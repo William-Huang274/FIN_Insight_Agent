@@ -1,0 +1,1034 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_residual_gap_external_live_result_v1_0",
+  "contract_ref": "fin_0_1_3.S1.residual_gap_official_first_external_supplement:v1",
+  "run_scope": "S1_RESIDUAL_GAP_EXTERNAL_SUPPLEMENT",
+  "status": "terminal_completed_with_candidates_and_typed_gaps",
+  "source_commit": "4674306e035a95729a9005b6a16de44ced2e855e",
+  "admission_id": "fin013-s1-residual-external-admission-33a611a244bcaf407843",
+  "admission_digest": "06f004648c3557dd72490204c4c278c97f178155ac568f7c574be4ff744ca82d",
+  "admission_consumed": true,
+  "run_id": "fin013-s1-residual-external-run-a291e153dbf715d557a4",
+  "attempt_id": "fin013-s1-residual-external-attempt-6092e1ebb79f479d9c27",
+  "as_of_date": "2026-08-06",
+  "priority_plan_digest": "e1eb54f75d9d6b17f6222c2f245713bec7c6f3b9fb3cc9d9cf90108b70081c19",
+  "discovery_results": [
+    {
+      "case_key": "DELL",
+      "status": "typed_gap",
+      "code": "official_source_transport_failed",
+      "attempt": {
+        "route_id": "residual_discovery::DELL",
+        "status": "transport_failure",
+        "failure_code": "official_source_transport_failed",
+        "request_capture": {
+          "object_key": "fin-0.1.3/s1/residual-gap-external-live/6f/94/6f948293f8fb4d40e5a55bcba0a464fce9daf9c27236bfb3ba808601d56acb88.json",
+          "digest": "6f948293f8fb4d40e5a55bcba0a464fce9daf9c27236bfb3ba808601d56acb88",
+          "byte_size": 446,
+          "media_type": "application/json",
+          "artifact_type": "official_source_request"
+        },
+        "response_capture": {
+          "object_key": "fin-0.1.3/s1/residual-gap-external-live/01/a6/01a6ada0c3c5ff653c941cb7a15ab6c1b82e8a215725c3df753b9b94e27618aa.json",
+          "digest": "01a6ada0c3c5ff653c941cb7a15ab6c1b82e8a215725c3df753b9b94e27618aa",
+          "byte_size": 518,
+          "media_type": "application/json",
+          "artifact_type": "official_source_transport_failure"
+        }
+      }
+    },
+    {
+      "case_key": "MU",
+      "status": "typed_gap",
+      "code": "official_source_transport_failed",
+      "attempt": {
+        "route_id": "residual_discovery::MU",
+        "status": "transport_failure",
+        "failure_code": "official_source_transport_failed",
+        "request_capture": {
+          "object_key": "fin-0.1.3/s1/residual-gap-external-live/a4/4a/a44abb94876b94777df3e7d4936d17f9ed4a65801a37cc20b9f3216d4b741754.json",
+          "digest": "a44abb94876b94777df3e7d4936d17f9ed4a65801a37cc20b9f3216d4b741754",
+          "byte_size": 432,
+          "media_type": "application/json",
+          "artifact_type": "official_source_request"
+        },
+        "response_capture": {
+          "object_key": "fin-0.1.3/s1/residual-gap-external-live/e3/25/e3250f93eb07bcfbdec1cb02cdbeb0db0924ad92c9cc97a8f9ccf4076a3cd814.json",
+          "digest": "e3250f93eb07bcfbdec1cb02cdbeb0db0924ad92c9cc97a8f9ccf4076a3cd814",
+          "byte_size": 514,
+          "media_type": "application/json",
+          "artifact_type": "official_source_transport_failure"
+        }
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "status": "captured_and_parsed",
+      "code": "official_discovery_materialized",
+      "response_capture": {
+        "object_key": "fin-0.1.3/s1/residual-gap-external-live/90/d1/90d177600ded2789eccb9b78a5e1c7573e17dbac257fc68dbf2abc78b3a7b9bc.json",
+        "digest": "90d177600ded2789eccb9b78a5e1c7573e17dbac257fc68dbf2abc78b3a7b9bc",
+        "byte_size": 149275,
+        "media_type": "application/json",
+        "artifact_type": "official_source_response"
+      },
+      "parser_capture": {
+        "object_key": "fin-0.1.3/s1/residual-gap-external-live/24/0f/240f14a7338483ced8d0ae77a481787e4c517b203868386d3a75994b5bd1bc47.json",
+        "digest": "240f14a7338483ced8d0ae77a481787e4c517b203868386d3a75994b5bd1bc47",
+        "byte_size": 1048,
+        "media_type": "application/json",
+        "artifact_type": "residual_external_discovery_parser"
+      },
+      "locator_count": 28
+    },
+    {
+      "case_key": "ORCL",
+      "status": "captured_and_parsed",
+      "code": "official_discovery_materialized",
+      "response_capture": {
+        "object_key": "fin-0.1.3/s1/residual-gap-external-live/aa/6a/aa6a2313dd17157062961ff4fcf04c46b78d13e9330d97120a51455c4e48aaef.json",
+        "digest": "aa6a2313dd17157062961ff4fcf04c46b78d13e9330d97120a51455c4e48aaef",
+        "byte_size": 96964,
+        "media_type": "application/json",
+        "artifact_type": "official_source_response"
+      },
+      "parser_capture": {
+        "object_key": "fin-0.1.3/s1/residual-gap-external-live/d9/14/d914c6187c6804b63594cc14cd6952813152f3e192aecf5baf0c77b1ede17dce.json",
+        "digest": "d914c6187c6804b63594cc14cd6952813152f3e192aecf5baf0c77b1ede17dce",
+        "byte_size": 710,
+        "media_type": "application/json",
+        "artifact_type": "residual_external_discovery_parser"
+      },
+      "locator_count": 11
+    },
+    {
+      "case_key": "ASML",
+      "status": "captured_and_parsed",
+      "code": "official_discovery_materialized",
+      "response_capture": {
+        "object_key": "fin-0.1.3/s1/residual-gap-external-live/9b/c8/9bc8b3c1fdcdbf9b0743dd8141b20cd8095a68ce4f27b7c6fb66d2f6513a9fd6.json",
+        "digest": "9bc8b3c1fdcdbf9b0743dd8141b20cd8095a68ce4f27b7c6fb66d2f6513a9fd6",
+        "byte_size": 239363,
+        "media_type": "application/json",
+        "artifact_type": "official_source_response"
+      },
+      "parser_capture": {
+        "object_key": "fin-0.1.3/s1/residual-gap-external-live/26/29/2629c18279c97bc6c4ed626c80ea135e19f0fe44632795fc9ce8489779f41e80.json",
+        "digest": "2629c18279c97bc6c4ed626c80ea135e19f0fe44632795fc9ce8489779f41e80",
+        "byte_size": 1901,
+        "media_type": "application/json",
+        "artifact_type": "residual_external_discovery_parser"
+      },
+      "locator_count": 112
+    },
+    {
+      "case_key": "ANET",
+      "status": "captured_and_parsed",
+      "code": "official_discovery_materialized",
+      "response_capture": {
+        "object_key": "fin-0.1.3/s1/residual-gap-external-live/2d/60/2d60e2b2fb466a41a9e6e16915d67fbce5a73c5da879d044326b8ea104730166.json",
+        "digest": "2d60e2b2fb466a41a9e6e16915d67fbce5a73c5da879d044326b8ea104730166",
+        "byte_size": 109367,
+        "media_type": "application/json",
+        "artifact_type": "official_source_response"
+      },
+      "parser_capture": {
+        "object_key": "fin-0.1.3/s1/residual-gap-external-live/d4/e1/d4e1d9b97f16afb161bfd8571ef37ce6351ba0684ee67800f3aa297b89d18c35.json",
+        "digest": "d4e1d9b97f16afb161bfd8571ef37ce6351ba0684ee67800f3aa297b89d18c35",
+        "byte_size": 682,
+        "media_type": "application/json",
+        "artifact_type": "residual_external_discovery_parser"
+      },
+      "locator_count": 30
+    }
+  ],
+  "intent_results": [
+    {
+      "intent_id": "residual_search_intent::DELL::issuer_demand_margin_cash::c6f8b5ec03d8ec7a",
+      "intent_digest": "c6f8b5ec03d8ec7abe43db441122efc28b9e410d1f50abf947adf34d5ff740e8",
+      "case_key": "DELL",
+      "intent_key": "issuer_demand_margin_cash",
+      "decision_surface": "AI server demand durability, value capture and cash absorption",
+      "selected_gap_ids": [
+        "dell-gap-ai-working-capital",
+        "dell-gap-demand-pull-forward-digestion",
+        "dell-gap-ai-system-margin",
+        "dell-gap-pricing-asp",
+        "dell-gap-price-volume-mix-bridge",
+        "dell-gap-pricing-units"
+      ],
+      "route": "official_domain_locator_provider_fallback",
+      "status": "typed_gap",
+      "terminal_code": "no_qualified_official_locator",
+      "selected_locator": null,
+      "document": null,
+      "matched_business_terms": [],
+      "provider_capture_refs": [
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/df/a2/dfa21c74c0bd2d3ba2467cd2c15f52989852abc7339cf27d174021a62c094706.json",
+          "digest": "dfa21c74c0bd2d3ba2467cd2c15f52989852abc7339cf27d174021a62c094706",
+          "byte_size": 740,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_safe_request"
+        },
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/95/fc/95fcd1db3f11ae8a79f968d21c9afedc31afe64a4518bef4d1844438f43ad6a9.json",
+          "digest": "95fcd1db3f11ae8a79f968d21c9afedc31afe64a4518bef4d1844438f43ad6a9",
+          "byte_size": 7299,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_raw_response"
+        },
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/4b/51/4b51f86547809e04c95e1945b9756bfcef71fb13e676003e544b810e3ef7f1c0.json",
+          "digest": "4b51f86547809e04c95e1945b9756bfcef71fb13e676003e544b810e3ef7f1c0",
+          "byte_size": 8347,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_private_normalized_projection"
+        }
+      ],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::DELL::supplier_hbm_packaging_capacity::eb2799fa6a6a1080",
+      "intent_digest": "eb2799fa6a6a1080622ecf42774573a18173821f8d5310caacedb15b634bc461",
+      "case_key": "DELL",
+      "intent_key": "supplier_hbm_packaging_capacity",
+      "decision_surface": "HBM and advanced-packaging capacity available to AI systems",
+      "selected_gap_ids": [
+        "dell-gap-advanced-packaging",
+        "dell-gap-capacity-release-timing",
+        "dell-gap-hbm-supply",
+        "dell-gap-capacity-utilization-yield",
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "route": "official_domain_locator_provider_fallback",
+      "status": "typed_gap",
+      "terminal_code": "no_qualified_official_locator",
+      "selected_locator": null,
+      "document": null,
+      "matched_business_terms": [],
+      "provider_capture_refs": [
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/f1/07/f107037d8a24f21325028903f8af0579905e2bed74fe42cb0d42ba1c95cca6bd.json",
+          "digest": "f107037d8a24f21325028903f8af0579905e2bed74fe42cb0d42ba1c95cca6bd",
+          "byte_size": 743,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_safe_request"
+        },
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/b2/f2/b2f29902f6cf732eb9af32c425557afa7ff3d20ca741cfc271049ed8fdac053a.json",
+          "digest": "b2f29902f6cf732eb9af32c425557afa7ff3d20ca741cfc271049ed8fdac053a",
+          "byte_size": 7844,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_raw_response"
+        },
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/31/36/3136caef94359cc3ddf230130f675cd2a67e519d1ace4a340a1a9e20ece3b101.json",
+          "digest": "3136caef94359cc3ddf230130f675cd2a67e519d1ace4a340a1a9e20ece3b101",
+          "byte_size": 8887,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_private_normalized_projection"
+        }
+      ],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::MU::issuer_hbm_demand_revenue::0fe88aa7ff09bf68",
+      "intent_digest": "0fe88aa7ff09bf682359ea2f02e4f4e8955bfc0481108377d113d27840cad64c",
+      "case_key": "MU",
+      "intent_key": "issuer_hbm_demand_revenue",
+      "decision_surface": "HBM demand durability, orders and AI revenue attribution",
+      "selected_gap_ids": [
+        "mu-gap-order-volume",
+        "mu-gap-pull-forward",
+        "mu-gap-ai-revenue"
+      ],
+      "route": "official_domain_locator_provider_fallback",
+      "status": "typed_gap",
+      "terminal_code": "official_source_transport_failed",
+      "selected_locator": {
+        "url": "https://investors.micron.com/press-releases?NumberPerPage=20&PageNum=3&ReleasesType=Italian&SortOrder=Date+Descending&Year=&page=1",
+        "title": "Latest News Micron Technology",
+        "source_domain": "investors.micron.com",
+        "local_locator_score": 2,
+        "provider_rank": 1,
+        "provider_snippet_used_as_evidence": false,
+        "provider_date_used_as_authority": false
+      },
+      "document": {
+        "status": "typed_gap",
+        "code": "official_source_transport_failed",
+        "url": "https://investors.micron.com/press-releases?NumberPerPage=20&PageNum=3&ReleasesType=Italian&SortOrder=Date+Descending&Year=&page=1"
+      },
+      "matched_business_terms": [],
+      "provider_capture_refs": [
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/e9/c4/e9c4f98b5707a2fe745bcc70db2a83b30c880afeea737dc5f7961646b581d694.json",
+          "digest": "e9c4f98b5707a2fe745bcc70db2a83b30c880afeea737dc5f7961646b581d694",
+          "byte_size": 719,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_safe_request"
+        },
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/e1/40/e140f590b94dba318b6c68dcbb632b0c2c3026d12c8d10d27aca3b781cf38054.json",
+          "digest": "e140f590b94dba318b6c68dcbb632b0c2c3026d12c8d10d27aca3b781cf38054",
+          "byte_size": 4600,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_raw_response"
+        },
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/ce/48/ce4874903b007f1d77acede2b8c838ca012dc3645045195aee9d1d6deb6dda35.json",
+          "digest": "ce4874903b007f1d77acede2b8c838ca012dc3645045195aee9d1d6deb6dda35",
+          "byte_size": 6097,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_private_normalized_projection"
+        }
+      ],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::MU::issuer_hbm_execution::e0611949eb628fcc",
+      "intent_digest": "e0611949eb628fcc2407faafd36648150e7f4ea9b8894c6ce3845d3ead866ac6",
+      "case_key": "MU",
+      "intent_key": "issuer_hbm_execution",
+      "decision_surface": "HBM capacity, packaging, yield and execution bottlenecks",
+      "selected_gap_ids": [
+        "mu-gap-advanced-packaging",
+        "mu-gap-foundry-component",
+        "mu-gap-supplier-commitment",
+        "mu-gap-utilization-yield",
+        "mu-gap-yield-die"
+      ],
+      "route": "official_domain_locator_provider_fallback",
+      "status": "typed_gap",
+      "terminal_code": "official_source_transport_failed",
+      "selected_locator": {
+        "url": "https://investors.micron.com/press-releases?NumberPerPage=20&PageNum=3&ReleasesType=Italian&SortOrder=Date+Descending&Year=&page=1",
+        "title": "Latest News Micron Technology",
+        "source_domain": "investors.micron.com",
+        "local_locator_score": 2,
+        "provider_rank": 1,
+        "provider_snippet_used_as_evidence": false,
+        "provider_date_used_as_authority": false
+      },
+      "document": {
+        "status": "typed_gap",
+        "code": "official_source_transport_failed",
+        "url": "https://investors.micron.com/press-releases?NumberPerPage=20&PageNum=3&ReleasesType=Italian&SortOrder=Date+Descending&Year=&page=1"
+      },
+      "matched_business_terms": [],
+      "provider_capture_refs": [
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/6c/c2/6cc2ac7075f1c080a557f00dc3ac55759f82fc5b0df3e5ad3c702bc0e4db224a.json",
+          "digest": "6cc2ac7075f1c080a557f00dc3ac55759f82fc5b0df3e5ad3c702bc0e4db224a",
+          "byte_size": 714,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_safe_request"
+        },
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/4c/a8/4ca811ca3e6f053da9e538bbf4c75f82fbab9934491f19439d3ebe357ba8e2d8.json",
+          "digest": "4ca811ca3e6f053da9e538bbf4c75f82fbab9934491f19439d3ebe357ba8e2d8",
+          "byte_size": 4600,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_raw_response"
+        },
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/50/c4/50c429ed93ce5d185a44b53551f39eb28bcca7a27850c196c7a863e01a30e673.json",
+          "digest": "50c429ed93ce5d185a44b53551f39eb28bcca7a27850c196c7a863e01a30e673",
+          "byte_size": 6097,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_private_normalized_projection"
+        }
+      ],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::NVDA::issuer_demand_product_economics::5988730ac57b1b38",
+      "intent_digest": "5988730ac57b1b3838c8b5f4d1df12d6e80a4e6c53578fce2957ae1332fa948d",
+      "case_key": "NVDA",
+      "intent_key": "issuer_demand_product_economics",
+      "decision_surface": "platform demand, shipments, pricing and mix",
+      "selected_gap_ids": [
+        "nvda-gap-order-volume",
+        "nvda-gap-asp",
+        "nvda-gap-pvm",
+        "nvda-gap-units"
+      ],
+      "route": "official_discovery_root",
+      "status": "typed_gap",
+      "terminal_code": "official_source_transport_failed",
+      "selected_locator": {
+        "url": "https://investor.nvidia.com/financial-info/Annual-Meeting/default.aspx",
+        "title": "Annual Meeting within the Financial Info section",
+        "source_domain": "investor.nvidia.com",
+        "local_locator_score": 2,
+        "provider_rank": null,
+        "provider_snippet_used_as_evidence": false,
+        "provider_date_used_as_authority": false
+      },
+      "document": {
+        "status": "typed_gap",
+        "code": "official_source_transport_failed",
+        "url": "https://investor.nvidia.com/financial-info/Annual-Meeting/default.aspx"
+      },
+      "matched_business_terms": [],
+      "provider_capture_refs": [],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::NVDA::supplier_packaging_hbm_capacity::73b645cd0b127d68",
+      "intent_digest": "73b645cd0b127d6870edb02a71d21ad889812179b05ca9dacd916f3f992d240a",
+      "case_key": "NVDA",
+      "intent_key": "supplier_packaging_hbm_capacity",
+      "decision_surface": "foundry, advanced-packaging and HBM capacity release",
+      "selected_gap_ids": [
+        "nvda-gap-advanced-packaging",
+        "nvda-gap-capacity-release",
+        "nvda-gap-utilization-yield"
+      ],
+      "route": "official_domain_locator_provider_fallback",
+      "status": "typed_gap",
+      "terminal_code": "no_qualified_official_locator",
+      "selected_locator": null,
+      "document": null,
+      "matched_business_terms": [],
+      "provider_capture_refs": [
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/b7/05/b70515cf9815ef94a16f59e4f6bb0f4f4c31284e441ff0c469e0e7fa432b6728.json",
+          "digest": "b70515cf9815ef94a16f59e4f6bb0f4f4c31284e441ff0c469e0e7fa432b6728",
+          "byte_size": 744,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_safe_request"
+        },
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/8c/1b/8c1b665c7f3cbe2e2dc40e9bc2270c4f0ed68540f5afcb243f9fdbc24cde4cc9.json",
+          "digest": "8c1b665c7f3cbe2e2dc40e9bc2270c4f0ed68540f5afcb243f9fdbc24cde4cc9",
+          "byte_size": 3888,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_raw_response"
+        },
+        {
+          "object_key": "fin-0.1.3/s1/residual-gap-tencent-locator/48/13/481375f53cfed09a68526dd2114845c06284e0d51e56aa3fd5379796fa3bf74a.json",
+          "digest": "481375f53cfed09a68526dd2114845c06284e0d51e56aa3fd5379796fa3bf74a",
+          "byte_size": 5134,
+          "media_type": "application/json",
+          "artifact_type": "tencent_locator_private_normalized_projection"
+        }
+      ],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::ORCL::issuer_capacity_and_policy::19450c109fcb7667",
+      "intent_digest": "19450c109fcb76673d142db1c922c65a6cfc2cf6b9b17ab2035899141ad64c0f",
+      "case_key": "ORCL",
+      "intent_key": "issuer_capacity_and_policy",
+      "decision_surface": "data-center capacity ramp, execution constraints and policy exposure",
+      "selected_gap_ids": [
+        "orcl-gap-capacity_inputs_execution-bottleneck_or_lead_time",
+        "orcl-gap-capacity_inputs_execution-capacity_or_supply",
+        "orcl-gap-capacity_inputs_execution-ramp_timing",
+        "orcl-gap-capacity_inputs_execution-supplier_commitment_or_dependency",
+        "orcl-gap-capacity_inputs_execution-utilization_or_yield",
+        "orcl-gap-regulatory_policy_exposure-affected_scope",
+        "orcl-gap-regulatory_policy_exposure-financial_or_operating_consequence",
+        "orcl-gap-regulatory_policy_exposure-mitigation_or_uncertainty",
+        "orcl-gap-regulatory_policy_exposure-policy_or_regulatory_event"
+      ],
+      "route": "official_discovery_root",
+      "status": "typed_gap",
+      "terminal_code": "official_source_transport_failed",
+      "selected_locator": {
+        "url": "https://investor.oracle.com/financials/default.aspx",
+        "title": "Financials",
+        "source_domain": "investor.oracle.com",
+        "local_locator_score": 2,
+        "provider_rank": null,
+        "provider_snippet_used_as_evidence": false,
+        "provider_date_used_as_authority": false
+      },
+      "document": {
+        "status": "typed_gap",
+        "code": "official_source_transport_failed",
+        "url": "https://investor.oracle.com/financials/default.aspx"
+      },
+      "matched_business_terms": [],
+      "provider_capture_refs": [],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::ORCL::issuer_cloud_demand_value::5c658354cc80ac34",
+      "intent_digest": "5c658354cc80ac34b40d47dba92b0f3c77d65ecad9b5d8e09224a0db6f021d0d",
+      "case_key": "ORCL",
+      "intent_key": "issuer_cloud_demand_value",
+      "decision_surface": "OCI demand, RPO conversion, product growth and value capture",
+      "selected_gap_ids": [
+        "orcl-gap-demand_volume_quality-customer_breadth_or_concentration",
+        "orcl-gap-demand_volume_quality-deployment_or_utilization",
+        "orcl-gap-demand_volume_quality-order_backlog_rpo_or_volume",
+        "orcl-gap-operating_performance-management_outlook",
+        "orcl-gap-operating_performance-segment_or_product_performance",
+        "orcl-gap-pricing_mix_value_capture-mix_or_product_attribution",
+        "orcl-gap-pricing_mix_value_capture-price_or_asp",
+        "orcl-gap-pricing_mix_value_capture-profit_capture_bridge",
+        "orcl-gap-pricing_mix_value_capture-volume_or_units",
+        "orcl-gap-relationship_attribution-company_specific_attribution_or_boundary"
+      ],
+      "route": "official_discovery_root",
+      "status": "typed_gap",
+      "terminal_code": "official_source_transport_failed",
+      "selected_locator": {
+        "url": "https://investor.oracle.com/financials/default.aspx",
+        "title": "Financials",
+        "source_domain": "investor.oracle.com",
+        "local_locator_score": 2,
+        "provider_rank": null,
+        "provider_snippet_used_as_evidence": false,
+        "provider_date_used_as_authority": false
+      },
+      "document": {
+        "status": "typed_gap",
+        "code": "official_source_transport_failed",
+        "url": "https://investor.oracle.com/financials/default.aspx"
+      },
+      "matched_business_terms": [],
+      "provider_capture_refs": [],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::ASML::issuer_execution_cash_policy::805efabb365fd7cf",
+      "intent_digest": "805efabb365fd7cfcebae6d2887d8eb0594b888033747a3f092c3e9cb7b8a46e",
+      "case_key": "ASML",
+      "intent_key": "issuer_execution_cash_policy",
+      "decision_surface": "capacity execution, cash conversion and export-control counterevidence",
+      "selected_gap_ids": [
+        "asml-gap-capacity_inputs_execution-bottleneck_or_lead_time",
+        "asml-gap-capacity_inputs_execution-capacity_or_supply",
+        "asml-gap-capacity_inputs_execution-ramp_timing",
+        "asml-gap-capacity_inputs_execution-supplier_commitment_or_dependency",
+        "asml-gap-capacity_inputs_execution-utilization_or_yield",
+        "asml-gap-cash_conversion_balance_sheet-capital_expenditure",
+        "asml-gap-cash_conversion_balance_sheet-inventory",
+        "asml-gap-cash_conversion_balance_sheet-operating_cash_flow",
+        "asml-gap-cash_conversion_balance_sheet-receivables_payables_or_obligations",
+        "asml-gap-cash_conversion_balance_sheet-working_capital",
+        "asml-gap-counterevidence_and_what_would_change-impact_mechanism",
+        "asml-gap-counterevidence_and_what_would_change-strongest_counterevidence",
+        "asml-gap-regulatory_policy_exposure-affected_scope",
+        "asml-gap-regulatory_policy_exposure-financial_or_operating_consequence",
+        "asml-gap-regulatory_policy_exposure-mitigation_or_uncertainty",
+        "asml-gap-regulatory_policy_exposure-policy_or_regulatory_event"
+      ],
+      "route": "official_discovery_root",
+      "status": "typed_gap",
+      "terminal_code": "official_source_transport_failed",
+      "selected_locator": {
+        "url": "https://www.asml.com/en/investors/why-invest-in-asml/financial-strategy",
+        "title": "Financial strategy",
+        "source_domain": "www.asml.com",
+        "local_locator_score": 3,
+        "provider_rank": null,
+        "provider_snippet_used_as_evidence": false,
+        "provider_date_used_as_authority": false
+      },
+      "document": {
+        "status": "typed_gap",
+        "code": "official_source_transport_failed",
+        "url": "https://www.asml.com/en/investors/why-invest-in-asml/financial-strategy"
+      },
+      "matched_business_terms": [],
+      "provider_capture_refs": [],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::ASML::issuer_orders_product_economics::43d7e3c3ff782307",
+      "intent_digest": "43d7e3c3ff782307a737ed1f773103c7d6265024a92259fbee1eb492f2821c0c",
+      "case_key": "ASML",
+      "intent_key": "issuer_orders_product_economics",
+      "decision_surface": "bookings, backlog, product mix, system volume and outlook",
+      "selected_gap_ids": [
+        "asml-gap-demand_volume_quality-customer_breadth_or_concentration",
+        "asml-gap-demand_volume_quality-deployment_or_utilization",
+        "asml-gap-demand_volume_quality-order_backlog_rpo_or_volume",
+        "asml-gap-operating_performance-management_outlook",
+        "asml-gap-pricing_mix_value_capture-price_or_asp",
+        "asml-gap-pricing_mix_value_capture-profit_capture_bridge"
+      ],
+      "route": "official_discovery_root",
+      "status": "typed_gap",
+      "terminal_code": "official_source_transport_failed",
+      "selected_locator": {
+        "url": "https://www.asml.com/en/news/press-releases/2026/q2-2026-financial-results",
+        "title": "July 15, 2026 ASML reports €9.3 billion total net sales and €2.9 billion net income in Q2 2026",
+        "source_domain": "www.asml.com",
+        "local_locator_score": 5,
+        "provider_rank": null,
+        "provider_snippet_used_as_evidence": false,
+        "provider_date_used_as_authority": false
+      },
+      "document": {
+        "status": "typed_gap",
+        "code": "official_source_transport_failed",
+        "url": "https://www.asml.com/en/news/press-releases/2026/q2-2026-financial-results"
+      },
+      "matched_business_terms": [],
+      "provider_capture_refs": [],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::ANET::issuer_ai_networking_demand_value::19156d4e5f3846a8",
+      "intent_digest": "19156d4e5f3846a8cba757a6bdfe2d6e444a13058bc9d547eacf6c7bedb26fee",
+      "case_key": "ANET",
+      "intent_key": "issuer_ai_networking_demand_value",
+      "decision_surface": "AI networking demand, customer concentration, product mix and value capture",
+      "selected_gap_ids": [
+        "anet-gap-demand_volume_quality-customer_breadth_or_concentration",
+        "anet-gap-demand_volume_quality-deployment_or_utilization",
+        "anet-gap-demand_volume_quality-order_backlog_rpo_or_volume",
+        "anet-gap-operating_performance-management_outlook",
+        "anet-gap-operating_performance-segment_or_product_performance",
+        "anet-gap-pricing_mix_value_capture-mix_or_product_attribution",
+        "anet-gap-pricing_mix_value_capture-price_or_asp",
+        "anet-gap-pricing_mix_value_capture-profit_capture_bridge",
+        "anet-gap-pricing_mix_value_capture-volume_or_units"
+      ],
+      "route": "official_discovery_root",
+      "status": "captured_candidate_with_typed_date_or_content_gap",
+      "terminal_code": "publication_date_unproven",
+      "selected_locator": {
+        "url": "https://investors.arista.com/Financial-Information/default.aspx",
+        "title": "Financial Info",
+        "source_domain": "investors.arista.com",
+        "local_locator_score": 2,
+        "provider_rank": null,
+        "provider_snippet_used_as_evidence": false,
+        "provider_date_used_as_authority": false
+      },
+      "document": {
+        "status": "captured_and_parsed",
+        "code": "official_document_materialized",
+        "url": "https://investors.arista.com/Financial-Information/default.aspx",
+        "title": "Arista Networks",
+        "response_capture": {
+          "object_key": "fin-0.1.3/s1/residual-gap-external-live/2c/a9/2ca9269eb9542406a3d310730f45b61905e6f15eb0962a0d09ba80bc4c6f4475.json",
+          "digest": "2ca9269eb9542406a3d310730f45b61905e6f15eb0962a0d09ba80bc4c6f4475",
+          "byte_size": 93395,
+          "media_type": "application/json",
+          "artifact_type": "official_source_response"
+        },
+        "parser_capture": {
+          "object_key": "fin-0.1.3/s1/residual-gap-external-live/78/76/78769764b35957c6fc8477571f965f1442fd77d484a35505a29b79a1397b7320.json",
+          "digest": "78769764b35957c6fc8477571f965f1442fd77d484a35505a29b79a1397b7320",
+          "byte_size": 25844,
+          "media_type": "application/json",
+          "artifact_type": "residual_external_document_parser"
+        },
+        "publication_date": {
+          "date_value": "",
+          "date_kind": "",
+          "date_source": "",
+          "date_confidence": "",
+          "capture_ref": "fin-0.1.3/s1/residual-gap-external-live/2c/a9/2ca9269eb9542406a3d310730f45b61905e6f15eb0962a0d09ba80bc4c6f4475.json",
+          "capture_digest": "2ca9269eb9542406a3d310730f45b61905e6f15eb0962a0d09ba80bc4c6f4475",
+          "conflict_status": "publication_date_unproven",
+          "candidates": [
+            {
+              "date_value": "2026-05-29",
+              "date_kind": "published_date",
+              "date_source": "trafilatura_inferred_date",
+              "date_confidence": "low",
+              "context_class": "library_inferred_untyped"
+            }
+          ]
+        },
+        "text_digest": "e6383975773dd7ce01deb713cbedae55e20d1a6699245452e00cb36675b0fbd4",
+        "text_chars": 24400
+      },
+      "matched_business_terms": [
+        "arista",
+        "networks",
+        "product",
+        "value"
+      ],
+      "provider_capture_refs": [],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    },
+    {
+      "intent_id": "residual_search_intent::ANET::issuer_supply_cash_mitigation::46196424fee1da7d",
+      "intent_digest": "46196424fee1da7d1fc9ae1aa5fa81625be50b456460423c1d10e2d9230b4f2d",
+      "case_key": "ANET",
+      "intent_key": "issuer_supply_cash_mitigation",
+      "decision_surface": "component supply, platform ramp, cash conversion and policy mitigation",
+      "selected_gap_ids": [
+        "anet-gap-capacity_inputs_execution-bottleneck_or_lead_time",
+        "anet-gap-capacity_inputs_execution-capacity_or_supply",
+        "anet-gap-capacity_inputs_execution-ramp_timing",
+        "anet-gap-capacity_inputs_execution-supplier_commitment_or_dependency",
+        "anet-gap-capacity_inputs_execution-utilization_or_yield",
+        "anet-gap-cash_conversion_balance_sheet-capital_expenditure",
+        "anet-gap-cash_conversion_balance_sheet-inventory",
+        "anet-gap-cash_conversion_balance_sheet-receivables_payables_or_obligations",
+        "anet-gap-regulatory_policy_exposure-mitigation_or_uncertainty",
+        "anet-gap-relationship_attribution-company_specific_attribution_or_boundary",
+        "anet-gap-relationship_attribution-economic_relationship_direction",
+        "anet-gap-relationship_attribution-evidence_owner_self_disclosure"
+      ],
+      "route": "official_discovery_root",
+      "status": "captured_candidate_with_typed_date_or_content_gap",
+      "terminal_code": "publication_date_unproven",
+      "selected_locator": {
+        "url": "https://investors.arista.com/Financial-Information/default.aspx",
+        "title": "Financial Info",
+        "source_domain": "investors.arista.com",
+        "local_locator_score": 2,
+        "provider_rank": null,
+        "provider_snippet_used_as_evidence": false,
+        "provider_date_used_as_authority": false
+      },
+      "document": {
+        "status": "captured_and_parsed",
+        "code": "official_document_materialized",
+        "url": "https://investors.arista.com/Financial-Information/default.aspx",
+        "title": "Arista Networks",
+        "response_capture": {
+          "object_key": "fin-0.1.3/s1/residual-gap-external-live/2c/a9/2ca9269eb9542406a3d310730f45b61905e6f15eb0962a0d09ba80bc4c6f4475.json",
+          "digest": "2ca9269eb9542406a3d310730f45b61905e6f15eb0962a0d09ba80bc4c6f4475",
+          "byte_size": 93395,
+          "media_type": "application/json",
+          "artifact_type": "official_source_response"
+        },
+        "parser_capture": {
+          "object_key": "fin-0.1.3/s1/residual-gap-external-live/78/76/78769764b35957c6fc8477571f965f1442fd77d484a35505a29b79a1397b7320.json",
+          "digest": "78769764b35957c6fc8477571f965f1442fd77d484a35505a29b79a1397b7320",
+          "byte_size": 25844,
+          "media_type": "application/json",
+          "artifact_type": "residual_external_document_parser"
+        },
+        "publication_date": {
+          "date_value": "",
+          "date_kind": "",
+          "date_source": "",
+          "date_confidence": "",
+          "capture_ref": "fin-0.1.3/s1/residual-gap-external-live/2c/a9/2ca9269eb9542406a3d310730f45b61905e6f15eb0962a0d09ba80bc4c6f4475.json",
+          "capture_digest": "2ca9269eb9542406a3d310730f45b61905e6f15eb0962a0d09ba80bc4c6f4475",
+          "conflict_status": "publication_date_unproven",
+          "candidates": [
+            {
+              "date_value": "2026-05-29",
+              "date_kind": "published_date",
+              "date_source": "trafilatura_inferred_date",
+              "date_confidence": "low",
+              "context_class": "library_inferred_untyped"
+            }
+          ]
+        },
+        "text_digest": "e6383975773dd7ce01deb713cbedae55e20d1a6699245452e00cb36675b0fbd4",
+        "text_chars": 24400
+      },
+      "matched_business_terms": [
+        "10-q",
+        "arista",
+        "component",
+        "networks",
+        "platform",
+        "policy",
+        "time"
+      ],
+      "provider_capture_refs": [],
+      "evidence_promotion_allowed": false,
+      "writer_citable": false
+    }
+  ],
+  "observed_counts": {
+    "intents": 12,
+    "candidate_ready_for_local_readjudication": 0,
+    "captured_candidate_with_typed_date_or_content_gap": 2,
+    "typed_gap": 10,
+    "official_discovery_network_calls": 6,
+    "official_document_network_calls": 6,
+    "locator_provider_network_calls": 5,
+    "total_network_calls": 17,
+    "retry_calls": 0,
+    "model_calls": 0,
+    "embedding_calls": 0,
+    "rerank_calls": 0,
+    "evidence_promotions": 0
+  },
+  "capture_refs": [
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/6f/94/6f948293f8fb4d40e5a55bcba0a464fce9daf9c27236bfb3ba808601d56acb88.json",
+      "digest": "6f948293f8fb4d40e5a55bcba0a464fce9daf9c27236bfb3ba808601d56acb88",
+      "byte_size": 446,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/01/a6/01a6ada0c3c5ff653c941cb7a15ab6c1b82e8a215725c3df753b9b94e27618aa.json",
+      "digest": "01a6ada0c3c5ff653c941cb7a15ab6c1b82e8a215725c3df753b9b94e27618aa",
+      "byte_size": 518,
+      "media_type": "application/json",
+      "artifact_type": "official_source_transport_failure"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/a4/4a/a44abb94876b94777df3e7d4936d17f9ed4a65801a37cc20b9f3216d4b741754.json",
+      "digest": "a44abb94876b94777df3e7d4936d17f9ed4a65801a37cc20b9f3216d4b741754",
+      "byte_size": 432,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/e3/25/e3250f93eb07bcfbdec1cb02cdbeb0db0924ad92c9cc97a8f9ccf4076a3cd814.json",
+      "digest": "e3250f93eb07bcfbdec1cb02cdbeb0db0924ad92c9cc97a8f9ccf4076a3cd814",
+      "byte_size": 514,
+      "media_type": "application/json",
+      "artifact_type": "official_source_transport_failure"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/9d/05/9d05b31e7c762ab09bcefeb7d2b263a51bef8a33e07a064c114988654cb720e5.json",
+      "digest": "9d05b31e7c762ab09bcefeb7d2b263a51bef8a33e07a064c114988654cb720e5",
+      "byte_size": 435,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/90/d1/90d177600ded2789eccb9b78a5e1c7573e17dbac257fc68dbf2abc78b3a7b9bc.json",
+      "digest": "90d177600ded2789eccb9b78a5e1c7573e17dbac257fc68dbf2abc78b3a7b9bc",
+      "byte_size": 149275,
+      "media_type": "application/json",
+      "artifact_type": "official_source_response"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/ed/67/ed672dcbd5f8b4e55935050e74c041fba4a0d5e1379781b0c95c0d53886facf2.json",
+      "digest": "ed672dcbd5f8b4e55935050e74c041fba4a0d5e1379781b0c95c0d53886facf2",
+      "byte_size": 435,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/aa/6a/aa6a2313dd17157062961ff4fcf04c46b78d13e9330d97120a51455c4e48aaef.json",
+      "digest": "aa6a2313dd17157062961ff4fcf04c46b78d13e9330d97120a51455c4e48aaef",
+      "byte_size": 96964,
+      "media_type": "application/json",
+      "artifact_type": "official_source_response"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/47/e9/47e92120e7b41347baf0a3e81d27239f44fcccde909ad76219f6a71d7c963b2b.json",
+      "digest": "47e92120e7b41347baf0a3e81d27239f44fcccde909ad76219f6a71d7c963b2b",
+      "byte_size": 440,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/9b/c8/9bc8b3c1fdcdbf9b0743dd8141b20cd8095a68ce4f27b7c6fb66d2f6513a9fd6.json",
+      "digest": "9bc8b3c1fdcdbf9b0743dd8141b20cd8095a68ce4f27b7c6fb66d2f6513a9fd6",
+      "byte_size": 239363,
+      "media_type": "application/json",
+      "artifact_type": "official_source_response"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/70/1a/701aa7d4515402f233858699db2efdd28eb9a64f9252844babd7aa702647a3fa.json",
+      "digest": "701aa7d4515402f233858699db2efdd28eb9a64f9252844babd7aa702647a3fa",
+      "byte_size": 436,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/2d/60/2d60e2b2fb466a41a9e6e16915d67fbce5a73c5da879d044326b8ea104730166.json",
+      "digest": "2d60e2b2fb466a41a9e6e16915d67fbce5a73c5da879d044326b8ea104730166",
+      "byte_size": 109367,
+      "media_type": "application/json",
+      "artifact_type": "official_source_response"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/60/a6/60a6cb3bb8d36e966903a9af2c75f84263b7aad736d5e6e7fd15699122ed530f.json",
+      "digest": "60a6cb3bb8d36e966903a9af2c75f84263b7aad736d5e6e7fd15699122ed530f",
+      "byte_size": 550,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/cf/f5/cff5b47a4e3e1c8d0f2d0fff02493bb8bbdecc08a9f7ffa0f4993908b62129cf.json",
+      "digest": "cff5b47a4e3e1c8d0f2d0fff02493bb8bbdecc08a9f7ffa0f4993908b62129cf",
+      "byte_size": 531,
+      "media_type": "application/json",
+      "artifact_type": "official_source_transport_failure"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/cc/37/cc37558f2e35c3c39bc12da44e4a1db4cfabc22f08fe2ced577228da7bff1cab.json",
+      "digest": "cc37558f2e35c3c39bc12da44e4a1db4cfabc22f08fe2ced577228da7bff1cab",
+      "byte_size": 494,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/aa/97/aa97942629945c12caf2070560ccaa30332eb3cd58af1f715f4f36ff0e3b44fb.json",
+      "digest": "aa97942629945c12caf2070560ccaa30332eb3cd58af1f715f4f36ff0e3b44fb",
+      "byte_size": 535,
+      "media_type": "application/json",
+      "artifact_type": "official_source_transport_failure"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/1a/c9/1ac9a6bf643ccfc99d50b601ae0290d3fe5bbf5e78da4e20aee0b0bf5a4e4432.json",
+      "digest": "1ac9a6bf643ccfc99d50b601ae0290d3fe5bbf5e78da4e20aee0b0bf5a4e4432",
+      "byte_size": 475,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/6d/fb/6dfb50086146978e642702e6375a0b5c2b0f272ab8b2e5be330b2d4849d4972e.json",
+      "digest": "6dfb50086146978e642702e6375a0b5c2b0f272ab8b2e5be330b2d4849d4972e",
+      "byte_size": 535,
+      "media_type": "application/json",
+      "artifact_type": "official_source_transport_failure"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/a8/7b/a87bcbd7408e56f2fdafe795eec71b7788232c82eb711088fea2a866c98036b3.json",
+      "digest": "a87bcbd7408e56f2fdafe795eec71b7788232c82eb711088fea2a866c98036b3",
+      "byte_size": 495,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/6c/9b/6c9b4d0a63b2028eee4fbdc04ae80b814eeee2793519baf34bec9a90fb73f095.json",
+      "digest": "6c9b4d0a63b2028eee4fbdc04ae80b814eeee2793519baf34bec9a90fb73f095",
+      "byte_size": 535,
+      "media_type": "application/json",
+      "artifact_type": "official_source_transport_failure"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/65/1a/651a0d0d6e016b7876a19049c85658f4eec001cde4927dd3590aab9d442f2b2a.json",
+      "digest": "651a0d0d6e016b7876a19049c85658f4eec001cde4927dd3590aab9d442f2b2a",
+      "byte_size": 498,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/7a/3a/7a3a6631b7eff0580d2dc4879dc7f46042434e0c414e0a992c3467528539e482.json",
+      "digest": "7a3a6631b7eff0580d2dc4879dc7f46042434e0c414e0a992c3467528539e482",
+      "byte_size": 535,
+      "media_type": "application/json",
+      "artifact_type": "official_source_transport_failure"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/93/31/933115fdd8fe0954c1533055197ce74b46c7ae8264b090c0bf4368b85b4328de.json",
+      "digest": "933115fdd8fe0954c1533055197ce74b46c7ae8264b090c0bf4368b85b4328de",
+      "byte_size": 487,
+      "media_type": "application/json",
+      "artifact_type": "official_source_request"
+    },
+    {
+      "object_key": "fin-0.1.3/s1/residual-gap-external-live/2c/a9/2ca9269eb9542406a3d310730f45b61905e6f15eb0962a0d09ba80bc4c6f4475.json",
+      "digest": "2ca9269eb9542406a3d310730f45b61905e6f15eb0962a0d09ba80bc4c6f4475",
+      "byte_size": 93395,
+      "media_type": "application/json",
+      "artifact_type": "official_source_response"
+    }
+  ],
+  "stage_acceptance": {
+    "all_twelve_intents_terminal": true,
+    "capture_first": true,
+    "provider_locator_only": true,
+    "external_live_complete": true,
+    "external_evidence_readjudicated": false,
+    "deepseek_research": false,
+    "release": false
+  },
+  "known_boundary": "Captured official documents are candidate material for local readjudication. This terminal does not promote Evidence, close every residual gap, prove DeepSeek research quality, or accept a report.",
+  "execution_environment_guard": {
+    "guard": "public_allowlist_plus_controlled_198_18_0_0_15_proxy_v1",
+    "host_count": 8,
+    "synthetic_allowance_required": true,
+    "all_forbidden_addresses_controlled_synthetic": true,
+    "resolved_hosts": [
+      {
+        "host": "asml.com",
+        "address_digests": [
+          "d3b7579c787d6b93e0d442df20e96fa363287ed415f3e245cec968c9dd1369f3"
+        ],
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true
+      },
+      {
+        "host": "investor.nvidia.com",
+        "address_digests": [
+          "20be0d37abde91a3750f649d76e7c87761d848ee914bd1982483159578bcd75b"
+        ],
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true
+      },
+      {
+        "host": "investor.oracle.com",
+        "address_digests": [
+          "42d67d893abeb3b3fe695ea8349e13221ab2926ca2dda11553f784c2cad14e8c"
+        ],
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true
+      },
+      {
+        "host": "investor.tsmc.com",
+        "address_digests": [
+          "c46031b26618938aafaf8d94a5f280ae51e75c4375c94d0b5978b748aacc010b"
+        ],
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true
+      },
+      {
+        "host": "investors.arista.com",
+        "address_digests": [
+          "75ecb48e53e876fe8129778222a9e2d2d12bb47d55fedbf43fd97b1487bfbed9"
+        ],
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true
+      },
+      {
+        "host": "investors.delltechnologies.com",
+        "address_digests": [
+          "998eb7ee26002f6abab22dd7cedbc2ab6d3dc8a021976133bb2afd81f196887d"
+        ],
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true
+      },
+      {
+        "host": "investors.micron.com",
+        "address_digests": [
+          "866b1a1c149538e778e147241f062abc21b9ae5af2a2dfaf91a96dec8d2d3e63"
+        ],
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true
+      },
+      {
+        "host": "www.asml.com",
+        "address_digests": [
+          "c4bdb7648ec280eef92c5454abc3aa803ae38e31a415f50247ae0b6a2fbd59bf"
+        ],
+        "address_count": 1,
+        "controlled_synthetic_range_observed": true
+      }
+    ],
+    "decision_digest": "1d440598b8eadcae988ea6f8f92dcc4acad1683627a9aeaaee94b9b2c384bc71"
+  },
+  "provider_sdk": {
+    "package": "tencentcloud-sdk-python",
+    "version": "3.1.152"
+  },
+  "public_private_separation": {
+    "raw_source_and_provider_captures_retained_outside_git": true,
+    "runtime_root_ref": ".codex_runtime/fin013_s1_residual_gap_external_live/r1",
+    "credential_values_persisted": false,
+    "provider_snippets_or_dates_promoted": false
+  },
+  "terminal_capture": {
+    "runtime_ref": ".codex_runtime/fin013_s1_residual_gap_external_live/r1/terminal-result.json",
+    "sha256": "e9f3be57ee889a7ba60a08a7d34aec87d079b558a12f101b410402ef27928ad1"
+  },
+  "result_digest": "fcf529dbe5e9d55910b74324c379709f3af3f42d9eb2119d15d23967af4e02da"
+}

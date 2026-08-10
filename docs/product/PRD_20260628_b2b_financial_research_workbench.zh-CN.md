@@ -2298,4 +2298,6 @@ fresh R2 现已 exact-once terminal succeeded：六案 93 个 CandidateBundle �
 
 六案检索评测的产品口径进一步明确为“两套标签、先天花板优先”：DELL／MU／NVDA 的 18 条 Owner qrels 检查已审目标是否进入前十；六案 54 个 canonical Slot 只用冻结 manifest 的 slot metadata 诊断上游对象覆盖，不能冒充 Evidence 或研报质量。候选必须在加载标签前生成，sparse／dense 只允许 case filter，禁止用 gold target、URL 或 slot filter 偷渡答案；fusion 固定 1:1 RRF，不准看结果调权重。当前 93-object population 的先天 required-slot ceiling 是 `36/48`：前三案均 `8/8`，ORCL `5/8`、ASML `3/8`、ANET `4/8`；Owner targets 为 `16/18`，缺 NVDA regulatory 与 NVDA case 下的 MU supply target。真实排序即使全命中，也不能弥补这 12 个 required-slot 空洞，必须在 Evidence Pack 审计中保留 typed gaps，并只把真正 residual gaps 送入后续外源补源。
 
+六案真实 R1 已进一步证明，`slot metadata 命中` 与 `内容可用于研究` 必须是两个产品门。ObjectBM25／BGE-M3／fusion 对 16 个上游可用 Owner targets 的 Recall@10 分别为 `1.0／0.875／1.0`，但留出案例存在“ANET Land→capacity”“ORCL 债券利率→valuation”等标签命中而内容不回答问题的情况。产品默认 Candidate route 因此暂定为 ObjectBM25；BGE-M3 只作 shadow／候选扩展，1:1 fusion 的微小 aggregate MRR 增益不足以成为全局默认，reranker 也不得用于掩盖缺源或弱对象。下一门必须逐条读取候选正文，区分 source fact、bounded mechanism、counterevidence 与 typed gap；只有通过 Evidence Gate 的内容才可供模型引用。
+
 面向业务解释时，检索结果必须从同一冻结 Candidate spec 回接 `evidence_owner_ticker`、经济关系方向、来源类型、发布日期和 source record，而不能靠 target ID 前缀猜“谁在披露谁”。这让“查 Dell 客户需求却排进 Dell 自己的收入”“查供应约束却排进另一交易对手”“主题相近但期间错误”成为可审计的不同错误。该辅助 join 只解释候选，不改变 rank、不晋升 Evidence，也不触发模型或网络调用。

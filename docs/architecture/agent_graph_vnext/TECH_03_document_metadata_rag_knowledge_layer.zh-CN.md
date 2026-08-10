@@ -807,3 +807,21 @@ fresh R2 已在唯一 authority 下 terminal succeeded：同一 93-spec populati
 物理索引 schema 为最小搜索面，没有单独保存 disclosure owner 与 relationship direction；评测 Runtime 因而必须按 `vector_id` 回接同一 digest-bound private manifest spec，再把 `evidence_owner_ticker`、`relationship_directions`、`source_record_id`、`source_type` 与 `publication_date` 附到候选解释面。该 join 必须覆盖全部返回 vector，否则 fail closed；不得从 `8K_EARNINGS::`、`SUPP::` 等命名空间猜交易对手。rank 和 score 不被回接修改。
 
 零模型 full-shape proof 已固定先天业务上限：Owner qrels `16/18` 有对象；canonical required Slots `36/48` 有对象，DELL/MU/NVDA=`8/8`、ORCL=`5/8`、ASML=`3/8`、ANET=`4/8`。这不是 ranking 结果，而是明确告诉下游：dense/fusion 不能从不存在的对象中恢复需求、监管、反证等内容。实现同时拒绝 duplicate/cross-case population，验证 candidate iteration order 不改变 RRF，并把任何 unexpected local failure 原子物化为 typed terminal result、0 retry。真实 R1 仍须 clean/synced commit-bound authority 后单独执行。
+
+### 24.15 六案真实排序结果与正文 Evidence Gate（2026-08-10）
+
+唯一 R1 已 terminal succeeded：一次 BGE-M3 load／一次 72-query encode、72 次 ObjectBM25 query、按六案分组的 6 次 Milvus search；network／Provider／LLM／document fetch／rerank／Evidence promotion／retry 均为 0。对 16 个实际存在的 Owner targets，ObjectBM25／BGE-M3／固定 1:1 RRF 的 Recall@10 为 `1.0／0.875／1.0`，MRR 为 `0.7948／0.7902／0.8038`。机械 aggregate MRR 的微小提升不构成 fusion 的产品准入：fusion 相比 sparse 恶化 DELL、NVDA 和 canonical-slot 排序，只在 MU 局部改善。
+
+当前路由处置固定为：
+
+- ObjectBM25 是 primary Candidate route，但返回项仍只是候选；
+- BGE-M3 只作 shadow／candidate expansion，不能独立提权；
+- fixed fusion 不作为 global default，也不允许根据 R1 结果调权；
+- reranker 未准入，因为它不能补回不存在的资料，也不能把正文不支持问题的对象变成 Evidence。
+
+R1 同时暴露了 metadata 与业务正文之间的新边界。`ANET Land／Equipment and machinery` 虽带 `capacity_inputs_execution` 标签，却不能回答交换机供给瓶颈或交付能力；ORCL 债券利率、销售费用等对象也不能补齐云需求、监管或反证。故 Step 3 的输入可以使用 rank，但晋升必须重新读取 source/object 正文并按以下两层分账：
+
+1. `candidate_relevance`：公司、披露主体、关系方向、期间、来源、章节与问题是否相符；
+2. `evidence_eligibility`：正文是否明确支持一个有边界的事实／机制／反证，且 identity、date、period、table、unit、currency 与 lineage 均可回溯。
+
+Evidence Pack builder 不得把 Slot metadata 当成正文真值，也不得让 Writer 修补缺失内容。安全但不回答问题的结构化 Metric 必须记为 `content_not_decision_relevant`；相关但只覆盖部分 facet 的资料保留窄边界；不存在或仍缺的 facet 物化 typed residual gap。执行顺序为 DELL 首案逐项审计，随后在 core fingerprint 不变的前提下迁移 MU、NVDA、ORCL、ASML、ANET，最后才把真实 residual gaps 投影给 external supplement。

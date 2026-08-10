@@ -1,0 +1,30 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_1",
+  "contract_ref": "fin_0_1_3.S1_to_S3.retrieval_evidence_research_execution:v1.1",
+  "recorded_at": "2026-08-10",
+  "product_version": "FIN_0_1_3",
+  "status": "steps_1_and_2_terminal_step_3_evidence_pack_current",
+  "supersedes": "configs/releases/fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_0.json",
+  "supersession_reason": "v1.0 is an immutable input to retrieval R1. v1.1 records the terminal R1 result and its business disposition without rewriting that bound plan.",
+  "user_decision": "Execute steps 1-5 in order without requesting approval at every substep; preserve exact-once authorities and stop at a newly established L1 blocker rather than silently expanding or retrying.",
+  "current_truth": {
+    "physical_index_r2": "terminal_succeeded_93_shared_object_bm25_and_bge_m3_milvus_objects",
+    "retrieval_r1": "terminal_succeeded_result_dfc2e69a444db1b011d0cf61d02b592f84e7c6da6524accfc3abc6e56bc3914a",
+    "retrieval_route_disposition": "object_bm25_primary_bge_shadow_fusion_not_global_default_no_reranker",
+    "owner_targets": "16_of_18_present_upstream_object_bm25_and_fusion_recall_at_10_1_0_dense_0_875",
+    "required_slot_candidate_ceiling": "36_of_48_with_candidate",
+    "candidate_content_quality": "not_accepted_metadata_slot_labels_exposed_as_insufficient",
+    "evidence_packs": "current_dell_first_business_audit_then_core_unchanged_transfer",
+    "external_residual_supplement": "blocked_until_real_evidence_gaps",
+    "deepseek_fixed_pack_and_dynamic_research": "blocked_until_governed_pack"
+  },
+  "execution_sequence": [
+    {"order": 1, "owner_stage": "S1", "work_item": "PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2", "status": "terminal_succeeded"},
+    {"order": 2, "owner_stage": "S1", "work_item": "SIX_CASE_REAL_SPARSE_DENSE_FUSION_RETRIEVAL_EVALUATION", "status": "terminal_succeeded_business_disposition_recorded", "decision": "ObjectBM25 is the primary Candidate route; BGE-M3 is shadow expansion; fusion is not the global default. No reranker or result-driven weight tuning."},
+    {"order": 3, "owner_stage": "S1_to_S3", "work_item": "SIX_CASE_EVIDENCE_PACK_ASSEMBLY_AND_BUSINESS_AUDIT", "status": "current", "acceptance": "For each Slot, inspect actual content rather than labels; separate source facts, bounded mechanisms, counterevidence and typed gaps; preserve exact source/date/identity/period/relationship/table/currency lineage. Audit DELL first and transfer without core changes.", "stop_rule": "A structurally safe metric or high-ranked candidate that cannot support the financial question is rejected or retained only with a narrow boundary. Writer prose cannot repair it."},
+    {"order": 4, "owner_stage": "S1", "work_item": "OFFICIAL_FIRST_EXTERNAL_RESIDUAL_GAP_SUPPLEMENT", "status": "blocked_until_step_3_real_residual_gaps", "acceptance": "Search only unresolved Slot/facet gaps; official routes lead, broad providers locate; recapture and re-adjudicate every source locally."},
+    {"order": 5, "owner_stage": "S2_to_S3", "work_item": "DEEPSEEK_FIXED_PACK_ANALYSIS_THEN_DYNAMIC_AGENTIC_RESEARCH", "status": "blocked_until_step_4_governed_pack", "acceptance": "First score analysis on the same frozen pack, then separately score dynamic planning/tool use and research synthesis."}
+  ],
+  "known_boundary": "This successor records completed steps 1-2 and current step 3. It does not make Evidence, external coverage, DeepSeek research, report quality or release true in advance.",
+  "plan_digest": "3c8d895d9d60490bb9ecc816e068b1549ac760514c994a239caf887a8c68be91"
+}

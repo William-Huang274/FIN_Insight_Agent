@@ -741,3 +741,15 @@ R2 的排序结果仍对 qrels v1.3 有效，但产品解释必须更新：dense
 - `configs/releases/fin_ia_0_1_3_s1_dell_financial_source_object_vertical_result_r3_v1_0.json`
 
 当前状态严格为前三项通过：通用合同、DELL 本地纵切和 MU／NVDA 不改核心迁移成立，但三案 Candidate Pack 均仍有 residual gaps 且从未晋升为 Evidence。下一项只做三个留出案例的泛化证明；不能宣称 sparse／dense、外源补源、未知公司泛化、DeepSeek 研究或研报质量通过。
+
+## 7R. 六案物理检索完成后的五步执行重定基（2026-08-10）
+
+7Q 的通用内核、三案纵切和留出案例对象证明已被后续 93-object manifest、fresh physical-index R2 与六案检索 R1 消费。产品版本仍为 FIN 0.1.3，不新建 S 序列；当前不再回到“是否值得建索引”的旧决策，而按已取得的真实结果继续：
+
+1. [x] `PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2`：ObjectBM25 与 BGE-M3／Milvus 共享 93 个对象并完成 close/reopen、目录摘要与 whole-root publication；
+2. [x] `SIX_CASE_REAL_SPARSE_DENSE_FUSION_RETRIEVAL_EVALUATION`：唯一 R1 terminal succeeded。ObjectBM25 保留主候选路，BGE 仅 shadow，fixed fusion 不作全局默认，不启用 reranker；
+3. [ ] `SIX_CASE_EVIDENCE_PACK_ASSEMBLY_AND_BUSINESS_AUDIT`：当前项。先 DELL，逐候选读取正文并区分 source fact、bounded mechanism、counterevidence、部分覆盖与 typed gap；再在 core 不变下迁移其余五案，形成六份本地 Pack 与 residual-gap manifest；
+4. [ ] `OFFICIAL_FIRST_EXTERNAL_RESIDUAL_GAP_SUPPLEMENT`：只搜索第 3 项确认的真实缺口；官方路由负责权威来源，broad provider 只定位，所有返回重新 capture、日期裁决和 Evidence Gate；
+5. [ ] `DEEPSEEK_FIXED_PACK_ANALYSIS_THEN_DYNAMIC_AGENTIC_RESEARCH`：先用同一冻结 Pack 测分析综合，再单独测模型自主规划、工具调用和动态补洞，最终按研究内容质量和事实可靠性双门验收。
+
+R1 的业务事实是：前三个已知案例在 93-object population 中各有 `8/8` Slot 候选，但留出案例只有 ORCL `5/8`、ASML `3/8`、ANET `4/8`。而且“有候选”仍可能是 ANET 土地／设备或 ORCL 债券利率这类结构安全却不回答研究问题的内容。第 3 项因此不是把 top-k 拼成报告，而是审查每份材料究竟能证明什么；不合格内容留在候选／拒绝账本，不交给模型自由补写。该项完成前，外源调用、DeepSeek 研究和发布均保持 false。

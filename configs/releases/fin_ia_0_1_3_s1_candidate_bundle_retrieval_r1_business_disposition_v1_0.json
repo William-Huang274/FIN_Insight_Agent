@@ -1,0 +1,59 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_retrieval_r1_business_disposition_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_retrieval_business_disposition:v1",
+  "recorded_at": "2026-08-10",
+  "status": "retrieval_measurement_terminal_sparse_primary_dense_shadow_fusion_not_global_default",
+  "source_result": {
+    "ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_retrieval_evaluation_result_v1_0.json",
+    "attempt_id": "20260810_s1_six_case_candidate_bundle_exact_object_bm25_bge_m3_fusion_r1",
+    "result_digest": "dfc2e69a444db1b011d0cf61d02b592f84e7c6da6524accfc3abc6e56bc3914a",
+    "terminal_status": "terminal_succeeded_six_case_retrieval_business_evaluation"
+  },
+  "measurement": {
+    "query_bundles": 72,
+    "owner_qrels": {
+      "available_targets": 16,
+      "zero_ceiling_targets": 2,
+      "object_bm25": {"recall_at_10": 1.0, "mrr_at_10": 0.79479167, "ndcg_at_10": 0.83207164},
+      "bge_m3_dense": {"recall_at_10": 0.875, "mrr_at_10": 0.79017857, "ndcg_at_10": 0.7971656},
+      "fusion": {"recall_at_10": 1.0, "mrr_at_10": 0.80381944, "ndcg_at_10": 0.83559144}
+    },
+    "required_slot_candidate_ceiling": {
+      "with_candidate": 36,
+      "total": 48,
+      "by_case": {"DELL": "8/8", "MU": "8/8", "NVDA": "8/8", "ORCL": "5/8", "ASML": "3/8", "ANET": "4/8"}
+    },
+    "calls": {"embedding_model_loads": 1, "embedding_vectors": 72, "object_bm25_queries": 72, "milvus_search_invocations": 6, "network": 0, "provider": 0, "llm_model": 0, "rerank": 0, "evidence_promotion": 0}
+  },
+  "business_findings": [
+    {"finding_id": "R1-F01", "classification": "retrieval_success", "case_key": "DELL", "explanation_zh": "查 Microsoft 的 AI 基础设施需求时，三条路线都把 Microsoft 自身披露排在第一，能够作为行业需求 read-through；但它仍不能证明 Microsoft 是 Dell 客户或把微软资本开支直接算成 Dell 收入。"},
+    {"finding_id": "R1-F02", "classification": "dense_semantic_miss_sparse_success", "case_key": "DELL", "explanation_zh": "查 Dell 的内存供给约束时，关键词路线把 Micron 供给披露排在第一；BGE 前十没有该目标，反而把 Dell 自己的综合业绩稿排在前面。语义相似没有保住披露主体和供应关系方向。"},
+    {"finding_id": "R1-F03", "classification": "generic_document_before_precise_risk", "case_key": "DELL", "explanation_zh": "查监管和财务调节风险时，精确风险段只排在 ObjectBM25 第十、BGE 第七、fusion 第八；第一名是覆盖多个主题的 Dell 业绩稿，方向相关但不够精确。"},
+    {"finding_id": "R1-F04", "classification": "dense_wrong_financial_question", "case_key": "MU", "explanation_zh": "查 Micron 当期经营表现时，BGE 第一名是 capex、现金和 HBM 供给段，真正收入和利润结果排第二；查需求质量时又把产能约束排第一。它找到了同一家公司，却回答了另一个财务问题。"},
+    {"finding_id": "R1-F05", "classification": "candidate_absent_upstream", "case_key": "NVDA", "explanation_zh": "NVDA 的监管精确目标和 NVDA 案例下的 Micron 供给精确目标不在 93 个对象中，任何排序器都无法搜回，必须保留 typed gap。"},
+    {"finding_id": "R1-F06", "classification": "metadata_label_not_business_evidence", "case_key": "ANET", "explanation_zh": "ANET 的 Land、Equipment and machinery 等资产表行被上游标成 capacity_inputs_execution，所以 Slot 检索能拿到满分；这些数值本身并不能解释交换机供应瓶颈、交付能力或 AI 网络需求。"},
+    {"finding_id": "R1-F07", "classification": "metadata_label_not_business_evidence", "case_key": "ORCL", "explanation_zh": "ORCL 的债券利率、销售费用和基础财务表行能被稳定召回，但不能补齐云需求真实性、监管影响或反证；存在候选不等于存在研究答案。"},
+    {"finding_id": "R1-F08", "classification": "source_object_coverage_gap", "case_key": "ASML", "explanation_zh": "ASML 当前主索引只有业绩、系统销量、毛利率和现金等结构化表格，缺需求、产能、关系、监管和反证五个 required Slot；排序分数不能替代缺失的叙事和外部关系证据。"}
+  ],
+  "route_disposition": {
+    "object_bm25": {"status": "admitted_as_primary_candidate_retrieval_baseline", "reason_zh": "召回全部 16 个可用 Owner 目标，且在 DELL、NVDA 与留出 Slot 上整体不弱于 fusion；仍须经过内容审计和 Evidence Gate。"},
+    "bge_m3_dense": {"status": "shadow_candidate_expansion_only", "reason_zh": "能在部分语义关系查询上提前精确目标，但会把同公司不同研究问题混在一起，并漏掉 sparse 已找到的供应和监管目标；当前不允许单独作为生产主路。"},
+    "fusion": {"status": "not_admitted_as_global_default", "reason_zh": "机械规则判定存在微小 Owner-MRR 增益，但 fusion 相比 sparse 恶化 DELL、NVDA 和 Slot 排序，只在 MU 局部改善。这个布尔值不能解释为全局产品增益，也不允许按本结果调权。"},
+    "reranker": {"status": "not_used_not_admitted", "reason_zh": "上游没有候选或候选内容本身不支持问题时，reranker 无法补源；Evidence Pack 审计前不启用。"}
+  },
+  "stage_acceptance": {
+    "retrieval_measurement_terminal": true,
+    "object_bm25_primary_baseline": true,
+    "dense_primary_admitted": false,
+    "fusion_global_default_admitted": false,
+    "candidate_content_quality_accepted": false,
+    "evidence_pack_assembly_admitted_with_typed_gaps": true,
+    "evidence_pack_accepted": false,
+    "external_residual_supplement": false,
+    "deepseek_research": false,
+    "release": false
+  },
+  "next_action": "SIX_CASE_EVIDENCE_PACK_ASSEMBLY_AND_BUSINESS_AUDIT_DELL_FIRST_THEN_CORE_UNCHANGED_TRANSFER",
+  "known_boundary": "This disposition interprets one immutable retrieval result. It does not rewrite the result's mechanical adoption flags, promote candidates to Evidence, close missing source coverage, authorize external calls, call DeepSeek or accept a report.",
+  "disposition_digest": "9be7739157f30959c7a75a7371016a4b676f79a5aad236cbb0240a0a5a745b7a"
+}

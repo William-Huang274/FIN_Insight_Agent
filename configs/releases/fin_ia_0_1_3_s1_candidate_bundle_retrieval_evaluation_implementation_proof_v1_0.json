@@ -1,0 +1,95 @@
+{
+  "attempt_id": "20260810_s1_six_case_candidate_bundle_exact_object_bm25_bge_m3_fusion_r1",
+  "bindings": {
+    "candidate_count": 93,
+    "candidate_digest": "1e24445c798d544c515e87fa8960fe93e41665f225be878c020cd7e1477fc0d1",
+    "policy_digest": "d7c2a782366028d6803d56e0d724aa77d9de57f5ddf46db7e6cd407e327e1b9e",
+    "query_bundle_count": 72,
+    "query_bundle_digest": "91e64b1fe68dbb9f377a8b45f3606773139de94938fd38c2df9960db4dcacc11"
+  },
+  "business_ceiling": {
+    "by_case": {
+      "ANET": {
+        "required_slots": 8,
+        "with_candidate": 4
+      },
+      "ASML": {
+        "required_slots": 8,
+        "with_candidate": 3
+      },
+      "DELL": {
+        "required_slots": 8,
+        "with_candidate": 8
+      },
+      "MU": {
+        "required_slots": 8,
+        "with_candidate": 8
+      },
+      "NVDA": {
+        "required_slots": 8,
+        "with_candidate": 8
+      },
+      "ORCL": {
+        "required_slots": 8,
+        "with_candidate": 5
+      }
+    },
+    "required_slots_total": 48,
+    "required_slots_with_candidate": 36,
+    "required_slots_without_candidate": 12
+  },
+  "candidate_generation": {
+    "candidate_generation_digest": "8c6ec02b0a64b3092e5a922e34097a17eee8b6e61476a37ff90c129efa436dcc",
+    "completed_before_label_load": true,
+    "gold_or_target_identity_in_query_count": 0
+  },
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_retrieval_business_evaluation:v1",
+  "known_boundary": "The synthetic dense lane proves evaluator shape only. It does not measure BGE-M3 quality, Evidence usefulness, external supplementation, DeepSeek research quality, Workbench behavior or release readiness.",
+  "mutation_receipts": [
+    {
+      "code": "candidate_bundle_retrieval_population_identity_invalid",
+      "mutation": "duplicate_candidate",
+      "status": "rejected"
+    },
+    {
+      "code": "candidate_bundle_retrieval_population_identity_invalid",
+      "mutation": "cross_case_population_contamination",
+      "status": "rejected"
+    },
+    {
+      "digest": "da82e3251c1ba023c46eec09bd4aaaae6e8dd51f4c4e9cec5d2947e5527252db",
+      "mutation": "candidate_iteration_order_reversal",
+      "status": "same_output"
+    }
+  ],
+  "observed_calls": {
+    "embedding_model_loads": 0,
+    "evidence_promotion": 0,
+    "llm_model": 0,
+    "milvus_search_invocations": 0,
+    "network": 0,
+    "provider": 0,
+    "rerank": 0
+  },
+  "owner_target_ceiling": {
+    "absent": 2,
+    "present": 16,
+    "total": 18
+  },
+  "proof_digest": "3ebb37f7e60d1a13d6bd54ad0a7ade13ebf54ef8314cb31022bdddb07416198b",
+  "recorded_at": "2026-08-10",
+  "run_scope": "S1_INTERNAL_SPARSE_DENSE_FUSION_BUSINESS_EXPLAINED_SUCCESSOR",
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_retrieval_evaluation_implementation_proof_v1_0",
+  "stage_acceptance": {
+    "business_error_attribution": true,
+    "dense_contract_unit_proven": true,
+    "exact_execution_authority_eligible": true,
+    "fusion_stability": true,
+    "label_separation": true,
+    "object_bm25_full_shape": true,
+    "population_validation": true,
+    "query_compiler": true,
+    "real_dense_quality_measured": false
+  },
+  "status": "pass_zero_model_full_shape_implementation_proof"
+}

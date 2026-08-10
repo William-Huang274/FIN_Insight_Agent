@@ -276,29 +276,23 @@ def test_materialized_proof_is_zero_call_digest_bound_and_honest() -> None:
     assert proof["stage_acceptance"]["external_product_coverage"] is False
 
 
-def test_project_os_holds_index_refresh_after_dell_vertical_and_allows_transfer() -> None:
+def test_project_os_preserves_completed_s1_scopes_after_physical_r2() -> None:
     completed = run_project_os_preflight(ROOT, run_scope=RUN_SCOPE)
-    assert completed["status"] == "blocked"
+    assert completed["status"] == "pass"
     candidate_ceiling = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_CANDIDATE_CEILING_AND_QRELS_GATE"
     )
-    assert candidate_ceiling["status"] == "blocked"
+    assert candidate_ceiling["status"] == "pass"
     refresh = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_CURRENT_CORPUS_AND_INDEX_REFRESH"
     )
-    assert refresh["status"] == "blocked"
-    assert {
-        row["issue_id"] for row in refresh["open_full_chain_blockers"]
-    } == {
-        "RC-P36-157-fin-0-1-3-s1-08-operational-provider-and-candidate-coverage-insufficient",
-        "RC-P36-160-fin-0-1-3-s1-internal-current-corpus-index-and-gold-mart-freshness-insufficient",
-        "RC-P36-162-fin-0-1-3-s1-milvus-lite-windows-manifest-atomic-replace-and-fingerprint-gap",
-    }
+    assert refresh["status"] == "pass"
+    assert refresh["open_full_chain_blockers"] == []
     dell_vertical = run_project_os_preflight(
         ROOT,
         run_scope="S1_DELL_FINANCIAL_SOURCE_OBJECT_AND_EVIDENCE_PACK_VERTICAL_SLICE",
     )
-    assert dell_vertical["status"] == "blocked"
+    assert dell_vertical["status"] == "pass"
     transfer = run_project_os_preflight(
         ROOT,
         run_scope="S1_MU_NVDA_CORE_UNCHANGED_TRANSFER",
@@ -307,18 +301,12 @@ def test_project_os_holds_index_refresh_after_dell_vertical_and_allows_transfer(
     current = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_CURRENT_OFFICIAL_SOURCE_ACQUISITION"
     )
-    assert current["status"] == "blocked"
+    assert current["status"] == "pass"
     ranking = run_project_os_preflight(
         ROOT, run_scope="S1_INTERNAL_BGE_FUSION_AND_RERANK_EVALUATION"
     )
-    assert ranking["status"] == "blocked"
-    assert {
-        row["issue_id"] for row in ranking["open_full_chain_blockers"]
-    } == {
-        "RC-P36-157-fin-0-1-3-s1-08-operational-provider-and-candidate-coverage-insufficient",
-        "RC-P36-160-fin-0-1-3-s1-internal-current-corpus-index-and-gold-mart-freshness-insufficient",
-        "RC-P36-162-fin-0-1-3-s1-milvus-lite-windows-manifest-atomic-replace-and-fingerprint-gap",
-    }
+    assert ranking["status"] == "pass"
+    assert ranking["open_full_chain_blockers"] == []
     assert ranking["scope_resolution"]["operation_class"] == (
         "ranking_evaluation"
     )

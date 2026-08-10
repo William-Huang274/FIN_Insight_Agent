@@ -2295,3 +2295,7 @@ synthetic microcanary 已实际通过并只证明目录发布能力：Ubuntu 中
 two-clean-archive successor A2 已 terminal succeeded（A1 的时间字段误比较保持失败）：两份 clean Git archive 均重现同一实现 proof、同一文件 SHA、相同 `16 passed／1 skipped`、11 mutations 和 0-call receipt，并只读复核 microcanary。clean proof=`095e24ab...f9a9`，因此产品门现在只允许签发一次 fresh 93-object R2；仍不得声称业务索引、召回或研报能力已通过。
 
 fresh R2 现已 exact-once terminal succeeded：六案 93 个 CandidateBundle 对象成功发布到同一 ObjectBM25 与 BGE-M3／Milvus population，目录 store 在 close/reopen 与 whole-root publication 后保持内容摘要一致。这只完成“可搜索资料底座”，不等于“搜得准”或“能写好研报”。产品验收继续要求六案真实检索逐条说明公司、期间、关系、章节与内容错误，再生成 Evidence Pack；外源只补真实 residual gaps，DeepSeek 必须先在固定 Evidence Pack 上证明分析质量。
+
+六案检索评测的产品口径进一步明确为“两套标签、先天花板优先”：DELL／MU／NVDA 的 18 条 Owner qrels 检查已审目标是否进入前十；六案 54 个 canonical Slot 只用冻结 manifest 的 slot metadata 诊断上游对象覆盖，不能冒充 Evidence 或研报质量。候选必须在加载标签前生成，sparse／dense 只允许 case filter，禁止用 gold target、URL 或 slot filter 偷渡答案；fusion 固定 1:1 RRF，不准看结果调权重。当前 93-object population 的先天 required-slot ceiling 是 `36/48`：前三案均 `8/8`，ORCL `5/8`、ASML `3/8`、ANET `4/8`；Owner targets 为 `16/18`，缺 NVDA regulatory 与 NVDA case 下的 MU supply target。真实排序即使全命中，也不能弥补这 12 个 required-slot 空洞，必须在 Evidence Pack 审计中保留 typed gaps，并只把真正 residual gaps 送入后续外源补源。
+
+面向业务解释时，检索结果必须从同一冻结 Candidate spec 回接 `evidence_owner_ticker`、经济关系方向、来源类型、发布日期和 source record，而不能靠 target ID 前缀猜“谁在披露谁”。这让“查 Dell 客户需求却排进 Dell 自己的收入”“查供应约束却排进另一交易对手”“主题相近但期间错误”成为可审计的不同错误。该辅助 join 只解释候选，不改变 rank、不晋升 Evidence，也不触发模型或网络调用。

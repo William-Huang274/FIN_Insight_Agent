@@ -1,0 +1,119 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_candidate_bundle_retrieval_evaluation_policy_v1_0",
+  "result_schema": "fin_ia_0_1_3_s1_candidate_bundle_retrieval_evaluation_result_v1_0",
+  "authority_schema": "fin_ia_0_1_3_s1_candidate_bundle_retrieval_evaluation_authority_v1_0",
+  "contract_ref": "fin_0_1_3.S1.candidate_bundle_retrieval_business_evaluation:v1",
+  "run_scope": "S1_INTERNAL_SPARSE_DENSE_FUSION_BUSINESS_EXPLAINED_SUCCESSOR",
+  "recorded_at": "2026-08-10",
+  "attempt_id": "20260810_s1_six_case_candidate_bundle_exact_object_bm25_bge_m3_fusion_r1",
+  "binding_hash_profile": "sha256_utf8_lf_normalized_v1",
+  "immutable_inputs": {
+    "physical_result_ref": "configs/releases/fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_result_v1_1.json",
+    "physical_result_sha256": "f83d9e7cc32b09821e1a5018406a2eca4516d8178919c1c3a8332148b4883e45",
+    "execution_plan_ref": "configs/releases/fin_ia_0_1_3_s1_to_s3_retrieval_evidence_research_execution_plan_v1_0.json",
+    "execution_plan_sha256": "75c4253735a1bdedea7f1107428f374f6a59ff16785f6c24dde02c13504cffdc",
+    "generalization_contract_ref": "configs/runtime/fin_ia_0_1_3_s0_s1_financial_research_generalization_contract_v1_0.json",
+    "generalization_contract_sha256": "b3eb29820d44b18e931b0f9eac3a76547f8cb56b9f634f483e9223ea64d93363",
+    "held_out_profile_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_three_held_out_profile_selection_policy_v1_0.json",
+    "held_out_profile_policy_sha256": "9076d7b37466e5f98ed26b710905ea421ada13e90c0291e8611fb263c7574cba",
+    "known_case_query_facet_proof_ref": "configs/releases/fin_ia_0_1_3_s1_internal_query_facet_integration_zero_call_proof_v1_2.json",
+    "known_case_query_facet_proof_sha256": "d8d7b3784ece0f83d270380623088c58304653fffdcf7471f9aaed503aadbc23",
+    "owner_qrels_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_3.json",
+    "owner_qrels_sha256": "f78c0e4da5f0167d8e9f80cab20b4095135502b8f468a830c115f9226700e49d",
+    "owner_acceptance_ref": "configs/releases/fin_ia_0_1_3_s1_internal_qrels_owner_acceptance_v1_0.json",
+    "owner_acceptance_sha256": "2e6076fe5a06a5039760f0bc9ff48906d59e7cc08aa2a9bae27f127fa31c6de8",
+    "physical_build_policy_ref": "configs/runtime/fin_ia_0_1_3_s1_candidate_bundle_physical_index_build_policy_v1_1.json",
+    "physical_build_policy_sha256": "64f68e3fc557da03faa81c3a6dcca938cb0ea70ddc92898372855b227d30685b"
+  },
+  "physical_index_binding": {
+    "final_root": "/home/william/.cache/fin_insight/candidate_bundle_indexes/fin_0_1_3_s1/v2",
+    "sparse_subdir": "object_bm25",
+    "dense_subdir": "bge_m3_milvus",
+    "milvus_db_filename": "milvus_lite.db",
+    "collection_name": "fin_ia_0_1_3_s1_candidate_bundle_dense_v2",
+    "expected_candidate_count": 93,
+    "expected_artifact_digest": "aebe67d0c143e23c1bf3dd2887443caf338d44226af37699bfd3defd03d63f35",
+    "expected_sparse_record_digest": "1e24445c798d544c515e87fa8960fe93e41665f225be878c020cd7e1477fc0d1",
+    "expected_case_counts": {
+      "DELL": 15,
+      "MU": 16,
+      "NVDA": 14,
+      "ORCL": 19,
+      "ASML": 10,
+      "ANET": 19
+    }
+  },
+  "evaluation_contract": {
+    "cases": ["DELL", "MU", "NVDA", "ORCL", "ASML", "ANET"],
+    "required_slot_ids": [
+      "operating_performance",
+      "demand_volume_quality",
+      "pricing_mix_value_capture",
+      "capacity_inputs_execution",
+      "cash_conversion_balance_sheet",
+      "relationship_attribution",
+      "regulatory_policy_exposure",
+      "counterevidence_and_what_would_change"
+    ],
+    "optional_slot_ids": ["capital_allocation_and_valuation"],
+    "known_owner_qrel_rows": 18,
+    "canonical_slot_bundles": 54,
+    "total_query_bundles": 72,
+    "candidate_generation_before_label_load": true,
+    "gold_or_target_identity_may_enter_query": false,
+    "slot_labels_come_from_frozen_candidate_manifest_metadata": true,
+    "slot_label_is_not_business_evidence_acceptance": true,
+    "owner_qrels_remain_owner_reviewed": true,
+    "held_out_slot_labels_are_diagnostic_not_owner_reviewed": true
+  },
+  "ranking_contract": {
+    "top_k": 10,
+    "rrf_k": 60,
+    "object_bm25_query_families": ["exact_lookup_queries", "lexical_queries"],
+    "dense_query_source": "compiled_provider_neutral_query_facet_text",
+    "case_filter_required": true,
+    "slot_filter_for_sparse_or_dense_forbidden": true,
+    "fusion_weights": {
+      "object_bm25": 1.0,
+      "bge_m3_dense": 1.0
+    },
+    "route_order_must_not_change_output": true,
+    "candidate_ceiling_reported_before_ranking": true,
+    "dense_or_fusion_adoption_requires_declared_use_case_gain_over_sparse": true,
+    "weight_tuning_against_result_forbidden": true
+  },
+  "runtime_contract": {
+    "python_executable": "/home/william/.cache/fin_insight/candidate_bundle_build_env_v1/bin/python",
+    "embedding_model_linux_ref": "/mnt/d/hf_models/BAAI__bge-m3",
+    "embedding_device": "cpu",
+    "embedding_dimension": 1024,
+    "embedding_batch_size": 8,
+    "normalize_embeddings": true,
+    "evaluation_required_packages": {
+      "pydantic": "2.13.4"
+    }
+  },
+  "execution_ceiling": {
+    "maximum_executions": 1,
+    "automatic_retry": false,
+    "embedding_model_loads": 1,
+    "embedding_encode_invocations": 1,
+    "embedding_vectors": 72,
+    "object_bm25_queries": 72,
+    "milvus_search_invocations": 6,
+    "milvus_query_vectors": 72,
+    "network": 0,
+    "provider": 0,
+    "llm_model": 0,
+    "document_fetch": 0,
+    "rerank": 0,
+    "evidence_promotion": 0
+  },
+  "stop_rules": {
+    "new_physical_identity_or_store_l1": "terminal_fail_no_retry_no_r2",
+    "candidate_ceiling_gap": "record_upstream_gap_and_continue_measurement",
+    "dense_or_fusion_underperforms_sparse": "retain_or_restrict_sparse_do_not_tune",
+    "content_quality_gap": "carry_to_evidence_pack_audit_not_hide_with_rank_score"
+  },
+  "known_boundary": "This policy evaluates a frozen Candidate-only population. Exact means a typed ceiling/oracle, not a production search claim. Slot labels test retrieval of upstream tags and do not prove Evidence usefulness. No model, external source, reranker, Evidence promotion or report acceptance is authorized."
+}

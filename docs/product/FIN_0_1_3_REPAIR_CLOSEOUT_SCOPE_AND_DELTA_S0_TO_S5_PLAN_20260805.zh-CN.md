@@ -749,7 +749,7 @@ R2 的排序结果仍对 qrels v1.3 有效，但产品解释必须更新：dense
 1. [x] `PHYSICAL_INDEX_FILE_OR_DIRECTORY_REPAIR_AND_FRESH_R2`：ObjectBM25 与 BGE-M3／Milvus 共享 93 个对象并完成 close/reopen、目录摘要与 whole-root publication；
 2. [x] `SIX_CASE_REAL_SPARSE_DENSE_FUSION_RETRIEVAL_EVALUATION`：唯一 R1 terminal succeeded。ObjectBM25 保留主候选路，BGE 仅 shadow，fixed fusion 不作全局默认，不启用 reranker；
 3. [x] `SIX_CASE_EVIDENCE_PACK_ASSEMBLY_AND_BUSINESS_AUDIT`：唯一零调用 R1 已按 DELL-first 顺序审完 93 个 manifest candidates 与 19 条 narrative queue，并以同一 core 迁移六案；形成六份 content-addressed 私有 Pack、84 条有边界 Evidence、28 条拒绝项和 126 个 raw facet gaps；
-4. [ ] `OFFICIAL_FIRST_EXTERNAL_RESIDUAL_GAP_SUPPLEMENT`：当前项。先把 126 个理论 facet 缺口编译成少量“影响投资判断且存在可取得权威来源”的 SearchIntent，再按官方路由优先、broad provider 只定位执行；所有返回重新 capture、日期裁决和 Evidence Gate；
+4. [x] `OFFICIAL_FIRST_EXTERNAL_RESIDUAL_GAP_SUPPLEMENT`：126 个理论 facet 缺口编译为 12 个高价值 SearchIntent，并完成唯一 official-first live 与本地全文重裁决；当前 provider/compiler/selector 组合得到 `0` 条合格新增 Evidence，原 84 条本地 Evidence 与 126 个 residual gaps 原样保留；
 5. [ ] `DEEPSEEK_FIXED_PACK_ANALYSIS_THEN_DYNAMIC_AGENTIC_RESEARCH`：先用同一冻结 Pack 测分析综合，再单独测模型自主规划、工具调用和动态补洞，最终按研究内容质量和事实可靠性双门验收。
 
 R1 的业务事实是：前三个已知案例在 93-object population 中各有 `8/8` Slot 候选，但留出案例只有 ORCL `5/8`、ASML `3/8`、ANET `4/8`。而且“有候选”仍可能是 ANET 土地／设备或 ORCL 债券利率这类结构安全却不回答研究问题的内容。第 3 项因此不是把 top-k 拼成报告，而是审查每份材料究竟能证明什么；不合格内容留在候选／拒绝账本，不交给模型自由补写。该项完成前，外源调用、DeepSeek 研究和发布均保持 false。
@@ -771,3 +771,5 @@ Live runner 的 zero-call engineering 已通过：六案 fake transport 模拟 `
 clean/synced `ef01fa41...e6dd` fresh preflight 已 pass，且唯一 24 小时 authority 已签发未消费。它只允许一次 `6 discovery + <=12 locator + <=12 official document` 的受限 observation；0 retry／model／embedding／rerank／Evidence。签发本身没有读取凭据或访问网络。下一项为一次 exact-once live；无论完整、部分或 typed failure，均先保留 capture 与 terminal，之后才做本地重裁决。
 
 该唯一 live 已 terminal：`17` 次网络动作，`0` retry/model/embedding/rerank/Evidence；12 个意图全部终态，但没有一条直接达到待重裁决 ready，只有 ANET 的 2 个通用 Financial Info 页面实例带 publication-date/content gap，其余 10 个为 typed gap。业务上不是“完全没搜到字”，而是搜到的页面大多不回答问题：DELL 的转载／登录页、MU 的错误新闻列表、NVDA 的 Annual Meeting／驱动页、ORCL 的通用 Financials、ANET 的脚本导航壳；ASML 的正确 Q2 2026 results URL 则未成功抓到正文。第 4 项因此仍需完成一次本地 readjudication 才能终态；不得把 provider snippet 或 generic IR page 当 Evidence，也不得自动再开 live。
+
+本地 readjudication 已 terminal，digest=`494a0f01...f41c9`：12/12 意图均被拒绝新增，ANET 两页完整正文读回后确认是脚本/导航壳且日期不明；`Evidence 84→84`、`residual gaps 126→126`。第 4 项按“执行与审计闭环通过、外源候选质量失败、0 新增”关闭，不再扩大。第 5 项现在只允许先做 fixed-pack DeepSeek analysis；模型看见现有 Evidence 和 gaps，但不联网、不读取 provider snippet，也不替外源缺口背锅。

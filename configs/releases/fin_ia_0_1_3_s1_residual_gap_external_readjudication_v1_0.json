@@ -1,0 +1,456 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_residual_gap_external_readjudication_v1_0",
+  "contract_ref": "fin_0_1_3.S1.residual_gap_external_capture_readjudication:v1",
+  "run_scope": "S1_RESIDUAL_GAP_EXTERNAL_SUPPLEMENT",
+  "status": "terminal_readjudicated_zero_external_additions_original_pack_reused",
+  "external_live_result_digest": "fcf529dbe5e9d55910b74324c379709f3af3f42d9eb2119d15d23967af4e02da",
+  "local_evidence_pack_result_digest": "52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da",
+  "priority_plan_digest": "e1eb54f75d9d6b17f6222c2f245713bec7c6f3b9fb3cc9d9cf90108b70081c19",
+  "decisions": [
+    {
+      "intent_id": "residual_search_intent::DELL::issuer_demand_margin_cash::c6f8b5ec03d8ec7a",
+      "case_key": "DELL",
+      "intent_key": "issuer_demand_margin_cash",
+      "selected_gap_ids": [
+        "dell-gap-ai-working-capital",
+        "dell-gap-demand-pull-forward-digestion",
+        "dell-gap-ai-system-margin",
+        "dell-gap-pricing-asp",
+        "dell-gap-price-volume-mix-bridge",
+        "dell-gap-pricing-units"
+      ],
+      "live_status": "typed_gap",
+      "live_terminal_code": "no_qualified_official_locator",
+      "selected_url": "",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_typed_gap",
+      "reason_codes": [
+        "no_qualified_official_locator"
+      ],
+      "full_text_read": false
+    },
+    {
+      "intent_id": "residual_search_intent::DELL::supplier_hbm_packaging_capacity::eb2799fa6a6a1080",
+      "case_key": "DELL",
+      "intent_key": "supplier_hbm_packaging_capacity",
+      "selected_gap_ids": [
+        "dell-gap-advanced-packaging",
+        "dell-gap-capacity-release-timing",
+        "dell-gap-hbm-supply",
+        "dell-gap-capacity-utilization-yield",
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "live_status": "typed_gap",
+      "live_terminal_code": "no_qualified_official_locator",
+      "selected_url": "",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_typed_gap",
+      "reason_codes": [
+        "no_qualified_official_locator"
+      ],
+      "full_text_read": false
+    },
+    {
+      "intent_id": "residual_search_intent::MU::issuer_hbm_demand_revenue::0fe88aa7ff09bf68",
+      "case_key": "MU",
+      "intent_key": "issuer_hbm_demand_revenue",
+      "selected_gap_ids": [
+        "mu-gap-order-volume",
+        "mu-gap-pull-forward",
+        "mu-gap-ai-revenue"
+      ],
+      "live_status": "typed_gap",
+      "live_terminal_code": "official_source_transport_failed",
+      "selected_url": "https://investors.micron.com/press-releases?NumberPerPage=20&PageNum=3&ReleasesType=Italian&SortOrder=Date+Descending&Year=&page=1",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_typed_gap",
+      "reason_codes": [
+        "official_source_transport_failed"
+      ],
+      "full_text_read": false
+    },
+    {
+      "intent_id": "residual_search_intent::MU::issuer_hbm_execution::e0611949eb628fcc",
+      "case_key": "MU",
+      "intent_key": "issuer_hbm_execution",
+      "selected_gap_ids": [
+        "mu-gap-advanced-packaging",
+        "mu-gap-foundry-component",
+        "mu-gap-supplier-commitment",
+        "mu-gap-utilization-yield",
+        "mu-gap-yield-die"
+      ],
+      "live_status": "typed_gap",
+      "live_terminal_code": "official_source_transport_failed",
+      "selected_url": "https://investors.micron.com/press-releases?NumberPerPage=20&PageNum=3&ReleasesType=Italian&SortOrder=Date+Descending&Year=&page=1",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_typed_gap",
+      "reason_codes": [
+        "official_source_transport_failed"
+      ],
+      "full_text_read": false
+    },
+    {
+      "intent_id": "residual_search_intent::NVDA::issuer_demand_product_economics::5988730ac57b1b38",
+      "case_key": "NVDA",
+      "intent_key": "issuer_demand_product_economics",
+      "selected_gap_ids": [
+        "nvda-gap-order-volume",
+        "nvda-gap-asp",
+        "nvda-gap-pvm",
+        "nvda-gap-units"
+      ],
+      "live_status": "typed_gap",
+      "live_terminal_code": "official_source_transport_failed",
+      "selected_url": "https://investor.nvidia.com/financial-info/Annual-Meeting/default.aspx",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_typed_gap",
+      "reason_codes": [
+        "official_source_transport_failed"
+      ],
+      "full_text_read": false
+    },
+    {
+      "intent_id": "residual_search_intent::NVDA::supplier_packaging_hbm_capacity::73b645cd0b127d68",
+      "case_key": "NVDA",
+      "intent_key": "supplier_packaging_hbm_capacity",
+      "selected_gap_ids": [
+        "nvda-gap-advanced-packaging",
+        "nvda-gap-capacity-release",
+        "nvda-gap-utilization-yield"
+      ],
+      "live_status": "typed_gap",
+      "live_terminal_code": "no_qualified_official_locator",
+      "selected_url": "",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_typed_gap",
+      "reason_codes": [
+        "no_qualified_official_locator"
+      ],
+      "full_text_read": false
+    },
+    {
+      "intent_id": "residual_search_intent::ORCL::issuer_capacity_and_policy::19450c109fcb7667",
+      "case_key": "ORCL",
+      "intent_key": "issuer_capacity_and_policy",
+      "selected_gap_ids": [
+        "orcl-gap-capacity_inputs_execution-bottleneck_or_lead_time",
+        "orcl-gap-capacity_inputs_execution-capacity_or_supply",
+        "orcl-gap-capacity_inputs_execution-ramp_timing",
+        "orcl-gap-capacity_inputs_execution-supplier_commitment_or_dependency",
+        "orcl-gap-capacity_inputs_execution-utilization_or_yield",
+        "orcl-gap-regulatory_policy_exposure-affected_scope",
+        "orcl-gap-regulatory_policy_exposure-financial_or_operating_consequence",
+        "orcl-gap-regulatory_policy_exposure-mitigation_or_uncertainty",
+        "orcl-gap-regulatory_policy_exposure-policy_or_regulatory_event"
+      ],
+      "live_status": "typed_gap",
+      "live_terminal_code": "official_source_transport_failed",
+      "selected_url": "https://investor.oracle.com/financials/default.aspx",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_typed_gap",
+      "reason_codes": [
+        "official_source_transport_failed"
+      ],
+      "full_text_read": false
+    },
+    {
+      "intent_id": "residual_search_intent::ORCL::issuer_cloud_demand_value::5c658354cc80ac34",
+      "case_key": "ORCL",
+      "intent_key": "issuer_cloud_demand_value",
+      "selected_gap_ids": [
+        "orcl-gap-demand_volume_quality-customer_breadth_or_concentration",
+        "orcl-gap-demand_volume_quality-deployment_or_utilization",
+        "orcl-gap-demand_volume_quality-order_backlog_rpo_or_volume",
+        "orcl-gap-operating_performance-management_outlook",
+        "orcl-gap-operating_performance-segment_or_product_performance",
+        "orcl-gap-pricing_mix_value_capture-mix_or_product_attribution",
+        "orcl-gap-pricing_mix_value_capture-price_or_asp",
+        "orcl-gap-pricing_mix_value_capture-profit_capture_bridge",
+        "orcl-gap-pricing_mix_value_capture-volume_or_units",
+        "orcl-gap-relationship_attribution-company_specific_attribution_or_boundary"
+      ],
+      "live_status": "typed_gap",
+      "live_terminal_code": "official_source_transport_failed",
+      "selected_url": "https://investor.oracle.com/financials/default.aspx",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_typed_gap",
+      "reason_codes": [
+        "official_source_transport_failed"
+      ],
+      "full_text_read": false
+    },
+    {
+      "intent_id": "residual_search_intent::ASML::issuer_execution_cash_policy::805efabb365fd7cf",
+      "case_key": "ASML",
+      "intent_key": "issuer_execution_cash_policy",
+      "selected_gap_ids": [
+        "asml-gap-capacity_inputs_execution-bottleneck_or_lead_time",
+        "asml-gap-capacity_inputs_execution-capacity_or_supply",
+        "asml-gap-capacity_inputs_execution-ramp_timing",
+        "asml-gap-capacity_inputs_execution-supplier_commitment_or_dependency",
+        "asml-gap-capacity_inputs_execution-utilization_or_yield",
+        "asml-gap-cash_conversion_balance_sheet-capital_expenditure",
+        "asml-gap-cash_conversion_balance_sheet-inventory",
+        "asml-gap-cash_conversion_balance_sheet-operating_cash_flow",
+        "asml-gap-cash_conversion_balance_sheet-receivables_payables_or_obligations",
+        "asml-gap-cash_conversion_balance_sheet-working_capital",
+        "asml-gap-counterevidence_and_what_would_change-impact_mechanism",
+        "asml-gap-counterevidence_and_what_would_change-strongest_counterevidence",
+        "asml-gap-regulatory_policy_exposure-affected_scope",
+        "asml-gap-regulatory_policy_exposure-financial_or_operating_consequence",
+        "asml-gap-regulatory_policy_exposure-mitigation_or_uncertainty",
+        "asml-gap-regulatory_policy_exposure-policy_or_regulatory_event"
+      ],
+      "live_status": "typed_gap",
+      "live_terminal_code": "official_source_transport_failed",
+      "selected_url": "https://www.asml.com/en/investors/why-invest-in-asml/financial-strategy",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_typed_gap",
+      "reason_codes": [
+        "official_source_transport_failed"
+      ],
+      "full_text_read": false
+    },
+    {
+      "intent_id": "residual_search_intent::ASML::issuer_orders_product_economics::43d7e3c3ff782307",
+      "case_key": "ASML",
+      "intent_key": "issuer_orders_product_economics",
+      "selected_gap_ids": [
+        "asml-gap-demand_volume_quality-customer_breadth_or_concentration",
+        "asml-gap-demand_volume_quality-deployment_or_utilization",
+        "asml-gap-demand_volume_quality-order_backlog_rpo_or_volume",
+        "asml-gap-operating_performance-management_outlook",
+        "asml-gap-pricing_mix_value_capture-price_or_asp",
+        "asml-gap-pricing_mix_value_capture-profit_capture_bridge"
+      ],
+      "live_status": "typed_gap",
+      "live_terminal_code": "official_source_transport_failed",
+      "selected_url": "https://www.asml.com/en/news/press-releases/2026/q2-2026-financial-results",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_typed_gap",
+      "reason_codes": [
+        "official_source_transport_failed"
+      ],
+      "full_text_read": false
+    },
+    {
+      "intent_id": "residual_search_intent::ANET::issuer_ai_networking_demand_value::19156d4e5f3846a8",
+      "case_key": "ANET",
+      "intent_key": "issuer_ai_networking_demand_value",
+      "selected_gap_ids": [
+        "anet-gap-demand_volume_quality-customer_breadth_or_concentration",
+        "anet-gap-demand_volume_quality-deployment_or_utilization",
+        "anet-gap-demand_volume_quality-order_backlog_rpo_or_volume",
+        "anet-gap-operating_performance-management_outlook",
+        "anet-gap-operating_performance-segment_or_product_performance",
+        "anet-gap-pricing_mix_value_capture-mix_or_product_attribution",
+        "anet-gap-pricing_mix_value_capture-price_or_asp",
+        "anet-gap-pricing_mix_value_capture-profit_capture_bridge",
+        "anet-gap-pricing_mix_value_capture-volume_or_units"
+      ],
+      "live_status": "captured_candidate_with_typed_date_or_content_gap",
+      "live_terminal_code": "publication_date_unproven",
+      "selected_url": "https://investors.arista.com/Financial-Information/default.aspx",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_content_or_date_gate",
+      "reason_codes": [
+        "publication_date_unproven",
+        "generic_ir_page_not_disclosure",
+        "navigation_or_script_shell_dominates",
+        "insufficient_content_level_slot_fit"
+      ],
+      "full_text_read": true,
+      "full_text_digest": "e6383975773dd7ce01deb713cbedae55e20d1a6699245452e00cb36675b0fbd4",
+      "full_text_chars": 24400,
+      "navigation_shell_markers": [
+        "cookie",
+        "document.",
+        "function ",
+        "googleanalytics",
+        "jquery",
+        "q4inc",
+        "toggle navigation",
+        "window.",
+        "{{"
+      ],
+      "financial_disclosure_markers": [],
+      "matched_business_terms": [
+        "arista",
+        "networks",
+        "product",
+        "value"
+      ],
+      "publication_date_verified": false
+    },
+    {
+      "intent_id": "residual_search_intent::ANET::issuer_supply_cash_mitigation::46196424fee1da7d",
+      "case_key": "ANET",
+      "intent_key": "issuer_supply_cash_mitigation",
+      "selected_gap_ids": [
+        "anet-gap-capacity_inputs_execution-bottleneck_or_lead_time",
+        "anet-gap-capacity_inputs_execution-capacity_or_supply",
+        "anet-gap-capacity_inputs_execution-ramp_timing",
+        "anet-gap-capacity_inputs_execution-supplier_commitment_or_dependency",
+        "anet-gap-capacity_inputs_execution-utilization_or_yield",
+        "anet-gap-cash_conversion_balance_sheet-capital_expenditure",
+        "anet-gap-cash_conversion_balance_sheet-inventory",
+        "anet-gap-cash_conversion_balance_sheet-receivables_payables_or_obligations",
+        "anet-gap-regulatory_policy_exposure-mitigation_or_uncertainty",
+        "anet-gap-relationship_attribution-company_specific_attribution_or_boundary",
+        "anet-gap-relationship_attribution-economic_relationship_direction",
+        "anet-gap-relationship_attribution-evidence_owner_self_disclosure"
+      ],
+      "live_status": "captured_candidate_with_typed_date_or_content_gap",
+      "live_terminal_code": "publication_date_unproven",
+      "selected_url": "https://investors.arista.com/Financial-Information/default.aspx",
+      "provider_snippet_used": false,
+      "provider_date_used": false,
+      "evidence_promoted": false,
+      "decision": "rejected_content_or_date_gate",
+      "reason_codes": [
+        "publication_date_unproven",
+        "generic_ir_page_not_disclosure",
+        "navigation_or_script_shell_dominates",
+        "insufficient_content_level_slot_fit"
+      ],
+      "full_text_read": true,
+      "full_text_digest": "e6383975773dd7ce01deb713cbedae55e20d1a6699245452e00cb36675b0fbd4",
+      "full_text_chars": 24400,
+      "navigation_shell_markers": [
+        "cookie",
+        "document.",
+        "function ",
+        "googleanalytics",
+        "jquery",
+        "q4inc",
+        "toggle navigation",
+        "window.",
+        "{{"
+      ],
+      "financial_disclosure_markers": [],
+      "matched_business_terms": [
+        "10-q",
+        "arista",
+        "component",
+        "networks",
+        "platform",
+        "policy",
+        "time"
+      ],
+      "publication_date_verified": false
+    }
+  ],
+  "successor_pack_decision": {
+    "mode": "reuse_original_local_pack_unchanged",
+    "original_pack_payload_digests": {
+      "DELL": "554e7db12bcb98f0a03f420f9d4b7cbaf7422a87bdef6f83699068d0b863f181",
+      "MU": "1c2b787a955bb145fef6acd4e1ebf70566f472259006c06891b3fd9dde0f2964",
+      "NVDA": "9372a57bb60bbb573a8b53fd7dda2a45d70caaf89298456982714ea84ecaf066",
+      "ORCL": "fab997d54e67c13ebae8d3dee9647678c9beebccd1693a22861cd9a844ad58b7",
+      "ASML": "2f975a03b5a646c1da54bb63ad0ee8f3ec977e5848c06ff71075f02e92f1c683",
+      "ANET": "49422886291e495d736066c790d7344052bc3b4796c48b4351226b345408ccf3"
+    },
+    "resulting_pack_payload_digests": {
+      "DELL": "554e7db12bcb98f0a03f420f9d4b7cbaf7422a87bdef6f83699068d0b863f181",
+      "MU": "1c2b787a955bb145fef6acd4e1ebf70566f472259006c06891b3fd9dde0f2964",
+      "NVDA": "9372a57bb60bbb573a8b53fd7dda2a45d70caaf89298456982714ea84ecaf066",
+      "ORCL": "fab997d54e67c13ebae8d3dee9647678c9beebccd1693a22861cd9a844ad58b7",
+      "ASML": "2f975a03b5a646c1da54bb63ad0ee8f3ec977e5848c06ff71075f02e92f1c683",
+      "ANET": "49422886291e495d736066c790d7344052bc3b4796c48b4351226b345408ccf3"
+    },
+    "original_pack_artifacts": {
+      "DELL": {
+        "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/dell/v1/da/86/da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b.json",
+        "digest": "da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b",
+        "byte_size": 87530,
+        "media_type": "application/json",
+        "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps"
+      },
+      "MU": {
+        "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/mu/v1/93/ce/93ce23a039a000e5a9e83956804f28b425232f6b1992e9c21cc59f0aac01c371.json",
+        "digest": "93ce23a039a000e5a9e83956804f28b425232f6b1992e9c21cc59f0aac01c371",
+        "byte_size": 78664,
+        "media_type": "application/json",
+        "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps"
+      },
+      "NVDA": {
+        "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/nvda/v1/03/a2/03a2f5da4fbfeef1b7a404eea480a53056f8c66d532cbbfeef1ea7d91c49cba4.json",
+        "digest": "03a2f5da4fbfeef1b7a404eea480a53056f8c66d532cbbfeef1ea7d91c49cba4",
+        "byte_size": 90045,
+        "media_type": "application/json",
+        "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps"
+      },
+      "ORCL": {
+        "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/orcl/v1/df/e9/dfe9440043bdc30b9cb56fe79aaf7a857e9f364c9ce2af956a62d82307ae3be9.json",
+        "digest": "dfe9440043bdc30b9cb56fe79aaf7a857e9f364c9ce2af956a62d82307ae3be9",
+        "byte_size": 46141,
+        "media_type": "application/json",
+        "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps"
+      },
+      "ASML": {
+        "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/asml/v1/55/fa/55fad48bfa82edbe69662158939083e82d4b7844f9c67d5f66bae83de212efd1.json",
+        "digest": "55fad48bfa82edbe69662158939083e82d4b7844f9c67d5f66bae83de212efd1",
+        "byte_size": 41445,
+        "media_type": "application/json",
+        "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps"
+      },
+      "ANET": {
+        "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/anet/v1/eb/e4/ebe4e2aa615e0126d130b2427bc083ba16eaadc55debc4bb5dd50cf9c240126c.json",
+        "digest": "ebe4e2aa615e0126d130b2427bc083ba16eaadc55debc4bb5dd50cf9c240126c",
+        "byte_size": 48391,
+        "media_type": "application/json",
+        "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps"
+      }
+    },
+    "evidence_promoted_during_readjudication": false
+  },
+  "observed_counts": {
+    "intents_readjudicated": 12,
+    "eligible_for_successor_pack_build": 0,
+    "rejected_or_typed_gap": 12,
+    "external_evidence_additions": 0,
+    "evidence_items_before": 84,
+    "evidence_items_after": 84,
+    "residual_gaps_before": 126,
+    "residual_gaps_after": 126,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "embedding_calls": 0,
+    "rerank_calls": 0
+  },
+  "stage_acceptance": {
+    "external_live_preserved": true,
+    "external_capture_readjudicated": true,
+    "provider_snippet_promoted": false,
+    "external_evidence_added": false,
+    "fixed_local_pack_ready_for_model_analysis": true,
+    "deepseek_research": false,
+    "release": false
+  },
+  "known_boundary": "Zero external additions means the immutable reviewed local pack is the fixed model input. It does not close residual gaps or prove report quality.",
+  "result_digest": "494a0f01fb979883d454a2d0140e3070be6cdbe7832ec081a060e478f00f41c9"
+}

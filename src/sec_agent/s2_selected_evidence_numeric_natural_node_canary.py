@@ -83,12 +83,14 @@ def _read_json(path: Path, code: str) -> dict[str, Any]:
     return value
 
 
-def _file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
+def _normalized_text_sha256(path: Path) -> str:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise SelectedEvidenceNumericNaturalNodeCanaryError(
+            "natural_node_canary_bound_text_unreadable"
+        ) from exc
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def _resolve(root: Path, ref: str) -> Path:
@@ -102,7 +104,7 @@ def _load_bound_json(
     path = _resolve(root, str(binding.get("ref") or ""))
     _require(path.is_file(), f"{code}_missing")
     _require(
-        _file_sha256(path) == str(binding.get("sha256") or ""),
+        _normalized_text_sha256(path) == str(binding.get("sha256") or ""),
         f"{code}_sha256_drift",
     )
     return path, _read_json(path, f"{code}_json_invalid")

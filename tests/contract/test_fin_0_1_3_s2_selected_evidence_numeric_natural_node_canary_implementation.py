@@ -14,6 +14,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 from sec_agent.s2_selected_evidence_numeric_natural_node_canary import (  # noqa: E402
     SelectedEvidenceNumericNaturalNodeCanaryError,
     ZERO_CALL_SCOPE,
+    _normalized_text_sha256,
     compile_canary_material,
     execute_canary,
     issue_fixture_admission,
@@ -344,3 +345,11 @@ def test_policy_does_not_register_or_issue_live_scope(material) -> None:
         material["policy"]["live_run_scope_reserved_not_registered_or_authorized"]
         not in scopes
     )
+
+
+def test_bound_text_digest_is_crlf_lf_portable(tmp_path) -> None:
+    lf = tmp_path / "lf.json"
+    crlf = tmp_path / "crlf.json"
+    lf.write_bytes(b'{"value":1}\n')
+    crlf.write_bytes(b'{"value":1}\r\n')
+    assert _normalized_text_sha256(lf) == _normalized_text_sha256(crlf)

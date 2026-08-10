@@ -1,0 +1,29 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_clean_proof_failure_v1_0",
+  "attempt_id": "20260811_s2_selected_evidence_numeric_natural_node_canary_clean_proof_r1",
+  "result_digest": "f06661f12d79bff091283b8acee4462cfc5fc37bc0cb1040c3d3341e5e13a2b9",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "status": "terminal_failed_clean_portability_binding_only",
+  "implementation_commit": "e2c5e5fa",
+  "failure_phase": "clean_archive_worker_policy_binding_validation",
+  "failure_code": "natural_node_canary_clean_proof_binding_sha256_drift_crlf_lf",
+  "failure_summary": "The first clean archive stored the same UTF-8 JSON text with LF line endings, while the canary policy bound the Windows working-tree CRLF raw-byte SHA256 for the prior clean-proof artifact. The worker correctly failed before compiling or executing the canary.",
+  "root_cause": "The new canary binding helper used raw file bytes instead of the repository's established normalized-text digest rule, making the authority binding sensitive to Git line-ending checkout behavior.",
+  "scope": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "fixture_provider_invocations": 0,
+    "business_artifact_promotion": false
+  },
+  "private_artifacts_persisted_to_repository": false,
+  "temporary_roots_removed": true,
+  "business_runtime_or_financial_rule_changed_before_failure": false,
+  "repair": "Use SHA256 of UTF-8 text after universal-newline normalization for JSON/text bindings, retain raw-byte SHA only for binary private artifacts, add an explicit CRLF/LF parity test, then commit and run a new R2 clean proof.",
+  "successor_attempt": "20260811_s2_selected_evidence_numeric_natural_node_canary_clean_proof_r2",
+  "known_boundary": "R1 proves only that the original binding was not checkout-portable. It does not fail the canary's financial logic, call DeepSeek, or authorize any rerun or product promotion."
+}

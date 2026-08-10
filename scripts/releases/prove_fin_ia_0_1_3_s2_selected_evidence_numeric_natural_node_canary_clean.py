@@ -376,7 +376,7 @@ def main() -> int:
     worker = workers[0]
     body = {
         "schema_version": PROOF_SCHEMA,
-        "attempt_id": "20260811_s2_selected_evidence_numeric_natural_node_canary_clean_proof_r1",
+        "attempt_id": "20260811_s2_selected_evidence_numeric_natural_node_canary_clean_proof_r2",
         "contract_ref": (
             "fin_0_1_3.S2.selected_evidence_numeric_natural_node_canary:v1"
         ),

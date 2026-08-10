@@ -1,11 +1,11 @@
 {
   "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_minimum_zero_call_implementation_v1_0",
   "implementation_id": "FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-NATURAL-NODE-CANARY-MINIMUM-ZERO-CALL-IMPLEMENTATION-R1",
-  "result_digest": "47dc0b3817adc310604b46414422a40b0cf049e329c57b40905bb30f6cce654b",
+  "result_digest": "9d257c4a153dd8cafa219449bfb4029cc6345948a3c926eb46793d93cfbe4a71",
   "recorded_at": "2026-08-11",
   "product_version": "FIN_0_1_3",
   "owner_stage": "S2",
-  "status": "working_tree_engineering_pass_clean_independent_proof_pending",
+  "status": "working_tree_engineering_pass_clean_proof_r1_portability_failure_repaired_r2_pending",
   "implementation_base_commit": "9a857b9b",
   "run_scope": "FIN_0_1_3_S2_SELECTED_EVIDENCE_NUMERIC_NATURAL_NODE_CANARY_ZERO_CALL",
   "scope": {
@@ -21,9 +21,9 @@
   },
   "implementation_bindings": {
     "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json": "5f9e29aab6aa7a0b1d5c65954f583563aea49461e62c53df83bc41181c50a9d9",
-    "configs/runtime/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_policy_v1_0.json": "2a6d23395767527880a9de81ee743662e7605d71c57721b525041b639f1bb6b3",
-    "src/sec_agent/s2_selected_evidence_numeric_natural_node_canary.py": "60b3a2b1497e1f8e185b0d887f1d2255edda5c80d4632032c34a2c7a536fcfac",
-    "tests/contract/test_fin_0_1_3_s2_selected_evidence_numeric_natural_node_canary_implementation.py": "544fd5193d1377d86a617d7df1dd0b44fa654f5fe3bfca11485c3d5d9b29f25c"
+    "configs/runtime/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_policy_v1_0.json": "69f9754129c5fa70cf8f79bcab8fddbc383212d7e1c5c489080b68079fe08c46",
+    "src/sec_agent/s2_selected_evidence_numeric_natural_node_canary.py": "b5a793355d4d5b17a53094a54ab73a1dcf02647d26507ead48599ec0b72d5db4",
+    "tests/contract/test_fin_0_1_3_s2_selected_evidence_numeric_natural_node_canary_implementation.py": "f1e19c8b068269e3fa7447e232c7262180051cb9e882b08fb03887cc4241f103"
   },
   "compiled_canary": {
     "case_key": "DELL",
@@ -61,6 +61,14 @@
     "bounded_repair": "For this selected-Evidence canary, literal candidate checks are restricted to the three selected Evidence items and genuinely material money, percentage or count surfaces; the independent full-text financial surface scanners remain active.",
     "not_changed": "No financial value, unit, presentation alias, Evidence role or provider-neutral numeric authority was relaxed."
   },
+  "clean_portability_failure_and_repair": {
+    "failed_attempt_ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_clean_proof_attempt_r1_failure_v1_0.json",
+    "failure_code": "natural_node_canary_clean_proof_binding_sha256_drift_crlf_lf",
+    "root_cause": "The canary binding helper used checkout-specific raw text bytes, so CRLF working-tree and LF Git-archive copies of the same JSON produced different SHA256 values.",
+    "repair": "Text bindings now use UTF-8 universal-newline normalized SHA256; binary private artifact bindings remain byte-exact.",
+    "financial_contract_changed": false,
+    "model_provider_network_source_retry": [0, 0, 0, 0, 0]
+  },
   "mutation_coverage": [
     "extra or missing schema fields",
     "wrong case or node identity",
@@ -76,8 +84,8 @@
     "second consumption of the same admission"
   ],
   "verification": {
-    "focused_tests": "19 passed",
-    "focused_plus_adjacent_contract_tests": "35 passed",
+    "focused_tests": "20 passed",
+    "focused_plus_adjacent_contract_tests": "36 passed",
     "project_os_scoped_preflight": "pass",
     "request_capacity": "11838_of_24000_characters",
     "clean_independent_workers": 0
@@ -95,5 +103,5 @@
     "release": false
   },
   "known_boundary": "This working-tree result proves only the bounded canary compiler, exact-once capture path and deterministic validators under fake responses. It does not issue live authority, call DeepSeek, prove natural contract compliance, improve a full Dell report, close S2 or authorize release.",
-  "current_next": "COMMIT_PUSH_IMPLEMENTATION_THEN_TWO_CLEAN_ARCHIVE_FRESH_PROCESS_ZERO_CALL_PROOF_NO_MODEL_CALL"
+  "current_next": "COMMIT_PUSH_CRLF_LF_PORTABILITY_REPAIR_THEN_RUN_NEW_R2_TWO_CLEAN_ARCHIVE_FRESH_PROCESS_ZERO_CALL_PROOF"
 }

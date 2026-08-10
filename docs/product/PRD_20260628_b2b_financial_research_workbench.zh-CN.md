@@ -2458,3 +2458,5 @@ changed-input DELL exact-live 证明，补源已经能转化为更好的需求�
 canary 输入已经从前序 clean-proven transaction 机械编译：只含 E022／E018／E023、四个对应 NUM 和 bounded annotated context，请求大小为 11,838 字符，低于 24,000 上限。Runtime 必须在解析前保存完整 request／response capture，以共享 ledger exact-once 消费 admission；transport、`finish_reason=length`、invalid JSON、错角色、错 ref、错单位、未绑定金额和缺少持续性边界均形成 terminal failure。公开 terminal 只含 capture ref／digest 和 typed code，不携带 raw model content，也不晋升业务 Artifact。
 
 实现测试还揭示：全案 numeric inventory 内含日期、表序号等 context-only 裸数字，若直接做 substring literal guard，正常写 `FY2027 Q1` 也会因命中 `2027／3／7` 被误杀。产品规则因此明确为两层：candidate literal 分支只检查当前 selected Evidence 中具备金额、百分比或数量语义的 material surface；独立金额／百分比／数量 scanner 仍扫描全部输出。该调整不是放宽数字权威：授权 presentation 仍须带 NUM，错单位和任意新增金额仍 hard fail。当前仅达到 working-tree engineering pass；双 clean proof 和另行 live authority 决策前，不得宣称 DeepSeek 自然遵循或 S2 完成。
+
+第一次 clean archive 进一步证明，所有 Git 管理的 UTF-8 JSON／文本权威绑定必须对 CRLF／LF 归一化后计算 digest；否则相同语义文件会因 Windows checkout 与 `git archive` 的换行差异被误判漂移。二进制 PDF、capture bytes 和 private Pack 仍使用 raw-byte SHA。该失败发生在 worker 业务编译前，必须以新 attempt 复证，不能把 R1 追认为成功或据此放宽绑定。

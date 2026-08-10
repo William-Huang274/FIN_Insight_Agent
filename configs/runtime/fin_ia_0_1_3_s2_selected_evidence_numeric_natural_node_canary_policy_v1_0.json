@@ -13,7 +13,7 @@
     },
     "cocompilation_clean_proof": {
       "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_clean_independent_proof_v1_0.json",
-      "sha256": "85254037c54cdd171c197caa11208201e43c4ea1067a3cd2ed6b6ec0c3e5af84",
+      "sha256": "9c9e8c66f3f5818a52efbee5248063f05be2c28d5dc826cc35d34b82a2a63e0c",
       "expected_result_digest": "cdca2fda2cef915177b58c8c42a26ebd24ca8bd92785990a818c36eca14787cb"
     },
     "cocompilation_policy": {

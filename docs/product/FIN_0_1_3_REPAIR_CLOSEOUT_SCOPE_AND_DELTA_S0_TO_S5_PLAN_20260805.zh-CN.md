@@ -306,6 +306,8 @@ DELL Supervisor R2 说明旧计划还缺一条统一原则：模型需要看到�
 
 > **2026-08-11 `S2-06D` numeric-view successor engineering 更新**：在 selected-Evidence numeric co-compilation 双 clean proof 后，没有恢复 13-call DELL，而是冻结一个 E022／E018／E023 的 demand-authenticity atom。零调用 compiler、capture-first exact-once fixture runner、strict schema／Evidence role／NUM presentation／durability boundary gate 已 working-tree 通过；请求为 `11,838/24,000 chars`，focused=`19 passed`，adjacent total=`35 passed`。测试同时修正了全案 context-only 裸数字对 `FY2027` 的 substring 误杀，但未放宽 material money／percent／count scanner。当前下一步仍是双 clean archive 复证；尚无 live admission、自然 DeepSeek 或 DELL 产品通过。该 successor 是同一 `S2-06D` 的有界修复，不创建新版本，也不重开 S1／S3。
 
+> **2026-08-11 `S2-06D` clean R1 portability failure**：第一 clean worker 在任何 fake Provider 调用前因 CRLF working-tree raw SHA 与 LF Git-archive raw SHA 不同而停止。R1 独立保留，外部调用为 0。修复只统一文本 binding 的 universal-newline digest，并增加 CRLF/LF parity；不改 Evidence、NUM、角色、输出 schema 或金融门。提交后以 R2 重跑双 archive，不增加 live 预算。
+
 #### 7A.5.1 2026-08-10 DELL fixed-pack transport successor 与数字表面闭环
 
 新的 DELL fixed-pack canary R1 在第 6 次 Provider 调用发生 `RemoteDisconnected`。前 5 个节点均有完整不可变 request/response capture；失败节点也有 capture，但没有可晋升输出。相邻请求大小近似，当前证据不足以认定容量故障或模型推理失败。direct baseline 的 11 个 numeric finding 又主要来自合法中文尺度转换和一项可复算比例缺少本地权威 trace。故本轮保持 S2，不重跑前 5 节点，也不创建新产品版本：

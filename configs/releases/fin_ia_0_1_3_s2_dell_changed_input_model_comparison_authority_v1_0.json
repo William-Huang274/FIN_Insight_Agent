@@ -1,0 +1,134 @@
+{
+  "admission": {
+    "admission_digest": "ff1a8529110d7f00bd46c2d381c0200f0d8764b6b8a1b3f528767423f2f11643",
+    "admission_id": "admission::fin013_s2_fixed_pack_dell_415d700ca9f9a7e51103",
+    "attempt_id": "fin013_s2_fixed_pack_dell_415d700ca9f9a7e51103::attempt_1",
+    "capacity": {
+      "fallback_count": 0,
+      "input_usd_per_million_tokens": 0.6,
+      "maximum_estimated_usd_campaign": 4.5,
+      "maximum_estimated_usd_per_case": 0.75,
+      "maximum_input_tokens_per_case": 500000,
+      "maximum_output_tokens_per_case": 66000,
+      "maximum_total_tokens_per_case": 566000,
+      "output_usd_per_million_tokens": 1.7,
+      "provider_calls_campaign_maximum": 90,
+      "provider_calls_per_case": {
+        "maximum": 15,
+        "minimum": 13
+      },
+      "retry_count": 0,
+      "specialist_units_per_case": {
+        "maximum": 8,
+        "minimum": 6
+      }
+    },
+    "case_input_digest": "063fbad04d757ab38239690dbf3bc90aa5f9fff50b6a9214e30453674085f6a2",
+    "case_key": "DELL",
+    "contract_sha256": "aacdcb9f7407ff1df35f613d901c8c089c8a46891dc33151dd9f96af426c6ff6",
+    "credential_present": true,
+    "execution_git_commit": "4cadc1cc88a87aa3124e4e66bc492c5e464db426",
+    "execution_mode": "live",
+    "expires_at": "2026-08-11T15:07:30Z",
+    "issued_at": "2026-08-10T15:07:30Z",
+    "node_order": [
+      "direct_baseline",
+      "research_lead",
+      "specialist::demand_authenticity_and_sustainability",
+      "specialist::product_and_technology_position",
+      "specialist::supply_capacity_and_competition",
+      "specialist::financial_transmission_profit_and_cash",
+      "specialist::capital_allocation_valuation_and_price_in",
+      "specialist::counter_thesis_risk_and_what_would_change",
+      "cross_unit_synthesis",
+      "draft_writer",
+      "red_team_critic",
+      "final_writer",
+      "verifier"
+    ],
+    "profile_sha256": "d0fc499e36678369081d27619404ea3de776a8349addf29192b0fb895f34c9ac",
+    "promotion_authority": false,
+    "provider": {
+      "base_url": "https://api.deepseek.com/beta",
+      "chat_completions_path": "/chat/completions",
+      "model": "deepseek-v4-pro",
+      "model_tier": "pro_not_flash",
+      "name": "deepseek"
+    },
+    "run_id": "fin013_s2_fixed_pack_dell_415d700ca9f9a7e51103",
+    "run_nonce_digest": "dca1af0f0518908cd3b42761786806189c0950d72c4b6f507b861afe792be0dc",
+    "runner_sha256": "c30ca331348e48dab0e37e27959abf690819a8cad1b48a65d9ecc006482fc0ef",
+    "runtime_identity": "fin013_s2_fixed_pack_dell_415d700ca9f9a7e51103::runtime_1",
+    "schema_version": "fin_ia_0_1_3_s2_fixed_pack_case_admission_v1_0",
+    "scope": "FIN_0_1_3_S2_FIXED_PACK_RESEARCH_ONE_CASE_EXACT_ONCE",
+    "source_pack_digest": "5ba1091ddc71d0c8543f186e4331bf2caae7d10e365af0a0f7510a056b5e9984",
+    "state": "issued_unconsumed"
+  },
+  "authority_digest": "f45ca449b240387cd040228b5e8ee76ac4f62956f27a8721caad74b903cb5c15",
+  "automatic_replacement": false,
+  "case_key": "DELL",
+  "clean_proof_digest": "dfe271b14252478d1aac679ae26dd2cdf2d16a84e82958ae86b7c5f37af01df2",
+  "comparison_type": "changed_input_information_increment_not_model_ab",
+  "decision_id": "FIN-0.1.3-S2-DELL-CHANGED-INPUT-R1-AUTHORITY",
+  "execution_ceiling": {
+    "business_promotions": 0,
+    "cases": 1,
+    "fallbacks": 0,
+    "fresh_model_nodes": 13,
+    "model_calls": 13,
+    "network_tool_calls": 0,
+    "old_model_nodes_reused": 0,
+    "provider_calls": 13,
+    "retries": 0,
+    "source_calls": 0
+  },
+  "implementation_bindings": [
+    {
+      "ref": "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json",
+      "sha256": "c090cee2313e694d22db7c4419b4a12c5e771664704ca8a5f43f8db2a5f26e68"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_dell_changed_input_model_comparison_contract_v1_0.json",
+      "sha256": "aacdcb9f7407ff1df35f613d901c8c089c8a46891dc33151dd9f96af426c6ff6"
+    },
+    {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_deepseek_v4_pro_fixed_pack_profile_v1_0.json",
+      "sha256": "d0fc499e36678369081d27619404ea3de776a8349addf29192b0fb895f34c9ac"
+    },
+    {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_dell_changed_input_model_comparison_clean_proof_v1_0.json",
+      "sha256": "72cab57bcf89ff972cbd772d8dd4362ccb0a96901450e268272d83b91d2560bb"
+    },
+    {
+      "ref": "src/sec_agent/s2_dell_changed_input_model_comparison.py",
+      "sha256": "d164ca8740deb372d9a7a6fb90da26439782a7d4db10af84ddd37af8a28f8a10"
+    },
+    {
+      "ref": "src/sec_agent/s2_fixed_pack_research_runtime.py",
+      "sha256": "c30ca331348e48dab0e37e27959abf690819a8cad1b48a65d9ecc006482fc0ef"
+    },
+    {
+      "ref": "scripts/releases/issue_fin_ia_0_1_3_s2_dell_changed_input_model_comparison_authority.py",
+      "sha256": "a395f0a8653d4fa48c87c59f36a099cc1e587731e464cc6607946605e854f3f9"
+    },
+    {
+      "ref": "scripts/releases/run_fin_ia_0_1_3_s2_dell_changed_input_model_comparison.py",
+      "sha256": "44d82a395bd628feb2892080d806ac268a38cdc54433d300cc27a7ebfee06ff0"
+    }
+  ],
+  "implementation_commit": "4cadc1cc88a87aa3124e4e66bc492c5e464db426",
+  "known_boundary": "This authority permits one fresh thirteen-node Dell DeepSeek Pro run on the corrected Pack. It authorizes no source call, old-node reuse, retry, automatic replacement, business promotion or release.",
+  "maximum_executions": 1,
+  "project_os_preflight": {
+    "open_full_chain_blocker_count": 0,
+    "run_scope": "FIN_0_1_3_S2_DELL_FIXED_PACK_MODEL_COMPARISON",
+    "status": "pass"
+  },
+  "recorded_at": "2026-08-10T15:07:30Z",
+  "run_scope": "FIN_0_1_3_S2_DELL_FIXED_PACK_MODEL_COMPARISON",
+  "same_input_internal_direct_baseline": true,
+  "same_input_with_prior_report": false,
+  "schema_version": "fin_ia_0_1_3_s2_dell_changed_input_model_comparison_authority_v1_0",
+  "status": "issued_unconsumed",
+  "user_authority": "User approved continuing the bounded-anchor sequence and conditionally executing one enriched DeepSeek exact-live after clean proof. This authority is narrowed to the fresh DELL thirteen-node comparison."
+}

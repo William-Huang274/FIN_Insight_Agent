@@ -1,0 +1,34 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_residual_gap_tencent_locator_profile_v1_0",
+  "contract_ref": "fin_0_1_3.S1.residual_gap_official_first_external_supplement:v1",
+  "provider_id": "tencent_wsa_searchpro_standard_locator_v1",
+  "api_contract": {
+    "endpoint": "wsa.tencentcloudapi.com",
+    "protocol": "https",
+    "action": "SearchPro",
+    "version": "2025-05-08",
+    "region": "",
+    "request_body_fields": ["Query"]
+  },
+  "authentication": {
+    "mode": "tencent_cloud_api3_ak_sk_signature",
+    "secret_id_env": "TENCENTCLOUD_SECRET_ID",
+    "secret_key_env": "TENCENTCLOUD_SECRET_KEY",
+    "credential_persistence_allowed": false,
+    "credential_logging_allowed": false
+  },
+  "budget": {
+    "provider_call_ceiling": 12,
+    "result_ceiling_per_call": 10,
+    "timeout_seconds_per_call": 30,
+    "retry_ceiling": 0
+  },
+  "capability_boundary": {
+    "role": "official_domain_locator_only",
+    "provider_snippet_is_evidence": false,
+    "provider_date_is_financial_date_authority": false,
+    "evidence_promotion_allowed": false,
+    "writer_citable": false,
+    "numeric_authority": "none"
+  }
+}

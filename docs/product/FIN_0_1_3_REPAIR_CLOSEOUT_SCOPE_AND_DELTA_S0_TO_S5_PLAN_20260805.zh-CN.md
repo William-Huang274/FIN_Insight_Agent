@@ -765,3 +765,5 @@ R1 的业务事实是：前三个已知案例在 93-object population 中各有 
 本轮第一次测试暴露并修正了关系型来源边界：研究 DELL／NVDA 的供应问题时，证据披露主体可以是 Micron／TSMC，因此 `research subject`、`evidence owner` 与 `relationship direction` 必须分别建模。Owner→official-host registry 只允许相应主体的官方域；供应商自我披露仍只能证明其自身供给背景，不能被改写为 DELL／NVDA 获得特定 allocation。
 
 下一项仍属于 FIN 0.1.3 S1，不创建新版本：在 clean commit 上签发唯一 exact-once live，最多 `6 discovery + 12 locator + 12 official document = 30 network`、retry=0、model／embedding／rerank=0。Tencent 等 broad provider 仅定位受限官方 URL，snippet 和 provider date 没有 Evidence authority；原文 capture 后必须本地解析、日期裁决和 Evidence Gate。公开材料不存在即保留 typed gap。完成本项后才进入 frozen-pack DeepSeek 分析，随后另测动态 Agentic Research。
+
+Live runner 的 zero-call engineering 已通过：六案 fake transport 模拟 `6 discovery + 2 locator + 8 official documents = 16` 个网络动作，12／12 intents 均形成待重裁决 Candidate；off-domain、future-date、Provider systemic stop、budget／binding drift 和 exact-once mutation 均 fail closed，相关 current-slice 回归=`48 passed`。真实 network、credential read、Evidence 和模型仍为 0。当前下一项是 clean commit／push 后的 fresh preflight 与一次 authority issuance，不是直接把 fake Candidate 当作外源能力通过。

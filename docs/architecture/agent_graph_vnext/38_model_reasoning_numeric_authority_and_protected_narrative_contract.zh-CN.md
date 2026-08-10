@@ -355,3 +355,26 @@ changed-input live 暴露了静态 NumericFact inventory 的扩展上限。新 P
 6. compact model Verifier 与 deterministic guard 是串联关系，不是互相覆盖。Verifier 返回 pass 只说明它没有发现语义支持问题；数字、身份、期间、单位和 lineage 必须由本地 gate 独立通过。
 
 本轮 direct baseline 有 8 条 L1，Red Team／Final Writer 后只剩 2 条，说明模型链具有实质控制增益；compact Verifier 30/30 pass 却漏掉三枚未绑定 surface，说明 Verifier 不具备单独晋升权。后续测试必须覆盖新增 Evidence 自动出现未知数字、同 target 多精度表面、百分比／客户数／日期 token、cross-case、错期间、source 数字可见但不可输出，以及 Verifier false-pass 后本地门仍阻断。完成零调用 co-compilation proof 前不得再发 DELL paid rerun。
+
+#### 13.10.1 冻结后的候选合同
+
+零调用处置拒绝静态 whitelist 扩表和 raw-text regex-all promotion。每次 selected Evidence 变更必须同事务生成 `MaterialNumericCandidateInventory`；其中 `MaterialNumericCandidate` 最小字段固定为：`candidate_id／case_key／evidence_target_id／evidence_alias／source_record_id／source_coordinate_or_span／source_surface／value_kind／parsed_value_or_bounds／canonical_unit／currency／scale／entity_or_evidence_owner／period_or_as_of／slot_ids／facet_ids／relationship_directions／semantic_metric_key／claim_and_output_boundary／adjudication_status／decision_code`。
+
+`value_kind` 至少覆盖金额、百分比、计数、比率／倍数、数值区间、时间区间／边界和定性数字带。`adjudication_status` 固定为 `authorized_fact／authorized_formula_operand／descriptive_nonmaterial／context_only_do_not_output／forbidden_or_ambiguous`。stable fact identity 由 `case + entity + semantic metric + period/as-of + canonical unit + authoritative source scope` 决定；Evidence target、source record 和精确 span／table path 是 lineage，不足以单独定义经济事实。
+
+发现层按来源类型拆分：structured metric 直接投影；表格候选必须继承 parent currency／unit／period 和 row／column path；叙事候选只在 selected Evidence 的 bounded span 内发现，并携带 Slot／Facet 语义；count、percentage、range、H1／beyond-year、qualitative band 和 PIT market input 使用独立 parser。Regex 可以提出候选，不能作晋升裁决。
+
+#### 13.10.2 四种视图与晋升顺序
+
+1. `private_audit_view` 保存完整 raw request／response／assistant output，restricted access、不可直接晋升。
+2. `research_view` 给 Lead／Specialist bounded Evidence、Slot／Facet、授权候选和与原 span 同位置的 non-output 标记；不得继续发送未注解的完整数字正文。
+3. `writer_view` 只给可写 `NUM/FORM`、bounded nonnumeric narrative 和稳定遮蔽标签；context-only 数字不得靠全局 prompt 尾注约束。
+4. `verifier_view` 只给 compact claim、ref、Evidence support 和边界。其 semantic pass 后仍必须串行执行 local identity／period／unit／currency／ref／lineage gate。
+
+Harness 的确定性 renderer 只写入已授权事实表面，不生成机制、thesis 或反方。S3 可以在以后新增“按实体＋指标＋期间＋Slot 请求更多数字目标”的模型动作，但请求只能产生待裁决 candidate，不能直接写值或取得输出权威。
+
+#### 13.10.3 泛化与实现边界
+
+DELL／MU／NVDA 用于叙事、表格、供应商／客户 read-through 和 PIT 输入；ORCL／ASML／ANET 用于 `source_materials=[]` 的 structured metric、USD／EUR、货币／非货币单位和期间隔离。mutation 必须覆盖同数不同义、精确＋官方舍入、错实体／期间／币种、table child 缺 parent、slot 外数字、日期／规则号／产品型号、count qualifier、range／H1／beyond-year、cross-case、排序稳定、Writer 越过 DO_NOT_OUTPUT、公式 lineage、PIT 不越权估值，以及 Verifier false-pass。
+
+处置工件只达到 `decision_complete_implementation_pending`。下一项 `FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-CANDIDATE-COCOMPILATION-MINIMUM-ZERO-CALL-IMPLEMENTATION` 依次实现 pure schema/compiler、source-aware adapters、deterministic adjudicator、node views／renderer／guard、六案 fake／capture replay／mutation 和双 clean proof；不得在此之前自动重跑 DELL。

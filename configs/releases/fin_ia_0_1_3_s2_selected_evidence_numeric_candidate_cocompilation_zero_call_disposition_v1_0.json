@@ -1,0 +1,265 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_zero_call_disposition_v1_0",
+  "decision_id": "FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-CANDIDATE-COCOMPILATION-ZERO-CALL-DISPOSITION-R1",
+  "decision_digest": "bd80bd92c9fe8f936016d1435bc9b5c91fc6f91809495f6d5d437e81ee433e7c",
+  "recorded_at": "2026-08-10",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "status": "decision_complete_implementation_pending",
+  "source_commit": "b1f6102723b3919fe8a661d86d43d0976fddad8e",
+  "scope": {
+    "kind": "zero_call_root_cause_and_contract_disposition",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "automatic_dell_rerun": false,
+    "runtime_implementation_in_this_item": false,
+    "business_artifact_promotion": false
+  },
+  "trigger": {
+    "case_key": "DELL",
+    "changed_input_result_digest": "c3ffde4ee31379a4145483d7c99e95a115ac8fad920620dfc4ba8eb7cce0f610",
+    "business_assessment_digest": "2115b25a28ed19f9bc053011503157702652f9297540a40c6ec523daee84f627",
+    "selected_evidence_source_material_gap": [27, 27, 14],
+    "current_numeric_fact_formula_inventory": [15, 4],
+    "observed_unbound_surfaces": ["16.1", "97.8%", "5000"],
+    "root_cause_issue": "RC-P36-170-fin-0-1-3-s2-fixed-pack-numeric-presentation-alias-and-formula-lineage-gap"
+  },
+  "observed_current_system": {
+    "code_refs": [
+      "src/sec_agent/s2_fixed_pack_capture_reuse_successor.py::compile_numeric_authority",
+      "src/sec_agent/s2_dell_changed_input_model_comparison.py::compile_changed_input_numeric_authority",
+      "src/sec_agent/s2_fixed_pack_research.py::compile_case_model_input",
+      "src/sec_agent/s2_fixed_pack_research_runtime.py::evaluate_final_output",
+      "src/sec_agent/s2_fixed_pack_research_runtime.py::resolve_final_output_numeric_surfaces"
+    ],
+    "compiler_behavior": "Numeric authority is compiled from a separately maintained historical source_numeric_facts list, rebound to current target_id and source_record_id, then extended by one hard-coded TSMC repair fact and one market PIT fact.",
+    "model_view_behavior": "The current fixed-pack input exposes complete source_text for each selected SourceMaterial while NumericFactView covers only the separate fact inventory.",
+    "final_guard_behavior": "The deterministic final guard correctly rejects material numeric surfaces that cannot be bound to the compiled authority, even when the source text contains the number.",
+    "business_effect": "Evidence expansion can improve research while simultaneously making more true source numbers visible but not deliverable.",
+    "concrete_findings": [
+      {
+        "example": "DELL management disclosure",
+        "selected_evidence_contains": ["USD 24.4B AI orders", "USD 16.1B AI server revenue", "USD 51.3B backlog", "more than 5,000 AI customers"],
+        "defect": "The selected Evidence target contains four decision-relevant numeric surfaces, but the separate authority inventory does not co-compile all four and does not bind the source-rounded 16.1 surface to the exact 16.132 fact."
+      },
+      {
+        "example": "SMCI competitor read-through",
+        "selected_evidence_contains": ["USD 12,028.9M revenue surface", "97.8% AI GPU product growth"],
+        "defect": "The 97.8% surface is relevant to the selected competition facet but absent from the current authority inventory."
+      },
+      {
+        "example": "DELL balance-sheet table",
+        "selected_evidence_contains": ["accounts receivable row", "inventory row", "accounts payable row"],
+        "defect": "A whole-table all-number extractor would also promote dozens of unrelated cells; selection must preserve row, column, unit, period and slot meaning."
+      },
+      {
+        "example": "false numeric tokens",
+        "selected_evidence_contains": ["2026-08-06.4. close", "Rule 4090", "256GB", "3D"],
+        "defect": "Regex-all extraction can misclassify date punctuation, rule numbers and product names as financial facts."
+      },
+      {
+        "example": "temporal and qualitative surfaces",
+        "selected_evidence_contains": ["first half of calendar 2027", "beyond calendar 2027", "mid-single-digit operating margin"],
+        "defect": "The contract must represent temporal ranges and qualitative numeric bands, not only Decimal scalars."
+      }
+    ]
+  },
+  "option_assessment": [
+    {
+      "option_id": "A_manual_whitelist_extension",
+      "decision": "rejected",
+      "reason": "Adding 51.3, 5000 and 97.8 one by one repeats the same dual-ledger defect and cannot generalize when the Evidence Pack changes."
+    },
+    {
+      "option_id": "B_regex_promote_every_number_in_selected_source_text",
+      "decision": "rejected",
+      "reason": "It would authorize unrelated table cells, dates, filing rules, product model numbers, footnotes and cross-facet context; source presence is not sufficient financial authority."
+    },
+    {
+      "option_id": "C_source_aware_candidate_discovery_target_aware_deterministic_adjudication_and_bounded_model_views",
+      "decision": "selected",
+      "reason": "It keeps the financial control plane provider-neutral, derives authority from the actual selected Evidence, preserves structured lineage and lets stronger future models receive more autonomy without changing the product truth boundary."
+    }
+  ],
+  "selected_design": {
+    "design_principles": [
+      "selected Evidence and numeric authority have one compilation transaction and one input digest",
+      "raw source capture remains immutable private audit evidence and is never itself output authority",
+      "candidate discovery may be broad but promotion is deterministic and target-aware",
+      "the local renderer owns value, unit, period, currency, rounding and formula surfaces but does not write the research thesis",
+      "the model owns analysis, mechanism, counter-thesis and prose within the compiled fact boundary",
+      "an unbound model number remains L1 even when an inventory omission also exists",
+      "no provider-specific branch is added to the core contract"
+    ],
+    "data_flow": [
+      "SelectedEvidence and its exact source or structured-metric coordinates enter one co-compilation transaction",
+      "source-aware extractors emit MaterialNumericCandidate rows only for selected Evidence targets",
+      "a deterministic adjudicator resolves entity, metric, period, unit, currency, slot, facet, relationship and output boundary",
+      "a stable fact resolver merges exact, rounded, converted and formatted surfaces for the same economic fact",
+      "a presentation program compiles NUM and FORM refs plus source-surface receipts",
+      "node-specific model views expose authorized refs and local non-output annotations or masking",
+      "the final local guard rechecks rendered surfaces, explicit refs and Evidence lineage after semantic model verification"
+    ],
+    "candidate_value_kinds": [
+      "monetary_scalar",
+      "percentage_scalar",
+      "count_scalar",
+      "ratio_or_multiple",
+      "numeric_range",
+      "temporal_range_or_boundary",
+      "qualitative_numeric_band"
+    ],
+    "required_candidate_fields": [
+      "candidate_id",
+      "case_key",
+      "evidence_target_id",
+      "evidence_alias",
+      "source_record_id",
+      "source_coordinate_or_span",
+      "source_surface",
+      "value_kind",
+      "parsed_value_or_bounds",
+      "canonical_unit",
+      "currency",
+      "scale",
+      "entity_or_evidence_owner",
+      "period_or_as_of",
+      "slot_ids",
+      "facet_ids",
+      "relationship_directions",
+      "semantic_metric_key",
+      "claim_and_output_boundary",
+      "adjudication_status",
+      "decision_code"
+    ],
+    "adjudication_statuses": [
+      "authorized_fact",
+      "authorized_formula_operand",
+      "descriptive_nonmaterial",
+      "context_only_do_not_output",
+      "forbidden_or_ambiguous"
+    ],
+    "stable_fact_identity": "case_key + entity + semantic_metric_key + period_or_as_of + canonical_unit + authoritative_source_scope",
+    "lineage_identity": "evidence_target_id + source_record_id + exact source coordinate or structured table path",
+    "presentation_rule": "Exact source values, official rounded surfaces, deterministic unit conversions and formula outputs are presentations of one stable fact when their receipt proves equivalence; they are not independent hand-authored aliases.",
+    "source_adapter_families": [
+      "structured_metric_direct_projection",
+      "table_cell_with_parent_currency_unit_and_period",
+      "bounded_narrative_span_with_selected_slot_and_facet",
+      "count_percentage_range_and_temporal_surface",
+      "point_in_time_market_input"
+    ]
+  },
+  "model_view_contract": {
+    "private_audit_view": "Preserve the complete immutable raw request, source response and assistant output under restricted access; never treat raw presence as promotion authority.",
+    "research_lead_and_specialist_view": "Expose bounded selected Evidence context, slot and facet meaning, authorized candidate refs and colocated context-only or forbidden annotations. Do not expose unannotated full-source numeric surfaces.",
+    "writer_view": "Expose authorized NUM and FORM refs plus bounded nonnumeric narrative. Replace context-only numeric spans with stable local labels or explicit DO_NOT_OUTPUT markers; ambiguous spans are masked.",
+    "verifier_view": "Expose compact claims, explicit refs, Evidence support and relevant boundaries; semantic pass cannot override the local numeric gate.",
+    "future_dynamic_request_boundary": "S3 may later let a model request an additional numeric target by entity, metric, period and slot, but the request cannot directly authorize or render a value."
+  },
+  "local_guard_contract": {
+    "promotion_order": [
+      "model semantic verification complete",
+      "deterministic numeric identity period unit currency ref and lineage verification complete",
+      "artifact promotion decision"
+    ],
+    "finding_classifications": [
+      "inventory_omission",
+      "model_unbound_output",
+      "unauthorized_presentation_surface",
+      "wrong_entity_period_unit_or_currency",
+      "formula_lineage_incomplete"
+    ],
+    "coexisting_findings_allowed": true,
+    "source_text_presence_bypasses_authority": false,
+    "model_verifier_is_sole_promotion_authority": false
+  },
+  "case_acceptance_matrix": {
+    "DELL": ["narrative orders revenue backlog and customer counts", "balance-sheet row selection", "competitor and supplier read-through", "PIT market input without target-price authority"],
+    "MU": ["issuer HBM and data-center narrative", "price shipment mix and capacity periods", "supplier or customer relationship direction"],
+    "NVDA": ["issuer revenue margin and cash metrics", "customer and supplier read-through", "export and platform boundaries"],
+    "ORCL": ["structured_metric rows without SourceMaterial narrative", "USD millions and exact table path", "company-wide metric cannot become AI-specific attribution"],
+    "ASML": ["EUR millions preserved", "nonmonetary lithography-system count preserved", "Q1 versus Q2 and product-mix identity"],
+    "ANET": ["structured USD metrics", "three-month versus six-month period identity", "company-wide value cannot become AI-network attribution"]
+  },
+  "mutation_suite": [
+    "same numeric surface with different semantic metrics",
+    "same stable fact with exact and official rounded surfaces",
+    "same metric with different entity period unit or currency",
+    "table child missing parent currency unit period or row path",
+    "number present in source text but outside the selected Evidence slot",
+    "date fiscal label rule number footnote and product-model false positives",
+    "count without currency including more-than qualifiers",
+    "numeric range temporal boundary and qualitative band",
+    "cross-case candidate contamination",
+    "candidate ordering and alias stability",
+    "Writer emits context-only or forbidden candidate",
+    "model view masking and local inventory parity",
+    "formula operand and derived-output lineage",
+    "market PIT price does not authorize valuation multiple fair value target price or recommendation",
+    "structured metric works when source_materials is empty",
+    "semantic Verifier false-pass remains blocked by the deterministic gate"
+  ],
+  "stage_ownership": {
+    "S1": "Own source capture, parsing, source coordinates, Evidence selection and residual source gaps. Do not reopen the repaired bounded-anchor parser for this S2 defect.",
+    "S2": "Own candidate co-compilation, deterministic adjudication, stable fact and presentation programs, node-specific numeric views and final numeric promotion gate.",
+    "S3": "Own dynamic requests for additional numeric targets, evidence-to-mechanism reasoning, executable WWC and decision density after S2 provides a safe fact surface.",
+    "S4": "Own Workbench review surfaces for fact lineage, masked candidates and human correction; not part of this implementation package.",
+    "S5": "Own release evidence and migration proof after primary and held-out acceptance."
+  },
+  "implementation_sequence": [
+    {
+      "step": 1,
+      "name": "schema_and_pure_compiler",
+      "exit": "MaterialNumericCandidateInventory and stable-fact presentation receipts compile deterministically from selected Evidence with zero model and network calls."
+    },
+    {
+      "step": 2,
+      "name": "source_aware_adapters_and_adjudicator",
+      "exit": "Structured metrics, table cells, bounded narrative, counts, percentages, ranges, temporal surfaces and PIT inputs are classified without regex-all promotion."
+    },
+    {
+      "step": 3,
+      "name": "node_views_renderer_and_guard",
+      "exit": "Research, Writer and Verifier views stay digest-aligned; unauthorized numeric spans cannot reach delivery and local rendering does not author analysis."
+    },
+    {
+      "step": 4,
+      "name": "six_case_fake_capture_replay_and_mutation",
+      "exit": "DELL, MU, NVDA and ORCL, ASML, ANET all pass their case matrix and all listed mutations fail closed where required."
+    },
+    {
+      "step": 5,
+      "name": "clean_independent_zero_call_proof",
+      "exit": "Two clean workers produce byte-equivalent inventories, model views, presentation programs and guard outcomes."
+    },
+    {
+      "step": 6,
+      "name": "separate_natural_canary_and_rerun_decision",
+      "exit": "Only after a separate authority decision may one minimal natural node canary determine whether a new DELL formal run is worth its cost."
+    }
+  ],
+  "non_goals": [
+    "do not add three DELL-specific numeric aliases as the primary fix",
+    "do not promote every regex number from raw source text",
+    "do not weaken the deterministic financial gate",
+    "do not ask the model to count characters or hand-maintain IDs",
+    "do not reopen S1 retrieval or source parsing",
+    "do not absorb S3 WWC mechanism or density work",
+    "do not perform a DELL paid rerun or start another case",
+    "do not claim Owner acceptance release or production readiness"
+  ],
+  "release_boundary": {
+    "engineering_pass": false,
+    "natural_model_pass": false,
+    "dell_delivery_pass": false,
+    "primary_case_transfer_pass": false,
+    "held_out_generalization_pass": false,
+    "owner_acceptance": false,
+    "release_eligible": false
+  },
+  "current_next": "FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-CANDIDATE-COCOMPILATION-MINIMUM-ZERO-CALL-IMPLEMENTATION"
+}

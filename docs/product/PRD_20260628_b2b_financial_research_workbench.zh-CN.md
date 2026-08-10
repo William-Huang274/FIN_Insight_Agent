@@ -2416,3 +2416,13 @@ changed-input DELL exact-live 证明，补源已经能转化为更好的需求�
 7. 单点 PIT price 继续只代表 `valuation_input_ready`。本次真实报告正确保留历史区间、forward earnings、同业和情景敏感度 Gap，不能把一枚收盘价包装为 valuation-ready。
 
 本次业务审计结论为 `source_increment materially utilized／research quality improved／delivery gate failed`。下一步属于 S2 的零调用 numeric co-compilation 处置，不授权自动 DELL 重跑；WWC 和内容密度进入 S3，残余估值与 Dell 特定供应缺口留在 S1／后续 source work。
+
+零调用处置现已冻结，不再采用“给漏掉的三个数字补白名单”或“把 selected source text 中所有数字都放行”两种方案。前者会永久维持 Evidence 与 NumericFact 的双账本，后者会把无关表格单元格、日期、规则号、产品型号和脚注一起变成交付事实。产品选择 `source-aware candidate discovery + target-aware deterministic adjudication + bounded model views`：
+
+1. `MaterialNumericCandidateInventory` 必须支持 monetary、percentage、count、ratio、range、temporal boundary 和 qualitative band；每行至少绑定 case、Evidence target、source coordinate／table path、原始 surface、解析值或区间、实体、指标、期间、单位、币种、slot／facet、关系方向、claim boundary、裁决状态和 decision code。
+2. 裁决状态固定为 `authorized_fact／authorized_formula_operand／descriptive_nonmaterial／context_only_do_not_output／forbidden_or_ambiguous`。发现候选可以宽，晋升必须窄；regex 命中或 source text 存在都不能直接获得事实权威。
+3. 完整 raw capture 继续私有不可变留存。Lead／Specialist 只读取 bounded selected context 与就地 non-output 标记；Writer 只读取可写 `NUM/FORM` 和遮蔽后的上下文；Verifier 读取 compact claim／ref／support view。模型不再面对“数字原文可见、是否可写不明”的输入面。
+4. Harness 只负责事实身份、数值、期间、单位、币种、舍入、公式、引用和渲染，不代写 thesis、机制、反方或完整报告；模型继续拥有研究判断和表达。未来模型能力提升时可以扩大它的候选请求权，不能取消金融事实和 lineage 控制面。
+5. 验收必须覆盖 DELL／MU／NVDA，以及无 SourceMaterial 正文、主要由 structured metrics 构成的 ORCL／ASML／ANET held-out Pack；尤其要证明 ASML EUR／台数、ANET 三个月／六个月和 ORCL 全公司／AI 归因不会混淆。
+
+本项只达到 `decision_complete／runtime_not_implemented`。下一项为 `FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-CANDIDATE-COCOMPILATION-MINIMUM-ZERO-CALL-IMPLEMENTATION`；完成六案 fake／capture replay／mutation 和 clean proof 前，不授权自然模型 canary、DELL paid rerun、Owner acceptance 或 release。

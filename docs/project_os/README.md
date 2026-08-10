@@ -6,13 +6,13 @@
 
 ## 当前恢复锚点
 
-最新恢复锚点（2026-08-10）：FIN 0.1.3 S1 DELL targeted-source recovery 已完成零网络证明。TSMC 同源窗口 selector、目标路径 safe transport envelope 和 PIT expected-value leakage 已修；Dell/Micron 官方文档已形成一次捕获候选。当前唯一 authority 前置 blocker 是 DELL 2026-08-06 精确市场价格路线尚不可执行，故未签发新 source authority，未编译 enriched Pack，未调用 DeepSeek。恢复时先读 `current_context_pack.zh-CN.md` 顶部、worklog 829、capability `v2_351` 与 root projections `v2_393–v2_396`。
+最新恢复锚点（2026-08-10）：FIN 0.1.3 S2 DELL changed-input exact-live 已证明补源能够改善需求、利润、供应、竞争和反方判断，但 selected Evidence 与 NumericFactView 双账本导致 `16.1／97.8%／5000` 的 2 条交付 L1。零调用处置已拒绝逐数字白名单和 raw-text regex-all，冻结 provider-neutral `MaterialNumericCandidateInventory`、target-aware adjudication、stable fact presentation 和分层 model view；Runtime 尚未实现，禁止自动 DELL 重跑。恢复时先读 `current_context_pack.zh-CN.md` 顶部、worklog 845–846、capability `v2_365–v2_366` 与 root projections `v2_414–v2_417`。
 
 FIN 0.1.1 保存第一轮 S0–S5 的内部 honest-block 工程基线。2026-08-02 用户纠正版本治理后，原 0.1.2、0.1.3、0.1.4 曾合并回 FIN 0.1.2：原 0.1.3 是 FIN 0.1.2 S0 的历史 recovery/clean-environment acceptance attempts，原 0.1.4 是未执行的 S0 改进提案。此段只保留为历史版本治理记录；当前开发版本与阶段以其后的 FIN 0.1.3 锚点及本页顶部最新恢复锚点为准。
 
-当前开发版本为 FIN 0.1.3。`013-S0-04G` 已以 typed blocker state、`RunScopeRegistry v1_0` 和 unknown fail-closed 关闭 RC-P36-156，并从 clean Git archive/fresh process 以 `85/85` 复证现有 DELL R3 successor；本项外部调用与 admission 均为 0。S1-08 的真实 candidate ceiling 仍未通过，DELL R3、ranking、MU/NVDA、S3 和 release 均未因此解锁。
+当前开发版本为 FIN 0.1.3。S0 的 shared control plane、S1 的本地／外源 Evidence Pack 与 bounded source recovery 已进入当前代码；DELL corrected Pack 已在 S2 被 13-node DeepSeek 链完整消费并证明研究质量增量。当前 blocker 不是旧 S1 candidate ceiling，而是 RC-P36-170 的 selected-Evidence numeric co-compilation 尚未实现；RC-P36-172 的 WWC／机制／密度另留 S3，不能混成同一修复。
 
-当前下一项：Tencent WSA standard 的三案 × 四个外部 Evidence Slot × 中英文 24-call comparator 已 exact-once 完成。24/24 调用成功且成本、延迟、表面域名多样性通过，但 Evidence-eligible=`0`、case-slot target-in-pool=`0/12`、hidden target group=`0/12`，日期因零 exact target 无法验证；终态为 diagnostic-only，禁止 SourceHunter integration 和 reranker rescue。下一步只能由 Owner 选择另一 broad-search Provider 按同一 comparator 资格审查，或显式缩减 Internal Alpha source claim；不得继续 Tencent R5/query patch，也不解锁 DeepSeek、S3 或 release。
+当前下一项：`FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-CANDIDATE-COCOMPILATION-MINIMUM-ZERO-CALL-IMPLEMENTATION`。先实现 schema／pure compiler、source-aware adapters、deterministic adjudicator、stable fact／presentation program、节点视图和 local guard，再以 DELL／MU／NVDA＋ORCL／ASML／ANET 做 fake、capture replay、mutation 和双 clean proof。完成前不得发起自然模型 canary、DELL paid rerun、Owner acceptance 或 release；S1 residual source 与 S3 WWC／机制／密度继续留原阶段。
 
 ## 文件职责
 

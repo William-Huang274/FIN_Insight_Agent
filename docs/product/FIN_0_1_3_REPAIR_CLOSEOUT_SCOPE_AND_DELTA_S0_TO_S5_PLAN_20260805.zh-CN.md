@@ -863,3 +863,16 @@ Owner 已批准 7W terminal 后的有界处置，不授权重新抓取来源。�
 本段不是新版本或新 S 阶段，只是 7W 在 S1 内的根因修复以及原第 5 项的条件恢复。第 5 项已经证明新增资料被模型用于更好的判断，因此不得以本次数字合同 finding 重开 S1 parser。下一项限定为 S2 零调用处置：从 selected Evidence 共编 material numeric candidates、source-rounded presentation aliases 与 explicit non-output/masking；不能自动再跑 DELL。WWC、机制桥和内容密度继续归 S3，估值深度与 Dell 特定 allocation gaps 继续归 S1／后续补源。
 
 > **7X terminal disposition**：补源链达到 `research_quality_increment=material_positive`，但交付链为 `L1 failed`。三枚数都可在 cited Evidence 中追溯：`16.1` 是项目侧 source-rounded surface 漏编；`97.8%／5000` 是 NumericFact inventory 未随新 Evidence 共编且模型又越过 ref 合同直接输出。Agent 链把同输入 direct baseline 的 8 条 L1 降为 2，证明 Red Team／Final Writer 有控制增益；model Verifier 的全 pass 不能替代本地数字门。当前禁止 Owner acceptance、paired acceptance、release 与 automatic rerun。
+
+## 7Y. Selected-Evidence numeric candidate co-compilation（2026-08-10）
+
+本段继续留在 FIN 0.1.3 S2，不新建版本、不重开 S1 parser，也不吸收 S3 的 WWC／机制／内容密度任务。执行顺序冻结为：
+
+1. [x] `S2_ZERO_CALL_ROOT_CAUSE_AND_CONTRACT_DISPOSITION`：确认当前 authority 来自旧 `source_numeric_facts` 手工表重绑定，再追加单点 repair／market fact；拒绝 DELL 三数字白名单和 raw-text regex-all；选择 provider-neutral source-aware candidate discovery、target-aware deterministic adjudication 和 bounded model views。
+2. [ ] `S2_MATERIAL_NUMERIC_CANDIDATE_SCHEMA_AND_PURE_COMPILER`：从最终 selected Evidence 同事务生成 `MaterialNumericCandidateInventory`；覆盖金额、百分比、计数、倍数、区间、时间边界和定性数字带，保存坐标、实体、指标、期间、单位、币种、Slot／Facet、关系方向与 output boundary。
+3. [ ] `S2_SOURCE_AWARE_ADAPTERS_STABLE_FACT_AND_PRESENTATION_PROGRAM`：实现 structured metric、table cell、bounded narrative、temporal／range 和 PIT adapter；同一经济事实的 exact、source-rounded、converted 与 formula surface 归并，不手工维护重复 alias。
+4. [ ] `S2_NODE_VIEWS_RENDERER_AND_LOCAL_GUARD`：完整 raw capture 只留 private audit；Lead／Specialist、Writer、Verifier 使用不同 bounded view；Harness 只渲染事实，不代写研究；semantic pass 后仍执行 deterministic L1 gate。
+5. [ ] `S2_SIX_CASE_FAKE_CAPTURE_REPLAY_MUTATION_AND_CLEAN_PROOF`：DELL／MU／NVDA 加 ORCL／ASML／ANET 全部通过，并覆盖同数不同义、错期间／币种、slot 外数字、日期／型号、范围、count、cross-case、公式、PIT 越权和 Verifier false-pass；两个 clean worker 必须 byte-equivalent。
+6. [ ] `S2_MINIMAL_NATURAL_CANARY_AND_FORMAL_RERUN_DECISION`：只在第 5 项通过且另行签发 authority 后，最多做一次最小自然节点 canary；它只决定是否值得重新运行 DELL，不自动授权 paid report、paired／Owner 或其他案例。
+
+当前处置 artifact=`configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_zero_call_disposition_v1_0.json`，状态=`decision_complete_implementation_pending`。current next=`FIN-0.1.3-S2-SELECTED-EVIDENCE-NUMERIC-CANDIDATE-COCOMPILATION-MINIMUM-ZERO-CALL-IMPLEMENTATION`。

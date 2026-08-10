@@ -338,3 +338,5 @@ Reader JSON parser 只把被保存的 `data.content` 转成待匹配文本；目
 `_smallest_regex_window` 的输入不得是任意手写 regex。每个 pattern 先编译为短语义原子并经过静态检查：跨行模式下拒绝无界贪婪 `.*`、`.+` 和等价结构；限制单 occurrence 最大长度；对需要表达顺序的词组优先拆成多个 anchor，由 window selector 负责组合，而不是让单一 regex 跨越任意正文。
 
 failure 必须区分：`anchor_missing`、`pattern_occurrence_unbounded`、`multi_anchor_window_too_wide` 与 `final_excerpt_too_large`。Dell／Micron live 已证明这四者业务含义不同：原文 anchor 全部存在且真实距离很短，但 policy pattern 自身贪婪跨越长文，属于本地 compiler defect。修复只能零网络回放 immutable Reader captures，并加入重复主题词、文档尾部同名词和顺序变换 mutation；不得更改历史 result、扩大 span 或自动发起新的 source call。
+
+当前 successor 将 v2 输入面收窄为 `literal_phrase_groups_v1`：每组包含一个语义原子及少量等价 literal，compiler 先做合同数量／长度检查，再在 whitespace-normalized、case-folded 正文中枚举全部 occurrence，并把位置映射回原始文本；滑动窗口选择覆盖每个 group 的最小原文 span。v2 不接受 `required_patterns`，因此无界 regex 无法重新进入该链。selector receipt 保存每组命中的 literal、原文 start/end、occurrence count、最小窗口和最终 excerpt 长度，但不把整份原始正文写入公开 result。working-tree 真实 capture replay 已得到 Dell 三片段窗口 `310／219／90` 字符、Micron 两片段 `139／219` 字符，五条均在原上限内；双 clean archive proof 尚待执行。

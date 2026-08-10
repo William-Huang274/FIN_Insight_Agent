@@ -849,3 +849,15 @@ Owner 已提供 Alpha Vantage credential 并批准原 1–5 顺序。该决定�
 Managed reader 不改变来源权威：官方 URL 是事实来源，Reader 是有记录的传输中介；完整 Reader 原始响应先 capture，再由本地 parser／Evidence Gate 晋升。若第 4 项仍不能取得 Dell 三片段，停止在 S1，不自动 R2；若 Dell 成功而 Micron 失败，core 可以继续但 supplier gap 必须保留。无论结果如何，Jina 匿名可达性都不能被包装为生产 SLA 或 release readiness。
 
 > **Terminal disposition**：第 5 项 blocked，未运行 DeepSeek。新证据表明官方来源和 managed-reader 路径已经可用，阻断属于本地 required-pattern compiler：真实 Dell／Micron 锚点分别在约 297／91 字符内，但 `.*` 贪婪产生 52,102／12,615 字符假 span。后续若继续，只允许先做零网络 semantic-anchor compiler 处置和本次 capture replay；不得直接重发 source authority、调大 span 或把失败归因模型。
+
+## 7X. Immutable capture 的 bounded semantic-anchor 修复与 changed-input 报告门（2026-08-10）
+
+Owner 已批准 7W terminal 后的有界处置，不授权重新抓取来源。当前顺序与状态为：
+
+1. [x] `S1_BOUNDED_LITERAL_ANCHOR_COMPILER_ENGINEERING`：新增 provider-neutral literal phrase group compiler，四类 failure 分离；successor policy 静态拒绝旧 `required_patterns` surface，不修改 v1 policy／result。
+2. [x] `S1_IMMUTABLE_READER_CAPTURE_LONG_DOCUMENT_REPLAY`（working-tree）：直接重放 Dell `55,765` 字符与 Micron `26,784` 字符正文，Dell `3/3`、Micron `2/2` fragments 全部 materialize；Pack=`22→27 Evidence／15→14 gaps`，core/supplier/valuation-input=`true/true/true`，network/model/retry=`0/0/0`。
+3. [x] `S1_LONG_DOCUMENT_MUTATION_ENGINEERING`：覆盖重复 demand/supply、尾部同名词、顺序打乱、anchor 缺失、真实宽窗口和最终 excerpt 过大；旧无界 regex 在 source inspection 前 fail closed。
+4. [ ] `S1_TWO_CLEAN_ARCHIVE_PROOF_AND_CORRECTED_PACK_MATERIALIZATION`：clean/synced commit 上由两个 archive/fresh process 读取同一 digest-bound private captures，结果必须 byte-equivalent；随后持久化 corrected Pack 和公开零调用 result。
+5. [ ] `S2_S3_ONE_CHANGED_INPUT_DEEPSEEK_REPORT_COMPARISON`：仅第 4 项保持 core=true 才签发。模型必须消费 corrected Pack，从头编译节点输入；比较新增 Dell demand/backlog 与 Micron memory-tightness 是否真正改善机制、反方、WWC、证据利用和决策密度。只增加引用数不算通过，且本实验不授权新的 source call。
+
+本段不是新版本或新 S 阶段，只是 7W 在 S1 内的根因修复以及原第 5 项的条件恢复。若 clean proof 与 working-tree 不一致，停在 S1；若模型比较只暴露 L2–L4 内容质量问题，按 S2/S3 归属记录，不回头扩大 S1 parser。

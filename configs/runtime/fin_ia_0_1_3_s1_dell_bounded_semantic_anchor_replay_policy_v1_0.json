@@ -1,0 +1,232 @@
+{
+  "schema_version": "fin_ia_0_1_3_s1_dell_bounded_semantic_anchor_replay_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S1.dell_bounded_semantic_anchor_replay:v1",
+  "owner_stage": "S1",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "immutable_bindings": {
+    "predecessor_public_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_dell_enriched_source_successor_result_v1_0.json",
+      "sha256": "81f24ffee8831007469932823c90669c5258feb1dedefb88d28104c09114a2be",
+      "hash_mode": "lf_normalized_utf8",
+      "expected_result_digest": "2f69c44eb3095f8cf12973def4210525cc641f9aa9e3738dff5a9bd91c84ae79"
+    },
+    "predecessor_private_pack": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_enriched_source_successor/live/attempts/fin013_s1_dell_enriched_source_63e4726a49b86c47985b/objects/fin-0.1.3/s1/dell-enriched-source-successor/pack/90/11/9011bb6c08a79dff2922ec5a8b44e3aa172f9eae306f9cce68f2f4e8d13d142d.json",
+      "sha256": "9011bb6c08a79dff2922ec5a8b44e3aa172f9eae306f9cce68f2f4e8d13d142d",
+      "hash_mode": "raw_bytes",
+      "expected_pack_payload_digest": "bafa587403f25aa76520a1da4567828116d6cce4a4c20d67162ad528cd27fe01"
+    },
+    "historical_recovery_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s1_dell_official_source_recovery_successor_policy_v1_0.json",
+      "sha256": "13bab484c972f52a5d7c77dfd85f3b4d812c0df1d0cff959491935d421bf18cc",
+      "hash_mode": "lf_normalized_utf8"
+    },
+    "historical_recovery_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s1_dell_official_source_recovery_successor_result_v1_0.json",
+      "sha256": "641f5e1e62ddf01652fb2f781cd9d629c001ed6ec832edcdbe839083b8125645",
+      "hash_mode": "lf_normalized_utf8",
+      "expected_result_digest": "9be7ec13c20b97dd9a2d58a936078fb3135008110fc33bf413a15d2a9fe18920"
+    },
+    "response_captures": [
+      {
+        "route_id": "dell_q1_fy27_earnings_transcript",
+        "official_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+        "ref": "data/workbench_private/fin_0_1_3_s1_dell_official_source_recovery/live/attempts/fin013_s1_dell_official_recovery_93f80e015a85e086ee57/objects/fin-0.1.3/s1/dell-official-source-recovery-successor/official/66/98/66987c3c202b90b5b66d68cc951cc988b380bf15a19cb7dbb1b9fc3889cb4ecb.json",
+        "sha256": "66987c3c202b90b5b66d68cc951cc988b380bf15a19cb7dbb1b9fc3889cb4ecb",
+        "hash_mode": "raw_bytes"
+      },
+      {
+        "route_id": "micron_q3_fy26_prepared_remarks",
+        "official_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+        "ref": "data/workbench_private/fin_0_1_3_s1_dell_official_source_recovery/live/attempts/fin013_s1_dell_official_recovery_93f80e015a85e086ee57/objects/fin-0.1.3/s1/dell-official-source-recovery-successor/official/bf/34/bf343558294cabeff1e05f131d7dd5c5bafb3e8b24c3d3514c9b78a5c2adac93.json",
+        "sha256": "bf343558294cabeff1e05f131d7dd5c5bafb3e8b24c3d3514c9b78a5c2adac93",
+        "hash_mode": "raw_bytes"
+      }
+    ]
+  },
+  "replay_routes": [
+    {
+      "route_id": "dell_q1_fy27_earnings_transcript",
+      "url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "official_locator": "https://investors.delltechnologies.com/events/event-details/dell-technologies-fiscal-year-2027-first-quarter-results",
+      "allowed_hosts": ["investors.delltechnologies.com"],
+      "source_type": "earnings_call_transcript",
+      "source_tier": "primary_company_ir_via_managed_reader_capture_replay",
+      "evidence_owner_ticker": "DELL",
+      "publication_date": "2026-05-28",
+      "period_end": "2026-05-01",
+      "relationship_directions": ["subject_self_disclosure"],
+      "fragments": [
+        {
+          "fragment_id": "demand_backlog_supply",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::DEMAND_BACKLOG_SUPPLY",
+          "anchor_contract": {
+            "kind": "literal_phrase_groups_v1",
+            "required_anchor_groups": [
+              {"group_id": "ai_orders", "literal_phrases": ["$24.4 billion in AI orders", "24.4 billion in AI orders"]},
+              {"group_id": "ai_backlog", "literal_phrases": ["$51.3 billion of AI backlog", "51.3 billion of AI backlog"]},
+              {"group_id": "demand_supply", "literal_phrases": ["Demand continues to exceed supply"]}
+            ],
+            "excerpt_before": 120,
+            "excerpt_after": 420,
+            "max_anchor_span": 1600,
+            "max_excerpt_chars": 1800
+          },
+          "slot_bindings": [
+            {
+              "slot_id": "demand_volume_quality",
+              "facet_ids": ["ai_orders", "ai_backlog", "demand_exceeds_supply", "customer_count"],
+              "business_meaning_zh": "Dell 法说把 AI 订单、收入、backlog、客户数和供给约束放在同一管理层解释中。",
+              "claim_boundary_zh": "backlog 与订单不是无条件收入承诺，不能推断取消率或未来季度线性兑现。"
+            }
+          ]
+        },
+        {
+          "fragment_id": "proactive_supply_securing",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::PROACTIVE_SUPPLY_SECURING",
+          "anchor_contract": {
+            "kind": "literal_phrase_groups_v1",
+            "required_anchor_groups": [
+              {"group_id": "memory_uncertainty", "literal_phrases": ["memory uncertainty"]},
+              {"group_id": "proactive_securing", "literal_phrases": ["proactively secure access to infrastructure"]},
+              {"group_id": "pricing_margin_discipline", "literal_phrases": ["pricing and margin discipline"]}
+            ],
+            "excerpt_before": 140,
+            "excerpt_after": 420,
+            "max_anchor_span": 1800,
+            "max_excerpt_chars": 2000
+          },
+          "slot_bindings": [
+            {
+              "slot_id": "demand_volume_quality",
+              "facet_ids": ["pull_forward_or_digestion", "supply_securing_behavior"],
+              "business_meaning_zh": "Dell 说明内存不确定性推动客户提前锁定基础设施，提示订单时点受保供行为影响。",
+              "claim_boundary_zh": "只提示潜在 pull-forward，没有量化提前采购规模或后续消化。"
+            },
+            {
+              "slot_id": "pricing_mix_value_capture",
+              "facet_ids": ["pricing_discipline"],
+              "business_meaning_zh": "管理层把供给分配与价格、利润纪律绑定。",
+              "claim_boundary_zh": "没有披露 AI 服务器 ASP 或可复算价格桥。"
+            }
+          ]
+        },
+        {
+          "fragment_id": "ai_server_profitability",
+          "target_id": "SUPPLEMENT::DELL::ISSUER::Q1FY27::AI_SERVER_PROFITABILITY",
+          "anchor_contract": {
+            "kind": "literal_phrase_groups_v1",
+            "required_anchor_groups": [
+              {"group_id": "ai_server_profitability", "literal_phrases": ["AI server profitability"]},
+              {"group_id": "operating_income_target", "literal_phrases": ["mid-single-digit operating income rate target"]}
+            ],
+            "excerpt_before": 160,
+            "excerpt_after": 380,
+            "max_anchor_span": 1600,
+            "max_excerpt_chars": 1800
+          },
+          "slot_bindings": [
+            {
+              "slot_id": "pricing_mix_value_capture",
+              "facet_ids": ["ai_system_margin", "ai_server_profitability_target"],
+              "business_meaning_zh": "Dell 管理层给出 AI 服务器盈利水平与中个位数经营利润率目标。",
+              "claim_boundary_zh": "这是管理层目标，不是分部审计利润，也不能替代实际季度产品利润桥。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "route_id": "micron_q3_fy26_prepared_remarks",
+      "url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "official_locator": "https://investors.micron.com/events/event-details/microns-third-quarter-2026-financial-call",
+      "allowed_hosts": ["investors.micron.com"],
+      "source_type": "earnings_call_prepared_remarks",
+      "source_tier": "primary_company_ir_via_managed_reader_capture_replay",
+      "evidence_owner_ticker": "MU",
+      "publication_date": "2026-06-24",
+      "period_end": "2026-05-28",
+      "relationship_directions": ["memory_supplier_self_disclosure_to_dell_supply_readthrough"],
+      "fragments": [
+        {
+          "fragment_id": "memory_supply_tight_beyond_2027",
+          "target_id": "SUPPLEMENT::DELL::SUPPLIER::MU::SUPPLY_TIGHT_BEYOND_2027",
+          "anchor_contract": {
+            "kind": "literal_phrase_groups_v1",
+            "required_anchor_groups": [
+              {"group_id": "memory_industry_demand", "literal_phrases": ["DRAM and NAND industry demand"]},
+              {"group_id": "demand_exceeds_supply", "literal_phrases": ["exceed industry supply"]},
+              {"group_id": "tightness_horizon", "literal_phrases": ["tight conditions to persist beyond calendar 2027"]}
+            ],
+            "excerpt_before": 120,
+            "excerpt_after": 380,
+            "max_anchor_span": 1500,
+            "max_excerpt_chars": 1700
+          },
+          "slot_bindings": [
+            {
+              "slot_id": "capacity_inputs_execution",
+              "facet_ids": ["memory_supply_constraint", "supply_tightness_horizon"],
+              "business_meaning_zh": "Micron 对 DRAM/NAND 供需紧张延续到 2027 年后的判断，为 Dell 所述内存约束提供供应商侧交叉验证。",
+              "claim_boundary_zh": "不证明 Dell 的采购价格、供货份额或缺货持续时间。"
+            }
+          ]
+        },
+        {
+          "fragment_id": "hbm_packaging_h1_2027",
+          "target_id": "SUPPLEMENT::DELL::SUPPLIER::MU::HBM_PACKAGING_H1_2027",
+          "anchor_contract": {
+            "kind": "literal_phrase_groups_v1",
+            "required_anchor_groups": [
+              {"group_id": "singapore_site", "literal_phrases": ["Singapore site"]},
+              {"group_id": "advanced_packaging", "literal_phrases": ["advanced packaging"]},
+              {"group_id": "hbm_packaging_capacity", "literal_phrases": ["HBM packaging capacity"]},
+              {"group_id": "capacity_timing", "literal_phrases": ["first half of calendar year 2027"]}
+            ],
+            "excerpt_before": 140,
+            "excerpt_after": 360,
+            "max_anchor_span": 1800,
+            "max_excerpt_chars": 1900
+          },
+          "slot_bindings": [
+            {
+              "slot_id": "capacity_inputs_execution",
+              "facet_ids": ["high_bandwidth_memory_supply", "advanced_packaging_capacity", "capacity_release_timing"],
+              "business_meaning_zh": "Micron Prepared Remarks 把 HBM 封装扩产时间收窄到 2027 年上半年。",
+              "claim_boundary_zh": "不证明实际良率、可销售产出或 Dell 分配。"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "gap_disposition": {
+    "remove_when_satisfied": [
+      {
+        "gap_id": "dell-gap-ai-system-margin",
+        "requires_target_ids": ["SUPPLEMENT::DELL::ISSUER::Q1FY27::AI_SERVER_PROFITABILITY"]
+      }
+    ],
+    "never_remove": [
+      "dell-gap-price-in-boundary",
+      "dell-gap-scenario-sensitivity",
+      "dell-gap-capacity-release-timing",
+      "dell-gap-hbm-supply",
+      "dell-gap-supplier-capacity-readthrough"
+    ]
+  },
+  "budget": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "retries": 0
+  },
+  "acceptance": {
+    "historical_result_immutable": true,
+    "capture_replay_only": true,
+    "arbitrary_regex_forbidden": true,
+    "long_document_duplicate_and_tail_mutations_required": true,
+    "corrected_pack_must_have_five_new_evidence_items": true,
+    "core_gate_must_pass_before_model_authority": true
+  }
+}

@@ -37,3 +37,7 @@
 ## 下一步边界
 
 停止自动重试。下一轮应先零网络审计两份已保存 timeout capture，再为 Dell／Micron 各选择一个等价的官方来源路线或经过证明的传输方式，做 fixture／capture-replay／mutation；只有新的 clean proof 与 fresh authority 成立后，才允许一次 successor source live。不能直接进入 DeepSeek enriched report。
+
+## 收口回归的 Project OS 失败
+
+首次收口回归=`23 passed／1 failed`。失败不是 source Runtime，而是 RC-P36-165 最新投影只允许 repository hygiene，错误阻断了已注册的 S1 targeted-source scope。该写法把“本次 authority 已消费”与“整个 S1 修复 scope 不可评估”混在一起；exact-once 应由 admission ledger 保证，Project OS 仍应允许 owning-stage 的诊断和另行授权路径。失败登记为 RC-P36-177；RC-P36-165 投影改为只阻断 S3／release、允许两个有界 S1 source scopes后，Project OS preflight=`pass／0 blocker`、同一组回归=`24 passed`，RC-P36-177 关闭。

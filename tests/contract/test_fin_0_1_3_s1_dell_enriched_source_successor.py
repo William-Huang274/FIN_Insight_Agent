@@ -15,6 +15,7 @@ from sec_agent.official_source_attempt_program import (
     SourceResponse,
 )
 from sec_agent.s1_dell_enriched_source_successor import (
+    _lf_normalized_utf8_sha256,
     execute_dell_enriched_source_successor,
     load_dell_enriched_source_policy,
 )
@@ -199,3 +200,21 @@ def test_single_close_never_removes_relative_valuation_or_scenario_gaps(tmp_path
     assert "dell-gap-price-in-boundary" in gaps
     assert "dell-gap-scenario-sensitivity" in gaps
     assert "dell-gap-valuation-basis" not in gaps
+
+
+def test_tracked_json_binding_is_stable_across_crlf_and_lf_checkouts(
+    tmp_path: Path,
+) -> None:
+    lf_path = tmp_path / "lf.json"
+    crlf_path = tmp_path / "crlf.json"
+    lf_path.write_bytes(b'{\n  "case_key": "DELL"\n}\n')
+    crlf_path.write_bytes(b'{\r\n  "case_key": "DELL"\r\n}\r\n')
+
+    assert _lf_normalized_utf8_sha256(lf_path) == _lf_normalized_utf8_sha256(
+        crlf_path
+    )
+
+    crlf_path.write_bytes(b'{\r\n  "case_key": "MU"\r\n}\r\n')
+    assert _lf_normalized_utf8_sha256(lf_path) != _lf_normalized_utf8_sha256(
+        crlf_path
+    )

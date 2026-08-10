@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import base64
 from copy import deepcopy
 from datetime import datetime, timezone
 from decimal import Decimal
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -20,11 +22,8 @@ from sec_agent.market_data_adapter import (
 from sec_agent.official_source_attempt_program import (
     CAPTURE_SCHEMA_SAFE_FAILURE_V1_1,
     CaptureFirstOfficialSourceClient,
+    SourceResponse,
     SourceTransport,
-)
-from sec_agent.s1_dell_targeted_source_recovery import (
-    _load_response_capture,
-    load_recovery_policy,
 )
 from sec_agent.s1_dell_targeted_source_supplement import (
     _compile_external_route,
@@ -73,6 +72,16 @@ def _resolve(root: Path, ref: str) -> Path:
     return path.resolve() if path.is_absolute() else (root / path).resolve()
 
 
+def _lf_normalized_utf8_sha256(path: Path) -> str:
+    try:
+        text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
+    except OSError as exc:
+        raise DellEnrichedSourceSuccessorError(
+            "dell_enriched_bound_text_unreadable"
+        ) from exc
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def _utc(value: str) -> datetime:
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -110,10 +119,20 @@ def load_dell_enriched_source_policy(
     for key, binding in bindings.items():
         value = dict(binding)
         source = _resolve(root, str(value.get("ref") or ""))
+        hash_mode = str(value.get("hash_mode") or "")
         _require(
             source.is_file()
-            and _HEX64.fullmatch(str(value.get("sha256") or "")) is not None
-            and file_sha256(source) == value["sha256"],
+            and hash_mode in {"lf_normalized_utf8", "raw_bytes"}
+            and _HEX64.fullmatch(str(value.get("sha256") or "")) is not None,
+            f"dell_enriched_policy_binding_invalid:{key}",
+        )
+        observed_hash = (
+            _lf_normalized_utf8_sha256(source)
+            if hash_mode == "lf_normalized_utf8"
+            else file_sha256(source)
+        )
+        _require(
+            observed_hash == value["sha256"],
             f"dell_enriched_policy_binding_invalid:{key}",
         )
         payload = _read_json(source, f"dell_enriched_bound_json_invalid:{key}")
@@ -202,17 +221,48 @@ def _compile_saved_tsmc(
     repo_root: Path,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     recovery_ref = policy["immutable_bindings"]["recovery_policy"]["ref"]
-    recovery = load_recovery_policy(_resolve(repo_root, str(recovery_ref)), repo_root=repo_root)
-    capture, response = _load_response_capture(recovery, repo_root=repo_root)
+    recovery = _read_json(
+        _resolve(repo_root, str(recovery_ref)),
+        "dell_enriched_recovery_policy_invalid",
+    )
+    replay = dict(recovery.get("tsmc_capture_replay") or {})
+    capture_path = _resolve(repo_root, str(replay.get("private_capture_ref") or ""))
+    capture = _read_json(
+        capture_path,
+        "dell_enriched_tsmc_capture_missing_or_invalid",
+    )
+    _require(
+        file_sha256(capture_path) == str(replay.get("capture_digest") or "")
+        and capture.get("capture_kind") == "source_response"
+        and capture.get("body_sha256") == replay.get("body_sha256"),
+        "dell_enriched_tsmc_capture_binding_invalid",
+    )
+    try:
+        response_body = base64.b64decode(str(capture["body_base64"]), validate=True)
+    except (KeyError, ValueError) as exc:
+        raise DellEnrichedSourceSuccessorError(
+            "dell_enriched_tsmc_capture_body_invalid"
+        ) from exc
+    _require(
+        hashlib.sha256(response_body).hexdigest() == replay["body_sha256"],
+        "dell_enriched_tsmc_capture_body_digest_invalid",
+    )
+    response = SourceResponse(
+        status_code=int(capture["status_code"]),
+        final_url=str(capture["final_url"]),
+        headers=dict(capture.get("headers") or {}),
+        body=response_body,
+        redirect_chain=tuple(capture.get("redirect_chain") or ()),
+    )
     route = next(
         dict(row)
         for row in historical_policy["external_routes"]
         if row["route_id"] == policy["saved_capture_route_id"]
     )
     response_ref = {
-        "object_key": recovery["tsmc_capture_replay"]["private_capture_ref"],
-        "digest": recovery["tsmc_capture_replay"]["capture_digest"],
-        "body_sha256": recovery["tsmc_capture_replay"]["body_sha256"],
+        "object_key": replay["private_capture_ref"],
+        "digest": replay["capture_digest"],
+        "body_sha256": replay["body_sha256"],
     }
     materials, evidence, route_result = _compile_external_route(
         route=route,

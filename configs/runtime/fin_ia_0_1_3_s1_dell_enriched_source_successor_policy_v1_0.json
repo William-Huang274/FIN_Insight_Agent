@@ -9,25 +9,30 @@
   "immutable_bindings": {
     "historical_source_policy": {
       "ref": "configs/runtime/fin_ia_0_1_3_s1_dell_targeted_source_supplement_policy_v1_0.json",
-      "sha256": "3d80d44d06b834cbb2d48af335a5c27f737eb3f862f8df04e297539c52a25bd9"
+      "sha256": "3d80d44d06b834cbb2d48af335a5c27f737eb3f862f8df04e297539c52a25bd9",
+      "hash_mode": "lf_normalized_utf8"
     },
     "historical_source_result": {
       "ref": "configs/releases/fin_ia_0_1_3_s1_dell_targeted_source_supplement_result_v1_0.json",
-      "sha256": "9f13705980d212bfe449431fd115b04b01942fa0725f3b2f342a03b4004ccc62",
+      "sha256": "60d4d6930b7417ff6353683b6f211c49694b145efa7ddd876af64961b643fa82",
+      "hash_mode": "lf_normalized_utf8",
       "expected_result_digest": "0c590dc1ca8c9be512b30100c94d9b63a5e0a2d0bfcf2b05355715d32534c73a"
     },
     "recovery_policy": {
       "ref": "configs/runtime/fin_ia_0_1_3_s1_dell_targeted_source_recovery_policy_v1_0.json",
-      "sha256": "a8ff6badd5dfaebac7a0ba8cc32571f46733adb7fcb1a7da461f1195f79cdcaf"
+      "sha256": "a8ff6badd5dfaebac7a0ba8cc32571f46733adb7fcb1a7da461f1195f79cdcaf",
+      "hash_mode": "lf_normalized_utf8"
     },
     "recovery_result": {
       "ref": "configs/releases/fin_ia_0_1_3_s1_dell_targeted_source_recovery_result_v1_0.json",
-      "sha256": "908f447c748a73f70070ec7cc0b8ab33e46540336f0a99bdb098e172f4f35187",
+      "sha256": "1f21a73617fae1b96dd197ddd13fc6f1a97ef8d6026a4884f2cdb13c8b4557c4",
+      "hash_mode": "lf_normalized_utf8",
       "expected_result_digest": "5de25dedcc697b6fde80312e9ed6ad98907acf0e20848e9200f3a2a6025e5b65"
     },
     "predecessor_dell_pack": {
       "ref": "data/workbench_private/fin_0_1_3_s1_dell_targeted_source_supplement/live/attempts/fin013_s1_dell_targeted_source_e7d77ba0d1824fc2a6e4/objects/fin-0.1.3/s1/dell-targeted-source-supplement/packs/dell/v1/8d/16/8d164f187de0da8a6c9214e81b06c7854467a167e521850fd0f6fad7131d5aa1.json",
       "sha256": "8d164f187de0da8a6c9214e81b06c7854467a167e521850fd0f6fad7131d5aa1",
+      "hash_mode": "raw_bytes",
       "expected_pack_payload_digest": "d2ec0d8700b93b5bf3728425eda5e411c22bc63e138e3c3bec8e754e87cbebcd"
     }
   },

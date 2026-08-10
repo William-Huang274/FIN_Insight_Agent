@@ -44,6 +44,14 @@ Owner 提供 Alpha Vantage credential 并批准继续 1–5 后，本轮将门�
 - enriched live Pack 的真实 Evidence／Gap 数量；
 - changed Evidence Pack 是否让 DeepSeek 的需求、利润、供给、竞争、反方、WWC 和估值边界判断实质改善。
 
+## 第一次 fresh proof 的诚实失败
+
+implementation commit `4ba5fa19...` 推送后，第一次 clean proof 在 worker 1 载入 policy 时终止，尚未进入 fake source、Pack 合并或任何网络／模型调用。直接原因不是业务逻辑，而是跨 checkout 文件绑定：Windows 工作树中的两个历史 result JSON 使用 CRLF，`git archive` 中为 LF；新 policy 当时绑定 raw bytes SHA，导致同一 Git 内容在 fresh worker 被误判为 drift。
+
+该失败没有删除、覆盖或包装成通过。修复把受 Git 管理的 JSON 改为 `lf_normalized_utf8` 哈希模式；私有 predecessor Pack 与 TSMC capture 继续使用 raw-byte SHA。新 successor 同时停止复用历史 recovery loader 的 raw-CRLF 内部绑定，改为在新合同中直接验证已绑定 recovery policy、capture file SHA 和 response body SHA。新增 CRLF／LF 等价与真实内容 mutation 回归后，定向＋相邻测试=`24 passed`，JSON／JSONL／py_compile／secret scan 通过；修复仍需新 commit／push 后重新运行两个 fresh worker，当前不能提前记为 clean proof pass。
+
+这不是第一次遇到该类问题。RC-P36-146 已明确要求新合同使用 canonical JSON 或 normalized digest，但当时经验只留在根因账本，没有变成新 binding 的默认审查项。本次复发登记为 RC-P36-175；含义不是再造一套例外，而是承认“历史教训未制度化”也是根因。
+
 ## 下一步
 
 1. 完成 docs／Project OS／secret scan 和提交推送。

@@ -1,0 +1,237 @@
+{
+  "attempt_id": "fin013_s1_dell_targeted_source_e7d77ba0d1824fc2a6e4::attempt_1",
+  "base_pack_result_digest": "52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da",
+  "case_summaries": [
+    {
+      "accepted_evidence_items": 20,
+      "bounded_context_items": 11,
+      "case_key": "DELL",
+      "direct_evidence_items": 9,
+      "independent_market_items": 0,
+      "rejected_items": 0,
+      "residual_gaps": 16,
+      "source_materials": 20
+    },
+    {
+      "accepted_evidence_items": 16,
+      "bounded_context_items": 4,
+      "case_key": "MU",
+      "direct_evidence_items": 12,
+      "rejected_items": 0,
+      "residual_gaps": 13,
+      "source_materials": 16
+    },
+    {
+      "accepted_evidence_items": 14,
+      "bounded_context_items": 4,
+      "case_key": "NVDA",
+      "direct_evidence_items": 10,
+      "rejected_items": 0,
+      "residual_gaps": 13,
+      "source_materials": 13
+    },
+    {
+      "accepted_evidence_items": 13,
+      "bounded_context_items": 0,
+      "case_key": "ORCL",
+      "direct_evidence_items": 13,
+      "rejected_items": 14,
+      "residual_gaps": 26,
+      "source_materials": 0
+    },
+    {
+      "accepted_evidence_items": 12,
+      "bounded_context_items": 0,
+      "case_key": "ASML",
+      "direct_evidence_items": 12,
+      "rejected_items": 1,
+      "residual_gaps": 31,
+      "source_materials": 0
+    },
+    {
+      "accepted_evidence_items": 14,
+      "bounded_context_items": 0,
+      "case_key": "ANET",
+      "direct_evidence_items": 14,
+      "rejected_items": 13,
+      "residual_gaps": 27,
+      "source_materials": 0
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S1.dell_targeted_source_supplement:v1",
+  "known_boundary": "This exact-once source run materializes a DELL successor Evidence Pack. It does not prove report quality, Dell-specific supplier allocation, target price, recommendation, or product promotion.",
+  "observed_counts": {
+    "dell_evidence_items_after": 20,
+    "dell_evidence_items_before": 15,
+    "dell_residual_gaps_after": 16,
+    "dell_residual_gaps_before": 16,
+    "external_source_fragments_adjudicated": 0,
+    "external_source_fragments_expected": 7,
+    "local_source_records_adjudicated": 5,
+    "model_calls": 0,
+    "network_calls": 4,
+    "new_dell_evidence_items": 5,
+    "provider_calls": 0,
+    "retries": 0
+  },
+  "pack_artifacts": {
+    "ANET": {
+      "artifact_type": "immutable_base_local_evidence_pack_copy",
+      "byte_size": 48391,
+      "digest": "ebe4e2aa615e0126d130b2427bc083ba16eaadc55debc4bb5dd50cf9c240126c",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/packs/anet/v1/eb/e4/ebe4e2aa615e0126d130b2427bc083ba16eaadc55debc4bb5dd50cf9c240126c.json"
+    },
+    "ASML": {
+      "artifact_type": "immutable_base_local_evidence_pack_copy",
+      "byte_size": 41445,
+      "digest": "55fad48bfa82edbe69662158939083e82d4b7844f9c67d5f66bae83de212efd1",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/packs/asml/v1/55/fa/55fad48bfa82edbe69662158939083e82d4b7844f9c67d5f66bae83de212efd1.json"
+    },
+    "DELL": {
+      "artifact_type": "targeted_source_supplemented_local_evidence_pack",
+      "byte_size": 109839,
+      "digest": "8d164f187de0da8a6c9214e81b06c7854467a167e521850fd0f6fad7131d5aa1",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/packs/dell/v1/8d/16/8d164f187de0da8a6c9214e81b06c7854467a167e521850fd0f6fad7131d5aa1.json"
+    },
+    "MU": {
+      "artifact_type": "immutable_base_local_evidence_pack_copy",
+      "byte_size": 78664,
+      "digest": "93ce23a039a000e5a9e83956804f28b425232f6b1992e9c21cc59f0aac01c371",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/packs/mu/v1/93/ce/93ce23a039a000e5a9e83956804f28b425232f6b1992e9c21cc59f0aac01c371.json"
+    },
+    "NVDA": {
+      "artifact_type": "immutable_base_local_evidence_pack_copy",
+      "byte_size": 90045,
+      "digest": "03a2f5da4fbfeef1b7a404eea480a53056f8c66d532cbbfeef1ea7d91c49cba4",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/packs/nvda/v1/03/a2/03a2f5da4fbfeef1b7a404eea480a53056f8c66d532cbbfeef1ea7d91c49cba4.json"
+    },
+    "ORCL": {
+      "artifact_type": "immutable_base_local_evidence_pack_copy",
+      "byte_size": 46141,
+      "digest": "dfe9440043bdc30b9cb56fe79aaf7a857e9f364c9ce2af956a62d82307ae3be9",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/packs/orcl/v1/df/e9/dfe9440043bdc30b9cb56fe79aaf7a857e9f364c9ce2af956a62d82307ae3be9.json"
+    }
+  },
+  "pack_payload_digests": {
+    "ANET": "49422886291e495d736066c790d7344052bc3b4796c48b4351226b345408ccf3",
+    "ASML": "2f975a03b5a646c1da54bb63ad0ee8f3ec977e5848c06ff71075f02e92f1c683",
+    "DELL": "d2ec0d8700b93b5bf3728425eda5e411c22bc63e138e3c3bec8e754e87cbebcd",
+    "MU": "1c2b787a955bb145fef6acd4e1ebf70566f472259006c06891b3fd9dde0f2964",
+    "NVDA": "9372a57bb60bbb573a8b53fd7dda2a45d70caaf89298456982714ea84ecaf066",
+    "ORCL": "fab997d54e67c13ebae8d3dee9647678c9beebccd1693a22861cd9a844ad58b7"
+  },
+  "policy_digest": "3de3320cd0bae18241a2e3be3a1fb217f8e51aefbe99d51592a05c21c56cadfd",
+  "recorded_at": "2026-08-10T11:36:53Z",
+  "research_as_of": "2026-08-06",
+  "result_digest": "0c590dc1ca8c9be512b30100c94d9b63a5e0a2d0bfcf2b05355715d32534c73a",
+  "route_results": [
+    {
+      "failure_code": "official_source_transport_failed",
+      "fragments_expected": 3,
+      "fragments_materialized": 0,
+      "request_capture": {
+        "artifact_type": "official_source_request",
+        "byte_size": 503,
+        "digest": "639905ae203d575e94ee0ecd06474f51ca1fc13bb2d17082da8a04e03e453991",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/63/99/639905ae203d575e94ee0ecd06474f51ca1fc13bb2d17082da8a04e03e453991.json"
+      },
+      "required_for_model_live_gate": true,
+      "response_capture": {
+        "artifact_type": "official_source_transport_failure",
+        "byte_size": 531,
+        "digest": "bee9484dcbe38a73e941162871539c06edfb4e601c027b87c02fb856ac9532de",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/be/e9/bee9484dcbe38a73e941162871539c06edfb4e601c027b87c02fb856ac9532de.json"
+      },
+      "route_id": "dell_q1_fy27_earnings_transcript",
+      "status": "transport_failure"
+    },
+    {
+      "failure_code": "official_source_transport_failed",
+      "fragments_expected": 2,
+      "fragments_materialized": 0,
+      "request_capture": {
+        "artifact_type": "official_source_request",
+        "byte_size": 491,
+        "digest": "20ce6d51750c2985a3dacab6fb54a16e87137e14185e05f1d4ca66dc139eae30",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/20/ce/20ce6d51750c2985a3dacab6fb54a16e87137e14185e05f1d4ca66dc139eae30.json"
+      },
+      "required_for_model_live_gate": false,
+      "response_capture": {
+        "artifact_type": "official_source_transport_failure",
+        "byte_size": 529,
+        "digest": "739466d04358ab4651ac9bef8e7661fd6047ca90abefba371d6f89b39c12fdab",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/73/94/739466d04358ab4651ac9bef8e7661fd6047ca90abefba371d6f89b39c12fdab.json"
+      },
+      "route_id": "micron_q3_fy26_earnings_slides",
+      "status": "transport_failure"
+    },
+    {
+      "failure_code": "dell_targeted_source_fragment_size_invalid",
+      "fragments_expected": 1,
+      "fragments_materialized": 0,
+      "request_capture": {
+        "artifact_type": "official_source_request",
+        "byte_size": 562,
+        "digest": "505b6387affac991ed5451ea7c620cf1bcbce6446673a6e83436d11398b82d9e",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/50/5b/505b6387affac991ed5451ea7c620cf1bcbce6446673a6e83436d11398b82d9e.json"
+      },
+      "required_for_model_live_gate": false,
+      "response_capture": {
+        "artifact_type": "official_source_response",
+        "byte_size": 358965,
+        "digest": "39805472768ede6729a8c4dd168e22d5653ec5eb7560c1c55f394787c891352d",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/39/80/39805472768ede6729a8c4dd168e22d5653ec5eb7560c1c55f394787c891352d.json"
+      },
+      "route_id": "tsmc_q1_2026_earnings_transcript",
+      "status": "anchor_failure"
+    },
+    {
+      "failure_code": "official_source_transport_failed",
+      "fragments_expected": 1,
+      "fragments_materialized": 0,
+      "request_capture": {
+        "artifact_type": "official_source_request",
+        "byte_size": 529,
+        "digest": "c88e433e017251311070bf04f8beb8dedcbc15f6a495553ba8bc14d597495769",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/c8/8e/c88e433e017251311070bf04f8beb8dedcbc15f6a495553ba8bc14d597495769.json"
+      },
+      "required_for_model_live_gate": true,
+      "response_capture": {
+        "artifact_type": "official_source_transport_failure",
+        "byte_size": 532,
+        "digest": "8e321640fdd16ce56ef8c877a1dfb583f44c3001a32d2d84913b90eb086e144a",
+        "media_type": "application/json",
+        "object_key": "fin-0.1.3/s1/dell-targeted-source-supplement/8e/32/8e321640fdd16ce56ef8c877a1dfb583f44c3001a32d2d84913b90eb086e144a.json"
+      },
+      "route_id": "nasdaq_dell_historical_2026_08_06",
+      "status": "transport_failure"
+    }
+  ],
+  "run_scope": "FIN_0_1_3_S1_DELL_TARGETED_SOURCE_SUPPLEMENT_EXACT_ONCE",
+  "schema_version": "fin_ia_0_1_3_s1_dell_targeted_source_supplement_result_v1_0",
+  "source_commit": "c641018bd9fd164e53dea7624846a6a23a1dba25",
+  "stage_acceptance": {
+    "all_planned_external_fragments_adjudicated": false,
+    "all_required_routes_adjudicated": false,
+    "business_artifact_promoted": false,
+    "capture_first": true,
+    "counterparty_claim_boundaries_preserved": true,
+    "deepseek_exact_live_authorized": false,
+    "market_point_in_time_source_bound": false,
+    "successor_pack_ready_for_zero_call_input_compilation": false
+  },
+  "status": "terminal_completed_targeted_source_successor_pack_with_typed_gaps"
+}

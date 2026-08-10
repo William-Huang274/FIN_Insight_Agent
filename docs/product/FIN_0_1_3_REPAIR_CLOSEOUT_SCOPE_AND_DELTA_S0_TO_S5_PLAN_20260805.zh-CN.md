@@ -799,9 +799,11 @@ DELL fixed-pack successor 已完成 13 个逻辑节点并形成有实质内容�
 内容审计同时证明下一阻塞回到 S1：旧 Pack 能写出 DELL-specific 判断，却缺 point-in-time 估值基础、产品利润口径，并遗漏本地 corpus 已有的客户、竞争与供应 read-through。更新后的执行顺序为：
 
 1. [x] `S2_NUMERIC_PRESENTATION_AND_COMPACT_VERIFIER_ZERO_CALL_REPAIR`：保存旧 raw，完成 replay／mutation／clean proof，不执行模型。
-2. [ ] `S1_DELL_TARGETED_SOURCE_SUPPLEMENT`：先 exact-select 本地 HPE／SMCI／MSFT／MU 五条官方材料，再 exact-once 抓取 Dell 法说、Micron 演示稿、TSMC 法说和 DELL point-in-time 市场行；总网络上限 4、0 retry、0 model。
-3. [ ] `S1_DELL_SUCCESSOR_EVIDENCE_PACK`：只有 source anchor 实际出现才关闭对应 gap；客户／竞争／供应材料保持 bounded read-through，市场价格保持独立 PIT 角色。目标形状是 DELL Evidence `15→27`、gap `16→14`，但数量不是通过标准。
+2. [x] `S1_DELL_TARGETED_SOURCE_SUPPLEMENT`（已执行、内容门失败）：exact-select 的 HPE／SMCI／MSFT／MU 五条本地官方材料均通过；四条 source route exact-once 消费为 `4 network／0 retry／0 model`，但 Dell／Micron／Nasdaq 在 transport 终止，TSMC PDF 抓取成功后在本地 fragment 合同终止。
+3. [x] `S1_DELL_SUCCESSOR_EVIDENCE_PACK`（已物化 typed-gap terminal、未获准下游）：DELL Evidence 实际 `15→20`、gap `16→16`。本地五条 bounded read-through 保留；0 条外部 fragment 晋升，独立 PIT 仍缺，`successor_pack_ready=false`。
 4. [ ] `S2_ENRICHED_DELL_INPUT_COMPILE_AND_ZERO_CALL_PROOF`：重新编译完整新输入、数字权威、公式和 compact Verifier 容量；Evidence Pack 已改变，因此不复用旧 13 节点输出。
 5. [ ] `S2_S3_ONE_ENRICHED_DELL_EXACT_LIVE_AND_CONTENT_DELTA_REVIEW`：只有第 2–4 项全部通过才签发一次完整 DeepSeek 链；比较需求、利润、供应、竞争、反方、WWC、估值边界和信息密度是否实质改善。L2–L4 问题按 rubric 记录；新 L1 停止，不自动再开下一轮。
 
 这不是把已关闭的六案 broad-search live 重跑一遍，也不是为 DELL 手工拼一篇标准答案。Source successor 仍产出可复用 Evidence Pack；模型负责判断与叙事，Harness 只拥有来源、身份、期间、数值、公式、gap 和晋升边界。MU／NVDA、动态 Agentic Research、Workbench 与 S5 release 不因本次 DELL 比较自动解锁。
+
+> **2026-08-10 terminal disposition**：第 4、5 项未进入。Dell issuer 法说与 Nasdaq PIT 是完整报告输入的 hard gate；用只有本地 read-through 的 20-item Pack 跑 DeepSeek，会把“来源缺失”混进“模型分析能力”比较，结论无效。后续先零网络复用已保存 TSMC capture，把错误的单片三锚点改为同源多片／Evidence group；另行对 Dell／Micron／Nasdaq transport 做安全原因 envelope 与替代官方路线决策。不得仅把 4,000 字符上限调大，也不得自动重发 source authority。

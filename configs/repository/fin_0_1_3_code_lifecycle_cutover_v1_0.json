@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_code_lifecycle_cutover_v1_0",
   "baseline_id": "FIN_0_1_3_CLEAN_REBASELINE_20260811",
   "recorded_at": "2026-08-11",
-  "status": "first_clean_baseline_slice_engineering_pass_route_cutover_pending",
+  "status": "route_map_complete_first_s1_product_api_vertical_pass_ui_cutover_pending",
   "worktree": {
     "path": "D:/FIN_Insight_Agent_fin013_rebaseline",
     "branch": "codex/fin013-clean-baseline",
@@ -117,6 +117,26 @@
     "files_deleted": 0,
     "historical_runs_rewritten": 0
   },
+  "second_slice_validation": {
+    "consumer_map_ref": "configs/repository/fin_0_1_3_workbench_route_runtime_resource_consumer_map_v1_0.json",
+    "fastapi_route_count": 109,
+    "frontdoor_families": ["current", "point02_03_fixture", "next_candidate", "legacy_r53_r60"],
+    "unknown_static_consumers_resolved": 13,
+    "unknown_files_moved": 0,
+    "next_frontend_direct_route": "pass",
+    "clean_baseline_runtime_registry_resources": 33,
+    "s1_product_api_contract_tests": 18,
+    "real_case_mount": {
+      "DELL": {"evidence_items": 15, "residual_gaps": 16, "http_status": 200},
+      "MU": {"evidence_items": 16, "residual_gaps": 13, "http_status": 200},
+      "NVDA": {"evidence_items": 14, "residual_gaps": 13, "http_status": 200}
+    },
+    "model_calls": 0,
+    "provider_calls": 0,
+    "live_network_calls": 0,
+    "automatic_evidence_promotion": false,
+    "ui_consumer_cutover_complete": false
+  },
   "lifecycle_actions": [
     "keep",
     "promote",
@@ -147,5 +167,5 @@
     "old_consumer_zero",
     "git_rename_with_redirect_manifest"
   ],
-  "next_action": "BUILD_CURRENT_ROUTE_SERVICE_RUNTIME_RESOURCE_CONSUMER_MAP_THEN_PROMOTE_ONE_S1_VERTICAL_SLICE"
+  "next_action": "ADD_TYPED_CASE_SUBJECT_AND_CASE_TO_CURRENT_RESEARCH_PACK_BINDING_THEN_CONNECT_ONE_WORKBENCH_EVIDENCE_VIEW_WITHOUT_REBUILDING_RETRIEVAL"
 }

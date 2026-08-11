@@ -208,3 +208,15 @@ flowchart LR
 - 无数据复制、无文件删除、无历史 run 改写、无 DeepSeek 调用。
 
 这说明现在已经能够从干净代码基线运行 Workbench 和本地研究链，但不等于 99 个 release-only 候选已经产品化，也不等于可以立即搬走 FIN 0.1.2／`r53_r60`。下一阶段必须先完成 route → application service → canonical runtime → resource 的消费者图，再逐能力 promote，最后才执行带 redirect manifest 的 Git rename 归档。
+
+## 9. 第二轮消费者图与首条 S1 产品纵切
+
+route → service → Runtime/resource → frontend/test 的消费者图已完成，详见 `FIN_0_1_3_WORKBENCH_ROUTE_RUNTIME_RESOURCE_CONSUMER_MAP_20260811.zh-CN.md`。审计确认 Workbench 不是一条主线，而是 `/current`、Point02/03 fixture、`/next` candidate 和 `r53-r60` legacy 四套表面并存。`/next` 缺失的后端 SPA fallback 已补齐，但它的 Case Runtime 仍是 fixture，不得称为 current product。
+
+13 个 unknown 已全部辨明：9 个 package root、1 个动态 test helper 保留；2 个 generic retrieval prototype 和 1 个旧 eval utility 进入 quarantine 候选。没有移动或删除文件。
+
+第一条 S1 纵切没有复用固定 P36 preview。原因是 Case contract 没有 entity/ticker，而旧 preview 固定跨 NVDA／DELL／MU／AMAT 编译十单元；强行复用会制造假 case-aware 语义。新建的版本中立 `ResearchEvidencePackService` 只读 current tracked result 和内容寻址 Pack，核对 artifact／payload／source binding，并投影业务含义、claim boundary、citation、受限内部摘录和 residual gaps。
+
+真实 data mount 结果为 DELL `15 Evidence／16 gaps`、MU `16／13`、NVDA `14／13`，三案 HTTP 200；新服务与 registry 合同 `18 passed`，模型／Provider／live network 均为 0。当前只能记为 `product_api_promoted_ui_pending`，不能记为 FIN 0.1.3 UI 或完整产品 cutover。
+
+下一项冻结为：先给长期 Case contract 增加 typed subject（entity/ticker/issuer/as-of）和显式 Case-to-Pack binding，再让一个真实 Workbench Evidence 页面消费新 API。禁止从 query 文本猜 ticker，禁止重建检索，禁止在 UI consumer 和旧 consumer=0 前归档 P36 preview、FIN 0.1.2 或 `r53_r60`。

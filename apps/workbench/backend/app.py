@@ -22,6 +22,7 @@ from .api.v1.integrity import build_integrity_router
 from .api.v1.human_baseline import build_human_baseline_router
 from .api.v1.local_research import build_local_research_router
 from .api.v1.planning import build_planning_router
+from .api.v1.research_evidence_packs import build_research_evidence_pack_router
 from .application.case_service import CaseService, case_service_from_env
 from .application.fin_0_1_2_s4_t06_current_product_projection import (
     CurrentProductProjectionService,
@@ -42,6 +43,9 @@ from .application.integrity_service import IntegrityService
 from .application.human_baseline_service import HumanBaselineService
 from .application.local_research_service import P36LocalResearchService
 from .application.planning_service import PlanningService
+from .application.research_evidence_pack_service import (
+    ResearchEvidencePackService,
+)
 from .application.research_runtime import Fin01ResearchRuntime
 from .application.bounded_agent_executor import (
     BoundedAgentAdmission,
@@ -377,6 +381,9 @@ def create_app(
     p02_execution_service: ExecutionService | None = None,
     p03_evidence_service: EvidenceService | None = None,
     p36_local_research_service: P36LocalResearchService | None = None,
+    current_research_evidence_pack_service: (
+        ResearchEvidencePackService | None
+    ) = None,
     human_baseline_service: HumanBaselineService | None = None,
     vt2_integrity_service: IntegrityService | None = None,
     vt3_deliverable_service: DeliverableService | None = None,
@@ -419,6 +426,13 @@ def create_app(
     local_research_service = p36_local_research_service or P36LocalResearchService.from_runtime_paths(
         case_service,
         runtime_paths=runtime_paths,
+    )
+    research_evidence_pack_service = (
+        current_research_evidence_pack_service
+        or ResearchEvidencePackService.from_runtime_paths(
+            CODE_ROOT,
+            runtime_paths,
+        )
     )
     if (
         workbench_runtime_mode == "fixture"
@@ -519,6 +533,10 @@ def create_app(
     app.include_router(build_execution_router(execution_service), prefix="/api/v1")
     app.include_router(build_evidence_router(evidence_service), prefix="/api/v1")
     app.include_router(build_local_research_router(local_research_service), prefix="/api/v1")
+    app.include_router(
+        build_research_evidence_pack_router(research_evidence_pack_service),
+        prefix="/api/v1",
+    )
     app.include_router(build_human_baseline_router(baseline_service), prefix="/api/v1")
     app.include_router(build_integrity_router(integrity_service), prefix="/api/v1")
     app.include_router(build_deliverables_router(deliverable_service), prefix="/api/v1")
@@ -1173,6 +1191,8 @@ def create_app(
     @app.get("/legacy", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/current", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/current/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/next", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/next/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/cases/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
     def point02_frontend_entrypoint(frontend_path: str = "") -> str:
         return index()

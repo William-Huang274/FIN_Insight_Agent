@@ -2,6 +2,7 @@
 
 本目录维护代码仓库的结构审计、引用图和清理规则。
 
+- `FIN_0_1_3_WORKBENCH_ROUTE_RUNTIME_RESOURCE_CONSUMER_MAP_20260811.zh-CN.md`：当前 Workbench 四套表面、109 个 route、service/runtime/resource 消费关系、13 个 unknown 逐文件裁决和第一条 S1 Evidence Pack 产品 API 纵切；明确 UI/Case cutover 前不得归档旧实现。
 - FIN_0_1_3_REPOSITORY_BASELINE_AUDIT_20260811.zh-CN.md：当前全仓基线；覆盖 6,112 个 tracked 文件、本机 ignored/private 数据、真实产品入口静态依赖图、FIN 0.1.3 candidate 与 Workbench cutover 边界、版本冲突和“反复修”根因。该文档是当前人工判读入口，Owner 审阅前不授权删除、迁移或恢复 S3。
 - `REPOSITORY_ARCHITECTURE_MAP.zh-CN.md`：自动生成的仓库摘要、功能图、复杂度热点、数据资产类型和待审对象。
 - `REPOSITORY_DEEP_AUDIT_20260711.zh-CN.md`：截至 2026-07-11 的代码、测试、数据资产和 PRD/TECH 对齐审计。

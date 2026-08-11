@@ -14,7 +14,7 @@ RUNTIME_RESOURCE_REGISTRY_SCHEMA = (
 )
 DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF = (
     "configs/runtime/"
-    "fin_ia_0_1_3_repair_closeout_runtime_resource_registry_v1_0.json"
+    "fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json"
 )
 
 _RESOURCE_ROW_FIELDS = frozenset(

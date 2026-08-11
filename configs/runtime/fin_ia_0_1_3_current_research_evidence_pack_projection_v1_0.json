@@ -1,0 +1,25 @@
+{
+  "schema_version": "fin_ia_current_research_evidence_pack_projection_config_v1_0",
+  "status": "active_read_only_workbench_projection",
+  "source_result_resource_id": "application.result.current_research_local_evidence_packs",
+  "private_object_root_relative": "fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects",
+  "published_case_keys": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "read_mode": "current",
+  "read_permission": "current_product:read",
+  "max_reviewed_source_excerpt_chars": 1200,
+  "surface_policy": {
+    "reviewed_source_excerpt_exposure": "authenticated_internal_review_only",
+    "full_source_material_exposure": false,
+    "raw_capture_exposure": false,
+    "rejected_item_prompt_exposure": false,
+    "automatic_evidence_promotion": false,
+    "automatic_financial_truth_write": false,
+    "model_provider_or_live_network_calls": 0,
+    "residual_gaps_remain_visible": true
+  },
+  "known_boundary": "This version-neutral Workbench projection exposes reviewed local evidence, bounded internal excerpts, citations and residual gaps. It is not a complete investment report, an external-source-complete pack, or a mutable financial-truth surface."
+}

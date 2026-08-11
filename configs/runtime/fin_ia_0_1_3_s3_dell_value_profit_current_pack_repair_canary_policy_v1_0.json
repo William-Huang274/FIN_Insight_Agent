@@ -1,0 +1,143 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_dell_value_profit_current_pack_repair_canary_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S3.dell_value_profit_current_pack_repair_canary:v1",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S3",
+  "zero_call_run_scope": "FIN_0_1_3_S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_AND_CONTENT_QUALITY_ZERO_CALL",
+  "live_run_scope_reserved_not_registered_or_authorized": "FIN_0_1_3_S3_DELL_VALUE_PROFIT_CURRENT_PACK_REPAIR_CANARY_LIVE",
+  "immutable_bindings": {
+    "value_cost_risk_decision": {
+      "ref": "configs/releases/fin_ia_0_1_3_s3_minimal_natural_repair_canary_value_cost_risk_decision_v1_0.json",
+      "sha256": "9c40761952917299da615830875416691cd7473d1e6c15f137862138f2663136",
+      "expected_decision_digest": "5830d0d9184257056a6b1f36bea6f208b17d4414bb5967d1b8d36cbb14610c36"
+    },
+    "s2_current_pack_compiler_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_policy_v1_0.json",
+      "sha256": "69f9754129c5fa70cf8f79bcab8fddbc383212d7e1c5c489080b68079fe08c46"
+    },
+    "successor_program": {
+      "ref": "configs/releases/fin_ia_0_1_3_s3_dynamic_research_successor_program_v1_0.json",
+      "sha256": "1a24c030614b15c6a316871afd888a1dc09f9654db1eb0a0acd687af982d58e4",
+      "expected_program_digest": "e7bbfb04fcc4bac4f27383451d5a551b6eff804d2fb38acca790fff2e374d208"
+    },
+    "successor_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s3_dynamic_research_planner_evidence_request_and_content_quality_entry_policy_v1_0.json",
+      "sha256": "486473249255773ea28a6012c660680035cceaad8d6b08aed086704de396f98e",
+      "expected_result_digest": "9accc877b13313aa97aafb5daeefb9cc03b8ac6ac7452053a1e5b523772d1667"
+    },
+    "provider_profile": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s2_deepseek_v4_pro_fixed_pack_profile_v1_0.json",
+      "sha256": "d0fc499e36678369081d27619404ea3de776a8349addf29192b0fb895f34c9ac"
+    }
+  },
+  "canary": {
+    "case_key": "DELL",
+    "node_id": "dell_value_profit_current_pack_repair_adjudicator_v1",
+    "research_question_zh": "现有 Dell 证据对 AI 服务器盈利归因究竟修复了什么，哪些分部、毛利和现金边界仍不能越过？",
+    "repair_request_id": "evidence_request_0eb73a1c4b81a05d96b7",
+    "gap_id": "DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION",
+    "accepted_evidence_aliases": ["E021"],
+    "boundary_evidence_aliases": ["E002", "E008", "E023"],
+    "allowed_evidence_aliases": ["E002", "E008", "E021", "E023"],
+    "required_numeric_ref": "NUM:DELL:OPERATING_MARGIN_TARGET:2894219F450D",
+    "allowed_numeric_refs": [
+      "NUM:DELL:AI_SERVER_REVENUE:C4947C75D942",
+      "NUM:DELL:ISG_OPERATING_INCOME:0BE2D8D1B2E2",
+      "NUM:DELL:ISG_REVENUE:FEE111316B02",
+      "NUM:DELL:OPERATING_MARGIN_TARGET:2894219F450D"
+    ],
+    "expected_affected_cell_ids": [
+      "bottleneck_counterevidence_and_what_would_change",
+      "cross_chain_price_in_and_expectations",
+      "value_and_profit_capture",
+      "writer_admission_boundary"
+    ],
+    "required_retained_gap_components": [
+      "audited_product_profit_bridge",
+      "cash_conversion",
+      "gross_margin"
+    ],
+    "required_wwc_ref": "DELL_W_AI_MARGIN"
+  },
+  "output_contract": {
+    "schema_version": "fin_ia_0_1_3_s3_dell_value_profit_current_pack_repair_canary_output_v1_0",
+    "top_level_fields": [
+      "schema_version",
+      "case_key",
+      "node_id",
+      "repair_request_id",
+      "observation_outcome",
+      "repair_resolution",
+      "accepted_evidence_refs",
+      "boundary_evidence_refs",
+      "evidence_semantics",
+      "retained_gap_components",
+      "affected_cell_readjudications",
+      "used_numeric_refs"
+    ],
+    "observation_outcome_enum": ["accepted", "rejected", "typed_gap"],
+    "repair_resolution_enum": ["accepted_partial_resolution", "no_resolution"],
+    "evidence_semantics_fields": [
+      "e021_evidence_role",
+      "operating_profitability_status",
+      "isg_profit_attribution_status",
+      "gross_margin_status",
+      "cash_conversion_status",
+      "audited_product_profit_bridge_status"
+    ],
+    "required_evidence_semantics": {
+      "e021_evidence_role": "issuer_direct_source",
+      "operating_profitability_status": "issuer_management_observed_in_line_with_target",
+      "isg_profit_attribution_status": "forbidden_substitution",
+      "gross_margin_status": "typed_gap",
+      "cash_conversion_status": "typed_gap",
+      "audited_product_profit_bridge_status": "typed_gap"
+    },
+    "readjudication_fields": [
+      "cell_id",
+      "judgment_state",
+      "judgment_changed",
+      "support_refs",
+      "counterevidence_refs",
+      "numeric_refs",
+      "mechanism_atom",
+      "boundary_atom",
+      "wwc_ref"
+    ],
+    "judgment_state_enum": [
+      "supported",
+      "supported_with_limits",
+      "mixed",
+      "cannot_infer",
+      "not_supported"
+    ],
+    "maximum_atom_text_characters": 500,
+    "maximum_total_output_characters": 9000,
+    "model_text_numeric_surface_forbidden": true
+  },
+  "request_budget": {
+    "maximum_compiled_request_characters": 30000,
+    "maximum_output_tokens": 1800,
+    "provider_calls_maximum_if_later_authorized": 1,
+    "model_calls_maximum_if_later_authorized": 1,
+    "source_calls": 0,
+    "network_tool_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "hard_boundaries": {
+    "current_governed_pack_first": true,
+    "capture_before_parse_or_validation": true,
+    "exact_once_admission": true,
+    "finish_reason": "stop",
+    "raw_source_text_in_model_input": false,
+    "model_numeric_surface_authority": "alias_and_ref_selection_only",
+    "local_runtime_owns_state_transition": true,
+    "complete_report_or_recommendation": false,
+    "free_arithmetic": false,
+    "valuation_or_target_price": false,
+    "business_artifact_promotion": false,
+    "live_authority_issued_by_this_policy": false,
+    "automatic_rerun": false
+  }
+}

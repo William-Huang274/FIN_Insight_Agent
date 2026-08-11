@@ -929,3 +929,15 @@ current next=`S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_LOOP_INFORMATION_ECON
 对 immutable DELL fixed-pack same-input baseline／Agent 候选做了真实、无原文持久化的信息经济审计。baseline 为 `42` 个观点，Agent 压缩为 `30` 个，说明模型已经在做筛选和综合；但 Agent 仍有 `2` 个过载的 executive points、`1` 组跨章节重复，decision-marker point ratio=`0.4333`，并继续带有历史记录中的 numeric／identity authority L1 hard failure。故本轮只记 `zero_call_successor=engineering_pass`：历史候选不改标、不晋升，八维正式评分、paired gain、qualified-human acceptance、Owner 和 release 全部仍为 false。
 
 工程验证为 focused=`12 passed`、既有 S3＋successor=`47 passed`，model／provider／network／source／retry／promotion=`0/0/0/0/0/0`。正式 S3 scope 仍由 RC-P36-157、RC-P36-165、RC-P36-172 三条真实边界阻断。current next=`S3_MINIMAL_NATURAL_PLANNER_OR_REPAIR_CANARY_NECESSITY_VALUE_COST_RISK_ZERO_CALL_DECISION`：先判断一次最小自然 planner／repair canary 是否值得做；即使决定做，也只能单独签发，不得自动进入完整报告 live。
+
+## 7AC. S3 最小自然 repair canary 价值／成本／风险决策（2026-08-11）
+
+需求 evidence-role／numeric-view 已有自然观察，不重复测试；自由 planner selection 也因确定性 38-cell／5-request 编译已证明而不值得单独付费。唯一选中的新问题是 fixed Pack `E021` 对 `DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION` 的 current-pack-first repair：允许部分关闭管理层 operating-profitability target comparison，但禁止把 `E002` ISG 分部利润当作 AI-server 产品利润，并保留 gross margin、cash conversion、audited product-profit bridge。
+
+下一项只实现并 clean-prove 一个 typed repair-adjudicator canary；live scope、admission、Provider 与完整报告仍须分离。未来 live 上限为一次 DeepSeek Pro 调用、零 source/tool/retry/fallback/promotion；canary 失败不得自动进入完整报告。
+
+## 7AD. DELL value/profit current-pack repair canary 零调用实现（2026-08-11）
+
+已把 `E021` 的部分修复语义和 `E002` 的分部／产品边界编译成一个 provider-neutral typed canary。模型只选择 Evidence／NUM refs 并输出短 mechanism／boundary atom；本地 Runtime 拥有 observation、affected-cell 图、数值展示、successor state transition 与业务晋升。目标 cell 仅为 `value_and_profit_capture`、`bottleneck_counterevidence_and_what_would_change`、`writer_admission_boundary`，并保持 `cross_chain_price_in_and_expectations=cannot_infer / unchanged`。
+
+当前 governed Pack 先于新 EvidenceRequest：`E021` 已足以部分关闭“管理层 operating-profitability target comparison”，所以这一判断不得再被误送回 S1 抓网页；但 gross margin、cash conversion 与 audited product-profit bridge 继续是正式 gap。request=`17,343 / 30,000 chars`，decision＋canary＋相邻 successor=`27 passed`，scoped preflight=`pass`，外部调用全为 `0`。下一项仍是 commit／push 后两个 clean Git archive／fresh-process 零调用 proof；未通过前不注册 live、不签 admission、不调用 DeepSeek，也不生成 DELL 报告。

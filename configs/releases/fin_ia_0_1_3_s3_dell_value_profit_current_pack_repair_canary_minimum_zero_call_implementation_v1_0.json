@@ -1,0 +1,111 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_dell_value_profit_current_pack_repair_canary_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.3-S3-DELL-VALUE-PROFIT-CURRENT-PACK-REPAIR-CANARY-MINIMUM-ZERO-CALL-IMPLEMENTATION-R1",
+  "result_digest": "e128d3143dd65ef3d8e13c458d978cf80b3ebc36e19dfc5c1da905d5533b629f",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S3",
+  "status": "working_tree_engineering_pass_clean_independent_proof_pending",
+  "implementation_base_commit": "dd875efb4dc4086bfc758caf88cc8b66544daa38",
+  "run_scope": "FIN_0_1_3_S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_AND_CONTENT_QUALITY_ZERO_CALL",
+  "scope": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "live_scope_registered": false,
+    "live_admissions_issued": 0,
+    "fixture_only_execution": true,
+    "complete_report_executed": false,
+    "business_artifact_promotion": false
+  },
+  "implementation_bindings": {
+    "configs/releases/fin_ia_0_1_3_s3_minimal_natural_repair_canary_value_cost_risk_decision_v1_0.json": "9c40761952917299da615830875416691cd7473d1e6c15f137862138f2663136",
+    "configs/runtime/fin_ia_0_1_3_s3_dell_value_profit_current_pack_repair_canary_policy_v1_0.json": "5274522d8f9e96ca70d7f245cb5c7cbb7a1be5f48bb8b0106910a7c87ffdcfa0",
+    "src/sec_agent/s3_dell_value_profit_repair_canary.py": "0ec452e29f34c0947a7acae3fa2fdcd434376ba8e0655797f815e0e365010540",
+    "tests/contract/test_fin_0_1_3_s3_dell_value_profit_current_pack_repair_canary.py": "23629735d71296da586c9d4c1093773cf2641a0d5048bcc3525fee9541048cc0",
+    "scripts/releases/prove_fin_ia_0_1_3_s3_dell_value_profit_repair_canary_worker.py": "3c39c5981652ebcc5796a14bb5b497fa9e494c328614800e4f406dc2d2722137",
+    "scripts/releases/prove_fin_ia_0_1_3_s3_dell_value_profit_repair_canary_clean.py": "68968e52b73764f2c0cd54ab9b9b068bb4aa47999bef183a5c365e706ffa6c68"
+  },
+  "compiled_canary": {
+    "case_key": "DELL",
+    "node_id": "dell_value_profit_current_pack_repair_adjudicator_v1",
+    "repair_request_id": "evidence_request_0eb73a1c4b81a05d96b7",
+    "gap_id": "DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION",
+    "compiled_input_digest": "a340683b525a58f182d65b6b7fe813421a7f34b13d0f1868e2e3e866c71d56db",
+    "request_digest": "d3270b5eccc0c0e97bf6c0d60159c96952a18f0a85d7e357f5833b7107d95fad",
+    "compiled_request_characters": 17343,
+    "maximum_request_characters": 30000,
+    "evidence_aliases": ["E002", "E008", "E021", "E023"],
+    "accepted_evidence_aliases": ["E021"],
+    "boundary_evidence_aliases": ["E002", "E008", "E023"],
+    "required_numeric_ref": "NUM:DELL:OPERATING_MARGIN_TARGET:2894219F450D",
+    "affected_cell_ids": [
+      "bottleneck_counterevidence_and_what_would_change",
+      "cross_chain_price_in_and_expectations",
+      "value_and_profit_capture",
+      "writer_admission_boundary"
+    ],
+    "current_pack_cocompilation_result_digest": "0dc1740e43636a807060d6f5bf0c066487a3743ca87ad2a5418b9e788ee02864",
+    "current_pack_cocompilation_transaction_digest": "f57becedee3db9c31a4b28a02bdc7bd093fe798cb2c3e27515ea156c572c676d",
+    "raw_source_text_in_model_input": false,
+    "complete_report_or_recommendation": false
+  },
+  "implemented_runtime": {
+    "current_governed_pack_reconciled_before_new_source_request": true,
+    "typed_partial_resolution_and_retained_gap_contract": true,
+    "segment_profit_cannot_replace_product_profit": true,
+    "affected_cell_set_owned_by_deterministic_graph": true,
+    "model_selects_evidence_aliases_numeric_refs_and_short_atoms": true,
+    "model_authored_numeric_surface_forbidden": true,
+    "numeric_presentation_rendered_locally": true,
+    "successor_state_transition_owned_locally": true,
+    "capture_before_parse_or_validation": true,
+    "shared_crash_safe_exact_once_admission_ledger": true,
+    "full_provider_response_preserved_on_failure": true,
+    "business_artifact_promotion": false
+  },
+  "business_semantics": {
+    "what_e021_repairs": "Dell management commentary supports a bounded comparison between AI-server profitability and its operating-income-rate target.",
+    "what_e021_does_not_repair": "It does not establish an audited standalone AI-server profit bridge, gross margin, cash conversion, valuation or recommendation.",
+    "why_e002_is_boundary_not_support": "ISG operating income is a segment result and cannot be substituted for standalone AI-server product profit.",
+    "why_this_precedes_s1": "The required issuer Evidence and Numeric authority already exist in the governed Pack; requesting another source before reconciliation would duplicate work and misclassify an S3 reasoning defect as an S1 retrieval defect."
+  },
+  "mutation_coverage": [
+    "wrong accepted Evidence alias",
+    "ISG segment profit used as product-profit proxy",
+    "cash-conversion gap silently dropped",
+    "incomplete affected-cell coverage",
+    "model-authored numeric surface including spelled-out percentage",
+    "valuation and expectations cell falsely reopened",
+    "provider transport failure with complete capture",
+    "finish_reason length truncation",
+    "invalid JSON",
+    "invalid financial semantics",
+    "second consumption of the same admission"
+  ],
+  "verification": {
+    "decision_tests": "5 passed",
+    "canary_focused_tests": "10 passed",
+    "decision_canary_and_adjacent_successor_tests": "27 passed",
+    "project_os_scoped_preflight": "pass",
+    "request_capacity": "17343_of_30000_characters",
+    "clean_independent_workers": 0
+  },
+  "stage_acceptance": {
+    "value_cost_risk_decision": true,
+    "bounded_input_and_output_contract": true,
+    "capture_first_exact_once_fixture_runtime": true,
+    "local_financial_boundary_validation": true,
+    "fake_and_mutation_suite": true,
+    "clean_independent_proof": false,
+    "natural_model_canary": false,
+    "repaired_dell_report": false,
+    "qualified_human_acceptance": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "known_boundary": "This working-tree result proves only the bounded current-pack repair compiler, local financial semantics, deterministic successor projection and fixture failure paths. It does not register a live scope, issue live authority or admission, call DeepSeek, prove natural repair behavior, generate a repaired Dell report, close S3, grant qualified-human or Owner acceptance, or authorize release.",
+  "current_next": "COMMIT_PUSH_IMPLEMENTATION_THEN_RUN_TWO_CLEAN_ARCHIVE_FRESH_PROCESS_ZERO_CALL_PROOF"
+}

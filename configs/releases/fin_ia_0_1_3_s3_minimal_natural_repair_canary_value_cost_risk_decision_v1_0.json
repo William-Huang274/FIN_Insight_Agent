@@ -1,0 +1,160 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_minimal_natural_repair_canary_value_cost_risk_decision_v1_0",
+  "decision_id": "FIN-0.1.3-S3-MINIMAL-NATURAL-REPAIR-CANARY-VALUE-COST-RISK-DECISION-R1",
+  "decision_digest": "5830d0d9184257056a6b1f36bea6f208b17d4414bb5967d1b8d36cbb14610c36",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S3",
+  "status": "decision_complete_authorize_one_dell_current_pack_repair_canary_zero_call_implementation_and_clean_proof_only",
+  "source_commit": "dd875efb4dc4086bfc758caf88cc8b66544daa38",
+  "scope": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "live_scope_registered": false,
+    "live_runner_implemented": false,
+    "live_admission_issued": false,
+    "live_execution_authorized_by_this_record": false,
+    "complete_report_authorized": false,
+    "business_artifact_promotion": false
+  },
+  "immutable_basis": {
+    "successor_result": {
+      "ref": "configs/releases/fin_ia_0_1_3_s3_dynamic_research_successor_minimum_zero_call_implementation_and_proof_v1_0.json",
+      "sha256": "61c9e372e9670b800d8a26783354f0e5ed5a4fecdc313ad51a89a9170db267af",
+      "expected_result_digest": "be3ec8585826fa421958558801e196a473178fe2a39f359e7e2edb1d44dedfb0"
+    },
+    "successor_program": {
+      "ref": "configs/releases/fin_ia_0_1_3_s3_dynamic_research_successor_program_v1_0.json",
+      "sha256": "1a24c030614b15c6a316871afd888a1dc09f9654db1eb0a0acd687af982d58e4",
+      "expected_program_digest": "e7bbfb04fcc4bac4f27383451d5a551b6eff804d2fb38acca790fff2e374d208"
+    },
+    "successor_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s3_dynamic_research_planner_evidence_request_and_content_quality_entry_policy_v1_0.json",
+      "sha256": "486473249255773ea28a6012c660680035cceaad8d6b08aed086704de396f98e",
+      "expected_result_digest": "9accc877b13313aa97aafb5daeefb9cc03b8ac6ac7452053a1e5b523772d1667"
+    },
+    "prior_demand_evidence_role_canary": {
+      "ref": "configs/releases/fin_ia_0_1_3_repair_closeout_s3_evidence_role_v2_canary_result_and_replacement_authority_v1_0.json",
+      "sha256": "64eda5dfdd3de710d928c3d2b3e5897999f40b7a3981b304ff278f0118228258",
+      "record_digest": "2a8637ab4cdaab79e5af35a20c4dc43098d4db4e6f7ef5672543c4615fbb7c26"
+    },
+    "prior_demand_numeric_canary": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_terminal_and_semantic_audit_v1_0.json",
+      "sha256": "e7187e40f5404a83d20a57c35cb054974e41549011d6fae41c9a506c6db494d8",
+      "result_digest": "ca579cb54822ad94058f32acc8455249037f6e52fccfad9550d1c7e890fcd3bd"
+    },
+    "dell_content_assessment": {
+      "ref": "configs/releases/fin_ia_0_1_3_s2_dell_changed_input_business_content_assessment_v1_0.json",
+      "sha256": "0ee1a124ebfbe1a390daf20754ee181e91b5b259bdd2974a26f8f74072d685fd",
+      "assessment_digest": "2115b25a28ed19f9bc053011503157702652f9297540a40c6ec523daee84f627"
+    }
+  },
+  "new_information_audit": {
+    "deterministic_planner_question_already_answered": true,
+    "dell_demand_natural_question_already_answered": true,
+    "unanswered_high_value_question": "Can the current model classify existing issuer evidence E021 as a bounded partial repair for AI-server profitability, preserve the E002 segment-versus-product boundary, retain gross-margin and cash-conversion gaps, and reopen only the deterministic affected-cell set?",
+    "current_pack_first_observation": "E021 already exists in the fixed governed DELL Pack and states an issuer-management comparison between AI-server profitability and an operating-income-rate target. The current repair request was compiled from an older unresolved gap surface. Therefore the next test must reconcile current governed Evidence before any new external EvidenceRequest is admitted.",
+    "why_this_is_not_a_source_task": "The evidence is already captured, promoted, role-bound and numeric-authority-bound. This canary tests S3 repair adjudication and affected-cell control with zero source or tool calls."
+  },
+  "value_cost_risk_assessment": {
+    "value": {
+      "rating": "high_for_one_call",
+      "reason": "The test covers the positive accepted-evidence branch of the new repair loop, the exact product-versus-segment attribution boundary and the highest-risk financial overclaim surface not covered by the two prior demand canaries."
+    },
+    "cost": {
+      "rating": "low_and_hard_bounded",
+      "provider_calls_maximum": 1,
+      "model_calls_maximum": 1,
+      "maximum_output_tokens": 1800,
+      "maximum_estimated_usd": 0.02,
+      "source_or_tool_calls": 0,
+      "retries_or_fallbacks": 0
+    },
+    "risk": {
+      "rating": "bounded_if_model_selects_typed_semantics_and_local_runtime_projects_state",
+      "controls": [
+        "model returns typed repair disposition, aliases, exact affected cells and short mechanism/boundary atoms rather than a report",
+        "local runtime owns Evidence promotion, observation digest, affected-cell graph, Numeric rendering and final state transition",
+        "E021 may partially resolve operating-profitability attribution but cannot become audited product profit, gross margin or cash conversion",
+        "E002 ISG operating income remains a segment boundary and cannot be substituted for AI-server product profit",
+        "fresh exact-once live scope and admission are separate from zero-call fixtures",
+        "capture precedes parse and validation; zero retry, fallback, source, tool and business promotion"
+      ]
+    }
+  },
+  "option_assessment": [
+    {
+      "option_id": "A_skip_canary_and_run_repaired_full_report",
+      "decision": "rejected",
+      "reason": "A full report would mix repair semantics, Writer quality and delivery controls before the new accepted-evidence branch has any natural observation."
+    },
+    {
+      "option_id": "B_repeat_dell_demand_canary",
+      "decision": "rejected",
+      "reason": "Demand evidence-role and numeric-view behavior already have natural observations; another demand call has little marginal information value."
+    },
+    {
+      "option_id": "C_test_model_only_planner_selection",
+      "decision": "rejected",
+      "reason": "The deterministic planner already compiles 38 cells and five canonical repair requests. The unresolved risk is repair adjudication, not another free-form plan."
+    },
+    {
+      "option_id": "D_one_dell_current_pack_value_profit_repair_adjudication_canary",
+      "decision": "selected",
+      "reason": "One fixed-pack call can test accepted Evidence, partial gap closure, exact affected-cell scope, mechanism, boundary and WWC without source access or full-report cost."
+    },
+    {
+      "option_id": "E_multi_node_or_three_case_canary_campaign",
+      "decision": "rejected_for_this_item",
+      "reason": "Campaign behavior belongs after one changed contract family is naturally qualified and would otherwise duplicate the later three-case dynamic Agentic Research step."
+    }
+  ],
+  "selected_canary": {
+    "case_key": "DELL",
+    "node_id": "dell_value_profit_current_pack_repair_adjudicator_v1",
+    "repair_request_id": "evidence_request_0eb73a1c4b81a05d96b7",
+    "gap_id": "DELL_GAP_AI_SERVER_PROFIT_ATTRIBUTION",
+    "current_pack_accepted_evidence": ["E021"],
+    "boundary_evidence": ["E002", "E008", "E023"],
+    "required_numeric_ref": "NUM:DELL:OPERATING_MARGIN_TARGET:2894219F450D",
+    "expected_repair_outcome": "accepted_partial_resolution",
+    "expected_affected_cell_ids": [
+      "bottleneck_counterevidence_and_what_would_change",
+      "cross_chain_price_in_and_expectations",
+      "value_and_profit_capture",
+      "writer_admission_boundary"
+    ],
+    "required_retained_gaps": [
+      "audited_product_profit_bridge",
+      "cash_conversion",
+      "gross_margin"
+    ],
+    "required_wwc_ref": "DELL_W_AI_MARGIN",
+    "model_numeric_surface_authority": "alias_and_ref_selection_only",
+    "local_runtime_authority": [
+      "observation acceptance and digest binding",
+      "affected-cell set",
+      "numeric presentation rendering",
+      "successor state transition",
+      "business artifact promotion"
+    ]
+  },
+  "authorized_next_implementation": {
+    "implement_provider_neutral_typed_repair_canary": true,
+    "compile_from_existing_dell_fixed_pack": true,
+    "use_existing_s3_successor_state_transition": true,
+    "add_fake_positive_negative_and_mutation_proof": true,
+    "perform_clean_independent_zero_call_proof": true,
+    "register_or_execute_live_scope": false,
+    "issue_live_admission": false,
+    "execute_provider_call": false,
+    "run_complete_report": false
+  },
+  "pass_disposition": "After zero-call implementation and clean proof, make a separate exact-once live authority decision, issue and execute at most one DeepSeek Pro call. A natural pass may authorize one repaired DELL fixed-pack report, but does not itself pass S3.",
+  "fail_disposition": "Preserve the capture and stop with zero retry. If the typed repair semantics fail, reduce this surface to smaller model judgment atoms plus deterministic state assembly; do not add DeepSeek-specific field-by-field branches and do not run a full report.",
+  "known_boundary": "This is a zero-call value, cost and risk decision. It does not prove natural DeepSeek behavior, register a live scope, issue or consume an admission, call a Provider, repair the DELL report, close S1 gaps, pass S3, grant qualified-human or Owner acceptance, or authorize release.",
+  "current_next": "IMPLEMENT_AND_CLEAN_PROVE_ONE_DELL_VALUE_PROFIT_CURRENT_PACK_REPAIR_ADJUDICATION_CANARY_ZERO_CALL"
+}

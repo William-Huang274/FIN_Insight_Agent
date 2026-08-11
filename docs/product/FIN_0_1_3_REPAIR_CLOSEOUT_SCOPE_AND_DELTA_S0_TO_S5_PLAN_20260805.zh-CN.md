@@ -1011,3 +1011,13 @@ current next=`COMMIT_PUSH_ISSUANCE_THEN_CLEAN_SYNCED_RUNNER_PREFLIGHT_AND_SEPARA
 clean/synced `8c62b0e1...dd64` 上 runner 复核 implementation ancestry、10-source binding、Project OS、credential presence、expiry、空 runtime root 与未消费 admission，结果=`preflight_pass_execution_not_authorized`。独立价值决策随后只授权当前 run 的一次 DeepSeek Pro successor natural canary：`1 provider/model／1,200 output／0 source/tool/retry/fallback/promotion`。
 
 current next=`COMMIT_PUSH_AUTHORITY_THEN_CLEAN_SYNCED_REPREFLIGHT_AND_EXACT_ONCE_EXECUTION`。这次调用主要检验缩小后的动作面与短 atom 质量；失败必须 terminalize 后停止，成功也不能跳过 repaired DELL report 的 L1、八维、paired 与 qualified-human 验收。
+
+## 7AO. successor natural canary 终态与 mixed root cause（2026-08-11）
+
+唯一 run=`fin013_s3_small_atom_b351adc5bb4bc396d39a` 已 exact-once 消费。DeepSeek Pro transport／JSON 正常，`2,400 in／565 out／2,965 total／7,027 ms／0 retry`；formal terminal 在 `contract_validation` 以 `s3_small_atom_disposition_invalid` 失败，promotion=false。request／capture／parsed／terminal／receipt 完整保留，validated／projection／successor 未物化。
+
+自然输出的金融边界并非全错：required Evidence semantics、盈利方向、分部≠产品利润和三项 retained gap 均准确，且不再拥有 price-in 表面。失败来自三组连续问题：disposition literals 不符；accepted／boundary Evidence 重叠且 Numeric refs 过选；atom 写出禁止的定性金融数字带。零调用 counterfactual 依次修正三组后才通过。
+
+根因必须记为 mixed：model-visible contract 没有列 observation／resolution 枚举，也没有给每条 Evidence 的互斥 disposition schema 或单一 Numeric 选择规则，这是项目欠编译；DS 同时违反了明确的 no-numeric-band 规则。不能全归因 DS，也不能 post-hoc 修绿。
+
+本轮按 authority 停止，不执行 repaired report、S1 gap、S2 regression 或三案动态研究。current next=`S3_PROVIDER_NEUTRAL_COMPILED_ENUM_EVIDENCE_ROLE_AND_NUMERIC_SELECTION_CONTRACT_DISPOSITION_ZERO_CALL`；先决定结构处置并用 immutable replay／mutation 证明，任何 replacement natural canary 仍须另行价值与权限决策。

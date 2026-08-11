@@ -1,0 +1,188 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_small_judgment_atom_successor_natural_canary_terminal_and_root_cause_audit_v1_0",
+  "audit_id": "FIN-0.1.3-S3-SMALL-JUDGMENT-ATOM-SUCCESSOR-NATURAL-CANARY-TERMINAL-AUDIT-R1",
+  "result_digest": "bc801e343b75f4965d9cd94cc06d5e81cca558c915e73b4620364fed2e7902f8",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S3",
+  "status": "failed_terminal_audited_stop_no_retry_no_report",
+  "run": {
+    "run_scope": "FIN_0_1_3_S3_DELL_VALUE_PROFIT_SMALL_JUDGMENT_ATOM_CANARY_LIVE",
+    "run_id": "fin013_s3_small_atom_b351adc5bb4bc396d39a",
+    "attempt_id": "attempt_fin013_s3_small_atom_b351adc5bb4bc396d39a_r1",
+    "admission_digest": "87edf77103034561104151e341c0436df0e9727d8fadc4d9d502b0a4e7f41223",
+    "issuance_digest": "f9ea28398bb8b8f67d5010f488b285e2f771cd990f7956d051ce6c1467935b0c",
+    "execution_authority_digest": "77144e66504289ed35fc9bad5570720caf0cd946e12d1c0158fd0602a84a71b2",
+    "admission_consumed": true
+  },
+  "terminal": {
+    "status": "failed",
+    "phase": "contract_validation",
+    "code": "s3_small_atom_disposition_invalid",
+    "terminal_result_digest": "ada77273ceb8baf0ee2a721f40eb6c4453bb5f0ab25eba93ee4c770e2e1fc428",
+    "result_digest": "2c91e33e5e543d7775dd34cc6909767f6636dbc1c1fbafc28060bc78494e9a6d",
+    "business_artifact_promotion": false,
+    "parsed_output_materialized": true,
+    "validated_output_materialized": false,
+    "projection_materialized": false,
+    "successor_program_materialized": false
+  },
+  "provider_observation": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "transport_status": "ok",
+    "finish_reason": "stop",
+    "transport_attempts": 1,
+    "transport_failures": 0,
+    "input_tokens": 2400,
+    "output_tokens": 565,
+    "total_tokens": 2965,
+    "latency_ms": 7027,
+    "profile_estimated_cost_usd": 0.0024005,
+    "provider_calls": 1,
+    "model_calls": 1,
+    "source_calls": 0,
+    "network_tool_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "private_artifact_receipts": [
+    {
+      "kind": "request",
+      "relative_path": "data/workbench_private/fin_0_1_3_s3_small_judgment_atom_live/attempts/fin013_s3_small_atom_b351adc5bb4bc396d39a/raw_model_only/calls/call_01/request.json",
+      "bytes": 10250,
+      "sha256": "4f281a903206ab5600aa60320e3e976842b6d385b07689698e57ef5c67b0eff2"
+    },
+    {
+      "kind": "capture",
+      "relative_path": "data/workbench_private/fin_0_1_3_s3_small_judgment_atom_live/attempts/fin013_s3_small_atom_b351adc5bb4bc396d39a/raw_model_only/calls/call_01/capture.json",
+      "bytes": 18599,
+      "sha256": "f5ff6b3be74d1148852ec516b8cc8471d20c8b37829f54256fd9e62f252d18b6"
+    },
+    {
+      "kind": "parsed_output",
+      "relative_path": "data/workbench_private/fin_0_1_3_s3_small_judgment_atom_live/attempts/fin013_s3_small_atom_b351adc5bb4bc396d39a/parsed/small_judgment_output.json",
+      "bytes": 2117,
+      "sha256": "a520c02802d2fdf730f4a6099487543eb49bb0e24ecea7c5d6cd7516540278de"
+    },
+    {
+      "kind": "terminal_with_receipt",
+      "relative_path": "data/workbench_private/fin_0_1_3_s3_small_judgment_atom_live/attempts/fin013_s3_small_atom_b351adc5bb4bc396d39a/terminal_with_receipt.json",
+      "bytes": 2716,
+      "sha256": "c15df5fbb04e09f4a3583be802764952994c738b5732f3dc29229a12d45772af"
+    }
+  ],
+  "model_semantics_passed": {
+    "required_evidence_semantics_exact": true,
+    "profitability_direction_exact": true,
+    "segment_not_product_profit_boundary_exact": true,
+    "retained_gap_components_exact": true,
+    "gross_margin_gap_retained": true,
+    "cash_conversion_gap_retained": true,
+    "audited_product_profit_bridge_gap_retained": true,
+    "price_in_or_valuation_overreach_surface_present": false,
+    "atom_character_limits_passed": true,
+    "mechanism_atom_characters": 318,
+    "boundary_atom_characters": 218
+  },
+  "formal_and_authority_failures": [
+    {
+      "failure": "disposition_literals_invalid",
+      "observed": ["repair_partial", "free_text_resolution"],
+      "required": ["accepted", "accepted_partial_resolution"],
+      "first_terminal_code": "s3_small_atom_disposition_invalid"
+    },
+    {
+      "failure": "support_and_boundary_reference_roles_not_separated",
+      "observed_accepted_refs": ["E002", "E008", "E021", "E023"],
+      "required_accepted_refs": ["E021"],
+      "observed_boundary_refs": ["E002", "E008", "E021", "E023"],
+      "required_boundary_refs": ["E002", "E008", "E023"]
+    },
+    {
+      "failure": "numeric_reference_selection_overbroad",
+      "observed_numeric_ref_count": 4,
+      "required_numeric_ref_count": 1,
+      "required_numeric_semantic": "operating_margin_target"
+    },
+    {
+      "failure": "forbidden_financial_numeric_band_in_model_atom",
+      "surface_kind": "qualitative_financial_band",
+      "explicit_prompt_prohibition_present": true
+    }
+  ],
+  "counterfactual_replay": [
+    {
+      "step": "original_immutable_output",
+      "result": "fail",
+      "code": "s3_small_atom_disposition_invalid"
+    },
+    {
+      "step": "correct_disposition_literals_only",
+      "result": "fail",
+      "code": "s3_small_atom_ref_or_gap_set_invalid"
+    },
+    {
+      "step": "also_correct_reference_roles_and_numeric_selection",
+      "result": "fail",
+      "code": "s3_small_atom_financial_numeric_surface_forbidden"
+    },
+    {
+      "step": "also_remove_unauthorized_numeric_band",
+      "result": "pass",
+      "validation_digest": "a14293678f27e7a19c4a09f67b738c9597648565a41a990a10a3ec11413f6723"
+    }
+  ],
+  "root_cause_classification": {
+    "classification": "mixed_project_model_visible_contract_under_specification_and_model_surface_instruction_failure",
+    "project_contract_defect_established": true,
+    "model_instruction_failure_established": true,
+    "transport_or_provider_availability_failure": false,
+    "financial_reasoning_wholly_failed": false,
+    "project_details": [
+      "model-visible output contract omitted observation_outcome allowed literals",
+      "model-visible output contract omitted repair_resolution allowed literals",
+      "model-visible contract did not expose per-Evidence mutually exclusive support versus boundary roles",
+      "used_numeric_refs was presented without the local validator's single required-ref selection rule"
+    ],
+    "model_details": [
+      "the response authored a financial qualitative band despite an explicit no-numeric-band instruction",
+      "the response placed the same Evidence refs in both accepted and boundary arrays rather than resolving their roles"
+    ],
+    "why_not_label_as_deepseek_only": "The response's core financial boundary and retained gaps were correct, while several exact literals and role constraints enforced locally were absent from the model-visible contract. Calling the whole failure model disobedience would hide a project-owned contract defect.",
+    "why_not_posthoc_promote": "The numeric surface lacked visible source authority and the ref-role arrays did not satisfy the governed contract. Correct reasoning fragments cannot turn a failed output into Evidence or a report input."
+  },
+  "stage_disposition": {
+    "owning_stage": "S3",
+    "successor_natural_canary": "failed",
+    "repaired_dell_report": "not_executed",
+    "l1_assessment": "not_executed",
+    "eight_dimension_assessment": "not_executed",
+    "paired_assessment": "not_executed",
+    "qualified_human_acceptance": "not_executed",
+    "s1_gap_work": "not_started_from_this_sequence",
+    "s2_bounded_regression": "not_started_from_this_sequence",
+    "three_case_dynamic_agentic_research": "not_started",
+    "automatic_retry_or_second_natural_call": false,
+    "failed_output_promotable": false
+  },
+  "recommended_next": {
+    "decision_scope": "S3_PROVIDER_NEUTRAL_COMPILED_ENUM_EVIDENCE_ROLE_AND_NUMERIC_SELECTION_CONTRACT_DISPOSITION_ZERO_CALL",
+    "preferred_direction": [
+      "compile explicit allowed literals for every enum field into the model-visible contract",
+      "replace overlapping accepted and boundary arrays with one disposition object per Evidence ref",
+      "derive permitted Numeric refs locally from accepted Evidence or expose an explicit selection criterion",
+      "keep unauthorized financial numeric surfaces as a hard L1 failure",
+      "prove the revised contract by immutable replay and mutation before separately deciding whether any replacement natural canary is worth another call"
+    ],
+    "not_authorized_now": [
+      "second natural canary",
+      "field-by-field prompt patch",
+      "posthoc output correction or promotion",
+      "complete DELL report",
+      "S1 expansion",
+      "three-case dynamic research"
+    ]
+  },
+  "known_boundary": "This audit explains one failed bounded natural canary. It does not establish a repaired DELL report, S3 acceptance, model-family generalization, qualified-human acceptance, Owner acceptance or release."
+}

@@ -48,3 +48,16 @@ jobs:
             tests/test_workbench_profiles.py \
             tests/test_workbench_artifacts.py \
             -q
+
+  workbench-windows-helper:
+    runs-on: windows-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Parse Docker helper
+        shell: pwsh
+        run: |
+          powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -SkipBuild -SkipRun

@@ -65,6 +65,7 @@
 *.html
 *.htm
 !/apps/workbench/frontend/index.html
+!/apps/workbench/frontend/vite/index.html
 !/docs/product/prototypes/fin_0_1_workbench_next/index.html
 *.parquet
 *.sqlite

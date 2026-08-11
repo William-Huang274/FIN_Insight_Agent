@@ -27,7 +27,7 @@ Fixture 路径：
 
 `tests/fixtures/fin_agent_full_chain_multiturn_cases_v0_1.jsonl`
 
-当前包含 `17` 个 case：
+当前包含 `20` 个 case：
 
 | Case ID | 类型 | 公司 / 行业 | 主要考察 |
 | --- | --- | --- | --- |
@@ -48,6 +48,9 @@ Fixture 路径：
 | `fin_full_mt_semis_scope_t2` | multi-turn T2 | NVDA only + AI capex chain | Scope override，不能继续分析 AMD |
 | `fin_full_mt_banking_t1` | multi-turn T1 | JPM/BAC | 首轮银行比较 |
 | `fin_full_mt_banking_t2` | multi-turn T2 | BAC only | Follow-up narrowed scope，不能继续分析 JPM |
+| `fin_full_scope_nvda_basic_fundamental_zh` | scope-decision | NVDA | 单公司基本面必须先窄 scope，可条件扩展但不能无故全行业扩展 |
+| `fin_full_scope_nvda_ai_supply_chain_readthrough_zh` | scope-decision | NVDA + AI infra chain | 检查 cloud capex、memory/foundry/equipment、server/networking/power、export risk、market reaction 的 scope decision 和 Universe contract |
+| `fin_full_scope_nvda_non_us_supply_chain_gap_zh` | scope / gap escalation | NVDA + non-US supply chain | 非美供应链 disclosure 若只有 hypothesis/source gap，必须输出 structured gap request 并在 Memo/Renderer 保留边界 |
 
 ## 4. Hard Gates
 
@@ -90,19 +93,36 @@ Multi-turn case：
 - 若 T2 缩小 scope，forbidden scope ticker 不得进入 activated focus/search scope。
 - T2 不允许把上一轮已排除 ticker 继续作为主分析对象。
 
+A6 scope-decision / gap-escalation case：
+
+- Research Lead 必须输出 `scope_decision`，包含 `scoping_pattern`、`expansion_mode`、`catalogs_to_inspect`、`candidate_lenses`、`expansion_budget`、`stop_condition`。
+- `scoping_pattern` 必须落在 case 的 expected set 中，例如 `single_company_fundamental`、`supply_chain_readthrough`、`sector_depth`。
+- `expansion_mode` 必须符合 case 预期：`no_expansion`、`conditional_expansion` 或 `required_expansion`。
+- Universe / Relationship 被要求时，必须输出 per-ticker scope contract：`included_ticker`、`candidate_lens`、`inclusion_rationale`、`available_source_families`、`relationship_strength`、`downstream_operator_owner`。
+- 若 case 要求 excluded rationale，excluded ticker 必须带 `excluded_ticker`、`candidate_lens`、`exclusion_rationale`。
+- Specialist 输出的 `evidence_gap_requests` 必须按要求的 request type 出现，并被 Judgment / Memo 保留。
+- Renderer 必须显示 hypothesis-only、source gap 或 coverage boundary，不能把缺口包装成 confirmed finding。
+
+Token / latency case：
+
+- 每个 A6 scope case 可设置 `max_case_elapsed_ms_lte`、`max_total_tokens_lte`、`max_research_lead_tokens_lte`、`max_universe_tokens_lte`、`max_specialist_tokens_lte`、`max_memo_tokens_lte`、`max_verifier_tokens_lte`。
+- 这些阈值是真实云端 A6 的 stop/proceed 约束，不是本地单测目标。
+- 如果 token 或 latency fail，先看 prompt/data-view/second-pass 是否过宽；不要只提高 max tokens。
+
 ## 5. 首批 Smoke
 
 建议首批只跑：
 
 1. `fin_full_exact_msft_capex_zh`
-2. `fin_full_mt_semis_scope_t1`
-3. `fin_full_mt_semis_scope_t2`
+2. `fin_full_scope_nvda_basic_fundamental_zh`
+3. `fin_full_standard_nvda_amd_market_zh`
+4. `fin_full_sector_ai_infra_depth_zh`
 
 原因：
 
-- 覆盖 exact lookup、standard memo、deep research 和 multi-turn scope override。
-- 只跑 3 个 case 即可捕捉 retrieval、language gate、memo/verifier、relationship、forbidden scope 的主要风险。
-- 如果这 3 个稳定，再跑 banking / energy / healthcare / utilities 的行业扩展。
+- 覆盖 exact lookup、单公司 scope decision、standard memo、deep research relationship path。
+- 只跑 4 个 case 即可捕捉 retrieval、scope contract、language gate、memo/verifier、relationship 的主要风险。
+- 如果这 4 个稳定，再跑 banking / energy / healthcare / utilities / multi-turn / gap-escalation 的行业扩展。
 
 ## 6. 命令模板
 
@@ -110,10 +130,11 @@ Multi-turn case：
 python scripts\eval_multi_agent\eval_multi_agent_real_llm_chain.py `
   --cases-path tests\fixtures\fin_agent_full_chain_multiturn_cases_v0_1.jsonl `
   --output-dir eval\sec_cases\outputs\multi_agent_real_llm_chain_eval `
-  --run-id 20260601_fin_agent_full_chain_multiturn_smoke_v0_1 `
+  --run-id 20260607_expanded_a6_scope_smoke_v0_1 `
   --case-id fin_full_exact_msft_capex_zh `
-  --case-id fin_full_mt_semis_scope_t1 `
-  --case-id fin_full_mt_semis_scope_t2 `
+  --case-id fin_full_scope_nvda_basic_fundamental_zh `
+  --case-id fin_full_standard_nvda_amd_market_zh `
+  --case-id fin_full_sector_ai_infra_depth_zh `
   --real-evidence-operators `
   --evidence-top-k 16 `
   --object-top-k 16 `
@@ -126,6 +147,8 @@ python scripts\eval_multi_agent\eval_multi_agent_real_llm_chain.py `
 
 如果首批通过，再新增：
 
+- `fin_full_scope_nvda_ai_supply_chain_readthrough_zh`
+- `fin_full_scope_nvda_non_us_supply_chain_gap_zh`
 - `fin_full_standard_jpm_bac_deposit_credit_zh`
 - `fin_full_standard_xom_cvx_energy_zh`
 - `fin_full_sector_utilities_power_depth_zh`
@@ -138,7 +161,8 @@ Proceed：
 - 首批 smoke `3/3` hard gate pass。
 - Memo / Verifier fallback 为 `0`。
 - rendered answer language gate pass。
-- multi-turn T2 forbidden scope pass。
+- scope-decision case 的 `scope_gap_contract.*` 全 pass。
+- performance layer 的 token / latency 阈值全 pass。
 
 Stop：
 
@@ -146,6 +170,9 @@ Stop：
 - 真实 retrieval 没触发但 case 要求 real retrieval。
 - Verifier pass 依赖 fallback 或 repair 成本异常。
 - 中文 output 退回英文。
+- Research Lead 缺 `scope_decision`，或 Universe 缺 per-ticker scope contract。
+- gap-escalation case 中 Specialist gap request 未被 Judgment / Memo / Renderer 保留。
+- token / latency 超过 case 明确阈值。
 
 Pivot：
 

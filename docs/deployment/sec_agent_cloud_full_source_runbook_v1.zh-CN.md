@@ -2,6 +2,8 @@
 
 [English version](sec_agent_cloud_full_source_runbook_v1.md)
 
+> 历史说明：本文是早期 full30 云端运行手册，不作为当前 FinSight-Agent 扩展链路的部署入口。当前公开运行说明请优先阅读根目录 README、工作台快速开始和自有数据快速接入文档。
+
 日期：2026-05-26
 
 ## 目的

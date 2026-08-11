@@ -219,6 +219,53 @@ docker run --rm -p 127.0.0.1:8765:8765 `
 
 镜像不包含私有数据、模型权重或 API key；这些仍然通过本地挂载目录和环境变量提供。后端 target 会使用内置静态页面或已有前端产物；完整 target 会在镜像构建时生成前端产物。
 
+真正一体化部署推荐使用：
+
+```powershell
+docker compose -f compose.yaml -f compose.runtime.yaml up --build
+```
+
+这个形态的约束是：
+
+- 镜像内置 Workbench 后端、前端产物、`requirements.txt` 完整 Python runtime 和基础 OS 包。
+- 宿主机只挂载 `configs/`、`data/`、`reports/` 作为持久层；私有数据、运行产物和配置不会被打入镜像。
+- `apps/`、`scripts/`、`src/` 在容器内视为不可变代码层。上线环境不要通过容器内手改脚本来更新逻辑。
+- 脚本更新默认策略是重建镜像；未来如果接签名脚本包或远程发布通道，走 Workbench 的维护接口扩展，不开放任意命令执行。
+- 数据更新走白名单 data-build job，成功后可回填 source bundle，前端或自动化脚本不需要直接拼 shell 命令。
+
+如果仓库所在磁盘空间紧张，可以把可写层放到其它磁盘。Compose 的默认值不变，但支持覆盖三个挂载源：
+
+```powershell
+$env:WORKBENCH_CONFIGS_MOUNT = "D:/FIN_Insight_Agent/configs"
+$env:WORKBENCH_DATA_MOUNT = "Z:/finsight_workbench_runtime/data"
+$env:WORKBENCH_REPORTS_MOUNT = "Z:/finsight_workbench_runtime/reports"
+docker compose -f compose.yaml -f compose.runtime.yaml up --build
+```
+
+`WORKBENCH_DATA_MOUNT` 必须有足够空间并允许 SQLite 写入；否则 `/api/health/ready` 会因为 store 检查失败而返回 503。
+
+部署和更新契约可以通过这些接口查看：
+
+```text
+GET /api/system/deployment
+GET /api/system/maintenance/actions
+POST /api/system/maintenance/run
+GET /api/data-build/steps
+POST /api/data-build/preview
+POST /api/data-build/run
+POST /api/source-bundles/validate
+```
+
+`/api/system/deployment` 会报告当前是 `control-plane` 还是 `integrated` runtime、完整 runtime 依赖是否齐全、哪些目录是持久层、以及数据更新/脚本更新接口的状态。完整 runtime 模式下，如果 `requirements.txt` 对应依赖缺失，`/api/health/ready` 会降级，避免轻量镜像伪装成可执行完整链路的一体化部署。
+
+当前维护接口只启用只读检查动作：
+
+- `runtime_preflight`
+- `script_catalog_validate`
+- `data_build_catalog_validate`
+
+`script_update_reserved` 是为未来脚本更新保留的 action，默认不可运行。真实脚本更新应通过重建镜像或后续接入的签名更新机制完成。
+
 如果要做前端开发，可以另开一个终端：
 
 ```powershell
@@ -416,6 +463,48 @@ GET /api/traces/<trace_id>
 `/api/traces/<trace_id>` 会返回同一个 trace 下的任务列表、事件列表、任务数、事件数和状态计数，适合排查一次请求从 API 到后台子进程的完整路径。
 
 `/api/runs/{job_id}/status` 是轻量轮询接口，只读取任务状态和最新事件，不检查运行目录里的大产物。前端刷新任务状态时优先用这个接口。
+
+Workbench 后端启动时会把上一次服务退出后残留的 `queued` / `running` 任务标记为 `interrupted`，避免页面误以为旧任务仍在运行。任务终态包括：
+
+```text
+completed
+failed
+cancelled
+interrupted
+timed_out
+```
+
+后台任务有并发和超时控制，可以用环境变量调整：
+
+```text
+WORKBENCH_MAX_ACTIVE_JOBS=2
+WORKBENCH_DEFAULT_TIMEOUT_S=
+WORKBENCH_CANCEL_GRACE_S=5
+WORKBENCH_EVENT_PAGE_MAX=5000
+```
+
+数据构建步骤默认使用各自的 `timeout_hint_s`；未设置步骤级 timeout 的任务会使用 `WORKBENCH_DEFAULT_TIMEOUT_S`。取消任务时，后端会尽量终止子进程树，而不仅是父进程。
+
+默认路径策略只允许访问仓库、`configs/`、`data/`、`reports/`、`eval_sets/` 和 Workbench SQLite 所在目录。需要额外允许本机目录时，优先设置：
+
+```text
+WORKBENCH_ALLOWED_ROOTS=<absolute-path-1><path-separator><absolute-path-2>
+```
+
+不建议设置 `WORKBENCH_ALLOW_EXTERNAL_PATHS=1`，除非你确认 Workbench 仍只绑定在 `127.0.0.1` 且只由可信本机用户访问。
+
+后端运维和合约接口：
+
+```text
+GET /api/health/live
+GET /api/health/ready
+GET /api/system/runtime/preflight
+GET /api/system/contracts
+POST /api/system/store/backup
+POST /api/runs/prune
+```
+
+`/api/system/runtime/preflight` 会区分控制面依赖和完整 runtime 依赖。轻量后端镜像只要求控制面依赖通过；完整数据构建或 Agent 子任务仍需要 runtime 依赖就绪。
 
 每个 API 响应都会带：
 

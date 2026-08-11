@@ -1,0 +1,198 @@
+{
+  "schema_version": "fin_ia_0_1_3_main_unique_semantic_merge_disposition_v1_0",
+  "recorded_at": "2026-08-11",
+  "status": "complete_merge_commit_and_post_merge_tests_pending",
+  "merge_base": "abf26ae3d7f1eebf7a0b54982a175a797ef23a97",
+  "incoming_tip": "179be9b1f38a903850ff449f55e2804bca9a9c42",
+  "working_tip_before_merge": "130e78ad",
+  "policy": {
+    "allowed_dispositions": [
+      "patch_equivalent",
+      "promote",
+      "promote_partial_archive_remainder",
+      "current_superseded_archive_history",
+      "merge_topology_only"
+    ],
+    "blanket_ours_or_theirs_allowed": false,
+    "failed_history_rewritten": false,
+    "private_data_copied": false
+  },
+  "commits": [
+    {
+      "commit": "023cacb42ee1b2bfa06394436fb264876ebdb9af",
+      "subject": "Productize workbench backend operations",
+      "disposition": "promote_partial_archive_remainder",
+      "promoted": [
+        "src/sec_agent/workbench/path_policy.py",
+        "src/sec_agent/workbench/runtime_config.py",
+        "src/sec_agent/workbench/runtime_preflight.py",
+        "bounded_runner_timeout_concurrency_and_process_tree_semantics"
+      ],
+      "superseded": [
+        "direct_endpoint_additions_to_legacy_apps/workbench/backend/app.py"
+      ],
+      "reason": "Permanent operator safety is reusable; legacy giant-app endpoint composition will be replaced by the version-neutral operations router."
+    },
+    {
+      "commit": "af89b6e7073b305f54c3b7b694a0a3fde8d3610b",
+      "subject": "Add workbench integrated runtime deployment contract",
+      "disposition": "promote",
+      "promoted": [
+        "src/sec_agent/workbench/deployment.py",
+        "src/sec_agent/workbench/maintenance.py",
+        "scripts/workbench/runtime_maintenance.py",
+        "Docker_and_compose_runtime_contracts"
+      ],
+      "reason": "Deployment and maintenance are permanent operator capabilities and remain separate from research truth."
+    },
+    {
+      "commit": "31543a88e989e226fbbc3c63f82c027363c2866d",
+      "subject": "Fix workbench full runtime image",
+      "disposition": "promote",
+      "promoted": ["Dockerfile", "compose.runtime.yaml", "tracked_vite_entrypoint", "tests/test_workbench_docker_config.py"],
+      "reason": "Portable runtime image and build checks are baseline infrastructure."
+    },
+    {
+      "commit": "e63e54ecdb0d07d720565e97949a87d5b2074394",
+      "subject": "Add workbench runtime operations UI",
+      "disposition": "current_superseded_archive_history",
+      "superseded": ["legacy_main.tsx_operations_composition", "legacy_workbench.css_additions"],
+      "replacement": "future_/operations_composition_over_promoted_operator_API",
+      "reason": "The current frontend has evolved far beyond this snapshot; replaying the patch would restore a second product/operator shell."
+    },
+    {
+      "commit": "9175d88b545672c69aba13178f57a43619aa2552",
+      "subject": "Allow workbench compose data mounts to move drives",
+      "disposition": "promote",
+      "promoted": ["compose_data_root_overrides", "portable_mount_tests"],
+      "reason": "Explicit data roots are required by the clean-worktree contract."
+    },
+    {
+      "commit": "6f46fbd454046eeb8f586801e9c18aea15ea8f21",
+      "subject": "Add Workbench frontend CI smoke and pressure harness",
+      "disposition": "promote_partial_archive_remainder",
+      "promoted": ["scripts/workbench/frontend_smoke_playwright.py", ".github/workflows/docker-smoke.yml"],
+      "archived": ["archive/code/pre_fin_0_1_3_main_a6/scripts/eval_multi_agent/benchmark_real_llm_chain_pressure.py"],
+      "reason": "Frontend smoke is permanent; the old real-chain pressure runner is attempt-era eval code and is not an active product entrypoint."
+    },
+    {
+      "commit": "f6757f2653d3122f4f53be90eb7bf006662b44f5",
+      "subject": "Add Workbench backend release quality report",
+      "disposition": "promote_partial_archive_remainder",
+      "promoted": ["scripts/workbench/generate_backend_release_quality_report.py", "tests/test_workbench_release_quality_report.py"],
+      "archived": ["docs/archive/pre_fin_0_1_3_main_a6/model_runs/20260605_workbench_backend_release_quality_pressure_smoke_v0_1.md"],
+      "reason": "Reusable quality tooling remains active; the point-in-time report is audit history."
+    },
+    {
+      "commit": "d4f88eb084fb00dfeb53916a394e80ebb2842f25",
+      "subject": "feat: add layered data source expansion assets",
+      "disposition": "patch_equivalent",
+      "reason": "git cherry reports patch-equivalent content already integrated on the current lineage."
+    },
+    {
+      "commit": "c12852165476d523331ddb9ee0b1a774f4858885",
+      "subject": "feat: add expanded retrieval and relationship contracts",
+      "disposition": "patch_equivalent",
+      "reason": "git cherry reports patch-equivalent content already integrated on the current lineage."
+    },
+    {
+      "commit": "1893caac8af30266313e2d4375c7548075ae348a",
+      "subject": "feat: wire expanded multi-agent gates",
+      "disposition": "patch_equivalent",
+      "reason": "git cherry reports patch-equivalent content already integrated on the current lineage."
+    },
+    {
+      "commit": "2ea7718177c7da644bb503a9bd297de44f35c640",
+      "subject": "chore: add workbench service dependencies",
+      "disposition": "patch_equivalent",
+      "reason": "Current requirements are a strict superset and git cherry reports patch equivalence."
+    },
+    {
+      "commit": "7d7cf3bce918c2a4e9dbe4761f61402522ec0573",
+      "subject": "docs: record layered expansion progress",
+      "disposition": "current_superseded_archive_history",
+      "replacement": "current_PRD_TECH_Project_OS_and_fin_0_1_3_worklogs",
+      "reason": "The active architecture documents have later FIN 0.1.3 corrections; June execution narratives remain reachable through merge history."
+    },
+    {
+      "commit": "b2082a2a34732247806d98303ea40fc7260c4730",
+      "subject": "feat: add Workbench A6 full-chain eval runner",
+      "disposition": "current_superseded_archive_history",
+      "archived": [
+        "archive/code/pre_fin_0_1_3_main_a6/scripts/workbench/run_expanded_a6_eval.py",
+        "archive/code/pre_fin_0_1_3_main_a6/tests/test_workbench_expanded_a6_eval.py"
+      ],
+      "replacement": "current_generalized_Workbench_eval_catalog_and_FIN_0_1_3_stage_evals",
+      "reason": "A6-specific orchestration is historical and must not return as a product runner."
+    },
+    {
+      "commit": "364e565d947094c0806ebdf1a04ba10db5a75a1d",
+      "subject": "feat: add structured agent evidence gap protocol",
+      "disposition": "current_superseded_archive_history",
+      "replacement": "current_EvidenceRequest_typed_gap_dynamic_research_and_pack_contracts",
+      "reason": "The current lineage has later provider-neutral EvidenceRequest, typed gap and Case/Evidence boundaries; merging the older fields into shared contracts would create dual schemas."
+    },
+    {
+      "commit": "37718b2344b3087a29d33f1c67b1b0dc7abe6d10",
+      "subject": "docs: harden research lead universe scope skills",
+      "disposition": "current_superseded_archive_history",
+      "replacement": "current_research_skills_SearchIntent_and_case_subject_contracts",
+      "reason": "The current skill set contains later scope, identity and relationship-direction rules."
+    },
+    {
+      "commit": "124e049a101914228eab578d9b1aa02ae4adcb48",
+      "subject": "feat: add expanded A6 scope gap eval gates",
+      "disposition": "current_superseded_archive_history",
+      "replacement": "current_stage_specific_qrels_Evidence_Pack_and_content_quality_gates",
+      "reason": "The A6 evaluator mixes an old contract family with a superseded fixed case set."
+    },
+    {
+      "commit": "8863a3d94326be7e7f284f20fc1a9efbcaa00ad7",
+      "subject": "Harden Workbench backend runtime",
+      "disposition": "merge_topology_only",
+      "reason": "This merge commit joins the Workbench hardening side line; reusable semantics are dispositioned under 023cacb4 through f6757f26."
+    },
+    {
+      "commit": "c962a88e1d75283327c2a8c92526767212e27642",
+      "subject": "Complete expanded A6 backend eval closeout",
+      "disposition": "current_superseded_archive_history",
+      "archived": [
+        "archive/code/pre_fin_0_1_3_main_a6/src/sec_agent/mcp_resident_worker.py",
+        "archive/code/pre_fin_0_1_3_main_a6/scripts/mcp/run_sec_agent_mcp_resident_worker.py",
+        "archive/code/pre_fin_0_1_3_main_a6/scripts/eval_retrieval/eval_milvus_multi_query_batch_probe.py",
+        "docs/archive/pre_fin_0_1_3_main_a6/worklog",
+        "docs/archive/pre_fin_0_1_3_main_a6/model_runs"
+      ],
+      "replacement": "current_S1_retrieval_Evidence_Pack_and_S3_dynamic_research_acceptance",
+      "reason": "The resident A6 experiment and 20-case closeout are historical evidence, not a current product Runtime contract."
+    },
+    {
+      "commit": "f936e0fa599534a4b43453b74373a13098e2b0cf",
+      "subject": "Merge expanded A6 backend eval closeout",
+      "disposition": "merge_topology_only",
+      "reason": "Topology is retained; code semantics are dispositioned under the parent commits."
+    },
+    {
+      "commit": "179be9b1f38a903850ff449f55e2804bca9a9c42",
+      "subject": "Docs: add public architecture and eval docs",
+      "disposition": "promote",
+      "promoted": [
+        "docs/architecture/fin_sight_agent_architecture.zh-CN.md",
+        "docs/architecture/backend_and_eval_runtime.zh-CN.md",
+        "docs/architecture/context_and_state_management.zh-CN.md",
+        "docs/architecture/data_and_tool_access_model.zh-CN.md",
+        "docs/architecture/multi_agent_orchestration.zh-CN.md",
+        "docs/eval/fin_agent_public_eval_summary.zh-CN.md",
+        "README.zh-CN.md"
+      ],
+      "reason": "Current public architecture is reusable and will be cross-linked to the stricter FIN 0.1.3 baseline documents."
+    }
+  ],
+  "verification": {
+    "unmerged_paths": 0,
+    "workbench_merge_slice": "66 passed",
+    "failed_history_rewritten": false,
+    "model_provider_network_calls": [0, 0, 0]
+  },
+  "current_next": "COMMIT_SEMANTIC_MERGE_THEN_CONNECT_PROMOTED_WORKBENCH_OPERATIONS_AND_TYPED_CASE_WORKSPACE"
+}

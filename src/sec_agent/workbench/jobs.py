@@ -11,7 +11,8 @@ from .artifacts import RunArtifactIndex
 from .runtime_ids import new_trace_id
 
 
-TERMINAL_RUN_STATUSES = {"completed", "failed", "cancelled"}
+ACTIVE_RUN_STATUSES = {"queued", "running"}
+TERMINAL_RUN_STATUSES = {"completed", "failed", "cancelled", "interrupted", "timed_out"}
 
 
 class RunJob(BaseModel):
@@ -249,8 +250,11 @@ def new_eval_run_job(
     job_id: str | None = None,
     profile_id: str | None = None,
     trace_id: str | None = None,
+    case_ids: list[str] | None = None,
+    prewarm_resident_tools: bool | None = None,
 ) -> RunJob:
     now = datetime.now().isoformat(timespec="seconds")
+    selected_case_ids = [str(item).strip() for item in case_ids or [] if str(item).strip()]
     return RunJob(
         job_id=job_id or f"eval_{uuid4().hex[:12]}",
         job_type="eval_run",
@@ -263,6 +267,33 @@ def new_eval_run_job(
             "runner": "workbench_subprocess",
             "eval_id": eval_id,
             "output_path": str(Path(output_path)),
+            "case_ids": selected_case_ids,
+            "prewarm_resident_tools": prewarm_resident_tools,
+        },
+    )
+
+
+def new_maintenance_job(
+    *,
+    action_id: str,
+    action_label: str,
+    category: str,
+    job_id: str | None = None,
+    trace_id: str | None = None,
+) -> RunJob:
+    now = datetime.now().isoformat(timespec="seconds")
+    return RunJob(
+        job_id=job_id or f"maintenance_{uuid4().hex[:12]}",
+        job_type="maintenance",
+        status="queued",
+        trace_id=trace_id or new_trace_id(),
+        created_at=now,
+        updated_at=now,
+        metadata={
+            "runner": "workbench_subprocess",
+            "action_id": action_id,
+            "action_label": action_label,
+            "category": category,
         },
     )
 

@@ -20,6 +20,11 @@ from apps.workbench.backend.application.research_evidence_pack_service import (
     ResearchEvidencePackService,
     ResearchEvidencePackServiceError,
 )
+from apps.workbench.backend.application.research_workspace_service import (
+    ResearchWorkspacePrincipal,
+    ResearchWorkspaceService,
+    ResearchWorkspaceServiceError,
+)
 from sec_agent.runtime_resource_registry import load_runtime_resource_registry
 from sec_agent.s1_six_case_local_evidence_pack import (
     CONTRACT_REF,
@@ -239,6 +244,81 @@ def _service(tmp_path: Path) -> ResearchEvidencePackService:
     )
 
 
+def _workspace_config(
+    evidence_service: ResearchEvidencePackService,
+) -> dict[str, Any]:
+    principal = ResearchEvidencePackPrincipal(
+        "current", frozenset({"current_product:read"})
+    )
+    subjects = {
+        "DELL": {
+            "entity_id": "sec_issuer_0001571996",
+            "issuer_id": "0001571996",
+            "legal_name": "Dell Technologies Inc.",
+            "ticker": "DELL",
+            "exchange": "NYSE",
+            "as_of": "2026-08-06",
+            "aliases": ["Dell Technologies", "Dell"],
+        },
+        "MU": {
+            "entity_id": "sec_issuer_0000723125",
+            "issuer_id": "0000723125",
+            "legal_name": "Micron Technology, Inc.",
+            "ticker": "MU",
+            "exchange": "NASDAQ",
+            "as_of": "2026-08-06",
+            "aliases": ["Micron Technology", "Micron"],
+        },
+        "NVDA": {
+            "entity_id": "sec_issuer_0001045810",
+            "issuer_id": "0001045810",
+            "legal_name": "NVIDIA Corporation",
+            "ticker": "NVDA",
+            "exchange": "NASDAQ",
+            "as_of": "2026-08-06",
+            "aliases": ["NVIDIA", "Nvidia"],
+        },
+    }
+    cases = []
+    for key in ("DELL", "MU", "NVDA"):
+        pack = evidence_service.get_case(key, principal)
+        cases.append(
+            {
+                "case_id": f"case_{key.lower()}_current",
+                "case_version": 1,
+                "case_key": key,
+                "subject": subjects[key],
+                "research_context": {
+                    "research_as_of": "2026-08-06",
+                    "language": "zh-CN",
+                    "research_question": f"{key} current research question",
+                },
+                "evidence_pack_binding": {
+                    "pack_case_key": key,
+                    "pack_artifact_digest": pack["artifact_digest"],
+                    "pack_payload_digest": pack["pack_payload_digest"],
+                },
+            }
+        )
+    return {
+        "schema_version": "fin_ia_research_workspace_catalog_v1_0",
+        "status": "active_read_only_research_workspace",
+        "product_mode": "current",
+        "read_permission": "current_product:read",
+        "evidence_pack_result_digest": evidence_service.result_digest,
+        "cases": cases,
+        "surface_policy": {
+            "primary_route": "/workspace",
+            "available_surfaces": ["overview", "evidence"],
+            "mutable_case_creation": False,
+            "complete_investment_report_claimed": False,
+            "model_or_network_calls": 0,
+            "residual_gaps_remain_visible": True,
+        },
+        "known_boundary": "test identity-bound reviewed evidence only",
+    }
+
+
 def _all_keys(value: Any) -> set[str]:
     if isinstance(value, dict):
         return set(value) | {
@@ -362,3 +442,99 @@ def test_projection_fails_closed_on_permission_case_and_artifact_drift(
         "current_research_evidence_pack_object_identity_drift"
     )
     assert drift.value.status_code == 503
+
+
+def test_primary_workspace_binds_subject_case_and_evidence_pack(
+    tmp_path: Path,
+) -> None:
+    evidence_service = _service(tmp_path)
+    workspace_service = ResearchWorkspaceService(
+        config=_workspace_config(evidence_service),
+        evidence_packs=evidence_service,
+    )
+    app = create_app(
+        store_path=tmp_path / "workbench.sqlite3",
+        current_research_evidence_pack_service=evidence_service,
+        research_workspace_service=workspace_service,
+        workbench_runtime_mode="fixture",
+    )
+    client = TestClient(app)
+
+    listed = client.get("/api/v1/research-cases", headers=HEADERS)
+    assert listed.status_code == 200
+    assert listed.json()["primary_route"] == "/workspace"
+    assert [row["subject"]["legal_name"] for row in listed.json()["items"]] == [
+        "Dell Technologies Inc.",
+        "Micron Technology, Inc.",
+        "NVIDIA Corporation",
+    ]
+    assert all(
+        row["pack_binding"]["binding_state"]
+        == "identity_and_digest_bound"
+        for row in listed.json()["items"]
+    )
+
+    detail = client.get(
+        "/api/v1/research-cases/case_dell_current", headers=HEADERS
+    )
+    assert detail.status_code == 200
+    assert detail.json()["subject"]["issuer_id"] == "0001571996"
+    assert detail.json()["available_surfaces"] == ["overview", "evidence"]
+    assert detail.json()["evidence_pack_uri"].endswith("/evidence")
+
+    evidence = client.get(
+        "/api/v1/research-cases/case_dell_current/evidence",
+        headers=HEADERS,
+    )
+    assert evidence.status_code == 200
+    payload = evidence.json()
+    assert payload["case_key"] == payload["subject"]["ticker"] == "DELL"
+    assert payload["research_context"]["research_as_of"] == "2026-08-06"
+    assert payload["evidence_items"][0]["source"]["evidence_owner_ticker"] == "DELL"
+    assert payload["residual_gaps"]
+    assert {"/workspace", "/workspace/{frontend_path:path}"}.issubset(
+        {route.path for route in app.routes}
+    )
+
+
+def test_primary_workspace_fails_closed_on_cross_case_binding(
+    tmp_path: Path,
+) -> None:
+    evidence_service = _service(tmp_path)
+    config = _workspace_config(evidence_service)
+    config["cases"][0]["evidence_pack_binding"]["pack_artifact_digest"] = (
+        config["cases"][1]["evidence_pack_binding"]["pack_artifact_digest"]
+    )
+    config["cases"][0]["evidence_pack_binding"]["pack_payload_digest"] = (
+        config["cases"][1]["evidence_pack_binding"]["pack_payload_digest"]
+    )
+    with pytest.raises(ResearchWorkspaceServiceError) as failure:
+        ResearchWorkspaceService(
+            config=config,
+            evidence_packs=evidence_service,
+        )
+    assert failure.value.error_code == (
+        "research_workspace_case_pack_binding_drift"
+    )
+    assert failure.value.status_code == 503
+
+
+def test_primary_workspace_denies_wrong_mode_permission_and_unknown_case(
+    tmp_path: Path,
+) -> None:
+    evidence_service = _service(tmp_path)
+    service = ResearchWorkspaceService(
+        config=_workspace_config(evidence_service),
+        evidence_packs=evidence_service,
+    )
+    with pytest.raises(ResearchWorkspaceServiceError) as denied:
+        service.list_cases(ResearchWorkspacePrincipal("fixture", frozenset()))
+    assert denied.value.status_code == 403
+    with pytest.raises(ResearchWorkspaceServiceError) as missing:
+        service.get_case(
+            "case_orcl_current",
+            ResearchWorkspacePrincipal(
+                "current", frozenset({"current_product:read"})
+            ),
+        )
+    assert missing.value.status_code == 404

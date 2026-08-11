@@ -72,10 +72,10 @@ def _assert_code(root: Path, expected: str) -> None:
 
 def test_registry_is_one_validated_authority_for_all_declared_consumers() -> None:
     registry = load_runtime_resource_registry(ROOT)
-    assert len(registry.resources) == 33
-    assert sum(row.bytes for row in registry.resources) == 345764
+    assert len(registry.resources) == 34
+    assert sum(row.bytes for row in registry.resources) == 349463
     assert registry.resource_canonical_digest == (
-        "bda68a50390cbc953b9572948ee129c8bf884c8c27337596fcbe4feaa5f4908a"
+        "4c32719e934cd1bd1d048c52cac91be1a8b4a3d35bc355622abb3f05070614b7"
     )
     assert registry.package_paths()[0].as_posix().startswith("configs/")
     assert all(row.required for row in registry.resources)

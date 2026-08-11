@@ -19,12 +19,13 @@
     "apps/workbench/backend/application/fin_0_1_2_runtime_contract_binding.py",
     "apps/workbench/backend/application/integrity_service.py",
     "apps/workbench/backend/application/research_evidence_pack_service.py",
+    "apps/workbench/backend/application/research_workspace_service.py",
     "src/sec_agent/research_skills.py",
     "src/sec_agent/s4_case_runtime.py"
   ],
-  "resource_count": 33,
-  "resource_bytes": 345764,
-  "resource_canonical_digest": "bda68a50390cbc953b9572948ee129c8bf884c8c27337596fcbe4feaa5f4908a",
+  "resource_count": 34,
+  "resource_bytes": 349463,
+  "resource_canonical_digest": "4c32719e934cd1bd1d048c52cac91be1a8b4a3d35bc355622abb3f05070614b7",
   "resources": [
     {
       "resource_id": "application.config.current_research_evidence_pack_projection",
@@ -38,6 +39,19 @@
       "load_phase": "application_service_initialization",
       "required": true,
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
+    },
+    {
+      "resource_id": "application.config.current_research_workspace_catalog",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_0.json",
+      "sha256": "4302202cd309bf1df0caa6e5c5555d90be24e12848d7cf2744ad04c6b0c4a86f",
+      "bytes": 3699,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.research_workspace_service.ResearchWorkspaceService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.research_workspace_service"
     },
     {
       "resource_id": "application.config.point01_feature_flags",

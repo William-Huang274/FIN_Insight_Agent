@@ -23,6 +23,7 @@ from .api.v1.human_baseline import build_human_baseline_router
 from .api.v1.local_research import build_local_research_router
 from .api.v1.planning import build_planning_router
 from .api.v1.research_evidence_packs import build_research_evidence_pack_router
+from .api.v1.research_workspace import build_research_workspace_router
 from .application.case_service import CaseService, case_service_from_env
 from .application.fin_0_1_2_s4_t06_current_product_projection import (
     CurrentProductProjectionService,
@@ -46,6 +47,7 @@ from .application.planning_service import PlanningService
 from .application.research_evidence_pack_service import (
     ResearchEvidencePackService,
 )
+from .application.research_workspace_service import ResearchWorkspaceService
 from .application.research_runtime import Fin01ResearchRuntime
 from .application.bounded_agent_executor import (
     BoundedAgentAdmission,
@@ -384,6 +386,7 @@ def create_app(
     current_research_evidence_pack_service: (
         ResearchEvidencePackService | None
     ) = None,
+    research_workspace_service: ResearchWorkspaceService | None = None,
     human_baseline_service: HumanBaselineService | None = None,
     vt2_integrity_service: IntegrityService | None = None,
     vt3_deliverable_service: DeliverableService | None = None,
@@ -434,6 +437,15 @@ def create_app(
             runtime_paths,
         )
     )
+    workspace_service = research_workspace_service
+    if (
+        workspace_service is None
+        and current_research_evidence_pack_service is None
+    ):
+        workspace_service = ResearchWorkspaceService.from_runtime_paths(
+            CODE_ROOT,
+            research_evidence_pack_service,
+        )
     if (
         workbench_runtime_mode == "fixture"
         and p02_execution_service is not None
@@ -520,6 +532,8 @@ def create_app(
         execution_service.background_dispatch_enabled
     )
     app.state.current_review_control_enabled = True
+    app.state.primary_product_route = "/workspace"
+    app.state.operator_route = "/operations"
     install_api_contracts(app)
     app.add_middleware(
         CORSMiddleware,
@@ -537,6 +551,11 @@ def create_app(
         build_research_evidence_pack_router(research_evidence_pack_service),
         prefix="/api/v1",
     )
+    if workspace_service is not None:
+        app.include_router(
+            build_research_workspace_router(workspace_service),
+            prefix="/api/v1",
+        )
     app.include_router(build_human_baseline_router(baseline_service), prefix="/api/v1")
     app.include_router(build_integrity_router(integrity_service), prefix="/api/v1")
     app.include_router(build_deliverables_router(deliverable_service), prefix="/api/v1")
@@ -1189,6 +1208,10 @@ def create_app(
 
     @app.get("/tasks", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/legacy", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/operations", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/operations/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/current", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/current/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/next", response_class=HTMLResponse, include_in_schema=False)

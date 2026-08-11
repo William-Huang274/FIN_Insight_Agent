@@ -20,6 +20,7 @@ import { WorkpaperReview } from "../features/workpaper-review/WorkpaperReview";
 import { WorkbenchLocaleProvider } from "../i18n/WorkbenchLocale";
 import { isWorkbenchNextPath, WorkbenchNext } from "./WorkbenchNext";
 import { CurrentProductWorkbench, isCurrentProductPath } from "./CurrentProductWorkbench";
+import { isResearchWorkspacePath, ResearchWorkspace } from "./ResearchWorkspace";
 import "./p02-shell.css";
 
 type AppShellProps = {
@@ -53,6 +54,8 @@ function LocalizedAppShell({ legacyApp }: AppShellProps) {
   const activeCaseId = caseIdForRoute(route);
   const [recentCaseId, setRecentCaseId] = useState<string | null>(null);
 
+  if (window.location.pathname === "/" || isResearchWorkspacePath(window.location.pathname)) return <ResearchWorkspace online={online} />;
+  if (window.location.pathname === "/operations" || window.location.pathname.startsWith("/operations/")) return <>{legacyApp}</>;
   if (isCurrentProductPath(window.location.pathname)) return <CurrentProductWorkbench online={online} />;
   if (isWorkbenchNextPath(window.location.pathname)) return <WorkbenchNext online={online} />;
   if (route.kind === "legacy") return <>{legacyApp}</>;
@@ -214,7 +217,7 @@ function useOnlineStatus(): boolean {
 }
 
 function decodeRoute(pathname: string): Route {
-  if (pathname === "/legacy") return { kind: "legacy" };
+  if (pathname === "/legacy" || pathname === "/operations") return { kind: "legacy" };
   if (pathname === "/cases/new") return { kind: "newCase" };
   const activityMatch = /^\/cases\/([^/]+)\/activity\/?$/.exec(pathname);
   if (activityMatch) return { kind: "activity", caseId: decodeURIComponent(activityMatch[1]) };
@@ -245,7 +248,7 @@ function pathForRoute(route: Route): string {
   if (route.kind === "workpaper") return `/cases/${encodeURIComponent(route.caseId)}/workpaper`;
   if (route.kind === "deliverable") return `/cases/${encodeURIComponent(route.caseId)}/deliverable`;
   if (route.kind === "humanBaseline") return `/cases/${encodeURIComponent(route.caseId)}/baseline`;
-  if (route.kind === "legacy") return "/legacy";
+  if (route.kind === "legacy") return "/operations";
   return "/tasks";
 }
 

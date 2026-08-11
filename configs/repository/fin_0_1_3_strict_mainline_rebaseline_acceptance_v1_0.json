@@ -1,7 +1,7 @@
 {
   "schema_version": "fin_ia_0_1_3_strict_mainline_rebaseline_acceptance_v1_0",
   "recorded_at": "2026-08-11",
-  "status": "accepted_in_progress_no_archive_or_release_yet",
+  "status": "in_progress_main_semantics_and_workspace_vertical_pass_old_consumer_cutover_pending",
   "owner_intent": "form_one_clear_FIN_0_1_3_code_and_project_baseline_then_merge_main_without_carrying_active_legacy_debt",
   "repository": {
     "working_branch": "codex/fin013-clean-baseline",
@@ -57,8 +57,9 @@
     {
       "gate_id": "G01_main_semantic_integration",
       "required": true,
-      "status": "pending",
-      "proof": "all_valid_semantics_from_main_unique_commits_preserved_or_explicitly_superseded_with_file_level_decision"
+      "status": "passed",
+      "proof": "all_valid_semantics_from_main_unique_commits_preserved_or_explicitly_superseded_with_file_level_decision",
+      "evidence": "b7263309fe808e4e3bb41b6d46318f35389d8d6a plus fin_0_1_3_main_unique_semantic_merge_disposition_v1_0.json"
     },
     {
       "gate_id": "G02_one_primary_product_frontdoor",
@@ -69,14 +70,16 @@
     {
       "gate_id": "G03_typed_case_and_pack_binding",
       "required": true,
-      "status": "pending",
-      "proof": "DELL_MU_NVDA_case_identity_and_digest_bound_pack_binding_pass_positive_and_cross_case_mutation"
+      "status": "passed",
+      "proof": "DELL_MU_NVDA_case_identity_and_digest_bound_pack_binding_pass_positive_and_cross_case_mutation",
+      "evidence": "ResearchWorkspaceService contract tests in 21-pass focused suite"
     },
     {
       "gate_id": "G04_real_ui_consumer",
       "required": true,
-      "status": "pending",
-      "proof": "workspace_evidence_view_consumes_current_case_API_and_displays_business_meaning_boundaries_citations_and_gaps"
+      "status": "passed",
+      "proof": "workspace_evidence_view_consumes_current_case_API_and_displays_business_meaning_boundaries_citations_and_gaps",
+      "evidence": "ResearchWorkspace.tsx plus TypeScript and production Vite build pass"
     },
     {
       "gate_id": "G05_old_consumer_zero",
@@ -135,5 +138,5 @@
     "do_not_claim_dynamic_research_or_release_from_a_read_only_three_case_surface",
     "do_not_merge_main_while_any_required_gate_is_pending_or_failed"
   ],
-  "current_next": "AUDIT_AND_SEMANTICALLY_INTEGRATE_MAIN_UNIQUE_COMMITS_THEN_IMPLEMENT_TYPED_CASE_PACK_WORKSPACE_CUTOVER"
+  "current_next": "CUT_OVER_VERSION_NEUTRAL_OPERATIONS_AND_REMOVE_ALL_LEGACY_PRODUCT_CONSUMERS_BEFORE_ARCHIVE"
 }

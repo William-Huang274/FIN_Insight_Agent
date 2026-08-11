@@ -1,5 +1,7 @@
 # Worklog
 
+- [881 — FIN 0.1.3 typed Case／Pack 绑定与主研究工作区纵切](product_strategy/881_fin_0_1_3_typed_case_pack_binding_and_primary_workspace_vertical.md)
+- [880 — FIN 0.1.3 `main` 语义合并与 A6 历史归档](product_strategy/880_fin_0_1_3_main_semantic_merge_and_a6_archive.md)
 - [879 — FIN 0.1.3 严格主线重定基验收与迁移程序](product_strategy/879_fin_0_1_3_strict_mainline_rebaseline_acceptance_and_migration_program.md)
 - [878 — FIN 0.1.3 Workbench 消费者总图与第一条 S1 产品纵切](product_strategy/878_fin_0_1_3_workbench_consumer_map_and_s1_vertical_slice_decision.md)
 - [877 — FIN 0.1.3 clean worktree、代码生命周期与 Workbench cutover 边界](product_strategy/877_fin_0_1_3_clean_worktree_code_lifecycle_and_workbench_cutover_boundary.md)

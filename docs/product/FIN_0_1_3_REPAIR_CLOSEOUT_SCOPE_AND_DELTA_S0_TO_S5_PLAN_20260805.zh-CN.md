@@ -316,6 +316,8 @@ DELL Supervisor R2 说明旧计划还缺一条统一原则：模型需要看到�
 
 > **2026-08-11 `S2-06D` R1 admission expiry-guard disposition**：R1 从 clean/synced implementation 成功签发但未消费；签后复核发现执行路径没有把当前时间与 24 小时窗口比较。R1 因此保留为不可变 rejected evidence，永不执行或改标复用，且 provider/model/network/source=`0/0/0/0`。修复在 S2 原地增加 authority/admission 时间一致性和 `issued_at <= observed_at < expires_at` 硬门禁，issuer/runner 只转向 v1.1；`56 passed` 后先 clean commit，再签一份新的未消费 v1.1，仍不自动执行。
 
+> **2026-08-11 `S2-06D` v1.1 issuance and clean preflight**：修复后的 clean/synced commit 已签发新 admission，R1 未复用；v1.1 在 24 小时窗口内通过正式 runner `--preflight`，仍为 unconsumed，且无 execution authority。累计相关回归=`61 passed`，provider/model/network/source=`0/0/0/0`。下一项是独立零调用 execution-authority 决策；若 admission 到期则失效重签，不能用继续指令隐式绕过。
+
 #### 7A.5.1 2026-08-10 DELL fixed-pack transport successor 与数字表面闭环
 
 新的 DELL fixed-pack canary R1 在第 6 次 Provider 调用发生 `RemoteDisconnected`。前 5 个节点均有完整不可变 request/response capture；失败节点也有 capture，但没有可晋升输出。相邻请求大小近似，当前证据不足以认定容量故障或模型推理失败。direct baseline 的 11 个 numeric finding 又主要来自合法中文尺度转换和一项可复算比例缺少本地权威 trace。故本轮保持 S2，不重跑前 5 节点，也不创建新产品版本：

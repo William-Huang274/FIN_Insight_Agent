@@ -45,6 +45,10 @@ R1_DISPOSITION = RELEASES / (
     "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_"
     "live_admission_issuance_r1_expiry_guard_gap_disposition_v1_0.json"
 )
+PREFLIGHT_RESULT = RELEASES / (
+    "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_"
+    "live_admission_v1_1_clean_preflight_result_v1_0.json"
+)
 
 
 def _load(path: Path) -> dict:
@@ -123,3 +127,19 @@ def test_v1_1_does_not_rehabilitate_or_reuse_r1() -> None:
     ]["admission_digest"]
     assert disposition["disposition"]["r1_may_be_executed"] is False
     assert disposition["disposition"]["r1_may_be_relabelled_or_reused"] is False
+
+
+def test_v1_1_clean_preflight_result_is_canonical_and_stops_before_execution() -> None:
+    result = _load(PREFLIGHT_RESULT)
+    body = {key: value for key, value in result.items() if key != "result_digest"}
+    assert result["result_digest"] == canonical_digest(body)
+    assert result["v1_1_issuance"]["issuance_digest"] == _load(ISSUANCE)[
+        "issuance_digest"
+    ]
+    assert result["clean_preflight"]["status"] == (
+        "preflight_pass_execution_not_authorized"
+    )
+    assert result["clean_preflight"]["separate_execution_authority_present"] is False
+    assert result["stage_acceptance"]["fresh_v1_1_clean_preflight"] is True
+    assert result["stage_acceptance"]["natural_model_canary"] is False
+    assert result["observed_calls"]["provider_calls"] == 0

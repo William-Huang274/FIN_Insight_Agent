@@ -1,0 +1,64 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_admission_v1_1_clean_preflight_result_v1_0",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "status": "issued_unconsumed_clean_preflight_pass_execution_authority_pending",
+  "repair_basis": {
+    "implementation_commit": "dd035eb5d62776e0a3d1118f1c439add42814c45",
+    "issuance_commit": "5e2db80d905f01bda06c381ad7174f45a990d2d0",
+    "expiry_guard_repair_digest": "2f33d395473d636c20ab01daa94fab102b03e63d811a5e63055a94fbd9000bb7",
+    "r1_disposition_digest": "3a13ab4eba786c4c45eb9a5882c410cce631dd5f1bab11e784af578a48e7fc17"
+  },
+  "v1_1_issuance": {
+    "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_admission_issuance_v1_1.json",
+    "issuance_digest": "bbed0f7bf77eb9cbdb64cdd7c5e55c5346cfc06139f2962a55908a11f6116f33",
+    "admission_digest": "39aad5b20df5ca0e95c96103bee0175105697bf5cf71c1002d16c7509e0ba151",
+    "run_id": "fin013_s2_numeric_view_natural_canary_789cf2edee8c4818b160",
+    "issued_at": "2026-08-11T01:46:27Z",
+    "expires_at": "2026-08-12T01:46:27Z",
+    "admission_consumed": false,
+    "execution_enabled_by_issuance": false
+  },
+  "clean_preflight": {
+    "status": "preflight_pass_execution_not_authorized",
+    "repository_clean": true,
+    "head_synced_with_upstream": true,
+    "implementation_is_ancestor": true,
+    "project_os_live_scope": "pass",
+    "source_bindings_valid": 9,
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "admission_within_valid_time_window": true,
+    "runtime_root_absent": true,
+    "separate_execution_authority_present": false
+  },
+  "verification": {
+    "focused_and_adjacent_tests": "61 passed",
+    "python_compileall": "pass",
+    "git_diff_check": "pass",
+    "staged_secret_scan": "pass"
+  },
+  "observed_calls": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0
+  },
+  "stage_acceptance": {
+    "live_path_clean_synced": true,
+    "r1_rejected_and_preserved": true,
+    "expiry_guard_clean_synced": true,
+    "fresh_v1_1_admission_issued": true,
+    "fresh_v1_1_clean_preflight": true,
+    "execution_authority_issued": false,
+    "natural_model_canary": false,
+    "dell_delivery_pass": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "known_boundary": "The admission is valid and preflighted but unconsumed. It cannot reach DeepSeek without a separately reviewed execution-authority artifact, and it expires at 2026-08-12T01:46:27Z.",
+  "current_next": "SEPARATE_ZERO_CALL_SINGLE_LIVE_CANARY_EXECUTION_AUTHORITY_DECISION_BEFORE_EXPIRY_OR_REISSUE_IF_EXPIRED",
+  "result_digest": "77cf96f9ec3979aec7036e16a53c2ec4205a4683d36b8c21b0ebcd150cc08664"
+}

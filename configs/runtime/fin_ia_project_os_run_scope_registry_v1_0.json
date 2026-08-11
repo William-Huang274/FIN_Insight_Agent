@@ -563,10 +563,24 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1"]
     },
+    "FIN_0_1_3_S3": {
+      "owner_stage": "S3",
+      "operation_class": "namespace",
+      "parent_scope_id": "FIN_0_1_3",
+      "executable": false,
+      "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
+    },
+    "FIN_0_1_3_S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_AND_CONTENT_QUALITY_ZERO_CALL": {
+      "owner_stage": "S3",
+      "operation_class": "shared_governance_implementation",
+      "parent_scope_id": "FIN_0_1_3_S3",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
+    },
     "FIN_0_1_3_S3_Experiment_B_end_to_end_agentic_research": {
       "owner_stage": "S3",
       "operation_class": "agentic_research",
-      "parent_scope_id": "FIN_0_1_3",
+      "parent_scope_id": "FIN_0_1_3_S3",
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
     },

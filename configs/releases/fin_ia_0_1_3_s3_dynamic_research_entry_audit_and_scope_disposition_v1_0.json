@@ -1,0 +1,138 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_dynamic_research_entry_audit_and_scope_disposition_v1_0",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S3",
+  "status": "entry_audit_pass_zero_call_successor_authorized_formal_scope_blocked_three_real_boundaries",
+  "run_scope": "FIN_0_1_3_S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_AND_CONTENT_QUALITY_ZERO_CALL",
+  "source_of_truth": {
+    "current_plan": "docs/product/FIN_0_1_3_REPAIR_CLOSEOUT_SCOPE_AND_DELTA_S0_TO_S5_PLAN_20260805.zh-CN.md",
+    "historical_plan_not_current": "docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md",
+    "prd": "docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md",
+    "technical_contracts": [
+      "docs/architecture/agent_graph_vnext/TECH_01_agentic_research_loop_decision_surface_contract.zh-CN.md",
+      "docs/architecture/agent_graph_vnext/TECH_02_agentic_search_evidence_toolgateway_sourcehunter.zh-CN.md",
+      "docs/architecture/agent_graph_vnext/TECH_05_domain_evidence_operator_decision_surface_projection.zh-CN.md",
+      "docs/architecture/agent_graph_vnext/TECH_10_trajectory_eval_self_improvement.zh-CN.md"
+    ],
+    "quality_rubric": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+    "S2_entry_decision": "configs/releases/fin_ia_0_1_3_s2_bounded_closeout_autonomy_grant_and_s3_entry_decision_v1_0.json"
+  },
+  "preflight_before_correction": {
+    "formal_scope": "FIN_0_1_3_S3_Experiment_B_end_to_end_agentic_research",
+    "status": "blocked",
+    "open_full_chain_blocker_count": 7,
+    "issue_prefixes": [
+      "RC-P36-151",
+      "RC-P36-152",
+      "RC-P36-154",
+      "RC-P36-155",
+      "RC-P36-157",
+      "RC-P36-165",
+      "RC-P36-172"
+    ]
+  },
+  "preflight_after_correction": {
+    "zero_call_scope": {
+      "status": "pass",
+      "open_full_chain_blocker_count": 0,
+      "contract_error_count": 0
+    },
+    "formal_scope": {
+      "status": "blocked",
+      "open_full_chain_blocker_count": 3,
+      "issue_prefixes": ["RC-P36-157", "RC-P36-165", "RC-P36-172"]
+    }
+  },
+  "blocker_dispositions": [
+    {
+      "issue_prefix": "RC-P36-151",
+      "disposition": "close_historical_projection",
+      "reason": "The later three-case official-source runtime and external recovery live proved the bounded DNS transport path without recurrence. This closes the synthetic-DNS compatibility defect, not general network reliability.",
+      "evidence_refs": [
+        "configs/releases/fin_ia_0_1_3_s1_07_current_source_canary_result_v1_3.json",
+        "docs/worklog/product_strategy/698_fin_0_1_3_s1_07_current_source_runtime_implementation.md",
+        "docs/worklog/product_strategy/764_fin_0_1_3_s1_08_external_recovery_terminal_closeout_and_internal_handoff.md"
+      ]
+    },
+    {
+      "issue_prefix": "RC-P36-152",
+      "disposition": "close_historical_projection",
+      "reason": "The approved Dell official SEC HTML fallback completed fetch, capture, parse and promotion while reusing immutable MU and NVDA successes. The PDF route may remain unavailable, but the bounded official-route recovery obligation is complete.",
+      "evidence_refs": [
+        "configs/releases/fin_ia_0_1_3_s1_07_current_source_canary_result_v1_3.json",
+        "docs/worklog/product_strategy/698_fin_0_1_3_s1_07_current_source_runtime_implementation.md"
+      ]
+    },
+    {
+      "issue_prefix": "RC-P36-154",
+      "disposition": "close_historical_projection",
+      "reason": "The missing candidate/query runtime was implemented, mutation-proven and exercised through later combined live runs. Search coverage remains insufficient under RC-P36-157; closing this issue does not claim target-in-pool quality.",
+      "evidence_refs": [
+        "docs/worklog/product_strategy/753_fin_0_1_3_s1_08_unified_query_facet_zero_call_implementation.md",
+        "configs/releases/fin_ia_0_1_3_s1_08_external_combined_recovery_assessment_v1_0.json",
+        "docs/worklog/product_strategy/764_fin_0_1_3_s1_08_external_recovery_terminal_closeout_and_internal_handoff.md"
+      ]
+    },
+    {
+      "issue_prefix": "RC-P36-155",
+      "disposition": "close_historical_projection",
+      "reason": "The project-owned discovery, transport and partial-terminalization defect was live-closed with complete captures, effective-query receipts and typed partial terminal results. External product coverage remains separately open under RC-P36-157.",
+      "evidence_refs": [
+        "configs/releases/fin_ia_0_1_3_s1_08_external_combined_live_result_v1_1.json",
+        "configs/releases/fin_ia_0_1_3_s1_08_external_combined_recovery_assessment_v1_0.json",
+        "docs/worklog/product_strategy/764_fin_0_1_3_s1_08_external_recovery_terminal_closeout_and_internal_handoff.md"
+      ]
+    },
+    {
+      "issue_prefix": "RC-P36-157",
+      "disposition": "preserve_mitigated_open",
+      "reason": "External candidate coverage remains materially insufficient: the latest re-adjudication added no Evidence and dynamic external research is not production-qualified. It blocks formal end-to-end S3 and release, but not zero-call successor engineering."
+    },
+    {
+      "issue_prefix": "RC-P36-165",
+      "disposition": "preserve_mitigated_open",
+      "reason": "The corrected DELL Pack materially improved downstream analysis, but valuation and issuer-specific supply allocation, timing and yield gaps remain typed. It blocks a claim of complete end-to-end research, not fixed-pack zero-call S3 engineering."
+    },
+    {
+      "issue_prefix": "RC-P36-172",
+      "disposition": "preserve_open_as_S3_repair_target",
+      "reason": "Weak executable WWC, causal bridges, decision density and repetition are the S3 product-quality work itself. It must not be closed to authorize its own repair and must continue blocking formal acceptance until proven."
+    }
+  ],
+  "stage_boundary": {
+    "zero_call_entry_scope": "pass_after_registered_scope_and_projection_correction",
+    "formal_S3_scope": "blocked_by_RC_P36_157_RC_P36_165_RC_P36_172",
+    "S3_engineering_started": true,
+    "S3_formal_agentic_research_passed": false,
+    "post_repair_full_report_passed": false,
+    "qualified_human_content_acceptance": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "successor_policy_ref": "configs/runtime/fin_ia_0_1_3_s3_dynamic_research_planner_evidence_request_and_content_quality_entry_policy_v1_0.json",
+  "authorized_now": [
+    "zero_call_contract_and_runtime_implementation",
+    "saved_pack_and_capture_replay",
+    "fake_mutation_and_deterministic_quality_packet_tests",
+    "scoped_project_os_preflight"
+  ],
+  "not_authorized_now": [
+    "model_provider_network_or_source_live",
+    "formal_end_to_end_agentic_research",
+    "business_artifact_promotion",
+    "qualified_human_or_owner_acceptance",
+    "release"
+  ],
+  "observed_calls": {
+    "provider_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "next_action": "S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_LOOP_INFORMATION_ECONOMY_AND_QUALITY_PACKET_MINIMUM_ZERO_CALL_IMPLEMENTATION_AND_PROOF",
+  "known_boundary": "This decision corrects stale Project OS projections and authorizes bounded S3 engineering. It does not waive real external-source and semantic-completeness gaps, close the research-quality issue, authorize a DeepSeek or tool live, or establish a reviewer-ready report.",
+  "result_digest": "5990fd45aed549f407b6c0810cff8c50a24048e7c27b84679a8b41a94ff267de"
+}

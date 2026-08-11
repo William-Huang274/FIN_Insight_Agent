@@ -1,0 +1,200 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_dynamic_research_planner_evidence_request_and_content_quality_entry_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S3.dynamic_research_evidence_repair_and_content_quality_successor:v1",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S3",
+  "run_scope": "FIN_0_1_3_S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_AND_CONTENT_QUALITY_ZERO_CALL",
+  "source_contracts": [
+    "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_dynamic_decision_surface_policy_v1_0.json",
+    "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_claim_and_observable_wwc_policy_v1_0.json",
+    "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_cross_cell_synthesis_policy_v1_0.json",
+    "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_workpaper_writer_content_policy_v1_0.json",
+    "configs/runtime/fin_ia_0_1_3_repair_closeout_s3_research_quality_gate_policy_v1_0.json"
+  ],
+  "successor_reason": "Existing S3 components prove isolated contract shapes but do not yet form one evidence-observing research loop. The successor connects planning, typed repair, re-adjudication, information economy and quality acceptance without replacing the existing assets.",
+  "planner_contract": {
+    "input": [
+      "user_question_and_as_of",
+      "case_identity_and_autonomy_grant",
+      "current_governed_evidence_pack",
+      "numeric_fact_and_formula_views",
+      "method_registry_runtime_eligible_entries",
+      "sector_and_report_type_packs",
+      "prior_typed_gaps_and_rejections"
+    ],
+    "composition": [
+      "universal_research_responsibility_skeleton",
+      "sector_cell_pack",
+      "report_type_pack",
+      "bounded_case_cell_instances"
+    ],
+    "required_behavior": [
+      "compile_10_to_20_decision_cells_from_the_open_question_not_from_a_fixed_call_count",
+      "assign_business_decision_role_evidence_slots_owner_dependencies_budget_and_stop_condition_per_cell",
+      "merge_split_add_or_retire_case_cells_when_observations_change_materiality",
+      "preserve_case_entity_period_source_and_numeric_authority_boundaries",
+      "record_why_each_cell_is_material_and_what_downstream_decision_it_can_change"
+    ],
+    "forbidden_behavior": [
+      "fixed_three_cell_or_fixed_nine_call_report_plan",
+      "generic_memo_sections_as_substitutes_for_decision_cells",
+      "hidden_gold_url_or_answer_injection",
+      "planner_created_financial_facts_or_unbound_numbers"
+    ]
+  },
+  "evidence_request_loop": {
+    "eligible_gap_classes": [
+      "needs_source",
+      "needs_parser",
+      "needs_numeric_recompute",
+      "needs_relationship_resolution",
+      "needs_counterevidence"
+    ],
+    "ineligible_gap_classes": [
+      "commercially_unavailable_without_new_owner_authority",
+      "non_observable_hypothesis",
+      "writer_style_preference",
+      "already_exhausted_same_route",
+      "release_or_human_acceptance_gap"
+    ],
+    "request_fields": [
+      "cell_id",
+      "requester_role",
+      "evidence_domain",
+      "target_entities",
+      "metric_or_product_intent",
+      "period_granularity_unit",
+      "acceptable_sources_and_proxies",
+      "forbidden_proxies",
+      "route_budget",
+      "stop_condition",
+      "previous_rejections",
+      "return_contract"
+    ],
+    "loop": [
+      "classify_gap_and_materiality",
+      "compile_one_bounded_evidence_request",
+      "route_through_shared_evidence_orchestrator",
+      "capture_then_classify_response",
+      "accept_reject_or_keep_typed_gap",
+      "re_adjudicate_only_affected_cells",
+      "stop_on_satisfaction_budget_exhaustion_repeated_route_or_authority_boundary"
+    ],
+    "invariants": [
+      "writer_has_no_source_tools",
+      "retrieval_candidate_is_not_evidence",
+      "new_evidence_cannot_change_a_judgment_without_cell_re_adjudication",
+      "typed_gap_is_a_valid_terminal_state",
+      "no_automatic_retry_or_provider_fallback",
+      "source_tool_model_and_budget_failures_keep_their_own_stage_and_code"
+    ]
+  },
+  "mechanism_and_wwc_contract": {
+    "mechanism_chain_fields": [
+      "observed_fact_or_signal",
+      "economic_transmission_hypothesis",
+      "supporting_and_counterevidence_refs",
+      "affected_decision_cells",
+      "financial_or_operating_implication",
+      "confidence_and_cannot_infer_boundary"
+    ],
+    "what_would_change_fields": [
+      "current_judgment",
+      "decisive_variable",
+      "observable_measure",
+      "strengthen_weaken_or_overturn_direction",
+      "threshold_or_qualitative_condition",
+      "threshold_authority_ref",
+      "next_disclosure_or_observation_route",
+      "re_adjudication_owner"
+    ],
+    "threshold_policy": {
+      "numeric_threshold_allowed_only_when_bound_to_numeric_fact_formula_or_approved_scenario": true,
+      "model_may_propose_unbound_numeric_threshold": false,
+      "no_authoritative_threshold_result": "cannot_operationalize_numeric_threshold_with_current_evidence",
+      "qualitative_observable_condition_allowed": true
+    }
+  },
+  "information_economy_contract": {
+    "unit": "decision_relevant_claim",
+    "required_checks": [
+      "section_has_distinct_decision_role",
+      "claim_fingerprint_and_evidence_ref_overlap",
+      "executive_summary_repetition_is_linked_not_reargued",
+      "each_material_number_has_interpretation_not_merely_display",
+      "strongest_counterthesis_is_adjudicated_not_listed",
+      "remaining_gap_changes_confidence_scope_or_next_action"
+    ],
+    "hard_failures": [
+      "unsupported_material_claim",
+      "numeric_or_identity_authority_violation",
+      "writer_source_bypass",
+      "missing_strongest_counterthesis",
+      "missing_what_would_change_section"
+    ],
+    "quality_findings": [
+      "cross_section_repetition",
+      "overloaded_executive_point",
+      "low_claim_novelty",
+      "weak_decision_density",
+      "excess_boundary_language"
+    ],
+    "policy": "Quality findings require scoring and targeted revision but do not erase an otherwise valid research chain; L1, L2 and rubric-defined L3 failures remain blocking."
+  },
+  "quality_acceptance": {
+    "rubric_ref": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+    "score_dimensions": ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8"],
+    "absolute_thresholds": {
+      "total_minimum": 24,
+      "Q1_to_Q7_minimum": 2,
+      "Q1_Q2_Q3_Q8_minimum": 3,
+      "dimensions_at_or_above_three_minimum": 4
+    },
+    "paired_thresholds": {
+      "same_input_and_evidence_snapshot": true,
+      "material_gain_dimensions_minimum": 3,
+      "L1_L2_regression_allowed": false,
+      "candidate_must_also_pass_absolute_threshold": true
+    },
+    "reference_isolation": {
+      "codex_reference_required": true,
+      "reference_hidden_from_model_and_runner": true,
+      "gold_prose_similarity_is_not_an_oracle": true
+    },
+    "final_authority": {
+      "qualified_human_content_acceptance_required": true,
+      "workflow_or_identity_acceptance_is_content_acceptance": false,
+      "codex_or_automation_may_sign": false,
+      "LLM_judge_is_shadow_only": true
+    }
+  },
+  "zero_call_authority": {
+    "allowed_now": [
+      "successor_contract_and_schema_implementation",
+      "saved_capture_and_fixed_pack_replay",
+      "fake_and_mutation_tests",
+      "deterministic_quality_packet_materialization",
+      "project_os_scoped_preflight"
+    ],
+    "forbidden_now": [
+      "provider_or_model_call",
+      "network_or_source_call",
+      "new_evidence_promotion",
+      "formal_agentic_research_execution",
+      "business_artifact_promotion",
+      "owner_or_release_acceptance"
+    ],
+    "fresh_authority_required_before_any_live": true
+  },
+  "stage_exit_sequence": [
+    "zero_call_successor_implementation_and_mutation_proof",
+    "fixed_pack_Dell_same_input_quality_packet",
+    "separate_minimal_natural_planner_or_repair_canary_decision_if_needed",
+    "fresh_exact_once_formal_authority_decision",
+    "formal_end_to_end_candidate",
+    "independent_L1_L2_and_eight_dimension_assessment",
+    "same_input_paired_comparison",
+    "qualified_human_content_acceptance"
+  ],
+  "result_digest": "9accc877b13313aa97aafb5daeefb9cc03b8ac6ac7452053a1e5b523772d1667"
+}

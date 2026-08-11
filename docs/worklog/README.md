@@ -1,5 +1,7 @@
 # Worklog
 
+- [861 — FIN 0.1.3 S3 动态研究入口审计与 scope 对账](product_strategy/861_fin_0_1_3_s3_dynamic_research_entry_audit_and_scope_reconciliation.md)
+- [860 — FIN 0.1.3 S2 local renderer clean proof、bounded closeout 与 S3 入口](product_strategy/860_fin_0_1_3_s2_local_renderer_clean_proof_bounded_closeout_and_s3_entry.md)
 - [805 — FIN 0.1.3 CandidateBundle physical-index R2 terminal success](product_strategy/805_fin_0_1_3_candidate_bundle_physical_index_r2_terminal_success.md)
 - [804 — FIN 0.1.3 CandidateBundle physical-index R2 authority](product_strategy/804_fin_0_1_3_candidate_bundle_physical_index_r2_authority.md)
 - [803 — FIN 0.1.3 physical-index clean proof A2 terminal success](product_strategy/803_fin_0_1_3_physical_index_clean_proof_a2_terminal_success.md)

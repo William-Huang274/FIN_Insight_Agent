@@ -1,7 +1,7 @@
 # FIN 0.1.3 修复收口版范围与差量 S0–S5 计划
 
-日期：2026-08-05；最近互校准：2026-08-10
-状态：`FIN_0_1_3_active / S1_five_step_1_to_3_terminal / S1_step_4_priority_compiled_external_live_pending / S2_S3_fixed_pack_then_dynamic_research_pending / S4_S5_pending / release_blocked / FIN_0_2_definition_unchanged`
+日期：2026-08-05；最近互校准：2026-08-11
+状态：`FIN_0_1_3_active / S1_external_coverage_and_residual_semantics_mitigated_open / S2_bounded_closeout / S3_zero_call_entry_audit_pass_formal_blocked_3 / S4_S5_pending / release_blocked / FIN_0_2_definition_unchanged`
 
 > **2026-08-06 用户新增硬要求**：FIN 0.1.3 必须把研究内容输出质量作为 release-blocking 考核，不得再将 L3 的通用 Claim、弱综合、机械 Writer 或不可执行 WWC 降级为 nonblocking finding。八维绝对质量＋paired gain＋qualified human content acceptance 的正式标准见 `docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`。
 
@@ -898,3 +898,24 @@ Owner 已批准 7W terminal 后的有界处置，不授权重新抓取来源。�
 S2 的关闭语义限定为 `bounded_capability_closeout`：DeepSeek profile 可以选择已批准 Evidence／NUM 并形成 thesis、support、counterevidence、boundary、mechanism 和 WWC 原子；本地继续拥有身份、期间、币种、单位、公式、canonical numeric rendering、lineage 和晋升。三案 raw Experiment A 的质量失败并未被抹掉，unrestricted full-report autonomy 仍为 false。RC-P36-170 在 S2 数字控制面关闭；WWC、机制桥、决策密度和最终内容质量 RC-P36-172 继续归 S3。
 
 current next=`S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_LOOP_AND_RESEARCH_CONTENT_QUALITY_ENTRY_AUDIT_ZERO_CALL`。当前只授权零调用的入口审计、合同和 Runtime 实现；在 fresh exact-once authority 前不得执行模型或工具 live。正式 S3 scope 当前 Project OS preflight=`blocked / 7`：先审计 RC-P36-151／152／154／155 是否为已被后续证据解决但未投影关闭的历史债，并保留 RC-P36-157／165／172 的真实边界；不得为了放行而批量改标。S3 必须以 Codex reference、隐藏八维 rubric、same-input comparison 和 qualified-human acceptance 验证真正研报质量，不能用合同全绿、调用次数或页面可打开替代。
+
+## 7AA. S3 零调用入口审计、历史 blocker 对账与 successor 边界（2026-08-11）
+
+Project OS 先注册独立 S3 namespace 与 zero-call engineering scope，避免“要修复 S3 内容质量”被“尚未修好 S3 内容质量”循环阻断。该 scope 不继承正式 Experiment B 的执行语义，只允许合同／Runtime 实现、固定 Pack／capture replay、fake／mutation 和 deterministic quality packet；model／provider／network／source／业务晋升仍为 0，任何 live 仍需 fresh exact-once authority。
+
+7 条 formal blocker 经逐项证据复核后分为两组：
+
+- RC-P36-151／152：S1-07 后续三案官方源 runtime 与 Dell SEC HTML fallback 已完成 fetch、capture、parse、promotion；历史 synthetic-DNS 拒绝和 PDF timeout 保留，但对应的受控兼容／等价官方 route 义务已完成；
+- RC-P36-154／155：provider-neutral Query Facet runtime 已实现并被 combined external live 消费；capture、effective query、typed date／identity／lineage 与 `completed_with_typed_failures` terminal 已保留。关闭的是“runtime missing／partial terminalization”缺陷，不是搜索覆盖；
+- RC-P36-157：外源 candidate coverage 仍不足，继续 `mitigated_open`；
+- RC-P36-165：corrected Pack 已被模型实质使用，但估值与 issuer-specific supply allocation／timing／yield 缺口仍在，继续 `mitigated_open`；
+- RC-P36-172：可执行 WWC、机制桥、决策密度和重复表达就是 S3 当前任务，继续 `open`，不能为进入 S3 而预先关闭。
+
+因此 formal Experiment B preflight 从 `blocked / 7` 变为 `blocked / 3`，而新 zero-call scope 为 `pass / 0`；这不是放宽标准，而是把陈旧账本与真实产品边界分开。successor 不重建既有 S3-01～05，而把它们连成闭环：开放问题动态生成 10–20 个有业务决策角色的 cells；只对 material、可检索 typed gap 发起有预算的 EvidenceRequest；新证据只重裁决受影响 cells；数值 WWC 必须绑定 NumericFact／Formula／approved scenario，否则明确 `cannot_operationalize`；最终以信息重复／决策密度检查、隐藏八维绝对门、same-input paired gain 和 qualified-human content acceptance 验收。
+
+机器合同：
+
+- `configs/runtime/fin_ia_0_1_3_s3_dynamic_research_planner_evidence_request_and_content_quality_entry_policy_v1_0.json`，digest=`9accc877...d1667`；
+- `configs/releases/fin_ia_0_1_3_s3_dynamic_research_entry_audit_and_scope_disposition_v1_0.json`，digest=`5990fd45...267de`。
+
+current next=`S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_LOOP_INFORMATION_ECONOMY_AND_QUALITY_PACKET_MINIMUM_ZERO_CALL_IMPLEMENTATION_AND_PROOF`。通过该零调用实现与 mutation proof 后，再单独决定是否需要最小自然 planner／repair canary；不得直接签发完整报告 live。

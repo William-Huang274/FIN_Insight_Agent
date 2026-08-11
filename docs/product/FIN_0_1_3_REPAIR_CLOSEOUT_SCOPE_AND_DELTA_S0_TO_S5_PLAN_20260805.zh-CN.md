@@ -991,3 +991,11 @@ clean/synced `9eadecd6...f73d` 已在两个独立 Git archive／fresh process �
 独立价值／成本／风险决策选择“一次 successor DeepSeek Pro natural canary”，因为零调用无法证明结构变化后的自然合同遵循；拒绝零调用直接关闭、复用旧 admission、完整 DELL 报告、模型 A/B 与先补源。预算为 `1 model/provider／1,200 output／USD 0.02`，source/tool/retry/fallback/promotion=`0`。
 
 该 canary 主要测试更小 action surface 与 atom quality，不是开放式研究泛化。decision 只允许实现新 live path 并签发一个 fresh 未消费 admission，不授权 Provider execution。current next=`IMPLEMENT_SUCCESSOR_LIVE_PATH_COMMIT_PUSH_AND_ISSUE_ONE_FRESH_UNCONSUMED_ADMISSION_NO_EXECUTION`；execution 仍须 clean preflight 与独立 authority，任何终态停止，成功也不自动跑报告。
+
+## 7AL. small-judgment successor live path 零调用工程（2026-08-11）
+
+独立 live scope 已注册。issuance 与 execution 分离，旧 admission 不可复用；签发和执行都要求 clean／synced source，且绑定 policy、profile、proof、decision、Runtime 与 runner 摘要。运行时使用 shared ledger exact-once，Provider 返回先 capture 再解析；parsed 文件先物化，validated ref 只在实际验证文件存在时出现，任一终态 promotion=false。
+
+success、合同失败、expiry、source drift 与重复消费边界均已覆盖；new live=`4 passed`，focused／adjacent=`39 passed`，Project OS scoped preflight=`pass / 0 blocker`，model／provider／network／source／retry=`0/0/0/0/0`。该结果只建立安全执行通道，不是自然输出或报告质量证据。
+
+current next=`COMMIT_PUSH_LIVE_PATH_THEN_ISSUE_ONE_FRESH_UNCONSUMED_ADMISSION_NO_EXECUTION`。签发后必须再做 clean preflight 与独立 execution-authority；唯一自然终态失败即停止，不允许 prompt 字段补丁或重试；成功也只允许进入修复后 DELL fixed-pack 报告的单独决策与验收链。

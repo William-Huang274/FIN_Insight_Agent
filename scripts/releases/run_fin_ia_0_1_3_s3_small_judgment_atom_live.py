@@ -1,0 +1,234 @@
+from __future__ import annotations
+
+import argparse
+from datetime import datetime, timezone
+import json
+from pathlib import Path
+import subprocess
+import sys
+from typing import Any
+
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path[:0] = [str(ROOT), str(ROOT / "src")]
+
+from sec_agent.project_os_preflight import run_project_os_preflight  # noqa: E402
+from sec_agent.s3_small_judgment_atom_projection import (  # noqa: E402
+    compile_small_judgment_material,
+    load_small_judgment_projection_policy,
+)
+from sec_agent.s3_small_judgment_atom_projection_live import (  # noqa: E402
+    LIVE_SCOPE,
+    build_no_retry_provider_call,
+    credential_presence_only,
+    execute_successor_live_canary,
+    validate_successor_live_issuance,
+)
+from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger  # noqa: E402
+
+
+POLICY_PATH = ROOT / (
+    "configs/runtime/"
+    "fin_ia_0_1_3_s3_small_judgment_atom_projection_policy_v1_0.json"
+)
+PROOF_PATH = ROOT / (
+    "configs/releases/"
+    "fin_ia_0_1_3_s3_small_judgment_atom_projection_clean_independent_"
+    "proof_v1_0.json"
+)
+DECISION_PATH = ROOT / (
+    "configs/releases/"
+    "fin_ia_0_1_3_s3_small_judgment_atom_successor_natural_canary_"
+    "value_cost_risk_decision_v1_0.json"
+)
+ISSUANCE_PATH = ROOT / (
+    "configs/releases/"
+    "fin_ia_0_1_3_s3_small_judgment_atom_live_admission_issuance_v1_0.json"
+)
+PRIVATE_ROOT = ROOT / (
+    "data/workbench_private/fin_0_1_3_s3_small_judgment_atom_live"
+)
+LEDGER_PATH = PRIVATE_ROOT / "shared/admission_consumption.sqlite"
+
+
+class SuccessorLiveRunnerError(RuntimeError):
+    pass
+
+
+def _git(*args: str) -> str:
+    completed = subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    return completed.stdout.strip()
+
+
+def _load(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise SuccessorLiveRunnerError("s3_small_atom_live_runner_json_invalid")
+    return value
+
+
+def _validate_repository() -> str:
+    if _git("status", "--porcelain", "--untracked-files=all"):
+        raise SuccessorLiveRunnerError(
+            "s3_small_atom_live_runner_requires_clean_worktree"
+        )
+    head = _git("rev-parse", "HEAD")
+    if head != _git("rev-parse", "@{upstream}"):
+        raise SuccessorLiveRunnerError("s3_small_atom_live_runner_requires_synced_head")
+    return head
+
+
+def preflight() -> dict[str, Any]:
+    head = _validate_repository()
+    policy = load_small_judgment_projection_policy(POLICY_PATH, repo_root=ROOT)
+    material = compile_small_judgment_material(policy=policy, repo_root=ROOT)
+    proof = _load(PROOF_PATH)
+    decision = _load(DECISION_PATH)
+    issuance = _load(ISSUANCE_PATH)
+    implementation_commit = str(
+        issuance.get("authority", {}).get("implementation_commit") or ""
+    )
+    ancestor = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", implementation_commit, head],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+    )
+    if ancestor.returncode != 0:
+        raise SuccessorLiveRunnerError(
+            "s3_small_atom_live_implementation_not_ancestor"
+        )
+    project_os = run_project_os_preflight(ROOT, run_scope=LIVE_SCOPE)
+    if project_os.get("status") != "pass":
+        raise SuccessorLiveRunnerError(
+            "s3_small_atom_live_runner_project_os_blocked:"
+            + json.dumps(project_os.get("errors") or [], ensure_ascii=False)
+        )
+    profile = material["predecessor"]["profile"]
+    credential = credential_presence_only(profile=profile)
+    if credential["credential_present"] is not True:
+        raise SuccessorLiveRunnerError("s3_small_atom_live_runner_credential_missing")
+    observed_at = (
+        datetime.now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+    validate_successor_live_issuance(
+        issuance,
+        decision=decision,
+        clean_proof=proof,
+        material=material,
+        project_os_preflight=project_os,
+        repo_root=ROOT,
+        observed_at=observed_at,
+    )
+    admission = dict(issuance["admission"])
+    runtime_root = PRIVATE_ROOT / "attempts" / str(admission["run_id"])
+    if runtime_root.exists():
+        raise SuccessorLiveRunnerError(
+            "s3_small_atom_live_attempt_root_already_exists"
+        )
+    return {
+        "head": head,
+        "material": material,
+        "proof": proof,
+        "decision": decision,
+        "issuance": issuance,
+        "project_os": project_os,
+        "credential": credential,
+        "runtime_root": runtime_root,
+        "observed_at": observed_at,
+    }
+
+
+def execute(execution_authority_path: Path) -> dict[str, Any]:
+    if not execution_authority_path.is_file():
+        raise SuccessorLiveRunnerError(
+            "s3_small_atom_live_separate_execution_authority_missing"
+        )
+    state = preflight()
+    authority = _load(execution_authority_path)
+    observed_at = (
+        datetime.now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+    profile = state["material"]["predecessor"]["profile"]
+    return execute_successor_live_canary(
+        issuance=state["issuance"],
+        execution_authority=authority,
+        decision=state["decision"],
+        clean_proof=state["proof"],
+        material=state["material"],
+        project_os_preflight=state["project_os"],
+        repo_root=ROOT,
+        provider_call=build_no_retry_provider_call(profile=profile),
+        runtime_root=state["runtime_root"],
+        shared_ledger=SharedAdmissionConsumptionLedger(LEDGER_PATH),
+        observed_at=observed_at,
+    )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--preflight", action="store_true")
+    mode.add_argument("--execute", action="store_true")
+    parser.add_argument("--execution-authority", type=Path)
+    args = parser.parse_args()
+    if args.preflight:
+        state = preflight()
+        admission = state["issuance"]["admission"]
+        print(
+            json.dumps(
+                {
+                    "status": "preflight_pass_execution_not_authorized",
+                    "run_scope": LIVE_SCOPE,
+                    "run_id": admission["run_id"],
+                    "attempt_id": admission["attempt_id"],
+                    "admission_consumed": False,
+                    "provider_call_ceiling": 1,
+                    "model_call_ceiling": 1,
+                    "source_call_ceiling": 0,
+                    "retry_count": 0,
+                    "credential_present": True,
+                    "credential_value_read_output_or_persisted": False,
+                    "separate_execution_authority_present": False,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return 0
+    if args.execution_authority is None:
+        raise SuccessorLiveRunnerError(
+            "s3_small_atom_live_separate_execution_authority_required"
+        )
+    terminal = execute(args.execution_authority)
+    print(
+        json.dumps(
+            {
+                "status": terminal["status"],
+                "terminal_phase": terminal["terminal_phase"],
+                "terminal_code": terminal["terminal_code"],
+                "observed_counts": terminal["observed_counts"],
+                "result_digest": terminal["result_digest"],
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0 if terminal["status"] == "completed" else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,163 @@
+{
+  "admission": {
+    "admission_digest": "39aad5b20df5ca0e95c96103bee0175105697bf5cf71c1002d16c7509e0ba151",
+    "admission_id": "admission_fin013_s2_numeric_view_natural_canary_789cf2edee8c4818b160",
+    "attempt_id": "attempt_fin013_s2_numeric_view_natural_canary_789cf2edee8c4818b160_r1",
+    "authority_digest": "468a2be52f3622aa801dc756ad9147baf64351311506cd23f7cc06cc3c4f1664",
+    "authority_kind": "fresh_live_canary_admission_bound_to_issuance_authority",
+    "business_artifact_promotion": false,
+    "case_key": "DELL",
+    "compiled_input_digest": "cee0aa92b7a118059ff79ceba86c2cafad7ee37f084cbd36f14b785af637b063",
+    "consumed": false,
+    "execution_enabled_by_issuance": false,
+    "execution_mode": "live_single_node_no_retry",
+    "expires_at": "2026-08-12T01:46:27Z",
+    "fallbacks": 0,
+    "issued_at": "2026-08-11T01:46:27Z",
+    "live_authority": true,
+    "model": "deepseek-v4-pro",
+    "model_calls_maximum": 1,
+    "network_tool_calls": 0,
+    "node_id": "dell_demand_authenticity_numeric_view_atom_canary_v1",
+    "profile_ref": "fin_0_1_3.model_profile.deepseek_v4_pro.fixed_pack_research:v1",
+    "provider": "deepseek",
+    "provider_calls_maximum": 1,
+    "request_digest": "6f28084df556249011fcb4c146261d4546a93ff4bab1add1e45158f074615879",
+    "retries": 0,
+    "run_id": "fin013_s2_numeric_view_natural_canary_789cf2edee8c4818b160",
+    "run_scope": "FIN_0_1_3_S2_SELECTED_EVIDENCE_NUMERIC_NATURAL_NODE_CANARY_LIVE",
+    "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_admission_v1_0",
+    "separate_execution_authority_required": true,
+    "source_calls": 0
+  },
+  "authority": {
+    "authority_digest": "468a2be52f3622aa801dc756ad9147baf64351311506cd23f7cc06cc3c4f1664",
+    "budget": {
+      "business_artifact_promotion": false,
+      "fallbacks": 0,
+      "maximum_estimated_usd": 0.02,
+      "maximum_output_tokens": 1800,
+      "model_calls_maximum": 1,
+      "network_tool_calls": 0,
+      "provider_calls_maximum": 1,
+      "retries": 0,
+      "source_calls": 0
+    },
+    "clean_proof_digest": "86ee394477e05fce580e7ef107c3f21d4087c94fe0ebbaaad9cecadbf7343402",
+    "compiled_input_digest": "cee0aa92b7a118059ff79ceba86c2cafad7ee37f084cbd36f14b785af637b063",
+    "credential_preflight": {
+      "credential_env_name": "DEEPSEEK_API_KEY",
+      "credential_present": true,
+      "credential_value_read_output_or_persisted": false
+    },
+    "decision_digest": "4b3c48325e1dd18917a85a44c05d8df45111ab08a557deba4e893d1c90dd6164",
+    "execution_authorized_by_this_authority": false,
+    "expires_at": "2026-08-12T01:46:27Z",
+    "implementation_commit": "dd035eb5d62776e0a3d1118f1c439add42814c45",
+    "issued_at": "2026-08-11T01:46:27Z",
+    "model": "deepseek-v4-pro",
+    "operation_class": "agentic_research",
+    "profile_ref": "fin_0_1_3.model_profile.deepseek_v4_pro.fixed_pack_research:v1",
+    "project_os_preflight_digest": "e1b572bab966b2b002679868d19932d99be62df6b7dd2d83ce026ff77073be40",
+    "project_os_preflight_snapshot": {
+      "allow_open_blockers": false,
+      "capability_count": 731,
+      "checklist_count": 6,
+      "contract_errors": [],
+      "errors": [],
+      "missing_capabilities": [],
+      "missing_files": [],
+      "next_action": "Project OS preflight passed. Continue to token budget, provider, evidence-mode, AIE, and data-script preflights.",
+      "open_full_chain_blocker_count": 0,
+      "open_full_chain_blockers": [],
+      "policy": "typed_blocker_state_and_registered_run_scope_fail_closed_v0_2",
+      "project_os_dir": "D:\\FIN_Insight_Agent\\docs\\project_os",
+      "project_root": "D:\\FIN_Insight_Agent",
+      "root_cause_issue_count": 1259,
+      "run_scope": "FIN_0_1_3_S2_SELECTED_EVIDENCE_NUMERIC_NATURAL_NODE_CANARY_LIVE",
+      "run_scope_registry": {
+        "adoption_sequence_after_projection": "v2_191",
+        "path": "configs\\runtime\\fin_ia_project_os_run_scope_registry_v1_0.json",
+        "registry_id": "fin_insight_project_os_run_scope_registry",
+        "registry_version": "v1_0",
+        "schema_version": "fin_insight_project_os_run_scope_registry_v1_0"
+      },
+      "schema_version": "fin_insight_project_os_full_chain_preflight_v0_2",
+      "scope_resolution": {
+        "canonical_scope_id": "FIN_0_1_3_S2_SELECTED_EVIDENCE_NUMERIC_NATURAL_NODE_CANARY_LIVE",
+        "operation_class": "agentic_research",
+        "owner_stage": "S2",
+        "parent_scope_id": "FIN_0_1_3_S2",
+        "status": "registered"
+      },
+      "status": "pass"
+    },
+    "provider": "deepseek",
+    "request_digest": "6f28084df556249011fcb4c146261d4546a93ff4bab1add1e45158f074615879",
+    "run_scope": "FIN_0_1_3_S2_SELECTED_EVIDENCE_NUMERIC_NATURAL_NODE_CANARY_LIVE",
+    "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_authority_v1_0",
+    "source_bindings": [
+      {
+        "normalized_text_sha256": "fc127af69cfbfa41439776defe04ccefb8800a41e20f32396b90814f9ebc9e22",
+        "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_clean_independent_proof_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "6e6dd110390c140427ce54931e4adecb60616806464adba16c2a191480c088df",
+        "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_value_cost_risk_authority_decision_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "d0fc499e36678369081d27619404ea3de776a8349addf29192b0fb895f34c9ac",
+        "ref": "configs/runtime/fin_ia_0_1_3_s2_deepseek_v4_pro_fixed_pack_profile_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "69f9754129c5fa70cf8f79bcab8fddbc383212d7e1c5c489080b68079fe08c46",
+        "ref": "configs/runtime/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_policy_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "3f074460ef369f883c93b46b3b8741bb5bcdb9052eb4964f8cb99b00c347ba3a",
+        "ref": "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "921c3edf79e4feb265dd9b99dc30ac7a7c6ce59f61f44c426e1681e2f63bbcce",
+        "ref": "scripts/releases/issue_fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_admission.py"
+      },
+      {
+        "normalized_text_sha256": "82a6e7fe98f55a18402cb655faa988579454cc3c52e8a028b80b7c28702cac34",
+        "ref": "scripts/releases/run_fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live.py"
+      },
+      {
+        "normalized_text_sha256": "32cd4ae876b13d7ba69a9409d21e7f7fdc0dd8fc4a85bb42a1d2961aa6f391ff",
+        "ref": "src/sec_agent/s2_selected_evidence_numeric_natural_node_canary.py"
+      },
+      {
+        "normalized_text_sha256": "c6dcea0463227696bf4c2a3d222554c7dd412c89f6e952270b807bcad50aaf08",
+        "ref": "src/sec_agent/s2_selected_evidence_numeric_natural_node_canary_live.py"
+      }
+    ],
+    "status": "one_fresh_admission_issuance_authorized_execution_requires_separate_authority",
+    "user_authority": "User instructed continue after being told that the next bounded step implements the isolated live path and issues one unconsumed admission. This issuance does not authorize or start the Provider call."
+  },
+  "current_next": "SEPARATE_ZERO_CALL_SINGLE_LIVE_CANARY_EXECUTION_AUTHORITY_DECISION",
+  "issuance_boundary": {
+    "admission_consumed": false,
+    "admission_issued": true,
+    "business_artifact_promotion": false,
+    "execution_started": false,
+    "model_call_started": false,
+    "provider_call_started": false
+  },
+  "issuance_digest": "bbed0f7bf77eb9cbdb64cdd7c5e55c5346cfc06139f2962a55908a11f6116f33",
+  "known_boundary": "Issuance is not execution authorization, admission consumption, natural DeepSeek evidence, a corrected Dell report, Owner acceptance or release.",
+  "observed_counts": {
+    "admission_consumptions": 0,
+    "fallbacks": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_admissions": 1,
+    "provider_calls": 0,
+    "retries": 0,
+    "source_calls": 0
+  },
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_admission_issuance_v1_0",
+  "status": "issued_unconsumed_execution_not_authorized"
+}

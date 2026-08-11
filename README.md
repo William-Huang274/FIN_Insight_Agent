@@ -18,7 +18,7 @@ FinSight-Agent 当前适合处理这类问题：
 
 公开仓库不包含私有 SEC 原文、市场数据、生成索引、运行产物或 API key。用户可以用自己的公开披露、市场快照和行业数据生成同类产物，再通过本项目的配置约定接入。
 
-当前 FIN 0.1.3 仍处于内部工程验证，不是可发布版本。最新 S2 工作已把“selected Evidence 与可写数字权威分离”的历史缺口改成同事务编译，并为一个 DELL 需求真实性判断实现了三条 bounded Evidence、四个 NUM、capture-first、exact-once 和本地角色／数字／边界校验；尚未调用自然模型，也没有完成 DELL 报告、Owner 验收或 release。项目状态以 `docs/project_os/current_context_pack.zh-CN.md` 为准，不以某次测试或页面可渲染等同产品通过。
+当前 FIN 0.1.3 仍处于内部工程验证，不是可发布版本。S1 已形成有边界的本地／外源检索与 Evidence Pack 候选，S2 已完成 selected Evidence、NumericFact 和本地展示共编的 bounded closeout，S3 已有 dynamic-research successor 与小判断原子实验；但最新 DeepSeek natural canary 仍以“项目合同欠编译＋模型约束违例”的 mixed root cause 失败，完整报告、qualified-human、Owner 和 release 均未通过。仓库审计还确认当前 Workbench 主要继承 FIN 0.1.2 的绑定与投影，FIN 0.1.3 尚未完成产品 cutover。项目状态以 `docs/project_os/current_context_pack.zh-CN.md` 和 `docs/architecture/repository/FIN_0_1_3_REPOSITORY_BASELINE_AUDIT_20260811.zh-CN.md` 为准，不以某次测试、调用次数或页面可渲染等同产品通过。
 
 ## 面向非金融场景的迁移性
 FinSight-Agent 当前用美股上市公司研究作为高约束验证场景，但底层链路并不依赖金融领域本身。只要目标任务存在多源材料、口径边界、工具调用、多轮追问和结论校验需求，同一套流程可以迁移到企业知识库问答、行业研究、合同/合规文档分析、数据分析报告生成等场景。

@@ -6,6 +6,8 @@
 
 ## 当前恢复锚点
 
+最新恢复锚点（2026-08-11）：用户已暂停 S3 局部修复，要求先恢复全仓可读性并以当前 FIN 0.1.3 建立新基线。基线 commit=7cd373885a2f5958baa69a285d15e9b1b72f72d4；审计确认 6,112 个 tracked 文件中，Workbench 后端静态主链仅触达 150 个 Python 文件，稳定入口并集约 161 个，FIN 0.1.3 S1–S3 主要仍是 candidate/proof 链而未完成 Workbench cutover。当前版本诚实状态是 engineering_candidate_at_S3：最新 small-judgment natural canary 仍为 mixed-root-cause failed，S4 current dogfood 与 S5 release 未完成。先读 ../architecture/repository/FIN_0_1_3_REPOSITORY_BASELINE_AUDIT_20260811.zh-CN.md 与 ../../configs/repository/fin_0_1_3_repository_baseline_v1_0.json；Owner 审阅前禁止恢复 S3、批量归档/删除或把 candidate 改写为 product pass。
+
 最新恢复锚点（2026-08-10）：FIN 0.1.3 S2 DELL changed-input exact-live 已证明补源能够改善需求、利润、供应、竞争和反方判断，但 selected Evidence 与 NumericFactView 双账本导致 `16.1／97.8%／5000` 的 2 条交付 L1。零调用处置已拒绝逐数字白名单和 raw-text regex-all，冻结 provider-neutral `MaterialNumericCandidateInventory`、target-aware adjudication、stable fact presentation 和分层 model view；Runtime 尚未实现，禁止自动 DELL 重跑。恢复时先读 `current_context_pack.zh-CN.md` 顶部、worklog 845–846、capability `v2_365–v2_366` 与 root projections `v2_414–v2_417`。
 
 FIN 0.1.1 保存第一轮 S0–S5 的内部 honest-block 工程基线。2026-08-02 用户纠正版本治理后，原 0.1.2、0.1.3、0.1.4 曾合并回 FIN 0.1.2：原 0.1.3 是 FIN 0.1.2 S0 的历史 recovery/clean-environment acceptance attempts，原 0.1.4 是未执行的 S0 改进提案。此段只保留为历史版本治理记录；当前开发版本与阶段以其后的 FIN 0.1.3 锚点及本页顶部最新恢复锚点为准。

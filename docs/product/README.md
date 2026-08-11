@@ -15,7 +15,10 @@ Product docs should not be implementation plans. Technical contracts, APIs, sche
 
 ## Current Product Docs
 
-- [FIN 0.1.2 Consolidated Canonical S0 To S5 Product Progression Plan](FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md)
+- [FIN 0.1.3 Current Repair-Closeout Scope And Delta S0 To S5 Plan](FIN_0_1_3_REPAIR_CLOSEOUT_SCOPE_AND_DELTA_S0_TO_S5_PLAN_20260805.zh-CN.md)
+- [FIN 0.1.3 Repository Baseline Audit](../architecture/repository/FIN_0_1_3_REPOSITORY_BASELINE_AUDIT_20260811.zh-CN.md)
+- [FIN 0.1.3 Research Content Output Quality Rubric](../eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md)
+- [FIN 0.1.2 Consolidated Canonical S0 To S5 Product Progression Plan — historical predecessor](FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md)
 - [FIN 0.1.1 / 0.1.2 Version Lineage And Release Cadence Decision](FIN_0_1_1_0_1_2_VERSION_LINEAGE_AND_RELEASE_CADENCE_DECISION_20260731.zh-CN.md)
 - [FIN 0.1.3 Historical S0 Recovery Attempt Plan](FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md)
 - [FIN 0.1 S0 To S4-T05 Global Product Audit And Forward Plan](FIN_0_1_S0_TO_S4_T05_GLOBAL_PRODUCT_AUDIT_AND_FORWARD_PLAN_20260728.zh-CN.md)

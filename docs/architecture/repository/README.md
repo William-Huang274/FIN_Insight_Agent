@@ -2,6 +2,7 @@
 
 本目录维护代码仓库的结构审计、引用图和清理规则。
 
+- FIN_0_1_3_REPOSITORY_BASELINE_AUDIT_20260811.zh-CN.md：当前全仓基线；覆盖 6,112 个 tracked 文件、本机 ignored/private 数据、真实产品入口静态依赖图、FIN 0.1.3 candidate 与 Workbench cutover 边界、版本冲突和“反复修”根因。该文档是当前人工判读入口，Owner 审阅前不授权删除、迁移或恢复 S3。
 - `REPOSITORY_ARCHITECTURE_MAP.zh-CN.md`：自动生成的仓库摘要、功能图、复杂度热点、数据资产类型和待审对象。
 - `REPOSITORY_DEEP_AUDIT_20260711.zh-CN.md`：截至 2026-07-11 的代码、测试、数据资产和 PRD/TECH 对齐审计。
 - `ENGINEERING_HANDOFF_BASELINE_20260711.zh-CN.md`：Canonical Object Registry、Legacy Mapping Matrix 和 Test Profile Split 的可执行交接基线。
@@ -18,6 +19,8 @@
 - `FIN_0_1_2_S1_REALISTIC_THREE_CASE_DETERMINISTIC_VERTICAL_STAGE_PLAN_20260731.zh-CN.md`：FIN 0.1.2 S1 的 bounded production-consumer 迁移、DELL/MU/NVDA realistic fixture、mutation/collect-all/full-fake 证明矩阵，以及固定 T01–T04 与 G0–G6 边界。
 - `../../product/FIN_0_1_INTERNAL_ALPHA_FEATURE_SCOPE_MATRIX_20260717.zh-CN.md`：`P001-F01`-`F15` 的 PRD、TECH owner、产品 surface、Point 和 release acceptance 映射。
 - 完整机器可读图：`data/manifests/repository_architecture_inventory_v0_1.json`。
+
+当前紧凑机器基线为 configs/repository/fin_0_1_3_repository_baseline_v1_0.json。旧完整机器引用图 data/manifests/repository_architecture_inventory_v0_1.json 仍可用于查文本引用，但它的 active/reachability 分类不能直接作为清理依据。
 
 维护命令：
 

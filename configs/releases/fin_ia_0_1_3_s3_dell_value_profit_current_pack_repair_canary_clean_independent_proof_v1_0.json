@@ -1,0 +1,108 @@
+{
+  "attempt_id": "20260811_s3_dell_value_profit_repair_canary_clean_proof_r1",
+  "clean_git_archives": 2,
+  "compiled_canary": {
+    "affected_cell_ids": [
+      "bottleneck_counterevidence_and_what_would_change",
+      "cross_chain_price_in_and_expectations",
+      "value_and_profit_capture",
+      "writer_admission_boundary"
+    ],
+    "compiled_input_digest": "a340683b525a58f182d65b6b7fe813421a7f34b13d0f1868e2e3e866c71d56db",
+    "evidence_aliases": [
+      "E002",
+      "E008",
+      "E021",
+      "E023"
+    ],
+    "numeric_refs": [
+      "NUM:DELL:AI_SERVER_REVENUE:C4947C75D942",
+      "NUM:DELL:ISG_OPERATING_INCOME:0BE2D8D1B2E2",
+      "NUM:DELL:ISG_REVENUE:FEE111316B02",
+      "NUM:DELL:OPERATING_MARGIN_TARGET:2894219F450D"
+    ],
+    "raw_source_text_in_model_input": false,
+    "request_characters": 17343,
+    "request_digest": "d3270b5eccc0c0e97bf6c0d60159c96952a18f0a85d7e357f5833b7107d95fad"
+  },
+  "contract_ref": "fin_0_1_3.S3.dell_value_profit_current_pack_repair_canary:v1",
+  "credential_environment_variables_present_each_worker": 0,
+  "current_next": "SEPARATE_ZERO_CALL_ONE_CALL_LIVE_CANARY_EXECUTION_AUTHORITY_DECISION",
+  "fresh_python_processes": 2,
+  "fresh_worker_count": 2,
+  "implementation_commit": "d925aa89d8e289ca4d477437a636dd24d32155ec",
+  "implementation_result_digest": "e128d3143dd65ef3d8e13c458d978cf80b3ebc36e19dfc5c1da905d5533b629f",
+  "known_boundary": "This proof establishes clean committed reproducibility of the bounded current-pack repair compiler, fixture runtime and local financial boundaries. It does not register live scope, issue live admission, call DeepSeek, prove natural repair behavior, generate a Dell report, close S3, grant qualified-human or Owner acceptance, or authorize release.",
+  "mutations": {
+    "affected_cell_scope_must_be_complete": true,
+    "cash_gap_cannot_be_dropped": true,
+    "isg_proxy_fails_closed": true,
+    "model_numeric_surface_fails_closed": true,
+    "segment_evidence_cannot_replace_product_profit": true,
+    "valid_partial_resolution_passes": true,
+    "valuation_expectations_cell_cannot_be_falsely_reopened": true
+  },
+  "normalized_worker_output_sha256": "d9457299fafaaaec63cf0cb9be42833cd2ef3ce4647476bd6f802debcca0efaa",
+  "observed_calls": {
+    "fixture_provider_invocations_per_worker": 5,
+    "fixture_provider_invocations_total": 10,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retries": 0,
+    "source_calls": 0
+  },
+  "private_artifact_injections": [
+    {
+      "bytes": 149544,
+      "kind": "corrected_dell_pack",
+      "relative_path": "data/workbench_private/fin_0_1_3_s1_dell_bounded_semantic_anchor_replay/corrected_pack/objects/fin-0.1.3/s1/dell-bounded-semantic-anchor-replay/pack/82/10/8210887f7e06c4fb8397594ba965a8c737525c4b53be52a3cac1cf279e697387.json",
+      "sha256": "8210887f7e06c4fb8397594ba965a8c737525c4b53be52a3cac1cf279e697387"
+    },
+    {
+      "bytes": 87530,
+      "kind": "historical_dell_pack",
+      "relative_path": "data/workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects/fin-0.1.3/s1-six-case-local-evidence-pack/dell/v1/da/86/da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b.json",
+      "sha256": "da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b"
+    }
+  ],
+  "private_artifacts_persisted_to_repository": false,
+  "recorded_at": "2026-08-11",
+  "result_digest": "ca9878d3e20840c95a782f2591089eb1b63c7d5c866322dc1bf48f1e4c2faa68",
+  "runtime_outcomes": {
+    "business_artifact_promotion": false,
+    "full_transport_response_capture_preserved": true,
+    "invalid_json": "s3_repair_canary_invalid_json",
+    "invalid_semantics": "s3_repair_canary_evidence_semantics_invalid",
+    "length": "s3_repair_canary_incomplete_finish_reason_length",
+    "same_admission_second_consumption_rejected": true,
+    "success": "s3_repair_canary_pass",
+    "transport": "s3_repair_canary_provider_failure:provider_error"
+  },
+  "schema_version": "fin_ia_0_1_3_s3_dell_value_profit_current_pack_repair_canary_clean_independent_proof_v1_0",
+  "stage_acceptance": {
+    "canary_clean_proof": true,
+    "canary_runner_implementation": true,
+    "canary_selection_and_contract": true,
+    "dell_delivery_pass": false,
+    "fake_and_mutation_suite": true,
+    "natural_model_canary": false,
+    "owner_acceptance": false,
+    "qualified_human_acceptance": false,
+    "release": false
+  },
+  "status": "pass_two_clean_archives_two_fresh_processes_zero_external_call_reproducible",
+  "temporary_roots_removed": true,
+  "worker_process_receipts": [
+    {
+      "stderr_empty": true,
+      "stdout_sha256": "4b522bed34ee003d90e2adc2d70b4426ad1c2a78bdf82df9326c17f3eb58ee1c"
+    },
+    {
+      "stderr_empty": true,
+      "stdout_sha256": "4b522bed34ee003d90e2adc2d70b4426ad1c2a78bdf82df9326c17f3eb58ee1c"
+    }
+  ],
+  "worker_result_digest": "aaa4ab47439e40da30058408eb238e336ee33b40d237e7d5cd260bad696e68d4",
+  "workers_byte_equivalent": true
+}

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 from copy import deepcopy
 from decimal import Decimal
@@ -34,6 +33,7 @@ from apps.workbench.backend.application.fin_0_1_2_s4_t04_current_evidence_resear
     validate_current_case_evidence_pack,
 )
 from sec_agent.canonical_runtime.models import canonical_digest
+from sec_agent.runtime_resource_registry import matches_checkout_portable_sha256
 from sec_agent.s4_case_runtime import (
     S4_RUNTIME_CONSUMER_IDS,
     apply_s4_case_runtime_research_profile_overlay,
@@ -133,10 +133,11 @@ def compile_case_transfer_surface(
         raise Fin012S4T05TransferError("s4_t05_compiled_profile_drift")
     oracle_path = root / str(profile["regression_oracle_ref"])
     try:
-        oracle_sha = hashlib.sha256(oracle_path.read_bytes()).hexdigest()
+        oracle_bytes = oracle_path.read_bytes()
     except OSError as exc:
         raise Fin012S4T05TransferError("s4_t05_regression_oracle_missing") from exc
-    if oracle_sha != str(profile["regression_oracle_sha256"]):
+    oracle_sha = str(profile["regression_oracle_sha256"])
+    if not matches_checkout_portable_sha256(oracle_bytes, oracle_sha):
         raise Fin012S4T05TransferError("s4_t05_regression_oracle_digest_mismatch")
     request_rows = [row.as_dict() for row in requests]
     body = {

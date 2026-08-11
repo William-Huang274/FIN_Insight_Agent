@@ -19,6 +19,7 @@ from apps.workbench.backend.application.local_research_service import (
     LocalResearchPaths,
     P36LocalResearchService,
 )
+from sec_agent.runtime_bridge.paths import resolve_runtime_paths
 
 
 TENANT = "tenant-local-research"
@@ -158,6 +159,24 @@ def _create_sources(tmp_path: Path) -> LocalResearchPaths:
     connection.commit()
     connection.close()
     return LocalResearchPaths(object_index=object_index, gold_mart=gold, research_graph=graph)
+
+
+def test_local_research_paths_use_shared_data_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data_root = tmp_path / "shared-data"
+    private_root = tmp_path / "shared-private"
+    monkeypatch.setenv("FINSIGHT_DATA_ROOT", str(data_root))
+    monkeypatch.setenv("FINSIGHT_WORKBENCH_PRIVATE_ROOT", str(private_root))
+    runtime_paths = resolve_runtime_paths(tmp_path / "clean-code-worktree")
+
+    paths = LocalResearchPaths.from_runtime_paths(runtime_paths)
+
+    assert paths.object_index.is_relative_to(data_root)
+    assert paths.gold_mart.is_relative_to(private_root)
+    assert paths.research_graph.is_relative_to(private_root)
+    assert paths.official_filing_root == data_root / "raw_private" / "sec"
 
 
 def test_local_research_preview_reads_three_real_lanes_without_case_mutation(tmp_path: Path) -> None:

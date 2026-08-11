@@ -896,8 +896,17 @@ class WorkbenchStore:
         return str(row["trace_id"] or "") if row else ""
 
 
-def default_store_path(repo_root: str | Path) -> Path:
-    return Path(repo_root) / "data" / "workbench_private" / "workbench.sqlite"
+def default_store_path(
+    repo_root: str | Path,
+    *,
+    workbench_private_root: str | Path | None = None,
+) -> Path:
+    private_root = (
+        Path(workbench_private_root)
+        if workbench_private_root is not None
+        else Path(repo_root) / "data" / "workbench_private"
+    )
+    return private_root / "workbench.sqlite"
 
 
 def _string_or_none(value: Any) -> str | None:

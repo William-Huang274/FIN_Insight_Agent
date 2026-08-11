@@ -22,6 +22,7 @@ from apps.workbench.backend.application.fin_0_1_2_s4_retrieval_evidence_readines
 from retrieval.bm25_retriever import BM25Retriever
 from sec_agent.canonical_runtime.models import canonical_digest
 from sec_agent.canonical_runtime.object_store import FileCanonicalObjectStore
+from sec_agent.runtime_bridge.paths import resolve_runtime_paths
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
 
 
@@ -1308,8 +1309,14 @@ class Fin012S4T03SearchRunner:
         runtime_root: str | Path,
         transport: SourceTransport,
         shared_admission_ledger: SharedAdmissionConsumptionLedger | None = None,
+        data_root: str | Path | None = None,
     ) -> None:
         self.repository_root = Path(repository_root).resolve()
+        self.data_root = (
+            Path(data_root).resolve()
+            if data_root is not None
+            else resolve_runtime_paths(self.repository_root).primary_data_root
+        )
         self.runtime_root = Path(runtime_root).resolve()
         self.runtime_root.mkdir(parents=True, exist_ok=True)
         self.store = FileCanonicalObjectStore(self.runtime_root / "objects")
@@ -1378,15 +1385,15 @@ class Fin012S4T03SearchRunner:
             official_by_accession = {row.accession: row for row in filings}
             phase = "local_retrieval"
             object_adapter = BM25SearchAdapter(
-                index_dir=self.repository_root / TEXT_INDEX_RELATIVE_PATH,
+                index_dir=self._data_path(TEXT_INDEX_RELATIVE_PATH),
                 capture=self.local_capture,
             )
             graph_adapter = RelationshipGraphSearchAdapter(
-                database=self.repository_root / RESEARCH_GRAPH_RELATIVE_PATH,
+                database=self._data_path(RESEARCH_GRAPH_RELATIVE_PATH),
                 capture=self.local_capture,
             )
             exact_adapter = ExactValueSqlSearchAdapter(
-                database=self.repository_root / GOLD_MART_RELATIVE_PATH,
+                database=self._data_path(GOLD_MART_RELATIVE_PATH),
                 capture=self.local_capture,
             )
             for request in requests:
@@ -1569,13 +1576,21 @@ class Fin012S4T03SearchRunner:
 
     def _require_sources(self) -> None:
         required = (
-            self.repository_root / TEXT_INDEX_RELATIVE_PATH / "metadata.json",
-            self.repository_root / TEXT_INDEX_RELATIVE_PATH / "bm25.pkl",
-            self.repository_root / GOLD_MART_RELATIVE_PATH,
-            self.repository_root / RESEARCH_GRAPH_RELATIVE_PATH,
+            self._data_path(TEXT_INDEX_RELATIVE_PATH) / "metadata.json",
+            self._data_path(TEXT_INDEX_RELATIVE_PATH) / "bm25.pkl",
+            self._data_path(GOLD_MART_RELATIVE_PATH),
+            self._data_path(RESEARCH_GRAPH_RELATIVE_PATH),
         )
         if any(not path.is_file() for path in required):
             raise Fin012S4T03SearchError("t03_required_local_source_missing")
+
+    def _data_path(self, repository_relative_path: str | Path) -> Path:
+        relative = Path(repository_relative_path)
+        try:
+            relative = relative.relative_to("data")
+        except ValueError:
+            pass
+        return self.data_root / relative
 
 
 def compile_current_nvda_executable_requests() -> tuple[ExecutableSearchRequest, ...]:

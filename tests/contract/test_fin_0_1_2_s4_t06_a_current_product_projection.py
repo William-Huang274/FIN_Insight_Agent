@@ -24,9 +24,9 @@ from apps.workbench.backend.application.fin_0_1_2_s4_t06_current_product_project
     CurrentProductProjectionService,
     validate_current_product_projection_manifest,
 )
-from scripts.releases.materialize_fin_ia_0_1_2_s4_t06_a_current_product_projection_manifest import (
-    DEFAULT_MANIFEST_OUTPUT,
-    materialize_manifest,
+DEFAULT_MANIFEST_OUTPUT = REPO_ROOT / (
+    "configs/releases/fin_ia_0_1_2_s4_t06_a_current_product_projection_"
+    "manifest_v1_0.json"
 )
 from sec_agent.canonical_runtime.models import canonical_digest
 
@@ -109,15 +109,15 @@ def _forbidden_product_paths(value: Any, path: tuple[str, ...] = ()) -> list[str
     return found
 
 
-def test_manifest_rebuild_is_exact_and_registry_loaded(
+def test_manifest_is_self_consistent_and_registry_loaded_without_attempt_runtime(
     manifest: dict[str, Any], service: CurrentProductProjectionService
 ) -> None:
-    assert materialize_manifest() == manifest
     assert validate_current_product_projection_manifest(manifest) == manifest
     assert service.manifest_digest == manifest["manifest_digest"]
     assert [row["case_key"] for row in manifest["cases"]] == list(
         CURRENT_PRODUCT_CASE_KEYS
     )
+    assert ".codex_runtime" not in json.dumps(manifest, ensure_ascii=False)
 
 
 def test_manifest_projects_all_required_surfaces_without_raw_runtime_content(

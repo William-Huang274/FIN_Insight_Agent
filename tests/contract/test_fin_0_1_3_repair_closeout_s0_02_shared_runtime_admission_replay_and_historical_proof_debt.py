@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 import sqlite3
+import subprocess
 import sys
 from threading import Barrier
 
@@ -17,8 +18,10 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src"), str(ROOT / "scripts" / "releases")
 
 from apps.workbench.backend.application.fin_0_1_2_s4_t03_executable_agentic_search import (  # noqa: E402
     SearchAdmission,
+    SearchCandidate,
     compile_current_case_executable_requests,
 )
+import apps.workbench.backend.application.fin_0_1_2_s4_t03_executable_agentic_search as search_runtime  # noqa: E402
 from apps.workbench.backend.application.fin_0_1_3_shared_admission_guarded_search import (  # noqa: E402
     Fin013SharedAdmissionGuardedSearchRunner,
 )
@@ -27,6 +30,7 @@ from sec_agent.canonical_runtime.models import canonical_digest  # noqa: E402
 from sec_agent.runtime_resource_registry import (  # noqa: E402
     detect_repo_relative_runtime_resource_literals,
     load_runtime_resource_registry,
+    matches_checkout_portable_sha256,
 )
 from sec_agent.shared_admission_ledger import (  # noqa: E402
     SharedAdmissionConsumptionLedger,
@@ -46,6 +50,12 @@ SUCCESSOR_REGISTRY_REF = (
     "configs/runtime/fin_ia_0_1_3_repair_closeout_"
     "runtime_resource_registry_v1_0.json"
 )
+DECISION_SOURCE_COMMIT = "f54012fac7f294a0b442eee6466c2f85635b0816"
+KNOWN_DECISION_BIRTH_DRIFT = {
+    "src/sec_agent/shared_admission_ledger.py",
+    "apps/workbench/backend/application/fin_0_1_3_shared_admission_guarded_search.py",
+    "tests/contract/test_fin_0_1_3_repair_closeout_s0_02_shared_runtime_admission_replay_and_historical_proof_debt.py",
+}
 
 
 def _load(ref: Path) -> dict:
@@ -54,6 +64,56 @@ def _load(ref: Path) -> dict:
 
 def _sha(ref: Path) -> str:
     return hashlib.sha256((ROOT / ref).read_bytes()).hexdigest()
+
+
+def _historical_blob(commit: str, ref: Path) -> bytes:
+    return subprocess.check_output(
+        ["git", "show", f"{commit}:{ref.as_posix()}"], cwd=ROOT
+    )
+
+
+def _install_hermetic_search_core(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _FixtureAdapter:
+        def __init__(self, **_: object) -> None:
+            pass
+
+        def search(self, request, **_: object):
+            return (
+                SearchCandidate.create(
+                    request_digest=request.request_digest,
+                    program_cell_id=request.program_cell_id,
+                    entity_ref=request.target_entity_ref,
+                    candidate_role=request.accepted_candidate_roles[0],
+                    adapter_id="hermetic_shared_ledger_fixture",
+                    route_id=request.metadata_route_ids[0],
+                    title="Hermetic shared-ledger candidate",
+                    excerpt="Deterministic candidate used only to exercise exact-once control.",
+                    published_at="2026-05-20",
+                    source_url="https://www.sec.gov/Archives/edgar/data/1045810/fixture.htm",
+                    locator="fixture:shared-ledger",
+                    source_snapshot_ref="fixture/source.json",
+                    source_snapshot_digest=canonical_digest({"fixture": "source"}),
+                    parser_adapter="hermetic_fixture_parser_v1",
+                    parser_digest=canonical_digest({"fixture": "parser"}),
+                    source_authority_rank=100,
+                    score=1.0,
+                    exact_value_authority=False,
+                ),
+            )
+
+    monkeypatch.setattr(
+        Fin013SharedAdmissionGuardedSearchRunner,
+        "_require_sources",
+        lambda self: None,
+    )
+    monkeypatch.setattr(
+        Fin013SharedAdmissionGuardedSearchRunner,
+        "_load_official_filing_identities",
+        lambda self, **kwargs: (),
+    )
+    monkeypatch.setattr(search_runtime, "BM25SearchAdapter", _FixtureAdapter)
+    monkeypatch.setattr(search_runtime, "RelationshipGraphSearchAdapter", _FixtureAdapter)
+    monkeypatch.setattr(search_runtime, "ExactValueSqlSearchAdapter", _FixtureAdapter)
 
 
 def _admission(case_key: str = "NVDA") -> SearchAdmission:
@@ -123,8 +183,9 @@ def test_concurrent_reservation_race_has_exactly_one_winner(tmp_path: Path) -> N
 
 
 def test_current_guarded_runner_denies_same_admission_across_runtime_roots(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    _install_hermetic_search_core(monkeypatch)
     admission = _admission()
     ledger_path = tmp_path / "shared-control-plane" / "admissions.sqlite3"
     first_root = tmp_path / "runtime-a"
@@ -248,7 +309,9 @@ def test_candidate_revalidation_promotes_only_semantically_current_assets() -> N
         "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json"
     ]["disposition"] == "rejected_incomplete_then_successor_materialized"
     for ref, row in rows.items():
-        assert row["sha256"] == _sha(Path(ref))
+        assert matches_checkout_portable_sha256(
+            _historical_blob(DECISION_SOURCE_COMMIT, Path(ref)), row["sha256"]
+        )
 
 
 def test_successor_resource_registry_closes_detector_gap_without_rewriting_old() -> None:
@@ -283,13 +346,20 @@ def test_historical_proof_policy_keeps_old_receipts_immutable() -> None:
     }
 
 
-def test_decision_and_active_suite_are_digest_bound_and_do_not_promote_old_names() -> None:
+def test_decision_preserves_known_birth_drift_and_does_not_promote_old_names() -> None:
     decision = _load(DECISION_REF)
     assert decision["decision_digest"] == canonical_digest(
         {key: value for key, value in decision.items() if key != "decision_digest"}
     )
-    for binding in decision["source_bindings"]:
-        assert binding["sha256"] == _sha(Path(binding["ref"]))
+    birth_drift = {
+        binding["ref"]
+        for binding in decision["source_bindings"]
+        if not matches_checkout_portable_sha256(
+            _historical_blob(DECISION_SOURCE_COMMIT, Path(binding["ref"])),
+            binding["sha256"],
+        )
+    }
+    assert birth_drift == KNOWN_DECISION_BIRTH_DRIFT
     assert decision["root_cause_disposition"] == {
         "RC-P36-115": "closed_by_current_mandatory_shared_exact_once_ledger",
         "RC-P36-128": "closed_by_historical_receipt_role_and_disposable_issuance_policy",

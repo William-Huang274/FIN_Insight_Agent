@@ -12,19 +12,20 @@ from typing import Any, Callable, Iterator, Mapping
 
 from retrieval.object_bm25_retriever import ObjectBM25Retriever
 from sec_agent.canonical_runtime.models import canonical_digest
+from sec_agent.runtime_bridge.paths import RuntimePathRegistry
 
 from .case_service import CasePrincipal, CaseService, CaseServiceError
 
 
-OBJECT_INDEX_RELATIVE_PATH = (
-    "data/indexes/bm25/"
+OBJECT_INDEX_DATA_RELATIVE_PATH = (
+    "indexes/bm25/"
     "sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027_objects"
 )
-GOLD_MART_RELATIVE_PATH = (
-    "data/workbench_private/research_data/gold_fact_signal_mart_v0_1.sqlite"
+GOLD_MART_WORKBENCH_RELATIVE_PATH = (
+    "research_data/gold_fact_signal_mart_v0_1.sqlite"
 )
-RESEARCH_GRAPH_RELATIVE_PATH = (
-    "data/workbench_private/research_data/research_graph_store_v0_1.sqlite"
+RESEARCH_GRAPH_WORKBENCH_RELATIVE_PATH = (
+    "research_data/research_graph_store_v0_1.sqlite"
 )
 
 
@@ -38,11 +39,35 @@ class LocalResearchPaths:
     @classmethod
     def from_repo_root(cls, repo_root: str | Path) -> "LocalResearchPaths":
         root = Path(repo_root).resolve()
+        return cls.from_data_roots(
+            primary_data_root=root / "data",
+            workbench_private_root=root / "data" / "workbench_private",
+        )
+
+    @classmethod
+    def from_runtime_paths(
+        cls,
+        runtime_paths: RuntimePathRegistry,
+    ) -> "LocalResearchPaths":
+        return cls.from_data_roots(
+            primary_data_root=runtime_paths.primary_data_root,
+            workbench_private_root=runtime_paths.workbench_private_root,
+        )
+
+    @classmethod
+    def from_data_roots(
+        cls,
+        *,
+        primary_data_root: str | Path,
+        workbench_private_root: str | Path,
+    ) -> "LocalResearchPaths":
+        data_root = Path(primary_data_root).resolve()
+        private_root = Path(workbench_private_root).resolve()
         return cls(
-            object_index=root / OBJECT_INDEX_RELATIVE_PATH,
-            gold_mart=root / GOLD_MART_RELATIVE_PATH,
-            research_graph=root / RESEARCH_GRAPH_RELATIVE_PATH,
-            official_filing_root=root / "data/raw_private/sec",
+            object_index=data_root / OBJECT_INDEX_DATA_RELATIVE_PATH,
+            gold_mart=private_root / GOLD_MART_WORKBENCH_RELATIVE_PATH,
+            research_graph=private_root / RESEARCH_GRAPH_WORKBENCH_RELATIVE_PATH,
+            official_filing_root=data_root / "raw_private" / "sec",
         )
 
 
@@ -81,6 +106,18 @@ class P36LocalResearchService:
         repo_root: str | Path,
     ) -> "P36LocalResearchService":
         return cls(case_service, paths=LocalResearchPaths.from_repo_root(repo_root))
+
+    @classmethod
+    def from_runtime_paths(
+        cls,
+        case_service: CaseService,
+        *,
+        runtime_paths: RuntimePathRegistry,
+    ) -> "P36LocalResearchService":
+        return cls(
+            case_service,
+            paths=LocalResearchPaths.from_runtime_paths(runtime_paths),
+        )
 
     def preview(self, case_id: str, principal: CasePrincipal) -> dict[str, Any]:
         self._require_permission(principal, "evidence:read")

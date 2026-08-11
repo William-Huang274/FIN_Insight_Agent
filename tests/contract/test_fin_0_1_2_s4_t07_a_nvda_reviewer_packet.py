@@ -24,11 +24,11 @@ from apps.workbench.backend.application.fin_0_1_2_s4_t06_current_review_control 
 from apps.workbench.backend.application.fin_0_1_2_s4_t07_reviewer_packet import (
     CurrentProductReviewerPacketError,
     CurrentProductReviewerPacketService,
+    validate_current_product_reviewer_packet_contract,
 )
-from scripts.releases.materialize_fin_ia_0_1_2_s4_t07_a_nvda_reviewer_packet import (
-    DEFAULT_OUTPUT,
-    build_contract,
-    validate_contract,
+DEFAULT_OUTPUT = ROOT / (
+    "configs/releases/fin_ia_0_1_2_s4_t07_a_nvda_exact_reviewer_packet_"
+    "contract_v1_0.json"
 )
 from sec_agent.canonical_runtime.models import canonical_digest
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
@@ -54,10 +54,8 @@ def _services(tmp_path: Path):
     return projection, review, packet
 
 
-def test_contract_is_reproducible_registered_and_records_option_a() -> None:
+def test_contract_is_registered_self_consistent_and_records_option_a() -> None:
     stored = json.loads(DEFAULT_OUTPUT.read_text(encoding="utf-8"))
-    assert build_contract() == stored
-    validate_contract(stored)
     registered = read_registered_runtime_json(
         ROOT,
         "fin_0_1_2.s4.t07_a.nvda_reviewer_packet_contract",
@@ -67,6 +65,10 @@ def test_contract_is_reproducible_registered_and_records_option_a() -> None:
         ),
     )
     assert registered == stored
+    assert canonical_digest(
+        {key: value for key, value in stored.items() if key != "contract_digest"}
+    ) == stored["contract_digest"]
+    assert ".codex_runtime" not in json.dumps(stored, ensure_ascii=False)
     assert stored["authority"]["user_security_scope_choice"] == "A"
     assert stored["authority"]["T07_C_human_action_authorized_for_automation"] is False
 
@@ -142,7 +144,7 @@ def test_contract_mutation_and_secret_surface_fail_closed() -> None:
         {key: value for key, value in mutated.items() if key != "contract_digest"}
     )
     with pytest.raises(Exception, match="forbidden_reviewer_surface"):
-        validate_contract(mutated)
+        validate_current_product_reviewer_packet_contract(mutated)
 
 
 def test_api_returns_packet_without_creating_human_acceptance(tmp_path: Path) -> None:

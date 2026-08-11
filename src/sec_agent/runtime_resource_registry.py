@@ -13,7 +13,8 @@ RUNTIME_RESOURCE_REGISTRY_SCHEMA = (
     "fin_ia_0_1_3_runtime_resource_registry_v1_0"
 )
 DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF = (
-    "configs/runtime/fin_ia_0_1_3_runtime_resource_registry_v1_0.json"
+    "configs/runtime/"
+    "fin_ia_0_1_3_repair_closeout_runtime_resource_registry_v1_0.json"
 )
 
 _RESOURCE_ROW_FIELDS = frozenset(
@@ -109,6 +110,50 @@ def _canonical_bytes(value: Any) -> bytes:
 
 def _sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def _checkout_equivalent_text_bytes(value: bytes) -> tuple[bytes, ...]:
+    """Return byte forms that differ only by Git checkout newlines.
+
+    Runtime resources are restricted to UTF-8 text formats.  Their logical
+    identity must survive an LF checkout on Linux and a legacy CRLF checkout
+    on Windows.  This deliberately does not canonicalize JSON structure,
+    whitespace, ordering, or any other content mutation.
+    """
+
+    try:
+        text = value.decode("utf-8")
+    except UnicodeDecodeError:
+        return (value,)
+    lf_text = text.replace("\r\n", "\n").replace("\r", "\n")
+    candidates = (
+        value,
+        lf_text.encode("utf-8"),
+        lf_text.replace("\n", "\r\n").encode("utf-8"),
+    )
+    return tuple(dict.fromkeys(candidates))
+
+
+def _matches_registered_text_identity(
+    value: bytes,
+    *,
+    expected_bytes: int,
+    expected_sha256: str,
+) -> bool:
+    return any(
+        len(candidate) == expected_bytes
+        and _sha256_bytes(candidate) == expected_sha256
+        for candidate in _checkout_equivalent_text_bytes(value)
+    )
+
+
+def matches_checkout_portable_sha256(value: bytes, expected_sha256: str) -> bool:
+    """Match an immutable UTF-8 text digest across LF/CRLF-only checkouts."""
+
+    return any(
+        _sha256_bytes(candidate) == expected_sha256
+        for candidate in _checkout_equivalent_text_bytes(value)
+    )
 
 
 def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -367,7 +412,11 @@ def load_runtime_resource_registry(
                 "runtime_resource_registry_row_contract_invalid"
             )
         value = (root / path).read_bytes()
-        if len(value) != expected_bytes or _sha256_bytes(value) != expected_sha:
+        if not _matches_registered_text_identity(
+            value,
+            expected_bytes=expected_bytes,
+            expected_sha256=expected_sha,
+        ):
             raise RuntimeResourceRegistryError(
                 f"runtime_resource_registry_digest_or_bytes_drift:{resource_id}"
             )

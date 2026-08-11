@@ -24,6 +24,14 @@ def parse_args() -> argparse.Namespace:
         "--baseline-store",
         help="Separate SQLite store for resumable human baseline and senior review records.",
     )
+    parser.add_argument(
+        "--data-root",
+        help="Primary local data/index root; defaults to FINSIGHT_DATA_ROOT or <repo>/data.",
+    )
+    parser.add_argument(
+        "--workbench-private-root",
+        help="Workbench store/capture root; defaults to <data-root>/workbench_private.",
+    )
     return parser.parse_args()
 
 
@@ -36,6 +44,12 @@ def main() -> int:
         os.environ["FINSIGHT_P02_FIXTURE_ROOT"] = str(fixture_root)
     if args.baseline_store:
         os.environ["FINSIGHT_HUMAN_BASELINE_STORE"] = str(Path(args.baseline_store).resolve())
+    if args.data_root:
+        os.environ["FINSIGHT_DATA_ROOT"] = str(Path(args.data_root).resolve())
+    if args.workbench_private_root:
+        os.environ["FINSIGHT_WORKBENCH_PRIVATE_ROOT"] = str(
+            Path(args.workbench_private_root).resolve()
+        )
     sys.path.insert(0, str(REPO_ROOT))
     sys.path.insert(0, str(REPO_ROOT / "src"))
     uvicorn.run(

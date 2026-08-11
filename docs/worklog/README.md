@@ -1,5 +1,6 @@
 # Worklog
 
+- [877 — FIN 0.1.3 clean worktree、代码生命周期与 Workbench cutover 边界](product_strategy/877_fin_0_1_3_clean_worktree_code_lifecycle_and_workbench_cutover_boundary.md)
 - [876 — FIN 0.1.3 全仓基线盘点与“反复修”复盘](product_strategy/876_fin_0_1_3_full_repository_baseline_inventory_and_repeated_repair_retrospective.md)
 - [875 — FIN 0.1.3 S3 small-judgment successor natural canary 失败审计](product_strategy/875_fin_0_1_3_s3_small_judgment_successor_natural_canary_failure_audit.md)
 - [874 — FIN 0.1.3 S3 small-judgment successor clean preflight 与 execution authority](product_strategy/874_fin_0_1_3_s3_small_judgment_successor_clean_preflight_and_execution_authority.md)

@@ -22,6 +22,8 @@
 
 当前紧凑机器基线为 configs/repository/fin_0_1_3_repository_baseline_v1_0.json。旧完整机器引用图 data/manifests/repository_architecture_inventory_v0_1.json 仍可用于查文本引用，但它的 active/reachability 分类不能直接作为清理依据。
 
+当前 rebaseline、代码生命周期和 Workbench cutover 权威见 `FIN_0_1_3_CLEAN_BASELINE_CODE_LIFECYCLE_AND_WORKBENCH_CUTOVER_20260811.zh-CN.md`，机器摘要见 `configs/repository/fin_0_1_3_code_lifecycle_cutover_v1_0.json`。该方案禁止按修改时间或静态未可达直接归档，要求先证明 successor、产品消费者切换和 redirect manifest。
+
 维护命令：
 
 ```powershell

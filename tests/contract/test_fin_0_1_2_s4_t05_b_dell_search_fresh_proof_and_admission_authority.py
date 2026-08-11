@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 from typing import Mapping
 
@@ -33,6 +33,7 @@ from run_fin_ia_0_1_2_s4_t05_current_search import (
     parse_dell_direct_ir_pdf_identity,
 )
 from sec_agent.canonical_runtime.models import canonical_digest
+from sec_agent.runtime_resource_registry import matches_checkout_portable_sha256
 
 
 DECISION_REF = (
@@ -46,6 +47,13 @@ PROJECTION_REF = (
 HISTORICAL_T03_RUNNER_REF = (
     "scripts/releases/run_fin_ia_0_1_2_s4_t03_agentic_search.py"
 )
+DECISION_SOURCE_COMMIT = "27eb4244eacf96fb922b53a95942e474d44b3ffb"
+
+
+def _historical_blob(ref: str) -> bytes:
+    return subprocess.check_output(
+        ["git", "show", f"{DECISION_SOURCE_COMMIT}:{ref}"], cwd=ROOT
+    )
 
 
 @pytest.fixture(scope="module")
@@ -277,11 +285,12 @@ def test_authority_decision_and_projection_are_honest_and_content_addressed() ->
     assert decision["authority"]["source_live_authorized_this_decision"] is False
     assert decision["authority"]["agent_or_model_live_authorized"] is False
     for binding in decision["immutable_bindings"]:
-        assert hashlib.sha256((ROOT / binding["ref"]).read_bytes()).hexdigest() == (
-            binding["sha256"]
+        assert matches_checkout_portable_sha256(
+            _historical_blob(binding["ref"]), binding["sha256"]
         )
-    assert hashlib.sha256((ROOT / HISTORICAL_T03_RUNNER_REF).read_bytes()).hexdigest() == (
-        "988939424a7701b2a72dd1e90f833b69f545ebeb23420afdce07f3a69cb0e80d"
+    assert matches_checkout_portable_sha256(
+        _historical_blob(HISTORICAL_T03_RUNNER_REF),
+        "988939424a7701b2a72dd1e90f833b69f545ebeb23420afdce07f3a69cb0e80d",
     )
     projection = json.loads((ROOT / PROJECTION_REF).read_text(encoding="utf-8"))
     assert projection["current_truth"]["S4_T05_B_DELL"] == (

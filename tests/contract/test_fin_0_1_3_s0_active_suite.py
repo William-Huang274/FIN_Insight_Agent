@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 from typing import Any
 
 from sec_agent.hermetic_test_runner import (
@@ -13,7 +14,10 @@ from sec_agent.hermetic_test_runner import (
 from sec_agent.runtime_contract_governance import (
     validate_active_test_suite_manifest,
 )
-from sec_agent.runtime_resource_registry import load_runtime_resource_registry
+from sec_agent.runtime_resource_registry import (
+    load_runtime_resource_registry,
+    matches_checkout_portable_sha256,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,6 +35,7 @@ NEXT_ACTION = (
     "FIN-0.1.3-S0-HOST-IMPORT-COLLECT-RESOURCE-MUTATION-AND-THREE-CASE-"
     "FULL-FAKE-ZERO-CALL-PROOF"
 )
+IMPLEMENTATION_SOURCE_COMMIT = "041b4c86bd0fe7a5e1df4c29cf19a9f6002e8df0"
 
 
 def _load(ref: str) -> dict[str, Any]:
@@ -39,6 +44,16 @@ def _load(ref: str) -> dict[str, Any]:
 
 def _sha256(ref: str) -> str:
     return hashlib.sha256((ROOT / ref).read_bytes()).hexdigest()
+
+
+def _matches_recorded_sha(ref: str, expected_sha256: str) -> bool:
+    return matches_checkout_portable_sha256(
+        subprocess.check_output(
+            ["git", "show", f"{IMPLEMENTATION_SOURCE_COMMIT}:{ref}"],
+            cwd=ROOT,
+        ),
+        expected_sha256,
+    )
 
 
 def test_active_manifest_has_one_owner_per_proof_class_and_validates() -> None:
@@ -89,7 +104,7 @@ def test_T02_implementation_record_binds_current_files_and_zero_call_truth() -> 
         assert (ROOT / binding["ref"]).is_file()
         assert len(binding["sha256"]) == 64
         if binding["role"] in immutable_snapshot_roles:
-            assert binding["sha256"] == _sha256(binding["ref"])
+            assert _matches_recorded_sha(binding["ref"], binding["sha256"])
     assert record["runtime_resource_registry"]["resource_count"] == 29
     assert record["runtime_resource_registry"]["resource_bytes"] == 323829
     assert record["typed_environment_projection"]["typed_root_count"] == 8

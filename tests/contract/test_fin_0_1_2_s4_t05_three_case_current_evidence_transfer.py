@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import replace
-import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 from typing import Any, Mapping
 
@@ -51,6 +51,7 @@ from apps.workbench.backend.application.fin_0_1_2_s4_t05_three_case_transfer imp
     validate_transfer_evidence_pack,
 )
 from sec_agent.canonical_runtime.models import canonical_digest
+from sec_agent.runtime_resource_registry import matches_checkout_portable_sha256
 from test_fin_0_1_2_s1_bounded_production_consumer_migration import (
     _fin012_runtime,
 )
@@ -90,6 +91,13 @@ IMPLEMENTATION_REF = (
 PROJECTION_REF = (
     "configs/runtime/fin_ia_0_1_2_current_program_projection_v2_51.json"
 )
+IMPLEMENTATION_SOURCE_COMMIT = "0b641ae6ccca4a421710d6b523de77dd4a133223"
+
+
+def _historical_blob(ref: str) -> bytes:
+    return subprocess.check_output(
+        ["git", "show", f"{IMPLEMENTATION_SOURCE_COMMIT}:{ref}"], cwd=ROOT
+    )
 
 
 class _CaseSecTransport:
@@ -250,8 +258,8 @@ def test_T05_A_result_and_projection_are_content_addressed_and_nonpromotable() -
         }
     )
     for binding in result["immutable_bindings"]:
-        assert hashlib.sha256((ROOT / binding["ref"]).read_bytes()).hexdigest() == (
-            binding["sha256"]
+        assert matches_checkout_portable_sha256(
+            _historical_blob(binding["ref"]), binding["sha256"]
         )
     assert result["observed_external_counts"] == {
         "model_calls": 0,

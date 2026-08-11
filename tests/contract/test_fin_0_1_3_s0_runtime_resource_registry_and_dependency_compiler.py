@@ -72,10 +72,10 @@ def _assert_code(root: Path, expected: str) -> None:
 
 def test_registry_is_one_validated_authority_for_all_declared_consumers() -> None:
     registry = load_runtime_resource_registry(ROOT)
-    assert len(registry.resources) == 30
-    assert sum(row.bytes for row in registry.resources) == 327491
+    assert len(registry.resources) == 31
+    assert sum(row.bytes for row in registry.resources) == 338132
     assert registry.resource_canonical_digest == (
-        "f907ce949ed55e0582ce918ccd6c1eb3f51bcee66e98df3b96ac9b19116d284b"
+        "a2490320368b53e5864a606b769a5abc2e19f19b299ed5bedc1fd99087fa56cc"
     )
     assert registry.package_paths()[0].as_posix().startswith("configs/")
     assert all(row.required for row in registry.resources)
@@ -85,7 +85,7 @@ def test_registry_is_one_validated_authority_for_all_declared_consumers() -> Non
 def test_static_detector_finds_no_direct_unregistered_runtime_literal() -> None:
     registry = load_runtime_resource_registry(ROOT)
     detected = detect_repo_relative_runtime_resource_literals(ROOT, registry)
-    assert len(detected) == 29
+    assert len(detected) == 30
     assert set(detected).issubset(registry.by_path())
     assert assert_no_unregistered_runtime_resource_literals(ROOT) == detected
 
@@ -120,6 +120,24 @@ def test_registered_json_reader_uses_resource_id_not_caller_path() -> None:
     assert failure.value.code == (
         "runtime_resource_registry_unknown_resource_id:unknown.runtime.resource"
     )
+
+
+def test_registry_text_identity_survives_lf_and_crlf_git_checkouts(
+    tmp_path: Path,
+) -> None:
+    registry = _copy_closure(tmp_path)
+    row = registry["resources"][0]
+    path = tmp_path / row["repo_relative_path"]
+    original = path.read_bytes()
+    lf = original.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    crlf = lf.replace(b"\n", b"\r\n")
+
+    path.write_bytes(crlf if original == lf else lf)
+    loaded = load_runtime_resource_registry(tmp_path)
+    assert loaded.by_id()[row["resource_id"]].sha256 == row["sha256"]
+
+    path.write_bytes(path.read_bytes() + b" ")
+    _assert_code(tmp_path, "runtime_resource_registry_digest_or_bytes_drift")
 
 
 @pytest.mark.parametrize(

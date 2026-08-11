@@ -57,6 +57,28 @@ def test_workbench_backend_system_status_reports_store_and_paths(tmp_path: Path)
     assert "runtime-secret" not in json.dumps(payload, ensure_ascii=False)
 
 
+def test_workbench_uses_explicit_data_root_without_copying_repo_data(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    data_root = tmp_path / "shared-data"
+    private_root = tmp_path / "shared-workbench-private"
+    data_root.mkdir()
+    private_root.mkdir()
+    monkeypatch.setenv("FINSIGHT_DATA_ROOT", str(data_root))
+    monkeypatch.setenv("FINSIGHT_WORKBENCH_PRIVATE_ROOT", str(private_root))
+
+    app = create_app()
+    client = TestClient(app)
+    payload = client.get("/api/system/status").json()
+
+    assert app.state.runtime_paths.primary_data_root == data_root.resolve()
+    assert app.state.runtime_paths.workbench_private_root == private_root.resolve()
+    assert Path(payload["paths"]["data_root"]["path"]) == data_root.resolve()
+    assert Path(payload["paths"]["workbench_private"]["path"]) == private_root.resolve()
+    assert (private_root / "workbench.sqlite").is_file()
+
+
 def test_workbench_store_concurrent_event_appends_keep_monotonic_sequences(tmp_path: Path) -> None:
     store = WorkbenchStore(tmp_path / "workbench.sqlite")
     job = new_local_smoke_job(job_id="concurrent_fixture", trace_id="trace_concurrent")

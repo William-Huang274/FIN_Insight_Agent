@@ -46,6 +46,92 @@ def _require(condition: bool, code: str) -> None:
         raise CurrentProductReviewerPacketError(code)
 
 
+def _reject_forbidden_reviewer_surface(value: Any) -> None:
+    forbidden_keys = {
+        "authorization",
+        "capture_objects",
+        "credential",
+        "cookie",
+        "object_key",
+        "provider_output",
+        "raw_provider_response",
+        "request_headers",
+        "response_headers",
+    }
+    safe_negative_boundaries = {"raw_capture_product_exposure"}
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            normalized = str(key).lower()
+            _require(
+                normalized not in forbidden_keys
+                and (
+                    not normalized.startswith("raw_")
+                    or (
+                        normalized in safe_negative_boundaries
+                        and item is False
+                    )
+                )
+                and "private_reasoning" not in normalized,
+                "t07_reviewer_packet_forbidden_reviewer_surface",
+            )
+            _reject_forbidden_reviewer_surface(item)
+    elif isinstance(value, list):
+        for item in value:
+            _reject_forbidden_reviewer_surface(item)
+    elif isinstance(value, str):
+        normalized = value.replace("\\", "/").lower()
+        _require(
+            ".codex_runtime" not in normalized
+            and "restricted-provider-captures" not in normalized,
+            "t07_reviewer_packet_forbidden_runtime_reference",
+        )
+
+
+def validate_current_product_reviewer_packet_contract(
+    contract: Mapping[str, Any],
+) -> None:
+    body = {key: value for key, value in contract.items() if key != "contract_digest"}
+    binding = contract.get("exact_binding") or {}
+    boundaries = contract.get("hard_boundaries") or {}
+    authority = contract.get("authority") or {}
+    lead = contract.get("safe_cross_cell_lead") or {}
+    _require(
+        contract.get("schema_version") == T07_A_REVIEWER_PACKET_SCHEMA
+        and contract.get("contract_digest") == canonical_digest(body),
+        "t07_reviewer_packet_contract_invalid",
+    )
+    _require(
+        authority.get("user_security_scope_choice") == "A"
+        and authority.get("T07_A_implementation_authorized") is True
+        and authority.get("T07_B_implementation_authorized") is True
+        and authority.get("T07_C_human_action_authorized_for_automation") is False,
+        "t07_reviewer_packet_authority_invalid",
+    )
+    _require(
+        binding.get("case_key") == "NVDA"
+        and len(binding.get("view_digests") or {}) == 10
+        and binding.get("cross_cell_lead_digest") == canonical_digest(lead),
+        "t07_reviewer_packet_contract_binding_invalid",
+    )
+    _require(
+        len(lead.get("cross_cell_dependencies", [])) == 1
+        and len(lead.get("conflict_adjudications", [])) == 2
+        and len(lead.get("remaining_gaps", [])) == 4,
+        "t07_reviewer_packet_lead_content_invalid",
+    )
+    _require(
+        boundaries.get("model_provider_network_financial_source_calls") == 0
+        and boundaries.get("raw_capture_product_exposure") is False
+        and boundaries.get("mutable_business_truth_write") is False
+        and boundaries.get("qualified_human_review_executed") is False
+        and boundaries.get("authenticated_reviewer_session_established") is False
+        and boundaries.get("automation_or_Codex_may_sign_human_acceptance") is False
+        and boundaries.get("NVDA_R3") is False,
+        "t07_reviewer_packet_contract_boundary_invalid",
+    )
+    _reject_forbidden_reviewer_surface(contract)
+
+
 class CurrentProductReviewerPacketService:
     """Build the exact NVDA T07 packet without model, source, or write calls."""
 
@@ -179,30 +265,4 @@ class CurrentProductReviewerPacketService:
         return {**packet_body, "packet_digest": canonical_digest(packet_body)}
 
     def _validate_contract(self) -> None:
-        body = {
-            key: value
-            for key, value in self._contract.items()
-            if key != "contract_digest"
-        }
-        binding = self._contract.get("exact_binding") or {}
-        boundaries = self._contract.get("hard_boundaries") or {}
-        _require(
-            self._contract.get("schema_version") == T07_A_REVIEWER_PACKET_SCHEMA
-            and self._contract.get("contract_digest") == canonical_digest(body),
-            "t07_reviewer_packet_contract_invalid",
-        )
-        _require(
-            binding.get("case_key") == "NVDA"
-            and len(binding.get("view_digests") or {}) == 10
-            and binding.get("cross_cell_lead_digest")
-            == canonical_digest(self._contract.get("safe_cross_cell_lead") or {}),
-            "t07_reviewer_packet_contract_binding_invalid",
-        )
-        _require(
-            boundaries.get("model_provider_network_financial_source_calls") == 0
-            and boundaries.get("raw_capture_product_exposure") is False
-            and boundaries.get("mutable_business_truth_write") is False
-            and boundaries.get("qualified_human_review_executed") is False
-            and boundaries.get("NVDA_R3") is False,
-            "t07_reviewer_packet_contract_boundary_invalid",
-        )
+        validate_current_product_reviewer_packet_contract(self._contract)

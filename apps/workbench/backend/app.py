@@ -91,6 +91,7 @@ from sec_agent.s4_case_runtime import (
     S4CaseRuntimeResearchProfileOverlay,
     S4SourceGroundedInputPack,
 )
+from sec_agent.runtime_bridge.paths import resolve_runtime_paths
 from sec_agent.r53_r60_deliverable_studio_dashboard import (
     build_s7_gate as build_r53_r60_s7_deliverables,
     get_dashboard_projection as get_r53_r60_dashboard_projection,
@@ -135,7 +136,16 @@ from sec_agent.r53_r60_workbench_frontdoor_drilldown import (
 APP_ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_ROOT = APP_ROOT / "frontend"
 FRONTEND_DIST_ROOT = FRONTEND_ROOT / "dist"
-REPO_ROOT = Path(os.environ.get("FINSIGHT_WORKBENCH_REPO_ROOT", Path(__file__).resolve().parents[3])).resolve()
+CODE_ROOT = Path(
+    os.environ.get(
+        "FINSIGHT_WORKBENCH_REPO_ROOT",
+        Path(__file__).resolve().parents[3],
+    )
+).resolve()
+# Compatibility root for the inherited r53-r60 projection surface.  Tests and
+# legacy operators may redirect it, but tracked contracts always resolve from
+# CODE_ROOT so a fixture/data workspace cannot impersonate the code checkout.
+REPO_ROOT = CODE_ROOT
 
 
 class ImportEnvRequest(BaseModel):
@@ -393,14 +403,22 @@ def create_app(
 ) -> FastAPI:
     if workbench_runtime_mode not in {"current", "fixture"}:
         raise ValueError("workbench_runtime_mode_invalid")
-    store = WorkbenchStore(store_path or default_store_path(REPO_ROOT))
-    case_service = p02_case_service or case_service_from_env(REPO_ROOT)
+    runtime_paths = resolve_runtime_paths(CODE_ROOT)
+    store = WorkbenchStore(
+        store_path
+        or default_store_path(
+            CODE_ROOT,
+            workbench_private_root=runtime_paths.workbench_private_root,
+        )
+    )
+    case_service = p02_case_service or case_service_from_env(CODE_ROOT)
     planning_service = p02_planning_service or PlanningService.from_case_service(case_service)
     evidence_service = p03_evidence_service or EvidenceService.from_case_service(
-        case_service, repo_root=REPO_ROOT
+        case_service, repo_root=CODE_ROOT
     )
-    local_research_service = p36_local_research_service or P36LocalResearchService.from_case_service(
-        case_service, repo_root=REPO_ROOT
+    local_research_service = p36_local_research_service or P36LocalResearchService.from_runtime_paths(
+        case_service,
+        runtime_paths=runtime_paths,
     )
     if (
         workbench_runtime_mode == "fixture"
@@ -441,22 +459,22 @@ def create_app(
             runtime=research_runtime,
         )
     baseline_service = human_baseline_service or HumanBaselineService.from_services(
-        case_service, local_research_service, repo_root=REPO_ROOT
+        case_service, local_research_service, repo_root=CODE_ROOT
     )
     integrity_service = vt2_integrity_service or IntegrityService.from_services(
-        case_service, evidence_service, repo_root=REPO_ROOT
+        case_service, evidence_service, repo_root=CODE_ROOT
     )
     deliverable_service = vt3_deliverable_service or DeliverableService.from_services(
-        case_service, evidence_service, repo_root=REPO_ROOT
+        case_service, evidence_service, repo_root=CODE_ROOT
     )
     current_product_service = (
         current_product_projection_service
-        or CurrentProductProjectionService.from_repository(REPO_ROOT)
+        or CurrentProductProjectionService.from_repository(CODE_ROOT)
     )
     current_review_control_service = (
         current_product_review_control_service
         or CurrentProductReviewControlService.from_repository(
-            REPO_ROOT,
+            CODE_ROOT,
             current_product_service,
             store.db_path,
         )
@@ -464,7 +482,7 @@ def create_app(
     current_reviewer_packet_service = (
         current_product_reviewer_packet_service
         or CurrentProductReviewerPacketService.from_repository(
-            REPO_ROOT,
+            CODE_ROOT,
             current_product_service,
             current_review_control_service,
         )
@@ -472,7 +490,7 @@ def create_app(
     current_reviewer_session_service = (
         current_product_reviewer_session_service
         or CurrentProductReviewerSessionService.from_repository(
-            REPO_ROOT,
+            CODE_ROOT,
             current_reviewer_packet_service,
             store.db_path,
         )
@@ -483,6 +501,7 @@ def create_app(
         description="Local API for FinSight-Agent profile import and source readiness checks.",
     )
     app.state.workbench_runtime_mode = workbench_runtime_mode
+    app.state.runtime_paths = runtime_paths
     app.state.background_dispatch_enabled = (
         execution_service.background_dispatch_enabled
     )
@@ -538,9 +557,16 @@ def create_app(
         frontend_available = (FRONTEND_DIST_ROOT / "index.html").exists() or (FRONTEND_ROOT / "index.html").exists()
         store_health = store.inspect_health()
         path_status = {
-            "repo_root": _path_status(REPO_ROOT),
-            "data_root": _path_status(REPO_ROOT / "data"),
-            "workbench_private": _path_status(REPO_ROOT / "data" / "workbench_private"),
+            "repo_root": _path_status(CODE_ROOT),
+            "legacy_workspace_root": _path_status(REPO_ROOT),
+            "data_root": _path_status(runtime_paths.primary_data_root),
+            "workbench_private": _path_status(
+                runtime_paths.workbench_private_root
+            ),
+            "object_store": _path_status(runtime_paths.object_store_root),
+            "secondary_data_roots": [
+                _path_status(path) for path in runtime_paths.secondary_data_roots
+            ],
             "frontend_root": _path_status(FRONTEND_ROOT),
             "frontend_dist": _path_status(FRONTEND_DIST_ROOT),
         }

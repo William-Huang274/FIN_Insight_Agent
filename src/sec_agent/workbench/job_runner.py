@@ -16,6 +16,7 @@ from uuid import uuid4
 from .jobs import RunCancelReport, RunJob
 from .profiles import WorkbenchProfile
 from .store import WorkbenchStore
+from sec_agent.runtime_bridge.paths import resolve_runtime_paths
 
 
 TERMINAL_STATUSES = {"completed", "failed", "cancelled"}
@@ -239,7 +240,11 @@ def build_eval_command(
             "agent_graph_vnext_load_mix_15": "eval/sec_cases/outputs/multi_agent_vnext_load_mix_15_eval",
         }
         output_dir = output_dir_by_eval[eval_id]
-        run_audit_db_path = Path("data") / "workbench_private" / "run_audit" / f"{job_id}_run_audit.sqlite"
+        run_audit_db_path = (
+            resolve_runtime_paths(repo_root).workbench_private_root
+            / "run_audit"
+            / f"{job_id}_run_audit.sqlite"
+        )
         args = [
             sys.executable,
             "-u",
@@ -945,7 +950,11 @@ def _runtime_secret_env(profile: WorkbenchProfile, api_key_value: str | None) ->
 
 
 def _write_prompt_file(repo_root: Path, prompt: str) -> Path:
-    path = repo_root.resolve() / "data" / "workbench_private" / "prompts" / f"prompt_{uuid4().hex}.txt"
+    path = (
+        resolve_runtime_paths(repo_root).workbench_private_root
+        / "prompts"
+        / f"prompt_{uuid4().hex}.txt"
+    )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(prompt, encoding="utf-8")
     return path

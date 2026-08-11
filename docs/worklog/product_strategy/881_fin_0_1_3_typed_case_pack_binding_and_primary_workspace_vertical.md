@@ -35,4 +35,3 @@
 ## 下一步
 
 把 `/operations` 收敛成版本中立运维消费者；让 `/current`、`/next`、`/legacy`、Point02/03 与 r53 产品消费者归零；完成 redirect manifest 后才移动对应代码与测试。
-

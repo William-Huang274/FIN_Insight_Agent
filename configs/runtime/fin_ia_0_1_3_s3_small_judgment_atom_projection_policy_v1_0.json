@@ -1,0 +1,175 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_small_judgment_atom_projection_policy_v1_0",
+  "contract_ref": "fin_0_1_3.S3.small_judgment_atom_deterministic_cell_projection:v1",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S3",
+  "run_scope": "FIN_0_1_3_S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_AND_CONTENT_QUALITY_ZERO_CALL",
+  "immutable_bindings": {
+    "predecessor_canary_policy": {
+      "ref": "configs/runtime/fin_ia_0_1_3_s3_dell_value_profit_current_pack_repair_canary_policy_v1_0.json",
+      "sha256": "5274522d8f9e96ca70d7f245cb5c7cbb7a1be5f48bb8b0106910a7c87ffdcfa0"
+    },
+    "failed_live_audit": {
+      "ref": "configs/releases/fin_ia_0_1_3_s3_dell_value_profit_repair_canary_live_terminal_and_root_cause_audit_v1_0.json",
+      "sha256": "a754c0fcc1c7af28e4e7c6a816b4b0a24a38a95df6842bad38d6c5694c2f7281",
+      "expected_result_digest": "ecbf83c5ec662838eb4c36f80beb89409774e59e9485289812bbf1ae4a0fa92a"
+    }
+  },
+  "model_output_contract": {
+    "schema_version": "fin_ia_0_1_3_s3_small_judgment_atom_output_v1_0",
+    "top_level_fields": [
+      "schema_version",
+      "case_key",
+      "node_id",
+      "repair_request_id",
+      "observation_outcome",
+      "repair_resolution",
+      "accepted_evidence_refs",
+      "boundary_evidence_refs",
+      "evidence_semantics",
+      "retained_gap_components",
+      "used_numeric_refs",
+      "profitability_direction",
+      "attribution_boundary",
+      "mechanism_atom",
+      "boundary_atom"
+    ],
+    "evidence_semantics_fields": [
+      "e021_evidence_role",
+      "operating_profitability_status",
+      "isg_profit_attribution_status",
+      "gross_margin_status",
+      "cash_conversion_status",
+      "audited_product_profit_bridge_status"
+    ],
+    "required_evidence_semantics": {
+      "e021_evidence_role": "issuer_direct_source",
+      "operating_profitability_status": "issuer_management_observed_in_line_with_target",
+      "isg_profit_attribution_status": "forbidden_substitution",
+      "gross_margin_status": "typed_gap",
+      "cash_conversion_status": "typed_gap",
+      "audited_product_profit_bridge_status": "typed_gap"
+    },
+    "profitability_direction_enum": [
+      "management_target_consistent_product_profit_unproven",
+      "not_supported",
+      "cannot_infer"
+    ],
+    "attribution_boundary_enum": [
+      "segment_profit_not_product_profit",
+      "product_profit_directly_supported",
+      "cannot_infer"
+    ],
+    "maximum_atom_text_characters": 420,
+    "maximum_total_output_characters": 5000,
+    "model_cell_state_fields_forbidden": true,
+    "model_numeric_surface_forbidden": true,
+    "alias_tokens_in_atom_normalized_locally": true
+  },
+  "dell_expected_output": {
+    "case_key": "DELL",
+    "node_id": "dell_value_profit_small_judgment_atom_v1",
+    "repair_request_id": "evidence_request_0eb73a1c4b81a05d96b7",
+    "accepted_evidence_refs": ["E021"],
+    "boundary_evidence_refs": ["E002", "E008", "E023"],
+    "retained_gap_components": [
+      "audited_product_profit_bridge",
+      "cash_conversion",
+      "gross_margin"
+    ],
+    "used_numeric_refs": [
+      "NUM:DELL:OPERATING_MARGIN_TARGET:2894219F450D"
+    ],
+    "profitability_direction": "management_target_consistent_product_profit_unproven",
+    "attribution_boundary": "segment_profit_not_product_profit",
+    "required_wwc_ref": "DELL_W_AI_MARGIN"
+  },
+  "deterministic_cell_projection": [
+    {
+      "cell_id": "bottleneck_counterevidence_and_what_would_change",
+      "judgment_state": "supported_with_limits",
+      "judgment_changed": true,
+      "support_ref_roles": ["accepted"],
+      "counterevidence_ref_roles": ["boundary"],
+      "numeric_ref_roles": [],
+      "mechanism_source": "model_mechanism_atom",
+      "boundary_source": "model_boundary_atom",
+      "wwc_source": "required"
+    },
+    {
+      "cell_id": "cross_chain_price_in_and_expectations",
+      "judgment_state": "cannot_infer",
+      "judgment_changed": false,
+      "support_ref_roles": ["primary_boundary"],
+      "counterevidence_ref_roles": [],
+      "numeric_ref_roles": [],
+      "mechanism_source": "local_price_in_boundary",
+      "boundary_source": "local_price_in_boundary",
+      "wwc_source": "none"
+    },
+    {
+      "cell_id": "value_and_profit_capture",
+      "judgment_state": "supported_with_limits",
+      "judgment_changed": true,
+      "support_ref_roles": ["accepted"],
+      "counterevidence_ref_roles": ["primary_boundary", "mix_boundary"],
+      "numeric_ref_roles": ["required"],
+      "mechanism_source": "model_mechanism_atom",
+      "boundary_source": "model_boundary_atom",
+      "wwc_source": "required"
+    },
+    {
+      "cell_id": "writer_admission_boundary",
+      "judgment_state": "supported_with_limits",
+      "judgment_changed": true,
+      "support_ref_roles": ["accepted", "primary_boundary"],
+      "counterevidence_ref_roles": [],
+      "numeric_ref_roles": [],
+      "mechanism_source": "local_writer_control",
+      "boundary_source": "local_writer_control",
+      "wwc_source": "required"
+    }
+  ],
+  "portfolio_shape_fixtures": [
+    {
+      "case_key": "DELL",
+      "accepted_ref": "E021",
+      "boundary_refs": ["E002", "E008", "E023"],
+      "numeric_ref": "NUM:DELL:OPERATING_MARGIN_TARGET:2894219F450D"
+    },
+    {
+      "case_key": "MU",
+      "accepted_ref": "E101",
+      "boundary_refs": ["E102", "E108", "E123"],
+      "numeric_ref": "NUM:MU:PROFITABILITY_SIGNAL:FIXTURE"
+    },
+    {
+      "case_key": "NVDA",
+      "accepted_ref": "E201",
+      "boundary_refs": ["E202", "E208", "E223"],
+      "numeric_ref": "NUM:NVDA:PROFITABILITY_SIGNAL:FIXTURE"
+    }
+  ],
+  "request_budget": {
+    "maximum_compiled_request_characters": 16000,
+    "maximum_output_tokens_if_later_authorized": 1200,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0
+  },
+  "hard_boundaries": {
+    "provider_neutral_core": true,
+    "deepseek_specific_runtime_branch": false,
+    "current_governed_pack_first": true,
+    "model_owns_research_semantics": true,
+    "model_owns_internal_cell_state": false,
+    "local_runtime_owns_state_refs_wwc_numeric_and_writer_control": true,
+    "failed_capture_diagnostic_only": true,
+    "failed_capture_posthoc_promotion": false,
+    "second_model_call_authorized": false,
+    "complete_report_authorized": false,
+    "business_artifact_promotion": false
+  }
+}

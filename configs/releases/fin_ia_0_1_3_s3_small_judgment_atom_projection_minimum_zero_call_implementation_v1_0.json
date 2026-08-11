@@ -1,0 +1,125 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_small_judgment_atom_projection_minimum_zero_call_implementation_v1_0",
+  "implementation_id": "FIN-0.1.3-S3-SMALL-JUDGMENT-ATOM-DETERMINISTIC-CELL-PROJECTION-ZERO-CALL-R1",
+  "result_digest": "f80f5ac42046be8f9ebe0189de695ef16bd3264d1feb3887bde269f76c8e2a4e",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S3",
+  "status": "working_tree_engineering_pass_clean_independent_proof_pending",
+  "implementation_base_commit": "56fc53449a8387fe85fa89b5a28a830407af738b",
+  "run_scope": "FIN_0_1_3_S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_AND_CONTENT_QUALITY_ZERO_CALL",
+  "scope": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "failed_capture_replay_callbacks": 1,
+    "second_natural_canary_authorized": false,
+    "complete_report_executed": false,
+    "business_artifact_promotion": false
+  },
+  "implementation_bindings": {
+    "configs/runtime/fin_ia_0_1_3_s3_small_judgment_atom_projection_policy_v1_0.json": "03a1622e1baf365bfd8ebd14b9cc765a95f941d6c8f464de960db3d86df26164",
+    "src/sec_agent/s3_small_judgment_atom_projection.py": "0a8efc992fb48a6680c3b93657c82b20d0734d73d29a331766f0b5e2f962495e",
+    "src/sec_agent/s3_dell_value_profit_repair_canary.py": "e0c51fdcaa309c1a7ceb9527438db86c20a20a443bdfe8ac231a64f42ded523d",
+    "src/sec_agent/s3_dell_value_profit_repair_canary_live.py": "5844809e5b93e2e930ba24139afd5e7915d4c946451a9a421c3b6a45cb5eac21",
+    "tests/contract/test_fin_0_1_3_s3_small_judgment_atom_projection.py": "dd26da721be6b262d213ec803b3004a6aedade50ec40c5db26b5c5b3610f7368",
+    "tests/contract/test_fin_0_1_3_s3_dell_value_profit_current_pack_repair_canary.py": "ffaef7e2ce5e3d53578d260d9416c26bc4ca695e6d463d13a61f884e445819f7",
+    "tests/contract/test_fin_0_1_3_s3_dell_value_profit_repair_canary_live.py": "acc3cdff058ebc2ad928fb725ee639d1d7f838f45e5ec371289c1081f14e1e0f",
+    "scripts/releases/prove_fin_ia_0_1_3_s3_small_judgment_atom_projection_worker.py": "0f8fbb64cc543343daeb9ff4e717ca4fd36083419fa2f837e0bed342989bfdf4",
+    "scripts/releases/prove_fin_ia_0_1_3_s3_small_judgment_atom_projection_clean.py": "9b93052ae79715aff1dc86c1360c834ce935502d42a9d88b9142d5918b5bcef0"
+  },
+  "compiled_successor": {
+    "compiled_input_digest": "fa954482c33f8f444a4d7991fdc0f672dcc1cb9ce8bfa70266b4f3b34a7d7d84",
+    "request_digest": "1f1e076903ba86514b30dbd527efd558f40c44680c5b06d5e570339d9bf31680",
+    "compiled_request_characters": 8854,
+    "predecessor_request_characters": 17343,
+    "maximum_request_characters": 16000,
+    "model_output_cell_state_fields": 0,
+    "model_visible_authoritative_numeric_values": 0,
+    "model_visible_numeric_presentations": 0,
+    "projection_digest": "6077131cab7994cc4f0c8e7e4b06b42b61915151570780c463321f08eb519629",
+    "successor_program_digest": "dd8a071d8406d1ad7bd15f51d6eaaaede9b635ab73fec799579b6ed161a8a7fe"
+  },
+  "responsibility_split": {
+    "model_owns": [
+      "Evidence disposition",
+      "bounded profitability direction",
+      "segment-versus-product attribution boundary",
+      "retained-gap enums",
+      "short mechanism and boundary atoms"
+    ],
+    "local_runtime_owns": [
+      "affected cell ids",
+      "judgment state and changed flag",
+      "Evidence, Numeric and WWC refs",
+      "canonical numeric rendering",
+      "price-in cannot-infer boundary",
+      "Writer admission control"
+    ],
+    "local_runtime_does_not_own": [
+      "free-form thesis invention",
+      "economic mechanism selection",
+      "counterevidence interpretation",
+      "full report prose"
+    ]
+  },
+  "failed_capture_replay": {
+    "legacy_audit_digest": "b6762cd35ffbc62dfa6b3d4d48765ffca463ede62b961c9041d4b858c6256073",
+    "accepted_evidence_and_numeric_authority_correct": true,
+    "target_changed_flag_valid": false,
+    "price_in_boundary_valid": false,
+    "failed_output_promotable": false,
+    "raw_capture_preserved": true
+  },
+  "implemented_runtime": {
+    "provider_neutral_small_judgment_contract": true,
+    "deterministic_four_cell_projection": true,
+    "model_state_surface_removed": true,
+    "financial_numeric_gate_retained": true,
+    "internal_alias_digits_classified_separately": true,
+    "alias_tokens_neutrally_normalized_in_promotable_atoms": true,
+    "local_numeric_projection_retained": true,
+    "price_in_without_valuation_evidence_forced_to_cannot_infer": true,
+    "failed_terminal_parsed_ref_materialized": true,
+    "validated_ref_only_when_validated_file_exists": true,
+    "failed_output_posthoc_promotion": false
+  },
+  "portfolio_shape_receipts": {
+    "DELL": "42c32b9c7fdd993a4dcb18455bf2ee9469137d884878cf4cd8c9fdfd313878ca",
+    "MU": "11f5500e899428bd630dc0643c7095bb1d16e7b845635df37b66eaa8b3ed3ad6",
+    "NVDA": "4dd8996193d27e12d53b85578a74cc5ca199852e4e759e7c05fdc098982c00de"
+  },
+  "mutation_coverage": [
+    "model attempts to return judgment_state",
+    "model writes a financial numeric band in prose",
+    "wrong profitability direction",
+    "cross-case identity contamination",
+    "wrong Evidence set or semantic role",
+    "missing retained gap",
+    "operating Evidence reopens price-in",
+    "failed parsed output incorrectly labeled validated"
+  ],
+  "verification": {
+    "focused_and_terminal_tests": "27 passed; adjacent S3 total 42 passed",
+    "python_compile": "pass",
+    "project_os_scoped_preflight": "pending_after_ledger_projection",
+    "clean_independent_workers": 0
+  },
+  "stage_acceptance": {
+    "failed_natural_canary_immutable": true,
+    "small_judgment_atom_contract": true,
+    "deterministic_cell_projection": true,
+    "fake_and_mutation_suite": true,
+    "terminal_materialization_fix": true,
+    "clean_independent_proof": false,
+    "successor_natural_canary": false,
+    "repaired_dell_report": false,
+    "qualified_human_acceptance": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "known_boundary": "This working-tree result proves a provider-neutral responsibility split and deterministic projection using current DELL material plus DELL, MU and NVDA shape fixtures. It does not reclassify the failed natural canary, authorize a second model call, generate a repaired report, close S3, or authorize acceptance or release.",
+  "current_next": "COMMIT_PUSH_THEN_TWO_CLEAN_ARCHIVE_CAPTURE_REPLAY_AND_MUTATION_PROOF"
+}

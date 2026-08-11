@@ -302,6 +302,9 @@ def test_live_execution_is_capture_first_exact_once_and_counts_one_call(
     assert terminal["observed_counts"]["model_calls"] == 1
     assert terminal["business_artifact_promotion"] is False
     assert (tmp_path / "attempt/raw_model_only/calls/call_01/capture.json").is_file()
+    assert terminal["parsed_output_ref"] == "parsed/repair_output.json"
+    assert terminal["validated_output_ref"] == "validated/repair_output.json"
+    assert (tmp_path / "attempt/parsed/repair_output.json").is_file()
     assert (tmp_path / "attempt/validated/successor_program.json").is_file()
     with pytest.raises(SharedAdmissionLedgerError):
         execute_live_canary(
@@ -347,6 +350,10 @@ def test_invalid_financial_semantics_terminalizes_after_full_capture(
     assert terminal["status"] == "failed"
     assert terminal["terminal_phase"] == "contract_validation"
     assert terminal["terminal_code"] == "s3_repair_canary_evidence_semantics_invalid"
+    assert terminal["parsed_output_ref"] == "parsed/repair_output.json"
+    assert terminal["validated_output_ref"] is None
+    assert (tmp_path / "invalid/parsed/repair_output.json").is_file()
+    assert not (tmp_path / "invalid/validated/repair_output.json").exists()
     capture = _load(
         tmp_path / "invalid/raw_model_only/calls/call_01/capture.json"
     )

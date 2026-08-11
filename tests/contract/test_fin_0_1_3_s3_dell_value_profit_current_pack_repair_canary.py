@@ -354,5 +354,9 @@ def test_invalid_output_is_preserved_as_terminal_failure(
     assert terminal["terminal_code"] == (
         "s3_repair_canary_evidence_semantics_invalid"
     )
+    assert terminal["parsed_output_ref"] == "parsed/repair_output.json"
+    assert terminal["validated_output_ref"] is None
+    assert (runtime_root / "parsed/repair_output.json").is_file()
+    assert not (runtime_root / "validated/repair_output.json").exists()
     assert (runtime_root / "raw_model_only/calls/call_01/capture.json").is_file()
     assert terminal["business_artifact_promotion"] is False

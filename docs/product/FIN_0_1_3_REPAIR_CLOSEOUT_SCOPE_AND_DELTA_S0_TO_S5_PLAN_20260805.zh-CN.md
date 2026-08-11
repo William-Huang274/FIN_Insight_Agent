@@ -975,3 +975,11 @@ runner 在 clean/synced `34f4c3b4...f7d8` 上确认 implementation ancestor、10
 零调用 counterfactual 依次去除 atom 数字／alias、修正 target changed flag、恢复 price-in `cannot_infer` 后才通过，证明继续逐字段扩 Prompt 不具备结构价值。后续在 S3 内插入一个 provider-neutral 的结构包：模型仅负责 Evidence disposition、盈利方向、归因边界、residual-gap enums 和短机制／边界原子；本地确定性 Runtime 负责 affected cells、state、changed flag、Evidence／NUM／WWC refs、数字渲染与 Writer admission projection。同时让 numeric-surface guard 识别内部 alias，并让 terminal 仅在真实写出验证结果时提供 `validated_output_ref`。
 
 current next=`S3_DELL_REPAIR_SMALL_JUDGMENT_ATOM_AND_DETERMINISTIC_CELL_PROJECTION_ZERO_CALL_ROOT_CAUSE_DISPOSITION`。该结构包必须先完成 capture replay、DELL／MU／NVDA fake／mutation 和 clean proof；失败 capture 只能作诊断，不得 post-hoc 晋升。通过后另做 successor natural canary 的价值／成本／风险决策；不得把本次失败改标、复用 admission、自动发第二次模型调用或生成完整报告。
+
+## 7AJ. 小判断原子与确定性 cell 投影 working-tree 实现（2026-08-11）
+
+新 provider-neutral contract 已把模型输出面收敛为 Evidence disposition、盈利方向、产品／分部归因、retained-gap enums 和两个短 atom；affected cells、state、changed flag、Evidence／NUM／WWC refs、price-in 边界、数字展示与 Writer admission 均由本地投影。Runtime 没有替模型生成 thesis、选择机制、解释反方或写完整报告。
+
+模型请求从 `17,343` 字符降到 `8,854`，不再暴露 authoritative numeric values／presentations 或四行内部状态表。DELL 实际 successor 投影为 target changed=true、price-in=`cannot_infer / unchanged`；DELL／MU／NVDA 三案 shape 与 state 注入、跨案、错误方向、金融数字等 mutation 通过。alias digits 先被识别为内部引用，再替换成中性引用短语，金融数字门没有放宽。失败 output capture replay 继续 failed／不可晋升；parsed ref 实际存在，validated ref 在失败时为 null。
+
+working-tree focused／terminal=`27 passed`、相邻 S3 合计=`42 passed`，model／provider／network／source／retry=`0/0/0/0/0`。current next=`COMMIT_PUSH_THEN_TWO_CLEAN_ARCHIVE_CAPTURE_REPLAY_AND_MUTATION_PROOF`；clean proof 前不能签 successor natural admission，clean proof 后仍须独立价值／成本／风险决策，不能自动发第二次调用或报告。

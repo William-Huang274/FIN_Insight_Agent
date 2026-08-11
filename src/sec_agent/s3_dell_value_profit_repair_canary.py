@@ -874,8 +874,17 @@ def _terminalize(
         "request_digest": request["request_digest"],
         "capture_ref": "raw_model_only/calls/call_01/capture.json",
         "capture_digest": capture["capture_digest"],
+        "parsed_output_ref": (
+            "parsed/repair_output.json"
+            if output is not None
+            and (runtime_root / "parsed/repair_output.json").is_file()
+            else None
+        ),
         "validated_output_ref": (
-            "validated/repair_output.json" if output is not None else None
+            "validated/repair_output.json"
+            if validation is not None
+            and (runtime_root / "validated/repair_output.json").is_file()
+            else None
         ),
         "output_digest": canonical_digest(output) if output is not None else None,
         "validation_digest": (
@@ -1042,6 +1051,7 @@ def execute_validated_repair_canary(
             validation=None,
             successor_program=None,
         )
+    _atomic_json(root / "parsed/repair_output.json", output)
     try:
         adjudicated = adjudicate_repair_canary_output(
             output=output,

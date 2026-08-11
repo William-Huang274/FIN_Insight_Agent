@@ -228,6 +228,7 @@ def test_live_issuance_is_fresh_unconsumed_and_does_not_authorize_execution(
         material=basis["material"],
         project_os_preflight=basis["preflight"],
         repo_root=ROOT,
+        observed_at=ISSUED_AT,
     )
     assert issuance["status"] == "issued_unconsumed_execution_not_authorized"
     assert issuance["admission"]["run_scope"] == LIVE_SCOPE
@@ -235,6 +236,30 @@ def test_live_issuance_is_fresh_unconsumed_and_does_not_authorize_execution(
     assert issuance["admission"]["execution_enabled_by_issuance"] is False
     assert issuance["observed_counts"]["provider_calls"] == 0
     assert issuance["observed_counts"]["model_calls"] == 0
+
+
+@pytest.mark.parametrize(
+    ("observed_at", "expected_code"),
+    [
+        ("2026-08-11T09:59:59Z", "live_canary_admission_not_yet_valid"),
+        (EXPIRES_AT, "live_canary_admission_expired"),
+        ("2026-08-12T10:00:01Z", "live_canary_admission_expired"),
+    ],
+)
+def test_live_issuance_time_window_fails_closed(
+    basis, observed_at: str, expected_code: str
+) -> None:
+    with pytest.raises(SelectedEvidenceNumericNaturalNodeCanaryLiveError) as exc:
+        validate_live_canary_issuance(
+            basis["issuance"],
+            decision=basis["decision"],
+            clean_proof=basis["proof"],
+            material=basis["material"],
+            project_os_preflight=basis["preflight"],
+            repo_root=ROOT,
+            observed_at=observed_at,
+        )
+    assert exc.value.code == expected_code
 
 
 def test_fixture_or_mutated_admission_cannot_masquerade_as_live(basis) -> None:

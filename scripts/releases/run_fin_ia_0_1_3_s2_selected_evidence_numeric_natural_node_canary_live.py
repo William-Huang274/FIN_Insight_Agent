@@ -45,7 +45,7 @@ PROOF_PATH = ROOT / (
 ISSUANCE_PATH = ROOT / (
     "configs/releases/"
     "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_"
-    "live_admission_issuance_v1_0.json"
+    "live_admission_issuance_v1_1.json"
 )
 PRIVATE_ROOT = ROOT / (
     "data/workbench_private/"
@@ -113,6 +113,8 @@ def preflight() -> dict[str, Any]:
     credential = credential_presence_only(profile=material["profile"])
     if credential["credential_present"] is not True:
         raise LiveCanaryRunnerError("live_canary_runner_credential_missing")
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    observed_at = now.isoformat().replace("+00:00", "Z")
     validate_live_canary_issuance(
         issuance,
         decision=decision,
@@ -120,6 +122,7 @@ def preflight() -> dict[str, Any]:
         material=material,
         project_os_preflight=project_os,
         repo_root=ROOT,
+        observed_at=observed_at,
     )
     admission = dict(issuance["admission"])
     runtime_root = PRIVATE_ROOT / "attempts" / str(admission["run_id"])
@@ -134,6 +137,7 @@ def preflight() -> dict[str, Any]:
         "project_os": project_os,
         "runtime_root": runtime_root,
         "credential": credential,
+        "observed_at": observed_at,
     }
 
 

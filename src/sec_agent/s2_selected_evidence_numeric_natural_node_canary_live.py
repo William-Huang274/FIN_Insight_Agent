@@ -348,6 +348,7 @@ def validate_live_canary_issuance(
     material: Mapping[str, Any],
     project_os_preflight: Mapping[str, Any],
     repo_root: str | Path,
+    observed_at: str | None = None,
 ) -> None:
     issuance_body = {
         key: value for key, value in issuance.items() if key != "issuance_digest"
@@ -431,11 +432,30 @@ def validate_live_canary_issuance(
         ),
         "live_canary_admission_binding_invalid",
     )
+    issued_at = _parse_time(
+        admission.get("issued_at"), "live_canary_admission_issued_at_invalid"
+    )
+    expires_at = _parse_time(
+        admission.get("expires_at"), "live_canary_admission_expiry_invalid"
+    )
     _require(
-        _parse_time(admission.get("expires_at"), "live_canary_admission_expiry_invalid")
-        > _parse_time(admission.get("issued_at"), "live_canary_admission_issued_at_invalid"),
+        admission.get("issued_at") == authority.get("issued_at")
+        and admission.get("expires_at") == authority.get("expires_at"),
+        "live_canary_admission_authority_time_binding_invalid",
+    )
+    _require(
+        expires_at > issued_at,
         "live_canary_admission_expiry_not_after_issuance",
     )
+    if observed_at is not None:
+        observed = _parse_time(
+            observed_at, "live_canary_admission_observed_at_invalid"
+        )
+        _require(
+            observed >= issued_at,
+            "live_canary_admission_not_yet_valid",
+        )
+        _require(observed < expires_at, "live_canary_admission_expired")
     _require(
         issuance.get("issuance_boundary")
         == {
@@ -512,6 +532,7 @@ def execute_live_canary(
         material=material,
         project_os_preflight=project_os_preflight,
         repo_root=repo_root,
+        observed_at=observed_at,
     )
     validate_live_execution_authority(execution_authority, issuance=issuance)
     admission = dict(issuance["admission"])

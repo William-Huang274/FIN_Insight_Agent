@@ -43,7 +43,7 @@ PROOF_PATH = ROOT / (
 OUTPUT_PATH = ROOT / (
     "configs/releases/"
     "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_"
-    "live_admission_issuance_v1_0.json"
+    "live_admission_issuance_v1_1.json"
 )
 SOURCE_REFS = (
     "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json",
@@ -137,6 +137,7 @@ def main() -> int:
         material=material,
         project_os_preflight=preflight,
         repo_root=ROOT,
+        observed_at=issued_at,
     )
     temporary = OUTPUT_PATH.with_suffix(OUTPUT_PATH.suffix + ".tmp")
     temporary.write_text(

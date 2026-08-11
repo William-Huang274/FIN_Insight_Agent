@@ -1,0 +1,43 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_admission_issuance_r1_expiry_guard_gap_disposition_v1_0",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "status": "rejected_unconsumed_never_execution_eligible_expiry_guard_missing",
+  "r1_issuance": {
+    "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_admission_issuance_v1_0.json",
+    "issuance_digest": "d0b6f5a9555793062d0198cca10a43ca9143442cc95ffd4625bf376e558c62a9",
+    "admission_digest": "be2866700b9c9817f3f40646fe9ce24c22227808ee545d747132e348ccf4ddbe",
+    "run_id": "fin013_s2_numeric_view_natural_canary_2168b2c3912d4f6481a0",
+    "implementation_commit": "f0dba49f3e3d7ee1db8b935ed0fea3b95d97a4f9",
+    "issued_at": "2026-08-11T01:35:59Z",
+    "expires_at": "2026-08-12T01:35:59Z"
+  },
+  "finding": {
+    "code": "live_canary_execution_time_window_not_enforced",
+    "plain_language": "The validator proved that expiry followed issuance but did not compare the execution observation time with that window.",
+    "impact": "A stale admission could have reached the Provider after its nominal 24-hour expiry if all other gates passed.",
+    "owning_stage": "S2",
+    "model_or_provider_fault": false
+  },
+  "safety_observation": {
+    "admission_consumed": false,
+    "execution_started": false,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "credential_value_persisted": false,
+    "business_artifact_promotion": false
+  },
+  "disposition": {
+    "r1_may_be_executed": false,
+    "r1_may_be_relabelled_or_reused": false,
+    "preserve_as_immutable_audit_evidence": true,
+    "required_fix": "Bind authority and admission timestamps, require issued_at <= observed_at < expires_at before Provider reachability, add not-yet-valid and expired mutations, then commit and issue a new v1_1 admission from clean/synced HEAD.",
+    "replacement_ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_admission_issuance_v1_1.json"
+  },
+  "known_boundary": "This is a project-owned live-governance defect discovered after issuance, not DeepSeek behavior, transport behavior or financial research quality evidence.",
+  "current_next": "COMMIT_PUSH_EXPIRY_GUARD_REPAIR_THEN_ISSUE_ONE_NEW_UNCONSUMED_V1_1_ADMISSION_NO_EXECUTION",
+  "disposition_digest": "3a13ab4eba786c4c45eb9a5882c410cce631dd5f1bab11e784af578a48e7fc17"
+}

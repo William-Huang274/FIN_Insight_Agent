@@ -1,0 +1,44 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_expiry_guard_repair_v1_0",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "status": "working_tree_expiry_guard_repaired_clean_commit_and_r2_issuance_pending",
+  "r1_disposition_ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_admission_issuance_r1_expiry_guard_gap_disposition_v1_0.json",
+  "implementation": {
+    "authority_and_admission_time_fields_must_match": true,
+    "execution_observation_time_required_by_live_runner": true,
+    "valid_window_rule": "issued_at <= observed_at < expires_at",
+    "not_yet_valid_fails_before_provider": true,
+    "expired_at_boundary_fails_before_provider": true,
+    "expired_after_boundary_fails_before_provider": true,
+    "r1_issuance_is_never_reused": true,
+    "replacement_issuance_version": "v1_1"
+  },
+  "verification": {
+    "focused_and_adjacent_tests": "56 passed",
+    "time_window_mutations": 3,
+    "python_compileall": "pass",
+    "model_provider_network_source_retry": [0, 0, 0, 0, 0]
+  },
+  "stage_acceptance": {
+    "expiry_guard_implemented": true,
+    "r1_preserved_and_rejected": true,
+    "clean_synced_repair_commit": false,
+    "fresh_v1_1_admission_issued": false,
+    "natural_model_canary": false,
+    "dell_delivery_pass": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "observed_calls": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0
+  },
+  "known_boundary": "The repair is a working-tree control-plane result. It is not yet a clean/synced binding, replacement admission, natural DeepSeek observation or product acceptance.",
+  "current_next": "COMMIT_PUSH_EXPIRY_GUARD_REPAIR_THEN_ISSUE_ONE_NEW_UNCONSUMED_V1_1_ADMISSION_NO_EXECUTION",
+  "result_digest": "2f33d395473d636c20ab01daa94fab102b03e63d811a5e63055a94fbd9000bb7"
+}

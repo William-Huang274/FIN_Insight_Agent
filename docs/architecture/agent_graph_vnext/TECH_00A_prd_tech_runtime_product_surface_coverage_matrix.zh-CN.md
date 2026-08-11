@@ -164,3 +164,20 @@ S1 search pass + S2 autonomy grant
 ```
 
 S1 与 S2 的准备工作在 S0-04G 后可以有界并行；两者只在 S3 join。不得再为了证明模型合同而阻塞确定性搜索修复，也不得在搜索失败时把工具缺口记为模型缺陷。
+
+## 9. FIN 0.1.3 严格主线重定基覆盖（2026-08-11）
+
+本节 supersede 仅针对“当前产品代码从哪里进入、哪些模块算活动主线”的旧描述，不改写 S1–S3 历史 run 证据。
+
+| PRD／产品责任 | canonical TECH 所有者 | 当前实证 | 严格切换门 |
+| --- | --- | --- | --- |
+| Case 身份与研究上下文 | Workbench domain CaseSubject＋CasePackBinding | 旧 Case 只有 query/as-of；current Evidence Pack API 只有 case_key | entity/issuer/ticker/exchange/as-of 全显式；cross-case、错 digest、query 猜 ticker mutation 全拒绝 |
+| Evidence 产品消费 | version-neutral application service＋registered resource＋RuntimePathRegistry | 三案 API 真实挂载通过，尚无 UI consumer | `/workspace` Evidence view 显示 meaning/boundary/citation/gap，且只读取绑定 Pack |
+| 产品入口 | product frontend composition root | `/current`、`/next`、fixture shell、legacy 四表面并存 | `/workspace` 唯一研究入口；兼容路径无独立 Runtime |
+| 运维控制面 | `sec_agent.workbench` operator services | profile/run/eval/trace 与旧 product shell 混合 | `/operations` 独立；不得晋升 Evidence 或拥有研究验收权 |
+| 活动 Runtime | provider-neutral ports/contracts | 大量 version/attempt module 仍被 route/test import | 活动 import graph 无版本／attempt 模块；历史只在 archive |
+| 数据路径 | `RuntimePathRegistry`／显式 fixture injection | 新 adapter 可挂载；旧 S1 测试仍 checkout-local hard bind | clean worktree 不复制数据，活动路径与测试全部显式挂载 |
+| 历史生命周期 | archive redirect manifest | 目前未移动，旧消费者非零 | replacement pass＋old consumer zero 后 `git mv`，每条路径记录 replacement/reason/version |
+| Git 主线 | semantic merge disposition＋post-merge proof | branch/main 双向分叉 510/20 commits | main 独有语义逐项裁决，禁止 blanket ours/theirs，main 工作树复验后 push |
+
+技术完成不再由“新增服务测试通过”单独定义。必须同时满足：domain contract、application consumer、product UI、active import graph、portable data path、archive lineage、business acceptance 和 main post-merge proof。完整程序见 `FIN_0_1_3_STRICT_MAINLINE_REBASELINE_ACCEPTANCE_AND_MIGRATION_PROGRAM_20260811.zh-CN.md`。

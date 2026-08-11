@@ -1,5 +1,6 @@
 # Worklog
 
+- [879 — FIN 0.1.3 严格主线重定基验收与迁移程序](product_strategy/879_fin_0_1_3_strict_mainline_rebaseline_acceptance_and_migration_program.md)
 - [878 — FIN 0.1.3 Workbench 消费者总图与第一条 S1 产品纵切](product_strategy/878_fin_0_1_3_workbench_consumer_map_and_s1_vertical_slice_decision.md)
 - [877 — FIN 0.1.3 clean worktree、代码生命周期与 Workbench cutover 边界](product_strategy/877_fin_0_1_3_clean_worktree_code_lifecycle_and_workbench_cutover_boundary.md)
 - [876 — FIN 0.1.3 全仓基线盘点与“反复修”复盘](product_strategy/876_fin_0_1_3_full_repository_baseline_inventory_and_repeated_repair_retrospective.md)

@@ -2478,3 +2478,17 @@ live 控制面已达到 working-tree engineering pass：scope 已独立注册，
 数字交付改为两层责任：模型负责研究判断、反方、边界和 Evidence／NUM 选择；本地控制面负责 NumericFact 的 value、entity、period、unit、qualifier、lineage、approved presentation 和受保护数字片段渲染。Harness 不得重写 thesis、机制或整段叙事。长期输出合同应让模型直接返回 `NUM ref + relation/qualifier enum`；当前 v1 自由叙事只允许经过有界 compatibility adapter 迁移，不允许用 embedding、编辑距离或无限同义词把任意句子判成等价。
 
 兼容 adapter 必须先证明关系方向一致，再把受保护片段规范化。例如 `surpassing` 与事实中的 `surpassed` 都编译为严格大于，才可由本地渲染为 canonical surface；`not surpassing`、`below`、`at most`、错公司、错季度、错币种／scale、错数值和额外未绑定数字仍 hard fail。保存 capture 的零调用 successor 已满足该边界，只改变 1 个受保护片段，其他模型叙事不变。该结果不追认旧 live、不给第二次调用权限，也不等于完整 DELL 报告、S2 closeout、Owner acceptance 或 release；还需 clean archive／fresh process 复证后单独做 S2 关闭与 S3 准入决策。
+
+### 16.21 FIN 0.1.3 严格新基线与唯一 Workbench 产品面（2026-08-11）
+
+全仓盘点证明，继续在 `/current`、`/next`、Point02/03 fixture 和 `r53_r60` legacy 之间追加桥接，会让候选 proof 与产品主线继续分离。Owner 因此把 FIN 0.1.3 的收口标准提升为“形成唯一清晰基线并合并 main”，而不是只让一条新 API 或一个候选页面可运行。
+
+本次产品承诺严格限定为：
+
+1. `/workspace` 是唯一研究产品入口；`/operations` 是独立运维控制台，不能拥有金融事实或产品验收权。
+2. 首个可交付产品面是 DELL／MU／NVDA 三个已审核 Case 的只读研究工作区。任意新公司动态研究、完整估值、生产多租户、商业实时行情与无人审核发布继续 deferred；主 UI 不得用半接线按钮暗示这些能力已经存在。
+3. Case 必须显式保存 entity、issuer、ticker、exchange 和 as-of，并通过 digest-bound binding 连接 reviewed Evidence Pack。禁止从 query 文本猜 ticker、从 ID 前缀猜披露主体，或把固定多公司 preview 冒充任意 Case 的研究结果。
+4. 活动 Workbench 和 Runtime 不得依赖 `fin_0_1_2_*`、`p36_*`、`r53_r60_*` 或某次 R1/R2/R3 admission/runner/result。历史失败证据继续不可变保存，但只能在零活动消费者后迁入版本归档。
+5. “新基线完成”要求同时通过 typed Case／Pack、真实 UI consumer、三案业务可读性、活动全量测试、clean-data mount、secret scan、zero-old-reference、文档一致性以及合并 `main` 后复证。任一硬门 pending/failed 时，不得宣称 FIN 0.1.3 已冻结或 release。
+
+详细机器门和迁移顺序由 `configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json` 与 `docs/architecture/repository/FIN_0_1_3_STRICT_MAINLINE_REBASELINE_ACCEPTANCE_AND_MIGRATION_PROGRAM_20260811.zh-CN.md` 共同约束。该规则不会删除历史价值，也不会把未实现的 PRD 需求偷换为“不做”；它要求未完成能力进入清晰 backlog，而不是以活动半成品继续污染主线。

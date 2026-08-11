@@ -953,3 +953,9 @@ clean/synced commit `d925aa89...155ec` 已在两个独立 Git archive／fresh Py
 零调用价值／成本／风险复核选择“一次 DeepSeek Pro repair canary”，拒绝直接写完整报告、先追加外源、重复 demand 节点或做 Flash／Pro A/B。独立 live scope、fresh admission、24 小时 expiry、credential presence-only、source digest binding、capture-first、shared-ledger exact-once、单 transport attempt 与零 retry 已实现；issuance 不得自动授权执行。
 
 working-tree fake live 已证明 pass、invalid financial semantics terminal、完整 capture 与重复 admission 拒绝，相关集合=`20 passed`，live scope preflight=`pass`。当前仍为 `0` 次真实调用。下一项是提交推送后从 clean/synced head 签发唯一未消费 admission，再单独签发 execution authority；不能把 live path 工程通过写成自然模型、DELL 报告或 S3 通过。
+
+## 7AG. 唯一 live admission 签发（2026-08-11）
+
+clean/synced `1d29bc65...95c8d` 已签发 run=`...11a8bc7aa03045f7803a`、admission=`877a6503...8e85`、issuance=`27dd7579...d20d`，有效期至 `2026-08-12T05:33:57Z`。10 个源码／合同绑定、精确 input／request、credential presence-only 和零调用边界均已固化；admission 未消费且 execution=false。
+
+下一项是在提交推送后执行 runner clean preflight，再单独物化 execution authority。若 preflight 的 source、expiry、credential、runtime root、ledger 或 Project OS 任一不成立，停止且不调用 Provider。

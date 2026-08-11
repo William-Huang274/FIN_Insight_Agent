@@ -999,3 +999,9 @@ clean/synced `9eadecd6...f73d` 已在两个独立 Git archive／fresh process �
 success、合同失败、expiry、source drift 与重复消费边界均已覆盖；new live=`4 passed`，focused／adjacent=`39 passed`，Project OS scoped preflight=`pass / 0 blocker`，model／provider／network／source／retry=`0/0/0/0/0`。该结果只建立安全执行通道，不是自然输出或报告质量证据。
 
 current next=`COMMIT_PUSH_LIVE_PATH_THEN_ISSUE_ONE_FRESH_UNCONSUMED_ADMISSION_NO_EXECUTION`。签发后必须再做 clean preflight 与独立 execution-authority；唯一自然终态失败即停止，不允许 prompt 字段补丁或重试；成功也只允许进入修复后 DELL fixed-pack 报告的单独决策与验收链。
+
+## 7AM. successor natural canary fresh admission 签发（2026-08-11）
+
+clean/synced `0a1785d6...f030` 已签发 run=`fin013_s3_small_atom_b351adc5bb4bc396d39a`、attempt=`..._r1`、admission=`87edf771...1223`、issuance=`f9ea2839...5b0c`，有效至 `2026-08-12T06:40:50Z`。10 个 source binding、精确 compiled input／request、credential presence-only 和 `1 provider/model／1,200 output／0 source/tool/retry/fallback/promotion` 已冻结；真实 provider／model／network=`0/0/0`，admission 未消费，execution=false。
+
+current next=`COMMIT_PUSH_ISSUANCE_THEN_CLEAN_SYNCED_RUNNER_PREFLIGHT_AND_SEPARATE_EXECUTION_AUTHORITY_DECISION`。不得把 admission 视为自然 canary 或报告通过；expiry、源码漂移、既有 runtime root、ledger 已消费或 Project OS 失败任一出现都必须在 transport 前停止。

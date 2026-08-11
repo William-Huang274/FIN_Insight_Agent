@@ -1,0 +1,117 @@
+{
+  "admission": {
+    "admission_digest": "87edf77103034561104151e341c0436df0e9727d8fadc4d9d502b0a4e7f41223",
+    "admission_id": "admission::fin013_s3_small_atom_b351adc5bb4bc396d39a::attempt_fin013_s3_small_atom_b351adc5bb4bc396d39a_r1",
+    "attempt_id": "attempt_fin013_s3_small_atom_b351adc5bb4bc396d39a_r1",
+    "authority_digest": "c37e4854c96421882d568c33fd7c8a0f731b90b477c2bdad1f95970d0ae0ff17",
+    "business_artifact_promotion": false,
+    "case_key": "DELL",
+    "compiled_input_digest": "fa954482c33f8f444a4d7991fdc0f672dcc1cb9ce8bfa70266b4f3b34a7d7d84",
+    "execution_authorized": false,
+    "expires_at": "2026-08-12T06:40:50Z",
+    "fallbacks": 0,
+    "issued_at": "2026-08-11T06:40:50Z",
+    "model": "deepseek-v4-pro",
+    "model_calls_maximum": 1,
+    "network_tool_calls": 0,
+    "node_id": "dell_value_profit_small_judgment_atom_v1",
+    "profile_ref": "fin_0_1_3.model_profile.deepseek_v4_pro.fixed_pack_research:v1",
+    "provider": "deepseek",
+    "provider_calls_maximum": 1,
+    "request_digest": "1f1e076903ba86514b30dbd527efd558f40c44680c5b06d5e570339d9bf31680",
+    "retries": 0,
+    "run_id": "fin013_s3_small_atom_b351adc5bb4bc396d39a",
+    "run_scope": "FIN_0_1_3_S3_DELL_VALUE_PROFIT_SMALL_JUDGMENT_ATOM_CANARY_LIVE",
+    "schema_version": "fin_ia_0_1_3_s3_small_judgment_atom_live_admission_v1_0",
+    "source_calls": 0
+  },
+  "authority": {
+    "authority_digest": "c37e4854c96421882d568c33fd7c8a0f731b90b477c2bdad1f95970d0ae0ff17",
+    "business_artifact_promotion": false,
+    "clean_proof_digest": "b891e4d49d9b77d0caf52c08001f50ffd4e19cfb9c49e2056479c3eb210e9bf1",
+    "compiled_input_digest": "fa954482c33f8f444a4d7991fdc0f672dcc1cb9ce8bfa70266b4f3b34a7d7d84",
+    "decision_digest": "9124175794cd4e5488bfc8e6e1ac8e4bdaa32bf2a20d87e712c81ce2f15373e3",
+    "execute_provider_call": false,
+    "expires_at": "2026-08-12T06:40:50Z",
+    "fallbacks": 0,
+    "implementation_commit": "0a1785d63121c316d6285d86bf32b48b7666f030",
+    "issued_at": "2026-08-11T06:40:50Z",
+    "maximum_output_tokens": 1200,
+    "model": "deepseek-v4-pro",
+    "model_calls_maximum": 1,
+    "network_tool_calls": 0,
+    "provider": "deepseek",
+    "provider_calls_maximum": 1,
+    "request_digest": "1f1e076903ba86514b30dbd527efd558f40c44680c5b06d5e570339d9bf31680",
+    "retries": 0,
+    "run_scope": "FIN_0_1_3_S3_DELL_VALUE_PROFIT_SMALL_JUDGMENT_ATOM_CANARY_LIVE",
+    "schema_version": "fin_ia_0_1_3_s3_small_judgment_atom_live_authority_v1_0",
+    "source_bindings": [
+      {
+        "normalized_text_sha256": "5b4f50671747e310fa5cb5e9a359a7f62158c361a6d6c417abff4ea54898a5e3",
+        "ref": "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "03a1622e1baf365bfd8ebd14b9cc765a95f941d6c8f464de960db3d86df26164",
+        "ref": "configs/runtime/fin_ia_0_1_3_s3_small_judgment_atom_projection_policy_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "d0fc499e36678369081d27619404ea3de776a8349addf29192b0fb895f34c9ac",
+        "ref": "configs/runtime/fin_ia_0_1_3_s2_deepseek_v4_pro_fixed_pack_profile_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "46c21d769523985326fb2fd79c48ae5ebe2f5af72b704df3e6c3a851c5b1e124",
+        "ref": "configs/releases/fin_ia_0_1_3_s3_small_judgment_atom_projection_minimum_zero_call_implementation_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "55cc73f644f2102ad2b498feb6699d5e8c31569356cf1252fa51dd8ba72e34ab",
+        "ref": "configs/releases/fin_ia_0_1_3_s3_small_judgment_atom_projection_clean_independent_proof_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "bf75ddcd1d85215088246b03d281b7a5583106acc59220e37c3931aed9afe95a",
+        "ref": "configs/releases/fin_ia_0_1_3_s3_small_judgment_atom_successor_natural_canary_value_cost_risk_decision_v1_0.json"
+      },
+      {
+        "normalized_text_sha256": "0a8efc992fb48a6680c3b93657c82b20d0734d73d29a331766f0b5e2f962495e",
+        "ref": "src/sec_agent/s3_small_judgment_atom_projection.py"
+      },
+      {
+        "normalized_text_sha256": "fff5a09c7ab5f645bc6177a3ee32b9f6d0c9ed1abb282514ad9f1ff69de4361b",
+        "ref": "src/sec_agent/s3_small_judgment_atom_projection_live.py"
+      },
+      {
+        "normalized_text_sha256": "37817394013db6024a2e96fb49da9adcf5cc48449dacf21463d47102cf970359",
+        "ref": "scripts/releases/issue_fin_ia_0_1_3_s3_small_judgment_atom_live_admission.py"
+      },
+      {
+        "normalized_text_sha256": "db16980e6d3d8fbbaf3bc1e82c85bcb51d00c93712fef09e8ea7ce213f734c3e",
+        "ref": "scripts/releases/run_fin_ia_0_1_3_s3_small_judgment_atom_live.py"
+      }
+    ],
+    "source_calls": 0,
+    "status": "issued_live_path_execution_separate",
+    "user_authority": "User authorized the approved six-step sequence and bounded blocker repairs. This record issues one fresh successor admission but does not authorize or start the Provider call."
+  },
+  "business_artifact_promotion": false,
+  "credential_preflight": {
+    "credential_env_name": "DEEPSEEK_API_KEY",
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false
+  },
+  "issuance_digest": "f9ea28398bb8b8f67d5010f488b285e2f771cd990f7956d051ce6c1467935b0c",
+  "observed_counts": {
+    "fallbacks": 0,
+    "model_calls": 0,
+    "network_tool_calls": 0,
+    "provider_calls": 0,
+    "retries": 0,
+    "source_calls": 0
+  },
+  "project_os_preflight": {
+    "errors": [],
+    "run_scope": "FIN_0_1_3_S3_DELL_VALUE_PROFIT_SMALL_JUDGMENT_ATOM_CANARY_LIVE",
+    "status": "pass"
+  },
+  "schema_version": "fin_ia_0_1_3_s3_small_judgment_atom_live_issuance_v1_0",
+  "status": "issued_unconsumed_execution_not_authorized"
+}

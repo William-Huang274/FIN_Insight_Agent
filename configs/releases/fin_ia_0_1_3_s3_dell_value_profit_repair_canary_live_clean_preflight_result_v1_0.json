@@ -1,0 +1,61 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_dell_value_profit_repair_canary_live_clean_preflight_result_v1_0",
+  "result_digest": "15ef0f2561751eb87713c2ac841c77111569375adfd8d193e96640c5f4e72ce5",
+  "recorded_at": "2026-08-11T05:35:55Z",
+  "status": "preflight_pass_execution_not_authorized",
+  "run_scope": "FIN_0_1_3_S3_DELL_VALUE_PROFIT_CURRENT_PACK_REPAIR_CANARY_LIVE",
+  "run_id": "fin013_s3_dell_value_profit_repair_canary_11a8bc7aa03045f7803a",
+  "attempt_id": "attempt_fin013_s3_dell_value_profit_repair_canary_11a8bc7aa03045f7803a_r1",
+  "repository": {
+    "branch": "codex/layered-data-source-expansion",
+    "head": "34f4c3b4a7d02cb55dc4dc8c3947f4e4fe05f7d8",
+    "upstream_head": "34f4c3b4a7d02cb55dc4dc8c3947f4e4fe05f7d8",
+    "clean": true,
+    "synced": true,
+    "implementation_commit": "1d29bc65b63560ac68b4f7344cc1fc8f10295c8d",
+    "implementation_is_ancestor": true,
+    "source_bindings_valid": 10
+  },
+  "project_os": {
+    "status": "pass",
+    "open_full_chain_blocker_count": 0,
+    "contract_error_count": 0
+  },
+  "credential": {
+    "credential_env_name": "DEEPSEEK_API_KEY",
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false
+  },
+  "admission": {
+    "issuance_digest": "27dd7579034d94b88aafe9a00b0d2ed8eed3f9c64be49f1d03438a88a264d20d",
+    "admission_digest": "877a65031df7be4d87dedb9d01099864055d3bc77bd500672cd9d4141ad08e85",
+    "issued_at": "2026-08-11T05:33:57Z",
+    "expires_at": "2026-08-12T05:33:57Z",
+    "within_valid_time_window": true,
+    "consumed": false,
+    "runtime_root_absent": true,
+    "shared_ledger_reservation_absent": true
+  },
+  "budget": {
+    "provider_calls_maximum": 1,
+    "model_calls_maximum": 1,
+    "source_calls": 0,
+    "network_tool_calls": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "maximum_output_tokens": 1800,
+    "maximum_estimated_usd": 0.02,
+    "business_artifact_promotion": false
+  },
+  "observed_counts": {
+    "admission_consumptions": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "known_boundary": "Preflight proves the current clean execution envelope only. It is not execution authority, admission consumption, a Provider call, a natural model result, a repaired DELL report, S3 acceptance or release.",
+  "current_next": "SEPARATE_ZERO_CALL_SINGLE_LIVE_CANARY_EXECUTION_AUTHORITY_DECISION"
+}

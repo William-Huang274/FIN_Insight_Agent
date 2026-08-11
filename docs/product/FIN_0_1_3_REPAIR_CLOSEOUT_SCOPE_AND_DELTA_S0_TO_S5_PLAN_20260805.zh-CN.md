@@ -959,3 +959,9 @@ working-tree fake live 已证明 pass、invalid financial semantics terminal、�
 clean/synced `1d29bc65...95c8d` 已签发 run=`...11a8bc7aa03045f7803a`、admission=`877a6503...8e85`、issuance=`27dd7579...d20d`，有效期至 `2026-08-12T05:33:57Z`。10 个源码／合同绑定、精确 input／request、credential presence-only 和零调用边界均已固化；admission 未消费且 execution=false。
 
 下一项是在提交推送后执行 runner clean preflight，再单独物化 execution authority。若 preflight 的 source、expiry、credential、runtime root、ledger 或 Project OS 任一不成立，停止且不调用 Provider。
+
+## 7AH. clean preflight 与唯一 execution authority（2026-08-11）
+
+runner 在 clean/synced `34f4c3b4...f7d8` 上确认 implementation ancestor、10-source binding、Project OS、credential presence、expiry、空 runtime root 和未消费 admission 全部通过。零调用 decision 因此只授权 run=`...11a8bc7aa03045f7803a` 的一次 DeepSeek Pro repair canary；`1 provider/model`、`1,800 output`、0 source/tool/retry/fallback/promotion，任一终态停止。
+
+提交推送 execution authority 后必须再次 clean preflight，才可 exact-once 消费。成功只代表 repair-adjudication 单节点自然通过；失败则保存 capture 并停止。两者都不自动授权完整报告。

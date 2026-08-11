@@ -420,3 +420,9 @@ live path 必须使用与 zero-call scope 不同的 `FIN_0_1_3_S2_SELECTED_EVIDE
 实现进一步将 `issuance authority` 与 `execution authority` 分离：前者可以创建一份 fresh admission，但 admission 明示 `execution_enabled_by_issuance=false／separate_execution_authority_required=true`；后者必须在执行前精确绑定 issuance digest 与 admission digest。Provider callback 只在两层 validator、current Project OS preflight、clean/synced ancestor 和 runtime-root-absent 均通过后可达。fixture 与 live 共用 capture/terminal 内核时，terminal 的 scope 必须从已验证 admission 投影；fixture issuer 仍固定 zero-call scope，防止局部参数化把测试凭证变成 live 凭证。
 
 freshness 不能只作为 authority/admission 上的两个展示字段。live validator 必须确认二者的 `issued_at／expires_at` 完全相同，并在每次 preflight 和执行入口使用带时区的 `observed_at` 强制 `issued_at <= observed_at < expires_at`；恰好到期即失效。缺少该门禁的 admission 即使尚未消费也必须作为 immutable rejected evidence 保留，不得通过改标或代码升级继续使用，只能在修复后的 clean/synced commit 上签新版本 admission。
+
+#### 13.10.8 Execution authority 与一次性自然观察边界（2026-08-11）
+
+v1.1 admission 的 clean preflight 通过后，execution authority 仍作为独立零调用对象签发。它必须 canonical 绑定 issuance/admission digest、run/attempt、case/node、profile/model、compiled input/request、issued/expires window 与调用上限；仅有用户续行文字、issuance 或 clean proof 均不能触达 Provider。当前 authority=`3e46e380...a170`，只允许一个 DELL demand-authenticity DeepSeek Pro 节点，provider/model=`1/1`，source/tool/retry/fallback/promotion=`0`。
+
+决策 artifact 本身可作为 runner 消费的 authority，但提交推送后仍必须重新执行 clean/synced preflight；这使“审计时成立”与“调用入口时仍成立”形成双门。任何 transport、length、JSON、证据角色、ref、numeric 或 durability boundary 失败都必须 capture-first terminalize，且 authority 随 admission exact-once 消费，不得因失败换 runtime root、自动重试或局部改字段复跑。成功也只证明该原子合同的当前自然遵循；完整报告、研究内容八维、paired gain 和 Owner acceptance 需要新的独立决策。

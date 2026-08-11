@@ -426,3 +426,9 @@ freshness 不能只作为 authority/admission 上的两个展示字段。live va
 v1.1 admission 的 clean preflight 通过后，execution authority 仍作为独立零调用对象签发。它必须 canonical 绑定 issuance/admission digest、run/attempt、case/node、profile/model、compiled input/request、issued/expires window 与调用上限；仅有用户续行文字、issuance 或 clean proof 均不能触达 Provider。当前 authority=`3e46e380...a170`，只允许一个 DELL demand-authenticity DeepSeek Pro 节点，provider/model=`1/1`，source/tool/retry/fallback/promotion=`0`。
 
 决策 artifact 本身可作为 runner 消费的 authority，但提交推送后仍必须重新执行 clean/synced preflight；这使“审计时成立”与“调用入口时仍成立”形成双门。任何 transport、length、JSON、证据角色、ref、numeric 或 durability boundary 失败都必须 capture-first terminalize，且 authority 随 admission exact-once 消费，不得因失败换 runtime root、自动重试或局部改字段复跑。成功也只证明该原子合同的当前自然遵循；完整报告、研究内容八维、paired gain 和 Owner acceptance 需要新的独立决策。
+
+#### 13.10.9 Numeric authority 与语法展示不得用整句逐字等同（2026-08-11）
+
+本次唯一 live 证明了一个关键边界：模型返回四个正确 NUM ref、正确金额／count、正确 issuer／read-through 角色和完整兑现／利润限制，却把 canonical `customer count surpassed 5,000` 自然改写为 `customer count surpassing 5,000`。当前 validator 以 `required_surface.casefold() in delivery_text` 做整句逐字匹配，在数字值、qualifier 方向、实体、期间、单位和 ref 全部不变时仍 hard fail。只替换该词形的零调用 replay 通过所有后续 gate。
+
+因此“模型选择何种受权威约束的数值事实”与“最终句法如何呈现”必须分层。provider-neutral 方向是模型输出 NUM ref、判断原子和必要的关系／qualifier enum，本地 presentation program 负责 canonical 渲染；若保留自由 prose，则 equivalence 只能在已绑定 ref、同实体／指标／期间／单位和同方向 qualifier 内工作，并必须用 negation、below-threshold、反向 qualifier、cross-case、wrong-period 与 wrong-unit mutation fail closed。不得为 DeepSeek 增加单词白名单，也不得把任意近义改写视作安全。

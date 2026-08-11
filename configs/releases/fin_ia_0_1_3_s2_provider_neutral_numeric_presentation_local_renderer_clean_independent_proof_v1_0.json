@@ -1,0 +1,97 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_provider_neutral_numeric_presentation_local_renderer_clean_independent_proof_v1_0",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "status": "clean_independent_zero_call_proof_pass",
+  "implementation": {
+    "commit": "3b5e584ffa6d948ec24102beb5dee5b87d658de5",
+    "branch": "codex/layered-data-source-expansion",
+    "remote_synced_before_proof": true,
+    "predecessor_result_ref": "configs/releases/fin_ia_0_1_3_s2_provider_neutral_numeric_presentation_equivalence_local_renderer_zero_call_result_v1_0.json",
+    "predecessor_result_digest": "79148601bbcadfe277cd68dcd27e1595db681459ca116e11bebad395a7b0a031",
+    "renderer_sha256": "e4467cdc74ef0990f51f026534a7f83bf3e8e288e2804a60b732988b96f2951e"
+  },
+  "archive_protocol": {
+    "worker_count": 2,
+    "archive_format": "git_archive_tar",
+    "archive_sha256": "671e228201d592b50f2c944640ac856d3197585066826a42efc66a0bcc6746ea",
+    "fresh_python_process_per_worker": true,
+    "python_hash_seeds": [101, 202],
+    "private_inputs_hydrated_after_archive": [
+      {
+        "kind": "immutable_model_capture",
+        "file_sha256": "12b387975cff872bba0b074ade1f6ca84b3e2a26c92ec79550bc9914ae1b9523",
+        "canonical_capture_digest": "7cfd3c822acda2f2f21b035801c9c1866a450f51848c68d2df9b40102553b9b6"
+      },
+      {
+        "kind": "corrected_evidence_pack",
+        "sha256": "8210887f7e06c4fb8397594ba965a8c737525c4b53be52a3cac1cf279e697387"
+      },
+      {
+        "kind": "historical_evidence_pack",
+        "sha256": "da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b"
+      }
+    ],
+    "private_inputs_committed_to_git": false,
+    "temporary_workers_removed": true
+  },
+  "precondition_discovery": {
+    "first_worker_attempt_status": "failed_before_material_compilation",
+    "code": "changed_input_corrected_pack_artifact_drift",
+    "root_cause": "The first archive contained the committed code and model capture but not the two digest-bound private Evidence Packs required to compile the captured request material.",
+    "disposition": "Hydrate the exact bound private artifacts into both clean workers; do not change source code, expected digests or the historical capture.",
+    "project_or_model_defect": false,
+    "provider_model_network_source_calls": [0, 0, 0, 0]
+  },
+  "worker_results": [
+    {
+      "worker": "A",
+      "focused_tests": "12 passed",
+      "proof_digest": "ba5e4ecf9772b588f5c6d0dc6e46c08055a5aec81feac6563e838f6285a004c1"
+    },
+    {
+      "worker": "B",
+      "focused_tests": "12 passed",
+      "proof_digest": "ba5e4ecf9772b588f5c6d0dc6e46c08055a5aec81feac6563e838f6285a004c1"
+    }
+  ],
+  "replay_result": {
+    "byte_equivalent": true,
+    "capture_digest": "7cfd3c822acda2f2f21b035801c9c1866a450f51848c68d2df9b40102553b9b6",
+    "validation_digest": "35a06db48f3adaca4718a624bce15704ecc3546a602098c2a4b84a0108c62036",
+    "raw_delivery_digest": "0cb82dee663c06e58b60d7f69e9dd054c6ad631a2e895ca0ce4195e2c62a1b93",
+    "rendered_delivery_digest": "f75256e3ec98a64398cb6becc6f5d22b4d12a448f87b701f88b4d7828f81ebe5",
+    "support_renderer_receipt_digest": "943715893f9d390dc7810019cef0e51af8185ac0d1e72d9ecd1707aca9e73f4d",
+    "numeric_guard_digest": "c8130130f462b505c0e7924a2d3a8088cc61b0e19687bb79cc6694d06b5d8d25",
+    "protected_span_count": 4,
+    "changed_protected_spans": 1,
+    "provider_specific_rule_used": false
+  },
+  "observed_calls": {
+    "provider_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "immutability": {
+    "historical_exact_live_terminal_remains_failed": true,
+    "historical_admission_remains_consumed": true,
+    "historical_result_relabelled": false,
+    "second_model_canary_executed": false,
+    "business_artifact_promotion": false
+  },
+  "stage_acceptance": {
+    "successor_clean_proof": true,
+    "substantive_numeric_relation_gate": true,
+    "full_dell_report_after_repair": false,
+    "S2_closeout_decided_by_this_proof": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "known_boundary": "This proof establishes portable deterministic behavior over the immutable model capture and its digest-bound private Evidence inputs. It does not turn the historical failed exact-live terminal into a pass, authorize another DeepSeek call, prove a post-repair full report, close S3 research-content gaps, or satisfy Owner/release acceptance.",
+  "next_action": "ZERO_CALL_S2_BOUNDED_CLOSEOUT_AUTONOMY_GRANT_AND_S3_ENTRY_DECISION",
+  "result_digest": "df6552e8159758ac07828c370d8d3dbc119e82160505d329f00cda43dfbb41c8"
+}

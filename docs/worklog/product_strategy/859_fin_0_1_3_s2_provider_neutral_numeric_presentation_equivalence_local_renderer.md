@@ -12,7 +12,7 @@
 
 ## Immutable capture replay
 
-没有再调用 DeepSeek，也没有改写或追认旧 terminal。对 capture=`7cfd3c82...b9b6` 的原始输出运行 successor：四个 NUM 全部保留，三个金额表面原样通过，只有 `customer count surpassing 5,000` 被本地规范为 `customer count surpassed 5,000`；非受保护叙事、E018／E023 角色和 conversion／margin boundary 不变。successor validation=`04f5e00f...2733`，shared numeric guard=`c8130130...d25`。
+没有再调用 DeepSeek，也没有改写或追认旧 terminal。对 capture=`7cfd3c82...b9b6` 的 `provider_response.content` 原始输出运行 successor：四个 NUM 全部保留，三个金额表面原样通过，只有 `customer count surpassing 5,000` 被本地规范为 `customer count surpassed 5,000`；非受保护叙事、E018／E023 角色和 conversion／margin boundary 不变。successor validation=`35a06db4...2036`，support renderer receipt=`94371589...3f4d`，shared numeric guard=`c8130130...d25`。此前本地未推送结果中的两项 receipt 摘要来自错误的证明形状，已在 amend 和首次 push 前改为真实 capture replay 值，未用测试 fixture 冒充 immutable capture。
 
 负向验证覆盖：否定关系、below、at-most、foreign entity、wrong fiscal period、wrong scale、wrong count value 和额外未绑定 inflected count；全部 fail closed。旧 `model_exact_surface` validator 仍按历史行为失败，证明没有暗中重标 failed run。
 

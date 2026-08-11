@@ -1,0 +1,86 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_bounded_closeout_autonomy_grant_and_s3_entry_decision_v1_0",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "status": "S2_bounded_capability_closeout_pass_S3_zero_call_entry_authorized",
+  "evidence": {
+    "changed_input_business_assessment_ref": "configs/releases/fin_ia_0_1_3_s2_dell_changed_input_business_content_assessment_v1_0.json",
+    "numeric_cocompilation_clean_proof_ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_candidate_cocompilation_clean_independent_proof_v1_0.json",
+    "natural_canary_terminal_ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_terminal_and_semantic_audit_v1_0.json",
+    "natural_canary_terminal_digest": "ca579cb54822ad94058f32acc8455249037f6e52fccfad9550d1c7e890fcd3bd",
+    "local_renderer_result_ref": "configs/releases/fin_ia_0_1_3_s2_provider_neutral_numeric_presentation_equivalence_local_renderer_zero_call_result_v1_0.json",
+    "local_renderer_result_digest": "79148601bbcadfe277cd68dcd27e1595db681459ca116e11bebad395a7b0a031",
+    "local_renderer_clean_proof_ref": "configs/releases/fin_ia_0_1_3_s2_provider_neutral_numeric_presentation_local_renderer_clean_independent_proof_v1_0.json",
+    "local_renderer_clean_proof_digest": "df6552e8159758ac07828c370d8d3dbc119e82160505d329f00cda43dfbb41c8"
+  },
+  "decision_basis": [
+    "The corrected DELL Evidence Pack was materially used by the 13-node chain: demand durability, profit transmission, supply constraints, competition and counterevidence improved rather than merely gaining citations.",
+    "The selected-Evidence numeric co-compilation control plane has a prior two-worker clean proof and closes the project-side inventory and source-rounded presentation gaps that blocked the changed-input report.",
+    "The one-call natural canary selected the correct issuer Evidence, four bound NUM refs, competitor read-through and pull-forward boundaries. Its only formal failure was exact English inflection, not a financial fact or research-judgment error.",
+    "The provider-neutral local renderer now proves strict relation, entity, period, unit, value and lineage while changing only the protected grammatical surface; two clean archives reproduce identical receipts without a second model call.",
+    "The remaining weak WWC, mechanism bridges, decision density and full-report research quality are S3 obligations and must not keep expanding S2 numeric-control work."
+  ],
+  "autonomy_grant": {
+    "profile": "deepseek-v4-pro",
+    "grant_level": "bounded_judgment_atom_and_evidence_selection",
+    "provider_neutral_core_contract": true,
+    "allowed": [
+      "select approved Evidence and NUM refs",
+      "produce thesis, support, counterevidence and epistemic-boundary atoms",
+      "propose mechanisms, research follow-ups and observable What-Would-Change conditions",
+      "write non-authoritative analytical prose within S3 node contracts"
+    ],
+    "local_control_plane_retained": [
+      "case, entity, period, currency and unit identity",
+      "NumericFact and FormulaTrace authority",
+      "canonical protected numeric rendering",
+      "Evidence lineage, deterministic IDs and final numeric guard",
+      "capture-first, exact-once and business-artifact promotion"
+    ],
+    "forbidden": [
+      "unbound material numbers or free arithmetic",
+      "turning supplier, competitor or market context into issuer-specific facts",
+      "valuation multiples, target price or recommendation from a single market close",
+      "silent gap closure or invented external Evidence",
+      "full-report promotion without S3 L1/L2 and research-content quality acceptance",
+      "automatic retry or another S2 natural canary"
+    ],
+    "unrestricted_full_report_autonomy": false
+  },
+  "stage_disposition": {
+    "S2_bounded_capability_closeout": true,
+    "S2_product_report_acceptance": false,
+    "RC_P36_170_numeric_control_plane": "closed",
+    "RC_P36_172_wwc_mechanism_and_density": "open_owned_by_S3",
+    "historical_exact_live_terminal": "failed_immutable",
+    "second_model_canary_required": false,
+    "full_dell_report_rerun_required_for_S2_closeout": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "S3_entry": {
+    "eligible": true,
+    "authorized_now": "zero_call_entry_audit_contract_and_runtime_implementation_only",
+    "formal_model_or_tool_execution_authorized": false,
+    "first_work_package": "S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_LOOP_AND_RESEARCH_CONTENT_QUALITY_ENTRY_AUDIT",
+    "required_outputs": [
+      "dynamic DecisionSurface and EvidenceRequest loop over governed local plus official Evidence",
+      "explicit residual-gap and tool-route budget",
+      "mechanism, counterevidence and observable WWC contracts",
+      "same-input comparison against the Codex reference and hidden eight-dimension quality rubric",
+      "fresh exact-once authority decision before any model or tool live"
+    ]
+  },
+  "observed_calls": {
+    "provider_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "known_boundary": "S2 is closed only for its bounded model-consumption and numeric-control responsibilities. This is not a post-repair full DELL report pass, a three-case Agentic Research proof, qualified-human acceptance, Workbench dogfood or release. S1 residual source and valuation gaps remain typed inputs to S3 rather than silently closed.",
+  "next_action": "S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_LOOP_AND_RESEARCH_CONTENT_QUALITY_ENTRY_AUDIT_ZERO_CALL",
+  "result_digest": "2ef1060200332c6aba3ffc86eea98b80e9d52b612a0632d9ef9658d012a9e132"
+}

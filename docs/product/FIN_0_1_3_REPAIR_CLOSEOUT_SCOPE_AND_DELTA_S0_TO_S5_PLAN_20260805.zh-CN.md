@@ -1,7 +1,7 @@
 # FIN 0.1.3 修复收口版范围与差量 S0–S5 计划
 
 日期：2026-08-05；最近互校准：2026-08-11
-状态：`FIN_0_1_3_active / S1_external_coverage_and_residual_semantics_mitigated_open / S2_bounded_closeout / S3_zero_call_entry_audit_pass_formal_blocked_3 / S4_S5_pending / release_blocked / FIN_0_2_definition_unchanged`
+状态：`FIN_0_1_3_active / S1_external_coverage_and_residual_semantics_mitigated_open / S2_bounded_closeout / S3_zero_call_successor_engineering_pass_real_DELL_quality_packet_materialized_formal_blocked_3 / S4_S5_pending / release_blocked / FIN_0_2_definition_unchanged`
 
 > **2026-08-06 用户新增硬要求**：FIN 0.1.3 必须把研究内容输出质量作为 release-blocking 考核，不得再将 L3 的通用 Claim、弱综合、机械 Writer 或不可执行 WWC 降级为 nonblocking finding。八维绝对质量＋paired gain＋qualified human content acceptance 的正式标准见 `docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md`。
 
@@ -919,3 +919,13 @@ Project OS 先注册独立 S3 namespace 与 zero-call engineering scope，避免
 - `configs/releases/fin_ia_0_1_3_s3_dynamic_research_entry_audit_and_scope_disposition_v1_0.json`，digest=`5990fd45...267de`。
 
 current next=`S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_LOOP_INFORMATION_ECONOMY_AND_QUALITY_PACKET_MINIMUM_ZERO_CALL_IMPLEMENTATION_AND_PROOF`。通过该零调用实现与 mutation proof 后，再单独决定是否需要最小自然 planner／repair canary；不得直接签发完整报告 live。
+
+## 7AB. S3 successor 零调用实现、DELL 同输入信息经济审计与质量包（2026-08-11）
+
+本轮没有创建第二套研究框架，而是把既有 Dynamic DecisionSurface、Claim／WWC、Cross-cell、Writer 和 Research Quality Gate 五组资产接成一条可执行闭环。三案共编译 `38` 个有业务决策角色的 cell（DELL `13`、MU `12`、NVDA `13`），调用次数保持动态而非固定；只针对 material 且可检索的缺口生成 `5` 个 canonical EvidenceRequest。新证据被接受后只把目标 cell 及其传递依赖标记为 `needs_readjudication`，拒绝或 typed gap 不晋升 Evidence；任何改变判断方向的重裁决必须完整覆盖受影响 cell，并引用本轮新增 Evidence。
+
+机制和可执行性也进入同一 Runtime：当前编译出 `9` 条 mechanism chain、`13` 个 WWC condition。数值阈值若没有 NumericFact／Formula／approved scenario 权威，不再让模型猜测，而是明确返回 `cannot_operationalize_numeric_threshold_with_current_evidence`。这保留了模型分析和提出判断的职责，同时把身份、期间、数值、lineage 与晋升留在本地控制面。
+
+对 immutable DELL fixed-pack same-input baseline／Agent 候选做了真实、无原文持久化的信息经济审计。baseline 为 `42` 个观点，Agent 压缩为 `30` 个，说明模型已经在做筛选和综合；但 Agent 仍有 `2` 个过载的 executive points、`1` 组跨章节重复，decision-marker point ratio=`0.4333`，并继续带有历史记录中的 numeric／identity authority L1 hard failure。故本轮只记 `zero_call_successor=engineering_pass`：历史候选不改标、不晋升，八维正式评分、paired gain、qualified-human acceptance、Owner 和 release 全部仍为 false。
+
+工程验证为 focused=`12 passed`、既有 S3＋successor=`47 passed`，model／provider／network／source／retry／promotion=`0/0/0/0/0/0`。正式 S3 scope 仍由 RC-P36-157、RC-P36-165、RC-P36-172 三条真实边界阻断。current next=`S3_MINIMAL_NATURAL_PLANNER_OR_REPAIR_CANARY_NECESSITY_VALUE_COST_RISK_ZERO_CALL_DECISION`：先判断一次最小自然 planner／repair canary 是否值得做；即使决定做，也只能单独签发，不得自动进入完整报告 live。

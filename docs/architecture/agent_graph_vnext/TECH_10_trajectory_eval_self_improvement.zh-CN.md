@@ -575,3 +575,11 @@ FIN 0.1.3 的真实工程结果证明，检索、模型合同和研究内容必�
 S3 入口必须同时满足：S1 current Evidence Pack 可用、S2 已冻结当前 Provider 的 `ModelCapabilityProfile + AutonomyGrant`、material numeric truth 可重算。方法 registry 中的条目只有在 `runtime_injected`、`node_consumed`、`paid_artifact_proven` 后才能计入实现覆盖；`documented` 或 `contract_translated` 只表示设计资产。
 
 S3 出口必须同时通过 L1/L2、八维绝对质量 `>=24/32`、Q1–Q7 无低于 2、Q1/Q2/Q3/Q8 各不低于 3、paired gain 和 qualified-human content acceptance。Search 不足、模型不遵循、内容薄弱分别保留自己的 failure code；任何一类都不能被另一类分数补偿。
+
+## 25. FIN 0.1.3 Information Economy 与正式内容评分前置门（2026-08-11）
+
+S3 successor 新增 prose-free 信息经济投影：只保存 section／point 数、引用集合、指纹、跨章节重复、摘要过载、决策／边界密度和 hard-failure code，不把 private raw prose复制到公开程序。它回答“证据是否被选择、压缩和转化成决策”，但不替代八维人工／模型隔离评分。
+
+真实 DELL same-input projection 的 baseline=`42 points`、Agent=`30 points`；Agent 有 `2` 个 overloaded executive points、`1` 组 cross-section repetition，decision-marker point ratio=`0.4333`。这说明 Agent 相比原始 Evidence dump 已有压缩与综合增益，但仍未达到 senior-useful 的信息经济要求。更重要的是，历史 Agent 候选仍带有 `final_report_material_numeric_ref_missing` 与 `final_report_numeric_surface_not_authorized_by_refs` 两个 L1 来源码，故 formal eight-dimension score 必须保持 `null / blocked_before_L3_scoring`，不能因为文字更紧凑而补偿事实权威失败。
+
+本轮质量包只建立评分输入与 fail-closed 顺序：`L1 truth -> information economy findings -> hidden eight-dimension absolute score -> same-input paired gain -> qualified-human acceptance`。自然 post-repair report 尚不存在，paired、human、Owner 和 release 均为 false。

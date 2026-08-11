@@ -392,3 +392,15 @@ WWC trigger 命中后 TECH_11 只提交 observation/impact request。TECH_05 评
 4. Reviewer override 可 PIT replay，后续 Case 只在适用 scope 内复用。
 
 本节状态为 `documented / contract_draft`；不表示现有 specialist output 已迁移为 JudgmentVersion。
+
+## 19. FIN 0.1.3 Evidence Repair、受影响重裁决与 WWC 权威投影（2026-08-11）
+
+当前 S3 successor 将本章的 Evidence／Judgment 语义落实为以下零调用 Runtime 不变量：
+
+- `EvidenceRequest` 复用 canonical compiler，绑定 case、cell、slot、as-of、预算、planning authority 和 execution admission；zero-call 程序中不得出现 admitted request。
+- accepted Evidence observation 只产生 affected-cell 集合和重裁决义务，不自动改变方向、置信度或最终文案；rejected／typed gap observation 不晋升 Evidence，也不重开无关 cell。
+- 影响范围按 cell dependency 传递计算；重裁决必须恰好覆盖该集合。任何 changed Judgment 若不引用新 Evidence，必须 fail closed。
+- WWC 的数值阈值只能引用 NumericFact、FormulaTrace 或 approved scenario。无绑定阈值以 typed `cannot_operationalize_numeric_threshold_with_current_evidence` 留存，而不是由模型补数字。
+- 每次 observation、affected-set 和 readjudication 都重新封装 digest 与 lineage，禁止跨案例、旧状态或部分覆盖污染。
+
+当前程序编译出 `5` 个 repair request、`9` 条 mechanism chain 和 `13` 个 WWC condition，mutation 已覆盖 cross-case、部分重裁决、无新 Evidence 改判、非法晋升和 digest drift。该状态是 engineering proof，不表示自然证据回流、正式 JudgmentVersion 或交付报告已经通过。

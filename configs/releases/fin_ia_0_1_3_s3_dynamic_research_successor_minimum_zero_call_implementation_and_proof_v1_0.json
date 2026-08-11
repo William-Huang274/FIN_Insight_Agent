@@ -1,0 +1,114 @@
+{
+  "acceptance": {
+    "formal_S3": false,
+    "owner": false,
+    "paired": false,
+    "post_repair_report": false,
+    "qualified_human": false,
+    "real_dell_quality_packet": "materialized_blocked_before_formal_scoring",
+    "release": false,
+    "zero_call_successor": "engineering_pass"
+  },
+  "capability_observation": {
+    "accepted_fake_observation_requires_affected_cell_readjudication": true,
+    "compiled_canonical_evidence_requests": 5,
+    "decision_cells": 38,
+    "fixed_call_count": null,
+    "mechanism_chains": 9,
+    "observable_wwc_conditions": 13,
+    "rejected_or_typed_gap_observation_promotes_evidence": false,
+    "unbound_numeric_wwc_result": "cannot_operationalize_numeric_threshold_with_current_evidence"
+  },
+  "dell_fixed_pack_same_input_quality_observation": {
+    "agent_cross_section_duplicate_pairs": 1,
+    "agent_decision_marker_point_ratio": 0.4333,
+    "agent_hard_failure_codes": [
+      "numeric_or_identity_authority_violation"
+    ],
+    "agent_overloaded_executive_points": 2,
+    "agent_points": 30,
+    "agent_quality_finding_codes": [
+      "cross_section_repetition",
+      "overloaded_executive_point",
+      "weak_decision_density"
+    ],
+    "baseline_points": 42,
+    "formal_eight_dimension_score": null,
+    "formal_scoreability": "blocked_before_L3_scoring",
+    "historical_L1_status": "fail_immutable_historical_candidate",
+    "historical_candidate_relabelled_or_promoted": false,
+    "interpretation": "The Agent reduced a 42-point direct source dump to 30 points and improved research synthesis, but two executive points remain overloaded, one cross-section repetition survives, decision density is still weak, and the immutable candidate remains blocked by its recorded numeric L1 findings."
+  },
+  "implementation": {
+    "policy_ref": "configs/runtime/fin_ia_0_1_3_s3_dynamic_research_planner_evidence_request_and_content_quality_entry_policy_v1_0.json",
+    "policy_sha256": "486473249255773ea28a6012c660680035cceaad8d6b08aed086704de396f98e",
+    "runtime_ref": "src/sec_agent/s3_dynamic_research_successor.py",
+    "runtime_sha256": "366e41343441d5c74c2b148bfe6e6584e712cf86d7fb04cb86acce9e6496085f",
+    "test_ref": "tests/contract/test_fin_0_1_3_s3_dynamic_research_successor.py",
+    "test_sha256": "2aae81b3acfd273a9c2c1a9a7e08b6b46894ca6fc117efa0bcf26d587b459a9b"
+  },
+  "known_boundary": "This result proves a deterministic connector around existing S3 assets and materializes a prose-free audit of the immutable DELL pair. It does not repair the historical report, close external evidence gaps, prove a natural planner/repair node, authorize DeepSeek or source tools, create a verifier-bound final delivery, or satisfy paired and qualified-human acceptance.",
+  "materialized_program": {
+    "policy_digest": "9accc877b13313aa97aafb5daeefb9cc03b8ac6ac7452053a1e5b523772d1667",
+    "private_source_terminal_sha256": "bbedc7b250bc84433a748c8ba8d612fcf1fa80eb8c535697ccc198e3ac0ca00d",
+    "program_digest": "e7bbfb04fcc4bac4f27383451d5a551b6eff804d2fb38acca790fff2e374d208",
+    "raw_private_prose_persisted_in_program": false,
+    "ref": "configs/releases/fin_ia_0_1_3_s3_dynamic_research_successor_program_v1_0.json",
+    "sha256": "1a24c030614b15c6a316871afd888a1dc09f9654db1eb0a0acd687af982d58e4"
+  },
+  "next_action": "S3_MINIMAL_NATURAL_PLANNER_OR_REPAIR_CANARY_NECESSITY_VALUE_COST_RISK_ZERO_CALL_DECISION",
+  "observed_calls": {
+    "business_promotion": 0,
+    "fallback": 0,
+    "model": 0,
+    "network": 0,
+    "provider": 0,
+    "retry": 0,
+    "source": 0
+  },
+  "open_boundaries": [
+    {
+      "issue": "RC-P36-157",
+      "meaning": "External candidate coverage remains insufficient for formal dynamic research.",
+      "owner_stage": "S1"
+    },
+    {
+      "issue": "RC-P36-165",
+      "meaning": "Valuation and issuer-specific supply allocation/timing/yield remain typed semantic gaps.",
+      "owner_stage": "S1"
+    },
+    {
+      "issue": "RC-P36-172",
+      "meaning": "WWC, causal bridge, repetition and senior decision density remain product-quality work; this slice provides the repair runtime and diagnosis but no post-repair natural report.",
+      "owner_stage": "S3"
+    }
+  ],
+  "owner_stage": "S3",
+  "product_version": "FIN_0_1_3",
+  "proof": {
+    "adjacent_existing_S3_plus_successor_tests": "47 passed",
+    "clean_archive_fresh_process_proof": false,
+    "focused_tests": "12 passed",
+    "negative_cases": [
+      "cross_case_state",
+      "admitted_request_in_zero_call_scope",
+      "partial_readjudication",
+      "changed_judgment_without_new_evidence",
+      "unbound_numeric_threshold",
+      "rejected_and_typed_gap_evidence_promotion",
+      "digest_drift"
+    ],
+    "positive_cases": [
+      "three_case_38_cell_planner",
+      "five_canonical_repair_requests",
+      "accepted_observation_to_four_affected_cells",
+      "exact_affected_cell_readjudication",
+      "prose_free_real_dell_quality_projection"
+    ]
+  },
+  "recorded_at": "2026-08-11",
+  "result_digest": "be3ec8585826fa421958558801e196a473178fe2a39f359e7e2edb1d44dedfb0",
+  "run_scope": "FIN_0_1_3_S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_AND_CONTENT_QUALITY_ZERO_CALL",
+  "schema_version": "fin_ia_0_1_3_s3_dynamic_research_successor_minimum_zero_call_implementation_and_proof_v1_0",
+  "status": "zero_call_successor_engineering_pass_real_dell_quality_packet_materialized_formal_S3_still_blocked"
+}

@@ -533,3 +533,15 @@ Assignment 不授予隐含工具、数据或审批权限；实际能力仍由 TE
 5. WriterAdmission 必须同时看到 SearchQualityCard、DecisionSurfacePack、material gaps 和内容质量门；完整链无异常但证据单薄或报告模板化仍不得进入 R2。
 
 FIN 0.1.3 当前投影为：S1-08 v3 只有 zero-call engineering pass，最近 DELL live target-in-pool 为 0；S3-01–05 仅为 minimum engineering anchor，S3-06–09 尚未开始。因此本节是准入合同更新，不表示动态研究或内容质量已经通过。
+
+## 21. FIN 0.1.3 Dynamic Research Successor Runtime Projection（2026-08-11）
+
+S3 不再把已有五个孤立组件当作五项能力计数，而以一个 successor 连接它们：
+
+1. `DecisionSurface` 的开放问题编译为具有 `business_role / why_material / downstream_decision` 的动态 cell；DELL／MU／NVDA 当前共 `38` 个 cell，不绑定固定 Agent 调用次数。
+2. 只有 material、可检索且具 typed slot 的 gap 才能生成 canonical `EvidenceRequest`；当前五个 repair request 全为 `shadow / not_admitted / one-tool-call ceiling / no fallback`。
+3. source observation 必须先落为 `accepted / rejected / typed_gap`。只有 accepted observation 可以使目标 cell 与传递依赖进入 `needs_readjudication`；它本身不得直接改写 Judgment。
+4. re-adjudication 必须精确覆盖受影响 cell。changed Judgment 必须引用新 Evidence；未变化 Judgment 也必须给出 lineage-bound 处置。
+5. Writer 前先编译 mechanism／WWC，再执行信息经济投影；L1 hard truth 与 L2–L4 内容 finding 分账，不能用表达评分覆盖事实错误。
+
+该 Runtime 已在 zero-call scope 下形成三案程序和真实 DELL 无原文质量投影，但没有执行自然 planner、source tool、DeepSeek 或 post-repair report。formal S3 仍由 RC-P36-157／165／172 阻断；下一步只能先做一次 canary 必要性、价值、成本和风险决策。

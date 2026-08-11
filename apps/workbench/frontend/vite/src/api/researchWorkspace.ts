@@ -42,14 +42,17 @@ export type ResearchCaseSummary = {
   pack_binding: PackBinding;
   evidence_summary: EvidenceSummary;
   available_surfaces: Array<"overview" | "evidence">;
+  evidence_object_ready: boolean;
 };
 
 export type ResearchCaseList = {
-  status: "identity_bound_research_cases_ready";
+  status: "identity_bound_research_case_catalog_ready";
   product_mode: "current";
   primary_route: "/workspace";
   evidence_pack_result_digest: string;
   items: ResearchCaseSummary[];
+  evidence_objects_ready: boolean;
+  unavailable_case_keys: string[];
   surface_policy: Record<string, unknown>;
   known_boundary: string;
   projection_digest: string;

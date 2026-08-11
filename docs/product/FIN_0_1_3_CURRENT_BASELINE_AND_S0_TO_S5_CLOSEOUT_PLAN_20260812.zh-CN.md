@@ -1,0 +1,56 @@
+# FIN 0.1.3 当前基线与 S0–S5 收口计划
+
+日期：2026-08-12
+状态：`repository_baseline_candidate / product_iteration_not_closed`
+## 1. 这份文件拥有哪项真值
+
+本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
+
+FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵向研究闭环。当前仓库重定基只是为后续产品工作建立一条可读、可测、可维护的主线，不等于版本产品收口。
+
+## 2. 当前真正可用的产品
+
+- `/workspace` 展示 DELL、MU、NVDA 三个身份和摘要均绑定的 reviewed Evidence Pack。
+- `/operations` 独立展示当前运行配置、来源包、准入数据构建和已保存运行；历史作业明确标记为仅供审计。
+- 无数据挂载时仍可查看案例目录，但详情入口禁用且 `/api/readiness` 返回 typed HTTP 503；不得假装数据就绪。
+- 挂载 reviewed pack 后可查看 Evidence、拒绝理由、来源边界和 residual gap。
+- 当前三案只有 SEC 来源，结构化数值项为 0；因此不能声称多源研究、NumericFact、动态 Agentic Research 或完整报告已经完成。
+
+## 3. S0–S5 责任与当前状态
+
+| 阶段 | 只拥有的责任 | 当前事实 | 通过条件 |
+| --- | --- | --- | --- |
+| S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线 | 重定基候选已形成；等待 main 合并后复证 | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿 |
+| S1 | 内外源发现、解析、chunk/object、检索、rerank、来源覆盖 | 当前 Pack 只来自 SEC；旧检索实验不在活动 Runtime | 三案及留出案例的 required-slot target-in-pool、日期/实体/关系正确，外源只补真实 residual gap |
+| S2 | Evidence/NumericFact 编译、PIT、单位/期间、引用和冲突 | reviewed Evidence 可读，但三案 structured numeric=0 | 数值事实从权威对象确定性编译，跨案/错期/错单位 fail closed，S1 新证据依赖回归通过 |
+| S3 | 动态规划、工具使用、重裁决、研究综合、Workpaper/Report | 当前无活动动态 planner、模型 research chain 或完整报告产品 | 三案真实动态研究通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收 |
+| S4 | 用户任务、Evidence/Gap/Workpaper/Review/Repair 产品闭环 | 只有只读 Evidence Workspace 和独立 Operations | 当前 S3 candidate 被真实 UI 消费；review/repair/lineage 可完成且不依赖旧产品面 |
+| S5 | 发布、回滚、运行、成本、安全和 Owner acceptance | 未开始；本次仓库 merge 不是 S5 | RG1–RG5、clean deploy、回滚和 Owner 签署全部成立 |
+
+失败必须回到最早责任阶段；不能在 S4 页面、Writer 或 renderer 用补丁掩盖 S1/S2/S3 缺陷。一次失败只产生新 attempt，不产生新版本。
+
+## 4. 当前重定基完成后的执行顺序
+
+1. **先完成 S0 仓库基线**：所有严格门通过，合并并推送 `main`，在干净主线工作树复证。
+2. **S1 检索纵切**：以当前三案和留出案例重新建立 source → object/chunk → typed query lanes → candidate/evaluator；官方来源优先，外源按 residual gap 补源。
+3. **S2 最小依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
+4. **S3 三案动态 Agentic Research**：由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
+5. **S4 产品闭环**：把通过验收的研究结果接入当前 Workbench，而不是恢复旧页面；补齐 human review、repair 和 artifact lineage。
+6. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+
+## 5. 防止再次膨胀的工程规则
+
+1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。
+2. 同一合同只有一个编译源；Prompt、validator、fake、live、renderer 和 UI 不能各自维护一份结构。
+3. 单次 run/attempt 的实现、admission、capture 和 proof 默认进入运行数据或版本归档，不能成为永久模块名。
+4. Workbench 是常驻产品与验收入口；不得用一次性脚本代替最终用户链。
+5. 测试分为确定性工程门、自然模型 canary、产品内容验收；不得为每个字段重复 live。
+6. 新模型通过统一 profile/canary 获得不同自主权；provider 特殊拐杖不能进入核心金融合同。
+7. 每个阶段结束时同步 PRD、当前计划、技术图、Project OS 和机器 manifest；当前投影保持短小，完整历史归档。
+
+## 6. 明确不偷换的边界
+
+- 仓库基线通过，只说明后续开发不再带着多主线和 attempt 债务；不说明研究质量已经通过。
+- 三份 reviewed Pack 通过，只说明身份、摘要、来源和 gap 可以审阅；不说明 Evidence 完整或结论可靠。
+- 数据构建脚本存在，只说明有受维护入口；不说明网络、授权、索引或数据已经就绪。
+- S1/S2/S3 的历史 proof 仍可用于诊断，但只有当前 Runtime、当前数据和当前产品消费者的复证才能成为新能力证据。

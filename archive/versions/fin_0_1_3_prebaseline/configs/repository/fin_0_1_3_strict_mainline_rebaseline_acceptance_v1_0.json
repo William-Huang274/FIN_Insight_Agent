@@ -1,0 +1,142 @@
+{
+  "schema_version": "fin_ia_0_1_3_strict_mainline_rebaseline_acceptance_v1_0",
+  "recorded_at": "2026-08-11",
+  "status": "in_progress_main_semantics_and_workspace_vertical_pass_old_consumer_cutover_pending",
+  "owner_intent": "form_one_clear_FIN_0_1_3_code_and_project_baseline_then_merge_main_without_carrying_active_legacy_debt",
+  "repository": {
+    "working_branch": "codex/fin013-clean-baseline",
+    "working_commit_at_freeze": "5cf7db134bf298e5fbfb56ed551f0cdb6e0a7149",
+    "target_branch": "main",
+    "merge_base": "abf26ae3d7f1eebf7a0b54982a175a797ef23a97",
+    "target_unique_commits": 20,
+    "working_branch_unique_commits": 510,
+    "private_data_policy": "mount_existing_data_root_never_copy_into_clean_worktree",
+    "deletion_policy": "no_delete_move_archive_refactor_allowed_after_zero_consumer_proof"
+  },
+  "bounded_product_promise": {
+    "primary_product": "FinSight institutional research Workbench",
+    "primary_browser_entry": "/workspace",
+    "operator_entry": "/operations",
+    "initial_reviewed_cases": ["DELL", "MU", "NVDA"],
+    "current_research_mode": "reviewed_read_only_case_and_evidence_pack_projection",
+    "not_claimed": [
+      "unrestricted_dynamic_case_research",
+      "complete_valuation_or_target_price",
+      "production_multitenancy_or_enterprise_auth",
+      "commercial_realtime_market_data",
+      "fully_autonomous_report_release"
+    ]
+  },
+  "canonical_contracts": {
+    "case_subject_required_fields": [
+      "entity_id",
+      "issuer_id",
+      "legal_name",
+      "ticker",
+      "exchange",
+      "as_of"
+    ],
+    "case_pack_binding_required_fields": [
+      "case_id",
+      "case_version",
+      "case_subject_digest",
+      "pack_case_key",
+      "pack_artifact_digest",
+      "pack_payload_digest",
+      "binding_state"
+    ],
+    "forbidden_identity_shortcuts": [
+      "guess_ticker_from_query_text",
+      "infer_case_identity_from_target_id_prefix",
+      "bind_fixed_cross_case_preview_to_arbitrary_case"
+    ],
+    "activity_code_rule": "active_product_and_runtime_modules_must_be_version_and_attempt_neutral",
+    "historical_rule": "failed_runs_and_old_versions_remain_immutable_under_versioned_archive_with_redirect_manifest"
+  },
+  "strict_gates": [
+    {
+      "gate_id": "G01_main_semantic_integration",
+      "required": true,
+      "status": "passed",
+      "proof": "all_valid_semantics_from_main_unique_commits_preserved_or_explicitly_superseded_with_file_level_decision",
+      "evidence": "b7263309fe808e4e3bb41b6d46318f35389d8d6a plus fin_0_1_3_main_unique_semantic_merge_disposition_v1_0.json"
+    },
+    {
+      "gate_id": "G02_one_primary_product_frontdoor",
+      "required": true,
+      "status": "pending",
+      "proof": "workspace_is_primary_and_current_next_legacy_product_aliases_have_redirect_or_archive_disposition"
+    },
+    {
+      "gate_id": "G03_typed_case_and_pack_binding",
+      "required": true,
+      "status": "passed",
+      "proof": "DELL_MU_NVDA_case_identity_and_digest_bound_pack_binding_pass_positive_and_cross_case_mutation",
+      "evidence": "ResearchWorkspaceService contract tests in 21-pass focused suite"
+    },
+    {
+      "gate_id": "G04_real_ui_consumer",
+      "required": true,
+      "status": "passed",
+      "proof": "workspace_evidence_view_consumes_current_case_API_and_displays_business_meaning_boundaries_citations_and_gaps",
+      "evidence": "ResearchWorkspace.tsx plus TypeScript and production Vite build pass"
+    },
+    {
+      "gate_id": "G05_old_consumer_zero",
+      "required": true,
+      "status": "pending",
+      "proof": "no_active_product_import_route_or_test_depends_on_P36_FIN_0_1_2_or_r53_r60_product_surfaces"
+    },
+    {
+      "gate_id": "G06_archive_redirect_manifest",
+      "required": true,
+      "status": "pending",
+      "proof": "every_moved_path_has_origin_version_reason_replacement_and_immutable_evidence_classification"
+    },
+    {
+      "gate_id": "G07_active_tree_clarity",
+      "required": true,
+      "status": "pending",
+      "proof": "documented_code_map_active_import_graph_and_no_release_attempt_module_in_product_runtime"
+    },
+    {
+      "gate_id": "G08_portable_runtime_paths",
+      "required": true,
+      "status": "pending",
+      "proof": "clean_worktree_reads_private_data_only_through_RuntimePathRegistry_or_injected_fixture"
+    },
+    {
+      "gate_id": "G09_engineering_verification",
+      "required": true,
+      "status": "pending",
+      "proof": "backend_import_frontend_build_active_test_suite_API_integration_UI_smoke_secret_scan_and_zero_old_reference_all_pass"
+    },
+    {
+      "gate_id": "G10_business_acceptance",
+      "required": true,
+      "status": "pending",
+      "proof": "DELL_MU_NVDA_UI_readability_review_preserves_subject_identity_evidence_boundaries_numeric_lineage_and_typed_gaps"
+    },
+    {
+      "gate_id": "G11_document_and_ledger_alignment",
+      "required": true,
+      "status": "pending",
+      "proof": "PRD_TECH_Project_OS_code_map_and_archive_manifest_describe_the_same_current_baseline"
+    },
+    {
+      "gate_id": "G12_main_merge_and_post_merge_reproof",
+      "required": true,
+      "status": "pending",
+      "proof": "clean_tagged_FIN_0_1_3_baseline_merged_to_main_pushed_and_reverified_from_main_worktree"
+    }
+  ],
+  "stop_rules": [
+    "do_not_archive_before_replacement_consumer_and_zero_old_consumer_proof",
+    "do_not_hide_failing_active_tests_by_reclassifying_them_as_history",
+    "do_not_copy_private_data_to_make_a_clean_worktree_pass",
+    "do_not_resolve_main_conflicts_by_blanket_ours_or_theirs_without_semantic_disposition",
+    "do_not_claim_dynamic_research_or_release_from_a_read_only_three_case_surface",
+    "do_not_merge_main_while_any_required_gate_is_pending_or_failed"
+  ],
+  "current_next": "CUT_OVER_VERSION_NEUTRAL_OPERATIONS_AND_REMOVE_ALL_LEGACY_PRODUCT_CONSUMERS_BEFORE_ARCHIVE"
+}

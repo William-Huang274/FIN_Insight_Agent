@@ -1,0 +1,29 @@
+{
+  "schema_version": "fin_ia_0_1_3_archive_redirect_manifest_v1_0",
+  "recorded_at": "2026-08-11",
+  "status": "partial_main_unique_history_only_product_consumer_archive_not_authorized",
+  "entries": [
+    {
+      "source_prefix": "main:c962a88e_and_related_A6_commits",
+      "archive_prefix": "archive/code/pre_fin_0_1_3_main_a6",
+      "classification": "historical_experiment_code_not_active_runtime",
+      "replacement": "current_S1_retrieval_Evidence_Pack_and_S3_dynamic_research_contracts",
+      "active_imports_allowed": false
+    },
+    {
+      "source_prefix": "main:docs/worklog/257_through_267_and_related_model_runs",
+      "archive_prefix": "docs/archive/pre_fin_0_1_3_main_a6",
+      "classification": "immutable_historical_execution_evidence",
+      "replacement": "PRD_TECH_Project_OS_and_current_stage_acceptance",
+      "active_imports_allowed": false
+    }
+  ],
+  "not_yet_authorized": [
+    "P36_product_surface",
+    "FIN_0_1_2_current_product_surface",
+    "r53_r60_product_surface",
+    "remaining_release_attempt_modules_tests_and_docs"
+  ],
+  "restore_rule": "move_back_into_an_owned_module_add_tests_and_update_repository_inventory",
+  "known_boundary": "This manifest covers only files introduced by the main semantic merge and immediately classified as A6 history. It is not the final zero-consumer archive manifest."
+}

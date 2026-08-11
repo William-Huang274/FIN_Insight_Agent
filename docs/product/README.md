@@ -1,38 +1,16 @@
-# Product Documentation Index
+# 产品文档
 
-This folder is the product-management source of truth for FinSight-Agent.
+产品文档回答“为谁解决什么问题、用户怎样使用、怎样才算有价值”，不把工程 proof 或某次模型运行写成产品能力。
 
-Product docs answer:
+当前入口：
 
-- Who is the user?
-- What problem are we solving?
-- What workflow should the product support?
-- What value should the user perceive?
-- What should be in scope or out of scope?
-- What acceptance criteria matter from the user's perspective?
+- `PRD_20260628_b2b_financial_research_workbench.zh-CN.md`：完整产品愿景。
+- `FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md`：FIN 0.1.3 唯一当前计划与阶段责任。
+- `FIN_PRD_FULL_ABSORPTION_AND_RELEASE_ALLOCATION_MATRIX_20260719.zh-CN.md`：PRD 能力与版本归属。
+- `FIN_0_1_3_CODEX_GOLD_RESEARCH_BENCHMARK_SCOPE_20260806.zh-CN.md`：三案例参考研究范围。
+- `PRODUCT_20260628_finsight_tob_toc_positioning_and_product_line.zh-CN.md`：产品线定位。
+- `PRODUCT_20260717_release_ladder_and_cadence.zh-CN.md`：发布节奏。
 
-Product docs should not be implementation plans. Technical contracts, APIs, schemas, runtime design, parser plans, eval runners, and delivery notes belong in `docs/architecture/`, `docs/eval/`, `docs/deployment/`, or a future `docs/engineering/` area.
+FIN 0.1.3 当前已经落地的是三个经复核案例的只读 Evidence Workspace；PRD 中动态规划、内外源检索、模型研究综合、完整交付报告、协作与生产化能力均不得因文档存在而被描述为已实现。
 
-## Current Product Docs
-
-- [FIN 0.1.3 Current Repair-Closeout Scope And Delta S0 To S5 Plan](FIN_0_1_3_REPAIR_CLOSEOUT_SCOPE_AND_DELTA_S0_TO_S5_PLAN_20260805.zh-CN.md)
-- [FIN 0.1.3 Repository Baseline Audit](../architecture/repository/FIN_0_1_3_REPOSITORY_BASELINE_AUDIT_20260811.zh-CN.md)
-- [FIN 0.1.3 Research Content Output Quality Rubric](../eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md)
-- [FIN 0.1.2 Consolidated Canonical S0 To S5 Product Progression Plan — historical predecessor](FIN_0_1_2_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260802.zh-CN.md)
-- [FIN 0.1.1 / 0.1.2 Version Lineage And Release Cadence Decision](FIN_0_1_1_0_1_2_VERSION_LINEAGE_AND_RELEASE_CADENCE_DECISION_20260731.zh-CN.md)
-- [FIN 0.1.3 Historical S0 Recovery Attempt Plan](FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md)
-- [FIN 0.1 S0 To S4-T05 Global Product Audit And Forward Plan](FIN_0_1_S0_TO_S4_T05_GLOBAL_PRODUCT_AUDIT_AND_FORWARD_PLAN_20260728.zh-CN.md)
-- [PRODUCT 2026-06-28 FinSight ToB / ToC Positioning And Product Line](PRODUCT_20260628_finsight_tob_toc_positioning_and_product_line.zh-CN.md)
-- [PRD 2026-06-28 B2B Financial Research Workbench](PRD_20260628_b2b_financial_research_workbench.zh-CN.md)
-- [PRODUCT 2026-07-17 Release Ladder And Cadence](PRODUCT_20260717_release_ladder_and_cadence.zh-CN.md)
-- [FIN 0.1 Internal Alpha Feature Scope Matrix](FIN_0_1_INTERNAL_ALPHA_FEATURE_SCOPE_MATRIX_20260717.zh-CN.md)
-- [FIN 0.1 Workbench UX Benchmark And Interaction Blueprint](FIN_0_1_WORKBENCH_UX_BENCHMARK_INTERACTION_BLUEPRINT_20260719.zh-CN.md)
-- [FIN 0.1 PRD / Product Stage Review](FIN_0_1_STAGE_REVIEW_20260719.zh-CN.md)
-
-## Governance
-
-- Product docs own product direction, user workflows, packaging, and business-facing acceptance criteria.
-- Technical docs own implementation contracts, runtime architecture, database/API/data-source details, eval gates, and delivery decisions.
-- Worklogs own factual execution records: what changed, what ran, what passed, what failed, and what remains.
-- Mixed discussions should first be summarized into a product doc, then translated into separate technical requirements or delivery docs.
-- Historical mixed docs should not be bulk-moved only for cleanup; new and touched docs should follow this split.
+两份旧 FIN 0.1.3 S0–S5/repair 流水账已迁入 `archive/versions/fin_0_1_3_prebaseline/docs/product/`，不再拥有当前执行权。

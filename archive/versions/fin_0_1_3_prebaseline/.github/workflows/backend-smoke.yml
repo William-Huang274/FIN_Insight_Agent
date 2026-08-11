@@ -1,0 +1,63 @@
+name: backend-smoke
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  workbench-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend smoke dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            "fastapi>=0.115.0" \
+            "uvicorn[standard]>=0.30.0" \
+            "httpx>=0.27.0" \
+            "pytest>=8.0.0" \
+            "pydantic>=2.7.0" \
+            "PyYAML>=6.0.1" \
+            "langgraph>=1.0.0" \
+            "langgraph-checkpoint-sqlite>=3.1.0"
+
+      - name: Compile backend modules
+        run: |
+          python -m compileall \
+            apps/workbench/backend \
+            scripts/workbench \
+            src/sec_agent/workbench
+
+      - name: Run Workbench backend tests
+        run: |
+          python -m pytest \
+            tests/test_workbench_backend.py \
+            tests/test_workbench_job_runner.py \
+            tests/test_workbench_profiles.py \
+            tests/test_workbench_artifacts.py \
+            -q
+
+  workbench-windows-helper:
+    runs-on: windows-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Parse Docker helper
+        shell: pwsh
+        run: |
+          powershell -ExecutionPolicy Bypass -File scripts/workbench/run_workbench_docker.ps1 -SkipBuild -SkipRun

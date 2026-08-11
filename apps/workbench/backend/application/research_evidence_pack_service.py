@@ -9,10 +9,10 @@ from typing import Any, Mapping
 
 from sec_agent.runtime_bridge.paths import RuntimePathRegistry
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
-from sec_agent.s1_six_case_local_evidence_pack import (
+from sec_agent.research.reviewed_evidence_pack import (
     canonical_digest,
     file_sha256,
-    validate_local_evidence_pack,
+    validate_reviewed_evidence_pack,
 )
 
 
@@ -100,7 +100,7 @@ class ResearchEvidencePackService:
             str(config.get("source_result_resource_id") or ""),
         )
         object_root = (
-            runtime_paths.workbench_private_root
+            runtime_paths.reviewed_evidence_root
             / str(config.get("private_object_root_relative") or "")
         )
         return cls(config=config, result=result, private_object_root=object_root)
@@ -113,6 +113,11 @@ class ResearchEvidencePackService:
         self, principal: ResearchEvidencePackPrincipal
     ) -> dict[str, Any]:
         self._require_read(principal)
+        readiness = self.readiness()
+        readiness_by_case = {
+            str(row["case_key"]): bool(row["ready"])
+            for row in readiness["cases"]
+        }
         items = []
         artifacts = dict(self._result["pack_artifacts"])
         for case_key in self._config["published_case_keys"]:
@@ -123,20 +128,50 @@ class ResearchEvidencePackService:
                     **deepcopy(summary),
                     "artifact_digest": str(artifact["digest"]),
                     "artifact_type": str(artifact["artifact_type"]),
+                    "evidence_object_ready": readiness_by_case[case_key],
                 }
             )
         return _projection(
             {
                 "schema_version": PROJECTION_SCHEMA,
                 "projection_mode": "current",
-                "status": "reviewed_local_evidence_packs_ready_with_declared_gaps",
+                "status": "reviewed_evidence_catalog_ready",
                 "result_digest": self.result_digest,
                 "items": items,
+                "evidence_objects_ready": bool(readiness["all_ready"]),
+                "unavailable_case_keys": list(readiness["unavailable_case_keys"]),
                 "next_cursor": None,
                 "hard_boundaries": self._hard_boundaries(),
                 "known_boundary": str(self._config["known_boundary"]),
             }
         )
+
+    def readiness(self) -> dict[str, Any]:
+        """Report mounted-object readiness without exposing private paths."""
+
+        cases: list[dict[str, Any]] = []
+        for case_key in self._config["published_case_keys"]:
+            try:
+                self._load_pack(str(case_key))
+            except ResearchEvidencePackServiceError as exc:
+                cases.append(
+                    {
+                        "case_key": str(case_key),
+                        "ready": False,
+                        "reason": exc.error_code,
+                    }
+                )
+            else:
+                cases.append(
+                    {"case_key": str(case_key), "ready": True, "reason": None}
+                )
+        unavailable = [row["case_key"] for row in cases if not row["ready"]]
+        return {
+            "status": "ready" if not unavailable else "data_mount_required",
+            "all_ready": not unavailable,
+            "unavailable_case_keys": unavailable,
+            "cases": cases,
+        }
 
     def get_case(
         self,
@@ -170,6 +205,7 @@ class ResearchEvidencePackService:
             "status": "reviewed_local_evidence_pack_ready_with_declared_gaps",
             "result_digest": self.result_digest,
             "case_key": normalized,
+            "evidence_object_ready": True,
             "artifact_digest": str(artifact["digest"]),
             "pack_payload_digest": str(pack["pack_payload_digest"]),
             "summary": deepcopy(self._summaries[normalized]),
@@ -228,7 +264,7 @@ class ResearchEvidencePackService:
             case_key=case_key,
         )
         try:
-            validate_local_evidence_pack(pack)
+            validate_reviewed_evidence_pack(pack)
         except (TypeError, ValueError, RuntimeError) as exc:
             raise ResearchEvidencePackServiceError(
                 "current_research_evidence_pack_contract_invalid",

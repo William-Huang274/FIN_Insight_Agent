@@ -1,4 +1,4 @@
-name: docker-smoke
+name: current-workbench-container
 
 on:
   workflow_dispatch:
@@ -6,96 +6,73 @@ on:
     paths:
       - Dockerfile
       - .dockerignore
-      - requirements-workbench.txt
+      - requirements.txt
       - compose.yaml
-      - compose.runtime.yaml
       - apps/workbench/**
-      - scripts/workbench/**
-      - src/sec_agent/workbench/**
+      - configs/runtime/**
+      - scripts/dev/**
+      - src/**
       - .github/workflows/docker-smoke.yml
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - Dockerfile
       - .dockerignore
-      - requirements-workbench.txt
+      - requirements.txt
       - compose.yaml
-      - compose.runtime.yaml
       - apps/workbench/**
-      - scripts/workbench/**
-      - src/sec_agent/workbench/**
+      - configs/runtime/**
+      - scripts/dev/**
+      - src/**
       - .github/workflows/docker-smoke.yml
 
 jobs:
-  workbench-docker:
+  workbench-container:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Build Workbench image
+      - name: Validate Compose and build the only product image
         run: |
+          docker compose config
           docker build \
             --target workbench \
-            --build-arg REQUIREMENTS_FILE=requirements-workbench.txt \
-            --build-arg WORKBENCH_IMAGE_KIND=workbench \
-            --build-arg WORKBENCH_RUNTIME_PROFILE=control-plane \
+            --build-arg REQUIREMENTS_FILE=requirements.txt \
+            --build-arg WORKBENCH_IMAGE_KIND=current-product \
+            --build-arg WORKBENCH_RUNTIME_PROFILE=reviewed-evidence \
             -t finsight-workbench:ci \
             .
 
-      - name: Validate Compose configs
-        run: |
-          docker compose -f compose.yaml config
-          docker compose -f compose.yaml -f compose.runtime.yaml config
-
-      - name: Start Workbench container
+      - name: Start container
         run: |
           docker run --rm -d \
             --name finsight-workbench-ci \
             -p 127.0.0.1:8765:8765 \
             finsight-workbench:ci
 
-      - name: Wait for health and readiness endpoints
+      - name: Verify health, product API and browser shell
         run: |
           for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:8765/api/health \
-              && curl -fsS http://127.0.0.1:8765/api/health/ready \
-              && curl -fsS http://127.0.0.1:8765/api/system/contracts; then
-              exit 0
+            if curl -fsS http://127.0.0.1:8765/api/health >/dev/null; then
+              break
             fi
-            docker logs finsight-workbench-ci || true
             sleep 2
           done
+          curl -fsS http://127.0.0.1:8765/api/health
+          curl -fsS \
+            -H 'X-Fin-Product-Mode: current' \
+            -H 'X-Fin-Case-Permissions: current_product:read' \
+            http://127.0.0.1:8765/api/v1/research-cases \
+            | python -c 'import json,sys; value=json.load(sys.stdin); assert [row["case_key"] for row in value["items"]] == ["DELL","MU","NVDA"]; assert value["evidence_objects_ready"] is False'
+          readiness_status="$(curl -sS -o /tmp/finsight-readiness.json -w '%{http_code}' http://127.0.0.1:8765/api/readiness)"
+          test "$readiness_status" = "503"
+          python -c 'import json; value=json.load(open("/tmp/finsight-readiness.json", encoding="utf-8")); assert value["status"] == "data_mount_required"'
+          curl -fsS http://127.0.0.1:8765/workspace | grep -q '<div id="root"></div>'
+
+      - name: Show logs and stop container
+        if: always()
+        run: |
           docker logs finsight-workbench-ci || true
-          exit 1
-
-      - name: Install Playwright smoke dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install "playwright>=1.55.0,<2"
-          python -m playwright install --with-deps chromium
-
-      - name: Run Workbench frontend Playwright smoke
-        env:
-          WORKBENCH_BASE_URL: http://127.0.0.1:8765
-          WORKBENCH_FRONTEND_SCREENSHOT_DIR: ${{ runner.temp }}/workbench-frontend-smoke
-        run: |
-          python scripts/workbench/frontend_smoke_playwright.py \
-            --base-url "$WORKBENCH_BASE_URL" \
-            --screenshot-dir "$WORKBENCH_FRONTEND_SCREENSHOT_DIR"
-
-      - name: Upload Workbench frontend smoke screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: workbench-frontend-smoke-screenshots
-          path: ${{ runner.temp }}/workbench-frontend-smoke
-          if-no-files-found: ignore
-
-      - name: Stop Workbench container
-        if: always()
-        run: |
           docker stop finsight-workbench-ci || true

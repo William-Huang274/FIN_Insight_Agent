@@ -1,10 +1,10 @@
-from .bm25_retriever import BM25Retriever
-from .dense_retriever import DenseRetriever
-from .hybrid_rrf_retriever import HybridRRFRetriever, reciprocal_rank_fusion
+"""Shared text normalization used by the admitted index builders.
 
-__all__ = [
-    "BM25Retriever",
-    "DenseRetriever",
-    "HybridRRFRetriever",
-    "reciprocal_rank_fusion",
-]
+Historical BM25, dense and fusion query implementations are deliberately not
+re-exported here.  They have not been promoted into the FIN 0.1.3 product
+runtime and live in the versioned archive.
+"""
+
+from .text import tokenize
+
+__all__ = ["tokenize"]

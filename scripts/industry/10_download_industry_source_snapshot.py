@@ -16,8 +16,8 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.append(str(REPO_ROOT / "scripts" / "data_expansion"))
-from env_loader import load_env_file  # noqa: E402
+sys.path.insert(0, str(REPO_ROOT / "src"))
+from sec_agent.runtime_bridge.env import load_env_file  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:

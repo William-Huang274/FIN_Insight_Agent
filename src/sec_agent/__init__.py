@@ -1,14 +1,8 @@
-"""SEC agent runtime helpers."""
+"""Version-neutral FIN 0.1.3 runtime package.
 
-from sec_agent.context_manager import ContextBudget, SecAgentContextManager
-from sec_agent.context_api import SecAgentContextRequestHandler
-from sec_agent.graph_state import ArtifactRef, SecAgentState, StageRecord
+The package root intentionally has no eager imports.  Product and operator
+entrypoints import their owned modules explicitly so importing ``sec_agent``
+cannot revive an archived agent graph as a side effect.
+"""
 
-__all__ = [
-    "ArtifactRef",
-    "ContextBudget",
-    "SecAgentContextManager",
-    "SecAgentContextRequestHandler",
-    "SecAgentState",
-    "StageRecord",
-]
+__all__: list[str] = []

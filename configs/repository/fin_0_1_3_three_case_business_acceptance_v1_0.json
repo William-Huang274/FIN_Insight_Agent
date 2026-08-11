@@ -1,0 +1,116 @@
+{
+  "bounded_findings": [
+    "All current source domains are SEC filings; source diversity remains a later S1/S3 product task.",
+    "The reviewed packs currently expose zero structured numeric items; numeric fact surfaces are not claimed by this baseline.",
+    "Valuation, scenario sensitivity and commercial allocation remain visible typed gaps rather than inferred facts."
+  ],
+  "cases": [
+    {
+      "accepted_evidence_items": 15,
+      "binding_state": "identity_and_digest_bound",
+      "case_key": "DELL",
+      "cross_company_readthrough_items": 6,
+      "evidence_owner_tickers": [
+        "DELL",
+        "MSFT",
+        "MU",
+        "NVDA",
+        "TSM"
+      ],
+      "issuer_id": "0001571996",
+      "legal_name": "Dell Technologies Inc.",
+      "research_as_of": "2026-08-06",
+      "residual_gaps": 16,
+      "slot_coverage": [
+        "capacity_inputs_execution",
+        "capital_allocation_and_valuation",
+        "cash_conversion_balance_sheet",
+        "counterevidence_and_what_would_change",
+        "demand_volume_quality",
+        "operating_performance",
+        "pricing_mix_value_capture",
+        "regulatory_policy_exposure",
+        "relationship_attribution"
+      ],
+      "source_domains": [
+        "www.sec.gov"
+      ],
+      "structured_numeric_items": 0
+    },
+    {
+      "accepted_evidence_items": 16,
+      "binding_state": "identity_and_digest_bound",
+      "case_key": "MU",
+      "cross_company_readthrough_items": 4,
+      "evidence_owner_tickers": [
+        "DELL",
+        "MSFT",
+        "MU",
+        "NVDA",
+        "TSM"
+      ],
+      "issuer_id": "0000723125",
+      "legal_name": "Micron Technology, Inc.",
+      "research_as_of": "2026-08-06",
+      "residual_gaps": 13,
+      "slot_coverage": [
+        "capacity_inputs_execution",
+        "capital_allocation_and_valuation",
+        "cash_conversion_balance_sheet",
+        "counterevidence_and_what_would_change",
+        "demand_volume_quality",
+        "operating_performance",
+        "pricing_mix_value_capture",
+        "regulatory_policy_exposure",
+        "relationship_attribution"
+      ],
+      "source_domains": [
+        "www.sec.gov"
+      ],
+      "structured_numeric_items": 0
+    },
+    {
+      "accepted_evidence_items": 14,
+      "binding_state": "identity_and_digest_bound",
+      "case_key": "NVDA",
+      "cross_company_readthrough_items": 4,
+      "evidence_owner_tickers": [
+        "DELL",
+        "MSFT",
+        "MU",
+        "NVDA",
+        "TSM"
+      ],
+      "issuer_id": "0001045810",
+      "legal_name": "NVIDIA Corporation",
+      "research_as_of": "2026-08-06",
+      "residual_gaps": 13,
+      "slot_coverage": [
+        "capacity_inputs_execution",
+        "capital_allocation_and_valuation",
+        "cash_conversion_balance_sheet",
+        "counterevidence_and_what_would_change",
+        "demand_volume_quality",
+        "operating_performance",
+        "pricing_mix_value_capture",
+        "regulatory_policy_exposure",
+        "relationship_attribution"
+      ],
+      "source_domains": [
+        "www.sec.gov"
+      ],
+      "structured_numeric_items": 0
+    }
+  ],
+  "recorded_at": "2026-08-12",
+  "safety": {
+    "live_network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "source_text_in_report": false
+  },
+  "schema_version": "fin_ia_0_1_3_three_case_business_acceptance_v1_0",
+  "scope": "identity_bound_reviewed_evidence_workspace_not_full_research_report",
+  "status": "pass",
+  "violations": []
+}

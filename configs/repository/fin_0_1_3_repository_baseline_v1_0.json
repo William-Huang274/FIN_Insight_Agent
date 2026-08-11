@@ -1,198 +1,44 @@
 {
   "schema_version": "fin_ia_repository_baseline_v1_0",
   "baseline_id": "FIN_0_1_3_REPOSITORY_BASELINE_20260811",
-  "recorded_at": "2026-08-11",
-  "status": "baseline_candidate_pending_owner_review",
-  "scope": {
-    "tracked_repository": "complete_path_count_and_component_inventory",
-    "local_ignored_assets": "path_count_and_size_only",
-    "runtime_or_network_execution": false,
-    "model_or_provider_calls": 0,
-    "file_delete_move_or_archive": 0,
-    "secret_value_read": false
-  },
-  "git": {
-    "branch": "codex/layered-data-source-expansion",
-    "head": "7cd373885a2f5958baa69a285d15e9b1b72f72d4",
-    "upstream": "origin/codex/layered-data-source-expansion",
-    "working_tree": "clean_and_synced",
-    "first_commit": "4893e4bc7e726b302b0d8ed21126c2681fd67211",
-    "commit_count": 588,
-    "tags": [
-      "fin-0.1.1-internal-honest-block",
-      "v0.1.0-resume-demo"
-    ],
-    "fin_0_1_3_tag_exists": false,
-    "other_worktrees": [
-      {
-        "path": "D:/FIN_Insight_Agent_main_merge",
-        "branch": "main",
-        "head": "179be9b1f38a903850ff449f55e2804bca9a9c42"
-      },
-      {
-        "path": "D:/FIN_Insight_Agent_workbench_backend_p0",
-        "branch": "codex/expanded-a6-workbench-eval",
-        "head": "c962a88e1d75283327c2a8c92526767212e27642"
-      }
+  "recorded_at": "2026-08-12",
+  "status": "clean_baseline_candidate_G01_G11_pass_main_merge_pending",
+  "canonical_recovery": "docs/project_os/current_context_pack.zh-CN.md",
+  "canonical_product": "docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md",
+  "canonical_current_scope": "docs/product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md",
+  "canonical_code_map": "docs/architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md",
+  "machine_active_graph": "configs/repository/fin_0_1_3_active_baseline_manifest_v1_0.json",
+  "machine_archive_index": "archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl",
+  "product_boundary": {
+    "current": "three_case_read_only_reviewed_evidence_workspace",
+    "cases": ["DELL", "MU", "NVDA"],
+    "not_current": [
+      "dynamic_agentic_research",
+      "open_web_search",
+      "complete_investment_report",
+      "realtime_market_data",
+      "automatic_evidence_promotion",
+      "production_multitenancy"
     ]
   },
-  "tracked_inventory": {
-    "files": 6112,
-    "bytes": 153617965,
-    "by_top_level": [
-      {"path": "configs", "files": 1409, "bytes_approx": 46560000},
-      {"path": "data", "files": 493, "bytes_approx": 39950000},
-      {"path": "docs", "files": 1630, "bytes_approx": 24880000},
-      {"path": "src", "files": 408, "bytes_approx": 12630000},
-      {"path": "scripts", "files": 802, "bytes_approx": 11040000},
-      {"path": "tests", "files": 970, "bytes_approx": 9390000},
-      {"path": "reports", "files": 246, "bytes_approx": 3450000},
-      {"path": "apps", "files": 104, "bytes_approx": 3060000},
-      {"path": "eval_sets", "files": 23, "bytes_approx": 2570000},
-      {"path": "archive", "files": 6, "bytes_approx": 26000},
-      {"path": "root_and_other", "files": 21, "bytes_approx": 631965}
-    ],
-    "high_volume_subtrees": [
-      {"path": "configs/releases", "files": 955, "role": "mixed_runtime_policy_and_immutable_execution_evidence"},
-      {"path": "configs/runtime", "files": 237, "role": "runtime_and_scope_contracts"},
-      {"path": "configs/engineering_handoff", "files": 130, "role": "historical_handoff_records"},
-      {"path": "docs/worklog", "files": 1220, "role": "execution_history"},
-      {"path": "tests/contract", "files": 668, "role": "contract_and_attempt_proofs"},
-      {"path": "scripts/releases", "files": 359, "role": "mostly_one_shot_release_and_attempt_runners"},
-      {"path": "data/manifests", "files": 489, "role": "tracked_lineage_and_inventory"},
-      {"path": "reports/model_runs", "files": 224, "role": "tracked_model_run_summaries"}
-    ]
+  "repository_rules": {
+    "one_product_frontdoor": true,
+    "one_operator_frontdoor": true,
+    "attempt_specific_active_implementations_allowed": false,
+    "archive_imports_allowed": false,
+    "private_data_tracked": false,
+    "historical_evidence_rewritten": false,
+    "failed_attempt_creates_product_version": false
   },
-  "local_ignored_inventory": [
-    {"path": "data/indexes", "files": 75, "bytes": 29266743021, "authority": "derived_rebuildable_index"},
-    {"path": "data/staging", "files": 34, "bytes": 17624909196, "authority": "intermediate_non_fact"},
-    {"path": "data/processed_private", "files": 246, "bytes": 15024563421, "authority": "private_processed_with_lineage_required"},
-    {"path": "data/raw_private", "files": 10622, "bytes": 13731008146, "authority": "private_raw_source"},
-    {"path": "data/workbench_private", "files": 600, "bytes": 1856691579, "authority": "private_product_runtime"},
-    {"path": "data/manifests_including_ignored", "files": 755, "bytes": 1809018998, "authority": "mixed_tracked_and_generated_manifests"},
-    {"path": "eval", "files": 18419, "bytes": 2211908157, "authority": "local_eval_output"},
-    {"path": ".codex_runtime", "files": 20639, "bytes": 751619277, "authority": "local_attempt_capture_runtime"},
-    {"path": "reports_including_ignored", "files": 4980, "bytes": 504658657, "authority": "local_report_and_run_output"},
-    {"path": "artifacts", "files": 198, "bytes": 4687135, "authority": "local_artifact_output"}
-  ],
-  "python_static_graph": {
-    "scope": "tracked_src_apps_scripts_python",
-    "files": 1229,
-    "parse_errors": 0,
-    "stable_entrypoints": [
-      {"path": "apps/workbench/backend/app.py", "reachable_files": 150},
-      {"path": "scripts/cloud/sec_agent_interactive.py", "reachable_files": 20},
-      {"path": "scripts/cloud/sec_agent_graph_runner.py", "reachable_files": 70},
-      {"path": "scripts/cloud/sec_agent_context_session_cli.py", "reachable_files": 9},
-      {"path": "src/sec_agent/mcp_server.py", "reachable_files": 14},
-      {"path": "scripts/mcp/run_sec_agent_mcp_server.py", "reachable_files": 15}
-    ],
-    "stable_entrypoint_union_files": 161,
-    "not_in_stable_entrypoint_union": 1068,
-    "warning": "not_reachable_is_a_review_candidate_not_a_delete_decision_dynamic_config_shell_and_external_consumers_are_not_captured"
-  },
-  "current_product_mainline": {
-    "entrypoint": "apps/workbench/backend/app.py",
-    "static_reachable_files": 150,
-    "observed_generation": "mixed_current_api_canonical_runtime_fin_0_1_2_s2_s3_bindings_s4_t06_t07_projection_and_legacy_runtime",
-    "fin_0_1_3_current_candidate_cutover_complete": false,
-    "known_fin_0_1_2_or_s4_bindings": [
-      "apps/workbench/backend/application/fin_0_1_2_s2_runtime_contract_binding.py",
-      "apps/workbench/backend/application/fin_0_1_2_s3_runtime_contract_binding.py",
-      "apps/workbench/backend/application/fin_0_1_2_s4_t06_current_product_projection.py",
-      "apps/workbench/backend/application/fin_0_1_2_s4_t06_current_review_control.py",
-      "apps/workbench/backend/application/fin_0_1_2_s4_t07_reviewer_packet.py",
-      "apps/workbench/backend/application/fin_0_1_2_s4_t07_reviewer_session.py",
-      "src/sec_agent/s4_case_runtime.py"
-    ]
-  },
-  "fin_0_1_3_truth": {
-    "baseline_semantics": "current_engineering_candidate_not_product_or_release_pass",
-    "canonical_current_plan": "docs/product/FIN_0_1_3_REPAIR_CLOSEOUT_SCOPE_AND_DELTA_S0_TO_S5_PLAN_20260805.zh-CN.md",
-    "historical_same_name_plan": "docs/product/FIN_0_1_3_CANONICAL_S0_TO_S5_PRODUCT_PROGRESSION_PLAN_20260801.zh-CN.md",
-    "stage_status": {
-      "S0": "repair_foundation_closed",
-      "S1": "substantial_local_and_source_engineering_external_coverage_and_residual_semantics_open",
-      "S2": "bounded_model_consumption_and_numeric_control_closed_unrestricted_report_autonomy_false",
-      "S3": "engineering_successor_exists_latest_natural_canary_terminal_failed_full_content_acceptance_open",
-      "S4": "current_fin_0_1_3_workbench_cutover_and_dogfood_not_completed",
-      "S5": "current_fin_0_1_3_release_gates_not_executed"
-    },
-    "paused_pre_audit_next": "S3_PROVIDER_NEUTRAL_COMPILED_ENUM_EVIDENCE_ROLE_AND_NUMERIC_SELECTION_CONTRACT_DISPOSITION_ZERO_CALL",
-    "resume_allowed_before_owner_baseline_review": false
-  },
-  "existing_inventory_observation": {
-    "source": "data/manifests/repository_architecture_inventory_v0_1.json",
-    "stale_generated_date": "2026-07-11",
-    "readonly_current_rebuild": {
-      "nodes": 5331,
-      "edges": 26779,
-      "parse_errors": 0,
-      "classified_reachable": 4105
-    },
-    "known_limitations": [
-      "all_non_archive_scripts_are_classified_active_script",
-      "all_configs_are_classified_runtime_config",
-      "all_apps_are_classified_product_surface",
-      "document_and_config_text_references_are_mixed_with_runtime_imports",
-      "tracked_reports_eval_sets_and_most_data_are_not_complete_graph_nodes",
-      "classification_cannot_distinguish_current_product_candidate_compatibility_evidence_and_history"
-    ],
-    "cleanup_authority": false
-  },
-  "explicit_archive_paths": [
-    "archive/README.md",
-    "archive/code/v0_1_retrieval_prototypes/README.md",
-    "archive/code/v0_1_retrieval_prototypes/build_dense_index.py",
-    "archive/code/v0_1_retrieval_prototypes/facet_aware_retriever.py",
-    "archive/code/v0_1_retrieval_prototypes/multifacet_retrieval_eval.py",
-    "archive/code/v0_1_retrieval_prototypes/object_verifier.py",
-    "scripts/archive/README.md",
-    "scripts/archive/v0_1_free_query/score_sec_agent_free_query_quality.py",
-    "scripts/archive/v0_1_vllm_diagnostics/check_vllm_blackwell_env.py"
-  ],
-  "asset_axes": {
-    "execution_role": [
-      "product_runtime",
-      "operator_and_data_pipeline",
-      "candidate_experiment",
-      "test_and_eval",
-      "immutable_evidence_and_history"
-    ],
-    "lifecycle": [
-      "current",
-      "compatibility",
-      "candidate_not_promoted",
-      "historical_immutable",
-      "explicit_archive",
-      "pending_review"
-    ],
-    "authority": [
-      "source_truth",
-      "generated_derivative",
-      "runtime_capture",
-      "diagnostic_only",
-      "governance_record"
-    ]
-  },
-  "repeated_repair_root_causes": [
-    "product_mainline_and_candidate_proof_mainline_are_not_cut_over_together",
-    "immutable_attempt_governance_is_over_materialized_as_new_code_config_test_and_worklog_files",
-    "prompt_validator_fake_provider_renderer_terminal_and_workbench_contracts_lack_one_compiler_source",
-    "financial_semantic_and_report_quality_acceptance_occurs_too_late",
-    "project_contract_omissions_and_deepseek_adherence_failures_are_often_mixed",
-    "ordinary_local_repairs_inherit_full_live_authority_ceremony",
-    "current_compatibility_candidate_and_history_are_not_explicit_lifecycle_layers",
-    "retrieval_chunk_index_and_evidence_pack_quality_were_validated_after_model_chain_optimization",
-    "project_os_and_product_docs_are_too_chronological_and_large_for_reliable_recovery"
-  ],
-  "owner_decisions_pending": [
-    "accept_or_reject_fin_0_1_3_engineering_baseline_at_exact_commit",
-    "decide_whether_to_create_a_baseline_tag",
-    "approve_or_revise_repository_recovery_and_product_cutover_before_resuming_s3",
-    "choose_history_retention_and_migration_strategy",
-    "freeze_fin_0_1_3_product_acceptance_sequence"
-  ],
-  "cleanup_actions_executed": [],
-  "next_action": "OWNER_REVIEW_BASELINE_THEN_DEFINE_REPOSITORY_NORMS_AND_MIGRATION_SEQUENCE"
+  "current_validation": {
+    "active_graph": "pass",
+    "python_tests": "43_passed",
+    "typescript": "pass",
+    "vite_production_build": "pass",
+    "browser": "pass_desktop_mobile_mounted_unmounted_no_horizontal_overflow",
+    "business": "pass_bounded_three_case_reviewed_evidence_workspace",
+    "secret_scan": "pass_6230_files_zero_findings",
+    "container": "pass_unmounted_503_and_readonly_reviewed_evidence_mount_200",
+    "post_merge_reproof": "pending"
+  }
 }

@@ -1,5 +1,5 @@
-"""Runtime bridge contracts for the Java task gateway and Python research worker."""
+"""Portable code, data, capture and artifact path ownership."""
 
-from .contracts import runtime_bridge_registry
+from .paths import RuntimePathRegistry, resolve_runtime_paths
 
-__all__ = ["runtime_bridge_registry"]
+__all__ = ["RuntimePathRegistry", "resolve_runtime_paths"]

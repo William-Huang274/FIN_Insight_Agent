@@ -1,66 +1,26 @@
-# 脚本发布面
-
-这个目录只保留当前主线还会用到的脚本：完整链路入口、数据准备、评测门控、MCP 服务和 Workbench 启动。历史实验脚本、一次性基准评测构造器、旧版人审草稿和临时检索调试脚本不再作为公开入口保留。
-
-## 稳定入口
-
-- `cloud/sec_agent_interactive.sh`：公开 CLI 演示入口，支持单轮完整链路和多轮会话。
-- `cloud/sec_agent_interactive.py`：SEC / 8-K / 市场快照完整链路运行时。
-- `cloud/sec_agent_graph_runner.py`：图运行器，供 CLI、工具执行层和 Workbench 使用。
-- `cloud/sec_agent_context_session_cli.py`：多轮会话上下文运行入口。
-- `eval_context/evaluate_sec_agent_resume_closeout_readiness.py`：本地发布就绪检查，覆盖上下文、来源策略、市场快照、耗时和结构性门控。
+# 当前脚本入口
+`scripts/` 只保留 FIN 0.1.3 当前基线会直接使用或维护的入口。历史实验、单次 attempt runner、旧 full-chain、旧 MCP/CLI 与发布证明脚本均已迁入 `archive/versions/`。
 
 ## 数据准备
 
-- `data_sec/`：SEC 10-K / 10-Q、8-K 业绩材料、混合清单、文本切分、来源缺口合并、行业深度 universe 配置生成和覆盖探测。
-- `data_retrieval/`：证据对象、结构化对象、BM25、ObjectBM25、SQLite FTS、精确数值台账和覆盖矩阵。
-- 市场快照：`market/06_*` 到 `market/60_*`。
-- 行业来源：`industry/10_download_industry_source_snapshot.py`。
-- 辅助索引和台账：`indexing/`、`ledger/`。
+- `data_sec/`：SEC filing 与 8-K earnings 的下载、manifest、chunk 和 source-gap 合并。
+- `data_retrieval/`：Evidence Store 与 BM25 索引。
+- `market/`：离线行情快照、事件、分析和 Evidence Pack 构建。
+- `industry/`：受合同约束的行业来源快照。
 
-## 评测和门控
+脚本出现在目录中只表示“受维护的数据构建入口”，不表示外部来源、私有数据或相应研究能力已自动可用。Workbench `/operations` 只暴露 `src/sec_agent/workbench/data_build.py` 明确准入的步骤。
 
-- `eval_multi_agent/`：多智能体分层门控、全链路真实模型评测和质量审计。
-- `eval_retrieval/`：检索资产质量评测，目前包含 SEC chunk / EvidenceObject / BM25 / ObjectBM25 一致性和切片质量审计。
-- `eval_context/`：上下文状态、请求 API、工具控制器、工具执行层、延迟和发布就绪检查。
-- `eval_query_planner/`：自由问题解析和查询合同评测。
-- `eval_sec_benchmark/`：SEC benchmark 运行、旧 benchmark 运行时支撑、Qwen/contract synthesis 适配、后置门控和相关 validator。虽然目录名保留 benchmark，但其中部分脚本仍被当前完整链路复用，不能归档。
+## 产品与治理
 
-## 服务和本地工作台
+- `dev/run_workbench_backend.py`：唯一后端启动入口。
+- `engineering/verify_active_baseline.py`：从产品、数据构建和前端入口重建活动 import graph，禁止旧版本/attempt/archive 进入活动图。
+- `engineering/build_archive_redirect_index.py`：对所有版本归档重建逐文件 SHA256 重定向索引；对不可移植的长路径使用可逆 path map 和短路径对象名。
 
-- `mcp/`：MCP 工具合同导出、服务端、调用器和冒烟检查。
-- `workbench/`：本地 Workbench 启动和环境辅助脚本，包括一键启动脚本、后端启动脚本、前端构建辅助和 Docker 本地 smoke 脚本。容器化日常入口优先用根目录 `compose.yaml`。
+本次一次性迁移程序已经完成使命，并随执行前代码一起迁入 `archive/versions/fin_0_1_3_prebaseline/`；它不再是活动入口。
 
-## 归档脚本
+## 规则
 
-- `archive/`：不再作为当前公开入口的历史脚本。目录名带版本号，例如 `v0_1_free_query/`、`v0_1_vllm_diagnostics/`。归档脚本只用于查历史实现，不保证随主链路持续维护。
-
-## 维护原则
-
-- 新用户应该从根目录 `README.md`、`docs/README.md` 和本文件开始，不需要翻历史工作日志。
-- 一次性实验脚本不要继续加回主线脚本目录；如果需要保留背景，写进工作日志。
-- 用户会复制的命令必须使用当前保留脚本，不能引用已删除的历史脚本。
-- 私有数据、运行产物、索引、模型缓存和 API key 不进入 `scripts/`。
-
-## 仓库结构与复杂度门控
-
-代码、脚本、文档、配置、测试、archive 和数据资产的静态引用图由以下命令维护：
-
-```powershell
-python scripts/engineering/build_repository_architecture_inventory.py
-python scripts/engineering/check_repository_architecture_guard.py
-python scripts/engineering/build_engineering_handoff_baseline.py
-pytest -q tests/test_repository_architecture_inventory.py
-pytest -q tests/test_engineering_handoff.py
-```
-
-完整图写入 `data/manifests/repository_architecture_inventory_v0_1.json`，可读摘要写入 `docs/architecture/repository/REPOSITORY_ARCHITECTURE_MAP.zh-CN.md`。新增或移动入口、归档代码、修改 TECH/source-of-truth 或增加大型模块后必须重建并通过 guard。
-
-新旧工程交接合同位于 `configs/engineering_handoff/`。交接 builder 会校验 canonical identity/version/owner、legacy adapter 方向、source-of-truth 和 cutover gate，并审计 pytest profile；它不会切换 runtime 写路径。
-### WorkBuddy semantic/trajectory re-audit
-
-```powershell
-python scripts/engineering/build_workbuddy_semantic_trajectory_reaudit.py
-```
-
-Builds the 12-case semantic and structured-trajectory review, defect matrix, and pack-candidate governance artifacts. It does not ingest WorkBuddy claims into FIN evidence or run a paid/full-chain workflow.
+1. 新的单次实验不能直接成为 `scripts/` 中的长期入口。
+2. 新入口必须进入当前代码图、测试和 Workbench/CLI 的真实消费者之一。
+3. 私有数据、生成索引、模型输出和凭据不进入脚本目录或 Git。
+4. 归档脚本不可被当前 Runtime import；恢复功能要先建立版本中立 successor。

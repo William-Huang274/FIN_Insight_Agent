@@ -32,28 +32,19 @@ RUN if [ "$INSTALL_OS_PACKAGES" = "1" ]; then \
     fi
 
 ARG REQUIREMENTS_FILE=requirements.txt
-COPY requirements.txt requirements-workbench.txt pyproject.toml README.md README.zh-CN.md README.en.md ./
+COPY requirements.txt pyproject.toml README.md README.zh-CN.md README.en.md ./
 RUN python -m pip install --upgrade pip \
     && python -m pip install --no-cache-dir -r "${REQUIREMENTS_FILE}"
-ARG EXTRA_REQUIREMENTS_FILE=
-RUN if [ -n "$EXTRA_REQUIREMENTS_FILE" ]; then \
-        python -m pip install --no-cache-dir -r "${EXTRA_REQUIREMENTS_FILE}"; \
-    fi
-
+ENV FINSIGHT_REVIEWED_EVIDENCE_ROOT=/app/reviewed-evidence
+ENV FINSIGHT_WORKBENCH_PRIVATE_ROOT=/app/state/workbench_private
 COPY apps ./apps
 COPY configs ./configs
 COPY scripts ./scripts
 COPY src ./src
-COPY eval_sets ./eval_sets
-COPY docs/workbench ./docs/workbench
-
-RUN mkdir -p data/workbench_private reports/quality/workbench_eval
+RUN mkdir -p data reviewed-evidence state/workbench_private
 
 EXPOSE 8765
-CMD ["python", "scripts/workbench/start_workbench.py", "--host", "0.0.0.0", "--port", "8765"]
-
-
-FROM workbench-base AS workbench-backend
+CMD ["python", "scripts/dev/run_workbench_backend.py", "--host", "0.0.0.0", "--port", "8765"]
 
 
 FROM workbench-base AS workbench

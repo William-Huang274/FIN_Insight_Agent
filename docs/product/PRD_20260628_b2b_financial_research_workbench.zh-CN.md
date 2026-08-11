@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-12 | FIN 0.1.3 仓库重定基把当前可交付产品收敛为 DELL／MU／NVDA 三案只读 reviewed Evidence Workspace，并把旧并行产品面、attempt runner 与流水账迁入不可执行版本归档。实测三案只有 SEC 来源且 structured numeric=0，故新基线只通过身份、摘要、来源和 gap 可审阅性，不代表多源检索、NumericFact、动态 Agentic Research 或完整研报通过。当前执行权转入 `FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md`；仓库基线合并不等于 FIN 0.1.3 产品收口。 |
 | 2026-08-11 | S3 动态研究 successor 已完成零调用工程连接：三案由开放问题编译为 38 个有决策角色的 cell，按 material typed gap 生成 5 个有界 EvidenceRequest，新证据只触发受影响 cell 重裁决；数值 WWC 无权威绑定时必须显式不可操作化。真实 DELL same-input 审计显示 Agent 把 42 个原始散点压缩为 30 个，但仍有 2 个摘要过载点、1 处跨章节重复、决策密度不足及历史数值 L1 失败。因此产品验收继续要求“更短且更有判断”与事实权威同时成立；本轮只记 engineering pass，不代表自然 planner、修复后报告、八维评分、paired／人工／Owner 或 release 通过。 |
 | 2026-08-11 | S2 单节点 DeepSeek Pro canary 的业务判断、4 个 NUM ref、反方和边界均正确，formal failure 仅来自 `surpassing` 未逐字等于 `surpassed`。产品门据此纠正：whole-string 英语词形不再作为金融 L1；模型选择 Evidence／NUM 与研究判断，本地只渲染受保护数字片段。兼容层必须先把 relation 编译为 typed direction，并对否定、低于阈值、错实体／期间／单位 fail closed；禁止 DeepSeek 专用白名单、模糊同义放行或 Harness 代写整段报告。历史 terminal 保持 failed，零调用 successor 通过也不自动关闭 S2。 |
 | 2026-08-08 | Firecrawl/Tencent 同矩阵实证后纠正单 Provider 全职责假设：production SourceHunter 改为 official-first、role-specific portfolio。SEC/issuer IR feed/sitemap/official-domain route 负责 known primary discovery，broad search 只负责 unknown locator；Provider 日期降为 telemetry，capture-backed 本地发布日期裁决仍是 Evidence 硬门。Firecrawl 因 target=`5/6` 只进入 discovery shadow implementation 候选，Tencent 因 `0/6` 保持 diagnostic-only；暂停继续采购/轮测 Provider，先以零调用 replay 证明组合候选、关系、日期和 Evidence Gate。历史 assessment 不改，S1-08 仍未通过。 |
@@ -2492,3 +2493,11 @@ live 控制面已达到 working-tree engineering pass：scope 已独立注册，
 5. “新基线完成”要求同时通过 typed Case／Pack、真实 UI consumer、三案业务可读性、活动全量测试、clean-data mount、secret scan、zero-old-reference、文档一致性以及合并 `main` 后复证。任一硬门 pending/failed 时，不得宣称 FIN 0.1.3 已冻结或 release。
 
 详细机器门和迁移顺序由 `configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json` 与 `docs/architecture/repository/FIN_0_1_3_STRICT_MAINLINE_REBASELINE_ACCEPTANCE_AND_MIGRATION_PROGRAM_20260811.zh-CN.md` 共同约束。该规则不会删除历史价值，也不会把未实现的 PRD 需求偷换为“不做”；它要求未完成能力进入清晰 backlog，而不是以活动半成品继续污染主线。
+
+### 16.22 FIN 0.1.3 重定基后的当前产品真值（2026-08-12）
+
+当前 `/workspace` 的三案业务复核结果为：DELL `15 Evidence / 16 gaps`、MU `16 / 13`、NVDA `14 / 13`。公司身份、CIK、交易所、截至日、Pack 摘要和跨公司 read-through 方向均可审计；跨公司材料只能作为 counterparty/ecosystem read-through，不能写成研究主体直接因果。
+
+同时，三案 source domain 均只有 `www.sec.gov`，structured numeric items 均为 `0`，估值、情景敏感性和商业分配仍是 typed gap。该实证把后续责任重新落回：S1 解决来源/检索与 residual-gap 补源，S2 解决权威 NumericFact/PIT 编译，S3 解决动态规划和研究内容质量，S4 才把通过的研究结果接入 review/repair 产品闭环，S5 执行 release。不得在当前 Workspace 用通用摘要或 UI 文案代替这些能力。
+
+仓库重定基完成的产品意义是：后续每项能力只有一条活动实现和一个真实消费者，可以被一致测试与替换。它不降低 FIN 0.1 的研究质量门，也不把未完成能力后移出版本；唯一当前顺序见 `docs/product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md`。

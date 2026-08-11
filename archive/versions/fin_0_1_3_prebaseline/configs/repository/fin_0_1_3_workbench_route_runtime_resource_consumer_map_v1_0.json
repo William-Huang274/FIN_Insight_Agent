@@ -1,0 +1,320 @@
+{
+  "schema_version": "fin_ia_0_1_3_workbench_route_runtime_resource_consumer_map_v1_0",
+  "recorded_at": "2026-08-11",
+  "status": "consumer_map_complete_first_s1_product_api_vertical_proven_ui_cutover_pending",
+  "repository": {
+    "worktree": "D:/FIN_Insight_Agent_fin013_rebaseline",
+    "branch": "codex/fin013-clean-baseline",
+    "baseline_commit": "d417048e77c1b2739d3b13e1f10b55dda9d1da64",
+    "tracked_source_files": 387,
+    "source_ownership": {
+      "workbench_product_reachable": 119,
+      "operator_pipeline_reachable": 132,
+      "cli_mcp_reachable": 14,
+      "release_only": 99,
+      "test_only": 5,
+      "eval_only": 5,
+      "unknown_static_consumer": 13
+    }
+  },
+  "route_inventory": {
+    "total_fastapi_decorated_routes": 109,
+    "versioned_api_routes": 43,
+    "direct_app_routes": 66,
+    "frontend_fallback_routes": 7,
+    "source": "AST inventory over apps/workbench/backend/app.py and api/v1/*.py"
+  },
+  "frontdoors": [
+    {
+      "paths": ["/current", "/current/{path}"],
+      "frontend": "CurrentProductWorkbench",
+      "backend_family": "fin_0_1_2_current_product_projection_and_review",
+      "state": "current_user_visible_but_version_coupled",
+      "lifecycle": "keep_until_fin_0_1_3_ui_and_review_cutover"
+    },
+    {
+      "paths": ["/tasks", "/cases/{path}"],
+      "frontend": "Point02_03_AppShell",
+      "backend_family": "case_planning_execution_evidence_integrity_deliverable",
+      "state": "internal_fixture_surface_default_case_runtime_unavailable_without_FINSIGHT_P02_FIXTURE_ROOT",
+      "lifecycle": "retain_as_test_and_migration_surface_not_current_product_claim"
+    },
+    {
+      "paths": ["/next", "/next/{path}"],
+      "frontend": "WorkbenchNext",
+      "backend_family": "same_point02_03_case_services_plus_local_preview",
+      "state": "frontend_direct_route_repaired_but_business_runtime_still_fixture_bound",
+      "lifecycle": "candidate_future_primary_shell_after_case_subject_and_runtime_cutover"
+    },
+    {
+      "paths": ["/legacy"],
+      "frontend": "legacyApp",
+      "backend_family": "r53_r60_direct_modules",
+      "state": "legacy_product_surface_still_directly_consumed",
+      "lifecycle": "archive_only_after_replacement_frontdoor_and_old_consumer_zero"
+    },
+    {
+      "paths": ["/"],
+      "frontend": "AppShell_default_tasks_route",
+      "backend_family": "mixed_shell_dispatch",
+      "state": "compatibility_entry",
+      "lifecycle": "decide_primary_redirect_only_after_ui_cutover"
+    }
+  ],
+  "route_groups": [
+    {
+      "group_id": "current_research_evidence_pack",
+      "route_count": 2,
+      "patterns": [
+        "GET /api/v1/current-research/evidence-packs",
+        "GET /api/v1/current-research/evidence-packs/{case_key}"
+      ],
+      "router": "apps/workbench/backend/api/v1/research_evidence_packs.py",
+      "application_service": "ResearchEvidencePackService",
+      "runtime": "digest_bound_s1_pack_validation_safe_projection",
+      "resource_ids": [
+        "application.config.current_research_evidence_pack_projection",
+        "application.result.current_research_local_evidence_packs"
+      ],
+      "private_data_root": "RuntimePathRegistry.workbench_private_root",
+      "published_cases": ["DELL", "MU", "NVDA"],
+      "frontend_consumer": null,
+      "state": "product_api_promoted_real_three_case_mount_proven_ui_consumer_pending",
+      "model_provider_live_network_calls": 0
+    },
+    {
+      "group_id": "fin_0_1_2_current_product",
+      "route_count": 8,
+      "patterns": [
+        "GET /api/v1/current-product/cases",
+        "GET /api/v1/current-product/cases/{case_key}",
+        "GET /api/v1/current-product/cases/{case_key}/{surface}",
+        "GET /api/v1/current-product/cases/{case_key}/review-control",
+        "POST /api/v1/current-product/cases/{case_key}/return-requests",
+        "GET /api/v1/current-product/cases/{case_key}/reviewer-packet",
+        "GET /api/v1/current-product/cases/NVDA/qualified-review",
+        "POST /api/v1/current-product/cases/NVDA/qualified-review/decisions"
+      ],
+      "application_services": [
+        "CurrentProductProjectionService",
+        "CurrentProductReviewControlService",
+        "CurrentProductReviewerPacketService",
+        "CurrentProductReviewerSessionService"
+      ],
+      "runtime": "tracked_FIN_0_1_2_projection_plus_workbench_store",
+      "frontend_consumer": "CurrentProductWorkbench",
+      "state": "current_product_but_old_version_bound",
+      "lifecycle": "keep_until_equal_or_better_FIN_0_1_3_content_and_review_surface"
+    },
+    {
+      "group_id": "point02_cases",
+      "route_count": 3,
+      "patterns": [
+        "POST /api/v1/cases",
+        "GET /api/v1/cases",
+        "GET /api/v1/cases/{case_id}"
+      ],
+      "application_service": "CaseService",
+      "runtime": "canonical_RuntimeFacade_only_when_explicit_fixture_root_exists",
+      "resource_ids": [
+        "application.config.point01_feature_flags",
+        "application.contract.p36_candidate_profile"
+      ],
+      "frontend_consumers": ["AppShell", "WorkbenchNext"],
+      "state": "fixture_internal_not_default_current_case_service",
+      "missing_product_contract": "typed_case_subject_entity_ticker_and_case_to_research_pack_binding"
+    },
+    {
+      "group_id": "planning_execution",
+      "route_count": 9,
+      "patterns": [
+        "/api/v1/cases/{case_id}/planning/*",
+        "/api/v1/cases/{case_id}/decision-surface",
+        "/api/v1/cases/{case_id}/work-units*",
+        "/api/v1/cases/{case_id}/activity",
+        "/api/v1/cases/{case_id}/execution-projection"
+      ],
+      "application_services": ["PlanningService", "ExecutionService", "Fin01ResearchRuntime"],
+      "runtime": "fixture_case_control_with_optional_current_research_runtime",
+      "frontend_consumers": ["AppShell", "WorkbenchNext"],
+      "state": "mixed_fixture_and_candidate_runtime"
+    },
+    {
+      "group_id": "evidence_integrity_deliverable",
+      "route_count": 14,
+      "patterns": [
+        "/api/v1/cases/{case_id}/evidence*",
+        "/api/v1/cases/{case_id}/integrity/numeric*",
+        "/api/v1/cases/{case_id}/workpaper*",
+        "/api/v1/cases/{case_id}/deliverables*",
+        "/api/v1/cases/{case_id}/trace",
+        "/api/v1/artifacts/{deliverable_id}/versions/{artifact_version}/review-actions"
+      ],
+      "application_services": ["EvidenceService", "IntegrityService", "DeliverableService"],
+      "runtime": "fixture_evidence_and_registered_contract_compilers",
+      "frontend_consumers": ["AppShell", "WorkbenchNext"],
+      "state": "useful_workbench_controls_but_not_yet_bound_to_current_s1_pack_adapter"
+    },
+    {
+      "group_id": "p36_local_preview",
+      "route_count": 2,
+      "patterns": [
+        "GET /api/v1/cases/{case_id}/local-research-preview",
+        "GET /api/v1/cases/{case_id}/local-analysis-preview"
+      ],
+      "application_service": "P36LocalResearchService",
+      "runtime": "fixed_ten_cell_multi_company_preview_over_ObjectBM25_SQL_Graph",
+      "frontend_consumer": "WorkbenchNext",
+      "state": "legacy_fixed_profile_preview_not_general_case_research",
+      "lifecycle": "retain_until_case_aware_research_service_cutover_then_archive_or_fixture_only"
+    },
+    {
+      "group_id": "human_baseline",
+      "route_count": 5,
+      "patterns": ["/api/v1/cases/{case_id}/human-baseline/sessions*"],
+      "application_service": "HumanBaselineService",
+      "runtime": "case_plus_local_preview_plus_sqlite_review_store",
+      "frontend_consumers": ["AppShell", "WorkbenchNext"],
+      "state": "test_and_human_review_surface_with_remaining_private_path_coupling"
+    },
+    {
+      "group_id": "legacy_r53_r60",
+      "route_count": 23,
+      "patterns": ["/api/r53-r60/*"],
+      "application_service": "direct_app_function_imports_from_22_r53_r60_modules",
+      "runtime": "legacy_projection_and_acceptance_files",
+      "frontend_consumer": "legacyApp",
+      "state": "active_legacy_consumer_prevents_archive"
+    },
+    {
+      "group_id": "operator_workbench",
+      "route_count": 32,
+      "patterns": [
+        "/api/profiles*",
+        "/api/source-bundles*",
+        "/api/runs*",
+        "/api/evals*",
+        "/api/data-build*",
+        "/api/sessions*",
+        "/api/native-checkpoints*"
+      ],
+      "application_service": "sec_agent.workbench_store_job_runner_and_command_builders",
+      "runtime": "operator_control_plane",
+      "frontend_consumer": "legacy_and_operator_views",
+      "state": "keep_as_permanent_operator_infrastructure_separate_from_research_truth"
+    }
+  ],
+  "unknown_static_consumer_disposition": [
+    {
+      "paths": [
+        "src/__init__.py",
+        "src/eval/__init__.py",
+        "src/indexing/__init__.py",
+        "src/retrieval/__init__.py",
+        "src/sec_agent/__init__.py",
+        "src/sec_agent/entities/__init__.py",
+        "src/sec_agent/relationships/__init__.py",
+        "src/sec_agent/runtime_bridge/__init__.py",
+        "src/utils/__init__.py"
+      ],
+      "disposition": "keep_package_roots_static_graph_false_positive"
+    },
+    {
+      "paths": ["src/sec_agent/hermetic_test_capture.py"],
+      "disposition": "keep_test_only_dynamic_path_loader"
+    },
+    {
+      "paths": [
+        "src/retrieval/dense_retriever.py",
+        "src/retrieval/hybrid_rrf_retriever.py"
+      ],
+      "disposition": "quarantine_superseded_generic_retrieval_prototype_archive_after_operator_confirmation"
+    },
+    {
+      "paths": ["src/eval/retrieval_eval.py"],
+      "disposition": "quarantine_historical_eval_utility_archive_after_operator_confirmation"
+    }
+  ],
+  "s1_candidate_disposition": [
+    {
+      "path": "src/sec_agent/financial_research_generalization_contract.py",
+      "role": "provider_neutral_financial_research_kernel_and_plugin_interfaces",
+      "decision": "keep_and_promote_by_consumer_not_copy"
+    },
+    {
+      "path": "src/sec_agent/financial_research_source_object_vertical.py",
+      "role": "DELL_release_proof_vertical_bound_to_reviewed_qrels",
+      "decision": "retain_as_release_proof_extract_reusable_kernel_only"
+    },
+    {
+      "path": "src/sec_agent/financial_research_candidate_bundle_v2.py",
+      "role": "six_case_structural_candidate_projection",
+      "decision": "retain_as_proof_input_not_product_runtime"
+    },
+    {
+      "path": "src/sec_agent/s1_six_case_local_evidence_pack.py",
+      "role": "validated_candidate_to_reviewed_local_evidence_pack_compiler_and_validator",
+      "decision": "reuse_validator_in_version_neutral_product_adapter"
+    },
+    {
+      "path": "apps/workbench/backend/application/research_evidence_pack_service.py",
+      "role": "version_neutral_digest_bound_safe_Workbench_projection",
+      "decision": "first_S1_product_API_vertical_promoted"
+    }
+  ],
+  "first_s1_vertical": {
+    "decision": "promote_reviewed_local_evidence_pack_read_surface_not_fixed_P36_preview",
+    "reason": "CaseService has no typed company subject and P36LocalResearchService ignores case identity in favor of one fixed multi-company ten-cell profile; reusing it as a general path would create false product semantics.",
+    "real_mount_result": {
+      "DELL": {"evidence_items": 15, "residual_gaps": 16, "http_status": 200},
+      "MU": {"evidence_items": 16, "residual_gaps": 13, "http_status": 200},
+      "NVDA": {"evidence_items": 14, "residual_gaps": 13, "http_status": 200}
+    },
+    "boundaries": {
+      "full_source_material_exposure": false,
+      "reviewed_excerpt_internal_only": true,
+      "automatic_evidence_promotion": false,
+      "automatic_financial_truth_write": false,
+      "complete_report_claimed": false,
+      "model_provider_live_network_calls": 0
+    },
+    "tests": {
+      "new_and_registry_contracts": "18 passed",
+      "real_data_mount": "3 of 3 cases HTTP 200 and digest validated"
+    }
+  },
+  "regression_observation": {
+    "changed_surface_targeted": "23 passed",
+    "broader_workbench_snapshot": {
+      "passed": 201,
+      "failed": 8,
+      "failure_ownership": [
+        "3 inherited frontend source or shell assertions outside the changed files",
+        "1 inherited VT4 ten-cell fixture-state expectation",
+        "4 inherited VT4 rollback legacy-fallback expectations"
+      ],
+      "new_research_evidence_pack_stack_entered_by_failures": false
+    },
+    "s1_adjacent_clean_worktree_snapshot": {
+      "passed": 28,
+      "skipped": 1,
+      "failed": 11,
+      "errors": 9,
+      "failure_ownership": "Historical candidate/index tests resolve private manifests and content-addressed objects under the checkout-local data directory instead of an explicit RuntimePathRegistry mount or injected fixture."
+    },
+    "disposition": "Do not copy private data or broaden this product-adapter slice. Keep the historical release-only failures visible, and migrate path ownership when each candidate is promoted into the product Runtime."
+  },
+  "cutover_gates": [
+    {"gate": "route_service_runtime_resource_map", "status": "pass"},
+    {"gate": "unknown_13_consumer_disposition", "status": "pass_no_move"},
+    {"gate": "S1_real_pack_product_API", "status": "pass"},
+    {"gate": "Workbench_next_direct_route", "status": "pass"},
+    {"gate": "typed_case_subject_and_pack_binding", "status": "pending"},
+    {"gate": "current_or_next_frontend_consumes_new_API", "status": "pending"},
+    {"gate": "P36_fixed_preview_old_consumer_zero", "status": "pending"},
+    {"gate": "FIN_0_1_2_current_product_replacement_content_acceptance", "status": "pending"},
+    {"gate": "r53_r60_replacement_and_old_consumer_zero", "status": "pending"},
+    {"gate": "archive_redirect_manifest", "status": "pending_no_move_authorized"}
+  ],
+  "next_action": "ADD_TYPED_CASE_SUBJECT_AND_CASE_TO_CURRENT_RESEARCH_PACK_BINDING_THEN_CONNECT_ONE_WORKBENCH_EVIDENCE_VIEW_WITHOUT_REBUILDING_RETRIEVAL"
+}

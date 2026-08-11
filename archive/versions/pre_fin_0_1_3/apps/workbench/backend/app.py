@@ -1,0 +1,1370 @@
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import time
+from pathlib import Path
+from typing import Literal
+
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, ConfigDict, Field
+
+from .api.v1.cases import build_cases_router
+from .api.v1.current_product import build_current_product_router
+from .api.v1.evidence import build_evidence_router
+from .api.v1.deliverables import build_deliverables_router
+from .api.v1.execution import build_execution_router
+from .api.v1.integrity import build_integrity_router
+from .api.v1.human_baseline import build_human_baseline_router
+from .api.v1.local_research import build_local_research_router
+from .api.v1.planning import build_planning_router
+from .api.v1.research_evidence_packs import build_research_evidence_pack_router
+from .api.v1.research_workspace import build_research_workspace_router
+from .application.case_service import CaseService, case_service_from_env
+from .application.fin_0_1_2_s4_t06_current_product_projection import (
+    CurrentProductProjectionService,
+)
+from .application.fin_0_1_2_s4_t06_current_review_control import (
+    CurrentProductReviewControlService,
+)
+from .application.fin_0_1_2_s4_t07_reviewer_packet import (
+    CurrentProductReviewerPacketService,
+)
+from .application.fin_0_1_2_s4_t07_reviewer_session import (
+    CurrentProductReviewerSessionService,
+)
+from .application.evidence_service import EvidenceService
+from .application.deliverable_service import DeliverableService
+from .application.execution_service import ExecutionService
+from .application.integrity_service import IntegrityService
+from .application.human_baseline_service import HumanBaselineService
+from .application.local_research_service import P36LocalResearchService
+from .application.planning_service import PlanningService
+from .application.research_evidence_pack_service import (
+    ResearchEvidencePackService,
+)
+from .application.research_workspace_service import ResearchWorkspaceService
+from .application.research_runtime import Fin01ResearchRuntime
+from .application.bounded_agent_executor import (
+    BoundedAgentAdmission,
+    BoundedAgentExecutorPort,
+    S3ThreeCellBoundedAgentAdmission,
+    S3ThreeCellBoundedAgentExecutorPort,
+)
+from sec_agent.workbench import (
+    RunCancelReport,
+    RunInspectionReport,
+    RunPruneReport,
+    RunStatusReport,
+    SourceBundle,
+    TraceInspectionReport,
+    WorkbenchProfile,
+    WorkbenchStore,
+    build_data_build_command,
+    build_agent_ask_command,
+    build_agent_session_turn_command,
+    build_agent_information_economy_projection,
+    build_eval_command,
+    build_local_smoke_command,
+    build_native_checkpoint_resume_command,
+    cancel_command_job,
+    default_store_path,
+    data_build_catalog,
+    eval_output_path,
+    eval_runner_catalog,
+    inspect_run_artifacts,
+    new_agent_ask_job,
+    new_agent_session_turn_job,
+    new_data_build_job,
+    new_eval_run_job,
+    new_local_smoke_job,
+    new_native_checkpoint_resume_job,
+    new_saved_run_inspection_job,
+    profile_from_env_file,
+    profile_from_source_bundle,
+    source_bundle_from_profile,
+    start_command_job,
+    validate_profile_sources,
+)
+from sec_agent.workbench.api_contracts import install_api_contracts, request_trace_id
+from sec_agent.langgraph_orchestrator import inspect_node_checkpoint_artifact
+from sec_agent.s4_case_runtime import (
+    S4CaseRuntimeBinding,
+    S4CaseRuntimeResearchProfileOverlay,
+    S4SourceGroundedInputPack,
+)
+from sec_agent.runtime_bridge.paths import resolve_runtime_paths
+from sec_agent.r53_r60_deliverable_studio_dashboard import (
+    build_s7_gate as build_r53_r60_s7_deliverables,
+    get_dashboard_projection as get_r53_r60_dashboard_projection,
+    get_deliverable_projection as get_r53_r60_deliverable_projection,
+)
+from sec_agent.r53_r60_internal_reviewer_dogfood_window import (
+    get_pilot_case_detail as get_r53_r60_pilot_case_detail,
+    get_pilot_dashboard_projection as get_r53_r60_pilot_dashboard_projection,
+    list_pilot_cases as list_r53_r60_pilot_cases,
+)
+from sec_agent.r53_r60_internal_reviewer_action_capture import (
+    append_live_reviewer_action as append_r53_r60_pilot_reviewer_action,
+    get_pilot_action_ledger as get_r53_r60_pilot_action_ledger,
+    get_pilot_case_action_ledger as get_r53_r60_pilot_case_action_ledger,
+)
+from sec_agent.r53_r60_product_acceptance_b04_gate import (
+    P24_DEFECT_CLOSEOUT_STATUSES,
+    P24_DELIVERABLE_DECISION_STATUSES,
+    P24_REAL_HUMAN_REVIEWER_ROLES,
+    P24_REVIEWER_EVIDENCE_TYPES,
+    append_real_reviewer_acceptance_evidence as append_r53_r60_product_acceptance_evidence,
+    get_product_acceptance_evidence_status as get_r53_r60_product_acceptance_evidence_status,
+)
+from sec_agent.r53_r60_b04_reviewer_acceptance_package import (
+    get_b04_reviewer_acceptance_package as get_r53_r60_b04_reviewer_acceptance_package,
+)
+from sec_agent.r53_r60_workbench_frontdoor_drilldown import (
+    append_review_action as append_r53_r60_review_action,
+    cancel_task as cancel_r53_r60_task,
+    get_ops_projection as get_r53_r60_ops_projection,
+    get_review_queue as get_r53_r60_review_queue,
+    get_scope_gate as get_r53_r60_scope_gate,
+    get_task_artifacts as get_r53_r60_task_artifacts,
+    get_task_detail as get_r53_r60_task_detail,
+    get_task_drilldown as get_r53_r60_task_drilldown,
+    get_task_events as get_r53_r60_task_events,
+    list_tasks as list_r53_r60_tasks,
+    resume_task as resume_r53_r60_task,
+)
+
+
+APP_ROOT = Path(__file__).resolve().parents[1]
+FRONTEND_ROOT = APP_ROOT / "frontend"
+FRONTEND_DIST_ROOT = FRONTEND_ROOT / "dist"
+CODE_ROOT = Path(
+    os.environ.get(
+        "FINSIGHT_WORKBENCH_REPO_ROOT",
+        Path(__file__).resolve().parents[3],
+    )
+).resolve()
+# Compatibility root for the inherited r53-r60 projection surface.  Tests and
+# legacy operators may redirect it, but tracked contracts always resolve from
+# CODE_ROOT so a fixture/data workspace cannot impersonate the code checkout.
+REPO_ROOT = CODE_ROOT
+
+
+class ImportEnvRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    env_path: str
+    profile_id: str | None = None
+    display_name: str | None = None
+
+
+class ValidateProfileRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    profile: WorkbenchProfile | None = None
+    env_path: str | None = None
+    profile_id: str | None = None
+    display_name: str | None = None
+    repo_root: str | None = None
+    require_full_source: bool | None = None
+
+
+class ImportSourceBundleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    profile: WorkbenchProfile | None = None
+    env_path: str | None = None
+    profile_id: str | None = None
+    display_name: str | None = None
+    bundle_id: str | None = None
+    bundle_display_name: str | None = None
+    repo_root: str | None = None
+    require_full_source: bool | None = None
+
+
+class ValidateSourceBundleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    bundle: SourceBundle | None = None
+    bundle_id: str | None = None
+    repo_root: str | None = None
+    require_full_source: bool | None = None
+
+
+class DataBuildPreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    step_id: str
+    values: dict[str, object] = Field(default_factory=dict)
+    profile: WorkbenchProfile | None = None
+    profile_id: str | None = None
+    dry_run: bool = False
+    bundle_id: str | None = None
+    update_bundle: bool = False
+
+
+class DataBuildRunRequest(DataBuildPreviewRequest):
+    job_id: str | None = None
+
+
+class InspectRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    run_dir: str
+    job_id: str | None = None
+    profile_id: str | None = None
+    persist: bool = True
+
+
+class StartSmokeRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    job_id: str | None = None
+    profile_id: str | None = None
+
+
+class StartAgentAskRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    prompt: str
+    profile: WorkbenchProfile | None = None
+    profile_id: str | None = None
+    job_id: str | None = None
+    api_key_value: str | None = None
+    command_mode: Literal[
+        "ask-full-source-api",
+        "ask-full-source-deepseek",
+        "ask-mixed-8k-api",
+        "ask-mixed-8k-deepseek",
+        "ask-mixed-api",
+        "ask-mixed-deepseek",
+        "ask-api",
+        "ask-deepseek",
+        "plan",
+    ] = "ask-full-source-api"
+
+
+class StartSessionTurnRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    prompt: str
+    session_id: str
+    tenant_id: str = "workbench_tenant"
+    user_id: str = "workbench_user"
+    profile: WorkbenchProfile | None = None
+    profile_id: str | None = None
+    job_id: str | None = None
+    api_key_value: str | None = None
+    command_mode: Literal[
+        "session-full-source-api",
+        "session-full-source-deepseek",
+        "session-mixed-8k-api",
+        "session-mixed-8k-deepseek",
+        "session-mixed-api",
+        "session-mixed-deepseek",
+        "session-api",
+        "session-deepseek",
+    ] = "session-full-source-api"
+
+
+class StartEvalRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    eval_id: str
+    job_id: str | None = None
+    profile_id: str | None = None
+
+
+class CancelRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = "cancelled by user"
+
+
+class R53R60ReviewActionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    action: Literal[
+        "approve",
+        "accept",
+        "reject",
+        "supersede",
+        "request_repair",
+        "return_to_specialist",
+        "downgrade_claim",
+        "comment",
+    ]
+    comment: str = ""
+    reviewer_role: str = "senior_analyst"
+    review_item_id: str = ""
+
+
+class R53R60ProductAcceptanceEvidenceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_type: Literal[
+        "reviewer_session",
+        "deliverable_acceptance",
+        "defect_closeout",
+        "visual_acceptance",
+        "audit_replay",
+    ]
+    reviewer_role: str
+    session_id: str
+    status: str = "complete"
+    action_source: str = "real_human"
+    task_id: str | None = None
+    case_id: str | None = None
+    decision_status: Literal["accepted", "rejected"] | None = None
+    deliverable_ref: str | None = None
+    artifact_ref_id: str | None = None
+    artifact_ref_ids: list[str] | None = None
+    review_comment: str | None = None
+    closeout_status: Literal["repaired", "regression_covered", "typed_gap_accepted"] | None = None
+    source_id: str | list[str] | None = None
+    covered_source_ids: list[str] | None = None
+    repair_ref: str | None = None
+    regression_case_id: str | None = None
+    typed_gap_id: str | None = None
+    visual_decision: str | None = None
+    browser_screenshot_refs: list[str] | None = None
+    trace_ref: str | None = None
+    review_comment_ref: str | None = None
+
+
+class R53R60ResumeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = "resume from workbench"
+
+
+class R53R60CancelRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = "cancel from workbench"
+
+
+class PruneRunHistoryRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    keep_latest: int = Field(default=200, ge=0, le=10000)
+    max_age_days: int | None = Field(default=None, ge=0, le=3650)
+    terminal_only: bool = True
+    dry_run: bool = True
+
+
+class NativeCheckpointInspectRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    run_dir: str
+
+
+class NativeCheckpointResumeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    run_dir: str
+    profile: WorkbenchProfile | None = None
+    profile_id: str | None = None
+    job_id: str | None = None
+    api_key_value: str | None = None
+    include_synthesis: bool = True
+    stop_after_node: str | None = None
+    checkpoint_mode: Literal["memory", "sqlite", "none"] = "sqlite"
+
+
+def create_app(
+    store_path: str | Path | None = None,
+    p02_case_service: CaseService | None = None,
+    p02_planning_service: PlanningService | None = None,
+    p02_execution_service: ExecutionService | None = None,
+    p03_evidence_service: EvidenceService | None = None,
+    p36_local_research_service: P36LocalResearchService | None = None,
+    current_research_evidence_pack_service: (
+        ResearchEvidencePackService | None
+    ) = None,
+    research_workspace_service: ResearchWorkspaceService | None = None,
+    human_baseline_service: HumanBaselineService | None = None,
+    vt2_integrity_service: IntegrityService | None = None,
+    vt3_deliverable_service: DeliverableService | None = None,
+    bounded_agent_admission: BoundedAgentAdmission | None = None,
+    bounded_agent_executor: BoundedAgentExecutorPort | None = None,
+    s3_three_cell_bounded_agent_admission: S3ThreeCellBoundedAgentAdmission | None = None,
+    s3_three_cell_bounded_agent_executor: S3ThreeCellBoundedAgentExecutorPort | None = None,
+    s4_deterministic_binding: S4CaseRuntimeBinding | None = None,
+    s4_deterministic_source_pack: S4SourceGroundedInputPack | None = None,
+    s4_deterministic_research_profile_overlay: (
+        S4CaseRuntimeResearchProfileOverlay | None
+    ) = None,
+    current_product_projection_service: CurrentProductProjectionService | None = None,
+    current_product_review_control_service: (
+        CurrentProductReviewControlService | None
+    ) = None,
+    current_product_reviewer_packet_service: (
+        CurrentProductReviewerPacketService | None
+    ) = None,
+    current_product_reviewer_session_service: (
+        CurrentProductReviewerSessionService | None
+    ) = None,
+    workbench_runtime_mode: Literal["current", "fixture"] = "current",
+) -> FastAPI:
+    if workbench_runtime_mode not in {"current", "fixture"}:
+        raise ValueError("workbench_runtime_mode_invalid")
+    runtime_paths = resolve_runtime_paths(CODE_ROOT)
+    store = WorkbenchStore(
+        store_path
+        or default_store_path(
+            CODE_ROOT,
+            workbench_private_root=runtime_paths.workbench_private_root,
+        )
+    )
+    case_service = p02_case_service or case_service_from_env(CODE_ROOT)
+    planning_service = p02_planning_service or PlanningService.from_case_service(case_service)
+    evidence_service = p03_evidence_service or EvidenceService.from_case_service(
+        case_service, repo_root=CODE_ROOT
+    )
+    local_research_service = p36_local_research_service or P36LocalResearchService.from_runtime_paths(
+        case_service,
+        runtime_paths=runtime_paths,
+    )
+    research_evidence_pack_service = (
+        current_research_evidence_pack_service
+        or ResearchEvidencePackService.from_runtime_paths(
+            CODE_ROOT,
+            runtime_paths,
+        )
+    )
+    workspace_service = research_workspace_service
+    if (
+        workspace_service is None
+        and current_research_evidence_pack_service is None
+    ):
+        workspace_service = ResearchWorkspaceService.from_runtime_paths(
+            CODE_ROOT,
+            research_evidence_pack_service,
+        )
+    if (
+        workbench_runtime_mode == "fixture"
+        and p02_execution_service is not None
+        and p02_execution_service.background_dispatch_enabled
+    ):
+        raise ValueError("fixture_mode_background_runtime_forbidden")
+    if p02_execution_service is not None:
+        execution_service = p02_execution_service
+    else:
+        facade = getattr(case_service, "_facade", None)
+        research_runtime = (
+            Fin01ResearchRuntime(
+                facade,
+                local_research_service,
+                evidence_service,
+                bounded_agent_admission=bounded_agent_admission,
+                bounded_agent_executor=bounded_agent_executor,
+                s3_three_cell_bounded_agent_admission=(
+                    s3_three_cell_bounded_agent_admission
+                ),
+                s3_three_cell_bounded_agent_executor=(
+                    s3_three_cell_bounded_agent_executor
+                ),
+                s4_deterministic_binding=s4_deterministic_binding,
+                s4_deterministic_source_pack=(
+                    s4_deterministic_source_pack
+                ),
+                s4_deterministic_research_profile_overlay=(
+                    s4_deterministic_research_profile_overlay
+                ),
+            )
+            if facade is not None and workbench_runtime_mode == "current"
+            else None
+        )
+        execution_service = ExecutionService.from_case_service(
+            case_service,
+            runtime=research_runtime,
+        )
+    baseline_service = human_baseline_service or HumanBaselineService.from_services(
+        case_service, local_research_service, repo_root=CODE_ROOT
+    )
+    integrity_service = vt2_integrity_service or IntegrityService.from_services(
+        case_service, evidence_service, repo_root=CODE_ROOT
+    )
+    deliverable_service = vt3_deliverable_service or DeliverableService.from_services(
+        case_service, evidence_service, repo_root=CODE_ROOT
+    )
+    current_product_service = (
+        current_product_projection_service
+        or CurrentProductProjectionService.from_repository(CODE_ROOT)
+    )
+    current_review_control_service = (
+        current_product_review_control_service
+        or CurrentProductReviewControlService.from_repository(
+            CODE_ROOT,
+            current_product_service,
+            store.db_path,
+        )
+    )
+    current_reviewer_packet_service = (
+        current_product_reviewer_packet_service
+        or CurrentProductReviewerPacketService.from_repository(
+            CODE_ROOT,
+            current_product_service,
+            current_review_control_service,
+        )
+    )
+    current_reviewer_session_service = (
+        current_product_reviewer_session_service
+        or CurrentProductReviewerSessionService.from_repository(
+            CODE_ROOT,
+            current_reviewer_packet_service,
+            store.db_path,
+        )
+    )
+    app = FastAPI(
+        title="FinSight Workbench API",
+        version="0.1.0",
+        description="Local API for FinSight-Agent profile import and source readiness checks.",
+    )
+    app.state.workbench_runtime_mode = workbench_runtime_mode
+    app.state.runtime_paths = runtime_paths
+    app.state.background_dispatch_enabled = (
+        execution_service.background_dispatch_enabled
+    )
+    app.state.current_review_control_enabled = True
+    app.state.primary_product_route = "/workspace"
+    app.state.operator_route = "/operations"
+    install_api_contracts(app)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
+        allow_headers=["*"],
+    )
+    app.include_router(build_cases_router(case_service), prefix="/api/v1")
+    app.include_router(build_planning_router(planning_service), prefix="/api/v1")
+    app.include_router(build_execution_router(execution_service), prefix="/api/v1")
+    app.include_router(build_evidence_router(evidence_service), prefix="/api/v1")
+    app.include_router(build_local_research_router(local_research_service), prefix="/api/v1")
+    app.include_router(
+        build_research_evidence_pack_router(research_evidence_pack_service),
+        prefix="/api/v1",
+    )
+    if workspace_service is not None:
+        app.include_router(
+            build_research_workspace_router(workspace_service),
+            prefix="/api/v1",
+        )
+    app.include_router(build_human_baseline_router(baseline_service), prefix="/api/v1")
+    app.include_router(build_integrity_router(integrity_service), prefix="/api/v1")
+    app.include_router(build_deliverables_router(deliverable_service), prefix="/api/v1")
+    app.include_router(
+        build_current_product_router(
+            current_product_service,
+            current_review_control_service,
+            current_reviewer_packet_service,
+            current_reviewer_session_service,
+        ),
+        prefix="/api/v1",
+    )
+    if (FRONTEND_DIST_ROOT / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=FRONTEND_DIST_ROOT / "assets"), name="assets")
+    if (FRONTEND_ROOT / "static").exists():
+        app.mount("/static", StaticFiles(directory=FRONTEND_ROOT / "static"), name="static")
+
+    @app.get("/", response_class=HTMLResponse)
+    def index() -> str:
+        index_path = FRONTEND_DIST_ROOT / "index.html" if (FRONTEND_DIST_ROOT / "index.html").exists() else FRONTEND_ROOT / "index.html"
+        if not index_path.exists():
+            raise HTTPException(status_code=404, detail="frontend_not_built")
+        return index_path.read_text(encoding="utf-8")
+
+    @app.get("/api/health")
+    def health() -> dict[str, str]:
+        return {
+            "status": "ok",
+            "service": "finsight-workbench",
+            "version": "0.1.0",
+            "frontend": "available" if (FRONTEND_DIST_ROOT / "index.html").exists() or (FRONTEND_ROOT / "index.html").exists() else "missing",
+        }
+
+    @app.get("/api/system/status")
+    def system_status():
+        frontend_available = (FRONTEND_DIST_ROOT / "index.html").exists() or (FRONTEND_ROOT / "index.html").exists()
+        store_health = store.inspect_health()
+        path_status = {
+            "repo_root": _path_status(CODE_ROOT),
+            "legacy_workspace_root": _path_status(REPO_ROOT),
+            "data_root": _path_status(runtime_paths.primary_data_root),
+            "workbench_private": _path_status(
+                runtime_paths.workbench_private_root
+            ),
+            "object_store": _path_status(runtime_paths.object_store_root),
+            "secondary_data_roots": [
+                _path_status(path) for path in runtime_paths.secondary_data_roots
+            ],
+            "frontend_root": _path_status(FRONTEND_ROOT),
+            "frontend_dist": _path_status(FRONTEND_DIST_ROOT),
+        }
+        checks = {
+            "store": store_health.status,
+            "frontend": "available" if frontend_available else "missing",
+            "repo_root": "ok" if path_status["repo_root"]["exists"] else "missing",
+            "workbench_private": "ok" if path_status["workbench_private"]["writable"] else "not_writable",
+        }
+        critical_ok = store_health.status == "ok" and checks["repo_root"] == "ok" and checks["workbench_private"] == "ok"
+        return {
+            "status": "ok" if critical_ok else "degraded",
+            "service": "finsight-workbench",
+            "version": "0.1.0",
+            "docker_required": False,
+            "checks": checks,
+            "store": store_health,
+            "paths": path_status,
+        }
+
+    @app.get("/api/r53-r60/tasks")
+    def r53_r60_task_center(limit: int = Query(50, ge=1, le=500)):
+        return list_r53_r60_tasks(REPO_ROOT, limit=limit)
+
+    @app.get("/api/r53-r60/scope-gate")
+    def r53_r60_scope_gate():
+        return get_r53_r60_scope_gate(REPO_ROOT)
+
+    @app.get("/api/r53-r60/tasks/{task_id}")
+    def r53_r60_task_detail(task_id: str):
+        try:
+            return get_r53_r60_task_detail(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/events")
+    def r53_r60_task_events(
+        task_id: str,
+        after_sequence: int = Query(0, ge=0),
+        limit: int = Query(500, ge=1, le=5000),
+    ):
+        try:
+            return get_r53_r60_task_events(REPO_ROOT, task_id=task_id, after_sequence=after_sequence, limit=limit)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/artifacts")
+    def r53_r60_task_artifacts(task_id: str):
+        try:
+            return get_r53_r60_task_artifacts(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/drilldown")
+    def r53_r60_task_drilldown(task_id: str):
+        try:
+            return get_r53_r60_task_drilldown(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/review-queue")
+    def r53_r60_review_queue(task_id: str):
+        try:
+            return get_r53_r60_review_queue(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/api/r53-r60/tasks/{task_id}/review-actions")
+    def r53_r60_review_action(task_id: str, payload: R53R60ReviewActionRequest):
+        try:
+            return append_r53_r60_review_action(
+                REPO_ROOT,
+                task_id=task_id,
+                action=payload.action,
+                comment=payload.comment,
+                reviewer_role=payload.reviewer_role,
+                review_item_id=payload.review_item_id,
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.post("/api/r53-r60/tasks/{task_id}/resume")
+    def r53_r60_resume_task(task_id: str, payload: R53R60ResumeRequest):
+        try:
+            return resume_r53_r60_task(REPO_ROOT, task_id=task_id, reason=payload.reason.strip() or "resume from workbench")
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.post("/api/r53-r60/tasks/{task_id}/cancel")
+    def r53_r60_cancel_task(task_id: str, payload: R53R60CancelRequest):
+        try:
+            return cancel_r53_r60_task(REPO_ROOT, task_id=task_id, reason=payload.reason.strip() or "cancel from workbench")
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/ops")
+    def r53_r60_ops_projection(task_id: str):
+        try:
+            return get_r53_r60_ops_projection(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/deliverables")
+    def r53_r60_deliverables(task_id: str):
+        try:
+            return get_r53_r60_deliverable_projection(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/api/r53-r60/tasks/{task_id}/render-deliverables")
+    def r53_r60_render_deliverables(task_id: str):
+        try:
+            return build_r53_r60_s7_deliverables(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/tasks/{task_id}/dashboard-projection")
+    def r53_r60_dashboard_projection(task_id: str):
+        try:
+            return get_r53_r60_dashboard_projection(REPO_ROOT, task_id=task_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/pilot/dashboard")
+    def r53_r60_pilot_dashboard():
+        return get_r53_r60_pilot_dashboard_projection(REPO_ROOT)
+
+    @app.get("/api/r53-r60/pilot/cases")
+    def r53_r60_pilot_cases():
+        return list_r53_r60_pilot_cases(REPO_ROOT)
+
+    @app.get("/api/r53-r60/pilot/cases/{case_id}")
+    def r53_r60_pilot_case_detail(case_id: str):
+        try:
+            return get_r53_r60_pilot_case_detail(REPO_ROOT, case_id=case_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.get("/api/r53-r60/pilot/actions")
+    def r53_r60_pilot_action_ledger():
+        return get_r53_r60_pilot_action_ledger(REPO_ROOT)
+
+    @app.get("/api/r53-r60/product-acceptance/evidence")
+    def r53_r60_product_acceptance_evidence():
+        return {
+            "accepted_reviewer_roles": sorted(P24_REAL_HUMAN_REVIEWER_ROLES),
+            "accepted_evidence_types": sorted(P24_REVIEWER_EVIDENCE_TYPES),
+            "accepted_deliverable_decisions": sorted(P24_DELIVERABLE_DECISION_STATUSES),
+            "accepted_defect_closeout_statuses": sorted(P24_DEFECT_CLOSEOUT_STATUSES),
+            "evidence_status": get_r53_r60_product_acceptance_evidence_status(REPO_ROOT),
+        }
+
+    @app.get("/api/r53-r60/product-acceptance/reviewer-package")
+    def r53_r60_product_acceptance_reviewer_package():
+        return get_r53_r60_b04_reviewer_acceptance_package(REPO_ROOT)
+
+    @app.post("/api/r53-r60/product-acceptance/evidence")
+    def r53_r60_append_product_acceptance_evidence(payload: R53R60ProductAcceptanceEvidenceRequest):
+        try:
+            result = append_r53_r60_product_acceptance_evidence(
+                REPO_ROOT,
+                payload.model_dump(exclude_none=True),
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return {
+            **result,
+            "evidence_status": get_r53_r60_product_acceptance_evidence_status(REPO_ROOT),
+        }
+
+    @app.get("/api/r53-r60/pilot/cases/{case_id}/actions")
+    def r53_r60_pilot_case_action_ledger(case_id: str):
+        try:
+            return get_r53_r60_pilot_case_action_ledger(REPO_ROOT, case_id=case_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @app.post("/api/r53-r60/pilot/cases/{case_id}/review-actions")
+    def r53_r60_pilot_reviewer_action(case_id: str, payload: R53R60ReviewActionRequest):
+        try:
+            return append_r53_r60_pilot_reviewer_action(
+                REPO_ROOT,
+                case_id=case_id,
+                action=payload.action,
+                comment=payload.comment,
+                reviewer_role=payload.reviewer_role,
+                action_source="workbench_api",
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.post("/api/profiles/import-env")
+    def import_env(request: ImportEnvRequest) -> WorkbenchProfile:
+        return _load_env_profile(
+            request.env_path,
+            profile_id=request.profile_id,
+            display_name=request.display_name,
+        )
+
+    @app.get("/api/profiles")
+    def list_profiles():
+        return {"profiles": store.list_profiles()}
+
+    @app.post("/api/profiles")
+    def save_profile(profile: WorkbenchProfile):
+        return store.upsert_profile(profile)
+
+    @app.get("/api/profiles/{profile_id}")
+    def get_profile(profile_id: str) -> WorkbenchProfile:
+        profile = store.get_profile(profile_id)
+        if profile is None:
+            raise HTTPException(status_code=404, detail=f"profile_not_found: {profile_id}")
+        return profile
+
+    @app.get("/api/source-bundles")
+    def list_source_bundles():
+        return {"bundles": store.list_source_bundles()}
+
+    @app.post("/api/source-bundles")
+    def save_source_bundle(bundle: SourceBundle):
+        return store.upsert_source_bundle(bundle)
+
+    @app.get("/api/source-bundles/{bundle_id}")
+    def get_source_bundle(bundle_id: str) -> SourceBundle:
+        bundle = store.get_source_bundle(bundle_id)
+        if bundle is None:
+            raise HTTPException(status_code=404, detail=f"source_bundle_not_found: {bundle_id}")
+        return bundle
+
+    @app.post("/api/source-bundles/import-profile")
+    def import_source_bundle(request: ImportSourceBundleRequest):
+        profile = _resolve_profile_like(
+            profile=request.profile,
+            env_path=request.env_path,
+            profile_id=request.profile_id,
+            display_name=request.display_name,
+            store=store,
+        )
+        repo_root = Path(request.repo_root).resolve() if request.repo_root else REPO_ROOT
+        readiness = validate_profile_sources(
+            profile,
+            repo_root=repo_root,
+            require_full_source=request.require_full_source,
+        )
+        bundle = source_bundle_from_profile(
+            profile,
+            readiness=readiness,
+            bundle_id=request.bundle_id,
+            display_name=request.bundle_display_name,
+        )
+        summary = store.upsert_source_bundle(bundle)
+        return {"bundle": bundle, "summary": summary, "readiness": readiness}
+
+    @app.post("/api/source-bundles/validate")
+    def validate_source_bundle(request: ValidateSourceBundleRequest):
+        bundle = request.bundle
+        if bundle is None:
+            if not request.bundle_id:
+                raise HTTPException(status_code=400, detail="bundle_or_bundle_id_required")
+            bundle = store.get_source_bundle(request.bundle_id)
+            if bundle is None:
+                raise HTTPException(status_code=404, detail=f"source_bundle_not_found: {request.bundle_id}")
+        repo_root = Path(request.repo_root).resolve() if request.repo_root else REPO_ROOT
+        profile = profile_from_source_bundle(bundle)
+        readiness = validate_profile_sources(
+            profile,
+            repo_root=repo_root,
+            require_full_source=request.require_full_source,
+        )
+        return {"bundle": bundle, "readiness": readiness}
+
+    @app.post("/api/profiles/validate")
+    def validate_profile(request: ValidateProfileRequest):
+        profile = request.profile
+        if profile is None:
+            if request.env_path:
+                profile = _load_env_profile(
+                    request.env_path,
+                    profile_id=request.profile_id,
+                    display_name=request.display_name,
+                )
+            elif request.profile_id:
+                profile = store.get_profile(request.profile_id)
+                if profile is None:
+                    raise HTTPException(status_code=404, detail=f"profile_not_found: {request.profile_id}")
+            else:
+                raise HTTPException(status_code=400, detail="profile_or_env_path_required")
+        repo_root = Path(request.repo_root).resolve() if request.repo_root else Path.cwd().resolve()
+        return validate_profile_sources(
+            profile,
+            repo_root=repo_root,
+            require_full_source=request.require_full_source,
+        )
+
+    @app.get("/api/runs")
+    def list_runs(
+        trace_id: str | None = None,
+        status: str | None = None,
+        job_type: str | None = None,
+        limit: int = Query(200, ge=1, le=1000),
+    ):
+        return {
+            "runs": store.list_run_jobs(
+                trace_id=trace_id,
+                status=status,
+                job_type=job_type,
+                limit=limit,
+            )
+        }
+
+    @app.get("/api/traces/{trace_id}")
+    def inspect_trace(trace_id: str, event_limit: int = Query(1000, ge=1, le=5000)) -> TraceInspectionReport:
+        report = store.inspect_trace(trace_id, event_limit=event_limit)
+        if report.job_count == 0 and report.event_count == 0:
+            raise HTTPException(status_code=404, detail=f"trace_not_found: {trace_id}")
+        return report
+
+    @app.get("/api/evals")
+    def list_evals():
+        return {"evals": eval_runner_catalog()}
+
+    @app.get("/api/evals/dashboard")
+    def eval_dashboard(limit: int = Query(default=50, ge=1, le=500)):
+        return store.eval_dashboard(limit=limit)
+
+    @app.get("/api/evals/agent-information-economy")
+    def eval_agent_information_economy(limit: int = Query(default=12, ge=1, le=100)):
+        return build_agent_information_economy_projection(REPO_ROOT, limit=limit)
+
+    @app.get("/api/data-build/steps")
+    def list_data_build_steps():
+        return {"steps": data_build_catalog()}
+
+    @app.post("/api/data-build/preview")
+    def preview_data_build(request: DataBuildPreviewRequest):
+        profile = _optional_profile(request.profile, request.profile_id, store)
+        try:
+            _spec, preview = build_data_build_command(
+                repo_root=REPO_ROOT,
+                step_id=request.step_id,
+                values=request.values,
+                profile=profile,
+                dry_run=request.dry_run,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return {"preview": preview}
+
+    @app.post("/api/data-build/run")
+    def run_data_build(payload: DataBuildRunRequest, request: Request):
+        profile = _optional_profile(payload.profile, payload.profile_id, store)
+        try:
+            spec, preview = build_data_build_command(
+                repo_root=REPO_ROOT,
+                step_id=payload.step_id,
+                values=payload.values,
+                profile=profile,
+                dry_run=payload.dry_run,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        if preview.missing_required:
+            raise HTTPException(
+                status_code=400,
+                detail={"reason": "missing_required_parameters", "missing_required": preview.missing_required},
+            )
+        if payload.update_bundle and not payload.dry_run:
+            if not payload.bundle_id:
+                raise HTTPException(status_code=400, detail="bundle_id_required_for_update")
+            if store.get_source_bundle(payload.bundle_id) is None:
+                raise HTTPException(status_code=404, detail=f"source_bundle_not_found: {payload.bundle_id}")
+        job = new_data_build_job(
+            step_id=preview.step_id,
+            step_label=preview.label,
+            command_preview=preview.args,
+            bundle_id=payload.bundle_id if payload.update_bundle and not payload.dry_run else None,
+            bundle_artifact_updates=preview.bundle_artifact_updates if payload.update_bundle and not payload.dry_run else {},
+            bundle_field_updates=preview.bundle_field_updates if payload.update_bundle and not payload.dry_run else {},
+            job_id=payload.job_id,
+            profile_id=profile.profile_id if profile else None,
+            trace_id=request_trace_id(request),
+        )
+        start_command_job(store, job, spec)
+        return {"job": job, "preview": preview}
+
+    @app.get("/api/sessions")
+    def list_sessions():
+        return {"sessions": store.list_sessions()}
+
+    @app.get("/api/sessions/{session_id}/turns")
+    def list_session_turns(session_id: str):
+        return {
+            "session_id": session_id,
+            "turns": store.list_session_turn_jobs(session_id),
+        }
+
+    @app.get("/api/runs/{job_id}")
+    def get_run(job_id: str):
+        job = store.get_run_job(job_id)
+        if job is None:
+            raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
+        artifact_index = inspect_run_artifacts(job.run_dir) if job.run_dir else None
+        native_checkpoint = _inspect_native_checkpoint_if_available(job.run_dir) if job.run_dir else None
+        return {"job": job, "artifact_index": artifact_index, "native_checkpoint": native_checkpoint}
+
+    @app.get("/api/runs/{job_id}/status")
+    def get_run_status(job_id: str) -> RunStatusReport:
+        report = store.get_run_status(job_id)
+        if report is None:
+            raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
+        return report
+
+    @app.post("/api/runs/{job_id}/cancel")
+    def cancel_run(job_id: str, payload: CancelRunRequest) -> RunCancelReport:
+        report = cancel_command_job(store, job_id, reason=payload.reason.strip() or "cancelled by user")
+        if report.status == "missing":
+            raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
+        return report
+
+    @app.post("/api/runs/prune")
+    def prune_runs(payload: PruneRunHistoryRequest) -> RunPruneReport:
+        return store.prune_run_jobs(
+            keep_latest=payload.keep_latest,
+            max_age_days=payload.max_age_days,
+            terminal_only=payload.terminal_only,
+            dry_run=payload.dry_run,
+        )
+
+    @app.get("/api/runs/{job_id}/events")
+    def get_run_events(
+        job_id: str,
+        after_sequence: int = Query(0, ge=0),
+        limit: int = Query(500, ge=1, le=5000),
+    ):
+        if store.get_run_job(job_id) is None:
+            raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
+        return {"events": store.list_run_events(job_id, after_sequence=after_sequence, limit=limit)}
+
+    @app.get("/api/runs/{job_id}/events/stream")
+    def stream_run_events(job_id: str, after_sequence: int = Query(0, ge=0)):
+        if store.get_run_job(job_id) is None:
+            raise HTTPException(status_code=404, detail=f"job_not_found: {job_id}")
+        return StreamingResponse(
+            _event_stream(store, job_id, after_sequence=after_sequence),
+            media_type="text/event-stream",
+        )
+
+    @app.post("/api/runs/inspect")
+    def inspect_run(payload: InspectRunRequest, request: Request) -> RunInspectionReport:
+        run_dir = _repo_path(payload.run_dir)
+        artifact_index = inspect_run_artifacts(run_dir)
+        native_checkpoint = _inspect_native_checkpoint_if_available(run_dir)
+        job = new_saved_run_inspection_job(
+            run_dir=run_dir,
+            artifact_index=artifact_index,
+            job_id=payload.job_id,
+            profile_id=payload.profile_id,
+            trace_id=request_trace_id(request),
+        )
+        if payload.persist:
+            store.upsert_run_job(job)
+        return RunInspectionReport(job=job, artifact_index=artifact_index, native_checkpoint=native_checkpoint)
+
+    @app.post("/api/native-checkpoints/inspect")
+    def inspect_native_checkpoint(request: NativeCheckpointInspectRequest):
+        try:
+            return inspect_node_checkpoint_artifact(_repo_path(request.run_dir))
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except (json.JSONDecodeError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.post("/api/native-checkpoints/resume")
+    def resume_native_checkpoint(payload: NativeCheckpointResumeRequest, request: Request):
+        checkpoint_path = _repo_path(payload.run_dir)
+        try:
+            inspection = inspect_node_checkpoint_artifact(checkpoint_path)
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except (json.JSONDecodeError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        if not inspection.get("resume_supported"):
+            raise HTTPException(status_code=409, detail={"reason": "native_checkpoint_not_resumable", "inspection": inspection})
+        profile = _resolve_run_profile(payload.profile, payload.profile_id, store)
+        try:
+            spec = build_native_checkpoint_resume_command(
+                repo_root=REPO_ROOT,
+                profile=profile,
+                checkpoint_path=checkpoint_path,
+                api_key_value=payload.api_key_value,
+                include_synthesis=payload.include_synthesis,
+                stop_after_node=payload.stop_after_node,
+                checkpoint_mode=payload.checkpoint_mode,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        job = new_native_checkpoint_resume_job(
+            checkpoint_path=checkpoint_path,
+            profile_id=profile.profile_id,
+            job_id=payload.job_id,
+            stop_after_node=payload.stop_after_node,
+            include_synthesis=payload.include_synthesis,
+            trace_id=request_trace_id(request),
+        )
+        start_command_job(store, job, spec)
+        return {"job": job, "inspection": inspection}
+
+    @app.post("/api/runs/smoke")
+    def start_smoke_run(payload: StartSmokeRunRequest, request: Request):
+        job = new_local_smoke_job(job_id=payload.job_id, profile_id=payload.profile_id, trace_id=request_trace_id(request))
+        spec = build_local_smoke_command(REPO_ROOT)
+        start_command_job(store, job, spec)
+        return {"job": job}
+
+    @app.post("/api/runs/ask")
+    def start_agent_ask(payload: StartAgentAskRequest, request: Request):
+        profile = _resolve_run_profile(payload.profile, payload.profile_id, store)
+        try:
+            spec = build_agent_ask_command(
+                repo_root=REPO_ROOT,
+                profile=profile,
+                prompt=payload.prompt,
+                command_mode=payload.command_mode,
+                api_key_value=payload.api_key_value,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        job = new_agent_ask_job(
+            prompt=payload.prompt.strip(),
+            command_mode=payload.command_mode,
+            job_id=payload.job_id,
+            profile_id=profile.profile_id,
+            trace_id=request_trace_id(request),
+        )
+        start_command_job(store, job, spec)
+        return {"job": job}
+
+    @app.post("/api/sessions/turns")
+    def start_session_turn(payload: StartSessionTurnRequest, request: Request):
+        profile = _resolve_run_profile(payload.profile, payload.profile_id, store)
+        try:
+            spec = build_agent_session_turn_command(
+                repo_root=REPO_ROOT,
+                profile=profile,
+                prompt=payload.prompt,
+                session_id=payload.session_id,
+                tenant_id=payload.tenant_id,
+                user_id=payload.user_id,
+                command_mode=payload.command_mode,
+                api_key_value=payload.api_key_value,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        job = new_agent_session_turn_job(
+            prompt=payload.prompt.strip(),
+            command_mode=payload.command_mode,
+            session_id=payload.session_id.strip(),
+            tenant_id=payload.tenant_id.strip() or "workbench_tenant",
+            user_id=payload.user_id.strip() or "workbench_user",
+            job_id=payload.job_id,
+            profile_id=profile.profile_id,
+            trace_id=request_trace_id(request),
+        )
+        start_command_job(store, job, spec)
+        return {"job": job}
+
+    @app.post("/api/evals/run")
+    def start_eval_run(payload: StartEvalRunRequest, request: Request):
+        profile = store.get_profile(payload.profile_id) if payload.profile_id else None
+        if payload.profile_id and profile is None:
+            raise HTTPException(status_code=404, detail=f"profile_not_found: {payload.profile_id}")
+        job_id = payload.job_id or None
+        output_path = eval_output_path(REPO_ROOT, eval_id=payload.eval_id, job_id=job_id or f"eval_{int(time.time())}")
+        job = new_eval_run_job(
+            eval_id=payload.eval_id,
+            output_path=output_path,
+            job_id=job_id,
+            profile_id=profile.profile_id if profile else None,
+            trace_id=request_trace_id(request),
+        )
+        output_path = eval_output_path(REPO_ROOT, eval_id=payload.eval_id, job_id=job.job_id)
+        job = job.model_copy(update={"metadata": {**job.metadata, "output_path": str(output_path)}})
+        try:
+            spec = build_eval_command(
+                repo_root=REPO_ROOT,
+                eval_id=payload.eval_id,
+                job_id=job.job_id,
+                profile=profile,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        start_command_job(store, job, spec)
+        return {"job": job}
+
+    @app.get("/tasks", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/legacy", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/operations", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/operations/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/current", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/current/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/next", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/next/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/cases/{frontend_path:path}", response_class=HTMLResponse, include_in_schema=False)
+    def point02_frontend_entrypoint(frontend_path: str = "") -> str:
+        return index()
+
+    return app
+
+
+def _load_env_profile(env_path: str, *, profile_id: str | None, display_name: str | None) -> WorkbenchProfile:
+    path = Path(env_path)
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"env_path_not_found: {env_path}")
+    if not path.is_file():
+        raise HTTPException(status_code=400, detail=f"env_path_not_file: {env_path}")
+    return profile_from_env_file(path, profile_id=profile_id, display_name=display_name)
+
+
+def _repo_path(value: str | Path) -> Path:
+    path = Path(value)
+    return path if path.is_absolute() else REPO_ROOT / path
+
+
+def _path_status(path: Path) -> dict[str, object]:
+    target = path if path.exists() else path.parent
+    if not target.exists():
+        target = REPO_ROOT
+    try:
+        usage = shutil.disk_usage(target)
+        total_bytes = int(usage.total)
+        free_bytes = int(usage.free)
+    except OSError:
+        total_bytes = 0
+        free_bytes = 0
+    return {
+        "path": str(path),
+        "exists": path.exists(),
+        "is_dir": path.is_dir(),
+        "writable": _path_writable(path),
+        "total_bytes": total_bytes,
+        "free_bytes": free_bytes,
+    }
+
+
+def _path_writable(path: Path) -> bool:
+    target = path if path.exists() else path.parent
+    if not target.exists():
+        return False
+    try:
+        probe = target / ".workbench_api_write_check"
+        probe.write_text("", encoding="utf-8")
+        probe.unlink(missing_ok=True)
+        return True
+    except OSError:
+        return False
+
+
+def _resolve_run_profile(
+    profile: WorkbenchProfile | None,
+    profile_id: str | None,
+    store: WorkbenchStore,
+) -> WorkbenchProfile:
+    if profile is not None:
+        return profile
+    if not profile_id:
+        raise HTTPException(status_code=400, detail="profile_or_profile_id_required")
+    saved = store.get_profile(profile_id)
+    if saved is None:
+        raise HTTPException(status_code=404, detail=f"profile_not_found: {profile_id}")
+    return saved
+
+
+def _optional_profile(
+    profile: WorkbenchProfile | None,
+    profile_id: str | None,
+    store: WorkbenchStore,
+) -> WorkbenchProfile | None:
+    if profile is not None:
+        return profile
+    if not profile_id:
+        return None
+    saved = store.get_profile(profile_id)
+    if saved is None:
+        raise HTTPException(status_code=404, detail=f"profile_not_found: {profile_id}")
+    return saved
+
+
+def _resolve_profile_like(
+    *,
+    profile: WorkbenchProfile | None,
+    env_path: str | None,
+    profile_id: str | None,
+    display_name: str | None,
+    store: WorkbenchStore,
+) -> WorkbenchProfile:
+    if profile is not None:
+        return profile
+    if env_path:
+        return _load_env_profile(env_path, profile_id=profile_id, display_name=display_name)
+    if profile_id:
+        saved = store.get_profile(profile_id)
+        if saved is None:
+            raise HTTPException(status_code=404, detail=f"profile_not_found: {profile_id}")
+        return saved
+    raise HTTPException(status_code=400, detail="profile_or_env_path_or_profile_id_required")
+
+
+def _inspect_native_checkpoint_if_available(run_dir: str | Path | None) -> dict | None:
+    if not run_dir:
+        return None
+    root = Path(run_dir)
+    checkpoint_path = root / "langgraph_node_checkpoints.json" if root.is_dir() else root
+    if not checkpoint_path.exists():
+        return None
+    try:
+        return inspect_node_checkpoint_artifact(root)
+    except FileNotFoundError:
+        return None
+    except (json.JSONDecodeError, ValueError) as exc:
+        return {
+            "schema_version": "sec_agent_langgraph_node_checkpoint_artifact_v0.1",
+            "checkpoint_path": str(checkpoint_path),
+            "run_id": "",
+            "status": "invalid",
+            "checkpoint_count": 0,
+            "latest_checkpoint_id": "",
+            "latest_completed_node": "",
+            "next_recoverable_node": "",
+            "required_artifacts_for_next_node": [],
+            "resume_supported": False,
+            "blocked_reasons": [str(exc)],
+            "missing_required_artifacts": [],
+            "digest_mismatch_artifacts": [],
+            "recoverable_state_summary": {},
+        }
+
+
+def _event_stream(store: WorkbenchStore, job_id: str, *, after_sequence: int):
+    cursor = after_sequence
+    while True:
+        events = store.list_run_events(job_id, after_sequence=cursor, limit=100)
+        for event in events:
+            cursor = event.sequence
+            yield f"event: log\ndata: {json.dumps(event.model_dump(mode='json'), ensure_ascii=False)}\n\n"
+        job = store.get_run_job(job_id)
+        if job is None or job.status in {"completed", "failed", "cancelled"}:
+            yield f"event: done\ndata: {json.dumps({'job_id': job_id, 'status': job.status if job else 'missing'}, ensure_ascii=False)}\n\n"
+            break
+        if not events:
+            yield f"event: heartbeat\ndata: {json.dumps({'job_id': job_id, 'cursor': cursor}, ensure_ascii=False)}\n\n"
+            time.sleep(1)
+
+
+app = create_app()

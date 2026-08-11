@@ -1,29 +1,40 @@
 {
   "schema_version": "fin_ia_0_1_3_archive_redirect_manifest_v1_0",
-  "recorded_at": "2026-08-11",
-  "status": "partial_main_unique_history_only_product_consumer_archive_not_authorized",
-  "entries": [
-    {
-      "source_prefix": "main:c962a88e_and_related_A6_commits",
-      "archive_prefix": "archive/code/pre_fin_0_1_3_main_a6",
-      "classification": "historical_experiment_code_not_active_runtime",
-      "replacement": "current_S1_retrieval_Evidence_Pack_and_S3_dynamic_research_contracts",
-      "active_imports_allowed": false
-    },
-    {
-      "source_prefix": "main:docs/worklog/257_through_267_and_related_model_runs",
-      "archive_prefix": "docs/archive/pre_fin_0_1_3_main_a6",
-      "classification": "immutable_historical_execution_evidence",
-      "replacement": "PRD_TECH_Project_OS_and_current_stage_acceptance",
-      "active_imports_allowed": false
-    }
+  "recorded_at": "2026-08-12",
+  "status": "full_non_destructive_migration_index_rebuilt_and_checked",
+  "index": "archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl",
+  "portable_path_map": "archive/versions/FIN_0_1_3_REBASELINE_PATH_MAP.jsonl",
+  "redirect_count": 6051,
+  "portable_path_count": 156,
+  "maximum_tracked_archive_relative_path": 180,
+  "archive_roots": [
+    "archive/versions/fin_0_1_1",
+    "archive/versions/fin_0_1_2",
+    "archive/versions/fin_0_1_3_prebaseline",
+    "archive/versions/pre_fin_0_1_3"
   ],
-  "not_yet_authorized": [
-    "P36_product_surface",
-    "FIN_0_1_2_current_product_surface",
-    "r53_r60_product_surface",
-    "remaining_release_attempt_modules_tests_and_docs"
+  "row_contract": [
+    "source_path",
+    "archive_path",
+    "origin_version",
+    "reason",
+    "replacement",
+    "evidence_classification",
+    "active_imports_allowed",
+    "sha256"
   ],
-  "restore_rule": "move_back_into_an_owned_module_add_tests_and_update_repository_inventory",
-  "known_boundary": "This manifest covers only files introduced by the main semantic merge and immediately classified as A6 history. It is not the final zero-consumer archive manifest."
+  "invariants": {
+    "deletion_used": false,
+    "active_imports_from_archive_allowed": false,
+    "historical_artifacts_are_current_capability_evidence": false,
+    "digest_check_required": true,
+    "portable_path_map_required_for_shortened_targets": true,
+    "portable_path_map_digest_check_required": true,
+    "duplicate_source_redirect_allowed": false
+  },
+  "rebuild_command": "python scripts/engineering/build_archive_redirect_index.py",
+  "check_command": "python scripts/engineering/build_archive_redirect_index.py --check",
+  "portable_path_command": "python scripts/engineering/build_archive_redirect_index.py --compact-long-paths",
+  "restore_rule": "A historical file may return only through an owned current module with current tests, current documentation and an explicit lifecycle decision; do not copy it back as an attempt-specific parallel implementation.",
+  "known_boundary": "Ignored caches and private data are not migration evidence and are not indexed."
 }

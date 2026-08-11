@@ -39,7 +39,7 @@ export function isResearchWorkspacePath(pathname: string): boolean {
   return pathname === "/workspace" || pathname.startsWith("/workspace/");
 }
 
-export function ResearchWorkspace({ online }: { online: boolean }) {
+export function ResearchWorkspace() {
   const [route, setRoute] = useState<WorkspaceRoute>(() => decodeRoute(window.location.pathname));
 
   useEffect(() => {
@@ -64,8 +64,8 @@ export function ResearchWorkspace({ online }: { online: boolean }) {
           </div>
         </button>
         <div className="research-workspace__topbar-actions">
-          <span className={online ? "research-workspace__online is-online" : "research-workspace__online"}>
-            <i />{online ? "本机服务在线" : "当前离线"}
+          <span className="research-workspace__online is-online">
+            <i />只读审证模式
           </span>
           <a href="/operations">运行与运维 <ExternalLink size={14} /></a>
         </div>
@@ -118,7 +118,7 @@ function ResearchCaseIndex({ onOpen }: { onOpen: (caseId: string) => void }) {
         <>
           <div className="research-workspace__assurance">
             <ShieldCheck size={19} />
-            <span>{state.value.items.length} 个案例已通过身份与摘要绑定；本页面不会触发模型、网络或事实写入。</span>
+            <span>{state.value.items.length} 个案例已通过身份与摘要绑定；{state.value.evidence_objects_ready ? "证据对象已挂载" : `仍需挂载 ${state.value.unavailable_case_keys.join("、")} 证据对象`}。</span>
             <code>{shortDigest(state.value.evidence_pack_result_digest)}</code>
           </div>
           <section className="research-workspace__case-grid">
@@ -133,7 +133,7 @@ function ResearchCaseIndex({ onOpen }: { onOpen: (caseId: string) => void }) {
 
 function CaseCard({ item, onOpen }: { item: ResearchCaseSummary; onOpen: (caseId: string) => void }) {
   return (
-    <button className="research-workspace__case-card" type="button" onClick={() => onOpen(item.case_id)}>
+    <button className="research-workspace__case-card" type="button" disabled={!item.evidence_object_ready} onClick={() => onOpen(item.case_id)}>
       <div className="research-workspace__case-heading">
         <span className="research-workspace__ticker">{item.case_key}</span>
         <CheckCircle2 size={18} />
@@ -147,7 +147,7 @@ function CaseCard({ item, onOpen }: { item: ResearchCaseSummary; onOpen: (caseId
       </div>
       <footer>
         <span><Fingerprint size={14} /> {shortDigest(item.pack_binding.binding_digest)}</span>
-        <b>打开研究案例 →</b>
+        <b>{item.evidence_object_ready ? "打开研究案例 →" : "证据对象未挂载"}</b>
       </footer>
     </button>
   );

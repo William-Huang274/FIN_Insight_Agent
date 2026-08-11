@@ -1,72 +1,37 @@
-# 文档地图
+# FIN 0.1.3 文档地图
 
-这里是 FinSight-Agent 的公开文档入口。新用户不应该先去翻工作日志，也不应该从历史基准评测文档里猜当前系统长什么样；应该先从这里找到适合自己的阅读路径。
+当前文档按“产品目标、当前技术事实、研究质量、历史证据”分层，避免用数百份过程日志冒充项目结构。
 
-## 项目叙事
+## 每次恢复先读
 
-FinSight-Agent 是一个面向公开公司研究的可审计金融研究系统。它把用户的金融问题拆成可检查的研究步骤：判断问题类型、确定研究范围、检索证据、整理数值台账和关系/行业上下文、形成专家结论卡、汇总论证提纲、写投研备忘录，并检查来源边界和缺证结论。
+1. [当前上下文包](project_os/current_context_pack.zh-CN.md)
+2. [高级助手协作规范](project_os/senior_assistant_collaboration_policy.zh-CN.md)
+3. [FIN 0.1.3 当前计划](product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)
+4. [当前代码图](architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md)
 
-公开文档里统一使用 `FinSight-Agent` 作为项目名。`SEC Agent` 只在说明早期 SEC 数据链路或历史文档时使用。
+## 产品
 
-## 读者路径
+- [产品 PRD](product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md)：完整愿景和用户价值。
+- [FIN 0.1.3 当前计划](product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)：唯一当前范围、S 阶段归属和下一步。
+- [PRD 功能吸收与版本分配矩阵](product/FIN_PRD_FULL_ABSORPTION_AND_RELEASE_ALLOCATION_MATRIX_20260719.zh-CN.md)：长期功能归属。
 
-| 你想做什么 | 先看 | 再看 |
-| --- | --- | --- |
-| 快速理解项目 | 根目录 `README.md` | 架构文档入口、质量评价体系 |
-| 克隆后跑本地检查 | 根目录快速开始 | 演示入口、脚本发布面 |
-| 接入自己的数据 | 自有数据快速接入 | 演示入口、数据来源边界 |
-| 体验产品化界面 | Workbench 快速开始 | 数据包、数据构建、演示入口、运行产物说明 |
-| 看产品定位和功能主线 | 产品文档入口 | 架构文档入口、工作日志索引 |
-| 看质量标准和评测 | 投研质量评价体系 | 分层质量门控执行文档 |
-| 查实现历史 | 工作日志索引 | 对应编号的工作日志 |
+## 当前工程
 
-## 主要入口
+- [当前代码图](architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md)
+- [严格主线验收程序](architecture/repository/FIN_0_1_3_STRICT_MAINLINE_REBASELINE_ACCEPTANCE_AND_MIGRATION_PROGRAM_20260811.zh-CN.md)
+- 机器活动图：`../configs/repository/fin_0_1_3_active_baseline_manifest_v1_0.json`
+- 严格验收门：`../configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json`
+- 历史重定向：`../archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-- 根目录 `README.md`：项目定位、核心链路、快速开始、公开边界和文档地图。
-- [产品文档入口](product/README.md)：产品定位、ToB/ToC 分层、用户工作流、功能主线和产品验收口径。产品经理向内容放这里，技术实现拆到架构、评测或交付文档。
-- [CLI 演示入口](demo/sec_agent_demo_entrypoints_v1.zh-CN.md)：单轮演示、多轮会话、已保存运行检查。
-- [自有数据快速接入](deployment/local_custom_data_quickstart.zh-CN.md)：用自己的 SEC、8-K、市场快照和索引跑完整链路。
-- [Workbench 快速开始](workbench/workbench_quickstart.zh-CN.md)：本地界面入口、配置导入、数据包管理、数据构建、产物回填、运行和产物查看。
-- [脚本发布面](../scripts/README.md)：当前主线保留的脚本入口和用途。
+## 研究质量与案例证据
 
-后续文档整理时，演示入口会从 `sec_agent_demo_entrypoints_v1` 改成更统一的 FinSight 命名；当前链接先保持不动，避免一次性移动文件造成断链。
+- [研究内容质量 Rubric](eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md)
+- [三案例研究协议](eval/FIN_0_1_3_CODEX_VS_DEEPSEEK_THREE_CASE_RESEARCH_PROTOCOL_20260806.zh-CN.md)
+- `research/fin_0_1_3_gold_candidates/`：DELL、MU、NVDA 参考研究。
+- `research/fin_0_1_3_retrieval_autopsy/`：三案例真实检索尸检与跨案根因。
 
-## 架构文档
+## Project OS
 
-架构文档应该讲当前系统怎么工作，而不是复述每轮实验历史。
+`project_os/` 的规范路径只保存当前短投影和长期方法注册表。完整旧上下文、能力台账和 root-cause 台账已保存在版本归档，避免每次任务恢复都重新加载数 MB 历史。
 
-计划公开三篇：
-
-- `architecture/fin_sight_agent_architecture.zh-CN.md`：整体架构，说明图运行、工具执行层、检索、数值台账、覆盖检查、备忘录写作和校验。
-- `architecture/multi_agent_orchestration.zh-CN.md`：多智能体调度，说明研究负责人、智能体激活策略、主力/辅助/条件启动、上下文交接和修复循环。
-- `architecture/data_and_tool_access_model.zh-CN.md`：工具和数据权限，说明每类智能体能看什么、能调用什么、不能越过什么边界。
-
-在这些文档写完之前，[分层质量门控执行文档](eval/fin_agent_layered_quality_execution_plan_v0_1.md) 和最近的工作日志保留了更细的实现记录。
-
-## 评测文档
-
-评测文档要分清两件事：一类讲“什么叫好”，一类讲“怎么测”。具体运行编号、调用成本和失败排查不要放在公开入口里，应该放进工作日志或模型运行记录。
-
-- [投研质量评价体系](eval/fin_agent_investment_research_quality_framework_v0_1.md)：定义好的金融研究回答应该满足什么标准。
-- [分层质量门控执行文档](eval/fin_agent_layered_quality_execution_plan_v0_1.md)：说明每一层智能体怎么过门控，什么时候才能跑全链路。
-- [全链路 / 多轮评测计划](eval/fin_agent_full_chain_multiturn_eval_plan_v0_1.md)：说明单轮、多轮和不同问题难度的测试思路。
-- [S1-S8 用例矩阵](eval/fin_agent_s1_s8_agent_quality_case_matrix_v0_2.md)：当前分层用例覆盖情况。后续应把过细的运行编号和成本诊断移到工作日志。
-
-早期 SEC 基准评测 v1/v2 文档属于历史资料，不再作为当前项目入口。
-
-## 发布和历史资料
-
-- `release/`：当前发布状态和公开就绪检查。
-- `worklog/`：按时间记录的实现过程、排查记录和交接文档。
-- [内部规划](internal/README.md)：尚未作为公开能力发布的 vNext 规划、覆盖审计和迁移合同；当前包含 2026-06-10 外部 10 份规划文档的吸收结果和公开/免费数据源覆盖审计。
-- [公开源 S5-S0 物化状态](internal/vnext_20260610/public_source_strength_materialization.zh-CN.md)：说明不使用商业 API 时，各公开源已经落地到 raw/cleaned text、structured fact、resolver/inventory 还是仍停在 parser/key/gap gate。
-- 早期 `sec_agent_v0_1` 和 `sec_benchmark_v1/v2` 文档应保留，但后续会标注为历史资料或移动到归档目录。
-
-## 写作规则
-
-- 产品文档、技术文档和工作日志分开维护。产品文档回答“给谁用、解决什么问题、用户流程和价值是什么”；技术文档回答“怎么实现、接口/数据/运行/评测合同是什么”；工作日志记录“本轮实际做了什么和验证结果”。
-- 不在公开文档里写 API key、私有数据、云端临时路径、原始运行输出或私有供应商产物。
-- 用户真正会复制的命令放在 README、演示、部署、Workbench 或脚本索引里。
-- 实验失败、成本诊断、具体运行编号和调试细节放在工作日志或模型运行记录里。
-- 多智能体调度、上下文交接、工具权限和数据边界是项目主线，不是内部细节，必须在架构文档里讲清楚。
-- `docs/internal/` 里的 vNext 规划不能直接描述为当前已实现能力；进入公开架构文档前必须有对应 source registry、schema、gate 和真实运行证据。
+历史设计、attempt、运行报告和旧工作日志不在当前文档入口；请通过 archive 重定向索引查找。

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
-from sec_agent.s1_six_case_local_evidence_pack import canonical_digest
+from sec_agent.research.reviewed_evidence_pack import canonical_digest
 
 from .research_evidence_pack_service import (
     ResearchEvidencePackPrincipal,
@@ -108,11 +108,17 @@ class ResearchWorkspaceService:
         return _projection(
             {
                 "schema_version": WORKSPACE_PROJECTION_SCHEMA,
-                "status": "identity_bound_research_cases_ready",
+                "status": "identity_bound_research_case_catalog_ready",
                 "product_mode": "current",
                 "primary_route": self._config["surface_policy"]["primary_route"],
                 "evidence_pack_result_digest": self._evidence_packs.result_digest,
                 "items": items,
+                "evidence_objects_ready": bool(
+                    pack_projection["evidence_objects_ready"]
+                ),
+                "unavailable_case_keys": deepcopy(
+                    pack_projection["unavailable_case_keys"]
+                ),
                 "next_cursor": None,
                 "surface_policy": deepcopy(self._config["surface_policy"]),
                 "known_boundary": str(self._config["known_boundary"]),
@@ -126,15 +132,21 @@ class ResearchWorkspaceService:
     ) -> dict[str, Any]:
         self._require_read(principal)
         row = self._case_for_id(case_id)
-        pack = self._evidence_packs.get_case(
-            str(row["case_key"]), self._pack_principal(principal)
-        )
+        pack = self._get_pack(row, principal)
         self._validate_binding(row, pack)
         body = {
             "schema_version": WORKSPACE_PROJECTION_SCHEMA,
             "status": "identity_bound_research_case_ready",
             "product_mode": "current",
-            **self._case_summary(row, dict(pack["summary"])),
+            **self._case_summary(
+                row,
+                {
+                    **dict(pack["summary"]),
+                    "evidence_object_ready": bool(
+                        pack["evidence_object_ready"]
+                    ),
+                },
+            ),
             "research_context": deepcopy(row["research_context"]),
             "evidence_pack_uri": (
                 f"/api/v1/research-cases/{row['case_id']}/evidence"
@@ -151,9 +163,7 @@ class ResearchWorkspaceService:
     ) -> dict[str, Any]:
         self._require_read(principal)
         row = self._case_for_id(case_id)
-        pack = self._evidence_packs.get_case(
-            str(row["case_key"]), self._pack_principal(principal)
-        )
+        pack = self._get_pack(row, principal)
         binding = self._validate_binding(row, pack)
         return _projection(
             {
@@ -302,8 +312,13 @@ class ResearchWorkspaceService:
                 )
                 if key in pack_summary
             },
-            "available_surfaces": deepcopy(
-                self._config["surface_policy"]["available_surfaces"]
+            "evidence_object_ready": bool(
+                pack_summary.get("evidence_object_ready")
+            ),
+            "available_surfaces": (
+                deepcopy(self._config["surface_policy"]["available_surfaces"])
+                if pack_summary.get("evidence_object_ready")
+                else []
             ),
         }
 
@@ -317,6 +332,27 @@ class ResearchWorkspaceService:
                 case_id=case_id,
             )
         return deepcopy(row)
+
+    def _get_pack(
+        self,
+        row: Mapping[str, Any],
+        principal: ResearchWorkspacePrincipal,
+    ) -> dict[str, Any]:
+        try:
+            return self._evidence_packs.get_case(
+                str(row["case_key"]), self._pack_principal(principal)
+            )
+        except ResearchEvidencePackServiceError as exc:
+            detail = {
+                key: value
+                for key, value in exc.detail.items()
+                if key != "reason"
+            }
+            raise ResearchWorkspaceServiceError(
+                exc.error_code,
+                exc.status_code,
+                **detail,
+            ) from exc
 
     def _require_read(self, principal: ResearchWorkspacePrincipal) -> None:
         if principal.mode != self._config["product_mode"]:

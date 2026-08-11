@@ -26,9 +26,9 @@ from apps.workbench.backend.application.research_workspace_service import (
     ResearchWorkspaceServiceError,
 )
 from sec_agent.runtime_resource_registry import load_runtime_resource_registry
-from sec_agent.s1_six_case_local_evidence_pack import (
-    CONTRACT_REF,
-    PACK_SCHEMA,
+from sec_agent.research.reviewed_evidence_pack import (
+    REVIEWED_EVIDENCE_PACK_CONTRACT as CONTRACT_REF,
+    REVIEWED_EVIDENCE_PACK_SCHEMA as PACK_SCHEMA,
     canonical_digest,
 )
 
@@ -334,36 +334,27 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CLEAN-BASELINE-WORKBENCH-S1-RUNTIME-RESOURCE-REGISTRY-R1"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R2"
     )
-    assert {
+    assert set(registry.by_id()) == {
         "application.config.current_research_evidence_pack_projection",
+        "application.config.current_research_workspace_catalog",
         "application.result.current_research_local_evidence_packs",
-    }.issubset(registry.by_id())
+    }
+    assert registry.detector_python_refs == (
+        "apps/workbench/backend/application/research_evidence_pack_service.py",
+        "apps/workbench/backend/application/research_workspace_service.py",
+    )
+    assert all(
+        "fin_0_1_2" not in row.repo_relative_path
+        and "p36" not in row.repo_relative_path.lower()
+        and "r53_r60" not in row.repo_relative_path
+        for row in registry.resources
+    )
     assert (
         "apps/workbench/backend/application/research_evidence_pack_service.py"
         in registry.detector_python_refs
     )
-    consumer_map = json.loads(
-        (
-            ROOT
-            / "configs/repository/fin_0_1_3_workbench_route_runtime_resource_consumer_map_v1_0.json"
-        ).read_text(encoding="utf-8")
-    )
-    assert consumer_map["route_inventory"] == {
-        "total_fastapi_decorated_routes": 109,
-        "versioned_api_routes": 43,
-        "direct_app_routes": 66,
-        "frontend_fallback_routes": 7,
-        "source": (
-            "AST inventory over apps/workbench/backend/app.py and api/v1/*.py"
-        ),
-    }
-    dispositions = consumer_map["unknown_static_consumer_disposition"]
-    assert sum(len(row["paths"]) for row in dispositions) == 13
-    assert consumer_map["first_s1_vertical"]["tests"][
-        "new_and_registry_contracts"
-    ] == "18 passed"
 
 
 def test_workbench_api_exposes_reviewed_content_and_gaps_without_raw_material(

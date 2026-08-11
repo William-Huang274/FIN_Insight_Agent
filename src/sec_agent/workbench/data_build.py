@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .job_runner import CommandSpec
+from .process_runner import CommandSpec
 from .profiles import WorkbenchProfile
 
 
@@ -316,25 +316,6 @@ _DATA_BUILD_STEPS = {
         ],
         output_parameters=["output_dir"],
     ),
-    "sec_build_object_bm25_index": _step(
-        "sec_build_object_bm25_index",
-        "SEC",
-        "构建 ObjectBM25 索引",
-        "从结构化对象目录构建 ObjectBM25 索引。",
-        "scripts/data_retrieval/build_object_bm25_index.py",
-        [
-            _param("structured_dir", "--structured-dir", "结构化对象目录", required=True),
-            _param("prefix", "--prefix", "文件前缀"),
-            _param("output_dir", "--output-dir", "输出索引目录", required=True),
-            _param("record_mode", "--record-mode", "记录模式", default="compact"),
-            _param("workers", "--workers", "工作线程"),
-            _param("cpu_workers", "--cpu-workers", "CPU worker"),
-            _param("batch_bytes", "--batch-bytes", "批字节数"),
-            _param("progress_every", "--progress-every", "进度间隔"),
-            _param("no_slim_jsonl", "--no-slim-jsonl", "跳过 slim jsonl", kind="bool"),
-        ],
-        output_parameters=["output_dir"],
-    ),
     "sec_download_8k_earnings": _step(
         "sec_download_8k_earnings",
         "8-K",
@@ -342,7 +323,12 @@ _DATA_BUILD_STEPS = {
         "下载公司 8-K 业绩新闻稿附件，并可输出缺口记录。",
         "scripts/data_sec/download_sec_8k_earnings.py",
         [
-            _param("config", "--config", "配置 YAML", default="configs/sec_8k_earnings_pilot.yaml"),
+            _param(
+                "config",
+                "--config",
+                "配置 YAML",
+                default="configs/sec_tech_8k_earnings_pilot_2026_2027.yaml",
+            ),
             _param("cache_dir", "--cache-dir", "8-K 缓存目录", default="data/raw_private/sec_8k_earnings"),
             _param("user_agent", "--user-agent", "SEC User-Agent"),
             _param("tickers", "--tickers", "股票代码"),
@@ -363,7 +349,12 @@ _DATA_BUILD_STEPS = {
         "从 8-K 业绩稿缓存生成 manifest 和缺口记录。",
         "scripts/data_sec/build_sec_8k_earnings_manifest.py",
         [
-            _param("config", "--config", "配置 YAML", default="configs/sec_8k_earnings_pilot.yaml"),
+            _param(
+                "config",
+                "--config",
+                "配置 YAML",
+                default="configs/sec_tech_8k_earnings_pilot_2026_2027.yaml",
+            ),
             _param("root", "--root", "8-K 缓存目录", default="data/raw_private/sec_8k_earnings"),
             _param("output", "--output", "输出清单", required=True),
             _param("years", "--years", "年份"),
@@ -373,6 +364,24 @@ _DATA_BUILD_STEPS = {
             _param("gap_output", "--gap-output", "缺口输出"),
         ],
         output_parameters=["output", "gap_output"],
+    ),
+    "sec_build_8k_chunks": _step(
+        "sec_build_8k_chunks",
+        "8-K",
+        "切分 8-K 业绩稿",
+        "把已捕获的 8-K 业绩稿附件切分成可进入 EvidenceObject 的片段。",
+        "scripts/data_sec/build_sec_8k_earnings_chunks.py",
+        [
+            _param("manifest", "--manifest", "输入 8-K 清单", required=True),
+            _param("output", "--output", "输出 chunks", required=True),
+            _param("years", "--years", "年份"),
+            _param("tickers", "--tickers", "股票代码"),
+            _param("target_words", "--target-words", "目标词数"),
+            _param("overlap_words", "--overlap-words", "重叠词数"),
+            _param("min_words", "--min-words", "最小词数"),
+            _param("limit", "--limit", "文件上限"),
+        ],
+        output_parameters=["output"],
     ),
     "sec_merge_source_gaps": _step(
         "sec_merge_source_gaps",

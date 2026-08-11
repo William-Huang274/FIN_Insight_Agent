@@ -1,0 +1,171 @@
+{
+  "schema_version": "fin_ia_code_lifecycle_cutover_v1_0",
+  "baseline_id": "FIN_0_1_3_CLEAN_REBASELINE_20260811",
+  "recorded_at": "2026-08-11",
+  "status": "route_map_complete_first_s1_product_api_vertical_pass_ui_cutover_pending",
+  "worktree": {
+    "path": "D:/FIN_Insight_Agent_fin013_rebaseline",
+    "branch": "codex/fin013-clean-baseline",
+    "base_commit": "87a8276fcb26aafab066bd42852759cffcb41b46",
+    "purpose": "single_fin_0_1_3_rebaseline_not_parallel_product_runtime"
+  },
+  "owner_authority": {
+    "delete_allowed": false,
+    "move_allowed": true,
+    "archive_allowed": true,
+    "refactor_allowed": true,
+    "mass_move_before_consumer_audit": false
+  },
+  "observed_python_ownership": {
+    "scope": "tracked_python_under_src_apps_scripts_tests",
+    "files": 2172,
+    "parse_errors": 0,
+    "src_files": 387,
+    "src_classes": {
+      "product_workbench_reachable": 119,
+      "operator_data_pipeline_reachable": 132,
+      "public_cli_mcp_reachable": 14,
+      "release_runner_reachable_only": 99,
+      "test_reachable_only": 5,
+      "eval_reachable_only": 5,
+      "no_known_static_consumer": 13
+    },
+    "release_only_candidate_families": {
+      "fin_0_1_3_s1_retrieval_evidence": 62,
+      "fin_0_1_3_s2_contract_numeric": 20,
+      "fin_0_1_3_s3_dynamic_research": 12,
+      "other_candidate_or_release": 5
+    }
+  },
+  "workbench_runtime_observation": {
+    "repository_modules_imported": 173,
+    "static_src_closure": 119,
+    "families": {
+      "legacy_r53_r60": 22,
+      "canonical_runtime": 15,
+      "fin_0_1_2_binding_projection_review": 7,
+      "sec_agent_workbench": 12,
+      "workbench_api": 9,
+      "workbench_application_other": 14
+    },
+    "fin_0_1_3_candidate_cutover_complete": false
+  },
+  "release_script_observation": {
+    "files": 359,
+    "lines": 103867,
+    "prefix_counts": {
+      "materialize": 113,
+      "run": 74,
+      "prepare": 65,
+      "issue": 54,
+      "other": 53
+    },
+    "target": "one_generic_runner_plus_versioned_contract_plus_immutable_attempt_record"
+  },
+  "p0_findings": [
+    {
+      "id": "P0_PORTABLE_TEXT_RESOURCE_IDENTITY",
+      "evidence": "clean_LF_checkout_fails_registry_while_original_CRLF_checkout_passes",
+      "affected_registry_files": 7,
+      "affected_unique_resources_observed": 6,
+      "root_cause": "raw_checkout_bytes_used_as_text_resource_identity",
+      "resolution": "promote_existing_universal_newline_equivalence_to_shared_registry_without_relaxing_content_mutation_gate",
+      "state": "closed_in_first_baseline_slice"
+    },
+    {
+      "id": "P0_WORKBENCH_CODE_DATA_ROOT_COUPLING",
+      "evidence": "clean_worktree_has_no_ignored_74GiB_data_and_workbench_derives_assets_from_repo_root",
+      "root_cause": "repo_root_is_used_as_code_config_data_capture_and_artifact_root",
+      "resolution": "reuse_existing_RuntimePathRegistry_and_FINSIGHT_DATA_ROOT_contract",
+      "state": "closed_for_workbench_store_local_research_job_audit_and_current_search"
+    },
+    {
+      "id": "P0_CURRENT_PRODUCT_TEST_BASELINE",
+      "evidence": "selected_current_workbench_suite_74_passed_3_failed",
+      "root_cause": "temporary_repo_fixtures_do_not_include_new_default_runtime_resource_registry_dependency",
+      "resolution": "separate_current_code_contract_root_from_redirectable_legacy_workspace_and_data_roots",
+      "state": "closed_143_current_product_tests_pass"
+    },
+    {
+      "id": "P0_HISTORICAL_PROOF_CURRENT_SOURCE_CONFLATION",
+      "evidence": "repair_closeout_S0_02_has_three_source_binding_digests_already_drifted_at_introduction_commit",
+      "root_cause": "historical_decision_test_compares_old_record_to_mutable_current_source_instead_of_historical_git_blob",
+      "resolution": "preserve_old_record_validate_birth_commit_and_explicitly_classify_three_birth_drifts",
+      "state": "closed_without_rewriting_historical_evidence"
+    }
+  ],
+  "first_slice_validation": {
+    "workbench_clean_import": "pass",
+    "current_product_workbench_runtime_tests": 143,
+    "current_product_workbench_runtime_test_failures": 0,
+    "registry_shared_ledger_historical_semantics_tests": 29,
+    "registry_shared_ledger_historical_semantics_failures": 0,
+    "s4_t03_t05_three_case_adjacent_tests": 27,
+    "s4_t03_t05_three_case_adjacent_failures": 0,
+    "external_data_root": "D:/FIN_Insight_Agent/data",
+    "external_data_copied": false,
+    "nvda_local_search": {
+      "terminal_status": "success",
+      "accepted_by_research_cell": [6, 6, 6],
+      "accepted_total": 18,
+      "rejected_total": 13,
+      "local_invocations": 6,
+      "live_network_calls": 0,
+      "model_calls": 0,
+      "provider_calls": 0
+    },
+    "files_deleted": 0,
+    "historical_runs_rewritten": 0
+  },
+  "second_slice_validation": {
+    "consumer_map_ref": "configs/repository/fin_0_1_3_workbench_route_runtime_resource_consumer_map_v1_0.json",
+    "fastapi_route_count": 109,
+    "frontdoor_families": ["current", "point02_03_fixture", "next_candidate", "legacy_r53_r60"],
+    "unknown_static_consumers_resolved": 13,
+    "unknown_files_moved": 0,
+    "next_frontend_direct_route": "pass",
+    "clean_baseline_runtime_registry_resources": 33,
+    "s1_product_api_contract_tests": 18,
+    "real_case_mount": {
+      "DELL": {"evidence_items": 15, "residual_gaps": 16, "http_status": 200},
+      "MU": {"evidence_items": 16, "residual_gaps": 13, "http_status": 200},
+      "NVDA": {"evidence_items": 14, "residual_gaps": 13, "http_status": 200}
+    },
+    "model_calls": 0,
+    "provider_calls": 0,
+    "live_network_calls": 0,
+    "automatic_evidence_promotion": false,
+    "ui_consumer_cutover_complete": false
+  },
+  "lifecycle_actions": [
+    "keep",
+    "promote",
+    "merge",
+    "archive_after_cutover",
+    "quarantine_pending_consumer_review"
+  ],
+  "archive_roots_planned": [
+    "archive/code/pre_fin_0_1",
+    "archive/code/fin_0_1_1",
+    "archive/code/fin_0_1_2",
+    "archive/code/fin_0_1_3_attempts"
+  ],
+  "archive_assignment_basis": [
+    "git_introduction_commit",
+    "last_real_product_consumer",
+    "successor_equivalence",
+    "static_dynamic_config_and_operator_references",
+    "redirect_manifest_and_reproduction_integrity"
+  ],
+  "cutover_gates": [
+    "shared_portable_resource_identity",
+    "explicit_code_and_data_roots",
+    "workbench_route_to_runtime_consumer_map",
+    "candidate_adapter_into_canonical_runtime",
+    "library_api_ui_consistency",
+    "financial_content_acceptance",
+    "old_consumer_zero",
+    "git_rename_with_redirect_manifest"
+  ],
+  "next_action": "ADD_TYPED_CASE_SUBJECT_AND_CASE_TO_CURRENT_RESEARCH_PACK_BINDING_THEN_CONNECT_ONE_WORKBENCH_EVIDENCE_VIEW_WITHOUT_REBUILDING_RETRIEVAL"
+}

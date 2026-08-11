@@ -14,6 +14,7 @@ class RuntimePathRegistry:
     primary_data_root: Path
     secondary_data_roots: tuple[Path, ...]
     object_store_root: Path
+    reviewed_evidence_root: Path
     workbench_private_root: Path
     milvus_mode: str
     milvus_note: str
@@ -31,6 +32,7 @@ class RuntimePathRegistry:
             "primary_data_root": str(self.primary_data_root),
             "secondary_data_roots": [str(path) for path in self.secondary_data_roots],
             "object_store_root": str(self.object_store_root),
+            "reviewed_evidence_root": str(self.reviewed_evidence_root),
             "workbench_private_root": str(self.workbench_private_root),
             "milvus_mode": self.milvus_mode,
             "milvus_note": self.milvus_note,
@@ -55,6 +57,10 @@ def resolve_runtime_paths(repo_root: str | Path | None = None) -> RuntimePathReg
         if value.strip()
     )
     object_store = Path(os.environ.get("FINSIGHT_OBJECT_STORE_ROOT") or primary / "object_store").resolve()
+    reviewed_evidence = Path(
+        os.environ.get("FINSIGHT_REVIEWED_EVIDENCE_ROOT")
+        or primary / "workbench_private"
+    ).resolve()
     workbench_private = Path(os.environ.get("FINSIGHT_WORKBENCH_PRIVATE_ROOT") or primary / "workbench_private").resolve()
     milvus_mode = (
         os.environ.get("FINSIGHT_MILVUS_MODE")
@@ -91,6 +97,7 @@ def resolve_runtime_paths(repo_root: str | Path | None = None) -> RuntimePathReg
         primary_data_root=primary,
         secondary_data_roots=secondary,
         object_store_root=object_store,
+        reviewed_evidence_root=reviewed_evidence,
         workbench_private_root=workbench_private,
         milvus_mode=milvus_mode,
         milvus_note=milvus_note,

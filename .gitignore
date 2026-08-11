@@ -92,6 +92,7 @@ docs/interview/
 # Local Codex/Workbench runtime state and generated visual previews.
 # Durable release evidence belongs under /reports/release_evidence/ instead.
 /.codex_runtime/
+**/.codex_runtime/
 /output/
 
 # Capture-first provider diagnostics: preserve raw responses locally for audit,

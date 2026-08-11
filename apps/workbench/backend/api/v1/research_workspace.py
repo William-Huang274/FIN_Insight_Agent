@@ -16,11 +16,13 @@ class ResearchWorkspaceCaseListResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: str
-    status: Literal["identity_bound_research_cases_ready"]
+    status: Literal["identity_bound_research_case_catalog_ready"]
     product_mode: Literal["current"]
     primary_route: Literal["/workspace"]
     evidence_pack_result_digest: str
     items: list[dict[str, Any]]
+    evidence_objects_ready: bool
+    unavailable_case_keys: list[str]
     next_cursor: None = None
     surface_policy: dict[str, Any]
     known_boundary: str
@@ -43,6 +45,7 @@ class ResearchWorkspaceCaseResponse(BaseModel):
     pack_binding: dict[str, Any]
     evidence_summary: dict[str, Any]
     available_surfaces: list[str]
+    evidence_object_ready: bool
     research_context: dict[str, Any]
     evidence_pack_uri: str
     surface_policy: dict[str, Any]

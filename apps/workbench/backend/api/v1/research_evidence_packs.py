@@ -17,9 +17,11 @@ class ResearchEvidencePackListResponse(BaseModel):
 
     schema_version: str
     projection_mode: Literal["current"]
-    status: Literal["reviewed_local_evidence_packs_ready_with_declared_gaps"]
+    status: Literal["reviewed_evidence_catalog_ready"]
     result_digest: str
     items: list[dict[str, Any]]
+    evidence_objects_ready: bool
+    unavailable_case_keys: list[str]
     next_cursor: None = None
     hard_boundaries: dict[str, Any]
     known_boundary: str
@@ -34,6 +36,7 @@ class ResearchEvidencePackResponse(BaseModel):
     status: Literal["reviewed_local_evidence_pack_ready_with_declared_gaps"]
     result_digest: str
     case_key: str
+    evidence_object_ready: bool
     artifact_digest: str
     pack_payload_digest: str
     summary: dict[str, Any]

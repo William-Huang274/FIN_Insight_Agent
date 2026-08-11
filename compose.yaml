@@ -3,30 +3,36 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: workbench-backend
+      target: workbench
       args:
-        REQUIREMENTS_FILE: requirements-workbench.txt
-        WORKBENCH_IMAGE_KIND: backend
-        WORKBENCH_RUNTIME_PROFILE: control-plane
+        REQUIREMENTS_FILE: requirements.txt
+        WORKBENCH_IMAGE_KIND: current-product
+        WORKBENCH_RUNTIME_PROFILE: reviewed-evidence
     image: finsight-workbench:compose
     ports:
       - "127.0.0.1:8765:8765"
     environment:
       PYTHONUNBUFFERED: "1"
-      WORKBENCH_IMAGE_KIND: backend
-      WORKBENCH_RUNTIME_PROFILE: control-plane
+      WORKBENCH_IMAGE_KIND: current-product
+      WORKBENCH_RUNTIME_PROFILE: reviewed-evidence
       WORKBENCH_SCRIPT_UPDATE_MODE: image_rebuild
       WORKBENCH_DATA_UPDATE_MODE: data_build_jobs
-      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:-}"
-      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      FINSIGHT_DATA_ROOT: "/app/data"
+      FINSIGHT_REVIEWED_EVIDENCE_ROOT: "/app/reviewed-evidence"
+      FINSIGHT_WORKBENCH_PRIVATE_ROOT: "/app/state/workbench_private"
       FMP_API_KEY: "${FMP_API_KEY:-}"
+      EIA_API_KEY: "${EIA_API_KEY:-}"
     volumes:
-      - ${WORKBENCH_CONFIGS_MOUNT:-./configs}:/app/configs
+      - ${WORKBENCH_CONFIGS_MOUNT:-./configs}:/app/configs:ro
       - ${WORKBENCH_DATA_MOUNT:-./data}:/app/data
-      - ${WORKBENCH_REPORTS_MOUNT:-./reports}:/app/reports
+      - ${WORKBENCH_REVIEWED_EVIDENCE_MOUNT:-./data/workbench_private}:/app/reviewed-evidence:ro
+      - finsight-workbench-state:/app/state
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/api/health/ready', timeout=5).read()"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/api/health', timeout=5).read()"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 20s
+
+volumes:
+  finsight-workbench-state:

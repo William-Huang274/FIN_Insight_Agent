@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import sys
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]
@@ -19,6 +21,7 @@ from sec_agent.s2_selected_evidence_numeric_natural_node_canary import (  # noqa
 )
 from sec_agent.s2_selected_evidence_numeric_natural_node_canary_live import (  # noqa: E402
     LIVE_SCOPE,
+    SelectedEvidenceNumericNaturalNodeCanaryLiveError,
     validate_live_canary_issuance,
 )
 
@@ -57,21 +60,23 @@ def _load(path: Path) -> dict:
     return value
 
 
-def test_v1_1_issuance_validates_against_current_contract_and_window() -> None:
+def test_v1_1_issuance_is_immutable_and_rejected_after_source_drift() -> None:
     issuance = _load(ISSUANCE)
     material = compile_canary_material(
         policy=load_canary_policy(POLICY, repo_root=ROOT), repo_root=ROOT
     )
     preflight = run_project_os_preflight(ROOT, run_scope=LIVE_SCOPE)
-    validate_live_canary_issuance(
-        issuance,
-        decision=_load(DECISION),
-        clean_proof=_load(PROOF),
-        material=material,
-        project_os_preflight=preflight,
-        repo_root=ROOT,
-        observed_at=issuance["authority"]["issued_at"],
-    )
+    with pytest.raises(SelectedEvidenceNumericNaturalNodeCanaryLiveError) as exc:
+        validate_live_canary_issuance(
+            issuance,
+            decision=_load(DECISION),
+            clean_proof=_load(PROOF),
+            material=material,
+            project_os_preflight=preflight,
+            repo_root=ROOT,
+            observed_at=issuance["authority"]["issued_at"],
+        )
+    assert exc.value.code == "live_canary_source_binding_sha256_drift"
     body = {
         key: value for key, value in issuance.items() if key != "issuance_digest"
     }

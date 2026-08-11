@@ -567,3 +567,29 @@ TECH_05 重新解释受影响 Judgment，TECH_09 把相关 SurfaceClaim/table/ch
 4. 同一 approved NumericProgramRun 在 memo/model/deck/dashboard 保持 value/unit/period/rounding identity。
 
 本节状态为 `documented / contract_draft`；不表示现有 SQL rows、表格抽取或 derived metrics 已通过新 hard gate。
+
+## 19. 2026-08-11 Protected Numeric Presentation Renderer
+
+S2 自然 canary 证明，NumericFact 的业务身份与自然语言展示不能继续用 whole-string equality 绑定。模型写出的 `surpassing` 与 source canonical `surpassed` 具有相同 strict-greater-than 方向，但旧 validator 在 numeric guard 之前即 hard fail。TECH_04 因此新增 `ProtectedNumericPresentationRenderer`，其输入只允许：
+
+- 已晋升 NumericFact／Formula 与稳定 `NUM／FORM` ref；
+- 模型在当前 atom 中明确选择的 refs；
+- NumericFact 已绑定的 entity、period、unit、value kind、qualifier 与 approved presentation receipts；
+- 当前 Evidence role 和 case identity。
+
+Runtime 顺序固定为：
+
+```text
+model judgment atom + selected NUM refs
+ -> typed relation check for any model-visible protected numeric phrase
+ -> entity / period / unit / value / negation fail-closed checks
+ -> local canonical protected-span rendering
+ -> shared numeric authority guard
+ -> semantic Verifier and Artifact promotion
+```
+
+兼容 v1 的 relation compiler 只接受有界枚举，如 `greater_than / greater_than_or_equal / equal / approximate / less_than / less_than_or_equal`；否定作用域、方向冲突、foreign entity、wrong period、wrong unit/value 或无法唯一绑定必须拒绝。禁止 provider/model 名称分支、编辑距离、embedding similarity、无界同义词、整句重写或通过扩大字符上限掩盖问题。
+
+长期 v2 合同不应继续解析模型自由叙事来猜数字关系。模型应返回 typed numeric claim selection（至少 `numeric_ref + relation/qualifier enum`），本地生成 canonical fact strip 或受保护 span；模型仍拥有 thesis、机制、反方、uncertainty 和 what-would-change，Harness 只拥有 material fact rendering。Raw model prose 保留作审计但不是金融事实写入面。
+
+当前零调用 successor 已在 immutable canary capture 上把四个 NUM 绑定为四个 protected spans，仅把一个 count 词形规范化；negation、below/at-most、foreign entity、wrong period、wrong scale/value 和额外未绑定 count mutation 均 fail closed。旧 terminal 仍 failed。该 working-tree 结果需要 clean archive／fresh process 复证，不能直接声明 S2、DELL 或 release 通过。

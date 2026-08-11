@@ -17,6 +17,10 @@ from sec_agent.s2_selected_evidence_numeric_cocompilation import (
     evaluate_delivery_numeric_authority,
     load_numeric_cocompilation_policy,
 )
+from sec_agent.s2_numeric_presentation_renderer import (
+    NumericPresentationRendererError,
+    render_protected_numeric_presentations,
+)
 from sec_agent.shared_admission_ledger import SharedAdmissionConsumptionLedger
 
 
@@ -376,7 +380,10 @@ def _list_of_unique_strings(value: Any, code: str) -> list[str]:
 
 
 def validate_canary_output(
-    *, output: Mapping[str, Any], material: Mapping[str, Any]
+    *,
+    output: Mapping[str, Any],
+    material: Mapping[str, Any],
+    presentation_mode: str = "model_exact_surface",
 ) -> dict[str, Any]:
     policy = dict(material["policy"])
     contract = dict(policy["output_contract"])
@@ -464,7 +471,46 @@ def validate_canary_output(
         and bool(set(canary["required_one_of_numeric_refs"]) & union_refs),
         "natural_node_canary_numeric_ref_requirements_failed",
     )
-    delivery_text = "\n".join(str(row["text"]) for row in atoms.values())
+    raw_delivery_text = "\n".join(str(row["text"]) for row in atoms.values())
+    rendering_receipts: list[dict[str, Any]] = []
+    if presentation_mode == "model_exact_surface":
+        delivery_text = raw_delivery_text
+    elif presentation_mode == "local_protected_renderer":
+        rendered_atom_texts: list[str] = []
+        compiled_input = dict(material.get("compiled_input") or {})
+        try:
+            for key in (
+                "support_atom",
+                "counterevidence_atom",
+                "boundary_atom",
+            ):
+                atom = atoms[key]
+                rendered = render_protected_numeric_presentations(
+                    atom_text=str(atom["text"]),
+                    numeric_refs=list(atom["numeric_refs"]),
+                    numeric_facts=list(
+                        compiled_input.get("numeric_facts") or ()
+                    ),
+                    case_key=str(output["case_key"]),
+                    evidence=list(compiled_input.get("evidence") or ()),
+                )
+                rendered_atom_texts.append(str(rendered["rendered_text"]))
+                rendering_receipts.append(
+                    {
+                        key: {
+                            field: deepcopy(value)
+                            for field, value in rendered.items()
+                            if field != "rendered_text"
+                        }
+                    }
+                )
+        except NumericPresentationRendererError as exc:
+            raise SelectedEvidenceNumericNaturalNodeCanaryError(exc.code) from exc
+        delivery_text = "\n".join(rendered_atom_texts)
+    else:
+        raise SelectedEvidenceNumericNaturalNodeCanaryError(
+            "natural_node_canary_presentation_mode_invalid"
+        )
     normalized_text = delivery_text.casefold()
     _require(
         all(
@@ -549,6 +595,15 @@ def validate_canary_output(
         "numeric_guard_digest": numeric_guard["guard_result_digest"],
         "business_artifact_promotion": False,
     }
+    if presentation_mode == "local_protected_renderer":
+        body["presentation_mode"] = presentation_mode
+        body["raw_delivery_digest"] = canonical_digest(
+            {"text": raw_delivery_text}
+        )
+        body["rendered_delivery_digest"] = canonical_digest(
+            {"text": delivery_text}
+        )
+        body["local_rendering_receipts"] = rendering_receipts
     return {**body, "validation_digest": canonical_digest(body)}
 
 

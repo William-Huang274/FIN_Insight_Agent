@@ -1,0 +1,144 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_provider_neutral_numeric_presentation_equivalence_local_renderer_zero_call_result_v1_0",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "status": "working_tree_zero_call_immutable_capture_successor_pass_clean_proof_pending",
+  "predecessor_terminal": {
+    "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_terminal_and_semantic_audit_v1_0.json",
+    "result_digest": "ca579cb54822ad94058f32acc8455249037f6e52fccfad9550d1c7e890fcd3bd",
+    "formal_status": "failed",
+    "terminal_code": "natural_node_canary_required_presentations_missing",
+    "formal_terminal_remains_immutable_failed": true,
+    "admission_consumed": true,
+    "rerun_or_relabel": false
+  },
+  "architecture_disposition": {
+    "selected": "model_selects_bound_NUM_refs_and_research_judgment_local_control_plane_renders_only_protected_numeric_spans",
+    "model_owns": [
+      "thesis_and_directional_judgment",
+      "mechanism_and_counterevidence",
+      "epistemic_boundary",
+      "Evidence_and_NUM_ref_selection"
+    ],
+    "local_control_plane_owns": [
+      "numeric_value_entity_period_unit_and_qualifier_identity",
+      "approved_presentation_selection",
+      "protected_span_grammatical_rendering",
+      "numeric_lineage_and_promotion"
+    ],
+    "compatibility_adapter": "The v1 capture is accepted only after a bounded relation compiler proves the observed count phrase has the same strict-greater-than direction as the bound NumericFact. This adapter is a migration bridge for free-prose v1 output, not the permanent report contract.",
+    "target_contract": "A successor output contract should return typed numeric claim selections (NUM ref plus relation/qualifier enum) and non-authoritative judgment prose. Local rendering should not need fuzzy parsing of model prose.",
+    "rejected": [
+      "DeepSeek-specific phrase whitelist",
+      "whole-string exact identity as a financial L1 invariant",
+      "unbounded synonym or embedding equivalence",
+      "Harness-authored thesis or full narrative",
+      "automatic second Provider canary"
+    ],
+    "provider_neutral": true,
+    "full_narrative_local_assembly": false
+  },
+  "implementation": {
+    "renderer_ref": "src/sec_agent/s2_numeric_presentation_renderer.py",
+    "renderer_sha256": "e4467cdc74ef0990f51f026534a7f83bf3e8e288e2804a60b732988b96f2951e",
+    "canary_validator_ref": "src/sec_agent/s2_selected_evidence_numeric_natural_node_canary.py",
+    "canary_validator_sha256": "0e3620593c4d86c8abd8a12fb98a9a7ad695c10cab0c8ae68d8858bc43eb3b24",
+    "shared_numeric_guard_ref": "src/sec_agent/s2_selected_evidence_numeric_cocompilation.py",
+    "shared_numeric_guard_sha256": "0d919a8fd20115dbdd0aabf6dc6a620d7fb4793545b04cbb5900d387c9d4b0fc",
+    "old_exact_surface_mode_preserved": true,
+    "new_mode": "local_protected_renderer",
+    "free_prose_rewrite": false,
+    "count_inflection_output_scanner_hardened": true
+  },
+  "immutable_capture_replay": {
+    "capture_ref": "data/workbench_private/fin_0_1_3_s2_selected_evidence_numeric_natural_node_canary/live/attempts/fin013_s2_numeric_view_natural_canary_789cf2edee8c4818b160/raw_model_only/calls/call_01/capture.json",
+    "capture_digest": "7cfd3c822acda2f2f21b035801c9c1866a450f51848c68d2df9b40102553b9b6",
+    "capture_versioned": false,
+    "replay_input_source": "capture.provider_response.content",
+    "provider_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "old_exact_surface_validator": "failed_as_recorded",
+    "successor_validator": "pass",
+    "validation_digest": "35a06db48f3adaca4718a624bce15704ecc3546a602098c2a4b84a0108c62036",
+    "raw_delivery_digest": "0cb82dee663c06e58b60d7f69e9dd054c6ad631a2e895ca0ce4195e2c62a1b93",
+    "rendered_delivery_digest": "f75256e3ec98a64398cb6becc6f5d22b4d12a448f87b701f88b4d7828f81ebe5",
+    "support_renderer_receipt_digest": "943715893f9d390dc7810019cef0e51af8185ac0d1e72d9ecd1707aca9e73f4d",
+    "numeric_guard_digest": "c8130130f462b505c0e7924a2d3a8088cc61b0e19687bb79cc6694d06b5d8d25",
+    "protected_span_count": 4,
+    "changed_protected_spans": 1,
+    "only_changed_surface": {
+      "numeric_ref": "NUM:DELL:CUSTOMER_COUNT:8C7F5A41CBF9",
+      "observed": "customer count surpassing 5,000",
+      "canonical": "customer count surpassed 5,000",
+      "relation": "greater_than",
+      "equivalence_basis": "bounded_relation_equivalence"
+    },
+    "non_protected_model_prose_unchanged": true,
+    "boundary_topic_groups": ["conversion", "margin"]
+  },
+  "fail_closed_mutations": [
+    {
+      "mutation": "negated strict-greater-than relation",
+      "expected_code": "numeric_presentation_renderer_negated_relation"
+    },
+    {
+      "mutation": "below-threshold relation",
+      "expected_code": "numeric_presentation_renderer_relation_direction_mismatch"
+    },
+    {
+      "mutation": "at-most relation",
+      "expected_code": "numeric_presentation_renderer_relation_direction_mismatch"
+    },
+    {
+      "mutation": "foreign evidence-owner entity",
+      "expected_code": "numeric_presentation_renderer_foreign_entity_mismatch"
+    },
+    {
+      "mutation": "wrong fiscal period",
+      "expected_code": "numeric_presentation_renderer_period_mismatch"
+    },
+    {
+      "mutation": "wrong currency scale",
+      "expected_code": "numeric_presentation_renderer_required_numeric_surface_missing"
+    },
+    {
+      "mutation": "wrong count value",
+      "expected_code": "numeric_presentation_renderer_required_count_claim_missing"
+    },
+    {
+      "mutation": "additional unbound inflected count",
+      "expected_code": "natural_node_canary_local_numeric_gate_failed"
+    }
+  ],
+  "working_tree_verification": {
+    "focused_and_adjacent_tests": "49 passed",
+    "old_exact_mode_regression": "pass",
+    "provider_specific_branch": false,
+    "clean_archive_fresh_process_proof": false
+  },
+  "issue_disposition": {
+    "issue_id": "RC-P36-170-fin-0-1-3-s2-fixed-pack-numeric-presentation-alias-and-formula-lineage-gap",
+    "state": "mitigated_open_working_tree_renderer_pass_clean_proof_pending",
+    "current_substantive_model_fault": false,
+    "project_acceptance_false_negative_repaired_in_successor": true,
+    "formal_live_terminal_changed": false
+  },
+  "stage_acceptance": {
+    "natural_model_observation_completed": true,
+    "natural_model_semantic_objective_met": true,
+    "old_formal_canary_contract_pass": false,
+    "successor_local_renderer_working_tree_pass": true,
+    "successor_clean_proof": false,
+    "dell_full_report_pass": false,
+    "S2_closeout": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "known_boundary": "This result proves a zero-call successor over the immutable captured output and fail-closed mutations. It does not relabel the failed exact-live terminal, authorize another model call, prove a full Dell report, close S2, or satisfy Owner/release acceptance.",
+  "next_action": "COMMIT_PUSH_PROVIDER_NEUTRAL_RENDERER_THEN_TWO_CLEAN_ARCHIVE_FRESH_PROCESS_ZERO_CALL_PROOF_BEFORE_S2_CLOSEOUT_DECISION",
+  "result_digest": "79148601bbcadfe277cd68dcd27e1595db681459ca116e11bebad395a7b0a031"
+}

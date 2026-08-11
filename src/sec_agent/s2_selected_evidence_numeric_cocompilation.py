@@ -92,7 +92,8 @@ _COUNT_AFTER_RE = re.compile(
 _COUNT_BEFORE_RE = re.compile(
     r"(?P<noun>customer\s+count|customers?|systems?|servers?|units?|shipments?)"
     r"[^.\n]{0,32}?"
-    r"(?P<qualifier>surpassed|exceeded|more\s+than|over|at\s+least|approximately|about|nearly)\s*"
+    r"(?P<qualifier>surpass(?:es|ed|ing)?|exceed(?:s|ed|ing)?|"
+    r"more\s+than|over|at\s+least|approximately|about|nearly)\s*"
     rf"(?P<number>{_NUMBER})",
     re.IGNORECASE,
 )

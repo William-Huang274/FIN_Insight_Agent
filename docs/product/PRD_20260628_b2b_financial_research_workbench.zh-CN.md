@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-11 | S2 单节点 DeepSeek Pro canary 的业务判断、4 个 NUM ref、反方和边界均正确，formal failure 仅来自 `surpassing` 未逐字等于 `surpassed`。产品门据此纠正：whole-string 英语词形不再作为金融 L1；模型选择 Evidence／NUM 与研究判断，本地只渲染受保护数字片段。兼容层必须先把 relation 编译为 typed direction，并对否定、低于阈值、错实体／期间／单位 fail closed；禁止 DeepSeek 专用白名单、模糊同义放行或 Harness 代写整段报告。历史 terminal 保持 failed，零调用 successor 通过也不自动关闭 S2。 |
 | 2026-08-08 | Firecrawl/Tencent 同矩阵实证后纠正单 Provider 全职责假设：production SourceHunter 改为 official-first、role-specific portfolio。SEC/issuer IR feed/sitemap/official-domain route 负责 known primary discovery，broad search 只负责 unknown locator；Provider 日期降为 telemetry，capture-backed 本地发布日期裁决仍是 Evidence 硬门。Firecrawl 因 target=`5/6` 只进入 discovery shadow implementation 候选，Tencent 因 `0/6` 保持 diagnostic-only；暂停继续采购/轮测 Provider，先以零调用 replay 证明组合候选、关系、日期和 Evidence Gate。历史 assessment 不改，S1-08 仍未通过。 |
 | 2026-08-08 | Firecrawl 关系感知 semantic control 已 exact-once 完成：24/24 成功、topical useful=`133/240`、六个 customer/supply case-slot target-in-pool=`5/6`，证明 evidence-owner/direction 查询和 fan-out 比旧 generic A4 更接近研究目标；但旧／新矩阵调用数与语言不同，不标作单变量 A/B。Firecrawl 因 DELL supply 目标缺失、日期字段=`0/235`、中文 exact target=0 和 p95=`6877 ms` 继续 diagnostic-only。产品验收明确拆分“query compiler live-supported”和“Provider lane qualified”；前者可通过而后者失败。下一步只在 fresh 国内凭据就绪后复用同一 24-query plan，不自动重跑 Firecrawl、加 precise lane 或用 reranker 补上游候选。 |
 | 2026-08-08 | S1-08 已完成国内凭据就绪度判断与 Firecrawl 关系感知语义控制组零调用实现：当前腾讯／百度／阿里凭据均不可安全使用，不复用聊天暴露 Key；国内 Provider 优先方向不变。为单独检验查询修复，只选择 customer/supply 的 24 个 semantic execution unit，不同时执行 22 个 precise unit。runner 强制 clean/exact-once、request/raw-response-or-failure capture-first、0 retry/model/document/Evidence，且 evaluator 只有在 24 个身份全终态后才加载 Gold。即使控制组通过也只允许同矩阵国内 Provider 对照，不建立国内能力或 SourceHunter 接入。 |
@@ -2468,3 +2469,11 @@ R2 已从修复后的 clean/synced commit 建立两个独立 archive／fresh pro
 live 控制面已达到 working-tree engineering pass：scope 已独立注册，issuance authority 与 admission 分别 canonicalize，签发记录本身固定 `execution_enabled_by_issuance=false`，runner 必须另见一份绑定 issuance/admission digest 的 execution authority 才能调用 Provider。凭据值不得进入 authority、admission、日志或公开 terminal；adapter 固定一次 transport attempt。测试中的 scope 投影错误已在 fixture 与 fake-live 双路径回归中修正。该状态仍不是 admission、自然模型观察或产品通过；只有 clean/synced 提交和 fresh preflight 后才允许签一份未消费 admission。
 
 首次 R1 签发后的审查补充了 freshness 产品要求：admission 的 24 小时窗口不是说明文字，执行前必须用当前 `observed_at` 硬校验 `issued_at <= observed_at < expires_at`，并要求 authority 与 admission 时间字段一致。缺该门禁的 R1 虽未消费、零 Provider 调用，仍按项目缺陷拒绝并永久禁止执行；修复后只能从新的 clean/synced commit 签 v1.1。该处置不构成 DeepSeek 失败或自然研究质量证据。
+
+#### 16.20.5 数字展示等价、本地受保护渲染与 canary 终态（2026-08-11）
+
+唯一一次 DeepSeek Pro canary 已 exact-once 消费并 formal failed，失败码为 `natural_node_canary_required_presentations_missing`。但原始 capture 显示模型正确选择 E022 与四个 NUM，保持 HPE read-through、pull-forward、转化和 margin 边界，也没有自由算术、估值或推荐；唯一差异是把 `customer count surpassed 5,000` 写成 `customer count surpassing 5,000`。因此历史 terminal 必须继续记 failed，同时产品不能把无经济意义的英语词形差异继续当成数字真实性 L1。
+
+数字交付改为两层责任：模型负责研究判断、反方、边界和 Evidence／NUM 选择；本地控制面负责 NumericFact 的 value、entity、period、unit、qualifier、lineage、approved presentation 和受保护数字片段渲染。Harness 不得重写 thesis、机制或整段叙事。长期输出合同应让模型直接返回 `NUM ref + relation/qualifier enum`；当前 v1 自由叙事只允许经过有界 compatibility adapter 迁移，不允许用 embedding、编辑距离或无限同义词把任意句子判成等价。
+
+兼容 adapter 必须先证明关系方向一致，再把受保护片段规范化。例如 `surpassing` 与事实中的 `surpassed` 都编译为严格大于，才可由本地渲染为 canonical surface；`not surpassing`、`below`、`at most`、错公司、错季度、错币种／scale、错数值和额外未绑定数字仍 hard fail。保存 capture 的零调用 successor 已满足该边界，只改变 1 个受保护片段，其他模型叙事不变。该结果不追认旧 live、不给第二次调用权限，也不等于完整 DELL 报告、S2 closeout、Owner acceptance 或 release；还需 clean archive／fresh process 复证后单独做 S2 关闭与 S3 准入决策。

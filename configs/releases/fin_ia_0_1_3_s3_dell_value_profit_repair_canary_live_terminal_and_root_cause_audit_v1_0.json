@@ -1,0 +1,154 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_dell_value_profit_repair_canary_live_terminal_and_root_cause_audit_v1_0",
+  "result_digest": "ecbf83c5ec662838eb4c36f80beb89409774e59e9485289812bbf1ae4a0fa92a",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S3",
+  "status": "formal_terminal_failed_mixed_surface_guard_and_model_state_semantic_nonconformance_no_retry",
+  "execution_authority": {
+    "ref": "configs/releases/fin_ia_0_1_3_s3_dell_value_profit_repair_canary_live_execution_authority_decision_v1_0.json",
+    "execution_authority_digest": "b761da66373b470737d7cfc37145616c25012263ee154e2f5ff52acc70ea4e72",
+    "issuance_digest": "27dd7579034d94b88aafe9a00b0d2ed8eed3f9c64be49f1d03438a88a264d20d",
+    "admission_digest": "877a65031df7be4d87dedb9d01099864055d3bc77bd500672cd9d4141ad08e85"
+  },
+  "formal_terminal": {
+    "run_id": "fin013_s3_dell_value_profit_repair_canary_11a8bc7aa03045f7803a",
+    "attempt_id": "attempt_fin013_s3_dell_value_profit_repair_canary_11a8bc7aa03045f7803a_r1",
+    "run_scope": "FIN_0_1_3_S3_DELL_VALUE_PROFIT_CURRENT_PACK_REPAIR_CANARY_LIVE",
+    "case_key": "DELL",
+    "node_id": "dell_value_profit_current_pack_repair_adjudicator_v1",
+    "status": "failed",
+    "terminal_phase": "contract_validation",
+    "terminal_code": "s3_repair_canary_model_numeric_surface_forbidden",
+    "terminal_result_digest": "cc2c0cf885fa5c40e837c86465b202273bf8a70e75ae3677a3f6f9efe795ce56",
+    "result_digest": "47874f375b3db515677f900c05d9d1dda837b7e986428b6d63e19a7913e2f89f",
+    "admission_consumption_receipt_digest": "051a3e29b525ac584c2fed67471d1f4a14fd03bcdeefcedf1c9ce222ec6c3877",
+    "request_ref": "data/workbench_private/fin_0_1_3_s3_dell_value_profit_repair_canary/live/attempts/fin013_s3_dell_value_profit_repair_canary_11a8bc7aa03045f7803a/raw_model_only/calls/call_01/request.json",
+    "capture_ref": "data/workbench_private/fin_0_1_3_s3_dell_value_profit_repair_canary/live/attempts/fin013_s3_dell_value_profit_repair_canary_11a8bc7aa03045f7803a/raw_model_only/calls/call_01/capture.json",
+    "capture_digest": "5cae6e34571cbd126db3eeb585cb4b64c66940d3b69dad05872052d9feaf06ac",
+    "captured_output_digest": "2d13b1efd6e063ab46d47e006dc6129b0d565fef0520abf137c5582214a1fbbb",
+    "business_artifact_promotion": false
+  },
+  "provider_observation": {
+    "provider": "deepseek",
+    "model": "deepseek-v4-pro",
+    "response_status": "ok",
+    "finish_reason": "stop",
+    "input_tokens": 4678,
+    "output_tokens": 1075,
+    "total_tokens": 5753,
+    "latency_ms": 13249,
+    "profile_estimated_cost_usd": 0.0046343,
+    "provider_calls": 1,
+    "model_calls": 1,
+    "source_calls": 0,
+    "network_tool_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "captured_output_semantic_audit": {
+    "raw_prose_republished_publicly": false,
+    "exact_top_level_schema_and_identity": true,
+    "accepted_partial_resolution_selected": true,
+    "accepted_evidence_refs_exact": ["E021"],
+    "boundary_evidence_refs_exact": ["E002", "E008", "E023"],
+    "evidence_semantics_exact": true,
+    "retained_gap_components_exact": [
+      "audited_product_profit_bridge",
+      "cash_conversion",
+      "gross_margin"
+    ],
+    "required_numeric_ref_selected": "NUM:DELL:OPERATING_MARGIN_TARGET:2894219F450D",
+    "affected_cell_set_exact": true,
+    "model_strength_observed": "The model correctly classified the current issuer Evidence, attribution boundary, residual gaps and Numeric authority.",
+    "model_failure_observed": "The model did not reliably execute the internal affected-cell state transition and overreached from operating profitability into the price-in/expectations cell."
+  },
+  "failure_expansion": [
+    {
+      "failure_id": "F1_authorized_numeric_band_in_model_atom",
+      "owner": "model_contract_nonconformance",
+      "severity": "surface_control",
+      "detail": "The model repeated the authorized qualitative profitability band inside mechanism prose even though the contract reserved numeric presentation for the local renderer.",
+      "factual_value_or_direction_wrong": false
+    },
+    {
+      "failure_id": "F2_evidence_alias_digits_trigger_generic_numeric_guard",
+      "owner": "project_guard_severity_false_positive",
+      "severity": "observability_and_classification",
+      "detail": "Three atoms named Evidence aliases such as E021. The generic any-digit regex treated internal Evidence identity digits as financial numeric surfaces.",
+      "financial_authority_violation": false
+    },
+    {
+      "failure_id": "F3_target_cell_changed_flag_false",
+      "owner": "model_state_transition_nonconformance",
+      "severity": "substantive_control",
+      "detail": "value_and_profit_capture was returned supported_with_limits but judgment_changed=false, contradicting the accepted_partial_resolution event.",
+      "blocks_repair_promotion": true
+    },
+    {
+      "failure_id": "F4_price_in_cell_changed_from_cannot_infer_to_mixed",
+      "owner": "model_cross_cell_overreach",
+      "severity": "substantive_financial_boundary",
+      "detail": "The model inferred a mixed market value-capture signal from operating profitability, pricing discipline and mix context even though no valuation or expectations Evidence was present.",
+      "blocks_repair_promotion": true
+    },
+    {
+      "failure_id": "F5_writer_admission_boundary_misread_as_business_evidence_cell",
+      "owner": "model_internal_control_semantics_misread",
+      "severity": "quality_finding",
+      "detail": "The model treated writer_admission_boundary as if it required a separate business Evidence item rather than a local report-control projection.",
+      "formal_first_pass_blocker": false
+    },
+    {
+      "failure_id": "F6_failed_terminal_points_to_unwritten_validated_output_ref",
+      "owner": "project_live_terminal_materialization",
+      "severity": "audit_contract_defect",
+      "detail": "The failed terminal populated validated_output_ref although no validated output file was written. Full raw output remains recoverable from the immutable capture.",
+      "raw_output_lost": false
+    }
+  ],
+  "zero_call_counterfactual_progression": [
+    {
+      "change": "Remove model-authored qualitative band and Evidence aliases from atom prose only",
+      "next_failure": "s3_repair_canary_target_readjudication_invalid"
+    },
+    {
+      "change": "Additionally set value_and_profit_capture judgment_changed=true",
+      "next_failure": "s3_repair_canary_price_in_boundary_invalid"
+    },
+    {
+      "change": "Additionally restore cross_chain_price_in_and_expectations to cannot_infer",
+      "result": "validator_pass",
+      "counterfactual_successor_program_digest": "a12e59ab323379e9b20d3fcf07d3ea71e4adb75d6071de43eecf45f44e27e25c"
+    }
+  ],
+  "root_cause_disposition": {
+    "not_just_one_field_or_one_regex": true,
+    "not_source_retrieval_failure": true,
+    "not_provider_transport_or_json_failure": true,
+    "model_can_classify_small_research_semantics": true,
+    "model_should_not_own_affected_cell_state_transition": true,
+    "selected_structural_repair": "Reduce the model output to evidence disposition, bounded profitability direction, attribution boundary, retained-gap enums and short prose atoms. The deterministic Runtime must own affected cells, state, changed flags, Evidence/NUM/WWC refs, local numeric rendering and Writer admission projection.",
+    "deepseek_specific_core_branches_forbidden": true,
+    "new_source_request_for_this_gap_forbidden": true,
+    "posthoc_promotion_of_failed_output_forbidden": true
+  },
+  "stage_acceptance": {
+    "natural_repair_canary": false,
+    "repaired_dell_report": false,
+    "l1_assessment": false,
+    "eight_dimension_assessment": false,
+    "paired_assessment": false,
+    "qualified_human_acceptance": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "stop_and_next": {
+    "same_admission_consumed": true,
+    "same_attempt_retry_or_replay": false,
+    "automatic_second_model_call": false,
+    "complete_report_execution": false,
+    "current_next": "S3_DELL_REPAIR_SMALL_JUDGMENT_ATOM_AND_DETERMINISTIC_CELL_PROJECTION_ZERO_CALL_ROOT_CAUSE_DISPOSITION"
+  },
+  "known_boundary": "The counterfactual is diagnostic only and does not convert the failed terminal into a pass. The immutable output cannot be promoted. A provider-neutral structural repair and clean proof are required before any separately decided successor natural canary; the complete DELL report remains blocked."
+}

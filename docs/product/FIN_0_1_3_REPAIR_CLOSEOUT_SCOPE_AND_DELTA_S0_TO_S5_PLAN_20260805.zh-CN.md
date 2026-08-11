@@ -965,3 +965,13 @@ clean/synced `1d29bc65...95c8d` 已签发 run=`...11a8bc7aa03045f7803a`、admiss
 runner 在 clean/synced `34f4c3b4...f7d8` 上确认 implementation ancestor、10-source binding、Project OS、credential presence、expiry、空 runtime root 和未消费 admission 全部通过。零调用 decision 因此只授权 run=`...11a8bc7aa03045f7803a` 的一次 DeepSeek Pro repair canary；`1 provider/model`、`1,800 output`、0 source/tool/retry/fallback/promotion，任一终态停止。
 
 提交推送 execution authority 后必须再次 clean preflight，才可 exact-once 消费。成功只代表 repair-adjudication 单节点自然通过；失败则保存 capture 并停止。两者都不自动授权完整报告。
+
+## 7AI. 唯一自然 repair canary 终态与结构性收口（2026-08-11）
+
+唯一 admission 已 exact-once 消费。DeepSeek Pro 完成 `1 call／4,678 input／1,075 output／5,753 total tokens／13,249 ms／0 retry`，transport、finish reason 和 JSON 均正常；formal terminal 在本地合同校验阶段失败，code=`s3_repair_canary_model_numeric_surface_forbidden`，business promotion=false。完整 request／response 已 capture-first 保存，本次不重试、不进入完整报告。
+
+模型正确选择 `E021` 为 accepted Evidence、`E002／E008／E023` 为边界，保留 gross margin／cash conversion／audited product-profit bridge 三个 gap，并绑定正确 NUM ref；因此“Evidence 角色与残余边界判断”已有自然正证据。失败不能只归结为一个格式字段：模型在 atom 中重述定性数字带，并把 `value_and_profit_capture` 的 changed flag 留为 false；更重要的是，它在没有估值／预期 Evidence 时把 `cross_chain_price_in_and_expectations` 从 `cannot_infer` 改成 `mixed`。项目侧同时存在 alias 数字误报和失败 terminal 错填未写出 validated ref 两项缺陷。
+
+零调用 counterfactual 依次去除 atom 数字／alias、修正 target changed flag、恢复 price-in `cannot_infer` 后才通过，证明继续逐字段扩 Prompt 不具备结构价值。后续在 S3 内插入一个 provider-neutral 的结构包：模型仅负责 Evidence disposition、盈利方向、归因边界、residual-gap enums 和短机制／边界原子；本地确定性 Runtime 负责 affected cells、state、changed flag、Evidence／NUM／WWC refs、数字渲染与 Writer admission projection。同时让 numeric-surface guard 识别内部 alias，并让 terminal 仅在真实写出验证结果时提供 `validated_output_ref`。
+
+current next=`S3_DELL_REPAIR_SMALL_JUDGMENT_ATOM_AND_DETERMINISTIC_CELL_PROJECTION_ZERO_CALL_ROOT_CAUSE_DISPOSITION`。该结构包必须先完成 capture replay、DELL／MU／NVDA fake／mutation 和 clean proof；失败 capture 只能作诊断，不得 post-hoc 晋升。通过后另做 successor natural canary 的价值／成本／风险决策；不得把本次失败改标、复用 admission、自动发第二次模型调用或生成完整报告。

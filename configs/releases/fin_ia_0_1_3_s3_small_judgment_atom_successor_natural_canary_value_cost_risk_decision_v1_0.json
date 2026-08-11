@@ -1,0 +1,118 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_small_judgment_atom_successor_natural_canary_value_cost_risk_decision_v1_0",
+  "decision_id": "FIN-0.1.3-S3-SMALL-JUDGMENT-ATOM-SUCCESSOR-NATURAL-CANARY-VALUE-COST-RISK-R1",
+  "decision_digest": "9124175794cd4e5488bfc8e6e1ac8e4bdaa32bf2a20d87e712c81ce2f15373e3",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S3",
+  "status": "decision_complete_authorize_successor_live_path_and_one_fresh_admission_execution_separate",
+  "zero_call_scope": "FIN_0_1_3_S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_AND_CONTENT_QUALITY_ZERO_CALL",
+  "immutable_basis": {
+    "clean_proof": {
+      "ref": "configs/releases/fin_ia_0_1_3_s3_small_judgment_atom_projection_clean_independent_proof_v1_0.json",
+      "sha256": "55cc73f644f2102ad2b498feb6699d5e8c31569356cf1252fa51dd8ba72e34ab",
+      "expected_result_digest": "b891e4d49d9b77d0caf52c08001f50ffd4e19cfb9c49e2056479c3eb210e9bf1"
+    },
+    "failed_predecessor_audit": {
+      "ref": "configs/releases/fin_ia_0_1_3_s3_dell_value_profit_repair_canary_live_terminal_and_root_cause_audit_v1_0.json",
+      "expected_result_digest": "ecbf83c5ec662838eb4c36f80beb89409774e59e9485289812bbf1ae4a0fa92a"
+    }
+  },
+  "value": {
+    "rating": "high_bounded_new_information",
+    "why": "The predecessor natural call established correct Evidence and gap semantics but failed because the model also owned deterministic cell state. The successor removes that surface. Only one natural response can now establish whether the smaller contract preserves those semantics without a new substantive boundary failure.",
+    "what_this_canary_tests": [
+      "natural adherence to the smaller provider-neutral output contract",
+      "retention of accepted Evidence, attribution boundary and residual gaps",
+      "short mechanism and boundary atom quality without financial numeric surfaces",
+      "successful deterministic projection into the four affected cells"
+    ],
+    "what_this_canary_does_not_test": [
+      "open-ended research planning",
+      "source discovery or retrieval",
+      "complete report quality",
+      "generalization beyond the bounded contract",
+      "Owner or release readiness"
+    ]
+  },
+  "cost": {
+    "model": "deepseek-v4-pro",
+    "provider_calls_maximum": 1,
+    "model_calls_maximum": 1,
+    "maximum_output_tokens": 1200,
+    "profile_estimated_cost_usd_maximum": 0.02,
+    "source_calls": 0,
+    "network_tool_calls": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "compiled_request_characters": 8854
+  },
+  "risk_controls": {
+    "new_live_scope": "FIN_0_1_3_S3_DELL_VALUE_PROFIT_SMALL_JUDGMENT_ATOM_CANARY_LIVE",
+    "fresh_exact_once_admission": true,
+    "predecessor_admission_reuse": false,
+    "clean_synced_source_binding": true,
+    "credential_presence_only": true,
+    "capture_before_parse_or_validation": true,
+    "parsed_and_validated_refs_reflect_actual_files": true,
+    "business_artifact_promotion": false,
+    "automatic_second_call": false,
+    "automatic_complete_report": false,
+    "failure_stops_run": true
+  },
+  "alternatives_rejected": [
+    {
+      "alternative": "close S3 from zero-call proof alone",
+      "reason": "Deterministic proof cannot establish natural model behavior on the changed contract."
+    },
+    {
+      "alternative": "reuse or replay the consumed predecessor admission",
+      "reason": "The predecessor terminal is immutable and its exact-once authority is consumed."
+    },
+    {
+      "alternative": "run the complete DELL report now",
+      "reason": "A full report would conflate the changed repair contract with Writer, Verifier and content-quality variables."
+    },
+    {
+      "alternative": "perform Flash versus Pro comparison",
+      "reason": "Model-family comparison is not required to answer the current contract question."
+    },
+    {
+      "alternative": "add more sources before the canary",
+      "reason": "The current governed Pack already contains the exact Evidence needed for this bounded repair."
+    }
+  ],
+  "success_criteria": {
+    "transport_status": "ok",
+    "finish_reason": "stop",
+    "json_and_exact_fields": true,
+    "evidence_disposition_and_semantics": "exact",
+    "profitability_and_attribution_boundary": "exact",
+    "retained_gaps": "exact",
+    "financial_numeric_surface_in_normalized_atoms": false,
+    "deterministic_cell_projection": "pass",
+    "price_in_state": ["cannot_infer", false],
+    "business_artifact_promotion": false
+  },
+  "authority_boundary": {
+    "this_decision_authorizes_live_path_implementation": true,
+    "this_decision_authorizes_one_fresh_admission_issuance": true,
+    "this_decision_authorizes_provider_execution": false,
+    "execution_requires_separate_clean_preflight_and_authority": true,
+    "success_authorizes_complete_report": false,
+    "failure_authorizes_retry_or_prompt_patch": false
+  },
+  "stage_acceptance": {
+    "clean_structural_proof": true,
+    "successor_natural_canary": false,
+    "repaired_dell_report": false,
+    "l1_assessment": false,
+    "eight_dimension_assessment": false,
+    "paired_assessment": false,
+    "qualified_human_acceptance": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "known_boundary": "The contract includes bounded expected Evidence semantics, so this canary primarily tests natural action-surface adherence and atom quality, not open-ended financial reasoning or generalization. A pass is necessary but not sufficient for a repaired DELL report or S3 acceptance.",
+  "current_next": "IMPLEMENT_SUCCESSOR_LIVE_PATH_COMMIT_PUSH_AND_ISSUE_ONE_FRESH_UNCONSUMED_ADMISSION_NO_EXECUTION"
+}

@@ -983,3 +983,11 @@ current next=`S3_DELL_REPAIR_SMALL_JUDGMENT_ATOM_AND_DETERMINISTIC_CELL_PROJECTI
 模型请求从 `17,343` 字符降到 `8,854`，不再暴露 authoritative numeric values／presentations 或四行内部状态表。DELL 实际 successor 投影为 target changed=true、price-in=`cannot_infer / unchanged`；DELL／MU／NVDA 三案 shape 与 state 注入、跨案、错误方向、金融数字等 mutation 通过。alias digits 先被识别为内部引用，再替换成中性引用短语，金融数字门没有放宽。失败 output capture replay 继续 failed／不可晋升；parsed ref 实际存在，validated ref 在失败时为 null。
 
 working-tree focused／terminal=`27 passed`、相邻 S3 合计=`42 passed`，model／provider／network／source／retry=`0/0/0/0/0`。current next=`COMMIT_PUSH_THEN_TWO_CLEAN_ARCHIVE_CAPTURE_REPLAY_AND_MUTATION_PROOF`；clean proof 前不能签 successor natural admission，clean proof 后仍须独立价值／成本／风险决策，不能自动发第二次调用或报告。
+
+## 7AK. small-judgment clean proof 与 successor natural canary 决策（2026-08-11）
+
+clean/synced `9eadecd6...f73d` 已在两个独立 Git archive／fresh process 中复证；相同 corrected／historical Pack 和失败 capture 注入后 worker 输出逐字节一致，model／provider／network／source／retry=`0/0/0/0/0`。旧失败仍失败且不可晋升；新四-cell state、三案 shape、alias 中性替换、金融数字 gate 和 parsed／validated terminal truth 均成立。proof=`b891e4d4...e9bf1`。
+
+独立价值／成本／风险决策选择“一次 successor DeepSeek Pro natural canary”，因为零调用无法证明结构变化后的自然合同遵循；拒绝零调用直接关闭、复用旧 admission、完整 DELL 报告、模型 A/B 与先补源。预算为 `1 model/provider／1,200 output／USD 0.02`，source/tool/retry/fallback/promotion=`0`。
+
+该 canary 主要测试更小 action surface 与 atom quality，不是开放式研究泛化。decision 只允许实现新 live path 并签发一个 fresh 未消费 admission，不授权 Provider execution。current next=`IMPLEMENT_SUCCESSOR_LIVE_PATH_COMMIT_PUSH_AND_ISSUE_ONE_FRESH_UNCONSUMED_ADMISSION_NO_EXECUTION`；execution 仍须 clean preflight 与独立 authority，任何终态停止，成功也不自动跑报告。

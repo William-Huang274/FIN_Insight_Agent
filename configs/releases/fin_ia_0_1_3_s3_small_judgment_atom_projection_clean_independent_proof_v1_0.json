@@ -1,0 +1,211 @@
+{
+  "alias_normalization": {
+    "boundary_atom": {
+      "normalization_changed_text": true,
+      "normalized_text": "The cited Evidence prevents segment income from replacing product profit; cash conversion remains open.",
+      "removed_alias_tokens": [
+        "E002"
+      ]
+    },
+    "mechanism_atom": {
+      "normalization_changed_text": true,
+      "normalized_text": "The cited Evidence supports bounded operating profitability while the cited Evidence limits transmission to product profit.",
+      "removed_alias_tokens": [
+        "E021",
+        "E008"
+      ]
+    }
+  },
+  "attempt_id": "20260811_s3_small_judgment_atom_projection_clean_proof_r1",
+  "clean_git_archives": 2,
+  "compiled_input_digest": "fa954482c33f8f444a4d7991fdc0f672dcc1cb9ce8bfa70266b4f3b34a7d7d84",
+  "compiled_request_characters": 8854,
+  "contract_ref": "fin_0_1_3.S3.small_judgment_atom_deterministic_cell_projection:v1",
+  "current_next": "SEPARATE_ZERO_CALL_SUCCESSOR_NATURAL_CANARY_VALUE_COST_RISK_DECISION",
+  "deterministic_cell_states": {
+    "bottleneck_counterevidence_and_what_would_change": [
+      "supported_with_limits",
+      true
+    ],
+    "cross_chain_price_in_and_expectations": [
+      "cannot_infer",
+      false
+    ],
+    "value_and_profit_capture": [
+      "supported_with_limits",
+      true
+    ],
+    "writer_admission_boundary": [
+      "supported_with_limits",
+      true
+    ]
+  },
+  "fresh_python_processes": 2,
+  "implementation_commit": "9eadecd62e0bcd6f4b216833b9e6714dcc1df73d",
+  "implementation_result_digest": "f80f5ac42046be8f9ebe0189de695ef16bd3264d1feb3887bde269f76c8e2a4e",
+  "known_boundary": "This proof establishes only the provider-neutral small-judgment contract, deterministic DELL cell projection, three-case shape isolation, immutable failed-capture replay and accurate parsed-versus-validated terminal refs. It does not reclassify the failed natural canary, authorize a second model call, generate a report, close S3, or authorize acceptance or release.",
+  "legacy_capture_audit": {
+    "accepted_evidence_refs_exact": true,
+    "atom_alias_token_count": 5,
+    "audit_digest": "b6762cd35ffbc62dfa6b3d4d48765ffca463ede62b961c9041d4b858c6256073",
+    "failed_output_promotable": false,
+    "legacy_output_digest": "2d13b1efd6e063ab46d47e006dc6129b0d565fef0520abf137c5582214a1fbbb",
+    "price_in_boundary_valid": false,
+    "required_numeric_ref_selected": true,
+    "target_changed_flag_valid": false
+  },
+  "legacy_terminal_materialization": {
+    "business_artifact_promotion": false,
+    "parsed_output_exists": true,
+    "parsed_output_ref": "parsed/repair_output.json",
+    "raw_capture_exists": true,
+    "temporary_replay_root_removed": true,
+    "terminal_code": "s3_repair_canary_model_numeric_surface_forbidden",
+    "validated_output_exists": false,
+    "validated_output_ref": null
+  },
+  "mutations": {
+    "cross_case_identity_rejected": true,
+    "financial_numeric_surface_rejected": true,
+    "model_cell_state_surface_rejected": true,
+    "wrong_profitability_direction_rejected": true
+  },
+  "observed_calls": {
+    "fixture_capture_replay_callbacks_per_worker": 1,
+    "fixture_capture_replay_callbacks_total": 2,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retries": 0,
+    "source_calls": 0
+  },
+  "portfolio_shape_receipts": [
+    {
+      "accepted_ref": "E021",
+      "boundary_refs": [
+        "E002",
+        "E008",
+        "E023"
+      ],
+      "case_key": "DELL",
+      "local_owned_fields": [
+        "cell_id",
+        "judgment_state",
+        "judgment_changed",
+        "evidence_numeric_wwc_refs",
+        "numeric_rendering",
+        "writer_admission"
+      ],
+      "model_owned_fields": [
+        "evidence_disposition",
+        "profitability_direction",
+        "attribution_boundary",
+        "retained_gap_enums",
+        "mechanism_atom",
+        "boundary_atom"
+      ],
+      "numeric_ref": "NUM:DELL:OPERATING_MARGIN_TARGET:2894219F450D",
+      "shape_digest": "42c32b9c7fdd993a4dcb18455bf2ee9469137d884878cf4cd8c9fdfd313878ca"
+    },
+    {
+      "accepted_ref": "E101",
+      "boundary_refs": [
+        "E102",
+        "E108",
+        "E123"
+      ],
+      "case_key": "MU",
+      "local_owned_fields": [
+        "cell_id",
+        "judgment_state",
+        "judgment_changed",
+        "evidence_numeric_wwc_refs",
+        "numeric_rendering",
+        "writer_admission"
+      ],
+      "model_owned_fields": [
+        "evidence_disposition",
+        "profitability_direction",
+        "attribution_boundary",
+        "retained_gap_enums",
+        "mechanism_atom",
+        "boundary_atom"
+      ],
+      "numeric_ref": "NUM:MU:PROFITABILITY_SIGNAL:FIXTURE",
+      "shape_digest": "11f5500e899428bd630dc0643c7095bb1d16e7b845635df37b66eaa8b3ed3ad6"
+    },
+    {
+      "accepted_ref": "E201",
+      "boundary_refs": [
+        "E202",
+        "E208",
+        "E223"
+      ],
+      "case_key": "NVDA",
+      "local_owned_fields": [
+        "cell_id",
+        "judgment_state",
+        "judgment_changed",
+        "evidence_numeric_wwc_refs",
+        "numeric_rendering",
+        "writer_admission"
+      ],
+      "model_owned_fields": [
+        "evidence_disposition",
+        "profitability_direction",
+        "attribution_boundary",
+        "retained_gap_enums",
+        "mechanism_atom",
+        "boundary_atom"
+      ],
+      "numeric_ref": "NUM:NVDA:PROFITABILITY_SIGNAL:FIXTURE",
+      "shape_digest": "4dd8996193d27e12d53b85578a74cc5ca199852e4e759e7c05fdc098982c00de"
+    }
+  ],
+  "private_artifact_injections": [
+    {
+      "bytes": 149544,
+      "kind": "corrected_dell_pack",
+      "relative_path": "data/workbench_private/fin_0_1_3_s1_dell_bounded_semantic_anchor_replay/corrected_pack/objects/fin-0.1.3/s1/dell-bounded-semantic-anchor-replay/pack/82/10/8210887f7e06c4fb8397594ba965a8c737525c4b53be52a3cac1cf279e697387.json",
+      "sha256": "8210887f7e06c4fb8397594ba965a8c737525c4b53be52a3cac1cf279e697387"
+    },
+    {
+      "bytes": 87530,
+      "kind": "historical_dell_pack",
+      "relative_path": "data/workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects/fin-0.1.3/s1-six-case-local-evidence-pack/dell/v1/da/86/da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b.json",
+      "sha256": "da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b"
+    },
+    {
+      "bytes": 33377,
+      "kind": "failed_natural_canary_capture",
+      "relative_path": "data/workbench_private/fin_0_1_3_s3_dell_value_profit_repair_canary/live/attempts/fin013_s3_dell_value_profit_repair_canary_11a8bc7aa03045f7803a/raw_model_only/calls/call_01/capture.json",
+      "sha256": "7b6d6abb3f4d9fa181ca7208cd7e6e6f9ab65864d6ea502ff881790c4d2ffd51"
+    }
+  ],
+  "private_artifacts_persisted_to_repository": false,
+  "projection_digest": "80ee67dbea393042e6f86877725eb6b07d8c30c986c28604beff6ca0c776d038",
+  "recorded_at": "2026-08-11",
+  "request_digest": "1f1e076903ba86514b30dbd527efd558f40c44680c5b06d5e570339d9bf31680",
+  "result_digest": "b891e4d49d9b77d0caf52c08001f50ffd4e19cfb9c49e2056479c3eb210e9bf1",
+  "schema_version": "fin_ia_0_1_3_s3_small_judgment_atom_projection_clean_independent_proof_v1_0",
+  "stage_acceptance": {
+    "alias_aware_financial_surface_guard": true,
+    "clean_independent_proof": true,
+    "dell_mu_nvda_shape_mutation": true,
+    "deterministic_cell_projection": true,
+    "failed_natural_canary_immutable": true,
+    "owner_acceptance": false,
+    "parsed_and_validated_terminal_materialization": true,
+    "qualified_human_acceptance": false,
+    "release": false,
+    "repaired_dell_report": false,
+    "small_judgment_atom_contract": true,
+    "successor_natural_canary": false
+  },
+  "status": "pass_two_clean_archives_replay_projection_and_mutation_zero_external_call",
+  "successor_program_digest": "72987b8f8584d0775d153a5bd34478bdb3f64b4a16b993da941ccaded8c47220",
+  "temporary_roots_removed": true,
+  "worker_output_sha256": "5374623f8ba68cdcfb4019030506d5fa8d994ebe5fa3b531e582b6999c098193",
+  "worker_result_digest": "08ab97856850f33d8c41c80d1d7f16798167b8423f9f2c08ee3268ed40f5364c",
+  "workers_byte_equivalent": true
+}

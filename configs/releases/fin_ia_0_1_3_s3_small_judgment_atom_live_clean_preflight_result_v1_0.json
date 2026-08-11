@@ -1,0 +1,51 @@
+{
+  "schema_version": "fin_ia_0_1_3_s3_small_judgment_atom_live_clean_preflight_result_v1_0",
+  "result_digest": "351de9ebee46695a71d73874deaf2f7e55f1efd65de4a35eca9629846154237c",
+  "recorded_at": "2026-08-11T06:44:22Z",
+  "status": "preflight_pass_execution_not_authorized",
+  "run_scope": "FIN_0_1_3_S3_DELL_VALUE_PROFIT_SMALL_JUDGMENT_ATOM_CANARY_LIVE",
+  "run_id": "fin013_s3_small_atom_b351adc5bb4bc396d39a",
+  "attempt_id": "attempt_fin013_s3_small_atom_b351adc5bb4bc396d39a_r1",
+  "admission_digest": "87edf77103034561104151e341c0436df0e9727d8fadc4d9d502b0a4e7f41223",
+  "issuance_digest": "f9ea28398bb8b8f67d5010f488b285e2f771cd990f7956d051ce6c1467935b0c",
+  "repository": {
+    "branch": "codex/layered-data-source-expansion",
+    "candidate_head": "8c62b0e1c2369c523cb41cd50fb15809cbc6dd64",
+    "upstream_head": "8c62b0e1c2369c523cb41cd50fb15809cbc6dd64",
+    "clean": true,
+    "synced": true,
+    "implementation_commit": "0a1785d63121c316d6285d86bf32b48b7666f030",
+    "implementation_is_ancestor": true
+  },
+  "checks": {
+    "project_os_scope_preflight": "pass",
+    "open_full_chain_blocker_count": 0,
+    "source_bindings_valid": 10,
+    "credential_presence_checked": true,
+    "credential_present": true,
+    "credential_value_read_output_or_persisted": false,
+    "admission_within_valid_time_window": true,
+    "runtime_root_absent": true,
+    "admission_consumed": false,
+    "separate_execution_authority_present": false
+  },
+  "budgets": {
+    "provider_calls_maximum": 1,
+    "model_calls_maximum": 1,
+    "maximum_output_tokens": 1200,
+    "source_calls": 0,
+    "network_tool_calls": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "business_artifact_promotion": false
+  },
+  "observed_counts": {
+    "provider_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "admission_consumptions": 0
+  },
+  "current_next": "SEPARATE_ZERO_CALL_RUN_BOUND_EXECUTION_AUTHORITY_DECISION"
+}

@@ -947,3 +947,9 @@ current next=`S3_DYNAMIC_RESEARCH_PLANNER_EVIDENCE_REQUEST_LOOP_INFORMATION_ECON
 clean/synced commit `d925aa89...155ec` 已在两个独立 Git archive／fresh Python process 中复证。两个 worker 都在凭据清空、网络封锁条件下重新编译 `E002／E008／E021／E023`、四个 affected cell 与本地 numeric projection，并得到逐字节一致结果；success／transport／length／invalid JSON／invalid financial semantics／exact-once 和 7 类研究 mutation 均通过。proof=`ca9878d3...faa68`，本轮 model／provider／network／source／retry=`0/0/0/0/0`。
 
 该结果把“现有 Evidence 先重裁决、真实 residual gap 再补源”正式纳入 S3 方法边界。下一项只做唯一一次 Pro canary 的零调用 execution-authority 决策；clean proof 不自动授权 live，也不等于 DELL 报告、qualified-human、Owner 或 release 通过。
+
+## 7AF. DELL value/profit repair canary live path（2026-08-11）
+
+零调用价值／成本／风险复核选择“一次 DeepSeek Pro repair canary”，拒绝直接写完整报告、先追加外源、重复 demand 节点或做 Flash／Pro A/B。独立 live scope、fresh admission、24 小时 expiry、credential presence-only、source digest binding、capture-first、shared-ledger exact-once、单 transport attempt 与零 retry 已实现；issuance 不得自动授权执行。
+
+working-tree fake live 已证明 pass、invalid financial semantics terminal、完整 capture 与重复 admission 拒绝，相关集合=`20 passed`，live scope preflight=`pass`。当前仍为 `0` 次真实调用。下一项是提交推送后从 clean/synced head 签发唯一未消费 admission，再单独签发 execution authority；不能把 live path 工程通过写成自然模型、DELL 报告或 S3 通过。

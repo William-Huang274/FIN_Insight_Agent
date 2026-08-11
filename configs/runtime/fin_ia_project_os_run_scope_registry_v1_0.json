@@ -577,6 +577,13 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
     },
+    "FIN_0_1_3_S3_DELL_VALUE_PROFIT_CURRENT_PACK_REPAIR_CANARY_LIVE": {
+      "owner_stage": "S3",
+      "operation_class": "agentic_research",
+      "parent_scope_id": "FIN_0_1_3_S3",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
+    },
     "FIN_0_1_3_S3_Experiment_B_end_to_end_agentic_research": {
       "owner_stage": "S3",
       "operation_class": "agentic_research",

@@ -21,6 +21,9 @@ from sec_agent.s2_selected_evidence_numeric_natural_node_canary import (  # noqa
     load_canary_policy,
     validate_canary_output,
 )
+from sec_agent.s2_selected_evidence_numeric_natural_node_canary_live import (  # noqa: E402
+    LIVE_SCOPE,
+)
 from sec_agent.shared_admission_ledger import (  # noqa: E402
     SharedAdmissionConsumptionLedger,
     SharedAdmissionLedgerError,
@@ -331,7 +334,9 @@ def test_unknown_numeric_ref_fails_before_numeric_guard(material) -> None:
     assert exc.value.code == "natural_node_canary_support_atom_unknown_ref"
 
 
-def test_policy_does_not_register_or_issue_live_scope(material) -> None:
+def test_policy_does_not_issue_live_authority_after_separate_scope_registration(
+    material,
+) -> None:
     assert material["policy"]["zero_call_run_scope"] == ZERO_CALL_SCOPE
     assert material["policy"]["hard_boundaries"]["live_authority_issued_by_this_policy"] is False
     registry = json.loads(
@@ -341,10 +346,14 @@ def test_policy_does_not_register_or_issue_live_scope(material) -> None:
     )
     scopes = registry["scopes"]
     assert ZERO_CALL_SCOPE in scopes
-    assert (
-        material["policy"]["live_run_scope_reserved_not_registered_or_authorized"]
-        not in scopes
-    )
+    assert material["policy"]["live_run_scope_reserved_not_registered_or_authorized"] == LIVE_SCOPE
+    assert scopes[LIVE_SCOPE] == {
+        "owner_stage": "S2",
+        "operation_class": "agentic_research",
+        "parent_scope_id": "FIN_0_1_3_S2",
+        "executable": True,
+        "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"],
+    }
 
 
 def test_bound_text_digest_is_crlf_lf_portable(tmp_path) -> None:

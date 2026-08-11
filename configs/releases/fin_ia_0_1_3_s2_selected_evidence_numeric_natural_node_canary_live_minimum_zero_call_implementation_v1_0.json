@@ -1,0 +1,87 @@
+{
+  "schema_version": "fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_minimum_zero_call_implementation_v1_0",
+  "recorded_at": "2026-08-11",
+  "product_version": "FIN_0_1_3",
+  "owner_stage": "S2",
+  "status": "working_tree_zero_call_engineering_pass_clean_synced_commit_and_admission_issuance_pending",
+  "authority_decision": {
+    "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_value_cost_risk_authority_decision_v1_0.json",
+    "decision_digest": "4b3c48325e1dd18917a85a44c05d8df45111ab08a557deba4e893d1c90dd6164"
+  },
+  "clean_canary_basis": {
+    "ref": "configs/releases/fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_clean_independent_proof_v1_0.json",
+    "proof_digest": "86ee394477e05fce580e7ef107c3f21d4087c94fe0ebbaaad9cecadbf7343402",
+    "compiled_input_digest": "cee0aa92b7a118059ff79ceba86c2cafad7ee37f084cbd36f14b785af637b063",
+    "request_digest": "6f28084df556249011fcb4c146261d4546a93ff4bab1add1e45158f074615879",
+    "request_characters": 11838
+  },
+  "implementation": {
+    "live_scope": "FIN_0_1_3_S2_SELECTED_EVIDENCE_NUMERIC_NATURAL_NODE_CANARY_LIVE",
+    "live_scope_registered": true,
+    "operation_class": "agentic_research",
+    "fixture_and_live_authority_kinds_separate": true,
+    "fixture_admission_cannot_be_relabelled_live": true,
+    "authority_and_admission_canonical_digests": true,
+    "authority_binds_clean_proof_policy_profile_input_request_runner_and_issuer": true,
+    "credential_presence_only": true,
+    "credential_value_persisted": false,
+    "provider_adapter_transport_attempts": 1,
+    "provider_adapter_retries": 0,
+    "capture_before_parse_or_validation": true,
+    "shared_exact_once_ledger_outside_attempt_root": true,
+    "business_artifact_promotion": false,
+    "separate_execution_authority_required": true,
+    "execution_without_separate_authority_fails_before_provider": true,
+    "source_refs": [
+      "configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json",
+      "src/sec_agent/s2_selected_evidence_numeric_natural_node_canary.py",
+      "src/sec_agent/s2_selected_evidence_numeric_natural_node_canary_live.py",
+      "scripts/releases/issue_fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_admission.py",
+      "scripts/releases/run_fin_ia_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live.py",
+      "tests/contract/test_fin_0_1_3_s2_selected_evidence_numeric_natural_node_canary_live_implementation.py"
+    ]
+  },
+  "verification": {
+    "focused_and_adjacent_tests": "49 passed",
+    "python_compileall": "pass",
+    "project_os_live_scope_preflight": "pass",
+    "project_os_open_blocker_count": 0,
+    "project_os_contract_error_count": 0,
+    "first_test_attempt": {
+      "status": "failed_then_repaired_before_commit",
+      "failed_tests": 6,
+      "root_cause": "run_scope_parameterization_was_applied_to_fixture_admission_instead_of_terminal_projection",
+      "model_provider_network_source_calls": [0, 0, 0, 0],
+      "repair": "restore_fixture_zero_call_scope_and_project_terminal_scope_from_the_validated_admission"
+    },
+    "final_test_attempt": {
+      "status": "pass",
+      "tests_passed": 49,
+      "model_provider_network_source_calls": [0, 0, 0, 0]
+    }
+  },
+  "stage_acceptance": {
+    "live_scope_registered": true,
+    "live_authority_and_admission_contract_implemented": true,
+    "presence_only_credential_preflight_implemented": true,
+    "no_retry_provider_adapter_implemented": true,
+    "separate_execution_authority_gate_implemented": true,
+    "clean_synced_implementation_commit": false,
+    "fresh_live_admission_issued": false,
+    "natural_model_canary": false,
+    "dell_delivery_pass": false,
+    "owner_acceptance": false,
+    "release": false
+  },
+  "observed_calls": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "source_calls": 0,
+    "retries": 0,
+    "fixture_provider_callbacks": 1
+  },
+  "known_boundary": "The working-tree engineering pass proves the live control path with a fake callback. It is not a clean/synced implementation, a signed fresh admission, execution authority, natural DeepSeek evidence, Dell delivery, Owner acceptance or release.",
+  "current_next": "COMMIT_PUSH_LIVE_IMPLEMENTATION_THEN_RUN_CLEAN_SYNCED_PREFLIGHT_AND_ISSUE_ONE_UNCONSUMED_ADMISSION_NO_EXECUTION",
+  "result_digest": "74d412852cdbf46d747889da42967226f6dc5411d31f5585fe68dbc058e23275"
+}

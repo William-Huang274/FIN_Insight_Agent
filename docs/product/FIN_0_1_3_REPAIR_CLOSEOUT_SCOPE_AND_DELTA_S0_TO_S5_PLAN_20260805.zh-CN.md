@@ -312,6 +312,8 @@ DELL Supervisor R2 说明旧计划还缺一条统一原则：模型需要看到�
 
 > **2026-08-11 `S2-06D` live value-cost-risk decision**：批准实现一条与 fixture 隔离的 Pro live path，并在 clean/synced preflight 后签发一份 fresh exact-once admission；未来预算=`1 call／1,800 output tokens／USD 0.02／0 retry/source/tool/promotion`。本决策不执行调用，也不授权 DELL full report。下一项只实现 live validator／adapter／presence-only credential 和 admission issuance。
 
+> **2026-08-11 `S2-06D` live path engineering pass**：独立 live scope、canonical authority/admission/issuance、presence-only credential、single-attempt adapter 和 separate execution-authority gate 已实现；fixture 无法改标冒充 live，缺 execution authority 时 Provider callback=`0`。首轮 scope 参数化错误经 fixture/live 双回归修复，最终相关集合=`49 passed`、Project OS live scope=`pass`。当前只进入 clean/synced implementation commit 和一份未消费 admission 签发；本项 model/provider/network/source=`0/0/0/0`，不自动执行 canary。
+
 #### 7A.5.1 2026-08-10 DELL fixed-pack transport successor 与数字表面闭环
 
 新的 DELL fixed-pack canary R1 在第 6 次 Provider 调用发生 `RemoteDisconnected`。前 5 个节点均有完整不可变 request/response capture；失败节点也有 capture，但没有可晋升输出。相邻请求大小近似，当前证据不足以认定容量故障或模型推理失败。direct baseline 的 11 个 numeric finding 又主要来自合法中文尺度转换和一项可复算比例缺少本地权威 trace。故本轮保持 S2，不重跑前 5 节点，也不创建新产品版本：

@@ -136,6 +136,13 @@
       "executable": true,
       "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
     },
+    "FIN_0_1_3_S2_SELECTED_EVIDENCE_NUMERIC_NATURAL_NODE_CANARY_LIVE": {
+      "owner_stage": "S2",
+      "operation_class": "agentic_research",
+      "parent_scope_id": "FIN_0_1_3_S2",
+      "executable": true,
+      "allowed_projection_owner_stages": ["shared", "S1", "S2", "S3"]
+    },
     "FIN_0_1_3_S1_08": {
       "owner_stage": "S1",
       "operation_class": "namespace",

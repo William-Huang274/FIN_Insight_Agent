@@ -651,7 +651,7 @@ def _terminalize(
 ) -> dict[str, Any]:
     body = {
         "schema_version": TERMINAL_SCHEMA,
-        "run_scope": ZERO_CALL_SCOPE,
+        "run_scope": str(admission["run_scope"]),
         "run_id": admission["run_id"],
         "attempt_id": admission["attempt_id"],
         "case_key": admission["case_key"],
@@ -700,7 +700,7 @@ def _terminalize(
     return public
 
 
-def execute_canary(
+def _execute_validated_canary(
     *,
     admission: Mapping[str, Any],
     material: Mapping[str, Any],
@@ -709,7 +709,6 @@ def execute_canary(
     shared_ledger: SharedAdmissionConsumptionLedger,
     observed_at: str,
 ) -> dict[str, Any]:
-    validate_canary_admission(admission, material=material)
     root = Path(runtime_root).resolve()
     _require(not root.exists(), "natural_node_canary_attempt_root_exists")
     shared_ledger.reserve(
@@ -847,6 +846,28 @@ def execute_canary(
         observed_at=observed_at,
         output=output,
         validation=validation,
+    )
+
+
+def execute_canary(
+    *,
+    admission: Mapping[str, Any],
+    material: Mapping[str, Any],
+    provider_call: ProviderCall,
+    runtime_root: str | Path,
+    shared_ledger: SharedAdmissionConsumptionLedger,
+    observed_at: str,
+) -> dict[str, Any]:
+    """Execute the fixture-only canary after its zero-call admission is checked."""
+
+    validate_canary_admission(admission, material=material)
+    return _execute_validated_canary(
+        admission=admission,
+        material=material,
+        provider_call=provider_call,
+        runtime_root=runtime_root,
+        shared_ledger=shared_ledger,
+        observed_at=observed_at,
     )
 
 

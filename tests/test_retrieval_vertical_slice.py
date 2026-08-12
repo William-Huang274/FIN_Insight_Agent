@@ -29,6 +29,12 @@ SNAPSHOT_PATH = (
     / "runtime"
     / "fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
 )
+RANKING_PROJECTION_PATH = (
+    ROOT
+    / "configs"
+    / "runtime"
+    / "fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json"
+)
 
 
 def _kernel():
@@ -237,3 +243,38 @@ def test_current_snapshot_is_read_only_candidate_projection() -> None:
     assert "reviewed_pack_match" not in rendered
     assert "matched_source_record_ids" not in rendered
     assert "reviewed_evaluation" not in rendered
+
+
+def test_s1c_ranking_projection_is_consumable_without_gold_identity() -> None:
+    snapshot = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    ranking = json.loads(RANKING_PROJECTION_PATH.read_text(encoding="utf-8"))
+    service = ResearchRetrievalService(
+        snapshot=snapshot,
+        ranking_comparison=ranking,
+    )
+    projection = service.get_case(
+        "NVDA",
+        ResearchRetrievalPrincipal(
+            mode="current",
+            permissions=frozenset({"current_product:read"}),
+        ),
+    )
+
+    comparison = projection["ranking_comparison"]
+    assert comparison["candidate_state"] == "candidate_not_evidence"
+    assert comparison["same_object_population_count"] == 1805
+    assert set(comparison["route_summaries"]) == {
+        "sparse_bm25",
+        "dense_bge_m3",
+        "fusion_rrf_1_1",
+        "typed_financial_rerank",
+    }
+    rendered = json.dumps(comparison, ensure_ascii=False)
+    assert "target_current_source_record_ids" not in rendered
+    assert "target_in_top_k" not in rendered
+    assert "target_rank" not in rendered
+    assert "matched_qrel_ids" not in rendered
+    assert all(
+        "qrel" not in str(query["query_id"])
+        for query in comparison["queries"]
+    )

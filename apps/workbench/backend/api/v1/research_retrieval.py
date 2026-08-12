@@ -26,6 +26,7 @@ class ResearchRetrievalResponse(BaseModel):
     summary: dict[str, Any]
     source_gap_summary: dict[str, Any]
     business_findings_zh: list[str]
+    ranking_comparison: dict[str, Any] | None
     lanes: list[dict[str, Any]]
     known_boundary: str
     projection_digest: str

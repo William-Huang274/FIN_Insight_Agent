@@ -10,6 +10,8 @@
       "scripts/data_retrieval/build_current_retrieval_snapshot.py",
       "scripts/data_retrieval/build_evidence_store.py",
       "scripts/data_retrieval/capture_s1b_official_sources.py",
+      "scripts/data_retrieval/materialize_s1c_requalified_qrels.py",
+      "scripts/data_retrieval/run_s1c_ranking_comparison.py",
       "scripts/data_sec/build_sec_8k_earnings_chunks.py",
       "scripts/data_sec/build_sec_8k_earnings_manifest.py",
       "scripts/data_sec/build_sec_chunks.py",
@@ -53,9 +55,9 @@
   ],
   "observed": {
     "frontend_files": 7,
-    "python_files": 69,
+    "python_files": 72,
     "runtime_detector_files": 3,
-    "runtime_resources": 4
+    "runtime_resources": 5
   },
   "python_import_graph": [
     "apps/workbench/backend/api/operations.py",
@@ -71,6 +73,8 @@
     "scripts/data_retrieval/build_current_retrieval_snapshot.py",
     "scripts/data_retrieval/build_evidence_store.py",
     "scripts/data_retrieval/capture_s1b_official_sources.py",
+    "scripts/data_retrieval/materialize_s1c_requalified_qrels.py",
+    "scripts/data_retrieval/run_s1c_ranking_comparison.py",
     "scripts/data_sec/build_sec_8k_earnings_chunks.py",
     "scripts/data_sec/build_sec_8k_earnings_manifest.py",
     "scripts/data_sec/build_sec_chunks.py",
@@ -110,6 +114,7 @@
     "src/retrieval/contracts.py",
     "src/retrieval/financial_objects.py",
     "src/retrieval/query_plan.py",
+    "src/retrieval/ranking_comparison.py",
     "src/retrieval/text.py",
     "src/sec_agent/market_snapshot.py",
     "src/sec_agent/research/reviewed_evidence_pack.py",
@@ -137,7 +142,8 @@
     "configs/runtime/fin_ia_0_1_3_current_research_evidence_pack_projection_v1_0.json",
     "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_0.json",
     "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json",
-    "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
+    "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
+    "configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json"
   ],
   "schema_version": "fin_ia_active_baseline_import_graph_v1_0",
   "status": "pass",

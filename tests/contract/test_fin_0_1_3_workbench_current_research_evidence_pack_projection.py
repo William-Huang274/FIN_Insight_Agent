@@ -334,13 +334,14 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R2"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R3"
     )
     assert set(registry.by_id()) == {
         "application.config.current_research_evidence_pack_projection",
         "application.config.current_research_workspace_catalog",
         "application.result.current_research_local_evidence_packs",
         "application.result.current_research_retrieval_snapshot",
+        "application.result.current_s1c_ranking_comparison_projection",
     }
     assert registry.detector_python_refs == (
         "apps/workbench/backend/application/research_evidence_pack_service.py",

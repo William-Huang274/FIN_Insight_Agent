@@ -244,6 +244,7 @@ function RetrievalSurface({ retrieval }: { retrieval: ResearchRetrievalView }) {
           {missing.map(([facet, roles]) => <div className="research-workspace__missing-role" key={facet}><strong>{facet}</strong><span>缺 {roles.join("、")}</span></div>)}
         </article>
       </section>
+      {retrieval.ranking_comparison ? <RankingComparisonPanel comparison={retrieval.ranking_comparison} /> : null}
       <section className="research-workspace__panel">
         <div className="research-workspace__section-title"><h2>查询 Facets 与候选</h2><span>{retrieval.summary.lane_count} 条独立查询 lane</span></div>
         <div className="research-workspace__retrieval-lanes">
@@ -266,6 +267,54 @@ function RetrievalSurface({ retrieval }: { retrieval: ResearchRetrievalView }) {
       </section>
       <Boundary text={retrieval.known_boundary} />
     </>
+  );
+}
+
+const rankingRouteLabels: Record<string, string> = {
+  sparse_bm25: "BM25 关键词",
+  dense_bge_m3: "BGE-M3 语义",
+  fusion_rrf_1_1: "1:1 RRF 融合",
+  typed_financial_rerank: "金融角色重排",
+};
+
+function RankingComparisonPanel({ comparison }: { comparison: NonNullable<ResearchRetrievalView["ranking_comparison"]> }) {
+  return (
+    <section className="research-workspace__panel">
+      <div className="research-workspace__section-title">
+        <h2>同对象排名对照</h2>
+        <span>{comparison.same_object_population_count.toLocaleString("zh-CN")} 个冻结 child · 候选仍不是 Evidence</span>
+      </div>
+      <div className="research-workspace__ranking-routes">
+        {Object.entries(comparison.route_summaries).map(([routeId, summary]) => (
+          <article key={routeId}>
+            <strong>{rankingRouteLabels[routeId] ?? routeId}</strong>
+            <b>{Math.round(summary.recall_at_10_mapped_targets * 100)}%</b>
+            <span>映射目标进入前 10 · MRR {summary.mrr_mapped_targets.toFixed(3)}</span>
+            <small>{summary.mapped_current_target_count} 条可映射，{summary.typed_target_gap_count} 条目标缺口</small>
+          </article>
+        ))}
+      </div>
+      <p className="research-workspace__ranking-note">这组数字只比较同一批对象如何排序；不代表候选内容已通过证据门，也不会把评测答案暴露给产品候选。</p>
+      <div className="research-workspace__ranking-queries">
+        {comparison.queries.slice(0, 3).map((query) => (
+          <article key={query.query_id}>
+            <header><strong>{query.evidence_owner_ticker}</strong><span>{query.evidence_slot_id}</span></header>
+            <div>
+              {Object.entries(query.routes).map(([routeId, route]) => {
+                const candidate = route.candidates[0];
+                return (
+                  <section key={routeId}>
+                    <small>{rankingRouteLabels[routeId] ?? routeId}</small>
+                    {candidate ? <><b>{candidate.subsection || candidate.section || candidate.source_type}</b><p>{candidate.excerpt}</p></> : <p>无候选</p>}
+                  </section>
+                );
+              })}
+            </div>
+          </article>
+        ))}
+      </div>
+      <Boundary text={comparison.known_boundary} />
+    </section>
   );
 }
 

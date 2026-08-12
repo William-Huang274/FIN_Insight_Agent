@@ -17,6 +17,8 @@ PYTHON_ENTRYPOINTS = (
     "scripts/data_retrieval/build_current_retrieval_snapshot.py",
     "scripts/data_retrieval/build_evidence_store.py",
     "scripts/data_retrieval/capture_s1b_official_sources.py",
+    "scripts/data_retrieval/materialize_s1c_requalified_qrels.py",
+    "scripts/data_retrieval/run_s1c_ranking_comparison.py",
     "scripts/data_sec/build_sec_8k_earnings_chunks.py",
     "scripts/data_sec/build_sec_8k_earnings_manifest.py",
     "scripts/data_sec/build_sec_chunks.py",

@@ -1,7 +1,7 @@
 {
   "schema_version": "fin_ia_0_1_3_workbench_route_runtime_resource_consumer_map_v1_0",
   "recorded_at": "2026-08-12",
-  "status": "current_consumer_map_cutover_and_mainline_G12_pass",
+  "status": "current_consumer_map_cutover_with_s1c_candidate_ranking_comparison",
   "composition_root": "apps/workbench/backend/app.py",
   "frontdoors": [
     {
@@ -19,17 +19,21 @@
     "/api/v1/research-cases",
     "/api/v1/research-cases/{case_id}",
     "/api/v1/research-cases/{case_id}/evidence",
+    "/api/v1/research-cases/{case_id}/retrieval",
     "/api/v1/current-research/evidence-packs",
     "/api/v1/current-research/evidence-packs/{case_key}"
   ],
   "product_services": [
     "apps/workbench/backend/application/research_workspace_service.py",
-    "apps/workbench/backend/application/research_evidence_pack_service.py"
+    "apps/workbench/backend/application/research_evidence_pack_service.py",
+    "apps/workbench/backend/application/research_retrieval_service.py"
   ],
   "runtime_resources": [
     "configs/runtime/fin_ia_0_1_3_current_research_evidence_pack_projection_v1_0.json",
     "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_0.json",
-    "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json"
+    "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json",
+    "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
+    "configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json"
   ],
   "operator_capabilities": [
     "runtime_status",
@@ -55,5 +59,5 @@
     "data_build_root": "FINSIGHT_DATA_ROOT",
     "unmounted_readiness": "typed_http_503"
   },
-  "known_boundary": "The current workspace consumes immutable reviewed local packs. It is not the future dynamic research runtime."
+  "known_boundary": "The current workspace consumes immutable reviewed local packs and a read-only S1-C candidate-ranking comparison. Ranking candidates are not Evidence, the projection contains no qrel identities, and this is not the future dynamic research runtime."
 }

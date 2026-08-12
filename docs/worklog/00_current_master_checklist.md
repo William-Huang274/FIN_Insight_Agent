@@ -3,7 +3,8 @@
 - [x] S0 权威干净基线
 - [x] S1-A 类型化本地检索纵切接入 Workbench
 - [x] S1-B current official source/object 重建（工程通过，typed gaps 转交 S1-C/S1-D）
-- [ ] S1-C sparse/dense/rerank 同候选对照
+- [x] S1-C sparse/dense/fusion/规则重排同对象工程对照（BM25 保留默认，其他路线未晋升）
+- [ ] S1-C Owner qrel successor 决策与缓存复跑（仅 05/11/15/16）
 - [ ] S1-D residual-gap 外源补源与 Evidence Pack 复编译
 - [ ] S2 NumericFact / PIT / 单位期间与引用回归
 - [ ] S3 动态 Agentic Research 与内容质量验收

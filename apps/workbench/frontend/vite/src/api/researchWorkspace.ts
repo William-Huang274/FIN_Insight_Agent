@@ -198,6 +198,40 @@ export type ResearchRetrievalView = {
     interpretation_zh: string;
   };
   business_findings_zh: string[];
+  ranking_comparison: null | {
+    candidate_state: "candidate_not_evidence";
+    same_object_population_count: number;
+    route_summaries: Record<string, {
+      qrel_count: number;
+      mapped_current_target_count: number;
+      typed_target_gap_count: number;
+      recall_at_10_all_qrels: number;
+      recall_at_10_mapped_targets: number;
+      mrr_mapped_targets: number;
+      automatic_business_error_counts_in_top3: Record<string, number>;
+    }>;
+    queries: Array<{
+      query_id: string;
+      evidence_slot_id: string;
+      evidence_owner_ticker: string;
+      routes: Record<string, {
+        candidates: Array<{
+          candidate_state: "candidate_not_evidence";
+          rank: number;
+          source_record_id: string;
+          evidence_owner_ticker: string;
+          source_type: string;
+          publication_date: string;
+          section: string;
+          subsection: string;
+          score: number;
+          excerpt: string;
+        }>;
+      }>;
+    }>;
+    known_boundary: string;
+    projection_digest: string;
+  };
   lanes: RetrievalLane[];
   known_boundary: string;
   projection_digest: string;

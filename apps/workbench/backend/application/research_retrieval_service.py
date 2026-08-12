@@ -12,7 +12,11 @@ from sec_agent.research.reviewed_evidence_pack import canonical_digest
 CURRENT_RETRIEVAL_SNAPSHOT_RESOURCE_ID = (
     "application.result.current_research_retrieval_snapshot"
 )
+CURRENT_RANKING_COMPARISON_RESOURCE_ID = (
+    "application.result.current_s1c_ranking_comparison_projection"
+)
 EXPECTED_SCHEMA = "fin_ia_current_retrieval_snapshot_v1_0"
+EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
 RETRIEVAL_PROJECTION_SCHEMA = "fin_ia_research_retrieval_projection_v1_0"
 
 
@@ -33,12 +37,30 @@ class ResearchRetrievalServiceError(RuntimeError):
 class ResearchRetrievalService:
     """Read-only product projection of the current S1 retrieval snapshot."""
 
-    def __init__(self, *, snapshot: Mapping[str, Any]) -> None:
+    def __init__(
+        self,
+        *,
+        snapshot: Mapping[str, Any],
+        ranking_comparison: Mapping[str, Any] | None = None,
+    ) -> None:
         self._snapshot = self._validate(snapshot)
         self._cases = {
             str(row["case_key"]): deepcopy(dict(row))
             for row in self._snapshot["cases"]
         }
+        self._ranking = (
+            self._validate_ranking(ranking_comparison)
+            if ranking_comparison is not None
+            else None
+        )
+        self._ranking_cases = (
+            {
+                str(row["case_key"]): deepcopy(dict(row))
+                for row in self._ranking["cases"]
+            }
+            if self._ranking is not None
+            else {}
+        )
 
     @classmethod
     def from_runtime_paths(
@@ -49,7 +71,11 @@ class ResearchRetrievalService:
             snapshot=read_registered_runtime_json(
                 repository_root,
                 CURRENT_RETRIEVAL_SNAPSHOT_RESOURCE_ID,
-            )
+            ),
+            ranking_comparison=read_registered_runtime_json(
+                repository_root,
+                CURRENT_RANKING_COMPARISON_RESOURCE_ID,
+            ),
         )
 
     def get_case(
@@ -117,10 +143,30 @@ class ResearchRetrievalService:
             "summary": summary,
             "source_gap_summary": deepcopy(row["source_gap_summary"]),
             "business_findings_zh": deepcopy(row["business_findings_zh"]),
+            "ranking_comparison": self._ranking_projection_for_case(key),
             "lanes": lanes,
             "known_boundary": str(self._snapshot["known_boundary"]),
         }
         return {**body, "projection_digest": canonical_digest(body)}
+
+    def _ranking_projection_for_case(self, case_key: str) -> dict[str, Any] | None:
+        if self._ranking is None:
+            return None
+        case = self._ranking_cases.get(case_key)
+        if case is None:
+            raise ResearchRetrievalServiceError(
+                "research_ranking_case_projection_missing", 503, case_key=case_key
+            )
+        return {
+            "candidate_state": "candidate_not_evidence",
+            "same_object_population_count": int(
+                self._ranking["same_object_population_count"]
+            ),
+            "route_summaries": deepcopy(self._ranking["route_summaries"]),
+            "queries": deepcopy(case["queries"]),
+            "known_boundary": str(self._ranking["known_boundary"]),
+            "projection_digest": str(self._ranking["projection_digest"]),
+        }
 
     @staticmethod
     def _validate(snapshot: Mapping[str, Any]) -> dict[str, Any]:
@@ -173,8 +219,49 @@ class ResearchRetrievalService:
                 "research_retrieval_read_permission_required", 403
             )
 
+    @staticmethod
+    def _validate_ranking(value: Mapping[str, Any]) -> dict[str, Any]:
+        ranking = deepcopy(dict(value))
+        rendered = str(ranking)
+        cases = ranking.get("cases")
+        if not (
+            ranking.get("schema_version") == EXPECTED_RANKING_SCHEMA
+            and ranking.get("candidate_state") == "candidate_not_evidence"
+            and int(ranking.get("same_object_population_count") or 0) > 0
+            and isinstance(ranking.get("route_summaries"), Mapping)
+            and isinstance(cases, list)
+            and [row.get("case_key") for row in cases] == ["DELL", "MU", "NVDA"]
+            and str(ranking.get("known_boundary") or "")
+            and str(ranking.get("projection_digest") or "")
+            and canonical_digest(
+                {
+                    key: value
+                    for key, value in ranking.items()
+                    if key != "projection_digest"
+                }
+            )
+            == ranking.get("projection_digest")
+        ):
+            raise ResearchRetrievalServiceError(
+                "research_ranking_projection_invalid", 503
+            )
+        for forbidden in (
+            "target_current_source_record_ids",
+            "target_in_top_k",
+            "target_rank",
+            "matched_qrel_ids",
+            "missed_qrel_ids",
+            "business_diagnostic_code",
+        ):
+            if forbidden in rendered:
+                raise ResearchRetrievalServiceError(
+                    "research_ranking_projection_contains_eval_identity", 503
+                )
+        return ranking
+
 
 __all__ = [
+    "CURRENT_RANKING_COMPARISON_RESOURCE_ID",
     "CURRENT_RETRIEVAL_SNAPSHOT_RESOURCE_ID",
     "ResearchRetrievalPrincipal",
     "ResearchRetrievalService",

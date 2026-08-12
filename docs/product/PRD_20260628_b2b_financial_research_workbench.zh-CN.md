@@ -2515,3 +2515,13 @@ live 控制面已达到 working-tree engineering pass：scope 已独立注册，
 4. 候选仍不是 Evidence。只有 Evidence Gate、引用边界和 residual-gap evaluator 完成后，S1-D 才能定向补源并复编译 Evidence Pack。
 
 Dell Q1 FY2027 transcript 与 Micron Q3 FY2026 prepared remarks 已由官方 IR 证明存在，但当前产品 transport 的有界 R1–R4 未取得原始 PDF；产品表面必须显示 transport gap，不能用搜索摘要代替正文。TSM 当前 6-K 只是财务业绩，不等于先进封装产能/良率/分配证据。PIT market snapshot 早于 research as-of 且缺估值字段，因此也不能冒充 valuation-ready。
+
+### 16.24 同对象排名比较、语义近邻污染与 qrel successor 门（2026-08-12）
+
+S1-C 已把当前 `1,805` 个金融 child、身份／期间／来源硬过滤和 18 条 Owner relevance qrels 冻结为同一比较面。候选必须先生成，之后才能连接 gold label；WorkBench 投影禁止携带 target ID、命中状态或标准答案 URL。四路结果为 BM25=`14/17`、BGE-M3=`12/17`、固定 1:1 RRF=`13/17`、确定性金融规则重排=`13/17` mapped Recall@10。BM25 因召回最高继续作为候选默认，但该结论不授予 Evidence 权限。
+
+Dense 的实质问题不是“向量不能工作”，而是金融证据角色不足：它会把 NVDA 保修／诉讼文字当供给约束，把 Dell 资本回报当客户需求，把 Microsoft 云产品定义或安全风险当实际部署需求。Fusion 虽提高平均首个相关结果位置，却漏掉更多有效目标；确定性规则能压低部分噪声但没有超过 BM25，并且不得冒充 neural cross-encoder。产品采用路线必须同时改善逐条业务错误与目标召回，不能因单一 MRR/NDCG 指标上涨而晋升。
+
+评测合同自身也必须被审计。首轮三条 TSM qrel 因旧 source-tier allowlist 不认识当前 `primary_global_public_disclosure` 而在排序前失去候选；修复为通用官方来源 tier 等价后才恢复。这类合同漂移不得算作模型失败。另有四条 qrel 需要 Owner review：两条 NVDA supply 目标以联系人／安全港为主体；一条 NVDA results 需要允许当前 10-Q 更精确替代目标；一条旧 metric-table identity 在当前 store 中缺失。实现者只能提出 successor，不得静默重写已接受标签或回填更漂亮的分数。
+
+因此 S1-C 可记为工程比较完成，但 S1 仍未通过。Owner 确认受影响标签并进行缓存复跑后，S1-D 才按 residual gaps 定向补 Dell／Micron PDF、TSM 先进封装和新鲜估值；不得为了排名分数继续盲目扩源或调权重。完整技术记录见 `docs/architecture/retrieval/FIN_0_1_3_S1C_SAME_OBJECT_RANKING_COMPARISON_20260812.zh-CN.md`。

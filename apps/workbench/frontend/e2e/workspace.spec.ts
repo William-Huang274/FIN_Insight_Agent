@@ -49,6 +49,11 @@ test("workspace exposes the three identity-bound reviewed cases", async ({ page 
   await expect(page.getByRole("heading", { name: "当前候选检索" })).toBeVisible();
   await expect(page.getByText("candidate_not_evidence", { exact: false })).toHaveCount(0);
   await expect(page.getByText(/这些是待审候选，不是 Evidence/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "同对象排名对照" })).toBeVisible();
+  await expect(page.getByText(/这组数字只比较同一批对象如何排序/)).toBeVisible();
+  for (const route of ["BM25 关键词", "BGE-M3 语义", "1:1 RRF 融合", "金融角色重排"]) {
+    await expect(page.getByText(route, { exact: true }).first()).toBeVisible();
+  }
   await expect(page.getByText(/point_in_time_market/)).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await capture(page, "dell-evidence", testInfo.project.name);

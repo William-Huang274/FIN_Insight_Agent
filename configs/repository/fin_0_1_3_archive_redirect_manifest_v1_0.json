@@ -4,7 +4,7 @@
   "status": "full_non_destructive_migration_index_rebuilt_and_checked",
   "index": "archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl",
   "portable_path_map": "archive/versions/FIN_0_1_3_REBASELINE_PATH_MAP.jsonl",
-  "redirect_count": 6051,
+  "redirect_count": 6052,
   "portable_path_count": 156,
   "maximum_tracked_archive_relative_path": 180,
   "archive_roots": [

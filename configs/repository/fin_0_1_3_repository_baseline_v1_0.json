@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_repository_baseline_v1_0",
   "baseline_id": "FIN_0_1_3_REPOSITORY_BASELINE_20260811",
   "recorded_at": "2026-08-12",
-  "status": "clean_baseline_candidate_G01_G11_pass_main_merge_pending",
+  "status": "mainline_baseline_complete_G01_G12_pass_product_iteration_open",
   "canonical_recovery": "docs/project_os/current_context_pack.zh-CN.md",
   "canonical_product": "docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md",
   "canonical_current_scope": "docs/product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md",
@@ -32,13 +32,13 @@
   },
   "current_validation": {
     "active_graph": "pass",
-    "python_tests": "43_passed",
+    "python_tests": "44_passed",
     "typescript": "pass",
     "vite_production_build": "pass",
     "browser": "pass_desktop_mobile_mounted_unmounted_no_horizontal_overflow",
     "business": "pass_bounded_three_case_reviewed_evidence_workspace",
     "secret_scan": "pass_6230_files_zero_findings",
-    "container": "pass_unmounted_503_and_readonly_reviewed_evidence_mount_200",
-    "post_merge_reproof": "pending"
+    "container": "pass_clean_build_unmounted_503_readonly_reviewed_evidence_mount_200_and_compose_200",
+    "post_merge_reproof": "pass_clean_origin_main_cd9990ac"
   }
 }

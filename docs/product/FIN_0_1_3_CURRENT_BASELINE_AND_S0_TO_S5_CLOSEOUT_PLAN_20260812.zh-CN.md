@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_candidate / product_iteration_not_closed`
+状态：`repository_baseline_complete / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -20,7 +20,7 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 
 | 阶段 | 只拥有的责任 | 当前事实 | 通过条件 |
 | --- | --- | --- | --- |
-| S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线 | 重定基候选已形成；等待 main 合并后复证 | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿 |
+| S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线 | G01–G12 已通过并合并远端 main | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿 |
 | S1 | 内外源发现、解析、chunk/object、检索、rerank、来源覆盖 | 当前 Pack 只来自 SEC；旧检索实验不在活动 Runtime | 三案及留出案例的 required-slot target-in-pool、日期/实体/关系正确，外源只补真实 residual gap |
 | S2 | Evidence/NumericFact 编译、PIT、单位/期间、引用和冲突 | reviewed Evidence 可读，但三案 structured numeric=0 | 数值事实从权威对象确定性编译，跨案/错期/错单位 fail closed，S1 新证据依赖回归通过 |
 | S3 | 动态规划、工具使用、重裁决、研究综合、Workpaper/Report | 当前无活动动态 planner、模型 research chain 或完整报告产品 | 三案真实动态研究通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收 |
@@ -31,8 +31,8 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 
 ## 4. 当前重定基完成后的执行顺序
 
-1. **先完成 S0 仓库基线**：所有严格门通过，合并并推送 `main`，在干净主线工作树复证。
-2. **S1 检索纵切**：以当前三案和留出案例重新建立 source → object/chunk → typed query lanes → candidate/evaluator；官方来源优先，外源按 residual gap 补源。
+1. **S0 仓库基线（已完成）**：G01–G12 已通过，远端 `main` 已从第二份 clean-main 工作树完成复证。
+2. **当前下一步——S1 检索纵切**：以当前三案和留出案例重新建立 source → object/chunk → typed query lanes → candidate/evaluator；官方来源优先，外源按 residual gap 补源。
 3. **S2 最小依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
 4. **S3 三案动态 Agentic Research**：由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
 5. **S4 产品闭环**：把通过验收的研究结果接入当前 Workbench，而不是恢复旧页面；补齐 human review、repair 和 artifact lineage。

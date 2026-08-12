@@ -1,7 +1,7 @@
 # FIN 0.1.3 严格主线重定基验收与迁移程序
 
 更新：2026-08-12
-状态：`candidate acceptance; main merge and post-merge reproof pending`
+状态：`mainline G01–G12 pass; repository baseline complete; product iteration open`
 
 ## 目标
 
@@ -23,7 +23,7 @@ data/                  外置/挂载数据根；私有对象不进 Git
 
 ## 严格门
 
-| Gate | 含义 | 候选状态 |
+| Gate | 含义 | 主线状态 |
 | --- | --- | --- |
 | G01 | `main` 有效语义先合入候选 | pass |
 | G02 | `/workspace` 与 `/operations` 是唯一产品/运维前门 | pass |
@@ -32,11 +32,11 @@ data/                  外置/挂载数据根；私有对象不进 Git
 | G05 | 旧消费者为 0；旧页面 redirect、旧 API typed 410 | pass |
 | G06 | 历史非破坏性归档，逐文件 digest/index 可重建 | pass |
 | G07 | README、PRD、当前计划、技术图、CI 和机器 manifest 一致 | pass |
-| G08 | 当前 Python、TypeScript、Vite 和 browser tests 全绿 | pass：43 tests＋两种数据模式 browser |
+| G08 | 当前 Python、TypeScript、Vite 和 browser tests 全绿 | pass：44 tests＋两种数据模式共 12 个 browser tests |
 | G09 | DELL/MU/NVDA bounded 业务语义检查 | pass；只限 reviewed Evidence Workspace |
 | G10 | 桌面/移动、挂载/未挂载两种 UI 行为 | pass；包含无横向溢出 |
 | G11 | secret、startup、Compose/container smoke | pass；含只读 Evidence/可写 state 分离 |
-| G12 | 合并并推送 `main` 后从干净工作树完整复证 | pending |
+| G12 | 合并并推送 `main` 后从干净工作树完整复证 | pass：clean `origin/main` `cd9990ac` |
 
 唯一机器状态位于 `configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json`；本表不独立拥有最终状态。
 
@@ -65,6 +65,10 @@ npm run test:e2e
 ```
 
 挂载私有 reviewed Pack 后另执行三案例业务验收和 browser test。容器必须在未挂载数据时明确返回 `data_mount_required`，不能把缺数据的镜像标为产品 ready。
+
+## G12 clean-main 发现与处置
+
+G12 没有把候选缓存当作证明。第一次 clean-main 自然暴露并在本 gate 关闭三项缺陷：archive SHA 受 checkout 换行影响、后端可退回旧 HTML、Playwright 固定 5173 会撞上 Docker Desktop 的 Windows 排除端口。修复合并 `main` 后，第二份 clean-main 从零安装前端依赖、构建并完成全套复证。前端依赖的唯一权威仍为 `package-lock.json + npm ci`，没有引入 pnpm lock 或第二套工作区。
 
 ## 完成语义
 

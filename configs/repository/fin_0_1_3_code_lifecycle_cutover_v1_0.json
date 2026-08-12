@@ -2,8 +2,8 @@
   "schema_version": "fin_ia_code_lifecycle_cutover_v1_0",
   "baseline_id": "FIN_0_1_3_CLEAN_REBASELINE_20260811",
   "recorded_at": "2026-08-12",
-  "status": "active_tree_cut_over_and_G01_G11_acceptance_pass_main_merge_pending",
-  "working_branch": "codex/fin013-clean-baseline",
+  "status": "active_tree_cut_over_mainline_G01_G12_pass",
+  "working_branch": "main",
   "target_branch": "main",
   "current_product": {
     "browser_entry": "/workspace",
@@ -31,12 +31,10 @@
   "archive": {
     "redirect_manifest": "configs/repository/fin_0_1_3_archive_redirect_manifest_v1_0.json",
     "exact_index": "archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl",
-    "redirect_count": 6051,
+    "redirect_count": 6052,
     "deletion_used": false
   },
   "private_data_policy": "reviewed_evidence_readonly_mount_and_writable_operations_state_are_separate_never_copy_private_data_into_git",
-  "remaining_gates": [
-    "main_merge_and_post_merge_reproof"
-  ],
-  "next_action": "COMMIT_PUSH_MERGE_MAIN_AND_REPROVE_FROM_CLEAN_MAIN"
+  "remaining_gates": [],
+  "next_action": "FIN_0_1_3_S1_RETRIEVAL_VERTICAL_SLICE"
 }

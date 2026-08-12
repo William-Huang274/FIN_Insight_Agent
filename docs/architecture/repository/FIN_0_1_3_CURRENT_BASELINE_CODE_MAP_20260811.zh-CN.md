@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线代码图
 
 日期：2026-08-12
-状态：G01–G11 合并前验收通过；主线合并后复证前不得称为基线完成或 release complete。
+状态：G01–G12 主线仓库基线通过；FIN 0.1.3 产品迭代尚未完成。
 
 ## 1. 当前产品是什么
 
@@ -35,6 +35,8 @@ flowchart LR
 | Product UI | `apps/workbench/frontend/vite/src/app/ResearchWorkspace.tsx` | 三案例工作区和证据可读展示 |
 | Operator UI | `apps/workbench/frontend/vite/src/operations/OperationsConsole.tsx` | 系统状态、配置、数据构建和运行检查 |
 | Runtime registry | `src/sec_agent/runtime_resource_registry.py` | 只允许注册的三项 runtime resource |
+
+后端只消费 Vite 生成的 `apps/workbench/frontend/dist/index.html`。缺少构建产物时 `/workspace` 与 `/operations` 返回 typed 503 `frontend_not_built`；源码目录中的历史 HTML 已归档，不能作为缓存式 fallback。
 
 ## 3. 活动领域与数据模块
 
@@ -98,17 +100,14 @@ python -m pytest -q
 
 ## 7. 历史与恢复
 
-6,051 个历史/被替换文件的去向记录在 `archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`。其中包含已经完成使命的一次性迁移程序、旧 HTML 原型和脱敏 fixture；每行均记录原路径、归档路径、推断版本、处置原因、当前替代物、证据分类、活动 import 禁令和 SHA256。156 个不适合跨平台检出的长路径已改为短对象路径，并由 `archive/versions/FIN_0_1_3_REBASELINE_PATH_MAP.jsonl` 可逆绑定回完整原路径；内容摘要没有改变。
+6,052 个历史/被替换文件的去向记录在 `archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`。其中包含已经完成使命的一次性迁移程序、旧 HTML 原型和脱敏 fixture；每行均记录原路径、归档路径、推断版本、处置原因、当前替代物、证据分类、活动 import 禁令和 SHA256。156 个不适合跨平台检出的长路径已改为短对象路径，并由 `archive/versions/FIN_0_1_3_REBASELINE_PATH_MAP.jsonl` 可逆绑定回完整原路径。摘要以 Git canonical blob 为准，不受 Windows checkout 换行转换影响。
 
 归档不是垃圾箱：历史失败和设计仍可审计。但归档也不是代码库的隐形第二主线；任何恢复必须通过版本中立 successor、当前测试、当前消费者和新的生命周期决策。
 
 ## 8. 当前完成边界
 
-工程纵切已经成立，但以下门通过前不能冻结/发布：
+仓库工程基线已经合并远端 `main` 并完成 G12。复证目标为 `cd9990ac7ea4586cc55af0bc77f41c3f797399cb`，在第二份全新 clean-main 工作树上通过：44 个 Python tests、TypeScript、Vite build、无数据/挂载数据桌面与移动共 12 个 Playwright tests、三案业务验收、6,230 文件 secret scan、clean Docker build、无数据和只读 Evidence 挂载 smoke，以及原生 Compose 启动。
 
-- 合并并推送 `main`；
-- 从干净主线工作树完整复证并关闭 G12。
-
-合并前已通过：43 个 Python tests、TypeScript、Vite build、无数据/挂载数据桌面与移动 Playwright、三案业务验收、6,230 文件 secret scan、无数据和只读 Evidence 挂载 Docker smoke。三案业务通过只限本文件第 1 节定义的 reviewed Evidence Workspace。
+这只关闭 S0 仓库/运行时基线。三案业务通过仍只限本文件第 1 节定义的 reviewed Evidence Workspace；S1 检索、S2 NumericFact、S3 动态研究与完整报告、S4 产品闭环和 S5 release 仍需按当前计划分别验收。
 
 这些门的唯一机器状态见 `configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json`。

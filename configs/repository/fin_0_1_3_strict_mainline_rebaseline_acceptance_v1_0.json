@@ -1,9 +1,9 @@
 {
   "schema_version": "fin_ia_0_1_3_strict_mainline_rebaseline_acceptance_v1_0",
   "recorded_at": "2026-08-12",
-  "status": "candidate_G01_G11_pass_main_merge_and_post_merge_reproof_pending",
+  "status": "mainline_G01_G12_pass_product_iteration_not_closed",
   "owner_intent": "form_one_clear_FIN_0_1_3_code_and_project_baseline_then_merge_main_without_carrying_active_legacy_debt",
-  "working_branch": "codex/fin013-clean-baseline",
+  "working_branch": "main",
   "target_branch": "main",
   "bounded_product_promise": {
     "primary_product": "identity_bound_reviewed_research_workspace",
@@ -16,7 +16,7 @@
       "open_web_search",
       "realtime_market_data",
       "automatic_evidence_promotion",
-      "release_ready_before_post_merge_reproof"
+      "FIN_0_1_3_product_release"
     ]
   },
   "strict_gates": [
@@ -27,11 +27,11 @@
     {"id": "G05", "name": "old_product_consumers_zero_and_typed_tombstones", "status": "pass"},
     {"id": "G06", "name": "non_destructive_archive_and_exact_redirect_integrity", "status": "pass"},
     {"id": "G07", "name": "current_docs_readmes_ci_and_machine_maps", "status": "pass"},
-    {"id": "G08", "name": "full_current_engineering_suite_and_frontend_build", "status": "pass_43_pytests_typescript_vite_and_two_mode_browser"},
+    {"id": "G08", "name": "full_current_engineering_suite_and_frontend_build", "status": "pass_44_pytests_typescript_vite_and_two_mode_browser"},
     {"id": "G09", "name": "DELL_MU_NVDA_business_semantic_acceptance", "status": "pass_bounded_reviewed_evidence_workspace"},
     {"id": "G10", "name": "workspace_and_operations_browser_acceptance", "status": "pass_desktop_mobile_mounted_unmounted"},
     {"id": "G11", "name": "secret_scan_startup_and_container_smoke", "status": "pass_secret_6230_zero_findings_container_mounted_and_unmounted"},
-    {"id": "G12", "name": "main_merge_push_and_clean_post_merge_reproof", "status": "pending"}
+    {"id": "G12", "name": "main_merge_push_and_clean_post_merge_reproof", "status": "pass_clean_origin_main_cd9990ac_full_reproof"}
   ],
   "stop_rules": [
     "do_not_merge_when_any_gate_is_fail_or_pending",
@@ -41,5 +41,5 @@
     "do_not_create_a_new_product_version_for_a_failed_gate",
     "do_not_call_models_or_live_research_sources_for_repository_acceptance"
   ],
-  "current_next": "COMMIT_PUSH_CANDIDATE_MERGE_MAIN_AND_COMPLETE_CLEAN_MAIN_G12"
+  "current_next": "FIN_0_1_3_S1_RETRIEVAL_VERTICAL_SLICE"
 }

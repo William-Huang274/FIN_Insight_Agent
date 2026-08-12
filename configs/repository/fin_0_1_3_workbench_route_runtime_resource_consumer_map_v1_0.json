@@ -1,7 +1,7 @@
 {
   "schema_version": "fin_ia_0_1_3_workbench_route_runtime_resource_consumer_map_v1_0",
   "recorded_at": "2026-08-12",
-  "status": "current_consumer_map_cutover_and_premerge_acceptance_pass",
+  "status": "current_consumer_map_cutover_and_mainline_G12_pass",
   "composition_root": "apps/workbench/backend/app.py",
   "frontdoors": [
     {

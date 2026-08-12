@@ -585,6 +585,35 @@ _DATA_BUILD_STEPS = {
         output_parameters=["full_output_root", "summary_output"],
         timeout_hint_s=7200,
     ),
+    "financial_facts_build_s2_company_mart": _step(
+        "financial_facts_build_s2_company_mart",
+        "Financial Facts",
+        "构建 S2 公司财务事实库",
+        "从已保存并经 digest 绑定的 SEC CompanyFacts 与 Submissions 构建保留期间、vintage、单位、accession 和引用血缘的 SQLite mart；不访问网络、不调用模型。",
+        "scripts/data_retrieval/build_s2_company_financial_fact_mart.py",
+        [
+            _param(
+                "policy",
+                "--policy",
+                "公司财务事实策略",
+                default="configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_policy_v1_0.json",
+            ),
+            _param(
+                "sqlite",
+                "--sqlite",
+                "私有 SQLite 输出",
+                default="data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_facts.sqlite",
+            ),
+            _param(
+                "output",
+                "--output",
+                "受追踪构建与验收摘要",
+                default="configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_0.json",
+            ),
+        ],
+        output_parameters=["sqlite", "output"],
+        timeout_hint_s=900,
+    ),
     "sec_download_8k_earnings": _step(
         "sec_download_8k_earnings",
         "8-K",

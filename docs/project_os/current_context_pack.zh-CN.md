@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-A 已接入类型化查询与 Workbench 候选页，S1-B 已建立 28 parent / 1,805 child 的当前金融对象库。S1-C 已把 17 个 facet 拆成 11 类问题，把混合请求拆为叙事检索／数据库事实 sibling，并把全库编译为 20,340 个去重 claim／metric-row／context 候选。18 个 Runtime Query Atom 的同对象模型 shadow 已完成：Qwen Embedding 为 provisional first-stage winner（8/15 前十），BM25 为 fallback（5/15），BGE dense 为 0/15；Qwen Reranker 受控 pairwise=12/16 但自然前十未改善，只保留 shadow，BGE Reranker 不晋升。Evidence Role F1=0.5818，且发现残缺片段和错误关系 qrel，故 S1 产品门仍未通过、禁止微调。下一硬门已转入 S2 公司财务事实 mart；当前原始 CompanyFacts 是新鲜的，但活动 manifest 和旧 mart 没有 current-quarter/vintage 能力。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-A 已接入类型化查询与 Workbench 候选页，S1-B 已建立 28 parent / 1,805 child 的当前金融对象库。S1-C 已把 17 个 facet 拆成 11 类问题，把混合请求拆为叙事检索／数据库事实 sibling，并把全库编译为 20,340 个去重 claim／metric-row／context 候选。18 个 Runtime Query Atom 的同对象模型 shadow 已完成：Qwen Embedding 为 provisional first-stage winner（8/15 前十），BM25 为 fallback（5/15），Qwen Reranker 只保留 shadow，Evidence Role F1=0.5818，故 S1 产品门仍未通过、禁止微调。数据库硬门没有后移：S2 已从三案 source-bound SEC capture 建成 1,319 条 observation 的 PIT 公司财务事实 mart，最近财年 9/9、当前 interim 15/15 及 mutation 全过。当前状态是 S2 engineering pass；mart 尚未被研究 Runtime 消费，下一硬门是 DELL S1/S2/S3 纵切。
 
 ## 当前唯一产品边界
 
@@ -15,7 +15,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。排名投影不含 gold identity，候选对象仍未晋升 Evidence；当前 reviewed Pack 未复编译，结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。private S2 mart 已能执行 source-bound NumericFact 查询，但尚未挂入当前研究 API／Workbench；因此当前 reviewed Pack 仍未复编译，产品表面的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 
@@ -24,12 +24,12 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 后端组合根：`apps/workbench/backend/app.py`
 - 领域应用层：`apps/workbench/backend/application/`
 - 当前前端：`apps/workbench/frontend/vite/src/`
-- 稳定运行时：`src/sec_agent/`、`src/connectors/`、`src/ingestion/`、`src/evidence/`、`src/indexing/`、`src/retrieval/`
+- 稳定运行时：`src/sec_agent/`、`src/connectors/`、`src/ingestion/`、`src/evidence/`、`src/indexing/`、`src/retrieval/`；S2 新增 `src/financial_facts/`，待 DELL 纵切证明产品消费
 - 受控数据构建：`scripts/data_sec/`、`scripts/data_retrieval/`、`scripts/market/`、`scripts/industry/`
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动 import graph 为 85 个 Python 文件和 7 个前端文件；provider-neutral route/object compiler 与共享 embedding/reranker adapter 均已进入活动图。Runtime Registry 仍为 R5／7 个资源；模型、人工标签、编译私有对象和 shadow 结果均未注册为产品 Runtime resource。两条 Query Atom 复现入口已纳入 Workbench Operations 的受维护 Retrieval Eval catalog，不再作为无消费者的一次性脚本。历史文件没有删除；完整旧 Project OS 账本也保存在 `archive/versions/fin_0_1_3_prebaseline/docs/project_os/`。
+当前活动 import graph 为 94 个 Python 文件和 7 个前端文件；provider-neutral route/object compiler、共享 embedding/reranker adapter 与 S2 financial-facts 实现均已进入活动图。Runtime Registry 仍为 R5／7 个资源；模型、人工标签、private mart 和 shadow 结果均未注册为产品 Runtime resource。活动基线现在从 Workbench data-build catalog 自动纳入所有动态启动脚本，Query Atom 与 S2 mart 构建入口不再因没有静态 import 而漏审。历史文件没有删除；完整旧 Project OS 账本也保存在 `archive/versions/fin_0_1_3_prebaseline/docs/project_os/`。
 
 ## 已完成的重定基事实
 
@@ -46,6 +46,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 11. 当前 S1-C 对象角色收口复证为 91 个 Python tests、Python compileall、active baseline 79 Python／7 frontend／6 Runtime resources 且 0 forbidden reference，以及 6,298 files secret scan 0 findings。Workbench 排名投影仍不含 gold target、命中结果、业务评测码、qrel 编号或本轮人工角色标签；本轮未改前端，因此未重跑历史 Playwright 产品面。
 12. S1-C 对象级角色 successor 已建立 label-free `EvidenceObjectView`、独立 `EvidenceObjectAnnotation` 与 query-specific relation。DELL／MU／NVDA 24 object／35 relation 已由 Codex 做开发复核，ORCL／ASML／ANET 未参与；三案 Pack 另识别出 45 个仅有 source segment、尚无 claim/metric 精确训练表面的条目。
 13. 固定本地 reranker 在对象级批次上 35 pair、0 网络、0 训练、0 生成调用；正负 pairwise=`0.50`、可比较 query top1=`0.60`、top3=`1.0`。旧规则角色 positive compatibility=`0.705882`、hard-negative suppression=`0.416667`、multi-label F1=`0.507936`。预注册门因此拒绝微调、独立角色训练、Runtime 晋升和 S1-D 自动执行。
+14. S2 公司财务事实 mart 已从 DELL／MU／NVDA immutable CompanyFacts＋Submissions capture 零网络构建：1,319 observations、12 个直接指标、591 个保留的 superseded observations；最近财年 9/9、当前 interim 15/15、PIT／跨案／季度-YTD／派生公式／披露批次 mutation 全过。第一版自然暴露“最新 Q1 拼接旧 Q3 YTD”的业务错误，现已按同一 10-Q accession 锁定 disclosure cohort。该结果只授权 engineering route，不授权 Workbench 数值产品能力。
 
 ## G12 关闭的可复现性缺陷
 
@@ -56,11 +57,11 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 尚未完成，不能提前宣称通过
 
-1. 当前对象库已增加 PIT market role，但 reviewed Evidence Pack 仍只覆盖 SEC 且结构化数值项为 0；当前活动 SQLite/DuckDB 不包含公司财务事实 mart，对象候选不得伪装为已晋升 Evidence 或数值能力。
+1. 当前对象库已增加 PIT market role，private S2 公司财务事实 mart 也已建立；但 reviewed Evidence Pack 仍只覆盖 SEC 且结构化数值项为 0，研究 Runtime 尚未消费该 mart。对象候选不得伪装为已晋升 Evidence 或数值能力，数据库 engineering pass 也不得冒充产品集成通过。
 2. Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 的官方文件已确认存在，但当前产品 transport 的有界 R1–R4 未取得原始 PDF；TSM 先进封装和新鲜估值也仍是 S1-D typed gap。
 3. successor 后同对象比较为 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。现成 Cross-Encoder 同为 `17/18` 且提高 MRR，但会把 DELL 直接风险目标从第 1 降到第 19，不能晋升默认路线。
 4. 规则 Evidence Role 虽减少三案 top3 显式不兼容项，却把 Recall 降到 `13/18`；对象级复核仍只有 F1=`0.507936`。根因不仅是对象形态，还包括 reported results、guidance、counterevidence、监管和财务桥接被旧 qrel 混成一个 query，当前规则禁止上线。
-5. 当前 query compiler 已消费类型化 `EvidenceRequest`，按需选择 facet，并拆成 narrative／typed fact sibling；但自然语言问题到 Research Objective／EvidenceRequest 尚未进入 Runtime，S2 公司财务事实 mart 也尚未建立，仍不能称为真实用户查询理解或数值能力。
+5. 当前 query compiler 已消费类型化 `EvidenceRequest`，按需选择 facet，并拆成 narrative／typed fact sibling；S2 mart 与 executor 已建立，但两者尚未在真实 Research Objective 纵切中连接。自然语言问题到 Research Objective／EvidenceRequest 也尚未进入 Runtime，仍不能称为真实用户查询理解或产品数值能力。
 6. Workbench 镜像仍安装数据构建依赖，冷缓存构建成本偏高；依赖拆分是非阻断基础设施优化，不能回滚已验证的数据/状态隔离。
 7. Python 基础镜像与依赖目前可从 clean-main 构建并通过；更强的镜像/依赖字节级锁定属于后续基础设施加固，不得被误写为当前研究能力，也不阻断已通过的仓库基线。
 
@@ -75,9 +76,9 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S2_COMPANY_FINANCIAL_FACT_MART_AND_TYPED_EXACT_LOOKUP`
+`FIN_0_1_3_DELL_S1_S2_S3_VERTICAL_SLICE`
 
-S1-C Runtime Query Atom R1/R2 已完成，原始失败和诊断池结果均保留。当前路线冻结为 `Qwen3 Embedding provisional + BM25 fallback`，Qwen Reranker 仅 shadow，Evidence Role 不通过，微调不授权。S2 现在必须审计并迁移旧年度 9/9 能力，从 2026-08-06 的 DELL／MU／NVDA SEC CompanyFacts＋Submissions 原始捕获建立独立公司财务事实 mart，明确 accession、accepted-at、vintage、period start/end、instant／discrete quarter／YTD／FY、unit、taxonomy concept、source digest 和 supersession。旧“一 ticker／metric 只留一行”及 fact/signal/context 混表不可复用。typed exact lookup 必须返回 source-bound NumericFact、typed conflict 或 typed gap；通过后才可进入 DELL S1/S2/S3 纵切。S1 的残缺 qrel、Evidence Role 和 TSMC advanced-packaging gap继续开放，但不得用它们拖延或替代数据库硬门。
+S1-C Runtime Query Atom R1/R2 已完成，原始失败和诊断池结果均保留。当前路线冻结为 `Qwen3 Embedding provisional + BM25 fallback`，Qwen Reranker 仅 shadow，Evidence Role 不通过，微调不授权。S2 数据库硬门已达到 engineering pass：typed exact lookup 可以从 1,319 条 source-bound observation 返回 NumericFact、typed conflict 或 typed gap，并保留 PIT、期间、单位、accession、accepted-at、vintage 和公式 lineage。下一项必须由 DELL 真实纵切连接 S3 Research Objective／EvidenceRequest、S1 narrative＋typed fact 路由、S2 executor 与 S3 综合；不能因为 24/24 离线查询通过就关闭 S2，也不能用 S1 的残缺 qrel、Evidence Role 或 TSMC gap重新拖回数据库实现。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量
@@ -93,3 +94,4 @@ S1-C Runtime Query Atom R1/R2 已完成，原始失败和诊断池结果均保�
 - 权威说明：`docs/architecture/retrieval/FIN_0_1_3_S1B_CURRENT_FINANCIAL_OBJECT_STORE_20260812.zh-CN.md`。
 - S1-C 权威说明：`docs/architecture/retrieval/FIN_0_1_3_S1C_SAME_OBJECT_RANKING_COMPARISON_20260812.zh-CN.md`。
 - S1-C 检索栈／数据库权威说明：`docs/architecture/retrieval/FIN_0_1_3_S1C_RETRIEVAL_STACK_AND_DATABASE_LANE_DECISION_20260812.zh-CN.md`。
+- S2 公司财务事实 mart 权威说明：`docs/architecture/financial_facts/FIN_0_1_3_S2_COMPANY_FINANCIAL_FACT_MART_20260813.zh-CN.md`。

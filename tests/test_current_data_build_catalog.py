@@ -66,3 +66,10 @@ def test_data_build_catalog_exposes_s1c_as_one_controlled_comparison_chain() -> 
     assert {
         row.name for row in atom_shadow.parameters
     } == {"policy", "cache_root", "full_output_root", "summary_output"}
+    fact_mart = steps["financial_facts_build_s2_company_mart"]
+    assert fact_mart.timeout_hint_s == 900
+    assert {row.name for row in fact_mart.parameters} == {
+        "policy",
+        "sqlite",
+        "output",
+    }

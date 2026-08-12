@@ -1,0 +1,185 @@
+{
+  "schema_version": "fin_ia_s2_company_financial_fact_mart_policy_v1_0",
+  "status": "zero_network_source_bound_company_fact_mart_policy",
+  "recorded_at": "2026-08-13",
+  "research_as_of": "2026-08-06",
+  "minimum_period_end": "2022-01-01",
+  "allowed_forms": ["10-K", "10-Q"],
+  "source_bindings": [
+    {
+      "ticker": "DELL",
+      "cik": "0001571996",
+      "legal_name": "Dell Technologies Inc.",
+      "companyfacts_ref": "data/raw_private/structured_financial_facts/sec/DELL/sec_companyfacts.json",
+      "companyfacts_metadata_ref": "data/raw_private/structured_financial_facts/sec/DELL/sec_companyfacts.metadata.json",
+      "companyfacts_sha256": "c98225ef04c692e4489ea48f8812347cc4dff4e4ce0443ee8cd5c81393341ba7",
+      "submissions_ref": "data/raw_private/structured_financial_facts/sec/DELL/sec_submissions.json",
+      "submissions_metadata_ref": "data/raw_private/structured_financial_facts/sec/DELL/sec_submissions.metadata.json",
+      "submissions_sha256": "7da3fa0e119569fad6e9e2bb7701822bd93cd3aac86951e8519331d2e24325cf"
+    },
+    {
+      "ticker": "MU",
+      "cik": "0000723125",
+      "legal_name": "Micron Technology, Inc.",
+      "companyfacts_ref": "data/raw_private/structured_financial_facts/sec/MU/sec_companyfacts.json",
+      "companyfacts_metadata_ref": "data/raw_private/structured_financial_facts/sec/MU/sec_companyfacts.metadata.json",
+      "companyfacts_sha256": "8d198ff48519902ff6ae95c166e92e61a46b5761d18ac2addc6303ea7c244052",
+      "submissions_ref": "data/raw_private/structured_financial_facts/sec/MU/sec_submissions.json",
+      "submissions_metadata_ref": "data/raw_private/structured_financial_facts/sec/MU/sec_submissions.metadata.json",
+      "submissions_sha256": "1513d04033b854fc2bdc1727a5c133925818dc2069d23cc60d1e9df10e66b1c3"
+    },
+    {
+      "ticker": "NVDA",
+      "cik": "0001045810",
+      "legal_name": "NVIDIA CORP",
+      "companyfacts_ref": "data/raw_private/structured_financial_facts/sec/NVDA/sec_companyfacts.json",
+      "companyfacts_metadata_ref": "data/raw_private/structured_financial_facts/sec/NVDA/sec_companyfacts.metadata.json",
+      "companyfacts_sha256": "0f0e785326b81a149866585c343532ab2fd42d6975e15956e590c07100b98c0a",
+      "submissions_ref": "data/raw_private/structured_financial_facts/sec/NVDA/sec_submissions.json",
+      "submissions_metadata_ref": "data/raw_private/structured_financial_facts/sec/NVDA/sec_submissions.metadata.json",
+      "submissions_sha256": "cc1ae0ab7c10a2a04ce4de1692e4ecf79602d59a3eeb8c4d8b49f8464ee9d878"
+    }
+  ],
+  "metric_definitions": [
+    {
+      "metric_id": "revenue",
+      "unit_family": "currency",
+      "allowed_units": ["USD"],
+      "concepts": [
+        {"taxonomy": "us-gaap", "concept": "RevenueFromContractWithCustomerExcludingAssessedTax"},
+        {"taxonomy": "us-gaap", "concept": "Revenues"},
+        {"taxonomy": "us-gaap", "concept": "SalesRevenueNet"}
+      ]
+    },
+    {
+      "metric_id": "gross_profit",
+      "unit_family": "currency",
+      "allowed_units": ["USD"],
+      "concepts": [{"taxonomy": "us-gaap", "concept": "GrossProfit"}]
+    },
+    {
+      "metric_id": "operating_income",
+      "unit_family": "currency",
+      "allowed_units": ["USD"],
+      "concepts": [{"taxonomy": "us-gaap", "concept": "OperatingIncomeLoss"}]
+    },
+    {
+      "metric_id": "net_income",
+      "unit_family": "currency",
+      "allowed_units": ["USD"],
+      "concepts": [{"taxonomy": "us-gaap", "concept": "NetIncomeLoss"}]
+    },
+    {
+      "metric_id": "diluted_eps",
+      "unit_family": "currency_per_share",
+      "allowed_units": ["USD/shares"],
+      "concepts": [{"taxonomy": "us-gaap", "concept": "EarningsPerShareDiluted"}]
+    },
+    {
+      "metric_id": "operating_cash_flow",
+      "unit_family": "currency",
+      "allowed_units": ["USD"],
+      "concepts": [{"taxonomy": "us-gaap", "concept": "NetCashProvidedByUsedInOperatingActivities"}]
+    },
+    {
+      "metric_id": "capital_expenditures",
+      "unit_family": "currency",
+      "allowed_units": ["USD"],
+      "concepts": [
+        {"taxonomy": "us-gaap", "concept": "PaymentsToAcquirePropertyPlantAndEquipment"},
+        {"taxonomy": "us-gaap", "concept": "PaymentsToAcquireProductiveAssets"}
+      ]
+    },
+    {
+      "metric_id": "inventory",
+      "unit_family": "currency",
+      "allowed_units": ["USD"],
+      "concepts": [{"taxonomy": "us-gaap", "concept": "InventoryNet"}]
+    },
+    {
+      "metric_id": "accounts_receivable",
+      "unit_family": "currency",
+      "allowed_units": ["USD"],
+      "concepts": [{"taxonomy": "us-gaap", "concept": "AccountsReceivableNetCurrent"}]
+    },
+    {
+      "metric_id": "accounts_payable",
+      "unit_family": "currency",
+      "allowed_units": ["USD"],
+      "concepts": [{"taxonomy": "us-gaap", "concept": "AccountsPayableCurrent"}]
+    },
+    {
+      "metric_id": "cash_and_equivalents",
+      "unit_family": "currency",
+      "allowed_units": ["USD"],
+      "concepts": [{"taxonomy": "us-gaap", "concept": "CashAndCashEquivalentsAtCarryingValue"}]
+    },
+    {
+      "metric_id": "shares_outstanding",
+      "unit_family": "shares",
+      "allowed_units": ["shares"],
+      "concepts": [{"taxonomy": "dei", "concept": "EntityCommonStockSharesOutstanding"}]
+    },
+    {
+      "metric_id": "gross_margin",
+      "unit_family": "percentage",
+      "allowed_units": [],
+      "concepts": [],
+      "formula": "gross_profit / revenue * 100"
+    },
+    {
+      "metric_id": "operating_margin",
+      "unit_family": "percentage",
+      "allowed_units": [],
+      "concepts": [],
+      "formula": "operating_income / revenue * 100"
+    },
+    {
+      "metric_id": "free_cash_flow",
+      "unit_family": "currency",
+      "allowed_units": [],
+      "concepts": [],
+      "formula": "operating_cash_flow - capital_expenditures"
+    }
+  ],
+  "acceptance_qrels": [
+    {"qrel_id": "DELL-FY2026-REVENUE", "stratum": "latest_fiscal_year", "ticker": "DELL", "metric_id": "revenue", "period_role": "fiscal_year", "fiscal_year": 2026, "fiscal_period": "FY", "period_start": "2025-02-01", "period_end": "2026-01-30", "research_as_of": "2026-08-06", "expected_value": "113538000000", "expected_unit": "USD", "expected_accession": "0001571996-26-000008"},
+    {"qrel_id": "DELL-FY2026-GROSS-PROFIT", "stratum": "latest_fiscal_year", "ticker": "DELL", "metric_id": "gross_profit", "period_role": "fiscal_year", "fiscal_year": 2026, "fiscal_period": "FY", "period_start": "2025-02-01", "period_end": "2026-01-30", "research_as_of": "2026-08-06", "expected_value": "22707000000", "expected_unit": "USD", "expected_accession": "0001571996-26-000008"},
+    {"qrel_id": "DELL-FY2026-OPERATING-INCOME", "stratum": "latest_fiscal_year", "ticker": "DELL", "metric_id": "operating_income", "period_role": "fiscal_year", "fiscal_year": 2026, "fiscal_period": "FY", "period_start": "2025-02-01", "period_end": "2026-01-30", "research_as_of": "2026-08-06", "expected_value": "8149000000", "expected_unit": "USD", "expected_accession": "0001571996-26-000008"},
+    {"qrel_id": "MU-FY2025-REVENUE", "stratum": "latest_fiscal_year", "ticker": "MU", "metric_id": "revenue", "period_role": "fiscal_year", "fiscal_year": 2025, "fiscal_period": "FY", "period_start": "2024-08-30", "period_end": "2025-08-28", "research_as_of": "2026-08-06", "expected_value": "37378000000", "expected_unit": "USD", "expected_accession": "0000723125-25-000028"},
+    {"qrel_id": "MU-FY2025-GROSS-PROFIT", "stratum": "latest_fiscal_year", "ticker": "MU", "metric_id": "gross_profit", "period_role": "fiscal_year", "fiscal_year": 2025, "fiscal_period": "FY", "period_start": "2024-08-30", "period_end": "2025-08-28", "research_as_of": "2026-08-06", "expected_value": "14873000000", "expected_unit": "USD", "expected_accession": "0000723125-25-000028"},
+    {"qrel_id": "MU-FY2025-OPERATING-INCOME", "stratum": "latest_fiscal_year", "ticker": "MU", "metric_id": "operating_income", "period_role": "fiscal_year", "fiscal_year": 2025, "fiscal_period": "FY", "period_start": "2024-08-30", "period_end": "2025-08-28", "research_as_of": "2026-08-06", "expected_value": "9770000000", "expected_unit": "USD", "expected_accession": "0000723125-25-000028"},
+    {"qrel_id": "NVDA-FY2026-REVENUE", "stratum": "latest_fiscal_year", "ticker": "NVDA", "metric_id": "revenue", "period_role": "fiscal_year", "fiscal_year": 2026, "fiscal_period": "FY", "period_start": "2025-01-27", "period_end": "2026-01-25", "research_as_of": "2026-08-06", "expected_value": "215938000000", "expected_unit": "USD", "expected_accession": "0001045810-26-000021"},
+    {"qrel_id": "NVDA-FY2026-GROSS-PROFIT", "stratum": "latest_fiscal_year", "ticker": "NVDA", "metric_id": "gross_profit", "period_role": "fiscal_year", "fiscal_year": 2026, "fiscal_period": "FY", "period_start": "2025-01-27", "period_end": "2026-01-25", "research_as_of": "2026-08-06", "expected_value": "153463000000", "expected_unit": "USD", "expected_accession": "0001045810-26-000021"},
+    {"qrel_id": "NVDA-FY2026-OPERATING-INCOME", "stratum": "latest_fiscal_year", "ticker": "NVDA", "metric_id": "operating_income", "period_role": "fiscal_year", "fiscal_year": 2026, "fiscal_period": "FY", "period_start": "2025-01-27", "period_end": "2026-01-25", "research_as_of": "2026-08-06", "expected_value": "130387000000", "expected_unit": "USD", "expected_accession": "0001045810-26-000021"},
+
+    {"qrel_id": "DELL-FY2027-Q1-REVENUE", "stratum": "current_interim", "ticker": "DELL", "metric_id": "revenue", "period_role": "quarter_discrete", "fiscal_year": 2027, "fiscal_period": "Q1", "period_start": "2026-01-31", "period_end": "2026-05-01", "research_as_of": "2026-08-06", "expected_value": "43842000000", "expected_unit": "USD", "expected_accession": "0001571996-26-000030"},
+    {"qrel_id": "DELL-FY2027-Q1-GROSS-PROFIT", "stratum": "current_interim", "ticker": "DELL", "metric_id": "gross_profit", "period_role": "quarter_discrete", "fiscal_year": 2027, "fiscal_period": "Q1", "period_start": "2026-01-31", "period_end": "2026-05-01", "research_as_of": "2026-08-06", "expected_value": "7782000000", "expected_unit": "USD", "expected_accession": "0001571996-26-000030"},
+    {"qrel_id": "DELL-FY2027-Q1-OPERATING-INCOME", "stratum": "current_interim", "ticker": "DELL", "metric_id": "operating_income", "period_role": "quarter_discrete", "fiscal_year": 2027, "fiscal_period": "Q1", "period_start": "2026-01-31", "period_end": "2026-05-01", "research_as_of": "2026-08-06", "expected_value": "3656000000", "expected_unit": "USD", "expected_accession": "0001571996-26-000030"},
+    {"qrel_id": "DELL-FY2027-Q1-OCF", "stratum": "current_interim", "ticker": "DELL", "metric_id": "operating_cash_flow", "period_role": "quarter_discrete", "fiscal_year": 2027, "fiscal_period": "Q1", "period_start": "2026-01-31", "period_end": "2026-05-01", "research_as_of": "2026-08-06", "expected_value": "4081000000", "expected_unit": "USD", "expected_accession": "0001571996-26-000030"},
+    {"qrel_id": "DELL-FY2027-Q1-CAPEX", "stratum": "current_interim", "ticker": "DELL", "metric_id": "capital_expenditures", "period_role": "quarter_discrete", "fiscal_year": 2027, "fiscal_period": "Q1", "period_start": "2026-01-31", "period_end": "2026-05-01", "research_as_of": "2026-08-06", "expected_value": "963000000", "expected_unit": "USD", "expected_accession": "0001571996-26-000030"},
+
+    {"qrel_id": "MU-FY2026-Q3-REVENUE", "stratum": "current_interim", "ticker": "MU", "metric_id": "revenue", "period_role": "quarter_discrete", "fiscal_year": 2026, "fiscal_period": "Q3", "period_start": "2026-02-27", "period_end": "2026-05-28", "research_as_of": "2026-08-06", "expected_value": "41456000000", "expected_unit": "USD", "expected_accession": "0000723125-26-000015"},
+    {"qrel_id": "MU-FY2026-Q3-GROSS-PROFIT", "stratum": "current_interim", "ticker": "MU", "metric_id": "gross_profit", "period_role": "quarter_discrete", "fiscal_year": 2026, "fiscal_period": "Q3", "period_start": "2026-02-27", "period_end": "2026-05-28", "research_as_of": "2026-08-06", "expected_value": "35056000000", "expected_unit": "USD", "expected_accession": "0000723125-26-000015"},
+    {"qrel_id": "MU-FY2026-Q3-OPERATING-INCOME", "stratum": "current_interim", "ticker": "MU", "metric_id": "operating_income", "period_role": "quarter_discrete", "fiscal_year": 2026, "fiscal_period": "Q3", "period_start": "2026-02-27", "period_end": "2026-05-28", "research_as_of": "2026-08-06", "expected_value": "33318000000", "expected_unit": "USD", "expected_accession": "0000723125-26-000015"},
+    {"qrel_id": "MU-FY2026-Q3-YTD-OCF", "stratum": "current_interim", "ticker": "MU", "metric_id": "operating_cash_flow", "period_role": "fiscal_ytd", "fiscal_year": 2026, "fiscal_period": "Q3", "period_start": "2025-08-29", "period_end": "2026-05-28", "research_as_of": "2026-08-06", "expected_value": "45702000000", "expected_unit": "USD", "expected_accession": "0000723125-26-000015"},
+    {"qrel_id": "MU-FY2026-Q3-YTD-CAPEX", "stratum": "current_interim", "ticker": "MU", "metric_id": "capital_expenditures", "period_role": "fiscal_ytd", "fiscal_year": 2026, "fiscal_period": "Q3", "period_start": "2025-08-29", "period_end": "2026-05-28", "research_as_of": "2026-08-06", "expected_value": "19602000000", "expected_unit": "USD", "expected_accession": "0000723125-26-000015"},
+
+    {"qrel_id": "NVDA-FY2027-Q1-REVENUE", "stratum": "current_interim", "ticker": "NVDA", "metric_id": "revenue", "period_role": "quarter_discrete", "fiscal_year": 2027, "fiscal_period": "Q1", "period_start": "2026-01-26", "period_end": "2026-04-26", "research_as_of": "2026-08-06", "expected_value": "81615000000", "expected_unit": "USD", "expected_accession": "0001045810-26-000052"},
+    {"qrel_id": "NVDA-FY2027-Q1-GROSS-PROFIT", "stratum": "current_interim", "ticker": "NVDA", "metric_id": "gross_profit", "period_role": "quarter_discrete", "fiscal_year": 2027, "fiscal_period": "Q1", "period_start": "2026-01-26", "period_end": "2026-04-26", "research_as_of": "2026-08-06", "expected_value": "61157000000", "expected_unit": "USD", "expected_accession": "0001045810-26-000052"},
+    {"qrel_id": "NVDA-FY2027-Q1-OPERATING-INCOME", "stratum": "current_interim", "ticker": "NVDA", "metric_id": "operating_income", "period_role": "quarter_discrete", "fiscal_year": 2027, "fiscal_period": "Q1", "period_start": "2026-01-26", "period_end": "2026-04-26", "research_as_of": "2026-08-06", "expected_value": "53536000000", "expected_unit": "USD", "expected_accession": "0001045810-26-000052"},
+    {"qrel_id": "NVDA-FY2027-Q1-OCF", "stratum": "current_interim", "ticker": "NVDA", "metric_id": "operating_cash_flow", "period_role": "quarter_discrete", "fiscal_year": 2027, "fiscal_period": "Q1", "period_start": "2026-01-26", "period_end": "2026-04-26", "research_as_of": "2026-08-06", "expected_value": "50344000000", "expected_unit": "USD", "expected_accession": "0001045810-26-000052"},
+    {"qrel_id": "NVDA-FY2027-Q1-CAPEX", "stratum": "current_interim", "ticker": "NVDA", "metric_id": "capital_expenditures", "period_role": "quarter_discrete", "fiscal_year": 2027, "fiscal_period": "Q1", "period_start": "2026-01-26", "period_end": "2026-04-26", "research_as_of": "2026-08-06", "expected_value": "1757000000", "expected_unit": "USD", "expected_accession": "0001045810-26-000052"}
+  ],
+  "authority": {
+    "raw_capture_digest_required": true,
+    "accepted_at_required": true,
+    "preserve_all_vintages": true,
+    "fact_signal_context_mixed_table_forbidden": true,
+    "typed_conflict_fails_closed": true,
+    "candidate_or_metric_row_grants_numeric_authority": false,
+    "derived_fact_requires_same_period_unit_and_accession": true,
+    "network_calls": 0,
+    "model_calls": 0
+  }
+}

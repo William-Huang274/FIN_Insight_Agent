@@ -6,17 +6,19 @@ from collections import deque
 import json
 from pathlib import Path
 import re
+import sys
 from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parents[2]
-PYTHON_ENTRYPOINTS = (
+_BASE_PYTHON_ENTRYPOINTS = (
     "apps/workbench/backend/app.py",
     "scripts/data_retrieval/build_bm25_index.py",
     "scripts/data_retrieval/build_current_compiled_object_views.py",
     "scripts/data_retrieval/build_current_financial_object_store.py",
     "scripts/data_retrieval/build_current_retrieval_snapshot.py",
     "scripts/data_retrieval/build_evidence_store.py",
+    "scripts/data_retrieval/build_s2_company_financial_fact_mart.py",
     "scripts/data_retrieval/capture_s1b_official_sources.py",
     "scripts/data_retrieval/materialize_s1c_financial_role_eval_set.py",
     "scripts/data_retrieval/materialize_s1c_object_role_review_set.py",
@@ -47,6 +49,28 @@ PYTHON_ENTRYPOINTS = (
     "scripts/market/30_compute_market_analytics.py",
     "scripts/market/40_build_market_evidence_pack.py",
     "scripts/market/50_validate_market_snapshot.py",
+)
+
+
+def _workbench_data_build_entrypoints() -> tuple[str, ...]:
+    """Treat every maintained Operations data-build step as active code.
+
+    These scripts are launched from catalog data rather than imported, so an
+    ordinary AST import closure cannot discover them.  Keeping the catalog as
+    the source of truth prevents a UI-reachable build from being audited as an
+    orphan or omitted from old-reference checks.
+    """
+
+    source_root = str((ROOT / "src").resolve())
+    if source_root not in sys.path:
+        sys.path.insert(0, source_root)
+    from sec_agent.workbench.data_build import data_build_catalog
+
+    return tuple(sorted({step.script for step in data_build_catalog()}))
+
+
+PYTHON_ENTRYPOINTS = tuple(
+    dict.fromkeys((*_BASE_PYTHON_ENTRYPOINTS, *_workbench_data_build_entrypoints()))
 )
 FRONTEND_ENTRYPOINTS = (
     "apps/workbench/frontend/vite/src/main.tsx",

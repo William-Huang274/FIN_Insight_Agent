@@ -2547,3 +2547,13 @@ Evidence Role 必须是多标签且允许 abstain，但“规则命中更少错�
 固定 `bge-reranker-v2-m3` 在这批精确对象上的结果反而证明“切得更小”不是充分条件：12 个正负 pair 中仅 6 个正例得分更高，10 个可比较问题 top1 正确率为 60%。Micron 财务桥接被泛化国际风险压过，NVIDIA 当期结果被风险提示开场压过，NVIDIA 现金流被供给风险压过；原因是旧 qrel 把 reported results、guidance、counterevidence、regulatory risk 和 financial reconciliation 混入同一 query。旧规则角色层的多标签 F1 也只有 0.507936，既漏财务表格，也把错误风险段判为 compatible。
 
 因此产品顺序冻结为：先在 S1-C 将 reported results、guidance、counterevidence、cash conversion 和 regulatory exposure 拆成独立 query family；为客户／生态方需求增加投入、部署和订单 read-through facet；表格模型面必须包含表头、期间、单位、metric row 与父章节，而不是整表字符串。修复后仍复用同一固定模型做 shadow，不训练、不晋升。只有至少 200 个源绑定关系、6 个开发案例且独立留出不参与调参后，才允许讨论 Cross-Encoder 微调或独立多标签角色分类器。当前 TSMC 目标只证明 2nm 需求／爬坡，不含 CoWoS／先进封装产能、良率或分配；该项是明确属于 S1-D 的定向补源缺口，但不得用 broad search 掩盖其余 S1-C 合同错误。
+
+### 16.27 公司财务事实数据库、披露批次与 S1/S2/S3 纵切门（2026-08-13）
+
+数据库精确查询不是检索模型选型结束后的附属工程。只要研究问题涉及收入、利润、现金流、资本开支、资产负债表余额或派生比率，S1 必须把意图编译为 typed fact request，S2 必须从 source-bound、point-in-time 的公司财务事实 mart 返回 `NumericFact／typed gap／typed conflict`；embedding、reranker、PDF 表格片段和 Writer 均不得替代这一权威路线。
+
+当前三案 CompanyFacts＋Submissions 零网络构建已形成 1,319 条已接纳 observation，并保存 ticker／CIK、metric／taxonomy concept、Decimal value、unit、period start/end、instant／quarter-discrete／fiscal-YTD／fiscal-year、accession、filed/accepted-at、source capture digest、citation 和 supersession。旧“一 ticker／metric 只留一行”与 fact/signal/context 混表明确禁止复用。所谓保存全部 vintage，只指全部已绑定 filing identity 和 accepted-at 的 vintage；无法绑定的历史行必须 fail closed，不得猜测披露时点。
+
+产品验收新增 disclosure-cohort 约束：开放式当前期间查询必须从同一最新 10-Q 取得 quarter/YTD/instant，并单独取得最近 10-K；不能把最新 Q1 与旧 Q3 YTD 拼成一个当前结果。实现初版曾自然出现该错误，现已通过同 accession 选择和 mutation 修复。当前最近财年 9/9、当前 interim 15/15 精确查询通过，但这只构成 S2 engineering pass。mart 尚未进入研究 Runtime，Workbench reviewed Pack 也不会因数据库文件存在而自动获得 structured numeric。
+
+下一产品门是 DELL S1/S2/S3 纵切：S3 从真实研究目标生成 EvidenceRequest，S1 同时执行叙事候选路线与 typed fact route，S2 返回带期间、单位、PIT 和 lineage 的 NumericFact，S3 再完成判断和引用。只有该纵切证明数字被真实消费、错期和缺失可靠显露，S2 才能从数据库工程能力前进到产品集成能力；S1 排名仍需由 Evidence Pack 实用性而不是离线分数验收。

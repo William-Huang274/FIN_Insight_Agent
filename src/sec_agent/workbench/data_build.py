@@ -316,6 +316,52 @@ _DATA_BUILD_STEPS = {
         ],
         output_parameters=["output_dir"],
     ),
+    "retrieval_build_current_compiled_object_views": _step(
+        "retrieval_build_current_compiled_object_views",
+        "Retrieval",
+        "编译当前金融对象视图",
+        "把当前 source-bound child 编译为去重的 claim、metric-row 与 bounded-context 候选；表格行不具备 NumericFact 权限，数据库事实路线保留给 S2。",
+        "scripts/data_retrieval/build_current_compiled_object_views.py",
+        [
+            _param(
+                "kernel",
+                "--kernel",
+                "金融研究内核",
+                default="configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json",
+            ),
+            _param(
+                "policy",
+                "--policy",
+                "查询、对象与数据库路由策略",
+                default="configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_0.json",
+            ),
+            _param(
+                "documents",
+                "--documents",
+                "父文档 JSONL",
+                default="data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v1/documents.jsonl",
+            ),
+            _param(
+                "records",
+                "--records",
+                "source-bound child JSONL",
+                default="data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v1/records.jsonl",
+            ),
+            _param(
+                "output_dir",
+                "--output-dir",
+                "私有编译对象目录",
+                default="data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v1",
+            ),
+            _param(
+                "result_output",
+                "--result-output",
+                "零调用证明摘要",
+                default="configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_0.json",
+            ),
+        ],
+        output_parameters=["output_dir", "result_output"],
+    ),
     "retrieval_materialize_s1c_qrels": _step(
         "retrieval_materialize_s1c_qrels",
         "Retrieval Eval",

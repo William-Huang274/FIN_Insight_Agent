@@ -1,7 +1,7 @@
 # FIN 0.1.3 S1-C 检索栈与数据库通道决策
 
 日期：2026-08-12
-状态：`Owner 已接受执行顺序 / 治理合同冻结 / 查询与对象实现待执行 / 模型与训练均未授权`
+状态：`Owner 已接受执行顺序 / 治理合同冻结 / S1-C1 查询、对象与数据库路由已实现并零调用证明 / 模型与训练均未授权`
 
 ## 1. 本次修正的结论
 
@@ -98,7 +98,7 @@ flowchart TD
 ## 7. 更新后的执行顺序
 
 1. 冻结本检索栈、数据库通道、业务错误分类和新 test manifest。（已完成）
-2. 拆 query family，编译 source-bound claim、metric-table、context。
+2. 拆 query family，编译 source-bound claim、metric-table、context。（已完成；实现时由 7 类校正为 11 类）
 3. 同语料比较 BM25、BGE-M3 三模式与 Qwen Embedding。
 4. 在同一候选并集比较 BGE 与 Qwen Reranker。
 5. 建立独立 Evidence Role＋abstain 层。
@@ -110,4 +110,12 @@ flowchart TD
 
 ## 8. 当前不声称
 
-本决策没有下载模型、生成新 embedding、建立公司财务 mart、执行 inference、微调、晋升 Runtime 路由、重编译 Evidence Pack 或通过 S1/S2/S3。机器可读合同为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_governance_v1_0.json`，留出合同为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_test_precut_manifest_v1_0.json`。
+本决策没有下载模型、生成新 embedding、建立公司财务 mart、执行 inference、微调、重编译 Evidence Pack 或通过 S1/S2/S3。S1-C1 已把 provider-neutral 查询／对象／typed fact 路由注册为当前 Runtime 配置，但没有晋升任何检索模型或 Evidence。机器可读合同为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_governance_v1_0.json`，留出合同为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_test_precut_manifest_v1_0.json`，实现结果见 `configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_0.json`。
+
+## 9. S1-C1 实现后校正
+
+原七类查询遗漏了四个真实研究问题：定价／价值获取、关系归因、资本配置和估值。尤其“客户需求”和“直接关系归因”不能合并：行业需求或客户资本开支只能作为 read-through，不能证明客户确实向研究主体下单。当前 17 个 facet 已且仅映射到 11 个 query family。
+
+当前 1,805 条 source-bound child 的零模型编译结果为：原始对象 22,703 个，按父文档和对象内容去掉 2,433 个重叠切块重复后为 20,270 个；包括 claim 11,663、metric-row 7,437、bounded parent context 1,170。编译器拒绝了 257 张非金融数值表；例如“高管姓名／年龄／职位”不再因为职位包含 `Sales` 而被当成销售指标。另有 51 张金融外观表没有可安全绑定的指标行、65 个 claim surface 在同一 child 内不唯一，均保留为诊断而没有静默猜测。
+
+这 20,270 个对象仍是候选，不是 Evidence。表格行即使完整携带表头、期间、单位和父章节，也没有 NumericFact 权限。当前 Runtime 会把 `revenue`、`free cash flow`、`market price` 等 24 个标准指标别名编译成 typed fact request；由于公司财务事实 mart 尚未建立，接口会返回 `typed_fact_store_unavailable / owning_stage=S2`，而叙事检索仍可继续。这样数据库缺口不会被遗忘，也不会用 PDF 字符串猜数字来掩盖。

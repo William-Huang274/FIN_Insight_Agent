@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PYTHON_ENTRYPOINTS = (
     "apps/workbench/backend/app.py",
     "scripts/data_retrieval/build_bm25_index.py",
+    "scripts/data_retrieval/build_current_compiled_object_views.py",
     "scripts/data_retrieval/build_current_financial_object_store.py",
     "scripts/data_retrieval/build_current_retrieval_snapshot.py",
     "scripts/data_retrieval/build_evidence_store.py",

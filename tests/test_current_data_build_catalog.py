@@ -41,6 +41,7 @@ def test_data_build_catalog_exposes_s1c_as_one_controlled_comparison_chain() -> 
     steps = {step.step_id: step for step in data_build_catalog()}
 
     assert {
+        "retrieval_build_current_compiled_object_views",
         "retrieval_materialize_s1c_qrels",
         "retrieval_run_s1c_ranking_comparison",
         "retrieval_materialize_s1c_financial_role_eval",

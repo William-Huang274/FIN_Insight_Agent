@@ -12,6 +12,11 @@ from retrieval.contracts import (
     load_financial_research_kernel,
 )
 from retrieval.query_plan import compile_query_facet_plan_for_request
+from retrieval.route_compiler import (
+    QueryObjectFactRoutePolicy,
+    compile_retrieval_execution_plan,
+    load_query_object_fact_route_policy,
+)
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 
@@ -25,11 +30,14 @@ CURRENT_RANKING_COMPARISON_RESOURCE_ID = (
 CURRENT_RETRIEVAL_KERNEL_RESOURCE_ID = (
     "application.config.current_financial_research_kernel"
 )
+CURRENT_QUERY_OBJECT_FACT_ROUTE_POLICY_RESOURCE_ID = (
+    "application.config.current_query_object_fact_route_policy"
+)
 EXPECTED_SCHEMA = "fin_ia_current_retrieval_snapshot_v1_0"
 EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
 RETRIEVAL_PROJECTION_SCHEMA = "fin_ia_research_retrieval_projection_v1_0"
 REQUEST_RETRIEVAL_PROJECTION_SCHEMA = (
-    "fin_ia_request_scoped_retrieval_projection_v1_0"
+    "fin_ia_request_scoped_retrieval_projection_v1_1"
 )
 
 
@@ -56,6 +64,7 @@ class ResearchRetrievalService:
         snapshot: Mapping[str, Any],
         ranking_comparison: Mapping[str, Any] | None = None,
         kernel: FinancialResearchKernel | Mapping[str, Any] | None = None,
+        route_policy: QueryObjectFactRoutePolicy | Mapping[str, Any] | None = None,
     ) -> None:
         self._snapshot = self._validate(snapshot)
         self._cases = {
@@ -80,6 +89,15 @@ class ResearchRetrievalService:
             if isinstance(kernel, Mapping)
             else kernel
         )
+        if route_policy is not None and self._kernel is None:
+            raise ResearchRetrievalServiceError(
+                "research_retrieval_route_policy_without_kernel", 503
+            )
+        self._route_policy = (
+            load_query_object_fact_route_policy(route_policy, self._kernel)
+            if isinstance(route_policy, Mapping) and self._kernel is not None
+            else route_policy
+        )
 
     @classmethod
     def from_runtime_paths(
@@ -98,6 +116,10 @@ class ResearchRetrievalService:
             kernel=read_registered_runtime_json(
                 repository_root,
                 CURRENT_RETRIEVAL_KERNEL_RESOURCE_ID,
+            ),
+            route_policy=read_registered_runtime_json(
+                repository_root,
+                CURRENT_QUERY_OBJECT_FACT_ROUTE_POLICY_RESOURCE_ID,
             ),
         )
 
@@ -188,6 +210,11 @@ class ResearchRetrievalService:
         try:
             request = load_evidence_request(payload, self._kernel)
             plan = compile_query_facet_plan_for_request(self._kernel, request)
+            execution_plan = (
+                compile_retrieval_execution_plan(self._route_policy, request)
+                if self._route_policy is not None
+                else None
+            )
         except RetrievalContractError as exc:
             raise ResearchRetrievalServiceError(str(exc), 422) from exc
         key = str(case_key).strip().upper()
@@ -211,7 +238,11 @@ class ResearchRetrievalService:
         request_payload = request.as_dict()
         request_digest = canonical_digest(request_payload)
         lanes: list[dict[str, Any]] = []
-        typed_gaps: list[dict[str, Any]] = []
+        typed_gaps: list[dict[str, Any]] = (
+            [dict(row) for row in execution_plan.typed_gaps]
+            if execution_plan is not None
+            else []
+        )
         seen_candidates: set[str] = set()
         for lane in plan.lanes:
             snapshot_lane = snapshot_lanes.get(lane.lane_id)
@@ -306,6 +337,9 @@ class ResearchRetrievalService:
             "request": request_payload,
             "request_digest": request_digest,
             "query_plan": plan.as_dict(),
+            "execution_plan": (
+                execution_plan.as_dict() if execution_plan is not None else None
+            ),
             "source_snapshot": deepcopy(self._snapshot["source_snapshot"]),
             "summary": {
                 "requested_facet_count": len(request.requested_facet_ids),
@@ -313,6 +347,24 @@ class ResearchRetrievalService:
                 "nonempty_lane_count": sum(bool(row["candidates"]) for row in lanes),
                 "unique_candidates": len(seen_candidates),
                 "typed_gap_count": len(typed_gaps),
+                "narrative_route_request_count": (
+                    len(execution_plan.narrative_requests)
+                    if execution_plan is not None
+                    else 0
+                ),
+                "typed_fact_request_count": (
+                    len(execution_plan.typed_fact_requests)
+                    if execution_plan is not None
+                    else 0
+                ),
+                "typed_fact_store_ready_count": (
+                    sum(
+                        row.execution_status == "ready_for_typed_fact_executor"
+                        for row in execution_plan.typed_fact_requests
+                    )
+                    if execution_plan is not None
+                    else 0
+                ),
                 "network_calls": 0,
                 "model_calls": 0,
             },
@@ -321,9 +373,12 @@ class ResearchRetrievalService:
             "known_boundary": (
                 "This endpoint consumes a typed EvidenceRequest and selects only "
                 "approved facets, owners, source types and reporting periods from the "
-                "immutable current candidate snapshot. It does not interpret raw user "
-                "language, expand free-form model queries, promote Evidence, fetch "
-                "external sources or complete S1/S3 product acceptance."
+                "immutable current candidate snapshot. The successor route compiler "
+                "separates narrative retrieval from typed fact requests; the current "
+                "runtime has no authoritative company financial fact mart, so those "
+                "requests remain S2 typed gaps. It does not interpret raw user language, "
+                "promote Evidence or NumericFact, fetch external sources, or complete "
+                "S1/S3 product acceptance."
             ),
         }
         return {**body, "projection_digest": canonical_digest(body)}
@@ -457,6 +512,7 @@ class ResearchRetrievalService:
 
 
 __all__ = [
+    "CURRENT_QUERY_OBJECT_FACT_ROUTE_POLICY_RESOURCE_ID",
     "CURRENT_RETRIEVAL_KERNEL_RESOURCE_ID",
     "CURRENT_RANKING_COMPARISON_RESOURCE_ID",
     "CURRENT_RETRIEVAL_SNAPSHOT_RESOURCE_ID",

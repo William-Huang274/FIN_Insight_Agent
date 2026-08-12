@@ -18,6 +18,12 @@ TEST_PRECUT = (
     / "retrieval"
     / "fin_ia_0_1_3_s1c_retrieval_stack_test_precut_manifest_v1_0.json"
 )
+S1C1_RESULT = (
+    ROOT
+    / "configs"
+    / "retrieval"
+    / "fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_0.json"
+)
 
 
 def _policy() -> dict[str, object]:
@@ -90,6 +96,19 @@ def test_holdout_and_query_object_repairs_precede_model_selection() -> None:
         "same_corpus_multi_retriever_bakeoff",
     ]
     assert payload["query_and_object_successor"]["training_authority"] is False
+    assert payload["query_and_object_successor"]["query_families"] == [
+        "customer_demand_read_through",
+        "reported_results",
+        "management_guidance",
+        "pricing_and_value_capture",
+        "cash_conversion",
+        "supply_capacity_execution",
+        "relationship_attribution",
+        "counterevidence_and_risk",
+        "regulatory_exposure",
+        "capital_allocation",
+        "valuation",
+    ]
 
 
 def test_database_and_text_routes_split_mixed_research_requests() -> None:
@@ -154,3 +173,34 @@ def test_new_test_precut_is_unseen_frozen_and_not_trainable() -> None:
         "retriever_or_reranker_results_observed": False,
         "training_authorized": False,
     }
+
+
+def test_s1c1_zero_call_result_preserves_database_gap_and_candidate_boundary() -> None:
+    payload = json.loads(S1C1_RESULT.read_text(encoding="utf-8"))
+    unsigned = {key: value for key, value in payload.items() if key != "payload_digest"}
+    encoded = json.dumps(
+        unsigned,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+    assert hashlib.sha256(encoded).hexdigest() == payload["payload_digest"]
+    assert payload["query_route_summary"] == {
+        "company_financial_fact_mart_status": "typed_route_only_store_unavailable",
+        "database_owning_stage": "S2",
+        "kernel_facet_count": 17,
+        "market_snapshot_fact_mart_status": "typed_route_only_store_unavailable",
+        "metric_route_count": 24,
+        "query_family_count": 11,
+    }
+    summary = payload["object_compilation_summary"]
+    assert summary["source_record_count"] == 1805
+    assert summary["raw_compiled_object_count"] == 22703
+    assert summary["compiled_object_count"] == 20270
+    assert summary["deduplicated_object_count"] == 2433
+    assert summary["missing_parent_count"] == 0
+    assert payload["acceptance"]["candidate_not_evidence"] is True
+    assert payload["acceptance"]["numeric_authority"] is False
+    assert payload["acceptance"]["complete_s1_claimed"] is False
+    assert payload["acceptance"]["complete_s2_claimed"] is False

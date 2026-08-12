@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-A 已接入类型化查询与 Workbench 候选页，S1-B 已建立 28 parent / 1,805 child 的当前金融对象库。S1-C 已完成 qrel successor、请求级 EvidenceRequest、Cross-Encoder／Evidence Role shadow 和 24 object／35 relation 对象合同；结果否决当前模型晋升。Owner 随后冻结完整检索栈与数据库通道：S1 必须同时处理 query/object、BM25、BGE-M3 三模式、Qwen challenger、reranker、Evidence Role 与 typed exact fact route；S2 必须建立当前公司财务事实 mart。HPQ／AVGO／INTC test-precut 已在模型结果前预注册。S1 产品门仍未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-A 已接入类型化查询与 Workbench 候选页，S1-B 已建立 28 parent / 1,805 child 的当前金融对象库。S1-C 已完成 qrel successor、请求级 EvidenceRequest、Cross-Encoder／Evidence Role shadow 和对象合同；结果否决当前模型晋升。S1-C1 现已把 17 个 facet 拆成 11 类问题，把混合请求拆为叙事检索／数据库事实 sibling，并把全库编译为 20,270 个去重 claim／metric-row／context 候选。当前公司财务事实 mart 仍不存在，typed request 会明确返回 S2 gap。HPQ／AVGO／INTC test-precut 已在模型结果前预注册；下一门是同对象多检索器对照，S1 产品门仍未通过。
 
 ## 当前唯一产品边界
 
@@ -29,7 +29,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动 import graph 为 79 个 Python 文件和 7 个前端文件；S1-C 的 provider-neutral role/object contract、共享本地 Cross-Encoder adapter 和六个受控 Retrieval Eval materialize/run 入口均有明确消费者。runtime resource 仍为 6 个，第六项是金融研究内核，供请求级 compiler 使用；模型、人工标签和 shadow 结果均未注册为产品 Runtime resource。历史文件没有删除；完整旧 Project OS 账本也保存在 `archive/versions/fin_0_1_3_prebaseline/docs/project_os/`。
+当前活动 import graph 为 82 个 Python 文件和 7 个前端文件；本轮新增 provider-neutral route/object compiler 与一个 Workbench 受维护构建入口，均已进入活动图。Runtime Registry 已升为 R5／7 个资源，新增项只是 query/object/fact route policy；模型、人工标签、编译私有对象和 shadow 结果均未注册为产品 Runtime resource。历史文件没有删除；完整旧 Project OS 账本也保存在 `archive/versions/fin_0_1_3_prebaseline/docs/project_os/`。
 
 ## 已完成的重定基事实
 
@@ -60,7 +60,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 2. Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 的官方文件已确认存在，但当前产品 transport 的有界 R1–R4 未取得原始 PDF；TSM 先进封装和新鲜估值也仍是 S1-D typed gap。
 3. successor 后同对象比较为 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。现成 Cross-Encoder 同为 `17/18` 且提高 MRR，但会把 DELL 直接风险目标从第 1 降到第 19，不能晋升默认路线。
 4. 规则 Evidence Role 虽减少三案 top3 显式不兼容项，却把 Recall 降到 `13/18`；对象级复核仍只有 F1=`0.507936`。根因不仅是对象形态，还包括 reported results、guidance、counterevidence、监管和财务桥接被旧 qrel 混成一个 query，当前规则禁止上线。
-5. 当前 query compiler 已消费类型化 `EvidenceRequest` 并按需选择 facet；但自然语言问题到 Research Objective／EvidenceRequest 尚未进入 Runtime，仍不能称为真实用户查询理解。
+5. 当前 query compiler 已消费类型化 `EvidenceRequest`，按需选择 facet，并拆成 narrative／typed fact sibling；但自然语言问题到 Research Objective／EvidenceRequest 尚未进入 Runtime，S2 公司财务事实 mart 也尚未建立，仍不能称为真实用户查询理解或数值能力。
 6. Workbench 镜像仍安装数据构建依赖，冷缓存构建成本偏高；依赖拆分是非阻断基础设施优化，不能回滚已验证的数据/状态隔离。
 7. Python 基础镜像与依赖目前可从 clean-main 构建并通过；更强的镜像/依赖字节级锁定属于后续基础设施加固，不得被误写为当前研究能力，也不阻断已通过的仓库基线。
 
@@ -75,9 +75,9 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S1C_QUERY_FAMILY_OBJECT_VIEW_AND_TYPED_FACT_ROUTE_COMPILER_SUCCESSOR`
+`FIN_0_1_3_S1C2_SAME_COMPILED_OBJECT_MULTI_RETRIEVER_BAKEOFF`
 
-完整检索栈与数据库通道治理已经冻结；机器合同和 HPQ／AVGO／INTC test-precut 均已落库，但没有模型执行、训练或路由晋升。下一门仍留在 S1-C：拆开 results／guidance／counterevidence／cash／regulatory／supply／customer-read-through query family，将 table 编译为表头、期间、单位、metric row 与父章节，并把 source segment 编译成 source-bound claim/table/context；同时把 exact metric/period/unit/PIT intent 编译成 typed fact request。之后才允许同语料比较 BM25、BGE-M3 三模式、Qwen Embedding 及 BGE/Qwen Reranker，再建立 Evidence Role＋abstain。S2 负责当前公司财务事实 mart 与 NumericFact；S3 负责自然语言规划和动态追问。当前唯一已确认属于 S1-D 的新缺口仍是 TSMC CoWoS／先进封装产能、良率和分配。
+S1-C1 已完成 11 query family、claim／metric-row／context 编译及 typed fact sibling route：1,805 个 child 原始生成 22,703 个对象，去掉 2,433 个重叠切块重复后为 20,270 个；高管年龄／职位等 257 张非金融数值表已拒绝。当前只证明对象和路由工程，不证明候选相关性。下一门在完全相同的去重对象、硬过滤和预算上比较 BM25、BGE-M3 dense／learned sparse／multi-vector 与 Qwen Embedding；随后才在同候选池比较 BGE/Qwen Reranker，再建立 Evidence Role＋abstain。S2 公司财务事实 mart 仍是明确硬缺口，不能被 PDF 表格替代；S3 负责自然语言规划和动态追问。当前唯一已确认属于 S1-D 的新缺口仍是 TSMC CoWoS／先进封装产能、良率和分配。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

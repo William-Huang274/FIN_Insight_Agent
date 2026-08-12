@@ -68,13 +68,17 @@
   },
   "query_and_object_successor": {
     "query_families": [
+      "customer_demand_read_through",
       "reported_results",
       "management_guidance",
-      "counterevidence_and_risk",
+      "pricing_and_value_capture",
       "cash_conversion",
-      "regulatory_exposure",
       "supply_capacity_execution",
-      "customer_demand_read_through"
+      "relationship_attribution",
+      "counterevidence_and_risk",
+      "regulatory_exposure",
+      "capital_allocation",
+      "valuation"
     ],
     "object_views": [
       "source_bound_claim",
@@ -82,7 +86,7 @@
       "bounded_parent_context",
       "navigation_or_boilerplate_reject"
     ],
-    "implementation_authority": "approved_next",
+    "implementation_authority": "implemented_and_zero_call_proven_current_runtime",
     "training_authority": false
   },
   "retrieval_stack_candidates": {

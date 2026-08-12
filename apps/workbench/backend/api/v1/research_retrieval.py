@@ -77,6 +77,7 @@ class EvidenceRequestExecutionResponse(BaseModel):
     request: dict[str, Any]
     request_digest: str
     query_plan: dict[str, Any]
+    execution_plan: dict[str, Any] | None
     source_snapshot: dict[str, Any]
     summary: dict[str, Any]
     typed_gaps: list[dict[str, Any]]

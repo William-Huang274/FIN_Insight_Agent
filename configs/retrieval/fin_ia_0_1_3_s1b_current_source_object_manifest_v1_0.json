@@ -1,0 +1,177 @@
+{
+  "schema_version": "fin_ia_s1b_source_object_manifest_v1_0",
+  "status": "s1b_current_source_object_manifest",
+  "recorded_at": "2026-08-12",
+  "research_as_of": "2026-08-06",
+  "policy": {
+    "immutable_capture_precedes_parse": true,
+    "document_parent_precedes_retrieval_child": true,
+    "candidate_is_not_evidence": true,
+    "market_snapshot_is_not_valuation": true,
+    "legacy_children_are_reused_only_with_explicit_lineage": true,
+    "missing_official_material_remains_typed_gap": true
+  },
+  "allowed_tickers": ["DELL", "MU", "NVDA", "TSM", "MSFT"],
+  "case_tickers": ["DELL", "MU", "NVDA"],
+  "sources": [
+    {
+      "source_id": "historical_sec_semantic_children",
+      "input_kind": "legacy_candidate_jsonl",
+      "path": "data/indexes/bm25/sector_depth_full238_us_v0_3_mixed_with_8k_fy2023_2027/records.jsonl",
+      "expected_sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9",
+      "required": true
+    },
+    {
+      "source_id": "dell_fy2026_10k_raw_capture",
+      "input_kind": "raw_sec_html_capture",
+      "path": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/22/71/2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388.json",
+      "expected_sha256": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+      "ticker": "DELL",
+      "company": "Dell Technologies Inc.",
+      "form_type": "10-K",
+      "source_tier": "primary_sec_filing",
+      "accession_number": "0001571996-26-000008",
+      "publication_date": "2026-03-16",
+      "period_end": "2026-01-30",
+      "fiscal_year": 2026,
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm",
+      "required": true
+    },
+    {
+      "source_id": "mu_q3_fy2026_earnings_release_raw_capture",
+      "input_kind": "raw_sec_html_capture",
+      "path": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/23/c9/23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846.json",
+      "expected_sha256": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+      "ticker": "MU",
+      "company": "Micron Technology, Inc.",
+      "form_type": "8-K",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "accession_number": "0000723125-26-000013",
+      "publication_date": "2026-06-24",
+      "period_end": "2026-06-24",
+      "fiscal_year": 2026,
+      "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+      "required": true
+    },
+    {
+      "source_id": "mu_q3_fy2026_10q_raw_capture",
+      "input_kind": "raw_sec_html_capture",
+      "path": "data/workbench_private/fin_0_1_3_s1_internal_mu_10q_acquisition/live-r1/objects/fin-0.1.3/s1-internal-mu-10q-successor/raw/90/79/90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d.json",
+      "expected_sha256": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+      "ticker": "MU",
+      "company": "Micron Technology, Inc.",
+      "form_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "accession_number": "0000723125-26-000015",
+      "publication_date": "2026-06-25",
+      "period_end": "2026-05-28",
+      "fiscal_year": 2026,
+      "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+      "required": true
+    },
+    {
+      "source_id": "nvda_q1_fy2027_10q_raw_capture",
+      "input_kind": "raw_sec_html_capture",
+      "path": "data/workbench_private/fin_0_1_3_s1b_official_source_capture/live-r4/objects/raw/3c/bc/3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e.json",
+      "expected_sha256": "3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e",
+      "ticker": "NVDA",
+      "company": "NVIDIA Corporation",
+      "form_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "accession_number": "0001045810-26-000052",
+      "publication_date": "2026-05-20",
+      "period_end": "2026-04-26",
+      "fiscal_year": 2027,
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/nvda-20260426.htm",
+      "capture_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/nvda-20260426.htm?output=1",
+      "required": true
+    },
+    {
+      "source_id": "tsm_q2_2026_6k_release_raw_capture",
+      "input_kind": "raw_sec_html_capture",
+      "path": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/5a/9e/5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64.json",
+      "expected_sha256": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+      "ticker": "TSM",
+      "company": "Taiwan Semiconductor Manufacturing Company Limited",
+      "form_type": "6-K",
+      "source_tier": "primary_global_public_disclosure",
+      "accession_number": "0001046179-26-000451",
+      "publication_date": "2026-07-16",
+      "period_end": "2026-06-30",
+      "fiscal_year": 2026,
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1046179/000104617926000451/a2q26e_withguidancexfinal.htm",
+      "required": true
+    },
+    {
+      "source_id": "three_case_pit_market_snapshot_20260624",
+      "input_kind": "market_evidence_jsonl",
+      "path": "data/processed_private/market/evidence_packs/20260624_market_yahoo_chart_603_3m_v1_3m_market_evidence.jsonl",
+      "expected_sha256": "db26ced97aadc0fc5d21b1bf331f01253315b147f43ea6573815fabfbe23c7f6",
+      "required": true
+    },
+    {
+      "source_id": "retired_supplemental_chunk_aliases_v2",
+      "input_kind": "legacy_qrel_alias_jsonl",
+      "path": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/corpus/supplemental_evidence.jsonl",
+      "expected_sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df",
+      "required": true
+    },
+    {
+      "source_id": "retired_mu_10q_chunk_aliases_v3",
+      "input_kind": "legacy_qrel_alias_jsonl",
+      "path": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v3_mu_10q/corpus/supplemental_evidence.jsonl",
+      "expected_sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5",
+      "required": true
+    }
+  ],
+  "required_qrel_alias_ids": [
+    "SUPP::DELL::000157199626000008::CHUNK_0037",
+    "SUPP::DELL::000157199626000008::CHUNK_0059",
+    "SUPP::MU::000072312526000013::CHUNK_0001",
+    "SUPP::MU::000072312526000013::CHUNK_0002",
+    "SUPP::MU::000072312526000013::CHUNK_0003",
+    "SUPP::MU::000072312526000013::CHUNK_0006",
+    "SUPP::MU::000072312526000015::CHUNK_0040",
+    "SUPP::MU::000072312526000015::CHUNK_0045",
+    "SUPP::MU::000072312526000015::CHUNK_0046",
+    "SUPP::MU::000072312526000015::CHUNK_0047",
+    "SUPP::MU::000072312526000015::CHUNK_0053",
+    "SUPP::MU::000072312526000015::CHUNK_0056",
+    "SUPP::MU::000072312526000015::CHUNK_0064",
+    "SUPP::MU::000072312526000015::CHUNK_0086",
+    "SUPP::MU::000072312526000015::CHUNK_0106",
+    "SUPP::TSM::000104617926000451::CHUNK_0001"
+  ],
+  "typed_gaps": [
+    {
+      "gap_id": "dell_q1_fy2027_transcript_product_transport_gap",
+      "owner_stage": "S1",
+      "blocking_scope": "S1D_external_supplementation_not_S1B_source_object_build",
+      "business_effect_zh": "Dell 官方 IR 已确认 Q1 FY2027 transcript 存在，但当前产品 transport 在有界 R1-R4 中超时；不能用网页摘要代替原文。"
+    },
+    {
+      "gap_id": "mu_q3_fy2026_prepared_remarks_product_transport_gap",
+      "owner_stage": "S1",
+      "blocking_scope": "S1D_external_supplementation_not_S1B_source_object_build",
+      "business_effect_zh": "Micron 官方 IR 已确认 Q3 FY2026 prepared remarks 存在，但当前产品 transport 在有界 R1-R4 中超时；当前对象库只保留已捕获的 8-K 与 10-Q。"
+    },
+    {
+      "gap_id": "tsm_advanced_packaging_current_source_not_captured",
+      "owner_stage": "S1",
+      "blocking_scope": "S1D_supply_evidence_supplementation",
+      "business_effect_zh": "现有 TSM Q2 6-K 是财务业绩披露，不等同于先进封装产能、良率或客户分配证据；供应链判断仍需定向补源。"
+    },
+    {
+      "gap_id": "three_case_market_snapshot_stale_to_2026_08_06",
+      "owner_stage": "S1",
+      "blocking_scope": "point_in_time_valuation_freshness",
+      "business_effect_zh": "本地行情截至 2026-06-24，早于研究截至日 2026-08-06；只能证明 PIT 行情对象链存在，不能完成正式估值。"
+    },
+    {
+      "gap_id": "three_case_market_valuation_fields_missing",
+      "owner_stage": "S1_S2_boundary",
+      "blocking_scope": "valuation_ready",
+      "business_effect_zh": "现有行情对象只有价格与收益率，缺市值、企业价值和估值倍数；不得把 market snapshot 误写成估值结论。"
+    }
+  ]
+}

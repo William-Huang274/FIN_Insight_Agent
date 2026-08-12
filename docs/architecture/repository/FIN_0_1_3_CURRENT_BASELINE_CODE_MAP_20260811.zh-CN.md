@@ -47,9 +47,9 @@ flowchart LR
 | 目录 | 当前职责 | 明确不负责 |
 | --- | --- | --- |
 | `src/connectors/` | SEC 下载与 filing manifest | broad web search |
-| `src/ingestion/` | filing/8-K 解析与 section split | 研究判断 |
+| `src/ingestion/` | filing/8-K 解析、section split 与有界 official-source capture | 研究判断或搜索摘要晋升 |
 | `src/evidence/` | Evidence schema 与构建 | 未经 gate 的事实晋升 |
-| `src/indexing/`、`src/retrieval/` | BM25 构建、provider-neutral 金融查询合同、facet 编译、候选过滤/解释 | 已完成的金融 RAG、current source coverage、dense/rerank 或 Evidence 晋升声明 |
+| `src/indexing/`、`src/retrieval/` | BM25 构建、provider-neutral 金融查询合同、父子金融对象、facet 编译、候选过滤/解释 | 已完成的金融 RAG、dense/rerank 或 Evidence 晋升声明 |
 | `src/sec_agent/market_snapshot.py` | 离线市场快照合同 | 实时行情 |
 | `src/sec_agent/research/` | reviewed pack 的稳定常量/摘要 | 动态 Agent planner |
 | `src/sec_agent/runtime_bridge/` | code/data、只读 reviewed Evidence 与可写 state 的显式路径边界 | checkout-local 私有数据假设 |
@@ -87,7 +87,7 @@ flowchart TB
 
 机器生成清单：`configs/repository/fin_0_1_3_active_baseline_manifest_v1_0.json`。
 
-- Python import graph：65 个文件。
+- Python import graph：69 个文件。
 - 前端 import graph：7 个文件。
 - Runtime resources：4 个。
 - Runtime detectors：3 个。
@@ -102,6 +102,8 @@ python scripts/engineering/build_archive_redirect_index.py --check
 python -m pytest -q
 ```
 
+S1-B 收口复证为：59 个 Python tests、TypeScript、Vite production build、无数据和真实数据挂载两种模式各 6 个 Playwright tests，以及 6,254 个仓库文件 secret scan 0 finding。真实数据移动端测试曾暴露长 lane ID/来源标签造成横向溢出，已在当前 Workbench 消费者中收敛，未通过放宽测试规避。
+
 ## 7. 历史与恢复
 
 6,052 个历史/被替换文件的去向记录在 `archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`。其中包含已经完成使命的一次性迁移程序、旧 HTML 原型和脱敏 fixture；每行均记录原路径、归档路径、推断版本、处置原因、当前替代物、证据分类、活动 import 禁令和 SHA256。156 个不适合跨平台检出的长路径已改为短对象路径，并由 `archive/versions/FIN_0_1_3_REBASELINE_PATH_MAP.jsonl` 可逆绑定回完整原路径。摘要以 Git canonical blob 为准，不受 Windows checkout 换行转换影响。
@@ -112,6 +114,6 @@ python -m pytest -q
 
 仓库工程基线已经合并远端 `main` 并完成 G12。复证目标为 `cd9990ac7ea4586cc55af0bc77f41c3f797399cb`，在第二份全新 clean-main 工作树上通过：44 个 Python tests、TypeScript、Vite build、无数据/挂载数据桌面与移动共 12 个 Playwright tests、三案业务验收、6,230 文件 secret scan、clean Docker build、无数据和只读 Evidence 挂载 smoke，以及原生 Compose 启动。
 
-S0 仓库/运行时基线已关闭，S1-A 工程纵切也已完成，但 S1 产品门仍未通过。下一阻断属于 S1-B：重建 current official source/object 与 PIT 行情对象，然后再评估 sparse/dense/rerank 和 residual-gap 外源补源。S2 NumericFact、S3 动态研究与完整报告、S4 产品闭环和 S5 release 仍需按当前计划分别验收。
+S0 仓库/运行时基线已关闭，S1-A 与 S1-B 工程纵切已完成，但 S1 产品门仍未通过。当前对象库为 28 parent / 1,805 child，并已接入 NVDA 当前 10-Q 与三案 PIT market role；当前下一阻断属于 S1-C：冻结同一对象做 sparse/dense/rerank 业务排序对照。Dell/Micron PDF transport、TSM 先进封装和新鲜估值归 S1-D。S2 NumericFact、S3 动态研究与完整报告、S4 产品闭环和 S5 release 仍需按当前计划分别验收。
 
 这些门的唯一机器状态见 `configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json`。

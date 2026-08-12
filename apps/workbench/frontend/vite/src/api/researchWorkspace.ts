@@ -192,7 +192,7 @@ export type ResearchRetrievalView = {
     slots_missing_required_source_roles: Record<string, string[]>;
   };
   source_gap_summary: {
-    reviewed_label_occurrences_missing_from_historical_corpus: number;
+    reviewed_label_occurrences_missing_from_current_corpus: number;
     reviewed_label_occurrences_eligible_before_scoring: number;
     reviewed_label_occurrences_matched_after_scoring: number;
     interpretation_zh: string;

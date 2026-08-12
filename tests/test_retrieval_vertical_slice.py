@@ -168,6 +168,48 @@ def test_related_company_context_does_not_claim_subject_allocation() -> None:
     assert "不证明" in candidate["business_boundary_zh"]
 
 
+def test_retired_chunk_alias_is_evaluation_only_and_matches_current_child() -> None:
+    kernel = _kernel()
+    plan = compile_query_facet_plan(kernel, "DELL")
+    record = _record(
+        "current-demand-child",
+        "DELL",
+        "2026-05-28",
+        "AI server orders and backlog increased while customer readiness made shipments non-linear. "
+        * 4,
+    )
+    record["metadata"] = {
+        "accession_number": "0001571996-26-000021",
+        "legacy_source_record_ids": ["retired-demand-chunk"],
+    }
+    corpus = CandidateCorpus(
+        records=(record,),
+        records_scanned=1,
+        invalid_records_excluded=0,
+    )
+
+    result = retrieve_query_plan(
+        kernel,
+        plan,
+        corpus,
+        reviewed_targets_by_slot={
+            "demand_volume_quality": {"retired-demand-chunk"}
+        },
+    )
+    demand = next(
+        row
+        for row in result["lane_results"]
+        if row["lane"]["facet_id"] == "orders_and_backlog"
+    )
+
+    assert demand["evaluation"]["missing_from_source_corpus"] == []
+    assert demand["evaluation"]["matched_source_record_ids"] == [
+        "retired-demand-chunk"
+    ]
+    assert demand["candidates"][0]["source_record_id"] == "current-demand-child"
+    assert "legacy_source_record_ids" not in demand["candidates"][0]
+
+
 def test_current_snapshot_is_read_only_candidate_projection() -> None:
     snapshot = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
     service = ResearchRetrievalService(snapshot=snapshot)
@@ -184,8 +226,8 @@ def test_current_snapshot_is_read_only_candidate_projection() -> None:
     assert projection["summary"]["slot_count"] == 9
     assert projection["summary"]["hard_constraint_failures"] == []
     assert projection["source_gap_summary"][
-        "reviewed_label_occurrences_missing_from_historical_corpus"
-    ] > 0
+        "reviewed_label_occurrences_missing_from_current_corpus"
+    ] == 0
     assert all(
         candidate["candidate_state"] == "candidate_not_evidence"
         for lane in projection["lanes"]

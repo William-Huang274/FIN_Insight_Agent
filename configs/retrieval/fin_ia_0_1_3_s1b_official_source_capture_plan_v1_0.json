@@ -1,0 +1,50 @@
+{
+  "schema_version": "fin_ia_s1b_official_source_capture_plan_v1_0",
+  "status": "s1b_official_source_capture_plan",
+  "recorded_at": "2026-08-12",
+  "research_as_of": "2026-08-06",
+  "policy": {
+    "capture_before_parse": true,
+    "https_only": true,
+    "credentials_forbidden": true,
+    "bounded_addendum_not_general_crawler": true,
+    "source_body_is_not_evidence_until_gate": true
+  },
+  "sources": [
+    {
+      "case_key": "NVDA",
+      "route_id": "NVDA_Q1_FY2027_10Q",
+      "url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/nvda-20260426.htm?output=1",
+      "allowed_hosts": ["www.sec.gov"],
+      "expected_content_types": ["text/html"],
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "timeout_seconds": 45,
+      "byte_ceiling": 5000000
+    },
+    {
+      "case_key": "MU",
+      "route_id": "MU_Q3_FY2026_PREPARED_REMARKS",
+      "url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe",
+      "allowed_hosts": ["investors.micron.com"],
+      "expected_content_types": ["application/pdf"],
+      "transport": "curl",
+      "max_transport_retries": 2,
+      "retry_total_seconds": 90,
+      "timeout_seconds": 60,
+      "byte_ceiling": 2000000
+    },
+    {
+      "case_key": "DELL",
+      "route_id": "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT",
+      "url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "allowed_hosts": ["investors.delltechnologies.com"],
+      "expected_content_types": ["application/pdf"],
+      "transport": "curl",
+      "max_transport_retries": 2,
+      "retry_total_seconds": 90,
+      "timeout_seconds": 60,
+      "byte_ceiling": 3000000
+    }
+  ]
+}

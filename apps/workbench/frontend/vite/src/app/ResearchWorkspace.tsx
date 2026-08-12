@@ -237,7 +237,7 @@ function RetrievalSurface({ retrieval }: { retrieval: ResearchRetrievalView }) {
           <h2>语料与真实缺口</h2>
           <p>{retrieval.source_gap_summary.interpretation_zh}</p>
           <div className="research-workspace__retrieval-gap-metrics">
-            <span>旧语料缺失 <b>{retrieval.source_gap_summary.reviewed_label_occurrences_missing_from_historical_corpus}</b></span>
+            <span>当前对象缺失 <b>{retrieval.source_gap_summary.reviewed_label_occurrences_missing_from_current_corpus}</b></span>
             <span>排名前可用 <b>{retrieval.source_gap_summary.reviewed_label_occurrences_eligible_before_scoring}</b></span>
             <span>当前召回 <b>{retrieval.source_gap_summary.reviewed_label_occurrences_matched_after_scoring}</b></span>
           </div>

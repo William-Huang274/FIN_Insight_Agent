@@ -17,8 +17,8 @@
     "apps/workbench/backend/application/research_workspace_service.py"
   ],
   "resource_count": 4,
-  "resource_bytes": 1695189,
-  "resource_canonical_digest": "6bc36937dbea8d06896c1e44cd59b6d935b19952ad4087fe8ff87a6cdf5f1924",
+  "resource_bytes": 1704610,
+  "resource_canonical_digest": "1d832b794353502b49f8b9f5b76922ad8634ab6ad766ac4c928abc88971af0c0",
   "resources": [
     {
       "resource_id": "application.config.current_research_evidence_pack_projection",
@@ -62,8 +62,8 @@
     {
       "resource_id": "application.result.current_research_retrieval_snapshot",
       "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
-      "sha256": "3aaba9db4e3b29ae65f0d8ff54488e213c2088fac1e80bedf270f305979c7bc9",
-      "bytes": 1683839,
+      "sha256": "c32bdc4abb742e5746cc303ec68dff76b670fa3028054a455e1a4701c85d5d84",
+      "bytes": 1693260,
       "classification": "digest_bound_read_only_retrieval_candidate_result",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"

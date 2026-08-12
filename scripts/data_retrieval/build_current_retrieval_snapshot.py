@@ -84,6 +84,7 @@ def build_snapshot(
     records_path: Path,
     pack_result_path: Path,
     pack_object_root: Path,
+    source_object_result_path: Path | None = None,
 ) -> dict[str, Any]:
     kernel_payload = _read_json(kernel_path)
     kernel = load_financial_research_kernel(kernel_payload)
@@ -100,6 +101,11 @@ def build_snapshot(
         allowed_tickers=allowed_tickers,
     )
     pack_result = _read_json(pack_result_path)
+    source_object_result = (
+        _read_json(source_object_result_path)
+        if source_object_result_path is not None
+        else None
+    )
     cases: list[dict[str, Any]] = []
     for case_key in kernel.cases:
         plan = compile_query_facet_plan(kernel, case_key)
@@ -116,7 +122,10 @@ def build_snapshot(
             reviewed_targets_by_slot=targets,
         )
         missing = retrieval["summary"]["slots_missing_required_source_roles"]
-        source_gap_summary = _source_gap_summary(retrieval)
+        source_gap_summary = _source_gap_summary(
+            retrieval,
+            current_object_store=source_object_result is not None,
+        )
         cases.append(
             {
                 "case_key": case_key,
@@ -156,7 +165,11 @@ def build_snapshot(
         "historical_corpus_sufficient_for_current_product": False,
     }
     status = (
-        "s1a_typed_local_retrieval_vertical_slice_ready"
+        (
+            "s1b_current_source_object_retrieval_snapshot_ready_with_typed_gaps"
+            if source_object_result is not None
+            else "s1a_typed_local_retrieval_vertical_slice_ready"
+        )
         if all(
             acceptance[key]
             for key in (
@@ -166,13 +179,21 @@ def build_snapshot(
                 "candidate_labels_joined_after_generation",
             )
         )
-        else "s1a_typed_local_retrieval_vertical_slice_failed"
+        else (
+            "s1b_current_source_object_retrieval_snapshot_failed"
+            if source_object_result is not None
+            else "s1a_typed_local_retrieval_vertical_slice_failed"
+        )
     )
     unsigned = {
         "schema_version": SNAPSHOT_SCHEMA_VERSION,
         "status": status,
         "recorded_at": "2026-08-12",
-        "scope": "FIN_0_1_3_S1A_PROVIDER_NEUTRAL_LOCAL_RETRIEVAL_VERTICAL_SLICE",
+        "scope": (
+            "FIN_0_1_3_S1B_CURRENT_SOURCE_OBJECT_RETRIEVAL"
+            if source_object_result is not None
+            else "FIN_0_1_3_S1A_PROVIDER_NEUTRAL_LOCAL_RETRIEVAL_VERTICAL_SLICE"
+        ),
         "kernel_contract_ref": kernel_path.relative_to(ROOT).as_posix(),
         "kernel_contract_digest": canonical_digest(kernel_payload),
         "source_snapshot": {
@@ -181,13 +202,36 @@ def build_snapshot(
             "case_scope_records": len(corpus.records),
             "invalid_records_excluded": corpus.invalid_records_excluded,
             "records_sha256": _sha256(records_path),
-            "source_boundary": "workstation_local_historical_sec_candidate_store",
+            "source_boundary": (
+                "current_parent_child_financial_object_store_with_legacy_lineage"
+                if source_object_result is not None
+                else "workstation_local_historical_sec_candidate_store"
+            ),
         },
+        "source_object_store": (
+            {
+                "result_ref": source_object_result_path.relative_to(ROOT).as_posix(),
+                "result_digest": source_object_result.get("result_digest"),
+                "status": source_object_result.get("status"),
+                "object_store": source_object_result.get("object_store"),
+                "case_readiness": source_object_result.get("case_readiness"),
+                "typed_gaps": source_object_result.get("typed_gaps"),
+            }
+            if source_object_result is not None
+            else None
+        ),
         "reviewed_label_source_digest": str(pack_result.get("result_digest") or ""),
         "cases": cases,
         "acceptance": acceptance,
         "known_boundary": (
-            "S1-A proves a provider-neutral typed query plan, pre-score identity/date/source "
+            "S1-B connects a bounded parent-child financial object store, current official "
+            "captures, inherited semantic children and point-in-time market roles to the same "
+            "provider-neutral candidate runtime. Candidates are not Evidence; Dell and Micron "
+            "call-material transport, TSM advanced-packaging evidence, fresh 2026-08-06 market "
+            "data and valuation fields remain typed gaps; "
+            "dense retrieval, reranking, Evidence Pack promotion and model research remain open."
+            if source_object_result is not None
+            else "S1-A proves a provider-neutral typed query plan, pre-score identity/date/source "
             "constraints, local lexical candidate generation and a Workbench-consumable "
             "diagnostic snapshot. The historical local SEC corpus is not a complete current "
             "research source universe; candidates are not Evidence; external supplementation, "
@@ -218,7 +262,11 @@ def _business_findings(
     return findings
 
 
-def _source_gap_summary(retrieval: Mapping[str, Any]) -> dict[str, Any]:
+def _source_gap_summary(
+    retrieval: Mapping[str, Any],
+    *,
+    current_object_store: bool,
+) -> dict[str, Any]:
     missing_from_corpus = 0
     eligible_before_scoring = 0
     matched_after_scoring = 0
@@ -232,11 +280,14 @@ def _source_gap_summary(retrieval: Mapping[str, Any]) -> dict[str, Any]:
             evaluation.get("reviewed_targets_in_candidate_pool") or 0
         )
     return {
-        "reviewed_label_occurrences_missing_from_historical_corpus": missing_from_corpus,
+        "reviewed_label_occurrences_missing_from_current_corpus": missing_from_corpus,
         "reviewed_label_occurrences_eligible_before_scoring": eligible_before_scoring,
         "reviewed_label_occurrences_matched_after_scoring": matched_after_scoring,
         "interpretation_zh": (
-            "缺失项属于当前本地候选语料覆盖问题；eligible 但未入池的项属于查询、对象形状或排序问题。"
+            "旧 reviewed chunk 已通过 lineage crosswalk 重定基到当前对象；仍缺失才属于对象覆盖问题，"
+            "eligible 但未入池的项属于查询、对象形状或排序问题。"
+            if current_object_store
+            else "缺失项属于当前本地候选语料覆盖问题；eligible 但未入池的项属于查询、对象形状或排序问题。"
         ),
     }
 
@@ -248,6 +299,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--kernel",
         default="configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json",
+    )
+    parser.add_argument(
+        "--source-object-result",
+        default=None,
+        help="Optional S1-B object-store result bound into the snapshot.",
     )
     parser.add_argument(
         "--records",
@@ -282,6 +338,11 @@ def main() -> int:
         records_path=_resolve(args.records),
         pack_result_path=_resolve(args.pack_result),
         pack_object_root=_resolve(args.pack_object_root),
+        source_object_result_path=(
+            _resolve(args.source_object_result)
+            if args.source_object_result
+            else None
+        ),
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_suffix(output.suffix + ".tmp")
@@ -308,7 +369,7 @@ def main() -> int:
             indent=2,
         )
     )
-    return 0 if snapshot["status"].endswith("_ready") else 1
+    return 0 if "_ready" in str(snapshot["status"]) else 1
 
 
 if __name__ == "__main__":

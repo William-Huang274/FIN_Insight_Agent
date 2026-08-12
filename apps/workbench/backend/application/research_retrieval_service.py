@@ -130,7 +130,10 @@ class ResearchRetrievalService:
         if not (
             value.get("schema_version") == EXPECTED_SCHEMA
             and value.get("status")
-            == "s1a_typed_local_retrieval_vertical_slice_ready"
+            in {
+                "s1a_typed_local_retrieval_vertical_slice_ready",
+                "s1b_current_source_object_retrieval_snapshot_ready_with_typed_gaps",
+            }
             and isinstance(cases, list)
             and [row.get("case_key") for row in cases]
             == ["DELL", "MU", "NVDA"]

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const frontendRoot = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(frontendRoot, "../../..");
 const productDataRoot = process.env.FINSIGHT_E2E_DATA_ROOT;
+const effectiveDataRoot = productDataRoot || resolve(frontendRoot, "test-results", "no-data-root");
 const frontendPort = Number(process.env.FINSIGHT_E2E_FRONTEND_PORT || "4173");
 
 if (!Number.isInteger(frontendPort) || frontendPort < 1024 || frontendPort > 65535) {
@@ -32,7 +33,7 @@ export default defineConfig({
       cwd: repoRoot,
       env: {
         ...process.env,
-        ...(productDataRoot ? { FINSIGHT_DATA_ROOT: productDataRoot } : {}),
+        FINSIGHT_DATA_ROOT: effectiveDataRoot,
       },
       url: "http://127.0.0.1:8765/api/health",
       reuseExistingServer: false,

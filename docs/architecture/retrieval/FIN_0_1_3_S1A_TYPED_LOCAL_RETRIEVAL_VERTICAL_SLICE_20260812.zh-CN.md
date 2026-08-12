@@ -54,9 +54,11 @@ flowchart LR
 
 新案例应当通过新增配置迁移；如果必须修改核心检索代码，必须说明是通用能力缺口还是不当案例特判。
 
-## 5. 下一步边界
+## 5. 后续实证更新
 
-S1-B 必须先补 current source/object：DELL 电话会/remarks、MU latest prepared remarks、NVDA 当前 10-Q 关键表与风险对象、TSMC 先进封装，以及 PIT 行情对象。随后以同一 17-facet 计划重建 candidate store，并比较 source-missing 与 eligible-but-not-ranked 两类缺口。
+S1-B 已完成父子金融对象库、raw SEC capture reparse、PIT 市场角色和当前 Workbench 快照，详见 [S1-B 当前金融对象库](FIN_0_1_3_S1B_CURRENT_FINANCIAL_OBJECT_STORE_20260812.zh-CN.md)。NVDA 当前 10-Q 已进入对象库；Dell/Micron 官方法说 PDF 已确认存在但产品 transport 未取得原文，TSM 先进封装与新鲜估值仍为 S1-D typed gap。
+
+同一对象库已把 source-missing 与 eligible-but-not-ranked 分开：current-object missing 为 0，但 DELL/MU/NVDA reviewed target 入池仅为 `6/3/4`，并出现风险段冒充现金、旧期压新期、主题共现冒充关系等业务排序问题。因此当前下一项是 S1-C 同候选 sparse/dense/rerank 对照，不再继续扩大 S1-B。
 
 只有 candidate coverage 通过后才值得：
 

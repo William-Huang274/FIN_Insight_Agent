@@ -98,6 +98,10 @@ def retrieve_query_plan(
     corpus_by_id = {
         str(record.get("evidence_id") or ""): record for record in corpus.records
     }
+    corpus_by_equivalent_id: dict[str, list[dict[str, Any]]] = {}
+    for record in corpus.records:
+        for equivalent_id in _record_equivalent_ids(record):
+            corpus_by_equivalent_id.setdefault(equivalent_id, []).append(record)
     lane_results: list[dict[str, Any]] = []
     all_candidate_ids: set[str] = set()
     hard_failures: list[str] = []
@@ -107,24 +111,33 @@ def retrieve_query_plan(
         # Labels are deliberately joined only after the terminal candidate pool.
         reviewed_targets = set(target_map.get(lane.slot_id) or ())
         for candidate in result["candidates"]:
-            candidate["reviewed_pack_match"] = (
-                candidate["source_record_id"] in reviewed_targets
+            source_record = corpus_by_id[candidate["source_record_id"]]
+            candidate["reviewed_pack_match"] = bool(
+                _record_equivalent_ids(source_record) & reviewed_targets
             )
-        candidate_ids = {
+        candidate_source_ids = {
             str(candidate["source_record_id"])
             for candidate in result["candidates"]
         }
-        all_candidate_ids.update(candidate_ids)
-        matched = sorted(candidate_ids & reviewed_targets)
-        present = sorted(reviewed_targets & set(corpus_by_id))
+        candidate_equivalent_ids = {
+            equivalent_id
+            for source_id in candidate_source_ids
+            for equivalent_id in _record_equivalent_ids(corpus_by_id[source_id])
+        }
+        all_candidate_ids.update(candidate_source_ids)
+        matched = sorted(candidate_equivalent_ids & reviewed_targets)
+        present = sorted(reviewed_targets & set(corpus_by_equivalent_id))
         eligible_targets: list[str] = []
         excluded_targets: dict[str, str] = {}
         for target_id in present:
-            reason = _candidate_exclusion_reason(corpus_by_id[target_id], lane)
-            if reason is None:
+            reasons = [
+                _candidate_exclusion_reason(record, lane)
+                for record in corpus_by_equivalent_id[target_id]
+            ]
+            if any(reason is None for reason in reasons):
                 eligible_targets.append(target_id)
             else:
-                excluded_targets[target_id] = reason
+                excluded_targets[target_id] = str(sorted(set(reasons))[0])
         result["evaluation"] = {
             "reviewed_targets": len(reviewed_targets),
             "reviewed_targets_present_in_source_corpus": len(present),
@@ -132,7 +145,9 @@ def retrieve_query_plan(
             "eligible_reviewed_source_record_ids": eligible_targets,
             "reviewed_targets_in_candidate_pool": len(matched),
             "matched_source_record_ids": matched,
-            "missing_from_source_corpus": sorted(reviewed_targets - set(present)),
+            "missing_from_source_corpus": sorted(
+                reviewed_targets - set(corpus_by_equivalent_id)
+            ),
             "excluded_before_scoring": excluded_targets,
             "labels_joined_after_candidate_generation": True,
         }
@@ -150,10 +165,13 @@ def retrieve_query_plan(
     slot_evaluation: dict[str, dict[str, Any]] = {}
     for slot_id, reviewed_targets in target_map.items():
         slot_candidate_ids = {
-            str(candidate["source_record_id"])
+            equivalent_id
             for result in lane_results
             if result["lane"]["slot_id"] == slot_id
             for candidate in result["candidates"]
+            for equivalent_id in _record_equivalent_ids(
+                corpus_by_id[str(candidate["source_record_id"])]
+            )
         }
         matched = sorted(slot_candidate_ids & set(reviewed_targets))
         slot_evaluation[slot_id] = {
@@ -290,6 +308,20 @@ def _retrieve_lane(
         per_document: Counter[str] = Counter()
         selected_ids: set[str] = set()
         selected_rows: list[tuple[float, float, dict[str, Any], list[str]]] = []
+        # Reserve one position for each contract-required source role before
+        # score-only filling. Otherwise a large issuer filing can crowd out the
+        # single PIT market object even when the facet explicitly requires it.
+        for required_role in lane.required_source_roles:
+            for row in scored:
+                record = row[2]
+                record_id = str(record.get("evidence_id") or "")
+                if (
+                    _source_role_for_record(record, plan) == required_role
+                    and record_id not in selected_ids
+                ):
+                    selected_rows.append(row)
+                    selected_ids.add(record_id)
+                    break
         # Give each configured evidence owner one fair chance before filling by score.
         for owner in lane.evidence_owner_tickers:
             for row in scored:
@@ -360,7 +392,7 @@ def _candidate_projection(
 ) -> dict[str, Any]:
     owner = str(record.get("ticker") or "").strip().upper()
     source_type = str(record.get("source_type") or "").strip().upper()
-    source_role = _ROLE_BY_SOURCE_TYPE.get(source_type, "other_source")
+    source_role = _source_role_for_record(record, plan)
     text = re.sub(r"\s+", " ", str(record.get("text") or "")).strip()
     if owner == plan.subject_ticker:
         relationship = "subject_self_disclosure"
@@ -420,6 +452,17 @@ def _candidate_projection(
     }
 
 
+def _source_role_for_record(
+    record: Mapping[str, Any],
+    plan: QueryFacetPlan,
+) -> str:
+    owner = str(record.get("ticker") or "").strip().upper()
+    if owner != plan.subject_ticker:
+        return "related_entity_context"
+    source_type = str(record.get("source_type") or "").strip().upper()
+    return _ROLE_BY_SOURCE_TYPE.get(source_type, "other_source")
+
+
 def _relationship_for_owner(
     kernel: FinancialResearchKernel,
     case_key: str,
@@ -461,6 +504,16 @@ def _document_key(record: Mapping[str, Any]) -> str:
     if isinstance(metadata, Mapping) and metadata.get("accession_number"):
         return str(metadata["accession_number"])
     return str(record.get("source_url") or record.get("evidence_id") or "")
+
+
+def _record_equivalent_ids(record: Mapping[str, Any]) -> set[str]:
+    identifiers = {str(record.get("evidence_id") or "").strip()}
+    metadata = record.get("metadata")
+    if isinstance(metadata, Mapping):
+        aliases = metadata.get("legacy_source_record_ids")
+        if isinstance(aliases, list):
+            identifiers.update(str(value).strip() for value in aliases)
+    return {value for value in identifiers if value}
 
 
 def _boilerplate_reason(record: Mapping[str, Any]) -> str | None:

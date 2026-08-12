@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-12 | FIN 0.1.3 S1-B 将历史 candidate store 重定基为 28 个父文档／1,805 个可检索金融子对象；NVDA 当前 10-Q、三案 PIT market role 与 Workbench 候选链已接入。实测证明 source coverage 与 ranking quality 必须分账：current-object missing=0，但 reviewed target 入池仅 DELL/MU/NVDA=`6/3/4`，并有风险段冒充现金、旧期压新期、主题共现冒充关系。Dell/Micron 官方 PDF 已确认存在但当前产品 transport 未捕获，和 TSM 先进封装、新鲜估值一起转 S1-D；当前下一阶段是冻结同一对象做 S1-C sparse/dense/rerank 对照，而非继续堆来源。 |
 | 2026-08-12 | FIN 0.1.3 仓库重定基把当前可交付产品收敛为 DELL／MU／NVDA 三案只读 reviewed Evidence Workspace，并把旧并行产品面、attempt runner 与流水账迁入不可执行版本归档。实测三案只有 SEC 来源且 structured numeric=0，故新基线只通过身份、摘要、来源和 gap 可审阅性，不代表多源检索、NumericFact、动态 Agentic Research 或完整研报通过。当前执行权转入 `FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md`；仓库基线合并不等于 FIN 0.1.3 产品收口。 |
 | 2026-08-11 | S3 动态研究 successor 已完成零调用工程连接：三案由开放问题编译为 38 个有决策角色的 cell，按 material typed gap 生成 5 个有界 EvidenceRequest，新证据只触发受影响 cell 重裁决；数值 WWC 无权威绑定时必须显式不可操作化。真实 DELL same-input 审计显示 Agent 把 42 个原始散点压缩为 30 个，但仍有 2 个摘要过载点、1 处跨章节重复、决策密度不足及历史数值 L1 失败。因此产品验收继续要求“更短且更有判断”与事实权威同时成立；本轮只记 engineering pass，不代表自然 planner、修复后报告、八维评分、paired／人工／Owner 或 release 通过。 |
 | 2026-08-11 | S2 单节点 DeepSeek Pro canary 的业务判断、4 个 NUM ref、反方和边界均正确，formal failure 仅来自 `surpassing` 未逐字等于 `surpassed`。产品门据此纠正：whole-string 英语词形不再作为金融 L1；模型选择 Evidence／NUM 与研究判断，本地只渲染受保护数字片段。兼容层必须先把 relation 编译为 typed direction，并对否定、低于阈值、错实体／期间／单位 fail closed；禁止 DeepSeek 专用白名单、模糊同义放行或 Harness 代写整段报告。历史 terminal 保持 failed，零调用 successor 通过也不自动关闭 S2。 |
@@ -2501,3 +2502,16 @@ live 控制面已达到 working-tree engineering pass：scope 已独立注册，
 同时，三案 source domain 均只有 `www.sec.gov`，structured numeric items 均为 `0`，估值、情景敏感性和商业分配仍是 typed gap。该实证把后续责任重新落回：S1 解决来源/检索与 residual-gap 补源，S2 解决权威 NumericFact/PIT 编译，S3 解决动态规划和研究内容质量，S4 才把通过的研究结果接入 review/repair 产品闭环，S5 执行 release。不得在当前 Workspace 用通用摘要或 UI 文案代替这些能力。
 
 仓库重定基完成的产品意义是：后续每项能力只有一条活动实现和一个真实消费者，可以被一致测试与替换。它不降低 FIN 0.1 的研究质量门，也不把未完成能力后移出版本；唯一当前顺序见 `docs/product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md`。
+
+### 16.23 S1-B 当前对象层与排序层必须分账（2026-08-12）
+
+当前 S1-B 已将官方 raw capture、父文档、section/block/table child、PIT market role 和查询候选连接为一条活动链。对象层工程门要求原始响应先保存、父子 lineage 可追溯、SEC Item 与表边界不破坏、child 容量有上限、旧 qrel 只能通过 evaluation alias 重定基；通过这些门不代表候选已经适合研究。
+
+三案实测中 current-object missing 已为 0，但 DELL/MU/NVDA reviewed target 进入候选池仅 `6/3/4`。新增 NVDA 当前 10-Q 反而使旧 qrel top-k 从 6 降到 4，因为新鲜风险对象与需求/关系问题竞争；DELL cash slot 首位是 AI 需求风险，MU cash slot 首位是 non-GAAP 对账，关系槽仍常把主题共现当成经济关系。产品因此规定：
+
+1. S1-C 的 sparse、dense、rerank 必须消费同一父子对象与同一评测标签，不得各自重切语料。
+2. 排名验收必须报告具体业务错因，包括错实体、错期间、错证据角色、主题共现、风险段冒充现金和通用股价风险冒充估值，不能只报 recall/NDCG。
+3. source coverage 通过后不得继续靠增加网页修排名；dense/rerank 只有在提高 required-slot target-in-pool 且不扩大污染时才可进入 Runtime。
+4. 候选仍不是 Evidence。只有 Evidence Gate、引用边界和 residual-gap evaluator 完成后，S1-D 才能定向补源并复编译 Evidence Pack。
+
+Dell Q1 FY2027 transcript 与 Micron Q3 FY2026 prepared remarks 已由官方 IR 证明存在，但当前产品 transport 的有界 R1–R4 未取得原始 PDF；产品表面必须显示 transport gap，不能用搜索摘要代替正文。TSM 当前 6-K 只是财务业绩，不等于先进封装产能/良率/分配证据。PIT market snapshot 早于 research as-of 且缺估值字段，因此也不能冒充 valuation-ready。

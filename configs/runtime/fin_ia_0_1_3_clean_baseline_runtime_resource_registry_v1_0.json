@@ -1,6 +1,6 @@
 {
   "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R3",
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R4",
   "status": "tracked_typed_runtime_resource_authority",
   "policy": {
     "registry_is_source_of_truth": true,
@@ -16,10 +16,23 @@
     "apps/workbench/backend/application/research_retrieval_service.py",
     "apps/workbench/backend/application/research_workspace_service.py"
   ],
-  "resource_count": 5,
-  "resource_bytes": 1782481,
-  "resource_canonical_digest": "fc3126aa8dc5e60ebced81847454b2ac0666bc87b8adb63edf9f2208248d1c33",
+  "resource_count": 6,
+  "resource_bytes": 1803030,
+  "resource_canonical_digest": "266845a53e2b9ad41aef236ebdc5a42b1f8ef2e884f2b0404fbfb652987500a4",
   "resources": [
+    {
+      "resource_id": "application.config.current_financial_research_kernel",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json",
+      "sha256": "3bab7c480c277f35d3ad49d3829dfa771baff1c899dacdc764a174acd45a3577",
+      "bytes": 20549,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "required": true,
+      "source_owner": "src.retrieval.contracts.load_financial_research_kernel"
+    },
     {
       "resource_id": "application.config.current_research_evidence_pack_projection",
       "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_research_evidence_pack_projection_v1_0.json",

@@ -1,0 +1,79 @@
+{
+  "schema_version": "fin_ia_s1c_cross_encoder_role_shadow_policy_v1_0",
+  "experiment_id": "FIN-0.1.3-S1C-BGE-RERANKER-V2-M3-ROLE-SHADOW-R1",
+  "recorded_at": "2026-08-12",
+  "status": "approved_shadow_only_no_training_no_runtime_promotion",
+  "hypothesis": "An off-the-shelf multilingual cross-encoder can improve ordering inside the frozen BM25 plus BGE-M3 candidate union, while a separate abstaining Evidence Role evaluator reduces semantically similar but role-incompatible top results without materially reducing relevant-target recall.",
+  "bound_inputs": {
+    "qrels_ref": "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json",
+    "qrels_sha256": "1d56f1deef3d7082b4e308a9caae1e7b70941a66cd025620adbcc80231b7562b",
+    "eval_set_ref": "configs/retrieval/fin_ia_0_1_3_s1c_financial_role_eval_set_v1_0.json",
+    "eval_set_digest": "670dc36e4b4495a0de09b5f8b0bee958c292f9dcbd9df201a72e8e80fd8f01fd",
+    "records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v1/records.jsonl",
+    "records_sha256": "484a18a2d7c5e2b8ab42eea97d8c68bbad37cfb49fe1a2c943d64d1381ad4382",
+    "bge_m3_cache_ref": "data/workbench_private/fin_0_1_3_s1c_ranking_comparison/bge_m3_cache_v1"
+  },
+  "model": {
+    "model_id": "BAAI/bge-reranker-v2-m3",
+    "role": "shadow_cross_encoder_only",
+    "download_sources_allowed": [
+      "Hugging Face",
+      "ModelScope"
+    ],
+    "maximum_sequence_length": 1024,
+    "batch_size": 2,
+    "training_allowed": false,
+    "holdout_tuning_allowed": false
+  },
+  "candidate_ceiling": {
+    "route": "union_of_bm25_top24_and_bge_m3_top24_after_identity_period_source_filters",
+    "per_route_top_k": 24,
+    "report_target_in_pool_before_rerank": true,
+    "cross_encoder_cannot_recover_target_outside_pool": true
+  },
+  "baselines": [
+    "sparse_bm25",
+    "dense_bge_m3",
+    "fusion_rrf_1_1",
+    "typed_financial_rerank"
+  ],
+  "evaluation": {
+    "primary_cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "holdout_cases": [
+      "ORCL",
+      "ASML",
+      "ANET"
+    ],
+    "top_k": 10,
+    "business_error_k": 3,
+    "metrics": [
+      "candidate_pool_target_coverage",
+      "target_recall_at_10",
+      "mrr",
+      "role_incompatible_top3",
+      "role_abstain_top3",
+      "positive_over_hard_negative_pairwise_accuracy",
+      "holdout_positive_compatibility",
+      "holdout_negative_suppression",
+      "latency_and_peak_gpu_memory"
+    ]
+  },
+  "stop_conditions": [
+    "Stop and retain BM25 as default if the candidate ceiling is insufficient.",
+    "Do not promote the cross-encoder if primary recall or holdout discrimination regresses.",
+    "Do not promote the Evidence Role evaluator if it suppresses valid positives or merely memorizes DELL, MU and NVDA.",
+    "Do not fine-tune until stable residual financial-role errors remain after this frozen shadow evaluation."
+  ],
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "cross_encoder_score_grants_evidence_authority": false,
+    "role_compatibility_grants_evidence_authority": false,
+    "runtime_route_promotion_authorized": false,
+    "fine_tuning_authorized": false,
+    "s1_completion_authorized": false
+  }
+}

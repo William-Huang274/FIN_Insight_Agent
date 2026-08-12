@@ -2527,3 +2527,13 @@ Dense 的实质问题不是“向量不能工作”，而是金融证据角色�
 评测合同自身也必须被审计。首轮三条 TSM qrel 因旧 source-tier allowlist 不认识当前 `primary_global_public_disclosure` 而在排序前失去候选；修复为通用官方来源 tier 等价后才恢复。这类合同漂移不得算作模型失败。另有四条 qrel 需要 Owner review：两条 NVDA supply 目标以联系人／安全港为主体；一条 NVDA results 需要允许当前 10-Q 更精确替代目标；一条旧 metric-table identity 在当前 store 中缺失。实现者只能提出 successor，不得静默重写已接受标签或回填更漂亮的分数。
 
 因此 S1-C 可记为工程比较完成，但 S1 仍未通过。Owner 确认受影响标签并进行缓存复跑后，S1-D 才按 residual gaps 定向补 Dell／Micron PDF、TSM 先进封装和新鲜估值；不得为了排名分数继续盲目扩源或调权重。完整技术记录见 `docs/architecture/retrieval/FIN_0_1_3_S1C_SAME_OBJECT_RANKING_COMPARISON_20260812.zh-CN.md`。
+
+### 16.25 请求级检索入口、Cross-Encoder 与 Evidence Role 分层验收（2026-08-12）
+
+固定 9 Slot／17 facet 查询包继续作为检索部件回归，但 S1 当前 Runtime 必须消费严格 `EvidenceRequest`，只编译请求明确选择的 facet、target entities、source types 和 reporting period。跨案例实体、错截至日、未知 facet、未获准来源和 route case mismatch 必须 fail closed。该接口只返回 candidate／typed gap，不把用户自然语言解释成研究计划，也不晋升 Evidence；前者归 S3，真实输入与澄清归 S4。
+
+排序、角色判断和 Evidence 晋升必须继续分层。FIN 0.1.3 本轮现成 `BAAI/bge-reranker-v2-m3` shadow 在 18 条修正后 qrels 上 Recall@10=`17/18`，与 BM25 相同，MRR=`0.608480` 高于 BM25=`0.559392`；它能将 NVDA 经营现金流从第 12 提至第 1，但也把 DELL 直接 AI 需求风险从第 1 降到第 19。任何 aggregate 增益都不能覆盖这种逐问题角色反转，故 Cross-Encoder 只能保留为候选 shadow，分数不授予 Evidence 权限。
+
+Evidence Role 必须是多标签且允许 abstain，但“规则命中更少错误”不等于合格门禁。本轮规则角色门把三案 top3 显式 incompatible 从 27 降为 3，同时把 Recall@10 从 `17/18` 降为 `13/18`；ORCL／ASML／ANET 留出正例 compatibility 仅 `23.2558%`、abstain `69.7674%`。典型失败是 customer commitments、毛利表和客户预付款因表达形态不同而被 abstain／判错。因此规则角色标签禁止上线。
+
+评测标签同样必须有角色语义。不同 slot 没绑定同一对象，只能是 `unjudged`，不能机械当 hard negative；同一对象可以同时支持现金、关系、需求或反方。训练前的数据合同至少要区分 claim、metric/table、parent context，多标签角色、事实状态、直接性与明确无关；留出公司不得参与调参。当前 18 条 qrel 只足以资格判断，不足以微调 embedding、Cross-Encoder 或角色分类器。只有扩展并复核数据合同后仍出现稳定可重复的金融角色错误，才允许单独做训练决策。

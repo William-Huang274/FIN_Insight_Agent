@@ -1,7 +1,7 @@
 # FIN 0.1.3 S1-C 同对象排名对照
 
 日期：2026-08-12
-状态：`engineering_comparison_complete / owner_qrel_review_pending / S1_product_gate_open`
+状态：`successor_recomparison_and_neural_shadow_complete / no_route_promoted / S1_product_gate_open`
 
 ## 1. 本阶段回答的问题
 
@@ -67,19 +67,65 @@ S1-C 首轮发现旧 source-tier allowlist 不认识当前 `primary_global_publi
 
 实现者没有擅自改标签。Owner 决策前，历史 qrels、17 mapped / 1 typed gap 和本轮指标都保持不变。
 
-## 6. 阶段结论和下一门
+## 6. 首轮阶段结论（已被第 8–11 节 successor 更新）
 
 S1-C 的“同对象工程比较”完成，但不等于排名产品通过，更不等于 S1 通过。当前默认继续使用 BM25，dense、fusion 和规则重排只在 Workbench 只读展示，不获得 Evidence 晋升权。
 
-下一门是：Owner 只复核上述四条 qrel；若接受 successor，利用已有 embedding cache 重新物化同对象对照。之后进入 S1-D，以真实 residual gaps 定向处理 Dell／Micron 官方 PDF transport、TSM 先进封装和新鲜估值来源，而不是继续为当前 aggregate 指标调权重。
+首轮下一门曾是 Owner 复核上述四条 qrel；该项现已完成。当前有效下一门以第 11 节为准，不再直接跳入 S1-D。
 
 S2 NumericFact、S3 动态 Agentic Research、完整报告内容质量、S4 review/repair 和 S5 release 均未由本阶段证明。
+
+## 8. Owner successor 与请求级入口
+
+Owner 决策已通过 evaluation-only successor 应用：`05/11` 使用当前 NVDA 10-Q 供给风险 child，`15` 保留原 8-K 并增加当前 10-Q，`16` 使用当前资产负债／现金流表 child。历史 qrel 不改写，successor 另存并绑定 base digest。缓存复跑结果如下：
+
+| 路线 | 18 qrel Recall@10 | MRR |
+| --- | ---: | ---: |
+| BM25 | `17/18` | `0.559392` |
+| BGE-M3 | `14/18` | `0.490741` |
+| RRF 1:1 | `16/18` | `0.580817` |
+| 旧确定性重排 | `16/18` | `0.567626` |
+
+当前 Runtime 同时新增 `EvidenceRequest → requested facets → QueryFacetPlan → immutable snapshot candidates/gaps`。它只消费类型化请求；用户自然语言到 Research Objective／EvidenceRequest 仍由 S3 负责，真实输入与澄清 UI 仍由 S4 负责。
+
+## 9. 现成 Cross-Encoder shadow
+
+本地 `BAAI/bge-reranker-v2-m3`（Apache-2.0，model.safetensors SHA256=`d9e3e081...b5286`）在 BM25 top24 与 BGE-M3 top24 并集上离线重排，631 个冻结 pair 用 RTX 4060 Laptop GPU 耗时 `25.141s`，峰值显存约 `2.28 GB`。网络、生成模型和训练调用均为 0。
+
+Cross-Encoder 的三案 Recall@10=`17/18`，与 BM25 相同，MRR 从 `0.559392` 提升到 `0.608480`。它有两种相反表现：
+
+- 正例：NVDA 财务桥接问题中，BM25 把需求／采购承诺风险排在前面，经营现金流目标仅第 12；Cross-Encoder 把现金流表升到第 1。
+- 负例：DELL 风险／财务综合问题中，BM25 把直接 AI 需求集中风险排第 1；Cross-Encoder 因宽泛问题同时包含结果、库存与收入确认，把公司概览／市场风险排前，正确风险段落落到第 19。
+- 负例：MU 财务桥接中，Cross-Encoder 将 exhibit index 排第 1，正确流动性正文第 2，说明截断、文档类型和表面词匹配仍会干扰。
+
+因此它是“有增量的候选重排器”，不是已合格默认路线，更不是 Evidence evaluator。
+
+## 10. Evidence Role shadow 与评测合同纠错
+
+规则版多标签角色支持 observed result、guidance、direct demand、risk/counterevidence、supply/capacity、financial statement、regulatory、relationship、valuation、generic，并允许 `abstain`。三案中它把 Cross-Encoder top3 的显式不兼容项从 `27` 降至 `3`，但 Recall@10 从 `17/18` 降为 `13/18`。
+
+第一版留出评测把“reviewed pack 未绑定当前 slot”机械标成 hard negative。这在业务上不成立：例如 ORCL 客户预付款现金流可同时支持 cash conversion 和 relationship attribution。该 R1 结果保留为评测合同失败，不用于模型结论。R2 只使用逐条明确的同案例角色对照，其余材料标记 unjudged：
+
+| 留出结果（ORCL/ASML/ANET，17 问题） | Cross-Encoder | Cross-Encoder + 规则角色门 |
+| --- | ---: | ---: |
+| 正例胜明确 hard negative pairwise | `0.790698` | 不适用（角色门不是连续分数） |
+| top1 含正确材料 | `0.823529` | `0.764706` |
+| top3 含正确材料 | `1.0` | `1.0` |
+
+角色规则在留出正例上 compatibility=`0.232558`、abstain=`0.697674`。典型错例是 ASML 的“customer commitments”明明是需求质量证据，却因词表没有 commitments 被判 incompatible；ORCL 经营利润表明明是 value capture，却因 metric 表语义未被结构化读取而 abstain。当前角色规则不得上线或充当 hard gate。
+
+## 11. 当前决策
+
+- BM25 继续作廉价候选主干；BGE-M3 继续候选扩展；Cross-Encoder 保留 shadow candidate，尚不晋升当前 Runtime。
+- 不立即微调 embedding 或 reranker。18 条主 qrel 不足以训练，当前残差同时含宽 query、chunk/exhibit index 和 role label 问题。
+- 下一门仍留在 S1-C：建立对象级 Evidence Role 数据合同，显式区分 claim／metric-table／parent context、多标签与 unjudged，并让 Owner 复核扩展标签。只有稳定残差仍存在，才决定微调 Cross-Encoder 或独立角色分类器。
+- 第 7／8 项未执行：尚未启动微调，也尚未让 residual gap 驱动 S1-D 补源或 Evidence Pack 重编译。
 
 ## 7. 工程复证
 
 - active baseline：72 个 Python、7 个 frontend、5 个 digest-bound Runtime resources，历史／archive 活动引用为 0。
-- Python：65 tests passed。
+- Python：当前 successor 收口为 83 tests passed。
 - TypeScript 与 Vite production build 通过。
 - Playwright：真实数据挂载与无数据两种模式，桌面／移动各 6/6 通过；排名对照面无横向溢出。
-- Secret scan：6,265 files，0 findings。
+- Secret scan：6,286 files，0 findings。
 - 本地 BGE-M3 复跑生成 ranking result digest `db7fbea1...235d9`；安全投影从结果合同读取 `1,805` 个对象数，不在前端硬编码，并同步更新 Runtime Registry 摘要。

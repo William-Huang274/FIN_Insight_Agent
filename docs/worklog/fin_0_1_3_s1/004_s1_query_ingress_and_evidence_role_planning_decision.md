@@ -1,7 +1,7 @@
 # S1 查询入口与 Evidence Role 规划决策
 
 日期：2026-08-12
-状态：`owner_decision_recorded / implementation_not_started`
+状态：`owner_decision_implemented / shadow_evaluation_complete / no_route_promoted`
 
 ## 问题
 
@@ -30,8 +30,17 @@
 4. 只把 evaluator 证明的真实 residual gap 交给 S1-D 补源。
 5. S1 通过后，S3 才执行自然用户问题与动态研究；S4 再接真实输入和澄清 UI。
 
-## 本次没有执行
+## 实施结果
 
-- 没有修改 Runtime 代码、模型或 qrels。
-- 没有下载 reranker、调用 DeepSeek、构建 embedding 或运行检索实验。
-- 本次只同步 PRD、当前计划、技术边界、Project OS 和工作记录。
+- 四条 successor 已按 Owner 决策应用，18 条 qrel 全部映射到当前对象；缓存复跑 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则重排=`16/18`。
+- 当前 Runtime 已新增严格 `EvidenceRequest` POST 入口，只编译请求中的 facet、owner、source 和 period；未知 facet、跨案例实体、错截至日和路由身份均 fail closed。它不负责把用户自然语言理解成请求，也不访问外网或晋升 Evidence。
+- `BAAI/bge-reranker-v2-m3` 以 Apache-2.0、本地不可变 SHA256 身份离线运行。三案 Recall@10 与 BM25 同为 `17/18`，MRR 从 `0.559392` 提升到 `0.608480`；它能把 NVDA 现金流目标从第 12 位提到第 1 位，却把 DELL AI 需求风险从第 1 位降到第 19 位，并把 MU exhibit index 排到正文前，因此只保留 shadow。
+- 规则版 Evidence Role 把三案 top3 的显式不兼容项从 Cross-Encoder 的 `27` 降至 `3`，但 Recall@10 同时降到 `13/18`；在 ORCL／ASML／ANET 留出集上正例 compatibility 仅 `23.2558%`、abstain=`69.7674%`，禁止进入 Runtime。
+- 第一版留出负例曾把“未绑定该 slot”错误当作 hard negative；该尝试作为失败结果保留。校正为逐条业务对照和 `unjudged` 后，Cross-Encoder 留出 pairwise=`0.790698`、top3=`1.0`，角色门 top1 反而从 `0.823529` 降到 `0.764706`，进一步证明当前规则不泛化。
+
+## 决策
+
+1. 不微调 BGE-M3 embedding；它不是本轮主要问题。
+2. 不立即微调 Cross-Encoder。现成 reranker 已有真实排序增益，但 qrel 仍太少，且残差包含 query／chunk／角色标签混合问题。
+3. 不把规则 Evidence Role 当硬门。下一项先把 claim、metric/table 与 parent context 的角色多标签及明确 unjudged 做成可信数据合同，再由结果决定训练 Cross-Encoder 还是独立角色分类器。
+4. 用户批准的第 7／8 项仍未执行：未开始微调，也未进入 S1-D 补源／Evidence Pack 重编译。

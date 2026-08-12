@@ -43,8 +43,18 @@ def test_data_build_catalog_exposes_s1c_as_one_controlled_comparison_chain() -> 
     assert {
         "retrieval_materialize_s1c_qrels",
         "retrieval_run_s1c_ranking_comparison",
+        "retrieval_materialize_s1c_financial_role_eval",
+        "retrieval_run_s1c_cross_encoder_role_shadow",
     }.issubset(steps)
     comparison = steps["retrieval_run_s1c_ranking_comparison"]
     model = next(row for row in comparison.parameters if row.name == "model")
     assert model.required is True
     assert comparison.timeout_hint_s == 1800
+    shadow = steps["retrieval_run_s1c_cross_encoder_role_shadow"]
+    assert next(
+        row for row in shadow.parameters if row.name == "bge_model"
+    ).required is True
+    assert next(
+        row for row in shadow.parameters if row.name == "cross_encoder_model"
+    ).required is True
+    assert shadow.timeout_hint_s == 1800

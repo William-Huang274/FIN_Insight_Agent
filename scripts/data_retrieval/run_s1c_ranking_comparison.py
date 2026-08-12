@@ -361,7 +361,7 @@ def parse_args() -> argparse.Namespace:
         "--qrels",
         default=(
             "configs/retrieval/"
-            "fin_ia_0_1_3_s1c_requalified_qrels_v1_0.json"
+            "fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json"
         ),
     )
     parser.add_argument(
@@ -380,14 +380,14 @@ def parse_args() -> argparse.Namespace:
         "--output",
         default=(
             "configs/retrieval/"
-            "fin_ia_0_1_3_s1c_ranking_comparison_result_v1_0.json"
+            "fin_ia_0_1_3_s1c_ranking_comparison_result_v1_1.json"
         ),
     )
     parser.add_argument(
         "--projection-output",
         default=(
-            "configs/runtime/"
-            "fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json"
+            "configs/retrieval/"
+            "fin_ia_0_1_3_s1c_ranking_workbench_projection_candidate_v1_1.json"
         ),
     )
     return parser.parse_args()

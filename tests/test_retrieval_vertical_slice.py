@@ -4,6 +4,10 @@ import json
 from pathlib import Path
 import sys
 
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]
@@ -12,9 +16,19 @@ from apps.workbench.backend.application.research_retrieval_service import (
     ResearchRetrievalPrincipal,
     ResearchRetrievalService,
 )
+from apps.workbench.backend.api.v1.research_retrieval import (
+    build_research_retrieval_router,
+)
 from retrieval.candidate_retriever import CandidateCorpus, retrieve_query_plan
-from retrieval.contracts import load_financial_research_kernel
-from retrieval.query_plan import compile_query_facet_plan
+from retrieval.contracts import (
+    RetrievalContractError,
+    load_evidence_request,
+    load_financial_research_kernel,
+)
+from retrieval.query_plan import (
+    compile_query_facet_plan,
+    compile_query_facet_plan_for_request,
+)
 
 
 KERNEL_PATH = (
@@ -41,6 +55,37 @@ def _kernel():
     return load_financial_research_kernel(
         json.loads(KERNEL_PATH.read_text(encoding="utf-8"))
     )
+
+
+def _evidence_request(**overrides: object) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ-DELL-DEMAND-001",
+        "cell_id": "DELL-DEMAND-CELL-001",
+        "requester_role": "demand_specialist",
+        "evidence_domain": "demand",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["DELL"],
+        "requested_facet_ids": ["orders_and_backlog"],
+        "metric_intents": ["orders", "backlog"],
+        "product_intents": ["AI-optimized servers"],
+        "period": {
+            "start_date": None,
+            "end_date": "2026-08-06",
+            "fiscal_years": [],
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-K", "10-Q", "8-K"],
+        "acceptable_proxy": False,
+        "forbidden_proxy": ["unbound industry demand"],
+        "stop_condition": "return candidates or a typed gap",
+        "clarification_policy": "return_typed_gap",
+    }
+    payload.update(overrides)
+    return payload
 
 
 def _record(
@@ -92,6 +137,59 @@ def test_three_cases_compile_through_one_core_without_answer_urls() -> None:
         for plan in plans.values()
         for lane in plan.lanes
     )
+    snapshot = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    assert {
+        row["case_key"]: row["retrieval"]["query_plan_digest"]
+        for row in snapshot["cases"]
+    } == {key: plan.plan_digest for key, plan in plans.items()}
+
+
+def test_evidence_request_selects_only_requested_facet_and_hard_constraints() -> None:
+    kernel = _kernel()
+    request = load_evidence_request(_evidence_request(), kernel)
+    plan = compile_query_facet_plan_for_request(kernel, request)
+
+    assert [lane.facet_id for lane in plan.lanes] == ["orders_and_backlog"]
+    assert plan.lanes[0].evidence_owner_tickers == ("DELL",)
+    assert plan.lanes[0].source_types == ("10-K", "10-Q", "8-K")
+    assert request.metric_intents == ("orders", "backlog")
+    assert "AI-optimized servers" in plan.lanes[0].lexical_query
+    assert "AI-optimized servers" in plan.lanes[0].semantic_query
+
+
+def test_related_entity_request_compiles_the_disclosure_owner_alias_not_subject_alias() -> None:
+    kernel = _kernel()
+    request = load_evidence_request(
+        _evidence_request(
+            request_id="REQ-DELL-TSM-CAPACITY-001",
+            target_entities=["TSM"],
+            requested_facet_ids=["upstream_capacity_context"],
+            metric_intents=["capacity", "yield"],
+            acceptable_sources=["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"],
+        ),
+        kernel,
+    )
+    lane = compile_query_facet_plan_for_request(kernel, request).lanes[0]
+
+    assert lane.evidence_owner_tickers == ("TSM",)
+    assert any('"TSMC"' in query for query in lane.exact_queries)
+    assert all('"Dell' not in query for query in lane.exact_queries)
+    assert "Taiwan Semiconductor Manufacturing Company Limited" in lane.semantic_query
+
+
+def test_evidence_request_fails_closed_on_unknown_facet_and_cross_case_target() -> None:
+    kernel = _kernel()
+    with pytest.raises(RetrievalContractError, match="facet_unknown"):
+        load_evidence_request(
+            _evidence_request(requested_facet_ids=["made_up_facet"]), kernel
+        )
+    with pytest.raises(RetrievalContractError, match="target_out_of_case_scope"):
+        load_evidence_request(_evidence_request(target_entities=["ORCL"]), kernel)
+    with pytest.raises(RetrievalContractError, match="intent_surface_invalid"):
+        load_evidence_request(
+            _evidence_request(metric_intents=["use qrel target_id from https://sec.gov"]),
+            kernel,
+        )
 
 
 def test_candidate_generation_filters_wrong_identity_future_and_navigation() -> None:
@@ -243,6 +341,69 @@ def test_current_snapshot_is_read_only_candidate_projection() -> None:
     assert "reviewed_pack_match" not in rendered
     assert "matched_source_record_ids" not in rendered
     assert "reviewed_evaluation" not in rendered
+
+
+def test_typed_request_executes_one_facet_against_current_snapshot() -> None:
+    snapshot = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    service = ResearchRetrievalService(snapshot=snapshot, kernel=_kernel())
+    projection = service.execute_request(
+        "DELL",
+        _evidence_request(),
+        ResearchRetrievalPrincipal(
+            mode="current",
+            permissions=frozenset({"current_product:read"}),
+        ),
+    )
+
+    assert projection["status"] == "request_scoped_typed_local_retrieval_ready"
+    assert projection["summary"]["requested_facet_count"] == 1
+    assert projection["summary"]["compiled_lane_count"] == 1
+    assert projection["query_plan"]["lanes"][0]["facet_id"] == "orders_and_backlog"
+    assert projection["candidate_state"] == "candidate_not_evidence"
+    assert projection["summary"]["network_calls"] == 0
+    assert projection["summary"]["model_calls"] == 0
+    assert all(
+        candidate["evidence_owner_ticker"] == "DELL"
+        and candidate["source_type"] in {"10-K", "10-Q", "8-K"}
+        for candidate in projection["lanes"][0]["candidates"]
+    )
+
+
+def test_typed_request_route_case_mismatch_fails_closed() -> None:
+    snapshot = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    service = ResearchRetrievalService(snapshot=snapshot, kernel=_kernel())
+    with pytest.raises(Exception, match="evidence_request_route_case_mismatch"):
+        service.execute_request(
+            "MU",
+            _evidence_request(),
+            ResearchRetrievalPrincipal(
+                mode="current",
+                permissions=frozenset({"current_product:read"}),
+            ),
+        )
+
+
+def test_typed_request_api_requires_current_read_permission() -> None:
+    snapshot = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    service = ResearchRetrievalService(snapshot=snapshot, kernel=_kernel())
+    app = FastAPI()
+    app.include_router(build_research_retrieval_router(service), prefix="/api/v1")
+    client = TestClient(app)
+    path = "/api/v1/research-cases/DELL/retrieval-requests"
+
+    denied = client.post(path, json=_evidence_request())
+    assert denied.status_code == 403
+    response = client.post(
+        path,
+        json=_evidence_request(),
+        headers={
+            "X-Fin-Product-Mode": "current",
+            "X-Fin-Case-Permissions": "current_product:read",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["summary"]["compiled_lane_count"] == 1
+    assert response.headers["etag"].startswith('"evidence-request=')
 
 
 def test_s1c_ranking_projection_is_consumable_without_gold_identity() -> None:

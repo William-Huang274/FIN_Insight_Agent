@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S1C_engineering_comparison_complete / owner_qrel_review_pending / product_iteration_not_closed`
+状态：`repository_baseline_complete / S1C_request_and_neural_shadow_complete / role_data_contract_open / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -21,7 +21,7 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 | 阶段 | 只拥有的责任 | 当前事实 | 通过条件 |
 | --- | --- | --- | --- |
 | S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线 | G01–G12 已通过并合并远端 main | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿 |
-| S1 | 类型化 EvidenceRequest、内外源发现、解析、chunk/object、检索、rerank、Evidence Role、来源覆盖 | 当前 Pack 只来自 SEC；活动 compiler 仍按固定 case 生成全部 17 facet，尚未消费请求级 facet 选择 | 三案及留出案例的 request-to-plan、required-slot target-in-pool、日期/实体/关系和 Evidence Role 正确，外源只补真实 residual gap |
+| S1 | 类型化 EvidenceRequest、内外源发现、解析、chunk/object、检索、rerank、Evidence Role、来源覆盖 | 当前 Pack 只来自 SEC；请求级 facet 已进入 Runtime，现成 Cross-Encoder 和规则 Evidence Role 已完成 shadow 但均未晋升 | 三案及留出案例的 request-to-plan、required-slot target-in-pool、日期/实体/关系和 Evidence Role 正确，外源只补真实 residual gap |
 | S2 | Evidence/NumericFact 编译、PIT、单位/期间、引用和冲突 | reviewed Evidence 可读，但三案 structured numeric=0 | 数值事实从权威对象确定性编译，跨案/错期/错单位 fail closed，S1 新证据依赖回归通过 |
 | S3 | 动态规划、工具使用、重裁决、研究综合、Workpaper/Report | 当前无活动动态 planner、模型 research chain 或完整报告产品 | 三案真实动态研究通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收 |
 | S4 | 用户任务、Evidence/Gap/Workpaper/Review/Repair 产品闭环 | 只有只读 Evidence Workspace 和独立 Operations | 当前 S3 candidate 被真实 UI 消费；review/repair/lineage 可完成且不依赖旧产品面 |
@@ -34,10 +34,10 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 1. **S0 仓库基线（已完成）**：G01–G12 已通过，远端 `main` 已从第二份 clean-main 工作树完成复证。
 2. **S1-A 已完成——类型化本地检索纵切**：已建立 provider-neutral 金融内核、9 slot / 17 facet 查询、身份/截至日/source-role 约束和真实 Workbench 候选消费者；三案同核心迁移通过。它只证明工程纵切，不代表 S1 产品通过。当前历史候选库对 DELL/MU/NVDA 的 reviewed target 对照分别只命中 4/0/6，三案 PIT 行情角色均缺失。
 3. **S1-B 已完成——current source/object 重建**：当前 store 为 28 parent / 1,805 child，含 NVDA 当前 10-Q、DELL/MU 当前 SEC、TSM 6-K 与三案 PIT market role；表边界、child 大小、身份和截至日硬门通过。Dell/Micron 官方法说 PDF transport、TSM 先进封装和新鲜估值仍为 typed gap，不阻断对象层工程关闭。
-4. **S1-C 排名对照已完成工程比较**：同一 1,805-child store 和 18 条 relevance qrels 上，BM25=`14/17`、BGE-M3=`12/17`、固定 RRF=`13/17`、确定性金融规则重排=`13/17` mapped Recall@10。BM25 继续作为候选默认；其他路线只保留 shadow。四条旧 qrel 暴露低精度／旧 identity，需要 Owner 只审 replacement labels；实现不得擅改历史标签。
-5. **当前下一门——S1-C qrel successor Owner decision**：只复核 `s1c_qrel_05/11/15/16` 的当前对象 successor。接受后用既有 embedding cache 重跑同对象评测，不重新抓源、不调模型、不为 aggregate 分数调权重。
-6. **S1 查询入口与候选质量闭环**：保留固定 canonical query pack 作为纯检索回归；新增 `EvidenceRequest → 按需 facet → QueryFacetPlan` 当前 Runtime 边界。随后在相同对象、修正后的 qrels、hard negatives 和留出案例上，分别资格判断 BGE-M3 完整候选扩展、Cross-Encoder 重排和 Evidence Role evaluator；Cross-Encoder 分数不得直接获得 Evidence 权限。
-7. **S1-D residual-gap 补源**：只处理 S1 候选与 Evidence evaluator 证明的真实缺口，优先 Dell/Micron PDF transport、TSM 先进封装和 PIT 估值，再重新编译 Evidence Pack。
+4. **S1-C successor 与请求入口已完成**：Owner 四条 successor 已另存应用，18/18 映射；缓存复跑 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。`EvidenceRequest → 按需 facet → QueryFacetPlan` 已进入当前 Runtime，固定 pack 继续作为部件回归。自然语言理解仍归 S3，交互仍归 S4。
+5. **S1-C Cross-Encoder／Evidence Role shadow 已完成**：现成 BGE reranker 与 BM25 同为 `17/18`，MRR 有增益但逐题仍有严重反转，未晋升。规则角色门把三案显式错角色减少，却将 Recall 压到 `13/18`；留出正例约七成 abstain，禁止上线。第一版错误的 cross-slot 负例合同保留为失败证据，校正后留出 Cross-Encoder top3=`17/17`，角色门 top1 仍退化。
+6. **当前下一门——S1-C 角色数据合同 successor**：扩展对象级、可多标签、明确 unjudged 的角色标注；分别覆盖 claim、metric/table 和 parent context，并经 Owner 复核。18 条主 qrel 不足以直接微调，本门不得用留出案例调参。
+7. **S1-D residual-gap 补源（尚未授权执行）**：等当前 1–6 结果决策后，只处理 S1 候选与 Evidence evaluator 证明的真实缺口，优先 Dell/Micron PDF transport、TSM 先进封装和 PIT 估值，再重新编译 Evidence Pack。
 8. **S2 最小依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
 9. **S3 三案动态 Agentic Research**：把用户问题编译成 `Research Objective / DecisionSurface / EvidenceRequest`，并由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
 10. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。

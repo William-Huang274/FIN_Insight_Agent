@@ -5,6 +5,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
+from retrieval.contracts import (
+    FinancialResearchKernel,
+    RetrievalContractError,
+    load_evidence_request,
+    load_financial_research_kernel,
+)
+from retrieval.query_plan import compile_query_facet_plan_for_request
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 
@@ -15,9 +22,15 @@ CURRENT_RETRIEVAL_SNAPSHOT_RESOURCE_ID = (
 CURRENT_RANKING_COMPARISON_RESOURCE_ID = (
     "application.result.current_s1c_ranking_comparison_projection"
 )
+CURRENT_RETRIEVAL_KERNEL_RESOURCE_ID = (
+    "application.config.current_financial_research_kernel"
+)
 EXPECTED_SCHEMA = "fin_ia_current_retrieval_snapshot_v1_0"
 EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
 RETRIEVAL_PROJECTION_SCHEMA = "fin_ia_research_retrieval_projection_v1_0"
+REQUEST_RETRIEVAL_PROJECTION_SCHEMA = (
+    "fin_ia_request_scoped_retrieval_projection_v1_0"
+)
 
 
 @dataclass(frozen=True)
@@ -42,6 +55,7 @@ class ResearchRetrievalService:
         *,
         snapshot: Mapping[str, Any],
         ranking_comparison: Mapping[str, Any] | None = None,
+        kernel: FinancialResearchKernel | Mapping[str, Any] | None = None,
     ) -> None:
         self._snapshot = self._validate(snapshot)
         self._cases = {
@@ -61,6 +75,11 @@ class ResearchRetrievalService:
             if self._ranking is not None
             else {}
         )
+        self._kernel = (
+            load_financial_research_kernel(kernel)
+            if isinstance(kernel, Mapping)
+            else kernel
+        )
 
     @classmethod
     def from_runtime_paths(
@@ -75,6 +94,10 @@ class ResearchRetrievalService:
             ranking_comparison=read_registered_runtime_json(
                 repository_root,
                 CURRENT_RANKING_COMPARISON_RESOURCE_ID,
+            ),
+            kernel=read_registered_runtime_json(
+                repository_root,
+                CURRENT_RETRIEVAL_KERNEL_RESOURCE_ID,
             ),
         )
 
@@ -148,6 +171,179 @@ class ResearchRetrievalService:
             "known_boundary": str(self._snapshot["known_boundary"]),
         }
         return {**body, "projection_digest": canonical_digest(body)}
+
+    def execute_request(
+        self,
+        case_key: str,
+        payload: Mapping[str, Any],
+        principal: ResearchRetrievalPrincipal,
+    ) -> dict[str, Any]:
+        """Execute a typed request against the immutable current candidate snapshot."""
+
+        self._require_read(principal)
+        if self._kernel is None:
+            raise ResearchRetrievalServiceError(
+                "research_retrieval_kernel_unavailable", 503
+            )
+        try:
+            request = load_evidence_request(payload, self._kernel)
+            plan = compile_query_facet_plan_for_request(self._kernel, request)
+        except RetrievalContractError as exc:
+            raise ResearchRetrievalServiceError(str(exc), 422) from exc
+        key = str(case_key).strip().upper()
+        if key != request.case_key:
+            raise ResearchRetrievalServiceError(
+                "evidence_request_route_case_mismatch",
+                422,
+                route_case_key=key,
+                request_case_key=request.case_key,
+            )
+        case = self._cases.get(key)
+        if case is None:
+            raise ResearchRetrievalServiceError(
+                "research_retrieval_case_not_found", 404, case_key=case_key
+            )
+        retrieval = case["retrieval"]
+        snapshot_lanes = {
+            str(row["lane"]["lane_id"]): row
+            for row in retrieval["lane_results"]
+        }
+        request_payload = request.as_dict()
+        request_digest = canonical_digest(request_payload)
+        lanes: list[dict[str, Any]] = []
+        typed_gaps: list[dict[str, Any]] = []
+        seen_candidates: set[str] = set()
+        for lane in plan.lanes:
+            snapshot_lane = snapshot_lanes.get(lane.lane_id)
+            if snapshot_lane is None:
+                raise ResearchRetrievalServiceError(
+                    "research_request_snapshot_lane_missing",
+                    503,
+                    lane_id=lane.lane_id,
+                )
+            contract = snapshot_lane["lane"]
+            if not (
+                contract.get("slot_id") == lane.slot_id
+                and contract.get("facet_id") == lane.facet_id
+                and contract.get("subject_ticker") == lane.subject_ticker
+                and contract.get("publication_date_lte")
+                == lane.publication_date_lte
+                and set(lane.evidence_owner_tickers).issubset(
+                    contract.get("evidence_owner_tickers") or ()
+                )
+                and set(lane.source_types).issubset(
+                    contract.get("source_types") or ()
+                )
+            ):
+                raise ResearchRetrievalServiceError(
+                    "research_request_snapshot_contract_drift",
+                    503,
+                    lane_id=lane.lane_id,
+                )
+            filtered: list[dict[str, Any]] = []
+            period_exclusions: dict[str, int] = {}
+            for raw_candidate in snapshot_lane["candidates"]:
+                candidate = deepcopy(dict(raw_candidate))
+                if candidate.get("evidence_owner_ticker") not in set(
+                    lane.evidence_owner_tickers
+                ):
+                    continue
+                if candidate.get("source_type") not in set(lane.source_types):
+                    continue
+                if not self._candidate_matches_period(candidate, request.period):
+                    period_exclusions["outside_requested_reporting_period"] = (
+                        period_exclusions.get(
+                            "outside_requested_reporting_period", 0
+                        )
+                        + 1
+                    )
+                    continue
+                candidate.pop("reviewed_pack_match", None)
+                filtered.append(candidate)
+                seen_candidates.add(str(candidate["source_record_id"]))
+            observed_roles = {
+                str(candidate.get("source_role") or "") for candidate in filtered
+            }
+            missing_roles = sorted(set(lane.required_source_roles) - observed_roles)
+            if not filtered:
+                typed_gaps.append(
+                    {
+                        "gap_code": "request_scoped_candidate_gap",
+                        "lane_id": lane.lane_id,
+                        "facet_id": lane.facet_id,
+                        "disposition": request.clarification_policy,
+                    }
+                )
+            if missing_roles:
+                typed_gaps.append(
+                    {
+                        "gap_code": "request_scoped_source_role_gap",
+                        "lane_id": lane.lane_id,
+                        "facet_id": lane.facet_id,
+                        "missing_source_roles": missing_roles,
+                        "disposition": request.clarification_policy,
+                    }
+                )
+            lanes.append(
+                {
+                    "lane": lane.as_dict(),
+                    "candidate_state": "candidate_not_evidence",
+                    "candidates": filtered,
+                    "missing_required_source_roles": missing_roles,
+                    "snapshot_exclusion_counts": deepcopy(
+                        snapshot_lane["exclusion_counts"]
+                    ),
+                    "request_exclusion_counts": period_exclusions,
+                }
+            )
+        body = {
+            "schema_version": REQUEST_RETRIEVAL_PROJECTION_SCHEMA,
+            "status": "request_scoped_typed_local_retrieval_ready",
+            "product_mode": "current",
+            "case_key": key,
+            "candidate_state": "candidate_not_evidence",
+            "execution_mode": "immutable_current_snapshot_filtering",
+            "request": request_payload,
+            "request_digest": request_digest,
+            "query_plan": plan.as_dict(),
+            "source_snapshot": deepcopy(self._snapshot["source_snapshot"]),
+            "summary": {
+                "requested_facet_count": len(request.requested_facet_ids),
+                "compiled_lane_count": len(lanes),
+                "nonempty_lane_count": sum(bool(row["candidates"]) for row in lanes),
+                "unique_candidates": len(seen_candidates),
+                "typed_gap_count": len(typed_gaps),
+                "network_calls": 0,
+                "model_calls": 0,
+            },
+            "typed_gaps": typed_gaps,
+            "lanes": lanes,
+            "known_boundary": (
+                "This endpoint consumes a typed EvidenceRequest and selects only "
+                "approved facets, owners, source types and reporting periods from the "
+                "immutable current candidate snapshot. It does not interpret raw user "
+                "language, expand free-form model queries, promote Evidence, fetch "
+                "external sources or complete S1/S3 product acceptance."
+            ),
+        }
+        return {**body, "projection_digest": canonical_digest(body)}
+
+    @staticmethod
+    def _candidate_matches_period(candidate: Mapping[str, Any], period: Any) -> bool:
+        raw_period_end = str(candidate.get("period_end") or "")
+        if period.start_date is not None and (
+            not raw_period_end or raw_period_end < period.start_date.isoformat()
+        ):
+            return False
+        if period.end_date is not None and (
+            not raw_period_end or raw_period_end > period.end_date.isoformat()
+        ):
+            return False
+        if period.fiscal_years:
+            fiscal_year = candidate.get("fiscal_year")
+            if fiscal_year not in set(period.fiscal_years):
+                return False
+        return True
 
     def _ranking_projection_for_case(self, case_key: str) -> dict[str, Any] | None:
         if self._ranking is None:
@@ -261,10 +457,12 @@ class ResearchRetrievalService:
 
 
 __all__ = [
+    "CURRENT_RETRIEVAL_KERNEL_RESOURCE_ID",
     "CURRENT_RANKING_COMPARISON_RESOURCE_ID",
     "CURRENT_RETRIEVAL_SNAPSHOT_RESOURCE_ID",
     "ResearchRetrievalPrincipal",
     "ResearchRetrievalService",
     "ResearchRetrievalServiceError",
     "RETRIEVAL_PROJECTION_SCHEMA",
+    "REQUEST_RETRIEVAL_PROJECTION_SCHEMA",
 ]

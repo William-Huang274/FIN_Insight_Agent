@@ -20,6 +20,7 @@ from retrieval.ranking_comparison import RANKING_QREL_SCHEMA_VERSION  # noqa: E4
 
 
 POLICY_SCHEMA = "fin_ia_s1c_ranking_comparison_policy_v1_0"
+SUCCESSOR_DECISION_SCHEMA = "fin_ia_s1c_owner_qrel_successor_decision_v1_0"
 
 
 def _resolve(value: str) -> Path:
@@ -54,7 +55,179 @@ def _records(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def materialize(policy: Mapping[str, Any]) -> dict[str, Any]:
+def _apply_owner_successor_decision(
+    payload: dict[str, Any],
+    decision: Mapping[str, Any],
+) -> dict[str, Any]:
+    if decision.get("schema_version") != SUCCESSOR_DECISION_SCHEMA:
+        raise ValueError("s1c_successor_decision_schema_invalid")
+    if decision.get("status") != "owner_accepted_ranking_evaluation_successors_only":
+        raise ValueError("s1c_successor_decision_status_invalid")
+    authority = decision.get("authority")
+    acceptance = decision.get("acceptance")
+    if not (
+        isinstance(authority, Mapping)
+        and authority.get("scope") == "ranking_relevance_evaluation_only"
+        and authority.get("candidate_is_not_evidence") is True
+        and authority.get("evidence_promotion_authorized") is False
+        and authority.get("historical_qrels_mutated") is False
+        and isinstance(acceptance, Mapping)
+        and acceptance.get("all_targets_must_exist_in_bound_current_records") is True
+        and acceptance.get("target_ticker_must_match_evidence_owner") is True
+        and acceptance.get("target_publication_date_must_not_exceed_qrel_as_of") is True
+        and acceptance.get("unaffected_qrels_must_remain_byte_semantically_equal") is True
+        and acceptance.get("gold_identity_must_remain_evaluation_only") is True
+    ):
+        raise ValueError("s1c_successor_decision_authority_invalid")
+
+    bound_inputs = decision.get("bound_inputs")
+    if not isinstance(bound_inputs, Mapping):
+        raise ValueError("s1c_successor_decision_inputs_invalid")
+    for ref_key, digest_key in (
+        ("base_qrel_ref", "base_qrel_sha256"),
+        ("current_records_ref", "current_records_sha256"),
+    ):
+        path = _resolve(str(bound_inputs.get(ref_key) or ""))
+        if _sha256(path) != str(bound_inputs.get(digest_key) or "").lower():
+            raise ValueError(f"s1c_successor_decision_input_drift:{ref_key}")
+    base_qrel = _read_json(_resolve(str(bound_inputs["base_qrel_ref"])))
+    if base_qrel.get("qrel_manifest_digest") != payload.get("qrel_manifest_digest"):
+        raise ValueError("s1c_successor_decision_base_manifest_drift")
+
+    records = {
+        str(row.get("evidence_id") or ""): row
+        for row in _records(_resolve(str(bound_inputs["current_records_ref"])))
+    }
+    qrels = {
+        str(row.get("qrel_id") or ""): dict(row)
+        for row in payload.get("qrels") or ()
+    }
+    decisions = decision.get("decisions")
+    if not isinstance(decisions, list) or not decisions:
+        raise ValueError("s1c_successor_decisions_missing")
+    affected: set[str] = set()
+    applied: list[dict[str, Any]] = []
+    for raw in decisions:
+        if not isinstance(raw, Mapping):
+            raise ValueError("s1c_successor_decision_row_invalid")
+        qrel_ids = [str(value) for value in raw.get("qrel_ids") or ()]
+        targets = [
+            str(value)
+            for value in raw.get("accepted_target_current_source_record_ids") or ()
+        ]
+        operation = str(raw.get("operation") or "")
+        if (
+            not qrel_ids
+            or len(qrel_ids) != len(set(qrel_ids))
+            or not targets
+            or len(targets) != len(set(targets))
+            or operation not in {"replace_targets", "retain_and_add_targets"}
+            or affected.intersection(qrel_ids)
+        ):
+            raise ValueError("s1c_successor_decision_row_invalid")
+        for target in targets:
+            if target not in records:
+                raise ValueError(f"s1c_successor_target_missing:{target}")
+        for qrel_id in qrel_ids:
+            try:
+                qrel = qrels[qrel_id]
+            except KeyError as exc:
+                raise ValueError(f"s1c_successor_qrel_unknown:{qrel_id}") from exc
+            as_of = str(qrel["publication_date_lte"])
+            owner = str(qrel["evidence_owner_ticker"]).upper()
+            for target in targets:
+                record = records[target]
+                if str(record.get("ticker") or "").upper() != owner:
+                    raise ValueError(f"s1c_successor_target_owner_mismatch:{qrel_id}")
+                if str(record.get("publication_date") or "") > as_of:
+                    raise ValueError(f"s1c_successor_target_future_dated:{qrel_id}")
+            current = [
+                str(value)
+                for value in qrel.get("target_current_source_record_ids") or ()
+            ]
+            updated = targets if operation == "replace_targets" else [*current, *targets]
+            qrel["target_current_source_record_ids"] = sorted(set(updated))
+            qrel["target_mapping_state"] = "mapped_current_child"
+            qrel["label_authority"] = (
+                "Owner-accepted S1-C successor relevance decision; evaluation-only, "
+                "candidate-not-Evidence."
+            )
+            qrels[qrel_id] = qrel
+            affected.add(qrel_id)
+        applied.append(
+            {
+                "qrel_ids": qrel_ids,
+                "operation": operation,
+                "accepted_target_current_source_record_ids": targets,
+                "reason_zh": str(raw.get("reason_zh") or ""),
+            }
+        )
+    expected_affected = {
+        str(value) for value in acceptance.get("affected_qrel_ids") or ()
+    }
+    if affected != expected_affected:
+        raise ValueError("s1c_successor_decision_affected_set_drift")
+
+    ordered = [qrels[str(row["qrel_id"])] for row in payload["qrels"]]
+    typed_gaps = [
+        row
+        for row in payload.get("typed_gaps") or ()
+        if not any(
+            qrels[qrel_id].get("legacy_target_id") == row.get("legacy_target_id")
+            for qrel_id in affected
+        )
+    ]
+    unsigned = {
+        **{
+            key: value
+            for key, value in payload.items()
+            if key != "qrel_manifest_digest"
+        },
+        "status": (
+            "owner_successor_qrels_applied_with_typed_target_gap"
+            if typed_gaps
+            else "owner_successor_qrels_applied_all_targets_current"
+        ),
+        "policy": {
+            **dict(payload["policy"]),
+            "owner_successor_decision_applied": True,
+        },
+        "bound_inputs": {
+            **dict(payload["bound_inputs"]),
+            "owner_successor_decision": {
+                "ref": _resolve(str(decision["_decision_ref"])).relative_to(ROOT).as_posix(),
+                "sha256": _sha256(_resolve(str(decision["_decision_ref"]))),
+            },
+        },
+        "summary": {
+            **dict(payload["summary"]),
+            "mapped_current_target_count": sum(
+                row["target_mapping_state"] == "mapped_current_child"
+                for row in ordered
+            ),
+            "typed_target_gap_count": len(typed_gaps),
+            "owner_successor_qrel_count": len(affected),
+        },
+        "qrels": ordered,
+        "typed_gaps": typed_gaps,
+        "owner_successor_decision": {
+            "decision_id": str(decision.get("decision_id") or ""),
+            "affected_qrel_ids": sorted(affected),
+            "applied_decisions": applied,
+        },
+        "known_boundary": (
+            "The Owner-approved successor identities correct ranking evaluation only. "
+            "All 18 labels now map to current children; candidates remain non-Evidence, "
+            "and no ranking route, model training, S1 acceptance or release is authorized."
+        ),
+    }
+    return {**unsigned, "qrel_manifest_digest": canonical_digest(unsigned)}
+
+
+def materialize(
+    policy: Mapping[str, Any],
+    successor_decision: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     if policy.get("schema_version") != POLICY_SCHEMA:
         raise ValueError("s1c_policy_schema_invalid")
     inputs = policy.get("inputs")
@@ -247,7 +420,12 @@ def materialize(policy: Mapping[str, Any]) -> dict[str, Any]:
             "been accepted by this artifact."
         ),
     }
-    return {**unsigned, "qrel_manifest_digest": canonical_digest(unsigned)}
+    payload = {**unsigned, "qrel_manifest_digest": canonical_digest(unsigned)}
+    return (
+        _apply_owner_successor_decision(payload, successor_decision)
+        if successor_decision is not None
+        else payload
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -265,7 +443,18 @@ def parse_args() -> argparse.Namespace:
         "--output",
         default=(
             "configs/retrieval/"
-            "fin_ia_0_1_3_s1c_requalified_qrels_v1_0.json"
+            "fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json"
+        ),
+    )
+    parser.add_argument(
+        "--successor-decision",
+        default=(
+            "configs/retrieval/"
+            "fin_ia_0_1_3_s1c_owner_qrel_successor_decision_v1_0.json"
+        ),
+        help=(
+            "Optional Owner-approved evaluation-only successor decision. "
+            "Historical qrels remain immutable."
         ),
     )
     return parser.parse_args()
@@ -274,7 +463,14 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     policy = _read_json(_resolve(args.policy))
-    result = materialize(policy)
+    successor_decision = None
+    if args.successor_decision:
+        decision_path = _resolve(args.successor_decision)
+        successor_decision = {
+            **_read_json(decision_path),
+            "_decision_ref": decision_path.as_posix(),
+        }
+    result = materialize(policy, successor_decision)
     output = _resolve(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     temporary = output.with_suffix(output.suffix + ".tmp")

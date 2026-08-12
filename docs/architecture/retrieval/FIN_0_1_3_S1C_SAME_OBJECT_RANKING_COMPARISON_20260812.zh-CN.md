@@ -149,3 +149,9 @@ DELL／MU／NVDA 开发批次为 24 object／35 relation，ORCL／ASML／ANET �
 - TypeScript、Vite 与 Playwright 产品面在上一项请求／shadow 收口时已通过；本轮没有修改前端或产品 Runtime，因此没有伪造重复执行记录。
 - Secret scan：6,298 files，0 findings。
 - 本地 BGE-M3 历史 ranking result digest 为 `db7fbea1...235d9`；对象级 fixed-model result digest 为 `4b6ff6e...27c3e`。两项都只属于 shadow，不进入 Runtime Registry。
+
+## 14. 2026-08-12 检索栈与数据库通道 successor
+
+第 11／12 节关于“修 query/object 后复用同一固定模型”的安排只保留为必要第一步，不再是完整 S1-C 计划。Owner 已确认 embedding、reranker、微调、检索组合方式和数据库精确查询必须在 DELL 纵切前共同定型。
+
+当前权威 successor 为 [S1-C 检索栈与数据库通道决策](FIN_0_1_3_S1C_RETRIEVAL_STACK_AND_DATABASE_LANE_DECISION_20260812.zh-CN.md)：先完成 query family 与对象编译；再同语料比较 BM25、BGE-M3 dense/learned-sparse/multi-vector 和 Qwen Embedding；在同候选并集比较 BGE/Qwen Reranker；独立建立 Evidence Role＋abstain。SQL/typed exact lookup 是必选路线，由 S1 编译路由、S2 公司财务事实 mart 和 NumericFact 授予最终数值权威。当前仍无模型执行、训练或路由晋升权限。

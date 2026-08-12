@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-A 已接入类型化查询与 Workbench 候选页，S1-B 已建立 28 parent / 1,805 child 的当前金融对象库。S1-C 已完成四条 qrel successor、请求级 EvidenceRequest Runtime 入口、现成 Cross-Encoder／Evidence Role shadow，以及 24 object／35 relation 的对象级角色合同开发复核。新复核证明对象切细仍不能补救混合 query：固定 reranker pairwise=0.50、top1=0.60，规则角色 F1=0.507936；两者均未晋升或训练。S1 产品门仍未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-A 已接入类型化查询与 Workbench 候选页，S1-B 已建立 28 parent / 1,805 child 的当前金融对象库。S1-C 已完成 qrel successor、请求级 EvidenceRequest、Cross-Encoder／Evidence Role shadow 和 24 object／35 relation 对象合同；结果否决当前模型晋升。Owner 随后冻结完整检索栈与数据库通道：S1 必须同时处理 query/object、BM25、BGE-M3 三模式、Qwen challenger、reranker、Evidence Role 与 typed exact fact route；S2 必须建立当前公司财务事实 mart。HPQ／AVGO／INTC test-precut 已在模型结果前预注册。S1 产品门仍未通过。
 
 ## 当前唯一产品边界
 
@@ -56,7 +56,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 尚未完成，不能提前宣称通过
 
-1. 当前对象库已增加 PIT market role，但 reviewed Evidence Pack 仍只覆盖 SEC 且结构化数值项为 0；对象候选不得伪装为已晋升 Evidence 或数值能力。
+1. 当前对象库已增加 PIT market role，但 reviewed Evidence Pack 仍只覆盖 SEC 且结构化数值项为 0；当前活动 SQLite/DuckDB 不包含公司财务事实 mart，对象候选不得伪装为已晋升 Evidence 或数值能力。
 2. Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 的官方文件已确认存在，但当前产品 transport 的有界 R1–R4 未取得原始 PDF；TSM 先进封装和新鲜估值也仍是 S1-D typed gap。
 3. successor 后同对象比较为 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。现成 Cross-Encoder 同为 `17/18` 且提高 MRR，但会把 DELL 直接风险目标从第 1 降到第 19，不能晋升默认路线。
 4. 规则 Evidence Role 虽减少三案 top3 显式不兼容项，却把 Recall 降到 `13/18`；对象级复核仍只有 F1=`0.507936`。根因不仅是对象形态，还包括 reported results、guidance、counterevidence、监管和财务桥接被旧 qrel 混成一个 query，当前规则禁止上线。
@@ -75,9 +75,9 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S1C_QUERY_FAMILY_AND_DETERMINISTIC_OBJECT_VIEW_COMPILER_SUCCESSOR`
+`FIN_0_1_3_S1C_QUERY_FAMILY_OBJECT_VIEW_AND_TYPED_FACT_ROUTE_COMPILER_SUCCESSOR`
 
-对象级合同与开发复核已完成，结果否决“现在微调”与“现在训练独立角色分类器”。下一门仍留在 S1-C：拆开 results／guidance／counterevidence／cash／regulatory query family，将 table 编译为表头、期间、单位、metric row 与父章节，并把 source segment 编译成源绑定 claim/table/context；复用同一固定模型再做 shadow。当前唯一已确认属于 S1-D 的新缺口是 TSMC CoWoS／先进封装产能、良率和分配，须等 S1-C successor 后定向补源。S3 才拥有自然语言问题到 Research Objective／DecisionSurface 和动态追问，S4 才拥有真实输入、澄清和人工修改 UI。
+完整检索栈与数据库通道治理已经冻结；机器合同和 HPQ／AVGO／INTC test-precut 均已落库，但没有模型执行、训练或路由晋升。下一门仍留在 S1-C：拆开 results／guidance／counterevidence／cash／regulatory／supply／customer-read-through query family，将 table 编译为表头、期间、单位、metric row 与父章节，并把 source segment 编译成 source-bound claim/table/context；同时把 exact metric/period/unit/PIT intent 编译成 typed fact request。之后才允许同语料比较 BM25、BGE-M3 三模式、Qwen Embedding 及 BGE/Qwen Reranker，再建立 Evidence Role＋abstain。S2 负责当前公司财务事实 mart 与 NumericFact；S3 负责自然语言规划和动态追问。当前唯一已确认属于 S1-D 的新缺口仍是 TSMC CoWoS／先进封装产能、良率和分配。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量
@@ -89,5 +89,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - S1-B 原始 lexical 快照的 reviewed target 入池为 `6/3/4`，具体表现为现金槽错排、旧期压新期和关系共现污染；该数字只作为进入 S1-C 前的历史定位基线。
 - S1-C successor、缓存复跑和请求级 Runtime 入口已完成；BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。
 - BGE reranker 历史 shadow=`17/18`、MRR=`0.608480`，有增益但逐题反转；对象级 successor 已进一步证明 fixed reranker pairwise=`0.50`、top1=`0.60`，规则 Evidence Role F1=`0.507936`。角色数据合同已经完成，当前下一项是 query-family decomposition 与 deterministic object-view compiler；不自动微调或进入 S1-D。
+- 检索栈治理已进一步确认：当前只测试过 BGE-M3 dense，尚未测试 learned sparse／multi-vector 或 Qwen challenger；数据库旧路线 annual `9/9`、current-quarter `0/6` 只属于归档诊断。当前必须先实现 query/object＋typed fact route，再执行有界模型对照；公司财务事实 mart 的物化归 S2，但其路由合同不能从 S1 遗忘。
 - 权威说明：`docs/architecture/retrieval/FIN_0_1_3_S1B_CURRENT_FINANCIAL_OBJECT_STORE_20260812.zh-CN.md`。
 - S1-C 权威说明：`docs/architecture/retrieval/FIN_0_1_3_S1C_SAME_OBJECT_RANKING_COMPARISON_20260812.zh-CN.md`。
+- S1-C 检索栈／数据库权威说明：`docs/architecture/retrieval/FIN_0_1_3_S1C_RETRIEVAL_STACK_AND_DATABASE_LANE_DECISION_20260812.zh-CN.md`。

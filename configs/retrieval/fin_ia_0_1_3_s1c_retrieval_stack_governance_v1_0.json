@@ -1,0 +1,222 @@
+{
+  "schema_version": "fin_ia_s1c_retrieval_stack_governance_v1_0",
+  "decision_id": "FIN-0.1.3-S1C-RETRIEVAL-STACK-AND-DATABASE-LANE-GOVERNANCE",
+  "recorded_at": "2026-08-12",
+  "status": "owner_sequence_accepted_contract_frozen_implementation_pending",
+  "product_goal": "Select a provider-neutral retrieval stack that improves the final financial Evidence Pack rather than only offline ranking metrics, while preserving a first-class exact financial database lane.",
+  "evidence_basis": {
+    "development_cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "fixed_qrel_count": 18,
+    "same_object_observation": {
+      "bm25_recall_at_10": "17/18",
+      "bge_m3_dense_recall_at_10": "14/18",
+      "rrf_recall_at_10": "16/18",
+      "bm25_plus_bge_candidate_union_target_in_pool": "18/18",
+      "bge_reranker_recall_at_10": "17/18",
+      "bge_reranker_mrr": 0.60848
+    },
+    "known_business_reversal": "The fixed BGE reranker raises the NVDA cash-flow target from rank 12 to rank 1 but lowers a direct DELL demand-risk target from rank 1 to rank 19.",
+    "interpretation": "Candidate coverage is already high on the fixed keyword-rich development queries; mixed query intent, object projection and financial evidence-role judgment must be repaired before model selection or training."
+  },
+  "stage_ownership": {
+    "S1": [
+      "EvidenceRequest_to_query_family_and_route_plan",
+      "identity_period_source_and_relationship_filters",
+      "text_object_candidate_generation",
+      "retriever_comparison_candidate_union_and_quota",
+      "cross_encoder_rerank",
+      "Evidence_Role_with_abstain",
+      "Evidence_Gate_candidate_to_evidence_decision"
+    ],
+    "S2": [
+      "authoritative_company_financial_fact_mart",
+      "metric_taxonomy_period_unit_and_PIT_normalization",
+      "deterministic_NumericFact_and_formula_lineage",
+      "typed_exact_lookup_result_or_gap"
+    ],
+    "S3": [
+      "user_question_to_ResearchObjective_DecisionSurface_and_EvidenceRequest",
+      "dynamic_residual_gap_followup",
+      "research_judgment_and_synthesis"
+    ]
+  },
+  "database_lane": {
+    "mandatory": true,
+    "current_active_baseline_audit": {
+      "workbench_sqlite": "mutable_operations_state_only_not_research_fact_authority",
+      "market_duckdb": "market_snapshot_catalog_only_not_company_financial_fact_mart",
+      "industry_duckdb": "industry_snapshot_only_not_company_financial_fact_mart",
+      "authoritative_company_financial_fact_mart": "absent_from_current_active_runtime"
+    },
+    "prebaseline_historical_evidence_only": {
+      "initial_current_exact_sql_target_coverage": "0/18",
+      "successor_latest_available_annual_exact_sql": "9/9",
+      "successor_current_quarter_exact_sql": "0/6_typed_refresh_gap",
+      "promotion_status": "archived_diagnostic_not_current_capability"
+    },
+    "routing_rules": {
+      "exact_metric_period_unit_PIT_request": "compile_to_typed_exact_fact_lookup",
+      "narrative_mechanism_risk_guidance_request": "compile_to_text_and_graph_retrieval_lanes",
+      "mixed_numeric_and_narrative_request": "split_into_sibling_fact_and_evidence_requests_bound_by_request_and_cell_identity",
+      "text_table_numeric_authority": "context_only_until_S2_projects_a_source_bound_typed_NumericFact"
+    },
+    "non_negotiable_boundary": "Embedding or reranking may locate a table or disclosure but may not replace SQL or typed exact lookup for final numeric authority."
+  },
+  "query_and_object_successor": {
+    "query_families": [
+      "reported_results",
+      "management_guidance",
+      "counterevidence_and_risk",
+      "cash_conversion",
+      "regulatory_exposure",
+      "supply_capacity_execution",
+      "customer_demand_read_through"
+    ],
+    "object_views": [
+      "source_bound_claim",
+      "metric_table_header_period_unit_row_parent",
+      "bounded_parent_context",
+      "navigation_or_boilerplate_reject"
+    ],
+    "implementation_authority": "approved_next",
+    "training_authority": false
+  },
+  "retrieval_stack_candidates": {
+    "hard_filters": [
+      "case_identity",
+      "evidence_owner",
+      "relationship_direction",
+      "research_as_of",
+      "period",
+      "source_type_and_authority"
+    ],
+    "candidate_lanes": [
+      "typed_exact_fact_lookup",
+      "bm25_lexical_baseline",
+      "bge_m3_dense_shadow",
+      "bge_m3_learned_sparse_shadow",
+      "bge_m3_multi_vector_shadow",
+      "qwen3_embedding_0_6b_instruction_aware_shadow",
+      "typed_relationship_graph"
+    ],
+    "reranker_candidates": [
+      "BAAI/bge-reranker-v2-m3",
+      "Qwen/Qwen3-Reranker-0.6B"
+    ],
+    "role_layer": "separate_multilabel_Evidence_Role_evaluator_with_abstain",
+    "evidence_authority": "Evidence_Gate_only"
+  },
+  "evaluation_governance": {
+    "development_cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "observed_validation_cases_not_pristine_test": [
+      "ORCL",
+      "ASML",
+      "ANET"
+    ],
+    "new_test_precut_manifest": "must_be_pre_registered_and_digest_bound_before_any_effect_seeking_model_run",
+    "effect_seeking_model_run_authorized": false,
+    "metrics": [
+      "required_slot_target_in_pool_at_k",
+      "unique_useful_candidate_contribution",
+      "wrong_company_period_relationship_and_fact_state_pollution",
+      "business_error_by_query_family_and_object_form",
+      "reranker_positive_over_hard_negative_pairwise_accuracy",
+      "Evidence_Role_multilabel_quality_and_abstain",
+      "typed_exact_fact_lookup_accuracy_and_gap_correctness",
+      "final_Evidence_Pack_coverage_and_research_usability",
+      "latency_peak_memory_and_serving_cost"
+    ],
+    "selection_rule": "A model or fusion route may become the provisional winner only if it adds valid evidence or materially improves business ordering without increasing identity period authority or role pollution.",
+    "final_product_rule": "Offline ranking gain alone cannot close S1; the DELL S1_S2_S3 vertical slice must show a better source-bound Evidence Pack and research judgment."
+  },
+  "business_error_taxonomy": {
+    "hard_scope_errors": [
+      "wrong_case_subject",
+      "wrong_evidence_owner",
+      "wrong_relationship_direction",
+      "after_research_as_of",
+      "wrong_fiscal_or_reporting_period",
+      "disallowed_source_type_or_authority"
+    ],
+    "candidate_generation_errors": [
+      "source_object_absent",
+      "parser_or_object_projection_missing",
+      "query_family_not_addressed",
+      "route_did_not_recall_available_target",
+      "slot_budget_starvation"
+    ],
+    "ranking_and_role_errors": [
+      "semantic_neighbor_wrong_evidence_role",
+      "risk_or_hypothesis_substituted_for_observed_fact",
+      "guidance_substituted_for_reported_result",
+      "background_substituted_for_direct_evidence",
+      "navigation_or_exhibit_index_promoted",
+      "duplicate_or_same_source_fragment_crowding",
+      "metric_table_lost_header_period_unit_or_parent_context"
+    ],
+    "authority_errors": [
+      "text_candidate_treated_as_exact_numeric_authority",
+      "model_score_treated_as_Evidence_authority",
+      "wrong_unit_period_formula_or_PIT_binding",
+      "cross_case_or_cross_source_lineage_pollution"
+    ],
+    "typed_non_errors": [
+      "source_not_publicly_available_after_verified_routes",
+      "requested_metric_not_disclosed_at_required_granularity",
+      "valid_abstain_or_typed_gap"
+    ],
+    "reporting_rule": "Every aggregate metric must be accompanied by at least one concrete business-language example per observed error class."
+  },
+  "fine_tuning_gate": {
+    "authorized_now": false,
+    "minimum_to_reopen_training_decision": {
+      "source_bound_reviewed_relations": 200,
+      "development_cases": 6,
+      "independent_unseen_holdout_required": true
+    },
+    "preferred_data_floor_before_effect_seeking_training": {
+      "role_classifier_reviewed_relations": 500,
+      "role_classifier_issuer_count": 10,
+      "reranker_positive_hard_negative_pairs": 1000,
+      "embedding_query_positive_hard_negative_triplets": 3000
+    },
+    "old_575_model_assisted_labels": "migration_and_review_candidates_only_not_training_truth",
+    "decision_rule": "Fine-tune only after query and object repair plus off-the-shelf bakeoff leave a stable repeatable financial error that enough reviewed data can represent."
+  },
+  "approved_sequence": [
+    "freeze_retrieval_stack_database_lane_error_taxonomy_and_new_holdout_manifest",
+    "split_query_families_and_compile_claim_table_context_views",
+    "same_corpus_multi_retriever_bakeoff",
+    "same_candidate_union_cross_encoder_bakeoff",
+    "separate_Evidence_Role_and_abstain_layer",
+    "fine_tuning_disposition_decision",
+    "select_provisional_winner_and_shadow_challenger",
+    "run_DELL_S1_S2_S3_vertical_slice_then_decide_S1_product_gate"
+  ],
+  "stop_conditions": [
+    "Do not run model bakeoffs before the query and object successor plus a new digest-bound test manifest exist.",
+    "Do not train on DELL MU NVDA or old model-assisted labels merely to improve the current fixed benchmark.",
+    "Do not let embedding or reranking grant numeric or Evidence authority.",
+    "Do not treat the operations SQLite or market and industry DuckDB files as the missing company financial fact mart.",
+    "Do not enter broad S1-D source expansion to hide query object database or ranking defects.",
+    "Do not choose a permanent provider-specific core route; select a provisional winner behind a provider-neutral profile."
+  ],
+  "authority": {
+    "owner_sequence_accepted": true,
+    "governance_contract_frozen": true,
+    "database_lane_mandatory": true,
+    "runtime_route_promoted": false,
+    "model_download_or_inference_authorized_by_this_contract": false,
+    "fine_tuning_authorized": false,
+    "S1_product_gate_closed": false,
+    "S2_or_S3_complete_claimed": false
+  }
+}

@@ -65,10 +65,10 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
 
 def _write_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(
+            json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        )
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -214,6 +214,8 @@ def main() -> int:
         "business_findings_zh": [
             "旧 child 重叠会重复生成同一 claim、表格行和父级上下文；当前编译器按父文档和对象内容去重，同时保留全部 source-record lineage。",
             "高管姓名、年龄和职位等数值型非财务表不会再冒充 metric rows；候选必须同时满足期间／单位表头或金融行标签门禁。",
+            "空 TABLE_START/TABLE_END 不再吞掉其后的真实叙事；本次恢复了 TSMC 领先制程需求与 2nm ramp 的来源绑定 claim。",
+            "同一表内重复的 Revenue／Gross margin 行会保留 Cloud Memory、Core Data Center 等行组上下文，避免检索后串错业务单元。",
             "财报表格行仅用于召回和上下文展示，不能成为 NumericFact；精确数值必须通过 S2 typed fact executor 和公司财务事实库。",
             "当前运行时尚无权威公司财务事实库，因此 exact fact 请求会成为显式 S2 typed gap，而不是退化为从 PDF 文本猜数字。",
         ],

@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-A 已接入类型化查询与 Workbench 候选页，S1-B 已建立 28 parent / 1,805 child 的当前金融对象库。S1-C 已完成 qrel successor、请求级 EvidenceRequest、Cross-Encoder／Evidence Role shadow 和对象合同；结果否决当前模型晋升。S1-C1 现已把 17 个 facet 拆成 11 类问题，把混合请求拆为叙事检索／数据库事实 sibling，并把全库编译为 20,270 个去重 claim／metric-row／context 候选。当前公司财务事实 mart 仍不存在，typed request 会明确返回 S2 gap。HPQ／AVGO／INTC test-precut 已在模型结果前预注册；下一门是同对象多检索器对照，S1 产品门仍未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-A 已接入类型化查询与 Workbench 候选页，S1-B 已建立 28 parent / 1,805 child 的当前金融对象库。S1-C1 已把 17 个 facet 拆成 11 类问题，把混合请求拆为叙事检索／数据库事实 sibling，并把全库编译为 20,340 个去重 claim／metric-row／context 候选；空表吞 claim 和 Micron 重复指标行缺少业务单元上下文均已修复。S1-C2 已完成 BM25 与 BGE-M3 同对象对照：两路候选并集覆盖 18/18 目标来源，但精确受复核对象只有 6/14，证明当前瓶颈是 query atom、细粒度对象选择、reranker 和 Evidence Role，而不是单纯找不到文件。Qwen 模型资产为 transport block，未评价模型。公司财务事实 mart 仍不存在，typed request 明确返回 S2 gap；下一门是同候选 reranker／Evidence Role shadow，S1 产品门仍未通过。
 
 ## 当前唯一产品边界
 
@@ -75,9 +75,9 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S1C2_SAME_COMPILED_OBJECT_MULTI_RETRIEVER_BAKEOFF`
+`FIN_0_1_3_S1C3_SAME_CANDIDATE_RERANKER_AND_EVIDENCE_ROLE_SHADOW`
 
-S1-C1 已完成 11 query family、claim／metric-row／context 编译及 typed fact sibling route：1,805 个 child 原始生成 22,703 个对象，去掉 2,433 个重叠切块重复后为 20,270 个；高管年龄／职位等 257 张非金融数值表已拒绝。当前只证明对象和路由工程，不证明候选相关性。下一门在完全相同的去重对象、硬过滤和预算上比较 BM25、BGE-M3 dense／learned sparse／multi-vector 与 Qwen Embedding；随后才在同候选池比较 BGE/Qwen Reranker，再建立 Evidence Role＋abstain。S2 公司财务事实 mart 仍是明确硬缺口，不能被 PDF 表格替代；S3 负责自然语言规划和动态追问。当前唯一已确认属于 S1-D 的新缺口仍是 TSMC CoWoS／先进封装产能、良率和分配。
+S1-C2 已在相同 20,340 对象、硬过滤和预算上完成 BM25、BGE-M3 dense／learned sparse／multi-vector 对照。BM25 与 dense 的 64 候选并集覆盖 18/18 目标来源，但精确受复核对象只有 6/14；multi-vector 压到前十后降为 14/18，因此 provisional candidate pool 只是 `BM25 + BGE dense union`，没有路线晋升。下一门必须使用 Runtime 已拆分 query atom，在同候选池比较 BGE/Qwen Reranker，并独立运行 Evidence Role＋abstain；旧混合 qrel 只作 source-level 诊断，禁止调参。Qwen3-Embedding-0.6B 首次 HF Xet 下载为 416、唯一一次普通 HTTP successor 在 1.1GB 权重处被对端提前断开；未执行不能写成模型失败，也不能无限重试。S2 公司财务事实 mart 仍是纵切硬前置，不能被 PDF 表格或模型分数替代；S3 负责自然语言规划和动态追问。当前已确认属于 S1-D 的缺口仍是 TSMC CoWoS／先进封装产能、良率和分配。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

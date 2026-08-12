@@ -13,6 +13,8 @@
   "business_findings_zh": [
     "旧 child 重叠会重复生成同一 claim、表格行和父级上下文；当前编译器按父文档和对象内容去重，同时保留全部 source-record lineage。",
     "高管姓名、年龄和职位等数值型非财务表不会再冒充 metric rows；候选必须同时满足期间／单位表头或金融行标签门禁。",
+    "空 TABLE_START/TABLE_END 不再吞掉其后的真实叙事；本次恢复了 TSMC 领先制程需求与 2nm ramp 的来源绑定 claim。",
+    "同一表内重复的 Revenue／Gross margin 行会保留 Cloud Memory、Core Data Center 等行组上下文，避免检索后串错业务单元。",
     "财报表格行仅用于召回和上下文展示，不能成为 NumericFact；精确数值必须通过 S2 typed fact executor 和公司财务事实库。",
     "当前运行时尚无权威公司财务事实库，因此 exact fact 请求会成为显式 S2 typed gap，而不是退化为从 PDF 文本猜数字。"
   ],
@@ -57,37 +59,37 @@
   },
   "object_compilation_summary": {
     "candidate_not_evidence": true,
-    "compiled_object_count": 20270,
-    "deduplicated_object_count": 2433,
-    "diagnostic_count": 373,
+    "compiled_object_count": 20340,
+    "deduplicated_object_count": 2425,
+    "diagnostic_count": 345,
     "diagnostic_counts": {
       "claim_surface_not_unique": 65,
-      "financial_table_has_no_compilable_metric_row": 51,
-      "nonfinancial_table_not_compiled_as_metric_rows": 257
+      "financial_table_has_no_compilable_metric_row": 52,
+      "nonfinancial_table_not_compiled_as_metric_rows": 228
     },
-    "duplicate_object_group_count": 2065,
+    "duplicate_object_group_count": 2059,
     "missing_parent_count": 0,
     "model_calls": 0,
     "network_calls": 0,
     "numeric_authority": false,
     "object_kind_counts": {
       "bounded_parent_context": 1170,
-      "claim": 11663,
-      "metric_row": 7437
+      "claim": 11670,
+      "metric_row": 7500
     },
     "parent_document_count": 28,
-    "raw_compiled_object_count": 22703,
+    "raw_compiled_object_count": 22765,
     "source_record_count": 1805
   },
   "output_binding": {
-    "diagnostics_bytes": 62444,
+    "diagnostics_bytes": 57688,
     "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v1/diagnostics.jsonl",
-    "diagnostics_sha256": "0b19817c232a3e925bbf14911a2b5e16312c8f513e8485267bad642139aca1a1",
-    "objects_bytes": 53780476,
+    "diagnostics_sha256": "d53660a9f1a5e58d579df334cdacef508057a0bd16256f4274b95dcb053c7f17",
+    "objects_bytes": 54570239,
     "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v1/objects.jsonl",
-    "objects_sha256": "4825d0a361ff51c2e6fae205aed742df6f9918a099c9fb2359d1b59dfbca6e18"
+    "objects_sha256": "bd725bfe8b34c765c1d25155acedf4d0094712896c7d9344bf63899c691a9bc7"
   },
-  "payload_digest": "c33c05cb885fb2b413c0f8c8f9ab73e1913c6f1bb43a5157308ca22de8c483f3",
+  "payload_digest": "e4fe7f622d21d4190a829ba7d29f21b6c102f85479b80f5138bf8511feb0cd49",
   "query_route_summary": {
     "company_financial_fact_mart_status": "typed_route_only_store_unavailable",
     "database_owning_stage": "S2",
@@ -105,7 +107,7 @@
       "source_record_id": "DELL_2023_10K_ITEM1A_BLOCK_0001_CHUNK_0001"
     },
     {
-      "compiled_object_id": "COBJ::8ad42b08eb6ed6bcfc1eed8a",
+      "compiled_object_id": "COBJ::b6f4db38628721dc3b5e57e0",
       "model_text_preview": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2023-03-30\nSection: Item 7. Management's Discussion and Analysis\nTable: Aggregate Adjustment for Income Taxes\nHeader: Fiscal Year Ended || February 3, 2023 | % Change | January 28, 2022 | % Change | January 29, 2021 || (in millions, except percentages)\nRow: Product net revenue | $ | 79,250 | (1) | % | $ | 79,830 | 18 | % | $ | 67,744",
       "numeric_authority": false,
       "object_kind": "metric_row",

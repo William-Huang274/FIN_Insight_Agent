@@ -256,6 +256,94 @@ def test_nonfinancial_table_is_not_misrepresented_as_metric_rows() -> None:
     }
 
 
+def test_empty_table_does_not_swallow_following_narrative_claims() -> None:
+    parent = {
+        "document_id": "CURRENT_DOC::TSM::6_K::EMPTY_TABLE",
+        "ticker": "TSM",
+        "company": "Taiwan Semiconductor Manufacturing Company Limited",
+        "source_type": "6-K",
+        "source_tier": "primary_global_public_disclosure",
+        "publication_date": "2026-07-16",
+        "period_end": "2026-06-30",
+        "fiscal_year": 2026,
+    }
+    claim = (
+        "Our business in the second quarter was supported by strong demand for "
+        "leading-edge process technologies, including the ramp of two-nanometer."
+    )
+    record = {
+        **parent,
+        "evidence_id": "TSM_EMPTY_TABLE_THEN_CLAIM",
+        "section": "6-K current official disclosure",
+        "subsection": "Earnings Release",
+        "metadata": {"parent_document_id": parent["document_id"]},
+        "text": (
+            "[TABLE_START id=1 rows=0]\n"
+            "[TABLE_END]\n"
+            f"{claim}\n"
+            "[TABLE_START id=2 rows=0]\n"
+            "[TABLE_END]"
+        ),
+    }
+    result = compile_object_store(
+        records=[record],
+        parents_by_id={parent["document_id"]: parent},
+        policy=_policy(),
+    )
+    claims = [row for row in result.objects if row["object_kind"] == "claim"]
+    assert [row["model_text"] for row in claims] == [claim]
+    assert result.summary["diagnostic_counts"] == {
+        "financial_table_has_no_compilable_metric_row": 2
+    }
+
+
+def test_table_period_rows_are_headers_and_business_unit_context_is_retained() -> None:
+    parent = {
+        "document_id": "CURRENT_DOC::MU::8_K::GROUPED_TABLE",
+        "ticker": "MU",
+        "company": "Micron Technology, Inc.",
+        "source_type": "8-K",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "publication_date": "2026-03-18",
+        "period_end": "2026-03-18",
+        "fiscal_year": 2026,
+    }
+    record = {
+        **parent,
+        "evidence_id": "MU_GROUPED_METRIC_TABLE",
+        "section": "Exhibit 99.1 Earnings Release",
+        "subsection": "Quarterly Business Unit Financial Results",
+        "metadata": {"parent_document_id": parent["document_id"]},
+        "text": (
+            "[TABLE_START id=3 rows=7]\n"
+            "Quarterly Business Unit Financial Results\n"
+            "FQ2-26 | FQ1-26 | FQ2-25\n"
+            "Cloud Memory Business Unit\n"
+            "Revenue | $ | 7,749 | $ | 5,284 | $ | 2,947\n"
+            "Gross margin | 74 | % | 66 | % | 55 | %\n"
+            "Core Data Center Business Unit\n"
+            "Revenue | $ | 5,687 | $ | 2,379 | $ | 1,830\n"
+            "Gross margin | 74 | % | 51 | % | 47 | %\n"
+            "[TABLE_END]"
+        ),
+    }
+    result = compile_object_store(
+        records=[record],
+        parents_by_id={parent["document_id"]: parent},
+        policy=_policy(),
+    )
+    rows = [row for row in result.objects if row["object_kind"] == "metric_row"]
+    assert len(rows) == 4
+    assert all(row["structured_projection"]["metric_row_label"] != "FQ2-26" for row in rows)
+    assert [row["structured_projection"]["row_context_lines"] for row in rows] == [
+        ["Cloud Memory Business Unit"],
+        ["Cloud Memory Business Unit"],
+        ["Core Data Center Business Unit"],
+        ["Core Data Center Business Unit"],
+    ]
+    assert "Row context: Cloud Memory Business Unit" in rows[0]["model_text"]
+
+
 def test_current_runtime_exposes_database_sibling_as_typed_s2_gap() -> None:
     service = ResearchRetrievalService.from_runtime_paths(ROOT)
     projection = service.execute_request(

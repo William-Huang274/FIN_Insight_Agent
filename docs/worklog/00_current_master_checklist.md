@@ -10,8 +10,11 @@
 - [x] S1-C 金融角色数据合同 successor（24 object／35 relation；claim/table/parent 分离；Codex 开发复核；留出未调参）
 - [x] S1-C 检索栈与数据库通道治理（SQL/typed exact lookup 为必选路线；多 retriever/reranker 对照和微调止损门冻结）
 - [x] S1-C 新 test-precut 预注册（HPQ／AVGO／INTC；ORCL／ASML／ANET 仅作已观察 validation）
-- [x] S1-C1 query family、确定性对象视图与 typed fact route compiler（11 family／17 facet；20,270 去重候选；数据库缺口显式归 S2；不训练）
+- [x] S1-C1 query family、确定性对象视图与 typed fact route compiler（11 family／17 facet；20,340 去重候选；空表与业务单元行组修复；数据库缺口显式归 S2；不训练）
 - [ ] S1-C 同语料 multi-retriever、同候选 Cross-Encoder 和 Evidence Role 对照
+  - [x] BM25／BGE-M3 同 20,340 对象对照与业务审计（候选并集 18/18 source hit；精确对象仅 6/14；无路线晋升）
+  - [ ] Qwen Embedding（当前模型资产 transport block，不评价质量）
+  - [ ] 同候选 BGE／Qwen Reranker 与独立 Evidence Role＋abstain
 - [ ] S1-D residual-gap 外源补源与 Evidence Pack 复编译
 - [ ] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归
 - [ ] S3 动态 Agentic Research 与内容质量验收

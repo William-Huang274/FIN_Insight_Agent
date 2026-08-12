@@ -196,9 +196,14 @@ def test_s1c1_zero_call_result_preserves_database_gap_and_candidate_boundary() -
     }
     summary = payload["object_compilation_summary"]
     assert summary["source_record_count"] == 1805
-    assert summary["raw_compiled_object_count"] == 22703
-    assert summary["compiled_object_count"] == 20270
-    assert summary["deduplicated_object_count"] == 2433
+    assert summary["raw_compiled_object_count"] == 22765
+    assert summary["compiled_object_count"] == 20340
+    assert summary["deduplicated_object_count"] == 2425
+    assert summary["object_kind_counts"] == {
+        "bounded_parent_context": 1170,
+        "claim": 11670,
+        "metric_row": 7500,
+    }
     assert summary["missing_parent_count"] == 0
     assert payload["acceptance"]["candidate_not_evidence"] is True
     assert payload["acceptance"]["numeric_authority"] is False

@@ -32,14 +32,16 @@ numeric_fact_authority = false
 
 | 项目 | 结果 | 业务含义 |
 | --- | ---: | --- |
-| 原始编译对象 | 22,703 | 重叠 child 会重复产出同一材料 |
-| 去重后对象 | 20,270 | 删除了 2,433 个重复候选，但保留全部 source-record lineage |
-| source-bound claim | 11,663 | 可用于叙事召回，尚未做 Evidence Role 判断 |
-| metric-row | 7,437 | 带公司、来源、章节、表头、期间、单位与行；仍非 NumericFact |
+| 原始编译对象 | 22,765 | 重叠 child 会重复产出同一材料 |
+| 去重后对象 | 20,340 | 删除了 2,425 个重复候选，但保留全部 source-record lineage |
+| source-bound claim | 11,670 | 可用于叙事召回，尚未做 Evidence Role 判断 |
+| metric-row | 7,500 | 带公司、来源、章节、表头、期间、单位、行组与行；仍非 NumericFact |
 | bounded parent context | 1,170 | 只帮助理解，不可单独晋升为正 Evidence |
-| 拒绝非金融数值表 | 257 | 高管年龄、职位等不再污染销售／业绩查询 |
-| 金融外观但无安全指标行 | 51 | 不强猜表结构，保留诊断 |
+| 拒绝非金融数值表 | 228 | 高管年龄、职位等不再污染销售／业绩查询 |
+| 金融外观但无安全指标行 | 52 | 不强猜表结构，保留诊断 |
 | claim surface 不唯一 | 65 | 不建立无法精确回指的 claim |
+
+标签复核又暴露并关闭了两个对象层根因：空的 `[TABLE_START]` 原先会被贪婪匹配一路吞到文末最后一个 `[TABLE_END]`，导致 TSMC 的领先制程需求和 2nm ramp 消失；同一张 Micron 业务单元表内多次出现 Revenue／Gross margin，原投影没有保留 Cloud Memory／Core Data Center 行组，数值可能被串到错误业务。当前空表边界已改为逐表最短匹配，metric-row 新增 `row_context_lines`。这只是检索定位语义，数值权威仍在 S2。
 
 一个真实误判例子是 Dell 高管表：`Michael S. Dell | 58 | Chief Executive Officer` 曾因同表职位中出现 `Global Sales` 被弱关键词规则视为金融表。现在必须满足期间／单位表头或金融行标签门禁，这张表被拒绝。
 
@@ -57,7 +59,7 @@ numeric_fact_authority = false
 
 ## 5. 这轮没有证明什么
 
-- 没有证明 20,270 个候选都高质量；下一轮要看它们在真实 query family 下是否召回正确材料。
+- 没有证明 20,340 个候选都高质量；下一轮要看它们在真实 query family 下是否召回正确材料。
 - 没有建立公司财务事实 mart，因此 S2 仍是硬缺口。
 - 没有运行 BGE-M3、Qwen、Cross-Encoder 或 Evidence Role；也没有授权微调。
 - 没有重新生成 Evidence Pack、DeepSeek 研报或关闭 S1。

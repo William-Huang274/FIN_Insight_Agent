@@ -1,0 +1,150 @@
+{
+  "schema_version": "fin_ia_s1c_compiled_object_retriever_business_assessment_v1_0",
+  "assessment_id": "FIN-0.1.3-S1C-COMPILED-OBJECT-RETRIEVER-BUSINESS-ASSESSMENT-R1",
+  "recorded_at": "2026-08-13",
+  "status": "bm25_bge_comparison_complete_qwen_transport_blocked_no_route_promoted",
+  "scope": {
+    "development_cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "compiled_object_count": 20340,
+    "source_level_qrel_count": 18,
+    "reviewed_object_judged_query_count": 14,
+    "observed_validation_pair_count": 86,
+    "generation_model_calls": 0,
+    "network_source_calls": 0,
+    "training_steps": 0,
+    "candidate_state": "candidate_not_evidence",
+    "numeric_fact_authority": false
+  },
+  "bound_inputs": {
+    "retriever_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_compiled_object_retriever_comparison_policy_v1_0.json",
+    "retriever_result_ref": "configs/retrieval/fin_ia_0_1_3_s1c_compiled_object_retriever_comparison_result_v1_0.json",
+    "retriever_summary_digest": "90a77e65f2e720b46f68c71e35d4bbcc36bd722b2aa79a2219bb6db463d5a55b",
+    "retriever_full_result_digest": "31f337d0fa7acc7ac3377fa7e1babec567f007c39b774c7598ae2530b7cc3f5b",
+    "retriever_full_result_sha256": "02325eef501a265ad7b0a5e0e6c37c52c452c205f74e6c37d572bbdbae6f75a2",
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v1/objects.jsonl",
+    "compiled_objects_sha256": "bd725bfe8b34c765c1d25155acedf4d0094712896c7d9344bf63899c691a9bc7"
+  },
+  "route_results": {
+    "bm25_lexical": {
+      "source_record_target_in_top_10": "13/18",
+      "source_record_mrr": 0.584851,
+      "reviewed_object_target_in_top_10": "6/14",
+      "observed_validation_positive_over_hard_negative": "60/86",
+      "decision": "retain_as_low_cost_lexical_branch"
+    },
+    "bge_m3_dense": {
+      "source_record_target_in_top_10": "15/18",
+      "source_record_mrr": 0.466667,
+      "reviewed_object_target_in_top_10": "6/14",
+      "observed_validation_positive_over_hard_negative": "57/86",
+      "decision": "retain_as_semantic_candidate_expansion_shadow"
+    },
+    "bge_m3_learned_sparse": {
+      "source_record_target_in_top_10": "12/18",
+      "source_record_mrr": 0.503102,
+      "reviewed_object_target_in_top_10": "4/14",
+      "observed_validation_positive_over_hard_negative": "55/86",
+      "decision": "do_not_include_in_provisional_candidate_stack"
+    },
+    "bge_m3_multi_vector_refinement": {
+      "source_record_target_in_top_10": "14/18",
+      "source_record_mrr": 0.407716,
+      "reviewed_object_target_in_top_10": "6/14",
+      "observed_validation_positive_over_hard_negative": "63/86",
+      "decision": "shadow_only_not_a_top10_selector"
+    },
+    "qwen3_embedding_0_6b_dense": {
+      "execution_state": "not_executed_transport_blocked",
+      "block_code": "hf_xet_416_then_plain_http_peer_closed_before_1_158_146_098_byte_weight_complete",
+      "decision": "no_model_quality_conclusion"
+    }
+  },
+  "candidate_union_finding": {
+    "bm25_or_bge_dense_source_target_in_top_10": "17/18",
+    "bm25_bge_dense_learned_sparse_candidate_union_source_target": "18/18",
+    "reviewed_exact_object_in_candidate_union": "6/14",
+    "business_meaning_zh": "当前对象库并非普遍找不到相关文件；BM25 与 BGE dense 互补后，18 个旧题的目标来源均进入候选并集。但同一来源中真正能回答问题的句子或表格经常没有进入候选，且 multi-vector 把候选压到前十时又丢掉四题。因此瓶颈已从粗粒度找文件转向细粒度 query 拆分、对象选择、金融重排和 Evidence Role 判断。"
+  },
+  "business_error_examples": [
+    {
+      "qrel_ids": [
+        "s1c_qrel_04",
+        "s1c_qrel_17"
+      ],
+      "case_context_zh": "为 Dell 或 NVIDIA 判断 HBM 供给时，需要 Micron 对 HBM4 高量出货、客户平台和送样的直接披露。",
+      "observed_zh": "BGE dense 找到了 Micron 当前 8-K，但前列对象是现金投资表、NOR 费用表和业务单元毛利表；真正的 HBM4 出货句子没有进入候选并集。BM25 则优先返回泛化的供应合同、产能和缺件风险。",
+      "root_cause_class": "mixed_query_and_object_selection_gap",
+      "business_impact_zh": "系统知道应去看 Micron，却仍可能把财务表或泛化风险当作 HBM 供给证明。"
+    },
+    {
+      "qrel_ids": [
+        "s1c_qrel_05",
+        "s1c_qrel_11"
+      ],
+      "case_context_zh": "为 Dell 或 Micron 判断 NVIDIA 供给约束时，需要生产爬坡、产能协议、长交期或供需错配材料。",
+      "observed_zh": "BM25 把 NVIDIA 关于国内制造生态产能爬坡的直接风险句排到第一；BGE dense 却把产品保修、现金等价物和应计负债表排在前面。",
+      "root_cause_class": "dense_semantic_role_confusion",
+      "business_impact_zh": "语义相近的制造或资产负债内容会挤掉真正的供给机制，说明 dense 不能单独成为默认检索器。"
+    },
+    {
+      "qrel_ids": [
+        "s1c_qrel_09"
+      ],
+      "case_context_zh": "Micron 当期业绩问题需要区分已报告结果、下一季指引、HBM 供给计划和反方风险。",
+      "observed_zh": "BM25 先返回晶圆利用不足风险和旧季度毛利表；BGE dense 能回到当前 Q3 8-K，但先给出发布日期、Q4 收入指引和若干表格行，没有选中 CEO 对当期结果、投资和客户协议的综合陈述。",
+      "root_cause_class": "legacy_mixed_result_guidance_supply_query",
+      "business_impact_zh": "只看来源命中会误以为问题已解决，实际研究员收到的仍是角色混杂的材料。"
+    },
+    {
+      "qrel_ids": [
+        "s1c_qrel_10"
+      ],
+      "case_context_zh": "旧查询文字询问 HBM、库存和收入确认，但已接受目标句实际讲多年客户协议、220 亿美元承诺和其中约 180 亿美元现金存款。",
+      "observed_zh": "所有路线都更偏向库存、产能利用和财务表；目标客户协议句未进入候选。",
+      "root_cause_class": "benchmark_query_target_semantic_misalignment",
+      "business_impact_zh": "该题不能用于惩罚检索器或训练模型；必须拆为库存／收入确认与客户协议／现金承诺两个独立 query atom，并分别复核标签。"
+    },
+    {
+      "qrel_ids": [
+        "s1c_qrel_03"
+      ],
+      "case_context_zh": "Dell 旧题同时询问 AI 服务器订单、库存、收入确认、风险和反方。",
+      "observed_zh": "BM25 先返回营运资金现金流和大订单库存风险，BGE dense 找到同一风险章节，multi-vector 又把财务报表行排在风险句前。",
+      "root_cause_class": "multi_intent_query_dilution",
+      "business_impact_zh": "这些候选各自可能有用，但一条排名无法同时代表订单、库存、收入确认与风险；必须由 QueryFacetPlan 分开执行。"
+    },
+    {
+      "qrel_ids": [
+        "s1c_qrel_06",
+        "s1c_qrel_12",
+        "s1c_qrel_18"
+      ],
+      "case_context_zh": "旧题想用 TSMC 材料判断先进封装或供应能力。",
+      "observed_zh": "所有路线都能返回当前 TSMC 6-K，但现有受复核内容主要是领先制程需求和 2nm ramp，并没有经过复核的 CoWoS／先进封装容量句。",
+      "root_cause_class": "source_content_gap_hidden_by_document_hit",
+      "business_impact_zh": "文档命中不能被计作研究问题已回答；这里应保留 typed evidence gap，后续由 S1-D 定向补源。"
+    }
+  ],
+  "database_lane": {
+    "owning_stage": "S2",
+    "state": "typed_fact_store_unavailable",
+    "required_before_vertical_slice": true,
+    "policy_zh": "claim、表格语境和父级上下文进入 S1 混合检索；权威公司数值必须由 S2 公司财务事实 mart 按主体、指标、期间、单位和截至日查询。当前 metric-row 只帮助定位披露，不能作为 NumericFact，也不能因 embedding 或 reranker 得分高而获得数值权威。"
+  },
+  "decision": {
+    "provisional_candidate_pool": "bm25_lexical_plus_bge_m3_dense_union",
+    "provisional_runtime_route_promoted": false,
+    "bge_m3_learned_sparse_retained": false,
+    "bge_m3_multi_vector_retained_as_shadow": true,
+    "qwen_quality_decision": "pending_transport_recovery",
+    "fine_tuning_authorized": false,
+    "evidence_promoted": false,
+    "s1_complete": false,
+    "next_gate": "Use runtime-split query atoms and the same BM25+BGE candidate union for BGE/Qwen reranker shadow and independent Evidence Role+abstain. Do not tune on the mixed legacy qrels."
+  },
+  "known_boundary": "This is a post-run business assessment, not a route promotion, Evidence acceptance, NumericFact proof, S1 closeout or product acceptance."
+}

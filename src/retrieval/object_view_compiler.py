@@ -18,17 +18,21 @@ OBJECT_STORE_COMPILATION_SCHEMA_VERSION = (
 )
 
 _TABLE_PATTERN = re.compile(
-    r"\[TABLE_START id=(?P<table_id>[^\s\]]+) rows=(?P<rows>\d+)\]\n"
-    r"(?P<body>.*?)\n\[TABLE_END\]",
+    r"\[TABLE_START id=(?P<table_id>[^\s\]]+) rows=(?P<rows>\d+)\]\r?\n"
+    r"(?P<body>.*?)\[TABLE_END\]",
     re.DOTALL,
 )
 _SENTENCE_PATTERN = re.compile(r"[^.!?\n]+(?:[.!?](?:[\"”’])?|$)")
 _MONTH_PATTERN = re.compile(
     r"\b(?:January|February|March|April|May|June|July|August|September|"
-    r"October|November|December)\b",
+    r"October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b",
     re.IGNORECASE,
 )
 _YEAR_PATTERN = re.compile(r"\b(?:19|20)\d{2}\b")
+_FISCAL_PERIOD_LABEL_PATTERN = re.compile(
+    r"^(?:FY|FQ|Q)\s*\d{1,2}(?:[-/]\d{2,4})?$",
+    re.IGNORECASE,
+)
 _NUMBER_PATTERN = re.compile(r"(?:\$|€|£)?\(?-?\d[\d,]*(?:\.\d+)?\)?%?")
 _FINANCIAL_HEADER_TERMS = (
     "revenue",
@@ -197,10 +201,31 @@ def _row_is_metric(line: str) -> bool:
     if (
         "ended" in normalized
         or _MONTH_PATTERN.search(label)
+        or _FISCAL_PERIOD_LABEL_PATTERN.fullmatch(label.strip())
         or normalized in {"name", "date", "period", "fiscal year", "quarter"}
     ):
         return False
     return any(_NUMBER_PATTERN.search(cell) for cell in cells[1:])
+
+
+def _row_context_candidate(line: str) -> bool:
+    """Return whether a non-metric table line can scope following metric rows."""
+
+    value = line.strip()
+    normalized = value.casefold()
+    if not value or "|" in value or not any(char.isalpha() for char in value):
+        return False
+    if (
+        _MONTH_PATTERN.search(value)
+        or _FISCAL_PERIOD_LABEL_PATTERN.fullmatch(value)
+        or "ended" in normalized
+        or "in millions" in normalized
+        or "in thousands" in normalized
+        or "except per share" in normalized
+        or normalized.startswith("quarterly ")
+    ):
+        return False
+    return len(value) <= 240
 
 
 def _compile_table_rows(
@@ -213,7 +238,7 @@ def _compile_table_rows(
     table_id = table_match.group("table_id")
     body = table_match.group("body")
     source_record_id = str(record.get("evidence_id") or "")
-    lines = [line.strip() for line in body.splitlines() if line.strip()]
+    lines = [line.strip() for line in body.strip().splitlines() if line.strip()]
     metric_indices = [index for index, line in enumerate(lines) if _row_is_metric(line)]
     if not metric_indices:
         return [], [
@@ -272,10 +297,22 @@ def _compile_table_rows(
     title = str(record.get("subsection") or record.get("section") or "").strip()
     limit = int(policy.object_compiler["max_metric_rows_per_table"])
     max_text = int(policy.object_compiler["max_model_text_characters"])
+    row_context_by_index: dict[int, list[str]] = {}
+    active_context: list[str] = []
+    for line in header_lines:
+        if _row_context_candidate(line):
+            active_context = [line]
+    for row_index in range(first_metric, len(lines)):
+        line = lines[row_index]
+        if _row_is_metric(line):
+            row_context_by_index[row_index] = list(active_context)
+        elif _row_context_candidate(line):
+            active_context = [line]
     output: list[dict[str, Any]] = []
     for row_index in metric_indices[:limit]:
         line = lines[row_index]
         cells = [cell.strip() for cell in line.split("|")]
+        row_context_lines = row_context_by_index.get(row_index, [])
         projection = {
             "table_id": table_id,
             "declared_row_count": int(table_match.group("rows")),
@@ -283,6 +320,7 @@ def _compile_table_rows(
             "header_lines": header_lines,
             "period_hints": period_hints,
             "unit_hints": unit_hints,
+            "row_context_lines": row_context_lines,
             "metric_row_label": cells[0],
             "metric_row_cells": cells[1:],
             "parent_section": str(record.get("section") or ""),
@@ -295,6 +333,11 @@ def _compile_table_rows(
                 f"Section: {record.get('section')}",
                 f"Table: {title}" if title else "",
                 f"Header: {' || '.join(header_lines)}" if header_lines else "",
+                (
+                    f"Row context: {' || '.join(row_context_lines)}"
+                    if row_context_lines
+                    else ""
+                ),
                 f"Row: {line}",
             )
             if value
@@ -461,6 +504,7 @@ def compile_object_store(
                 "parent_document_id": parent_id,
                 "table_id": projection["table_id"],
                 "header_lines": projection["header_lines"],
+                "row_context_lines": projection.get("row_context_lines", []),
                 "metric_row_label": projection["metric_row_label"],
                 "metric_row_cells": projection["metric_row_cells"],
             }

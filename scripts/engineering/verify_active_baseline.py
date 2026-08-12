@@ -21,6 +21,7 @@ PYTHON_ENTRYPOINTS = (
     "scripts/data_retrieval/materialize_s1c_financial_role_eval_set.py",
     "scripts/data_retrieval/materialize_s1c_object_role_review_set.py",
     "scripts/data_retrieval/materialize_s1c_requalified_qrels.py",
+    "scripts/data_retrieval/run_s1c_compiled_object_retriever_comparison.py",
     "scripts/data_retrieval/run_s1c_cross_encoder_role_shadow.py",
     "scripts/data_retrieval/run_s1c_object_role_shadow.py",
     "scripts/data_retrieval/run_s1c_ranking_comparison.py",

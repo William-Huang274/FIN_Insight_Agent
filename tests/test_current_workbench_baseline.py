@@ -158,7 +158,9 @@ def test_frontend_composition_root_has_no_old_product_consumer() -> None:
 
 
 def _wait_for_terminal(client: TestClient, job_id: str) -> str:
-    for _ in range(100):
+    # The active import-graph eval grows with admitted current modules; keep the
+    # product test bounded without assuming it always finishes in five seconds.
+    for _ in range(300):
         status = client.get(f"/api/operations/runs/{job_id}/status")
         assert status.status_code == 200
         payload = status.json()

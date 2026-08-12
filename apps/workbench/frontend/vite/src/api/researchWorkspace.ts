@@ -41,7 +41,7 @@ export type ResearchCaseSummary = {
   language: string;
   pack_binding: PackBinding;
   evidence_summary: EvidenceSummary;
-  available_surfaces: Array<"overview" | "evidence">;
+  available_surfaces: Array<"overview" | "evidence" | "retrieval">;
   evidence_object_ready: boolean;
 };
 
@@ -140,6 +140,69 @@ export type ResearchEvidenceView = {
   projection_digest: string;
 };
 
+export type RetrievalCandidate = {
+  candidate_state: "candidate_not_evidence";
+  source_record_id: string;
+  evidence_owner_ticker: string;
+  subject_ticker: string;
+  relationship_direction: string;
+  source_role: string;
+  subject_mention_state: string;
+  source_type: string;
+  publication_date: string;
+  subsection: string;
+  source_url: string;
+  matched_terms: string[];
+  final_score: number;
+  business_boundary_zh: string;
+  excerpt: string;
+};
+
+export type RetrievalLane = {
+  lane_id: string;
+  slot_id: string;
+  facet_id: string;
+  business_question_zh: string;
+  evidence_owner_tickers: string[];
+  required_source_roles: string[];
+  publication_date_lte: string;
+  candidates: RetrievalCandidate[];
+  missing_required_source_roles: string[];
+  exclusion_counts: Record<string, number>;
+};
+
+export type ResearchRetrievalView = {
+  status: "typed_local_retrieval_snapshot_ready";
+  product_mode: "current";
+  case_key: string;
+  candidate_state: "candidate_not_evidence";
+  query_plan_digest: string;
+  result_digest: string;
+  source_snapshot: {
+    logical_id: string;
+    records: number;
+    case_scope_records: number;
+    source_boundary: string;
+  };
+  summary: {
+    lane_count: number;
+    nonempty_lane_count: number;
+    slot_count: number;
+    unique_candidates: number;
+    slots_missing_required_source_roles: Record<string, string[]>;
+  };
+  source_gap_summary: {
+    reviewed_label_occurrences_missing_from_historical_corpus: number;
+    reviewed_label_occurrences_eligible_before_scoring: number;
+    reviewed_label_occurrences_matched_after_scoring: number;
+    interpretation_zh: string;
+  };
+  business_findings_zh: string[];
+  lanes: RetrievalLane[];
+  known_boundary: string;
+  projection_digest: string;
+};
+
 const headers = {
   "X-Fin-Product-Mode": "current",
   "X-Fin-Case-Permissions": "current_product:read",
@@ -169,6 +232,13 @@ export class ResearchWorkspaceApiClient {
   getEvidence(caseId: string, signal?: AbortSignal): Promise<ResearchEvidenceView> {
     return getJson<ResearchEvidenceView>(
       `/api/v1/research-cases/${encodeURIComponent(caseId)}/evidence`,
+      signal,
+    );
+  }
+
+  getRetrieval(caseKey: string, signal?: AbortSignal): Promise<ResearchRetrievalView> {
+    return getJson<ResearchRetrievalView>(
+      `/api/v1/research-cases/${encodeURIComponent(caseKey)}/retrieval`,
       signal,
     );
   }

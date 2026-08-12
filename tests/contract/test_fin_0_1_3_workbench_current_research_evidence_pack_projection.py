@@ -309,7 +309,7 @@ def _workspace_config(
         "cases": cases,
         "surface_policy": {
             "primary_route": "/workspace",
-            "available_surfaces": ["overview", "evidence"],
+            "available_surfaces": ["overview", "evidence", "retrieval"],
             "mutable_case_creation": False,
             "complete_investment_report_claimed": False,
             "model_or_network_calls": 0,
@@ -340,9 +340,11 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
         "application.config.current_research_evidence_pack_projection",
         "application.config.current_research_workspace_catalog",
         "application.result.current_research_local_evidence_packs",
+        "application.result.current_research_retrieval_snapshot",
     }
     assert registry.detector_python_refs == (
         "apps/workbench/backend/application/research_evidence_pack_service.py",
+        "apps/workbench/backend/application/research_retrieval_service.py",
         "apps/workbench/backend/application/research_workspace_service.py",
     )
     assert all(
@@ -470,7 +472,11 @@ def test_primary_workspace_binds_subject_case_and_evidence_pack(
     )
     assert detail.status_code == 200
     assert detail.json()["subject"]["issuer_id"] == "0001571996"
-    assert detail.json()["available_surfaces"] == ["overview", "evidence"]
+    assert detail.json()["available_surfaces"] == [
+        "overview",
+        "evidence",
+        "retrieval",
+    ]
     assert detail.json()["evidence_pack_uri"].endswith("/evidence")
 
     evidence = client.get(

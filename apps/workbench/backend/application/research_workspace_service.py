@@ -386,7 +386,8 @@ class ResearchWorkspaceService:
             and bool(_DIGEST.fullmatch(str(value.get("evidence_pack_result_digest") or "")))
             and isinstance(surface, Mapping)
             and surface.get("primary_route") == "/workspace"
-            and surface.get("available_surfaces") == ["overview", "evidence"]
+            and surface.get("available_surfaces")
+            == ["overview", "evidence", "retrieval"]
             and surface.get("mutable_case_creation") is False
             and surface.get("complete_investment_report_claimed") is False
             and surface.get("model_or_network_calls") == 0

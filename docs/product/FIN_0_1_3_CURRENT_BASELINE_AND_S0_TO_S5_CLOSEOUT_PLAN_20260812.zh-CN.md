@@ -32,11 +32,13 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 ## 4. 当前重定基完成后的执行顺序
 
 1. **S0 仓库基线（已完成）**：G01–G12 已通过，远端 `main` 已从第二份 clean-main 工作树完成复证。
-2. **当前下一步——S1 检索纵切**：以当前三案和留出案例重新建立 source → object/chunk → typed query lanes → candidate/evaluator；官方来源优先，外源按 residual gap 补源。
-3. **S2 最小依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
-4. **S3 三案动态 Agentic Research**：由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
-5. **S4 产品闭环**：把通过验收的研究结果接入当前 Workbench，而不是恢复旧页面；补齐 human review、repair 和 artifact lineage。
-6. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+2. **S1-A 已完成——类型化本地检索纵切**：已建立 provider-neutral 金融内核、9 slot / 17 facet 查询、身份/截至日/source-role 约束和真实 Workbench 候选消费者；三案同核心迁移通过。它只证明工程纵切，不代表 S1 产品通过。当前历史候选库对 DELL/MU/NVDA 的 reviewed target 对照分别只命中 4/0/6，三案 PIT 行情角色均缺失。
+3. **当前下一步——S1-B current source/object 重建**：补 DELL 电话会/remarks、MU latest prepared remarks、NVDA 当前关键表/风险对象、TSMC 先进封装和 PIT 行情对象；按父子金融对象与模板过滤重建 current candidate store。不能先用 dense/rerank 掩盖 source-missing 或坏 chunk。
+4. **S1-C/S1-D 排名与补源**：current objects 到位后，再比较 sparse/dense/rerank；外源只补 candidate evaluator 证明的真实 residual gap，并重新编译 Evidence Pack。
+5. **S2 最小依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
+6. **S3 三案动态 Agentic Research**：由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
+7. **S4 产品闭环**：把通过验收的研究结果接入当前 Workbench，而不是恢复旧页面；补齐 human review、repair 和 artifact lineage。
+8. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
 ## 5. 防止再次膨胀的工程规则
 

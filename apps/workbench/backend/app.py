@@ -16,8 +16,10 @@ from sec_agent.workbench.store import WorkbenchStore, default_store_path
 
 from .api.operations import build_operations_router
 from .api.v1.research_evidence_packs import build_research_evidence_pack_router
+from .api.v1.research_retrieval import build_research_retrieval_router
 from .api.v1.research_workspace import build_research_workspace_router
 from .application.research_evidence_pack_service import ResearchEvidencePackService
+from .application.research_retrieval_service import ResearchRetrievalService
 from .application.research_workspace_service import ResearchWorkspaceService
 
 
@@ -36,6 +38,7 @@ def create_app(
     store_path: str | Path | None = None,
     current_research_evidence_pack_service: ResearchEvidencePackService | None = None,
     research_workspace_service: ResearchWorkspaceService | None = None,
+    research_retrieval_service: ResearchRetrievalService | None = None,
     workbench_runtime_mode: Literal["current", "fixture"] = "current",
     frontend_dist_root: str | Path | None = None,
     **retired_product_services: object,
@@ -79,6 +82,9 @@ def create_app(
         workspace = ResearchWorkspaceService.from_runtime_paths(
             CODE_ROOT, evidence_packs
         )
+    retrieval = research_retrieval_service
+    if retrieval is None and current_research_evidence_pack_service is None:
+        retrieval = ResearchRetrievalService.from_runtime_paths(CODE_ROOT)
 
     app = FastAPI(
         title="FinSight Research Workbench API",
@@ -107,6 +113,10 @@ def create_app(
     if workspace is not None:
         app.include_router(
             build_research_workspace_router(workspace), prefix="/api/v1"
+        )
+    if retrieval is not None:
+        app.include_router(
+            build_research_retrieval_router(retrieval), prefix="/api/v1"
         )
 
     def system_status() -> dict[str, Any]:

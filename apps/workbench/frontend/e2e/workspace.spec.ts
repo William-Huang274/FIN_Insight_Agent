@@ -45,6 +45,11 @@ test("workspace exposes the three identity-bound reviewed cases", async ({ page 
   await page.getByRole("button", { name: /证据与缺口/ }).click();
   await expect(page.getByRole("heading", { name: "已审 Evidence" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Residual Gaps" })).toBeVisible();
+  await page.getByRole("button", { name: /检索候选/ }).click();
+  await expect(page.getByRole("heading", { name: "当前候选检索" })).toBeVisible();
+  await expect(page.getByText("candidate_not_evidence", { exact: false })).toHaveCount(0);
+  await expect(page.getByText(/这些是待审候选，不是 Evidence/)).toBeVisible();
+  await expect(page.getByText(/point_in_time_market/)).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await capture(page, "dell-evidence", testInfo.project.name);
   await page.getByRole("button", { name: /返回案例列表/ }).click();

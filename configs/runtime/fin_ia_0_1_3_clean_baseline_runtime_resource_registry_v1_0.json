@@ -13,11 +13,12 @@
   },
   "detector_python_refs": [
     "apps/workbench/backend/application/research_evidence_pack_service.py",
+    "apps/workbench/backend/application/research_retrieval_service.py",
     "apps/workbench/backend/application/research_workspace_service.py"
   ],
-  "resource_count": 3,
-  "resource_bytes": 11331,
-  "resource_canonical_digest": "6375a8925a919e183cbf0003e29733a59cb23f344dfdc2bb1770c8c406bc5e23",
+  "resource_count": 4,
+  "resource_bytes": 1695189,
+  "resource_canonical_digest": "6bc36937dbea8d06896c1e44cd59b6d935b19952ad4087fe8ff87a6cdf5f1924",
   "resources": [
     {
       "resource_id": "application.config.current_research_evidence_pack_projection",
@@ -35,8 +36,8 @@
     {
       "resource_id": "application.config.current_research_workspace_catalog",
       "repo_relative_path": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_0.json",
-      "sha256": "4302202cd309bf1df0caa6e5c5555d90be24e12848d7cf2744ad04c6b0c4a86f",
-      "bytes": 3699,
+      "sha256": "d43e09ef6ac5be623f6bebe560516eae7346aabbb28cddaa280ace6d95544ccd",
+      "bytes": 3718,
       "classification": "application_runtime_config",
       "consumer_ids": [
         "apps.workbench.research_workspace_service.ResearchWorkspaceService.from_runtime_paths"
@@ -57,6 +58,19 @@
       "load_phase": "application_service_initialization",
       "required": true,
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
+    },
+    {
+      "resource_id": "application.result.current_research_retrieval_snapshot",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
+      "sha256": "3aaba9db4e3b29ae65f0d8ff54488e213c2088fac1e80bedf270f305979c7bc9",
+      "bytes": 1683839,
+      "classification": "digest_bound_read_only_retrieval_candidate_result",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "required": true,
+      "source_owner": "apps.workbench.backend.application.research_retrieval_service"
     }
   ]
 }

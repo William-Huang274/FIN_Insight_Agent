@@ -91,7 +91,8 @@
     "primary_route": "/workspace",
     "available_surfaces": [
       "overview",
-      "evidence"
+      "evidence",
+      "retrieval"
     ],
     "mutable_case_creation": false,
     "complete_investment_report_claimed": false,

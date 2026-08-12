@@ -5,19 +5,22 @@
 
 ## 1. 当前产品是什么
 
-当前唯一产品是一个本地只读研究工作台。它加载 DELL、MU、NVDA 三份已复核 Evidence Pack，并用 `CaseSubject + ResearchContext + CasePackBinding` 防止公司、期间、artifact 或 payload 串案。
+当前唯一产品是一个本地只读研究工作台。它加载 DELL、MU、NVDA 三份已复核 Evidence Pack，并用 `CaseSubject + ResearchContext + CasePackBinding` 防止公司、期间、artifact 或 payload 串案。S1-A 又接入了一条明确标为 `candidate_not_evidence` 的本地检索候选读面，用于展示类型化查询、候选理由与来源角色缺口；它不替换 reviewed Pack。
 
-三份当前 Pack 均只来自 SEC，结构化数值项为 0。当前代码图因此只证明审证、来源边界和缺口可见，不证明数值事实、外源多样性或完整投研内容质量。
+三份当前 Pack 均只来自 SEC，结构化数值项为 0。当前历史 candidate store 对 reviewed target 的对照命中也仅为 DELL 4、MU 0、NVDA 6。当前代码图因此只证明审证、类型化候选、来源边界和缺口可见，不证明 current source coverage、数值事实、外源多样性或完整投研内容质量。
 
 ```mermaid
 flowchart LR
     U["用户 /workspace"] --> UI["ResearchWorkspace.tsx"]
     UI --> API["/api/v1/research-cases"]
+    UI --> QAPI["/api/v1/research-cases/{case}/retrieval"]
     API --> WS["ResearchWorkspaceService"]
     WS --> EP["ResearchEvidencePackService"]
     WS --> C["workspace catalog"]
     EP --> R["reviewed pack result"]
     EP --> P["projection policy"]
+    QAPI --> QS["ResearchRetrievalService"]
+    QS --> QR["typed retrieval snapshot"]
     C --> B["identity + as-of + digest binding"]
     R --> B
     B --> UI
@@ -32,9 +35,10 @@ flowchart LR
 | Backend composition | `apps/workbench/backend/app.py` | 只组装 workspace、operations、当前 API、重定向与 410 tombstone |
 | Product application | `apps/workbench/backend/application/research_workspace_service.py` | Case 身份、as-of、版本和 Pack digest 绑定 |
 | Evidence application | `apps/workbench/backend/application/research_evidence_pack_service.py` | 读取并校验三个 reviewed pack |
-| Product UI | `apps/workbench/frontend/vite/src/app/ResearchWorkspace.tsx` | 三案例工作区和证据可读展示 |
+| Retrieval application | `apps/workbench/backend/application/research_retrieval_service.py` | 读取候选快照、剥离 qrel identity、保持 candidate/Evidence 边界 |
+| Product UI | `apps/workbench/frontend/vite/src/app/ResearchWorkspace.tsx` | 三案例工作区、证据与类型化检索候选展示 |
 | Operator UI | `apps/workbench/frontend/vite/src/operations/OperationsConsole.tsx` | 系统状态、配置、数据构建和运行检查 |
-| Runtime registry | `src/sec_agent/runtime_resource_registry.py` | 只允许注册的三项 runtime resource |
+| Runtime registry | `src/sec_agent/runtime_resource_registry.py` | 只允许注册的四项 runtime resource |
 
 后端只消费 Vite 生成的 `apps/workbench/frontend/dist/index.html`。缺少构建产物时 `/workspace` 与 `/operations` 返回 typed 503 `frontend_not_built`；源码目录中的历史 HTML 已归档，不能作为缓存式 fallback。
 
@@ -45,7 +49,7 @@ flowchart LR
 | `src/connectors/` | SEC 下载与 filing manifest | broad web search |
 | `src/ingestion/` | filing/8-K 解析与 section split | 研究判断 |
 | `src/evidence/` | Evidence schema 与构建 | 未经 gate 的事实晋升 |
-| `src/indexing/`、`src/retrieval/` | 当前 BM25/tokenization 基础 | 已完成的金融 RAG 平台声明 |
+| `src/indexing/`、`src/retrieval/` | BM25 构建、provider-neutral 金融查询合同、facet 编译、候选过滤/解释 | 已完成的金融 RAG、current source coverage、dense/rerank 或 Evidence 晋升声明 |
 | `src/sec_agent/market_snapshot.py` | 离线市场快照合同 | 实时行情 |
 | `src/sec_agent/research/` | reviewed pack 的稳定常量/摘要 | 动态 Agent planner |
 | `src/sec_agent/runtime_bridge/` | code/data、只读 reviewed Evidence 与可写 state 的显式路径边界 | checkout-local 私有数据假设 |
@@ -57,7 +61,7 @@ flowchart LR
 
 1. SEC filing：download → manifest → chunks。
 2. SEC 8-K earnings：download → manifest → chunks。
-3. Evidence Store 与 BM25。
+3. Evidence Store、BM25 与类型化本地候选快照。
 4. 离线市场快照：download/normalize → catalog → analytics → evidence pack → validate。
 5. 行业来源快照。
 
@@ -83,10 +87,10 @@ flowchart TB
 
 机器生成清单：`configs/repository/fin_0_1_3_active_baseline_manifest_v1_0.json`。
 
-- Python import graph：58 个文件。
+- Python import graph：65 个文件。
 - 前端 import graph：7 个文件。
-- Runtime resources：3 个。
-- Runtime detectors：2 个。
+- Runtime resources：4 个。
+- Runtime detectors：3 个。
 - archive/旧版本/attempt 的活动引用：0。
 - unresolved local import：0。
 
@@ -108,6 +112,6 @@ python -m pytest -q
 
 仓库工程基线已经合并远端 `main` 并完成 G12。复证目标为 `cd9990ac7ea4586cc55af0bc77f41c3f797399cb`，在第二份全新 clean-main 工作树上通过：44 个 Python tests、TypeScript、Vite build、无数据/挂载数据桌面与移动共 12 个 Playwright tests、三案业务验收、6,230 文件 secret scan、clean Docker build、无数据和只读 Evidence 挂载 smoke，以及原生 Compose 启动。
 
-这只关闭 S0 仓库/运行时基线。三案业务通过仍只限本文件第 1 节定义的 reviewed Evidence Workspace；S1 检索、S2 NumericFact、S3 动态研究与完整报告、S4 产品闭环和 S5 release 仍需按当前计划分别验收。
+S0 仓库/运行时基线已关闭，S1-A 工程纵切也已完成，但 S1 产品门仍未通过。下一阻断属于 S1-B：重建 current official source/object 与 PIT 行情对象，然后再评估 sparse/dense/rerank 和 residual-gap 外源补源。S2 NumericFact、S3 动态研究与完整报告、S4 产品闭环和 S5 release 仍需按当前计划分别验收。
 
 这些门的唯一机器状态见 `configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json`。

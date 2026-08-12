@@ -20,13 +20,14 @@ import {
   ResearchCaseList,
   ResearchCaseSummary,
   ResearchEvidenceView,
+  ResearchRetrievalView,
   ResearchWorkspaceApiClient,
 } from "../api/researchWorkspace";
 import "./research-workspace.css";
 
 type WorkspaceRoute =
   | { kind: "cases" }
-  | { kind: "case"; caseId: string; surface: "overview" | "evidence" };
+  | { kind: "case"; caseId: string; surface: "overview" | "evidence" | "retrieval" };
 
 type LoadState<T> =
   | { kind: "loading" }
@@ -160,9 +161,9 @@ function ResearchCaseWorkspace({
 }: {
   route: Extract<WorkspaceRoute, { kind: "case" }>;
   onBack: () => void;
-  onSurface: (surface: "overview" | "evidence") => void;
+  onSurface: (surface: "overview" | "evidence" | "retrieval") => void;
 }) {
-  const [state, setState] = useState<LoadState<{ detail: ResearchCaseDetail; evidence: ResearchEvidenceView }>>({ kind: "loading" });
+  const [state, setState] = useState<LoadState<{ detail: ResearchCaseDetail; evidence: ResearchEvidenceView; retrieval: ResearchRetrievalView }>>({ kind: "loading" });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -170,8 +171,9 @@ function ResearchCaseWorkspace({
     Promise.all([
       api.getCase(route.caseId, controller.signal),
       api.getEvidence(route.caseId, controller.signal),
+      api.getRetrieval(route.caseId.replace(/^case_/, "").replace(/_current$/, "").toUpperCase(), controller.signal),
     ])
-      .then(([detail, evidence]) => setState({ kind: "ready", value: { detail, evidence } }))
+      .then(([detail, evidence, retrieval]) => setState({ kind: "ready", value: { detail, evidence, retrieval } }))
       .catch((error: Error) => {
         if (error.name !== "AbortError") setState({ kind: "error", message: error.message });
       });
@@ -181,7 +183,7 @@ function ResearchCaseWorkspace({
   if (state.kind === "loading") return <main className="research-workspace__page"><Loading label="正在核验案例身份、内容摘要与来源…" /></main>;
   if (state.kind === "error") return <main className="research-workspace__page"><Failure message={state.message} /></main>;
 
-  const { detail, evidence } = state.value;
+  const { detail, evidence, retrieval } = state.value;
   return (
     <main className="research-workspace__page">
       <button className="research-workspace__back" type="button" onClick={onBack}><ArrowLeft size={16} /> 返回案例列表</button>
@@ -204,11 +206,66 @@ function ResearchCaseWorkspace({
         <button className={route.surface === "evidence" ? "is-active" : ""} type="button" onClick={() => onSurface("evidence")}>
           <FileSearch size={16} /> 证据与缺口
         </button>
+        <button className={route.surface === "retrieval" ? "is-active" : ""} type="button" onClick={() => onSurface("retrieval")}>
+          <Database size={16} /> 检索候选
+        </button>
       </nav>
 
-      {route.surface === "overview" ? <CaseOverview detail={detail} evidence={evidence} /> : <EvidenceSurface evidence={evidence} />}
+      {route.surface === "overview" ? <CaseOverview detail={detail} evidence={evidence} /> : null}
+      {route.surface === "evidence" ? <EvidenceSurface evidence={evidence} /> : null}
+      {route.surface === "retrieval" ? <RetrievalSurface retrieval={retrieval} /> : null}
       <Boundary text={detail.known_boundary} />
     </main>
+  );
+}
+
+function RetrievalSurface({ retrieval }: { retrieval: ResearchRetrievalView }) {
+  const missing = Object.entries(retrieval.summary.slots_missing_required_source_roles);
+  return (
+    <>
+      <section className="research-workspace__overview-grid">
+        <article className="research-workspace__panel">
+          <h2>当前候选检索</h2>
+          <div className="research-workspace__metrics is-large">
+            <Metric value={retrieval.summary.slot_count} label="Evidence Slots" />
+            <Metric value={retrieval.summary.nonempty_lane_count} label="有结果 Facets" />
+            <Metric value={retrieval.summary.unique_candidates} label="候选对象" />
+          </div>
+          <p>这些是待审候选，不是 Evidence。系统已先按披露主体、关系角色和截至日过滤，再执行本地词法检索。</p>
+        </article>
+        <article className="research-workspace__panel">
+          <h2>语料与真实缺口</h2>
+          <p>{retrieval.source_gap_summary.interpretation_zh}</p>
+          <div className="research-workspace__retrieval-gap-metrics">
+            <span>旧语料缺失 <b>{retrieval.source_gap_summary.reviewed_label_occurrences_missing_from_historical_corpus}</b></span>
+            <span>排名前可用 <b>{retrieval.source_gap_summary.reviewed_label_occurrences_eligible_before_scoring}</b></span>
+            <span>当前召回 <b>{retrieval.source_gap_summary.reviewed_label_occurrences_matched_after_scoring}</b></span>
+          </div>
+          {missing.map(([facet, roles]) => <div className="research-workspace__missing-role" key={facet}><strong>{facet}</strong><span>缺 {roles.join("、")}</span></div>)}
+        </article>
+      </section>
+      <section className="research-workspace__panel">
+        <div className="research-workspace__section-title"><h2>查询 Facets 与候选</h2><span>{retrieval.summary.lane_count} 条独立查询 lane</span></div>
+        <div className="research-workspace__retrieval-lanes">
+          {retrieval.lanes.map((lane) => (
+            <article className="research-workspace__retrieval-lane" key={lane.lane_id}>
+              <header><div><span>{lane.slot_id}</span><h3>{lane.business_question_zh}</h3></div><code>{lane.facet_id}</code></header>
+              <p className="research-workspace__retrieval-scope">披露主体：{lane.evidence_owner_tickers.join(" / ")} · 截至 {lane.publication_date_lte}</p>
+              <div className="research-workspace__candidate-list">
+                {lane.candidates.slice(0, 3).map((candidate) => (
+                  <div className="research-workspace__candidate" key={candidate.source_record_id}>
+                    <div><strong>{candidate.evidence_owner_ticker} · {candidate.subsection || candidate.source_type}</strong><span>{candidate.publication_date} · {candidate.source_role}</span></div>
+                    <p>{candidate.excerpt}</p>
+                    <small>{candidate.business_boundary_zh}</small>
+                  </div>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+      <Boundary text={retrieval.known_boundary} />
+    </>
   );
 }
 
@@ -330,12 +387,12 @@ function shortDigest(value: string): string {
 }
 
 function decodeRoute(pathname: string): WorkspaceRoute {
-  const match = /^\/workspace\/cases\/([^/]+)(?:\/(overview|evidence))?\/?$/.exec(pathname);
+  const match = /^\/workspace\/cases\/([^/]+)(?:\/(overview|evidence|retrieval))?\/?$/.exec(pathname);
   if (!match) return { kind: "cases" };
   return {
     kind: "case",
     caseId: decodeURIComponent(match[1]),
-    surface: match[2] === "evidence" ? "evidence" : "overview",
+    surface: match[2] === "evidence" || match[2] === "retrieval" ? match[2] : "overview",
   };
 }
 

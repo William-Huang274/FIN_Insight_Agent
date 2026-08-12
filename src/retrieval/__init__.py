@@ -1,10 +1,14 @@
-"""Shared text normalization used by the admitted index builders.
+"""Provider-neutral retrieval contracts and deterministic local candidates."""
 
-Historical BM25, dense and fusion query implementations are deliberately not
-re-exported here.  They have not been promoted into the FIN 0.1.3 product
-runtime and live in the versioned archive.
-"""
-
+from .candidate_retriever import load_candidate_corpus, retrieve_query_plan
+from .contracts import load_financial_research_kernel
+from .query_plan import compile_query_facet_plan
 from .text import tokenize
 
-__all__ = ["tokenize"]
+__all__ = [
+    "compile_query_facet_plan",
+    "load_candidate_corpus",
+    "load_financial_research_kernel",
+    "retrieve_query_plan",
+    "tokenize",
+]

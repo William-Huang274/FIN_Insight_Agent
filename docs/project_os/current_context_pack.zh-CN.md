@@ -58,8 +58,9 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 2. Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 的官方文件已确认存在，但当前产品 transport 的有界 R1–R4 未取得原始 PDF；TSM 先进封装和新鲜估值也仍是 S1-D typed gap。
 3. S1-C 同对象比较已经证明：BM25=`14/17` mapped Recall@10，BGE-M3=`12/17`，RRF/规则重排均=`13/17`。Dense 仍会把保修诉讼、资本回报、云产品定义等语义近邻冒充供给或需求机制；BM25 也会把风险段落排到当期结果前。因此当前只是路线决策，不是研究质量通过。
 4. 四条 qrel 需要 Owner review：05/11 当前 NVDA supply 目标切块以联系人和安全港为主体；15 需要允许当前 10-Q 更精确结果对象；16 的旧 metric-table identity 在当前 store 缺失。实现未擅自修改标签。
-5. Workbench 镜像仍安装数据构建依赖，冷缓存构建成本偏高；依赖拆分是非阻断基础设施优化，不能回滚已验证的数据/状态隔离。
-6. Python 基础镜像与依赖目前可从 clean-main 构建并通过；更强的镜像/依赖字节级锁定属于后续基础设施加固，不得被误写为当前研究能力，也不阻断已通过的仓库基线。
+5. 当前 query compiler 只接收 `case_key` 并固定生成 9 Slot／17 facet；Workbench retrieval API 只读预计算快照。固定 pack 可继续隔离检索排序，但自然语言问题尚未进入当前 Runtime，不能称为真实查询理解。
+6. Workbench 镜像仍安装数据构建依赖，冷缓存构建成本偏高；依赖拆分是非阻断基础设施优化，不能回滚已验证的数据/状态隔离。
+7. Python 基础镜像与依赖目前可从 clean-main 构建并通过；更强的镜像/依赖字节级锁定属于后续基础设施加固，不得被误写为当前研究能力，也不阻断已通过的仓库基线。
 
 ## 决策与停止规则
 
@@ -74,6 +75,8 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 `FIN_0_1_3_S1C_OWNER_QREL_SUCCESSOR_DECISION_AND_CACHED_RECOMPARISON`
 
+该门之后的顺序已由 Owner 冻结：先完成 S1 的 `EvidenceRequest → 按需 facet → QueryFacetPlan` 边界与 Cross-Encoder／Evidence Role 分层资格判断，再用 evaluator 识别的 residual gap 进入 S1-D 补源；S3 才拥有自然语言问题到 Research Objective／DecisionSurface 和动态追问，S4 才拥有真实输入、澄清和人工修改 UI。
+
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量
 
@@ -83,6 +86,6 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - S1-B 当前对象库已收敛到 28 parent / 1,805 child；current-object missing=0，表边界与 child 容量门通过，NVDA 当前 10-Q 已接入。
 - S1-B 原始 lexical 快照的 reviewed target 入池为 `6/3/4`，具体表现为现金槽错排、旧期压新期和关系共现污染；该数字只作为进入 S1-C 前的历史定位基线。
 - S1-C 同对象四路对照已完成：BM25=`14/17`、BGE-M3=`12/17`、RRF=`13/17`、确定性金融规则重排=`13/17` mapped Recall@10；BM25 继续默认，其余 shadow only。
-- 下一项只复核 05/11/15/16 四条 qrel successor 并用缓存复跑；随后 S1-D 处理 Dell/Micron PDF transport、TSM 先进封装和新鲜估值。
+- 下一项只复核 05/11/15/16 四条 qrel successor 并用缓存复跑；随后先闭合请求驱动查询、Cross-Encoder 与 Evidence Role，再由真实 residual gap 驱动 S1-D 处理 Dell/Micron PDF transport、TSM 先进封装和新鲜估值。
 - 权威说明：`docs/architecture/retrieval/FIN_0_1_3_S1B_CURRENT_FINANCIAL_OBJECT_STORE_20260812.zh-CN.md`。
 - S1-C 权威说明：`docs/architecture/retrieval/FIN_0_1_3_S1C_SAME_OBJECT_RANKING_COMPARISON_20260812.zh-CN.md`。

@@ -31,6 +31,12 @@ flowchart LR
 - `scripts/data_retrieval/build_current_retrieval_snapshot.py`：从本机历史 SEC candidate store 生成不可变、可审计快照，并在候选生成结束后才连接 reviewed labels。
 - Workbench `/workspace/cases/{case}/retrieval`：展示问题 facet、披露主体范围、前三候选、来源角色缺口和业务边界。
 
+### 当前查询入口边界
+
+当前 `compile_query_facet_plan(kernel, case_key)` 只消费冻结 Case Profile，并固定生成全部 9 Slot／17 facet；Workspace catalog 中展示的 `research_question` 没有被解析为类型化意图，当前 API 也只读取预计算 retrieval snapshot。因此本纵切证明的是“标准查询计划下的候选链”，不是“用户自然语言已被正确理解和转写”。
+
+Owner 于 2026-08-12 冻结后续责任：S1 新增 `EvidenceRequest → 按需 facet → QueryFacetPlan → 实际检索` 边界；S3 负责 `用户问题 → Research Objective / DecisionSurface / EvidenceRequest` 与 residual-gap 动态追问；S4 负责真实任务输入、澄清、计划查看和人工修改界面。固定 pack 继续作为隔离下游检索器的回归基线，不能被删除，也不能冒充端到端产品验收。
+
 ## 3. 本轮真实结果
 
 三个案例都由同一核心代码生成 9 slot / 17 facet；没有 ticker 条件分支，没有模型、网络、dense 或 rerank 调用。主体、日期和 source type 的硬约束无违规。

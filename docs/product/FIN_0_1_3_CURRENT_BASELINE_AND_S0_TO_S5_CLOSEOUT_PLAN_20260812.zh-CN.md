@@ -21,7 +21,7 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 | 阶段 | 只拥有的责任 | 当前事实 | 通过条件 |
 | --- | --- | --- | --- |
 | S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线 | G01–G12 已通过并合并远端 main | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿 |
-| S1 | 内外源发现、解析、chunk/object、检索、rerank、来源覆盖 | 当前 Pack 只来自 SEC；旧检索实验不在活动 Runtime | 三案及留出案例的 required-slot target-in-pool、日期/实体/关系正确，外源只补真实 residual gap |
+| S1 | 类型化 EvidenceRequest、内外源发现、解析、chunk/object、检索、rerank、Evidence Role、来源覆盖 | 当前 Pack 只来自 SEC；活动 compiler 仍按固定 case 生成全部 17 facet，尚未消费请求级 facet 选择 | 三案及留出案例的 request-to-plan、required-slot target-in-pool、日期/实体/关系和 Evidence Role 正确，外源只补真实 residual gap |
 | S2 | Evidence/NumericFact 编译、PIT、单位/期间、引用和冲突 | reviewed Evidence 可读，但三案 structured numeric=0 | 数值事实从权威对象确定性编译，跨案/错期/错单位 fail closed，S1 新证据依赖回归通过 |
 | S3 | 动态规划、工具使用、重裁决、研究综合、Workpaper/Report | 当前无活动动态 planner、模型 research chain 或完整报告产品 | 三案真实动态研究通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收 |
 | S4 | 用户任务、Evidence/Gap/Workpaper/Review/Repair 产品闭环 | 只有只读 Evidence Workspace 和独立 Operations | 当前 S3 candidate 被真实 UI 消费；review/repair/lineage 可完成且不依赖旧产品面 |
@@ -36,11 +36,12 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 3. **S1-B 已完成——current source/object 重建**：当前 store 为 28 parent / 1,805 child，含 NVDA 当前 10-Q、DELL/MU 当前 SEC、TSM 6-K 与三案 PIT market role；表边界、child 大小、身份和截至日硬门通过。Dell/Micron 官方法说 PDF transport、TSM 先进封装和新鲜估值仍为 typed gap，不阻断对象层工程关闭。
 4. **S1-C 排名对照已完成工程比较**：同一 1,805-child store 和 18 条 relevance qrels 上，BM25=`14/17`、BGE-M3=`12/17`、固定 RRF=`13/17`、确定性金融规则重排=`13/17` mapped Recall@10。BM25 继续作为候选默认；其他路线只保留 shadow。四条旧 qrel 暴露低精度／旧 identity，需要 Owner 只审 replacement labels；实现不得擅改历史标签。
 5. **当前下一门——S1-C qrel successor Owner decision**：只复核 `s1c_qrel_05/11/15/16` 的当前对象 successor。接受后用既有 embedding cache 重跑同对象评测，不重新抓源、不调模型、不为 aggregate 分数调权重。
-6. **S1-D residual-gap 补源**：只处理 S1-C/Evidence evaluator 证明的真实缺口，优先 Dell/Micron PDF transport、TSM 先进封装和 PIT 估值，再重新编译 Evidence Pack。
-7. **S2 最小依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
-8. **S3 三案动态 Agentic Research**：由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
-9. **S4 产品闭环**：把通过验收的研究结果接入当前 Workbench，而不是恢复旧页面；补齐 human review、repair 和 artifact lineage。
-10. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+6. **S1 查询入口与候选质量闭环**：保留固定 canonical query pack 作为纯检索回归；新增 `EvidenceRequest → 按需 facet → QueryFacetPlan` 当前 Runtime 边界。随后在相同对象、修正后的 qrels、hard negatives 和留出案例上，分别资格判断 BGE-M3 完整候选扩展、Cross-Encoder 重排和 Evidence Role evaluator；Cross-Encoder 分数不得直接获得 Evidence 权限。
+7. **S1-D residual-gap 补源**：只处理 S1 候选与 Evidence evaluator 证明的真实缺口，优先 Dell/Micron PDF transport、TSM 先进封装和 PIT 估值，再重新编译 Evidence Pack。
+8. **S2 最小依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
+9. **S3 三案动态 Agentic Research**：把用户问题编译成 `Research Objective / DecisionSurface / EvidenceRequest`，并由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
+10. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
+11. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
 ## 5. 防止再次膨胀的工程规则
 
@@ -58,3 +59,4 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 - 三份 reviewed Pack 通过，只说明身份、摘要、来源和 gap 可以审阅；不说明 Evidence 完整或结论可靠。
 - 数据构建脚本存在，只说明有受维护入口；不说明网络、授权、索引或数据已经就绪。
 - S1/S2/S3 的历史 proof 仍可用于诊断，但只有当前 Runtime、当前数据和当前产品消费者的复证才能成为新能力证据。
+- 固定 case 的 9 Slot／17 facet 查询包只证明下游检索部件；在 S3 自然语言规划与 S4 用户入口接通前，不得称为真实用户查询链。

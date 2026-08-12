@@ -2249,6 +2249,8 @@ FIN 0.1.3 对 18 行 accepted qrels 的全文复核确认：`18/18` 仍是有效
 
 模型可提出查询原子和后续追问 facet，但本地 compiler 继续持有身份、期间、关系方向、来源权威、预算和 Evidence promotion。检索、parser、Provider 和向量库通过稳定插件接口接入；更换模型、Provider 或索引实现不得改变金融内核。模型能力增强时可以扩大 AutonomyGrant，不能删除引用、事实权威、PIT、冲突、gap 和审阅骨架。
 
+2026-08-12 Owner 冻结查询入口的阶段边界：当前 DELL／MU／NVDA 固定 9 Slot／17 facet 查询包只用于隔离检索器、排序器和 Evidence evaluator 的部件基线，不得冒充自然语言查询理解已经完成。S1 负责消费类型化 `EvidenceRequest`，按请求选择必要 facet，并确定性编译为 `QueryFacetPlan` 和实际检索 route；S3 负责把用户问题编译成 `Research Objective / DecisionSurface`、生成 `EvidenceRequest`，并根据 residual gap 动态追问；S4 负责真实任务输入、澄清、计划查看和人工修改界面。模型只能提出未受信任的意图／查询原子，本地 compiler 继续绑定身份、截至日、关系、来源、禁止扩展和预算。只有 `用户问题 → 类型化研究意图 → EvidenceRequest → QueryFacetPlan → 候选／gap` 的当前 Runtime 集成通过，才能声称真实查询入口成立。
+
 FIN 0.1.3 的采用顺序固定为：先冻结上述合同；再做 DELL 完整纵切；MU／NVDA 必须在核心文件字节不变的情况下只改行业／案例配置完成迁移；随后用一个美国非半导体、一个 non-US 20-F／6-K、一个披露稀疏 archetype 做留出验证。留出案例的真实身份和答案在其 proof 前不得写进核心合同。只有迁移和留出测试通过后，才允许根据已证明的对象形状重建 sparse／dense。
 
 本合同不把 `capital_allocation_and_valuation` 提前变成 FIN 0.1.3 的新增硬门。该 Slot 已进入通用库，但仍按本 PRD 16.2 的版本边界保持 optional；本轮 DELL／MU／NVDA 的必需门聚焦事实、经济机制、归因、现金转换、监管、反证、typed gap 和可追溯性。

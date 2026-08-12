@@ -69,6 +69,15 @@ SLOT_COMPATIBLE_ROLES: Mapping[str, frozenset[str]] = {
     ),
 }
 
+LEGACY_EVIDENCE_SLOT_MAP: Mapping[str, str] = {
+    "customer_demand_and_deployment_validation": "demand_volume_quality",
+    "issuer_results_and_management_commentary": "operating_performance",
+    "regulatory_risk_and_financial_reconciliation": (
+        "regulatory_risk_and_financial_reconciliation"
+    ),
+    "supply_chain_capacity_and_counterevidence": "capacity_inputs_execution",
+}
+
 
 @dataclass(frozen=True)
 class EvidenceRoleEvaluation:
@@ -321,6 +330,7 @@ __all__ = [
     "EVIDENCE_ROLES",
     "EVIDENCE_ROLE_SCHEMA_VERSION",
     "EvidenceRoleEvaluation",
+    "LEGACY_EVIDENCE_SLOT_MAP",
     "SLOT_COMPATIBLE_ROLES",
     "evaluate_evidence_role",
 ]

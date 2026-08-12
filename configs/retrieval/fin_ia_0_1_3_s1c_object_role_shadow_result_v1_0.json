@@ -1,0 +1,1590 @@
+{
+  "schema_version": "fin_ia_s1c_object_role_shadow_result_v1_0",
+  "status": "object_bound_cross_encoder_and_role_shadow_complete",
+  "recorded_at": "2026-08-12",
+  "experiment_id": "FIN-0.1.3-S1C-OBJECT-BOUND-BGE-RERANKER-ROLE-AUDIT-R1",
+  "bound_inputs": {
+    "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_object_role_shadow_policy_v1_0.json",
+    "policy_sha256": "cf21c310969c8ef50e593dd4c49b221f4f1769ec679a34a7a30f1290ceb9efef",
+    "review_set_ref": "configs/retrieval/fin_ia_0_1_3_s1c_object_role_review_set_v1_0.json",
+    "review_set_sha256": "5bb5b4233fc45abf4b7344bdc4a167f9f176a17a557bc297ce52e9128c1070a4",
+    "review_set_digest": "8a9021df26a590b9cb2501c45c386dc61aa47f9a8ebff7bd2f2957714f03932c",
+    "qrels_ref": "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json",
+    "qrels_sha256": "1d56f1deef3d7082b4e308a9caae1e7b70941a66cd025620adbcc80231b7562b",
+    "qrel_manifest_digest": "116d52a44569109ac47f0ce8e0875987673862d741d952eccee1a29c607ab7f4"
+  },
+  "execution": {
+    "model_identity": {
+      "model_id": "BAAI/bge-reranker-v2-m3",
+      "local_directory_name": "modelscope_BAAI__bge-reranker-v2-m3",
+      "files": [
+        {
+          "name": "config.json",
+          "bytes": 795,
+          "sha256": "13dcd6c31d9fec9d1d8e158702072f62d7fa7d312a64b9fe057bec9a08cfe41a"
+        },
+        {
+          "name": "model.safetensors",
+          "bytes": 2271071852,
+          "sha256": "d9e3e081faff1eefb84019509b2f5558fd74c1a05a2c7db22f74174fcedb5286"
+        }
+      ],
+      "model_digest": "80b469d6bddb1e240987d002aae27658be43f83ec3dbbe3ee94ecb4b9301b994"
+    },
+    "scored_pair_count": 35,
+    "maximum_sequence_length": 1024,
+    "batch_size": 2,
+    "device": "cuda",
+    "elapsed_seconds": 1.505,
+    "pairs_per_second": 23.248,
+    "peak_gpu_memory_bytes": 1180100608,
+    "network_calls": 0,
+    "training_steps": 0,
+    "generation_model_calls": 0,
+    "labels_joined_after_scoring": true
+  },
+  "cross_encoder_development_review": {
+    "eligible_query_count": 10,
+    "pairwise_comparisons": 12,
+    "positive_over_hard_negative_pairwise_accuracy": 0.5,
+    "judged_query_top1_positive_rate": 0.6,
+    "judged_query_top3_positive_rate": 1.0,
+    "queries": [
+      {
+        "qrel_id": "s1c_qrel_01",
+        "judged_candidate_count": 2,
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "pairwise_wins": 1,
+        "pairwise_comparisons": 1,
+        "top_ranked_review_id": "s1c_role_review_001",
+        "top_ranked_judgement": "positive",
+        "ordered_reviews": [
+          {
+            "review_id": "s1c_role_review_001",
+            "object_form": "claim",
+            "judgement": "positive",
+            "score": -4.39453125
+          },
+          {
+            "review_id": "s1c_role_review_002",
+            "object_form": "metric_table",
+            "judgement": "hard_negative",
+            "score": -4.43359375
+          }
+        ]
+      },
+      {
+        "qrel_id": "s1c_qrel_02",
+        "judged_candidate_count": 2,
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "pairwise_wins": 1,
+        "pairwise_comparisons": 1,
+        "top_ranked_review_id": "s1c_role_review_003",
+        "top_ranked_judgement": "positive",
+        "ordered_reviews": [
+          {
+            "review_id": "s1c_role_review_003",
+            "object_form": "claim",
+            "judgement": "positive",
+            "score": 1.34960938
+          },
+          {
+            "review_id": "s1c_role_review_005",
+            "object_form": "claim",
+            "judgement": "hard_negative",
+            "score": -0.0173645
+          }
+        ]
+      },
+      {
+        "qrel_id": "s1c_qrel_04",
+        "judged_candidate_count": 2,
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "pairwise_wins": 0,
+        "pairwise_comparisons": 1,
+        "top_ranked_review_id": "s1c_role_review_008",
+        "top_ranked_judgement": "hard_negative",
+        "ordered_reviews": [
+          {
+            "review_id": "s1c_role_review_008",
+            "object_form": "metric_table",
+            "judgement": "hard_negative",
+            "score": -7.1875
+          },
+          {
+            "review_id": "s1c_role_review_007",
+            "object_form": "claim",
+            "judgement": "positive",
+            "score": -7.1953125
+          }
+        ]
+      },
+      {
+        "qrel_id": "s1c_qrel_05",
+        "judged_candidate_count": 2,
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "pairwise_wins": 1,
+        "pairwise_comparisons": 1,
+        "top_ranked_review_id": "s1c_role_review_009",
+        "top_ranked_judgement": "positive",
+        "ordered_reviews": [
+          {
+            "review_id": "s1c_role_review_009",
+            "object_form": "claim",
+            "judgement": "positive",
+            "score": -3.734375
+          },
+          {
+            "review_id": "s1c_role_review_010",
+            "object_form": "metric_table",
+            "judgement": "hard_negative",
+            "score": -7.84375
+          }
+        ]
+      },
+      {
+        "qrel_id": "s1c_qrel_07",
+        "judged_candidate_count": 2,
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "pairwise_wins": 1,
+        "pairwise_comparisons": 1,
+        "top_ranked_review_id": "s1c_role_review_014",
+        "top_ranked_judgement": "positive",
+        "ordered_reviews": [
+          {
+            "review_id": "s1c_role_review_014",
+            "object_form": "claim",
+            "judgement": "positive",
+            "score": -1.63964844
+          },
+          {
+            "review_id": "s1c_role_review_015",
+            "object_form": "claim",
+            "judgement": "hard_negative",
+            "score": -5.9921875
+          }
+        ]
+      },
+      {
+        "qrel_id": "s1c_qrel_09",
+        "judged_candidate_count": 2,
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "pairwise_wins": 1,
+        "pairwise_comparisons": 1,
+        "top_ranked_review_id": "s1c_role_review_017",
+        "top_ranked_judgement": "positive",
+        "ordered_reviews": [
+          {
+            "review_id": "s1c_role_review_017",
+            "object_form": "claim",
+            "judgement": "positive",
+            "score": -0.99658203
+          },
+          {
+            "review_id": "s1c_role_review_018",
+            "object_form": "claim",
+            "judgement": "hard_negative",
+            "score": -7.55859375
+          }
+        ]
+      },
+      {
+        "qrel_id": "s1c_qrel_10",
+        "judged_candidate_count": 2,
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "pairwise_wins": 0,
+        "pairwise_comparisons": 1,
+        "top_ranked_review_id": "s1c_role_review_021",
+        "top_ranked_judgement": "hard_negative",
+        "ordered_reviews": [
+          {
+            "review_id": "s1c_role_review_021",
+            "object_form": "mixed_source_segment",
+            "judgement": "hard_negative",
+            "score": -1.73046875
+          },
+          {
+            "review_id": "s1c_role_review_019",
+            "object_form": "claim",
+            "judgement": "positive",
+            "score": -6.0546875
+          }
+        ]
+      },
+      {
+        "qrel_id": "s1c_qrel_13",
+        "judged_candidate_count": 2,
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "pairwise_wins": 1,
+        "pairwise_comparisons": 1,
+        "top_ranked_review_id": "s1c_role_review_024",
+        "top_ranked_judgement": "positive",
+        "ordered_reviews": [
+          {
+            "review_id": "s1c_role_review_024",
+            "object_form": "claim",
+            "judgement": "positive",
+            "score": -1.35449219
+          },
+          {
+            "review_id": "s1c_role_review_025",
+            "object_form": "claim",
+            "judgement": "hard_negative",
+            "score": -6.0703125
+          }
+        ]
+      },
+      {
+        "qrel_id": "s1c_qrel_15",
+        "judged_candidate_count": 4,
+        "positive_count": 3,
+        "hard_negative_count": 1,
+        "pairwise_wins": 0,
+        "pairwise_comparisons": 3,
+        "top_ranked_review_id": "s1c_role_review_031",
+        "top_ranked_judgement": "hard_negative",
+        "ordered_reviews": [
+          {
+            "review_id": "s1c_role_review_031",
+            "object_form": "claim",
+            "judgement": "hard_negative",
+            "score": -0.51269531
+          },
+          {
+            "review_id": "s1c_role_review_027",
+            "object_form": "claim",
+            "judgement": "positive",
+            "score": -2.66015625
+          },
+          {
+            "review_id": "s1c_role_review_029",
+            "object_form": "metric_table",
+            "judgement": "positive",
+            "score": -3.9765625
+          },
+          {
+            "review_id": "s1c_role_review_028",
+            "object_form": "metric_table",
+            "judgement": "positive",
+            "score": -5.03125
+          }
+        ]
+      },
+      {
+        "qrel_id": "s1c_qrel_16",
+        "judged_candidate_count": 2,
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "pairwise_wins": 0,
+        "pairwise_comparisons": 1,
+        "top_ranked_review_id": "s1c_role_review_033",
+        "top_ranked_judgement": "hard_negative",
+        "ordered_reviews": [
+          {
+            "review_id": "s1c_role_review_033",
+            "object_form": "claim",
+            "judgement": "hard_negative",
+            "score": -3.9453125
+          },
+          {
+            "review_id": "s1c_role_review_032",
+            "object_form": "metric_table",
+            "judgement": "positive",
+            "score": -4.9453125
+          }
+        ]
+      }
+    ]
+  },
+  "legacy_rule_role_development_review": {
+    "positive_count": 17,
+    "hard_negative_count": 12,
+    "positive_role_compatibility_rate": 0.705882,
+    "positive_role_abstain_rate": 0.058824,
+    "hard_negative_role_suppression_rate": 0.416667,
+    "hard_negative_role_abstain_rate": 0.416667,
+    "multi_label_role_micro_precision": 0.8,
+    "multi_label_role_micro_recall": 0.372093,
+    "multi_label_role_micro_f1": 0.507936,
+    "multi_label_counts": {
+      "true_positive": 16,
+      "false_positive": 4,
+      "false_negative": 27
+    },
+    "errors_by_object_form": {
+      "claim": {
+        "hard_negative_false_compatible": 1,
+        "positive_incompatible": 4
+      },
+      "metric_table": {
+        "positive_abstain": 1
+      },
+      "mixed_source_segment": {
+        "hard_negative_false_compatible": 1
+      }
+    },
+    "object_role_details": [
+      {
+        "object_view_id": "EOV::06cec2d388082d2ac018577d",
+        "object_form": "metric_table",
+        "expected_roles": [
+          "financial_statement_or_reconciliation",
+          "observed_operating_result"
+        ],
+        "predicted_roles": [],
+        "missing_roles": [
+          "financial_statement_or_reconciliation",
+          "observed_operating_result"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::13ba8f5b92b2d95f44a7ce30",
+        "object_form": "claim",
+        "expected_roles": [
+          "demand_risk_or_counterevidence",
+          "supply_risk_or_counterevidence"
+        ],
+        "predicted_roles": [
+          "demand_risk_or_counterevidence",
+          "management_guidance"
+        ],
+        "missing_roles": [
+          "supply_risk_or_counterevidence"
+        ],
+        "spurious_roles": [
+          "management_guidance"
+        ]
+      },
+      {
+        "object_view_id": "EOV::328901d5aa1121f8e065710d",
+        "object_form": "claim",
+        "expected_roles": [
+          "capital_allocation_or_valuation",
+          "observed_operating_result"
+        ],
+        "predicted_roles": [
+          "capital_allocation_or_valuation"
+        ],
+        "missing_roles": [
+          "observed_operating_result"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::3928b5940e5dc4c7d6ed4a1e",
+        "object_form": "claim",
+        "expected_roles": [
+          "generic_or_boilerplate"
+        ],
+        "predicted_roles": [
+          "generic_or_boilerplate"
+        ],
+        "missing_roles": [],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::41e0ec54d9dded3f7a8e004f",
+        "object_form": "claim",
+        "expected_roles": [
+          "demand_risk_or_counterevidence",
+          "direct_supply_capacity_signal",
+          "supply_risk_or_counterevidence"
+        ],
+        "predicted_roles": [
+          "relationship_context",
+          "supply_risk_or_counterevidence"
+        ],
+        "missing_roles": [
+          "demand_risk_or_counterevidence",
+          "direct_supply_capacity_signal"
+        ],
+        "spurious_roles": [
+          "relationship_context"
+        ]
+      },
+      {
+        "object_view_id": "EOV::51435eeb1041133c0c6a790d",
+        "object_form": "claim",
+        "expected_roles": [
+          "generic_or_boilerplate"
+        ],
+        "predicted_roles": [],
+        "missing_roles": [
+          "generic_or_boilerplate"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::529ae5b0c5493d019a4ec952",
+        "object_form": "claim",
+        "expected_roles": [
+          "direct_demand_signal",
+          "management_guidance",
+          "observed_operating_result",
+          "relationship_context"
+        ],
+        "predicted_roles": [
+          "management_guidance"
+        ],
+        "missing_roles": [
+          "direct_demand_signal",
+          "observed_operating_result",
+          "relationship_context"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::58fd043de80cc791ed6b811f",
+        "object_form": "claim",
+        "expected_roles": [
+          "direct_demand_signal",
+          "relationship_context"
+        ],
+        "predicted_roles": [
+          "management_guidance"
+        ],
+        "missing_roles": [
+          "direct_demand_signal",
+          "relationship_context"
+        ],
+        "spurious_roles": [
+          "management_guidance"
+        ]
+      },
+      {
+        "object_view_id": "EOV::77ce86fbe60b83cbefde1c85",
+        "object_form": "parent_context",
+        "expected_roles": [],
+        "predicted_roles": [],
+        "missing_roles": [],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::857cfeab8874f35ee22ee4aa",
+        "object_form": "metric_table",
+        "expected_roles": [
+          "generic_or_boilerplate"
+        ],
+        "predicted_roles": [],
+        "missing_roles": [
+          "generic_or_boilerplate"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::8976f9250c0f5ad9113188a5",
+        "object_form": "metric_table",
+        "expected_roles": [
+          "financial_statement_or_reconciliation",
+          "observed_operating_result"
+        ],
+        "predicted_roles": [],
+        "missing_roles": [
+          "financial_statement_or_reconciliation",
+          "observed_operating_result"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::918daa67702b3cb9d747ca24",
+        "object_form": "claim",
+        "expected_roles": [
+          "direct_demand_signal",
+          "management_guidance",
+          "observed_operating_result"
+        ],
+        "predicted_roles": [
+          "direct_demand_signal",
+          "observed_operating_result"
+        ],
+        "missing_roles": [
+          "management_guidance"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::ab200641c20820fab9e41c03",
+        "object_form": "claim",
+        "expected_roles": [
+          "direct_demand_signal",
+          "observed_operating_result"
+        ],
+        "predicted_roles": [
+          "observed_operating_result"
+        ],
+        "missing_roles": [
+          "direct_demand_signal"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::ad246c634685625ef6d8be62",
+        "object_form": "parent_context",
+        "expected_roles": [],
+        "predicted_roles": [],
+        "missing_roles": [],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::bc9476c2fc5a7c9843ff60ed",
+        "object_form": "metric_table",
+        "expected_roles": [
+          "financial_statement_or_reconciliation",
+          "observed_operating_result"
+        ],
+        "predicted_roles": [
+          "financial_statement_or_reconciliation"
+        ],
+        "missing_roles": [
+          "observed_operating_result"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::c385f2b7d17f046466529f28",
+        "object_form": "parent_context",
+        "expected_roles": [],
+        "predicted_roles": [],
+        "missing_roles": [],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::c5dd4867990d1d881c7d931b",
+        "object_form": "claim",
+        "expected_roles": [
+          "direct_supply_capacity_signal",
+          "observed_operating_result",
+          "relationship_context"
+        ],
+        "predicted_roles": [
+          "direct_supply_capacity_signal",
+          "relationship_context"
+        ],
+        "missing_roles": [
+          "observed_operating_result"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::c752000d3b2364d66719061f",
+        "object_form": "mixed_source_segment",
+        "expected_roles": [
+          "regulatory_or_policy_exposure",
+          "supply_risk_or_counterevidence"
+        ],
+        "predicted_roles": [
+          "supply_risk_or_counterevidence"
+        ],
+        "missing_roles": [
+          "regulatory_or_policy_exposure"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::e0e57bd5a7e04364d306522f",
+        "object_form": "claim",
+        "expected_roles": [
+          "supply_risk_or_counterevidence"
+        ],
+        "predicted_roles": [
+          "supply_risk_or_counterevidence"
+        ],
+        "missing_roles": [],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::e14d24ee7a48db3070b6b682",
+        "object_form": "claim",
+        "expected_roles": [
+          "direct_demand_signal",
+          "direct_supply_capacity_signal",
+          "management_guidance",
+          "observed_operating_result"
+        ],
+        "predicted_roles": [
+          "management_guidance"
+        ],
+        "missing_roles": [
+          "direct_demand_signal",
+          "direct_supply_capacity_signal",
+          "observed_operating_result"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::e575091990449cd73e53f3de",
+        "object_form": "navigation_or_boilerplate",
+        "expected_roles": [
+          "generic_or_boilerplate"
+        ],
+        "predicted_roles": [],
+        "missing_roles": [
+          "generic_or_boilerplate"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::f5cdd5666e664e048f35693c",
+        "object_form": "metric_table",
+        "expected_roles": [
+          "financial_statement_or_reconciliation",
+          "observed_operating_result"
+        ],
+        "predicted_roles": [],
+        "missing_roles": [
+          "financial_statement_or_reconciliation",
+          "observed_operating_result"
+        ],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::fe1038c156a1f83fed7ec4ac",
+        "object_form": "claim",
+        "expected_roles": [
+          "observed_operating_result"
+        ],
+        "predicted_roles": [
+          "observed_operating_result"
+        ],
+        "missing_roles": [],
+        "spurious_roles": []
+      },
+      {
+        "object_view_id": "EOV::fff78429dc68628deba019ca",
+        "object_form": "metric_table",
+        "expected_roles": [
+          "financial_statement_or_reconciliation",
+          "observed_operating_result"
+        ],
+        "predicted_roles": [
+          "capital_allocation_or_valuation",
+          "financial_statement_or_reconciliation"
+        ],
+        "missing_roles": [
+          "observed_operating_result"
+        ],
+        "spurious_roles": [
+          "capital_allocation_or_valuation"
+        ]
+      }
+    ]
+  },
+  "evaluated_relations": [
+    {
+      "review_id": "s1c_role_review_001",
+      "qrel_id": "s1c_qrel_01",
+      "case_key": "DELL",
+      "object_view_id": "EOV::ab200641c20820fab9e41c03",
+      "object_key": "msft_ai_infra_investment_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -4.39453125,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "demand_volume_quality",
+        "labels": [
+          "observed_operating_result"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "observed_period_result_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_002",
+      "qrel_id": "s1c_qrel_01",
+      "case_key": "DELL",
+      "object_view_id": "EOV::857cfeab8874f35ee22ee4aa",
+      "object_key": "msft_segment_definition_table",
+      "object_form": "metric_table",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "cross_encoder_score": -4.43359375,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "demand_volume_quality",
+        "labels": [],
+        "compatibility": "abstain",
+        "reason_codes": [
+          "no_qualified_financial_role_detected"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_003",
+      "qrel_id": "s1c_qrel_02",
+      "case_key": "DELL",
+      "object_view_id": "EOV::918daa67702b3cb9d747ca24",
+      "object_key": "dell_q1_ai_orders_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "cross_encoder_score": 1.34960938,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "operating_performance",
+        "labels": [
+          "direct_demand_signal",
+          "observed_operating_result"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "direct_demand_activity_surface",
+          "observed_period_result_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_004",
+      "qrel_id": "s1c_qrel_02",
+      "case_key": "DELL",
+      "object_view_id": "EOV::77ce86fbe60b83cbefde1c85",
+      "object_key": "dell_q1_parent_context",
+      "object_form": "parent_context",
+      "relevance_judgement": "unjudged",
+      "directness": "context_only",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -2.33398438,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "operating_performance",
+        "labels": [],
+        "compatibility": "abstain",
+        "reason_codes": [
+          "no_qualified_financial_role_detected"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_005",
+      "qrel_id": "s1c_qrel_02",
+      "case_key": "DELL",
+      "object_view_id": "EOV::3928b5940e5dc4c7d6ed4a1e",
+      "object_key": "dell_company_overview_claim",
+      "object_form": "claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "cross_encoder_score": -0.0173645,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "operating_performance",
+        "labels": [
+          "generic_or_boilerplate"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "generic_company_description_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_006",
+      "qrel_id": "s1c_qrel_03",
+      "case_key": "DELL",
+      "object_view_id": "EOV::13ba8f5b92b2d95f44a7ce30",
+      "object_key": "dell_ai_demand_risk_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "cross_encoder_score": -2.29296875,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "regulatory_risk_and_financial_reconciliation",
+        "labels": [
+          "demand_risk_or_counterevidence",
+          "management_guidance"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "demand_risk_or_counterevidence_surface",
+          "forward_management_guidance_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_007",
+      "qrel_id": "s1c_qrel_04",
+      "case_key": "DELL",
+      "object_view_id": "EOV::c5dd4867990d1d881c7d931b",
+      "object_key": "mu_hbm4_shipments_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -7.1953125,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [
+          "direct_supply_capacity_signal",
+          "relationship_context"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "direct_supply_or_capacity_surface",
+          "related_entity_relationship_context_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_008",
+      "qrel_id": "s1c_qrel_04",
+      "case_key": "DELL",
+      "object_view_id": "EOV::06cec2d388082d2ac018577d",
+      "object_key": "mu_q2_business_unit_result_table",
+      "object_form": "metric_table",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "cross_encoder_score": -7.1875,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [],
+        "compatibility": "abstain",
+        "reason_codes": [
+          "no_qualified_financial_role_detected"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_009",
+      "qrel_id": "s1c_qrel_05",
+      "case_key": "DELL",
+      "object_view_id": "EOV::41e0ec54d9dded3f7a8e004f",
+      "object_key": "nvda_supply_capacity_risk_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -3.734375,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [
+          "relationship_context",
+          "supply_risk_or_counterevidence"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "related_entity_relationship_context_surface",
+          "supply_risk_or_counterevidence_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_010",
+      "qrel_id": "s1c_qrel_05",
+      "case_key": "DELL",
+      "object_view_id": "EOV::bc9476c2fc5a7c9843ff60ed",
+      "object_key": "nvda_q1_income_table",
+      "object_form": "metric_table",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "cross_encoder_score": -7.84375,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [
+          "financial_statement_or_reconciliation"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "financial_statement_or_reconciliation_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_011",
+      "qrel_id": "s1c_qrel_06",
+      "case_key": "DELL",
+      "object_view_id": "EOV::e14d24ee7a48db3070b6b682",
+      "object_key": "tsm_leading_edge_ramp_claim",
+      "object_form": "claim",
+      "relevance_judgement": "unjudged",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "background_only",
+      "cross_encoder_score": -3.0703125,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [
+          "management_guidance"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "forward_management_guidance_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_012",
+      "qrel_id": "s1c_qrel_06",
+      "case_key": "DELL",
+      "object_view_id": "EOV::f5cdd5666e664e048f35693c",
+      "object_key": "tsm_q2_result_table",
+      "object_form": "metric_table",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "cross_encoder_score": -6.55078125,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [],
+        "compatibility": "abstain",
+        "reason_codes": [
+          "no_qualified_financial_role_detected"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_013",
+      "qrel_id": "s1c_qrel_06",
+      "case_key": "DELL",
+      "object_view_id": "EOV::e575091990449cd73e53f3de",
+      "object_key": "tsm_empty_table_navigation",
+      "object_form": "navigation_or_boilerplate",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "boilerplate_or_navigation",
+      "cross_encoder_score": -9.6484375,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [],
+        "compatibility": "abstain",
+        "reason_codes": [
+          "no_qualified_financial_role_detected"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_014",
+      "qrel_id": "s1c_qrel_07",
+      "case_key": "MU",
+      "object_view_id": "EOV::918daa67702b3cb9d747ca24",
+      "object_key": "dell_q1_ai_orders_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -1.63964844,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "demand_volume_quality",
+        "labels": [
+          "direct_demand_signal",
+          "observed_operating_result"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "direct_demand_activity_surface",
+          "observed_period_result_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_015",
+      "qrel_id": "s1c_qrel_07",
+      "case_key": "MU",
+      "object_view_id": "EOV::328901d5aa1121f8e065710d",
+      "object_key": "dell_capital_return_claim",
+      "object_form": "claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "cross_encoder_score": -5.9921875,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "demand_volume_quality",
+        "labels": [
+          "capital_allocation_or_valuation"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "capital_allocation_or_valuation_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_016",
+      "qrel_id": "s1c_qrel_08",
+      "case_key": "MU",
+      "object_view_id": "EOV::ab200641c20820fab9e41c03",
+      "object_key": "msft_ai_infra_investment_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -4.33984375,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "demand_volume_quality",
+        "labels": [
+          "observed_operating_result"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "observed_period_result_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_017",
+      "qrel_id": "s1c_qrel_09",
+      "case_key": "MU",
+      "object_view_id": "EOV::529ae5b0c5493d019a4ec952",
+      "object_key": "mu_q3_result_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "cross_encoder_score": -0.99658203,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "operating_performance",
+        "labels": [
+          "management_guidance"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "forward_management_guidance_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_018",
+      "qrel_id": "s1c_qrel_09",
+      "case_key": "MU",
+      "object_view_id": "EOV::e0e57bd5a7e04364d306522f",
+      "object_key": "mu_margin_risk_claim",
+      "object_form": "claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "cross_encoder_score": -7.55859375,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "operating_performance",
+        "labels": [
+          "supply_risk_or_counterevidence"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "supply_risk_or_counterevidence_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_019",
+      "qrel_id": "s1c_qrel_10",
+      "case_key": "MU",
+      "object_view_id": "EOV::58fd043de80cc791ed6b811f",
+      "object_key": "mu_customer_commitment_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "cross_encoder_score": -6.0546875,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "regulatory_risk_and_financial_reconciliation",
+        "labels": [
+          "management_guidance"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "forward_management_guidance_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_020",
+      "qrel_id": "s1c_qrel_10",
+      "case_key": "MU",
+      "object_view_id": "EOV::ad246c634685625ef6d8be62",
+      "object_key": "mu_liquidity_parent_context",
+      "object_form": "parent_context",
+      "relevance_judgement": "unjudged",
+      "directness": "context_only",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -1.05371094,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "regulatory_risk_and_financial_reconciliation",
+        "labels": [],
+        "compatibility": "abstain",
+        "reason_codes": [
+          "no_qualified_financial_role_detected"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_021",
+      "qrel_id": "s1c_qrel_10",
+      "case_key": "MU",
+      "object_view_id": "EOV::c752000d3b2364d66719061f",
+      "object_key": "mu_international_risk_segment",
+      "object_form": "mixed_source_segment",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "cross_encoder_score": -1.73046875,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "regulatory_risk_and_financial_reconciliation",
+        "labels": [
+          "supply_risk_or_counterevidence"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "supply_risk_or_counterevidence_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_022",
+      "qrel_id": "s1c_qrel_11",
+      "case_key": "MU",
+      "object_view_id": "EOV::41e0ec54d9dded3f7a8e004f",
+      "object_key": "nvda_supply_capacity_risk_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -3.80859375,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [
+          "relationship_context",
+          "supply_risk_or_counterevidence"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "related_entity_relationship_context_surface",
+          "supply_risk_or_counterevidence_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_023",
+      "qrel_id": "s1c_qrel_12",
+      "case_key": "MU",
+      "object_view_id": "EOV::e14d24ee7a48db3070b6b682",
+      "object_key": "tsm_leading_edge_ramp_claim",
+      "object_form": "claim",
+      "relevance_judgement": "unjudged",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "background_only",
+      "cross_encoder_score": -2.61328125,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [
+          "management_guidance"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "forward_management_guidance_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_024",
+      "qrel_id": "s1c_qrel_13",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::918daa67702b3cb9d747ca24",
+      "object_key": "dell_q1_ai_orders_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -1.35449219,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "demand_volume_quality",
+        "labels": [
+          "direct_demand_signal",
+          "observed_operating_result"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "direct_demand_activity_surface",
+          "observed_period_result_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_025",
+      "qrel_id": "s1c_qrel_13",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::328901d5aa1121f8e065710d",
+      "object_key": "dell_capital_return_claim",
+      "object_form": "claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "cross_encoder_score": -6.0703125,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "demand_volume_quality",
+        "labels": [
+          "capital_allocation_or_valuation"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "capital_allocation_or_valuation_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_026",
+      "qrel_id": "s1c_qrel_14",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::ab200641c20820fab9e41c03",
+      "object_key": "msft_ai_infra_investment_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -4.6875,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "demand_volume_quality",
+        "labels": [
+          "observed_operating_result"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "observed_period_result_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_027",
+      "qrel_id": "s1c_qrel_15",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::fe1038c156a1f83fed7ec4ac",
+      "object_key": "nvda_q1_result_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "cross_encoder_score": -2.66015625,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "operating_performance",
+        "labels": [
+          "observed_operating_result"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "observed_period_result_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_028",
+      "qrel_id": "s1c_qrel_15",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::bc9476c2fc5a7c9843ff60ed",
+      "object_key": "nvda_q1_income_table",
+      "object_form": "metric_table",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "cross_encoder_score": -5.03125,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "operating_performance",
+        "labels": [
+          "financial_statement_or_reconciliation"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "financial_statement_or_reconciliation_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_029",
+      "qrel_id": "s1c_qrel_15",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::8976f9250c0f5ad9113188a5",
+      "object_key": "nvda_q1_mdna_summary_table",
+      "object_form": "metric_table",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "cross_encoder_score": -3.9765625,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "operating_performance",
+        "labels": [],
+        "compatibility": "abstain",
+        "reason_codes": [
+          "no_qualified_financial_role_detected"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_030",
+      "qrel_id": "s1c_qrel_15",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::c385f2b7d17f046466529f28",
+      "object_key": "nvda_q1_parent_context",
+      "object_form": "parent_context",
+      "relevance_judgement": "unjudged",
+      "directness": "context_only",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -3.74804688,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "operating_performance",
+        "labels": [],
+        "compatibility": "abstain",
+        "reason_codes": [
+          "no_qualified_financial_role_detected"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_031",
+      "qrel_id": "s1c_qrel_15",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::51435eeb1041133c0c6a790d",
+      "object_key": "nvda_risk_preamble_claim",
+      "object_form": "claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "boilerplate_or_navigation",
+      "cross_encoder_score": -0.51269531,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "operating_performance",
+        "labels": [],
+        "compatibility": "abstain",
+        "reason_codes": [
+          "no_qualified_financial_role_detected"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_032",
+      "qrel_id": "s1c_qrel_16",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::fff78429dc68628deba019ca",
+      "object_key": "nvda_q1_cash_flow_table",
+      "object_form": "metric_table",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "cross_encoder_score": -4.9453125,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "regulatory_risk_and_financial_reconciliation",
+        "labels": [
+          "capital_allocation_or_valuation",
+          "financial_statement_or_reconciliation"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "capital_allocation_or_valuation_surface",
+          "financial_statement_or_reconciliation_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_033",
+      "qrel_id": "s1c_qrel_16",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::41e0ec54d9dded3f7a8e004f",
+      "object_key": "nvda_supply_capacity_risk_claim",
+      "object_form": "claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "cross_encoder_score": -3.9453125,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "regulatory_risk_and_financial_reconciliation",
+        "labels": [
+          "supply_risk_or_counterevidence"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "supply_risk_or_counterevidence_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_034",
+      "qrel_id": "s1c_qrel_17",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::c5dd4867990d1d881c7d931b",
+      "object_key": "mu_hbm4_shipments_claim",
+      "object_form": "claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "cross_encoder_score": -6.56640625,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [
+          "direct_supply_capacity_signal",
+          "relationship_context"
+        ],
+        "compatibility": "compatible",
+        "reason_codes": [
+          "direct_supply_or_capacity_surface",
+          "related_entity_relationship_context_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    },
+    {
+      "review_id": "s1c_role_review_035",
+      "qrel_id": "s1c_qrel_18",
+      "case_key": "NVDA",
+      "object_view_id": "EOV::e14d24ee7a48db3070b6b682",
+      "object_key": "tsm_leading_edge_ramp_claim",
+      "object_form": "claim",
+      "relevance_judgement": "unjudged",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "background_only",
+      "cross_encoder_score": -3.05859375,
+      "legacy_rule_role": {
+        "schema_version": "fin_ia_evidence_role_evaluation_v1_0",
+        "slot_id": "capacity_inputs_execution",
+        "labels": [
+          "management_guidance"
+        ],
+        "compatibility": "incompatible",
+        "reason_codes": [
+          "forward_management_guidance_surface"
+        ],
+        "decision_basis": "deterministic_metadata_and_phrase_rules_v1",
+        "evidence_promoted": false
+      }
+    }
+  ],
+  "decision": {
+    "cross_encoder_object_projection_credible": false,
+    "legacy_rule_role_credible": false,
+    "fine_tuning_eligible": false,
+    "next_disposition": "repair_query_decomposition_or_object_projection_before_any_model_training",
+    "real_source_semantic_gap": {
+      "code": "tsm_advanced_packaging_capacity_not_present_in_reviewed_target",
+      "affected_qrels": [
+        "s1c_qrel_06",
+        "s1c_qrel_12",
+        "s1c_qrel_18"
+      ],
+      "owning_stage": "S1-D targeted source supplementation",
+      "currently_authorized": false
+    },
+    "representation_gap": {
+      "code": "primary_pack_claim_or_metric_surface_unbound_for_role_training",
+      "affected_evidence_item_count": 45,
+      "owning_stage": "S1-C object compiler and reviewed role labels"
+    }
+  },
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "evidence_promoted": false,
+    "cross_encoder_runtime_promoted": false,
+    "legacy_rule_role_runtime_promoted": false,
+    "fine_tuning_authorized": false,
+    "s1d_authorized": false,
+    "s1_complete_claimed": false
+  },
+  "known_boundary": "This fixed-model result is a post-contract development audit on 24 source-bound objects and 35 reviewed relations. It does not reuse ORCL, ASML or ANET, does not train a model, and cannot establish independent generalization or Evidence authority.",
+  "result_digest": "4b6ff6e734f4b410dc6713e39c759aec06f81118a33a17f4ac86cee0c0f27c3e"
+}

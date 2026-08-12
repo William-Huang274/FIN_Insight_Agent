@@ -1,0 +1,939 @@
+{
+  "schema_version": "fin_ia_s1c_object_role_adjudication_v1_0",
+  "status": "codex_reviewed_development_labels_frozen",
+  "recorded_at": "2026-08-12",
+  "scope": "FIN_0_1_3_S1C_OBJECT_LEVEL_EVIDENCE_ROLE_DEVELOPMENT_REVIEW",
+  "review_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+  "bound_inputs": {
+    "qrels": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json",
+      "sha256": "1d56f1deef3d7082b4e308a9caae1e7b70941a66cd025620adbcc80231b7562b"
+    },
+    "records": {
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v1/records.jsonl",
+      "sha256": "484a18a2d7c5e2b8ab42eea97d8c68bbad37cfb49fe1a2c943d64d1381ad4382"
+    },
+    "documents": {
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v1/documents.jsonl",
+      "sha256": "04c8774f74f7b6fb25a4fad9eadf8e585e938ac549ab2bc7239bb7215549b7ab"
+    },
+    "pack_result": {
+      "ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json",
+      "sha256": "1da1d1e21d7b3b3211bb0008b5ac00c8b9bca8c2af17712354095ab4708117a0"
+    }
+  },
+  "policy": {
+    "development_cases_only": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "holdout_cases_forbidden": [
+      "ANET",
+      "ASML",
+      "ORCL"
+    ],
+    "objects_selected_without_new_model_scores": true,
+    "human_labels_never_enter_object_surface": true,
+    "ranking_relevance_not_equal_evidence_support": true,
+    "parent_context_qualifies_but_never_proves_claim": true,
+    "cross_slot_absence_is_unjudged_unless_explicitly_reviewed": true,
+    "candidate_is_not_evidence": true
+  },
+  "objects": [
+    {
+      "object_key": "msft_ai_infra_investment_claim",
+      "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "object_form": "claim",
+      "locator": {
+        "mode": "exact_text",
+        "text": "Gross margin percentage decreased driven by continued investments in AI infrastructure and growing AI product usage, offset in part by efficiency gains across the Microsoft Cloud."
+      },
+      "role_labels": [
+        "direct_demand_signal",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "evidence_owner_reports_real_ai_infrastructure_spending_effect",
+        "does_not_disclose_subject_specific_procurement"
+      ]
+    },
+    {
+      "object_key": "dell_q1_ai_orders_claim",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "object_form": "claim",
+      "locator": {
+        "mode": "exact_text",
+        "text": "“We booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue. We’re increasing our AI server revenue expectations for FY27 to $60 billion, which only goes to show the AI opportunity shows no signs of slowing.”"
+      },
+      "role_labels": [
+        "direct_demand_signal",
+        "management_guidance",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed",
+        "management_guidance"
+      ],
+      "reason_codes": [
+        "orders_and_recognized_revenue_are_separately_visible",
+        "future_revenue_expectation_is_management_guidance"
+      ]
+    },
+    {
+      "object_key": "dell_ai_demand_risk_claim",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02",
+      "object_form": "claim",
+      "locator": {
+        "mode": "bounded_text",
+        "start_text": "While we expect the buyer base for our AI solutions to continue to expand",
+        "end_text": "could adversely affect our cash flow and expose us to the risk of holding excess and obsolete inventory due to delays or cancellations."
+      },
+      "role_labels": [
+        "demand_risk_or_counterevidence",
+        "supply_risk_or_counterevidence"
+      ],
+      "fact_state_labels": [
+        "management_risk_or_hypothesis"
+      ],
+      "reason_codes": [
+        "customer_concentration_and_order_timing_risk",
+        "working_capital_and_inventory_counterevidence"
+      ]
+    },
+    {
+      "object_key": "mu_hbm4_shipments_claim",
+      "source_record_id": "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03",
+      "object_form": "claim",
+      "locator": {
+        "mode": "exact_text",
+        "text": "HBM4, built on 1-beta DRAM technology, is in high-volume shipments for our lead customer's platform, and qualification samples have been shipped to multiple end-customers."
+      },
+      "role_labels": [
+        "direct_supply_capacity_signal",
+        "observed_operating_result",
+        "relationship_context"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "high_volume_shipments_are_observed_supply_execution",
+        "customer_identity_and_subject_allocation_remain_unattributed"
+      ]
+    },
+    {
+      "object_key": "nvda_supply_capacity_risk_claim",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04",
+      "object_form": "claim",
+      "locator": {
+        "mode": "bounded_text",
+        "start_text": "We continue to increase our supply and capacity purchases with existing and new suppliers",
+        "end_text": "Delays or shortfalls could impact our ability to meet demand."
+      },
+      "role_labels": [
+        "demand_risk_or_counterevidence",
+        "direct_supply_capacity_signal",
+        "supply_risk_or_counterevidence"
+      ],
+      "fact_state_labels": [
+        "reported_observed",
+        "contractual_commitment",
+        "management_risk_or_hypothesis"
+      ],
+      "reason_codes": [
+        "capacity_purchases_and_prepaid_agreements_are_direct_supply_actions",
+        "production_scaling_and_demand_mismatch_remain_risks"
+      ]
+    },
+    {
+      "object_key": "tsm_leading_edge_ramp_claim",
+      "source_record_id": "CURRENT_DOC::TSM::6_K::0001046179_26_000451::ITEM_CURRENT_REPORT::BLOCK_0001::PART_01_OF_01",
+      "object_form": "claim",
+      "locator": {
+        "mode": "exact_text",
+        "text": "“Our business in the second quarter was supported by strong demand for our leading-edge process technologies,” said Wendell Huang, Senior VP and Chief Financial Officer of TSMC. “Moving into third quarter 2026, we expect our business to be supported by continued strong demand for our leading-edge process technologies, including the steep ramp-up of our 2-nanometer technology.”"
+      },
+      "role_labels": [
+        "direct_demand_signal",
+        "direct_supply_capacity_signal",
+        "management_guidance",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed",
+        "management_guidance"
+      ],
+      "reason_codes": [
+        "leading_edge_demand_and_two_nanometer_ramp_are_visible",
+        "cowos_or_advanced_packaging_capacity_is_not_visible"
+      ]
+    },
+    {
+      "object_key": "mu_q3_result_claim",
+      "source_record_id": "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03",
+      "object_form": "claim",
+      "locator": {
+        "mode": "bounded_text",
+        "start_text": "“Micron’s record fiscal Q3 financial results",
+        "end_text": "We believe our multi-year Strategic Customer Agreements will significantly enhance the durability and predictability of Micron’s strong financial performance.”"
+      },
+      "role_labels": [
+        "direct_demand_signal",
+        "management_guidance",
+        "observed_operating_result",
+        "relationship_context"
+      ],
+      "fact_state_labels": [
+        "reported_observed",
+        "management_guidance"
+      ],
+      "reason_codes": [
+        "management_separates_reported_results_from_outlook",
+        "customer_agreement_claim_requires_contract_detail_for_attribution"
+      ]
+    },
+    {
+      "object_key": "mu_customer_commitment_claim",
+      "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0009::PART_01_OF_02",
+      "object_form": "claim",
+      "locator": {
+        "mode": "bounded_text",
+        "start_text": "We recently executed certain strategic customer agreements",
+        "end_text": "Approximately $18 billion of these commitments will be in the form of cash deposits."
+      },
+      "role_labels": [
+        "direct_demand_signal",
+        "relationship_context"
+      ],
+      "fact_state_labels": [
+        "contractual_commitment",
+        "management_guidance"
+      ],
+      "reason_codes": [
+        "binding_volume_commitments_are_direct_demand_quality",
+        "expected_deposit_amount_is_forward_until_received"
+      ]
+    },
+    {
+      "object_key": "nvda_q1_result_claim",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+      "object_form": "claim",
+      "locator": {
+        "mode": "bounded_text",
+        "start_text": "NVIDIA (NASDAQ: NVDA) today reported record revenue",
+        "end_text": "For the quarter, GAAP and non-GAAP earnings per diluted share were $2.39 and $1.87, respectively."
+      },
+      "role_labels": [
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "reported_period_results_are_direct_issuer_evidence",
+        "revenue_does_not_alone_prove_demand_causality"
+      ]
+    },
+    {
+      "object_key": "nvda_q1_income_table",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04",
+      "object_form": "metric_table",
+      "locator": {
+        "mode": "balanced_table",
+        "table_id": "8"
+      },
+      "role_labels": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "period_header_metric_row_and_unit_are_source_visible",
+        "table_requires_numeric_coordinate_compiler_before_fact_promotion"
+      ]
+    },
+    {
+      "object_key": "nvda_q1_cash_flow_table",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_03_OF_04",
+      "object_form": "metric_table",
+      "locator": {
+        "mode": "balanced_table",
+        "table_id": "12"
+      },
+      "role_labels": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "cash_flow_reconciliation_and_working_capital_rows_are_visible",
+        "table_requires_numeric_coordinate_compiler_before_fact_promotion"
+      ]
+    },
+    {
+      "object_key": "nvda_q1_mdna_summary_table",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_02_OF_02",
+      "object_form": "metric_table",
+      "locator": {
+        "mode": "balanced_table",
+        "table_id": "36"
+      },
+      "role_labels": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "quarter_over_quarter_and_year_over_year_result_bridge_is_visible",
+        "management_discussion_table_is_not_an_audited_fact_by_itself"
+      ]
+    },
+    {
+      "object_key": "dell_q1_parent_context",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "object_form": "parent_context",
+      "locator": {
+        "mode": "parent_context"
+      },
+      "role_labels": [],
+      "fact_state_labels": [
+        "not_applicable"
+      ],
+      "reason_codes": [
+        "parent_context_qualifies_source_period_and_section_only"
+      ]
+    },
+    {
+      "object_key": "mu_liquidity_parent_context",
+      "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0009::PART_01_OF_02",
+      "object_form": "parent_context",
+      "locator": {
+        "mode": "parent_context"
+      },
+      "role_labels": [],
+      "fact_state_labels": [
+        "not_applicable"
+      ],
+      "reason_codes": [
+        "parent_context_qualifies_source_period_and_section_only"
+      ]
+    },
+    {
+      "object_key": "nvda_q1_parent_context",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+      "object_form": "parent_context",
+      "locator": {
+        "mode": "parent_context"
+      },
+      "role_labels": [],
+      "fact_state_labels": [
+        "not_applicable"
+      ],
+      "reason_codes": [
+        "parent_context_qualifies_source_period_and_section_only"
+      ]
+    },
+    {
+      "object_key": "dell_company_overview_claim",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0001::PART_01_OF_01",
+      "object_form": "claim",
+      "locator": {
+        "mode": "bounded_text",
+        "start_text": "Dell Technologies is a leader in the global technology industry",
+        "end_text": "drive better business outcomes."
+      },
+      "role_labels": [
+        "generic_or_boilerplate"
+      ],
+      "fact_state_labels": [
+        "standing_business_description"
+      ],
+      "reason_codes": [
+        "company_description_has_no_current_period_result"
+      ]
+    },
+    {
+      "object_key": "msft_segment_definition_table",
+      "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "object_form": "metric_table",
+      "locator": {
+        "mode": "balanced_table",
+        "table_id": "45"
+      },
+      "role_labels": [
+        "generic_or_boilerplate"
+      ],
+      "fact_state_labels": [
+        "standing_business_description"
+      ],
+      "reason_codes": [
+        "metric_definition_table_contains_no_period_value_or_deployment"
+      ]
+    },
+    {
+      "object_key": "mu_q2_business_unit_result_table",
+      "source_record_id": "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+      "object_form": "metric_table",
+      "locator": {
+        "mode": "balanced_table",
+        "table_id": "3"
+      },
+      "role_labels": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "business_unit_results_do_not_show_capacity_ramp_or_constraint"
+      ]
+    },
+    {
+      "object_key": "tsm_q2_result_table",
+      "source_record_id": "CURRENT_DOC::TSM::6_K::0001046179_26_000451::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_01",
+      "object_form": "metric_table",
+      "locator": {
+        "mode": "balanced_table",
+        "table_id": "3"
+      },
+      "role_labels": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "consolidated_results_do_not_show_packaging_capacity_or_allocation"
+      ]
+    },
+    {
+      "object_key": "mu_margin_risk_claim",
+      "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0003::PART_01_OF_01",
+      "object_form": "claim",
+      "locator": {
+        "mode": "bounded_text",
+        "start_text": "Our gross margins may be adversely affected by a range of factors.",
+        "end_text": "prevent deterioration of or improve gross margins include, but are not limited to:"
+      },
+      "role_labels": [
+        "supply_risk_or_counterevidence"
+      ],
+      "fact_state_labels": [
+        "management_risk_or_hypothesis"
+      ],
+      "reason_codes": [
+        "risk_factor_is_not_observed_period_result"
+      ]
+    },
+    {
+      "object_key": "mu_international_risk_segment",
+      "source_record_id": "MU_2026_10Q_ITEM1A_BLOCK_0005_PART_02_OF_02",
+      "object_form": "mixed_source_segment",
+      "locator": {
+        "mode": "full_source_segment"
+      },
+      "role_labels": [
+        "regulatory_or_policy_exposure",
+        "supply_risk_or_counterevidence"
+      ],
+      "fact_state_labels": [
+        "management_risk_or_hypothesis",
+        "mixed"
+      ],
+      "reason_codes": [
+        "broad_risk_segment_has_no_claim_level_financial_reconciliation",
+        "mixed_segment_retained_to_measure_granularity_failure"
+      ]
+    },
+    {
+      "object_key": "nvda_risk_preamble_claim",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0001::PART_01_OF_01",
+      "object_form": "claim",
+      "locator": {
+        "mode": "bounded_text",
+        "start_text": "Other than the risk factors listed below",
+        "end_text": "may also harm our business, financial condition, results of operations or reputation."
+      },
+      "role_labels": [
+        "generic_or_boilerplate"
+      ],
+      "fact_state_labels": [
+        "management_risk_or_hypothesis"
+      ],
+      "reason_codes": [
+        "generic_risk_preamble_contains_no_current_result_or_mechanism"
+      ]
+    },
+    {
+      "object_key": "dell_capital_return_claim",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+      "object_form": "claim",
+      "locator": {
+        "mode": "exact_text",
+        "text": "Dell Technologies returned $2.1 billion to shareholders in the first quarter through share repurchases and dividends."
+      },
+      "role_labels": [
+        "capital_allocation_or_valuation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "capital_return_is_real_but_not_customer_demand"
+      ]
+    },
+    {
+      "object_key": "tsm_empty_table_navigation",
+      "source_record_id": "CURRENT_DOC::TSM::6_K::0001046179_26_000451::ITEM_CURRENT_REPORT::BLOCK_0001::PART_01_OF_01",
+      "object_form": "navigation_or_boilerplate",
+      "locator": {
+        "mode": "balanced_table",
+        "table_id": "1"
+      },
+      "role_labels": [
+        "generic_or_boilerplate"
+      ],
+      "fact_state_labels": [
+        "not_applicable"
+      ],
+      "reason_codes": [
+        "empty_parser_table_has_no_financial_or_operating_content"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "review_id": "s1c_role_review_001",
+      "qrel_id": "s1c_qrel_01",
+      "object_key": "msft_ai_infra_investment_claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "direct_for_msft_spend_but_not_dell_procurement"
+      ],
+      "business_rationale_zh": "微软明确说 AI 基础设施投入压低云毛利，可证明客户侧真实投入，但不能推出其中有多少采购自 Dell。"
+    },
+    {
+      "review_id": "s1c_role_review_002",
+      "qrel_id": "s1c_qrel_01",
+      "object_key": "msft_segment_definition_table",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "definition_not_demand_observation"
+      ],
+      "business_rationale_zh": "这张表只解释 Azure 等指标包含什么，没有当期投入、部署或采购事实，不能回答需求问题。"
+    },
+    {
+      "review_id": "s1c_role_review_003",
+      "qrel_id": "s1c_qrel_02",
+      "object_key": "dell_q1_ai_orders_claim",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_orders_revenue_and_guidance_visible"
+      ],
+      "business_rationale_zh": "Dell 同时披露 AI 订单、已确认收入和全年展望，是本案当期经营表现的核心直接证据。"
+    },
+    {
+      "review_id": "s1c_role_review_004",
+      "qrel_id": "s1c_qrel_02",
+      "object_key": "dell_q1_parent_context",
+      "relevance_judgement": "unjudged",
+      "directness": "context_only",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "parent_qualifies_source_not_claim"
+      ],
+      "business_rationale_zh": "父文档能确认这是 Dell 业绩稿及其日期，但单靠父级元数据不能证明订单或收入。"
+    },
+    {
+      "review_id": "s1c_role_review_005",
+      "qrel_id": "s1c_qrel_02",
+      "object_key": "dell_company_overview_claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "standing_description_substituted_for_period_result"
+      ],
+      "business_rationale_zh": "公司概览讲 Dell 做什么，不是 Q1 FY27 已发生的订单、收入或利润表现。"
+    },
+    {
+      "review_id": "s1c_role_review_006",
+      "qrel_id": "s1c_qrel_03",
+      "object_key": "dell_ai_demand_risk_claim",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_specific_counterevidence_and_financial_mechanism"
+      ],
+      "business_rationale_zh": "该段直接说明大客户集中、订单波动、营运资金和库存风险，能约束对 Dell AI 增长质量的判断。"
+    },
+    {
+      "review_id": "s1c_role_review_007",
+      "qrel_id": "s1c_qrel_04",
+      "object_key": "mu_hbm4_shipments_claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "supplier_execution_visible_subject_allocation_unknown"
+      ],
+      "business_rationale_zh": "Micron 已高量出货 HBM4，能证明供应侧执行进展；但没有披露给 Dell 的具体份额。"
+    },
+    {
+      "review_id": "s1c_role_review_008",
+      "qrel_id": "s1c_qrel_04",
+      "object_key": "mu_q2_business_unit_result_table",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "financial_result_not_supply_execution"
+      ],
+      "business_rationale_zh": "业务单元收入和毛利能说明结果，不能替代 HBM 产能、良率、爬坡或约束证据。"
+    },
+    {
+      "review_id": "s1c_role_review_009",
+      "qrel_id": "s1c_qrel_05",
+      "object_key": "nvda_supply_capacity_risk_claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "platform_supply_actions_and_constraints_visible"
+      ],
+      "business_rationale_zh": "NVIDIA 明确披露产能采购、预付协议和扩产难点，能约束 Dell 上游 GPU 供给判断，但不能直接归因到 Dell 配额。"
+    },
+    {
+      "review_id": "s1c_role_review_010",
+      "qrel_id": "s1c_qrel_05",
+      "object_key": "nvda_q1_income_table",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "income_statement_not_capacity_mechanism"
+      ],
+      "business_rationale_zh": "利润表是重要结果证据，但没有产能采购、良率、爬坡或供应约束，不能回答供应链问题。"
+    },
+    {
+      "review_id": "s1c_role_review_011",
+      "qrel_id": "s1c_qrel_06",
+      "object_key": "tsm_leading_edge_ramp_claim",
+      "relevance_judgement": "unjudged",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "background_only",
+      "reason_codes": [
+        "leading_edge_ramp_visible_but_requested_packaging_capacity_absent"
+      ],
+      "business_rationale_zh": "这段能证明 2nm 需求和爬坡，但题目要的是 CoWoS/先进封装产能与约束；相关却不足以作为该槽位正例。"
+    },
+    {
+      "review_id": "s1c_role_review_012",
+      "qrel_id": "s1c_qrel_06",
+      "object_key": "tsm_q2_result_table",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "consolidated_result_not_packaging_capacity"
+      ],
+      "business_rationale_zh": "合并收入和利润表不能证明 CoWoS 容量、利用率、良率或客户分配。"
+    },
+    {
+      "review_id": "s1c_role_review_013",
+      "qrel_id": "s1c_qrel_06",
+      "object_key": "tsm_empty_table_navigation",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "boilerplate_or_navigation",
+      "reason_codes": [
+        "empty_table_parser_artifact"
+      ],
+      "business_rationale_zh": "这是解析产生的空表标记，没有任何业务事实，必须在 Evidence Gate 前剔除。"
+    },
+    {
+      "review_id": "s1c_role_review_014",
+      "qrel_id": "s1c_qrel_07",
+      "object_key": "dell_q1_ai_orders_claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "customer_ai_orders_are_memory_demand_readthrough"
+      ],
+      "business_rationale_zh": "Dell AI 服务器订单是 Micron 下游需求旁证，但没有披露 Micron 内存金额或份额。"
+    },
+    {
+      "review_id": "s1c_role_review_015",
+      "qrel_id": "s1c_qrel_07",
+      "object_key": "dell_capital_return_claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "capital_return_not_customer_deployment"
+      ],
+      "business_rationale_zh": "Dell 回购和分红是真实事实，但与 AI 服务器下单、部署和内存需求无关。"
+    },
+    {
+      "review_id": "s1c_role_review_016",
+      "qrel_id": "s1c_qrel_08",
+      "object_key": "msft_ai_infra_investment_claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "hyperscaler_ai_spend_is_memory_demand_readthrough"
+      ],
+      "business_rationale_zh": "微软的 AI 基础设施投入是 Micron 需求环境旁证，但没有 Micron 专属采购额。"
+    },
+    {
+      "review_id": "s1c_role_review_017",
+      "qrel_id": "s1c_qrel_09",
+      "object_key": "mu_q3_result_claim",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_results_and_demand_outlook_visible"
+      ],
+      "business_rationale_zh": "Micron 管理层把已实现 Q3 结果、Q4 展望和客户协议联系起来，是经营判断的直接材料，但仍需把事实和展望分开。"
+    },
+    {
+      "review_id": "s1c_role_review_018",
+      "qrel_id": "s1c_qrel_09",
+      "object_key": "mu_margin_risk_claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "risk_hypothesis_not_period_result"
+      ],
+      "business_rationale_zh": "毛利风险因子适合反方或 WWC，不是当期收入、利润和现金流结果。"
+    },
+    {
+      "review_id": "s1c_role_review_019",
+      "qrel_id": "s1c_qrel_10",
+      "object_key": "mu_customer_commitment_claim",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "binding_volume_and_deposit_mechanism_visible"
+      ],
+      "business_rationale_zh": "绑定采购量和客户存款构成需求质量与现金机制的直接证据，但预计存款不能冒充已到账现金。"
+    },
+    {
+      "review_id": "s1c_role_review_020",
+      "qrel_id": "s1c_qrel_10",
+      "object_key": "mu_liquidity_parent_context",
+      "relevance_judgement": "unjudged",
+      "directness": "context_only",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "parent_qualifies_source_not_financial_claim"
+      ],
+      "business_rationale_zh": "父级元数据能确认 10-Q、期间和 MD&A 位置，但不能单独证明客户存款或流动性数值。"
+    },
+    {
+      "review_id": "s1c_role_review_021",
+      "qrel_id": "s1c_qrel_10",
+      "object_key": "mu_international_risk_segment",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "broad_policy_risk_not_financial_reconciliation"
+      ],
+      "business_rationale_zh": "国际经营风险可作为宏观反方，但不能替代库存、现金、客户存款和资本支出的当期桥接。"
+    },
+    {
+      "review_id": "s1c_role_review_022",
+      "qrel_id": "s1c_qrel_11",
+      "object_key": "nvda_supply_capacity_risk_claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "gpu_platform_supply_constraints_are_memory_ecosystem_context"
+      ],
+      "business_rationale_zh": "NVIDIA 的供应与产能安排能约束 Micron 所处 AI 生态的交付节奏，但不证明 Micron 获得的订单或份额。"
+    },
+    {
+      "review_id": "s1c_role_review_023",
+      "qrel_id": "s1c_qrel_12",
+      "object_key": "tsm_leading_edge_ramp_claim",
+      "relevance_judgement": "unjudged",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "background_only",
+      "reason_codes": [
+        "requested_packaging_or_memory_supply_mechanism_absent"
+      ],
+      "business_rationale_zh": "2nm 需求和爬坡与半导体景气相关，但不能直接回答 Micron 的 HBM/DRAM 供给约束。"
+    },
+    {
+      "review_id": "s1c_role_review_024",
+      "qrel_id": "s1c_qrel_13",
+      "object_key": "dell_q1_ai_orders_claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "downstream_ai_server_orders_are_gpu_demand_readthrough"
+      ],
+      "business_rationale_zh": "Dell AI 服务器订单是 NVIDIA 下游需求旁证，但无法拆出 GPU 型号、数量、价格或交付节奏。"
+    },
+    {
+      "review_id": "s1c_role_review_025",
+      "qrel_id": "s1c_qrel_13",
+      "object_key": "dell_capital_return_claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "capital_return_not_gpu_demand"
+      ],
+      "business_rationale_zh": "Dell 股东回报不提供 GPU 采购、AI 服务器部署或订单转换信息。"
+    },
+    {
+      "review_id": "s1c_role_review_026",
+      "qrel_id": "s1c_qrel_14",
+      "object_key": "msft_ai_infra_investment_claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "hyperscaler_ai_investment_is_gpu_demand_readthrough"
+      ],
+      "business_rationale_zh": "微软 AI 基础设施投入证明 hyperscaler 需求环境，但不能直接归因到 NVIDIA 的采购金额。"
+    },
+    {
+      "review_id": "s1c_role_review_027",
+      "qrel_id": "s1c_qrel_15",
+      "object_key": "nvda_q1_result_claim",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_period_result_visible"
+      ],
+      "business_rationale_zh": "NVIDIA 当季收入、毛利率和 EPS 是公司经营结果的直接披露。"
+    },
+    {
+      "review_id": "s1c_role_review_028",
+      "qrel_id": "s1c_qrel_15",
+      "object_key": "nvda_q1_income_table",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_income_statement_coordinates_visible"
+      ],
+      "business_rationale_zh": "10-Q 利润表提供收入、毛利、营业利润和净利润的期间坐标，是结果核验核心表格。"
+    },
+    {
+      "review_id": "s1c_role_review_029",
+      "qrel_id": "s1c_qrel_15",
+      "object_key": "nvda_q1_mdna_summary_table",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_period_change_bridge_visible"
+      ],
+      "business_rationale_zh": "MD&A 汇总表补充环比、同比变化，适合解释结果变化，但最终数值仍须绑定行列坐标。"
+    },
+    {
+      "review_id": "s1c_role_review_030",
+      "qrel_id": "s1c_qrel_15",
+      "object_key": "nvda_q1_parent_context",
+      "relevance_judgement": "unjudged",
+      "directness": "context_only",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "parent_qualifies_source_not_result"
+      ],
+      "business_rationale_zh": "父级元数据可确认来源和期间，不能单独证明收入或利润。"
+    },
+    {
+      "review_id": "s1c_role_review_031",
+      "qrel_id": "s1c_qrel_15",
+      "object_key": "nvda_risk_preamble_claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "boilerplate_or_navigation",
+      "reason_codes": [
+        "generic_risk_notice_not_period_result"
+      ],
+      "business_rationale_zh": "风险提示开场没有任何 Q1 经营结果或具体经济机制，不能替代业绩证据。"
+    },
+    {
+      "review_id": "s1c_role_review_032",
+      "qrel_id": "s1c_qrel_16",
+      "object_key": "nvda_q1_cash_flow_table",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "cash_flow_and_working_capital_bridge_visible"
+      ],
+      "business_rationale_zh": "现金流表直接展示净利润到经营现金流的调整及库存、应收、应付变化，是财务桥接核心证据。"
+    },
+    {
+      "review_id": "s1c_role_review_033",
+      "qrel_id": "s1c_qrel_16",
+      "object_key": "nvda_supply_capacity_risk_claim",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "supply_risk_not_cash_flow_reconciliation"
+      ],
+      "business_rationale_zh": "供给风险可以解释未来压力，但不能替代当期现金流和营运资金行列事实。"
+    },
+    {
+      "review_id": "s1c_role_review_034",
+      "qrel_id": "s1c_qrel_17",
+      "object_key": "mu_hbm4_shipments_claim",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "hbm_supplier_execution_is_platform_supply_context"
+      ],
+      "business_rationale_zh": "Micron HBM4 高量出货为 NVIDIA 平台供应生态提供旁证，但未披露对 NVIDIA 的具体供货分配。"
+    },
+    {
+      "review_id": "s1c_role_review_035",
+      "qrel_id": "s1c_qrel_18",
+      "object_key": "tsm_leading_edge_ramp_claim",
+      "relevance_judgement": "unjudged",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "background_only",
+      "reason_codes": [
+        "two_nanometer_ramp_not_requested_advanced_packaging_capacity"
+      ],
+      "business_rationale_zh": "2nm 需求和爬坡只是相关背景；没有 CoWoS/先进封装产能与分配，不能直接支持 NVIDIA 供给判断。"
+    }
+  ]
+}

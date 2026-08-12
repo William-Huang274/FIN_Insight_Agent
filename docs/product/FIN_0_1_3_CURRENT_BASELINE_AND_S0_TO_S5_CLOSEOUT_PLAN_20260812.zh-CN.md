@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S1C_request_and_neural_shadow_complete / role_data_contract_open / product_iteration_not_closed`
+状态：`repository_baseline_complete / S1C_object_role_contract_reviewed / query_and_object_successor_open / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -36,12 +36,13 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 3. **S1-B 已完成——current source/object 重建**：当前 store 为 28 parent / 1,805 child，含 NVDA 当前 10-Q、DELL/MU 当前 SEC、TSM 6-K 与三案 PIT market role；表边界、child 大小、身份和截至日硬门通过。Dell/Micron 官方法说 PDF transport、TSM 先进封装和新鲜估值仍为 typed gap，不阻断对象层工程关闭。
 4. **S1-C successor 与请求入口已完成**：Owner 四条 successor 已另存应用，18/18 映射；缓存复跑 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。`EvidenceRequest → 按需 facet → QueryFacetPlan` 已进入当前 Runtime，固定 pack 继续作为部件回归。自然语言理解仍归 S3，交互仍归 S4。
 5. **S1-C Cross-Encoder／Evidence Role shadow 已完成**：现成 BGE reranker 与 BM25 同为 `17/18`，MRR 有增益但逐题仍有严重反转，未晋升。规则角色门把三案显式错角色减少，却将 Recall 压到 `13/18`；留出正例约七成 abstain，禁止上线。第一版错误的 cross-slot 负例合同保留为失败证据，校正后留出 Cross-Encoder top3=`17/17`，角色门 top1 仍退化。
-6. **当前下一门——S1-C 角色数据合同 successor**：扩展对象级、可多标签、明确 unjudged 的角色标注；分别覆盖 claim、metric/table 和 parent context，并经 Owner 复核。18 条主 qrel 不足以直接微调，本门不得用留出案例调参。
-7. **S1-D residual-gap 补源（尚未授权执行）**：等当前 1–6 结果决策后，只处理 S1 候选与 Evidence evaluator 证明的真实缺口，优先 Dell/Micron PDF transport、TSM 先进封装和 PIT 估值，再重新编译 Evidence Pack。
-8. **S2 最小依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
-9. **S3 三案动态 Agentic Research**：把用户问题编译成 `Research Objective / DecisionSurface / EvidenceRequest`，并由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
-10. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
-11. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+6. **S1-C 对象级角色数据合同已完成开发复核**：24 个源绑定 object／35 个 query relation 已明确 claim、metric table、parent context、多标签 role、fact state、directness 和 positive／hard negative／unjudged；标签与模型可见 surface 分离，三案例开发批次没有读取 ORCL／ASML／ANET 留出。固定模型复核为 pairwise `0.50`、top1 `0.60`，旧规则角色 F1=`0.507936`，故没有微调、训练或 Runtime 晋升。
+7. **当前下一门——S1-C query family 与对象编译器 successor**：拆开 reported results、guidance、counterevidence、cash conversion 和 regulatory exposure；为相关客户／生态方需求增加投入、部署和订单 read-through facet；把财务表投影成表头、期间、单位、metric row 和父章节，并把现有 source segment 确定性编译成 claim/table/context。继续复用固定模型做 shadow，禁止用 35 个关系训练。
+8. **S1-D residual-gap 补源（尚未授权执行）**：S1-C successor 通过后，只处理已证明的真实缺口；当前最明确的是 TSMC CoWoS／先进封装产能、良率和分配，随后才是 Dell/Micron PDF transport 与 PIT 估值。不能用 broad search 掩盖 query 或对象错误。
+9. **S2 最小依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
+10. **S3 三案动态 Agentic Research**：把用户问题编译成 `Research Objective / DecisionSurface / EvidenceRequest`，并由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
+11. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
+12. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
 ## 5. 防止再次膨胀的工程规则
 

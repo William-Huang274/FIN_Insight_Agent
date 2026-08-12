@@ -121,11 +121,31 @@ Cross-Encoder 的三案 Recall@10=`17/18`，与 BM25 相同，MRR 从 `0.559392`
 - 下一门仍留在 S1-C：建立对象级 Evidence Role 数据合同，显式区分 claim／metric-table／parent context、多标签与 unjudged，并让 Owner 复核扩展标签。只有稳定残差仍存在，才决定微调 Cross-Encoder 或独立角色分类器。
 - 第 7／8 项未执行：尚未启动微调，也尚未让 residual gap 驱动 S1-D 补源或 Evidence Pack 重编译。
 
-## 7. 工程复证
+## 12. 对象级角色合同与固定模型复核 successor
 
-- active baseline：72 个 Python、7 个 frontend、5 个 digest-bound Runtime resources，历史／archive 活动引用为 0。
-- Python：当前 successor 收口为 83 tests passed。
-- TypeScript 与 Vite production build 通过。
-- Playwright：真实数据挂载与无数据两种模式，桌面／移动各 6/6 通过；排名对照面无横向溢出。
-- Secret scan：6,286 files，0 findings。
-- 本地 BGE-M3 复跑生成 ranking result digest `db7fbea1...235d9`；安全投影从结果合同读取 `1,805` 个对象数，不在前端硬编码，并同步更新 Runtime Registry 摘要。
+当前 successor 新增三份彼此隔离的对象：
+
+1. `EvidenceObjectView`：只含源绑定的 claim、balanced metric table、parent context、mixed segment 或 navigation surface，以及 source／parent digest；不含任何人工标签。
+2. `EvidenceObjectAnnotation`：只含对象的多标签 role、fact state 与原因；不复制 source surface。
+3. `EvidenceQueryRelation`：只含 query 相对该对象的 directness、background 和 positive／hard negative／unjudged；不把 Cross-Encoder 分数变成 Evidence 权限。
+
+DELL／MU／NVDA 开发批次为 24 object／35 relation，ORCL／ASML／ANET 未读取、未改标、未调参。三个 parent context 全部只能是 `unjudged/context_only`。当前三案 reviewed Pack 的 45 个条目仍以完整 source segment 绑定人工业务说明；这些条目可继续作为既有 reviewed Evidence 使用，但不能把人工说明当成模型可见 claim，也不能作为角色训练样本，需由后续确定性对象编译器补出 claim/table/context 或 typed gap。
+
+固定模型在精确 surface 上只得到 pairwise=`6/12=0.50`、可比较 query top1=`6/10=0.60`、top3=`10/10`。这表明它仍有候选扩展价值，但对象变小没有自动带来角色判断：
+
+- MU supply：旧季度业务单元结果表以 `0.008` 的微小分差压过 HBM4 高量出货 claim；模型对两者都给极低分，未稳定区分“结果”与“供给执行”。
+- MU financial reconciliation：泛化国际经营风险长段压过绑定采购量和客户存款 claim，因为旧 query 同时塞入监管、风险、库存、承诺和营运资金。
+- NVDA results：泛化风险提示开场压过收入 claim、利润表和 MD&A 汇总表，因为旧 query 仍要求“counterevidence”。
+- NVDA cash reconciliation：供给风险 claim 压过现金流表，暴露 legacy mixed slot 与表格语义投影双重问题。
+
+旧规则角色层在新批次上 positive compatibility=`0.705882`、hard-negative suppression=`0.416667`、multi-label micro-F1=`0.507936`。它仍漏掉表格的 observed/financial role，也无法稳定区分 customer commitments、guidance 和 supply execution，因此继续禁止作为 gate。
+
+当前处置不是微调，也不是立刻训练独立分类器。先拆 query family，并把 metric table 投影成表头／期间／单位／row／父章节；随后用相同固定模型复跑。若在至少 200 个关系、6 个开发案例上仍存在稳定角色残差，才评估独立多标签角色分类器。TSMC 三条 qrel 的当前 target 只含领先制程需求和 2nm ramp，不含 CoWoS／先进封装容量、良率或分配；它们在角色合同中为 `unjudged`，并作为 S1-D 定向补源候选，不追改历史 ranking relevance label。
+
+## 13. 工程复证（含对象级 successor）
+
+- active baseline：79 个 Python、7 个 frontend、6 个 digest-bound Runtime resources，历史／archive 活动引用为 0。
+- Python：对象合同定向 18 tests、全仓 91 tests 均通过，retrieval 源码和脚本通过 `compileall`。
+- TypeScript、Vite 与 Playwright 产品面在上一项请求／shadow 收口时已通过；本轮没有修改前端或产品 Runtime，因此没有伪造重复执行记录。
+- Secret scan：6,298 files，0 findings。
+- 本地 BGE-M3 历史 ranking result digest 为 `db7fbea1...235d9`；对象级 fixed-model result digest 为 `4b6ff6e...27c3e`。两项都只属于 shadow，不进入 Runtime Registry。

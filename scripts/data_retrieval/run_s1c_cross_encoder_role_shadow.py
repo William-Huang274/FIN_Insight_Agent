@@ -20,7 +20,15 @@ if hasattr(sys.stdout, "reconfigure"):
 
 import numpy as np  # noqa: E402
 
-from retrieval.evidence_role import evaluate_evidence_role  # noqa: E402
+from retrieval.evidence_role import (  # noqa: E402
+    LEGACY_EVIDENCE_SLOT_MAP,
+    evaluate_evidence_role,
+)
+from retrieval.cross_encoder import (  # noqa: E402
+    cross_encoder_model_identity,
+    load_local_cross_encoder,
+    score_cross_encoder_pairs,
+)
 from retrieval.query_plan import canonical_digest  # noqa: E402
 from retrieval.ranking_comparison import (  # noqa: E402
     build_document_text,
@@ -32,14 +40,6 @@ from retrieval.ranking_comparison import (  # noqa: E402
 
 POLICY_SCHEMA = "fin_ia_s1c_cross_encoder_role_shadow_policy_v1_0"
 RESULT_SCHEMA = "fin_ia_s1c_cross_encoder_role_shadow_result_v1_0"
-LEGACY_SLOT_MAP = {
-    "customer_demand_and_deployment_validation": "demand_volume_quality",
-    "issuer_results_and_management_commentary": "operating_performance",
-    "regulatory_risk_and_financial_reconciliation": "regulatory_risk_and_financial_reconciliation",
-    "supply_chain_capacity_and_counterevidence": "capacity_inputs_execution",
-}
-
-
 def _resolve(value: str | Path) -> Path:
     path = Path(value)
     return path.resolve() if path.is_absolute() else (ROOT / path).resolve()
@@ -73,22 +73,6 @@ def _records(path: Path) -> list[dict[str, Any]]:
     if not all(ids) or len(ids) != len(set(ids)):
         raise ValueError("cross_encoder_record_identity_invalid")
     return rows
-
-
-def _model_identity(model_dir: Path) -> dict[str, Any]:
-    files = [model_dir / "config.json", model_dir / "model.safetensors"]
-    if not all(path.is_file() for path in files):
-        raise ValueError("cross_encoder_model_files_missing")
-    rows = [
-        {"name": path.name, "bytes": path.stat().st_size, "sha256": _sha256(path)}
-        for path in files
-    ]
-    body = {
-        "model_id": "BAAI/bge-reranker-v2-m3",
-        "local_directory_name": model_dir.name,
-        "files": rows,
-    }
-    return {**body, "model_digest": canonical_digest(body)}
 
 
 def _load_embedding_cache(
@@ -136,53 +120,6 @@ def _query_embeddings(
         normalize_embeddings=True,
     ).astype(np.float32, copy=False)
     return {query.qrel_id: matrix[index] for index, query in enumerate(queries)}
-
-
-def _load_cross_encoder(model_dir: Path, maximum_sequence_length: int) -> Any:
-    os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
-    os.environ.setdefault("HF_HUB_OFFLINE", "1")
-    import torch
-    from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tokenizer = AutoTokenizer.from_pretrained(str(model_dir), local_files_only=True)
-    model = AutoModelForSequenceClassification.from_pretrained(
-        str(model_dir),
-        local_files_only=True,
-        dtype=torch.float16 if device.type == "cuda" else torch.float32,
-    )
-    model.to(device)
-    model.eval()
-    return tokenizer, model, device, maximum_sequence_length
-
-
-def _score_pairs(
-    runtime: Any,
-    pairs: Sequence[tuple[str, str]],
-    *,
-    batch_size: int,
-) -> list[float]:
-    import torch
-
-    tokenizer, model, device, maximum_sequence_length = runtime
-    scores: list[float] = []
-    for start in range(0, len(pairs), batch_size):
-        batch = pairs[start : start + batch_size]
-        encoded = tokenizer(
-            [pair[0] for pair in batch],
-            [pair[1] for pair in batch],
-            padding=True,
-            truncation=True,
-            max_length=maximum_sequence_length,
-            return_tensors="pt",
-        )
-        encoded = {key: value.to(device) for key, value in encoded.items()}
-        with torch.inference_mode():
-            logits = model(**encoded).logits.reshape(-1).float().cpu().tolist()
-        scores.extend(float(value) for value in logits)
-        if start and start % 100 == 0:
-            print(f"scored_pairs={start}/{len(pairs)}", flush=True)
-    return scores
 
 
 def _role(
@@ -275,7 +212,7 @@ def _primary_evaluation(
         targets = set(query.target_current_source_record_ids)
         if targets.intersection(union_ids):
             ceiling_hits += 1
-        role_slot = LEGACY_SLOT_MAP[query.evidence_slot_id]
+        role_slot = LEGACY_EVIDENCE_SLOT_MAP[query.evidence_slot_id]
         scored: list[dict[str, Any]] = []
         for record_id in union_ids:
             record = records_by_id[record_id]
@@ -394,7 +331,9 @@ def _frozen_label_evaluation(
         gated_top3_positive = 0
         for row in rows:
             query_id = str(row["query_id"])
-            slot_id = LEGACY_SLOT_MAP.get(str(row["slot_id"]), str(row["slot_id"]))
+            slot_id = LEGACY_EVIDENCE_SLOT_MAP.get(
+                str(row["slot_id"]), str(row["slot_id"])
+            )
             documents: list[dict[str, Any]] = []
             positive_ids = {str(item["document_id"]) for item in row["positives"]}
             for label_kind, items in (
@@ -574,18 +513,18 @@ def run(
                 str(item["document_text"]),
             )
 
-    model_identity = _model_identity(cross_encoder_model_dir)
+    model_identity = cross_encoder_model_identity(cross_encoder_model_dir)
     import torch
 
     if torch.cuda.is_available():
         torch.cuda.reset_peak_memory_stats()
-    runtime = _load_cross_encoder(
+    runtime = load_local_cross_encoder(
         cross_encoder_model_dir,
-        int(policy["model"]["maximum_sequence_length"]),
+        maximum_sequence_length=int(policy["model"]["maximum_sequence_length"]),
     )
     started = time.perf_counter()
     keys = list(pair_payloads)
-    scores = _score_pairs(
+    scores = score_cross_encoder_pairs(
         runtime,
         [pair_payloads[key] for key in keys],
         batch_size=int(policy["model"]["batch_size"]),

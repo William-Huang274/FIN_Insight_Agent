@@ -2537,3 +2537,13 @@ Dense 的实质问题不是“向量不能工作”，而是金融证据角色�
 Evidence Role 必须是多标签且允许 abstain，但“规则命中更少错误”不等于合格门禁。本轮规则角色门把三案 top3 显式 incompatible 从 27 降为 3，同时把 Recall@10 从 `17/18` 降为 `13/18`；ORCL／ASML／ANET 留出正例 compatibility 仅 `23.2558%`、abstain `69.7674%`。典型失败是 customer commitments、毛利表和客户预付款因表达形态不同而被 abstain／判错。因此规则角色标签禁止上线。
 
 评测标签同样必须有角色语义。不同 slot 没绑定同一对象，只能是 `unjudged`，不能机械当 hard negative；同一对象可以同时支持现金、关系、需求或反方。训练前的数据合同至少要区分 claim、metric/table、parent context，多标签角色、事实状态、直接性与明确无关；留出公司不得参与调参。当前 18 条 qrel 只足以资格判断，不足以微调 embedding、Cross-Encoder 或角色分类器。只有扩展并复核数据合同后仍出现稳定可重复的金融角色错误，才允许单独做训练决策。
+
+### 16.26 对象级 Evidence Role、标签隔离与 query family 先决条件（2026-08-12）
+
+对象级角色合同必须把“模型可见对象”和“人工评测标签”物理分开。模型可见面只允许包含源绑定 claim、完整表格边界或父文档元数据及其 digest；role、fact state、directness、background、positive／hard negative／unjudged 和人工理由只能在候选生成或评分完成后连接。父级上下文只负责确认公司、表单、期间和章节，永远不能单独成为 positive Evidence。reviewer 的 `business_meaning` 不能反向伪装成来源原文。
+
+本轮 DELL／MU／NVDA 开发复核形成 24 个对象、35 个 query-object 关系：13 个 claim、6 个 metric table、3 个 parent context、1 个混合长段和 1 个空表／导航对象；17 positive、12 explicit hard negative、6 unjudged。ORCL／ASML／ANET 保持完全留出。三案现有 Pack 的 45 个 Evidence item 仍是 source segment，虽保留来源 digest、角色边界和可引用权，但没有 claim text 或 structured metric 的精确表面，因此不得直接用于角色训练；后续对象编译器必须从原始 child 生成源绑定 claim／table／context，无法绑定时返回 typed gap。
+
+固定 `bge-reranker-v2-m3` 在这批精确对象上的结果反而证明“切得更小”不是充分条件：12 个正负 pair 中仅 6 个正例得分更高，10 个可比较问题 top1 正确率为 60%。Micron 财务桥接被泛化国际风险压过，NVIDIA 当期结果被风险提示开场压过，NVIDIA 现金流被供给风险压过；原因是旧 qrel 把 reported results、guidance、counterevidence、regulatory risk 和 financial reconciliation 混入同一 query。旧规则角色层的多标签 F1 也只有 0.507936，既漏财务表格，也把错误风险段判为 compatible。
+
+因此产品顺序冻结为：先在 S1-C 将 reported results、guidance、counterevidence、cash conversion 和 regulatory exposure 拆成独立 query family；为客户／生态方需求增加投入、部署和订单 read-through facet；表格模型面必须包含表头、期间、单位、metric row 与父章节，而不是整表字符串。修复后仍复用同一固定模型做 shadow，不训练、不晋升。只有至少 200 个源绑定关系、6 个开发案例且独立留出不参与调参后，才允许讨论 Cross-Encoder 微调或独立多标签角色分类器。当前 TSMC 目标只证明 2nm 需求／爬坡，不含 CoWoS／先进封装产能、良率或分配；该项是明确属于 S1-D 的定向补源缺口，但不得用 broad search 掩盖其余 S1-C 合同错误。

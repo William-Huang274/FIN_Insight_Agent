@@ -1,0 +1,65 @@
+{
+  "schema_version": "fin_ia_s1c_object_role_shadow_policy_v1_0",
+  "experiment_id": "FIN-0.1.3-S1C-OBJECT-BOUND-BGE-RERANKER-ROLE-AUDIT-R1",
+  "recorded_at": "2026-08-12",
+  "status": "approved_fixed_model_development_shadow_no_training_no_runtime_promotion",
+  "hypothesis": "Source-bound claim/table/context projections should improve fixed Cross-Encoder discrimination relative to broad mixed segments, while the old phrase-rule Evidence Role evaluator will still show form-specific role errors that justify a separate role layer rather than Cross-Encoder score authority.",
+  "bound_inputs": {
+    "review_set_ref": "configs/retrieval/fin_ia_0_1_3_s1c_object_role_review_set_v1_0.json",
+    "review_set_sha256": "5bb5b4233fc45abf4b7344bdc4a167f9f176a17a557bc297ce52e9128c1070a4",
+    "review_set_digest": "8a9021df26a590b9cb2501c45c386dc61aa47f9a8ebff7bd2f2957714f03932c",
+    "qrels_ref": "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json",
+    "qrels_sha256": "1d56f1deef3d7082b4e308a9caae1e7b70941a66cd025620adbcc80231b7562b",
+    "fixed_model_digest": "80b469d6bddb1e240987d002aae27658be43f83ec3dbbe3ee94ecb4b9301b994"
+  },
+  "model": {
+    "model_id": "BAAI/bge-reranker-v2-m3",
+    "role": "fixed_shadow_cross_encoder_only",
+    "maximum_sequence_length": 1024,
+    "batch_size": 2,
+    "local_files_only": true,
+    "training_allowed": false
+  },
+  "query_projection": "same_dense_bge_m3_query_text_as_predecessor_shadow",
+  "label_join_boundary": "score_all_query_object_pairs_before_joining_object_annotations_or_query_relations",
+  "evaluation": {
+    "exclude_unjudged_from_ranking_metrics": true,
+    "parent_context_never_competes_as_positive_evidence": true,
+    "metrics": [
+      "positive_over_hard_negative_pairwise_accuracy",
+      "judged_query_top1_positive_rate",
+      "judged_query_top3_positive_rate",
+      "positive_role_compatibility",
+      "hard_negative_role_suppression",
+      "multi_label_role_micro_f1",
+      "error_counts_by_object_form",
+      "latency_and_peak_gpu_memory"
+    ]
+  },
+  "decision_gates": {
+    "cross_encoder_object_projection_credible_pairwise_minimum": 0.8,
+    "cross_encoder_object_projection_credible_top1_minimum": 0.75,
+    "existing_rule_role_credible_positive_compatibility_minimum": 0.8,
+    "existing_rule_role_credible_negative_suppression_minimum": 0.8,
+    "existing_rule_role_credible_multilabel_micro_f1_minimum": 0.75,
+    "minimum_reviewed_relations_before_any_fine_tuning": 200,
+    "minimum_development_cases_before_any_fine_tuning": 6,
+    "separate_role_classifier_candidate_if_cross_encoder_credible_and_rule_role_not_credible": true,
+    "s1d_requires_real_typed_source_gap_after_object_review": true
+  },
+  "stop_conditions": [
+    "Do not tune, select labels or alter object projections after seeing scores in this attempt.",
+    "Do not treat parent context, Cross-Encoder score or rule compatibility as Evidence authority.",
+    "Do not use ORCL, ASML or ANET for design, tuning or training.",
+    "Do not authorize fine-tuning because this development batch has fewer than 200 relations and fewer than six development cases.",
+    "Do not enter broad S1-D supplementation unless the object review identifies a source-semantic gap rather than a ranking or chunking failure."
+  ],
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "evidence_promoted": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_authorized": false,
+    "s1d_authorized": false,
+    "s1_complete_claimed": false
+  }
+}

@@ -1,6 +1,6 @@
 {
   "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R6",
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R8",
   "status": "tracked_typed_runtime_resource_authority",
   "policy": {
     "registry_is_source_of_truth": true,
@@ -16,9 +16,9 @@
     "apps/workbench/backend/application/research_retrieval_service.py",
     "apps/workbench/backend/application/research_workspace_service.py"
   ],
-  "resource_count": 7,
-  "resource_bytes": 2028529,
-  "resource_canonical_digest": "6e37d2cef26930fddc9be6302b8227893d045da786851d447a4343aa7bd44708",
+  "resource_count": 9,
+  "resource_bytes": 2033338,
+  "resource_canonical_digest": "a012dfce0c74ec545104c41088f364353accc1fa2e42b057d8484b2db20396b4",
   "resources": [
     {
       "resource_id": "application.config.current_financial_research_kernel",
@@ -32,6 +32,19 @@
       "load_phase": "application_service_initialization",
       "required": true,
       "source_owner": "src.retrieval.contracts.load_financial_research_kernel"
+    },
+    {
+      "resource_id": "application.config.current_hybrid_candidate_runtime_policy",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_0.json",
+      "sha256": "ceb100b556fec77bd55bd53e709be817bc30243ec53895925c288a41cc6e9512",
+      "bytes": 1607,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "lazy_first_controlled_research_plan",
+      "required": true,
+      "source_owner": "retrieval.hybrid_candidate_runtime.LocalQwenHybridCandidateRuntime.from_policy"
     },
     {
       "resource_id": "application.config.current_query_object_fact_route_policy",
@@ -58,6 +71,19 @@
       "load_phase": "application_service_initialization",
       "required": true,
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
+    },
+    {
+      "resource_id": "application.config.current_research_planning_policy",
+      "repo_relative_path": "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_0.json",
+      "sha256": "a04dd224aa50675f7e9b846c705a623f59df2efc778e4b9649b64e2a0416a03c",
+      "bytes": 3202,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "required": true,
+      "source_owner": "sec_agent.research.planning.load_research_planning_policy"
     },
     {
       "resource_id": "application.config.current_research_workspace_catalog",

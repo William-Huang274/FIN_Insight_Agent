@@ -23,7 +23,7 @@ from retrieval.route_compiler import (  # noqa: E402
 )
 
 
-RESULT_SCHEMA_VERSION = "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_0"
+RESULT_SCHEMA_VERSION = "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_1"
 
 
 def _resolve(value: str) -> Path:
@@ -111,14 +111,14 @@ def main() -> int:
     parser.add_argument(
         "--output-dir",
         default=(
-            "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v1"
+            "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v2"
         ),
     )
     parser.add_argument(
         "--result-output",
         default=(
             "configs/retrieval/"
-            "fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_0.json"
+            "fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_1.json"
         ),
     )
     args = parser.parse_args()
@@ -176,7 +176,7 @@ def main() -> int:
     }
     result = {
         "schema_version": RESULT_SCHEMA_VERSION,
-        "status": "s1c_query_object_fact_route_zero_call_proven_with_s2_store_gap",
+        "status": "s1c_temporal_correct_object_route_zero_call_proven",
         "inputs": {
             "kernel": {
                 "ref": _relative(kernel_path),
@@ -204,7 +204,7 @@ def main() -> int:
             "query_family_count": len(policy.query_families),
             "kernel_facet_count": len(policy.family_by_facet()),
             "metric_route_count": len(policy.metric_routes),
-            "company_financial_fact_mart_status": "typed_route_only_store_unavailable",
+            "company_financial_fact_mart_status": "separate_s2_runtime_integrated_not_object_candidate_authority",
             "market_snapshot_fact_mart_status": "typed_route_only_store_unavailable",
             "database_owning_stage": "S2",
         },
@@ -217,7 +217,8 @@ def main() -> int:
             "空 TABLE_START/TABLE_END 不再吞掉其后的真实叙事；本次恢复了 TSMC 领先制程需求与 2nm ramp 的来源绑定 claim。",
             "同一表内重复的 Revenue／Gross margin 行会保留 Cloud Memory、Core Data Center 等行组上下文，避免检索后串错业务单元。",
             "财报表格行仅用于召回和上下文展示，不能成为 NumericFact；精确数值必须通过 S2 typed fact executor 和公司财务事实库。",
-            "当前运行时尚无权威公司财务事实库，因此 exact fact 请求会成为显式 S2 typed gap，而不是退化为从 PDF 文本猜数字。",
+            "公司财务事实库由独立 S2 Runtime 提供；对象候选只保留上下文，不能替代 NumericFact、期间、单位或公式血缘。",
+            "8-K 业绩稿同时保留原始 current-report 日期和元数据中的实际报告期；对象检索按报告期过滤，不再把发布日期误当财季结束日。",
         ],
         "acceptance": {
             "all_kernel_facets_routed_once": len(policy.family_by_facet())

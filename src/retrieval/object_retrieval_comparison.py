@@ -29,7 +29,11 @@ def load_compiled_objects(rows: Iterable[Mapping[str, Any]]) -> tuple[dict[str, 
         object_id = str(row.get("compiled_object_id") or "")
         base = row.get("base_object_view")
         if not (
-            row.get("schema_version") == "fin_ia_compiled_financial_object_view_v1_0"
+            row.get("schema_version")
+            in {
+                "fin_ia_compiled_financial_object_view_v1_0",
+                "fin_ia_compiled_financial_object_view_v1_1",
+            }
             and object_id
             and object_id not in identities
             and isinstance(base, Mapping)

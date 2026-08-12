@@ -12,6 +12,7 @@ from rank_bm25 import BM25Okapi
 
 from .contracts import FinancialResearchKernel
 from .query_plan import QueryFacetPlan, QueryLane, canonical_digest
+from .temporal import reporting_temporal_projection
 from .text import evidence_search_text, tokenize
 
 
@@ -394,7 +395,7 @@ def _candidate_projection(
     source_type = str(record.get("source_type") or "").strip().upper()
     source_role = _source_role_for_record(record, plan)
     text = re.sub(r"\s+", " ", str(record.get("text") or "")).strip()
-    temporal = _reporting_temporal_projection(record)
+    temporal = reporting_temporal_projection(record)
     if owner == plan.subject_ticker:
         relationship = "subject_self_disclosure"
         boundary = "主体公司直接披露候选；仍需 Evidence Gate 核验引用范围与事实口径。"
@@ -452,54 +453,6 @@ def _candidate_projection(
                 "score": round(final_score, 6),
             }
         ),
-    }
-
-
-def _reporting_temporal_projection(record: Mapping[str, Any]) -> dict[str, Any]:
-    """Project the issuer reporting period without confusing it with filing dates.
-
-    Legacy 8-K earnings objects retain the SEC current-report date at the record
-    surface while preserving the earnings period in source-bound metadata.  Product
-    retrieval must filter on the latter when it is present.  The original values are
-    retained so the normalization remains auditable instead of silently rewriting
-    source lineage.
-    """
-
-    metadata = record.get("metadata")
-    metadata = metadata if isinstance(metadata, Mapping) else {}
-    source_fiscal_year = record.get("fiscal_year")
-    reported_fiscal_year = metadata.get("reported_fiscal_year")
-    try:
-        reporting_fiscal_year = int(
-            reported_fiscal_year
-            if reported_fiscal_year not in (None, "")
-            else source_fiscal_year
-        )
-    except (TypeError, ValueError):
-        reporting_fiscal_year = None
-
-    source_period_end = str(record.get("period_end") or "").strip()
-    reported_period_end = str(metadata.get("reported_period_end") or "").strip()
-    reporting_period_end = (
-        reported_period_end
-        if _date_or_none(reported_period_end) is not None
-        else source_period_end
-    )
-    return {
-        "reporting_fiscal_year": reporting_fiscal_year,
-        "reporting_fiscal_year_source": (
-            "metadata.reported_fiscal_year"
-            if reported_fiscal_year not in (None, "")
-            else "source_record.fiscal_year"
-        ),
-        "reporting_period_end": reporting_period_end,
-        "reporting_period_end_source": (
-            "metadata.reported_period_end"
-            if reported_period_end and _date_or_none(reported_period_end) is not None
-            else "source_record.period_end"
-        ),
-        "source_record_fiscal_year": source_fiscal_year,
-        "source_record_period_end": source_period_end,
     }
 
 

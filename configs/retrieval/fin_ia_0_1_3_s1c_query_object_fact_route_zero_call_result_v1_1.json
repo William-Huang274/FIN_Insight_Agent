@@ -16,7 +16,8 @@
     "空 TABLE_START/TABLE_END 不再吞掉其后的真实叙事；本次恢复了 TSMC 领先制程需求与 2nm ramp 的来源绑定 claim。",
     "同一表内重复的 Revenue／Gross margin 行会保留 Cloud Memory、Core Data Center 等行组上下文，避免检索后串错业务单元。",
     "财报表格行仅用于召回和上下文展示，不能成为 NumericFact；精确数值必须通过 S2 typed fact executor 和公司财务事实库。",
-    "当前运行时尚无权威公司财务事实库，因此 exact fact 请求会成为显式 S2 typed gap，而不是退化为从 PDF 文本猜数字。"
+    "公司财务事实库由独立 S2 Runtime 提供；对象候选只保留上下文，不能替代 NumericFact、期间、单位或公式血缘。",
+    "8-K 业绩稿同时保留原始 current-report 日期和元数据中的实际报告期；对象检索按报告期过滤，不再把发布日期误当财季结束日。"
   ],
   "diagnostic_examples": {
     "claim_surface_not_unique": {
@@ -42,9 +43,9 @@
       "sha256": "04c8774f74f7b6fb25a4fad9eadf8e585e938ac549ab2bc7239bb7215549b7ab"
     },
     "kernel": {
-      "bytes": 21811,
-      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_1.json",
-      "sha256": "6f456246130ab0ea6f3b3d31ae009d0bb3d51ee18c93645ff39a5330cd375564"
+      "bytes": 20549,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json",
+      "sha256": "3bab7c480c277f35d3ad49d3829dfa771baff1c899dacdc764a174acd45a3577"
     },
     "records": {
       "bytes": 10042322,
@@ -52,9 +53,9 @@
       "sha256": "484a18a2d7c5e2b8ab42eea97d8c68bbad37cfb49fe1a2c943d64d1381ad4382"
     },
     "route_policy": {
-      "bytes": 12104,
-      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_1.json",
-      "sha256": "be4ee9efe54f588b4c887f58d9c450942c031c16c268f1a1470d58f9f5b5dfd7"
+      "bytes": 12075,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_0.json",
+      "sha256": "ccd4775435c3d3ef82073d37b8df37abbe7c04e28f8340d0a4fd0f04809c8439"
     }
   },
   "object_compilation_summary": {
@@ -83,24 +84,24 @@
   },
   "output_binding": {
     "diagnostics_bytes": 57688,
-    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v1/diagnostics.jsonl",
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v2/diagnostics.jsonl",
     "diagnostics_sha256": "d53660a9f1a5e58d579df334cdacef508057a0bd16256f4274b95dcb053c7f17",
-    "objects_bytes": 54570239,
-    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v1/objects.jsonl",
-    "objects_sha256": "bd725bfe8b34c765c1d25155acedf4d0094712896c7d9344bf63899c691a9bc7"
+    "objects_bytes": 60433863,
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v2/objects.jsonl",
+    "objects_sha256": "fa4849b0c91256e83a373c20818dd7ba6be1f2fd47655494b032f94ed51fa2dd"
   },
-  "payload_digest": "15ddf8c6e11cc29e047b8c24262868c6d132f992bb137d515e3071a3befb54f2",
+  "payload_digest": "22040fb30ae629931c3ba2c54ed56b1aa0a1268b725ba70a48c5b6ca436c4db0",
   "query_route_summary": {
-    "company_financial_fact_mart_status": "typed_route_only_store_unavailable",
+    "company_financial_fact_mart_status": "separate_s2_runtime_integrated_not_object_candidate_authority",
     "database_owning_stage": "S2",
-    "kernel_facet_count": 18,
+    "kernel_facet_count": 17,
     "market_snapshot_fact_mart_status": "typed_route_only_store_unavailable",
     "metric_route_count": 24,
     "query_family_count": 11
   },
   "sample_objects": [
     {
-      "compiled_object_id": "COBJ::9d2d2070bb938a538632e1d4",
+      "compiled_object_id": "COBJ::9a946f2c09da64ae20a7ba20",
       "model_text_preview": "Our business, operating results, financial condition, and prospects are subject to a variety of significant risks, many of which are beyond our control. The following is a description of some of the important risk factors that may cause our actual results in future periods to differ substantially from those we currently expect or seek. The risks described below are not the only risks we face. There are additional risks and uncertainties not currently known to us or that we currently deem to be immaterial that also may materially adversely affect our business, operating results, financial condi",
       "numeric_authority": false,
       "object_kind": "claim",
@@ -114,13 +115,13 @@
       "source_record_id": "DELL_2023_10K_ITEM7_BLOCK_0009_PART_01_OF_02"
     },
     {
-      "compiled_object_id": "COBJ::70c35e6563ee727c2783553f",
+      "compiled_object_id": "COBJ::77765c6fde4a108fa7739ade",
       "model_text_preview": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: 10-K\nsource_tier: primary_sec_filing\npublication_date: 2023-03-30\nperiod_end: 2023-02-03\nfiscal_year: 2023\nsection: Item 1A. Risk Factors\nsubsection: Item 1A. Risk Factors",
       "numeric_authority": false,
       "object_kind": "bounded_parent_context",
       "source_record_id": "DELL_2023_10K_ITEM1A_BLOCK_0001_CHUNK_0001"
     }
   ],
-  "schema_version": "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_0",
-  "status": "s1c_query_object_fact_route_zero_call_proven_with_s2_store_gap"
+  "schema_version": "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_1",
+  "status": "s1c_temporal_correct_object_route_zero_call_proven"
 }

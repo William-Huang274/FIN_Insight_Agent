@@ -1,0 +1,71 @@
+{
+  "schema_version": "fin_ia_research_planning_policy_v1_0",
+  "status": "provider_neutral_s3_planning_control_plane",
+  "allowed_task_types": [
+    "company_deep_dive",
+    "earnings_review",
+    "supply_chain_read_through",
+    "event_impact_analysis"
+  ],
+  "allowed_output_formats": [
+    "investment_research_memo",
+    "evidence_first_research_brief"
+  ],
+  "allowed_gap_policies": [
+    "fail_closed",
+    "return_typed_gap",
+    "request_human_clarification"
+  ],
+  "allowed_pass_criteria": [
+    "identity_and_as_of_bound",
+    "required_dimensions_covered",
+    "numeric_facts_source_bound",
+    "candidate_not_evidence_boundary_preserved",
+    "counterevidence_and_what_would_change_present",
+    "qualified_human_review_required"
+  ],
+  "required_pass_criteria": [
+    "identity_and_as_of_bound",
+    "required_dimensions_covered",
+    "numeric_facts_source_bound",
+    "candidate_not_evidence_boundary_preserved"
+  ],
+  "family_bindings": [
+    {"query_family_id": "customer_demand_read_through", "evidence_domain": "demand", "requester_role": "demand_specialist"},
+    {"query_family_id": "reported_results", "evidence_domain": "operating_performance", "requester_role": "financial_specialist"},
+    {"query_family_id": "management_guidance", "evidence_domain": "operating_performance", "requester_role": "financial_specialist"},
+    {"query_family_id": "pricing_and_value_capture", "evidence_domain": "operating_performance", "requester_role": "value_capture_specialist"},
+    {"query_family_id": "cash_conversion", "evidence_domain": "operating_performance", "requester_role": "cash_conversion_specialist"},
+    {"query_family_id": "supply_capacity_execution", "evidence_domain": "supply", "requester_role": "supply_specialist"},
+    {"query_family_id": "relationship_attribution", "evidence_domain": "relationship", "requester_role": "relationship_specialist"},
+    {"query_family_id": "counterevidence_and_risk", "evidence_domain": "risk_policy", "requester_role": "counterevidence_specialist"},
+    {"query_family_id": "regulatory_exposure", "evidence_domain": "risk_policy", "requester_role": "risk_specialist"},
+    {"query_family_id": "capital_allocation", "evidence_domain": "financial_research", "requester_role": "capital_specialist"},
+    {"query_family_id": "valuation", "evidence_domain": "valuation", "requester_role": "valuation_specialist"}
+  ],
+  "forbidden_proxy": [
+    "unbound industry demand",
+    "wrong entity relationship",
+    "future publication",
+    "unbound model knowledge"
+  ],
+  "max_budget": {
+    "max_evidence_requests": 12,
+    "max_metric_intents_per_request": 6,
+    "max_product_intents_per_request": 4,
+    "max_model_calls": 2
+  },
+  "defaults": {
+    "granularity": "quarter_and_fiscal_year",
+    "unit": "reported_source_unit",
+    "stop_condition": "return candidates, typed facts, or typed gaps"
+  },
+  "authority": {
+    "model_may_select_bounded_atoms_only": true,
+    "harness_owns_identity_dates_sources_budgets_and_lineage": true,
+    "canonical_metric_ids_required": true,
+    "database_lane_required_for_exact_numeric_authority": true,
+    "candidate_is_not_evidence": true,
+    "planner_output_is_not_research_judgment": true
+  }
+}

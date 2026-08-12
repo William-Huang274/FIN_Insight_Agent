@@ -383,6 +383,48 @@ def test_empty_table_does_not_swallow_following_narrative_claims() -> None:
     }
 
 
+def test_compiled_objects_share_reporting_period_binding_with_snapshot_candidates() -> None:
+    parent = {
+        "document_id": "CURRENT_DOC::DELL::8_K::Q1",
+        "ticker": "DELL",
+        "company": "Dell Technologies Inc.",
+        "source_type": "8-K",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "publication_date": "2026-05-28",
+        "period_end": "2026-05-28",
+        "fiscal_year": 2026,
+    }
+    record = {
+        **parent,
+        "evidence_id": "DELL_Q1_FY27_RESULTS",
+        "section": "Exhibit 99.1 Earnings Release",
+        "subsection": "Quarterly results",
+        "metadata": {
+            "parent_document_id": parent["document_id"],
+            "reported_period_end": "2026-05-01",
+            "reported_fiscal_year": 2027,
+        },
+        "text": (
+            "Dell reported strong AI-optimized server revenue during the quarter "
+            "while noting that mix and pricing still constrained profitability."
+        ),
+    }
+
+    result = compile_object_store(
+        records=[record],
+        parents_by_id={parent["document_id"]: parent},
+        policy=_policy(),
+    )
+
+    assert result.objects
+    assert all(
+        row["schema_version"] == "fin_ia_compiled_financial_object_view_v1_1"
+        and row["base_object_view"]["period_end"] == "2026-05-01"
+        and row["base_object_view"]["fiscal_year"] == 2027
+        for row in result.objects
+    )
+
+
 def test_table_period_rows_are_headers_and_business_unit_context_is_retained() -> None:
     parent = {
         "document_id": "CURRENT_DOC::MU::8_K::GROUPED_TABLE",

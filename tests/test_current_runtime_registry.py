@@ -25,12 +25,14 @@ def test_current_registry_is_exactly_the_current_product_resources() -> None:
     registry = load_runtime_resource_registry(ROOT)
 
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R6"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R8"
     )
     assert [row.repo_relative_path for row in registry.resources] == [
         "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_0.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_0.json",
         "configs/runtime/fin_ia_0_1_3_current_research_evidence_pack_projection_v1_0.json",
+        "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_0.json",
         "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_0.json",
         "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json",
         "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
@@ -70,8 +72,10 @@ def _copy_registry_fixture(tmp_path: Path) -> Path:
         Path("apps/workbench/backend/application/research_workspace_service.py"),
         Path("apps/workbench/backend/application/research_retrieval_service.py"),
         Path("configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json"),
+        Path("configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_0.json"),
         Path("configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_0.json"),
         Path("configs/runtime/fin_ia_0_1_3_current_research_evidence_pack_projection_v1_0.json"),
+        Path("configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_0.json"),
         Path("configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_0.json"),
         Path("configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json"),
         Path("configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"),

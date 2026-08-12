@@ -18,7 +18,8 @@
 - [ ] S1-D residual-gap 外源补源与 Evidence Pack 复编译
 - [x] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归（engineering pass）
 - [x] S2 request-scoped Runtime 接入（真实 DELL 6/6 resolved；S3／前端消费未完成）
-- [ ] DELL S1/S2/S3 纵切（S3 Objective／EvidenceRequest、Qwen＋BM25 联合候选、S2 NumericFact、S3 综合）
+- [x] DELL S1/S2/S3 零调用工程纵切（受控 S3 Objective／EvidenceRequest、Qwen＋BM25 联合候选、S2 7/7 resolved／21 NumericFacts）
+- [ ] DELL 自然 planner canary 与 S3 研究消费（唯一一次 atoms canary；成功后才做候选选择、判断和报告）
 - [ ] S3 动态 Agentic Research 与内容质量验收
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision

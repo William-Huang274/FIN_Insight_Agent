@@ -5,3 +5,4 @@
 - 当前总清单：`00_current_master_checklist.md`
 - FIN 0.1.3 S1：`fin_0_1_3_s1/`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
+- FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`

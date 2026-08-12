@@ -1,7 +1,7 @@
 # FIN 0.1.3 S2 公司财务事实 Mart 与 PIT 精确查询
 
 日期：2026-08-13
-状态：`request_runtime_integration_engineering_pass / S3_and_UI_consumption_pending / S2_product_not_closed`
+状态：`controlled_vertical_engineering_pass / natural_planner_research_and_UI_consumption_pending / S2_product_not_closed`
 
 ## 1. 为什么数据库是纵切前硬门
 
@@ -90,6 +90,8 @@ DELL FY2027 Q1 例子：收入 `43,842,000,000 USD`、毛利 `7,782,000,000 USD`
 
 该证明使用标准 metric ID。自然语言中的“资本开支／capital expenditure”等表达必须由 S3 规范成受控 ID `capital_expenditures`；S2 不以模糊词形扩大事实查询权限。未知指标继续 fail closed，而不是逐词增加数据库分支。
 
+在后续 DELL 受控 S1/S2/S3 纵切中，同一产品服务进一步执行 5 个 EvidenceRequest 下的 7 个 typed fact request：7/7 resolved、0 gap、0 conflict，共物化 21 个 source-bound NumericFact。除上述收入、现金流、资本开支和自由现金流外，还覆盖营业利润、毛利、毛利率及最近财年 sibling，并继续保留 accession、accepted-at、期间、单位、citation、capture digest 与公式输入 lineage。该结果证明数据库已进入当前纵切，而不是留在离线构建脚本中；但 atoms 仍是受控输入，所以不等于自然用户问题或报告已消费。
+
 ## 8. 下一门
 
-下一项是 DELL S1/S2/S3 纵切：由 S3 产生真实 Research Objective／EvidenceRequest；S1 使用 `Qwen semantic + BM25 lexical` 联合候选召回叙事对象，并把数值请求路由到本 mart；S2 返回 source-bound NumericFact；S3 使用两路结果完成研究判断。该纵切要验证“数据库事实是否真正改善研报”，并暴露 S1 角色判断、S2 指标覆盖和 S3 研究规划之间的产品级残差。纵切完成前不把当前 private mart 宣称为完整用户能力。
+零调用纵切的工程部分已经完成。下一门是唯一一次最小自然 planner canary：模型只能选择 canonical facet、目标实体、metric ID 和产品意图；S2 仍独立执行 typed request。Canary 通过后，也必须继续验证 S3 是否在研究判断和引用中真实使用这些 NumericFact，并执行三案依赖回归；否则不能把当前 private mart 宣称为完整用户能力。未来更强 embedding、reranker 或生成模型可以减少检索和规划拐杖，但不能取消公司财务事实库、PIT、期间、单位、冲突和 lineage 这条金融控制面。

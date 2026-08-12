@@ -13,6 +13,10 @@ from retrieval.contracts import (
     load_financial_research_kernel,
 )
 from retrieval.query_plan import compile_query_facet_plan_for_request
+from retrieval.hybrid_candidate_runtime import (
+    HybridCandidateRuntimeError,
+    LazyLocalQwenHybridCandidateRuntime,
+)
 from retrieval.route_compiler import (
     QueryObjectFactRoutePolicy,
     compile_retrieval_execution_plan,
@@ -20,6 +24,13 @@ from retrieval.route_compiler import (
 )
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
+from sec_agent.research.planning import (
+    ResearchPlanningError,
+    ResearchPlanningPolicy,
+    compile_research_objective,
+    compile_research_plan,
+    load_research_planning_policy,
+)
 from sec_agent.runtime_bridge.paths import RuntimePathRegistry, resolve_runtime_paths
 
 
@@ -35,11 +46,20 @@ CURRENT_RETRIEVAL_KERNEL_RESOURCE_ID = (
 CURRENT_QUERY_OBJECT_FACT_ROUTE_POLICY_RESOURCE_ID = (
     "application.config.current_query_object_fact_route_policy"
 )
+CURRENT_RESEARCH_PLANNING_POLICY_RESOURCE_ID = (
+    "application.config.current_research_planning_policy"
+)
+CURRENT_HYBRID_CANDIDATE_RUNTIME_POLICY_RESOURCE_ID = (
+    "application.config.current_hybrid_candidate_runtime_policy"
+)
 EXPECTED_SCHEMA = "fin_ia_current_retrieval_snapshot_v1_0"
 EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
 RETRIEVAL_PROJECTION_SCHEMA = "fin_ia_research_retrieval_projection_v1_0"
 REQUEST_RETRIEVAL_PROJECTION_SCHEMA = (
     "fin_ia_request_scoped_retrieval_projection_v1_2"
+)
+RESEARCH_PLAN_EXECUTION_PROJECTION_SCHEMA = (
+    "fin_ia_controlled_research_plan_execution_projection_v1_0"
 )
 
 
@@ -67,6 +87,8 @@ class ResearchRetrievalService:
         ranking_comparison: Mapping[str, Any] | None = None,
         kernel: FinancialResearchKernel | Mapping[str, Any] | None = None,
         route_policy: QueryObjectFactRoutePolicy | Mapping[str, Any] | None = None,
+        planning_policy: ResearchPlanningPolicy | Mapping[str, Any] | None = None,
+        hybrid_candidate_runtime: Any | None = None,
         company_financial_fact_mart_path: str | Path | None = None,
     ) -> None:
         self._snapshot = self._validate(snapshot)
@@ -101,6 +123,17 @@ class ResearchRetrievalService:
             if isinstance(route_policy, Mapping) and self._kernel is not None
             else route_policy
         )
+        if planning_policy is not None and self._route_policy is None:
+            raise ResearchRetrievalServiceError(
+                "research_planning_policy_without_route_policy", 503
+            )
+        self._planning_policy = (
+            load_research_planning_policy(planning_policy, self._route_policy)
+            if isinstance(planning_policy, Mapping)
+            and self._route_policy is not None
+            else planning_policy
+        )
+        self._hybrid_candidate_runtime = hybrid_candidate_runtime
         self._company_financial_fact_mart_path = (
             Path(company_financial_fact_mart_path).resolve()
             if company_financial_fact_mart_path is not None
@@ -112,8 +145,18 @@ class ResearchRetrievalService:
         cls,
         repository_root: str | Path,
         runtime_paths: RuntimePathRegistry | None = None,
+        hybrid_candidate_runtime: Any | None = None,
     ) -> "ResearchRetrievalService":
         paths = runtime_paths or resolve_runtime_paths(repository_root)
+        active_hybrid_runtime = hybrid_candidate_runtime
+        if active_hybrid_runtime is None:
+            active_hybrid_runtime = LazyLocalQwenHybridCandidateRuntime(
+                repository_root,
+                read_registered_runtime_json(
+                    repository_root,
+                    CURRENT_HYBRID_CANDIDATE_RUNTIME_POLICY_RESOURCE_ID,
+                ),
+            )
         return cls(
             snapshot=read_registered_runtime_json(
                 repository_root,
@@ -131,6 +174,11 @@ class ResearchRetrievalService:
                 repository_root,
                 CURRENT_QUERY_OBJECT_FACT_ROUTE_POLICY_RESOURCE_ID,
             ),
+            planning_policy=read_registered_runtime_json(
+                repository_root,
+                CURRENT_RESEARCH_PLANNING_POLICY_RESOURCE_ID,
+            ),
+            hybrid_candidate_runtime=active_hybrid_runtime,
             company_financial_fact_mart_path=(
                 paths.company_financial_fact_mart_path
             ),
@@ -204,6 +252,151 @@ class ResearchRetrievalService:
             "ranking_comparison": self._ranking_projection_for_case(key),
             "lanes": lanes,
             "known_boundary": str(self._snapshot["known_boundary"]),
+        }
+        return {**body, "projection_digest": canonical_digest(body)}
+
+    def execute_controlled_plan(
+        self,
+        case_key: str,
+        objective_payload: Mapping[str, Any],
+        planner_payload: Mapping[str, Any],
+        principal: ResearchRetrievalPrincipal,
+    ) -> dict[str, Any]:
+        """Compile bounded S3 atoms and execute their S1/S2 sibling requests."""
+
+        self._require_read(principal)
+        if (
+            self._kernel is None
+            or self._route_policy is None
+            or self._planning_policy is None
+        ):
+            raise ResearchRetrievalServiceError(
+                "controlled_research_planning_contract_unavailable", 503
+            )
+        try:
+            objective = compile_research_objective(
+                objective_payload,
+                kernel=self._kernel,
+                policy=self._planning_policy,
+            )
+            compiled = compile_research_plan(
+                planner_payload,
+                objective=objective,
+                kernel=self._kernel,
+                route_policy=self._route_policy,
+                planning_policy=self._planning_policy,
+            )
+        except ResearchPlanningError as exc:
+            raise ResearchRetrievalServiceError(str(exc), 422) from exc
+        key = str(case_key).strip().upper()
+        if key != objective.case_key:
+            raise ResearchRetrievalServiceError(
+                "research_objective_route_case_mismatch",
+                422,
+                route_case_key=key,
+                objective_case_key=objective.case_key,
+            )
+
+        request_results = [
+            self.execute_request(key, request.as_dict(), principal)
+            for request in compiled.evidence_requests
+        ]
+        hybrid_results: tuple[dict[str, Any], ...] = ()
+        if self._hybrid_candidate_runtime is not None:
+            try:
+                hybrid_results = self._hybrid_candidate_runtime.retrieve_many(
+                    compiled.evidence_requests,
+                    kernel=self._kernel,
+                    route_policy=self._route_policy,
+                )
+            except HybridCandidateRuntimeError as exc:
+                raise ResearchRetrievalServiceError(
+                    "hybrid_candidate_runtime_unavailable",
+                    503,
+                    typed_reason=str(exc),
+                ) from exc
+            if len(hybrid_results) != len(request_results):
+                raise ResearchRetrievalServiceError(
+                    "hybrid_candidate_result_count_invalid", 503
+                )
+            request_results = [
+                {**result, "hybrid_object_retrieval": hybrid}
+                for result, hybrid in zip(request_results, hybrid_results)
+            ]
+        candidate_ids = {
+            str(candidate["source_record_id"])
+            for result in request_results
+            for lane in result["lanes"]
+            for candidate in lane["candidates"]
+        }
+        facts = [
+            fact
+            for result in request_results
+            for fact_result in result["typed_fact_results"]
+            for fact in fact_result.get("facts", ())
+        ]
+        body = {
+            "schema_version": RESEARCH_PLAN_EXECUTION_PROJECTION_SCHEMA,
+            "status": "controlled_research_plan_zero_call_executed",
+            "product_mode": "current",
+            "case_key": key,
+            "objective": objective.as_dict(),
+            "compiled_plan": compiled.as_dict(),
+            "summary": {
+                "evidence_request_count": len(request_results),
+                "required_slot_count": len(objective.required_slot_ids),
+                "compiled_lane_count": sum(
+                    result["summary"]["compiled_lane_count"]
+                    for result in request_results
+                ),
+                "nonempty_lane_count": sum(
+                    result["summary"]["nonempty_lane_count"]
+                    for result in request_results
+                ),
+                "unique_narrative_candidates": len(candidate_ids),
+                "typed_fact_request_count": sum(
+                    result["summary"]["typed_fact_request_count"]
+                    for result in request_results
+                ),
+                "typed_fact_resolved_count": sum(
+                    result["summary"]["typed_fact_resolved_count"]
+                    for result in request_results
+                ),
+                "typed_fact_gap_count": sum(
+                    result["summary"]["typed_fact_gap_count"]
+                    for result in request_results
+                ),
+                "typed_fact_conflict_count": sum(
+                    result["summary"]["typed_fact_conflict_count"]
+                    for result in request_results
+                ),
+                "numeric_fact_count": len(facts),
+                "hybrid_candidate_runtime": (
+                    "bm25_plus_qwen_local_embedding"
+                    if hybrid_results
+                    else "not_configured"
+                ),
+                "hybrid_selected_candidate_count": sum(
+                    row["summary"]["selected_count"]
+                    for row in hybrid_results
+                ),
+                "local_embedding_inference_batches": 1 if hybrid_results else 0,
+                "network_calls": 0,
+                "model_calls": 0,
+                "generation_model_calls": 0,
+            },
+            "request_results": request_results,
+            "known_boundary": (
+                "This projection proves deterministic user-objective binding, "
+                "bounded planner-atom compilation, S1 narrative candidate lookup "
+                "and S2 source-bound NumericFact execution. When configured, the "
+                "provisional S1 path also returns a hard-filtered BM25 plus local "
+                "Qwen embedding candidate union; those rows remain candidates. "
+                "Planner atoms are "
+                "supplied as controlled input in this zero-call proof; no natural "
+                "language model planning, candidate-to-Evidence promotion, research "
+                "judgment, report writing or S3 product acceptance is claimed."
+            ),
         }
         return {**body, "projection_digest": canonical_digest(body)}
 

@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-13 | DELL 受控 S1/S2/S3 零调用纵切已接通：5 个 EvidenceRequest 同时得到 Qwen＋BM25 叙事候选和 S2 SQL/PIT 事实，7/7 typed request 返回 21 个 NumericFact、0 gap/conflict。该结果把数据库从“不能遗忘的规划项”提升为不可被 embedding、reranker 或模型替代的运行时数值权威；同时暴露 80 个候选仍有旧期、表格和角色噪声。下一门只允许一次 planner-atoms canary，不允许模型拥有身份、日期、来源、预算或数值写入权，也不因此宣称 S1/S2/S3 产品通过。 |
 | 2026-08-12 | FIN 0.1.3 S1-B 将历史 candidate store 重定基为 28 个父文档／1,805 个可检索金融子对象；NVDA 当前 10-Q、三案 PIT market role 与 Workbench 候选链已接入。实测证明 source coverage 与 ranking quality 必须分账：current-object missing=0，但 reviewed target 入池仅 DELL/MU/NVDA=`6/3/4`，并有风险段冒充现金、旧期压新期、主题共现冒充关系。Dell/Micron 官方 PDF 已确认存在但当前产品 transport 未捕获，和 TSM 先进封装、新鲜估值一起转 S1-D；当前下一阶段是冻结同一对象做 S1-C sparse/dense/rerank 对照，而非继续堆来源。 |
 | 2026-08-12 | FIN 0.1.3 仓库重定基把当前可交付产品收敛为 DELL／MU／NVDA 三案只读 reviewed Evidence Workspace，并把旧并行产品面、attempt runner 与流水账迁入不可执行版本归档。实测三案只有 SEC 来源且 structured numeric=0，故新基线只通过身份、摘要、来源和 gap 可审阅性，不代表多源检索、NumericFact、动态 Agentic Research 或完整研报通过。当前执行权转入 `FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md`；仓库基线合并不等于 FIN 0.1.3 产品收口。 |
 | 2026-08-11 | S3 动态研究 successor 已完成零调用工程连接：三案由开放问题编译为 38 个有决策角色的 cell，按 material typed gap 生成 5 个有界 EvidenceRequest，新证据只触发受影响 cell 重裁决；数值 WWC 无权威绑定时必须显式不可操作化。真实 DELL same-input 审计显示 Agent 把 42 个原始散点压缩为 30 个，但仍有 2 个摘要过载点、1 处跨章节重复、决策密度不足及历史数值 L1 失败。因此产品验收继续要求“更短且更有判断”与事实权威同时成立；本轮只记 engineering pass，不代表自然 planner、修复后报告、八维评分、paired／人工／Owner 或 release 通过。 |
@@ -2557,3 +2558,13 @@ Evidence Role 必须是多标签且允许 abstain，但“规则命中更少错�
 产品验收新增 disclosure-cohort 约束：开放式当前期间查询必须从同一最新 10-Q 取得 quarter/YTD/instant，并单独取得最近 10-K；不能把最新 Q1 与旧 Q3 YTD 拼成一个当前结果。实现初版曾自然出现该错误，现已通过同 accession 选择和 mutation 修复。当前最近财年 9/9、当前 interim 15/15 精确查询通过，但这只构成 S2 engineering pass。mart 尚未进入研究 Runtime，Workbench reviewed Pack 也不会因数据库文件存在而自动获得 structured numeric。
 
 下一产品门是 DELL S1/S2/S3 纵切：S3 从真实研究目标生成 EvidenceRequest，S1 同时执行叙事候选路线与 typed fact route，S2 返回带期间、单位、PIT 和 lineage 的 NumericFact，S3 再完成判断和引用。只有该纵切证明数字被真实消费、错期和缺失可靠显露，S2 才能从数据库工程能力前进到产品集成能力；S1 排名仍需由 Evidence Pack 实用性而不是离线分数验收。
+
+### 16.28 受控纵切、自然 Planner Canary 与数据库长期边界（2026-08-13）
+
+当前 DELL 零生成调用纵切已把一个研究目标编译为 5 个 EvidenceRequest。S1 的 Qwen＋BM25 路线形成 80 个候选；S2 的 7 个 typed fact request 全部 resolved，共返回 21 个带公司、期间、单位、申报批次、PIT、引用和公式 lineage 的 NumericFact。该纵切还修复了 8-K filing/current-report 日期与 issuer reporting period 混用：时间投影统一后，20,340 个对象中 713 个时间元数据得到校正，只有 16 个模型文本需要重编码。旧投影和旧 shadow 继续保留为失败/历史证据。
+
+该结果只证明“给定合格 atoms 时，S1 候选与 S2 数值事实可以共同运行”。它没有证明自然用户问题能被正确规划，也没有把 80 个候选晋升为 Evidence。候选中仍存在年度 10-K 压当前 8-K、表格行压机制解释和语义相近但证据角色错误。因此不能把整池直接喂给 Writer，也不能用 aggregate ranking 分数关闭 S1。
+
+下一自然模型门限定为一次 planner-atoms canary。模型只可返回 `facet_id、target_entity、canonical metric_id、product_intent`；公司身份、截至日、来源类型、期间、预算、request/cell ID、lineage 和数字写入权由 Harness 绑定。输出必须 exact JSON parse 并通过同一语义编译器；失败保存原始 capture 后终止，禁止逐字段补丁、retry 或扩大 prompt。成功只允许执行确定性 S1/S2 successor，不能自动生成完整报告。
+
+数据库是长期金融控制面而不是当前模型能力的临时拐杖。更强模型可以改善查询拆分、候选选择和研究综合，但不得替代 source-bound NumericFact、PIT、期间/单位、冲突检测、披露 vintage 和公式 trace。结构化财务表优先规范化进入 S2 mart；PDF/HTML 表格、dense 命中和模型读到的数字只能作为定位/语境，未经 S2 编译不拥有最终数值权威。S2 产品关闭仍需自然规划后的真实研究消费、三案依赖回归和用户表面引用证明。

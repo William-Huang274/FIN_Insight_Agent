@@ -5,9 +5,10 @@ from typing import Any, Mapping
 
 from .evidence_role import EVIDENCE_ROLES
 from .query_plan import canonical_digest
+from .temporal import reporting_temporal_projection
 
 
-EVIDENCE_OBJECT_VIEW_SCHEMA_VERSION = "fin_ia_evidence_object_view_v1_0"
+EVIDENCE_OBJECT_VIEW_SCHEMA_VERSION = "fin_ia_evidence_object_view_v1_1"
 EVIDENCE_OBJECT_ANNOTATION_SCHEMA_VERSION = (
     "fin_ia_evidence_object_annotation_v1_0"
 )
@@ -206,6 +207,7 @@ class EvidenceObjectView:
     surface_text: str
     surface_digest: str
     focus_binding: Mapping[str, Any]
+    temporal_binding: Mapping[str, Any]
     candidate_not_evidence: bool
 
     def as_dict(self) -> dict[str, Any]:
@@ -227,9 +229,15 @@ def build_evidence_object_view(
     _require(source_record_id, "evidence_object_source_record_id_missing")
     _require(parent_document_id, "evidence_object_parent_document_id_missing")
     _require(parent_document_id == str(parent.get("document_id") or ""), "evidence_object_parent_mismatch")
+    temporal = reporting_temporal_projection(record)
+    effective_parent = {
+        **dict(parent),
+        "period_end": temporal["reporting_period_end"],
+        "fiscal_year": temporal["reporting_fiscal_year"],
+    }
     surface, focus_binding = _surface_from_locator(
         record,
-        parent,
+        effective_parent,
         object_form=object_form,
         locator=locator,
     )
@@ -259,13 +267,18 @@ def build_evidence_object_view(
         source_type=str(record.get("source_type") or ""),
         source_tier=str(record.get("source_tier") or ""),
         publication_date=str(record.get("publication_date") or ""),
-        period_end=str(record.get("period_end") or ""),
-        fiscal_year=record.get("fiscal_year") if isinstance(record.get("fiscal_year"), int) else None,
+        period_end=str(temporal["reporting_period_end"] or ""),
+        fiscal_year=(
+            temporal["reporting_fiscal_year"]
+            if isinstance(temporal["reporting_fiscal_year"], int)
+            else None
+        ),
         section=str(record.get("section") or ""),
         subsection=str(record.get("subsection") or ""),
         surface_text=surface,
         surface_digest=canonical_digest(surface),
         focus_binding=focus_binding,
+        temporal_binding=temporal,
         candidate_not_evidence=True,
     )
 

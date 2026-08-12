@@ -12,7 +12,7 @@ from .query_plan import canonical_digest
 from .route_compiler import QueryObjectFactRoutePolicy
 
 
-COMPILED_OBJECT_SCHEMA_VERSION = "fin_ia_compiled_financial_object_view_v1_0"
+COMPILED_OBJECT_SCHEMA_VERSION = "fin_ia_compiled_financial_object_view_v1_1"
 OBJECT_STORE_COMPILATION_SCHEMA_VERSION = (
     "fin_ia_financial_object_store_compilation_v1_0"
 )

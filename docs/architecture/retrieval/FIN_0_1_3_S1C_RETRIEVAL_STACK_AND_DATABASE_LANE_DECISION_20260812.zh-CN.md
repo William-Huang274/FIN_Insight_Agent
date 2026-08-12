@@ -106,13 +106,13 @@ flowchart TD
 5. 建立独立 Evidence Role＋abstain 层。（合同和基线完成，当前实现不通过产品门）
 6. 根据稳定残差决定是否值得准备微调数据；默认不微调。（已决定：数据不足，不微调）
 7. 选 provisional winner＋shadow challenger。（Qwen Embedding provisional；BM25 必须保留为 lexical 联合候选，Qwen Reranker 仅 shadow）
-8. 运行 DELL S1/S2/S3 纵切：S3 产生真实 EvidenceRequest，S1 使用 Qwen＋BM25 候选并集，S2 返回 NumericFact，S3 消费并暴露产品级残差。（S2 request Runtime 已接通；S1 联合产品路线和 S3 planner 仍在实现）
+8. 运行 DELL S1/S2/S3 纵切：受控 atoms 的零调用工程纵切已完成；S1 的 Qwen＋BM25 联合路线返回 5×16 个候选，S2 为 7/7 typed request 返回 21 个 NumericFact。自然 planner、候选晋升、研究消费与报告仍未通过，故下一项只做一次最小 planner canary。
 
 纵切后再决定 S1 product gate；不能用离线 Recall 或 MRR 单独关闭 S1。
 
 ## 8. 当前不声称
 
-本决策后续已经完成本地模型 shadow、公司财务 fact mart 和 request-scoped S2 Runtime 接入，但仍没有微调、重编译 Evidence Pack、S3 自然规划、前端 NumericFact 消费或 S1/S2/S3 产品通过。任何“模型已对照”或“数据库 6/6”都只是纵切输入条件，不能替代 Evidence Pack usefulness 与研报内容验收。机器可读治理合同仍为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_governance_v1_0.json`，留出合同为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_test_precut_manifest_v1_0.json`。
+本决策后续已经完成本地模型 shadow、公司财务 fact mart、受控 Objective/EvidenceRequest 和 DELL 零调用纵切，但仍没有微调、合格 Evidence Pack、S3 自然规划、研究综合、前端 NumericFact 消费或 S1/S2/S3 产品通过。任何“联合候选已运行”或“数据库 7/7”都只是产品纵切的工程证据，不能替代 Evidence Pack usefulness 与研报内容验收。机器可读治理合同仍为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_governance_v1_0.json`，留出合同为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_test_precut_manifest_v1_0.json`。
 
 ## 9. S1-C1 实现后校正
 

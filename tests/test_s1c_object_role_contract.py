@@ -95,6 +95,41 @@ def test_claim_and_metric_table_are_exact_source_bound_objects() -> None:
     assert_object_view_is_label_free(table)
 
 
+def test_object_view_uses_reported_period_metadata_without_erasing_source_date() -> None:
+    record = _record()
+    record["period_end"] = "2026-05-28"
+    record["fiscal_year"] = 2026
+    record["metadata"] = {
+        "parent_document_id": "CURRENT_DOC::DELL::10_Q::A",
+        "reported_period_end": "2026-05-01",
+        "reported_fiscal_year": 2027,
+    }
+    parent = _parent()
+    parent["period_end"] = "2026-05-28"
+    parent["fiscal_year"] = 2026
+
+    view = build_evidence_object_view(
+        object_key="reported-period",
+        object_form="parent_context",
+        locator={"mode": "parent_context"},
+        record=record,
+        parent=parent,
+    ).as_dict()
+
+    assert view["schema_version"] == "fin_ia_evidence_object_view_v1_1"
+    assert view["period_end"] == "2026-05-01"
+    assert view["fiscal_year"] == 2027
+    assert "period_end: 2026-05-01" in view["surface_text"]
+    assert view["temporal_binding"] == {
+        "reporting_fiscal_year": 2027,
+        "reporting_fiscal_year_source": "metadata.reported_fiscal_year",
+        "reporting_period_end": "2026-05-01",
+        "reporting_period_end_source": "metadata.reported_period_end",
+        "source_record_fiscal_year": 2026,
+        "source_record_period_end": "2026-05-28",
+    }
+
+
 def test_annotations_and_query_relations_never_copy_source_surface() -> None:
     view = build_evidence_object_view(
         object_key="claim",

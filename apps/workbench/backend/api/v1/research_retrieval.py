@@ -87,6 +87,79 @@ class EvidenceRequestExecutionResponse(BaseModel):
     projection_digest: str
 
 
+class ResearchObjectivePeriodBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    start_date: str | None
+    fiscal_years: list[int]
+
+
+class ResearchObjectiveBudgetBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    max_evidence_requests: int
+    max_metric_intents_per_request: int
+    max_product_intents_per_request: int
+    max_model_calls: int
+
+
+class ResearchObjectiveDraftBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str
+    raw_question: str
+    task_type: str
+    case_key: str
+    required_slot_ids: list[str]
+    allowed_source_types: list[str]
+    forbidden_source_types: list[str]
+    output_format: str
+    gap_policy: str
+    reviewer_role: str
+    period: ResearchObjectivePeriodBody
+    budget: ResearchObjectiveBudgetBody
+    pass_criteria: list[str]
+
+
+class PlannerAtomBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    facet_id: str
+    target_entity: str
+    metric_ids: list[str]
+    product_intents: list[str]
+
+
+class ResearchPlannerAtomsBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str
+    objective_id: str
+    atoms: list[PlannerAtomBody]
+
+
+class ControlledResearchPlanBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    objective: ResearchObjectiveDraftBody
+    planner: ResearchPlannerAtomsBody
+
+
+class ControlledResearchPlanExecutionResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str
+    status: Literal["controlled_research_plan_zero_call_executed"]
+    product_mode: Literal["current"]
+    case_key: str
+    objective: dict[str, Any]
+    compiled_plan: dict[str, Any]
+    summary: dict[str, Any]
+    request_results: list[dict[str, Any]]
+    known_boundary: str
+    projection_digest: str
+
+
 def build_research_retrieval_router(
     service: ResearchRetrievalService,
 ) -> APIRouter:
@@ -166,12 +239,58 @@ def build_research_retrieval_router(
         )
         return projection
 
+    @router.post(
+        "/research-cases/{case_key}/controlled-research-plans",
+        operation_id="executeControlledResearchPlan",
+        response_model=ControlledResearchPlanExecutionResponse,
+    )
+    def execute_controlled_research_plan(
+        case_key: str,
+        request: ControlledResearchPlanBody,
+        response: Response,
+        product_mode: Annotated[
+            str | None, Header(alias="X-Fin-Product-Mode")
+        ] = None,
+        permissions: Annotated[
+            str | None, Header(alias="X-Fin-Case-Permissions")
+        ] = None,
+    ) -> dict[str, Any]:
+        try:
+            projection = service.execute_controlled_plan(
+                case_key,
+                request.objective.model_dump(mode="json"),
+                request.planner.model_dump(mode="json"),
+                ResearchRetrievalPrincipal(
+                    mode=(product_mode or "").strip(),
+                    permissions=frozenset(
+                        item.strip()
+                        for item in (permissions or "").split(",")
+                        if item.strip()
+                    ),
+                ),
+            )
+        except ResearchRetrievalServiceError as exc:
+            raise HTTPException(
+                status_code=exc.status_code, detail=exc.detail
+            ) from exc
+        response.headers["ETag"] = (
+            f'"controlled-research-plan={projection["projection_digest"]}"'
+        )
+        return projection
+
     return router
 
 
 __all__ = [
+    "ControlledResearchPlanBody",
+    "ControlledResearchPlanExecutionResponse",
     "EvidenceRequestBody",
     "EvidenceRequestExecutionResponse",
     "EvidenceRequestPeriodBody",
+    "PlannerAtomBody",
+    "ResearchObjectiveBudgetBody",
+    "ResearchObjectiveDraftBody",
+    "ResearchObjectivePeriodBody",
+    "ResearchPlannerAtomsBody",
     "build_research_retrieval_router",
 ]

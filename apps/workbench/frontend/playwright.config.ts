@@ -5,6 +5,11 @@ import { fileURLToPath } from "node:url";
 const frontendRoot = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(frontendRoot, "../../..");
 const productDataRoot = process.env.FINSIGHT_E2E_DATA_ROOT;
+const frontendPort = Number(process.env.FINSIGHT_E2E_FRONTEND_PORT || "4173");
+
+if (!Number.isInteger(frontendPort) || frontendPort < 1024 || frontendPort > 65535) {
+  throw new Error("FINSIGHT_E2E_FRONTEND_PORT must be an integer from 1024 to 65535");
+}
 
 export default defineConfig({
   testDir: "./e2e",
@@ -13,7 +18,7 @@ export default defineConfig({
   reporter: [["list"]],
   outputDir: "test-results",
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL: `http://127.0.0.1:${frontendPort}`,
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
   },
@@ -34,9 +39,9 @@ export default defineConfig({
       timeout: 120_000,
     },
     {
-      command: "node node_modules/vite/bin/vite.js --config vite.config.ts",
+      command: `node node_modules/vite/bin/vite.js --config vite.config.ts --host 127.0.0.1 --port ${frontendPort} --strictPort`,
       cwd: frontendRoot,
-      url: "http://127.0.0.1:5173/workspace",
+      url: `http://127.0.0.1:${frontendPort}/workspace`,
       reuseExistingServer: false,
       timeout: 120_000,
     },

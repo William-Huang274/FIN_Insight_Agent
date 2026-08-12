@@ -7,7 +7,13 @@ from .contracts import EvidenceRequest, FinancialResearchKernel, RetrievalContra
 from .query_plan import canonical_digest
 
 
-ROUTE_POLICY_SCHEMA_VERSION = "fin_ia_s1c_query_object_fact_route_policy_v1_0"
+ROUTE_POLICY_SCHEMA_VERSION = "fin_ia_s1c_query_object_fact_route_policy_v1_1"
+ROUTE_POLICY_SCHEMA_VERSIONS = frozenset(
+    {
+        "fin_ia_s1c_query_object_fact_route_policy_v1_0",
+        ROUTE_POLICY_SCHEMA_VERSION,
+    }
+)
 EXECUTION_PLAN_SCHEMA_VERSION = "fin_ia_s1c_retrieval_execution_plan_v1_0"
 TYPED_FACT_REQUEST_SCHEMA_VERSION = "fin_ia_typed_fact_request_v1_0"
 
@@ -159,7 +165,7 @@ def load_query_object_fact_route_policy(
     """Load the S1/S2 boundary and fail closed on missing or overlapping routes."""
 
     _require(
-        payload.get("schema_version") == ROUTE_POLICY_SCHEMA_VERSION,
+        payload.get("schema_version") in ROUTE_POLICY_SCHEMA_VERSIONS,
         "query_object_fact_route_policy_schema_invalid",
     )
     _require(

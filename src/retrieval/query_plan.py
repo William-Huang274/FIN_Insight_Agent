@@ -148,12 +148,26 @@ def _compile_query_facet_plan(
                 and facet.facet_id not in requested_facet_ids
             ):
                 continue
-            owners = [profile.subject_ticker]
-            relationships = ["subject_self_disclosure"]
-            if facet.evidence_owner_scope == "subject_and_related":
-                owners.extend(entity.ticker for entity in profile.related_entities)
+            owners = (
+                [profile.subject_ticker]
+                if facet.evidence_owner_scope != "related_only"
+                else []
+            )
+            relationships = (
+                ["subject_self_disclosure"]
+                if facet.evidence_owner_scope != "related_only"
+                else []
+            )
+            if facet.evidence_owner_scope in {"subject_and_related", "related_only"}:
+                eligible_related = [
+                    entity
+                    for entity in profile.related_entities
+                    if not facet.related_economic_roles
+                    or entity.economic_role in facet.related_economic_roles
+                ]
+                owners.extend(entity.ticker for entity in eligible_related)
                 relationships.extend(
-                    entity.relationship_direction for entity in profile.related_entities
+                    entity.relationship_direction for entity in eligible_related
                 )
             if target_entities is not None:
                 selected_pairs = [
@@ -214,29 +228,21 @@ def _compile_query_facet_plan(
                 )
                 for owner, relationship in zip(owners, relationships)
             )
-            if target_entities is None:
-                # Preserve the frozen canonical-pack contract and digest.
-                exact_aliases = profile.subject_aliases
-                owner_names = [profile.subject_legal_name]
-                owner_names.extend(
-                    related[ticker].legal_name for ticker in owners[1:]
-                )
-            else:
-                exact_aliases = _unique(
-                    alias
-                    for owner in owners
-                    for alias in (
-                        profile.subject_aliases
-                        if owner == profile.subject_ticker
-                        else related[owner].aliases
-                    )
-                )
-                owner_names = [
-                    profile.subject_legal_name
+            exact_aliases = _unique(
+                alias
+                for owner in owners
+                for alias in (
+                    profile.subject_aliases
                     if owner == profile.subject_ticker
-                    else related[owner].legal_name
-                    for owner in owners
-                ]
+                    else related[owner].aliases
+                )
+            )
+            owner_names = [
+                profile.subject_legal_name
+                if owner == profile.subject_ticker
+                else related[owner].legal_name
+                for owner in owners
+            ]
             exact_queries = _unique(
                 f'"{alias}" "{phrase}"'
                 for alias in exact_aliases

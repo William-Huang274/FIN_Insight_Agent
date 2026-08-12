@@ -17,8 +17,8 @@
     "apps/workbench/backend/application/research_workspace_service.py"
   ],
   "resource_count": 7,
-  "resource_bytes": 1815105,
-  "resource_canonical_digest": "ee7f48dc00af58d1b8d2c8b317f3fc467ddd225ae3039f3a17c4a1dd25b6c71e",
+  "resource_bytes": 1834621,
+  "resource_canonical_digest": "9b383b5b9d5146df7602ff774d5b6f50677c4fc72fd96319a836c3d6601df595",
   "resources": [
     {
       "resource_id": "application.config.current_financial_research_kernel",
@@ -88,8 +88,8 @@
     {
       "resource_id": "application.result.current_research_retrieval_snapshot",
       "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
-      "sha256": "c32bdc4abb742e5746cc303ec68dff76b670fa3028054a455e1a4701c85d5d84",
-      "bytes": 1693260,
+      "sha256": "0d0fb4f217dd57adbb952250e3a1104b6f96be7d30f4121e53abc9b4f3bbd7fe",
+      "bytes": 1712776,
       "classification": "digest_bound_read_only_retrieval_candidate_result",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"

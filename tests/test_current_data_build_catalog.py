@@ -46,6 +46,8 @@ def test_data_build_catalog_exposes_s1c_as_one_controlled_comparison_chain() -> 
         "retrieval_run_s1c_ranking_comparison",
         "retrieval_materialize_s1c_financial_role_eval",
         "retrieval_run_s1c_cross_encoder_role_shadow",
+        "retrieval_materialize_s1c_runtime_query_atoms",
+        "retrieval_run_s1c_runtime_query_atom_model_shadow",
     }.issubset(steps)
     comparison = steps["retrieval_run_s1c_ranking_comparison"]
     model = next(row for row in comparison.parameters if row.name == "model")
@@ -59,3 +61,8 @@ def test_data_build_catalog_exposes_s1c_as_one_controlled_comparison_chain() -> 
         row for row in shadow.parameters if row.name == "cross_encoder_model"
     ).required is True
     assert shadow.timeout_hint_s == 1800
+    atom_shadow = steps["retrieval_run_s1c_runtime_query_atom_model_shadow"]
+    assert atom_shadow.timeout_hint_s == 7200
+    assert {
+        row.name for row in atom_shadow.parameters
+    } == {"policy", "cache_root", "full_output_root", "summary_output"}

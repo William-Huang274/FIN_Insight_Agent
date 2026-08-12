@@ -40,13 +40,14 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 7. **S1-C0 检索栈、数据库通道和 test-precut 治理（已完成）**：已冻结 SQL/typed exact lookup、BM25、BGE-M3 dense/learned-sparse/multi-vector、Qwen Embedding、typed graph、BGE/Qwen Reranker 和独立 Evidence Role 的分层边界；HPQ／AVGO／INTC issuer-time test-precut 已在新模型结果出现前绑定，ORCL／ASML／ANET 降为已观察 validation。当前没有模型、训练或 Runtime 晋升权限。
 8. **S1-C1 query family、对象编译器与 typed fact route（已完成工程门）**：17 facet 已且仅映射到 11 类问题；混合请求拆成同 cell 的 narrative／fact sibling。1,805 个 current child 编译出 20,340 个去重 claim／metric-row／context 候选，2,425 个重叠切块重复已合并并保留 lineage；高管年龄表等 228 张非金融数值表已拒绝。标签回放进一步修复空表吞掉 TSMC claim，以及 Micron 重复 Revenue 行缺少业务单元上下文。24 类指标可路由到 typed fact request，但当前公司财务事实 mart 不存在，故返回 S2 typed gap；没有把表格行冒充 NumericFact。
 9. **S1-C2 多检索器有界对照（BM25／BGE 已完成，Qwen transport block）**：同 20,340 对象上，BM25 与 BGE dense 的 64 候选并集覆盖 18/18 目标来源，精确受复核对象仅 6/14；learned sparse 不保留，multi-vector 压到前十反而只剩 14/18。结论不是 dense 胜出，而是 provisional candidate pool 采用 `BM25 + BGE dense union`，继续禁止 Runtime 晋升。Qwen 模型文件未完整到达本机，不评价模型质量。
-10. **当前下一门——S1-C3/C4 同候选 Reranker、Evidence Role＋abstain 与微调处置**：使用 Runtime 已拆分的 query atom，而不是旧混合 qrel，在同一候选并集比较 BGE/Qwen Reranker；Evidence Role 独立判断候选能证明什么并可 abstain。模型分数不授予 Evidence 或数值权威。只有跨案例仍存在稳定残差，并达到数据与独立留出门，才重新讨论微调。
+10. **S1-C3/C4 Runtime Query Atom 模型 shadow（已完成，无 Runtime 晋升）**：18 个原子问题上，BM25／BGE／Qwen Embedding 前十正例分别为 `5/15`、`0/15`、`8/15`，自然共享池为 `10/15`，未过 0.80 门。Qwen Reranker 受控 pairwise=`12/16`，但自然 top10=`7/15`，没有超过 Qwen Embedding；BGE Reranker=`8/16`。因此冻结 `Qwen Embedding provisional + BM25 fallback`，Qwen Reranker 仅 shadow。Evidence Role 正例 compatible=`10/16`、负例拒绝/abstain=`15/18`、F1=`0.5818`，禁止上线和微调。残缺片段及错误关系 qrel 保留为 S1 复核问题，不能通过改标签追分。
 11. **S1-D residual-gap 补源（尚未授权执行）**：S1-C successor 通过后，只处理已证明的真实缺口；当前最明确的是 TSMC CoWoS／先进封装产能、良率和分配，随后才是 Dell/Micron PDF transport 与 PIT 估值。不能用 broad search 掩盖 query、对象、数据库或 ranking 错误。
-12. **DELL S1/S2/S3 纵切**：先用 provisional winner＋shadow challenger；S3 产生真实 EvidenceRequest，S1 执行文本/图检索并路由 fact request，S2 从当前公司财务事实 mart 返回 NumericFact，S3 再综合和暴露产品级残差。该纵切决定 S1 product gate，而不是离线排名数字。
-13. **S2 三案扩展与依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
-14. **S3 三案动态 Agentic Research**：把用户问题编译成 `Research Objective / DecisionSurface / EvidenceRequest`，并由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
-15. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
-16. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+12. **当前下一硬门——S2 公司财务事实 mart**：旧路线只证明年度 9/9，current-quarter 为 0/6；当前 2026-08-06 DELL／MU／NVDA CompanyFacts 和 Submissions 原始捕获已存在，但活动 manifest 仍旧期。S2 要按 accession、accepted-at、vintage、期间角色、单位、taxonomy concept、source digest 和 supersession 建库，禁止复用“一 ticker／metric 只留一行”或 fact/signal/context 混表。typed exact lookup 必须返回 NumericFact、typed conflict 或 typed gap。
+13. **DELL S1/S2/S3 纵切**：S2 门通过后使用 provisional winner＋shadow challenger；S3 产生真实 EvidenceRequest，S1 执行文本/图检索并路由 fact request，S2 从当前公司财务事实 mart 返回 NumericFact，S3 再综合和暴露产品级残差。该纵切决定 S1 product gate，而不是离线排名数字。
+14. **S2 三案扩展与依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
+15. **S3 三案动态 Agentic Research**：把用户问题编译成 `Research Objective / DecisionSurface / EvidenceRequest`，并由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
+16. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
+17. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
 ## 5. 防止再次膨胀的工程规则
 

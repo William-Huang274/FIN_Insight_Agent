@@ -1,0 +1,80 @@
+{
+  "schema_version": "fin_ia_s1c_runtime_query_atom_model_shadow_policy_v1_0",
+  "status": "pre_registered_fixed_model_shadow_no_training_no_runtime_promotion",
+  "recorded_at": "2026-08-13",
+  "experiment_id": "FIN-0.1.3-S1C-RUNTIME-QUERY-ATOM-EMBEDDING-RERANKER-ROLE-SHADOW-R1",
+  "bound_inputs": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1c_runtime_query_atom_eval_v1_0.json",
+    "query_atom_eval_sha256_lf": "15894e94ec8447e2eecfeab2ecca08d5dc84fd78bf64835f7d5d887c4d279e5f",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_1.json",
+    "kernel_sha256_lf": "6f456246130ab0ea6f3b3d31ae009d0bb3d51ee18c93645ff39a5330cd375564",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_1.json",
+    "route_policy_sha256_lf": "be4ee9efe54f588b4c887f58d9c450942c031c16c268f1a1470d58f9f5b5dfd7",
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v1/objects.jsonl",
+    "compiled_objects_sha256": "bd725bfe8b34c765c1d25155acedf4d0094712896c7d9344bf63899c691a9bc7",
+    "bge_embedding_model_digest": "d6d4a7fc2980e5bde67c1cd013ef87d1a8709464ba982d61a28653070e440cd5",
+    "qwen_embedding_model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+    "bge_reranker_model_digest": "f477a931c26459852ea2e3070b48a3f977fd81d4e767b097fc8eeb1292c297b0",
+    "qwen_reranker_model_digest": "9fa9d067824c3aae0aeee7a773cbb42fac95a06c981ab72e075294bb10845ad2"
+  },
+  "models": {
+    "bge_embedding": {
+      "model_id": "BAAI/bge-m3",
+      "local_directory": "D:/hf_models/BAAI__bge-m3",
+      "maximum_sequence_length": 512,
+      "batch_size": 4
+    },
+    "qwen_embedding": {
+      "model_id": "Qwen/Qwen3-Embedding-0.6B",
+      "local_directory": "D:/hf_models/Qwen__Qwen3-Embedding-0.6B",
+      "maximum_sequence_length": 512,
+      "batch_size": 8,
+      "query_instruction": "Given a source-bound financial research request, retrieve passages that directly address the requested evidence facet while preserving issuer, period and relationship direction."
+    },
+    "bge_reranker": {
+      "model_id": "BAAI/bge-reranker-v2-m3",
+      "local_directory": "D:/hf_models/BAAI__bge-reranker-v2-m3",
+      "maximum_sequence_length": 1024,
+      "batch_size": 2
+    },
+    "qwen_reranker": {
+      "model_id": "Qwen/Qwen3-Reranker-0.6B",
+      "local_directory": "D:/hf_models/Qwen__Qwen3-Reranker-0.6B",
+      "maximum_sequence_length": 1024,
+      "batch_size": 2,
+      "instruction": "Retrieve source-bound financial passages that directly answer the requested evidence facet. Prefer the correct issuer, reporting period, economic relationship direction, fact state and evidence role; do not treat merely related background as direct evidence."
+    }
+  },
+  "candidate_contract": {
+    "bge_first_stage_limit": 64,
+    "qwen_first_stage_limit": 64,
+    "reranker_candidate_union_limit": 96,
+    "top_k": 10,
+    "rerank_both_models_on_exact_same_candidate_union": true,
+    "labels_joined_after_candidate_generation_and_scoring": true
+  },
+  "decision_gates": {
+    "hard_owner_date_source_form_filter_violations_maximum": 0,
+    "positive_target_in_union_minimum_rate": 0.8,
+    "reranker_pairwise_accuracy_minimum": 0.75,
+    "evidence_role_positive_compatibility_minimum": 0.75,
+    "evidence_role_hard_negative_suppression_minimum": 0.75,
+    "minimum_reviewed_relations_before_fine_tuning": 200,
+    "minimum_development_cases_before_fine_tuning": 6
+  },
+  "stop_conditions": [
+    "Do not change query atoms, labels, model instructions or candidate limits after observing this attempt's scores.",
+    "Do not treat a reranker score or Evidence Role compatibility result as Evidence authority.",
+    "Do not treat compiled metric rows as NumericFact; the S2 company financial fact mart remains a hard gate before the DELL vertical slice.",
+    "Do not fine-tune on DELL, MU and NVDA alone.",
+    "Do not use ORCL, ASML or ANET for model, query, threshold or feature tuning."
+  ],
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_authorized": false,
+    "s1_complete_claimed": false,
+    "s2_database_gate_required_before_vertical_slice": true
+  }
+}

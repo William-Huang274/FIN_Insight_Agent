@@ -1,13 +1,13 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-12
+更新时间：2026-08-13
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-s1-retrieval-vertical-slice`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-A 已接入类型化查询与 Workbench 候选页，S1-B 已建立 28 parent / 1,805 child 的当前金融对象库。S1-C1 已把 17 个 facet 拆成 11 类问题，把混合请求拆为叙事检索／数据库事实 sibling，并把全库编译为 20,340 个去重 claim／metric-row／context 候选；空表吞 claim 和 Micron 重复指标行缺少业务单元上下文均已修复。S1-C2 已完成 BM25 与 BGE-M3 同对象对照：两路候选并集覆盖 18/18 目标来源，但精确受复核对象只有 6/14，证明当前瓶颈是 query atom、细粒度对象选择、reranker 和 Evidence Role，而不是单纯找不到文件。Qwen 模型资产为 transport block，未评价模型。公司财务事实 mart 仍不存在，typed request 明确返回 S2 gap；下一门是同候选 reranker／Evidence Role shadow，S1 产品门仍未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-A 已接入类型化查询与 Workbench 候选页，S1-B 已建立 28 parent / 1,805 child 的当前金融对象库。S1-C 已把 17 个 facet 拆成 11 类问题，把混合请求拆为叙事检索／数据库事实 sibling，并把全库编译为 20,340 个去重 claim／metric-row／context 候选。18 个 Runtime Query Atom 的同对象模型 shadow 已完成：Qwen Embedding 为 provisional first-stage winner（8/15 前十），BM25 为 fallback（5/15），BGE dense 为 0/15；Qwen Reranker 受控 pairwise=12/16 但自然前十未改善，只保留 shadow，BGE Reranker 不晋升。Evidence Role F1=0.5818，且发现残缺片段和错误关系 qrel，故 S1 产品门仍未通过、禁止微调。下一硬门已转入 S2 公司财务事实 mart；当前原始 CompanyFacts 是新鲜的，但活动 manifest 和旧 mart 没有 current-quarter/vintage 能力。
 
 ## 当前唯一产品边界
 
@@ -29,7 +29,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动 import graph 为 82 个 Python 文件和 7 个前端文件；本轮新增 provider-neutral route/object compiler 与一个 Workbench 受维护构建入口，均已进入活动图。Runtime Registry 已升为 R5／7 个资源，新增项只是 query/object/fact route policy；模型、人工标签、编译私有对象和 shadow 结果均未注册为产品 Runtime resource。历史文件没有删除；完整旧 Project OS 账本也保存在 `archive/versions/fin_0_1_3_prebaseline/docs/project_os/`。
+当前活动 import graph 为 85 个 Python 文件和 7 个前端文件；provider-neutral route/object compiler 与共享 embedding/reranker adapter 均已进入活动图。Runtime Registry 仍为 R5／7 个资源；模型、人工标签、编译私有对象和 shadow 结果均未注册为产品 Runtime resource。两条 Query Atom 复现入口已纳入 Workbench Operations 的受维护 Retrieval Eval catalog，不再作为无消费者的一次性脚本。历史文件没有删除；完整旧 Project OS 账本也保存在 `archive/versions/fin_0_1_3_prebaseline/docs/project_os/`。
 
 ## 已完成的重定基事实
 
@@ -75,9 +75,9 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S1C3_SAME_CANDIDATE_RERANKER_AND_EVIDENCE_ROLE_SHADOW`
+`FIN_0_1_3_S2_COMPANY_FINANCIAL_FACT_MART_AND_TYPED_EXACT_LOOKUP`
 
-S1-C2 已在相同 20,340 对象、硬过滤和预算上完成 BM25、BGE-M3 dense／learned sparse／multi-vector 对照。BM25 与 dense 的 64 候选并集覆盖 18/18 目标来源，但精确受复核对象只有 6/14；multi-vector 压到前十后降为 14/18，因此 provisional candidate pool 只是 `BM25 + BGE dense union`，没有路线晋升。下一门必须使用 Runtime 已拆分 query atom，在同候选池比较 BGE/Qwen Reranker，并独立运行 Evidence Role＋abstain；旧混合 qrel 只作 source-level 诊断，禁止调参。Qwen3-Embedding-0.6B 首次 HF Xet 下载为 416、唯一一次普通 HTTP successor 在 1.1GB 权重处被对端提前断开；未执行不能写成模型失败，也不能无限重试。S2 公司财务事实 mart 仍是纵切硬前置，不能被 PDF 表格或模型分数替代；S3 负责自然语言规划和动态追问。当前已确认属于 S1-D 的缺口仍是 TSMC CoWoS／先进封装产能、良率和分配。
+S1-C Runtime Query Atom R1/R2 已完成，原始失败和诊断池结果均保留。当前路线冻结为 `Qwen3 Embedding provisional + BM25 fallback`，Qwen Reranker 仅 shadow，Evidence Role 不通过，微调不授权。S2 现在必须审计并迁移旧年度 9/9 能力，从 2026-08-06 的 DELL／MU／NVDA SEC CompanyFacts＋Submissions 原始捕获建立独立公司财务事实 mart，明确 accession、accepted-at、vintage、period start/end、instant／discrete quarter／YTD／FY、unit、taxonomy concept、source digest 和 supersession。旧“一 ticker／metric 只留一行”及 fact/signal/context 混表不可复用。typed exact lookup 必须返回 source-bound NumericFact、typed conflict 或 typed gap；通过后才可进入 DELL S1/S2/S3 纵切。S1 的残缺 qrel、Evidence Role 和 TSMC advanced-packaging gap继续开放，但不得用它们拖延或替代数据库硬门。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

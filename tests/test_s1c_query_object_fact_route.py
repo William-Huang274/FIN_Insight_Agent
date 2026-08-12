@@ -39,6 +39,18 @@ POLICY_PATH = (
     / "retrieval"
     / "fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_0.json"
 )
+SUCCESSOR_KERNEL_PATH = (
+    ROOT
+    / "configs"
+    / "retrieval"
+    / "fin_ia_0_1_3_s1_financial_research_kernel_v1_1.json"
+)
+SUCCESSOR_POLICY_PATH = (
+    ROOT
+    / "configs"
+    / "retrieval"
+    / "fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_1.json"
+)
 
 
 def _kernel_payload() -> dict[str, object]:
@@ -56,6 +68,19 @@ def _kernel():
 def _policy():
     kernel = _kernel()
     return load_query_object_fact_route_policy(_policy_payload(), kernel)
+
+
+def _successor_kernel():
+    return load_financial_research_kernel(
+        json.loads(SUCCESSOR_KERNEL_PATH.read_text(encoding="utf-8"))
+    )
+
+
+def _successor_policy():
+    kernel = _successor_kernel()
+    return load_query_object_fact_route_policy(
+        json.loads(SUCCESSOR_POLICY_PATH.read_text(encoding="utf-8")), kernel
+    )
 
 
 def _request(**overrides: object) -> dict[str, object]:
@@ -151,6 +176,67 @@ def test_demand_and_relationship_attribution_are_not_one_query_family() -> None:
     assert family_by_facet["counterparty_direct_mention"].family_id == (
         "relationship_attribution"
     )
+
+
+def test_successor_separates_downstream_demand_from_upstream_capacity() -> None:
+    kernel = _successor_kernel()
+    policy = _successor_policy()
+    assert len(policy.family_by_facet()) == 18
+    assert policy.family_by_facet()["downstream_demand_context"].family_id == (
+        "customer_demand_read_through"
+    )
+
+    downstream = load_evidence_request(
+        _request(
+            request_id="REQ-DELL-DOWNSTREAM-001",
+            target_entities=["MSFT"],
+            requested_facet_ids=["downstream_demand_context"],
+            metric_intents=[],
+        ),
+        kernel,
+    )
+    downstream_plan = compile_retrieval_execution_plan(policy, downstream)
+    assert downstream_plan.narrative_requests[0].target_entities == ("MSFT",)
+
+    upstream = load_evidence_request(
+        _request(
+            request_id="REQ-DELL-UPSTREAM-001",
+            target_entities=["MU"],
+            requested_facet_ids=["upstream_capacity_context"],
+            metric_intents=[],
+        ),
+        kernel,
+    )
+    upstream_plan = compile_retrieval_execution_plan(policy, upstream)
+    assert upstream_plan.narrative_requests[0].target_entities == ("MU",)
+
+
+@pytest.mark.parametrize(
+    ("facet_id", "target"),
+    [
+        ("downstream_demand_context", "MU"),
+        ("upstream_capacity_context", "MSFT"),
+        ("downstream_demand_context", "DELL"),
+        ("upstream_capacity_context", "DELL"),
+    ],
+)
+def test_successor_related_facets_fail_closed_on_wrong_economic_role(
+    facet_id: str,
+    target: str,
+) -> None:
+    with pytest.raises(
+        RetrievalContractError,
+        match=f"evidence_request_facet_has_no_target:{facet_id}",
+    ):
+        load_evidence_request(
+            _request(
+                request_id=f"REQ-DELL-{facet_id}-{target}",
+                target_entities=[target],
+                requested_facet_ids=[facet_id],
+                metric_intents=[],
+            ),
+            _successor_kernel(),
+        )
 
 
 def test_policy_fails_closed_when_one_facet_is_mapped_twice() -> None:

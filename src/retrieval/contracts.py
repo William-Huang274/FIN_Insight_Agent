@@ -31,6 +31,9 @@ _FORBIDDEN_INTENT_FRAGMENTS = (
     "target_id",
     "source_record_id",
 )
+_RELATED_ECONOMIC_ROLES = frozenset(
+    {"customer_demand_context", "supplier_capacity_context"}
+)
 
 
 class RetrievalContractError(ValueError):
@@ -56,11 +59,22 @@ def _optional_strings(value: object, code: str) -> tuple[str, ...]:
     return normalized
 
 
+def _related_economic_role(item: Mapping[str, Any]) -> str:
+    explicit = str(item.get("economic_role") or "").strip()
+    if explicit:
+        return explicit
+    direction = str(item.get("relationship_direction") or "").casefold()
+    if any(token in direction for token in ("supplier", "upstream", "foundry")):
+        return "supplier_capacity_context"
+    return "customer_demand_context"
+
+
 @dataclass(frozen=True)
 class EvidenceFacetSpec:
     facet_id: str
     business_question_zh: str
     evidence_owner_scope: str
+    related_economic_roles: tuple[str, ...]
     required_source_roles: tuple[str, ...]
     exact_phrases: tuple[str, ...]
     lexical_terms: tuple[str, ...]
@@ -86,6 +100,7 @@ class RelatedEntity:
     legal_name: str
     aliases: tuple[str, ...]
     relationship_direction: str
+    economic_role: str
 
 
 @dataclass(frozen=True)
@@ -232,7 +247,7 @@ def load_financial_research_kernel(
                 raw_facet.get("evidence_owner_scope") or scope
             )
             _require(
-                facet_scope in {"subject", "subject_and_related"},
+                facet_scope in {"subject", "subject_and_related", "related_only"},
                 "retrieval_facet_owner_scope_invalid",
             )
             required_roles = raw_facet.get("required_source_roles") or raw.get(
@@ -244,6 +259,10 @@ def load_financial_research_kernel(
                     raw_facet.get("business_question_zh") or ""
                 ).strip(),
                 evidence_owner_scope=facet_scope,
+                related_economic_roles=_optional_strings(
+                    raw_facet.get("related_economic_roles") or [],
+                    "retrieval_facet_related_economic_roles_invalid",
+                ),
                 required_source_roles=_strings(
                     required_roles,
                     "retrieval_facet_source_roles_invalid",
@@ -258,7 +277,16 @@ def load_financial_research_kernel(
                 ),
             )
             _require(
-                facet.facet_id and facet.business_question_zh,
+                facet.facet_id
+                and facet.business_question_zh
+                and set(facet.related_economic_roles).issubset(
+                    _RELATED_ECONOMIC_ROLES
+                )
+                and (
+                    not facet.related_economic_roles
+                    or facet.evidence_owner_scope
+                    in {"subject_and_related", "related_only"}
+                ),
                 "retrieval_facet_identity_invalid",
             )
             facets.append(facet)
@@ -356,12 +384,14 @@ def load_financial_research_kernel(
                 legal_name=str(item.get("legal_name") or "").strip(),
                 aliases=_strings(item.get("aliases"), "retrieval_related_aliases_invalid"),
                 relationship_direction=str(item.get("relationship_direction") or "").strip(),
+                economic_role=_related_economic_role(item),
             )
             _require(
                 ticker
                 and ticker != subject_ticker
                 and entity.legal_name
-                and entity.relationship_direction,
+                and entity.relationship_direction
+                and entity.economic_role in _RELATED_ECONOMIC_ROLES,
                 "retrieval_related_entity_identity_invalid",
             )
             related_entities.append(entity)
@@ -504,8 +534,15 @@ def load_evidence_request(
     for facet_id in requested_facets:
         _, facet = facets[facet_id]
         permitted = {profile.subject_ticker}
-        if facet.evidence_owner_scope == "subject_and_related":
-            permitted.update(entity.ticker for entity in profile.related_entities)
+        if facet.evidence_owner_scope == "related_only":
+            permitted.clear()
+        if facet.evidence_owner_scope in {"subject_and_related", "related_only"}:
+            permitted.update(
+                entity.ticker
+                for entity in profile.related_entities
+                if not facet.related_economic_roles
+                or entity.economic_role in facet.related_economic_roles
+            )
         _require(
             bool(permitted.intersection(target_entities)),
             f"evidence_request_facet_has_no_target:{facet_id}",

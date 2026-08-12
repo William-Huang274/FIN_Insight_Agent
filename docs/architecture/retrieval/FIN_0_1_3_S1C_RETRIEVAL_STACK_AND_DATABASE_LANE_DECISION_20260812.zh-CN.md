@@ -1,7 +1,7 @@
 # FIN 0.1.3 S1-C 检索栈与数据库通道决策
 
 日期：2026-08-12
-状态：`Owner 已接受执行顺序 / 治理合同冻结 / S1-C1 查询、对象与数据库路由已实现并零调用证明 / 模型与训练均未授权`
+状态：`Owner 已接受执行顺序 / S1 模型 shadow 完成 / S2 request Runtime 已接通 / DELL S1-S2-S3 纵切进行中 / 微调未授权`
 
 ## 1. 本次修正的结论
 
@@ -29,7 +29,9 @@ S1 不能只做“拆混合查询＋对象编译器”，然后继续沿用当�
 
 - `src/sec_agent/workbench/store.py` 的 SQLite 是可写 Operations state，不是金融研究事实库。
 - 行情 catalog DuckDB 只负责行情快照；行业 DuckDB 只负责行业快照。
-- 当前活动 Runtime 没有与新对象合同绑定的公司财务事实 mart，三案 reviewed Pack 的 structured numeric 仍为 0。
+- 当前已有独立的 source-bound 公司财务事实 mart，private 路径由 `RuntimePathRegistry` 显式绑定；它不属于 Operations state，也不进入 Git 或 Runtime Resource Registry。
+- request-scoped Research Runtime 已实际执行该 mart：一条 DELL 结果／现金请求拆出 6 个 typed fact sibling，6/6 resolved、0 gap、0 conflict。
+- 当前三案 reviewed Pack 尚未复编译、前端和尚未建立的 S3 planner 也尚未消费这些 NumericFact，因此 reviewed Pack 的 structured numeric 仍为 0。
 
 ### 3.2 旧 SQL 路线说明了什么
 
@@ -99,18 +101,18 @@ flowchart TD
 
 1. 冻结本检索栈、数据库通道、业务错误分类和新 test manifest。（已完成）
 2. 拆 query family，编译 source-bound claim、metric-table、context。（已完成；实现时由 7 类校正为 11 类）
-3. 同语料比较 BM25、BGE-M3 三模式与 Qwen Embedding。
-4. 在同一候选并集比较 BGE 与 Qwen Reranker。
-5. 建立独立 Evidence Role＋abstain 层。
-6. 根据稳定残差决定是否值得准备微调数据；默认不微调。
-7. 选 provisional winner＋shadow challenger。
-8. 运行 DELL S1/S2/S3 纵切：S3 产生真实 EvidenceRequest，S1 检索，S2 返回 NumericFact，S3 消费并暴露产品级残差。
+3. 同语料比较 BM25、BGE-M3 三模式与 Qwen Embedding。（已完成 shadow）
+4. 在同一候选并集比较 BGE 与 Qwen Reranker。（已完成 shadow；均未晋升）
+5. 建立独立 Evidence Role＋abstain 层。（合同和基线完成，当前实现不通过产品门）
+6. 根据稳定残差决定是否值得准备微调数据；默认不微调。（已决定：数据不足，不微调）
+7. 选 provisional winner＋shadow challenger。（Qwen Embedding provisional；BM25 必须保留为 lexical 联合候选，Qwen Reranker 仅 shadow）
+8. 运行 DELL S1/S2/S3 纵切：S3 产生真实 EvidenceRequest，S1 使用 Qwen＋BM25 候选并集，S2 返回 NumericFact，S3 消费并暴露产品级残差。（S2 request Runtime 已接通；S1 联合产品路线和 S3 planner 仍在实现）
 
 纵切后再决定 S1 product gate；不能用离线 Recall 或 MRR 单独关闭 S1。
 
 ## 8. 当前不声称
 
-本决策没有下载模型、生成新 embedding、建立公司财务 mart、执行 inference、微调、重编译 Evidence Pack 或通过 S1/S2/S3。S1-C1 已把 provider-neutral 查询／对象／typed fact 路由注册为当前 Runtime 配置，但没有晋升任何检索模型或 Evidence。机器可读合同为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_governance_v1_0.json`，留出合同为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_test_precut_manifest_v1_0.json`，实现结果见 `configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_0.json`。
+本决策后续已经完成本地模型 shadow、公司财务 fact mart 和 request-scoped S2 Runtime 接入，但仍没有微调、重编译 Evidence Pack、S3 自然规划、前端 NumericFact 消费或 S1/S2/S3 产品通过。任何“模型已对照”或“数据库 6/6”都只是纵切输入条件，不能替代 Evidence Pack usefulness 与研报内容验收。机器可读治理合同仍为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_governance_v1_0.json`，留出合同为 `configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_test_precut_manifest_v1_0.json`。
 
 ## 9. S1-C1 实现后校正
 
@@ -118,4 +120,10 @@ flowchart TD
 
 当前 1,805 条 source-bound child 的零模型编译结果为：原始对象 22,703 个，按父文档和对象内容去掉 2,433 个重叠切块重复后为 20,270 个；包括 claim 11,663、metric-row 7,437、bounded parent context 1,170。编译器拒绝了 257 张非金融数值表；例如“高管姓名／年龄／职位”不再因为职位包含 `Sales` 而被当成销售指标。另有 51 张金融外观表没有可安全绑定的指标行、65 个 claim surface 在同一 child 内不唯一，均保留为诊断而没有静默猜测。
 
-这 20,270 个对象仍是候选，不是 Evidence。表格行即使完整携带表头、期间、单位和父章节，也没有 NumericFact 权限。当前 Runtime 会把 `revenue`、`free cash flow`、`market price` 等 24 个标准指标别名编译成 typed fact request；由于公司财务事实 mart 尚未建立，接口会返回 `typed_fact_store_unavailable / owning_stage=S2`，而叙事检索仍可继续。这样数据库缺口不会被遗忘，也不会用 PDF 字符串猜数字来掩盖。
+这 20,270 个对象仍是候选，不是 Evidence。表格行即使完整携带表头、期间、单位和父章节，也没有 NumericFact 权限。当前 Runtime 会把 `revenue`、`free cash flow`、`market price` 等 24 个标准指标或受控别名编译成 typed fact request。公司财务事实 mart 可用时，`company_financial_fact_mart` 路线返回 NumericFact／typed gap／typed conflict；不可用时仍返回 `typed_fact_store_unavailable / owning_stage=S2`，而叙事检索可继续。用户自然语言到标准指标 ID 的规范化属于 S3 planner；S2 不用词形猜测扩大事实权限。
+
+## 10. 纵切前的实际路线修订
+
+真实 DELL results／cash 请求暴露出两点离线总分看不见的事实：Qwen 更容易把当前结果表和现金流事实召回到前列；BM25 则能找到自由现金流定义、AI 服务器收入和毛利变化解释。两者分别擅长语义近邻和精确业务措辞，因此当前产品方向不是“Qwen 替换 BM25”，而是同一硬过滤后的候选并集，再由后续 Evidence Gate 和研究 Agent 选择。数据库继续作为独立 exact-fact lane，不参与文本排名，也不被联合召回替代。
+
+同时，8-K 的申报／发布日期不能冒充 issuer reporting period。当前候选投影优先读取 source-bound `reported_fiscal_year` 与 `reported_period_end`，并保留原始 fiscal year/date 和选择来源；这关闭了 DELL FY2027 Q1 候选被 FY2026 filing year 误过滤的根因。该修复只校正时间身份，不增加 Evidence 或 NumericFact 权限。

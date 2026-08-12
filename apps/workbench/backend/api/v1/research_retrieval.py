@@ -81,6 +81,7 @@ class EvidenceRequestExecutionResponse(BaseModel):
     source_snapshot: dict[str, Any]
     summary: dict[str, Any]
     typed_gaps: list[dict[str, Any]]
+    typed_fact_results: list[dict[str, Any]]
     lanes: list[dict[str, Any]]
     known_boundary: str
     projection_digest: str

@@ -84,7 +84,10 @@ def create_app(
         )
     retrieval = research_retrieval_service
     if retrieval is None and current_research_evidence_pack_service is None:
-        retrieval = ResearchRetrievalService.from_runtime_paths(CODE_ROOT)
+        retrieval = ResearchRetrievalService.from_runtime_paths(
+            CODE_ROOT,
+            runtime_paths=runtime_paths,
+        )
 
     app = FastAPI(
         title="FinSight Research Workbench API",
@@ -274,6 +277,9 @@ def _system_status(
         "reviewed_evidence": _path_status(runtime_paths.reviewed_evidence_root),
         "workbench_state": _path_status(runtime_paths.workbench_private_root),
         "object_store": _path_status(runtime_paths.object_store_root),
+        "company_financial_fact_mart": _path_status(
+            runtime_paths.company_financial_fact_mart_path
+        ),
         "frontend_dist": _path_status(frontend_dist_root),
     }
     checks = {

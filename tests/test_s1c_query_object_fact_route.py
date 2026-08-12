@@ -430,8 +430,20 @@ def test_table_period_rows_are_headers_and_business_unit_context_is_retained() -
     assert "Row context: Cloud Memory Business Unit" in rows[0]["model_text"]
 
 
-def test_current_runtime_exposes_database_sibling_as_typed_s2_gap() -> None:
-    service = ResearchRetrievalService.from_runtime_paths(ROOT)
+def test_current_runtime_exposes_database_sibling_as_typed_s2_gap(
+    tmp_path: Path,
+) -> None:
+    service = ResearchRetrievalService(
+        snapshot=json.loads(
+            (
+                ROOT
+                / "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
+            ).read_text(encoding="utf-8")
+        ),
+        kernel=_kernel_payload(),
+        route_policy=_policy_payload(),
+        company_financial_fact_mart_path=tmp_path / "missing.sqlite",
+    )
     projection = service.execute_request(
         "DELL",
         _request(
@@ -449,7 +461,7 @@ def test_current_runtime_exposes_database_sibling_as_typed_s2_gap() -> None:
         ),
     )
     assert projection["schema_version"] == (
-        "fin_ia_request_scoped_retrieval_projection_v1_1"
+        "fin_ia_request_scoped_retrieval_projection_v1_2"
     )
     assert projection["summary"]["typed_fact_request_count"] == 1
     assert projection["summary"]["typed_fact_store_ready_count"] == 0
@@ -464,3 +476,4 @@ def test_current_runtime_exposes_database_sibling_as_typed_s2_gap() -> None:
         and row["owning_stage"] == "S2"
         for row in projection["typed_gaps"]
     )
+    assert projection["typed_fact_results"] == []

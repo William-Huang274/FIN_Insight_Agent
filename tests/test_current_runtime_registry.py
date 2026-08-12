@@ -25,7 +25,7 @@ def test_current_registry_is_exactly_the_current_product_resources() -> None:
     registry = load_runtime_resource_registry(ROOT)
 
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R5"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R6"
     )
     assert [row.repo_relative_path for row in registry.resources] == [
         "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json",

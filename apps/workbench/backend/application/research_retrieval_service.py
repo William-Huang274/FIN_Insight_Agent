@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
+from financial_facts import execute_typed_fact_request
 from retrieval.contracts import (
     FinancialResearchKernel,
     RetrievalContractError,
@@ -19,6 +20,7 @@ from retrieval.route_compiler import (
 )
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
+from sec_agent.runtime_bridge.paths import RuntimePathRegistry, resolve_runtime_paths
 
 
 CURRENT_RETRIEVAL_SNAPSHOT_RESOURCE_ID = (
@@ -37,7 +39,7 @@ EXPECTED_SCHEMA = "fin_ia_current_retrieval_snapshot_v1_0"
 EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
 RETRIEVAL_PROJECTION_SCHEMA = "fin_ia_research_retrieval_projection_v1_0"
 REQUEST_RETRIEVAL_PROJECTION_SCHEMA = (
-    "fin_ia_request_scoped_retrieval_projection_v1_1"
+    "fin_ia_request_scoped_retrieval_projection_v1_2"
 )
 
 
@@ -65,6 +67,7 @@ class ResearchRetrievalService:
         ranking_comparison: Mapping[str, Any] | None = None,
         kernel: FinancialResearchKernel | Mapping[str, Any] | None = None,
         route_policy: QueryObjectFactRoutePolicy | Mapping[str, Any] | None = None,
+        company_financial_fact_mart_path: str | Path | None = None,
     ) -> None:
         self._snapshot = self._validate(snapshot)
         self._cases = {
@@ -98,12 +101,19 @@ class ResearchRetrievalService:
             if isinstance(route_policy, Mapping) and self._kernel is not None
             else route_policy
         )
+        self._company_financial_fact_mart_path = (
+            Path(company_financial_fact_mart_path).resolve()
+            if company_financial_fact_mart_path is not None
+            else None
+        )
 
     @classmethod
     def from_runtime_paths(
         cls,
         repository_root: str | Path,
+        runtime_paths: RuntimePathRegistry | None = None,
     ) -> "ResearchRetrievalService":
+        paths = runtime_paths or resolve_runtime_paths(repository_root)
         return cls(
             snapshot=read_registered_runtime_json(
                 repository_root,
@@ -120,6 +130,9 @@ class ResearchRetrievalService:
             route_policy=read_registered_runtime_json(
                 repository_root,
                 CURRENT_QUERY_OBJECT_FACT_ROUTE_POLICY_RESOURCE_ID,
+            ),
+            company_financial_fact_mart_path=(
+                paths.company_financial_fact_mart_path
             ),
         )
 
@@ -211,7 +224,15 @@ class ResearchRetrievalService:
             request = load_evidence_request(payload, self._kernel)
             plan = compile_query_facet_plan_for_request(self._kernel, request)
             execution_plan = (
-                compile_retrieval_execution_plan(self._route_policy, request)
+                compile_retrieval_execution_plan(
+                    self._route_policy,
+                    request,
+                    fact_store_availability={
+                        "company_financial_fact_mart": (
+                            self._company_fact_mart_available()
+                        )
+                    },
+                )
                 if self._route_policy is not None
                 else None
             )
@@ -243,6 +264,42 @@ class ResearchRetrievalService:
             if execution_plan is not None
             else []
         )
+        typed_fact_results: list[dict[str, Any]] = []
+        if execution_plan is not None:
+            for fact_request in execution_plan.typed_fact_requests:
+                if fact_request.execution_status != "ready_for_typed_fact_executor":
+                    continue
+                if self._company_financial_fact_mart_path is None:
+                    raise ResearchRetrievalServiceError(
+                        "company_financial_fact_mart_path_unavailable", 503
+                    )
+                result = execute_typed_fact_request(
+                    self._company_financial_fact_mart_path,
+                    fact_request,
+                )
+                typed_fact_results.append(result.as_dict())
+                if result.status == "typed_gap" and result.typed_gap:
+                    typed_gaps.append(
+                        {
+                            **dict(result.typed_gap),
+                            "fact_request_id": result.fact_request_id,
+                            "metric_id": result.metric_id,
+                            "target_entity": result.ticker,
+                            "owning_stage": "S2",
+                            "disposition": request.clarification_policy,
+                        }
+                    )
+                elif result.status == "typed_conflict":
+                    typed_gaps.append(
+                        {
+                            "gap_code": "typed_fact_conflict",
+                            "fact_request_id": result.fact_request_id,
+                            "metric_id": result.metric_id,
+                            "target_entity": result.ticker,
+                            "owning_stage": "S2",
+                            "disposition": "fail_closed",
+                        }
+                    )
         seen_candidates: set[str] = set()
         for lane in plan.lanes:
             snapshot_lane = snapshot_lanes.get(lane.lane_id)
@@ -365,23 +422,41 @@ class ResearchRetrievalService:
                     if execution_plan is not None
                     else 0
                 ),
+                "typed_fact_resolved_count": sum(
+                    row["status"] == "resolved" for row in typed_fact_results
+                ),
+                "typed_fact_gap_count": sum(
+                    row["status"] == "typed_gap" for row in typed_fact_results
+                ),
+                "typed_fact_conflict_count": sum(
+                    row["status"] == "typed_conflict"
+                    for row in typed_fact_results
+                ),
                 "network_calls": 0,
                 "model_calls": 0,
             },
             "typed_gaps": typed_gaps,
+            "typed_fact_results": typed_fact_results,
             "lanes": lanes,
             "known_boundary": (
                 "This endpoint consumes a typed EvidenceRequest and selects only "
                 "approved facets, owners, source types and reporting periods from the "
                 "immutable current candidate snapshot. The successor route compiler "
-                "separates narrative retrieval from typed fact requests; the current "
-                "runtime has no authoritative company financial fact mart, so those "
-                "requests remain S2 typed gaps. It does not interpret raw user language, "
-                "promote Evidence or NumericFact, fetch external sources, or complete "
-                "S1/S3 product acceptance."
+                "separates narrative retrieval from typed fact requests. When the "
+                "source-bound S2 company mart is mounted, exact requests execute as "
+                "NumericFact, typed gap or typed conflict; candidate text still cannot "
+                "grant numeric authority. This endpoint does not interpret raw user "
+                "language, promote narrative Evidence, fetch external sources, or "
+                "complete S1/S3 product acceptance."
             ),
         }
         return {**body, "projection_digest": canonical_digest(body)}
+
+    def _company_fact_mart_available(self) -> bool:
+        return bool(
+            self._company_financial_fact_mart_path is not None
+            and self._company_financial_fact_mart_path.is_file()
+        )
 
     @staticmethod
     def _candidate_matches_period(candidate: Mapping[str, Any], period: Any) -> bool:

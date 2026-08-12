@@ -1,7 +1,7 @@
 # FIN 0.1.3 S1-C1 查询、对象与数据库事实路由实现
 
 日期：2026-08-12
-状态：`engineering pass / zero model / zero network / S1 product gate open`
+状态：`engineering pass / S2 request Runtime consumed / S1 product gate open`
 
 ## 1. 这轮真正做成了什么
 
@@ -16,7 +16,7 @@
 
 ## 2. 为什么数据库没有被放到后面
 
-活动 Runtime 目前仍没有权威公司财务事实 mart。现在 `POST /api/v1/research-cases/{case}/retrieval-requests` 已能生成 24 类标准指标的 typed request，并明确返回：
+`POST /api/v1/research-cases/{case}/retrieval-requests` 已能生成 24 类标准指标的 typed request，并根据显式 Runtime path 判断 source-bound 公司财务事实 mart 是否可用。不可用时仍明确返回：
 
 ```text
 typed_fact_store_unavailable
@@ -24,7 +24,7 @@ owning_stage = S2
 numeric_fact_authority = false
 ```
 
-这不是“数据库失败后再走文本兜底”。叙事候选可以继续检索，但最终报告中的精确数值必须等 S2 从 source-bound 标准事实表返回 NumericFact。PDF/HTML 表格只负责帮助定位和解释披露。
+这不是“数据库失败后再走文本兜底”。可用时，S2 executor 返回 NumericFact、typed gap 或 typed conflict；叙事候选可以继续检索，但最终报告中的精确数值只能来自该权威路线。真实 DELL results／cash 请求已执行 6 个 typed fact sibling，6/6 resolved。PDF/HTML 表格仍只负责帮助定位和解释披露。
 
 ## 3. 旧 chunk 在业务上暴露了什么
 
@@ -55,15 +55,19 @@ numeric_fact_authority = false
 - 当前请求消费者：`ResearchRetrievalService` 的 request-scoped endpoint
 - 零调用结果：`configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_0.json`
 
-完整对象输出位于私有 Workbench 数据目录，不进入 Git；跟踪摘要只保存 digest、数量、边界和有限示例。Runtime Registry 已升为 R5，共 7 个当前资源，新增的只是 route policy，不包含 qrels、模型输出或人工标签。
+完整对象输出位于私有 Workbench 数据目录，不进入 Git；跟踪摘要只保存 digest、数量、边界和有限示例。Runtime Registry 已升为 R6，共 7 个当前资源；R6 更新了显式 reporting-period binding 的候选快照，不包含 private mart、qrels、模型输出或人工标签。private mart 通过 `RuntimePathRegistry.company_financial_fact_mart_path` 挂载。
 
 ## 5. 这轮没有证明什么
 
 - 没有证明 20,340 个候选都高质量；下一轮要看它们在真实 query family 下是否召回正确材料。
-- 没有建立公司财务事实 mart，因此 S2 仍是硬缺口。
+- 公司财务事实 mart 和 request-scoped backend 已接通，但 S3 planner、报告研究消费和前端 NumericFact 消费尚未证明，因此 S2 产品门仍开着。
 - 没有运行 BGE-M3、Qwen、Cross-Encoder 或 Evidence Role；也没有授权微调。
 - 没有重新生成 Evidence Pack、DeepSeek 研报或关闭 S1。
 
 ## 6. 下一步
 
-同一批去重对象、同一硬过滤、同一预算依次对照 BM25、BGE-M3 dense／learned sparse／multi-vector 和 Qwen Embedding；随后在同一候选并集比较 BGE/Qwen reranker，并建立独立 Evidence Role＋abstain。每项结果必须同时给出业务错例，例如“DELL 需求查询召回高管销售职位而非订单披露”，不能只报 Recall/MRR。
+模型对照已经完成，结果不支持单一路线替换：Qwen 语义召回与 BM25 精确业务措辞互补，当前下一步是在 DELL 纵切中实现同硬过滤后的 `Qwen + BM25` 联合候选，并由 S3 受控 planner 产生真实 EvidenceRequest。S2 同时返回 NumericFact；先做零调用合同、污染和期间 mutation，再决定一次最小自然 canary。每项结果继续同时给出业务错例，不能只报 Recall/MRR。
+
+## 7. 候选时间身份校正
+
+当前 8-K earnings object 同时可能携带 SEC current-report date、filing calendar year 和公司实际报告的 fiscal year／period end。旧候选投影没有输出 fiscal year，导致 request-scoped 期间过滤把 DELL FY2027 Q1 叙事候选全部剔除。现在投影优先采用 `metadata.reported_fiscal_year` 和 `metadata.reported_period_end`，并在 `temporal_binding` 中保留原始 source-record fiscal year/date 及选择来源。该合同防止申报时间与业务报告期混淆，但不改变候选的非 Evidence 身份。

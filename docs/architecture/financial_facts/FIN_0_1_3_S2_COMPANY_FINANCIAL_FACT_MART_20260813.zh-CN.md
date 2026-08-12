@@ -1,7 +1,7 @@
 # FIN 0.1.3 S2 公司财务事实 Mart 与 PIT 精确查询
 
 日期：2026-08-13
-状态：`engineering_pass / DELL_vertical_runtime_integration_pending / S2_product_not_closed`
+状态：`request_runtime_integration_engineering_pass / S3_and_UI_consumption_pending / S2_product_not_closed`
 
 ## 1. 为什么数据库是纵切前硬门
 
@@ -70,13 +70,26 @@ DELL FY2027 Q1 例子：收入 `43,842,000,000 USD`、毛利 `7,782,000,000 USD`
 
 ## 6. 当前明确边界
 
-- 这是 S2 数据库与查询执行器的 engineering pass，不是 S2 产品关闭。
-- mart 尚未挂入 Workbench 当前研究 Runtime；下一次 DELL 纵切才是第一个真实消费者证明。
+- 这是 S2 数据库、查询执行器与 request-scoped backend 的 engineering pass，不是 S2 产品关闭。
+- mart 已通过显式 Runtime path 挂入当前 Research Retrieval Service；它没有进入 Git 或 Runtime Resource Registry，也不与可写 Operations SQLite 混用。
+- 当前消费者仍是工程侧提供受控 EvidenceRequest 的 backend API。S3 自然问题规划、报告综合和前端展示尚未消费，因此还没有证明用户可感知的数值能力。
 - 当前只覆盖三个案例和已绑定的近年 SEC 10-K/10-Q；缺少历史 filing identity 的旧行不接纳。
 - `total_debt` 尚未进入当前标准指标；DELL 当前 capture 没有可接纳 shares outstanding，MU 没有可接纳 accounts payable，均保留 typed gap。
 - 市场价格、估值和行业数据属于独立 PIT market/industry mart，不混进公司报表事实表。
 - metric-row、PDF 表格候选和 embedding 命中仍不拥有 NumericFact 权威。
 
-## 7. 下一门
+## 7. 当前 Runtime 消费证明
 
-下一项是 DELL S1/S2/S3 纵切：由 S3 产生真实 Research Objective／EvidenceRequest；S1 使用当前 `Qwen Embedding provisional + BM25 fallback` 召回叙事对象，并把数值请求路由到本 mart；S2 返回 source-bound NumericFact；S3 使用两路结果完成研究判断。该纵切要验证“数据库事实是否真正改善研报”，并暴露 S1 角色判断、S2 指标覆盖和 S3 研究规划之间的产品级残差。纵切前不把当前 private mart 宣称为用户可用能力。
+真实 DELL request-scoped 诊断同时请求 `reported_results`、`cash_generation` 与 6 个标准指标：revenue、gross_margin、operating_income、operating_cash_flow、capital_expenditures、free_cash_flow。结果为：
+
+- narrative lanes 2/2 非空、9 个去重候选；
+- typed fact requests 6/6 store-ready、6/6 resolved、0 gap、0 conflict；
+- FY2027 Q1 revenue=`43,842,000,000 USD`、operating cash flow=`4,081,000,000 USD`、capital expenditures=`963,000,000 USD`；
+- 同一 accession 的确定性公式返回 free cash flow=`3,118,000,000 USD`，并保留输入 NumericFact ID、source digest 和 citation URL；
+- 0 网络、0 模型调用。
+
+该证明使用标准 metric ID。自然语言中的“资本开支／capital expenditure”等表达必须由 S3 规范成受控 ID `capital_expenditures`；S2 不以模糊词形扩大事实查询权限。未知指标继续 fail closed，而不是逐词增加数据库分支。
+
+## 8. 下一门
+
+下一项是 DELL S1/S2/S3 纵切：由 S3 产生真实 Research Objective／EvidenceRequest；S1 使用 `Qwen semantic + BM25 lexical` 联合候选召回叙事对象，并把数值请求路由到本 mart；S2 返回 source-bound NumericFact；S3 使用两路结果完成研究判断。该纵切要验证“数据库事实是否真正改善研报”，并暴露 S1 角色判断、S2 指标覆盖和 S3 研究规划之间的产品级残差。纵切完成前不把当前 private mart 宣称为完整用户能力。

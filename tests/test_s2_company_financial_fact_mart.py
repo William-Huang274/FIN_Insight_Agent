@@ -5,9 +5,11 @@ from datetime import date
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from financial_facts import (
     CompanyFactMartPolicy,
@@ -21,6 +23,10 @@ from financial_facts import (
     write_company_fact_mart,
 )
 from retrieval.route_compiler import TypedFactRequest
+from apps.workbench.backend.application.research_retrieval_service import (
+    ResearchRetrievalPrincipal,
+    ResearchRetrievalService,
+)
 
 
 def _policy(*, metrics: tuple[MetricDefinition, ...]) -> CompanyFactMartPolicy:
@@ -325,6 +331,88 @@ def test_s1_typed_fact_request_executes_against_s2_mart(tmp_path: Path) -> None:
     assert result.status == "resolved"
     assert result.facts[0].numeric_fact_authority is True
     assert result.fact_request_is_not_numeric_fact is True
+
+
+def test_current_request_runtime_executes_company_fact_sibling(
+    tmp_path: Path,
+) -> None:
+    metrics = (_metric("revenue"),)
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=(_observation("OBS-REV", "revenue", "43842000000"),),
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+    service = ResearchRetrievalService(
+        snapshot=json.loads(
+            (
+                ROOT
+                / "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
+            ).read_text(encoding="utf-8")
+        ),
+        kernel=json.loads(
+            (
+                ROOT
+                / "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json"
+            ).read_text(encoding="utf-8")
+        ),
+        route_policy=json.loads(
+            (
+                ROOT
+                / "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_0.json"
+            ).read_text(encoding="utf-8")
+        ),
+        company_financial_fact_mart_path=sqlite_path,
+    )
+    request = {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::DELL-S2-RUNTIME",
+        "cell_id": "CELL::DELL-RESULTS",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["DELL"],
+        "requested_facet_ids": ["reported_results"],
+        "metric_intents": ["revenue"],
+        "product_intents": ["AI-optimized servers"],
+        "period": {
+            "start_date": "2026-01-31",
+            "end_date": "2026-05-01",
+            "fiscal_years": [2027],
+        },
+        "granularity": "quarter_discrete",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-K", "10-Q", "8-K"],
+        "acceptable_proxy": False,
+        "forbidden_proxy": ["unbound industry demand"],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap",
+    }
+
+    projection = service.execute_request(
+        "DELL",
+        request,
+        ResearchRetrievalPrincipal(
+            mode="current",
+            permissions=frozenset({"current_product:read"}),
+        ),
+    )
+
+    assert projection["schema_version"] == (
+        "fin_ia_request_scoped_retrieval_projection_v1_2"
+    )
+    assert projection["summary"]["typed_fact_store_ready_count"] == 1
+    assert projection["summary"]["typed_fact_resolved_count"] == 1
+    assert projection["summary"]["typed_fact_gap_count"] == 0
+    assert projection["typed_fact_results"][0]["facts"][0][
+        "value_decimal"
+    ] == "43842000000"
+    assert projection["typed_fact_results"][0]["facts"][0][
+        "numeric_fact_authority"
+    ] is True
 
 
 def test_sec_parser_separates_q3_discrete_from_fiscal_ytd(tmp_path: Path) -> None:

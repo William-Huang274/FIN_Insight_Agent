@@ -272,6 +272,63 @@ def test_related_company_context_does_not_claim_subject_allocation() -> None:
     assert "不证明" in candidate["business_boundary_zh"]
 
 
+def test_earnings_release_candidate_uses_reported_period_not_filing_year() -> None:
+    kernel = _kernel()
+    request = load_evidence_request(
+        _evidence_request(
+            request_id="REQ-DELL-FY2027-RESULTS-001",
+            requested_facet_ids=["reported_results"],
+            metric_intents=["revenue"],
+            period={
+                "start_date": None,
+                "end_date": "2026-08-06",
+                "fiscal_years": [2027],
+            },
+        ),
+        kernel,
+    )
+    plan = compile_query_facet_plan_for_request(kernel, request)
+    record = _record(
+        "dell-q1-fy2027-earnings",
+        "DELL",
+        "2026-05-28",
+        "Dell reported record quarterly revenue and operating results for fiscal 2027. "
+        * 5,
+        source_type="8-K",
+        subsection="Exhibit 99.1 Earnings Release",
+    )
+    record["period_end"] = "2026-05-28"
+    record["fiscal_year"] = 2026
+    record["metadata"] = {
+        "accession_number": "0001571996-26-000021",
+        "reported_fiscal_year": 2027,
+        "reported_fiscal_period": "Q1",
+        "reported_period_end": "2026-05-01",
+    }
+
+    result = retrieve_query_plan(
+        kernel,
+        plan,
+        CandidateCorpus(
+            records=(record,),
+            records_scanned=1,
+            invalid_records_excluded=0,
+        ),
+    )
+    candidate = result["lane_results"][0]["candidates"][0]
+
+    assert candidate["fiscal_year"] == 2027
+    assert candidate["period_end"] == "2026-05-01"
+    assert candidate["temporal_binding"] == {
+        "reporting_fiscal_year": 2027,
+        "reporting_fiscal_year_source": "metadata.reported_fiscal_year",
+        "reporting_period_end": "2026-05-01",
+        "reporting_period_end_source": "metadata.reported_period_end",
+        "source_record_fiscal_year": 2026,
+        "source_record_period_end": "2026-05-28",
+    }
+
+
 def test_retired_chunk_alias_is_evaluation_only_and_matches_current_child() -> None:
     kernel = _kernel()
     plan = compile_query_facet_plan(kernel, "DELL")

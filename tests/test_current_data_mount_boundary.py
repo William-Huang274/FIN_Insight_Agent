@@ -18,6 +18,12 @@ def test_reviewed_evidence_and_mutable_workbench_state_can_be_separate(
     assert paths.primary_data_root == data_root.resolve()
     assert paths.reviewed_evidence_root == reviewed_root.resolve()
     assert paths.workbench_private_root == state_root.resolve()
+    assert paths.company_financial_fact_mart_path == (
+        state_root
+        / "fin_0_1_3_s2_company_financial_fact_mart"
+        / "v1"
+        / "company_financial_facts.sqlite"
+    ).resolve()
     assert len({
         paths.primary_data_root,
         paths.reviewed_evidence_root,

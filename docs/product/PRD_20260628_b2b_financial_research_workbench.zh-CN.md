@@ -2567,4 +2567,6 @@ Evidence Role 必须是多标签且允许 abstain，但“规则命中更少错�
 
 下一自然模型门限定为一次 planner-atoms canary。模型只可返回 `facet_id、target_entity、canonical metric_id、product_intent`；公司身份、截至日、来源类型、期间、预算、request/cell ID、lineage 和数字写入权由 Harness 绑定。输出必须 exact JSON parse 并通过同一语义编译器；失败保存原始 capture 后终止，禁止逐字段补丁、retry 或扩大 prompt。成功只允许执行确定性 S1/S2 successor，不能自动生成完整报告。
 
+R1 已按该边界 exact-once 执行：自然输出 exact JSON、DELL 身份、5/5 required slot、10/10 合法 facet 与所有 canonical metric/family 均正确，但返回 10 个 atoms，超过本次 `maximum_atoms=8`，因此在检索和数据库 successor 前 terminal failed。该结果既不能被手工删成 8 条追认，也不能简单记成“模型无研究能力”：十条路径覆盖需求、订单转化、业绩、指引、价格组合、增量利润、现金、营运资本及两类反方，具有实质性。产品合同必须进一步把 `proposal ceiling` 与本地 `execution budget` 分开；预算调度可以由确定性 scheduler 处理，但身份、日期、来源、外部调用和 NumericFact 权威仍保持硬失败。完成零调用 replay/mutation 前不签发 R2。
+
 数据库是长期金融控制面而不是当前模型能力的临时拐杖。更强模型可以改善查询拆分、候选选择和研究综合，但不得替代 source-bound NumericFact、PIT、期间/单位、冲突检测、披露 vintage 和公式 trace。结构化财务表优先规范化进入 S2 mart；PDF/HTML 表格、dense 命中和模型读到的数字只能作为定位/语境，未经 S2 编译不拥有最终数值权威。S2 产品关闭仍需自然规划后的真实研究消费、三案依赖回归和用户表面引用证明。

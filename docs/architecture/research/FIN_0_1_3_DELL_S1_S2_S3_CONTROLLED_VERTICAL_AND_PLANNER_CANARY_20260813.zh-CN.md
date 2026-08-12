@@ -1,7 +1,7 @@
 # FIN 0.1.3 DELL S1／S2／S3 受控纵切与 Planner Canary 决策
 
 日期：2026-08-13
-状态：`zero-call vertical engineering pass / one natural planner canary justified / S3 product open`
+状态：`zero-call vertical engineering pass / natural planner R1 terminal budget failure / S3 product open`
 
 ## 1. 这轮真正接通了什么
 
@@ -75,12 +75,18 @@ DELL 零生成调用实跑包含 5 个 EvidenceRequest、7 个 typed fact reques
 
 Provider 特殊参数只存在独立 profile；核心 planner 与金融合同保持 provider-neutral。当前活动树原 LLM gateway 已在严格重定基时归档，因此本轮只恢复一个通用 capture-first、exact-once Chat Completions transport，不把历史 attempt runner 搬回主线。
 
-## 6. 尚未通过
+## 6. 自然 Planner R1 结果
 
-- 自然 planner canary 尚未执行；
+唯一一次授权调用已经执行并按规则终止。Provider 正常返回 exact JSON，DELL 身份、5/5 required slot、10/10 facet、所有 canonical metric ID 和 query-family compatibility 均正确；但模型返回 10 个 atoms，超过本次 objective 的 `maximum_atoms=8`，因此在任何 S1/S2 successor 之前以 `research_planner_atom_budget_invalid` 终止。没有 retry、fallback、手工裁剪或第二次调用。
+
+该结果不应简单归为“DeepSeek 不会规划”：它给出的需求、转化、业绩、指引、定价、利润、现金、营运资本和两类反方维度具有实质研究价值。直接失败是没有遵守执行数量上限；系统问题则是当前合同没有分开模型的 research proposal ceiling 与本地实际 execution budget。下一项必须先做零调用结构处置，不能自动签发 R2。
+
+## 7. 尚未通过
+
+- 自然 planner R1 已执行但预算合同失败；
 - 80 条候选尚未经过合格的 Evidence selection/Role/Gate；
 - S3 尚未消费候选与 NumericFact 做研究判断；
 - 没有 Workpaper、报告、L1、八维内容质量、paired 或人工验收；
 - S1、S2、S3 产品门均未关闭。
 
-Canary 成功只允许执行返回 atoms 的确定性 S1/S2 路线并检查计划质量；它不自动授权完整报告或多轮 Agentic Research。
+R1 永久保持 failed。后续若将提案范围与执行预算分层，仍必须保留身份、日期、来源、外部调用和 NumericFact 权威硬门，并在新的 authority 下另行判断是否值得 canary；本次结果不自动授权完整报告或多轮 Agentic Research。

@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / DELL_zero_call_vertical_engineering_pass / natural_planner_canary_pending / S1_S2_S3_product_open / product_iteration_not_closed`
+状态：`repository_baseline_complete / DELL_zero_call_vertical_engineering_pass / natural_planner_R1_budget_contract_failed / S1_S2_S3_product_open / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -44,11 +44,12 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 11. **S1-D residual-gap 补源（尚未授权执行）**：S1-C successor 通过后，只处理已证明的真实缺口；当前最明确的是 TSMC CoWoS／先进封装产能、良率和分配，随后才是 Dell/Micron PDF transport 与 PIT 估值。不能用 broad search 掩盖 query、对象、数据库或 ranking 错误。
 12. **S2 公司财务事实 mart（受控纵切 engineering pass）**：已从 2026-08-06 DELL／MU／NVDA CompanyFacts 与 Submissions 原始 capture 建立 1,319 条 observation，按 accession、accepted-at、vintage、期间角色、单位、taxonomy concept、source digest 和 supersession 保存；最近财年 9/9、当前 interim 15/15，PIT、跨案、季度/YTD、公式和 disclosure-cohort mutation 全过。DELL 受控纵切执行 7 个指标请求并全部 resolved，共返回 21 个 NumericFact、0 gap/conflict；private mart 仍不进入 Git，自然 planner、报告与前端消费未证明，故不宣称 S2 产品关闭。
 13. **DELL S1/S2/S3 零调用纵切（已完成工程门）**：当前 Runtime 已把受控 Research Objective／planner atoms 编译为 5 个 EvidenceRequest；S1 使用 `Qwen semantic + BM25 lexical candidate union` 返回 80 个候选，S2 返回上述 NumericFact。该结果证明给定正确 atoms 时链路和数据库可协同运行，但没有证明 DeepSeek 能自然规划、候选已成为 Evidence 或研报质量通过。
-14. **当前下一硬门——唯一一次自然 Planner Canary**：只让 DeepSeek Pro 返回 `facet_id／target_entity／canonical metric_id／product_intent`，一次调用、一次 transport attempt、0 retry/fallback；身份、截至日、来源、预算和数值权威继续由 Harness/S2 绑定。exact JSON 或语义合同失败即保留 capture 并停止，不逐字段修补；成功也只允许执行确定性 S1/S2 successor，不自动生成完整报告。
-15. **S2 三案扩展与依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
-16. **S3 三案动态 Agentic Research**：把用户问题编译成 `Research Objective / DecisionSurface / EvidenceRequest`，并由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
-17. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
-18. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+14. **自然 Planner Canary R1（已执行并 terminal failed）**：DeepSeek Pro exact JSON、DELL 身份、5/5 required slot、10/10 facet 和全部 canonical metric/family 均正确，但返回 10 个 atoms，超过授权上限 8，故在 S1/S2 successor 前停止。没有 retry、fallback、手工裁剪或报告调用；这不是数据库失败。
+15. **当前下一硬门——proposal/execution budget 分层处置**：零调用区分模型可提出的研究原子上限与本地实际 EvidenceRequest 执行预算，并定义 required-slot 覆盖、secondary facet 排序和舍弃理由。身份、日期、来源、外部调用与 NumericFact 权威仍为硬门；完成 replay/mutation 前不签发 R2。
+16. **S2 三案扩展与依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
+17. **S3 三案动态 Agentic Research**：把用户问题编译成 `Research Objective / DecisionSurface / EvidenceRequest`，并由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
+18. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
+19. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
 ## 5. 防止再次膨胀的工程规则
 

@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1 已把 17 个 facet 拆成 11 类问题，把混合请求拆为叙事检索／数据库事实 sibling，并把全库编译为 20,340 个去重 claim／metric-row／context 候选；Qwen Embedding 与 BM25 冻结为互补候选路线，Qwen Reranker 仅 shadow，Evidence Role 未过门，故禁止微调和 Evidence 晋升。数据库硬门没有后移：S2 已从三案 source-bound SEC capture 建成 1,319 条 observation 的 PIT 公司财务事实 mart。当前 DELL 零生成调用纵切已把受控 Research Objective 编译为 5 个 EvidenceRequest，S1 返回 80 个 Qwen＋BM25 候选，S2 的 7 个 typed fact request 全部 resolved、0 gap/conflict，并物化 21 个 NumericFact。该结果是受控纵切 engineering pass，不是自然规划、Evidence Pack、研究报告或 S1/S2/S3 产品通过；下一硬门是唯一一次 DeepSeek Pro planner-atoms canary。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1 已把 17 个 facet 拆成 11 类问题，并冻结 Qwen Embedding＋BM25 互补候选路线；Evidence Role 未过门，故禁止微调和 Evidence 晋升。S2 的 1,319 条 observation PIT 公司财务事实 mart 已在 DELL 受控纵切中为 7/7 typed request 返回 21 个 NumericFact。DeepSeek Pro planner R1 已 exact-once 执行：exact JSON、DELL 身份、5/5 required slot、合法 facet/metric/family 全部成立，但返回 10 atoms，超过授权上限 8，故在任何 S1/S2 successor 前 terminal failed、0 retry。当前下一硬门是零调用分离 proposal ceiling 与 execution budget；数据库继续是独立数值权威，本次失败不重开 S2。
 
 ## 当前唯一产品边界
 
@@ -78,9 +78,9 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_DELL_MINIMAL_NATURAL_PLANNER_CANARY`
+`FIN_0_1_3_S3_PROPOSAL_EXECUTION_BUDGET_LAYERING_ZERO_CALL_DISPOSITION`
 
-DELL 受控零调用纵切已经连接 Research Objective／EvidenceRequest、S1 `Qwen3 Embedding + BM25` 联合候选和 S2 executor；数据库为 7/7 request 返回 21 个 NumericFact。当前只允许一次 DeepSeek Pro planner-atoms canary，1 call／1 attempt／0 retry/fallback，不访问检索或生成报告；输出 exact JSON 与语义编译失败即保存 capture 并停止。成功也只允许执行确定性 S1/S2 successor，继续检查候选质量与数据库消费；不能因为 7/7 关闭 S2，也不能用候选噪声重新改写数据库控制面。
+DELL 受控零调用纵切已经连接 Research Objective／EvidenceRequest、S1 `Qwen3 Embedding + BM25` 联合候选和 S2 executor；数据库为 7/7 request 返回 21 个 NumericFact。Planner R1 已按权限终止：10 atoms 超出 8 条执行上限，其他结构与业务维度正确。不得 retry、手工裁剪或直接签发 R2。下一项只做零调用结构处置，把模型提案范围与本地执行预算分层，并用已保存响应 replay/mutation 证明 required-slot 覆盖、secondary 选择和舍弃原因；不能用此 S3 预算问题重新改写数据库控制面。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

@@ -37,6 +37,7 @@ def create_app(
     current_research_evidence_pack_service: ResearchEvidencePackService | None = None,
     research_workspace_service: ResearchWorkspaceService | None = None,
     workbench_runtime_mode: Literal["current", "fixture"] = "current",
+    frontend_dist_root: str | Path | None = None,
     **retired_product_services: object,
 ) -> FastAPI:
     """Compose the only active FIN 0.1.3 product and operator surfaces.
@@ -59,6 +60,9 @@ def create_app(
         )
 
     runtime_paths = resolve_runtime_paths(CODE_ROOT)
+    resolved_frontend_dist_root = Path(
+        frontend_dist_root or FRONTEND_DIST_ROOT
+    ).resolve()
     store = WorkbenchStore(
         store_path
         or default_store_path(
@@ -111,6 +115,7 @@ def create_app(
             runtime_paths=runtime_paths,
             evidence_packs=evidence_packs,
             fixture_mode=workbench_runtime_mode == "fixture",
+            frontend_dist_root=resolved_frontend_dist_root,
         )
 
     app.include_router(
@@ -122,10 +127,10 @@ def create_app(
         prefix="/api",
     )
 
-    if (FRONTEND_DIST_ROOT / "assets").exists():
+    if (resolved_frontend_dist_root / "assets").exists():
         app.mount(
             "/assets",
-            StaticFiles(directory=FRONTEND_DIST_ROOT / "assets"),
+            StaticFiles(directory=resolved_frontend_dist_root / "assets"),
             name="assets",
         )
 
@@ -169,7 +174,7 @@ def create_app(
         include_in_schema=False,
     )
     def workspace_entrypoint(frontend_path: str = "") -> str:
-        return _frontend_index()
+        return _frontend_index(resolved_frontend_dist_root)
 
     @app.get("/operations", response_class=HTMLResponse, include_in_schema=False)
     @app.get(
@@ -178,7 +183,7 @@ def create_app(
         include_in_schema=False,
     )
     def operations_entrypoint(frontend_path: str = "") -> str:
-        return _frontend_index()
+        return _frontend_index(resolved_frontend_dist_root)
 
     @app.get("/legacy", include_in_schema=False)
     @app.get("/legacy/{frontend_path:path}", include_in_schema=False)
@@ -233,15 +238,11 @@ def create_app(
     return app
 
 
-def _frontend_index() -> str:
-    candidates = (
-        FRONTEND_DIST_ROOT / "index.html",
-        FRONTEND_ROOT / "index.html",
-    )
-    for path in candidates:
-        if path.exists():
-            return path.read_text(encoding="utf-8")
-    raise HTTPException(status_code=404, detail="frontend_not_built")
+def _frontend_index(frontend_dist_root: Path) -> str:
+    path = frontend_dist_root / "index.html"
+    if path.is_file():
+        return path.read_text(encoding="utf-8")
+    raise HTTPException(status_code=503, detail="frontend_not_built")
 
 
 def _system_status(
@@ -250,6 +251,7 @@ def _system_status(
     runtime_paths: RuntimePathRegistry,
     evidence_packs: ResearchEvidencePackService,
     fixture_mode: bool,
+    frontend_dist_root: Path,
 ) -> dict[str, Any]:
     store_health = store.inspect_health()
     product_readiness = _evidence_pack_readiness(
@@ -262,11 +264,13 @@ def _system_status(
         "reviewed_evidence": _path_status(runtime_paths.reviewed_evidence_root),
         "workbench_state": _path_status(runtime_paths.workbench_private_root),
         "object_store": _path_status(runtime_paths.object_store_root),
-        "frontend_dist": _path_status(FRONTEND_DIST_ROOT),
+        "frontend_dist": _path_status(frontend_dist_root),
     }
     checks = {
         "store": store_health.status,
-        "frontend": "available" if (FRONTEND_DIST_ROOT / "index.html").exists() else "missing",
+        "frontend": (
+            "available" if (frontend_dist_root / "index.html").is_file() else "missing"
+        ),
         "code_root": "ok" if paths["code_root"]["exists"] else "missing",
         "workbench_state": (
             "ok" if paths["workbench_state"]["writable"] else "not_writable"

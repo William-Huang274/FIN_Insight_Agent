@@ -175,11 +175,123 @@ def _digest(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _staged_blob_oids(repository_root: Path) -> dict[str, str]:
+    completed = subprocess.run(
+        ["git", "ls-files", "--stage", "-z", "--", "archive/versions"],
+        cwd=repository_root,
+        check=True,
+        capture_output=True,
+    )
+    staged: dict[str, str] = {}
+    for record in completed.stdout.split(b"\0"):
+        if not record:
+            continue
+        metadata, separator, path_bytes = record.partition(b"\t")
+        if not separator:
+            raise ValueError("invalid_git_index_record")
+        _mode, oid, stage = metadata.split()
+        if stage != b"0":
+            raise ValueError("unmerged_archive_index_entry")
+        staged[path_bytes.decode("utf-8", errors="surrogateescape")] = oid.decode(
+            "ascii"
+        )
+    return staged
+
+
+def _blob_sha256s(
+    repository_root: Path,
+    object_ids: Iterable[str],
+) -> dict[str, str]:
+    ordered = sorted(set(object_ids))
+    digests: dict[str, str] = {}
+    batch_size = 256
+    for offset in range(0, len(ordered), batch_size):
+        batch = ordered[offset : offset + batch_size]
+        completed = subprocess.run(
+            ["git", "cat-file", "--batch"],
+            cwd=repository_root,
+            check=True,
+            input=("\n".join(batch) + "\n").encode("ascii"),
+            capture_output=True,
+        )
+        payload = completed.stdout
+        cursor = 0
+        for requested_oid in batch:
+            header_end = payload.find(b"\n", cursor)
+            if header_end < 0:
+                raise ValueError("git_cat_file_header_missing")
+            header = payload[cursor:header_end].decode("ascii").split()
+            if len(header) != 3 or header[1] != "blob":
+                raise ValueError(f"git_cat_file_invalid_header:{requested_oid}")
+            actual_oid, _kind, size_text = header
+            size = int(size_text)
+            content_start = header_end + 1
+            content_end = content_start + size
+            if content_end >= len(payload) or payload[content_end : content_end + 1] != b"\n":
+                raise ValueError(f"git_cat_file_payload_truncated:{requested_oid}")
+            digests[actual_oid] = hashlib.sha256(
+                payload[content_start:content_end]
+            ).hexdigest()
+            cursor = content_end + 1
+        if cursor != len(payload):
+            raise ValueError("git_cat_file_unconsumed_payload")
+    return digests
+
+
+def _canonical_archive_digests(
+    repository_root: Path,
+    archive_paths: Iterable[str],
+) -> dict[str, str]:
+    paths = list(archive_paths)
+    staged = _staged_blob_oids(repository_root)
+    blob_digests = _blob_sha256s(
+        repository_root,
+        (staged[path] for path in paths if path in staged),
+    )
+    return {
+        path: (
+            blob_digests[staged[path]]
+            if path in staged
+            else _digest(repository_root / path)
+        )
+        for path in paths
+    }
+
+
+def _canonical_archive_digest(repository_root: Path, archive_path: str) -> str:
+    """Hash the staged Git blob when available, not checkout-specific EOL bytes."""
+
+    return _canonical_archive_digests(repository_root, [archive_path])[archive_path]
+
+
+def _refresh_path_map_digests(repository_root: Path) -> None:
+    path_map = _read_path_map(repository_root)
+    if not path_map:
+        return
+    archive_files = set(_archive_files(repository_root))
+    canonical_digests = _canonical_archive_digests(repository_root, path_map)
+    refreshed: list[dict[str, str]] = []
+    for archive_path, row in path_map.items():
+        if archive_path not in archive_files:
+            raise FileNotFoundError(f"archive_path_map_target_missing:{archive_path}")
+        refreshed.append(
+            {
+                **row,
+                "sha256": canonical_digests[archive_path],
+            }
+        )
+    _write_jsonl(
+        repository_root / PATH_MAP_RELATIVE,
+        sorted(refreshed, key=lambda row: row["source_path"]),
+    )
+
+
 def build_rows(repository_root: Path) -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
     observed_sources: dict[str, str] = {}
     path_map = _read_path_map(repository_root)
     archive_files = _archive_files(repository_root)
+    canonical_digests = _canonical_archive_digests(repository_root, archive_files)
     missing_targets = sorted(set(path_map) - set(archive_files))
     if missing_targets:
         raise FileNotFoundError(f"archive_path_map_target_missing:{missing_targets[0]}")
@@ -197,7 +309,7 @@ def build_rows(repository_root: Path) -> list[dict[str, object]]:
         target = (repository_root / archive_path).resolve()
         if not target.is_file():
             raise FileNotFoundError(f"archive_target_missing:{archive_path}")
-        digest = _digest(target)
+        digest = canonical_digests[archive_path]
         mapped = path_map.get(archive_path)
         if mapped is not None and mapped["sha256"] != digest:
             raise ValueError(f"archive_path_map_digest_drift:{archive_path}")
@@ -301,6 +413,8 @@ def main() -> int:
             repository_root,
             max_relative_length=args.max_relative_path,
         )
+    if not args.check:
+        _refresh_path_map_digests(repository_root)
     overlong = [
         path
         for path in _archive_files(repository_root)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 from pathlib import Path
+import subprocess
 
 
 SCRIPT = (
@@ -19,6 +20,7 @@ SPEC.loader.exec_module(MODULE)
 PORTABLE_ARCHIVE_PATH_LIMIT = MODULE.PORTABLE_ARCHIVE_PATH_LIMIT
 _portable_archive_path = MODULE._portable_archive_path
 _source_and_version = MODULE._source_and_version
+_canonical_archive_digest = MODULE._canonical_archive_digest
 
 
 def test_portable_archive_path_is_bounded_and_preserves_mapping_authority() -> None:
@@ -58,3 +60,19 @@ def test_portable_archive_paths_do_not_collide_for_distinct_source_paths() -> No
     second = _portable_archive_path("configs/releases/second.json", "fin_0_1_2", digest)
 
     assert first != second
+
+
+def test_archive_digest_uses_canonical_staged_blob_not_checkout_line_endings(
+    tmp_path: Path,
+) -> None:
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    relative = "archive/versions/fin_0_1_2/example.ps1"
+    target = tmp_path / relative
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"first\nsecond\n")
+    subprocess.run(["git", "add", "--", relative], cwd=tmp_path, check=True)
+    target.write_bytes(b"first\r\nsecond\r\n")
+
+    assert _canonical_archive_digest(tmp_path, relative) == hashlib.sha256(
+        b"first\nsecond\n"
+    ).hexdigest()

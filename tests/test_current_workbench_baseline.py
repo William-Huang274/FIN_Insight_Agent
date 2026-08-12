@@ -29,6 +29,7 @@ def _client(tmp_path: Path) -> TestClient:
             store_path=tmp_path / "operations.sqlite3",
             current_research_evidence_pack_service=_FixtureEvidencePacks(),
             workbench_runtime_mode="fixture",
+            frontend_dist_root=tmp_path / "frontend-not-built",
         )
     )
 
@@ -37,8 +38,11 @@ def test_only_workspace_and_operations_are_canonical_frontends(tmp_path: Path) -
     client = _client(tmp_path)
     workspace = client.get("/workspace")
     operations = client.get("/operations")
-    assert workspace.status_code == operations.status_code == 200
-    assert "id=\"root\"" in workspace.text
+    assert workspace.status_code == operations.status_code == 503
+    for response in (workspace, operations):
+        payload = response.json()
+        assert payload["detail"] == "frontend_not_built"
+        assert payload["error"]["error_code"] == "frontend_not_built"
 
     assert client.get("/").url.path == "/workspace"
     assert client.get("/current/report").url.path == "/workspace"

@@ -311,6 +311,61 @@ def test_v1_1_single_cell_scope_keeps_only_cell_local_catalogs(
         )
 
 
+def test_v1_1_json_and_final_tool_views_share_business_payload(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> None:
+    _, _, research_input = current_inputs
+    cell_id = "CELL::value_capture"
+    json_view = json.loads(
+        compile_current_research_messages(
+            research_input,
+            required_cell_ids=[cell_id],
+            submission_transport="json",
+        )[1]["content"]
+    )
+    tool_view = json.loads(
+        compile_current_research_messages(
+            research_input,
+            required_cell_ids=[cell_id],
+            submission_transport="final_tool",
+        )[1]["content"]
+    )
+
+    assert "submission_transport" not in json_view["output_contract"]
+    assert (
+        tool_view["output_contract"]["submission_transport"]
+        == "final_tool"
+    )
+    contracts = []
+    for view in (json_view, tool_view):
+        contract = dict(view.pop("output_contract"))
+        contract.pop("submission_transport", None)
+        shape = dict(contract.pop("payload_shape"))
+        cell_shape = dict(
+            shape["cells"][0]
+            if "cells" in shape
+            else shape["submit_research_judgment_arguments"]
+        )
+        wwc = dict(cell_shape["what_would_change"])
+        wwc["threshold_numeric_ref"] = "transport-specific-empty-value"
+        cell_shape["what_would_change"] = wwc
+        contract["normalized_cell_payload_shape"] = cell_shape
+        contracts.append(contract)
+        view["rules"][0] = "transport-specific-final-submission"
+    assert json_view == tool_view
+    assert contracts[0] == contracts[1]
+
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_submission_transport_invalid",
+    ):
+        compile_current_research_messages(
+            research_input,
+            required_cell_ids=[cell_id],
+            submission_transport="unsupported",
+        )
+
+
 def test_v1_1_payload_injects_trusted_envelope_and_renders_typed_uses(
     current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
 ) -> None:

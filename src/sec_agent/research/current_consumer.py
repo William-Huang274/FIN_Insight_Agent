@@ -903,6 +903,7 @@ def compile_current_research_messages(
     research_input: Mapping[str, Any],
     *,
     required_cell_ids: Sequence[str] | None = None,
+    submission_transport: str = "json",
 ) -> tuple[dict[str, str], ...]:
     """Compile a bounded payload contract with explicit enums and authority.
 
@@ -911,6 +912,10 @@ def compile_current_research_messages(
     the cell boundary without duplicating long source excerpts for every use.
     """
 
+    _require(
+        submission_transport in {"json", "final_tool"},
+        "research_consumer_submission_transport_invalid",
+    )
     input_contract = research_input["model_input_contract"]
     maximum_excerpt = int(input_contract["maximum_evidence_excerpt_chars"])
     evidence_by_ref = {
@@ -1046,6 +1051,33 @@ def compile_current_research_messages(
             }
         )
     contract = research_input["model_output_contract"]
+    cell_payload_shape = {
+        "cell_id": "one required cell_id",
+        "judgment_status": "one listed judgment status",
+        "confidence_basis": "one listed confidence basis",
+        "inference_authority": (
+            "directly_supported, bounded_inference or not_inferable"
+        ),
+        "evidence_uses": [
+            {
+                "evidence_ref": "one EV ref from this cell only",
+                "use_role": "support, limit or context",
+            }
+        ],
+        "numeric_refs": ["zero or more NUM refs from this cell only"],
+        "thesis_atom": "company-specific conclusion without digits",
+        "mechanism_atom": "economic mechanism without digits",
+        "counterargument_atom": "strongest bounded alternative without digits",
+        "what_would_change": {
+            "observable": "observable variable without digits",
+            "direction": "one listed direction",
+            "time_horizon": "bounded non-numeric horizon such as 后续披露期",
+            "evidence_route": "where to verify it without a citation",
+            "threshold_numeric_ref": (
+                None if submission_transport == "json" else ""
+            ),
+        },
+    }
     visible = {
         "case_identity": research_input["case_identity"],
         "research_question": research_input["objective"]["raw_question"],
@@ -1078,48 +1110,23 @@ def compile_current_research_messages(
                 "allowed_inference_authorities"
             ],
             "allowed_wwc_directions": contract["allowed_wwc_directions"],
-            "payload_shape": {
-                "cells": [
-                    {
-                        "cell_id": "one required cell_id",
-                        "judgment_status": "one listed judgment status",
-                        "confidence_basis": "one listed confidence basis",
-                        "inference_authority": (
-                            "directly_supported, bounded_inference or not_inferable"
-                        ),
-                        "evidence_uses": [
-                            {
-                                "evidence_ref": (
-                                    "one EV ref from this cell only"
-                                ),
-                                "use_role": "support, limit or context",
-                            }
-                        ],
-                        "numeric_refs": [
-                            "zero or more NUM refs from this cell only"
-                        ],
-                        "thesis_atom": "company-specific conclusion without digits",
-                        "mechanism_atom": "economic mechanism without digits",
-                        "counterargument_atom": (
-                            "strongest bounded alternative without digits"
-                        ),
-                        "what_would_change": {
-                            "observable": "observable variable without digits",
-                            "direction": "one listed direction",
-                            "time_horizon": (
-                                "bounded non-numeric horizon such as 后续披露期"
-                            ),
-                            "evidence_route": (
-                                "where to verify it without a citation"
-                            ),
-                            "threshold_numeric_ref": None,
-                        },
-                    }
-                ]
-            },
-        },
+            "payload_shape": (
+                {"cells": [cell_payload_shape]}
+                if submission_transport == "json"
+                else {"submit_research_judgment_arguments": cell_payload_shape}
+            ),
+        }
+        | (
+            {"submission_transport": "final_tool"}
+            if submission_transport == "final_tool"
+            else {}
+        ),
         "rules": [
-            "Return one exact JSON object with only a cells field and no Markdown or commentary; the harness injects schema and input identity.",
+            (
+                "Return one exact JSON object with only a cells field and no Markdown or commentary; the harness injects schema and input identity."
+                if submission_transport == "json"
+                else "Call the sole submit_research_judgment tool exactly once with the required cell fields; do not return a free-form answer."
+            ),
             "Use every cell exactly once and only refs printed in that cell's local views or allowed numeric refs; use the immutable catalogs only to read the bound fact behind a local ref.",
             "List each Evidence ref at most once; use support for what it proves, limit for how it constrains the conclusion, and context only for bounded background.",
             "Residual gaps shown in each cell are authoritative and will be injected by the harness; do not repeat them in the payload, and do not write a conclusion that silently closes them.",

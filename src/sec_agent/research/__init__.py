@@ -44,6 +44,13 @@ from .bounded_finance_loop import (
     validate_deepseek_ga_json_profile,
     validate_deepseek_ga_profile,
 )
+from .paired_submission import (
+    PairedResearchSubmission,
+    PairedSubmissionError,
+    compile_paired_research_submission,
+    run_paired_research_submission,
+    shared_provider_failure,
+)
 
 __all__ = [
     "ReviewedEvidencePackError",
@@ -57,6 +64,8 @@ __all__ = [
     "BoundedFinanceLoopError",
     "BoundedFinanceLoopPolicy",
     "BoundedFinanceLoopResult",
+    "PairedResearchSubmission",
+    "PairedSubmissionError",
     "build_reviewed_pack_successor",
     "canonical_digest",
     "compile_research_objective",
@@ -67,6 +76,7 @@ __all__ = [
     "compile_current_research_messages",
     "compile_finance_loop_messages",
     "compile_finance_loop_tools",
+    "compile_paired_research_submission",
     "file_sha256",
     "evaluate_official_pdf_evidence",
     "load_research_planning_policy",
@@ -78,6 +88,8 @@ __all__ = [
     "validate_official_pdf_evidence_policy",
     "validate_current_research_output",
     "run_bounded_finance_loop",
+    "run_paired_research_submission",
+    "shared_provider_failure",
     "validate_deepseek_ga_json_profile",
     "validate_deepseek_ga_profile",
 ]

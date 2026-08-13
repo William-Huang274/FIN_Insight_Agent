@@ -85,7 +85,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
-R1 已保存并停止。v1.1 与 GA 四工具循环各自的全仓回归、active-baseline、secret scan、干净远端提交和独立 zero-call proof 均已通过。当前可为 DELL 单研究单元 JSON／strict paired canary 建立实现和 exact-once authority；strict final-tool 只作 Beta 资格实验。paired 失败不自动重试，paired 通过也不自动进入五单元运行、R2 或产品发布。
+R1 已保存并停止。v1.1 与 GA 四工具循环各自的全仓回归、active-baseline、secret scan、干净远端提交和独立 zero-call proof 均已通过。当前唯一 S3 canary runner 已增加 DELL `CELL::value_capture` JSON／strict paired 分支，没有新增第二套 runner；provider-neutral paired core 与 authority／持久化边界已拆开，两路绑定同一归一化业务 payload 并在调用前重新验 digest，strict 只暴露最终 Judgment tool，V4 thinking 不发送 `tool_choice`。当前 paired 实现的 253 项全仓测试、115 Python／8 frontend／10 Runtime resources 活动图和 6,486 文件 secret scan 均通过；完成干净提交后才能签发 fresh exact-once authority。paired 失败不自动重试，paired 通过也不自动进入五单元运行、R2 或产品发布。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

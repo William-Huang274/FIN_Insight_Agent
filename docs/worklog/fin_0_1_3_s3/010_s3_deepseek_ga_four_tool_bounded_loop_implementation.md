@@ -31,3 +31,5 @@
 实现已提交并推送为 `ae86d8bc90b23f6ee6d6c488f0762efa4768ebee`。绑定该提交的独立 zero-call R1 已通过：single-cell=`4` step，five-cell=`15` step，两次 fresh process byte-equivalent；EvidenceRequest 后 gap=`open`，0 retrieval、0 candidate promotion、0 network/model/Provider/embedding。结果为 `configs/research/evals/fin_ia_0_1_3_s3_bounded_finance_loop_zero_call_result_v1_0.json`。
 
 下一门只允许实现并签发 DELL 单研究单元 JSON／strict final-tool paired canary。zero-call 没有资格证明 strict Beta 的真实 Provider transport，也没有证明自然金融研究质量、五单元循环、Workbench 或 S3 通过。
+
+paired 实现没有新增 runner：provider-neutral 的两路编译／执行逻辑收敛在 `src/sec_agent/research/paired_submission.py`，现有 current-consumer canary 只负责 authority、路径、持久化和公开摘要，并保留旧 authority 兼容。两路绑定 `CELL::value_capture` 和同一归一化业务 payload；运行前会重新计算 payload digest，strict 只暴露最终 Judgment 工具，V4 thinking 模式不发送 `tool_choice`。当前定向测试为 39 passed、全仓为 253 passed；active-baseline 为 115 Python／8 frontend／10 Runtime resources 且 0 forbidden reference；secret scan 为 6,486 files／0 finding；历史默认 v1.1 JSON message 仍为 46,061 字符。当前仍为零模型调用；需先完成 clean commit/push 和 fresh exact-once authority。

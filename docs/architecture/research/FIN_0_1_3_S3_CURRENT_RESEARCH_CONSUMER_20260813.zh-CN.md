@@ -131,6 +131,14 @@ thinking tool loop 所需的 `reasoning_content` 只存在于同一次受控运�
 
 DeepSeek 差异只存在于三个可替换 profile：标准四工具、JSON 对照和 `/beta` strict tool。三者都固定正式模型名、`thinking=enabled`、`reasoning_effort=max`，且不发送无效 sampling 参数；strict Beta 不会被当作核心金融合同依赖。
 
+### 8.2 paired canary 实现边界
+
+paired canary 没有新增第二套 runner。当前唯一 `run_s3_current_research_consumer_canary.py` 保留旧 R1 authority schema 的只读兼容，并为新的 GA paired authority 增加显式分支；两路继续共享当前 DELL 输入编译、capture-first Provider transport、本地 Validator、terminal result 和 exact-once Git boundary。
+
+两路固定为 `CELL::value_capture`，因为该单元同时拥有 reviewed Evidence、权威 NumericFact 和未关闭的利润/归因 gap，能够检验模型“看见数字并分析”与 Harness“拥有最终数字/引用渲染”是否真正分离。JSON 与 strict 路的公司、问题、Evidence、NumericFact、gap、枚举和研究规则完全相同；只允许最终提交方式和 `null`／strict-string 空值表示不同，并生成归一化业务 payload digest。
+
+DeepSeek V4 thinking 集成说明标记 `tool_choice` 不兼容，因此 strict 路不发送该字段，而是只暴露一个 `submit_research_judgment` 工具并要求模型调用。JSON 路出现认证、配额、断网或服务端故障会停止 strict 路；JSON 参数级 HTTP 400 不会掩盖 strict 独立资格。两路各最多一次调用、0 retry、0 fallback、0 tool execution，所有 terminal 均保存 capture ref；任何一条通过都不等于内容质量或 S3 通过。
+
 官方资料：
 
 - https://api-docs.deepseek.com/zh-cn/news/news260813

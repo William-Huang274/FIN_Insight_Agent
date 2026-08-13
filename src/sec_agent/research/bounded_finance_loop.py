@@ -317,6 +317,8 @@ def validate_deepseek_ga_profile(
         and defaults.get("stream") is False
         and defaults.get("thinking") == {"type": "enabled"}
         and defaults.get("reasoning_effort") == "max"
+        and isinstance(defaults.get("max_tokens"), int)
+        and 1 <= int(defaults["max_tokens"]) <= 384_000
         and "response_format" not in defaults,
         "finance_loop_deepseek_ga_profile_defaults_invalid",
     )
@@ -342,6 +344,8 @@ def validate_deepseek_ga_json_profile(profile: object) -> None:
         and defaults.get("stream") is False
         and defaults.get("thinking") == {"type": "enabled"}
         and defaults.get("reasoning_effort") == "max"
+        and isinstance(defaults.get("max_tokens"), int)
+        and 1 <= int(defaults["max_tokens"]) <= 384_000
         and defaults.get("response_format") == {"type": "json_object"},
         "finance_loop_deepseek_ga_json_profile_defaults_invalid",
     )

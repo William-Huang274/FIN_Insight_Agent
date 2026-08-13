@@ -510,6 +510,40 @@ def _redact_transient_request_reasoning(
     return output, redacted
 
 
+def _empty_completion_failure_code(
+    *,
+    response_body: Mapping[str, Any],
+    choice: Mapping[str, Any],
+    request_body: Mapping[str, Any],
+    fallback_code: str,
+) -> str:
+    """Distinguish an empty answer from a consumed generation budget.
+
+    DeepSeek thinking tokens share ``max_tokens`` with the visible answer.  A
+    response can therefore be HTTP 200 yet contain no final content or tool
+    call when reasoning consumes the entire allowance.  Preserve that as a
+    typed capacity failure instead of misreporting it as generic empty output.
+    """
+
+    if str(choice.get("finish_reason") or "") != "length":
+        return fallback_code
+    usage = response_body.get("usage")
+    maximum = request_body.get("max_tokens")
+    if not isinstance(usage, Mapping) or not isinstance(maximum, int):
+        return "model_gateway_generation_budget_exhausted"
+    completion = usage.get("completion_tokens")
+    details = usage.get("completion_tokens_details")
+    reasoning = details.get("reasoning_tokens") if isinstance(details, Mapping) else 0
+    if (
+        isinstance(completion, int)
+        and isinstance(reasoning, int)
+        and completion >= maximum
+        and reasoning >= maximum
+    ):
+        return "model_gateway_reasoning_budget_exhausted"
+    return "model_gateway_generation_budget_exhausted"
+
+
 def _execute_capture_first_request(
     *,
     profile: ChatCompletionProfile,
@@ -819,11 +853,16 @@ def execute_chat_completion_exact_once(
         capture_ref=capture_ref,
     )
     content = str(message.get("content") or "")
-    _require(
-        bool(content.strip()),
-        "model_gateway_content_empty",
-        capture_ref=capture_ref,
-    )
+    if not content.strip():
+        raise ModelGatewayError(
+            _empty_completion_failure_code(
+                response_body=body,
+                choice=choice,
+                request_body=request_body,
+                fallback_code="model_gateway_content_empty",
+            ),
+            capture_ref=capture_ref,
+        )
     usage = body.get("usage") if isinstance(body.get("usage"), Mapping) else {}
     return ChatCompletionResult(
         status="completed_exact_once",
@@ -965,11 +1004,16 @@ def execute_chat_completion_tool_step_exact_once(
         )
         for row in raw_calls
     )
-    _require(
-        bool(content.strip()) or bool(tool_calls),
-        "model_gateway_tool_step_empty",
-        capture_ref=capture_ref,
-    )
+    if not content.strip() and not tool_calls:
+        raise ModelGatewayError(
+            _empty_completion_failure_code(
+                response_body=transient_body,
+                choice=choice,
+                request_body=request_body,
+                fallback_code="model_gateway_tool_step_empty",
+            ),
+            capture_ref=capture_ref,
+        )
     usage = (
         transient_body.get("usage")
         if isinstance(transient_body.get("usage"), Mapping)

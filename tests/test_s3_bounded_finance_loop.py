@@ -426,6 +426,25 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
     validate_deepseek_ga_profile(strict, strict_tools=True)
     validate_deepseek_ga_json_profile(json_control)
 
+    replacement_strict = load_chat_completion_profile(
+        _json(
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_strict_tool_profile_v1_1.json"
+        )
+    )
+    replacement_json = load_chat_completion_profile(
+        _json(
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_json_profile_v1_1.json"
+        )
+    )
+    assert replacement_strict.request_defaults["max_tokens"] == 16000
+    assert replacement_json.request_defaults["max_tokens"] == 16000
+    validate_deepseek_ga_profile(replacement_strict, strict_tools=True)
+    validate_deepseek_ga_json_profile(replacement_json)
+
     changed = deepcopy(_json(
         ROOT
         / "configs/providers/"
@@ -446,6 +465,20 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
         "fin_ia_0_1_3_deepseek_v4_pro_ga_json_profile_v1_0.json"
     ))
     changed_json["request_defaults"]["top_p"] = 1
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="json_profile_defaults_invalid",
+    ):
+        validate_deepseek_ga_json_profile(
+            load_chat_completion_profile(changed_json)
+        )
+
+    changed_json = deepcopy(_json(
+        ROOT
+        / "configs/providers/"
+        "fin_ia_0_1_3_deepseek_v4_pro_ga_json_profile_v1_1.json"
+    ))
+    changed_json["request_defaults"]["max_tokens"] = 384001
     with pytest.raises(
         BoundedFinanceLoopError,
         match="json_profile_defaults_invalid",

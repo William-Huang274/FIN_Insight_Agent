@@ -156,3 +156,11 @@ DeepSeek V4 thinking 集成说明标记 `tool_choice` 不兼容，因此 strict 
 5. 单独签发 DELL 单单元 paired canary：`v1.1 JSON + thinking=max` 对 `strict final-tool + thinking=max`。
 6. 选择可靠传输后，再执行 DELL 五单元有界循环；调用次数由真实步骤决定，但受总 step、工具预算和无进展停止条件约束。
 7. 依次执行 L1、八维绝对内容质量、与 R1 同 Evidence Pack paired、qualified-human 验收。任何一项失败都留在 S3，不自动扩成下一产品版本。
+
+## 10. GA 单单元 paired R1 结果与预算处置
+
+R1 已在干净提交 `b8f335eb...` 上按 authority 执行。JSON control 与 strict final-tool 各完成一次 HTTP 200，0 retry、0 fallback；两路都在提交最终答案前以 `finish_reason=length` 结束。JSON 路 prompt=`3,796`、completion=`5,000`、reasoning=`5,000`；strict 路 prompt=`4,912`、completion=`5,000`、reasoning=`5,000`。两路可见正文与 tool call 都是 0。
+
+因此 R1 不是 JSON/strict 合同失败，更不是金融内容失败；它没有产出可被合同或内容验收的 Judgment。首因属于项目 profile 容量标定：`thinking=max` 与 5,000 token 上限组合不足。网关此前把它记成通用 `content_empty`／`tool_step_empty`，后续已增加 typed reasoning-budget exhaustion 分类，但 R1 结果保持原样。
+
+replacement 只允许使用同一业务 payload 和 versioned JSON／strict profile v1.1，每路 `max_tokens=16,000`、一次调用、0 retry、0 fallback。16,000 是针对本次单 cell 的受控容量，不是未来五单元循环的固定预算；五单元需要在 paired 通过后单独按实际步骤定标。若 replacement 再次用尽预算或出现新的 L1，停止并做阶段处置，不自动签发第三轮。

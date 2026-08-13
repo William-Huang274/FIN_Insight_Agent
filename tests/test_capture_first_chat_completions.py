@@ -191,6 +191,44 @@ def test_gateway_invalid_provider_shape_preserves_response_capture_ref(
     assert Path(failure.value.capture_ref).is_file()
 
 
+def test_gateway_classifies_reasoning_budget_exhaustion(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("FIXTURE_PROVIDER_KEY", "fixture")
+    monkeypatch.setattr(
+        urllib.request,
+        "urlopen",
+        lambda *_args, **_kwargs: _Response(
+            {
+                "choices": [
+                    {
+                        "message": {"role": "assistant", "content": ""},
+                        "finish_reason": "length",
+                    }
+                ],
+                "usage": {
+                    "completion_tokens": 500,
+                    "completion_tokens_details": {"reasoning_tokens": 500},
+                    "total_tokens": 511,
+                },
+            }
+        ),
+    )
+
+    with pytest.raises(
+        ModelGatewayError, match="reasoning_budget_exhausted"
+    ) as failure:
+        execute_chat_completion_exact_once(
+            profile=_profile(),
+            messages=({"role": "user", "content": "Bounded input."},),
+            capture_root=tmp_path,
+            run_id="RUN::REASONING-BUDGET",
+            attempt_id="ATTEMPT::1",
+        )
+
+    assert Path(failure.value.capture_ref).is_file()
+
+
 class _ResponseFile:
     def __init__(self, value: bytes) -> None:
         self.value = value
@@ -310,3 +348,63 @@ def test_tool_step_preserves_reasoning_only_for_transient_continuation(
     assert json.loads(request_capture)[
         "transient_private_reasoning_fields_redacted"
     ] == 1
+
+
+def test_tool_step_classifies_reasoning_budget_exhaustion(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("FIXTURE_PROVIDER_KEY", "fixture")
+    monkeypatch.setattr(
+        urllib.request,
+        "urlopen",
+        lambda *_args, **_kwargs: _Response(
+            {
+                "choices": [
+                    {
+                        "message": {"role": "assistant", "content": ""},
+                        "finish_reason": "length",
+                    }
+                ],
+                "usage": {
+                    "completion_tokens": 500,
+                    "completion_tokens_details": {"reasoning_tokens": 500},
+                    "total_tokens": 511,
+                },
+            }
+        ),
+    )
+
+    with pytest.raises(
+        ModelGatewayError, match="reasoning_budget_exhausted"
+    ) as failure:
+        execute_chat_completion_tool_step_exact_once(
+            profile=_profile(
+                request_defaults={
+                    "max_tokens": 500,
+                    "stream": False,
+                    "thinking": {"type": "enabled"},
+                    "reasoning_effort": "max",
+                }
+            ),
+            messages=({"role": "user", "content": "Research one cell."},),
+            tools=(
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "submit_research_judgment",
+                        "description": "Submit one judgment.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {"cell_id": {"type": "string"}},
+                            "required": ["cell_id"],
+                            "additionalProperties": False,
+                        },
+                    },
+                },
+            ),
+            capture_root=tmp_path,
+            run_id="RUN::TOOL-REASONING-BUDGET",
+            attempt_id="ATTEMPT::1",
+        )
+
+    assert Path(failure.value.capture_ref).is_file()

@@ -32,4 +32,6 @@
 
 下一门只允许实现并签发 DELL 单研究单元 JSON／strict final-tool paired canary。zero-call 没有资格证明 strict Beta 的真实 Provider transport，也没有证明自然金融研究质量、五单元循环、Workbench 或 S3 通过。
 
-paired 实现没有新增 runner：provider-neutral 的两路编译／执行逻辑收敛在 `src/sec_agent/research/paired_submission.py`，现有 current-consumer canary 只负责 authority、路径、持久化和公开摘要，并保留旧 authority 兼容。两路绑定 `CELL::value_capture` 和同一归一化业务 payload；运行前会重新计算 payload digest，strict 只暴露最终 Judgment 工具，V4 thinking 模式不发送 `tool_choice`。当前定向测试为 39 passed、全仓为 253 passed；active-baseline 为 115 Python／8 frontend／10 Runtime resources 且 0 forbidden reference；secret scan 为 6,486 files／0 finding；历史默认 v1.1 JSON message 仍为 46,061 字符。当前仍为零模型调用；需先完成 clean commit/push 和 fresh exact-once authority。
+paired 实现没有新增 runner：provider-neutral 的两路编译／执行逻辑收敛在 `src/sec_agent/research/paired_submission.py`，现有 current-consumer canary 只负责 authority、路径、持久化和公开摘要，并保留旧 authority 兼容。两路绑定 `CELL::value_capture` 和同一归一化业务 payload；运行前会重新计算 payload digest，strict 只暴露最终 Judgment 工具，V4 thinking 模式不发送 `tool_choice`。实现门为定向 39 passed、全仓 253 passed；active-baseline 为 115 Python／8 frontend／10 Runtime resources 且 0 forbidden reference；secret scan 为 6,486 files／0 finding；历史默认 v1.1 JSON message 仍为 46,061 字符。
+
+随后 R1 两路各执行一次：均 HTTP 200、`finish_reason=length`，且各自 5,000 completion token 全部为 reasoning token，未生成可见 Judgment。R1 因此保持 terminal failed，不用于评价合同或内容质量；当前处置是修正网关失败分类并建立 16,000-token versioned replacement profiles，只允许一轮 fresh paired replacement，五单元仍未获授权。

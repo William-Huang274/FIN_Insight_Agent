@@ -94,6 +94,13 @@ def validate_reviewed_evidence_pack(pack: Mapping[str, Any]) -> None:
                 ),
                 "reviewed_evidence_pack_context_boundary_invalid",
             )
+        elif row.get("disposition") == "accepted_direct_source_evidence":
+            _require(
+                row.get("evidence_role") == "issuer_direct_source",
+                "reviewed_evidence_pack_direct_source_boundary_invalid",
+            )
+        else:
+            _require(False, "reviewed_evidence_pack_disposition_invalid")
         if row.get("object_type") == "metric":
             metric = dict(row.get("structured_metric") or {})
             authority = dict(metric.get("currency_unit_authority") or {})

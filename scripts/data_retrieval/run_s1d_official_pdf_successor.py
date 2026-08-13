@@ -25,6 +25,7 @@ from ingestion.official_pdf import (  # noqa: E402
 from retrieval.official_pdf_objects import compile_official_pdf_document  # noqa: E402
 from sec_agent.research.official_pdf_evidence import (  # noqa: E402
     build_reviewed_pack_successor,
+    combine_official_pdf_evidence_results,
     evaluate_official_pdf_evidence,
 )
 from sec_agent.research.reviewed_evidence_pack import (  # noqa: E402
@@ -38,14 +39,6 @@ AUTHORITY_SCHEMA_VERSION = (
     "fin_ia_s1d_official_pdf_successor_execution_authority_v1_0"
 )
 RESULT_SCHEMA_VERSION = "fin_ia_s1d_official_pdf_successor_result_v1_0"
-DEFAULT_AUTHORITY = (
-    ROOT
-    / "configs"
-    / "retrieval"
-    / "fin_ia_0_1_3_s1d_tsm_official_pdf_successor_execution_authority_v1_0.json"
-)
-
-
 class OfficialPdfSuccessorRunnerError(RuntimeError):
     """The zero-network PDF successor execution was not exactly authorized."""
 
@@ -104,34 +97,74 @@ def validate_authority(
         == 0
         and budget.get("current_product_pointer_mutation") == "forbidden"
         and budget.get("raw_source_publication") == "forbidden"
-        and source.get("route_id") == "TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT"
-        and source.get("ticker") == "TSM"
-        and source.get("consumer_case_key") == "DELL"
+        and str(source.get("route_id") or "")
+        and str(source.get("ticker") or "")
+        and str(source.get("consumer_case_key") or "")
+        and str(source.get("company") or "")
         and source.get("source_type") == "EARNINGS_CALL_TRANSCRIPT"
+        and str(source.get("source_tier") or "")
+        and str(source.get("publication_date") or "")
+        and str(source.get("period_end") or "")
+        and isinstance(source.get("fiscal_year"), int)
+        and str(source.get("source_url") or "")
         and source.get("redistributable") is False
-        and source.get("license_scope")
-        == "official_hosted_third_party_transcript_private_research_use"
+        and str(source.get("license_scope") or "")
     ):
         raise OfficialPdfSuccessorRunnerError(
             "official_pdf_successor_authority_budget_or_source_invalid"
         )
 
-    input_pairs = (
-        ("source_intake_result_ref", "source_intake_result_sha256"),
+    input_pairs = [
         ("attempt_manifest_ref", "attempt_manifest_sha256"),
-        ("evidence_gate_policy_ref", "evidence_gate_policy_sha256"),
         ("predecessor_pack_ref", "predecessor_pack_sha256"),
         ("s2_result_ref", "s2_result_sha256"),
         ("runner_ref", "runner_sha256"),
-    )
+    ]
+    if bound.get("source_intake_result_ref") is not None:
+        input_pairs.append(
+            ("source_intake_result_ref", "source_intake_result_sha256")
+        )
     for ref_key, digest_key in input_pairs:
         path = _safe_repository_path(
             repository_root, str(bound.get(ref_key) or "")
         )
         _assert_digest(path, str(bound.get(digest_key) or ""))
-    if str(bound.get("raw_pdf_sha256") or "") != "3e21fe2dc69a4b95ebaf3e2e9a037ff5d704c5729e1eb7eff1554d03bdfea453":
+    policy_bindings = _policy_bindings(bound)
+    for binding in policy_bindings:
+        path = _safe_repository_path(repository_root, str(binding["ref"]))
+        _assert_digest(path, str(binding["sha256"]))
+    raw_pdf_sha256 = str(bound.get("raw_pdf_sha256") or "")
+    if (
+        len(raw_pdf_sha256) != 64
+        or raw_pdf_sha256 == "0" * 64
+        or any(
+            character not in "0123456789abcdef"
+            for character in raw_pdf_sha256
+        )
+    ):
         raise OfficialPdfSuccessorRunnerError(
             "official_pdf_successor_raw_digest_invalid"
+        )
+
+    successor_contract = value.get("successor_contract")
+    if successor_contract is not None and not (
+        isinstance(successor_contract, Mapping)
+        and isinstance(successor_contract.get("gap_ids_satisfied"), list)
+        and all(
+            str(gap_id).strip()
+            for gap_id in successor_contract["gap_ids_satisfied"]
+        )
+    ):
+        raise OfficialPdfSuccessorRunnerError(
+            "official_pdf_successor_contract_invalid"
+        )
+    if not (
+        str(output.get("private_output_root_ref") or "")
+        and str(output.get("public_result_ref") or "")
+        and str(output.get("result_id") or "")
+    ):
+        raise OfficialPdfSuccessorRunnerError(
+            "official_pdf_successor_output_contract_invalid"
         )
 
     private_root = _safe_repository_path(
@@ -191,26 +224,12 @@ def execute(
     bound = authority["bound_inputs"]
     output = authority["output_contract"]
     source_contract = authority["source_contract"]
-    source_result = _read_json(
-        repository_root / str(bound["source_intake_result_ref"])
-    )
-    route_by_id = {
-        str(row.get("route_id") or ""): dict(row)
-        for row in source_result.get("route_results") or ()
-    }
-    tsm_result = route_by_id.get("TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT")
-    dell_result = route_by_id.get("DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT")
-    if not (
-        tsm_result
-        and tsm_result.get("status") == "captured_ready_for_parse"
-        and tsm_result.get("raw_object_sha256") == bound["raw_pdf_sha256"]
-        and dell_result
-        and dell_result.get("status") == "acquisition_failed"
-        and dell_result.get("failure_code")
-        == "official_source_transport_read_timeout"
-    ):
-        raise OfficialPdfSuccessorRunnerError(
-            "official_pdf_successor_source_result_boundary_invalid"
+    if bound.get("source_intake_result_ref") is not None:
+        _validate_source_result_assertions(
+            _read_json(repository_root / str(bound["source_intake_result_ref"])),
+            list(authority.get("source_result_assertions") or ()),
+            source_route_id=str(source_contract["route_id"]),
+            raw_pdf_sha256=str(bound["raw_pdf_sha256"]),
         )
 
     attempt = _read_json(repository_root / str(bound["attempt_manifest_ref"]))
@@ -236,19 +255,27 @@ def execute(
         parsed_ref="parsed_document.json",
         parsed_sha256=parsed_sha256,
     )
-    gate_policy = _read_json(
-        repository_root / str(bound["evidence_gate_policy_ref"])
-    )
-    evidence_result = evaluate_official_pdf_evidence(
-        parent=parent,
-        children=children,
-        policy=gate_policy,
-        research_as_of=str(authority["research_as_of"]),
-    )
-    if evidence_result.get("status") != "official_pdf_evidence_gate_passed":
+    policy_results = [
+        evaluate_official_pdf_evidence(
+            parent=parent,
+            children=children,
+            policy=_read_json(repository_root / str(binding["ref"])),
+            research_as_of=str(authority["research_as_of"]),
+        )
+        for binding in _policy_bindings(bound)
+    ]
+    if any(
+        result.get("status") != "official_pdf_evidence_gate_passed"
+        for result in policy_results
+    ):
         raise OfficialPdfSuccessorRunnerError(
             "official_pdf_successor_evidence_gate_failed"
         )
+    evidence_result = (
+        policy_results[0]
+        if len(policy_results) == 1
+        else combine_official_pdf_evidence_results(policy_results)
+    )
 
     predecessor = _read_json(
         repository_root / str(bound["predecessor_pack_ref"])
@@ -273,6 +300,9 @@ def execute(
         "raw_pdf_sha256": bound["raw_pdf_sha256"],
         "parsed_document_sha256": parsed_sha256,
         "evidence_gate_result_digest": evidence_result["result_digest"],
+        "evidence_gate_policy_ids": [
+            str(result["policy_id"]) for result in policy_results
+        ],
         "predecessor_pack_payload_digest": predecessor["pack_payload_digest"],
         "s2_result_digest": s2["result_digest"],
         "network_calls": 0,
@@ -282,7 +312,11 @@ def execute(
     successor = build_reviewed_pack_successor(
         predecessor=predecessor,
         evidence_result=evidence_result,
-        gap_ids_satisfied=["dell-gap-advanced-packaging"],
+        gap_ids_satisfied=list(
+            (authority.get("successor_contract") or {}).get(
+                "gap_ids_satisfied", []
+            )
+        ),
         successor_lineage=lineage,
     )
     validate_reviewed_evidence_pack(successor)
@@ -292,13 +326,19 @@ def execute(
     _write_exclusive(private_root / "parsed_document.json", parsed)
     _write_exclusive(private_root / "document_parent.json", parent)
     _write_jsonl_exclusive(private_root / "retrieval_children.jsonl", children)
-    _write_exclusive(private_root / "evidence_gate_result.json", evidence_result)
+    for index, result in enumerate(policy_results, start=1):
+        _write_exclusive(
+            private_root / f"evidence_gate_result_{index:02d}.json", result
+        )
+    _write_exclusive(
+        private_root / "evidence_gate_bundle_result.json", evidence_result
+    )
     pack_digest = canonical_digest(successor)
     pack_relative = (
         PurePosixPath("objects")
         / "fin-0.1.3"
-        / "s1d-tsm-official-pdf-successor"
-        / "dell"
+        / str(output.get("object_family") or "s1d-official-pdf-successor")
+        / str(source_contract["consumer_case_key"]).lower()
         / "v1"
         / pack_digest[:2]
         / pack_digest[2:4]
@@ -314,28 +354,54 @@ def execute(
         "schema_version": RESULT_SCHEMA_VERSION,
         "result_id": str(output["result_id"]),
         "recorded_at": str(authority["recorded_at"]),
-        "status": "tsm_official_pdf_successor_candidate_ready_current_pointer_unchanged",
+        "status": str(
+            output.get("result_status")
+            or "official_pdf_successor_candidate_ready_current_pointer_unchanged"
+        ),
         "authority_ref": authority_path.relative_to(repository_root).as_posix(),
         "source": {
             "route_id": source_contract["route_id"],
-            "evidence_owner_ticker": "TSM",
-            "consumer_case_key": "DELL",
+            "evidence_owner_ticker": source_contract["ticker"],
+            "consumer_case_key": source_contract["consumer_case_key"],
             "raw_pdf_sha256": bound["raw_pdf_sha256"],
             "page_count": parsed["page_count"],
             "nonempty_page_count": parsed["nonempty_page_count"],
             "parsed_document_sha256": parsed_sha256,
-            "promotion_status": "two_page_bounded_context_evidence_accepted",
+            "promotion_status": str(
+                output.get("promotion_status")
+                or "bounded_official_pdf_evidence_accepted"
+            ),
         },
         "evidence_gate": {
             "result_digest": evidence_result["result_digest"],
+            "policy_ids": [
+                str(result["policy_id"]) for result in policy_results
+            ],
             "accepted_items": len(evidence_result["accepted_evidence_items"]),
             "accepted_page_numbers": sorted(
                 int(row["page_number"])
                 for row in evidence_result["source_materials"]
             ),
-            "slot_id": evidence_result["slot_id"],
-            "facet_id": evidence_result["facet_id"],
-            "gap_closed": "dell-gap-advanced-packaging",
+            "slot_ids": sorted(
+                {
+                    str(binding.get("slot_id") or "")
+                    for item in evidence_result["accepted_evidence_items"]
+                    for binding in item.get("slot_bindings") or ()
+                }
+            ),
+            "facet_ids": sorted(
+                {
+                    str(facet)
+                    for item in evidence_result["accepted_evidence_items"]
+                    for binding in item.get("slot_bindings") or ()
+                    for facet in binding.get("facet_ids") or ()
+                }
+            ),
+            "gaps_closed": list(
+                (authority.get("successor_contract") or {}).get(
+                    "gap_ids_satisfied", []
+                )
+            ),
             "causal_attribution_authorized": False,
             "numeric_authority_granted": False,
         },
@@ -361,15 +427,9 @@ def execute(
             "numeric_fact_authority_changed": False,
             "transcript_numeric_authority": False,
         },
-        "remaining_boundaries": {
-            "dell_transcript_transport_gap": True,
-            "dell_specific_tsm_allocation_proven": False,
-            "capacity_release_timing_proven": False,
-            "core_research_ready": False,
-            "S1_product_acceptance": False,
-            "S3_execution_authorized": False,
-            "complete_research_or_release_claimed": False,
-        },
+        "remaining_boundaries": dict(
+            authority.get("remaining_boundaries") or {}
+        ),
         "execution": {
             "network_calls": 0,
             "model_calls": 0,
@@ -416,6 +476,71 @@ def _validate_s2_dependency(
             "official_pdf_successor_s2_sqlite_digest_mismatch"
         )
     return value
+
+
+def _policy_bindings(bound: Mapping[str, Any]) -> list[dict[str, str]]:
+    raw = bound.get("evidence_gate_policies")
+    if raw is None:
+        raw = [
+            {
+                "ref": bound.get("evidence_gate_policy_ref"),
+                "sha256": bound.get("evidence_gate_policy_sha256"),
+            }
+        ]
+    if not isinstance(raw, list) or not raw:
+        raise OfficialPdfSuccessorRunnerError(
+            "official_pdf_successor_policy_bindings_invalid"
+        )
+    bindings: list[dict[str, str]] = []
+    for row in raw:
+        if not isinstance(row, Mapping):
+            raise OfficialPdfSuccessorRunnerError(
+                "official_pdf_successor_policy_bindings_invalid"
+            )
+        ref = str(row.get("ref") or "")
+        digest = str(row.get("sha256") or "")
+        if not ref or len(digest) != 64:
+            raise OfficialPdfSuccessorRunnerError(
+                "official_pdf_successor_policy_bindings_invalid"
+            )
+        bindings.append({"ref": ref, "sha256": digest})
+    if len({binding["ref"] for binding in bindings}) != len(bindings):
+        raise OfficialPdfSuccessorRunnerError(
+            "official_pdf_successor_policy_bindings_invalid"
+        )
+    return bindings
+
+
+def _validate_source_result_assertions(
+    source_result: Mapping[str, Any],
+    assertions: list[Mapping[str, Any]],
+    *,
+    source_route_id: str,
+    raw_pdf_sha256: str,
+) -> None:
+    if not assertions:
+        assertions = [
+            {
+                "route_id": source_route_id,
+                "equals": {
+                    "status": "captured_ready_for_parse",
+                    "raw_object_sha256": raw_pdf_sha256,
+                },
+            }
+        ]
+    route_by_id = {
+        str(row.get("route_id") or ""): dict(row)
+        for row in source_result.get("route_results") or ()
+    }
+    for assertion in assertions:
+        route = route_by_id.get(str(assertion.get("route_id") or ""))
+        expected = dict(assertion.get("equals") or {})
+        if not route or not expected or any(
+            route.get(key) != value for key, value in expected.items()
+        ):
+            raise OfficialPdfSuccessorRunnerError(
+                "official_pdf_successor_source_result_boundary_invalid"
+            )
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -501,9 +626,9 @@ def _git(root: Path, *args: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Run the authorized zero-network TSM official PDF successor."
+        description="Run an authorized zero-network official PDF successor."
     )
-    parser.add_argument("--authority", type=Path, default=DEFAULT_AUTHORITY)
+    parser.add_argument("--authority", type=Path, required=True)
     args = parser.parse_args()
     authority_path = args.authority.resolve()
     authority = validate_authority(

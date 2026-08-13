@@ -13,6 +13,14 @@ OFFICIAL_PDF_EVIDENCE_POLICY_SCHEMA = (
 OFFICIAL_PDF_EVIDENCE_RESULT_SCHEMA = (
     "fin_ia_official_pdf_evidence_gate_result_v1_0"
 )
+OFFICIAL_PDF_EVIDENCE_BUNDLE_RESULT_SCHEMA = (
+    "fin_ia_official_pdf_evidence_gate_bundle_result_v1_0"
+)
+
+_ALLOWED_EVIDENCE_ROLE_BY_DISPOSITION = {
+    "accepted_bounded_context_evidence": "counterparty_or_ecosystem_readthrough",
+    "accepted_direct_source_evidence": "issuer_direct_source",
+}
 
 
 class OfficialPdfEvidenceError(ValueError):
@@ -23,7 +31,33 @@ def validate_official_pdf_evidence_policy(
     payload: Mapping[str, Any],
 ) -> dict[str, Any]:
     value = deepcopy(dict(payload))
+    value.setdefault("disposition", "accepted_bounded_context_evidence")
+    value.setdefault(
+        "evidence_role", "counterparty_or_ecosystem_readthrough"
+    )
+    value.setdefault(
+        "numeric_use_boundary",
+        (
+            "Only source-visible exact values may be quoted; derived arithmetic "
+            "requires a separate deterministic numeric program."
+        ),
+    )
+    value.setdefault("gap_ids_satisfied", [])
+    raw_bindings = value.get("slot_bindings")
+    if raw_bindings is None:
+        raw_bindings = [
+            {
+                "slot_id": value.get("slot_id"),
+                "facet_ids": [value.get("facet_id")],
+                "qualification_id": value.get("qualification_id"),
+                "business_meaning_zh": value.get("business_meaning_zh"),
+                "claim_boundary_zh": value.get("claim_boundary_zh"),
+            }
+        ]
+    bindings = [deepcopy(dict(row)) for row in raw_bindings]
+    value["slot_bindings"] = bindings
     anchors = list(value.get("required_anchor_groups") or ())
+    disposition = str(value.get("disposition") or "")
     if not (
         value.get("schema_version") == OFFICIAL_PDF_EVIDENCE_POLICY_SCHEMA
         and value.get("status") == "active_bounded_official_pdf_evidence_gate"
@@ -31,8 +65,8 @@ def validate_official_pdf_evidence_policy(
         and str(value.get("route_id") or "")
         and str(value.get("consumer_case_key") or "")
         and str(value.get("evidence_owner_ticker") or "")
-        and str(value.get("slot_id") or "")
-        and str(value.get("facet_id") or "")
+        and bindings
+        and all(_valid_slot_binding(binding) for binding in bindings)
         and isinstance(value.get("allowed_page_numbers"), list)
         and value["allowed_page_numbers"]
         and len(value["allowed_page_numbers"])
@@ -42,11 +76,30 @@ def validate_official_pdf_evidence_policy(
         and 100 <= int(value.get("max_excerpt_characters") or 0) <= 4000
         and anchors
         and all(_valid_anchor_group(group) for group in anchors)
+        and isinstance(value.get("relationship_directions"), list)
+        and value["relationship_directions"]
+        and all(str(direction).strip() for direction in value["relationship_directions"])
+        and str(value.get("license_scope") or "")
+        and disposition in _ALLOWED_EVIDENCE_ROLE_BY_DISPOSITION
+        and value.get("evidence_role")
+        == _ALLOWED_EVIDENCE_ROLE_BY_DISPOSITION[disposition]
+        and str(value.get("numeric_use_boundary") or "")
+        and isinstance(value.get("gap_ids_satisfied"), list)
+        and len(value["gap_ids_satisfied"])
+        == len(set(value["gap_ids_satisfied"]))
+        and all(str(gap_id).strip() for gap_id in value["gap_ids_satisfied"])
         and value.get("causal_attribution_authorized") is False
         and value.get("redistributable") is False
-        and str(value.get("claim_boundary_zh") or "")
     ):
         raise OfficialPdfEvidenceError("official_pdf_evidence_policy_invalid")
+    if disposition == "accepted_direct_source_evidence" and not (
+        str(value["evidence_owner_ticker"]).upper()
+        == str(value["consumer_case_key"]).upper()
+        and "subject_self_disclosure" in value["relationship_directions"]
+    ):
+        raise OfficialPdfEvidenceError("official_pdf_evidence_policy_invalid")
+    value["slot_id"] = str(bindings[0]["slot_id"])
+    value["facet_id"] = str(bindings[0]["facet_ids"][0])
     return value
 
 
@@ -81,11 +134,12 @@ def evaluate_official_pdf_evidence(
         ):
             continue
         text = str(child.get("text") or "")
+        match_text = _normalized_match_text(text)
         matched = [
             str(group["group_id"])
             for group in value["required_anchor_groups"]
             if any(
-                str(literal).casefold() in text.casefold()
+                _normalized_match_text(str(literal)) in match_text
                 for literal in group["any_literals"]
             )
         ]
@@ -154,25 +208,14 @@ def evaluate_official_pdf_evidence(
         item_without_digest = {
             "case_key": value["consumer_case_key"],
             "causal_attribution_authorized": False,
-            "disposition": "accepted_bounded_context_evidence",
-            "evidence_role": "counterparty_or_ecosystem_readthrough",
-            "numeric_use_boundary": (
-                "Only source-visible exact values may be quoted; derived arithmetic "
-                "requires a separate deterministic numeric program."
-            ),
+            "disposition": value["disposition"],
+            "evidence_role": value["evidence_role"],
+            "numeric_use_boundary": value["numeric_use_boundary"],
             "object_type": "claim",
             "publication_date": child.get("publication_date"),
             "relationship_directions": list(value["relationship_directions"]),
             "research_as_of": research_as_of,
-            "slot_bindings": [
-                {
-                    "business_meaning_zh": value["business_meaning_zh"],
-                    "claim_boundary_zh": value["claim_boundary_zh"],
-                    "facet_ids": [value["facet_id"]],
-                    "qualification_id": value["qualification_id"],
-                    "slot_id": value["slot_id"],
-                }
-            ],
+            "slot_bindings": deepcopy(value["slot_bindings"]),
             "source_content_digest": source_digest,
             "source_material_ref": material_ref,
             "source_record_id": child.get("evidence_id"),
@@ -196,10 +239,113 @@ def evaluate_official_pdf_evidence(
         "evidence_owner_ticker": owner,
         "slot_id": value["slot_id"],
         "facet_id": value["facet_id"],
+        "slot_ids": sorted(
+            {str(binding["slot_id"]) for binding in value["slot_bindings"]}
+        ),
+        "facet_ids": sorted(
+            {
+                str(facet)
+                for binding in value["slot_bindings"]
+                for facet in binding["facet_ids"]
+            }
+        ),
         "accepted_evidence_items": evidence_items,
         "source_materials": source_materials,
         "rejected_items": rejected,
-        "gap_satisfied": True,
+        "evidence_qualified": True,
+        "gap_ids_satisfied": list(value["gap_ids_satisfied"]),
+        "gap_satisfied": bool(value["gap_ids_satisfied"]),
+        "candidate_is_not_evidence": False,
+        "causal_attribution_authorized": False,
+    }
+    return {**unsigned, "result_digest": canonical_digest(unsigned)}
+
+
+def combine_official_pdf_evidence_results(
+    results: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Combine independently gated fragments from one consumer case.
+
+    A document can contain several financially distinct fragments. Each stays
+    policy-bound and independently auditable; the bundle only provides the
+    atomic input surface needed by a single Pack successor.
+    """
+
+    rows = [deepcopy(dict(result)) for result in results]
+    if not rows or any(
+        row.get("schema_version") != OFFICIAL_PDF_EVIDENCE_RESULT_SCHEMA
+        or row.get("status") != "official_pdf_evidence_gate_passed"
+        or row.get("evidence_qualified") is not True
+        for row in rows
+    ):
+        raise OfficialPdfEvidenceError("official_pdf_evidence_bundle_input_invalid")
+    case_keys = {str(row.get("consumer_case_key") or "") for row in rows}
+    if len(case_keys) != 1 or not next(iter(case_keys)):
+        raise OfficialPdfEvidenceError("official_pdf_evidence_bundle_case_mismatch")
+
+    evidence_items = [
+        deepcopy(dict(item))
+        for row in rows
+        for item in row.get("accepted_evidence_items") or ()
+    ]
+    source_materials = [
+        deepcopy(dict(item))
+        for row in rows
+        for item in row.get("source_materials") or ()
+    ]
+    target_ids = [str(item.get("target_id") or "") for item in evidence_items]
+    material_refs = [
+        str(item.get("material_ref") or "") for item in source_materials
+    ]
+    if (
+        not evidence_items
+        or len(target_ids) != len(set(target_ids))
+        or len(material_refs) != len(set(material_refs))
+    ):
+        raise OfficialPdfEvidenceError("official_pdf_evidence_bundle_collision")
+
+    unsigned = {
+        "schema_version": OFFICIAL_PDF_EVIDENCE_BUNDLE_RESULT_SCHEMA,
+        "status": "official_pdf_evidence_gate_bundle_passed",
+        "consumer_case_key": next(iter(case_keys)),
+        "evidence_owner_tickers": sorted(
+            {str(row.get("evidence_owner_ticker") or "") for row in rows}
+        ),
+        "policy_ids": [str(row["policy_id"]) for row in rows],
+        "policy_result_digests": [str(row["result_digest"]) for row in rows],
+        "accepted_evidence_items": evidence_items,
+        "source_materials": source_materials,
+        "rejected_items": [
+            deepcopy(dict(item))
+            for row in rows
+            for item in row.get("rejected_items") or ()
+        ],
+        "slot_ids": sorted(
+            {
+                str(binding.get("slot_id") or "")
+                for item in evidence_items
+                for binding in item.get("slot_bindings") or ()
+            }
+        ),
+        "facet_ids": sorted(
+            {
+                str(facet)
+                for item in evidence_items
+                for binding in item.get("slot_bindings") or ()
+                for facet in binding.get("facet_ids") or ()
+            }
+        ),
+        "evidence_qualified": True,
+        "gap_ids_satisfied": sorted(
+            {
+                str(gap_id)
+                for row in rows
+                for gap_id in row.get("gap_ids_satisfied") or ()
+            }
+        ),
+        "gap_satisfied": any(
+            row.get("gap_ids_satisfied") for row in rows
+        ),
         "candidate_is_not_evidence": False,
         "causal_attribution_authorized": False,
     }
@@ -215,9 +361,16 @@ def build_reviewed_pack_successor(
 ) -> dict[str, Any]:
     if not (
         predecessor.get("case_key") == evidence_result.get("consumer_case_key")
-        and evidence_result.get("status") == "official_pdf_evidence_gate_passed"
-        and evidence_result.get("gap_satisfied") is True
-        and gap_ids_satisfied
+        and evidence_result.get("status")
+        in {
+            "official_pdf_evidence_gate_passed",
+            "official_pdf_evidence_gate_bundle_passed",
+        }
+        and (
+            evidence_result.get("evidence_qualified") is True
+            or evidence_result.get("gap_satisfied") is True
+        )
+        and evidence_result.get("accepted_evidence_items")
     ):
         raise OfficialPdfEvidenceError("reviewed_pack_successor_input_invalid")
     gaps = [dict(row) for row in predecessor.get("residual_gaps") or ()]
@@ -225,6 +378,13 @@ def build_reviewed_pack_successor(
     requested = {str(value) for value in gap_ids_satisfied}
     if not requested <= existing_gap_ids:
         raise OfficialPdfEvidenceError("reviewed_pack_successor_gap_unknown")
+    qualified_gap_ids = {
+        str(value) for value in evidence_result.get("gap_ids_satisfied") or ()
+    }
+    if not requested <= qualified_gap_ids:
+        raise OfficialPdfEvidenceError(
+            "reviewed_pack_successor_gap_not_qualified"
+        )
 
     body = deepcopy(dict(predecessor))
     body.pop("pack_payload_digest", None)
@@ -263,9 +423,20 @@ def build_reviewed_pack_successor(
         "reviewed_local_predecessor_plus_digest_bound_official_pdf_evidence_gate"
     )
     body["successor_lineage"] = deepcopy(dict(successor_lineage))
+    if requested:
+        gap_statement = (
+            "This successor closes only the explicitly declared gap IDs: "
+            + ", ".join(sorted(requested))
+            + ". "
+        )
+    else:
+        gap_statement = (
+            "This successor adds qualified official-PDF Evidence without closing "
+            "any residual gap. "
+        )
     body["known_boundary"] = (
-        "This successor closes only the declared official-PDF evidence gap. "
-        "It does not establish issuer-specific allocation, complete research, "
+        gap_statement
+        + "It does not establish undeclared attribution, complete research, "
         "NumericFact authority, S3 model readiness or product release."
     )
     return {**body, "pack_payload_digest": canonical_digest(body)}
@@ -278,6 +449,19 @@ def _valid_anchor_group(value: Any) -> bool:
         and isinstance(value.get("any_literals"), list)
         and value["any_literals"]
         and all(str(literal).strip() for literal in value["any_literals"])
+    )
+
+
+def _valid_slot_binding(value: Any) -> bool:
+    return bool(
+        isinstance(value, Mapping)
+        and str(value.get("slot_id") or "")
+        and isinstance(value.get("facet_ids"), list)
+        and value["facet_ids"]
+        and all(str(facet).strip() for facet in value["facet_ids"])
+        and str(value.get("qualification_id") or "")
+        and str(value.get("business_meaning_zh") or "")
+        and str(value.get("claim_boundary_zh") or "")
     )
 
 
@@ -307,9 +491,14 @@ def _bounded_excerpt(
     return normalized[start:end].strip()
 
 
+def _normalized_match_text(value: str) -> str:
+    return " ".join(str(value).split()).casefold()
+
+
 __all__ = [
     "OfficialPdfEvidenceError",
     "build_reviewed_pack_successor",
+    "combine_official_pdf_evidence_results",
     "evaluate_official_pdf_evidence",
     "validate_official_pdf_evidence_policy",
 ]

@@ -1,0 +1,59 @@
+{
+  "schema_version": "fin_ia_official_pdf_evidence_gate_policy_v1_0",
+  "policy_id": "FIN-0.1.3-S1D-DELL-Q1-FY2027-DEMAND-BACKLOG-EVIDENCE-GATE-V1.0",
+  "status": "active_bounded_official_pdf_evidence_gate",
+  "recorded_at": "2026-08-13",
+  "route_id": "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT",
+  "consumer_case_key": "DELL",
+  "evidence_owner_ticker": "DELL",
+  "allowed_page_numbers": [3],
+  "max_accepted_pages": 1,
+  "max_excerpt_characters": 1550,
+  "required_anchor_groups": [
+    {
+      "group_id": "ai_orders",
+      "any_literals": ["24.4 billion in AI orders"]
+    },
+    {
+      "group_id": "ai_backlog",
+      "any_literals": ["51.3 billion of AI backlog"]
+    },
+    {
+      "group_id": "demand_supply",
+      "any_literals": ["Demand continues to exceed supply"]
+    },
+    {
+      "group_id": "customer_breadth",
+      "any_literals": ["customer count surpassed 5,000"]
+    }
+  ],
+  "slot_bindings": [
+    {
+      "slot_id": "demand_volume_quality",
+      "facet_ids": [
+        "ai_orders",
+        "ai_backlog",
+        "demand_exceeds_supply",
+        "customer_breadth"
+      ],
+      "qualification_id": "dell-q1-fy2027-demand-backlog-and-customer-breadth",
+      "business_meaning_zh": "Dell 管理层在同一段落披露 AI 订单、收入、backlog、供需关系与客户广度，可用于判断当期需求规模和可见度。",
+      "claim_boundary_zh": "订单、backlog、pipeline 与客户数不等于不可取消收入，也没有给出订单账龄、取消率或未来季度线性兑现。"
+    },
+    {
+      "slot_id": "capacity_inputs_execution",
+      "facet_ids": ["memory_primary_constraint"],
+      "qualification_id": "dell-q1-fy2027-memory-primary-constraint",
+      "business_meaning_zh": "Dell 将内存列为需求超过供给时的首要约束。",
+      "claim_boundary_zh": "该表述不证明具体供应商分配、采购价格、缺货时长或产能释放时间。"
+    }
+  ],
+  "relationship_directions": ["subject_self_disclosure"],
+  "disposition": "accepted_direct_source_evidence",
+  "evidence_role": "issuer_direct_source",
+  "numeric_use_boundary": "只允许引用来源中可见的订单、收入、backlog 与客户数；不得把 backlog 当作已确认收入，任何转化率或衍生计算须由独立确定性 Numeric Program 生成。",
+  "gap_ids_satisfied": [],
+  "license_scope": "official_hosted_third_party_transcript_private_research_use",
+  "redistributable": false,
+  "causal_attribution_authorized": false
+}

@@ -22,6 +22,7 @@ from retrieval.official_pdf_objects import compile_official_pdf_document  # noqa
 from sec_agent.research.official_pdf_evidence import (  # noqa: E402
     OfficialPdfEvidenceError,
     build_reviewed_pack_successor,
+    combine_official_pdf_evidence_results,
     evaluate_official_pdf_evidence,
 )
 from sec_agent.research.reviewed_evidence_pack import (  # noqa: E402
@@ -240,6 +241,7 @@ def test_evidence_gate_and_pack_successor_close_only_declared_gap() -> None:
     )
     policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
     policy["source_url"] = "https://investor.tsmc.com/test.pdf"
+    policy["gap_ids_satisfied"] = ["dell-gap-advanced-packaging"]
     result = evaluate_official_pdf_evidence(
         parent=parent,
         children=children,
@@ -297,3 +299,167 @@ def test_gate_rejects_owner_and_anchor_mutations() -> None:
     assert result["rejected_items"][0]["rejection_code"] == (
         "required_anchor_group_missing"
     )
+
+
+def test_direct_source_multi_slot_bundle_can_add_evidence_without_closing_gap() -> None:
+    parsed = _parsed_pages()
+    parsed["route_id"] = "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT"
+    parsed["case_key"] = "DELL"
+    parsed["issuer_name"] = "Dell Technologies Inc."
+    parsed["title"] = "Dell Technologies Fiscal Year 2027 First Quarter Results Transcript"
+    parsed["publication_date"] = "2026-05-28"
+    parsed["pages"][0]["text"] = (
+        "Dell booked $24.4 billion in AI orders and had $51.3 billion of AI "
+        "backlog. Demand continues to exceed supply."
+    )
+    parsed["pages"][1]["text"] = (
+        "AI server profitability was in line with our mid-single-digit "
+        "operating income rate target."
+    )
+    for page in parsed["pages"]:
+        page["text_characters"] = len(page["text"])
+        page["text_sha256"] = hashlib.sha256(page["text"].encode()).hexdigest()
+    parsed["text_characters"] = sum(
+        page["text_characters"] for page in parsed["pages"]
+    )
+    source_spec = {
+        "route_id": parsed["route_id"],
+        "ticker": "DELL",
+        "company": parsed["issuer_name"],
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "source_tier": "official_hosted_management_call_transcript",
+        "publication_date": parsed["publication_date"],
+        "period_end": "2026-05-01",
+        "fiscal_year": 2027,
+        "source_url": parsed["source_url"],
+        "license_scope": "official_hosted_third_party_transcript_private_research_use",
+    }
+    parent, children = compile_official_pdf_document(
+        parsed,
+        source_spec=source_spec,
+        parsed_ref="private/dell-parsed.json",
+        parsed_sha256="f" * 64,
+    )
+    shared = {
+        "schema_version": "fin_ia_official_pdf_evidence_gate_policy_v1_0",
+        "status": "active_bounded_official_pdf_evidence_gate",
+        "route_id": parsed["route_id"],
+        "consumer_case_key": "DELL",
+        "evidence_owner_ticker": "DELL",
+        "max_accepted_pages": 1,
+        "max_excerpt_characters": 900,
+        "relationship_directions": ["subject_self_disclosure"],
+        "license_scope": source_spec["license_scope"],
+        "redistributable": False,
+        "causal_attribution_authorized": False,
+        "disposition": "accepted_direct_source_evidence",
+        "evidence_role": "issuer_direct_source",
+        "gap_ids_satisfied": [],
+    }
+    demand_policy = {
+        **shared,
+        "policy_id": "DELL-DEMAND",
+        "allowed_page_numbers": [10],
+        "required_anchor_groups": [
+            {"group_id": "orders", "any_literals": ["24.4 billion in AI orders"]},
+            {"group_id": "backlog", "any_literals": ["51.3 billion of AI backlog"]},
+            {"group_id": "supply", "any_literals": ["demand continues to exceed supply"]},
+        ],
+        "slot_bindings": [
+            {
+                "slot_id": "demand_volume_quality",
+                "facet_ids": ["ai_orders", "ai_backlog"],
+                "qualification_id": "dell-demand",
+                "business_meaning_zh": "Dell 直接披露订单和积压。",
+                "claim_boundary_zh": "不证明取消率或线性兑现。",
+            }
+        ],
+    }
+    profit_policy = {
+        **shared,
+        "policy_id": "DELL-PROFIT",
+        "allowed_page_numbers": [20],
+        "required_anchor_groups": [
+            {"group_id": "profit", "any_literals": ["AI server profitability"]},
+            {"group_id": "target", "any_literals": ["mid-single-digit operating income rate target"]},
+        ],
+        "slot_bindings": [
+            {
+                "slot_id": "pricing_mix_value_capture",
+                "facet_ids": ["ai_system_margin"],
+                "qualification_id": "dell-profit",
+                "business_meaning_zh": "Dell 直接披露 AI 服务器利润目标。",
+                "claim_boundary_zh": "目标不等于审计后的产品利润桥。",
+            }
+        ],
+        "gap_ids_satisfied": ["dell-gap-advanced-packaging"],
+    }
+    results = [
+        evaluate_official_pdf_evidence(
+            parent=parent,
+            children=children,
+            policy=policy,
+            research_as_of="2026-08-06",
+        )
+        for policy in (demand_policy, profit_policy)
+    ]
+    bundle = combine_official_pdf_evidence_results(results)
+    assert bundle["status"] == "official_pdf_evidence_gate_bundle_passed"
+    assert len(bundle["accepted_evidence_items"]) == 2
+    assert all(
+        item["disposition"] == "accepted_direct_source_evidence"
+        and item["evidence_role"] == "issuer_direct_source"
+        for item in bundle["accepted_evidence_items"]
+    )
+
+    successor = build_reviewed_pack_successor(
+        predecessor=_minimal_pack(),
+        evidence_result=bundle,
+        gap_ids_satisfied=["dell-gap-advanced-packaging"],
+        successor_lineage={"test": True},
+    )
+    validate_reviewed_evidence_pack(successor)
+    assert len(successor["evidence_items"]) == 3
+    assert len(successor["residual_gaps"]) == 1
+    assert "dell-gap-advanced-packaging" in successor["known_boundary"]
+
+
+def test_direct_source_policy_rejects_cross_company_owner() -> None:
+    policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+    policy.update(
+        {
+            "consumer_case_key": "DELL",
+            "evidence_owner_ticker": "TSM",
+            "disposition": "accepted_direct_source_evidence",
+            "evidence_role": "issuer_direct_source",
+            "relationship_directions": ["subject_self_disclosure"],
+        }
+    )
+    with pytest.raises(OfficialPdfEvidenceError, match="policy_invalid"):
+        evaluate_official_pdf_evidence(
+            parent={}, children=[], policy=policy, research_as_of="2026-08-06"
+        )
+
+
+def test_successor_cannot_close_gap_not_qualified_by_evidence_policy() -> None:
+    predecessor = _minimal_pack()
+    evidence_result = {
+        "status": "official_pdf_evidence_gate_passed",
+        "consumer_case_key": "DELL",
+        "evidence_qualified": True,
+        "gap_ids_satisfied": [],
+        "accepted_evidence_items": [deepcopy(predecessor["evidence_items"][0])],
+        "source_materials": [deepcopy(predecessor["source_materials"][0])],
+    }
+    evidence_result["accepted_evidence_items"][0]["target_id"] = "new-target"
+    evidence_result["accepted_evidence_items"][0]["source_material_ref"] = (
+        "source_material_new"
+    )
+    evidence_result["source_materials"][0]["material_ref"] = "source_material_new"
+    with pytest.raises(OfficialPdfEvidenceError, match="gap_not_qualified"):
+        build_reviewed_pack_successor(
+            predecessor=predecessor,
+            evidence_result=evidence_result,
+            gap_ids_satisfied=["dell-gap-advanced-packaging"],
+            successor_lineage={"test": True},
+        )

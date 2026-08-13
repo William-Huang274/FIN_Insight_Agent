@@ -343,6 +343,12 @@ class ResearchRetrievalService:
             "objective": objective.as_dict(),
             "compiled_plan": compiled.as_dict(),
             "summary": {
+                "proposed_atom_count": len(compiled.proposed_atoms),
+                "selected_atom_count": len(compiled.planner_atoms),
+                "deferred_atom_count": len(compiled.deferred_atoms),
+                "execution_request_budget": (
+                    objective.budget.max_evidence_requests
+                ),
                 "evidence_request_count": len(request_results),
                 "required_slot_count": len(objective.required_slot_ids),
                 "compiled_lane_count": sum(
@@ -388,12 +394,15 @@ class ResearchRetrievalService:
             "request_results": request_results,
             "known_boundary": (
                 "This projection proves deterministic user-objective binding, "
-                "bounded planner-atom compilation, S1 narrative candidate lookup "
+                "bounded planner-atom proposal validation, deterministic local "
+                "execution selection, S1 narrative candidate lookup "
                 "and S2 source-bound NumericFact execution. When configured, the "
                 "provisional S1 path also returns a hard-filtered BM25 plus local "
                 "Qwen embedding candidate union; those rows remain candidates. "
-                "Planner atoms are "
-                "supplied as controlled input in this zero-call proof; no natural "
+                "All valid proposed atoms and stable defer reasons remain auditable; "
+                "only the execution-budget selection becomes EvidenceRequests. "
+                "Planner atoms are supplied as controlled input in this zero-call "
+                "proof; no natural "
                 "language model planning, candidate-to-Evidence promotion, research "
                 "judgment, report writing or S3 product acceptance is claimed."
             ),

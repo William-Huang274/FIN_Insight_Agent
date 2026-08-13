@@ -45,7 +45,11 @@ ROUTE_POLICY_PATH = (
 )
 PLANNING_POLICY_PATH = (
     ROOT
-    / "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_0.json"
+    / "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_1.json"
+)
+R1_ATOMS_PATH = (
+    ROOT
+    / "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json"
 )
 
 
@@ -160,6 +164,10 @@ def _planner_atoms(**overrides: object) -> dict[str, object]:
     return value
 
 
+def _r1_planner_atoms() -> dict[str, object]:
+    return json.loads(R1_ATOMS_PATH.read_text(encoding="utf-8"))
+
+
 def test_objective_binds_identity_as_of_sources_budget_and_database_pass_rule() -> None:
     kernel, _, planning_policy = _contracts()
     objective = compile_research_objective(
@@ -235,6 +243,122 @@ def test_bounded_atoms_compile_to_canonical_s1_and_s2_requests_deterministically
     assert all(row.execution_status == "ready_for_typed_fact_executor" for row in fact_requests)
     assert all(row.numeric_fact_authority is False for row in fact_requests)
     assert planning_policy.authority["database_lane_required_for_exact_numeric_authority"] is True
+
+
+def test_saved_r1_proposals_are_selected_with_required_slots_and_stable_drop_reasons() -> None:
+    kernel, route_policy, planning_policy = _contracts()
+    objective = compile_research_objective(
+        _objective_draft(), kernel=kernel, policy=planning_policy
+    )
+    payload = _r1_planner_atoms()
+    plan = compile_research_plan(
+        payload,
+        objective=objective,
+        kernel=kernel,
+        route_policy=route_policy,
+        planning_policy=planning_policy,
+    )
+    permuted = deepcopy(payload)
+    permuted["atoms"] = list(reversed(permuted["atoms"]))
+    same_plan = compile_research_plan(
+        permuted,
+        objective=objective,
+        kernel=kernel,
+        route_policy=route_policy,
+        planning_policy=planning_policy,
+    )
+
+    assert len(plan.proposed_atoms) == 10
+    assert len(plan.planner_atoms) == 8
+    assert len(plan.evidence_requests) == 8
+    assert plan.plan_digest == same_plan.plan_digest
+    assert plan.selection == same_plan.selection
+    assert plan.selection["proposal_ceiling"] == 12
+    assert plan.selection["execution_request_budget"] == 8
+    assert plan.selection["required_slot_ids_preserved"] == list(
+        objective.required_slot_ids
+    )
+    assert {row.facet_id for row in plan.planner_atoms} == {
+        "orders_and_backlog",
+        "conversion_and_durability",
+        "reported_results",
+        "margin_and_incremental_profit",
+        "cash_generation",
+        "working_capital_risk",
+        "issuer_counterevidence",
+        "upstream_or_demand_counterevidence",
+    }
+    assert [row.atom.facet_id for row in plan.deferred_atoms] == [
+        "guidance_and_outlook",
+        "pricing_and_mix",
+    ]
+    assert {row.reason for row in plan.deferred_atoms} == {
+        "execution_budget_exhausted_after_required_slot_and_"
+        "provider_neutral_facet_priority_selection"
+    }
+
+
+def test_proposal_ceiling_and_all_proposed_atom_semantics_remain_fail_closed() -> None:
+    kernel, route_policy, planning_policy = _contracts()
+    objective = compile_research_objective(
+        _objective_draft(), kernel=kernel, policy=planning_policy
+    )
+    excessive = _r1_planner_atoms()
+    excessive["atoms"] = excessive["atoms"] + excessive["atoms"][:3]
+    with pytest.raises(ResearchPlanningError, match="proposal_budget_invalid"):
+        compile_research_plan(
+            excessive,
+            objective=objective,
+            kernel=kernel,
+            route_policy=route_policy,
+            planning_policy=planning_policy,
+        )
+
+    invalid_deferred = _r1_planner_atoms()
+    invalid_deferred["atoms"][3]["metric_ids"] = ["invented_metric"]
+    with pytest.raises(ResearchPlanningError, match="metric_id_unknown"):
+        compile_research_plan(
+            invalid_deferred,
+            objective=objective,
+            kernel=kernel,
+            route_policy=route_policy,
+            planning_policy=planning_policy,
+        )
+
+
+def test_execution_budget_equal_to_required_slots_keeps_one_atom_per_slot() -> None:
+    kernel, route_policy, planning_policy = _contracts()
+    objective = compile_research_objective(
+        _objective_draft(
+            budget={
+                "max_evidence_requests": 5,
+                "max_metric_intents_per_request": 6,
+                "max_product_intents_per_request": 4,
+                "max_model_calls": 1,
+            }
+        ),
+        kernel=kernel,
+        policy=planning_policy,
+    )
+    payload = _r1_planner_atoms()
+    payload["objective_id"] = objective.objective_id
+    plan = compile_research_plan(
+        payload,
+        objective=objective,
+        kernel=kernel,
+        route_policy=route_policy,
+        planning_policy=planning_policy,
+    )
+
+    assert len(plan.planner_atoms) == 5
+    assert {
+        next(
+            slot.slot_id
+            for slot in kernel.slots
+            if any(facet.facet_id == atom.facet_id for facet in slot.facets)
+        )
+        for atom in plan.planner_atoms
+    } == set(objective.required_slot_ids)
 
 
 def test_planner_fails_closed_on_alias_unknown_metric_cross_case_and_scope_expansion() -> None:
@@ -346,6 +470,7 @@ def test_planner_prompt_is_compiled_from_active_facets_and_metric_routes() -> No
         objective=objective,
         kernel=kernel,
         route_policy=route_policy,
+        planning_policy=planning_policy,
     )
     visible = json.loads(messages[1]["content"])
 
@@ -360,6 +485,8 @@ def test_planner_prompt_is_compiled_from_active_facets_and_metric_routes() -> No
     assert "revenue" in facets["reported_results"]["allowed_metric_ids"]
     assert "free_cash_flow" in facets["cash_generation"]["allowed_metric_ids"]
     assert visible["output_contract"]["objective_id"] == objective.objective_id
+    assert visible["objective"]["maximum_proposed_atoms"] == 12
+    assert visible["objective"]["maximum_executed_evidence_requests"] == 8
     serialized = json.dumps(visible, ensure_ascii=False)
     assert "source_record_id" not in serialized
     assert "request_id" not in serialized

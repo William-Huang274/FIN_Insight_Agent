@@ -45,11 +45,13 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 12. **S2 公司财务事实 mart（受控纵切 engineering pass）**：已从 2026-08-06 DELL／MU／NVDA CompanyFacts 与 Submissions 原始 capture 建立 1,319 条 observation，按 accession、accepted-at、vintage、期间角色、单位、taxonomy concept、source digest 和 supersession 保存；最近财年 9/9、当前 interim 15/15，PIT、跨案、季度/YTD、公式和 disclosure-cohort mutation 全过。DELL 受控纵切执行 7 个指标请求并全部 resolved，共返回 21 个 NumericFact、0 gap/conflict；private mart 仍不进入 Git，自然 planner、报告与前端消费未证明，故不宣称 S2 产品关闭。
 13. **DELL S1/S2/S3 零调用纵切（已完成工程门）**：当前 Runtime 已把受控 Research Objective／planner atoms 编译为 5 个 EvidenceRequest；S1 使用 `Qwen semantic + BM25 lexical candidate union` 返回 80 个候选，S2 返回上述 NumericFact。该结果证明给定正确 atoms 时链路和数据库可协同运行，但没有证明 DeepSeek 能自然规划、候选已成为 Evidence 或研报质量通过。
 14. **自然 Planner Canary R1（已执行并 terminal failed）**：DeepSeek Pro exact JSON、DELL 身份、5/5 required slot、10/10 facet 和全部 canonical metric/family 均正确，但返回 10 个 atoms，超过授权上限 8，故在 S1/S2 successor 前停止。没有 retry、fallback、手工裁剪或报告调用；这不是数据库失败。
-15. **当前下一硬门——proposal/execution budget 分层处置**：零调用区分模型可提出的研究原子上限与本地实际 EvidenceRequest 执行预算，并定义 required-slot 覆盖、secondary facet 排序和舍弃理由。身份、日期、来源、外部调用与 NumericFact 权威仍为硬门；完成 replay/mutation 前不签发 R2。
-16. **S2 三案扩展与依赖回归**：把 S1 的新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
-17. **S3 三案动态 Agentic Research**：把用户问题编译成 `Research Objective / DecisionSurface / EvidenceRequest`，并由同一 Runtime 完成规划、内源检索、缺口判断、外源补证、重裁决和报告；模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
-18. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
-19. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+15. **当前下一硬门——proposal/execution budget 分层处置**：零调用区分模型可提出的研究原子上限与本地实际 EvidenceRequest 执行预算，并定义 required-slot 覆盖、secondary facet 排序和舍弃理由。身份、日期、来源、外部调用与 NumericFact 权威仍为硬门；用 R1 保存的 10 条 atoms 完成 replay/mutation 后不重跑 Planner，也不直接签发 S3 R2。
+16. **回到 S1-C 产品级候选收敛**：把 R1 保存的 10 条自然 atoms 作为真实上游输入，先完成 v2 qrel successor、结构化 QueryFacetPlan 约束消费、候选排序和独立 Evidence Role／abstain。S1-C 只拥有“已有对象如何被正确召回、排序和解释”，不能用 S1-D 新网页掩盖当前对象内的错排。
+17. **S1-D residual-gap 补源**：只有 S1-C 证明某个 required slot 在正确查询、对象和排序下仍无合格材料时，才定向补 Dell/Micron 官方法说、TSM 先进封装和 PIT 估值；不得 broad search 堆量。
+18. **S2 三案有限依赖回归**：把 S1 新 Evidence 编译成有权威、期间、单位、公式和 lineage 的 Evidence/NumericFact；不重跑无关控制面。
+19. **S3 三案动态 Agentic Research**：保留已经完成的 DELL Planner R1，不重复付费证明相同能力；在合格 Evidence Pack 和 NumericFact 上继续动态缺口判断、重裁决和报告。模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
+20. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
+21. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
 ## 5. 防止再次膨胀的工程规则
 

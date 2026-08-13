@@ -89,4 +89,6 @@ Provider 特殊参数只存在独立 profile；核心 planner 与金融合同保
 - 没有 Workpaper、报告、L1、八维内容质量、paired 或人工验收；
 - S1、S2、S3 产品门均未关闭。
 
-R1 永久保持 failed。后续若将提案范围与执行预算分层，仍必须保留身份、日期、来源、外部调用和 NumericFact 权威硬门，并在新的 authority 下另行判断是否值得 canary；本次结果不自动授权完整报告或多轮 Agentic Research。
+R1 永久保持 failed。预算分层只能通过零调用 successor 消费其 immutable capture：模型可在 proposal ceiling 内提出比执行预算更多的 atoms，本地先保证 required-slot 覆盖，再按 provider-neutral 金融 facet 优先级选择实际 EvidenceRequest，并为每条未执行 atom 保存稳定舍弃理由。身份、日期、来源、外部调用和 NumericFact 权威继续是硬门。
+
+该 successor 通过后不重跑 Planner。R1 的 10 条自然 atoms 将成为 S1-C 的真实产品输入，用于暴露已有对象上的结构约束丢失、当前期／官方来源／直接性排序和 Evidence Role 问题；S1-C 收敛后才由真实 residual gap 驱动 S1-D，最后回到 S3 消费合格 Evidence Pack 与 NumericFact。本次结果不自动授权完整报告或多轮 Agentic Research。

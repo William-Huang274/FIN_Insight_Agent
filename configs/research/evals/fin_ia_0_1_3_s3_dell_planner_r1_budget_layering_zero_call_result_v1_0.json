@@ -1,0 +1,89 @@
+{
+  "schema_version": "fin_ia_s3_proposal_execution_budget_layering_zero_call_result_v1_0",
+  "status": "engineering_pass_saved_r1_replay_no_model_or_network_call",
+  "case_key": "DELL",
+  "predecessor": {
+    "run_id": "FIN013-S3-DELL-PLANNER-CANARY-R1",
+    "attempt_id": "ATTEMPT-01",
+    "terminal_status": "failed_terminal_no_retry",
+    "terminal_failure_code": "research_planner_atom_budget_invalid",
+    "capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3/dell_planner_canary/FIN013-S3-DELL-PLANNER-CANARY-R1/ATTEMPT-01/provider_response.json",
+    "capture_response_digest": "1686b3585c07776eb42b859391f2e56a20ac70099d48a2796f501e1c66cada10",
+    "predecessor_remains_failed": true
+  },
+  "replay_inputs": {
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json",
+    "objective_sha256": "e458acb042447c9ef11ad6f0a2f8152b1f6abdd4de8dc65922d2593e34f93548",
+    "planner_atoms_fixture_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+    "planner_atoms_fixture_sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d",
+    "planning_policy_ref": "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_1.json",
+    "planning_policy_sha256": "e16119cf2b04f82d993c8ac9e465f161084fc01921c403dd88a62661dec236c4"
+  },
+  "selection": {
+    "strategy": "required_slot_first_then_provider_neutral_facet_priority",
+    "proposal_ceiling": 12,
+    "proposed_atom_count": 10,
+    "execution_request_budget": 8,
+    "selected_atom_count": 8,
+    "deferred_atom_count": 2,
+    "selection_policy_digest": "a845a14f9ccec59a395fb36fdc635ee3630071284b44519f73829991e403f808",
+    "selected_facets": [
+      "orders_and_backlog",
+      "conversion_and_durability",
+      "reported_results",
+      "margin_and_incremental_profit",
+      "cash_generation",
+      "working_capital_risk",
+      "issuer_counterevidence",
+      "upstream_or_demand_counterevidence"
+    ],
+    "deferred_facets": [
+      {
+        "facet_id": "guidance_and_outlook",
+        "execution_priority": 14,
+        "reason": "execution_budget_exhausted_after_required_slot_and_provider_neutral_facet_priority_selection"
+      },
+      {
+        "facet_id": "pricing_and_mix",
+        "execution_priority": 15,
+        "reason": "execution_budget_exhausted_after_required_slot_and_provider_neutral_facet_priority_selection"
+      }
+    ]
+  },
+  "current_runtime_replay": {
+    "projection_digest": "5c6590a812390f0a54dc72bba469c9851f5b042edbcc38abb944c1ddcd64d7f8",
+    "compiled_lane_count": 8,
+    "nonempty_lane_count": 8,
+    "hybrid_candidate_runtime": "bm25_plus_qwen_local_embedding",
+    "hybrid_selected_candidate_count": 128,
+    "typed_fact_request_count": 25,
+    "typed_fact_resolved_count": 18,
+    "typed_fact_gap_count": 7,
+    "typed_fact_conflict_count": 0,
+    "numeric_fact_count": 44,
+    "model_calls": 0,
+    "network_calls": 0
+  },
+  "typed_fact_gaps": {
+    "gap_code": "metric_not_in_company_fact_mart",
+    "metric_ids": [
+      "backlog",
+      "orders",
+      "customer_count",
+      "shipments"
+    ],
+    "affected_facets": [
+      "orders_and_backlog",
+      "conversion_and_durability"
+    ],
+    "disposition": "preserve_as_typed_gaps_and_allow_narrative_evidence_lane;_do_not_invent_numeric_facts"
+  },
+  "mutation_assertions": [
+    "input_atom_permutation_preserves_plan_digest_and_selection",
+    "required_slot_coverage_is_preserved_at_execution_budget_equal_to_slot_count",
+    "proposal_count_above_ceiling_fails_closed",
+    "invalid_metric_in_a_would_be_deferred_atom_still_fails_closed",
+    "duplicate_cross_case_unknown_and_scope_expansion_checks_remain_hard_failures"
+  ],
+  "boundary": "This closes RC-S3-001 as a deterministic budget-contract defect. It does not turn candidates into Evidence, close S1 or S3, authorize a Planner retry, or claim that typed operating metrics absent from the company fact mart are numeric facts. The selected R1 atoms now become S1-C product inputs."
+}

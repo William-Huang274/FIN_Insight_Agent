@@ -8,6 +8,7 @@ from .reviewed_evidence_pack import (
 )
 from .planning import (
     CompiledResearchPlan,
+    DeferredPlannerAtom,
     ResearchObjective,
     ResearchPlanningError,
     ResearchPlanningPolicy,
@@ -21,6 +22,7 @@ from .planning import (
 __all__ = [
     "ReviewedEvidencePackError",
     "CompiledResearchPlan",
+    "DeferredPlannerAtom",
     "ResearchObjective",
     "ResearchPlanningError",
     "ResearchPlanningPolicy",

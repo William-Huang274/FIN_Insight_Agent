@@ -16,11 +16,11 @@ from retrieval.query_plan import canonical_digest
 from retrieval.route_compiler import QueryObjectFactRoutePolicy
 
 
-RESEARCH_PLANNING_POLICY_SCHEMA_VERSION = "fin_ia_research_planning_policy_v1_0"
+RESEARCH_PLANNING_POLICY_SCHEMA_VERSION = "fin_ia_research_planning_policy_v1_1"
 RESEARCH_OBJECTIVE_DRAFT_SCHEMA_VERSION = "fin_ia_research_objective_draft_v1_0"
 RESEARCH_OBJECTIVE_SCHEMA_VERSION = "fin_ia_research_objective_v1_0"
 PLANNER_ATOMS_SCHEMA_VERSION = "fin_ia_research_planner_atoms_v1_0"
-COMPILED_RESEARCH_PLAN_SCHEMA_VERSION = "fin_ia_compiled_research_plan_v1_0"
+COMPILED_RESEARCH_PLAN_SCHEMA_VERSION = "fin_ia_compiled_research_plan_v1_1"
 
 _REQUIRED_AUTHORITY = {
     "model_may_select_bounded_atoms_only": True,
@@ -70,15 +70,33 @@ class ResearchPlanningPolicy:
     required_pass_criteria: tuple[str, ...]
     forbidden_proxy: tuple[str, ...]
     max_budget: Mapping[str, int]
+    max_proposed_atoms: int
+    selection_strategy: str
+    facet_execution_priority: tuple[str, ...]
     defaults: Mapping[str, str]
     authority: Mapping[str, bool]
 
     def binding_by_family(self) -> dict[str, FamilyPlanningBinding]:
         return {row.query_family_id: row for row in self.family_bindings}
 
+    def priority_by_facet(self) -> dict[str, int]:
+        return {
+            facet_id: index
+            for index, facet_id in enumerate(self.facet_execution_priority)
+        }
+
+    def selection_contract(self) -> dict[str, Any]:
+        return {
+            "max_proposed_atoms": self.max_proposed_atoms,
+            "strategy": self.selection_strategy,
+            "facet_execution_priority": list(self.facet_execution_priority),
+        }
+
 
 @dataclass(frozen=True)
 class ResearchObjectiveBudget:
+    # Historical external name retained for objective-id compatibility.  It is
+    # the EvidenceRequest execution ceiling, not the model proposal ceiling.
     max_evidence_requests: int
     max_metric_intents_per_request: int
     max_product_intents_per_request: int
@@ -147,10 +165,29 @@ class PlannerAtom:
 
 
 @dataclass(frozen=True)
+class DeferredPlannerAtom:
+    atom: PlannerAtom
+    slot_id: str
+    execution_priority: int
+    reason: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "atom": self.atom.as_dict(),
+            "slot_id": self.slot_id,
+            "execution_priority": self.execution_priority,
+            "reason": self.reason,
+        }
+
+
+@dataclass(frozen=True)
 class CompiledResearchPlan:
     schema_version: str
     objective: ResearchObjective
+    proposed_atoms: tuple[PlannerAtom, ...]
     planner_atoms: tuple[PlannerAtom, ...]
+    deferred_atoms: tuple[DeferredPlannerAtom, ...]
+    selection: Mapping[str, Any]
     evidence_requests: tuple[EvidenceRequest, ...]
     authority: Mapping[str, bool]
     plan_digest: str
@@ -159,7 +196,10 @@ class CompiledResearchPlan:
         return {
             "schema_version": self.schema_version,
             "objective": self.objective.as_dict(),
+            "proposed_atoms": [row.as_dict() for row in self.proposed_atoms],
             "planner_atoms": [row.as_dict() for row in self.planner_atoms],
+            "deferred_atoms": [row.as_dict() for row in self.deferred_atoms],
+            "selection": dict(self.selection),
             "evidence_requests": [row.as_dict() for row in self.evidence_requests],
             "authority": dict(self.authority),
             "plan_digest": self.plan_digest,
@@ -183,6 +223,7 @@ def load_research_planning_policy(
         "family_bindings",
         "forbidden_proxy",
         "max_budget",
+        "atom_selection",
         "defaults",
         "authority",
     }
@@ -240,6 +281,27 @@ def load_research_planning_policy(
         and 0 <= max_budget["max_model_calls"] <= 8,
         "research_planning_budget_invalid",
     )
+    raw_selection = payload.get("atom_selection")
+    _require(
+        isinstance(raw_selection, Mapping)
+        and set(raw_selection)
+        == {"max_proposed_atoms", "strategy", "facet_execution_priority"},
+        "research_planning_atom_selection_invalid",
+    )
+    max_proposed_atoms = int(raw_selection["max_proposed_atoms"])
+    selection_strategy = str(raw_selection["strategy"] or "").strip()
+    facet_execution_priority = _strings(
+        raw_selection.get("facet_execution_priority"),
+        "research_planning_atom_selection_invalid",
+    )
+    known_facets = set(route_policy.family_by_facet())
+    _require(
+        max_budget["max_evidence_requests"] <= max_proposed_atoms <= 20
+        and selection_strategy
+        == "required_slot_first_then_provider_neutral_facet_priority"
+        and set(facet_execution_priority) == known_facets,
+        "research_planning_atom_selection_invalid",
+    )
     defaults = payload.get("defaults")
     _require(
         isinstance(defaults, Mapping)
@@ -261,6 +323,9 @@ def load_research_planning_policy(
         required_pass_criteria=required_pass,
         forbidden_proxy=_strings(payload.get("forbidden_proxy"), "research_planning_forbidden_proxy_invalid"),
         max_budget=max_budget,
+        max_proposed_atoms=max_proposed_atoms,
+        selection_strategy=selection_strategy,
+        facet_execution_priority=facet_execution_priority,
         defaults={key: str(value).strip() for key, value in defaults.items()},
         authority=dict(authority),
     )
@@ -423,8 +488,8 @@ def compile_research_plan(
     _require(
         isinstance(raw_atoms, list)
         and bool(raw_atoms)
-        and len(raw_atoms) <= objective.budget.max_evidence_requests,
-        "research_planner_atom_budget_invalid",
+        and len(raw_atoms) <= planning_policy.max_proposed_atoms,
+        "research_planner_proposal_budget_invalid",
     )
 
     facets = {
@@ -483,16 +548,94 @@ def compile_research_plan(
         set(objective.required_slot_ids).issubset(covered_slots),
         "research_planner_required_slot_uncovered",
     )
-    ordered_atoms = tuple(
+    priority_by_facet = planning_policy.priority_by_facet()
+    proposed_atoms = tuple(
         sorted(
             atoms,
             key=lambda row: (
                 objective.required_slot_ids.index(facets[row.facet_id][0].slot_id),
-                row.facet_id,
+                priority_by_facet[row.facet_id],
                 row.target_entity,
             ),
         )
     )
+
+    selected_scopes: set[tuple[str, str]] = set()
+    selected_atoms: list[PlannerAtom] = []
+    for slot_id in objective.required_slot_ids:
+        slot_atoms = [
+            row
+            for row in proposed_atoms
+            if facets[row.facet_id][0].slot_id == slot_id
+        ]
+        _require(bool(slot_atoms), "research_planner_required_slot_uncovered")
+        primary = min(
+            slot_atoms,
+            key=lambda row: (
+                priority_by_facet[row.facet_id],
+                row.target_entity,
+            ),
+        )
+        selected_atoms.append(primary)
+        selected_scopes.add((primary.facet_id, primary.target_entity))
+
+    remaining_capacity = (
+        objective.budget.max_evidence_requests - len(selected_atoms)
+    )
+    remaining_atoms = sorted(
+        (
+            row
+            for row in proposed_atoms
+            if (row.facet_id, row.target_entity) not in selected_scopes
+        ),
+        key=lambda row: (
+            priority_by_facet[row.facet_id],
+            objective.required_slot_ids.index(
+                facets[row.facet_id][0].slot_id
+            ),
+            row.target_entity,
+        ),
+    )
+    for atom in remaining_atoms[:remaining_capacity]:
+        selected_atoms.append(atom)
+        selected_scopes.add((atom.facet_id, atom.target_entity))
+
+    ordered_atoms = tuple(
+        sorted(
+            selected_atoms,
+            key=lambda row: (
+                objective.required_slot_ids.index(
+                    facets[row.facet_id][0].slot_id
+                ),
+                priority_by_facet[row.facet_id],
+                row.target_entity,
+            ),
+        )
+    )
+    deferred_atoms = tuple(
+        DeferredPlannerAtom(
+            atom=row,
+            slot_id=facets[row.facet_id][0].slot_id,
+            execution_priority=priority_by_facet[row.facet_id] + 1,
+            reason=(
+                "execution_budget_exhausted_after_required_slot_and_"
+                "provider_neutral_facet_priority_selection"
+            ),
+        )
+        for row in proposed_atoms
+        if (row.facet_id, row.target_entity) not in selected_scopes
+    )
+    selection_contract = planning_policy.selection_contract()
+    selection = {
+        "strategy": planning_policy.selection_strategy,
+        "proposal_ceiling": planning_policy.max_proposed_atoms,
+        "proposed_atom_count": len(proposed_atoms),
+        "execution_request_budget": objective.budget.max_evidence_requests,
+        "selected_atom_count": len(ordered_atoms),
+        "deferred_atom_count": len(deferred_atoms),
+        "required_slot_ids_preserved": list(objective.required_slot_ids),
+        "selection_policy_digest": canonical_digest(selection_contract),
+    }
 
     evidence_requests: list[EvidenceRequest] = []
     for atom in ordered_atoms:
@@ -544,14 +687,20 @@ def compile_research_plan(
     unsigned = {
         "schema_version": COMPILED_RESEARCH_PLAN_SCHEMA_VERSION,
         "objective": objective.as_dict(),
+        "proposed_atoms": [row.as_dict() for row in proposed_atoms],
         "planner_atoms": [row.as_dict() for row in ordered_atoms],
+        "deferred_atoms": [row.as_dict() for row in deferred_atoms],
+        "selection": selection,
         "evidence_requests": [row.as_dict() for row in evidence_requests],
         "authority": dict(planning_policy.authority),
     }
     return CompiledResearchPlan(
         schema_version=COMPILED_RESEARCH_PLAN_SCHEMA_VERSION,
         objective=objective,
+        proposed_atoms=proposed_atoms,
         planner_atoms=ordered_atoms,
+        deferred_atoms=deferred_atoms,
+        selection=selection,
         evidence_requests=tuple(evidence_requests),
         authority=dict(planning_policy.authority),
         plan_digest=canonical_digest(unsigned),
@@ -563,6 +712,7 @@ def compile_research_planner_messages(
     objective: ResearchObjective,
     kernel: FinancialResearchKernel,
     route_policy: QueryObjectFactRoutePolicy,
+    planning_policy: ResearchPlanningPolicy,
 ) -> tuple[dict[str, str], ...]:
     """Compile one small provider-neutral planner prompt from active contracts.
 
@@ -606,7 +756,10 @@ def compile_research_planner_messages(
             "subject_legal_name": objective.subject_legal_name,
             "research_as_of": objective.research_as_of.isoformat(),
             "required_slot_ids": list(objective.required_slot_ids),
-            "maximum_atoms": objective.budget.max_evidence_requests,
+            "maximum_proposed_atoms": planning_policy.max_proposed_atoms,
+            "maximum_executed_evidence_requests": (
+                objective.budget.max_evidence_requests
+            ),
             "maximum_metric_ids_per_atom": (
                 objective.budget.max_metric_intents_per_request
             ),
@@ -631,6 +784,7 @@ def compile_research_planner_messages(
         },
         "rules": [
             "Cover every required slot with at least one atom.",
+            "You may propose more atoms than the execution budget, up to maximum_proposed_atoms; the harness deterministically selects execution requests and preserves deferred atoms with reasons.",
             "Use only listed facet_id and canonical metric_id values.",
             "Use only the subject ticker as target_entity in this canary.",
             "Choose metrics and product intents needed to answer the question; do not copy every option.",
@@ -680,6 +834,7 @@ def parse_research_planner_output(content: str) -> dict[str, Any]:
 
 __all__ = [
     "COMPILED_RESEARCH_PLAN_SCHEMA_VERSION",
+    "DeferredPlannerAtom",
     "PLANNER_ATOMS_SCHEMA_VERSION",
     "RESEARCH_OBJECTIVE_DRAFT_SCHEMA_VERSION",
     "RESEARCH_OBJECTIVE_SCHEMA_VERSION",

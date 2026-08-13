@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1 已把 17 个 facet 拆成 11 类问题，并冻结 Qwen Embedding＋BM25 互补候选路线；Evidence Role 未过门，故禁止微调和 Evidence 晋升。S2 的 1,319 条 observation PIT 公司财务事实 mart 已在 DELL 受控纵切中为 7/7 typed request 返回 21 个 NumericFact。DeepSeek Pro planner R1 已 exact-once 执行：exact JSON、DELL 身份、5/5 required slot、合法 facet/metric/family 全部成立，但返回 10 atoms，超过授权上限 8，故在任何 S1/S2 successor 前 terminal failed、0 retry。当前下一硬门是零调用分离 proposal ceiling 与 execution budget；数据库继续是独立数值权威，本次失败不重开 S2。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1 已把 17 个 facet 拆成 11 类问题，并冻结 Qwen Embedding＋BM25 互补候选路线；Evidence Role 未过门，故禁止微调和 Evidence 晋升。S2 的 1,319 条 observation PIT 公司财务事实 mart 已在 DELL 受控纵切中为 7/7 typed request 返回 21 个 NumericFact。DeepSeek Pro planner R1 已 exact-once 执行：exact JSON、DELL 身份、5/5 required slot、合法 facet/metric/family 全部成立，但返回 10 atoms，超过授权上限 8，故在任何 S1/S2 successor 前 terminal failed、0 retry。当前先零调用分离 proposal ceiling 与 execution budget；通过后不重跑 Planner，而把保存的 10 条自然 atoms 作为 S1-C 产品输入，先修候选选择、结构约束和 Evidence Role，再由真实 residual gap 驱动 S1-D，最后回到 S3 消费合格 Evidence Pack 与 NumericFact。数据库继续是独立数值权威，本次失败不重开 S2。
 
 ## 当前唯一产品边界
 
@@ -29,7 +29,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime 和 capture-first Chat Completions transport。Runtime Registry 为 R8／9 个资源，新增当前 research planning policy 与 hybrid candidate policy；模型权重、人工标签、private mart、capture 和 shadow 结果仍不注册为产品 Runtime resource。private mart 继续通过显式 Runtime path 挂载，而不是复制进 Git。Qwen 权重按第一次受控计划懒加载，普通 Workbench 启动不加载模型。历史文件没有删除；完整旧 Project OS 账本也保存在 `archive/versions/fin_0_1_3_prebaseline/docs/project_os/`。
+当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime 和 capture-first Chat Completions transport。Runtime Registry 为 R9／9 个资源，当前 planning policy 已升级为 proposal/execution budget 分层合同；模型权重、人工标签、private mart、capture 和 shadow 结果仍不注册为产品 Runtime resource。private mart 继续通过显式 Runtime path 挂载，而不是复制进 Git。Qwen 权重按第一次受控计划懒加载，普通 Workbench 启动不加载模型。历史文件没有删除；完整旧 Project OS 账本也保存在 `archive/versions/fin_0_1_3_prebaseline/docs/project_os/`。
 
 ## 已完成的重定基事实
 
@@ -81,6 +81,8 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 `FIN_0_1_3_S3_PROPOSAL_EXECUTION_BUDGET_LAYERING_ZERO_CALL_DISPOSITION`
 
 DELL 受控零调用纵切已经连接 Research Objective／EvidenceRequest、S1 `Qwen3 Embedding + BM25` 联合候选和 S2 executor；数据库为 7/7 request 返回 21 个 NumericFact。Planner R1 已按权限终止：10 atoms 超出 8 条执行上限，其他结构与业务维度正确。不得 retry、手工裁剪或直接签发 R2。下一项只做零调用结构处置，把模型提案范围与本地执行预算分层，并用已保存响应 replay/mutation 证明 required-slot 覆盖、secondary 选择和舍弃原因；不能用此 S3 预算问题重新改写数据库控制面。
+
+预算分层通过后的冻结顺序为：保留 R1 failed capture 和 10 条自然提案，不再调用模型；以确定性选出的执行 atoms 进入 S1-C，完成 v2 qrel successor、结构化 QueryFacetPlan 约束消费、候选排序和 Evidence Role／abstain；然后只对真实 residual gap 执行 S1-D；最后回到 S3，让同一个 planner 语义消费合格 Evidence Pack 与 NumericFact。不得跳过 S1-C 继续调 S3，也不得把 S1 排名缺陷写成 DeepSeek 失败。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

@@ -1,0 +1,62 @@
+{
+  "schema_version": "fin_ia_current_evidence_pack_promotion_authority_v1_0",
+  "authority_id": "20260813_s1d_current_dell_pack_promotion_zero_call_r1",
+  "recorded_at": "2026-08-13",
+  "status": "fresh_zero_call_current_pack_promotion_authorized",
+  "clean_implementation": {
+    "branch": "codex/fin013-s1-retrieval-vertical-slice",
+    "git_commit": "495e04e1d606f5078c08264570e59f6ac4b89fae",
+    "working_tree_required_clean_before_execution": true,
+    "pushed_head_required": true
+  },
+  "bound_inputs": {
+    "predecessor_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json",
+    "predecessor_result_sha256": "1da1d1e21d7b3b3211bb0008b5ac00c8b9bca8c2af17712354095ab4708117a0",
+    "predecessor_workspace_ref": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_0.json",
+    "predecessor_workspace_sha256": "d43e09ef6ac5be623f6bebe560516eae7346aabbb28cddaa280ace6d95544ccd",
+    "successor_result_ref": "configs/retrieval/fin_ia_0_1_3_s1d_dell_official_pdf_successor_result_v1_0.json",
+    "successor_result_sha256": "fea2d90237cf7e080576381e8de10ed62fd0f17988f3471f9ecae03ed1729db4",
+    "successor_pack_ref": "data/workbench_private/fin_0_1_3_s1d_dell_official_pdf_successor/zero-call-r1/objects/fin-0.1.3/s1d-dell-official-pdf-successor/dell/v1/8c/24/8c245932331bc63e4349ad91735c10a854a0b74db73a460a31b52df2e1dba4d9.json",
+    "successor_pack_sha256": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+    "zero_call_proof_ref": "configs/retrieval/fin_ia_0_1_3_s1d_current_dell_pack_promotion_zero_call_proof_v1_0.json",
+    "zero_call_proof_sha256": "69988112355388f3d8c0cf06d9260042ae7728c3af929fcbc2733742bf65826f",
+    "runner_ref": "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
+    "runner_sha256": "8688cdf7e273f99e76c4c33b39288769d78bdc352945b28a3a4f367236a3dc53",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "e3971488525ca9e411eaca7d0dfe163ad8ec9faf55466d89642131a78d044d49"
+  },
+  "replacement_contract": {
+    "case_key": "DELL",
+    "retained_case_keys": [
+      "MU",
+      "NVDA",
+      "ORCL",
+      "ASML",
+      "ANET"
+    ],
+    "private_object_root_relative": "fin_0_1_3_s1d_dell_official_pdf_successor/zero-call-r1"
+  },
+  "execution_budget": {
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "retries": 0,
+    "current_pointer_mutation": "replace_registered_result_and_workspace_once",
+    "private_object_copy": "forbidden",
+    "raw_source_publication": "forbidden"
+  },
+  "output_contract": {
+    "result_id": "FIN-0.1.3-S1D-CURRENT-DELL-PACK-PROMOTION-ZERO-CALL-R1-RESULT",
+    "composed_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+    "composed_workspace_ref": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_1.json",
+    "public_execution_result_ref": "configs/retrieval/fin_ia_0_1_3_s1d_current_dell_pack_promotion_result_v1_0.json",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R11"
+  },
+  "remaining_boundaries": {
+    "core_research_ready_after_promotion": true,
+    "S1_product_acceptance": false,
+    "S3_execution_authorized": false,
+    "complete_research_or_release_claimed": false
+  }
+}

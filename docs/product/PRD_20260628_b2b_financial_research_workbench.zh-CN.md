@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-13 | FIN 0.1.3 S1-D 新增有界官方来源入库：自动获取和操作员上传预登记官方 PDF 共用不可变 raw CAS、route 身份、日期、摘要和 PDF 验收，Workbench Operations 可查看 attempt，但任何成功对象仍是 `source_only_not_evidence`。该入口不是 FIN 0.5 通用 Data Room：不接受任意 URL、私有材料、截图或文本，也不提前引入 ACL/OCR/机构文件管理。真实自动 R1 的 Dell/TSM 两条请求均在 HTTP status 前失败，且两域 Fake-IP 均经 `okz` TUN；因此当前保留 typed gap，优先使用绑定 route 的人工官方 PDF 上传，自动路径只有在用户可见的 DIRECT/TUN A/B 后才可重试。 |
 | 2026-08-13 | DELL 受控 S1/S2/S3 零调用纵切已接通：5 个 EvidenceRequest 同时得到 Qwen＋BM25 叙事候选和 S2 SQL/PIT 事实，7/7 typed request 返回 21 个 NumericFact、0 gap/conflict。该结果把数据库从“不能遗忘的规划项”提升为不可被 embedding、reranker 或模型替代的运行时数值权威；同时暴露 80 个候选仍有旧期、表格和角色噪声。下一门只允许一次 planner-atoms canary，不允许模型拥有身份、日期、来源、预算或数值写入权，也不因此宣称 S1/S2/S3 产品通过。 |
 | 2026-08-12 | FIN 0.1.3 S1-B 将历史 candidate store 重定基为 28 个父文档／1,805 个可检索金融子对象；NVDA 当前 10-Q、三案 PIT market role 与 Workbench 候选链已接入。实测证明 source coverage 与 ranking quality 必须分账：current-object missing=0，但 reviewed target 入池仅 DELL/MU/NVDA=`6/3/4`，并有风险段冒充现金、旧期压新期、主题共现冒充关系。Dell/Micron 官方 PDF 已确认存在但当前产品 transport 未捕获，和 TSM 先进封装、新鲜估值一起转 S1-D；当前下一阶段是冻结同一对象做 S1-C sparse/dense/rerank 对照，而非继续堆来源。 |
 | 2026-08-12 | FIN 0.1.3 仓库重定基把当前可交付产品收敛为 DELL／MU／NVDA 三案只读 reviewed Evidence Workspace，并把旧并行产品面、attempt runner 与流水账迁入不可执行版本归档。实测三案只有 SEC 来源且 structured numeric=0，故新基线只通过身份、摘要、来源和 gap 可审阅性，不代表多源检索、NumericFact、动态 Agentic Research 或完整研报通过。当前执行权转入 `FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md`；仓库基线合并不等于 FIN 0.1.3 产品收口。 |

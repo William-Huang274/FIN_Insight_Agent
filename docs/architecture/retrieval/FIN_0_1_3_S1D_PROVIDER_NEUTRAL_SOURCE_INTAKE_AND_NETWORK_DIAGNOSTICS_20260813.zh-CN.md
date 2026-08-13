@@ -1,7 +1,7 @@
 # FIN 0.1.3 S1-D 通用来源入库与网络诊断合同
 
 日期：2026-08-13
-状态：`implementation_authorized / S1D_product_open / no_evidence_promotion`
+状态：`engineering_pass / automatic_path_blocked / operator_upload_ready / S1D_product_open / no_evidence_promotion`
 
 ## 1. 产品问题
 
@@ -74,3 +74,19 @@ Source Intake 只记录脱敏诊断：应用层代理是否存在、是否命中
 5. 后端测试、前端 typecheck/build、Workbench E2E 和全量回归通过。
 
 产品门仍保持开放：取得 PDF 后还需 parser、对象编译、Evidence Gate、Evidence Pack 复编译和 S2 依赖回归；只有这些完成，S3 才能消费。
+
+## 7. 实现与真实 R1 结果
+
+共同 intake、两条 driver、API 和 Workbench 消费者已实现。最终 47 个聚焦后端/合同测试、前端 typecheck、production build，以及桌面/移动 6 个 Playwright 用例通过。人工上传与自动 driver 的同字节回放会复用同一 raw CAS；伪造、截断、加密、超限、错 host 和重复 attempt 均 fail closed。
+
+唯一 automatic R1 按两条 route 各执行一次，0 retry、0 模型、0 broad search：
+
+- Dell 在取得 HTTP status 前约 45 秒 timeout；
+- TSM 在取得 HTTP status 前约 45 秒发生 requests transport exception；
+- 两案均为 0 PDF、0 parse、0 Evidence。
+
+两域在执行时分别解析为 `198.18.1.43` 和 `198.18.1.44`，均落在 Fake-IP 段并经 `okz / Meta Tunnel`；显式应用代理、Windows 用户代理和 PAC 均未启用。因此“当前透明 TUN 路径参与失败”是已证事实，“具体是 TUN 映射/转发异常还是代理出口被站点/WAF 拒绝”仍未证明。
+
+R1 还暴露出原 capture 对通用 Requests 异常分类不足：TSM 的具体异常类未被持久化，事后只能保守记为 transport exception。R1 保持不可变；successor 已用零网络 mutation 将 connect/read timeout、TLS、proxy、response stream、redirect、invalid URL、connection 和 generic request 分成安全 typed code，且不保存可能带敏感内容的异常消息。本修复不产生自动 R2 权限。
+
+本合同不授权自动 R2 或修改代理设置。当前推荐顺序是：优先用已绑定 Workbench route 人工上传官方 PDF；若必须恢复自动获取，再在用户可见情况下对同一 URL 做 domain DIRECT／临时关闭 TUN 的单次 A/B。无论哪条 driver 成功，后续仍须经过 parser、对象编译、Evidence Gate、Pack 复编译和有限 S2 回归。

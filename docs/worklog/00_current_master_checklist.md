@@ -16,7 +16,7 @@
   - [x] Qwen Embedding（本地合格资产完成 shadow；8/15，provisional，不单独晋升）
   - [x] 同候选 BGE／Qwen Reranker 与独立 Evidence Role＋abstain（Qwen reranker 仅 shadow；Role F1=0.5818，拒绝上线）
 - [x] S1-C 保存 Planner 10 atoms 产品输入审计（10→8+2；8 request／128 candidates／19 resolved／9 typed gap／45 NumericFacts；逐 facet 归责完成）
-- [ ] S1-D residual-gap 外源补源与 Evidence Pack 复编译（Dell/TSM 两次 capture-first live 均被官方 IR 403/timeout 阻断；0 PDF；禁止自动 R3）
+- [ ] S1-D residual-gap 外源补源与 Evidence Pack 复编译（共同 intake、WorkBench 自动/人工入口已工程通过；automatic R1 两域均在 HTTP status 前失败且经 `okz` TUN；0 PDF；优先人工官方 PDF 上传，禁止自动 R2）
 - [x] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归（engineering pass）
 - [x] S2 request-scoped Runtime 接入（真实 DELL 6/6 resolved；S3／前端消费未完成）
 - [x] DELL S1/S2/S3 零调用工程纵切（受控 S3 Objective／EvidenceRequest、Qwen＋BM25 联合候选、S2 7/7 resolved／21 NumericFacts）

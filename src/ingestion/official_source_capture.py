@@ -731,11 +731,27 @@ def _official_source_user_agent() -> str:
 def _failure_code(exc: Exception) -> str:
     if isinstance(exc, OfficialSourceCaptureError):
         return str(exc)
+    if isinstance(exc, requests.ConnectTimeout):
+        return "official_source_transport_connect_timeout"
+    if isinstance(exc, requests.ReadTimeout):
+        return "official_source_transport_read_timeout"
+    if isinstance(exc, requests.exceptions.SSLError):
+        return "official_source_transport_tls_error"
+    if isinstance(exc, requests.exceptions.ProxyError):
+        return "official_source_transport_proxy_error"
+    if isinstance(exc, requests.exceptions.ChunkedEncodingError):
+        return "official_source_transport_response_stream_error"
+    if isinstance(exc, requests.TooManyRedirects):
+        return "official_source_transport_redirect_error"
+    if isinstance(exc, requests.exceptions.InvalidURL):
+        return "official_source_transport_invalid_url"
     if isinstance(exc, requests.Timeout):
         return "official_source_transport_timeout"
     if isinstance(exc, requests.ConnectionError):
         return "official_source_transport_connection_error"
-    return "official_source_transport_error"
+    if isinstance(exc, requests.RequestException):
+        return "official_source_transport_request_error"
+    return "official_source_transport_unclassified_error"
 
 
 def _canonical_json_bytes(value: Mapping[str, Any]) -> bytes:

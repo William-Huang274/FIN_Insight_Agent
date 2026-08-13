@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 
 import pytest
+import requests
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -231,3 +232,59 @@ def test_repository_browser_download_successor_is_two_official_routes() -> None:
         and row["expected_download_url"] == row["url"]
         for row in plan["sources"]
     )
+
+
+@pytest.mark.parametrize(
+    ("exception", "failure_code"),
+    [
+        (
+            requests.ConnectTimeout("safe test"),
+            "official_source_transport_connect_timeout",
+        ),
+        (
+            requests.ReadTimeout("safe test"),
+            "official_source_transport_read_timeout",
+        ),
+        (
+            requests.exceptions.SSLError("safe test"),
+            "official_source_transport_tls_error",
+        ),
+        (
+            requests.exceptions.ProxyError("safe test"),
+            "official_source_transport_proxy_error",
+        ),
+        (
+            requests.exceptions.ChunkedEncodingError("safe test"),
+            "official_source_transport_response_stream_error",
+        ),
+        (
+            requests.TooManyRedirects("safe test"),
+            "official_source_transport_redirect_error",
+        ),
+        (
+            requests.RequestException("safe test"),
+            "official_source_transport_request_error",
+        ),
+    ],
+)
+def test_transport_failures_preserve_safe_stage_without_exception_text(
+    tmp_path: Path,
+    exception: requests.RequestException,
+    failure_code: str,
+) -> None:
+    def failing_fetcher(source):  # noqa: ANN001, ARG001
+        raise exception
+
+    result = capture_plan(
+        _successor_plan(),
+        output_root=tmp_path,
+        attempt_id=failure_code,
+        transport_fetchers={"playwright_api_request": failing_fetcher},
+    )
+    row = result["sources"][0]
+    capture = json.loads(
+        Path(row["response_capture"]["object_ref"]).read_text(encoding="utf-8")
+    )
+    assert row["failure_code"] == failure_code
+    assert capture["failure_code"] == failure_code
+    assert "safe test" not in json.dumps(capture)

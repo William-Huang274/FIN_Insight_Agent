@@ -1,0 +1,115 @@
+{
+  "authority_ref": "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_execution_authority_v1_0.json",
+  "boundary": {
+    "captured_source_is_not_evidence": true,
+    "evidence_promotion_authorized": false,
+    "parse_authorized": false,
+    "raw_bytes_are_private": true,
+    "s3_model_execution_authorized": false
+  },
+  "execution": {
+    "broad_web_search_calls": 0,
+    "captured_ready_for_parse": 0,
+    "model_calls": 0,
+    "network_attempts_maximum": 2,
+    "retries": 0,
+    "routes": 2,
+    "source_promoted_to_evidence": 0
+  },
+  "recorded_at": "2026-08-13",
+  "result_id": "FIN-0.1.3-S1D-PROVIDER-NEUTRAL-SOURCE-INTAKE-AUTOMATIC-LIVE-R1",
+  "route_results": [
+    {
+      "acquisition_method": "automatic_adapter",
+      "adapter_id": "official_http_capture_v1",
+      "attempt_id": "source-intake-auto-dell-r1",
+      "case_key": "DELL",
+      "detected_content_type": null,
+      "document_type": "earnings_call_transcript",
+      "failure_code": "official_source_transport_timeout",
+      "issuer_name": "Dell Technologies Inc.",
+      "manifest_ref": "attempts/source-intake-auto-dell-r1.json",
+      "network_path": {
+        "diagnostic_boundary": "fake_ip_and_tunnel_route_observed_application_clients_share_transparent_path",
+        "environment_proxy_configured": false,
+        "hostname": "investors.delltechnologies.com",
+        "resolution_status": "resolved",
+        "resolved_address_classes": [
+          "benchmark_fake_ip"
+        ],
+        "resolved_address_count": 1,
+        "route_interface": "okz",
+        "schema_version": "fin_ia_source_network_path_snapshot_v1_0",
+        "transparent_tun_likely": true,
+        "windows_pac_configured": false,
+        "windows_user_proxy_enabled": false
+      },
+      "pdf_page_count": 0,
+      "promotion_status": "source_only_not_evidence",
+      "publication_date": "2026-05-28",
+      "raw_object_bytes": 0,
+      "raw_object_reused": false,
+      "raw_object_sha256": null,
+      "recorded_at": "2026-08-13T03:46:19+00:00",
+      "route_id": "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT",
+      "source_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "status": "acquisition_failed",
+      "title": "Dell Technologies Fiscal Year 2027 First Quarter Results Transcript",
+      "transport": {
+        "adapter_id": "official_http_capture_v1",
+        "attempts": 1,
+        "failure_category": "transport_timeout",
+        "failure_code": "official_source_transport_timeout",
+        "http_status": null,
+        "transport": "requests"
+      }
+    },
+    {
+      "acquisition_method": "automatic_adapter",
+      "adapter_id": "official_http_capture_v1",
+      "attempt_id": "source-intake-auto-tsm-r1",
+      "case_key": "TSM",
+      "detected_content_type": null,
+      "document_type": "earnings_call_transcript",
+      "failure_code": "official_source_transport_error",
+      "issuer_name": "Taiwan Semiconductor Manufacturing Company Limited",
+      "manifest_ref": "attempts/source-intake-auto-tsm-r1.json",
+      "network_path": {
+        "diagnostic_boundary": "fake_ip_and_tunnel_route_observed_application_clients_share_transparent_path",
+        "environment_proxy_configured": false,
+        "hostname": "investor.tsmc.com",
+        "resolution_status": "resolved",
+        "resolved_address_classes": [
+          "benchmark_fake_ip"
+        ],
+        "resolved_address_count": 1,
+        "route_interface": "okz",
+        "schema_version": "fin_ia_source_network_path_snapshot_v1_0",
+        "transparent_tun_likely": true,
+        "windows_pac_configured": false,
+        "windows_user_proxy_enabled": false
+      },
+      "pdf_page_count": 0,
+      "promotion_status": "source_only_not_evidence",
+      "publication_date": "2026-07-16",
+      "raw_object_bytes": 0,
+      "raw_object_reused": false,
+      "raw_object_sha256": null,
+      "recorded_at": "2026-08-13T03:47:06+00:00",
+      "route_id": "TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT",
+      "source_url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/547d1696765e05ce3adb81c108ce1c8c1682b80c/TSMC%202Q26%20Transcript.pdf",
+      "status": "acquisition_failed",
+      "title": "TSMC Q2 2026 Earnings Call Transcript",
+      "transport": {
+        "adapter_id": "official_http_capture_v1",
+        "attempts": 1,
+        "failure_category": "connection_failure",
+        "failure_code": "official_source_transport_error",
+        "http_status": null,
+        "transport": "requests"
+      }
+    }
+  ],
+  "schema_version": "fin_ia_s1d_source_intake_execution_result_v1_0",
+  "status": "source_intake_automatic_capture_incomplete"
+}

@@ -241,6 +241,14 @@ def _failure_category(failure_code: str | None, status_code: int | None) -> str 
         return "transport_timeout"
     if "tls" in value or "ssl" in value:
         return "tls_failure"
+    if "proxy" in value:
+        return "proxy_path_failure"
+    if "response_stream" in value:
+        return "response_stream_failure"
+    if "redirect" in value:
+        return "redirect_failure"
+    if "invalid_url" in value:
+        return "request_policy_failure"
     if "connection" in value or "transport" in value:
         return "connection_failure"
     if value:

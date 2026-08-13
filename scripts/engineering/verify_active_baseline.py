@@ -20,6 +20,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/data_retrieval/build_evidence_store.py",
     "scripts/data_retrieval/build_s2_company_financial_fact_mart.py",
     "scripts/data_retrieval/capture_s1b_official_sources.py",
+    "scripts/data_retrieval/run_s1d_source_intake.py",
     "scripts/data_retrieval/materialize_s1c_financial_role_eval_set.py",
     "scripts/data_retrieval/materialize_s1c_object_role_review_set.py",
     "scripts/data_retrieval/materialize_s1c_requalified_qrels.py",

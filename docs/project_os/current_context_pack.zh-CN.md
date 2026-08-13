@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1 已把 17 个 facet 拆成 11 类问题，并冻结 Qwen Embedding＋BM25 互补候选路线；Evidence Role 未过门，故禁止微调和 Evidence 晋升。S2 的 1,319 条 observation PIT 公司财务事实 mart 已在 DELL 受控纵切中为 7/7 typed request 返回 21 个 NumericFact。DeepSeek Pro planner R1 已 exact-once 执行：exact JSON、DELL 身份、5/5 required slot、合法 facet/metric/family 全部成立，但返回 10 atoms，超过授权上限 8，故在任何 S1/S2 successor 前 terminal failed、0 retry。当前先零调用分离 proposal ceiling 与 execution budget；通过后不重跑 Planner，而把保存的 10 条自然 atoms 作为 S1-C 产品输入，先修候选选择、结构约束和 Evidence Role，再由真实 residual gap 驱动 S1-D，最后回到 S3 消费合格 Evidence Pack 与 NumericFact。数据库继续是独立数值权威，本次失败不重开 S2。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。真实 S1-C 产品输入审计得到 8 request、128 candidates、19 resolved／9 typed gap 和 45 NumericFacts，并把每项问题归责为候选选择、S2 非标准经营指标或真实缺源。两个新 ranker 与 facet Evidence Role 均未过业务门，故不晋升。S1-D 只尝试 Dell Q1 FY2027 与 TSM Q2 2026 官方 transcript；API request live-r1 为 Dell timeout／TSM 403，真实 Edge 页面 live-r2 两个 discovery page 均 403，0 PDF、0 Evidence、0 retry。当前停止自动 R3；在选定可审计 source-acquisition adapter／人工官方文件上传，或明确接受 typed gap 的降级实验前，不签发 S3 研究/报告权限。
 
 ## 当前唯一产品边界
 
@@ -60,7 +60,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 ## 尚未完成，不能提前宣称通过
 
 1. 当前对象库已增加 PIT market role，private S2 公司财务事实 mart 也已被 request-scoped Research Runtime 消费；但 reviewed Evidence Pack 仍只覆盖 SEC 且结构化数值项为 0，S3 和前端尚未消费这些 NumericFact。对象候选不得伪装为已晋升 Evidence，数据库 Runtime integration engineering pass 也不得冒充研究产品通过。
-2. Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 的官方文件已确认存在，但当前产品 transport 的有界 R1–R4 未取得原始 PDF；TSM 先进封装和新鲜估值也仍是 S1-D typed gap。
+2. Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 的官方文件已确认存在；本轮又对 Dell 与 TSM Q2 2026 transcript 做了两次 capture-first successor，但当前产品环境分别出现 timeout/403，真实浏览器进入官方 discovery page 也为 403。Dell transcript、TSM 先进封装、Micron prepared remarks 与新鲜估值继续是 typed gap；搜索摘要不得代替原文。
 3. successor 后同对象比较为 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。现成 Cross-Encoder 同为 `17/18` 且提高 MRR，但会把 DELL 直接风险目标从第 1 降到第 19，不能晋升默认路线。
 4. 规则 Evidence Role 虽减少三案 top3 显式不兼容项，却把 Recall 降到 `13/18`；对象级复核仍只有 F1=`0.507936`。根因不仅是对象形态，还包括 reported results、guidance、counterevidence、监管和财务桥接被旧 qrel 混成一个 query，当前规则禁止上线。
 5. 当前 provider-neutral planner compiler 已能把受控 Objective/atoms 变成 EvidenceRequest，并执行 S1 联合候选与 S2 typed fact sibling；但 atoms 仍由工程侧提供。自然模型是否能正确选择 facet、实体、metric 与 product intent 尚未证明，S3 也尚未把候选和 NumericFact 变成研究判断，因此仍不能称为真实用户查询理解或完整产品数值能力。
@@ -78,11 +78,11 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S3_PROPOSAL_EXECUTION_BUDGET_LAYERING_ZERO_CALL_DISPOSITION`
+`FIN_0_1_3_S1D_SOURCE_ACQUISITION_OR_TYPED_GAP_REDUCED_S3_SCOPE_DECISION`
 
-DELL 受控零调用纵切已经连接 Research Objective／EvidenceRequest、S1 `Qwen3 Embedding + BM25` 联合候选和 S2 executor；数据库为 7/7 request 返回 21 个 NumericFact。Planner R1 已按权限终止：10 atoms 超出 8 条执行上限，其他结构与业务维度正确。不得 retry、手工裁剪或直接签发 R2。下一项只做零调用结构处置，把模型提案范围与本地执行预算分层，并用已保存响应 replay/mutation 证明 required-slot 覆盖、secondary 选择和舍弃原因；不能用此 S3 预算问题重新改写数据库控制面。
+S3 预算分层与保存 atoms 的 S1-C 产品输入审计已经完成；R1 仍是历史 failed attempt，没有重跑模型。S1-C 工程切片可以记为候选池可审计，但两个 ranker 和 Evidence Role 均未取得 Evidence 权限。S1-D 两次有界真实补源均未取得官方 PDF，且 live-r2 已证明官方 discovery page 在真实 Edge 会话中返回 403；禁止自动 R3、客户端轮换、重试或搜索摘要晋升。
 
-预算分层通过后的冻结顺序为：保留 R1 failed capture 和 10 条自然提案，不再调用模型；以确定性选出的执行 atoms 进入 S1-C，完成 v2 qrel successor、结构化 QueryFacetPlan 约束消费、候选排序和 Evidence Role／abstain；然后只对真实 residual gap 执行 S1-D；最后回到 S3，让同一个 planner 语义消费合格 Evidence Pack 与 NumericFact。不得跳过 S1-C 继续调 S3，也不得把 S1 排名缺陷写成 DeepSeek 失败。
+下一项是项目级范围决策：优先引入 provider-neutral、capture-first 的正式 source-acquisition adapter 或人工官方 PDF 上传入口；若暂不引入，则只能明确接受 Dell transcript 与 TSM packaging typed gap，做降级 fixed-pack S3 实验，并声明不构成 S1 产品通过。没有合格 Evidence Pack 前不得签发 S3 研究/报告调用。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

@@ -1,0 +1,59 @@
+{
+  "schema_version": "fin_ia_s1d_official_source_capture_result_summary_v1_2",
+  "result_id": "FIN-0.1.3-S1D-DELL-TSM-OFFICIAL-SOURCE-LIVE-R2",
+  "recorded_at": "2026-08-13",
+  "status": "terminal_blocked_by_official_site_access_control_no_r3",
+  "authority_ref": "configs/retrieval/fin_ia_0_1_3_s1d_official_source_browser_execution_authority_v1_0.json",
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s1d_official_source_capture/live-r2/result.json",
+  "private_result_sha256": "d6cafe6aabef0afa6c44f15bb65228778ebf598c7d29d0eceb2cb4197272b253",
+  "execution": {
+    "official_routes": 2,
+    "discovery_page_attempts": 2,
+    "download_attempts": 0,
+    "retries": 0,
+    "model_calls": 0,
+    "search_provider_calls": 0,
+    "captured_official_pdfs": 0,
+    "parsed_documents": 0,
+    "evidence_promoted": 0
+  },
+  "route_results": [
+    {
+      "route_id": "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT_PAGE_DOWNLOAD_SUCCESSOR",
+      "discovery_url": "https://investors.delltechnologies.com/events/event-details/dell-technologies-fiscal-year-2027-first-quarter-results",
+      "status": "transport_failure",
+      "failure_code": "official_source_browser_discovery_http_403",
+      "preflight_capture_sha256": "a9d701ded07a6a001f63a80bda5768118cf732dad4c7a1345782f8b59a70223c",
+      "business_meaning_zh": "真实 Edge 浏览器会话尚未进入 transcript 下载；Dell 官方活动页本身即返回 403。该结果只证明当前产品环境被访问控制拦截，不证明官方资料不存在。"
+    },
+    {
+      "route_id": "TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT_PAGE_DOWNLOAD_SUCCESSOR",
+      "discovery_url": "https://investor.tsmc.com/english/quarterly-results/2026/q2",
+      "status": "transport_failure",
+      "failure_code": "official_source_browser_discovery_http_403",
+      "preflight_capture_sha256": "5d5338a7e24eb5c71f1e198729b3fb154df1aeed8ba20939e4a7badbc9ba82a7",
+      "business_meaning_zh": "真实 Edge 浏览器会话尚未进入 transcript 下载；TSM 官方季度结果页本身即返回 403。搜索索引可读不等于产品取得了可审计原文。"
+    }
+  ],
+  "cross_attempt_diagnosis": {
+    "live_r1": "direct Playwright API request: Dell timeout; TSM direct PDF HTTP 403",
+    "live_r2": "real browser page navigation: both official discovery pages HTTP 403",
+    "root_cause": "The current workstation/network execution environment cannot establish an accepted session with either official IR site. Replacing HTTP clients or adding retries is no longer a credible fix.",
+    "not_model_failure": true,
+    "not_source_absence": true
+  },
+  "stop_decision": {
+    "automatic_r3_forbidden": true,
+    "search_excerpt_as_evidence_forbidden": true,
+    "active_object_store_mutation_forbidden": true,
+    "s3_model_execution_authorized": false,
+    "reason_zh": "合格 Evidence Pack 尚未建立；当前 Evidence Role 只能 advisory，且两项真实补源仍是 typed gap。继续 S3 只会让模型更稳定地消费未经晋升的候选。"
+  },
+  "next_project_decision": {
+    "decision_required": true,
+    "recommended_option": "add a provider-neutral sanctioned source-acquisition adapter or operator-upload path that preserves immutable raw bytes, official URL, publication date and digest before parsing",
+    "alternative_option": "accept Dell transcript and TSM packaging as typed gaps for a deliberately reduced fixed-pack S3 experiment, explicitly not S1 product acceptance",
+    "not_recommended": "keep rotating local HTTP clients, retries or per-site selectors"
+  },
+  "known_boundary": "S1-C candidate generation is auditable and the saved S3 plan compiles, but S1 product acceptance and S3 research consumption remain open because candidate-to-Evidence authority and the two bounded official-source gaps are unresolved."
+}

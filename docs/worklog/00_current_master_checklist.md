@@ -15,12 +15,13 @@
   - [x] BM25／BGE-M3 同 20,340 对象对照与业务审计（候选并集 18/18 source hit；精确对象仅 6/14；无路线晋升）
   - [x] Qwen Embedding（本地合格资产完成 shadow；8/15，provisional，不单独晋升）
   - [x] 同候选 BGE／Qwen Reranker 与独立 Evidence Role＋abstain（Qwen reranker 仅 shadow；Role F1=0.5818，拒绝上线）
-- [ ] S1-D residual-gap 外源补源与 Evidence Pack 复编译
+- [x] S1-C 保存 Planner 10 atoms 产品输入审计（10→8+2；8 request／128 candidates／19 resolved／9 typed gap／45 NumericFacts；逐 facet 归责完成）
+- [ ] S1-D residual-gap 外源补源与 Evidence Pack 复编译（Dell/TSM 两次 capture-first live 均被官方 IR 403/timeout 阻断；0 PDF；禁止自动 R3）
 - [x] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归（engineering pass）
 - [x] S2 request-scoped Runtime 接入（真实 DELL 6/6 resolved；S3／前端消费未完成）
 - [x] DELL S1/S2/S3 零调用工程纵切（受控 S3 Objective／EvidenceRequest、Qwen＋BM25 联合候选、S2 7/7 resolved／21 NumericFacts）
 - [x] DELL 自然 planner canary R1（exact-once terminal：业务维度全覆盖，但 10 atoms 超过 8 条执行上限；无 retry）
-- [ ] S3 proposal ceiling／execution budget 分层零调用处置（完成前不签发 R2，不做报告）
+- [x] S3 proposal ceiling／execution budget 分层零调用处置（10 proposals 全校验，稳定选择 8、延期 2；R1 不重跑）
 - [ ] S3 候选选择、研究判断和报告消费
 - [ ] S3 动态 Agentic Research 与内容质量验收
 - [ ] S4 审阅修复产品闭环

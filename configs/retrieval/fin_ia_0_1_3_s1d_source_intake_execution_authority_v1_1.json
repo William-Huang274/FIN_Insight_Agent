@@ -1,0 +1,83 @@
+{
+  "schema_version": "fin_ia_s1d_source_intake_execution_authority_v1_0",
+  "authority_id": "FIN-0.1.3-S1D-PROVIDER-NEUTRAL-SOURCE-INTAKE-DIRECT-AUTHORITY-R2",
+  "recorded_at": "2026-08-13",
+  "status": "fresh_bounded_source_intake_automatic_execution_authorized",
+  "owner_basis": "Owner explicitly disabled TUN mode and authorized continuation. This authority isolates that network-path change using the same URLs, policy and automatic adapter as R1.",
+  "clean_implementation": {
+    "git_commit": "a03c2e8932e6ce115b1f01fc8847bae96172a7c0",
+    "branch": "codex/fin013-s1-retrieval-vertical-slice",
+    "remote_pushed": true,
+    "working_tree_required_clean_before_execution": true
+  },
+  "bound_inputs": {
+    "source_intake_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_policy_v1_0.json",
+    "source_intake_policy_sha256": "c6f53b23386a4b2ec34d77b7740789840013f41657d548ea4917c73188184fd9",
+    "runner_ref": "scripts/data_retrieval/run_s1d_source_intake.py",
+    "runner_sha256": "0af4b3455057c1995bf4229a14242ed9107c61aa51841244a01000c1c49f5cf6",
+    "R1_result_ref": "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_automatic_result_v1_0.json",
+    "R1_result_sha256": "470dcd33dfee0b0b524b50c5a574cd1032d70203f6c521ec44c11d52de550417"
+  },
+  "direct_path_preflight": {
+    "tun_interface_active": false,
+    "active_route_interface": "WLAN",
+    "winhttp_proxy": "direct",
+    "environment_proxy_variables_present": false,
+    "windows_user_proxy_enabled": false,
+    "windows_pac_enabled": false,
+    "dell_public_ipv4": [
+      "23.15.241.208",
+      "23.15.241.146"
+    ],
+    "tsm_public_ipv4": [
+      "162.159.140.3",
+      "172.66.0.3"
+    ],
+    "rfc2544_fake_ip_observed": false,
+    "AB_changed_variable": "transparent_TUN_disabled_public_DNS_and_WLAN_direct_route",
+    "unchanged_variables": [
+      "source_URLs",
+      "route_policy",
+      "requests_adapter",
+      "timeout",
+      "zero_retry",
+      "PDF_validation"
+    ]
+  },
+  "zero_network_proof": {
+    "result": "passed",
+    "focused_tests": 47,
+    "active_baseline": "102_Python_8_frontend_10_Runtime_resources_zero_failures",
+    "frontend": "typecheck_build_and_6_desktop_mobile_Playwright_passed"
+  },
+  "execution_budget": {
+    "route_attempts": [
+      {
+        "route_id": "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT",
+        "attempt_id": "source-intake-direct-dell-r2"
+      },
+      {
+        "route_id": "TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT",
+        "attempt_id": "source-intake-direct-tsm-r2"
+      }
+    ],
+    "network_attempts_maximum": 2,
+    "retries": 0,
+    "model_calls": 0,
+    "broad_web_search_calls": 0,
+    "credentials": "forbidden",
+    "network_configuration_mutation": "forbidden_during_execution"
+  },
+  "success_condition": "Both policy-bound official PDF bodies are immutably captured and pass PDF intake validation as source-only objects ready for parsing.",
+  "failure_disposition": "Preserve the new direct-path typed result and stop. Do not add retries, rotate clients, weaken route or PDF validation, promote Evidence, or enter S3.",
+  "result_contract": {
+    "result_id": "FIN-0.1.3-S1D-PROVIDER-NEUTRAL-SOURCE-INTAKE-DIRECT-LIVE-R2",
+    "public_result_ref": "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_automatic_result_v1_1.json"
+  },
+  "downstream_authority": {
+    "parse_captured_pdf": false,
+    "mutate_active_financial_object_store": false,
+    "promote_candidate_to_evidence": false,
+    "rerun_s3_model": false
+  }
+}

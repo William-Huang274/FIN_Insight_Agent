@@ -69,6 +69,69 @@ SLOT_COMPATIBLE_ROLES: Mapping[str, frozenset[str]] = {
     ),
 }
 
+# Product requests are facet-specific even when several facets share one broad
+# Evidence Slot. Use the slot map for legacy qrels, but prefer this map for the
+# current Runtime so that, for example, a working-capital risk claim is not
+# rejected merely because cash statements share its parent slot.
+FACET_COMPATIBLE_ROLES: Mapping[str, frozenset[str]] = {
+    "orders_and_backlog": frozenset({ROLE_DIRECT_DEMAND, ROLE_DEMAND_RISK}),
+    "conversion_and_durability": frozenset(
+        {ROLE_DIRECT_DEMAND, ROLE_DEMAND_RISK}
+    ),
+    "downstream_demand_context": frozenset(
+        {ROLE_DIRECT_DEMAND, ROLE_DEMAND_RISK, ROLE_OBSERVED_RESULT, ROLE_RELATIONSHIP}
+    ),
+    "reported_results": frozenset(
+        {ROLE_OBSERVED_RESULT, ROLE_FINANCIAL_STATEMENT}
+    ),
+    "guidance_and_outlook": frozenset({ROLE_GUIDANCE}),
+    "pricing_and_mix": frozenset(
+        {ROLE_OBSERVED_RESULT, ROLE_GUIDANCE, ROLE_FINANCIAL_STATEMENT}
+    ),
+    "margin_and_incremental_profit": frozenset(
+        {ROLE_OBSERVED_RESULT, ROLE_FINANCIAL_STATEMENT}
+    ),
+    "cash_generation": frozenset(
+        {ROLE_FINANCIAL_STATEMENT, ROLE_OBSERVED_RESULT}
+    ),
+    "working_capital_risk": frozenset(
+        {
+            ROLE_FINANCIAL_STATEMENT,
+            ROLE_OBSERVED_RESULT,
+            ROLE_DEMAND_RISK,
+            ROLE_SUPPLY_RISK,
+        }
+    ),
+    "subject_execution": frozenset(
+        {ROLE_DIRECT_SUPPLY, ROLE_SUPPLY_RISK, ROLE_OBSERVED_RESULT}
+    ),
+    "upstream_capacity_context": frozenset(
+        {ROLE_DIRECT_SUPPLY, ROLE_SUPPLY_RISK, ROLE_RELATIONSHIP}
+    ),
+    "subject_relationship_disclosure": frozenset({ROLE_RELATIONSHIP}),
+    "counterparty_direct_mention": frozenset({ROLE_RELATIONSHIP}),
+    "issuer_counterevidence": frozenset(
+        {ROLE_DEMAND_RISK, ROLE_SUPPLY_RISK, ROLE_REGULATORY}
+    ),
+    "upstream_or_demand_counterevidence": frozenset(
+        {
+            ROLE_DIRECT_DEMAND,
+            ROLE_DEMAND_RISK,
+            ROLE_DIRECT_SUPPLY,
+            ROLE_SUPPLY_RISK,
+            ROLE_REGULATORY,
+            ROLE_RELATIONSHIP,
+        }
+    ),
+    "issuer_policy_exposure": frozenset({ROLE_REGULATORY}),
+    "capital_allocation": frozenset(
+        {ROLE_CAPITAL_VALUATION, ROLE_FINANCIAL_STATEMENT}
+    ),
+    "point_in_time_valuation": frozenset(
+        {ROLE_CAPITAL_VALUATION, ROLE_FINANCIAL_STATEMENT}
+    ),
+}
+
 LEGACY_EVIDENCE_SLOT_MAP: Mapping[str, str] = {
     "customer_demand_and_deployment_validation": "demand_volume_quality",
     "issuer_results_and_management_commentary": "operating_performance",
@@ -112,6 +175,7 @@ def evaluate_evidence_role(
     *,
     slot_id: str,
     subject_ticker: str,
+    facet_id: str | None = None,
     evidence_owner_ticker: str | None = None,
     relationship_direction: str | None = None,
 ) -> EvidenceRoleEvaluation:
@@ -119,6 +183,8 @@ def evaluate_evidence_role(
 
     if slot_id not in SLOT_COMPATIBLE_ROLES:
         raise ValueError(f"evidence_role_slot_unknown:{slot_id}")
+    if facet_id is not None and facet_id not in FACET_COMPATIBLE_ROLES:
+        raise ValueError(f"evidence_role_facet_unknown:{facet_id}")
     section = str(document.get("section") or "").casefold()
     subsection = str(document.get("subsection") or "").casefold()
     text = " ".join(
@@ -158,6 +224,7 @@ def evaluate_evidence_role(
         or "reconciliation" in text
         or "balance sheets" in text
         or "structured_metric" in str(document.get("source_type") or "")
+        or str(document.get("object_kind") or "") == "metric_row"
     )
     if financial_statement:
         labels.add(ROLE_FINANCIAL_STATEMENT)
@@ -221,6 +288,9 @@ def evaluate_evidence_role(
         (
             "capacity",
             "supply chain",
+            "industry supply",
+            "supply is",
+            "supply growth",
             "supply constraints",
             "advanced packaging",
             "cowos",
@@ -305,7 +375,11 @@ def evaluate_evidence_role(
         labels.add(ROLE_GENERIC)
         reasons.append("generic_company_description_surface")
 
-    compatible_roles = SLOT_COMPATIBLE_ROLES[slot_id]
+    compatible_roles = (
+        FACET_COMPATIBLE_ROLES[facet_id]
+        if facet_id is not None
+        else SLOT_COMPATIBLE_ROLES[slot_id]
+    )
     if ROLE_GENERIC in labels and not (labels - {ROLE_GENERIC}):
         compatibility = "incompatible"
     elif labels.intersection(compatible_roles):
@@ -321,13 +395,18 @@ def evaluate_evidence_role(
         labels=tuple(sorted(labels)),
         compatibility=compatibility,
         reason_codes=tuple(sorted(set(reasons))),
-        decision_basis="deterministic_metadata_and_phrase_rules_v1",
+        decision_basis=(
+            "deterministic_facet_aware_metadata_and_phrase_rules_v1"
+            if facet_id is not None
+            else "deterministic_metadata_and_phrase_rules_v1"
+        ),
         evidence_promoted=False,
     )
 
 
 __all__ = [
     "EVIDENCE_ROLES",
+    "FACET_COMPATIBLE_ROLES",
     "EVIDENCE_ROLE_SCHEMA_VERSION",
     "EvidenceRoleEvaluation",
     "LEGACY_EVIDENCE_SLOT_MAP",

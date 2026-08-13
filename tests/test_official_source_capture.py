@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -12,6 +13,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from ingestion.official_source_capture import (  # noqa: E402
     OfficialSourceCaptureError,
+    _TransportResponse,
     capture_plan,
     validate_capture_plan,
 )
@@ -125,3 +127,67 @@ def test_repository_capture_plan_is_bounded_to_three_official_routes() -> None:
         "NVDA",
     }
     assert plan["policy"]["bounded_addendum_not_general_crawler"] is True
+
+
+def _successor_plan() -> dict[str, object]:
+    plan = _plan()
+    plan["schema_version"] = "fin_ia_s1d_official_source_capture_plan_v1_1"
+    plan["status"] = "s1d_official_source_capture_plan"
+    plan["sources"][0]["transport"] = "playwright_api_request"
+    return plan
+
+
+def test_playwright_successor_is_capture_first_with_injected_zero_network_fetcher(
+    tmp_path: Path,
+) -> None:
+    body = b"%PDF-1.7 hermetic official source"
+
+    def fake_fetcher(source):  # noqa: ANN001
+        assert source["transport"] == "playwright_api_request"
+        return _TransportResponse(
+            status_code=200,
+            final_url=str(source["url"]),
+            headers={"content-type": "text/html", "authorization": "forbidden"},
+            redirect_chain=(),
+            body=body,
+            transport_attempts=1,
+        )
+
+    result = capture_plan(
+        _successor_plan(),
+        output_root=tmp_path,
+        attempt_id="successor-r1",
+        transport_fetchers={"playwright_api_request": fake_fetcher},
+    )
+
+    assert result["status"] == "s1d_official_sources_captured"
+    row = result["sources"][0]
+    capture = json.loads(
+        Path(row["response_capture"]["object_ref"]).read_text(encoding="utf-8")
+    )
+    assert capture["body_sha256"] == hashlib.sha256(body).hexdigest()
+    assert capture["headers"] == {"content-type": "text/html"}
+    assert capture["capture_before_parse"] is True
+
+
+def test_legacy_plan_cannot_silently_enable_playwright_transport() -> None:
+    plan = _plan()
+    plan["sources"][0]["transport"] = "playwright_api_request"
+    with pytest.raises(OfficialSourceCaptureError, match="source_invalid"):
+        validate_capture_plan(plan)
+
+
+def test_repository_s1d_plan_is_bounded_to_dell_and_tsm_official_pdfs() -> None:
+    plan = validate_capture_plan(
+        json.loads(
+            (
+                ROOT
+                / "configs"
+                / "retrieval"
+                / "fin_ia_0_1_3_s1d_official_source_capture_plan_v1_1.json"
+            ).read_text(encoding="utf-8")
+        )
+    )
+    assert {row["case_key"] for row in plan["sources"]} == {"DELL", "TSM"}
+    assert all(row["transport"] == "playwright_api_request" for row in plan["sources"])
+    assert plan["policy"]["broad_web_search_forbidden"] is True

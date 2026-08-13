@@ -1,0 +1,517 @@
+{
+  "schema_version": "fin_ia_s1c_facet_evidence_role_shadow_result_v1_0",
+  "status": "facet_aware_role_shadow_complete_not_runtime_promotion",
+  "recorded_at": "2026-08-13",
+  "authority_ref": "configs/retrieval/fin_ia_0_1_3_s1c_facet_evidence_role_shadow_authority_v1_0.json",
+  "authority_sha256": "94c3558c01ce9623ab4f4606f9605012704c550573f800e60e32ad4de7ad26d1",
+  "summary": {
+    "atom_count": 18,
+    "case_count": 3,
+    "positive_count": 21,
+    "hard_negative_count": 18,
+    "positive_compatible_rate": 0.714286,
+    "hard_negative_suppressed_or_abstained_rate": 0.777778,
+    "multilabel_true_positive": 30,
+    "multilabel_false_positive": 13,
+    "multilabel_false_negative": 42,
+    "multilabel_micro_precision": 0.697674,
+    "multilabel_micro_recall": 0.416667,
+    "multilabel_micro_f1": 0.521739,
+    "material_role_error_count": 10
+  },
+  "atom_results": [
+    {
+      "atom_id": "S1C_ATOM_01_DELL_DOWNSTREAM_MSFT",
+      "case_key": "DELL",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "MSFT",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 2,
+        "multilabel_micro_precision": 0.5,
+        "multilabel_micro_recall": 0.333333,
+        "multilabel_micro_f1": 0.4
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_02_DELL_REPORTED_RESULTS",
+      "case_key": "DELL",
+      "facet_id": "reported_results",
+      "evidence_owner_ticker": "DELL",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 3,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.75,
+        "multilabel_micro_f1": 0.857143
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_03_DELL_COUNTEREVIDENCE",
+      "case_key": "DELL",
+      "facet_id": "issuer_counterevidence",
+      "evidence_owner_ticker": "DELL",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 0.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 3,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.25,
+        "multilabel_micro_f1": 0.4
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_04_DELL_UPSTREAM_MU",
+      "case_key": "DELL",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "MU",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 2,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.666667,
+        "multilabel_micro_f1": 0.8
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_05_DELL_UPSTREAM_NVDA",
+      "case_key": "DELL",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "NVDA",
+      "metrics": {
+        "positive_count": 4,
+        "hard_negative_count": 2,
+        "positive_compatible_rate": 0.75,
+        "hard_negative_suppressed_or_abstained_rate": 0.5,
+        "multilabel_true_positive": 2,
+        "multilabel_false_positive": 3,
+        "multilabel_false_negative": 7,
+        "multilabel_micro_precision": 0.4,
+        "multilabel_micro_recall": 0.222222,
+        "multilabel_micro_f1": 0.285714
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_06_DELL_UPSTREAM_TSM_GAP",
+      "case_key": "DELL",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "TSM",
+      "metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": 0.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 0.5,
+        "multilabel_micro_recall": 0.5,
+        "multilabel_micro_f1": 0.5
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_07_MU_DOWNSTREAM_DELL",
+      "case_key": "MU",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "DELL",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 3,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 2,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.6,
+        "multilabel_micro_f1": 0.75
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_08_MU_DOWNSTREAM_MSFT",
+      "case_key": "MU",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "MSFT",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 2,
+        "multilabel_micro_precision": 0.5,
+        "multilabel_micro_recall": 0.333333,
+        "multilabel_micro_f1": 0.4
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_09_MU_REPORTED_RESULTS",
+      "case_key": "MU",
+      "facet_id": "reported_results",
+      "evidence_owner_ticker": "MU",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 0.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 2,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 3,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.4,
+        "multilabel_micro_f1": 0.571429
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_10_MU_RELATIONSHIP",
+      "case_key": "MU",
+      "facet_id": "subject_relationship_disclosure",
+      "evidence_owner_ticker": "MU",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 0.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 2,
+        "multilabel_micro_precision": 0.5,
+        "multilabel_micro_recall": 0.333333,
+        "multilabel_micro_f1": 0.4
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_11_MU_DOWNSTREAM_NVDA",
+      "case_key": "MU",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "NVDA",
+      "metrics": {
+        "positive_count": 3,
+        "hard_negative_count": 2,
+        "positive_compatible_rate": 0.333333,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 3,
+        "multilabel_false_negative": 6,
+        "multilabel_micro_precision": 0.25,
+        "multilabel_micro_recall": 0.142857,
+        "multilabel_micro_f1": 0.181818
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_12_MU_UPSTREAM_TSM_GAP",
+      "case_key": "MU",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "TSM",
+      "metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": 0.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 0.5,
+        "multilabel_micro_recall": 0.5,
+        "multilabel_micro_f1": 0.5
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_13_NVDA_DOWNSTREAM_DELL",
+      "case_key": "NVDA",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "DELL",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 3,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 2,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.6,
+        "multilabel_micro_f1": 0.75
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_14_NVDA_DOWNSTREAM_MSFT",
+      "case_key": "NVDA",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "MSFT",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 2,
+        "multilabel_micro_precision": 0.5,
+        "multilabel_micro_recall": 0.333333,
+        "multilabel_micro_f1": 0.4
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_15_NVDA_REPORTED_RESULTS",
+      "case_key": "NVDA",
+      "facet_id": "reported_results",
+      "evidence_owner_ticker": "NVDA",
+      "metrics": {
+        "positive_count": 2,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 2,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 2,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.5,
+        "multilabel_micro_f1": 0.666667
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_16_NVDA_CASH_GENERATION",
+      "case_key": "NVDA",
+      "facet_id": "cash_generation",
+      "evidence_owner_ticker": "NVDA",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 2,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 3,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.4,
+        "multilabel_micro_f1": 0.571429
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_17_NVDA_UPSTREAM_MU",
+      "case_key": "NVDA",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "MU",
+      "metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 2,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.666667,
+        "multilabel_micro_f1": 0.8
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_18_NVDA_UPSTREAM_TSM_GAP",
+      "case_key": "NVDA",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "TSM",
+      "metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": 0.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 0.5,
+        "multilabel_micro_recall": 0.5,
+        "multilabel_micro_f1": 0.5
+      }
+    }
+  ],
+  "material_role_errors": [
+    {
+      "atom_id": "S1C_ATOM_03_DELL_COUNTEREVIDENCE",
+      "case_key": "DELL",
+      "facet_id": "issuer_counterevidence",
+      "judgement": "positive",
+      "compatibility": "abstain",
+      "compiled_object_id": "COBJ::824cb6c08e81d2e0a451d3ea",
+      "expected_roles": [
+        "demand_risk_or_counterevidence",
+        "supply_risk_or_counterevidence"
+      ],
+      "predicted_roles": [],
+      "text_excerpt": "If we are not successful in continuing to expand sales to a broader base of customers, our ability to maintain growth in this area may be limited."
+    },
+    {
+      "atom_id": "S1C_ATOM_05_DELL_UPSTREAM_NVDA",
+      "case_key": "DELL",
+      "facet_id": "upstream_capacity_context",
+      "judgement": "positive",
+      "compatibility": "abstain",
+      "compiled_object_id": "COBJ::8d7e9557cccecf5f7e844b14",
+      "expected_roles": [
+        "demand_risk_or_counterevidence",
+        "supply_risk_or_counterevidence"
+      ],
+      "predicted_roles": [],
+      "text_excerpt": "The increased frequency of these architecture introductions and the larger number of products and product configurations may magnify the challenges associated with managing our supply and demand which may further create volatility in our revenue."
+    },
+    {
+      "atom_id": "S1C_ATOM_05_DELL_UPSTREAM_NVDA",
+      "case_key": "DELL",
+      "facet_id": "upstream_capacity_context",
+      "judgement": "hard_negative",
+      "compatibility": "compatible",
+      "compiled_object_id": "COBJ::03355e54dc18175d1570e124",
+      "expected_roles": [
+        "generic_or_boilerplate"
+      ],
+      "predicted_roles": [
+        "supply_risk_or_counterevidence"
+      ],
+      "text_excerpt": "-based manufacturing and investing in specialized equipment and processes to support domestic production."
+    },
+    {
+      "atom_id": "S1C_ATOM_06_DELL_UPSTREAM_TSM_GAP",
+      "case_key": "DELL",
+      "facet_id": "upstream_capacity_context",
+      "judgement": "hard_negative",
+      "compatibility": "compatible",
+      "compiled_object_id": "COBJ::890b3038d022948939bd108d",
+      "expected_roles": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "predicted_roles": [
+        "direct_supply_capacity_signal",
+        "financial_statement_or_reconciliation"
+      ],
+      "text_excerpt": "Company: Taiwan Semiconductor Manufacturing Company Limited (TSM)\nSource: 6-K published 2026-07-16\nSection: 6-K current official disclosure\nTable: TSMC’s 2026 second quarter consolidated results\nRow: Net sales | 1,270,381 | 933,792 | 36.0 | 1,134,103 | 12.0"
+    },
+    {
+      "atom_id": "S1C_ATOM_09_MU_REPORTED_RESULTS",
+      "case_key": "MU",
+      "facet_id": "reported_results",
+      "judgement": "positive",
+      "compatibility": "incompatible",
+      "compiled_object_id": "COBJ::c91f7307dae051cb3c262fdf",
+      "expected_roles": [
+        "direct_demand_signal",
+        "management_guidance",
+        "observed_operating_result",
+        "relationship_context"
+      ],
+      "predicted_roles": [
+        "management_guidance"
+      ],
+      "text_excerpt": "“Micron’s record fiscal Q3 financial results and even stronger outlook for Q4 reflect the strategic value of memory in the AI era,” said Sanjay Mehrotra, Chairman, President and CEO of Micron Technology. “Micron is investing at record levels in technology, products and supply to address our customers’ rapidly growing demand. We believe our multi-year Strategic Customer Agreements will significantly enhance the durabi"
+    },
+    {
+      "atom_id": "S1C_ATOM_10_MU_RELATIONSHIP",
+      "case_key": "MU",
+      "facet_id": "subject_relationship_disclosure",
+      "judgement": "positive",
+      "compatibility": "incompatible",
+      "compiled_object_id": "COBJ::828cd1f2a6cf2545bf1e7aeb",
+      "expected_roles": [
+        "direct_demand_signal",
+        "relationship_context"
+      ],
+      "predicted_roles": [
+        "management_guidance"
+      ],
+      "text_excerpt": "We recently executed certain strategic customer agreements, including agreements executed subsequent to May 28, 2026. These agreements include binding commitments for specific volumes over the multi-year contract terms. Strategic customer agreements often include substantial customer deposits and related financial commitments. In connection with these strategic customer agreements, we expect to receive cash deposits "
+    },
+    {
+      "atom_id": "S1C_ATOM_11_MU_DOWNSTREAM_NVDA",
+      "case_key": "MU",
+      "facet_id": "downstream_demand_context",
+      "judgement": "positive",
+      "compatibility": "incompatible",
+      "compiled_object_id": "COBJ::9a623b1778d2de1491beb720",
+      "expected_roles": [
+        "demand_risk_or_counterevidence",
+        "supply_risk_or_counterevidence"
+      ],
+      "predicted_roles": [
+        "supply_risk_or_counterevidence"
+      ],
+      "text_excerpt": "We have incurred and may in the future incur inventory provisions or impairments if our inventory or supply or capacity commitments exceed demand for our products or demand declines."
+    },
+    {
+      "atom_id": "S1C_ATOM_11_MU_DOWNSTREAM_NVDA",
+      "case_key": "MU",
+      "facet_id": "downstream_demand_context",
+      "judgement": "positive",
+      "compatibility": "abstain",
+      "compiled_object_id": "COBJ::8d7e9557cccecf5f7e844b14",
+      "expected_roles": [
+        "demand_risk_or_counterevidence",
+        "supply_risk_or_counterevidence"
+      ],
+      "predicted_roles": [],
+      "text_excerpt": "The increased frequency of these architecture introductions and the larger number of products and product configurations may magnify the challenges associated with managing our supply and demand which may further create volatility in our revenue."
+    },
+    {
+      "atom_id": "S1C_ATOM_12_MU_UPSTREAM_TSM_GAP",
+      "case_key": "MU",
+      "facet_id": "upstream_capacity_context",
+      "judgement": "hard_negative",
+      "compatibility": "compatible",
+      "compiled_object_id": "COBJ::890b3038d022948939bd108d",
+      "expected_roles": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "predicted_roles": [
+        "direct_supply_capacity_signal",
+        "financial_statement_or_reconciliation"
+      ],
+      "text_excerpt": "Company: Taiwan Semiconductor Manufacturing Company Limited (TSM)\nSource: 6-K published 2026-07-16\nSection: 6-K current official disclosure\nTable: TSMC’s 2026 second quarter consolidated results\nRow: Net sales | 1,270,381 | 933,792 | 36.0 | 1,134,103 | 12.0"
+    },
+    {
+      "atom_id": "S1C_ATOM_18_NVDA_UPSTREAM_TSM_GAP",
+      "case_key": "NVDA",
+      "facet_id": "upstream_capacity_context",
+      "judgement": "hard_negative",
+      "compatibility": "compatible",
+      "compiled_object_id": "COBJ::890b3038d022948939bd108d",
+      "expected_roles": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "predicted_roles": [
+        "direct_supply_capacity_signal",
+        "financial_statement_or_reconciliation"
+      ],
+      "text_excerpt": "Company: Taiwan Semiconductor Manufacturing Company Limited (TSM)\nSource: 6-K published 2026-07-16\nSection: 6-K current official disclosure\nTable: TSMC’s 2026 second quarter consolidated results\nRow: Net sales | 1,270,381 | 933,792 | 36.0 | 1,134,103 | 12.0"
+    }
+  ],
+  "decision": "Role compatibility remains an advisory candidate attribute. It may partition compatible, abstain and incompatible candidates, but it does not establish relevance, Evidence, or numeric authority.",
+  "authority": {
+    "network_calls_authorized": false,
+    "model_calls_authorized": false,
+    "candidate_is_not_evidence": true,
+    "role_compatibility_is_not_relevance": true,
+    "runtime_promotion_authorized": false,
+    "training_authorized": false
+  }
+}

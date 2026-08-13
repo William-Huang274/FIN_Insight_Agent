@@ -83,3 +83,34 @@ def test_legacy_combined_slot_accepts_risk_and_financial_evidence_without_qrel_l
 
     assert risk.compatibility == "compatible"
     assert financial.compatibility == "compatible"
+
+
+def test_current_working_capital_facet_accepts_demand_risk_inside_cash_slot() -> None:
+    result = evaluate_evidence_role(
+        _document(
+            "Larger orders may require working capital and expose inventory to cancellations.",
+            section="Item 1A. Risk Factors",
+        ),
+        slot_id="cash_conversion_balance_sheet",
+        facet_id="working_capital_risk",
+        subject_ticker="DELL",
+    )
+
+    assert result.compatibility == "compatible"
+    assert "demand_risk_or_counterevidence" in result.labels
+    assert result.decision_basis.startswith("deterministic_facet_aware")
+
+
+def test_metric_row_is_financial_evidence_role_without_numeric_authority() -> None:
+    document = _document("Revenue | 31,174 | 23,376 | 33%")
+    document["object_kind"] = "metric_row"
+    result = evaluate_evidence_role(
+        document,
+        slot_id="operating_performance",
+        facet_id="reported_results",
+        subject_ticker="DELL",
+    )
+
+    assert result.compatibility == "compatible"
+    assert "financial_statement_or_reconciliation" in result.labels
+    assert result.evidence_promoted is False

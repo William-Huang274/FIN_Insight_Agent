@@ -1,0 +1,56 @@
+{
+  "schema_version": "fin_ia_s1c_planner_residual_gap_audit_authority_v1_1",
+  "status": "zero_network_zero_generation_successor_contract_product_input_audit",
+  "recorded_at": "2026-08-13",
+  "audit_id": "FIN-0.1.3-S1C-DELL-SAVED-PLANNER-RESIDUAL-GAP-AUDIT-R2-SUCCESSOR",
+  "bound_inputs": {
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_planner_r1_execution_objective_v1_1.json",
+    "objective_sha256": "f54bc73bea616c607c52576b29feaae7f6bb7cb67a5ea1f8563993534b8a7646",
+    "planner_atoms_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+    "planner_atoms_sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_1.json",
+    "kernel_sha256": "6f456246130ab0ea6f3b3d31ae009d0bb3d51ee18c93645ff39a5330cd375564",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_1.json",
+    "route_policy_sha256": "be4ee9efe54f588b4c887f58d9c450942c031c16c268f1a1470d58f9f5b5dfd7",
+    "planning_policy_ref": "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_2.json",
+    "planning_policy_sha256": "a65763d3772bf39f35fa328c53183a0848c4e36acea241c694b028698165f60c",
+    "hybrid_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_2.json",
+    "hybrid_policy_sha256": "09ef5d328d8cf57aba3350634547a8739746d96c3ad1287738fbc34fbdcc51ce",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "6e15bc5bf87beefdabe1091e17c48f555af1deb6d169a4a13a8284fa8db92b50"
+  },
+  "planner_atom_rebind": {
+    "mode": "deterministic_objective_id_rebind_only",
+    "source_objective_id": "ROC::c5023a44800a7b8ad60ebaf5",
+    "successor_objective_id": "ROC::ae1da4bf36a11142a1d03e15",
+    "preserve_atom_bodies_exactly": true,
+    "model_rerun_authorized": false
+  },
+  "audit_contract": {
+    "top_candidates_per_request": 5,
+    "allowed_dispositions_after_review": [
+      "supported_by_current_candidates",
+      "s1c_candidate_selection_or_role_gap",
+      "s1d_true_source_or_transport_gap",
+      "s2_typed_fact_gap",
+      "valid_typed_gap_no_disclosed_fact"
+    ],
+    "source_hit_is_not_evidence_support": true,
+    "weak_ranking_is_not_source_absence": true,
+    "typed_operating_metric_gap_is_not_automatically_s1d": true
+  },
+  "outputs": {
+    "private_output_directory": "data/workbench_private/fin_0_1_3_s1c_planner_residual_gap_audit/v1",
+    "tracked_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1c_planner_residual_gap_audit_result_v1_1.json"
+  },
+  "authority": {
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "local_embedding_inference_authorized": true,
+    "candidate_is_not_evidence": true,
+    "numeric_authority_remains_s2": true,
+    "runtime_promotion_authorized": false,
+    "s1d_source_execution_authorized": false,
+    "s1_or_s3_complete_claimed": false
+  }
+}

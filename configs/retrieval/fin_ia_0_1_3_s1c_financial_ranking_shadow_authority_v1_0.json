@@ -1,0 +1,48 @@
+{
+  "schema_version": "fin_ia_s1c_financial_ranking_shadow_authority_v1_0",
+  "status": "pre_registered_zero_network_local_embedding_shadow_not_runtime_promotion",
+  "recorded_at": "2026-08-13",
+  "experiment_id": "FIN-0.1.3-S1C-FINANCIAL-CANDIDATE-RANKING-SHADOW-R1",
+  "bound_inputs": {
+    "runtime_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_1.json",
+    "runtime_policy_sha256_lf": "54b1336a2fb633f8135e750a20520da7e61513229e40b73bdc9134fc35ad717b",
+    "qrels_ref": "configs/retrieval/fin_ia_0_1_3_s1c_runtime_query_atom_eval_v1_1.json",
+    "qrels_sha256_lf": "e7d198ec6109a22eb2c8fe00655a96dee99addcc28df743730156d7fc2643c9f",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_1.json",
+    "kernel_sha256_lf": "6f456246130ab0ea6f3b3d31ae009d0bb3d51ee18c93645ff39a5330cd375564",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_1.json",
+    "route_policy_sha256_lf": "be4ee9efe54f588b4c887f58d9c450942c031c16c268f1a1470d58f9f5b5dfd7"
+  },
+  "comparison": {
+    "same_object_store": true,
+    "same_query_embeddings": true,
+    "same_bm25_and_qwen_candidate_union": true,
+    "same_source_quota": true,
+    "changed_surface": "candidate_ordering_only",
+    "top_k": 10
+  },
+  "decision_gates": {
+    "hard_filter_violation_maximum": 0,
+    "positive_target_in_top10_not_worse_than_legacy": true,
+    "mean_reciprocal_rank_not_worse_than_legacy": true,
+    "hard_negative_in_top5_not_worse_than_legacy": true,
+    "known_parser_fragment_in_top5_maximum": 0,
+    "candidate_authority_violation_maximum": 0
+  },
+  "stop_conditions": [
+    "Do not tune feature order or thresholds on DELL, MU or NVDA after observing this result.",
+    "Do not promote a candidate to Evidence or NumericFact from ranking output.",
+    "Do not call a generation model or access the network.",
+    "Do not claim final S1 product acceptance without ORCL, ASML and ANET holdout proof.",
+    "Do not enter S1-D until the evaluator has identified a source that is truly absent rather than merely misranked."
+  ],
+  "authority": {
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "local_embedding_inference_authorized": true,
+    "runtime_promotion_authorized": false,
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "s1_complete_claimed": false
+  }
+}

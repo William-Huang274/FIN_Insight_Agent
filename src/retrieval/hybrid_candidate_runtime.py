@@ -15,6 +15,8 @@ from .embedding_runtime import (
     local_model_identity,
     sha256_file,
 )
+from .financial_candidate_ranking import rank_financial_candidate_union
+from .evidence_role import evaluate_evidence_role
 from .object_retrieval_comparison import (
     CandidateScore,
     bm25_rank,
@@ -22,15 +24,27 @@ from .object_retrieval_comparison import (
     load_compiled_objects,
     union_candidate_ids,
 )
-from .query_atom_shadow import QueryAtom, compile_atom_lane, eligible_atom_indices
-from .query_plan import canonical_digest
+from .query_atom_shadow import eligible_request_indices
+from .query_plan import canonical_digest, compile_query_facet_plan_for_request
 from .route_compiler import QueryObjectFactRoutePolicy
 
 
 HYBRID_RUNTIME_POLICY_SCHEMA_VERSION = (
     "fin_ia_s1c_hybrid_candidate_runtime_policy_v1_0"
 )
+HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_runtime_policy_v1_1"
+)
+HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_runtime_policy_v1_2"
+)
 HYBRID_RESULT_SCHEMA_VERSION = "fin_ia_s1c_hybrid_candidate_result_v1_0"
+HYBRID_RESULT_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_result_v1_1"
+)
+HYBRID_RESULT_OWNER_BALANCED_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_result_v1_2"
+)
 
 _REQUIRED_AUTHORITY = {
     "candidate_is_not_evidence": True,
@@ -107,6 +121,9 @@ def retrieve_hybrid_candidates(
     candidate_union_limit: int,
     output_limit: int,
     max_candidates_per_source_record: int,
+    financial_ranking_enabled: bool = False,
+    minimum_candidates_per_owner: int = 0,
+    evidence_role_advisory_enabled: bool = False,
 ) -> dict[str, Any]:
     """Return a hard-filtered, source-diverse BM25 + Qwen candidate union."""
 
@@ -116,18 +133,16 @@ def retrieve_hybrid_candidates(
         and max_candidates_per_source_record >= 1,
         "hybrid_candidate_limits_invalid",
     )
-    atom = QueryAtom(
-        atom_id=f"RUNTIME::{request.request_id}",
-        request_payload=request.as_dict(),
-        positive_object_ids=(),
-        hard_negative_object_ids=(),
-        unjudged_object_ids=(),
-        expected_roles_by_object_id={},
+    _require(
+        0 <= minimum_candidates_per_owner <= output_limit,
+        "hybrid_candidate_owner_floor_invalid",
     )
-    _, lane = compile_atom_lane(atom, kernel)
-    eligible, exclusions = eligible_atom_indices(
+    plan = compile_query_facet_plan_for_request(kernel, request)
+    _require(len(plan.lanes) == 1, "hybrid_candidate_lane_count_invalid")
+    lane = plan.lanes[0]
+    eligible, exclusions = eligible_request_indices(
         objects,
-        atom=atom,
+        request=request,
         lane=lane,
         route_policy=route_policy,
     )
@@ -151,20 +166,188 @@ def retrieve_hybrid_candidates(
     bm25_ranks, bm25_scores = _route_maps(bm25)
     qwen_ranks, qwen_scores = _route_maps(qwen)
     objects_by_id = {str(row["compiled_object_id"]): row for row in objects}
-    selected: list[dict[str, Any]] = []
+    owner_route_maps: dict[
+        str,
+        tuple[dict[str, int], dict[str, float], dict[str, int], dict[str, float]],
+    ] = {}
+    owner_ordered_ids: dict[str, list[str]] = {}
+    owner_balance_active = (
+        minimum_candidates_per_owner > 0 and len(lane.evidence_owner_tickers) > 1
+    )
+    if owner_balance_active:
+        for owner in lane.evidence_owner_tickers:
+            owner_eligible = np.asarray(
+                [
+                    int(index)
+                    for index in eligible
+                    if str(objects[int(index)]["base_object_view"]["ticker"]) == owner
+                ],
+                dtype=np.int64,
+            )
+            owner_bm25 = bm25_rank(
+                objects,
+                owner_eligible,
+                lane.lexical_query,
+                limit=first_stage_limit,
+            )
+            owner_qwen = dense_rank(
+                objects,
+                owner_eligible,
+                qwen_document_embeddings,
+                qwen_query_embedding,
+                limit=first_stage_limit,
+            )
+            owner_ordered_ids[owner] = list(
+                union_candidate_ids(
+                    (owner_bm25, owner_qwen),
+                    maximum=candidate_union_limit,
+                )
+            )
+            owner_route_maps[owner] = (
+                *_route_maps(owner_bm25),
+                *_route_maps(owner_qwen),
+            )
+    financial_features_by_id: dict[str, dict[str, Any]] = {}
+    ordered_ids = list(union_ids)
+    if financial_ranking_enabled:
+        ranked = rank_financial_candidate_union(
+            union_object_ids=union_ids,
+            objects_by_id=objects_by_id,
+            lane=lane,
+            route_ranks_by_id={
+                object_id: {
+                    "bm25_lexical": bm25_ranks.get(object_id),
+                    "qwen3_embedding_0_6b_dense": qwen_ranks.get(object_id),
+                }
+                for object_id in union_ids
+            },
+        )
+        ordered_ids = [str(row["compiled_object_id"]) for row in ranked]
+        financial_features_by_id = {
+            str(row["compiled_object_id"]): row for row in ranked
+        }
+    selected_ids: list[str] = []
     source_counts: dict[str, int] = {}
-    for object_id in union_ids:
+    for object_id in ordered_ids:
         row = objects_by_id[object_id]
         base = row["base_object_view"]
         source_id = str(base["source_record_id"])
         if source_counts.get(source_id, 0) >= max_candidates_per_source_record:
             continue
         source_counts[source_id] = source_counts.get(source_id, 0) + 1
+        selected_ids.append(object_id)
+        if len(selected_ids) >= output_limit:
+            break
+
+    owner_floor_unmet: list[str] = []
+    if owner_balance_active:
+        owner_counts = {
+            owner: sum(
+                str(objects_by_id[object_id]["base_object_view"]["ticker"])
+                == owner
+                for object_id in selected_ids
+            )
+            for owner in lane.evidence_owner_tickers
+        }
+        for owner in lane.evidence_owner_tickers:
+            while owner_counts[owner] < minimum_candidates_per_owner:
+                replacement = next(
+                    (
+                        object_id
+                        for object_id in owner_ordered_ids.get(owner, ())
+                        if object_id not in selected_ids
+                        and source_counts.get(
+                            str(
+                                objects_by_id[object_id]["base_object_view"][
+                                    "source_record_id"
+                                ]
+                            ),
+                            0,
+                        )
+                        < max_candidates_per_source_record
+                    ),
+                    None,
+                )
+                if replacement is None:
+                    owner_floor_unmet.append(owner)
+                    break
+                if len(selected_ids) < output_limit:
+                    selected_ids.append(replacement)
+                else:
+                    replace_index = next(
+                        (
+                            index
+                            for index in range(len(selected_ids) - 1, -1, -1)
+                            if owner_counts[
+                                str(
+                                    objects_by_id[selected_ids[index]][
+                                        "base_object_view"
+                                    ]["ticker"]
+                                )
+                            ]
+                            > minimum_candidates_per_owner
+                        ),
+                        None,
+                    )
+                    if replace_index is None:
+                        owner_floor_unmet.append(owner)
+                        break
+                    removed = selected_ids[replace_index]
+                    removed_base = objects_by_id[removed]["base_object_view"]
+                    removed_owner = str(removed_base["ticker"])
+                    removed_source = str(removed_base["source_record_id"])
+                    source_counts[removed_source] -= 1
+                    owner_counts[removed_owner] -= 1
+                    selected_ids[replace_index] = replacement
+                replacement_source = str(
+                    objects_by_id[replacement]["base_object_view"]["source_record_id"]
+                )
+                source_counts[replacement_source] = (
+                    source_counts.get(replacement_source, 0) + 1
+                )
+                owner_counts[owner] += 1
+
+    selected: list[dict[str, Any]] = []
+    relationship_by_owner = dict(
+        zip(lane.evidence_owner_tickers, lane.relationship_constraints)
+    )
+    for object_id in selected_ids:
+        row = objects_by_id[object_id]
+        base = row["base_object_view"]
+        source_id = str(base["source_record_id"])
+        owner = str(base["ticker"])
+        owner_maps = owner_route_maps.get(owner)
+        effective_bm25_ranks = owner_maps[0] if owner_maps else bm25_ranks
+        effective_bm25_scores = owner_maps[1] if owner_maps else bm25_scores
+        effective_qwen_ranks = owner_maps[2] if owner_maps else qwen_ranks
+        effective_qwen_scores = owner_maps[3] if owner_maps else qwen_scores
         routes = []
-        if object_id in bm25_ranks:
+        if object_id in effective_bm25_ranks:
             routes.append("bm25_lexical")
-        if object_id in qwen_ranks:
+        if object_id in effective_qwen_ranks:
             routes.append("qwen3_embedding_0_6b_dense")
+        evidence_role = None
+        if evidence_role_advisory_enabled:
+            evidence_role = {
+                **evaluate_evidence_role(
+                    {
+                        "ticker": owner,
+                        "section": base.get("section"),
+                        "subsection": base.get("subsection"),
+                        "source_type": base.get("source_type"),
+                        "object_kind": row.get("object_kind"),
+                        "document_text": row.get("model_text"),
+                    },
+                    slot_id=lane.slot_id,
+                    facet_id=lane.facet_id,
+                    subject_ticker=lane.subject_ticker,
+                    evidence_owner_ticker=owner,
+                    relationship_direction=relationship_by_owner.get(owner),
+                ).as_dict(),
+                "advisory_only": True,
+                "ranking_effect": False,
+                "hard_drop": False,
+            }
         selected.append(
             {
                 "rank": len(selected) + 1,
@@ -186,19 +369,19 @@ def retrieve_hybrid_candidates(
                 "model_text": str(row["model_text"]),
                 "route_membership": routes,
                 "route_ranks": {
-                    "bm25_lexical": bm25_ranks.get(object_id),
-                    "qwen3_embedding_0_6b_dense": qwen_ranks.get(object_id),
+                    "bm25_lexical": effective_bm25_ranks.get(object_id),
+                    "qwen3_embedding_0_6b_dense": effective_qwen_ranks.get(object_id),
                 },
                 "route_scores": {
-                    "bm25_lexical": bm25_scores.get(object_id),
-                    "qwen3_embedding_0_6b_dense": qwen_scores.get(object_id),
+                    "bm25_lexical": effective_bm25_scores.get(object_id),
+                    "qwen3_embedding_0_6b_dense": effective_qwen_scores.get(object_id),
                 },
+                "financial_ranking": financial_features_by_id.get(object_id),
+                "evidence_role": evidence_role,
                 "candidate_not_evidence": True,
                 "numeric_authority": False,
             }
         )
-        if len(selected) >= output_limit:
-            break
 
     both = sum(len(row["route_membership"]) == 2 for row in selected)
     bm25_only = sum(row["route_membership"] == ["bm25_lexical"] for row in selected)
@@ -207,15 +390,33 @@ def retrieve_hybrid_candidates(
         for row in selected
     )
     body = {
-        "schema_version": HYBRID_RESULT_SCHEMA_VERSION,
+        "schema_version": (
+            HYBRID_RESULT_OWNER_BALANCED_SCHEMA_VERSION
+            if owner_balance_active or evidence_role_advisory_enabled
+            else HYBRID_RESULT_SUCCESSOR_SCHEMA_VERSION
+            if financial_ranking_enabled
+            else HYBRID_RESULT_SCHEMA_VERSION
+        ),
         "request_id": request.request_id,
         "facet_id": lane.facet_id,
         "evidence_owner_tickers": list(lane.evidence_owner_tickers),
-        "route_id": "bm25_lexical_plus_qwen3_embedding_dense_union",
+        "route_id": (
+            "bm25_qwen_owner_balanced_union_with_advisory_evidence_role_v1"
+            if owner_balance_active or evidence_role_advisory_enabled
+            else
+            "bm25_plus_qwen_union_then_financial_structure_rank_v1"
+            if financial_ranking_enabled
+            else "bm25_lexical_plus_qwen3_embedding_dense_union"
+        ),
         "candidate_state": "candidate_not_evidence",
         "query": {
             "lexical": lane.lexical_query,
             "semantic": lane.semantic_query,
+            "relationship_constraints": list(lane.relationship_constraints),
+            "required_source_roles": list(lane.required_source_roles),
+            "exact_queries": list(lane.exact_queries),
+            "graph_constraints": list(lane.graph_constraints),
+            "forbidden_expansions": list(lane.forbidden_expansions),
         },
         "summary": {
             "eligible_object_count": int(eligible.size),
@@ -227,6 +428,15 @@ def retrieve_hybrid_candidates(
             "selected_bm25_only": bm25_only,
             "selected_qwen_only": qwen_only,
             "max_candidates_per_source_record": max_candidates_per_source_record,
+            "financial_ranking_enabled": financial_ranking_enabled,
+            "owner_balance_active": owner_balance_active,
+            "minimum_candidates_per_owner": minimum_candidates_per_owner,
+            "selected_candidate_count_by_owner": {
+                owner: sum(row["ticker"] == owner for row in selected)
+                for owner in lane.evidence_owner_tickers
+            },
+            "owner_floor_unmet": sorted(set(owner_floor_unmet)),
+            "evidence_role_advisory_enabled": evidence_role_advisory_enabled,
             "hard_filter_exclusions": exclusions,
         },
         "candidates": selected,
@@ -249,6 +459,9 @@ class LocalQwenHybridCandidateRuntime:
         candidate_union_limit: int,
         output_limit: int,
         max_candidates_per_source_record: int,
+        financial_ranking_enabled: bool,
+        minimum_candidates_per_owner: int,
+        evidence_role_advisory_enabled: bool,
         runtime_identity: Mapping[str, Any],
     ) -> None:
         self._objects = tuple(objects)
@@ -259,6 +472,9 @@ class LocalQwenHybridCandidateRuntime:
         self._candidate_union_limit = candidate_union_limit
         self._output_limit = output_limit
         self._max_candidates_per_source_record = max_candidates_per_source_record
+        self._financial_ranking_enabled = financial_ranking_enabled
+        self._minimum_candidates_per_owner = minimum_candidates_per_owner
+        self._evidence_role_advisory_enabled = evidence_role_advisory_enabled
         self.runtime_identity = dict(runtime_identity)
         self._inference_lock = Lock()
 
@@ -269,6 +485,11 @@ class LocalQwenHybridCandidateRuntime:
         payload: Mapping[str, Any],
     ) -> "LocalQwenHybridCandidateRuntime":
         root = Path(repository_root).resolve()
+        schema_version = str(payload.get("schema_version") or "")
+        successor = schema_version == HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION
+        owner_balanced = (
+            schema_version == HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION
+        )
         expected_fields = {
             "schema_version",
             "status",
@@ -277,14 +498,30 @@ class LocalQwenHybridCandidateRuntime:
             "candidate_contract",
             "authority",
         }
+        if successor:
+            expected_fields.add("financial_ranking")
+        if owner_balanced:
+            expected_fields.update({"owner_balance", "evidence_role"})
         _require(set(payload) == expected_fields, "hybrid_runtime_policy_fields_invalid")
         _require(
-            payload.get("schema_version") == HYBRID_RUNTIME_POLICY_SCHEMA_VERSION,
+            schema_version
+            in {
+                HYBRID_RUNTIME_POLICY_SCHEMA_VERSION,
+                HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION,
+                HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION,
+            },
             "hybrid_runtime_policy_schema_invalid",
         )
         _require(
             payload.get("status")
-            == "provisional_local_embedding_adapter_not_evidence_authority",
+            == (
+                "provisional_owner_balanced_candidate_runtime_not_evidence_authority"
+                if owner_balanced
+                else
+                "provisional_financial_structure_ranker_not_evidence_authority"
+                if successor
+                else "provisional_local_embedding_adapter_not_evidence_authority"
+            ),
             "hybrid_runtime_policy_status_invalid",
         )
         _require(
@@ -294,12 +531,45 @@ class LocalQwenHybridCandidateRuntime:
         object_policy = payload.get("object_store")
         model_policy = payload.get("qwen_embedding")
         candidate_policy = payload.get("candidate_contract")
+        financial_ranking = payload.get("financial_ranking")
+        owner_balance = payload.get("owner_balance")
+        evidence_role = payload.get("evidence_role")
         _require(
             isinstance(object_policy, Mapping)
             and isinstance(model_policy, Mapping)
             and isinstance(candidate_policy, Mapping),
             "hybrid_runtime_policy_shape_invalid",
         )
+        if successor:
+            _require(
+                financial_ranking
+                == {
+                    "enabled": True,
+                    "strategy": "lexicographic_financial_structure_v1",
+                    "evidence_role_mode": "advisory_with_abstain",
+                    "source_quota_after_ranking": True,
+                    "candidate_is_not_evidence": True,
+                },
+                "hybrid_runtime_financial_ranking_policy_invalid",
+            )
+        if owner_balanced:
+            _require(
+                owner_balance
+                == {
+                    "enabled": True,
+                    "minimum_candidates_per_owner": 2,
+                    "apply_only_to_multi_owner_requests": True,
+                    "candidate_is_not_evidence": True,
+                }
+                and evidence_role
+                == {
+                    "mode": "advisory_with_abstain",
+                    "ranking_effect": False,
+                    "hard_drop": False,
+                    "evidence_authority": False,
+                },
+                "hybrid_runtime_owner_balance_policy_invalid",
+            )
         objects_path = _resolve(root, str(object_policy.get("objects_ref") or ""))
         cache_path = _resolve(root, str(model_policy.get("dense_cache_ref") or ""))
         manifest_path = _resolve(root, str(model_policy.get("cache_manifest_ref") or ""))
@@ -358,6 +628,9 @@ class LocalQwenHybridCandidateRuntime:
             max_candidates_per_source_record=int(
                 candidate_policy.get("max_candidates_per_source_record") or 0
             ),
+            financial_ranking_enabled=successor,
+            minimum_candidates_per_owner=(2 if owner_balanced else 0),
+            evidence_role_advisory_enabled=owner_balanced,
             runtime_identity=runtime_identity,
         )
 
@@ -368,19 +641,89 @@ class LocalQwenHybridCandidateRuntime:
         kernel: FinancialResearchKernel,
         route_policy: QueryObjectFactRoutePolicy,
     ) -> tuple[dict[str, Any], ...]:
+        lanes, encoded = self._encode_requests(requests, kernel=kernel)
+        return tuple(
+            retrieve_hybrid_candidates(
+                request=request,
+                kernel=kernel,
+                route_policy=route_policy,
+                objects=self._objects,
+                qwen_document_embeddings=self._qwen_document_embeddings,
+                qwen_query_embedding=encoded[index],
+                first_stage_limit=self._first_stage_limit,
+                candidate_union_limit=self._candidate_union_limit,
+                output_limit=self._output_limit,
+                max_candidates_per_source_record=(
+                    self._max_candidates_per_source_record
+                ),
+                financial_ranking_enabled=self._financial_ranking_enabled,
+                minimum_candidates_per_owner=self._minimum_candidates_per_owner,
+                evidence_role_advisory_enabled=(
+                    self._evidence_role_advisory_enabled
+                ),
+            )
+            for index, request in enumerate(requests)
+        )
+
+    def compare_financial_ranking(
+        self,
+        requests: Sequence[EvidenceRequest],
+        *,
+        kernel: FinancialResearchKernel,
+        route_policy: QueryObjectFactRoutePolicy,
+    ) -> tuple[dict[str, Any], ...]:
+        """Compare legacy union order and financial order on one encoded query set."""
+
+        _require(
+            self._financial_ranking_enabled,
+            "hybrid_runtime_financial_ranking_shadow_not_enabled",
+        )
+        _, encoded = self._encode_requests(requests, kernel=kernel)
+        rows: list[dict[str, Any]] = []
+        for index, request in enumerate(requests):
+            common = {
+                "request": request,
+                "kernel": kernel,
+                "route_policy": route_policy,
+                "objects": self._objects,
+                "qwen_document_embeddings": self._qwen_document_embeddings,
+                "qwen_query_embedding": encoded[index],
+                "first_stage_limit": self._first_stage_limit,
+                "candidate_union_limit": self._candidate_union_limit,
+                "output_limit": self._output_limit,
+                "max_candidates_per_source_record": (
+                    self._max_candidates_per_source_record
+                ),
+            }
+            rows.append(
+                {
+                    "request_id": request.request_id,
+                    "legacy": retrieve_hybrid_candidates(
+                        **common,
+                        financial_ranking_enabled=False,
+                    ),
+                    "financial": retrieve_hybrid_candidates(
+                        **common,
+                        financial_ranking_enabled=True,
+                    ),
+                    "candidate_not_evidence": True,
+                    "numeric_authority": False,
+                }
+            )
+        return tuple(rows)
+
+    def _encode_requests(
+        self,
+        requests: Sequence[EvidenceRequest],
+        *,
+        kernel: FinancialResearchKernel,
+    ) -> tuple[list[Any], np.ndarray]:
         _require(bool(requests), "hybrid_runtime_requests_missing")
         lanes = []
         for request in requests:
-            atom = QueryAtom(
-                atom_id=f"RUNTIME::{request.request_id}",
-                request_payload=request.as_dict(),
-                positive_object_ids=(),
-                hard_negative_object_ids=(),
-                unjudged_object_ids=(),
-                expected_roles_by_object_id={},
-            )
-            _, lane = compile_atom_lane(atom, kernel)
-            lanes.append(lane)
+            plan = compile_query_facet_plan_for_request(kernel, request)
+            _require(len(plan.lanes) == 1, "hybrid_candidate_lane_count_invalid")
+            lanes.append(plan.lanes[0])
         with self._inference_lock:
             encoded = np.asarray(
                 self._qwen_runtime.encode(
@@ -397,23 +740,7 @@ class LocalQwenHybridCandidateRuntime:
             encoded.shape[0] == len(requests),
             "hybrid_runtime_query_embedding_shape_invalid",
         )
-        return tuple(
-            retrieve_hybrid_candidates(
-                request=request,
-                kernel=kernel,
-                route_policy=route_policy,
-                objects=self._objects,
-                qwen_document_embeddings=self._qwen_document_embeddings,
-                qwen_query_embedding=encoded[index],
-                first_stage_limit=self._first_stage_limit,
-                candidate_union_limit=self._candidate_union_limit,
-                output_limit=self._output_limit,
-                max_candidates_per_source_record=(
-                    self._max_candidates_per_source_record
-                ),
-            )
-            for index, request in enumerate(requests)
-        )
+        return lanes, encoded
 
 
 class LazyLocalQwenHybridCandidateRuntime:
@@ -456,6 +783,8 @@ class LazyLocalQwenHybridCandidateRuntime:
 __all__ = [
     "HYBRID_RESULT_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_SCHEMA_VERSION",
+    "HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION",
+    "HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION",
     "HybridCandidateRuntimeError",
     "LazyLocalQwenHybridCandidateRuntime",
     "LocalQwenHybridCandidateRuntime",

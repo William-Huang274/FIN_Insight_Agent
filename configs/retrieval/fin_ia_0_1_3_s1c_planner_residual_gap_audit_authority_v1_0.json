@@ -1,0 +1,41 @@
+{
+  "schema_version": "fin_ia_s1c_planner_residual_gap_audit_authority_v1_0",
+  "status": "zero_network_zero_generation_saved_planner_product_input_audit",
+  "recorded_at": "2026-08-13",
+  "audit_id": "FIN-0.1.3-S1C-DELL-SAVED-PLANNER-RESIDUAL-GAP-AUDIT-R1",
+  "bound_inputs": {
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json",
+    "objective_sha256": "e458acb042447c9ef11ad6f0a2f8152b1f6abdd4de8dc65922d2593e34f93548",
+    "planner_atoms_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+    "planner_atoms_sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "6e15bc5bf87beefdabe1091e17c48f555af1deb6d169a4a13a8284fa8db92b50"
+  },
+  "audit_contract": {
+    "top_candidates_per_request": 5,
+    "allowed_dispositions_after_review": [
+      "supported_by_current_candidates",
+      "s1c_candidate_selection_or_role_gap",
+      "s1d_true_source_or_transport_gap",
+      "s2_typed_fact_gap",
+      "valid_typed_gap_no_disclosed_fact"
+    ],
+    "source_hit_is_not_evidence_support": true,
+    "weak_ranking_is_not_source_absence": true,
+    "typed_operating_metric_gap_is_not_automatically_s1d": true
+  },
+  "outputs": {
+    "private_output_directory": "data/workbench_private/fin_0_1_3_s1c_planner_residual_gap_audit/v1",
+    "tracked_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1c_planner_residual_gap_audit_result_v1_0.json"
+  },
+  "authority": {
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "local_embedding_inference_authorized": true,
+    "candidate_is_not_evidence": true,
+    "numeric_authority_remains_s2": true,
+    "runtime_promotion_authorized": false,
+    "s1d_source_execution_authorized": false,
+    "s1_or_s3_complete_claimed": false
+  }
+}

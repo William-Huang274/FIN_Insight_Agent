@@ -47,6 +47,18 @@ PLANNING_POLICY_PATH = (
     ROOT
     / "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_1.json"
 )
+SUCCESSOR_KERNEL_PATH = (
+    ROOT
+    / "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_1.json"
+)
+SUCCESSOR_ROUTE_POLICY_PATH = (
+    ROOT
+    / "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_1.json"
+)
+SUCCESSOR_PLANNING_POLICY_PATH = (
+    ROOT
+    / "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_2.json"
+)
 R1_ATOMS_PATH = (
     ROOT
     / "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json"
@@ -66,6 +78,35 @@ def _contracts():
         route_policy,
     )
     return kernel, route_policy, planning_policy
+
+
+def _successor_contracts():
+    kernel = load_financial_research_kernel(
+        json.loads(SUCCESSOR_KERNEL_PATH.read_text(encoding="utf-8"))
+    )
+    route_policy = load_query_object_fact_route_policy(
+        json.loads(SUCCESSOR_ROUTE_POLICY_PATH.read_text(encoding="utf-8")),
+        kernel,
+    )
+    planning_policy = load_research_planning_policy(
+        json.loads(SUCCESSOR_PLANNING_POLICY_PATH.read_text(encoding="utf-8")),
+        route_policy,
+    )
+    return kernel, route_policy, planning_policy
+
+
+def test_successor_planning_policy_covers_new_s1c_facet_without_promoting_runtime() -> None:
+    _, route_policy, planning_policy = _successor_contracts()
+
+    assert set(planning_policy.facet_execution_priority) == set(
+        route_policy.family_by_facet()
+    )
+    assert "downstream_demand_context" in planning_policy.facet_execution_priority
+    active_policy = json.loads(PLANNING_POLICY_PATH.read_text(encoding="utf-8"))
+    assert active_policy["schema_version"] == "fin_ia_research_planning_policy_v1_1"
+    assert "downstream_demand_context" not in active_policy["atom_selection"][
+        "facet_execution_priority"
+    ]
 
 
 def _objective_draft(**overrides: object) -> dict[str, object]:
@@ -296,6 +337,17 @@ def test_saved_r1_proposals_are_selected_with_required_slots_and_stable_drop_rea
         "execution_budget_exhausted_after_required_slot_and_"
         "provider_neutral_facet_priority_selection"
     }
+    upstream_request = next(
+        row
+        for row in plan.evidence_requests
+        if row.requested_facet_ids == ("upstream_or_demand_counterevidence",)
+    )
+    assert upstream_request.target_entities == (
+        "NVDA",
+        "MU",
+        "TSM",
+        "MSFT",
+    )
 
 
 def test_proposal_ceiling_and_all_proposed_atom_semantics_remain_fail_closed() -> None:
@@ -380,7 +432,7 @@ def test_planner_fails_closed_on_alias_unknown_metric_cross_case_and_scope_expan
 
     cross_case = _planner_atoms()
     cross_case["atoms"][0]["target_entity"] = "ORCL"
-    with pytest.raises(ResearchPlanningError, match="compiled_request_invalid"):
+    with pytest.raises(ResearchPlanningError, match="target_entity_invalid"):
         compile_research_plan(
             cross_case,
             objective=objective,

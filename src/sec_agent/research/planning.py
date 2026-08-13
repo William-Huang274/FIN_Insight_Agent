@@ -17,6 +17,15 @@ from retrieval.route_compiler import QueryObjectFactRoutePolicy
 
 
 RESEARCH_PLANNING_POLICY_SCHEMA_VERSION = "fin_ia_research_planning_policy_v1_1"
+RESEARCH_PLANNING_POLICY_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_research_planning_policy_v1_2"
+)
+SUPPORTED_RESEARCH_PLANNING_POLICY_SCHEMA_VERSIONS = frozenset(
+    {
+        RESEARCH_PLANNING_POLICY_SCHEMA_VERSION,
+        RESEARCH_PLANNING_POLICY_SUCCESSOR_SCHEMA_VERSION,
+    }
+)
 RESEARCH_OBJECTIVE_DRAFT_SCHEMA_VERSION = "fin_ia_research_objective_draft_v1_0"
 RESEARCH_OBJECTIVE_SCHEMA_VERSION = "fin_ia_research_objective_v1_0"
 PLANNER_ATOMS_SCHEMA_VERSION = "fin_ia_research_planner_atoms_v1_0"
@@ -229,7 +238,8 @@ def load_research_planning_policy(
     }
     _require(set(payload) == expected_fields, "research_planning_policy_fields_invalid")
     _require(
-        payload.get("schema_version") == RESEARCH_PLANNING_POLICY_SCHEMA_VERSION,
+        payload.get("schema_version")
+        in SUPPORTED_RESEARCH_PLANNING_POLICY_SCHEMA_VERSIONS,
         "research_planning_policy_schema_invalid",
     )
     _require(
@@ -511,6 +521,10 @@ def compile_research_plan(
         facet_id = str(raw.get("facet_id") or "").strip()
         target = str(raw.get("target_entity") or "").strip().upper()
         _require(facet_id in facets, "research_planner_facet_unknown")
+        _require(
+            target == objective.subject_ticker,
+            "research_planner_target_entity_invalid",
+        )
         slot, _ = facets[facet_id]
         _require(slot.slot_id in objective.required_slot_ids, "research_planner_scope_expansion_forbidden")
         scope = (facet_id, target)
@@ -638,8 +652,9 @@ def compile_research_plan(
     }
 
     evidence_requests: list[EvidenceRequest] = []
+    profile = kernel.cases[objective.case_key]
     for atom in ordered_atoms:
-        slot, _ = facets[atom.facet_id]
+        slot, facet = facets[atom.facet_id]
         family = family_by_facet[atom.facet_id]
         binding = binding_by_family[family.family_id]
         acceptable_sources = tuple(
@@ -649,10 +664,36 @@ def compile_research_plan(
             and source not in objective.forbidden_source_types
         )
         _require(bool(acceptable_sources), "research_planner_no_acceptable_source")
+        target_entities: list[str] = []
+        needs_related_context = any(
+            role.startswith("related_entity")
+            for role in facet.required_source_roles
+        )
+        needs_issuer_disclosure = (
+            "issuer_disclosure" in facet.required_source_roles
+        )
+        if facet.evidence_owner_scope != "related_only" and (
+            needs_issuer_disclosure or not needs_related_context
+        ):
+            target_entities.append(objective.subject_ticker)
+        if (
+            facet.evidence_owner_scope in {"subject_and_related", "related_only"}
+            and (needs_related_context or not needs_issuer_disclosure)
+        ):
+            target_entities.extend(
+                entity.ticker
+                for entity in profile.related_entities
+                if not facet.related_economic_roles
+                or entity.economic_role in facet.related_economic_roles
+            )
+        _require(
+            bool(target_entities),
+            "research_planner_compiled_evidence_owner_targets_missing",
+        )
         identity = {
             "objective_id": objective.objective_id,
             "facet_id": atom.facet_id,
-            "target_entity": atom.target_entity,
+            "target_entities": target_entities,
             "metric_ids": atom.metric_ids,
             "product_intents": atom.product_intents,
         }
@@ -666,7 +707,7 @@ def compile_research_plan(
             "case_key": objective.case_key,
             "subject_ticker": objective.subject_ticker,
             "research_as_of": objective.research_as_of.isoformat(),
-            "target_entities": [atom.target_entity],
+            "target_entities": target_entities,
             "requested_facet_ids": [atom.facet_id],
             "metric_intents": list(atom.metric_ids),
             "product_intents": list(atom.product_intents),
@@ -839,6 +880,8 @@ __all__ = [
     "RESEARCH_OBJECTIVE_DRAFT_SCHEMA_VERSION",
     "RESEARCH_OBJECTIVE_SCHEMA_VERSION",
     "RESEARCH_PLANNING_POLICY_SCHEMA_VERSION",
+    "RESEARCH_PLANNING_POLICY_SUCCESSOR_SCHEMA_VERSION",
+    "SUPPORTED_RESEARCH_PLANNING_POLICY_SCHEMA_VERSIONS",
     "CompiledResearchPlan",
     "PlannerAtom",
     "ResearchObjective",

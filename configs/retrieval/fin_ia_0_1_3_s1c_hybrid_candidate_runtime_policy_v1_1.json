@@ -1,0 +1,38 @@
+{
+  "schema_version": "fin_ia_s1c_hybrid_candidate_runtime_policy_v1_1",
+  "status": "provisional_financial_structure_ranker_not_evidence_authority",
+  "object_store": {
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v2/objects.jsonl",
+    "objects_sha256": "fa4849b0c91256e83a373c20818dd7ba6be1f2fd47655494b032f94ed51fa2dd"
+  },
+  "qwen_embedding": {
+    "model_id": "Qwen/Qwen3-Embedding-0.6B",
+    "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+    "local_directory_env": "FINSIGHT_QWEN_EMBEDDING_MODEL_DIR",
+    "development_fallback_local_directory": "D:/hf_models/Qwen__Qwen3-Embedding-0.6B",
+    "dense_cache_ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v2/qwen3_embedding_0_6b_v1/dense.float16.npy",
+    "cache_manifest_ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v2/qwen3_embedding_0_6b_v1/manifest.json",
+    "maximum_sequence_length": 512,
+    "query_instruction": "Given a source-bound financial research request, retrieve passages that directly address the requested evidence facet while preserving issuer, period and relationship direction."
+  },
+  "candidate_contract": {
+    "first_stage_limit": 64,
+    "candidate_union_limit": 96,
+    "output_limit": 16,
+    "max_candidates_per_source_record": 2
+  },
+  "financial_ranking": {
+    "enabled": true,
+    "strategy": "lexicographic_financial_structure_v1",
+    "evidence_role_mode": "advisory_with_abstain",
+    "source_quota_after_ranking": true,
+    "candidate_is_not_evidence": true
+  },
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "embedding_grants_evidence_authority": false,
+    "database_lane_remains_independent": true,
+    "generation_model_calls_authorized": false
+  }
+}

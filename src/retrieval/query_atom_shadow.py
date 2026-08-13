@@ -19,6 +19,15 @@ from .route_compiler import QueryObjectFactRoutePolicy
 
 
 QUERY_ATOM_EVAL_SCHEMA_VERSION = "fin_ia_s1c_runtime_query_atom_eval_v1_0"
+QUERY_ATOM_EVAL_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_s1c_runtime_query_atom_eval_v1_1"
+)
+QUERY_ATOM_EVAL_SCHEMA_VERSIONS = frozenset(
+    {
+        QUERY_ATOM_EVAL_SCHEMA_VERSION,
+        QUERY_ATOM_EVAL_SUCCESSOR_SCHEMA_VERSION,
+    }
+)
 
 
 class QueryAtomShadowError(ValueError):
@@ -36,7 +45,7 @@ class QueryAtom:
 
 
 def load_query_atoms(payload: Mapping[str, Any]) -> tuple[QueryAtom, ...]:
-    if payload.get("schema_version") != QUERY_ATOM_EVAL_SCHEMA_VERSION:
+    if payload.get("schema_version") not in QUERY_ATOM_EVAL_SCHEMA_VERSIONS:
         raise QueryAtomShadowError("query_atom_eval_schema_invalid")
     policy = payload.get("policy")
     if not (
@@ -159,6 +168,45 @@ def eligible_atom_indices(
     return np.asarray(eligible, dtype=np.int64), dict(sorted(exclusions.items()))
 
 
+def eligible_request_indices(
+    objects: Sequence[Mapping[str, Any]],
+    *,
+    request: Any,
+    lane: QueryLane,
+    route_policy: QueryObjectFactRoutePolicy,
+) -> tuple[np.ndarray, dict[str, int]]:
+    """Apply the same hard boundary to a product request with one or more owners."""
+
+    family = route_policy.family_by_facet().get(lane.facet_id)
+    if family is None:
+        raise QueryAtomShadowError("query_atom_facet_unrouted")
+    object_kinds = {
+        "bounded_parent_context" if form == "bounded_parent_context" else form
+        for form in family.allowed_object_forms
+    }
+    fiscal_years = {int(value) for value in request.period.fiscal_years}
+    as_of = date.fromisoformat(lane.publication_date_lte)
+    owners = {value.upper() for value in lane.evidence_owner_tickers}
+    if not owners:
+        raise QueryAtomShadowError("query_request_evidence_owner_missing")
+    eligible: list[int] = []
+    exclusions: dict[str, int] = {}
+    for index, row in enumerate(objects):
+        reason = _request_object_exclusion_reason(
+            row,
+            owners=owners,
+            as_of=as_of,
+            source_types=lane.source_types,
+            object_kinds=object_kinds,
+            fiscal_years=fiscal_years,
+        )
+        if reason is None:
+            eligible.append(index)
+        else:
+            exclusions[reason] = exclusions.get(reason, 0) + 1
+    return np.asarray(eligible, dtype=np.int64), dict(sorted(exclusions.items()))
+
+
 def label_eligibility_rows(
     objects: Sequence[Mapping[str, Any]],
     *,
@@ -264,9 +312,11 @@ def evaluate_controlled_evidence_roles(
                 "section": base.get("section"),
                 "subsection": base.get("subsection"),
                 "source_type": base.get("source_type"),
+                "object_kind": row.get("object_kind"),
                 "document_text": row.get("model_text"),
             },
             slot_id=lane.slot_id,
+            facet_id=lane.facet_id,
             subject_ticker=lane.subject_ticker,
             evidence_owner_ticker=owner,
             relationship_direction=relationship,
@@ -299,8 +349,27 @@ def _atom_object_exclusion_reason(
     object_kinds: set[str],
     fiscal_years: set[int],
 ) -> str | None:
+    return _request_object_exclusion_reason(
+        row,
+        owners={owner},
+        as_of=as_of,
+        source_types=source_types,
+        object_kinds=object_kinds,
+        fiscal_years=fiscal_years,
+    )
+
+
+def _request_object_exclusion_reason(
+    row: Mapping[str, Any],
+    *,
+    owners: set[str],
+    as_of: date,
+    source_types: Sequence[str],
+    object_kinds: set[str],
+    fiscal_years: set[int],
+) -> str | None:
     base = row["base_object_view"]
-    if str(base.get("ticker") or "").upper() != owner:
+    if str(base.get("ticker") or "").upper() not in owners:
         return "outside_evidence_owner_scope"
     try:
         published = date.fromisoformat(str(base.get("publication_date") or ""))
@@ -400,9 +469,11 @@ def evaluate_query_atom(
                 "section": base.get("section"),
                 "subsection": base.get("subsection"),
                 "source_type": base.get("source_type"),
+                "object_kind": row.get("object_kind"),
                 "document_text": row.get("model_text"),
             },
             slot_id=lane.slot_id,
+            facet_id=lane.facet_id,
             subject_ticker=lane.subject_ticker,
             evidence_owner_ticker=owner,
             relationship_direction=relationship,
@@ -627,6 +698,7 @@ __all__ = [
     "aggregate_query_atom_results",
     "compile_atom_lane",
     "eligible_atom_indices",
+    "eligible_request_indices",
     "evaluate_controlled_evidence_roles",
     "evaluate_controlled_reranker",
     "evaluate_query_atom",

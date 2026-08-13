@@ -8,7 +8,7 @@ from pathlib import Path
 import shutil
 import subprocess
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 from urllib.parse import urlparse
 
 import requests
@@ -16,6 +16,9 @@ import requests
 
 CAPTURE_SCHEMA_VERSION = "fin_ia_official_source_capture_v1_0"
 CAPTURE_PLAN_SCHEMA_VERSION = "fin_ia_s1b_official_source_capture_plan_v1_0"
+CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_s1d_official_source_capture_plan_v1_1"
+)
 SAFE_RESPONSE_HEADERS = {
     "content-length",
     "content-type",
@@ -38,11 +41,23 @@ class _TransportResponse:
     transport_attempts: int
 
 
+TransportFetcher = Callable[[Mapping[str, Any]], _TransportResponse]
+
+
 def validate_capture_plan(payload: Mapping[str, Any]) -> dict[str, Any]:
     value = dict(payload)
-    if value.get("schema_version") != CAPTURE_PLAN_SCHEMA_VERSION:
+    schema_version = str(value.get("schema_version") or "")
+    if schema_version not in {
+        CAPTURE_PLAN_SCHEMA_VERSION,
+        CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION,
+    }:
         raise OfficialSourceCaptureError("official_capture_plan_schema_invalid")
-    if value.get("status") != "s1b_official_source_capture_plan":
+    expected_status = (
+        "s1d_official_source_capture_plan"
+        if schema_version == CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION
+        else "s1b_official_source_capture_plan"
+    )
+    if value.get("status") != expected_status:
         raise OfficialSourceCaptureError("official_capture_plan_status_invalid")
     policy = value.get("policy")
     sources = value.get("sources")
@@ -78,7 +93,11 @@ def validate_capture_plan(payload: Mapping[str, Any]) -> dict[str, Any]:
             and int(source.get("byte_ceiling") or 0) > 0
             and int(source.get("timeout_seconds") or 0) > 0
             and str(source.get("transport") or "requests")
-            in {"requests", "curl"}
+            in (
+                {"requests", "curl", "playwright_api_request"}
+                if schema_version == CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION
+                else {"requests", "curl"}
+            )
             and 0 <= int(source.get("max_transport_retries") or 0) <= 2
         ):
             raise OfficialSourceCaptureError("official_capture_source_invalid")
@@ -92,6 +111,7 @@ def capture_plan(
     output_root: Path,
     attempt_id: str,
     session: requests.Session | None = None,
+    transport_fetchers: Mapping[str, TransportFetcher] | None = None,
 ) -> dict[str, Any]:
     validated = validate_capture_plan(plan)
     root = output_root.resolve() / attempt_id
@@ -106,14 +126,23 @@ def capture_plan(
                 source,
                 object_root=object_root,
                 session=active_session,
+                transport_fetchers=transport_fetchers or {},
             )
         )
+    successor = (
+        validated["schema_version"] == CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION
+    )
+    result_prefix = "s1d" if successor else "s1b"
     result = {
-        "schema_version": "fin_ia_s1b_official_source_capture_result_v1_0",
+        "schema_version": (
+            "fin_ia_s1d_official_source_capture_result_v1_1"
+            if successor
+            else "fin_ia_s1b_official_source_capture_result_v1_0"
+        ),
         "status": (
-            "s1b_official_sources_captured"
+            f"{result_prefix}_official_sources_captured"
             if all(row["status"] == "captured" for row in rows)
-            else "s1b_official_source_capture_incomplete"
+            else f"{result_prefix}_official_source_capture_incomplete"
         ),
         "attempt_id": attempt_id,
         "source_routes_executed": len(rows),
@@ -137,6 +166,7 @@ def _capture_source(
     *,
     object_root: Path,
     session: requests.Session,
+    transport_fetchers: Mapping[str, TransportFetcher],
 ) -> dict[str, Any]:
     route_id = str(source["route_id"])
     case_key = str(source["case_key"])
@@ -161,6 +191,7 @@ def _capture_source(
         response = _fetch_source(
             source,
             session=session,
+            transport_fetchers=transport_fetchers,
         )
     except (requests.RequestException, OfficialSourceCaptureError) as exc:
         failure = {
@@ -243,10 +274,16 @@ def _fetch_source(
     source: Mapping[str, Any],
     *,
     session: requests.Session,
+    transport_fetchers: Mapping[str, TransportFetcher],
 ) -> _TransportResponse:
     transport = str(source.get("transport") or "requests")
+    injected = transport_fetchers.get(transport)
+    if injected is not None:
+        return injected(source)
     if transport == "curl":
         return _fetch_with_curl(source)
+    if transport == "playwright_api_request":
+        return _fetch_with_playwright_api_request(source)
     response = session.get(
         str(source["url"]),
         headers={
@@ -267,6 +304,62 @@ def _fetch_source(
         body=body,
         transport_attempts=1,
     )
+
+
+def _fetch_with_playwright_api_request(
+    source: Mapping[str, Any],
+) -> _TransportResponse:
+    try:
+        from playwright.sync_api import Error as PlaywrightError
+        from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+        from playwright.sync_api import sync_playwright
+    except ImportError as exc:  # pragma: no cover - dependency contract
+        raise OfficialSourceCaptureError(
+            "official_source_playwright_unavailable"
+        ) from exc
+
+    try:
+        with sync_playwright() as runtime:
+            context = runtime.request.new_context(
+                extra_http_headers={
+                    "Accept": "text/html,application/pdf;q=0.9,*/*;q=0.1",
+                    "User-Agent": _official_source_user_agent(),
+                },
+                ignore_https_errors=False,
+            )
+            try:
+                response = context.get(
+                    str(source["url"]),
+                    fail_on_status_code=False,
+                    max_redirects=10,
+                    timeout=int(source["timeout_seconds"]) * 1000,
+                )
+                body = response.body()
+                if len(body) > int(source["byte_ceiling"]):
+                    raise OfficialSourceCaptureError(
+                        "official_source_body_too_large"
+                    )
+                return _TransportResponse(
+                    status_code=int(response.status),
+                    final_url=str(response.url),
+                    headers={
+                        str(key).lower(): str(value)
+                        for key, value in response.headers.items()
+                    },
+                    redirect_chain=(),
+                    body=body,
+                    transport_attempts=1,
+                )
+            finally:
+                context.dispose()
+    except PlaywrightTimeoutError as exc:
+        raise OfficialSourceCaptureError(
+            "official_source_playwright_timeout"
+        ) from exc
+    except PlaywrightError as exc:
+        raise OfficialSourceCaptureError(
+            "official_source_playwright_transport_failure"
+        ) from exc
 
 
 def _fetch_with_curl(source: Mapping[str, Any]) -> _TransportResponse:
@@ -397,6 +490,7 @@ def _persist_result(path: Path, payload: Mapping[str, Any]) -> None:
 
 __all__ = [
     "CAPTURE_PLAN_SCHEMA_VERSION",
+    "CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION",
     "CAPTURE_SCHEMA_VERSION",
     "OfficialSourceCaptureError",
     "capture_plan",

@@ -1,0 +1,24 @@
+{
+  "schema_version": "fin_ia_s1c_facet_evidence_role_shadow_authority_v1_0",
+  "status": "zero_network_zero_model_qrel_successor_role_shadow",
+  "recorded_at": "2026-08-13",
+  "bound_inputs": {
+    "eval_ref": "configs/retrieval/fin_ia_0_1_3_s1c_runtime_query_atom_eval_v1_1.json",
+    "eval_sha256": "e7d198ec6109a22eb2c8fe00655a96dee99addcc28df743730156d7fc2643c9f",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_1.json",
+    "kernel_sha256": "6f456246130ab0ea6f3b3d31ae009d0bb3d51ee18c93645ff39a5330cd375564",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_1.json",
+    "route_policy_sha256": "be4ee9efe54f588b4c887f58d9c450942c031c16c268f1a1470d58f9f5b5dfd7",
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v2/objects.jsonl",
+    "objects_sha256": "fa4849b0c91256e83a373c20818dd7ba6be1f2fd47655494b032f94ed51fa2dd"
+  },
+  "output_ref": "configs/retrieval/fin_ia_0_1_3_s1c_facet_evidence_role_shadow_result_v1_0.json",
+  "authority": {
+    "network_calls_authorized": false,
+    "model_calls_authorized": false,
+    "candidate_is_not_evidence": true,
+    "role_compatibility_is_not_relevance": true,
+    "runtime_promotion_authorized": false,
+    "training_authorized": false
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": "fin_ia_s1d_official_source_capture_plan_v1_1",
+  "status": "s1d_official_source_capture_plan",
+  "recorded_at": "2026-08-13",
+  "research_as_of": "2026-08-06",
+  "policy": {
+    "capture_before_parse": true,
+    "https_only": true,
+    "credentials_forbidden": true,
+    "bounded_addendum_not_general_crawler": true,
+    "source_body_is_not_evidence_until_gate": true,
+    "equivalent_official_routes_only": true,
+    "broad_web_search_forbidden": true,
+    "zero_retry": true
+  },
+  "sources": [
+    {
+      "case_key": "DELL",
+      "route_id": "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT_BROWSER_SUCCESSOR",
+      "url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "allowed_hosts": ["investors.delltechnologies.com"],
+      "expected_content_types": ["application/pdf"],
+      "transport": "playwright_api_request",
+      "max_transport_retries": 0,
+      "timeout_seconds": 60,
+      "byte_ceiling": 4000000
+    },
+    {
+      "case_key": "TSM",
+      "route_id": "TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT_BROWSER_SUCCESSOR",
+      "url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/547d1696765e05ce3adb81c108ce1c8c1682b80c/TSMC%202Q26%20Transcript.pdf",
+      "allowed_hosts": ["investor.tsmc.com"],
+      "expected_content_types": ["application/pdf"],
+      "transport": "playwright_api_request",
+      "max_transport_retries": 0,
+      "timeout_seconds": 60,
+      "byte_ceiling": 5000000
+    }
+  ]
+}

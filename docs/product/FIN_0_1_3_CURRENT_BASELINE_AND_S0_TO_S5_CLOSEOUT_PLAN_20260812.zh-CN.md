@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S3_budget_contract_engineering_pass / S1C_saved_planner_input_audited / S1D_Dell_and_TSM_official_PDF_successors_promoted / runtime_registry_R11 / DELL_core_research_ready / S1_product_open / S3_consumer_zero_call_engineering_pass / natural_synthesis_pending / product_iteration_not_closed`
+状态：`repository_baseline_complete / S3_budget_contract_engineering_pass / S1C_saved_planner_input_audited / S1D_Dell_and_TSM_official_PDF_successors_promoted / runtime_registry_R11 / DELL_core_research_ready / S1_product_open / S3_consumer_zero_call_engineering_pass / natural_synthesis_R1_terminal_failed / structural_disposition_required / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -23,7 +23,7 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 | S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线 | G01–G12 已通过并合并远端 main | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿 |
 | S1 | 类型化 EvidenceRequest、内外源发现、解析、chunk/object、SQL/lexical/semantic/graph 路由、rerank、Evidence Role、来源覆盖 | 保存的自然 Planner atoms 已执行 8 个 request／128 个 Qwen＋BM25 候选并逐项归责；两个新 ranker 与 Evidence Role 均未晋升。TSM 与 Dell 官方 PDF 已经共用 parser/Gate 进入当前 DELL Pack，当前为 20 Evidence／14 gaps；MU/NVDA 未偷换 | 三案及独立留出案例的 request-to-plan、required-slot target-in-pool、日期/实体/关系、route contribution 和 Evidence Role 正确；数值请求可靠路由到 S2 exact lookup，外源只补真实 residual gap |
 | S2 | 公司财务事实 mart、Evidence/NumericFact 编译、PIT、单位/期间、引用和冲突 | private mart 已从三案 SEC capture 建立，1,319 observations、24/24 精确事实查询及 mutation 通过；DELL 受控纵切为 7/7 typed request resolved、21 NumericFacts、0 gap/conflict | 数值事实从权威对象确定性入库和查询，跨案/错期/错单位 fail closed，typed exact lookup 返回 NumericFact 或可信 gap；自然 planner、研究消费和三案依赖回归证明产品价值 |
-| S3 | 动态规划、工具使用、重裁决、研究综合、Workpaper/Report | provider-neutral Objective／planner atom／EvidenceRequest 合同和预算分层已接通；当前 consumer 已在零调用 R1 中消费 DELL current Pack、residual gaps 与 S2 NumericFact，并完成结构化判断/底稿/报告 preview；自然综合与产品验收未执行 | 三案真实动态研究通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收 |
+| S3 | 动态规划、工具使用、重裁决、研究综合、Workpaper/Report | provider-neutral planning 和 consumer 零调用工程门已通过；DELL 自然综合 R1 返回 exact JSON/5 cells，但合同与内容双重失败，0 retry | 三案真实动态研究通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收 |
 | S4 | 用户任务、Evidence/Gap/Workpaper/Review/Repair 产品闭环 | 只有只读 Evidence Workspace 和独立 Operations | 当前 S3 candidate 被真实 UI 消费；review/repair/lineage 可完成且不依赖旧产品面 |
 | S5 | 发布、回滚、运行、成本、安全和 Owner acceptance | 未开始；本次仓库 merge 不是 S5 | RG1–RG5、clean deploy、回滚和 Owner 签署全部成立 |
 
@@ -50,8 +50,9 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 17. **S1-D 本轮有界补源与 current Pack 提升（已完成）**：TSM 22-page PDF 晋升两条先进封装 bounded Evidence；Dell Q1 FY2027 14-page 官方托管 transcript 经绑定 route 人工入库，共用 parser/Gate 晋升三条 direct Evidence，覆盖 $24.4b AI orders、$16.1b AI server revenue、$51.3b backlog、需求大于供给、memory constraint、主动锁定基础设施以及 AI server 中个位数营业利润率目标。只有利润率 gap 被关闭；提前采购幅度/消化、ASP/PVM、供应分配、容量时点和估值继续可见。一次零调用 current composition 把 DELL 从 15／16 提升为 20／14，MU/NVDA 和留出案例保持原摘要与 digest；Runtime Registry R11、真实私有挂载和 Workbench 三案验收通过。
 18. **S2 三案有限依赖回归（已完成）**：Dell/TSM transcript 只作为叙事 Evidence，没有获得 NumericFact 权限；公司事实 mart 保持 1,319 observations、SQLite SHA-256 `d05b0cc8...c585`，没有因补源改变数值真值。
 19. **S3 当前 research consumer 纵切（零调用工程门与 clean R2 已完成）**：保留已经完成的 DELL Planner R1，不重复付费证明规划。当前活动树已建立唯一 provider-neutral `Evidence Pack + NumericFact → judgment/workpaper/report` consumer；R1 从 20 条 reviewed Evidence、14 gaps 和 45 个 request-level NumericFact 编译 19 条可见 Evidence、10 gaps 与 25 个去重/期间选择后的 NumericFact，并以 fake/mutation 证明结构、引用和数值权限 fail closed。绑定远端提交的 R2 复现同一 input/deliverable digest。模型负责引用选择、机制、反方、置信度与 WWC；本地控制面负责事实、身份、数值、引用和结构。下一门是一次最小 DeepSeek 综合 canary；DELL 通过后再迁移 MU/NVDA，不能直接复活归档 9-call runner。
-20. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
-21. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+20. **DELL 自然综合 Canary R1（terminal failed）**：Provider HTTP/finish reason/exact JSON 和 5/5 cells 成立，但模型遗漏本地 envelope，并自创未在 model-visible view 中列出的枚举；另有跨 cell ref、复合 Evidence 二元角色冲突和自由数量级表述。零调用内容审计还发现 AI→EPS/分部利润、AI→营运资金、上游扩产→Dell 瓶颈缓解等越界归因。R1 0 retry、0 fallback、0 发布；下一项必须先做一次 provider-neutral 零调用结构处置，不自动进入 R2。
+21. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
+22. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
 ## 5. 防止再次膨胀的工程规则
 

@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_canary_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "recorded_at": "2026-08-13T10:11:54+00:00",
+  "result_id": "FIN-0.1.3-S3-DELL-CURRENT-RESEARCH-CONSUMER-CANARY-R1",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_research_consumer_canary_authority_v1_0.json",
+  "authority_sha256": "ff4aee749f3c44c304be3d4d03264ead2b095a3b8c9b1339416645919b9fd5fd",
+  "implementation_commit": "e470022e26c6c61d6e6525627b68b7a6f5a459b4",
+  "bindings": {
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "research_input_digest": "440987e2fdaf62324ccacd7280d5eaba1d352906f58008794499ce7733dd1968",
+    "evidence_pack_artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+    "evidence_pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a",
+    "deliverable_digest": ""
+  },
+  "provider": {
+    "provider_id": "deepseek",
+    "model": "deepseek-v4-pro",
+    "finish_reason": "stop",
+    "usage": {
+      "prompt_tokens": 14141,
+      "completion_tokens": 2643,
+      "total_tokens": 16784,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 14141
+    },
+    "request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3/dell_current_research_consumer/FIN013-S3-DELL-CURRENT-CONSUMER-CANARY-R1/ATTEMPT-01/model_visible_request.json",
+    "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3/dell_current_research_consumer/FIN013-S3-DELL-CURRENT-CONSUMER-CANARY-R1/ATTEMPT-01/provider_response.json",
+    "request_digest": "eceba77c4f37dc6f3a1c935d5e510684d4abc148ed069194cc369d987c986662",
+    "response_digest": "203103bc01b4887fdd5006c252deba69a031f957b77389b5142e0853c56724d0",
+    "private_reasoning_fields_redacted": 0
+  },
+  "terminal": {
+    "failure_phase": "research_output_parse_or_contract",
+    "failure_code": "research_consumer_output_envelope_invalid",
+    "model_calls": 1,
+    "transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "planner_calls": 0,
+    "product_publication": false
+  },
+  "full_result_ref": "",
+  "full_result_sha256": "",
+  "acceptance": {
+    "deterministic_contract_pass": false,
+    "natural_research_quality_proven": false,
+    "qualified_human_acceptance": false,
+    "s3_product_acceptance": false,
+    "workbench_publication": false,
+    "release_ready": false
+  },
+  "known_boundary": "This authority tests only one natural DeepSeek synthesis node against the current fixed Dell Evidence Pack and NumericFacts. Contract success still requires L1 and content-quality review and does not prove dynamic three-case Agentic Research, Workbench publication, S3 acceptance or release readiness.",
+  "result_digest": "c3b172d42764672e9be16ddc4aa364430abff65b55cb98a47f94f30db71b4711"
+}

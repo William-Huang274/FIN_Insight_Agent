@@ -78,3 +78,9 @@ R2 已通过；当前只允许一次 DeepSeek Pro 综合 canary：
 - 不自动发布到 Workbench，也不宣称 S3 或 FIN 0.1.3 通过。
 
 若模型自然输出通过合同，再做 L1 事实/数值/身份/引用和内容质量审阅。若出现新的 L1，保留 capture 并停在 S3 做一次结构处置；不得恢复旧九调用链或进入逐字段 live 循环。
+
+## 6. 自然 Canary R1 结果
+
+唯一一次 DeepSeek Pro 调用完成 HTTP 与 exact JSON，并返回五个必需单元，但在 envelope、枚举、cell ref、Evidence role 和自由数量级表述上未通过合同；内容层也存在 AI 归因、现金归因和供应缓解过度推断。特别需要更正的是：model-visible contract 没有列出实际合法枚举，因此枚举失败包含项目责任；同时模型已经看见 claim boundary，仍作出多项越界因果判断，因此也存在真实的模型研究质量问题。
+
+R1 不重试、不追认。下一 successor 必须让 Harness 注入本地 envelope、明列枚举、按 cell 嵌套 Evidence/NumericFact/Gap，并把证据用途改为 `support / limit / context`，再增加显式 inference authority。保存 R1 只用于零调用回放，不能成为新报告或训练 gold。

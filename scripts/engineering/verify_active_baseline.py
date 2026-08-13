@@ -52,6 +52,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/market/30_compute_market_analytics.py",
     "scripts/market/40_build_market_evidence_pack.py",
     "scripts/market/50_validate_market_snapshot.py",
+    "scripts/research/run_s3_current_research_consumer_zero_call.py",
 )
 
 

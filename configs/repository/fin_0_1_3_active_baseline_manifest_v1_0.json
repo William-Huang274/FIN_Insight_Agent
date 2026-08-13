@@ -44,6 +44,7 @@
       "scripts/market/30_compute_market_analytics.py",
       "scripts/market/40_build_market_evidence_pack.py",
       "scripts/market/50_validate_market_snapshot.py",
+      "scripts/research/run_s3_current_research_consumer_zero_call.py",
       "scripts/data_retrieval/materialize_s1c_runtime_query_atoms.py",
       "scripts/data_retrieval/run_s1c_runtime_query_atom_model_shadow.py"
     ],
@@ -68,7 +69,7 @@
   ],
   "observed": {
     "frontend_files": 8,
-    "python_files": 107,
+    "python_files": 109,
     "runtime_detector_files": 4,
     "runtime_resources": 10
   },
@@ -124,6 +125,7 @@
     "scripts/market/30_compute_market_analytics.py",
     "scripts/market/40_build_market_evidence_pack.py",
     "scripts/market/50_validate_market_snapshot.py",
+    "scripts/research/run_s3_current_research_consumer_zero_call.py",
     "src/connectors/__init__.py",
     "src/connectors/sec_edgar_connector.py",
     "src/connectors/sec_filing_manifest.py",
@@ -163,6 +165,7 @@
     "src/retrieval/temporal.py",
     "src/retrieval/text.py",
     "src/sec_agent/market_snapshot.py",
+    "src/sec_agent/research/current_consumer.py",
     "src/sec_agent/research/official_pdf_evidence.py",
     "src/sec_agent/research/planning.py",
     "src/sec_agent/research/reviewed_evidence_pack.py",

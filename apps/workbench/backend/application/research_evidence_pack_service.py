@@ -373,6 +373,7 @@ class ResearchEvidencePackService:
         projected = {
             key: deepcopy(item[key])
             for key in (
+                "case_key",
                 "target_id",
                 "source_record_id",
                 "object_type",

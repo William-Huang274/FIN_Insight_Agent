@@ -1,0 +1,1301 @@
+from __future__ import annotations
+
+from copy import deepcopy
+import json
+import re
+from typing import Any, Mapping, Sequence
+
+from .reviewed_evidence_pack import canonical_digest
+
+
+CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION = (
+    "fin_ia_current_research_consumer_policy_v1_0"
+)
+CURRENT_RESEARCH_INPUT_SCHEMA_VERSION = "fin_ia_current_research_input_v1_0"
+CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION = (
+    "fin_ia_current_research_judgment_output_v1_0"
+)
+CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION = (
+    "fin_ia_current_research_deliverable_v1_0"
+)
+
+_AUTHORITY = {
+    "model_sees_source_visible_facts_and_authoritative_numeric_facts": True,
+    "model_owns_judgment_mechanism_counterargument_and_wwc": True,
+    "harness_owns_identity_period_unit_exact_numeric_surface_and_citations": True,
+    "harness_may_not_invent_research_judgment": True,
+    "candidates_and_rejected_items_forbidden": True,
+    "residual_gaps_remain_visible": True,
+    "source_policy_domains_remain_separate": True,
+    "qualified_human_review_required": True,
+}
+_MODEL_TEXT_FIELDS = (
+    "thesis_atom",
+    "mechanism_atom",
+    "counterargument_atom",
+)
+_DIGIT_OR_FINANCIAL_SURFACE = re.compile(
+    r"[0-9０-９]|[$€£¥￥]|%|％|\b(?:USD|CNY|EUR|JPY|bps?)\b",
+    re.IGNORECASE,
+)
+_VERBAL_NUMERIC_SURFACE = re.compile(
+    r"(?:百分之[零一二两三四五六七八九十百千万亿点]+|"
+    r"[零一二两三四五六七八九十百千万亿]+位数|"
+    r"(?:个|两|双|多)位数|"
+    r"[零一二两三四五六七八九十百千万亿点]+个基点)"
+)
+_ALIAS_IN_PROSE = re.compile(r"\b(?:EV|NUM|GAP)::[A-F0-9]{8,64}\b")
+
+
+class CurrentResearchConsumerError(ValueError):
+    """Fail-closed error at the reviewed Evidence/NumericFact consumer boundary."""
+
+    def __init__(self, code: str) -> None:
+        self.code = code
+        super().__init__(code)
+
+
+def _require(condition: bool, code: str) -> None:
+    if not condition:
+        raise CurrentResearchConsumerError(code)
+
+
+def _mapping(value: object, code: str) -> Mapping[str, Any]:
+    _require(isinstance(value, Mapping), code)
+    return value
+
+
+def _unique_strings(
+    value: object,
+    code: str,
+    *,
+    allow_empty: bool = False,
+) -> tuple[str, ...]:
+    _require(isinstance(value, list), code)
+    rows = tuple(str(item).strip() for item in value)
+    _require(
+        (allow_empty or bool(rows))
+        and all(rows)
+        and len(rows) == len(set(rows)),
+        code,
+    )
+    return rows
+
+
+def _alias(prefix: str, identity: Mapping[str, Any]) -> str:
+    return f"{prefix}::{canonical_digest(identity)[:16].upper()}"
+
+
+def load_current_research_consumer_policy(
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected = {
+        "schema_version",
+        "status",
+        "reviewed_source_policy",
+        "cell_contracts",
+        "numeric_fact_selection",
+        "model_input_contract",
+        "model_output_contract",
+        "authority",
+    }
+    _require(set(payload) == expected, "research_consumer_policy_fields_invalid")
+    _require(
+        payload.get("schema_version")
+        == CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION,
+        "research_consumer_policy_schema_invalid",
+    )
+    _require(
+        payload.get("status")
+        == "provider_neutral_reviewed_evidence_and_numeric_fact_consumer",
+        "research_consumer_policy_status_invalid",
+    )
+    source_policy = _mapping(
+        payload.get("reviewed_source_policy"),
+        "research_consumer_source_policy_invalid",
+    )
+    _require(
+        set(source_policy)
+        == {
+            "allowed_source_types",
+            "allowed_source_tiers",
+            "earnings_call_transcript_constraints",
+        },
+        "research_consumer_source_policy_invalid",
+    )
+    source_types = _unique_strings(
+        source_policy.get("allowed_source_types"),
+        "research_consumer_source_types_invalid",
+    )
+    source_tiers = _unique_strings(
+        source_policy.get("allowed_source_tiers"),
+        "research_consumer_source_tiers_invalid",
+    )
+    transcript = _mapping(
+        source_policy.get("earnings_call_transcript_constraints"),
+        "research_consumer_transcript_policy_invalid",
+    )
+    _require(
+        dict(transcript)
+        == {
+            "required_source_tier": "official_hosted_management_call_transcript",
+            "reviewed_pack_only": True,
+            "open_retrieval_source_type_expansion": False,
+            "automatic_numeric_fact_promotion": False,
+        }
+        and "EARNINGS_CALL_TRANSCRIPT" in source_types
+        and "official_hosted_management_call_transcript" in source_tiers,
+        "research_consumer_transcript_policy_invalid",
+    )
+    raw_cells = payload.get("cell_contracts")
+    _require(
+        isinstance(raw_cells, list) and len(raw_cells) == 5,
+        "research_consumer_cell_contracts_invalid",
+    )
+    cell_ids: set[str] = set()
+    primary_slots: set[str] = set()
+    cells: list[dict[str, Any]] = []
+    cell_fields = {
+        "cell_id",
+        "title_zh",
+        "primary_slot_id",
+        "supplemental_context_slot_ids",
+        "maximum_evidence_items",
+        "maximum_numeric_facts",
+    }
+    for raw in raw_cells:
+        row = _mapping(raw, "research_consumer_cell_contract_invalid")
+        _require(
+            set(row) == cell_fields,
+            "research_consumer_cell_contract_invalid",
+        )
+        cell_id = str(row.get("cell_id") or "").strip()
+        title = str(row.get("title_zh") or "").strip()
+        primary = str(row.get("primary_slot_id") or "").strip()
+        supplemental = _unique_strings(
+            row.get("supplemental_context_slot_ids"),
+            "research_consumer_supplemental_slots_invalid",
+            allow_empty=True,
+        )
+        max_evidence = int(row.get("maximum_evidence_items") or 0)
+        max_numeric = int(row.get("maximum_numeric_facts") or 0)
+        _require(
+            cell_id
+            and title
+            and primary
+            and cell_id not in cell_ids
+            and primary not in primary_slots
+            and primary not in supplemental
+            and 1 <= max_evidence <= 20
+            and 0 <= max_numeric <= 20,
+            "research_consumer_cell_contract_invalid",
+        )
+        cell_ids.add(cell_id)
+        primary_slots.add(primary)
+        cells.append(
+            {
+                **dict(row),
+                "supplemental_context_slot_ids": list(supplemental),
+            }
+        )
+    numeric_selection = _mapping(
+        payload.get("numeric_fact_selection"),
+        "research_consumer_numeric_selection_policy_invalid",
+    )
+    _require(
+        dict(numeric_selection)
+        == {
+            "strategy": (
+                "latest_quarter_latest_fiscal_year_and_latest_instant_per_metric"
+            ),
+            "maximum_non_instant_periods_per_metric": 2,
+            "deduplicate_request_identity": True,
+            "preserve_source_request_and_period_role_lineage": True,
+        },
+        "research_consumer_numeric_selection_policy_invalid",
+    )
+    model_input = _mapping(
+        payload.get("model_input_contract"),
+        "research_consumer_model_input_policy_invalid",
+    )
+    _require(
+        set(model_input)
+        == {
+            "maximum_user_message_chars",
+            "maximum_evidence_excerpt_chars",
+            "internal_ids_digests_request_lineage_and_citation_urls_hidden",
+            "exact_source_visible_facts_and_numeric_values_preserved",
+        }
+        and 10000 <= int(model_input["maximum_user_message_chars"]) <= 80000
+        and 400 <= int(model_input["maximum_evidence_excerpt_chars"]) <= 1600
+        and model_input[
+            "internal_ids_digests_request_lineage_and_citation_urls_hidden"
+        ]
+        is True
+        and model_input["exact_source_visible_facts_and_numeric_values_preserved"]
+        is True,
+        "research_consumer_model_input_policy_invalid",
+    )
+    output = _mapping(
+        payload.get("model_output_contract"),
+        "research_consumer_model_output_policy_invalid",
+    )
+    output_fields = {
+        "allowed_judgment_statuses",
+        "allowed_confidence_bases",
+        "allowed_wwc_directions",
+        "maximum_atom_chars",
+        "maximum_wwc_observable_chars",
+        "maximum_wwc_horizon_chars",
+        "maximum_wwc_evidence_route_chars",
+        "digits_currency_units_dates_and_citations_forbidden_in_model_prose",
+        "structured_refs_required",
+    }
+    _require(
+        set(output) == output_fields,
+        "research_consumer_model_output_policy_invalid",
+    )
+    statuses = _unique_strings(
+        output.get("allowed_judgment_statuses"),
+        "research_consumer_judgment_statuses_invalid",
+    )
+    confidence = _unique_strings(
+        output.get("allowed_confidence_bases"),
+        "research_consumer_confidence_bases_invalid",
+    )
+    directions = _unique_strings(
+        output.get("allowed_wwc_directions"),
+        "research_consumer_wwc_directions_invalid",
+    )
+    _require(
+        set(statuses)
+        == {"supported", "bounded_support", "mixed", "insufficient_evidence"}
+        and bool(confidence)
+        and bool(directions)
+        and 80 <= int(output["maximum_atom_chars"]) <= 1000
+        and 40 <= int(output["maximum_wwc_observable_chars"]) <= 600
+        and 20 <= int(output["maximum_wwc_horizon_chars"]) <= 240
+        and 40 <= int(output["maximum_wwc_evidence_route_chars"]) <= 400
+        and output["digits_currency_units_dates_and_citations_forbidden_in_model_prose"]
+        is True
+        and output["structured_refs_required"] is True,
+        "research_consumer_model_output_policy_invalid",
+    )
+    _require(
+        isinstance(payload.get("authority"), Mapping)
+        and dict(payload["authority"]) == _AUTHORITY,
+        "research_consumer_authority_invalid",
+    )
+    return {
+        **deepcopy(dict(payload)),
+        "reviewed_source_policy": {
+            **deepcopy(dict(source_policy)),
+            "allowed_source_types": list(source_types),
+            "allowed_source_tiers": list(source_tiers),
+        },
+        "cell_contracts": cells,
+        "model_output_contract": {
+            **deepcopy(dict(output)),
+            "allowed_judgment_statuses": list(statuses),
+            "allowed_confidence_bases": list(confidence),
+            "allowed_wwc_directions": list(directions),
+        },
+    }
+
+
+def _evidence_card(item: Mapping[str, Any], *, case_key: str) -> dict[str, Any]:
+    source = _mapping(
+        item.get("source"), "research_consumer_evidence_source_missing"
+    )
+    bindings = item.get("slot_bindings")
+    _require(
+        str(item.get("case_key") or "").upper() == case_key
+        and
+        item.get("writer_citable") is True
+        and item.get("causal_attribution_authorized") is False
+        and item.get("disposition")
+        in {
+            "accepted_direct_source_evidence",
+            "accepted_bounded_context_evidence",
+        }
+        and isinstance(bindings, list)
+        and bool(bindings),
+        "research_consumer_evidence_boundary_invalid",
+    )
+    source_ticker = str(source.get("evidence_owner_ticker") or "").strip().upper()
+    _require(source_ticker, "research_consumer_evidence_owner_missing")
+    alias = _alias(
+        "EV",
+        {
+            "case_key": case_key,
+            "target_id": item.get("target_id"),
+            "evidence_item_digest": item.get("evidence_item_digest"),
+        },
+    )
+    slot_rows = []
+    for raw in bindings:
+        binding = _mapping(
+            raw, "research_consumer_evidence_slot_binding_invalid"
+        )
+        slot_id = str(binding.get("slot_id") or "").strip()
+        business = str(binding.get("business_meaning_zh") or "").strip()
+        boundary = str(binding.get("claim_boundary_zh") or "").strip()
+        facets = _unique_strings(
+            binding.get("facet_ids"),
+            "research_consumer_evidence_facets_invalid",
+        )
+        _require(
+            slot_id and business and boundary,
+            "research_consumer_evidence_slot_binding_invalid",
+        )
+        slot_rows.append(
+            {
+                "slot_id": slot_id,
+                "facet_ids": list(facets),
+                "business_meaning_zh": business,
+                "claim_boundary_zh": boundary,
+            }
+        )
+    return {
+        "evidence_ref": alias,
+        "target_id": str(item.get("target_id") or ""),
+        "source_record_id": str(item.get("source_record_id") or ""),
+        "evidence_role": str(item.get("evidence_role") or ""),
+        "evidence_owner_ticker": source_ticker,
+        "source_type": str(source.get("source_type") or ""),
+        "source_tier": str(source.get("source_tier") or ""),
+        "source_url": str(source.get("source_url") or ""),
+        "publication_date": str(item.get("publication_date") or ""),
+        "source_reporting_period_end": str(
+            item.get("source_reporting_period_end") or ""
+        ),
+        "research_as_of": str(item.get("research_as_of") or ""),
+        "relationship_directions": list(
+            item.get("relationship_directions") or ()
+        ),
+        "slot_bindings": slot_rows,
+        "numeric_use_boundary": str(item.get("numeric_use_boundary") or ""),
+        "source_visible_fact_excerpt": str(
+            source.get("reviewed_source_excerpt") or ""
+        ).strip(),
+        "excerpt_truncated": bool(source.get("excerpt_truncated")),
+        "evidence_item_digest": str(item.get("evidence_item_digest") or ""),
+        "source_text_digest": str(source.get("source_text_digest") or ""),
+    }
+
+
+def _validate_evidence_source(
+    card: Mapping[str, Any],
+    *,
+    policy: Mapping[str, Any],
+    research_as_of: str,
+) -> None:
+    source_policy = policy["reviewed_source_policy"]
+    _require(
+        card.get("source_type") in set(source_policy["allowed_source_types"])
+        and card.get("source_tier") in set(source_policy["allowed_source_tiers"]),
+        "research_consumer_reviewed_source_not_allowed",
+    )
+    _require(
+        str(card.get("publication_date") or "") <= research_as_of
+        and str(card.get("research_as_of") or "") == research_as_of,
+        "research_consumer_evidence_temporal_boundary_invalid",
+    )
+    _require(
+        card.get("evidence_owner_ticker")
+        and card.get("source_visible_fact_excerpt")
+        and card.get("source_url"),
+        "research_consumer_evidence_source_incomplete",
+    )
+    if card.get("source_type") == "EARNINGS_CALL_TRANSCRIPT":
+        transcript = source_policy["earnings_call_transcript_constraints"]
+        _require(
+            card.get("source_tier") == transcript["required_source_tier"]
+            and str(card.get("source_url") or "").startswith("https://"),
+            "research_consumer_transcript_source_invalid",
+        )
+
+
+def _numeric_signature(fact: Mapping[str, Any]) -> dict[str, Any]:
+    # A first-quarter observation can legitimately be exposed by the S2 mart as
+    # both ``quarter_discrete`` and ``fiscal_ytd``.  Those rows have the same
+    # company, metric, period boundary, value and source authority.  Keeping the
+    # request/period-role labels in the semantic identity would make one
+    # economic fact look like multiple independent facts to the model.  The
+    # labels remain lineage below, but do not split the S3 fact card.
+    return {
+        "ticker": fact.get("ticker"),
+        "metric_id": fact.get("metric_id"),
+        "value_decimal": fact.get("value_decimal"),
+        "unit": fact.get("unit"),
+        "period_start": fact.get("period_start"),
+        "period_end": fact.get("period_end"),
+        "fiscal_year": fact.get("fiscal_year"),
+        "fiscal_period": fact.get("fiscal_period"),
+        "research_as_of": fact.get("research_as_of"),
+        "authority_mode": fact.get("authority_mode"),
+        "source_observation_ids": sorted(fact.get("source_observation_ids") or ()),
+        "source_digests": sorted(fact.get("source_digests") or ()),
+    }
+
+
+def _numeric_cards(
+    controlled_plan: Mapping[str, Any],
+    *,
+    case_key: str,
+    research_as_of: str,
+    allowed_tickers: set[str],
+) -> tuple[list[dict[str, Any]], dict[str, set[str]]]:
+    grouped: dict[str, dict[str, Any]] = {}
+    slots_by_alias: dict[str, set[str]] = {}
+    for result in controlled_plan.get("request_results") or ():
+        query_plan = _mapping(
+            result.get("query_plan"), "research_consumer_query_plan_missing"
+        )
+        lanes = query_plan.get("lanes")
+        _require(
+            isinstance(lanes, list) and bool(lanes),
+            "research_consumer_query_plan_lanes_missing",
+        )
+        slot_ids = {
+            str(lane.get("slot_id") or "")
+            for lane in lanes
+            if isinstance(lane, Mapping)
+        }
+        _require(
+            "" not in slot_ids,
+            "research_consumer_query_plan_slot_invalid",
+        )
+        request_id = str(
+            _mapping(
+                result.get("request"), "research_consumer_request_missing"
+            ).get("request_id")
+            or ""
+        )
+        for execution in result.get("typed_fact_results") or ():
+            for raw_fact in execution.get("facts") or ():
+                fact = _mapping(raw_fact, "research_consumer_numeric_fact_invalid")
+                _require(
+                    fact.get("schema_version") == "fin_ia_numeric_fact_v1_0"
+                    and fact.get("numeric_fact_authority") is True
+                    and str(fact.get("ticker") or "").upper()
+                    in allowed_tickers
+                    and str(fact.get("research_as_of") or "") == research_as_of,
+                    "research_consumer_numeric_fact_boundary_invalid",
+                )
+                signature = _numeric_signature(fact)
+                alias = _alias("NUM", signature)
+                slots_by_alias.setdefault(alias, set()).update(slot_ids)
+                if alias not in grouped:
+                    grouped[alias] = {
+                        "numeric_ref": alias,
+                        **signature,
+                        "unit_family": fact.get("unit_family"),
+                        "accession_numbers": list(
+                            fact.get("accession_numbers") or ()
+                        ),
+                        "accepted_at": fact.get("accepted_at"),
+                        "citation_urls": list(fact.get("citation_urls") or ()),
+                        "formula_trace": deepcopy(fact.get("formula_trace")),
+                        "source_period_roles": [],
+                        "source_numeric_fact_ids": [],
+                        "source_fact_request_ids": [],
+                    }
+                grouped[alias]["source_period_roles"].append(
+                    str(fact.get("period_role") or "")
+                )
+                grouped[alias]["source_numeric_fact_ids"].append(
+                    str(fact.get("numeric_fact_id") or "")
+                )
+                grouped[alias]["source_fact_request_ids"].append(request_id)
+    cards = []
+    for alias in sorted(grouped):
+        row = grouped[alias]
+        row["source_numeric_fact_ids"] = sorted(
+            set(row["source_numeric_fact_ids"])
+        )
+        row["source_period_roles"] = sorted(set(row["source_period_roles"]))
+        row["source_fact_request_ids"] = sorted(
+            set(row["source_fact_request_ids"])
+        )
+        row["eligible_slot_ids"] = sorted(slots_by_alias[alias])
+        cards.append(row)
+    return cards, slots_by_alias
+
+
+def _select_numeric_cards(
+    cards: Sequence[Mapping[str, Any]],
+    *,
+    policy: Mapping[str, Any],
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    selection = policy["numeric_fact_selection"]
+    groups: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+    for card in cards:
+        groups.setdefault(
+            (str(card.get("ticker") or ""), str(card.get("metric_id") or "")),
+            [],
+        ).append(card)
+    selected_refs: set[str] = set()
+    decisions: list[dict[str, Any]] = []
+    for (ticker, metric_id), rows in sorted(groups.items()):
+        instant = [
+            row for row in rows if "instant" in set(row["source_period_roles"])
+        ]
+        quarter = [
+            row
+            for row in rows
+            if "quarter_discrete" in set(row["source_period_roles"])
+        ]
+        fiscal_year = [
+            row
+            for row in rows
+            if "fiscal_year" in set(row["source_period_roles"])
+        ]
+        fallback_ytd = [
+            row
+            for row in rows
+            if "fiscal_ytd" in set(row["source_period_roles"])
+        ]
+        chosen: list[Mapping[str, Any]] = []
+        if instant:
+            chosen.append(max(instant, key=lambda row: str(row["period_end"])))
+        else:
+            if quarter:
+                chosen.append(max(quarter, key=lambda row: str(row["period_end"])))
+            if fiscal_year:
+                annual = max(fiscal_year, key=lambda row: str(row["period_end"]))
+                if annual.get("numeric_ref") not in {
+                    row.get("numeric_ref") for row in chosen
+                }:
+                    chosen.append(annual)
+            if not chosen and fallback_ytd:
+                chosen.append(
+                    max(fallback_ytd, key=lambda row: str(row["period_end"]))
+                )
+        maximum = int(selection["maximum_non_instant_periods_per_metric"])
+        if not instant:
+            chosen = chosen[:maximum]
+        refs = [str(row["numeric_ref"]) for row in chosen]
+        selected_refs.update(refs)
+        decisions.append(
+            {
+                "ticker": ticker,
+                "metric_id": metric_id,
+                "available_semantic_fact_count": len(rows),
+                "selected_numeric_refs": refs,
+                "omitted_semantic_fact_count": len(rows) - len(refs),
+            }
+        )
+    selected = [deepcopy(dict(row)) for row in cards if row["numeric_ref"] in selected_refs]
+    selected.sort(key=lambda row: str(row["numeric_ref"]))
+    return selected, {
+        "strategy": selection["strategy"],
+        "semantic_unique_fact_count_before_period_selection": len(cards),
+        "model_visible_numeric_fact_count": len(selected),
+        "omitted_but_preserved_in_controlled_plan_count": len(cards) - len(selected),
+        "decisions": decisions,
+    }
+
+
+def _gap_cards(
+    evidence_pack: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    output = []
+    for raw in evidence_pack.get("residual_gaps") or ():
+        row = _mapping(raw, "research_consumer_gap_invalid")
+        slot_id = str(row.get("slot_id") or "").strip()
+        gap_code = str(row.get("gap_code") or "").strip()
+        _require(slot_id and gap_code, "research_consumer_gap_invalid")
+        identity = {
+            "gap_id": row.get("gap_id"),
+            "slot_id": slot_id,
+            "facet_id": row.get("facet_id"),
+            "gap_code": gap_code,
+        }
+        output.append(
+            {
+                "gap_ref": _alias("GAP", identity),
+                "slot_id": slot_id,
+                "facet_id": str(row.get("facet_id") or ""),
+                "gap_code": gap_code,
+                "business_reason_zh": str(
+                    row.get("business_reason_zh") or ""
+                ),
+                "supplement_direction_zh": str(
+                    row.get("supplement_direction_zh") or ""
+                ),
+            }
+        )
+    return sorted(output, key=lambda row: row["gap_ref"])
+
+
+def compile_current_research_input(
+    *,
+    policy: Mapping[str, Any],
+    evidence_pack: Mapping[str, Any],
+    controlled_plan: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Compile only reviewed Evidence and authoritative NumericFacts for S3."""
+
+    policy = load_current_research_consumer_policy(policy)
+    objective = _mapping(
+        controlled_plan.get("objective"), "research_consumer_objective_missing"
+    )
+    case_key = str(objective.get("case_key") or "").strip().upper()
+    research_as_of = str(objective.get("research_as_of") or "")
+    _require(
+        controlled_plan.get("status")
+        == "controlled_research_plan_zero_call_executed"
+        and case_key
+        and evidence_pack.get("case_key") == case_key
+        and research_as_of,
+        "research_consumer_input_boundary_invalid",
+    )
+    rejected_items = evidence_pack.get("rejected_items") or []
+    _require(
+        isinstance(rejected_items, list)
+        and all(
+            isinstance(row, Mapping) and row.get("writer_citable") is False
+            for row in rejected_items
+        ),
+        "research_consumer_rejected_item_boundary_invalid",
+    )
+    consumer_contract = _mapping(
+        evidence_pack.get("consumer_contract"),
+        "research_consumer_pack_contract_missing",
+    )
+    _require(
+        consumer_contract.get("writer_may_consume_only_writer_citable_items")
+        is True
+        and consumer_contract.get("rejected_items_must_not_enter_prompt") is True
+        and consumer_contract.get("residual_gaps_must_remain_visible") is True
+        and consumer_contract.get(
+            "exact_numeric_surface_must_be_source_visible_or_typed"
+        )
+        is True,
+        "research_consumer_pack_contract_invalid",
+    )
+    evidence_cards = [
+        _evidence_card(row, case_key=case_key)
+        for row in evidence_pack.get("evidence_items") or ()
+    ]
+    _require(evidence_cards, "research_consumer_evidence_missing")
+    for card in evidence_cards:
+        _validate_evidence_source(
+            card,
+            policy=policy,
+            research_as_of=research_as_of,
+        )
+    evidence_refs = [row["evidence_ref"] for row in evidence_cards]
+    _require(
+        len(evidence_refs) == len(set(evidence_refs)),
+        "research_consumer_evidence_alias_collision",
+    )
+    allowed_numeric_tickers = {
+        str(ticker).upper()
+        for request in controlled_plan.get("compiled_plan", {}).get(
+            "evidence_requests", ()
+        )
+        for ticker in request.get("target_entities", ())
+    }
+    allowed_numeric_tickers.add(case_key)
+    all_numeric_cards, _ = _numeric_cards(
+        controlled_plan,
+        case_key=case_key,
+        research_as_of=research_as_of,
+        allowed_tickers=allowed_numeric_tickers,
+    )
+    numeric_cards, numeric_selection_summary = _select_numeric_cards(
+        all_numeric_cards,
+        policy=policy,
+    )
+    gap_cards = _gap_cards(evidence_pack)
+    proposed = controlled_plan.get("compiled_plan", {}).get("planner_atoms") or []
+    facet_to_atom = {
+        str(row.get("facet_id") or ""): deepcopy(dict(row))
+        for row in proposed
+        if isinstance(row, Mapping)
+    }
+    selected_facets_by_slot: dict[str, list[str]] = {}
+    for result in controlled_plan.get("request_results") or ():
+        request = _mapping(
+            result.get("request"), "research_consumer_request_missing"
+        )
+        for lane in result.get("query_plan", {}).get("lanes") or ():
+            slot_id = str(lane.get("slot_id") or "")
+            for facet_id in request.get("requested_facet_ids") or ():
+                selected_facets_by_slot.setdefault(slot_id, []).append(
+                    str(facet_id)
+                )
+    cells = []
+    for contract in policy["cell_contracts"]:
+        eligible_slots = {
+            contract["primary_slot_id"],
+            *contract["supplemental_context_slot_ids"],
+        }
+        cell_evidence = [
+            row
+            for row in evidence_cards
+            if any(
+                binding["slot_id"] in eligible_slots
+                for binding in row["slot_bindings"]
+            )
+        ]
+        cell_numeric = [
+            row
+            for row in numeric_cards
+            if eligible_slots.intersection(row["eligible_slot_ids"])
+        ]
+        cell_gaps = [
+            row for row in gap_cards if row["slot_id"] in eligible_slots
+        ]
+        _require(
+            len(cell_evidence) <= int(contract["maximum_evidence_items"])
+            and len(cell_numeric) <= int(contract["maximum_numeric_facts"]),
+            "research_consumer_cell_capacity_exceeded",
+        )
+        facets = sorted(
+            {
+                facet
+                for slot_id in eligible_slots
+                for facet in selected_facets_by_slot.get(slot_id, [])
+            }
+        )
+        cells.append(
+            {
+                "cell_id": contract["cell_id"],
+                "title_zh": contract["title_zh"],
+                "primary_slot_id": contract["primary_slot_id"],
+                "supplemental_context_slot_ids": list(
+                    contract["supplemental_context_slot_ids"]
+                ),
+                "selected_planner_facets": facets,
+                "planner_atoms": [facet_to_atom[facet] for facet in facets],
+                "allowed_evidence_refs": [
+                    row["evidence_ref"] for row in cell_evidence
+                ],
+                "allowed_numeric_refs": [
+                    row["numeric_ref"] for row in cell_numeric
+                ],
+                "visible_gap_refs": [row["gap_ref"] for row in cell_gaps],
+            }
+        )
+    visible_evidence_refs = {
+        ref for cell in cells for ref in cell["allowed_evidence_refs"]
+    }
+    visible_numeric_refs = {
+        ref for cell in cells for ref in cell["allowed_numeric_refs"]
+    }
+    visible_gap_refs = {ref for cell in cells for ref in cell["visible_gap_refs"]}
+    evidence_cards = [
+        row for row in evidence_cards if row["evidence_ref"] in visible_evidence_refs
+    ]
+    numeric_cards = [
+        row for row in numeric_cards if row["numeric_ref"] in visible_numeric_refs
+    ]
+    gap_cards = [row for row in gap_cards if row["gap_ref"] in visible_gap_refs]
+    unsigned = {
+        "schema_version": CURRENT_RESEARCH_INPUT_SCHEMA_VERSION,
+        "status": "current_reviewed_research_input_compiled",
+        "case_identity": {
+            "case_key": case_key,
+            "subject_ticker": objective.get("subject_ticker"),
+            "subject_legal_name": objective.get("subject_legal_name"),
+            "research_as_of": research_as_of,
+        },
+        "objective": deepcopy(dict(objective)),
+        "plan_digest": controlled_plan.get("compiled_plan", {}).get(
+            "plan_digest"
+        ),
+        "evidence_pack_binding": {
+            "artifact_digest": evidence_pack.get("artifact_digest"),
+            "pack_payload_digest": evidence_pack.get("pack_payload_digest"),
+            "projection_digest": evidence_pack.get("projection_digest"),
+        },
+        "cells": cells,
+        "evidence_cards": evidence_cards,
+        "numeric_fact_cards": numeric_cards,
+        "residual_gap_cards": gap_cards,
+        "input_selection_summary": {
+            "reviewed_pack_evidence_count": len(
+                evidence_pack.get("evidence_items") or ()
+            ),
+            "model_visible_evidence_count": len(evidence_cards),
+            "reviewed_pack_gap_count": len(
+                evidence_pack.get("residual_gaps") or ()
+            ),
+            "model_visible_gap_count": len(gap_cards),
+            "controlled_plan_numeric_fact_count_before_semantic_dedup": int(
+                controlled_plan.get("summary", {}).get("numeric_fact_count") or 0
+            ),
+            **numeric_selection_summary,
+        },
+        "model_output_contract": deepcopy(policy["model_output_contract"]),
+        "model_input_contract": deepcopy(policy["model_input_contract"]),
+        "authority": deepcopy(policy["authority"]),
+        "known_boundary": (
+            "Only reviewed writer-citable Evidence, authoritative NumericFacts "
+            "and declared residual gaps enter this S3 input. Retrieval candidates "
+            "and rejected items are absent. Transcript Evidence is already reviewed "
+            "material; it does not expand the S1 open-retrieval source whitelist or "
+            "become S2 numeric authority."
+        ),
+    }
+    return {**unsigned, "research_input_digest": canonical_digest(unsigned)}
+
+
+def compile_current_research_messages(
+    research_input: Mapping[str, Any],
+) -> tuple[dict[str, str], ...]:
+    """Compile one provider-neutral synthesis call from the bounded input."""
+
+    input_contract = research_input["model_input_contract"]
+    maximum_excerpt = int(input_contract["maximum_evidence_excerpt_chars"])
+    visible_evidence = []
+    for row in research_input["evidence_cards"]:
+        excerpt = str(row["source_visible_fact_excerpt"])
+        business_meanings = [
+            binding["business_meaning_zh"] for binding in row["slot_bindings"]
+        ]
+        claim_boundaries = [
+            binding["claim_boundary_zh"] for binding in row["slot_bindings"]
+        ]
+        visible_evidence.append(
+            {
+                "evidence_ref": row["evidence_ref"],
+                "evidence_role": row["evidence_role"],
+                "evidence_owner_ticker": row["evidence_owner_ticker"],
+                "source_type": row["source_type"],
+                "source_tier": row["source_tier"],
+                "publication_date": row["publication_date"],
+                "source_reporting_period_end": row[
+                    "source_reporting_period_end"
+                ],
+                "relationship_directions": row["relationship_directions"],
+                "business_meanings_zh": business_meanings,
+                "claim_boundaries_zh": claim_boundaries,
+                "numeric_use_boundary": row["numeric_use_boundary"],
+                "source_visible_fact_excerpt": excerpt[:maximum_excerpt],
+                "excerpt_truncated": (
+                    bool(row["excerpt_truncated"])
+                    or len(excerpt) > maximum_excerpt
+                ),
+            }
+        )
+    visible_numeric = []
+    for row in research_input["numeric_fact_cards"]:
+        formula = row.get("formula_trace")
+        visible_formula = None
+        if isinstance(formula, Mapping):
+            visible_formula = {
+                key: deepcopy(formula[key])
+                for key in ("formula", "operation", "input_metrics")
+                if key in formula
+            }
+        visible_numeric.append(
+            {
+                key: deepcopy(row[key])
+                for key in (
+                    "numeric_ref",
+                    "ticker",
+                    "metric_id",
+                    "value_decimal",
+                    "unit",
+                    "period_start",
+                    "period_end",
+                    "fiscal_year",
+                    "fiscal_period",
+                    "authority_mode",
+                )
+            }
+            | {"formula_trace": visible_formula}
+        )
+    visible_cells = []
+    for cell in research_input["cells"]:
+        visible_cells.append(
+            {
+                "cell_id": cell["cell_id"],
+                "title_zh": cell["title_zh"],
+                "selected_planner_facets": cell["selected_planner_facets"],
+                "research_intents": sorted(
+                    {
+                        intent
+                        for atom in cell["planner_atoms"]
+                        for intent in atom.get("product_intents", ())
+                    }
+                ),
+                "allowed_evidence_refs": cell["allowed_evidence_refs"],
+                "allowed_numeric_refs": cell["allowed_numeric_refs"],
+                "visible_gap_refs": cell["visible_gap_refs"],
+            }
+        )
+    output_cell_contract = {
+        "cell_id": "one required cell_id",
+        "judgment_status": "one allowed status",
+        "confidence_basis": "one allowed confidence basis",
+        "supporting_evidence_refs": ["zero or more allowed EV refs"],
+        "counterevidence_refs": ["zero or more allowed EV refs"],
+        "numeric_refs": ["zero or more allowed NUM refs"],
+        "remaining_gap_refs": ["zero or more visible GAP refs"],
+        "thesis_atom": "company-specific conclusion without digits",
+        "mechanism_atom": "economic mechanism without digits",
+        "counterargument_atom": "strongest bounded alternative without digits",
+        "what_would_change": {
+            "observable": "observable variable without digits",
+            "direction": "one allowed direction",
+            "time_horizon": "bounded horizon without dates or digits",
+            "evidence_route": "where to verify it without a citation",
+            "threshold_numeric_ref": None,
+        },
+    }
+    visible = {
+        "case_identity": research_input["case_identity"],
+        "research_question": research_input["objective"]["raw_question"],
+        "cells": visible_cells,
+        "evidence_cards": visible_evidence,
+        "numeric_fact_cards": visible_numeric,
+        "residual_gap_cards": research_input["residual_gap_cards"],
+        "output_contract": {
+            "schema_version": CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION,
+            "research_input_digest": research_input["research_input_digest"],
+            "required_cell_ids": [
+                cell["cell_id"] for cell in research_input["cells"]
+            ],
+            "cell_contract": output_cell_contract,
+        },
+        "rules": [
+            "Return one exact JSON object and no Markdown or commentary.",
+            "Use every cell exactly once and only refs allowed for that cell.",
+            "Write the judgment, mechanism, counterargument and observable change condition yourself.",
+            "Do not repeat or alter identities, dates, exact numbers, units, currencies or citations in prose; select structured refs instead.",
+            "Do not treat an Evidence excerpt as causal proof beyond its claim boundary.",
+            "Do not infer an undisclosed threshold; preserve its GAP ref or bind threshold_numeric_ref to an allowed NumericFact.",
+        ],
+    }
+    user_content = json.dumps(
+        visible,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    _require(
+        len(user_content) <= int(input_contract["maximum_user_message_chars"]),
+        "research_consumer_model_input_capacity_exceeded",
+    )
+    return (
+        {
+            "role": "system",
+            "content": (
+                "You are a financial research synthesis node. You own analytical "
+                "judgment, economic mechanism, counterargument and observable "
+                "what-would-change conditions. The harness owns identities, exact "
+                "numbers, dates, units, citations and final fact rendering."
+            ),
+        },
+        {
+            "role": "user",
+            "content": user_content,
+        },
+    )
+
+
+def parse_current_research_output(content: str) -> dict[str, Any]:
+    text = str(content or "").strip()
+    _require(bool(text), "research_consumer_output_empty")
+    _require(
+        not text.startswith("```") and not text.endswith("```"),
+        "research_consumer_output_not_exact_json",
+    )
+    try:
+        value = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise CurrentResearchConsumerError(
+            "research_consumer_output_json_invalid"
+        ) from exc
+    _require(isinstance(value, dict), "research_consumer_output_not_object")
+    return value
+
+
+def _validate_model_text(
+    value: object,
+    *,
+    maximum: int,
+    code: str,
+    minimum: int = 12,
+) -> str:
+    text = str(value or "").strip()
+    _require(
+        minimum <= len(text) <= maximum
+        and not _DIGIT_OR_FINANCIAL_SURFACE.search(text)
+        and not _VERBAL_NUMERIC_SURFACE.search(text)
+        and not _ALIAS_IN_PROSE.search(text)
+        and "http://" not in text.casefold()
+        and "https://" not in text.casefold(),
+        code,
+    )
+    return text
+
+
+def validate_current_research_output(
+    payload: Mapping[str, Any],
+    *,
+    research_input: Mapping[str, Any],
+) -> dict[str, Any]:
+    _require(
+        set(payload) == {"schema_version", "research_input_digest", "cells"}
+        and payload.get("schema_version")
+        == CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION
+        and payload.get("research_input_digest")
+        == research_input.get("research_input_digest"),
+        "research_consumer_output_envelope_invalid",
+    )
+    raw_cells = payload.get("cells")
+    _require(isinstance(raw_cells, list), "research_consumer_output_cells_invalid")
+    input_cells = {
+        str(row["cell_id"]): row for row in research_input["cells"]
+    }
+    output_cells = {
+        str(row.get("cell_id") or ""): row
+        for row in raw_cells
+        if isinstance(row, Mapping)
+    }
+    _require(
+        len(output_cells) == len(raw_cells)
+        and set(output_cells) == set(input_cells),
+        "research_consumer_output_cell_coverage_invalid",
+    )
+    contract = research_input["model_output_contract"]
+    cell_fields = {
+        "cell_id",
+        "judgment_status",
+        "confidence_basis",
+        "supporting_evidence_refs",
+        "counterevidence_refs",
+        "numeric_refs",
+        "remaining_gap_refs",
+        "thesis_atom",
+        "mechanism_atom",
+        "counterargument_atom",
+        "what_would_change",
+    }
+    validated = []
+    for cell_id in input_cells:
+        raw = output_cells[cell_id]
+        _require(
+            set(raw) == cell_fields,
+            "research_consumer_output_cell_fields_invalid",
+        )
+        judgment_status = str(raw.get("judgment_status") or "")
+        confidence_basis = str(raw.get("confidence_basis") or "")
+        _require(
+            judgment_status in set(contract["allowed_judgment_statuses"])
+            and confidence_basis in set(contract["allowed_confidence_bases"]),
+            "research_consumer_output_enum_invalid",
+        )
+        supporting = _unique_strings(
+            raw.get("supporting_evidence_refs"),
+            "research_consumer_support_refs_invalid",
+            allow_empty=True,
+        )
+        counter = _unique_strings(
+            raw.get("counterevidence_refs"),
+            "research_consumer_counter_refs_invalid",
+            allow_empty=True,
+        )
+        numeric = _unique_strings(
+            raw.get("numeric_refs"),
+            "research_consumer_numeric_refs_invalid",
+            allow_empty=True,
+        )
+        gaps = _unique_strings(
+            raw.get("remaining_gap_refs"),
+            "research_consumer_gap_refs_invalid",
+            allow_empty=True,
+        )
+        allowed = input_cells[cell_id]
+        _require(
+            set(supporting).issubset(allowed["allowed_evidence_refs"])
+            and set(counter).issubset(allowed["allowed_evidence_refs"])
+            and set(numeric).issubset(allowed["allowed_numeric_refs"])
+            and set(gaps).issubset(allowed["visible_gap_refs"])
+            and not set(supporting).intersection(counter),
+            "research_consumer_output_ref_boundary_invalid",
+        )
+        if judgment_status in {"supported", "bounded_support", "mixed"}:
+            _require(
+                bool(supporting),
+                "research_consumer_supported_judgment_without_evidence",
+            )
+        if judgment_status == "insufficient_evidence":
+            _require(
+                bool(gaps),
+                "research_consumer_insufficient_judgment_without_gap",
+            )
+        validated_text = {
+            field: _validate_model_text(
+                raw.get(field),
+                maximum=int(contract["maximum_atom_chars"]),
+                code=f"research_consumer_{field}_invalid",
+            )
+            for field in _MODEL_TEXT_FIELDS
+        }
+        wwc = _mapping(
+            raw.get("what_would_change"),
+            "research_consumer_wwc_invalid",
+        )
+        _require(
+            set(wwc)
+            == {
+                "observable",
+                "direction",
+                "time_horizon",
+                "evidence_route",
+                "threshold_numeric_ref",
+            }
+            and wwc.get("direction") in set(contract["allowed_wwc_directions"]),
+            "research_consumer_wwc_invalid",
+        )
+        threshold = wwc.get("threshold_numeric_ref")
+        _require(
+            threshold is None or threshold in set(numeric),
+            "research_consumer_wwc_threshold_ref_invalid",
+        )
+        validated_wwc = {
+            "observable": _validate_model_text(
+                wwc.get("observable"),
+                maximum=int(contract["maximum_wwc_observable_chars"]),
+                code="research_consumer_wwc_observable_invalid",
+            ),
+            "direction": str(wwc["direction"]),
+            "time_horizon": _validate_model_text(
+                wwc.get("time_horizon"),
+                maximum=int(contract["maximum_wwc_horizon_chars"]),
+                code="research_consumer_wwc_horizon_invalid",
+                minimum=4,
+            ),
+            "evidence_route": _validate_model_text(
+                wwc.get("evidence_route"),
+                maximum=int(contract["maximum_wwc_evidence_route_chars"]),
+                code="research_consumer_wwc_evidence_route_invalid",
+            ),
+            "threshold_numeric_ref": threshold,
+        }
+        validated.append(
+            {
+                "cell_id": cell_id,
+                "judgment_status": judgment_status,
+                "confidence_basis": confidence_basis,
+                "supporting_evidence_refs": list(supporting),
+                "counterevidence_refs": list(counter),
+                "numeric_refs": list(numeric),
+                "remaining_gap_refs": list(gaps),
+                **validated_text,
+                "what_would_change": validated_wwc,
+            }
+        )
+    return {
+        "schema_version": CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION,
+        "research_input_digest": research_input["research_input_digest"],
+        "cells": validated,
+        "judgment_output_digest": canonical_digest(
+            {
+                "schema_version": CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION,
+                "research_input_digest": research_input["research_input_digest"],
+                "cells": validated,
+            }
+        ),
+    }
+
+
+def compile_current_research_deliverable(
+    *,
+    research_input: Mapping[str, Any],
+    judgment_output: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Render refs and exact fact cards without inventing analytical prose."""
+
+    validated = validate_current_research_output(
+        judgment_output,
+        research_input=research_input,
+    )
+    evidence = {
+        row["evidence_ref"]: row for row in research_input["evidence_cards"]
+    }
+    numeric = {
+        row["numeric_ref"]: row
+        for row in research_input["numeric_fact_cards"]
+    }
+    gaps = {
+        row["gap_ref"]: row for row in research_input["residual_gap_cards"]
+    }
+    cell_contracts = {
+        row["cell_id"]: row for row in research_input["cells"]
+    }
+    rendered_cells = []
+    for row in validated["cells"]:
+        contract = cell_contracts[row["cell_id"]]
+        rendered_cells.append(
+            {
+                **deepcopy(row),
+                "title_zh": contract["title_zh"],
+                "supporting_evidence": [
+                    deepcopy(evidence[ref])
+                    for ref in row["supporting_evidence_refs"]
+                ],
+                "counterevidence": [
+                    deepcopy(evidence[ref])
+                    for ref in row["counterevidence_refs"]
+                ],
+                "numeric_facts": [
+                    deepcopy(numeric[ref]) for ref in row["numeric_refs"]
+                ],
+                "remaining_gaps": [
+                    deepcopy(gaps[ref]) for ref in row["remaining_gap_refs"]
+                ],
+            }
+        )
+    unsigned = {
+        "schema_version": CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION,
+        "status": "structured_workpaper_and_report_preview_compiled",
+        "case_identity": deepcopy(research_input["case_identity"]),
+        "research_question": research_input["objective"]["raw_question"],
+        "research_input_digest": research_input["research_input_digest"],
+        "judgment_output_digest": validated["judgment_output_digest"],
+        "cells": rendered_cells,
+        "rendering_authority": {
+            "model_authored_judgment_fields": list(_MODEL_TEXT_FIELDS)
+            + ["what_would_change"],
+            "harness_rendered_surfaces": [
+                "case_identity",
+                "source_visible_fact_excerpt",
+                "numeric_facts",
+                "citations",
+                "periods",
+                "units",
+                "remaining_gaps",
+            ],
+            "harness_generated_research_conclusion": False,
+            "qualified_human_review_required": True,
+        },
+        "known_boundary": (
+            "This is a structured internal workpaper/report preview. It proves "
+            "reference-safe rendering, not natural-model research quality, owner "
+            "acceptance, investment suitability or release readiness."
+        ),
+    }
+    return {**unsigned, "deliverable_digest": canonical_digest(unsigned)}
+
+
+__all__ = [
+    "CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION",
+    "CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION",
+    "CURRENT_RESEARCH_INPUT_SCHEMA_VERSION",
+    "CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION",
+    "CurrentResearchConsumerError",
+    "compile_current_research_deliverable",
+    "compile_current_research_input",
+    "compile_current_research_messages",
+    "load_current_research_consumer_policy",
+    "parse_current_research_output",
+    "validate_current_research_output",
+]

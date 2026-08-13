@@ -1,0 +1,61 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_zero_call_result_v1_0",
+  "status": "engineering_pass_zero_call_current_consumer",
+  "recorded_at": "2026-08-13",
+  "result_id": "FIN-0.1.3-S3-DELL-CURRENT-RESEARCH-CONSUMER-ZERO-CALL-R1",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_research_consumer_zero_call_authority_v1_0.json",
+  "authority_sha256": "6eed1a4407f3ab171d9d535048dba18df1c97757397a554fe95dce89efce16bf",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/zero-call-r1/full_result_167d36878925bd665c7eab2609707edd7c215f90b25c430b431b98f700805d40.json",
+  "full_result_sha256": "788a934cc0d259cfa3eccd508572b8d3a59c12985d18d560493eb129dc2304e2",
+  "bindings": {
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "evidence_pack_artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+    "evidence_pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a",
+    "controlled_plan_digest": "a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80",
+    "research_input_digest": "440987e2fdaf62324ccacd7280d5eaba1d352906f58008794499ce7733dd1968",
+    "deliverable_digest": "d915a4a21d8d9a6c2d09d4bbe652f6d17e0f745e2d36e22cd2f1e208cd7250c0"
+  },
+  "observed": {
+    "reviewed_pack_evidence_count": 20,
+    "model_visible_evidence_count": 19,
+    "reviewed_transcript_evidence_count": 5,
+    "source_types": [
+      "10-K",
+      "10-Q",
+      "6-K",
+      "8-K",
+      "EARNINGS_CALL_TRANSCRIPT"
+    ],
+    "controlled_plan_numeric_fact_count": 45,
+    "semantic_unique_numeric_fact_count": 35,
+    "model_visible_numeric_fact_count": 25,
+    "model_visible_residual_gap_count": 10,
+    "research_cell_count": 5,
+    "mutation_failure_codes": [
+      "research_consumer_output_ref_boundary_invalid",
+      "research_consumer_thesis_atom_invalid",
+      "research_consumer_output_ref_boundary_invalid",
+      "research_consumer_output_cell_coverage_invalid"
+    ],
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "local_embedding_calls": 0
+  },
+  "acceptance": {
+    "reviewed_source_policy_separate_from_open_retrieval": true,
+    "transcript_automatic_numeric_promotion": false,
+    "request_identity_numeric_duplicates_removed": true,
+    "model_sees_exact_source_facts_and_numeric_facts": true,
+    "model_free_numeric_prose_blocked": true,
+    "unknown_and_cross_cell_refs_blocked": true,
+    "harness_generated_research_conclusion": false,
+    "fake_deliverable_published_to_product": false,
+    "natural_model_quality_proven": false,
+    "s3_product_acceptance": false
+  },
+  "next_decision": "Decide whether the bounded one-call DeepSeek research synthesis canary is worth fresh exact-once authority. Do not publish the fake deliverable or claim S3 acceptance.",
+  "known_boundary": "This authority proves the current provider-neutral S3 consumer with a fake judgment output only. It does not prove DeepSeek contract following, natural research quality, Workbench product acceptance, S3 completion or release readiness.",
+  "result_digest": "3acc7cdc1073dacb1c6a4c1016a0bf0e5ab4c293b36cee16a146c46abb6a2b46"
+}

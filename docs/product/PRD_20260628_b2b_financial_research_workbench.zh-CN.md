@@ -2572,3 +2572,15 @@ Evidence Role 必须是多标签且允许 abstain，但“规则命中更少错�
 R1 已按该边界 exact-once 执行：自然输出 exact JSON、DELL 身份、5/5 required slot、10/10 合法 facet 与所有 canonical metric/family 均正确，但返回 10 个 atoms，超过本次 `maximum_atoms=8`，因此在检索和数据库 successor 前 terminal failed。该结果既不能被手工删成 8 条追认，也不能简单记成“模型无研究能力”：十条路径覆盖需求、订单转化、业绩、指引、价格组合、增量利润、现金、营运资本及两类反方，具有实质性。产品合同必须进一步把 `proposal ceiling` 与本地 `execution budget` 分开；预算调度可以由确定性 scheduler 处理，但身份、日期、来源、外部调用和 NumericFact 权威仍保持硬失败。完成零调用 replay/mutation 前不签发 R2。
 
 数据库是长期金融控制面而不是当前模型能力的临时拐杖。更强模型可以改善查询拆分、候选选择和研究综合，但不得替代 source-bound NumericFact、PIT、期间/单位、冲突检测、披露 vintage 和公式 trace。结构化财务表优先规范化进入 S2 mart；PDF/HTML 表格、dense 命中和模型读到的数字只能作为定位/语境，未经 S2 编译不拥有最终数值权威。S2 产品关闭仍需自然规划后的真实研究消费、三案依赖回归和用户表面引用证明。
+
+### 16.29 Reviewed Evidence＋NumericFact 研究消费者与模型/Harness 权限（2026-08-13）
+
+严格重定基后，活动树必须拥有一个版本中立的 S3 consumer；不能依赖归档九调用 runner 或为每个 attempt 复制 Prompt、Validator、Renderer 与结果物化代码。当前 consumer 的唯一输入是 digest-bound reviewed Evidence Pack、其 residual gaps、保存 Planner atoms 的受控执行以及 S2 NumericFact。retrieval candidate、rejected Evidence 和未绑定 transcript 数字不得进入可写事实面。
+
+模型必须看见来源原文中的精确事实和 S2 权威数值，才能完成真正的金融分析；但模型输出只拥有判断状态、置信基础、支持/反方/数值/gap ref 选择、机制、最强反方和 what-would-change 原子。Harness 负责公司身份、日期、期间、单位、精确数字、公式、引用、cell 归属和最终结构，且不得替模型生成结论。由此既避免“模型看不到数字导致报告变空”，也避免“模型自由重写数字导致真实性失控”。
+
+request 数量不得被误当作独立证据数量。同一个 S2 事实因多个 request 或 period-role 暴露时，S3 必须按公司、指标、数值、期间、单位和来源权威合并，request/period-role 只保留为 lineage。模型输入容量也不得靠不断抬高字符上限解决：必须优先删除内部 ID、digest、request lineage 和 citation URL，合并重复事实，并在保留来源原文、claim boundary 与精确 NumericFact 的前提下选择与当前 cell 相关的信息。
+
+当前 DELL 零调用 R1 已将 45 个 request-level NumericFact 合并为 35 个经济事实，再选择 25 个模型可见事实；20 条 reviewed Evidence 中 19 条与五个研究单元相关，14 个 gaps 中 10 个可见。fake 输出能编译结构化底稿/报告 preview，未知引用、跨 cell 数值、自由数字叙事和缺 cell 均 fail closed。该结果只关闭 consumer engineering gap，不证明自然模型质量，也不允许发布 fake 报告。
+
+下一自然门只能在干净远端提交上执行一次 DeepSeek Pro 综合 canary：不重跑 Planner、不联网、不重新检索、不 retry、不 fallback、不自动发布 Workbench。成功后仍需 L1 与绝对内容质量审阅；失败必须保存 capture 并在 S3 做一次结构处置，禁止恢复逐字段 live 修补循环。

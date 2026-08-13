@@ -7,7 +7,7 @@
 
 当前唯一产品是一个本地只读研究工作台。它加载 DELL、MU、NVDA 三份已复核 Evidence Pack，并用 `CaseSubject + ResearchContext + CasePackBinding` 防止公司、期间、artifact 或 payload 串案。S1-A/S1-B 接入 `candidate_not_evidence` 的当前金融对象候选；S1-C 又接入同对象四路排名对照。排名投影剥离 gold identity，只用于审计候选，不替换 reviewed Pack。
 
-DELL 当前 Pack 已从仅 SEC 扩展为 SEC＋Dell IR＋TSM IR（20 Evidence／14 gaps），MU/NVDA 仍保留旧 Pack；三案结构化数值项仍为 0。当前代码图因此证明审证、类型化候选、官方 PDF 入库/晋升、按案例私有对象绑定和缺口可见，但不证明 S1 全来源覆盖、S3 研究判断或完整投研内容质量。S2 NumericFact 通过独立 private mart 提供，不嵌入 transcript Evidence。
+DELL 当前 Pack 已从仅 SEC 扩展为 SEC＋Dell IR＋TSM IR（20 Evidence／14 gaps），MU/NVDA 仍保留旧 Pack；三案 Workbench Evidence 页面的结构化数值项仍为 0。当前代码图已经证明审证、类型化候选、官方 PDF 入库/晋升、按案例私有对象绑定、缺口可见，以及 reviewed Evidence＋S2 NumericFact 到结构化研究 preview 的零调用消费；它不证明 S1 全来源覆盖、DeepSeek 自然研究质量或完整投研内容验收。S2 NumericFact 通过独立 private mart 提供，不嵌入 transcript Evidence。
 
 ```mermaid
 flowchart LR
@@ -22,6 +22,9 @@ flowchart LR
     QAPI --> QS["ResearchRetrievalService"]
     QS --> QR["typed retrieval snapshot"]
     QS --> RC["S1-C safe ranking projection"]
+    EP --> S3C["current S3 research consumer"]
+    QS --> S3C
+    S3C -. "candidate only / not published" .-> RP["structured workpaper/report preview"]
     C --> B["identity + as-of + digest binding"]
     R --> B
     B --> UI
@@ -52,7 +55,7 @@ flowchart LR
 | `src/evidence/` | Evidence schema 与构建 | 未经 gate 的事实晋升 |
 | `src/indexing/`、`src/retrieval/` | BM25 构建、provider-neutral 金融查询合同、父子金融对象、facet 编译、候选过滤/解释、同对象 sparse/dense/fusion/规则重排比较 | 已完成的金融 RAG、默认 dense/rerank 或 Evidence 晋升声明 |
 | `src/sec_agent/market_snapshot.py` | 离线市场快照合同 | 实时行情 |
-| `src/sec_agent/research/` | reviewed pack 的稳定常量/摘要 | 动态 Agent planner |
+| `src/sec_agent/research/` | provider-neutral planner、reviewed Pack/PDF successor，以及 Evidence＋NumericFact 到判断/底稿/报告的 current consumer | 未经验收的自然研究质量或产品发布 |
 | `src/sec_agent/runtime_bridge/` | code/data、只读 reviewed Evidence 与可写 state 的显式路径边界 | checkout-local 私有数据假设 |
 | `src/sec_agent/workbench/` | 运维 profile、source bundle、data build、run inspection | 旧 ask/session/checkpoint 产品链 |
 
@@ -88,7 +91,7 @@ flowchart TB
 
 机器生成清单：`configs/repository/fin_0_1_3_active_baseline_manifest_v1_0.json`。
 
-- Python import graph：107 个文件。
+- Python import graph：109 个文件。
 - 前端 import graph：8 个文件。
 - Runtime resources：10 个。
 - Runtime detectors：4 个。
@@ -117,6 +120,6 @@ S1-C 收口复证为：活动图 72 Python / 7 frontend / 5 Runtime resources，
 
 仓库工程基线已经合并远端 `main` 并完成 G12。复证目标为 `cd9990ac7ea4586cc55af0bc77f41c3f797399cb`，在第二份全新 clean-main 工作树上通过：44 个 Python tests、TypeScript、Vite build、无数据/挂载数据桌面与移动共 12 个 Playwright tests、三案业务验收、6,230 文件 secret scan、clean Docker build、无数据和只读 Evidence 挂载 smoke，以及原生 Compose 启动。
 
-S0 仓库/运行时基线已关闭；S1-A/S1-B/S1-C 工程纵切和本轮 S1-D Dell/TSM 补源已完成，但 S1 总产品门仍未通过。当前 DELL Pack 已可作为 S3 输入，S2 mart 也具备 NumericFact；活动树只有 Planner，没有现役 judgment/workpaper/report consumer。当前下一门因此是当前基线的最小 S3 research-consumer 纵切，而不是继续重做检索或复活归档报告 runner。MU/NVDA 动态研究、S4 产品闭环和 S5 release 仍需分别验收。
+S0 仓库/运行时基线已关闭；S1-A/S1-B/S1-C 工程纵切和本轮 S1-D Dell/TSM 补源已完成，但 S1 总产品门仍未通过。当前 DELL Pack 与 S2 mart 已被 current S3 consumer 在零调用 R1 中消费并生成结构化 preview；活动树不再只有 Planner，也没有复活归档报告 runner。当前下一门是绑定干净提交的 R2 与唯一一次 DeepSeek 自然综合 canary。MU/NVDA 动态研究、S4 产品闭环和 S5 release 仍需分别验收。
 
 这些门的唯一机器状态见 `configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json`。

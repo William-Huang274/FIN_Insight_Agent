@@ -32,8 +32,9 @@
 - [ ] DeepSeek V4 Pro GA profile 与四工具最小研究循环资格验证
   - [x] JSON control 单节点 v1.1 合同/L1/L2 与适用内容门通过；strict Beta 传输未资格化并停放
   - [x] 标准 Tool Calls R1 执行并保留：模型正确并行请求 Evidence/NumericFact，项目 wire `index` 与单工具策略不兼容，0 retry
-  - [ ] 只读并行兼容 successor、clean zero-call proof 与一个 replacement single-cell live
-  - [ ] replacement 通过且机器处置授权后，才可进入 DELL 五单元 bounded loop
+  - [x] 只读并行兼容 successor、clean zero-call R3 与一个 replacement single-cell R2（两类 read 成功；proposal 合同编译失败，0 retry）
+  - [ ] 统一 Tool Schema／Validator／route／fake／repair feedback 编译源，并以 R2 capture＋三案 fake/mutation 复证
+  - [ ] 新的 single-cell 权限尚未签发；只有后续真实 replacement 通过且机器处置授权后，才可进入 DELL 五单元 bounded loop
 - [ ] S3 动态 Agentic Research 与内容质量验收
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision

@@ -190,3 +190,11 @@ strict Beta 在 R2 中没有取得 HTTP 业务响应，capture 只记录 `URLErr
 successor 不把这个结果固化成 DeepSeek 专用分支，也不放开任意并行。provider-neutral transport 只允许可验证的非负整数 `index` 并在归一化后剥离；核心策略只允许同 cell、不同 call id、名称集合恰为 Evidence read＋NumericFact read 的两个只读调用共存。EvidenceRequest、Judgment、重复 read、三工具或未知组合继续 fail closed。每个 tool receipt 必须拥有不会相互覆盖的 sequence identity，Provider 归一化失败也必须携带 capture ref。
 
 R1 保持 immutable failed。实现、replay、mutation、fresh-process 和干净提交 proof 完成前不执行 replacement；replacement 仍只有 single cell、最多 6 次模型调用、0 retry/fallback。五单元权限不随兼容修复自动产生。
+
+### 11.3 标准 Tool Calls R2 与合同编译缺口
+
+v1.1 successor 的 fresh zero-call R3 通过后，唯一 replacement R2 在 clean upstream `6f9ed940...` 执行。第一步真实完成同 cell Evidence＋NumericFact 并行读取并保存两份 receipt，证明 R1 的 wire／并行／terminal 缺陷已关闭。第二步模型针对缺失 AI server unit volume 提出 shipments／compute capacity 补证，希望区分 volume-led 与 price-led revenue growth；该业务方向与 reviewed gap 一致。
+
+R2 仍 terminal failed，但失败责任在项目 Tool Contract Compiler。`product_intents` Schema 只写“concise”，没有公开本地 120-char／数组上限；更深一层，Schema 分别暴露全局 facet enum 与 metric enum，没有表达 `facet → query family → allowed metrics` 依赖。模型选择 `pricing_and_mix` 加 shipments／capacity／orders／backlog 在 Schema 上可生成、在本地 route 上必然拒绝。单纯增大字符上限会立即撞到下一道门，故禁止字段级补丁。
+
+successor 必须由同一 provider-neutral EvidenceRequest／route 合同编译 Tool Schema、validator、fake 和 repair feedback。合法但跨 family 的研究需求由本地拆成 facet-compatible atoms；proposal-only 的长度／路由不匹配可以返回 `rejected_not_executed`、保持 gap open 并给出安全的 allowed-family 提示，在原调用预算内由模型修正。身份、Evidence／NumericFact 权威、Judgment、引用和跨 case/cell 错误仍 hard fail。完成 R2 capture replay、四工具合同对齐、三案 fake 与 mutation 前，不允许第三次 single-cell live或五单元。

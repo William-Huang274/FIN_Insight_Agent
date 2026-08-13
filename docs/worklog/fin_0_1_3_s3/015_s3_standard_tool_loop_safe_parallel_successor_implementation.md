@@ -1,7 +1,7 @@
 # S3 标准 Tool Calls 有界兼容 successor 实现
 
 日期：2026-08-14
-状态：`clean_implementation_and_fresh_zero_call_R3_pass / one_replacement_single_cell_live_allowed / model_calls_zero`
+状态：`clean_implementation_and_fresh_zero_call_R3_pass / replacement_R2_executed_and_terminal / no_further_live_authority`
 
 ## 目标
 
@@ -36,4 +36,4 @@
 
 ## 边界与下一项
 
-实现已在干净远端提交，fresh zero-call R3 也已通过。下一项只允许签发一个新的 DELL `value_capture` replacement live；R1 不重跑、0 retry。replacement 必须先完成真实 tool result continuation 与最终 Judgment 节点评估；五单元仍不自动授权。
+实现已在干净远端提交，fresh zero-call R3 通过，且唯一 replacement R2 已真实完成 Evidence＋NumericFact continuation。R2 随后因 Tool Schema 未公开长度／数组约束且未表达 facet–metric 依赖而在 proposal 校验终止；0 Judgment、0 retry。下一项只允许零调用统一合同编译与 proposal repair 语义；没有新的 single-cell 或五单元权限。

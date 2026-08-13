@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 from copy import deepcopy
+import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import subprocess
 import sys
@@ -108,6 +110,7 @@ def validate_authority(
         ("successor_pack_ref", "successor_pack_sha256"),
         ("zero_call_proof_ref", "zero_call_proof_sha256"),
         ("runner_ref", "runner_sha256"),
+        ("runtime_registry_ref", "runtime_registry_sha256"),
     ):
         path = _safe_repository_path(
             repository_root, str(bound.get(ref_key) or "")
@@ -147,6 +150,19 @@ def validate_authority(
             raise CurrentEvidencePackPromotionError(
                 "current_pack_promotion_output_already_exists"
             )
+    registry_ref = str(output.get("runtime_registry_ref") or "")
+    if not registry_ref or registry_ref != str(
+        bound.get("runtime_registry_ref") or ""
+    ):
+        raise CurrentEvidencePackPromotionError(
+            "current_pack_promotion_registry_binding_invalid"
+        )
+    if str(output.get("runtime_registry_id") or "") != (
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R11"
+    ):
+        raise CurrentEvidencePackPromotionError(
+            "current_pack_promotion_registry_id_invalid"
+        )
     return value
 
 
@@ -402,7 +418,92 @@ def execute(
         ),
         execution_result,
     )
+    registry_path = _safe_repository_path(
+        repository_root, str(output["runtime_registry_ref"])
+    )
+    registry = _compose_runtime_registry(
+        _read_json(registry_path),
+        repository_root=repository_root,
+        result_ref=str(output["composed_result_ref"]),
+        result_payload=composed_result,
+        workspace_ref=str(output["composed_workspace_ref"]),
+        workspace_payload=composed_workspace,
+        registry_id=str(output["runtime_registry_id"]),
+    )
+    _write_atomic_replace(registry_path, registry)
     return execution_result
+
+
+def _compose_runtime_registry(
+    predecessor: Mapping[str, Any],
+    *,
+    repository_root: Path,
+    result_ref: str,
+    result_payload: Mapping[str, Any],
+    workspace_ref: str,
+    workspace_payload: Mapping[str, Any],
+    registry_id: str,
+) -> dict[str, Any]:
+    value = deepcopy(dict(predecessor))
+    expected_top_level = {
+        "schema_version",
+        "registry_id",
+        "status",
+        "policy",
+        "detector_python_refs",
+        "resource_count",
+        "resource_bytes",
+        "resource_canonical_digest",
+        "resources",
+    }
+    rows = value.get("resources")
+    if not (
+        set(value) == expected_top_level
+        and value.get("schema_version")
+        == "fin_ia_0_1_3_runtime_resource_registry_v1_0"
+        and value.get("status") == "tracked_typed_runtime_resource_authority"
+        and isinstance(rows, list)
+    ):
+        raise CurrentEvidencePackPromotionError(
+            "current_pack_promotion_runtime_registry_invalid"
+        )
+    replacements = {
+        "application.result.current_research_local_evidence_packs": (
+            result_ref,
+            result_payload,
+        ),
+        "application.config.current_research_workspace_catalog": (
+            workspace_ref,
+            workspace_payload,
+        ),
+    }
+    observed: set[str] = set()
+    for row in rows:
+        resource_id = str(row.get("resource_id") or "")
+        if resource_id not in replacements:
+            continue
+        ref, payload = replacements[resource_id]
+        _safe_repository_path_or_future(repository_root, ref)
+        rendered = _render_json(payload)
+        row["repo_relative_path"] = ref
+        row["sha256"] = hashlib.sha256(rendered).hexdigest()
+        row["bytes"] = len(rendered)
+        observed.add(resource_id)
+    if observed != set(replacements):
+        raise CurrentEvidencePackPromotionError(
+            "current_pack_promotion_registry_resource_missing"
+        )
+    if [str(row.get("resource_id") or "") for row in rows] != sorted(
+        str(row.get("resource_id") or "") for row in rows
+    ):
+        raise CurrentEvidencePackPromotionError(
+            "current_pack_promotion_registry_order_invalid"
+        )
+    value["registry_id"] = registry_id
+    value["resource_count"] = len(rows)
+    value["resource_bytes"] = sum(int(row["bytes"]) for row in rows)
+    value["resource_canonical_digest"] = canonical_digest(rows)
+    return value
 
 
 def _validate_predecessor(
@@ -576,6 +677,18 @@ def _safe_repository_path(root: Path, ref: str) -> Path:
     return path
 
 
+def _safe_repository_path_or_future(root: Path, ref: str) -> Path:
+    relative = _safe_relative(ref, "current_pack_promotion_path_invalid")
+    path = root.joinpath(*relative.parts).resolve()
+    try:
+        path.relative_to(root.resolve())
+    except ValueError as exc:
+        raise CurrentEvidencePackPromotionError(
+            "current_pack_promotion_path_invalid"
+        ) from exc
+    return path
+
+
 def _assert_digest(path: Path, expected: str) -> None:
     if not path.is_file() or file_sha256(path) != expected:
         raise CurrentEvidencePackPromotionError(
@@ -600,19 +713,41 @@ def _read_json(path: Path) -> dict[str, Any]:
 def _write_exclusive(path: Path, payload: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        with path.open("x", encoding="utf-8", newline="\n") as handle:
-            json.dump(
-                payload,
-                handle,
-                ensure_ascii=False,
-                sort_keys=True,
-                indent=2,
-            )
-            handle.write("\n")
+        with path.open("xb") as handle:
+            handle.write(_render_json(payload))
     except FileExistsError as exc:
         raise CurrentEvidencePackPromotionError(
             "current_pack_promotion_output_already_exists"
         ) from exc
+
+
+def _write_atomic_replace(path: Path, payload: Mapping[str, Any]) -> None:
+    temporary = path.with_name(path.name + ".promotion-tmp")
+    if temporary.exists():
+        raise CurrentEvidencePackPromotionError(
+            "current_pack_promotion_temporary_output_exists"
+        )
+    try:
+        with temporary.open("xb") as handle:
+            handle.write(_render_json(payload))
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+
+
+def _render_json(payload: Mapping[str, Any]) -> bytes:
+    return (
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            indent=2,
+        )
+        + "\n"
+    ).encode("utf-8")
 
 
 def _git(root: Path, *args: str) -> str:

@@ -170,7 +170,7 @@ def build_report(data_root: Path) -> dict[str, object]:
         "cases": cases,
         "violations": sorted(set(violations)),
         "bounded_findings": [
-            "All current source domains are SEC filings; source diversity remains a later S1/S3 product task.",
+            "Current packs include reviewed SEC, issuer and bounded ecosystem official sources, but source diversity and residual-gap coverage remain incomplete S1/S3 product work.",
             "The reviewed packs currently expose zero structured numeric items; numeric fact surfaces are not claimed by this baseline.",
             "Valuation, scenario sensitivity and commercial allocation remain visible typed gaps rather than inferred facts.",
         ],

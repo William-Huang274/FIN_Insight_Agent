@@ -16,6 +16,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from scripts.data_retrieval.run_current_evidence_pack_promotion import (  # noqa: E402
     CurrentEvidencePackPromotionError,
+    _compose_runtime_registry,
     compose_current_pack,
     validate_authority,
 )
@@ -258,6 +259,42 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
     runner_path = repo / RUNNER_REF
     runner_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / RUNNER_REF, runner_path)
+    registry_ref = "configs/runtime/registry.json"
+    registry = {
+        "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+        "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R10",
+        "status": "tracked_typed_runtime_resource_authority",
+        "policy": {},
+        "detector_python_refs": [],
+        "resource_count": 2,
+        "resource_bytes": 2,
+        "resource_canonical_digest": "0" * 64,
+        "resources": [
+            {
+                "resource_id": "application.config.current_research_workspace_catalog",
+                "repo_relative_path": workspace_ref,
+                "sha256": _sha(repo / workspace_ref),
+                "bytes": (repo / workspace_ref).stat().st_size,
+                "classification": "application_runtime_config",
+                "consumer_ids": ["fixture"],
+                "load_phase": "fixture",
+                "required": True,
+                "source_owner": "fixture",
+            },
+            {
+                "resource_id": "application.result.current_research_local_evidence_packs",
+                "repo_relative_path": predecessor_ref,
+                "sha256": _sha(repo / predecessor_ref),
+                "bytes": (repo / predecessor_ref).stat().st_size,
+                "classification": "digest_bound_read_only_product_result",
+                "consumer_ids": ["fixture"],
+                "load_phase": "fixture",
+                "required": True,
+                "source_owner": "fixture",
+            },
+        ],
+    }
+    _write_json(repo / registry_ref, registry)
 
     authority = {
         "schema_version": "fin_ia_current_evidence_pack_promotion_authority_v1_0",
@@ -283,6 +320,8 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
             "zero_call_proof_sha256": _sha(repo / proof_ref),
             "runner_ref": RUNNER_REF,
             "runner_sha256": _sha(runner_path),
+            "runtime_registry_ref": registry_ref,
+            "runtime_registry_sha256": _sha(repo / registry_ref),
         },
         "replacement_contract": {
             "case_key": "DELL",
@@ -303,6 +342,8 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
             "composed_result_ref": "configs/runtime/composed.json",
             "composed_workspace_ref": "configs/runtime/workspace-composed.json",
             "public_execution_result_ref": "configs/retrieval/execution.json",
+            "runtime_registry_ref": registry_ref,
+            "runtime_registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R11",
         },
     }
     authority_ref = repo / "configs/retrieval/authority.json"
@@ -331,6 +372,21 @@ def test_current_pack_composition_replaces_only_dell(tmp_path: Path) -> None:
         "residual_gaps": [2, 1],
     }
     assert execution["execution"]["private_object_copy_performed"] is False
+
+    registry = _compose_runtime_registry(
+        json.loads((repo / authority["bound_inputs"]["runtime_registry_ref"]).read_text(encoding="utf-8")),
+        repository_root=repo,
+        result_ref=authority["output_contract"]["composed_result_ref"],
+        result_payload=result,
+        workspace_ref=authority["output_contract"]["composed_workspace_ref"],
+        workspace_payload=workspace,
+        registry_id=authority["output_contract"]["runtime_registry_id"],
+    )
+    assert registry["registry_id"].endswith("R11")
+    assert registry["resource_count"] == 2
+    assert registry["resource_canonical_digest"] == canonical_digest(
+        registry["resources"]
+    )
 
 
 @pytest.mark.parametrize("mutation", ["digest", "budget", "root", "retained"])

@@ -29,6 +29,7 @@ def _client_without_private_objects(tmp_path: Path) -> TestClient:
             ROOT, str(projection["source_result_resource_id"])
         ),
         private_object_root=tmp_path / "empty-object-root",
+        private_root_base=tmp_path / "empty-private-root",
     )
     workspace = ResearchWorkspaceService(
         config=read_registered_runtime_json(

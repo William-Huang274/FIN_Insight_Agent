@@ -1,0 +1,102 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_zero_call_result_v1_2",
+  "status": "engineering_pass_zero_call_current_consumer_contract_successor",
+  "recorded_at": "2026-08-13",
+  "result_id": "FIN-0.1.3-S3-DELL-CURRENT-RESEARCH-CONSUMER-V1.1-ZERO-CALL-R3",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_research_consumer_zero_call_authority_v1_2.json",
+  "authority_sha256": "94e3082aa3be86fefcba404e7137577f796a60a6b6fda8eef85c4fbeb69436e5",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/zero-call-r3-v1-1/full_result_b7dbfdef75cc0221fcc412a044f249d0eb184137aaf12fb5f4e65e44df970ce3.json",
+  "full_result_sha256": "62b0284345b846ae20bf173a247049a9a81426ff1383df64d8371f6023eb1cba",
+  "bindings": {
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "evidence_pack_artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+    "evidence_pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a",
+    "controlled_plan_digest": "a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80",
+    "research_input_digest": "6505a58e68811e59e3471378bc0cf16174abef3021c3ae9900e46d5e99189b4c",
+    "deliverable_digest": "38c0a472237e7cf95182efad337946293f401c1c363cc34cb7adb23e4d5d8e96"
+  },
+  "observed": {
+    "reviewed_pack_evidence_count": 20,
+    "model_visible_evidence_count": 19,
+    "reviewed_transcript_evidence_count": 5,
+    "source_types": [
+      "10-K",
+      "10-Q",
+      "6-K",
+      "8-K",
+      "EARNINGS_CALL_TRANSCRIPT"
+    ],
+    "controlled_plan_numeric_fact_count": 45,
+    "semantic_unique_numeric_fact_count": 35,
+    "model_visible_numeric_fact_count": 25,
+    "model_visible_residual_gap_count": 10,
+    "research_cell_count": 5,
+    "mutation_failure_codes": [
+      "research_consumer_evidence_use_invalid",
+      "research_consumer_evidence_use_invalid",
+      "research_consumer_output_enum_invalid",
+      "research_consumer_output_cell_fields_invalid",
+      "research_consumer_thesis_atom_invalid",
+      "research_consumer_output_ref_boundary_invalid"
+    ],
+    "failed_r1_model_visible_user_chars": 48380,
+    "successor_model_visible_user_chars": 46061,
+    "failed_r1_replay": {
+      "v1_1_rejection_code": "research_consumer_output_cell_fields_invalid",
+      "invented_judgment_statuses": [
+        "supported_with_caveats"
+      ],
+      "invented_confidence_bases": [
+        "issuer_disclosure_plus_ecosystem_readthrough"
+      ],
+      "dual_role_evidence_by_cell": {
+        "CELL::demand_quality": [
+          "EV::ABAB2A6B49DD71A9",
+          "EV::DB0FAF039C8659F2"
+        ],
+        "CELL::value_capture": [
+          "EV::5388E016C17032C1"
+        ],
+        "CELL::counterevidence": [
+          "EV::35C817F5304A3012",
+          "EV::BA594865DB45F850",
+          "EV::E9C1A0A4C2A9A15F",
+          "EV::F37945E157DAB288"
+        ]
+      },
+      "qualified_content_audit_finding_codes": [
+        "ai_to_group_and_segment_profit_attribution_unproven",
+        "ai_working_capital_attribution_unproven",
+        "demand_durability_overreach",
+        "supply_easing_unproven",
+        "unbound_comparative_margin_and_leverage_claim"
+      ],
+      "automatic_salvage_or_publication": false
+    },
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "local_embedding_calls": 0
+  },
+  "acceptance": {
+    "reviewed_source_policy_separate_from_open_retrieval": true,
+    "transcript_automatic_numeric_promotion": false,
+    "request_identity_numeric_duplicates_removed": true,
+    "model_sees_exact_source_facts_and_numeric_facts": true,
+    "model_free_numeric_prose_blocked": true,
+    "unknown_and_cross_cell_refs_blocked": true,
+    "trusted_envelope_harness_injected": true,
+    "exact_model_visible_enums_exposed": true,
+    "typed_evidence_use_and_inference_authority": true,
+    "all_visible_residual_gaps_preserved": true,
+    "failed_r1_not_silently_salvaged": true,
+    "harness_generated_research_conclusion": false,
+    "fake_deliverable_published_to_product": false,
+    "natural_model_quality_proven": false,
+    "s3_product_acceptance": false
+  },
+  "next_decision": "Make a separate value-cost-risk decision before any replacement DeepSeek call. If authorized later, test this changed synthesis contract once; require deterministic L1, absolute content-quality, paired and qualified-human review before any product publication.",
+  "known_boundary": "This authority proves the provider-neutral v1.1 judgment submission contract, immutable failed-R1 replay and deterministic fake deliverable only. It does not authorize a model call, prove DeepSeek GA or strict-tool transport, prove natural financial-research quality, publish to Workbench, close S3 or approve release.",
+  "result_digest": "96d7e9c4cef32729a321c1467d21ccca9a47b039a962b5acb1e108d94a1ba39e"
+}

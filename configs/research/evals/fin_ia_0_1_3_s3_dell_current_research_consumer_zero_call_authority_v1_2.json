@@ -1,0 +1,62 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_zero_call_authority_v1_2",
+  "authority_id": "FIN-0.1.3-S3-DELL-CURRENT-RESEARCH-CONSUMER-ZERO-CALL-AUTHORITY-V1.2",
+  "status": "fresh_zero_network_zero_model_current_consumer_proof_authorized",
+  "issued_at": "2026-08-13T23:59:40+08:00",
+  "run_id": "FIN013-S3-DELL-CURRENT-CONSUMER-V1-1-ZERO-CALL-R3",
+  "attempt_id": "ATTEMPT-01",
+  "clean_implementation": {
+    "implementation_commit": "db1e9db43370e880b868aeb6c8fcf7402f62876f",
+    "head_must_equal_implementation_commit": true,
+    "upstream_must_equal_implementation_commit": true,
+    "tracked_worktree_must_be_clean": true,
+    "only_authority_may_be_untracked": true
+  },
+  "bound_inputs": {
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_1.json",
+    "consumer_policy_sha256": "bc63b5fb994f7b5f5e3052f620d7d59a364a2261d686d820d04351c6132f2fe2",
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json",
+    "objective_sha256": "e458acb042447c9ef11ad6f0a2f8152b1f6abdd4de8dc65922d2593e34f93548",
+    "planner_atoms_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+    "planner_atoms_sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d",
+    "fake_output_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_1.json",
+    "fake_output_sha256": "5cb4ea600af2ebc3cbd1bcc3915f1d2570e3726b92a6fb937aa7ea629bbde6c6",
+    "current_evidence_pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+    "current_evidence_pack_result_sha256": "e902eb8c6873caa6b139d2aa8b6261556392eaa0346a0f67d63597955199df10",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "bfbe6f11368bb4130c8b0f6594baa65c254a61bcc863ee4922c0a2ca5047f252",
+    "runner_ref": "scripts/research/run_s3_current_research_consumer_zero_call.py",
+    "runner_sha256": "d17abcf4d772efd69a061899aebf2f0340551501d707ea8493988cec062c2b51",
+    "failed_r1_payload_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_consumer_canary_r1_failed_payload.json",
+    "failed_r1_payload_sha256": "1aa73f781ba865d118feafde16b112e34ebe47752ae37acb73c7a541d5a352f6",
+    "failed_r1_audit_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_research_consumer_canary_r1_content_audit_v1_0.json",
+    "failed_r1_audit_sha256": "06d7fd4052e2ef629b65d9aac45635fb552a4af4296d252e2b3db7762282d404"
+  },
+  "execution_budget": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "local_embedding_calls": 0,
+    "retries": 0,
+    "current_product_pointer_mutation": "forbidden",
+    "fake_deliverable_publication": "forbidden"
+  },
+  "required_assertions": [
+    "head_and_upstream_equal_bound_implementation_commit",
+    "only_this_fresh_authority_is_untracked_before_execution",
+    "v1_1_policy_and_fake_are_digest_bound",
+    "trusted_envelope_and_visible_gaps_are_harness_injected",
+    "exact_model_visible_enums_are_exposed",
+    "Evidence_NumericFact_and_gap_views_are_cell_local",
+    "typed_support_limit_context_and_inference_authority_are_validated",
+    "unknown_duplicate_cross_cell_enum_gap_and_numeric_mutations_fail_closed",
+    "immutable_R1_payload_and_content_audit_are_digest_bound",
+    "historical_R1_remains_rejected_and_is_never_salvaged_or_published"
+  ],
+  "output_contract": {
+    "private_output_root_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/zero-call-r3-v1-1",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_research_consumer_zero_call_result_v1_2.json",
+    "result_id": "FIN-0.1.3-S3-DELL-CURRENT-RESEARCH-CONSUMER-V1.1-ZERO-CALL-R3"
+  },
+  "known_boundary": "This authority proves the provider-neutral v1.1 judgment submission contract, immutable failed-R1 replay and deterministic fake deliverable only. It does not authorize a model call, prove DeepSeek GA or strict-tool transport, prove natural financial-research quality, publish to Workbench, close S3 or approve release."
+}

@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`v1.1 structural successor implemented / clean proof pending / DeepSeek GA agent-loop qualification planned`
+状态：`v1.1 clean zero-call engineering pass / historical R1 remains failed / DeepSeek GA agent-loop qualification next`
 
 ## 1. 为什么需要这条链
 
@@ -98,7 +98,7 @@ v1.1 把模型提交面收敛为 provider-neutral 的最终判断合同，而不
 - 最终数字、身份、日期、引用和 remaining gaps 仍由本地确定性绑定；
 - immutable R1 payload 与独立内容审计绑定回放，必须继续被拒绝，不能被 v1.1 静默“修好”。
 
-当前聚焦测试为 25 passed；这只是 working-tree 实现证据，干净提交和独立零调用结果尚待完成。
+当前聚焦测试为 25 passed；全仓复跑为 238 passed。绑定 HEAD/upstream `db1e9db43370e880b868aeb6c8fcf7402f62876f` 的独立 zero-call R3 已通过：0 网络／模型／Provider，successor user view 46,061 字符，六类 mutation 全部 fail closed，immutable R1 的五项内容 finding 与合同失败继续被拒绝，未 salvage、未发布。
 
 ## 8. DeepSeek V4 Pro GA 与官方 Harness 处置
 

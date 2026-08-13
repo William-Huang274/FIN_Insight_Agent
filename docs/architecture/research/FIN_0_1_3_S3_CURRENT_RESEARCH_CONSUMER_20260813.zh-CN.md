@@ -65,11 +65,11 @@ Dell/TSM 官方托管 transcript 已经过人工 route、parser、对象编译�
 - unknown Evidence ref、cross-cell NumericFact、自由数字叙事、缺失 cell 均 fail closed；
 - 网络／模型／provider／embedding 调用均为 0，fake deliverable 未发布产品面。
 
-R1 是脏工作树上的工程证据，必须保留但不能独立签发 live。正式执行前还需一个绑定干净远端提交的 R2。
+R1 是脏工作树上的工程证据，已保留且未改写。绑定远端提交 `b4016469...` 的 R2 随后复现相同 research input 与 deliverable digest，证明这不是脏工作树偶然结果。
 
 ## 5. 下一自然门与停止规则
 
-R2 通过后只允许一次 DeepSeek Pro 综合 canary：
+R2 已通过；当前只允许一次 DeepSeek Pro 综合 canary：
 
 - 复用保存的 Planner R1，不再次证明规划；
 - 不联网、不重新检索、不 fallback、不 retry；

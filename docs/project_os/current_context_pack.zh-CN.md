@@ -50,6 +50,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 15. compiled object temporal projection 已统一区分 filing/current-report 日期与 issuer reporting period；20,340 个 v2 对象中 713 个时间元数据校正，只有 16 个模型文本需要重新编码，其余 20,324 个 Qwen 向量安全复用。
 16. DELL 受控零调用纵切已完成：5 个 EvidenceRequest、80 个联合候选、7/7 typed fact resolved、21 NumericFacts、0 gap/conflict、0 网络和生成模型调用。数据库被证明为当前纵切的独立数值权威，但自然 planner、候选选择、研究综合和 UI 仍未通过。
 17. S3 当前 consumer 零调用 R1 已完成：DELL 当前 20 条 reviewed Evidence 中 19 条进入五个研究单元，含 5 条已复核 transcript Evidence；45 个 request-level NumericFact 先合并为 35 个经济事实，再按最新季度／财年／时点选择 25 个模型可见事实；14 个 Pack gap 中 10 个与本轮单元相关。fake 输出成功编译结构化底稿/报告预览，未知引用、跨单元数值、自由数字叙事和缺单元 mutation 均 fail closed；0 网络、0 模型、0 provider、0 embedding，且 fake 结果未发布到产品面。
+18. 绑定干净远端提交 `b4016469...` 的零调用 R2 已复现同一 research input digest `440987e2...968` 与同一 deliverable digest `d915a4a2...c0c0`；R2 result digest 为 `90574540...5974`。自然 canary runner 已通过 no-retry terminal、case binding 和 capture-first 测试，当前全量为 231 passed，活动图 111 Python／8 frontend／10 Runtime resources，0 forbidden reference。
 
 ## G12 关闭的可复现性缺陷
 
@@ -83,7 +84,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
-下一项先把实现、政策、fake、R1 结果和文档形成干净远端提交，再执行一次绑定 `HEAD=upstream` 的零调用 R2 复证。R2 通过后，只签发一次 DELL DeepSeek Pro 综合 canary：复用保存的 Planner R1 和当前 Evidence/NumericFact，不联网、不重跑检索、不 retry、不发布 Workbench；模型只返回引用选择、机制判断、反方、置信度和 WWC 原子，本地绑定身份、数字、日期、引用和最终结构。成功后做 L1 与内容质量审阅；失败保留 capture 并停在 S3，不进入逐字段 live 修补。该 canary 仍不是 S3 三案产品验收。
+干净 R2 已通过。下一项只签发一次 DELL DeepSeek Pro 综合 canary：复用保存的 Planner R1 和当前 Evidence/NumericFact，不联网、不重跑检索、不 retry、不发布 Workbench；模型只返回引用选择、机制判断、反方、置信度和 WWC 原子，本地绑定身份、数字、日期、引用和最终结构。成功后做 L1 与内容质量审阅；失败保留 capture 并停在 S3，不进入逐字段 live 修补。该 canary 仍不是 S3 三案产品验收。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

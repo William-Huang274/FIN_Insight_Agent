@@ -1,7 +1,7 @@
 # S3 当前研究消费者零调用纵切
 
 日期：2026-08-13
-状态：`engineering_pass_zero_call / clean_reproof_and_natural_canary_pending`
+状态：`engineering_pass_zero_call / clean_reproof_pass / natural_canary_pending`
 
 ## 本轮完成
 
@@ -27,4 +27,4 @@
 
 ## 边界与下一项
 
-R1 在未提交工作树执行，只是工程证据，不是 live authority。下一项先形成干净远端提交，再执行绑定 HEAD/upstream 的零调用 R2；R2 通过后才允许一次 DeepSeek Pro 综合 canary。canary 不重跑 Planner/检索、不联网、不 retry、不发布 Workbench；成功后仍需 L1 和内容质量审阅，不能直接关闭 S3。
+R1 在未提交工作树执行，只是工程证据，不是 live authority。实现提交 `b4016469...` 推送后，R2 由 runner 强制验证 HEAD、upstream 和唯一未跟踪 authority，并复现相同 research input 与 deliverable digest；R2 result digest=`90574540...5974`。当前全量为 231 passed，活动图=`111 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference`。下一项只允许一次 DeepSeek Pro 综合 canary；它不重跑 Planner/检索、不联网、不 retry、不发布 Workbench，成功后仍需 L1 和内容质量审阅，不能直接关闭 S3。

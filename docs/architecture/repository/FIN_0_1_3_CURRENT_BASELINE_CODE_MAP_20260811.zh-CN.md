@@ -91,7 +91,7 @@ flowchart TB
 
 机器生成清单：`configs/repository/fin_0_1_3_active_baseline_manifest_v1_0.json`。
 
-- Python import graph：109 个文件。
+- Python import graph：111 个文件。
 - 前端 import graph：8 个文件。
 - Runtime resources：10 个。
 - Runtime detectors：4 个。
@@ -120,6 +120,6 @@ S1-C 收口复证为：活动图 72 Python / 7 frontend / 5 Runtime resources，
 
 仓库工程基线已经合并远端 `main` 并完成 G12。复证目标为 `cd9990ac7ea4586cc55af0bc77f41c3f797399cb`，在第二份全新 clean-main 工作树上通过：44 个 Python tests、TypeScript、Vite build、无数据/挂载数据桌面与移动共 12 个 Playwright tests、三案业务验收、6,230 文件 secret scan、clean Docker build、无数据和只读 Evidence 挂载 smoke，以及原生 Compose 启动。
 
-S0 仓库/运行时基线已关闭；S1-A/S1-B/S1-C 工程纵切和本轮 S1-D Dell/TSM 补源已完成，但 S1 总产品门仍未通过。当前 DELL Pack 与 S2 mart 已被 current S3 consumer 在零调用 R1 中消费并生成结构化 preview；活动树不再只有 Planner，也没有复活归档报告 runner。当前下一门是绑定干净提交的 R2 与唯一一次 DeepSeek 自然综合 canary。MU/NVDA 动态研究、S4 产品闭环和 S5 release 仍需分别验收。
+S0 仓库/运行时基线已关闭；S1-A/S1-B/S1-C 工程纵切和本轮 S1-D Dell/TSM 补源已完成，但 S1 总产品门仍未通过。当前 DELL Pack 与 S2 mart 已被 current S3 consumer 在零调用 R1 中消费并生成结构化 preview，干净 R2 已复现相同 input/deliverable digest；活动树不再只有 Planner，也没有复活归档报告 runner。当前下一门是唯一一次 DeepSeek 自然综合 canary。MU/NVDA 动态研究、S4 产品闭环和 S5 release 仍需分别验收。
 
 这些门的唯一机器状态见 `configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json`。

@@ -24,7 +24,8 @@
 - [x] DELL 自然 planner canary R1（exact-once terminal：业务维度全覆盖，但 10 atoms 超过 8 条执行上限；无 retry）
 - [x] S3 proposal ceiling／execution budget 分层零调用处置（10 proposals 全校验，稳定选择 8、延期 2；R1 不重跑）
 - [x] S3 当前基线 research consumer 零调用工程纵切：Evidence Pack＋NumericFact → 判断原子／底稿／报告 preview（45 request-level facts → 35 semantic unique → 25 visible；fake/mutation 通过）
-- [ ] S3 当前 consumer clean R2 与唯一一次 DeepSeek 自然综合 canary
+- [x] S3 当前 consumer clean R2（HEAD/upstream 绑定，复现同一 input/deliverable digest）
+- [ ] S3 唯一一次 DeepSeek 自然综合 canary
 - [ ] S3 动态 Agentic Research 与内容质量验收
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision

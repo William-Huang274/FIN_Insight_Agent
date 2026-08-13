@@ -1,6 +1,6 @@
 # S3 标准 Tool Calls R1 线格式与只读并行处置
 
-日期：2026-08-14  
+日期：2026-08-14
 状态：`R1_immutable_terminal / project_root_cause_confirmed / zero_call_successor_required`
 
 ## 问题与证据

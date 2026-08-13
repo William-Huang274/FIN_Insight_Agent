@@ -191,3 +191,43 @@ def test_repository_s1d_plan_is_bounded_to_dell_and_tsm_official_pdfs() -> None:
     assert {row["case_key"] for row in plan["sources"]} == {"DELL", "TSM"}
     assert all(row["transport"] == "playwright_api_request" for row in plan["sources"])
     assert plan["policy"]["broad_web_search_forbidden"] is True
+
+
+def test_browser_download_plan_requires_allowlisted_discovery_and_bound_link() -> None:
+    plan = _successor_plan()
+    plan["schema_version"] = "fin_ia_s1d_official_source_browser_capture_plan_v1_2"
+    plan["sources"][0].update(
+        {
+            "transport": "playwright_browser_download",
+            "discovery_url": "https://official.example.test/results",
+            "expected_download_url": "https://official.example.test/report.htm",
+            "link_selector": "a[href='/report.htm']",
+        }
+    )
+    assert validate_capture_plan(plan)["sources"][0]["discovery_url"].endswith(
+        "/results"
+    )
+
+    plan["sources"][0]["discovery_url"] = "https://untrusted.example.test/results"
+    with pytest.raises(OfficialSourceCaptureError, match="source_invalid"):
+        validate_capture_plan(plan)
+
+
+def test_repository_browser_download_successor_is_two_official_routes() -> None:
+    plan = validate_capture_plan(
+        json.loads(
+            (
+                ROOT
+                / "configs"
+                / "retrieval"
+                / "fin_ia_0_1_3_s1d_official_source_browser_capture_plan_v1_2.json"
+            ).read_text(encoding="utf-8")
+        )
+    )
+    assert {row["case_key"] for row in plan["sources"]} == {"DELL", "TSM"}
+    assert all(
+        row["transport"] == "playwright_browser_download"
+        and row["discovery_url"].startswith("https://")
+        and row["expected_download_url"] == row["url"]
+        for row in plan["sources"]
+    )

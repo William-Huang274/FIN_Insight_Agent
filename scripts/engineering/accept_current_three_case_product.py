@@ -49,6 +49,7 @@ def _load_services(data_root: Path) -> tuple[ResearchWorkspaceService, ResearchE
             / "workbench_private"
             / str(evidence_config["private_object_root_relative"])
         ),
+        private_root_base=data_root / "workbench_private",
     )
     workspace_config = read_registered_runtime_json(
         ROOT, "application.config.current_research_workspace_catalog"

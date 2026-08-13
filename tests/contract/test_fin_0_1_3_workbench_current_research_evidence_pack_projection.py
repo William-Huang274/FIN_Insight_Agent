@@ -143,7 +143,11 @@ def _pack(case_key: str, source_text: str) -> dict[str, Any]:
     return {**body, "pack_payload_digest": canonical_digest(body)}
 
 
-def _service(tmp_path: Path) -> ResearchEvidencePackService:
+def _service(
+    tmp_path: Path,
+    *,
+    split_dell_root: bool = False,
+) -> ResearchEvidencePackService:
     object_root = tmp_path / "objects"
     object_root.mkdir()
     artifacts: dict[str, dict[str, Any]] = {}
@@ -159,7 +163,12 @@ def _service(tmp_path: Path) -> ResearchEvidencePackService:
         raw = _canonical_bytes(pack)
         digest = hashlib.sha256(raw).hexdigest()
         object_key = f"{case_key.lower()}/{digest}.json"
-        target = object_root / object_key
+        target_root = (
+            tmp_path / "dell-successor"
+            if split_dell_root and case_key == "DELL"
+            else object_root
+        )
+        target = target_root / object_key
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(raw)
         artifacts[case_key] = {
@@ -169,6 +178,10 @@ def _service(tmp_path: Path) -> ResearchEvidencePackService:
             "media_type": "application/json",
             "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps",
         }
+        if split_dell_root and case_key == "DELL":
+            artifacts[case_key]["private_object_root_relative"] = (
+                "dell-successor"
+            )
         payload_digests[case_key] = pack["pack_payload_digest"]
         summaries.append(
             {
@@ -183,16 +196,12 @@ def _service(tmp_path: Path) -> ResearchEvidencePackService:
             }
         )
     result_body = {
-        "schema_version": (
-            "fin_ia_0_1_3_s1_six_case_local_evidence_pack_result_v1_0"
-        ),
+        "schema_version": "fin_ia_current_research_evidence_pack_result_v1_1",
         "contract_ref": CONTRACT_REF,
         "run_scope": "test",
         "recorded_at": "2026-08-11",
         "attempt_id": "test-zero-call-r1",
-        "status": (
-            "terminal_succeeded_six_case_local_evidence_packs_with_declared_gaps"
-        ),
+        "status": "terminal_succeeded_current_pack_composition_with_declared_gaps",
         "materialization_order": ["DELL", "MU", "NVDA"],
         "candidate_manifest_digest": "a" * 64,
         "retrieval_result_digest": "b" * 64,
@@ -241,6 +250,7 @@ def _service(tmp_path: Path) -> ResearchEvidencePackService:
         config=config,
         result=result,
         private_object_root=object_root,
+        private_root_base=tmp_path,
     )
 
 
@@ -442,6 +452,44 @@ def test_projection_fails_closed_on_permission_case_and_artifact_drift(
         "current_research_evidence_pack_object_identity_drift"
     )
     assert drift.value.status_code == 503
+
+
+def test_projection_supports_digest_bound_per_case_private_roots(
+    tmp_path: Path,
+) -> None:
+    service = _service(tmp_path, split_dell_root=True)
+    principal = ResearchEvidencePackPrincipal(
+        "current", frozenset({"current_product:read"})
+    )
+
+    dell = service.get_case("DELL", principal)
+    mu = service.get_case("MU", principal)
+
+    assert dell["case_key"] == "DELL"
+    assert mu["case_key"] == "MU"
+    assert service.readiness()["all_ready"] is True
+    assert "private_object_root_relative" not in _all_keys(dell)
+
+
+def test_projection_fails_closed_on_per_case_private_root_escape(
+    tmp_path: Path,
+) -> None:
+    service = _service(tmp_path, split_dell_root=True)
+    service._result["pack_artifacts"]["DELL"][  # noqa: SLF001
+        "private_object_root_relative"
+    ] = "../outside"
+
+    with pytest.raises(ResearchEvidencePackServiceError) as denied:
+        service.get_case(
+            "DELL",
+            ResearchEvidencePackPrincipal(
+                "current", frozenset({"current_product:read"})
+            ),
+        )
+
+    assert denied.value.error_code == (
+        "current_research_evidence_pack_private_root_invalid"
+    )
 
 
 def test_primary_workspace_binds_subject_case_and_evidence_pack(

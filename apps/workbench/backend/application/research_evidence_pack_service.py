@@ -22,11 +22,29 @@ CURRENT_RESEARCH_EVIDENCE_PACK_CONFIG_RESOURCE_ID = (
 EXPECTED_CONFIG_SCHEMA = (
     "fin_ia_current_research_evidence_pack_projection_config_v1_0"
 )
-EXPECTED_RESULT_SCHEMA = (
-    "fin_ia_0_1_3_s1_six_case_local_evidence_pack_result_v1_0"
+EXPECTED_RESULT_SCHEMAS = frozenset(
+    {
+        "fin_ia_0_1_3_s1_six_case_local_evidence_pack_result_v1_0",
+        "fin_ia_current_research_evidence_pack_result_v1_1",
+    }
 )
-EXPECTED_RESULT_STATUS = (
-    "terminal_succeeded_six_case_local_evidence_packs_with_declared_gaps"
+EXPECTED_RESULT_STATUSES = frozenset(
+    {
+        "terminal_succeeded_six_case_local_evidence_packs_with_declared_gaps",
+        "terminal_succeeded_current_pack_composition_with_declared_gaps",
+    }
+)
+EXPECTED_RESULT_CONTRACTS = frozenset(
+    {
+        (
+            "fin_ia_0_1_3_s1_six_case_local_evidence_pack_result_v1_0",
+            "terminal_succeeded_six_case_local_evidence_packs_with_declared_gaps",
+        ),
+        (
+            "fin_ia_current_research_evidence_pack_result_v1_1",
+            "terminal_succeeded_current_pack_composition_with_declared_gaps",
+        ),
+    }
 )
 PROJECTION_SCHEMA = "fin_ia_current_research_evidence_pack_projection_v1_0"
 
@@ -74,10 +92,16 @@ class ResearchEvidencePackService:
         config: Mapping[str, Any],
         result: Mapping[str, Any],
         private_object_root: str | Path,
+        private_root_base: str | Path | None = None,
     ) -> None:
         self._config = self._validate_config(config)
         self._result = self._validate_result(result, self._config)
         self._object_root = Path(private_object_root).resolve()
+        self._private_root_base = (
+            Path(private_root_base).resolve()
+            if private_root_base is not None
+            else None
+        )
         self._summaries = {
             str(row["case_key"]): deepcopy(dict(row))
             for row in self._result["case_summaries"]
@@ -99,11 +123,16 @@ class ResearchEvidencePackService:
             repository_root,
             str(config.get("source_result_resource_id") or ""),
         )
-        object_root = (
+        default_object_root = (
             runtime_paths.reviewed_evidence_root
             / str(config.get("private_object_root_relative") or "")
         )
-        return cls(config=config, result=result, private_object_root=object_root)
+        return cls(
+            config=config,
+            result=result,
+            private_object_root=default_object_root,
+            private_root_base=runtime_paths.reviewed_evidence_root,
+        )
 
     @property
     def result_digest(self) -> str:
@@ -220,6 +249,7 @@ class ResearchEvidencePackService:
 
     def _load_pack(self, case_key: str) -> tuple[dict[str, Any], dict[str, Any]]:
         artifact = dict(self._result["pack_artifacts"][case_key])
+        object_root = self._artifact_object_root(artifact)
         object_key = str(artifact.get("object_key") or "")
         relative = PurePosixPath(object_key)
         _require(
@@ -229,9 +259,9 @@ class ResearchEvidencePackService:
             and ".." not in relative.parts,
             "current_research_evidence_pack_object_key_invalid",
         )
-        path = self._object_root.joinpath(*relative.parts).resolve()
+        path = object_root.joinpath(*relative.parts).resolve()
         try:
-            path.relative_to(self._object_root)
+            path.relative_to(object_root)
         except ValueError as exc:
             raise ResearchEvidencePackServiceError(
                 "current_research_evidence_pack_object_escape"
@@ -281,6 +311,27 @@ class ResearchEvidencePackService:
         )
         self._validate_source_materials(pack, case_key)
         return pack, artifact
+
+    def _artifact_object_root(self, artifact: Mapping[str, Any]) -> Path:
+        root_ref = str(artifact.get("private_object_root_relative") or "")
+        if not root_ref:
+            return self._object_root
+        relative = PurePosixPath(root_ref)
+        _require(
+            self._private_root_base is not None
+            and not relative.is_absolute()
+            and "\\" not in root_ref
+            and ".." not in relative.parts,
+            "current_research_evidence_pack_private_root_invalid",
+        )
+        root = self._private_root_base.joinpath(*relative.parts).resolve()
+        try:
+            root.relative_to(self._private_root_base)
+        except ValueError as exc:
+            raise ResearchEvidencePackServiceError(
+                "current_research_evidence_pack_private_root_escape"
+            ) from exc
+        return root
 
     @staticmethod
     def _validate_source_materials(pack: Mapping[str, Any], case_key: str) -> None:
@@ -472,8 +523,10 @@ class ResearchEvidencePackService:
         payload_digests = value.get("pack_payload_digests")
         published = list(config["published_case_keys"])
         _require(
-            value.get("schema_version") == EXPECTED_RESULT_SCHEMA
-            and value.get("status") == EXPECTED_RESULT_STATUS
+            value.get("schema_version") in EXPECTED_RESULT_SCHEMAS
+            and value.get("status") in EXPECTED_RESULT_STATUSES
+            and (value.get("schema_version"), value.get("status"))
+            in EXPECTED_RESULT_CONTRACTS
             and digest == canonical_digest(body)
             and all(case_key in summaries for case_key in published)
             and isinstance(artifacts, Mapping)
@@ -486,6 +539,21 @@ class ResearchEvidencePackService:
             is False,
             "current_research_evidence_pack_result_invalid",
         )
+        for case_key in published:
+            artifact = artifacts[case_key]
+            _require(
+                isinstance(artifact, Mapping)
+                and str(artifact.get("object_key") or "")
+                and str(artifact.get("digest") or "")
+                and type(artifact.get("byte_size")) is int,
+                "current_research_evidence_pack_artifact_invalid",
+            )
+            _require(
+                "private_object_root_relative" not in artifact
+                or value.get("schema_version")
+                == "fin_ia_current_research_evidence_pack_result_v1_1",
+                "current_research_evidence_pack_artifact_root_version_invalid",
+            )
         return value
 
 

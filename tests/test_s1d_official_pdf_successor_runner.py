@@ -34,6 +34,7 @@ def _fixture(tmp_path: Path) -> tuple[Path, dict[str, object]]:
         "predecessor_pack_ref": "data/private/pack.json",
         "s2_result_ref": "configs/s2.json",
         "runner_ref": RUNNER_REF,
+        "zero_call_proof_ref": "configs/proof.json",
     }
     for ref in refs.values():
         target = repo / ref

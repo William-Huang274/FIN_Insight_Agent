@@ -124,6 +124,10 @@ def validate_authority(
         input_pairs.append(
             ("source_intake_result_ref", "source_intake_result_sha256")
         )
+    if bound.get("zero_call_proof_ref") is not None:
+        input_pairs.append(
+            ("zero_call_proof_ref", "zero_call_proof_sha256")
+        )
     for ref_key, digest_key in input_pairs:
         path = _safe_repository_path(
             repository_root, str(bound.get(ref_key) or "")

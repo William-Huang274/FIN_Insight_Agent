@@ -1,0 +1,64 @@
+{
+  "schema_version": "fin_ia_s1d_dell_official_pdf_successor_zero_call_proof_v1_0",
+  "proof_id": "FIN-0.1.3-S1D-DELL-OFFICIAL-PDF-SUCCESSOR-CLEAN-PROOF-R1",
+  "recorded_at": "2026-08-13",
+  "status": "clean_zero_network_proof_passed",
+  "branch": "codex/fin013-s1-retrieval-vertical-slice",
+  "git_commit": "38b8c7164a7f6699792bcd055f7d752749326b6f",
+  "inputs": {
+    "attempt_manifest_ref": "data/workbench_private/source_intake/attempts/source-intake-operator-dell-r3.json",
+    "attempt_manifest_sha256": "1c039ece3963e7a2b01f2751366a41563bd5acea8afec9fbe7b987ed26fc3646",
+    "raw_pdf_sha256": "2e2a251d50608284f6e3ca91e1d71cd39152a214e4bafd8b66cdd240d90fc5c2",
+    "predecessor_pack_ref": "data/workbench_private/fin_0_1_3_s1d_tsm_official_pdf_successor/zero-call-r2/objects/fin-0.1.3/s1d-tsm-official-pdf-successor/dell/v1/27/f3/27f3040a228d3eb83f68a1fdc8cf5014480175b5b57f5af7cb10e889d7884dd7.json",
+    "predecessor_pack_sha256": "2475a9bbd67f712e2198c38247347ad87d2cfad4fde4164895a9b1d819f47c08",
+    "evidence_gate_policies": [
+      {
+        "ref": "configs/retrieval/fin_ia_0_1_3_s1d_dell_demand_backlog_evidence_gate_policy_v1_0.json",
+        "sha256": "357fa244dac40b4f048876cb631976f9ec77842bbb6a5b5b22099ed19fd2637f"
+      },
+      {
+        "ref": "configs/retrieval/fin_ia_0_1_3_s1d_dell_supply_securing_evidence_gate_policy_v1_0.json",
+        "sha256": "245428875934db0f318a68e054a23f94dad8087a81c1273a1ece8770e1a19c39"
+      },
+      {
+        "ref": "configs/retrieval/fin_ia_0_1_3_s1d_dell_ai_profitability_evidence_gate_policy_v1_0.json",
+        "sha256": "9428c2d03b6e21e66b1930994605ad524ae1df8bc55fbb2434e831de66830dc5"
+      }
+    ]
+  },
+  "observed": {
+    "page_count": 14,
+    "nonempty_page_count": 14,
+    "parsed_document_sha256": "6ca967a6a6f8d81562e1560f0384a54085092cc0ee46b22b071f9a7ef44eb8fd",
+    "policy_statuses": [
+      "official_pdf_evidence_gate_passed",
+      "official_pdf_evidence_gate_passed",
+      "official_pdf_evidence_gate_passed"
+    ],
+    "accepted_page_numbers": [3, 3, 4],
+    "accepted_evidence_items": 3,
+    "slot_ids": [
+      "capacity_inputs_execution",
+      "demand_volume_quality",
+      "pricing_mix_value_capture"
+    ],
+    "gap_ids_qualified": ["dell-gap-ai-system-margin"],
+    "predecessor_evidence_items": 17,
+    "predecessor_residual_gaps": 15
+  },
+  "mutations": {
+    "cross_company_direct_source_rejected": true,
+    "missing_anchor_fragment_returns_typed_gap": true,
+    "unqualified_gap_closure_rejected": true,
+    "duplicate_bundle_targets_rejected": true,
+    "numeric_authority_not_granted": true
+  },
+  "boundaries": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "retries": 0,
+    "current_product_pointer_mutated": false,
+    "complete_research_or_release_claimed": false
+  },
+  "proof_digest": "3396a1f678ad2af8b525e68f04a697fe0d7d5cebb202ae0b3aa135afd0634755"
+}

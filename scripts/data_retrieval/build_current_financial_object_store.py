@@ -27,6 +27,7 @@ from retrieval.financial_objects import (  # noqa: E402
     summarize_object_store,
     validate_source_object_manifest,
 )
+from retrieval.official_pdf_objects import compile_official_pdf_document  # noqa: E402
 
 
 RESULT_SCHEMA_VERSION = "fin_ia_s1b_current_financial_object_store_result_v1_0"
@@ -158,6 +159,20 @@ def build_object_store(
             )
             if str(parent["ticker"]) not in allowed_tickers:
                 raise FinancialObjectError(f"parsed_source_owner_not_allowed:{source_id}")
+            add_parent(parent)
+            for child in parsed_children:
+                add_child(child)
+        elif input_kind == "parsed_official_pdf_document":
+            parent, parsed_children = compile_official_pdf_document(
+                _read_json(path),
+                source_spec=source,
+                parsed_ref=source_ref,
+                parsed_sha256=actual_sha256,
+            )
+            if str(parent["ticker"]) not in allowed_tickers:
+                raise FinancialObjectError(
+                    f"parsed_source_owner_not_allowed:{source_id}"
+                )
             add_parent(parent)
             for child in parsed_children:
                 add_child(child)

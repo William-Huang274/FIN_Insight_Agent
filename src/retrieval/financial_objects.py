@@ -88,6 +88,7 @@ def validate_source_object_manifest(payload: Mapping[str, Any]) -> dict[str, Any
                 "legacy_qrel_alias_jsonl",
                 "parsed_sec_capture",
                 "raw_sec_html_capture",
+                "parsed_official_pdf_document",
                 "market_evidence_jsonl",
             }
             or not str(source.get("path") or "").strip()

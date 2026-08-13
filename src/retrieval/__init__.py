@@ -11,10 +11,12 @@ from .financial_objects import (
     validate_source_object_manifest,
 )
 from .query_plan import compile_query_facet_plan
+from .official_pdf_objects import compile_official_pdf_document
 from .text import tokenize
 
 __all__ = [
     "compile_query_facet_plan",
+    "compile_official_pdf_document",
     "attach_legacy_aliases",
     "compile_parsed_sec_capture",
     "compile_raw_sec_html_capture",

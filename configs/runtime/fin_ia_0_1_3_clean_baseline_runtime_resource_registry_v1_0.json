@@ -1,6 +1,6 @@
 {
   "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R9",
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R10",
   "status": "tracked_typed_runtime_resource_authority",
   "policy": {
     "registry_is_source_of_truth": true,
@@ -14,11 +14,12 @@
   "detector_python_refs": [
     "apps/workbench/backend/application/research_evidence_pack_service.py",
     "apps/workbench/backend/application/research_retrieval_service.py",
-    "apps/workbench/backend/application/research_workspace_service.py"
+    "apps/workbench/backend/application/research_workspace_service.py",
+    "apps/workbench/backend/application/source_intake_service.py"
   ],
-  "resource_count": 9,
-  "resource_bytes": 2034057,
-  "resource_canonical_digest": "15325be0edeb5e4f0eec731149d665f52e56597e4d8376374114bf2beebefe14",
+  "resource_count": 10,
+  "resource_bytes": 2036506,
+  "resource_canonical_digest": "f361c7d45f58629bd82b3a685d753c3b56288449e9464e9ee71fa18485528432",
   "resources": [
     {
       "resource_id": "application.config.current_financial_research_kernel",
@@ -97,6 +98,19 @@
       "load_phase": "application_service_initialization",
       "required": true,
       "source_owner": "apps.workbench.backend.application.research_workspace_service"
+    },
+    {
+      "resource_id": "application.config.current_source_intake_policy",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_policy_v1_0.json",
+      "sha256": "c6f53b23386a4b2ec34d77b7740789840013f41657d548ea4917c73188184fd9",
+      "bytes": 2449,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.source_intake_service.SourceIntakeService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "required": true,
+      "source_owner": "ingestion.source_intake.SourceIntakePolicy.from_path"
     },
     {
       "resource_id": "application.result.current_research_local_evidence_packs",

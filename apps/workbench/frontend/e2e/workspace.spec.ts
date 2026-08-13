@@ -67,6 +67,10 @@ test("operations is isolated from the research product", async ({ page }, testIn
   await expect(page.getByRole("heading", { name: "运行与数据控制台" })).toBeVisible();
   await expect(page.getByText("服务状态")).toBeVisible();
   await expect(page.getByText("评测目录")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "官方资料入库" })).toBeVisible();
+  await expect(page.getByLabel("已登记来源")).toHaveValue(/DELL_Q1_FY2027/);
+  await expect(page.getByText(/入库成功仍不是 Evidence/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "自动获取一次" })).toBeEnabled();
   await expectNoHorizontalOverflow(page);
   await capture(page, "operations", testInfo.project.name);
   await page.getByRole("link", { name: /研究工作区/ }).click();

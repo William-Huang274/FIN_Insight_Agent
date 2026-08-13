@@ -15,12 +15,14 @@ from sec_agent.workbench.api_contracts import install_api_contracts
 from sec_agent.workbench.store import WorkbenchStore, default_store_path
 
 from .api.operations import build_operations_router
+from .api.source_intake import build_source_intake_router
 from .api.v1.research_evidence_packs import build_research_evidence_pack_router
 from .api.v1.research_retrieval import build_research_retrieval_router
 from .api.v1.research_workspace import build_research_workspace_router
 from .application.research_evidence_pack_service import ResearchEvidencePackService
 from .application.research_retrieval_service import ResearchRetrievalService
 from .application.research_workspace_service import ResearchWorkspaceService
+from .application.source_intake_service import SourceIntakeService
 
 
 APP_ROOT = Path(__file__).resolve().parents[1]
@@ -39,6 +41,7 @@ def create_app(
     current_research_evidence_pack_service: ResearchEvidencePackService | None = None,
     research_workspace_service: ResearchWorkspaceService | None = None,
     research_retrieval_service: ResearchRetrievalService | None = None,
+    source_intake_service: SourceIntakeService | None = None,
     workbench_runtime_mode: Literal["current", "fixture"] = "current",
     frontend_dist_root: str | Path | None = None,
     **retired_product_services: object,
@@ -88,6 +91,10 @@ def create_app(
             CODE_ROOT,
             runtime_paths=runtime_paths,
         )
+    source_intake = source_intake_service or SourceIntakeService.from_runtime_paths(
+        CODE_ROOT,
+        runtime_paths,
+    )
 
     app = FastAPI(
         title="FinSight Research Workbench API",
@@ -137,6 +144,10 @@ def create_app(
             repository_root=CODE_ROOT,
             system_status=system_status,
         ),
+        prefix="/api",
+    )
+    app.include_router(
+        build_source_intake_router(source_intake),
         prefix="/api",
     )
 

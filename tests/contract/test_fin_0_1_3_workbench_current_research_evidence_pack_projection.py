@@ -334,7 +334,7 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R9"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R10"
     )
     assert set(registry.by_id()) == {
         "application.config.current_financial_research_kernel",
@@ -343,6 +343,7 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
         "application.config.current_research_planning_policy",
         "application.config.current_research_evidence_pack_projection",
         "application.config.current_research_workspace_catalog",
+        "application.config.current_source_intake_policy",
         "application.result.current_research_local_evidence_packs",
         "application.result.current_research_retrieval_snapshot",
         "application.result.current_s1c_ranking_comparison_projection",
@@ -351,6 +352,7 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
         "apps/workbench/backend/application/research_evidence_pack_service.py",
         "apps/workbench/backend/application/research_retrieval_service.py",
         "apps/workbench/backend/application/research_workspace_service.py",
+        "apps/workbench/backend/application/source_intake_service.py",
     )
     assert all(
         "fin_0_1_2" not in row.repo_relative_path

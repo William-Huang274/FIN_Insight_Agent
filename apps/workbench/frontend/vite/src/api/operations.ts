@@ -44,10 +44,57 @@ export type EvalCatalogItem = {
   runner?: string;
 };
 
+export type SourceIntakeRoute = {
+  route_id: string;
+  case_key: string;
+  issuer_name: string;
+  document_type: string;
+  title: string;
+  publication_date: string;
+  source_url: string;
+  discovery_url?: string | null;
+  byte_ceiling: number;
+  automatic_enabled: boolean;
+  automatic_adapter_id?: string | null;
+  operator_upload_enabled: boolean;
+  promotion_status: "source_only_not_evidence";
+};
+
+export type SourceIntakeAttempt = {
+  attempt_id: string;
+  recorded_at: string;
+  route_id: string;
+  case_key: string;
+  title: string;
+  publication_date: string;
+  acquisition_method: "operator_upload" | "automatic_adapter";
+  adapter_id: string;
+  status: "captured_ready_for_parse" | "captured_rejected" | "acquisition_failed";
+  failure_code?: string | null;
+  raw_object_sha256?: string | null;
+  raw_object_bytes: number;
+  raw_object_reused: boolean;
+  pdf_page_count: number;
+  promotion_status: "source_only_not_evidence";
+  transport?: {
+    http_status?: number | null;
+    failure_category?: string | null;
+  } | null;
+  network_path?: {
+    transparent_tun_likely?: boolean;
+    route_interface?: string | null;
+    diagnostic_boundary?: string;
+  } | null;
+};
+
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers = new Headers(init?.headers);
+  if (!headers.has("Content-Type") && typeof init?.body === "string") {
+    headers.set("Content-Type", "application/json");
+  }
   const response = await fetch(path, {
     ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
+    headers,
   });
   if (!response.ok) {
     const detail = await response.text();
@@ -75,6 +122,29 @@ export class OperationsApiClient {
 
   evals(): Promise<EvalCatalogItem[]> {
     return requestJson<{ evals: EvalCatalogItem[] }>("/api/operations/evals").then((value) => value.evals);
+  }
+
+  sourceIntakeRoutes(): Promise<SourceIntakeRoute[]> {
+    return requestJson<{ routes: SourceIntakeRoute[] }>("/api/operations/source-intake/routes").then((value) => value.routes);
+  }
+
+  sourceIntakeAttempts(): Promise<SourceIntakeAttempt[]> {
+    return requestJson<{ attempts: SourceIntakeAttempt[] }>("/api/operations/source-intake/attempts").then((value) => value.attempts);
+  }
+
+  uploadSource(routeId: string, file: File): Promise<SourceIntakeAttempt> {
+    return requestJson<{ attempt: SourceIntakeAttempt }>(`/api/operations/source-intake/uploads/${encodeURIComponent(routeId)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/pdf" },
+      body: file,
+    }).then((value) => value.attempt);
+  }
+
+  acquireSourceAutomatically(routeId: string): Promise<SourceIntakeAttempt> {
+    return requestJson<{ attempt: SourceIntakeAttempt }>(`/api/operations/source-intake/automatic/${encodeURIComponent(routeId)}`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    }).then((value) => value.attempt);
   }
 
   startSmoke(): Promise<RunJob> {

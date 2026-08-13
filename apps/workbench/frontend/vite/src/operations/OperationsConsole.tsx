@@ -19,10 +19,13 @@ import {
   EvalCatalogItem,
   OperationsApiClient,
   RunJob,
+  SourceIntakeAttempt,
+  SourceIntakeRoute,
   StoredProfile,
   StoredSourceBundle,
   SystemStatus,
 } from "../api/operations";
+import { SourceIntakePanel } from "./SourceIntakePanel";
 import "./operations-console.css";
 
 type Snapshot = {
@@ -31,6 +34,8 @@ type Snapshot = {
   bundles: StoredSourceBundle[];
   runs: RunJob[];
   evals: EvalCatalogItem[];
+  sourceRoutes: SourceIntakeRoute[];
+  sourceAttempts: SourceIntakeAttempt[];
 };
 
 type ViewState =
@@ -47,9 +52,9 @@ export function OperationsConsole() {
 
   const refresh = useCallback(() => {
     setState({ kind: "loading" });
-    Promise.all([api.status(), api.profiles(), api.sourceBundles(), api.runs(), api.evals()])
-      .then(([status, profiles, bundles, runs, evals]) => {
-        setState({ kind: "ready", snapshot: { status, profiles, bundles, runs, evals } });
+    Promise.all([api.status(), api.profiles(), api.sourceBundles(), api.runs(), api.evals(), api.sourceIntakeRoutes(), api.sourceIntakeAttempts()])
+      .then(([status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts]) => {
+        setState({ kind: "ready", snapshot: { status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts } });
       })
       .catch((error: Error) => setState({ kind: "error", message: error.message }));
   }, []);
@@ -82,6 +87,32 @@ export function OperationsConsole() {
     }
   };
 
+  const uploadSource = async (routeId: string, file: File) => {
+    setAction("source-upload");
+    setActionError(null);
+    try {
+      await api.uploadSource(routeId, file);
+      refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setAction(null);
+    }
+  };
+
+  const acquireSourceAutomatically = async (routeId: string) => {
+    setAction("source-automatic");
+    setActionError(null);
+    try {
+      await api.acquireSourceAutomatically(routeId);
+      refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setAction(null);
+    }
+  };
+
   return (
     <div className="operations-console">
       <header className="operations-console__topbar">
@@ -105,13 +136,13 @@ export function OperationsConsole() {
         {actionError ? <div className="operations-console__error"><ShieldAlert size={17} />{actionError}</div> : null}
         {state.kind === "loading" ? <div className="operations-console__loading"><LoaderCircle className="is-spinning" /><span>正在读取当前运行状态…</span></div> : null}
         {state.kind === "error" ? <div className="operations-console__error"><ShieldAlert size={17} />{state.message}</div> : null}
-        {state.kind === "ready" ? <OperationsSnapshot snapshot={state.snapshot} action={action} onCancel={cancel} /> : null}
+        {state.kind === "ready" ? <OperationsSnapshot snapshot={state.snapshot} action={action} onCancel={cancel} onUploadSource={uploadSource} onAutomaticSource={acquireSourceAutomatically} /> : null}
       </main>
     </div>
   );
 }
 
-function OperationsSnapshot({ snapshot, action, onCancel }: { snapshot: Snapshot; action: string | null; onCancel: (jobId: string) => void }) {
+function OperationsSnapshot({ snapshot, action, onCancel, onUploadSource, onAutomaticSource }: { snapshot: Snapshot; action: string | null; onCancel: (jobId: string) => void; onUploadSource: (routeId: string, file: File) => Promise<void>; onAutomaticSource: (routeId: string) => Promise<void> }) {
   const activeRuns = useMemo(() => snapshot.runs.filter((run) => ["queued", "running", "cancelling"].includes(run.status)), [snapshot.runs]);
   return (
     <>
@@ -140,6 +171,8 @@ function OperationsSnapshot({ snapshot, action, onCancel }: { snapshot: Snapshot
           </dl>
         </article>
       </section>
+
+      <SourceIntakePanel routes={snapshot.sourceRoutes} attempts={snapshot.sourceAttempts} action={action} onUpload={onUploadSource} onAutomatic={onAutomaticSource} />
 
       <section className="operations-console__columns">
         <article className="operations-console__panel">

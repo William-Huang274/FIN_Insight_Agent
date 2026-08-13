@@ -7,7 +7,7 @@
 
 当前唯一产品是一个本地只读研究工作台。它加载 DELL、MU、NVDA 三份已复核 Evidence Pack，并用 `CaseSubject + ResearchContext + CasePackBinding` 防止公司、期间、artifact 或 payload 串案。S1-A/S1-B 接入 `candidate_not_evidence` 的当前金融对象候选；S1-C 又接入同对象四路排名对照。排名投影剥离 gold identity，只用于审计候选，不替换 reviewed Pack。
 
-三份当前 Pack 均只来自 SEC，结构化数值项为 0。当前历史 candidate store 对 reviewed target 的对照命中也仅为 DELL 4、MU 0、NVDA 6。当前代码图因此只证明审证、类型化候选、来源边界和缺口可见，不证明 current source coverage、数值事实、外源多样性或完整投研内容质量。
+DELL 当前 Pack 已从仅 SEC 扩展为 SEC＋Dell IR＋TSM IR（20 Evidence／14 gaps），MU/NVDA 仍保留旧 Pack；三案结构化数值项仍为 0。当前代码图因此证明审证、类型化候选、官方 PDF 入库/晋升、按案例私有对象绑定和缺口可见，但不证明 S1 全来源覆盖、S3 研究判断或完整投研内容质量。S2 NumericFact 通过独立 private mart 提供，不嵌入 transcript Evidence。
 
 ```mermaid
 flowchart LR
@@ -39,7 +39,7 @@ flowchart LR
 | Retrieval application | `apps/workbench/backend/application/research_retrieval_service.py` | 读取候选快照与 S1-C 安全投影、剥离 qrel identity、保持 candidate/Evidence 边界 |
 | Product UI | `apps/workbench/frontend/vite/src/app/ResearchWorkspace.tsx` | 三案例工作区、证据与类型化检索候选展示 |
 | Operator UI | `apps/workbench/frontend/vite/src/operations/OperationsConsole.tsx` | 系统状态、配置、数据构建和运行检查 |
-| Runtime registry | `src/sec_agent/runtime_resource_registry.py` | 只允许注册的五项 runtime resource；第五项是 S1-C 只读排名投影 |
+| Runtime registry | `src/sec_agent/runtime_resource_registry.py` | R11 注册 10 项 current resource；支持 DELL v1.1 Pack/Workspace 组合并保持 MU/NVDA 私有对象不复制 |
 
 后端只消费 Vite 生成的 `apps/workbench/frontend/dist/index.html`。缺少构建产物时 `/workspace` 与 `/operations` 返回 typed 503 `frontend_not_built`；源码目录中的历史 HTML 已归档，不能作为缓存式 fallback。
 
@@ -88,10 +88,10 @@ flowchart TB
 
 机器生成清单：`configs/repository/fin_0_1_3_active_baseline_manifest_v1_0.json`。
 
-- Python import graph：72 个文件。
-- 前端 import graph：7 个文件。
-- Runtime resources：5 个。
-- Runtime detectors：3 个。
+- Python import graph：107 个文件。
+- 前端 import graph：8 个文件。
+- Runtime resources：10 个。
+- Runtime detectors：4 个。
 - archive/旧版本/attempt 的活动引用：0。
 - unresolved local import：0。
 
@@ -117,6 +117,6 @@ S1-C 收口复证为：活动图 72 Python / 7 frontend / 5 Runtime resources，
 
 仓库工程基线已经合并远端 `main` 并完成 G12。复证目标为 `cd9990ac7ea4586cc55af0bc77f41c3f797399cb`，在第二份全新 clean-main 工作树上通过：44 个 Python tests、TypeScript、Vite build、无数据/挂载数据桌面与移动共 12 个 Playwright tests、三案业务验收、6,230 文件 secret scan、clean Docker build、无数据和只读 Evidence 挂载 smoke，以及原生 Compose 启动。
 
-S0 仓库/运行时基线已关闭，S1-A/S1-B 工程纵切和 S1-C 同对象排名工程比较已完成，但 S1 产品门仍未通过。当前对象库为 28 parent / 1,805 child；BM25 以 `14/17` mapped Recall@10 保留默认，BGE-M3=`12/17`、RRF/规则重排=`13/17` 只作 shadow。当前下一门是 Owner 只复核四条 qrel successor 并缓存复跑；Dell/Micron PDF transport、TSM 先进封装和新鲜估值随后归 S1-D。S2 NumericFact、S3 动态研究与完整报告、S4 产品闭环和 S5 release 仍需按当前计划分别验收。
+S0 仓库/运行时基线已关闭；S1-A/S1-B/S1-C 工程纵切和本轮 S1-D Dell/TSM 补源已完成，但 S1 总产品门仍未通过。当前 DELL Pack 已可作为 S3 输入，S2 mart 也具备 NumericFact；活动树只有 Planner，没有现役 judgment/workpaper/report consumer。当前下一门因此是当前基线的最小 S3 research-consumer 纵切，而不是继续重做检索或复活归档报告 runner。MU/NVDA 动态研究、S4 产品闭环和 S5 release 仍需分别验收。
 
 这些门的唯一机器状态见 `configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json`。

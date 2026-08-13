@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-13 | FIN 0.1.3 S1-D 完成 Dell/TSM 有界官方补源与当前 Pack 提升：Dell 14 页 Q1 FY2027 官方托管 transcript 经既有绑定 route 人工入库，复用共用 parser/object/Evidence Gate 接受 3 条 issuer-direct Evidence；TSM 保留 2 条 bounded ecosystem Evidence。当前 DELL 为 20 Evidence／14 gaps，MU/NVDA 未变；只关闭 AI server margin gap，pull-forward、ASP/PVM、供应分配、容量时点和估值继续显式。Runtime Registry R11 支持按案例 digest-bound 私有对象根，避免复制整套 Pack。`core_research_ready=true` 只授权进入下一段零调用 S3 consumer 工程，不等于 S1、报告或 release 通过。 |
 | 2026-08-13 | FIN 0.1.3 S1-D 新增有界官方来源入库：自动获取和操作员上传预登记官方 PDF 共用不可变 raw CAS、route 身份、日期、摘要和 PDF 验收，Workbench Operations 可查看 attempt，但任何成功对象仍是 `source_only_not_evidence`。该入口不是 FIN 0.5 通用 Data Room：不接受任意 URL、私有材料、截图或文本，也不提前引入 ACL/OCR/机构文件管理。真实自动 R1 的 Dell/TSM 两条请求均在 HTTP status 前失败，且两域 Fake-IP 均经 `okz` TUN；因此当前保留 typed gap，优先使用绑定 route 的人工官方 PDF 上传，自动路径只有在用户可见的 DIRECT/TUN A/B 后才可重试。 |
 | 2026-08-13 | DELL 受控 S1/S2/S3 零调用纵切已接通：5 个 EvidenceRequest 同时得到 Qwen＋BM25 叙事候选和 S2 SQL/PIT 事实，7/7 typed request 返回 21 个 NumericFact、0 gap/conflict。该结果把数据库从“不能遗忘的规划项”提升为不可被 embedding、reranker 或模型替代的运行时数值权威；同时暴露 80 个候选仍有旧期、表格和角色噪声。下一门只允许一次 planner-atoms canary，不允许模型拥有身份、日期、来源、预算或数值写入权，也不因此宣称 S1/S2/S3 产品通过。 |
 | 2026-08-12 | FIN 0.1.3 S1-B 将历史 candidate store 重定基为 28 个父文档／1,805 个可检索金融子对象；NVDA 当前 10-Q、三案 PIT market role 与 Workbench 候选链已接入。实测证明 source coverage 与 ranking quality 必须分账：current-object missing=0，但 reviewed target 入池仅 DELL/MU/NVDA=`6/3/4`，并有风险段冒充现金、旧期压新期、主题共现冒充关系。Dell/Micron 官方 PDF 已确认存在但当前产品 transport 未捕获，和 TSM 先进封装、新鲜估值一起转 S1-D；当前下一阶段是冻结同一对象做 S1-C sparse/dense/rerank 对照，而非继续堆来源。 |

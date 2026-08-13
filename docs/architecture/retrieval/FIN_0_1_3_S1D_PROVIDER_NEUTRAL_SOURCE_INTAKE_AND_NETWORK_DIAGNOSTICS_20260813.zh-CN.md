@@ -1,7 +1,7 @@
 # FIN 0.1.3 S1-D 通用来源入库与网络诊断合同
 
 日期：2026-08-13
-状态：`engineering_pass / TUN_off_A_B_complete / TSM_source_and_bounded_evidence_ready / Dell_transport_gap_open / current_pointer_unchanged / S1D_product_open`
+状态：`engineering_pass / TUN_off_A_B_complete / TSM_and_Dell_official_PDF_evidence_ready / current_Dell_pack_promoted / S1_product_open`
 
 ## 1. 产品问题
 
@@ -111,3 +111,21 @@ Owner 关闭 TUN 后，项目在新的干净 authority 下对完全相同的两�
 8. Workbench current pointer 未切换，公开结果不含 transcript 正文、raw ref、Cookie 或 Authorization。
 
 本轮关闭的是 `TSM advanced-packaging source absence`，没有关闭 Dell 自己的订单转化、利润解释 transcript gap。因此 `core_research_ready=false`、S1 product acceptance=false、S3 execution unauthorized。下一项不是重跑 TSM 或扩大 broad search，而是通过现有绑定 route 人工上传 Dell 官方 PDF；成功后复用同一 parser／对象／Gate 主干。
+
+## 9. Dell 人工官方 PDF successor 与当前 Pack 提升
+
+Owner 提供的 `Q1 FY27 Transcript.pdf` 通过既有 `DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT` route 入库。文件为 14 页、370,371 bytes、未加密且全文可解析，raw SHA-256=`2e2a251d...fc5c2`。原始字节只保存在私有 CAS；公开结果不包含正文或凭据。
+
+同一个 provider-neutral runner 同时消费三份 Evidence Gate policy，没有建立 Dell 专用 parser：
+
+1. 第 3 页接受 demand/backlog 证据：AI orders `$24.4b`、AI server revenue `$16.1b`、backlog `$51.3b`、需求高于供给、memory 为主要约束及超过 5,000 客户；
+2. 第 3 页接受 supply-securing 证据：memory 不确定性促使客户更早、以更长周期锁定基础设施，并保留 pricing/margin discipline 边界；
+3. 第 4 页接受 AI profitability 证据：AI server profitability 与中个位数营业利润率目标一致。
+
+三条均为 `issuer_direct_source`，不获得 NumericFact 或因果归因权限。前两条不能量化 pull-forward、取消、消化、ASP 或 PVM；第三条只关闭 `dell-gap-ai-system-margin`，因为它仍是管理层目标而非审计产品分部利润桥。
+
+DELL 私有 successor 为 20 Evidence／14 gaps。随后新增唯一 current-Pack 组合器：每个案例可绑定独立、digest-bound 私有对象根；DELL 使用新 successor，MU/NVDA 与 ORCL/ASML/ANET 保留旧对象，不复制任何私有 Pack。组合器重算摘要、绑定 predecessor/result/Pack/proof/runner/Workspace/Registry 摘要，路径逃逸、预算扩大、保留集合漂移、对象/计数漂移均 fail closed。Runtime Registry 由 R10 原子切换为 R11。
+
+切换后 30 项聚焦回归通过，真实私有挂载三案均 ready；业务验收读取 DELL=20 Evidence／14 gaps，来源域为 `www.sec.gov`、`investors.delltechnologies.com`、`investor.tsmc.com`，MU/NVDA 保持旧 Pack。S2 仍为 1,319 observations，transcript numeric authority=false。
+
+本轮因此将 `core_research_ready` 置为 true，但没有关闭 S1 product acceptance，也没有授权 S3 模型调用。活动树审计确认当前只有 S3 Planner、没有 judgment/workpaper/report consumer；下一项先建立当前基线的最小 S3 消费纵切，不得复活归档 attempt runner。

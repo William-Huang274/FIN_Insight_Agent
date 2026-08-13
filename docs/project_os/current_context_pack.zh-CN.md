@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。真实 S1-C 产品输入审计得到 8 request、128 candidates、19 resolved／9 typed gap 和 45 NumericFacts，并把每项问题归责为候选选择、S2 非标准经营指标或真实缺源。两个新 ranker 与 facet Evidence Role 均未过业务门，故不晋升。S1-D 的 Source Intake、私有 CAS 和自动/人工 driver 已工程通过；Owner 关闭 TUN 后 TSM route 已取得 22-page 官方 PDF，共用 parser／对象／Evidence Gate 只接受第 10、20 页两条先进封装 bounded context，私有 DELL successor 为 17 Evidence／15 gaps，S2 1,319 observations 与 NumericFact 权限不变。Dell transcript 仍 read-timeout，current Pack 指针未切换，因此 `core_research_ready=false`、S1 产品门与 S3 研究/报告权限仍关闭。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。真实 S1-C 产品输入审计得到 8 request、128 candidates、19 resolved／9 typed gap 和 45 NumericFacts。S1-D 的 Source Intake、私有 CAS 和自动/人工 driver 已工程通过；TSM 官方 PDF 形成两条 bounded read-through，Owner 随后人工上传 Dell Q1 FY2027 官方托管 transcript。共用 parser／对象／Evidence Gate 从 Dell 第 3、3、4 页接受三条 issuer-direct Evidence，并只关闭 `dell-gap-ai-system-margin`。当前 DELL Pack 已由一次零调用、registry-atomic 提升从 15 Evidence／16 gaps 更新为 20／14；MU、NVDA 与留出案例不变，S2 仍为 1,319 observations 且 transcript 没有 NumericFact 权限。`core_research_ready=true` 只表示 DELL 可进入下一段 S3 纵切；S1 产品门、S3 研究/报告和 release 仍未通过。
 
 ## 当前唯一产品边界
 
@@ -15,7 +15,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。受控计划 API 已能把 Objective/atoms 同时送入 S1 联合候选与 private S2 mart；Operations 可按预登记官方 route 自动抓取或人工上传 PDF，并保证原始字节先进入私有不可变 source-only capture。当前 reviewed Pack 尚未复编译，前端也尚未消费这些事实，因此 reviewed 产品表面的结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。受控计划 API 已能把 Objective/atoms 同时送入 S1 联合候选与 private S2 mart；Operations 可按预登记官方 route 自动抓取或人工上传 PDF，并保证原始字节先进入私有不可变 source-only capture。reviewed 产品表面的结构化数值项仍为 0；NumericFact 是独立 S2 路线，尚未被 S3 报告和前端消费。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 
@@ -29,7 +29,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Chat Completions transport 和 Source Intake。Runtime Registry 为 R10／10 个资源，新增的唯一产品资源是 source-intake policy；模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册为产品 Runtime resource。private mart 与 raw capture 继续通过显式 Runtime path 挂载，而不是复制进 Git。Qwen 权重按第一次受控计划懒加载，普通 Workbench 启动不加载模型。历史文件没有删除；完整旧 Project OS 账本也保存在 `archive/versions/fin_0_1_3_prebaseline/docs/project_os/`。
+当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Chat Completions transport、Source Intake、共用 official-PDF Evidence successor 和 registry-atomic current-Pack promotion。Runtime Registry 为 R11／10 个资源；模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册为产品 Runtime resource。当前结果允许每个案例绑定独立的 digest-bound 私有对象根，因此升级 DELL 无需复制 MU/NVDA。private mart 与 raw capture 继续通过显式 Runtime path 挂载，Qwen 权重按第一次受控计划懒加载，普通 Workbench 启动不加载模型。
 
 ## 已完成的重定基事实
 
@@ -59,8 +59,8 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 尚未完成，不能提前宣称通过
 
-1. 当前对象库已增加 PIT market role，private S2 公司财务事实 mart 也已被 request-scoped Research Runtime 消费；但 reviewed Evidence Pack 仍只覆盖 SEC 且结构化数值项为 0，S3 和前端尚未消费这些 NumericFact。对象候选不得伪装为已晋升 Evidence，数据库 Runtime integration engineering pass 也不得冒充研究产品通过。
-2. Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 的官方文件已确认存在。TUN-off R2 已证明 TSM 原始 PDF 可取得，并完成先进封装 Evidence successor；原先 TSM source gap 已关闭。Dell 在同一 changed path 仍 read-timeout，Micron prepared remarks 与新鲜估值不在本轮授权范围。下一项只允许 Dell 绑定 route 人工入库；搜索摘要不得代替原文，TSM 行业供给背景不得冒充 Dell-specific allocation。
+1. 当前对象库已增加 PIT market role，private S2 公司财务事实 mart 也已被 request-scoped Research Runtime 消费；DELL reviewed Pack 已扩展到 Dell/TSM 官方法说，但结构化数值项仍为 0，S3 和前端尚未消费 NumericFact。对象候选不得伪装为 Evidence，报告也不得从 transcript 叙事重新发明精确数值权威。
+2. Dell Q1 FY2027 transcript transport gap 已通过绑定 route 的人工官方 PDF 入库关闭；TSM 先进封装 source gap 也已关闭。仍保留 14 个 DELL residual gaps，包括提前采购幅度与消化、ASP/PVM 桥、供应商分配与容量释放时点、HBM 供给、利用率/良率和估值。Micron prepared remarks 与新鲜估值不在本次提升范围，不得因 DELL `core_research_ready` 一并视作 S1 完成。
 3. successor 后同对象比较为 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。现成 Cross-Encoder 同为 `17/18` 且提高 MRR，但会把 DELL 直接风险目标从第 1 降到第 19，不能晋升默认路线。
 4. 规则 Evidence Role 虽减少三案 top3 显式不兼容项，却把 Recall 降到 `13/18`；对象级复核仍只有 F1=`0.507936`。根因不仅是对象形态，还包括 reported results、guidance、counterevidence、监管和财务桥接被旧 qrel 混成一个 query，当前规则禁止上线。
 5. 当前 provider-neutral planner compiler 已能把受控 Objective/atoms 变成 EvidenceRequest，并执行 S1 联合候选与 S2 typed fact sibling；但 atoms 仍由工程侧提供。自然模型是否能正确选择 facet、实体、metric 与 product intent 尚未证明，S3 也尚未把候选和 NumericFact 变成研究判断，因此仍不能称为真实用户查询理解或完整产品数值能力。
@@ -78,11 +78,11 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S1D_DELL_BOUND_OFFICIAL_PDF_OPERATOR_INTAKE`
+`FIN_0_1_3_S3_CURRENT_RESEARCH_CONSUMER_MINIMUM_VERTICAL_SLICE`
 
-S3 预算分层与保存 atoms 的 S1-C 产品输入审计已经完成；R1 仍是历史 failed attempt，没有重跑模型。S1-C 工程切片可以记为候选池可审计，但两个 ranker 和通用 Evidence Role 均未取得自动晋升权限。S1-D 的 TUN-off R2 已取得 TSM PDF，随后零网络解析 22 页并只晋升第 10、20 页两条受边界约束的 read-through；DELL successor 从 15／16 变为 17 Evidence／15 gaps，S2 与 current pointer 都不变。Dell 自动 route 仍 timeout。
+Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前活动树审计发现：干净基线只有 S3 Planner，尚无现役 `Evidence Pack + NumericFact → research judgment / workpaper / report` 消费者；归档中的旧 9-call/attempt runner 不得直接复活。
 
-下一项只处理 Dell：使用已经可用的 Workbench `DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT` 绑定 route 人工上传官方 PDF。上传只解除 transport；之后必须复用同一共用 parser、身份/日期绑定、对象编译、Evidence Gate、Pack successor 和有限 S2 回归。不得重跑 TSM、自动 retry Dell、扩大 broad search 或新建 Dell 专用脚本；Dell 仍缺失时不得签发 S3。
+下一项先在当前基线建立最小、provider-neutral 的 DELL S3 消费纵切：编译模型可见的 reviewed Evidence、14 个 residual gaps 与 S2 NumericFact；模型只产出引用选择、机制判断、反方、置信度和 WWC 原子；本地绑定身份、数字、日期、引用和最终结构。先做零调用 fake/mutation/回放，随后再单独判断一次最小 DeepSeek 自然 canary。该纵切通过后才允许生成和验收当前 DELL 报告；不提前扩成三案 full-live，也不把 S1 尚存缺口塞回 S3 修补。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

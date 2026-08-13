@@ -16,13 +16,14 @@
   - [x] Qwen Embedding（本地合格资产完成 shadow；8/15，provisional，不单独晋升）
   - [x] 同候选 BGE／Qwen Reranker 与独立 Evidence Role＋abstain（Qwen reranker 仅 shadow；Role F1=0.5818，拒绝上线）
 - [x] S1-C 保存 Planner 10 atoms 产品输入审计（10→8+2；8 request／128 candidates／19 resolved／9 typed gap／45 NumericFacts；逐 facet 归责完成）
-- [ ] S1-D residual-gap 外源补源与 Evidence Pack 复编译（TUN-off R2 后 TSM 22-page PDF、2 条 bounded Evidence 与 DELL 私有 successor candidate 已完成；current 指针未切换；Dell transcript 仍 read-timeout，下一项只允许绑定 route 人工入库并复用同一 parser/Gate）
+- [x] S1-D 本轮有界 residual-gap 补源与 DELL Evidence Pack 复编译（TSM 2 条 bounded Evidence；Dell 官方 transcript 3 条 direct Evidence；当前 DELL 20 Evidence／14 gaps；MU/NVDA 不变；S1 总产品门仍开）
+- [x] 当前 Pack registry-atomic 提升（R11；按案例私有对象根；0 复制／0 网络／0 模型；Workbench 三案真实挂载复验通过）
 - [x] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归（engineering pass）
 - [x] S2 request-scoped Runtime 接入（真实 DELL 6/6 resolved；S3／前端消费未完成）
 - [x] DELL S1/S2/S3 零调用工程纵切（受控 S3 Objective／EvidenceRequest、Qwen＋BM25 联合候选、S2 7/7 resolved／21 NumericFacts）
 - [x] DELL 自然 planner canary R1（exact-once terminal：业务维度全覆盖，但 10 atoms 超过 8 条执行上限；无 retry）
 - [x] S3 proposal ceiling／execution budget 分层零调用处置（10 proposals 全校验，稳定选择 8、延期 2；R1 不重跑）
-- [ ] S3 候选选择、研究判断和报告消费
+- [ ] S3 当前基线 research consumer：Evidence Pack＋NumericFact → 判断原子／底稿／报告（Planner 已有，consumer 尚未实现）
 - [ ] S3 动态 Agentic Research 与内容质量验收
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision

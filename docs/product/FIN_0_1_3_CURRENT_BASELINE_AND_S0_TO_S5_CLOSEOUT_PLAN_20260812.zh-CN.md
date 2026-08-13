@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S3_budget_contract_engineering_pass / S1C_saved_planner_input_audited / S1D_source_intake_engineering_pass / S1D_TSM_official_PDF_successor_ready / S1D_Dell_transport_gap_open / operator_upload_ready / S1_S2_S3_product_open / product_iteration_not_closed`
+状态：`repository_baseline_complete / S3_budget_contract_engineering_pass / S1C_saved_planner_input_audited / S1D_Dell_and_TSM_official_PDF_successors_promoted / runtime_registry_R11 / DELL_core_research_ready / S1_product_open / S3_consumer_missing / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -14,16 +14,16 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 - `/operations` 独立展示当前运行配置、来源包、准入数据构建和已保存运行；历史作业明确标记为仅供审计。
 - 无数据挂载时仍可查看案例目录，但详情入口禁用且 `/api/readiness` 返回 typed HTTP 503；不得假装数据就绪。
 - 挂载 reviewed pack 后可查看 Evidence、拒绝理由、来源边界和 residual gap。
-- 当前三案只有 SEC 来源，结构化数值项为 0；因此不能声称多源研究、NumericFact、动态 Agentic Research 或完整报告已经完成。
+- DELL 当前 Pack 已包含 SEC、Dell IR 和 TSM IR 官方来源（20 Evidence／14 gaps）；MU/NVDA 暂保留旧 Pack。三案 reviewed 表面的结构化数值项仍为 0，S2 NumericFact 也尚未被研究报告消费；因此不能声称完整多源研究、动态 Agentic Research 或完整报告已经完成。
 
 ## 3. S0–S5 责任与当前状态
 
 | 阶段 | 只拥有的责任 | 当前事实 | 通过条件 |
 | --- | --- | --- | --- |
 | S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线 | G01–G12 已通过并合并远端 main | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿 |
-| S1 | 类型化 EvidenceRequest、内外源发现、解析、chunk/object、SQL/lexical/semantic/graph 路由、rerank、Evidence Role、来源覆盖 | 保存的自然 Planner atoms 已执行 8 个 request／128 个 Qwen＋BM25 候选并逐项归责；两个新 ranker 与 Evidence Role 均未晋升。TUN-off R2 已取得 TSM 22-page PDF，并由共用 parser/Gate 形成 2 条 bounded Evidence 和私有 DELL successor；Dell transcript 仍 timeout，current Pack 未切换 | 三案及独立留出案例的 request-to-plan、required-slot target-in-pool、日期/实体/关系、route contribution 和 Evidence Role 正确；数值请求可靠路由到 S2 exact lookup，外源只补真实 residual gap |
+| S1 | 类型化 EvidenceRequest、内外源发现、解析、chunk/object、SQL/lexical/semantic/graph 路由、rerank、Evidence Role、来源覆盖 | 保存的自然 Planner atoms 已执行 8 个 request／128 个 Qwen＋BM25 候选并逐项归责；两个新 ranker 与 Evidence Role 均未晋升。TSM 与 Dell 官方 PDF 已经共用 parser/Gate 进入当前 DELL Pack，当前为 20 Evidence／14 gaps；MU/NVDA 未偷换 | 三案及独立留出案例的 request-to-plan、required-slot target-in-pool、日期/实体/关系、route contribution 和 Evidence Role 正确；数值请求可靠路由到 S2 exact lookup，外源只补真实 residual gap |
 | S2 | 公司财务事实 mart、Evidence/NumericFact 编译、PIT、单位/期间、引用和冲突 | private mart 已从三案 SEC capture 建立，1,319 observations、24/24 精确事实查询及 mutation 通过；DELL 受控纵切为 7/7 typed request resolved、21 NumericFacts、0 gap/conflict | 数值事实从权威对象确定性入库和查询，跨案/错期/错单位 fail closed，typed exact lookup 返回 NumericFact 或可信 gap；自然 planner、研究消费和三案依赖回归证明产品价值 |
-| S3 | 动态规划、工具使用、重裁决、研究综合、Workpaper/Report | provider-neutral Objective／planner atom／EvidenceRequest 合同和预算分层已接通；R1 保存 atoms 已进入 S1/S2，但没有合格 Evidence Pack，因此研究综合与报告尚未执行 | 三案真实动态研究通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收 |
+| S3 | 动态规划、工具使用、重裁决、研究综合、Workpaper/Report | provider-neutral Objective／planner atom／EvidenceRequest 合同和预算分层已接通，DELL current Pack 与 S2 mart 已具备输入条件；但当前活动树没有现役 judgment/workpaper/report consumer | 三案真实动态研究通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收 |
 | S4 | 用户任务、Evidence/Gap/Workpaper/Review/Repair 产品闭环 | 只有只读 Evidence Workspace 和独立 Operations | 当前 S3 candidate 被真实 UI 消费；review/repair/lineage 可完成且不依赖旧产品面 |
 | S5 | 发布、回滚、运行、成本、安全和 Owner acceptance | 未开始；本次仓库 merge 不是 S5 | RG1–RG5、clean deploy、回滚和 Owner 签署全部成立 |
 
@@ -47,9 +47,9 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 14. **自然 Planner Canary R1（已执行并 terminal failed）**：DeepSeek Pro exact JSON、DELL 身份、5/5 required slot、10/10 facet 和全部 canonical metric/family 均正确，但返回 10 个 atoms，超过授权上限 8，故在 S1/S2 successor 前停止。没有 retry、fallback、手工裁剪或报告调用；这不是数据库失败。
 15. **proposal/execution budget 分层处置（已完成）**：R1 10 条合法提案全部校验，本地按 required-slot 和 provider-neutral priority 稳定选择 8、延期 2；R1 失败 capture 保留，未重跑 Planner。
 16. **保存 atoms 的 S1-C 产品输入审计（工程切片完成，产品门未关）**：Harness 已派生多 owner，owner-balanced 候选保护已实现；两个新 ranker 均因真实业务退化被拒绝，Evidence Role 仅 advisory。候选池可审计，但候选仍不是 Evidence。
-17. **S1-D residual-gap 补源（TSM successor ready / Dell blocked）**：只处理 Dell 与 TSM 两份官方 transcript。TSM 已由 TUN-off 路径取得原始 PDF，完成逐页解析、对象编译、Evidence Gate、Pack successor 和有限 S2 回归；只关闭先进封装证据 gap，不关闭 Dell-specific allocation 或 capacity timing。Dell 自动路线仍 timeout，下一项使用已经可用的 Workbench 绑定 route 人工上传；不得 broad search 堆量、复制搜索摘要、自动重试或新建 Dell 专用 parser。
-18. **S2 三案有限依赖回归（TSM successor 已完成一次）**：TSM 新 Evidence 已触发一次有界回归，确认公司事实 mart 仍为 1,319 observations、12 metrics，SQLite digest 与 NumericFact 权限均未变化；transcript 只作为叙事 Evidence，不得生成 NumericFact。Dell 新 Evidence 尚未入库，下一次只允许在 Dell Gate 通过后重编相关 lineage，不重跑无关 S2 控制面。
-19. **S3 三案动态 Agentic Research**：保留已经完成的 DELL Planner R1，不重复付费证明相同能力；在合格 Evidence Pack 和 NumericFact 上继续动态缺口判断、重裁决和报告。模型负责研究判断，本地控制面负责事实、权限和确定性渲染。
+17. **S1-D 本轮有界补源与 current Pack 提升（已完成）**：TSM 22-page PDF 晋升两条先进封装 bounded Evidence；Dell Q1 FY2027 14-page 官方托管 transcript 经绑定 route 人工入库，共用 parser/Gate 晋升三条 direct Evidence，覆盖 $24.4b AI orders、$16.1b AI server revenue、$51.3b backlog、需求大于供给、memory constraint、主动锁定基础设施以及 AI server 中个位数营业利润率目标。只有利润率 gap 被关闭；提前采购幅度/消化、ASP/PVM、供应分配、容量时点和估值继续可见。一次零调用 current composition 把 DELL 从 15／16 提升为 20／14，MU/NVDA 和留出案例保持原摘要与 digest；Runtime Registry R11、真实私有挂载和 Workbench 三案验收通过。
+18. **S2 三案有限依赖回归（已完成）**：Dell/TSM transcript 只作为叙事 Evidence，没有获得 NumericFact 权限；公司事实 mart 保持 1,319 observations、SQLite SHA-256 `d05b0cc8...c585`，没有因补源改变数值真值。
+19. **S3 当前 research consumer 纵切（下一项）**：保留已经完成的 DELL Planner R1，不重复付费证明规划。当前活动树只有 Planner，没有现役 `Evidence Pack + NumericFact → judgment/workpaper/report` 消费者；因此先建立最小 provider-neutral 消费合同和零调用 fake/mutation，再判断一次最小 DeepSeek canary。模型负责引用选择、机制、反方、置信度与 WWC；本地控制面负责事实、身份、数值、引用和结构。DELL 通过后再迁移 MU/NVDA，不能直接复活归档 9-call runner。
 20. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
 21. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 

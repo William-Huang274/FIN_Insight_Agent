@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`v1.1 clean zero-call engineering pass / historical R1 remains failed / DeepSeek GA agent-loop qualification next`
+状态：`v1.1 clean zero-call engineering pass / historical R1 remains failed / GA four-tool loop implemented / clean loop proof pending`
 
 ## 1. 为什么需要这条链
 
@@ -114,6 +114,23 @@ FIN 采纳的官方约束：
 
 官方 `deepseek-ai/deepseek-harness` 当前是 developer preview，并明确可能产生破坏性变更。项目不整体引入其插件系统，也不把通用 coding harness 当金融事实控制面；只借鉴最小工具面、有界 step loop、事件/capture 可追溯和停止条件。参考版本固定为审计时 HEAD `47f943859bef60e4160492346772ded9b24f765a`，升级必须重新审计。
 
+### 8.1 当前活动实现
+
+当前活动树已经实现 provider-neutral 的四工具循环，而不是复制官方 Harness 或恢复旧九调用 runner：
+
+- `read_reviewed_evidence_for_cell`：只读取指定研究单元已经通过 Evidence Gate 的 reviewed Evidence；
+- `read_numeric_facts_for_cell`：只读取 S2 已绑定期间、单位、来源和 lineage 的 NumericFact；
+- `submit_evidence_request`：只提交新的补证提案并通过当前金融内核、route policy 和 planning policy 编译；它不执行检索、不晋升候选，也不会因为模型提了请求就关闭 gap；
+- `submit_research_judgment`：只提交判断原子、引用用途、推断权限、机制、反方和 WWC，再交给 v1.1 本地校验和确定性渲染。
+
+默认循环上限是 24 step／24 tool calls、同一时刻 1 个 tool call、连续 2 次无进展即停止；五个 cell 各最多读取一次 Evidence、一次 NumericFact并提交一次 Judgment，EvidenceRequest 总数最多 9。这里的 24 是安全上限，不是目标调用次数；fake 五单元证明路径只需要 15 step，单单元含补证提案的路径需要 4 step。
+
+工具 Schema 由当前 Research Input 生成 cell-local enum，所有 object 都是 closed schema。没有 NumericFact 或 gap 的单元使用不可匹配占位约束，而不是生成非法空 enum。模型若提交未知 cell/ref、跨 cell 引用、重复判断、非法指标/关系方向或未完成所有必需 cell，循环都 fail closed。
+
+thinking tool loop 所需的 `reasoning_content` 只存在于同一次受控运行的瞬时 continuation message；落盘的 request/response capture、receipt 和 terminal result 都会剔除 Provider 私有推理。工具参数、最终 assistant/tool 输出、usage、finish reason、capture ref 和 digest 仍完整保存。凭据和 Authorization 永不落盘。
+
+DeepSeek 差异只存在于三个可替换 profile：标准四工具、JSON 对照和 `/beta` strict tool。三者都固定正式模型名、`thinking=enabled`、`reasoning_effort=max`，且不发送无效 sampling 参数；strict Beta 不会被当作核心金融合同依赖。
+
 官方资料：
 
 - https://api-docs.deepseek.com/zh-cn/news/news260813
@@ -124,10 +141,10 @@ FIN 采纳的官方约束：
 
 ## 9. 更新后的执行顺序
 
-1. 完成 v1.1 全量回放、mutation、全仓回归、active-baseline 和 secret scan。
-2. 在干净远端提交上签发 v1.1 zero-call authority，证明 R1 保持失败、successor 合同可执行。
-3. 新建 DeepSeek GA provider profile 与四个 typed tool：按研究单元读取 reviewed Evidence、读取权威 NumericFact、提交 EvidenceRequest、提交 Judgment。
-4. 零调用证明 step/tool/no-progress/capture/跨 cell/数字权限/strict-schema 资格边界。
+1. v1.1 全量回放、mutation、全仓回归、active-baseline 和 secret scan：已完成。
+2. 干净远端提交上的 v1.1 zero-call authority 与 R3：已完成，R1 保持失败、successor 合同可执行。
+3. DeepSeek GA provider profiles、capture-first tool-step transport 与四个 typed tool：已在活动树实现，尚待干净提交复证。
+4. 在干净远端提交上执行 step/tool/no-progress/capture/跨 cell/数字权限/strict-schema 的独立零调用证明。
 5. 单独签发 DELL 单单元 paired canary：`v1.1 JSON + thinking=max` 对 `strict final-tool + thinking=max`。
 6. 选择可靠传输后，再执行 DELL 五单元有界循环；调用次数由真实步骤决定，但受总 step、工具预算和无进展停止条件约束。
 7. 依次执行 L1、八维绝对内容质量、与 R1 同 Evidence Pack paired、qualified-human 验收。任何一项失败都留在 S3，不自动扩成下一产品版本。

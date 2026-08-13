@@ -19,6 +19,9 @@ CHAT_COMPLETION_PROFILE_SCHEMA_VERSION = (
 CHAT_COMPLETION_CAPTURE_SCHEMA_VERSION = (
     "fin_ia_capture_first_chat_completion_v1_0"
 )
+CHAT_COMPLETION_TOOL_STEP_CAPTURE_SCHEMA_VERSION = (
+    "fin_ia_capture_first_chat_completion_tool_step_v1_0"
+)
 
 _PRIVATE_REASONING_KEYS = frozenset(
     {"reasoning", "reasoning_content", "thinking", "thoughts"}
@@ -196,6 +199,67 @@ class ChatCompletionResult:
         }
 
 
+@dataclass(frozen=True)
+class ChatCompletionToolStepResult:
+    """One no-retry provider step in a bounded tool-use loop.
+
+    ``reasoning_content`` is deliberately transient.  It is returned only so
+    the caller can satisfy a provider's same-loop continuation protocol; it is
+    excluded from ``as_dict`` and from every persisted capture.
+    """
+
+    status: str
+    provider_id: str
+    model: str
+    content: str
+    reasoning_content: str
+    tool_calls: tuple[Mapping[str, Any], ...]
+    finish_reason: str
+    usage: Mapping[str, Any]
+    request_capture_ref: str
+    response_capture_ref: str
+    request_digest: str
+    response_digest: str
+    private_reasoning_fields_redacted: int
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "provider_id": self.provider_id,
+            "model": self.model,
+            "content": self.content,
+            "tool_calls": [dict(row) for row in self.tool_calls],
+            "finish_reason": self.finish_reason,
+            "usage": dict(self.usage),
+            "request_capture_ref": self.request_capture_ref,
+            "response_capture_ref": self.response_capture_ref,
+            "request_digest": self.request_digest,
+            "response_digest": self.response_digest,
+            "private_reasoning_fields_redacted": (
+                self.private_reasoning_fields_redacted
+            ),
+            "reasoning_content_persisted": False,
+        }
+
+    def continuation_assistant_message(self) -> dict[str, Any]:
+        """Return the transient provider continuation message.
+
+        The caller must keep this object in memory only.  It intentionally
+        carries ``reasoning_content`` because DeepSeek thinking-mode tool
+        loops reject a continuation that omits it.
+        """
+
+        message: dict[str, Any] = {
+            "role": "assistant",
+            "content": self.content,
+        }
+        if self.reasoning_content:
+            message["reasoning_content"] = self.reasoning_content
+        if self.tool_calls:
+            message["tool_calls"] = [dict(row) for row in self.tool_calls]
+        return message
+
+
 def load_chat_completion_profile(
     payload: Mapping[str, Any],
 ) -> ChatCompletionProfile:
@@ -276,6 +340,312 @@ def load_chat_completion_profile(
         maximum_response_bytes=maximum_response_bytes,
         request_defaults=dict(defaults),
         authority=dict(authority),
+    )
+
+
+def _normalize_tool_call(
+    value: object,
+    *,
+    code: str,
+) -> dict[str, Any]:
+    _require(isinstance(value, Mapping), code)
+    assert isinstance(value, Mapping)
+    function = value.get("function")
+    _require(
+        set(value) == {"id", "type", "function"}
+        and value.get("type") == "function"
+        and isinstance(function, Mapping),
+        code,
+    )
+    assert isinstance(function, Mapping)
+    name = str(function.get("name") or "").strip()
+    arguments = str(function.get("arguments") or "")
+    _require(
+        set(function) == {"name", "arguments"}
+        and bool(name)
+        and bool(arguments)
+        and bool(str(value.get("id") or "").strip()),
+        code,
+    )
+    return {
+        "id": str(value["id"]),
+        "type": "function",
+        "function": {"name": name, "arguments": arguments},
+    }
+
+
+def _normalize_tool_loop_messages(
+    messages: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    _require(bool(messages), "model_gateway_messages_missing")
+    normalized: list[dict[str, Any]] = []
+    for raw in messages:
+        _require(isinstance(raw, Mapping), "model_gateway_messages_invalid")
+        role = str(raw.get("role") or "")
+        if role in {"system", "user"}:
+            content = str(raw.get("content") or "")
+            _require(
+                set(raw) == {"role", "content"} and bool(content),
+                "model_gateway_messages_invalid",
+            )
+            normalized.append({"role": role, "content": content})
+            continue
+        if role == "assistant":
+            _require(
+                set(raw).issubset(
+                    {"role", "content", "reasoning_content", "tool_calls"}
+                ),
+                "model_gateway_messages_invalid",
+            )
+            content = str(raw.get("content") or "")
+            reasoning = str(raw.get("reasoning_content") or "")
+            raw_calls = raw.get("tool_calls") or []
+            _require(
+                isinstance(raw_calls, list),
+                "model_gateway_messages_invalid",
+            )
+            calls = [
+                _normalize_tool_call(
+                    value,
+                    code="model_gateway_message_tool_call_invalid",
+                )
+                for value in raw_calls
+            ]
+            _require(
+                bool(content or calls),
+                "model_gateway_messages_invalid",
+            )
+            message: dict[str, Any] = {
+                "role": "assistant",
+                "content": content,
+            }
+            if reasoning:
+                message["reasoning_content"] = reasoning
+            if calls:
+                message["tool_calls"] = calls
+            normalized.append(message)
+            continue
+        if role == "tool":
+            content = str(raw.get("content") or "")
+            call_id = str(raw.get("tool_call_id") or "").strip()
+            _require(
+                set(raw) == {"role", "tool_call_id", "content"}
+                and bool(call_id)
+                and bool(content),
+                "model_gateway_messages_invalid",
+            )
+            normalized.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": call_id,
+                    "content": content,
+                }
+            )
+            continue
+        raise ModelGatewayError("model_gateway_messages_invalid")
+    return normalized
+
+
+def _normalize_tool_definitions(
+    tools: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    _require(
+        bool(tools) and len(tools) <= 16,
+        "model_gateway_tools_invalid",
+    )
+    normalized: list[dict[str, Any]] = []
+    names: set[str] = set()
+    for raw in tools:
+        _require(
+            isinstance(raw, Mapping)
+            and set(raw) == {"type", "function"}
+            and raw.get("type") == "function",
+            "model_gateway_tool_invalid",
+        )
+        function = raw.get("function")
+        _require(
+            isinstance(function, Mapping),
+            "model_gateway_tool_invalid",
+        )
+        assert isinstance(function, Mapping)
+        _require(
+            set(function).issubset(
+                {"name", "description", "parameters", "strict"}
+            )
+            and {"name", "description", "parameters"}.issubset(function),
+            "model_gateway_tool_invalid",
+        )
+        name = str(function.get("name") or "").strip()
+        parameters = function.get("parameters")
+        _require(
+            bool(re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,63}", name))
+            and name not in names
+            and isinstance(parameters, Mapping)
+            and not _contains_sensitive_key(function),
+            "model_gateway_tool_invalid",
+        )
+        names.add(name)
+        normalized.append(
+            {
+                "type": "function",
+                "function": dict(function),
+            }
+        )
+    return normalized
+
+
+def _redact_transient_request_reasoning(
+    request_body: Mapping[str, Any],
+) -> tuple[dict[str, Any], int]:
+    output = dict(request_body)
+    messages = []
+    redacted = 0
+    for raw in request_body.get("messages") or ():
+        row = dict(raw)
+        if "reasoning_content" in row:
+            row.pop("reasoning_content")
+            redacted += 1
+        messages.append(row)
+    output["messages"] = messages
+    return output, redacted
+
+
+def _execute_capture_first_request(
+    *,
+    profile: ChatCompletionProfile,
+    request_body: Mapping[str, Any],
+    persisted_request_body: Mapping[str, Any],
+    capture_dir: Path,
+    run_id: str,
+    attempt_id: str,
+    capture_schema_version: str,
+    capture_type: str,
+    transient_request_reasoning_fields_redacted: int,
+) -> tuple[str, Path, Path, dict[str, Any], Any]:
+    """Send one request after persisting its credential-free audit view."""
+
+    api_key = os.environ.get(profile.api_key_env, "").strip()
+    _require(bool(api_key), "model_gateway_credential_absent")
+    _require(
+        not _contains_sensitive_key(request_body)
+        and not _contains_sensitive_key(persisted_request_body),
+        "model_gateway_request_contains_sensitive_key",
+    )
+    request_digest = _digest(request_body)
+    request_ref = capture_dir / "model_visible_request.json"
+    response_ref = capture_dir / "provider_response.json"
+    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    _write_new_json(
+        request_ref,
+        {
+            "schema_version": capture_schema_version,
+            "capture_type": capture_type,
+            "captured_at": now,
+            "run_id": run_id,
+            "attempt_id": attempt_id,
+            "provider_id": profile.provider_id,
+            "model": profile.model,
+            "url": profile.url,
+            "transport_attempt_ceiling": 1,
+            "request_body": dict(persisted_request_body),
+            "request_digest": request_digest,
+            "transient_private_reasoning_fields_redacted": (
+                transient_request_reasoning_fields_redacted
+            ),
+            "credential_or_authorization_captured": False,
+        },
+    )
+    encoded = _canonical_bytes(request_body)
+    request = urllib.request.Request(
+        profile.url,
+        data=encoded,
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "FIN-Insight-Agent/0.1.3",
+        },
+    )
+    try:
+        with urllib.request.urlopen(
+            request,
+            timeout=profile.timeout_seconds,
+        ) as response:
+            status_code = int(getattr(response, "status", 200))
+            raw = response.read(profile.maximum_response_bytes + 1)
+            content_type = str(response.headers.get("Content-Type") or "")
+            provider_request_id = str(
+                response.headers.get("x-request-id")
+                or response.headers.get("x-ds-request-id")
+                or ""
+            )
+    except urllib.error.HTTPError as exc:
+        raw = exc.read(profile.maximum_response_bytes + 1)
+        _persist_response_capture(
+            response_ref=response_ref,
+            run_id=run_id,
+            attempt_id=attempt_id,
+            provider_id=profile.provider_id,
+            model=profile.model,
+            status_code=int(exc.code),
+            content_type=str(exc.headers.get("Content-Type") or ""),
+            provider_request_id=str(exc.headers.get("x-request-id") or ""),
+            raw=raw,
+            maximum_response_bytes=profile.maximum_response_bytes,
+            transport_error="",
+        )
+        raise ModelGatewayError(
+            f"model_gateway_http_error:{exc.code}",
+            capture_ref=response_ref.as_posix(),
+        ) from exc
+    except Exception as exc:
+        _persist_response_capture(
+            response_ref=response_ref,
+            run_id=run_id,
+            attempt_id=attempt_id,
+            provider_id=profile.provider_id,
+            model=profile.model,
+            status_code=0,
+            content_type="",
+            provider_request_id="",
+            raw=b"",
+            maximum_response_bytes=profile.maximum_response_bytes,
+            transport_error=type(exc).__name__,
+        )
+        raise ModelGatewayError(
+            "model_gateway_transport_error",
+            capture_ref=response_ref.as_posix(),
+        ) from exc
+    try:
+        transient_body: Any = (
+            json.loads(raw[: profile.maximum_response_bytes].decode("utf-8"))
+            if raw
+            else {}
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        transient_body = raw[: profile.maximum_response_bytes].decode(
+            "utf-8", errors="replace"
+        )
+    capture = _persist_response_capture(
+        response_ref=response_ref,
+        run_id=run_id,
+        attempt_id=attempt_id,
+        provider_id=profile.provider_id,
+        model=profile.model,
+        status_code=status_code,
+        content_type=content_type,
+        provider_request_id=provider_request_id,
+        raw=raw,
+        maximum_response_bytes=profile.maximum_response_bytes,
+        transport_error="",
+    )
+    return (
+        request_digest,
+        request_ref,
+        response_ref,
+        capture,
+        transient_body,
     )
 
 
@@ -472,6 +842,158 @@ def execute_chat_completion_exact_once(
     )
 
 
+def execute_chat_completion_tool_step_exact_once(
+    *,
+    profile: ChatCompletionProfile,
+    messages: Sequence[Mapping[str, Any]],
+    tools: Sequence[Mapping[str, Any]],
+    capture_root: str | Path,
+    run_id: str,
+    attempt_id: str,
+    tool_choice: object | None = None,
+) -> ChatCompletionToolStepResult:
+    """Execute one capture-first step of a caller-bounded tool loop.
+
+    This function owns no loop, tool budget, or financial authority.  It only
+    preserves the wire fields required for a provider continuation while
+    keeping private reasoning out of persistent captures and result ledgers.
+    """
+
+    normalized_run_id = _safe_identity(run_id, "model_gateway_run_id_invalid")
+    normalized_attempt_id = _safe_identity(
+        attempt_id, "model_gateway_attempt_id_invalid"
+    )
+    normalized_messages = _normalize_tool_loop_messages(messages)
+    normalized_tools = _normalize_tool_definitions(tools)
+    defaults = dict(profile.request_defaults)
+    _require(
+        not set(defaults).intersection({"model", "messages", "tools"})
+        and defaults.get("stream") is not True,
+        "model_gateway_tool_step_defaults_invalid",
+    )
+    request_body: dict[str, Any] = {
+        "model": profile.model,
+        "messages": normalized_messages,
+        "tools": normalized_tools,
+        **defaults,
+    }
+    if tool_choice is not None:
+        _require(
+            isinstance(tool_choice, (str, Mapping)),
+            "model_gateway_tool_choice_invalid",
+        )
+        request_body["tool_choice"] = (
+            dict(tool_choice)
+            if isinstance(tool_choice, Mapping)
+            else str(tool_choice)
+        )
+    persisted_request, request_reasoning_redacted = (
+        _redact_transient_request_reasoning(request_body)
+    )
+    capture_dir = (
+        Path(capture_root).resolve()
+        / _path_slug(normalized_run_id)
+        / _path_slug(normalized_attempt_id)
+    )
+    (
+        request_digest,
+        request_ref,
+        response_ref,
+        capture,
+        transient_body,
+    ) = _execute_capture_first_request(
+        profile=profile,
+        request_body=request_body,
+        persisted_request_body=persisted_request,
+        capture_dir=capture_dir,
+        run_id=normalized_run_id,
+        attempt_id=normalized_attempt_id,
+        capture_schema_version=(
+            CHAT_COMPLETION_TOOL_STEP_CAPTURE_SCHEMA_VERSION
+        ),
+        capture_type=(
+            "model_visible_tool_step_request_without_credentials_or_reasoning"
+        ),
+        transient_request_reasoning_fields_redacted=(
+            request_reasoning_redacted
+        ),
+    )
+    capture_ref = response_ref.as_posix()
+    _require(
+        not capture["truncated"],
+        "model_gateway_response_too_large",
+        capture_ref=capture_ref,
+    )
+    _require(
+        isinstance(transient_body, Mapping),
+        "model_gateway_response_json_invalid",
+        capture_ref=capture_ref,
+    )
+    assert isinstance(transient_body, Mapping)
+    choices = transient_body.get("choices")
+    _require(
+        isinstance(choices, list) and len(choices) == 1,
+        "model_gateway_choice_count_invalid",
+        capture_ref=capture_ref,
+    )
+    choice = choices[0]
+    _require(
+        isinstance(choice, Mapping),
+        "model_gateway_choice_invalid",
+        capture_ref=capture_ref,
+    )
+    assert isinstance(choice, Mapping)
+    message = choice.get("message")
+    _require(
+        isinstance(message, Mapping),
+        "model_gateway_message_invalid",
+        capture_ref=capture_ref,
+    )
+    assert isinstance(message, Mapping)
+    content = str(message.get("content") or "")
+    reasoning_content = str(message.get("reasoning_content") or "")
+    raw_calls = message.get("tool_calls") or []
+    _require(
+        isinstance(raw_calls, list),
+        "model_gateway_tool_calls_invalid",
+        capture_ref=capture_ref,
+    )
+    tool_calls = tuple(
+        _normalize_tool_call(
+            row,
+            code="model_gateway_tool_call_invalid",
+        )
+        for row in raw_calls
+    )
+    _require(
+        bool(content.strip()) or bool(tool_calls),
+        "model_gateway_tool_step_empty",
+        capture_ref=capture_ref,
+    )
+    usage = (
+        transient_body.get("usage")
+        if isinstance(transient_body.get("usage"), Mapping)
+        else {}
+    )
+    return ChatCompletionToolStepResult(
+        status="completed_exact_once_tool_step",
+        provider_id=profile.provider_id,
+        model=profile.model,
+        content=content,
+        reasoning_content=reasoning_content,
+        tool_calls=tool_calls,
+        finish_reason=str(choice.get("finish_reason") or ""),
+        usage=dict(usage),
+        request_capture_ref=request_ref.as_posix(),
+        response_capture_ref=response_ref.as_posix(),
+        request_digest=request_digest,
+        response_digest=str(capture["response_digest"]),
+        private_reasoning_fields_redacted=int(
+            capture["private_reasoning_fields_redacted"]
+        ),
+    )
+
+
 def _persist_response_capture(
     *,
     response_ref: Path,
@@ -519,9 +1041,12 @@ def _persist_response_capture(
 __all__ = [
     "CHAT_COMPLETION_CAPTURE_SCHEMA_VERSION",
     "CHAT_COMPLETION_PROFILE_SCHEMA_VERSION",
+    "CHAT_COMPLETION_TOOL_STEP_CAPTURE_SCHEMA_VERSION",
     "ChatCompletionProfile",
     "ChatCompletionResult",
+    "ChatCompletionToolStepResult",
     "ModelGatewayError",
     "execute_chat_completion_exact_once",
+    "execute_chat_completion_tool_step_exact_once",
     "load_chat_completion_profile",
 ]

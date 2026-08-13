@@ -1,0 +1,27 @@
+{
+  "schema_version": "fin_ia_chat_completion_provider_profile_v1_0",
+  "status": "experimental_provider_profile_not_product_authority",
+  "provider_id": "deepseek",
+  "wire_api": "openai_compatible_chat_completions",
+  "base_url": "https://api.deepseek.com/beta",
+  "endpoint": "/chat/completions",
+  "model": "deepseek-v4-pro",
+  "api_key_env": "DEEPSEEK_API_KEY",
+  "timeout_seconds": 300,
+  "maximum_response_bytes": 2097152,
+  "request_defaults": {
+    "max_tokens": 5000,
+    "stream": false,
+    "thinking": {"type": "enabled"},
+    "reasoning_effort": "max"
+  },
+  "authority": {
+    "transport_attempt_ceiling": 1,
+    "retry_count": 0,
+    "capture_model_visible_request": true,
+    "capture_assistant_output": true,
+    "credential_capture_forbidden": true,
+    "provider_private_reasoning_capture_forbidden": true,
+    "provider_specific_profile_outside_core": true
+  }
+}

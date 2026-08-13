@@ -1,0 +1,1090 @@
+from __future__ import annotations
+
+from collections import Counter
+from copy import deepcopy
+from dataclasses import dataclass
+import json
+import re
+from typing import Any, Callable, Mapping, Sequence
+
+from retrieval.contracts import (
+    EVIDENCE_REQUEST_SCHEMA_VERSION,
+    FinancialResearchKernel,
+    RetrievalContractError,
+    load_evidence_request,
+)
+from retrieval.route_compiler import QueryObjectFactRoutePolicy
+
+from sec_agent.providers import ChatCompletionToolStepResult
+
+from .current_consumer import (
+    CurrentResearchConsumerError,
+    compile_current_research_deliverable,
+    validate_current_research_output,
+)
+from .planning import ResearchPlanningPolicy
+from .reviewed_evidence_pack import canonical_digest
+
+
+BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION = (
+    "fin_ia_bounded_finance_agent_loop_policy_v1_0"
+)
+BOUNDED_FINANCE_LOOP_RESULT_SCHEMA_VERSION = (
+    "fin_ia_bounded_finance_agent_loop_result_v1_0"
+)
+
+READ_REVIEWED_EVIDENCE_TOOL = "read_reviewed_evidence_for_cell"
+READ_NUMERIC_FACTS_TOOL = "read_numeric_facts_for_cell"
+SUBMIT_EVIDENCE_REQUEST_TOOL = "submit_evidence_request"
+SUBMIT_RESEARCH_JUDGMENT_TOOL = "submit_research_judgment"
+FINANCE_TOOL_NAMES = (
+    READ_REVIEWED_EVIDENCE_TOOL,
+    READ_NUMERIC_FACTS_TOOL,
+    SUBMIT_EVIDENCE_REQUEST_TOOL,
+    SUBMIT_RESEARCH_JUDGMENT_TOOL,
+)
+
+_DISALLOWED_SAMPLING_FIELDS = frozenset(
+    {"temperature", "top_p", "presence_penalty", "frequency_penalty"}
+)
+_MODEL_TEXT_DIGITS = re.compile(r"[0-9０-９]")
+
+
+class BoundedFinanceLoopError(RuntimeError):
+    """Fail-closed error at the four-tool financial research boundary."""
+
+    def __init__(self, code: str) -> None:
+        self.code = code
+        super().__init__(code)
+
+
+def _require(condition: bool, code: str) -> None:
+    if not condition:
+        raise BoundedFinanceLoopError(code)
+
+
+def _strings(
+    value: object,
+    code: str,
+    *,
+    allow_empty: bool = False,
+) -> tuple[str, ...]:
+    _require(isinstance(value, list), code)
+    rows = tuple(str(item).strip() for item in value)
+    _require(
+        (allow_empty or bool(rows))
+        and all(rows)
+        and len(rows) == len(set(rows)),
+        code,
+    )
+    return rows
+
+
+def _parse_json_object(value: str, code: str) -> dict[str, Any]:
+    try:
+        parsed = json.loads(str(value or ""))
+    except json.JSONDecodeError as exc:
+        raise BoundedFinanceLoopError(code) from exc
+    _require(isinstance(parsed, dict), code)
+    return parsed
+
+
+def _json_message(value: Mapping[str, Any]) -> str:
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
+def _strict_object(
+    properties: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "properties": dict(properties),
+        "required": list(properties),
+        "additionalProperties": False,
+    }
+
+
+@dataclass(frozen=True)
+class BoundedFinanceLoopPolicy:
+    maximum_steps: int
+    maximum_tool_calls: int
+    maximum_no_progress_steps: int
+    maximum_parallel_tool_calls: int
+    maximum_calls_by_tool: Mapping[str, int]
+    evidence_request_max_metric_intents: int
+    evidence_request_max_product_intents: int
+    evidence_request_max_product_intent_chars: int
+    required_profile_defaults: Mapping[str, Any]
+    authority: Mapping[str, bool]
+
+
+@dataclass(frozen=True)
+class BoundedFinanceLoopResult:
+    status: str
+    provider_id: str
+    model: str
+    selected_cell_ids: tuple[str, ...]
+    step_count: int
+    tool_call_count: int
+    tool_counts: Mapping[str, int]
+    proposed_evidence_requests: tuple[Mapping[str, Any], ...]
+    judgment_output: Mapping[str, Any]
+    structured_deliverable: Mapping[str, Any]
+    step_receipts: tuple[Mapping[str, Any], ...]
+    authority: Mapping[str, bool]
+
+    def as_dict(self) -> dict[str, Any]:
+        unsigned = {
+            "schema_version": BOUNDED_FINANCE_LOOP_RESULT_SCHEMA_VERSION,
+            "status": self.status,
+            "provider_id": self.provider_id,
+            "model": self.model,
+            "selected_cell_ids": list(self.selected_cell_ids),
+            "step_count": self.step_count,
+            "tool_call_count": self.tool_call_count,
+            "tool_counts": dict(self.tool_counts),
+            "proposed_evidence_requests": [
+                deepcopy(row) for row in self.proposed_evidence_requests
+            ],
+            "judgment_output": deepcopy(self.judgment_output),
+            "structured_deliverable": deepcopy(
+                self.structured_deliverable
+            ),
+            "step_receipts": [deepcopy(row) for row in self.step_receipts],
+            "authority": dict(self.authority),
+        }
+        return {**unsigned, "result_digest": canonical_digest(unsigned)}
+
+
+ToolStepExecutor = Callable[
+    [Sequence[Mapping[str, Any]], Sequence[Mapping[str, Any]], int],
+    ChatCompletionToolStepResult,
+]
+
+
+def load_bounded_finance_loop_policy(
+    payload: Mapping[str, Any],
+) -> BoundedFinanceLoopPolicy:
+    expected = {
+        "schema_version",
+        "status",
+        "tool_names",
+        "budgets",
+        "evidence_request_limits",
+        "required_profile_defaults",
+        "authority",
+    }
+    _require(set(payload) == expected, "finance_loop_policy_fields_invalid")
+    _require(
+        payload.get("schema_version")
+        == BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION,
+        "finance_loop_policy_schema_invalid",
+    )
+    _require(
+        payload.get("status")
+        == "provider_neutral_bounded_financial_research_loop",
+        "finance_loop_policy_status_invalid",
+    )
+    tools = _strings(payload.get("tool_names"), "finance_loop_tools_invalid")
+    _require(tools == FINANCE_TOOL_NAMES, "finance_loop_tools_invalid")
+    budgets = payload.get("budgets")
+    limits = payload.get("evidence_request_limits")
+    defaults = payload.get("required_profile_defaults")
+    authority = payload.get("authority")
+    _require(
+        isinstance(budgets, Mapping)
+        and set(budgets)
+        == {
+            "maximum_steps",
+            "maximum_tool_calls",
+            "maximum_no_progress_steps",
+            "maximum_parallel_tool_calls",
+            "maximum_calls_by_tool",
+        },
+        "finance_loop_budgets_invalid",
+    )
+    raw_per_tool = budgets.get("maximum_calls_by_tool")
+    _require(
+        isinstance(raw_per_tool, Mapping)
+        and set(raw_per_tool) == set(FINANCE_TOOL_NAMES),
+        "finance_loop_budgets_invalid",
+    )
+    per_tool = {name: int(raw_per_tool[name]) for name in FINANCE_TOOL_NAMES}
+    maximum_steps = int(budgets.get("maximum_steps") or 0)
+    maximum_tool_calls = int(budgets.get("maximum_tool_calls") or 0)
+    maximum_no_progress = int(
+        budgets.get("maximum_no_progress_steps") or 0
+    )
+    maximum_parallel = int(budgets.get("maximum_parallel_tool_calls") or 0)
+    _require(
+        1 <= maximum_steps <= 64
+        and 1 <= maximum_tool_calls <= 128
+        and maximum_tool_calls <= sum(per_tool.values())
+        and 1 <= maximum_no_progress <= 4
+        and maximum_parallel == 1
+        and all(1 <= value <= 64 for value in per_tool.values()),
+        "finance_loop_budgets_invalid",
+    )
+    _require(
+        isinstance(limits, Mapping)
+        and set(limits)
+        == {
+            "maximum_metric_intents",
+            "maximum_product_intents",
+            "maximum_product_intent_chars",
+        },
+        "finance_loop_request_limits_invalid",
+    )
+    metric_limit = int(limits.get("maximum_metric_intents") or 0)
+    product_limit = int(limits.get("maximum_product_intents") or 0)
+    product_chars = int(limits.get("maximum_product_intent_chars") or 0)
+    _require(
+        1 <= metric_limit <= 6
+        and 1 <= product_limit <= 4
+        and 12 <= product_chars <= 120,
+        "finance_loop_request_limits_invalid",
+    )
+    _require(
+        isinstance(defaults, Mapping)
+        and set(defaults)
+        == {"stream", "thinking", "reasoning_effort"}
+        and defaults.get("stream") is False
+        and defaults.get("thinking") == {"type": "enabled"}
+        and defaults.get("reasoning_effort") == "max",
+        "finance_loop_profile_defaults_invalid",
+    )
+    required_authority = {
+        "reviewed_evidence_only": True,
+        "numeric_fact_only": True,
+        "evidence_request_is_proposal_only": True,
+        "evidence_request_does_not_execute_retrieval": True,
+        "gap_remains_open_after_evidence_request": True,
+        "judgment_requires_local_validation": True,
+        "candidate_cannot_become_evidence": True,
+        "harness_owns_identity_date_numeric_citation_rendering": True,
+        "private_reasoning_persistence_forbidden": True,
+    }
+    _require(
+        isinstance(authority, Mapping)
+        and dict(authority) == required_authority,
+        "finance_loop_authority_invalid",
+    )
+    return BoundedFinanceLoopPolicy(
+        maximum_steps=maximum_steps,
+        maximum_tool_calls=maximum_tool_calls,
+        maximum_no_progress_steps=maximum_no_progress,
+        maximum_parallel_tool_calls=maximum_parallel,
+        maximum_calls_by_tool=per_tool,
+        evidence_request_max_metric_intents=metric_limit,
+        evidence_request_max_product_intents=product_limit,
+        evidence_request_max_product_intent_chars=product_chars,
+        required_profile_defaults=dict(defaults),
+        authority=dict(authority),
+    )
+
+
+def validate_deepseek_ga_profile(
+    profile: object,
+    *,
+    strict_tools: bool,
+) -> None:
+    """Qualify only the replaceable DeepSeek wire profile, not finance truth."""
+
+    base_url = str(getattr(profile, "base_url", "") or "").rstrip("/")
+    defaults = dict(getattr(profile, "request_defaults", {}) or {})
+    _require(
+        str(getattr(profile, "provider_id", "")) == "deepseek"
+        and str(getattr(profile, "model", "")) == "deepseek-v4-pro"
+        and str(getattr(profile, "endpoint", "")) == "/chat/completions",
+        "finance_loop_deepseek_ga_profile_identity_invalid",
+    )
+    _require(
+        base_url
+        == (
+            "https://api.deepseek.com/beta"
+            if strict_tools
+            else "https://api.deepseek.com"
+        ),
+        "finance_loop_deepseek_ga_profile_endpoint_invalid",
+    )
+    _require(
+        not set(defaults).intersection(_DISALLOWED_SAMPLING_FIELDS)
+        and defaults.get("stream") is False
+        and defaults.get("thinking") == {"type": "enabled"}
+        and defaults.get("reasoning_effort") == "max"
+        and "response_format" not in defaults,
+        "finance_loop_deepseek_ga_profile_defaults_invalid",
+    )
+
+
+def validate_deepseek_ga_json_profile(profile: object) -> None:
+    """Qualify the GA JSON-control lane without leaking it into core logic."""
+
+    base_url = str(getattr(profile, "base_url", "") or "").rstrip("/")
+    defaults = dict(getattr(profile, "request_defaults", {}) or {})
+    _require(
+        str(getattr(profile, "provider_id", "")) == "deepseek"
+        and str(getattr(profile, "model", "")) == "deepseek-v4-pro"
+        and str(getattr(profile, "endpoint", "")) == "/chat/completions",
+        "finance_loop_deepseek_ga_json_profile_identity_invalid",
+    )
+    _require(
+        base_url == "https://api.deepseek.com",
+        "finance_loop_deepseek_ga_json_profile_endpoint_invalid",
+    )
+    _require(
+        not set(defaults).intersection(_DISALLOWED_SAMPLING_FIELDS)
+        and defaults.get("stream") is False
+        and defaults.get("thinking") == {"type": "enabled"}
+        and defaults.get("reasoning_effort") == "max"
+        and defaults.get("response_format") == {"type": "json_object"},
+        "finance_loop_deepseek_ga_json_profile_defaults_invalid",
+    )
+
+
+def _selected_cells(
+    research_input: Mapping[str, Any],
+    required_cell_ids: Sequence[str],
+) -> tuple[Mapping[str, Any], ...]:
+    requested = tuple(str(value) for value in required_cell_ids)
+    all_cells = {
+        str(row["cell_id"]): row for row in research_input["cells"]
+    }
+    _require(
+        bool(requested)
+        and len(requested) == len(set(requested))
+        and set(requested).issubset(all_cells),
+        "finance_loop_cell_scope_invalid",
+    )
+    return tuple(all_cells[cell_id] for cell_id in requested)
+
+
+def _tool(
+    name: str,
+    description: str,
+    parameters: Mapping[str, Any],
+    *,
+    strict: bool,
+) -> dict[str, Any]:
+    function: dict[str, Any] = {
+        "name": name,
+        "description": description,
+        "parameters": dict(parameters),
+    }
+    if strict:
+        function["strict"] = True
+    return {"type": "function", "function": function}
+
+
+def _judgment_parameters(
+    *,
+    cell_ids: Sequence[str],
+    evidence_refs: Sequence[str],
+    numeric_refs: Sequence[str],
+    contract: Mapping[str, Any],
+) -> dict[str, Any]:
+    evidence_use = _strict_object(
+        {
+            "evidence_ref": {
+                "type": "string",
+                "enum": list(evidence_refs),
+                "description": "Reviewed Evidence ref allowed in this run.",
+            },
+            "use_role": {
+                "type": "string",
+                "enum": list(contract["allowed_evidence_use_roles"]),
+            },
+        }
+    )
+    threshold_values = ["", *numeric_refs]
+    numeric_item: dict[str, Any] = (
+        {"type": "string", "enum": list(numeric_refs)}
+        if numeric_refs
+        else {
+            "type": "string",
+            "pattern": "^$",
+            "description": "No NumericFact is available; the array must stay empty.",
+        }
+    )
+    wwc = _strict_object(
+        {
+            "observable": {
+                "type": "string",
+                "description": "Observable variable without digits or refs.",
+            },
+            "direction": {
+                "type": "string",
+                "enum": list(contract["allowed_wwc_directions"]),
+            },
+            "time_horizon": {
+                "type": "string",
+                "description": "Bounded non-numeric horizon.",
+            },
+            "evidence_route": {
+                "type": "string",
+                "description": "Where to verify without URL or citation.",
+            },
+            "threshold_numeric_ref": {
+                "type": "string",
+                "enum": threshold_values,
+                "description": "Allowed NumericFact ref or empty string.",
+            },
+        }
+    )
+    return _strict_object(
+        {
+            "cell_id": {"type": "string", "enum": list(cell_ids)},
+            "judgment_status": {
+                "type": "string",
+                "enum": list(contract["allowed_judgment_statuses"]),
+            },
+            "confidence_basis": {
+                "type": "string",
+                "enum": list(contract["allowed_confidence_bases"]),
+            },
+            "inference_authority": {
+                "type": "string",
+                "enum": list(contract["allowed_inference_authorities"]),
+            },
+            "evidence_uses": {"type": "array", "items": evidence_use},
+            "numeric_refs": {
+                "type": "array",
+                "items": numeric_item,
+            },
+            "thesis_atom": {
+                "type": "string",
+                "description": "Company-specific conclusion without digits or refs.",
+            },
+            "mechanism_atom": {
+                "type": "string",
+                "description": "Economic mechanism without digits or refs.",
+            },
+            "counterargument_atom": {
+                "type": "string",
+                "description": "Strongest bounded alternative without digits or refs.",
+            },
+            "what_would_change": wwc,
+        }
+    )
+
+
+def compile_finance_loop_tools(
+    *,
+    research_input: Mapping[str, Any],
+    required_cell_ids: Sequence[str],
+    kernel: FinancialResearchKernel,
+    route_policy: QueryObjectFactRoutePolicy,
+    strict: bool,
+) -> tuple[dict[str, Any], ...]:
+    cells = _selected_cells(research_input, required_cell_ids)
+    cell_ids = [str(row["cell_id"]) for row in cells]
+    evidence_refs = sorted(
+        {str(ref) for row in cells for ref in row["allowed_evidence_refs"]}
+    )
+    numeric_refs = sorted(
+        {str(ref) for row in cells for ref in row["allowed_numeric_refs"]}
+    )
+    facets = sorted(
+        facet.facet_id for slot in kernel.slots for facet in slot.facets
+    )
+    metric_ids = sorted(row.metric_id for row in route_policy.metric_routes)
+    target_entities = sorted(
+        {
+            kernel.cases[research_input["case_identity"]["case_key"]]
+            .subject_ticker,
+            *(
+                row.ticker
+                for row in kernel.cases[
+                    research_input["case_identity"]["case_key"]
+                ].related_entities
+            ),
+        }
+    )
+    read_parameters = _strict_object(
+        {"cell_id": {"type": "string", "enum": cell_ids}}
+    )
+    visible_gap_refs = sorted(
+        {
+            str(ref)
+            for row in cells
+            for ref in row["visible_gap_refs"]
+        }
+    )
+    gap_ref_schema: dict[str, Any] = (
+        {"type": "string", "enum": visible_gap_refs}
+        if visible_gap_refs
+        else {
+            "type": "string",
+            "pattern": "^NO_VISIBLE_GAP$",
+            "description": (
+                "No visible gap is available; this proposal tool must not be called."
+            ),
+        }
+    )
+    request_parameters = _strict_object(
+        {
+            "cell_id": {"type": "string", "enum": cell_ids},
+            "gap_ref": gap_ref_schema,
+            "target_entity": {
+                "type": "string",
+                "enum": target_entities,
+            },
+            "requested_facet_id": {"type": "string", "enum": facets},
+            "metric_intents": {
+                "type": "array",
+                "items": {"type": "string", "enum": metric_ids},
+            },
+            "product_intents": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "description": (
+                        "Concise evidence intent; no URL, source id, answer or digits."
+                    ),
+                },
+            },
+        }
+    )
+    return (
+        _tool(
+            READ_REVIEWED_EVIDENCE_TOOL,
+            "Read reviewed writer-citable Evidence and declared gaps for one research cell.",
+            read_parameters,
+            strict=strict,
+        ),
+        _tool(
+            READ_NUMERIC_FACTS_TOOL,
+            "Read authoritative NumericFacts with period, unit and formula lineage for one research cell.",
+            read_parameters,
+            strict=strict,
+        ),
+        _tool(
+            SUBMIT_EVIDENCE_REQUEST_TOOL,
+            (
+                "Submit a bounded proposal for missing evidence. This does not run retrieval, "
+                "does not create Evidence and does not close the gap."
+            ),
+            request_parameters,
+            strict=strict,
+        ),
+        _tool(
+            SUBMIT_RESEARCH_JUDGMENT_TOOL,
+            "Submit one provider-neutral v1.1 judgment for local validation and rendering.",
+            _judgment_parameters(
+                cell_ids=cell_ids,
+                evidence_refs=evidence_refs,
+                numeric_refs=numeric_refs,
+                contract=research_input["model_output_contract"],
+            ),
+            strict=strict,
+        ),
+    )
+
+
+def compile_finance_loop_messages(
+    *,
+    research_input: Mapping[str, Any],
+    required_cell_ids: Sequence[str],
+) -> tuple[dict[str, str], ...]:
+    cells = _selected_cells(research_input, required_cell_ids)
+    visible = {
+        "case_identity": deepcopy(research_input["case_identity"]),
+        "research_question": research_input["objective"]["raw_question"],
+        "required_cells": [
+            {
+                "cell_id": row["cell_id"],
+                "title_zh": row["title_zh"],
+                "research_intents": sorted(
+                    {
+                        intent
+                        for atom in row["planner_atoms"]
+                        for intent in atom.get("product_intents", ())
+                    }
+                ),
+                "visible_gap_refs": list(row["visible_gap_refs"]),
+            }
+            for row in cells
+        ],
+        "workflow": [
+            "Read only the Evidence and NumericFacts needed for the current cell.",
+            "Submit an EvidenceRequest only for a material visible gap; it remains open in this run.",
+            "Submit exactly one locally valid judgment per required cell.",
+        ],
+        "boundaries": [
+            "Never treat a retrieval proposal, model memory or gap as Evidence.",
+            "Use reviewed Evidence for claims and NumericFacts for exact values.",
+            "Do not write digits, units, dates, citations or refs inside prose atoms.",
+            "The harness renders identity, exact numbers, periods, units and citations.",
+        ],
+    }
+    return (
+        {
+            "role": "system",
+            "content": (
+                "You are a bounded financial research analyst. Use only the four "
+                "provided tools. Preserve evidence boundaries, limiting evidence "
+                "and unresolved gaps; never convert correlation into causation."
+            ),
+        },
+        {"role": "user", "content": _json_message(visible)},
+    )
+
+
+def _evidence_tool_result(
+    *,
+    research_input: Mapping[str, Any],
+    cell: Mapping[str, Any],
+) -> dict[str, Any]:
+    cards = {
+        str(row["evidence_ref"]): row for row in research_input["evidence_cards"]
+    }
+    slot_ids = {
+        str(cell["primary_slot_id"]),
+        *(str(value) for value in cell["supplemental_context_slot_ids"]),
+    }
+    output = []
+    maximum = int(research_input["model_input_contract"]["maximum_evidence_excerpt_chars"])
+    for ref in cell["allowed_evidence_refs"]:
+        row = cards[str(ref)]
+        bindings = [
+            binding
+            for binding in row["slot_bindings"]
+            if str(binding["slot_id"]) in slot_ids
+        ]
+        output.append(
+            {
+                "evidence_ref": ref,
+                "evidence_owner_ticker": row["evidence_owner_ticker"],
+                "source_type": row["source_type"],
+                "source_tier": row["source_tier"],
+                "publication_date": row["publication_date"],
+                "source_reporting_period_end": row["source_reporting_period_end"],
+                "relationship_directions": deepcopy(row["relationship_directions"]),
+                "source_visible_fact_excerpt": str(
+                    row["source_visible_fact_excerpt"]
+                )[:maximum],
+                "business_meanings_zh": [
+                    binding["business_meaning_zh"] for binding in bindings
+                ],
+                "claim_boundaries_zh": [
+                    binding["claim_boundary_zh"] for binding in bindings
+                ],
+                "numeric_use_boundary": row["numeric_use_boundary"],
+            }
+        )
+    gaps = {
+        str(row["gap_ref"]): row for row in research_input["residual_gap_cards"]
+    }
+    return {
+        "status": "reviewed_evidence_read",
+        "cell_id": cell["cell_id"],
+        "evidence": output,
+        "residual_gaps": [deepcopy(gaps[str(ref)]) for ref in cell["visible_gap_refs"]],
+        "candidate_or_rejected_item_included": False,
+    }
+
+
+def _numeric_tool_result(
+    *,
+    research_input: Mapping[str, Any],
+    cell: Mapping[str, Any],
+) -> dict[str, Any]:
+    cards = {
+        str(row["numeric_ref"]): row
+        for row in research_input["numeric_fact_cards"]
+    }
+    return {
+        "status": "authoritative_numeric_facts_read",
+        "cell_id": cell["cell_id"],
+        "numeric_facts": [deepcopy(cards[str(ref)]) for ref in cell["allowed_numeric_refs"]],
+        "model_generated_numeric_authority": False,
+    }
+
+
+def _allowed_request_facets(
+    *,
+    cell: Mapping[str, Any],
+    kernel: FinancialResearchKernel,
+) -> set[str]:
+    slot_ids = {
+        str(cell["primary_slot_id"]),
+        *(str(value) for value in cell["supplemental_context_slot_ids"]),
+    }
+    return {
+        facet.facet_id
+        for slot in kernel.slots
+        if slot.slot_id in slot_ids
+        for facet in slot.facets
+    }
+
+
+def _compile_proposed_evidence_request(
+    *,
+    arguments: Mapping[str, Any],
+    research_input: Mapping[str, Any],
+    cell: Mapping[str, Any],
+    policy: BoundedFinanceLoopPolicy,
+    kernel: FinancialResearchKernel,
+    route_policy: QueryObjectFactRoutePolicy,
+    planning_policy: ResearchPlanningPolicy,
+) -> dict[str, Any]:
+    expected = {
+        "cell_id",
+        "gap_ref",
+        "target_entity",
+        "requested_facet_id",
+        "metric_intents",
+        "product_intents",
+    }
+    _require(
+        set(arguments) == expected
+        and str(arguments.get("cell_id")) == str(cell["cell_id"]),
+        "finance_loop_evidence_request_fields_invalid",
+    )
+    gap_ref = str(arguments.get("gap_ref") or "")
+    facet_id = str(arguments.get("requested_facet_id") or "")
+    target_entity = str(arguments.get("target_entity") or "").upper()
+    _require(
+        gap_ref in set(cell["visible_gap_refs"]),
+        "finance_loop_evidence_request_gap_out_of_cell",
+    )
+    _require(
+        facet_id in _allowed_request_facets(cell=cell, kernel=kernel),
+        "finance_loop_evidence_request_facet_out_of_cell",
+    )
+    metrics = _strings(
+        arguments.get("metric_intents"),
+        "finance_loop_evidence_request_metrics_invalid",
+        allow_empty=True,
+    )
+    intents = _strings(
+        arguments.get("product_intents"),
+        "finance_loop_evidence_request_intents_invalid",
+        allow_empty=True,
+    )
+    _require(
+        bool(metrics or intents)
+        and len(metrics) <= policy.evidence_request_max_metric_intents
+        and len(intents) <= policy.evidence_request_max_product_intents
+        and all(
+            len(value) <= policy.evidence_request_max_product_intent_chars
+            and not _MODEL_TEXT_DIGITS.search(value)
+            and "http://" not in value.casefold()
+            and "https://" not in value.casefold()
+            and "::" not in value
+            for value in intents
+        ),
+        "finance_loop_evidence_request_intents_invalid",
+    )
+    family = route_policy.family_by_facet().get(facet_id)
+    _require(family is not None, "finance_loop_evidence_request_facet_unrouted")
+    binding = planning_policy.binding_by_family().get(family.family_id)
+    _require(binding is not None, "finance_loop_evidence_request_family_unbound")
+    metric_routes = {row.metric_id: row for row in route_policy.metric_routes}
+    _require(
+        all(
+            metric_id in metric_routes
+            and family.family_id
+            in metric_routes[metric_id].allowed_query_families
+            for metric_id in metrics
+        ),
+        "finance_loop_evidence_request_metric_family_mismatch",
+    )
+    slot = next(
+        slot
+        for slot in kernel.slots
+        if any(facet.facet_id == facet_id for facet in slot.facets)
+    )
+    objective = research_input["objective"]
+    acceptable_sources = [
+        source
+        for source in slot.source_types
+        if source in objective["allowed_source_types"]
+        and source not in objective["forbidden_source_types"]
+    ]
+    _require(
+        bool(acceptable_sources),
+        "finance_loop_evidence_request_no_acceptable_source",
+    )
+    identity = {
+        "research_input_digest": research_input["research_input_digest"],
+        "cell_id": cell["cell_id"],
+        "gap_ref": gap_ref,
+        "target_entity": target_entity,
+        "facet_id": facet_id,
+        "metrics": metrics,
+        "intents": intents,
+    }
+    request_id = f"REQ::{canonical_digest(identity)[:24]}"
+    payload = {
+        "schema_version": EVIDENCE_REQUEST_SCHEMA_VERSION,
+        "request_id": request_id,
+        "cell_id": f"CELLREQ::{canonical_digest(identity)[:24]}",
+        "requester_role": binding.requester_role,
+        "evidence_domain": binding.evidence_domain,
+        "case_key": objective["case_key"],
+        "subject_ticker": objective["subject_ticker"],
+        "research_as_of": objective["research_as_of"],
+        "target_entities": [target_entity],
+        "requested_facet_ids": [facet_id],
+        "metric_intents": list(metrics),
+        "product_intents": list(intents),
+        "period": deepcopy(objective["period"]),
+        "granularity": planning_policy.defaults["granularity"],
+        "unit": planning_policy.defaults["unit"],
+        "acceptable_sources": acceptable_sources,
+        "acceptable_proxy": False,
+        "forbidden_proxy": list(planning_policy.forbidden_proxy),
+        "stop_condition": planning_policy.defaults["stop_condition"],
+        "clarification_policy": objective["gap_policy"],
+    }
+    try:
+        compiled = load_evidence_request(payload, kernel).as_dict()
+    except RetrievalContractError as exc:
+        raise BoundedFinanceLoopError(
+            f"finance_loop_evidence_request_invalid:{exc}"
+        ) from exc
+    return {
+        "status": "recorded_not_executed",
+        "research_cell_id": cell["cell_id"],
+        "gap_ref": gap_ref,
+        "gap_status": "open",
+        "compiled_evidence_request": compiled,
+        "retrieval_executed": False,
+        "candidate_promoted_to_evidence": False,
+        "numeric_fact_created": False,
+    }
+
+
+def _receipt(
+    *,
+    step: ChatCompletionToolStepResult,
+    step_index: int,
+    tool_name: str,
+    tool_call_id: str,
+    tool_result: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        "step_index": step_index,
+        "tool_name": tool_name,
+        "tool_call_id": tool_call_id,
+        "tool_result_digest": canonical_digest(tool_result),
+        "provider_step": step.as_dict(),
+        "private_reasoning_persisted": False,
+    }
+
+
+def run_bounded_finance_loop(
+    *,
+    policy: BoundedFinanceLoopPolicy,
+    research_input: Mapping[str, Any],
+    required_cell_ids: Sequence[str],
+    kernel: FinancialResearchKernel,
+    route_policy: QueryObjectFactRoutePolicy,
+    planning_policy: ResearchPlanningPolicy,
+    tools: Sequence[Mapping[str, Any]],
+    step_executor: ToolStepExecutor,
+) -> BoundedFinanceLoopResult:
+    """Run an exact bounded loop; no tool can create trusted financial truth."""
+
+    cells = _selected_cells(research_input, required_cell_ids)
+    cell_by_id = {str(row["cell_id"]): row for row in cells}
+    expected_tools = {str(row["function"]["name"]) for row in tools}
+    _require(
+        expected_tools == set(FINANCE_TOOL_NAMES),
+        "finance_loop_tool_definition_set_invalid",
+    )
+    messages: list[dict[str, Any]] = [
+        dict(row)
+        for row in compile_finance_loop_messages(
+            research_input=research_input,
+            required_cell_ids=required_cell_ids,
+        )
+    ]
+    counts: Counter[str] = Counter()
+    no_progress = 0
+    seen_calls: set[str] = set()
+    proposed_requests: list[dict[str, Any]] = []
+    judgments: dict[str, dict[str, Any]] = {}
+    receipts: list[dict[str, Any]] = []
+    provider_id = ""
+    model = ""
+
+    for step_index in range(1, policy.maximum_steps + 1):
+        step = step_executor(messages, tools, step_index)
+        provider_id = step.provider_id
+        model = step.model
+        _require(
+            len(step.tool_calls) <= policy.maximum_parallel_tool_calls,
+            "finance_loop_parallel_tool_calls_exceeded",
+        )
+        _require(
+            len(step.tool_calls) == 1,
+            "finance_loop_step_without_single_tool_call",
+        )
+        call = step.tool_calls[0]
+        name = str(call["function"]["name"])
+        call_id = str(call["id"])
+        _require(name in expected_tools, "finance_loop_tool_unknown")
+        arguments = _parse_json_object(
+            str(call["function"]["arguments"]),
+            "finance_loop_tool_arguments_invalid_json",
+        )
+        signature = canonical_digest({"name": name, "arguments": arguments})
+        counts[name] += 1
+        _require(
+            sum(counts.values()) <= policy.maximum_tool_calls
+            and counts[name] <= policy.maximum_calls_by_tool[name],
+            "finance_loop_tool_budget_exceeded",
+        )
+        duplicate = signature in seen_calls
+        seen_calls.add(signature)
+        progress = False
+
+        if name in {READ_REVIEWED_EVIDENCE_TOOL, READ_NUMERIC_FACTS_TOOL}:
+            _require(
+                set(arguments) == {"cell_id"}
+                and str(arguments.get("cell_id")) in cell_by_id,
+                "finance_loop_read_scope_invalid",
+            )
+            cell = cell_by_id[str(arguments["cell_id"])]
+            tool_result = (
+                _evidence_tool_result(
+                    research_input=research_input,
+                    cell=cell,
+                )
+                if name == READ_REVIEWED_EVIDENCE_TOOL
+                else _numeric_tool_result(
+                    research_input=research_input,
+                    cell=cell,
+                )
+            )
+            progress = not duplicate
+        elif name == SUBMIT_EVIDENCE_REQUEST_TOOL:
+            cell_id = str(arguments.get("cell_id") or "")
+            _require(
+                cell_id in cell_by_id,
+                "finance_loop_evidence_request_cell_invalid",
+            )
+            tool_result = _compile_proposed_evidence_request(
+                arguments=arguments,
+                research_input=research_input,
+                cell=cell_by_id[cell_id],
+                policy=policy,
+                kernel=kernel,
+                route_policy=route_policy,
+                planning_policy=planning_policy,
+            )
+            proposal_digest = canonical_digest(
+                tool_result["compiled_evidence_request"]
+            )
+            if proposal_digest not in {
+                canonical_digest(row["compiled_evidence_request"])
+                for row in proposed_requests
+            }:
+                proposed_requests.append(tool_result)
+                progress = True
+        else:
+            cell_id = str(arguments.get("cell_id") or "")
+            _require(
+                cell_id in cell_by_id and cell_id not in judgments,
+                "finance_loop_judgment_cell_invalid_or_duplicate",
+            )
+            normalized = deepcopy(arguments)
+            threshold = normalized.get("what_would_change", {}).get(
+                "threshold_numeric_ref"
+            )
+            if threshold == "":
+                normalized["what_would_change"]["threshold_numeric_ref"] = None
+            try:
+                validated = validate_current_research_output(
+                    {"cells": [normalized]},
+                    research_input=research_input,
+                    required_cell_ids=[cell_id],
+                )
+            except CurrentResearchConsumerError as exc:
+                raise BoundedFinanceLoopError(
+                    f"finance_loop_judgment_invalid:{exc.code}"
+                ) from exc
+            judgments[cell_id] = normalized
+            tool_result = {
+                "status": "judgment_accepted_by_local_validator",
+                "cell_id": cell_id,
+                "judgment_output_digest": validated[
+                    "judgment_output_digest"
+                ],
+                "harness_rendered_identity_numeric_and_citations": True,
+            }
+            progress = True
+
+        no_progress = 0 if progress else no_progress + 1
+        _require(
+            no_progress < policy.maximum_no_progress_steps,
+            "finance_loop_no_progress_stop",
+        )
+        receipts.append(
+            _receipt(
+                step=step,
+                step_index=step_index,
+                tool_name=name,
+                tool_call_id=call_id,
+                tool_result=tool_result,
+            )
+        )
+        messages.append(step.continuation_assistant_message())
+        messages.append(
+            {
+                "role": "tool",
+                "tool_call_id": call_id,
+                "content": _json_message(tool_result),
+            }
+        )
+        if set(judgments) == set(cell_by_id):
+            ordered = [judgments[cell_id] for cell_id in required_cell_ids]
+            judgment_output = {"cells": ordered}
+            deliverable = compile_current_research_deliverable(
+                research_input=research_input,
+                judgment_output=judgment_output,
+                required_cell_ids=required_cell_ids,
+            )
+            return BoundedFinanceLoopResult(
+                status="completed_all_required_cells",
+                provider_id=provider_id,
+                model=model,
+                selected_cell_ids=tuple(required_cell_ids),
+                step_count=step_index,
+                tool_call_count=sum(counts.values()),
+                tool_counts=dict(counts),
+                proposed_evidence_requests=tuple(proposed_requests),
+                judgment_output=judgment_output,
+                structured_deliverable=deliverable,
+                step_receipts=tuple(receipts),
+                authority=policy.authority,
+            )
+
+    raise BoundedFinanceLoopError("finance_loop_step_budget_exhausted")
+
+
+__all__ = [
+    "BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION",
+    "BOUNDED_FINANCE_LOOP_RESULT_SCHEMA_VERSION",
+    "BoundedFinanceLoopError",
+    "BoundedFinanceLoopPolicy",
+    "BoundedFinanceLoopResult",
+    "FINANCE_TOOL_NAMES",
+    "READ_NUMERIC_FACTS_TOOL",
+    "READ_REVIEWED_EVIDENCE_TOOL",
+    "SUBMIT_EVIDENCE_REQUEST_TOOL",
+    "SUBMIT_RESEARCH_JUDGMENT_TOOL",
+    "compile_finance_loop_messages",
+    "compile_finance_loop_tools",
+    "load_bounded_finance_loop_policy",
+    "run_bounded_finance_loop",
+    "validate_deepseek_ga_profile",
+    "validate_deepseek_ga_json_profile",
+]

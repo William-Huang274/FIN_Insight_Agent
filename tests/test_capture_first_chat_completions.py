@@ -10,6 +10,7 @@ import pytest
 from sec_agent.providers.chat_completions import (
     ModelGatewayError,
     execute_chat_completion_exact_once,
+    execute_chat_completion_tool_step_exact_once,
     load_chat_completion_profile,
 )
 
@@ -203,3 +204,109 @@ def test_provider_profile_rejects_plain_http_and_sensitive_request_defaults() ->
         _profile(base_url="http://provider.example")
     with pytest.raises(ModelGatewayError, match="request_defaults_invalid"):
         _profile(request_defaults={"api_key": "must-not-be-here"})
+
+
+def test_tool_step_preserves_reasoning_only_for_transient_continuation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    observed: dict[str, object] = {}
+
+    def fake_urlopen(request: urllib.request.Request, timeout: int):
+        observed["body"] = json.loads(bytes(request.data or b"").decode())
+        return _Response(
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": "",
+                            "reasoning_content": "transient private chain",
+                            "tool_calls": [
+                                {
+                                    "id": "call-1",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "read_reviewed_evidence_for_cell",
+                                        "arguments": '{"cell_id":"CELL::demand_quality"}',
+                                    },
+                                }
+                            ],
+                        },
+                        "finish_reason": "tool_calls",
+                    }
+                ],
+                "usage": {"total_tokens": 10},
+            }
+        )
+
+    profile = _profile(
+        request_defaults={
+            "max_tokens": 500,
+            "stream": False,
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+        }
+    )
+    monkeypatch.setenv("FIXTURE_PROVIDER_KEY", "secret")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    result = execute_chat_completion_tool_step_exact_once(
+        profile=profile,
+        messages=(
+            {"role": "system", "content": "Use tools."},
+            {"role": "user", "content": "Research one cell."},
+            {
+                "role": "assistant",
+                "content": "",
+                "reasoning_content": "prior transient chain",
+                "tool_calls": [
+                    {
+                        "id": "prior-call",
+                        "type": "function",
+                        "function": {
+                            "name": "read_reviewed_evidence_for_cell",
+                            "arguments": '{"cell_id":"CELL::demand_quality"}',
+                        },
+                    }
+                ],
+            },
+            {
+                "role": "tool",
+                "tool_call_id": "prior-call",
+                "content": '{"status":"ok"}',
+            },
+        ),
+        tools=(
+            {
+                "type": "function",
+                "function": {
+                    "name": "read_reviewed_evidence_for_cell",
+                    "description": "Read evidence.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {"cell_id": {"type": "string"}},
+                        "required": ["cell_id"],
+                        "additionalProperties": False,
+                    },
+                },
+            },
+        ),
+        capture_root=tmp_path,
+        run_id="RUN::TOOL-STEP",
+        attempt_id="STEP::1",
+    )
+
+    assert observed["body"]["messages"][2]["reasoning_content"] == (
+        "prior transient chain"
+    )
+    assert result.reasoning_content == "transient private chain"
+    assert result.continuation_assistant_message()["reasoning_content"] == (
+        "transient private chain"
+    )
+    assert "reasoning_content" not in result.as_dict()
+    request_capture = Path(result.request_capture_ref).read_text(encoding="utf-8")
+    response_capture = Path(result.response_capture_ref).read_text(encoding="utf-8")
+    assert "prior transient chain" not in request_capture
+    assert "transient private chain" not in response_capture
+    assert json.loads(request_capture)[
+        "transient_private_reasoning_fields_redacted"
+    ] == 1

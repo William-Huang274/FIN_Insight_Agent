@@ -268,6 +268,49 @@ def test_v1_1_message_exposes_exact_enums_and_cell_local_views(
     assert "research_input_digest" not in messages[1]["content"]
 
 
+def test_v1_1_single_cell_scope_keeps_only_cell_local_catalogs(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> None:
+    _, _, research_input = current_inputs
+    cell_id = "CELL::demand_quality"
+    messages = compile_current_research_messages(
+        research_input,
+        required_cell_ids=[cell_id],
+    )
+    visible = json.loads(messages[1]["content"])
+    allowed = next(
+        row for row in research_input["cells"] if row["cell_id"] == cell_id
+    )
+
+    assert visible["output_contract"]["required_cell_ids"] == [cell_id]
+    assert [row["cell_id"] for row in visible["cells"]] == [cell_id]
+    assert {row["evidence_ref"] for row in visible["evidence_fact_catalog"]} == set(
+        allowed["allowed_evidence_refs"]
+    )
+    assert visible["numeric_fact_catalog"] == []
+    assert len(messages[1]["content"]) < 18000
+
+    fake = _json(FAKE_PAYLOAD_V1_1)
+    one_cell = {
+        "cells": [row for row in fake["cells"] if row["cell_id"] == cell_id]
+    }
+    deliverable = compile_current_research_deliverable(
+        research_input=research_input,
+        judgment_output=one_cell,
+        required_cell_ids=[cell_id],
+    )
+    assert [row["cell_id"] for row in deliverable["cells"]] == [cell_id]
+
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_required_cell_scope_invalid",
+    ):
+        compile_current_research_messages(
+            research_input,
+            required_cell_ids=["CELL::not_current_case"],
+        )
+
+
 def test_v1_1_payload_injects_trusted_envelope_and_renders_typed_uses(
     current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
 ) -> None:

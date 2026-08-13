@@ -901,6 +901,8 @@ def compile_current_research_input(
 
 def compile_current_research_messages(
     research_input: Mapping[str, Any],
+    *,
+    required_cell_ids: Sequence[str] | None = None,
 ) -> tuple[dict[str, str], ...]:
     """Compile a bounded payload contract with explicit enums and authority.
 
@@ -992,12 +994,34 @@ def compile_current_research_messages(
             )
         } | {"formula_trace": visible_formula}
 
+    all_cell_ids = [str(cell["cell_id"]) for cell in research_input["cells"]]
+    selected_cell_ids = (
+        tuple(all_cell_ids)
+        if required_cell_ids is None
+        else tuple(str(value) for value in required_cell_ids)
+    )
+    _require(
+        bool(selected_cell_ids)
+        and len(selected_cell_ids) == len(set(selected_cell_ids))
+        and set(selected_cell_ids).issubset(all_cell_ids),
+        "research_consumer_required_cell_scope_invalid",
+    )
+    selected_cell_id_set = set(selected_cell_ids)
+    selected_cells = [
+        cell
+        for cell in research_input["cells"]
+        if cell["cell_id"] in selected_cell_id_set
+    ]
     visible_cells = []
-    for cell in research_input["cells"]:
+    selected_evidence_refs: set[str] = set()
+    selected_numeric_refs: set[str] = set()
+    for cell in selected_cells:
         slot_ids = {
             cell["primary_slot_id"],
             *cell["supplemental_context_slot_ids"],
         }
+        selected_evidence_refs.update(cell["allowed_evidence_refs"])
+        selected_numeric_refs.update(cell["allowed_numeric_refs"])
         visible_cells.append(
             {
                 "cell_id": cell["cell_id"],
@@ -1028,16 +1052,18 @@ def compile_current_research_messages(
         "evidence_fact_catalog": [
             visible_evidence_fact(row["evidence_ref"])
             for row in research_input["evidence_cards"]
+            if row["evidence_ref"] in selected_evidence_refs
         ],
         "numeric_fact_catalog": [
             visible_numeric(row["numeric_ref"])
             for row in research_input["numeric_fact_cards"]
+            if row["numeric_ref"] in selected_numeric_refs
         ],
         "cells": visible_cells,
         "output_contract": {
             "schema_version": contract["payload_schema_version"],
             "required_cell_ids": [
-                cell["cell_id"] for cell in research_input["cells"]
+                cell["cell_id"] for cell in selected_cells
             ],
             "allowed_judgment_statuses": contract[
                 "allowed_judgment_statuses"
@@ -1179,6 +1205,7 @@ def validate_current_research_output(
     payload: Mapping[str, Any],
     *,
     research_input: Mapping[str, Any],
+    required_cell_ids: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     """Validate a model-owned payload and inject the local trusted envelope."""
 
@@ -1188,8 +1215,22 @@ def validate_current_research_output(
         and isinstance(payload.get("cells"), list),
         "research_consumer_payload_envelope_invalid",
     )
-    input_cells = {
+    all_input_cells = {
         str(row["cell_id"]): row for row in research_input["cells"]
+    }
+    selected_cell_ids = (
+        tuple(all_input_cells)
+        if required_cell_ids is None
+        else tuple(str(value) for value in required_cell_ids)
+    )
+    _require(
+        bool(selected_cell_ids)
+        and len(selected_cell_ids) == len(set(selected_cell_ids))
+        and set(selected_cell_ids).issubset(all_input_cells),
+        "research_consumer_required_cell_scope_invalid",
+    )
+    input_cells = {
+        cell_id: all_input_cells[cell_id] for cell_id in selected_cell_ids
     }
     raw_cells = payload["cells"]
     output_cells = {
@@ -1369,12 +1410,14 @@ def compile_current_research_deliverable(
     *,
     research_input: Mapping[str, Any],
     judgment_output: Mapping[str, Any],
+    required_cell_ids: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     """Render a typed evidence-use payload without inventing conclusions."""
 
     validated = validate_current_research_output(
         judgment_output,
         research_input=research_input,
+        required_cell_ids=required_cell_ids,
     )
     evidence = {
         row["evidence_ref"]: row for row in research_input["evidence_cards"]

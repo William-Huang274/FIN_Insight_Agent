@@ -54,6 +54,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/market/50_validate_market_snapshot.py",
     "scripts/research/run_s3_current_research_consumer_zero_call.py",
     "scripts/research/run_s3_current_research_consumer_canary.py",
+    "scripts/research/run_s3_bounded_finance_loop_zero_call.py",
 )
 
 

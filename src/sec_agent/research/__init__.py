@@ -33,6 +33,17 @@ from .current_consumer import (
     parse_current_research_output,
     validate_current_research_output,
 )
+from .bounded_finance_loop import (
+    BoundedFinanceLoopError,
+    BoundedFinanceLoopPolicy,
+    BoundedFinanceLoopResult,
+    compile_finance_loop_messages,
+    compile_finance_loop_tools,
+    load_bounded_finance_loop_policy,
+    run_bounded_finance_loop,
+    validate_deepseek_ga_json_profile,
+    validate_deepseek_ga_profile,
+)
 
 __all__ = [
     "ReviewedEvidencePackError",
@@ -43,6 +54,9 @@ __all__ = [
     "ResearchPlanningPolicy",
     "OfficialPdfEvidenceError",
     "CurrentResearchConsumerError",
+    "BoundedFinanceLoopError",
+    "BoundedFinanceLoopPolicy",
+    "BoundedFinanceLoopResult",
     "build_reviewed_pack_successor",
     "canonical_digest",
     "compile_research_objective",
@@ -51,13 +65,19 @@ __all__ = [
     "compile_current_research_deliverable",
     "compile_current_research_input",
     "compile_current_research_messages",
+    "compile_finance_loop_messages",
+    "compile_finance_loop_tools",
     "file_sha256",
     "evaluate_official_pdf_evidence",
     "load_research_planning_policy",
     "load_current_research_consumer_policy",
+    "load_bounded_finance_loop_policy",
     "parse_current_research_output",
     "parse_research_planner_output",
     "validate_reviewed_evidence_pack",
     "validate_official_pdf_evidence_policy",
     "validate_current_research_output",
+    "run_bounded_finance_loop",
+    "validate_deepseek_ga_json_profile",
+    "validate_deepseek_ga_profile",
 ]

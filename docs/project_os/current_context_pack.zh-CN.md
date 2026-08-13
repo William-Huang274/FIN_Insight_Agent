@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。S2 仍为 1,319 observations，transcript 没有 NumericFact 权限。provider-neutral S3 consumer v1.1 与四工具有界循环均已通过干净零调用证明。DELL 单研究单元 GA paired R1 已执行：JSON 与 strict 两路均 HTTP 200，但每路 5,000 completion token 全部为 reasoning token，`finish_reason=length`，没有可见 Judgment；这属于项目 profile 容量标定不足，不构成 DS 合同或内容质量结论。R1 保持失败，当前只允许修正 typed failure、使用 16,000-token versioned profiles 签发一次同输入 replacement。五单元、S1 产品门、自然研究质量、Workbench 报告面和 release 仍未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。S2 仍为 1,319 observations，transcript 没有 NumericFact 权限。provider-neutral S3 consumer v1.1 与四工具有界循环均已通过干净零调用证明。DELL 单研究单元 GA paired R2 已执行：16,000-token JSON control 取得可见 Judgment、通过本地合同和 L1/L2，节点适用内容维度为 18/24；它删除了旧 R1 的 AI 利润率与经营杠杆越界，并保留价格／销量／组合 gap，但未选择八条公司级 NumericFact，定量密度仍弱。strict Beta 在取得 HTTP 业务响应前出现 `URLError`，0 retry，因而没有资格评价 strict schema 或内容。JSON 成功不证明标准四工具循环，当前只允许先执行一个 standard API 四工具单 cell live；通过后才允许 DELL 五单元。S1 产品门、完整八维研报、Workbench 报告面和 release 仍未通过。
 
 ## 当前唯一产品边界
 
@@ -85,7 +85,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
-旧综合 R1 与 GA paired R1 均已保存并停止。GA paired R1 的两路输入相同，HTTP 均成功，但 `thinking=max + max_tokens=5,000` 使全部 completion budget 被 reasoning 用尽；模型尚未提交 JSON 或 strict tool，故不能判断合同与内容质量。当前只做同阶段有界处置：网关增加 reasoning-budget exhaustion 分类，新增 16,000-token JSON／strict profile v1.1；完成全仓、secret scan、干净提交后可签发唯一一次 fresh replacement。replacement 失败不得自动进入第三次 paired；通过也不自动进入五单元、产品发布或 S3 acceptance。
+旧综合 R1 与 GA paired R1 均已保存并停止。paired R2 的 JSON control 已证明 profile 容量修复有效，并提供一个 L1/L2 合格、节点内容 18/24 的自然 Judgment；strict Beta 只证明一次无 HTTP 响应的传输失败，不再作为当前主链依赖，也不自动签发第三次 paired。下一项是给标准四工具 profile 做同样的 versioned 16,000-token 容量修正，在干净提交上签发一次 DELL `value_capture` 单 cell tool-loop live，要求至少真实读取 reviewed Evidence 和 NumericFact，再由本地 validator 接受 Judgment。该 canary 通过后才允许一次 DELL 五单元 bounded loop；任何单节点分数都不能改写为完整八维报告通过、产品发布或 S3 acceptance。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

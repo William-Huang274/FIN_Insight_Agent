@@ -1,0 +1,79 @@
+{
+  "schema_version": "fin_ia_s3_deepseek_ga_single_cell_paired_result_v1_0",
+  "status": "paired_terminal_mixed_or_failed_no_retry",
+  "recorded_at": "2026-08-13T16:13:33+00:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_ga_value_capture_paired_authority_v1_1.json",
+  "authority_sha256": "7ebe4566981490ed1c0c2c32e5aff8d2384bf8d573ac0e177615011e7abcd641",
+  "implementation_commit": "539a95325ead437160efbfc4f93ecd25bf78b418",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "research_input_digest": "6505a58e68811e59e3471378bc0cf16174abef3021c3ae9900e46d5e99189b4c",
+  "business_payload_digest": "d259a2a95140bf843f4a32246ce3fc66aeb8774aa8d9efdd4db372936adae28b",
+  "same_business_payload": true,
+  "json_lane": {
+    "lane": "json_control",
+    "status": "contract_valid",
+    "failure_phase": "",
+    "failure_code": "",
+    "provider": {
+      "status": "completed_exact_once",
+      "provider_id": "deepseek",
+      "model": "deepseek-v4-pro",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 3796,
+        "completion_tokens": 7380,
+        "total_tokens": 11176,
+        "prompt_tokens_details": {
+          "cached_tokens": 3712
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 6918
+        },
+        "prompt_cache_hit_tokens": 3712,
+        "prompt_cache_miss_tokens": 84
+      },
+      "request_digest": "d24af683a499c31f40dd4e4c9ab6389778766398df1b83c8128c8d994b2581ab",
+      "response_digest": "e4c6acf50b131829e30efbfc0e2c1a97e14116b9f1caa85f72f043e9eb430d4d",
+      "private_reasoning_fields_redacted": 1,
+      "request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_deepseek_ga_value_capture_paired/FIN013-S3-DELL-GA-VALUE-CAPTURE-PAIRED-R2/JSON-CONTROL-ATTEMPT-01/model_visible_request.json",
+      "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_deepseek_ga_value_capture_paired/FIN013-S3-DELL-GA-VALUE-CAPTURE-PAIRED-R2/JSON-CONTROL-ATTEMPT-01/provider_response.json"
+    },
+    "deliverable_digest": "8f4b618bf204cecd8f88796da3fe2214afbc5a9169f1f9592a8223cb5ef1c242",
+    "failure_request_capture_ref": "",
+    "failure_response_capture_ref": ""
+  },
+  "strict_lane": {
+    "lane": "strict_final_tool",
+    "status": "terminal_failed_no_retry",
+    "failure_phase": "provider_transport_or_response",
+    "failure_code": "model_gateway_transport_error",
+    "provider": {},
+    "deliverable_digest": "",
+    "failure_request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_deepseek_ga_value_capture_paired/FIN013-S3-DELL-GA-VALUE-CAPTURE-PAIRED-R2/STRICT-FINAL-TOOL-ATTEMPT-01/model_visible_request.json",
+    "failure_response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_deepseek_ga_value_capture_paired/FIN013-S3-DELL-GA-VALUE-CAPTURE-PAIRED-R2/STRICT-FINAL-TOOL-ATTEMPT-01/provider_response.json"
+  },
+  "execution": {
+    "model_calls": 2,
+    "transport_attempts": 2,
+    "retries": 0,
+    "fallbacks": 0,
+    "planner_calls": 0,
+    "external_retrieval_calls": 0,
+    "tool_executions": 0,
+    "tool_choice_sent": false,
+    "product_publication": false
+  },
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/ga-paired-r2-value-capture/full_result.json",
+  "full_result_sha256": "ce54da6fa61e507ec1b4d654ae411a0583a965956df279a0ccc1e59b02e9b67b",
+  "acceptance": {
+    "json_transport_and_contract_pass": true,
+    "strict_beta_transport_and_contract_pass": false,
+    "paired_content_assessment_pending": false,
+    "five_cell_live_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false
+  },
+  "known_boundary": "This is the only same-input capacity replacement after R1 exhausted 5000 reasoning tokens per lane. It compares v1.1 JSON and strict Beta final-tool submission for one DELL cell with 16000 tokens per lane. It authorizes no retry, fallback, third pair, planner, retrieval, tool execution, five-cell run, Workbench publication, S3 acceptance or release claim.",
+  "result_digest": "705f51f77a32f80575a88add34c138d58515dcf3f54ea568b0233c17aab8946b"
+}

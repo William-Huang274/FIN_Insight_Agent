@@ -1,0 +1,114 @@
+{
+  "schema_version": "fin_ia_s3_single_cell_node_quality_assessment_v1_0",
+  "status": "json_node_pass_strict_transport_unqualified_full_report_not_scored",
+  "recorded_at": "2026-08-14T00:20:00+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_ga_value_capture_paired_authority_v1_1.json",
+  "source_authority_sha256": "7ebe4566981490ed1c0c2c32e5aff8d2384bf8d573ac0e177615011e7abcd641",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_ga_value_capture_paired_result_v1_1.json",
+  "source_result_sha256": "1d46bc0256fad0fd68d9627db9485e7f3c3044fe3b2da54ca180f2ce71787645",
+  "full_result_sha256": "ce54da6fa61e507ec1b4d654ae411a0583a965956df279a0ccc1e59b02e9b67b",
+  "business_payload_digest": "d259a2a95140bf843f4a32246ce3fc66aeb8774aa8d9efdd4db372936adae28b",
+  "json_lane": {
+    "transport_status": "pass",
+    "contract_status": "pass",
+    "finish_reason": "stop",
+    "prompt_tokens": 3796,
+    "completion_tokens": 7380,
+    "reasoning_tokens": 6918,
+    "deliverable_digest": "8f4b618bf204cecd8f88796da3fe2214afbc5a9169f1f9592a8223cb5ef1c242",
+    "l1_financial_truth": {
+      "status": "pass",
+      "checks": {
+        "case_identity_correct": true,
+        "cross_cell_or_cross_case_refs": 0,
+        "free_prose_digits_units_dates_or_citations": 0,
+        "unbound_numeric_claims": 0,
+        "invalid_or_duplicate_refs": 0
+      }
+    },
+    "l2_evidence_authority": {
+      "status": "pass",
+      "checks": {
+        "reviewed_evidence_refs": 4,
+        "candidate_or_rejected_items_used": 0,
+        "typed_gaps_preserved": 3,
+        "gap_closed_without_new_evidence": 0,
+        "numeric_refs_selected": 0
+      }
+    },
+    "node_quality_scores": {
+      "Q1_company_and_question_specificity": {
+        "score": 4,
+        "reason": "The judgment is specific to Dell AI servers, ISG mix, and the missing product-level profit bridge."
+      },
+      "Q2_evidence_to_conclusion_argument": {
+        "score": 3,
+        "reason": "Four reviewed issuer sources are separated into support, limit, and context, and the claim boundaries remain active."
+      },
+      "Q3_financial_and_numeric_interpretation": {
+        "score": 2,
+        "reason": "The judgment correctly refuses to use group-level numbers as an AI profit bridge, but selects no NumericFact and therefore remains quantitatively thin."
+      },
+      "Q4_causal_mechanism_and_industry_logic": {
+        "score": 3,
+        "reason": "Revenue scale, pricing discipline, mix pressure, and operating profit are linked as a bounded mechanism without claiming an audited product margin bridge."
+      },
+      "Q5_cross_cell_synthesis": {
+        "score": null,
+        "reason": "Not applicable to a pre-registered single-cell canary; no full-report score is issued."
+      },
+      "Q6_counterthesis_risk_and_gap_discipline": {
+        "score": 3,
+        "reason": "The strongest alternative explicitly preserves traditional-server and other-business contribution plus price, volume, and mix gaps."
+      },
+      "Q7_what_would_change_and_action_value": {
+        "score": 3,
+        "reason": "The observable, direction, bounded horizon, and evidence route would directly drive a follow-up request, while no unsupported numeric threshold is invented."
+      },
+      "Q8_senior_delivery_usability": {
+        "score": null,
+        "reason": "Not applicable until verifier-bound five-cell workpaper and report artifacts exist."
+      }
+    },
+    "applicable_score": 18,
+    "applicable_maximum": 24,
+    "applicable_dimensions_below_two": 0,
+    "quality_findings": [
+      "numeric_context_underused_even_though_eight_company_level_NumericFacts_were_available",
+      "full_cross_cell_conflict_and_senior_delivery_quality_unobserved"
+    ]
+  },
+  "paired_material_change_vs_historical_r1_value_cell": {
+    "status": "material_gain_on_same_current_evidence_pack_contract_family_not_model_build_ab",
+    "gains": [
+      "removed_unproven_claim_that_AI_server_margin_is_below_traditional_business",
+      "removed_unbound_operating_leverage_assertion",
+      "separated_support_limit_and_context_instead_of_dual_role_evidence",
+      "preserved_price_volume_mix_gaps_instead_of_implying_the_bridge_exists",
+      "made_the_WWC_a_concrete_product_level_bridge_request"
+    ],
+    "regression_or_tradeoff": "All eight company-level NumericFacts were omitted, improving attribution discipline but reducing quantitative decision density."
+  },
+  "strict_lane": {
+    "status": "unqualified_no_retry",
+    "failure_code": "model_gateway_transport_error",
+    "transport_error_type": "URLError",
+    "status_code": 0,
+    "schema_adherence_observed": false,
+    "content_quality_observed": false,
+    "automatic_retry_or_third_pair": false
+  },
+  "transport_disposition": {
+    "json_control": "qualified_as_non_tool_submission_control",
+    "strict_beta_final_tool": "parked_optional_transport_not_core_dependency",
+    "standard_api_tool_calls": "single_cell_live_qualification_required_before_five_cell",
+    "local_validator_and_deterministic_renderer": "remain_authoritative"
+  },
+  "next_authorized_scope": "one_standard_API_four_tool_single_cell_live_on_the_same_DELL_value_capture_input_after_clean_implementation_and_authority",
+  "five_cell_live_authorized": false,
+  "qualified_human_acceptance": false,
+  "s3_product_acceptance": false,
+  "known_boundary": "This assessment qualifies one JSON-submitted judgment node. It is not the eight-dimension final report score, a blinded model-build comparison, qualified-human acceptance, five-cell Agentic Research, or S3 product acceptance."
+}

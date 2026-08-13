@@ -164,3 +164,13 @@ R1 已在干净提交 `b8f335eb...` 上按 authority 执行。JSON control 与 s
 因此 R1 不是 JSON/strict 合同失败，更不是金融内容失败；它没有产出可被合同或内容验收的 Judgment。首因属于项目 profile 容量标定：`thinking=max` 与 5,000 token 上限组合不足。网关此前把它记成通用 `content_empty`／`tool_step_empty`，后续已增加 typed reasoning-budget exhaustion 分类，但 R1 结果保持原样。
 
 replacement 只允许使用同一业务 payload 和 versioned JSON／strict profile v1.1，每路 `max_tokens=16,000`、一次调用、0 retry、0 fallback。16,000 是针对本次单 cell 的受控容量，不是未来五单元循环的固定预算；五单元需要在 paired 通过后单独按实际步骤定标。若 replacement 再次用尽预算或出现新的 L1，停止并做阶段处置，不自动签发第三轮。
+
+## 11. GA 单单元 paired R2 与核心传输选择
+
+R2 继续绑定同一个 DELL `CELL::value_capture` 和归一化业务 payload digest。JSON control 使用 v1.1 16,000-token profile 后以 `finish_reason=stop` 提交可见 Judgment，本地合同、身份、引用、自由数字和 gap 门均通过；usage 为 prompt `3,796`、completion `7,380`，其中 reasoning `6,918`。这关闭了 R1 的项目 profile 容量问题，但不追认 R1。
+
+JSON Judgment 使用四条本 cell reviewed Evidence，明确区分 support／limit／context，保留价格、销量与组合三条 gap，并拒绝把公司／分部指标冒充 AI 产品利润桥。与旧 R1 相比，它删除了“AI server margin 低于传统业务”和无证经营杠杆等越界。其明显不足是八条公司级 NumericFact 全未选择，故节点适用评分为 18/24，Q5 跨单元综合和 Q8 最终交付不适用；不得折算成完整八维研报通过。
+
+strict Beta 在 R2 中没有取得 HTTP 业务响应，capture 只记录 `URLError`／status 0。由于 schema adherence 与内容均未被观察，项目既不能宣布 strict 不遵循，也不为可选 Beta 通道自动做第三轮 paired。JSON control 可作为非工具最终提交对照；本地 validator 和确定性 renderer 继续拥有最终权威。
+
+完整五单元实际依赖标准 API Tool Calls，因此传输选择还差一个小而必要的资格门：使用 versioned 16,000-token 标准 profile，只运行 DELL `value_capture` 单 cell 四工具循环；必须至少真实读取 reviewed Evidence 与 NumericFact，EvidenceRequest 仍只记录提案，最终 Judgment 仍由 v1.1 本地合同校验。该门通过后才执行五单元；这不是新产品版本，也不是重开 strict paired。

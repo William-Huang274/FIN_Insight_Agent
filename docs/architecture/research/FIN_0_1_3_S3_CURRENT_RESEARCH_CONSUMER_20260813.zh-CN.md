@@ -182,3 +182,11 @@ strict Beta 在 R2 中没有取得 HTTP 业务响应，capture 只记录 `URLErr
 成功的每一步立即保存 receipt；中途 Provider 或本地校验失败时，公开 terminal 保留成功前缀、失败 phase/code、capture ref 和实际调用数，0 retry、0 fallback。完整 Judgment、工具返回和 provider step 存在受限 private result，公开结果不把未验收内容晋升为产品事实。standard profile v1.1 使用正式标准地址与 16,000-token 上限；strict Beta 保持停放。
 
 同一 generic 分支未来可运行五 cell，但不能复用本次单 cell 决策：五 cell authority 必须绑定一份新的机器可读 scope decision，明确 `five_cell_live_authorized=true`，并且 cell 顺序必须等于当前 research input 的全部五单元。这阻止 runner 可复用性扩大当前权限。
+
+### 11.2 标准 Tool Calls R1 与有界兼容 successor
+
+标准 single-cell R1 在干净提交 `2aab623d...` 上取得 HTTP 200、`finish_reason=tool_calls`。DeepSeek 在第一步一次请求 `read_reviewed_evidence_for_cell` 和 `read_numeric_facts_for_cell`，两者参数均为当前 `CELL::value_capture`；这是正确且互不改变状态的 mandatory read pair。失败发生在项目边界：Provider 为每个 tool call 附带标准顺序 `index`，当前归一化器要求绝对三字段；核心循环又把 `maximum_parallel_tool_calls` 固定为 1。异常在 step receipt 前抛出，还造成公开 terminal 未引用已经保存的 response capture。
+
+successor 不把这个结果固化成 DeepSeek 专用分支，也不放开任意并行。provider-neutral transport 只允许可验证的非负整数 `index` 并在归一化后剥离；核心策略只允许同 cell、不同 call id、名称集合恰为 Evidence read＋NumericFact read 的两个只读调用共存。EvidenceRequest、Judgment、重复 read、三工具或未知组合继续 fail closed。每个 tool receipt 必须拥有不会相互覆盖的 sequence identity，Provider 归一化失败也必须携带 capture ref。
+
+R1 保持 immutable failed。实现、replay、mutation、fresh-process 和干净提交 proof 完成前不执行 replacement；replacement 仍只有 single cell、最多 6 次模型调用、0 retry/fallback。五单元权限不随兼容修复自动产生。

@@ -17,6 +17,8 @@ from sec_agent.providers.chat_completions import (  # noqa: E402
     ModelGatewayError,
 )
 from sec_agent.research.bounded_finance_loop import (  # noqa: E402
+    READ_NUMERIC_FACTS_TOOL,
+    READ_REVIEWED_EVIDENCE_TOOL,
     SUBMIT_RESEARCH_JUDGMENT_TOOL,
 )
 from sec_agent.research.paired_submission import (  # noqa: E402
@@ -28,6 +30,32 @@ from sec_agent.research.paired_submission import (  # noqa: E402
 
 
 SCRIPT = ROOT / "scripts/research/run_s3_current_research_consumer_canary.py"
+LOOP_POLICY = ROOT / (
+    "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_0.json"
+)
+CONSUMER_POLICY = ROOT / (
+    "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_1.json"
+)
+OBJECTIVE = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json"
+)
+ATOMS = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json"
+)
+FAKE = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_1.json"
+)
+STANDARD_PROFILE = ROOT / (
+    "configs/providers/"
+    "fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json"
+)
+CLEAN_LOOP_PROOF = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_bounded_finance_loop_zero_call_result_v1_0.json"
+)
 
 
 def _runner():
@@ -39,6 +67,251 @@ def _runner():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _tool_loop_authority(tmp_path: Path) -> tuple[Path, dict[str, object]]:
+    authority = {
+        "schema_version": "fin_ia_s3_bounded_finance_loop_live_authority_v1_0",
+        "status": "signed_exact_once_standard_API_bounded_finance_loop_live",
+        "implementation_commit": "a" * 40,
+        "case_key": "DELL",
+        "required_cell_ids": ["CELL::value_capture"],
+        "execution_budget": {
+            "maximum_model_calls": 6,
+            "maximum_transport_attempts": 6,
+            "maximum_evidence_requests": 3,
+            "retries": 0,
+            "fallbacks": 0,
+            "planner_calls": 0,
+            "external_retrieval_calls": 0,
+            "embedding_calls": 0,
+            "current_product_pointer_mutations": 0,
+        },
+        "output_contract": {
+            "capture_root_ref": "capture",
+            "private_output_root_ref": "private",
+            "public_result_ref": "public.json",
+            "run_id": "TEST-LOOP-R1",
+            "step_attempt_prefix": "STEP",
+            "product_publication": "forbidden",
+        },
+        "known_boundary": "unit test only",
+    }
+    path = tmp_path / "authority.json"
+    path.write_text(json.dumps(authority), encoding="utf-8")
+    return path, authority
+
+
+def _tool_loop_bound_paths() -> dict[str, Path]:
+    return {
+        "consumer_policy_ref": CONSUMER_POLICY,
+        "objective_ref": OBJECTIVE,
+        "planner_atoms_ref": ATOMS,
+        "clean_zero_call_result_ref": CLEAN_LOOP_PROOF,
+        "loop_policy_ref": LOOP_POLICY,
+        "provider_profile_ref": STANDARD_PROFILE,
+        "prior_scope_decision_ref": ROOT
+        / (
+            "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_ga_value_capture_json_r2_node_assessment_v1_0.json"
+        ),
+    }
+
+
+def _tool_step(
+    index: int,
+    name: str,
+    arguments: dict[str, object],
+    capture_root: Path,
+) -> ChatCompletionToolStepResult:
+    return ChatCompletionToolStepResult(
+        status="completed_exact_once_tool_step",
+        provider_id="fixture-provider",
+        model="fixture-model",
+        content="",
+        reasoning_content=f"transient-private-{index}",
+        tool_calls=(
+            {
+                "id": f"call-{index}",
+                "type": "function",
+                "function": {
+                    "name": name,
+                    "arguments": json.dumps(arguments, ensure_ascii=False),
+                },
+            },
+        ),
+        finish_reason="tool_calls",
+        usage={"prompt_tokens": index, "completion_tokens": index + 1},
+        request_capture_ref=str(capture_root / f"request-{index}.json"),
+        response_capture_ref=str(capture_root / f"response-{index}.json"),
+        request_digest=str(index) * 64,
+        response_digest=str(index + 1) * 64,
+        private_reasoning_fields_redacted=1,
+    )
+
+
+def _prepare_tool_loop_test(
+    runner,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> tuple[Path, dict[str, object], dict[str, Path]]:
+    authority_path, authority = _tool_loop_authority(tmp_path)
+    paths = _tool_loop_bound_paths()
+    clean_proof_path = tmp_path / "clean-proof.json"
+    clean_proof_path.write_text(
+        json.dumps(
+            {
+                "status": "zero_call_engineering_and_fresh_process_proof_pass",
+                "normalized_proof": {
+                    "research_input_digest": "pending",
+                    "single_cell_maximum_steps": 6,
+                    "standard_profile_max_tokens": 16000,
+                    "mutation_failure_codes": [
+                        "finance_loop_required_cell_reads_incomplete"
+                    ],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    paths["clean_zero_call_result_ref"] = clean_proof_path
+    _, research_input, _ = runner._compile_runtime_input(
+        paths,
+        case_key="DELL",
+        required_cell_ids=["CELL::value_capture"],
+    )
+    kernel, route, _ = runner._tool_loop_contracts(paths)
+    messages = runner.compile_finance_loop_messages(
+        research_input=research_input,
+        required_cell_ids=["CELL::value_capture"],
+        execution_budget={
+            "maximum_steps": 6,
+            "maximum_evidence_requests": 3,
+            "maximum_reads_per_cell": 1,
+            "maximum_judgments_per_cell": 1,
+            "retry_count": 0,
+        },
+    )
+    tools = runner.compile_finance_loop_tools(
+        research_input=research_input,
+        required_cell_ids=["CELL::value_capture"],
+        kernel=kernel,
+        route_policy=route,
+        strict=False,
+    )
+    authority["bound_inputs"] = {
+        "research_input_digest": research_input["research_input_digest"],
+        "finance_loop_messages_digest": runner.canonical_digest(list(messages)),
+        "standard_tool_schema_digest": runner.canonical_digest(list(tools)),
+    }
+    proof = json.loads(clean_proof_path.read_text(encoding="utf-8"))
+    proof["normalized_proof"]["research_input_digest"] = research_input[
+        "research_input_digest"
+    ]
+    clean_proof_path.write_text(json.dumps(proof), encoding="utf-8")
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+    monkeypatch.setattr(
+        runner,
+        "validate_tool_loop_authority",
+        lambda _payload, authority_path: paths,
+    )
+    destinations = {
+        "capture": tmp_path / "capture",
+        "private": tmp_path / "private",
+        "public.json": tmp_path / "public.json",
+    }
+    monkeypatch.setattr(
+        runner,
+        "_resolve",
+        lambda ref: destinations[str(ref)],
+    )
+    monkeypatch.setattr(runner, "_relative", lambda path: Path(path).name)
+    return authority_path, authority, paths
+
+
+def test_standard_tool_loop_success_materializes_three_steps(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    authority_path, _, _ = _prepare_tool_loop_test(
+        runner, monkeypatch, tmp_path
+    )
+    fake = json.loads(FAKE.read_text(encoding="utf-8"))
+    judgment = next(
+        row
+        for row in fake["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    sequence = [
+        (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": "CELL::value_capture"}),
+        (READ_NUMERIC_FACTS_TOOL, {"cell_id": "CELL::value_capture"}),
+        (SUBMIT_RESEARCH_JUDGMENT_TOOL, judgment),
+    ]
+
+    def executor(**kwargs):
+        index = int(str(kwargs["attempt_id"]).split("-")[-3])
+        if index == 1:
+            first_user_message = kwargs["messages"][1]["content"]
+            assert '"maximum_steps":6' in first_user_message
+            assert '"retry_count":0' in first_user_message
+        name, arguments = sequence[index - 1]
+        return _tool_step(index, name, arguments, tmp_path / "capture")
+
+    result = runner.run_tool_loop(authority_path, step_executor=executor)
+
+    assert result["status"] == "completed_contract_valid_content_assessment_pending"
+    assert result["execution"]["model_calls_attempted"] == 3
+    assert result["accepted_receipt_count"] == 3
+    assert result["tool_counts"] == {
+        READ_REVIEWED_EVIDENCE_TOOL: 1,
+        READ_NUMERIC_FACTS_TOOL: 1,
+        SUBMIT_RESEARCH_JUDGMENT_TOOL: 1,
+    }
+    assert result["acceptance"][
+        "standard_tool_transport_and_local_contract_pass"
+    ] is True
+    assert result["acceptance"]["five_cell_live_authorized"] is False
+    full = (tmp_path / "private" / "full_result.json").read_text(
+        encoding="utf-8"
+    )
+    assert "transient-private" not in full
+    assert (tmp_path / "public.json").is_file()
+
+
+def test_standard_tool_loop_failure_preserves_successful_prefix_without_retry(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    authority_path, _, _ = _prepare_tool_loop_test(
+        runner, monkeypatch, tmp_path
+    )
+
+    def executor(**kwargs):
+        index = int(str(kwargs["attempt_id"]).split("-")[-3])
+        if index == 2:
+            raise ModelGatewayError(
+                "model_gateway_transport_error",
+                capture_ref=str(tmp_path / "capture" / "failed-response.json"),
+            )
+        return _tool_step(
+            index,
+            READ_REVIEWED_EVIDENCE_TOOL,
+            {"cell_id": "CELL::value_capture"},
+            tmp_path / "capture",
+        )
+
+    result = runner.run_tool_loop(authority_path, step_executor=executor)
+
+    assert result["status"] == "terminal_failed_no_retry"
+    assert result["failure_phase"] == "provider_transport_or_response"
+    assert result["failure_code"] == "model_gateway_transport_error"
+    assert result["execution"]["model_calls_attempted"] == 2
+    assert result["execution"]["retries"] == 0
+    assert result["accepted_receipt_count"] == 1
+    assert len(result["provider_steps"]) == 1
+    assert result["failure_capture_ref"] == "failed-response.json"
 
 
 def test_live_runner_is_case_bound_and_has_exact_once_budget() -> None:

@@ -43,6 +43,7 @@ from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     compile_finance_loop_tools,
     load_bounded_finance_loop_policy,
     run_bounded_finance_loop,
+    scope_bounded_finance_loop_policy,
     validate_deepseek_ga_json_profile,
     validate_deepseek_ga_profile,
 )
@@ -314,6 +315,18 @@ def _run_fake_matrix(
         route_policy=route,
         strict=True,
     )
+    single_standard_tools = compile_finance_loop_tools(
+        research_input=research_input,
+        required_cell_ids=[single_id],
+        kernel=kernel,
+        route_policy=route,
+        strict=False,
+    )
+    single_policy = scope_bounded_finance_loop_policy(
+        policy,
+        cell_count=1,
+        maximum_evidence_requests=3,
+    )
     demand_gap = next(
         row["visible_gap_refs"][0]
         for row in research_input["cells"]
@@ -336,16 +349,23 @@ def _run_fake_matrix(
         (SUBMIT_RESEARCH_JUDGMENT_TOOL, _fake_judgment(fake, single_id)),
     ]
     single = run_bounded_finance_loop(
-        policy=policy,
+        policy=single_policy,
         research_input=research_input,
         required_cell_ids=[single_id],
         kernel=kernel,
         route_policy=route,
         planning_policy=planning,
-        tools=strict_tools,
+        tools=single_standard_tools,
         step_executor=lambda _messages, _tools, index: _step(
             index, *single_sequence[index - 1]
         ),
+        visible_execution_budget={
+            "maximum_steps": single_policy.maximum_steps,
+            "maximum_evidence_requests": 3,
+            "maximum_reads_per_cell": 1,
+            "maximum_judgments_per_cell": 1,
+            "retry_count": 0,
+        },
     ).as_dict()
     standard_tools = compile_finance_loop_tools(
         research_input=research_input,
@@ -363,8 +383,13 @@ def _run_fake_matrix(
             (SUBMIT_RESEARCH_JUDGMENT_TOOL, _fake_judgment(fake, cell_id)),
         )
     ]
+    full_policy = scope_bounded_finance_loop_policy(
+        policy,
+        cell_count=len(cell_ids),
+        maximum_evidence_requests=9,
+    )
     full = run_bounded_finance_loop(
-        policy=policy,
+        policy=full_policy,
         research_input=research_input,
         required_cell_ids=cell_ids,
         kernel=kernel,
@@ -374,6 +399,13 @@ def _run_fake_matrix(
         step_executor=lambda _messages, _tools, index: _step(
             index, *full_sequence[index - 1]
         ),
+        visible_execution_budget={
+            "maximum_steps": full_policy.maximum_steps,
+            "maximum_evidence_requests": 9,
+            "maximum_reads_per_cell": 1,
+            "maximum_judgments_per_cell": 1,
+            "retry_count": 0,
+        },
     ).as_dict()
     return {
         "single_cell": single,
@@ -382,9 +414,17 @@ def _run_fake_matrix(
             compile_finance_loop_messages(
                 research_input=research_input,
                 required_cell_ids=[single_id],
+                execution_budget={
+                    "maximum_steps": single_policy.maximum_steps,
+                    "maximum_evidence_requests": 3,
+                    "maximum_reads_per_cell": 1,
+                    "maximum_judgments_per_cell": 1,
+                    "retry_count": 0,
+                },
             )[1]["content"]
         ),
         "strict_tools": strict_tools,
+        "single_standard_tools": single_standard_tools,
         "standard_tools": standard_tools,
     }
 
@@ -406,6 +446,11 @@ def _mutation_codes(
         route_policy=route,
         strict=False,
     )
+    scoped_policy = scope_bounded_finance_loop_policy(
+        policy,
+        cell_count=1,
+        maximum_evidence_requests=3,
+    )
     cases: list[list[tuple[str, dict[str, Any]]]] = [
         [
             (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
@@ -419,12 +464,18 @@ def _mutation_codes(
                 _fake_judgment(fake, "CELL::operating_performance"),
             )
         ],
+        [
+            (
+                SUBMIT_RESEARCH_JUDGMENT_TOOL,
+                _fake_judgment(fake, cell_id),
+            )
+        ],
     ]
     codes = []
     for sequence in cases:
         try:
             run_bounded_finance_loop(
-                policy=policy,
+                policy=scoped_policy,
                 research_input=research_input,
                 required_cell_ids=[cell_id],
                 kernel=kernel,
@@ -434,6 +485,13 @@ def _mutation_codes(
                 step_executor=lambda _messages, _tools, index, seq=sequence: _step(
                     index, *seq[min(index - 1, len(seq) - 1)]
                 ),
+                visible_execution_budget={
+                    "maximum_steps": scoped_policy.maximum_steps,
+                    "maximum_evidence_requests": 3,
+                    "maximum_reads_per_cell": 1,
+                    "maximum_judgments_per_cell": 1,
+                    "retry_count": 0,
+                },
             )
         except BoundedFinanceLoopError as exc:
             codes.append(exc.code)
@@ -536,6 +594,13 @@ def _execute(
         ],
         "strict_tool_schema_digest": canonical_digest(matrix["strict_tools"]),
         "standard_tool_schema_digest": canonical_digest(matrix["standard_tools"]),
+        "single_standard_tool_schema_digest": canonical_digest(
+            matrix["single_standard_tools"]
+        ),
+        "single_cell_maximum_steps": 6,
+        "standard_profile_max_tokens": int(
+            standard_profile.request_defaults["max_tokens"]
+        ),
         "mutation_failure_codes": _mutation_codes(
             research_input=research_input,
             kernel=kernel,
@@ -577,6 +642,9 @@ def _execute(
         },
         "profile_qualification": {
             "standard_ga_endpoint": standard_profile.base_url,
+            "standard_ga_max_tokens": int(
+                standard_profile.request_defaults["max_tokens"]
+            ),
             "strict_beta_endpoint": strict_profile.base_url,
             "thinking": {"type": "enabled"},
             "reasoning_effort": "max",

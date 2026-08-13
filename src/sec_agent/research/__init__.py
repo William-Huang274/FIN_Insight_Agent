@@ -41,6 +41,7 @@ from .bounded_finance_loop import (
     compile_finance_loop_tools,
     load_bounded_finance_loop_policy,
     run_bounded_finance_loop,
+    scope_bounded_finance_loop_policy,
     validate_deepseek_ga_json_profile,
     validate_deepseek_ga_profile,
 )
@@ -88,6 +89,7 @@ __all__ = [
     "validate_official_pdf_evidence_policy",
     "validate_current_research_output",
     "run_bounded_finance_loop",
+    "scope_bounded_finance_loop_policy",
     "run_paired_research_submission",
     "shared_provider_failure",
     "validate_deepseek_ga_json_profile",

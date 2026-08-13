@@ -32,6 +32,7 @@ from sec_agent.research.bounded_finance_loop import (
     compile_finance_loop_tools,
     load_bounded_finance_loop_policy,
     run_bounded_finance_loop,
+    scope_bounded_finance_loop_policy,
     validate_deepseek_ga_json_profile,
     validate_deepseek_ga_profile,
 )
@@ -222,6 +223,19 @@ def test_tool_compiler_emits_four_closed_finance_schemas(contracts) -> None:
         research_input=research_input,
         required_cell_ids=[cell_id],
     )[1]["content"]) < 4000
+    budgeted = compile_finance_loop_messages(
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        execution_budget={
+            "maximum_steps": 6,
+            "maximum_evidence_requests": 3,
+            "maximum_reads_per_cell": 1,
+            "maximum_judgments_per_cell": 1,
+            "retry_count": 0,
+        },
+    )
+    assert '"maximum_steps":6' in budgeted[1]["content"]
+    assert '"retry_count":0' in budgeted[1]["content"]
 
 
 def test_single_cell_fake_loop_reads_submits_gap_and_judgment(contracts) -> None:
@@ -288,6 +302,97 @@ def test_single_cell_fake_loop_reads_submits_gap_and_judgment(contracts) -> None
     assert "private-step" not in json.dumps(payload, ensure_ascii=False)
     assert observed_messages[1][-2]["reasoning_content"] == "private-step-1"
     assert all(row["private_reasoning_persisted"] is False for row in result.step_receipts)
+
+
+def test_scoped_policy_and_required_reads_prevent_cosmetic_agent_loop(
+    contracts,
+) -> None:
+    policy, research_input, kernel, route, planning = contracts
+    cell_id = "CELL::value_capture"
+    scoped = scope_bounded_finance_loop_policy(
+        policy,
+        cell_count=1,
+        maximum_evidence_requests=3,
+    )
+    assert scoped.maximum_steps == 6
+    assert scoped.maximum_tool_calls == 6
+    assert scoped.maximum_calls_by_tool == {
+        READ_REVIEWED_EVIDENCE_TOOL: 1,
+        READ_NUMERIC_FACTS_TOOL: 1,
+        SUBMIT_EVIDENCE_REQUEST_TOOL: 3,
+        SUBMIT_RESEARCH_JUDGMENT_TOOL: 1,
+    }
+    tools = compile_finance_loop_tools(
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        strict=False,
+    )
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_required_cell_reads_incomplete",
+    ):
+        run_bounded_finance_loop(
+            policy=scoped,
+            research_input=research_input,
+            required_cell_ids=[cell_id],
+            kernel=kernel,
+            route_policy=route,
+            planning_policy=planning,
+            tools=tools,
+            step_executor=lambda _messages, _tools, step_index: _step(
+                step_index,
+                SUBMIT_RESEARCH_JUDGMENT_TOOL,
+                _fake_judgment(cell_id),
+            ),
+        )
+
+
+def test_receipt_recorder_preserves_successful_prefix(contracts) -> None:
+    policy, research_input, kernel, route, planning = contracts
+    cell_id = "CELL::value_capture"
+    scoped = scope_bounded_finance_loop_policy(
+        policy,
+        cell_count=1,
+        maximum_evidence_requests=3,
+    )
+    tools = compile_finance_loop_tools(
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        strict=False,
+    )
+    sequence = [
+        (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+        (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
+        (SUBMIT_RESEARCH_JUDGMENT_TOOL, _fake_judgment(cell_id)),
+    ]
+    receipts: list[dict[str, object]] = []
+    result = run_bounded_finance_loop(
+        policy=scoped,
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+        tools=tools,
+        step_executor=lambda _messages, _tools, step_index: _step(
+            step_index, *sequence[step_index - 1]
+        ),
+        receipt_recorder=receipts.append,
+        visible_execution_budget={
+            "maximum_steps": 6,
+            "maximum_evidence_requests": 3,
+            "maximum_reads_per_cell": 1,
+            "maximum_judgments_per_cell": 1,
+            "retry_count": 0,
+        },
+    )
+    assert result.step_count == 3
+    assert [row["step_index"] for row in receipts] == [1, 2, 3]
+    assert all(row["private_reasoning_persisted"] is False for row in receipts)
 
 
 def test_five_cell_fake_loop_uses_budgets_not_fixed_nine_calls(contracts) -> None:
@@ -444,6 +549,16 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
     assert replacement_json.request_defaults["max_tokens"] == 16000
     validate_deepseek_ga_profile(replacement_strict, strict_tools=True)
     validate_deepseek_ga_json_profile(replacement_json)
+
+    replacement_standard = load_chat_completion_profile(
+        _json(
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json"
+        )
+    )
+    assert replacement_standard.request_defaults["max_tokens"] == 16000
+    validate_deepseek_ga_profile(replacement_standard, strict_tools=False)
 
     changed = deepcopy(_json(
         ROOT

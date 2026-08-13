@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import json
 import re
 from typing import Any, Callable, Mapping, Sequence
@@ -165,6 +165,46 @@ ToolStepExecutor = Callable[
     [Sequence[Mapping[str, Any]], Sequence[Mapping[str, Any]], int],
     ChatCompletionToolStepResult,
 ]
+StepReceiptRecorder = Callable[[Mapping[str, Any]], None]
+
+
+def scope_bounded_finance_loop_policy(
+    policy: BoundedFinanceLoopPolicy,
+    *,
+    cell_count: int,
+    maximum_evidence_requests: int,
+) -> BoundedFinanceLoopPolicy:
+    """Narrow the shared five-cell safety ceiling for one authorized run.
+
+    Every selected cell may read Evidence once, read NumericFacts once and
+    submit one Judgment.  EvidenceRequest remains optional and proposal-only.
+    The scoped policy can only reduce the checked-in provider-neutral policy.
+    """
+
+    _require(1 <= cell_count <= 5, "finance_loop_scope_cell_count_invalid")
+    _require(
+        0 <= maximum_evidence_requests
+        <= policy.maximum_calls_by_tool[SUBMIT_EVIDENCE_REQUEST_TOOL],
+        "finance_loop_scope_evidence_request_budget_invalid",
+    )
+    per_tool = {
+        READ_REVIEWED_EVIDENCE_TOOL: cell_count,
+        READ_NUMERIC_FACTS_TOOL: cell_count,
+        SUBMIT_EVIDENCE_REQUEST_TOOL: maximum_evidence_requests,
+        SUBMIT_RESEARCH_JUDGMENT_TOOL: cell_count,
+    }
+    maximum_calls = sum(per_tool.values())
+    _require(
+        maximum_calls <= policy.maximum_tool_calls
+        and maximum_calls <= policy.maximum_steps,
+        "finance_loop_scope_exceeds_base_policy",
+    )
+    return replace(
+        policy,
+        maximum_steps=maximum_calls,
+        maximum_tool_calls=maximum_calls,
+        maximum_calls_by_tool=per_tool,
+    )
 
 
 def load_bounded_finance_loop_policy(
@@ -594,6 +634,7 @@ def compile_finance_loop_messages(
     *,
     research_input: Mapping[str, Any],
     required_cell_ids: Sequence[str],
+    execution_budget: Mapping[str, int] | None = None,
 ) -> tuple[dict[str, str], ...]:
     cells = _selected_cells(research_input, required_cell_ids)
     visible = {
@@ -615,7 +656,10 @@ def compile_finance_loop_messages(
             for row in cells
         ],
         "workflow": [
-            "Read only the Evidence and NumericFacts needed for the current cell.",
+            (
+                "Before submitting each cell Judgment, call both the reviewed "
+                "Evidence reader and the NumericFact reader for that same cell."
+            ),
             "Submit an EvidenceRequest only for a material visible gap; it remains open in this run.",
             "Submit exactly one locally valid judgment per required cell.",
         ],
@@ -626,6 +670,28 @@ def compile_finance_loop_messages(
             "The harness renders identity, exact numbers, periods, units and citations.",
         ],
     }
+    if execution_budget is not None:
+        expected_budget = {
+            "maximum_steps",
+            "maximum_evidence_requests",
+            "maximum_reads_per_cell",
+            "maximum_judgments_per_cell",
+            "retry_count",
+        }
+        _require(
+            set(execution_budget) == expected_budget
+            and all(
+                isinstance(execution_budget[key], int)
+                for key in expected_budget
+            )
+            and execution_budget["maximum_steps"] >= 3 * len(cells)
+            and execution_budget["maximum_evidence_requests"] >= 0
+            and execution_budget["maximum_reads_per_cell"] == 1
+            and execution_budget["maximum_judgments_per_cell"] == 1
+            and execution_budget["retry_count"] == 0,
+            "finance_loop_visible_execution_budget_invalid",
+        )
+        visible["execution_budget"] = dict(execution_budget)
     return (
         {
             "role": "system",
@@ -893,6 +959,8 @@ def run_bounded_finance_loop(
     planning_policy: ResearchPlanningPolicy,
     tools: Sequence[Mapping[str, Any]],
     step_executor: ToolStepExecutor,
+    receipt_recorder: StepReceiptRecorder | None = None,
+    visible_execution_budget: Mapping[str, int] | None = None,
 ) -> BoundedFinanceLoopResult:
     """Run an exact bounded loop; no tool can create trusted financial truth."""
 
@@ -908,6 +976,7 @@ def run_bounded_finance_loop(
         for row in compile_finance_loop_messages(
             research_input=research_input,
             required_cell_ids=required_cell_ids,
+            execution_budget=visible_execution_budget,
         )
     ]
     counts: Counter[str] = Counter()
@@ -916,6 +985,8 @@ def run_bounded_finance_loop(
     proposed_requests: list[dict[str, Any]] = []
     judgments: dict[str, dict[str, Any]] = {}
     receipts: list[dict[str, Any]] = []
+    evidence_reads: set[str] = set()
+    numeric_reads: set[str] = set()
     provider_id = ""
     model = ""
 
@@ -968,6 +1039,10 @@ def run_bounded_finance_loop(
                     cell=cell,
                 )
             )
+            if name == READ_REVIEWED_EVIDENCE_TOOL:
+                evidence_reads.add(str(arguments["cell_id"]))
+            else:
+                numeric_reads.add(str(arguments["cell_id"]))
             progress = not duplicate
         elif name == SUBMIT_EVIDENCE_REQUEST_TOOL:
             cell_id = str(arguments.get("cell_id") or "")
@@ -998,6 +1073,10 @@ def run_bounded_finance_loop(
             _require(
                 cell_id in cell_by_id and cell_id not in judgments,
                 "finance_loop_judgment_cell_invalid_or_duplicate",
+            )
+            _require(
+                cell_id in evidence_reads and cell_id in numeric_reads,
+                "finance_loop_required_cell_reads_incomplete",
             )
             normalized = deepcopy(arguments)
             threshold = normalized.get("what_would_change", {}).get(
@@ -1031,15 +1110,16 @@ def run_bounded_finance_loop(
             no_progress < policy.maximum_no_progress_steps,
             "finance_loop_no_progress_stop",
         )
-        receipts.append(
-            _receipt(
-                step=step,
-                step_index=step_index,
-                tool_name=name,
-                tool_call_id=call_id,
-                tool_result=tool_result,
-            )
+        receipt = _receipt(
+            step=step,
+            step_index=step_index,
+            tool_name=name,
+            tool_call_id=call_id,
+            tool_result=tool_result,
         )
+        receipts.append(receipt)
+        if receipt_recorder is not None:
+            receipt_recorder(deepcopy(receipt))
         messages.append(step.continuation_assistant_message())
         messages.append(
             {
@@ -1089,6 +1169,7 @@ __all__ = [
     "compile_finance_loop_tools",
     "load_bounded_finance_loop_policy",
     "run_bounded_finance_loop",
+    "scope_bounded_finance_loop_policy",
     "validate_deepseek_ga_profile",
     "validate_deepseek_ga_json_profile",
 ]

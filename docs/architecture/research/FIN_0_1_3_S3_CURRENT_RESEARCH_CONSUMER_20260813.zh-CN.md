@@ -174,3 +174,11 @@ JSON Judgment 使用四条本 cell reviewed Evidence，明确区分 support／li
 strict Beta 在 R2 中没有取得 HTTP 业务响应，capture 只记录 `URLError`／status 0。由于 schema adherence 与内容均未被观察，项目既不能宣布 strict 不遵循，也不为可选 Beta 通道自动做第三轮 paired。JSON control 可作为非工具最终提交对照；本地 validator 和确定性 renderer 继续拥有最终权威。
 
 完整五单元实际依赖标准 API Tool Calls，因此传输选择还差一个小而必要的资格门：使用 versioned 16,000-token 标准 profile，只运行 DELL `value_capture` 单 cell 四工具循环；必须至少真实读取 reviewed Evidence 与 NumericFact，EvidenceRequest 仍只记录提案，最终 Judgment 仍由 v1.1 本地合同校验。该门通过后才执行五单元；这不是新产品版本，也不是重开 strict paired。
+
+### 11.1 标准 Tool Calls live successor
+
+当前永久 canary runner 增加 provider-neutral bounded-loop authority 分支，没有按 R3/R4 新造 attempt runner。核心四工具仍只有 `bounded_finance_loop.py` 一份实现；runner 只负责 Git/authority 绑定、current input 编译、exact-once Provider step、capture、receipt 和 terminal materialization。单 cell authority 被硬绑定为 DELL `value_capture`，预算收窄为最多 6 step：Evidence read 1、NumericFact read 1、EvidenceRequest proposal 最多 3、Judgment 1。每个 cell 在提交 Judgment 前必须真实完成两类 read；该顺序和本次预算同时对模型可见，不能用直接提交答案伪装成 Agentic Research。
+
+成功的每一步立即保存 receipt；中途 Provider 或本地校验失败时，公开 terminal 保留成功前缀、失败 phase/code、capture ref 和实际调用数，0 retry、0 fallback。完整 Judgment、工具返回和 provider step 存在受限 private result，公开结果不把未验收内容晋升为产品事实。standard profile v1.1 使用正式标准地址与 16,000-token 上限；strict Beta 保持停放。
+
+同一 generic 分支未来可运行五 cell，但不能复用本次单 cell 决策：五 cell authority 必须绑定一份新的机器可读 scope decision，明确 `five_cell_live_authorized=true`，并且 cell 顺序必须等于当前 research input 的全部五单元。这阻止 runner 可复用性扩大当前权限。

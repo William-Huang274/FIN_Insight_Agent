@@ -87,6 +87,8 @@ Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提�
 
 旧综合 R1 与 GA paired R1 均已保存并停止。paired R2 的 JSON control 已证明 profile 容量修复有效，并提供一个 L1/L2 合格、节点内容 18/24 的自然 Judgment；strict Beta 只证明一次无 HTTP 响应的传输失败，不再作为当前主链依赖，也不自动签发第三次 paired。下一项是给标准四工具 profile 做同样的 versioned 16,000-token 容量修正，在干净提交上签发一次 DELL `value_capture` 单 cell tool-loop live，要求至少真实读取 reviewed Evidence 和 NumericFact，再由本地 validator 接受 Judgment。该 canary 通过后才允许一次 DELL 五单元 bounded loop；任何单节点分数都不能改写为完整八维报告通过、产品发布或 S3 acceptance。
 
+标准 Tool Calls successor 已在当前工作树实现但尚未取得 clean proof：现有唯一 canary runner 新增通用 bounded-loop authority；单 cell 限定 DELL `value_capture`、最多 6 step，强制先读 Evidence 和 NumericFact，再交 Judgment，并保存成功前缀/失败 terminal。五 cell 虽复用同一入口，但必须绑定新的显式五单元 scope decision，不能复用 R2。当前工程门为 259 tests、活动图 115 Python／8 frontend／10 Runtime resources、0 forbidden reference、secret scan 6,497 files／0 finding；下一步仍是提交推送、fresh zero-call successor，而不是直接宣称 live 通过。
+
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量
 

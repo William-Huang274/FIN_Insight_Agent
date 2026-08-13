@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`v1.1 clean zero-call engineering pass / historical R1 remains failed / GA four-tool loop implemented / clean loop proof pending`
+状态：`v1.1 clean zero-call engineering pass / historical R1 remains failed / GA four-tool loop clean zero-call pass / paired live pending`
 
 ## 1. 为什么需要这条链
 
@@ -143,8 +143,8 @@ DeepSeek 差异只存在于三个可替换 profile：标准四工具、JSON 对�
 
 1. v1.1 全量回放、mutation、全仓回归、active-baseline 和 secret scan：已完成。
 2. 干净远端提交上的 v1.1 zero-call authority 与 R3：已完成，R1 保持失败、successor 合同可执行。
-3. DeepSeek GA provider profiles、capture-first tool-step transport 与四个 typed tool：已在活动树实现，尚待干净提交复证。
-4. 在干净远端提交上执行 step/tool/no-progress/capture/跨 cell/数字权限/strict-schema 的独立零调用证明。
+3. DeepSeek GA provider profiles、capture-first tool-step transport 与四个 typed tool：已在干净远端提交 `ae86d8bc...` 上实现。
+4. 独立零调用 R1：已通过。单单元 4 step、五单元 15 step；两次 fresh process 结果等价；no-progress、unknown tool 和错 cell 判断均 fail closed；EvidenceRequest 后 gap 仍 open，0 retrieval／promotion／network／model／Provider。
 5. 单独签发 DELL 单单元 paired canary：`v1.1 JSON + thinking=max` 对 `strict final-tool + thinking=max`。
 6. 选择可靠传输后，再执行 DELL 五单元有界循环；调用次数由真实步骤决定，但受总 step、工具预算和无进展停止条件约束。
 7. 依次执行 L1、八维绝对内容质量、与 R1 同 Evidence Pack paired、qualified-human 验收。任何一项失败都留在 S3，不自动扩成下一产品版本。

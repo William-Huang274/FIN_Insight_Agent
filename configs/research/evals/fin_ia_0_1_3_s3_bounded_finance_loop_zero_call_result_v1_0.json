@@ -1,0 +1,44 @@
+{
+  "schema_version": "fin_ia_bounded_finance_loop_zero_call_result_v1_0",
+  "status": "zero_call_engineering_and_fresh_process_proof_pass",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_bounded_finance_loop_zero_call_authority_v1_0.json",
+  "authority_sha256": "6f136207d8c5d5f5ff342c65eda2089529b40381d0d8f597e452e75991fed25c",
+  "normalized_proof": {
+    "research_input_digest": "6505a58e68811e59e3471378bc0cf16174abef3021c3ae9900e46d5e99189b4c",
+    "single_cell_result_digest": "fa6377230757cfc5eb47d1580cdc509d785f89ac185c87dbe03cc541c8f52d26",
+    "five_cell_result_digest": "189e006955364dfad934507e257cf62bee52c2cc532ab150e956045360644b11",
+    "single_cell_steps": 4,
+    "five_cell_steps": 15,
+    "single_cell_initial_message_chars": 1050,
+    "strict_tool_schema_digest": "b93cd2a75a506add5c3050abfbfce279751efb06a7760b0384e72cc97c40ef44",
+    "standard_tool_schema_digest": "ec1e5fb40d2cdfda761da198af8e800e1649d316ce8dc87d4ae233cbec35790c",
+    "mutation_failure_codes": [
+      "finance_loop_no_progress_stop",
+      "finance_loop_tool_unknown",
+      "finance_loop_judgment_cell_invalid_or_duplicate"
+    ],
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0
+  },
+  "fresh_process_count": 2,
+  "fresh_process_results_byte_equivalent": true,
+  "single_cell_proposal_boundary": {
+    "gap_status": "open",
+    "retrieval_executed": false,
+    "candidate_promoted_to_evidence": false
+  },
+  "profile_qualification": {
+    "standard_ga_endpoint": "https://api.deepseek.com",
+    "strict_beta_endpoint": "https://api.deepseek.com/beta",
+    "thinking": {
+      "type": "enabled"
+    },
+    "reasoning_effort": "max",
+    "ineffective_sampling_parameters_present": [],
+    "strict_tool_live_provider_qualified": false
+  },
+  "known_boundary": "This proves provider-neutral loop behavior, local finance authority, DeepSeek GA profile shape, strict schema shape, no-progress stopping and fresh-process determinism only. It performs no provider call, does not prove natural judgment quality and does not authorize a live canary.",
+  "result_digest": "cba0f4bcdbb9fe37f61a2d49d8ed681087d59be39cc5f1e9dc5c82ff0811d022"
+}

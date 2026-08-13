@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S3_budget_contract_engineering_pass / S1C_saved_planner_input_audited / S1D_Dell_and_TSM_official_PDF_successors_promoted / runtime_registry_R11 / DELL_core_research_ready / S1_product_open / S3_consumer_v1_1_clean_zero_call_engineering_pass / natural_synthesis_R1_terminal_failed / GA_four_tool_loop_implemented_clean_proof_pending / product_iteration_not_closed`
+状态：`repository_baseline_complete / S3_budget_contract_engineering_pass / S1C_saved_planner_input_audited / S1D_Dell_and_TSM_official_PDF_successors_promoted / runtime_registry_R11 / DELL_core_research_ready / S1_product_open / S3_consumer_v1_1_clean_zero_call_engineering_pass / natural_synthesis_R1_terminal_failed / GA_four_tool_loop_clean_zero_call_pass / paired_live_pending / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -51,7 +51,7 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 18. **S2 三案有限依赖回归（已完成）**：Dell/TSM transcript 只作为叙事 Evidence，没有获得 NumericFact 权限；公司事实 mart 保持 1,319 observations、SQLite SHA-256 `d05b0cc8...c585`，没有因补源改变数值真值。
 19. **S3 当前 research consumer 纵切（v1.1 clean zero-call engineering pass）**：保留已经完成的 DELL Planner R1，不重复付费证明规划。当前活动树只有一份 provider-neutral `Evidence Pack + NumericFact → judgment/workpaper/report` consumer。v1.1 让 Harness 注入可信 envelope/gaps，明列枚举，以 cell-local card 阻断跨单元引用，并增加 `support/limit/context` Evidence use 与显式 inference authority。绑定干净远端提交的 R3 为 0 网络／模型／Provider，六类 mutation 全部 fail closed，旧 R1 继续被拒绝。模型负责引用选择、机制、反方、置信度与 WWC；本地控制面负责事实、身份、数值、日期、引用和结构。它是长期提交合同，不是 DeepSeek 专用补丁。
 20. **DELL 自然综合 Canary R1（terminal failed）**：Provider HTTP/finish reason/exact JSON 和 5/5 cells 成立，但模型遗漏本地 envelope，并自创未在 model-visible view 中列出的枚举；另有跨 cell ref、复合 Evidence 二元角色冲突和自由数量级表述。零调用内容审计还发现 AI→EPS/分部利润、AI→营运资金、上游扩产→Dell 瓶颈缓解等越界归因。R1 0 retry、0 fallback、0 发布，且永久保持失败；由于官方 GA 沿用相同模型名，不能事后把 R1 标为 Preview 或 GA。
-21. **DeepSeek GA Agent loop 资格路线（实现完成，干净复证待执行，尚未调用）**：活动树已经建立标准／JSON 对照／strict Beta 三个可替换 GA profile、capture-first tool-step transport，以及 reviewed Evidence、NumericFact、EvidenceRequest、Judgment 四工具循环。EvidenceRequest 仍只是提案，不能自行检索、关闭 gap 或把候选晋升为 Evidence；模型私有 reasoning 只用于同一运行的瞬时 tool continuation，不进入 capture 或金融事实。循环上限 24 step／24 calls、连续 2 次无进展停止，fake 五单元路径为 15 step，因此不再规定固定 9 次调用。下一门是绑定干净远端提交的独立零调用复证；strict final-tool 因仍属 Beta，只在复证后用 DELL 单研究单元 paired canary 独立资格验证。通过后才决定是否运行 DELL 五单元有界循环；不整体引入 developer-preview 官方 Harness。
+21. **DeepSeek GA Agent loop 资格路线（clean zero-call pass，尚未调用）**：干净提交 `ae86d8bc...` 已建立标准／JSON 对照／strict Beta 三个可替换 GA profile、capture-first tool-step transport，以及 reviewed Evidence、NumericFact、EvidenceRequest、Judgment 四工具循环。EvidenceRequest 仍只是提案，不能自行检索、关闭 gap 或把候选晋升为 Evidence；模型私有 reasoning 只用于同一运行的瞬时 tool continuation，不进入 capture 或金融事实。绑定该提交的零调用 R1 已通过：单单元 4 step、五单元 15 step，两次 fresh process 等价，EvidenceRequest 后 gap 仍 open，0 retrieval／promotion／network／model／Provider。下一门是 DELL 单研究单元 `v1.1 JSON` 对 `strict final-tool` paired canary；strict 仍是 Beta，只有真实 transport 和内容同时合格后才决定是否运行 DELL 五单元有界循环。
 22. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
 23. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 

@@ -27,6 +27,9 @@ from .reviewed_evidence_pack import canonical_digest
 
 
 BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION = (
+    "fin_ia_bounded_finance_agent_loop_policy_v1_1"
+)
+_LEGACY_BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION = (
     "fin_ia_bounded_finance_agent_loop_policy_v1_0"
 )
 BOUNDED_FINANCE_LOOP_RESULT_SCHEMA_VERSION = (
@@ -220,9 +223,13 @@ def load_bounded_finance_loop_policy(
         "authority",
     }
     _require(set(payload) == expected, "finance_loop_policy_fields_invalid")
+    schema_version = str(payload.get("schema_version") or "")
     _require(
-        payload.get("schema_version")
-        == BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION,
+        schema_version
+        in {
+            _LEGACY_BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION,
+            BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION,
+        },
         "finance_loop_policy_schema_invalid",
     )
     _require(
@@ -266,7 +273,12 @@ def load_bounded_finance_loop_policy(
         and 1 <= maximum_tool_calls <= 128
         and maximum_tool_calls <= sum(per_tool.values())
         and 1 <= maximum_no_progress <= 4
-        and maximum_parallel == 1
+        and maximum_parallel
+        == (
+            2
+            if schema_version == BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION
+            else 1
+        )
         and all(1 <= value <= 64 for value in per_tool.values()),
         "finance_loop_budgets_invalid",
     )
@@ -660,6 +672,10 @@ def compile_finance_loop_messages(
                 "Before submitting each cell Judgment, call both the reviewed "
                 "Evidence reader and the NumericFact reader for that same cell."
             ),
+            (
+                "Those two read-only calls may be issued together for the same "
+                "cell; never combine, duplicate or parallelize any other tools."
+            ),
             "Submit an EvidenceRequest only for a material visible gap; it remains open in this run.",
             "Submit exactly one locally valid judgment per required cell.",
         ],
@@ -675,6 +691,7 @@ def compile_finance_loop_messages(
             "maximum_steps",
             "maximum_evidence_requests",
             "maximum_reads_per_cell",
+            "maximum_parallel_read_tools",
             "maximum_judgments_per_cell",
             "retry_count",
         }
@@ -687,6 +704,7 @@ def compile_finance_loop_messages(
             and execution_budget["maximum_steps"] >= 3 * len(cells)
             and execution_budget["maximum_evidence_requests"] >= 0
             and execution_budget["maximum_reads_per_cell"] == 1
+            and execution_budget["maximum_parallel_read_tools"] == 2
             and execution_budget["maximum_judgments_per_cell"] == 1
             and execution_budget["retry_count"] == 0,
             "finance_loop_visible_execution_budget_invalid",
@@ -935,12 +953,14 @@ def _receipt(
     *,
     step: ChatCompletionToolStepResult,
     step_index: int,
+    receipt_sequence: int,
     tool_name: str,
     tool_call_id: str,
     tool_result: Mapping[str, Any],
 ) -> dict[str, Any]:
     return {
         "step_index": step_index,
+        "receipt_sequence": receipt_sequence,
         "tool_name": tool_name,
         "tool_call_id": tool_call_id,
         "tool_result_digest": canonical_digest(tool_result),
@@ -982,6 +1002,7 @@ def run_bounded_finance_loop(
     counts: Counter[str] = Counter()
     no_progress = 0
     seen_calls: set[str] = set()
+    seen_call_ids: set[str] = set()
     proposed_requests: list[dict[str, Any]] = []
     judgments: dict[str, dict[str, Any]] = {}
     receipts: list[dict[str, Any]] = []
@@ -999,135 +1020,199 @@ def run_bounded_finance_loop(
             "finance_loop_parallel_tool_calls_exceeded",
         )
         _require(
-            len(step.tool_calls) == 1,
-            "finance_loop_step_without_single_tool_call",
+            bool(step.tool_calls),
+            "finance_loop_step_without_tool_call",
         )
-        call = step.tool_calls[0]
-        name = str(call["function"]["name"])
-        call_id = str(call["id"])
-        _require(name in expected_tools, "finance_loop_tool_unknown")
-        arguments = _parse_json_object(
-            str(call["function"]["arguments"]),
-            "finance_loop_tool_arguments_invalid_json",
-        )
-        signature = canonical_digest({"name": name, "arguments": arguments})
-        counts[name] += 1
+        parsed_calls: list[
+            tuple[Mapping[str, Any], str, str, dict[str, Any], str, bool]
+        ] = []
+        batch_names: list[str] = []
+        batch_ids: list[str] = []
+        for call in step.tool_calls:
+            name = str(call["function"]["name"])
+            call_id = str(call["id"])
+            _require(name in expected_tools, "finance_loop_tool_unknown")
+            _require(
+                bool(call_id)
+                and call_id not in seen_call_ids
+                and call_id not in batch_ids,
+                "finance_loop_tool_call_id_duplicate",
+            )
+            arguments = _parse_json_object(
+                str(call["function"]["arguments"]),
+                "finance_loop_tool_arguments_invalid_json",
+            )
+            signature = canonical_digest(
+                {"name": name, "arguments": arguments}
+            )
+            parsed_calls.append(
+                (
+                    call,
+                    name,
+                    call_id,
+                    arguments,
+                    signature,
+                    signature in seen_calls,
+                )
+            )
+            batch_names.append(name)
+            batch_ids.append(call_id)
+
+        if len(parsed_calls) == 2:
+            _require(
+                set(batch_names)
+                == {READ_REVIEWED_EVIDENCE_TOOL, READ_NUMERIC_FACTS_TOOL},
+                "finance_loop_parallel_tool_set_invalid",
+            )
+            read_cells = []
+            for _, _, _, arguments, _, _ in parsed_calls:
+                _require(
+                    set(arguments) == {"cell_id"}
+                    and str(arguments.get("cell_id")) in cell_by_id,
+                    "finance_loop_read_scope_invalid",
+                )
+                read_cells.append(str(arguments["cell_id"]))
+            _require(
+                len(set(read_cells)) == 1,
+                "finance_loop_parallel_read_cell_mismatch",
+            )
+
+        batch_counts = Counter(batch_names)
         _require(
-            sum(counts.values()) <= policy.maximum_tool_calls
-            and counts[name] <= policy.maximum_calls_by_tool[name],
+            sum(counts.values()) + len(parsed_calls)
+            <= policy.maximum_tool_calls
+            and all(
+                counts[name] + increment
+                <= policy.maximum_calls_by_tool[name]
+                for name, increment in batch_counts.items()
+            ),
             "finance_loop_tool_budget_exceeded",
         )
-        duplicate = signature in seen_calls
-        seen_calls.add(signature)
-        progress = False
+        counts.update(batch_counts)
+        seen_call_ids.update(batch_ids)
+        step_progress = False
+        tool_messages: list[dict[str, Any]] = []
 
-        if name in {READ_REVIEWED_EVIDENCE_TOOL, READ_NUMERIC_FACTS_TOOL}:
-            _require(
-                set(arguments) == {"cell_id"}
-                and str(arguments.get("cell_id")) in cell_by_id,
-                "finance_loop_read_scope_invalid",
-            )
-            cell = cell_by_id[str(arguments["cell_id"])]
-            tool_result = (
-                _evidence_tool_result(
-                    research_input=research_input,
-                    cell=cell,
-                )
-                if name == READ_REVIEWED_EVIDENCE_TOOL
-                else _numeric_tool_result(
-                    research_input=research_input,
-                    cell=cell,
-                )
-            )
-            if name == READ_REVIEWED_EVIDENCE_TOOL:
-                evidence_reads.add(str(arguments["cell_id"]))
-            else:
-                numeric_reads.add(str(arguments["cell_id"]))
-            progress = not duplicate
-        elif name == SUBMIT_EVIDENCE_REQUEST_TOOL:
-            cell_id = str(arguments.get("cell_id") or "")
-            _require(
-                cell_id in cell_by_id,
-                "finance_loop_evidence_request_cell_invalid",
-            )
-            tool_result = _compile_proposed_evidence_request(
-                arguments=arguments,
-                research_input=research_input,
-                cell=cell_by_id[cell_id],
-                policy=policy,
-                kernel=kernel,
-                route_policy=route_policy,
-                planning_policy=planning_policy,
-            )
-            proposal_digest = canonical_digest(
-                tool_result["compiled_evidence_request"]
-            )
-            if proposal_digest not in {
-                canonical_digest(row["compiled_evidence_request"])
-                for row in proposed_requests
+        for _, name, call_id, arguments, signature, duplicate in parsed_calls:
+            seen_calls.add(signature)
+            progress = False
+
+            if name in {
+                READ_REVIEWED_EVIDENCE_TOOL,
+                READ_NUMERIC_FACTS_TOOL,
             }:
-                proposed_requests.append(tool_result)
-                progress = True
-        else:
-            cell_id = str(arguments.get("cell_id") or "")
-            _require(
-                cell_id in cell_by_id and cell_id not in judgments,
-                "finance_loop_judgment_cell_invalid_or_duplicate",
-            )
-            _require(
-                cell_id in evidence_reads and cell_id in numeric_reads,
-                "finance_loop_required_cell_reads_incomplete",
-            )
-            normalized = deepcopy(arguments)
-            threshold = normalized.get("what_would_change", {}).get(
-                "threshold_numeric_ref"
-            )
-            if threshold == "":
-                normalized["what_would_change"]["threshold_numeric_ref"] = None
-            try:
-                validated = validate_current_research_output(
-                    {"cells": [normalized]},
-                    research_input=research_input,
-                    required_cell_ids=[cell_id],
+                _require(
+                    set(arguments) == {"cell_id"}
+                    and str(arguments.get("cell_id")) in cell_by_id,
+                    "finance_loop_read_scope_invalid",
                 )
-            except CurrentResearchConsumerError as exc:
-                raise BoundedFinanceLoopError(
-                    f"finance_loop_judgment_invalid:{exc.code}"
-                ) from exc
-            judgments[cell_id] = normalized
-            tool_result = {
-                "status": "judgment_accepted_by_local_validator",
-                "cell_id": cell_id,
-                "judgment_output_digest": validated[
-                    "judgment_output_digest"
-                ],
-                "harness_rendered_identity_numeric_and_citations": True,
-            }
-            progress = True
+                cell = cell_by_id[str(arguments["cell_id"])]
+                tool_result = (
+                    _evidence_tool_result(
+                        research_input=research_input,
+                        cell=cell,
+                    )
+                    if name == READ_REVIEWED_EVIDENCE_TOOL
+                    else _numeric_tool_result(
+                        research_input=research_input,
+                        cell=cell,
+                    )
+                )
+                if name == READ_REVIEWED_EVIDENCE_TOOL:
+                    evidence_reads.add(str(arguments["cell_id"]))
+                else:
+                    numeric_reads.add(str(arguments["cell_id"]))
+                progress = not duplicate
+            elif name == SUBMIT_EVIDENCE_REQUEST_TOOL:
+                cell_id = str(arguments.get("cell_id") or "")
+                _require(
+                    cell_id in cell_by_id,
+                    "finance_loop_evidence_request_cell_invalid",
+                )
+                tool_result = _compile_proposed_evidence_request(
+                    arguments=arguments,
+                    research_input=research_input,
+                    cell=cell_by_id[cell_id],
+                    policy=policy,
+                    kernel=kernel,
+                    route_policy=route_policy,
+                    planning_policy=planning_policy,
+                )
+                proposal_digest = canonical_digest(
+                    tool_result["compiled_evidence_request"]
+                )
+                if proposal_digest not in {
+                    canonical_digest(row["compiled_evidence_request"])
+                    for row in proposed_requests
+                }:
+                    proposed_requests.append(tool_result)
+                    progress = True
+            else:
+                cell_id = str(arguments.get("cell_id") or "")
+                _require(
+                    cell_id in cell_by_id and cell_id not in judgments,
+                    "finance_loop_judgment_cell_invalid_or_duplicate",
+                )
+                _require(
+                    cell_id in evidence_reads and cell_id in numeric_reads,
+                    "finance_loop_required_cell_reads_incomplete",
+                )
+                normalized = deepcopy(arguments)
+                threshold = normalized.get("what_would_change", {}).get(
+                    "threshold_numeric_ref"
+                )
+                if threshold == "":
+                    normalized["what_would_change"][
+                        "threshold_numeric_ref"
+                    ] = None
+                try:
+                    validated = validate_current_research_output(
+                        {"cells": [normalized]},
+                        research_input=research_input,
+                        required_cell_ids=[cell_id],
+                    )
+                except CurrentResearchConsumerError as exc:
+                    raise BoundedFinanceLoopError(
+                        f"finance_loop_judgment_invalid:{exc.code}"
+                    ) from exc
+                judgments[cell_id] = normalized
+                tool_result = {
+                    "status": "judgment_accepted_by_local_validator",
+                    "cell_id": cell_id,
+                    "judgment_output_digest": validated[
+                        "judgment_output_digest"
+                    ],
+                    "harness_rendered_identity_numeric_and_citations": True,
+                }
+                progress = True
 
-        no_progress = 0 if progress else no_progress + 1
+            step_progress = step_progress or progress
+            receipt = _receipt(
+                step=step,
+                step_index=step_index,
+                receipt_sequence=len(receipts) + 1,
+                tool_name=name,
+                tool_call_id=call_id,
+                tool_result=tool_result,
+            )
+            receipts.append(receipt)
+            if receipt_recorder is not None:
+                receipt_recorder(deepcopy(receipt))
+            tool_messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": call_id,
+                    "content": _json_message(tool_result),
+                }
+            )
+
+        no_progress = 0 if step_progress else no_progress + 1
         _require(
             no_progress < policy.maximum_no_progress_steps,
             "finance_loop_no_progress_stop",
         )
-        receipt = _receipt(
-            step=step,
-            step_index=step_index,
-            tool_name=name,
-            tool_call_id=call_id,
-            tool_result=tool_result,
-        )
-        receipts.append(receipt)
-        if receipt_recorder is not None:
-            receipt_recorder(deepcopy(receipt))
         messages.append(step.continuation_assistant_message())
-        messages.append(
-            {
-                "role": "tool",
-                "tool_call_id": call_id,
-                "content": _json_message(tool_result),
-            }
-        )
+        messages.extend(tool_messages)
         if set(judgments) == set(cell_by_id):
             ordered = [judgments[cell_id] for cell_id in required_cell_ids]
             judgment_output = {"cells": ordered}

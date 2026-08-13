@@ -347,15 +347,28 @@ def _normalize_tool_call(
     value: object,
     *,
     code: str,
+    capture_ref: str = "",
 ) -> dict[str, Any]:
-    _require(isinstance(value, Mapping), code)
+    _require(isinstance(value, Mapping), code, capture_ref=capture_ref)
     assert isinstance(value, Mapping)
     function = value.get("function")
+    allowed_fields = {"id", "type", "function"}
+    if "index" in value:
+        index = value.get("index")
+        _require(
+            isinstance(index, int)
+            and not isinstance(index, bool)
+            and 0 <= index <= 1_000_000,
+            "model_gateway_tool_call_index_invalid",
+            capture_ref=capture_ref,
+        )
+        allowed_fields.add("index")
     _require(
-        set(value) == {"id", "type", "function"}
+        set(value) == allowed_fields
         and value.get("type") == "function"
         and isinstance(function, Mapping),
         code,
+        capture_ref=capture_ref,
     )
     assert isinstance(function, Mapping)
     name = str(function.get("name") or "").strip()
@@ -366,12 +379,58 @@ def _normalize_tool_call(
         and bool(arguments)
         and bool(str(value.get("id") or "").strip()),
         code,
+        capture_ref=capture_ref,
     )
     return {
         "id": str(value["id"]),
         "type": "function",
         "function": {"name": name, "arguments": arguments},
     }
+
+
+def normalize_chat_completion_tool_calls(
+    value: object,
+    *,
+    code: str = "model_gateway_tool_calls_invalid",
+    call_code: str = "model_gateway_tool_call_invalid",
+    capture_ref: str = "",
+) -> tuple[dict[str, Any], ...]:
+    """Normalize one non-stream tool-call array into the provider-neutral form.
+
+    OpenAI-compatible providers may attach a positional ``index`` to each
+    tool call.  It is a wire-order field, not financial or tool authority, so
+    this boundary validates a complete zero-based sequence and strips it.
+    Unknown fields still fail closed.
+    """
+
+    _require(isinstance(value, list), code, capture_ref=capture_ref)
+    assert isinstance(value, list)
+    present = [
+        isinstance(row, Mapping) and "index" in row for row in value
+    ]
+    _require(
+        not any(present) or all(present),
+        "model_gateway_tool_call_index_invalid",
+        capture_ref=capture_ref,
+    )
+    if present and all(present):
+        indexes = [
+            row.get("index") if isinstance(row, Mapping) else None
+            for row in value
+        ]
+        _require(
+            indexes == list(range(len(value))),
+            "model_gateway_tool_call_index_invalid",
+            capture_ref=capture_ref,
+        )
+    return tuple(
+        _normalize_tool_call(
+            row,
+            code=call_code,
+            capture_ref=capture_ref,
+        )
+        for row in value
+    )
 
 
 def _normalize_tool_loop_messages(
@@ -404,13 +463,13 @@ def _normalize_tool_loop_messages(
                 isinstance(raw_calls, list),
                 "model_gateway_messages_invalid",
             )
-            calls = [
-                _normalize_tool_call(
-                    value,
-                    code="model_gateway_message_tool_call_invalid",
+            calls = list(
+                normalize_chat_completion_tool_calls(
+                    raw_calls,
+                    code="model_gateway_messages_invalid",
+                    call_code="model_gateway_message_tool_call_invalid",
                 )
-                for value in raw_calls
-            ]
+            )
             _require(
                 bool(content or calls),
                 "model_gateway_messages_invalid",
@@ -997,12 +1056,9 @@ def execute_chat_completion_tool_step_exact_once(
         "model_gateway_tool_calls_invalid",
         capture_ref=capture_ref,
     )
-    tool_calls = tuple(
-        _normalize_tool_call(
-            row,
-            code="model_gateway_tool_call_invalid",
-        )
-        for row in raw_calls
+    tool_calls = normalize_chat_completion_tool_calls(
+        raw_calls,
+        capture_ref=capture_ref,
     )
     if not content.strip() and not tool_calls:
         raise ModelGatewayError(
@@ -1093,4 +1149,5 @@ __all__ = [
     "execute_chat_completion_exact_once",
     "execute_chat_completion_tool_step_exact_once",
     "load_chat_completion_profile",
+    "normalize_chat_completion_tool_calls",
 ]

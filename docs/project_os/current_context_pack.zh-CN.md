@@ -87,7 +87,7 @@ Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提�
 
 旧综合 R1 与 GA paired R1 均已保存并停止。paired R2 的 JSON control 已证明 profile 容量修复有效，并提供一个 L1/L2 合格、节点内容 18/24 的自然 Judgment；strict Beta 只证明一次无 HTTP 响应的传输失败，不再作为当前主链依赖。标准四工具 single-cell R1 已执行：模型选择了正确的两个 mandatory read，但被项目 wire 归一化和单工具策略拦截。下一项是保留 R1、实现精确的 `index` 兼容和唯一安全并行 read pair、修复 terminal capture ref，再做干净零调用 successor；通过后只允许一个新的 DELL `value_capture` single-cell live。该 replacement 取得有效 Judgment并完成节点评估后，才可另行决定 DELL 五单元 bounded loop；任何单节点分数都不能改写为完整八维报告通过、产品发布或 S3 acceptance。
 
-标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证：现有唯一 canary runner 新增通用 bounded-loop authority；单 cell 限定 DELL `value_capture`、最多 6 step，强制先读 Evidence 和 NumericFact，再交 Judgment，并保存成功前缀/失败 terminal。R2 使用 standard schema 与 16,000-token profile，单 cell fake 4 step、五 cell fake 15 step、两次 fresh process 等价，必读 mutation fail closed，0 网络／模型／Provider。五 cell 虽复用同一入口，但必须绑定新的显式五单元 scope decision，不能复用 paired R2。当前工程门为 259 tests、活动图 115 Python／8 frontend／10 Runtime resources、0 forbidden reference、secret scan 6,498 files／0 finding；下一步只允许签发一次 DELL `value_capture` standard Tool Calls live。
+历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证：单 cell 限定 DELL `value_capture`、最多 6 step，强制先读 Evidence 和 NumericFact，再交 Judgment，并保存成功前缀/失败 terminal；旧 fake 单 cell 4 step、五 cell 15 step。随后 R1 live 暴露 wire `index` 与安全并行缺口，因此旧 proof 不能授权 replacement。当前 v1.1 successor 要求 R1 capture replay、只读并行 3/10 step（仍为 4/15 tool calls）、非法并行 mutation、distinct receipt 和 capture ref 全部在新 clean proof 中成立；五 cell 仍必须绑定新 scope decision。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

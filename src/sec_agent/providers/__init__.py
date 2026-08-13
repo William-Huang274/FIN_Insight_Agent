@@ -8,6 +8,7 @@ from .chat_completions import (
     execute_chat_completion_exact_once,
     execute_chat_completion_tool_step_exact_once,
     load_chat_completion_profile,
+    normalize_chat_completion_tool_calls,
 )
 
 __all__ = [
@@ -18,4 +19,5 @@ __all__ = [
     "execute_chat_completion_exact_once",
     "execute_chat_completion_tool_step_exact_once",
     "load_chat_completion_profile",
+    "normalize_chat_completion_tool_calls",
 ]

@@ -31,7 +31,9 @@ from retrieval.contracts import load_financial_research_kernel  # noqa: E402
 from retrieval.route_compiler import load_query_object_fact_route_policy  # noqa: E402
 from sec_agent.providers import (  # noqa: E402
     ChatCompletionToolStepResult,
+    ModelGatewayError,
     load_chat_completion_profile,
+    normalize_chat_completion_tool_calls,
 )
 from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     BoundedFinanceLoopError,
@@ -293,6 +295,51 @@ def _step(index: int, name: str, arguments: Mapping[str, Any]):
     )
 
 
+def _parallel_read_step(index: int, cell_id: str):
+    return _parallel_step(
+        index,
+        [
+            (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+            (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
+        ],
+    )
+
+
+def _parallel_step(
+    index: int,
+    calls: Sequence[tuple[str, Mapping[str, Any]]],
+):
+    return ChatCompletionToolStepResult(
+        status="completed_exact_once_tool_step",
+        provider_id="zero_call_fixture_provider",
+        model="zero-call-fixture",
+        content="",
+        reasoning_content=f"private-not-persisted-{index}",
+        tool_calls=tuple(
+            {
+                "id": f"fixture-call-{index}-{offset}",
+                "type": "function",
+                "function": {
+                    "name": name,
+                    "arguments": json.dumps(arguments, ensure_ascii=False),
+                },
+            }
+            for offset, (name, arguments) in enumerate(calls)
+        ),
+        finish_reason="tool_calls",
+        usage={"total_tokens": 0},
+        request_capture_ref=f"zero-call/request-{index}.json",
+        response_capture_ref=f"zero-call/response-{index}.json",
+        request_digest=hashlib.sha256(
+            f"request-{index}".encode()
+        ).hexdigest(),
+        response_digest=hashlib.sha256(
+            f"response-{index}".encode()
+        ).hexdigest(),
+        private_reasoning_fields_redacted=1,
+    )
+
+
 def _fake_judgment(fake: Mapping[str, Any], cell_id: str) -> dict[str, Any]:
     return deepcopy(next(row for row in fake["cells"] if row["cell_id"] == cell_id))
 
@@ -333,8 +380,6 @@ def _run_fake_matrix(
         if row["cell_id"] == single_id
     )
     single_sequence = [
-        (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": single_id}),
-        (READ_NUMERIC_FACTS_TOOL, {"cell_id": single_id}),
         (
             SUBMIT_EVIDENCE_REQUEST_TOOL,
             {
@@ -356,13 +401,16 @@ def _run_fake_matrix(
         route_policy=route,
         planning_policy=planning,
         tools=single_standard_tools,
-        step_executor=lambda _messages, _tools, index: _step(
-            index, *single_sequence[index - 1]
+        step_executor=lambda _messages, _tools, index: (
+            _parallel_read_step(index, single_id)
+            if index == 1
+            else _step(index, *single_sequence[index - 2])
         ),
         visible_execution_budget={
             "maximum_steps": single_policy.maximum_steps,
             "maximum_evidence_requests": 3,
             "maximum_reads_per_cell": 1,
+            "maximum_parallel_read_tools": 2,
             "maximum_judgments_per_cell": 1,
             "retry_count": 0,
         },
@@ -374,15 +422,6 @@ def _run_fake_matrix(
         route_policy=route,
         strict=False,
     )
-    full_sequence = [
-        entry
-        for cell_id in cell_ids
-        for entry in (
-            (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
-            (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
-            (SUBMIT_RESEARCH_JUDGMENT_TOOL, _fake_judgment(fake, cell_id)),
-        )
-    ]
     full_policy = scope_bounded_finance_loop_policy(
         policy,
         cell_count=len(cell_ids),
@@ -396,13 +435,20 @@ def _run_fake_matrix(
         route_policy=route,
         planning_policy=planning,
         tools=standard_tools,
-        step_executor=lambda _messages, _tools, index: _step(
-            index, *full_sequence[index - 1]
+        step_executor=lambda _messages, _tools, index: (
+            _parallel_read_step(index, cell_ids[(index - 1) // 2])
+            if index % 2 == 1
+            else _step(
+                index,
+                SUBMIT_RESEARCH_JUDGMENT_TOOL,
+                _fake_judgment(fake, cell_ids[(index - 1) // 2]),
+            )
         ),
         visible_execution_budget={
             "maximum_steps": full_policy.maximum_steps,
             "maximum_evidence_requests": 9,
             "maximum_reads_per_cell": 1,
+            "maximum_parallel_read_tools": 2,
             "maximum_judgments_per_cell": 1,
             "retry_count": 0,
         },
@@ -418,6 +464,7 @@ def _run_fake_matrix(
                     "maximum_steps": single_policy.maximum_steps,
                     "maximum_evidence_requests": 3,
                     "maximum_reads_per_cell": 1,
+                    "maximum_parallel_read_tools": 2,
                     "maximum_judgments_per_cell": 1,
                     "retry_count": 0,
                 },
@@ -489,6 +536,7 @@ def _mutation_codes(
                     "maximum_steps": scoped_policy.maximum_steps,
                     "maximum_evidence_requests": 3,
                     "maximum_reads_per_cell": 1,
+                    "maximum_parallel_read_tools": 2,
                     "maximum_judgments_per_cell": 1,
                     "retry_count": 0,
                 },
@@ -499,7 +547,120 @@ def _mutation_codes(
             raise BoundedFinanceLoopProofError(
                 "finance_loop_proof_mutation_did_not_fail"
             )
+    parallel_mutations = [
+        (
+            [
+                (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+                (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+            ],
+            "finance_loop_parallel_tool_set_invalid",
+        ),
+        (
+            [
+                (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+                (
+                    SUBMIT_RESEARCH_JUDGMENT_TOOL,
+                    _fake_judgment(fake, cell_id),
+                ),
+            ],
+            "finance_loop_parallel_tool_set_invalid",
+        ),
+    ]
+    for calls, expected in parallel_mutations:
+        try:
+            run_bounded_finance_loop(
+                policy=scoped_policy,
+                research_input=research_input,
+                required_cell_ids=[cell_id],
+                kernel=kernel,
+                route_policy=route,
+                planning_policy=planning,
+                tools=tools,
+                step_executor=lambda _messages, _tools, index, rows=calls: (
+                    _parallel_step(index, rows)
+                ),
+                visible_execution_budget={
+                    "maximum_steps": scoped_policy.maximum_steps,
+                    "maximum_evidence_requests": 3,
+                    "maximum_reads_per_cell": 1,
+                    "maximum_parallel_read_tools": 2,
+                    "maximum_judgments_per_cell": 1,
+                    "retry_count": 0,
+                },
+            )
+        except BoundedFinanceLoopError as exc:
+            if exc.code != expected:
+                raise
+            codes.append(exc.code)
+        else:
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_proof_parallel_mutation_did_not_fail"
+            )
     return codes
+
+
+def _wire_index_replay(
+    capture: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    raw: object = [
+        {
+            "id": "call-evidence",
+            "index": 0,
+            "type": "function",
+            "function": {
+                "name": READ_REVIEWED_EVIDENCE_TOOL,
+                "arguments": '{"cell_id":"CELL::value_capture"}',
+            },
+        },
+        {
+            "id": "call-numeric",
+            "index": 1,
+            "type": "function",
+            "function": {
+                "name": READ_NUMERIC_FACTS_TOOL,
+                "arguments": '{"cell_id":"CELL::value_capture"}',
+            },
+        },
+    ]
+    source_sha256 = "portable_fixture"
+    if capture is not None:
+        try:
+            raw = capture["response_body"]["choices"][0]["message"][
+                "tool_calls"
+            ]
+            source_sha256 = str(capture["response_digest"])
+        except (KeyError, IndexError, TypeError) as exc:
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_proof_R1_capture_shape_invalid"
+            ) from exc
+    normalized = normalize_chat_completion_tool_calls(raw)
+    if any("index" in row for row in normalized):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_proof_wire_index_not_stripped"
+        )
+    mutation_codes = []
+    mutations = [
+        [{**raw[0], "index": -1}, raw[1]],
+        [raw[0], {key: value for key, value in raw[1].items() if key != "index"}],
+        [{**raw[0], "index": 1}, {**raw[1], "index": 0}],
+    ]
+    for mutation in mutations:
+        try:
+            normalize_chat_completion_tool_calls(mutation)
+        except ModelGatewayError as exc:
+            mutation_codes.append(exc.code)
+        else:
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_proof_wire_index_mutation_did_not_fail"
+            )
+    return {
+        "wire_tool_call_index_stripped": True,
+        "wire_replay_source_digest": source_sha256,
+        "normalized_tool_names": [
+            str(row["function"]["name"]) for row in normalized
+        ],
+        "wire_mutation_failure_codes": mutation_codes,
+    }
 
 
 def _fresh_process_probe(
@@ -583,12 +744,26 @@ def _execute(
         policy=policy,
         fake=fake,
     )
+    replay_capture = (
+        _json(paths["prior_standard_r1_response_capture_ref"])
+        if "prior_standard_r1_response_capture_ref" in paths
+        else None
+    )
+    wire_replay = _wire_index_replay(replay_capture)
     normalized = {
         "research_input_digest": research_input["research_input_digest"],
         "single_cell_result_digest": matrix["single_cell"]["result_digest"],
         "five_cell_result_digest": matrix["five_cell"]["result_digest"],
         "single_cell_steps": matrix["single_cell"]["step_count"],
         "five_cell_steps": matrix["five_cell"]["step_count"],
+        "single_cell_tool_calls": matrix["single_cell"]["tool_call_count"],
+        "five_cell_tool_calls": matrix["five_cell"]["tool_call_count"],
+        "safe_parallel_read_pair_pass": (
+            matrix["single_cell"]["step_count"] == 3
+            and matrix["single_cell"]["tool_call_count"] == 4
+            and matrix["five_cell"]["step_count"] == 10
+            and matrix["five_cell"]["tool_call_count"] == 15
+        ),
         "single_cell_initial_message_chars": matrix[
             "single_cell_initial_message_chars"
         ],
@@ -609,6 +784,7 @@ def _execute(
             policy=policy,
             fake=fake,
         ),
+        **wire_replay,
         "network_calls": 0,
         "model_calls": 0,
         "provider_calls": 0,

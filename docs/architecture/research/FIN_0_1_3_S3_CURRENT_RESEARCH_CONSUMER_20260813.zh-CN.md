@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`v1.1 clean zero-call engineering pass / historical R1 remains failed / GA four-tool loop clean zero-call pass / paired live pending`
+状态：`consumer_v1.1_clean_zero_call_pass / paired_R2_JSON_node_pass / standard_tool_R1_project_failure_preserved / safe_parallel_successor_working_tree_pass / clean_proof_pending`
 
 ## 1. 为什么需要这条链
 
@@ -123,7 +123,7 @@ FIN 采纳的官方约束：
 - `submit_evidence_request`：只提交新的补证提案并通过当前金融内核、route policy 和 planning policy 编译；它不执行检索、不晋升候选，也不会因为模型提了请求就关闭 gap；
 - `submit_research_judgment`：只提交判断原子、引用用途、推断权限、机制、反方和 WWC，再交给 v1.1 本地校验和确定性渲染。
 
-默认循环上限是 24 step／24 tool calls、同一时刻 1 个 tool call、连续 2 次无进展即停止；五个 cell 各最多读取一次 Evidence、一次 NumericFact并提交一次 Judgment，EvidenceRequest 总数最多 9。这里的 24 是安全上限，不是目标调用次数；fake 五单元证明路径只需要 15 step，单单元含补证提案的路径需要 4 step。
+默认循环上限是 24 step／24 tool calls、连续 2 次无进展即停止；五个 cell 各最多读取一次 Evidence、一次 NumericFact 并提交一次 Judgment，EvidenceRequest 总数最多 9。当前 v1.1 唯一允许的双工具 step 是同一 cell 的 Evidence read＋NumericFact read；其余工具仍为单调用。24 是安全上限，不是目标调用次数；旧 v1.0 fake 五单元为 15 step，v1.1 安全并行路径为 10 step／15 tool calls；含一条补证提案的单单元路径为 3 step／4 tool calls。
 
 工具 Schema 由当前 Research Input 生成 cell-local enum，所有 object 都是 closed schema。没有 NumericFact 或 gap 的单元使用不可匹配占位约束，而不是生成非法空 enum。模型若提交未知 cell/ref、跨 cell 引用、重复判断、非法指标/关系方向或未完成所有必需 cell，循环都 fail closed。
 
@@ -152,7 +152,7 @@ DeepSeek V4 thinking 集成说明标记 `tool_choice` 不兼容，因此 strict 
 1. v1.1 全量回放、mutation、全仓回归、active-baseline 和 secret scan：已完成。
 2. 干净远端提交上的 v1.1 zero-call authority 与 R3：已完成，R1 保持失败、successor 合同可执行。
 3. DeepSeek GA provider profiles、capture-first tool-step transport 与四个 typed tool：已在干净远端提交 `ae86d8bc...` 上实现。
-4. 独立零调用 R1：已通过。单单元 4 step、五单元 15 step；两次 fresh process 结果等价；no-progress、unknown tool 和错 cell 判断均 fail closed；EvidenceRequest 后 gap 仍 open，0 retrieval／promotion／network／model／Provider。
+4. 独立零调用 R1/R2：已通过。历史 v1.0 单单元 4 step、五单元 15 step；两次 fresh process 结果等价；no-progress、unknown tool 和错 cell 判断均 fail closed；EvidenceRequest 后 gap 仍 open，0 retrieval／promotion／network／model／Provider。R1 live 后发现的 v1.1 successor 将在新的 clean proof 中单独证明 3/10 step 与 4/15 tool-call 形状，不改写旧结果。
 5. 单独签发 DELL 单单元 paired canary：`v1.1 JSON + thinking=max` 对 `strict final-tool + thinking=max`。
 6. 选择可靠传输后，再执行 DELL 五单元有界循环；调用次数由真实步骤决定，但受总 step、工具预算和无进展停止条件约束。
 7. 依次执行 L1、八维绝对内容质量、与 R1 同 Evidence Pack paired、qualified-human 验收。任何一项失败都留在 S3，不自动扩成下一产品版本。

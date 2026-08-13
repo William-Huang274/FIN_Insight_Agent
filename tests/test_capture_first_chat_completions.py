@@ -12,6 +12,7 @@ from sec_agent.providers.chat_completions import (
     execute_chat_completion_exact_once,
     execute_chat_completion_tool_step_exact_once,
     load_chat_completion_profile,
+    normalize_chat_completion_tool_calls,
 )
 
 
@@ -190,6 +191,25 @@ def test_gateway_invalid_provider_shape_preserves_response_capture_ref(
     assert failure.value.capture_ref.endswith("provider_response.json")
     assert Path(failure.value.capture_ref).is_file()
 
+    with pytest.raises(
+        ModelGatewayError,
+        match="model_gateway_tool_call_invalid",
+    ):
+        normalize_chat_completion_tool_calls(
+            [
+                {
+                    "id": "call-extra",
+                    "index": 0,
+                    "type": "function",
+                    "unexpected": "must fail closed",
+                    "function": {
+                        "name": "read_reviewed_evidence_for_cell",
+                        "arguments": '{"cell_id":"CELL::value_capture"}',
+                    },
+                }
+            ]
+        )
+
 
 def test_gateway_classifies_reasoning_budget_exhaustion(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
@@ -348,6 +368,122 @@ def test_tool_step_preserves_reasoning_only_for_transient_continuation(
     assert json.loads(request_capture)[
         "transient_private_reasoning_fields_redacted"
     ] == 1
+
+
+def test_tool_step_strips_valid_wire_indexes_and_preserves_capture_on_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    def response(indexes: tuple[object, object]):
+        return _Response(
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": "Read both authoritative inputs.",
+                            "tool_calls": [
+                                {
+                                    "id": "call-evidence",
+                                    "index": indexes[0],
+                                    "type": "function",
+                                    "function": {
+                                        "name": "read_reviewed_evidence_for_cell",
+                                        "arguments": '{"cell_id":"CELL::value_capture"}',
+                                    },
+                                },
+                                {
+                                    "id": "call-numeric",
+                                    "index": indexes[1],
+                                    "type": "function",
+                                    "function": {
+                                        "name": "read_numeric_facts_for_cell",
+                                        "arguments": '{"cell_id":"CELL::value_capture"}',
+                                    },
+                                },
+                            ],
+                        },
+                        "finish_reason": "tool_calls",
+                    }
+                ],
+                "usage": {"total_tokens": 12},
+            }
+        )
+
+    profile = _profile(
+        request_defaults={
+            "max_tokens": 500,
+            "stream": False,
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+        }
+    )
+    tools = (
+        {
+            "type": "function",
+            "function": {
+                "name": "read_reviewed_evidence_for_cell",
+                "description": "Read evidence.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"cell_id": {"type": "string"}},
+                    "required": ["cell_id"],
+                    "additionalProperties": False,
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "read_numeric_facts_for_cell",
+                "description": "Read facts.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"cell_id": {"type": "string"}},
+                    "required": ["cell_id"],
+                    "additionalProperties": False,
+                },
+            },
+        },
+    )
+    monkeypatch.setenv("FIXTURE_PROVIDER_KEY", "fixture")
+    monkeypatch.setattr(
+        urllib.request,
+        "urlopen",
+        lambda *_args, **_kwargs: response((0, 1)),
+    )
+    result = execute_chat_completion_tool_step_exact_once(
+        profile=profile,
+        messages=({"role": "user", "content": "Read the cell."},),
+        tools=tools,
+        capture_root=tmp_path,
+        run_id="RUN::WIRE-INDEX-PASS",
+        attempt_id="STEP::1",
+    )
+    assert [row["function"]["name"] for row in result.tool_calls] == [
+        "read_reviewed_evidence_for_cell",
+        "read_numeric_facts_for_cell",
+    ]
+    assert all("index" not in row for row in result.tool_calls)
+
+    monkeypatch.setattr(
+        urllib.request,
+        "urlopen",
+        lambda *_args, **_kwargs: response((1, 0)),
+    )
+    with pytest.raises(
+        ModelGatewayError,
+        match="model_gateway_tool_call_index_invalid",
+    ) as failure:
+        execute_chat_completion_tool_step_exact_once(
+            profile=profile,
+            messages=({"role": "user", "content": "Read the cell."},),
+            tools=tools,
+            capture_root=tmp_path,
+            run_id="RUN::WIRE-INDEX-FAIL",
+            attempt_id="STEP::1",
+        )
+    assert failure.value.capture_ref.endswith("provider_response.json")
+    assert Path(failure.value.capture_ref).is_file()
 
 
 def test_tool_step_classifies_reasoning_budget_exhaustion(

@@ -1159,6 +1159,7 @@ def run_tool_loop(
         "maximum_steps": scoped_policy.maximum_steps,
         "maximum_evidence_requests": maximum_evidence_requests,
         "maximum_reads_per_cell": 1,
+        "maximum_parallel_read_tools": 2,
         "maximum_judgments_per_cell": 1,
         "retry_count": 0,
     }
@@ -1185,7 +1186,11 @@ def run_tool_loop(
         and normalized.get("research_input_digest")
         == research_input["research_input_digest"]
         and normalized.get("single_cell_maximum_steps") == 6
+        and normalized.get("safe_parallel_read_pair_pass") is True
+        and normalized.get("wire_tool_call_index_stripped") is True
         and normalized.get("standard_profile_max_tokens") == 16000
+        and "finance_loop_parallel_tool_set_invalid"
+        in normalized.get("mutation_failure_codes", [])
         and "finance_loop_required_cell_reads_incomplete"
         in normalized.get("mutation_failure_codes", [])
     ):
@@ -1195,11 +1200,27 @@ def run_tool_loop(
     prior_scope_decision = _json(paths["prior_scope_decision_ref"])
     single_scope_authorized = (
         len(cell_ids) == 1
-        and prior_scope_decision.get("status")
-        == "json_node_pass_strict_transport_unqualified_full_report_not_scored"
-        and prior_scope_decision.get("next_authorized_scope")
-        == "one_standard_API_four_tool_single_cell_live_on_the_same_DELL_value_capture_input_after_clean_implementation_and_authority"
-        and prior_scope_decision.get("five_cell_live_authorized") is False
+        and (
+            (
+                prior_scope_decision.get("status")
+                == "json_node_pass_strict_transport_unqualified_full_report_not_scored"
+                and prior_scope_decision.get("next_authorized_scope")
+                == "one_standard_API_four_tool_single_cell_live_on_the_same_DELL_value_capture_input_after_clean_implementation_and_authority"
+                and prior_scope_decision.get("five_cell_live_authorized") is False
+            )
+            or (
+                prior_scope_decision.get("status")
+                == "terminal_failed_project_wire_and_safe_parallel_read_compatibility"
+                and prior_scope_decision.get("replacement_boundary", {}).get(
+                    "replacement_single_cell_live_allowed_after_clean_proof"
+                )
+                is True
+                and prior_scope_decision.get("replacement_boundary", {}).get(
+                    "five_cell_live_authorized"
+                )
+                is False
+            )
+        )
     )
     five_scope_authorized = (
         len(cell_ids) == 5
@@ -1233,8 +1254,11 @@ def run_tool_loop(
     receipt_refs: list[str] = []
 
     def record_receipt(receipt: Mapping[str, Any]) -> None:
-        index = int(receipt["step_index"])
-        path = private_root / f"step-{index:02d}-receipt.json"
+        step_index = int(receipt["step_index"])
+        sequence = int(receipt["receipt_sequence"])
+        path = private_root / (
+            f"receipt-{sequence:02d}-step-{step_index:02d}.json"
+        )
         _write_new(path, receipt)
         receipt_refs.append(_relative(path))
 

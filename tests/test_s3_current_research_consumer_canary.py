@@ -31,7 +31,7 @@ from sec_agent.research.paired_submission import (  # noqa: E402
 
 SCRIPT = ROOT / "scripts/research/run_s3_current_research_consumer_canary.py"
 LOOP_POLICY = ROOT / (
-    "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_0.json"
+    "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_1.json"
 )
 CONSUMER_POLICY = ROOT / (
     "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_1.json"
@@ -150,6 +150,42 @@ def _tool_step(
     )
 
 
+def _parallel_tool_step(
+    index: int,
+    cell_id: str,
+    capture_root: Path,
+) -> ChatCompletionToolStepResult:
+    return ChatCompletionToolStepResult(
+        status="completed_exact_once_tool_step",
+        provider_id="fixture-provider",
+        model="fixture-model",
+        content="",
+        reasoning_content=f"transient-private-{index}",
+        tool_calls=tuple(
+            {
+                "id": f"call-{index}-{offset}",
+                "type": "function",
+                "function": {
+                    "name": name,
+                    "arguments": json.dumps(
+                        {"cell_id": cell_id}, ensure_ascii=False
+                    ),
+                },
+            }
+            for offset, name in enumerate(
+                (READ_REVIEWED_EVIDENCE_TOOL, READ_NUMERIC_FACTS_TOOL)
+            )
+        ),
+        finish_reason="tool_calls",
+        usage={"prompt_tokens": index, "completion_tokens": index + 1},
+        request_capture_ref=str(capture_root / f"request-{index}.json"),
+        response_capture_ref=str(capture_root / f"response-{index}.json"),
+        request_digest=str(index) * 64,
+        response_digest=str(index + 1) * 64,
+        private_reasoning_fields_redacted=1,
+    )
+
+
 def _prepare_tool_loop_test(
     runner,
     monkeypatch: pytest.MonkeyPatch,
@@ -165,8 +201,11 @@ def _prepare_tool_loop_test(
                 "normalized_proof": {
                     "research_input_digest": "pending",
                     "single_cell_maximum_steps": 6,
+                    "safe_parallel_read_pair_pass": True,
+                    "wire_tool_call_index_stripped": True,
                     "standard_profile_max_tokens": 16000,
                     "mutation_failure_codes": [
+                        "finance_loop_parallel_tool_set_invalid",
                         "finance_loop_required_cell_reads_incomplete"
                     ],
                 },
@@ -188,6 +227,7 @@ def _prepare_tool_loop_test(
             "maximum_steps": 6,
             "maximum_evidence_requests": 3,
             "maximum_reads_per_cell": 1,
+            "maximum_parallel_read_tools": 2,
             "maximum_judgments_per_cell": 1,
             "retry_count": 0,
         },
@@ -277,6 +317,51 @@ def test_standard_tool_loop_success_materializes_three_steps(
     )
     assert "transient-private" not in full
     assert (tmp_path / "public.json").is_file()
+
+
+def test_standard_tool_loop_parallel_reads_materialize_distinct_receipts(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    authority_path, _, _ = _prepare_tool_loop_test(
+        runner, monkeypatch, tmp_path
+    )
+    fake = json.loads(FAKE.read_text(encoding="utf-8"))
+    judgment = next(
+        row
+        for row in fake["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+
+    def executor(**kwargs):
+        index = int(str(kwargs["attempt_id"]).split("-")[-3])
+        if index == 1:
+            return _parallel_tool_step(
+                index, "CELL::value_capture", tmp_path / "capture"
+            )
+        return _tool_step(
+            index,
+            SUBMIT_RESEARCH_JUDGMENT_TOOL,
+            judgment,
+            tmp_path / "capture",
+        )
+
+    result = runner.run_tool_loop(authority_path, step_executor=executor)
+
+    assert result["status"] == "completed_contract_valid_content_assessment_pending"
+    assert result["execution"]["model_calls_attempted"] == 2
+    assert result["accepted_receipt_count"] == 3
+    assert result["provider_steps"][0]["tool_names"] == [
+        READ_REVIEWED_EVIDENCE_TOOL,
+        READ_NUMERIC_FACTS_TOOL,
+    ]
+    receipts = sorted((tmp_path / "private").glob("receipt-*.json"))
+    assert [path.name for path in receipts] == [
+        "receipt-01-step-01.json",
+        "receipt-02-step-01.json",
+        "receipt-03-step-02.json",
+    ]
 
 
 def test_standard_tool_loop_failure_preserves_successful_prefix_without_retry(

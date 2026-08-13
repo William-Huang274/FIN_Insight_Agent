@@ -46,7 +46,7 @@ from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
 READ = frozenset({"current_product:read"})
 POLICY = ROOT / (
-    "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_0.json"
+    "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_1.json"
 )
 CONSUMER_POLICY = ROOT / (
     "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_1.json"
@@ -165,6 +165,37 @@ def _step(
     )
 
 
+def _parallel_step(
+    index: int,
+    calls: list[tuple[str, dict[str, object]]],
+) -> ChatCompletionToolStepResult:
+    return ChatCompletionToolStepResult(
+        status="completed_exact_once_tool_step",
+        provider_id="fixture_provider",
+        model="fixture-model",
+        content="",
+        reasoning_content=f"private-step-{index}",
+        tool_calls=tuple(
+            {
+                "id": f"call-{index}-{offset}",
+                "type": "function",
+                "function": {
+                    "name": name,
+                    "arguments": json.dumps(arguments, ensure_ascii=False),
+                },
+            }
+            for offset, (name, arguments) in enumerate(calls)
+        ),
+        finish_reason="tool_calls",
+        usage={"total_tokens": index},
+        request_capture_ref=f"capture/request-{index}.json",
+        response_capture_ref=f"capture/response-{index}.json",
+        request_digest=f"request-{index}",
+        response_digest=f"response-{index}",
+        private_reasoning_fields_redacted=1,
+    )
+
+
 def _fake_judgment(cell_id: str) -> dict[str, object]:
     return deepcopy(
         next(row for row in _json(FAKE)["cells"] if row["cell_id"] == cell_id)
@@ -230,12 +261,34 @@ def test_tool_compiler_emits_four_closed_finance_schemas(contracts) -> None:
             "maximum_steps": 6,
             "maximum_evidence_requests": 3,
             "maximum_reads_per_cell": 1,
+            "maximum_parallel_read_tools": 2,
             "maximum_judgments_per_cell": 1,
             "retry_count": 0,
         },
     )
     assert '"maximum_steps":6' in budgeted[1]["content"]
     assert '"retry_count":0' in budgeted[1]["content"]
+
+
+def test_policy_version_preserves_legacy_single_call_replay() -> None:
+    current = load_bounded_finance_loop_policy(_json(POLICY))
+    legacy = load_bounded_finance_loop_policy(
+        _json(
+            ROOT
+            / "configs/research/"
+            "fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_0.json"
+        )
+    )
+    assert current.maximum_parallel_tool_calls == 2
+    assert legacy.maximum_parallel_tool_calls == 1
+
+    invalid = deepcopy(_json(POLICY))
+    invalid["budgets"]["maximum_parallel_tool_calls"] = 1
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_budgets_invalid",
+    ):
+        load_bounded_finance_loop_policy(invalid)
 
 
 def test_single_cell_fake_loop_reads_submits_gap_and_judgment(contracts) -> None:
@@ -386,6 +439,7 @@ def test_receipt_recorder_preserves_successful_prefix(contracts) -> None:
             "maximum_steps": 6,
             "maximum_evidence_requests": 3,
             "maximum_reads_per_cell": 1,
+            "maximum_parallel_read_tools": 2,
             "maximum_judgments_per_cell": 1,
             "retry_count": 0,
         },
@@ -393,6 +447,121 @@ def test_receipt_recorder_preserves_successful_prefix(contracts) -> None:
     assert result.step_count == 3
     assert [row["step_index"] for row in receipts] == [1, 2, 3]
     assert all(row["private_reasoning_persisted"] is False for row in receipts)
+
+
+def test_safe_parallel_read_pair_is_the_only_two_call_step(contracts) -> None:
+    policy, research_input, kernel, route, planning = contracts
+    cell_id = "CELL::value_capture"
+    scoped = scope_bounded_finance_loop_policy(
+        policy,
+        cell_count=1,
+        maximum_evidence_requests=3,
+    )
+    tools = compile_finance_loop_tools(
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        strict=False,
+    )
+    sequence = [
+        _parallel_step(
+            1,
+            [
+                (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+                (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
+            ],
+        ),
+        _step(2, SUBMIT_RESEARCH_JUDGMENT_TOOL, _fake_judgment(cell_id)),
+    ]
+    result = run_bounded_finance_loop(
+        policy=scoped,
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+        tools=tools,
+        step_executor=lambda _messages, _tools, step_index: sequence[
+            step_index - 1
+        ],
+    )
+    assert result.step_count == 2
+    assert result.tool_call_count == 3
+    assert [row["step_index"] for row in result.step_receipts] == [1, 1, 2]
+    assert [row["receipt_sequence"] for row in result.step_receipts] == [
+        1,
+        2,
+        3,
+    ]
+
+    forbidden = [
+        [
+            (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+            (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+        ],
+        [
+            (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
+            (
+                SUBMIT_RESEARCH_JUDGMENT_TOOL,
+                _fake_judgment(cell_id),
+            ),
+        ],
+    ]
+    for calls in forbidden:
+        with pytest.raises(
+            BoundedFinanceLoopError,
+            match="finance_loop_parallel_tool_set_invalid",
+        ):
+            run_bounded_finance_loop(
+                policy=scoped,
+                research_input=research_input,
+                required_cell_ids=[cell_id],
+                kernel=kernel,
+                route_policy=route,
+                planning_policy=planning,
+                tools=tools,
+                step_executor=lambda _messages, _tools, _step_index, rows=calls: (
+                    _parallel_step(1, rows)
+                ),
+            )
+
+    two_cells = ["CELL::demand_quality", "CELL::value_capture"]
+    two_cell_tools = compile_finance_loop_tools(
+        research_input=research_input,
+        required_cell_ids=two_cells,
+        kernel=kernel,
+        route_policy=route,
+        strict=False,
+    )
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_parallel_read_cell_mismatch",
+    ):
+        run_bounded_finance_loop(
+            policy=policy,
+            research_input=research_input,
+            required_cell_ids=two_cells,
+            kernel=kernel,
+            route_policy=route,
+            planning_policy=planning,
+            tools=two_cell_tools,
+            step_executor=lambda _messages, _tools, _step_index: (
+                _parallel_step(
+                    1,
+                    [
+                        (
+                            READ_REVIEWED_EVIDENCE_TOOL,
+                            {"cell_id": two_cells[0]},
+                        ),
+                        (
+                            READ_NUMERIC_FACTS_TOOL,
+                            {"cell_id": two_cells[1]},
+                        ),
+                    ],
+                )
+            ),
+        )
 
 
 def test_five_cell_fake_loop_uses_budgets_not_fixed_nine_calls(contracts) -> None:

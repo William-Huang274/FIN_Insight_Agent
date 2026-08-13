@@ -45,7 +45,7 @@ def test_live_runner_is_case_bound_and_has_exact_once_budget() -> None:
     assert '"external_retrieval_calls": 0' in source
     assert '"planner_calls": 0' in source
     assert '"current_product_pointer_mutations": 0' in source
-    assert runner.AUTHORITY_SCHEMA.endswith("_v1_0")
+    assert runner.AUTHORITY_SCHEMA.endswith("_v1_1")
 
 
 def test_terminal_summary_preserves_success_usage_and_no_product_claim(

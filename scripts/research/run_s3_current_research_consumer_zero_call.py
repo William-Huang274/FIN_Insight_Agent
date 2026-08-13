@@ -32,6 +32,7 @@ from sec_agent.research.current_consumer import (  # noqa: E402
     compile_current_research_deliverable,
     compile_current_research_input,
     compile_current_research_messages,
+    validate_current_research_output,
 )
 from sec_agent.research.reviewed_evidence_pack import (  # noqa: E402
     canonical_digest,
@@ -42,20 +43,10 @@ from sec_agent.runtime_resource_registry import (  # noqa: E402
 )
 
 
-AUTHORITY_SCHEMA_V1_0 = (
-    "fin_ia_current_research_consumer_zero_call_authority_v1_0"
+AUTHORITY_SCHEMA = (
+    "fin_ia_current_research_consumer_zero_call_authority_v1_2"
 )
-AUTHORITY_SCHEMA_V1_1 = (
-    "fin_ia_current_research_consumer_zero_call_authority_v1_1"
-)
-RESULT_SCHEMA_BY_AUTHORITY = {
-    AUTHORITY_SCHEMA_V1_0: (
-        "fin_ia_current_research_consumer_zero_call_result_v1_0"
-    ),
-    AUTHORITY_SCHEMA_V1_1: (
-        "fin_ia_current_research_consumer_zero_call_result_v1_1"
-    ),
-}
+RESULT_SCHEMA = "fin_ia_current_research_consumer_zero_call_result_v1_2"
 
 
 class CurrentResearchConsumerRunnerError(RuntimeError):
@@ -171,7 +162,7 @@ def validate_authority(
 ) -> tuple[dict[str, Path], str]:
     schema = str(payload.get("schema_version") or "")
     if not (
-        schema in RESULT_SCHEMA_BY_AUTHORITY
+        schema == AUTHORITY_SCHEMA
         and payload.get("status")
         == "fresh_zero_network_zero_model_current_consumer_proof_authorized"
     ):
@@ -200,7 +191,7 @@ def validate_authority(
         raise CurrentResearchConsumerRunnerError(
             "current_consumer_authority_budget_invalid"
         )
-    pairs = (
+    pairs = [
         ("consumer_policy_ref", "consumer_policy_sha256"),
         ("objective_ref", "objective_sha256"),
         ("planner_atoms_ref", "planner_atoms_sha256"),
@@ -208,6 +199,12 @@ def validate_authority(
         ("current_evidence_pack_result_ref", "current_evidence_pack_result_sha256"),
         ("runtime_registry_ref", "runtime_registry_sha256"),
         ("runner_ref", "runner_sha256"),
+    ]
+    pairs.extend(
+        [
+            ("failed_r1_payload_ref", "failed_r1_payload_sha256"),
+            ("failed_r1_audit_ref", "failed_r1_audit_sha256"),
+        ]
     )
     paths: dict[str, Path] = {}
     for ref_key, digest_key in pairs:
@@ -231,20 +228,15 @@ def validate_authority(
         raise CurrentResearchConsumerRunnerError(
             "current_consumer_exact_once_identity_consumed"
         )
-    if schema == AUTHORITY_SCHEMA_V1_1:
-        if authority_path is None:
-            raise CurrentResearchConsumerRunnerError(
-                "current_consumer_authority_path_required"
-            )
-        _validate_clean_implementation(
-            payload,
-            authority_path=authority_path,
-        )
-    elif "clean_implementation" in payload:
+    if authority_path is None:
         raise CurrentResearchConsumerRunnerError(
-            "current_consumer_v1_authority_unexpected_clean_binding"
+            "current_consumer_authority_path_required"
         )
-    return paths, RESULT_SCHEMA_BY_AUTHORITY[schema]
+    _validate_clean_implementation(
+        payload,
+        authority_path=authority_path,
+    )
+    return paths, RESULT_SCHEMA
 
 
 def _services() -> tuple[ResearchEvidencePackService, ResearchRetrievalService]:
@@ -294,21 +286,31 @@ def _mutation_codes(
 ) -> list[str]:
     cases = []
     unknown = deepcopy(dict(fake))
-    unknown["cells"][0]["supporting_evidence_refs"].append(
-        "EV::DOESNOTEXIST"
+    unknown["cells"][0]["evidence_uses"].append(
+        {"evidence_ref": "EV::DOESNOTEXIST", "use_role": "support"}
     )
     cases.append(unknown)
+    duplicate = deepcopy(dict(fake))
+    duplicate["cells"][0]["evidence_uses"].append(
+        deepcopy(duplicate["cells"][0]["evidence_uses"][0])
+    )
+    cases.append(duplicate)
+    invented_enum = deepcopy(dict(fake))
+    invented_enum["cells"][0]["judgment_status"] = "supported_with_caveats"
+    cases.append(invented_enum)
+    model_owned_gap = deepcopy(dict(fake))
+    model_owned_gap["cells"][2]["remaining_gap_refs"] = []
+    cases.append(model_owned_gap)
     free_number = deepcopy(dict(fake))
     free_number["cells"][0]["thesis_atom"] = (
         "戴尔订单增长达到两位数，因此需求已经完全确认。"
     )
     cases.append(free_number)
     cross_cell = deepcopy(dict(fake))
-    cross_cell["cells"][0]["numeric_refs"].append("NUM::ADC81E7A547FAB94")
+    cross_cell["cells"][0]["numeric_refs"].append(
+        "NUM::ADC81E7A547FAB94"
+    )
     cases.append(cross_cell)
-    missing_cell = deepcopy(dict(fake))
-    missing_cell["cells"].pop()
-    cases.append(missing_cell)
     output = []
     for mutation in cases:
         try:
@@ -323,6 +325,94 @@ def _mutation_codes(
                 "current_consumer_mutation_did_not_fail"
             )
     return output
+
+
+def _replay_failed_r1(
+    *,
+    research_input: Mapping[str, Any],
+    payload: Mapping[str, Any],
+    audit: Mapping[str, Any],
+) -> dict[str, Any]:
+    if not (
+        audit.get("schema_version")
+        == "fin_ia_current_research_consumer_r1_content_audit_v1_0"
+        and audit.get("status") == "rejected_not_salvageable"
+        and isinstance(audit.get("content_findings"), list)
+        and audit.get("failed_payload_canonical_digest")
+        == canonical_digest(payload)
+    ):
+        raise CurrentResearchConsumerRunnerError(
+            "current_consumer_failed_r1_audit_invalid"
+        )
+    cells = {
+        str(row.get("cell_id") or ""): row
+        for row in payload.get("cells") or ()
+        if isinstance(row, Mapping)
+    }
+    expected_codes = {
+        "demand_durability_overreach",
+        "ai_to_group_and_segment_profit_attribution_unproven",
+        "unbound_comparative_margin_and_leverage_claim",
+        "ai_working_capital_attribution_unproven",
+        "supply_easing_unproven",
+    }
+    observed_codes = set()
+    for finding in audit["content_findings"]:
+        if not isinstance(finding, Mapping):
+            raise CurrentResearchConsumerRunnerError(
+                "current_consumer_failed_r1_audit_invalid"
+            )
+        code = str(finding.get("finding_code") or "")
+        cell_id = str(finding.get("cell_id") or "")
+        field = str(finding.get("field") or "")
+        excerpt = str(finding.get("observed_excerpt") or "")
+        if (
+            code not in expected_codes
+            or cell_id not in cells
+            or field not in {"thesis_atom", "mechanism_atom", "counterargument_atom"}
+            or not excerpt
+            or excerpt not in str(cells[cell_id].get(field) or "")
+        ):
+            raise CurrentResearchConsumerRunnerError(
+                "current_consumer_failed_r1_audit_finding_unbound"
+            )
+        observed_codes.add(code)
+    if observed_codes != expected_codes:
+        raise CurrentResearchConsumerRunnerError(
+            "current_consumer_failed_r1_audit_incomplete"
+        )
+    try:
+        validate_current_research_output(
+            payload,
+            research_input=research_input,
+        )
+    except CurrentResearchConsumerError as exc:
+        rejection_code = exc.code
+    else:
+        raise CurrentResearchConsumerRunnerError(
+            "current_consumer_failed_r1_was_silently_accepted"
+        )
+    overlaps = {
+        cell_id: sorted(
+            set(row.get("supporting_evidence_refs") or ())
+            & set(row.get("counterevidence_refs") or ())
+        )
+        for cell_id, row in cells.items()
+    }
+    return {
+        "v1_1_rejection_code": rejection_code,
+        "invented_judgment_statuses": sorted(
+            {str(row.get("judgment_status") or "") for row in cells.values()}
+        ),
+        "invented_confidence_bases": sorted(
+            {str(row.get("confidence_basis") or "") for row in cells.values()}
+        ),
+        "dual_role_evidence_by_cell": {
+            key: value for key, value in overlaps.items() if value
+        },
+        "qualified_content_audit_finding_codes": sorted(observed_codes),
+        "automatic_salvage_or_publication": False,
+    }
 
 
 def run(authority_path: Path) -> dict[str, Any]:
@@ -353,9 +443,17 @@ def run(authority_path: Path) -> dict[str, Any]:
         research_input=research_input,
         judgment_output=fake,
     )
-    mutations = _mutation_codes(research_input=research_input, fake=fake)
+    mutations = _mutation_codes(
+        research_input=research_input,
+        fake=fake,
+    )
+    failed_r1_replay = _replay_failed_r1(
+        research_input=research_input,
+        payload=_json(paths["failed_r1_payload_ref"]),
+        audit=_json(paths["failed_r1_audit_ref"]),
+    )
     full_body = {
-        "schema_version": "fin_ia_current_research_consumer_zero_call_full_v1_0",
+        "schema_version": "fin_ia_current_research_consumer_zero_call_full_v1_1",
         "status": "completed_zero_network_zero_model_current_consumer_proof",
         "authority_ref": _relative(authority_path),
         "authority_sha256": _sha(authority_path),
@@ -366,6 +464,7 @@ def run(authority_path: Path) -> dict[str, Any]:
         "fake_judgment_output": fake,
         "structured_deliverable_preview": deliverable,
         "mutation_failure_codes": mutations,
+        "failed_r1_replay": failed_r1_replay,
         "known_boundary": str(authority["known_boundary"]),
     }
     full_digest = canonical_digest(full_body)
@@ -378,7 +477,7 @@ def run(authority_path: Path) -> dict[str, Any]:
     )
     summary_body = {
         "schema_version": result_schema,
-        "status": "engineering_pass_zero_call_current_consumer",
+        "status": "engineering_pass_zero_call_current_consumer_contract_successor",
         "recorded_at": "2026-08-13",
         "result_id": str(output["result_id"]),
         "authority_ref": _relative(authority_path),
@@ -416,6 +515,9 @@ def run(authority_path: Path) -> dict[str, Any]:
             ),
             "research_cell_count": len(research_input["cells"]),
             "mutation_failure_codes": mutations,
+            "failed_r1_model_visible_user_chars": 48380,
+            "successor_model_visible_user_chars": len(messages[1]["content"]),
+            "failed_r1_replay": failed_r1_replay,
             "network_calls": 0,
             "model_calls": 0,
             "provider_calls": 0,
@@ -428,15 +530,21 @@ def run(authority_path: Path) -> dict[str, Any]:
             "model_sees_exact_source_facts_and_numeric_facts": True,
             "model_free_numeric_prose_blocked": True,
             "unknown_and_cross_cell_refs_blocked": True,
+            "trusted_envelope_harness_injected": True,
+            "exact_model_visible_enums_exposed": True,
+            "typed_evidence_use_and_inference_authority": True,
+            "all_visible_residual_gaps_preserved": True,
+            "failed_r1_not_silently_salvaged": True,
             "harness_generated_research_conclusion": False,
             "fake_deliverable_published_to_product": False,
             "natural_model_quality_proven": False,
             "s3_product_acceptance": False,
         },
         "next_decision": (
-            "Decide whether the bounded one-call DeepSeek research synthesis "
-            "canary is worth fresh exact-once authority. Do not publish the fake "
-            "deliverable or claim S3 acceptance."
+            "Make a separate value-cost-risk decision before any replacement "
+            "DeepSeek call. If authorized later, test this changed synthesis "
+            "contract once; require deterministic L1, absolute content-quality, "
+            "paired and qualified-human review before any product publication."
         ),
         "known_boundary": str(authority["known_boundary"]),
     }
@@ -451,7 +559,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "--authority",
         default=(
             "configs/research/evals/"
-            "fin_ia_0_1_3_s3_dell_current_research_consumer_zero_call_authority_v1_0.json"
+            "fin_ia_0_1_3_s3_dell_current_research_consumer_zero_call_authority_v1_2.json"
         ),
     )
     args = parser.parse_args(argv)

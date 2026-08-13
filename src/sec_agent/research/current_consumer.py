@@ -9,14 +9,14 @@ from .reviewed_evidence_pack import canonical_digest
 
 
 CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION = (
-    "fin_ia_current_research_consumer_policy_v1_0"
+    "fin_ia_current_research_consumer_policy_v1_1"
 )
 CURRENT_RESEARCH_INPUT_SCHEMA_VERSION = "fin_ia_current_research_input_v1_0"
 CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION = (
-    "fin_ia_current_research_judgment_output_v1_0"
+    "fin_ia_current_research_judgment_payload_v1_1"
 )
 CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION = (
-    "fin_ia_current_research_deliverable_v1_0"
+    "fin_ia_current_research_deliverable_v1_1"
 )
 
 _AUTHORITY = {
@@ -241,8 +241,15 @@ def load_current_research_consumer_policy(
         "research_consumer_model_output_policy_invalid",
     )
     output_fields = {
+        "payload_schema_version",
+        "model_owned_top_level_fields",
+        "model_owned_cell_fields",
+        "harness_injected_envelope_fields",
+        "harness_injected_cell_fields",
         "allowed_judgment_statuses",
         "allowed_confidence_bases",
+        "allowed_evidence_use_roles",
+        "allowed_inference_authorities",
         "allowed_wwc_directions",
         "maximum_atom_chars",
         "maximum_wwc_observable_chars",
@@ -267,9 +274,55 @@ def load_current_research_consumer_policy(
         output.get("allowed_wwc_directions"),
         "research_consumer_wwc_directions_invalid",
     )
+    evidence_use_roles = _unique_strings(
+        output.get("allowed_evidence_use_roles"),
+        "research_consumer_evidence_use_roles_invalid",
+    )
+    inference_authorities = _unique_strings(
+        output.get("allowed_inference_authorities"),
+        "research_consumer_inference_authorities_invalid",
+    )
+    model_top_fields = _unique_strings(
+        output.get("model_owned_top_level_fields"),
+        "research_consumer_model_top_fields_invalid",
+    )
+    model_cell_fields = _unique_strings(
+        output.get("model_owned_cell_fields"),
+        "research_consumer_model_cell_fields_invalid",
+    )
+    harness_envelope_fields = _unique_strings(
+        output.get("harness_injected_envelope_fields"),
+        "research_consumer_harness_envelope_fields_invalid",
+    )
+    harness_cell_fields = _unique_strings(
+        output.get("harness_injected_cell_fields"),
+        "research_consumer_harness_cell_fields_invalid",
+    )
     _require(
-        set(statuses)
+        output.get("payload_schema_version")
+        == CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION
+        and set(model_top_fields) == {"cells"}
+        and set(model_cell_fields)
+        == {
+            "cell_id",
+            "judgment_status",
+            "confidence_basis",
+            "inference_authority",
+            "evidence_uses",
+            "numeric_refs",
+            "thesis_atom",
+            "mechanism_atom",
+            "counterargument_atom",
+            "what_would_change",
+        }
+        and set(harness_envelope_fields)
+        == {"schema_version", "research_input_digest"}
+        and set(harness_cell_fields) == {"remaining_gap_refs"}
+        and set(statuses)
         == {"supported", "bounded_support", "mixed", "insufficient_evidence"}
+        and set(evidence_use_roles) == {"support", "limit", "context"}
+        and set(inference_authorities)
+        == {"directly_supported", "bounded_inference", "not_inferable"}
         and bool(confidence)
         and bool(directions)
         and 80 <= int(output["maximum_atom_chars"]) <= 1000
@@ -298,6 +351,8 @@ def load_current_research_consumer_policy(
             **deepcopy(dict(output)),
             "allowed_judgment_statuses": list(statuses),
             "allowed_confidence_bases": list(confidence),
+            "allowed_evidence_use_roles": list(evidence_use_roles),
+            "allowed_inference_authorities": list(inference_authorities),
             "allowed_wwc_directions": list(directions),
         },
     }
@@ -847,43 +902,72 @@ def compile_current_research_input(
 def compile_current_research_messages(
     research_input: Mapping[str, Any],
 ) -> tuple[dict[str, str], ...]:
-    """Compile one provider-neutral synthesis call from the bounded input."""
+    """Compile a bounded payload contract with explicit enums and authority.
+
+    Source-visible facts are emitted once in an immutable catalog.  Each cell
+    receives only a local interpretation view over those facts.  This preserves
+    the cell boundary without duplicating long source excerpts for every use.
+    """
 
     input_contract = research_input["model_input_contract"]
     maximum_excerpt = int(input_contract["maximum_evidence_excerpt_chars"])
-    visible_evidence = []
-    for row in research_input["evidence_cards"]:
+    evidence_by_ref = {
+        row["evidence_ref"]: row for row in research_input["evidence_cards"]
+    }
+    numeric_by_ref = {
+        row["numeric_ref"]: row
+        for row in research_input["numeric_fact_cards"]
+    }
+    gap_by_ref = {
+        row["gap_ref"]: row for row in research_input["residual_gap_cards"]
+    }
+
+    def visible_evidence_fact(ref: str) -> dict[str, Any]:
+        row = evidence_by_ref[ref]
         excerpt = str(row["source_visible_fact_excerpt"])
-        business_meanings = [
-            binding["business_meaning_zh"] for binding in row["slot_bindings"]
+        return {
+            "evidence_ref": ref,
+            "evidence_owner_ticker": row["evidence_owner_ticker"],
+            "source_type": row["source_type"],
+            "source_tier": row["source_tier"],
+            "publication_date": row["publication_date"],
+            "source_reporting_period_end": row[
+                "source_reporting_period_end"
+            ],
+            "relationship_directions": row["relationship_directions"],
+            "source_visible_fact_excerpt": excerpt[:maximum_excerpt],
+            "excerpt_truncated": (
+                bool(row["excerpt_truncated"])
+                or len(excerpt) > maximum_excerpt
+            ),
+        }
+
+    def visible_cell_evidence(
+        ref: str, *, slot_ids: set[str]
+    ) -> dict[str, Any]:
+        row = evidence_by_ref[ref]
+        bindings = [
+            binding
+            for binding in row["slot_bindings"]
+            if binding["slot_id"] in slot_ids
         ]
-        claim_boundaries = [
-            binding["claim_boundary_zh"] for binding in row["slot_bindings"]
-        ]
-        visible_evidence.append(
-            {
-                "evidence_ref": row["evidence_ref"],
-                "evidence_role": row["evidence_role"],
-                "evidence_owner_ticker": row["evidence_owner_ticker"],
-                "source_type": row["source_type"],
-                "source_tier": row["source_tier"],
-                "publication_date": row["publication_date"],
-                "source_reporting_period_end": row[
-                    "source_reporting_period_end"
-                ],
-                "relationship_directions": row["relationship_directions"],
-                "business_meanings_zh": business_meanings,
-                "claim_boundaries_zh": claim_boundaries,
-                "numeric_use_boundary": row["numeric_use_boundary"],
-                "source_visible_fact_excerpt": excerpt[:maximum_excerpt],
-                "excerpt_truncated": (
-                    bool(row["excerpt_truncated"])
-                    or len(excerpt) > maximum_excerpt
-                ),
-            }
+        _require(
+            bool(bindings),
+            "research_consumer_cell_evidence_binding_missing",
         )
-    visible_numeric = []
-    for row in research_input["numeric_fact_cards"]:
+        return {
+            "evidence_ref": ref,
+            "business_meanings_zh": [
+                binding["business_meaning_zh"] for binding in bindings
+            ],
+            "claim_boundaries_zh": [
+                binding["claim_boundary_zh"] for binding in bindings
+            ],
+            "numeric_use_boundary": row["numeric_use_boundary"],
+        }
+
+    def visible_numeric(ref: str) -> dict[str, Any]:
+        row = numeric_by_ref[ref]
         formula = row.get("formula_trace")
         visible_formula = None
         if isinstance(formula, Mapping):
@@ -892,26 +976,28 @@ def compile_current_research_messages(
                 for key in ("formula", "operation", "input_metrics")
                 if key in formula
             }
-        visible_numeric.append(
-            {
-                key: deepcopy(row[key])
-                for key in (
-                    "numeric_ref",
-                    "ticker",
-                    "metric_id",
-                    "value_decimal",
-                    "unit",
-                    "period_start",
-                    "period_end",
-                    "fiscal_year",
-                    "fiscal_period",
-                    "authority_mode",
-                )
-            }
-            | {"formula_trace": visible_formula}
-        )
+        return {
+            key: deepcopy(row[key])
+            for key in (
+                "numeric_ref",
+                "ticker",
+                "metric_id",
+                "value_decimal",
+                "unit",
+                "period_start",
+                "period_end",
+                "fiscal_year",
+                "fiscal_period",
+                "authority_mode",
+            )
+        } | {"formula_trace": visible_formula}
+
     visible_cells = []
     for cell in research_input["cells"]:
+        slot_ids = {
+            cell["primary_slot_id"],
+            *cell["supplemental_context_slot_ids"],
+        }
         visible_cells.append(
             {
                 "cell_id": cell["cell_id"],
@@ -924,52 +1010,97 @@ def compile_current_research_messages(
                         for intent in atom.get("product_intents", ())
                     }
                 ),
-                "allowed_evidence_refs": cell["allowed_evidence_refs"],
+                "cell_evidence_views": [
+                    visible_cell_evidence(ref, slot_ids=slot_ids)
+                    for ref in cell["allowed_evidence_refs"]
+                ],
                 "allowed_numeric_refs": cell["allowed_numeric_refs"],
-                "visible_gap_refs": cell["visible_gap_refs"],
+                "residual_gap_cards": [
+                    deepcopy(gap_by_ref[ref])
+                    for ref in cell["visible_gap_refs"]
+                ],
             }
         )
-    output_cell_contract = {
-        "cell_id": "one required cell_id",
-        "judgment_status": "one allowed status",
-        "confidence_basis": "one allowed confidence basis",
-        "supporting_evidence_refs": ["zero or more allowed EV refs"],
-        "counterevidence_refs": ["zero or more allowed EV refs"],
-        "numeric_refs": ["zero or more allowed NUM refs"],
-        "remaining_gap_refs": ["zero or more visible GAP refs"],
-        "thesis_atom": "company-specific conclusion without digits",
-        "mechanism_atom": "economic mechanism without digits",
-        "counterargument_atom": "strongest bounded alternative without digits",
-        "what_would_change": {
-            "observable": "observable variable without digits",
-            "direction": "one allowed direction",
-            "time_horizon": "bounded horizon without dates or digits",
-            "evidence_route": "where to verify it without a citation",
-            "threshold_numeric_ref": None,
-        },
-    }
+    contract = research_input["model_output_contract"]
     visible = {
         "case_identity": research_input["case_identity"],
         "research_question": research_input["objective"]["raw_question"],
+        "evidence_fact_catalog": [
+            visible_evidence_fact(row["evidence_ref"])
+            for row in research_input["evidence_cards"]
+        ],
+        "numeric_fact_catalog": [
+            visible_numeric(row["numeric_ref"])
+            for row in research_input["numeric_fact_cards"]
+        ],
         "cells": visible_cells,
-        "evidence_cards": visible_evidence,
-        "numeric_fact_cards": visible_numeric,
-        "residual_gap_cards": research_input["residual_gap_cards"],
         "output_contract": {
-            "schema_version": CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION,
-            "research_input_digest": research_input["research_input_digest"],
+            "schema_version": contract["payload_schema_version"],
             "required_cell_ids": [
                 cell["cell_id"] for cell in research_input["cells"]
             ],
-            "cell_contract": output_cell_contract,
+            "allowed_judgment_statuses": contract[
+                "allowed_judgment_statuses"
+            ],
+            "allowed_confidence_bases": contract[
+                "allowed_confidence_bases"
+            ],
+            "allowed_evidence_use_roles": contract[
+                "allowed_evidence_use_roles"
+            ],
+            "allowed_inference_authorities": contract[
+                "allowed_inference_authorities"
+            ],
+            "allowed_wwc_directions": contract["allowed_wwc_directions"],
+            "payload_shape": {
+                "cells": [
+                    {
+                        "cell_id": "one required cell_id",
+                        "judgment_status": "one listed judgment status",
+                        "confidence_basis": "one listed confidence basis",
+                        "inference_authority": (
+                            "directly_supported, bounded_inference or not_inferable"
+                        ),
+                        "evidence_uses": [
+                            {
+                                "evidence_ref": (
+                                    "one EV ref from this cell only"
+                                ),
+                                "use_role": "support, limit or context",
+                            }
+                        ],
+                        "numeric_refs": [
+                            "zero or more NUM refs from this cell only"
+                        ],
+                        "thesis_atom": "company-specific conclusion without digits",
+                        "mechanism_atom": "economic mechanism without digits",
+                        "counterargument_atom": (
+                            "strongest bounded alternative without digits"
+                        ),
+                        "what_would_change": {
+                            "observable": "observable variable without digits",
+                            "direction": "one listed direction",
+                            "time_horizon": (
+                                "bounded non-numeric horizon such as 后续披露期"
+                            ),
+                            "evidence_route": (
+                                "where to verify it without a citation"
+                            ),
+                            "threshold_numeric_ref": None,
+                        },
+                    }
+                ]
+            },
         },
         "rules": [
-            "Return one exact JSON object and no Markdown or commentary.",
-            "Use every cell exactly once and only refs allowed for that cell.",
-            "Write the judgment, mechanism, counterargument and observable change condition yourself.",
+            "Return one exact JSON object with only a cells field and no Markdown or commentary; the harness injects schema and input identity.",
+            "Use every cell exactly once and only refs printed in that cell's local views or allowed numeric refs; use the immutable catalogs only to read the bound fact behind a local ref.",
+            "List each Evidence ref at most once; use support for what it proves, limit for how it constrains the conclusion, and context only for bounded background.",
+            "Residual gaps shown in each cell are authoritative and will be injected by the harness; do not repeat them in the payload, and do not write a conclusion that silently closes them.",
+            "directly_supported permits only conclusions explicitly stated by current subject evidence; bounded_inference must use cautious language and preserve limiting Evidence or respect visible residual gaps; not_inferable must not assert the unavailable mechanism.",
+            "Do not attribute group, segment, balance-sheet or upstream results to AI or Dell without direct subject-bound evidence; contemporaneous movement is not causation.",
             "Do not repeat or alter identities, dates, exact numbers, units, currencies or citations in prose; select structured refs instead.",
-            "Do not treat an Evidence excerpt as causal proof beyond its claim boundary.",
-            "Do not infer an undisclosed threshold; preserve its GAP ref or bind threshold_numeric_ref to an allowed NumericFact.",
+            "Do not infer an undisclosed threshold or claim a supply constraint is easing without directly bound allocation and timing evidence.",
         ],
     }
     user_content = json.dumps(
@@ -986,20 +1117,28 @@ def compile_current_research_messages(
         {
             "role": "system",
             "content": (
-                "You are a financial research synthesis node. You own analytical "
-                "judgment, economic mechanism, counterargument and observable "
-                "what-would-change conditions. The harness owns identities, exact "
-                "numbers, dates, units, citations and final fact rendering."
+                "You are a financial research synthesis node. Separate direct "
+                "evidence from bounded inference, preserve limiting evidence "
+                "and declared gaps, and never turn contemporaneous movement "
+                "into unsupported product or causal attribution."
             ),
         },
-        {
-            "role": "user",
-            "content": user_content,
-        },
+        {"role": "user", "content": user_content},
     )
 
 
 def parse_current_research_output(content: str) -> dict[str, Any]:
+    """Parse the model-owned payload; the harness owns the outer envelope."""
+
+    value = _parse_exact_json_object(content)
+    _require(
+        set(value) == {"cells"} and isinstance(value.get("cells"), list),
+        "research_consumer_payload_envelope_invalid",
+    )
+    return value
+
+
+def _parse_exact_json_object(content: str) -> dict[str, Any]:
     text = str(content or "").strip()
     _require(bool(text), "research_consumer_output_empty")
     _require(
@@ -1041,19 +1180,18 @@ def validate_current_research_output(
     *,
     research_input: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Validate a model-owned payload and inject the local trusted envelope."""
+
+    contract = research_input["model_output_contract"]
     _require(
-        set(payload) == {"schema_version", "research_input_digest", "cells"}
-        and payload.get("schema_version")
-        == CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION
-        and payload.get("research_input_digest")
-        == research_input.get("research_input_digest"),
-        "research_consumer_output_envelope_invalid",
+        set(payload) == set(contract["model_owned_top_level_fields"])
+        and isinstance(payload.get("cells"), list),
+        "research_consumer_payload_envelope_invalid",
     )
-    raw_cells = payload.get("cells")
-    _require(isinstance(raw_cells, list), "research_consumer_output_cells_invalid")
     input_cells = {
         str(row["cell_id"]): row for row in research_input["cells"]
     }
+    raw_cells = payload["cells"]
     output_cells = {
         str(row.get("cell_id") or ""): row
         for row in raw_cells
@@ -1064,20 +1202,9 @@ def validate_current_research_output(
         and set(output_cells) == set(input_cells),
         "research_consumer_output_cell_coverage_invalid",
     )
-    contract = research_input["model_output_contract"]
-    cell_fields = {
-        "cell_id",
-        "judgment_status",
-        "confidence_basis",
-        "supporting_evidence_refs",
-        "counterevidence_refs",
-        "numeric_refs",
-        "remaining_gap_refs",
-        "thesis_atom",
-        "mechanism_atom",
-        "counterargument_atom",
-        "what_would_change",
-    }
+    cell_fields = set(contract["model_owned_cell_fields"])
+    use_roles = set(contract["allowed_evidence_use_roles"])
+    inference_authorities = set(contract["allowed_inference_authorities"])
     validated = []
     for cell_id in input_cells:
         raw = output_cells[cell_id]
@@ -1085,51 +1212,83 @@ def validate_current_research_output(
             set(raw) == cell_fields,
             "research_consumer_output_cell_fields_invalid",
         )
-        judgment_status = str(raw.get("judgment_status") or "")
-        confidence_basis = str(raw.get("confidence_basis") or "")
+        status = str(raw.get("judgment_status") or "")
+        confidence = str(raw.get("confidence_basis") or "")
+        inference = str(raw.get("inference_authority") or "")
         _require(
-            judgment_status in set(contract["allowed_judgment_statuses"])
-            and confidence_basis in set(contract["allowed_confidence_bases"]),
+            status in set(contract["allowed_judgment_statuses"])
+            and confidence in set(contract["allowed_confidence_bases"])
+            and inference in inference_authorities,
             "research_consumer_output_enum_invalid",
         )
-        supporting = _unique_strings(
-            raw.get("supporting_evidence_refs"),
-            "research_consumer_support_refs_invalid",
-            allow_empty=True,
+        raw_uses = raw.get("evidence_uses")
+        _require(
+            isinstance(raw_uses, list),
+            "research_consumer_evidence_uses_invalid",
         )
-        counter = _unique_strings(
-            raw.get("counterevidence_refs"),
-            "research_consumer_counter_refs_invalid",
-            allow_empty=True,
-        )
+        evidence_uses = []
+        seen_evidence: set[str] = set()
+        for raw_use in raw_uses:
+            use = _mapping(
+                raw_use, "research_consumer_evidence_use_invalid"
+            )
+            ref = str(use.get("evidence_ref") or "")
+            role = str(use.get("use_role") or "")
+            _require(
+                set(use) == {"evidence_ref", "use_role"}
+                and ref in set(input_cells[cell_id]["allowed_evidence_refs"])
+                and ref not in seen_evidence
+                and role in use_roles,
+                "research_consumer_evidence_use_invalid",
+            )
+            seen_evidence.add(ref)
+            evidence_uses.append({"evidence_ref": ref, "use_role": role})
         numeric = _unique_strings(
             raw.get("numeric_refs"),
             "research_consumer_numeric_refs_invalid",
             allow_empty=True,
         )
-        gaps = _unique_strings(
-            raw.get("remaining_gap_refs"),
-            "research_consumer_gap_refs_invalid",
-            allow_empty=True,
-        )
-        allowed = input_cells[cell_id]
+        gaps = tuple(input_cells[cell_id]["visible_gap_refs"])
         _require(
-            set(supporting).issubset(allowed["allowed_evidence_refs"])
-            and set(counter).issubset(allowed["allowed_evidence_refs"])
-            and set(numeric).issubset(allowed["allowed_numeric_refs"])
-            and set(gaps).issubset(allowed["visible_gap_refs"])
-            and not set(supporting).intersection(counter),
+            set(numeric).issubset(
+                input_cells[cell_id]["allowed_numeric_refs"]
+            ),
             "research_consumer_output_ref_boundary_invalid",
         )
-        if judgment_status in {"supported", "bounded_support", "mixed"}:
+        supporting = [
+            use["evidence_ref"]
+            for use in evidence_uses
+            if use["use_role"] == "support"
+        ]
+        limiting = [
+            use["evidence_ref"]
+            for use in evidence_uses
+            if use["use_role"] == "limit"
+        ]
+        if status in {"supported", "bounded_support", "mixed"}:
             _require(
                 bool(supporting),
                 "research_consumer_supported_judgment_without_evidence",
             )
-        if judgment_status == "insufficient_evidence":
+        if status == "insufficient_evidence" or inference == "not_inferable":
             _require(
                 bool(gaps),
                 "research_consumer_insufficient_judgment_without_gap",
+            )
+        _require(
+            (status == "insufficient_evidence")
+            == (inference == "not_inferable"),
+            "research_consumer_inference_status_mismatch",
+        )
+        if inference == "bounded_inference":
+            _require(
+                bool(limiting) or bool(gaps),
+                "research_consumer_bounded_inference_without_boundary",
+            )
+        if status == "mixed":
+            _require(
+                bool(limiting) or bool(gaps),
+                "research_consumer_mixed_judgment_without_boundary",
             )
         validated_text = {
             field: _validate_model_text(
@@ -1152,7 +1311,9 @@ def validate_current_research_output(
                 "evidence_route",
                 "threshold_numeric_ref",
             }
-            and wwc.get("direction") in set(contract["allowed_wwc_directions"]),
+            and wwc.get("direction") in set(
+                contract["allowed_wwc_directions"]
+            ),
             "research_consumer_wwc_invalid",
         )
         threshold = wwc.get("threshold_numeric_ref")
@@ -1183,27 +1344,24 @@ def validate_current_research_output(
         validated.append(
             {
                 "cell_id": cell_id,
-                "judgment_status": judgment_status,
-                "confidence_basis": confidence_basis,
-                "supporting_evidence_refs": list(supporting),
-                "counterevidence_refs": list(counter),
+                "judgment_status": status,
+                "confidence_basis": confidence,
+                "inference_authority": inference,
+                "evidence_uses": evidence_uses,
                 "numeric_refs": list(numeric),
                 "remaining_gap_refs": list(gaps),
                 **validated_text,
                 "what_would_change": validated_wwc,
             }
         )
-    return {
-        "schema_version": CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION,
+    trusted = {
+        "schema_version": contract["payload_schema_version"],
         "research_input_digest": research_input["research_input_digest"],
         "cells": validated,
-        "judgment_output_digest": canonical_digest(
-            {
-                "schema_version": CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION,
-                "research_input_digest": research_input["research_input_digest"],
-                "cells": validated,
-            }
-        ),
+    }
+    return {
+        **trusted,
+        "judgment_output_digest": canonical_digest(trusted),
     }
 
 
@@ -1212,7 +1370,7 @@ def compile_current_research_deliverable(
     research_input: Mapping[str, Any],
     judgment_output: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Render refs and exact fact cards without inventing analytical prose."""
+    """Render a typed evidence-use payload without inventing conclusions."""
 
     validated = validate_current_research_output(
         judgment_output,
@@ -1233,24 +1391,23 @@ def compile_current_research_deliverable(
     }
     rendered_cells = []
     for row in validated["cells"]:
-        contract = cell_contracts[row["cell_id"]]
         rendered_cells.append(
             {
                 **deepcopy(row),
-                "title_zh": contract["title_zh"],
-                "supporting_evidence": [
-                    deepcopy(evidence[ref])
-                    for ref in row["supporting_evidence_refs"]
-                ],
-                "counterevidence": [
-                    deepcopy(evidence[ref])
-                    for ref in row["counterevidence_refs"]
+                "title_zh": cell_contracts[row["cell_id"]]["title_zh"],
+                "evidence_uses_rendered": [
+                    {
+                        **deepcopy(use),
+                        "evidence": deepcopy(evidence[use["evidence_ref"]]),
+                    }
+                    for use in row["evidence_uses"]
                 ],
                 "numeric_facts": [
                     deepcopy(numeric[ref]) for ref in row["numeric_refs"]
                 ],
                 "remaining_gaps": [
-                    deepcopy(gaps[ref]) for ref in row["remaining_gap_refs"]
+                    deepcopy(gaps[ref])
+                    for ref in row["remaining_gap_refs"]
                 ],
             }
         )
@@ -1264,8 +1421,13 @@ def compile_current_research_deliverable(
         "cells": rendered_cells,
         "rendering_authority": {
             "model_authored_judgment_fields": list(_MODEL_TEXT_FIELDS)
-            + ["what_would_change"],
+            + [
+                "what_would_change",
+                "inference_authority",
+                "evidence_uses",
+            ],
             "harness_rendered_surfaces": [
+                "trusted_envelope",
                 "case_identity",
                 "source_visible_fact_excerpt",
                 "numeric_facts",
@@ -1278,9 +1440,10 @@ def compile_current_research_deliverable(
             "qualified_human_review_required": True,
         },
         "known_boundary": (
-            "This is a structured internal workpaper/report preview. It proves "
-            "reference-safe rendering, not natural-model research quality, owner "
-            "acceptance, investment suitability or release readiness."
+            "This is a structured internal workpaper/report preview. Typed "
+            "evidence use and inference authority reduce ambiguity but do not "
+            "prove natural-model quality, causality, owner acceptance or "
+            "release readiness."
         ),
     }
     return {**unsigned, "deliverable_digest": canonical_digest(unsigned)}

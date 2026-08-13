@@ -49,9 +49,9 @@ from sec_agent.runtime_resource_registry import (  # noqa: E402
 )
 
 
-AUTHORITY_SCHEMA = "fin_ia_current_research_consumer_canary_authority_v1_0"
-RESULT_SCHEMA = "fin_ia_current_research_consumer_canary_result_v1_0"
-FULL_SCHEMA = "fin_ia_current_research_consumer_canary_full_v1_0"
+AUTHORITY_SCHEMA = "fin_ia_current_research_consumer_canary_authority_v1_1"
+RESULT_SCHEMA = "fin_ia_current_research_consumer_canary_result_v1_1"
+FULL_SCHEMA = "fin_ia_current_research_consumer_canary_full_v1_1"
 
 
 class CurrentResearchConsumerCanaryError(RuntimeError):
@@ -419,7 +419,8 @@ def run(
     )
     clean_zero = _json(paths["clean_zero_call_result_ref"])
     if not (
-        clean_zero.get("status") == "engineering_pass_zero_call_current_consumer"
+        clean_zero.get("status")
+        == "engineering_pass_zero_call_current_consumer_contract_successor"
         and clean_zero.get("bindings", {}).get("research_input_digest")
         == research_input["research_input_digest"]
         and clean_zero.get("bindings", {}).get("evidence_pack_artifact_digest")

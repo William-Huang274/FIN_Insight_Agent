@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。S2 仍为 1,319 observations，transcript 没有 NumericFact 权限。当前已新增 provider-neutral S3 research consumer：它从 reviewed Pack、residual gaps 和 S2 NumericFact 编译五个研究单元，按经济事实去重并选择 25 个模型可见 NumericFact，把模型视图从初始约 8.9 万字符收敛到 4.8 万字符；零模型 fake/mutation 证明结构、引用和数值权限 fail closed。`core_research_ready=true` 和 consumer engineering pass 只允许进入一次干净绑定的最小 DeepSeek 综合 canary；S1 产品门、自然研究质量、Workbench 报告面和 release 仍未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。S2 仍为 1,319 observations，transcript 没有 NumericFact 权限。当前 provider-neutral S3 consumer 的 v1.1 successor 已实现：Harness 注入可信 envelope/gaps、明列枚举、使用 cell-local cards、typed Evidence use 和 inference authority；immutable 自然 R1 保持 failed。聚焦测试 25 passed，但 clean zero-call proof 尚未执行。DeepSeek V4 Pro GA 沿用同一模型名，后续将测试新的 GA profile 与四工具有界循环，而不把旧 R1 冒充成 Preview/GA A/B。S1 产品门、自然研究质量、Workbench 报告面和 release 仍未通过。
 
 ## 当前唯一产品边界
 
@@ -81,11 +81,11 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S3_CURRENT_RESEARCH_CONSUMER_CLEAN_REPROOF_AND_ONE_CALL_CANARY`
+`FIN_0_1_3_S3_CURRENT_RESEARCH_CONSUMER_V1_1_CLEAN_REPROOF_AND_GA_AGENT_LOOP_QUALIFICATION`
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
-R1 已保存并停止。下一项限定为 `S3_CURRENT_CONSUMER_TYPED_EVIDENCE_USE_AND_INFERENCE_AUTHORITY_ZERO_CALL_DISPOSITION`：Harness 注入本地 envelope，model-visible view 明列枚举并按 cell 提供 cards；Evidence 使用改为 `support/limit/context`，推论标记 `directly_supported/bounded_inference/not_inferable`。复用 R1 capture、fake 和 mutation 做零调用回放，确保合同更合理但不会把当前越界判断自动追认为事实。通过后再单独决定是否值得新的自然 canary，不自动进入 R2。
+R1 已保存并停止。v1.1 working-tree implementation 已完成，当前必须先通过全仓回归、active-baseline、secret scan 和绑定干净远端提交的零调用 proof，确保合同更合理但不会把 R1 越界判断自动追认为事实。之后建立 DeepSeek GA profile 与 reviewed Evidence、NumericFact、EvidenceRequest、Judgment 四工具最小循环；strict final-tool 只作 Beta paired 资格实验。任何真实调用都需要独立 exact-once authority，不自动进入 R2。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

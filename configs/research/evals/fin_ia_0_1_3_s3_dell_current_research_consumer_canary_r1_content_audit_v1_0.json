@@ -1,0 +1,55 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_r1_content_audit_v1_0",
+  "status": "rejected_not_salvageable",
+  "case_key": "DELL",
+  "run_id": "FIN013-S3-DELL-CURRENT-CONSUMER-CANARY-R1",
+  "attempt_id": "ATTEMPT-01",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_research_consumer_canary_result_v1_0.json",
+  "failed_payload_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_consumer_canary_r1_failed_payload.json",
+  "failed_payload_canonical_digest": "5da111a28aef63f575e762b84cbcbeed4684b4ffb8f7569b9faf3d22254a85ec",
+  "content_findings": [
+    {
+      "finding_code": "demand_durability_overreach",
+      "cell_id": "CELL::demand_quality",
+      "field": "thesis_atom",
+      "observed_excerpt": "需求真实且具有持续性",
+      "business_reason_zh": "订单与积压可以证明需求规模，但 pull-forward、取消与消化仍是显式缺口，不能先把持续性写成已成立。"
+    },
+    {
+      "finding_code": "ai_to_group_and_segment_profit_attribution_unproven",
+      "cell_id": "CELL::operating_performance",
+      "field": "thesis_atom",
+      "observed_excerpt": "推动 EPS 和分部利润大幅提升",
+      "business_reason_zh": "现有资料同时披露 AI 收入、集团和分部结果，但没有提供足以把 EPS 或分部利润增量归因给 AI 服务器的桥。"
+    },
+    {
+      "finding_code": "unbound_comparative_margin_and_leverage_claim",
+      "cell_id": "CELL::value_capture",
+      "field": "mechanism_atom",
+      "observed_excerpt": "低于传统业务，导致整体毛利率下降；同时规模效应带来经营杠杆",
+      "business_reason_zh": "管理层只给出产品盈利边界和组合压力，没有给出对传统业务的可复算比较或 AI 独立经营杠杆桥。"
+    },
+    {
+      "finding_code": "ai_working_capital_attribution_unproven",
+      "cell_id": "CELL::cash_conversion",
+      "field": "thesis_atom",
+      "observed_excerpt": "AI 服务器业务增长导致营运资金占用增加",
+      "business_reason_zh": "集团应收、库存、应付和现金流已知，但当前 Evidence Pack 明确保留 AI 营运资金归属缺口。"
+    },
+    {
+      "finding_code": "supply_easing_unproven",
+      "cell_id": "CELL::counterevidence",
+      "field": "thesis_atom",
+      "observed_excerpt": "供应瓶颈正在逐步缓解",
+      "business_reason_zh": "上游扩产和制程信息不等于 Dell 获得的分配、释放时点、利用率或良率，不能直接得出瓶颈正在缓解。"
+    }
+  ],
+  "contract_findings": [
+    "trusted_envelope_was_model_owned_and_omitted",
+    "allowed_enums_were_not_model_visible",
+    "same_evidence_was_used_as_support_and_counterevidence",
+    "verbal_numeric_surface_was_emitted_in_free_prose"
+  ],
+  "disposition": "Preserve R1 as immutable failed evidence. Do not map its invented enums, merge its evidence roles or publish its prose. Re-test only through a separately authorized successor contract.",
+  "known_boundary": "This is a qualified zero-call content audit of the saved R1 payload. It is evidence for disposition, not a general automated semantic verifier."
+}

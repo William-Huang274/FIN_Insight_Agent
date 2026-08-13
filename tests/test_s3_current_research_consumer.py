@@ -25,6 +25,7 @@ from sec_agent.research.current_consumer import (
     compile_current_research_deliverable,
     compile_current_research_input,
     compile_current_research_messages,
+    load_current_research_consumer_policy,
     parse_current_research_output,
     validate_current_research_output,
 )
@@ -34,7 +35,7 @@ from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
 POLICY = ROOT / (
     "configs/research/"
-    "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_0.json"
+    "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_1.json"
 )
 OBJECTIVE = ROOT / (
     "configs/research/evals/"
@@ -44,9 +45,13 @@ ATOMS = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json"
 )
-FAKE_OUTPUT = ROOT / (
+FAKE_PAYLOAD_V1_1 = ROOT / (
     "tests/fixtures/research/"
-    "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_output_v1_0.json"
+    "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_1.json"
+)
+R1_FAILED_PAYLOAD = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_consumer_canary_r1_failed_payload.json"
 )
 READ = frozenset({"current_product:read"})
 
@@ -197,7 +202,7 @@ def test_fake_judgments_compile_a_reference_safe_workpaper(
     current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
 ) -> None:
     _, _, research_input = current_inputs
-    fake = _json(FAKE_OUTPUT)
+    fake = _json(FAKE_PAYLOAD_V1_1)
     validated = validate_current_research_output(
         fake, research_input=research_input
     )
@@ -223,59 +228,187 @@ def test_fake_judgments_compile_a_reference_safe_workpaper(
         for row in operating["numeric_facts"]
     )
     assert any(
-        row["source_type"] == "EARNINGS_CALL_TRANSCRIPT"
+        row["evidence"]["source_type"] == "EARNINGS_CALL_TRANSCRIPT"
         for cell in deliverable["cells"]
-        for row in cell["supporting_evidence"]
+        for row in cell["evidence_uses_rendered"]
+        if row["use_role"] == "support"
     )
+
+
+def test_v1_1_message_exposes_exact_enums_and_cell_local_views(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> None:
+    _, _, research_input = current_inputs
+    messages = compile_current_research_messages(research_input)
+    visible = json.loads(messages[1]["content"])
+    contract = visible["output_contract"]
+
+    assert len(messages[1]["content"]) == 46061
+    assert len(messages[1]["content"]) <= 50000
+    assert contract["allowed_judgment_statuses"] == [
+        "supported",
+        "bounded_support",
+        "mixed",
+        "insufficient_evidence",
+    ]
+    assert contract["allowed_evidence_use_roles"] == [
+        "support",
+        "limit",
+        "context",
+    ]
+    assert contract["allowed_inference_authorities"] == [
+        "directly_supported",
+        "bounded_inference",
+        "not_inferable",
+    ]
+    assert len(visible["evidence_fact_catalog"]) == 19
+    assert len(visible["numeric_fact_catalog"]) == 25
+    assert all("cell_evidence_views" in row for row in visible["cells"])
+    assert all("evidence_cards" not in row for row in visible["cells"])
+    assert "research_input_digest" not in messages[1]["content"]
+
+
+def test_v1_1_payload_injects_trusted_envelope_and_renders_typed_uses(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> None:
+    _, _, research_input = current_inputs
+    payload = _json(FAKE_PAYLOAD_V1_1)
+    parsed = parse_current_research_output(json.dumps(payload))
+    validated = validate_current_research_output(
+        parsed, research_input=research_input
+    )
+    deliverable = compile_current_research_deliverable(
+        research_input=research_input,
+        judgment_output=payload,
+    )
+
+    assert validated["research_input_digest"] == research_input[
+        "research_input_digest"
+    ]
+    assert validated["schema_version"].endswith("payload_v1_1")
+    assert deliverable["rendering_authority"][
+        "harness_generated_research_conclusion"
+    ] is False
+    assert deliverable["schema_version"].endswith("deliverable_v1_1")
+    demand = deliverable["cells"][0]
+    assert [row["use_role"] for row in demand["evidence_uses"]] == [
+        "support",
+        "support",
+        "limit",
+    ]
+    assert all("evidence" in row for row in demand["evidence_uses_rendered"])
+    assert demand["remaining_gap_refs"] == ["GAP::00730082A5C08C4C"]
 
 
 @pytest.mark.parametrize(
     ("mutator", "code"),
     [
         (
-            lambda value: value["cells"][0]["supporting_evidence_refs"].append(
-                "EV::DOESNOTEXIST"
+            lambda value: value["cells"][0]["evidence_uses"].append(
+                {"evidence_ref": "EV::734A9C177164E08E", "use_role": "limit"}
             ),
-            "research_consumer_output_ref_boundary_invalid",
+            "research_consumer_evidence_use_invalid",
         ),
         (
             lambda value: value["cells"][0].__setitem__(
-                "thesis_atom", "戴尔订单增长达到两位数，因此需求已经完全确认。"
+                "judgment_status", "supported_with_caveats"
+            ),
+            "research_consumer_output_enum_invalid",
+        ),
+        (
+            lambda value: value["cells"][0].__setitem__(
+                "inference_authority", "issuer_plus_ecosystem"
+            ),
+            "research_consumer_output_enum_invalid",
+        ),
+        (
+            lambda value: value["cells"][0]["evidence_uses"].append(
+                {"evidence_ref": "EV::7F4D7E6762C21D83", "use_role": "context"}
+            ),
+            "research_consumer_evidence_use_invalid",
+        ),
+        (
+            lambda value: value["cells"][2].__setitem__(
+                "remaining_gap_refs", []
+            ),
+            "research_consumer_output_cell_fields_invalid",
+        ),
+        (
+            lambda value: value["cells"][3].__setitem__(
+                "thesis_atom", "现金流增长两位数，人工智能订单已经完全转化为现金。"
             ),
             "research_consumer_thesis_atom_invalid",
         ),
-        (
-            lambda value: value["cells"].pop(),
-            "research_consumer_output_cell_coverage_invalid",
-        ),
-        (
-            lambda value: value["cells"][0]["numeric_refs"].append(
-                "NUM::ADC81E7A547FAB94"
-            ),
-            "research_consumer_output_ref_boundary_invalid",
-        ),
-        (
-            lambda value: value["cells"][1]["what_would_change"].__setitem__(
-                "threshold_numeric_ref", "NUM::UNKNOWN"
-            ),
-            "research_consumer_wwc_threshold_ref_invalid",
-        ),
     ],
 )
-def test_output_mutations_fail_before_materialization(
+def test_v1_1_mutations_fail_closed(
     current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
     mutator,
     code: str,
 ) -> None:
     _, _, research_input = current_inputs
-    value = deepcopy(_json(FAKE_OUTPUT))
-    mutator(value)
+    payload = deepcopy(_json(FAKE_PAYLOAD_V1_1))
+    mutator(payload)
 
     with pytest.raises(CurrentResearchConsumerError, match=code):
         compile_current_research_deliverable(
             research_input=research_input,
-            judgment_output=value,
+            judgment_output=payload,
         )
+
+
+def test_immutable_r1_response_is_not_silently_promoted_to_v1_1(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> None:
+    _, _, research_input = current_inputs
+    raw = _json(R1_FAILED_PAYLOAD)
+
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_output_cell_fields_invalid",
+    ):
+        validate_current_research_output(raw, research_input=research_input)
+
+    assert {
+        row["judgment_status"] for row in raw["cells"]
+    } == {"supported_with_caveats"}
+    assert {
+        row["confidence_basis"] for row in raw["cells"]
+    } == {"issuer_disclosure_plus_ecosystem_readthrough"}
+    assert any(
+        set(row["supporting_evidence_refs"])
+        & set(row["counterevidence_refs"])
+        for row in raw["cells"]
+    )
+
+
+def test_v1_1_capacity_fails_closed_without_raising_the_policy_limit(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> None:
+    _, _, research_input = current_inputs
+    changed = deepcopy(research_input)
+    changed["model_input_contract"]["maximum_user_message_chars"] = 45000
+
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_model_input_capacity_exceeded",
+    ):
+        compile_current_research_messages(changed)
+
+
+def test_v1_1_policy_contract_drift_fails_closed() -> None:
+    policy = _json(POLICY)
+    policy["model_output_contract"]["allowed_evidence_use_roles"] = [
+        "support",
+        "counter",
+        "context",
+    ]
+
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_model_output_policy_invalid",
+    ):
+        load_current_research_consumer_policy(policy)
 
 
 @pytest.mark.parametrize(
@@ -332,7 +465,7 @@ def test_input_mutations_fail_closed(
 
 
 def test_parser_requires_exact_json() -> None:
-    fake = _json(FAKE_OUTPUT)
+    fake = _json(FAKE_PAYLOAD_V1_1)
     assert parse_current_research_output(json.dumps(fake))["cells"]
     with pytest.raises(CurrentResearchConsumerError, match="not_exact_json"):
         parse_current_research_output("```json\n{}\n```")
@@ -348,7 +481,7 @@ def test_clean_reproof_authority_binds_head_upstream_and_only_itself_untracked(
     authority_path = ROOT / (
         "configs/research/evals/"
         "fin_ia_0_1_3_s3_dell_current_research_consumer_"
-        "zero_call_authority_v1_1.json"
+        "zero_call_authority_v1_2.json"
     )
     binding = {
         "implementation_commit": commit,
@@ -387,3 +520,32 @@ def test_clean_reproof_authority_binds_head_upstream_and_only_itself_untracked(
             {"clean_implementation": binding},
             authority_path=authority_path,
         )
+
+
+def test_v1_1_runner_binds_content_audit_to_immutable_failed_payload(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> None:
+    runner = _zero_call_runner()
+    _, _, research_input = current_inputs
+    replay = runner._replay_failed_r1(
+        research_input=research_input,
+        payload=_json(R1_FAILED_PAYLOAD),
+        audit=_json(
+            ROOT
+            / "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_current_research_consumer_"
+            "canary_r1_content_audit_v1_0.json"
+        ),
+    )
+
+    assert replay["automatic_salvage_or_publication"] is False
+    assert replay["v1_1_rejection_code"] == (
+        "research_consumer_output_cell_fields_invalid"
+    )
+    assert replay["qualified_content_audit_finding_codes"] == [
+        "ai_to_group_and_segment_profit_attribution_unproven",
+        "ai_working_capital_attribution_unproven",
+        "demand_durability_overreach",
+        "supply_easing_unproven",
+        "unbound_comparative_margin_and_leverage_claim",
+    ]

@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`provider-neutral consumer zero-call engineering pass / natural synthesis pending`
+状态：`v1.1 structural successor implemented / clean proof pending / DeepSeek GA agent-loop qualification planned`
 
 ## 1. 为什么需要这条链
 
@@ -52,7 +52,7 @@ Dell/TSM 官方托管 transcript 已经过人工 route、parser、对象编译�
 
 ### 3.3 模型容量由信息选择解决
 
-第一版模型视图约 88,526 字符，主要由内部 ID、digest、request lineage、citation URL 和重复事实造成。当前模型视图为 48,380 字符：保留来源原文、业务含义、claim boundary 和精确 NumericFact；隐藏只供审计的内部字段。没有通过随手放大上限掩盖信息架构问题。
+第一版模型视图约 88,526 字符，主要由内部 ID、digest、request lineage、citation URL 和重复事实造成。旧 R1 模型视图为 48,380 字符；v1.1 successor 进一步把不可变事实目录与 cell-local interpretation view 分开，当前约 46,061 字符：保留来源原文、业务含义、claim boundary 和精确 NumericFact；隐藏只供审计的内部字段。没有通过随手放大上限掩盖信息架构问题。
 
 ## 4. 零调用 R1 结果
 
@@ -67,20 +67,67 @@ Dell/TSM 官方托管 transcript 已经过人工 route、parser、对象编译�
 
 R1 是脏工作树上的工程证据，已保留且未改写。绑定远端提交 `b4016469...` 的 R2 随后复现相同 research input 与 deliverable digest，证明这不是脏工作树偶然结果。
 
-## 5. 下一自然门与停止规则
+## 5. R1 后的停止规则
 
-R2 已通过；当前只允许一次 DeepSeek Pro 综合 canary：
+旧 clean R2 只证明 v1.0 的离线消费者；随后唯一一次 DeepSeek Pro 综合 canary R1 已失败，且永久保持失败。当前不得重放旧请求、补包 envelope 后追认，也不得恢复旧九调用链。
 
-- 复用保存的 Planner R1，不再次证明规划；
-- 不联网、不重新检索、不 fallback、不 retry；
-- 只改变 `reviewed Evidence/NumericFact → judgment atoms` 这一节点；
-- 完整保存模型可见请求、最终 assistant 输出、参数、usage、finish reason 和 typed terminal；
+新的自然门必须满足：
+
+- 先完成 v1.1 provider-neutral 合同的干净零调用复证；
+- 再建立 DeepSeek GA profile 和四工具最小研究循环；
+- paired canary 前另行签发 exact-once authority；
+- 完整保存模型可见请求、最终 assistant 输出、调用参数、usage、finish reason、tool call 和 typed terminal；
+- Provider 私有推理不得成为 Evidence 或金融事实；工具循环所需的 `reasoning_content` 只在受控传输上下文中回传；
 - 不自动发布到 Workbench，也不宣称 S3 或 FIN 0.1.3 通过。
-
-若模型自然输出通过合同，再做 L1 事实/数值/身份/引用和内容质量审阅。若出现新的 L1，保留 capture 并停在 S3 做一次结构处置；不得恢复旧九调用链或进入逐字段 live 循环。
 
 ## 6. 自然 Canary R1 结果
 
 唯一一次 DeepSeek Pro 调用完成 HTTP 与 exact JSON，并返回五个必需单元，但在 envelope、枚举、cell ref、Evidence role 和自由数量级表述上未通过合同；内容层也存在 AI 归因、现金归因和供应缓解过度推断。特别需要更正的是：model-visible contract 没有列出实际合法枚举，因此枚举失败包含项目责任；同时模型已经看见 claim boundary，仍作出多项越界因果判断，因此也存在真实的模型研究质量问题。
 
 R1 不重试、不追认。下一 successor 必须让 Harness 注入本地 envelope、明列枚举、按 cell 嵌套 Evidence/NumericFact/Gap，并把证据用途改为 `support / limit / context`，再增加显式 inference authority。保存 R1 只用于零调用回放，不能成为新报告或训练 gold。
+
+## 7. v1.1 结构 successor
+
+v1.1 把模型提交面收敛为 provider-neutral 的最终判断合同，而不是一次性 Prompt 修补：
+
+- 模型只提交 `cells`；`schema_version`、`research_input_digest` 和可信 residual gaps 由 Harness 注入；
+- model-visible view 明列全部合法 status、confidence、evidence-use、inference 和 WWC direction 枚举；
+- Evidence、NumericFact 和 gap 以 cell-local view 暴露，禁止跨单元引用；
+- Evidence 使用从互斥的 support/counter 数组改为 `support / limit / context`；
+- 每个判断显式声明 `directly_supported / bounded_inference / not_inferable`；
+- 最终数字、身份、日期、引用和 remaining gaps 仍由本地确定性绑定；
+- immutable R1 payload 与独立内容审计绑定回放，必须继续被拒绝，不能被 v1.1 静默“修好”。
+
+当前聚焦测试为 25 passed；这只是 working-tree 实现证据，干净提交和独立零调用结果尚待完成。
+
+## 8. DeepSeek V4 Pro GA 与官方 Harness 处置
+
+2026-08-13 官方发布 V4 Pro 正式版，API 模型名仍为 `deepseek-v4-pro`。因此旧 R1 仅凭模型名和调用日期不能被可靠标注为 Preview 或 GA；后续 paired 只能声称比较“旧 R1 请求形态”与“新 GA profile／新合同”，不能伪称模型 build A/B。
+
+FIN 采纳的官方约束：
+
+- 标准 Chat Completions 地址为 `https://api.deepseek.com`；高度复杂 Agent 任务使用 thinking=`enabled`、reasoning effort=`max`；
+- thinking 模式下 `temperature`、`top_p`、presence/frequency penalty 不生效，因此 GA profile 不再发送这些无效参数；
+- thinking＋tool calls 的后续请求必须回传 assistant 的 `reasoning_content`，否则 API 会 400；
+- strict function schema 需要 `/beta`、`strict=true`、所有 object properties required 且 `additionalProperties=false`；它仍是 Beta，只能独立资格验证；
+- JSON Output 只作为 paired 基线，不能替代本地 schema 校验。
+
+官方 `deepseek-ai/deepseek-harness` 当前是 developer preview，并明确可能产生破坏性变更。项目不整体引入其插件系统，也不把通用 coding harness 当金融事实控制面；只借鉴最小工具面、有界 step loop、事件/capture 可追溯和停止条件。参考版本固定为审计时 HEAD `47f943859bef60e4160492346772ded9b24f765a`，升级必须重新审计。
+
+官方资料：
+
+- https://api-docs.deepseek.com/zh-cn/news/news260813
+- https://api-docs.deepseek.com/zh-cn/guides/thinking_mode/
+- https://api-docs.deepseek.com/guides/tool_calls/
+- https://api-docs.deepseek.com/guides/json_mode/
+- https://github.com/deepseek-ai/deepseek-harness
+
+## 9. 更新后的执行顺序
+
+1. 完成 v1.1 全量回放、mutation、全仓回归、active-baseline 和 secret scan。
+2. 在干净远端提交上签发 v1.1 zero-call authority，证明 R1 保持失败、successor 合同可执行。
+3. 新建 DeepSeek GA provider profile 与四个 typed tool：按研究单元读取 reviewed Evidence、读取权威 NumericFact、提交 EvidenceRequest、提交 Judgment。
+4. 零调用证明 step/tool/no-progress/capture/跨 cell/数字权限/strict-schema 资格边界。
+5. 单独签发 DELL 单单元 paired canary：`v1.1 JSON + thinking=max` 对 `strict final-tool + thinking=max`。
+6. 选择可靠传输后，再执行 DELL 五单元有界循环；调用次数由真实步骤决定，但受总 step、工具预算和无进展停止条件约束。
+7. 依次执行 L1、八维绝对内容质量、与 R1 同 Evidence Pack paired、qualified-human 验收。任何一项失败都留在 S3，不自动扩成下一产品版本。

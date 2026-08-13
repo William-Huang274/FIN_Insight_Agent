@@ -26,7 +26,10 @@
 - [x] S3 当前基线 research consumer 零调用工程纵切：Evidence Pack＋NumericFact → 判断原子／底稿／报告 preview（45 request-level facts → 35 semantic unique → 25 visible；fake/mutation 通过）
 - [x] S3 当前 consumer clean R2（HEAD/upstream 绑定，复现同一 input/deliverable digest）
 - [x] S3 DELL 自然综合 canary R1（HTTP/exact JSON/5 cells；合同与内容双重失败，0 retry）
-- [ ] S3 consumer envelope／枚举／cell-scoped Evidence／推论权限零调用结构处置
+- [ ] S3 consumer v1.1 envelope／枚举／cell-scoped Evidence／推论权限结构处置
+  - [x] provider-neutral 合同、immutable R1 replay、fake/mutation working-tree implementation
+  - [ ] 全仓回归、clean remote commit 与独立 zero-call proof
+- [ ] DeepSeek V4 Pro GA profile 与四工具最小研究循环资格验证
 - [ ] S3 动态 Agentic Research 与内容质量验收
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision

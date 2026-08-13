@@ -1,7 +1,7 @@
 # S3 标准 Tool Calls 有界兼容 successor 实现
 
 日期：2026-08-14
-状态：`working_tree_engineering_pass / clean_commit_and_fresh_zero_call_proof_pending / model_calls_zero`
+状态：`clean_implementation_and_fresh_zero_call_R3_pass / one_replacement_single_cell_live_allowed / model_calls_zero`
 
 ## 目标
 
@@ -22,9 +22,18 @@
 - 全仓：263 passed。
 - Python compileall：pass。
 - active baseline：115 Python／8 frontend／10 Runtime resources，0 forbidden reference。
-- 全仓 secret scan：6,506 files，0 finding。
+- 全仓 secret scan：6,507 files，0 finding。
 - 网络、模型、Provider、embedding 调用均为 0；没有生成或发布 Judgment。
+
+## 干净零调用 R3
+
+- authority：`FIN013-S3-BOUNDED-FINANCE-LOOP-ZERO-CALL-R3`，绑定已推送提交 `db14854e...`、R1 原始 Provider response capture、v1.1 policy 与当前 runner／transport／core digest。
+- 两个 fresh process 字节等价；research input digest=`6505a58e...`，proof result digest=`7cfd83e2...`。
+- single cell 为 3 assistant step／4 tool calls，five cell 为 10 assistant step／15 tool calls；调用预算仍逐 tool call 计算。
+- 保存的 R1 wire response 已自然重放为同一 cell 的 Evidence＋NumericFact 安全读对；合法 `index` 被剥离，乱序、负数和 mixed-index mutation 均 fail closed。
+- 重复 read、跨 cell、并行 Judgment／EvidenceRequest 均被 `finance_loop_parallel_tool_set_invalid` 拒绝；同一步 receipt 不再覆盖。
+- 0 network、0 model、0 provider、0 embedding；R3 只证明项目实现与新鲜性，不证明 DeepSeek continuation 或研究内容质量。
 
 ## 边界与下一项
 
-working-tree green 不等于可执行 live。下一项是提交并推送这份实现，在 clean HEAD/upstream 上签发一次新的 zero-call authority；proof 必须绑定 R1 private capture、v1.1 policy、当前 runner/transport/core digests，并证明两次 fresh process 等价。只有该 proof 通过后，才签发一个新的 DELL `value_capture` replacement live；R1 不重跑，五单元不自动授权。
+实现已在干净远端提交，fresh zero-call R3 也已通过。下一项只允许签发一个新的 DELL `value_capture` replacement live；R1 不重跑、0 retry。replacement 必须先完成真实 tool result continuation 与最终 Judgment 节点评估；五单元仍不自动授权。

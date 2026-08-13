@@ -1,7 +1,7 @@
 # FIN 0.1.3 S1-D 通用来源入库与网络诊断合同
 
 日期：2026-08-13
-状态：`engineering_pass / automatic_path_blocked / operator_upload_ready / S1D_product_open / no_evidence_promotion`
+状态：`engineering_pass / TUN_off_A_B_complete / TSM_source_and_bounded_evidence_ready / Dell_transport_gap_open / current_pointer_unchanged / S1D_product_open`
 
 ## 1. 产品问题
 
@@ -90,3 +90,24 @@ Source Intake 只记录脱敏诊断：应用层代理是否存在、是否命中
 R1 还暴露出原 capture 对通用 Requests 异常分类不足：TSM 的具体异常类未被持久化，事后只能保守记为 transport exception。R1 保持不可变；successor 已用零网络 mutation 将 connect/read timeout、TLS、proxy、response stream、redirect、invalid URL、connection 和 generic request 分成安全 typed code，且不保存可能带敏感内容的异常消息。本修复不产生自动 R2 权限。
 
 本合同不授权自动 R2 或修改代理设置。当前推荐顺序是：优先用已绑定 Workbench route 人工上传官方 PDF；若必须恢复自动获取，再在用户可见情况下对同一 URL 做 domain DIRECT／临时关闭 TUN 的单次 A/B。无论哪条 driver 成功，后续仍须经过 parser、对象编译、Evidence Gate、Pack 复编译和有限 S2 回归。
+
+## 8. 用户关闭 TUN 后的有界 R2 与下游结果
+
+Owner 关闭 TUN 后，项目在新的干净 authority 下对完全相同的两条 route 各执行一次，仍保持 0 retry／0 模型／0 broad search。执行时两个域都解析为公网 IPv4，并经 WLAN，而不再经 `okz / Meta Tunnel`。但运行时同时观测到 Windows localhost 用户代理和环境代理，因此本次只能准确称为“无 TUN、公共 DNS、WLAN 路径”，不能称为完全无代理裸直连。
+
+- TSM：HTTP 200，取得 1,450,799 bytes、22 页 PDF；私有 raw SHA-256 为 `3e21fe2d...fea453`；
+- Dell：仍在 HTTP status 前 `official_source_transport_read_timeout`，0 bytes；
+- 结论：关闭 TUN 确实解除 TSM 运输阻塞，但不足以解除 Dell；不得把两者继续写成同一个“官方站点全不可达”问题。
+
+随后建立了共用、provider-neutral 的离线链，而不是 TSM 专用一次性脚本：
+
+1. `pypdf_page_text_v1` 逐页解析并保存 page locator、page text digest、raw capture digest；
+2. 官方 PDF 对象编译器生成一个 document parent 与 22 个 page child，全部先标记 `candidate_not_evidence`；
+3. Evidence Gate 只允许第 10、20 页，并要求 packaging、constraint/bottleneck、business effect/response 三组语义原子同时出现；
+4. 两页都通过，作为 `counterparty_or_ecosystem_readthrough` 进入私有 DELL successor Pack；
+5. DELL Pack 从 15 Evidence／16 gaps 变为候选 17／15，只关闭 `dell-gap-advanced-packaging`；
+6. `dell-gap-capacity-release-timing` 与 `dell-gap-supplier-capacity-readthrough` 继续保留：TSM 自述不能证明分给 Dell 多少或何时释放；
+7. S2 仍为 1,319 observations、12 metrics、SQLite SHA-256 `d05b0cc8...c585`，transcript 没有获得 NumericFact 权限；
+8. Workbench current pointer 未切换，公开结果不含 transcript 正文、raw ref、Cookie 或 Authorization。
+
+本轮关闭的是 `TSM advanced-packaging source absence`，没有关闭 Dell 自己的订单转化、利润解释 transcript gap。因此 `core_research_ready=false`、S1 product acceptance=false、S3 execution unauthorized。下一项不是重跑 TSM 或扩大 broad search，而是通过现有绑定 route 人工上传 Dell 官方 PDF；成功后复用同一 parser／对象／Gate 主干。

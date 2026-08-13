@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。真实 S1-C 产品输入审计得到 8 request、128 candidates、19 resolved／9 typed gap 和 45 NumericFacts，并把每项问题归责为候选选择、S2 非标准经营指标或真实缺源。两个新 ranker 与 facet Evidence Role 均未过业务门，故不晋升。S1-D 的 provider-neutral Source Intake、私有 immutable CAS、自动 driver 和人工官方 PDF 上传已进入 Workbench 并通过工程门；唯一 automatic R1 的 Dell/TSM 两条请求均在 HTTP status 前失败，两域 Fake-IP 均经 `okz / Meta Tunnel`，0 PDF、0 Evidence、0 retry。当前优先人工绑定 route 上传；没有合法 PDF、parser、Evidence Gate 和 Pack 复编译前不签发 S3 研究/报告权限。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。真实 S1-C 产品输入审计得到 8 request、128 candidates、19 resolved／9 typed gap 和 45 NumericFacts，并把每项问题归责为候选选择、S2 非标准经营指标或真实缺源。两个新 ranker 与 facet Evidence Role 均未过业务门，故不晋升。S1-D 的 Source Intake、私有 CAS 和自动/人工 driver 已工程通过；Owner 关闭 TUN 后 TSM route 已取得 22-page 官方 PDF，共用 parser／对象／Evidence Gate 只接受第 10、20 页两条先进封装 bounded context，私有 DELL successor 为 17 Evidence／15 gaps，S2 1,319 observations 与 NumericFact 权限不变。Dell transcript 仍 read-timeout，current Pack 指针未切换，因此 `core_research_ready=false`、S1 产品门与 S3 研究/报告权限仍关闭。
 
 ## 当前唯一产品边界
 
@@ -60,7 +60,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 ## 尚未完成，不能提前宣称通过
 
 1. 当前对象库已增加 PIT market role，private S2 公司财务事实 mart 也已被 request-scoped Research Runtime 消费；但 reviewed Evidence Pack 仍只覆盖 SEC 且结构化数值项为 0，S3 和前端尚未消费这些 NumericFact。对象候选不得伪装为已晋升 Evidence，数据库 Runtime integration engineering pass 也不得冒充研究产品通过。
-2. Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 的官方文件已确认存在；共同 Source Intake 与人工绑定 route 已完成，但新的 automatic R1 中 Dell timeout、TSM transport exception，均未取得 HTTP status。两域都由 TUN Fake-IP 映射并经 `okz`，因此本地透明 TUN 路径明确参与失败；尚不能区分 TUN 转发异常与代理出口被 WAF 拒绝。Dell transcript、TSM 先进封装、Micron prepared remarks 与新鲜估值继续是 typed gap；搜索摘要不得代替原文。
+2. Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 的官方文件已确认存在。TUN-off R2 已证明 TSM 原始 PDF 可取得，并完成先进封装 Evidence successor；原先 TSM source gap 已关闭。Dell 在同一 changed path 仍 read-timeout，Micron prepared remarks 与新鲜估值不在本轮授权范围。下一项只允许 Dell 绑定 route 人工入库；搜索摘要不得代替原文，TSM 行业供给背景不得冒充 Dell-specific allocation。
 3. successor 后同对象比较为 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。现成 Cross-Encoder 同为 `17/18` 且提高 MRR，但会把 DELL 直接风险目标从第 1 降到第 19，不能晋升默认路线。
 4. 规则 Evidence Role 虽减少三案 top3 显式不兼容项，却把 Recall 降到 `13/18`；对象级复核仍只有 F1=`0.507936`。根因不仅是对象形态，还包括 reported results、guidance、counterevidence、监管和财务桥接被旧 qrel 混成一个 query，当前规则禁止上线。
 5. 当前 provider-neutral planner compiler 已能把受控 Objective/atoms 变成 EvidenceRequest，并执行 S1 联合候选与 S2 typed fact sibling；但 atoms 仍由工程侧提供。自然模型是否能正确选择 facet、实体、metric 与 product intent 尚未证明，S3 也尚未把候选和 NumericFact 变成研究判断，因此仍不能称为真实用户查询理解或完整产品数值能力。
@@ -78,11 +78,11 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S1D_OPERATOR_OFFICIAL_PDF_INTAKE_OR_USER_VISIBLE_TUN_DIRECT_AB_DECISION`
+`FIN_0_1_3_S1D_DELL_BOUND_OFFICIAL_PDF_OPERATOR_INTAKE`
 
-S3 预算分层与保存 atoms 的 S1-C 产品输入审计已经完成；R1 仍是历史 failed attempt，没有重跑模型。S1-C 工程切片可以记为候选池可审计，但两个 ranker 和 Evidence Role 均未取得 Evidence 权限。S1-D 共同 intake 与 Workbench 人工上传已经工程通过；新的两 route automatic R1 仍为 0 PDF，且证明两个客户端目标都受同一 Fake-IP／`okz` TUN 路径控制。禁止自动 R2、客户端轮换、重试或搜索摘要晋升。
+S3 预算分层与保存 atoms 的 S1-C 产品输入审计已经完成；R1 仍是历史 failed attempt，没有重跑模型。S1-C 工程切片可以记为候选池可审计，但两个 ranker 和通用 Evidence Role 均未取得自动晋升权限。S1-D 的 TUN-off R2 已取得 TSM PDF，随后零网络解析 22 页并只晋升第 10、20 页两条受边界约束的 read-through；DELL successor 从 15／16 变为 17 Evidence／15 gaps，S2 与 current pointer 都不变。Dell 自动 route 仍 timeout。
 
-下一项优先使用已经可用的 Workbench 绑定 route 上传官方 PDF；它只解除 transport 阻塞，不绕过 parser 或 Evidence Gate。若必须恢复自动获取，则由用户可见地对同一 URL 做 domain DIRECT／临时关闭 TUN 的单次 A/B，并另行签发。取得合法 PDF 后依次完成 parser、身份/日期绑定、对象编译、Evidence Gate、Evidence Pack 复编译和有限 S2 依赖回归；没有合格 Evidence Pack 前不得签发 S3 研究/报告调用。
+下一项只处理 Dell：使用已经可用的 Workbench `DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT` 绑定 route 人工上传官方 PDF。上传只解除 transport；之后必须复用同一共用 parser、身份/日期绑定、对象编译、Evidence Gate、Pack successor 和有限 S2 回归。不得重跑 TSM、自动 retry Dell、扩大 broad search 或新建 Dell 专用脚本；Dell 仍缺失时不得签发 S3。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

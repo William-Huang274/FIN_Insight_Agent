@@ -309,3 +309,5 @@ DELL 当前可见 19 条 Evidence、25 个 NumericFact 和 10 条同口径 relat
 - status=0 只表示连响应 metadata 都未取得的传输失败，不再用来覆盖已经取得 HTTP 响应的断流。
 
 这项修复提高的是失败可追溯性和边界可靠性，不改变模型看到的 Evidence、NumericFact、RoleMethodPack、GraphContextPack，也不直接提升研报内容。旧 R1 已丢失的 partial 不可恢复；其 terminal result 与旧 capture 必须保持不可变。
+
+该合同已由 formal zero-call replay R1 绑定干净提交 `a9578878...` 通过：两类 partial mutation 都是 1 attempt／0 retry，两个 fresh targeted process、全仓 280 tests、compileall、active baseline 和 secret scan 均通过。该结果只关闭 capture 可观测性门；replacement Chat 仍需新的 scope decision／Run／Attempt，且运行后仍必须单独进行 L1 与八维内容验收。

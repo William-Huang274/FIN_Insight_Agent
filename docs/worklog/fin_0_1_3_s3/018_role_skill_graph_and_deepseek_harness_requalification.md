@@ -141,3 +141,9 @@ S1 的完整 typed graph handler、全公司图谱重建和 DeepSeek Harness sha
 6. paired R1 的 Chat／Responses 两份 immutable Judgment 已按原 digest 回放；它们因缺少当前 relation／method／graph 消费字段而同时被 v1.2 拒绝，旧失败没有被静默追认。三案例完整 fake 循环与 mutation 另覆盖 identity、关系端点、YoY 无 relation、method 数量、cross-case graph、不可用来源和 stale／归档上下文。当前全仓回归为 `276 passed`，compileall 通过，active baseline 为 `123 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference`，secret scan 为 `6,536 files / 0 finding`。
 
 这仍只是工作树工程结果，不是正式 fresh proof 或自然模型质量结果。下一门是先提交并推送这条实现链，再签发一次零网络／零模型 authority；只有正式 proof 复现相同三案例结果后，才允许唯一一次 Chat `CELL::value_capture` canary。五单元、Responses 重跑、Anthropic live 和其余 RoleMethodPack 迁移继续不在本轮范围。
+
+## 9. Formal zero-call R1 authority 失败与处置
+
+实现已在干净远端提交 `93d58d10...`，但 R1 authority 误绑 `bounded_finance_agent_loop_policy_v1_0`。该旧 policy 的并行上限为 1，而当前已经资格化的 mandatory read 是同 cell Evidence＋NumericFact 两个只读工具；因此 runner 在 single-cell fake 的第一步以 `finance_loop_parallel_tool_calls_exceeded` 终止。
+
+R1 没有发生网络、模型、Provider、embedding、retry 或产品发布，也没有开始检验新 relation／source-route／method／graph 内容。失败 authority 与 terminal result 保持不可变。后续只允许签发 ATTEMPT-02，唯一差异是绑定已验证的 loop policy v1.1；不能修改 R1 后追认为通过。

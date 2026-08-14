@@ -426,6 +426,135 @@ def test_standard_tool_loop_accepts_digest_bound_research_context_decision(
     assert result["acceptance"]["five_cell_live_authorized"] is False
 
 
+def test_standard_tool_loop_accepts_bound_incomplete_read_replacement_decision(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    authority_path, _, paths = _prepare_tool_loop_test(
+        runner, monkeypatch, tmp_path
+    )
+    proof_path = tmp_path / "transport-proof.json"
+    proof_path.write_text(
+        json.dumps(
+            {
+                "status": "zero_call_incomplete_read_capture_replay_pass",
+                "result_digest": "d" * 64,
+                "normalized_proof": {
+                    "provider_neutral_shared_terminal_capture_path": True,
+                    "ordinary_chat_and_tool_calls_both_covered": True,
+                    "model_calls": 0,
+                    "network_calls": 0,
+                    "provider_calls": 0,
+                    "retries": 0,
+                    "valid_json_partial_mutation": {
+                        "transport_attempts": 1,
+                        "eligible_for_contract_parse": False,
+                        "eligible_for_business_promotion": False,
+                    },
+                    "malformed_partial_mutation": {
+                        "transport_attempts": 1,
+                        "partial_plaintext_persisted": False,
+                        "private_reasoning_leaked": False,
+                        "eligible_for_contract_parse": False,
+                        "eligible_for_business_promotion": False,
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    r1_result_path = tmp_path / "immutable-r1-result.json"
+    r1_authority_ref = "immutable-r1-authority.json"
+    r1_result_path.write_text(
+        json.dumps(
+            {
+                "status": "terminal_failed_no_retry",
+                "failure_code": "model_gateway_transport_error",
+                "authority_ref": r1_authority_ref,
+                "execution": {"retries": 0, "fallbacks": 0},
+            }
+        ),
+        encoding="utf-8",
+    )
+    decision_path = tmp_path / "replacement-decision.json"
+    decision_path.write_text(
+        json.dumps(
+            {
+                "status": (
+                    "incomplete_read_capture_replay_pass_"
+                    "one_chat_replacement_authorized"
+                ),
+                "case_key": "DELL",
+                "cell_id": "CELL::value_capture",
+                "next_authorized_scope": (
+                    "one_Chat_DELL_value_capture_replacement_after_"
+                    "incomplete_read_capture_replay"
+                ),
+                "research_context_zero_call_result_digest": "c" * 64,
+                "chat_live_authorized": True,
+                "responses_live_authorized": False,
+                "anthropic_live_authorized": False,
+                "five_cell_live_authorized": False,
+                "other_role_method_pack_migration_authorized": False,
+                "external_retrieval_authorized": False,
+                "product_publication_authorized": False,
+                "retries": 0,
+                "fallbacks": 0,
+                "replacement_boundary": {
+                    "transport_capture_proof_ref": "transport-proof",
+                    "transport_capture_proof_sha256": runner._sha(proof_path),
+                    "transport_capture_proof_result_digest": "d" * 64,
+                    "immutable_r1_result_ref": "immutable-r1-result",
+                    "immutable_r1_result_sha256": runner._sha(r1_result_path),
+                    "immutable_r1_authority_ref": r1_authority_ref,
+                    "replacement_is_new_attempt_not_retry": True,
+                    "historical_partial_recovery_claimed": False,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    paths["prior_scope_decision_ref"] = decision_path
+    destinations = {
+        "capture": tmp_path / "capture",
+        "private": tmp_path / "private",
+        "public.json": tmp_path / "public.json",
+        "transport-proof": proof_path,
+        "immutable-r1-result": r1_result_path,
+    }
+    monkeypatch.setattr(
+        runner,
+        "_resolve",
+        lambda ref: destinations[str(ref)],
+    )
+    fake = json.loads(FAKE.read_text(encoding="utf-8"))
+    judgment = next(
+        row
+        for row in fake["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+
+    def executor(**kwargs):
+        index = int(str(kwargs["attempt_id"]).split("-")[-3])
+        if index == 1:
+            return _parallel_tool_step(
+                index, "CELL::value_capture", tmp_path / "capture"
+            )
+        return _tool_step(
+            index,
+            SUBMIT_RESEARCH_JUDGMENT_TOOL,
+            judgment,
+            tmp_path / "capture",
+        )
+
+    result = runner.run_tool_loop(authority_path, step_executor=executor)
+
+    assert result["status"] == "completed_contract_valid_content_assessment_pending"
+    assert result["execution"]["retries"] == 0
+    assert result["acceptance"]["five_cell_live_authorized"] is False
+
+
 def test_standard_tool_loop_failure_preserves_successful_prefix_without_retry(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

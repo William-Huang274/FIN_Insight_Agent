@@ -311,3 +311,5 @@ DELL 当前可见 19 条 Evidence、25 个 NumericFact 和 10 条同口径 relat
 这项修复提高的是失败可追溯性和边界可靠性，不改变模型看到的 Evidence、NumericFact、RoleMethodPack、GraphContextPack，也不直接提升研报内容。旧 R1 已丢失的 partial 不可恢复；其 terminal result 与旧 capture 必须保持不可变。
 
 该合同已由 formal zero-call replay R1 绑定干净提交 `a9578878...` 通过：两类 partial mutation 都是 1 attempt／0 retry，两个 fresh targeted process、全仓 280 tests、compileall、active baseline 和 secret scan 均通过。该结果只关闭 capture 可观测性门；replacement Chat 仍需新的 scope decision／Run／Attempt，且运行后仍必须单独进行 L1 与八维内容验收。
+
+replacement gate 不复用旧 Research Context Chat decision。新 decision 必须同时绑定 R4、RC-S3-012 replay 和 immutable R1 result，并显式声明这是新 attempt 而不是 retry；runner 会重新验证 safe JSON partial 与 malformed partial 都不可 contract parse／business promotion。只有 DELL `value_capture`、Chat-only、0 retry／fallback 且所有扩大项关闭时才放行。该 gate 已通过全仓 281 tests；live authority 仍必须在 gate 提交并推送后的干净 HEAD 上另行签发。

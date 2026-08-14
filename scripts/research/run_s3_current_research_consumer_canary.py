@@ -1112,6 +1112,104 @@ def _public_tool_steps(
     ]
 
 
+def _incomplete_read_replacement_scope_authorized(
+    decision: Mapping[str, Any],
+    *,
+    cell_ids: Sequence[str],
+    clean_zero_call_result: Mapping[str, Any],
+) -> bool:
+    status = (
+        "incomplete_read_capture_replay_pass_"
+        "one_chat_replacement_authorized"
+    )
+    if decision.get("status") != status:
+        return False
+    boundary = decision.get("replacement_boundary")
+    if not isinstance(boundary, Mapping):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_tool_loop_replacement_boundary_invalid"
+        )
+    proof_path = _resolve(str(boundary.get("transport_capture_proof_ref") or ""))
+    r1_result_path = _resolve(str(boundary.get("immutable_r1_result_ref") or ""))
+    if not (
+        proof_path.is_file()
+        and r1_result_path.is_file()
+        and _sha(proof_path)
+        == str(boundary.get("transport_capture_proof_sha256") or "")
+        and _sha(r1_result_path)
+        == str(boundary.get("immutable_r1_result_sha256") or "")
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_tool_loop_replacement_evidence_drift"
+        )
+    proof = _json(proof_path)
+    normalized = proof.get("normalized_proof")
+    r1_result = _json(r1_result_path)
+    if not isinstance(normalized, Mapping):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_tool_loop_replacement_proof_invalid"
+        )
+    valid_partial = normalized.get("valid_json_partial_mutation")
+    malformed_partial = normalized.get("malformed_partial_mutation")
+    proof_valid = (
+        proof.get("status") == "zero_call_incomplete_read_capture_replay_pass"
+        and proof.get("result_digest")
+        == boundary.get("transport_capture_proof_result_digest")
+        and normalized.get("provider_neutral_shared_terminal_capture_path") is True
+        and normalized.get("ordinary_chat_and_tool_calls_both_covered") is True
+        and normalized.get("model_calls") == 0
+        and normalized.get("network_calls") == 0
+        and normalized.get("provider_calls") == 0
+        and normalized.get("retries") == 0
+        and isinstance(valid_partial, Mapping)
+        and valid_partial.get("transport_attempts") == 1
+        and valid_partial.get("eligible_for_contract_parse") is False
+        and valid_partial.get("eligible_for_business_promotion") is False
+        and isinstance(malformed_partial, Mapping)
+        and malformed_partial.get("transport_attempts") == 1
+        and malformed_partial.get("partial_plaintext_persisted") is False
+        and malformed_partial.get("private_reasoning_leaked") is False
+        and malformed_partial.get("eligible_for_contract_parse") is False
+        and malformed_partial.get("eligible_for_business_promotion") is False
+    )
+    predecessor_valid = (
+        r1_result.get("status") == "terminal_failed_no_retry"
+        and r1_result.get("failure_code") == "model_gateway_transport_error"
+        and r1_result.get("authority_ref")
+        == boundary.get("immutable_r1_authority_ref")
+        and r1_result.get("execution", {}).get("retries") == 0
+        and r1_result.get("execution", {}).get("fallbacks") == 0
+    )
+    scope_valid = (
+        list(cell_ids) == ["CELL::value_capture"]
+        and decision.get("case_key") == "DELL"
+        and decision.get("cell_id") == "CELL::value_capture"
+        and decision.get("next_authorized_scope")
+        == (
+            "one_Chat_DELL_value_capture_replacement_after_"
+            "incomplete_read_capture_replay"
+        )
+        and decision.get("research_context_zero_call_result_digest")
+        == clean_zero_call_result.get("result_digest")
+        and decision.get("chat_live_authorized") is True
+        and decision.get("responses_live_authorized") is False
+        and decision.get("anthropic_live_authorized") is False
+        and decision.get("five_cell_live_authorized") is False
+        and decision.get("other_role_method_pack_migration_authorized") is False
+        and decision.get("external_retrieval_authorized") is False
+        and decision.get("product_publication_authorized") is False
+        and decision.get("retries") == 0
+        and decision.get("fallbacks") == 0
+        and boundary.get("replacement_is_new_attempt_not_retry") is True
+        and boundary.get("historical_partial_recovery_claimed") is False
+    )
+    if not (proof_valid and predecessor_valid and scope_valid):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_tool_loop_replacement_disposition_invalid"
+        )
+    return True
+
+
 def run_tool_loop(
     authority_path: Path,
     *,
@@ -1215,10 +1313,18 @@ def run_tool_loop(
         and prior_scope_decision.get("other_role_method_pack_migration_authorized")
         is False
     )
+    incomplete_read_replacement_authorized = (
+        _incomplete_read_replacement_scope_authorized(
+            prior_scope_decision,
+            cell_ids=cell_ids,
+            clean_zero_call_result=clean,
+        )
+    )
     single_scope_authorized = (
         len(cell_ids) == 1
         and (
             research_context_revalidation_authorized
+            or incomplete_read_replacement_authorized
             or (
                 prior_scope_decision.get("status")
                 == "json_node_pass_strict_transport_unqualified_full_report_not_scored"

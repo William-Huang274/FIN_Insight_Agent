@@ -2,7 +2,7 @@
 
 日期：2026-08-14
 
-状态：`owner_authorized_layer_one_only / formal_zero_call_proof_pass / one_fixed_pack_chat_canary_authorized / live_pending / layer_two_blocked`
+状态：`formal_zero_call_proof_pass / one_fixed_pack_chat_terminal_failed_no_retry / raw_content_materially_improved / layer_one_not_accepted / layer_two_blocked`
 
 ## Owner 决定
 
@@ -33,4 +33,10 @@ Owner 接受三层验收，但只批准先完成第一层并返回结果：fixed
 
 ## 停止线
 
-formal zero-call proof 已通过。下一步只能把证明与本决策固化到干净 upstream，再签发第一层唯一一次 Chat live。无论 live 成功或失败，本工作包都必须返回 Owner；不能自动开始 Layer Two。
+formal zero-call proof 已通过，唯一一次 Chat live 也已执行并终止。运行完成 Evidence／NumericFact 并行读取和一次 Judgment 提交，共 2 次模型调用、0 EvidenceRequest、0 retry；首个硬失败为 `research_consumer_thesis_atom_invalid`。
+
+模型复述了 reviewed Evidence 明确允许引用的“中个位数”管理层目标，但旧叙事 validator 禁止汉字数值区间，且当前输入没有 typed range／management-target alias。零调用尸检证明仅移除该区间表面后，同一输出通过现有 validator；该回放只用于定位，不追认失败输出。
+
+原始内容较 R2 明显改善：不再把公司／分部利润归因于 AI 服务器，不再发明半固定成本，明确限定为产品级 management assertion，并保留价格、数量和 PVM 缺口。原始内容诊断为 `21/24`，但因没有合同有效 Judgment，正式 L1、第一层 acceptance 和产品发布均为 false。
+
+必须先返回 Owner。第二层继续 blocked；不允许自动修改后重跑。若 Owner 继续，建议先做 source-bound qualitative range／management-target alias 与结构化 claim relation 的零调用处置。

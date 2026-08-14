@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。旧 Chat R1 的 `IncompleteRead` capture 缺口由共用 provider-neutral capture-first 路径关闭，formal replay 与全仓回归通过。新的独立 Chat R2 已真实完成 5 step／6 receipts，五份响应均完整、0 retry、`IncompleteRead=0`；DeepSeek 实际消费 8 个 NumericFact、4 条同口径 relation、6 条方法步骤和 1 条当前图边，并保持三项补证为 open gap，但产品级因果归因 L1 失败。2026-08-14 的 S1→S3 全链审计确认动态补证尚未执行 S1 Evidence 回流，S2 缺产品经营指标与产品→财务桥权威，S3 缺 claim scope／causal bridge 强制门。Owner 随后把验收拆为 fixed Pack、单单元动态纵切、五单元动态案例三层，并只批准先完成第一层。当前 successor overlay、回归和 formal zero-call proof 已通过：旧 R2 强归因被拒绝，而 bounded informative judgment 保持可通过。现只签发一次 fixed-pack Chat canary；第一层通过也只证明给定资料下的分析能力，不代表 Agentic Research，第二层和五单元继续 blocked。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。旧 Chat R1 的 `IncompleteRead` capture 缺口由共用 provider-neutral capture-first 路径关闭。后续 Chat R2 真实完成但因产品级因果归因 L1 失败。Owner 把验收拆为 fixed Pack、单单元动态纵切、五单元动态案例三层，并只批准第一层。claim-authority formal zero-call proof 已通过；唯一 fixed-pack Chat R1 也已执行：2 次模型调用完成读 Evidence／NumericFact 和提交 Judgment，0 retry／EvidenceRequest。自然输出已收敛为产品级 management assertion，不再归因公司利润或发明半固定成本，但 reviewed source 的“中个位数”目标没有 typed alias、又被通用叙事数字门禁止，故 terminal failed。原始内容诊断 `21/24` 只表示方向改善，正式合同、L1 和第一层 acceptance 均未通过；第二层和五单元继续 blocked。
 
 ## 当前唯一产品边界
 
@@ -96,7 +96,7 @@ R2 仍未通过内容门：最终 thesis 把公司／ISG 多因素利润改善�
 
 S1→S3 全链审计已完成，完整记录为 `docs/worklog/fin_0_1_3_s3/019_s1_to_s3_full_chain_and_experiment_audit.md`。审计确认当前不能只把下一项理解为一个 S3 validator：`submit_evidence_request` 仍是 proposal-only，当前 loop 没有执行 S1 检索／Evidence Gate／回流；S2 对标准公司财务事实可靠，但订单、积压、销量、ASP、PVM、产品利润线、产品到公司／分部利润桥和估值尚无同等级 typed authority；S3 则缺 claim scope 和 causal bridge 强制门。建议供 Owner 选择的主方案是一个有界的 S1→S3 Research Truth Spine Closure，把 EvidenceResponse、operating-metric／bridge 和 claim authority 放在同一 DELL 单元纵切中验证。单独 S3 因果门仍可作为较快备选，但只能提高安全性，可能得到更空的 `not_inferable`，不能代表研究质量提升。
 
-Owner 最新决定是先隔离模型分析能力：第一层固定使用 R2 同一 reviewed Pack，不运行 S1 动态检索，不允许 EvidenceRequest，不计作 Agentic Research。provider-neutral claim-authority overlay 已实现，要求模型声明 claim scope、financial scope 和 causal bridge authority；当前 Pack 不暴露产品到分部／公司的直接桥。保存 R2 Judgment 已作为负向 replay，formal zero-call proof 状态为 `engineering_pass_zero_call_fixed_pack_claim_authority`，且确认 `0 EvidenceRequest / 0 model call`。现已授权唯一一次 DELL `value_capture` fixed-pack Chat；之后必须完成 L1／内容／paired 评估并返回 Owner，不自动进入动态第二层。
+Owner 最新决定是先隔离模型分析能力：第一层固定使用 R2 同一 reviewed Pack，不运行 S1 动态检索，不允许 EvidenceRequest，不计作 Agentic Research。provider-neutral claim-authority overlay 已实现，保存 R2 Judgment 负向 replay 与 formal zero-call proof 均通过。唯一 DELL `value_capture` fixed-pack Chat 已 terminal failed no retry；原始内容较 R2 明显改善，但没有合同有效 Judgment。现在必须把结果返回 Owner；不自动进入动态第二层，也不自动修复后重跑。建议下一决策只考虑 source-bound qualitative range／management-target alias 与结构化 claim relation 的零调用处置。
 
 历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。当前统一合同、协议投影、Research Context Closure 和 IncompleteRead capture-first 均已达到 formal clean replay pass；新 Chat R2 也已自然完成，但因产品级利润归因越界未过 L1。五 cell 不再是“等待复验”，而是明确 blocked。未批准新的跨阶段或局部处置范围前，不自动新增代码、模型调用、五单元运行、其他 Skill 迁移或 broad source 扩张。
 

@@ -50,3 +50,10 @@ Prompt 和 Skill 已经明确提醒过这些边界，R2 仍越界，因此不能
 - 通过正式 clean proof 后只允许一次新的 DELL Chat canary，0 retry／fallback／retrieval／embedding／publication；
 - live 后分别做 L1、内容质量和与 R2 的 paired assessment，再返回 Owner；不自动进入 Layer Two。
 
+## 6. 首次自然运行结果
+
+唯一一次 Chat R1 完成 2 个模型步骤：并行读取 Evidence／NumericFact，随后提交 Judgment；0 EvidenceRequest、0 retry、0 外源检索。模型自然选择 `product / product_financial / management_assertion_only`，不再把公司或分部利润改善归因于 AI 服务器，也移除了旧 R2 的半固定成本机制。
+
+正式结果仍为 `terminal_failed_no_retry`。最早失败不是 causal scope，而是旧通用叙事门禁止汉字数字区间：模型复述 reviewed Evidence 明确允许引用的“中个位数”管理层目标，当前合同却没有 typed range／management-target alias。本轮因此证明 claim-authority 方向有效，但“来源允许引用的定性区间如何进入确定性数值表面”仍未闭合。
+
+失败输出不得晋升。第二层仍 blocked。任何后续处置应先零调用建立 source-bound qualitative range／management-target alias，并把文本关键词式因果 guard 逐步替换为结构化 claim relation；这不改变模型对 thesis、mechanism、counterargument 和 WWC 的写作所有权。

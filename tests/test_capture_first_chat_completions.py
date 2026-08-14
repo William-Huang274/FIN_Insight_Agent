@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import http.client
 import json
 from pathlib import Path
 import urllib.error
@@ -66,6 +68,30 @@ class _Response:
 
     def read(self, size: int = -1) -> bytes:
         return json.dumps(self.payload).encode("utf-8")[:size]
+
+
+class _IncompleteResponse:
+    status = 200
+
+    def __init__(self, partial: bytes, *, expected: int) -> None:
+        self.partial = partial
+        self.expected = expected
+        self.headers = {
+            "Content-Type": "application/json",
+            "Content-Length": str(len(partial) + expected),
+            "x-request-id": "provider-incomplete-1",
+            "Set-Cookie": "must-not-be-captured",
+            "Authorization": "must-not-be-captured",
+        }
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        return None
+
+    def read(self, size: int = -1) -> bytes:
+        raise http.client.IncompleteRead(self.partial[:size], self.expected)
 
 
 def test_exact_once_gateway_captures_request_and_output_without_secret_or_reasoning(
@@ -166,6 +192,136 @@ def test_gateway_preserves_http_failure_capture_without_retry(
     )
     assert capture["status_code"] == 429
     assert capture["response_body"]["error"]["message"] == "quota"
+
+
+def test_gateway_retains_safe_complete_json_partial_but_never_promotes_it(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls = 0
+    partial = json.dumps(
+        {
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": '{"ok":true}',
+                        "reasoning_content": "private chain must be redacted",
+                    },
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {"total_tokens": 21},
+        }
+    ).encode("utf-8")
+
+    def incomplete(*_args: object, **_kwargs: object) -> _IncompleteResponse:
+        nonlocal calls
+        calls += 1
+        return _IncompleteResponse(partial, expected=7)
+
+    monkeypatch.setenv("FIXTURE_PROVIDER_KEY", "fixture")
+    monkeypatch.setattr(urllib.request, "urlopen", incomplete)
+    with pytest.raises(ModelGatewayError) as failure:
+        execute_chat_completion_exact_once(
+            profile=_profile(),
+            messages=({"role": "user", "content": "Bounded input."},),
+            capture_root=tmp_path,
+            run_id="RUN::INCOMPLETE-JSON",
+            attempt_id="ATTEMPT::1",
+        )
+
+    assert calls == 1
+    assert failure.value.code == "model_gateway_incomplete_read"
+    capture_text = Path(failure.value.capture_ref).read_text(encoding="utf-8")
+    capture = json.loads(capture_text)
+    assert capture["status_code"] == 200
+    assert capture["provider_request_id"] == "provider-incomplete-1"
+    assert capture["response_headers"] == {
+        "content-length": str(len(partial) + 7),
+        "content-type": "application/json",
+        "x-request-id": "provider-incomplete-1",
+    }
+    assert capture["received_body_bytes"] == len(partial)
+    assert capture["expected_additional_bytes"] == 7
+    assert capture["expected_total_body_bytes"] == len(partial) + 7
+    assert capture["declared_content_length"] == len(partial) + 7
+    assert capture["raw_response_sha256"] == hashlib.sha256(partial).hexdigest()
+    assert capture["response_body_complete"] is False
+    assert capture["partial_response_received"] is True
+    assert capture["response_body_parse_status"] == "json"
+    assert capture["response_body_persisted"] is True
+    assert capture["eligible_for_contract_parse"] is False
+    assert capture["eligible_for_business_promotion"] is False
+    assert capture["response_body"]["choices"][0]["message"]["content"] == (
+        '{"ok":true}'
+    )
+    assert "private chain must be redacted" not in capture_text
+    assert "must-not-be-captured" not in capture_text
+
+
+def test_tool_step_retains_only_digest_and_lengths_for_unsafe_partial(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls = 0
+    partial = (
+        b'{"choices":[{"message":{"reasoning_content":'
+        b'"private chain in malformed fragment","tool_calls":['
+    )
+
+    def incomplete(*_args: object, **_kwargs: object) -> _IncompleteResponse:
+        nonlocal calls
+        calls += 1
+        return _IncompleteResponse(partial, expected=113)
+
+    monkeypatch.setenv("FIXTURE_PROVIDER_KEY", "fixture")
+    monkeypatch.setattr(urllib.request, "urlopen", incomplete)
+    with pytest.raises(ModelGatewayError) as failure:
+        execute_chat_completion_tool_step_exact_once(
+            profile=_profile(
+                request_defaults={
+                    "max_tokens": 500,
+                    "stream": False,
+                    "thinking": {"type": "enabled"},
+                    "reasoning_effort": "max",
+                }
+            ),
+            messages=({"role": "user", "content": "Research one cell."},),
+            tools=(
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "submit_research_judgment",
+                        "description": "Submit one judgment.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {"cell_id": {"type": "string"}},
+                            "required": ["cell_id"],
+                            "additionalProperties": False,
+                        },
+                    },
+                },
+            ),
+            capture_root=tmp_path,
+            run_id="RUN::INCOMPLETE-MALFORMED",
+            attempt_id="STEP::1",
+        )
+
+    assert calls == 1
+    assert failure.value.code == "model_gateway_incomplete_read"
+    capture_text = Path(failure.value.capture_ref).read_text(encoding="utf-8")
+    capture = json.loads(capture_text)
+    assert capture["received_body_bytes"] == len(partial)
+    assert capture["expected_additional_bytes"] == 113
+    assert capture["raw_response_sha256"] == hashlib.sha256(partial).hexdigest()
+    assert capture["response_body_parse_status"] == "unsafe_unparsed_redacted"
+    assert capture["response_body_persisted"] is False
+    assert capture["response_body"] == {
+        "reason": "body_not_safely_persisted",
+        "unparsed_response_redacted": True,
+    }
+    assert capture["eligible_for_contract_parse"] is False
+    assert capture["eligible_for_business_promotion"] is False
+    assert "private chain in malformed fragment" not in capture_text
 
 
 def test_gateway_invalid_provider_shape_preserves_response_capture_ref(

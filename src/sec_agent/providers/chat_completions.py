@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
+import http.client
 import json
 import os
 from pathlib import Path
@@ -48,6 +49,15 @@ _REQUIRED_AUTHORITY = {
     "provider_private_reasoning_capture_forbidden": True,
     "provider_specific_profile_outside_core": True,
 }
+
+_SAFE_RESPONSE_HEADER_NAMES = (
+    "content-type",
+    "content-length",
+    "content-encoding",
+    "transfer-encoding",
+    "x-request-id",
+    "x-ds-request-id",
+)
 
 
 class ModelGatewayError(RuntimeError):
@@ -609,6 +619,223 @@ def _empty_completion_failure_code(
     return "model_gateway_generation_budget_exhausted"
 
 
+def _safe_response_headers(headers: Any) -> dict[str, str]:
+    """Keep only response metadata that is safe and useful for transport audit."""
+
+    if headers is None or not hasattr(headers, "get"):
+        return {}
+    casefolded: dict[str, Any] = {}
+    if hasattr(headers, "items"):
+        try:
+            casefolded = {
+                str(key).casefold(): value for key, value in headers.items()
+            }
+        except (AttributeError, TypeError, ValueError):
+            casefolded = {}
+    output: dict[str, str] = {}
+    for name in _SAFE_RESPONSE_HEADER_NAMES:
+        value = casefolded.get(name)
+        if value is None:
+            try:
+                value = headers.get(name)
+            except (AttributeError, KeyError, TypeError):
+                value = None
+        if value is None:
+            continue
+        normalized = " ".join(str(value).splitlines()).strip()
+        if normalized:
+            output[name] = normalized[:2048]
+    return output
+
+
+def _response_transport_metadata(
+    response: Any,
+    *,
+    default_status_code: int,
+) -> tuple[int, str, str, dict[str, str]]:
+    safe_headers = _safe_response_headers(getattr(response, "headers", None))
+    status_code = int(
+        getattr(response, "status", None)
+        or getattr(response, "code", None)
+        or default_status_code
+    )
+    content_type = safe_headers.get("content-type", "")
+    provider_request_id = (
+        safe_headers.get("x-request-id")
+        or safe_headers.get("x-ds-request-id")
+        or ""
+    )
+    return status_code, content_type, provider_request_id, safe_headers
+
+
+def _transient_response_body(raw: bytes, maximum_response_bytes: int) -> Any:
+    admitted_raw = raw[:maximum_response_bytes]
+    try:
+        return json.loads(admitted_raw.decode("utf-8")) if admitted_raw else {}
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return admitted_raw.decode("utf-8", errors="replace")
+
+
+def _incomplete_expected_bytes(exc: http.client.IncompleteRead) -> int | None:
+    expected = getattr(exc, "expected", None)
+    return (
+        expected
+        if isinstance(expected, int) and not isinstance(expected, bool)
+        else None
+    )
+
+
+def _incomplete_partial_bytes(exc: http.client.IncompleteRead) -> bytes:
+    partial = getattr(exc, "partial", b"")
+    return (
+        bytes(partial)
+        if isinstance(partial, (bytes, bytearray, memoryview))
+        else b""
+    )
+
+
+def _execute_capture_first_http_exchange(
+    *,
+    request: urllib.request.Request,
+    profile: ChatCompletionProfile,
+    response_ref: Path,
+    run_id: str,
+    attempt_id: str,
+) -> tuple[dict[str, Any], Any]:
+    """Execute one HTTP exchange and atomically capture every terminal outcome.
+
+    An incomplete response is retained as transport evidence but is never
+    returned to a contract parser.  There is deliberately no retry or partial
+    continuation path here.
+    """
+
+    status_code = 0
+    content_type = ""
+    provider_request_id = ""
+    response_headers: dict[str, str] = {}
+    try:
+        with urllib.request.urlopen(
+            request,
+            timeout=profile.timeout_seconds,
+        ) as response:
+            (
+                status_code,
+                content_type,
+                provider_request_id,
+                response_headers,
+            ) = _response_transport_metadata(response, default_status_code=200)
+            raw = response.read(profile.maximum_response_bytes + 1)
+    except urllib.error.HTTPError as exc:
+        (
+            status_code,
+            content_type,
+            provider_request_id,
+            response_headers,
+        ) = _response_transport_metadata(exc, default_status_code=int(exc.code))
+        try:
+            raw = exc.read(profile.maximum_response_bytes + 1)
+        except http.client.IncompleteRead as incomplete:
+            raw = _incomplete_partial_bytes(incomplete)
+            _persist_response_capture(
+                response_ref=response_ref,
+                run_id=run_id,
+                attempt_id=attempt_id,
+                provider_id=profile.provider_id,
+                model=profile.model,
+                status_code=status_code,
+                content_type=content_type,
+                provider_request_id=provider_request_id,
+                response_headers=response_headers,
+                raw=raw,
+                maximum_response_bytes=profile.maximum_response_bytes,
+                transport_error="IncompleteRead",
+                response_body_complete=False,
+                incomplete_expected_additional_bytes=_incomplete_expected_bytes(
+                    incomplete
+                ),
+            )
+            raise ModelGatewayError(
+                "model_gateway_incomplete_read",
+                capture_ref=response_ref.as_posix(),
+            ) from incomplete
+        _persist_response_capture(
+            response_ref=response_ref,
+            run_id=run_id,
+            attempt_id=attempt_id,
+            provider_id=profile.provider_id,
+            model=profile.model,
+            status_code=status_code,
+            content_type=content_type,
+            provider_request_id=provider_request_id,
+            response_headers=response_headers,
+            raw=raw,
+            maximum_response_bytes=profile.maximum_response_bytes,
+            transport_error="",
+        )
+        raise ModelGatewayError(
+            f"model_gateway_http_error:{exc.code}",
+            capture_ref=response_ref.as_posix(),
+        ) from exc
+    except http.client.IncompleteRead as exc:
+        raw = _incomplete_partial_bytes(exc)
+        _persist_response_capture(
+            response_ref=response_ref,
+            run_id=run_id,
+            attempt_id=attempt_id,
+            provider_id=profile.provider_id,
+            model=profile.model,
+            status_code=status_code,
+            content_type=content_type,
+            provider_request_id=provider_request_id,
+            response_headers=response_headers,
+            raw=raw,
+            maximum_response_bytes=profile.maximum_response_bytes,
+            transport_error="IncompleteRead",
+            response_body_complete=False,
+            incomplete_expected_additional_bytes=_incomplete_expected_bytes(exc),
+        )
+        raise ModelGatewayError(
+            "model_gateway_incomplete_read",
+            capture_ref=response_ref.as_posix(),
+        ) from exc
+    except Exception as exc:
+        _persist_response_capture(
+            response_ref=response_ref,
+            run_id=run_id,
+            attempt_id=attempt_id,
+            provider_id=profile.provider_id,
+            model=profile.model,
+            status_code=status_code,
+            content_type=content_type,
+            provider_request_id=provider_request_id,
+            response_headers=response_headers,
+            raw=b"",
+            maximum_response_bytes=profile.maximum_response_bytes,
+            transport_error=type(exc).__name__,
+            response_body_complete=False,
+        )
+        raise ModelGatewayError(
+            "model_gateway_transport_error",
+            capture_ref=response_ref.as_posix(),
+        ) from exc
+
+    capture = _persist_response_capture(
+        response_ref=response_ref,
+        run_id=run_id,
+        attempt_id=attempt_id,
+        provider_id=profile.provider_id,
+        model=profile.model,
+        status_code=status_code,
+        content_type=content_type,
+        provider_request_id=provider_request_id,
+        response_headers=response_headers,
+        raw=raw,
+        maximum_response_bytes=profile.maximum_response_bytes,
+        transport_error="",
+    )
+    return capture, _transient_response_body(raw, profile.maximum_response_bytes)
+
+
 def _execute_capture_first_request(
     *,
     profile: ChatCompletionProfile,
@@ -666,78 +893,12 @@ def _execute_capture_first_request(
             "User-Agent": "FIN-Insight-Agent/0.1.3",
         },
     )
-    try:
-        with urllib.request.urlopen(
-            request,
-            timeout=profile.timeout_seconds,
-        ) as response:
-            status_code = int(getattr(response, "status", 200))
-            raw = response.read(profile.maximum_response_bytes + 1)
-            content_type = str(response.headers.get("Content-Type") or "")
-            provider_request_id = str(
-                response.headers.get("x-request-id")
-                or response.headers.get("x-ds-request-id")
-                or ""
-            )
-    except urllib.error.HTTPError as exc:
-        raw = exc.read(profile.maximum_response_bytes + 1)
-        _persist_response_capture(
-            response_ref=response_ref,
-            run_id=run_id,
-            attempt_id=attempt_id,
-            provider_id=profile.provider_id,
-            model=profile.model,
-            status_code=int(exc.code),
-            content_type=str(exc.headers.get("Content-Type") or ""),
-            provider_request_id=str(exc.headers.get("x-request-id") or ""),
-            raw=raw,
-            maximum_response_bytes=profile.maximum_response_bytes,
-            transport_error="",
-        )
-        raise ModelGatewayError(
-            f"model_gateway_http_error:{exc.code}",
-            capture_ref=response_ref.as_posix(),
-        ) from exc
-    except Exception as exc:
-        _persist_response_capture(
-            response_ref=response_ref,
-            run_id=run_id,
-            attempt_id=attempt_id,
-            provider_id=profile.provider_id,
-            model=profile.model,
-            status_code=0,
-            content_type="",
-            provider_request_id="",
-            raw=b"",
-            maximum_response_bytes=profile.maximum_response_bytes,
-            transport_error=type(exc).__name__,
-        )
-        raise ModelGatewayError(
-            "model_gateway_transport_error",
-            capture_ref=response_ref.as_posix(),
-        ) from exc
-    try:
-        transient_body: Any = (
-            json.loads(raw[: profile.maximum_response_bytes].decode("utf-8"))
-            if raw
-            else {}
-        )
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        transient_body = raw[: profile.maximum_response_bytes].decode(
-            "utf-8", errors="replace"
-        )
-    capture = _persist_response_capture(
+    capture, transient_body = _execute_capture_first_http_exchange(
+        request=request,
+        profile=profile,
         response_ref=response_ref,
         run_id=run_id,
         attempt_id=attempt_id,
-        provider_id=profile.provider_id,
-        model=profile.model,
-        status_code=status_code,
-        content_type=content_type,
-        provider_request_id=provider_request_id,
-        raw=raw,
-        maximum_response_bytes=profile.maximum_response_bytes,
-        transport_error="",
     )
     return (
         request_digest,
@@ -824,68 +985,12 @@ def execute_chat_completion_exact_once(
             "User-Agent": "FIN-Insight-Agent/0.1.3",
         },
     )
-    try:
-        with urllib.request.urlopen(
-            request,
-            timeout=profile.timeout_seconds,
-        ) as response:
-            status_code = int(getattr(response, "status", 200))
-            raw = response.read(profile.maximum_response_bytes + 1)
-            content_type = str(response.headers.get("Content-Type") or "")
-            provider_request_id = str(
-                response.headers.get("x-request-id")
-                or response.headers.get("x-ds-request-id")
-                or ""
-            )
-    except urllib.error.HTTPError as exc:
-        raw = exc.read(profile.maximum_response_bytes + 1)
-        _persist_response_capture(
-            response_ref=response_ref,
-            run_id=normalized_run_id,
-            attempt_id=normalized_attempt_id,
-            provider_id=profile.provider_id,
-            model=profile.model,
-            status_code=int(exc.code),
-            content_type=str(exc.headers.get("Content-Type") or ""),
-            provider_request_id=str(exc.headers.get("x-request-id") or ""),
-            raw=raw,
-            maximum_response_bytes=profile.maximum_response_bytes,
-            transport_error="",
-        )
-        raise ModelGatewayError(
-            f"model_gateway_http_error:{exc.code}",
-            capture_ref=response_ref.as_posix(),
-        ) from exc
-    except Exception as exc:
-        _persist_response_capture(
-            response_ref=response_ref,
-            run_id=normalized_run_id,
-            attempt_id=normalized_attempt_id,
-            provider_id=profile.provider_id,
-            model=profile.model,
-            status_code=0,
-            content_type="",
-            provider_request_id="",
-            raw=b"",
-            maximum_response_bytes=profile.maximum_response_bytes,
-            transport_error=type(exc).__name__,
-        )
-        raise ModelGatewayError(
-            "model_gateway_transport_error",
-            capture_ref=response_ref.as_posix(),
-        ) from exc
-    capture = _persist_response_capture(
+    capture, _transient_body = _execute_capture_first_http_exchange(
+        request=request,
+        profile=profile,
         response_ref=response_ref,
         run_id=normalized_run_id,
         attempt_id=normalized_attempt_id,
-        provider_id=profile.provider_id,
-        model=profile.model,
-        status_code=status_code,
-        content_type=content_type,
-        provider_request_id=provider_request_id,
-        raw=raw,
-        maximum_response_bytes=profile.maximum_response_bytes,
-        transport_error="",
     )
     if capture["truncated"]:
         raise ModelGatewayError(
@@ -1110,18 +1215,54 @@ def _persist_response_capture(
     status_code: int,
     content_type: str,
     provider_request_id: str,
+    response_headers: Mapping[str, str] | None = None,
     raw: bytes,
     maximum_response_bytes: int,
     transport_error: str,
+    response_body_complete: bool = True,
+    incomplete_expected_additional_bytes: int | None = None,
 ) -> dict[str, Any]:
     truncated = len(raw) > maximum_response_bytes
     admitted_raw = raw[:maximum_response_bytes]
+    response_body_parse_status = "empty"
+    response_body_persisted = True
     try:
         parsed: Any = json.loads(admitted_raw.decode("utf-8")) if admitted_raw else {}
+        if admitted_raw:
+            response_body_parse_status = "json"
     except (UnicodeDecodeError, json.JSONDecodeError):
-        parsed = admitted_raw.decode("utf-8", errors="replace")
+        # An unparseable fragment can contain provider-private reasoning.  Its
+        # bytes remain auditable through length and digest, but plaintext is
+        # not persisted until it can be structurally redacted.
+        parsed = {
+            "unparsed_response_redacted": True,
+            "reason": "body_not_safely_persisted",
+        }
+        response_body_parse_status = "unsafe_unparsed_redacted"
+        response_body_persisted = False
     cleaned, redacted = _redact_private_reasoning(parsed)
     response_digest = _digest(cleaned)
+    safe_headers = _safe_response_headers(response_headers)
+    declared_content_length: int | None = None
+    raw_declared_length = safe_headers.get("content-length")
+    if raw_declared_length and raw_declared_length.isdecimal():
+        declared_content_length = int(raw_declared_length)
+    expected_additional = (
+        incomplete_expected_additional_bytes
+        if isinstance(incomplete_expected_additional_bytes, int)
+        and not isinstance(incomplete_expected_additional_bytes, bool)
+        and incomplete_expected_additional_bytes >= 0
+        else None
+    )
+    expected_total = (
+        len(raw) + expected_additional if expected_additional is not None else None
+    )
+    eligible_for_contract_parse = bool(
+        response_body_complete
+        and not truncated
+        and 200 <= status_code < 300
+        and response_body_parse_status == "json"
+    )
     capture = {
         "schema_version": CHAT_COMPLETION_CAPTURE_SCHEMA_VERSION,
         "capture_type": "provider_response_private_reasoning_redacted",
@@ -1133,8 +1274,20 @@ def _persist_response_capture(
         "status_code": status_code,
         "content_type": content_type,
         "provider_request_id": provider_request_id,
+        "response_headers": safe_headers,
         "response_body": cleaned,
         "response_digest": response_digest,
+        "raw_response_sha256": hashlib.sha256(raw).hexdigest(),
+        "received_body_bytes": len(raw),
+        "declared_content_length": declared_content_length,
+        "expected_additional_bytes": expected_additional,
+        "expected_total_body_bytes": expected_total,
+        "response_body_complete": bool(response_body_complete),
+        "partial_response_received": bool(not response_body_complete and raw),
+        "response_body_parse_status": response_body_parse_status,
+        "response_body_persisted": response_body_persisted,
+        "eligible_for_contract_parse": eligible_for_contract_parse,
+        "eligible_for_business_promotion": False,
         "truncated": truncated,
         "transport_error": transport_error,
         "private_reasoning_fields_redacted": redacted,

@@ -182,3 +182,11 @@ R4 正式通过，两个 fresh process 字节一致，三案例污染仍为 0，
 R1 按 authority 执行 2 次 Provider step，0 retry。第一步 3 秒返回 HTTP 200，DeepSeek 正确同时选择本案 Evidence 和 NumericFact 两个只读工具，形成 2 份 accepted receipt。第二步已经把实际 Evidence、NumericFact、4 条 value_capture same-basis relation、6 条 RoleMethod step 和 1 条当前 Graph edge 放入 model-visible request；等待约 175 秒后以 `IncompleteRead` 终止，没有返回 EvidenceRequest 或 Judgment。
 
 因此本轮没有发现新的事实错误，但也不能把 L1 记为通过：根本没有最终判断可审。八维内容质量和相对旧 Chat 的内容增益同样不可评分。失败不是已经观测到的 DeepSeek 指令不遵循，也不是 relation／route／Skill／Graph 合同拒绝，而是响应体传输不完整。当前 transport 还有一个项目内审计缺口：它把 `IncompleteRead` 当作 generic exception，丢弃了可获得的 HTTP status／headers／partial bytes，只留下 status=0 的空响应 capture。R1 保持 immutable terminal failure；未重试，五单元和第 7 步继续禁止。
+
+## 15. IncompleteRead capture-first successor 工作树结果
+
+RC-S3-012 的修复落在共用 Chat transport，而不是 DeepSeek profile 或单次 attempt runner。普通 Chat 和 Tool Calls 现在共用同一 HTTP 终局捕获函数；`http.client.IncompleteRead` 不再落入 generic exception，也不再把已经取得的 HTTP 200、Content-Type、Content-Length、request id 和 partial bytes 伪装成 status=0／空响应。
+
+新 capture 保存 received／missing／expected-total bytes、声明长度、安全响应头和原始字节 SHA-256。若 partial 本身仍是完整 JSON，只保存删除 Provider 私有 reasoning 后的结构化响应；若 partial 已无法解析，则只保存长度、SHA-256 和 redacted placeholder，不把可能混有私有 reasoning 的残片明文写盘。两种情况都返回 typed `model_gateway_incomplete_read`，并强制 `eligible_for_contract_parse=false`、`eligible_for_business_promotion=false`；没有 retry、拼接、续传或业务晋升。
+
+零网络 mutation 已覆盖两种自然形态：完整 JSON＋尾部缺失、含 reasoning 的 malformed fragment；两路均只观察到一次 `urlopen`。同文件 10 tests、相关三组 transport／loop 33 tests 和全仓 280 tests 均通过。旧 R1 capture 仍保持原样；由于旧实现已经丢弃 `exception.partial`，这次修复不能追溯恢复 2026-08-14 R1 的原始残片，只能保证 successor attempt 完整留存。当前仍只是工作树工程结果；下一门是干净提交／推送后签发 formal zero-call replay authority，不能据此自动执行 replacement Chat。

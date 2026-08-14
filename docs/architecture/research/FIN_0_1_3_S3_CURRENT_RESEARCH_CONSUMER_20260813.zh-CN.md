@@ -296,3 +296,16 @@ DELL 当前可见 19 条 Evidence、25 个 NumericFact 和 10 条同口径 relat
 单次复验不能复用历史 disposition。当前 runner 只在 scope decision 同时绑定 R4 result digest、DELL、`CELL::value_capture`，并明确关闭 Responses、五单元和其他 RoleMethodPack 迁移时，才接受新的 Chat authority。这个校验把 Owner 本轮“先做 1–6、暂停第 7 步”的边界落实到了执行代码，而不只存在于聊天或文档。
 
 该唯一 Chat R1 已消费：第一步正确读取 Evidence＋NumericFact，第二步含完整研究上下文的请求在约 175 秒后发生 `IncompleteRead`。没有 Judgment，因此 L1 与八维内容均不可评，不能用 R4 结构通过替代自然内容通过。项目 transport 也暴露了 capture 缺口：generic exception 分支没有保存 `IncompleteRead.partial` 与已经可见的 HTTP metadata。任何 replacement 都必须先独立处置该 capture/transport 问题并重新签发，不能自动重试。
+
+### 12.6 IncompleteRead 原始响应留存合同
+
+当前 successor 把网络终局统一为一份 provider-neutral capture 合同，普通 Chat 与 Tool Calls 不再各自维护异常分支：
+
+- body read 前先冻结 HTTP status、安全 header、Content-Length 和 Provider request id；
+- `IncompleteRead.partial` 只以原始 SHA-256／字节数作为不可变身份；只有它仍能完整解析为 JSON 时，才允许在移除 Provider 私有 reasoning 后保存业务可见结构；
+- malformed partial 永不保存明文，只保存 redacted placeholder、长度和 digest；
+- incomplete body 即使恰好是合法 JSON，也不得进入 contract parser、Tool executor、Evidence、NumericFact、Artifact 或重放输入；
+- 不提供自动 retry、partial continuation 或跨 attempt 拼接。replacement 必须使用新的 Run／Attempt／authority；
+- status=0 只表示连响应 metadata 都未取得的传输失败，不再用来覆盖已经取得 HTTP 响应的断流。
+
+这项修复提高的是失败可追溯性和边界可靠性，不改变模型看到的 Evidence、NumericFact、RoleMethodPack、GraphContextPack，也不直接提升研报内容。旧 R1 已丢失的 partial 不可恢复；其 terminal result 与旧 capture 必须保持不可变。

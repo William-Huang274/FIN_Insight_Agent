@@ -55,7 +55,8 @@ flowchart LR
 | `src/evidence/` | Evidence schema 与构建 | 未经 gate 的事实晋升 |
 | `src/indexing/`、`src/retrieval/` | BM25 构建、provider-neutral 金融查询合同、父子金融对象、facet 编译、候选过滤/解释、同对象 sparse/dense/fusion/规则重排比较 | 已完成的金融 RAG、默认 dense/rerank 或 Evidence 晋升声明 |
 | `src/sec_agent/market_snapshot.py` | 离线市场快照合同 | 实时行情 |
-| `src/sec_agent/research/` | provider-neutral planner、reviewed Pack/PDF successor，以及 Evidence＋NumericFact 到判断/底稿/报告的 current consumer | 未经验收的自然研究质量或产品发布 |
+| `src/sec_agent/research/` | provider-neutral planner、reviewed Pack/PDF successor、单一 FinanceToolContract，以及 Evidence＋NumericFact 到判断/底稿/报告的 current consumer | 未经验收的自然研究质量或产品发布 |
+| `src/sec_agent/providers/` | capture-first Chat／Responses transport、三协议 canonical 投影与受控 dispatch；Anthropic 当前只允许 shadow | Provider 协议兼容等于金融研究质量、Anthropic live 或多主链声明 |
 | `src/sec_agent/runtime_bridge/` | code/data、只读 reviewed Evidence 与可写 state 的显式路径边界 | checkout-local 私有数据假设 |
 | `src/sec_agent/workbench/` | 运维 profile、source bundle、data build、run inspection | 旧 ask/session/checkpoint 产品链 |
 
@@ -91,7 +92,7 @@ flowchart TB
 
 机器生成清单：`configs/repository/fin_0_1_3_active_baseline_manifest_v1_0.json`。
 
-- Python import graph：111 个文件。
+- Python import graph：122 个文件。
 - 前端 import graph：8 个文件。
 - Runtime resources：10 个。
 - Runtime detectors：4 个。
@@ -120,6 +121,6 @@ S1-C 收口复证为：活动图 72 Python / 7 frontend / 5 Runtime resources，
 
 仓库工程基线已经合并远端 `main` 并完成 G12。复证目标为 `cd9990ac7ea4586cc55af0bc77f41c3f797399cb`，在第二份全新 clean-main 工作树上通过：44 个 Python tests、TypeScript、Vite build、无数据/挂载数据桌面与移动共 12 个 Playwright tests、三案业务验收、6,230 文件 secret scan、clean Docker build、无数据和只读 Evidence 挂载 smoke，以及原生 Compose 启动。
 
-S0 仓库/运行时基线已关闭；S1-A/S1-B/S1-C 工程纵切和本轮 S1-D Dell/TSM 补源已完成，但 S1 总产品门仍未通过。当前 DELL Pack 与 S2 mart 已被 current S3 consumer 在零调用 R1 中消费并生成结构化 preview，干净 R2 已复现相同 input/deliverable digest；活动树不再只有 Planner，也没有复活归档报告 runner。当前下一门是唯一一次 DeepSeek 自然综合 canary。MU/NVDA 动态研究、S4 产品闭环和 S5 release 仍需分别验收。
+S0 仓库/运行时基线已关闭；S1-A/S1-B/S1-C 工程纵切和本轮 S1-D Dell/TSM 补源已完成，但 S1 总产品门仍未通过。当前 DELL Pack 与 S2 mart 已被 current S3 consumer 消费。标准 Tool Calls R2 证明真实 read continuation 可行，同时暴露 Schema／validator／route 漂移；活动树现已用唯一 FinanceToolContract 收敛该问题，并把同一金融循环投影到 Chat control、Responses candidate 和 Anthropic shadow。当前下一门是干净提交上的正式零调用 R2 回放；通过后才允许一次 DELL 单研究单元 Chat／Responses paired canary。五单元、MU/NVDA 动态研究、S4 产品闭环和 S5 release 仍需分别验收。
 
 这些门的唯一机器状态见 `configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json`。

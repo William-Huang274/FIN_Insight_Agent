@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`consumer_v1.1_clean_zero_call_pass / paired_R2_JSON_node_pass / standard_tool_R1_project_failure_preserved / safe_parallel_successor_working_tree_pass / clean_proof_pending`
+状态：`consumer_v1.1_clean_zero_call_pass / paired_R2_JSON_node_pass / standard_R2_project_contract_failure_preserved / unified_tool_contract_working_tree_pass / Chat_Responses_transport_projection_working_tree_pass / formal_clean_replay_pending`
 
 ## 1. 为什么需要这条链
 
@@ -198,3 +198,29 @@ v1.1 successor 的 fresh zero-call R3 通过后，唯一 replacement R2 在 clea
 R2 仍 terminal failed，但失败责任在项目 Tool Contract Compiler。`product_intents` Schema 只写“concise”，没有公开本地 120-char／数组上限；更深一层，Schema 分别暴露全局 facet enum 与 metric enum，没有表达 `facet → query family → allowed metrics` 依赖。模型选择 `pricing_and_mix` 加 shipments／capacity／orders／backlog 在 Schema 上可生成、在本地 route 上必然拒绝。单纯增大字符上限会立即撞到下一道门，故禁止字段级补丁。
 
 successor 必须由同一 provider-neutral EvidenceRequest／route 合同编译 Tool Schema、validator、fake 和 repair feedback。合法但跨 family 的研究需求由本地拆成 facet-compatible atoms；proposal-only 的长度／路由不匹配可以返回 `rejected_not_executed`、保持 gap open 并给出安全的 allowed-family 提示，在原调用预算内由模型修正。身份、Evidence／NumericFact 权威、Judgment、引用和跨 case/cell 错误仍 hard fail。完成 R2 capture replay、四工具合同对齐、三案 fake 与 mutation 前，不允许第三次 single-cell live或五单元。
+
+### 11.4 统一 Tool Contract Compiler 与 R2 replay
+
+当前 successor 已把 Case、Cell、visible gap、Evidence Slot、facet、target owner/relationship、query family、metric route 和 proposal limits 收敛到唯一 `FinanceToolContract`。四工具的 Provider Schema、运行时验证和可修复提示都从该对象派生；不存在“Prompt 写 concise、本地另藏 120 字符”或“全局 metric enum 与 facet family 各自维护”的第二真值。
+
+可修复范围只包含 proposal-only 的字段形状、facet、metric family、数量和长度。失败结果固定为 `rejected_not_executed`：0 retrieval、0 Evidence/NumericFact promotion、gap 继续 open，并返回当前 cell 的 allowed gap、facet→target、facet→metric 和长度预算。它仍消耗一次已发生的模型/tool step，不能伪装成免费 retry。跨案 target、跨 cell、Evidence/NumericFact/引用、Judgment 和身份错误不降级，继续 hard fail。
+
+working-tree 零调用 replay 已把 immutable R2 的真实长 intent／错 family proposal 放回当前循环：该动作被拒绝后，一个合法 `pricing_and_mix + average_selling_price` repair 在同一预算内被记录，最终 Judgment 完成；4 step／5 receipts，只有 1 个有效 proposal。DELL／MU／NVDA 的跨案 target mutation 全部 hard fail。正式能力仍需 clean/synced proof，不能用 working-tree 结果签发 live。
+
+### 11.5 Chat／Responses／Anthropic 的协议边界
+
+核心金融循环只处理一套 canonical messages、tools、tool calls 和 tool results。外层允许三个版本化投影：
+
+- Chat Completions：当前 control，继续传递 thinking-mode 所需的瞬时 `reasoning_content`；
+- Responses：主候选，采用 stateless 全历史输入和 `function_call/function_call_output`；Provider reasoning output item 只在同一 loop 内存继续传递，落盘前删除；
+- Anthropic Messages：只做 schema/transcript shadow，当前 dispatch 明确拒绝 live。
+
+DeepSeek Responses 当前不支持 `previous_response_id`、conversation/store 等有状态能力，并会忽略 `max_tool_calls`／`parallel_tool_calls`；Runtime 因此禁止发送这些“看似有控制力、实际无效”的字段，工具预算、串并行安全和 no-progress stop 始终由本地循环执行。标准四工具仍使用非 strict schema；DeepSeek strict tool Beta 不支持本合同使用的全部长度/数组约束，继续停放。
+
+下一次自然门不再是“第三次 Chat 修补”，而是同一 DELL `value_capture`、同一 Evidence Pack/NumericFact、同一 canonical tools 的 Chat control 对 Responses candidate。两路各自 exact-once、0 retry，失败都保存完整 capture；协议合同通过后仍须审查研究机制、反方、WWC 和数字使用。Anthropic 不参加本轮。五单元必须等 paired 结果后的新 scope decision。
+
+官方协议依据：
+
+- https://api-docs.deepseek.com/guides/responses_api
+- https://api-docs.deepseek.com/guides/anthropic_api
+- https://api-docs.deepseek.com/guides/tool_calls/

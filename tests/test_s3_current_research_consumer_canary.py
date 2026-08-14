@@ -237,6 +237,9 @@ def _prepare_tool_loop_test(
         required_cell_ids=["CELL::value_capture"],
         kernel=kernel,
         route_policy=route,
+        policy=runner.load_bounded_finance_loop_policy(
+            json.loads(LOOP_POLICY.read_text(encoding="utf-8"))
+        ),
         strict=False,
     )
     authority["bound_inputs"] = {

@@ -2585,3 +2585,13 @@ request 数量不得被误当作独立证据数量。同一个 S2 事实因多�
 当前 DELL 零调用 R1 已将 45 个 request-level NumericFact 合并为 35 个经济事实，再选择 25 个模型可见事实；20 条 reviewed Evidence 中 19 条与五个研究单元相关，14 个 gaps 中 10 个可见。fake 输出能编译结构化底稿/报告 preview，未知引用、跨 cell 数值、自由数字叙事和缺 cell 均 fail closed。该结果只关闭 consumer engineering gap，不证明自然模型质量，也不允许发布 fake 报告。
 
 下一自然门只能在干净远端提交上执行一次 DeepSeek Pro 综合 canary：不重跑 Planner、不联网、不重新检索、不 retry、不 fallback、不自动发布 Workbench。成功后仍需 L1 与绝对内容质量审阅；失败必须保存 capture 并在 S3 做一次结构处置，禁止恢复逐字段 live 修补循环。
+
+### 16.30 单一金融工具合同与可替换 Agent 协议（2026-08-14）
+
+金融 Tool Schema、运行时 validator、fake provider 和修复提示必须从同一份 provider-neutral 合同编译，禁止分别手写并依靠 live 运行发现漂移。合同必须按当前 Case、研究单元、visible gap、Evidence Slot、facet、关系方向、target entity、route family 和 metric route 只暴露本次合法动作；数组数量、文本长度和唯一性等本地限制若会拒绝模型输出，也必须在模型可见 Schema 中表达。可安全更正的 proposal 格式错误应返回 `rejected_not_executed`，保持 gap 开放且不触发检索、Evidence 晋升或 NumericFact 写入；身份、跨案例、引用、最终 Judgment 和真实性错误继续 fail closed。
+
+金融控制面不得绑定某一种 Provider 协议。核心 Runtime 只认 canonical message、tool definition、tool call、tool result 和 receipt；Chat Completions、Responses API 与 Anthropic Messages 只作为外层 transport profile。Provider 支持新的协议不代表产品质量自动提升，也不授权同时维护多条主链。当前 Chat Completions 是 control，Responses 是候选，Anthropic 仅做 schema/transcript shadow；后两者只有通过独立 continuation、capture 和内容质量资格验证后才能改变主次关系。
+
+Responses 的无状态历史重建、Anthropic 的 content block 结构、Chat thinking continuity 都属于传输责任。Provider 私有推理只可在同一运行的内存中继续，不能写入 capture、Artifact 或公开结果；模型可见请求、最终 assistant 输出、usage、finish state、tool calls 和失败阶段必须完整留存。Provider 可能静默忽略的 `max_tool_calls`、`parallel_tool_calls` 等参数不得伪装成控制权，本地 step、tool、proposal、retry 和 no-progress 预算始终具有最终权威。
+
+协议资格验证固定采用“同一 DELL 单研究单元、同一 Evidence Pack、同一 NumericFact、同一 Tool Contract”的 paired canary。先比较合同通过、跨单元污染、gap 冒充事实、数字/引用/身份越界、经济机制、反方和 WWC；单单元通过仍不能直接授权五单元、完整八维报告、Workbench 发布或 S3 acceptance。若 Responses 只改变 wire 形态而不改善稳定性或研究内容，产品保留 Chat 主链，不为协议新颖性增加维护成本。

@@ -18,7 +18,7 @@ from sec_agent.providers import (
 
 from .bounded_finance_loop import (
     SUBMIT_RESEARCH_JUDGMENT_TOOL,
-    compile_finance_loop_tools,
+    compile_finance_judgment_tool,
 )
 from .current_consumer import (
     CurrentResearchConsumerError,
@@ -98,16 +98,10 @@ def compile_paired_research_submission(
         required_cell_ids=[cell_id],
         submission_transport="final_tool",
     )
-    strict_tool = next(
-        row
-        for row in compile_finance_loop_tools(
-            research_input=research_input,
-            required_cell_ids=[cell_id],
-            kernel=kernel,
-            route_policy=route_policy,
-            strict=True,
-        )
-        if row["function"]["name"] == SUBMIT_RESEARCH_JUDGMENT_TOOL
+    strict_tool = compile_finance_judgment_tool(
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        strict=True,
     )
     return PairedResearchSubmission(
         json_messages=json_messages,

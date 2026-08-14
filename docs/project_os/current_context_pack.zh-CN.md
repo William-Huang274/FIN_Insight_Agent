@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。S2 仍为 1,319 observations，transcript 没有 NumericFact 权限。DELL 单研究单元 JSON R2 已通过合同/L1/L2、节点内容 18/24；strict Beta 停放。标准 Tool Calls R1 的 wire `index`、只读并行、receipt 与 capture ref 缺陷已由 provider-neutral v1.1 successor 和 fresh zero-call R3 关闭。唯一 replacement R2 随后真实完成本 cell reviewed Evidence＋NumericFact 两类 read 并保存 2 份 receipt；模型针对 AI server unit volume 提出业务相关补证，但项目 Tool Schema 没有公开长度/数组限制，也没有表达 facet→query family→metric 依赖，导致 Schema-valid／local-invalid，0 Judgment、0 retry。当前只允许零调用统一 Tool Schema／Validator／route／fake／repair feedback 编译源；第三次 single-cell 和 DELL 五单元均未授权。S1 产品门、完整八维研报、Workbench 报告面和 release 仍未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。S2 仍为 1,319 observations，transcript 没有 NumericFact 权限。DELL 单研究单元 JSON R2 已通过合同/L1/L2、节点内容 18/24；strict Beta 停放。标准 Tool Calls R1 的 wire／并行缺陷已关闭，唯一 replacement R2 随后真实完成本 cell reviewed Evidence＋NumericFact 两类 read，但暴露项目 Tool Schema／validator／route 漂移。当前 working-tree 已用唯一 FinanceToolContract 编译 Schema、validator 和 repair surface：旧 R2 proposal 会 `rejected_not_executed`，合法 repair 可在原预算继续；三案跨案 target hard fail。Chat control、Responses candidate 和 Anthropic shadow 现投影到同一内部事件，Anthropic live 被禁止。全仓 271 tests、active baseline 122 Python／8 frontend／10 Runtime resources／0 forbidden、secret scan 6,526／0 finding；正式 clean replay、付费 Chat/Responses paired single-cell、五单元和内容验收均未执行。S1 产品门、完整八维研报、Workbench 报告面和 release 仍未通过。
 
 ## 当前唯一产品边界
 
@@ -29,7 +29,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Chat Completions transport、Source Intake、共用 official-PDF Evidence successor、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。Runtime Registry 为 R11／10 个资源；consumer policy、模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册为产品 Runtime resource。当前结果允许每个案例绑定独立的 digest-bound 私有对象根，因此升级 DELL 无需复制 MU/NVDA。private mart 与 raw capture 继续通过显式 Runtime path 挂载，Qwen 权重按第一次受控计划懒加载，普通 Workbench 启动不加载模型。
+当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影，只有 Chat／Responses 当前具备付费 canary 候选资格。Runtime Registry 为 R11／10 个资源；consumer policy、模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册为产品 Runtime resource。当前结果允许每个案例绑定独立的 digest-bound 私有对象根，因此升级 DELL 无需复制 MU/NVDA。private mart 与 raw capture 继续通过显式 Runtime path 挂载，Qwen 权重按第一次受控计划懒加载，普通 Workbench 启动不加载模型。
 
 ## 已完成的重定基事实
 
@@ -81,13 +81,13 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S3_CURRENT_RESEARCH_CONSUMER_V1_1_CLEAN_REPROOF_AND_GA_AGENT_LOOP_QUALIFICATION`
+`FIN_0_1_3_S3_UNIFIED_TOOL_CONTRACT_AND_CHAT_RESPONSES_PAIRED_QUALIFICATION`
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
-旧综合 R1 与 GA paired R1 均已保存并停止。paired R2 的 JSON control 已证明 profile 容量修复有效，并提供一个 L1/L2 合格、节点内容 18/24 的自然 Judgment；strict Beta 只证明一次无 HTTP 响应的传输失败，不再作为当前主链依赖。标准四工具 R1 已保持不可变；精确 `index` 兼容、唯一安全并行 read pair、terminal capture ref 与 receipt identity 已实现并由 fresh zero-call R3 通过。唯一 replacement R2 已执行：两个 mandatory read 真实成功，随后 business-relevant EvidenceRequest 被项目内未完整编译的隐藏长度与 facet–metric 门拒绝。下一项只允许零调用 Tool Contract Compiler／proposal repair 结构处置；禁止字段级放宽、自动 R3 或五单元。任何单节点分数都不能改写为完整八维报告通过、产品发布或 S3 acceptance。
+旧综合 R1、GA paired R1 和标准 R1/R2 均保持不可变。paired R2 的 JSON control 已证明 profile 容量修复有效，并提供一个 L1/L2 合格、节点内容 18/24 的自然 Judgment；strict Beta 不再作为主链依赖。当前唯一 Tool Contract Compiler 与 typed proposal repair 已完成 working-tree 实现；同一 canonical tools/messages 可投影 Chat、Responses、Anthropic，只有前两者具备 live 候选资格。下一项先在干净远端提交上用 immutable R2 captures 和 DELL/MU/NVDA mutation 做正式零调用 replay；通过后另行签发同一 DELL `value_capture` 的 Chat control／Responses candidate paired authority。结果必须先做合同与内容评估，不能自动进入五单元。任何单节点分数都不能改写为完整八维报告通过、产品发布或 S3 acceptance。
 
-历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。真实 replacement R2 进一步证明 tool-result continuation 和两份 receipt 成立，同时暴露 Schema/Validator/route 非同源编译。R2 永久 failed；五 cell 仍必须等待统一合同零调用复证、未来独立 single-cell 权限和新的 scope decision。
+历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。真实 replacement R2 进一步证明 tool-result continuation 和两份 receipt 成立，同时暴露 Schema/Validator/route 非同源编译。R2 永久 failed。当前统一合同与协议投影只达到 working-tree engineering pass；五 cell 仍必须等待 formal replay、独立 Chat/Responses paired single-cell、内容评估和新的 scope decision。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

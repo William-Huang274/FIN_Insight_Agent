@@ -110,6 +110,12 @@ def _contains_sensitive_key(value: Any) -> bool:
 
 def _redact_private_reasoning(value: Any) -> tuple[Any, int]:
     if isinstance(value, Mapping):
+        block_type = str(value.get("type") or "").casefold()
+        if block_type in {"reasoning", "thinking", "redacted_thinking"}:
+            return {
+                "type": block_type,
+                "private_reasoning_redacted": True,
+            }, 1
         output: dict[str, Any] = {}
         redacted = 0
         for key, item in value.items():

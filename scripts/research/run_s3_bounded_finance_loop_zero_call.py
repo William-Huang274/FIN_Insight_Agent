@@ -360,6 +360,7 @@ def _run_fake_matrix(
         required_cell_ids=[single_id],
         kernel=kernel,
         route_policy=route,
+        policy=policy,
         strict=True,
     )
     single_standard_tools = compile_finance_loop_tools(
@@ -367,6 +368,7 @@ def _run_fake_matrix(
         required_cell_ids=[single_id],
         kernel=kernel,
         route_policy=route,
+        policy=policy,
         strict=False,
     )
     single_policy = scope_bounded_finance_loop_policy(
@@ -420,6 +422,7 @@ def _run_fake_matrix(
         required_cell_ids=cell_ids,
         kernel=kernel,
         route_policy=route,
+        policy=policy,
         strict=False,
     )
     full_policy = scope_bounded_finance_loop_policy(
@@ -491,6 +494,7 @@ def _mutation_codes(
         required_cell_ids=[cell_id],
         kernel=kernel,
         route_policy=route,
+        policy=policy,
         strict=False,
     )
     scoped_policy = scope_bounded_finance_loop_policy(

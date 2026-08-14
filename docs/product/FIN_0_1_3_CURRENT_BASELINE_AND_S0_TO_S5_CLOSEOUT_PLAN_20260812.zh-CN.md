@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S3_budget_contract_engineering_pass / S1C_saved_planner_input_audited / S1D_Dell_and_TSM_official_PDF_successors_promoted / runtime_registry_R11 / DELL_core_research_ready / S1_product_open / S3_consumer_v1_1_clean_zero_call_engineering_pass / historical_natural_synthesis_R1_terminal_failed / GA_four_tool_loop_clean_zero_call_pass / paired_R2_JSON_node_pass / strict_Beta_transport_unqualified / standard_tool_loop_R1_project_wire_parallel_read_failure / bounded_successor_required / product_iteration_not_closed`
+状态：`repository_baseline_complete / S3_budget_contract_engineering_pass / S1C_saved_planner_input_audited / S1D_Dell_and_TSM_official_PDF_successors_promoted / runtime_registry_R11 / DELL_core_research_ready / S1_product_open / S3_consumer_v1_1_clean_zero_call_engineering_pass / historical_natural_synthesis_R1_terminal_failed / paired_R2_JSON_node_pass / strict_Beta_transport_unqualified / standard_R2_project_contract_failure_preserved / unified_tool_contract_and_transport_projection_working_tree_pass / formal_clean_replay_pending / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -52,7 +52,9 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 19. **S3 当前 research consumer 纵切（v1.1 clean zero-call engineering pass）**：保留已经完成的 DELL Planner R1，不重复付费证明规划。当前活动树只有一份 provider-neutral `Evidence Pack + NumericFact → judgment/workpaper/report` consumer。v1.1 让 Harness 注入可信 envelope/gaps，明列枚举，以 cell-local card 阻断跨单元引用，并增加 `support/limit/context` Evidence use 与显式 inference authority。绑定干净远端提交的 R3 为 0 网络／模型／Provider，六类 mutation 全部 fail closed，旧 R1 继续被拒绝。模型负责引用选择、机制、反方、置信度与 WWC；本地控制面负责事实、身份、数值、日期、引用和结构。它是长期提交合同，不是 DeepSeek 专用补丁。
 20. **DELL 自然综合 Canary R1（terminal failed）**：Provider HTTP/finish reason/exact JSON 和 5/5 cells 成立，但模型遗漏本地 envelope，并自创未在 model-visible view 中列出的枚举；另有跨 cell ref、复合 Evidence 二元角色冲突和自由数量级表述。零调用内容审计还发现 AI→EPS/分部利润、AI→营运资金、上游扩产→Dell 瓶颈缓解等越界归因。R1 0 retry、0 fallback、0 发布，且永久保持失败；由于官方 GA 沿用相同模型名，不能事后把 R1 标为 Preview 或 GA。
 21. **DeepSeek GA Agent loop 资格路线（JSON 单节点通过，标准工具 R2 暴露合同编译缺口）**：三个可替换 GA profile、capture-first tool-step transport 与 reviewed Evidence／NumericFact／EvidenceRequest／Judgment 四工具循环已建立。JSON R2 Judgment 通过本地合同与 L1/L2，节点适用维度 18/24；strict Beta 停放。标准 R1 的 wire `index`、安全只读并行、receipt 和 capture ref 项目缺陷已由 v1.1 successor 与 fresh zero-call R3 关闭。
-    - 唯一 replacement R2 已真实完成 Evidence＋NumericFact 两个 read 并保存 receipt；随后模型针对 AI server unit volume 提出业务相关补证，但 Tool Schema 未公开 120-char/数组门，也未表达 facet→query family→metric 依赖，导致 Schema-valid／local-invalid。EvidenceRequest 仍未执行、gap 仍 open、0 Judgment／发布。下一项只允许零调用统一合同编译与 proposal repair semantics；禁止只增字符上限、自动 R3 或五单元。五 cell 仍必须绑定新的 `five_cell_live_authorized=true` 决策。
+    - 唯一 replacement R2 已真实完成 Evidence＋NumericFact 两个 read 并保存 receipt；随后模型针对 AI server unit volume 提出业务相关补证，但 Tool Schema 未公开 120-char/数组门，也未表达 facet→query family→metric 依赖，导致 Schema-valid／local-invalid。R2 永久失败，不追认。
+    - 当前 working-tree 已完成唯一 Tool Contract Compiler、typed proposal repair、三案 identity mutation，以及 Chat／Responses／Anthropic canonical projection。Anthropic 仅 shadow；Chat control 与 Responses candidate 共用同一金融循环。下一项是 clean/synced R2 formal replay，不是自动 R3。
+    - formal replay 通过后，只允许签发一次 DELL `value_capture` Chat/Responses 同输入 paired canary。两路合计最多 12 次模型步骤、0 retry/fallback/external retrieval。完成合同与内容评估后才决定是否值得签发五 cell；`five_cell_live_authorized` 当前仍为 false。
 22. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
 23. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 

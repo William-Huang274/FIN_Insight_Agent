@@ -1137,13 +1137,6 @@ def run_tool_loop(
             "research_consumer_tool_loop_five_cell_scope_invalid"
         )
     kernel, route, planning = _tool_loop_contracts(paths)
-    tools = compile_finance_loop_tools(
-        research_input=research_input,
-        required_cell_ids=cell_ids,
-        kernel=kernel,
-        route_policy=route,
-        strict=False,
-    )
     base_policy = load_bounded_finance_loop_policy(
         _json(paths["loop_policy_ref"])
     )
@@ -1154,6 +1147,14 @@ def run_tool_loop(
         base_policy,
         cell_count=len(cell_ids),
         maximum_evidence_requests=maximum_evidence_requests,
+    )
+    tools = compile_finance_loop_tools(
+        research_input=research_input,
+        required_cell_ids=cell_ids,
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped_policy,
+        strict=False,
     )
     visible_execution_budget = {
         "maximum_steps": scoped_policy.maximum_steps,

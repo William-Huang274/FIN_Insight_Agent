@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`consumer_v1.1_clean_zero_call_pass / paired_R2_JSON_node_pass / standard_R2_project_contract_failure_preserved / unified_tool_contract_working_tree_pass / Chat_Responses_transport_projection_working_tree_pass / formal_clean_replay_pending`
+状态：`consumer_v1.1_clean_zero_call_pass / paired_R2_JSON_node_pass / standard_R2_project_contract_failure_preserved / unified_tool_contract_formal_clean_replay_pass / Chat_Responses_live_pair_pending`
 
 ## 1. 为什么需要这条链
 
@@ -205,7 +205,7 @@ successor 必须由同一 provider-neutral EvidenceRequest／route 合同编译 
 
 可修复范围只包含 proposal-only 的字段形状、facet、metric family、数量和长度。失败结果固定为 `rejected_not_executed`：0 retrieval、0 Evidence/NumericFact promotion、gap 继续 open，并返回当前 cell 的 allowed gap、facet→target、facet→metric 和长度预算。它仍消耗一次已发生的模型/tool step，不能伪装成免费 retry。跨案 target、跨 cell、Evidence/NumericFact/引用、Judgment 和身份错误不降级，继续 hard fail。
 
-working-tree 零调用 replay 已把 immutable R2 的真实长 intent／错 family proposal 放回当前循环：该动作被拒绝后，一个合法 `pricing_and_mix + average_selling_price` repair 在同一预算内被记录，最终 Judgment 完成；4 step／5 receipts，只有 1 个有效 proposal。DELL／MU／NVDA 的跨案 target mutation 全部 hard fail。正式能力仍需 clean/synced proof，不能用 working-tree 结果签发 live。
+绑定干净远端提交 `17bb0c5a...` 的正式零调用 replay 已把 immutable R2 的真实长 intent／错 family proposal 放回当前循环：该动作被拒绝后，一个合法 `pricing_and_mix + average_selling_price` repair 在同一预算内被记录，最终 Judgment 完成；4 step／5 receipts，只有 1 个有效 proposal。DELL／MU／NVDA 的跨案 target mutation 全部 hard fail。proof 同时绑定当前 Runtime Registry、Evidence Pack、合同、实现与历史 captures，network/model/provider/embedding 均为 0。
 
 ### 11.5 Chat／Responses／Anthropic 的协议边界
 

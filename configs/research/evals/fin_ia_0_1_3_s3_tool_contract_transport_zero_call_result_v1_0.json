@@ -1,0 +1,42 @@
+{
+  "schema_version": "fin_ia_s3_tool_contract_transport_zero_call_result_v1_0",
+  "status": "zero_call_tool_contract_and_transport_replay_pass",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_tool_contract_transport_zero_call_authority_v1_0.json",
+  "authority_sha256": "92e616d41bf7f37ba8814f561d36da81ce98cf75733f7c916b1e32f4454ea99b",
+  "implementation_commit": "17bb0c5ae74cac7f8451f0828d1ecd0ee875db0b",
+  "normalized_proof": {
+    "research_input_digest": "6505a58e68811e59e3471378bc0cf16174abef3021c3ae9900e46d5e99189b4c",
+    "current_tool_contract_digest": "e4164404ebd9038e2063be6140b8924a2c7fc538dc815113999dc22a0dbd967a",
+    "r2_old_tool_contract_digest": "2ead2aa4d7724b5ac706c668c642da2b93c4c381641d3fb6c4222dd0cccfe423",
+    "current_projection_digests": {
+      "openai_compatible_chat_completions": "b2752bf460076d78dbc155b66be048ee447df1564c90327dfffe5fed7a627fde",
+      "openai_responses": "25fbdc996745adbf43895d02773ef76ffe3f3bad6e86a3f75638ee6001504147",
+      "anthropic_messages": "26253903ca9ad3ee36d325964fc66edb32805c58686b97be9bf9a07eb5f89fdc"
+    },
+    "r2_projection_digests": {
+      "openai_compatible_chat_completions": "f10a8f78578df09da5462bc8799e9b8fa450a6dcd9895439409c82cf7aafc509",
+      "openai_responses": "b5915e16cf0577dc025c2874bcc80cc467eef59001cbfc7a81ad943a8027e5d2",
+      "anthropic_messages": "43f11a3fed99a78927f9f3729a3ea3ffc9d104ac4772e08a3172f65b60dc7995"
+    },
+    "r2_failure_code_before_fix": "finance_loop_evidence_request_intents_invalid",
+    "r2_replay_status_after_fix": "rejected_not_executed_then_repaired",
+    "r2_rejected_request_promoted": false,
+    "r2_valid_repair_request_count": 1,
+    "r2_replay_completed": true,
+    "r2_replay_step_count": 4,
+    "r2_replay_receipt_count": 5,
+    "r2_rejected_receipt_digest": "c485373516f68760748ad26e3cf0a81e857269d73deaa51bba3580def05280a5",
+    "cross_case_mutation_failures": {
+      "DELL": "finance_loop_evidence_request_target_out_of_scope",
+      "MU": "finance_loop_evidence_request_target_out_of_scope",
+      "NVDA": "finance_loop_evidence_request_target_out_of_scope"
+    },
+    "anthropic_live_qualified": false,
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0
+  },
+  "known_boundary": "This proves deterministic contract repair, three-wire projection, three-case identity isolation and R2 capture replay with zero provider calls. It does not qualify Anthropic live, natural model behavior, five-cell research quality, S3 acceptance or release.",
+  "result_digest": "fe188a899b2d995cd024d7074ac12add4a065c509c750d2b5f7ebe89cd71d5eb"
+}

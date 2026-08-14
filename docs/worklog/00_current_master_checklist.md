@@ -33,9 +33,9 @@
   - [x] JSON control 单节点 v1.1 合同/L1/L2 与适用内容门通过；strict Beta 传输未资格化并停放
   - [x] 标准 Tool Calls R1 执行并保留：模型正确并行请求 Evidence/NumericFact，项目 wire `index` 与单工具策略不兼容，0 retry
   - [x] 只读并行兼容 successor、clean zero-call R3 与一个 replacement single-cell R2（两类 read 成功；proposal 合同编译失败，0 retry）
-  - [ ] 统一 Tool Schema／Validator／route／fake／repair feedback 编译源（working-tree implementation 和本地 R2/三案 replay 已通过；clean/synced formal proof 待执行）
+  - [x] 统一 Tool Schema／Validator／route／fake／repair feedback 编译源；绑定 `17bb0c5a...` 的 formal R2 replay 与三案 identity mutation 通过，0 provider
   - [x] Chat control／Responses candidate／Anthropic shadow 的 provider-neutral canonical transport projection；Anthropic live 代码级禁止
-  - [ ] DELL `value_capture` Chat/Responses paired single-cell authority 尚未签发；只有 formal replay、paired 合同与内容评估通过并有新 scope decision，才可进入五单元 bounded loop
+  - [ ] DELL `value_capture` Chat/Responses paired single-cell authority 尚未签发；formal replay 已通过，仍须 paired 合同与内容评估及新 scope decision 才可进入五单元 bounded loop
 - [ ] S3 动态 Agentic Research 与内容质量验收
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision

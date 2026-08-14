@@ -50,7 +50,9 @@ from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     validate_deepseek_ga_profile,
 )
 from sec_agent.research.current_consumer import (  # noqa: E402
+    CurrentResearchConsumerError,
     compile_current_research_input,
+    validate_current_research_output,
 )
 from sec_agent.research.planning import (  # noqa: E402
     compile_research_objective,
@@ -653,6 +655,69 @@ def _three_case_context_matrix(
     }
 
 
+def _immutable_paired_r1_content_replay(
+    *,
+    research_input: Mapping[str, Any],
+    prior_result: Mapping[str, Any],
+) -> dict[str, Any]:
+    lanes = prior_result.get("lanes")
+    if not (
+        prior_result.get("status") == "paired_contract_valid_content_assessment_pending"
+        and isinstance(lanes, list)
+        and {str(row.get("lane") or "") for row in lanes if isinstance(row, Mapping)}
+        == {"chat_control", "responses_candidate"}
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_proof_prior_paired_result_invalid"
+        )
+    replay: dict[str, Any] = {}
+    allowed_failures = {
+        "research_consumer_output_cell_fields_invalid",
+        "research_consumer_numeric_relation_consumption_invalid",
+        "research_consumer_method_consumption_invalid",
+        "research_consumer_graph_consumption_invalid",
+    }
+    for raw in lanes:
+        lane = str(raw["lane"])
+        loop_result = raw.get("loop_result")
+        payload = (
+            loop_result.get("judgment_output")
+            if isinstance(loop_result, Mapping)
+            else None
+        )
+        if not isinstance(payload, Mapping):
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_proof_prior_paired_payload_missing"
+            )
+        try:
+            validate_current_research_output(
+                payload,
+                research_input=research_input,
+                required_cell_ids=["CELL::value_capture"],
+            )
+        except CurrentResearchConsumerError as exc:
+            if exc.code not in allowed_failures:
+                raise BoundedFinanceLoopProofError(
+                    "finance_loop_proof_prior_paired_unexpected_failure:"
+                    + exc.code
+                ) from exc
+            replay[lane] = {
+                "old_loop_result_digest": str(loop_result.get("result_digest") or ""),
+                "rejected_by_current_contract": True,
+                "failure_code": exc.code,
+            }
+        else:
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_proof_prior_paired_silently_promoted"
+            )
+    body = {
+        "prior_full_result_digest": str(prior_result.get("full_result_digest") or ""),
+        "lanes": replay,
+        "old_failed_content_was_not_silently_promoted": True,
+    }
+    return {**body, "replay_digest": canonical_digest(body)}
+
+
 def _run_fake_matrix(
     *,
     research_input: Mapping[str, Any],
@@ -1062,6 +1127,10 @@ def _execute(
         paths=paths,
         base_policy=policy,
     )
+    paired_content_replay = _immutable_paired_r1_content_replay(
+        research_input=research_input,
+        prior_result=_json(paths["prior_paired_result_ref"]),
+    )
     replay_capture = (
         _json(paths["prior_standard_r1_response_capture_ref"])
         if "prior_standard_r1_response_capture_ref" in paths
@@ -1118,6 +1187,13 @@ def _execute(
         "three_case_unavailable_route_exposed_count": three_case_context[
             "unavailable_route_exposed_count"
         ],
+        "prior_paired_content_replay_digest": paired_content_replay[
+            "replay_digest"
+        ],
+        "prior_paired_content_rejected_by_current_contract": all(
+            row["rejected_by_current_contract"]
+            for row in paired_content_replay["lanes"].values()
+        ),
         **wire_replay,
         "network_calls": 0,
         "model_calls": 0,
@@ -1151,6 +1227,7 @@ def _execute(
             "candidate_promoted_to_evidence": False,
         },
         "three_case_context_qualification": three_case_context,
+        "immutable_paired_r1_content_replay": paired_content_replay,
         "profile_qualification": {
             "standard_ga_endpoint": standard_profile.base_url,
             "standard_ga_max_tokens": int(
@@ -1178,6 +1255,7 @@ def _execute(
             **result,
             "fake_matrix": matrix,
             "three_case_context_matrix": three_case_context,
+            "immutable_paired_r1_content_replay": paired_content_replay,
         },
     )
     _write_new(public_path, result)

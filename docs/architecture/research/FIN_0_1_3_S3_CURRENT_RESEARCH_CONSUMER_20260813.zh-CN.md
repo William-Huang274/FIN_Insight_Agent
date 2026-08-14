@@ -289,6 +289,6 @@ FIN 只采纳这些接口模式：先定义 provider-neutral、版本化和内�
 - `GraphContextPack`：从当前 Case、reviewed Evidence、NumericFact 和 typed relation 即时编译；禁止读取归档 materialization，禁止跨 Case，禁止将 edge 当成 Evidence。
 - `ResearchContextReceipt`：记录选择、压缩、注入和消费。最终 Judgment 必须提交实际消费的 `method_step_refs`、`graph_edge_refs` 和需要时的 `numeric_relation_refs`。
 
-DELL 当前可见 19 条 Evidence、25 个 NumericFact 和 10 条同口径 relation；MU 为 14／14／0，NVDA 为 13／15／0。后两案的 relation=0 是正确的 typed gap，不是失败：当前资料没有足够端点时，模型不得生成同比／扩张／压缩关系。三案 full-fake 均完成 15 个工具 receipt，case identity／graph pollution／archived context／unavailable route exposure 均为 0。
+DELL 当前可见 19 条 Evidence、25 个 NumericFact 和 10 条同口径 relation；MU 为 14／14／0，NVDA 为 13／15／0。后两案的 relation=0 是正确的 typed gap，不是失败：当前资料没有足够端点时，模型不得生成同比／扩张／压缩关系。三案 full-fake 均完成 15 个工具 receipt，case identity／graph pollution／archived context／unavailable route exposure 均为 0。paired R1 的 Chat／Responses 旧 Judgment 也按 immutable result 回放，并因缺少 v1.2 的 relation／method／graph 消费字段而 fail closed，不能被新代码静默追认。
 
 当前结果已经通过 276 项全仓测试，但在干净提交绑定的 fresh proof 和一次 Chat 单单元自然复验之前，只能记为 working-tree engineering pass。完整 typed graph retrieval handler 仍归 S1；五单元运行和其他 RoleMethodPack 迁移仍需后续独立决策。

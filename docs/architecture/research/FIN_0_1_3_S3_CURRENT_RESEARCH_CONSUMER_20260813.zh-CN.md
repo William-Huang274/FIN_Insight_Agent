@@ -313,3 +313,13 @@ DELL 当前可见 19 条 Evidence、25 个 NumericFact 和 10 条同口径 relat
 该合同已由 formal zero-call replay R1 绑定干净提交 `a9578878...` 通过：两类 partial mutation 都是 1 attempt／0 retry，两个 fresh targeted process、全仓 280 tests、compileall、active baseline 和 secret scan 均通过。该结果只关闭 capture 可观测性门；replacement Chat 仍需新的 scope decision／Run／Attempt，且运行后仍必须单独进行 L1 与八维内容验收。
 
 replacement gate 不复用旧 Research Context Chat decision。新 decision 必须同时绑定 R4、RC-S3-012 replay 和 immutable R1 result，并显式声明这是新 attempt 而不是 retry；runner 会重新验证 safe JSON partial 与 malformed partial 都不可 contract parse／business promotion。只有 DELL `value_capture`、Chat-only、0 retry／fallback 且所有扩大项关闭时才放行。该 gate 已通过全仓 281 tests；live authority 仍必须在 gate 提交并推送后的干净 HEAD 上另行签发。
+
+### 12.7 replacement Chat R2：transport 恢复、因果门仍失败
+
+新的 R2 authority 绑定干净 gate 提交 `8ce05106...`。真实循环完成 5 step／6 receipts，0 retry／fallback／external retrieval／embedding／publication。五份 HTTP response 均完整，capture-first 审计为 `5/5 status=200`、`5/5 body_complete=true`、`IncompleteRead=0`、私有 reasoning 明文 finding=0；这构成修复后的自然 transport 证明，但不改变旧 R1 partial 已不可恢复、历史断流来源仍未知的事实。
+
+模型正确使用本案 4 条 reviewed Evidence、8 个 NumericFact、4 条 same-cadence NumericRelation、6 条 RoleMethod step 和 1 条当前 Graph edge，并把 ASP、unit volume、price-volume-mix bridge 三条 request 保持为未执行提案。关系端点、期间、来源 route、gap authority 和 context receipt 均通过。
+
+最终内容仍违反 `METHOD::VC::CAUSAL_BOUNDARY`：公司／ISG 的多因素利润改善被升级为 AI server surge 已转成利润，且“semi-fixed cost base”没有 Evidence／NumericFact／relation／edge 绑定。模型自己的 counterargument 已承认 product profit line、ASP、unit、PVM bridge 不存在，这使强 thesis 与其证据边界内部冲突。当前 L1 因果归因 fail；单节点诊断为 18/24，正式八维报告不评分。五单元、其他 RoleMethodPack、qualified-human 和 S3 product acceptance 均未授权。
+
+因此当前最早责任层仍在 S3 judgment authority，而不是再次修改 transport、S1 补源或增加 Prompt 长度。若继续，应先用零模型把 `claim_scope`、`financial_scope`、`causal_bridge_authority` 和 abstain／bounded wording 变成可校验合同，并把 R2 保存 Judgment 加入负向 replay；不能继续用自然调用逐句试错。

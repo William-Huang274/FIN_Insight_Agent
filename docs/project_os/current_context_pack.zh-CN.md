@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。历史 DELL `value_capture` Chat／Responses paired exact-live 两路均通过传输但未过内容 L1。Research Context Closure v1 先由 formal zero-call R3 完成结构证明，再由 R4 绑定当前 16,000-token profile；DELL 为 19 Evidence／25 NumericFact／10 relation，MU 为 14／14／0，NVDA 为 13／15／0，三案污染为 0。唯一 Chat 自然复验 R1 的第一步正确读取 Evidence＋NumericFact，第二步含完整 relation／RoleMethodPack／GraphContextPack 的请求在约 175 秒后发生 `IncompleteRead`；0 retry，没有 Judgment。故当前 L1 与内容质量均未取得可评结果，五单元继续禁止。RC-S3-012 的 provider-neutral successor 现已让普通 Chat／Tool Calls 共用同一 capture-first 终局：保留 HTTP metadata、partial 长度和原始 SHA-256，安全 JSON 经 reasoning redaction 后保存，malformed fragment 只留 digest／长度；任何 incomplete body 都禁止合同解析和业务晋升。formal zero-call replay R1 与全仓 280 tests 已通过，replacement authority 尚未签发，Provider 与本地代理谁导致旧 R1 断流仍不能归因。S1 产品门、完整八维研报、Workbench 报告面和 release 仍未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。旧 Chat R1 的 `IncompleteRead` capture 缺口由共用 provider-neutral capture-first 路径关闭，formal replay 与全仓回归通过。新的独立 Chat R2 已真实完成 5 step／6 receipts，五份响应均完整、0 retry、`IncompleteRead=0`；DeepSeek 实际消费 8 个 NumericFact、4 条同口径 relation、6 条方法步骤和 1 条当前图边，并保持三项补证为 open gap。当前剩余阻塞已从 transport／期间／route 收敛为 S3 内容因果边界：模型仍把公司／ISG 多因素利润改善过强归因于 AI server，并引入未绑定的 semi-fixed cost 机制。因此 transport 与结构通过、因果归因 L1 失败、单节点仅诊断 18/24；五单元、完整八维研报、Workbench 报告面、S3 acceptance 和 release 均未通过。
 
 ## 当前唯一产品边界
 
@@ -15,7 +15,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。受控计划 API 已能把 Objective/atoms 同时送入 S1 联合候选与 private S2 mart；Operations 可按预登记官方 route 自动抓取或人工上传 PDF，并保证原始字节先进入私有不可变 source-only capture。当前 S3 consumer 已能在离线证明中消费 reviewed Evidence 与 NumericFact 并产出结构化底稿/报告预览，但尚未被自然模型或 Workbench 产品面验收；reviewed Evidence 页面本身的结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。受控计划 API 已能把 Objective/atoms 同时送入 S1 联合候选与 private S2 mart；Operations 可按预登记官方 route 自动抓取或人工上传 PDF，并保证原始字节先进入私有不可变 source-only capture。当前 S3 consumer 已由 DELL `value_capture` 自然模型证明可消费 reviewed Evidence、NumericFact、typed relation、RoleMethodPack 和 GraphContextPack 并产出结构化单元底稿预览，但其因果内容未过 L1，也尚未进入五单元或 Workbench 产品面；reviewed Evidence 页面本身的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 
@@ -53,7 +53,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 18. 绑定干净远端提交 `b4016469...` 的零调用 R2 已复现同一 research input digest `440987e2...968` 与同一 deliverable digest `d915a4a2...c0c0`；R2 result digest 为 `90574540...5974`。自然 canary runner 已通过 no-retry terminal、case binding 和 capture-first 测试，当前全量为 231 passed，活动图 111 Python／8 frontend／10 Runtime resources，0 forbidden reference。
 19. 唯一 DELL DeepSeek Pro 综合 canary R1 已执行并 terminal failed：HTTP 成功、exact JSON、5/5 cells、usage=`14,141/2,643/16,784`，但首个硬失败为 envelope 缺字段。零调用完整诊断还发现 model-visible 枚举缺失、跨 cell 引用、复合 Evidence 二元角色冲突、自由数量级表述，以及 AI 归因、现金归因和供应缓解等内容越界。R1 0 retry、0 fallback、0 检索、0 发布；不能只补 envelope 后追认。
 20. 历史角色 Skill 与图谱只读重新资格已完成：20 个旧 Skill 全部审阅，fundamental／industry／product／valuation／risk／lead／writer／verifier／shared boundary 的方法可选择性迁移，旧对象接口、重复版本和静态多 specialist 运行方式不恢复。旧 6 GraphPack／16 SkillPack／6 MemoryPack 结果只证明 registry/injection-plan 范围；旧物化数据、期间和 digest 不进入当前 Runtime。
-21. 当前 Chat／Responses paid requests 的 model-visible prompt 和 captures 均没有 RoleMethodPack、specialist rubric、GraphPack 或 ProductIntelligenceGraph；因此协议资格仍成立，但内容失败不能只归因于 DeepSeek。官方 `deepseek-harness` 当前 scoped Skill、progressive disclosure、context log 和 preset 接缝只作为同一 FIN pack 合同的未来 shadow adapter，不整体导入开发预览 Runtime。
+21. 历史 Chat／Responses paired paid requests 的 model-visible prompt 均没有 RoleMethodPack 或 GraphContextPack；新的 Chat R2 已用 refs／receipts 证明 `value_capture` 的当前方法包、同口径关系与本案图上下文被实际消费。自然结果关闭了“模型没看见方法／关系”的不确定性，却仍出现 AI 产品利润归因越界，故当前责任是模型语义判断与项目 causal authority gate 的组合，不再是缺少上下文注入。官方 `deepseek-harness` 仍只作为同一 FIN pack 合同的未来 shadow adapter，不整体导入开发预览 Runtime。
 
 ## G12 关闭的可复现性缺陷
 
@@ -64,12 +64,12 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 尚未完成，不能提前宣称通过
 
-1. 当前对象库已增加 PIT market role，private S2 公司财务事实 mart 已被 request-scoped Research Runtime 和零调用 S3 consumer 消费；DELL reviewed Pack 已扩展到 Dell/TSM 官方法说，但 Workbench Evidence 页面结构化数值项仍为 0，自然模型与前端尚未消费 NumericFact。对象候选不得伪装为 Evidence，报告也不得从 transcript 叙事重新发明精确数值权威。
+1. 当前对象库已增加 PIT market role，private S2 公司财务事实 mart 已被 request-scoped Research Runtime、零调用 S3 consumer 和 DELL `value_capture` 自然 Chat R2 消费；DELL reviewed Pack 已扩展到 Dell/TSM 官方法说，但 Workbench Evidence 页面结构化数值项仍为 0，前端和五单元报告尚未消费 NumericFact。对象候选不得伪装为 Evidence，报告也不得从 transcript 叙事重新发明精确数值权威。
 2. Dell Q1 FY2027 transcript transport gap 已通过绑定 route 的人工官方 PDF 入库关闭；TSM 先进封装 source gap 也已关闭。仍保留 14 个 DELL residual gaps，包括提前采购幅度与消化、ASP/PVM 桥、供应商分配与容量释放时点、HBM 供给、利用率/良率和估值。Micron prepared remarks 与新鲜估值不在本次提升范围，不得因 DELL `core_research_ready` 一并视作 S1 完成。
 3. successor 后同对象比较为 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。现成 Cross-Encoder 同为 `17/18` 且提高 MRR，但会把 DELL 直接风险目标从第 1 降到第 19，不能晋升默认路线。
 4. 规则 Evidence Role 虽减少三案 top3 显式不兼容项，却把 Recall 降到 `13/18`；对象级复核仍只有 F1=`0.507936`。根因不仅是对象形态，还包括 reported results、guidance、counterevidence、监管和财务桥接被旧 qrel 混成一个 query，当前规则禁止上线。
-5. 当前 provider-neutral planner compiler 已能把自然 Planner R1 的 atoms 变成 EvidenceRequest，并执行 S1 联合候选与 S2 typed fact sibling；当前 consumer 也已在 fake 证明中把 reviewed Evidence 与 NumericFact 变成结构化判断。尚未证明的是 DeepSeek 能否在同一合同下自然选择引用、形成经济机制、保留反方和 WWC，也未完成用户输入、动态追问或前端报告消费，因此仍不能称为完整 Agentic Research。
-6. 当前 paid consumer 没有消费角色方法包或单元级图上下文；`typed_relationship_graph` 也只有 route 声明而无当前执行 handler。Skill／Graph 不能被旧归档材料假装补齐，也不能因缺失而把所有失败归因于模型。
+5. 当前 provider-neutral planner compiler 已能把自然 Planner R1 的 atoms 变成 EvidenceRequest，并执行 S1 联合候选与 S2 typed fact sibling；DELL `value_capture` Chat R2 也证明 DeepSeek 能自然选择引用、同口径关系、反方、WWC 和补证请求。尚未通过的是产品级因果归因、五单元综合、用户输入、动态追问和前端报告消费，因此仍不能称为完整 Agentic Research。
+6. 当前 paid consumer 已消费 `value_capture` 的 RoleMethodPack 和即时编译的单元级 GraphContextPack；其他四个 cell 尚未迁移或资格化。`typed_relationship_graph` 仍只有 route 声明而无 S1 当前执行 handler；S3 的本案 context edge 不能冒充通用图检索能力。
 7. Workbench 镜像仍安装数据构建依赖，冷缓存构建成本偏高；依赖拆分是非阻断基础设施优化，不能回滚已验证的数据/状态隔离。
 8. Python 基础镜像与依赖目前可从 clean-main 构建并通过；更强的镜像/依赖字节级锁定属于后续基础设施加固，不得被误写为当前研究能力，也不阻断已通过的仓库基线。
 
@@ -84,15 +84,17 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S2_S3_RESEARCH_CONTEXT_CLOSURE_V1`
+Owner decision pending：`FIN_0_1_3_S3_CAUSAL_CLAIM_SCOPE_AND_TYPED_PRODUCT_PROFIT_BRIDGE_ZERO_CALL_PACKAGE`
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
 旧综合 R1、GA paired R1 和标准 R1/R2 均保持不可变。唯一 Tool Contract Compiler、typed proposal repair 与三协议投影已通过正式零调用 replay；同一 DELL `value_capture` 的 Chat control／Responses candidate paired 也已 exact-once 完成。两路都能读取 Evidence／NumericFact、记录三个 open-gap 请求并提交 Judgment，但共同暴露 same-cadence numeric relation 无确定性 lineage，以及 model-visible source class 与实际 route 不一致。协议资格通过没有覆盖内容 L1，五单元继续 blocked。
 
-Research Context Closure 的结构门和当前 profile 容量门已通过，但唯一 Chat R1 已以 `IncompleteRead` terminal failure 消费，不能自动重跑。Owner 已授权先修 partial capture、做零调用回放，再执行一次真实 replacement。共享修复已提交并由 formal zero-call replay R1 通过：两个 fresh targeted process 各 10 passed，全仓 280 passed，compileall、active baseline 与 secret scan 同时通过；旧 R1 保持不可变，旧 partial 不可恢复。新的 replacement scope decision 与 runner gate 已完成工作树实现并把 R4、capture proof、旧 R1、Chat-only 和 0 retry 同时绑定；全仓现为 281 passed。当前下一步是提交／推送该 gate，再签发唯一一次新的 Chat R2 Run／Attempt。第 7 步五单元、其他 RoleMethodPack、Responses 和完整图 handler仍不自动开始。
+Research Context Closure 的结构门、当前 profile 容量门和 IncompleteRead capture-first formal replay 均已通过。新的 replacement gate 已以干净提交 `8ce05106...` 生效，并签发独立 Chat R2 authority。R2 真实完成 5 step／6 receipts，0 retry／fallback；五份 HTTP 响应均完整，`IncompleteRead=0`，私有 reasoning 未落盘。模型正确消费 8 个 NumericFact、4 条同口径 relation、6 条 RoleMethod step 和 1 条当前 Graph edge，并把 ASP、unit、PVM 三项保持为 proposal-only open gap。
 
-历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。真实 replacement R2 进一步证明 tool-result continuation 和两份 receipt 成立，同时暴露 Schema/Validator/route 非同源编译。R2 永久 failed。当前统一合同、协议投影和 Research Context Closure 均已达到 formal clean replay pass；Chat/Responses paired single-cell 的旧内容 L1 未通过。五 cell 现在只等待新 Chat 单单元复验后的 L1／内容质量与 scope decision。
+R2 仍未通过内容门：最终 thesis 把公司／ISG 多因素利润改善过强归因于 AI server surge，mechanism 又加入当前证据未绑定的 semi-fixed cost base。故当前状态为 transport／合同／期间数值／route／Evidence 权限 pass，因果归因 L1 fail；单节点仅诊断 18/24，正式八维不评分。五单元、其他 RoleMethodPack、Responses 和产品发布继续禁止。当前下一步不再是付费重跑，而是决策是否建立零模型 `causal claim scope + typed product-to-profit bridge` 门，并用保存的 R2 Judgment 做负向回放。
+
+历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。当前统一合同、协议投影、Research Context Closure 和 IncompleteRead capture-first 均已达到 formal clean replay pass；新 Chat R2 也已自然完成，但因产品级利润归因越界未过 L1。五 cell 不再是“等待复验”，而是明确 blocked。是否继续的下一门是 Owner 决定是否用零模型 causal scope／typed bridge 拒绝本轮保存 Judgment；未批准前不自动新增代码或付费调用。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

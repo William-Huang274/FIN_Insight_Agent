@@ -194,3 +194,13 @@ RC-S3-012 的修复落在共用 Chat transport，而不是 DeepSeek profile 或�
 修复随后以干净远端提交 `a9578878...` 绑定 formal replay R1。两个独立 targeted fresh process 各为 10 passed，全仓为 280 passed；compileall、active baseline `123 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 与 secret scan `6,549 files / 0 finding` 同时通过。formal result digest 为 `0fa1ffc9...966c1`。RC-S3-012 的项目内 capture 缺口至此结构关闭，但真实断流究竟来自 Provider、本地 6696 代理还是其他网络跳点仍未知。formal replay 没有自动授权模型调用；下一步必须另建只允许一个 DELL value_capture Chat replacement 的 scope decision 和 exact-once authority。
 
 replacement scope decision 现已单独建立，runner 会在调用前重新读取并核验：R4 research-context proof、RC-S3-012 formal replay、旧 R1 terminal result／authority、DELL＋`CELL::value_capture`、Chat-only、0 retry／fallback，以及五单元／Responses／Anthropic／外源检索／产品发布全部关闭。proof 任一 digest 漂移、partial 被允许进入 contract／business promotion，或旧 R1 不再是 immutable no-retry failure，runner 都会在 Provider 调用前 fail closed。新增 gate 测试后全仓为 281 passed。当前尚未签发 live authority，也没有模型调用；先提交并推送这条 gate，之后才能以新的 R2 Run ID 执行唯一一次 replacement。
+
+## 16. replacement Chat R2 真实结果
+
+gate 以干净远端提交 `8ce05106...` 生效后，单独签发 `LIVE-AUTHORITY-V1.1`，并以新 Run `FIN013-S3-DELL-VALUE-CAPTURE-RESEARCH-CONTEXT-CHAT-R2` 执行。R2 不是 R1 retry：它有新的 authority、Run／Attempt 和私有结果根，仍保持 0 retry／fallback。
+
+真实运行完成 5 次 Provider step／6 份 receipt：第一步读取同 cell Evidence＋NumericFact；随后分别为 ASP、price-volume-mix bridge 和 unit volume 提交三条 proposal-only EvidenceRequest；第五步提交 Judgment。五份响应均为 HTTP 200 complete body，新的 capture-first 路径保存安全 metadata 与 raw SHA-256，`IncompleteRead=0`；Provider 私有 reasoning 没有落盘。三条 request 均未执行检索、未晋升 Evidence 或 NumericFact。
+
+自然内容同时证明了结构增益和剩余边界：模型实际引用 8 个 NumericFact、4 条 same-basis relation、6 条 `value_capture` 方法步骤和 1 条当前 Graph edge，旧 paired 的错期间关系与 source-route 漂移均已关闭；反方也保留了产品利润线、ASP、台数、PVM bridge、memory pull-forward 和 services 等缺口。但最终 thesis 仍把多因素共同形成的公司／ISG 利润改善写成“AI server surge 转成利润”，mechanism 还加入了未由当前 Evidence 绑定的 semi-fixed cost base。故独立结论为 transport／合同／数值关系／Evidence 权限 pass，因果归因 L1 fail；单节点仅诊断 18/24，正式 Q1–Q8 不评分，五单元与其他角色迁移继续 blocked。
+
+本轮说明旧 Skill／Graph 的迁移不是无效：它明显改善了关系引用、补证和反方；但方法提示与引用 receipt 不能替代 causal authority。下一步不得继续付费重跑，而应先零模型把产品级利润归因编译为 typed bridge／causal-claim scope，并用保存的 R2 Judgment 证明当前过强表述会 fail closed。完整报告见 `reports/model_runs/FIN_0_1_3_S3_DELL_VALUE_CAPTURE_RESEARCH_CONTEXT_CHAT_R2_20260814.md`。

@@ -157,6 +157,8 @@ def _validate_authority(
         "consumer_policy_ref",
         "objective_ref",
         "planner_atoms_ref",
+        "current_evidence_pack_result_ref",
+        "runtime_registry_ref",
         "loop_policy_ref",
         "fake_judgment_ref",
         "r2_request_capture_ref",

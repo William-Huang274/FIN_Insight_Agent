@@ -1,0 +1,60 @@
+{
+  "cells": [
+    {
+      "cell_id": "CELL::value_capture",
+      "judgment_status": "mixed",
+      "confidence_basis": "mixed_source_strength",
+      "inference_authority": "bounded_inference",
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "multi_driver_context_only",
+      "evidence_uses": [
+        {
+          "evidence_ref": "EV::0063F22F643B94ED",
+          "use_role": "support"
+        },
+        {
+          "evidence_ref": "EV::7F4D7E6762C21D83",
+          "use_role": "context"
+        },
+        {
+          "evidence_ref": "EV::5388E016C17032C1",
+          "use_role": "limit"
+        }
+      ],
+      "numeric_refs": [
+        "NUM::55D71667B5DA8AF0",
+        "NUM::1BB4D30C6329CD27",
+        "NUM::D0EA6489B2C138EE",
+        "NUM::BA153FB9939D66DF",
+        "NUM::AB89B02ADCCB77E0",
+        "NUM::33642A79CE277E0B"
+      ],
+      "numeric_relation_refs": [
+        "REL::E773B8CD872C906A",
+        "REL::E3A67501DFA73ACF",
+        "REL::B60164179DFFDF5A"
+      ],
+      "method_step_refs": [
+        "METHOD::VC::PERIOD_BASIS",
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::COUNTERREAD",
+        "METHOD::VC::MATERIAL_GAP_ROUTE"
+      ],
+      "graph_edge_refs": [
+        "GRAPH::2B17375548682087"
+      ],
+      "thesis_atom": "Dell company and segment profit improved while AI server mix pressured gross margin, but the reviewed evidence does not isolate the product contribution.",
+      "mechanism_atom": "Management describes product profitability, storage profitability, traditional server margins and revenue scale as separate factors, so the current pack cannot allocate the company change to one product.",
+      "counterargument_atom": "The product target is unaudited and the missing product profit, unit, price and mix bridge leaves the value-capture conclusion bounded.",
+      "what_would_change": {
+        "observable": "Product price, shipment and cost bridge becomes consistently available",
+        "direction": "resolve_gap",
+        "time_horizon": "subsequent earnings disclosures",
+        "evidence_route": "official company product profitability disclosure and reproducible financial bridge",
+        "threshold_numeric_ref": null
+      }
+    }
+  ]
+}

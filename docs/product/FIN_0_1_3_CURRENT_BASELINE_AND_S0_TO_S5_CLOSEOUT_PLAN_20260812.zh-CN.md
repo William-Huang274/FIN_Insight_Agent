@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / runtime_registry_R11 / S1_object_route_and_Dell_targeted_source_engineering_pass / S1_candidate_to_Evidence_product_open / S2_company_fact_mart_and_Dell_relation_consumption_pass / S2_operating_metric_and_product_bridge_open / S3_research_context_closure_pass / replacement_Chat_R2_transport_contract_relation_route_method_graph_pass / causal_attribution_L1_fail / S1_to_S3_full_chain_audit_complete / owner_direction_pending / five_cell_blocked / product_iteration_not_closed`
+状态：`repository_baseline_complete / runtime_registry_R11 / S1_object_route_and_Dell_targeted_source_engineering_pass / S1_candidate_to_Evidence_product_open / S2_company_fact_mart_and_Dell_relation_consumption_pass / S2_operating_metric_and_product_bridge_open / S3_research_context_closure_pass / replacement_Chat_R2_transport_contract_relation_route_method_graph_pass / causal_attribution_L1_fail / S1_to_S3_full_chain_audit_complete / fixed_pack_layer_one_owner_authorized / claim_authority_implementation_complete / formal_zero_call_and_one_live_pending / dynamic_layer_two_blocked / five_cell_blocked / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -60,8 +60,9 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
     - Research Context Closure R3/R4 与 replacement Chat R2 已完成：R2 正确消费 8 个 NumericFact、4 条同口径 relation、6 条 RoleMethod step 和 1 条当前 Graph edge，并保持 ASP／unit／PVM 为 open gap。最终仍把多因素公司／ISG 利润改善过强归因于 AI server，并加入未绑定的 semi-fixed cost 机制，故因果归因 L1 fail，五单元继续 blocked。
 22. **角色 Skill／图谱／DeepSeek Harness 重新资格（只读审计已完成）**：旧 fundamental、industry/supply-chain、product、valuation、risk、lead、writer、verifier 方法选择性迁移；旧 renderer／aggregator 和重复版本不恢复。旧图数据不复用，完整 typed graph handler 留在 S1。官方 Harness 的 scoped Skill、progressive disclosure、context log 和 preset 只作为 provider-neutral pack 的可选 shadow 宿主，不接管金融 Evidence／NumericFact 权威。
 23. **S1→S3 全链审计（只读完成、方向待 Owner 决策）**：审计确认当前主链的最早产品断点是 `candidate → EvidenceResponse` 未在 Agent loop 内闭合；S2 只对标准公司财务事实形成权威，订单／积压／销量／ASP／PVM／产品利润桥与估值仍缺 typed authority；S3 则缺 claim scope 与 causal bridge 强制门。原先单独的 S3 causal gate 仍有必要，但若不与 S1 Evidence 回流和 S2 operating-metric／bridge 纵切一起设计，只会得到更安全但可能更空的结论。下一方向见 `docs/worklog/fin_0_1_3_s3/019_s1_to_s3_full_chain_and_experiment_audit.md`，未获 Owner 决策前不新增模型调用或五单元运行。
-24. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
-25. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+24. **三层验收与第一层（Owner 已批准、实现完成、formal proof 待执行）**：fixed Pack 只测试“给定合格资料时能否可靠分析”，不计作 Agentic Research；第二层才是 DELL 单单元动态 S1/S2/EvidenceResponse 纵切；第三层才是五单元动态完整案例。第一层已以 successor overlay 增加 claim scope、financial scope 和 causal bridge authority，保存的 R2 作为负向 replay，EvidenceRequest 预算为零。第一层必须完成 formal clean proof、唯一一次 Chat live、L1／内容／paired 评估并返回 Owner；不得自动开始第二层。
+25. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
+26. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
 ## 5. 防止再次膨胀的工程规则
 

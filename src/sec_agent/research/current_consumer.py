@@ -14,6 +14,12 @@ from .research_context import (
     compile_graph_context_packs,
     load_research_context_contract,
 )
+from .claim_authority import (
+    CLAIM_AUTHORITY_DELIVERABLE_SCHEMA_VERSION,
+    CLAIM_AUTHORITY_MODEL_FIELDS,
+    ClaimAuthorityError,
+    validate_claim_authority_selection,
+)
 
 
 CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION = (
@@ -1270,6 +1276,15 @@ def compile_current_research_messages(
                 "context_consumption_contract": deepcopy(
                     cell["context_consumption_contract"]
                 ),
+                **(
+                    {
+                        "claim_authority_card": deepcopy(
+                            cell["claim_authority_card"]
+                        )
+                    }
+                    if "claim_authority_card" in cell
+                    else {}
+                ),
                 "residual_gap_cards": [
                     {
                         **deepcopy(gap_by_ref[ref]),
@@ -1286,6 +1301,15 @@ def compile_current_research_messages(
         "confidence_basis": "one listed confidence basis",
         "inference_authority": (
             "directly_supported, bounded_inference or not_inferable"
+        ),
+        **(
+            {
+                "claim_scope": "one claim scope listed in the cell ClaimAuthorityCard",
+                "financial_scope": "one financial scope listed in the cell ClaimAuthorityCard",
+                "causal_bridge_authority": "one bridge authority listed in the cell ClaimAuthorityCard",
+            }
+            if "claim_authority_contract" in research_input
+            else {}
         ),
         "evidence_uses": [
             {
@@ -1385,6 +1409,29 @@ def compile_current_research_messages(
             "Do not infer an undisclosed threshold or claim a supply constraint is easing without directly bound allocation and timing evidence.",
         ],
     }
+    if "claim_authority_contract" in research_input:
+        visible["claim_authority_contract"] = deepcopy(
+            research_input["claim_authority_contract"]
+        )
+        visible["output_contract"].update(
+            {
+                "allowed_claim_scopes": contract["allowed_claim_scopes"],
+                "allowed_financial_scopes": contract[
+                    "allowed_financial_scopes"
+                ],
+                "allowed_causal_bridge_authorities": contract[
+                    "allowed_causal_bridge_authorities"
+                ],
+            }
+        )
+        visible["rules"].extend(
+            [
+                "Declare claim_scope, financial_scope and causal_bridge_authority before the narrative atoms; the selected combination must appear in the cell ClaimAuthorityCard.",
+                "Management assertion authority proves only the attributed statement. Multi-driver context permits coexistence but not product-to-segment or product-to-company profit allocation.",
+                "Do not use product-to-profit causal language, operating-leverage claims or semi-fixed-cost mechanisms unless the card exposes a direct cross-scope bridge.",
+                "This fixed Evidence Pack test does not execute retrieval and must not be described as Agentic Research.",
+            ]
+        )
     user_content = json.dumps(
         visible,
         ensure_ascii=False,
@@ -1506,6 +1553,12 @@ def validate_current_research_output(
     cell_fields = set(contract["model_owned_cell_fields"])
     use_roles = set(contract["allowed_evidence_use_roles"])
     inference_authorities = set(contract["allowed_inference_authorities"])
+    claim_authority_contract = research_input.get("claim_authority_contract")
+    _require(
+        claim_authority_contract is None
+        or isinstance(claim_authority_contract, Mapping),
+        "research_consumer_claim_authority_contract_invalid",
+    )
     validated = []
     for cell_id in input_cells:
         raw = output_cells[cell_id]
@@ -1651,6 +1704,27 @@ def validate_current_research_output(
             )
             for field in _MODEL_TEXT_FIELDS
         }
+        claim_authority_receipt = None
+        if claim_authority_contract is not None:
+            claim_card = input_cells[cell_id].get("claim_authority_card")
+            _require(
+                isinstance(claim_card, Mapping),
+                "research_consumer_claim_authority_cell_not_qualified",
+            )
+            try:
+                claim_authority_receipt = validate_claim_authority_selection(
+                    raw,
+                    claim_authority_card=claim_card,
+                    claim_authority_contract=claim_authority_contract,
+                    evidence_uses=evidence_uses,
+                    numeric_refs=numeric,
+                    remaining_gap_refs=gaps,
+                    inference_authority=inference,
+                    judgment_status=status,
+                    narrative_atoms=tuple(validated_text.values()),
+                )
+            except ClaimAuthorityError as exc:
+                raise CurrentResearchConsumerError(exc.code) from exc
         if any(_YEAR_OVER_YEAR_SURFACE.search(text) for text in validated_text.values()):
             _require(
                 bool(numeric_relations),
@@ -1725,6 +1799,19 @@ def validate_current_research_output(
                     "consumed_graph_edge_refs": list(graph_edges),
                     "consumed_numeric_relation_refs": list(numeric_relations),
                 },
+                **(
+                    {
+                        field: str(raw[field])
+                        for field in CLAIM_AUTHORITY_MODEL_FIELDS
+                    }
+                    if claim_authority_receipt is not None
+                    else {}
+                ),
+                **(
+                    {"claim_authority_receipt": claim_authority_receipt}
+                    if claim_authority_receipt is not None
+                    else {}
+                ),
                 **validated_text,
                 "what_would_change": validated_wwc,
             }
@@ -1797,7 +1884,11 @@ def compile_current_research_deliverable(
             }
         )
     unsigned = {
-        "schema_version": CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION,
+        "schema_version": (
+            CLAIM_AUTHORITY_DELIVERABLE_SCHEMA_VERSION
+            if "claim_authority_contract" in research_input
+            else CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION
+        ),
         "status": "structured_workpaper_and_report_preview_compiled",
         "case_identity": deepcopy(research_input["case_identity"]),
         "research_question": research_input["objective"]["raw_question"],
@@ -1827,11 +1918,24 @@ def compile_current_research_deliverable(
         },
         "known_boundary": (
             "This is a structured internal workpaper/report preview. Typed "
-            "evidence use and inference authority reduce ambiguity but do not "
+            "evidence use, inference authority and any declared claim scope "
+            "reduce ambiguity but do not "
             "prove natural-model quality, causality, owner acceptance or "
             "release readiness."
         ),
     }
+    if "claim_authority_contract" in research_input:
+        unsigned["rendering_authority"]["model_authored_judgment_fields"].extend(
+            CLAIM_AUTHORITY_MODEL_FIELDS
+        )
+        unsigned["rendering_authority"]["harness_rendered_surfaces"].append(
+            "claim_authority_receipt"
+        )
+        unsigned["fixed_pack_experiment_boundary"] = {
+            "dynamic_retrieval_executed": False,
+            "agentic_research_claimed": False,
+            "harness_generated_research_conclusion": False,
+        }
     return {**unsigned, "deliverable_digest": canonical_digest(unsigned)}
 
 

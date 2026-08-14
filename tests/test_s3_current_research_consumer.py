@@ -29,6 +29,10 @@ from sec_agent.research.current_consumer import (
     parse_current_research_output,
     validate_current_research_output,
 )
+from sec_agent.research.claim_authority import (
+    compile_claim_authority_research_input,
+    load_claim_authority_policy,
+)
 from sec_agent.runtime_bridge.paths import resolve_runtime_paths
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
@@ -48,6 +52,14 @@ ATOMS = ROOT / (
 FAKE_PAYLOAD_V1_2 = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_2.json"
+)
+CLAIM_AUTHORITY_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_v1_0.json"
+)
+R2_FULL_RESULT = ROOT / (
+    "data/workbench_private/fin_0_1_3_s3_current_research_consumer/"
+    "research-context-chat-r2-value-capture/full_result.json"
 )
 R1_FAILED_PAYLOAD = ROOT / (
     "tests/fixtures/research/"
@@ -129,6 +141,215 @@ def _current_inputs() -> tuple[dict[str, object], dict[str, object], dict[str, o
 @pytest.fixture(scope="module")
 def current_inputs() -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
     return _current_inputs()
+
+
+@pytest.fixture(scope="module")
+def claim_authority_input(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> dict[str, object]:
+    _, _, research_input = current_inputs
+    return compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+
+
+def _r2_judgment() -> dict[str, object]:
+    full = _json(R2_FULL_RESULT)
+    return deepcopy(full["loop_result"]["judgment_output"])
+
+
+def _bounded_claim_judgment() -> dict[str, object]:
+    payload = _r2_judgment()
+    row = payload["cells"][0]
+    row.update(
+        {
+            "claim_scope": "multi_scope",
+            "financial_scope": "multi_scope_financial",
+            "causal_bridge_authority": "multi_driver_context_only",
+            "thesis_atom": (
+                "Dell company and segment profit improved while AI server mix "
+                "pressured gross margin, but the reviewed evidence does not "
+                "isolate the product contribution."
+            ),
+            "mechanism_atom": (
+                "Management describes product profitability, storage "
+                "profitability, traditional server margins and revenue scale as "
+                "separate factors, so the current pack cannot allocate the "
+                "company change to one product."
+            ),
+            "counterargument_atom": (
+                "The product target is unaudited and the missing product profit, "
+                "unit, price and mix bridge leaves the value-capture conclusion "
+                "bounded."
+            ),
+        }
+    )
+    return payload
+
+
+def test_claim_authority_overlay_is_fixed_pack_only_and_does_not_mutate_v1_2(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+    claim_authority_input: dict[str, object],
+) -> None:
+    _, _, base = current_inputs
+    assert base["schema_version"] == "fin_ia_current_research_input_v1_1"
+    assert "claim_authority_contract" not in base
+    assert claim_authority_input["schema_version"] == (
+        "fin_ia_current_research_input_v1_2"
+    )
+    boundary = claim_authority_input["claim_authority_contract"]
+    assert boundary["base_research_input_digest"] == base["research_input_digest"]
+    assert boundary["fixed_pack_unit_test_only"] is True
+    assert boundary["dynamic_retrieval_executed"] is False
+    assert boundary["agentic_research_claimed"] is False
+    assert boundary["qualified_cell_ids"] == ["CELL::value_capture"]
+    target = next(
+        row
+        for row in claim_authority_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    assert target["claim_authority_card"][
+        "allowed_causal_bridge_authorities"
+    ] == [
+        "same_scope_observation_only",
+        "management_assertion_only",
+        "multi_driver_context_only",
+        "bridge_unavailable",
+    ]
+    assert "direct_cross_scope_bridge" not in target["claim_authority_card"][
+        "allowed_causal_bridge_authorities"
+    ]
+
+
+def test_claim_authority_policy_and_model_view_are_exact(
+    claim_authority_input: dict[str, object],
+) -> None:
+    loaded = load_claim_authority_policy(_json(CLAIM_AUTHORITY_POLICY))
+    assert loaded["authority"]["model_owns_narrative_judgment"] is True
+    messages = compile_current_research_messages(
+        claim_authority_input,
+        required_cell_ids=["CELL::value_capture"],
+        submission_transport="final_tool",
+    )
+    visible = json.loads(messages[1]["content"])
+    assert visible["claim_authority_contract"]["agentic_research_claimed"] is False
+    card = visible["cells"][0]["claim_authority_card"]
+    assert card["cell_id"] == "CELL::value_capture"
+    shape = visible["output_contract"]["payload_shape"][
+        "submit_research_judgment_arguments"
+    ]
+    assert shape["claim_scope"].startswith("one claim scope")
+    assert shape["financial_scope"].startswith("one financial scope")
+    assert shape["causal_bridge_authority"].startswith("one bridge authority")
+
+
+def test_saved_r2_overclaim_is_rejected_by_claim_authority_replay(
+    claim_authority_input: dict[str, object],
+) -> None:
+    payload = _r2_judgment()
+    payload["cells"][0].update(
+        {
+            "claim_scope": "multi_scope",
+            "financial_scope": "multi_scope_financial",
+            "causal_bridge_authority": "multi_driver_context_only",
+        }
+    )
+    with pytest.raises(CurrentResearchConsumerError) as exc:
+        validate_current_research_output(
+            payload,
+            research_input=claim_authority_input,
+            required_cell_ids=["CELL::value_capture"],
+        )
+    assert exc.value.code == (
+        "claim_authority_cross_scope_causal_language_unbound"
+    )
+
+
+def test_bounded_multi_driver_claim_passes_without_harness_authorship(
+    claim_authority_input: dict[str, object],
+) -> None:
+    payload = _bounded_claim_judgment()
+    validated = validate_current_research_output(
+        payload,
+        research_input=claim_authority_input,
+        required_cell_ids=["CELL::value_capture"],
+    )
+    row = validated["cells"][0]
+    assert row["claim_scope"] == "multi_scope"
+    assert row["financial_scope"] == "multi_scope_financial"
+    assert row["causal_bridge_authority"] == "multi_driver_context_only"
+    assert row["claim_authority_receipt"][
+        "cross_scope_causal_language_guard_pass"
+    ] is True
+    assert row["claim_authority_receipt"][
+        "harness_generated_research_judgment"
+    ] is False
+    deliverable = compile_current_research_deliverable(
+        research_input=claim_authority_input,
+        judgment_output=payload,
+        required_cell_ids=["CELL::value_capture"],
+    )
+    assert deliverable["schema_version"] == (
+        "fin_ia_current_research_deliverable_v1_3"
+    )
+    assert deliverable["fixed_pack_experiment_boundary"] == {
+        "dynamic_retrieval_executed": False,
+        "agentic_research_claimed": False,
+        "harness_generated_research_conclusion": False,
+    }
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected"),
+    [
+        (
+            {
+                "causal_bridge_authority": "direct_cross_scope_bridge",
+            },
+            "claim_authority_output_enum_invalid",
+        ),
+        (
+            {
+                "claim_scope": "product",
+                "financial_scope": "company_financial",
+            },
+            "claim_authority_scope_combination_invalid",
+        ),
+        (
+            {
+                "claim_scope": "product",
+                "financial_scope": "product_financial",
+                "causal_bridge_authority": "management_assertion_only",
+                "evidence_uses": [
+                    {
+                        "evidence_ref": "EV::0063F22F643B94ED",
+                        "use_role": "context",
+                    },
+                    {
+                        "evidence_ref": "EV::7F4D7E6762C21D83",
+                        "use_role": "support",
+                    }
+                ],
+            },
+            "claim_authority_management_assertion_evidence_missing",
+        ),
+    ],
+)
+def test_claim_authority_mutations_fail_closed(
+    claim_authority_input: dict[str, object],
+    mutation: dict[str, object],
+    expected: str,
+) -> None:
+    payload = _bounded_claim_judgment()
+    payload["cells"][0].update(deepcopy(mutation))
+    with pytest.raises(CurrentResearchConsumerError) as exc:
+        validate_current_research_output(
+            payload,
+            research_input=claim_authority_input,
+            required_cell_ids=["CELL::value_capture"],
+        )
+    assert exc.value.code == expected
 
 
 def test_current_input_consumes_reviewed_pack_and_deduplicated_numeric_facts(

@@ -34,6 +34,27 @@ from sec_agent.research.current_consumer import (  # noqa: E402
     compile_current_research_messages,
     validate_current_research_output,
 )
+from sec_agent.research.claim_authority import (  # noqa: E402
+    compile_claim_authority_research_input,
+)
+from sec_agent.research.bounded_finance_loop import (  # noqa: E402
+    READ_NUMERIC_FACTS_TOOL,
+    READ_REVIEWED_EVIDENCE_TOOL,
+    SUBMIT_RESEARCH_JUDGMENT_TOOL,
+    compile_finance_loop_messages,
+    compile_finance_loop_tools,
+    load_bounded_finance_loop_policy,
+    run_bounded_finance_loop,
+    scope_bounded_finance_loop_policy,
+)
+from sec_agent.providers import ChatCompletionToolStepResult  # noqa: E402
+from retrieval.contracts import load_financial_research_kernel  # noqa: E402
+from retrieval.route_compiler import (  # noqa: E402
+    load_query_object_fact_route_policy,
+)
+from sec_agent.research.planning import (  # noqa: E402
+    load_research_planning_policy,
+)
 from sec_agent.research.reviewed_evidence_pack import (  # noqa: E402
     canonical_digest,
 )
@@ -47,6 +68,12 @@ AUTHORITY_SCHEMA = (
     "fin_ia_current_research_consumer_zero_call_authority_v1_2"
 )
 RESULT_SCHEMA = "fin_ia_current_research_consumer_zero_call_result_v1_2"
+CLAIM_AUTHORITY_SCHEMA = (
+    "fin_ia_fixed_pack_claim_authority_zero_call_authority_v1_0"
+)
+CLAIM_RESULT_SCHEMA = (
+    "fin_ia_fixed_pack_claim_authority_zero_call_result_v1_0"
+)
 
 
 class CurrentResearchConsumerRunnerError(RuntimeError):
@@ -162,7 +189,7 @@ def validate_authority(
 ) -> tuple[dict[str, Path], str]:
     schema = str(payload.get("schema_version") or "")
     if not (
-        schema == AUTHORITY_SCHEMA
+        schema in {AUTHORITY_SCHEMA, CLAIM_AUTHORITY_SCHEMA}
         and payload.get("status")
         == "fresh_zero_network_zero_model_current_consumer_proof_authorized"
     ):
@@ -195,17 +222,46 @@ def validate_authority(
         ("consumer_policy_ref", "consumer_policy_sha256"),
         ("objective_ref", "objective_sha256"),
         ("planner_atoms_ref", "planner_atoms_sha256"),
-        ("fake_output_ref", "fake_output_sha256"),
         ("current_evidence_pack_result_ref", "current_evidence_pack_result_sha256"),
         ("runtime_registry_ref", "runtime_registry_sha256"),
         ("runner_ref", "runner_sha256"),
     ]
-    pairs.extend(
-        [
-            ("failed_r1_payload_ref", "failed_r1_payload_sha256"),
-            ("failed_r1_audit_ref", "failed_r1_audit_sha256"),
-        ]
-    )
+    if schema == AUTHORITY_SCHEMA:
+        pairs.extend(
+            [
+                ("fake_output_ref", "fake_output_sha256"),
+                ("failed_r1_payload_ref", "failed_r1_payload_sha256"),
+                ("failed_r1_audit_ref", "failed_r1_audit_sha256"),
+            ]
+        )
+    else:
+        pairs.extend(
+            [
+                ("claim_authority_policy_ref", "claim_authority_policy_sha256"),
+                ("prior_r2_full_result_ref", "prior_r2_full_result_sha256"),
+                (
+                    "prior_r2_content_assessment_ref",
+                    "prior_r2_content_assessment_sha256",
+                ),
+                ("loop_policy_ref", "loop_policy_sha256"),
+                (
+                    "claim_authority_fake_output_ref",
+                    "claim_authority_fake_output_sha256",
+                ),
+                (
+                    "current_consumer_implementation_ref",
+                    "current_consumer_implementation_sha256",
+                ),
+                (
+                    "claim_authority_implementation_ref",
+                    "claim_authority_implementation_sha256",
+                ),
+                (
+                    "bounded_loop_implementation_ref",
+                    "bounded_loop_implementation_sha256",
+                ),
+            ]
+        )
     paths: dict[str, Path] = {}
     for ref_key, digest_key in pairs:
         path = _resolve(str(bound.get(ref_key) or ""))
@@ -236,7 +292,9 @@ def validate_authority(
         payload,
         authority_path=authority_path,
     )
-    return paths, RESULT_SCHEMA
+    return paths, (
+        CLAIM_RESULT_SCHEMA if schema == CLAIM_AUTHORITY_SCHEMA else RESULT_SCHEMA
+    )
 
 
 def _services() -> tuple[ResearchEvidencePackService, ResearchRetrievalService]:
@@ -415,6 +473,320 @@ def _replay_failed_r1(
     }
 
 
+def _tool_step(
+    index: int,
+    calls: Sequence[tuple[str, Mapping[str, Any]]],
+) -> ChatCompletionToolStepResult:
+    return ChatCompletionToolStepResult(
+        status="completed_exact_once_tool_step",
+        provider_id="fixed_pack_zero_call_fixture",
+        model="zero-call-fixture",
+        content="",
+        reasoning_content=f"transient-zero-call-step-{index}",
+        tool_calls=tuple(
+            {
+                "id": f"call-{index}-{offset}",
+                "type": "function",
+                "function": {
+                    "name": name,
+                    "arguments": json.dumps(
+                        dict(arguments),
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ),
+                },
+            }
+            for offset, (name, arguments) in enumerate(calls, start=1)
+        ),
+        finish_reason="tool_calls",
+        usage={"total_tokens": 0},
+        request_capture_ref=f"zero-call/request-{index}.json",
+        response_capture_ref=f"zero-call/response-{index}.json",
+        request_digest=f"zero-call-request-{index}",
+        response_digest=f"zero-call-response-{index}",
+        private_reasoning_fields_redacted=1,
+    )
+
+
+def _claim_authority_mutation_codes(
+    *,
+    research_input: Mapping[str, Any],
+    fake: Mapping[str, Any],
+) -> list[str]:
+    cases: list[dict[str, Any]] = []
+    direct_bridge = deepcopy(dict(fake))
+    direct_bridge["cells"][0][
+        "causal_bridge_authority"
+    ] = "direct_cross_scope_bridge"
+    cases.append(direct_bridge)
+    wrong_scope = deepcopy(dict(fake))
+    wrong_scope["cells"][0]["claim_scope"] = "product"
+    wrong_scope["cells"][0]["financial_scope"] = "company_financial"
+    cases.append(wrong_scope)
+    causal_surface = deepcopy(dict(fake))
+    causal_surface["cells"][0]["thesis_atom"] = (
+        "Dell is converting the AI server surge into profit through operating leverage."
+    )
+    cases.append(causal_surface)
+    output = []
+    for mutation in cases:
+        try:
+            validate_current_research_output(
+                mutation,
+                research_input=research_input,
+                required_cell_ids=["CELL::value_capture"],
+            )
+        except CurrentResearchConsumerError as exc:
+            output.append(exc.code)
+        else:
+            raise CurrentResearchConsumerRunnerError(
+                "claim_authority_mutation_did_not_fail"
+            )
+    return output
+
+
+def _run_claim_authority_proof(
+    *,
+    authority: Mapping[str, Any],
+    authority_path: Path,
+    paths: Mapping[str, Path],
+    result_schema: str,
+    evidence_pack: Mapping[str, Any],
+    controlled: Mapping[str, Any],
+    base_research_input: Mapping[str, Any],
+) -> dict[str, Any]:
+    research_input = compile_claim_authority_research_input(
+        base_research_input,
+        policy=_json(paths["claim_authority_policy_ref"]),
+    )
+    cell_id = "CELL::value_capture"
+    fake = _json(paths["claim_authority_fake_output_ref"])
+    deliverable = compile_current_research_deliverable(
+        research_input=research_input,
+        judgment_output=fake,
+        required_cell_ids=[cell_id],
+    )
+    prior_r2 = _json(paths["prior_r2_full_result_ref"])
+    prior_assessment = _json(paths["prior_r2_content_assessment_ref"])
+    if not (
+        prior_r2.get("status")
+        == "completed_contract_valid_content_assessment_pending"
+        and prior_assessment.get("l1_financial_truth", {}).get("gate_status")
+        == "fail_causal_attribution_unbound"
+        and prior_assessment.get("source_result_ref")
+        == "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_research_context_chat_live_result_v1_1.json"
+    ):
+        raise CurrentResearchConsumerRunnerError(
+            "claim_authority_prior_r2_disposition_invalid"
+        )
+    prior_judgment = deepcopy(
+        prior_r2["loop_result"]["judgment_output"]
+    )
+    prior_judgment["cells"][0].update(
+        {
+            "claim_scope": "multi_scope",
+            "financial_scope": "multi_scope_financial",
+            "causal_bridge_authority": "multi_driver_context_only",
+        }
+    )
+    try:
+        validate_current_research_output(
+            prior_judgment,
+            research_input=research_input,
+            required_cell_ids=[cell_id],
+        )
+    except CurrentResearchConsumerError as exc:
+        prior_r2_rejection_code = exc.code
+    else:
+        raise CurrentResearchConsumerRunnerError(
+            "claim_authority_prior_r2_silently_promoted"
+        )
+    if prior_r2_rejection_code != (
+        "claim_authority_cross_scope_causal_language_unbound"
+    ):
+        raise CurrentResearchConsumerRunnerError(
+            "claim_authority_prior_r2_wrong_rejection"
+        )
+    kernel_payload = read_registered_runtime_json(
+        ROOT, "application.config.current_financial_research_kernel"
+    )
+    route_payload = read_registered_runtime_json(
+        ROOT, "application.config.current_query_object_fact_route_policy"
+    )
+    planning_payload = read_registered_runtime_json(
+        ROOT, "application.config.current_research_planning_policy"
+    )
+    kernel = load_financial_research_kernel(kernel_payload)
+    route = load_query_object_fact_route_policy(route_payload, kernel)
+    planning = load_research_planning_policy(planning_payload, route)
+    base_policy = load_bounded_finance_loop_policy(
+        _json(paths["loop_policy_ref"])
+    )
+    scoped = scope_bounded_finance_loop_policy(
+        base_policy,
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_loop_tools(
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped,
+        strict=False,
+    )
+    visible_budget = {
+        "maximum_steps": scoped.maximum_steps,
+        "maximum_evidence_requests": 0,
+        "maximum_reads_per_cell": 1,
+        "maximum_parallel_read_tools": 2,
+        "maximum_judgments_per_cell": 1,
+        "retry_count": 0,
+    }
+    messages = compile_finance_loop_messages(
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        execution_budget=visible_budget,
+    )
+    loop_result = run_bounded_finance_loop(
+        policy=scoped,
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+        tools=tools,
+        step_executor=lambda _messages, _tools, index: (
+            _tool_step(
+                index,
+                [
+                    (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+                    (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
+                ],
+            )
+            if index == 1
+            else _tool_step(
+                index,
+                [(SUBMIT_RESEARCH_JUDGMENT_TOOL, fake["cells"][0])],
+            )
+        ),
+        visible_execution_budget=visible_budget,
+    )
+    mutations = _claim_authority_mutation_codes(
+        research_input=research_input,
+        fake=fake,
+    )
+    replay_input = compile_claim_authority_research_input(
+        base_research_input,
+        policy=_json(paths["claim_authority_policy_ref"]),
+    )
+    replay_messages = compile_finance_loop_messages(
+        research_input=replay_input,
+        required_cell_ids=[cell_id],
+        execution_budget=visible_budget,
+    )
+    if not (
+        replay_input == research_input
+        and replay_messages == messages
+        and loop_result.status == "completed_all_required_cells"
+        and loop_result.step_count == 2
+        and loop_result.tool_call_count == 3
+        and loop_result.tool_counts.get("submit_evidence_request", 0) == 0
+    ):
+        raise CurrentResearchConsumerRunnerError(
+            "claim_authority_zero_call_determinism_or_loop_invalid"
+        )
+    normalized = {
+        "base_research_input_digest": base_research_input[
+            "research_input_digest"
+        ],
+        "research_input_digest": research_input["research_input_digest"],
+        "finance_loop_messages_digest": canonical_digest(list(messages)),
+        "standard_tool_schema_digest": canonical_digest(list(tools)),
+        "deliverable_digest": deliverable["deliverable_digest"],
+        "saved_r2_negative_replay_code": prior_r2_rejection_code,
+        "mutation_failure_codes": mutations,
+        "fixed_pack_unit_test_only": True,
+        "dynamic_retrieval_executed": False,
+        "agentic_research_claimed": False,
+        "maximum_model_steps": scoped.maximum_steps,
+        "maximum_evidence_requests": 0,
+        "fake_loop_steps": loop_result.step_count,
+        "fake_loop_tool_calls": loop_result.tool_call_count,
+        "fake_loop_evidence_requests": loop_result.tool_counts.get(
+            "submit_evidence_request", 0
+        ),
+        "network_calls": 0,
+        "model_calls": 0,
+        "provider_calls": 0,
+        "local_embedding_calls": 0,
+        "retries": 0,
+        "deterministic_recompile_equal": True,
+    }
+    full_body = {
+        "schema_version": "fin_ia_fixed_pack_claim_authority_zero_call_full_v1_0",
+        "status": "completed_zero_call_fixed_pack_claim_authority_proof",
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha(authority_path),
+        "base_research_input": base_research_input,
+        "claim_authority_research_input": research_input,
+        "model_visible_messages": list(messages),
+        "tool_contract": list(tools),
+        "fake_judgment_output": fake,
+        "fake_loop_result": loop_result.as_dict(),
+        "structured_deliverable_preview": deliverable,
+        "saved_r2_negative_replay": {
+            "source_full_result_digest": prior_r2["full_result_digest"],
+            "source_content_gate": prior_assessment["l1_financial_truth"][
+                "gate_status"
+            ],
+            "rejection_code": prior_r2_rejection_code,
+            "silently_promoted": False,
+        },
+        "normalized_proof": normalized,
+        "known_boundary": str(authority["known_boundary"]),
+    }
+    full_digest = canonical_digest(full_body)
+    output = authority["output_contract"]
+    private_root = _resolve(str(output["private_output_root_ref"]))
+    full_path = private_root / f"full_result_{full_digest}.json"
+    _write_new(full_path, {**full_body, "result_digest": full_digest})
+    summary_body = {
+        "schema_version": result_schema,
+        "status": "engineering_pass_zero_call_fixed_pack_claim_authority",
+        "recorded_at": "2026-08-14",
+        "result_id": str(output["result_id"]),
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha(authority_path),
+        "full_result_ref": _relative(full_path),
+        "full_result_sha256": _sha(full_path),
+        "normalized_proof": normalized,
+        "acceptance": {
+            "base_v1_2_input_immutable": True,
+            "model_still_owns_narrative_judgment": True,
+            "claim_and_financial_scope_machine_visible": True,
+            "unavailable_direct_bridge_not_exposed": True,
+            "saved_r2_overclaim_rejected": True,
+            "bounded_informative_judgment_passes": True,
+            "zero_request_fixed_pack_loop_passes": True,
+            "natural_model_quality_proven": False,
+            "agentic_research_proven": False,
+            "second_layer_authorized": False,
+            "s3_product_acceptance": False,
+        },
+        "next_decision": (
+            "Run at most one new DELL value_capture fixed-pack Chat canary only "
+            "after a separate exact-once execution authority binds this proof. "
+            "Return L1, content and paired results before any dynamic Layer Two."
+        ),
+        "known_boundary": str(authority["known_boundary"]),
+    }
+    summary = {**summary_body, "result_digest": canonical_digest(summary_body)}
+    _write_new(_resolve(str(output["public_result_ref"])), summary)
+    return summary
+
+
 def run(authority_path: Path) -> dict[str, Any]:
     authority = _json(authority_path)
     paths, result_schema = validate_authority(
@@ -437,6 +809,16 @@ def run(authority_path: Path) -> dict[str, Any]:
         evidence_pack=evidence_pack,
         controlled_plan=controlled,
     )
+    if "claim_authority_policy_ref" in paths:
+        return _run_claim_authority_proof(
+            authority=authority,
+            authority_path=authority_path,
+            paths=paths,
+            result_schema=result_schema,
+            evidence_pack=evidence_pack,
+            controlled=controlled,
+            base_research_input=research_input,
+        )
     messages = compile_current_research_messages(research_input)
     fake = _json(paths["fake_output_ref"])
     deliverable = compile_current_research_deliverable(

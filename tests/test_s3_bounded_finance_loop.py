@@ -48,6 +48,9 @@ from sec_agent.research.bounded_finance_loop import (
 from sec_agent.research.current_consumer import (
     compile_current_research_input,
 )
+from sec_agent.research.claim_authority import (
+    compile_claim_authority_research_input,
+)
 from sec_agent.research.planning import (
     compile_research_objective,
     load_research_planning_policy,
@@ -77,6 +80,10 @@ ATOMS = ROOT / (
 FAKE = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_2.json"
+)
+CLAIM_AUTHORITY_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_v1_0.json"
 )
 
 
@@ -227,6 +234,119 @@ def _fake_judgment(cell_id: str) -> dict[str, object]:
     return deepcopy(
         next(row for row in _json(FAKE)["cells"] if row["cell_id"] == cell_id)
     )
+
+
+def _claim_authority_judgment() -> dict[str, object]:
+    row = _fake_judgment("CELL::value_capture")
+    row.update(
+        {
+            "claim_scope": "multi_scope",
+            "financial_scope": "multi_scope_financial",
+            "causal_bridge_authority": "multi_driver_context_only",
+            "thesis_atom": (
+                "Dell company and segment profit improved while AI server mix "
+                "pressured gross margin, but the reviewed evidence does not "
+                "isolate the product contribution."
+            ),
+            "mechanism_atom": (
+                "Management describes product profitability, storage "
+                "profitability, traditional server margins and revenue scale as "
+                "separate factors, so the current pack cannot allocate the "
+                "company change to one product."
+            ),
+            "counterargument_atom": (
+                "The product target is unaudited and the missing product profit, "
+                "unit, price and mix bridge leaves the value-capture conclusion "
+                "bounded."
+            ),
+        }
+    )
+    return row
+
+
+def test_fixed_pack_claim_authority_loop_uses_zero_request_budget(contracts) -> None:
+    base_policy, research_input, kernel, route, planning = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    cell_id = "CELL::value_capture"
+    scoped = scope_bounded_finance_loop_policy(
+        base_policy,
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_loop_tools(
+        research_input=claim_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped,
+        strict=False,
+    )
+    judgment = next(
+        row
+        for row in tools
+        if row["function"]["name"] == SUBMIT_RESEARCH_JUDGMENT_TOOL
+    )
+    properties = judgment["function"]["parameters"]["properties"]
+    assert properties["claim_scope"]["enum"] == [
+        "product",
+        "segment",
+        "company",
+        "multi_scope",
+    ]
+    assert "direct_cross_scope_bridge" not in properties[
+        "causal_bridge_authority"
+    ]["enum"]
+    budget = {
+        "maximum_steps": scoped.maximum_steps,
+        "maximum_evidence_requests": 0,
+        "maximum_reads_per_cell": 1,
+        "maximum_parallel_read_tools": 2,
+        "maximum_judgments_per_cell": 1,
+        "retry_count": 0,
+    }
+    messages = compile_finance_loop_messages(
+        research_input=claim_input,
+        required_cell_ids=[cell_id],
+        execution_budget=budget,
+    )
+    visible = json.loads(messages[1]["content"])
+    assert visible["execution_budget"]["maximum_evidence_requests"] == 0
+    assert visible["claim_authority_contract"]["agentic_research_claimed"] is False
+    result = run_bounded_finance_loop(
+        policy=scoped,
+        research_input=claim_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+        tools=tools,
+        step_executor=lambda _messages, _tools, index: (
+            _parallel_step(
+                index,
+                [
+                    (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+                    (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
+                ],
+            )
+            if index == 1
+            else _step(
+                index,
+                SUBMIT_RESEARCH_JUDGMENT_TOOL,
+                _claim_authority_judgment(),
+            )
+        ),
+        visible_execution_budget=budget,
+    )
+    assert result.status == "completed_all_required_cells"
+    assert result.step_count == 2
+    assert result.tool_call_count == 3
+    assert result.tool_counts.get(SUBMIT_EVIDENCE_REQUEST_TOOL, 0) == 0
+    assert result.structured_deliverable["fixed_pack_experiment_boundary"][
+        "agentic_research_claimed"
+    ] is False
 
 
 def _case_specific_plan(

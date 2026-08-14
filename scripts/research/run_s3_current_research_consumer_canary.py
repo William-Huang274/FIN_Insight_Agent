@@ -58,6 +58,9 @@ from sec_agent.research.current_consumer import (  # noqa: E402
     compile_current_research_messages,
     parse_current_research_output,
 )
+from sec_agent.research.claim_authority import (  # noqa: E402
+    compile_claim_authority_research_input,
+)
 from sec_agent.research.reviewed_evidence_pack import (  # noqa: E402
     canonical_digest,
 )
@@ -350,6 +353,11 @@ def _compile_runtime_input(
         evidence_pack=evidence_pack,
         controlled_plan=controlled,
     )
+    if "claim_authority_policy_ref" in paths:
+        research_input = compile_claim_authority_research_input(
+            research_input,
+            policy=_json(paths["claim_authority_policy_ref"]),
+        )
     return (
         evidence_pack,
         research_input,
@@ -975,7 +983,12 @@ def validate_tool_loop_authority(
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_tool_loop_worktree_not_clean"
         )
-    maximum_requests = 3 if len(cell_ids) == 1 else 9
+    claim_authority_mode = "claim_authority_policy_ref" in payload.get(
+        "bound_inputs", {}
+    )
+    maximum_requests = (
+        0 if claim_authority_mode else (3 if len(cell_ids) == 1 else 9)
+    )
     maximum_steps = len(cell_ids) * 3 + maximum_requests
     budget = payload.get("execution_budget")
     if not (
@@ -1016,6 +1029,8 @@ def validate_tool_loop_authority(
         "provider_transport_ref",
         "prior_scope_decision_ref",
     }
+    if claim_authority_mode:
+        required_refs.add("claim_authority_policy_ref")
     ref_keys = {key for key in bound if key.endswith("_ref")}
     runtime_digest_keys = {
         "research_input_digest",
@@ -1279,7 +1294,8 @@ def run_tool_loop(
         )
     clean = _json(paths["clean_zero_call_result_ref"])
     normalized = clean.get("normalized_proof", {})
-    if not (
+    claim_authority_mode = "claim_authority_policy_ref" in paths
+    ordinary_clean = (
         clean.get("status")
         == "zero_call_engineering_and_fresh_process_proof_pass"
         and normalized.get("research_input_digest")
@@ -1292,6 +1308,27 @@ def run_tool_loop(
         in normalized.get("mutation_failure_codes", [])
         and "finance_loop_required_cell_reads_incomplete"
         in normalized.get("mutation_failure_codes", [])
+    )
+    claim_clean = (
+        clean.get("status")
+        == "engineering_pass_zero_call_fixed_pack_claim_authority"
+        and normalized.get("research_input_digest")
+        == research_input["research_input_digest"]
+        and normalized.get("maximum_model_steps") == 3
+        and normalized.get("maximum_evidence_requests") == 0
+        and normalized.get("fake_loop_steps") == 2
+        and normalized.get("fake_loop_tool_calls") == 3
+        and normalized.get("fake_loop_evidence_requests") == 0
+        and normalized.get("saved_r2_negative_replay_code")
+        == "claim_authority_cross_scope_causal_language_unbound"
+        and normalized.get("fixed_pack_unit_test_only") is True
+        and normalized.get("agentic_research_claimed") is False
+        and normalized.get("model_calls") == 0
+        and normalized.get("network_calls") == 0
+    )
+    if not (
+        (claim_authority_mode and claim_clean)
+        or (not claim_authority_mode and ordinary_clean)
     ):
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_tool_loop_clean_proof_drift"
@@ -1320,11 +1357,29 @@ def run_tool_loop(
             clean_zero_call_result=clean,
         )
     )
+    fixed_pack_claim_authority_authorized = (
+        claim_authority_mode
+        and len(cell_ids) == 1
+        and prior_scope_decision.get("status")
+        == "fixed_pack_claim_authority_zero_call_pass_one_chat_canary_authorized"
+        and prior_scope_decision.get("case_key") == "DELL"
+        and prior_scope_decision.get("cell_id") == "CELL::value_capture"
+        and prior_scope_decision.get("clean_zero_call_result_digest")
+        == clean.get("result_digest")
+        and prior_scope_decision.get("next_authorized_scope")
+        == "one_DELL_value_capture_fixed_pack_Chat_canary"
+        and prior_scope_decision.get("maximum_evidence_requests") == 0
+        and prior_scope_decision.get("chat_live_authorized") is True
+        and prior_scope_decision.get("dynamic_layer_two_authorized") is False
+        and prior_scope_decision.get("five_cell_live_authorized") is False
+        and prior_scope_decision.get("product_publication_authorized") is False
+    )
     single_scope_authorized = (
         len(cell_ids) == 1
         and (
             research_context_revalidation_authorized
             or incomplete_read_replacement_authorized
+            or fixed_pack_claim_authority_authorized
             or (
                 prior_scope_decision.get("status")
                 == "json_node_pass_strict_transport_unqualified_full_report_not_scored"

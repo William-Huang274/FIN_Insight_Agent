@@ -509,8 +509,7 @@ def _judgment_parameters(
             },
         }
     )
-    return _strict_object(
-        {
+    properties = {
             "cell_id": {"type": "string", "enum": list(cell_ids)},
             "judgment_status": {
                 "type": "string",
@@ -524,6 +523,26 @@ def _judgment_parameters(
                 "type": "string",
                 "enum": list(contract["allowed_inference_authorities"]),
             },
+            **(
+                {
+                    "claim_scope": {
+                        "type": "string",
+                        "enum": list(contract["allowed_claim_scopes"]),
+                    },
+                    "financial_scope": {
+                        "type": "string",
+                        "enum": list(contract["allowed_financial_scopes"]),
+                    },
+                    "causal_bridge_authority": {
+                        "type": "string",
+                        "enum": list(
+                            contract["allowed_causal_bridge_authorities"]
+                        ),
+                    },
+                }
+                if "allowed_claim_scopes" in contract
+                else {}
+            ),
             "evidence_uses": {"type": "array", "items": evidence_use},
             "numeric_refs": {
                 "type": "array",
@@ -556,7 +575,7 @@ def _judgment_parameters(
             },
             "what_would_change": wwc,
         }
-    )
+    return _strict_object(properties)
 
 
 def compile_finance_loop_tools(
@@ -730,6 +749,15 @@ def compile_finance_loop_messages(
                 "context_consumption_contract": deepcopy(
                     row["context_consumption_contract"]
                 ),
+                **(
+                    {
+                        "claim_authority_card": deepcopy(
+                            row["claim_authority_card"]
+                        )
+                    }
+                    if "claim_authority_card" in row
+                    else {}
+                ),
                 "gap_route_decisions": [
                     deepcopy(route_decisions[str(ref)])
                     for ref in row["visible_gap_refs"]
@@ -761,6 +789,17 @@ def compile_finance_loop_messages(
             "Cite the injected method steps and current graph edges actually used; graph context never grants fact or causal authority.",
         ],
     }
+    if "claim_authority_contract" in research_input:
+        visible["claim_authority_contract"] = deepcopy(
+            research_input["claim_authority_contract"]
+        )
+        visible["boundaries"].extend(
+            [
+                "Declare claim scope, financial scope and causal bridge authority using the cell ClaimAuthorityCard.",
+                "A management assertion is not an audited product-to-company bridge; multi-driver context does not allocate profit to one product.",
+                "This fixed-pack unit test performs no retrieval and is not Agentic Research.",
+            ]
+        )
     if execution_budget is not None:
         expected_budget = {
             "maximum_steps",
@@ -850,6 +889,11 @@ def _evidence_tool_result(
         "residual_gaps": [deepcopy(gaps[str(ref)]) for ref in cell["visible_gap_refs"]],
         "role_method_pack": deepcopy(cell.get("role_method_pack")),
         "graph_context_pack": deepcopy(cell["graph_context_pack"]),
+        **(
+            {"claim_authority_card": deepcopy(cell["claim_authority_card"])}
+            if "claim_authority_card" in cell
+            else {}
+        ),
         "candidate_or_rejected_item_included": False,
     }
 

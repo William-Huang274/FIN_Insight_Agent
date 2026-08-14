@@ -47,7 +47,10 @@ from sec_agent.research.bounded_finance_loop import (
 from sec_agent.research.current_consumer import (
     compile_current_research_input,
 )
-from sec_agent.research.planning import load_research_planning_policy
+from sec_agent.research.planning import (
+    compile_research_objective,
+    load_research_planning_policy,
+)
 from sec_agent.research.live_transport_lane import (
     execute_finance_loop_transport_lane,
 )
@@ -60,7 +63,7 @@ POLICY = ROOT / (
     "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_1.json"
 )
 CONSUMER_POLICY = ROOT / (
-    "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_1.json"
+    "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_2.json"
 )
 OBJECTIVE = ROOT / (
     "configs/research/evals/"
@@ -72,7 +75,7 @@ ATOMS = ROOT / (
 )
 FAKE = ROOT / (
     "tests/fixtures/research/"
-    "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_1.json"
+    "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_2.json"
 )
 
 
@@ -213,6 +216,127 @@ def _fake_judgment(cell_id: str) -> dict[str, object]:
     )
 
 
+def _case_specific_plan(
+    *,
+    case_key: str,
+    kernel,
+    planning,
+) -> tuple[dict[str, object], dict[str, object]]:
+    objective = _json(OBJECTIVE)
+    objective["case_key"] = case_key
+    objective["raw_question"] = (
+        f"{case_key} 的核心需求、利润和现金转换是否可持续，"
+        "哪些供应约束和反方证据会改变判断？"
+    )
+    compiled = compile_research_objective(
+        objective,
+        kernel=kernel,
+        policy=planning,
+    )
+    atoms = _json(ATOMS)
+    atoms["objective_id"] = compiled.objective_id
+    subject = kernel.cases[case_key].subject_ticker
+    product_intents = {
+        "orders_and_backlog": [
+            f"{subject} demand signals",
+            "backlog composition",
+            "customer concentration",
+        ],
+        "conversion_and_durability": [
+            "order conversion",
+            "channel inventory risk",
+            "demand durability",
+        ],
+        "reported_results": [
+            "current product revenue contribution",
+            "segment profitability",
+            "earnings contribution",
+        ],
+        "guidance_and_outlook": [
+            "margin guidance",
+            "supply constraint outlook",
+        ],
+        "pricing_and_mix": ["pricing trend", "product mix shift"],
+        "margin_and_incremental_profit": [
+            "incremental product margin",
+            "operating leverage",
+        ],
+        "cash_generation": ["cash conversion", "capacity investment"],
+        "working_capital_risk": [
+            "component inventory buildup",
+            "customer receivable risk",
+        ],
+        "issuer_counterevidence": [
+            "management demand caution",
+            "inventory impairment risk",
+        ],
+        "upstream_or_demand_counterevidence": [
+            "upstream supply constraints",
+            "end demand slowdown",
+        ],
+    }
+    for atom in atoms["atoms"]:
+        atom["target_entity"] = subject
+        atom["product_intents"] = product_intents[atom["facet_id"]]
+    return objective, atoms
+
+
+def _synthetic_context_judgment(
+    research_input: dict[str, object],
+    cell_id: str,
+) -> dict[str, object]:
+    cell = next(row for row in research_input["cells"] if row["cell_id"] == cell_id)
+    evidence_refs = list(cell["allowed_evidence_refs"])
+    gap_refs = list(cell["visible_gap_refs"])
+    assert evidence_refs or gap_refs
+    if evidence_refs and gap_refs:
+        status = "mixed"
+        inference = "bounded_inference"
+        confidence = "mixed_source_strength"
+    elif evidence_refs:
+        status = "supported"
+        inference = "directly_supported"
+        confidence = "direct_source_only"
+    else:
+        status = "insufficient_evidence"
+        inference = "not_inferable"
+        confidence = "gap_dominated"
+    method_pack = cell.get("role_method_pack") or {}
+    method_minimum = int(cell["context_consumption_contract"]["minimum_method_step_refs"])
+    graph_minimum = int(cell["context_consumption_contract"]["minimum_graph_edge_refs"])
+    return {
+        "cell_id": cell_id,
+        "judgment_status": status,
+        "confidence_basis": confidence,
+        "inference_authority": inference,
+        "evidence_uses": (
+            [{"evidence_ref": evidence_refs[0], "use_role": "support"}]
+            if evidence_refs
+            else []
+        ),
+        "numeric_refs": [],
+        "numeric_relation_refs": [],
+        "method_step_refs": [
+            row["method_step_ref"]
+            for row in method_pack.get("method_steps", [])[:method_minimum]
+        ],
+        "graph_edge_refs": [
+            row["graph_edge_ref"]
+            for row in cell["graph_context_pack"]["edges"][:graph_minimum]
+        ],
+        "thesis_atom": "当前研究单元有已审资料支持，但结论仍受已登记证据边界约束。",
+        "mechanism_atom": "经营表现、产品组合与供需条件共同作用，单一现象不能独立证明因果。",
+        "counterargument_atom": "替代业务、时点差异与尚未补齐的资料可能解释当前观察。",
+        "what_would_change": {
+            "observable": "后续正式披露补齐当前关键证据缺口",
+            "direction": "resolve_gap" if gap_refs else "persist",
+            "time_horizon": "后续连续披露期",
+            "evidence_route": "公司正式披露与已审证据复核",
+            "threshold_numeric_ref": None,
+        },
+    }
+
+
 def test_tool_compiler_emits_four_closed_finance_schemas(contracts) -> None:
     policy, research_input, kernel, route, _ = contracts
     cell_id = "CELL::demand_quality"
@@ -266,7 +390,7 @@ def test_tool_compiler_emits_four_closed_finance_schemas(contracts) -> None:
     assert len(compile_finance_loop_messages(
         research_input=research_input,
         required_cell_ids=[cell_id],
-    )[1]["content"]) < 4000
+    )[1]["content"]) < 6500
     budgeted = compile_finance_loop_messages(
         research_input=research_input,
         required_cell_ids=[cell_id],
@@ -332,6 +456,170 @@ def test_three_case_contract_projection_preserves_identity_and_wire_equivalence(
         assert pricing["properties"]["target_entity"]["enum"] == [
             subject_ticker
         ]
+
+
+def test_three_case_current_context_full_fake_has_no_identity_or_graph_pollution(
+    contracts,
+) -> None:
+    base_policy, _, kernel, route, planning = contracts
+    paths = resolve_runtime_paths(ROOT)
+    kernel_payload = read_registered_runtime_json(
+        ROOT, "application.config.current_financial_research_kernel"
+    )
+    route_payload = read_registered_runtime_json(
+        ROOT, "application.config.current_query_object_fact_route_policy"
+    )
+    planning_payload = read_registered_runtime_json(
+        ROOT, "application.config.current_research_planning_policy"
+    )
+    evidence_config = read_registered_runtime_json(
+        ROOT, "application.config.current_research_evidence_pack_projection"
+    )
+    evidence_service = ResearchEvidencePackService(
+        config=evidence_config,
+        result=read_registered_runtime_json(
+            ROOT, str(evidence_config["source_result_resource_id"])
+        ),
+        private_object_root=(
+            paths.reviewed_evidence_root
+            / str(evidence_config["private_object_root_relative"])
+        ),
+        private_root_base=paths.reviewed_evidence_root,
+    )
+    retrieval = ResearchRetrievalService(
+        snapshot=read_registered_runtime_json(
+            ROOT, "application.result.current_research_retrieval_snapshot"
+        ),
+        ranking_comparison=read_registered_runtime_json(
+            ROOT, "application.result.current_s1c_ranking_comparison_projection"
+        ),
+        kernel=kernel_payload,
+        route_policy=route_payload,
+        planning_policy=planning_payload,
+        hybrid_candidate_runtime=None,
+        company_financial_fact_mart_path=paths.company_financial_fact_mart_path,
+    )
+    read = frozenset({"current_product:read"})
+    value_graph_refs: dict[str, set[str]] = {}
+
+    for case_key in ("DELL", "MU", "NVDA"):
+        objective, atoms = _case_specific_plan(
+            case_key=case_key,
+            kernel=kernel,
+            planning=planning,
+        )
+        pack = evidence_service.get_case(
+            case_key,
+            ResearchEvidencePackPrincipal("current", read),
+        )
+        controlled = retrieval.execute_controlled_plan(
+            case_key,
+            objective,
+            atoms,
+            ResearchRetrievalPrincipal("current", read),
+        )
+        research_input = compile_current_research_input(
+            policy=_json(CONSUMER_POLICY),
+            evidence_pack=pack,
+            controlled_plan=controlled,
+        )
+        subject = kernel.cases[case_key].subject_ticker
+        assert research_input["case_identity"]["case_key"] == case_key
+        assert research_input["case_identity"]["subject_ticker"] == subject
+        assert all(
+            relation["ticker"] == subject
+            for relation in research_input["numeric_relation_cards"]
+        )
+        assert research_input["research_context_receipts"]["compression"] == {
+            "method_steps_omitted_after_selection": 0,
+            "archived_skill_or_graph_rows_loaded": 0,
+            "only_cell_local_current_context_retained": True,
+        }
+        value_cell = next(
+            row
+            for row in research_input["cells"]
+            if row["cell_id"] == "CELL::value_capture"
+        )
+        assert value_cell["role_method_pack"]["pack_id"] == (
+            "ROLE_METHOD::VALUE_CAPTURE::V1"
+        )
+        assert value_cell["graph_context_pack"]["case_key"] == case_key
+        assert {row["entity_id"] for row in value_cell["graph_context_pack"]["nodes"]} == {
+            subject
+        }
+        assert value_cell["graph_context_pack"]["authority"][
+            "archived_graph_rows_used"
+        ] is False
+        value_graph_refs[case_key] = {
+            row["graph_edge_ref"]
+            for row in value_cell["graph_context_pack"]["edges"]
+        }
+        assert all(
+            route["source_class"] != "commercial_or_industry_data"
+            for decision in research_input["evidence_request_route_catalog"][
+                "gap_route_decisions"
+            ]
+            for route in decision["available_source_routes"]
+        )
+
+        cell_ids = [str(row["cell_id"]) for row in research_input["cells"]]
+        scoped = scope_bounded_finance_loop_policy(
+            base_policy,
+            cell_count=len(cell_ids),
+            maximum_evidence_requests=0,
+        )
+        tools = compile_finance_loop_tools(
+            research_input=research_input,
+            required_cell_ids=cell_ids,
+            kernel=kernel,
+            route_policy=route,
+            policy=scoped,
+            strict=False,
+        )
+        result = run_bounded_finance_loop(
+            policy=scoped,
+            research_input=research_input,
+            required_cell_ids=cell_ids,
+            kernel=kernel,
+            route_policy=route,
+            planning_policy=planning,
+            tools=tools,
+            step_executor=lambda _messages, _tools, index: (
+                _parallel_step(
+                    index,
+                    [
+                        (
+                            READ_REVIEWED_EVIDENCE_TOOL,
+                            {"cell_id": cell_ids[(index - 1) // 2]},
+                        ),
+                        (
+                            READ_NUMERIC_FACTS_TOOL,
+                            {"cell_id": cell_ids[(index - 1) // 2]},
+                        ),
+                    ],
+                )
+                if index % 2 == 1
+                else _step(
+                    index,
+                    SUBMIT_RESEARCH_JUDGMENT_TOOL,
+                    _synthetic_context_judgment(
+                        research_input,
+                        cell_ids[(index - 1) // 2],
+                    ),
+                )
+            ),
+        )
+        assert result.status == "completed_all_required_cells"
+        assert result.tool_call_count == 15
+        assert result.structured_deliverable["case_identity"]["case_key"] == case_key
+        assert all(
+            cell["context_consumption_receipt"]["graph_context_digest"]
+            for cell in result.structured_deliverable["cells"]
+        )
+
+    assert value_graph_refs["DELL"].isdisjoint(value_graph_refs["MU"])
+    assert value_graph_refs["DELL"].isdisjoint(value_graph_refs["NVDA"])
+    assert value_graph_refs["MU"].isdisjoint(value_graph_refs["NVDA"])
 
 
 def test_chat_and_responses_lanes_share_one_finance_loop_core(contracts) -> None:
@@ -426,7 +714,7 @@ def test_policy_version_preserves_legacy_single_call_replay() -> None:
 
 def test_single_cell_fake_loop_reads_submits_gap_and_judgment(contracts) -> None:
     policy, research_input, kernel, route, planning = contracts
-    cell_id = "CELL::demand_quality"
+    cell_id = "CELL::value_capture"
     tools = compile_finance_loop_tools(
         research_input=research_input,
         required_cell_ids=[cell_id],
@@ -436,9 +724,9 @@ def test_single_cell_fake_loop_reads_submits_gap_and_judgment(contracts) -> None
         strict=True,
     )
     gap_ref = next(
-        row["visible_gap_refs"][0]
-        for row in research_input["cells"]
-        if row["cell_id"] == cell_id
+        row["gap_ref"]
+        for row in research_input["residual_gap_cards"]
+        if row["facet_id"] == "price_or_asp"
     )
     sequence = [
         (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
@@ -449,9 +737,10 @@ def test_single_cell_fake_loop_reads_submits_gap_and_judgment(contracts) -> None
                 "cell_id": cell_id,
                 "gap_ref": gap_ref,
                 "target_entity": "DELL",
-                "requested_facet_id": "conversion_and_durability",
-                "metric_intents": ["orders"],
-                "product_intents": ["order digestion and cancellation evidence"],
+                "requested_facet_id": "pricing_and_mix",
+                "requested_source_class": "official_company_disclosure",
+                "metric_intents": ["average_selling_price"],
+                "product_intents": ["price and configuration mix evidence"],
             },
         ),
         (SUBMIT_RESEARCH_JUDGMENT_TOOL, _fake_judgment(cell_id)),
@@ -522,29 +811,34 @@ def test_r2_invalid_proposal_is_rejected_without_execution_then_repaired(
         for row in proposal_schema["oneOf"]
         if row["properties"]["requested_facet_id"].get("const")
         == "pricing_and_mix"
+        and row["properties"]["requested_source_class"].get("const")
+        == "official_company_disclosure"
+        and row["properties"]["metric_intents"].get("items", {}).get("enum")
+        == ["average_selling_price"]
     )
     allowed_metrics = pricing_branch["properties"]["metric_intents"]["items"][
         "enum"
     ]
     assert "average_selling_price" in allowed_metrics
     assert "shipments" not in allowed_metrics
+    assert "commercial_or_industry_data" not in proposal_schema["properties"][
+        "requested_source_class"
+    ]["enum"]
 
     gap_ref = next(
-        row["visible_gap_refs"][0]
-        for row in research_input["cells"]
-        if row["cell_id"] == cell_id
+        row["gap_ref"]
+        for row in research_input["residual_gap_cards"]
+        if row["facet_id"] == "price_or_asp"
     )
     r2_invalid = {
         "cell_id": cell_id,
         "gap_ref": gap_ref,
         "target_entity": "DELL",
         "requested_facet_id": "pricing_and_mix",
-        "metric_intents": ["shipments", "capacity", "orders", "backlog"],
+        "requested_source_class": "official_company_disclosure",
+        "metric_intents": ["average_selling_price"],
         "product_intents": [
-            "AI-optimized server unit shipments or equivalent compute capacity "
-            "disclosed by Dell in earnings materials, investor presentations, or "
-            "industry shipment trackers, to anchor whether revenue growth is "
-            "volume-led or price-led."
+            "AI server price and configuration mix from industry data"
         ],
     }
     repaired = {
@@ -552,6 +846,7 @@ def test_r2_invalid_proposal_is_rejected_without_execution_then_repaired(
         "gap_ref": gap_ref,
         "target_entity": "DELL",
         "requested_facet_id": "pricing_and_mix",
+        "requested_source_class": "official_company_disclosure",
         "metric_intents": ["average_selling_price"],
         "product_intents": ["price and configuration mix evidence"],
     }
@@ -587,12 +882,15 @@ def test_r2_invalid_proposal_is_rejected_without_execution_then_repaired(
 
     assert observed_repair["status"] == "rejected_not_executed"
     assert observed_repair["failure_code"] == (
-        "finance_loop_evidence_request_intents_invalid"
+        "finance_loop_evidence_request_forbidden_intent"
     )
     assert observed_repair["retrieval_executed"] is False
     assert observed_repair["gap_status"] == "open"
     assert len(result.proposed_evidence_requests) == 1
     assert result.proposed_evidence_requests[0]["status"] == "recorded_not_executed"
+    assert result.proposed_evidence_requests[0]["compiled_route_projection"][
+        "selected_executable_route_ids"
+    ] == ["bm25_lexical"]
     assert result.tool_counts[SUBMIT_EVIDENCE_REQUEST_TOOL] == 2
 
 
@@ -610,9 +908,9 @@ def test_tool_definition_drift_fails_before_provider_execution(contracts) -> Non
         )
     )
     tools[2] = deepcopy(tools[2])
-    tools[2]["function"]["parameters"]["properties"]["product_intents"][
-        "items"
-    ]["maxLength"] += 1
+    tools[2]["function"]["parameters"]["properties"]["cell_id"][
+        "pattern"
+    ] = "^DRIFT$"
     called = False
 
     def executor(_messages, _tools, _step_index):

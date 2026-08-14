@@ -278,3 +278,17 @@ FIN 只采纳这些接口模式：先定义 provider-neutral、版本化和内�
 7. 只有 L1 和同输入内容增益同时成立，才签发五单元 scope decision 并逐单元迁移其余 RoleMethodPack。
 
 完整 typed graph handler 留在 S1，官方 Harness shadow host 留在宿主一致性资格；两者都不能膨胀当前单单元修复包。完整审计见 `docs/worklog/fin_0_1_3_s3/018_role_skill_graph_and_deepseek_harness_requalification.md`。
+
+### 12.5 Research Context Closure v1 当前实现合同
+
+当前 successor 使用 consumer policy v1.2，并新增以下 provider-neutral 合同：
+
+- `NumericRelationCard`：只允许同 ticker、同 fiscal cadence、同单位和同语义指标的 current／prior 端点；本地计算绝对变化、百分比或百分点变化。模型可见精确数字不减少，但比较叙事必须引用 `REL::*` 和端点 NumericFact。
+- `EvidenceRequestBranch`：source class、acceptable source types、executable routes、intent mode、query facet／typed metric family 和 forbidden terms 同源编译。policy 声明不等于 route 可用；只有当前 Runtime 能实际执行的 route 才进入模型枚举。
+- `RoleMethodPack`：当前只存在 `ROLE_METHOD::VALUE_CAPTURE::V1`，且只绑定 `CELL::value_capture`。pack 是研究方法，不是 Prompt 文案集合，也不拥有事实权威。
+- `GraphContextPack`：从当前 Case、reviewed Evidence、NumericFact 和 typed relation 即时编译；禁止读取归档 materialization，禁止跨 Case，禁止将 edge 当成 Evidence。
+- `ResearchContextReceipt`：记录选择、压缩、注入和消费。最终 Judgment 必须提交实际消费的 `method_step_refs`、`graph_edge_refs` 和需要时的 `numeric_relation_refs`。
+
+DELL 当前可见 19 条 Evidence、25 个 NumericFact 和 10 条同口径 relation；MU 为 14／14／0，NVDA 为 13／15／0。后两案的 relation=0 是正确的 typed gap，不是失败：当前资料没有足够端点时，模型不得生成同比／扩张／压缩关系。三案 full-fake 均完成 15 个工具 receipt，case identity／graph pollution／archived context／unavailable route exposure 均为 0。
+
+当前结果已经通过 276 项全仓测试，但在干净提交绑定的 fresh proof 和一次 Chat 单单元自然复验之前，只能记为 working-tree engineering pass。完整 typed graph retrieval handler 仍归 S1；五单元运行和其他 RoleMethodPack 迁移仍需后续独立决策。

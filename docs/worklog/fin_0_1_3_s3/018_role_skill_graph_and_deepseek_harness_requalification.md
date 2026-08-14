@@ -128,3 +128,16 @@ S1 的完整 typed graph handler、全公司图谱重建和 DeepSeek Harness sha
 - 当前 canary：没有消费角色 Skill 或知识图谱，因此内容失败是“当前合同缺口＋模型判断”的混合结果，不能只归因于模型。
 - 新 Harness：提供了更合适的 Skill／context／scope／log 接缝，但仍是开发预览；适合作为同合同 shadow host，不适合接管 FIN 金融权威。
 - 当前最早可执行项：先完成有界、零模型的 `Research Context Closure v1`，再决定是否值得花费一次 Chat 单单元调用。
+
+## 8. Research Context Closure v1 工作树实现结果
+
+本轮没有恢复旧多 Specialist Runtime，也没有把归档 Skill／Graph 当作当前事实。实现收敛为一条当前合同链：
+
+1. S2 在同一披露批次内保留当期和上年同季度／同 YTD 的可比 NumericFact；S3 只从这些端点编译 `REL::*`。比较词必须同时引用 relation 和两个端点，否则 fail closed。DELL 当前输入形成 10 条同口径关系；MU、NVDA 当前 mart 没有足够同口径端点，因此关系数保持为 0，系统不会补造同比。
+2. EvidenceRequest 的 `requested_source_class`、可接受来源类型、可执行 route、intent mode 和禁止项由同一 branch 编译。当前没有真实商业／行业 Provider 的路线会从模型可见枚举中消失，不能再出现“模型被要求找行业数据、工具却只支持 SEC”的假可执行请求。
+3. 只给 `CELL::value_capture` 注入 `ROLE_METHOD::VALUE_CAPTURE::V1`。它要求收入—利润桥、同口径比较、mix／毛利支持、归因边界、反方和 WWC；其他四单元没有借机迁移 Skill。
+4. `GraphContextPack` 只从当前 Case、当前 reviewed Evidence、当前 NumericFact／typed relation 编译。DELL、MU、NVDA 的 value cell 只含本案主体节点和本案引用；归档图谱读取数为 0。它是导航／上下文，不具备 Evidence 或 NumericFact 晋升权。
+5. 选择、压缩、注入和消费均形成 digest／receipt。模型提交 Judgment 时必须回传实际使用的 method、graph edge 和 relation refs；不存在的、跨案的或跨单元的引用会被拒绝。
+6. 三案例完整 fake 循环与 mutation 已覆盖 identity、关系端点、YoY 无 relation、method 数量、cross-case graph、不可用来源和 stale／归档上下文。当前全仓回归为 `276 passed`，compileall 通过，active baseline 为 `123 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference`，secret scan 为 `6,536 files / 0 finding`。
+
+这仍只是工作树工程结果，不是正式 fresh proof 或自然模型质量结果。下一门是先提交并推送这条实现链，再签发一次零网络／零模型 authority；只有正式 proof 复现相同三案例结果后，才允许唯一一次 Chat `CELL::value_capture` canary。五单元、Responses 重跑、Anthropic live 和其余 RoleMethodPack 迁移继续不在本轮范围。

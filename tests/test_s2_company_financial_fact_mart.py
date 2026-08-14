@@ -170,6 +170,15 @@ def test_open_period_uses_one_current_interim_filing_cohort(tmp_path: Path) -> N
     rows = (
         _observation("OBS-Q1", "revenue", "43842000000"),
         _observation(
+            "OBS-Q1-COMPARABLE",
+            "revenue",
+            "23378000000",
+            period_start="2025-02-01",
+            period_end="2025-05-02",
+            fiscal_year=2026,
+            fiscal_period="Q1",
+        ),
+        _observation(
             "OBS-STALE-YTD",
             "revenue",
             "80159000000",
@@ -221,6 +230,14 @@ def test_open_period_uses_one_current_interim_filing_cohort(tmp_path: Path) -> N
     assert {fact.period_role for fact in result.facts} == {
         "quarter_discrete",
         "fiscal_year",
+    }
+    assert {
+        (fact.fiscal_year, fact.fiscal_period, fact.value_decimal)
+        for fact in result.facts
+        if fact.period_role == "quarter_discrete"
+    } == {
+        (2027, "Q1", "43842000000"),
+        (2026, "Q1", "23378000000"),
     }
     assert all(fact.period_end != "2025-10-31" for fact in result.facts)
 

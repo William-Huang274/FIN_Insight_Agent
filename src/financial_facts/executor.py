@@ -152,6 +152,8 @@ def _execute_direct(
                     "period_start": key[0],
                     "period_end": key[1],
                     "period_role": key[2],
+                    "fiscal_year": key[3],
+                    "fiscal_period": key[4],
                     "unit": key[5],
                     "accepted_at": latest_accepted,
                     "forms": sorted({str(row["form"]) for row in latest}),
@@ -460,7 +462,49 @@ def _select_latest_period_roles(
                 }
             )
             continue
-        selected.append(newest_candidates[0])
+        current = newest_candidates[0]
+        selected.append(current)
+        if role not in {"quarter_discrete", "fiscal_ytd"}:
+            continue
+
+        # A current 10-Q normally repeats the prior-year comparable column.  It
+        # is part of the same filing cohort and is the only safe basis for
+        # phrases such as "year over year".  Preserve that row alongside the
+        # current interim value instead of forcing S3 to compare a quarter with
+        # the latest fiscal year.
+        current_fiscal_year = current[0][3]
+        current_fiscal_period = current[0][4]
+        if not isinstance(current_fiscal_year, int) or not current_fiscal_period:
+            continue
+        comparable_year = current_fiscal_year - 1
+        comparable_conflicts = [
+            item
+            for item in role_conflicts
+            if item.get("fiscal_year") == comparable_year
+            and item.get("fiscal_period") == current_fiscal_period
+        ]
+        if comparable_conflicts:
+            selected_conflicts.extend(comparable_conflicts)
+            continue
+        comparable_candidates = [
+            item
+            for item in candidates
+            if item[0][3] == comparable_year
+            and item[0][4] == current_fiscal_period
+        ]
+        if len(comparable_candidates) > 1:
+            selected_conflicts.append(
+                {
+                    "code": "typed_fact_comparable_period_ambiguous",
+                    "period_role": role,
+                    "fiscal_year": comparable_year,
+                    "fiscal_period": current_fiscal_period,
+                    "candidate_periods": [item[0] for item in comparable_candidates],
+                }
+            )
+            continue
+        if comparable_candidates:
+            selected.append(comparable_candidates[0])
     return selected, selected_conflicts
 
 

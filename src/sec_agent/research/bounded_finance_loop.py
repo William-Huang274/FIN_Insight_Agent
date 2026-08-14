@@ -13,7 +13,10 @@ from retrieval.contracts import (
     RetrievalContractError,
     load_evidence_request,
 )
-from retrieval.route_compiler import QueryObjectFactRoutePolicy
+from retrieval.route_compiler import (
+    QueryObjectFactRoutePolicy,
+    compile_retrieval_execution_plan,
+)
 
 from sec_agent.providers.agent_protocol import AgentToolStepResult
 
@@ -53,10 +56,14 @@ _MODEL_TEXT_DIGITS = re.compile(r"[0-9０-９]")
 _REPAIRABLE_EVIDENCE_REQUEST_CODES = frozenset(
     {
         "finance_loop_evidence_request_fields_invalid",
+        "finance_loop_evidence_request_source_class_invalid",
         "finance_loop_evidence_request_facet_out_of_cell",
         "finance_loop_evidence_request_metrics_invalid",
         "finance_loop_evidence_request_intents_invalid",
+        "finance_loop_evidence_request_intent_mode_mismatch",
+        "finance_loop_evidence_request_forbidden_intent",
         "finance_loop_evidence_request_metric_family_mismatch",
+        "finance_loop_evidence_request_route_not_executable",
     }
 )
 
@@ -433,6 +440,9 @@ def _judgment_parameters(
     cell_ids: Sequence[str],
     evidence_refs: Sequence[str],
     numeric_refs: Sequence[str],
+    numeric_relation_refs: Sequence[str],
+    method_step_refs: Sequence[str],
+    graph_edge_refs: Sequence[str],
     contract: Mapping[str, Any],
 ) -> dict[str, Any]:
     evidence_use = _strict_object(
@@ -458,6 +468,22 @@ def _judgment_parameters(
             "description": "No NumericFact is available; the array must stay empty.",
         }
     )
+
+    def ref_array(refs: Sequence[str], *, description: str) -> dict[str, Any]:
+        item: dict[str, Any] = (
+            {"type": "string", "enum": list(refs)}
+            if refs
+            else {"type": "string", "pattern": "^$"}
+        )
+        schema = {
+            "type": "array",
+            "items": item,
+            "uniqueItems": True,
+            "description": description,
+        }
+        if not refs:
+            schema["maxItems"] = 0
+        return schema
     wwc = _strict_object(
         {
             "observable": {
@@ -502,7 +528,20 @@ def _judgment_parameters(
             "numeric_refs": {
                 "type": "array",
                 "items": numeric_item,
+                **({"maxItems": 0} if not numeric_refs else {}),
             },
+            "numeric_relation_refs": ref_array(
+                numeric_relation_refs,
+                description="Same-basis numeric relations actually used.",
+            ),
+            "method_step_refs": ref_array(
+                method_step_refs,
+                description="Injected RoleMethodPack steps actually used.",
+            ),
+            "graph_edge_refs": ref_array(
+                graph_edge_refs,
+                description="Current GraphContextPack edges actually used.",
+            ),
             "thesis_atom": {
                 "type": "string",
                 "description": "Company-specific conclusion without digits or refs.",
@@ -556,6 +595,29 @@ def compile_finance_loop_tool_contract(
     numeric_refs = sorted(
         {str(ref) for row in cells for ref in row["allowed_numeric_refs"]}
     )
+    numeric_relation_refs = sorted(
+        {
+            str(ref)
+            for row in cells
+            for ref in row["allowed_numeric_relation_refs"]
+        }
+    )
+    method_step_refs = sorted(
+        {
+            str(step["method_step_ref"])
+            for row in cells
+            for step in (row.get("role_method_pack") or {}).get(
+                "method_steps", ()
+            )
+        }
+    )
+    graph_edge_refs = sorted(
+        {
+            str(edge["graph_edge_ref"])
+            for row in cells
+            for edge in row["graph_context_pack"]["edges"]
+        }
+    )
     return compile_finance_tool_contract(
         research_input=research_input,
         selected_cells=cells,
@@ -565,6 +627,9 @@ def compile_finance_loop_tool_contract(
             cell_ids=cell_ids,
             evidence_refs=evidence_refs,
             numeric_refs=numeric_refs,
+            numeric_relation_refs=numeric_relation_refs,
+            method_step_refs=method_step_refs,
+            graph_edge_refs=graph_edge_refs,
             contract=research_input["model_output_contract"],
         ),
         maximum_metric_intents=policy.evidence_request_max_metric_intents,
@@ -588,7 +653,7 @@ def compile_finance_judgment_tool(
     function: dict[str, Any] = {
         "name": SUBMIT_RESEARCH_JUDGMENT_TOOL,
         "description": (
-            "Submit one provider-neutral v1.1 judgment for local validation and rendering."
+            "Submit one provider-neutral v1.2 judgment for local validation and rendering."
         ),
         "parameters": _judgment_parameters(
             cell_ids=[str(row["cell_id"]) for row in cells],
@@ -597,6 +662,29 @@ def compile_finance_judgment_tool(
             ),
             numeric_refs=sorted(
                 {str(ref) for row in cells for ref in row["allowed_numeric_refs"]}
+            ),
+            numeric_relation_refs=sorted(
+                {
+                    str(ref)
+                    for row in cells
+                    for ref in row["allowed_numeric_relation_refs"]
+                }
+            ),
+            method_step_refs=sorted(
+                {
+                    str(step["method_step_ref"])
+                    for row in cells
+                    for step in (row.get("role_method_pack") or {}).get(
+                        "method_steps", ()
+                    )
+                }
+            ),
+            graph_edge_refs=sorted(
+                {
+                    str(edge["graph_edge_ref"])
+                    for row in cells
+                    for edge in row["graph_context_pack"]["edges"]
+                }
             ),
             contract=research_input["model_output_contract"],
         ),
@@ -613,6 +701,12 @@ def compile_finance_loop_messages(
     execution_budget: Mapping[str, int] | None = None,
 ) -> tuple[dict[str, str], ...]:
     cells = _selected_cells(research_input, required_cell_ids)
+    route_decisions = {
+        str(row["gap_ref"]): row
+        for row in research_input["evidence_request_route_catalog"][
+            "gap_route_decisions"
+        ]
+    }
     visible = {
         "case_identity": deepcopy(research_input["case_identity"]),
         "research_question": research_input["objective"]["raw_question"],
@@ -628,9 +722,24 @@ def compile_finance_loop_messages(
                     }
                 ),
                 "visible_gap_refs": list(row["visible_gap_refs"]),
+                "allowed_numeric_relation_refs": list(
+                    row["allowed_numeric_relation_refs"]
+                ),
+                "role_method_pack": deepcopy(row.get("role_method_pack")),
+                "graph_context_pack": deepcopy(row["graph_context_pack"]),
+                "context_consumption_contract": deepcopy(
+                    row["context_consumption_contract"]
+                ),
+                "gap_route_decisions": [
+                    deepcopy(route_decisions[str(ref)])
+                    for ref in row["visible_gap_refs"]
+                ],
             }
             for row in cells
         ],
+        "research_context_injection_receipt": deepcopy(
+            research_input["research_context_receipts"]
+        ),
         "workflow": [
             (
                 "Before submitting each cell Judgment, call both the reviewed "
@@ -640,7 +749,7 @@ def compile_finance_loop_messages(
                 "Those two read-only calls may be issued together for the same "
                 "cell; never combine, duplicate or parallelize any other tools."
             ),
-            "Submit an EvidenceRequest only for a material visible gap; it remains open in this run.",
+            "Submit an EvidenceRequest only for a material visible gap whose route_decision is requestable_on_current_runtime; it remains open in this run.",
             "Submit exactly one locally valid judgment per required cell.",
         ],
         "boundaries": [
@@ -648,6 +757,8 @@ def compile_finance_loop_messages(
             "Use reviewed Evidence for claims and NumericFacts for exact values.",
             "Do not write digits, units, dates, citations or refs inside prose atoms.",
             "The harness renders identity, exact numbers, periods, units and citations.",
+            "Explicit year-over-year language requires one same-basis NumericRelation and both endpoint NumericFacts.",
+            "Cite the injected method steps and current graph edges actually used; graph context never grants fact or causal authority.",
         ],
     }
     if execution_budget is not None:
@@ -737,6 +848,8 @@ def _evidence_tool_result(
         "cell_id": cell["cell_id"],
         "evidence": output,
         "residual_gaps": [deepcopy(gaps[str(ref)]) for ref in cell["visible_gap_refs"]],
+        "role_method_pack": deepcopy(cell.get("role_method_pack")),
+        "graph_context_pack": deepcopy(cell["graph_context_pack"]),
         "candidate_or_rejected_item_included": False,
     }
 
@@ -750,10 +863,18 @@ def _numeric_tool_result(
         str(row["numeric_ref"]): row
         for row in research_input["numeric_fact_cards"]
     }
+    relations = {
+        str(row["numeric_relation_ref"]): row
+        for row in research_input["numeric_relation_cards"]
+    }
     return {
         "status": "authoritative_numeric_facts_read",
         "cell_id": cell["cell_id"],
         "numeric_facts": [deepcopy(cards[str(ref)]) for ref in cell["allowed_numeric_refs"]],
+        "same_basis_numeric_relations": [
+            deepcopy(relations[str(ref)])
+            for ref in cell["allowed_numeric_relation_refs"]
+        ],
         "model_generated_numeric_authority": False,
     }
 
@@ -773,6 +894,7 @@ def _compile_proposed_evidence_request(
         "gap_ref",
         "target_entity",
         "requested_facet_id",
+        "requested_source_class",
         "metric_intents",
         "product_intents",
     }
@@ -783,6 +905,7 @@ def _compile_proposed_evidence_request(
     )
     gap_ref = str(arguments.get("gap_ref") or "")
     facet_id = str(arguments.get("requested_facet_id") or "")
+    source_class = str(arguments.get("requested_source_class") or "")
     target_entity = str(arguments.get("target_entity") or "").upper()
     _require(
         gap_ref in set(cell["visible_gap_refs"]),
@@ -791,8 +914,13 @@ def _compile_proposed_evidence_request(
     branch = tool_contract.branch_for(
         cell_id=str(cell["cell_id"]),
         facet_id=facet_id,
+        gap_ref=gap_ref,
+        source_class=source_class,
     )
-    _require(branch is not None, "finance_loop_evidence_request_facet_out_of_cell")
+    _require(
+        branch is not None,
+        "finance_loop_evidence_request_source_class_invalid",
+    )
     assert branch is not None
     _require(
         target_entity in branch.target_entities,
@@ -809,8 +937,7 @@ def _compile_proposed_evidence_request(
         allow_empty=True,
     )
     _require(
-        bool(metrics or intents)
-        and len(metrics) <= tool_contract.maximum_metric_intents
+        len(metrics) <= tool_contract.maximum_metric_intents
         and len(intents) <= tool_contract.maximum_product_intents
         and all(
             len(value) <= tool_contract.maximum_product_intent_chars
@@ -821,6 +948,24 @@ def _compile_proposed_evidence_request(
             for value in intents
         ),
         "finance_loop_evidence_request_intents_invalid",
+    )
+    if branch.intent_mode == "metric_intent_required_product_intent_forbidden":
+        _require(
+            bool(metrics) and not intents,
+            "finance_loop_evidence_request_intent_mode_mismatch",
+        )
+    else:
+        _require(
+            bool(intents),
+            "finance_loop_evidence_request_intent_mode_mismatch",
+        )
+    folded_intents = " ".join(intents).casefold()
+    _require(
+        not any(
+            forbidden.casefold() in folded_intents
+            for forbidden in branch.forbidden_intent_terms
+        ),
+        "finance_loop_evidence_request_forbidden_intent",
     )
     family = route_policy.family_by_facet().get(facet_id)
     _require(family is not None, "finance_loop_evidence_request_facet_unrouted")
@@ -838,8 +983,9 @@ def _compile_proposed_evidence_request(
     objective = research_input["objective"]
     acceptable_sources = [
         source
-        for source in slot.source_types
-        if source in objective["allowed_source_types"]
+        for source in branch.acceptable_source_types
+        if source in slot.source_types
+        and source in objective["allowed_source_types"]
         and source not in objective["forbidden_source_types"]
     ]
     _require(
@@ -852,6 +998,7 @@ def _compile_proposed_evidence_request(
         "gap_ref": gap_ref,
         "target_entity": target_entity,
         "facet_id": facet_id,
+        "source_class": source_class,
         "metrics": metrics,
         "intents": intents,
     }
@@ -879,17 +1026,65 @@ def _compile_proposed_evidence_request(
         "clarification_policy": objective["gap_policy"],
     }
     try:
-        compiled = load_evidence_request(payload, kernel).as_dict()
+        request = load_evidence_request(payload, kernel)
+        compiled = request.as_dict()
+        execution_plan = compile_retrieval_execution_plan(
+            route_policy,
+            request,
+            fact_store_availability={
+                "company_financial_fact_mart": True,
+                "market_snapshot_fact_mart": False,
+            },
+        )
     except RetrievalContractError as exc:
         raise BoundedFinanceLoopError(
             f"finance_loop_evidence_request_invalid:{exc}"
         ) from exc
+    narrative_routes = sorted(
+        {
+            route_id
+            for row in execution_plan.narrative_requests
+            for route_id in row.candidate_routes
+            if route_id in branch.executable_route_ids
+        }
+    )
+    ready_fact_requests = [
+        row.as_dict()
+        for row in execution_plan.typed_fact_requests
+        if row.execution_status == "ready_for_typed_fact_executor"
+    ]
+    if source_class == "typed_company_financial_fact":
+        _require(
+            bool(ready_fact_requests),
+            "finance_loop_evidence_request_route_not_executable",
+        )
+        selected_route_ids = list(branch.executable_route_ids)
+    else:
+        _require(
+            bool(narrative_routes),
+            "finance_loop_evidence_request_route_not_executable",
+        )
+        selected_route_ids = narrative_routes
     return {
         "status": "recorded_not_executed",
         "research_cell_id": cell["cell_id"],
         "gap_ref": gap_ref,
         "gap_status": "open",
+        "requested_source_class": source_class,
         "compiled_evidence_request": compiled,
+        "compiled_route_projection": {
+            "execution_plan_digest": execution_plan.plan_digest,
+            "selected_executable_route_ids": selected_route_ids,
+            "ready_typed_fact_requests": ready_fact_requests,
+            "narrative_route_request_ids": [
+                row.route_request_id
+                for row in execution_plan.narrative_requests
+                if any(
+                    route_id in branch.executable_route_ids
+                    for route_id in row.candidate_routes
+                )
+            ],
+        },
         "retrieval_executed": False,
         "candidate_promoted_to_evidence": False,
         "numeric_fact_created": False,

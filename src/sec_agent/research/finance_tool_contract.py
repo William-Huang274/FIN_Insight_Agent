@@ -54,16 +54,26 @@ class EvidenceRequestBranch:
     cell_id: str
     gap_refs: tuple[str, ...]
     facet_id: str
+    source_class: str
     target_entities: tuple[str, ...]
     metric_ids: tuple[str, ...]
+    intent_mode: str
+    acceptable_source_types: tuple[str, ...]
+    executable_route_ids: tuple[str, ...]
+    forbidden_intent_terms: tuple[str, ...]
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "cell_id": self.cell_id,
             "gap_refs": list(self.gap_refs),
             "facet_id": self.facet_id,
+            "source_class": self.source_class,
             "target_entities": list(self.target_entities),
             "metric_ids": list(self.metric_ids),
+            "intent_mode": self.intent_mode,
+            "acceptable_source_types": list(self.acceptable_source_types),
+            "executable_route_ids": list(self.executable_route_ids),
+            "forbidden_intent_terms": list(self.forbidden_intent_terms),
         }
 
 
@@ -99,12 +109,17 @@ class FinanceToolContract:
         *,
         cell_id: str,
         facet_id: str,
+        gap_ref: str,
+        source_class: str,
     ) -> EvidenceRequestBranch | None:
         return next(
             (
                 row
                 for row in self.evidence_request_branches
-                if row.cell_id == cell_id and row.facet_id == facet_id
+                if row.cell_id == cell_id
+                and row.facet_id == facet_id
+                and gap_ref in row.gap_refs
+                and row.source_class == source_class
             ),
             None,
         )
@@ -123,6 +138,21 @@ class FinanceToolContract:
             },
             "allowed_metrics_by_facet": {
                 row.facet_id: list(row.metric_ids) for row in branches
+            },
+            "available_source_classes_by_gap": {
+                gap_ref: sorted(
+                    {
+                        row.source_class
+                        for row in branches
+                        if gap_ref in row.gap_refs
+                    }
+                )
+                for gap_ref in sorted(
+                    {value for row in branches for value in row.gap_refs}
+                )
+            },
+            "executable_routes_by_source_class": {
+                row.source_class: list(row.executable_route_ids) for row in branches
             },
             "limits": {
                 "maximum_metric_intents": self.maximum_metric_intents,
@@ -184,6 +214,10 @@ def _proposal_schema(
                     "type": "string",
                     "pattern": "^NO_VISIBLE_GAP$",
                 },
+                "requested_source_class": {
+                    "type": "string",
+                    "pattern": "^NO_EXECUTABLE_ROUTE$",
+                },
                 "metric_intents": {"type": "array", "maxItems": 0},
                 "product_intents": {"type": "array", "maxItems": 0},
             }
@@ -202,14 +236,32 @@ def _proposal_schema(
         }
         if not branch.metric_ids:
             metric_schema["maxItems"] = 0
+        product_schema: dict[str, Any] = {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": maximum_product_intent_chars,
+                "description": "One evidence intent without digits, URL, source id or answer.",
+            },
+            "uniqueItems": True,
+            "maxItems": maximum_product_intents,
+        }
+        if branch.intent_mode == "metric_intent_required_product_intent_forbidden":
+            metric_schema["minItems"] = 1
+            product_schema["maxItems"] = 0
+        else:
+            product_schema["minItems"] = 1
         branch_schemas.append(
             {
                 "properties": {
                     "cell_id": {"const": branch.cell_id},
-                    "gap_ref": {"enum": list(branch.gap_refs)},
+                    "gap_ref": {"const": branch.gap_refs[0]},
                     "target_entity": {"enum": list(branch.target_entities)},
                     "requested_facet_id": {"const": branch.facet_id},
+                    "requested_source_class": {"const": branch.source_class},
                     "metric_intents": metric_schema,
+                    "product_intents": product_schema,
                 }
             }
         )
@@ -233,6 +285,10 @@ def _proposal_schema(
                 "type": "string",
                 "enum": sorted({row.facet_id for row in branches}),
             },
+            "requested_source_class": {
+                "type": "string",
+                "enum": sorted({row.source_class for row in branches}),
+            },
             "metric_intents": {
                 "type": "array",
                 "items": {
@@ -248,9 +304,6 @@ def _proposal_schema(
                     "type": "string",
                     "minLength": 1,
                     "maxLength": maximum_product_intent_chars,
-                    "description": (
-                        "One evidence intent without digits, URL, source id or answer."
-                    ),
                 },
                 "uniqueItems": True,
                 "maxItems": maximum_product_intents,
@@ -286,6 +339,12 @@ def compile_finance_tool_contract(
     family_by_facet = route_policy.family_by_facet()
     metric_routes = {row.metric_id: row for row in route_policy.metric_routes}
     slot_by_id = kernel.slot_by_id()
+    gap_routes = {
+        str(row["gap_ref"]): row
+        for row in research_input["evidence_request_route_catalog"][
+            "gap_route_decisions"
+        ]
+    }
     branches: list[EvidenceRequestBranch] = []
 
     for cell in selected_cells:
@@ -301,8 +360,16 @@ def compile_finance_tool_contract(
             slot_ids.issubset(slot_by_id),
             "finance_tool_contract_cell_slot_invalid",
         )
-        for slot_id in sorted(slot_ids):
+        for gap_ref in gap_refs:
+            route_decision = gap_routes[gap_ref]
+            slot_id = str(route_decision["slot_id"])
+            if slot_id not in slot_ids:
+                continue
+            requested_facets = set(route_decision["requested_query_facet_ids"])
+            gap_metric_ids = set(route_decision["typed_metric_ids"])
             for facet in slot_by_id[slot_id].facets:
+                if facet.facet_id not in requested_facets:
+                    continue
                 family = family_by_facet.get(facet.facet_id)
                 _require(
                     family is not None,
@@ -322,18 +389,42 @@ def compile_finance_tool_contract(
                     sorted(
                         metric_id
                         for metric_id, route in metric_routes.items()
-                        if family.family_id in route.allowed_query_families
+                        if metric_id in gap_metric_ids
+                        and family.family_id in route.allowed_query_families
                     )
                 )
-                branches.append(
-                    EvidenceRequestBranch(
-                        cell_id=cell_id,
-                        gap_refs=gap_refs,
-                        facet_id=facet.facet_id,
-                        target_entities=targets,
-                        metric_ids=metrics,
+                for source_route in route_decision["available_source_routes"]:
+                    executable = tuple(
+                        route_id
+                        for route_id in source_route["executable_route_ids"]
+                        if route_id in family.candidate_routes
                     )
-                )
+                    if not executable:
+                        continue
+                    if (
+                        source_route["intent_mode"]
+                        == "metric_intent_required_product_intent_forbidden"
+                        and not metrics
+                    ):
+                        continue
+                    branches.append(
+                        EvidenceRequestBranch(
+                            cell_id=cell_id,
+                            gap_refs=(gap_ref,),
+                            facet_id=facet.facet_id,
+                            source_class=str(source_route["source_class"]),
+                            target_entities=targets,
+                            metric_ids=metrics,
+                            intent_mode=str(source_route["intent_mode"]),
+                            acceptable_source_types=tuple(
+                                source_route["acceptable_source_types"]
+                            ),
+                            executable_route_ids=executable,
+                            forbidden_intent_terms=tuple(
+                                source_route["forbidden_intent_terms"]
+                            ),
+                        )
+                    )
 
     read_schema = _strict_object(
         {
@@ -380,7 +471,7 @@ def compile_finance_tool_contract(
         ),
         tool(
             SUBMIT_RESEARCH_JUDGMENT_TOOL,
-            "Submit one provider-neutral v1.1 judgment for local validation and rendering.",
+            "Submit one provider-neutral v1.2 judgment for local validation and rendering.",
             judgment_schema,
         ),
     )

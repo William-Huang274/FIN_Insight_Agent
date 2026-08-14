@@ -53,6 +53,7 @@ from sec_agent.research.current_consumer import (  # noqa: E402
     compile_current_research_input,
 )
 from sec_agent.research.planning import (  # noqa: E402
+    compile_research_objective,
     load_research_planning_policy,
 )
 from sec_agent.research.reviewed_evidence_pack import (  # noqa: E402
@@ -210,7 +211,7 @@ def _validate_authority(
     return paths, output
 
 
-def _contracts_and_input(paths: Mapping[str, Path]):
+def _runtime_components():
     runtime_paths = resolve_runtime_paths(ROOT)
     kernel_payload = read_registered_runtime_json(
         ROOT, "application.config.current_financial_research_kernel"
@@ -251,6 +252,11 @@ def _contracts_and_input(paths: Mapping[str, Path]):
         hybrid_candidate_runtime=None,
         company_financial_fact_mart_path=runtime_paths.company_financial_fact_mart_path,
     )
+    return kernel, route, planning, evidence, retrieval
+
+
+def _contracts_and_input(paths: Mapping[str, Path]):
+    kernel, route, planning, evidence, retrieval = _runtime_components()
     evidence_pack = evidence.get_case(
         "DELL", ResearchEvidencePackPrincipal("current", frozenset({"current_product:read"}))
     )
@@ -344,6 +350,309 @@ def _fake_judgment(fake: Mapping[str, Any], cell_id: str) -> dict[str, Any]:
     return deepcopy(next(row for row in fake["cells"] if row["cell_id"] == cell_id))
 
 
+def _case_specific_plan(
+    *,
+    paths: Mapping[str, Path],
+    case_key: str,
+    kernel: Any,
+    planning: Any,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    objective = _json(paths["objective_ref"])
+    objective["case_key"] = case_key
+    objective["raw_question"] = (
+        f"{case_key} 的核心需求、利润和现金转换是否可持续，"
+        "哪些供应约束和反方证据会改变判断？"
+    )
+    compiled = compile_research_objective(
+        objective,
+        kernel=kernel,
+        policy=planning,
+    )
+    atoms = _json(paths["planner_atoms_ref"])
+    atoms["objective_id"] = compiled.objective_id
+    subject = kernel.cases[case_key].subject_ticker
+    product_intents = {
+        "orders_and_backlog": [
+            f"{subject} demand signals",
+            "backlog composition",
+            "customer concentration",
+        ],
+        "conversion_and_durability": [
+            "order conversion",
+            "channel inventory risk",
+            "demand durability",
+        ],
+        "reported_results": [
+            "current product revenue contribution",
+            "segment profitability",
+            "earnings contribution",
+        ],
+        "guidance_and_outlook": [
+            "margin guidance",
+            "supply constraint outlook",
+        ],
+        "pricing_and_mix": ["pricing trend", "product mix shift"],
+        "margin_and_incremental_profit": [
+            "incremental product margin",
+            "operating leverage",
+        ],
+        "cash_generation": ["cash conversion", "capacity investment"],
+        "working_capital_risk": [
+            "component inventory buildup",
+            "customer receivable risk",
+        ],
+        "issuer_counterevidence": [
+            "management demand caution",
+            "inventory impairment risk",
+        ],
+        "upstream_or_demand_counterevidence": [
+            "upstream supply constraints",
+            "end demand slowdown",
+        ],
+    }
+    for atom in atoms["atoms"]:
+        atom["target_entity"] = subject
+        atom["product_intents"] = product_intents[atom["facet_id"]]
+    return objective, atoms
+
+
+def _synthetic_context_judgment(
+    research_input: Mapping[str, Any],
+    cell_id: str,
+) -> dict[str, Any]:
+    cell = next(row for row in research_input["cells"] if row["cell_id"] == cell_id)
+    evidence_refs = list(cell["allowed_evidence_refs"])
+    gap_refs = list(cell["visible_gap_refs"])
+    if not evidence_refs and not gap_refs:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_proof_cell_without_evidence_or_gap"
+        )
+    if evidence_refs and gap_refs:
+        status, inference, confidence = (
+            "mixed",
+            "bounded_inference",
+            "mixed_source_strength",
+        )
+    elif evidence_refs:
+        status, inference, confidence = (
+            "supported",
+            "directly_supported",
+            "direct_source_only",
+        )
+    else:
+        status, inference, confidence = (
+            "insufficient_evidence",
+            "not_inferable",
+            "gap_dominated",
+        )
+    method_pack = cell.get("role_method_pack") or {}
+    method_minimum = int(
+        cell["context_consumption_contract"]["minimum_method_step_refs"]
+    )
+    graph_minimum = int(
+        cell["context_consumption_contract"]["minimum_graph_edge_refs"]
+    )
+    return {
+        "cell_id": cell_id,
+        "judgment_status": status,
+        "confidence_basis": confidence,
+        "inference_authority": inference,
+        "evidence_uses": (
+            [{"evidence_ref": evidence_refs[0], "use_role": "support"}]
+            if evidence_refs
+            else []
+        ),
+        "numeric_refs": [],
+        "numeric_relation_refs": [],
+        "method_step_refs": [
+            row["method_step_ref"]
+            for row in method_pack.get("method_steps", [])[:method_minimum]
+        ],
+        "graph_edge_refs": [
+            row["graph_edge_ref"]
+            for row in cell["graph_context_pack"]["edges"][:graph_minimum]
+        ],
+        "thesis_atom": "当前研究单元有已审资料支持，但结论仍受已登记证据边界约束。",
+        "mechanism_atom": "经营表现、产品组合与供需条件共同作用，单一现象不能独立证明因果。",
+        "counterargument_atom": "替代业务、时点差异与尚未补齐的资料可能解释当前观察。",
+        "what_would_change": {
+            "observable": "后续正式披露补齐当前关键证据缺口",
+            "direction": "resolve_gap" if gap_refs else "persist",
+            "time_horizon": "后续连续披露期",
+            "evidence_route": "公司正式披露与已审证据复核",
+            "threshold_numeric_ref": None,
+        },
+    }
+
+
+def _three_case_context_matrix(
+    *,
+    paths: Mapping[str, Path],
+    base_policy: Any,
+) -> dict[str, Any]:
+    kernel, route, planning, evidence, retrieval = _runtime_components()
+    read = frozenset({"current_product:read"})
+    cases: dict[str, Any] = {}
+    value_graph_refs: dict[str, set[str]] = {}
+    for case_key in ("DELL", "MU", "NVDA"):
+        objective, atoms = _case_specific_plan(
+            paths=paths,
+            case_key=case_key,
+            kernel=kernel,
+            planning=planning,
+        )
+        evidence_pack = evidence.get_case(
+            case_key,
+            ResearchEvidencePackPrincipal("current", read),
+        )
+        controlled = retrieval.execute_controlled_plan(
+            case_key,
+            objective,
+            atoms,
+            ResearchRetrievalPrincipal("current", read),
+        )
+        research_input = compile_current_research_input(
+            policy=_json(paths["consumer_policy_ref"]),
+            evidence_pack=evidence_pack,
+            controlled_plan=controlled,
+        )
+        subject = kernel.cases[case_key].subject_ticker
+        if (
+            research_input["case_identity"]["case_key"] != case_key
+            or research_input["case_identity"]["subject_ticker"] != subject
+            or any(
+                row["ticker"] != subject
+                for row in research_input["numeric_relation_cards"]
+            )
+        ):
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_proof_three_case_identity_pollution"
+            )
+        receipts = research_input["research_context_receipts"]
+        if receipts["compression"] != {
+            "method_steps_omitted_after_selection": 0,
+            "archived_skill_or_graph_rows_loaded": 0,
+            "only_cell_local_current_context_retained": True,
+        }:
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_proof_context_compression_invalid"
+            )
+        value_cell = next(
+            row
+            for row in research_input["cells"]
+            if row["cell_id"] == "CELL::value_capture"
+        )
+        if (
+            value_cell["role_method_pack"]["pack_id"]
+            != "ROLE_METHOD::VALUE_CAPTURE::V1"
+            or value_cell["graph_context_pack"]["case_key"] != case_key
+            or {
+                row["entity_id"]
+                for row in value_cell["graph_context_pack"]["nodes"]
+            }
+            != {subject}
+            or value_cell["graph_context_pack"]["authority"][
+                "archived_graph_rows_used"
+            ]
+            is not False
+        ):
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_proof_three_case_context_pollution"
+            )
+        if any(
+            route_row["source_class"] == "commercial_or_industry_data"
+            for decision in research_input["evidence_request_route_catalog"][
+                "gap_route_decisions"
+            ]
+            for route_row in decision["available_source_routes"]
+        ):
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_proof_unavailable_route_exposed"
+            )
+        value_graph_refs[case_key] = {
+            row["graph_edge_ref"]
+            for row in value_cell["graph_context_pack"]["edges"]
+        }
+        cell_ids = [str(row["cell_id"]) for row in research_input["cells"]]
+        scoped = scope_bounded_finance_loop_policy(
+            base_policy,
+            cell_count=len(cell_ids),
+            maximum_evidence_requests=0,
+        )
+        tools = compile_finance_loop_tools(
+            research_input=research_input,
+            required_cell_ids=cell_ids,
+            kernel=kernel,
+            route_policy=route,
+            policy=scoped,
+            strict=False,
+        )
+        result = run_bounded_finance_loop(
+            policy=scoped,
+            research_input=research_input,
+            required_cell_ids=cell_ids,
+            kernel=kernel,
+            route_policy=route,
+            planning_policy=planning,
+            tools=tools,
+            step_executor=lambda _messages, _tools, index: (
+                _parallel_read_step(index, cell_ids[(index - 1) // 2])
+                if index % 2 == 1
+                else _step(
+                    index,
+                    SUBMIT_RESEARCH_JUDGMENT_TOOL,
+                    _synthetic_context_judgment(
+                        research_input,
+                        cell_ids[(index - 1) // 2],
+                    ),
+                )
+            ),
+        )
+        if (
+            result.status != "completed_all_required_cells"
+            or result.tool_call_count != 15
+        ):
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_proof_three_case_full_fake_failed"
+            )
+        cases[case_key] = {
+            "subject_ticker": subject,
+            "research_input_digest": research_input["research_input_digest"],
+            "reviewed_evidence_count": len(research_input["evidence_cards"]),
+            "numeric_fact_count": len(research_input["numeric_fact_cards"]),
+            "same_basis_relation_count": len(
+                research_input["numeric_relation_cards"]
+            ),
+            "route_catalog_digest": research_input[
+                "evidence_request_route_catalog"
+            ]["route_catalog_digest"],
+            "context_receipt_digest": receipts["context_receipt_digest"],
+            "value_role_method_pack_digest": value_cell["role_method_pack"][
+                "pack_digest"
+            ],
+            "value_graph_context_digest": value_cell["graph_context_pack"][
+                "graph_context_digest"
+            ],
+            "full_fake_result_digest": result.result_digest,
+            "full_fake_tool_calls": result.tool_call_count,
+        }
+    if any(
+        not value_graph_refs[left].isdisjoint(value_graph_refs[right])
+        for left, right in (("DELL", "MU"), ("DELL", "NVDA"), ("MU", "NVDA"))
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_proof_three_case_graph_ref_collision"
+        )
+    return {
+        "cases": cases,
+        "case_identity_pollution_count": 0,
+        "graph_context_pollution_count": 0,
+        "archived_skill_or_graph_rows_loaded": 0,
+        "unavailable_route_exposed_count": 0,
+        "all_three_full_fake_pass": True,
+    }
+
+
 def _run_fake_matrix(
     *,
     research_input: Mapping[str, Any],
@@ -354,7 +663,7 @@ def _run_fake_matrix(
     fake: Mapping[str, Any],
 ) -> dict[str, Any]:
     cell_ids = [str(row["cell_id"]) for row in research_input["cells"]]
-    single_id = "CELL::demand_quality"
+    single_id = "CELL::value_capture"
     strict_tools = compile_finance_loop_tools(
         research_input=research_input,
         required_cell_ids=[single_id],
@@ -376,21 +685,22 @@ def _run_fake_matrix(
         cell_count=1,
         maximum_evidence_requests=3,
     )
-    demand_gap = next(
-        row["visible_gap_refs"][0]
-        for row in research_input["cells"]
-        if row["cell_id"] == single_id
+    request_gap = next(
+        row["gap_ref"]
+        for row in research_input["residual_gap_cards"]
+        if row["facet_id"] == "price_or_asp"
     )
     single_sequence = [
         (
             SUBMIT_EVIDENCE_REQUEST_TOOL,
             {
                 "cell_id": single_id,
-                "gap_ref": demand_gap,
-                "target_entity": "DELL",
-                "requested_facet_id": "conversion_and_durability",
-                "metric_intents": ["orders"],
-                "product_intents": ["order digestion and cancellation evidence"],
+                "gap_ref": request_gap,
+                "target_entity": research_input["case_identity"]["subject_ticker"],
+                "requested_facet_id": "pricing_and_mix",
+                "requested_source_class": "official_company_disclosure",
+                "metric_intents": ["average_selling_price"],
+                "product_intents": ["price and configuration mix evidence"],
             },
         ),
         (SUBMIT_RESEARCH_JUDGMENT_TOOL, _fake_judgment(fake, single_id)),
@@ -748,6 +1058,10 @@ def _execute(
         policy=policy,
         fake=fake,
     )
+    three_case_context = _three_case_context_matrix(
+        paths=paths,
+        base_policy=policy,
+    )
     replay_capture = (
         _json(paths["prior_standard_r1_response_capture_ref"])
         if "prior_standard_r1_response_capture_ref" in paths
@@ -788,6 +1102,22 @@ def _execute(
             policy=policy,
             fake=fake,
         ),
+        "three_case_context_digest": canonical_digest(three_case_context),
+        "three_case_context_all_pass": three_case_context[
+            "all_three_full_fake_pass"
+        ],
+        "three_case_identity_pollution_count": three_case_context[
+            "case_identity_pollution_count"
+        ],
+        "three_case_graph_context_pollution_count": three_case_context[
+            "graph_context_pollution_count"
+        ],
+        "three_case_archived_context_rows_loaded": three_case_context[
+            "archived_skill_or_graph_rows_loaded"
+        ],
+        "three_case_unavailable_route_exposed_count": three_case_context[
+            "unavailable_route_exposed_count"
+        ],
         **wire_replay,
         "network_calls": 0,
         "model_calls": 0,
@@ -820,6 +1150,7 @@ def _execute(
             "retrieval_executed": False,
             "candidate_promoted_to_evidence": False,
         },
+        "three_case_context_qualification": three_case_context,
         "profile_qualification": {
             "standard_ga_endpoint": standard_profile.base_url,
             "standard_ga_max_tokens": int(
@@ -841,7 +1172,14 @@ def _execute(
     result["result_digest"] = canonical_digest(result)
     private_path = _resolve(str(output["private_output_ref"]))
     public_path = _resolve(str(output["public_result_ref"]))
-    _write_new(private_path, {**result, "fake_matrix": matrix})
+    _write_new(
+        private_path,
+        {
+            **result,
+            "fake_matrix": matrix,
+            "three_case_context_matrix": three_case_context,
+        },
+    )
     _write_new(public_path, result)
     return result
 

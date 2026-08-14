@@ -1,22 +1,30 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from decimal import Decimal, localcontext
 import json
 import re
 from typing import Any, Mapping, Sequence
 
 from .reviewed_evidence_pack import canonical_digest
+from .research_context import (
+    ResearchContextError,
+    bind_research_context_to_cells,
+    compile_evidence_request_route_catalog,
+    compile_graph_context_packs,
+    load_research_context_contract,
+)
 
 
 CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION = (
-    "fin_ia_current_research_consumer_policy_v1_1"
+    "fin_ia_current_research_consumer_policy_v1_2"
 )
-CURRENT_RESEARCH_INPUT_SCHEMA_VERSION = "fin_ia_current_research_input_v1_0"
+CURRENT_RESEARCH_INPUT_SCHEMA_VERSION = "fin_ia_current_research_input_v1_1"
 CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION = (
-    "fin_ia_current_research_judgment_payload_v1_1"
+    "fin_ia_current_research_judgment_payload_v1_2"
 )
 CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION = (
-    "fin_ia_current_research_deliverable_v1_1"
+    "fin_ia_current_research_deliverable_v1_2"
 )
 
 _AUTHORITY = {
@@ -28,6 +36,7 @@ _AUTHORITY = {
     "residual_gaps_remain_visible": True,
     "source_policy_domains_remain_separate": True,
     "qualified_human_review_required": True,
+    "model_must_cite_injected_method_and_graph_context_when_available": True,
 }
 _MODEL_TEXT_FIELDS = (
     "thesis_atom",
@@ -44,7 +53,13 @@ _VERBAL_NUMERIC_SURFACE = re.compile(
     r"(?:个|两|双|多)位数|"
     r"[零一二两三四五六七八九十百千万亿点]+个基点)"
 )
-_ALIAS_IN_PROSE = re.compile(r"\b(?:EV|NUM|GAP)::[A-F0-9]{8,64}\b")
+_ALIAS_IN_PROSE = re.compile(
+    r"\b(?:EV|NUM|REL|GAP|METHOD|GRAPH)::[A-Z0-9:_-]{4,96}\b"
+)
+_YEAR_OVER_YEAR_SURFACE = re.compile(
+    r"同比|较上年同期|year[- ]over[- ]year|\byoy\b|prior[- ]year quarter",
+    re.IGNORECASE,
+)
 
 
 class CurrentResearchConsumerError(ValueError):
@@ -97,6 +112,7 @@ def load_current_research_consumer_policy(
         "numeric_fact_selection",
         "model_input_contract",
         "model_output_contract",
+        "research_context_contract",
         "authority",
     }
     _require(set(payload) == expected, "research_consumer_policy_fields_invalid")
@@ -107,7 +123,7 @@ def load_current_research_consumer_policy(
     )
     _require(
         payload.get("status")
-        == "provider_neutral_reviewed_evidence_and_numeric_fact_consumer",
+        == "provider_neutral_reviewed_evidence_numeric_relation_and_context_consumer",
         "research_consumer_policy_status_invalid",
     )
     source_policy = _mapping(
@@ -205,12 +221,11 @@ def load_current_research_consumer_policy(
     _require(
         dict(numeric_selection)
         == {
-            "strategy": (
-                "latest_quarter_latest_fiscal_year_and_latest_instant_per_metric"
-            ),
+            "strategy": "latest_period_and_same_basis_comparable_per_metric",
             "maximum_non_instant_periods_per_metric": 2,
             "deduplicate_request_identity": True,
             "preserve_source_request_and_period_role_lineage": True,
+            "same_fiscal_period_comparison_required_for_year_over_year_language": True,
         },
         "research_consumer_numeric_selection_policy_invalid",
     )
@@ -310,6 +325,9 @@ def load_current_research_consumer_policy(
             "inference_authority",
             "evidence_uses",
             "numeric_refs",
+            "numeric_relation_refs",
+            "method_step_refs",
+            "graph_edge_refs",
             "thesis_atom",
             "mechanism_atom",
             "counterargument_atom",
@@ -317,7 +335,8 @@ def load_current_research_consumer_policy(
         }
         and set(harness_envelope_fields)
         == {"schema_version", "research_input_digest"}
-        and set(harness_cell_fields) == {"remaining_gap_refs"}
+        and set(harness_cell_fields)
+        == {"remaining_gap_refs", "context_consumption_receipt"}
         and set(statuses)
         == {"supported", "bounded_support", "mixed", "insufficient_evidence"}
         and set(evidence_use_roles) == {"support", "limit", "context"}
@@ -339,6 +358,15 @@ def load_current_research_consumer_policy(
         and dict(payload["authority"]) == _AUTHORITY,
         "research_consumer_authority_invalid",
     )
+    try:
+        context_contract = load_research_context_contract(
+            _mapping(
+                payload.get("research_context_contract"),
+                "research_context_contract_invalid",
+            )
+        )
+    except ResearchContextError as exc:
+        raise CurrentResearchConsumerError(exc.code) from exc
     return {
         **deepcopy(dict(payload)),
         "reviewed_source_policy": {
@@ -355,6 +383,7 @@ def load_current_research_consumer_policy(
             "allowed_inference_authorities": list(inference_authorities),
             "allowed_wwc_directions": list(directions),
         },
+        "research_context_contract": context_contract,
     }
 
 
@@ -616,17 +645,43 @@ def _select_numeric_cards(
             chosen.append(max(instant, key=lambda row: str(row["period_end"])))
         else:
             if quarter:
-                chosen.append(max(quarter, key=lambda row: str(row["period_end"])))
-            if fiscal_year:
+                current = max(quarter, key=lambda row: str(row["period_end"]))
+                chosen.append(current)
+                comparable = [
+                    row
+                    for row in quarter
+                    if row.get("fiscal_period") == current.get("fiscal_period")
+                    and isinstance(current.get("fiscal_year"), int)
+                    and row.get("fiscal_year") == int(current["fiscal_year"]) - 1
+                ]
+                if comparable:
+                    chosen.append(
+                        max(comparable, key=lambda row: str(row["period_end"]))
+                    )
+            if not quarter and fallback_ytd:
+                current = max(
+                    fallback_ytd, key=lambda row: str(row["period_end"])
+                )
+                chosen.append(current)
+                comparable = [
+                    row
+                    for row in fallback_ytd
+                    if row.get("fiscal_period") == current.get("fiscal_period")
+                    and isinstance(current.get("fiscal_year"), int)
+                    and row.get("fiscal_year") == int(current["fiscal_year"]) - 1
+                ]
+                if comparable:
+                    chosen.append(
+                        max(comparable, key=lambda row: str(row["period_end"]))
+                    )
+            if fiscal_year and len(chosen) < int(
+                selection["maximum_non_instant_periods_per_metric"]
+            ):
                 annual = max(fiscal_year, key=lambda row: str(row["period_end"]))
                 if annual.get("numeric_ref") not in {
                     row.get("numeric_ref") for row in chosen
                 }:
                     chosen.append(annual)
-            if not chosen and fallback_ytd:
-                chosen.append(
-                    max(fallback_ytd, key=lambda row: str(row["period_end"]))
-                )
         maximum = int(selection["maximum_non_instant_periods_per_metric"])
         if not instant:
             chosen = chosen[:maximum]
@@ -650,6 +705,106 @@ def _select_numeric_cards(
         "omitted_but_preserved_in_controlled_plan_count": len(cards) - len(selected),
         "decisions": decisions,
     }
+
+
+def _decimal_text(value: Decimal) -> str:
+    text = format(value, "f")
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    return text or "0"
+
+
+def _numeric_relation_cards(
+    cards: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    groups: dict[tuple[str, str, str, str], list[Mapping[str, Any]]] = {}
+    for card in cards:
+        roles = set(card.get("source_period_roles") or ())
+        comparable_role = next(
+            (
+                role
+                for role in ("quarter_discrete", "fiscal_ytd")
+                if role in roles
+            ),
+            None,
+        )
+        fiscal_period = str(card.get("fiscal_period") or "")
+        if comparable_role and fiscal_period:
+            groups.setdefault(
+                (
+                    str(card.get("ticker") or ""),
+                    str(card.get("metric_id") or ""),
+                    comparable_role,
+                    fiscal_period,
+                ),
+                [],
+            ).append(card)
+    output: list[dict[str, Any]] = []
+    for (ticker, metric_id, period_role, fiscal_period), rows in sorted(
+        groups.items()
+    ):
+        by_year = {
+            int(row["fiscal_year"]): row
+            for row in rows
+            if isinstance(row.get("fiscal_year"), int)
+        }
+        if len(by_year) < 2:
+            continue
+        current_year = max(by_year)
+        if current_year - 1 not in by_year:
+            continue
+        current = by_year[current_year]
+        prior = by_year[current_year - 1]
+        if current.get("unit") != prior.get("unit"):
+            continue
+        current_value = Decimal(str(current["value_decimal"]))
+        prior_value = Decimal(str(prior["value_decimal"]))
+        absolute_change = current_value - prior_value
+        percent_change = None
+        if prior_value != 0:
+            with localcontext() as context:
+                context.prec = 34
+                percent_change = absolute_change / prior_value * Decimal("100")
+        direction = (
+            "increase"
+            if absolute_change > 0
+            else "decrease" if absolute_change < 0 else "unchanged"
+        )
+        identity = {
+            "ticker": ticker,
+            "metric_id": metric_id,
+            "period_role": period_role,
+            "fiscal_period": fiscal_period,
+            "current_numeric_ref": current["numeric_ref"],
+            "comparison_numeric_ref": prior["numeric_ref"],
+        }
+        row = {
+            "numeric_relation_ref": _alias("REL", identity),
+            "relation_type": (
+                "same_fiscal_quarter_year_over_year"
+                if period_role == "quarter_discrete"
+                else "same_fiscal_ytd_year_over_year"
+            ),
+            **identity,
+            "unit": current["unit"],
+            "current_period_start": current["period_start"],
+            "current_period_end": current["period_end"],
+            "comparison_period_start": prior["period_start"],
+            "comparison_period_end": prior["period_end"],
+            "direction": direction,
+            "absolute_change_decimal": _decimal_text(absolute_change),
+            "percent_change_decimal": (
+                _decimal_text(percent_change) if percent_change is not None else None
+            ),
+            "percentage_point_change_decimal": (
+                _decimal_text(absolute_change)
+                if str(current.get("unit")) == "percent"
+                else None
+            ),
+            "authority_mode": "deterministically_compiled_same_basis_relation",
+        }
+        output.append(row)
+    return output
 
 
 def _gap_cards(
@@ -764,6 +919,7 @@ def compile_current_research_input(
         all_numeric_cards,
         policy=policy,
     )
+    numeric_relation_cards = _numeric_relation_cards(numeric_cards)
     gap_cards = _gap_cards(evidence_pack)
     proposed = controlled_plan.get("compiled_plan", {}).get("planner_atoms") or []
     facet_to_atom = {
@@ -801,6 +957,15 @@ def compile_current_research_input(
             for row in numeric_cards
             if eligible_slots.intersection(row["eligible_slot_ids"])
         ]
+        cell_numeric_refs = {row["numeric_ref"] for row in cell_numeric}
+        cell_numeric_relations = [
+            row
+            for row in numeric_relation_cards
+            if {
+                row["current_numeric_ref"],
+                row["comparison_numeric_ref"],
+            }.issubset(cell_numeric_refs)
+        ]
         cell_gaps = [
             row for row in gap_cards if row["slot_id"] in eligible_slots
         ]
@@ -832,6 +997,9 @@ def compile_current_research_input(
                 "allowed_numeric_refs": [
                     row["numeric_ref"] for row in cell_numeric
                 ],
+                "allowed_numeric_relation_refs": [
+                    row["numeric_relation_ref"] for row in cell_numeric_relations
+                ],
                 "visible_gap_refs": [row["gap_ref"] for row in cell_gaps],
             }
         )
@@ -842,6 +1010,9 @@ def compile_current_research_input(
         ref for cell in cells for ref in cell["allowed_numeric_refs"]
     }
     visible_gap_refs = {ref for cell in cells for ref in cell["visible_gap_refs"]}
+    visible_numeric_relation_refs = {
+        ref for cell in cells for ref in cell["allowed_numeric_relation_refs"]
+    }
     evidence_cards = [
         row for row in evidence_cards if row["evidence_ref"] in visible_evidence_refs
     ]
@@ -849,15 +1020,42 @@ def compile_current_research_input(
         row for row in numeric_cards if row["numeric_ref"] in visible_numeric_refs
     ]
     gap_cards = [row for row in gap_cards if row["gap_ref"] in visible_gap_refs]
+    numeric_relation_cards = [
+        row
+        for row in numeric_relation_cards
+        if row["numeric_relation_ref"] in visible_numeric_relation_refs
+    ]
+    case_identity = {
+        "case_key": case_key,
+        "subject_ticker": objective.get("subject_ticker"),
+        "subject_legal_name": objective.get("subject_legal_name"),
+        "research_as_of": research_as_of,
+    }
+    try:
+        route_catalog = compile_evidence_request_route_catalog(
+            context_contract=policy["research_context_contract"],
+            controlled_plan=controlled_plan,
+            gap_cards=gap_cards,
+            objective=objective,
+        )
+        graph_packs = compile_graph_context_packs(
+            context_contract=policy["research_context_contract"],
+            case_identity=case_identity,
+            cells=cells,
+            evidence_cards=evidence_cards,
+            numeric_cards=numeric_cards,
+        )
+        cells, context_receipts = bind_research_context_to_cells(
+            context_contract=policy["research_context_contract"],
+            cells=cells,
+            graph_packs=graph_packs,
+        )
+    except ResearchContextError as exc:
+        raise CurrentResearchConsumerError(exc.code) from exc
     unsigned = {
         "schema_version": CURRENT_RESEARCH_INPUT_SCHEMA_VERSION,
         "status": "current_reviewed_research_input_compiled",
-        "case_identity": {
-            "case_key": case_key,
-            "subject_ticker": objective.get("subject_ticker"),
-            "subject_legal_name": objective.get("subject_legal_name"),
-            "research_as_of": research_as_of,
-        },
+        "case_identity": case_identity,
         "objective": deepcopy(dict(objective)),
         "plan_digest": controlled_plan.get("compiled_plan", {}).get(
             "plan_digest"
@@ -870,7 +1068,10 @@ def compile_current_research_input(
         "cells": cells,
         "evidence_cards": evidence_cards,
         "numeric_fact_cards": numeric_cards,
+        "numeric_relation_cards": numeric_relation_cards,
         "residual_gap_cards": gap_cards,
+        "evidence_request_route_catalog": route_catalog,
+        "research_context_receipts": context_receipts,
         "input_selection_summary": {
             "reviewed_pack_evidence_count": len(
                 evidence_pack.get("evidence_items") or ()
@@ -880,6 +1081,7 @@ def compile_current_research_input(
                 evidence_pack.get("residual_gaps") or ()
             ),
             "model_visible_gap_count": len(gap_cards),
+            "model_visible_numeric_relation_count": len(numeric_relation_cards),
             "controlled_plan_numeric_fact_count_before_semantic_dedup": int(
                 controlled_plan.get("summary", {}).get("numeric_fact_count") or 0
             ),
@@ -924,6 +1126,10 @@ def compile_current_research_messages(
     numeric_by_ref = {
         row["numeric_ref"]: row
         for row in research_input["numeric_fact_cards"]
+    }
+    numeric_relation_by_ref = {
+        row["numeric_relation_ref"]: row
+        for row in research_input["numeric_relation_cards"]
     }
     gap_by_ref = {
         row["gap_ref"]: row for row in research_input["residual_gap_cards"]
@@ -1020,6 +1226,13 @@ def compile_current_research_messages(
     visible_cells = []
     selected_evidence_refs: set[str] = set()
     selected_numeric_refs: set[str] = set()
+    selected_numeric_relation_refs: set[str] = set()
+    route_decisions = {
+        row["gap_ref"]: row
+        for row in research_input["evidence_request_route_catalog"][
+            "gap_route_decisions"
+        ]
+    }
     for cell in selected_cells:
         slot_ids = {
             cell["primary_slot_id"],
@@ -1027,6 +1240,11 @@ def compile_current_research_messages(
         }
         selected_evidence_refs.update(cell["allowed_evidence_refs"])
         selected_numeric_refs.update(cell["allowed_numeric_refs"])
+        selected_numeric_relation_refs.update(
+            cell["allowed_numeric_relation_refs"]
+        )
+        method_pack = deepcopy(cell.get("role_method_pack"))
+        graph_pack = deepcopy(cell["graph_context_pack"])
         visible_cells.append(
             {
                 "cell_id": cell["cell_id"],
@@ -1044,8 +1262,19 @@ def compile_current_research_messages(
                     for ref in cell["allowed_evidence_refs"]
                 ],
                 "allowed_numeric_refs": cell["allowed_numeric_refs"],
+                "allowed_numeric_relation_refs": cell[
+                    "allowed_numeric_relation_refs"
+                ],
+                "role_method_pack": method_pack,
+                "graph_context_pack": graph_pack,
+                "context_consumption_contract": deepcopy(
+                    cell["context_consumption_contract"]
+                ),
                 "residual_gap_cards": [
-                    deepcopy(gap_by_ref[ref])
+                    {
+                        **deepcopy(gap_by_ref[ref]),
+                        "route_decision": deepcopy(route_decisions[ref]),
+                    }
                     for ref in cell["visible_gap_refs"]
                 ],
             }
@@ -1065,6 +1294,15 @@ def compile_current_research_messages(
             }
         ],
         "numeric_refs": ["zero or more NUM refs from this cell only"],
+        "numeric_relation_refs": [
+            "zero or more REL refs from this cell; required for explicit year-over-year language"
+        ],
+        "method_step_refs": [
+            "method steps actually used from this cell's RoleMethodPack"
+        ],
+        "graph_edge_refs": [
+            "current GraphContextPack edges actually used; these remain context-only"
+        ],
         "thesis_atom": "company-specific conclusion without digits",
         "mechanism_atom": "economic mechanism without digits",
         "counterargument_atom": "strongest bounded alternative without digits",
@@ -1091,7 +1329,15 @@ def compile_current_research_messages(
             for row in research_input["numeric_fact_cards"]
             if row["numeric_ref"] in selected_numeric_refs
         ],
+        "numeric_relation_catalog": [
+            deepcopy(row)
+            for row in research_input["numeric_relation_cards"]
+            if row["numeric_relation_ref"] in selected_numeric_relation_refs
+        ],
         "cells": visible_cells,
+        "research_context_injection_receipt": deepcopy(
+            research_input["research_context_receipts"]
+        ),
         "output_contract": {
             "schema_version": contract["payload_schema_version"],
             "required_cell_ids": [
@@ -1129,10 +1375,13 @@ def compile_current_research_messages(
             ),
             "Use every cell exactly once and only refs printed in that cell's local views or allowed numeric refs; use the immutable catalogs only to read the bound fact behind a local ref.",
             "List each Evidence ref at most once; use support for what it proves, limit for how it constrains the conclusion, and context only for bounded background.",
+            "Cite the RoleMethodPack steps and current GraphContextPack edges actually used. A graph edge supplies scope/context only and never replaces reviewed Evidence.",
             "Residual gaps shown in each cell are authoritative and will be injected by the harness; do not repeat them in the payload, and do not write a conclusion that silently closes them.",
             "directly_supported permits only conclusions explicitly stated by current subject evidence; bounded_inference must use cautious language and preserve limiting Evidence or respect visible residual gaps; not_inferable must not assert the unavailable mechanism.",
             "Do not attribute group, segment, balance-sheet or upstream results to AI or Dell without direct subject-bound evidence; contemporaneous movement is not causation.",
             "Do not repeat or alter identities, dates, exact numbers, units, currencies or citations in prose; select structured refs instead.",
+            "Use year-over-year or prior-year-quarter language only when selecting a same-basis REL ref and both of its NumericFact endpoints.",
+            "Submit an EvidenceRequest only through a source class and route shown as requestable; an unavailable industry, commercial or market route must remain a typed gap.",
             "Do not infer an undisclosed threshold or claim a supply constraint is easing without directly bound allocation and timing evidence.",
         ],
     }
@@ -1239,6 +1488,10 @@ def validate_current_research_output(
     input_cells = {
         cell_id: all_input_cells[cell_id] for cell_id in selected_cell_ids
     }
+    relation_by_ref = {
+        str(row["numeric_relation_ref"]): row
+        for row in research_input["numeric_relation_cards"]
+    }
     raw_cells = payload["cells"]
     output_cells = {
         str(row.get("cell_id") or ""): row
@@ -1296,12 +1549,64 @@ def validate_current_research_output(
             "research_consumer_numeric_refs_invalid",
             allow_empty=True,
         )
+        numeric_relations = _unique_strings(
+            raw.get("numeric_relation_refs"),
+            "research_consumer_numeric_relation_refs_invalid",
+            allow_empty=True,
+        )
+        method_steps = _unique_strings(
+            raw.get("method_step_refs"),
+            "research_consumer_method_step_refs_invalid",
+            allow_empty=True,
+        )
+        graph_edges = _unique_strings(
+            raw.get("graph_edge_refs"),
+            "research_consumer_graph_edge_refs_invalid",
+            allow_empty=True,
+        )
         gaps = tuple(input_cells[cell_id]["visible_gap_refs"])
         _require(
             set(numeric).issubset(
                 input_cells[cell_id]["allowed_numeric_refs"]
             ),
             "research_consumer_output_ref_boundary_invalid",
+        )
+        _require(
+            set(numeric_relations).issubset(
+                input_cells[cell_id]["allowed_numeric_relation_refs"]
+            )
+            and all(
+                {
+                    relation_by_ref[ref]["current_numeric_ref"],
+                    relation_by_ref[ref]["comparison_numeric_ref"],
+                }.issubset(numeric)
+                for ref in numeric_relations
+            ),
+            "research_consumer_numeric_relation_boundary_invalid",
+        )
+        method_pack = input_cells[cell_id].get("role_method_pack")
+        allowed_method_steps = {
+            str(row["method_step_ref"])
+            for row in (method_pack or {}).get("method_steps", ())
+        }
+        allowed_graph_edges = {
+            str(row["graph_edge_ref"])
+            for row in input_cells[cell_id]["graph_context_pack"]["edges"]
+        }
+        consumption_contract = input_cells[cell_id][
+            "context_consumption_contract"
+        ]
+        _require(
+            set(method_steps).issubset(allowed_method_steps)
+            and len(method_steps)
+            >= int(consumption_contract["minimum_method_step_refs"]),
+            "research_consumer_method_consumption_invalid",
+        )
+        _require(
+            set(graph_edges).issubset(allowed_graph_edges)
+            and len(graph_edges)
+            >= int(consumption_contract["minimum_graph_edge_refs"]),
+            "research_consumer_graph_consumption_invalid",
         )
         supporting = [
             use["evidence_ref"]
@@ -1346,6 +1651,11 @@ def validate_current_research_output(
             )
             for field in _MODEL_TEXT_FIELDS
         }
+        if any(_YEAR_OVER_YEAR_SURFACE.search(text) for text in validated_text.values()):
+            _require(
+                bool(numeric_relations),
+                "research_consumer_year_over_year_without_same_basis_relation",
+            )
         wwc = _mapping(
             raw.get("what_would_change"),
             "research_consumer_wwc_invalid",
@@ -1397,7 +1707,24 @@ def validate_current_research_output(
                 "inference_authority": inference,
                 "evidence_uses": evidence_uses,
                 "numeric_refs": list(numeric),
+                "numeric_relation_refs": list(numeric_relations),
+                "method_step_refs": list(method_steps),
+                "graph_edge_refs": list(graph_edges),
                 "remaining_gap_refs": list(gaps),
+                "context_consumption_receipt": {
+                    "role_method_pack_id": (
+                        method_pack["pack_id"] if method_pack else None
+                    ),
+                    "role_method_pack_digest": (
+                        method_pack["pack_digest"] if method_pack else None
+                    ),
+                    "consumed_method_step_refs": list(method_steps),
+                    "graph_context_digest": input_cells[cell_id][
+                        "graph_context_pack"
+                    ]["graph_context_digest"],
+                    "consumed_graph_edge_refs": list(graph_edges),
+                    "consumed_numeric_relation_refs": list(numeric_relations),
+                },
                 **validated_text,
                 "what_would_change": validated_wwc,
             }
@@ -1433,6 +1760,10 @@ def compile_current_research_deliverable(
         row["numeric_ref"]: row
         for row in research_input["numeric_fact_cards"]
     }
+    numeric_relations = {
+        row["numeric_relation_ref"]: row
+        for row in research_input["numeric_relation_cards"]
+    }
     gaps = {
         row["gap_ref"]: row for row in research_input["residual_gap_cards"]
     }
@@ -1454,6 +1785,10 @@ def compile_current_research_deliverable(
                 ],
                 "numeric_facts": [
                     deepcopy(numeric[ref]) for ref in row["numeric_refs"]
+                ],
+                "numeric_relations": [
+                    deepcopy(numeric_relations[ref])
+                    for ref in row["numeric_relation_refs"]
                 ],
                 "remaining_gaps": [
                     deepcopy(gaps[ref])
@@ -1481,6 +1816,7 @@ def compile_current_research_deliverable(
                 "case_identity",
                 "source_visible_fact_excerpt",
                 "numeric_facts",
+                "numeric_relations",
                 "citations",
                 "periods",
                 "units",

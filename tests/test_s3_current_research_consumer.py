@@ -35,7 +35,7 @@ from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
 POLICY = ROOT / (
     "configs/research/"
-    "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_1.json"
+    "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_2.json"
 )
 OBJECTIVE = ROOT / (
     "configs/research/evals/"
@@ -45,9 +45,9 @@ ATOMS = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json"
 )
-FAKE_PAYLOAD_V1_1 = ROOT / (
+FAKE_PAYLOAD_V1_2 = ROOT / (
     "tests/fixtures/research/"
-    "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_1.json"
+    "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_2.json"
 )
 R1_FAILED_PAYLOAD = ROOT / (
     "tests/fixtures/research/"
@@ -136,12 +136,13 @@ def test_current_input_consumes_reviewed_pack_and_deduplicated_numeric_facts(
 ) -> None:
     evidence_pack, controlled, research_input = current_inputs
 
-    assert controlled["summary"]["numeric_fact_count"] == 45
+    assert controlled["summary"]["numeric_fact_count"] == 58
     summary = research_input["input_selection_summary"]
-    assert summary["semantic_unique_fact_count_before_period_selection"] == 35
+    assert summary["semantic_unique_fact_count_before_period_selection"] == 45
     assert summary["model_visible_numeric_fact_count"] == 25
     assert summary["model_visible_evidence_count"] == 19
     assert summary["model_visible_gap_count"] == 10
+    assert summary["model_visible_numeric_relation_count"] == 10
     assert len(evidence_pack["evidence_items"]) == 20
     assert [row["cell_id"] for row in research_input["cells"]] == [
         "CELL::demand_quality",
@@ -183,7 +184,7 @@ def test_model_sees_exact_facts_but_does_not_own_fact_rendering(
     assert "51.3 billion" in serialized
     assert "source_visible_fact_excerpt" in serialized
     assert "Do not repeat or alter identities" in serialized
-    assert len(messages[1]["content"]) <= 50000
+    assert len(messages[1]["content"]) <= 80000
     for internal_field in (
         "target_id",
         "source_record_id",
@@ -202,7 +203,7 @@ def test_fake_judgments_compile_a_reference_safe_workpaper(
     current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
 ) -> None:
     _, _, research_input = current_inputs
-    fake = _json(FAKE_PAYLOAD_V1_1)
+    fake = _json(FAKE_PAYLOAD_V1_2)
     validated = validate_current_research_output(
         fake, research_input=research_input
     )
@@ -243,8 +244,8 @@ def test_v1_1_message_exposes_exact_enums_and_cell_local_views(
     visible = json.loads(messages[1]["content"])
     contract = visible["output_contract"]
 
-    assert len(messages[1]["content"]) == 46061
-    assert len(messages[1]["content"]) <= 50000
+    assert len(messages[1]["content"]) == 72700
+    assert len(messages[1]["content"]) <= 80000
     assert contract["allowed_judgment_statuses"] == [
         "supported",
         "bounded_support",
@@ -263,6 +264,8 @@ def test_v1_1_message_exposes_exact_enums_and_cell_local_views(
     ]
     assert len(visible["evidence_fact_catalog"]) == 19
     assert len(visible["numeric_fact_catalog"]) == 25
+    assert len(visible["numeric_relation_catalog"]) == 10
+    assert any(row["role_method_pack"] for row in visible["cells"])
     assert all("cell_evidence_views" in row for row in visible["cells"])
     assert all("evidence_cards" not in row for row in visible["cells"])
     assert "research_input_digest" not in messages[1]["content"]
@@ -290,7 +293,7 @@ def test_v1_1_single_cell_scope_keeps_only_cell_local_catalogs(
     assert visible["numeric_fact_catalog"] == []
     assert len(messages[1]["content"]) < 18000
 
-    fake = _json(FAKE_PAYLOAD_V1_1)
+    fake = _json(FAKE_PAYLOAD_V1_2)
     one_cell = {
         "cells": [row for row in fake["cells"] if row["cell_id"] == cell_id]
     }
@@ -370,7 +373,7 @@ def test_v1_1_payload_injects_trusted_envelope_and_renders_typed_uses(
     current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
 ) -> None:
     _, _, research_input = current_inputs
-    payload = _json(FAKE_PAYLOAD_V1_1)
+    payload = _json(FAKE_PAYLOAD_V1_2)
     parsed = parse_current_research_output(json.dumps(payload))
     validated = validate_current_research_output(
         parsed, research_input=research_input
@@ -383,11 +386,11 @@ def test_v1_1_payload_injects_trusted_envelope_and_renders_typed_uses(
     assert validated["research_input_digest"] == research_input[
         "research_input_digest"
     ]
-    assert validated["schema_version"].endswith("payload_v1_1")
+    assert validated["schema_version"].endswith("payload_v1_2")
     assert deliverable["rendering_authority"][
         "harness_generated_research_conclusion"
     ] is False
-    assert deliverable["schema_version"].endswith("deliverable_v1_1")
+    assert deliverable["schema_version"].endswith("deliverable_v1_2")
     demand = deliverable["cells"][0]
     assert [row["use_role"] for row in demand["evidence_uses"]] == [
         "support",
@@ -445,7 +448,57 @@ def test_v1_1_mutations_fail_closed(
     code: str,
 ) -> None:
     _, _, research_input = current_inputs
-    payload = deepcopy(_json(FAKE_PAYLOAD_V1_1))
+    payload = deepcopy(_json(FAKE_PAYLOAD_V1_2))
+    mutator(payload)
+
+    with pytest.raises(CurrentResearchConsumerError, match=code):
+        compile_current_research_deliverable(
+            research_input=research_input,
+            judgment_output=payload,
+        )
+
+
+@pytest.mark.parametrize(
+    ("mutator", "code"),
+    [
+        (
+            lambda value: (
+                value["cells"][2].__setitem__("numeric_relation_refs", []),
+                value["cells"][2].__setitem__(
+                    "thesis_atom", "利润率同比变化可见，但产品级利润桥仍然缺失。"
+                ),
+            ),
+            "research_consumer_year_over_year_without_same_basis_relation",
+        ),
+        (
+            lambda value: value["cells"][2].__setitem__(
+                "numeric_refs",
+                value["cells"][2]["numeric_refs"][1:],
+            ),
+            "research_consumer_numeric_relation_boundary_invalid",
+        ),
+        (
+            lambda value: value["cells"][2].__setitem__(
+                "method_step_refs",
+                value["cells"][2]["method_step_refs"][:3],
+            ),
+            "research_consumer_method_consumption_invalid",
+        ),
+        (
+            lambda value: value["cells"][2].__setitem__(
+                "graph_edge_refs", ["GRAPH::CROSS_CASE_CONTAMINATION"]
+            ),
+            "research_consumer_graph_consumption_invalid",
+        ),
+    ],
+)
+def test_v1_2_context_and_same_basis_mutations_fail_closed(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+    mutator,
+    code: str,
+) -> None:
+    _, _, research_input = current_inputs
+    payload = deepcopy(_json(FAKE_PAYLOAD_V1_2))
     mutator(payload)
 
     with pytest.raises(CurrentResearchConsumerError, match=code):
@@ -563,7 +616,7 @@ def test_input_mutations_fail_closed(
 
 
 def test_parser_requires_exact_json() -> None:
-    fake = _json(FAKE_PAYLOAD_V1_1)
+    fake = _json(FAKE_PAYLOAD_V1_2)
     assert parse_current_research_output(json.dumps(fake))["cells"]
     with pytest.raises(CurrentResearchConsumerError, match="not_exact_json"):
         parse_current_research_output("```json\n{}\n```")

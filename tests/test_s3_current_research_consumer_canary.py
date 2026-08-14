@@ -34,7 +34,7 @@ LOOP_POLICY = ROOT / (
     "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_1.json"
 )
 CONSUMER_POLICY = ROOT / (
-    "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_1.json"
+    "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_2.json"
 )
 OBJECTIVE = ROOT / (
     "configs/research/evals/"
@@ -46,7 +46,7 @@ ATOMS = ROOT / (
 )
 FAKE = ROOT / (
     "tests/fixtures/research/"
-    "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_1.json"
+    "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_2.json"
 )
 STANDARD_PROFILE = ROOT / (
     "configs/providers/"
@@ -555,7 +555,7 @@ def _paired_fixture():
         "fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
         "consumer_policy_ref": ROOT
         / "configs/research/"
-        "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_1.json",
+        "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_2.json",
     }
     paired = runner._compile_paired_inputs(
         paths,
@@ -567,7 +567,7 @@ def _paired_fixture():
         (
             ROOT
             / "tests/fixtures/research/"
-            "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_1.json"
+            "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_2.json"
         ).read_text(encoding="utf-8")
     )
     judgment = next(

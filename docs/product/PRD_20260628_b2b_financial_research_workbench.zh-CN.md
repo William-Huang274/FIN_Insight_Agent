@@ -603,6 +603,14 @@ Evidence Workbench 必须综合 25 文档中的完整研究信息范围，而不
 - 对 gap 分类：retrievable gap、public-source boundary、commercial gap、not material、forbidden claim；
 - 生成 evidence appendix。
 
+研究上下文的产品边界：
+
+- `RoleMethodPack` 只说明某个研究单元应如何分析、检查机制、反方和 WWC，不能成为 Evidence、NumericFact 或 citation；
+- `GraphPack`／`GraphContextPack` 只提供实体、产品、客户、供应商和作用关系的导航、范围与待证假设；只有带当前 as-of、来源 authority 并经过 Evidence Gate 的边／事实才能进入底稿；
+- 任何注入模型的 method／graph pack 必须版本化、内容寻址、可重建，并记录选择、压缩、注入和消费 receipt；
+- Agent 宿主可以替换，但同一研究任务在不同宿主上必须消费同一 pack digest；通用 Agent Harness 不拥有 FIN 的身份、期间、NumericFact、Evidence、引用或晋升权威；
+- 缺失或不可执行的 graph route 必须显示 typed gap，不得把归档图数据或 Prompt 中的关系描述伪装成当前图谱能力。
+
 ### 6.5 Workpaper Builder
 
 目标：建立合格底稿层。写作器不能直接拼 ClaimCard；必须先形成底稿。

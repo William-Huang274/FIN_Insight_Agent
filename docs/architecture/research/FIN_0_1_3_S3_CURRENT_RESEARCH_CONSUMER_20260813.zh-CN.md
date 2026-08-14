@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`consumer_v1.1_clean_zero_call_pass / paired_R2_JSON_node_pass / standard_R2_project_contract_failure_preserved / unified_tool_contract_formal_clean_replay_pass / Chat_Responses_live_pair_pending`
+状态：`consumer_v1.1_clean_zero_call_pass / paired_R2_JSON_node_pass / unified_tool_contract_formal_clean_replay_pass / Chat_Responses_single_cell_transport_pass / paired_content_L1_fail / historical_skill_graph_requalified / current_role_method_and_graph_context_not_injected / research_context_closure_pending / five_cell_blocked`
 
 ## 1. 为什么需要这条链
 
@@ -236,3 +236,45 @@ EvidenceRequest 还有一项与 RC-S3-007 不同的新缺口。当前统一合�
 内容层仍保留独立模型责任：Chat 加入未绑定的 supply-allocation 利润机制；Responses 把存储、定价、传统服务器、配置和规模共同驱动的结果表述为“来自 AI server cycle 的真实经营杠杆”。Harness 应阻止无 relation／无 source route 的结构越界，但不能替模型代写更谨慎的经济结论。
 
 当前处置是：Chat 保留 provisional primary；Responses 只晋升为 live-compatible shadow/candidate，因为它总 token=`102,176`、耗时约 `267s`，高于 Chat 的 `74,885`／`169s`，且没有形成内容硬门优势；Anthropic 仍 shadow。五单元继续 blocked。下一项是零调用 comparable-period relation＋source-route contract 包，通过后最多一条 Chat 单 cell 复验。
+
+## 12. 角色 Skill、知识图谱与当前官方 Harness 重新资格
+
+### 12.1 当前 paired 没有消费旧角色方法或图谱
+
+两路保存的 model-visible request 只有通用 bounded financial analyst 指令、四个金融工具和 cell-local Evidence／NumericFact／gap。当前 Runtime Registry R11 的 10 个资源中没有 SkillPack 或 GraphPack；请求中也没有 `method_runtime_pack`、specialist rubric、ProductIntelligenceGraph 或经济关系 GraphPack。`value_capture_specialist` 只作为请求者角色标签出现，不是已消费的方法包。
+
+因此 paired R1 可以证明 Chat／Responses 的协议续接，但不能证明此前角色 Skill 或知识图谱无效。它暴露的是三类责任的组合：S2 comparable relation 缺口、S3 source-route／研究上下文缺口，以及模型自身的过强因果表述。
+
+### 12.2 旧资产的可迁移边界
+
+旧 fundamental、industry/supply-chain、product、valuation、risk、lead、writer、verifier 和 shared evidence boundary 方法仍有价值，尤其旧 fundamental 已明确禁止在缺少 mix／gross-margin 支持时把 AI server revenue growth 写成 margin improvement。旧运行接口则依赖 SpecialistMemolet、ClaimCard v0.3、静态 specialist 和旧 ledger，不能原样恢复。
+
+旧图谱的 entity／product／metric／customer／supplier／claim／evidence／gap 分层、edge authority、as-of 和 role-scoped GraphPack 思路仍可复用；旧物化数据、digest、公司期间和 role binding 已归档，不能作为当前事实。当前 route policy 虽声明 `typed_relationship_graph`，Runtime 还没有执行 handler；该配置／实现漂移归 S1 产品门，不用旧 GraphPack 在 Prompt 中伪装关闭。
+
+### 12.3 DeepSeek Harness 只作为可替换宿主接口
+
+旧的 Harness 审计固定于当时 HEAD，只覆盖最小 loop。2026-08-14 对当前官方开发预览版 `0.1.0-rc.5` 的重新核对表明，它现在提供按 agent scope 分层的 Skill registry、先目录后按需加载的 progressive disclosure、可重放 context injection、preset、subagent、workflow、guard 和 compaction 接缝。
+
+FIN 只采纳这些接口模式：先定义 provider-neutral、版本化和内容寻址的 `RoleMethodPack`／`GraphContextPack`；当前 Python loop 使用 native adapter，官方 Harness 以后只作为 shadow adapter。无论宿主是哪一条，必须记录相同的 pack digest、选择／压缩理由、model-visible injection 和 consumption receipt。Skill 永远只是研究方法，Graph 永远只是导航／假设；Evidence、NumericFact、身份、日期、引用和晋升继续由 FIN 控制面拥有。
+
+官方依据：
+
+- https://github.com/deepseek-ai/deepseek-harness
+- https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md
+- https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/skills.md
+- https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/context
+- https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/preset
+
+### 12.4 更新后的执行门
+
+下一结构包改名为 `FIN_0_1_3_S2_S3_RESEARCH_CONTEXT_CLOSURE_V1`，但范围仍然有界：
+
+1. S2 提供同口径 prior comparator 或 typed relation；
+2. EvidenceRequest 显式编译 source class 与 route availability；
+3. 只为 `CELL::value_capture` 迁移最小 `RoleMethodPack v1`；
+4. 只从当前 Case、reviewed Evidence、NumericFact 和受控关系编译 cell-scoped `GraphContextPack v1`，不恢复旧图谱物化；
+5. capture replay 和 DELL／MU／NVDA mutation 证明 pack 可重建、无跨案／错期／stale digest 污染；
+6. 通过后最多一条 Chat 单 cell 自然复验，Responses 不重跑，Anthropic 不进入 live；
+7. 只有 L1 和同输入内容增益同时成立，才签发五单元 scope decision 并逐单元迁移其余 RoleMethodPack。
+
+完整 typed graph handler 留在 S1，官方 Harness shadow host 留在宿主一致性资格；两者都不能膨胀当前单单元修复包。完整审计见 `docs/worklog/fin_0_1_3_s3/018_role_skill_graph_and_deepseek_harness_requalification.md`。

@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。S2 仍为 1,319 observations，transcript 没有 NumericFact 权限。唯一 FinanceToolContract 已在干净远端提交 `17bb0c5a...` 上完成正式零调用回放，RC-S3-007 已关闭。随后绑定 `aafd8be3...` 的 DELL `value_capture` Chat／Responses paired exact-live 两路均完成 5 step／6 receipts、0 retry；Responses 的真实 stateless continuation 因此已观察，但它比 Chat 多耗约 36% token、慢约 58%。内容审计发现两路均把未绑定 same-cadence relation 的 Q1／FY NumericFact 写成同比／扩张／压缩，并且 gap 提示的行业数据与编译后仅 SEC form 的 route 不一致；两路均未过 L1，正式八维评分未签发。Chat 保留 provisional primary，Responses 保留 live-compatible shadow/candidate，Anthropic live 继续禁止，五单元未授权。S1 产品门、完整八维研报、Workbench 报告面和 release 仍未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。S2 仍为 1,319 observations，transcript 没有 NumericFact 权限。唯一 FinanceToolContract 已在干净远端提交 `17bb0c5a...` 上完成正式零调用回放，RC-S3-007 已关闭。随后绑定 `aafd8be3...` 的 DELL `value_capture` Chat／Responses paired exact-live 两路均完成 5 step／6 receipts、0 retry；Responses 的真实 stateless continuation 因此已观察，但它比 Chat 多耗约 36% token、慢约 58%。内容审计发现两路均把未绑定 same-cadence relation 的 Q1／FY NumericFact 写成同比／扩张／压缩，并且 gap 提示的行业数据与编译后仅 SEC form 的 route 不一致；两路均未过 L1，正式八维评分未签发。进一步审计确认这两路请求没有消费历史角色 Skill 或知识图谱：旧方法内容多数仍有价值，但运行接口过时；旧图谱对象思想可迁移，旧数据和 materialization 不能作为当前事实。Chat 保留 provisional primary，Responses 保留 live-compatible shadow/candidate，Anthropic live 继续禁止，五单元未授权。S1 产品门、完整八维研报、Workbench 报告面和 release 仍未通过。
 
 ## 当前唯一产品边界
 
@@ -29,7 +29,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影，只有 Chat／Responses 当前具备付费 canary 候选资格。Runtime Registry 为 R11／10 个资源；consumer policy、模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册为产品 Runtime resource。当前结果允许每个案例绑定独立的 digest-bound 私有对象根，因此升级 DELL 无需复制 MU/NVDA。private mart 与 raw capture 继续通过显式 Runtime path 挂载，Qwen 权重按第一次受控计划懒加载，普通 Workbench 启动不加载模型。
+当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影，只有 Chat／Responses 当前具备付费 canary 候选资格。Runtime Registry 为 R11／10 个资源，尚无当前 RoleMethodPack／GraphContextPack；consumer policy、模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册为产品 Runtime resource。当前 route policy 声明 `typed_relationship_graph`，但 hybrid candidate Runtime 只执行 BM25＋Qwen，图 handler 未实现。当前结果允许每个案例绑定独立的 digest-bound 私有对象根，因此升级 DELL 无需复制 MU/NVDA。private mart 与 raw capture 继续通过显式 Runtime path 挂载，Qwen 权重按第一次受控计划懒加载，普通 Workbench 启动不加载模型。
 
 ## 已完成的重定基事实
 
@@ -52,6 +52,8 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 17. S3 当前 consumer 零调用 R1 已完成：DELL 当前 20 条 reviewed Evidence 中 19 条进入五个研究单元，含 5 条已复核 transcript Evidence；45 个 request-level NumericFact 先合并为 35 个经济事实，再按最新季度／财年／时点选择 25 个模型可见事实；14 个 Pack gap 中 10 个与本轮单元相关。fake 输出成功编译结构化底稿/报告预览，未知引用、跨单元数值、自由数字叙事和缺单元 mutation 均 fail closed；0 网络、0 模型、0 provider、0 embedding，且 fake 结果未发布到产品面。
 18. 绑定干净远端提交 `b4016469...` 的零调用 R2 已复现同一 research input digest `440987e2...968` 与同一 deliverable digest `d915a4a2...c0c0`；R2 result digest 为 `90574540...5974`。自然 canary runner 已通过 no-retry terminal、case binding 和 capture-first 测试，当前全量为 231 passed，活动图 111 Python／8 frontend／10 Runtime resources，0 forbidden reference。
 19. 唯一 DELL DeepSeek Pro 综合 canary R1 已执行并 terminal failed：HTTP 成功、exact JSON、5/5 cells、usage=`14,141/2,643/16,784`，但首个硬失败为 envelope 缺字段。零调用完整诊断还发现 model-visible 枚举缺失、跨 cell 引用、复合 Evidence 二元角色冲突、自由数量级表述，以及 AI 归因、现金归因和供应缓解等内容越界。R1 0 retry、0 fallback、0 检索、0 发布；不能只补 envelope 后追认。
+20. 历史角色 Skill 与图谱只读重新资格已完成：20 个旧 Skill 全部审阅，fundamental／industry／product／valuation／risk／lead／writer／verifier／shared boundary 的方法可选择性迁移，旧对象接口、重复版本和静态多 specialist 运行方式不恢复。旧 6 GraphPack／16 SkillPack／6 MemoryPack 结果只证明 registry/injection-plan 范围；旧物化数据、期间和 digest 不进入当前 Runtime。
+21. 当前 Chat／Responses paid requests 的 model-visible prompt 和 captures 均没有 RoleMethodPack、specialist rubric、GraphPack 或 ProductIntelligenceGraph；因此协议资格仍成立，但内容失败不能只归因于 DeepSeek。官方 `deepseek-harness` 当前 scoped Skill、progressive disclosure、context log 和 preset 接缝只作为同一 FIN pack 合同的未来 shadow adapter，不整体导入开发预览 Runtime。
 
 ## G12 关闭的可复现性缺陷
 
@@ -67,8 +69,9 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 3. successor 后同对象比较为 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。现成 Cross-Encoder 同为 `17/18` 且提高 MRR，但会把 DELL 直接风险目标从第 1 降到第 19，不能晋升默认路线。
 4. 规则 Evidence Role 虽减少三案 top3 显式不兼容项，却把 Recall 降到 `13/18`；对象级复核仍只有 F1=`0.507936`。根因不仅是对象形态，还包括 reported results、guidance、counterevidence、监管和财务桥接被旧 qrel 混成一个 query，当前规则禁止上线。
 5. 当前 provider-neutral planner compiler 已能把自然 Planner R1 的 atoms 变成 EvidenceRequest，并执行 S1 联合候选与 S2 typed fact sibling；当前 consumer 也已在 fake 证明中把 reviewed Evidence 与 NumericFact 变成结构化判断。尚未证明的是 DeepSeek 能否在同一合同下自然选择引用、形成经济机制、保留反方和 WWC，也未完成用户输入、动态追问或前端报告消费，因此仍不能称为完整 Agentic Research。
-6. Workbench 镜像仍安装数据构建依赖，冷缓存构建成本偏高；依赖拆分是非阻断基础设施优化，不能回滚已验证的数据/状态隔离。
-7. Python 基础镜像与依赖目前可从 clean-main 构建并通过；更强的镜像/依赖字节级锁定属于后续基础设施加固，不得被误写为当前研究能力，也不阻断已通过的仓库基线。
+6. 当前 paid consumer 没有消费角色方法包或单元级图上下文；`typed_relationship_graph` 也只有 route 声明而无当前执行 handler。Skill／Graph 不能被旧归档材料假装补齐，也不能因缺失而把所有失败归因于模型。
+7. Workbench 镜像仍安装数据构建依赖，冷缓存构建成本偏高；依赖拆分是非阻断基础设施优化，不能回滚已验证的数据/状态隔离。
+8. Python 基础镜像与依赖目前可从 clean-main 构建并通过；更强的镜像/依赖字节级锁定属于后续基础设施加固，不得被误写为当前研究能力，也不阻断已通过的仓库基线。
 
 ## 决策与停止规则
 
@@ -81,13 +84,13 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S2_S3_COMPARABLE_RELATION_AND_EVIDENCE_REQUEST_SOURCE_ROUTE_CONTRACT`
+`FIN_0_1_3_S2_S3_RESEARCH_CONTEXT_CLOSURE_V1`
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
 旧综合 R1、GA paired R1 和标准 R1/R2 均保持不可变。唯一 Tool Contract Compiler、typed proposal repair 与三协议投影已通过正式零调用 replay；同一 DELL `value_capture` 的 Chat control／Responses candidate paired 也已 exact-once 完成。两路都能读取 Evidence／NumericFact、记录三个 open-gap 请求并提交 Judgment，但共同暴露 same-cadence numeric relation 无确定性 lineage，以及 model-visible source class 与实际 route 不一致。协议资格通过没有覆盖内容 L1，五单元继续 blocked。
 
-下一项只做零模型结构包：S2/S3 提供 prior comparable 或 typed relation fact；比较词必须绑定 relation/direction 并本地验证；EvidenceRequest branch 必须显式包含 allowed source class 与 route availability；用本轮 immutable captures 和 DELL/MU/NVDA mutation 复证。通过后最多签发一条 Chat 单单元自然复验，不再做第二组协议 pair。Responses 暂不替换 Chat，Anthropic 不进入 live。任何 diagnostic 节点分都不能改写为完整八维报告、产品发布或 S3 acceptance。
+下一项只做一个零模型结构包：S2/S3 提供 prior comparable 或 typed relation fact；比较词必须绑定 relation/direction 并本地验证；EvidenceRequest branch 显式包含 allowed source class 与 route availability；只为 `CELL::value_capture` 迁移最小 `RoleMethodPack v1`；只从当前 Case、reviewed Evidence、NumericFact 和受控关系编译 cell-scoped `GraphContextPack v1`。所有 pack 选择、压缩、注入和消费必须有 digest／receipt，并用本轮 immutable captures 和 DELL/MU/NVDA mutation 复证。通过后最多签发一条 Chat 单单元自然复验，不再做第二组协议 pair。Responses 暂不替换 Chat，Anthropic 不进入 live。完整 typed graph handler 留在 S1，DeepSeek Harness shadow host 留在宿主资格；任何 diagnostic 节点分都不能改写为完整八维报告、产品发布或 S3 acceptance。
 
 历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。真实 replacement R2 进一步证明 tool-result continuation 和两份 receipt 成立，同时暴露 Schema/Validator/route 非同源编译。R2 永久 failed。当前统一合同与协议投影已达到 formal clean replay pass；Chat/Responses paired single-cell 也已完成，但内容 L1 未通过。五 cell 必须等待 comparable-period relation、source-route contract、零调用证明和一条新的 Chat 单单元复验后的 scope decision。
 

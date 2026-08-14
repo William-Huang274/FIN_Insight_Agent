@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`consumer_v1.2 / unified_tool_contract_formal_clean_replay_pass / Chat_Responses_single_cell_transport_pass / paired_content_L1_fail / historical_skill_graph_requalified / research_context_closure_formal_zero_call_R4_current_profile_pass / one_Chat_value_capture_revalidation_pending / five_cell_blocked`
+状态：`consumer_v1.2 / unified_tool_contract_formal_clean_replay_pass / historical_paired_content_L1_fail / historical_skill_graph_requalified / research_context_closure_formal_zero_call_R4_current_profile_pass / research_context_Chat_R1_IncompleteRead_no_judgment / L1_content_not_qualified / five_cell_blocked`
 
 ## 1. 为什么需要这条链
 
@@ -294,3 +294,5 @@ DELL 当前可见 19 条 Evidence、25 个 NumericFact 和 10 条同口径 relat
 当前实现通过 277 项全仓测试，并先由 formal zero-call R3 完成结构复证，再由 R4 在不改变实现和研究输入的前提下绑定当前 16,000-token GA profile；两个 fresh process 和三案 full-fake 均通过。结构门与当前 profile 容量门现为 pass；自然内容门仍只允许一次 Chat 单单元复验。完整 typed graph retrieval handler 仍归 S1；五单元运行和其他 RoleMethodPack 迁移仍需后续独立决策。
 
 单次复验不能复用历史 disposition。当前 runner 只在 scope decision 同时绑定 R4 result digest、DELL、`CELL::value_capture`，并明确关闭 Responses、五单元和其他 RoleMethodPack 迁移时，才接受新的 Chat authority。这个校验把 Owner 本轮“先做 1–6、暂停第 7 步”的边界落实到了执行代码，而不只存在于聊天或文档。
+
+该唯一 Chat R1 已消费：第一步正确读取 Evidence＋NumericFact，第二步含完整研究上下文的请求在约 175 秒后发生 `IncompleteRead`。没有 Judgment，因此 L1 与八维内容均不可评，不能用 R4 结构通过替代自然内容通过。项目 transport 也暴露了 capture 缺口：generic exception 分支没有保存 `IncompleteRead.partial` 与已经可见的 HTTP metadata。任何 replacement 都必须先独立处置该 capture/transport 问题并重新签发，不能自动重试。

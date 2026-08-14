@@ -176,3 +176,9 @@ R4 正式通过，两个 fresh process 字节一致，三案例污染仍为 0，
 ## 13. 单次 Chat 复验权限边界
 
 旧 runner 只识别已经消费过的 historical JSON-node／standard-tool disposition。为了不复用旧权限，新建 Research Context Chat scope decision，并让 runner 额外校验：DELL、`CELL::value_capture`、R4 `result_digest`、Chat=true、Responses=false、five-cell=false、other-role-migration=false。该决定只允许一次至多 6 step 的 exact-once Chat 循环；运行结束后必须先返回 L1 和内容质量，不得自动进入第 7 步。
+
+## 14. 唯一 Chat 复验 R1 结果
+
+R1 按 authority 执行 2 次 Provider step，0 retry。第一步 3 秒返回 HTTP 200，DeepSeek 正确同时选择本案 Evidence 和 NumericFact 两个只读工具，形成 2 份 accepted receipt。第二步已经把实际 Evidence、NumericFact、4 条 value_capture same-basis relation、6 条 RoleMethod step 和 1 条当前 Graph edge 放入 model-visible request；等待约 175 秒后以 `IncompleteRead` 终止，没有返回 EvidenceRequest 或 Judgment。
+
+因此本轮没有发现新的事实错误，但也不能把 L1 记为通过：根本没有最终判断可审。八维内容质量和相对旧 Chat 的内容增益同样不可评分。失败不是已经观测到的 DeepSeek 指令不遵循，也不是 relation／route／Skill／Graph 合同拒绝，而是响应体传输不完整。当前 transport 还有一个项目内审计缺口：它把 `IncompleteRead` 当作 generic exception，丢弃了可获得的 HTTP status／headers／partial bytes，只留下 status=0 的空响应 capture。R1 保持 immutable terminal failure；未重试，五单元和第 7 步继续禁止。

@@ -2,7 +2,7 @@
 
 日期：2026-08-14
 
-状态：`owner_authorized_layer_one_only / implementation_and_targeted_tests_pass / formal_clean_proof_pending / no_new_live_yet / layer_two_blocked`
+状态：`owner_authorized_layer_one_only / formal_zero_call_proof_pass / one_fixed_pack_chat_canary_authorized / live_pending / layer_two_blocked`
 
 ## Owner 决定
 
@@ -23,9 +23,14 @@ Owner 接受三层验收，但只批准先完成第一层并返回结果：fixed
 - `tests/test_s3_current_research_consumer.py`
 - `tests/test_s3_bounded_finance_loop.py`
 - 定向 consumer／loop／canary tests：`66 passed`
-- 尚未签发 formal zero-call authority，也尚未执行新的 DeepSeek live。
+- 全量 Python tests：`289 passed`
+- active baseline：`124 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference`
+- secret scan：`6,561 files / 0 finding`
+- formal zero-call proof：`engineering_pass_zero_call_fixed_pack_claim_authority`
+- 保存 R2 负向 replay 的拒绝码：`claim_authority_cross_scope_causal_language_unbound`
+- 固定 Pack fake loop：`2 steps / 3 tool calls / 0 EvidenceRequest / 0 model call`
+- 新 DeepSeek live 尚未执行；本记录之后只允许签发一次固定 Pack Chat canary。
 
 ## 停止线
 
-必须先形成干净提交、推送 upstream、签发 exact-once zero-call authority并通过正式 proof。只有该 proof 通过，才可另行签发第一层唯一一次 Chat live。无论结果如何，本工作包都必须先返回 Owner；不能自动开始 Layer Two。
-
+formal zero-call proof 已通过。下一步只能把证明与本决策固化到干净 upstream，再签发第一层唯一一次 Chat live。无论 live 成功或失败，本工作包都必须返回 Owner；不能自动开始 Layer Two。

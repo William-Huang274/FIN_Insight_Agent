@@ -172,3 +172,7 @@ R3 绑定干净远端提交 `c6a97699...`，正式状态为 `zero_call_engineeri
 R3 的结构结论有效，但 authority 仍绑定旧 GA profile v1.0，其 `max_tokens=5000`；当前单单元 live runner 的容量资格要求是 GA profile v1.1 的 `max_tokens=16000`。因此没有把 R3 伪装成当前 Provider 容量证明，也没有直接放行付费调用，而是签发 ATTEMPT-04：实现、输入、合同、fake、三案例矩阵和 mutation 全部不变，只把 agent／strict／JSON 三份 Provider profile 更新为 v1.1。
 
 R4 正式通过，两个 fresh process 字节一致，三案例污染仍为 0，DELL 仍为 19 Evidence／25 NumericFact／10 same-basis relations，MU 为 14／14／0，NVDA 为 13／15／0；唯一预期变化是 `standard_profile_max_tokens` 从 5000 变为 16000。network／model／Provider／embedding 均为 0。R4 不增加产品能力，只关闭“当前 profile 容量尚未被 clean proof 绑定”的资格缺口；下一门仍然只有一次 Chat `CELL::value_capture` 自然复验。
+
+## 13. 单次 Chat 复验权限边界
+
+旧 runner 只识别已经消费过的 historical JSON-node／standard-tool disposition。为了不复用旧权限，新建 Research Context Chat scope decision，并让 runner 额外校验：DELL、`CELL::value_capture`、R4 `result_digest`、Chat=true、Responses=false、five-cell=false、other-role-migration=false。该决定只允许一次至多 6 step 的 exact-once Chat 循环；运行结束后必须先返回 L1 和内容质量，不得自动进入第 7 步。

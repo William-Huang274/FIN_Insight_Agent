@@ -90,7 +90,7 @@ Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提�
 
 旧综合 R1、GA paired R1 和标准 R1/R2 均保持不可变。唯一 Tool Contract Compiler、typed proposal repair 与三协议投影已通过正式零调用 replay；同一 DELL `value_capture` 的 Chat control／Responses candidate paired 也已 exact-once 完成。两路都能读取 Evidence／NumericFact、记录三个 open-gap 请求并提交 Judgment，但共同暴露 same-cadence numeric relation 无确定性 lineage，以及 model-visible source class 与实际 route 不一致。协议资格通过没有覆盖内容 L1，五单元继续 blocked。
 
-零模型结构包已由 formal R3 关闭结构门，并由 R4 关闭当前 16,000-token profile 的容量资格门。当前只允许签发一次 Chat `CELL::value_capture` 自然复验：复用当前 DELL Evidence Pack／NumericFact，要求模型真实读取 typed relation、RoleMethodPack、GraphContextPack 和可执行来源路线；0 retry、0 fallback，不运行 Responses、不访问外源、不发布产品。运行后先做 L1，再评估归因、机制、反方和 WWC 的内容增益，并与 paired R1 Chat 同业务证据基线比较。无论成功或失败，本轮都先返回 Owner；五单元、其他 RoleMethodPack 和完整图 handler 不自动开始。
+零模型结构包已由 formal R3 关闭结构门，并由 R4 关闭当前 16,000-token profile 的容量资格门。新的 scope decision 与 runner 校验把权限限定为一次 Chat `CELL::value_capture` 自然复验：复用当前 DELL Evidence Pack／NumericFact，要求模型真实读取 typed relation、RoleMethodPack、GraphContextPack 和可执行来源路线；0 retry、0 fallback，不运行 Responses、不访问外源、不发布产品。运行后先做 L1，再评估归因、机制、反方和 WWC 的内容增益，并与 paired R1 Chat 同业务证据基线比较。无论成功或失败，本轮都先返回 Owner；五单元、其他 RoleMethodPack 和完整图 handler 不自动开始。
 
 历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。真实 replacement R2 进一步证明 tool-result continuation 和两份 receipt 成立，同时暴露 Schema/Validator/route 非同源编译。R2 永久 failed。当前统一合同、协议投影和 Research Context Closure 均已达到 formal clean replay pass；Chat/Responses paired single-cell 的旧内容 L1 未通过。五 cell 现在只等待新 Chat 单单元复验后的 L1／内容质量与 scope decision。
 

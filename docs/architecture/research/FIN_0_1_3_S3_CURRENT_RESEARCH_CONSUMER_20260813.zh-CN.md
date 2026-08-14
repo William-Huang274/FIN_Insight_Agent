@@ -292,3 +292,5 @@ FIN 只采纳这些接口模式：先定义 provider-neutral、版本化和内�
 DELL 当前可见 19 条 Evidence、25 个 NumericFact 和 10 条同口径 relation；MU 为 14／14／0，NVDA 为 13／15／0。后两案的 relation=0 是正确的 typed gap，不是失败：当前资料没有足够端点时，模型不得生成同比／扩张／压缩关系。三案 full-fake 均完成 15 个工具 receipt，case identity／graph pollution／archived context／unavailable route exposure 均为 0。paired R1 的 Chat／Responses 旧 Judgment 也按 immutable result 回放，并因缺少 v1.2 的 relation／method／graph 消费字段而 fail closed，不能被新代码静默追认。
 
 当前实现通过 277 项全仓测试，并先由 formal zero-call R3 完成结构复证，再由 R4 在不改变实现和研究输入的前提下绑定当前 16,000-token GA profile；两个 fresh process 和三案 full-fake 均通过。结构门与当前 profile 容量门现为 pass；自然内容门仍只允许一次 Chat 单单元复验。完整 typed graph retrieval handler 仍归 S1；五单元运行和其他 RoleMethodPack 迁移仍需后续独立决策。
+
+单次复验不能复用历史 disposition。当前 runner 只在 scope decision 同时绑定 R4 result digest、DELL、`CELL::value_capture`，并明确关闭 Responses、五单元和其他 RoleMethodPack 迁移时，才接受新的 Chat authority。这个校验把 Owner 本轮“先做 1–6、暂停第 7 步”的边界落实到了执行代码，而不只存在于聊天或文档。

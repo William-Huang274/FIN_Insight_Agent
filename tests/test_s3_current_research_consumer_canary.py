@@ -198,6 +198,7 @@ def _prepare_tool_loop_test(
         json.dumps(
             {
                 "status": "zero_call_engineering_and_fresh_process_proof_pass",
+                "result_digest": "c" * 64,
                 "normalized_proof": {
                     "research_input_digest": "pending",
                     "single_cell_maximum_steps": 6,
@@ -365,6 +366,64 @@ def test_standard_tool_loop_parallel_reads_materialize_distinct_receipts(
         "receipt-02-step-01.json",
         "receipt-03-step-02.json",
     ]
+
+
+def test_standard_tool_loop_accepts_digest_bound_research_context_decision(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    authority_path, _, paths = _prepare_tool_loop_test(
+        runner, monkeypatch, tmp_path
+    )
+    decision_path = tmp_path / "research-context-decision.json"
+    decision_path.write_text(
+        json.dumps(
+            {
+                "status": (
+                    "research_context_closure_zero_call_pass_"
+                    "one_chat_revalidation_authorized"
+                ),
+                "case_key": "DELL",
+                "cell_id": "CELL::value_capture",
+                "next_authorized_scope": (
+                    "one_Chat_DELL_value_capture_revalidation_after_"
+                    "research_context_closure"
+                ),
+                "clean_zero_call_result_digest": "c" * 64,
+                "chat_live_authorized": True,
+                "responses_live_authorized": False,
+                "five_cell_live_authorized": False,
+                "other_role_method_pack_migration_authorized": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    paths["prior_scope_decision_ref"] = decision_path
+    fake = json.loads(FAKE.read_text(encoding="utf-8"))
+    judgment = next(
+        row
+        for row in fake["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+
+    def executor(**kwargs):
+        index = int(str(kwargs["attempt_id"]).split("-")[-3])
+        if index == 1:
+            return _parallel_tool_step(
+                index, "CELL::value_capture", tmp_path / "capture"
+            )
+        return _tool_step(
+            index,
+            SUBMIT_RESEARCH_JUDGMENT_TOOL,
+            judgment,
+            tmp_path / "capture",
+        )
+
+    result = runner.run_tool_loop(authority_path, step_executor=executor)
+
+    assert result["status"] == "completed_contract_valid_content_assessment_pending"
+    assert result["acceptance"]["five_cell_live_authorized"] is False
 
 
 def test_standard_tool_loop_failure_preserves_successful_prefix_without_retry(

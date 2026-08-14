@@ -1199,10 +1199,27 @@ def run_tool_loop(
             "research_consumer_tool_loop_clean_proof_drift"
         )
     prior_scope_decision = _json(paths["prior_scope_decision_ref"])
+    research_context_revalidation_authorized = (
+        len(cell_ids) == 1
+        and prior_scope_decision.get("status")
+        == "research_context_closure_zero_call_pass_one_chat_revalidation_authorized"
+        and prior_scope_decision.get("case_key") == "DELL"
+        and prior_scope_decision.get("cell_id") == "CELL::value_capture"
+        and prior_scope_decision.get("next_authorized_scope")
+        == "one_Chat_DELL_value_capture_revalidation_after_research_context_closure"
+        and prior_scope_decision.get("clean_zero_call_result_digest")
+        == clean.get("result_digest")
+        and prior_scope_decision.get("chat_live_authorized") is True
+        and prior_scope_decision.get("responses_live_authorized") is False
+        and prior_scope_decision.get("five_cell_live_authorized") is False
+        and prior_scope_decision.get("other_role_method_pack_migration_authorized")
+        is False
+    )
     single_scope_authorized = (
         len(cell_ids) == 1
         and (
-            (
+            research_context_revalidation_authorized
+            or (
                 prior_scope_decision.get("status")
                 == "json_node_pass_strict_transport_unqualified_full_report_not_scored"
                 and prior_scope_decision.get("next_authorized_scope")

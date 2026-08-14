@@ -147,3 +147,9 @@ S1 的完整 typed graph handler、全公司图谱重建和 DeepSeek Harness sha
 实现已在干净远端提交 `93d58d10...`，但 R1 authority 误绑 `bounded_finance_agent_loop_policy_v1_0`。该旧 policy 的并行上限为 1，而当前已经资格化的 mandatory read 是同 cell Evidence＋NumericFact 两个只读工具；因此 runner 在 single-cell fake 的第一步以 `finance_loop_parallel_tool_calls_exceeded` 终止。
 
 R1 没有发生网络、模型、Provider、embedding、retry 或产品发布，也没有开始检验新 relation／source-route／method／graph 内容。失败 authority 与 terminal result 保持不可变。后续只允许签发 ATTEMPT-02，唯一差异是绑定已验证的 loop policy v1.1；不能修改 R1 后追认为通过。
+
+## 10. Formal zero-call R2 result 投影失败与处置
+
+R2 正确绑定 loop policy v1.1，DELL 单单元 fake 完成 3 step／4 tool receipts，五单元 fake 完成 10 step／15 receipts，三案例矩阵中的 DELL full-fake 也已完成 15 receipts。失败发生在把 `BoundedFinanceLoopResult` 写入三案例 proof 摘要时：runner 错把 digest 当作对象属性，而标准合同要求从 `as_dict()` 读取。
+
+该处已改为 canonical dictionary projection。签发下一条 authority 前，已直接执行完整本地函数链：single=`3/4`、five=`10/15`；DELL／MU／NVDA full-fake 全部为 15 receipts；三案 identity／graph／archived-context／unavailable-route pollution 均为 0；paired R1 两份旧 Judgment 均被 v1.2 fail closed。R2 保持 immutable failed，ATTEMPT-03 只能绑定这一行投影修复后的干净提交。

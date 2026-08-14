@@ -635,7 +635,7 @@ def _three_case_context_matrix(
             "value_graph_context_digest": value_cell["graph_context_pack"][
                 "graph_context_digest"
             ],
-            "full_fake_result_digest": result.result_digest,
+            "full_fake_result_digest": result.as_dict()["result_digest"],
             "full_fake_tool_calls": result.tool_call_count,
         }
     if any(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import importlib.util
 import json
 from pathlib import Path
 import sys
@@ -81,6 +82,18 @@ FAKE = ROOT / (
 
 def _json(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _zero_call_runner():
+    path = ROOT / "scripts/research/run_s3_bounded_finance_loop_zero_call.py"
+    spec = importlib.util.spec_from_file_location(
+        "s3_bounded_finance_loop_zero_call_runner",
+        path,
+    )
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 @pytest.fixture(scope="module")
@@ -620,6 +633,26 @@ def test_three_case_current_context_full_fake_has_no_identity_or_graph_pollution
     assert value_graph_refs["DELL"].isdisjoint(value_graph_refs["MU"])
     assert value_graph_refs["DELL"].isdisjoint(value_graph_refs["NVDA"])
     assert value_graph_refs["MU"].isdisjoint(value_graph_refs["NVDA"])
+
+
+def test_zero_call_runner_materializes_three_case_result_digests() -> None:
+    runner = _zero_call_runner()
+    result = runner._three_case_context_matrix(
+        paths={
+            "consumer_policy_ref": CONSUMER_POLICY,
+            "objective_ref": OBJECTIVE,
+            "planner_atoms_ref": ATOMS,
+        },
+        base_policy=load_bounded_finance_loop_policy(_json(POLICY)),
+    )
+
+    assert result["all_three_full_fake_pass"] is True
+    assert result["case_identity_pollution_count"] == 0
+    assert result["graph_context_pollution_count"] == 0
+    assert all(
+        row["full_fake_result_digest"] and row["full_fake_tool_calls"] == 15
+        for row in result["cases"].values()
+    )
 
 
 def test_chat_and_responses_lanes_share_one_finance_loop_core(contracts) -> None:

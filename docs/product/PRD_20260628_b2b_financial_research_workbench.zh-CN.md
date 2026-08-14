@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-14 | FIN 0.1.3 S1→S3 全链审计纠正“只修 S3 因果门即可继续”的局部判断。当前已证明 EvidenceRequest→S1 candidate、S2 CompanyFact/NumericRelation、fixed reviewed Pack→S3 单元 Judgment 各自可运行，但动态补证仍只记录 proposal、不会在同一循环执行检索/Evidence Gate/回流；S2 对订单、积压、销量、ASP、PVM、产品利润桥和估值尚无同等级 typed authority；S3 也尚无 claim scope／causal bridge 强制门。产品下一决策必须把 `candidate→EvidenceResponse→operating metric/bridge→claim authority` 作为同一有界真值纵切，不能只靠更多来源、调 embedding 或重复 live。完整审计见 `docs/worklog/fin_0_1_3_s3/019_s1_to_s3_full_chain_and_experiment_audit.md`。 |
 | 2026-08-14 | FIN 0.1.3 S3 Chat／Responses 同输入 paired 证明两种协议均可完成 DELL 单单元五步工具循环，但协议通过不等于金融内容通过。两路均使用 FY2027 Q1 与 FY2026 全年 NumericFact 生成同比／扩张／压缩关系，原始表格虽含上年同期数据，最终 Judgment 却没有 same-cadence relation、公式与 lineage，故 L1 不通过；另发现 gap 建议行业数据而 compiled request 只允许 SEC form，source class 未进入 model-visible Tool Contract。产品合同新增：比较性语言必须绑定同指标、同单位、同 cadence 的确定性 relation；EvidenceRequest 必须显式选择当前可执行的 source class。Chat 暂保留主传输，Responses 只作已跑通 candidate，五单元不放行。 |
 | 2026-08-14 | FIN 0.1.3 S3 标准四工具 R2 证明：模型已能在同一 cell 真实读取 reviewed Evidence 与 NumericFact，并针对 AI server 出货/算力规模提出用于区分量增与价增的 material gap 补证；但项目 Tool Schema 未公开 EvidenceRequest 的长度/数量边界，也未表达 facet→query family→metric 依赖，导致 Schema-valid／local-invalid。产品要求据此补充：Prompt/Tool Schema、Validator、fake 与 route 必须由同一 provider-neutral 合同编译；跨 family 需求由本地拆成兼容请求；proposal-only 的本地格式/路由拒绝可返回 typed rejected-not-executed 并保留 gap，但身份、Evidence/NumericFact 权威、Judgment、引用和跨 case/cell 错误继续 hard fail。R2 不重试、不追认；第三次 single-cell 与五单元未授权。 |
 | 2026-08-13 | FIN 0.1.3 S1-D 完成 Dell/TSM 有界官方补源与当前 Pack 提升：Dell 14 页 Q1 FY2027 官方托管 transcript 经既有绑定 route 人工入库，复用共用 parser/object/Evidence Gate 接受 3 条 issuer-direct Evidence；TSM 保留 2 条 bounded ecosystem Evidence。当前 DELL 为 20 Evidence／14 gaps，MU/NVDA 未变；只关闭 AI server margin gap，pull-forward、ASP/PVM、供应分配、容量时点和估值继续显式。Runtime Registry R11 支持按案例 digest-bound 私有对象根，避免复制整套 Pack。`core_research_ready=true` 只授权进入下一段零调用 S3 consumer 工程，不等于 S1、报告或 release 通过。 |
@@ -2608,3 +2609,13 @@ Responses 的无状态历史重建、Anthropic 的 content block 结构、Chat t
 paired R1 进一步确立两条产品硬约束。第一，模型选择了若干真实 NumericFact 不等于比较关系已经受权威保护；“同比、环比、扩张、压缩、高于、低于”必须绑定同指标、同单位、同 cadence 的 comparator 与确定性 relation trace。若当前输入只有 Q1 和全年，系统必须拒绝把二者渲染成趋势。第二，EvidenceRequest 的 source class 不是隐藏的本地派生字段；gap 提示、objective allowed source、Tool Schema 和实际 adapter route 必须一致。若模型需要行业数据而当前只具备 SEC route，系统应返回 `rejected_not_executed` 并保留 gap，不得记录一个语义上不可执行的“成功请求”。
 
 当前真实结果只把 Responses 晋升为 `live-compatible shadow/candidate`。它与 Chat 同为 5 step／6 receipts，却约多耗 36% token、慢 58%，且没有通过 L1 或形成确定内容优势。因此 Chat 暂保留主传输，Anthropic 继续 shadow；修复 numeric relation 与 source route 后最多先做一条 Chat 单单元复验，不能再以协议对照为由扩大付费运行。
+
+### 16.31 S1→S3 研究真值链必须连续验收（2026-08-14）
+
+最新全链审计确认，分阶段工程通过不能相乘成产品通过。当前 `EvidenceRequest → QueryFacetPlan → BM25/Qwen candidate` 已运行，S2 CompanyFact mart 与同口径 NumericRelation 已被 DELL 单单元消费，Research Context Closure 也已证明 `value_capture` RoleMethodPack 与当前 GraphContextPack 的真实注入和引用；但三段之间仍有以下产品断点：
+
+1. S3 的 `submit_evidence_request` 当前只保存 proposal，不执行 S1 检索、解析、Evidence Gate 或局部重裁决。fixed reviewed Pack canary 只能验证研究消费，不能宣称动态 Agentic Research。
+2. S2 目前主要覆盖收入、利润、现金、资产负债表和派生比率。订单、积压、客户数、销量、ASP、PVM、产品利润线、产品到分部／公司的财务桥和 PIT 估值必须形成 source-bound typed operating metric／bridge 状态或明确 gap；不得因为这些数字出现在法说文本中就让模型、retriever 或 renderer 获得数值与因果权威。
+3. S3 必须把 `claim_scope`、`financial_scope`、`causal_bridge_authority` 和 abstain／bounded wording 编译成 provider-neutral 判断合同。RoleMethodPack 是方法，GraphContextPack 是作用域和机制上下文；二者都不能替代 Evidence、NumericFact、NumericRelation 或 product-to-financial bridge。
+
+因此下一产品决策应以一条有界的 Research Truth Spine 为单位，同时验证：真实 EvidenceRequest 是否返回 accepted／rejected／typed gap／needs-human-review；研究所需 operating metric 和 bridge 是否有权威；模型最终 claim 是否处在被证据允许的范围。只有同一 DELL cell 的三段闭合并用保存失败输出完成零调用负向回放后，才值得新增自然模型证明。通过单 cell 后再扩五单元，通过 DELL 后再用 MU／NVDA 与独立留出案例验证泛化。只修 S3 拒绝器、只增加网页、只调 embedding／reranker 或直接跑五单元都不能关闭该产品门。

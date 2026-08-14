@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。旧 Chat R1 的 `IncompleteRead` capture 缺口由共用 provider-neutral capture-first 路径关闭，formal replay 与全仓回归通过。新的独立 Chat R2 已真实完成 5 step／6 receipts，五份响应均完整、0 retry、`IncompleteRead=0`；DeepSeek 实际消费 8 个 NumericFact、4 条同口径 relation、6 条方法步骤和 1 条当前图边，并保持三项补证为 open gap。当前剩余阻塞已从 transport／期间／route 收敛为 S3 内容因果边界：模型仍把公司／ISG 多因素利润改善过强归因于 AI server，并引入未绑定的 semi-fixed cost 机制。因此 transport 与结构通过、因果归因 L1 失败、单节点仅诊断 18/24；五单元、完整八维研报、Workbench 报告面、S3 acceptance 和 release 均未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。旧 Chat R1 的 `IncompleteRead` capture 缺口由共用 provider-neutral capture-first 路径关闭，formal replay 与全仓回归通过。新的独立 Chat R2 已真实完成 5 step／6 receipts，五份响应均完整、0 retry、`IncompleteRead=0`；DeepSeek 实际消费 8 个 NumericFact、4 条同口径 relation、6 条方法步骤和 1 条当前图边，并保持三项补证为 open gap。当前剩余阻塞已从 transport／期间／route 收敛为因果内容失败，但 2026-08-14 的 S1→S3 全链审计进一步确认它不是一个孤立 S3 字段问题：动态补证尚未执行 S1 Evidence 回流，S2 也缺产品经营指标与产品→财务桥权威，S3 则缺 claim scope／causal bridge 强制门。因此 transport 与结构通过、因果归因 L1 失败、单节点仅诊断 18/24；五单元、完整八维研报、Workbench 报告面、S3 acceptance 和 release 均未通过，下一方向等待 Owner 在跨阶段真值纵切与局部 S3 拒绝器之间作出明确决策。
 
 ## 当前唯一产品边界
 
@@ -37,7 +37,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 2. Case 公司身份合同和 Case→Evidence Pack digest 绑定已经实现。
 3. `/workspace` 已成为唯一研究产品入口；旧产品页面重定向，旧产品 API 返回 typed HTTP 410。
 4. `/operations` 独立保留运行配置、来源包、受控数据构建、运行记录与基线检查，不承诺旧 Agent 产品能力。
-5. S0 冻结时 Runtime Registry 只有三个活动资源；S1-A/S1-B 增加当前检索快照，S1-C 增加剥离 qrel identity 的排名安全投影，当前基线清单共六个活动资源。对象构建、embedding cache、角色复核标签和 live attempt 仍不进入产品 Runtime Registry。
+5. S0 冻结时 Runtime Registry 只有三个活动资源；S1-A/S1-B 增加当前检索快照，S1-C 增加剥离 qrel identity 的排名安全投影，当时清单为六个活动资源。S1-D／Workspace／Source Intake 后的当前 R11 清单为 10 个活动资源。对象构建、embedding cache、角色复核标签、private S2 mart 和 live attempt 仍不进入产品 Runtime Registry。
 6. 6,052 个旧实现/证明/尝试文件、被替换的规范快照、旧 HTML 原型、脱敏 fixture 以及已完成使命的一次性迁移程序，均已按推断版本非破坏性迁移到 `archive/versions/`；逐文件保留 source、archive、SHA256、原因和替代物。156 个过长路径已用可逆 path map 改为可移植短路径，两份冲突的旧 S0–S5 流水账也已归档。
 7. S1-B 收口时 59 个 Python tests、TypeScript、Vite production build，以及桌面/移动 × 无数据/挂载数据共 12 个 Playwright tests 均通过；真实挂载数据曾自然暴露移动端长检索字段横向溢出，修复后两种模式均为 6/6。
 8. 三案业务验收继续受其有界范围约束；本轮 secret scan 扫描 6,254 个文件为 0 finding。
@@ -84,7 +84,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-Owner decision pending：`FIN_0_1_3_S3_CAUSAL_CLAIM_SCOPE_AND_TYPED_PRODUCT_PROFIT_BRIDGE_ZERO_CALL_PACKAGE`
+Owner direction decision pending：`FIN_0_1_3_S1_TO_S3_RESEARCH_TRUTH_SPINE_CLOSURE_DECISION`
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
@@ -92,9 +92,11 @@ Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提�
 
 Research Context Closure 的结构门、当前 profile 容量门和 IncompleteRead capture-first formal replay 均已通过。新的 replacement gate 已以干净提交 `8ce05106...` 生效，并签发独立 Chat R2 authority。R2 真实完成 5 step／6 receipts，0 retry／fallback；五份 HTTP 响应均完整，`IncompleteRead=0`，私有 reasoning 未落盘。模型正确消费 8 个 NumericFact、4 条同口径 relation、6 条 RoleMethod step 和 1 条当前 Graph edge，并把 ASP、unit、PVM 三项保持为 proposal-only open gap。
 
-R2 仍未通过内容门：最终 thesis 把公司／ISG 多因素利润改善过强归因于 AI server surge，mechanism 又加入当前证据未绑定的 semi-fixed cost base。故当前状态为 transport／合同／期间数值／route／Evidence 权限 pass，因果归因 L1 fail；单节点仅诊断 18/24，正式八维不评分。五单元、其他 RoleMethodPack、Responses 和产品发布继续禁止。当前下一步不再是付费重跑，而是决策是否建立零模型 `causal claim scope + typed product-to-profit bridge` 门，并用保存的 R2 Judgment 做负向回放。
+R2 仍未通过内容门：最终 thesis 把公司／ISG 多因素利润改善过强归因于 AI server surge，mechanism 又加入当前证据未绑定的 semi-fixed cost base。故当前状态为 transport／合同／期间数值／route／Evidence 权限 pass，因果归因 L1 fail；单节点仅诊断 18/24，正式八维不评分。五单元、其他 RoleMethodPack、Responses 和产品发布继续禁止。
 
-历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。当前统一合同、协议投影、Research Context Closure 和 IncompleteRead capture-first 均已达到 formal clean replay pass；新 Chat R2 也已自然完成，但因产品级利润归因越界未过 L1。五 cell 不再是“等待复验”，而是明确 blocked。是否继续的下一门是 Owner 决定是否用零模型 causal scope／typed bridge 拒绝本轮保存 Judgment；未批准前不自动新增代码或付费调用。
+S1→S3 全链审计已完成，完整记录为 `docs/worklog/fin_0_1_3_s3/019_s1_to_s3_full_chain_and_experiment_audit.md`。审计确认当前不能只把下一项理解为一个 S3 validator：`submit_evidence_request` 仍是 proposal-only，当前 loop 没有执行 S1 检索／Evidence Gate／回流；S2 对标准公司财务事实可靠，但订单、积压、销量、ASP、PVM、产品利润线、产品到公司／分部利润桥和估值尚无同等级 typed authority；S3 则缺 claim scope 和 causal bridge 强制门。建议供 Owner 选择的主方案是一个有界的 S1→S3 Research Truth Spine Closure，把 EvidenceResponse、operating-metric／bridge 和 claim authority 放在同一 DELL 单元纵切中验证。单独 S3 因果门仍可作为较快备选，但只能提高安全性，可能得到更空的 `not_inferable`，不能代表研究质量提升。
+
+历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。当前统一合同、协议投影、Research Context Closure 和 IncompleteRead capture-first 均已达到 formal clean replay pass；新 Chat R2 也已自然完成，但因产品级利润归因越界未过 L1。五 cell 不再是“等待复验”，而是明确 blocked。未批准新的跨阶段或局部处置范围前，不自动新增代码、模型调用、五单元运行、其他 Skill 迁移或 broad source 扩张。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

@@ -224,3 +224,15 @@ DeepSeek Responses 当前不支持 `previous_response_id`、conversation/store �
 - https://api-docs.deepseek.com/guides/responses_api
 - https://api-docs.deepseek.com/guides/anthropic_api
 - https://api-docs.deepseek.com/guides/tool_calls/
+
+### 11.6 Chat／Responses paired R1 与新的最早责任层
+
+paired R1 绑定同一 DELL `value_capture` research input digest `6505a58e...89b4c` 和同一 canonical FinanceToolContract。Chat 与 Responses 都完成 5 个 Provider step／6 个工具 receipt：同 cell Evidence＋NumericFact read、三个 open-gap EvidenceRequest 和一个 Judgment。两路均 0 retry、0 fallback、0 retrieval、0 publication；Responses 的 stateless full-history continuation 因此已真实资格化到“可完成当前单 cell loop”，不再只是 schema shadow。
+
+该结果同时证明 transport pass 与 financial-content pass 必须分开。两路 Judgment 都选择 FY2027 Q1 与 FY2026 全年 NumericFact，并生成“同比上升／利润率扩张／毛利压缩”等比较关系。reviewed source table 包含上年同期数字，因此方向可能成立；但当前 S2/S3 没有把 same-cadence comparator、relation operation 和 lineage 绑定到 narrative atom。存在的 NumericFact ref 不能证明模型使用了正确比较期。后续 comparative language 必须引用 typed relation，而不是由模型或 renderer 从两个任意期间自行拼接。
+
+EvidenceRequest 还有一项与 RC-S3-007 不同的新缺口。当前统一合同已经拥有 facet、target、metric 和长度，但 `EvidenceRequestBranch` 没有 source class／route availability。当前单位量 gap 提示可找行业出货数据，模型也确实请求行业数据；本地编译结果却只允许 10-K／10-Q／8-K。proposal 被记录不等于其研究意图可执行。后续合同必须让 source class 成为显式枚举，并确保 gap supplement direction、objective allowed sources 和实际 adapter route 同源编译。
+
+内容层仍保留独立模型责任：Chat 加入未绑定的 supply-allocation 利润机制；Responses 把存储、定价、传统服务器、配置和规模共同驱动的结果表述为“来自 AI server cycle 的真实经营杠杆”。Harness 应阻止无 relation／无 source route 的结构越界，但不能替模型代写更谨慎的经济结论。
+
+当前处置是：Chat 保留 provisional primary；Responses 只晋升为 live-compatible shadow/candidate，因为它总 token=`102,176`、耗时约 `267s`，高于 Chat 的 `74,885`／`169s`，且没有形成内容硬门优势；Anthropic 仍 shadow。五单元继续 blocked。下一项是零调用 comparable-period relation＋source-route contract 包，通过后最多一条 Chat 单 cell 复验。

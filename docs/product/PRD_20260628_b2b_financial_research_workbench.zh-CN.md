@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-14 | FIN 0.1.3 S3 Chat／Responses 同输入 paired 证明两种协议均可完成 DELL 单单元五步工具循环，但协议通过不等于金融内容通过。两路均使用 FY2027 Q1 与 FY2026 全年 NumericFact 生成同比／扩张／压缩关系，原始表格虽含上年同期数据，最终 Judgment 却没有 same-cadence relation、公式与 lineage，故 L1 不通过；另发现 gap 建议行业数据而 compiled request 只允许 SEC form，source class 未进入 model-visible Tool Contract。产品合同新增：比较性语言必须绑定同指标、同单位、同 cadence 的确定性 relation；EvidenceRequest 必须显式选择当前可执行的 source class。Chat 暂保留主传输，Responses 只作已跑通 candidate，五单元不放行。 |
 | 2026-08-14 | FIN 0.1.3 S3 标准四工具 R2 证明：模型已能在同一 cell 真实读取 reviewed Evidence 与 NumericFact，并针对 AI server 出货/算力规模提出用于区分量增与价增的 material gap 补证；但项目 Tool Schema 未公开 EvidenceRequest 的长度/数量边界，也未表达 facet→query family→metric 依赖，导致 Schema-valid／local-invalid。产品要求据此补充：Prompt/Tool Schema、Validator、fake 与 route 必须由同一 provider-neutral 合同编译；跨 family 需求由本地拆成兼容请求；proposal-only 的本地格式/路由拒绝可返回 typed rejected-not-executed 并保留 gap，但身份、Evidence/NumericFact 权威、Judgment、引用和跨 case/cell 错误继续 hard fail。R2 不重试、不追认；第三次 single-cell 与五单元未授权。 |
 | 2026-08-13 | FIN 0.1.3 S1-D 完成 Dell/TSM 有界官方补源与当前 Pack 提升：Dell 14 页 Q1 FY2027 官方托管 transcript 经既有绑定 route 人工入库，复用共用 parser/object/Evidence Gate 接受 3 条 issuer-direct Evidence；TSM 保留 2 条 bounded ecosystem Evidence。当前 DELL 为 20 Evidence／14 gaps，MU/NVDA 未变；只关闭 AI server margin gap，pull-forward、ASP/PVM、供应分配、容量时点和估值继续显式。Runtime Registry R11 支持按案例 digest-bound 私有对象根，避免复制整套 Pack。`core_research_ready=true` 只授权进入下一段零调用 S3 consumer 工程，不等于 S1、报告或 release 通过。 |
 | 2026-08-13 | FIN 0.1.3 S1-D 新增有界官方来源入库：自动获取和操作员上传预登记官方 PDF 共用不可变 raw CAS、route 身份、日期、摘要和 PDF 验收，Workbench Operations 可查看 attempt，但任何成功对象仍是 `source_only_not_evidence`。该入口不是 FIN 0.5 通用 Data Room：不接受任意 URL、私有材料、截图或文本，也不提前引入 ACL/OCR/机构文件管理。真实自动 R1 的 Dell/TSM 两条请求均在 HTTP status 前失败，且两域 Fake-IP 均经 `okz` TUN；因此当前保留 typed gap，优先使用绑定 route 的人工官方 PDF 上传，自动路径只有在用户可见的 DIRECT/TUN A/B 后才可重试。 |
@@ -2595,3 +2596,7 @@ request 数量不得被误当作独立证据数量。同一个 S2 事实因多�
 Responses 的无状态历史重建、Anthropic 的 content block 结构、Chat thinking continuity 都属于传输责任。Provider 私有推理只可在同一运行的内存中继续，不能写入 capture、Artifact 或公开结果；模型可见请求、最终 assistant 输出、usage、finish state、tool calls 和失败阶段必须完整留存。Provider 可能静默忽略的 `max_tool_calls`、`parallel_tool_calls` 等参数不得伪装成控制权，本地 step、tool、proposal、retry 和 no-progress 预算始终具有最终权威。
 
 协议资格验证固定采用“同一 DELL 单研究单元、同一 Evidence Pack、同一 NumericFact、同一 Tool Contract”的 paired canary。先比较合同通过、跨单元污染、gap 冒充事实、数字/引用/身份越界、经济机制、反方和 WWC；单单元通过仍不能直接授权五单元、完整八维报告、Workbench 发布或 S3 acceptance。若 Responses 只改变 wire 形态而不改善稳定性或研究内容，产品保留 Chat 主链，不为协议新颖性增加维护成本。
+
+paired R1 进一步确立两条产品硬约束。第一，模型选择了若干真实 NumericFact 不等于比较关系已经受权威保护；“同比、环比、扩张、压缩、高于、低于”必须绑定同指标、同单位、同 cadence 的 comparator 与确定性 relation trace。若当前输入只有 Q1 和全年，系统必须拒绝把二者渲染成趋势。第二，EvidenceRequest 的 source class 不是隐藏的本地派生字段；gap 提示、objective allowed source、Tool Schema 和实际 adapter route 必须一致。若模型需要行业数据而当前只具备 SEC route，系统应返回 `rejected_not_executed` 并保留 gap，不得记录一个语义上不可执行的“成功请求”。
+
+当前真实结果只把 Responses 晋升为 `live-compatible shadow/candidate`。它与 Chat 同为 5 step／6 receipts，却约多耗 36% token、慢 58%，且没有通过 L1 或形成确定内容优势。因此 Chat 暂保留主传输，Anthropic 继续 shadow；修复 numeric relation 与 source route 后最多先做一条 Chat 单单元复验，不能再以协议对照为由扩大付费运行。

@@ -1,7 +1,7 @@
 # S3 统一工具合同与 Agent 协议投影
 
 日期：2026-08-14
-状态：`formal_clean_replay_pass / paid_Chat_Responses_pair_pending / paid_calls_zero`
+状态：`formal_clean_replay_pass / paid_Chat_Responses_pair_complete / both_transport_contracts_pass / content_L1_failed / five_cell_blocked`
 
 ## 为什么做
 
@@ -39,6 +39,18 @@ formal authority/result 纳入后 secret scan 为 6,528 files／0 finding。
 - Anthropic live 未资格化；
 - DELL 五单元、完整八维报告、qualified-human、S3、Workbench 和 release 均未通过。
 
+## Chat／Responses 同输入真实结果
+
+绑定干净远端提交 `aafd8be3...` 的 paired authority 已签发并 exact-once 执行。Chat control 与 Responses candidate 都在同一 DELL `CELL::value_capture` 输入上完成 5 个 Provider step／6 份 tool receipt：先读取 reviewed Evidence 与 NumericFact，再分别记录 ASP、单位量和 PVM／增量利润三条补证，最后提交一个本地合同有效的 Judgment。两路合计 10 calls，0 retry/fallback/external retrieval/embedding/publication；20 个 capture JSON 中 15 个含 reasoning 形态的 block 均只保存 redacted placeholder，0 私有推理泄漏。
+
+Responses 真实完成了无状态全历史 continuation，故协议可用性已经观察；但没有形成主链晋级理由。Chat 总 token=`74,885`、耗时约 `169s`；Responses 总 token=`102,176`、耗时约 `267s`，分别约为 Chat 的 `1.36x` 与 `1.58x`。Responses 的机制和反方略丰富，但也更强地把多驱动的公司／分部利润改善归因于 AI server cycle；两路都没有通过内容硬门。
+
+paired authority/result、独立内容 assessment 与报告纳入后，仓库 secret scan 为 6,532 files／0 finding；本轮未新增代码，沿用执行前已通过的 271 tests 与 active-baseline 证明。
+
+共同首因不是 wire：当前 judgment 使用的 NumericFact 只显式绑定 FY2027 Q1 与 FY2026 全年，模型却生成“同比上升／正在扩张／毛利压缩”等比较性语言。原始 reviewed 表格含上年同期数据，因此方向可能正确；但当前输出没有 same-cadence relation、公式和期间 lineage，Harness 不能证明它不是 Q1 对 FY 的错误比较。第二个项目缺口是 gap 提示允许行业出货数据，而编译后的请求只允许 10-K／10-Q／8-K；模型无法看到或选择 source class，导致“请求行业数据、实际只能走 SEC route”。
+
+因此正式八维评分没有签发：FIN 0.1.3 要求先过 L1/L2。Chat／Responses 只保留 diagnostic-only 节点分 `17/24` 与 `18/24`，不能冒充产品分数。Chat 继续作为 provisional primary，Responses 降为已跑通的 shadow/candidate，Anthropic 仍禁止 live；五单元不授权。
+
 ## 下一门
 
-提交并推送正式 authority／result 后，签发 DELL `CELL::value_capture` 的 Chat control／Responses candidate 同输入 paired authority。两路各最多 6 step、总计最多 12 次 Provider 调用、0 retry/fallback/external retrieval。完成后先做合同与内容评估，再决定五单元是否值得运行；不得自动进入五单元。
+只允许一个零模型结构包：补 same-cadence comparable NumericFact／relation trace；让比较词绑定 relation/direction 并本地验证；把 allowed source class 与 route availability 编入 EvidenceRequest；重放本轮 capture 并覆盖 DELL/MU/NVDA 错期间、错来源和因果越界 mutation。通过后最多签发一条 Chat 单单元复验，不再做第二组协议对照；复验过 L1 且保留研究增益后，才重新决定五单元。

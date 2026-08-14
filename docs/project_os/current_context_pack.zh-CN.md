@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。S2 仍为 1,319 observations，transcript 没有 NumericFact 权限。DELL 单研究单元 JSON R2 已通过合同/L1/L2、节点内容 18/24；strict Beta 停放。标准 Tool Calls R1 的 wire／并行缺陷已关闭，唯一 replacement R2 随后真实完成本 cell reviewed Evidence＋NumericFact 两类 read，但暴露项目 Tool Schema／validator／route 漂移。唯一 FinanceToolContract 已在干净远端提交 `17bb0c5a...` 上完成正式零调用回放：旧 R2 proposal 会 `rejected_not_executed`，合法 repair 在原预算继续并完成 Judgment；4 step／5 receipts、错误请求 0 晋升，三案跨案 target hard fail。Chat control、Responses candidate 和 Anthropic shadow 投影到同一内部事件，Anthropic live 被禁止。全仓 271 tests、active baseline 122 Python／8 frontend／10 Runtime resources／0 forbidden、formal-proof secret scan 6,528／0 finding；付费 Chat/Responses paired single-cell、五单元和内容验收均未执行。S1 产品门、完整八维研报、Workbench 报告面和 release 仍未通过。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S3 的 10>8 预算缺陷已由 provider-neutral proposal/execution 分层关闭，Planner R1 未重跑；保存的 10 atoms 稳定选择 8、延期 2。S1-D 已把 TSM 官方 PDF 两条 bounded read-through 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 三条 issuer-direct Evidence 提升到当前 DELL Pack，当前为 20 Evidence／14 gaps；MU、NVDA 与留出案例不变。S2 仍为 1,319 observations，transcript 没有 NumericFact 权限。唯一 FinanceToolContract 已在干净远端提交 `17bb0c5a...` 上完成正式零调用回放，RC-S3-007 已关闭。随后绑定 `aafd8be3...` 的 DELL `value_capture` Chat／Responses paired exact-live 两路均完成 5 step／6 receipts、0 retry；Responses 的真实 stateless continuation 因此已观察，但它比 Chat 多耗约 36% token、慢约 58%。内容审计发现两路均把未绑定 same-cadence relation 的 Q1／FY NumericFact 写成同比／扩张／压缩，并且 gap 提示的行业数据与编译后仅 SEC form 的 route 不一致；两路均未过 L1，正式八维评分未签发。Chat 保留 provisional primary，Responses 保留 live-compatible shadow/candidate，Anthropic live 继续禁止，五单元未授权。S1 产品门、完整八维研报、Workbench 报告面和 release 仍未通过。
 
 ## 当前唯一产品边界
 
@@ -81,13 +81,15 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 
 ## 当前下一步
 
-`FIN_0_1_3_S3_UNIFIED_TOOL_CONTRACT_AND_CHAT_RESPONSES_PAIRED_QUALIFICATION`
+`FIN_0_1_3_S2_S3_COMPARABLE_RELATION_AND_EVIDENCE_REQUEST_SOURCE_ROUTE_CONTRACT`
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
-旧综合 R1、GA paired R1 和标准 R1/R2 均保持不可变。paired R2 的 JSON control 已证明 profile 容量修复有效，并提供一个 L1/L2 合格、节点内容 18/24 的自然 Judgment；strict Beta 不再作为主链依赖。唯一 Tool Contract Compiler、typed proposal repair 与三协议投影已通过绑定 immutable R2 captures、当前 Registry／Pack 和 DELL/MU/NVDA identity mutation 的正式零调用 replay。下一项在提交该 proof 后，另行签发同一 DELL `value_capture` 的 Chat control／Responses candidate paired authority。结果必须先做合同与内容评估，不能自动进入五单元。任何单节点分数都不能改写为完整八维报告通过、产品发布或 S3 acceptance。
+旧综合 R1、GA paired R1 和标准 R1/R2 均保持不可变。唯一 Tool Contract Compiler、typed proposal repair 与三协议投影已通过正式零调用 replay；同一 DELL `value_capture` 的 Chat control／Responses candidate paired 也已 exact-once 完成。两路都能读取 Evidence／NumericFact、记录三个 open-gap 请求并提交 Judgment，但共同暴露 same-cadence numeric relation 无确定性 lineage，以及 model-visible source class 与实际 route 不一致。协议资格通过没有覆盖内容 L1，五单元继续 blocked。
 
-历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。真实 replacement R2 进一步证明 tool-result continuation 和两份 receipt 成立，同时暴露 Schema/Validator/route 非同源编译。R2 永久 failed。当前统一合同与协议投影已达到 formal clean replay pass；五 cell 仍必须等待独立 Chat/Responses paired single-cell、内容评估和新的 scope decision。
+下一项只做零模型结构包：S2/S3 提供 prior comparable 或 typed relation fact；比较词必须绑定 relation/direction 并本地验证；EvidenceRequest branch 必须显式包含 allowed source class 与 route availability；用本轮 immutable captures 和 DELL/MU/NVDA mutation 复证。通过后最多签发一条 Chat 单单元自然复验，不再做第二组协议 pair。Responses 暂不替换 Chat，Anthropic 不进入 live。任何 diagnostic 节点分都不能改写为完整八维报告、产品发布或 S3 acceptance。
+
+历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。真实 replacement R2 进一步证明 tool-result continuation 和两份 receipt 成立，同时暴露 Schema/Validator/route 非同源编译。R2 永久 failed。当前统一合同与协议投影已达到 formal clean replay pass；Chat/Responses paired single-cell 也已完成，但内容 L1 未通过。五 cell 必须等待 comparable-period relation、source-route contract、零调用证明和一条新的 Chat 单单元复验后的 scope decision。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量

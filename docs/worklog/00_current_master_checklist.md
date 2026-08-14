@@ -35,7 +35,9 @@
   - [x] 只读并行兼容 successor、clean zero-call R3 与一个 replacement single-cell R2（两类 read 成功；proposal 合同编译失败，0 retry）
   - [x] 统一 Tool Schema／Validator／route／fake／repair feedback 编译源；绑定 `17bb0c5a...` 的 formal R2 replay 与三案 identity mutation 通过，0 provider
   - [x] Chat control／Responses candidate／Anthropic shadow 的 provider-neutral canonical transport projection；Anthropic live 代码级禁止
-  - [ ] DELL `value_capture` Chat/Responses paired single-cell authority 尚未签发；formal replay 已通过，仍须 paired 合同与内容评估及新 scope decision 才可进入五单元 bounded loop
+  - [x] DELL `value_capture` Chat/Responses paired single-cell exact-live：两路均 5 step／6 receipts、合同通过、0 retry；Responses live continuation 已观察
+  - [x] paired 内容审计与协议处置：两路均因 comparable-period relation 无确定性 lineage 未过 L1；source class 与可执行 route 仍漂移；Chat 保留 provisional primary，Responses 保留 shadow/candidate
+  - [ ] 零调用 comparable-period Numeric relation＋EvidenceRequest source-route 合同包；通过后最多一条 Chat 单单元复验，五单元仍未授权
 - [ ] S3 动态 Agentic Research 与内容质量验收
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision

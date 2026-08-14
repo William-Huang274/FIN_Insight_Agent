@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S3_budget_contract_engineering_pass / S1C_saved_planner_input_audited / S1D_Dell_and_TSM_official_PDF_successors_promoted / runtime_registry_R11 / DELL_core_research_ready / S1_product_open / S3_consumer_v1_1_clean_zero_call_engineering_pass / historical_natural_synthesis_R1_terminal_failed / paired_R2_JSON_node_pass / strict_Beta_transport_unqualified / standard_R2_project_contract_failure_preserved / unified_tool_contract_and_transport_projection_working_tree_pass / formal_clean_replay_pending / product_iteration_not_closed`
+状态：`repository_baseline_complete / S3_budget_contract_engineering_pass / S1C_saved_planner_input_audited / S1D_Dell_and_TSM_official_PDF_successors_promoted / runtime_registry_R11 / DELL_core_research_ready / S1_product_open / S3_consumer_v1_1_clean_zero_call_engineering_pass / historical_natural_synthesis_R1_terminal_failed / paired_R2_JSON_node_pass / strict_Beta_transport_unqualified / unified_tool_contract_formal_replay_pass / Chat_Responses_single_cell_transport_pass / paired_content_L1_fail / comparable_relation_and_source_route_contract_pending / five_cell_blocked / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -51,10 +51,12 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 18. **S2 三案有限依赖回归（已完成）**：Dell/TSM transcript 只作为叙事 Evidence，没有获得 NumericFact 权限；公司事实 mart 保持 1,319 observations、SQLite SHA-256 `d05b0cc8...c585`，没有因补源改变数值真值。
 19. **S3 当前 research consumer 纵切（v1.1 clean zero-call engineering pass）**：保留已经完成的 DELL Planner R1，不重复付费证明规划。当前活动树只有一份 provider-neutral `Evidence Pack + NumericFact → judgment/workpaper/report` consumer。v1.1 让 Harness 注入可信 envelope/gaps，明列枚举，以 cell-local card 阻断跨单元引用，并增加 `support/limit/context` Evidence use 与显式 inference authority。绑定干净远端提交的 R3 为 0 网络／模型／Provider，六类 mutation 全部 fail closed，旧 R1 继续被拒绝。模型负责引用选择、机制、反方、置信度与 WWC；本地控制面负责事实、身份、数值、日期、引用和结构。它是长期提交合同，不是 DeepSeek 专用补丁。
 20. **DELL 自然综合 Canary R1（terminal failed）**：Provider HTTP/finish reason/exact JSON 和 5/5 cells 成立，但模型遗漏本地 envelope，并自创未在 model-visible view 中列出的枚举；另有跨 cell ref、复合 Evidence 二元角色冲突和自由数量级表述。零调用内容审计还发现 AI→EPS/分部利润、AI→营运资金、上游扩产→Dell 瓶颈缓解等越界归因。R1 0 retry、0 fallback、0 发布，且永久保持失败；由于官方 GA 沿用相同模型名，不能事后把 R1 标为 Preview 或 GA。
-21. **DeepSeek GA Agent loop 资格路线（JSON 单节点通过，标准工具 R2 暴露合同编译缺口）**：三个可替换 GA profile、capture-first tool-step transport 与 reviewed Evidence／NumericFact／EvidenceRequest／Judgment 四工具循环已建立。JSON R2 Judgment 通过本地合同与 L1/L2，节点适用维度 18/24；strict Beta 停放。标准 R1 的 wire `index`、安全只读并行、receipt 和 capture ref 项目缺陷已由 v1.1 successor 与 fresh zero-call R3 关闭。
+21. **DeepSeek GA Agent loop 资格路线（Chat／Responses 传输通过，内容 L1 未过）**：三个可替换 GA profile、capture-first tool-step transport 与 reviewed Evidence／NumericFact／EvidenceRequest／Judgment 四工具循环已建立。JSON R2 Judgment 通过本地合同与 L1/L2，节点适用维度 18/24；strict Beta 停放。标准 R1 的 wire `index`、安全只读并行、receipt 和 capture ref 项目缺陷已由 v1.1 successor 与 fresh zero-call R3 关闭。
     - 唯一 replacement R2 已真实完成 Evidence＋NumericFact 两个 read 并保存 receipt；随后模型针对 AI server unit volume 提出业务相关补证，但 Tool Schema 未公开 120-char/数组门，也未表达 facet→query family→metric 依赖，导致 Schema-valid／local-invalid。R2 永久失败，不追认。
-    - 当前 working-tree 已完成唯一 Tool Contract Compiler、typed proposal repair、三案 identity mutation，以及 Chat／Responses／Anthropic canonical projection。Anthropic 仅 shadow；Chat control 与 Responses candidate 共用同一金融循环。下一项是 clean/synced R2 formal replay，不是自动 R3。
-    - formal replay 通过后，只允许签发一次 DELL `value_capture` Chat/Responses 同输入 paired canary。两路合计最多 12 次模型步骤、0 retry/fallback/external retrieval。完成合同与内容评估后才决定是否值得签发五 cell；`five_cell_live_authorized` 当前仍为 false。
+    - 唯一 Tool Contract Compiler、typed proposal repair、三案 identity mutation，以及 Chat／Responses／Anthropic canonical projection 已通过绑定 `17bb0c5a...` 的 formal replay。Anthropic 仅 shadow；Chat control 与 Responses candidate 共用同一金融循环。
+    - 绑定 `aafd8be3...` 的 DELL `value_capture` Chat/Responses 同输入 paired 已执行：两路均 5 step／6 receipts、0 retry/fallback/external retrieval；Responses 真实 continuation 通过，但总 token／耗时分别约为 Chat 的 1.36x／1.58x。
+    - 内容层两路均未通过 L1：比较性叙事没有绑定 same-cadence Numeric relation；gap 提示允许行业数据但 request 实际只允许 SEC route。Responses 还更强地把多驱动利润改善归因于 AI 周期。Chat 保留 provisional primary，Responses 保留 shadow/candidate。
+    - 当前下一项是零调用 comparable-period relation＋EvidenceRequest source-route 合同包；通过后最多一条 Chat 单 cell 复验。`five_cell_live_authorized=false`，不再以协议对照为由自动增加付费运行。
 22. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
 23. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 

@@ -166,3 +166,9 @@ R3 绑定干净远端提交 `c6a97699...`，正式状态为 `zero_call_engineeri
 - network／model／Provider／embedding 均为 0，fake deliverable 未发布。
 
 至此 RC-S2-003、RC-S3-008、RC-S3-009 的结构性部分具备 formal zero-call closure。它仍没有证明 DeepSeek 自然 Judgment 的 L1 或内容质量；下一门严格限制为唯一一次 Chat `CELL::value_capture` canary。Responses 不重跑，五单元和其他 RoleMethodPack 迁移仍等待 canary 后的 Owner 决策。
+
+## 12. Formal zero-call R4 当前 Provider 容量复证
+
+R3 的结构结论有效，但 authority 仍绑定旧 GA profile v1.0，其 `max_tokens=5000`；当前单单元 live runner 的容量资格要求是 GA profile v1.1 的 `max_tokens=16000`。因此没有把 R3 伪装成当前 Provider 容量证明，也没有直接放行付费调用，而是签发 ATTEMPT-04：实现、输入、合同、fake、三案例矩阵和 mutation 全部不变，只把 agent／strict／JSON 三份 Provider profile 更新为 v1.1。
+
+R4 正式通过，两个 fresh process 字节一致，三案例污染仍为 0，DELL 仍为 19 Evidence／25 NumericFact／10 same-basis relations，MU 为 14／14／0，NVDA 为 13／15／0；唯一预期变化是 `standard_profile_max_tokens` 从 5000 变为 16000。network／model／Provider／embedding 均为 0。R4 不增加产品能力，只关闭“当前 profile 容量尚未被 clean proof 绑定”的资格缺口；下一门仍然只有一次 Chat `CELL::value_capture` 自然复验。

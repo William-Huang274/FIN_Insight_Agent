@@ -153,3 +153,16 @@ R1 没有发生网络、模型、Provider、embedding、retry 或产品发布，
 R2 正确绑定 loop policy v1.1，DELL 单单元 fake 完成 3 step／4 tool receipts，五单元 fake 完成 10 step／15 receipts，三案例矩阵中的 DELL full-fake 也已完成 15 receipts。失败发生在把 `BoundedFinanceLoopResult` 写入三案例 proof 摘要时：runner 错把 digest 当作对象属性，而标准合同要求从 `as_dict()` 读取。
 
 该处已改为 canonical dictionary projection。签发下一条 authority 前，已直接执行完整本地函数链：single=`3/4`、five=`10/15`；DELL／MU／NVDA full-fake 全部为 15 receipts；三案 identity／graph／archived-context／unavailable-route pollution 均为 0；paired R1 两份旧 Judgment 均被 v1.2 fail closed。R2 保持 immutable failed，ATTEMPT-03 只能绑定这一行投影修复后的干净提交。
+
+## 11. Formal zero-call R3 结果
+
+R3 绑定干净远端提交 `c6a97699...`，正式状态为 `zero_call_engineering_and_fresh_process_proof_pass`：
+
+- 两个独立 fresh process 与主进程 normalized result 字节级一致；
+- DELL 单单元为 3 step／4 receipts，五单元 fake 为 10 step／15 receipts；
+- DELL／MU／NVDA 三案 full-fake 各 15 receipts；DELL 为 19 Evidence／25 NumericFact／10 same-basis relations，MU 为 14／14／0，NVDA 为 13／15／0；
+- case identity、GraphContextPack、归档 Skill／Graph row、不可用 route 暴露均为 0；
+- paired R1 的 Chat／Responses 旧 Judgment 均被当前合同拒绝，没有静默 salvage；
+- network／model／Provider／embedding 均为 0，fake deliverable 未发布。
+
+至此 RC-S2-003、RC-S3-008、RC-S3-009 的结构性部分具备 formal zero-call closure。它仍没有证明 DeepSeek 自然 Judgment 的 L1 或内容质量；下一门严格限制为唯一一次 Chat `CELL::value_capture` canary。Responses 不重跑，五单元和其他 RoleMethodPack 迁移仍等待 canary 后的 Owner 决策。

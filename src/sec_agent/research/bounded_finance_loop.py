@@ -2661,11 +2661,13 @@ def _validate_micro_judgment_fragment(
     return output
 
 
-def _compile_micro_judgment(
+def compile_finance_micro_judgment_fragments(
     fragments: Mapping[str, Mapping[str, Any]],
     *,
     cell: Mapping[str, Any],
 ) -> dict[str, Any]:
+    """Compile three validated model fragments into one conservative Judgment."""
+
     _require(
         set(fragments) == set(MICRO_JUDGMENT_TOOL_NAMES),
         "finance_loop_micro_fragment_coverage_invalid",
@@ -2678,10 +2680,14 @@ def _compile_micro_judgment(
         str(row["claim_relation_ref"]): row
         for row in cell["claim_relation_card"]["allowed_combinations"]
     }
-    selected_relations = [
-        relation_by_ref[str(fragment["claim_relation_ref"])]
-        for fragment in ordered
+    relation_refs = [
+        str(fragment["claim_relation_ref"]) for fragment in ordered
     ]
+    _require(
+        set(relation_refs).issubset(relation_by_ref),
+        "finance_loop_micro_relation_alias_invalid",
+    )
+    selected_relations = [relation_by_ref[ref] for ref in relation_refs]
     atom_inference_authorities = [
         str(fragment["inference_authority"]) for fragment in ordered
     ]
@@ -3132,7 +3138,7 @@ def run_bounded_finance_loop(
                 )
                 fragments[name] = fragment
                 if set(fragments) == set(MICRO_JUDGMENT_TOOL_NAMES):
-                    normalized = _compile_micro_judgment(
+                    normalized = compile_finance_micro_judgment_fragments(
                         fragments,
                         cell=cell_by_id[cell_id],
                     )
@@ -3284,6 +3290,7 @@ __all__ = [
     "compile_finance_micro_fragment_analysis_messages",
     "compile_finance_micro_fragment_context",
     "compile_finance_micro_fragment_submission_messages",
+    "compile_finance_micro_judgment_fragments",
     "compile_finance_micro_judgment_tools",
     "compile_finance_loop_messages",
     "compile_finance_loop_tools",

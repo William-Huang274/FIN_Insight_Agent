@@ -56,6 +56,20 @@ CLEAN_LOOP_PROOF = ROOT / (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_bounded_finance_loop_zero_call_result_v1_0.json"
 )
+CLAIM_AUTHORITY_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_v1_0.json"
+)
+CLAIM_SURFACE_AUTHORITY_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_v1_0.json"
+)
+CLAIM_SURFACE_FAKE = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_fake_payload_v1_0.json"
+)
 
 
 def _runner():
@@ -365,6 +379,206 @@ def test_standard_tool_loop_parallel_reads_materialize_distinct_receipts(
         "receipt-01-step-01.json",
         "receipt-02-step-01.json",
         "receipt-03-step-02.json",
+    ]
+
+
+def test_fixed_pack_claim_surface_live_path_uses_surface_contract(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    authority_path, authority, paths = _prepare_tool_loop_test(
+        runner, monkeypatch, tmp_path
+    )
+    paths["claim_authority_policy_ref"] = CLAIM_AUTHORITY_POLICY
+    paths["claim_surface_authority_policy_ref"] = (
+        CLAIM_SURFACE_AUTHORITY_POLICY
+    )
+    _, research_input, _ = runner._compile_runtime_input(
+        paths,
+        case_key="DELL",
+        required_cell_ids=["CELL::value_capture"],
+    )
+    assert "claim_surface_authority_contract" in research_input
+    value_capture = next(
+        row
+        for row in research_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    assert value_capture["allowed_qualitative_fact_refs"] == [
+        "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
+    ]
+
+    kernel, route, _ = runner._tool_loop_contracts(paths)
+    base_policy = runner.load_bounded_finance_loop_policy(
+        json.loads(LOOP_POLICY.read_text(encoding="utf-8"))
+    )
+    scoped_policy = runner.scope_bounded_finance_loop_policy(
+        base_policy,
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    visible_budget = {
+        "maximum_steps": scoped_policy.maximum_steps,
+        "maximum_evidence_requests": 0,
+        "maximum_reads_per_cell": 1,
+        "maximum_parallel_read_tools": 2,
+        "maximum_judgments_per_cell": 1,
+        "retry_count": 0,
+    }
+    messages = runner.compile_finance_loop_messages(
+        research_input=research_input,
+        required_cell_ids=["CELL::value_capture"],
+        execution_budget=visible_budget,
+    )
+    tools = runner.compile_finance_loop_tools(
+        research_input=research_input,
+        required_cell_ids=["CELL::value_capture"],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped_policy,
+        strict=False,
+    )
+    proof_path = paths["clean_zero_call_result_ref"]
+    proof_path.write_text(
+        json.dumps(
+            {
+                "status": "engineering_pass_zero_call_claim_surface_authority",
+                "result_digest": "d" * 64,
+                "normalized_proof": {
+                    "claim_surface_input_digest": research_input[
+                        "research_input_digest"
+                    ],
+                    "finance_loop_messages_digest": runner.canonical_digest(
+                        list(messages)
+                    ),
+                    "standard_tool_schema_digest": runner.canonical_digest(
+                        list(tools)
+                    ),
+                    "structured_claim_relations_per_atom": 3,
+                    "qualitative_band_converted_to_point_estimate": False,
+                    "fake_loop_steps": 2,
+                    "fake_loop_tool_calls": 3,
+                    "fake_loop_evidence_requests": 0,
+                    "agentic_research_claimed": False,
+                    "model_calls": 0,
+                    "network_calls": 0,
+                    "retries": 0,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    predecessor_path = tmp_path / "predecessor.json"
+    predecessor_path.write_text(
+        json.dumps(
+            {
+                "status": "terminal_failed_no_retry",
+                "failure_code": (
+                    "finance_loop_judgment_invalid:"
+                    "research_consumer_thesis_atom_invalid"
+                ),
+                "result_digest": "e" * 64,
+                "execution": {"retries": 0, "fallbacks": 0},
+            }
+        ),
+        encoding="utf-8",
+    )
+    decision_path = tmp_path / "claim-surface-decision.json"
+    decision_path.write_text(
+        json.dumps(
+            {
+                "status": (
+                    "fixed_pack_claim_surface_authority_zero_call_pass_"
+                    "one_chat_replacement_authorized"
+                ),
+                "case_key": "DELL",
+                "cell_id": "CELL::value_capture",
+                "next_authorized_scope": (
+                    "one_DELL_value_capture_fixed_pack_claim_surface_"
+                    "Chat_replacement"
+                ),
+                "clean_zero_call_result_digest": "d" * 64,
+                "immutable_predecessor_result_ref": "predecessor.json",
+                "immutable_predecessor_result_sha256": runner._sha(
+                    predecessor_path
+                ),
+                "immutable_predecessor_result_digest": "e" * 64,
+                "replacement_is_new_attempt_not_retry": True,
+                "historical_failure_promoted": False,
+                "maximum_evidence_requests": 0,
+                "chat_live_authorized": True,
+                "responses_live_authorized": False,
+                "anthropic_live_authorized": False,
+                "dynamic_layer_two_authorized": False,
+                "five_cell_live_authorized": False,
+                "product_publication_authorized": False,
+                "retries": 0,
+                "fallbacks": 0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    paths["prior_scope_decision_ref"] = decision_path
+    authority["execution_budget"].update(
+        {
+            "maximum_model_calls": scoped_policy.maximum_steps,
+            "maximum_transport_attempts": scoped_policy.maximum_steps,
+            "maximum_evidence_requests": 0,
+        }
+    )
+    authority["bound_inputs"] = {
+        "research_input_digest": research_input["research_input_digest"],
+        "finance_loop_messages_digest": runner.canonical_digest(list(messages)),
+        "standard_tool_schema_digest": runner.canonical_digest(list(tools)),
+    }
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+    destinations = {
+        "capture": tmp_path / "capture",
+        "private": tmp_path / "private",
+        "public.json": tmp_path / "public.json",
+        "predecessor.json": predecessor_path,
+    }
+    monkeypatch.setattr(
+        runner,
+        "_resolve",
+        lambda ref: destinations[str(ref)],
+    )
+    fake = json.loads(CLAIM_SURFACE_FAKE.read_text(encoding="utf-8"))
+    judgment = fake["cells"][0]
+
+    def executor(**kwargs):
+        index = int(str(kwargs["attempt_id"]).split("-")[-3])
+        if index == 1:
+            return _parallel_tool_step(
+                index, "CELL::value_capture", tmp_path / "capture"
+            )
+        return _tool_step(
+            index,
+            SUBMIT_RESEARCH_JUDGMENT_TOOL,
+            judgment,
+            tmp_path / "capture",
+        )
+
+    result = runner.run_tool_loop(authority_path, step_executor=executor)
+
+    assert result["status"] == "completed_contract_valid_content_assessment_pending"
+    assert result["execution"]["model_calls_attempted"] == 2
+    assert result["tool_counts"] == {
+        READ_REVIEWED_EVIDENCE_TOOL: 1,
+        READ_NUMERIC_FACTS_TOOL: 1,
+        SUBMIT_RESEARCH_JUDGMENT_TOOL: 1,
+    }
+    full = json.loads(
+        (tmp_path / "private" / "full_result.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    receipt = full["loop_result"]["structured_deliverable"]["cells"][0][
+        "claim_surface_authority_receipt"
+    ]
+    assert receipt["qualitative_fact_refs"] == [
+        "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
     ]
 
 

@@ -1,0 +1,44 @@
+# FIN 0.1.3 S3 第一层至三案例执行计划
+
+日期：2026-08-15
+
+状态：`owner_authorized / fixed_pack_replacement_in_progress / dynamic_truth_spine_pending / three_case_acceptance_pending`
+
+## Owner 决定
+
+Owner 授权在同一 FIN 0.1.3 内连续执行以下五项，并允许在不改变产品范围、发布含义、安全边界或不可逆状态的前提下，自主修复最早责任层问题并重新安排五项内部顺序：
+
+1. DELL `value_capture` 自然 DeepSeek fixed-Pack replacement；
+2. `EvidenceRequest → S1/S2 → EvidenceResponse` 动态研究事实回路；
+3. DELL `value_capture` 单单元动态 Agentic Research；
+4. DELL 五单元动态案例、完整底稿与报告；
+5. MU／NVDA 同核心迁移与三案例 S1–S3 产品质量验收。
+
+本授权不创建新产品版本，不授权 S4 产品发布或 S5 release。失败 attempt 必须保持不可变；项目缺陷先用零调用回放和 deterministic tests 修复，新的付费 live 只能在冻结合同、干净提交、fresh authority 和 0 retry 下执行。
+
+## 执行门
+
+- 第一层只验证相同 fixed Pack 下的自然判断；若 L1 或内容门失败，不进入动态第二层。
+- 第二层先闭合候选到 EvidenceResponse 的真实回流，并补足本轮实际需要的 operating metric／bridge 权威；不先建设通用搜索或通用图平台。
+- 单单元动态纵切只提供用户问题、Case 身份、截至日期和工具权限；模型必须自然提出 EvidenceRequest，S1/S2 必须真实执行并返回 lineage-bound response。
+- 五单元前，其他四个 RoleMethodPack 与 cell-scoped GraphContextPack 必须逐项迁移并有消费 receipt；不得恢复旧静态多 Specialist 或固定九调用结构。
+- MU／NVDA 原则上只能通过 Case／行业／来源配置迁移；若需要修改核心 Runtime，必须先证明是跨案例通用缺口。
+- L1/L2、八维绝对质量、paired material gain 与 qualified-human review 分开记录；三案逐案通过，不能取平均掩盖失败。
+
+## 当前最早动作
+
+现有 canonical live runner 只会编译 predecessor claim-authority overlay，尚未消费已经通过 formal R3 的 Claim Surface overlay。先在同一 runner 增加 source-bound QF／逐原子关系输入接线、旧 live payload 回放和 exact-once replacement gate；通过零调用测试、全仓回归、Project OS preflight 与 clean/synced commit 后，才签发一次 Chat fixed-Pack replacement。
+
+## 第一项实现进度（2026-08-15）
+
+已完成但尚未执行付费 live：
+
+- canonical runner 现在按固定顺序编译 base research input、Claim Authority 和 Claim Surface Authority；缺少 base authority 时 fail closed；
+- formal R3 的 research input、messages、tool schema、QF、逐原子关系和零请求预算均在 live 入口重新核对；
+- 新 scope decision 显式绑定 immutable predecessor failure、R3 proof、DeepSeek GA profile、最近完整 Provider capture、三次模型调用上限、零请求、零 retry／fallback；
+- 测试覆盖旧 payload 回放、完整 Claim Surface fake loop、证据与数字 mandatory reads、最终 Judgment 以及 exact replacement scope；相关 81 项测试通过；
+- 发现严格重定基同时归档了 Project OS 付费运行前检查器。没有恢复旧多 Agent 实现和旧 run-scope registry，而是建立当前基线的 decision-bound preflight；它只检查当前 scope 的 artifact digest、root-cause allowance、预算、Provider profile、最近完整 capture、凭据存在性和 clean/synced Git 状态，零网络且不保存凭据值；
+- 首次全仓回归暴露 active-baseline 审计仍先遍历整个历史 archive、再过滤，导致 Workbench 在约 15 秒等待上限内未结束。已改为只扫描 `apps/`、`scripts/`、`src/` 三个维护根；直接审计从约 34.4 秒降至约 10.7 秒，Workbench 真实 eval 测试重新通过。
+- 修复后全仓复证为 `304 passed`；`compileall`、active-baseline（127 Python／8 frontend／10 runtime resources、零旧引用）、6585 文件密钥扫描和 `git diff --check` 均通过。
+
+当前边界：没有模型、Provider、网络或产品发布调用；live authority 尚未签发。下一门是全仓复证、clean commit/push、真实 Project OS preflight，再签发唯一 authority。

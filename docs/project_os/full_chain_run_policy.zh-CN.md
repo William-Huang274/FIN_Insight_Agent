@@ -13,9 +13,26 @@ full-chain 是集成验收工具，不是日常 debugging 工具。
 5. 需要真实检索的 case 必须启用 real evidence operators；
 6. 运行结果能写回 run audit / artifact refs / AIE / data-script audit。
 
-## Typed state 与 scope registry（v1.0）
+## 当前干净基线：decision-bound preflight（v1.1，2026-08-15）
 
-- `configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json` 是当前 canonical scope registry；未注册或标为 non-executable 的请求一律 fail-closed。
+严格重定基已经归档旧的多 Agent preflight 实现与全局 run-scope registry。当前基线不能恢复旧脚本和旧注册表来获得表面上的“预检通过”，而是通过
+`scripts/eval_multi_agent/run_project_os_full_chain_preflight.py --decision <decision-ref>`
+执行与当前决策绑定的预检。
+
+当前预检必须同时证明：
+
+- decision、零调用 proof、历史失败、Provider profile 与最近完整 Provider capture 的 SHA / result digest 不漂移；
+- root-cause ledger 对该**精确 scope**没有阻断，或显式把该 scope 列为 allowed；
+- 调用数、传输次数、每次与总输出 token、EvidenceRequest、retry、fallback 都有界；
+- 只检查凭据是否存在，不读取、输出或保存凭据值；
+- 对固定 Evidence Pack 的模型分析测试，必须明确标为 unit test，并将动态检索、五单元、发布和产品验收全部置为 false；
+- 执行前仓库 clean 且与 upstream 同步。
+
+这个 preflight 仍只是必要条件，不替代 exact-live authority、runner 输入 digest、capture-first 和 exact-once 约束。
+
+## 历史规则：Typed state 与 scope registry（v1.0，只读）
+
+- `configs/runtime/fin_ia_project_os_run_scope_registry_v1_0.json` 属于 pre-FIN-0.1.3 历史实现，已经归档，不得作为当前 Runtime 依赖；以下条款只用于解释旧运行证据。
 - `v2_191` 之后的新 root-cause projection 必须写入 `blocker_state`、`run_scope_registry_version`、`owner_stage` 与 `previous_projection_sequence`；缺失、未知、版本漂移或 owner/scope 不匹配均为合同错误。
 - canonical blocker state 为 `open / mitigated_open / blocked_external / closed / superseded`；前三者开放且阻断，后两者关闭。历史自由字符串只读兼容，未知的 historical full-chain blocker 按 open 处理。
 - scope 的父级 block/allow 可覆盖注册子 scope；wildcard 只允许出现在 blocking side。

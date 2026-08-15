@@ -11,6 +11,11 @@ from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parents[2]
+ACTIVE_PYTHON_ROOTS = (
+    "apps",
+    "scripts",
+    "src",
+)
 _BASE_PYTHON_ENTRYPOINTS = (
     "apps/workbench/backend/app.py",
     "scripts/data_retrieval/build_bm25_index.py",
@@ -42,6 +47,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/engineering/accept_current_three_case_product.py",
     "scripts/engineering/check_repository_secrets.py",
     "scripts/engineering/verify_active_baseline.py",
+    "scripts/eval_multi_agent/run_project_os_full_chain_preflight.py",
     "scripts/industry/10_download_industry_source_snapshot.py",
     "scripts/market/06_download_yahoo_chart_snapshot.py",
     "scripts/market/07_enrich_market_snapshot_valuation_fmp.py",
@@ -108,20 +114,25 @@ def _relative(path: Path) -> str:
 def _active_python_modules() -> tuple[dict[str, Path], dict[Path, str]]:
     by_module: dict[str, Path] = {}
     by_path: dict[Path, str] = {}
-    for path in ROOT.rglob("*.py"):
-        relative = _relative(path)
-        if relative.startswith(("archive/", ".codex_runtime/", ".git/")):
-            continue
-        if relative.startswith("src/"):
-            parts = list(path.relative_to(ROOT / "src").with_suffix("").parts)
-        else:
-            parts = list(path.relative_to(ROOT).with_suffix("").parts)
-        if parts[-1] == "__init__":
-            parts.pop()
-        module = ".".join(parts)
-        if module:
-            by_module[module] = path.resolve()
-            by_path[path.resolve()] = module
+    # The active baseline is intentionally limited to maintained code roots.
+    # Scanning ROOT first and filtering afterwards still traverses the immutable
+    # archive and made the Workbench eval depend on historical repository size.
+    for root_ref in ACTIVE_PYTHON_ROOTS:
+        active_root = ROOT / root_ref
+        if not active_root.is_dir():
+            raise RuntimeError(f"active_baseline_code_root_missing:{root_ref}")
+        for path in active_root.rglob("*.py"):
+            relative = _relative(path)
+            if relative.startswith("src/"):
+                parts = list(path.relative_to(ROOT / "src").with_suffix("").parts)
+            else:
+                parts = list(path.relative_to(ROOT).with_suffix("").parts)
+            if parts[-1] == "__init__":
+                parts.pop()
+            module = ".".join(parts)
+            if module:
+                by_module[module] = path.resolve()
+                by_path[path.resolve()] = module
     return by_module, by_path
 
 

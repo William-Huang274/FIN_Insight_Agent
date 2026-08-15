@@ -15,7 +15,7 @@ Project OS 是跨任务恢复当前事实的最小控制面，不是无限增长
 ## 长期规则与注册表
 
 - `full_chain_run_policy.zh-CN.md`：昂贵或全链运行边界。
-- `full_chain_preflight_checklist.json`：全链预检。
+- `full_chain_preflight_checklist.json`：当前付费／全链预检清单；FIN 0.1.3 干净基线通过 `python scripts/eval_multi_agent/run_project_os_full_chain_preflight.py --decision <decision-ref>` 执行 decision-bound preflight，旧多 Agent 实现保持归档。
 - `done_definition_l4_scope_pass.zh-CN.md`：scope pass 定义。
 - `token_budget_policy.zh-CN.md`：信息与调用预算。
 - `STRICT_SCHEMA_TRANSPORT_API_HANDOFF.zh-CN.md`：未来新 Provider 的 transport 交接。

@@ -61,6 +61,9 @@ from sec_agent.research.current_consumer import (  # noqa: E402
 from sec_agent.research.claim_authority import (  # noqa: E402
     compile_claim_authority_research_input,
 )
+from sec_agent.research.claim_surface_authority import (  # noqa: E402
+    compile_claim_surface_authority_research_input,
+)
 from sec_agent.research.reviewed_evidence_pack import (  # noqa: E402
     canonical_digest,
 )
@@ -357,6 +360,15 @@ def _compile_runtime_input(
         research_input = compile_claim_authority_research_input(
             research_input,
             policy=_json(paths["claim_authority_policy_ref"]),
+        )
+    if "claim_surface_authority_policy_ref" in paths:
+        if "claim_authority_policy_ref" not in paths:
+            raise CurrentResearchConsumerCanaryError(
+                "research_consumer_claim_surface_base_authority_missing"
+            )
+        research_input = compile_claim_surface_authority_research_input(
+            research_input,
+            policy=_json(paths["claim_surface_authority_policy_ref"]),
         )
     return (
         evidence_pack,
@@ -983,9 +995,15 @@ def validate_tool_loop_authority(
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_tool_loop_worktree_not_clean"
         )
-    claim_authority_mode = "claim_authority_policy_ref" in payload.get(
-        "bound_inputs", {}
+    bound_input_keys = payload.get("bound_inputs", {})
+    claim_authority_mode = "claim_authority_policy_ref" in bound_input_keys
+    claim_surface_authority_mode = (
+        "claim_surface_authority_policy_ref" in bound_input_keys
     )
+    if claim_surface_authority_mode and not claim_authority_mode:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_tool_loop_claim_surface_base_missing"
+        )
     maximum_requests = (
         0 if claim_authority_mode else (3 if len(cell_ids) == 1 else 9)
     )
@@ -1031,6 +1049,8 @@ def validate_tool_loop_authority(
     }
     if claim_authority_mode:
         required_refs.add("claim_authority_policy_ref")
+    if claim_surface_authority_mode:
+        required_refs.add("claim_surface_authority_policy_ref")
     ref_keys = {key for key in bound if key.endswith("_ref")}
     runtime_digest_keys = {
         "research_input_digest",
@@ -1225,6 +1245,66 @@ def _incomplete_read_replacement_scope_authorized(
     return True
 
 
+def _fixed_pack_claim_surface_replacement_scope_authorized(
+    decision: Mapping[str, Any],
+    *,
+    cell_ids: Sequence[str],
+    clean_zero_call_result: Mapping[str, Any],
+) -> bool:
+    expected_status = (
+        "fixed_pack_claim_surface_authority_zero_call_pass_"
+        "one_chat_replacement_authorized"
+    )
+    if decision.get("status") != expected_status:
+        return False
+    predecessor_path = _resolve(
+        str(decision.get("immutable_predecessor_result_ref") or "")
+    )
+    if not (
+        predecessor_path.is_file()
+        and _sha(predecessor_path)
+        == str(decision.get("immutable_predecessor_result_sha256") or "")
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_claim_surface_predecessor_drift"
+        )
+    predecessor = _json(predecessor_path)
+    predecessor_valid = (
+        predecessor.get("status") == "terminal_failed_no_retry"
+        and predecessor.get("failure_code")
+        == "finance_loop_judgment_invalid:research_consumer_thesis_atom_invalid"
+        and predecessor.get("result_digest")
+        == decision.get("immutable_predecessor_result_digest")
+        and predecessor.get("execution", {}).get("retries") == 0
+        and predecessor.get("execution", {}).get("fallbacks") == 0
+    )
+    scope_valid = (
+        list(cell_ids) == ["CELL::value_capture"]
+        and decision.get("case_key") == "DELL"
+        and decision.get("cell_id") == "CELL::value_capture"
+        and decision.get("next_authorized_scope")
+        == "one_DELL_value_capture_fixed_pack_claim_surface_Chat_replacement"
+        and decision.get("clean_zero_call_result_digest")
+        == clean_zero_call_result.get("result_digest")
+        and decision.get("maximum_evidence_requests") == 0
+        and decision.get("chat_live_authorized") is True
+        and decision.get("responses_live_authorized") is False
+        and decision.get("anthropic_live_authorized") is False
+        and decision.get("dynamic_layer_two_authorized") is False
+        and decision.get("five_cell_live_authorized") is False
+        and decision.get("product_publication_authorized") is False
+        and decision.get("retries") == 0
+        and decision.get("fallbacks") == 0
+        and decision.get("replacement_is_new_attempt_not_retry") is True
+        and decision.get("historical_failure_promoted") is False
+    )
+    if not (predecessor_valid and scope_valid):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_claim_surface_replacement_disposition_invalid"
+        )
+    return True
+
+
 def run_tool_loop(
     authority_path: Path,
     *,
@@ -1295,6 +1375,9 @@ def run_tool_loop(
     clean = _json(paths["clean_zero_call_result_ref"])
     normalized = clean.get("normalized_proof", {})
     claim_authority_mode = "claim_authority_policy_ref" in paths
+    claim_surface_authority_mode = (
+        "claim_surface_authority_policy_ref" in paths
+    )
     ordinary_clean = (
         clean.get("status")
         == "zero_call_engineering_and_fresh_process_proof_pass"
@@ -1326,8 +1409,37 @@ def run_tool_loop(
         and normalized.get("model_calls") == 0
         and normalized.get("network_calls") == 0
     )
+    claim_surface_clean = (
+        clean.get("status")
+        == "engineering_pass_zero_call_claim_surface_authority"
+        and normalized.get("claim_surface_input_digest")
+        == research_input["research_input_digest"]
+        and normalized.get("finance_loop_messages_digest")
+        == actual["finance_loop_messages_digest"]
+        and normalized.get("standard_tool_schema_digest")
+        == actual["standard_tool_schema_digest"]
+        and normalized.get("structured_claim_relations_per_atom") == 3
+        and normalized.get("qualitative_band_converted_to_point_estimate")
+        is False
+        and normalized.get("fake_loop_steps") == 2
+        and normalized.get("fake_loop_tool_calls") == 3
+        and normalized.get("fake_loop_evidence_requests") == 0
+        and normalized.get("agentic_research_claimed") is False
+        and normalized.get("model_calls") == 0
+        and normalized.get("network_calls") == 0
+        and normalized.get("retries") == 0
+    )
     if not (
-        (claim_authority_mode and claim_clean)
+        (
+            claim_surface_authority_mode
+            and claim_authority_mode
+            and claim_surface_clean
+        )
+        or (
+            claim_authority_mode
+            and not claim_surface_authority_mode
+            and claim_clean
+        )
         or (not claim_authority_mode and ordinary_clean)
     ):
         raise CurrentResearchConsumerCanaryError(
@@ -1359,6 +1471,7 @@ def run_tool_loop(
     )
     fixed_pack_claim_authority_authorized = (
         claim_authority_mode
+        and not claim_surface_authority_mode
         and len(cell_ids) == 1
         and prior_scope_decision.get("status")
         == "fixed_pack_claim_authority_zero_call_pass_one_chat_canary_authorized"
@@ -1374,12 +1487,22 @@ def run_tool_loop(
         and prior_scope_decision.get("five_cell_live_authorized") is False
         and prior_scope_decision.get("product_publication_authorized") is False
     )
+    fixed_pack_claim_surface_authority_authorized = (
+        claim_surface_authority_mode
+        and claim_authority_mode
+        and _fixed_pack_claim_surface_replacement_scope_authorized(
+            prior_scope_decision,
+            cell_ids=cell_ids,
+            clean_zero_call_result=clean,
+        )
+    )
     single_scope_authorized = (
         len(cell_ids) == 1
         and (
             research_context_revalidation_authorized
             or incomplete_read_replacement_authorized
             or fixed_pack_claim_authority_authorized
+            or fixed_pack_claim_surface_authority_authorized
             or (
                 prior_scope_decision.get("status")
                 == "json_node_pass_strict_transport_unqualified_full_report_not_scored"

@@ -85,3 +85,7 @@ Prompt 和 Skill 已经明确提醒过这些边界，R2 仍越界，因此不能
 - fake loop 为 `2 steps / 3 tool calls / 0 EvidenceRequest`，且网络、模型、Provider、embedding、retry 和产品发布均为 0。
 
 R1 formal proof 先因 mutation fixture 把全部 generic support 一并移除而在更早通用门终止，该失败已独立保存；R2 工程逻辑通过但公共 `recorded_at` 沿用旧固定日期，也保持不可变。R3 只修正证明路径与审计时间，不改变产品合同。此结果仍不证明 DeepSeek 会自然提交新字段，因此 fixed-Pack 第一层尚未 accepted，动态第二层、五单元和 S3 产品验收继续 blocked。
+
+## 2026-08-15 Natural replacement 接线
+
+Owner 审阅 R3 后授权继续五项纵切，但当前 live 权限仍按逐门收窄。唯一 canonical canary runner 现以同一编译顺序加载 predecessor ClaimAuthority 与 Claim Surface overlay；若只提供 Claim Surface 而缺少 base authority，运行在 Provider 前 fail closed。live runner 将 R3 的 `claim_surface_input_digest`、model-visible message digest 和 standard tool schema digest 重新绑定，且只接受 source-bound QF、三条逐原子结构关系、0 EvidenceRequest、0 retry 的新 scope decision。旧 Chat R1 继续不可变，replacement 使用新的 Run／Attempt／输出路径；该接线不执行动态检索，也不授权 Layer Two。

@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / runtime_registry_R11 / S1_object_route_and_Dell_targeted_source_engineering_pass / S1_candidate_to_Evidence_product_open / S2_company_fact_mart_and_Dell_relation_consumption_pass / S2_operating_metric_and_product_bridge_open / S3_research_context_closure_pass / replacement_Chat_R2_transport_contract_relation_route_method_graph_pass / causal_attribution_L1_fail / S1_to_S3_full_chain_audit_complete / fixed_pack_layer_one_owner_authorized / claim_authority_implementation_complete / formal_zero_call_and_one_live_pending / dynamic_layer_two_blocked / five_cell_blocked / product_iteration_not_closed`
+状态：`repository_baseline_complete / runtime_registry_R11 / S1_object_route_and_Dell_targeted_source_engineering_pass / S1_candidate_to_Evidence_product_open / S2_company_fact_mart_and_Dell_relation_consumption_pass / S2_operating_metric_and_product_bridge_open / S3_research_context_closure_pass / fixed_pack_claim_surface_zero_call_R3_pass / owner_authorized_layer_one_to_three_case_execution / fixed_pack_natural_replacement_in_progress / dynamic_truth_spine_pending / five_cell_pending / three_case_acceptance_pending / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -63,6 +63,12 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 24. **三层验收与第一层（Claim Surface formal R3 已通过、等待 Owner 决定自然 replacement）**：fixed Pack 只测试“给定合格资料时能否可靠分析”，不计作 Agentic Research；第二层才是 DELL 单单元动态 S1/S2/EvidenceResponse 纵切；第三层才是五单元动态完整案例。唯一自然 Chat 选择了产品级 management assertion，不再产生旧 R2 的公司利润归因和半固定成本机制，但 reviewed source 的“中个位数”目标没有 typed alias，故 terminal failed。Owner 随后只授权零调用收口：successor 已把该目标编译为 source-bound QF，禁止单点化，并要求 thesis／mechanism／counterargument 分别提交结构化 subject、outcome、relation、attribution 和 scope。最终 clean/synced R3 通过旧失败三层回放、四类 mutation、source drift、三案例隔离、2-step fake loop 和 deterministic recompile；全程 0 模型／网络。R1 runner failure 与 R2 stale-date 结果均保持不可变。尚未证明新的自然输出，因此第一层 acceptance、动态第二层和五单元仍 blocked。
 25. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
 26. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+
+## 4A. 2026-08-15 Owner 连续执行授权
+
+Owner 已把原三层验收扩展为同一 FIN 0.1.3 内的五项连续执行范围：fixed-Pack natural replacement、动态 Research Truth Spine、DELL 单单元、DELL 五单元，以及 MU／NVDA 同核心迁移和三案例验收。执行仍受前置门约束：上一项未通过自身 L1／工程／内容门时，下一项不得用更昂贵的 live 掩盖失败；项目缺陷留在 S1／S2／S3 最早责任层修复。该授权不包含 S4 publication 或 S5 release，也不把任何失败 attempt 改写为成功。
+
+当前第一项的最早实现工作不是重新调用模型，而是让唯一 canonical live runner 消费已通过 formal R3 的 source-bound QF 和逐原子 Claim Surface 合同。完成 deterministic replay、全仓回归、Project OS preflight 和 clean/synced authority 后，才执行一次 0 retry 的 DeepSeek Chat replacement。
 
 ## 5. 防止再次膨胀的工程规则
 

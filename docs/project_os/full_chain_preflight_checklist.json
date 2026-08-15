@@ -1,6 +1,6 @@
 {
-  "schema_version": "fin_insight_project_os_full_chain_preflight_checklist_v0_1",
-  "updated_at": "2026-07-04",
+  "schema_version": "fin_insight_project_os_full_chain_preflight_checklist_v0_2",
+  "updated_at": "2026-08-15",
   "checks": [
     {
       "check_id": "project_os_context_pack_read",
@@ -20,17 +20,17 @@
     {
       "check_id": "provider_health_preflight_passed",
       "required": true,
-      "description": "Run minimal provider connectivity/auth probe before paid graph execution."
+      "description": "Confirm the bound provider profile, unread credential presence, and either a recent complete capture or an explicitly budgeted connectivity/auth probe. A separate probe is not mandatory when it would add a non-research paid call and recent immutable evidence is valid."
     },
     {
       "check_id": "real_evidence_mode_required_when_case_demands_it",
       "required": true,
-      "description": "Cases requiring real retrieval cannot be validated with dry-run evidence operators."
+      "description": "Cases requiring dynamic retrieval cannot be validated with dry-run evidence operators. A reviewed fixed Evidence Pack is valid only when the decision labels the run as a model-analysis unit test and forbids any Agentic Research or product claim."
     },
     {
       "check_id": "aie_and_data_script_gate_clean_for_known_blockers",
       "required": true,
-      "description": "Known Agent Information Economy and DataScriptQuality blockers must not be carried into paid run."
+      "description": "Known evidence, data, and research-quality blockers must either be outside the exact decision-bound run scope or explicitly allow that scope; a narrow allowance must not be projected to dynamic research, a five-cell case, publication, or release."
     }
   ]
 }

@@ -1,0 +1,31 @@
+{
+  "schema_version": "fin_ia_fixed_pack_claim_surface_authority_zero_call_failure_v1_0",
+  "status": "terminal_failed_before_result_materialization_no_retry",
+  "recorded_at": "2026-08-15T13:16:48+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_surface_authority_zero_call_authority_v1_0.json",
+  "authority_sha256": "cee5257fd0e6d79202b18e05090ce4853945a854187a269aec255b5b66111d1c",
+  "implementation_commit": "12df99dd6599125169821a6a83491809c30ad176",
+  "runner_sha256": "04bec3fad43e4a76422fb947e2301b321109555c411fc8744daaca99d2e02328",
+  "failure_phase": "formal_zero_call_mutation_assertion",
+  "failure_code": "claim_surface_mutation_disposition_invalid",
+  "observed_mutation_codes": {
+    "cross_case_qualitative_fact": "research_consumer_qualitative_fact_boundary_invalid",
+    "invalid_structured_relation": "claim_surface_combination_invalid",
+    "all_support_removed": "research_consumer_supported_judgment_without_evidence",
+    "narrative_relation_conflict": "claim_surface_narrative_relation_conflict"
+  },
+  "expected_surface_specific_missing_authority_code": "claim_surface_required_authority_missing",
+  "root_cause": "The formal runner changed the required source Evidence from support to context but left every other Evidence as context or limit. The generic supported-judgment gate therefore failed before the intended claim-surface authority gate. The unit mutation kept an unrelated reviewed Evidence as generic support and correctly reached the surface-specific missing-authority gate.",
+  "disposition": "Preserve this attempt. Update only the formal mutation fixture so one unrelated Evidence remains generic support, then create a new clean implementation commit and separately authorize R2. Do not change the product claim-surface contract or reinterpret this attempt as a product failure.",
+  "execution": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "local_embedding_calls": 0,
+    "retries": 0,
+    "public_result_materialized": false,
+    "private_result_materialized": false,
+    "product_publication": false
+  },
+  "known_boundary": "This is a proof-runner mutation-order failure, not a failure of the source-bound qualitative fact or structured claim-relation product contract."
+}

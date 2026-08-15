@@ -975,6 +975,7 @@ def _run_claim_surface_authority_proof(
     )
     missing_support = deepcopy(corrected)
     missing_support["cells"][0]["evidence_uses"][0]["use_role"] = "context"
+    missing_support["cells"][0]["evidence_uses"][3]["use_role"] = "support"
     mutation_codes.append(
         _consumer_rejection_code(missing_support, research_input=surface_input)
     )

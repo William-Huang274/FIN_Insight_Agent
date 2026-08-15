@@ -124,7 +124,7 @@ FRAGMENT_ANALYSIS_SUBMISSION_RESULT_SCHEMA = (
     "fin_ia_s3_fixed_pack_fragment_analysis_submission_live_result_v1_0"
 )
 FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA = (
-    "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_0"
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_1"
 )
 FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS = (
     "signed_exact_once_fixed_pack_full_three_fragment_analysis_submission_chat_live"
@@ -1531,6 +1531,8 @@ def validate_full_fragment_judgment_authority(
         "full_fragment_disposition_ref",
         "prior_fragment_result_ref",
         "prior_fragment_assessment_ref",
+        "prior_full_fragment_result_ref",
+        "prior_full_fragment_failure_assessment_ref",
     }
     ref_keys = {key for key in bound if key.endswith("_ref")}
     digest_keys = {
@@ -1561,6 +1563,10 @@ def validate_full_fragment_judgment_authority(
     disposition = _json(paths["full_fragment_disposition_ref"])
     prior_result = _json(paths["prior_fragment_result_ref"])
     prior_assessment = _json(paths["prior_fragment_assessment_ref"])
+    prior_full_result = _json(paths["prior_full_fragment_result_ref"])
+    prior_full_assessment = _json(
+        paths["prior_full_fragment_failure_assessment_ref"]
+    )
     if not (
         zero_call.get("status")
         == "zero_call_full_fragment_sequence_and_terminal_judgment_pass_predecessor_not_reusable"
@@ -1576,6 +1582,38 @@ def validate_full_fragment_judgment_authority(
         == "completed_fragment_contract_valid_content_assessment_pending"
         and prior_assessment.get("status")
         == "single_thesis_L1_pass_content_materially_improved_two_hypotheses_qualified_no_automatic_expansion"
+        and prior_full_result.get("status") == "terminal_failed_no_retry"
+        and prior_full_result.get("failure_code")
+        == "finance_loop_micro_narrative_invalid"
+        and prior_full_result.get("failure_fragment_tool")
+        == SUBMIT_RESEARCH_THESIS_TOOL
+        and prior_full_result.get("execution", {}).get(
+            "model_calls_attempted"
+        )
+        == 2
+        and prior_full_result.get("execution", {}).get("retries") == 0
+        and prior_full_assessment.get("status")
+        == "terminal_contract_failure_project_surface_projection_defect_new_attempt_required"
+        and prior_full_assessment.get("disposition", {}).get(
+            "immutable_R1_preserved"
+        )
+        is True
+        and prior_full_assessment.get("disposition", {}).get(
+            "same_attempt_retry_forbidden"
+        )
+        is True
+        and prior_full_assessment.get("disposition", {}).get("repair_scope")
+        == "provider_neutral_fragment_surface_contract_v1_1"
+        and zero_call.get("surface_contract", {}).get(
+            "saved_R1_replay_failure"
+        )
+        == "finance_loop_micro_narrative_invalid"
+        and zero_call.get("surface_contract", {}).get(
+            "final_deliverable_QF_surface_preserved"
+        )
+        is True
+        and disposition.get("surface_contract_v1_1_required") is True
+        and disposition.get("prior_failed_attempt_reused") is False
     ):
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_full_fragment_disposition_invalid"

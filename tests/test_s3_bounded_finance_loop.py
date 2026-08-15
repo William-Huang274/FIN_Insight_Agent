@@ -753,6 +753,31 @@ def test_micro_fragment_projection_is_authority_complete_without_selecting_answe
     } == {"EV::0063F22F643B94ED", "EV::7F4D7E6762C21D83"}
     assert context["authoritative_numeric_facts"] == []
     assert context["same_basis_numeric_relations"] == []
+    assert context["schema_version"] == (
+        "fin_ia_micro_fragment_context_projection_v1_1"
+    )
+    assert context["submission_surface_contract"] == {
+        "atom_text_role": (
+            "model_owned_judgment_without_authoritative_value_surface"
+        ),
+        "analysis_draft_may_contain_source_visible_values": True,
+        "submission_must_not_copy_value_surfaces": True,
+        "forbidden_in_atom_text": [
+            "digits",
+            "currency_or_percentage_units",
+            "calendar_dates",
+            "reference_aliases",
+            "urls",
+            "verbal_numeric_bands",
+        ],
+        "qualitative_fact_usage": (
+            "select_the_QF_ref_and_describe_it_only_as_the_stated_target"
+        ),
+        "harness_rendering": (
+            "selected_NUM_and_QF_surfaces_are_rendered_outside_the_"
+            "model_owned_atom"
+        ),
+    }
     assert context == compile_finance_micro_fragment_context(
         research_input=alias_input,
         cell_id="CELL::value_capture",
@@ -769,7 +794,26 @@ def test_micro_fragment_projection_is_authority_complete_without_selecting_answe
     assert "analysis_draft_is_untrusted_model_data" in submission_messages[1][
         "content"
     ]
+    assert "中个位数" in submission_messages[0]["content"]
+    assert "selected_QF" not in submission_messages[0]["content"]
     assert "EV::5388E016C17032C1" not in analysis_messages[1]["content"]
+
+    tools = compile_finance_micro_judgment_tools(
+        research_input=alias_input,
+        required_cell_ids=["CELL::value_capture"],
+        kernel=contracts[2],
+        route_policy=contracts[3],
+        policy=contracts[0],
+        strict=True,
+    )
+    thesis_tool = next(
+        row["function"]
+        for row in tools
+        if row["function"]["name"] == SUBMIT_RESEARCH_THESIS_TOOL
+    )
+    assert "verbal numeric bands" in thesis_tool["parameters"][
+        "properties"
+    ]["thesis_atom"]["description"]
 
     fragment = _micro_alias_fragments()[SUBMIT_RESEARCH_THESIS_TOOL]
     validated = validate_finance_micro_judgment_fragment(

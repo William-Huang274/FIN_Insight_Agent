@@ -24,6 +24,10 @@ MICRO_FIXED_PACK_DECISION_STATUS = (
 FULL_FRAGMENT_FIXED_PACK_DECISION_SCHEMA = (
     "fin_ia_s3_fixed_pack_full_fragment_judgment_live_scope_decision_v1_0"
 )
+FULL_FRAGMENT_SURFACE_FIXED_PACK_DECISION_SCHEMA = (
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_surface_"
+    "live_scope_decision_v1_1"
+)
 FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS = (
     "full_fragment_zero_call_pass_one_fresh_chat_judgment_authorized"
 )
@@ -110,7 +114,10 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
-    if decision.get("schema_version") == FULL_FRAGMENT_FIXED_PACK_DECISION_SCHEMA:
+    if decision.get("schema_version") in {
+        FULL_FRAGMENT_FIXED_PACK_DECISION_SCHEMA,
+        FULL_FRAGMENT_SURFACE_FIXED_PACK_DECISION_SCHEMA,
+    }:
         return _validate_full_fragment_fixed_pack_decision(
             root=root, decision=decision
         )
@@ -277,6 +284,10 @@ def _validate_fixed_pack_decision(
 def _validate_full_fragment_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    surface_successor = (
+        decision.get("schema_version")
+        == FULL_FRAGMENT_SURFACE_FIXED_PACK_DECISION_SCHEMA
+    )
     required_equal = {
         "status": FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS,
         "case_key": "DELL",
@@ -304,6 +315,17 @@ def _validate_full_fragment_fixed_pack_decision(
             raise ValueError(
                 f"project_os_full_fragment_decision_true_required:{field}"
             )
+    if surface_successor:
+        for field in (
+            "fragment_surface_contract_parity_required",
+            "saved_R1_replay_required",
+            "final_QF_surface_rendering_required",
+        ):
+            if decision.get(field) is not True:
+                raise ValueError(
+                    "project_os_full_fragment_decision_true_required:"
+                    f"{field}"
+                )
     for field in (
         "historical_failure_promoted",
         "immutable_thesis_predecessor_reused",
@@ -354,6 +376,19 @@ def _validate_full_fragment_fixed_pack_decision(
         .get("terminal_judgment", {})
         .get("harness_generated_research_judgment")
         is False
+        and (
+            not surface_successor
+            or (
+                (clean.get("surface_contract") or {}).get(
+                    "saved_R1_replay_failure"
+                )
+                == "finance_loop_micro_narrative_invalid"
+                and (clean.get("surface_contract") or {}).get(
+                    "final_deliverable_QF_surface_preserved"
+                )
+                is True
+            )
+        )
     ):
         raise ValueError("project_os_full_fragment_clean_proof_invalid")
 
@@ -371,6 +406,13 @@ def _validate_full_fragment_fixed_pack_decision(
         )
         == 6
         and disposition.get("dynamic_agentic_research_authorized") is False
+        and (
+            not surface_successor
+            or (
+                disposition.get("surface_contract_v1_1_required") is True
+                and disposition.get("prior_failed_attempt_reused") is False
+            )
+        )
     ):
         raise ValueError("project_os_full_fragment_disposition_invalid")
 
@@ -396,6 +438,38 @@ def _validate_full_fragment_fixed_pack_decision(
         and decision.get("immutable_thesis_predecessor_reused") is False
     ):
         raise ValueError("project_os_full_fragment_predecessor_invalid")
+
+    prior_failed_status = ""
+    if surface_successor:
+        _, prior_failed = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="immutable_failed_full_fragment_result_ref",
+            sha_field="immutable_failed_full_fragment_result_sha256",
+            digest_field="immutable_failed_full_fragment_result_digest",
+        )
+        _, prior_failed_assessment = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="failed_full_fragment_assessment_ref",
+            sha_field="failed_full_fragment_assessment_sha256",
+        )
+        if not (
+            prior_failed.get("status") == "terminal_failed_no_retry"
+            and prior_failed.get("failure_code")
+            == "finance_loop_micro_narrative_invalid"
+            and (prior_failed.get("execution") or {}).get("retries") == 0
+            and prior_failed_assessment.get("status")
+            == "terminal_contract_failure_project_surface_projection_defect_new_attempt_required"
+            and (prior_failed_assessment.get("disposition") or {}).get(
+                "same_attempt_retry_forbidden"
+            )
+            is True
+        ):
+            raise ValueError(
+                "project_os_full_fragment_failed_predecessor_invalid"
+            )
+        prior_failed_status = str(prior_failed["status"])
 
     _, analysis_profile = _validate_artifact_binding(
         root=root,
@@ -431,6 +505,7 @@ def _validate_full_fragment_fixed_pack_decision(
     return {
         "clean_proof_status": clean["status"],
         "predecessor_status": predecessor["status"],
+        "prior_failed_full_fragment_status": prior_failed_status,
         "provider_id": analysis_profile["provider_id"],
         "provider_model": analysis_profile["model"],
         "api_key_env": analysis_profile["api_key_env"],

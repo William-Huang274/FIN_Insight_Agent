@@ -673,9 +673,23 @@ def validate_claim_surface_authority_selection(
             "claim_surface_claim_relation_invalid",
         )
         atom_field = str(row.get("atom_field") or "")
+        per_atom_inference_explicit = "inference_authority" in row
+        atom_inference_authority = str(
+            row.get("inference_authority") or inference_authority
+        )
         if alias_mode:
             _require(
-                set(row) == {"atom_field", "claim_relation_ref"},
+                frozenset(row)
+                in {
+                    frozenset({"atom_field", "claim_relation_ref"}),
+                    frozenset(
+                        {
+                            "atom_field",
+                            "claim_relation_ref",
+                            "inference_authority",
+                        }
+                    ),
+                },
                 "claim_surface_claim_relation_invalid",
             )
             relation_ref = str(row.get("claim_relation_ref") or "")
@@ -700,17 +714,23 @@ def validate_claim_surface_authority_selection(
             financial_scope = str(combination["financial_scope"])
             bridge = str(combination["causal_bridge_authority"])
         else:
+            full_relation_fields = {
+                "atom_field",
+                "claim_subject",
+                "claim_outcome",
+                "claim_relation",
+                "attribution_basis",
+                "claim_scope",
+                "financial_scope",
+                "causal_bridge_authority",
+            }
             _require(
-                set(row)
-                == {
-                    "atom_field",
-                    "claim_subject",
-                    "claim_outcome",
-                    "claim_relation",
-                    "attribution_basis",
-                    "claim_scope",
-                    "financial_scope",
-                    "causal_bridge_authority",
+                frozenset(row)
+                in {
+                    frozenset(full_relation_fields),
+                    frozenset(
+                        full_relation_fields | {"inference_authority"}
+                    ),
                 },
                 "claim_surface_claim_relation_invalid",
             )
@@ -751,7 +771,7 @@ def validate_claim_surface_authority_selection(
             )
         _require(
             combination is not None
-            and inference_authority
+            and atom_inference_authority
             in set(combination["allowed_inference_authorities"])
             and judgment_status
             in set(combination["allowed_judgment_statuses"]),
@@ -830,6 +850,11 @@ def validate_claim_surface_authority_selection(
                 "claim_scope": claim_scope,
                 "financial_scope": financial_scope,
                 "causal_bridge_authority": bridge,
+                **(
+                    {"inference_authority": atom_inference_authority}
+                    if per_atom_inference_explicit
+                    else {}
+                ),
             }
         )
     _require(

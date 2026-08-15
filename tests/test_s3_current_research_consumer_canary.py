@@ -306,6 +306,7 @@ def _micro_alias_fragments() -> dict[str, dict[str, object]]:
             "qualitative_fact_refs": [],
             "method_step_refs": [],
             "graph_edge_refs": [],
+            "inference_authority": row["inference_authority"],
             "mechanism_atom": row["mechanism_atom"],
         },
         MICRO_JUDGMENT_TOOL_NAMES[2]: {
@@ -317,6 +318,7 @@ def _micro_alias_fragments() -> dict[str, dict[str, object]]:
             "qualitative_fact_refs": [],
             "method_step_refs": [],
             "graph_edge_refs": [],
+            "inference_authority": row["inference_authority"],
             "counterargument_atom": row["counterargument_atom"],
             "what_would_change": {
                 **row["what_would_change"],

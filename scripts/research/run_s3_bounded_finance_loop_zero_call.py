@@ -454,6 +454,7 @@ def _micro_fragments_from_reviewed_fake(
         SUBMIT_RESEARCH_MECHANISM_TOOL: {
             "cell_id": cell_id,
             "claim_relation_ref": relation_by_atom["mechanism_atom"],
+            "inference_authority": source["inference_authority"],
             "evidence_uses": [
                 {"evidence_ref": ref, "use_role": "support"}
                 for ref in required_refs(
@@ -472,6 +473,7 @@ def _micro_fragments_from_reviewed_fake(
         SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: {
             "cell_id": cell_id,
             "claim_relation_ref": relation_by_atom["counterargument_atom"],
+            "inference_authority": source["inference_authority"],
             "evidence_uses": [
                 {"evidence_ref": ref, "use_role": "support"}
                 for ref in required_refs(

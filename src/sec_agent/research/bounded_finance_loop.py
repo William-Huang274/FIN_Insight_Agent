@@ -1068,6 +1068,13 @@ def _micro_judgment_parameters(
     elif atom_field == "mechanism_atom":
         common = {
             **common,
+            "inference_authority": {
+                "type": "string",
+                "enum": list(contract["allowed_inference_authorities"]),
+                "description": (
+                    "Inference authority for this mechanism fragment only."
+                ),
+            },
             "mechanism_atom": {
                 "type": "string",
                 "description": "Economic mechanism without digits or refs.",
@@ -1076,6 +1083,13 @@ def _micro_judgment_parameters(
     else:
         common = {
             **common,
+            "inference_authority": {
+                "type": "string",
+                "enum": list(contract["allowed_inference_authorities"]),
+                "description": (
+                    "Inference authority for this counterargument fragment only."
+                ),
+            },
             "counterargument_atom": {
                 "type": "string",
                 "description": "Strongest bounded alternative without digits or refs.",
@@ -2428,9 +2442,10 @@ def _validate_micro_judgment_fragment(
             "thesis_atom",
         }
     elif atom_field == "mechanism_atom":
-        expected = common_fields | {"mechanism_atom"}
+        expected = common_fields | {"inference_authority", "mechanism_atom"}
     else:
         expected = common_fields | {
+            "inference_authority",
             "counterargument_atom",
             "what_would_change",
         }
@@ -2587,13 +2602,19 @@ def _validate_micro_judgment_fragment(
             "finance_loop_micro_thesis_required",
         )
         assert thesis_fragment is not None
+        fragment_inference_authority = str(
+            arguments.get("inference_authority") or ""
+        )
         _require(
-            str(thesis_fragment["inference_authority"])
+            fragment_inference_authority
+            in set(contract["allowed_inference_authorities"])
+            and fragment_inference_authority
             in set(relation["allowed_inference_authorities"])
             and str(thesis_fragment["judgment_status"])
             in set(relation["allowed_judgment_statuses"]),
             "finance_loop_micro_relation_disposition_invalid",
         )
+        output["inference_authority"] = fragment_inference_authority
         narrative = str(arguments.get(atom_field) or "").strip()
         _require(bool(narrative), "finance_loop_micro_narrative_invalid")
         output[atom_field] = narrative
@@ -2629,6 +2650,8 @@ def _validate_micro_judgment_fragment(
 
 def _compile_micro_judgment(
     fragments: Mapping[str, Mapping[str, Any]],
+    *,
+    cell: Mapping[str, Any],
 ) -> dict[str, Any]:
     _require(
         set(fragments) == set(MICRO_JUDGMENT_TOOL_NAMES),
@@ -2638,6 +2661,67 @@ def _compile_micro_judgment(
     mechanism = fragments[SUBMIT_RESEARCH_MECHANISM_TOOL]
     counter = fragments[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL]
     ordered = (thesis, mechanism, counter)
+    relation_by_ref = {
+        str(row["claim_relation_ref"]): row
+        for row in cell["claim_relation_card"]["allowed_combinations"]
+    }
+    selected_relations = [
+        relation_by_ref[str(fragment["claim_relation_ref"])]
+        for fragment in ordered
+    ]
+    atom_inference_authorities = [
+        str(fragment["inference_authority"]) for fragment in ordered
+    ]
+    if set(atom_inference_authorities) == {"not_inferable"}:
+        aggregate_inference_authority = "not_inferable"
+        aggregate_judgment_status = "insufficient_evidence"
+    elif set(atom_inference_authorities) == {"directly_supported"}:
+        aggregate_inference_authority = "directly_supported"
+        aggregate_judgment_status = str(thesis["judgment_status"])
+    else:
+        aggregate_inference_authority = "bounded_inference"
+        aggregate_judgment_status = (
+            str(thesis["judgment_status"])
+            if str(thesis["judgment_status"]) in {"bounded_support", "mixed"}
+            else "bounded_support"
+        )
+
+    claim_scopes = {str(row["claim_scope"]) for row in selected_relations}
+    financial_scopes = {
+        str(row["financial_scope"]) for row in selected_relations
+    }
+    bridge_authorities = {
+        str(row["causal_bridge_authority"]) for row in selected_relations
+    }
+    if aggregate_inference_authority == "directly_supported" and (
+        len(claim_scopes) > 1
+        or len(financial_scopes) > 1
+        or len(bridge_authorities) > 1
+    ):
+        aggregate_inference_authority = "bounded_inference"
+        aggregate_judgment_status = (
+            str(thesis["judgment_status"])
+            if str(thesis["judgment_status"]) in {"bounded_support", "mixed"}
+            else "bounded_support"
+        )
+    aggregate_claim_scope = (
+        next(iter(claim_scopes)) if len(claim_scopes) == 1 else "multi_scope"
+    )
+    aggregate_financial_scope = (
+        next(iter(financial_scopes))
+        if len(financial_scopes) == 1
+        else "multi_scope_financial"
+    )
+    if aggregate_inference_authority == "not_inferable":
+        aggregate_bridge_authority = "bridge_unavailable"
+    elif (
+        len(bridge_authorities) == 1
+        and len(claim_scopes) == 1
+        and len(financial_scopes) == 1
+    ):
+        aggregate_bridge_authority = next(iter(bridge_authorities))
+    else:
+        aggregate_bridge_authority = "multi_driver_context_only"
 
     def union_refs(field: str) -> list[str]:
         output: list[str] = []
@@ -2669,16 +2753,17 @@ def _compile_micro_judgment(
         wwc["threshold_numeric_ref"] = None
     return {
         "cell_id": thesis["cell_id"],
-        "judgment_status": thesis["judgment_status"],
+        "judgment_status": aggregate_judgment_status,
         "confidence_basis": thesis["confidence_basis"],
-        "inference_authority": thesis["inference_authority"],
-        "claim_scope": thesis["claim_scope"],
-        "financial_scope": thesis["financial_scope"],
-        "causal_bridge_authority": thesis["causal_bridge_authority"],
+        "inference_authority": aggregate_inference_authority,
+        "claim_scope": aggregate_claim_scope,
+        "financial_scope": aggregate_financial_scope,
+        "causal_bridge_authority": aggregate_bridge_authority,
         "claim_relations": [
             {
                 "atom_field": atom_field,
                 "claim_relation_ref": fragment["claim_relation_ref"],
+                "inference_authority": fragment["inference_authority"],
             }
             for atom_field, fragment in zip(
                 (
@@ -3034,7 +3119,10 @@ def run_bounded_finance_loop(
                 )
                 fragments[name] = fragment
                 if set(fragments) == set(MICRO_JUDGMENT_TOOL_NAMES):
-                    normalized = _compile_micro_judgment(fragments)
+                    normalized = _compile_micro_judgment(
+                        fragments,
+                        cell=cell_by_id[cell_id],
+                    )
                     try:
                         validated = validate_current_research_output(
                             {"cells": [normalized]},

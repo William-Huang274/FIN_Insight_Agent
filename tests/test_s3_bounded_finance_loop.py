@@ -532,6 +532,7 @@ def _micro_alias_fragments() -> dict[str, dict[str, object]]:
             "qualitative_fact_refs": [],
             "method_step_refs": [],
             "graph_edge_refs": [],
+            "inference_authority": row["inference_authority"],
             "mechanism_atom": row["mechanism_atom"],
         },
         SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: {
@@ -543,6 +544,7 @@ def _micro_alias_fragments() -> dict[str, dict[str, object]]:
             "qualitative_fact_refs": [],
             "method_step_refs": [],
             "graph_edge_refs": [],
+            "inference_authority": row["inference_authority"],
             "counterargument_atom": row["counterargument_atom"],
             "what_would_change": {
                 **row["what_would_change"],
@@ -609,7 +611,9 @@ def test_micro_judgment_loop_keeps_model_authorship_and_compiles_terminal_cell(
     assert set(mechanism_schema["properties"]).isdisjoint(
         {"thesis_atom", "counterargument_atom", "what_would_change"}
     )
+    assert "inference_authority" in mechanism_schema["properties"]
     assert "counterargument_atom" in counter_schema["properties"]
+    assert "inference_authority" in counter_schema["properties"]
     assert "what_would_change" in counter_schema["properties"]
 
     fragments = _micro_alias_fragments()
@@ -677,6 +681,20 @@ def test_micro_judgment_loop_keeps_model_authorship_and_compiles_terminal_cell(
         "claim_subject" in relation and "claim_relation_ref" in relation
         for relation in cell["claim_relations"]
     )
+    assert {
+        relation["atom_field"]: relation["inference_authority"]
+        for relation in cell["claim_relations"]
+    } == {
+        "thesis_atom": fragments[SUBMIT_RESEARCH_THESIS_TOOL][
+            "inference_authority"
+        ],
+        "mechanism_atom": fragments[SUBMIT_RESEARCH_MECHANISM_TOOL][
+            "inference_authority"
+        ],
+        "counterargument_atom": fragments[
+            SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+        ]["inference_authority"],
+    }
     assert all(
         receipt["private_reasoning_persisted"] is False
         for receipt in result.step_receipts
@@ -863,6 +881,107 @@ def test_micro_fragment_projection_extends_through_mechanism_and_counter_wwc(
     assert counter["what_would_change"] == fragments[
         SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
     ]["what_would_change"]
+
+
+def test_micro_fragments_allow_direct_thesis_with_bounded_or_abstaining_followups(
+    contracts,
+) -> None:
+    base_policy, research_input, kernel, route, planning = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_ALIAS_POLICY),
+    )
+    fragments = _micro_alias_fragments()
+    thesis = fragments[SUBMIT_RESEARCH_THESIS_TOOL]
+    thesis["inference_authority"] = "directly_supported"
+
+    mechanism = fragments[SUBMIT_RESEARCH_MECHANISM_TOOL]
+    mechanism.update(
+        {
+            "claim_relation_ref": "CR::DELL::PROFIT_BRIDGE_GAP",
+            "evidence_uses": [],
+            "numeric_refs": [],
+            "numeric_relation_refs": [],
+            "qualitative_fact_refs": [],
+            "method_step_refs": [],
+            "graph_edge_refs": [],
+            "inference_authority": "not_inferable",
+            "mechanism_atom": (
+                "当前资料没有建立人工智能服务器产品到分部或公司的利润桥。"
+            ),
+        }
+    )
+
+    counter = fragments[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL]
+    counter.update(
+        {
+            "evidence_uses": [],
+            "inference_authority": "bounded_inference",
+            "counterargument_atom": (
+                "公司毛利率变化只支持同口径观察，不能据此把利润变化归因于"
+                "人工智能服务器。"
+            ),
+        }
+    )
+
+    scoped = scope_bounded_finance_micro_judgment_policy(
+        base_policy,
+        micro_policy=load_fixed_pack_micro_judgment_policy(_json(MICRO_POLICY)),
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_micro_judgment_tools(
+        research_input=alias_input,
+        required_cell_ids=["CELL::value_capture"],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped,
+        strict=False,
+    )
+    sequence = [
+        _parallel_step(
+            1,
+            [
+                (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": "CELL::value_capture"}),
+                (READ_NUMERIC_FACTS_TOOL, {"cell_id": "CELL::value_capture"}),
+            ],
+        ),
+        *[
+            _step(index + 2, name, fragments[name])
+            for index, name in enumerate(MICRO_JUDGMENT_TOOL_NAMES)
+        ],
+    ]
+    result = run_bounded_finance_loop(
+        policy=scoped,
+        research_input=alias_input,
+        required_cell_ids=["CELL::value_capture"],
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+        tools=tools,
+        step_executor=lambda _messages, _tools, index: sequence[index - 1],
+        visible_execution_budget={
+            "maximum_steps": scoped.maximum_steps,
+            "maximum_evidence_requests": 0,
+            "maximum_reads_per_cell": 1,
+            "maximum_parallel_read_tools": 2,
+            "maximum_judgments_per_cell": 1,
+            "retry_count": 0,
+        },
+    )
+    assert result.status == "completed_all_required_cells"
+    assert {
+        row["atom_field"]: row["inference_authority"]
+        for row in result.structured_deliverable["cells"][0]["claim_relations"]
+    } == {
+        "thesis_atom": "directly_supported",
+        "mechanism_atom": "not_inferable",
+        "counterargument_atom": "bounded_inference",
+    }
 
 
 def test_micro_fragment_projection_fails_closed_on_scope_and_prior_mutation(

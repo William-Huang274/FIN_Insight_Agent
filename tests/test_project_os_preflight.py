@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -19,6 +20,20 @@ DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "claim_surface_authority_live_decision_v1_0.json"
 )
+ALIAS_CLEAN_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_relation_alias_capacity_zero_call_result_v1_0.json"
+)
+CAPACITY_PREDECESSOR_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_chat_live_result_v1_0.json"
+)
+
+
+def _sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _copy_ref(target_root: Path, ref: str) -> None:
@@ -73,6 +88,61 @@ def test_missing_provider_credential_fails_closed() -> None:
             environment={},
             check_repository=False,
         )
+
+
+def test_claim_relation_alias_capacity_decision_passes_same_strict_preflight(
+    tmp_path: Path,
+) -> None:
+    root = _fixture_root(tmp_path)
+    _copy_ref(root, ALIAS_CLEAN_REF)
+    _copy_ref(root, CAPACITY_PREDECESSOR_REF)
+    decision_path = root / DECISION_REF
+    decision = json.loads(decision_path.read_text(encoding="utf-8"))
+    clean = json.loads((root / ALIAS_CLEAN_REF).read_text(encoding="utf-8"))
+    predecessor = json.loads(
+        (root / CAPACITY_PREDECESSOR_REF).read_text(encoding="utf-8")
+    )
+    decision.update(
+        {
+            "status": (
+                "fixed_pack_claim_relation_alias_capacity_zero_call_pass_"
+                "one_chat_successor_authorized"
+            ),
+            "next_authorized_scope": (
+                "one_DELL_value_capture_fixed_pack_claim_relation_alias_"
+                "Chat_successor"
+            ),
+            "clean_zero_call_result_ref": ALIAS_CLEAN_REF,
+            "clean_zero_call_result_sha256": _sha(root / ALIAS_CLEAN_REF),
+            "clean_zero_call_result_digest": clean["result_digest"],
+            "immutable_predecessor_result_ref": CAPACITY_PREDECESSOR_REF,
+            "immutable_predecessor_result_sha256": _sha(
+                root / CAPACITY_PREDECESSOR_REF
+            ),
+            "immutable_predecessor_result_digest": predecessor[
+                "result_digest"
+            ],
+            "same_evidence_pack_and_provider_profile": True,
+            "reasoning_or_token_limit_increase": False,
+        }
+    )
+    decision_path.write_text(json.dumps(decision), encoding="utf-8")
+
+    result = build_preflight(
+        root=root,
+        decision_ref=DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["decision_projection"][
+        "claim_relation_alias_capacity_successor"
+    ] is True
+    assert (
+        "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget"
+        in result["scope_projection"]["explicit_allow_issue_ids"]
+    )
 
 
 def test_bound_artifact_sha_drift_fails_closed(tmp_path: Path) -> None:

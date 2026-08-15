@@ -1305,6 +1305,68 @@ def _fixed_pack_claim_surface_replacement_scope_authorized(
     return True
 
 
+def _fixed_pack_claim_relation_alias_replacement_scope_authorized(
+    decision: Mapping[str, Any],
+    *,
+    cell_ids: Sequence[str],
+    clean_zero_call_result: Mapping[str, Any],
+) -> bool:
+    expected_status = (
+        "fixed_pack_claim_relation_alias_capacity_zero_call_pass_"
+        "one_chat_successor_authorized"
+    )
+    if decision.get("status") != expected_status:
+        return False
+    predecessor_path = _resolve(
+        str(decision.get("immutable_predecessor_result_ref") or "")
+    )
+    if not (
+        predecessor_path.is_file()
+        and _sha(predecessor_path)
+        == str(decision.get("immutable_predecessor_result_sha256") or "")
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_claim_relation_alias_predecessor_drift"
+        )
+    predecessor = _json(predecessor_path)
+    predecessor_valid = (
+        predecessor.get("status") == "terminal_failed_no_retry"
+        and predecessor.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and predecessor.get("result_digest")
+        == decision.get("immutable_predecessor_result_digest")
+        and predecessor.get("execution", {}).get("retries") == 0
+        and predecessor.get("execution", {}).get("fallbacks") == 0
+    )
+    scope_valid = (
+        list(cell_ids) == ["CELL::value_capture"]
+        and decision.get("case_key") == "DELL"
+        and decision.get("cell_id") == "CELL::value_capture"
+        and decision.get("next_authorized_scope")
+        == "one_DELL_value_capture_fixed_pack_claim_relation_alias_Chat_successor"
+        and decision.get("clean_zero_call_result_digest")
+        == clean_zero_call_result.get("result_digest")
+        and decision.get("maximum_evidence_requests") == 0
+        and decision.get("chat_live_authorized") is True
+        and decision.get("responses_live_authorized") is False
+        and decision.get("anthropic_live_authorized") is False
+        and decision.get("dynamic_layer_two_authorized") is False
+        and decision.get("five_cell_live_authorized") is False
+        and decision.get("product_publication_authorized") is False
+        and decision.get("same_evidence_pack_and_provider_profile") is True
+        and decision.get("reasoning_or_token_limit_increase") is False
+        and decision.get("retries") == 0
+        and decision.get("fallbacks") == 0
+        and decision.get("replacement_is_new_attempt_not_retry") is True
+        and decision.get("historical_failure_promoted") is False
+    )
+    if not (predecessor_valid and scope_valid):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_claim_relation_alias_replacement_disposition_invalid"
+        )
+    return True
+
+
 def run_tool_loop(
     authority_path: Path,
     *,
@@ -1429,11 +1491,35 @@ def run_tool_loop(
         and normalized.get("network_calls") == 0
         and normalized.get("retries") == 0
     )
+    claim_relation_alias_clean = (
+        clean.get("status")
+        == "engineering_pass_zero_call_claim_relation_alias_capacity"
+        and normalized.get("claim_relation_alias_input_digest")
+        == research_input["research_input_digest"]
+        and normalized.get("finance_loop_initial_messages_digest")
+        == actual["finance_loop_messages_digest"]
+        and normalized.get("standard_tool_schema_digest")
+        == actual["standard_tool_schema_digest"]
+        and normalized.get("relation_aliases_selected") == 3
+        and normalized.get("relations_expanded_locally") == 3
+        and normalized.get("full_internal_lineage_retained") is True
+        and normalized.get("compact_model_view_hides_audit_lineage") is True
+        and normalized.get("authority_cards_visible_once") is True
+        and normalized.get("zero_budget_evidence_request_tool_omitted") is True
+        and normalized.get("current_to_prior_message_ratio", 1) < 0.5
+        and normalized.get("current_to_prior_tool_ratio", 1) < 0.55
+        and normalized.get("fake_loop_steps") == 2
+        and normalized.get("fake_loop_tool_calls") == 3
+        and normalized.get("fake_loop_evidence_requests") == 0
+        and normalized.get("model_calls") == 0
+        and normalized.get("network_calls") == 0
+        and normalized.get("retries") == 0
+    )
     if not (
         (
             claim_surface_authority_mode
             and claim_authority_mode
-            and claim_surface_clean
+            and (claim_surface_clean or claim_relation_alias_clean)
         )
         or (
             claim_authority_mode
@@ -1490,10 +1576,17 @@ def run_tool_loop(
     fixed_pack_claim_surface_authority_authorized = (
         claim_surface_authority_mode
         and claim_authority_mode
-        and _fixed_pack_claim_surface_replacement_scope_authorized(
-            prior_scope_decision,
-            cell_ids=cell_ids,
-            clean_zero_call_result=clean,
+        and (
+            _fixed_pack_claim_surface_replacement_scope_authorized(
+                prior_scope_decision,
+                cell_ids=cell_ids,
+                clean_zero_call_result=clean,
+            )
+            or _fixed_pack_claim_relation_alias_replacement_scope_authorized(
+                prior_scope_decision,
+                cell_ids=cell_ids,
+                clean_zero_call_result=clean,
+            )
         )
     )
     single_scope_authorized = (

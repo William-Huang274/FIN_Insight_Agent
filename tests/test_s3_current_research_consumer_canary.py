@@ -582,6 +582,76 @@ def test_fixed_pack_claim_surface_live_path_uses_surface_contract(
     ]
 
 
+def test_claim_relation_alias_successor_requires_bound_capacity_failure(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    predecessor = tmp_path / "capacity-r1.json"
+    predecessor.write_text(
+        json.dumps(
+            {
+                "status": "terminal_failed_no_retry",
+                "failure_code": "model_gateway_reasoning_budget_exhausted",
+                "result_digest": "a" * 64,
+                "execution": {"retries": 0, "fallbacks": 0},
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        runner,
+        "_resolve",
+        lambda ref: predecessor if ref == "capacity-r1.json" else Path(ref),
+    )
+    decision = {
+        "status": (
+            "fixed_pack_claim_relation_alias_capacity_zero_call_pass_"
+            "one_chat_successor_authorized"
+        ),
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "next_authorized_scope": (
+            "one_DELL_value_capture_fixed_pack_claim_relation_alias_"
+            "Chat_successor"
+        ),
+        "clean_zero_call_result_digest": "b" * 64,
+        "immutable_predecessor_result_ref": "capacity-r1.json",
+        "immutable_predecessor_result_sha256": runner._sha(predecessor),
+        "immutable_predecessor_result_digest": "a" * 64,
+        "maximum_evidence_requests": 0,
+        "chat_live_authorized": True,
+        "responses_live_authorized": False,
+        "anthropic_live_authorized": False,
+        "dynamic_layer_two_authorized": False,
+        "five_cell_live_authorized": False,
+        "product_publication_authorized": False,
+        "same_evidence_pack_and_provider_profile": True,
+        "reasoning_or_token_limit_increase": False,
+        "retries": 0,
+        "fallbacks": 0,
+        "replacement_is_new_attempt_not_retry": True,
+        "historical_failure_promoted": False,
+    }
+    assert runner._fixed_pack_claim_relation_alias_replacement_scope_authorized(
+        decision,
+        cell_ids=["CELL::value_capture"],
+        clean_zero_call_result={"result_digest": "b" * 64},
+    ) is True
+
+    contaminated = dict(decision)
+    contaminated["same_evidence_pack_and_provider_profile"] = False
+    with pytest.raises(runner.CurrentResearchConsumerCanaryError) as exc:
+        runner._fixed_pack_claim_relation_alias_replacement_scope_authorized(
+            contaminated,
+            cell_ids=["CELL::value_capture"],
+            clean_zero_call_result={"result_digest": "b" * 64},
+        )
+    assert exc.value.args[0] == (
+        "research_consumer_claim_relation_alias_replacement_disposition_invalid"
+    )
+
+
 def test_standard_tool_loop_accepts_digest_bound_research_context_decision(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

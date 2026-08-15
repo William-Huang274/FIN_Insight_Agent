@@ -97,13 +97,20 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    alias_status = (
+        "fixed_pack_claim_relation_alias_capacity_zero_call_pass_"
+        "one_chat_successor_authorized"
+    )
+    alias_mode = decision.get("status") == alias_status
     required_equal = {
         "case_key": "DELL",
         "cell_id": "CELL::value_capture",
         "run_scope_id": FIXED_PACK_SCOPE,
         "evidence_mode": "reviewed_fixed_pack_unit_test",
         "next_authorized_scope": (
-            "one_DELL_value_capture_fixed_pack_claim_surface_Chat_replacement"
+            "one_DELL_value_capture_fixed_pack_claim_relation_alias_Chat_successor"
+            if alias_mode
+            else "one_DELL_value_capture_fixed_pack_claim_surface_Chat_replacement"
         ),
     }
     for field, expected in required_equal.items():
@@ -131,6 +138,17 @@ def _validate_fixed_pack_decision(
     for field in required_false:
         if decision.get(field) is not False:
             raise ValueError(f"project_os_decision_false_required:{field}")
+    if alias_mode:
+        if decision.get("same_evidence_pack_and_provider_profile") is not True:
+            raise ValueError(
+                "project_os_decision_true_required:"
+                "same_evidence_pack_and_provider_profile"
+            )
+        if decision.get("reasoning_or_token_limit_increase") is not False:
+            raise ValueError(
+                "project_os_decision_false_required:"
+                "reasoning_or_token_limit_increase"
+            )
 
     numeric_equal = {
         "maximum_model_calls": 3,
@@ -152,13 +170,27 @@ def _validate_fixed_pack_decision(
         sha_field="clean_zero_call_result_sha256",
         digest_field="clean_zero_call_result_digest",
     )
-    if clean.get("status") != "engineering_pass_zero_call_claim_surface_authority":
-        raise ValueError("project_os_clean_proof_status_invalid")
     acceptance = clean.get("acceptance") or {}
-    if (
-        acceptance.get("corrected_zero_call_judgment_passes") is not True
-        or acceptance.get("zero_request_fixed_pack_loop_passes") is not True
-        or acceptance.get("natural_replacement_live_proven") is not False
+    legacy_clean_valid = (
+        clean.get("status")
+        == "engineering_pass_zero_call_claim_surface_authority"
+        and acceptance.get("corrected_zero_call_judgment_passes") is True
+        and acceptance.get("zero_request_fixed_pack_loop_passes") is True
+        and acceptance.get("natural_replacement_live_proven") is False
+    )
+    alias_clean_valid = (
+        clean.get("status")
+        == "engineering_pass_zero_call_claim_relation_alias_capacity"
+        and acceptance.get(
+            "relation_alias_selection_and_local_expansion_pass"
+        )
+        is True
+        and acceptance.get("capacity_reduction_pass") is True
+        and acceptance.get("fake_loop_and_mutation_pass") is True
+        and acceptance.get("natural_replacement_live_proven") is False
+    )
+    if (alias_mode and not alias_clean_valid) or (
+        not alias_mode and not legacy_clean_valid
     ):
         raise ValueError("project_os_clean_proof_acceptance_invalid")
 
@@ -171,9 +203,12 @@ def _validate_fixed_pack_decision(
     )
     if predecessor.get("status") != "terminal_failed_no_retry":
         raise ValueError("project_os_predecessor_status_invalid")
-    if predecessor.get("failure_code") != (
-        "finance_loop_judgment_invalid:research_consumer_thesis_atom_invalid"
-    ):
+    expected_failure = (
+        "model_gateway_reasoning_budget_exhausted"
+        if alias_mode
+        else "finance_loop_judgment_invalid:research_consumer_thesis_atom_invalid"
+    )
+    if predecessor.get("failure_code") != expected_failure:
         raise ValueError("project_os_predecessor_failure_code_invalid")
 
     _, profile = _validate_artifact_binding(
@@ -213,6 +248,7 @@ def _validate_fixed_pack_decision(
         "provider_model": profile["model"],
         "api_key_env": profile["api_key_env"],
         "recent_provider_steps": len(health["provider_steps"]),
+        "claim_relation_alias_capacity_successor": alias_mode,
     }
 
 
@@ -296,6 +332,16 @@ def build_preflight(
     scope_projection = _scope_blocker_projection(
         root=root, run_scope_id=str(decision["run_scope_id"])
     )
+    if (
+        decision.get("status")
+        == (
+            "fixed_pack_claim_relation_alias_capacity_zero_call_pass_"
+            "one_chat_successor_authorized"
+        )
+        and "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget"
+        not in scope_projection["explicit_allow_issue_ids"]
+    ):
+        raise ValueError("project_os_claim_relation_alias_scope_allowance_missing")
 
     env = os.environ if environment is None else environment
     api_key_env = str(decision_projection["api_key_env"])

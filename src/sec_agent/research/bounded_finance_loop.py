@@ -443,6 +443,7 @@ def _judgment_parameters(
     numeric_relation_refs: Sequence[str],
     method_step_refs: Sequence[str],
     graph_edge_refs: Sequence[str],
+    qualitative_fact_refs: Sequence[str],
     contract: Mapping[str, Any],
 ) -> dict[str, Any]:
     evidence_use = _strict_object(
@@ -543,6 +544,80 @@ def _judgment_parameters(
                 if "allowed_claim_scopes" in contract
                 else {}
             ),
+            **(
+                {
+                    "claim_relations": {
+                        "type": "array",
+                        "items": _strict_object(
+                            {
+                                "atom_field": {
+                                    "type": "string",
+                                    "enum": [
+                                        "thesis_atom",
+                                        "mechanism_atom",
+                                        "counterargument_atom",
+                                    ],
+                                },
+                                "claim_subject": {
+                                    "type": "string",
+                                    "enum": list(
+                                        contract["allowed_claim_subjects"]
+                                    ),
+                                },
+                                "claim_outcome": {
+                                    "type": "string",
+                                    "enum": list(
+                                        contract["allowed_claim_outcomes"]
+                                    ),
+                                },
+                                "claim_relation": {
+                                    "type": "string",
+                                    "enum": list(
+                                        contract["allowed_claim_relations"]
+                                    ),
+                                },
+                                "attribution_basis": {
+                                    "type": "string",
+                                    "enum": list(
+                                        contract["allowed_attribution_bases"]
+                                    ),
+                                },
+                                "claim_scope": {
+                                    "type": "string",
+                                    "enum": list(
+                                        contract["allowed_claim_scopes"]
+                                    ),
+                                },
+                                "financial_scope": {
+                                    "type": "string",
+                                    "enum": list(
+                                        contract["allowed_financial_scopes"]
+                                    ),
+                                },
+                                "causal_bridge_authority": {
+                                    "type": "string",
+                                    "enum": list(
+                                        contract[
+                                            "allowed_causal_bridge_authorities"
+                                        ]
+                                    ),
+                                },
+                            }
+                        ),
+                        "minItems": 3,
+                        "maxItems": 3,
+                    },
+                    "qualitative_fact_refs": ref_array(
+                        qualitative_fact_refs,
+                        description=(
+                            "Source-bound qualitative fact refs actually used; "
+                            "the harness renders their surfaces without a point estimate."
+                        ),
+                    ),
+                }
+                if "allowed_claim_subjects" in contract
+                else {}
+            ),
             "evidence_uses": {"type": "array", "items": evidence_use},
             "numeric_refs": {
                 "type": "array",
@@ -637,6 +712,13 @@ def compile_finance_loop_tool_contract(
             for edge in row["graph_context_pack"]["edges"]
         }
     )
+    qualitative_fact_refs = sorted(
+        {
+            str(ref)
+            for row in cells
+            for ref in row.get("allowed_qualitative_fact_refs", ())
+        }
+    )
     return compile_finance_tool_contract(
         research_input=research_input,
         selected_cells=cells,
@@ -649,6 +731,7 @@ def compile_finance_loop_tool_contract(
             numeric_relation_refs=numeric_relation_refs,
             method_step_refs=method_step_refs,
             graph_edge_refs=graph_edge_refs,
+            qualitative_fact_refs=qualitative_fact_refs,
             contract=research_input["model_output_contract"],
         ),
         maximum_metric_intents=policy.evidence_request_max_metric_intents,
@@ -705,6 +788,13 @@ def compile_finance_judgment_tool(
                     for edge in row["graph_context_pack"]["edges"]
                 }
             ),
+            qualitative_fact_refs=sorted(
+                {
+                    str(ref)
+                    for row in cells
+                    for ref in row.get("allowed_qualitative_fact_refs", ())
+                }
+            ),
             contract=research_input["model_output_contract"],
         ),
     }
@@ -758,6 +848,18 @@ def compile_finance_loop_messages(
                     if "claim_authority_card" in row
                     else {}
                 ),
+                **(
+                    {
+                        "claim_relation_card": deepcopy(
+                            row["claim_relation_card"]
+                        ),
+                        "allowed_qualitative_fact_refs": list(
+                            row["allowed_qualitative_fact_refs"]
+                        ),
+                    }
+                    if "claim_relation_card" in row
+                    else {}
+                ),
                 "gap_route_decisions": [
                     deepcopy(route_decisions[str(ref)])
                     for ref in row["visible_gap_refs"]
@@ -798,6 +900,18 @@ def compile_finance_loop_messages(
                 "Declare claim scope, financial scope and causal bridge authority using the cell ClaimAuthorityCard.",
                 "A management assertion is not an audited product-to-company bridge; multi-driver context does not allocate profit to one product.",
                 "This fixed-pack unit test performs no retrieval and is not Agentic Research.",
+            ]
+        )
+    if "claim_surface_authority_contract" in research_input:
+        visible["claim_surface_authority_contract"] = deepcopy(
+            research_input["claim_surface_authority_contract"]
+        )
+        visible["boundaries"].extend(
+            [
+                "Select the structured subject, outcome, relation and attribution basis from the cell ClaimRelationCard.",
+                "Use a QF ref for a reviewed management target; never repeat or numerically sharpen its qualitative band in prose.",
+                "The harness renders the selected qualitative surface, while the model remains responsible for the narrative judgment.",
+                "Narrative atoms may not contradict or broaden the selected structured relation.",
             ]
         )
     if execution_budget is not None:
@@ -882,6 +996,12 @@ def _evidence_tool_result(
     gaps = {
         str(row["gap_ref"]): row for row in research_input["residual_gap_cards"]
     }
+    qualitative_facts = {
+        str(row["qualitative_fact_ref"]): row
+        for row in research_input.get(
+            "source_bound_qualitative_fact_cards", ()
+        )
+    }
     return {
         "status": "reviewed_evidence_read",
         "cell_id": cell["cell_id"],
@@ -892,6 +1012,19 @@ def _evidence_tool_result(
         **(
             {"claim_authority_card": deepcopy(cell["claim_authority_card"])}
             if "claim_authority_card" in cell
+            else {}
+        ),
+        **(
+            {
+                "claim_relation_card": deepcopy(
+                    cell["claim_relation_card"]
+                ),
+                "source_bound_qualitative_facts": [
+                    deepcopy(qualitative_facts[str(ref)])
+                    for ref in cell["allowed_qualitative_fact_refs"]
+                ],
+            }
+            if "claim_relation_card" in cell
             else {}
         ),
         "candidate_or_rejected_item_included": False,

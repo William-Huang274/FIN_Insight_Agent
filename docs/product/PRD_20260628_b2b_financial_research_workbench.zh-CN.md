@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-14 | FIN 0.1.3 S3 第一层失败后新增 Claim Surface successor：来源允许引用的管理层 qualitative band 必须先编译成 source-bound QF，并由 Harness 确定性展示 surface／qualifier，禁止转为单点或 audited NumericFact；thesis、mechanism、counterargument 各自提交结构化 subject、outcome、relation、attribution 和 scope。旧关键词因果门降为纵深防御，不能继续承担关系证明。旧 live 不追认，formal zero-call proof 前不授权 replacement live 或动态第二层。 |
 | 2026-08-14 | FIN 0.1.3 S3 验收正式拆成三层：fixed reviewed Pack 只隔离模型分析能力，不计作 Agentic Research；单单元动态纵切必须让模型自行提出 EvidenceRequest、真实调用 S1/S2、接收 EvidenceResponse 并继续／停止；完整动态案例还须五单元综合和报告验收。Owner 当前只批准第一层。第一层新增 provider-neutral `claim_scope + financial_scope + causal_bridge_authority`，但模型仍拥有研究叙事，本地不得代写结论。第一层通过也不得自动放行动态纵切或五单元。技术边界见 `docs/architecture/research/FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_20260814.zh-CN.md`。 |
 | 2026-08-14 | FIN 0.1.3 S1→S3 全链审计纠正“只修 S3 因果门即可继续”的局部判断。当前已证明 EvidenceRequest→S1 candidate、S2 CompanyFact/NumericRelation、fixed reviewed Pack→S3 单元 Judgment 各自可运行，但动态补证仍只记录 proposal、不会在同一循环执行检索/Evidence Gate/回流；S2 对订单、积压、销量、ASP、PVM、产品利润桥和估值尚无同等级 typed authority；S3 也尚无 claim scope／causal bridge 强制门。产品下一决策必须把 `candidate→EvidenceResponse→operating metric/bridge→claim authority` 作为同一有界真值纵切，不能只靠更多来源、调 embedding 或重复 live。完整审计见 `docs/worklog/fin_0_1_3_s3/019_s1_to_s3_full_chain_and_experiment_audit.md`。 |
 | 2026-08-14 | FIN 0.1.3 S3 Chat／Responses 同输入 paired 证明两种协议均可完成 DELL 单单元五步工具循环，但协议通过不等于金融内容通过。两路均使用 FY2027 Q1 与 FY2026 全年 NumericFact 生成同比／扩张／压缩关系，原始表格虽含上年同期数据，最终 Judgment 却没有 same-cadence relation、公式与 lineage，故 L1 不通过；另发现 gap 建议行业数据而 compiled request 只允许 SEC form，source class 未进入 model-visible Tool Contract。产品合同新增：比较性语言必须绑定同指标、同单位、同 cadence 的确定性 relation；EvidenceRequest 必须显式选择当前可执行的 source class。Chat 暂保留主传输，Responses 只作已跑通 candidate，五单元不放行。 |
@@ -2620,3 +2621,15 @@ paired R1 进一步确立两条产品硬约束。第一，模型选择了若干�
 3. S3 必须把 `claim_scope`、`financial_scope`、`causal_bridge_authority` 和 abstain／bounded wording 编译成 provider-neutral 判断合同。RoleMethodPack 是方法，GraphContextPack 是作用域和机制上下文；二者都不能替代 Evidence、NumericFact、NumericRelation 或 product-to-financial bridge。
 
 因此下一产品决策应以一条有界的 Research Truth Spine 为单位，同时验证：真实 EvidenceRequest 是否返回 accepted／rejected／typed gap／needs-human-review；研究所需 operating metric 和 bridge 是否有权威；模型最终 claim 是否处在被证据允许的范围。只有同一 DELL cell 的三段闭合并用保存失败输出完成零调用负向回放后，才值得新增自然模型证明。通过单 cell 后再扩五单元，通过 DELL 后再用 MU／NVDA 与独立留出案例验证泛化。只修 S3 拒绝器、只增加网页、只调 embedding／reranker 或直接跑五单元都不能关闭该产品门。
+
+### 16.32 来源绑定定性数值与逐原子 Claim Relation（2026-08-15）
+
+DELL fixed-Pack Chat 的首个失败表明，来源允许引用某个定性数值区间，不等于模型可以把该区间继续写在自由叙事里。若通用数字门全面禁止，合法管理层目标没有输出通道；若把“中个位数”加入白名单，同一短语又会脱离公司、期间、指标、来源和 qualifier 被任意复用。因此产品新增 `SourceBoundQualitativeFact`：
+
+1. 每个 QF 必须绑定 case、cell、subject、metric、qualitative band、unit、fiscal period、source Evidence ref、Evidence／source-text digest、原始 surface、canonical display surface、authority mode 和 qualifier。
+2. QF 可以表达 management target／qualitative band，但不得伪装成 audited NumericFact，不得被转成单点、区间端点或公式 operand。模型只选择 QF ref；Harness 只确定性展示 source-bound surface 和 qualifier。
+3. 原始 Evidence、QF 与 NumericFact 是三种不同权威：Evidence 证明来源说了什么，QF 允许展示经过审阅的定性数值表面，NumericFact 才拥有精确值、期间、单位和公式权威。
+
+单个 cell-level scope 标签也不足以约束一段完整输出。thesis、mechanism 和 counterargument 往往分别表达管理层陈述、因果机制与反方比较；用一个关系覆盖三段，会让其中两段逃离合同。因此每个 narrative atom 必须各自选择结构化 `subject、outcome、relation、attribution basis、claim scope、financial scope、causal bridge authority`，并绑定所需 Evidence、QF、NumericRelation 和 gap。模型仍拥有文字与关系选择；Harness 只校验组合、渲染 fact surface 和保存 receipt，不代写研究结论。
+
+关键词扫描保留为纵深防御，只用于发现叙事与所选关系的明显冲突，不能再作为关系正确性的主要证明。验收必须回放旧失败 payload：旧 schema 不得静默晋升；只补字段仍应被自由定性数字门拒绝；迁移 QF 后若 mechanism 仍选择不存在的强因果桥，也必须拒绝。修正版 fixture 通过只构成零调用工程门；自然 replacement live、fixed-Pack 第一层 acceptance、动态单单元纵切和五单元研究都需要各自独立授权与内容验收。

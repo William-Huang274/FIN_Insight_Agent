@@ -2,7 +2,7 @@
 
 日期：2026-08-14
 
-状态：`implementation_complete / formal_clean_proof_and_one_live_pending`
+状态：`claim_scope_live_failed_immutable / claim_surface_successor_implemented / formal_clean_zero_call_proof_pending`
 
 ## 1. 为什么需要这一层
 
@@ -57,3 +57,19 @@ Prompt 和 Skill 已经明确提醒过这些边界，R2 仍越界，因此不能
 正式结果仍为 `terminal_failed_no_retry`。最早失败不是 causal scope，而是旧通用叙事门禁止汉字数字区间：模型复述 reviewed Evidence 明确允许引用的“中个位数”管理层目标，当前合同却没有 typed range／management-target alias。本轮因此证明 claim-authority 方向有效，但“来源允许引用的定性区间如何进入确定性数值表面”仍未闭合。
 
 失败输出不得晋升。第二层仍 blocked。任何后续处置应先零调用建立 source-bound qualitative range／management-target alias，并把文本关键词式因果 guard 逐步替换为结构化 claim relation；这不改变模型对 thesis、mechanism、counterargument 和 WWC 的写作所有权。
+
+## 7. Claim Surface successor
+
+本轮没有把“中个位数”加入通用文本白名单，也没有放宽自由数字门。successor 把该来源表面编译成 `QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1`：它绑定 DELL、`CELL::value_capture`、源 Evidence、Evidence／source-text digest、FY2027 Q1、`mid_single_digit` qualitative band、百分比率单位和 `issuer_management_assertion`。模型只能选择 QF ref；Harness 确定性展示“中个位数经营利润率目标”及“未经独立审计、不得转成单点或跨层利润桥”的 qualifier。该 QF 永远不是 audited NumericFact。
+
+结构化关系也不再只给整个 cell 一个标签。thesis、mechanism、counterargument 三个模型原子各自必须选择：
+
+- `claim_subject`；
+- `claim_outcome`；
+- `claim_relation`；
+- `attribution_basis`；
+- `claim_scope / financial_scope / causal_bridge_authority`。
+
+本地只允许当前卡片列出的组合，并检查每个关系所需的 Evidence、QF、NumericRelation 和 gap。旧关键词 guard 降为纵深防御；它不再负责“证明关系正确”，但仍可拒绝与所选 bridge 明显冲突的强因果表面。模型继续独立写三段文字，Harness 不拼装 thesis 或机制。
+
+保存的失败 live 将按三步零调用回放：旧 schema 不能静默晋升；只补结构字段仍因自由定性数字表面失败；把区间迁移到 QF 后，原 mechanism 的强因果关系仍必须被结构门拒绝。只有同时使用 QF 和每原子合法关系的修正版 fixture 才可生成 v1.4 deliverable。该 fixture 只证明工程合同，不代表自然模型、第一层 acceptance 或动态 Agentic Research 通过。

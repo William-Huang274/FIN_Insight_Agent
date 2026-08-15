@@ -472,9 +472,13 @@ def compile_finance_tool_contract(
         tool(
             SUBMIT_RESEARCH_JUDGMENT_TOOL,
             (
-                "Submit one provider-neutral claim-authority judgment for local validation and rendering."
-                if "claim_authority_contract" in research_input
-                else "Submit one provider-neutral v1.2 judgment for local validation and rendering."
+                "Submit one provider-neutral structured claim-relation and source-bound qualitative-fact judgment for local validation and rendering."
+                if "claim_surface_authority_contract" in research_input
+                else (
+                    "Submit one provider-neutral claim-authority judgment for local validation and rendering."
+                    if "claim_authority_contract" in research_input
+                    else "Submit one provider-neutral v1.2 judgment for local validation and rendering."
+                )
             ),
             judgment_schema,
         ),

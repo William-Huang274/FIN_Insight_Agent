@@ -20,6 +20,12 @@ from .claim_authority import (
     ClaimAuthorityError,
     validate_claim_authority_selection,
 )
+from .claim_surface_authority import (
+    CLAIM_SURFACE_AUTHORITY_DELIVERABLE_SCHEMA_VERSION,
+    CLAIM_SURFACE_AUTHORITY_MODEL_FIELDS,
+    ClaimSurfaceAuthorityError,
+    validate_claim_surface_authority_selection,
+)
 
 
 CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION = (
@@ -60,7 +66,7 @@ _VERBAL_NUMERIC_SURFACE = re.compile(
     r"[零一二两三四五六七八九十百千万亿点]+个基点)"
 )
 _ALIAS_IN_PROSE = re.compile(
-    r"\b(?:EV|NUM|REL|GAP|METHOD|GRAPH)::[A-Z0-9:_-]{4,96}\b"
+    r"\b(?:EV|NUM|REL|GAP|METHOD|GRAPH|QF)::[A-Z0-9:_-]{4,128}\b"
 )
 _YEAR_OVER_YEAR_SURFACE = re.compile(
     r"同比|较上年同期|year[- ]over[- ]year|\byoy\b|prior[- ]year quarter",
@@ -1233,6 +1239,7 @@ def compile_current_research_messages(
     selected_evidence_refs: set[str] = set()
     selected_numeric_refs: set[str] = set()
     selected_numeric_relation_refs: set[str] = set()
+    selected_qualitative_fact_refs: set[str] = set()
     route_decisions = {
         row["gap_ref"]: row
         for row in research_input["evidence_request_route_catalog"][
@@ -1248,6 +1255,9 @@ def compile_current_research_messages(
         selected_numeric_refs.update(cell["allowed_numeric_refs"])
         selected_numeric_relation_refs.update(
             cell["allowed_numeric_relation_refs"]
+        )
+        selected_qualitative_fact_refs.update(
+            cell.get("allowed_qualitative_fact_refs", ())
         )
         method_pack = deepcopy(cell.get("role_method_pack"))
         graph_pack = deepcopy(cell["graph_context_pack"])
@@ -1285,6 +1295,18 @@ def compile_current_research_messages(
                     if "claim_authority_card" in cell
                     else {}
                 ),
+                **(
+                    {
+                        "claim_relation_card": deepcopy(
+                            cell["claim_relation_card"]
+                        ),
+                        "allowed_qualitative_fact_refs": list(
+                            cell["allowed_qualitative_fact_refs"]
+                        ),
+                    }
+                    if "claim_relation_card" in cell
+                    else {}
+                ),
                 "residual_gap_cards": [
                     {
                         **deepcopy(gap_by_ref[ref]),
@@ -1309,6 +1331,27 @@ def compile_current_research_messages(
                 "causal_bridge_authority": "one bridge authority listed in the cell ClaimAuthorityCard",
             }
             if "claim_authority_contract" in research_input
+            else {}
+        ),
+        **(
+            {
+                "claim_relations": [
+                    {
+                        "atom_field": "exactly one of thesis_atom, mechanism_atom or counterargument_atom; cover all three exactly once",
+                        "claim_subject": "one subject listed in the cell ClaimRelationCard",
+                        "claim_outcome": "one outcome listed in the cell ClaimRelationCard",
+                        "claim_relation": "one relation listed in the cell ClaimRelationCard",
+                        "attribution_basis": "one attribution basis listed in the cell ClaimRelationCard",
+                        "claim_scope": "scope of this atom-level claim",
+                        "financial_scope": "financial scope of this atom-level claim",
+                        "causal_bridge_authority": "bridge authority of this atom-level claim",
+                    }
+                ],
+                "qualitative_fact_refs": [
+                    "zero or more QF refs from this cell; select a reviewed source-bound qualitative fact instead of repeating its numeric surface in prose"
+                ],
+            }
+            if "claim_surface_authority_contract" in research_input
             else {}
         ),
         "evidence_uses": [
@@ -1358,6 +1401,20 @@ def compile_current_research_messages(
             for row in research_input["numeric_relation_cards"]
             if row["numeric_relation_ref"] in selected_numeric_relation_refs
         ],
+        **(
+            {
+                "source_bound_qualitative_fact_catalog": [
+                    deepcopy(row)
+                    for row in research_input[
+                        "source_bound_qualitative_fact_cards"
+                    ]
+                    if row["qualitative_fact_ref"]
+                    in selected_qualitative_fact_refs
+                ]
+            }
+            if "claim_surface_authority_contract" in research_input
+            else {}
+        ),
         "cells": visible_cells,
         "research_context_injection_receipt": deepcopy(
             research_input["research_context_receipts"]
@@ -1430,6 +1487,34 @@ def compile_current_research_messages(
                 "Management assertion authority proves only the attributed statement. Multi-driver context permits coexistence but not product-to-segment or product-to-company profit allocation.",
                 "Do not use product-to-profit causal language, operating-leverage claims or semi-fixed-cost mechanisms unless the card exposes a direct cross-scope bridge.",
                 "This fixed Evidence Pack test does not execute retrieval and must not be described as Agentic Research.",
+            ]
+        )
+    if "claim_surface_authority_contract" in research_input:
+        visible["claim_surface_authority_contract"] = deepcopy(
+            research_input["claim_surface_authority_contract"]
+        )
+        visible["output_contract"].update(
+            {
+                "allowed_claim_subjects": contract[
+                    "allowed_claim_subjects"
+                ],
+                "allowed_claim_outcomes": contract[
+                    "allowed_claim_outcomes"
+                ],
+                "allowed_claim_relations": contract[
+                    "allowed_claim_relations"
+                ],
+                "allowed_attribution_bases": contract[
+                    "allowed_attribution_bases"
+                ],
+            }
+        )
+        visible["rules"].extend(
+            [
+                "For thesis, mechanism and counterargument, select one atom-level structured subject, outcome, relation, attribution basis and scope tuple from the cell ClaimRelationCard; all three tuples are authoritative semantic commitments.",
+                "Select a QF ref to use a reviewed management target. Do not repeat its qualitative numeric band in prose; the harness renders the source-bound surface without converting it to a point estimate.",
+                "Narrative atoms remain yours, but they may not contradict or broaden the selected structured relation. An unattributed product-to-financial causal sentence remains invalid.",
+                "A source-bound qualitative management target is not an audited NumericFact and does not establish a product-to-segment or product-to-company bridge.",
             ]
         )
     user_content = json.dumps(
@@ -1559,6 +1644,24 @@ def validate_current_research_output(
         or isinstance(claim_authority_contract, Mapping),
         "research_consumer_claim_authority_contract_invalid",
     )
+    claim_surface_contract = research_input.get(
+        "claim_surface_authority_contract"
+    )
+    _require(
+        claim_surface_contract is None
+        or (
+            isinstance(claim_surface_contract, Mapping)
+            and isinstance(claim_authority_contract, Mapping)
+        ),
+        "research_consumer_claim_surface_contract_invalid",
+    )
+    qualitative_fact_by_ref = {
+        str(row["qualitative_fact_ref"]): row
+        for row in research_input.get(
+            "source_bound_qualitative_fact_cards", ()
+        )
+        if isinstance(row, Mapping)
+    }
     validated = []
     for cell_id in input_cells:
         raw = output_cells[cell_id]
@@ -1607,6 +1710,15 @@ def validate_current_research_output(
             "research_consumer_numeric_relation_refs_invalid",
             allow_empty=True,
         )
+        qualitative_facts = (
+            _unique_strings(
+                raw.get("qualitative_fact_refs"),
+                "research_consumer_qualitative_fact_refs_invalid",
+                allow_empty=True,
+            )
+            if claim_surface_contract is not None
+            else ()
+        )
         method_steps = _unique_strings(
             raw.get("method_step_refs"),
             "research_consumer_method_step_refs_invalid",
@@ -1637,6 +1749,14 @@ def validate_current_research_output(
             ),
             "research_consumer_numeric_relation_boundary_invalid",
         )
+        if claim_surface_contract is not None:
+            _require(
+                set(qualitative_facts).issubset(
+                    input_cells[cell_id]["allowed_qualitative_fact_refs"]
+                )
+                and set(qualitative_facts).issubset(qualitative_fact_by_ref),
+                "research_consumer_qualitative_fact_boundary_invalid",
+            )
         method_pack = input_cells[cell_id].get("role_method_pack")
         allowed_method_steps = {
             str(row["method_step_ref"])
@@ -1704,6 +1824,37 @@ def validate_current_research_output(
             )
             for field in _MODEL_TEXT_FIELDS
         }
+        claim_surface_authority_receipt = None
+        if claim_surface_contract is not None:
+            relation_card = input_cells[cell_id].get(
+                "claim_relation_card"
+            )
+            _require(
+                isinstance(relation_card, Mapping),
+                "research_consumer_claim_relation_cell_not_qualified",
+            )
+            try:
+                claim_surface_authority_receipt = (
+                    validate_claim_surface_authority_selection(
+                        raw,
+                        claim_relation_card=relation_card,
+                        claim_surface_contract=claim_surface_contract,
+                        qualitative_fact_cards=tuple(
+                            qualitative_fact_by_ref[ref]
+                            for ref in input_cells[cell_id][
+                                "allowed_qualitative_fact_refs"
+                            ]
+                        ),
+                        evidence_uses=evidence_uses,
+                        numeric_relation_refs=numeric_relations,
+                        remaining_gap_refs=gaps,
+                        inference_authority=inference,
+                        judgment_status=status,
+                        narrative_atoms=tuple(validated_text.values()),
+                    )
+                )
+            except ClaimSurfaceAuthorityError as exc:
+                raise CurrentResearchConsumerError(exc.code) from exc
         claim_authority_receipt = None
         if claim_authority_contract is not None:
             claim_card = input_cells[cell_id].get("claim_authority_card")
@@ -1722,6 +1873,9 @@ def validate_current_research_output(
                     inference_authority=inference,
                     judgment_status=status,
                     narrative_atoms=tuple(validated_text.values()),
+                    structured_claim_relation_receipt=(
+                        claim_surface_authority_receipt
+                    ),
                 )
             except ClaimAuthorityError as exc:
                 raise CurrentResearchConsumerError(exc.code) from exc
@@ -1782,6 +1936,15 @@ def validate_current_research_output(
                 "evidence_uses": evidence_uses,
                 "numeric_refs": list(numeric),
                 "numeric_relation_refs": list(numeric_relations),
+                **(
+                    {
+                        "qualitative_fact_refs": list(
+                            qualitative_facts
+                        )
+                    }
+                    if claim_surface_authority_receipt is not None
+                    else {}
+                ),
                 "method_step_refs": list(method_steps),
                 "graph_edge_refs": list(graph_edges),
                 "remaining_gap_refs": list(gaps),
@@ -1808,8 +1971,26 @@ def validate_current_research_output(
                     else {}
                 ),
                 **(
+                    {
+                        field: deepcopy(raw[field])
+                        for field in CLAIM_SURFACE_AUTHORITY_MODEL_FIELDS
+                        if field != "qualitative_fact_refs"
+                    }
+                    if claim_surface_authority_receipt is not None
+                    else {}
+                ),
+                **(
                     {"claim_authority_receipt": claim_authority_receipt}
                     if claim_authority_receipt is not None
+                    else {}
+                ),
+                **(
+                    {
+                        "claim_surface_authority_receipt": (
+                            claim_surface_authority_receipt
+                        )
+                    }
+                    if claim_surface_authority_receipt is not None
                     else {}
                 ),
                 **validated_text,
@@ -1851,6 +2032,12 @@ def compile_current_research_deliverable(
         row["numeric_relation_ref"]: row
         for row in research_input["numeric_relation_cards"]
     }
+    qualitative_facts = {
+        row["qualitative_fact_ref"]: row
+        for row in research_input.get(
+            "source_bound_qualitative_fact_cards", ()
+        )
+    }
     gaps = {
         row["gap_ref"]: row for row in research_input["residual_gap_cards"]
     }
@@ -1877,6 +2064,29 @@ def compile_current_research_deliverable(
                     deepcopy(numeric_relations[ref])
                     for ref in row["numeric_relation_refs"]
                 ],
+                **(
+                    {
+                        "source_bound_qualitative_facts": [
+                            deepcopy(qualitative_facts[ref])
+                            for ref in row["qualitative_fact_refs"]
+                        ],
+                        "source_bound_qualitative_fact_surfaces": [
+                            {
+                                "qualitative_fact_ref": ref,
+                                "display_surface_zh": qualitative_facts[ref][
+                                    "display_surface_zh"
+                                ],
+                                "qualifier_zh": qualitative_facts[ref][
+                                    "qualifier_zh"
+                                ],
+                                "point_estimate_generated": False,
+                            }
+                            for ref in row["qualitative_fact_refs"]
+                        ],
+                    }
+                    if "qualitative_fact_refs" in row
+                    else {}
+                ),
                 "remaining_gaps": [
                     deepcopy(gaps[ref])
                     for ref in row["remaining_gap_refs"]
@@ -1885,9 +2095,13 @@ def compile_current_research_deliverable(
         )
     unsigned = {
         "schema_version": (
-            CLAIM_AUTHORITY_DELIVERABLE_SCHEMA_VERSION
-            if "claim_authority_contract" in research_input
-            else CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION
+            CLAIM_SURFACE_AUTHORITY_DELIVERABLE_SCHEMA_VERSION
+            if "claim_surface_authority_contract" in research_input
+            else (
+                CLAIM_AUTHORITY_DELIVERABLE_SCHEMA_VERSION
+                if "claim_authority_contract" in research_input
+                else CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION
+            )
         ),
         "status": "structured_workpaper_and_report_preview_compiled",
         "case_identity": deepcopy(research_input["case_identity"]),
@@ -1936,6 +2150,23 @@ def compile_current_research_deliverable(
             "agentic_research_claimed": False,
             "harness_generated_research_conclusion": False,
         }
+    if "claim_surface_authority_contract" in research_input:
+        unsigned["rendering_authority"][
+            "model_authored_judgment_fields"
+        ].extend(CLAIM_SURFACE_AUTHORITY_MODEL_FIELDS)
+        unsigned["rendering_authority"]["harness_rendered_surfaces"].extend(
+            [
+                "source_bound_qualitative_fact_surface",
+                "qualitative_fact_qualifier",
+                "claim_surface_authority_receipt",
+            ]
+        )
+        unsigned["rendering_authority"].update(
+            {
+                "qualitative_band_converted_to_point_estimate": False,
+                "structured_claim_relation_selected_by_model": True,
+            }
+        )
     return {**unsigned, "deliverable_digest": canonical_digest(unsigned)}
 
 

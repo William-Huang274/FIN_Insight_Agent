@@ -346,6 +346,7 @@ def validate_claim_authority_selection(
     inference_authority: str,
     judgment_status: str,
     narrative_atoms: Sequence[str],
+    structured_claim_relation_receipt: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     claim_scope = str(raw.get("claim_scope") or "")
     financial_scope = str(raw.get("financial_scope") or "")
@@ -432,16 +433,38 @@ def validate_claim_authority_selection(
     has_causal = any(
         term.casefold() in combined for term in guard["causal_terms"]
     )
-    _require(
-        not (has_subject and has_financial and has_causal),
-        "claim_authority_cross_scope_causal_language_unbound",
-    )
+    lexical_risk_detected = has_subject and has_financial and has_causal
+    if structured_claim_relation_receipt is None:
+        _require(
+            not lexical_risk_detected,
+            "claim_authority_cross_scope_causal_language_unbound",
+        )
+    else:
+        _require(
+            structured_claim_relation_receipt.get(
+                "structured_claim_relation_primary"
+            )
+            is True
+            and structured_claim_relation_receipt.get(
+                "narrative_conflict_guard_pass"
+            )
+            is True,
+            "claim_authority_structured_relation_receipt_invalid",
+        )
     receipt = {
         "claim_scope": claim_scope,
         "financial_scope": financial_scope,
         "causal_bridge_authority": bridge,
         "claim_authority_card_digest": claim_authority_card["card_digest"],
-        "cross_scope_causal_language_guard_pass": True,
+        "cross_scope_causal_language_guard_pass": not lexical_risk_detected,
+        "cross_scope_language_guard_mode": (
+            "primary_fail_closed"
+            if structured_claim_relation_receipt is None
+            else "secondary_defense_in_depth"
+        ),
+        "structured_claim_relation_primary": (
+            structured_claim_relation_receipt is not None
+        ),
         "harness_generated_research_judgment": False,
     }
     return receipt

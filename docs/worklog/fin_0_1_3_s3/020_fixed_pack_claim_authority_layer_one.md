@@ -40,3 +40,15 @@ formal zero-call proof 已通过，唯一一次 Chat live 也已执行并终止�
 原始内容较 R2 明显改善：不再把公司／分部利润归因于 AI 服务器，不再发明半固定成本，明确限定为产品级 management assertion，并保留价格、数量和 PVM 缺口。原始内容诊断为 `21/24`，但因没有合同有效 Judgment，正式 L1、第一层 acceptance 和产品发布均为 false。
 
 必须先返回 Owner。第二层继续 blocked；不允许自动修改后重跑。若 Owner 继续，建议先做 source-bound qualitative range／management-target alias 与结构化 claim relation 的零调用处置。
+
+## Owner 继续后的零调用 successor
+
+Owner 要求继续，但未授权新的 DeepSeek live 或动态第二层。本轮在同一第一层内实现 `Claim Surface Authority`：
+
+- reviewed 管理层定性目标编译为 source-bound QF，而不是加入文字白名单或伪装成精确 NumericFact；
+- thesis／mechanism／counterargument 三个判断原子分别提交结构化 subject、outcome、relation、attribution 和 scope；
+- Tool Schema、model-visible view、validator、fake loop 与 deliverable 继续由同一 consumer 合同投影；
+- Harness 只展示 QF surface／qualifier 和结构 receipt，不生成模型结论；
+- 保存的失败 payload、DELL／MU／NVDA case 污染、source digest、错 relation、缺支持 Evidence 和强因果表面进入零调用回放／mutation。
+
+working-tree 定向回归为 `76 passed`。回放还纠正了一个初始设计：单个 cell-level structured relation 不能覆盖三段文字；旧输出的 thesis、mechanism 与 counterargument 实际承诺不同，因此 successor 改为每个 narrative atom 一条关系。formal clean proof 必须在实现提交和上游完全一致后另行签发；在该 proof 前，第一层、第二层与 S3 产品验收继续为 false。

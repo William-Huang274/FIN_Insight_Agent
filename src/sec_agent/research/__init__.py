@@ -39,6 +39,12 @@ from .claim_authority import (
     load_claim_authority_policy,
     validate_claim_authority_selection,
 )
+from .claim_surface_authority import (
+    ClaimSurfaceAuthorityError,
+    compile_claim_surface_authority_research_input,
+    load_claim_surface_authority_policy,
+    validate_claim_surface_authority_selection,
+)
 from .bounded_finance_loop import (
     BoundedFinanceLoopError,
     BoundedFinanceLoopPolicy,
@@ -69,6 +75,7 @@ __all__ = [
     "OfficialPdfEvidenceError",
     "CurrentResearchConsumerError",
     "ClaimAuthorityError",
+    "ClaimSurfaceAuthorityError",
     "BoundedFinanceLoopError",
     "BoundedFinanceLoopPolicy",
     "BoundedFinanceLoopResult",
@@ -83,6 +90,7 @@ __all__ = [
     "compile_current_research_input",
     "compile_current_research_messages",
     "compile_claim_authority_research_input",
+    "compile_claim_surface_authority_research_input",
     "compile_finance_loop_messages",
     "compile_finance_loop_tools",
     "compile_paired_research_submission",
@@ -91,6 +99,7 @@ __all__ = [
     "load_research_planning_policy",
     "load_current_research_consumer_policy",
     "load_claim_authority_policy",
+    "load_claim_surface_authority_policy",
     "load_bounded_finance_loop_policy",
     "parse_current_research_output",
     "parse_research_planner_output",
@@ -98,6 +107,7 @@ __all__ = [
     "validate_official_pdf_evidence_policy",
     "validate_current_research_output",
     "validate_claim_authority_selection",
+    "validate_claim_surface_authority_selection",
     "run_bounded_finance_loop",
     "scope_bounded_finance_loop_policy",
     "run_paired_research_submission",

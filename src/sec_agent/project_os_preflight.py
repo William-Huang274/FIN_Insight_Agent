@@ -763,8 +763,8 @@ def build_preflight(
                 "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence"
             ),
             allowed_scope=(
-                "one_clean_synced_exact_once_DELL_value_capture_full_three_"
-                "fragment_analysis_submission_Chat_live"
+                "one_full_fixed_pack_new_attempt_after_engineering_and_"
+                "authority_gates"
             ),
         )
     ):

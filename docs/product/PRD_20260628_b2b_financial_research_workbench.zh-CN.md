@@ -14,6 +14,7 @@
 | 日期 | 修改内容 |
 | --- | --- |
 | 2026-08-16 | FIN 0.1.3 S3 FAS-R1 证明：片段专属最小权威上下文＋高推理分析／低推理严格交卷可让 DELL `value_capture` 单 thesis 自然通过 L1，并消除旧 AI 产品→分部／公司利润越界；该结果不等于完整 Judgment 或 Agentic Research。Owner 授权连续完成其余片段、完整 fixed Pack、动态 Truth Spine、DELL 五单元及跨案例验收。普通 live failure 不再自动暂停，但必须保留 immutable attempt、在最早责任层修复并以新 authority 续跑。跨案例泛化必须预注册异质案例、逐案硬门和正式报告，禁止以相似案例或平均分冒充泛化。 |
+| 2026-08-16 | S3 片段执行进一步明确“分析可看值、交卷只选 ref、Harness 在 atom 外渲染值”：这一职责必须由同一 provider-neutral surface contract 编译到 fragment context、Tool Schema、submission prompt、Validator 与 Renderer；禁止分析层允许引用、提交层却只写“不得新增数字”而隐藏 verbal band 也会失败。验收必须同时证明旧失败 replay 仍拒绝、合规 atom 不含值、最终报告仍保留 QF／NumericFact surface，不能靠删数字通过。 |
 | 2026-08-14 | FIN 0.1.3 S3 第一层失败后新增 Claim Surface successor：来源允许引用的管理层 qualitative band 必须先编译成 source-bound QF，并由 Harness 确定性展示 surface／qualifier，禁止转为单点或 audited NumericFact；thesis、mechanism、counterargument 各自提交结构化 subject、outcome、relation、attribution 和 scope。旧关键词因果门降为纵深防御，不能继续承担关系证明。旧 live 不追认，formal zero-call proof 前不授权 replacement live 或动态第二层。 |
 | 2026-08-14 | FIN 0.1.3 S3 验收正式拆成三层：fixed reviewed Pack 只隔离模型分析能力，不计作 Agentic Research；单单元动态纵切必须让模型自行提出 EvidenceRequest、真实调用 S1/S2、接收 EvidenceResponse 并继续／停止；完整动态案例还须五单元综合和报告验收。Owner 当前只批准第一层。第一层新增 provider-neutral `claim_scope + financial_scope + causal_bridge_authority`，但模型仍拥有研究叙事，本地不得代写结论。第一层通过也不得自动放行动态纵切或五单元。技术边界见 `docs/architecture/research/FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_20260814.zh-CN.md`。 |
 | 2026-08-14 | FIN 0.1.3 S1→S3 全链审计纠正“只修 S3 因果门即可继续”的局部判断。当前已证明 EvidenceRequest→S1 candidate、S2 CompanyFact/NumericRelation、fixed reviewed Pack→S3 单元 Judgment 各自可运行，但动态补证仍只记录 proposal、不会在同一循环执行检索/Evidence Gate/回流；S2 对订单、积压、销量、ASP、PVM、产品利润桥和估值尚无同等级 typed authority；S3 也尚无 claim scope／causal bridge 强制门。产品下一决策必须把 `candidate→EvidenceResponse→operating metric/bridge→claim authority` 作为同一有界真值纵切，不能只靠更多来源、调 embedding 或重复 live。完整审计见 `docs/worklog/fin_0_1_3_s3/019_s1_to_s3_full_chain_and_experiment_audit.md`。 |
@@ -2634,6 +2635,8 @@ DELL fixed-Pack Chat 的首个失败表明，来源允许引用某个定性数�
 单个 cell-level scope 标签也不足以约束一段完整输出。thesis、mechanism 和 counterargument 往往分别表达管理层陈述、因果机制与反方比较；用一个关系覆盖三段，会让其中两段逃离合同。因此每个 narrative atom 必须各自选择结构化 `subject、outcome、relation、attribution basis、claim scope、financial scope、causal bridge authority`，并绑定所需 Evidence、QF、NumericRelation 和 gap。模型仍拥有文字与关系选择；Harness 只校验组合、渲染 fact surface 和保存 receipt，不代写研究结论。
 
 关键词扫描保留为纵深防御，只用于发现叙事与所选关系的明显冲突，不能再作为关系正确性的主要证明。验收必须回放旧失败 payload：旧 schema 不得静默晋升；只补字段仍应被自由定性数字门拒绝；迁移 QF 后若 mechanism 仍选择不存在的强因果桥，也必须拒绝。修正版 fixture 通过只构成零调用工程门；自然 replacement live、fixed-Pack 第一层 acceptance、动态单单元纵切和五单元研究都需要各自独立授权与内容验收。
+
+片段化执行时，analysis draft 可以读取并讨论 source-visible value；submission atom 不得复制 digit、单位、日期、ref、URL 或 verbal numeric band，只能选择 NUM/QF ref 并用“其所述目标”等无值文字表达判断。Harness 在 atom 外确定性渲染 selected surface 与 qualifier。Context、Tool Schema、Prompt、Validator 和 Renderer 必须从同一 surface contract 得到这一规则；若只在本地 Validator 隐藏禁止项，属于项目合同缺陷。通过标准必须同时包含：旧失败不可 salvage、合规 atom 无自由值、最终成品仍显示受保护值。
 
 正式 clean/synced R3 已于 2026-08-15 通过上述工程门：QF 未生成单点，三个叙事原子各有独立结构关系，旧失败三层 replay、非法关系、缺指定权威、叙事冲突、source digest 漂移和跨案例污染均 fail closed；fake loop 为 2 step／3 tool call／0 EvidenceRequest，外部与模型调用均为 0。该结果只关闭合同工程缺口，不得写成 DeepSeek 自然质量通过或 fixed-Pack 第一层 acceptance。
 

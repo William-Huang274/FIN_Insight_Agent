@@ -35,3 +35,11 @@
 ## 阶段边界
 
 本次仍属于第一层 fixed-Pack 模型能力隔离测试。完整 Judgment、动态 Truth Spine、DELL 五单元、MU/NVDA 与异质留出案例泛化、人工内容验收及 S3 均未通过。
+
+## Surface Contract v1.1 复证
+
+provider-neutral 修复已提交并推送为 `9e1c80b6...`。片段 projection v1.1 现在把相同的 structured surface contract 注入 thesis、mechanism 与 counterargument/WWC；Tool Schema、submission system 和本地 Validator 对 digits、单位、日期、ref、URL 与 verbal numeric band 使用同一边界。Authority v1.1 还必须绑定 FFJ-R1 失败结果及独立 assessment，不能绕过旧失败签发新身份。
+
+两个 fresh process 的输出逐字节一致，proof digest=`aed78f40...20f2`。保存的 FFJ-R1 Tool Call replay 仍以 `finance_loop_micro_narrative_invalid` 拒绝；同形 verbal-numeric mutation 也拒绝。合法 full-fake 的模型 atom 不含该表面，但最终 deliverable 继续确定性展示 `QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1` 的“中个位数经营利润率目标”，证明修复没有丢失金融信息。
+
+定向 60 tests、全仓 332 tests、compileall、active baseline `127 / 8 / 10 / 0` 和 secret scan `6,624 / 0` 通过；模型、网络、Provider、外源与 embedding 调用均为 0。正式 v1.1 proof、disposition 与 R2 scope decision 已物化；下一步是 clean commit/push、真实 Project OS preflight 和一个全新 R2 authority。

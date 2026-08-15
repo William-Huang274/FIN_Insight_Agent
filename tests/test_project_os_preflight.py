@@ -30,6 +30,11 @@ FULL_FRAGMENT_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "full_fragment_judgment_live_scope_decision_v1_0.json"
 )
+FULL_FRAGMENT_SURFACE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_surface_live_scope_decision_v1_1.json"
+)
 ALIAS_CLEAN_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -163,6 +168,29 @@ def test_full_fragment_decision_passes_with_analysis_and_submission_profiles() -
     assert result["network_calls"] == 0
     assert result["provider_calls"] == 0
     assert result["credential_value_persisted"] is False
+
+
+def test_full_fragment_surface_successor_binds_failed_R1_and_QF_rendering() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=FULL_FRAGMENT_SURFACE_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["decision_projection"][
+        "full_fragment_judgment_successor"
+    ] is True
+    assert result["decision_projection"][
+        "prior_failed_full_fragment_status"
+    ] == "terminal_failed_no_retry"
+    assert result["decision_projection"]["node_profiles"] == {
+        "fragment_analysis": {"reasoning_effort": "high", "max_tokens": 8000},
+        "contract_submission": {"reasoning_effort": "low", "max_tokens": 2000},
+    }
+    assert result["network_calls"] == 0
+    assert result["provider_calls"] == 0
 
 
 def test_micro_judgment_profile_digest_drift_fails_closed(

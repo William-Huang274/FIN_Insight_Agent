@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`consumer_v1.2 / unified_tool_contract_formal_clean_replay_pass / historical_paired_content_L1_fail / historical_skill_graph_requalified / research_context_closure_formal_zero_call_R4_current_profile_pass / research_context_Chat_R1_IncompleteRead_no_judgment / L1_content_not_qualified / five_cell_blocked`
+状态：`consumer_v1.2 / unified_tool_contract_formal_clean_replay_pass / historical_paired_content_L1_fail / historical_skill_graph_requalified / research_context_closure_formal_zero_call_pass / fragment_surface_contract_v1.1_zero_call_pass / full_fragment_FFJ_R1_immutable_contract_fail / FFJ_R2_pending / five_cell_blocked`
 
 ## 1. 为什么需要这条链
 
@@ -323,3 +323,11 @@ replacement gate 不复用旧 Research Context Chat decision。新 decision 必�
 最终内容仍违反 `METHOD::VC::CAUSAL_BOUNDARY`：公司／ISG 的多因素利润改善被升级为 AI server surge 已转成利润，且“semi-fixed cost base”没有 Evidence／NumericFact／relation／edge 绑定。模型自己的 counterargument 已承认 product profit line、ASP、unit、PVM bridge 不存在，这使强 thesis 与其证据边界内部冲突。当前 L1 因果归因 fail；单节点诊断为 18/24，正式八维报告不评分。五单元、其他 RoleMethodPack、qualified-human 和 S3 product acceptance 均未授权。
 
 因此当前最早责任层仍在 S3 judgment authority，而不是再次修改 transport、S1 补源或增加 Prompt 长度。若继续，应先用零模型把 `claim_scope`、`financial_scope`、`causal_bridge_authority` 和 abstain／bounded wording 变成可校验合同，并把 R2 保存 Judgment 加入负向 replay；不能继续用自然调用逐句试错。
+
+## 13. 片段分析与交卷的数值表面合同
+
+片段链必须区分两个合法但不同的动作：分析节点可以读取并讨论 reviewed Evidence、NumericFact 和 source-bound QF 中的原始数值或文字区间；交卷节点的 model-owned atom 不能复制这些 authoritative surfaces，只选择 `NUM/QF ref` 并写不带值的判断。Harness 随后在 atom 外按 ref、期间、单位、来源和 qualifier 确定性渲染。这个边界不减少模型的分析信息，也不允许 Harness 代写结论。
+
+FFJ-R1 暴露了投影缺口：完整 consumer 已有上述规则，但 fragment context v1.0 没有带入；submission system 只禁止“新增数字”，Tool Schema 只禁止 digits／refs，本地 Validator 却同时禁止 verbal numeric band。模型选择正确的 Dell 产品目标关系、Evidence、QF 和 management-only 权限后，仍因复制“中个位数”而失败。该结果保持不可变，不能删词追认。
+
+projection v1.1 现在将同一 structured surface contract 编译到三个 fragment context、Tool Schema、submission system 和 Validator。Authority v1.1 还绑定旧失败 result／assessment，防止绕过失败另发 attempt。零调用证明同时要求两条：保存 R1 replay 继续失败；合规 fake 的 atom 不带区间，而最终 deliverable 仍展示该 QF surface。只有两条同时成立，才能证明这是权威分层而不是信息删除。

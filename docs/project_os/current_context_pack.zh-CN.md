@@ -100,6 +100,8 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 
 2026-08-15 第一项接线、全仓复证、clean push 和真实 Project OS preflight 均已通过，随后执行的 fixed-Pack Claim Surface Chat R1 已按 0 retry 终止。第一步 Evidence／NumericFact mandatory reads 成功；第二步 Provider 返回完整 HTTP 200 JSON，但 16000 completion token 全部为 reasoning token，零可见内容、零 tool call，状态为 `model_gateway_reasoning_budget_exhausted`。因此 L1／内容不可评价，第二项未进入。最早责任层是 S3 model-visible contract projection：重复权限卡、完整审计 lineage、零预算 EvidenceRequest schema 和逐原子七字段关系提交共同造成过密输入。当前只授权零调用 successor：ClaimRelation alias＋本地展开、权限卡单次投影、紧凑事实视图和零预算工具移除；不增加 token、不换模型、不自动重跑。
 
+2026-08-15 15:52 +08:00：上述零调用 successor 已在 clean/synced commit `86a129a7` 通过正式证明。第二步完整 messages 为 `25,379` 字符，相对 R1 `52,412` 为 `48.4%`；tool schema 为 `5,835`，相对 `11,067` 为 `52.7%`。模型只选三个关系 alias，Harness 展开完整 typed relation；审计 lineage 私有保留、wire 隐藏；零预算 EvidenceRequest 工具不再发送；旧 full-field、未知 alias、跨案 QF、缺 supporting Evidence 与因果冲突均 fail closed。该结果仅关闭 RC-S3-014 的结构门，第一项仍未通过；下一动作是登记并 clean push 后执行 Project OS preflight，再签发唯一 natural fixed-Pack successor，得到 L1／内容结果前不得进入动态第二层。
+
 历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。当前统一合同、协议投影、Research Context Closure 和 IncompleteRead capture-first 均已达到 formal clean replay pass；新 Chat R2 也已自然完成，但因产品级利润归因越界未过 L1。五 cell 不再是“等待复验”，而是明确 blocked。未批准新的跨阶段或局部处置范围前，不自动新增代码、模型调用、五单元运行、其他 Skill 迁移或 broad source 扩张。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。

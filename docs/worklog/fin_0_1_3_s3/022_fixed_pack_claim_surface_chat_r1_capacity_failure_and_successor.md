@@ -2,7 +2,7 @@
 
 日期：2026-08-15
 
-状态：`R1 terminal_failed_no_retry / judgment_not_materialized / structural_successor_required`
+状态：`R1 terminal_failed_no_retry / zero-call structural successor passed / natural successor pending`
 
 ## 发生了什么
 
@@ -35,3 +35,16 @@
 ## 边界
 
 本轮不是模型质量通过或失败结论，不是动态 Agentic Research，不授权五单元。它暴露的是 fixed-Pack Harness 的模型视图仍然过密；这属于 S3 当前合同责任，应在第一项内闭合。
+
+## 零调用 successor 结果（2026-08-15 15:52 +08:00）
+
+结构包已在 clean/synced commit `86a129a7` 上完成正式零调用证明：
+
+- 模型现在只提交三个 `ClaimRelationAlias`；Harness 在验证后展开 subject、outcome、relation、attribution、claim scope、financial scope 和 bridge authority；
+- mandatory read 前不再重复 RoleMethodPack／GraphContextPack，Evidence read 后仍可见且有消费凭证；
+- 模型可见 NumericFact 不再携带 source digest、URL 和 observation ID，但完整 lineage 仍保留在私有 research input；
+- 本轮请求预算为 0，wire 上只保留 Evidence reader、NumericFact reader 和 Judgment 三个工具；
+- 完整 JSON 序列化口径下，第二步 messages 从 `52,412` 降到 `25,379`（`48.4%`），tools 从 `11,067` 降到 `5,835`（`52.7%`）；
+- 旧七字段提交、未知／跨案 alias、跨案 QF、缺失 supporting Evidence 和因果叙事冲突均 fail closed；fake loop 为 2 step／3 calls／0 EvidenceRequest。
+
+因此 RC-S3-014 的工程结构门已关闭，但第一项产品门仍未通过：尚未发生新的自然模型 Judgment，L1 和内容质量仍不可评价。下一步只能在再次 clean push 与 Project OS preflight 后，签发一个全新 exact-once natural successor；同 Evidence Pack、同 Provider profile、0 retry。

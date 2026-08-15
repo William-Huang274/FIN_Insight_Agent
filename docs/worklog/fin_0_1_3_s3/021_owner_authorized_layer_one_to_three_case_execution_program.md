@@ -48,3 +48,5 @@ Owner 授权在同一 FIN 0.1.3 内连续执行以下五项，并允许在不改
 clean/synced preflight 通过后已执行唯一 Chat R1。第一步 mandatory read pair 成功；第二步 HTTP 200 完整响应把 16000 completion token 全部用于 reasoning，没有可见内容或 tool call，最终 `model_gateway_reasoning_budget_exhausted`，0 retry。L1 与内容均不可评价，第一项未通过，第二项尚未进入。
 
 根据 Owner 允许在 1–5 内修复和重排的授权，第一项插入一个零调用 successor：ClaimRelation alias＋本地展开、权限卡单次投影、紧凑 model view、零预算工具移除。不会增加 token 上限、换模型或直接重跑；R1 authority、result 与 capture 保持不可变。详见 `022_fixed_pack_claim_surface_chat_r1_capacity_failure_and_successor.md`。
+
+该 successor 已在 commit `86a129a7` 上通过正式零调用证明：messages `52,412 → 25,379`，tools `11,067 → 5,835`，三关系 alias 均由本地展开，完整内部 lineage 保留，旧 full-field／未知 alias／跨案／缺权威／因果冲突 mutation 全部关闭。第一项仍是 `in_progress`，因为这只证明结构和容量，不证明自然 Judgment、L1 或内容质量；第二至第五项继续 pending。

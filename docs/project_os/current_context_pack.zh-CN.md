@@ -161,3 +161,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Tool Call 在 model-owned atom 内复制了 QF 的“中个位数”表面，命中统一文本门并以 `finance_loop_micro_narrative_invalid` 终止。最早责任层是片段投影 v1.0：完整 consumer 已有“模型选 QF、本地渲染”规则，但片段上下文遗漏；submission 只禁止新增数字，schema 只写禁止 digits／refs，与本地也禁止 verbal numeric band 的规则不一致。
 - R1 结果和 capture 保持不可变，不允许手工删词后重用。当前只处理 provider-neutral surface contract v1.1：显式区分分析可看值、交卷只选引用、报告再渲染；随后做保存响应 replay、三片段 full-fake、mutation、two-fresh-process proof。clean/synced 后才能签发 R2 新身份。动态 Truth Spine、五单元、泛化报告和 S3 继续为 false。
 - surface contract v1.1 已在 clean implementation commit `9e1c80b6...` 关闭工程缺口：两个 fresh process byte-equivalent，proof=`aed78f40...20f2`；保存 R1 和同形 verbal numeric mutation 均以原失败码拒绝；合规 atom 不含区间而最终 deliverable 仍渲染 source-bound QF“中个位数经营利润率目标”。定向 60、全仓 332、compileall、active baseline `127/8/10/0` 与 secret scan `6,624/0` 通过。新 proof、disposition 与 R2 scope decision 已物化；下一步只能 clean push、真实 preflight、fresh R2 authority 和一次完整 natural Judgment。
+
+## 2026-08-16 S3 完整片段 Chat FFJ-R2
+
+- clean/synced `bffb6591...` 上的 R2 使用 4/6 次 DeepSeek 调用，thesis 自然通过 v1.1 并成为首个 accepted fragment；mechanism 也返回完整、保守的 Tool Call，但以 `finance_loop_micro_required_authority_missing` 停止，0 retry／fallback。
+- 模型把法说标为 support、把宽泛 8-K 标为 context，并选择 `bounded_inference`、明确否定产品到分部／公司利润分配和因果桥。最早责任层是 `CR::DELL::MULTI_DRIVER_CONTEXT` 把 context 资料错误编码为 mandatory support；零调用继续回放还发现 non-thesis validator 错把 thesis 的全局 `supported` 状态套到 bounded mechanism，而终局 compiler 本来就会保守聚合状态。
+- R2 保持不可变；下一步仅做 provider-neutral relation support set 与 fragment-local disposition v1.2，保存 R2 replay、负向 role mutation、full fake 和 two-fresh-process proof。通过后才允许新 R3。动态 Truth Spine、五单元、泛化报告和 S3 acceptance 仍为 false。

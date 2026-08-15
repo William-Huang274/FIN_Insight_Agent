@@ -1,0 +1,28 @@
+{
+  "schema_version": "fin_ia_fixed_pack_claim_surface_authority_zero_call_metadata_disposition_v1_0",
+  "status": "engineering_proof_pass_preserved_recorded_at_metadata_stale_successor_required",
+  "recorded_at": "2026-08-15T13:32:58+08:00",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_surface_authority_zero_call_authority_v1_1.json",
+  "source_authority_sha256": "c825d90b2a8b8136a717166c89cdc45ae5636a6b193d015d7910e58e3c23a78e",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_surface_authority_zero_call_result_v1_1.json",
+  "source_result_sha256": "ea931c95b134dcb42ebcad5d32cbe6d89b0e06b0156b55ebfaf21c0aa7c600eb",
+  "implementation_commit": "32138ddb550f773b00eb294618cff83323e0d8b6",
+  "proof_status": "engineering_pass_zero_call_claim_surface_authority",
+  "proof_logic_reinterpreted": false,
+  "metadata_defect": {
+    "field": "recorded_at",
+    "observed": "2026-08-14",
+    "authority_issued_at": "2026-08-15T13:29:09+08:00",
+    "root_cause": "The claim-surface summary inherited a hard-coded date from the predecessor proof branch instead of deriving the value from the signed authority.",
+    "impact": "All hashes, replay codes, mutations, zero-call counts and acceptance flags remain valid, but the public record cannot serve as the final audit artifact with a stale execution date."
+  },
+  "disposition": "Preserve R2 unchanged. Bind recorded_at to authority.issued_at, commit and synchronize the one-line runner successor, then execute one final R3 zero-call proof. Do not change product contract logic or run a model.",
+  "execution": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "local_embedding_calls": 0,
+    "retries": 0,
+    "product_publication": false
+  }
+}

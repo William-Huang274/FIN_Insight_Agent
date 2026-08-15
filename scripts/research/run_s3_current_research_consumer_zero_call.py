@@ -1222,7 +1222,7 @@ def _run_claim_surface_authority_proof(
     summary_body = {
         "schema_version": result_schema,
         "status": "engineering_pass_zero_call_claim_surface_authority",
-        "recorded_at": "2026-08-14",
+        "recorded_at": str(authority["issued_at"]),
         "result_id": str(output["result_id"]),
         "authority_ref": _relative(authority_path),
         "authority_sha256": _sha(authority_path),

@@ -27,13 +27,16 @@ live authority 必须同时绑定：当前 Evidence Pack、Case／cell、Claim A
 ## 零调用验证
 
 - canonical runner 定向测试：`18 passed`；
-- 全仓测试：`318 passed`；
+- canonical runner＋Project OS preflight 联合定向测试：`25 passed`；
+- 全仓测试：`320 passed`；
 - Python compileall：通过；
 - active baseline：`127 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference`；
-- secret scan：`6,605 files / 0 finding`；
+- secret scan：`6,606 files / 0 finding`；
 - digest drift、旧失败身份漂移、已消费输出身份和非法活动工具集合均 fail closed；
 - micro fake 路径为 `4 provider step / 5 receipt`，节点 profile 选择顺序为 `tool_routing → bounded_financial_judgment × 3`；
 - 模型、网络、Provider、embedding、retry 和产品发布调用均为 0。
+
+首次尝试 clean preflight 前发现旧 Project OS 校验器只认识 monolithic／alias 的单 profile、`3 × 16000` 预算。该问题没有被绕过：同一 preflight 现在保留全部旧决策测试，并新增 micro decision 分支，分别核对 formal proof、immutable R2、capacity assessment、read／judgment profiles、最近完整 Provider capture、零 retry 与凭据存在性。旧路径与新路径联合定向 `25 passed`；这只是预检兼容工程通过，真实 clean/synced preflight 尚待本提交推送后执行。
 
 ## 尚未证明与下一门
 

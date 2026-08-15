@@ -69,4 +69,4 @@ Owner 授权范围内的下一修复不再做字段删减、上限扩大或协�
 
 唯一 canonical runner 已接入 micro authority，没有创建 attempt-specific runner。入口现在强制 `read pair → thesis → mechanism → counterargument＋WWC`，并在发出请求前把 read 节点绑定到 `low / 2000`、三个判断节点绑定到 `high / 8000`。Authority 同时绑定 formal proof、immutable R2、两个节点 profile、Claim policies、scope decision、Git 和未消费输出身份。
 
-定向 `18 passed`、全仓 `318 passed`、compileall、active baseline 和 `6,605` 文件 secret scan 均通过；本轮仍为 0 model／network／Provider call。第一项没有因此通过。下一动作只剩 clean commit/push、Project OS preflight、fresh authority 入口校验和唯一 natural Chat successor；若该 successor 再次容量失败或 L1 失败，停止第一项，不自动继续修补或进入第二项。
+canonical runner 与 Project OS preflight 联合定向 `25 passed`、全仓 `320 passed`、compileall、active baseline 和 `6,606` 文件 secret scan 均通过；本轮仍为 0 model／network／Provider call。预检保留旧单 profile 决策，并新增 micro 双 profile／`4 model / 5 tool` 决策校验。第一项没有因此通过。下一动作只剩 clean commit/push、真实 Project OS preflight、fresh authority 入口校验和唯一 natural Chat successor；若该 successor 再次容量失败或 L1 失败，停止第一项，不自动继续修补或进入第二项。

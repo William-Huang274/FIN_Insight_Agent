@@ -14,6 +14,13 @@ CURRENT_PREFLIGHT_SCHEMA = "fin_ia_current_decision_bound_project_os_preflight_v
 FIXED_PACK_SCOPE = (
     "one_separately_authorized_natural_fixed_pack_replacement_with_zero_retry"
 )
+MICRO_FIXED_PACK_DECISION_SCHEMA = (
+    "fin_ia_s3_fixed_pack_micro_judgment_live_scope_decision_v1_0"
+)
+MICRO_FIXED_PACK_DECISION_STATUS = (
+    "micro_judgment_formal_zero_call_pass_"
+    "canonical_live_gate_required_one_chat_successor_authorized"
+)
 REQUIRED_PROJECT_OS_REFS = (
     "docs/project_os/current_context_pack.zh-CN.md",
     "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md",
@@ -97,6 +104,10 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if decision.get("schema_version") == MICRO_FIXED_PACK_DECISION_SCHEMA:
+        return _validate_micro_fixed_pack_decision(
+            root=root, decision=decision
+        )
     alias_status = (
         "fixed_pack_claim_relation_alias_capacity_zero_call_pass_"
         "one_chat_successor_authorized"
@@ -249,6 +260,195 @@ def _validate_fixed_pack_decision(
         "api_key_env": profile["api_key_env"],
         "recent_provider_steps": len(health["provider_steps"]),
         "claim_relation_alias_capacity_successor": alias_mode,
+        "micro_judgment_successor": False,
+    }
+
+
+def _validate_micro_fixed_pack_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_equal = {
+        "status": MICRO_FIXED_PACK_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "run_scope_id": FIXED_PACK_SCOPE,
+        "evidence_mode": "reviewed_fixed_pack_unit_test",
+        "next_authorized_scope": (
+            "one_DELL_value_capture_fixed_pack_micro_judgment_Chat_successor"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(f"project_os_micro_decision_field_invalid:{field}")
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "canonical_live_gate_required",
+        "same_evidence_pack",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(f"project_os_micro_decision_true_required:{field}")
+    for field in (
+        "historical_failure_promoted",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "dynamic_layer_two_authorized",
+        "five_cell_live_authorized",
+        "product_publication_authorized",
+        "reasoning_or_token_limit_increase",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(f"project_os_micro_decision_false_required:{field}")
+    numeric_equal = {
+        "maximum_model_calls": 4,
+        "maximum_provider_transport_attempts": 4,
+        "maximum_tool_calls": 5,
+        "maximum_read_completion_tokens": 2000,
+        "maximum_judgment_completion_tokens_per_call": 8000,
+        "maximum_total_completion_tokens": 26000,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+    }
+    for field, expected in numeric_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(f"project_os_micro_decision_budget_invalid:{field}")
+
+    _, clean = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="clean_zero_call_result_ref",
+        sha_field="clean_zero_call_result_sha256",
+        digest_field="clean_zero_call_result_digest",
+    )
+    clean_acceptance = clean.get("acceptance") or {}
+    if not (
+        clean.get("status")
+        == "zero_call_micro_judgment_fresh_process_proof_pass"
+        and clean.get("fresh_process_results_byte_equivalent") is True
+        and clean_acceptance.get("natural_model_submission_proven") is False
+        and clean_acceptance.get("fixed_pack_layer_one_accepted") is False
+        and clean_acceptance.get("dynamic_agentic_research_authorized") is False
+    ):
+        raise ValueError("project_os_micro_clean_proof_acceptance_invalid")
+
+    _, proof_authority = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="micro_zero_call_authority_ref",
+        sha_field="micro_zero_call_authority_sha256",
+    )
+    if (
+        proof_authority.get("authority_id")
+        != decision.get("formal_zero_call_authority_id")
+        or proof_authority.get("status")
+        != "fresh_zero_network_zero_model_bounded_finance_loop_proof_authorized"
+    ):
+        raise ValueError("project_os_micro_proof_authority_invalid")
+
+    _, predecessor = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="immutable_predecessor_result_ref",
+        sha_field="immutable_predecessor_result_sha256",
+        digest_field="immutable_predecessor_result_digest",
+    )
+    if not (
+        predecessor.get("status") == "terminal_failed_no_retry"
+        and predecessor.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and (predecessor.get("execution") or {}).get("retries") == 0
+        and (predecessor.get("execution") or {}).get("fallbacks") == 0
+    ):
+        raise ValueError("project_os_micro_predecessor_invalid")
+
+    _, capacity = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="prior_capacity_assessment_ref",
+        sha_field="prior_capacity_assessment_sha256",
+    )
+    if not (
+        capacity.get("status")
+        == (
+            "terminal_capacity_failure_preserved_"
+            "monolithic_judgment_successor_required"
+        )
+        and capacity.get("result_digest") == predecessor.get("result_digest")
+        and (capacity.get("acceptance") or {}).get(
+            "fixed_pack_layer_one_accepted"
+        )
+        is False
+    ):
+        raise ValueError("project_os_micro_capacity_assessment_invalid")
+
+    _, read_profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="micro_read_profile_ref",
+        sha_field="micro_read_profile_sha256",
+    )
+    _, judgment_profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="micro_judgment_profile_ref",
+        sha_field="micro_judgment_profile_sha256",
+    )
+    for profile in (read_profile, judgment_profile):
+        if not (
+            profile.get("wire_api") == "openai_compatible_chat_completions"
+            and profile.get("provider_id") == "deepseek"
+            and profile.get("model") == "deepseek-v4-pro"
+            and (profile.get("authority") or {}).get("retry_count") == 0
+        ):
+            raise ValueError("project_os_micro_provider_profile_invalid")
+    read_defaults = read_profile.get("request_defaults") or {}
+    judgment_defaults = judgment_profile.get("request_defaults") or {}
+    if not (
+        read_defaults.get("reasoning_effort") == "low"
+        and read_defaults.get("max_tokens")
+        == decision.get("maximum_read_completion_tokens")
+        and judgment_defaults.get("reasoning_effort") == "high"
+        and judgment_defaults.get("max_tokens")
+        == decision.get("maximum_judgment_completion_tokens_per_call")
+    ):
+        raise ValueError("project_os_micro_provider_profile_budget_drift")
+
+    _, health = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="provider_health_evidence_ref",
+        sha_field="provider_health_evidence_sha256",
+        digest_field="provider_health_evidence_result_digest",
+    )
+    if not (
+        health.get("status")
+        == "completed_contract_valid_content_assessment_pending"
+        and (health.get("execution") or {}).get("retries") == 0
+        and health.get("provider_steps")
+    ):
+        raise ValueError("project_os_provider_health_evidence_invalid")
+    return {
+        "clean_proof_status": clean["status"],
+        "predecessor_status": predecessor["status"],
+        "capacity_assessment_status": capacity["status"],
+        "provider_id": read_profile["provider_id"],
+        "provider_model": read_profile["model"],
+        "api_key_env": read_profile["api_key_env"],
+        "recent_provider_steps": len(health["provider_steps"]),
+        "claim_relation_alias_capacity_successor": False,
+        "micro_judgment_successor": True,
+        "node_profiles": {
+            "tool_routing": {
+                "reasoning_effort": read_defaults["reasoning_effort"],
+                "max_tokens": read_defaults["max_tokens"],
+            },
+            "bounded_financial_judgment": {
+                "reasoning_effort": judgment_defaults["reasoning_effort"],
+                "max_tokens": judgment_defaults["max_tokens"],
+            },
+        },
     }
 
 
@@ -282,6 +482,19 @@ def _scope_blocker_projection(
         "blocking_issue_ids": blocked,
         "explicit_allow_issue_ids": explicitly_allowed,
         "out_of_scope_full_chain_blocker_count": len(out_of_scope),
+    }
+
+
+def _issue_explicitly_allows(
+    *, root: Path, issue_id: str, allowed_scope: str
+) -> bool:
+    ledger = _latest_jsonl_rows(
+        _repo_path(root, "docs/project_os/root_cause_issue_ledger.jsonl"),
+        "issue_id",
+    )
+    issue = ledger.get(issue_id) or {}
+    return allowed_scope in {
+        str(value) for value in issue.get("allowed_run_scopes") or ()
     }
 
 
@@ -342,6 +555,19 @@ def build_preflight(
         not in scope_projection["explicit_allow_issue_ids"]
     ):
         raise ValueError("project_os_claim_relation_alias_scope_allowance_missing")
+    if (
+        decision_projection.get("micro_judgment_successor") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence"
+            ),
+            allowed_scope=(
+                "one_exact_once_natural_fixed_pack_micro_successor_after_all_gates"
+            ),
+        )
+    ):
+        raise ValueError("project_os_micro_judgment_scope_allowance_missing")
 
     env = os.environ if environment is None else environment
     api_key_env = str(decision_projection["api_key_env"])
@@ -384,7 +610,15 @@ def build_preflight(
         "credential_value_persisted": False,
         "known_boundary": (
             "This current-baseline preflight permits only the decision-bound DELL "
-            "value_capture fixed-Pack Chat replacement. It is not exact-live authority, "
-            "dynamic Agentic Research, five-cell acceptance, publication, or release."
+            "value_capture fixed-Pack micro-judgment Chat successor. It is not "
+            "exact-live authority, natural submission proof, dynamic Agentic Research, "
+            "five-cell acceptance, publication, or release."
+            if decision_projection.get("micro_judgment_successor") is True
+            else (
+                "This current-baseline preflight permits only the decision-bound DELL "
+                "value_capture fixed-Pack Chat replacement. It is not exact-live "
+                "authority, dynamic Agentic Research, five-cell acceptance, "
+                "publication, or release."
+            )
         ),
     }

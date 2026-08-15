@@ -20,6 +20,11 @@ DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "claim_surface_authority_live_decision_v1_0.json"
 )
+MICRO_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "micro_judgment_live_scope_decision_v1_0.json"
+)
 ALIAS_CLEAN_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -58,6 +63,26 @@ def _fixture_root(tmp_path: Path) -> Path:
     return tmp_path
 
 
+def _micro_fixture_root(tmp_path: Path) -> Path:
+    for ref in REQUIRED_PROJECT_OS_REFS:
+        _copy_ref(tmp_path, ref)
+    _copy_ref(tmp_path, MICRO_DECISION_REF)
+    decision = json.loads(
+        (ROOT / MICRO_DECISION_REF).read_text(encoding="utf-8")
+    )
+    for field in (
+        "clean_zero_call_result_ref",
+        "micro_zero_call_authority_ref",
+        "immutable_predecessor_result_ref",
+        "prior_capacity_assessment_ref",
+        "micro_read_profile_ref",
+        "micro_judgment_profile_ref",
+        "provider_health_evidence_ref",
+    ):
+        _copy_ref(tmp_path, decision[field])
+    return tmp_path
+
+
 def test_current_fixed_pack_decision_passes_without_network_or_secret_read() -> None:
     result = build_preflight(
         root=ROOT,
@@ -86,6 +111,50 @@ def test_missing_provider_credential_fails_closed() -> None:
             root=ROOT,
             decision_ref=DECISION_REF,
             environment={},
+            check_repository=False,
+        )
+
+
+def test_micro_judgment_decision_passes_with_two_bound_node_profiles() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=MICRO_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["run_scope_id"] == FIXED_PACK_SCOPE
+    assert result["decision_projection"]["micro_judgment_successor"] is True
+    assert result["decision_projection"]["node_profiles"] == {
+        "tool_routing": {"reasoning_effort": "low", "max_tokens": 2000},
+        "bounded_financial_judgment": {
+            "reasoning_effort": "high",
+            "max_tokens": 8000,
+        },
+    }
+    assert result["network_calls"] == 0
+    assert result["provider_calls"] == 0
+    assert result["credential_value_persisted"] is False
+
+
+def test_micro_judgment_profile_digest_drift_fails_closed(
+    tmp_path: Path,
+) -> None:
+    root = _micro_fixture_root(tmp_path)
+    decision_path = root / MICRO_DECISION_REF
+    decision = json.loads(decision_path.read_text(encoding="utf-8"))
+    decision["micro_judgment_profile_sha256"] = "0" * 64
+    decision_path.write_text(json.dumps(decision), encoding="utf-8")
+
+    with pytest.raises(
+        ValueError,
+        match="project_os_artifact_sha_drift:micro_judgment_profile_ref",
+    ):
+        build_preflight(
+            root=root,
+            decision_ref=MICRO_DECISION_REF,
+            environment={"DEEPSEEK_API_KEY": "present"},
             check_repository=False,
         )
 

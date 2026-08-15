@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。Owner 授权的五项计划仍停在第 1 项，但 R3 后批准的两项结构假设已经得到新证据：thesis 片段上下文从完整单元投影为全部合法关系的最小权威并集，再把高推理可见分析与低推理严格交卷分开。零调用门与唯一 FAS-R1 均通过；自然运行形成 940 字分析、唯一合法 thesis Tool Call，单 thesis L1 通过且不再把 AI 产品归因成公司／分部利润。该结果只资格化一个 thesis，不是完整 Judgment 或 fixed-Pack 第一层通过；mechanism、counterargument／WWC、动态 Research Truth Spine、五单元和第 2–5 项仍未开始，下一门必须先由 Owner 审阅而非自动扩展。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。R3 后批准的两项结构假设已经得到新证据：thesis 片段上下文从完整单元投影为全部合法关系的最小权威并集，再把高推理可见分析与低推理严格交卷分开。零调用门与唯一 FAS-R1 均通过；自然运行形成 940 字分析、唯一合法 thesis Tool Call，单 thesis L1 通过且不再把 AI 产品归因成公司／分部利润。该结果只资格化一个 thesis，不是完整 Judgment 或 fixed-Pack 第一层通过。Owner 已于 2026-08-16 审阅并授权继续：先把同一模式零调用扩展到 mechanism、counterargument／WWC，再执行一次完整 fixed-Pack Judgment；通过后依次闭合动态 Research Truth Spine、DELL 动态单单元、DELL 五单元和跨案例泛化验收。业务／合同失败必须保留原 attempt 并在最早责任层以新 attempt 续跑，不再因一次 live fail 自动返回；网络连通性按本机代理／TUN／DNS／TLS／IncompleteRead 分类并做有界重连。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
 
 ## 当前唯一产品边界
 
@@ -82,11 +82,12 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 若业务验收发现当前三案例数据本身不可信，停止发布并在当前 FIN 0.1.3 修复；若只是未来动态研究能力缺失，记录为后续产品范围，不把它偷偷塞回本次重定基。
 - 任何 materially changed scope 都要先向 Owner 说明。
 - natural micro R3 已触发预先冻结的停止线：不得自动提高 token、切协议、签发 R4 或进入动态 Truth Spine；Provider/profile/protocol/context projection/autonomy 的变化必须先做项目级处置并重新取得范围授权。
-- R3 后的项目级处置已按 Owner 批准仅测试片段投影和分析／交卷分离；FAS-R1 单 thesis 成功后仍不得自动运行其余片段或完整 Judgment。两个 L2 finding 只记录，不触发补丁式 live 重跑。
+- R3 后的项目级处置已按 Owner 批准先测试片段投影和分析／交卷分离；FAS-R1 单 thesis 成功后，Owner 已授权同一模式扩到其余片段并在工程门通过后运行一次完整 fixed-Pack Judgment。两个 L2 finding 只记录，不触发逐字段 live 重跑；若完整运行失败，保留失败并在最早责任层以新 attempt 继续，不得复用旧 authority 或在同一 attempt 隐式 retry。
+- MU／NVDA 与独立留出案例的泛化评测必须在读取结果前预注册案例分层、异质性维度、逐案硬门和报告模板。不得只挑同产业、同来源或与 DELL 结构相似的案例，不得用平均分掩盖任何案例的身份、期间、来源、数值或因果 L1 失败。
 
 ## 当前下一步
 
-Owner 已批准第一层：`FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_ONE`
+Owner 已批准从第一层连续推进到 S3 三案例验收；每一层仍需独立工程、L1 与内容门：`FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_ONE → Research Truth Spine → DELL dynamic single cell → DELL five cells → heterogeneous generalization report`
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
@@ -104,7 +105,7 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 
 2026-08-15 15:52 +08:00：上述零调用 successor 已在 clean/synced commit `86a129a7` 通过正式证明。第二步完整 messages 为 `25,379` 字符，相对 R1 `52,412` 为 `48.4%`；tool schema 为 `5,835`，相对 `11,067` 为 `52.7%`。模型只选三个关系 alias，Harness 展开完整 typed relation；审计 lineage 私有保留、wire 隐藏；零预算 EvidenceRequest 工具不再发送；旧 full-field、未知 alias、跨案 QF、缺 supporting Evidence 与因果冲突均 fail closed。该结果仅关闭 RC-S3-014 的结构门，第一项仍未通过；下一动作是登记并 clean push 后执行 Project OS preflight，再签发唯一 natural fixed-Pack successor，得到 L1／内容结果前不得进入动态第二层。
 
-历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。当前统一合同、协议投影、Research Context Closure 和 IncompleteRead capture-first 均已达到 formal clean replay pass；新 Chat R2 也已自然完成，但因产品级利润归因越界未过 L1。五 cell 不再是“等待复验”，而是明确 blocked。未批准新的跨阶段或局部处置范围前，不自动新增代码、模型调用、五单元运行、其他 Skill 迁移或 broad source 扩张。
+历史标准 Tool Calls successor 已在干净远端提交 `4daaa894...` 完成，并由 fresh zero-call R2 复证；R1 live 暴露的 wire `index` 与安全并行缺口由 v1.1 successor／fresh zero-call R3 关闭。当前统一合同、协议投影、Research Context Closure 和 IncompleteRead capture-first 均已达到 formal clean replay pass；新 Chat R2 也已自然完成，但因产品级利润归因越界未过 L1。五 cell 在该时点由“等待复验”改为明确 blocked；2026-08-16 的 successor 授权只在完整 fixed-Pack 与动态单元逐层通过后解除对应后续门，不追认历史失败。
 
 仓库基线通过后回到 [FIN 0.1.3 当前 S0–S5 计划](../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)，不能把 baseline merge 写成 FIN 0.1.3 产品 release。
 # 2026-08-12 S1-A/S1-B/S1-C 当前增量
@@ -144,4 +145,4 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 零调用为定向 `47 passed`、全仓 `326 passed`、两个 fresh process digest 相等，MU／NVDA 合成身份迁移与跨案／缺权威／错误前序 mutation 均通过；active baseline 仍为 `127 Python / 8 frontend / 10 Runtime resources`，secret scan `6,612 / 0 finding`。
 - clean/synced commit `c5d303a5...` 上的唯一 FAS-R1 完成。analysis=`prompt 2,570 / completion 6,995 / reasoning 6,514 / visible 940 / stop`；submission=`prompt 4,309 / completion 1,944 / reasoning 1,434 / exactly one tool call`；0 retry、fallback、外源、embedding、协议切换与发布。事后治理复证为定向 `54 passed`、全仓 `326 passed`、compileall 与 active baseline 通过，secret scan=`6,615 / 0 finding`。
 - thesis 只采用 `CR::DELL::PRODUCT_TARGET`，明确是未经独立审计的管理层产品口径，不把 AI 增长桥接成 ISG／公司利润；单 thesis L1 pass。L2 仍有“无桥”应改成“当前 Pack 尚未建立桥”和模型重复 QF 定性带的表面归属问题，均不值得为本次结果自动重跑。
-- 两个结构假设已对单 thesis 资格化，但完整三片段 Judgment、fixed-Pack Layer One、动态 Agentic Research、五单元、三案例自然迁移和 S3 接受仍为 false。当前唯一下一步是 Owner review；若继续，先零调用把同一模式扩展到 mechanism 与 counterargument／WWC，再另行判断是否值得一次完整 fixed-Pack live。
+- 两个结构假设已对单 thesis 资格化，但完整三片段 Judgment、fixed-Pack Layer One、动态 Agentic Research、五单元、三案例自然迁移和 S3 接受仍为 false。Owner review 已完成；当前唯一下一步是零调用把同一模式扩展到 mechanism 与 counterargument／WWC，并在工程门通过后执行一次完整 fixed-Pack 新 attempt。

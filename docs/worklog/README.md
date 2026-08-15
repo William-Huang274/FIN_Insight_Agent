@@ -9,3 +9,4 @@
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`
   - fixed-Pack Claim Surface Chat R1 容量失败与结构性 successor：`fin_0_1_3_s3/022_fixed_pack_claim_surface_chat_r1_capacity_failure_and_successor.md`
   - 当前片段上下文与分析／交卷分离实验：`fin_0_1_3_s3/026_fragment_context_and_analysis_submission_experiment.md`
+  - 当前连续执行与异质泛化评测治理：`fin_0_1_3_s3/027_continuous_execution_and_heterogeneous_generalization_evaluation_governance.md`

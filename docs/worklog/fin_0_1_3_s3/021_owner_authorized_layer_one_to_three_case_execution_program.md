@@ -2,7 +2,7 @@
 
 日期：2026-08-15
 
-状态：`owner_authorized / fixed_pack_micro_R3_immutable_terminal_failure / item_1_not_accepted / items_2_to_5_blocked / project_level_disposition_required`
+状态：`owner_authorized_continuous_execution / FAS_R1_single_thesis_L1_pass / remaining_fragments_zero_call_current / full_fixed_pack_dynamic_truth_spine_five_cell_and_generalization_pending`
 
 ## Owner 决定
 
@@ -78,3 +78,24 @@ canonical runner 与 Project OS preflight 联合定向 `25 passed`、全仓 `320
 因此第一项没有通过，且无法进行 L1、八维内容或 paired assessment；这不是内容被判差，而是没有内容可判。微判断证明已经排除了“大 JSON 一次提交”这一局部因素，却仍未解决“完整单元上下文＋高 thinking＋强制 Tool submission”的收敛问题。按照本计划预先冻结的停止线，不自动进入 R4，不执行第 2–5 项，也不继续按字段修补。
 
 下一动作不再属于五项中的普通自行修复，而是项目级 Provider／profile／protocol／context projection／autonomy 处置。必须先零调用比较候选结构并向 Owner 返回决策；只有新的范围被明确接受后，才判断是否值得做一个最小单节点 canary。
+
+## FAS-R1 结果与 Owner 连续执行恢复（2026-08-16）
+
+Owner 批准的项目级处置没有换模型、换协议或增加 token，而是只测试两个 provider-neutral 假设：片段专属最小权威上下文，以及高推理可见分析／低推理严格交卷分离。FAS-R1 在 clean/synced commit `c5d303a5...` 上完成：分析调用形成 940 字可见草案，提交调用只形成一个合法 `submit_research_thesis` Tool Call；0 retry／fallback／EvidenceRequest／外源／embedding／protocol switch／publication。最终 thesis 只表达管理层产品盈利目标及其未审计、产品级边界，没有重现旧 AI 产品→ISG／公司利润强归因，单 thesis L1 通过。
+
+该结果只资格化 `value_capture.thesis`。mechanism、counterargument／WWC、完整 Judgment、动态 Research Truth Spine、DELL 五单元和跨案例 S3 验收仍未通过。两个 L2 finding——“无产品级桥”应限定为当前 Pack，以及 prose 不应重复确定性 QF surface——只进入后续完整 renderer／内容评估，不触发单字段 live 重跑。
+
+Owner 随后授权恢复连续执行，顺序冻结为：
+
+1. 同步 PRD、当前计划、Project OS 与本账本；
+2. 零调用把片段上下文＋分析／交卷扩展到 mechanism 和 counterargument／WWC；
+3. 工程门通过后只执行一次完整 fixed-Pack Judgment，并做 L1 与内容质量验收；
+4. 闭合 `EvidenceRequest → S1 → EvidenceDecision／EvidenceResponse → S2 operating metric／bridge／typed gap → 受影响单元重裁决`；
+5. 运行 DELL `value_capture` 动态单单元；
+6. 迁移其余四个 RoleMethodPack／GraphContextPack，运行 DELL 五单元完整案例；
+7. 用 MU、NVDA 和异质留出案例生成正式泛化报告；
+8. 完成八维绝对质量、同输入 paired gain、qualified-human 内容验收并判断 S3。
+
+连续执行规则：普通 live 的业务／合同失败不再自动返回 Owner；失败 attempt 与 capture 永久保留，在最早责任层修复后签发新 attempt／authority继续。网络错误先按本机代理／TUN／DNS／TLS／HTTP／IncompleteRead 分类并有界恢复，不能冒充模型内容失败。只有需要改变产品范围、数据采购／授权、模型主路线、S4 publication 或 S5 release 时暂停决策。
+
+第 7 项不得临时挑几个相似案例打标。泛化合同必须在读取结果前预注册开发／validation／test-precut／真正 holdout 分账，覆盖产业与商业模式、来源形态、关系方向、证据充足度、期间、因果边界和 typed gap；身份、期间、来源、引用、数字和跨案污染逐案为硬门，平均分不得掩盖失败。每案须输出端到端流转、具体业务错误、最早责任层、八维内容质量、paired gain、人工验收、成本与延迟，并汇总跨案例根因矩阵。

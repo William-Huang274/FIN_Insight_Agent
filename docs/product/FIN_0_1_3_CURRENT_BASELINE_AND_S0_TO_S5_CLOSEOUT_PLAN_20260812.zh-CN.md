@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / runtime_registry_R11 / S1_object_route_and_Dell_targeted_source_engineering_pass / S1_candidate_to_Evidence_product_open / S2_company_fact_mart_and_Dell_relation_consumption_pass / S2_operating_metric_and_product_bridge_open / S3_research_context_closure_pass / fixed_pack_claim_surface_zero_call_R3_pass / owner_authorized_layer_one_to_three_case_execution / fixed_pack_natural_replacement_in_progress / dynamic_truth_spine_pending / five_cell_pending / three_case_acceptance_pending / product_iteration_not_closed`
+状态：`repository_baseline_complete / runtime_registry_R11 / S1_object_route_and_Dell_targeted_source_engineering_pass / S1_candidate_to_Evidence_product_open / S2_company_fact_mart_and_Dell_relation_consumption_pass / S2_operating_metric_and_product_bridge_open / S3_research_context_closure_pass / fixed_pack_single_thesis_FAS_R1_L1_pass / owner_authorized_continuous_S3_execution / remaining_fragments_zero_call_in_progress / full_fixed_pack_dynamic_truth_spine_five_cell_and_generalization_pending / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -14,7 +14,7 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 - `/operations` 独立展示当前运行配置、来源包、准入数据构建和已保存运行；历史作业明确标记为仅供审计。
 - 无数据挂载时仍可查看案例目录，但详情入口禁用且 `/api/readiness` 返回 typed HTTP 503；不得假装数据就绪。
 - 挂载 reviewed pack 后可查看 Evidence、拒绝理由、来源边界和 residual gap。
-- DELL 当前 Pack 已包含 SEC、Dell IR 和 TSM IR 官方来源（20 Evidence／14 gaps）；MU/NVDA 暂保留旧 Pack。Workbench reviewed 表面的结构化数值项仍为 0，但 private S3 `value_capture` R2 已真实消费 8 个 NumericFact 和 4 条同口径 relation。该结果尚未进入五单元或 Workbench 报告面，补证请求也没有执行检索；因此不能声称完整多源研究、动态 Agentic Research 或完整报告已经完成。
+- DELL 当前 Pack 已包含 SEC、Dell IR 和 TSM IR 官方来源（20 Evidence／14 gaps）；MU/NVDA 暂保留旧 Pack。Workbench reviewed 表面的结构化数值项仍为 0，但 private S3 `value_capture` R2 已真实消费 8 个 NumericFact 和 4 条同口径 relation。后续 FAS-R1 又证明：在同一 fixed Pack 上，片段专属上下文＋分析／交卷分离可以让 DeepSeek 自然形成一条 L1 合格的 thesis，并避免把 AI 产品归因为 ISG／公司利润。该结果仍未形成完整 Judgment、五单元或 Workbench 报告，补证请求也没有执行检索；因此不能声称完整多源研究、动态 Agentic Research 或完整报告已经完成。
 
 ## 3. S0–S5 责任与当前状态
 
@@ -23,7 +23,7 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 | S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线 | G01–G12 已通过并合并远端 main | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿 |
 | S1 | 类型化 EvidenceRequest、内外源发现、解析、chunk/object、SQL/lexical/semantic/graph 路由、rerank、Evidence Role、来源覆盖 | 保存的自然 Planner atoms 已执行 8 个 request／128 个 Qwen＋BM25 候选并逐项归责；两个新 ranker 与 Evidence Role 均未晋升。TSM 与 Dell 官方 PDF 已经共用 parser/Gate 进入当前 DELL Pack，当前为 20 Evidence／14 gaps；MU/NVDA 未偷换。route policy 声明 `typed_relationship_graph`，当前 Runtime 尚无执行 handler | 三案及独立留出案例的 request-to-plan、required-slot target-in-pool、日期/实体/关系、route contribution 和 Evidence Role 正确；数值请求可靠路由到 S2 exact lookup，图路线只能在真实 handler 与来源权限通过后计为能力，外源只补真实 residual gap |
 | S2 | 公司财务事实 mart、Evidence/NumericFact 编译、PIT、单位/期间、引用和冲突 | private mart 已从三案 SEC capture 建立，1,319 observations、24/24 精确事实查询及 mutation 通过；DELL 受控纵切为 7/7 typed request resolved、21 NumericFacts、0 gap/conflict | 数值事实从权威对象确定性入库和查询，跨案/错期/错单位 fail closed，typed exact lookup 返回 NumericFact 或可信 gap；自然 planner、研究消费和三案依赖回归证明产品价值 |
-| S3 | 动态规划、工具使用、重裁决、研究综合、角色方法、单元级图上下文、Workpaper/Report | provider-neutral planning、consumer、Tool Contract、capture-first transport 与 Research Context Closure 已通过工程门。最新 DELL `value_capture` Chat R2 已用 receipt 证明 NumericRelation、RoleMethodPack 和当前 GraphContextPack 被消费，但产品级因果归因 L1 失败；其三条补证请求仍为 proposal-only，未形成动态回流 | 三案真实动态研究通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收；每个 model-visible RoleMethodPack／GraphContextPack 可重建并有消费 receipt |
+| S3 | 动态规划、工具使用、重裁决、研究综合、角色方法、单元级图上下文、Workpaper/Report | provider-neutral planning、consumer、Tool Contract、capture-first transport 与 Research Context Closure 已通过工程门。DELL `value_capture` FAS-R1 已让一个 thesis 自然通过合同和 L1；mechanism、counterargument／WWC、完整 Judgment、动态 EvidenceResponse 回流、五单元与报告仍未证明 | DELL 完整动态案例与异质跨案例泛化均通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收；每个 model-visible RoleMethodPack／GraphContextPack 可重建并有消费 receipt；逐案硬门不得被平均分掩盖 |
 | S4 | 用户任务、Evidence/Gap/Workpaper/Review/Repair 产品闭环 | 只有只读 Evidence Workspace 和独立 Operations | 当前 S3 candidate 被真实 UI 消费；review/repair/lineage 可完成且不依赖旧产品面 |
 | S5 | 发布、回滚、运行、成本、安全和 Owner acceptance | 未开始；本次仓库 merge 不是 S5 | RG1–RG5、clean deploy、回滚和 Owner 签署全部成立 |
 
@@ -59,18 +59,22 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
     - 旧角色 Skill／GraphPack 重新资格审计确认：方法内容大多仍有价值，但旧对象和运行接口过时。历史 paired request 没有注入这些上下文；后续 Research Context Closure 已只迁移 `value_capture` 所需方法与本案即时图上下文。
     - Research Context Closure R3/R4 与 replacement Chat R2 已完成：R2 正确消费 8 个 NumericFact、4 条同口径 relation、6 条 RoleMethod step 和 1 条当前 Graph edge，并保持 ASP／unit／PVM 为 open gap。最终仍把多因素公司／ISG 利润改善过强归因于 AI server，并加入未绑定的 semi-fixed cost 机制，故因果归因 L1 fail，五单元继续 blocked。
 22. **角色 Skill／图谱／DeepSeek Harness 重新资格（只读审计已完成）**：旧 fundamental、industry/supply-chain、product、valuation、risk、lead、writer、verifier 方法选择性迁移；旧 renderer／aggregator 和重复版本不恢复。旧图数据不复用，完整 typed graph handler 留在 S1。官方 Harness 的 scoped Skill、progressive disclosure、context log 和 preset 只作为 provider-neutral pack 的可选 shadow 宿主，不接管金融 Evidence／NumericFact 权威。
-23. **S1→S3 全链审计（只读完成、方向待 Owner 决策）**：审计确认当前主链的最早产品断点是 `candidate → EvidenceResponse` 未在 Agent loop 内闭合；S2 只对标准公司财务事实形成权威，订单／积压／销量／ASP／PVM／产品利润桥与估值仍缺 typed authority；S3 则缺 claim scope 与 causal bridge 强制门。原先单独的 S3 causal gate 仍有必要，但若不与 S1 Evidence 回流和 S2 operating-metric／bridge 纵切一起设计，只会得到更安全但可能更空的结论。下一方向见 `docs/worklog/fin_0_1_3_s3/019_s1_to_s3_full_chain_and_experiment_audit.md`，未获 Owner 决策前不新增模型调用或五单元运行。
-24. **三层验收与第一层（Claim Surface formal R3 已通过、等待 Owner 决定自然 replacement）**：fixed Pack 只测试“给定合格资料时能否可靠分析”，不计作 Agentic Research；第二层才是 DELL 单单元动态 S1/S2/EvidenceResponse 纵切；第三层才是五单元动态完整案例。唯一自然 Chat 选择了产品级 management assertion，不再产生旧 R2 的公司利润归因和半固定成本机制，但 reviewed source 的“中个位数”目标没有 typed alias，故 terminal failed。Owner 随后只授权零调用收口：successor 已把该目标编译为 source-bound QF，禁止单点化，并要求 thesis／mechanism／counterargument 分别提交结构化 subject、outcome、relation、attribution 和 scope。最终 clean/synced R3 通过旧失败三层回放、四类 mutation、source drift、三案例隔离、2-step fake loop 和 deterministic recompile；全程 0 模型／网络。R1 runner failure 与 R2 stale-date 结果均保持不可变。尚未证明新的自然输出，因此第一层 acceptance、动态第二层和五单元仍 blocked。
+23. **S1→S3 全链审计（只读完成、纵切方向已获 Owner 授权）**：审计确认当前主链的最早产品断点是 `candidate → EvidenceResponse` 未在 Agent loop 内闭合；S2 只对标准公司财务事实形成权威，订单／积压／销量／ASP／PVM／产品利润桥与估值仍缺 typed authority；S3 则缺 claim scope 与 causal bridge 强制门。原先单独的 S3 causal gate 仍有必要，但若不与 S1 Evidence 回流和 S2 operating-metric／bridge 纵切一起设计，只会得到更安全但可能更空的结论。Owner 已授权在完整 fixed-Pack 通过后闭合这条动态 Research Truth Spine；该授权不允许跳过 fixed-Pack 门或直接运行五单元。
+24. **三层验收与第一层（单 thesis FAS-R1 已通过，完整 Judgment 仍在途）**：fixed Pack 只测试“给定合格资料时能否可靠分析”，不计作 Agentic Research；第二层才是 DELL 单单元动态 S1/S2/EvidenceResponse 纵切；第三层才是五单元动态完整案例。Claim Surface formal R3 已把管理层目标编译为 source-bound QF，并要求 thesis／mechanism／counterargument 分别提交结构化 subject、outcome、relation、attribution 和 scope。随后 FAS-R1 在不加 token、不换协议的情况下，以片段专属上下文和分析／交卷分离形成 940 字可见分析与唯一合法 thesis Tool Call；该 thesis L1 通过且不再把 AI 产品归因成公司／分部利润。历史 R1/R2/R3 失败均保持不可变。当前只通过一个 thesis，mechanism、counterargument／WWC、完整 fixed-Pack Judgment、动态第二层和五单元仍未通过。
 25. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
 26. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
-## 4A. 2026-08-15 Owner 连续执行授权
+## 4A. 2026-08-15／16 Owner 连续执行授权
 
-Owner 已把原三层验收扩展为同一 FIN 0.1.3 内的五项连续执行范围：fixed-Pack natural replacement、动态 Research Truth Spine、DELL 单单元、DELL 五单元，以及 MU／NVDA 同核心迁移和三案例验收。执行仍受前置门约束：上一项未通过自身 L1／工程／内容门时，下一项不得用更昂贵的 live 掩盖失败；项目缺陷留在 S1／S2／S3 最早责任层修复。该授权不包含 S4 publication 或 S5 release，也不把任何失败 attempt 改写为成功。
+Owner 已把原三层验收扩展为同一 FIN 0.1.3 内的连续执行范围：完整 fixed-Pack Judgment、动态 Research Truth Spine、DELL 单单元、DELL 五单元，以及 MU／NVDA 同核心迁移和跨案例验收。执行仍受前置门约束：项目缺陷留在 S1／S2／S3 最早责任层修复；每个失败 attempt 保持不可变，修复后使用新 attempt／authority，不得在同一 attempt 隐式 retry 或把失败改写为成功。一次 live 未通过不再自动触发 Owner 返回点；只有产品范围、数据采购／授权、模型主路线、S4 publication 或 S5 release 的实质变化需要暂停决策。
 
 当前第一项的最早实现工作不是重新调用模型，而是让唯一 canonical live runner 消费已通过 formal R3 的 source-bound QF 和逐原子 Claim Surface 合同。完成 deterministic replay、全仓回归、Project OS preflight 和 clean/synced authority 后，才执行一次 0 retry 的 DeepSeek Chat replacement。
 
 2026-08-15 更新：上述接线与 preflight 已完成，但 natural Chat R1 在 mandatory reads 后因 16000 reasoning token 耗尽、零最终 tool call 而终止。该失败既不能算内容失败，也不能归咎为单纯 DS 不遵循；当前模型视图重复了 Claim／Method／Graph 卡，发送了完整审计 lineage 和零预算 EvidenceRequest schema，并要求模型逐原子重复七个已冻结的关系字段。第一项因此插入 provider-neutral 的 alias／compact-view successor，formal proof 通过前不得进入动态第二项。
+
+2026-08-16 更新：FAS-R1 已证明片段专属上下文＋高推理分析／低推理交卷对单 thesis 有效。Owner 现授权先把同一模式零调用扩到 mechanism 和 counterargument／WWC，再做一次完整 fixed-Pack Judgment；若失败，允许在最早责任层修复并以新 attempt 续跑，不因普通 live failure 自动停下。网络错误必须区分本机代理／TUN／DNS／TLS／IncompleteRead 与业务合同失败，采用有界连通性恢复，不能把 transport 问题记成模型内容失败。
+
+MU／NVDA 与留出案例验收必须先形成正式泛化评测设计和最终报告。开发案例、已观察 validation 和 test-precut／真正留出要分账；案例须覆盖不同产业、商业模式、来源形态、Evidence 充足度、期间与因果边界。验收至少逐案报告身份／期间／来源／数值 L1、EvidenceRequest 与 route 覆盖、Evidence 晋升与 abstain、NumericFact／bridge、动态补证、五单元内容、八维质量、paired gain、人工验收、成本和延迟。任何逐案 L1 失败不得被平均分掩盖，也不得只用几个与 DELL 相似的案例给“泛化通过”打标。
 
 ## 5. 防止再次膨胀的工程规则
 

@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-16 | FIN 0.1.3 S3 FAS-R1 证明：片段专属最小权威上下文＋高推理分析／低推理严格交卷可让 DELL `value_capture` 单 thesis 自然通过 L1，并消除旧 AI 产品→分部／公司利润越界；该结果不等于完整 Judgment 或 Agentic Research。Owner 授权连续完成其余片段、完整 fixed Pack、动态 Truth Spine、DELL 五单元及跨案例验收。普通 live failure 不再自动暂停，但必须保留 immutable attempt、在最早责任层修复并以新 authority 续跑。跨案例泛化必须预注册异质案例、逐案硬门和正式报告，禁止以相似案例或平均分冒充泛化。 |
 | 2026-08-14 | FIN 0.1.3 S3 第一层失败后新增 Claim Surface successor：来源允许引用的管理层 qualitative band 必须先编译成 source-bound QF，并由 Harness 确定性展示 surface／qualifier，禁止转为单点或 audited NumericFact；thesis、mechanism、counterargument 各自提交结构化 subject、outcome、relation、attribution 和 scope。旧关键词因果门降为纵深防御，不能继续承担关系证明。旧 live 不追认，formal zero-call proof 前不授权 replacement live 或动态第二层。 |
 | 2026-08-14 | FIN 0.1.3 S3 验收正式拆成三层：fixed reviewed Pack 只隔离模型分析能力，不计作 Agentic Research；单单元动态纵切必须让模型自行提出 EvidenceRequest、真实调用 S1/S2、接收 EvidenceResponse 并继续／停止；完整动态案例还须五单元综合和报告验收。Owner 当前只批准第一层。第一层新增 provider-neutral `claim_scope + financial_scope + causal_bridge_authority`，但模型仍拥有研究叙事，本地不得代写结论。第一层通过也不得自动放行动态纵切或五单元。技术边界见 `docs/architecture/research/FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_20260814.zh-CN.md`。 |
 | 2026-08-14 | FIN 0.1.3 S1→S3 全链审计纠正“只修 S3 因果门即可继续”的局部判断。当前已证明 EvidenceRequest→S1 candidate、S2 CompanyFact/NumericRelation、fixed reviewed Pack→S3 单元 Judgment 各自可运行，但动态补证仍只记录 proposal、不会在同一循环执行检索/Evidence Gate/回流；S2 对订单、积压、销量、ASP、PVM、产品利润桥和估值尚无同等级 typed authority；S3 也尚无 claim scope／causal bridge 强制门。产品下一决策必须把 `candidate→EvidenceResponse→operating metric/bridge→claim authority` 作为同一有界真值纵切，不能只靠更多来源、调 embedding 或重复 live。完整审计见 `docs/worklog/fin_0_1_3_s3/019_s1_to_s3_full_chain_and_experiment_audit.md`。 |
@@ -2635,3 +2636,24 @@ DELL fixed-Pack Chat 的首个失败表明，来源允许引用某个定性数�
 关键词扫描保留为纵深防御，只用于发现叙事与所选关系的明显冲突，不能再作为关系正确性的主要证明。验收必须回放旧失败 payload：旧 schema 不得静默晋升；只补字段仍应被自由定性数字门拒绝；迁移 QF 后若 mechanism 仍选择不存在的强因果桥，也必须拒绝。修正版 fixture 通过只构成零调用工程门；自然 replacement live、fixed-Pack 第一层 acceptance、动态单单元纵切和五单元研究都需要各自独立授权与内容验收。
 
 正式 clean/synced R3 已于 2026-08-15 通过上述工程门：QF 未生成单点，三个叙事原子各有独立结构关系，旧失败三层 replay、非法关系、缺指定权威、叙事冲突、source digest 漂移和跨案例污染均 fail closed；fake loop 为 2 step／3 tool call／0 EvidenceRequest，外部与模型调用均为 0。该结果只关闭合同工程缺口，不得写成 DeepSeek 自然质量通过或 fixed-Pack 第一层 acceptance。
+
+### 16.33 连续 S3 执行与异质泛化报告门（2026-08-16）
+
+FAS-R1 已用同一 DELL fixed Pack 证明：分析与严格结构提交可以分工，但模型仍拥有观点和文字，本地只投影片段所需的全部合法权威、校验所选关系并绑定 lineage。该模式当前只资格化 `value_capture.thesis`；mechanism、counterargument／WWC 和完整 Judgment 必须沿同一 provider-neutral 编译源扩展，不能各自复制 Prompt、Validator、fake 或 runner。
+
+Owner 授权 S3 在不改变产品范围、数据采购、模型主路线、S4 publication 或 S5 release 的前提下连续执行。连续执行不等于放宽审计：
+
+1. 每个业务／合同失败保留原始请求、最终 assistant 输出、usage、finish reason、capture、terminal result 和 attempt identity；修复最早责任层后必须签发新 attempt／authority，不得在同一 attempt 隐式 retry 或追认旧失败。
+2. 连通性失败必须先区分本机代理／TUN、DNS、TLS、HTTP transport、`IncompleteRead` 和远端业务响应；只允许有界恢复，不能把网络失败计入模型内容质量，也不能因一次断连复制临时 runner。
+3. 完整 fixed-Pack Judgment 通过后才可进入动态 Research Truth Spine；动态单单元通过后才可进入 DELL 五单元；DELL 通过后才可进入跨案例产品泛化。fixed Pack 始终只是模型分析单元测试，不得标为 Agentic Research。
+
+跨案例泛化必须在读取本轮结果前预注册并生成正式报告，至少满足以下产品合同：
+
+1. **案例分账**：DELL／MU／NVDA 属于已开发案例；ORCL／ASML／ANET 若曾用于设计或观察，只能作为 validation；HPQ／AVGO／INTC 等 test-precut 只有在冻结输入、来源与评分规则且未用于调参时才可作为测试。最终报告必须明确哪些案例真正不可见，不能事后挑表现好的样本。
+2. **异质性**：案例组合覆盖不同产业与商业模式、issuer／customer／supplier／ecosystem 关系、10-K／10-Q／8-K／6-K／IR PDF／transcript／表格等来源形态、充足证据与真实 typed gap、当期／同比／PIT 期间、直接事实／bounded read-through／因果桥／反方与 WWC。不得只选择与 DELL 同产业、同来源、同问题结构的案例。
+3. **逐案硬门**：身份、截至日、期间、来源、引用、精确数值、跨案例污染和 gap 冒充事实必须逐案为零 L1 违规；平均 Recall、平均质量分或成本优势不能抵消任一案例的 L1 失败。
+4. **链路评测**：逐案报告用户问题→Research Objective→EvidenceRequest→S1 route／候选→EvidenceDecision／EvidenceResponse→S2 NumericFact／bridge／gap→受影响单元重裁决→五单元综合→报告的实际流转；同时记录 target-in-pool、required-slot coverage、Evidence 晋升精度／abstain、route contribution、动态补证有效性、无进展停止、成本和延迟。
+5. **内容评测**：除事实硬门外，按问题定义、证据使用、机制解释、数值与财务桥、反方／WWC、决策密度、表达与边界、用户可用性八维做绝对评分；再做同输入 paired gain 与 qualified-human 内容验收。报告必须给出具体业务错误和最早责任层，而不是只列数字。
+6. **防止适配测试集**：开发、validation、test-precut 和真正 holdout 的数据、qrels、Prompt、模型 profile 与阈值变更都必须有 lineage；看过测试输出后对核心合同做的任何修改会使该案例降级为 development／validation，并需要新的未见案例复证。
+
+泛化门的目标不是证明一个模型在几个样例上“能跑通”，而是判断同一金融控制面在换公司、行业、来源和证据条件后，是否仍能诚实地找到资料、保留缺口、形成受权威约束的判断并交付有研究价值的报告。

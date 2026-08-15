@@ -1025,7 +1025,16 @@ def _micro_judgment_parameters(
                 "the Harness expands its full authority fields."
             ),
         },
-        "evidence_uses": {"type": "array", "items": evidence_use},
+        "evidence_uses": {
+            "type": "array",
+            "items": evidence_use,
+            "description": (
+                "Every ref listed by the selected relation as a required_"
+                "evidence_ref must be submitted with use_role=support. Other "
+                "reviewed Evidence may be selected as context or "
+                "counterevidence; those roles do not become claim support."
+            ),
+        },
         "numeric_refs": _micro_ref_array(
             numeric_refs,
             description="NumericFacts actually used by this atom.",
@@ -2026,7 +2035,7 @@ def compile_finance_micro_fragment_context(
         for name in expected_prior_names
     ]
     body: dict[str, Any] = {
-        "schema_version": "fin_ia_micro_fragment_context_projection_v1_1",
+        "schema_version": "fin_ia_micro_fragment_context_projection_v1_2",
         "case_identity": deepcopy(research_input["case_identity"]),
         "research_question": research_input["objective"]["raw_question"],
         "cell": {
@@ -2056,6 +2065,15 @@ def compile_finance_micro_fragment_context(
         ),
         "graph_edges": projected_edges,
         "accepted_prior_fragments": prior,
+        "relation_evidence_role_contract": {
+            "required_evidence_refs_role": "support",
+            "optional_reviewed_evidence_roles": [
+                "context",
+                "counterevidence",
+            ],
+            "context_or_counterevidence_grants_claim_support": False,
+            "support_role_grants_causal_bridge": False,
+        },
         "submission_surface_contract": {
             "atom_text_role": (
                 "model_owned_judgment_without_authoritative_value_surface"
@@ -2105,6 +2123,7 @@ def compile_finance_micro_fragment_context(
         },
         "boundaries": [
             "Only reviewed Evidence can support claims; gaps and graph edges do not grant fact authority.",
+            "Every required_evidence_ref of the selected relation must use role support; optional reviewed Evidence may remain context or counterevidence and does not become support.",
             "Exact values require NumericFacts and comparisons require same-basis NumericRelations.",
             "A management assertion is not an audited product-to-company profit bridge.",
             "The model owns the judgment; the harness may validate and render but may not invent it.",
@@ -2122,7 +2141,7 @@ def compile_finance_micro_fragment_analysis_messages(
 ) -> tuple[dict[str, str], ...]:
     _require(
         fragment_context.get("schema_version")
-        == "fin_ia_micro_fragment_context_projection_v1_1",
+        == "fin_ia_micro_fragment_context_projection_v1_2",
         "finance_loop_fragment_context_invalid",
     )
     tool_name = str(
@@ -2677,9 +2696,7 @@ def _validate_micro_judgment_fragment(
             fragment_inference_authority
             in set(contract["allowed_inference_authorities"])
             and fragment_inference_authority
-            in set(relation["allowed_inference_authorities"])
-            and str(thesis_fragment["judgment_status"])
-            in set(relation["allowed_judgment_statuses"]),
+            in set(relation["allowed_inference_authorities"]),
             "finance_loop_micro_relation_disposition_invalid",
         )
         output["inference_authority"] = fragment_inference_authority

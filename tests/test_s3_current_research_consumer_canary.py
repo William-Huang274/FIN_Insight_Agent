@@ -76,6 +76,11 @@ CLAIM_RELATION_ALIAS_POLICY = ROOT / (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "claim_surface_authority_v1_1.json"
 )
+CLAIM_RELATION_SUPPORT_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_v1_2.json"
+)
 CLAIM_RELATION_ALIAS_FAKE = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -130,11 +135,11 @@ FRAGMENT_DISPOSITION = ROOT / (
 )
 FULL_FRAGMENT_ZERO_CALL_RESULT = ROOT / (
     "tests/fixtures/research/"
-    "fin_ia_s3_full_fragment_surface_contract_zero_call_stub_v1_1.json"
+    "fin_ia_s3_full_fragment_relation_role_zero_call_stub_v1_2.json"
 )
 FULL_FRAGMENT_DISPOSITION = ROOT / (
     "tests/fixtures/research/"
-    "fin_ia_s3_full_fragment_surface_contract_disposition_stub_v1_1.json"
+    "fin_ia_s3_full_fragment_relation_role_disposition_stub_v1_2.json"
 )
 FAS_R1_RESULT = ROOT / (
     "configs/research/evals/"
@@ -155,6 +160,16 @@ FULL_FRAGMENT_R1_FAILURE_ASSESSMENT = ROOT / (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "full_fragment_judgment_chat_live_failure_assessment_v1_0.json"
+)
+FULL_FRAGMENT_R2_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_chat_live_result_v1_1.json"
+)
+FULL_FRAGMENT_R2_FAILURE_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_chat_live_failure_assessment_v1_1.json"
 )
 MICRO_R3_RESULT = ROOT / (
     "configs/research/evals/"
@@ -432,13 +447,16 @@ def _full_fragment_validation_paths() -> dict[str, Path]:
         paths.pop(key)
     paths.update(
         {
+            "claim_surface_authority_policy_ref": (
+                CLAIM_RELATION_SUPPORT_POLICY
+            ),
             "full_fragment_zero_call_result_ref": FULL_FRAGMENT_ZERO_CALL_RESULT,
             "full_fragment_disposition_ref": FULL_FRAGMENT_DISPOSITION,
             "prior_fragment_result_ref": FAS_R1_RESULT,
             "prior_fragment_assessment_ref": FAS_R1_ASSESSMENT,
-            "prior_full_fragment_result_ref": FULL_FRAGMENT_R1_RESULT,
+            "prior_full_fragment_result_ref": FULL_FRAGMENT_R2_RESULT,
             "prior_full_fragment_failure_assessment_ref": (
-                FULL_FRAGMENT_R1_FAILURE_ASSESSMENT
+                FULL_FRAGMENT_R2_FAILURE_ASSESSMENT
             ),
         }
     )

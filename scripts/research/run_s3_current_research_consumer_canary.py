@@ -124,7 +124,7 @@ FRAGMENT_ANALYSIS_SUBMISSION_RESULT_SCHEMA = (
     "fin_ia_s3_fixed_pack_fragment_analysis_submission_live_result_v1_0"
 )
 FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA = (
-    "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_1"
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_2"
 )
 FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS = (
     "signed_exact_once_fixed_pack_full_three_fragment_analysis_submission_chat_live"
@@ -1569,14 +1569,14 @@ def validate_full_fragment_judgment_authority(
     )
     if not (
         zero_call.get("status")
-        == "zero_call_full_fragment_sequence_and_terminal_judgment_pass_predecessor_not_reusable"
+        == "zero_call_relation_support_and_fragment_local_disposition_pass"
         and zero_call.get("execution", {}).get("model_calls") == 0
         and zero_call.get("immutable_predecessor", {}).get(
             "reuse_in_full_judgment_authorized"
         )
         is False
         and disposition.get("status")
-        == "approved_fresh_full_three_fragment_analysis_submission_Chat_live"
+        == "approved_fresh_full_three_fragment_analysis_submission_Chat_R3"
         and disposition.get("execution_budget") == expected_budget
         and prior_result.get("status")
         == "completed_fragment_contract_valid_content_assessment_pending"
@@ -1584,18 +1584,22 @@ def validate_full_fragment_judgment_authority(
         == "single_thesis_L1_pass_content_materially_improved_two_hypotheses_qualified_no_automatic_expansion"
         and prior_full_result.get("status") == "terminal_failed_no_retry"
         and prior_full_result.get("failure_code")
-        == "finance_loop_micro_narrative_invalid"
+        == "finance_loop_micro_required_authority_missing"
         and prior_full_result.get("failure_fragment_tool")
-        == SUBMIT_RESEARCH_THESIS_TOOL
+        == SUBMIT_RESEARCH_MECHANISM_TOOL
         and prior_full_result.get("execution", {}).get(
             "model_calls_attempted"
         )
-        == 2
+        == 4
+        and prior_full_result.get("execution", {}).get(
+            "tool_calls_accepted"
+        )
+        == 1
         and prior_full_result.get("execution", {}).get("retries") == 0
         and prior_full_assessment.get("status")
-        == "terminal_contract_failure_project_surface_projection_defect_new_attempt_required"
+        == "terminal_contract_failure_relation_evidence_role_and_fragment_disposition_compilation_defect_new_attempt_required"
         and prior_full_assessment.get("disposition", {}).get(
-            "immutable_R1_preserved"
+            "immutable_R2_preserved"
         )
         is True
         and prior_full_assessment.get("disposition", {}).get(
@@ -1603,16 +1607,33 @@ def validate_full_fragment_judgment_authority(
         )
         is True
         and prior_full_assessment.get("disposition", {}).get("repair_scope")
-        == "provider_neutral_fragment_surface_contract_v1_1"
-        and zero_call.get("surface_contract", {}).get(
-            "saved_R1_replay_failure"
-        )
-        == "finance_loop_micro_narrative_invalid"
-        and zero_call.get("surface_contract", {}).get(
-            "final_deliverable_QF_surface_preserved"
+        == "provider_neutral_relation_support_set_and_fragment_local_disposition_v1_2"
+        and zero_call.get("relation_role_contract", {}).get(
+            "saved_R2_thesis_replay_pass"
         )
         is True
-        and disposition.get("surface_contract_v1_1_required") is True
+        and zero_call.get("relation_role_contract", {}).get(
+            "saved_R2_mechanism_replay_pass"
+        )
+        is True
+        and zero_call.get("relation_role_contract", {}).get(
+            "saved_R2_context_role_preserved"
+        )
+        is True
+        and zero_call.get("relation_role_contract", {}).get(
+            "context_only_required_support_mutation_failure"
+        )
+        == "finance_loop_micro_required_authority_missing"
+        and zero_call.get("terminal_compilation", {}).get(
+            "judgment_status"
+        )
+        == "bounded_support"
+        and zero_call.get("terminal_compilation", {}).get(
+            "inference_authority"
+        )
+        == "bounded_inference"
+        and zero_call.get("fresh_process_results_byte_equivalent") is True
+        and disposition.get("relation_support_set_v1_2_required") is True
         and disposition.get("prior_failed_attempt_reused") is False
     ):
         raise CurrentResearchConsumerCanaryError(

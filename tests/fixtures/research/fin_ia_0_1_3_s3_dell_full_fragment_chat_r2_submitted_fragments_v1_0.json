@@ -1,0 +1,72 @@
+{
+  "schema_version": "fin_ia_s3_full_fragment_submitted_fragment_replay_v1_0",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_authority_v1_1.json",
+  "source_authority_sha256": "d5c8ac1332a383ee0541d38df40662a0fd724bef2e17d0ba575f05f344829835",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_1.json",
+  "source_result_sha256": "4b176444ff751b453646f969b9279cc5c9e98311c02d7b238580a0f7d4746fdb",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "fragments": {
+    "submit_research_thesis": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::PRODUCT_TARGET",
+      "evidence_uses": [
+        {
+          "evidence_ref": "EV::0063F22F643B94ED",
+          "use_role": "support"
+        }
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "qualitative_fact_refs": [
+        "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
+      ],
+      "method_step_refs": [
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::CAUSAL_BOUNDARY"
+      ],
+      "graph_edge_refs": [
+        "GRAPH::2B17375548682087"
+      ],
+      "judgment_status": "supported",
+      "confidence_basis": "direct_source_only",
+      "inference_authority": "directly_supported",
+      "claim_scope": "product",
+      "financial_scope": "product_financial",
+      "causal_bridge_authority": "management_assertion_only",
+      "thesis_atom": "管理层自述其 AI 服务器产品的盈利水平符合所述经营利润率目标；该判断仅代表管理层口径，未经独立审计，也不构成产品到分部或公司的利润分配。"
+    },
+    "submit_research_mechanism": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::MULTI_DRIVER_CONTEXT",
+      "evidence_uses": [
+        {
+          "evidence_ref": "EV::0063F22F643B94ED",
+          "use_role": "support"
+        },
+        {
+          "evidence_ref": "EV::7F4D7E6762C21D83",
+          "use_role": "context"
+        }
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "qualitative_fact_refs": [
+        "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
+      ],
+      "method_step_refs": [
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::COUNTERREAD"
+      ],
+      "graph_edge_refs": [
+        "GRAPH::2B17375548682087"
+      ],
+      "inference_authority": "bounded_inference",
+      "mechanism_atom": "管理层披露的多项利润率驱动因素——存储盈利改善、传统服务器利润率稳定、AI 服务器盈利水平符合其所述目标、以及收入规模效应——仅作为多因素背景一并存在，并未在产品与分部或公司利润之间建立任何分配或因果桥。"
+    }
+  },
+  "reasoning_content_persisted": false,
+  "business_promotion_authorized": false,
+  "known_boundary": "This fixture preserves only the model-visible submitted Tool Call arguments needed for deterministic replay. It contains no private reasoning and is not Evidence or an accepted Judgment."
+}

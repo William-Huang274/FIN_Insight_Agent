@@ -1,0 +1,21 @@
+{
+  "schema_version": "fin_ia_s3_full_fragment_relation_role_zero_call_stub_v1_2",
+  "status": "zero_call_relation_support_and_fragment_local_disposition_pass",
+  "fresh_process_results_byte_equivalent": true,
+  "immutable_predecessor": {
+    "reuse_in_full_judgment_authorized": false
+  },
+  "relation_role_contract": {
+    "saved_R2_thesis_replay_pass": true,
+    "saved_R2_mechanism_replay_pass": true,
+    "saved_R2_context_role_preserved": true,
+    "context_only_required_support_mutation_failure": "finance_loop_micro_required_authority_missing"
+  },
+  "terminal_compilation": {
+    "judgment_status": "bounded_support",
+    "inference_authority": "bounded_inference"
+  },
+  "execution": {
+    "model_calls": 0
+  }
+}

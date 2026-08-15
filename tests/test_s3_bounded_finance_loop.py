@@ -44,6 +44,7 @@ from sec_agent.research.bounded_finance_loop import (
     compile_finance_micro_fragment_analysis_messages,
     compile_finance_micro_fragment_context,
     compile_finance_micro_fragment_submission_messages,
+    compile_finance_micro_judgment_fragments,
     compile_finance_micro_judgment_tools,
     compile_finance_loop_messages,
     compile_finance_loop_tools,
@@ -109,6 +110,16 @@ CLAIM_RELATION_ALIAS_POLICY = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "claim_surface_authority_v1_1.json"
+)
+CLAIM_RELATION_SUPPORT_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_v1_2.json"
+)
+R2_SUBMITTED_FRAGMENT_REPLAY = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_full_fragment_chat_r2_"
+    "submitted_fragments_v1_0.json"
 )
 CLAIM_RELATION_ALIAS_FAKE = ROOT / (
     "tests/fixtures/research/"
@@ -754,8 +765,17 @@ def test_micro_fragment_projection_is_authority_complete_without_selecting_answe
     assert context["authoritative_numeric_facts"] == []
     assert context["same_basis_numeric_relations"] == []
     assert context["schema_version"] == (
-        "fin_ia_micro_fragment_context_projection_v1_1"
+        "fin_ia_micro_fragment_context_projection_v1_2"
     )
+    assert context["relation_evidence_role_contract"] == {
+        "required_evidence_refs_role": "support",
+        "optional_reviewed_evidence_roles": [
+            "context",
+            "counterevidence",
+        ],
+        "context_or_counterevidence_grants_claim_support": False,
+        "support_role_grants_causal_bridge": False,
+    }
     assert context["submission_surface_contract"] == {
         "atom_text_role": (
             "model_owned_judgment_without_authoritative_value_surface"
@@ -814,6 +834,9 @@ def test_micro_fragment_projection_is_authority_complete_without_selecting_answe
     assert "verbal numeric bands" in thesis_tool["parameters"][
         "properties"
     ]["thesis_atom"]["description"]
+    assert "required_evidence_ref" in thesis_tool["parameters"][
+        "properties"
+    ]["evidence_uses"]["description"]
 
     fragment = _micro_alias_fragments()[SUBMIT_RESEARCH_THESIS_TOOL]
     validated = validate_finance_micro_judgment_fragment(
@@ -823,6 +846,99 @@ def test_micro_fragment_projection_is_authority_complete_without_selecting_answe
         cell_id="CELL::value_capture",
     )
     assert validated["thesis_atom"] == fragment["thesis_atom"]
+
+
+def test_saved_R2_mechanism_passes_relation_support_v1_2_and_terminal_lowers_status(
+    contracts,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_SUPPORT_POLICY),
+    )
+    replay_fragments = _json(R2_SUBMITTED_FRAGMENT_REPLAY)["fragments"]
+    thesis_arguments = deepcopy(
+        replay_fragments[SUBMIT_RESEARCH_THESIS_TOOL]
+    )
+    mechanism_arguments = deepcopy(
+        replay_fragments[SUBMIT_RESEARCH_MECHANISM_TOOL]
+    )
+    thesis = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+        arguments=thesis_arguments,
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+    )
+    mechanism = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_MECHANISM_TOOL,
+        arguments=mechanism_arguments,
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+        thesis_fragment=thesis,
+    )
+    assert mechanism["evidence_uses"][1]["use_role"] == "context"
+
+    context_only_thesis = deepcopy(thesis_arguments)
+    context_only_thesis["evidence_uses"][0]["use_role"] = "context"
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_micro_required_authority_missing",
+    ):
+        validate_finance_micro_judgment_fragment(
+            tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+            arguments=context_only_thesis,
+            research_input=alias_input,
+            cell_id="CELL::value_capture",
+        )
+
+    counter_arguments = {
+        "cell_id": "CELL::value_capture",
+        "claim_relation_ref": "CR::DELL::PROFIT_BRIDGE_GAP",
+        "evidence_uses": [],
+        "numeric_refs": [],
+        "numeric_relation_refs": [],
+        "qualitative_fact_refs": [],
+        "method_step_refs": ["METHOD::VC::WHAT_WOULD_CHANGE"],
+        "graph_edge_refs": [],
+        "inference_authority": "not_inferable",
+        "counterargument_atom": (
+            "当前证据未建立产品到分部或公司的利润桥，低毛利组合与其他"
+            "业务贡献仍是替代解释。"
+        ),
+        "what_would_change": {
+            "observable": "经审计的产品价格、数量与成本桥",
+            "direction": "resolve_gap",
+            "time_horizon": "下一次正式披露",
+            "evidence_route": "公司正式文件或可复算的权威数据",
+            "threshold_numeric_ref": "",
+        },
+    }
+    counter = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        arguments=counter_arguments,
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+        thesis_fragment=thesis,
+    )
+    cell = next(
+        row
+        for row in alias_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    terminal = compile_finance_micro_judgment_fragments(
+        {
+            SUBMIT_RESEARCH_THESIS_TOOL: thesis,
+            SUBMIT_RESEARCH_MECHANISM_TOOL: mechanism,
+            SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: counter,
+        },
+        cell=cell,
+    )
+    assert terminal["judgment_status"] == "bounded_support"
+    assert terminal["inference_authority"] == "bounded_inference"
 
 
 def test_micro_fragment_projection_extends_through_mechanism_and_counter_wwc(

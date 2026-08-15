@@ -73,6 +73,7 @@ from sec_agent.research.planning import (
 from sec_agent.research.live_transport_lane import (
     execute_finance_loop_transport_lane,
 )
+from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.runtime_bridge.paths import resolve_runtime_paths
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
@@ -724,6 +725,8 @@ def test_micro_fragment_projection_is_authority_complete_without_selecting_answe
             "METHOD::VC::WHAT_WOULD_CHANGE",
         ],
         "graph_edge_refs": ["GRAPH::2B17375548682087"],
+        "expected_prior_fragment_tools": [],
+        "accepted_prior_fragment_digests": [],
         "projection_selects_answer": False,
         "all_legal_relation_options_preserved": True,
     }
@@ -758,6 +761,108 @@ def test_micro_fragment_projection_is_authority_complete_without_selecting_answe
         cell_id="CELL::value_capture",
     )
     assert validated["thesis_atom"] == fragment["thesis_atom"]
+
+
+def test_micro_fragment_projection_extends_through_mechanism_and_counter_wwc(
+    contracts,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_ALIAS_POLICY),
+    )
+    fragments = _micro_alias_fragments()
+    thesis = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+        arguments=fragments[SUBMIT_RESEARCH_THESIS_TOOL],
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+    )
+    mechanism_context = compile_finance_micro_fragment_context(
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+        tool_name=SUBMIT_RESEARCH_MECHANISM_TOOL,
+        accepted_fragments={SUBMIT_RESEARCH_THESIS_TOOL: thesis},
+    )
+    mechanism_manifest = mechanism_context["projection_manifest"]
+    assert mechanism_manifest["expected_prior_fragment_tools"] == [
+        SUBMIT_RESEARCH_THESIS_TOOL
+    ]
+    assert mechanism_manifest["accepted_prior_fragment_digests"] == [
+        canonical_digest(thesis)
+    ]
+    assert len(mechanism_manifest["candidate_claim_relation_refs"]) == 4
+    assert len(mechanism_context["same_basis_numeric_relations"]) == 1
+    assert len(mechanism_context["authoritative_numeric_facts"]) == 2
+    assert len(mechanism_context["source_bound_qualitative_facts"]) == 1
+    assert len(mechanism_context["typed_residual_gaps"]) == 3
+    mechanism_analysis = compile_finance_micro_fragment_analysis_messages(
+        mechanism_context
+    )
+    assert "不得重复 thesis" in mechanism_analysis[0]["content"]
+    mechanism_submission = compile_finance_micro_fragment_submission_messages(
+        fragment_context=mechanism_context,
+        analysis_draft="公司毛利变化是可观察事实，但当前资料未建立产品到公司利润桥。",
+    )
+    assert SUBMIT_RESEARCH_MECHANISM_TOOL in mechanism_submission[1][
+        "content"
+    ]
+    mechanism = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_MECHANISM_TOOL,
+        arguments=fragments[SUBMIT_RESEARCH_MECHANISM_TOOL],
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+        thesis_fragment=thesis,
+    )
+
+    counter_context = compile_finance_micro_fragment_context(
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+        tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        accepted_fragments={
+            SUBMIT_RESEARCH_THESIS_TOOL: thesis,
+            SUBMIT_RESEARCH_MECHANISM_TOOL: mechanism,
+        },
+    )
+    counter_manifest = counter_context["projection_manifest"]
+    assert counter_manifest["expected_prior_fragment_tools"] == [
+        SUBMIT_RESEARCH_THESIS_TOOL,
+        SUBMIT_RESEARCH_MECHANISM_TOOL,
+    ]
+    assert counter_manifest["accepted_prior_fragment_digests"] == [
+        canonical_digest(thesis),
+        canonical_digest(mechanism),
+    ]
+    assert len(counter_manifest["candidate_claim_relation_refs"]) == 3
+    assert len(counter_context["same_basis_numeric_relations"]) == 1
+    assert len(counter_context["authoritative_numeric_facts"]) == 2
+    assert counter_context["source_bound_qualitative_facts"] == []
+    assert len(counter_context["typed_residual_gaps"]) == 3
+    counter_analysis = compile_finance_micro_fragment_analysis_messages(
+        counter_context
+    )
+    assert "What-Would-Change" in counter_analysis[0]["content"]
+    counter_submission = compile_finance_micro_fragment_submission_messages(
+        fragment_context=counter_context,
+        analysis_draft="最强反方是多因素共同作用；需要可审计的产品利润桥才会改变判断。",
+    )
+    assert SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL in counter_submission[1][
+        "content"
+    ]
+    counter = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        arguments=fragments[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL],
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+        thesis_fragment=thesis,
+    )
+    assert counter["what_would_change"] == fragments[
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+    ]["what_would_change"]
 
 
 def test_micro_fragment_projection_fails_closed_on_scope_and_prior_mutation(
@@ -820,6 +925,39 @@ def test_micro_fragment_projection_fails_closed_on_scope_and_prior_mutation(
                 SUBMIT_RESEARCH_THESIS_TOOL: _micro_alias_fragments()[
                     SUBMIT_RESEARCH_THESIS_TOOL
                 ]
+            },
+        )
+
+    fragments = _micro_alias_fragments()
+    thesis = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+        arguments=fragments[SUBMIT_RESEARCH_THESIS_TOOL],
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+    )
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_fragment_prior_context_invalid",
+    ):
+        compile_finance_micro_fragment_context(
+            research_input=alias_input,
+            cell_id="CELL::value_capture",
+            tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+            accepted_fragments={SUBMIT_RESEARCH_THESIS_TOOL: thesis},
+        )
+
+    contaminated_thesis = deepcopy(thesis)
+    contaminated_thesis["cell_id"] = "CELL::cash_conversion"
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_micro_fragment_fields_invalid",
+    ):
+        compile_finance_micro_fragment_context(
+            research_input=alias_input,
+            cell_id="CELL::value_capture",
+            tool_name=SUBMIT_RESEARCH_MECHANISM_TOOL,
+            accepted_fragments={
+                SUBMIT_RESEARCH_THESIS_TOOL: contaminated_thesis
             },
         )
 

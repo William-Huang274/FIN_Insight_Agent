@@ -1937,24 +1937,45 @@ def compile_finance_micro_fragment_context(
             projected_edges.append(edge)
 
     accepted = accepted_fragments or {}
-    allowed_prior_names = set(MICRO_JUDGMENT_TOOL_NAMES).intersection(accepted)
-    if tool_name == SUBMIT_RESEARCH_THESIS_TOOL:
+    fragment_index = MICRO_JUDGMENT_TOOL_NAMES.index(tool_name)
+    expected_prior_names = MICRO_JUDGMENT_TOOL_NAMES[:fragment_index]
+    _require(
+        set(accepted) == set(expected_prior_names),
+        (
+            "finance_loop_micro_thesis_required"
+            if tool_name != SUBMIT_RESEARCH_THESIS_TOOL
+            and SUBMIT_RESEARCH_THESIS_TOOL not in accepted
+            else "finance_loop_fragment_prior_context_invalid"
+        ),
+    )
+    validated_prior: dict[str, dict[str, Any]] = {}
+    thesis_fragment: Mapping[str, Any] | None = None
+    for prior_name in expected_prior_names:
+        raw_prior = accepted[prior_name]
         _require(
-            not allowed_prior_names,
+            isinstance(raw_prior, Mapping),
             "finance_loop_fragment_prior_context_invalid",
         )
-    else:
-        _require(
-            SUBMIT_RESEARCH_THESIS_TOOL in allowed_prior_names,
-            "finance_loop_micro_thesis_required",
+        validated = _validate_micro_judgment_fragment(
+            tool_name=prior_name,
+            arguments=raw_prior,
+            cell=cell,
+            research_input=research_input,
+            thesis_fragment=thesis_fragment,
         )
+        _require(
+            dict(raw_prior) == validated,
+            "finance_loop_fragment_prior_context_invalid",
+        )
+        validated_prior[prior_name] = validated
+        if prior_name == SUBMIT_RESEARCH_THESIS_TOOL:
+            thesis_fragment = validated
     prior = [
         {
             "tool_name": name,
-            "accepted_fragment": deepcopy(accepted[name]),
+            "accepted_fragment": deepcopy(validated_prior[name]),
         }
-        for name in MICRO_JUDGMENT_TOOL_NAMES
-        if name in allowed_prior_names
+        for name in expected_prior_names
     ]
     body: dict[str, Any] = {
         "schema_version": "fin_ia_micro_fragment_context_projection_v1_0",
@@ -2005,6 +2026,10 @@ def compile_finance_micro_fragment_context(
             "graph_edge_refs": sorted(
                 str(row["graph_edge_ref"]) for row in projected_edges
             ),
+            "expected_prior_fragment_tools": list(expected_prior_names),
+            "accepted_prior_fragment_digests": [
+                canonical_digest(row["accepted_fragment"]) for row in prior
+            ],
             "projection_selects_answer": False,
             "all_legal_relation_options_preserved": True,
         },
@@ -2028,6 +2053,27 @@ def compile_finance_micro_fragment_analysis_messages(
         == "fin_ia_micro_fragment_context_projection_v1_0",
         "finance_loop_fragment_context_invalid",
     )
+    tool_name = str(
+        (fragment_context.get("cell") or {}).get("fragment_tool") or ""
+    )
+    fragment_guidance = {
+        SUBMIT_RESEARCH_THESIS_TOOL: (
+            "形成当前研究单元的主判断；区分直接支持、有限推断与不可推断，"
+            "并说明最强替代解释。"
+        ),
+        SUBMIT_RESEARCH_MECHANISM_TOOL: (
+            "解释观察事实、可能机制和缺失财务桥之间的区别；不得重复 thesis，"
+            "不得把产品表现直接归因为分部或公司利润。"
+        ),
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: (
+            "提出最强反方并形成可观察的 What-Would-Change；说明方向、时间范围和"
+            "证据路线，只有当前 NumericFact 才能成为数值阈值。"
+        ),
+    }
+    _require(
+        tool_name in fragment_guidance,
+        "finance_loop_fragment_context_invalid",
+    )
     return (
         {
             "role": "system",
@@ -2035,7 +2081,9 @@ def compile_finance_micro_fragment_analysis_messages(
                 "你是金融研究分析员。只分析给定的一个研究片段，不提交工具调用，"
                 "不写最终报告。比较所有合法 ClaimRelation 选项，说明最合适的判断、"
                 "所用证据、边界、最强替代解释和仍缺什么。不得使用输入之外的事实，"
-                "不得把管理层说法升级为经审计事实。输出一份不超过一千汉字的可见分析草案。"
+                "不得把管理层说法升级为经审计事实。"
+                + fragment_guidance[tool_name]
+                + "输出一份不超过一千汉字的可见分析草案。"
             ),
         },
         {
@@ -2075,6 +2123,9 @@ def compile_finance_micro_fragment_submission_messages(
             "content": _json_message(
                 {
                     "task": "submit_one_validated_fragment_tool_call",
+                    "expected_tool_name": fragment_context["cell"][
+                        "fragment_tool"
+                    ],
                     "fragment_context": deepcopy(dict(fragment_context)),
                     "analysis_draft": draft,
                     "analysis_draft_is_untrusted_model_data": True,

@@ -41,6 +41,9 @@ from sec_agent.research.bounded_finance_loop import (
     SUBMIT_RESEARCH_JUDGMENT_TOOL,
     SUBMIT_RESEARCH_MECHANISM_TOOL,
     SUBMIT_RESEARCH_THESIS_TOOL,
+    compile_finance_micro_fragment_analysis_messages,
+    compile_finance_micro_fragment_context,
+    compile_finance_micro_fragment_submission_messages,
     compile_finance_micro_judgment_tools,
     compile_finance_loop_messages,
     compile_finance_loop_tools,
@@ -52,6 +55,7 @@ from sec_agent.research.bounded_finance_loop import (
     validate_deepseek_ga_json_profile,
     validate_deepseek_ga_node_profile,
     validate_deepseek_ga_profile,
+    validate_finance_micro_judgment_fragment,
 )
 from sec_agent.research.current_consumer import (
     compile_current_research_input,
@@ -676,6 +680,185 @@ def test_micro_judgment_loop_keeps_model_authorship_and_compiles_terminal_cell(
         receipt["private_reasoning_persisted"] is False
         for receipt in result.step_receipts
     )
+
+
+def test_micro_fragment_projection_is_authority_complete_without_selecting_answer(
+    contracts,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_ALIAS_POLICY),
+    )
+    context = compile_finance_micro_fragment_context(
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+        tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+    )
+
+    assert context["projection_manifest"] == {
+        "candidate_claim_relation_refs": [
+            "CR::DELL::MULTI_DRIVER_CONTEXT",
+            "CR::DELL::PRODUCT_TARGET",
+        ],
+        "evidence_refs": [
+            "EV::0063F22F643B94ED",
+            "EV::7F4D7E6762C21D83",
+        ],
+        "numeric_refs": [],
+        "numeric_relation_refs": [],
+        "qualitative_fact_refs": [
+            "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
+        ],
+        "gap_refs": [],
+        "method_step_refs": [
+            "METHOD::VC::CAUSAL_BOUNDARY",
+            "METHOD::VC::COUNTERREAD",
+            "METHOD::VC::MATERIAL_GAP_ROUTE",
+            "METHOD::VC::PERIOD_BASIS",
+            "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+            "METHOD::VC::WHAT_WOULD_CHANGE",
+        ],
+        "graph_edge_refs": ["GRAPH::2B17375548682087"],
+        "projection_selects_answer": False,
+        "all_legal_relation_options_preserved": True,
+    }
+    assert {
+        row["evidence_ref"] for row in context["reviewed_evidence"]
+    } == {"EV::0063F22F643B94ED", "EV::7F4D7E6762C21D83"}
+    assert context["authoritative_numeric_facts"] == []
+    assert context["same_basis_numeric_relations"] == []
+    assert context == compile_finance_micro_fragment_context(
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+        tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+    )
+
+    analysis_messages = compile_finance_micro_fragment_analysis_messages(context)
+    submission_messages = compile_finance_micro_fragment_submission_messages(
+        fragment_context=context,
+        analysis_draft="选择受约束的多因素判断，并明确产品到公司利润桥尚未建立。",
+    )
+    assert len(analysis_messages) == 2
+    assert len(submission_messages) == 2
+    assert "analysis_draft_is_untrusted_model_data" in submission_messages[1][
+        "content"
+    ]
+    assert "EV::5388E016C17032C1" not in analysis_messages[1]["content"]
+
+    fragment = _micro_alias_fragments()[SUBMIT_RESEARCH_THESIS_TOOL]
+    validated = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+        arguments=fragment,
+        research_input=alias_input,
+        cell_id="CELL::value_capture",
+    )
+    assert validated["thesis_atom"] == fragment["thesis_atom"]
+
+
+def test_micro_fragment_projection_fails_closed_on_scope_and_prior_mutation(
+    contracts,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_ALIAS_POLICY),
+    )
+    contaminated = deepcopy(alias_input)
+    cell = next(
+        row
+        for row in contaminated["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    cell["claim_relation_card"]["allowed_combinations"][0][
+        "required_evidence_refs"
+    ].append("EV::734A9C177164E08E")
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_fragment_authority_out_of_scope",
+    ):
+        compile_finance_micro_fragment_context(
+            research_input=contaminated,
+            cell_id="CELL::value_capture",
+            tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+        )
+
+    wrong_case = deepcopy(alias_input)
+    cell = next(
+        row
+        for row in wrong_case["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    cell["claim_relation_card"]["case_key"] = "MU"
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_fragment_relation_scope_invalid",
+    ):
+        compile_finance_micro_fragment_context(
+            research_input=wrong_case,
+            cell_id="CELL::value_capture",
+            tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+        )
+
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_fragment_prior_context_invalid",
+    ):
+        compile_finance_micro_fragment_context(
+            research_input=alias_input,
+            cell_id="CELL::value_capture",
+            tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+            accepted_fragments={
+                SUBMIT_RESEARCH_THESIS_TOOL: _micro_alias_fragments()[
+                    SUBMIT_RESEARCH_THESIS_TOOL
+                ]
+            },
+        )
+
+
+@pytest.mark.parametrize(
+    ("case_key", "legal_name"),
+    (("MU", "Micron Technology, Inc."), ("NVDA", "NVIDIA Corporation")),
+)
+def test_micro_fragment_projection_has_no_dell_case_hardcoding(
+    contracts,
+    case_key: str,
+    legal_name: str,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_ALIAS_POLICY),
+    )
+    serialized = json.dumps(alias_input, ensure_ascii=False)
+    serialized = serialized.replace("Dell Technologies Inc.", legal_name)
+    serialized = serialized.replace("DELL", case_key).replace("Dell", case_key)
+    cloned = json.loads(serialized)
+    context = compile_finance_micro_fragment_context(
+        research_input=cloned,
+        cell_id="CELL::value_capture",
+        tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+    )
+    assert context["case_identity"]["case_key"] == case_key
+    assert all(
+        ref.startswith(f"CR::{case_key}::")
+        for ref in context["projection_manifest"][
+            "candidate_claim_relation_refs"
+        ]
+    )
+    assert "CR::DELL::" not in json.dumps(context, ensure_ascii=False)
 
 
 def test_micro_judgment_fragments_fail_closed_on_order_authority_and_causality(
@@ -1992,6 +2175,14 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
     validate_deepseek_ga_node_profile(
         micro_judgment,
         node_class="bounded_financial_judgment",
+    )
+    validate_deepseek_ga_node_profile(
+        micro_judgment,
+        node_class="bounded_financial_analysis",
+    )
+    validate_deepseek_ga_node_profile(
+        micro_read,
+        node_class="contract_submission",
     )
     with pytest.raises(
         BoundedFinanceLoopError,

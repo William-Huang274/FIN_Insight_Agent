@@ -118,6 +118,26 @@ MICRO_LIVE_DECISION = ROOT / (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "micro_judgment_live_scope_decision_v1_0.json"
 )
+FRAGMENT_ZERO_CALL_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "fragment_analysis_submission_zero_call_result_v1_0.json"
+)
+FRAGMENT_DISPOSITION = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "fragment_analysis_submission_disposition_v1_0.json"
+)
+MICRO_R3_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "micro_judgment_chat_live_result_v1_0.json"
+)
+MICRO_R3_CAPACITY = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "micro_judgment_chat_live_capacity_assessment_v1_0.json"
+)
 
 
 def _runner():
@@ -342,6 +362,33 @@ def _micro_validation_paths() -> dict[str, Path]:
         }
     )
     return paths
+
+
+def _fragment_validation_paths() -> dict[str, Path]:
+    return {
+        "consumer_policy_ref": CONSUMER_POLICY,
+        "objective_ref": OBJECTIVE,
+        "planner_atoms_ref": ATOMS,
+        "current_evidence_pack_result_ref": ROOT
+        / "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+        "runtime_registry_ref": ROOT
+        / "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+        "claim_authority_policy_ref": CLAIM_AUTHORITY_POLICY,
+        "claim_surface_authority_policy_ref": CLAIM_RELATION_ALIAS_POLICY,
+        "loop_policy_ref": LOOP_POLICY,
+        "micro_policy_ref": MICRO_POLICY,
+        "analysis_profile_ref": MICRO_JUDGMENT_PROFILE,
+        "submission_profile_ref": MICRO_READ_PROFILE,
+        "runner_ref": SCRIPT,
+        "loop_implementation_ref": ROOT
+        / "src/sec_agent/research/bounded_finance_loop.py",
+        "provider_transport_ref": ROOT
+        / "src/sec_agent/providers/chat_completions.py",
+        "zero_call_result_ref": FRAGMENT_ZERO_CALL_RESULT,
+        "prior_live_result_ref": MICRO_R3_RESULT,
+        "prior_capacity_assessment_ref": MICRO_R3_CAPACITY,
+        "disposition_decision_ref": FRAGMENT_DISPOSITION,
+    }
 
 
 def _prepare_micro_tool_loop_test(
@@ -810,6 +857,214 @@ def test_micro_authority_binds_profiles_budget_digest_and_unused_identity(
             authority, authority_path=authority_path
         )
     assert exc.value.code == "research_consumer_tool_loop_identity_consumed"
+
+
+def test_fragment_analysis_submission_runner_keeps_analysis_and_submission_separate(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    paths = _micro_tool_loop_paths()
+    paths.update(
+        {
+            "analysis_profile_ref": MICRO_JUDGMENT_PROFILE,
+            "submission_profile_ref": MICRO_READ_PROFILE,
+        }
+    )
+    authority_path = tmp_path / "authority.json"
+    authority = {
+        "schema_version": runner.FRAGMENT_ANALYSIS_SUBMISSION_AUTHORITY_SCHEMA,
+        "status": runner.FRAGMENT_ANALYSIS_SUBMISSION_AUTHORITY_STATUS,
+        "implementation_commit": "a" * 40,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "fragment_tool": MICRO_JUDGMENT_TOOL_NAMES[0],
+        "execution_budget": {},
+        "bound_inputs": {},
+        "output_contract": {
+            "capture_root_ref": "capture",
+            "private_output_root_ref": "private",
+            "public_result_ref": "public.json",
+            "run_id": "fragment-run",
+            "analysis_attempt_id": "analysis-attempt",
+            "submission_attempt_id": "submission-attempt",
+            "product_publication": "forbidden",
+        },
+        "known_boundary": "single fragment fixed-Pack unit test only",
+    }
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+    destinations = {
+        "capture": tmp_path / "capture",
+        "private": tmp_path / "private",
+        "public.json": tmp_path / "public.json",
+    }
+    monkeypatch.setattr(
+        runner,
+        "validate_fragment_analysis_submission_authority",
+        lambda _payload, authority_path: paths,
+    )
+    original_resolve = runner._resolve
+    monkeypatch.setattr(
+        runner,
+        "_resolve",
+        lambda ref: destinations.get(str(ref), original_resolve(ref)),
+    )
+    monkeypatch.setattr(runner, "_relative", lambda path: Path(path).name)
+
+    def analyze(**_kwargs):
+        return ChatCompletionResult(
+            status="completed_exact_once",
+            provider_id="deepseek",
+            model="deepseek-v4-pro",
+            content="受控分析草案",
+            finish_reason="stop",
+            usage={"prompt_tokens": 10, "completion_tokens": 5},
+            request_capture_ref=str(tmp_path / "analysis-request.json"),
+            response_capture_ref=str(tmp_path / "analysis-response.json"),
+            request_digest="1" * 64,
+            response_digest="2" * 64,
+            private_reasoning_fields_redacted=1,
+        )
+
+    fragment = _micro_alias_fragments()[MICRO_JUDGMENT_TOOL_NAMES[0]]
+
+    def submit(**_kwargs):
+        return ChatCompletionToolStepResult(
+            status="completed_exact_once",
+            provider_id="deepseek",
+            model="deepseek-v4-pro",
+            content="",
+            reasoning_content="transient",
+            tool_calls=(
+                {
+                    "id": "call-thesis",
+                    "type": "function",
+                    "function": {
+                        "name": MICRO_JUDGMENT_TOOL_NAMES[0],
+                        "arguments": json.dumps(fragment, ensure_ascii=False),
+                    },
+                },
+            ),
+            finish_reason="tool_calls",
+            usage={"prompt_tokens": 20, "completion_tokens": 8},
+            request_capture_ref=str(tmp_path / "submit-request.json"),
+            response_capture_ref=str(tmp_path / "submit-response.json"),
+            request_digest="3" * 64,
+            response_digest="4" * 64,
+            private_reasoning_fields_redacted=1,
+        )
+
+    monkeypatch.setattr(runner, "execute_chat_completion_exact_once", analyze)
+    monkeypatch.setattr(
+        runner,
+        "execute_chat_completion_tool_step_exact_once",
+        submit,
+    )
+    result = runner.run_fragment_analysis_submission(authority_path)
+    assert (
+        result["status"]
+        == "completed_fragment_contract_valid_content_assessment_pending"
+    )
+    assert result["analysis"]["visible_chars"] == len("受控分析草案")
+    assert result["submission"]["tool_call_count"] == 1
+    assert result["acceptance"]["submission_tool_contract_pass"] is True
+    full = json.loads(
+        (tmp_path / "private/full_result.json").read_text(encoding="utf-8")
+    )
+    assert full["authorship"]["analysis_draft_model_owned"] is True
+    assert full["authorship"]["harness_generated_research_judgment"] is False
+    assert full["analysis_step"]["content"] == "受控分析草案"
+
+
+def test_fragment_analysis_submission_authority_binds_clean_runtime_and_scope(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    paths = _fragment_validation_paths()
+    research_input, context, messages, thesis_tool = (
+        runner._fragment_analysis_submission_artifacts(paths)
+    )
+    commit = "a" * 40
+    authority_path = tmp_path / "authority.json"
+    bound: dict[str, object] = {
+        "research_input_digest": research_input["research_input_digest"],
+        "fragment_context_digest": context["projection_digest"],
+        "analysis_messages_digest": runner.canonical_digest(list(messages)),
+        "submission_tool_schema_digest": runner.canonical_digest(thesis_tool),
+    }
+    for key, path in paths.items():
+        bound[key] = path.relative_to(ROOT).as_posix()
+        bound[key[:-4] + "_sha256"] = runner._sha(path)
+    authority = {
+        "schema_version": runner.FRAGMENT_ANALYSIS_SUBMISSION_AUTHORITY_SCHEMA,
+        "status": runner.FRAGMENT_ANALYSIS_SUBMISSION_AUTHORITY_STATUS,
+        "implementation_commit": commit,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "fragment_tool": MICRO_JUDGMENT_TOOL_NAMES[0],
+        "execution_budget": {
+            "maximum_model_calls": 2,
+            "maximum_transport_attempts": 2,
+            "maximum_tool_calls": 1,
+            "maximum_evidence_requests": 0,
+            "retries": 0,
+            "fallbacks": 0,
+            "planner_calls": 0,
+            "external_retrieval_calls": 0,
+            "embedding_calls": 0,
+            "protocol_switches": 0,
+            "current_product_pointer_mutations": 0,
+        },
+        "bound_inputs": bound,
+        "output_contract": {
+            "capture_root_ref": "capture",
+            "private_output_root_ref": "private",
+            "public_result_ref": "public.json",
+            "run_id": "fragment-run",
+            "analysis_attempt_id": "analysis-attempt",
+            "submission_attempt_id": "submission-attempt",
+            "product_publication": "forbidden",
+        },
+        "known_boundary": "single thesis only",
+    }
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    def fake_git(*args):
+        if args[0] == "rev-parse":
+            return commit
+        if args[0] == "status":
+            return "?? authority.json"
+        raise AssertionError(args)
+
+    output_paths = {
+        "capture": tmp_path / "capture",
+        "private": tmp_path / "private",
+        "public.json": tmp_path / "public.json",
+    }
+    original_resolve = runner._resolve
+    monkeypatch.setattr(runner, "_git", fake_git)
+    monkeypatch.setattr(runner, "_relative", lambda path: Path(path).name)
+    monkeypatch.setattr(
+        runner,
+        "_resolve",
+        lambda ref: output_paths.get(str(ref), original_resolve(ref)),
+    )
+    validated = runner.validate_fragment_analysis_submission_authority(
+        authority,
+        authority_path=authority_path,
+    )
+    assert validated["analysis_profile_ref"] == MICRO_JUDGMENT_PROFILE
+    assert validated["submission_profile_ref"] == MICRO_READ_PROFILE
+
+    drifted = json.loads(json.dumps(authority))
+    drifted["bound_inputs"]["fragment_context_digest"] = "0" * 64
+    with pytest.raises(runner.CurrentResearchConsumerCanaryError) as exc:
+        runner.validate_fragment_analysis_submission_authority(
+            drifted,
+            authority_path=authority_path,
+        )
+    assert exc.value.code == "research_consumer_fragment_runtime_digest_drift"
 
 
 def test_fixed_pack_claim_surface_live_path_uses_surface_contract(

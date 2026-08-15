@@ -1,0 +1,32 @@
+{
+  "schema_version": "fin_ia_s3_fragment_analysis_submission_disposition_v1_0",
+  "decision_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FRAGMENT-ANALYSIS-SUBMISSION-DISPOSITION-V1.0",
+  "status": "approved_fragment_projection_and_analysis_submission_test_only",
+  "recorded_at": "2026-08-16T01:30:27+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "fragment_tool": "submit_research_thesis",
+  "approved_changes": [
+    "derive_each_fragment_context_from_all_claim_relations_legal_for_that_fragment_without_selecting_an_answer",
+    "separate_high_reasoning_visible_analysis_from_low_reasoning_strict_tool_submission"
+  ],
+  "live_scope": "one_DELL_value_capture_thesis",
+  "maximum_model_calls": 2,
+  "maximum_tool_calls": 1,
+  "retries": 0,
+  "fallbacks": 0,
+  "protocol_switch_authorized": false,
+  "reasoning_or_token_limit_increase_authorized": false,
+  "dynamic_agentic_research_authorized": false,
+  "five_cell_live_authorized": false,
+  "product_publication_authorized": false,
+  "analysis_draft_business_promotion_authorized": false,
+  "stop_conditions": [
+    "analysis_returns_no_visible_content_or_length_stop",
+    "submission_returns_no_exactly_one_thesis_tool_call_or_length_stop",
+    "local_fragment_authority_validation_fails",
+    "new_L1_or_material_content_failure_requires_a_new_disposition"
+  ],
+  "decision_digest": "46dea12cc5078a1e32a17feadc5b54164ed91d515fa8bbc52513e9e02be2f319",
+  "known_boundary": "This decision tests two structural hypotheses against the immutable DELL fixed Pack. It does not authorize a full micro judgment, a report, protocol qualification, dynamic retrieval, five cells, S3 acceptance, or release."
+}

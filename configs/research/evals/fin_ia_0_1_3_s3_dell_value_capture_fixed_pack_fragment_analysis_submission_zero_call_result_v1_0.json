@@ -1,0 +1,73 @@
+{
+  "schema_version": "fin_ia_s3_fragment_analysis_submission_zero_call_result_v1_0",
+  "result_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FRAGMENT-ANALYSIS-SUBMISSION-ZERO-CALL-RESULT-V1.0",
+  "status": "zero_call_fragment_projection_analysis_submission_pass",
+  "recorded_at": "2026-08-16T01:30:27+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "fragment_tool": "submit_research_thesis",
+  "research_input_digest": "783de9eafec8bef8b14c8a5761bf7ce42a52b31ff7e68ea1505b264d4ea7d274",
+  "fragment_context_digest": "085736555adc9f649bd2bc6b61eb04ae37982cb278cc5c4c7ac911d9fffc725e",
+  "analysis_messages_digest": "be7ae766ece840fac78f564927fb428b9357559b7ea2b9a7d0e6c3c31e501501",
+  "submission_tool_schema_digest": "e54a2e6e0e7a6dbd0d1b8ad9471fac63c16ce9ad833c7e62ba49e342a2dece31",
+  "projection": {
+    "claim_relation_option_count": 2,
+    "claim_relation_refs": [
+      "CR::DELL::MULTI_DRIVER_CONTEXT",
+      "CR::DELL::PRODUCT_TARGET"
+    ],
+    "reviewed_evidence_count": 2,
+    "reviewed_evidence_refs": [
+      "EV::0063F22F643B94ED",
+      "EV::7F4D7E6762C21D83"
+    ],
+    "numeric_fact_count": 0,
+    "numeric_relation_count": 0,
+    "source_bound_qualitative_fact_count": 1,
+    "typed_gap_count": 0,
+    "projection_json_chars": 8083,
+    "projection_selects_answer": false,
+    "all_legal_relation_options_preserved": true
+  },
+  "capacity_comparison": {
+    "immutable_R3_thesis_message_chars": 23852,
+    "fragment_analysis_message_chars": 8028,
+    "fragment_submission_message_chars_with_reference_draft": 8146,
+    "analysis_message_reduction_vs_R3": 0.6634,
+    "submission_message_reduction_vs_R3": 0.6585,
+    "immutable_R3_thesis_tool_schema_chars": 3570,
+    "current_thesis_tool_schema_chars": 3570,
+    "interpretation": "The change removes unrelated context rather than weakening the final thesis contract."
+  },
+  "verification": {
+    "focused_tests": 47,
+    "full_repository_tests": 326,
+    "fresh_process_count": 2,
+    "fresh_process_digests_equal": true,
+    "DELL_natural_authority_projection_pass": true,
+    "MU_synthetic_identity_migration_pass": true,
+    "NVDA_synthetic_identity_migration_pass": true,
+    "cross_case_mutation_fail_closed": true,
+    "missing_authority_mutation_fail_closed": true,
+    "wrong_prior_fragment_mutation_fail_closed": true,
+    "analysis_and_submission_profiles_qualified": true,
+    "fake_analysis_then_tool_submission_pass": true,
+    "analysis_draft_business_promotion": false,
+    "harness_generated_research_judgment": false
+  },
+  "cross_case_mutation_fail_closed": true,
+  "missing_authority_mutation_fail_closed": true,
+  "projection_selects_answer": false,
+  "all_legal_relation_options_preserved": true,
+  "analysis_draft_business_promotion": false,
+  "model_calls": 0,
+  "network_calls": 0,
+  "provider_calls": 0,
+  "external_retrieval_calls": 0,
+  "embedding_calls": 0,
+  "retries": 0,
+  "fallbacks": 0,
+  "next_authorized_scope": "one_clean_synced_exact_once_DELL_value_capture_thesis_analysis_submission_Chat_canary",
+  "result_digest": "c1c99da50937e50b77dac3b782a3f876ba42724b179daad9e9c6e32b01b1a0e8",
+  "known_boundary": "Synthetic MU and NVDA migration proves the projector has no DELL code branch; it does not establish natural MU or NVDA research quality. Zero-call success does not establish DeepSeek visible analysis, strict submission, L1, content quality, fixed-Pack Layer One, dynamic Agentic Research, five cells, S3 acceptance, or release."
+}

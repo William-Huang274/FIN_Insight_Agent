@@ -146,3 +146,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - clean/synced commit `c5d303a5...` 上的唯一 FAS-R1 完成。analysis=`prompt 2,570 / completion 6,995 / reasoning 6,514 / visible 940 / stop`；submission=`prompt 4,309 / completion 1,944 / reasoning 1,434 / exactly one tool call`；0 retry、fallback、外源、embedding、协议切换与发布。事后治理复证为定向 `54 passed`、全仓 `326 passed`、compileall 与 active baseline 通过，secret scan=`6,615 / 0 finding`。
 - thesis 只采用 `CR::DELL::PRODUCT_TARGET`，明确是未经独立审计的管理层产品口径，不把 AI 增长桥接成 ISG／公司利润；单 thesis L1 pass。L2 仍有“无桥”应改成“当前 Pack 尚未建立桥”和模型重复 QF 定性带的表面归属问题，均不值得为本次结果自动重跑。
 - 两个结构假设已对单 thesis 资格化，但完整三片段 Judgment、fixed-Pack Layer One、动态 Agentic Research、五单元、三案例自然迁移和 S3 接受仍为 false。Owner review 已完成；当前唯一下一步是零调用把同一模式扩展到 mechanism 与 counterargument／WWC，并在工程门通过后执行一次完整 fixed-Pack 新 attempt。
+
+## 2026-08-16 S3 完整片段终局合同零调用收敛
+
+- mechanism 与 counterargument／WWC 已接入同一片段专属上下文和“可见分析 → 低推理严格交卷”合同。三片段各自保留 `inference_authority`；终局 Judgment 由同一个 canonical compiler 按最保守权限汇总范围与因果桥，Harness 不生成研究叙事。
+- 零调用复证发现 FAS-R1 thesis 含“中个位数” verbal numeric surface。它在旧单节点 validator 下曾合法通过，但不符合既有终局合同的“模型只选 QF、本地渲染口径表面”。旧结果与旧评价保持不可变，但禁止直接拼入完整 Judgment；下一次完整 fixed-Pack 必须 fresh thesis，而不是静默改写 predecessor。
+- 单节点与终局现已调用同一文本校验函数。两个 fresh process proof digest 均为 `f13d7054...e65e26f1`；full-fake 终局为 `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only`。定向 `49 passed`、全仓 `328 passed`、compileall、active baseline `127 / 8 / 10 / 0` 与 secret scan `6,616 / 0` 通过。
+- 当前允许签发一次完整 DELL `value_capture` fixed-Pack 新 attempt：thesis、mechanism、counterargument／WWC 各一次分析和一次交卷，最多 6 model calls／3 accepted tool calls／0 retry。其 L1 与内容质量通过前，动态 Truth Spine、五单元、跨案例泛化和 S3 acceptance 仍为 false。

@@ -1,0 +1,107 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_full_fragment_judgment_zero_call_result_v1_0",
+  "result_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-FULL-FRAGMENT-JUDGMENT-ZERO-CALL-RESULT-V1.0",
+  "status": "zero_call_full_fragment_sequence_and_terminal_judgment_pass_predecessor_not_reusable",
+  "recorded_at": "2026-08-16T03:29:01+08:00",
+  "implementation_commit": "af3d0a8fe4672d1992e55a2c1efd11f18eb4348d",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "research_input_digest": "783de9eafec8bef8b14c8a5761bf7ce42a52b31ff7e68ea1505b264d4ea7d274",
+  "fresh_process": {
+    "count": 2,
+    "byte_equivalent": true,
+    "proof_digest": "f13d70541c5697ceed68be5caeb65e84255bb2c42b146336a264dcf2e65e26f1"
+  },
+  "immutable_predecessor": {
+    "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-fragment-analysis-submission-chat-fas-r1/full_result.json",
+    "private_result_sha256": "dfddecac1b209ae8a41358d8a9a712ff4381aa3e21a16c273b7dfe5f217f4ddc",
+    "validated_fragment_digest": "fb8fe25a1dedfe0c8660afd3fdbdb6c8f9b19a47f484307de6ae6e7a51bd4200",
+    "prior_single_node_assessment": "L1_pass_content_materially_improved",
+    "unified_terminal_contract_status": "rejected_without_mutating_predecessor",
+    "failure_code": "finance_loop_micro_narrative_invalid",
+    "business_reason": "The accepted thesis contains a verbal numeric surface that the terminal Judgment reserves for deterministic QF rendering.",
+    "reuse_in_full_judgment_authorized": false
+  },
+  "full_fake_sequence": {
+    "fixture_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_surface_authority_alias_fake_payload_v1_0.json",
+    "fixture_sha256": "68cb53022d6a73121524819c9e6ae00c8bae9b8eed146c86857ae813ccc1df05",
+    "ordered_fragment_tools": [
+      "submit_research_thesis",
+      "submit_research_mechanism",
+      "submit_research_counterargument_and_wwc"
+    ],
+    "fragment_digests": {
+      "submit_research_thesis": "87ba8e8fff9d4c3991797fecfadf79a56bab1bedfa4225da499b4674701571e5",
+      "submit_research_mechanism": "5d730d5a7c84968d29d65256f41ac7a771f02dc6ea7b24a1f044f07f420444f0",
+      "submit_research_counterargument_and_wwc": "4f6ab626d233399226715d0b05c4605dec38957205ed4613bc6f50c737f2676f"
+    },
+    "fragment_contexts": {
+      "submit_research_thesis": {
+        "projection_digest": "0e9c8db642337229da4474d7858d2f0b0394b0b4b79d09ffd2438adb0465be90",
+        "claim_relation_options": 2,
+        "reviewed_evidence": 2,
+        "numeric_facts": 0,
+        "numeric_relations": 0,
+        "qualitative_facts": 1,
+        "typed_gaps": 0
+      },
+      "submit_research_mechanism": {
+        "projection_digest": "48e779a7b36aee9892a77b8ceb31f1152f25ea800b32e3bf3d460925a4a06d15",
+        "claim_relation_options": 4,
+        "reviewed_evidence": 2,
+        "numeric_facts": 2,
+        "numeric_relations": 1,
+        "qualitative_facts": 1,
+        "typed_gaps": 3
+      },
+      "submit_research_counterargument_and_wwc": {
+        "projection_digest": "bf5c3387422e691d7b4b98de11cd0c9f101b1f39f954c4f49a2fa5be2e1d3bab",
+        "claim_relation_options": 3,
+        "reviewed_evidence": 2,
+        "numeric_facts": 2,
+        "numeric_relations": 1,
+        "qualitative_facts": 0,
+        "typed_gaps": 3
+      }
+    },
+    "terminal_judgment": {
+      "judgment_digest": "22618e38373e236b13f93fc7db926fa069144a03d0d6180e2616395c93eaa353",
+      "deliverable_digest": "2910b0a7f29bef6b6c3ea5e11ddd48651ec110a7c999ebcddc5e77a631d296b6",
+      "judgment_status": "bounded_support",
+      "inference_authority": "bounded_inference",
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "multi_driver_context_only",
+      "harness_generated_research_judgment": false
+    }
+  },
+  "mutation_results": {
+    "missing_fragment_inference": "finance_loop_micro_fragment_fields_invalid",
+    "overstated_gap_inference": "finance_loop_micro_relation_disposition_invalid",
+    "verbal_numeric_surface": "finance_loop_micro_narrative_invalid",
+    "wrong_fragment_order": "finance_loop_fragment_prior_context_invalid"
+  },
+  "verification": {
+    "focused_tests": 49,
+    "full_repository_tests": 328,
+    "python_compileall_pass": true,
+    "active_python_files": 127,
+    "active_frontend_files": 8,
+    "active_runtime_resources": 10,
+    "forbidden_references": 0,
+    "secret_scan_files": 6616,
+    "secret_scan_findings": 0
+  },
+  "execution": {
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "next_authorized_scope": "one_clean_synced_exact_once_DELL_value_capture_full_three_fragment_analysis_submission_Chat_live",
+  "result_digest": "f06d9223b60e1b9680fc6801527a1cabc593ea5b63a124e8c4bf4a78526d0db7",
+  "known_boundary": "This proves deterministic fragment projection, per-atom authority, conservative terminal aggregation and fail-closed text parity. It does not prove natural DeepSeek content quality, dynamic retrieval, five-cell research, S3 acceptance or release."
+}

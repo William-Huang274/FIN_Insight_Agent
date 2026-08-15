@@ -45,10 +45,13 @@ from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     MICRO_JUDGMENT_TOOL_NAMES,
     READ_NUMERIC_FACTS_TOOL,
     READ_REVIEWED_EVIDENCE_TOOL,
+    SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+    SUBMIT_RESEARCH_MECHANISM_TOOL,
     SUBMIT_RESEARCH_THESIS_TOOL,
     compile_finance_micro_fragment_analysis_messages,
     compile_finance_micro_fragment_context,
     compile_finance_micro_fragment_submission_messages,
+    compile_finance_micro_judgment_fragments,
     compile_finance_micro_judgment_tools,
     compile_finance_loop_messages,
     compile_finance_loop_tools,
@@ -119,6 +122,15 @@ FRAGMENT_ANALYSIS_SUBMISSION_AUTHORITY_STATUS = (
 )
 FRAGMENT_ANALYSIS_SUBMISSION_RESULT_SCHEMA = (
     "fin_ia_s3_fixed_pack_fragment_analysis_submission_live_result_v1_0"
+)
+FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_0"
+)
+FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS = (
+    "signed_exact_once_fixed_pack_full_three_fragment_analysis_submission_chat_live"
+)
+FULL_FRAGMENT_JUDGMENT_RESULT_SCHEMA = (
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_live_result_v1_0"
 )
 
 
@@ -1394,6 +1406,247 @@ def validate_fragment_analysis_submission_authority(
     return paths
 
 
+def _full_fragment_judgment_artifacts(paths: Mapping[str, Path]):
+    _, research_input, _ = _compile_runtime_input(
+        paths,
+        case_key="DELL",
+        required_cell_ids=["CELL::value_capture"],
+    )
+    kernel, route, _ = _tool_loop_contracts(paths)
+    base_policy = load_bounded_finance_loop_policy(_json(paths["loop_policy_ref"]))
+    scoped_policy = scope_bounded_finance_micro_judgment_policy(
+        base_policy,
+        micro_policy=load_fixed_pack_micro_judgment_policy(
+            _json(paths["micro_policy_ref"])
+        ),
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_micro_judgment_tools(
+        research_input=research_input,
+        required_cell_ids=["CELL::value_capture"],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped_policy,
+        strict=False,
+    )
+    tool_by_name = {
+        str(row["function"]["name"]): row
+        for row in tools
+        if str(row["function"]["name"]) in MICRO_JUDGMENT_TOOL_NAMES
+    }
+    if set(tool_by_name) != set(MICRO_JUDGMENT_TOOL_NAMES):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_tool_set_invalid"
+        )
+    initial_context = compile_finance_micro_fragment_context(
+        research_input=research_input,
+        cell_id="CELL::value_capture",
+        tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+    )
+    cell = next(
+        row
+        for row in research_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    return research_input, cell, tool_by_name, initial_context
+
+
+def validate_full_fragment_judgment_authority(
+    payload: Mapping[str, Any],
+    *,
+    authority_path: Path,
+) -> dict[str, Path]:
+    if not (
+        payload.get("schema_version")
+        == FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA
+        and payload.get("status")
+        == FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS
+        and payload.get("case_key") == "DELL"
+        and payload.get("cell_id") == "CELL::value_capture"
+        and payload.get("ordered_fragment_tools")
+        == list(MICRO_JUDGMENT_TOOL_NAMES)
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_authority_invalid"
+        )
+    commit = str(payload.get("implementation_commit") or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_commit_invalid"
+        )
+    if _git("rev-parse", "HEAD").lower() != commit:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_head_drift"
+        )
+    if _git("rev-parse", "@{upstream}").lower() != commit:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_upstream_drift"
+        )
+    allowed = f"?? {_relative(authority_path)}"
+    status = _git("status", "--porcelain=v1", "--untracked-files=all")
+    if [line for line in status.splitlines() if line] != [allowed]:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_worktree_not_clean"
+        )
+    expected_budget = {
+        "maximum_model_calls": 6,
+        "maximum_transport_attempts": 6,
+        "maximum_tool_calls": 3,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "planner_calls": 0,
+        "external_retrieval_calls": 0,
+        "embedding_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if payload.get("execution_budget") != expected_budget:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_budget_invalid"
+        )
+    bound = payload.get("bound_inputs")
+    output = payload.get("output_contract")
+    if not isinstance(bound, Mapping) or not isinstance(output, Mapping):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_shape_invalid"
+        )
+    required_refs = {
+        "consumer_policy_ref",
+        "objective_ref",
+        "planner_atoms_ref",
+        "current_evidence_pack_result_ref",
+        "runtime_registry_ref",
+        "claim_authority_policy_ref",
+        "claim_surface_authority_policy_ref",
+        "loop_policy_ref",
+        "micro_policy_ref",
+        "analysis_profile_ref",
+        "submission_profile_ref",
+        "runner_ref",
+        "loop_implementation_ref",
+        "provider_transport_ref",
+        "full_fragment_zero_call_result_ref",
+        "full_fragment_disposition_ref",
+        "prior_fragment_result_ref",
+        "prior_fragment_assessment_ref",
+    }
+    ref_keys = {key for key in bound if key.endswith("_ref")}
+    digest_keys = {
+        "research_input_digest",
+        "initial_fragment_context_digest",
+        "fragment_tool_schema_digests",
+    }
+    expected_keys = {
+        value
+        for key in ref_keys
+        for value in (key, key[:-4] + "_sha256")
+    } | digest_keys
+    if ref_keys != required_refs or set(bound) != expected_keys:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_bindings_invalid"
+        )
+    paths: dict[str, Path] = {}
+    for key in ref_keys:
+        path = _resolve(str(bound[key]))
+        if not path.is_file() or _sha(path) != str(
+            bound.get(key[:-4] + "_sha256") or ""
+        ):
+            raise CurrentResearchConsumerCanaryError(
+                f"research_consumer_full_fragment_bound_input_drift:{key}"
+            )
+        paths[key] = path
+    zero_call = _json(paths["full_fragment_zero_call_result_ref"])
+    disposition = _json(paths["full_fragment_disposition_ref"])
+    prior_result = _json(paths["prior_fragment_result_ref"])
+    prior_assessment = _json(paths["prior_fragment_assessment_ref"])
+    if not (
+        zero_call.get("status")
+        == "zero_call_full_fragment_sequence_and_terminal_judgment_pass_predecessor_not_reusable"
+        and zero_call.get("execution", {}).get("model_calls") == 0
+        and zero_call.get("immutable_predecessor", {}).get(
+            "reuse_in_full_judgment_authorized"
+        )
+        is False
+        and disposition.get("status")
+        == "approved_fresh_full_three_fragment_analysis_submission_Chat_live"
+        and disposition.get("execution_budget") == expected_budget
+        and prior_result.get("status")
+        == "completed_fragment_contract_valid_content_assessment_pending"
+        and prior_assessment.get("status")
+        == "single_thesis_L1_pass_content_materially_improved_two_hypotheses_qualified_no_automatic_expansion"
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_disposition_invalid"
+        )
+    research_input, _, tool_by_name, initial_context = (
+        _full_fragment_judgment_artifacts(paths)
+    )
+    expected_tool_digests = {
+        name: canonical_digest(tool_by_name[name])
+        for name in MICRO_JUDGMENT_TOOL_NAMES
+    }
+    if not (
+        bound["research_input_digest"] == research_input["research_input_digest"]
+        and bound["initial_fragment_context_digest"]
+        == initial_context["projection_digest"]
+        and bound["fragment_tool_schema_digests"] == expected_tool_digests
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_runtime_digest_drift"
+        )
+    required_output = {
+        "capture_root_ref",
+        "private_output_root_ref",
+        "public_result_ref",
+        "run_id",
+        "fragment_attempt_ids",
+        "product_publication",
+    }
+    attempt_ids = output.get("fragment_attempt_ids")
+    if not (
+        set(output) == required_output
+        and output.get("product_publication") == "forbidden"
+        and all(
+            str(output.get(key) or "")
+            for key in required_output
+            - {"product_publication", "fragment_attempt_ids"}
+        )
+        and isinstance(attempt_ids, Mapping)
+        and set(attempt_ids) == set(MICRO_JUDGMENT_TOOL_NAMES)
+        and all(
+            isinstance(value, Mapping)
+            and set(value) == {"analysis_attempt_id", "submission_attempt_id"}
+            and all(str(item or "") for item in value.values())
+            for value in attempt_ids.values()
+        )
+        and len(
+            {
+                str(item)
+                for value in attempt_ids.values()
+                for item in value.values()
+            }
+        )
+        == 6
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_output_invalid"
+        )
+    capture_run = _resolve(str(output["capture_root_ref"])) / str(
+        output["run_id"]
+    )
+    if (
+        capture_run.exists()
+        or _resolve(str(output["private_output_root_ref"])).exists()
+        or _resolve(str(output["public_result_ref"])).exists()
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_full_fragment_identity_consumed"
+        )
+    return paths
+
+
 def _tool_loop_contracts(paths: Mapping[str, Path]):
     kernel_payload = read_registered_runtime_json(
         ROOT, "application.config.current_financial_research_kernel"
@@ -2602,6 +2855,331 @@ def run_fragment_analysis_submission(authority_path: Path) -> dict[str, Any]:
     return summary
 
 
+def run_full_fragment_judgment(authority_path: Path) -> dict[str, Any]:
+    authority = _json(authority_path)
+    paths = validate_full_fragment_judgment_authority(
+        authority,
+        authority_path=authority_path,
+    )
+    research_input, cell, tool_by_name, _ = _full_fragment_judgment_artifacts(
+        paths
+    )
+    analysis_profile = load_chat_completion_profile(
+        _json(paths["analysis_profile_ref"])
+    )
+    submission_profile = load_chat_completion_profile(
+        _json(paths["submission_profile_ref"])
+    )
+    validate_deepseek_ga_node_profile(
+        analysis_profile,
+        node_class="bounded_financial_analysis",
+    )
+    validate_deepseek_ga_node_profile(
+        submission_profile,
+        node_class="contract_submission",
+    )
+    output = authority["output_contract"]
+    capture_root = _resolve(str(output["capture_root_ref"]))
+    private_root = _resolve(str(output["private_output_root_ref"]))
+    run_id = str(output["run_id"])
+    accepted_fragments: dict[str, dict[str, Any]] = {}
+    fragment_steps: list[dict[str, Any]] = []
+    model_calls_attempted = 0
+    failure_phase = ""
+    failure_code = ""
+    failure_fragment_tool = ""
+    failure_capture_ref = ""
+    judgment_output: dict[str, Any] = {}
+    structured_deliverable: dict[str, Any] = {}
+
+    try:
+        for fragment_tool in MICRO_JUDGMENT_TOOL_NAMES:
+            failure_fragment_tool = fragment_tool
+            context = compile_finance_micro_fragment_context(
+                research_input=research_input,
+                cell_id="CELL::value_capture",
+                tool_name=fragment_tool,
+                accepted_fragments=accepted_fragments,
+            )
+            analysis_messages = compile_finance_micro_fragment_analysis_messages(
+                context
+            )
+            attempt_ids = output["fragment_attempt_ids"][fragment_tool]
+            step_record: dict[str, Any] = {
+                "fragment_tool": fragment_tool,
+                "fragment_context": context,
+                "analysis_messages_digest": canonical_digest(
+                    list(analysis_messages)
+                ),
+                "submission_messages_digest": "",
+                "analysis_step": {},
+                "submission_step": {},
+                "validated_fragment": {},
+                "validated_fragment_digest": "",
+            }
+            fragment_steps.append(step_record)
+            model_calls_attempted += 1
+            analysis = execute_chat_completion_exact_once(
+                profile=analysis_profile,
+                messages=analysis_messages,
+                capture_root=capture_root,
+                run_id=run_id,
+                attempt_id=str(attempt_ids["analysis_attempt_id"]),
+            )
+            step_record["analysis_step"] = analysis.as_dict()
+            if analysis.finish_reason == "length":
+                raise CurrentResearchConsumerCanaryError(
+                    "research_consumer_full_fragment_analysis_length_stop"
+                )
+            submission_messages = (
+                compile_finance_micro_fragment_submission_messages(
+                    fragment_context=context,
+                    analysis_draft=analysis.content,
+                )
+            )
+            step_record["submission_messages_digest"] = canonical_digest(
+                list(submission_messages)
+            )
+            model_calls_attempted += 1
+            submission = execute_chat_completion_tool_step_exact_once(
+                profile=submission_profile,
+                messages=submission_messages,
+                tools=[tool_by_name[fragment_tool]],
+                capture_root=capture_root,
+                run_id=run_id,
+                attempt_id=str(attempt_ids["submission_attempt_id"]),
+                tool_choice=None,
+            )
+            step_record["submission_step"] = submission.as_dict()
+            if submission.finish_reason == "length":
+                raise CurrentResearchConsumerCanaryError(
+                    "research_consumer_full_fragment_submission_length_stop"
+                )
+            if len(submission.tool_calls) != 1:
+                raise CurrentResearchConsumerCanaryError(
+                    "research_consumer_full_fragment_tool_call_count_invalid"
+                )
+            call = submission.tool_calls[0]
+            function = call.get("function")
+            if not (
+                isinstance(function, Mapping)
+                and function.get("name") == fragment_tool
+            ):
+                raise CurrentResearchConsumerCanaryError(
+                    "research_consumer_full_fragment_tool_name_invalid"
+                )
+            try:
+                arguments = json.loads(str(function.get("arguments") or ""))
+            except json.JSONDecodeError as exc:
+                raise CurrentResearchConsumerCanaryError(
+                    "research_consumer_full_fragment_tool_arguments_invalid_json"
+                ) from exc
+            if not isinstance(arguments, Mapping):
+                raise CurrentResearchConsumerCanaryError(
+                    "research_consumer_full_fragment_tool_arguments_invalid"
+                )
+            validated_fragment = validate_finance_micro_judgment_fragment(
+                tool_name=fragment_tool,
+                arguments=arguments,
+                research_input=research_input,
+                cell_id="CELL::value_capture",
+                thesis_fragment=accepted_fragments.get(
+                    SUBMIT_RESEARCH_THESIS_TOOL
+                ),
+            )
+            accepted_fragments[fragment_tool] = validated_fragment
+            step_record["validated_fragment"] = validated_fragment
+            step_record["validated_fragment_digest"] = canonical_digest(
+                validated_fragment
+            )
+        normalized = compile_finance_micro_judgment_fragments(
+            accepted_fragments,
+            cell=cell,
+        )
+        judgment_output = {"cells": [normalized]}
+        structured_deliverable = compile_current_research_deliverable(
+            research_input=research_input,
+            judgment_output=judgment_output,
+            required_cell_ids=["CELL::value_capture"],
+        )
+        failure_fragment_tool = ""
+    except ModelGatewayError as exc:
+        failure_phase = "provider_transport_or_response"
+        failure_code = exc.code
+        failure_capture_ref = exc.capture_ref
+    except BoundedFinanceLoopError as exc:
+        failure_phase = "local_finance_fragment_or_terminal_validation"
+        failure_code = exc.code
+    except CurrentResearchConsumerError as exc:
+        failure_phase = "local_terminal_judgment_validation"
+        failure_code = exc.code
+    except CurrentResearchConsumerCanaryError as exc:
+        failure_phase = "local_full_fragment_canary_validation"
+        failure_code = exc.code
+
+    if failure_code and not failure_capture_ref and fragment_steps:
+        latest_step = fragment_steps[-1]
+        for step_key in ("submission_step", "analysis_step"):
+            capture_ref = str(
+                latest_step.get(step_key, {}).get("response_capture_ref") or ""
+            )
+            if capture_ref:
+                failure_capture_ref = capture_ref
+                break
+
+    succeeded = bool(structured_deliverable)
+    status = (
+        "completed_full_fragment_judgment_contract_valid_content_assessment_pending"
+        if succeeded
+        else "terminal_failed_no_retry"
+    )
+    full_body: dict[str, Any] = {
+        "schema_version": FULL_FRAGMENT_JUDGMENT_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": _now(),
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "ordered_fragment_tools": list(MICRO_JUDGMENT_TOOL_NAMES),
+        "research_input_digest": research_input["research_input_digest"],
+        "fragment_steps": fragment_steps,
+        "accepted_fragments": accepted_fragments,
+        "judgment_output": judgment_output,
+        "structured_deliverable": structured_deliverable,
+        "failure_phase": failure_phase,
+        "failure_code": failure_code,
+        "failure_fragment_tool": failure_fragment_tool,
+        "failure_capture_ref": (
+            _relative(failure_capture_ref) if failure_capture_ref else ""
+        ),
+        "execution": {
+            "model_calls_attempted": model_calls_attempted,
+            "maximum_model_calls": 6,
+            "tool_calls_accepted": len(accepted_fragments),
+            "retries": 0,
+            "fallbacks": 0,
+            "external_retrieval_calls": 0,
+            "embedding_calls": 0,
+            "protocol_switches": 0,
+            "product_publication": False,
+        },
+        "authorship": {
+            "all_analysis_drafts_model_owned": bool(fragment_steps),
+            "all_submitted_fragments_model_owned": succeeded,
+            "harness_generated_research_judgment": False,
+            "harness_validated_and_aggregated_authority": succeeded,
+            "analysis_draft_promoted_to_business_truth": False,
+            "private_reasoning_persisted": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    full = {**full_body, "full_result_digest": canonical_digest(full_body)}
+    full_path = private_root / "full_result.json"
+    _write_new(full_path, full)
+    public_steps = []
+    for row in fragment_steps:
+        analysis_step = row["analysis_step"]
+        submission_step = row["submission_step"]
+        public_steps.append(
+            {
+                "fragment_tool": row["fragment_tool"],
+                "fragment_context_digest": row["fragment_context"][
+                    "projection_digest"
+                ],
+                "analysis_messages_digest": row["analysis_messages_digest"],
+                "submission_messages_digest": row[
+                    "submission_messages_digest"
+                ],
+                "analysis": {
+                    "attempted": bool(analysis_step),
+                    "finish_reason": analysis_step.get("finish_reason", ""),
+                    "visible_chars": len(analysis_step.get("content", "")),
+                    "content_digest": (
+                        canonical_digest(
+                            {"content": analysis_step.get("content", "")}
+                        )
+                        if analysis_step
+                        else ""
+                    ),
+                    "usage": analysis_step.get("usage", {}),
+                    "request_capture_ref": (
+                        _relative(analysis_step["request_capture_ref"])
+                        if analysis_step
+                        else ""
+                    ),
+                    "response_capture_ref": (
+                        _relative(analysis_step["response_capture_ref"])
+                        if analysis_step
+                        else ""
+                    ),
+                },
+                "submission": {
+                    "attempted": bool(submission_step),
+                    "finish_reason": submission_step.get("finish_reason", ""),
+                    "tool_call_count": len(
+                        submission_step.get("tool_calls", ())
+                    ),
+                    "usage": submission_step.get("usage", {}),
+                    "request_capture_ref": (
+                        _relative(submission_step["request_capture_ref"])
+                        if submission_step
+                        else ""
+                    ),
+                    "response_capture_ref": (
+                        _relative(submission_step["response_capture_ref"])
+                        if submission_step
+                        else ""
+                    ),
+                },
+                "validated_fragment_digest": row[
+                    "validated_fragment_digest"
+                ],
+            }
+        )
+    public_body: dict[str, Any] = {
+        "schema_version": FULL_FRAGMENT_JUDGMENT_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": full["recorded_at"],
+        "authority_ref": full["authority_ref"],
+        "authority_sha256": full["authority_sha256"],
+        "implementation_commit": full["implementation_commit"],
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "ordered_fragment_tools": list(MICRO_JUDGMENT_TOOL_NAMES),
+        "research_input_digest": research_input["research_input_digest"],
+        "fragment_steps": public_steps,
+        "judgment_output_digest": (
+            canonical_digest(judgment_output) if judgment_output else ""
+        ),
+        "deliverable_digest": (
+            str(structured_deliverable.get("deliverable_digest") or "")
+        ),
+        "failure_phase": failure_phase,
+        "failure_code": failure_code,
+        "failure_fragment_tool": failure_fragment_tool,
+        "failure_capture_ref": full["failure_capture_ref"],
+        "full_result_ref": _relative(full_path),
+        "full_result_sha256": _sha(full_path),
+        "execution": full["execution"],
+        "acceptance": {
+            "full_three_fragment_contract_pass": succeeded,
+            "terminal_judgment_contract_pass": succeeded,
+            "content_assessment_pending": succeeded,
+            "fixed_pack_layer_one_acceptance": False,
+            "dynamic_agentic_research_acceptance": False,
+            "five_cell_live_authorized": False,
+            "s3_product_acceptance": False,
+            "qualified_human_acceptance": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    summary = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_new(_resolve(str(output["public_result_ref"])), summary)
+    return summary
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--authority", required=True)
@@ -2609,6 +3187,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     authority_path = _resolve(args.authority)
     authority = _json(authority_path)
     if (
+        authority.get("schema_version")
+        == FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA
+    ):
+        result = run_full_fragment_judgment(authority_path)
+    elif (
         authority.get("schema_version")
         == FRAGMENT_ANALYSIS_SUBMISSION_AUTHORITY_SCHEMA
     ):
@@ -2631,6 +3214,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "paired_contract_valid_content_assessment_pending",
             "completed_contract_valid_content_assessment_pending",
             "completed_fragment_contract_valid_content_assessment_pending",
+            "completed_full_fragment_judgment_contract_valid_content_assessment_pending",
         }
         else 2
     )

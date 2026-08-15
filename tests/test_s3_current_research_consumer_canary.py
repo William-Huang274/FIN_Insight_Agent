@@ -128,6 +128,26 @@ FRAGMENT_DISPOSITION = ROOT / (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "fragment_analysis_submission_disposition_v1_0.json"
 )
+FULL_FRAGMENT_ZERO_CALL_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_zero_call_result_v1_0.json"
+)
+FULL_FRAGMENT_DISPOSITION = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_live_disposition_v1_0.json"
+)
+FAS_R1_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "fragment_analysis_submission_chat_live_result_v1_0.json"
+)
+FAS_R1_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "fragment_analysis_submission_chat_content_assessment_v1_0.json"
+)
 MICRO_R3_RESULT = ROOT / (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -391,6 +411,26 @@ def _fragment_validation_paths() -> dict[str, Path]:
         "prior_capacity_assessment_ref": MICRO_R3_CAPACITY,
         "disposition_decision_ref": FRAGMENT_DISPOSITION,
     }
+
+
+def _full_fragment_validation_paths() -> dict[str, Path]:
+    paths = _fragment_validation_paths()
+    for key in (
+        "zero_call_result_ref",
+        "prior_live_result_ref",
+        "prior_capacity_assessment_ref",
+        "disposition_decision_ref",
+    ):
+        paths.pop(key)
+    paths.update(
+        {
+            "full_fragment_zero_call_result_ref": FULL_FRAGMENT_ZERO_CALL_RESULT,
+            "full_fragment_disposition_ref": FULL_FRAGMENT_DISPOSITION,
+            "prior_fragment_result_ref": FAS_R1_RESULT,
+            "prior_fragment_assessment_ref": FAS_R1_ASSESSMENT,
+        }
+    )
+    return paths
 
 
 def _prepare_micro_tool_loop_test(
@@ -1067,6 +1107,318 @@ def test_fragment_analysis_submission_authority_binds_clean_runtime_and_scope(
             authority_path=authority_path,
         )
     assert exc.value.code == "research_consumer_fragment_runtime_digest_drift"
+
+
+def test_full_fragment_judgment_runner_compiles_three_model_owned_fragments(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    paths = _full_fragment_validation_paths()
+    authority_path = tmp_path / "authority.json"
+    attempt_ids = {
+        name: {
+            "analysis_attempt_id": f"analysis-{index}",
+            "submission_attempt_id": f"submission-{index}",
+        }
+        for index, name in enumerate(MICRO_JUDGMENT_TOOL_NAMES, 1)
+    }
+    authority = {
+        "schema_version": runner.FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA,
+        "status": runner.FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS,
+        "implementation_commit": "a" * 40,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "ordered_fragment_tools": list(MICRO_JUDGMENT_TOOL_NAMES),
+        "execution_budget": {},
+        "bound_inputs": {},
+        "output_contract": {
+            "capture_root_ref": "capture",
+            "private_output_root_ref": "private",
+            "public_result_ref": "public.json",
+            "run_id": "full-fragment-run",
+            "fragment_attempt_ids": attempt_ids,
+            "product_publication": "forbidden",
+        },
+        "known_boundary": "full fixed-Pack unit test only",
+    }
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+    destinations = {
+        "capture": tmp_path / "capture",
+        "private": tmp_path / "private",
+        "public.json": tmp_path / "public.json",
+    }
+    monkeypatch.setattr(
+        runner,
+        "validate_full_fragment_judgment_authority",
+        lambda _payload, authority_path: paths,
+    )
+    original_resolve = runner._resolve
+    monkeypatch.setattr(
+        runner,
+        "_resolve",
+        lambda ref: destinations.get(str(ref), original_resolve(ref)),
+    )
+    monkeypatch.setattr(runner, "_relative", lambda path: Path(path).name)
+    counters = {"analysis": 0, "submission": 0}
+
+    def analyze(**_kwargs):
+        counters["analysis"] += 1
+        index = counters["analysis"]
+        return ChatCompletionResult(
+            status="completed_exact_once",
+            provider_id="deepseek",
+            model="deepseek-v4-pro",
+            content=f"受控分析草案片段{index}",
+            finish_reason="stop",
+            usage={"prompt_tokens": 10 * index, "completion_tokens": 5},
+            request_capture_ref=str(tmp_path / f"analysis-request-{index}.json"),
+            response_capture_ref=str(
+                tmp_path / f"analysis-response-{index}.json"
+            ),
+            request_digest=str(index) * 64,
+            response_digest=str(index + 1) * 64,
+            private_reasoning_fields_redacted=1,
+        )
+
+    fragments = _micro_alias_fragments()
+
+    def submit(**kwargs):
+        counters["submission"] += 1
+        index = counters["submission"]
+        name = kwargs["tools"][0]["function"]["name"]
+        return ChatCompletionToolStepResult(
+            status="completed_exact_once",
+            provider_id="deepseek",
+            model="deepseek-v4-pro",
+            content="",
+            reasoning_content="transient",
+            tool_calls=(
+                {
+                    "id": f"call-{index}",
+                    "type": "function",
+                    "function": {
+                        "name": name,
+                        "arguments": json.dumps(
+                            fragments[name], ensure_ascii=False
+                        ),
+                    },
+                },
+            ),
+            finish_reason="tool_calls",
+            usage={"prompt_tokens": 20 * index, "completion_tokens": 8},
+            request_capture_ref=str(tmp_path / f"submit-request-{index}.json"),
+            response_capture_ref=str(
+                tmp_path / f"submit-response-{index}.json"
+            ),
+            request_digest=str(index + 3) * 64,
+            response_digest=str(index + 4) * 64,
+            private_reasoning_fields_redacted=1,
+        )
+
+    monkeypatch.setattr(runner, "execute_chat_completion_exact_once", analyze)
+    monkeypatch.setattr(
+        runner,
+        "execute_chat_completion_tool_step_exact_once",
+        submit,
+    )
+    result = runner.run_full_fragment_judgment(authority_path)
+    assert result["status"] == (
+        "completed_full_fragment_judgment_contract_valid_"
+        "content_assessment_pending"
+    )
+    assert counters == {"analysis": 3, "submission": 3}
+    assert len(result["fragment_steps"]) == 3
+    assert result["acceptance"]["terminal_judgment_contract_pass"] is True
+    full = json.loads(
+        (tmp_path / "private/full_result.json").read_text(encoding="utf-8")
+    )
+    assert set(full["accepted_fragments"]) == set(MICRO_JUDGMENT_TOOL_NAMES)
+    assert full["structured_deliverable"]["deliverable_digest"]
+    assert full["authorship"]["harness_generated_research_judgment"] is False
+    assert full["execution"]["model_calls_attempted"] == 6
+
+    failure_authority = json.loads(json.dumps(authority))
+    failure_authority["output_contract"].update(
+        {
+            "capture_root_ref": "failure-capture",
+            "private_output_root_ref": "failure-private",
+            "public_result_ref": "failure-public.json",
+            "run_id": "full-fragment-failure-run",
+        }
+    )
+    failure_authority_path = tmp_path / "failure-authority.json"
+    failure_authority_path.write_text(
+        json.dumps(failure_authority), encoding="utf-8"
+    )
+    destinations.update(
+        {
+            "failure-capture": tmp_path / "failure-capture",
+            "failure-private": tmp_path / "failure-private",
+            "failure-public.json": tmp_path / "failure-public.json",
+        }
+    )
+    counters.update({"analysis": 0, "submission": 0})
+
+    def submit_invalid_mechanism(**kwargs):
+        counters["submission"] += 1
+        index = counters["submission"]
+        name = kwargs["tools"][0]["function"]["name"]
+        arguments = json.loads(json.dumps(fragments[name]))
+        if name == MICRO_JUDGMENT_TOOL_NAMES[1]:
+            arguments.pop("inference_authority")
+        return ChatCompletionToolStepResult(
+            status="completed_exact_once",
+            provider_id="deepseek",
+            model="deepseek-v4-pro",
+            content="",
+            reasoning_content="transient",
+            tool_calls=(
+                {
+                    "id": f"failure-call-{index}",
+                    "type": "function",
+                    "function": {
+                        "name": name,
+                        "arguments": json.dumps(arguments, ensure_ascii=False),
+                    },
+                },
+            ),
+            finish_reason="tool_calls",
+            usage={"prompt_tokens": 20 * index, "completion_tokens": 8},
+            request_capture_ref=str(
+                tmp_path / f"failure-submit-request-{index}.json"
+            ),
+            response_capture_ref=str(
+                tmp_path / f"failure-submit-response-{index}.json"
+            ),
+            request_digest=str(index + 5) * 64,
+            response_digest=str(index + 6) * 64,
+            private_reasoning_fields_redacted=1,
+        )
+
+    monkeypatch.setattr(
+        runner,
+        "execute_chat_completion_tool_step_exact_once",
+        submit_invalid_mechanism,
+    )
+    failure = runner.run_full_fragment_judgment(failure_authority_path)
+    assert failure["status"] == "terminal_failed_no_retry"
+    assert failure["failure_fragment_tool"] == MICRO_JUDGMENT_TOOL_NAMES[1]
+    assert failure["execution"]["model_calls_attempted"] == 4
+    assert failure["execution"]["tool_calls_accepted"] == 1
+    assert len(failure["fragment_steps"]) == 2
+    assert failure["fragment_steps"][1]["submission"]["attempted"] is True
+    failure_full = json.loads(
+        (tmp_path / "failure-private/full_result.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert set(failure_full["accepted_fragments"]) == {
+        MICRO_JUDGMENT_TOOL_NAMES[0]
+    }
+    assert failure_full["fragment_steps"][1]["submission_step"]
+
+
+def test_full_fragment_judgment_authority_binds_clean_runtime_and_scope(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    paths = _full_fragment_validation_paths()
+    research_input, _, tools, initial_context = (
+        runner._full_fragment_judgment_artifacts(paths)
+    )
+    commit = "a" * 40
+    authority_path = tmp_path / "authority.json"
+    bound: dict[str, object] = {
+        "research_input_digest": research_input["research_input_digest"],
+        "initial_fragment_context_digest": initial_context[
+            "projection_digest"
+        ],
+        "fragment_tool_schema_digests": {
+            name: runner.canonical_digest(tools[name])
+            for name in MICRO_JUDGMENT_TOOL_NAMES
+        },
+    }
+    for key, path in paths.items():
+        bound[key] = path.relative_to(ROOT).as_posix()
+        bound[key[:-4] + "_sha256"] = runner._sha(path)
+    authority = {
+        "schema_version": runner.FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA,
+        "status": runner.FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS,
+        "implementation_commit": commit,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "ordered_fragment_tools": list(MICRO_JUDGMENT_TOOL_NAMES),
+        "execution_budget": {
+            "maximum_model_calls": 6,
+            "maximum_transport_attempts": 6,
+            "maximum_tool_calls": 3,
+            "maximum_evidence_requests": 0,
+            "retries": 0,
+            "fallbacks": 0,
+            "planner_calls": 0,
+            "external_retrieval_calls": 0,
+            "embedding_calls": 0,
+            "protocol_switches": 0,
+            "current_product_pointer_mutations": 0,
+        },
+        "bound_inputs": bound,
+        "output_contract": {
+            "capture_root_ref": "capture",
+            "private_output_root_ref": "private",
+            "public_result_ref": "public.json",
+            "run_id": "full-fragment-run",
+            "fragment_attempt_ids": {
+                name: {
+                    "analysis_attempt_id": f"analysis-{index}",
+                    "submission_attempt_id": f"submission-{index}",
+                }
+                for index, name in enumerate(MICRO_JUDGMENT_TOOL_NAMES, 1)
+            },
+            "product_publication": "forbidden",
+        },
+        "known_boundary": "full fixed-Pack only",
+    }
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    def fake_git(*args):
+        if args[0] == "rev-parse":
+            return commit
+        if args[0] == "status":
+            return "?? authority.json"
+        raise AssertionError(args)
+
+    output_paths = {
+        "capture": tmp_path / "capture",
+        "private": tmp_path / "private",
+        "public.json": tmp_path / "public.json",
+    }
+    original_resolve = runner._resolve
+    monkeypatch.setattr(runner, "_git", fake_git)
+    monkeypatch.setattr(runner, "_relative", lambda path: Path(path).name)
+    monkeypatch.setattr(
+        runner,
+        "_resolve",
+        lambda ref: output_paths.get(str(ref), original_resolve(ref)),
+    )
+    validated = runner.validate_full_fragment_judgment_authority(
+        authority,
+        authority_path=authority_path,
+    )
+    assert validated["analysis_profile_ref"] == MICRO_JUDGMENT_PROFILE
+    assert validated["submission_profile_ref"] == MICRO_READ_PROFILE
+
+    drifted = json.loads(json.dumps(authority))
+    drifted["bound_inputs"]["initial_fragment_context_digest"] = "0" * 64
+    with pytest.raises(runner.CurrentResearchConsumerCanaryError) as exc:
+        runner.validate_full_fragment_judgment_authority(
+            drifted,
+            authority_path=authority_path,
+        )
+    assert exc.value.code == (
+        "research_consumer_full_fragment_runtime_digest_drift"
+    )
 
 
 def test_fixed_pack_claim_surface_live_path_uses_surface_contract(

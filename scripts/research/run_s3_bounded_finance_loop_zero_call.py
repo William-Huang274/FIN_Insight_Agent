@@ -37,17 +37,33 @@ from sec_agent.providers import (  # noqa: E402
 )
 from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     BoundedFinanceLoopError,
+    MICRO_JUDGMENT_TOOL_NAMES,
     READ_NUMERIC_FACTS_TOOL,
     READ_REVIEWED_EVIDENCE_TOOL,
     SUBMIT_EVIDENCE_REQUEST_TOOL,
+    SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
     SUBMIT_RESEARCH_JUDGMENT_TOOL,
+    SUBMIT_RESEARCH_MECHANISM_TOOL,
+    SUBMIT_RESEARCH_THESIS_TOOL,
     compile_finance_loop_messages,
+    compile_finance_micro_judgment_tools,
     compile_finance_loop_tools,
+    load_fixed_pack_micro_judgment_policy,
     load_bounded_finance_loop_policy,
     run_bounded_finance_loop,
+    scope_bounded_finance_micro_judgment_policy,
     scope_bounded_finance_loop_policy,
     validate_deepseek_ga_json_profile,
+    validate_deepseek_ga_node_profile,
     validate_deepseek_ga_profile,
+)
+from sec_agent.research.claim_authority import (  # noqa: E402
+    ClaimAuthorityError,
+    compile_claim_authority_research_input,
+)
+from sec_agent.research.claim_surface_authority import (  # noqa: E402
+    ClaimSurfaceAuthorityError,
+    compile_claim_surface_authority_research_input,
 )
 from sec_agent.research.current_consumer import (  # noqa: E402
     CurrentResearchConsumerError,
@@ -69,6 +85,10 @@ from sec_agent.runtime_resource_registry import (  # noqa: E402
 
 AUTHORITY_SCHEMA = "fin_ia_bounded_finance_loop_zero_call_authority_v1_0"
 RESULT_SCHEMA = "fin_ia_bounded_finance_loop_zero_call_result_v1_0"
+MICRO_AUTHORITY_SCHEMA = (
+    "fin_ia_fixed_pack_micro_judgment_zero_call_authority_v1_0"
+)
+MICRO_RESULT_SCHEMA = "fin_ia_fixed_pack_micro_judgment_zero_call_result_v1_0"
 
 
 class BoundedFinanceLoopProofError(RuntimeError):
@@ -136,7 +156,7 @@ def _validate_authority(
     authority_path: Path,
 ) -> tuple[dict[str, Path], Mapping[str, Any]]:
     if not (
-        payload.get("schema_version") == AUTHORITY_SCHEMA
+        payload.get("schema_version") in {AUTHORITY_SCHEMA, MICRO_AUTHORITY_SCHEMA}
         and payload.get("status")
         == "fresh_zero_network_zero_model_bounded_finance_loop_proof_authorized"
     ):
@@ -350,6 +370,131 @@ def _parallel_step(
 
 def _fake_judgment(fake: Mapping[str, Any], cell_id: str) -> dict[str, Any]:
     return deepcopy(next(row for row in fake["cells"] if row["cell_id"] == cell_id))
+
+
+def _claim_relation_alias_input(
+    *,
+    paths: Mapping[str, Path],
+    research_input: Mapping[str, Any],
+) -> dict[str, Any]:
+    try:
+        claim_input = compile_claim_authority_research_input(
+            research_input,
+            policy=_json(paths["claim_authority_policy_ref"]),
+        )
+        return compile_claim_surface_authority_research_input(
+            claim_input,
+            policy=_json(paths["claim_surface_authority_policy_ref"]),
+        )
+    except (ClaimAuthorityError, ClaimSurfaceAuthorityError) as exc:
+        raise BoundedFinanceLoopProofError(
+            f"finance_loop_micro_alias_input_invalid:{exc.code}"
+        ) from exc
+
+
+def _micro_fragments_from_reviewed_fake(
+    *,
+    research_input: Mapping[str, Any],
+    fake: Mapping[str, Any],
+) -> dict[str, dict[str, Any]]:
+    """Split one already-reviewed Judgment without inventing new prose."""
+
+    cell_id = "CELL::value_capture"
+    source = _fake_judgment(fake, cell_id)
+    cell = next(
+        row for row in research_input["cells"] if row["cell_id"] == cell_id
+    )
+    relation_by_atom = {
+        str(row["atom_field"]): str(row["claim_relation_ref"])
+        for row in source["claim_relations"]
+    }
+    relation_by_ref = {
+        str(row["claim_relation_ref"]): row
+        for row in cell["claim_relation_card"]["allowed_combinations"]
+    }
+
+    def required_refs(atom_field: str, field: str) -> list[str]:
+        relation_ref = relation_by_atom[atom_field]
+        relation = relation_by_ref.get(relation_ref)
+        if relation is None:
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_micro_fake_relation_not_compiled"
+            )
+        return [str(value) for value in relation[field]]
+
+    common_empty = {
+        "numeric_refs": [],
+        "numeric_relation_refs": [],
+        "qualitative_fact_refs": [],
+        "method_step_refs": [],
+        "graph_edge_refs": [],
+    }
+    fragments = {
+        SUBMIT_RESEARCH_THESIS_TOOL: {
+            "cell_id": cell_id,
+            "claim_relation_ref": relation_by_atom["thesis_atom"],
+            "evidence_uses": deepcopy(source["evidence_uses"]),
+            "numeric_refs": list(source["numeric_refs"]),
+            "numeric_relation_refs": required_refs(
+                "thesis_atom", "required_numeric_relation_refs"
+            ),
+            "qualitative_fact_refs": required_refs(
+                "thesis_atom", "required_qualitative_fact_refs"
+            ),
+            "method_step_refs": list(source["method_step_refs"]),
+            "graph_edge_refs": list(source["graph_edge_refs"]),
+            "judgment_status": source["judgment_status"],
+            "confidence_basis": source["confidence_basis"],
+            "inference_authority": source["inference_authority"],
+            "claim_scope": source["claim_scope"],
+            "financial_scope": source["financial_scope"],
+            "causal_bridge_authority": source["causal_bridge_authority"],
+            "thesis_atom": source["thesis_atom"],
+        },
+        SUBMIT_RESEARCH_MECHANISM_TOOL: {
+            "cell_id": cell_id,
+            "claim_relation_ref": relation_by_atom["mechanism_atom"],
+            "evidence_uses": [
+                {"evidence_ref": ref, "use_role": "support"}
+                for ref in required_refs(
+                    "mechanism_atom", "required_evidence_refs"
+                )
+            ],
+            **common_empty,
+            "numeric_relation_refs": required_refs(
+                "mechanism_atom", "required_numeric_relation_refs"
+            ),
+            "qualitative_fact_refs": required_refs(
+                "mechanism_atom", "required_qualitative_fact_refs"
+            ),
+            "mechanism_atom": source["mechanism_atom"],
+        },
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: {
+            "cell_id": cell_id,
+            "claim_relation_ref": relation_by_atom["counterargument_atom"],
+            "evidence_uses": [
+                {"evidence_ref": ref, "use_role": "support"}
+                for ref in required_refs(
+                    "counterargument_atom", "required_evidence_refs"
+                )
+            ],
+            **common_empty,
+            "numeric_relation_refs": required_refs(
+                "counterargument_atom", "required_numeric_relation_refs"
+            ),
+            "qualitative_fact_refs": required_refs(
+                "counterargument_atom", "required_qualitative_fact_refs"
+            ),
+            "counterargument_atom": source["counterargument_atom"],
+            "what_would_change": {
+                **deepcopy(source["what_would_change"]),
+                "threshold_numeric_ref": (
+                    source["what_would_change"]["threshold_numeric_ref"] or ""
+                ),
+            },
+        },
+    }
+    return fragments
 
 
 def _case_specific_plan(
@@ -716,6 +861,444 @@ def _immutable_paired_r1_content_replay(
         "old_failed_content_was_not_silently_promoted": True,
     }
     return {**body, "replay_digest": canonical_digest(body)}
+
+
+def _micro_mutation_codes(
+    *,
+    research_input: Mapping[str, Any],
+    kernel: Any,
+    route: Any,
+    planning: Any,
+    policy: Any,
+    tools: Sequence[Mapping[str, Any]],
+    fragments: Mapping[str, Mapping[str, Any]],
+) -> dict[str, str]:
+    cell_id = "CELL::value_capture"
+
+    def execute(
+        changed: Mapping[str, Mapping[str, Any]],
+        *,
+        mode: str,
+    ) -> None:
+        def step_executor(_messages, _active_tools, index):
+            if index == 1:
+                return _parallel_read_step(index, cell_id)
+            if mode == "wrong_order" and index == 2:
+                name = SUBMIT_RESEARCH_MECHANISM_TOOL
+            elif mode == "duplicate" and index == 3:
+                name = SUBMIT_RESEARCH_THESIS_TOOL
+            elif mode == "missing" and index == 4:
+                return _parallel_step(index, [])
+            else:
+                name = MICRO_JUDGMENT_TOOL_NAMES[index - 2]
+            return _step(index, name, changed[name])
+
+        run_bounded_finance_loop(
+            policy=policy,
+            research_input=research_input,
+            required_cell_ids=[cell_id],
+            kernel=kernel,
+            route_policy=route,
+            planning_policy=planning,
+            tools=tools,
+            step_executor=step_executor,
+        )
+
+    cases: list[tuple[str, str, dict[str, dict[str, Any]]]] = []
+    unchanged = deepcopy(dict(fragments))
+    cases.extend(
+        [
+            (
+                "wrong_fragment_order",
+                "finance_loop_micro_judgment_order_invalid",
+                deepcopy(unchanged),
+            ),
+            (
+                "duplicate_fragment",
+                "finance_loop_tool_budget_exceeded",
+                deepcopy(unchanged),
+            ),
+            (
+                "missing_fragment",
+                "finance_loop_step_without_tool_call",
+                deepcopy(unchanged),
+            ),
+        ]
+    )
+    missing_authority = deepcopy(unchanged)
+    missing_authority[SUBMIT_RESEARCH_THESIS_TOOL]["evidence_uses"] = []
+    cases.append(
+        (
+            "missing_required_authority",
+            "finance_loop_micro_required_authority_missing",
+            missing_authority,
+        )
+    )
+    unknown_alias = deepcopy(unchanged)
+    unknown_alias[SUBMIT_RESEARCH_THESIS_TOOL]["claim_relation_ref"] = (
+        "CR::MU::CROSS_CASE"
+    )
+    cases.append(
+        (
+            "unknown_or_cross_case_alias",
+            "finance_loop_micro_relation_alias_invalid",
+            unknown_alias,
+        )
+    )
+    role_conflict = deepcopy(unchanged)
+    support_ref = role_conflict[SUBMIT_RESEARCH_THESIS_TOOL][
+        "evidence_uses"
+    ][0]["evidence_ref"]
+    role_conflict[SUBMIT_RESEARCH_MECHANISM_TOOL]["evidence_uses"] = [
+        {"evidence_ref": support_ref, "use_role": "limit"}
+    ]
+    cases.append(
+        (
+            "cross_fragment_evidence_role_conflict",
+            "finance_loop_micro_evidence_role_conflict",
+            role_conflict,
+        )
+    )
+    causal_overreach = deepcopy(unchanged)
+    causal_overreach[SUBMIT_RESEARCH_MECHANISM_TOOL]["mechanism_atom"] = (
+        "AI servers drove Dell company profit through direct operating leverage."
+    )
+    cases.append(
+        (
+            "causal_overreach",
+            (
+                "finance_loop_judgment_invalid:"
+                "claim_surface_narrative_relation_conflict"
+            ),
+            causal_overreach,
+        )
+    )
+
+    observed: dict[str, str] = {}
+    for name, expected, changed in cases:
+        mode = {
+            "wrong_fragment_order": "wrong_order",
+            "duplicate_fragment": "duplicate",
+            "missing_fragment": "missing",
+        }.get(name, "normal")
+        try:
+            execute(changed, mode=mode)
+        except BoundedFinanceLoopError as exc:
+            if exc.code != expected:
+                raise BoundedFinanceLoopProofError(
+                    f"finance_loop_micro_mutation_wrong_code:{name}:{exc.code}"
+                ) from exc
+            observed[name] = exc.code
+        else:
+            raise BoundedFinanceLoopProofError(
+                f"finance_loop_micro_mutation_did_not_fail:{name}"
+            )
+
+    changed_tools = deepcopy(list(tools))
+    changed_tools[-1]["function"]["description"] += " drift"
+    try:
+        run_bounded_finance_loop(
+            policy=policy,
+            research_input=research_input,
+            required_cell_ids=[cell_id],
+            kernel=kernel,
+            route_policy=route,
+            planning_policy=planning,
+            tools=changed_tools,
+            step_executor=lambda _messages, _active, index: _parallel_read_step(
+                index, cell_id
+            ),
+        )
+    except BoundedFinanceLoopError as exc:
+        expected = "finance_loop_tool_definition_contract_drift"
+        if exc.code != expected:
+            raise
+        observed["tool_schema_mutation"] = exc.code
+    else:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_micro_schema_mutation_did_not_fail"
+        )
+    return observed
+
+
+def _cross_case_claim_policy_rejections(
+    *,
+    paths: Mapping[str, Path],
+) -> dict[str, str]:
+    kernel, _route, planning, evidence, retrieval = _runtime_components()
+    read = frozenset({"current_product:read"})
+    output: dict[str, str] = {}
+    for case_key in ("MU", "NVDA"):
+        objective, atoms = _case_specific_plan(
+            paths=paths,
+            case_key=case_key,
+            kernel=kernel,
+            planning=planning,
+        )
+        research_input = compile_current_research_input(
+            policy=_json(paths["consumer_policy_ref"]),
+            evidence_pack=evidence.get_case(
+                case_key,
+                ResearchEvidencePackPrincipal("current", read),
+            ),
+            controlled_plan=retrieval.execute_controlled_plan(
+                case_key,
+                objective,
+                atoms,
+                ResearchRetrievalPrincipal("current", read),
+            ),
+        )
+        try:
+            compile_claim_authority_research_input(
+                research_input,
+                policy=_json(paths["claim_authority_policy_ref"]),
+            )
+        except ClaimAuthorityError as exc:
+            if exc.code != "claim_authority_base_input_not_qualified":
+                raise BoundedFinanceLoopProofError(
+                    f"finance_loop_micro_cross_case_unexpected:{case_key}:{exc.code}"
+                ) from exc
+            output[case_key] = exc.code
+        else:
+            raise BoundedFinanceLoopProofError(
+                f"finance_loop_micro_cross_case_policy_leak:{case_key}"
+            )
+    return output
+
+
+def _run_micro_judgment_matrix(
+    *,
+    paths: Mapping[str, Path],
+    base_research_input: Mapping[str, Any],
+    kernel: Any,
+    route: Any,
+    planning: Any,
+    base_policy: Any,
+) -> dict[str, Any]:
+    required = {
+        "claim_authority_policy_ref",
+        "claim_surface_authority_policy_ref",
+        "micro_policy_ref",
+        "micro_read_profile_ref",
+        "micro_judgment_profile_ref",
+        "corrected_fake_output_ref",
+        "prior_live_result_ref",
+        "prior_capacity_assessment_ref",
+        "prior_step_two_request_ref",
+        "prior_step_two_response_ref",
+    }
+    missing = required.difference(paths)
+    if missing:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_micro_bound_inputs_missing:" + ",".join(sorted(missing))
+        )
+    research_input = _claim_relation_alias_input(
+        paths=paths,
+        research_input=base_research_input,
+    )
+    micro_policy = load_fixed_pack_micro_judgment_policy(
+        _json(paths["micro_policy_ref"])
+    )
+    read_profile = load_chat_completion_profile(
+        _json(paths["micro_read_profile_ref"])
+    )
+    judgment_profile = load_chat_completion_profile(
+        _json(paths["micro_judgment_profile_ref"])
+    )
+    validate_deepseek_ga_node_profile(read_profile, node_class="tool_routing")
+    validate_deepseek_ga_node_profile(
+        judgment_profile,
+        node_class="bounded_financial_judgment",
+    )
+    policy = scope_bounded_finance_micro_judgment_policy(
+        base_policy,
+        micro_policy=micro_policy,
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    cell_id = "CELL::value_capture"
+    tools = compile_finance_micro_judgment_tools(
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        policy=policy,
+        strict=False,
+    )
+    fake = _json(paths["corrected_fake_output_ref"])
+    fragments = _micro_fragments_from_reviewed_fake(
+        research_input=research_input,
+        fake=fake,
+    )
+    observed_steps: list[dict[str, Any]] = []
+
+    def step_executor(messages, active_tools, index):
+        observed_steps.append(
+            {
+                "step_index": index,
+                "active_tool_names": [
+                    row["function"]["name"] for row in active_tools
+                ],
+                "model_visible_message_chars": len(
+                    json.dumps(
+                        messages,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    )
+                ),
+                "active_tool_schema_chars": len(
+                    json.dumps(
+                        active_tools,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    )
+                ),
+            }
+        )
+        if index == 1:
+            return _parallel_read_step(index, cell_id)
+        name = MICRO_JUDGMENT_TOOL_NAMES[index - 2]
+        return _step(index, name, fragments[name])
+
+    result = run_bounded_finance_loop(
+        policy=policy,
+        research_input=research_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+        tools=tools,
+        step_executor=step_executor,
+        visible_execution_budget={
+            "maximum_steps": policy.maximum_steps,
+            "maximum_evidence_requests": 0,
+            "maximum_reads_per_cell": 1,
+            "maximum_parallel_read_tools": 2,
+            "maximum_judgments_per_cell": 1,
+            "retry_count": 0,
+        },
+    )
+    source = _fake_judgment(fake, cell_id)
+    compiled = result.judgment_output["cells"][0]
+    for field in ("thesis_atom", "mechanism_atom", "counterargument_atom"):
+        if compiled[field] != source[field]:
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_micro_harness_invented_narrative"
+            )
+
+    prior_live = _json(paths["prior_live_result_ref"])
+    prior_assessment = _json(paths["prior_capacity_assessment_ref"])
+    prior_request = _json(paths["prior_step_two_request_ref"])
+    prior_response = _json(paths["prior_step_two_response_ref"])
+    request_body = prior_request.get("request_body")
+    if not isinstance(request_body, Mapping):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_micro_prior_request_invalid"
+        )
+    prior_tools = request_body.get("tools")
+    if not isinstance(prior_tools, list):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_micro_prior_request_invalid"
+        )
+    prior_judgment_tool = next(
+        row
+        for row in prior_tools
+        if row.get("function", {}).get("name")
+        == SUBMIT_RESEARCH_JUDGMENT_TOOL
+    )
+    old_schema_chars = len(
+        json.dumps(
+            prior_judgment_tool,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    judgment_steps = observed_steps[1:]
+    if not all(
+        row["active_tool_schema_chars"] < old_schema_chars
+        for row in judgment_steps
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_micro_schema_not_smaller_than_monolith"
+        )
+    response_body = prior_response.get("response_body")
+    try:
+        prior_usage = response_body["usage"]
+        prior_message = response_body["choices"][0]["message"]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_micro_prior_response_invalid"
+        ) from exc
+    if not (
+        prior_live.get("failure_code") == "model_gateway_reasoning_budget_exhausted"
+        and prior_live.get("research_input_digest")
+        == research_input["research_input_digest"]
+        and prior_assessment.get("root_cause", {}).get("classification")
+        == "monolithic_final_judgment_interacting_with_provider_max_reasoning_nonconvergence"
+        and prior_usage.get("completion_tokens_details", {}).get(
+            "reasoning_tokens"
+        )
+        == 16000
+        and prior_message.get("content") == ""
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_micro_prior_capacity_failure_drift"
+        )
+
+    return {
+        "research_input_digest": research_input["research_input_digest"],
+        "terminal_result_digest": result.as_dict()["result_digest"],
+        "step_count": result.step_count,
+        "tool_call_count": result.tool_call_count,
+        "tool_counts": dict(result.tool_counts),
+        "ordered_model_owned_phases": list(MICRO_JUDGMENT_TOOL_NAMES),
+        "observed_steps": observed_steps,
+        "prior_monolithic_judgment_schema_chars": old_schema_chars,
+        "largest_micro_judgment_schema_chars": max(
+            row["active_tool_schema_chars"] for row in judgment_steps
+        ),
+        "largest_micro_to_prior_monolithic_ratio": round(
+            max(row["active_tool_schema_chars"] for row in judgment_steps)
+            / old_schema_chars,
+            6,
+        ),
+        "model_authored_narratives_preserved_exactly": True,
+        "harness_generated_missing_claim_or_fragment": False,
+        "private_reasoning_persisted": any(
+            row["private_reasoning_persisted"]
+            for row in result.step_receipts
+        ),
+        "node_profiles": {
+            "mandatory_read_pair": {
+                "reasoning_effort": read_profile.request_defaults[
+                    "reasoning_effort"
+                ],
+                "max_tokens": read_profile.request_defaults["max_tokens"],
+            },
+            "micro_judgment": {
+                "reasoning_effort": judgment_profile.request_defaults[
+                    "reasoning_effort"
+                ],
+                "max_tokens": judgment_profile.request_defaults["max_tokens"],
+            },
+        },
+        "mutation_failure_codes": _micro_mutation_codes(
+            research_input=research_input,
+            kernel=kernel,
+            route=route,
+            planning=planning,
+            policy=policy,
+            tools=tools,
+            fragments=fragments,
+        ),
+        "cross_case_policy_rejection_codes": _cross_case_claim_policy_rejections(
+            paths=paths
+        ),
+        "prior_capacity_failure_immutable": True,
+    }
 
 
 def _run_fake_matrix(
@@ -1102,6 +1685,94 @@ def _execute(
         )
     research_input, kernel, route, planning = _contracts_and_input(paths)
     policy = load_bounded_finance_loop_policy(_json(paths["loop_policy_ref"]))
+    if authority.get("schema_version") == MICRO_AUTHORITY_SCHEMA:
+        micro_matrix = _run_micro_judgment_matrix(
+            paths=paths,
+            base_research_input=research_input,
+            kernel=kernel,
+            route=route,
+            planning=planning,
+            base_policy=policy,
+        )
+        three_case_context = _three_case_context_matrix(
+            paths=paths,
+            base_policy=policy,
+        )
+        normalized = {
+            **micro_matrix,
+            "three_case_context_digest": canonical_digest(three_case_context),
+            "three_case_context_all_pass": three_case_context[
+                "all_three_full_fake_pass"
+            ],
+            "three_case_identity_pollution_count": three_case_context[
+                "case_identity_pollution_count"
+            ],
+            "three_case_graph_context_pollution_count": three_case_context[
+                "graph_context_pollution_count"
+            ],
+            "network_calls": 0,
+            "model_calls": 0,
+            "provider_calls": 0,
+            "embedding_calls": 0,
+            "retries": 0,
+        }
+        if probe_only:
+            return normalized
+        with tempfile.TemporaryDirectory(
+            prefix="fin013-s3-micro-proof-"
+        ) as directory:
+            first_path = Path(directory) / "fresh-1.json"
+            second_path = Path(directory) / "fresh-2.json"
+            first = _fresh_process_probe(
+                authority=authority_path,
+                normalized=first_path,
+            )
+            second = _fresh_process_probe(
+                authority=authority_path,
+                normalized=second_path,
+            )
+        if first != second or first != normalized:
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_micro_fresh_process_drift"
+            )
+        result = {
+            "schema_version": MICRO_RESULT_SCHEMA,
+            "status": "zero_call_micro_judgment_fresh_process_proof_pass",
+            "authority_ref": _relative(authority_path),
+            "authority_sha256": _sha(authority_path),
+            "normalized_proof": normalized,
+            "fresh_process_count": 2,
+            "fresh_process_results_byte_equivalent": True,
+            "three_case_context_qualification": three_case_context,
+            "acceptance": {
+                "same_r2_research_input_bound": True,
+                "model_owned_fragment_order_enforced": True,
+                "harness_narrative_invention_forbidden": True,
+                "each_judgment_schema_smaller_than_r2_monolith": True,
+                "mutation_and_cross_case_fail_closed": True,
+                "three_case_existing_runtime_unchanged": True,
+                "natural_model_submission_proven": False,
+                "fixed_pack_layer_one_accepted": False,
+                "dynamic_agentic_research_authorized": False,
+                "s3_product_acceptance": False,
+            },
+            "known_boundary": (
+                "This zero-network zero-model proof reuses the immutable DELL "
+                "R2 research input and proves only the provider-neutral micro-"
+                "judgment contract, node profile bindings, deterministic terminal "
+                "compilation, mutation closure and three-case non-regression. It "
+                "does not prove DeepSeek will naturally submit any fragment, does "
+                "not accept fixed-Pack Layer One and does not authorize dynamic "
+                "Agentic Research or product publication."
+            ),
+        }
+        result["result_digest"] = canonical_digest(result)
+        _write_new(
+            _resolve(str(output["private_output_ref"])),
+            {**result, "micro_judgment_matrix": micro_matrix},
+        )
+        _write_new(_resolve(str(output["public_result_ref"])), result)
+        return result
     fake = _json(paths["fake_output_ref"])
     standard_profile = load_chat_completion_profile(
         _json(paths["ga_agent_profile_ref"])

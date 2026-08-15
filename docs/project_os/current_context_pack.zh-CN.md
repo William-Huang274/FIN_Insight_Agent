@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。Owner 把验收拆为 fixed Pack、单单元动态纵切、五单元动态案例三层，并只批准第一层。唯一 fixed-pack Chat R1 因“来源允许引用的中个位数目标没有 typed alias”而 terminal failed且保持不可变。Claim Surface successor 现已在 clean/synced R3 正式零调用通过：管理层定性目标成为 source-bound QF，三段判断分别提交结构化关系，旧失败三层回放、mutation、source drift 和三案例污染均 fail closed。R1 proof-runner failure 与 R2 stale-date 结果也保持不可变。当前必须把结果返回 Owner；尚未执行 natural replacement，因此第一层 acceptance、动态第二层和五单元仍 blocked。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。Owner 已授权按 fixed Pack、单单元动态纵切、五单元动态案例和三案例迁移连续推进，但每层仍须独立过门。Claim Surface 结构门已通过；其后的 natural R1/R2 均保持 immutable terminal failure：R2 已把 prompt 从 18,902 降至 8,997 token，仍在一个 monolithic Judgment 上消耗完 16,000 reasoning token且没有可见提交。当前 working tree 已把该节点拆成三个模型拥有的微判断，复用同一 R2 输入完成 `4 step / 5 tool call` fake、八类 mutation、MU/NVDA 隔离和 314 项全仓回归；正式 clean proof 与下一次 natural submission 尚未执行。因此 fixed-Pack 第一层、动态 Truth Spine、五单元和三案例验收仍 blocked。
 
 ## 当前唯一产品边界
 
@@ -29,7 +29,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影。formal R3 已证明 consumer policy v1.2 的 provider-neutral RoleMethodPack／GraphContextPack 合同，但它们不注册为独立产品资源：前者只为 value_capture 提供方法，后者只从当前 Case／Evidence／NumericFact／typed relation 即时编译。Runtime Registry 仍为 R11／10 个资源；模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册。当前 route policy 声明 `typed_relationship_graph`，但 hybrid candidate Runtime 只执行 BM25＋Qwen，完整图查询 handler 仍未实现；S3 当前 GraphContextPack 不得被误称为关闭该 S1 缺口。
+当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影。fixed-Pack 微判断仍复用该循环和最终金融 Validator：模型依次提交 thesis、mechanism、counterargument＋WWC，Harness 只校验、展开预编译 relation alias、合并引用并生成一个终态 Judgment，不得补写缺失观点；DeepSeek 的 low/high reasoning 配置只存在于可替换 Provider profile。formal R3 已证明 consumer policy v1.2 的 provider-neutral RoleMethodPack／GraphContextPack 合同，但它们不注册为独立产品资源：前者只为 value_capture 提供方法，后者只从当前 Case／Evidence／NumericFact／typed relation 即时编译。Runtime Registry 仍为 R11／10 个资源；模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册。当前 route policy 声明 `typed_relationship_graph`，但 hybrid candidate Runtime 只执行 BM25＋Qwen，完整图查询 handler 仍未实现；S3 当前 GraphContextPack 不得被误称为关闭该 S1 缺口。
 
 ## 已完成的重定基事实
 
@@ -126,3 +126,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 第二步 HTTP 200、完整可解析响应，但 `prompt=8,997`、`completion=16,000`、`reasoning=16,000`、可见内容和 tool call 均为 0；状态为 `model_gateway_reasoning_budget_exhausted`。相对 R1 `18,902` prompt，alias／紧凑投影将输入减少超过一半，证明去冗余有效但不足以形成自然 Judgment。
 - Unicode 原始 bytes 复核确认模型输入中文合法；终端曾出现的乱码只属于 PowerShell 显示链，未进入产品根因。
 - 当前最早责任层修订为 S3 monolithic Judgment 与统一 max-thinking 节点。下一项只允许 provider-neutral micro-judgment＋节点复杂度预算的零调用结构包；不允许直接重跑、提高 token、切协议、进入动态 Truth Spine、五单元或三案例验收。
+
+## 2026-08-15 S3 fixed-Pack 微判断 working-tree 结果
+
+- 当前实现复用 R2 的 research input digest `783de9ef...1d274`，没有更换 Evidence Pack、Case、截至日、模型或协议。模型输出被拆成三个顺序固定但仍由模型独立撰写的片段；Harness 不生成任何缺失叙事。
+- fake 链为一次并行 Evidence／NumericFact read 加三次微判断，共 `4 step / 5 tool call / 0 EvidenceRequest`。三段原始文字逐字进入同一个既有终态 Validator 和 deliverable compiler。
+- 旧 monolithic Judgment 工具约 `4,847` 字符；三个微判断的最大活动 schema 约 `3,444` 字符，比例 `0.710543`。read 节点使用 provider-only `low / 2,000`，判断节点使用 `high / 8,000`；金融核心不读取 DeepSeek 配置。
+- 乱序、重复、缺片段、缺必要 Evidence、未知／跨案例 alias、跨片段 Evidence role 冲突、AI→公司利润强因果越界和 tool schema 漂移均 fail closed。DELL 专用 Claim policy 对 MU／NVDA 均拒绝；旧三案例 full-fake 路径仍无 identity／Graph 污染。
+- 定向 23 项和全仓 314 项测试通过；active baseline 为 `127 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference`，secret scan 为 `6,602 files / 0 finding`。该状态只是 working-tree engineering pass；尚未形成 clean/synced formal proof，也没有模型、Provider、网络、retry 或产品发布调用。下一步只能先提交并推送实现，再签发零调用 proof；proof 通过后另行做 fresh live 价值／风险资格判断。

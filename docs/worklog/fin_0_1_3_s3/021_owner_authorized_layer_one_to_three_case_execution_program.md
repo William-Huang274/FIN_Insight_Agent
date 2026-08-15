@@ -56,3 +56,11 @@ clean/synced preflight 通过后已执行唯一 Chat R1。第一步 mandatory re
 唯一 ClaimRelation-alias Chat R2 已在 clean/synced commit `442e505b` 执行并 0 retry 终止。mandatory read pair 继续成功；第二步完整 HTTP 200 JSON 的 prompt 已由 R1 的 `18,902` 降到 `8,997` token，但 16,000 completion token 仍全部为 reasoning，零可见 Judgment／tool call。因此输入去冗余真实有效但不是充分条件，第一项、L1 与内容门仍未通过。
 
 Owner 授权范围内的下一修复不再做字段删减、上限扩大或协议轮测，而是把 monolithic cell Judgment 拆成 provider-neutral micro-judgments，并按节点复杂度映射 reasoning budget；模型负责真实判断，Harness 只校验、展开 alias、绑定 lineage 和编译终态。完成三案例 fake／mutation 与 clean proof 前不签发下一次 natural live。详见 `023_fixed_pack_claim_relation_alias_chat_r2_and_micro_judgment_disposition.md`。
+
+## 第一项微判断 engineering pass（2026-08-15）
+
+当前 working tree 已完成 provider-neutral 微判断实现，并且没有新增 attempt-specific runner：现有 bounded-loop proof runner 增加同一 R2 输入的微判断分支。模型先完成 mandatory read pair，再依次独立提交 thesis、mechanism、counterargument＋WWC；Harness 只校验每段所选 Evidence／NumericFact／relation／method／graph 权限、展开 alias，并把三段模型原文编译为既有终态 Judgment。
+
+本地结果为 `4 step / 5 tool call / 0 EvidenceRequest`。三个微判断中最大的活动 Tool Schema 为 `3,444` 字符，相对旧 monolithic Judgment `4,847` 为 `0.710543`；read 节点使用 `low / 2,000`，判断节点使用 `high / 8,000`，两者均位于可替换 DeepSeek profile，金融核心没有 Provider 分支。三段 reviewed fake 叙事逐字保留；乱序、重复、缺片段、缺必要 Evidence、未知／跨案 alias、Evidence role 冲突、因果越界和 schema 漂移均 fail closed，MU／NVDA 不会套用 DELL policy。全仓为 `314 passed`。
+
+这只把第一项推进到 working-tree engineering pass；natural DeepSeek submission、L1 和内容质量仍未证明。下一门是 clean commit/push 后签发 formal zero-call authority，完成两次 fresh-process 等价证明和三案例非回归；通过后才允许做一次新的 live 资格判断。第二至第五项继续 pending。

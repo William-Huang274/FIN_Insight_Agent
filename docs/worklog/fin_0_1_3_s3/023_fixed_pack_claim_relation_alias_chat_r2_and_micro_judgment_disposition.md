@@ -2,7 +2,7 @@
 
 日期：2026-08-15
 
-状态：`R2 terminal_failed_no_retry / fixed-Pack layer one blocked / micro-judgment successor selected`
+状态：`R2 terminal_failed_no_retry / micro-judgment working-tree engineering pass / formal clean proof pending / fixed-Pack layer one blocked`
 
 ## 这次真实运行发生了什么
 
@@ -31,3 +31,9 @@ R1 第二步 prompt 是 18,902 token；R2 已降到 8,997，减少超过一半�
 ## 产品边界
 
 这次失败不证明 DeepSeek 的金融研究质量差，因为没有可见 Judgment；也不证明 compact alias 方案无价值，因为 prompt 已实质下降。它证明的是当前 Harness 把研究判断和大合同序列化压进同一节点，无法在该 Provider 的 max-thinking 行为下稳定收束。动态 Truth Spine、单单元 Agentic Research、五单元和三案例仍全部等待 fixed-Pack 第一层形成可验收 Judgment。
+
+## Working-tree 实现结果
+
+微判断结构已经实现并通过本地试装：同一 R2 input 先做一组 mandatory reads，随后依次提交 thesis、mechanism、counterargument＋WWC，总计 `4 step / 5 tool call / 0 EvidenceRequest`。模型继续拥有三段原文与所有引用／relation 选择；Harness 只校验、展开 alias 和编译终态。旧 monolithic Judgment schema 约 `4,847` 字符，新三段中最大活动 schema 约 `3,444` 字符。read 和 judgment 的 DeepSeek reasoning 配置分别位于 provider-only profile，金融核心只识别节点类别。
+
+八类 mutation、DELL→MU/NVDA policy 隔离和旧三案例 full-fake 均通过；定向 `23 passed`，全仓 `314 passed`。该结论仍只属于 working-tree engineering pass。正式 clean proof、natural DeepSeek 提交、L1 和内容质量均未发生；详见 `024_fixed_pack_micro_judgment_engineering.md`。

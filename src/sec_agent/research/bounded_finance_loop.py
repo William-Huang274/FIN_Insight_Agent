@@ -18,7 +18,10 @@ from retrieval.route_compiler import (
     compile_retrieval_execution_plan,
 )
 
-from sec_agent.providers.agent_protocol import AgentToolStepResult
+from sec_agent.providers.agent_protocol import (
+    AgentToolStepResult,
+    project_tool_definitions,
+)
 
 from .current_consumer import (
     CurrentResearchConsumerError,
@@ -48,6 +51,9 @@ _LEGACY_BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION = (
 BOUNDED_FINANCE_LOOP_RESULT_SCHEMA_VERSION = (
     "fin_ia_bounded_finance_agent_loop_result_v1_0"
 )
+FIXED_PACK_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION = (
+    "fin_ia_fixed_pack_micro_judgment_policy_v1_0"
+)
 
 _DISALLOWED_SAMPLING_FIELDS = frozenset(
     {"temperature", "top_p", "presence_penalty", "frequency_penalty"}
@@ -65,6 +71,23 @@ _REPAIRABLE_EVIDENCE_REQUEST_CODES = frozenset(
         "finance_loop_evidence_request_metric_family_mismatch",
         "finance_loop_evidence_request_route_not_executable",
     }
+)
+
+SUBMIT_RESEARCH_THESIS_TOOL = "submit_research_thesis"
+SUBMIT_RESEARCH_MECHANISM_TOOL = "submit_research_mechanism"
+SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL = (
+    "submit_research_counterargument_and_wwc"
+)
+MICRO_JUDGMENT_TOOL_NAMES = (
+    SUBMIT_RESEARCH_THESIS_TOOL,
+    SUBMIT_RESEARCH_MECHANISM_TOOL,
+    SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+)
+MICRO_FINANCE_TOOL_NAMES = (
+    READ_REVIEWED_EVIDENCE_TOOL,
+    READ_NUMERIC_FACTS_TOOL,
+    SUBMIT_EVIDENCE_REQUEST_TOOL,
+    *MICRO_JUDGMENT_TOOL_NAMES,
 )
 
 
@@ -142,6 +165,21 @@ class BoundedFinanceLoopPolicy:
 
 
 @dataclass(frozen=True)
+class FixedPackMicroJudgmentPolicy:
+    maximum_cell_count: int
+    maximum_evidence_requests: int
+    ordered_model_owned_phases: tuple[str, ...]
+    node_classes: Mapping[str, str]
+    maximum_provider_steps: int
+    maximum_tool_calls: int
+    maximum_parallel_read_tools: int
+    maximum_parallel_judgment_tools: int
+    retry_count: int
+    fallback_count: int
+    authority: Mapping[str, bool]
+
+
+@dataclass(frozen=True)
 class BoundedFinanceLoopResult:
     status: str
     provider_id: str
@@ -186,6 +224,103 @@ ToolStepExecutor = Callable[
 StepReceiptRecorder = Callable[[Mapping[str, Any]], None]
 
 
+def load_fixed_pack_micro_judgment_policy(
+    payload: Mapping[str, Any],
+) -> FixedPackMicroJudgmentPolicy:
+    expected = {
+        "schema_version",
+        "status",
+        "qualified_scope",
+        "ordered_model_owned_phases",
+        "node_classes",
+        "budgets",
+        "authority",
+    }
+    _require(
+        set(payload) == expected
+        and payload.get("schema_version")
+        == FIXED_PACK_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION
+        and payload.get("status")
+        == "provider_neutral_model_owned_micro_judgment_local_terminal_compilation",
+        "finance_loop_micro_policy_identity_invalid",
+    )
+    scope = payload.get("qualified_scope")
+    phases = _strings(
+        payload.get("ordered_model_owned_phases"),
+        "finance_loop_micro_policy_phases_invalid",
+    )
+    node_classes = payload.get("node_classes")
+    budgets = payload.get("budgets")
+    authority = payload.get("authority")
+    _require(
+        isinstance(scope, Mapping)
+        and dict(scope)
+        == {
+            "maximum_cell_count": 1,
+            "maximum_evidence_requests": 0,
+            "fixed_pack_only": True,
+            "dynamic_retrieval": False,
+        }
+        and phases == MICRO_JUDGMENT_TOOL_NAMES,
+        "finance_loop_micro_policy_scope_invalid",
+    )
+    expected_node_classes = {
+        "mandatory_read_pair": "tool_routing",
+        **{
+            name: "bounded_financial_judgment"
+            for name in MICRO_JUDGMENT_TOOL_NAMES
+        },
+    }
+    _require(
+        isinstance(node_classes, Mapping)
+        and dict(node_classes) == expected_node_classes,
+        "finance_loop_micro_policy_node_classes_invalid",
+    )
+    expected_budgets = {
+        "maximum_provider_steps": 4,
+        "maximum_tool_calls": 5,
+        "maximum_parallel_read_tools": 2,
+        "maximum_parallel_judgment_tools": 1,
+        "retry_count": 0,
+        "fallback_count": 0,
+    }
+    _require(
+        isinstance(budgets, Mapping)
+        and dict(budgets) == expected_budgets,
+        "finance_loop_micro_policy_budgets_invalid",
+    )
+    expected_authority = {
+        "model_owns_all_narrative_fragments": True,
+        "model_selects_all_claim_relation_aliases": True,
+        "model_selects_all_evidence_numeric_method_and_graph_refs": True,
+        "harness_may_validate_fragments": True,
+        "harness_may_expand_precompiled_aliases": True,
+        "harness_may_compile_one_terminal_judgment": True,
+        "harness_may_invent_missing_fragment_or_claim": False,
+        "terminal_judgment_uses_existing_financial_validator": True,
+        "provider_profile_mapping_outside_finance_core": True,
+        "private_reasoning_persistence_forbidden": True,
+    }
+    _require(
+        isinstance(authority, Mapping)
+        and dict(authority) == expected_authority,
+        "finance_loop_micro_policy_authority_invalid",
+    )
+    return FixedPackMicroJudgmentPolicy(
+        maximum_cell_count=1,
+        maximum_evidence_requests=0,
+        ordered_model_owned_phases=phases,
+        node_classes=deepcopy(dict(node_classes)),
+        maximum_provider_steps=4,
+        maximum_tool_calls=5,
+        maximum_parallel_read_tools=2,
+        maximum_parallel_judgment_tools=1,
+        retry_count=0,
+        fallback_count=0,
+        authority=deepcopy(dict(authority)),
+    )
+
+
 def scope_bounded_finance_loop_policy(
     policy: BoundedFinanceLoopPolicy,
     *,
@@ -221,6 +356,66 @@ def scope_bounded_finance_loop_policy(
         policy,
         maximum_steps=maximum_calls,
         maximum_tool_calls=maximum_calls,
+        maximum_calls_by_tool=per_tool,
+    )
+
+
+def scope_bounded_finance_micro_judgment_policy(
+    policy: BoundedFinanceLoopPolicy,
+    *,
+    micro_policy: FixedPackMicroJudgmentPolicy,
+    cell_count: int,
+    maximum_evidence_requests: int,
+) -> BoundedFinanceLoopPolicy:
+    """Scope one terminal Judgment into three model-owned micro decisions.
+
+    Evidence and NumericFact remain one read each per cell.  The model then
+    authors thesis, mechanism, and counterargument/WWC fragments in a fixed
+    order.  The Harness may validate and compile those fragments, but may not
+    invent a missing fragment or narrative atom.
+    """
+
+    _require(
+        1 <= cell_count <= micro_policy.maximum_cell_count,
+        "finance_loop_scope_cell_count_invalid",
+    )
+    _require(
+        maximum_evidence_requests
+        == micro_policy.maximum_evidence_requests,
+        "finance_loop_scope_evidence_request_budget_invalid",
+    )
+    per_tool = {
+        READ_REVIEWED_EVIDENCE_TOOL: cell_count,
+        READ_NUMERIC_FACTS_TOOL: cell_count,
+        SUBMIT_EVIDENCE_REQUEST_TOOL: maximum_evidence_requests,
+        SUBMIT_RESEARCH_THESIS_TOOL: cell_count,
+        SUBMIT_RESEARCH_MECHANISM_TOOL: cell_count,
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: cell_count,
+    }
+    maximum_tool_calls = sum(per_tool.values())
+    maximum_steps = (
+        cell_count * micro_policy.maximum_provider_steps
+        + maximum_evidence_requests
+    )
+    _require(
+        maximum_tool_calls <= policy.maximum_tool_calls
+        and maximum_steps <= policy.maximum_steps,
+        "finance_loop_scope_exceeds_base_policy",
+    )
+    _require(
+        maximum_tool_calls == micro_policy.maximum_tool_calls
+        and maximum_steps == micro_policy.maximum_provider_steps
+        and policy.maximum_parallel_tool_calls
+        == micro_policy.maximum_parallel_read_tools
+        and micro_policy.maximum_parallel_judgment_tools == 1
+        and micro_policy.retry_count == 0
+        and micro_policy.fallback_count == 0,
+        "finance_loop_micro_policy_runtime_drift",
+    )
+    return replace(
+        policy,
+        maximum_steps=maximum_steps,
+        maximum_tool_calls=maximum_tool_calls,
         maximum_calls_by_tool=per_tool,
     )
 
@@ -388,6 +583,43 @@ def validate_deepseek_ga_profile(
         and 1 <= int(defaults["max_tokens"]) <= 384_000
         and "response_format" not in defaults,
         "finance_loop_deepseek_ga_profile_defaults_invalid",
+    )
+
+
+def validate_deepseek_ga_node_profile(
+    profile: object,
+    *,
+    node_class: str,
+) -> None:
+    """Validate a provider-only cognitive profile for one core node class."""
+
+    expected = {
+        "tool_routing": {"reasoning_effort": "low", "max_tokens": 2000},
+        "bounded_financial_judgment": {
+            "reasoning_effort": "high",
+            "max_tokens": 8000,
+        },
+    }
+    _require(
+        node_class in expected,
+        "finance_loop_node_class_invalid",
+    )
+    base_url = str(getattr(profile, "base_url", "") or "").rstrip("/")
+    defaults = dict(getattr(profile, "request_defaults", {}) or {})
+    _require(
+        str(getattr(profile, "provider_id", "")) == "deepseek"
+        and str(getattr(profile, "model", "")) == "deepseek-v4-pro"
+        and str(getattr(profile, "endpoint", "")) == "/chat/completions"
+        and base_url == "https://api.deepseek.com"
+        and not set(defaults).intersection(_DISALLOWED_SAMPLING_FIELDS)
+        and defaults.get("stream") is False
+        and defaults.get("thinking") == {"type": "enabled"}
+        and defaults.get("reasoning_effort")
+        == expected[node_class]["reasoning_effort"]
+        and defaults.get("max_tokens")
+        == expected[node_class]["max_tokens"]
+        and "response_format" not in defaults,
+        "finance_loop_deepseek_ga_node_profile_invalid",
     )
 
 
@@ -678,6 +910,261 @@ def _judgment_parameters(
     return _strict_object(properties)
 
 
+def _micro_ref_array(
+    refs: Sequence[str],
+    *,
+    description: str,
+) -> dict[str, Any]:
+    item: dict[str, Any] = (
+        {"type": "string", "enum": list(refs)}
+        if refs
+        else {"type": "string", "pattern": "^$"}
+    )
+    schema: dict[str, Any] = {
+        "type": "array",
+        "items": item,
+        "uniqueItems": True,
+        "description": description,
+    }
+    if not refs:
+        schema["maxItems"] = 0
+    return schema
+
+
+def _micro_judgment_parameters(
+    *,
+    cell: Mapping[str, Any],
+    research_input: Mapping[str, Any],
+    atom_field: str,
+) -> dict[str, Any]:
+    """Compile one small, model-owned Judgment fragment.
+
+    The schema deliberately carries only one narrative decision and one
+    ClaimRelation alias.  Evidence and authority refs remain explicit so the
+    final local compiler cannot invent support that the model did not select.
+    """
+
+    _require(
+        atom_field
+        in {"thesis_atom", "mechanism_atom", "counterargument_atom"},
+        "finance_loop_micro_atom_field_invalid",
+    )
+    relation_card = cell.get("claim_relation_card")
+    _require(
+        isinstance(relation_card, Mapping),
+        "finance_loop_micro_claim_relation_card_missing",
+    )
+    relation_refs = sorted(
+        {
+            str(row["claim_relation_ref"])
+            for row in relation_card["allowed_combinations"]
+            if atom_field in row["allowed_atom_fields"]
+        }
+    )
+    _require(bool(relation_refs), "finance_loop_micro_relation_aliases_missing")
+    contract = research_input["model_output_contract"]
+    evidence_refs = sorted(str(ref) for ref in cell["allowed_evidence_refs"])
+    numeric_refs = sorted(str(ref) for ref in cell["allowed_numeric_refs"])
+    numeric_relation_refs = sorted(
+        str(ref) for ref in cell["allowed_numeric_relation_refs"]
+    )
+    qualitative_fact_refs = sorted(
+        str(ref) for ref in cell.get("allowed_qualitative_fact_refs", ())
+    )
+    method_step_refs = sorted(
+        str(step["method_step_ref"])
+        for step in (cell.get("role_method_pack") or {}).get(
+            "method_steps", ()
+        )
+    )
+    graph_edge_refs = sorted(
+        str(edge["graph_edge_ref"])
+        for edge in cell["graph_context_pack"]["edges"]
+    )
+    evidence_use = _strict_object(
+        {
+            "evidence_ref": {
+                "type": "string",
+                "enum": evidence_refs,
+            },
+            "use_role": {
+                "type": "string",
+                "enum": list(contract["allowed_evidence_use_roles"]),
+            },
+        }
+    )
+    common: dict[str, Any] = {
+        "cell_id": {"type": "string", "enum": [str(cell["cell_id"])]},
+        "claim_relation_ref": {
+            "type": "string",
+            "enum": relation_refs,
+            "description": (
+                "Select the typed relation alias for this narrative atom; "
+                "the Harness expands its full authority fields."
+            ),
+        },
+        "evidence_uses": {"type": "array", "items": evidence_use},
+        "numeric_refs": _micro_ref_array(
+            numeric_refs,
+            description="NumericFacts actually used by this atom.",
+        ),
+        "numeric_relation_refs": _micro_ref_array(
+            numeric_relation_refs,
+            description="Same-basis NumericRelations actually used by this atom.",
+        ),
+        "qualitative_fact_refs": _micro_ref_array(
+            qualitative_fact_refs,
+            description="Source-bound qualitative facts actually used by this atom.",
+        ),
+        "method_step_refs": _micro_ref_array(
+            method_step_refs,
+            description="RoleMethodPack steps actually used by this atom.",
+        ),
+        "graph_edge_refs": _micro_ref_array(
+            graph_edge_refs,
+            description="Current GraphContextPack edges actually used by this atom.",
+        ),
+    }
+    if atom_field == "thesis_atom":
+        common = {
+            **common,
+            "judgment_status": {
+                "type": "string",
+                "enum": list(contract["allowed_judgment_statuses"]),
+            },
+            "confidence_basis": {
+                "type": "string",
+                "enum": list(contract["allowed_confidence_bases"]),
+            },
+            "inference_authority": {
+                "type": "string",
+                "enum": list(contract["allowed_inference_authorities"]),
+            },
+            "claim_scope": {
+                "type": "string",
+                "enum": list(contract["allowed_claim_scopes"]),
+            },
+            "financial_scope": {
+                "type": "string",
+                "enum": list(contract["allowed_financial_scopes"]),
+            },
+            "causal_bridge_authority": {
+                "type": "string",
+                "enum": list(contract["allowed_causal_bridge_authorities"]),
+            },
+            "thesis_atom": {
+                "type": "string",
+                "description": "Company-specific conclusion without digits or refs.",
+            },
+        }
+    elif atom_field == "mechanism_atom":
+        common = {
+            **common,
+            "mechanism_atom": {
+                "type": "string",
+                "description": "Economic mechanism without digits or refs.",
+            },
+        }
+    else:
+        common = {
+            **common,
+            "counterargument_atom": {
+                "type": "string",
+                "description": "Strongest bounded alternative without digits or refs.",
+            },
+            "what_would_change": _strict_object(
+                {
+                    "observable": {
+                        "type": "string",
+                        "description": "Observable variable without digits or refs.",
+                    },
+                    "direction": {
+                        "type": "string",
+                        "enum": list(contract["allowed_wwc_directions"]),
+                    },
+                    "time_horizon": {
+                        "type": "string",
+                        "description": "Bounded non-numeric horizon.",
+                    },
+                    "evidence_route": {
+                        "type": "string",
+                        "description": "Where to verify without URL or citation.",
+                    },
+                    "threshold_numeric_ref": {
+                        "type": "string",
+                        "enum": ["", *numeric_refs],
+                        "description": "Allowed NumericFact ref or empty string.",
+                    },
+                }
+            ),
+        }
+    return _strict_object(common)
+
+
+def compile_finance_micro_judgment_tools(
+    *,
+    research_input: Mapping[str, Any],
+    required_cell_ids: Sequence[str],
+    kernel: FinancialResearchKernel,
+    route_policy: QueryObjectFactRoutePolicy,
+    policy: BoundedFinanceLoopPolicy,
+    strict: bool,
+    wire_api: str = CHAT_COMPLETIONS_WIRE,
+) -> tuple[dict[str, Any], ...]:
+    """Compile one canonical read/request surface plus three micro decisions."""
+
+    cells = _selected_cells(research_input, required_cell_ids)
+    _require(
+        len(cells) == 1,
+        "finance_loop_micro_judgment_single_cell_only",
+    )
+    cell = cells[0]
+    base = compile_finance_loop_tool_contract(
+        research_input=research_input,
+        required_cell_ids=required_cell_ids,
+        kernel=kernel,
+        route_policy=route_policy,
+        policy=policy,
+        strict=strict,
+    )
+    canonical = [
+        deepcopy(dict(row))
+        for row in base.canonical_tools
+        if str(row["name"]) != SUBMIT_RESEARCH_JUDGMENT_TOOL
+    ]
+    phases = (
+        (
+            SUBMIT_RESEARCH_THESIS_TOOL,
+            "Submit the bounded thesis, cell disposition, refs and one relation alias.",
+            "thesis_atom",
+        ),
+        (
+            SUBMIT_RESEARCH_MECHANISM_TOOL,
+            "Submit the bounded economic mechanism, refs and one relation alias.",
+            "mechanism_atom",
+        ),
+        (
+            SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+            "Submit the bounded counterargument, what-would-change test, refs and one relation alias.",
+            "counterargument_atom",
+        ),
+    )
+    for name, description, atom_field in phases:
+        canonical.append(
+            {
+                "name": name,
+                "description": description,
+                "input_schema": _micro_judgment_parameters(
+                    cell=cell,
+                    research_input=research_input,
+                    atom_field=atom_field,
+                ),
+                "strict": strict,
+            }
+        )
+    return project_tool_definitions(canonical, wire_api=wire_api)
+
+
 def compile_finance_loop_tools(
     *,
     research_input: Mapping[str, Any],
@@ -836,6 +1323,7 @@ def compile_finance_loop_messages(
     research_input: Mapping[str, Any],
     required_cell_ids: Sequence[str],
     execution_budget: Mapping[str, int] | None = None,
+    micro_judgment_mode: bool = False,
 ) -> tuple[dict[str, str], ...]:
     cells = _selected_cells(research_input, required_cell_ids)
     compact_alias_view = research_input.get(
@@ -957,7 +1445,13 @@ def compile_finance_loop_messages(
                 "cell; never combine, duplicate or parallelize any other tools."
             ),
             "Submit an EvidenceRequest only for a material visible gap whose route_decision is requestable_on_current_runtime; it remains open in this run.",
-            "Submit exactly one locally valid judgment per required cell.",
+            (
+                "After the mandatory reads, submit thesis, mechanism, and "
+                "counterargument plus what-would-change in the prompted order; "
+                "the Harness compiles exactly one terminal cell Judgment."
+                if micro_judgment_mode
+                else "Submit exactly one locally valid judgment per required cell."
+            ),
         ],
         "boundaries": [
             "Never treat a retrieval proposal, model memory or gap as Evidence.",
@@ -1008,6 +1502,17 @@ def compile_finance_loop_messages(
                 "Narrative atoms may not contradict or broaden the selected structured relation.",
             ]
         )
+    if micro_judgment_mode:
+        visible["judgment_submission_mode"] = {
+            "mode": "provider_neutral_micro_judgment_v1",
+            "ordered_fragments": [
+                "thesis",
+                "mechanism",
+                "counterargument_and_what_would_change",
+            ],
+            "model_owns_every_narrative_fragment": True,
+            "harness_may_validate_expand_and_compile_but_not_invent": True,
+        }
     if execution_budget is not None:
         expected_budget = {
             "maximum_steps",
@@ -1533,6 +2038,318 @@ def _rejected_evidence_request_result(
     }
 
 
+_MICRO_TOOL_TO_ATOM_FIELD = {
+    SUBMIT_RESEARCH_THESIS_TOOL: "thesis_atom",
+    SUBMIT_RESEARCH_MECHANISM_TOOL: "mechanism_atom",
+    SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: "counterargument_atom",
+}
+
+
+def _validate_micro_judgment_fragment(
+    *,
+    tool_name: str,
+    arguments: Mapping[str, Any],
+    cell: Mapping[str, Any],
+    research_input: Mapping[str, Any],
+    thesis_fragment: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    atom_field = _MICRO_TOOL_TO_ATOM_FIELD.get(tool_name)
+    _require(atom_field is not None, "finance_loop_micro_tool_invalid")
+    common_fields = {
+        "cell_id",
+        "claim_relation_ref",
+        "evidence_uses",
+        "numeric_refs",
+        "numeric_relation_refs",
+        "qualitative_fact_refs",
+        "method_step_refs",
+        "graph_edge_refs",
+    }
+    if atom_field == "thesis_atom":
+        expected = common_fields | {
+            "judgment_status",
+            "confidence_basis",
+            "inference_authority",
+            "claim_scope",
+            "financial_scope",
+            "causal_bridge_authority",
+            "thesis_atom",
+        }
+    elif atom_field == "mechanism_atom":
+        expected = common_fields | {"mechanism_atom"}
+    else:
+        expected = common_fields | {
+            "counterargument_atom",
+            "what_would_change",
+        }
+    _require(
+        set(arguments) == expected
+        and str(arguments.get("cell_id") or "") == str(cell["cell_id"]),
+        "finance_loop_micro_fragment_fields_invalid",
+    )
+    evidence_refs = set(str(ref) for ref in cell["allowed_evidence_refs"])
+    contract = research_input["model_output_contract"]
+    raw_uses = arguments.get("evidence_uses")
+    _require(
+        isinstance(raw_uses, list),
+        "finance_loop_micro_evidence_uses_invalid",
+    )
+    evidence_uses: list[dict[str, str]] = []
+    seen_evidence: set[str] = set()
+    for raw in raw_uses:
+        _require(
+            isinstance(raw, Mapping)
+            and set(raw) == {"evidence_ref", "use_role"},
+            "finance_loop_micro_evidence_uses_invalid",
+        )
+        evidence_ref = str(raw.get("evidence_ref") or "")
+        role = str(raw.get("use_role") or "")
+        _require(
+            evidence_ref in evidence_refs
+            and evidence_ref not in seen_evidence
+            and role in set(contract["allowed_evidence_use_roles"]),
+            "finance_loop_micro_evidence_uses_invalid",
+        )
+        seen_evidence.add(evidence_ref)
+        evidence_uses.append(
+            {"evidence_ref": evidence_ref, "use_role": role}
+        )
+
+    def bounded_refs(
+        field: str,
+        allowed: Sequence[str],
+    ) -> list[str]:
+        refs = list(
+            _strings(
+                arguments.get(field),
+                f"finance_loop_micro_{field}_invalid",
+                allow_empty=True,
+            )
+        )
+        _require(
+            set(refs).issubset(set(str(value) for value in allowed)),
+            f"finance_loop_micro_{field}_invalid",
+        )
+        return refs
+
+    numeric_refs = bounded_refs("numeric_refs", cell["allowed_numeric_refs"])
+    numeric_relation_refs = bounded_refs(
+        "numeric_relation_refs", cell["allowed_numeric_relation_refs"]
+    )
+    qualitative_fact_refs = bounded_refs(
+        "qualitative_fact_refs",
+        cell.get("allowed_qualitative_fact_refs", ()),
+    )
+    method_step_refs = bounded_refs(
+        "method_step_refs",
+        [
+            str(step["method_step_ref"])
+            for step in (cell.get("role_method_pack") or {}).get(
+                "method_steps", ()
+            )
+        ],
+    )
+    graph_edge_refs = bounded_refs(
+        "graph_edge_refs",
+        [
+            str(edge["graph_edge_ref"])
+            for edge in cell["graph_context_pack"]["edges"]
+        ],
+    )
+    relation_ref = str(arguments.get("claim_relation_ref") or "")
+    relation = next(
+        (
+            row
+            for row in cell["claim_relation_card"]["allowed_combinations"]
+            if row.get("claim_relation_ref") == relation_ref
+            and atom_field in row["allowed_atom_fields"]
+        ),
+        None,
+    )
+    _require(
+        relation is not None,
+        "finance_loop_micro_relation_alias_invalid",
+    )
+    assert relation is not None
+    roles_by_ref = {
+        row["evidence_ref"]: row["use_role"] for row in evidence_uses
+    }
+    _require(
+        all(
+            roles_by_ref.get(str(ref)) == "support"
+            for ref in relation["required_evidence_refs"]
+        )
+        and set(relation["required_numeric_relation_refs"]).issubset(
+            numeric_relation_refs
+        )
+        and set(relation["required_qualitative_fact_refs"]).issubset(
+            qualitative_fact_refs
+        )
+        and set(relation["required_gap_refs"]).issubset(
+            set(cell["visible_gap_refs"])
+        ),
+        "finance_loop_micro_required_authority_missing",
+    )
+
+    output: dict[str, Any] = {
+        "cell_id": str(cell["cell_id"]),
+        "claim_relation_ref": relation_ref,
+        "evidence_uses": evidence_uses,
+        "numeric_refs": numeric_refs,
+        "numeric_relation_refs": numeric_relation_refs,
+        "qualitative_fact_refs": qualitative_fact_refs,
+        "method_step_refs": method_step_refs,
+        "graph_edge_refs": graph_edge_refs,
+    }
+    if atom_field == "thesis_atom":
+        for field, allowed_field in (
+            ("judgment_status", "allowed_judgment_statuses"),
+            ("confidence_basis", "allowed_confidence_bases"),
+            ("inference_authority", "allowed_inference_authorities"),
+            ("claim_scope", "allowed_claim_scopes"),
+            ("financial_scope", "allowed_financial_scopes"),
+            (
+                "causal_bridge_authority",
+                "allowed_causal_bridge_authorities",
+            ),
+        ):
+            value = str(arguments.get(field) or "")
+            _require(
+                value in set(contract[allowed_field]),
+                f"finance_loop_micro_{field}_invalid",
+            )
+            output[field] = value
+        _require(
+            output["inference_authority"]
+            in set(relation["allowed_inference_authorities"])
+            and output["judgment_status"]
+            in set(relation["allowed_judgment_statuses"]),
+            "finance_loop_micro_relation_disposition_invalid",
+        )
+        narrative = str(arguments.get("thesis_atom") or "").strip()
+        _require(bool(narrative), "finance_loop_micro_narrative_invalid")
+        output["thesis_atom"] = narrative
+    else:
+        _require(
+            isinstance(thesis_fragment, Mapping),
+            "finance_loop_micro_thesis_required",
+        )
+        assert thesis_fragment is not None
+        _require(
+            str(thesis_fragment["inference_authority"])
+            in set(relation["allowed_inference_authorities"])
+            and str(thesis_fragment["judgment_status"])
+            in set(relation["allowed_judgment_statuses"]),
+            "finance_loop_micro_relation_disposition_invalid",
+        )
+        narrative = str(arguments.get(atom_field) or "").strip()
+        _require(bool(narrative), "finance_loop_micro_narrative_invalid")
+        output[atom_field] = narrative
+        if atom_field == "counterargument_atom":
+            raw_wwc = arguments.get("what_would_change")
+            _require(
+                isinstance(raw_wwc, Mapping)
+                and set(raw_wwc)
+                == {
+                    "observable",
+                    "direction",
+                    "time_horizon",
+                    "evidence_route",
+                    "threshold_numeric_ref",
+                }
+                and str(raw_wwc.get("direction") or "")
+                in set(contract["allowed_wwc_directions"])
+                and str(raw_wwc.get("threshold_numeric_ref") or "")
+                in {"", *set(cell["allowed_numeric_refs"])}
+                and all(
+                    str(raw_wwc.get(field) or "").strip()
+                    for field in (
+                        "observable",
+                        "time_horizon",
+                        "evidence_route",
+                    )
+                ),
+                "finance_loop_micro_what_would_change_invalid",
+            )
+            output["what_would_change"] = deepcopy(dict(raw_wwc))
+    return output
+
+
+def _compile_micro_judgment(
+    fragments: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    _require(
+        set(fragments) == set(MICRO_JUDGMENT_TOOL_NAMES),
+        "finance_loop_micro_fragment_coverage_invalid",
+    )
+    thesis = fragments[SUBMIT_RESEARCH_THESIS_TOOL]
+    mechanism = fragments[SUBMIT_RESEARCH_MECHANISM_TOOL]
+    counter = fragments[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL]
+    ordered = (thesis, mechanism, counter)
+
+    def union_refs(field: str) -> list[str]:
+        output: list[str] = []
+        seen: set[str] = set()
+        for fragment in ordered:
+            for value in fragment[field]:
+                if value not in seen:
+                    seen.add(value)
+                    output.append(value)
+        return output
+
+    evidence_roles: dict[str, str] = {}
+    evidence_uses: list[dict[str, str]] = []
+    for fragment in ordered:
+        for row in fragment["evidence_uses"]:
+            ref = str(row["evidence_ref"])
+            role = str(row["use_role"])
+            _require(
+                ref not in evidence_roles or evidence_roles[ref] == role,
+                "finance_loop_micro_evidence_role_conflict",
+            )
+            if ref not in evidence_roles:
+                evidence_roles[ref] = role
+                evidence_uses.append(
+                    {"evidence_ref": ref, "use_role": role}
+                )
+    wwc = deepcopy(counter["what_would_change"])
+    if wwc["threshold_numeric_ref"] == "":
+        wwc["threshold_numeric_ref"] = None
+    return {
+        "cell_id": thesis["cell_id"],
+        "judgment_status": thesis["judgment_status"],
+        "confidence_basis": thesis["confidence_basis"],
+        "inference_authority": thesis["inference_authority"],
+        "claim_scope": thesis["claim_scope"],
+        "financial_scope": thesis["financial_scope"],
+        "causal_bridge_authority": thesis["causal_bridge_authority"],
+        "claim_relations": [
+            {
+                "atom_field": atom_field,
+                "claim_relation_ref": fragment["claim_relation_ref"],
+            }
+            for atom_field, fragment in zip(
+                (
+                    "thesis_atom",
+                    "mechanism_atom",
+                    "counterargument_atom",
+                ),
+                ordered,
+            )
+        ],
+        "qualitative_fact_refs": union_refs("qualitative_fact_refs"),
+        "evidence_uses": evidence_uses,
+        "numeric_refs": union_refs("numeric_refs"),
+        "numeric_relation_refs": union_refs("numeric_relation_refs"),
+        "method_step_refs": union_refs("method_step_refs"),
+        "graph_edge_refs": union_refs("graph_edge_refs"),
+        "thesis_atom": thesis["thesis_atom"],
+        "mechanism_atom": mechanism["mechanism_atom"],
+        "counterargument_atom": counter["counterargument_atom"],
+        "what_would_change": wwc,
+    }
+
+
 def _receipt(
     *,
     step: AgentToolStepResult,
@@ -1580,6 +2397,20 @@ def run_bounded_finance_loop(
         "finance_loop_tool_definition_strict_mode_invalid",
     )
     strict_mode = next(iter(strict_values))
+    supplied_tool_names = {
+        str(row["function"]["name"])
+        for row in tools
+        if isinstance(row, Mapping)
+        and isinstance(row.get("function"), Mapping)
+    }
+    micro_judgment_mode = set(MICRO_JUDGMENT_TOOL_NAMES).issubset(
+        supplied_tool_names
+    )
+    _require(
+        not set(MICRO_JUDGMENT_TOOL_NAMES).intersection(supplied_tool_names)
+        or micro_judgment_mode,
+        "finance_loop_micro_tool_set_incomplete",
+    )
     tool_contract = compile_finance_loop_tool_contract(
         research_input=research_input,
         required_cell_ids=required_cell_ids,
@@ -1588,14 +2419,29 @@ def run_bounded_finance_loop(
         policy=policy,
         strict=strict_mode,
     )
-    expected_tool_definitions = tool_contract.project(CHAT_COMPLETIONS_WIRE)
+    expected_tool_definitions = (
+        compile_finance_micro_judgment_tools(
+            research_input=research_input,
+            required_cell_ids=required_cell_ids,
+            kernel=kernel,
+            route_policy=route_policy,
+            policy=policy,
+            strict=strict_mode,
+        )
+        if micro_judgment_mode
+        else tool_contract.project(CHAT_COMPLETIONS_WIRE)
+    )
     _require(
         canonical_digest(list(tools))
         == canonical_digest(list(expected_tool_definitions)),
         "finance_loop_tool_definition_contract_drift",
     )
     expected_tools = {str(row["function"]["name"]) for row in tools}
-    required_tools = set(FINANCE_TOOL_NAMES)
+    required_tools = set(
+        MICRO_FINANCE_TOOL_NAMES
+        if micro_judgment_mode
+        else FINANCE_TOOL_NAMES
+    )
     if policy.maximum_calls_by_tool[SUBMIT_EVIDENCE_REQUEST_TOOL] == 0:
         required_tools.remove(SUBMIT_EVIDENCE_REQUEST_TOOL)
     _require(
@@ -1608,6 +2454,7 @@ def run_bounded_finance_loop(
             research_input=research_input,
             required_cell_ids=required_cell_ids,
             execution_budget=visible_execution_budget,
+            micro_judgment_mode=micro_judgment_mode,
         )
     ]
     counts: Counter[str] = Counter()
@@ -1616,14 +2463,49 @@ def run_bounded_finance_loop(
     seen_call_ids: set[str] = set()
     proposed_requests: list[dict[str, Any]] = []
     judgments: dict[str, dict[str, Any]] = {}
+    micro_fragments: dict[str, dict[str, dict[str, Any]]] = {
+        str(cell_id): {} for cell_id in required_cell_ids
+    }
     receipts: list[dict[str, Any]] = []
     evidence_reads: set[str] = set()
     numeric_reads: set[str] = set()
     provider_id = ""
     model = ""
 
+    tool_by_name = {
+        str(row["function"]["name"]): row for row in tools
+    }
     for step_index in range(1, policy.maximum_steps + 1):
-        step = step_executor(messages, tools, step_index)
+        active_tools = list(tools)
+        if micro_judgment_mode:
+            cell_id = str(required_cell_ids[0])
+            if cell_id not in evidence_reads or cell_id not in numeric_reads:
+                active_names = [
+                    name
+                    for name in (
+                        READ_REVIEWED_EVIDENCE_TOOL,
+                        READ_NUMERIC_FACTS_TOOL,
+                    )
+                    if (
+                        name == READ_REVIEWED_EVIDENCE_TOOL
+                        and cell_id not in evidence_reads
+                    )
+                    or (
+                        name == READ_NUMERIC_FACTS_TOOL
+                        and cell_id not in numeric_reads
+                    )
+                ]
+            else:
+                completed = micro_fragments[cell_id]
+                active_names = [
+                    next(
+                        name
+                        for name in MICRO_JUDGMENT_TOOL_NAMES
+                        if name not in completed
+                    )
+                ]
+            active_tools = [tool_by_name[name] for name in active_names]
+        step = step_executor(messages, active_tools, step_index)
         provider_id = step.provider_id
         model = step.model
         _require(
@@ -1769,6 +2651,73 @@ def run_bounded_finance_loop(
                     }:
                         proposed_requests.append(tool_result)
                         progress = True
+            elif name in MICRO_JUDGMENT_TOOL_NAMES:
+                cell_id = str(arguments.get("cell_id") or "")
+                _require(
+                    micro_judgment_mode
+                    and cell_id in cell_by_id
+                    and cell_id not in judgments
+                    and cell_id in evidence_reads
+                    and cell_id in numeric_reads,
+                    "finance_loop_micro_judgment_cell_invalid",
+                )
+                fragments = micro_fragments[cell_id]
+                expected_name = next(
+                    candidate
+                    for candidate in MICRO_JUDGMENT_TOOL_NAMES
+                    if candidate not in fragments
+                )
+                _require(
+                    name == expected_name,
+                    "finance_loop_micro_judgment_order_invalid",
+                )
+                fragment = _validate_micro_judgment_fragment(
+                    tool_name=name,
+                    arguments=arguments,
+                    cell=cell_by_id[cell_id],
+                    research_input=research_input,
+                    thesis_fragment=fragments.get(
+                        SUBMIT_RESEARCH_THESIS_TOOL
+                    ),
+                )
+                fragments[name] = fragment
+                if set(fragments) == set(MICRO_JUDGMENT_TOOL_NAMES):
+                    normalized = _compile_micro_judgment(fragments)
+                    try:
+                        validated = validate_current_research_output(
+                            {"cells": [normalized]},
+                            research_input=research_input,
+                            required_cell_ids=[cell_id],
+                        )
+                    except CurrentResearchConsumerError as exc:
+                        raise BoundedFinanceLoopError(
+                            f"finance_loop_judgment_invalid:{exc.code}"
+                        ) from exc
+                    judgments[cell_id] = normalized
+                    tool_result = {
+                        "status": "terminal_judgment_compiled_and_accepted",
+                        "cell_id": cell_id,
+                        "accepted_fragment": name,
+                        "judgment_output_digest": validated[
+                            "judgment_output_digest"
+                        ],
+                        "harness_generated_research_judgment": False,
+                        "harness_rendered_identity_numeric_and_citations": True,
+                    }
+                else:
+                    tool_result = {
+                        "status": "micro_judgment_fragment_accepted",
+                        "cell_id": cell_id,
+                        "accepted_fragment": name,
+                        "fragment_digest": canonical_digest(fragment),
+                        "remaining_fragments": [
+                            candidate
+                            for candidate in MICRO_JUDGMENT_TOOL_NAMES
+                            if candidate not in fragments
+                        ],
+                        "harness_generated_research_judgment": False,
+                    }
+                progress = True
             else:
                 cell_id = str(arguments.get("cell_id") or "")
                 _require(
@@ -1864,19 +2813,30 @@ def run_bounded_finance_loop(
 __all__ = [
     "BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION",
     "BOUNDED_FINANCE_LOOP_RESULT_SCHEMA_VERSION",
+    "FIXED_PACK_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION",
     "BoundedFinanceLoopError",
     "BoundedFinanceLoopPolicy",
     "BoundedFinanceLoopResult",
+    "FixedPackMicroJudgmentPolicy",
     "FINANCE_TOOL_NAMES",
+    "MICRO_FINANCE_TOOL_NAMES",
+    "MICRO_JUDGMENT_TOOL_NAMES",
     "READ_NUMERIC_FACTS_TOOL",
     "READ_REVIEWED_EVIDENCE_TOOL",
     "SUBMIT_EVIDENCE_REQUEST_TOOL",
+    "SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL",
     "SUBMIT_RESEARCH_JUDGMENT_TOOL",
+    "SUBMIT_RESEARCH_MECHANISM_TOOL",
+    "SUBMIT_RESEARCH_THESIS_TOOL",
+    "compile_finance_micro_judgment_tools",
     "compile_finance_loop_messages",
     "compile_finance_loop_tools",
+    "load_fixed_pack_micro_judgment_policy",
     "load_bounded_finance_loop_policy",
     "run_bounded_finance_loop",
     "scope_bounded_finance_loop_policy",
-    "validate_deepseek_ga_profile",
+    "scope_bounded_finance_micro_judgment_policy",
     "validate_deepseek_ga_json_profile",
+    "validate_deepseek_ga_node_profile",
+    "validate_deepseek_ga_profile",
 ]

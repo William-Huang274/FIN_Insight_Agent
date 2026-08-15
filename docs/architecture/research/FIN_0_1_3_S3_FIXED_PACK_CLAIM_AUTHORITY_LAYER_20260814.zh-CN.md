@@ -2,7 +2,7 @@
 
 日期：2026-08-14
 
-状态：`claim_scope_live_failed_immutable / claim_surface_successor_formal_zero_call_pass / natural_replacement_pending_owner_decision / layer_two_blocked`
+状态：`claim_scope_and_alias_live_failures_immutable / micro_judgment_engineering_pass / formal_clean_proof_pending / layer_two_blocked`
 
 ## 1. 为什么需要这一层
 
@@ -89,3 +89,19 @@ R1 formal proof 先因 mutation fixture 把全部 generic support 一并移除�
 ## 2026-08-15 Natural replacement 接线
 
 Owner 审阅 R3 后授权继续五项纵切，但当前 live 权限仍按逐门收窄。唯一 canonical canary runner 现以同一编译顺序加载 predecessor ClaimAuthority 与 Claim Surface overlay；若只提供 Claim Surface 而缺少 base authority，运行在 Provider 前 fail closed。live runner 将 R3 的 `claim_surface_input_digest`、model-visible message digest 和 standard tool schema digest 重新绑定，且只接受 source-bound QF、三条逐原子结构关系、0 EvidenceRequest、0 retry 的新 scope decision。旧 Chat R1 继续不可变，replacement 使用新的 Run／Attempt／输出路径；该接线不执行动态检索，也不授权 Layer Two。
+
+## 9. fixed-Pack 微判断与节点预算
+
+ClaimRelation alias 已把模型输入压缩过半，但 natural R2 仍在 monolithic `submit_research_judgment` 上耗尽全部 reasoning budget。该结果把责任边界从“继续压缩输入”推进到“拆分认知与提交单元”：金融事实权限没有变化，变化的是模型一次必须完成的决策数量。
+
+当前 provider-neutral successor 保持一份 `BoundedFinanceLoop` 和同一个终态 Validator，但在 fixed-Pack 单单元范围内把最终提交拆为：
+
+1. `submit_research_thesis`；
+2. `submit_research_mechanism`；
+3. `submit_research_counterargument_and_wwc`。
+
+三段都由模型撰写，并各自选择 relation alias、Evidence use、NumericFact／NumericRelation、QualitativeFact、RoleMethod 和 Graph refs。Harness 只校验权限、展开当前 Case 预编译 alias、拒绝跨片段 Evidence role 冲突，并按固定字段映射编译为原有 terminal Judgment。任一 fragment 缺失、重复、乱序或越权时整条运行失败；Harness 不提供默认 thesis、默认 mechanism 或默认反方。
+
+Provider 的认知预算不进入金融核心。核心 policy 只声明节点类别；DeepSeek profile 在外层把 mandatory read pair 映射为 `low / 2,000`，把三个 bounded financial judgment 映射为 `high / 8,000`。未来更强模型可以更换 profile 或获得更大自治面，而不改变 Evidence、NumericFact、ClaimRelation、lineage 和最终 Verifier 的长期金融控制面。
+
+该 successor 目前只资格化 DELL `CELL::value_capture`、同一 fixed Pack、0 EvidenceRequest、0 retry／fallback。动态 EvidenceRequest→S1/S2→EvidenceResponse 不得复用该固定范围 policy；五单元也不能把三段工具机械乘五后直接运行，必须先由单单元 natural proof 证明这种分解确有收敛和内容增益。

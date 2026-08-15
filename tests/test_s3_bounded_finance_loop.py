@@ -33,16 +33,24 @@ from sec_agent.providers.agent_protocol import (
 )
 from sec_agent.research.bounded_finance_loop import (
     BoundedFinanceLoopError,
+    MICRO_JUDGMENT_TOOL_NAMES,
     READ_NUMERIC_FACTS_TOOL,
     READ_REVIEWED_EVIDENCE_TOOL,
     SUBMIT_EVIDENCE_REQUEST_TOOL,
+    SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
     SUBMIT_RESEARCH_JUDGMENT_TOOL,
+    SUBMIT_RESEARCH_MECHANISM_TOOL,
+    SUBMIT_RESEARCH_THESIS_TOOL,
+    compile_finance_micro_judgment_tools,
     compile_finance_loop_messages,
     compile_finance_loop_tools,
     load_bounded_finance_loop_policy,
+    load_fixed_pack_micro_judgment_policy,
     run_bounded_finance_loop,
+    scope_bounded_finance_micro_judgment_policy,
     scope_bounded_finance_loop_policy,
     validate_deepseek_ga_json_profile,
+    validate_deepseek_ga_node_profile,
     validate_deepseek_ga_profile,
 )
 from sec_agent.research.current_consumer import (
@@ -68,6 +76,10 @@ from sec_agent.runtime_resource_registry import read_registered_runtime_json
 READ = frozenset({"current_product:read"})
 POLICY = ROOT / (
     "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_1.json"
+)
+MICRO_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_fixed_pack_micro_judgment_policy_v1_0.json"
 )
 CONSUMER_POLICY = ROOT / (
     "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_2.json"
@@ -477,6 +489,306 @@ def test_claim_relation_alias_loop_compacts_wire_and_retains_private_lineage(
             "claim_relations"
         ]
     )
+
+
+def _micro_alias_fragments() -> dict[str, dict[str, object]]:
+    row = deepcopy(_json(CLAIM_RELATION_ALIAS_FAKE)["cells"][0])
+    relation_by_atom = {
+        item["atom_field"]: item["claim_relation_ref"]
+        for item in row["claim_relations"]
+    }
+    common_refs = {
+        "numeric_refs": list(row["numeric_refs"]),
+        "method_step_refs": list(row["method_step_refs"]),
+        "graph_edge_refs": list(row["graph_edge_refs"]),
+    }
+    return {
+        SUBMIT_RESEARCH_THESIS_TOOL: {
+            "cell_id": row["cell_id"],
+            "claim_relation_ref": relation_by_atom["thesis_atom"],
+            "evidence_uses": row["evidence_uses"][:2],
+            **common_refs,
+            "numeric_relation_refs": [],
+            "qualitative_fact_refs": list(row["qualitative_fact_refs"]),
+            "judgment_status": row["judgment_status"],
+            "confidence_basis": row["confidence_basis"],
+            "inference_authority": row["inference_authority"],
+            "claim_scope": row["claim_scope"],
+            "financial_scope": row["financial_scope"],
+            "causal_bridge_authority": row["causal_bridge_authority"],
+            "thesis_atom": row["thesis_atom"],
+        },
+        SUBMIT_RESEARCH_MECHANISM_TOOL: {
+            "cell_id": row["cell_id"],
+            "claim_relation_ref": relation_by_atom["mechanism_atom"],
+            "evidence_uses": row["evidence_uses"][2:3],
+            "numeric_refs": [],
+            "numeric_relation_refs": [],
+            "qualitative_fact_refs": [],
+            "method_step_refs": [],
+            "graph_edge_refs": [],
+            "mechanism_atom": row["mechanism_atom"],
+        },
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: {
+            "cell_id": row["cell_id"],
+            "claim_relation_ref": relation_by_atom["counterargument_atom"],
+            "evidence_uses": row["evidence_uses"][3:],
+            "numeric_refs": [],
+            "numeric_relation_refs": list(row["numeric_relation_refs"]),
+            "qualitative_fact_refs": [],
+            "method_step_refs": [],
+            "graph_edge_refs": [],
+            "counterargument_atom": row["counterargument_atom"],
+            "what_would_change": {
+                **row["what_would_change"],
+                "threshold_numeric_ref": "",
+            },
+        },
+    }
+
+
+def test_micro_judgment_loop_keeps_model_authorship_and_compiles_terminal_cell(
+    contracts,
+) -> None:
+    base_policy, research_input, kernel, route, planning = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_ALIAS_POLICY),
+    )
+    cell_id = "CELL::value_capture"
+    scoped = scope_bounded_finance_micro_judgment_policy(
+        base_policy,
+        micro_policy=load_fixed_pack_micro_judgment_policy(
+            _json(MICRO_POLICY)
+        ),
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_micro_judgment_tools(
+        research_input=alias_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped,
+        strict=False,
+    )
+    names = [row["function"]["name"] for row in tools]
+    assert names == [
+        READ_REVIEWED_EVIDENCE_TOOL,
+        READ_NUMERIC_FACTS_TOOL,
+        *MICRO_JUDGMENT_TOOL_NAMES,
+    ]
+    assert SUBMIT_RESEARCH_JUDGMENT_TOOL not in names
+    thesis_schema = next(
+        row["function"]["parameters"]
+        for row in tools
+        if row["function"]["name"] == SUBMIT_RESEARCH_THESIS_TOOL
+    )
+    mechanism_schema = next(
+        row["function"]["parameters"]
+        for row in tools
+        if row["function"]["name"] == SUBMIT_RESEARCH_MECHANISM_TOOL
+    )
+    counter_schema = next(
+        row["function"]["parameters"]
+        for row in tools
+        if row["function"]["name"]
+        == SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+    )
+    assert "thesis_atom" in thesis_schema["properties"]
+    assert "mechanism_atom" not in thesis_schema["properties"]
+    assert set(mechanism_schema["properties"]).isdisjoint(
+        {"thesis_atom", "counterargument_atom", "what_would_change"}
+    )
+    assert "counterargument_atom" in counter_schema["properties"]
+    assert "what_would_change" in counter_schema["properties"]
+
+    fragments = _micro_alias_fragments()
+    observed_active_tools: list[list[str]] = []
+
+    def execute(_messages, active_tools, index):
+        active_names = [row["function"]["name"] for row in active_tools]
+        observed_active_tools.append(active_names)
+        if index == 1:
+            return _parallel_step(
+                index,
+                [
+                    (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+                    (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
+                ],
+            )
+        name = MICRO_JUDGMENT_TOOL_NAMES[index - 2]
+        return _step(index, name, fragments[name])
+
+    result = run_bounded_finance_loop(
+        policy=scoped,
+        research_input=alias_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+        tools=tools,
+        step_executor=execute,
+        visible_execution_budget={
+            "maximum_steps": scoped.maximum_steps,
+            "maximum_evidence_requests": 0,
+            "maximum_reads_per_cell": 1,
+            "maximum_parallel_read_tools": 2,
+            "maximum_judgments_per_cell": 1,
+            "retry_count": 0,
+        },
+    )
+    assert observed_active_tools == [
+        [READ_REVIEWED_EVIDENCE_TOOL, READ_NUMERIC_FACTS_TOOL],
+        [SUBMIT_RESEARCH_THESIS_TOOL],
+        [SUBMIT_RESEARCH_MECHANISM_TOOL],
+        [SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL],
+    ]
+    assert result.status == "completed_all_required_cells"
+    assert result.step_count == 4
+    assert result.tool_call_count == 5
+    assert result.tool_counts == {
+        READ_REVIEWED_EVIDENCE_TOOL: 1,
+        READ_NUMERIC_FACTS_TOOL: 1,
+        SUBMIT_RESEARCH_THESIS_TOOL: 1,
+        SUBMIT_RESEARCH_MECHANISM_TOOL: 1,
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: 1,
+    }
+    cell = result.structured_deliverable["cells"][0]
+    assert cell["thesis_atom"] == fragments[SUBMIT_RESEARCH_THESIS_TOOL][
+        "thesis_atom"
+    ]
+    assert cell["mechanism_atom"] == fragments[
+        SUBMIT_RESEARCH_MECHANISM_TOOL
+    ]["mechanism_atom"]
+    assert cell["counterargument_atom"] == fragments[
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+    ]["counterargument_atom"]
+    assert all(
+        "claim_subject" in relation and "claim_relation_ref" in relation
+        for relation in cell["claim_relations"]
+    )
+    assert all(
+        receipt["private_reasoning_persisted"] is False
+        for receipt in result.step_receipts
+    )
+
+
+def test_micro_judgment_fragments_fail_closed_on_order_authority_and_causality(
+    contracts,
+) -> None:
+    base_policy, research_input, kernel, route, planning = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_ALIAS_POLICY),
+    )
+    cell_id = "CELL::value_capture"
+    scoped = scope_bounded_finance_micro_judgment_policy(
+        base_policy,
+        micro_policy=load_fixed_pack_micro_judgment_policy(
+            _json(MICRO_POLICY)
+        ),
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_micro_judgment_tools(
+        research_input=alias_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped,
+        strict=False,
+    )
+    reads = _parallel_step(
+        1,
+        [
+            (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+            (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
+        ],
+    )
+    fragments = _micro_alias_fragments()
+
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_micro_judgment_order_invalid",
+    ):
+        run_bounded_finance_loop(
+            policy=scoped,
+            research_input=alias_input,
+            required_cell_ids=[cell_id],
+            kernel=kernel,
+            route_policy=route,
+            planning_policy=planning,
+            tools=tools,
+            step_executor=lambda _messages, _tools, index: (
+                reads
+                if index == 1
+                else _step(
+                    index,
+                    SUBMIT_RESEARCH_MECHANISM_TOOL,
+                    fragments[SUBMIT_RESEARCH_MECHANISM_TOOL],
+                )
+            ),
+        )
+
+    missing_support = deepcopy(fragments)
+    missing_support[SUBMIT_RESEARCH_THESIS_TOOL]["evidence_uses"] = []
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_micro_required_authority_missing",
+    ):
+        run_bounded_finance_loop(
+            policy=scoped,
+            research_input=alias_input,
+            required_cell_ids=[cell_id],
+            kernel=kernel,
+            route_policy=route,
+            planning_policy=planning,
+            tools=tools,
+            step_executor=lambda _messages, _tools, index: (
+                reads
+                if index == 1
+                else _step(
+                    index,
+                    MICRO_JUDGMENT_TOOL_NAMES[index - 2],
+                    missing_support[MICRO_JUDGMENT_TOOL_NAMES[index - 2]],
+                )
+            ),
+        )
+
+    causal = deepcopy(fragments)
+    causal[SUBMIT_RESEARCH_MECHANISM_TOOL]["mechanism_atom"] = (
+        "AI servers drove Dell company profit through direct operating leverage."
+    )
+    sequence = [
+        reads,
+        *[
+            _step(index + 2, name, causal[name])
+            for index, name in enumerate(MICRO_JUDGMENT_TOOL_NAMES)
+        ],
+    ]
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="claim_surface_narrative_relation_conflict",
+    ):
+        run_bounded_finance_loop(
+            policy=scoped,
+            research_input=alias_input,
+            required_cell_ids=[cell_id],
+            kernel=kernel,
+            route_policy=route,
+            planning_policy=planning,
+            tools=tools,
+            step_executor=lambda _messages, _tools, index: sequence[index - 1],
+        )
 
 
 def _case_specific_plan(
@@ -903,6 +1215,68 @@ def test_zero_call_runner_materializes_three_case_result_digests() -> None:
         row["full_fake_result_digest"] and row["full_fake_tool_calls"] == 15
         for row in result["cases"].values()
     )
+
+
+def test_zero_call_runner_replays_r2_as_micro_judgments(contracts) -> None:
+    runner = _zero_call_runner()
+    base_policy, research_input, kernel, route, planning = contracts
+    paths = {
+        "consumer_policy_ref": CONSUMER_POLICY,
+        "objective_ref": OBJECTIVE,
+        "planner_atoms_ref": ATOMS,
+        "claim_authority_policy_ref": CLAIM_AUTHORITY_POLICY,
+        "claim_surface_authority_policy_ref": CLAIM_RELATION_ALIAS_POLICY,
+        "micro_policy_ref": MICRO_POLICY,
+        "micro_read_profile_ref": ROOT
+        / "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_micro_read_profile_v1_0.json",
+        "micro_judgment_profile_ref": ROOT
+        / "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_micro_judgment_profile_v1_0.json",
+        "corrected_fake_output_ref": CLAIM_RELATION_ALIAS_FAKE,
+        "prior_live_result_ref": ROOT
+        / "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_relation_alias_chat_live_result_v1_0.json",
+        "prior_capacity_assessment_ref": ROOT
+        / "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_relation_alias_chat_live_capacity_assessment_v1_0.json",
+        "prior_step_two_request_ref": ROOT
+        / ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_claim_relation_alias_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-RELATION-ALIAS-CHAT-R2/STEP-02-ATTEMPT-01/model_visible_request.json",
+        "prior_step_two_response_ref": ROOT
+        / ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_claim_relation_alias_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-RELATION-ALIAS-CHAT-R2/STEP-02-ATTEMPT-01/provider_response.json",
+    }
+    result = runner._run_micro_judgment_matrix(
+        paths=paths,
+        base_research_input=research_input,
+        kernel=kernel,
+        route=route,
+        planning=planning,
+        base_policy=base_policy,
+    )
+
+    assert result["step_count"] == 4
+    assert result["tool_call_count"] == 5
+    assert result["model_authored_narratives_preserved_exactly"] is True
+    assert result["harness_generated_missing_claim_or_fragment"] is False
+    assert result["private_reasoning_persisted"] is False
+    assert result["largest_micro_to_prior_monolithic_ratio"] < 1
+    assert result["node_profiles"] == {
+        "mandatory_read_pair": {
+            "reasoning_effort": "low",
+            "max_tokens": 2000,
+        },
+        "micro_judgment": {
+            "reasoning_effort": "high",
+            "max_tokens": 8000,
+        },
+    }
+    assert set(result["mutation_failure_codes"]) == {
+        "wrong_fragment_order",
+        "duplicate_fragment",
+        "missing_fragment",
+        "missing_required_authority",
+        "unknown_or_cross_case_alias",
+        "cross_fragment_evidence_role_conflict",
+        "causal_overreach",
+        "tool_schema_mutation",
+    }
+    assert set(result["cross_case_policy_rejection_codes"]) == {"MU", "NVDA"}
 
 
 def test_chat_and_responses_lanes_share_one_finance_loop_core(contracts) -> None:
@@ -1596,6 +1970,54 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
     )
     assert replacement_standard.request_defaults["max_tokens"] == 16000
     validate_deepseek_ga_profile(replacement_standard, strict_tools=False)
+
+    micro_read = load_chat_completion_profile(
+        _json(
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_micro_read_profile_v1_0.json"
+        )
+    )
+    micro_judgment = load_chat_completion_profile(
+        _json(
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_micro_judgment_profile_v1_0.json"
+        )
+    )
+    validate_deepseek_ga_node_profile(
+        micro_read,
+        node_class="tool_routing",
+    )
+    validate_deepseek_ga_node_profile(
+        micro_judgment,
+        node_class="bounded_financial_judgment",
+    )
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="node_profile_invalid",
+    ):
+        validate_deepseek_ga_node_profile(
+            micro_read,
+            node_class="bounded_financial_judgment",
+        )
+
+    micro_policy_payload = _json(MICRO_POLICY)
+    micro_policy = load_fixed_pack_micro_judgment_policy(
+        micro_policy_payload
+    )
+    assert micro_policy.ordered_model_owned_phases == (
+        MICRO_JUDGMENT_TOOL_NAMES
+    )
+    changed_micro_policy = deepcopy(micro_policy_payload)
+    changed_micro_policy["authority"][
+        "harness_may_invent_missing_fragment_or_claim"
+    ] = True
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="micro_policy_authority_invalid",
+    ):
+        load_fixed_pack_micro_judgment_policy(changed_micro_policy)
 
     changed = deepcopy(_json(
         ROOT

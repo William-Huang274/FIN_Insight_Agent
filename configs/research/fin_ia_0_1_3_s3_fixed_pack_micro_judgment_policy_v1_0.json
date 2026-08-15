@@ -1,0 +1,41 @@
+{
+  "schema_version": "fin_ia_fixed_pack_micro_judgment_policy_v1_0",
+  "status": "provider_neutral_model_owned_micro_judgment_local_terminal_compilation",
+  "qualified_scope": {
+    "maximum_cell_count": 1,
+    "maximum_evidence_requests": 0,
+    "fixed_pack_only": true,
+    "dynamic_retrieval": false
+  },
+  "ordered_model_owned_phases": [
+    "submit_research_thesis",
+    "submit_research_mechanism",
+    "submit_research_counterargument_and_wwc"
+  ],
+  "node_classes": {
+    "mandatory_read_pair": "tool_routing",
+    "submit_research_thesis": "bounded_financial_judgment",
+    "submit_research_mechanism": "bounded_financial_judgment",
+    "submit_research_counterargument_and_wwc": "bounded_financial_judgment"
+  },
+  "budgets": {
+    "maximum_provider_steps": 4,
+    "maximum_tool_calls": 5,
+    "maximum_parallel_read_tools": 2,
+    "maximum_parallel_judgment_tools": 1,
+    "retry_count": 0,
+    "fallback_count": 0
+  },
+  "authority": {
+    "model_owns_all_narrative_fragments": true,
+    "model_selects_all_claim_relation_aliases": true,
+    "model_selects_all_evidence_numeric_method_and_graph_refs": true,
+    "harness_may_validate_fragments": true,
+    "harness_may_expand_precompiled_aliases": true,
+    "harness_may_compile_one_terminal_judgment": true,
+    "harness_may_invent_missing_fragment_or_claim": false,
+    "terminal_judgment_uses_existing_financial_validator": true,
+    "provider_profile_mapping_outside_finance_core": true,
+    "private_reasoning_persistence_forbidden": true
+  }
+}

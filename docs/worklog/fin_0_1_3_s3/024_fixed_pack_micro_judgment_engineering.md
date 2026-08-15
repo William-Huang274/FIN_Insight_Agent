@@ -2,7 +2,7 @@
 
 日期：2026-08-15
 
-状态：`formal_clean_zero_call_pass / canonical_live_gate_working_tree_pass / natural_live_not_executed`
+状态：`formal_clean_zero_call_pass / canonical_live_gate_clean_pass / natural_micro_R3_terminal_capacity_failure / no_automatic_successor`
 
 ## 为什么不是继续删字段
 
@@ -53,3 +53,5 @@ DELL 专用 Claim Authority 对 MU、NVDA 均拒绝；原 DELL／MU／NVDA 五�
 正式证明复用了 immutable R2 research input digest `783de9ef...1d274`，确认 `4 step / 5 tool call`、八类 mutation、DELL policy 对 MU／NVDA 拒绝和旧三案例 full-fake 非回归；网络、模型、Provider、embedding、retry 均为 0。formal proof 仍不是 natural fixed-Pack acceptance。下一项是扩展现有 canonical live runner 的 micro authority 分支并做零调用 gate；只有该入口能重新核对 proof、profiles、Git、预算和 exact-once output 后，才可签发一次新的 natural successor。
 
 2026-08-16：canonical live runner 的 micro authority、按活动工具选择节点 profile、exact budget／digest／identity gate 和 terminal failure 物化已经在 working tree 实现。定向 `18 passed`、全仓 `318 passed`，active baseline 与 secret scan 均通过；没有模型或网络调用。详见 `025_fixed_pack_micro_judgment_canonical_live_gate.md`。下一门已收窄为 clean commit/push、Project OS preflight、未使用 authority 的只读入口校验和唯一 natural successor。
+
+同日，live gate 与 micro preflight 已分别提交并推送，真实 clean/synced preflight 通过。唯一 natural micro R3 随后执行：read pair 成功，但仅开放 thesis tool 的第二步仍耗尽 `8,000` reasoning token，零可见 thesis、零 Tool Call，后两段未执行且 0 retry。由此可知微判断合同本身可执行，但“缩小输出 schema＋减半 reasoning ceiling”仍不足以让当前 DeepSeek Chat profile 在完整单元上下文下自然提交。该结论不否定模型的金融推理能力，也不能产生 L1／内容评分；它终止自动 successor，并把下一门升级为项目级 context projection／submission profile／protocol／autonomy 决策。

@@ -1,0 +1,101 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_micro_judgment_chat_capacity_assessment_v1_0",
+  "assessment_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-MICRO-JUDGMENT-CHAT-R3-CAPACITY-ASSESSMENT",
+  "status": "terminal_micro_thesis_capacity_failure_preserved_project_level_disposition_required",
+  "recorded_at": "2026-08-16T00:35:00+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_micro_judgment_chat_live_authority_v1_0.json",
+  "authority_sha256": "8899e9e35ea08d8f76f54f2f795e40591c8af5672d1b806dda9113e99b83a07b",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_micro_judgment_chat_live_result_v1_0.json",
+  "result_sha256": "b1a99e9abf63573740d13df3b79af8dc4e6fe8baf5269735343ac88925d3d68b",
+  "result_digest": "58e869ca411064052cf458e8eae114bc10b81c066d748cf4b4ec62ea66525ad4",
+  "observed": {
+    "model_calls_attempted": 2,
+    "successful_read_step": 1,
+    "accepted_read_receipts": 2,
+    "thesis_fragment_materialized": false,
+    "mechanism_fragment_attempted": false,
+    "counterargument_wwc_fragment_attempted": false,
+    "retries": 0,
+    "fallbacks": 0,
+    "step_two_node_class": "bounded_financial_judgment",
+    "step_two_active_tool": "submit_research_thesis",
+    "step_two_reasoning_effort": "high",
+    "step_two_max_tokens": 8000,
+    "step_two_http_status": 200,
+    "step_two_response_body_complete": true,
+    "step_two_response_body_parse_status": "json",
+    "step_two_received_body_bytes": 37848,
+    "step_two_finish_reason": "length",
+    "step_two_prompt_tokens": 8448,
+    "step_two_completion_tokens": 8000,
+    "step_two_reasoning_tokens": 8000,
+    "step_two_visible_content_chars": 0,
+    "step_two_tool_calls": 0,
+    "step_two_request_body_chars": 29288,
+    "step_two_message_chars": 25778,
+    "step_two_active_tool_schema_chars": 3373,
+    "private_reasoning_fields_redacted": 1,
+    "credential_or_authorization_captured": false
+  },
+  "capture_binding": {
+    "request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_micro_judgment_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-MICRO-JUDGMENT-CHAT-R3/MICRO-STEP-02-ATTEMPT-01/model_visible_request.json",
+    "request_capture_sha256": "9316fc83e82338099b5ffe40d3f252be8c857186e51fcaca99d75bb926537c4e",
+    "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_micro_judgment_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-MICRO-JUDGMENT-CHAT-R3/MICRO-STEP-02-ATTEMPT-01/provider_response.json",
+    "response_capture_sha256": "99486bbe926200b988b9d0cc53d6f54cebd79a4ab10acc343755548aaa91fd18",
+    "raw_response_sha256": "8d85fa54019c7d39676c22999012e718df9d9083bc9ccddaae132b1b9ece988b",
+    "response_body_complete": true,
+    "eligible_for_contract_parse": true,
+    "eligible_for_business_promotion": false,
+    "private_reasoning_persisted": false
+  },
+  "comparison_to_monolithic_r2": {
+    "r2_prompt_tokens": 8997,
+    "r3_prompt_tokens": 8448,
+    "prompt_ratio": 0.93898,
+    "r2_reasoning_tokens": 16000,
+    "r3_reasoning_tokens": 8000,
+    "reasoning_budget_ratio": 0.5,
+    "r2_monolithic_judgment_schema_chars": 4847,
+    "r3_thesis_tool_schema_chars": 3373,
+    "tool_schema_ratio": 0.695894,
+    "output_scope_reduction_material": true,
+    "natural_tool_submission_convergence_improved": false
+  },
+  "root_cause_disposition": {
+    "earliest_current_owner": "project_level_provider_profile_prompt_projection_and_tool_call_autonomy_boundary",
+    "classification": "minimal_output_node_still_nonconverges_under_high_thinking_with_full_cell_context",
+    "confirmed": [
+      "mandatory reviewed Evidence and NumericFact reads completed",
+      "only submit_research_thesis was active in the failed step",
+      "the Provider returned HTTP 200 with a complete parseable body",
+      "all 8000 completion tokens were reasoning tokens with zero visible content or tool call",
+      "node decomposition and lower token ceiling did not produce a natural submission"
+    ],
+    "not_supported": [
+      "network truncation",
+      "credential or quota failure",
+      "UTF-8 corruption",
+      "Evidence or NumericFact reader failure",
+      "local thesis validator failure",
+      "financial L1 or content quality pass or fail"
+    ],
+    "remaining_structural_candidates": [
+      "fragment-specific context projection instead of repeating the full cell context",
+      "lower or disabled reasoning for contract submission after a separate analysis step",
+      "official Responses or Anthropic tool-use transport qualification",
+      "provider or model autonomy-profile replacement"
+    ]
+  },
+  "stop_decision": {
+    "automatic_r4_or_retry_authorized": false,
+    "token_limit_increase_authorized": false,
+    "protocol_switch_authorized": false,
+    "dynamic_truth_spine_authorized": false,
+    "five_cell_live_authorized": false,
+    "fixed_pack_layer_one_accepted": false,
+    "next_required_scope": "project_level_provider_profile_protocol_context_projection_or_autonomy_disposition_decision"
+  },
+  "known_boundary": "R3 proves that reducing the output contract to one thesis fragment and halving the reasoning ceiling was still insufficient for a natural DeepSeek tool submission when the full cell context remained visible. It does not prove that DeepSeek lacks financial reasoning ability, because no visible thesis was produced; it also does not prove that further core Harness patching is justified. The immutable R3 must be preserved, no automatic R4 is allowed, and items 2-5 remain blocked until a project-level provider/profile/protocol/context-projection/autonomy decision is made."
+}

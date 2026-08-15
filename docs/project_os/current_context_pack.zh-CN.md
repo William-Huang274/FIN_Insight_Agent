@@ -1,13 +1,13 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-15
+更新时间：2026-08-16
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-s1-retrieval-vertical-slice`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。Owner 已授权按 fixed Pack、单单元动态纵切、五单元动态案例和三案例迁移连续推进，但每层仍须独立过门。Claim Surface 结构门已通过；natural R1/R2 均保持 immutable terminal failure：R2 已把 prompt 从 18,902 降至 8,997 token，仍在一个 monolithic Judgment 上耗尽 16,000 reasoning token且没有可见提交。微判断 formal proof 已在 clean/synced commit `3851f5f4...` 通过；当前唯一 canonical live runner 与 decision-bound Project OS preflight 已完成 working-tree micro 双 profile 接线，联合定向 `25 passed`、全仓 `320 passed`。下一次 natural submission 尚未签发；fixed-Pack 第一层、动态 Truth Spine、五单元和三案例验收仍 blocked。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。Owner 授权的五项计划目前停在第 1 项：Claim Surface、micro-judgment formal proof、canonical live gate 和 clean Project OS preflight 均已通过，但唯一 natural micro R3 在成功读取 Evidence／NumericFact 后，只开放 thesis tool 仍耗尽 `8,000 / 8,000` reasoning token，零可见内容、零 Tool Call并按 0 retry 终止。故 fixed-Pack 第一层没有 L1／内容结果可验收，第 2–5 项均未开始；下一门是项目级 context projection／submission profile／protocol／autonomy 处置，不允许自动 R4。
 
 ## 当前唯一产品边界
 
@@ -81,6 +81,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 私有数据继续外置或挂载，不复制进 Git。
 - 若业务验收发现当前三案例数据本身不可信，停止发布并在当前 FIN 0.1.3 修复；若只是未来动态研究能力缺失，记录为后续产品范围，不把它偷偷塞回本次重定基。
 - 任何 materially changed scope 都要先向 Owner 说明。
+- natural micro R3 已触发预先冻结的停止线：不得自动提高 token、切协议、签发 R4 或进入动态 Truth Spine；Provider/profile/protocol/context projection/autonomy 的变化必须先做项目级处置并重新取得范围授权。
 
 ## 当前下一步
 
@@ -134,3 +135,4 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 旧 monolithic Judgment 工具约 `4,847` 字符；三个微判断的最大活动 schema 约 `3,444` 字符，比例 `0.710543`。read 节点使用 provider-only `low / 2,000`，判断节点使用 `high / 8,000`；金融核心不读取 DeepSeek 配置。
 - 乱序、重复、缺片段、缺必要 Evidence、未知／跨案例 alias、跨片段 Evidence role 冲突、AI→公司利润强因果越界和 tool schema 漂移均 fail closed。DELL 专用 Claim policy 对 MU／NVDA 均拒绝；旧三案例 full-fake 路径仍无 identity／Graph 污染。
 - formal micro proof 的实现已提交并推送为 `3851f5f4...`，result=`ca63338d...b1399c`，两个 fresh process 字节等价。其后的 canonical live gate 与 Project OS preflight 已在 working tree 接入同一 micro 决策：Authority 固定 `4 model / 5 tool / 0 request / 0 retry`，read=`low/2000`，judgment=`high/8000`；非法工具集合、旧失败/容量证据漂移、profile/digest 漂移和已消费 identity 均在 Provider 前拒绝。联合定向 `25 passed`、全仓 `320 passed`、active baseline=`127 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference`、secret scan=`6,606 files / 0 finding`；模型、Provider、网络、embedding、retry 和产品发布调用仍为 0。下一步只能 clean commit/push、真实 decision-bound preflight、fresh authority 入口校验和唯一 natural successor；natural L1／内容通过前不得进入动态第二层。
+- canonical gate 与 preflight 随后在 clean/synced commit `8ed2d5c0...` 通过，并执行唯一 natural micro R3。第一步 Evidence／NumericFact reads 成功；第二步只有 thesis tool，Provider HTTP 200 且响应完整，但 `prompt=8,448`、`completion=8,000`、`reasoning=8,000`、可见内容／Tool Call=0，状态为 `model_gateway_reasoning_budget_exhausted`。后两段未执行，retry／fallback=0。R3 不构成金融 L1 或内容失败，因为没有 thesis 可评；它证明 micro output 分解与减半预算仍不足以解决完整单元上下文下的自然 Tool submission。第 1 项未 accepted，第 2–5 项继续 blocked，下一项只能是项目级零调用处置。

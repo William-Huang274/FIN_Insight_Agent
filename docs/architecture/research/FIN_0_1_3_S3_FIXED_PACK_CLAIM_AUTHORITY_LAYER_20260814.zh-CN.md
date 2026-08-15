@@ -2,7 +2,7 @@
 
 日期：2026-08-14
 
-状态：`claim_scope_and_alias_live_failures_immutable / micro_judgment_formal_clean_proof_pass / canonical_live_gate_working_tree_pass / natural_successor_pending / layer_two_blocked`
+状态：`claim_scope_and_alias_live_failures_immutable / micro_judgment_formal_clean_proof_pass / canonical_live_gate_clean_pass / natural_micro_R3_terminal_capacity_failure / project_level_disposition_required / layer_two_blocked`
 
 ## 1. 为什么需要这一层
 
@@ -105,3 +105,14 @@ ClaimRelation alias 已把模型输入压缩过半，但 natural R2 仍在 monol
 Provider 的认知预算不进入金融核心。核心 policy 只声明节点类别；DeepSeek profile 在外层把 mandatory read pair 映射为 `low / 2,000`，把三个 bounded financial judgment 映射为 `high / 8,000`。未来更强模型可以更换 profile 或获得更大自治面，而不改变 Evidence、NumericFact、ClaimRelation、lineage 和最终 Verifier 的长期金融控制面。
 
 该 successor 目前只资格化 DELL `CELL::value_capture`、同一 fixed Pack、0 EvidenceRequest、0 retry／fallback。动态 EvidenceRequest→S1/S2→EvidenceResponse 不得复用该固定范围 policy；五单元也不能把三段工具机械乘五后直接运行，必须先由单单元 natural proof 证明这种分解确有收敛和内容增益。
+
+## 10. Natural micro R3 对架构边界的更新
+
+canonical live gate、双节点 profile 和 Project OS preflight 已在 clean/synced commit `8ed2d5c0...` 通过。唯一 R3 的 read pair 正常完成；随后只开放 `submit_research_thesis` 的判断节点收到 HTTP 200 完整响应，但 `8,000` completion token 全部为 reasoning token，零可见内容、零 Tool Call。Runtime 原子终止，未调用 mechanism 或 counterargument＋WWC，retry／fallback 为 0。
+
+这次结果把两个层面分开：
+
+- 金融控制面没有暴露新缺陷：Evidence／NumericFact 读取、身份、期间、引用、关系 alias、capture 与终态失败均按合同工作；
+- 当前 Agent 提交面仍未收敛：把 monolithic output 拆成微片段并减半预算，没有解决完整单元上下文、高 thinking 和强制 Tool Call 之间的交互。
+
+因此不能把下一步继续写成“再缩一个字段”或“再多给 token”。长期 provider-neutral 金融合同保持不变；候选变化只应位于可替换的上下文投影、分析／提交 profile、协议适配器或自主权 profile。R3 没有可见 thesis，故既不是 L1 pass 也不是 L1 fail；Layer Two、五单元和三案例仍 blocked。

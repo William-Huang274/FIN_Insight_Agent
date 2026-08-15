@@ -2,7 +2,7 @@
 
 日期：2026-08-15
 
-状态：`owner_authorized / fixed_pack_R2_immutable / micro_live_gate_working_tree_pass / natural_successor_pending / dynamic_truth_spine_pending`
+状态：`owner_authorized / fixed_pack_micro_R3_immutable_terminal_failure / item_1_not_accepted / items_2_to_5_blocked / project_level_disposition_required`
 
 ## Owner 决定
 
@@ -70,3 +70,11 @@ Owner 授权范围内的下一修复不再做字段删减、上限扩大或协�
 唯一 canonical runner 已接入 micro authority，没有创建 attempt-specific runner。入口现在强制 `read pair → thesis → mechanism → counterargument＋WWC`，并在发出请求前把 read 节点绑定到 `low / 2000`、三个判断节点绑定到 `high / 8000`。Authority 同时绑定 formal proof、immutable R2、两个节点 profile、Claim policies、scope decision、Git 和未消费输出身份。
 
 canonical runner 与 Project OS preflight 联合定向 `25 passed`、全仓 `320 passed`、compileall、active baseline 和 `6,606` 文件 secret scan 均通过；本轮仍为 0 model／network／Provider call。预检保留旧单 profile 决策，并新增 micro 双 profile／`4 model / 5 tool` 决策校验。第一项没有因此通过。下一动作只剩 clean commit/push、真实 Project OS preflight、fresh authority 入口校验和唯一 natural Chat successor；若该 successor 再次容量失败或 L1 失败，停止第一项，不自动继续修补或进入第二项。
+
+## 第一项 natural micro R3 结果与计划停止（2026-08-16）
+
+实现与 preflight 已在 clean/synced commit `8ed2d5c0...` 通过，随后签发并执行唯一 Chat R3。第一步 mandatory Evidence／NumericFact read pair 成功，形成两份 receipt。第二步只允许提交 thesis，但完整 HTTP 200 响应把 `8,000 / 8,000` completion token 全部用于 reasoning，没有可见内容或 Tool Call；Runtime 以 `model_gateway_reasoning_budget_exhausted` 终止，0 retry／fallback，后两段没有执行。
+
+因此第一项没有通过，且无法进行 L1、八维内容或 paired assessment；这不是内容被判差，而是没有内容可判。微判断证明已经排除了“大 JSON 一次提交”这一局部因素，却仍未解决“完整单元上下文＋高 thinking＋强制 Tool submission”的收敛问题。按照本计划预先冻结的停止线，不自动进入 R4，不执行第 2–5 项，也不继续按字段修补。
+
+下一动作不再属于五项中的普通自行修复，而是项目级 Provider／profile／protocol／context projection／autonomy 处置。必须先零调用比较候选结构并向 Owner 返回决策；只有新的范围被明确接受后，才判断是否值得做一个最小单节点 canary。

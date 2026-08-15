@@ -2,7 +2,7 @@
 
 日期：2026-08-14
 
-状态：`claim_scope_live_failed_immutable / claim_surface_successor_implemented / formal_clean_zero_call_proof_pending`
+状态：`claim_scope_live_failed_immutable / claim_surface_successor_formal_zero_call_pass / natural_replacement_pending_owner_decision / layer_two_blocked`
 
 ## 1. 为什么需要这一层
 
@@ -73,3 +73,15 @@ Prompt 和 Skill 已经明确提醒过这些边界，R2 仍越界，因此不能
 本地只允许当前卡片列出的组合，并检查每个关系所需的 Evidence、QF、NumericRelation 和 gap。旧关键词 guard 降为纵深防御；它不再负责“证明关系正确”，但仍可拒绝与所选 bridge 明显冲突的强因果表面。模型继续独立写三段文字，Harness 不拼装 thesis 或机制。
 
 保存的失败 live 将按三步零调用回放：旧 schema 不能静默晋升；只补结构字段仍因自由定性数字表面失败；把区间迁移到 QF 后，原 mechanism 的强因果关系仍必须被结构门拒绝。只有同时使用 QF 和每原子合法关系的修正版 fixture 才可生成 v1.4 deliverable。该 fixture 只证明工程合同，不代表自然模型、第一层 acceptance 或动态 Agentic Research 通过。
+
+## 8. Formal clean proof 结果
+
+最终 R3 在干净且与 upstream 一致的提交 `022fcfeb0e5b9f744242032786cf637e7ff1f563` 上通过，状态为 `engineering_pass_zero_call_claim_surface_authority`。它复现同一 Claim Surface input digest `5e209ccc...28a0`，并证明：
+
+- 旧 live payload 在旧 schema、自由定性数字表面、结构化关系冲突三层分别 fail closed；
+- `QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1` 只确定性展示“中个位数经营利润率目标”，没有生成单点，也没有晋升为 audited NumericFact；
+- thesis、mechanism、counterargument 恰有三条独立结构化关系；
+- 跨 DELL→MU／NVDA、source digest 漂移、非法关系、缺少指定来源权威和叙事／关系冲突均 fail closed；
+- fake loop 为 `2 steps / 3 tool calls / 0 EvidenceRequest`，且网络、模型、Provider、embedding、retry 和产品发布均为 0。
+
+R1 formal proof 先因 mutation fixture 把全部 generic support 一并移除而在更早通用门终止，该失败已独立保存；R2 工程逻辑通过但公共 `recorded_at` 沿用旧固定日期，也保持不可变。R3 只修正证明路径与审计时间，不改变产品合同。此结果仍不证明 DeepSeek 会自然提交新字段，因此 fixed-Pack 第一层尚未 accepted，动态第二层、五单元和 S3 产品验收继续 blocked。

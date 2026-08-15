@@ -2633,3 +2633,5 @@ DELL fixed-Pack Chat 的首个失败表明，来源允许引用某个定性数�
 单个 cell-level scope 标签也不足以约束一段完整输出。thesis、mechanism 和 counterargument 往往分别表达管理层陈述、因果机制与反方比较；用一个关系覆盖三段，会让其中两段逃离合同。因此每个 narrative atom 必须各自选择结构化 `subject、outcome、relation、attribution basis、claim scope、financial scope、causal bridge authority`，并绑定所需 Evidence、QF、NumericRelation 和 gap。模型仍拥有文字与关系选择；Harness 只校验组合、渲染 fact surface 和保存 receipt，不代写研究结论。
 
 关键词扫描保留为纵深防御，只用于发现叙事与所选关系的明显冲突，不能再作为关系正确性的主要证明。验收必须回放旧失败 payload：旧 schema 不得静默晋升；只补字段仍应被自由定性数字门拒绝；迁移 QF 后若 mechanism 仍选择不存在的强因果桥，也必须拒绝。修正版 fixture 通过只构成零调用工程门；自然 replacement live、fixed-Pack 第一层 acceptance、动态单单元纵切和五单元研究都需要各自独立授权与内容验收。
+
+正式 clean/synced R3 已于 2026-08-15 通过上述工程门：QF 未生成单点，三个叙事原子各有独立结构关系，旧失败三层 replay、非法关系、缺指定权威、叙事冲突、source digest 漂移和跨案例污染均 fail closed；fake loop 为 2 step／3 tool call／0 EvidenceRequest，外部与模型调用均为 0。该结果只关闭合同工程缺口，不得写成 DeepSeek 自然质量通过或 fixed-Pack 第一层 acceptance。

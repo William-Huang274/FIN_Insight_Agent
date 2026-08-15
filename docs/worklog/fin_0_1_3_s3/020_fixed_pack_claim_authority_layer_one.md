@@ -2,7 +2,7 @@
 
 日期：2026-08-14
 
-状态：`formal_zero_call_proof_pass / one_fixed_pack_chat_terminal_failed_no_retry / raw_content_materially_improved / layer_one_not_accepted / layer_two_blocked`
+状态：`claim_surface_formal_zero_call_R3_pass / natural_replacement_not_run / layer_one_not_accepted / layer_two_blocked`
 
 ## Owner 决定
 
@@ -52,3 +52,13 @@ Owner 要求继续，但未授权新的 DeepSeek live 或动态第二层。本�
 - 保存的失败 payload、DELL／MU／NVDA case 污染、source digest、错 relation、缺支持 Evidence 和强因果表面进入零调用回放／mutation。
 
 working-tree 定向回归为 `76 passed`。回放还纠正了一个初始设计：单个 cell-level structured relation 不能覆盖三段文字；旧输出的 thesis、mechanism 与 counterargument 实际承诺不同，因此 successor 改为每个 narrative atom 一条关系。formal clean proof 必须在实现提交和上游完全一致后另行签发；在该 proof 前，第一层、第二层与 S3 产品验收继续为 false。
+
+## Formal zero-call proof 尝试与最终结果
+
+- R1：在写出结果前以 `claim_surface_mutation_disposition_invalid` 终止。原因不是产品合同失败，而是 proof runner 的“缺指定来源权威”mutation 同时移除了全部 generic support，导致先撞到 `research_consumer_supported_judgment_without_evidence`。authority、实际四个返回码和 0-call 边界已不可变保存。
+- R2：修正 mutation 顺序后，核心工程证明通过；但公共结果的 `recorded_at` 仍沿用 predecessor 的 `2026-08-14` 固定值。R2 结果保持不可变，只登记为“证明逻辑通过、最终审计元数据需要 successor”。
+- R3：把公共 `recorded_at` 确定性绑定到 signed authority `issued_at` 后，在 clean/synced commit `022fcfeb...f563` 正式通过。结果为 `engineering_pass_zero_call_claim_surface_authority`；source-bound QF、三条逐原子关系、三层旧失败回放、四类 mutation、source drift、DELL→MU/NVDA 隔离和 deterministic recompile 全部通过。
+
+R3 的自然调用计数仍为 0。它没有证明 DeepSeek 能自然使用 QF／claim relation，也没有接受 fixed-Pack 第一层。下一步必须先返回 Owner；若 Owner 继续，只能另行决定是否值得签发一次 replacement fixed-Pack live。不能自动进入动态第二层或五单元。
+
+最终仓库复证：S3 定向 `76 passed`，全量 Python `299 passed`；active baseline 为 `125 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference`；secret scan 为 `6,580 files / 0 finding`。一次全量回归曾发生 Workbench 异步 import-graph 15 秒窗口超时，单独复跑通过，最终非并发全量也通过，因此记为负载抖动，不扩大本工作包或修改产品超时。

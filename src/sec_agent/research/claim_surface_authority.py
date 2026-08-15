@@ -10,6 +10,9 @@ from .reviewed_evidence_pack import canonical_digest
 CLAIM_SURFACE_AUTHORITY_POLICY_SCHEMA_VERSION = (
     "fin_ia_claim_surface_authority_policy_v1_0"
 )
+CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION = (
+    "fin_ia_claim_surface_authority_policy_v1_1"
+)
 CLAIM_SURFACE_AUTHORITY_INPUT_SCHEMA_VERSION = (
     "fin_ia_current_research_input_v1_3"
 )
@@ -18,6 +21,15 @@ CLAIM_SURFACE_AUTHORITY_JUDGMENT_SCHEMA_VERSION = (
 )
 CLAIM_SURFACE_AUTHORITY_DELIVERABLE_SCHEMA_VERSION = (
     "fin_ia_current_research_deliverable_v1_4"
+)
+CLAIM_SURFACE_RELATION_ALIAS_INPUT_SCHEMA_VERSION = (
+    "fin_ia_current_research_input_v1_4"
+)
+CLAIM_SURFACE_RELATION_ALIAS_JUDGMENT_SCHEMA_VERSION = (
+    "fin_ia_current_research_judgment_payload_v1_5"
+)
+CLAIM_SURFACE_RELATION_ALIAS_DELIVERABLE_SCHEMA_VERSION = (
+    "fin_ia_current_research_deliverable_v1_5"
 )
 CLAIM_SURFACE_AUTHORITY_MODEL_FIELDS = (
     "claim_relations",
@@ -89,11 +101,19 @@ def load_claim_surface_authority_policy(
         set(payload) == expected,
         "claim_surface_policy_fields_invalid",
     )
+    schema_version = str(payload.get("schema_version") or "")
+    alias_mode = schema_version == CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION
     _require(
-        payload.get("schema_version")
-        == CLAIM_SURFACE_AUTHORITY_POLICY_SCHEMA_VERSION
-        and payload.get("status")
-        == "provider_neutral_fixed_pack_claim_surface_authority",
+        (
+            schema_version == CLAIM_SURFACE_AUTHORITY_POLICY_SCHEMA_VERSION
+            and payload.get("status")
+            == "provider_neutral_fixed_pack_claim_surface_authority"
+        )
+        or (
+            alias_mode
+            and payload.get("status")
+            == "provider_neutral_fixed_pack_claim_relation_alias_authority"
+        ),
         "claim_surface_policy_status_invalid",
     )
     qualified = _mapping(
@@ -204,26 +224,31 @@ def load_claim_surface_authority_policy(
     )
     combinations: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str, str, str, str, str]] = set()
+    seen_relation_refs: set[str] = set()
     for raw in raw_combinations:
         row = _mapping(raw, "claim_surface_combination_invalid")
+        combination_fields = {
+            "claim_subject",
+            "claim_outcome",
+            "claim_relation",
+            "attribution_basis",
+            "claim_scope",
+            "financial_scope",
+            "causal_bridge_authority",
+            "allowed_atom_fields",
+            "required_qualitative_fact_refs",
+            "required_evidence_refs",
+            "required_numeric_relation_refs",
+            "required_gap_refs",
+            "allowed_inference_authorities",
+            "allowed_judgment_statuses",
+        }
+        if alias_mode:
+            combination_fields.update(
+                {"claim_relation_ref", "model_description_zh"}
+            )
         _require(
-            set(row)
-            == {
-                "claim_subject",
-                "claim_outcome",
-                "claim_relation",
-                "attribution_basis",
-                "claim_scope",
-                "financial_scope",
-                "causal_bridge_authority",
-                "allowed_atom_fields",
-                "required_qualitative_fact_refs",
-                "required_evidence_refs",
-                "required_numeric_relation_refs",
-                "required_gap_refs",
-                "allowed_inference_authorities",
-                "allowed_judgment_statuses",
-            },
+            set(row) == combination_fields,
             "claim_surface_combination_invalid",
         )
         key = (
@@ -267,6 +292,8 @@ def load_claim_surface_authority_policy(
             row.get("allowed_judgment_statuses"),
             "claim_surface_combination_invalid",
         )
+        relation_ref = str(row.get("claim_relation_ref") or "")
+        model_description = str(row.get("model_description_zh") or "").strip()
         _require(
             key[0] in subjects
             and key[1] in outcomes
@@ -283,9 +310,16 @@ def load_claim_surface_authority_policy(
             and all(ref.startswith("GAP::") for ref in gap_refs),
             "claim_surface_combination_invalid",
         )
+        if alias_mode:
+            _require(
+                relation_ref.startswith("CR::")
+                and relation_ref not in seen_relation_refs
+                and 1 <= len(model_description) <= 120,
+                "claim_surface_relation_alias_invalid",
+            )
+            seen_relation_refs.add(relation_ref)
         seen.add(key)
-        combinations.append(
-            {
+        combination = {
                 "claim_subject": key[0],
                 "claim_outcome": key[1],
                 "claim_relation": key[2],
@@ -301,7 +335,13 @@ def load_claim_surface_authority_policy(
                 "allowed_inference_authorities": list(inference),
                 "allowed_judgment_statuses": list(statuses),
             }
-        )
+        if alias_mode:
+            combination = {
+                "claim_relation_ref": relation_ref,
+                "model_description_zh": model_description,
+                **combination,
+            }
+        combinations.append(combination)
 
     guard = _mapping(
         payload.get("narrative_conflict_guard"),
@@ -455,8 +495,16 @@ def compile_claim_surface_authority_research_input(
             and set(row["required_gap_refs"]).issubset(allowed_gaps),
             "claim_surface_combination_binding_drift",
         )
+    alias_mode = (
+        loaded["schema_version"]
+        == CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION
+    )
     relation_card_body = {
-        "card_schema_version": "fin_ia_structured_claim_relation_card_v1_0",
+        "card_schema_version": (
+            "fin_ia_structured_claim_relation_card_v1_1"
+            if alias_mode
+            else "fin_ia_structured_claim_relation_card_v1_0"
+        ),
         "case_key": qualified["case_key"],
         "cell_id": cell_id,
         "allowed_claim_subjects": deepcopy(loaded["allowed_claim_subjects"]),
@@ -467,6 +515,24 @@ def compile_claim_surface_authority_research_input(
         ),
         "allowed_combinations": deepcopy(
             loaded["allowed_structured_claim_combinations"]
+        ),
+        **(
+            {
+                "model_relation_aliases": [
+                    {
+                        "claim_relation_ref": row["claim_relation_ref"],
+                        "model_description_zh": row["model_description_zh"],
+                        "allowed_atom_fields": deepcopy(
+                            row["allowed_atom_fields"]
+                        ),
+                    }
+                    for row in loaded[
+                        "allowed_structured_claim_combinations"
+                    ]
+                ]
+            }
+            if alias_mode
+            else {}
         ),
         "rules": [
             "The structured relation is the authoritative semantic commitment selected by the model.",
@@ -481,16 +547,22 @@ def compile_claim_surface_authority_research_input(
     }
     unsigned = deepcopy(dict(claim_authority_input))
     unsigned.pop("research_input_digest", None)
-    unsigned["schema_version"] = CLAIM_SURFACE_AUTHORITY_INPUT_SCHEMA_VERSION
+    unsigned["schema_version"] = (
+        CLAIM_SURFACE_RELATION_ALIAS_INPUT_SCHEMA_VERSION
+        if alias_mode
+        else CLAIM_SURFACE_AUTHORITY_INPUT_SCHEMA_VERSION
+    )
     unsigned["source_bound_qualitative_fact_cards"] = deepcopy(compiled_facts)
     for row in unsigned["cells"]:
         if row["cell_id"] == cell_id:
             row["allowed_qualitative_fact_refs"] = sorted(fact_refs)
             row["claim_relation_card"] = deepcopy(relation_card)
     output = unsigned["model_output_contract"]
-    output[
-        "payload_schema_version"
-    ] = CLAIM_SURFACE_AUTHORITY_JUDGMENT_SCHEMA_VERSION
+    output["payload_schema_version"] = (
+        CLAIM_SURFACE_RELATION_ALIAS_JUDGMENT_SCHEMA_VERSION
+        if alias_mode
+        else CLAIM_SURFACE_AUTHORITY_JUDGMENT_SCHEMA_VERSION
+    )
     output["model_owned_cell_fields"] = [
         *output["model_owned_cell_fields"],
         *CLAIM_SURFACE_AUTHORITY_MODEL_FIELDS,
@@ -511,8 +583,13 @@ def compile_claim_surface_authority_research_input(
     output["allowed_attribution_bases"] = deepcopy(
         loaded["allowed_attribution_bases"]
     )
+    if alias_mode:
+        output["allowed_claim_relation_refs"] = [
+            row["claim_relation_ref"]
+            for row in loaded["allowed_structured_claim_combinations"]
+        ]
     unsigned["claim_surface_authority_contract"] = {
-        "policy_schema_version": CLAIM_SURFACE_AUTHORITY_POLICY_SCHEMA_VERSION,
+        "policy_schema_version": loaded["schema_version"],
         "policy_digest": canonical_digest(loaded),
         "qualified_case_key": qualified["case_key"],
         "qualified_cell_ids": [cell_id],
@@ -520,6 +597,12 @@ def compile_claim_surface_authority_research_input(
             "base_claim_authority_input_digest"
         ],
         "structured_claim_relation_primary": True,
+        "model_view_mode": (
+            "claim_relation_alias_compact_v1"
+            if alias_mode
+            else "full_structured_claim_relation_v1"
+        ),
+        "relation_alias_selection_primary": alias_mode,
         "qualitative_fact_surface_is_harness_rendered": True,
         "point_estimate_from_qualitative_band_forbidden": True,
         "narrative_conflict_guard": deepcopy(
@@ -580,33 +663,65 @@ def validate_claim_surface_authority_selection(
     validated_relations: list[dict[str, str]] = []
     seen_atom_fields: set[str] = set()
     required_qualitative_refs: set[str] = set()
+    alias_mode = (
+        claim_surface_contract.get("model_view_mode")
+        == "claim_relation_alias_compact_v1"
+    )
     for raw_relation in raw_relations:
         row = _mapping(
             raw_relation,
             "claim_surface_claim_relation_invalid",
         )
-        _require(
-            set(row)
-            == {
-                "atom_field",
-                "claim_subject",
-                "claim_outcome",
-                "claim_relation",
-                "attribution_basis",
-                "claim_scope",
-                "financial_scope",
-                "causal_bridge_authority",
-            },
-            "claim_surface_claim_relation_invalid",
-        )
         atom_field = str(row.get("atom_field") or "")
-        subject = str(row.get("claim_subject") or "")
-        outcome = str(row.get("claim_outcome") or "")
-        relation = str(row.get("claim_relation") or "")
-        attribution = str(row.get("attribution_basis") or "")
-        claim_scope = str(row.get("claim_scope") or "")
-        financial_scope = str(row.get("financial_scope") or "")
-        bridge = str(row.get("causal_bridge_authority") or "")
+        if alias_mode:
+            _require(
+                set(row) == {"atom_field", "claim_relation_ref"},
+                "claim_surface_claim_relation_invalid",
+            )
+            relation_ref = str(row.get("claim_relation_ref") or "")
+            combination = next(
+                (
+                    candidate
+                    for candidate in claim_relation_card["allowed_combinations"]
+                    if candidate.get("claim_relation_ref") == relation_ref
+                    and atom_field in candidate["allowed_atom_fields"]
+                ),
+                None,
+            )
+            _require(
+                combination is not None,
+                "claim_surface_relation_alias_invalid",
+            )
+            subject = str(combination["claim_subject"])
+            outcome = str(combination["claim_outcome"])
+            relation = str(combination["claim_relation"])
+            attribution = str(combination["attribution_basis"])
+            claim_scope = str(combination["claim_scope"])
+            financial_scope = str(combination["financial_scope"])
+            bridge = str(combination["causal_bridge_authority"])
+        else:
+            _require(
+                set(row)
+                == {
+                    "atom_field",
+                    "claim_subject",
+                    "claim_outcome",
+                    "claim_relation",
+                    "attribution_basis",
+                    "claim_scope",
+                    "financial_scope",
+                    "causal_bridge_authority",
+                },
+                "claim_surface_claim_relation_invalid",
+            )
+            relation_ref = ""
+            subject = str(row.get("claim_subject") or "")
+            outcome = str(row.get("claim_outcome") or "")
+            relation = str(row.get("claim_relation") or "")
+            attribution = str(row.get("attribution_basis") or "")
+            claim_scope = str(row.get("claim_scope") or "")
+            financial_scope = str(row.get("financial_scope") or "")
+            bridge = str(row.get("causal_bridge_authority") or "")
         _require(
             atom_field in CLAIM_SURFACE_AUTHORITY_ATOM_FIELDS
             and atom_field not in seen_atom_fields
@@ -618,21 +733,22 @@ def validate_claim_surface_authority_selection(
             "claim_surface_output_enum_invalid",
         )
         seen_atom_fields.add(atom_field)
-        combination = next(
-            (
-                candidate
-                for candidate in claim_relation_card["allowed_combinations"]
-                if candidate["claim_subject"] == subject
-                and candidate["claim_outcome"] == outcome
-                and candidate["claim_relation"] == relation
-                and candidate["attribution_basis"] == attribution
-                and candidate["claim_scope"] == claim_scope
-                and candidate["financial_scope"] == financial_scope
-                and candidate["causal_bridge_authority"] == bridge
-                and atom_field in candidate["allowed_atom_fields"]
-            ),
-            None,
-        )
+        if not alias_mode:
+            combination = next(
+                (
+                    candidate
+                    for candidate in claim_relation_card["allowed_combinations"]
+                    if candidate["claim_subject"] == subject
+                    and candidate["claim_outcome"] == outcome
+                    and candidate["claim_relation"] == relation
+                    and candidate["attribution_basis"] == attribution
+                    and candidate["claim_scope"] == claim_scope
+                    and candidate["financial_scope"] == financial_scope
+                    and candidate["causal_bridge_authority"] == bridge
+                    and atom_field in candidate["allowed_atom_fields"]
+                ),
+                None,
+            )
         _require(
             combination is not None
             and inference_authority
@@ -702,6 +818,11 @@ def validate_claim_surface_authority_selection(
         validated_relations.append(
             {
                 "atom_field": atom_field,
+                **(
+                    {"claim_relation_ref": relation_ref}
+                    if alias_mode
+                    else {}
+                ),
                 "claim_subject": subject,
                 "claim_outcome": outcome,
                 "claim_relation": relation,
@@ -746,6 +867,10 @@ __all__ = [
     "CLAIM_SURFACE_AUTHORITY_JUDGMENT_SCHEMA_VERSION",
     "CLAIM_SURFACE_AUTHORITY_MODEL_FIELDS",
     "CLAIM_SURFACE_AUTHORITY_POLICY_SCHEMA_VERSION",
+    "CLAIM_SURFACE_RELATION_ALIAS_DELIVERABLE_SCHEMA_VERSION",
+    "CLAIM_SURFACE_RELATION_ALIAS_INPUT_SCHEMA_VERSION",
+    "CLAIM_SURFACE_RELATION_ALIAS_JUDGMENT_SCHEMA_VERSION",
+    "CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION",
     "ClaimSurfaceAuthorityError",
     "compile_claim_surface_authority_research_input",
     "load_claim_surface_authority_policy",

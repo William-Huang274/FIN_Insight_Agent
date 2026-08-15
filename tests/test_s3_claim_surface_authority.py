@@ -40,6 +40,11 @@ SURFACE_POLICY = ROOT / (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "claim_surface_authority_v1_0.json"
 )
+ALIAS_SURFACE_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_v1_1.json"
+)
 FAILED_CHAT_PAYLOAD = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -49,6 +54,11 @@ POSITIVE_PAYLOAD = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "claim_surface_authority_fake_payload_v1_0.json"
+)
+ALIAS_POSITIVE_PAYLOAD = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_alias_fake_payload_v1_0.json"
 )
 QF_REF = "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
 
@@ -63,6 +73,19 @@ def surface_input() -> dict[str, object]:
     return compile_claim_surface_authority_research_input(
         claim_input,
         policy=_json(SURFACE_POLICY),
+    )
+
+
+@pytest.fixture(scope="module")
+def alias_surface_input() -> dict[str, object]:
+    _, _, base = _current_inputs()
+    claim_input = compile_claim_authority_research_input(
+        base,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    return compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(ALIAS_SURFACE_POLICY),
     )
 
 
@@ -92,6 +115,126 @@ def test_surface_policy_is_source_bound_and_does_not_create_numeric_fact(
         row["numeric_ref"] != QF_REF
         for row in surface_input["numeric_fact_cards"]
     )
+
+
+def test_alias_surface_contract_exposes_only_relation_refs_to_model(
+    alias_surface_input: dict[str, object],
+) -> None:
+    assert alias_surface_input["schema_version"] == (
+        "fin_ia_current_research_input_v1_4"
+    )
+    assert alias_surface_input["model_output_contract"][
+        "payload_schema_version"
+    ] == "fin_ia_current_research_judgment_payload_v1_5"
+    assert alias_surface_input["claim_surface_authority_contract"][
+        "model_view_mode"
+    ] == "claim_relation_alias_compact_v1"
+
+    messages = compile_current_research_messages(
+        alias_surface_input,
+        required_cell_ids=["CELL::value_capture"],
+        submission_transport="final_tool",
+    )
+    shape = json.loads(messages[1]["content"])["output_contract"][
+        "payload_shape"
+    ]["submit_research_judgment_arguments"]
+    assert set(shape["claim_relations"][0]) == {
+        "atom_field",
+        "claim_relation_ref",
+    }
+
+    tool = compile_finance_judgment_tool(
+        research_input=alias_surface_input,
+        required_cell_ids=["CELL::value_capture"],
+        strict=True,
+    )
+    relation = tool["function"]["parameters"]["properties"][
+        "claim_relations"
+    ]["items"]["properties"]
+    assert set(relation) == {"atom_field", "claim_relation_ref"}
+    assert relation["claim_relation_ref"]["enum"] == [
+        "CR::DELL::PRODUCT_TARGET",
+        "CR::DELL::COMPANY_MARGIN_OBSERVATION",
+        "CR::DELL::MULTI_DRIVER_CONTEXT",
+        "CR::DELL::PROFIT_BRIDGE_GAP",
+    ]
+
+
+def test_alias_selection_is_expanded_locally_before_delivery(
+    alias_surface_input: dict[str, object],
+) -> None:
+    payload = _json(ALIAS_POSITIVE_PAYLOAD)
+    validated = validate_current_research_output(
+        payload,
+        research_input=alias_surface_input,
+        required_cell_ids=["CELL::value_capture"],
+    )
+    relations = validated["cells"][0]["claim_relations"]
+    assert relations[0] == {
+        "atom_field": "thesis_atom",
+        "claim_relation_ref": "CR::DELL::PRODUCT_TARGET",
+        "claim_subject": "ai_server_product",
+        "claim_outcome": "product_operating_income_rate_target",
+        "claim_relation": "management_reported_in_line_with_target",
+        "attribution_basis": "issuer_management_assertion",
+        "claim_scope": "product",
+        "financial_scope": "product_financial",
+        "causal_bridge_authority": "management_assertion_only",
+    }
+    assert all(len(row) == 9 for row in relations)
+
+    deliverable = compile_current_research_deliverable(
+        research_input=alias_surface_input,
+        judgment_output=payload,
+        required_cell_ids=["CELL::value_capture"],
+    )
+    assert deliverable["schema_version"] == (
+        "fin_ia_current_research_deliverable_v1_5"
+    )
+    assert deliverable["cells"][0]["claim_relations"] == relations
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected"),
+    [
+        (
+            {
+                "claim_relations": _json(POSITIVE_PAYLOAD)["cells"][0][
+                    "claim_relations"
+                ]
+            },
+            "claim_surface_claim_relation_invalid",
+        ),
+        (
+            {
+                "claim_relations": [
+                    {
+                        "atom_field": "thesis_atom",
+                        "claim_relation_ref": "CR::MU::PRODUCT_TARGET",
+                    },
+                    *_json(ALIAS_POSITIVE_PAYLOAD)["cells"][0][
+                        "claim_relations"
+                    ][1:],
+                ]
+            },
+            "claim_surface_relation_alias_invalid",
+        ),
+    ],
+)
+def test_alias_surface_mutations_fail_closed(
+    alias_surface_input: dict[str, object],
+    mutation: dict[str, object],
+    expected: str,
+) -> None:
+    payload = _json(ALIAS_POSITIVE_PAYLOAD)
+    payload["cells"][0].update(deepcopy(mutation))
+    with pytest.raises(CurrentResearchConsumerError) as exc:
+        validate_current_research_output(
+            payload,
+            research_input=alias_surface_input,
+            required_cell_ids=["CELL::value_capture"],
+        )
+    assert exc.value.code == expected
 
 
 def test_surface_model_view_and_final_tool_are_compiled_from_same_contract(

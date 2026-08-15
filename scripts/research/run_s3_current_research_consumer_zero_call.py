@@ -44,6 +44,7 @@ from sec_agent.research.claim_surface_authority import (  # noqa: E402
 from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     READ_NUMERIC_FACTS_TOOL,
     READ_REVIEWED_EVIDENCE_TOOL,
+    SUBMIT_EVIDENCE_REQUEST_TOOL,
     SUBMIT_RESEARCH_JUDGMENT_TOOL,
     compile_finance_loop_messages,
     compile_finance_loop_tools,
@@ -83,6 +84,12 @@ CLAIM_SURFACE_AUTHORITY_SCHEMA = (
 )
 CLAIM_SURFACE_RESULT_SCHEMA = (
     "fin_ia_fixed_pack_claim_surface_authority_zero_call_result_v1_0"
+)
+CLAIM_RELATION_ALIAS_AUTHORITY_SCHEMA = (
+    "fin_ia_fixed_pack_claim_relation_alias_zero_call_authority_v1_0"
+)
+CLAIM_RELATION_ALIAS_RESULT_SCHEMA = (
+    "fin_ia_fixed_pack_claim_relation_alias_zero_call_result_v1_0"
 )
 
 
@@ -204,6 +211,7 @@ def validate_authority(
             AUTHORITY_SCHEMA,
             CLAIM_AUTHORITY_SCHEMA,
             CLAIM_SURFACE_AUTHORITY_SCHEMA,
+            CLAIM_RELATION_ALIAS_AUTHORITY_SCHEMA,
         }
         and payload.get("status")
         == "fresh_zero_network_zero_model_current_consumer_proof_authorized"
@@ -277,7 +285,7 @@ def validate_authority(
                 ),
             ]
         )
-    else:
+    elif schema == CLAIM_SURFACE_AUTHORITY_SCHEMA:
         pairs.extend(
             [
                 ("claim_authority_policy_ref", "claim_authority_policy_sha256"),
@@ -320,6 +328,57 @@ def validate_authority(
                 ),
             ]
         )
+    else:
+        pairs.extend(
+            [
+                ("claim_authority_policy_ref", "claim_authority_policy_sha256"),
+                (
+                    "claim_surface_authority_policy_ref",
+                    "claim_surface_authority_policy_sha256",
+                ),
+                (
+                    "corrected_fake_output_ref",
+                    "corrected_fake_output_sha256",
+                ),
+                (
+                    "prior_chat_result_ref",
+                    "prior_chat_result_sha256",
+                ),
+                (
+                    "prior_chat_assessment_ref",
+                    "prior_chat_assessment_sha256",
+                ),
+                (
+                    "prior_step_two_request_ref",
+                    "prior_step_two_request_sha256",
+                ),
+                (
+                    "prior_step_two_response_ref",
+                    "prior_step_two_response_sha256",
+                ),
+                ("loop_policy_ref", "loop_policy_sha256"),
+                (
+                    "current_consumer_implementation_ref",
+                    "current_consumer_implementation_sha256",
+                ),
+                (
+                    "claim_authority_implementation_ref",
+                    "claim_authority_implementation_sha256",
+                ),
+                (
+                    "claim_surface_authority_implementation_ref",
+                    "claim_surface_authority_implementation_sha256",
+                ),
+                (
+                    "bounded_loop_implementation_ref",
+                    "bounded_loop_implementation_sha256",
+                ),
+                (
+                    "finance_tool_contract_implementation_ref",
+                    "finance_tool_contract_implementation_sha256",
+                ),
+            ]
+        )
     paths: dict[str, Path] = {}
     for ref_key, digest_key in pairs:
         path = _resolve(str(bound.get(ref_key) or ""))
@@ -350,7 +409,9 @@ def validate_authority(
         payload,
         authority_path=authority_path,
     )
-    if schema == CLAIM_SURFACE_AUTHORITY_SCHEMA:
+    if schema == CLAIM_RELATION_ALIAS_AUTHORITY_SCHEMA:
+        result_schema = CLAIM_RELATION_ALIAS_RESULT_SCHEMA
+    elif schema == CLAIM_SURFACE_AUTHORITY_SCHEMA:
         result_schema = CLAIM_SURFACE_RESULT_SCHEMA
     elif schema == CLAIM_AUTHORITY_SCHEMA:
         result_schema = CLAIM_RESULT_SCHEMA
@@ -867,6 +928,497 @@ def _consumer_rejection_code(
     )
 
 
+def _run_claim_relation_alias_proof(
+    *,
+    authority: Mapping[str, Any],
+    authority_path: Path,
+    paths: Mapping[str, Path],
+    result_schema: str,
+    base_research_input: Mapping[str, Any],
+    claim_input: Mapping[str, Any],
+    surface_input: Mapping[str, Any],
+) -> dict[str, Any]:
+    cell_id = "CELL::value_capture"
+    corrected = _json(paths["corrected_fake_output_ref"])
+    validated = validate_current_research_output(
+        corrected,
+        research_input=surface_input,
+        required_cell_ids=[cell_id],
+    )
+    deliverable = compile_current_research_deliverable(
+        research_input=surface_input,
+        judgment_output=corrected,
+        required_cell_ids=[cell_id],
+    )
+    expanded_relations = validated["cells"][0]["claim_relations"]
+    if not (
+        len(expanded_relations) == 3
+        and all(
+            set(row)
+            == {
+                "atom_field",
+                "claim_relation_ref",
+                "claim_subject",
+                "claim_outcome",
+                "claim_relation",
+                "attribution_basis",
+                "claim_scope",
+                "financial_scope",
+                "causal_bridge_authority",
+            }
+            for row in expanded_relations
+        )
+        and deliverable["cells"][0]["claim_relations"]
+        == expanded_relations
+    ):
+        raise CurrentResearchConsumerRunnerError(
+            "claim_relation_alias_local_expansion_invalid"
+        )
+
+    legacy_full = deepcopy(corrected)
+    legacy_full["cells"][0]["claim_relations"] = [
+        {
+            key: value
+            for key, value in row.items()
+            if key != "claim_relation_ref"
+        }
+        for row in expanded_relations
+    ]
+    unknown_alias = deepcopy(corrected)
+    unknown_alias["cells"][0]["claim_relations"][0][
+        "claim_relation_ref"
+    ] = "CR::MU::PRODUCT_TARGET"
+    cross_case_fact = deepcopy(corrected)
+    cross_case_fact["cells"][0]["qualitative_fact_refs"] = [
+        "QF::MU::CROSS_CASE"
+    ]
+    missing_support = deepcopy(corrected)
+    missing_support["cells"][0]["evidence_uses"][0][
+        "use_role"
+    ] = "context"
+    missing_support["cells"][0]["evidence_uses"][3][
+        "use_role"
+    ] = "support"
+    narrative_conflict = deepcopy(corrected)
+    narrative_conflict["cells"][0]["mechanism_atom"] = (
+        "AI 服务器收入驱动公司利润扩张，但当前材料没有产品到公司的直接桥。"
+    )
+    mutation_codes = [
+        _consumer_rejection_code(legacy_full, research_input=surface_input),
+        _consumer_rejection_code(unknown_alias, research_input=surface_input),
+        _consumer_rejection_code(cross_case_fact, research_input=surface_input),
+        _consumer_rejection_code(missing_support, research_input=surface_input),
+        _consumer_rejection_code(
+            narrative_conflict,
+            research_input=surface_input,
+        ),
+    ]
+    expected_mutations = [
+        "claim_surface_claim_relation_invalid",
+        "claim_surface_relation_alias_invalid",
+        "research_consumer_qualitative_fact_boundary_invalid",
+        "claim_surface_required_authority_missing",
+        "claim_surface_narrative_relation_conflict",
+    ]
+    if mutation_codes != expected_mutations:
+        raise CurrentResearchConsumerRunnerError(
+            "claim_relation_alias_mutation_disposition_invalid"
+        )
+
+    policy = _json(paths["claim_surface_authority_policy_ref"])
+    source_drift = deepcopy(policy)
+    source_drift["source_bound_qualitative_facts"][0][
+        "source_evidence_item_digest"
+    ] = "0" * 64
+    try:
+        compile_claim_surface_authority_research_input(
+            claim_input,
+            policy=source_drift,
+        )
+    except ClaimSurfaceAuthorityError as exc:
+        source_drift_code = exc.code
+    else:
+        raise CurrentResearchConsumerRunnerError(
+            "claim_relation_alias_source_drift_did_not_fail"
+        )
+    cross_case_codes: list[str] = []
+    for case_key in ("MU", "NVDA"):
+        contaminated = deepcopy(claim_input)
+        contaminated["case_identity"]["case_key"] = case_key
+        try:
+            compile_claim_surface_authority_research_input(
+                contaminated,
+                policy=policy,
+            )
+        except ClaimSurfaceAuthorityError as exc:
+            cross_case_codes.append(exc.code)
+        else:
+            raise CurrentResearchConsumerRunnerError(
+                "claim_relation_alias_cross_case_did_not_fail"
+            )
+    if not (
+        source_drift_code == "claim_surface_qualitative_fact_source_drift"
+        and cross_case_codes
+        == [
+            "claim_surface_base_input_not_qualified",
+            "claim_surface_base_input_not_qualified",
+        ]
+    ):
+        raise CurrentResearchConsumerRunnerError(
+            "claim_relation_alias_source_or_case_isolation_invalid"
+        )
+
+    prior_result = _json(paths["prior_chat_result_ref"])
+    prior_assessment = _json(paths["prior_chat_assessment_ref"])
+    observed = prior_assessment.get("observed", {})
+    if not (
+        prior_result.get("status") == "terminal_failed_no_retry"
+        and prior_result.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and prior_result.get("execution", {}).get("model_calls_attempted") == 2
+        and observed.get("step_two_finish_reason") == "length"
+        and observed.get("step_two_reasoning_tokens") == 16000
+        and observed.get("step_two_visible_content_chars") == 0
+        and prior_assessment.get("acceptance", {}).get(
+            "fixed_pack_layer_one_accepted"
+        )
+        is False
+    ):
+        raise CurrentResearchConsumerRunnerError(
+            "claim_relation_alias_prior_capacity_disposition_invalid"
+        )
+    prior_request = _json(paths["prior_step_two_request_ref"])
+    request_body = prior_request.get("request_body")
+    if not isinstance(request_body, Mapping):
+        raise CurrentResearchConsumerRunnerError(
+            "claim_relation_alias_prior_request_invalid"
+        )
+    prior_message_chars = len(
+        json.dumps(
+            request_body.get("messages"),
+            ensure_ascii=False,
+        )
+    )
+    prior_tool_chars = len(
+        json.dumps(
+            request_body.get("tools"),
+            ensure_ascii=False,
+        )
+    )
+    if not (
+        abs(
+            prior_message_chars
+            - int(observed["step_two_model_visible_message_chars"])
+        )
+        <= 64
+        and prior_tool_chars == int(observed["step_two_tool_schema_chars"])
+    ):
+        raise CurrentResearchConsumerRunnerError(
+            "claim_relation_alias_prior_capacity_measurement_drift"
+        )
+
+    kernel_payload = read_registered_runtime_json(
+        ROOT, "application.config.current_financial_research_kernel"
+    )
+    route_payload = read_registered_runtime_json(
+        ROOT, "application.config.current_query_object_fact_route_policy"
+    )
+    planning_payload = read_registered_runtime_json(
+        ROOT, "application.config.current_research_planning_policy"
+    )
+    kernel = load_financial_research_kernel(kernel_payload)
+    route = load_query_object_fact_route_policy(route_payload, kernel)
+    planning = load_research_planning_policy(planning_payload, route)
+    base_policy = load_bounded_finance_loop_policy(
+        _json(paths["loop_policy_ref"])
+    )
+    scoped = scope_bounded_finance_loop_policy(
+        base_policy,
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_loop_tools(
+        research_input=surface_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped,
+        strict=False,
+    )
+    tool_names = [str(row["function"]["name"]) for row in tools]
+    if tool_names != [
+        READ_REVIEWED_EVIDENCE_TOOL,
+        READ_NUMERIC_FACTS_TOOL,
+        SUBMIT_RESEARCH_JUDGMENT_TOOL,
+    ]:
+        raise CurrentResearchConsumerRunnerError(
+            "claim_relation_alias_zero_budget_tool_surface_invalid"
+        )
+    visible_budget = {
+        "maximum_steps": scoped.maximum_steps,
+        "maximum_evidence_requests": 0,
+        "maximum_reads_per_cell": 1,
+        "maximum_parallel_read_tools": 2,
+        "maximum_judgments_per_cell": 1,
+        "retry_count": 0,
+    }
+    initial_messages = compile_finance_loop_messages(
+        research_input=surface_input,
+        required_cell_ids=[cell_id],
+        execution_budget=visible_budget,
+    )
+    step_two_messages: list[dict[str, Any]] = []
+
+    def execute_step(
+        messages: Sequence[Mapping[str, Any]],
+        _tools: Sequence[Mapping[str, Any]],
+        index: int,
+    ) -> ChatCompletionToolStepResult:
+        if index == 1:
+            return _tool_step(
+                index,
+                [
+                    (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+                    (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
+                ],
+            )
+        step_two_messages.extend(deepcopy(list(messages)))
+        return _tool_step(
+            index,
+            [(SUBMIT_RESEARCH_JUDGMENT_TOOL, corrected["cells"][0])],
+        )
+
+    loop_result = run_bounded_finance_loop(
+        policy=scoped,
+        research_input=surface_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+        tools=tools,
+        step_executor=execute_step,
+        visible_execution_budget=visible_budget,
+    )
+    current_message_chars = len(
+        json.dumps(step_two_messages, ensure_ascii=False)
+    )
+    current_tool_chars = len(json.dumps(list(tools), ensure_ascii=False))
+    tool_results = [
+        json.loads(str(row["content"]))
+        for row in step_two_messages
+        if row.get("role") == "tool"
+    ]
+    evidence_view = next(
+        row
+        for row in tool_results
+        if row.get("status") == "reviewed_evidence_read"
+    )
+    numeric_view = next(
+        row
+        for row in tool_results
+        if row.get("status") == "authoritative_numeric_facts_read"
+    )
+    compact_numeric = numeric_view["numeric_facts"][0]
+    private_lineage_retained = any(
+        "source_digests" in row
+        and "citation_urls" in row
+        and "source_observation_ids" in row
+        for row in surface_input["numeric_fact_cards"]
+    )
+    compact_lineage_hidden = all(
+        key not in compact_numeric
+        for key in (
+            "source_digests",
+            "citation_urls",
+            "source_observation_ids",
+        )
+    )
+    initial_visible = json.loads(initial_messages[1]["content"])
+    authority_cards_visible_once = (
+        "role_method_pack" not in initial_visible["cells"][0]
+        and "graph_context_pack" not in initial_visible["cells"][0]
+        and "role_method_pack" in evidence_view
+        and "graph_context_pack" in evidence_view
+    )
+    if not (
+        current_message_chars
+        < int(observed["step_two_model_visible_message_chars"]) / 2
+        and current_tool_chars
+        < int(observed["step_two_tool_schema_chars"]) * 0.55
+        and private_lineage_retained
+        and compact_lineage_hidden
+        and authority_cards_visible_once
+        and evidence_view.get("model_view_profile")
+        == "claim_relation_alias_compact_v1"
+        and numeric_view.get("model_view_profile")
+        == "claim_relation_alias_compact_v1"
+        and loop_result.status == "completed_all_required_cells"
+        and loop_result.step_count == 2
+        and loop_result.tool_call_count == 3
+        and loop_result.tool_counts.get(SUBMIT_EVIDENCE_REQUEST_TOOL, 0) == 0
+    ):
+        raise CurrentResearchConsumerRunnerError(
+            "claim_relation_alias_capacity_or_fake_loop_invalid"
+        )
+
+    replay_claim_input = compile_claim_authority_research_input(
+        base_research_input,
+        policy=_json(paths["claim_authority_policy_ref"]),
+    )
+    replay_surface_input = compile_claim_surface_authority_research_input(
+        replay_claim_input,
+        policy=policy,
+    )
+    replay_messages = compile_finance_loop_messages(
+        research_input=replay_surface_input,
+        required_cell_ids=[cell_id],
+        execution_budget=visible_budget,
+    )
+    replay_tools = compile_finance_loop_tools(
+        research_input=replay_surface_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped,
+        strict=False,
+    )
+    if not (
+        replay_surface_input == surface_input
+        and replay_messages == initial_messages
+        and replay_tools == tools
+    ):
+        raise CurrentResearchConsumerRunnerError(
+            "claim_relation_alias_deterministic_recompile_invalid"
+        )
+
+    normalized = {
+        "base_research_input_digest": base_research_input[
+            "research_input_digest"
+        ],
+        "claim_authority_input_digest": claim_input[
+            "research_input_digest"
+        ],
+        "claim_relation_alias_input_digest": surface_input[
+            "research_input_digest"
+        ],
+        "finance_loop_initial_messages_digest": canonical_digest(
+            list(initial_messages)
+        ),
+        "finance_loop_step_two_messages_digest": canonical_digest(
+            step_two_messages
+        ),
+        "standard_tool_schema_digest": canonical_digest(list(tools)),
+        "deliverable_digest": deliverable["deliverable_digest"],
+        "prior_capacity_failure_code": prior_result["failure_code"],
+        "prior_step_two_message_chars": int(
+            observed["step_two_model_visible_message_chars"]
+        ),
+        "current_step_two_message_chars": current_message_chars,
+        "current_to_prior_message_ratio": round(
+            current_message_chars
+            / int(observed["step_two_model_visible_message_chars"]),
+            6,
+        ),
+        "prior_tool_schema_chars": int(
+            observed["step_two_tool_schema_chars"]
+        ),
+        "current_tool_schema_chars": current_tool_chars,
+        "current_to_prior_tool_ratio": round(
+            current_tool_chars / int(observed["step_two_tool_schema_chars"]),
+            6,
+        ),
+        "wire_tool_names": tool_names,
+        "zero_budget_evidence_request_tool_omitted": True,
+        "relation_aliases_selected": 3,
+        "relations_expanded_locally": 3,
+        "full_internal_lineage_retained": private_lineage_retained,
+        "compact_model_view_hides_audit_lineage": compact_lineage_hidden,
+        "authority_cards_visible_once": authority_cards_visible_once,
+        "mutation_failure_codes": mutation_codes,
+        "source_digest_drift_code": source_drift_code,
+        "cross_case_isolation_codes": cross_case_codes,
+        "fake_loop_steps": loop_result.step_count,
+        "fake_loop_tool_calls": loop_result.tool_call_count,
+        "fake_loop_evidence_requests": 0,
+        "network_calls": 0,
+        "model_calls": 0,
+        "provider_calls": 0,
+        "local_embedding_calls": 0,
+        "retries": 0,
+        "deterministic_recompile_equal": True,
+    }
+    full_body = {
+        "schema_version": (
+            "fin_ia_fixed_pack_claim_relation_alias_zero_call_full_v1_0"
+        ),
+        "status": "completed_zero_call_claim_relation_alias_capacity_proof",
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha(authority_path),
+        "base_research_input": base_research_input,
+        "claim_authority_input": claim_input,
+        "claim_relation_alias_input": surface_input,
+        "model_visible_initial_messages": list(initial_messages),
+        "model_visible_step_two_messages": step_two_messages,
+        "tool_contract": list(tools),
+        "corrected_fake_judgment_output": corrected,
+        "validated_expanded_judgment_output": validated,
+        "fake_loop_result": loop_result.as_dict(),
+        "structured_deliverable_preview": deliverable,
+        "prior_capacity_failure_binding": {
+            "source_result_digest": prior_result["result_digest"],
+            "source_assessment_status": prior_assessment["status"],
+            "request_capture_sha256": _sha(
+                paths["prior_step_two_request_ref"]
+            ),
+            "response_capture_sha256": _sha(
+                paths["prior_step_two_response_ref"]
+            ),
+            "silently_promoted": False,
+        },
+        "normalized_proof": normalized,
+        "known_boundary": str(authority["known_boundary"]),
+    }
+    full_digest = canonical_digest(full_body)
+    output = authority["output_contract"]
+    private_root = _resolve(str(output["private_output_root_ref"]))
+    full_path = private_root / f"full_result_{full_digest}.json"
+    _write_new(full_path, {**full_body, "result_digest": full_digest})
+    summary_body = {
+        "schema_version": result_schema,
+        "status": "engineering_pass_zero_call_claim_relation_alias_capacity",
+        "recorded_at": str(authority["issued_at"]),
+        "result_id": str(output["result_id"]),
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha(authority_path),
+        "full_result_ref": _relative(full_path),
+        "full_result_sha256": _sha(full_path),
+        "normalized_proof": normalized,
+        "acceptance": {
+            "prior_capacity_failure_immutable": True,
+            "relation_alias_selection_and_local_expansion_pass": True,
+            "authority_cards_visible_once_pass": True,
+            "compact_model_view_and_private_lineage_separation_pass": True,
+            "zero_budget_tool_removal_pass": True,
+            "capacity_reduction_pass": True,
+            "fake_loop_and_mutation_pass": True,
+            "natural_replacement_live_proven": False,
+            "fixed_pack_layer_one_accepted": False,
+            "dynamic_layer_two_authorized": False,
+            "s3_product_acceptance": False,
+        },
+        "next_decision": (
+            "After a clean synced preflight, a separate exact-once authority may "
+            "bind one natural fixed-Pack successor with the same Evidence Pack "
+            "and provider profile. Dynamic Layer Two remains blocked until that "
+            "run produces an L1- and content-assessable Judgment."
+        ),
+        "known_boundary": str(authority["known_boundary"]),
+    }
+    summary = {**summary_body, "result_digest": canonical_digest(summary_body)}
+    _write_new(_resolve(str(output["public_result_ref"])), summary)
+    return summary
+
+
 def _run_claim_surface_authority_proof(
     *,
     authority: Mapping[str, Any],
@@ -883,6 +1435,21 @@ def _run_claim_surface_authority_proof(
         claim_input,
         policy=_json(paths["claim_surface_authority_policy_ref"]),
     )
+    if (
+        surface_input.get("claim_surface_authority_contract", {}).get(
+            "model_view_mode"
+        )
+        == "claim_relation_alias_compact_v1"
+    ):
+        return _run_claim_relation_alias_proof(
+            authority=authority,
+            authority_path=authority_path,
+            paths=paths,
+            result_schema=result_schema,
+            base_research_input=base_research_input,
+            claim_input=claim_input,
+            surface_input=surface_input,
+        )
     cell_id = "CELL::value_capture"
     failed = _json(paths["failed_chat_payload_ref"])
     failed["cells"][0]["what_would_change"][

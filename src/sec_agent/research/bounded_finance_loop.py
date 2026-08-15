@@ -549,60 +549,85 @@ def _judgment_parameters(
                     "claim_relations": {
                         "type": "array",
                         "items": _strict_object(
-                            {
-                                "atom_field": {
-                                    "type": "string",
-                                    "enum": [
-                                        "thesis_atom",
-                                        "mechanism_atom",
-                                        "counterargument_atom",
-                                    ],
-                                },
-                                "claim_subject": {
-                                    "type": "string",
-                                    "enum": list(
-                                        contract["allowed_claim_subjects"]
-                                    ),
-                                },
-                                "claim_outcome": {
-                                    "type": "string",
-                                    "enum": list(
-                                        contract["allowed_claim_outcomes"]
-                                    ),
-                                },
-                                "claim_relation": {
-                                    "type": "string",
-                                    "enum": list(
-                                        contract["allowed_claim_relations"]
-                                    ),
-                                },
-                                "attribution_basis": {
-                                    "type": "string",
-                                    "enum": list(
-                                        contract["allowed_attribution_bases"]
-                                    ),
-                                },
-                                "claim_scope": {
-                                    "type": "string",
-                                    "enum": list(
-                                        contract["allowed_claim_scopes"]
-                                    ),
-                                },
-                                "financial_scope": {
-                                    "type": "string",
-                                    "enum": list(
-                                        contract["allowed_financial_scopes"]
-                                    ),
-                                },
-                                "causal_bridge_authority": {
-                                    "type": "string",
-                                    "enum": list(
-                                        contract[
-                                            "allowed_causal_bridge_authorities"
-                                        ]
-                                    ),
-                                },
-                            }
+                            (
+                                {
+                                    "atom_field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "thesis_atom",
+                                            "mechanism_atom",
+                                            "counterargument_atom",
+                                        ],
+                                    },
+                                    "claim_relation_ref": {
+                                        "type": "string",
+                                        "enum": list(
+                                            contract[
+                                                "allowed_claim_relation_refs"
+                                            ]
+                                        ),
+                                        "description": (
+                                            "Select one typed relation alias; the "
+                                            "Harness expands all authority fields."
+                                        ),
+                                    },
+                                }
+                                if "allowed_claim_relation_refs" in contract
+                                else {
+                                    "atom_field": {
+                                        "type": "string",
+                                        "enum": [
+                                            "thesis_atom",
+                                            "mechanism_atom",
+                                            "counterargument_atom",
+                                        ],
+                                    },
+                                    "claim_subject": {
+                                        "type": "string",
+                                        "enum": list(
+                                            contract["allowed_claim_subjects"]
+                                        ),
+                                    },
+                                    "claim_outcome": {
+                                        "type": "string",
+                                        "enum": list(
+                                            contract["allowed_claim_outcomes"]
+                                        ),
+                                    },
+                                    "claim_relation": {
+                                        "type": "string",
+                                        "enum": list(
+                                            contract["allowed_claim_relations"]
+                                        ),
+                                    },
+                                    "attribution_basis": {
+                                        "type": "string",
+                                        "enum": list(
+                                            contract["allowed_attribution_bases"]
+                                        ),
+                                    },
+                                    "claim_scope": {
+                                        "type": "string",
+                                        "enum": list(
+                                            contract["allowed_claim_scopes"]
+                                        ),
+                                    },
+                                    "financial_scope": {
+                                        "type": "string",
+                                        "enum": list(
+                                            contract["allowed_financial_scopes"]
+                                        ),
+                                    },
+                                    "causal_bridge_authority": {
+                                        "type": "string",
+                                        "enum": list(
+                                            contract[
+                                                "allowed_causal_bridge_authorities"
+                                            ]
+                                        ),
+                                    },
+                                }
+                            )
                         ),
                         "minItems": 3,
                         "maxItems": 3,
@@ -739,6 +764,9 @@ def compile_finance_loop_tool_contract(
         maximum_product_intent_chars=(
             policy.evidence_request_max_product_intent_chars
         ),
+        include_evidence_request_tool=(
+            policy.maximum_calls_by_tool[SUBMIT_EVIDENCE_REQUEST_TOOL] > 0
+        ),
         strict=strict,
     )
 
@@ -810,6 +838,14 @@ def compile_finance_loop_messages(
     execution_budget: Mapping[str, int] | None = None,
 ) -> tuple[dict[str, str], ...]:
     cells = _selected_cells(research_input, required_cell_ids)
+    compact_alias_view = research_input.get(
+        "claim_surface_authority_contract", {}
+    ).get("model_view_mode") == "claim_relation_alias_compact_v1"
+    maximum_visible_requests = (
+        int(execution_budget["maximum_evidence_requests"])
+        if execution_budget is not None
+        else None
+    )
     route_decisions = {
         str(row["gap_ref"]): row
         for row in research_input["evidence_request_route_catalog"][
@@ -834,10 +870,20 @@ def compile_finance_loop_messages(
                 "allowed_numeric_relation_refs": list(
                     row["allowed_numeric_relation_refs"]
                 ),
-                "role_method_pack": deepcopy(row.get("role_method_pack")),
-                "graph_context_pack": deepcopy(row["graph_context_pack"]),
-                "context_consumption_contract": deepcopy(
-                    row["context_consumption_contract"]
+                **(
+                    {}
+                    if compact_alias_view
+                    else {
+                        "role_method_pack": deepcopy(
+                            row.get("role_method_pack")
+                        ),
+                        "graph_context_pack": deepcopy(
+                            row["graph_context_pack"]
+                        ),
+                        "context_consumption_contract": deepcopy(
+                            row["context_consumption_contract"]
+                        ),
+                    }
                 ),
                 **(
                     {
@@ -846,12 +892,25 @@ def compile_finance_loop_messages(
                         )
                     }
                     if "claim_authority_card" in row
+                    and not compact_alias_view
                     else {}
                 ),
                 **(
                     {
-                        "claim_relation_card": deepcopy(
-                            row["claim_relation_card"]
+                        **(
+                            {
+                                "claim_relation_aliases": deepcopy(
+                                    row["claim_relation_card"][
+                                        "model_relation_aliases"
+                                    ]
+                                )
+                            }
+                            if compact_alias_view
+                            else {
+                                "claim_relation_card": deepcopy(
+                                    row["claim_relation_card"]
+                                )
+                            }
                         ),
                         "allowed_qualitative_fact_refs": list(
                             row["allowed_qualitative_fact_refs"]
@@ -860,15 +919,33 @@ def compile_finance_loop_messages(
                     if "claim_relation_card" in row
                     else {}
                 ),
-                "gap_route_decisions": [
-                    deepcopy(route_decisions[str(ref)])
-                    for ref in row["visible_gap_refs"]
-                ],
+                **(
+                    {
+                        "gap_route_decisions": [
+                            deepcopy(route_decisions[str(ref)])
+                            for ref in row["visible_gap_refs"]
+                        ]
+                    }
+                    if maximum_visible_requests is None
+                    or maximum_visible_requests > 0
+                    else {}
+                ),
             }
             for row in cells
         ],
-        "research_context_injection_receipt": deepcopy(
-            research_input["research_context_receipts"]
+        **(
+            {
+                "research_context_available_after_mandatory_read": True,
+                "research_context_receipt_digest": canonical_digest(
+                    research_input["research_context_receipts"]
+                ),
+            }
+            if compact_alias_view
+            else {
+                "research_context_injection_receipt": deepcopy(
+                    research_input["research_context_receipts"]
+                )
+            }
         ),
         "workflow": [
             (
@@ -892,8 +969,16 @@ def compile_finance_loop_messages(
         ],
     }
     if "claim_authority_contract" in research_input:
-        visible["claim_authority_contract"] = deepcopy(
-            research_input["claim_authority_contract"]
+        visible["claim_authority_contract"] = (
+            {
+                "fixed_pack_unit_test_only": True,
+                "dynamic_retrieval_executed": False,
+                "agentic_research_claimed": False,
+                "model_selects_claim_scope": True,
+                "harness_may_validate_but_not_invent_judgment": True,
+            }
+            if compact_alias_view
+            else deepcopy(research_input["claim_authority_contract"])
         )
         visible["boundaries"].extend(
             [
@@ -903,8 +988,17 @@ def compile_finance_loop_messages(
             ]
         )
     if "claim_surface_authority_contract" in research_input:
-        visible["claim_surface_authority_contract"] = deepcopy(
-            research_input["claim_surface_authority_contract"]
+        visible["claim_surface_authority_contract"] = (
+            {
+                "model_view_mode": "claim_relation_alias_compact_v1",
+                "relation_alias_selection_primary": True,
+                "qualitative_fact_surface_is_harness_rendered": True,
+                "point_estimate_from_qualitative_band_forbidden": True,
+                "fixed_pack_unit_test_only": True,
+                "agentic_research_claimed": False,
+            }
+            if compact_alias_view
+            else deepcopy(research_input["claim_surface_authority_contract"])
         )
         visible["boundaries"].extend(
             [
@@ -942,13 +1036,117 @@ def compile_finance_loop_messages(
         {
             "role": "system",
             "content": (
-                "You are a bounded financial research analyst. Use only the four "
+                "You are a bounded financial research analyst. Use only the "
                 "provided tools. Preserve evidence boundaries, limiting evidence "
                 "and unresolved gaps; never convert correlation into causation."
             ),
         },
         {"role": "user", "content": _json_message(visible)},
     )
+
+
+def _claim_authority_model_view(card: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "card_schema_version": card["card_schema_version"],
+        "case_key": card["case_key"],
+        "cell_id": card["cell_id"],
+        "allowed_claim_scopes": deepcopy(card["allowed_claim_scopes"]),
+        "allowed_financial_scopes": deepcopy(
+            card["allowed_financial_scopes"]
+        ),
+        "allowed_causal_bridge_authorities": deepcopy(
+            card["allowed_causal_bridge_authorities"]
+        ),
+        "allowed_combinations": [
+            {
+                key: deepcopy(row[key])
+                for key in (
+                    "claim_scope",
+                    "financial_scope",
+                    "causal_bridge_authority",
+                    "allowed_inference_authorities",
+                    "allowed_judgment_statuses",
+                )
+            }
+            for row in card["allowed_combinations"]
+        ],
+        "bridge_gap_refs": deepcopy(card["bridge_gap_refs"]),
+        "rules": deepcopy(card["rules"]),
+    }
+
+
+def _claim_relation_alias_model_view(card: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "card_schema_version": card["card_schema_version"],
+        "case_key": card["case_key"],
+        "cell_id": card["cell_id"],
+        "model_relation_aliases": deepcopy(card["model_relation_aliases"]),
+        "rules": deepcopy(card["rules"]),
+    }
+
+
+def _qualitative_fact_model_view(row: Mapping[str, Any]) -> dict[str, Any]:
+    fields = (
+        "qualitative_fact_ref",
+        "fact_kind",
+        "case_key",
+        "cell_id",
+        "subject",
+        "metric_id",
+        "qualitative_band",
+        "unit",
+        "fiscal_year",
+        "fiscal_period",
+        "period_end",
+        "authority_mode",
+        "source_evidence_ref",
+        "display_surface_zh",
+        "qualifier_zh",
+        "point_estimate_forbidden",
+        "audited_numeric_fact",
+    )
+    return {field: deepcopy(row[field]) for field in fields}
+
+
+def _numeric_fact_model_view(row: Mapping[str, Any]) -> dict[str, Any]:
+    fields = (
+        "numeric_ref",
+        "ticker",
+        "metric_id",
+        "value_decimal",
+        "unit",
+        "unit_family",
+        "fiscal_year",
+        "fiscal_period",
+        "period_start",
+        "period_end",
+        "authority_mode",
+        "formula_trace",
+    )
+    return {field: deepcopy(row[field]) for field in fields}
+
+
+def _numeric_relation_model_view(row: Mapping[str, Any]) -> dict[str, Any]:
+    fields = (
+        "numeric_relation_ref",
+        "ticker",
+        "metric_id",
+        "relation_type",
+        "direction",
+        "current_numeric_ref",
+        "comparison_numeric_ref",
+        "absolute_change_decimal",
+        "percent_change_decimal",
+        "percentage_point_change_decimal",
+        "unit",
+        "fiscal_period",
+        "current_period_start",
+        "current_period_end",
+        "comparison_period_start",
+        "comparison_period_end",
+        "authority_mode",
+    )
+    return {field: deepcopy(row[field]) for field in fields}
 
 
 def _evidence_tool_result(
@@ -1002,6 +1200,9 @@ def _evidence_tool_result(
             "source_bound_qualitative_fact_cards", ()
         )
     }
+    compact_alias_view = research_input.get(
+        "claim_surface_authority_contract", {}
+    ).get("model_view_mode") == "claim_relation_alias_compact_v1"
     return {
         "status": "reviewed_evidence_read",
         "cell_id": cell["cell_id"],
@@ -1010,17 +1211,35 @@ def _evidence_tool_result(
         "role_method_pack": deepcopy(cell.get("role_method_pack")),
         "graph_context_pack": deepcopy(cell["graph_context_pack"]),
         **(
-            {"claim_authority_card": deepcopy(cell["claim_authority_card"])}
+            {
+                "claim_authority_card": (
+                    _claim_authority_model_view(
+                        cell["claim_authority_card"]
+                    )
+                    if compact_alias_view
+                    else deepcopy(cell["claim_authority_card"])
+                )
+            }
             if "claim_authority_card" in cell
             else {}
         ),
         **(
             {
-                "claim_relation_card": deepcopy(
-                    cell["claim_relation_card"]
+                "claim_relation_card": (
+                    _claim_relation_alias_model_view(
+                        cell["claim_relation_card"]
+                    )
+                    if compact_alias_view
+                    else deepcopy(cell["claim_relation_card"])
                 ),
                 "source_bound_qualitative_facts": [
-                    deepcopy(qualitative_facts[str(ref)])
+                    (
+                        _qualitative_fact_model_view(
+                            qualitative_facts[str(ref)]
+                        )
+                        if compact_alias_view
+                        else deepcopy(qualitative_facts[str(ref)])
+                    )
                     for ref in cell["allowed_qualitative_fact_refs"]
                 ],
             }
@@ -1028,6 +1247,11 @@ def _evidence_tool_result(
             else {}
         ),
         "candidate_or_rejected_item_included": False,
+        **(
+            {"model_view_profile": "claim_relation_alias_compact_v1"}
+            if compact_alias_view
+            else {}
+        ),
     }
 
 
@@ -1044,15 +1268,34 @@ def _numeric_tool_result(
         str(row["numeric_relation_ref"]): row
         for row in research_input["numeric_relation_cards"]
     }
+    compact_alias_view = research_input.get(
+        "claim_surface_authority_contract", {}
+    ).get("model_view_mode") == "claim_relation_alias_compact_v1"
     return {
         "status": "authoritative_numeric_facts_read",
         "cell_id": cell["cell_id"],
-        "numeric_facts": [deepcopy(cards[str(ref)]) for ref in cell["allowed_numeric_refs"]],
+        "numeric_facts": [
+            (
+                _numeric_fact_model_view(cards[str(ref)])
+                if compact_alias_view
+                else deepcopy(cards[str(ref)])
+            )
+            for ref in cell["allowed_numeric_refs"]
+        ],
         "same_basis_numeric_relations": [
-            deepcopy(relations[str(ref)])
+            (
+                _numeric_relation_model_view(relations[str(ref)])
+                if compact_alias_view
+                else deepcopy(relations[str(ref)])
+            )
             for ref in cell["allowed_numeric_relation_refs"]
         ],
         "model_generated_numeric_authority": False,
+        **(
+            {"model_view_profile": "claim_relation_alias_compact_v1"}
+            if compact_alias_view
+            else {}
+        ),
     }
 
 
@@ -1352,8 +1595,11 @@ def run_bounded_finance_loop(
         "finance_loop_tool_definition_contract_drift",
     )
     expected_tools = {str(row["function"]["name"]) for row in tools}
+    required_tools = set(FINANCE_TOOL_NAMES)
+    if policy.maximum_calls_by_tool[SUBMIT_EVIDENCE_REQUEST_TOOL] == 0:
+        required_tools.remove(SUBMIT_EVIDENCE_REQUEST_TOOL)
     _require(
-        expected_tools == set(FINANCE_TOOL_NAMES),
+        expected_tools == required_tools,
         "finance_loop_tool_definition_set_invalid",
     )
     messages: list[dict[str, Any]] = [

@@ -23,6 +23,7 @@ from .claim_authority import (
 from .claim_surface_authority import (
     CLAIM_SURFACE_AUTHORITY_DELIVERABLE_SCHEMA_VERSION,
     CLAIM_SURFACE_AUTHORITY_MODEL_FIELDS,
+    CLAIM_SURFACE_RELATION_ALIAS_DELIVERABLE_SCHEMA_VERSION,
     ClaimSurfaceAuthorityError,
     validate_claim_surface_authority_selection,
 )
@@ -1336,16 +1337,23 @@ def compile_current_research_messages(
         **(
             {
                 "claim_relations": [
-                    {
-                        "atom_field": "exactly one of thesis_atom, mechanism_atom or counterargument_atom; cover all three exactly once",
-                        "claim_subject": "one subject listed in the cell ClaimRelationCard",
-                        "claim_outcome": "one outcome listed in the cell ClaimRelationCard",
-                        "claim_relation": "one relation listed in the cell ClaimRelationCard",
-                        "attribution_basis": "one attribution basis listed in the cell ClaimRelationCard",
-                        "claim_scope": "scope of this atom-level claim",
-                        "financial_scope": "financial scope of this atom-level claim",
-                        "causal_bridge_authority": "bridge authority of this atom-level claim",
-                    }
+                    (
+                        {
+                            "atom_field": "exactly one of thesis_atom, mechanism_atom or counterargument_atom; cover all three exactly once",
+                            "claim_relation_ref": "one CR ref listed in the cell ClaimRelationCard; the Harness expands its complete typed relation",
+                        }
+                        if "allowed_claim_relation_refs" in contract
+                        else {
+                            "atom_field": "exactly one of thesis_atom, mechanism_atom or counterargument_atom; cover all three exactly once",
+                            "claim_subject": "one subject listed in the cell ClaimRelationCard",
+                            "claim_outcome": "one outcome listed in the cell ClaimRelationCard",
+                            "claim_relation": "one relation listed in the cell ClaimRelationCard",
+                            "attribution_basis": "one attribution basis listed in the cell ClaimRelationCard",
+                            "claim_scope": "scope of this atom-level claim",
+                            "financial_scope": "financial scope of this atom-level claim",
+                            "causal_bridge_authority": "bridge authority of this atom-level claim",
+                        }
+                    )
                 ],
                 "qualitative_fact_refs": [
                     "zero or more QF refs from this cell; select a reviewed source-bound qualitative fact instead of repeating its numeric surface in prose"
@@ -1972,9 +1980,11 @@ def validate_current_research_output(
                 ),
                 **(
                     {
-                        field: deepcopy(raw[field])
-                        for field in CLAIM_SURFACE_AUTHORITY_MODEL_FIELDS
-                        if field != "qualitative_fact_refs"
+                        "claim_relations": deepcopy(
+                            claim_surface_authority_receipt[
+                                "claim_relations"
+                            ]
+                        )
                     }
                     if claim_surface_authority_receipt is not None
                     else {}
@@ -2095,7 +2105,14 @@ def compile_current_research_deliverable(
         )
     unsigned = {
         "schema_version": (
-            CLAIM_SURFACE_AUTHORITY_DELIVERABLE_SCHEMA_VERSION
+            (
+                CLAIM_SURFACE_RELATION_ALIAS_DELIVERABLE_SCHEMA_VERSION
+                if research_input.get(
+                    "claim_surface_authority_contract", {}
+                ).get("model_view_mode")
+                == "claim_relation_alias_compact_v1"
+                else CLAIM_SURFACE_AUTHORITY_DELIVERABLE_SCHEMA_VERSION
+            )
             if "claim_surface_authority_contract" in research_input
             else (
                 CLAIM_AUTHORITY_DELIVERABLE_SCHEMA_VERSION

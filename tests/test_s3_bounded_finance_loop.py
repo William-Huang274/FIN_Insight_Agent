@@ -51,6 +51,9 @@ from sec_agent.research.current_consumer import (
 from sec_agent.research.claim_authority import (
     compile_claim_authority_research_input,
 )
+from sec_agent.research.claim_surface_authority import (
+    compile_claim_surface_authority_research_input,
+)
 from sec_agent.research.planning import (
     compile_research_objective,
     load_research_planning_policy,
@@ -84,6 +87,21 @@ FAKE = ROOT / (
 CLAIM_AUTHORITY_POLICY = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_v1_0.json"
+)
+CLAIM_RELATION_ALIAS_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_v1_1.json"
+)
+CLAIM_RELATION_ALIAS_FAKE = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_alias_fake_payload_v1_0.json"
+)
+CLAIM_SURFACE_R1_CAPACITY_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_chat_live_capacity_assessment_v1_0.json"
 )
 
 
@@ -347,6 +365,118 @@ def test_fixed_pack_claim_authority_loop_uses_zero_request_budget(contracts) -> 
     assert result.structured_deliverable["fixed_pack_experiment_boundary"][
         "agentic_research_claimed"
     ] is False
+
+
+def test_claim_relation_alias_loop_compacts_wire_and_retains_private_lineage(
+    contracts,
+) -> None:
+    base_policy, research_input, kernel, route, planning = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_ALIAS_POLICY),
+    )
+    cell_id = "CELL::value_capture"
+    scoped = scope_bounded_finance_loop_policy(
+        base_policy,
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_loop_tools(
+        research_input=alias_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped,
+        strict=False,
+    )
+    assert [row["function"]["name"] for row in tools] == [
+        READ_REVIEWED_EVIDENCE_TOOL,
+        READ_NUMERIC_FACTS_TOOL,
+        SUBMIT_RESEARCH_JUDGMENT_TOOL,
+    ]
+    budget = {
+        "maximum_steps": scoped.maximum_steps,
+        "maximum_evidence_requests": 0,
+        "maximum_reads_per_cell": 1,
+        "maximum_parallel_read_tools": 2,
+        "maximum_judgments_per_cell": 1,
+        "retry_count": 0,
+    }
+    observed: dict[str, object] = {}
+    fake = deepcopy(_json(CLAIM_RELATION_ALIAS_FAKE)["cells"][0])
+
+    def execute(messages, _tools, index):
+        if index == 1:
+            return _parallel_step(
+                index,
+                [
+                    (READ_REVIEWED_EVIDENCE_TOOL, {"cell_id": cell_id}),
+                    (READ_NUMERIC_FACTS_TOOL, {"cell_id": cell_id}),
+                ],
+            )
+        observed["messages"] = deepcopy(messages)
+        return _step(index, SUBMIT_RESEARCH_JUDGMENT_TOOL, fake)
+
+    result = run_bounded_finance_loop(
+        policy=scoped,
+        research_input=alias_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+        tools=tools,
+        step_executor=execute,
+        visible_execution_budget=budget,
+    )
+    messages = observed["messages"]
+    message_chars = sum(
+        len(str(row.get("content") or "")) for row in messages
+    )
+    tool_chars = len(
+        json.dumps(
+            tools,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+    )
+    prior = _json(CLAIM_SURFACE_R1_CAPACITY_ASSESSMENT)["observed"]
+    assert message_chars < prior["step_two_model_visible_message_chars"] / 2
+    assert tool_chars < prior["step_two_tool_schema_chars"] * 0.55
+
+    tool_results = [
+        json.loads(row["content"])
+        for row in messages
+        if row.get("role") == "tool"
+    ]
+    numeric_result = next(
+        row
+        for row in tool_results
+        if row.get("status") == "authoritative_numeric_facts_read"
+    )
+    compact_fact = numeric_result["numeric_facts"][0]
+    assert "source_digests" not in compact_fact
+    assert "citation_urls" not in compact_fact
+    assert "source_observation_ids" not in compact_fact
+    assert any(
+        "source_digests" in row and "citation_urls" in row
+        for row in alias_input["numeric_fact_cards"]
+    )
+    assert result.status == "completed_all_required_cells"
+    assert result.step_count == 2
+    assert result.tool_call_count == 3
+    assert result.structured_deliverable["schema_version"] == (
+        "fin_ia_current_research_deliverable_v1_5"
+    )
+    assert all(
+        "claim_subject" in row and "claim_relation_ref" in row
+        for row in result.structured_deliverable["cells"][0][
+            "claim_relations"
+        ]
+    )
 
 
 def _case_specific_plan(

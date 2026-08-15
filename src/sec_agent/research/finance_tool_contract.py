@@ -324,6 +324,7 @@ def compile_finance_tool_contract(
     maximum_metric_intents: int,
     maximum_product_intents: int,
     maximum_product_intent_chars: int,
+    include_evidence_request_tool: bool,
     strict: bool,
 ) -> FinanceToolContract:
     _require(bool(selected_cells), "finance_tool_contract_cells_empty")
@@ -460,14 +461,20 @@ def compile_finance_tool_contract(
             "Read authoritative NumericFacts with period, unit and formula lineage for one research cell.",
             read_schema,
         ),
-        tool(
-            SUBMIT_EVIDENCE_REQUEST_TOOL,
+        *(
             (
-                "Submit one bounded, family-compatible proposal for a visible gap. "
-                "This never runs retrieval or creates Evidence. Split needs that use "
-                "different facets into separate calls."
-            ),
-            proposal_schema,
+                tool(
+                    SUBMIT_EVIDENCE_REQUEST_TOOL,
+                    (
+                        "Submit one bounded, family-compatible proposal for a visible gap. "
+                        "This never runs retrieval or creates Evidence. Split needs that use "
+                        "different facets into separate calls."
+                    ),
+                    proposal_schema,
+                ),
+            )
+            if include_evidence_request_tool
+            else ()
         ),
         tool(
             SUBMIT_RESEARCH_JUDGMENT_TOOL,

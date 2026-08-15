@@ -28,6 +28,10 @@ FULL_FRAGMENT_SURFACE_FIXED_PACK_DECISION_SCHEMA = (
     "fin_ia_s3_fixed_pack_full_fragment_judgment_surface_"
     "live_scope_decision_v1_1"
 )
+FULL_FRAGMENT_RELATION_ROLE_FIXED_PACK_DECISION_SCHEMA = (
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_relation_role_"
+    "live_scope_decision_v1_2"
+)
 FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS = (
     "full_fragment_zero_call_pass_one_fresh_chat_judgment_authorized"
 )
@@ -117,6 +121,7 @@ def _validate_fixed_pack_decision(
     if decision.get("schema_version") in {
         FULL_FRAGMENT_FIXED_PACK_DECISION_SCHEMA,
         FULL_FRAGMENT_SURFACE_FIXED_PACK_DECISION_SCHEMA,
+        FULL_FRAGMENT_RELATION_ROLE_FIXED_PACK_DECISION_SCHEMA,
     }:
         return _validate_full_fragment_fixed_pack_decision(
             root=root, decision=decision
@@ -286,7 +291,14 @@ def _validate_full_fragment_fixed_pack_decision(
 ) -> dict[str, Any]:
     surface_successor = (
         decision.get("schema_version")
-        == FULL_FRAGMENT_SURFACE_FIXED_PACK_DECISION_SCHEMA
+        in {
+            FULL_FRAGMENT_SURFACE_FIXED_PACK_DECISION_SCHEMA,
+            FULL_FRAGMENT_RELATION_ROLE_FIXED_PACK_DECISION_SCHEMA,
+        }
+    )
+    relation_role_successor = (
+        decision.get("schema_version")
+        == FULL_FRAGMENT_RELATION_ROLE_FIXED_PACK_DECISION_SCHEMA
     )
     required_equal = {
         "status": FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS,
@@ -295,8 +307,15 @@ def _validate_full_fragment_fixed_pack_decision(
         "run_scope_id": FIXED_PACK_SCOPE,
         "evidence_mode": "reviewed_fixed_pack_unit_test",
         "next_authorized_scope": (
-            "one_clean_synced_exact_once_DELL_value_capture_full_three_"
-            "fragment_analysis_submission_Chat_live"
+            (
+                "one_clean_synced_exact_once_DELL_value_capture_full_three_"
+                "fragment_analysis_submission_Chat_R3"
+            )
+            if relation_role_successor
+            else (
+                "one_clean_synced_exact_once_DELL_value_capture_full_three_"
+                "fragment_analysis_submission_Chat_live"
+            )
         ),
     }
     for field, expected in required_equal.items():
@@ -320,6 +339,18 @@ def _validate_full_fragment_fixed_pack_decision(
             "fragment_surface_contract_parity_required",
             "saved_R1_replay_required",
             "final_QF_surface_rendering_required",
+        ):
+            if decision.get(field) is not True:
+                raise ValueError(
+                    "project_os_full_fragment_decision_true_required:"
+                    f"{field}"
+                )
+    if relation_role_successor:
+        for field in (
+            "relation_support_set_v1_2_required",
+            "saved_R2_replay_required",
+            "fragment_local_disposition_required",
+            "clock_derived_authority_timestamp_required",
         ):
             if decision.get(field) is not True:
                 raise ValueError(
@@ -364,29 +395,79 @@ def _validate_full_fragment_fixed_pack_decision(
         sha_field="clean_zero_call_result_sha256",
         digest_field="clean_zero_call_result_digest",
     )
+    expected_clean_status = (
+        "zero_call_relation_support_and_fragment_local_disposition_pass"
+        if relation_role_successor
+        else "zero_call_full_fragment_sequence_and_terminal_judgment_pass_predecessor_not_reusable"
+    )
     if not (
-        clean.get("status")
-        == "zero_call_full_fragment_sequence_and_terminal_judgment_pass_predecessor_not_reusable"
-        and (clean.get("fresh_process") or {}).get("byte_equivalent") is True
+        clean.get("status") == expected_clean_status
+        and (
+            clean.get("fresh_process_results_byte_equivalent") is True
+            if relation_role_successor
+            else (clean.get("fresh_process") or {}).get("byte_equivalent")
+            is True
+        )
         and (clean.get("immutable_predecessor") or {}).get(
             "reuse_in_full_judgment_authorized"
         )
         is False
-        and (clean.get("full_fake_sequence") or {})
-        .get("terminal_judgment", {})
-        .get("harness_generated_research_judgment")
-        is False
+        and (
+            (
+                (clean.get("terminal_compilation") or {}).get(
+                    "harness_generated_research_judgment"
+                )
+                is False
+            )
+            if relation_role_successor
+            else (clean.get("full_fake_sequence") or {})
+            .get("terminal_judgment", {})
+            .get("harness_generated_research_judgment")
+            is False
+        )
         and (
             not surface_successor
             or (
-                (clean.get("surface_contract") or {}).get(
-                    "saved_R1_replay_failure"
+                (
+                    relation_role_successor
+                    or (clean.get("surface_contract") or {}).get(
+                        "saved_R1_replay_failure"
+                    )
+                    == "finance_loop_micro_narrative_invalid"
                 )
-                == "finance_loop_micro_narrative_invalid"
                 and (clean.get("surface_contract") or {}).get(
                     "final_deliverable_QF_surface_preserved"
                 )
                 is True
+            )
+        )
+        and (
+            not relation_role_successor
+            or (
+                (clean.get("relation_role_contract") or {}).get(
+                    "saved_R2_thesis_replay_pass"
+                )
+                is True
+                and (clean.get("relation_role_contract") or {}).get(
+                    "saved_R2_mechanism_replay_pass"
+                )
+                is True
+                and (clean.get("relation_role_contract") or {}).get(
+                    "saved_R2_context_role_preserved"
+                )
+                is True
+                and (clean.get("relation_role_contract") or {}).get(
+                    "context_only_required_support_mutation_failure"
+                )
+                == "finance_loop_micro_required_authority_missing"
+                and (clean.get("terminal_compilation") or {}).get(
+                    "judgment_status"
+                )
+                == "bounded_support"
+                and (clean.get("terminal_compilation") or {}).get(
+                    "inference_authority"
+                )
+                == "bounded_inference"
             )
         )
     ):
@@ -398,9 +479,13 @@ def _validate_full_fragment_fixed_pack_decision(
         ref_field="scope_disposition_ref",
         sha_field="scope_disposition_sha256",
     )
+    expected_disposition_status = (
+        "approved_fresh_full_three_fragment_analysis_submission_Chat_R3"
+        if relation_role_successor
+        else "approved_fresh_full_three_fragment_analysis_submission_Chat_live"
+    )
     if not (
-        disposition.get("status")
-        == "approved_fresh_full_three_fragment_analysis_submission_Chat_live"
+        disposition.get("status") == expected_disposition_status
         and disposition.get("execution_budget", {}).get(
             "maximum_model_calls"
         )
@@ -409,9 +494,17 @@ def _validate_full_fragment_fixed_pack_decision(
         and (
             not surface_successor
             or (
-                disposition.get("surface_contract_v1_1_required") is True
+                (
+                    relation_role_successor
+                    or disposition.get("surface_contract_v1_1_required")
+                    is True
+                )
                 and disposition.get("prior_failed_attempt_reused") is False
             )
+        )
+        and (
+            not relation_role_successor
+            or disposition.get("relation_support_set_v1_2_required") is True
         )
     ):
         raise ValueError("project_os_full_fragment_disposition_invalid")
@@ -454,15 +547,38 @@ def _validate_full_fragment_fixed_pack_decision(
             ref_field="failed_full_fragment_assessment_ref",
             sha_field="failed_full_fragment_assessment_sha256",
         )
+        expected_failure_code = (
+            "finance_loop_micro_required_authority_missing"
+            if relation_role_successor
+            else "finance_loop_micro_narrative_invalid"
+        )
+        expected_failure_fragment = (
+            "submit_research_mechanism"
+            if relation_role_successor
+            else "submit_research_thesis"
+        )
+        expected_assessment_status = (
+            "terminal_contract_failure_relation_evidence_role_and_"
+            "fragment_disposition_compilation_defect_new_attempt_required"
+            if relation_role_successor
+            else "terminal_contract_failure_project_surface_projection_"
+            "defect_new_attempt_required"
+        )
+        expected_preserved_field = (
+            "immutable_R2_preserved"
+            if relation_role_successor
+            else "same_attempt_retry_forbidden"
+        )
         if not (
             prior_failed.get("status") == "terminal_failed_no_retry"
-            and prior_failed.get("failure_code")
-            == "finance_loop_micro_narrative_invalid"
+            and prior_failed.get("failure_code") == expected_failure_code
+            and prior_failed.get("failure_fragment_tool")
+            == expected_failure_fragment
             and (prior_failed.get("execution") or {}).get("retries") == 0
             and prior_failed_assessment.get("status")
-            == "terminal_contract_failure_project_surface_projection_defect_new_attempt_required"
+            == expected_assessment_status
             and (prior_failed_assessment.get("disposition") or {}).get(
-                "same_attempt_retry_forbidden"
+                expected_preserved_field
             )
             is True
         ):
@@ -513,6 +629,7 @@ def _validate_full_fragment_fixed_pack_decision(
         "claim_relation_alias_capacity_successor": False,
         "micro_judgment_successor": False,
         "full_fragment_judgment_successor": True,
+        "relation_role_successor": relation_role_successor,
         "node_profiles": {
             "fragment_analysis": {
                 "reasoning_effort": analysis_defaults["reasoning_effort"],
@@ -844,6 +961,20 @@ def build_preflight(
         )
     ):
         raise ValueError("project_os_full_fragment_scope_allowance_missing")
+    if (
+        decision_projection.get("relation_role_successor") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-018-relation-required-support-and-fragment-status-"
+                "coupling"
+            ),
+            allowed_scope="one_new_R3_after_clean_synced_proof",
+        )
+    ):
+        raise ValueError(
+            "project_os_full_fragment_relation_role_scope_allowance_missing"
+        )
 
     env = os.environ if environment is None else environment
     api_key_env = str(decision_projection["api_key_env"])

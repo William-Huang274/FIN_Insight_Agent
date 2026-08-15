@@ -38,7 +38,7 @@
   - [x] DELL `value_capture` Chat/Responses paired single-cell exact-live：两路均 5 step／6 receipts、合同通过、0 retry；Responses live continuation 已观察
   - [x] paired 内容审计与协议处置：两路均因 comparable-period relation 无确定性 lineage 未过 L1；source class 与可执行 route 仍漂移；Chat 保留 provisional primary，Responses 保留 shadow/candidate
   - [ ] 零调用 comparable-period Numeric relation＋EvidenceRequest source-route 合同包；通过后最多一条 Chat 单单元复验，五单元仍未授权
-- [ ] S3 fixed-Pack 第一层自然 replacement（Claim Surface formal R3 已通过；fresh live 接线与执行中）
+- [ ] S3 fixed-Pack 第一层自然 replacement（Claim Surface formal R3 已通过；Chat R1 mandatory reads 后 reasoning budget 耗尽，0 retry 保留；alias／compact model-view 零调用 successor 处理中）
 - [ ] S1→S3 动态 Research Truth Spine（EvidenceRequest→S1/S2→EvidenceResponse）
 - [ ] DELL `value_capture` 单单元动态 Agentic Research
 - [ ] DELL 五单元动态案例、底稿与报告验收

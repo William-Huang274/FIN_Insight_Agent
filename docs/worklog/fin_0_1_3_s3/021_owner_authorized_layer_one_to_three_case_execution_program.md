@@ -42,3 +42,9 @@ Owner 授权在同一 FIN 0.1.3 内连续执行以下五项，并允许在不改
 - 修复后全仓复证为 `304 passed`；`compileall`、active-baseline（127 Python／8 frontend／10 runtime resources、零旧引用）、6585 文件密钥扫描和 `git diff --check` 均通过。
 
 当前边界：没有模型、Provider、网络或产品发布调用；live authority 尚未签发。下一门是全仓复证、clean commit/push、真实 Project OS preflight，再签发唯一 authority。
+
+## 第一项 natural R1 结果与重排（2026-08-15）
+
+clean/synced preflight 通过后已执行唯一 Chat R1。第一步 mandatory read pair 成功；第二步 HTTP 200 完整响应把 16000 completion token 全部用于 reasoning，没有可见内容或 tool call，最终 `model_gateway_reasoning_budget_exhausted`，0 retry。L1 与内容均不可评价，第一项未通过，第二项尚未进入。
+
+根据 Owner 允许在 1–5 内修复和重排的授权，第一项插入一个零调用 successor：ClaimRelation alias＋本地展开、权限卡单次投影、紧凑 model view、零预算工具移除。不会增加 token 上限、换模型或直接重跑；R1 authority、result 与 capture 保持不可变。详见 `022_fixed_pack_claim_surface_chat_r1_capacity_failure_and_successor.md`。

@@ -70,6 +70,8 @@ Owner 已把原三层验收扩展为同一 FIN 0.1.3 内的五项连续执行范
 
 当前第一项的最早实现工作不是重新调用模型，而是让唯一 canonical live runner 消费已通过 formal R3 的 source-bound QF 和逐原子 Claim Surface 合同。完成 deterministic replay、全仓回归、Project OS preflight 和 clean/synced authority 后，才执行一次 0 retry 的 DeepSeek Chat replacement。
 
+2026-08-15 更新：上述接线与 preflight 已完成，但 natural Chat R1 在 mandatory reads 后因 16000 reasoning token 耗尽、零最终 tool call 而终止。该失败既不能算内容失败，也不能归咎为单纯 DS 不遵循；当前模型视图重复了 Claim／Method／Graph 卡，发送了完整审计 lineage 和零预算 EvidenceRequest schema，并要求模型逐原子重复七个已冻结的关系字段。第一项因此插入 provider-neutral 的 alias／compact-view successor，formal proof 通过前不得进入动态第二项。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

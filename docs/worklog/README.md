@@ -7,3 +7,4 @@
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`
+  - fixed-Pack Claim Surface Chat R1 容量失败与结构性 successor：`fin_0_1_3_s3/022_fixed_pack_claim_surface_chat_r1_capacity_failure_and_successor.md`

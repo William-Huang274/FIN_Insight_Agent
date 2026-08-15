@@ -1235,8 +1235,8 @@ def _run_claim_relation_alias_proof(
     )
     initial_visible = json.loads(initial_messages[1]["content"])
     authority_cards_visible_once = (
-        "role_method_pack" not in initial_visible["cells"][0]
-        and "graph_context_pack" not in initial_visible["cells"][0]
+        "role_method_pack" not in initial_visible["required_cells"][0]
+        and "graph_context_pack" not in initial_visible["required_cells"][0]
         and "role_method_pack" in evidence_view
         and "graph_context_pack" in evidence_view
     )

@@ -2660,3 +2660,15 @@ Owner 授权 S3 在不改变产品范围、数据采购、模型主路线、S4 p
 6. **防止适配测试集**：开发、validation、test-precut 和真正 holdout 的数据、qrels、Prompt、模型 profile 与阈值变更都必须有 lineage；看过测试输出后对核心合同做的任何修改会使该案例降级为 development／validation，并需要新的未见案例复证。
 
 泛化门的目标不是证明一个模型在几个样例上“能跑通”，而是判断同一金融控制面在换公司、行业、来源和证据条件后，是否仍能诚实地找到资料、保留缺口、形成受权威约束的判断并交付有研究价值的报告。
+
+### 16.34 关系证据角色与片段终局分层（2026-08-16）
+
+一条研究关系所需的 Evidence 必须区分直接支持、上下文和反证，不能继续用同一个 mandatory list 混装。模型把一份宽泛披露标为 context 并不等于少引用；若产品把它强制改成 support，反而会夸大证据能够证明的内容。因此：
+
+1. 每个 Claim Relation 必须显式列出 `required_support_refs`；只有这些材料缺失时关系本身才不得成立。其他已审 Evidence 可作为 context／counterevidence，但 Harness 不得替模型晋升角色。
+2. 只引用 context、没有 required support 的判断继续硬失败；正确保留 context 的判断不得因为“没有把背景说成支持”而失败。
+3. thesis、mechanism、counterargument／WWC 各自使用本片段 relation 的 inference authority。单片段 Validator 不负责提前决定完整 Judgment 的全局状态。
+4. 完整 Judgment 的 status、claim scope、financial scope 和 causal bridge authority，由 canonical terminal compiler 在全部片段通过后按最保守权限汇总；任何更强片段都不能覆盖更弱边界。
+5. relation card、model-visible role contract、Tool Schema、Validator、fake/replay 和 terminal compiler 必须从同一 provider-neutral 合同演化，禁止为单个 Provider 或 attempt 增加例外。
+
+FFJ-R2 是该要求的自然反例：DeepSeek 正确选择法说为 support、8-K 为 context，并否定产品到分部／公司利润桥；旧合同仍将它拒绝。v1.2 已用保存输出 replay、context-only 负向 mutation、完整 fake Judgment 和两个 fresh process 关闭该项目缺陷，但不追认 R2 为完整通过。只有 fresh natural FFJ-R3 的三片段 Judgment 同时通过 L1 和内容质量，fixed-Pack 第一层才可关闭；动态 Research Truth Spine、五单元与异质泛化仍需独立产品证明。

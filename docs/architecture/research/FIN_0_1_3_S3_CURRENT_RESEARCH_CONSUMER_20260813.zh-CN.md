@@ -331,3 +331,19 @@ replacement gate 不复用旧 Research Context Chat decision。新 decision 必�
 FFJ-R1 暴露了投影缺口：完整 consumer 已有上述规则，但 fragment context v1.0 没有带入；submission system 只禁止“新增数字”，Tool Schema 只禁止 digits／refs，本地 Validator 却同时禁止 verbal numeric band。模型选择正确的 Dell 产品目标关系、Evidence、QF 和 management-only 权限后，仍因复制“中个位数”而失败。该结果保持不可变，不能删词追认。
 
 projection v1.1 现在将同一 structured surface contract 编译到三个 fragment context、Tool Schema、submission system 和 Validator。Authority v1.1 还绑定旧失败 result／assessment，防止绕过失败另发 attempt。零调用证明同时要求两条：保存 R1 replay 继续失败；合规 fake 的 atom 不带区间，而最终 deliverable 仍展示该 QF surface。只有两条同时成立，才能证明这是权威分层而不是信息删除。
+
+## 14. Relation Evidence Role 与片段／终局责任边界
+
+FFJ-R2 证明 `required_evidence_refs` 不能继续同时表达“必须直接支持关系”和“只是帮助理解关系的上下文”。模型已经正确把 Dell 法说标为 support、把宽泛 8-K 标为 context；旧 relation card 却要求二者都以 support 出现，导致一个金融上保守的 mechanism 被合同拒绝。该失败属于项目关系合同，不属于 Provider 指令遵循或模型研究能力。
+
+当前 v1.2 采用显式角色合同：
+
+- `required_support_refs` 只列出缺失后便无法成立该 relation 的直接支持材料；
+- 其他可见 Evidence 可以由模型选择为 context 或 counterevidence，但 Harness 不得自动晋升角色；
+- 只提供 context、缺少 required support 的片段必须继续 fail closed；
+- thesis、mechanism、counterargument／WWC 分别按自身 relation 的 `inference_authority` 验证，不允许把 thesis 的全局 status 提前套给其他片段；
+- 所有片段通过后，canonical terminal compiler 才按最保守原则聚合 status、claim scope、financial scope 和 causal bridge authority。
+
+保存的 R2 Tool Calls 在 v1.2 下原样 replay：thesis 与 mechanism 均通过，8-K 继续保持 context；context-only mutation 仍以 `finance_loop_micro_required_authority_missing` 拒绝。最终 fake Judgment 被保守汇总为 `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only`。这项设计的目的不是让更多模型输出“过门”，而是避免把真实上下文伪装成直接证据，同时让片段责任与最终报告责任各归其位。
+
+该关系角色合同属于 provider-neutral 金融控制面，Chat／Responses／Anthropic 投影必须共享；不得为 DeepSeek 或某次 attempt 增加特殊分支。零调用 closure 只授权一个 fresh FFJ-R3，不能代替自然完整 Judgment、动态检索、五研究单元、异质泛化或 S3 产品验收。

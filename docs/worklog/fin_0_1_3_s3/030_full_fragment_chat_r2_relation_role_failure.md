@@ -19,3 +19,21 @@ The bounded repair is therefore one provider-neutral package:
 5. generate the next authority timestamp from the local clock rather than hand-entering it.
 
 R2 authority, public result and raw captures remain immutable. Dynamic Research Truth Spine, five-unit execution, generalization and S3 acceptance remain false.
+
+## Closure — relation-role contract v1.2
+
+The provider-neutral successor closes both project defects without rewriting any R2 model text:
+
+1. `CR::DELL::MULTI_DRIVER_CONTEXT` now requires only the Dell earnings-call transcript as supporting Evidence. The broad 8-K remains available as optional context and is not silently promoted to support.
+2. Each non-thesis fragment validates the inference authority allowed by its own relation card. Global Judgment status, scope and causal authority are derived only after all fragments pass, by the canonical conservative terminal compiler.
+3. The saved R2 thesis and mechanism Tool Calls both replay unchanged under v1.2. A mutation that supplies only contextual Evidence still fails with `finance_loop_micro_required_authority_missing`.
+4. The compiled terminal remains conservative: `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only`. The Harness did not generate or repair research prose.
+5. Two fresh processes produced byte-equivalent proof output. Focused tests are `62 passed`; the full repository is `334 passed`; compileall, active-baseline verification (`127 Python / 8 frontend / 10 Runtime / 0 forbidden`) and secret scan (`6,637 / 0`) pass.
+
+Formal evidence is recorded in:
+
+- `configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_relation_role_zero_call_result_v1_2.json`
+- `configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_relation_role_live_disposition_v1_2.json`
+- `configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_relation_role_live_scope_decision_v1_2.json`
+
+`RC-S3-018` is therefore closed at the relation-card／fragment-validation boundary. This engineering closure authorizes one fresh, clock-timestamped DELL `value_capture` FFJ-R3 only after clean push and Project OS preflight. It does not establish natural complete-Judgment L1, dynamic Agentic Research, five-unit execution, heterogeneous generalization, S3 acceptance, publication or release.

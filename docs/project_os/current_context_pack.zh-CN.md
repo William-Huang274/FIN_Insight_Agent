@@ -167,3 +167,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - clean/synced `bffb6591...` 上的 R2 使用 4/6 次 DeepSeek 调用，thesis 自然通过 v1.1 并成为首个 accepted fragment；mechanism 也返回完整、保守的 Tool Call，但以 `finance_loop_micro_required_authority_missing` 停止，0 retry／fallback。
 - 模型把法说标为 support、把宽泛 8-K 标为 context，并选择 `bounded_inference`、明确否定产品到分部／公司利润分配和因果桥。最早责任层是 `CR::DELL::MULTI_DRIVER_CONTEXT` 把 context 资料错误编码为 mandatory support；零调用继续回放还发现 non-thesis validator 错把 thesis 的全局 `supported` 状态套到 bounded mechanism，而终局 compiler 本来就会保守聚合状态。
 - R2 保持不可变；下一步仅做 provider-neutral relation support set 与 fragment-local disposition v1.2，保存 R2 replay、负向 role mutation、full fake 和 two-fresh-process proof。通过后才允许新 R3。动态 Truth Spine、五单元、泛化报告和 S3 acceptance 仍为 false。
+
+## 2026-08-16 S3 relation-role v1.2 零调用闭环
+
+- `RC-S3-018` 已在最早责任层关闭。`CR::DELL::MULTI_DRIVER_CONTEXT` 现在只把 Dell 法说列为 required support；宽泛 8-K 仍可作为 context，但 Runtime 不得替模型把它晋升为 support。
+- non-thesis 片段只按自身 relation 的 `inference_authority` 验证；完整 Judgment 的 status、scope、financial scope 和 causal bridge 仅由终局 compiler 保守汇总。保存的 R2 thesis／mechanism Tool Call 原样 replay 通过，只有 context 而没有 required support 的 mutation 继续 fail closed。
+- full-fake 终局保持 `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only`，Harness 没有补写观点。two-fresh-process byte-equivalent，定向 `62 passed`、全仓 `334 passed`、compileall、active baseline `127/8/10/0` 与 secret scan `6,637/0` 均通过。
+- 下一步只允许在 clean push 和 Project OS preflight 后签发一个由本机时钟生成时间戳的新 FFJ-R3。R3 仍是 fixed-Pack 第一层；其通过前动态 Truth Spine、五单元、异质泛化报告和 S3 acceptance 均为 false。

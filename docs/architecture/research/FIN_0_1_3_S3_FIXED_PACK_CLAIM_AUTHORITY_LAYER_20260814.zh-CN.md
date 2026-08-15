@@ -2,7 +2,7 @@
 
 日期：2026-08-14
 
-状态：`claim_scope_and_alias_live_failures_immutable / micro_judgment_formal_clean_proof_pass / natural_successor_gate_pending / layer_two_blocked`
+状态：`claim_scope_and_alias_live_failures_immutable / micro_judgment_formal_clean_proof_pass / canonical_live_gate_working_tree_pass / natural_successor_pending / layer_two_blocked`
 
 ## 1. 为什么需要这一层
 

@@ -2,7 +2,7 @@
 
 日期：2026-08-15
 
-状态：`owner_authorized / fixed_pack_R2_terminal_capacity_failure / micro_judgment_successor_in_progress / dynamic_truth_spine_pending / three_case_acceptance_pending`
+状态：`owner_authorized / fixed_pack_R2_immutable / micro_live_gate_working_tree_pass / natural_successor_pending / dynamic_truth_spine_pending`
 
 ## Owner 决定
 
@@ -64,3 +64,9 @@ Owner 授权范围内的下一修复不再做字段删减、上限扩大或协�
 本地结果为 `4 step / 5 tool call / 0 EvidenceRequest`。三个微判断中最大的活动 Tool Schema 为 `3,444` 字符，相对旧 monolithic Judgment `4,847` 为 `0.710543`；read 节点使用 `low / 2,000`，判断节点使用 `high / 8,000`，两者均位于可替换 DeepSeek profile，金融核心没有 Provider 分支。三段 reviewed fake 叙事逐字保留；乱序、重复、缺片段、缺必要 Evidence、未知／跨案 alias、Evidence role 冲突、因果越界和 schema 漂移均 fail closed，MU／NVDA 不会套用 DELL policy。全仓为 `314 passed`。
 
 实现已提交并推送为 `3851f5f4...`，随后签发的 formal zero-call authority 已通过：两个 fresh process 字节等价，result digest=`ca63338d...b1399c`，三案例非回归和八类 mutation 均成立。natural DeepSeek submission、L1 和内容质量仍未证明。下一门是给现有 canonical live runner 增加 micro authority／节点 profile 接线并完成零调用 gate；通过后才允许签发一次新的 natural successor。第二至第五项继续 pending。
+
+## 第一项 canonical live gate working-tree pass（2026-08-16）
+
+唯一 canonical runner 已接入 micro authority，没有创建 attempt-specific runner。入口现在强制 `read pair → thesis → mechanism → counterargument＋WWC`，并在发出请求前把 read 节点绑定到 `low / 2000`、三个判断节点绑定到 `high / 8000`。Authority 同时绑定 formal proof、immutable R2、两个节点 profile、Claim policies、scope decision、Git 和未消费输出身份。
+
+定向 `18 passed`、全仓 `318 passed`、compileall、active baseline 和 `6,605` 文件 secret scan 均通过；本轮仍为 0 model／network／Provider call。第一项没有因此通过。下一动作只剩 clean commit/push、Project OS preflight、fresh authority 入口校验和唯一 natural Chat successor；若该 successor 再次容量失败或 L1 失败，停止第一项，不自动继续修补或进入第二项。

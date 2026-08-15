@@ -17,6 +17,7 @@ from sec_agent.providers.chat_completions import (  # noqa: E402
     ModelGatewayError,
 )
 from sec_agent.research.bounded_finance_loop import (  # noqa: E402
+    MICRO_JUDGMENT_TOOL_NAMES,
     READ_NUMERIC_FACTS_TOOL,
     READ_REVIEWED_EVIDENCE_TOOL,
     SUBMIT_RESEARCH_JUDGMENT_TOOL,
@@ -69,6 +70,53 @@ CLAIM_SURFACE_FAKE = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "claim_surface_authority_fake_payload_v1_0.json"
+)
+CLAIM_RELATION_ALIAS_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_v1_1.json"
+)
+CLAIM_RELATION_ALIAS_FAKE = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_alias_fake_payload_v1_0.json"
+)
+MICRO_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_fixed_pack_micro_judgment_policy_v1_0.json"
+)
+MICRO_READ_PROFILE = ROOT / (
+    "configs/providers/"
+    "fin_ia_0_1_3_deepseek_v4_pro_ga_micro_read_profile_v1_0.json"
+)
+MICRO_JUDGMENT_PROFILE = ROOT / (
+    "configs/providers/"
+    "fin_ia_0_1_3_deepseek_v4_pro_ga_micro_judgment_profile_v1_0.json"
+)
+MICRO_PROOF_AUTHORITY = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "micro_judgment_zero_call_authority_v1_0.json"
+)
+MICRO_PROOF_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "micro_judgment_zero_call_result_v1_0.json"
+)
+PRIOR_ALIAS_LIVE_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_relation_alias_chat_live_result_v1_0.json"
+)
+PRIOR_ALIAS_CAPACITY = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_relation_alias_chat_live_capacity_assessment_v1_0.json"
+)
+MICRO_LIVE_DECISION = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "micro_judgment_live_scope_decision_v1_0.json"
 )
 
 
@@ -198,6 +246,188 @@ def _parallel_tool_step(
         response_digest=str(index + 1) * 64,
         private_reasoning_fields_redacted=1,
     )
+
+
+def _micro_alias_fragments() -> dict[str, dict[str, object]]:
+    row = json.loads(CLAIM_RELATION_ALIAS_FAKE.read_text(encoding="utf-8"))[
+        "cells"
+    ][0]
+    relation_by_atom = {
+        item["atom_field"]: item["claim_relation_ref"]
+        for item in row["claim_relations"]
+    }
+    common_refs = {
+        "numeric_refs": list(row["numeric_refs"]),
+        "method_step_refs": list(row["method_step_refs"]),
+        "graph_edge_refs": list(row["graph_edge_refs"]),
+    }
+    return {
+        MICRO_JUDGMENT_TOOL_NAMES[0]: {
+            "cell_id": row["cell_id"],
+            "claim_relation_ref": relation_by_atom["thesis_atom"],
+            "evidence_uses": row["evidence_uses"][:2],
+            **common_refs,
+            "numeric_relation_refs": [],
+            "qualitative_fact_refs": list(row["qualitative_fact_refs"]),
+            "judgment_status": row["judgment_status"],
+            "confidence_basis": row["confidence_basis"],
+            "inference_authority": row["inference_authority"],
+            "claim_scope": row["claim_scope"],
+            "financial_scope": row["financial_scope"],
+            "causal_bridge_authority": row["causal_bridge_authority"],
+            "thesis_atom": row["thesis_atom"],
+        },
+        MICRO_JUDGMENT_TOOL_NAMES[1]: {
+            "cell_id": row["cell_id"],
+            "claim_relation_ref": relation_by_atom["mechanism_atom"],
+            "evidence_uses": row["evidence_uses"][2:3],
+            "numeric_refs": [],
+            "numeric_relation_refs": [],
+            "qualitative_fact_refs": [],
+            "method_step_refs": [],
+            "graph_edge_refs": [],
+            "mechanism_atom": row["mechanism_atom"],
+        },
+        MICRO_JUDGMENT_TOOL_NAMES[2]: {
+            "cell_id": row["cell_id"],
+            "claim_relation_ref": relation_by_atom["counterargument_atom"],
+            "evidence_uses": row["evidence_uses"][3:],
+            "numeric_refs": [],
+            "numeric_relation_refs": list(row["numeric_relation_refs"]),
+            "qualitative_fact_refs": [],
+            "method_step_refs": [],
+            "graph_edge_refs": [],
+            "counterargument_atom": row["counterargument_atom"],
+            "what_would_change": {
+                **row["what_would_change"],
+                "threshold_numeric_ref": "",
+            },
+        },
+    }
+
+
+def _micro_tool_loop_paths() -> dict[str, Path]:
+    paths = _tool_loop_bound_paths()
+    paths.pop("provider_profile_ref")
+    paths.update(
+        {
+            "claim_authority_policy_ref": CLAIM_AUTHORITY_POLICY,
+            "claim_surface_authority_policy_ref": CLAIM_RELATION_ALIAS_POLICY,
+            "clean_zero_call_result_ref": MICRO_PROOF_RESULT,
+            "micro_zero_call_authority_ref": MICRO_PROOF_AUTHORITY,
+            "micro_policy_ref": MICRO_POLICY,
+            "micro_read_profile_ref": MICRO_READ_PROFILE,
+            "micro_judgment_profile_ref": MICRO_JUDGMENT_PROFILE,
+            "prior_live_result_ref": PRIOR_ALIAS_LIVE_RESULT,
+            "prior_capacity_assessment_ref": PRIOR_ALIAS_CAPACITY,
+            "prior_scope_decision_ref": MICRO_LIVE_DECISION,
+        }
+    )
+    return paths
+
+
+def _micro_validation_paths() -> dict[str, Path]:
+    paths = _micro_tool_loop_paths()
+    paths.update(
+        {
+            "current_evidence_pack_result_ref": ROOT
+            / "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+            "runtime_registry_ref": ROOT
+            / "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+            "runner_ref": SCRIPT,
+            "loop_implementation_ref": ROOT
+            / "src/sec_agent/research/bounded_finance_loop.py",
+            "provider_transport_ref": ROOT
+            / "src/sec_agent/providers/chat_completions.py",
+        }
+    )
+    return paths
+
+
+def _prepare_micro_tool_loop_test(
+    runner,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> tuple[Path, dict[str, object], dict[str, Path]]:
+    authority_path, authority = _tool_loop_authority(tmp_path)
+    authority.update(
+        {
+            "schema_version": runner.MICRO_TOOL_LOOP_AUTHORITY_SCHEMA,
+            "status": runner.MICRO_TOOL_LOOP_AUTHORITY_STATUS,
+            "execution_budget": {
+                "maximum_model_calls": 4,
+                "maximum_transport_attempts": 4,
+                "maximum_tool_calls": 5,
+                "maximum_evidence_requests": 0,
+                "retries": 0,
+                "fallbacks": 0,
+                "planner_calls": 0,
+                "external_retrieval_calls": 0,
+                "embedding_calls": 0,
+                "current_product_pointer_mutations": 0,
+            },
+        }
+    )
+    paths = _micro_tool_loop_paths()
+    _, research_input, _ = runner._compile_runtime_input(
+        paths,
+        case_key="DELL",
+        required_cell_ids=["CELL::value_capture"],
+    )
+    kernel, route, _ = runner._tool_loop_contracts(paths)
+    base_policy = runner.load_bounded_finance_loop_policy(
+        json.loads(LOOP_POLICY.read_text(encoding="utf-8"))
+    )
+    scoped_policy = runner.scope_bounded_finance_micro_judgment_policy(
+        base_policy,
+        micro_policy=runner.load_fixed_pack_micro_judgment_policy(
+            json.loads(MICRO_POLICY.read_text(encoding="utf-8"))
+        ),
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    messages = runner.compile_finance_loop_messages(
+        research_input=research_input,
+        required_cell_ids=["CELL::value_capture"],
+        execution_budget={
+            "maximum_steps": 4,
+            "maximum_evidence_requests": 0,
+            "maximum_reads_per_cell": 1,
+            "maximum_parallel_read_tools": 2,
+            "maximum_judgments_per_cell": 1,
+            "retry_count": 0,
+        },
+        micro_judgment_mode=True,
+    )
+    tools = runner.compile_finance_micro_judgment_tools(
+        research_input=research_input,
+        required_cell_ids=["CELL::value_capture"],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped_policy,
+        strict=False,
+    )
+    authority["bound_inputs"] = {
+        "research_input_digest": research_input["research_input_digest"],
+        "finance_loop_messages_digest": runner.canonical_digest(
+            list(messages)
+        ),
+        "micro_tool_schema_digest": runner.canonical_digest(list(tools)),
+    }
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+    monkeypatch.setattr(
+        runner,
+        "validate_tool_loop_authority",
+        lambda _payload, authority_path: paths,
+    )
+    destinations = {
+        "capture": tmp_path / "capture",
+        "private": tmp_path / "private",
+        "public.json": tmp_path / "public.json",
+    }
+    monkeypatch.setattr(runner, "_resolve", lambda ref: destinations[str(ref)])
+    monkeypatch.setattr(runner, "_relative", lambda path: Path(path).name)
+    return authority_path, authority, paths
 
 
 def _prepare_tool_loop_test(
@@ -380,6 +610,206 @@ def test_standard_tool_loop_parallel_reads_materialize_distinct_receipts(
         "receipt-02-step-01.json",
         "receipt-03-step-02.json",
     ]
+
+
+def test_micro_tool_loop_uses_node_profiles_and_materializes_four_steps(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    authority_path, _, _ = _prepare_micro_tool_loop_test(
+        runner, monkeypatch, tmp_path
+    )
+    fragments = _micro_alias_fragments()
+    observed: list[dict[str, object]] = []
+
+    def executor(**kwargs):
+        index = len(observed) + 1
+        names = [row["function"]["name"] for row in kwargs["tools"]]
+        observed.append(
+            {
+                "names": names,
+                "reasoning_effort": kwargs[
+                    "profile"
+                ].request_defaults["reasoning_effort"],
+                "max_tokens": kwargs["profile"].request_defaults[
+                    "max_tokens"
+                ],
+            }
+        )
+        if index == 1:
+            return _parallel_tool_step(
+                index, "CELL::value_capture", tmp_path
+            )
+        name = names[0]
+        return _tool_step(index, name, fragments[name], tmp_path)
+
+    result = runner.run_tool_loop(authority_path, step_executor=executor)
+
+    assert result["status"] == "completed_contract_valid_content_assessment_pending"
+    assert result["execution"]["model_calls_attempted"] == 4
+    assert result["accepted_receipt_count"] == 5
+    assert result["tool_counts"] == {
+        READ_REVIEWED_EVIDENCE_TOOL: 1,
+        READ_NUMERIC_FACTS_TOOL: 1,
+        MICRO_JUDGMENT_TOOL_NAMES[0]: 1,
+        MICRO_JUDGMENT_TOOL_NAMES[1]: 1,
+        MICRO_JUDGMENT_TOOL_NAMES[2]: 1,
+    }
+    assert observed[0] == {
+        "names": [READ_REVIEWED_EVIDENCE_TOOL, READ_NUMERIC_FACTS_TOOL],
+        "reasoning_effort": "low",
+        "max_tokens": 2000,
+    }
+    assert [row["reasoning_effort"] for row in observed[1:]] == [
+        "high",
+        "high",
+        "high",
+    ]
+    assert [row["max_tokens"] for row in observed[1:]] == [8000, 8000, 8000]
+    assert [row["node_class"] for row in result["node_profile_selections"]] == [
+        "tool_routing",
+        "bounded_financial_judgment",
+        "bounded_financial_judgment",
+        "bounded_financial_judgment",
+    ]
+
+
+def test_micro_node_profile_rejects_wrong_active_tools_before_provider() -> None:
+    runner = _runner()
+    read_profile = runner.load_chat_completion_profile(
+        json.loads(MICRO_READ_PROFILE.read_text(encoding="utf-8"))
+    )
+    judgment_profile = runner.load_chat_completion_profile(
+        json.loads(MICRO_JUDGMENT_PROFILE.read_text(encoding="utf-8"))
+    )
+    with pytest.raises(runner.CurrentResearchConsumerCanaryError) as exc:
+        runner._select_micro_node_profile(
+            [
+                {
+                    "type": "function",
+                    "function": {"name": READ_REVIEWED_EVIDENCE_TOOL},
+                }
+            ],
+            read_profile=read_profile,
+            judgment_profile=judgment_profile,
+        )
+    assert exc.value.code == "research_consumer_micro_active_tool_set_invalid"
+
+
+def test_micro_scope_decision_rejects_predecessor_drift() -> None:
+    runner = _runner()
+    decision = json.loads(MICRO_LIVE_DECISION.read_text(encoding="utf-8"))
+    clean = json.loads(MICRO_PROOF_RESULT.read_text(encoding="utf-8"))
+    clean_authority = json.loads(
+        MICRO_PROOF_AUTHORITY.read_text(encoding="utf-8")
+    )
+    predecessor = json.loads(
+        PRIOR_ALIAS_LIVE_RESULT.read_text(encoding="utf-8")
+    )
+    capacity = json.loads(PRIOR_ALIAS_CAPACITY.read_text(encoding="utf-8"))
+    assert runner._fixed_pack_micro_judgment_scope_authorized(
+        decision,
+        cell_ids=["CELL::value_capture"],
+        clean_zero_call_result=clean,
+        clean_zero_call_authority=clean_authority,
+        prior_live_result=predecessor,
+        prior_capacity_assessment=capacity,
+    )
+    predecessor["failure_code"] = "different_failure"
+    with pytest.raises(runner.CurrentResearchConsumerCanaryError) as exc:
+        runner._fixed_pack_micro_judgment_scope_authorized(
+            decision,
+            cell_ids=["CELL::value_capture"],
+            clean_zero_call_result=clean,
+            clean_zero_call_authority=clean_authority,
+            prior_live_result=predecessor,
+            prior_capacity_assessment=capacity,
+        )
+    assert exc.value.code == "research_consumer_micro_judgment_disposition_invalid"
+
+
+def test_micro_authority_binds_profiles_budget_digest_and_unused_identity(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    authority_path, authority = _tool_loop_authority(tmp_path)
+    authority.update(
+        {
+            "schema_version": runner.MICRO_TOOL_LOOP_AUTHORITY_SCHEMA,
+            "status": runner.MICRO_TOOL_LOOP_AUTHORITY_STATUS,
+            "execution_budget": {
+                "maximum_model_calls": 4,
+                "maximum_transport_attempts": 4,
+                "maximum_tool_calls": 5,
+                "maximum_evidence_requests": 0,
+                "retries": 0,
+                "fallbacks": 0,
+                "planner_calls": 0,
+                "external_retrieval_calls": 0,
+                "embedding_calls": 0,
+                "current_product_pointer_mutations": 0,
+            },
+        }
+    )
+    paths = _micro_validation_paths()
+    bound: dict[str, object] = {
+        "research_input_digest": "1" * 64,
+        "finance_loop_messages_digest": "2" * 64,
+        "micro_tool_schema_digest": "3" * 64,
+    }
+    for key, path in paths.items():
+        bound[key] = path.relative_to(ROOT).as_posix()
+        bound[key[:-4] + "_sha256"] = runner._sha(path)
+    authority["bound_inputs"] = bound
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+    commit = authority["implementation_commit"]
+
+    def fake_git(*args):
+        if args[0] == "rev-parse":
+            return commit
+        if args[0] == "status":
+            return "?? authority.json"
+        raise AssertionError(args)
+
+    output_paths = {
+        "capture": tmp_path / "capture",
+        "private": tmp_path / "private",
+        "public.json": tmp_path / "public.json",
+    }
+    original_resolve = runner._resolve
+    monkeypatch.setattr(runner, "_git", fake_git)
+    monkeypatch.setattr(runner, "_relative", lambda path: Path(path).name)
+    monkeypatch.setattr(
+        runner,
+        "_resolve",
+        lambda ref: output_paths.get(str(ref), original_resolve(ref)),
+    )
+
+    validated = runner.validate_tool_loop_authority(
+        authority, authority_path=authority_path
+    )
+    assert validated["micro_read_profile_ref"] == MICRO_READ_PROFILE
+    assert validated["micro_judgment_profile_ref"] == MICRO_JUDGMENT_PROFILE
+    assert validated["clean_zero_call_result_ref"] == MICRO_PROOF_RESULT
+
+    digest_drift = json.loads(json.dumps(authority))
+    digest_drift["bound_inputs"]["micro_policy_sha256"] = "0" * 64
+    with pytest.raises(runner.CurrentResearchConsumerCanaryError) as exc:
+        runner.validate_tool_loop_authority(
+            digest_drift, authority_path=authority_path
+        )
+    assert exc.value.code.startswith(
+        "research_consumer_tool_loop_bound_input_drift:micro_policy_ref"
+    )
+
+    output_paths["public.json"].write_text("{}", encoding="utf-8")
+    with pytest.raises(runner.CurrentResearchConsumerCanaryError) as exc:
+        runner.validate_tool_loop_authority(
+            authority, authority_path=authority_path
+        )
+    assert exc.value.code == "research_consumer_tool_loop_identity_consumed"
 
 
 def test_fixed_pack_claim_surface_live_path_uses_surface_contract(

@@ -2,7 +2,7 @@
 
 日期：2026-08-15
 
-状态：`formal_clean_zero_call_pass / natural_live_gate_implementation_pending / fixed-Pack layer one blocked`
+状态：`formal_clean_zero_call_pass / canonical_live_gate_working_tree_pass / natural_live_not_executed`
 
 ## 为什么不是继续删字段
 
@@ -51,3 +51,5 @@ DELL 专用 Claim Authority 对 MU、NVDA 均拒绝；原 DELL／MU／NVDA 五�
 实现已提交并推送为 `3851f5f4ec9ce4af4325aefa295f442ebf6e1950`。绑定该 clean/synced commit 的 authority 随后执行一次，两个 fresh process 结果字节等价，公开状态为 `zero_call_micro_judgment_fresh_process_proof_pass`，result digest=`ca63338d...b1399c`。
 
 正式证明复用了 immutable R2 research input digest `783de9ef...1d274`，确认 `4 step / 5 tool call`、八类 mutation、DELL policy 对 MU／NVDA 拒绝和旧三案例 full-fake 非回归；网络、模型、Provider、embedding、retry 均为 0。formal proof 仍不是 natural fixed-Pack acceptance。下一项是扩展现有 canonical live runner 的 micro authority 分支并做零调用 gate；只有该入口能重新核对 proof、profiles、Git、预算和 exact-once output 后，才可签发一次新的 natural successor。
+
+2026-08-16：canonical live runner 的 micro authority、按活动工具选择节点 profile、exact budget／digest／identity gate 和 terminal failure 物化已经在 working tree 实现。定向 `18 passed`、全仓 `318 passed`，active baseline 与 secret scan 均通过；没有模型或网络调用。详见 `025_fixed_pack_micro_judgment_canonical_live_gate.md`。下一门已收窄为 clean commit/push、Project OS preflight、未使用 authority 的只读入口校验和唯一 natural successor。

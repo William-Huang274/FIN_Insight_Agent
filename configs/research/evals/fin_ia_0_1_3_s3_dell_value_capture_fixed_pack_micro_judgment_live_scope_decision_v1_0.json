@@ -1,0 +1,42 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_micro_judgment_live_scope_decision_v1_0",
+  "decision_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-MICRO-JUDGMENT-LIVE-SCOPE-DECISION-V1.0",
+  "status": "micro_judgment_formal_zero_call_pass_canonical_live_gate_required_one_chat_successor_authorized",
+  "recorded_at": "2026-08-15T23:50:00+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "immutable_predecessor_result_digest": "fa06fce4f646d0c8d06c6261d12572bd53ad925b9a3d05130dcc2f54c05614a1",
+  "formal_zero_call_authority_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-MICRO-JUDGMENT-ZERO-CALL-V1.0",
+  "formal_zero_call_result_digest": "ca63338d3ed2004ae62ac0bdd6615c8fee088cd5e1a70292918478d518b1399c",
+  "value_decision": {
+    "new_information_expected": "Whether DeepSeek v4 Pro GA naturally completes three model-owned financial judgment fragments on the same reviewed DELL Evidence Pack after mandatory reads.",
+    "fixed_pack_unit_value": "Separates model analysis and contract convergence from retrieval, NumericFact and dynamic-planning quality before those layers are reopened.",
+    "dynamic_agentic_research_claimed": false
+  },
+  "risk_decision": {
+    "provider_capacity_risk": "bounded_by_three_8000_token_judgment_nodes_instead_of_one_16000_token_monolith",
+    "financial_truth_risk": "unchanged_existing_Evidence_NumericFact_ClaimAuthority_and_terminal_validator",
+    "harness_authorship_risk": "missing_fragment_or_claim_invention_forbidden",
+    "cost_risk": "maximum_four_provider_calls_zero_retry_zero_fallback",
+    "stop_on_new_capacity_failure": true,
+    "stop_on_L1_failure": true,
+    "automatic_second_successor_forbidden": true
+  },
+  "canonical_live_gate_required": true,
+  "next_authorized_scope": "one_DELL_value_capture_fixed_pack_micro_judgment_Chat_successor",
+  "maximum_model_calls": 4,
+  "maximum_tool_calls": 5,
+  "maximum_evidence_requests": 0,
+  "chat_live_authorized": true,
+  "responses_live_authorized": false,
+  "anthropic_live_authorized": false,
+  "dynamic_layer_two_authorized": false,
+  "five_cell_live_authorized": false,
+  "product_publication_authorized": false,
+  "reasoning_or_token_limit_increase": false,
+  "retries": 0,
+  "fallbacks": 0,
+  "replacement_is_new_attempt_not_retry": true,
+  "historical_failure_promoted": false,
+  "known_boundary": "This decision authorizes at most one future Chat Completions natural fixed-Pack micro-judgment successor after the current canonical runner, authority validation, exact-once capture path and clean Git gate pass. It does not itself execute a model call, accept Layer One, authorize dynamic Agentic Research, authorize a five-cell case or publish a product result."
+}

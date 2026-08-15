@@ -32,6 +32,7 @@ from retrieval.route_compiler import (  # noqa: E402
     load_query_object_fact_route_policy,
 )
 from sec_agent.providers.chat_completions import (  # noqa: E402
+    ChatCompletionProfile,
     ChatCompletionResult,
     ChatCompletionToolStepResult,
     ModelGatewayError,
@@ -41,14 +42,19 @@ from sec_agent.providers.chat_completions import (  # noqa: E402
 )
 from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     BoundedFinanceLoopError,
+    MICRO_JUDGMENT_TOOL_NAMES,
     READ_NUMERIC_FACTS_TOOL,
     READ_REVIEWED_EVIDENCE_TOOL,
+    compile_finance_micro_judgment_tools,
     compile_finance_loop_messages,
     compile_finance_loop_tools,
     load_bounded_finance_loop_policy,
+    load_fixed_pack_micro_judgment_policy,
     run_bounded_finance_loop,
+    scope_bounded_finance_micro_judgment_policy,
     scope_bounded_finance_loop_policy,
     validate_deepseek_ga_json_profile,
+    validate_deepseek_ga_node_profile,
     validate_deepseek_ga_profile,
 )
 from sec_agent.research.current_consumer import (  # noqa: E402
@@ -94,6 +100,12 @@ TOOL_LOOP_AUTHORITY_SCHEMA = (
 )
 TOOL_LOOP_RESULT_SCHEMA = "fin_ia_s3_bounded_finance_loop_live_result_v1_0"
 TOOL_LOOP_FULL_SCHEMA = "fin_ia_s3_bounded_finance_loop_live_full_v1_0"
+MICRO_TOOL_LOOP_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_fixed_pack_micro_judgment_live_authority_v1_0"
+)
+MICRO_TOOL_LOOP_AUTHORITY_STATUS = (
+    "signed_exact_once_fixed_pack_micro_judgment_chat_live"
+)
 
 
 class CurrentResearchConsumerCanaryError(RuntimeError):
@@ -950,10 +962,22 @@ def validate_tool_loop_authority(
     *,
     authority_path: Path,
 ) -> dict[str, Path]:
-    if not (
+    micro_mode = (
+        payload.get("schema_version") == MICRO_TOOL_LOOP_AUTHORITY_SCHEMA
+    )
+    standard_mode = (
         payload.get("schema_version") == TOOL_LOOP_AUTHORITY_SCHEMA
-        and payload.get("status")
-        == "signed_exact_once_standard_API_bounded_finance_loop_live"
+    )
+    if not (
+        (
+            standard_mode
+            and payload.get("status")
+            == "signed_exact_once_standard_API_bounded_finance_loop_live"
+        )
+        or (
+            micro_mode
+            and payload.get("status") == MICRO_TOOL_LOOP_AUTHORITY_STATUS
+        )
     ):
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_tool_loop_authority_invalid"
@@ -1004,25 +1028,40 @@ def validate_tool_loop_authority(
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_tool_loop_claim_surface_base_missing"
         )
+    if micro_mode and not (
+        case_key == "DELL"
+        and cell_ids == ["CELL::value_capture"]
+        and claim_authority_mode
+        and claim_surface_authority_mode
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_micro_tool_loop_scope_invalid"
+        )
     maximum_requests = (
-        0 if claim_authority_mode else (3 if len(cell_ids) == 1 else 9)
+        0
+        if micro_mode or claim_authority_mode
+        else (3 if len(cell_ids) == 1 else 9)
     )
-    maximum_steps = len(cell_ids) * 3 + maximum_requests
+    maximum_steps = (
+        4 if micro_mode else len(cell_ids) * 3 + maximum_requests
+    )
+    expected_budget = {
+        "maximum_model_calls": maximum_steps,
+        "maximum_transport_attempts": maximum_steps,
+        "maximum_evidence_requests": maximum_requests,
+        "retries": 0,
+        "fallbacks": 0,
+        "planner_calls": 0,
+        "external_retrieval_calls": 0,
+        "embedding_calls": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if micro_mode:
+        expected_budget["maximum_tool_calls"] = 5
     budget = payload.get("execution_budget")
     if not (
         isinstance(budget, Mapping)
-        and dict(budget)
-        == {
-            "maximum_model_calls": maximum_steps,
-            "maximum_transport_attempts": maximum_steps,
-            "maximum_evidence_requests": maximum_requests,
-            "retries": 0,
-            "fallbacks": 0,
-            "planner_calls": 0,
-            "external_retrieval_calls": 0,
-            "embedding_calls": 0,
-            "current_product_pointer_mutations": 0,
-        }
+        and dict(budget) == expected_budget
     ):
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_tool_loop_budget_invalid"
@@ -1033,7 +1072,7 @@ def validate_tool_loop_authority(
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_tool_loop_shape_invalid"
         )
-    required_refs = {
+    common_required_refs = {
         "consumer_policy_ref",
         "objective_ref",
         "planner_atoms_ref",
@@ -1041,12 +1080,25 @@ def validate_tool_loop_authority(
         "runtime_registry_ref",
         "clean_zero_call_result_ref",
         "loop_policy_ref",
-        "provider_profile_ref",
         "runner_ref",
         "loop_implementation_ref",
         "provider_transport_ref",
         "prior_scope_decision_ref",
     }
+    required_refs = set(common_required_refs)
+    if micro_mode:
+        required_refs.update(
+            {
+                "micro_policy_ref",
+                "micro_read_profile_ref",
+                "micro_judgment_profile_ref",
+                "micro_zero_call_authority_ref",
+                "prior_live_result_ref",
+                "prior_capacity_assessment_ref",
+            }
+        )
+    else:
+        required_refs.add("provider_profile_ref")
     if claim_authority_mode:
         required_refs.add("claim_authority_policy_ref")
     if claim_surface_authority_mode:
@@ -1055,7 +1107,11 @@ def validate_tool_loop_authority(
     runtime_digest_keys = {
         "research_input_digest",
         "finance_loop_messages_digest",
-        "standard_tool_schema_digest",
+        (
+            "micro_tool_schema_digest"
+            if micro_mode
+            else "standard_tool_schema_digest"
+        ),
     }
     expected = {
         value
@@ -1367,6 +1423,130 @@ def _fixed_pack_claim_relation_alias_replacement_scope_authorized(
     return True
 
 
+def _fixed_pack_micro_judgment_scope_authorized(
+    decision: Mapping[str, Any],
+    *,
+    cell_ids: Sequence[str],
+    clean_zero_call_result: Mapping[str, Any],
+    clean_zero_call_authority: Mapping[str, Any],
+    prior_live_result: Mapping[str, Any],
+    prior_capacity_assessment: Mapping[str, Any],
+) -> bool:
+    """Qualify one natural micro successor without relabeling R2.
+
+    Every evidence object is separately hash-bound by the live authority.  This
+    check joins their semantic identities and keeps the permission narrower
+    than dynamic research, five-cell execution, protocol switching or retry.
+    """
+
+    expected_status = (
+        "micro_judgment_formal_zero_call_pass_"
+        "canonical_live_gate_required_one_chat_successor_authorized"
+    )
+    if not (
+        decision.get("schema_version")
+        == "fin_ia_s3_fixed_pack_micro_judgment_live_scope_decision_v1_0"
+        and decision.get("decision_id")
+        == (
+            "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-"
+            "MICRO-JUDGMENT-LIVE-SCOPE-DECISION-V1.0"
+        )
+        and decision.get("status") == expected_status
+    ):
+        return False
+    observed = prior_capacity_assessment.get("observed")
+    acceptance = prior_capacity_assessment.get("acceptance")
+    clean_normalized = clean_zero_call_result.get("normalized_proof")
+    predecessor_valid = (
+        prior_live_result.get("status") == "terminal_failed_no_retry"
+        and prior_live_result.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and prior_live_result.get("result_digest")
+        == decision.get("immutable_predecessor_result_digest")
+        and prior_live_result.get("execution", {}).get("retries") == 0
+        and prior_live_result.get("execution", {}).get("fallbacks") == 0
+        and prior_capacity_assessment.get("status")
+        == (
+            "terminal_capacity_failure_preserved_"
+            "monolithic_judgment_successor_required"
+        )
+        and prior_capacity_assessment.get("result_digest")
+        == prior_live_result.get("result_digest")
+        and isinstance(observed, Mapping)
+        and observed.get("judgment_materialized") is False
+        and observed.get("retries") == 0
+        and observed.get("fallbacks") == 0
+        and isinstance(acceptance, Mapping)
+        and acceptance.get("fixed_pack_layer_one_accepted") is False
+    )
+    clean_valid = (
+        clean_zero_call_authority.get("authority_id")
+        == decision.get("formal_zero_call_authority_id")
+        and clean_zero_call_result.get("status")
+        == "zero_call_micro_judgment_fresh_process_proof_pass"
+        and clean_zero_call_result.get("result_digest")
+        == decision.get("formal_zero_call_result_digest")
+        and clean_zero_call_result.get("fresh_process_results_byte_equivalent")
+        is True
+        and isinstance(clean_normalized, Mapping)
+        and clean_normalized.get("step_count") == 4
+        and clean_normalized.get("tool_call_count") == 5
+        and clean_normalized.get("network_calls") == 0
+        and clean_normalized.get("model_calls") == 0
+        and clean_normalized.get("provider_calls") == 0
+        and clean_normalized.get("retries") == 0
+    )
+    scope_valid = (
+        list(cell_ids) == ["CELL::value_capture"]
+        and decision.get("case_key") == "DELL"
+        and decision.get("cell_id") == "CELL::value_capture"
+        and decision.get("next_authorized_scope")
+        == "one_DELL_value_capture_fixed_pack_micro_judgment_Chat_successor"
+        and decision.get("maximum_model_calls") == 4
+        and decision.get("maximum_tool_calls") == 5
+        and decision.get("maximum_evidence_requests") == 0
+        and decision.get("chat_live_authorized") is True
+        and decision.get("responses_live_authorized") is False
+        and decision.get("anthropic_live_authorized") is False
+        and decision.get("dynamic_layer_two_authorized") is False
+        and decision.get("five_cell_live_authorized") is False
+        and decision.get("product_publication_authorized") is False
+        and decision.get("canonical_live_gate_required") is True
+        and decision.get("reasoning_or_token_limit_increase") is False
+        and decision.get("retries") == 0
+        and decision.get("fallbacks") == 0
+        and decision.get("replacement_is_new_attempt_not_retry") is True
+        and decision.get("historical_failure_promoted") is False
+    )
+    if not (predecessor_valid and clean_valid and scope_valid):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_micro_judgment_disposition_invalid"
+        )
+    return True
+
+
+def _select_micro_node_profile(
+    step_tools: Sequence[Mapping[str, Any]],
+    *,
+    read_profile: ChatCompletionProfile,
+    judgment_profile: ChatCompletionProfile,
+) -> tuple[ChatCompletionProfile, str]:
+    names = tuple(
+        str(row.get("function", {}).get("name") or "")
+        for row in step_tools
+    )
+    if set(names) == {
+        READ_REVIEWED_EVIDENCE_TOOL,
+        READ_NUMERIC_FACTS_TOOL,
+    } and len(names) == 2:
+        return read_profile, "tool_routing"
+    if len(names) == 1 and names[0] in MICRO_JUDGMENT_TOOL_NAMES:
+        return judgment_profile, "bounded_financial_judgment"
+    raise CurrentResearchConsumerCanaryError(
+        "research_consumer_micro_active_tool_set_invalid"
+    )
+
+
 def run_tool_loop(
     authority_path: Path,
     *,
@@ -1375,6 +1555,9 @@ def run_tool_loop(
     ),
 ) -> dict[str, Any]:
     authority = _json(authority_path)
+    micro_mode = (
+        authority.get("schema_version") == MICRO_TOOL_LOOP_AUTHORITY_SCHEMA
+    )
     paths = validate_tool_loop_authority(
         authority, authority_path=authority_path
     )
@@ -1398,19 +1581,38 @@ def run_tool_loop(
     maximum_evidence_requests = int(
         authority["execution_budget"]["maximum_evidence_requests"]
     )
-    scoped_policy = scope_bounded_finance_loop_policy(
-        base_policy,
-        cell_count=len(cell_ids),
-        maximum_evidence_requests=maximum_evidence_requests,
-    )
-    tools = compile_finance_loop_tools(
-        research_input=research_input,
-        required_cell_ids=cell_ids,
-        kernel=kernel,
-        route_policy=route,
-        policy=scoped_policy,
-        strict=False,
-    )
+    if micro_mode:
+        micro_policy = load_fixed_pack_micro_judgment_policy(
+            _json(paths["micro_policy_ref"])
+        )
+        scoped_policy = scope_bounded_finance_micro_judgment_policy(
+            base_policy,
+            micro_policy=micro_policy,
+            cell_count=len(cell_ids),
+            maximum_evidence_requests=maximum_evidence_requests,
+        )
+        tools = compile_finance_micro_judgment_tools(
+            research_input=research_input,
+            required_cell_ids=cell_ids,
+            kernel=kernel,
+            route_policy=route,
+            policy=scoped_policy,
+            strict=False,
+        )
+    else:
+        scoped_policy = scope_bounded_finance_loop_policy(
+            base_policy,
+            cell_count=len(cell_ids),
+            maximum_evidence_requests=maximum_evidence_requests,
+        )
+        tools = compile_finance_loop_tools(
+            research_input=research_input,
+            required_cell_ids=cell_ids,
+            kernel=kernel,
+            route_policy=route,
+            policy=scoped_policy,
+            strict=False,
+        )
     visible_execution_budget = {
         "maximum_steps": scoped_policy.maximum_steps,
         "maximum_evidence_requests": maximum_evidence_requests,
@@ -1423,11 +1625,16 @@ def run_tool_loop(
         research_input=research_input,
         required_cell_ids=cell_ids,
         execution_budget=visible_execution_budget,
+        micro_judgment_mode=micro_mode,
     )
     actual = {
         "research_input_digest": research_input["research_input_digest"],
         "finance_loop_messages_digest": canonical_digest(list(messages)),
-        "standard_tool_schema_digest": canonical_digest(list(tools)),
+        (
+            "micro_tool_schema_digest"
+            if micro_mode
+            else "standard_tool_schema_digest"
+        ): canonical_digest(list(tools)),
     }
     bound = authority["bound_inputs"]
     if any(str(bound[key]) != str(value) for key, value in actual.items()):
@@ -1515,8 +1722,32 @@ def run_tool_loop(
         and normalized.get("network_calls") == 0
         and normalized.get("retries") == 0
     )
+    micro_clean = (
+        micro_mode
+        and clean.get("status")
+        == "zero_call_micro_judgment_fresh_process_proof_pass"
+        and normalized.get("research_input_digest")
+        == research_input["research_input_digest"]
+        and normalized.get("step_count") == 4
+        and normalized.get("tool_call_count") == 5
+        and normalized.get("ordered_model_owned_phases")
+        == list(MICRO_JUDGMENT_TOOL_NAMES)
+        and normalized.get("model_authored_narratives_preserved_exactly")
+        is True
+        and normalized.get("harness_generated_missing_claim_or_fragment")
+        is False
+        and normalized.get("three_case_context_all_pass") is True
+        and normalized.get("three_case_identity_pollution_count") == 0
+        and normalized.get("three_case_graph_context_pollution_count") == 0
+        and clean.get("fresh_process_results_byte_equivalent") is True
+        and normalized.get("model_calls") == 0
+        and normalized.get("network_calls") == 0
+        and normalized.get("provider_calls") == 0
+        and normalized.get("retries") == 0
+    )
     if not (
-        (
+        micro_clean
+        or (
             claim_surface_authority_mode
             and claim_authority_mode
             and (claim_surface_clean or claim_relation_alias_clean)
@@ -1532,6 +1763,19 @@ def run_tool_loop(
             "research_consumer_tool_loop_clean_proof_drift"
         )
     prior_scope_decision = _json(paths["prior_scope_decision_ref"])
+    micro_zero_call_authority = (
+        _json(paths["micro_zero_call_authority_ref"])
+        if micro_mode
+        else {}
+    )
+    prior_live_result = (
+        _json(paths["prior_live_result_ref"]) if micro_mode else {}
+    )
+    prior_capacity_assessment = (
+        _json(paths["prior_capacity_assessment_ref"])
+        if micro_mode
+        else {}
+    )
     research_context_revalidation_authorized = (
         len(cell_ids) == 1
         and prior_scope_decision.get("status")
@@ -1574,7 +1818,8 @@ def run_tool_loop(
         and prior_scope_decision.get("product_publication_authorized") is False
     )
     fixed_pack_claim_surface_authority_authorized = (
-        claim_surface_authority_mode
+        not micro_mode
+        and claim_surface_authority_mode
         and claim_authority_mode
         and (
             _fixed_pack_claim_surface_replacement_scope_authorized(
@@ -1589,10 +1834,24 @@ def run_tool_loop(
             )
         )
     )
+    fixed_pack_micro_judgment_authorized = (
+        micro_mode
+        and claim_surface_authority_mode
+        and claim_authority_mode
+        and _fixed_pack_micro_judgment_scope_authorized(
+            prior_scope_decision,
+            cell_ids=cell_ids,
+            clean_zero_call_result=clean,
+            clean_zero_call_authority=micro_zero_call_authority,
+            prior_live_result=prior_live_result,
+            prior_capacity_assessment=prior_capacity_assessment,
+        )
+    )
     single_scope_authorized = (
         len(cell_ids) == 1
         and (
-            research_context_revalidation_authorized
+            fixed_pack_micro_judgment_authorized
+            or research_context_revalidation_authorized
             or incomplete_read_replacement_authorized
             or fixed_pack_claim_authority_authorized
             or fixed_pack_claim_surface_authority_authorized
@@ -1629,12 +1888,29 @@ def run_tool_loop(
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_tool_loop_prior_disposition_invalid"
         )
-    profile = load_chat_completion_profile(_json(paths["provider_profile_ref"]))
-    validate_deepseek_ga_profile(profile, strict_tools=False)
-    if profile.request_defaults.get("max_tokens") != 16000:
-        raise CurrentResearchConsumerCanaryError(
-            "research_consumer_tool_loop_profile_capacity_invalid"
+    if micro_mode:
+        read_profile = load_chat_completion_profile(
+            _json(paths["micro_read_profile_ref"])
         )
+        judgment_profile = load_chat_completion_profile(
+            _json(paths["micro_judgment_profile_ref"])
+        )
+        validate_deepseek_ga_node_profile(
+            read_profile, node_class="tool_routing"
+        )
+        validate_deepseek_ga_node_profile(
+            judgment_profile, node_class="bounded_financial_judgment"
+        )
+        profile = None
+    else:
+        profile = load_chat_completion_profile(
+            _json(paths["provider_profile_ref"])
+        )
+        validate_deepseek_ga_profile(profile, strict_tools=False)
+        if profile.request_defaults.get("max_tokens") != 16000:
+            raise CurrentResearchConsumerCanaryError(
+                "research_consumer_tool_loop_profile_capacity_invalid"
+            )
     output = authority["output_contract"]
     private_root = _resolve(str(output["private_output_root_ref"]))
     capture_root = _resolve(str(output["capture_root_ref"]))
@@ -1643,6 +1919,7 @@ def run_tool_loop(
     state: dict[str, Any] = {
         "model_calls_attempted": 0,
         "attempted_steps": [],
+        "node_profile_selections": [],
         "last_attempt_id": "",
         "failure_capture_ref": "",
     }
@@ -1662,12 +1939,49 @@ def run_tool_loop(
         step_tools: Sequence[Mapping[str, Any]],
         step_index: int,
     ) -> ChatCompletionToolStepResult:
+        if micro_mode:
+            selected_profile, node_class = _select_micro_node_profile(
+                step_tools,
+                read_profile=read_profile,
+                judgment_profile=judgment_profile,
+            )
+            profile_ref = (
+                paths["micro_read_profile_ref"]
+                if node_class == "tool_routing"
+                else paths["micro_judgment_profile_ref"]
+            )
+        else:
+            if profile is None:
+                raise CurrentResearchConsumerCanaryError(
+                    "research_consumer_tool_loop_profile_missing"
+                )
+            selected_profile = profile
+            node_class = "legacy_bounded_finance_loop"
+            profile_ref = paths["provider_profile_ref"]
         attempt_id = f"{prefix}-{step_index:02d}-ATTEMPT-01"
         state["model_calls_attempted"] += 1
         state["last_attempt_id"] = attempt_id
+        state["node_profile_selections"].append(
+            {
+                "step_index": step_index,
+                "node_class": node_class,
+                "profile_ref": _relative(profile_ref),
+                "profile_sha256": _sha(profile_ref),
+                "reasoning_effort": selected_profile.request_defaults.get(
+                    "reasoning_effort"
+                ),
+                "max_tokens": selected_profile.request_defaults.get(
+                    "max_tokens"
+                ),
+                "active_tool_names": [
+                    str(row.get("function", {}).get("name") or "")
+                    for row in step_tools
+                ],
+            }
+        )
         try:
             step = step_executor(
-                profile=profile,
+                profile=selected_profile,
                 messages=step_messages,
                 tools=step_tools,
                 capture_root=capture_root,
@@ -1707,6 +2021,9 @@ def run_tool_loop(
             state["failure_capture_ref"] = state["attempted_steps"][-1][
                 "response_capture_ref"
             ]
+    except CurrentResearchConsumerCanaryError as exc:
+        failure_phase = "local_live_runner_validation"
+        failure_code = exc.code
     status = (
         "completed_contract_valid_content_assessment_pending"
         if loop_result is not None
@@ -1731,6 +2048,7 @@ def run_tool_loop(
         },
         "model_calls_attempted": state["model_calls_attempted"],
         "attempted_provider_steps": state["attempted_steps"],
+        "node_profile_selections": state["node_profile_selections"],
         "receipt_refs": receipt_refs,
         "failure_phase": failure_phase,
         "failure_code": failure_code,
@@ -1772,6 +2090,7 @@ def run_tool_loop(
             "product_publication": False,
         },
         "provider_steps": _public_tool_steps(state["attempted_steps"]),
+        "node_profile_selections": state["node_profile_selections"],
         "accepted_receipt_count": len(receipt_refs),
         "accepted_receipt_refs": receipt_refs,
         "tool_counts": (
@@ -1814,7 +2133,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     authority = _json(authority_path)
     if authority.get("schema_version") == PAIRED_AUTHORITY_SCHEMA:
         result = run_paired(authority_path)
-    elif authority.get("schema_version") == TOOL_LOOP_AUTHORITY_SCHEMA:
+    elif authority.get("schema_version") in {
+        TOOL_LOOP_AUTHORITY_SCHEMA,
+        MICRO_TOOL_LOOP_AUTHORITY_SCHEMA,
+    }:
         result = run_tool_loop(authority_path)
     else:
         result = run(authority_path)

@@ -2,7 +2,7 @@
 
 日期：2026-08-15
 
-状态：`working_tree_engineering_pass / formal_clean_proof_pending / natural_live_not_authorized`
+状态：`formal_clean_zero_call_pass / natural_live_gate_implementation_pending / fixed-Pack layer one blocked`
 
 ## 为什么不是继续删字段
 
@@ -45,3 +45,9 @@ DELL 专用 Claim Authority 对 MU、NVDA 均拒绝；原 DELL／MU／NVDA 五�
 该结果没有模型、Provider、网络、embedding、retry 或产品发布调用。它不能证明 DeepSeek 会自然提交三个片段，也不能证明 L1 或研究内容质量提高。它只说明项目端已经把 R2 暴露的 monolithic 节点拆成一个可执行、可校验、不会由 Harness 代写结论的有界结构。
 
 下一步必须先把实现提交并推送到 clean/synced commit，再签发 formal zero-call authority，绑定 R2 result、capacity assessment、原始 request/response、micro policy、两个 Provider profile 和当前实现摘要。formal proof 通过后，另做 fresh live 的价值／风险决策；不得自动把工程通过写成 natural fixed-Pack acceptance，也不得进入动态 Truth Spine。
+
+## Formal clean proof
+
+实现已提交并推送为 `3851f5f4ec9ce4af4325aefa295f442ebf6e1950`。绑定该 clean/synced commit 的 authority 随后执行一次，两个 fresh process 结果字节等价，公开状态为 `zero_call_micro_judgment_fresh_process_proof_pass`，result digest=`ca63338d...b1399c`。
+
+正式证明复用了 immutable R2 research input digest `783de9ef...1d274`，确认 `4 step / 5 tool call`、八类 mutation、DELL policy 对 MU／NVDA 拒绝和旧三案例 full-fake 非回归；网络、模型、Provider、embedding、retry 均为 0。formal proof 仍不是 natural fixed-Pack acceptance。下一项是扩展现有 canonical live runner 的 micro authority 分支并做零调用 gate；只有该入口能重新核对 proof、profiles、Git、预算和 exact-once output 后，才可签发一次新的 natural successor。

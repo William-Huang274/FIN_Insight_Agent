@@ -63,4 +63,4 @@ Owner 授权范围内的下一修复不再做字段删减、上限扩大或协�
 
 本地结果为 `4 step / 5 tool call / 0 EvidenceRequest`。三个微判断中最大的活动 Tool Schema 为 `3,444` 字符，相对旧 monolithic Judgment `4,847` 为 `0.710543`；read 节点使用 `low / 2,000`，判断节点使用 `high / 8,000`，两者均位于可替换 DeepSeek profile，金融核心没有 Provider 分支。三段 reviewed fake 叙事逐字保留；乱序、重复、缺片段、缺必要 Evidence、未知／跨案 alias、Evidence role 冲突、因果越界和 schema 漂移均 fail closed，MU／NVDA 不会套用 DELL policy。全仓为 `314 passed`。
 
-这只把第一项推进到 working-tree engineering pass；natural DeepSeek submission、L1 和内容质量仍未证明。下一门是 clean commit/push 后签发 formal zero-call authority，完成两次 fresh-process 等价证明和三案例非回归；通过后才允许做一次新的 live 资格判断。第二至第五项继续 pending。
+实现已提交并推送为 `3851f5f4...`，随后签发的 formal zero-call authority 已通过：两个 fresh process 字节等价，result digest=`ca63338d...b1399c`，三案例非回归和八类 mutation 均成立。natural DeepSeek submission、L1 和内容质量仍未证明。下一门是给现有 canonical live runner 增加 micro authority／节点 profile 接线并完成零调用 gate；通过后才允许签发一次新的 natural successor。第二至第五项继续 pending。

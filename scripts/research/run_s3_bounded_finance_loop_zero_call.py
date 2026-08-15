@@ -46,6 +46,7 @@ from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     SUBMIT_RESEARCH_MECHANISM_TOOL,
     SUBMIT_RESEARCH_THESIS_TOOL,
     compile_finance_loop_messages,
+    compile_finance_micro_judgment_fragments,
     compile_finance_micro_judgment_tools,
     compile_finance_loop_tools,
     load_fixed_pack_micro_judgment_policy,
@@ -53,6 +54,7 @@ from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     run_bounded_finance_loop,
     scope_bounded_finance_micro_judgment_policy,
     scope_bounded_finance_loop_policy,
+    validate_finance_micro_judgment_fragment,
     validate_deepseek_ga_json_profile,
     validate_deepseek_ga_node_profile,
     validate_deepseek_ga_profile,
@@ -67,6 +69,7 @@ from sec_agent.research.claim_surface_authority import (  # noqa: E402
 )
 from sec_agent.research.current_consumer import (  # noqa: E402
     CurrentResearchConsumerError,
+    compile_current_research_deliverable,
     compile_current_research_input,
     validate_current_research_output,
 )
@@ -947,18 +950,23 @@ def _micro_mutation_codes(
             unknown_alias,
         )
     )
-    role_conflict = deepcopy(unchanged)
-    support_ref = role_conflict[SUBMIT_RESEARCH_THESIS_TOOL][
+    local_support_laundering = deepcopy(unchanged)
+    support_ref = local_support_laundering[SUBMIT_RESEARCH_THESIS_TOOL][
         "evidence_uses"
     ][0]["evidence_ref"]
-    role_conflict[SUBMIT_RESEARCH_MECHANISM_TOOL]["evidence_uses"] = [
-        {"evidence_ref": support_ref, "use_role": "limit"}
+    local_support_laundering[SUBMIT_RESEARCH_MECHANISM_TOOL][
+        "claim_relation_ref"
+    ] = "CR::DELL::MULTI_DRIVER_CONTEXT"
+    local_support_laundering[SUBMIT_RESEARCH_MECHANISM_TOOL][
+        "evidence_uses"
+    ] = [
+        {"evidence_ref": support_ref, "use_role": "context"}
     ]
     cases.append(
         (
-            "cross_fragment_evidence_role_conflict",
-            "finance_loop_micro_evidence_role_conflict",
-            role_conflict,
+            "claim_local_required_support_not_borrowed",
+            "finance_loop_micro_required_authority_missing",
+            local_support_laundering,
         )
     )
     causal_overreach = deepcopy(unchanged)
@@ -1300,6 +1308,218 @@ def _run_micro_judgment_matrix(
             paths=paths
         ),
         "prior_capacity_failure_immutable": True,
+    }
+
+
+def _saved_r3_claim_local_boundary_replay(
+    *,
+    paths: Mapping[str, Path],
+    research_input: Mapping[str, Any],
+) -> dict[str, Any]:
+    required = {
+        "r3_submitted_fragments_ref",
+        "r3_live_result_ref",
+        "r3_failure_assessment_ref",
+    }
+    missing = required.difference(paths)
+    if missing:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r3_replay_bound_inputs_missing:"
+            + ",".join(sorted(missing))
+        )
+    fixture = _json(paths["r3_submitted_fragments_ref"])
+    prior_result = _json(paths["r3_live_result_ref"])
+    prior_assessment = _json(paths["r3_failure_assessment_ref"])
+    if not (
+        fixture.get("source_result_sha256")
+        == _sha(paths["r3_live_result_ref"])
+        and prior_result.get("failure_code")
+        == "finance_loop_micro_evidence_role_conflict"
+        and prior_assessment.get("root_cause", {}).get("owner_layer")
+        == "S3_terminal_claim_local_evidence_role_and_boundary_authority_aggregation"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r3_replay_predecessor_drift"
+        )
+    fragments = fixture.get("fragments")
+    if not isinstance(fragments, Mapping) or set(fragments) != set(
+        MICRO_JUDGMENT_TOOL_NAMES
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r3_replay_fragment_shape_invalid"
+        )
+    accepted: dict[str, dict[str, Any]] = {}
+    for tool_name in MICRO_JUDGMENT_TOOL_NAMES:
+        raw = fragments[tool_name]
+        if not isinstance(raw, Mapping):
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_r3_replay_fragment_shape_invalid"
+            )
+        accepted[tool_name] = validate_finance_micro_judgment_fragment(
+            tool_name=tool_name,
+            arguments=deepcopy(raw),
+            research_input=research_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=accepted.get(SUBMIT_RESEARCH_THESIS_TOOL),
+        )
+    cell = next(
+        row
+        for row in research_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    terminal = compile_finance_micro_judgment_fragments(
+        accepted,
+        cell=cell,
+    )
+    deliverable = compile_current_research_deliverable(
+        research_input=research_input,
+        judgment_output={"cells": [terminal]},
+        required_cell_ids=["CELL::value_capture"],
+    )
+    rendered = deliverable["cells"][0]
+    relation_by_atom = {
+        row["atom_field"]: row for row in rendered["claim_relations"]
+    }
+    if not (
+        terminal["evidence_uses"]
+        == [
+            {
+                "evidence_ref": "EV::0063F22F643B94ED",
+                "use_role": "support",
+            }
+        ]
+        and relation_by_atom["thesis_atom"]["evidence_uses"][0][
+            "use_role"
+        ]
+        == "support"
+        and relation_by_atom["mechanism_atom"]["evidence_uses"][0][
+            "use_role"
+        ]
+        == "context"
+        and set(
+            rendered["claim_authority_receipt"][
+                "boundary_authority_sources"
+            ]
+        )
+        == {
+            "typed_bridge_gap_relation",
+            "typed_same_scope_counter_relation",
+        }
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r3_replay_authority_receipt_invalid"
+        )
+    source_atoms = [
+        str(fragments[name][field])
+        for name, field in zip(
+            MICRO_JUDGMENT_TOOL_NAMES,
+            ("thesis_atom", "mechanism_atom", "counterargument_atom"),
+        )
+    ]
+    if source_atoms != [
+        terminal["thesis_atom"],
+        terminal["mechanism_atom"],
+        terminal["counterargument_atom"],
+    ]:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r3_replay_model_narrative_changed"
+        )
+
+    mutation_failure_codes: dict[str, str] = {}
+    borrowed_support = deepcopy(terminal)
+    thesis_relation = next(
+        row
+        for row in borrowed_support["claim_relations"]
+        if row["atom_field"] == "thesis_atom"
+    )
+    thesis_relation["evidence_uses"][0]["use_role"] = "context"
+    try:
+        compile_current_research_deliverable(
+            research_input=research_input,
+            judgment_output={"cells": [borrowed_support]},
+            required_cell_ids=["CELL::value_capture"],
+        )
+    except CurrentResearchConsumerError as exc:
+        if exc.code != "claim_surface_required_authority_missing":
+            raise
+        mutation_failure_codes["global_support_laundering"] = exc.code
+    else:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r3_replay_support_laundering_passed"
+        )
+
+    missing_boundary = deepcopy(terminal)
+    missing_boundary["evidence_uses"].append(
+        {
+            "evidence_ref": "EV::7F4D7E6762C21D83",
+            "use_role": "support",
+        }
+    )
+    multi_driver_uses = [
+        {
+            "evidence_ref": "EV::0063F22F643B94ED",
+            "use_role": "support",
+        },
+        {
+            "evidence_ref": "EV::7F4D7E6762C21D83",
+            "use_role": "support",
+        },
+    ]
+    for relation in missing_boundary["claim_relations"]:
+        if relation["atom_field"] != "thesis_atom":
+            relation["claim_relation_ref"] = (
+                "CR::DELL::MULTI_DRIVER_CONTEXT"
+            )
+            relation["inference_authority"] = "bounded_inference"
+            relation["evidence_uses"] = deepcopy(multi_driver_uses)
+    missing_boundary["mechanism_atom"] = (
+        "资料同时呈现产品目标、价格纪律和业务组合等背景；现有披露"
+        "未给出产品、分部与公司财务口径之间的可复算对应关系。"
+    )
+    missing_boundary["counterargument_atom"] = (
+        "公司整体毛利率同口径同比方向下降。该公司层面观察与产品层"
+        "管理层目标处于不同口径，两者之间仍缺少量价配置资料。"
+    )
+    try:
+        compile_current_research_deliverable(
+            research_input=research_input,
+            judgment_output={"cells": [missing_boundary]},
+            required_cell_ids=["CELL::value_capture"],
+        )
+    except CurrentResearchConsumerError as exc:
+        if exc.code != "claim_authority_multi_driver_boundary_missing":
+            raise
+        mutation_failure_codes["typed_boundary_removed"] = exc.code
+    else:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r3_replay_missing_boundary_passed"
+        )
+
+    return {
+        "predecessor_result_digest": prior_result["result_digest"],
+        "predecessor_failure_code": prior_result["failure_code"],
+        "submitted_fragment_fixture_sha256": _sha(
+            paths["r3_submitted_fragments_ref"]
+        ),
+        "accepted_fragment_digests": {
+            name: canonical_digest(accepted[name])
+            for name in MICRO_JUDGMENT_TOOL_NAMES
+        },
+        "terminal_judgment_digest": canonical_digest(terminal),
+        "deliverable_digest": deliverable["deliverable_digest"],
+        "judgment_status": rendered["judgment_status"],
+        "inference_authority": rendered["inference_authority"],
+        "claim_scope": rendered["claim_scope"],
+        "financial_scope": rendered["financial_scope"],
+        "causal_bridge_authority": rendered["causal_bridge_authority"],
+        "claim_local_roles_preserved": True,
+        "report_level_summary_deterministic": True,
+        "boundary_authority_sources": rendered[
+            "claim_authority_receipt"
+        ]["boundary_authority_sources"],
+        "model_narratives_preserved_exactly": True,
+        "harness_generated_research_judgment": False,
+        "mutation_failure_codes": mutation_failure_codes,
     }
 
 
@@ -1700,8 +1920,24 @@ def _execute(
             paths=paths,
             base_policy=policy,
         )
+        r3_replay = (
+            _saved_r3_claim_local_boundary_replay(
+                paths=paths,
+                research_input=_claim_relation_alias_input(
+                    paths=paths,
+                    research_input=research_input,
+                ),
+            )
+            if "r3_submitted_fragments_ref" in paths
+            else None
+        )
         normalized = {
             **micro_matrix,
+            **(
+                {"saved_r3_claim_local_boundary_replay": r3_replay}
+                if r3_replay is not None
+                else {}
+            ),
             "three_case_context_digest": canonical_digest(three_case_context),
             "three_case_context_all_pass": three_case_context[
                 "all_three_full_fake_pass"
@@ -1753,6 +1989,7 @@ def _execute(
                 "each_judgment_schema_smaller_than_r2_monolith": True,
                 "mutation_and_cross_case_fail_closed": True,
                 "three_case_existing_runtime_unchanged": True,
+                "saved_r3_terminal_replay_pass": r3_replay is not None,
                 "natural_model_submission_proven": False,
                 "fixed_pack_layer_one_accepted": False,
                 "dynamic_agentic_research_authorized": False,
@@ -1762,7 +1999,10 @@ def _execute(
                 "This zero-network zero-model proof reuses the immutable DELL "
                 "R2 research input and proves only the provider-neutral micro-"
                 "judgment contract, node profile bindings, deterministic terminal "
-                "compilation, mutation closure and three-case non-regression. It "
+                "compilation, mutation closure and three-case non-regression. "
+                "When an R3 replay fixture is bound, it also proves unchanged "
+                "model submissions preserve claim-local Evidence roles and typed "
+                "boundary authority through the final deliverable. It "
                 "does not prove DeepSeek will naturally submit any fragment, does "
                 "not accept fixed-Pack Layer One and does not authorize dynamic "
                 "Agentic Research or product publication."

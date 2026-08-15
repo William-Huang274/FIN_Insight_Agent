@@ -59,6 +59,8 @@ from sec_agent.research.bounded_finance_loop import (
     validate_finance_micro_judgment_fragment,
 )
 from sec_agent.research.current_consumer import (
+    CurrentResearchConsumerError,
+    compile_current_research_deliverable,
     compile_current_research_input,
 )
 from sec_agent.research.claim_authority import (
@@ -120,6 +122,21 @@ R2_SUBMITTED_FRAGMENT_REPLAY = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_full_fragment_chat_r2_"
     "submitted_fragments_v1_0.json"
+)
+R3_SUBMITTED_FRAGMENT_REPLAY = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_full_fragment_chat_r3_"
+    "submitted_fragments_v1_0.json"
+)
+R3_LIVE_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_"
+    "judgment_chat_live_result_v1_2.json"
+)
+R3_FAILURE_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_"
+    "judgment_chat_live_failure_assessment_v1_2.json"
 )
 CLAIM_RELATION_ALIAS_FAKE = ROOT / (
     "tests/fixtures/research/"
@@ -939,6 +956,211 @@ def test_saved_R2_mechanism_passes_relation_support_v1_2_and_terminal_lowers_sta
     )
     assert terminal["judgment_status"] == "bounded_support"
     assert terminal["inference_authority"] == "bounded_inference"
+
+
+def test_saved_R3_claim_local_roles_and_typed_boundaries_compile_full_deliverable(
+    contracts,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_SUPPORT_POLICY),
+    )
+    raw_fragments = _json(R3_SUBMITTED_FRAGMENT_REPLAY)["fragments"]
+    accepted = {}
+    for tool_name in MICRO_JUDGMENT_TOOL_NAMES:
+        accepted[tool_name] = validate_finance_micro_judgment_fragment(
+            tool_name=tool_name,
+            arguments=deepcopy(raw_fragments[tool_name]),
+            research_input=alias_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=accepted.get(SUBMIT_RESEARCH_THESIS_TOOL),
+        )
+    cell = next(
+        row
+        for row in alias_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    terminal = compile_finance_micro_judgment_fragments(
+        accepted,
+        cell=cell,
+    )
+    assert terminal["evidence_uses"] == [
+        {
+            "evidence_ref": "EV::0063F22F643B94ED",
+            "use_role": "support",
+        }
+    ]
+    relation_by_atom = {
+        row["atom_field"]: row for row in terminal["claim_relations"]
+    }
+    assert relation_by_atom["thesis_atom"]["evidence_uses"] == [
+        {
+            "evidence_ref": "EV::0063F22F643B94ED",
+            "use_role": "support",
+        }
+    ]
+    assert relation_by_atom["mechanism_atom"]["evidence_uses"] == [
+        {
+            "evidence_ref": "EV::0063F22F643B94ED",
+            "use_role": "context",
+        }
+    ]
+    deliverable = compile_current_research_deliverable(
+        research_input=alias_input,
+        judgment_output={"cells": [terminal]},
+        required_cell_ids=["CELL::value_capture"],
+    )
+    rendered = deliverable["cells"][0]
+    assert rendered["judgment_status"] == "bounded_support"
+    assert rendered["inference_authority"] == "bounded_inference"
+    assert rendered["causal_bridge_authority"] == (
+        "multi_driver_context_only"
+    )
+    assert set(
+        rendered["claim_authority_receipt"]["boundary_authority_sources"]
+    ) == {
+        "typed_bridge_gap_relation",
+        "typed_same_scope_counter_relation",
+    }
+    rendered_relation_by_atom = {
+        row["atom_field"]: row for row in rendered["claim_relations"]
+    }
+    assert rendered_relation_by_atom["mechanism_atom"][
+        "evidence_uses"
+    ][0]["use_role"] == "context"
+
+
+def test_saved_R3_claim_local_context_cannot_borrow_global_support(
+    contracts,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_SUPPORT_POLICY),
+    )
+    raw_fragments = _json(R3_SUBMITTED_FRAGMENT_REPLAY)["fragments"]
+    accepted = {}
+    for tool_name in MICRO_JUDGMENT_TOOL_NAMES:
+        accepted[tool_name] = validate_finance_micro_judgment_fragment(
+            tool_name=tool_name,
+            arguments=deepcopy(raw_fragments[tool_name]),
+            research_input=alias_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=accepted.get(SUBMIT_RESEARCH_THESIS_TOOL),
+        )
+    cell = next(
+        row
+        for row in alias_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    terminal = compile_finance_micro_judgment_fragments(
+        accepted,
+        cell=cell,
+    )
+    thesis_relation = next(
+        row
+        for row in terminal["claim_relations"]
+        if row["atom_field"] == "thesis_atom"
+    )
+    thesis_relation["evidence_uses"][0]["use_role"] = "context"
+    assert terminal["evidence_uses"][0]["use_role"] == "support"
+
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="claim_surface_required_authority_missing",
+    ):
+        compile_current_research_deliverable(
+            research_input=alias_input,
+            judgment_output={"cells": [terminal]},
+            required_cell_ids=["CELL::value_capture"],
+        )
+
+
+def test_multi_driver_terminal_requires_typed_or_limiting_boundary(
+    contracts,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_SUPPORT_POLICY),
+    )
+    raw_fragments = deepcopy(
+        _json(R3_SUBMITTED_FRAGMENT_REPLAY)["fragments"]
+    )
+    multi_driver_support = [
+        {
+            "evidence_ref": "EV::0063F22F643B94ED",
+            "use_role": "support",
+        },
+        {
+            "evidence_ref": "EV::7F4D7E6762C21D83",
+            "use_role": "support",
+        },
+    ]
+    for tool_name in (
+        SUBMIT_RESEARCH_MECHANISM_TOOL,
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+    ):
+        raw_fragments[tool_name][
+            "claim_relation_ref"
+        ] = "CR::DELL::MULTI_DRIVER_CONTEXT"
+        raw_fragments[tool_name]["evidence_uses"] = deepcopy(
+            multi_driver_support
+        )
+        raw_fragments[tool_name]["inference_authority"] = (
+            "bounded_inference"
+        )
+    raw_fragments[SUBMIT_RESEARCH_MECHANISM_TOOL]["mechanism_atom"] = (
+        "资料同时呈现产品目标、价格纪律和业务组合等背景；现有披露"
+        "未给出产品、分部与公司财务口径之间的可复算对应关系。"
+    )
+    raw_fragments[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL][
+        "counterargument_atom"
+    ] = (
+        "公司整体毛利率同口径同比方向下降。该公司层面观察与产品层"
+        "管理层目标处于不同口径，两者之间仍缺少量价配置资料。"
+    )
+    accepted = {}
+    for tool_name in MICRO_JUDGMENT_TOOL_NAMES:
+        accepted[tool_name] = validate_finance_micro_judgment_fragment(
+            tool_name=tool_name,
+            arguments=deepcopy(raw_fragments[tool_name]),
+            research_input=alias_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=accepted.get(SUBMIT_RESEARCH_THESIS_TOOL),
+        )
+    cell = next(
+        row
+        for row in alias_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    terminal = compile_finance_micro_judgment_fragments(
+        accepted,
+        cell=cell,
+    )
+
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="claim_authority_multi_driver_boundary_missing",
+    ):
+        compile_current_research_deliverable(
+            research_input=alias_input,
+            judgment_output={"cells": [terminal]},
+            required_cell_ids=["CELL::value_capture"],
+        )
 
 
 def test_micro_fragment_projection_extends_through_mechanism_and_counter_wwc(
@@ -1887,11 +2109,52 @@ def test_zero_call_runner_replays_r2_as_micro_judgments(contracts) -> None:
         "missing_fragment",
         "missing_required_authority",
         "unknown_or_cross_case_alias",
-        "cross_fragment_evidence_role_conflict",
+        "claim_local_required_support_not_borrowed",
         "causal_overreach",
         "tool_schema_mutation",
     }
     assert set(result["cross_case_policy_rejection_codes"]) == {"MU", "NVDA"}
+
+
+def test_zero_call_runner_replays_saved_r3_claim_local_boundary(
+    contracts,
+) -> None:
+    runner = _zero_call_runner()
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_SUPPORT_POLICY),
+    )
+    replay = runner._saved_r3_claim_local_boundary_replay(
+        paths={
+            "r3_submitted_fragments_ref": R3_SUBMITTED_FRAGMENT_REPLAY,
+            "r3_live_result_ref": R3_LIVE_RESULT,
+            "r3_failure_assessment_ref": R3_FAILURE_ASSESSMENT,
+        },
+        research_input=alias_input,
+    )
+
+    assert replay["predecessor_failure_code"] == (
+        "finance_loop_micro_evidence_role_conflict"
+    )
+    assert replay["claim_local_roles_preserved"] is True
+    assert replay["model_narratives_preserved_exactly"] is True
+    assert set(replay["boundary_authority_sources"]) == {
+        "typed_bridge_gap_relation",
+        "typed_same_scope_counter_relation",
+    }
+    assert replay["mutation_failure_codes"] == {
+        "global_support_laundering": (
+            "claim_surface_required_authority_missing"
+        ),
+        "typed_boundary_removed": (
+            "claim_authority_multi_driver_boundary_missing"
+        ),
+    }
 
 
 def test_chat_and_responses_lanes_share_one_finance_loop_core(contracts) -> None:

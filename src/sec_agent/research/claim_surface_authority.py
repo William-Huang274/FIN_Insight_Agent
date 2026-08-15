@@ -644,10 +644,11 @@ def validate_claim_surface_authority_selection(
         str(row["qualitative_fact_ref"]): row
         for row in qualitative_fact_cards
     }
-    roles_by_ref = {
-        str(row["evidence_ref"]): str(row["use_role"])
-        for row in evidence_uses
-    }
+    roles_by_ref: dict[str, set[str]] = {}
+    for row in evidence_uses:
+        roles_by_ref.setdefault(str(row["evidence_ref"]), set()).add(
+            str(row["use_role"])
+        )
     guard = claim_surface_contract["narrative_conflict_guard"]
     guarded_relations = set(
         guard[
@@ -674,20 +675,47 @@ def validate_claim_surface_authority_selection(
         )
         atom_field = str(row.get("atom_field") or "")
         per_atom_inference_explicit = "inference_authority" in row
+        claim_local_evidence_explicit = "evidence_uses" in row
+        claim_local_evidence_uses: list[dict[str, str]] = []
+        if claim_local_evidence_explicit:
+            raw_local_uses = row.get("evidence_uses")
+            _require(
+                isinstance(raw_local_uses, list),
+                "claim_surface_claim_local_evidence_uses_invalid",
+            )
+            seen_local_uses: set[tuple[str, str]] = set()
+            for raw_use in raw_local_uses:
+                local_use = _mapping(
+                    raw_use,
+                    "claim_surface_claim_local_evidence_use_invalid",
+                )
+                ref = str(local_use.get("evidence_ref") or "")
+                role = str(local_use.get("use_role") or "")
+                _require(
+                    set(local_use) == {"evidence_ref", "use_role"}
+                    and ref in roles_by_ref
+                    and role in {"support", "limit", "context"}
+                    and (ref, role) not in seen_local_uses,
+                    "claim_surface_claim_local_evidence_use_invalid",
+                )
+                seen_local_uses.add((ref, role))
+                claim_local_evidence_uses.append(
+                    {"evidence_ref": ref, "use_role": role}
+                )
         atom_inference_authority = str(
             row.get("inference_authority") or inference_authority
         )
         if alias_mode:
+            base_alias_fields = {"atom_field", "claim_relation_ref"}
             _require(
                 frozenset(row)
                 in {
-                    frozenset({"atom_field", "claim_relation_ref"}),
+                    frozenset(base_alias_fields),
+                    frozenset(base_alias_fields | {"inference_authority"}),
+                    frozenset(base_alias_fields | {"evidence_uses"}),
                     frozenset(
-                        {
-                            "atom_field",
-                            "claim_relation_ref",
-                            "inference_authority",
-                        }
+                        base_alias_fields
+                        | {"inference_authority", "evidence_uses"}
                     ),
                 },
                 "claim_surface_claim_relation_invalid",
@@ -780,9 +808,17 @@ def validate_claim_surface_authority_selection(
         required_qualitative_refs.update(
             combination["required_qualitative_fact_refs"]
         )
+        relation_roles_by_ref: Mapping[str, set[str]] = roles_by_ref
+        if claim_local_evidence_explicit:
+            relation_roles: dict[str, set[str]] = {}
+            for use in claim_local_evidence_uses:
+                relation_roles.setdefault(use["evidence_ref"], set()).add(
+                    use["use_role"]
+                )
+            relation_roles_by_ref = relation_roles
         _require(
             all(
-                roles_by_ref.get(ref) == "support"
+                "support" in relation_roles_by_ref.get(ref, set())
                 for ref in combination["required_evidence_refs"]
             )
             and set(combination["required_numeric_relation_refs"]).issubset(
@@ -855,6 +891,11 @@ def validate_claim_surface_authority_selection(
                     if per_atom_inference_explicit
                     else {}
                 ),
+                **(
+                    {"evidence_uses": claim_local_evidence_uses}
+                    if claim_local_evidence_explicit
+                    else {}
+                ),
             }
         )
     _require(
@@ -868,8 +909,10 @@ def validate_claim_surface_authority_selection(
     )
     _require(
         all(
-            roles_by_ref.get(str(facts[ref]["source_evidence_ref"]))
-            == "support"
+            "support"
+            in roles_by_ref.get(
+                str(facts[ref]["source_evidence_ref"]), set()
+            )
             for ref in qualitative_refs
         ),
         "claim_surface_qualitative_fact_source_not_supported",

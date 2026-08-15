@@ -2830,21 +2830,28 @@ def compile_finance_micro_judgment_fragments(
                     output.append(value)
         return output
 
-    evidence_roles: dict[str, str] = {}
-    evidence_uses: list[dict[str, str]] = []
+    evidence_roles: dict[str, set[str]] = {}
+    evidence_ref_order: list[str] = []
     for fragment in ordered:
         for row in fragment["evidence_uses"]:
             ref = str(row["evidence_ref"])
             role = str(row["use_role"])
-            _require(
-                ref not in evidence_roles or evidence_roles[ref] == role,
-                "finance_loop_micro_evidence_role_conflict",
-            )
             if ref not in evidence_roles:
-                evidence_roles[ref] = role
-                evidence_uses.append(
-                    {"evidence_ref": ref, "use_role": role}
-                )
+                evidence_roles[ref] = set()
+                evidence_ref_order.append(ref)
+            evidence_roles[ref].add(role)
+    role_precedence = ("support", "limit", "context")
+    evidence_uses = [
+        {
+            "evidence_ref": ref,
+            "use_role": next(
+                role
+                for role in role_precedence
+                if role in evidence_roles[ref]
+            ),
+        }
+        for ref in evidence_ref_order
+    ]
     wwc = deepcopy(counter["what_would_change"])
     if wwc["threshold_numeric_ref"] == "":
         wwc["threshold_numeric_ref"] = None
@@ -2861,6 +2868,7 @@ def compile_finance_micro_judgment_fragments(
                 "atom_field": atom_field,
                 "claim_relation_ref": fragment["claim_relation_ref"],
                 "inference_authority": fragment["inference_authority"],
+                "evidence_uses": deepcopy(fragment["evidence_uses"]),
             }
             for atom_field, fragment in zip(
                 (

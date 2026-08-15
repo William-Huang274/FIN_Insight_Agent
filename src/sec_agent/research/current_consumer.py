@@ -1877,6 +1877,7 @@ def validate_current_research_output(
                     claim_authority_contract=claim_authority_contract,
                     evidence_uses=evidence_uses,
                     numeric_refs=numeric,
+                    numeric_relation_refs=numeric_relations,
                     remaining_gap_refs=gaps,
                     inference_authority=inference,
                     judgment_status=status,

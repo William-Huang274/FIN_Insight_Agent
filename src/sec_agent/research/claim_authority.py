@@ -342,6 +342,7 @@ def validate_claim_authority_selection(
     claim_authority_contract: Mapping[str, Any],
     evidence_uses: Sequence[Mapping[str, str]],
     numeric_refs: Sequence[str],
+    numeric_relation_refs: Sequence[str] = (),
     remaining_gap_refs: Sequence[str],
     inference_authority: str,
     judgment_status: str,
@@ -376,14 +377,19 @@ def validate_claim_authority_selection(
         and judgment_status in set(combination["allowed_judgment_statuses"]),
         "claim_authority_scope_combination_invalid",
     )
-    roles_by_ref = {
-        str(row["evidence_ref"]): str(row["use_role"]) for row in evidence_uses
-    }
+    roles_by_ref: dict[str, set[str]] = {}
+    for row in evidence_uses:
+        roles_by_ref.setdefault(str(row["evidence_ref"]), set()).add(
+            str(row["use_role"])
+        )
     bindings = claim_authority_card["evidence_bindings"]
+    claim_local_limit = False
+    typed_bridge_gap_boundary = False
+    typed_same_scope_counter_boundary = False
     if bridge == "management_assertion_only":
         _require(
             any(
-                roles_by_ref.get(ref) == "support"
+                "support" in roles_by_ref.get(ref, set())
                 for ref in bindings["management_assertion_evidence_refs"]
             ),
             "claim_authority_management_assertion_evidence_missing",
@@ -397,14 +403,57 @@ def validate_claim_authority_selection(
             "claim_authority_management_attribution_missing",
         )
     if bridge == "multi_driver_context_only":
-        _require(
-            any(
-                roles_by_ref.get(ref) in {"support", "context"}
-                for ref in bindings["multi_driver_context_evidence_refs"]
+        structured_relations = (
+            structured_claim_relation_receipt.get("claim_relations", ())
+            if structured_claim_relation_receipt is not None
+            else ()
+        )
+        claim_local_limit = any(
+            str(use.get("use_role") or "") == "limit"
+            and str(use.get("evidence_ref") or "")
+            in set(bindings["limiting_evidence_refs"])
+            for relation in structured_relations
+            if isinstance(relation, Mapping)
+            for use in relation.get("evidence_uses", ())
+            if isinstance(use, Mapping)
+        )
+        typed_bridge_gap_boundary = (
+            set(claim_authority_card["bridge_gap_refs"]).issubset(
+                remaining_gap_refs
             )
             and any(
-                roles_by_ref.get(ref) == "limit"
-                for ref in bindings["limiting_evidence_refs"]
+                isinstance(relation, Mapping)
+                and relation.get("claim_relation")
+                == "bridge_not_established"
+                for relation in structured_relations
+            )
+        )
+        typed_same_scope_counter_boundary = (
+            bool(numeric_relation_refs)
+            and any(
+                isinstance(relation, Mapping)
+                and relation.get("atom_field") == "counterargument_atom"
+                and relation.get("claim_relation")
+                == "same_scope_numeric_observation"
+                for relation in structured_relations
+            )
+        )
+        _require(
+            any(
+                bool(
+                    roles_by_ref.get(ref, set())
+                    & {"support", "context"}
+                )
+                for ref in bindings["multi_driver_context_evidence_refs"]
+            )
+            and (
+                any(
+                    "limit" in roles_by_ref.get(ref, set())
+                    for ref in bindings["limiting_evidence_refs"]
+                )
+                or claim_local_limit
+                or typed_bridge_gap_boundary
+                or typed_same_scope_counter_boundary
             ),
             "claim_authority_multi_driver_boundary_missing",
         )
@@ -464,6 +513,33 @@ def validate_claim_authority_selection(
         ),
         "structured_claim_relation_primary": (
             structured_claim_relation_receipt is not None
+        ),
+        "boundary_authority_sources": (
+            [
+                source
+                for source, present in (
+                    (
+                        "limiting_evidence",
+                        any(
+                            "limit" in roles_by_ref.get(ref, set())
+                            for ref in bindings["limiting_evidence_refs"]
+                        ),
+                    ),
+                    (
+                        "claim_local_limiting_evidence",
+                        claim_local_limit,
+                    ),
+                    (
+                        "typed_bridge_gap_relation",
+                        typed_bridge_gap_boundary,
+                    ),
+                    (
+                        "typed_same_scope_counter_relation",
+                        typed_same_scope_counter_boundary,
+                    ),
+                )
+                if present
+            ]
         ),
         "harness_generated_research_judgment": False,
     }

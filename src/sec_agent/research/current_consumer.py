@@ -1577,7 +1577,7 @@ def _parse_exact_json_object(content: str) -> dict[str, Any]:
     return value
 
 
-def _validate_model_text(
+def validate_current_research_model_text(
     value: object,
     *,
     maximum: int,
@@ -1825,7 +1825,7 @@ def validate_current_research_output(
                 "research_consumer_mixed_judgment_without_boundary",
             )
         validated_text = {
-            field: _validate_model_text(
+            field: validate_current_research_model_text(
                 raw.get(field),
                 maximum=int(contract["maximum_atom_chars"]),
                 code=f"research_consumer_{field}_invalid",
@@ -1916,19 +1916,19 @@ def validate_current_research_output(
             "research_consumer_wwc_threshold_ref_invalid",
         )
         validated_wwc = {
-            "observable": _validate_model_text(
+            "observable": validate_current_research_model_text(
                 wwc.get("observable"),
                 maximum=int(contract["maximum_wwc_observable_chars"]),
                 code="research_consumer_wwc_observable_invalid",
             ),
             "direction": str(wwc["direction"]),
-            "time_horizon": _validate_model_text(
+            "time_horizon": validate_current_research_model_text(
                 wwc.get("time_horizon"),
                 maximum=int(contract["maximum_wwc_horizon_chars"]),
                 code="research_consumer_wwc_horizon_invalid",
                 minimum=4,
             ),
-            "evidence_route": _validate_model_text(
+            "evidence_route": validate_current_research_model_text(
                 wwc.get("evidence_route"),
                 maximum=int(contract["maximum_wwc_evidence_route_chars"]),
                 code="research_consumer_wwc_evidence_route_invalid",
@@ -2198,5 +2198,6 @@ __all__ = [
     "compile_current_research_messages",
     "load_current_research_consumer_policy",
     "parse_current_research_output",
+    "validate_current_research_model_text",
     "validate_current_research_output",
 ]

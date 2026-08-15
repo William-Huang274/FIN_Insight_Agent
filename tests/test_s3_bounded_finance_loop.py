@@ -1080,6 +1080,21 @@ def test_micro_fragment_projection_fails_closed_on_scope_and_prior_mutation(
             },
         )
 
+    verbal_numeric_thesis = deepcopy(fragments[SUBMIT_RESEARCH_THESIS_TOOL])
+    verbal_numeric_thesis["thesis_atom"] = (
+        "管理层称产品盈利符合中个位数目标，但该说法没有产品利润桥支持。"
+    )
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_micro_narrative_invalid",
+    ):
+        validate_finance_micro_judgment_fragment(
+            tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+            arguments=verbal_numeric_thesis,
+            research_input=alias_input,
+            cell_id="CELL::value_capture",
+        )
+
 
 @pytest.mark.parametrize(
     ("case_key", "legal_name"),

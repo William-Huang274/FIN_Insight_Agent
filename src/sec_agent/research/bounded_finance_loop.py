@@ -26,6 +26,7 @@ from sec_agent.providers.agent_protocol import (
 from .current_consumer import (
     CurrentResearchConsumerError,
     compile_current_research_deliverable,
+    validate_current_research_model_text,
     validate_current_research_output,
 )
 from .finance_tool_contract import (
@@ -2593,8 +2594,14 @@ def _validate_micro_judgment_fragment(
             in set(relation["allowed_judgment_statuses"]),
             "finance_loop_micro_relation_disposition_invalid",
         )
-        narrative = str(arguments.get("thesis_atom") or "").strip()
-        _require(bool(narrative), "finance_loop_micro_narrative_invalid")
+        try:
+            narrative = validate_current_research_model_text(
+                arguments.get("thesis_atom"),
+                maximum=int(contract["maximum_atom_chars"]),
+                code="finance_loop_micro_narrative_invalid",
+            )
+        except CurrentResearchConsumerError as exc:
+            raise BoundedFinanceLoopError(exc.code) from exc
         output["thesis_atom"] = narrative
     else:
         _require(
@@ -2615,8 +2622,14 @@ def _validate_micro_judgment_fragment(
             "finance_loop_micro_relation_disposition_invalid",
         )
         output["inference_authority"] = fragment_inference_authority
-        narrative = str(arguments.get(atom_field) or "").strip()
-        _require(bool(narrative), "finance_loop_micro_narrative_invalid")
+        try:
+            narrative = validate_current_research_model_text(
+                arguments.get(atom_field),
+                maximum=int(contract["maximum_atom_chars"]),
+                code="finance_loop_micro_narrative_invalid",
+            )
+        except CurrentResearchConsumerError as exc:
+            raise BoundedFinanceLoopError(exc.code) from exc
         output[atom_field] = narrative
         if atom_field == "counterargument_atom":
             raw_wwc = arguments.get("what_would_change")

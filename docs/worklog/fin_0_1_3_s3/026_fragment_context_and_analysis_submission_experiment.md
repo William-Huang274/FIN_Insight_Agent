@@ -2,7 +2,7 @@
 
 日期：2026-08-16
 
-状态：`zero_call_pass / one_single_thesis_live_pending / no_protocol_switch / no_dynamic_scope`
+状态：`zero_call_pass / single_thesis_live_contract_and_L1_pass / two_hypotheses_qualified / owner_review_required`
 
 ## 为什么做这一轮
 
@@ -43,3 +43,22 @@ DELL thesis 当前只有两个合法方向：管理层产品盈利目标，以�
 下一门仅允许在 clean/synced 提交上签发一个 DELL value_capture thesis canary，预算为 `2 model calls / 1 accepted tool call / 0 retry / 0 fallback`。任何一步 length、空输出、合同失败或新的实质内容问题都立即停止，不自动进入第二次 live。
 
 权威处置为 `configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_fragment_analysis_submission_disposition_v1_0.json`，零调用结果为 `configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_fragment_analysis_submission_zero_call_result_v1_0.json`。
+
+## Single-thesis exact-live 结果
+
+实现以 clean/synced commit `c5d303a5...` 推送。GitHub HTTPS 首次因本机 DNS 指向不可达边缘 IP 而失败；只对该次 Git 命令临时指定可达 GitHub 官方 IP 后成功，没有修改 remote、系统 DNS 或持久代理。fresh authority 的 18 份输入、输出 identity、HEAD/upstream、唯一未追踪 authority 和凭据存在性随后通过。
+
+唯一 FAS-R1 自然运行完成：
+
+1. 分析调用使用 `high / 8000`，prompt=`2,570`、completion=`6,995`、reasoning=`6,514`，`finish_reason=stop`，形成 940 字可见草案；
+2. 提交调用使用 `low / 2000`，prompt=`4,309`、completion=`1,944`、reasoning=`1,434`，`finish_reason=tool_calls`，只返回 1 个 `submit_research_thesis`；
+3. 本地 fragment contract 接受该 Tool Call，0 retry、0 fallback、0 EvidenceRequest、0 外源、0 embedding、0 protocol switch、0 publication；
+4. 分析草案保留在私有 capture，只用于审计和后续提交输入，没有被提升为 Evidence、Judgment 或报告。
+
+最终 thesis 选择 `CR::DELL::PRODUCT_TARGET`：只表述管理层称 AI 服务器产品盈利符合所选目标，明确该口径未经独立审计，也没有把产品增长归因成 ISG／公司利润。Evidence、QF、Method 与 Graph refs 均在当前单元范围内；最终 atom 没有自由精确数字，也没有把 gap 或 Graph 当成事实。因此单 thesis 的 L1 通过，并相对旧 R2 的 AI 利润归因有实质改善。
+
+仍有两个非 L1 finding：`无产品级...桥` 最好收敛为“当前 Evidence Pack 尚未建立...”，避免读成普遍不存在；模型已经选择 QF，但又在 prose 中重复“中个位数”定性带，完整 renderer 后续应避免模型表面和确定性表面重复。它们不应触发自动重跑。
+
+本轮只资格化了这两个结构假设在一个 thesis 上的效果，没有运行 mechanism、counterargument／WWC，也没有编译完整 Judgment。fixed-Pack Layer One、动态 Research Truth Spine、五单元和 S3 仍未通过。内容评估见 `configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_fragment_analysis_submission_chat_content_assessment_v1_0.json`；下一步必须先返回 Owner，不自动签发第二次 live。
+
+事后治理复证为定向 `54 passed`、全仓 `326 passed`、Python compileall、active baseline `127 Python / 8 frontend / 10 Runtime resources / 0 failure` 与 secret scan `6,615 files / 0 finding`。公开 result、authority 和独立 assessment 可提交；包含完整模型草案的 private capture 继续留在受限本地目录，不进入 Git。

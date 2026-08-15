@@ -1,0 +1,87 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_full_fragment_judgment_chat_live_failure_assessment_v1_2",
+  "assessment_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-FULL-FRAGMENT-JUDGMENT-CHAT-LIVE-FAILURE-ASSESSMENT-V1.2",
+  "status": "terminal_contract_failure_claim_local_evidence_role_and_typed_boundary_aggregation_defect_new_attempt_required",
+  "recorded_at": "2026-08-16T05:41:37+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_authority_v1_2.json",
+  "authority_sha256": "b36ae143a96e9f072d8a26d127fa045daf98a4f1983a04c959ef931650debddf",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_2.json",
+  "result_sha256": "870bb589ee1b367f82e9d85af540af26cb21b664d5b6548a4d66690a1957658d",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "attempt": {
+    "run_id": "FIN013-S3-DELL-VC-FULL-FRAGMENT-CHAT-FFJ-R3",
+    "model_calls_attempted": 6,
+    "model_call_ceiling": 6,
+    "accepted_fragment_tools": 3,
+    "retries": 0,
+    "fallbacks": 0,
+    "transport_complete": true,
+    "failure_fragment_tool": "submit_research_counterargument_and_wwc",
+    "failure_phase": "local_finance_fragment_or_terminal_validation",
+    "failure_code": "finance_loop_micro_evidence_role_conflict"
+  },
+  "model_behavior": {
+    "all_three_analysis_drafts_visible": true,
+    "all_three_submission_tool_calls_present": true,
+    "all_three_fragments_individually_validated": true,
+    "thesis_relation": "CR::DELL::PRODUCT_TARGET",
+    "mechanism_relation": "CR::DELL::PROFIT_BRIDGE_GAP",
+    "counterargument_relation": "CR::DELL::COMPANY_MARGIN_OBSERVATION",
+    "shared_evidence_claim_local_uses": [
+      {
+        "atom_field": "thesis_atom",
+        "evidence_ref": "EV::0063F22F643B94ED",
+        "use_role": "support"
+      },
+      {
+        "atom_field": "mechanism_atom",
+        "evidence_ref": "EV::0063F22F643B94ED",
+        "use_role": "context"
+      }
+    ],
+    "typed_counter_boundary": {
+      "numeric_relation_ref": "REL::B60164179DFFDF5A",
+      "relation_semantics": "same_scope_numeric_observation",
+      "bridge_relation": "bridge_not_established",
+      "product_to_company_attribution_denied": true
+    },
+    "new_financial_reasoning_L1_failure_observed": false,
+    "formal_complete_judgment_L1_pass": false,
+    "business_read": "The model kept the product target as a management assertion, explicitly withheld a product-to-segment or company profit bridge, and used a same-basis company gross-margin observation only as a bounded counter-read. The terminal failed before a complete Judgment existed."
+  },
+  "root_cause": {
+    "owner_layer": "S3_terminal_claim_local_evidence_role_and_boundary_authority_aggregation",
+    "provider_connectivity_failure": false,
+    "deepseek_specific_core_patch_required": false,
+    "first_visible_fault": "The terminal compiler enforced one global role per Evidence ref even though the same transcript legitimately supported the thesis and served only as context for the separate mechanism claim.",
+    "latent_fault_found_by_zero_call_replay": "After removing the duplicate contextual occurrence only for diagnosis, legacy Claim Authority still demanded a separately marked limiting Evidence item and ignored the already validated bridge_not_established relation, open typed bridge gaps and same-basis NumericRelation used by the counterargument.",
+    "downstream_diagnostic": "Adding a synthetic limiting Evidence only as a non-promotable diagnostic made the remaining current-consumer and deliverable chain pass, proving no third downstream blocker in this saved R3 payload. The synthetic row is not accepted as business evidence and is not used to salvage R3."
+  },
+  "disposition": {
+    "immutable_R3_preserved": true,
+    "silent_salvage_or_rewrite_forbidden": true,
+    "same_attempt_retry_forbidden": true,
+    "repair_scope": "provider_neutral_claim_local_evidence_role_receipt_terminal_summary_and_typed_boundary_authority_v1_3",
+    "required_proof": [
+      "saved_R3_three_fragments_replay_unchanged",
+      "same_Evidence_support_for_one_atom_and_context_for_another_is_preserved_claim_locally",
+      "global_terminal_evidence_summary_cannot_launder_missing_fragment_support",
+      "validated_bridge_not_established_relation_and_typed_gaps_count_as_a_boundary_without_inventing_limiting_Evidence",
+      "same_basis_numeric_counter_observation_remains_non_attributable_to_the_product",
+      "support_and_limit_roles_remain_visible_in_claim_local_lineage",
+      "full_current_consumer_and_deliverable_replay_pass",
+      "negative_role_gap_numeric_and_cross_case_mutations_fail_closed",
+      "two_fresh_processes_are_byte_equivalent"
+    ],
+    "next_live_scope": "one_new_DELL_value_capture_full_fragment_R4_only_after_clean_synced_zero_call_proof"
+  },
+  "acceptance": {
+    "full_fixed_pack_layer_one": false,
+    "dynamic_truth_spine": false,
+    "five_cell_live": false,
+    "generalization": false,
+    "s3_product_acceptance": false
+  },
+  "known_boundary": "R3 proves all six transport calls and all three model-owned fragment submissions can complete under the current profiles. It does not establish a terminal Judgment, formal L1 pass, dynamic Agentic Research, five-unit execution, heterogeneous generalization, S3 acceptance or release."
+}

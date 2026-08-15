@@ -119,3 +119,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - S1-C 权威说明：`docs/architecture/retrieval/FIN_0_1_3_S1C_SAME_OBJECT_RANKING_COMPARISON_20260812.zh-CN.md`。
 - S1-C 检索栈／数据库权威说明：`docs/architecture/retrieval/FIN_0_1_3_S1C_RETRIEVAL_STACK_AND_DATABASE_LANE_DECISION_20260812.zh-CN.md`。
 - S2 公司财务事实 mart 权威说明：`docs/architecture/financial_facts/FIN_0_1_3_S2_COMPANY_FINANCIAL_FACT_MART_20260813.zh-CN.md`。
+
+## 2026-08-15 S3 fixed-Pack ClaimRelation alias Chat R2
+
+- clean/synced commit `442e505b` 上的唯一 natural successor 已执行，0 retry／fallback。第一步 Evidence／NumericFact mandatory reads 成功并形成两份 receipt。
+- 第二步 HTTP 200、完整可解析响应，但 `prompt=8,997`、`completion=16,000`、`reasoning=16,000`、可见内容和 tool call 均为 0；状态为 `model_gateway_reasoning_budget_exhausted`。相对 R1 `18,902` prompt，alias／紧凑投影将输入减少超过一半，证明去冗余有效但不足以形成自然 Judgment。
+- Unicode 原始 bytes 复核确认模型输入中文合法；终端曾出现的乱码只属于 PowerShell 显示链，未进入产品根因。
+- 当前最早责任层修订为 S3 monolithic Judgment 与统一 max-thinking 节点。下一项只允许 provider-neutral micro-judgment＋节点复杂度预算的零调用结构包；不允许直接重跑、提高 token、切协议、进入动态 Truth Spine、五单元或三案例验收。

@@ -2,7 +2,7 @@
 
 日期：2026-08-15
 
-状态：`owner_authorized / fixed_pack_replacement_in_progress / dynamic_truth_spine_pending / three_case_acceptance_pending`
+状态：`owner_authorized / fixed_pack_R2_terminal_capacity_failure / micro_judgment_successor_in_progress / dynamic_truth_spine_pending / three_case_acceptance_pending`
 
 ## Owner 决定
 
@@ -50,3 +50,9 @@ clean/synced preflight 通过后已执行唯一 Chat R1。第一步 mandatory re
 根据 Owner 允许在 1–5 内修复和重排的授权，第一项插入一个零调用 successor：ClaimRelation alias＋本地展开、权限卡单次投影、紧凑 model view、零预算工具移除。不会增加 token 上限、换模型或直接重跑；R1 authority、result 与 capture 保持不可变。详见 `022_fixed_pack_claim_surface_chat_r1_capacity_failure_and_successor.md`。
 
 该 successor 已在 commit `86a129a7` 上通过正式零调用证明：messages `52,412 → 25,379`，tools `11,067 → 5,835`，三关系 alias 均由本地展开，完整内部 lineage 保留，旧 full-field／未知 alias／跨案／缺权威／因果冲突 mutation 全部关闭。第一项仍是 `in_progress`，因为这只证明结构和容量，不证明自然 Judgment、L1 或内容质量；第二至第五项继续 pending。
+
+## 第一项 natural R2 结果与第二次结构处置（2026-08-15）
+
+唯一 ClaimRelation-alias Chat R2 已在 clean/synced commit `442e505b` 执行并 0 retry 终止。mandatory read pair 继续成功；第二步完整 HTTP 200 JSON 的 prompt 已由 R1 的 `18,902` 降到 `8,997` token，但 16,000 completion token 仍全部为 reasoning，零可见 Judgment／tool call。因此输入去冗余真实有效但不是充分条件，第一项、L1 与内容门仍未通过。
+
+Owner 授权范围内的下一修复不再做字段删减、上限扩大或协议轮测，而是把 monolithic cell Judgment 拆成 provider-neutral micro-judgments，并按节点复杂度映射 reasoning budget；模型负责真实判断，Harness 只校验、展开 alias、绑定 lineage 和编译终态。完成三案例 fake／mutation 与 clean proof 前不签发下一次 natural live。详见 `023_fixed_pack_claim_relation_alias_chat_r2_and_micro_judgment_disposition.md`。

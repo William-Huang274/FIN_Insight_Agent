@@ -96,3 +96,4 @@ docs/interview/
 # Capture-first provider diagnostics: preserve raw responses locally for audit,
 # but commit only redacted assessments, digests, and bounded worklogs.
 /artifacts/runtime/
+/data/captures/

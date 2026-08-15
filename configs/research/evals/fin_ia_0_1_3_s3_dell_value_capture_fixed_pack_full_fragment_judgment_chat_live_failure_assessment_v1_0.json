@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_full_fragment_judgment_chat_live_failure_assessment_v1_0",
+  "assessment_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-FULL-FRAGMENT-JUDGMENT-CHAT-LIVE-FAILURE-ASSESSMENT-V1.0",
+  "status": "terminal_contract_failure_project_surface_projection_defect_new_attempt_required",
+  "recorded_at": "2026-08-16T04:08:54+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_authority_v1_0.json",
+  "authority_sha256": "5201a5185f55aff3078a9e02ec2a1cc82c1ff676c142a590b55072022e30c915",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_0.json",
+  "result_sha256": "f7e7bac0e71d0417288c9ab29fb0b5945ed80ff7ad06928399e2b850b3beb173",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "attempt": {
+    "run_id": "FIN013-S3-DELL-VC-FULL-FRAGMENT-CHAT-FFJ-R1",
+    "model_calls_attempted": 2,
+    "model_call_ceiling": 6,
+    "accepted_fragment_tools": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "transport_complete": true,
+    "failure_fragment_tool": "submit_research_thesis",
+    "failure_phase": "local_finance_fragment_or_terminal_validation",
+    "failure_code": "finance_loop_micro_narrative_invalid"
+  },
+  "model_behavior": {
+    "analysis_visible": true,
+    "submission_tool_call_present": true,
+    "selected_relation": "CR::DELL::PRODUCT_TARGET",
+    "selected_evidence_refs": [
+      "EV::0063F22F643B94ED"
+    ],
+    "selected_qualitative_fact_refs": [
+      "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
+    ],
+    "selected_inference_authority": "directly_supported",
+    "selected_causal_bridge_authority": "management_assertion_only",
+    "business_boundary_preserved": true,
+    "invalid_surface": "verbal_numeric_band_repeated_in_model_owned_atom"
+  },
+  "root_cause": {
+    "owner_layer": "S3_fragment_context_and_tool_contract_compilation",
+    "provider_connectivity_failure": false,
+    "financial_reasoning_L1_failure_established": false,
+    "deepseek_specific_core_patch_required": false,
+    "earliest_fault": "fragment_context_projection_v1_0_dropped_the_existing_QF_surface_rendering_rule_from_the_submission_view",
+    "contract_conflict": [
+      "The analysis context exposed a reviewed qualitative band and allowed it to be discussed.",
+      "The submission system prohibited adding new numbers but did not prohibit copying an existing verbal numeric band.",
+      "The tool description said only without digits or refs while the local validator also prohibited verbal numeric bands.",
+      "The Harness already rendered selected QF surfaces outside model-owned atoms, but that separation was not visible in the fragment submission contract."
+    ]
+  },
+  "disposition": {
+    "immutable_R1_preserved": true,
+    "silent_salvage_or_rewrite_forbidden": true,
+    "same_attempt_retry_forbidden": true,
+    "repair_scope": "provider_neutral_fragment_surface_contract_v1_1",
+    "required_proof": [
+      "structured_analysis_vs_submission_surface_contract_visible_in_every_fragment",
+      "tool_schema_and_submission_prompt_share_the_same_forbidden_surface_rules",
+      "saved_R1_tool_call_replay_rejected_for_the_same_reason",
+      "good_QF_ref_plus_generic_atom_fake_passes_and_final_deliverable_renders_the_QF_surface",
+      "three_fragment_full_fake_and_mutations_pass_in_two_fresh_processes"
+    ],
+    "next_live_scope": "one_new_DELL_value_capture_full_fragment_R2_only_after_clean_synced_zero_call_proof"
+  },
+  "acceptance": {
+    "full_fixed_pack_layer_one": false,
+    "dynamic_truth_spine": false,
+    "five_cell_live": false,
+    "generalization": false,
+    "s3_product_acceptance": false
+  },
+  "known_boundary": "The R1 output showed materially bounded financial reasoning but failed the advertised-versus-enforced text surface contract. It cannot be scored as a complete Judgment or reused in R2."
+}

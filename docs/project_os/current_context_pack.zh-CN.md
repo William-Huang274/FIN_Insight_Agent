@@ -153,3 +153,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 零调用复证发现 FAS-R1 thesis 含“中个位数” verbal numeric surface。它在旧单节点 validator 下曾合法通过，但不符合既有终局合同的“模型只选 QF、本地渲染口径表面”。旧结果与旧评价保持不可变，但禁止直接拼入完整 Judgment；下一次完整 fixed-Pack 必须 fresh thesis，而不是静默改写 predecessor。
 - 单节点与终局现已调用同一文本校验函数。两个 fresh process proof digest 均为 `f13d7054...e65e26f1`；full-fake 终局为 `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only`。定向 `49 passed`、全仓 `328 passed`、compileall、active baseline `127 / 8 / 10 / 0` 与 secret scan `6,616 / 0` 通过。
 - 当前允许签发一次完整 DELL `value_capture` fixed-Pack 新 attempt：thesis、mechanism、counterargument／WWC 各一次分析和一次交卷，最多 6 model calls／3 accepted tool calls／0 retry。其 L1 与内容质量通过前，动态 Truth Spine、五单元、跨案例泛化和 S3 acceptance 仍为 false。
+
+## 2026-08-16 S3 完整片段 Chat FFJ-R1
+
+- clean/synced `f2924eb3...` 上的 authority 与 18 份绑定输入通过，thesis 分析和交卷均收到完整 HTTP 响应；模型用 2/6 次调用返回一个 Tool Call，0 retry／fallback，后两片段没有执行。
+- 模型选择正确的 `CR::DELL::PRODUCT_TARGET`、法说 Evidence、source-bound QF、产品财务范围和 `management_assertion_only`，并保留未经审计及缺少产品利润桥的边界；本次没有证明新的金融内容 L1 失败。
+- Tool Call 在 model-owned atom 内复制了 QF 的“中个位数”表面，命中统一文本门并以 `finance_loop_micro_narrative_invalid` 终止。最早责任层是片段投影 v1.0：完整 consumer 已有“模型选 QF、本地渲染”规则，但片段上下文遗漏；submission 只禁止新增数字，schema 只写禁止 digits／refs，与本地也禁止 verbal numeric band 的规则不一致。
+- R1 结果和 capture 保持不可变，不允许手工删词后重用。当前只处理 provider-neutral surface contract v1.1：显式区分分析可看值、交卷只选引用、报告再渲染；随后做保存响应 replay、三片段 full-fake、mutation、two-fresh-process proof。clean/synced 后才能签发 R2 新身份。动态 Truth Spine、五单元、泛化报告和 S3 继续为 false。

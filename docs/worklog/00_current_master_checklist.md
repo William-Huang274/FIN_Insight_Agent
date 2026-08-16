@@ -45,6 +45,8 @@
   - [x] 动态 request-scoped micro-Judgment、终态与 deliverable 零调用闭环（跨请求借权、陈旧 graph minimum、全局／局部 status 混用已关闭；controlled fragments 非产品 Judgment）
   - [x] 共用动态投影与稳定单单元 live runner（自然 planner＋当前 S1/S2＋三片段交卷；379 tests；真实 live 待执行）
   - [ ] 自然 planner→真实 S1/S2→动态 Judgment；不得把工程证明或 controlled atoms 计作 Agentic Research
+    - [x] 动态 R1 已完成自然 planner、当前 S1/S2、thesis 和 mechanism；counter/WWC 分析 7,999 reasoning tokens 后无可见输出，R1 原子失败并保留
+    - [ ] 只复用成功前缀的 counter/WWC 分析＋交卷 successor；不得重跑前五个成功模型节点
   - [ ] S1 reviewed Pack↔当前检索对象库／来源路由同步（Dell transcript 已审但动态不可发现；MU/NVDA 当前请求 0 reviewed match）
 - [ ] DELL `value_capture` 单单元动态 Agentic Research
 - [ ] DELL 五单元动态案例、底稿与报告验收

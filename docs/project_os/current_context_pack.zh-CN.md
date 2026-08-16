@@ -267,3 +267,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 稳定 runner `scripts/research/run_s3_dynamic_single_cell_live.py` 已在提交 `db97f9bf...6c90` 冻结并推送。它从自然 DELL 用户问题开始，依次执行 1 次 planner、当前 S1/S2、reviewed-only EvidenceResponse，以及三组“分析＋非思考严格交卷”，最多 7 次模型调用；0 retry／fallback／外源网络／candidate promotion。
 - runner 对本地编译与产品服务的 `plan_digest` 做精确绑定；S1/S2／Pack 服务错误进入 typed terminal；私有结果保存完整模型可见请求与最终输出，公开结果不保存模型文字、Tool 参数或私有 reasoning。
 - 全仓 `379 passed`，compileall、active baseline `131／8／10／0`、secret scan `6707／0` 通过。范围门只批准一次诚实的 DELL SEC-only `value_capture` 动态纵切；`RC-S1-019` 继续 open，禁止偷喂 transcript。自然 live、L1、内容质量、五单元、泛化报告与 S3 acceptance 仍为 false。
+
+## 2026-08-16 S3 DELL 动态单单元 R1
+
+- R1 首次从自然用户问题真实执行：planner 提出 10 atoms，本地稳定选择 8、延期 2；当前 S1/S2 返回 6 条已审 Evidence、10 个 typed gap、108 个未审候选且 0 晋升。
+- thesis 与 mechanism 的四个模型节点均自然通过。模型保守判断产品收入到分部／公司利润桥不可推断，并只把同财季公司毛利率下降作为公司层观察，没有把它归因到 AI 服务器。当前两片段未观察到新的金融 L1。
+- counter／WWC 分析节点返回 HTTP 200，但 7,999 completion tokens 全部为 reasoning、可见输出 0，以 `model_gateway_generation_budget_exhausted` 原子终止。R1 共尝试 6 次调用、成功前缀 5 节点、accepted fragments 2、retry／fallback／外源均为 0。
+- 该失败属于 replaceable DeepSeek analysis profile 的第三片段非收敛，不是 S1/S2、Evidence Gate、Tool contract 或金融 Validator。只允许复用成功前缀的两调用 successor：一次现有 16k max-thinking agent profile 分析、一次 2k non-thinking 严格交卷；不得重跑 planner／检索／前两片段或增加 Evidence。完整动态 Judgment、L1、内容质量、五单元与 S3 acceptance 继续为 false。

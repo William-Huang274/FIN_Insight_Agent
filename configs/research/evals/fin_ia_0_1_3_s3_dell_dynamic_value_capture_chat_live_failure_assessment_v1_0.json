@@ -1,0 +1,81 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_single_cell_live_failure_assessment_v1_0",
+  "status": "terminal_failed_counter_WWC_analysis_generation_budget_exhausted",
+  "recorded_at": "2026-08-16T19:57:10+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_value_capture_chat_live_authority_v1_0.json",
+  "authority_sha256": "8cf61ecdeb5cc83ea5cf0fd8a43219cd31b5da0887fcf8fede9f9049b827f3df",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_value_capture_chat_live_result_v1_0.json",
+  "result_sha256": "81db265e960716469eb98fdba7eec93a78923605a683d3757ccf695f43b1298c",
+  "result_digest": "b573f049af0f2c4e3ed407791bd10d8912afd7463ca037d208d8a631932dde44",
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_single_cell/FIN013-S3-DELL-DYNAMIC-VC-R1/full_result.json",
+  "private_full_result_sha256": "72717af8f6b004e5a9b39090bd7a227d663c16dae6eac2a106e6dd7ff6dfd254",
+  "private_full_result_digest": "0ac6fd6a20080641ff2d5f49245ce7a1b1c3ed9dda174ea0bf732de0a269d4bd",
+  "observed": {
+    "natural_planner_completed": true,
+    "planner_proposed_atoms": 10,
+    "planner_selected_atoms": 8,
+    "planner_deferred_atoms": 2,
+    "current_S1_S2_executed": true,
+    "accepted_reviewed_evidence": 6,
+    "typed_gaps": 10,
+    "unreviewed_candidates": 108,
+    "candidate_promotions": 0,
+    "successful_model_nodes": 5,
+    "model_calls_attempted": 6,
+    "accepted_fragments": 2,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_source_network_calls": 0
+  },
+  "failed_node": {
+    "fragment_tool": "submit_research_counterargument_and_wwc",
+    "node_class": "bounded_financial_analysis",
+    "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-COUNTER-WWC-ANALYSIS-01/model_visible_request.json",
+    "request_capture_sha256": "0ef375600f3a39589024ac01ef78ba82d4750c039a80b29805e42e4ef3391ae8",
+    "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-COUNTER-WWC-ANALYSIS-01/provider_response.json",
+    "response_capture_sha256": "4792528ddbf4fb8ea06d9bcf914f984fd6448b857aa7ec9c2b00c69c708abae8",
+    "http_status": 200,
+    "finish_reason": "length",
+    "completion_tokens": 7999,
+    "reasoning_tokens": 7999,
+    "visible_chars": 0,
+    "tool_calls": 0,
+    "failure_code": "model_gateway_generation_budget_exhausted"
+  },
+  "business_assessment": {
+    "thesis": "模型明确判断现有证据不能建立 AI 优化服务器收入到分部或公司利润的可复核桥接，状态为 insufficient_evidence / not_inferable / bridge_unavailable。",
+    "mechanism": "模型只把同财季公司整体毛利率下降作为公司层观察，并明确不足以归因到该产品、分部或公司利润。",
+    "observed_new_L1_in_accepted_fragments": false,
+    "formal_single_cell_L1": false,
+    "reason_formal_L1_false": "counterargument/WWC 尚未形成，终态 Judgment 和 deliverable 不完整。"
+  },
+  "root_cause": {
+    "owning_layer": "replaceable DeepSeek analysis profile / S3 live orchestration resume path",
+    "classification": "third_fragment_high_thinking_nonconvergence",
+    "not_caused_by": [
+      "network or HTTP failure",
+      "natural planner contract",
+      "S1 retrieval or S2 NumericFact",
+      "EvidenceResponse or candidate promotion",
+      "strict Tool submission",
+      "financial L1 validator"
+    ]
+  },
+  "successor_disposition": {
+    "preserve_R1": true,
+    "rerun_natural_planner": false,
+    "rerun_current_S1_S2": false,
+    "rerun_thesis_or_mechanism": false,
+    "maximum_fresh_model_calls": 2,
+    "counter_analysis_profile": "reuse existing DeepSeek GA agent profile with max thinking and 16000 completion ceiling",
+    "counter_submission_profile": "reuse existing non-thinking strict submission profile with 2000 completion ceiling",
+    "retry_count": 0,
+    "new_evidence_or_authority": false,
+    "contract_relaxation": false,
+    "scope_if_successful": "revalidate all three fragments, terminal Judgment and deliverable, then perform L1 and content assessment",
+    "scope_if_failed_again": "preserve successor and make an architecture-level profile/model/action-surface disposition; do not create an automatic second analysis retry"
+  },
+  "known_boundary": "R1 proves natural planning, current S1/S2 execution and two model-owned dynamic fragments, but it does not prove a complete dynamic single-cell Judgment, Agentic Research, five-cell report, generalization, S3 acceptance or release readiness."
+}

@@ -21,12 +21,6 @@ from apps.workbench.backend.application.research_retrieval_service import (
     ResearchRetrievalPrincipal,
     ResearchRetrievalService,
 )
-from sec_agent.research.claim_authority import (
-    compile_claim_authority_research_input,
-)
-from sec_agent.research.claim_surface_authority import (
-    compile_claim_surface_authority_research_input,
-)
 from sec_agent.research.bounded_finance_loop import (
     BoundedFinanceLoopError,
     MICRO_JUDGMENT_TOOL_NAMES,
@@ -43,15 +37,13 @@ from sec_agent.research.bounded_finance_loop import (
     scope_bounded_finance_micro_judgment_policy,
     validate_finance_micro_judgment_fragment,
 )
-from sec_agent.research.current_consumer import (
-    compile_current_research_deliverable,
-    compile_current_research_input,
+from sec_agent.research.current_consumer import compile_current_research_deliverable
+from sec_agent.research.dynamic_research_runtime import (
+    compile_dynamic_claim_surface_projection,
+    compile_dynamic_research_input_projection,
 )
 from sec_agent.research.dynamic_truth_spine import (
     DynamicTruthSpineError,
-    bind_dynamic_evidence_responses_to_research_input,
-    compile_dynamic_claim_authority_policy,
-    compile_dynamic_claim_surface_policy,
     compile_dynamic_evidence_responses,
     compile_dynamic_reviewed_pack_view,
 )
@@ -211,27 +203,18 @@ def _case_projection(
         atoms,
         ResearchRetrievalPrincipal("current", permissions),
     )
-    responses = compile_dynamic_evidence_responses(
-        policy=_json(POLICY),
+    projection = compile_dynamic_research_input_projection(
+        truth_spine_policy=_json(POLICY),
+        consumer_policy=_json(CONSUMER_POLICY),
         controlled_plan=controlled,
         evidence_pack=pack,
     )
-    dynamic_input = None
-    if responses["accepted_evidence_item_digests"]:
-        view = compile_dynamic_reviewed_pack_view(
-            evidence_pack=pack,
-            evidence_responses=responses,
-        )
-        base = compile_current_research_input(
-            policy=_json(CONSUMER_POLICY),
-            evidence_pack=view,
-            controlled_plan=controlled,
-        )
-        dynamic_input = bind_dynamic_evidence_responses_to_research_input(
-            research_input=base,
-            evidence_responses=responses,
-        )
-    return pack, controlled, responses, dynamic_input
+    return (
+        pack,
+        controlled,
+        projection["evidence_responses"],
+        projection["dynamic_research_input"] or None,
+    )
 
 
 def _mutations(
@@ -641,22 +624,25 @@ def main() -> int:
         if case_key == "DELL":
             dell_private = (pack, controlled, responses)
             if dynamic_input is not None:
-                dynamic_claim_policy = compile_dynamic_claim_authority_policy(
-                    research_input=dynamic_input,
-                    template_policy=_json(DELL_CLAIM_TEMPLATE),
+                surface_projection = compile_dynamic_claim_surface_projection(
+                    dynamic_research_input=dynamic_input,
+                    claim_authority_template=_json(DELL_CLAIM_TEMPLATE),
+                    claim_surface_template=_json(
+                        DELL_CLAIM_SURFACE_TEMPLATE
+                    ),
                 )
-                claim_input = compile_claim_authority_research_input(
-                    dynamic_input,
-                    policy=dynamic_claim_policy,
-                )
-                dynamic_surface_policy = compile_dynamic_claim_surface_policy(
-                    claim_authority_input=claim_input,
-                    template_policy=_json(DELL_CLAIM_SURFACE_TEMPLATE),
-                )
-                surface_input = compile_claim_surface_authority_research_input(
-                    claim_input,
-                    policy=dynamic_surface_policy,
-                )
+                dynamic_claim_policy = surface_projection[
+                    "dynamic_claim_authority_policy"
+                ]
+                claim_input = surface_projection[
+                    "claim_authority_research_input"
+                ]
+                dynamic_surface_policy = surface_projection[
+                    "dynamic_claim_surface_policy"
+                ]
+                surface_input = surface_projection[
+                    "claim_surface_research_input"
+                ]
                 surface_relations = dynamic_surface_policy[
                     "allowed_structured_claim_combinations"
                 ]

@@ -194,3 +194,23 @@ def test_dynamic_successor_validates_R1_inputs_from_historical_commit() -> None:
     assert exc.value.code == (
         "dynamic_successor_historical_bound_input_drift:runner_ref"
     )
+
+
+def test_dynamic_successor_bound_set_includes_current_runtime_policies() -> None:
+    authority_path = (
+        ROOT
+        / "configs/research/evals/"
+        "fin_ia_0_1_3_s3_dell_dynamic_counter_successor_chat_live_"
+        "authority_v1_1.json"
+    )
+    authority = json.loads(authority_path.read_text(encoding="utf-8"))
+    authority["bound_inputs"]["runner_sha256"] = runner._sha(
+        ROOT / authority["bound_inputs"]["runner_ref"]
+    )
+
+    paths = runner._successor_bound_paths(authority)
+
+    assert paths["loop_policy_ref"].name.endswith("loop_policy_v1_1.json")
+    assert paths["dynamic_micro_policy_ref"].name.endswith(
+        "dynamic_micro_judgment_policy_v1_0.json"
+    )

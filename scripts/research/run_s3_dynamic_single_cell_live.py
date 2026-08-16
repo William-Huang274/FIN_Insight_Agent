@@ -254,8 +254,6 @@ def _bound_paths(authority: Mapping[str, Any]) -> dict[str, Path]:
         "dynamic_runtime_ref",
         "bounded_loop_ref",
         "provider_transport_ref",
-        "loop_policy_ref",
-        "dynamic_micro_policy_ref",
     }
     ref_keys = {key for key in bound if key.endswith("_ref")}
     scalar_keys = {
@@ -529,6 +527,8 @@ def _successor_bound_paths(authority: Mapping[str, Any]) -> dict[str, Path]:
         "runner_ref",
         "bounded_loop_ref",
         "provider_transport_ref",
+        "loop_policy_ref",
+        "dynamic_micro_policy_ref",
     }
     scalar_keys = {
         "predecessor_public_result_digest",

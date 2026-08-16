@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack` 已通过正式零调用 R2；稳定、可恢复的五单元 runner 与 Project OS 范围门也已通过正式零调用：一次 planner／当前 S1／S2，五组 cell-local 分析与严格交卷，全部通过后才做模型自有综合，单元失败仍继续暴露后续问题。正式 proof 绑定两次独立 `59/59` 回归、当前 S1/S2 五单元投影、源码哈希和三个既有 blocker 的有界许可；全仓 `413 passed`，活动图 `133 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference`，secret scan `6,765 / 0`。模型尚未自然完成五单元、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。下一项是 clean authority 和自然 DELL 五单元，不包含静默改变模型、数据采购、S4 publication 或 S5 release。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack`、稳定 runner 与 Project OS 范围门均已通过正式零调用。自然 DELL 五单元 R1 随后真实执行：DeepSeek Planner 正常提出 10 条研究原子，Harness 选中 8 条；当前 S1/S2 完成 8 条 lane、128 个 hybrid 候选和 30 个 typed fact request。链路在任何 cell 模型调用前因项目自己的容量合同失败：`value_capture` 合法形成 5 个指标 × 当期／上年同期 = 10 条 NumericFact，而 consumer policy v1.3 静态上限仍为 8。R1 仅消耗 1 次 planner 调用，0 retry，失败与 capture 均保持不可变；不能归因于 DeepSeek、网络、S1/S2 或研究内容。当前唯一下一项是 policy v1.4、容量 mutation、R1 immutable replay 和受约束 successor；零调用通过后只可复用已成功的 Planner/S1/S2，签发剩余 12 个模型节点。模型尚未自然完成任何五单元 Judgment、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。
 
 ## 当前唯一产品边界
 

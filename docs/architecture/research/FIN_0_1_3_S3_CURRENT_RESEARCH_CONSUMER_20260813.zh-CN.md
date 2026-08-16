@@ -388,4 +388,8 @@ Harness 不生成研究结论。它只校验模型选择的 Evidence／NumericFa
 
 当前 DELL 五单元 objective 另建新版本并显式允许已审 `EARNINGS_CALL_TRANSCRIPT`；旧 SEC-only objective 保持不可变。预算上限为 13 次模型调用：1 次规划、5 次单元分析、5 次单元交卷、1 次综合分析和 1 次综合交卷，0 retry／fallback／协议切换／外源网络／candidate promotion。13 是本次完整案例的可审计上限，不是未来产品固定调用次数。
 
-工程回归已证明：成功路径恰好完成 13 步并编译内部报告；任一单元 Tool 失败时，后续单元仍执行，综合跳过，partial terminal result 仍完整物化；跨单元上下文 receipt 已收窄到当前 cell。该结果仍只是 engineering pass。正式零调用 proof、clean/synced authority、自然 DELL 五单元、独立 L1、八维内容质量、paired gain 和 qualified-human 验收均待完成。
+工程回归已证明：成功路径恰好完成 13 步并编译内部报告；任一单元 Tool 失败时，后续单元仍执行，综合跳过，partial terminal result 仍完整物化；跨单元上下文 receipt 已收窄到当前 cell。正式零调用 proof 和 clean/synced authority 随后均通过。
+
+自然 DELL 五单元 R1 已执行，但在任何单元 Judgment 前因 consumer capacity 合同矛盾终止。Planner 与当前 S1/S2 均成功；`CELL::value_capture` 的合法 route 同时需要 revenue、gross_profit、gross_margin、operating_income、operating_margin 五个指标，same-cadence selector 对每个指标保留当期和上年同期，因此最小完整原子视图为 10 条 NumericFact。policy v1.3 的静态上限 8 与该上游合同不相容。该失败归 `RC-S3-031`，不属于 Provider 内容、网络、S1 检索或 S2 数值正确性。
+
+v1.3 与 R1 必须保持不可变。successor 只能建立 policy v1.4，显式绑定该五指标双期间原子容量，并证明：10 条合法视图通过、重排不改变选择、同口径 pair 不被拆分、额外第 11 条非法／重复／跨槽项目 fail closed。随后直接重放 R1 的 immutable planner 与 controlled plan；只有五个 cell 输入、消息、Tool Schema 和综合前置条件全部零调用通过，才可由同一个稳定 runner 复用已成功的 Planner/S1/S2，只运行剩余 12 个自然节点。独立 L1、八维内容质量、paired gain 和 qualified-human 验收继续待完成。

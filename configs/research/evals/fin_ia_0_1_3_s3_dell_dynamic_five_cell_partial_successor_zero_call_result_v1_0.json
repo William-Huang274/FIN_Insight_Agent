@@ -1,0 +1,192 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_partial_successor_zero_call_result_v1_0",
+  "status": "engineering_pass_zero_call_compact_analysis_partial_resume",
+  "recorded_at": "2026-08-17T03:58:06+08:00",
+  "implementation_commit": "fecc4fedb9930b421a1fa272f585314f2d1ed540",
+  "case_key": "DELL",
+  "required_cell_ids": [
+    "CELL::demand_quality",
+    "CELL::operating_performance",
+    "CELL::value_capture",
+    "CELL::cash_conversion",
+    "CELL::counterevidence"
+  ],
+  "reused_cell_ids": [
+    "CELL::demand_quality",
+    "CELL::operating_performance"
+  ],
+  "remaining_cell_ids": [
+    "CELL::value_capture",
+    "CELL::cash_conversion",
+    "CELL::counterevidence"
+  ],
+  "immutable_R2": {
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_successor_chat_live_result_v1_0.json",
+    "public_result_sha256": "8f5b930863d00a1846d17c3bf0688a4fe5ace7ec8d870d6b832394692c94b3cb",
+    "public_result_digest": "fdaf4368359ca581fd27600b40a2d1581334df2948cc1452e41b29847cac25bc",
+    "private_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/full_result.json",
+    "private_result_sha256": "a751b1e43a8f9377274f278d04599f5d838cf43864160053f47cfeae676a1635",
+    "failure_assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_successor_chat_live_failure_assessment_v1_0.json",
+    "accepted_cell_judgments": 2,
+    "failed_cell_analyses": 3,
+    "synthesis_attempted": false,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "source_bindings": {
+    "runner": {
+      "ref": "scripts/research/run_s3_dynamic_five_cell_live.py",
+      "sha256": "3a4baada4f5640d6ee457c9a1b004fbb252dc7e3d5f86b295bef801482287e8b"
+    },
+    "five_cell_runtime": {
+      "ref": "src/sec_agent/research/five_cell_runtime.py",
+      "sha256": "6ed01e87e704896f30340dbf96e6bbcacd99ea7a69a5bea710511fb4d2182d66"
+    },
+    "project_os_preflight": {
+      "ref": "src/sec_agent/project_os_preflight.py",
+      "sha256": "91e9ae3ae183919ddfb29ae74383a7ae513cdc0874a706a2716a59202469fe25"
+    },
+    "runner_tests": {
+      "ref": "tests/test_s3_dynamic_five_cell_live.py",
+      "sha256": "ff1e73c30ed68c041a9a74ea0b115ef20498e1570116773a2337d3b992ad4bad"
+    },
+    "runtime_tests": {
+      "ref": "tests/test_s3_five_cell_runtime.py",
+      "sha256": "f36f1070b1a9c242d3bf39dd814d3a38c65a86b568202749afe60fd835497dff"
+    },
+    "project_os_tests": {
+      "ref": "tests/test_project_os_preflight.py",
+      "sha256": "47d45a3a76bff4b73a872d2ede3e27879809e24e7ef0ed800993fff85d8a8a04"
+    },
+    "consumer_policy": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_4.json",
+      "sha256": "86e946714b6fab53c703b1194b454bcdb45e6e66c05114b2ef9233a3bc7070c7"
+    }
+  },
+  "compact_analysis_projection": {
+    "cell_count": 5,
+    "all_authority_ref_sets_preserved": true,
+    "submission_schema_removed": true,
+    "dynamic_transport_diagnostics_removed": true,
+    "character_reduction_percent": [
+      36.5,
+      19.5,
+      26.9,
+      28.1,
+      42.1
+    ],
+    "cells": [
+      {
+        "cell_id": "CELL::demand_quality",
+        "canonical_chars": 16542,
+        "compact_chars": 10505,
+        "reduction_percent": 36.5
+      },
+      {
+        "cell_id": "CELL::operating_performance",
+        "canonical_chars": 19591,
+        "compact_chars": 15763,
+        "reduction_percent": 19.5
+      },
+      {
+        "cell_id": "CELL::value_capture",
+        "canonical_chars": 20979,
+        "compact_chars": 15343,
+        "reduction_percent": 26.9
+      },
+      {
+        "cell_id": "CELL::cash_conversion",
+        "canonical_chars": 19176,
+        "compact_chars": 13782,
+        "reduction_percent": 28.1
+      },
+      {
+        "cell_id": "CELL::counterevidence",
+        "canonical_chars": 13003,
+        "compact_chars": 7524,
+        "reduction_percent": 42.1
+      }
+    ],
+    "preserved_authority": [
+      "reviewed Evidence refs and facts",
+      "NumericFact refs and facts",
+      "same-basis NumericRelation refs and operations",
+      "RoleMethodPack steps",
+      "current-case GraphContextPack",
+      "every typed residual gap"
+    ],
+    "removed_non_analysis_surface": [
+      "strict Tool submission schema",
+      "full source-route transport diagnostics",
+      "duplicate submission instructions"
+    ]
+  },
+  "partial_successor_fake_replay": {
+    "fresh_model_calls_attempted": 8,
+    "maximum_fresh_model_calls": 8,
+    "planner_calls_attempted": 0,
+    "current_S1_S2_executions": 0,
+    "reused_predecessor_planner_calls": 1,
+    "reused_predecessor_current_S1_S2": true,
+    "reused_predecessor_cell_judgments": 2,
+    "cell_analysis_calls_attempted": 3,
+    "cell_submission_calls_attempted": 3,
+    "cell_judgments_accepted": 5,
+    "synthesis_analysis_calls_attempted": 1,
+    "synthesis_submission_calls_attempted": 1,
+    "synthesis_contract_valid": true,
+    "resume_manifest_loaded_from_authority": true,
+    "reused_raw_arguments_revalidated_against_current_input": true,
+    "same_stable_runner_used": true,
+    "new_attempt_specific_runner_created": false,
+    "public_result_distinguishes_available_from_executed": true,
+    "retries": 0,
+    "fallbacks": 0,
+    "protocol_switches": 0,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0,
+    "product_publication": false
+  },
+  "independent_test_processes": [
+    {
+      "status": "passed",
+      "passed_tests": 102,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "network_calls": 0
+    },
+    {
+      "status": "passed",
+      "passed_tests": 102,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "network_calls": 0
+    }
+  ],
+  "broader_verification": {
+    "full_pytest_passed": 423,
+    "compileall": "pass",
+    "active_python_files": 133,
+    "active_frontend_files": 8,
+    "runtime_resources": 10,
+    "forbidden_references": 0,
+    "secret_files_scanned": 6782,
+    "secret_findings": 0
+  },
+  "acceptance": {
+    "R2_preserved": true,
+    "two_valid_cells_reused_not_rerun": true,
+    "only_three_failed_cells_executed": true,
+    "compact_analysis_projection_lossless": true,
+    "fresh_model_calls_equal_eight": true,
+    "synthesis_requires_all_five_cells": true,
+    "natural_model_quality_proven": false,
+    "partial_successor_live_authorized": false,
+    "product_publication_authorized": false,
+    "heterogeneous_generalization_authorized": false,
+    "S3_acceptance": false
+  },
+  "stop_rule": "If the same hidden-reasoning or visible-output budget failure recurs, preserve the successor and make a model-profile, analysis-action-surface or submission-responsibility decision. Do not create an automatic third capacity patch.",
+  "known_boundary": "This proof qualifies only the provider-neutral compact analysis projection and node-level partial resume on the current DELL R2 prefix. A separate Project OS scope decision and fresh authority are required before any natural call. Financial L1, all-five-cell content quality, synthesis quality, heterogeneous generalization, qualified-human acceptance, publication and release remain unproven.",
+  "result_digest": "1c421d34eae324d68593c50709d36ad7d15368853240bc132314f4fb4aeeb2e8"
+}

@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack`、稳定 runner 与 Project OS 范围门均已通过正式零调用。自然 DELL 五单元 R1 的 Planner/S1/S2 前缀保持不可变；policy v1.4 已关闭其 10 条合法 NumericFact 与旧静态上限 8 的容量矛盾。R2 随后精确复用该前缀并尝试剩余节点：需求质量和经营表现两单元自然通过本地 Judgment 合同，且未发现新的金融 L1；价值获取、现金转换和反方证据三单元均在分析阶段用尽 8,000 completion token，跨单元综合未执行。三个失败都是 HTTP 200，0 retry/fallback，不是网络、S1/S2、Skill、GraphContext 或严格 Tool 交卷问题。最早责任层重新定位到 S3 分析视图仍携带交卷 schema、重复目录和完整 route 诊断，并与隐藏推理共用过小预算。下一项是统一的紧凑 cell-local 分析投影、R2 capture replay/mutation 和只复用两个成功 Judgment 的部分节点 successor；不得重跑 Planner、S1/S2、需求或经营单元。模型尚未自然完成全部五单元、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。自然 DELL 五单元 R1 的 Planner/S1/S2 前缀保持不可变；policy v1.4 已关闭 10 条合法 NumericFact 与旧静态上限 8 的容量矛盾。R2 随后精确复用该前缀：需求质量和经营表现两单元自然通过本地 Judgment，且未发现新的金融 L1；价值获取、现金转换和反方证据三单元均在分析阶段用尽 8,000 completion token，综合未执行。三个失败均为 HTTP 200、0 retry/fallback，不是网络、S1/S2、Skill、GraphContext 或严格 Tool 交卷问题。`RC-S3-032` 的 provider-neutral 紧凑 analysis-only 投影和 authority-driven 节点恢复现已完成正式零调用：五个单元保留全部 Evidence／NumericFact／Relation／Method／Graph／gap 权威，移除不可执行交卷 schema 和 transport 诊断，字符减少 19.5%–42.1%；同一 runner 的 fake 只复用两个有效 Judgment、只执行三个失败单元和综合，共 8 次新调用。两次独立 102 tests、全仓 423、活动图和 secret scan 均通过，fresh scope decision 已建立。下一项只剩 clean commit/push、真实仓库 preflight、fresh authority 和一次 partial successor；不得重跑 Planner、S1/S2、需求或经营单元。若同类分析预算失败再次出现，不再自动扩 token 或增加 capacity patch，而转为模型 profile／动作面／提交职责决策。模型尚未自然完成全部五单元、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。
 
 ## 当前唯一产品边界
 

@@ -125,6 +125,11 @@ DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_dynamic_five_cell_successor_"
     "live_scope_decision_v1_0.json"
 )
+DYNAMIC_FIVE_CELL_PARTIAL_SUCCESSOR_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_dynamic_five_cell_partial_successor_"
+    "live_scope_decision_v1_0.json"
+)
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_dynamic_counter_successor_"
@@ -294,6 +299,39 @@ def test_historical_dynamic_five_cell_remaining_nodes_successor_fails_after_part
             environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
             check_repository=False,
         )
+
+
+def test_dynamic_five_cell_partial_successor_binds_compact_projection_and_failed_nodes() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=DYNAMIC_FIVE_CELL_PARTIAL_SUCCESSOR_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["run_scope_id"] == (
+        "one_DELL_dynamic_five_cell_partial_successor_"
+        "failed_three_plus_synthesis"
+    )
+    projection = result["decision_projection"]
+    assert projection["dynamic_five_cell_partial_successor"] is True
+    assert projection["dynamic_five_cell_remaining_nodes_successor"] is False
+    assert projection["node_profiles"] == {
+        "analysis_profile_ref": {
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+            "max_tokens": 16000,
+        },
+        "submission_profile_ref": {
+            "thinking": {"type": "disabled"},
+            "reasoning_effort": None,
+            "max_tokens": 2000,
+        },
+    }
+    assert result["network_calls"] == 0
+    assert result["provider_calls"] == 0
+    assert result["credential_value_persisted"] is False
 
 
 def test_dynamic_five_cell_decision_rejects_weakened_runner_proof(

@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`consumer_v1.3 / fixed_pack_and_dynamic_single_cell_accepted / five_cell_context_qualified / stable_five_cell_runner_engineering_pass / formal_runner_proof_and_natural_five_cell_pending / S3_not_accepted`
+状态：`consumer_v1.4 / fixed_pack_and_dynamic_single_cell_accepted / five_cell_context_qualified / stable_five_cell_runner_and_remaining_nodes_successor_formal_zero_call_pass / natural_five_cell_pending / S3_not_accepted`
 
 ## 1. 为什么需要这条链
 
@@ -393,3 +393,7 @@ Harness 不生成研究结论。它只校验模型选择的 Evidence／NumericFa
 自然 DELL 五单元 R1 已执行，但在任何单元 Judgment 前因 consumer capacity 合同矛盾终止。Planner 与当前 S1/S2 均成功；`CELL::value_capture` 的合法 route 同时需要 revenue、gross_profit、gross_margin、operating_income、operating_margin 五个指标，same-cadence selector 对每个指标保留当期和上年同期，因此最小完整原子视图为 10 条 NumericFact。policy v1.3 的静态上限 8 与该上游合同不相容。该失败归 `RC-S3-031`，不属于 Provider 内容、网络、S1 检索或 S2 数值正确性。
 
 v1.3 与 R1 必须保持不可变。successor 只能建立 policy v1.4，显式绑定该五指标双期间原子容量，并证明：10 条合法视图通过、重排不改变选择、同口径 pair 不被拆分、额外第 11 条非法／重复／跨槽项目 fail closed。随后直接重放 R1 的 immutable planner 与 controlled plan；只有五个 cell 输入、消息、Tool Schema 和综合前置条件全部零调用通过，才可由同一个稳定 runner 复用已成功的 Planner/S1/S2，只运行剩余 12 个自然节点。独立 L1、八维内容质量、paired gain 和 qualified-human 验收继续待完成。
+
+policy v1.4 和 R1 prefix replay 已满足上述容量门；稳定 runner 现在用同一实现支持 remaining-nodes successor，而不是复制 attempt runner。successor authority 不含 planner attempt，只允许五个分析、五个交卷和两次综合；运行时会从 R1 私有终态重新验证 planner、controlled plan、current Pack、S1/S2 结果和失败码，再用 v1.4 重新编译 research input。任何 prefix、Pack、policy 或 digest 漂移都在 Provider 前拒绝。
+
+正式 Project OS 回归还发现 scope decision 起初漏写 `evidence_mode`，而通用 preflight 终态会读取它。当前 decision、Project OS validator 和 runner 已统一要求 `immutable_dynamic_R1_planner_current_S1_S2_prefix_no_new_evidence`，避免“schema 接受但结果物化报错”。两次独立相关测试均为 `83 passed`，全仓 `420 passed`；该工程门只授权 clean/synced 后一个 fresh successor authority，不证明自然金融 L1、内容质量、综合、泛化或发布。

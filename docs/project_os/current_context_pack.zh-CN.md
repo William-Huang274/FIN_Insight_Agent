@@ -328,3 +328,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 全仓 `393 passed`；active baseline=`131／8／10／0`；secret scan=`6,744／0`。实现提交 `6c4e6592...12a` 已推送。
 - 关闭边界：这只证明 reviewed source 能被当前检索发现并安全进入 reviewed-only EvidenceResponse。S1 排名头部稳定性、Evidence Role、MU prepared remarks、PIT 估值仍未关闭；当前 reviewed target 进入 top candidate 的比例仍有限。不得把本结果写成 S1 产品通过、自然五单元、完整研报、泛化或 S3 acceptance。
 - 下一步：先做有限 S2 依赖回归，确认 transcript 没有越权生成 NumericFact；然后迁移其余四个 RoleMethodPack／cell-scoped GraphContextPack，先零调用复证，再决定并执行 DELL 五单元自然动态案例。
+
+## 2026-08-16 S2 transcript 数值权限与同期比较回归关闭
+
+- S1 transcript 接入后的有限 S2 回归完成。current mart 仍只读取 digest-bound SEC CompanyFacts／Submissions 和 10-K／10-Q；1,319 observations 中 transcript 来源为 0，非 SEC citation 为 0。法说可作为 reviewed Evidence／QualitativeFact 被模型分析，但不会自动生成 NumericFact。
+- 第一次 R1 保持失败：数据库 SHA、1,319 observations 和 24/24 qrel 都与当前库一致，失败来自旧验收仍禁止当前 10-Q 中合法的上年同期 Q1。该门已与 S3 same-cadence 合同对齐：保留 FY2027 Q1、同一 10-Q 的 FY2026 Q1 和最新 FY2026，同时禁止旧 Q3 YTD 混入。
+- 旧 S2 result v1.0 不改写；current builder／Workbench 使用 v1.1，digest=`0c25c917...95a1`。formal result 绑定提交 `9f076714...179`，全仓 `394 passed`、active baseline `131／8／10／0`、secret scan `6,747／0`。
+- `RC-S2-005` 关闭。`RC-S2-004` 仍开放：AI server 产品收入—成本—利润桥、ASP／PVM、出货量和 PIT 估值没有因本轮获得权威。
+- 下一步进入其余四个 RoleMethodPack／GraphContextPack 的五单元零调用资格化；自然五单元、完整八维报告、泛化和 S3 acceptance 仍为 false。

@@ -95,3 +95,13 @@ DELL FY2027 Q1 例子：收入 `43,842,000,000 USD`、毛利 `7,782,000,000 USD`
 ## 8. 下一门
 
 零调用纵切的工程部分已经完成。下一门是唯一一次最小自然 planner canary：模型只能选择 canonical facet、目标实体、metric ID 和产品意图；S2 仍独立执行 typed request。Canary 通过后，也必须继续验证 S3 是否在研究判断和引用中真实使用这些 NumericFact，并执行三案依赖回归；否则不能把当前 private mart 宣称为完整用户能力。未来更强 embedding、reranker 或生成模型可以减少检索和规划拐杖，但不能取消公司财务事实库、PIT、期间、单位、冲突和 lineage 这条金融控制面。
+
+## 9. 2026-08-16 transcript 与同口径比较 successor
+
+S1 将 Dell／TSMC 法说接回 current retrieval 后，S2 做了独立非回归。结果确认 current mart 的唯一来源仍是 digest-bound SEC CompanyFacts 与 Submissions，允许表单仅为 10-K／10-Q；S1 transcript、PDF metric row 和候选文本均不进入 S2 observation，也不获得 NumericFact 权威。
+
+第一次重建 R1 虽然得到与现有库完全相同的 SQLite SHA 和 24/24 qrel，却被旧 mutation 判失败。根因不是数据变化，而是历史检查仍禁止上年同期 Q1；当前 executor 为了给 S3 提供合法同比，已经正确保留当前 10-Q 中的本期 Q1 与上年同期 Q1。successor 将门改为“保留同口径对比端点，同时禁止旧 Q3 YTD 混入”。
+
+旧 v1.0 result 保持不可变；current builder 与 Workbench 构建入口使用 `fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json`。v1.1 仍为 1,319 observations、9/9 最新财年、15/15 current interim，result digest=`0c25c917...95a1`。formal regression 见 `configs/financial_facts/fin_ia_0_1_3_s2_transcript_numeric_authority_regression_result_v1_0.json`。
+
+该 successor 不关闭 `RC-S2-004`：产品收入、ASP、PVM、出货量、产品利润与公司／分部利润桥仍可能公开不可得。S2 不会为填满五单元而从法说叙事抽取一个伪 NumericFact。

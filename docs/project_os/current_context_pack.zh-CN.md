@@ -252,3 +252,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 模型自行把未经证明的正向 margin-driver 句改成“现有证据不能确定 AI server mix 或其他单一因素导致公司毛利率回落”。Harness 未改写文字，旧 R7 仍 rejected；三片段、因果 guard 和终态 Judgment 均通过。
 - 独立 L1 通过；单单元适用内容维度 `21/24`。固定 Pack 第一层由 false 改为 true。仍有非阻断 L2：机制句的自然语言归因方向略倒置，WWC 应在动态阶段更直接请求产品收入／成本／利润桥。正式八维、跨单元综合和 senior delivery 必须留到五单元报告，不能用本结果代替。
 - 下一项是动态 Research Truth Spine 的零调用闭合：EvidenceRequest 真正执行 S1、EvidenceResponse 返回晋升 Evidence 或 typed gap、S2 返回 NumericFact／bridge authority、S3 只重裁决受影响单元。dynamic live、五单元、异质泛化、qualified-human 与 S3 acceptance 仍为 false。
+
+## 2026-08-16 S3 动态 Truth Spine 零调用工程闭合
+
+- provider-neutral EvidenceResponse 已连接当前 S1 hybrid candidate route 与 S2 mart。只有 exact current reviewed lineage 且重新通过 case／owner／source／as-of／period／slot 的对象可 accepted；所有新候选保持 needs-human-review，0 自动晋升。
+- DELL 8 个请求中 5 个取回 6 条唯一 reviewed Evidence，112 个未审候选保持隔离，12 个 typed gap 保留；MU／NVDA 单请求各 16 个候选、0 accepted。候选重排、候选文字注入、跨案例和 Pack drift mutation 均 fail closed。
+- clean implementation commit=`b731f4e7...715e`，formal result digest=`6e13f687...baab`；全仓 `373 passed`，active baseline `129／8／10／0`，secret scan `6700／0`。这里 0 model call 指 0 生成式 DeepSeek／Provider；当前 S1 确实执行本地 Qwen embedding。
+- 当前工程控制面通过，但自然 planner、动态 Judgment 和 Agentic Research 均为 false。新开的 `RC-S1-015` 记录 reviewed Pack 与 current candidate index／source route 漂移：Dell transcript 已审但动态不可发现。下一步允许一次诚实的 DELL SEC-only 自然单单元纵切；三案例产品门和高质量五单元报告仍须先处理该 S1 同步缺口。

@@ -43,7 +43,11 @@
 - reviewed Pack digest 漂移 fail closed。
 - 0 model、0 provider、0 external network、0 candidate promotion。
 
-私有工程结果 digest：`93cc10355b98e164eddf879a5d27bd028e8fb73995d1b1e72c477649fb36bacc`。
+私有 working-tree 工程结果 digest：`93cc10355b98e164eddf879a5d27bd028e8fb73995d1b1e72c477649fb36bacc`。
+
+干净实现提交 `b731f4e7410516d5d616aa87173cc05f8568715e` 已推送；同一稳定 runner 随后生成公开 formal result `configs/research/evals/fin_ia_0_1_3_s3_dynamic_truth_spine_zero_call_result_v1_0.json`，result digest=`6e13f6873f5f6e83c8b2773c429fd01472fcbf938d157eb6b4ba3e75fbf5baab`。提交前全仓 `373 passed`，compileall、active baseline `129 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 和 secret scan `6,700 files / 0 finding` 通过。
+
+本记录里的“零调用”特指 0 次生成式 DeepSeek／Provider 调用和 0 次外部网络请求；当前 S1 hybrid route 实际执行了本地 Qwen embedding。不得把它解释成 0 embedding inference。
 
 ## 新暴露的最早责任层问题
 
@@ -53,7 +57,6 @@ Dell Q1 FY2027 官方 transcript 已经进入 reviewed Pack，但当前 S1 candi
 
 ## 下一步
 
-1. 在 clean commit 上重新运行正式零调用 proof，保存公开结果与实现 commit 绑定。
-2. 只给自然 DELL `value_capture` planner 用户问题、公司身份、as-of 和工具权限，让其提出 EvidenceRequest。
-3. 真实执行 S1/S2、返回 EvidenceResponse，并在当前有限权威下完成一次动态 Judgment。
-4. 保留 S1 transcript/index 同步缺口；根据自然纵切结果决定在进入五单元前的最小同步修复，不把缺口偷塞进 S3。
+1. 只给自然 DELL `value_capture` planner 用户问题、公司身份、as-of 和工具权限，让其提出 EvidenceRequest。
+2. 真实执行 S1/S2、返回 EvidenceResponse，并在当前有限权威下完成一次动态 Judgment。
+3. 保留 S1 transcript/index 同步缺口；根据自然纵切结果决定在进入五单元前的最小同步修复，不把缺口偷塞进 S3。

@@ -1,0 +1,187 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_capacity_successor_zero_call_result_v1_0",
+  "status": "engineering_pass_zero_call_R1_capacity_contract_successor",
+  "recorded_at": "2026-08-17T02:27:00+08:00",
+  "implementation_commit": "b3af0fa91ba4025400bdc89919b1bdca1c65f4ab",
+  "case_key": "DELL",
+  "predecessor": {
+    "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_chat_live_authority_v1_0.json",
+    "authority_sha256": "2bccbdf9ca1e43184d380f2ea5fae74b919313ea7df69616679191936a0cd796",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_chat_live_result_v1_0.json",
+    "public_result_sha256": "ee9615e374b03f235011b6fa54d25e86ceb72d33c049a43e6c558c374c5ac1e2",
+    "public_result_digest": "96b3fc98d4c7cf8c3b103bfe5384781b1523fd563cf27af3c1f0318ad8575708",
+    "private_full_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R1/full_result.json",
+    "private_full_result_sha256": "fb8867a30e1a2399677a323322eaab80e21a69c477128751098fea47421d64b1",
+    "private_full_result_digest": "6d701e35ef09f48d2c935f3b9b4d736bdbcae81360b937ff8387e630037cb483",
+    "failure_assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_chat_live_failure_assessment_v1_0.json",
+    "failure_assessment_sha256": "ef1eb0035dd002ad043277ce72383dbec022f7ea2be98938f13886c20f38dedc",
+    "plan_digest": "f964f9fe814e1ea5d50c5286fb57b3cb00144514c2ee47cc9c770b7d662debaf",
+    "controlled_plan_digest": "c439694e64a1b24f2049ca6c073df25fb867f17e8c6879abb2128a43db701db1",
+    "reused_planner_calls": 1,
+    "reused_current_S1_S2": true
+  },
+  "source_bindings": {
+    "current_consumer": {
+      "ref": "src/sec_agent/research/current_consumer.py",
+      "sha256": "567d88438b4315eff8f31575e57a9d826d6f36f653e671f623500762c6db9ffd"
+    },
+    "consumer_policy": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_4.json",
+      "sha256": "86e946714b6fab53c703b1194b454bcdb45e6e66c05114b2ef9233a3bc7070c7"
+    },
+    "consumer_tests": {
+      "ref": "tests/test_s3_current_research_consumer.py",
+      "sha256": "0764294fd3bdb20a11211b36e109343ab78cf648e42410b78d509fd7341ad7eb"
+    },
+    "project_os_tests": {
+      "ref": "tests/test_project_os_preflight.py",
+      "sha256": "b77a2e77a284322c0cf9476b6a02b6ae9c3cdd3feb1c2abcc1865ec706d4af0a"
+    }
+  },
+  "current_pack_binding": {
+    "artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+    "pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a",
+    "projection_digest": "6d5a6044d92fbea0aea53f095b01ba6bc5576c25cac5e823830e4714b0c6e40d"
+  },
+  "replay": {
+    "research_input_digest": "5a99ba2297a6d36c92c5b292341ea1b1599b7d852ffc7616ab75728ff8d2505c",
+    "candidate_promotions": 0,
+    "external_source_network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0,
+    "cells": [
+      {
+        "cell_id": "CELL::demand_quality",
+        "evidence_count": 4,
+        "numeric_fact_count": 0,
+        "numeric_relation_count": 0,
+        "metric_ids": [],
+        "analysis_messages_digest": "42feee467da8febac51ace6a13741c4f31c086e9d5b01844bac877de2a341569",
+        "analysis_user_chars": 16779,
+        "submission_messages_digest": "b6c38151dd74b9cec77440aca5e02292659068280ea19c3ee9ab6b725b868297",
+        "submission_user_chars": 16542,
+        "tool_schema_digest": "ffe20bc685120c4e452b1f49c5c4d774232cb7bb164c5684344980f13f6d2845"
+      },
+      {
+        "cell_id": "CELL::operating_performance",
+        "evidence_count": 2,
+        "numeric_fact_count": 12,
+        "numeric_relation_count": 6,
+        "metric_ids": [
+          "gross_margin",
+          "gross_profit",
+          "net_income",
+          "operating_income",
+          "operating_margin",
+          "revenue"
+        ],
+        "analysis_messages_digest": "aa3c995a4f1d4a90dc1e7a6e206c0d193dadc1a2b05bb1e95e72afaeb35cf313",
+        "analysis_user_chars": 19828,
+        "submission_messages_digest": "8f0d6315c53f9cb9183c62d39b89deae46a4dcf32623657d7031e682e2df67e6",
+        "submission_user_chars": 19591,
+        "tool_schema_digest": "dec558873b14b9c694ccb6ba3a53f8923159800d57696bbae82364f44385bc5a"
+      },
+      {
+        "cell_id": "CELL::value_capture",
+        "evidence_count": 1,
+        "numeric_fact_count": 10,
+        "numeric_relation_count": 5,
+        "metric_ids": [
+          "gross_margin",
+          "gross_profit",
+          "operating_income",
+          "operating_margin",
+          "revenue"
+        ],
+        "analysis_messages_digest": "2f14550509007cc45f73f00abb0493772badc94f01b213f69ca102e73712cf61",
+        "analysis_user_chars": 21216,
+        "submission_messages_digest": "75b07074df0e23b9efe450a1d38e935fc340f6fe878366a6acab438d1624f33a",
+        "submission_user_chars": 20979,
+        "tool_schema_digest": "21df01ceb605bacc8c2a99cd4c44c5b40796e3cb41234e488e5d2771f4882789"
+      },
+      {
+        "cell_id": "CELL::cash_conversion",
+        "evidence_count": 2,
+        "numeric_fact_count": 10,
+        "numeric_relation_count": 3,
+        "metric_ids": [
+          "accounts_payable",
+          "accounts_receivable",
+          "capital_expenditures",
+          "cash_and_equivalents",
+          "free_cash_flow",
+          "inventory",
+          "operating_cash_flow"
+        ],
+        "analysis_messages_digest": "85864ec398e29608459dbba386c54ee943c6ecca75e57d0802dbbff3dfcbbdab",
+        "analysis_user_chars": 19413,
+        "submission_messages_digest": "57f8b67d3f90d968994c5035d4cc51708e358fac56393f2b26c583b073ff0352",
+        "submission_user_chars": 19176,
+        "tool_schema_digest": "db228d19f19bfe0904833546f96d91fb2f78679d70f0b9e1f6b76bc86636281a"
+      },
+      {
+        "cell_id": "CELL::counterevidence",
+        "evidence_count": 1,
+        "numeric_fact_count": 3,
+        "numeric_relation_count": 0,
+        "metric_ids": [
+          "inventory"
+        ],
+        "analysis_messages_digest": "fba9da4f459787b9bb49046ef405f729694bdba723dc21bae8f61a40e1d9e69d",
+        "analysis_user_chars": 13240,
+        "submission_messages_digest": "cfcc1ec5cfeed1178330906cadebf26d5ef7fe8096cf3e68f67de8b2af8f6b27",
+        "submission_user_chars": 13003,
+        "tool_schema_digest": "ec9937f14aa92d55bdb2ca6c22daa0064b2f5c4e5390513bb57d68f2782caa75"
+      }
+    ],
+    "fake_judgment_digest": "94260e26cd78287ddd03d1f311b6f2004e9cf3aee90eda886533e3e4a15ce4ba",
+    "fake_deliverable_digest": "3dd61ffb68e5b71dee118aa8250887720b10267ab09125ae5b408562bebbb169",
+    "synthesis_analysis_messages_digest": "66357cec9f3f246ab1b9721ea9ff9d690da40ac3fa8cc9fd6ec0d716de6db555",
+    "synthesis_analysis_user_chars": 56880,
+    "synthesis_submission_messages_digest": "d54be70547e82b962cd08d1f0fee307781cbdf7abfaea765e42cdf0192a1b656",
+    "synthesis_tool_schema_digest": "42a576d6adf8a36de7a933395df93329a97c6e0ddf342dfbe9ffb318366f3e7f"
+  },
+  "independent_test_processes": [
+    {
+      "status": "passed",
+      "passed_tests": 64,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "network_calls": 0
+    },
+    {
+      "status": "passed",
+      "passed_tests": 64,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "network_calls": 0
+    }
+  ],
+  "mutation_coverage": {
+    "atomic_ten_passes": true,
+    "permutation_stable": true,
+    "capacity_plus_one_fails_closed": true,
+    "duplicate_ref_fails_closed": true,
+    "cross_case_numeric_fails_closed": true,
+    "missing_comparable_relation_fails_closed": true,
+    "historical_v1_3_policy_and_R1_immutable": true
+  },
+  "acceptance": {
+    "R1_preserved": true,
+    "planner_and_current_S1_S2_reused_not_rerun": true,
+    "value_capture_five_metrics_two_periods_equal_ten": true,
+    "all_five_cells_compile": true,
+    "all_five_cell_tool_schemas_compile": true,
+    "synthesis_preconditions_compile": true,
+    "successor_live_authorized": false,
+    "maximum_fresh_model_calls_after_separate_scope_decision": 12,
+    "natural_financial_L1_proven": false,
+    "content_quality_proven": false,
+    "heterogeneous_generalization": false,
+    "S3_product_acceptance": false,
+    "publication_authorized": false
+  },
+  "known_boundary": "Zero-call replay proves the R1 consumer-capacity successor and compilation path only. It does not authorize or prove natural cell judgments, synthesis, report quality, generalization, S3 acceptance, publication or release.",
+  "result_digest": "a9ccbf9974934fe42239c53468e67dc6969fa1a50b855b9310a642afec50a354"
+}

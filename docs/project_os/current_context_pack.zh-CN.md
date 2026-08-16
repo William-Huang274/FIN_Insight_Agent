@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack`、稳定 runner 与 Project OS 范围门均已通过正式零调用。自然 DELL 五单元 R1 随后真实执行：DeepSeek Planner 正常提出 10 条研究原子，Harness 选中 8 条；当前 S1/S2 完成 8 条 lane、128 个 hybrid 候选和 30 个 typed fact request。链路在任何 cell 模型调用前因项目自己的容量合同失败：`value_capture` 合法形成 5 个指标 × 当期／上年同期 = 10 条 NumericFact，而 consumer policy v1.3 静态上限仍为 8。R1 仅消耗 1 次 planner 调用，0 retry，失败与 capture 均保持不可变；不能归因于 DeepSeek、网络、S1/S2 或研究内容。当前唯一下一项是 policy v1.4、容量 mutation、R1 immutable replay 和受约束 successor；零调用通过后只可复用已成功的 Planner/S1/S2，签发剩余 12 个模型节点。模型尚未自然完成任何五单元 Judgment、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack`、稳定 runner 与 Project OS 范围门均已通过正式零调用。自然 DELL 五单元 R1 随后真实执行：DeepSeek Planner 正常提出 10 条研究原子，Harness 选中 8 条；当前 S1/S2 完成 8 条 lane、128 个 hybrid 候选和 30 个 typed fact request。链路在任何 cell 模型调用前因项目自己的容量合同失败：`value_capture` 合法形成 5 个指标 × 当期／上年同期 = 10 条 NumericFact，而 consumer policy v1.3 静态上限仍为 8。R1 仅消耗 1 次 planner 调用，0 retry，失败与 capture 均保持不可变。policy v1.4 已在干净提交上完成结构修复：容量由五指标双期间推导，10 条合法视图、重排、plus-one、重复、跨案和缺 relation mutation 均通过；直接重放 R1 prefix 后五个 cell 消息、Tool Schema 和综合前置条件全部可编译，两个独立进程 `64/64`、全仓 `418/418`。当前唯一下一项是在同一稳定 runner 增加受约束 successor 并做新的 Project OS 门；通过后只可复用已成功的 Planner/S1/S2，签发剩余 12 个模型节点。模型尚未自然完成任何五单元 Judgment、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。
 
 ## 当前唯一产品边界
 

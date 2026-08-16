@@ -287,3 +287,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - v1.0 authority 在 Provider 调用前以 `dynamic_live_bound_input_drift:runner_ref` 停止；model／Provider／network／capture 均为 0，R1 未变化。
 - R1 authority 绑定的是提交 `ba02a24b...` 中 runner 的历史 SHA；旧入口却拿它与 successor 演进后的当前路径比较。Git 历史 blob 仍完全匹配，问题属于项目内历史 authority 验证语义，不是实际 R1 漂移。
 - `RC-S3-026` 要求从 R1 的 immutable Git commit 验证全部历史输入，并把 successor 当前要消费的 loop／dynamic policy 直接绑定到新 authority。v1.0 authority 和 identity 不重用；修复后必须另做 v1.1 proof、decision、preflight 和新身份。
+
+## 2026-08-16 S3 successor v1.1 历史绑定闭环
+
+- `RC-S3-026` 已零调用关闭：R1 的全部 authority 输入从其 `ba02a24b...` Git commit 逐 blob 验证，当前 successor 使用的 loop／dynamic policy 则由新 authority 直接绑定；历史事实与当前执行依赖不再混淆。
+- v1.0 authority／identity 保持已消费入口失败，不重用。v1.1 proof result digest=`33dd4413...8f62`；R1 的成功前缀、counter context 和 messages digest 未变化，历史 SHA、缺失 blob、prefix 与 replay mutation 均 fail closed。
+- 全仓 `384 passed`，compileall、active baseline `131／8／10／0`、secret scan `6722／0` 通过。下一步仍只允许 clean/synced 后一个 v1.1 exact-once successor：16k max-thinking 分析＋2k non-thinking strict submission，0 retry／fallback／新 Evidence。动态完整 Judgment、五单元与 S3 acceptance 仍为 false。

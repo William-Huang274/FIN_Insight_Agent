@@ -71,12 +71,20 @@ DYNAMIC_SINGLE_CELL_DECISION_STATUS = (
 DYNAMIC_SINGLE_CELL_SCOPE = (
     "one_honest_DELL_SEC_only_dynamic_single_cell"
 )
-DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA = (
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_0 = (
     "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
     "live_scope_decision_v1_0"
 )
-DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS = (
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS_V1_0 = (
     "dynamic_R1_preserved_one_counter_analysis_submission_"
+    "successor_authorized"
+)
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
+    "live_scope_decision_v1_1"
+)
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS = (
+    "dynamic_R1_historical_binding_pass_one_counter_analysis_submission_"
     "successor_authorized"
 )
 DYNAMIC_COUNTER_SUCCESSOR_SCOPE = (
@@ -170,7 +178,10 @@ def _validate_fixed_pack_decision(
 ) -> dict[str, Any]:
     if (
         decision.get("schema_version")
-        == DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA
+        in {
+            DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_0,
+            DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA,
+        }
     ):
         return _validate_dynamic_counter_successor_decision(
             root=root,
@@ -562,8 +573,16 @@ def _validate_dynamic_single_cell_decision(
 def _validate_dynamic_counter_successor_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    historical_binding_v1_1 = (
+        decision.get("schema_version")
+        == DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA
+    )
     required_equal = {
-        "status": DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS,
+        "status": (
+            DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS
+            if historical_binding_v1_1
+            else DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS_V1_0
+        ),
         "case_key": "DELL",
         "cell_id": "CELL::value_capture",
         "run_scope_id": DYNAMIC_COUNTER_SUCCESSOR_SCOPE,
@@ -593,6 +612,17 @@ def _validate_dynamic_counter_successor_decision(
             raise ValueError(
                 f"project_os_dynamic_counter_decision_true_required:{field}"
             )
+    if historical_binding_v1_1:
+        for field in (
+            "historical_git_blob_validation_required",
+            "current_runtime_policies_directly_bound",
+            "obsolete_v1_0_identity_reuse_forbidden",
+        ):
+            if decision.get(field) is not True:
+                raise ValueError(
+                    "project_os_dynamic_counter_decision_true_required:"
+                    f"{field}"
+                )
     for field in (
         "planner_rerun_authorized",
         "current_S1_S2_rerun_authorized",
@@ -640,14 +670,19 @@ def _validate_dynamic_counter_successor_decision(
     )
     zero_acceptance = zero.get("acceptance") or {}
     replay = zero.get("replay_observation") or {}
+    expected_zero_schema = (
+        "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
+        f"zero_call_result_{'v1_1' if historical_binding_v1_1 else 'v1_0'}"
+    )
+    expected_zero_status = (
+        "zero_call_failed_counter_successor_historical_binding_"
+        "engineering_pass"
+        if historical_binding_v1_1
+        else "zero_call_failed_counter_successor_engineering_pass"
+    )
     if not (
-        zero.get("schema_version")
-        == (
-            "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
-            "zero_call_result_v1_0"
-        )
-        and zero.get("status")
-        == "zero_call_failed_counter_successor_engineering_pass"
+        zero.get("schema_version") == expected_zero_schema
+        and zero.get("status") == expected_zero_status
         and zero_acceptance.get("immutable_successful_prefix_reused") is True
         and zero_acceptance.get("failed_counter_context_recompiled_exactly")
         is True
@@ -664,6 +699,19 @@ def _validate_dynamic_counter_successor_decision(
         )
     ):
         raise ValueError("project_os_dynamic_counter_zero_call_invalid")
+    if historical_binding_v1_1 and not (
+        zero_acceptance.get(
+            "historical_authority_validated_from_immutable_git_commit"
+        )
+        is True
+        and zero_acceptance.get("current_runtime_policies_directly_bound")
+        is True
+        and zero_acceptance.get("obsolete_v1_0_identity_reuse_forbidden")
+        is True
+    ):
+        raise ValueError(
+            "project_os_dynamic_counter_historical_acceptance_invalid"
+        )
 
     _, predecessor_public = _validate_artifact_binding(
         root=root,
@@ -739,6 +787,53 @@ def _validate_dynamic_counter_successor_decision(
     runner_path = _repo_path(root, str(decision.get("runner_ref") or ""))
     if _sha256(runner_path) != str(decision.get("runner_sha256") or ""):
         raise ValueError("project_os_dynamic_counter_runner_drift")
+
+    if historical_binding_v1_1:
+        _, obsolete_authority = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="obsolete_entry_authority_ref",
+            sha_field="obsolete_entry_authority_sha256",
+        )
+        _, obsolete_failure = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="obsolete_entry_failure_ref",
+            sha_field="obsolete_entry_failure_sha256",
+        )
+        _, predecessor_authority = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="predecessor_authority_ref",
+            sha_field="predecessor_authority_sha256",
+        )
+        if not (
+            obsolete_authority.get("schema_version")
+            == (
+                "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
+                "authority_v1_0"
+            )
+            and obsolete_failure.get("status")
+            == "entry_failed_zero_model_calls_historical_runner_current_path_drift"
+            and sum((obsolete_failure.get("observed_calls") or {}).values()) == 0
+            and predecessor_authority.get("schema_version")
+            == "fin_ia_s3_dynamic_single_cell_live_authority_v1_0"
+            and predecessor_authority.get("implementation_commit")
+            == "ba02a24b3d01bdb70898e8ca09e442c50a09562f"
+        ):
+            raise ValueError(
+                "project_os_dynamic_counter_historical_binding_invalid"
+            )
+        for ref_field, sha_field in (
+            ("loop_policy_ref", "loop_policy_sha256"),
+            ("dynamic_micro_policy_ref", "dynamic_micro_policy_sha256"),
+        ):
+            _validate_artifact_binding(
+                root=root,
+                decision=decision,
+                ref_field=ref_field,
+                sha_field=sha_field,
+            )
 
     profiles: dict[str, dict[str, Any]] = {}
     profile_specs = (
@@ -823,6 +918,9 @@ def _validate_dynamic_counter_successor_decision(
         "api_key_env": "DEEPSEEK_API_KEY",
         "recent_provider_steps": 1,
         "dynamic_counter_successor": True,
+        "historical_binding_version": (
+            "v1_1" if historical_binding_v1_1 else "v1_0_obsolete"
+        ),
         "micro_judgment_successor": False,
         "node_profiles": profiles,
     }

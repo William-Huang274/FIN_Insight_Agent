@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -55,6 +56,7 @@ from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     scope_bounded_finance_micro_judgment_policy,
     validate_deepseek_ga_json_profile,
     validate_deepseek_ga_node_profile,
+    validate_deepseek_ga_profile,
     validate_finance_micro_judgment_fragment,
 )
 from sec_agent.research.current_consumer import (  # noqa: E402
@@ -89,6 +91,18 @@ AUTHORITY_SCHEMA = "fin_ia_s3_dynamic_single_cell_live_authority_v1_0"
 AUTHORITY_STATUS = "signed_exact_once_DELL_dynamic_value_capture_chat_live"
 RESULT_SCHEMA = "fin_ia_s3_dynamic_single_cell_live_result_v1_0"
 FULL_RESULT_SCHEMA = "fin_ia_s3_dynamic_single_cell_live_full_v1_0"
+SUCCESSOR_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_authority_v1_0"
+)
+SUCCESSOR_AUTHORITY_STATUS = (
+    "signed_exact_once_DELL_dynamic_counter_analysis_submission_successor"
+)
+SUCCESSOR_RESULT_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_result_v1_0"
+)
+SUCCESSOR_FULL_RESULT_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_full_v1_0"
+)
 
 
 class DynamicSingleCellLiveError(RuntimeError):
@@ -450,6 +464,258 @@ def _require_controlled_plan_binding(
         != expected_plan_digest
     ):
         raise DynamicSingleCellLiveError("dynamic_live_plan_digest_drift")
+
+
+def _successor_bound_paths(authority: Mapping[str, Any]) -> dict[str, Path]:
+    bound = authority.get("bound_inputs")
+    if not isinstance(bound, Mapping):
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_bound_inputs_invalid"
+        )
+    required_refs = {
+        "predecessor_authority_ref",
+        "predecessor_public_result_ref",
+        "predecessor_private_result_ref",
+        "failure_assessment_ref",
+        "analysis_profile_ref",
+        "submission_profile_ref",
+        "runner_ref",
+        "bounded_loop_ref",
+        "provider_transport_ref",
+    }
+    scalar_keys = {
+        "predecessor_public_result_digest",
+        "predecessor_private_result_digest",
+    }
+    expected = {
+        item
+        for key in required_refs
+        for item in (key, key[:-4] + "_sha256")
+    } | scalar_keys
+    if set(bound) != expected:
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_bound_inputs_invalid"
+        )
+    paths: dict[str, Path] = {}
+    for key in required_refs:
+        path = _resolve(str(bound[key]))
+        if not path.is_file() or _sha(path) != str(
+            bound[key[:-4] + "_sha256"]
+        ):
+            raise DynamicSingleCellLiveError(
+                f"dynamic_successor_bound_input_drift:{key}"
+            )
+        paths[key] = path
+    return paths
+
+
+def _compile_successor_replay_state(
+    predecessor_full: Mapping[str, Any],
+) -> dict[str, Any]:
+    surface_input = (
+        predecessor_full.get("surface_projection") or {}
+    ).get("claim_surface_research_input") or {}
+    accepted_fragments = deepcopy(
+        dict(predecessor_full.get("accepted_fragments") or {})
+    )
+    required_prefix = {
+        "submit_research_thesis",
+        "submit_research_mechanism",
+    }
+    if (
+        not surface_input
+        or set(accepted_fragments) != required_prefix
+        or any(not accepted_fragments[key] for key in required_prefix)
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_predecessor_prefix_invalid"
+        )
+    failed_rows = [
+        row
+        for row in predecessor_full.get("fragment_steps") or ()
+        if row.get("fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+    ]
+    if len(failed_rows) != 1:
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_failed_fragment_state_invalid"
+        )
+    prior_failed_row = failed_rows[0]
+    context = compile_finance_micro_fragment_context(
+        research_input=surface_input,
+        cell_id="CELL::value_capture",
+        tool_name="submit_research_counterargument_and_wwc",
+        accepted_fragments=accepted_fragments,
+    )
+    messages = compile_finance_micro_fragment_analysis_messages(context)
+    if not (
+        context.get("projection_digest")
+        == (prior_failed_row.get("fragment_context") or {}).get(
+            "projection_digest"
+        )
+        and canonical_digest(list(messages))
+        == prior_failed_row.get("analysis_messages_digest")
+        and not prior_failed_row.get("analysis_step")
+        and not prior_failed_row.get("submission_step")
+        and not prior_failed_row.get("validated_fragment")
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_failed_fragment_replay_drift"
+        )
+    return {
+        "surface_input": surface_input,
+        "accepted_fragments": accepted_fragments,
+        "fragment_context": context,
+        "analysis_messages": messages,
+        "analysis_messages_digest": canonical_digest(list(messages)),
+        "predecessor_fragment_context_digest": context[
+            "projection_digest"
+        ],
+    }
+
+
+def validate_successor_authority(
+    payload: Mapping[str, Any], *, authority_path: Path
+) -> dict[str, Path]:
+    if not (
+        payload.get("schema_version") == SUCCESSOR_AUTHORITY_SCHEMA
+        and payload.get("status") == SUCCESSOR_AUTHORITY_STATUS
+        and payload.get("case_key") == "DELL"
+        and payload.get("cell_id") == "CELL::value_capture"
+        and payload.get("failed_fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_authority_invalid"
+        )
+    commit = str(payload.get("implementation_commit") or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_commit_invalid"
+        )
+    if _git("rev-parse", "HEAD").lower() != commit:
+        raise DynamicSingleCellLiveError("dynamic_successor_head_drift")
+    if _git("rev-parse", "@{upstream}").lower() != commit:
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_upstream_drift"
+        )
+    allowed = f"?? {_relative(authority_path)}"
+    status = _git("status", "--porcelain=v1", "--untracked-files=all")
+    if [line for line in status.splitlines() if line] != [allowed]:
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_worktree_not_clean"
+        )
+
+    expected_budget = {
+        "successful_predecessor_model_nodes_reused": 5,
+        "maximum_fresh_model_calls": 2,
+        "maximum_transport_attempts": 2,
+        "maximum_counter_analysis_calls": 1,
+        "maximum_counter_submission_calls": 1,
+        "maximum_analysis_completion_tokens": 16000,
+        "maximum_submission_completion_tokens": 2000,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "external_source_network_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if payload.get("execution_budget") != expected_budget:
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_budget_invalid"
+        )
+    paths = _successor_bound_paths(payload)
+    bound = payload["bound_inputs"]
+    predecessor_authority = _json(paths["predecessor_authority_ref"])
+    predecessor_paths = _bound_paths(predecessor_authority)
+    predecessor_public = _json(paths["predecessor_public_result_ref"])
+    predecessor_full = _json(paths["predecessor_private_result_ref"])
+    assessment = _json(paths["failure_assessment_ref"])
+    if not (
+        predecessor_authority.get("schema_version") == AUTHORITY_SCHEMA
+        and predecessor_public.get("schema_version") == RESULT_SCHEMA
+        and predecessor_public.get("status") == "terminal_failed_no_retry"
+        and predecessor_public.get("result_digest")
+        == bound["predecessor_public_result_digest"]
+        and predecessor_public.get("failure_code")
+        == "model_gateway_generation_budget_exhausted"
+        and predecessor_public.get("failure_fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+        and (predecessor_public.get("execution") or {}).get(
+            "model_calls_attempted"
+        )
+        == 6
+        and (predecessor_public.get("execution") or {}).get(
+            "fragment_tool_calls_accepted"
+        )
+        == 2
+        and predecessor_full.get("schema_version") == FULL_RESULT_SCHEMA
+        and predecessor_full.get("status") == "terminal_failed_no_retry"
+        and predecessor_full.get("full_result_digest")
+        == bound["predecessor_private_result_digest"]
+        and assessment.get("schema_version")
+        == "fin_ia_s3_dynamic_single_cell_live_failure_assessment_v1_0"
+        and assessment.get("status")
+        == "terminal_failed_counter_WWC_analysis_generation_budget_exhausted"
+        and (assessment.get("successor_disposition") or {}).get(
+            "maximum_fresh_model_calls"
+        )
+        == 2
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_predecessor_invalid"
+        )
+    del predecessor_paths
+    _compile_successor_replay_state(predecessor_full)
+
+    analysis_profile = load_chat_completion_profile(
+        _json(paths["analysis_profile_ref"])
+    )
+    submission_profile = load_chat_completion_profile(
+        _json(paths["submission_profile_ref"])
+    )
+    validate_deepseek_ga_profile(analysis_profile, strict_tools=False)
+    validate_deepseek_ga_node_profile(
+        submission_profile, node_class="contract_submission_non_thinking"
+    )
+
+    output = payload.get("output_contract")
+    required_output = {
+        "capture_root_ref",
+        "private_output_root_ref",
+        "public_result_ref",
+        "run_id",
+        "analysis_attempt_id",
+        "submission_attempt_id",
+        "product_publication",
+    }
+    if not (
+        isinstance(output, Mapping)
+        and set(output) == required_output
+        and output.get("product_publication") == "forbidden"
+        and all(
+            str(output.get(key) or "")
+            for key in required_output - {"product_publication"}
+        )
+        and output.get("analysis_attempt_id")
+        != output.get("submission_attempt_id")
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_output_invalid"
+        )
+    capture_run = _resolve(str(output["capture_root_ref"])) / str(
+        output["run_id"]
+    )
+    if (
+        capture_run.exists()
+        or _resolve(str(output["private_output_root_ref"])).exists()
+        or _resolve(str(output["public_result_ref"])).exists()
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_identity_consumed"
+        )
+    return paths
 
 
 def run(
@@ -847,11 +1113,308 @@ def run(
     return public
 
 
+def run_successor(
+    authority_path: Path,
+    *,
+    analysis_executor: Callable[..., ChatCompletionResult] = (
+        execute_chat_completion_exact_once
+    ),
+    submission_executor: Callable[..., ChatCompletionToolStepResult] = (
+        execute_chat_completion_tool_step_exact_once
+    ),
+) -> dict[str, Any]:
+    authority = _json(authority_path)
+    paths = validate_successor_authority(
+        authority, authority_path=authority_path
+    )
+    output = authority["output_contract"]
+    capture_root = _resolve(str(output["capture_root_ref"]))
+    private_root = _resolve(str(output["private_output_root_ref"]))
+    predecessor_full = _json(paths["predecessor_private_result_ref"])
+    replay = _compile_successor_replay_state(predecessor_full)
+    surface_input = replay["surface_input"]
+    accepted_fragments = replay["accepted_fragments"]
+    fragment_context = replay["fragment_context"]
+    analysis_messages = replay["analysis_messages"]
+    analysis_profile = load_chat_completion_profile(
+        _json(paths["analysis_profile_ref"])
+    )
+    submission_profile = load_chat_completion_profile(
+        _json(paths["submission_profile_ref"])
+    )
+    predecessor_authority = _json(paths["predecessor_authority_ref"])
+    predecessor_paths = _bound_paths(predecessor_authority)
+    kernel, route, _ = _runtime_contracts()
+    micro_policy = load_dynamic_micro_judgment_policy(
+        _json(predecessor_paths["dynamic_micro_policy_ref"])
+    )
+    scoped = scope_bounded_finance_micro_judgment_policy(
+        load_bounded_finance_loop_policy(
+            _json(predecessor_paths["loop_policy_ref"])
+        ),
+        micro_policy=micro_policy,
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_micro_judgment_tools(
+        research_input=surface_input,
+        required_cell_ids=["CELL::value_capture"],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped,
+        strict=True,
+    )
+    tool_name = "submit_research_counterargument_and_wwc"
+    tool_by_name = {row["function"]["name"]: row for row in tools}
+
+    analysis_step: dict[str, Any] = {}
+    submission_step: dict[str, Any] = {}
+    validated_fragment: dict[str, Any] = {}
+    judgment_output: dict[str, Any] = {}
+    structured_deliverable: dict[str, Any] = {}
+    submission_messages_digest = ""
+    model_calls_attempted = 0
+    failure_phase = ""
+    failure_code = ""
+    failure_capture_ref = ""
+    try:
+        model_calls_attempted += 1
+        analysis = analysis_executor(
+            profile=analysis_profile,
+            messages=analysis_messages,
+            capture_root=capture_root,
+            run_id=str(output["run_id"]),
+            attempt_id=str(output["analysis_attempt_id"]),
+        )
+        analysis_step = analysis.as_dict()
+        if analysis.finish_reason == "length":
+            raise DynamicSingleCellLiveError(
+                "dynamic_successor_analysis_length_stop"
+            )
+        submission_messages = compile_finance_micro_fragment_submission_messages(
+            fragment_context=fragment_context,
+            analysis_draft=analysis.content,
+        )
+        submission_messages_digest = canonical_digest(
+            list(submission_messages)
+        )
+        model_calls_attempted += 1
+        submission = submission_executor(
+            profile=submission_profile,
+            messages=submission_messages,
+            tools=[tool_by_name[tool_name]],
+            capture_root=capture_root,
+            run_id=str(output["run_id"]),
+            attempt_id=str(output["submission_attempt_id"]),
+            tool_choice=None,
+        )
+        submission_step = submission.as_dict()
+        validated_fragment = validate_finance_micro_judgment_fragment(
+            tool_name=tool_name,
+            arguments=_tool_arguments(
+                submission, expected_tool=tool_name
+            ),
+            research_input=surface_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=accepted_fragments[
+                SUBMIT_RESEARCH_THESIS_TOOL
+            ],
+        )
+        accepted_fragments[tool_name] = validated_fragment
+        cell = next(
+            row
+            for row in surface_input["cells"]
+            if row["cell_id"] == "CELL::value_capture"
+        )
+        terminal = compile_finance_micro_judgment_fragments(
+            accepted_fragments, cell=cell
+        )
+        judgment_output = {"cells": [terminal]}
+        structured_deliverable = compile_current_research_deliverable(
+            research_input=surface_input,
+            judgment_output=judgment_output,
+            required_cell_ids=["CELL::value_capture"],
+        )
+    except ModelGatewayError as exc:
+        failure_phase = "provider_transport_or_response"
+        failure_code = exc.code
+        failure_capture_ref = exc.capture_ref
+    except BoundedFinanceLoopError as exc:
+        failure_phase = "dynamic_fragment_or_terminal_validation"
+        failure_code = str(exc)
+    except CurrentResearchConsumerError as exc:
+        failure_phase = "dynamic_deliverable_validation"
+        failure_code = exc.code
+    except DynamicSingleCellLiveError as exc:
+        failure_phase = "dynamic_successor_orchestration"
+        failure_code = exc.code
+
+    succeeded = bool(structured_deliverable)
+    status = (
+        "completed_dynamic_counter_successor_contract_valid_content_assessment_pending"
+        if succeeded
+        else "terminal_failed_no_retry"
+    )
+    predecessor_public = _json(paths["predecessor_public_result_ref"])
+    full_body: dict[str, Any] = {
+        "schema_version": SUCCESSOR_FULL_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": _now(),
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "failed_fragment_tool": tool_name,
+        "predecessor_public_result_ref": _relative(
+            paths["predecessor_public_result_ref"]
+        ),
+        "predecessor_public_result_digest": predecessor_public[
+            "result_digest"
+        ],
+        "predecessor_private_result_ref": _relative(
+            paths["predecessor_private_result_ref"]
+        ),
+        "predecessor_private_result_digest": predecessor_full[
+            "full_result_digest"
+        ],
+        "predecessor_successful_model_nodes_reused": 5,
+        "predecessor_accepted_fragments": {
+            key: predecessor_full["accepted_fragments"][key]
+            for key in (
+                "submit_research_thesis",
+                "submit_research_mechanism",
+            )
+        },
+        "fragment_context": fragment_context,
+        "analysis_messages_digest": replay["analysis_messages_digest"],
+        "analysis_step": analysis_step,
+        "submission_messages_digest": submission_messages_digest,
+        "submission_step": submission_step,
+        "validated_fragment": validated_fragment,
+        "judgment_output": judgment_output,
+        "structured_deliverable": structured_deliverable,
+        "failure_phase": failure_phase,
+        "failure_code": failure_code,
+        "failure_capture_ref": (
+            _relative(failure_capture_ref) if failure_capture_ref else ""
+        ),
+        "execution": {
+            "successful_predecessor_model_nodes_reused": 5,
+            "fresh_model_calls_attempted": model_calls_attempted,
+            "maximum_fresh_model_calls": 2,
+            "fresh_tool_calls_accepted": int(bool(validated_fragment)),
+            "total_fragments_accepted": len(accepted_fragments),
+            "planner_calls_rerun": 0,
+            "current_S1_S2_rerun": 0,
+            "thesis_or_mechanism_calls_rerun": 0,
+            "new_evidence": 0,
+            "candidate_promotions": 0,
+            "retries": 0,
+            "fallbacks": 0,
+            "external_source_network_calls": 0,
+            "protocol_switches": 0,
+            "product_publication": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    full = {
+        **full_body,
+        "full_result_digest": canonical_digest(full_body),
+    }
+    _write_new(private_root / "full_result.json", full)
+    terminal = (judgment_output.get("cells") or [{}])[0]
+    public_body: dict[str, Any] = {
+        "schema_version": SUCCESSOR_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": full["recorded_at"],
+        "authority_ref": full["authority_ref"],
+        "authority_sha256": full["authority_sha256"],
+        "implementation_commit": full["implementation_commit"],
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "failed_fragment_tool": tool_name,
+        "predecessor_public_result_digest": predecessor_public[
+            "result_digest"
+        ],
+        "predecessor_private_result_digest": predecessor_full[
+            "full_result_digest"
+        ],
+        "predecessor_fragment_context_digest": replay[
+            "predecessor_fragment_context_digest"
+        ],
+        "analysis_messages_digest": replay["analysis_messages_digest"],
+        "analysis": _public_provider_step(analysis_step),
+        "submission_messages_digest": submission_messages_digest,
+        "submission": _public_provider_step(submission_step),
+        "validated_fragment_digest": (
+            canonical_digest(validated_fragment)
+            if validated_fragment
+            else ""
+        ),
+        "terminal_disposition": {
+            "judgment_status": terminal.get("judgment_status", ""),
+            "inference_authority": terminal.get(
+                "inference_authority", ""
+            ),
+            "causal_bridge_authority": terminal.get(
+                "causal_bridge_authority", ""
+            ),
+        },
+        "terminal_judgment_digest": (
+            canonical_digest(terminal) if terminal else ""
+        ),
+        "deliverable_digest": structured_deliverable.get(
+            "deliverable_digest", ""
+        ),
+        "failure_phase": failure_phase,
+        "failure_code": failure_code,
+        "failure_capture_ref": full["failure_capture_ref"],
+        "execution": full["execution"],
+        "private_full_result_ref": _relative(
+            private_root / "full_result.json"
+        ),
+        "private_full_result_sha256": _sha(
+            private_root / "full_result.json"
+        ),
+        "acceptance": {
+            "immutable_successful_prefix_reused": True,
+            "failed_counter_analysis_naturally_completed": bool(
+                analysis_step
+            ),
+            "failed_counter_submission_naturally_completed": bool(
+                validated_fragment
+            ),
+            "dynamic_single_cell_contract_pass": succeeded,
+            "L1_content_assessment_pending": succeeded,
+            "five_cell_execution": False,
+            "heterogeneous_generalization": False,
+            "qualified_human_acceptance": False,
+            "s3_product_acceptance": False,
+            "workbench_publication": False,
+            "release_ready": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    public = {
+        **public_body,
+        "result_digest": canonical_digest(public_body),
+    }
+    _write_new(_resolve(str(output["public_result_ref"])), public)
+    return public
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--authority", type=Path, required=True)
     args = parser.parse_args(argv)
-    result = run(args.authority.resolve())
+    authority_path = args.authority.resolve()
+    schema = _json(authority_path).get("schema_version")
+    result = (
+        run_successor(authority_path)
+        if schema == SUCCESSOR_AUTHORITY_SCHEMA
+        else run(authority_path)
+    )
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0 if result["status"].startswith("completed_") else 2
 

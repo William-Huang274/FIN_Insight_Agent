@@ -16,6 +16,8 @@ from scripts.research.run_s3_dynamic_single_cell_live import (
     _require_controlled_plan_binding,
     _tool_arguments,
 )
+import scripts.research.run_s3_dynamic_single_cell_live as runner
+from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.providers.chat_completions import ChatCompletionToolStepResult
 
 
@@ -100,3 +102,54 @@ def test_dynamic_live_requires_service_to_execute_the_exact_compiled_plan() -> N
                 drifted, expected_plan_digest="expected"
             )
         assert exc.value.code == "dynamic_live_plan_digest_drift"
+
+
+def test_dynamic_successor_replays_only_the_failed_counter_context(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    context = {"projection_digest": "counter-context"}
+    messages = ({"role": "user", "content": "counter analysis"},)
+    monkeypatch.setattr(
+        runner,
+        "compile_finance_micro_fragment_context",
+        lambda **_: context,
+    )
+    monkeypatch.setattr(
+        runner,
+        "compile_finance_micro_fragment_analysis_messages",
+        lambda _: messages,
+    )
+    predecessor = {
+        "surface_projection": {
+            "claim_surface_research_input": {"research_input_digest": "input"}
+        },
+        "accepted_fragments": {
+            "submit_research_thesis": {"fragment": "thesis"},
+            "submit_research_mechanism": {"fragment": "mechanism"},
+        },
+        "fragment_steps": [
+            {
+                "fragment_tool": "submit_research_counterargument_and_wwc",
+                "fragment_context": context,
+                "analysis_messages_digest": canonical_digest(list(messages)),
+                "analysis_step": {},
+                "submission_step": {},
+                "validated_fragment": {},
+            }
+        ],
+    }
+
+    replay = runner._compile_successor_replay_state(predecessor)
+    assert set(replay["accepted_fragments"]) == {
+        "submit_research_thesis",
+        "submit_research_mechanism",
+    }
+    assert replay["predecessor_fragment_context_digest"] == "counter-context"
+    assert replay["analysis_messages_digest"] == canonical_digest(
+        list(messages)
+    )
+
+    predecessor["fragment_steps"][0]["analysis_messages_digest"] = "drift"
+    with pytest.raises(DynamicSingleCellLiveError) as exc:
+        runner._compile_successor_replay_state(predecessor)
+    assert exc.value.code == "dynamic_successor_failed_fragment_replay_drift"

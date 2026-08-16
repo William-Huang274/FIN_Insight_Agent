@@ -245,3 +245,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Runtime 现在会把 R7 的终态拒绝作为 typed Tool result 返回给模型，说明失败码、违规规则和同片段修正边界；模型最多重交一次 counter／WWC。R7 原输出继续保持 rejected，Harness 不删词、不代写观点、不增加 Evidence，也不重跑前六个模型节点。
 - 保存的 R5、R6、R7 路径均回放通过；错误失败码 mutation fail closed，因果门禁保持不变，DELL／MU／NVDA full-fake 无身份或 Graph 污染。两个 fresh process 字节等价，formal result digest=`2328029b...e82`，0 model／provider／network／embedding／retry。
 - 这只关闭了“系统无法把可修复错误反馈给模型”的工程缺口，没有证明 DeepSeek 会自然修正。当前唯一允许的下一步是在 clean/synced gate 后执行一次非思考、同 Pack、同 Tool 的 exact-once repair；若再次失败，不再自动扩展第二轮修复。终态 Judgment、fixed-Pack L1、八维质量、动态 Truth Spine、五单元、异质泛化与 S3 acceptance 仍为 false。
+
+## 2026-08-16 S3 fixed-Pack Layer One 关闭
+
+- clean/synced `78a2e13b...` 上的唯一 repair live 已成功：复用 R7 前六个模型节点，只新增一次非思考 counter／WWC 提交；`finish_reason=tool_calls`、completion `530`、0 retry／fallback／外源／embedding／协议切换。
+- 模型自行把未经证明的正向 margin-driver 句改成“现有证据不能确定 AI server mix 或其他单一因素导致公司毛利率回落”。Harness 未改写文字，旧 R7 仍 rejected；三片段、因果 guard 和终态 Judgment 均通过。
+- 独立 L1 通过；单单元适用内容维度 `21/24`。固定 Pack 第一层由 false 改为 true。仍有非阻断 L2：机制句的自然语言归因方向略倒置，WWC 应在动态阶段更直接请求产品收入／成本／利润桥。正式八维、跨单元综合和 senior delivery 必须留到五单元报告，不能用本结果代替。
+- 下一项是动态 Research Truth Spine 的零调用闭合：EvidenceRequest 真正执行 S1、EvidenceResponse 返回晋升 Evidence 或 typed gap、S2 返回 NumericFact／bridge authority、S3 只重裁决受影响单元。dynamic live、五单元、异质泛化、qualified-human 与 S3 acceptance 仍为 false。

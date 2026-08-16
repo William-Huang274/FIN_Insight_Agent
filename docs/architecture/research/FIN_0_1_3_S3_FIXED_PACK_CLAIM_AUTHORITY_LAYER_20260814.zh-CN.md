@@ -164,3 +164,5 @@ successor 不取消 lexical guard。结构化 ClaimRelation 仍是主要权威�
 repair 不是新的研究轮次。它不能增加 Evidence／NumericFact／关系权限，不能改变因果 guard，不能重新运行分析节点，也不能由本地代码生成观点。每个失败片段最多一次 repair；第二次失败形成新的不可变终态，必须转入内容／模型权限处置，不能自动扩成 retry loop。
 
 v1.8 已用 R7 真失败回放、错误 failure-code mutation、R5 假终态物化、DELL／MU／NVDA full-fake 和两个 fresh process 证明该结构。该证明只授权一次 exact-once live repair；只有自然修复后的完整三片段 Judgment 再通过 L1 与内容质量，fixed-Pack Layer One 才可能关闭。
+
+该唯一 live repair 已在 clean/synced `78a2e13b...` 上完成。模型一次返回新 counter／WWC Tool Call，把未经证明的 margin driver 改为明确不可归因，旧 R7、guard 和前序片段均未改动；终态 Judgment、独立 L1 和单单元适用内容质量通过。fixed-Pack Layer One 因而关闭，但该结论只证明固定证据下的分析／纠错能力。动态 EvidenceRequest→EvidenceResponse→S2 authority→受影响单元重裁决仍须单独证明。

@@ -1,13 +1,13 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-16
+更新时间：2026-08-17
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-s1-retrieval-vertical-slice`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层和 DELL `value_capture` 动态单单元均已关闭：自然用户问题实际经过 DeepSeek planner、当前 S1/S2、request-scoped reviewed-only EvidenceResponse、三个模型判断片段和一次有界时间关系自修正，最终合同、独立 L1 与适用内容质量 `21/24` 通过，未审候选 0 晋升，终态诚实保持 `insufficient_evidence / not_inferable / bridge_unavailable`。`RC-S3-028` 已关闭。随后 `RC-S1-019` 的全量三案回放发现并修复了 Dell 与 TSMC 已审法说“在 Pack 中可见、在当前检索对象库中不可发现”的共同漂移；30 个父文档、1,841 个子对象和三案 reviewed source 的对象级缺失现为 0，动态零调用 Truth Spine 已自然从普通 S1 请求命中 Dell 法说。该结果只关闭来源同步工程缺口，不等于 S1 排序／Evidence Role、五单元研报或 S3 产品验收通过。下一项是有限 S2 依赖回归和 DELL 五研究单元动态案例的资格化，不包含静默改变模型、数据采购、S4 publication 或 S5 release。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。其后五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack` successor 已通过正式零调用 R2：五个单元各有独立方法包，图上下文只从当前 DELL／当前 Evidence／NumericFact／typed relation 编译，跨案、跨单元、未知引用和方法未消费均 fail closed。该结果只说明五单元自然运行所需的资料房间和方法边界已摆正；模型尚未自然完成五单元、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。下一项是建立一份稳定、可恢复、exact-once 的自然五单元执行权威并运行 DELL 完整案例，不包含静默改变模型、数据采购、S4 publication 或 S5 release。
 
 ## 当前唯一产品边界
 
@@ -15,7 +15,7 @@ FIN 0.1.3 的 fixed-Pack 第一层和 DELL `value_capture` 动态单单元均已
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。当前对象库也已把这两份法说纳入受控查询路线：Dell 法说可由本案需求、经营、价值捕获和供给单元检索，TSMC 法说只能在绑定关系方向时作为供应链背景，不能冒充 Dell 自述或供应分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；动态单元真实经历 planner、S1/S2、EvidenceResponse、三个模型片段和一次有界修复。当前仍未证明的是其他四单元、跨单元综合、完整八维研报质量、MU/NVDA／留出案例泛化和 S3 产品验收；reviewed Evidence 页面本身的结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。当前对象库也已把这两份法说纳入受控查询路线：Dell 法说可由本案需求、经营、价值捕获和供给单元检索，TSMC 法说只能在绑定关系方向时作为供应链背景，不能冒充 Dell 自述或供应分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；五个单元的方法包与本案图上下文也已通过正式零调用资格化。当前仍未证明的是五单元自然判断、跨单元综合、完整八维研报质量、MU/NVDA／留出案例泛化和 S3 产品验收；reviewed Evidence 页面本身的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 
@@ -29,7 +29,7 @@ FIN 0.1.3 的 fixed-Pack 第一层和 DELL `value_capture` 动态单单元均已
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影。fixed-Pack 微判断仍复用该循环和最终金融 Validator：模型依次提交 thesis、mechanism、counterargument＋WWC，Harness 只校验、展开预编译 relation alias、合并引用并生成一个终态 Judgment，不得补写缺失观点；DeepSeek 的 low/high reasoning 配置只存在于可替换 Provider profile。formal R3 已证明 consumer policy v1.2 的 provider-neutral RoleMethodPack／GraphContextPack 合同，但它们不注册为独立产品资源：前者只为 value_capture 提供方法，后者只从当前 Case／Evidence／NumericFact／typed relation 即时编译。Runtime Registry 仍为 R11／10 个资源；模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册。当前 route policy 声明 `typed_relationship_graph`，但 hybrid candidate Runtime 只执行 BM25＋Qwen，完整图查询 handler 仍未实现；S3 当前 GraphContextPack 不得被误称为关闭该 S1 缺口。
+当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影。fixed-Pack 微判断仍复用该循环和最终金融 Validator：模型依次提交 thesis、mechanism、counterargument＋WWC，Harness 只校验、展开预编译 relation alias、合并引用并生成一个终态 Judgment，不得补写缺失观点；DeepSeek 的 low/high reasoning 配置只存在于可替换 Provider profile。consumer policy v1.3 已为五个研究单元各编译一份 case-neutral RoleMethodPack，并只从当前 Case／Evidence／NumericFact／typed relation 即时编译 cell-local GraphContextPack；这些包不注册为独立产品资源，也不授予事实或因果权威。Runtime Registry 仍为 R11／10 个资源；模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册。当前 route policy 声明 `typed_relationship_graph`，但 hybrid candidate Runtime 只执行 BM25＋Qwen，完整图查询 handler 仍未实现；S3 当前 GraphContextPack 不得被误称为关闭该 S1 缺口。
 
 ## 已完成的重定基事实
 
@@ -69,7 +69,7 @@ FIN 0.1.3 的 fixed-Pack 第一层和 DELL `value_capture` 动态单单元均已
 3. successor 后同对象比较为 BM25=`17/18`、BGE-M3=`14/18`、RRF／旧规则=`16/18`。现成 Cross-Encoder 同为 `17/18` 且提高 MRR，但会把 DELL 直接风险目标从第 1 降到第 19，不能晋升默认路线。
 4. 规则 Evidence Role 虽减少三案 top3 显式不兼容项，却把 Recall 降到 `13/18`；对象级复核仍只有 F1=`0.507936`。根因不仅是对象形态，还包括 reported results、guidance、counterevidence、监管和财务桥接被旧 qrel 混成一个 query，当前规则禁止上线。
 5. 当前 provider-neutral planner compiler 已能把自然 Planner R1 的 atoms 变成 EvidenceRequest，并执行 S1 联合候选与 S2 typed fact sibling；DELL `value_capture` Chat R2 也证明 DeepSeek 能自然选择引用、同口径关系、反方、WWC 和补证请求。尚未通过的是产品级因果归因、五单元综合、用户输入、动态追问和前端报告消费，因此仍不能称为完整 Agentic Research。
-6. 当前 paid consumer 已消费 `value_capture` 的 RoleMethodPack 和即时编译的单元级 GraphContextPack；其他四个 cell 尚未迁移或资格化。`typed_relationship_graph` 仍只有 route 声明而无 S1 当前执行 handler；S3 的本案 context edge 不能冒充通用图检索能力。
+6. 五个 cell 的 RoleMethodPack 与即时编译 GraphContextPack 已通过零调用资格化；只有 `value_capture` 已留下自然消费 receipt，其他四个 cell 尚未由模型自然消费。`typed_relationship_graph` 仍只有 route 声明而无 S1 当前执行 handler；S3 的本案 context edge 不能冒充通用图检索能力。
 7. Workbench 镜像仍安装数据构建依赖，冷缓存构建成本偏高；依赖拆分是非阻断基础设施优化，不能回滚已验证的数据/状态隔离。
 8. Python 基础镜像与依赖目前可从 clean-main 构建并通过；更强的镜像/依赖字节级锁定属于后续基础设施加固，不得被误写为当前研究能力，也不阻断已通过的仓库基线。
 
@@ -88,6 +88,8 @@ FIN 0.1.3 的 fixed-Pack 第一层和 DELL `value_capture` 动态单单元均已
 ## 当前下一步
 
 Owner 已批准从第一层连续推进到 S3 三案例验收；每一层仍需独立工程、L1 与内容门：`FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_ONE → Research Truth Spine → DELL dynamic single cell → DELL five cells → heterogeneous generalization report`
+
+截至 2026-08-17，前三层已关闭，DELL five-cell 的方法／图上下文零调用 R2 也已通过；当前唯一下一动作是自然 DELL 五单元 exact-once runner、fresh authority、live 与独立内容验收。零调用 R2 不授予模型权限，也不把 fake deliverable 发布到 Workbench。
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
@@ -336,3 +338,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 旧 S2 result v1.0 不改写；current builder／Workbench 使用 v1.1，digest=`0c25c917...95a1`。formal result 绑定提交 `9f076714...179`，全仓 `394 passed`、active baseline `131／8／10／0`、secret scan `6,747／0`。
 - `RC-S2-005` 关闭。`RC-S2-004` 仍开放：AI server 产品收入—成本—利润桥、ASP／PVM、出货量和 PIT 估值没有因本轮获得权威。
 - 下一步进入其余四个 RoleMethodPack／GraphContextPack 的五单元零调用资格化；自然五单元、完整八维报告、泛化和 S3 acceptance 仍为 false。
+
+## 2026-08-17 S3 五单元方法／图上下文零调用资格化
+
+- 历史 consumer policy v1.2 保持字节不变；successor v1.3 为需求真实性、经营表现、价值捕获、现金转换、反方／WWC 五个单元各编译一份 case-neutral RoleMethodPack。旧角色 Skill 的方法被选择性迁移，旧对象接口、旧图数据和静态多 Specialist 运行方式没有恢复。
+- 每个 GraphContextPack 只从当前 DELL、当前 Evidence／NumericFact／typed relation 即时编译；图只提示关系与作用域，不授予事实、数值、引用或因果权威。五单元逐一隔离，未知 ref、跨 cell、跨 case、方法消费不足和图消费不足均 fail closed。
+- 第一次 R1 已保留，业务证明通过但结果元数据仍使用硬编码旧日期且 next decision 忽略 Owner 既有授权。runner 修复后签发全新 R2；R2 `recorded_at=2026-08-17T00:36:58+08:00`，result digest=`da69170a...b7e`，0 model／Provider／network／embedding。
+- R2 输入包含 19 条模型可见 Evidence（其中 5 条 transcript）、25 个模型可见 NumericFact 和 10 个 residual gap；五个方法包和五个当前本案图包全部成立。该数据只描述当前编译输入，不代表这些资料足以支撑五个自然结论。
+- 当前状态为 five-cell context engineering pass、natural model quality false、cross-cell synthesis false、S3 acceptance false。下一步只能另建 clean exact-once natural DELL five-cell authority；完整 live 后依次做 L1、逐单元内容、跨单元综合、八维绝对质量、paired 和 qualified-human 验收。

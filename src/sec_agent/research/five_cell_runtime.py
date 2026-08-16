@@ -115,12 +115,72 @@ def _cell_ids(research_input: Mapping[str, Any]) -> list[str]:
     return values
 
 
-def compile_five_cell_analysis_messages(
+def _compact_gap_card(value: Mapping[str, Any]) -> dict[str, Any]:
+    """Keep decision-relevant gap authority without transport diagnostics."""
+
+    route = value.get("route_decision") or {}
+    _require(isinstance(route, Mapping), "five_cell_gap_route_invalid")
+
+    def source_rows(key: str) -> list[dict[str, Any]]:
+        raw = route.get(key) or []
+        _require(isinstance(raw, list), "five_cell_gap_route_sources_invalid")
+        rows = []
+        for item in raw:
+            _require(
+                isinstance(item, Mapping),
+                "five_cell_gap_route_source_invalid",
+            )
+            row = {
+                "source_class": str(item.get("source_class") or ""),
+                "acceptable_source_types": list(
+                    item.get("acceptable_source_types") or []
+                ),
+                "executable_route_ids": list(
+                    item.get("executable_route_ids") or []
+                ),
+            }
+            if key == "unavailable_source_routes":
+                row["unavailable_reason"] = str(
+                    item.get("unavailable_reason") or ""
+                )
+            rows.append(row)
+        return rows
+
+    return {
+        "gap_ref": str(value.get("gap_ref") or ""),
+        "slot_id": str(value.get("slot_id") or ""),
+        "facet_id": str(value.get("facet_id") or ""),
+        "gap_code": str(value.get("gap_code") or ""),
+        "business_reason_zh": str(value.get("business_reason_zh") or ""),
+        "supplement_direction_zh": str(
+            value.get("supplement_direction_zh") or ""
+        ),
+        "route_summary": {
+            "route_status": str(route.get("route_status") or ""),
+            "requested_query_facet_ids": list(
+                route.get("requested_query_facet_ids") or []
+            ),
+            "typed_metric_ids": list(route.get("typed_metric_ids") or []),
+            "available_source_routes": source_rows("available_source_routes"),
+            "unavailable_source_routes": source_rows(
+                "unavailable_source_routes"
+            ),
+        },
+    }
+
+
+def compile_five_cell_analysis_view(
     *,
     research_input: Mapping[str, Any],
     cell_id: str,
-) -> tuple[dict[str, str], ...]:
-    """Compile one cell-local analysis draft without granting submission authority."""
+) -> dict[str, Any]:
+    """Project the canonical cell contract into a lossless analysis-only view.
+
+    The strict submission schema remains authoritative, but it is intentionally
+    absent here because this step cannot submit a Tool Call.  Evidence facts,
+    numeric facts/relations, methods, graph context and every typed gap remain
+    visible and are checked against the canonical compiler before return.
+    """
 
     strict_messages = compile_current_research_messages(
         research_input,
@@ -128,18 +188,136 @@ def compile_five_cell_analysis_messages(
         submission_transport="final_tool",
     )
     visible = json.loads(strict_messages[1]["content"])
-    rules = list(visible["rules"])
-    rules[0] = (
-        "Analyze this cell and prepare a concise draft for a later strict "
-        "submission. Do not call a tool and do not treat this draft as business truth."
+    cells = visible.get("cells") or []
+    _require(
+        isinstance(cells, list)
+        and len(cells) == 1
+        and cells[0].get("cell_id") == cell_id,
+        "five_cell_analysis_scope_invalid",
     )
-    visible["rules"] = rules
-    visible["analysis_stage"] = {
-        "model_owns_analysis_and_judgment": True,
-        "draft_is_not_a_validated_judgment": True,
-        "later_submission_must_use_the_same_cell_local_authority": True,
-        "harness_may_not_invent_or_rewrite_a_viewpoint": True,
+    cell = cells[0]
+    gap_cards = cell.get("residual_gap_cards") or []
+    _require(isinstance(gap_cards, list), "five_cell_gap_cards_invalid")
+
+    compact_cell = {
+        key: deepcopy(cell[key])
+        for key in (
+            "cell_id",
+            "title_zh",
+            "research_intents",
+            "selected_planner_facets",
+            "cell_evidence_views",
+            "allowed_numeric_refs",
+            "allowed_numeric_relation_refs",
+            "role_method_pack",
+            "graph_context_pack",
+        )
     }
+    compact_cell["residual_gap_cards"] = [
+        _compact_gap_card(row) for row in gap_cards
+    ]
+
+    evidence_catalog = deepcopy(visible.get("evidence_fact_catalog") or {})
+    numeric_catalog = deepcopy(visible.get("numeric_fact_catalog") or {})
+    relation_catalog = deepcopy(visible.get("numeric_relation_catalog") or {})
+
+    def catalog_refs(value: object, key: str) -> set[str]:
+        if isinstance(value, Mapping):
+            return {str(ref) for ref in value}
+        _require(isinstance(value, list), "five_cell_analysis_catalog_invalid")
+        _require(
+            all(isinstance(row, Mapping) for row in value),
+            "five_cell_analysis_catalog_row_invalid",
+        )
+        return {str(row.get(key) or "") for row in value}
+
+    evidence_refs = {
+        str(row.get("evidence_ref") or "")
+        for row in compact_cell["cell_evidence_views"]
+    }
+    numeric_refs = set(compact_cell["allowed_numeric_refs"])
+    relation_refs = set(compact_cell["allowed_numeric_relation_refs"])
+    _require(
+        evidence_refs == catalog_refs(evidence_catalog, "evidence_ref"),
+        "five_cell_analysis_evidence_projection_drift",
+    )
+    _require(
+        numeric_refs == catalog_refs(numeric_catalog, "numeric_ref"),
+        "five_cell_analysis_numeric_projection_drift",
+    )
+    _require(
+        relation_refs
+        == catalog_refs(relation_catalog, "numeric_relation_ref"),
+        "five_cell_analysis_relation_projection_drift",
+    )
+    original_gap_refs = {str(row.get("gap_ref") or "") for row in gap_cards}
+    compact_gap_refs = {
+        str(row.get("gap_ref") or "")
+        for row in compact_cell["residual_gap_cards"]
+    }
+    _require(
+        original_gap_refs == compact_gap_refs,
+        "five_cell_analysis_gap_projection_drift",
+    )
+
+    projection = {
+        "schema_version": "fin_ia_five_cell_analysis_view_v1_0",
+        "case_identity": deepcopy(visible["case_identity"]),
+        "research_question": visible["research_question"],
+        "cell": compact_cell,
+        "evidence_fact_catalog": evidence_catalog,
+        "numeric_fact_catalog": numeric_catalog,
+        "numeric_relation_catalog": relation_catalog,
+        "analysis_task": {
+            "required_draft_sections": [
+                "thesis_atom",
+                "mechanism_atom",
+                "strongest_counterargument",
+                "evidence_and_numeric_ref_selection",
+                "remaining_gap_boundary",
+                "what_would_change",
+            ],
+            "visible_draft_target_chars": [1200, 2600],
+            "draft_is_not_business_truth": True,
+            "tool_submission_forbidden_in_this_step": True,
+        },
+        "rules": [
+            "Use only the current cell and the refs printed in this view.",
+            "Separate sourced fact, bounded inference, alternative explanation and what would change.",
+            "Graph edges provide scope or context only and never replace reviewed Evidence.",
+            "Residual gaps remain authoritative; do not silently close them.",
+            "Do not attribute group, segment, balance-sheet or upstream results to AI or Dell without a direct bridge.",
+            "Contemporaneous movement is not causation.",
+            "Use year-over-year language only with a same-basis REL ref and both NumericFact endpoints.",
+            "Do not invent identities, dates, exact numbers, units, currencies, citations or thresholds.",
+            "An unavailable industry, commercial or market route remains a typed gap.",
+            "Stop after a concise decision-ready draft; do not write a publishable report or Tool Call.",
+        ],
+        "projection_receipt": {
+            "canonical_submission_view_digest": canonical_digest(visible),
+            "cell_id": cell_id,
+            "evidence_ref_count": len(evidence_refs),
+            "numeric_ref_count": len(numeric_refs),
+            "numeric_relation_ref_count": len(relation_refs),
+            "gap_ref_count": len(compact_gap_refs),
+            "submission_schema_visible": False,
+            "dynamic_retrieval_diagnostics_visible": False,
+        },
+    }
+    return projection
+
+
+def compile_five_cell_analysis_messages(
+    *,
+    research_input: Mapping[str, Any],
+    cell_id: str,
+) -> tuple[dict[str, str], ...]:
+    """Compile one cell-local analysis draft without granting submission authority."""
+
+    visible = compile_five_cell_analysis_view(
+        research_input=research_input,
+        cell_id=cell_id,
+    )
     return (
         {
             "role": "system",
@@ -148,7 +326,9 @@ def compile_five_cell_analysis_messages(
                 "cell-local reviewed Evidence, NumericFacts, typed relations, "
                 "methods, graph context and gaps below. Separate fact, inference, "
                 "alternative explanation and what would change. Produce a concise "
-                "analysis draft, not a Tool Call and not a publishable report."
+                "analysis draft, not a Tool Call and not a publishable report. "
+                "Target 1200-2600 visible characters and stop once the required "
+                "decision fields and boundaries are covered."
             ),
         },
         {
@@ -264,8 +444,6 @@ def _synthesis_view(
                 "numeric_refs": list(row["numeric_refs"]),
                 "numeric_relation_refs": list(row["numeric_relation_refs"]),
                 "remaining_gap_refs": list(row["remaining_gap_refs"]),
-                "numeric_facts": deepcopy(row["numeric_facts"]),
-                "numeric_relations": deepcopy(row["numeric_relations"]),
             }
         )
     return {
@@ -311,7 +489,9 @@ def compile_five_cell_synthesis_analysis_messages(
                 "investment-research view. Preserve disagreement and evidence "
                 "gaps. Do not turn coexistence into causality, do not invent a "
                 "product-to-segment or product-to-company profit bridge, and do "
-                "not submit a tool call yet. Produce a concise analysis draft."
+                "not submit a tool call yet. Produce a concise analysis draft of "
+                "1800-3200 visible characters and stop after the cross-cell view, "
+                "strongest counterargument and decision-changing evidence."
             ),
         },
         {
@@ -690,6 +870,7 @@ __all__ = [
     "FIVE_CELL_REPORT_SCHEMA_VERSION",
     "FIVE_CELL_SYNTHESIS_SCHEMA_VERSION",
     "FiveCellResearchError",
+    "compile_five_cell_analysis_view",
     "compile_five_cell_analysis_messages",
     "compile_five_cell_report",
     "compile_five_cell_submission",

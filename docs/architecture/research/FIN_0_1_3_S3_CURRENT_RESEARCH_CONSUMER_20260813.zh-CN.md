@@ -397,3 +397,24 @@ v1.3 与 R1 必须保持不可变。successor 只能建立 policy v1.4，显式�
 policy v1.4 和 R1 prefix replay 已满足上述容量门；稳定 runner 现在用同一实现支持 remaining-nodes successor，而不是复制 attempt runner。successor authority 不含 planner attempt，只允许五个分析、五个交卷和两次综合；运行时会从 R1 私有终态重新验证 planner、controlled plan、current Pack、S1/S2 结果和失败码，再用 v1.4 重新编译 research input。任何 prefix、Pack、policy 或 digest 漂移都在 Provider 前拒绝。
 
 正式 Project OS 回归还发现 scope decision 起初漏写 `evidence_mode`，而通用 preflight 终态会读取它。当前 decision、Project OS validator 和 runner 已统一要求 `immutable_dynamic_R1_planner_current_S1_S2_prefix_no_new_evidence`，避免“schema 接受但结果物化报错”。两次独立相关测试均为 `83 passed`，全仓 `420 passed`；该工程门只授权 clean/synced 后一个 fresh successor authority，不证明自然金融 L1、内容质量、综合、泛化或发布。
+
+## 19. R2 局部成功、紧凑分析投影与节点级恢复边界
+
+remaining-nodes successor R2 已真实执行。它没有重跑 Planner 或当前 S1/S2，共尝试 7 次模型调用：`CELL::demand_quality` 与 `CELL::operating_performance` 完成分析和严格交卷；`CELL::value_capture`、`CELL::cash_conversion`、`CELL::counterevidence` 在分析阶段用尽 8,000 completion token，综合因此未执行。三次失败均取得 HTTP 200，0 retry／fallback／外源网络；其中两次隐藏推理占满全部预算且没有可见草案，另一次只留下被 `length` 截断的草案。R2 与两个有效 Judgment 均保持不可变。
+
+两个有效单元没有发现新的金融 L1。需求质量单元把订单、AI server revenue 与 backlog 视为公司自述的可观察需求链，同时保留提前锁货、客户准备度、组件切换和订单到出货非线性；经营表现单元只在公司整体口径判断收入、利润和现金改善，并明确拒绝在缺少产品利润桥时把改善直接归因于 AI server。它们只能算局部研究结果，不能冒充完整五单元报告。
+
+R2 的最早责任层是共享的 S3 model-visible analysis projection，而不是 S1/S2、Skill、Graph、网络或严格 Tool submission。旧分析请求同时携带交卷 schema、重复的 Evidence／NumericFact 目录和完整 route 诊断；隐藏推理和可见草案又共用同一个 completion budget。处置不能简化成“把 8,000 改成 16,000”：当前实现先从 canonical consumer contract 编译一份 analysis-only 投影，保留全部 Evidence、NumericFact、same-basis NumericRelation、RoleMethodPack、GraphContextPack 和 typed gap，只删除本步骤不可执行的交卷 schema及传输诊断，并把 gap route 压缩成决策所需摘要。DeepSeek 的 16,000／max-thinking 只存在于可替换 profile，用来验证紧凑投影是否给自然分析留下足够 headroom；它不是核心金融合同的新上限。
+
+节点恢复仍使用同一个稳定 runner。Project OS 可以精确绑定本次 R2 的两个成功节点、三个失败节点和失败码；执行循环本身从 fresh authority 的 `reused_cell_ids`／`remaining_cell_ids` 读取恢复清单，重新用当前 research input 验证被复用的原始 Tool arguments 与 Judgment digest，然后只给剩余节点分配 attempt ID。它不是 R3 专用 runner，也不允许把历史失败改写为成功。
+
+下一工程门必须同时证明：
+
+1. 五个 analysis-only 投影的全部 authority ref 集合与 canonical consumer 一致；
+2. submission schema 与动态 transport diagnostics 不再出现在分析视图；
+3. 两个已验证 Judgment 被复用且不产生新模型调用；
+4. 只有三个失败单元和一次综合可产生 8 个 fresh model call；
+5. fake 全链仍要求五个单元都通过后才允许综合；
+6. R2、capture 和失败评估保持不可变，0 retry／fallback／新 Evidence／publication。
+
+只有该零调用门和 clean Project OS preflight 通过，才能签发一次 partial successor。若同类 hidden-reasoning／visible-output budget failure 再次出现，不再自动增加预算或新增 capacity patch；应转为模型 profile、分析动作面或提交职责的项目级选择。若运行成功，后续仍须独立完成五单元金融 L1、八维绝对内容质量、同输入 paired gain 与 qualified-human 内容验收，才能讨论 MU／NVDA 和异质留出案例。

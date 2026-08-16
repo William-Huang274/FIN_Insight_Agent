@@ -72,7 +72,9 @@ def _prepare_runner(
     tmp_path: Path,
     *,
     successor_mode: bool = False,
+    partial_successor_mode: bool = False,
 ) -> tuple[Path, Path, Path, dict[str, int]]:
+    assert not (successor_mode and partial_successor_mode)
     authority_path = tmp_path / "authority.json"
     private_root = tmp_path / "private"
     public_path = tmp_path / "public.json"
@@ -96,23 +98,41 @@ def _prepare_runner(
         },
         "product_publication": "forbidden",
     }
-    if successor_mode:
+    if successor_mode or partial_successor_mode:
         output.pop("planner_attempt_id")
+    if partial_successor_mode:
+        output["cell_attempt_ids"] = {
+            cell_id: output["cell_attempt_ids"][cell_id]
+            for cell_id in runner.PARTIAL_SUCCESSOR_REMAINING_CELL_IDS
+        }
     authority = {
         "schema_version": (
-            runner.SUCCESSOR_AUTHORITY_SCHEMA if successor_mode else "fixture"
+            runner.PARTIAL_SUCCESSOR_AUTHORITY_SCHEMA
+            if partial_successor_mode
+            else (
+                runner.SUCCESSOR_AUTHORITY_SCHEMA
+                if successor_mode
+                else "fixture"
+            )
         ),
         "implementation_commit": "a" * 40,
         "known_boundary": "fixture orchestration proof; not product acceptance",
         "output_contract": output,
     }
-    if successor_mode:
+    if successor_mode or partial_successor_mode:
         authority["bound_inputs"] = {
             "predecessor_plan_digest": "plan-digest",
             "expected_evidence_pack_artifact_digest": "artifact",
             "expected_evidence_pack_payload_digest": "payload",
             "expected_research_input_digest": "research-input",
         }
+    if partial_successor_mode:
+        authority["reused_cell_ids"] = list(
+            runner.PARTIAL_SUCCESSOR_REUSED_CELL_IDS
+        )
+        authority["remaining_cell_ids"] = list(
+            runner.PARTIAL_SUCCESSOR_REMAINING_CELL_IDS
+        )
     authority_path.write_text(json.dumps(authority), encoding="utf-8")
     profile_path = tmp_path / "profile.json"
     objective_path = tmp_path / "objective.json"
@@ -127,7 +147,7 @@ def _prepare_runner(
         "consumer_policy_ref": profile_path,
     }
     values = {authority_path: authority, profile_path: {}, objective_path: {}}
-    if successor_mode:
+    if successor_mode or partial_successor_mode:
         predecessor_path = tmp_path / "predecessor.json"
         predecessor_authority_path = tmp_path / "predecessor-authority.json"
         predecessor_public_path = tmp_path / "predecessor-public.json"
@@ -137,7 +157,7 @@ def _prepare_runner(
         paths["predecessor_private_result_ref"] = predecessor_path
         paths["predecessor_authority_ref"] = predecessor_authority_path
         paths["predecessor_public_result_ref"] = predecessor_public_path
-        values[predecessor_path] = {
+        predecessor = {
             "planner_step": {"finish_reason": "stop"},
             "planner_output": {"atoms": []},
             "compiled_plan": {
@@ -150,6 +170,32 @@ def _prepare_runner(
                 "compiled_plan": {"plan_digest": "plan-digest"}
             },
         }
+        if partial_successor_mode:
+            predecessor["cell_steps"] = [
+                {
+                    "analysis_messages_digest": f"analysis-{index}",
+                    "analysis_step": _analysis_step(tmp_path, index).as_dict(),
+                    "cell_id": cell_id,
+                    "failure_capture_ref": "",
+                    "failure_code": "" if index <= 2 else "saved_failure",
+                    "failure_phase": "" if index <= 2 else "saved_phase",
+                    "raw_model_arguments": (
+                        {"cell_id": cell_id} if index <= 2 else {}
+                    ),
+                    "submission_messages_digest": f"submission-{index}",
+                    "submission_step": (
+                        {"finish_reason": "tool_calls"} if index <= 2 else {}
+                    ),
+                    "tool_schema_digest": f"tool-{index}",
+                    "validated_cell": (
+                        {"cell_id": cell_id} if index <= 2 else {}
+                    ),
+                }
+                for index, cell_id in enumerate(
+                    runner.REQUIRED_CELL_IDS, start=1
+                )
+            ]
+        values[predecessor_path] = predecessor
         values[predecessor_authority_path] = {}
         values[predecessor_public_path] = {}
     monkeypatch.setattr(runner, "_json", lambda path: values[path])
@@ -397,6 +443,72 @@ def test_five_cell_successor_reuses_prefix_and_attempts_only_twelve_nodes(
     assert result["acceptance"]["natural_planner_reused_not_rerun"] is True
     assert result["acceptance"]["current_S1_S2_reused_not_rerun"] is True
     assert counters == {"analysis": 6, "submission": 6}
+    assert public_path.is_file()
+    assert (private_root / "full_result.json").is_file()
+
+
+def test_five_cell_partial_successor_reuses_two_cells_and_runs_only_eight_nodes(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    authority_path, private_root, public_path, counters = _prepare_runner(
+        monkeypatch, tmp_path, partial_successor_mode=True
+    )
+
+    def planner_must_not_run(**_kwargs):
+        raise AssertionError("partial successor must not rerun planner")
+
+    def analyze(**_kwargs):
+        counters["analysis"] += 1
+        return _analysis_step(tmp_path, counters["analysis"] + 2)
+
+    def submit(**kwargs):
+        counters["submission"] += 1
+        tool = kwargs["tools"][0]["function"]
+        arguments = (
+            {"executive_thesis": "all cells synthesized"}
+            if tool["name"] == "submit_five_cell_synthesis"
+            else {"cell_id": tool["description"]}
+        )
+        return _submission_step(
+            tmp_path,
+            counters["submission"] + 2,
+            tool_name=tool["name"],
+            arguments=arguments,
+        )
+
+    result = runner.run(
+        authority_path,
+        planner_executor=planner_must_not_run,
+        analysis_executor=analyze,
+        submission_executor=submit,
+    )
+
+    assert result["schema_version"] == runner.PARTIAL_SUCCESSOR_RESULT_SCHEMA
+    assert result["status"].startswith("completed_")
+    assert result["execution"]["model_calls_attempted"] == 8
+    assert result["execution"]["maximum_model_calls"] == 8
+    assert result["execution"]["cell_analysis_calls_attempted"] == 3
+    assert result["execution"]["cell_submission_calls_attempted"] == 3
+    assert result["execution"]["cell_judgments_reused"] == 2
+    assert result["execution"]["cell_judgments_accepted"] == 5
+    assert result["acceptance"][
+        "valid_cell_judgments_reused_not_rerun"
+    ] is True
+    assert result["acceptance"][
+        "current_S1_S2_EvidenceResponse_executed"
+    ] is False
+    assert result["acceptance"][
+        "current_S1_S2_EvidenceResponse_available"
+    ] is True
+    assert [row["reused_from_predecessor"] for row in result["cells"]] == [
+        True,
+        True,
+        False,
+        False,
+        False,
+    ]
+    assert counters == {"analysis": 4, "submission": 4}
     assert public_path.is_file()
     assert (private_root / "full_result.json").is_file()
 

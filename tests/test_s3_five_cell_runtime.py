@@ -21,10 +21,12 @@ from scripts.research.run_s3_current_research_consumer_zero_call import _service
 from sec_agent.research.current_consumer import (
     compile_current_research_deliverable,
     compile_current_research_input,
+    compile_current_research_messages,
 )
 from sec_agent.research.five_cell_runtime import (
     FiveCellResearchError,
     compile_five_cell_analysis_messages,
+    compile_five_cell_analysis_view,
     compile_five_cell_report,
     compile_five_cell_submission,
     compile_five_cell_synthesis_analysis_messages,
@@ -187,6 +189,57 @@ def test_five_cell_analysis_and_submission_are_cell_local(
     assert tool["function"]["strict"] is True
 
 
+def test_five_cell_analysis_view_removes_submission_and_transport_duplication(
+    five_cell_input: dict[str, object],
+) -> None:
+    cell_id = "CELL::value_capture"
+    strict_messages = compile_current_research_messages(
+        five_cell_input,
+        required_cell_ids=[cell_id],
+        submission_transport="final_tool",
+    )
+    strict = json.loads(strict_messages[1]["content"])
+    compact = compile_five_cell_analysis_view(
+        research_input=five_cell_input,
+        cell_id=cell_id,
+    )
+    original = strict["cells"][0]
+    cell = compact["cell"]
+
+    assert "output_contract" not in compact
+    assert "dynamic_evidence_responses" not in cell
+    assert "context_consumption_contract" not in cell
+    assert compact["projection_receipt"]["submission_schema_visible"] is False
+    assert compact["projection_receipt"][
+        "dynamic_retrieval_diagnostics_visible"
+    ] is False
+    assert {row["evidence_ref"] for row in cell["cell_evidence_views"]} == {
+        row["evidence_ref"] for row in strict["evidence_fact_catalog"]
+    }
+    assert set(cell["allowed_numeric_refs"]) == {
+        row["numeric_ref"] for row in strict["numeric_fact_catalog"]
+    }
+    assert set(cell["allowed_numeric_relation_refs"]) == {
+        row["numeric_relation_ref"]
+        for row in strict["numeric_relation_catalog"]
+    }
+    assert {row["gap_ref"] for row in cell["residual_gap_cards"]} == {
+        row["gap_ref"] for row in original["residual_gap_cards"]
+    }
+    assert all(
+        "forbidden_intent_terms" not in route
+        for gap in cell["residual_gap_cards"]
+        for route in (
+            gap["route_summary"]["available_source_routes"]
+            + gap["route_summary"]["unavailable_source_routes"]
+        )
+    )
+    compact_chars = len(
+        json.dumps(compact, ensure_ascii=False, separators=(",", ":"))
+    )
+    assert compact_chars < len(strict_messages[1]["content"])
+
+
 def test_five_cell_synthesis_uses_only_validated_cell_refs(
     five_cell_input: dict[str, object],
     validated_judgment: tuple[dict[str, object], dict[str, object]],
@@ -213,6 +266,9 @@ def test_five_cell_synthesis_uses_only_validated_cell_refs(
         analysis_draft="五个研究单元共同表明需求有直接支撑，但价值与现金转化仍受桥接缺口限制。",
     )
     assert len(analysis) == 2
+    synthesis_view = json.loads(analysis[1]["content"])
+    assert all("numeric_facts" not in row for row in synthesis_view["cells"])
+    assert all("numeric_relations" not in row for row in synthesis_view["cells"])
     assert len(submission) == 4
     assert tool["function"]["name"] == "submit_five_cell_synthesis"
 

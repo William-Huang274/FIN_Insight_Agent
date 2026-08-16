@@ -55,6 +55,9 @@ BOUNDED_FINANCE_LOOP_RESULT_SCHEMA_VERSION = (
 FIXED_PACK_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION = (
     "fin_ia_fixed_pack_micro_judgment_policy_v1_0"
 )
+DYNAMIC_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION = (
+    "fin_ia_dynamic_micro_judgment_policy_v1_0"
+)
 
 _DISALLOWED_SAMPLING_FIELDS = frozenset(
     {"temperature", "top_p", "presence_penalty", "frequency_penalty"}
@@ -170,6 +173,21 @@ class BoundedFinanceLoopPolicy:
 
 @dataclass(frozen=True)
 class FixedPackMicroJudgmentPolicy:
+    maximum_cell_count: int
+    maximum_evidence_requests: int
+    ordered_model_owned_phases: tuple[str, ...]
+    node_classes: Mapping[str, str]
+    maximum_provider_steps: int
+    maximum_tool_calls: int
+    maximum_parallel_read_tools: int
+    maximum_parallel_judgment_tools: int
+    retry_count: int
+    fallback_count: int
+    authority: Mapping[str, bool]
+
+
+@dataclass(frozen=True)
+class DynamicMicroJudgmentPolicy:
     maximum_cell_count: int
     maximum_evidence_requests: int
     ordered_model_owned_phases: tuple[str, ...]
@@ -325,6 +343,107 @@ def load_fixed_pack_micro_judgment_policy(
     )
 
 
+def load_dynamic_micro_judgment_policy(
+    payload: Mapping[str, Any],
+) -> DynamicMicroJudgmentPolicy:
+    expected = {
+        "schema_version",
+        "status",
+        "qualified_scope",
+        "ordered_model_owned_phases",
+        "node_classes",
+        "budgets",
+        "authority",
+    }
+    _require(
+        set(payload) == expected
+        and payload.get("schema_version")
+        == DYNAMIC_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION
+        and payload.get("status")
+        == "provider_neutral_dynamic_micro_judgment_local_terminal_compilation",
+        "finance_loop_dynamic_micro_policy_identity_invalid",
+    )
+    scope = payload.get("qualified_scope")
+    phases = _strings(
+        payload.get("ordered_model_owned_phases"),
+        "finance_loop_dynamic_micro_policy_phases_invalid",
+    )
+    node_classes = payload.get("node_classes")
+    budgets = payload.get("budgets")
+    authority = payload.get("authority")
+    _require(
+        isinstance(scope, Mapping)
+        and dict(scope)
+        == {
+            "maximum_cell_count": 1,
+            "maximum_evidence_requests": 0,
+            "fixed_pack_only": False,
+            "dynamic_retrieval_completed_upstream": True,
+            "request_scoped_evidence_response_binding_required": True,
+        }
+        and phases == MICRO_JUDGMENT_TOOL_NAMES,
+        "finance_loop_dynamic_micro_policy_scope_invalid",
+    )
+    expected_node_classes = {
+        "mandatory_read_pair": "tool_routing",
+        **{
+            name: "bounded_financial_judgment"
+            for name in MICRO_JUDGMENT_TOOL_NAMES
+        },
+    }
+    _require(
+        isinstance(node_classes, Mapping)
+        and dict(node_classes) == expected_node_classes,
+        "finance_loop_dynamic_micro_policy_node_classes_invalid",
+    )
+    expected_budgets = {
+        "maximum_provider_steps": 4,
+        "maximum_tool_calls": 5,
+        "maximum_parallel_read_tools": 2,
+        "maximum_parallel_judgment_tools": 1,
+        "retry_count": 0,
+        "fallback_count": 0,
+    }
+    _require(
+        isinstance(budgets, Mapping)
+        and dict(budgets) == expected_budgets,
+        "finance_loop_dynamic_micro_policy_budgets_invalid",
+    )
+    expected_authority = {
+        "model_owns_all_narrative_fragments": True,
+        "model_selects_all_claim_relation_aliases": True,
+        "model_selects_all_evidence_numeric_method_and_graph_refs": True,
+        "harness_may_validate_fragments": True,
+        "harness_may_expand_precompiled_aliases": True,
+        "harness_may_compile_one_terminal_judgment": True,
+        "harness_may_invent_missing_fragment_or_claim": False,
+        "terminal_judgment_uses_existing_financial_validator": True,
+        "provider_profile_mapping_outside_finance_core": True,
+        "private_reasoning_persistence_forbidden": True,
+        "request_scoped_evidence_response_binding_required": True,
+        "unreviewed_candidate_text_forbidden": True,
+        "candidate_promotion_forbidden": True,
+    }
+    _require(
+        isinstance(authority, Mapping)
+        and dict(authority) == expected_authority,
+        "finance_loop_dynamic_micro_policy_authority_invalid",
+    )
+    return DynamicMicroJudgmentPolicy(
+        maximum_cell_count=1,
+        maximum_evidence_requests=0,
+        ordered_model_owned_phases=phases,
+        node_classes=deepcopy(dict(node_classes)),
+        maximum_provider_steps=4,
+        maximum_tool_calls=5,
+        maximum_parallel_read_tools=2,
+        maximum_parallel_judgment_tools=1,
+        retry_count=0,
+        fallback_count=0,
+        authority=deepcopy(dict(authority)),
+    )
+
+
 def scope_bounded_finance_loop_policy(
     policy: BoundedFinanceLoopPolicy,
     *,
@@ -367,7 +486,7 @@ def scope_bounded_finance_loop_policy(
 def scope_bounded_finance_micro_judgment_policy(
     policy: BoundedFinanceLoopPolicy,
     *,
-    micro_policy: FixedPackMicroJudgmentPolicy,
+    micro_policy: FixedPackMicroJudgmentPolicy | DynamicMicroJudgmentPolicy,
     cell_count: int,
     maximum_evidence_requests: int,
 ) -> BoundedFinanceLoopPolicy:
@@ -1908,6 +2027,21 @@ def compile_finance_micro_fragment_context(
     cells = _selected_cells(research_input, [cell_id])
     _require(len(cells) == 1, "finance_loop_fragment_cell_invalid")
     cell = cells[0]
+    surface_contract = research_input.get(
+        "claim_surface_authority_contract", {}
+    )
+    _require(
+        isinstance(surface_contract, Mapping),
+        "finance_loop_claim_surface_contract_invalid",
+    )
+    dynamic_flag = surface_contract.get("dynamic_retrieval_executed")
+    fixed_pack_flag = surface_contract.get("fixed_pack_unit_test_only")
+    dynamic_mode = dynamic_flag is True and fixed_pack_flag is False
+    _require(
+        dynamic_mode
+        or (dynamic_flag is False and fixed_pack_flag is True),
+        "finance_loop_dynamic_mode_contract_invalid",
+    )
     relation_card = cell.get("claim_relation_card")
     _require(
         isinstance(relation_card, Mapping),
@@ -2001,11 +2135,83 @@ def compile_finance_micro_fragment_context(
         "finance_loop_fragment_authority_object_missing",
     )
 
+    dynamic_response_cards: list[dict[str, Any]] = []
+    dynamic_response_refs: list[str] = []
+    request_scoped_context_evidence_refs: list[str] = []
+    if dynamic_mode:
+        raw_dynamic_responses = research_input.get(
+            "dynamic_evidence_response_cards", ()
+        )
+        dynamic_truth_spine_contract = research_input.get(
+            "dynamic_truth_spine_contract", {}
+        )
+        _require(
+            isinstance(raw_dynamic_responses, list)
+            and all(
+                isinstance(row, Mapping)
+                and bool(str(row.get("evidence_response_ref") or ""))
+                and isinstance(row.get("authority"), Mapping)
+                and row["authority"].get("candidate_promoted_to_evidence")
+                is False
+                for row in raw_dynamic_responses
+            )
+            and isinstance(dynamic_truth_spine_contract, Mapping)
+            and dynamic_truth_spine_contract.get("candidate_promotions") == 0
+            and dynamic_truth_spine_contract.get(
+                "cell_evidence_is_request_scoped"
+            )
+            is True
+            and dynamic_truth_spine_contract.get(
+                "graph_edges_require_request_scoped_evidence"
+            )
+            is True,
+            "finance_loop_dynamic_evidence_response_binding_invalid",
+        )
+        response_by_ref = {
+            str(row.get("evidence_response_ref") or ""): row
+            for row in raw_dynamic_responses
+        }
+        dynamic_response_refs = sorted(
+            str(ref)
+            for ref in cell.get("allowed_evidence_response_refs", ())
+        )
+        _require(
+            bool(dynamic_response_refs)
+            and len(response_by_ref) == len(raw_dynamic_responses)
+            and set(dynamic_response_refs).issubset(response_by_ref)
+            and all(dynamic_response_refs),
+            "finance_loop_dynamic_evidence_response_binding_invalid",
+        )
+        dynamic_response_cards = [
+            deepcopy(response_by_ref[ref]) for ref in dynamic_response_refs
+        ]
+        request_scoped_context_evidence_refs = sorted(
+            {
+                str(evidence_ref)
+                for card in dynamic_response_cards
+                for evidence_ref in card.get("accepted_evidence_refs", ())
+            }
+        )
+        _require(
+            set(request_scoped_context_evidence_refs).issubset(
+                set(str(ref) for ref in cell["allowed_evidence_refs"])
+            )
+            and set(request_scoped_context_evidence_refs).issubset(
+                evidence_by_ref
+            ),
+            "finance_loop_dynamic_evidence_response_binding_invalid",
+        )
+        evidence_refs = sorted(
+            set(evidence_refs) | set(request_scoped_context_evidence_refs)
+        )
+
     projected_edges: list[dict[str, Any]] = []
     for raw_edge in cell["graph_context_pack"]["edges"]:
-        bound_refs = sorted(
-            set(str(ref) for ref in raw_edge["evidence_refs"])
-            & set(evidence_refs)
+        raw_edge_refs = set(str(ref) for ref in raw_edge["evidence_refs"])
+        bound_refs = (
+            sorted(raw_edge_refs)
+            if dynamic_mode and raw_edge_refs.issubset(evidence_refs)
+            else sorted(raw_edge_refs & set(evidence_refs))
         )
         if bound_refs:
             edge = deepcopy(raw_edge)
@@ -2054,7 +2260,11 @@ def compile_finance_micro_fragment_context(
         for name in expected_prior_names
     ]
     body: dict[str, Any] = {
-        "schema_version": "fin_ia_micro_fragment_context_projection_v1_2",
+        "schema_version": (
+            "fin_ia_micro_fragment_context_projection_v1_3"
+            if dynamic_mode
+            else "fin_ia_micro_fragment_context_projection_v1_2"
+        ),
         "case_identity": deepcopy(research_input["case_identity"]),
         "research_question": research_input["objective"]["raw_question"],
         "cell": {
@@ -2079,6 +2289,15 @@ def compile_finance_micro_fragment_context(
             for ref in qualitative_fact_refs
         ],
         "typed_residual_gaps": [deepcopy(gaps_by_ref[ref]) for ref in gap_refs],
+        **(
+            {
+                "dynamic_evidence_responses": dynamic_response_cards,
+                "dynamic_retrieval_executed": True,
+                "candidate_promotions": 0,
+            }
+            if dynamic_mode
+            else {}
+        ),
         "role_method_steps": deepcopy(
             (cell.get("role_method_pack") or {}).get("method_steps", [])
         ),
@@ -2137,6 +2356,16 @@ def compile_finance_micro_fragment_context(
             "accepted_prior_fragment_digests": [
                 canonical_digest(row["accepted_fragment"]) for row in prior
             ],
+            **(
+                {
+                    "evidence_response_refs": dynamic_response_refs,
+                    "request_scoped_context_evidence_refs": (
+                        request_scoped_context_evidence_refs
+                    ),
+                }
+                if dynamic_mode
+                else {}
+            ),
             "projection_selects_answer": False,
             "all_legal_relation_options_preserved": True,
         },
@@ -2148,7 +2377,13 @@ def compile_finance_micro_fragment_context(
             "The model owns the judgment; the harness may validate and render but may not invent it.",
             "Analysis may discuss source-visible values, but submitted atom text must not copy digits, units, dates, refs, URLs or verbal numeric bands.",
             "Select NUM/QF refs for authoritative value surfaces and phrase the atom generically, for example as 'the stated target'; the harness renders the selected surface outside the model-owned atom.",
-            "This is a fixed-Pack unit test and not dynamic Agentic Research.",
+            (
+                "This fragment consumes request-scoped EvidenceResponses from "
+                "a dynamic retrieval run; only previously reviewed Evidence "
+                "may support the Judgment and candidate promotions remain zero."
+                if dynamic_mode
+                else "This is a fixed-Pack unit test and not dynamic Agentic Research."
+            ),
         ],
     }
     body["projection_digest"] = canonical_digest(body)
@@ -2160,7 +2395,10 @@ def compile_finance_micro_fragment_analysis_messages(
 ) -> tuple[dict[str, str], ...]:
     _require(
         fragment_context.get("schema_version")
-        == "fin_ia_micro_fragment_context_projection_v1_2",
+        in {
+            "fin_ia_micro_fragment_context_projection_v1_2",
+            "fin_ia_micro_fragment_context_projection_v1_3",
+        },
         "finance_loop_fragment_context_invalid",
     )
     tool_name = str(
@@ -3049,7 +3287,15 @@ def compile_finance_micro_judgment_fragments(
     atom_inference_authorities = [
         str(fragment["inference_authority"]) for fragment in ordered
     ]
-    if set(atom_inference_authorities) == {"not_inferable"}:
+    if (
+        str(thesis["inference_authority"]) == "not_inferable"
+        or str(thesis["judgment_status"]) == "insufficient_evidence"
+    ):
+        _require(
+            str(thesis["inference_authority"]) == "not_inferable"
+            and str(thesis["judgment_status"]) == "insufficient_evidence",
+            "finance_loop_micro_thesis_disposition_invalid",
+        )
         aggregate_inference_authority = "not_inferable"
         aggregate_judgment_status = "insufficient_evidence"
     elif set(atom_inference_authorities) == {"directly_supported"}:
@@ -3639,10 +3885,12 @@ __all__ = [
     "BOUNDED_FINANCE_LOOP_POLICY_SCHEMA_VERSION",
     "BOUNDED_FINANCE_LOOP_RESULT_SCHEMA_VERSION",
     "FIXED_PACK_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION",
+    "DYNAMIC_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION",
     "BoundedFinanceLoopError",
     "BoundedFinanceLoopPolicy",
     "BoundedFinanceLoopResult",
     "FixedPackMicroJudgmentPolicy",
+    "DynamicMicroJudgmentPolicy",
     "FINANCE_TOOL_NAMES",
     "MICRO_FINANCE_TOOL_NAMES",
     "MICRO_JUDGMENT_TOOL_NAMES",
@@ -3661,6 +3909,7 @@ __all__ = [
     "compile_finance_loop_messages",
     "compile_finance_loop_tools",
     "load_fixed_pack_micro_judgment_policy",
+    "load_dynamic_micro_judgment_policy",
     "load_bounded_finance_loop_policy",
     "run_bounded_finance_loop",
     "scope_bounded_finance_loop_policy",

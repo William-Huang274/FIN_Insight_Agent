@@ -362,13 +362,42 @@ def test_compact_response_receipt_binds_to_cell_without_candidate_text() -> None
             {
                 "evidence_item_digest": "evidence-digest-1",
                 "evidence_ref": "EV::REVIEWED1",
-            }
+            },
+            {
+                "evidence_item_digest": "evidence-digest-not-returned",
+                "evidence_ref": "EV::NOT-RETURNED",
+            },
         ],
         "cells": [
             {
                 "cell_id": "CELL::value_capture",
                 "primary_slot_id": "pricing_mix_value_capture",
                 "supplemental_context_slot_ids": [],
+                "allowed_evidence_refs": [
+                    "EV::REVIEWED1",
+                    "EV::NOT-RETURNED",
+                ],
+                "graph_context_pack": {
+                    "schema_version": "fin_ia_graph_context_pack_v1_0",
+                    "cell_id": "CELL::value_capture",
+                    "case_key": "DELL",
+                    "nodes": [],
+                    "edges": [
+                        {
+                            "graph_edge_ref": "GRAPH::CROSS-REQUEST",
+                            "evidence_refs": [
+                                "EV::REVIEWED1",
+                                "EV::NOT-RETURNED",
+                            ],
+                        }
+                    ],
+                    "authority": {},
+                    "graph_context_digest": "old-graph-digest",
+                },
+                "context_consumption_contract": {
+                    "minimum_method_step_refs": 0,
+                    "minimum_graph_edge_refs": 1,
+                },
             }
         ],
         "known_boundary": "base",
@@ -384,7 +413,17 @@ def test_compact_response_receipt_binds_to_cell_without_candidate_text() -> None
     assert dynamic["cells"][0]["allowed_evidence_response_refs"] == [
         card["evidence_response_ref"]
     ]
+    assert dynamic["cells"][0]["allowed_evidence_refs"] == [
+        "EV::REVIEWED1"
+    ]
+    assert dynamic["cells"][0]["graph_context_pack"]["edges"] == []
+    assert dynamic["cells"][0]["context_consumption_contract"][
+        "minimum_graph_edge_refs"
+    ] == 0
     assert dynamic["dynamic_truth_spine_contract"]["candidate_promotions"] == 0
+    assert dynamic["dynamic_truth_spine_contract"][
+        "cell_evidence_is_request_scoped"
+    ] is True
 
 
 def test_dynamic_claim_policy_only_removes_unavailable_authority() -> None:

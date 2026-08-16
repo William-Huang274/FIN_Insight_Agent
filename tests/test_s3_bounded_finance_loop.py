@@ -49,6 +49,7 @@ from sec_agent.research.bounded_finance_loop import (
     compile_finance_micro_judgment_tools,
     compile_finance_loop_messages,
     compile_finance_loop_tools,
+    load_dynamic_micro_judgment_policy,
     load_bounded_finance_loop_policy,
     load_fixed_pack_micro_judgment_policy,
     run_bounded_finance_loop,
@@ -89,6 +90,10 @@ POLICY = ROOT / (
 MICRO_POLICY = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_fixed_pack_micro_judgment_policy_v1_0.json"
+)
+DYNAMIC_MICRO_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dynamic_micro_judgment_policy_v1_0.json"
 )
 CONSUMER_POLICY = ROOT / (
     "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_2.json"
@@ -930,6 +935,121 @@ def test_micro_fragment_projection_is_authority_complete_without_selecting_answe
     assert validated["thesis_atom"] == fragment["thesis_atom"]
 
 
+def test_dynamic_fragment_projection_binds_request_scoped_response_receipts(
+    contracts,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    dynamic_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_ALIAS_POLICY),
+    )
+    dynamic_input = deepcopy(dynamic_input)
+    dynamic_input["claim_surface_authority_contract"].update(
+        {
+            "dynamic_retrieval_executed": True,
+            "fixed_pack_unit_test_only": False,
+            "candidate_promotions": 0,
+        }
+    )
+    dynamic_input["dynamic_truth_spine_contract"] = {
+        "candidate_promotions": 0,
+        "candidate_text_exposed_to_model": False,
+        "cell_evidence_is_request_scoped": True,
+        "graph_edges_require_request_scoped_evidence": True,
+    }
+    response_ref = "ER::DELL::VALUE-CAPTURE"
+    dynamic_input["dynamic_evidence_response_cards"] = [
+        {
+            "evidence_response_ref": response_ref,
+            "request_id": "REQ::DELL::VALUE-CAPTURE",
+            "request_bindings": [
+                {
+                    "slot_id": "pricing_mix_value_capture",
+                    "facet_id": "margin_and_incremental_profit",
+                }
+            ],
+            "candidate_route": "hybrid_object_retrieval",
+            "candidate_count": 2,
+            "accepted_evidence_refs": ["EV::0063F22F643B94ED"],
+            "rejected_reviewed_binding_count": 0,
+            "unreviewed_candidate_count": 1,
+            "typed_gaps": [],
+            "numeric_result_digest": "numeric-result-digest",
+            "authority": {
+                "candidate_promoted_to_evidence": False,
+                "reviewed_evidence_reselected": True,
+                "numeric_authority_remains_s2": True,
+                "model_decision_used": False,
+            },
+            "evidence_response_card_digest": "response-card-digest",
+        }
+    ]
+    cell = next(
+        row
+        for row in dynamic_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    cell["allowed_evidence_response_refs"] = [response_ref]
+
+    context = compile_finance_micro_fragment_context(
+        research_input=dynamic_input,
+        cell_id="CELL::value_capture",
+        tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+    )
+    assert context["schema_version"] == (
+        "fin_ia_micro_fragment_context_projection_v1_3"
+    )
+    assert context["dynamic_retrieval_executed"] is True
+    assert context["candidate_promotions"] == 0
+    assert context["dynamic_evidence_responses"] == dynamic_input[
+        "dynamic_evidence_response_cards"
+    ]
+    assert context["projection_manifest"]["evidence_response_refs"] == [
+        response_ref
+    ]
+    assert context["projection_manifest"][
+        "request_scoped_context_evidence_refs"
+    ] == ["EV::0063F22F643B94ED"]
+    assert {
+        row["evidence_ref"] for row in context["reviewed_evidence"]
+    } == {
+        "EV::0063F22F643B94ED",
+        "EV::7F4D7E6762C21D83",
+    }
+    assert "fixed-Pack unit test" not in " ".join(context["boundaries"])
+    assert len(compile_finance_micro_fragment_analysis_messages(context)) == 2
+
+    promotion = deepcopy(dynamic_input)
+    promotion["dynamic_truth_spine_contract"]["candidate_promotions"] = 1
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_dynamic_evidence_response_binding_invalid",
+    ):
+        compile_finance_micro_fragment_context(
+            research_input=promotion,
+            cell_id="CELL::value_capture",
+            tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+        )
+
+    half_dynamic = deepcopy(dynamic_input)
+    half_dynamic["claim_surface_authority_contract"][
+        "fixed_pack_unit_test_only"
+    ] = True
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_dynamic_mode_contract_invalid",
+    ):
+        compile_finance_micro_fragment_context(
+            research_input=half_dynamic,
+            cell_id="CELL::value_capture",
+            tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+        )
+
+
 def test_saved_R2_mechanism_passes_relation_support_v1_2_and_terminal_lowers_status(
     contracts,
 ) -> None:
@@ -1021,6 +1141,102 @@ def test_saved_R2_mechanism_passes_relation_support_v1_2_and_terminal_lowers_sta
     )
     assert terminal["judgment_status"] == "bounded_support"
     assert terminal["inference_authority"] == "bounded_inference"
+
+
+def test_terminal_judgment_cannot_be_stronger_than_abstaining_thesis(
+    contracts,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    alias_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_SUPPORT_POLICY),
+    )
+    cell = next(
+        row
+        for row in alias_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    gap_relation = next(
+        row
+        for row in cell["claim_relation_card"]["allowed_combinations"]
+        if row["claim_relation_ref"] == "CR::DELL::PROFIT_BRIDGE_GAP"
+    )
+    gap_relation["allowed_atom_fields"] = [
+        *gap_relation["allowed_atom_fields"],
+        "thesis_atom",
+    ]
+    gap_relation["allowed_inference_authorities"] = ["not_inferable"]
+    gap_relation["allowed_judgment_statuses"] = ["insufficient_evidence"]
+
+    raw = _micro_alias_fragments()
+    raw[SUBMIT_RESEARCH_THESIS_TOOL].update(
+        {
+            "claim_relation_ref": "CR::DELL::PROFIT_BRIDGE_GAP",
+            "evidence_uses": [],
+            "numeric_refs": [],
+            "numeric_relation_refs": [],
+            "qualitative_fact_refs": [],
+            "judgment_status": "insufficient_evidence",
+            "inference_authority": "not_inferable",
+            "claim_scope": "multi_scope",
+            "financial_scope": "multi_scope_financial",
+            "causal_bridge_authority": "bridge_unavailable",
+            "thesis_atom": (
+                "当前资料不足以判断产品层表现是否已转化为公司利润改善。"
+            ),
+        }
+    )
+    relation_by_ref = {
+        row["claim_relation_ref"]: row
+        for row in cell["claim_relation_card"]["allowed_combinations"]
+    }
+    for tool_name in (
+        SUBMIT_RESEARCH_MECHANISM_TOOL,
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+    ):
+        relation = relation_by_ref[raw[tool_name]["claim_relation_ref"]]
+        raw[tool_name]["inference_authority"] = relation[
+            "allowed_inference_authorities"
+        ][0]
+        if relation["required_numeric_relation_refs"]:
+            raw[tool_name]["numeric_refs"] = list(
+                cell["allowed_numeric_refs"]
+            )
+    accepted: dict[str, dict[str, object]] = {}
+    for tool_name in MICRO_JUDGMENT_TOOL_NAMES:
+        accepted[tool_name] = validate_finance_micro_judgment_fragment(
+            tool_name=tool_name,
+            arguments=raw[tool_name],
+            research_input=alias_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=accepted.get(SUBMIT_RESEARCH_THESIS_TOOL),
+        )
+
+    terminal = compile_finance_micro_judgment_fragments(accepted, cell=cell)
+    assert terminal["inference_authority"] == "not_inferable"
+    assert terminal["judgment_status"] == "insufficient_evidence"
+    deliverable = compile_current_research_deliverable(
+        research_input=alias_input,
+        judgment_output={"cells": [terminal]},
+        required_cell_ids=["CELL::value_capture"],
+    )
+    assert deliverable["cells"][0]["judgment_status"] == (
+        "insufficient_evidence"
+    )
+
+    inconsistent = deepcopy(accepted)
+    inconsistent[SUBMIT_RESEARCH_THESIS_TOOL]["judgment_status"] = (
+        "bounded_support"
+    )
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_micro_thesis_disposition_invalid",
+    ):
+        compile_finance_micro_judgment_fragments(inconsistent, cell=cell)
 
 
 def test_saved_R3_claim_local_roles_and_typed_boundaries_compile_full_deliverable(
@@ -3201,6 +3417,26 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
         match="micro_policy_authority_invalid",
     ):
         load_fixed_pack_micro_judgment_policy(changed_micro_policy)
+
+    dynamic_micro_policy_payload = _json(DYNAMIC_MICRO_POLICY)
+    dynamic_micro_policy = load_dynamic_micro_judgment_policy(
+        dynamic_micro_policy_payload
+    )
+    assert dynamic_micro_policy.ordered_model_owned_phases == (
+        MICRO_JUDGMENT_TOOL_NAMES
+    )
+    assert dynamic_micro_policy.authority[
+        "request_scoped_evidence_response_binding_required"
+    ] is True
+    changed_dynamic_micro_policy = deepcopy(dynamic_micro_policy_payload)
+    changed_dynamic_micro_policy["qualified_scope"][
+        "fixed_pack_only"
+    ] = True
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="dynamic_micro_policy_scope_invalid",
+    ):
+        load_dynamic_micro_judgment_policy(changed_dynamic_micro_policy)
 
     changed = deepcopy(_json(
         ROOT

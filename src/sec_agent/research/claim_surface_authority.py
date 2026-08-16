@@ -933,11 +933,20 @@ def validate_claim_surface_authority_selection(
                 ),
                 None,
             )
+        relation_judgment_status = (
+            judgment_status
+            if atom_field == "thesis_atom"
+            else {
+                "directly_supported": "supported",
+                "bounded_inference": "bounded_support",
+                "not_inferable": "insufficient_evidence",
+            }.get(atom_inference_authority, "")
+        )
         _require(
             combination is not None
             and atom_inference_authority
             in set(combination["allowed_inference_authorities"])
-            and judgment_status
+            and relation_judgment_status
             in set(combination["allowed_judgment_statuses"]),
             "claim_surface_combination_invalid",
         )

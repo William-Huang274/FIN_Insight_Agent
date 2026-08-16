@@ -707,8 +707,8 @@ def bind_dynamic_evidence_responses_to_research_input(
             str(cell.get("primary_slot_id") or ""),
             *(str(value) for value in cell.get("supplemental_context_slot_ids") or ()),
         }
-        cell["allowed_evidence_response_refs"] = [
-            card["evidence_response_ref"]
+        cell_cards = [
+            card
             for card in cards
             if any(
                 str(binding.get("slot_id") or "") in cell_slots
@@ -716,6 +716,50 @@ def bind_dynamic_evidence_responses_to_research_input(
                 if isinstance(binding, Mapping)
             )
         ]
+        cell["allowed_evidence_response_refs"] = [
+            card["evidence_response_ref"] for card in cell_cards
+        ]
+        request_scoped_evidence_refs = {
+            str(ref)
+            for card in cell_cards
+            for ref in card["accepted_evidence_refs"]
+        }
+        prior_allowed_evidence_refs = {
+            str(ref) for ref in cell.get("allowed_evidence_refs") or ()
+        }
+        cell["allowed_evidence_refs"] = sorted(
+            request_scoped_evidence_refs
+            & prior_allowed_evidence_refs
+        )
+
+        graph_pack = cell.get("graph_context_pack")
+        if isinstance(graph_pack, Mapping):
+            graph_body = deepcopy(dict(graph_pack))
+            graph_body.pop("graph_context_digest", None)
+            graph_body["edges"] = [
+                deepcopy(dict(edge))
+                for edge in graph_pack.get("edges") or ()
+                if isinstance(edge, Mapping)
+                and set(str(ref) for ref in edge.get("evidence_refs") or ())
+                .issubset(request_scoped_evidence_refs)
+            ]
+            cell["graph_context_pack"] = {
+                **graph_body,
+                "graph_context_digest": canonical_digest(graph_body),
+            }
+            consumption = cell.get("context_consumption_contract")
+            if isinstance(consumption, Mapping):
+                narrowed_consumption = deepcopy(dict(consumption))
+                narrowed_consumption["minimum_graph_edge_refs"] = min(
+                    int(
+                        narrowed_consumption.get(
+                            "minimum_graph_edge_refs", 0
+                        )
+                        or 0
+                    ),
+                    len(graph_body["edges"]),
+                )
+                cell["context_consumption_contract"] = narrowed_consumption
     unsigned["dynamic_truth_spine_contract"] = {
         "evidence_response_set_digest": evidence_responses[
             "evidence_response_set_digest"
@@ -725,6 +769,8 @@ def bind_dynamic_evidence_responses_to_research_input(
         "accepted_rows_are_previously_reviewed_evidence": True,
         "typed_response_gaps_preserved_separately_from_reviewed_pack_gaps": True,
         "model_may_request_but_not_promote_evidence": True,
+        "cell_evidence_is_request_scoped": True,
+        "graph_edges_require_request_scoped_evidence": True,
     }
     unsigned["known_boundary"] = (
         str(unsigned.get("known_boundary") or "")

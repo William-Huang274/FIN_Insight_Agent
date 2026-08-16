@@ -27,7 +27,26 @@ from sec_agent.research.claim_authority import (
 from sec_agent.research.claim_surface_authority import (
     compile_claim_surface_authority_research_input,
 )
-from sec_agent.research.current_consumer import compile_current_research_input
+from sec_agent.research.bounded_finance_loop import (
+    BoundedFinanceLoopError,
+    MICRO_JUDGMENT_TOOL_NAMES,
+    SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+    SUBMIT_RESEARCH_MECHANISM_TOOL,
+    SUBMIT_RESEARCH_THESIS_TOOL,
+    compile_finance_micro_fragment_analysis_messages,
+    compile_finance_micro_fragment_context,
+    compile_finance_micro_fragment_submission_messages,
+    compile_finance_micro_judgment_fragments,
+    compile_finance_micro_judgment_tools,
+    load_bounded_finance_loop_policy,
+    load_dynamic_micro_judgment_policy,
+    scope_bounded_finance_micro_judgment_policy,
+    validate_finance_micro_judgment_fragment,
+)
+from sec_agent.research.current_consumer import (
+    compile_current_research_deliverable,
+    compile_current_research_input,
+)
 from sec_agent.research.dynamic_truth_spine import (
     DynamicTruthSpineError,
     bind_dynamic_evidence_responses_to_research_input,
@@ -69,6 +88,14 @@ DELL_CLAIM_SURFACE_TEMPLATE = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "claim_surface_authority_v1_2.json"
+)
+BOUNDED_LOOP_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_1.json"
+)
+DYNAMIC_MICRO_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dynamic_micro_judgment_policy_v1_0.json"
 )
 
 
@@ -279,6 +306,269 @@ def _mutations(
     }
 
 
+def _relation_for_bridge(
+    cell: Mapping[str, Any], bridge: str, atom_field: str
+) -> Mapping[str, Any]:
+    relation = next(
+        (
+            row
+            for row in cell["claim_relation_card"]["allowed_combinations"]
+            if row["causal_bridge_authority"] == bridge
+            and atom_field in set(row["allowed_atom_fields"])
+        ),
+        None,
+    )
+    if relation is None:
+        raise ValueError("dynamic_micro_required_relation_missing")
+    return relation
+
+
+def _common_fragment_fields(
+    relation: Mapping[str, Any],
+    *,
+    cell_id: str,
+    surface_input: Mapping[str, Any],
+) -> dict[str, Any]:
+    numeric_relation_by_ref = {
+        str(row["numeric_relation_ref"]): row
+        for row in surface_input["numeric_relation_cards"]
+    }
+    numeric_refs = sorted(
+        {
+            str(numeric_relation_by_ref[ref][field])
+            for ref in relation["required_numeric_relation_refs"]
+            for field in ("current_numeric_ref", "comparison_numeric_ref")
+        }
+    )
+    return {
+        "cell_id": cell_id,
+        "claim_relation_ref": relation["claim_relation_ref"],
+        "evidence_uses": [
+            {"evidence_ref": ref, "use_role": "support"}
+            for ref in relation["required_evidence_refs"]
+        ],
+        "numeric_refs": numeric_refs,
+        "numeric_relation_refs": list(
+            relation["required_numeric_relation_refs"]
+        ),
+        "qualitative_fact_refs": list(
+            relation["required_qualitative_fact_refs"]
+        ),
+        "method_step_refs": [],
+        "graph_edge_refs": [],
+    }
+
+
+def _controlled_dynamic_fragments(
+    surface_input: Mapping[str, Any],
+) -> dict[str, dict[str, Any]]:
+    cell_id = "CELL::value_capture"
+    cell = next(
+        row for row in surface_input["cells"] if row["cell_id"] == cell_id
+    )
+    thesis_relation = _relation_for_bridge(
+        cell, "bridge_unavailable", "thesis_atom"
+    )
+    mechanism_relation = _relation_for_bridge(
+        cell, "same_scope_observation_only", "mechanism_atom"
+    )
+    counter_relation = _relation_for_bridge(
+        cell, "bridge_unavailable", "counterargument_atom"
+    )
+    method_step_refs = [
+        row["method_step_ref"]
+        for row in cell["role_method_pack"]["method_steps"]
+    ]
+    graph_edge_refs = [
+        row["graph_edge_ref"] for row in cell["graph_context_pack"]["edges"]
+    ]
+    return {
+        SUBMIT_RESEARCH_THESIS_TOOL: {
+            **_common_fragment_fields(
+                thesis_relation,
+                cell_id=cell_id,
+                surface_input=surface_input,
+            ),
+            "method_step_refs": method_step_refs,
+            "graph_edge_refs": graph_edge_refs,
+            "judgment_status": "insufficient_evidence",
+            "confidence_basis": "gap_dominated",
+            "inference_authority": "not_inferable",
+            "claim_scope": thesis_relation["claim_scope"],
+            "financial_scope": thesis_relation["financial_scope"],
+            "causal_bridge_authority": thesis_relation[
+                "causal_bridge_authority"
+            ],
+            "thesis_atom": (
+                "当前资料不足以判断产品层表现是否已转化为公司利润改善。"
+            ),
+        },
+        SUBMIT_RESEARCH_MECHANISM_TOOL: {
+            **_common_fragment_fields(
+                mechanism_relation,
+                cell_id=cell_id,
+                surface_input=surface_input,
+            ),
+            "inference_authority": "bounded_inference",
+            "mechanism_atom": (
+                "公司整体毛利率存在同口径变化，但该观察不构成产品到公司"
+                "利润的归因桥。"
+            ),
+        },
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: {
+            **_common_fragment_fields(
+                counter_relation,
+                cell_id=cell_id,
+                surface_input=surface_input,
+            ),
+            "inference_authority": "not_inferable",
+            "counterargument_atom": (
+                "产品到公司利润的可复算桥仍缺失，多因素共同作用仍是最强"
+                "替代解释。"
+            ),
+            "what_would_change": {
+                "observable": "可复算的产品收入、成本与公司利润桥",
+                "direction": "resolve_gap",
+                "time_horizon": "下一次正式财务披露",
+                "evidence_route": "公司正式文件与权威数值事实",
+                "threshold_numeric_ref": "",
+            },
+        },
+    }
+
+
+def _dynamic_micro_judgment_projection(
+    *,
+    surface_input: Mapping[str, Any],
+    kernel,
+    route_policy,
+) -> tuple[dict[str, Any], dict[str, bool]]:
+    cell_id = "CELL::value_capture"
+    micro_policy = load_dynamic_micro_judgment_policy(
+        _json(DYNAMIC_MICRO_POLICY)
+    )
+    scoped = scope_bounded_finance_micro_judgment_policy(
+        load_bounded_finance_loop_policy(_json(BOUNDED_LOOP_POLICY)),
+        micro_policy=micro_policy,
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_micro_judgment_tools(
+        research_input=surface_input,
+        required_cell_ids=[cell_id],
+        kernel=kernel,
+        route_policy=route_policy,
+        policy=scoped,
+        strict=True,
+    )
+    controlled = _controlled_dynamic_fragments(surface_input)
+    accepted: dict[str, dict[str, Any]] = {}
+    context_digests: dict[str, str] = {}
+    context_response_refs: dict[str, list[str]] = {}
+    message_digests: dict[str, dict[str, str]] = {}
+    for tool_name in MICRO_JUDGMENT_TOOL_NAMES:
+        context = compile_finance_micro_fragment_context(
+            research_input=surface_input,
+            cell_id=cell_id,
+            tool_name=tool_name,
+            accepted_fragments=accepted,
+        )
+        analysis_messages = compile_finance_micro_fragment_analysis_messages(
+            context
+        )
+        submission_messages = compile_finance_micro_fragment_submission_messages(
+            fragment_context=context,
+            analysis_draft=(
+                "受控零调用草案仅用于证明动态上下文、严格提交与终端编译"
+                "能够连接；不代表模型研究判断。"
+            ),
+        )
+        context_digests[tool_name] = context["projection_digest"]
+        context_response_refs[tool_name] = list(
+            context["projection_manifest"]["evidence_response_refs"]
+        )
+        message_digests[tool_name] = {
+            "analysis": canonical_digest(list(analysis_messages)),
+            "submission": canonical_digest(list(submission_messages)),
+        }
+        accepted[tool_name] = validate_finance_micro_judgment_fragment(
+            tool_name=tool_name,
+            arguments=controlled[tool_name],
+            research_input=surface_input,
+            cell_id=cell_id,
+            thesis_fragment=accepted.get(SUBMIT_RESEARCH_THESIS_TOOL),
+        )
+    cell = next(
+        row for row in surface_input["cells"] if row["cell_id"] == cell_id
+    )
+    terminal = compile_finance_micro_judgment_fragments(accepted, cell=cell)
+    deliverable = compile_current_research_deliverable(
+        research_input=surface_input,
+        judgment_output={"cells": [terminal]},
+        required_cell_ids=[cell_id],
+    )
+
+    promotion = deepcopy(dict(surface_input))
+    promotion["dynamic_truth_spine_contract"]["candidate_promotions"] = 1
+    promotion_failed = False
+    try:
+        compile_finance_micro_fragment_context(
+            research_input=promotion,
+            cell_id=cell_id,
+            tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+        )
+    except BoundedFinanceLoopError as exc:
+        promotion_failed = str(exc) == (
+            "finance_loop_dynamic_evidence_response_binding_invalid"
+        )
+
+    inconsistent = deepcopy(accepted)
+    inconsistent[SUBMIT_RESEARCH_THESIS_TOOL]["judgment_status"] = (
+        "bounded_support"
+    )
+    thesis_escalation_failed = False
+    try:
+        compile_finance_micro_judgment_fragments(inconsistent, cell=cell)
+    except BoundedFinanceLoopError as exc:
+        thesis_escalation_failed = str(exc) == (
+            "finance_loop_micro_thesis_disposition_invalid"
+        )
+
+    summary = {
+        "policy_ref": str(DYNAMIC_MICRO_POLICY.relative_to(ROOT)).replace(
+            "\\", "/"
+        ),
+        "policy_digest": canonical_digest(_json(DYNAMIC_MICRO_POLICY)),
+        "tool_names": [row["function"]["name"] for row in tools],
+        "tool_contract_digest": canonical_digest(list(tools)),
+        "fragment_context_schema_version": (
+            "fin_ia_micro_fragment_context_projection_v1_3"
+        ),
+        "fragment_context_digests": context_digests,
+        "fragment_evidence_response_refs": context_response_refs,
+        "fragment_message_digests": message_digests,
+        "controlled_fragment_digests": {
+            name: canonical_digest(value) for name, value in accepted.items()
+        },
+        "terminal_judgment_digest": canonical_digest(terminal),
+        "deliverable_digest": deliverable["deliverable_digest"],
+        "terminal_disposition": {
+            "judgment_status": terminal["judgment_status"],
+            "inference_authority": terminal["inference_authority"],
+            "causal_bridge_authority": terminal["causal_bridge_authority"],
+        },
+        "candidate_promotions": 0,
+        "model_calls": 0,
+        "controlled_fragments_are_product_judgment": False,
+    }
+    return summary, {
+        "dynamic_candidate_promotion_failed_closed": promotion_failed,
+        "abstaining_thesis_cannot_be_escalated_by_later_fragments": (
+            thesis_escalation_failed
+        ),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
@@ -288,8 +578,19 @@ def main() -> int:
         raise ValueError("dynamic_truth_spine_implementation_commit_invalid")
     output = args.output.resolve()
     evidence, retrieval = _services()
+    kernel_payload = read_registered_runtime_json(
+        ROOT, "application.config.current_financial_research_kernel"
+    )
+    kernel = load_financial_research_kernel(kernel_payload)
+    route_policy = load_query_object_fact_route_policy(
+        read_registered_runtime_json(
+            ROOT, "application.config.current_query_object_fact_route_policy"
+        ),
+        kernel,
+    )
     cases = []
     dell_private: tuple[dict[str, Any], dict[str, Any], dict[str, Any]] | None = None
+    dynamic_micro_mutations: dict[str, bool] = {}
     for case_key in ("DELL", "MU", "NVDA"):
         pack, controlled, responses, dynamic_input = _case_projection(
             case_key,
@@ -397,12 +698,21 @@ def main() -> int:
                         "claim_surface_authority_contract"
                     ]["candidate_promotions"],
                 }
+                (
+                    cases[-1]["dynamic_micro_judgment"],
+                    dynamic_micro_mutations,
+                ) = _dynamic_micro_judgment_projection(
+                    surface_input=surface_input,
+                    kernel=kernel,
+                    route_policy=route_policy,
+                )
     assert dell_private is not None
     mutations = _mutations(
         pack=dell_private[0],
         controlled=dell_private[1],
         baseline=dell_private[2],
     )
+    mutations.update(dynamic_micro_mutations)
     total_promotions = sum(
         int(row["summary"]["new_evidence_promotions"]) for row in cases
     )
@@ -419,9 +729,16 @@ def main() -> int:
         and all(
             cases[0]["dynamic_claim_surface"]["fragment_coverage"].values()
         )
+        and cases[0]["dynamic_micro_judgment"]["candidate_promotions"] == 0
+        and cases[0]["dynamic_micro_judgment"]["terminal_disposition"]
+        == {
+            "judgment_status": "insufficient_evidence",
+            "inference_authority": "not_inferable",
+            "causal_bridge_authority": "bridge_unavailable",
+        }
     )
     body = {
-        "schema_version": "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_1",
+        "schema_version": "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_2",
         "status": (
             "zero_call_dynamic_truth_spine_engineering_pass"
             if passed
@@ -429,7 +746,10 @@ def main() -> int:
         ),
         "recorded_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "implementation_commit": args.implementation_commit,
-        "scope": "S1_EvidenceRequest_to_S2_NumericFact_to_S3_EvidenceResponse",
+        "scope": (
+            "S1_EvidenceRequest_to_S2_NumericFact_to_S3_EvidenceResponse_"
+            "dynamic_micro_Judgment_and_terminal_deliverable"
+        ),
         "cases": cases,
         "mutations": mutations,
         "observed_counts": {
@@ -449,15 +769,22 @@ def main() -> int:
             "dynamic_dell_claim_authority_narrowed": passed,
             "dynamic_dell_claim_relation_surface_compiled": passed,
             "gap_only_thesis_can_only_abstain": passed,
+            "dynamic_dell_micro_fragment_contexts_compiled": passed,
+            "dynamic_dell_terminal_deliverable_compiled": passed,
+            "dynamic_candidate_promotion_and_thesis_escalation_fail_closed": (
+                passed
+            ),
             "natural_model_planner_executed": False,
+            "natural_model_judgment_executed": False,
             "dynamic_agentic_research_claimed": False,
             "s3_product_acceptance_claimed": False,
         },
         "known_boundary": (
             "This proof runs the current local S1 candidate and S2 NumericFact "
             "services, then compiles request-scoped EvidenceResponses. Planner "
-            "atoms remain controlled fixtures, so this is an engineering proof, "
-            "not natural Agentic Research. The current S1 object route does not "
+            "atoms and Judgment fragments remain controlled fixtures, so this is "
+            "an engineering proof, not natural Agentic Research. The current S1 "
+            "object route does not "
             "yet discover reviewed earnings-call transcripts; those remain an "
             "explicit source-route gap rather than being silently prefed."
         ),

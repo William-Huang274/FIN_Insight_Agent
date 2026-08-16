@@ -58,6 +58,17 @@ from .dynamic_research_runtime import (
     compile_dynamic_claim_surface_projection,
     compile_dynamic_research_input_projection,
 )
+from .five_cell_runtime import (
+    FIVE_CELL_REPORT_SCHEMA_VERSION,
+    FIVE_CELL_SYNTHESIS_SCHEMA_VERSION,
+    FiveCellResearchError,
+    compile_five_cell_analysis_messages,
+    compile_five_cell_report,
+    compile_five_cell_submission,
+    compile_five_cell_synthesis_analysis_messages,
+    compile_five_cell_synthesis_submission,
+    validate_five_cell_synthesis,
+)
 from .bounded_finance_loop import (
     DYNAMIC_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION,
     FIXED_PACK_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION,
@@ -108,6 +119,9 @@ __all__ = [
     "BoundedFinanceLoopResult",
     "DynamicMicroJudgmentPolicy",
     "FixedPackMicroJudgmentPolicy",
+    "FiveCellResearchError",
+    "FIVE_CELL_REPORT_SCHEMA_VERSION",
+    "FIVE_CELL_SYNTHESIS_SCHEMA_VERSION",
     "DYNAMIC_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION",
     "FIXED_PACK_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION",
     "MICRO_FINANCE_TOOL_NAMES",
@@ -135,6 +149,11 @@ __all__ = [
     "compile_dynamic_evidence_responses",
     "compile_dynamic_research_input_projection",
     "compile_dynamic_reviewed_pack_view",
+    "compile_five_cell_analysis_messages",
+    "compile_five_cell_report",
+    "compile_five_cell_submission",
+    "compile_five_cell_synthesis_analysis_messages",
+    "compile_five_cell_synthesis_submission",
     "load_dynamic_truth_spine_policy",
     "compile_finance_loop_messages",
     "compile_finance_micro_judgment_tools",
@@ -164,4 +183,5 @@ __all__ = [
     "validate_deepseek_ga_json_profile",
     "validate_deepseek_ga_node_profile",
     "validate_deepseek_ga_profile",
+    "validate_five_cell_synthesis",
 ]

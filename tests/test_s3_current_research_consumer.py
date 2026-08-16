@@ -1056,7 +1056,10 @@ def test_five_cell_context_is_cell_local_current_and_capacity_bounded(
         assert local["cells"][0]["role_method_pack"]["pack_id"] == cell[
             "role_method_pack"
         ]["pack_id"]
-        assert len(local["research_context_injection_receipt"]["selection"]) == 5
+        assert [
+            row["cell_id"]
+            for row in local["research_context_injection_receipt"]["selection"]
+        ] == [cell["cell_id"]]
 
         graph = cell["graph_context_pack"]
         assert graph["case_key"] == "DELL"

@@ -50,6 +50,7 @@
       "scripts/research/run_s3_bounded_finance_loop_zero_call.py",
       "scripts/research/run_s3_dynamic_truth_spine_zero_call.py",
       "scripts/research/run_s3_dynamic_single_cell_live.py",
+      "scripts/research/run_s3_dynamic_five_cell_live.py",
       "scripts/research/run_s3_tool_contract_transport_zero_call.py",
       "scripts/research/run_s3_transport_paired_canary.py",
       "scripts/data_retrieval/materialize_s1c_runtime_query_atoms.py",
@@ -76,7 +77,7 @@
   ],
   "observed": {
     "frontend_files": 8,
-    "python_files": 131,
+    "python_files": 133,
     "runtime_detector_files": 4,
     "runtime_resources": 10
   },
@@ -136,6 +137,7 @@
     "scripts/research/run_s3_bounded_finance_loop_zero_call.py",
     "scripts/research/run_s3_current_research_consumer_canary.py",
     "scripts/research/run_s3_current_research_consumer_zero_call.py",
+    "scripts/research/run_s3_dynamic_five_cell_live.py",
     "scripts/research/run_s3_dynamic_single_cell_live.py",
     "scripts/research/run_s3_dynamic_truth_spine_zero_call.py",
     "scripts/research/run_s3_tool_contract_transport_zero_call.py",
@@ -192,6 +194,7 @@
     "src/sec_agent/research/dynamic_research_runtime.py",
     "src/sec_agent/research/dynamic_truth_spine.py",
     "src/sec_agent/research/finance_tool_contract.py",
+    "src/sec_agent/research/five_cell_runtime.py",
     "src/sec_agent/research/live_transport_lane.py",
     "src/sec_agent/research/official_pdf_evidence.py",
     "src/sec_agent/research/paired_submission.py",

@@ -1428,6 +1428,23 @@ def compile_current_research_messages(
             ),
         },
     }
+    context_receipt = deepcopy(research_input["research_context_receipts"])
+    if required_cell_ids is not None and all(
+        row.get("role_method_pack") for row in research_input["cells"]
+    ):
+        context_receipt["selection"] = [
+            row
+            for row in context_receipt["selection"]
+            if row["cell_id"] in selected_cell_id_set
+        ]
+        receipt_body = {
+            key: deepcopy(value)
+            for key, value in context_receipt.items()
+            if key != "context_receipt_digest"
+        }
+        context_receipt["context_receipt_digest"] = canonical_digest(
+            receipt_body
+        )
     visible = {
         "case_identity": research_input["case_identity"],
         "research_question": research_input["objective"]["raw_question"],
@@ -1461,9 +1478,7 @@ def compile_current_research_messages(
             else {}
         ),
         "cells": visible_cells,
-        "research_context_injection_receipt": deepcopy(
-            research_input["research_context_receipts"]
-        ),
+        "research_context_injection_receipt": context_receipt,
         "output_contract": {
             "schema_version": contract["payload_schema_version"],
             "required_cell_ids": [

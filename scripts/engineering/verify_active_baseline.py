@@ -63,6 +63,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/research/run_s3_bounded_finance_loop_zero_call.py",
     "scripts/research/run_s3_dynamic_truth_spine_zero_call.py",
     "scripts/research/run_s3_dynamic_single_cell_live.py",
+    "scripts/research/run_s3_dynamic_five_cell_live.py",
     "scripts/research/run_s3_tool_contract_transport_zero_call.py",
     "scripts/research/run_s3_transport_paired_canary.py",
 )

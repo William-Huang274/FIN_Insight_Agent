@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 当前研究消费者
 
 日期：2026-08-13
-状态：`consumer_v1.2 / unified_tool_contract_formal_clean_replay_pass / historical_paired_content_L1_fail / historical_skill_graph_requalified / research_context_closure_formal_zero_call_pass / fragment_surface_contract_v1.1_zero_call_pass / full_fragment_FFJ_R1_immutable_contract_fail / FFJ_R2_pending / five_cell_blocked`
+状态：`consumer_v1.3 / fixed_pack_and_dynamic_single_cell_accepted / five_cell_context_qualified / stable_five_cell_runner_engineering_pass / formal_runner_proof_and_natural_five_cell_pending / S3_not_accepted`
 
 ## 1. 为什么需要这条链
 
@@ -379,3 +379,13 @@ fixed-Pack ClaimRelation 模板不是动态研究的默认权限清单。Evidenc
 formal Truth Spine v1.4 已在零模型下证明：DELL demand 请求自然命中 Dell transcript page 3；TSMC transcript 只在关系方向匹配时出现；跨 Case、重排、未审文本注入、日期漂移、非法晋升、thesis 越权和未绑定期间关系全部 fail closed。这个结果是工程门，不是自然五单元内容门。
 
 五单元前仍需两个前置动作：第一，做有限 S2 回归，确认新增 transcript 只提供 source-bound QualitativeFact／Evidence，不生成精确 NumericFact；第二，为其余四单元逐一迁移最小 RoleMethodPack 和只从本案当前 Case／Evidence／NumericFact／typed relation 编译的 GraphContextPack。不得恢复旧图数据，也不得把五份 Pack 拼成重复长 Prompt。
+
+## 18. 稳定五单元自然执行器
+
+五单元不能把单单元 runner 机械复制五次。稳定执行器采用一条共享的自然 planner／当前 S1／S2 路径，再按 cell-local 权威分别执行五组“分析草案＋严格交卷”。某个单元失败后，runner 仍继续运行其余单元，以便一次 attempt 暴露完整问题面；失败单元的输出不进入业务判断。只有五个单元全部通过本地 Judgment 合同后，才允许一次模型自有的跨单元分析和一次严格综合提交。
+
+Harness 不生成研究结论。它只校验模型选择的 Evidence／NumericFact／NumericRelation／gap、绑定身份和期间，并在模型完成综合后确定性渲染精确数字、引用和关系。综合合同禁止自由数字、未知引用、自连接和未由五个已验证单元选择的材料。私有 full result 保存模型可见输入、原始最终输出和逐阶段失败；公开结果只保留 capture ref／digest／usage／失败码及通过状态，不保存模型文字、Tool 参数或私有 reasoning。
+
+当前 DELL 五单元 objective 另建新版本并显式允许已审 `EARNINGS_CALL_TRANSCRIPT`；旧 SEC-only objective 保持不可变。预算上限为 13 次模型调用：1 次规划、5 次单元分析、5 次单元交卷、1 次综合分析和 1 次综合交卷，0 retry／fallback／协议切换／外源网络／candidate promotion。13 是本次完整案例的可审计上限，不是未来产品固定调用次数。
+
+工程回归已证明：成功路径恰好完成 13 步并编译内部报告；任一单元 Tool 失败时，后续单元仍执行，综合跳过，partial terminal result 仍完整物化；跨单元上下文 receipt 已收窄到当前 cell。该结果仍只是 engineering pass。正式零调用 proof、clean/synced authority、自然 DELL 五单元、独立 L1、八维内容质量、paired gain 和 qualified-human 验收均待完成。

@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。其后五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack` successor 已通过正式零调用 R2：五个单元各有独立方法包，图上下文只从当前 DELL／当前 Evidence／NumericFact／typed relation 编译，跨案、跨单元、未知引用和方法未消费均 fail closed。该结果只说明五单元自然运行所需的资料房间和方法边界已摆正；模型尚未自然完成五单元、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。下一项是建立一份稳定、可恢复、exact-once 的自然五单元执行权威并运行 DELL 完整案例，不包含静默改变模型、数据采购、S4 publication 或 S5 release。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack` 已通过正式零调用 R2；稳定、可恢复的五单元 runner 也已完成 engineering regression：一次 planner／当前 S1／S2，五组 cell-local 分析与严格交卷，全部通过后才做模型自有综合，单元失败仍继续暴露后续问题。模型尚未自然完成五单元、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。下一项是 formal runner zero-call、clean authority 和自然 DELL 五单元，不包含静默改变模型、数据采购、S4 publication 或 S5 release。
 
 ## 当前唯一产品边界
 
@@ -89,7 +89,7 @@ FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、revi
 
 Owner 已批准从第一层连续推进到 S3 三案例验收；每一层仍需独立工程、L1 与内容门：`FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_ONE → Research Truth Spine → DELL dynamic single cell → DELL five cells → heterogeneous generalization report`
 
-截至 2026-08-17，前三层已关闭，DELL five-cell 的方法／图上下文零调用 R2 也已通过；当前唯一下一动作是自然 DELL 五单元 exact-once runner、fresh authority、live 与独立内容验收。零调用 R2 不授予模型权限，也不把 fake deliverable 发布到 Workbench。
+截至 2026-08-17，前三层已关闭，DELL five-cell 的方法／图上下文零调用 R2 与稳定 runner 工程回归也已通过；当前唯一下一动作是 formal runner zero-call、fresh authority、自然 live 与独立内容验收。零调用与 fake 结果不授予模型权限，也不发布到 Workbench。
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
@@ -346,3 +346,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 第一次 R1 已保留，业务证明通过但结果元数据仍使用硬编码旧日期且 next decision 忽略 Owner 既有授权。runner 修复后签发全新 R2；R2 `recorded_at=2026-08-17T00:36:58+08:00`，result digest=`da69170a...b7e`，0 model／Provider／network／embedding。
 - R2 输入包含 19 条模型可见 Evidence（其中 5 条 transcript）、25 个模型可见 NumericFact 和 10 个 residual gap；五个方法包和五个当前本案图包全部成立。该数据只描述当前编译输入，不代表这些资料足以支撑五个自然结论。
 - 当前状态为 five-cell context engineering pass、natural model quality false、cross-cell synthesis false、S3 acceptance false。下一步只能另建 clean exact-once natural DELL five-cell authority；完整 live 后依次做 L1、逐单元内容、跨单元综合、八维绝对质量、paired 和 qualified-human 验收。
+
+## 2026-08-17 S3 稳定五单元 runner 工程闭环
+
+- 新 runner 不复制五份单单元链。它只执行一次自然 planner 和当前 S1／S2，再让五个单元各自分析与严格交卷；某单元失败后仍继续其余单元，只有 5/5 合同有效才启动跨单元综合。
+- 新综合合同只允许消费五个已验证 Judgment 实际选择的 Evidence／NumericFact／NumericRelation／gap；自由数字、未知 ref、自连接或缺单元均 fail closed。Harness 只渲染权威表面，不代写观点。
+- per-cell context receipt 已收窄到当前单元，解决了“正文隔离但审计 selection 仍泄露其他四单元元数据”的真实工程问题。
+- DELL 新 objective 显式允许当前已审官方法说 transcript；旧 objective 保持不可变，避免用旧 SEC-only 范围把资料缺口误记成模型能力问题。
+- current S1／S2 预回放把旧自然 atoms 仅作为测试形状重新绑定新 objective：8 个请求中 6 个返回 8 条已审 Evidence，106 个未审候选 0 晋升，10 个 typed gap 保留；旧 objective ID 原样复用会正确拒绝，真实 live 必须重新规划。
+- 定向回归 `59 passed`、全仓 `411 passed`；active baseline 为 `133／8／10／0`。当前仍是 engineering pass，未调用模型或外部网络。下一步是 formal runner zero-call、clean push、fresh authority 和唯一自然 DELL 五单元。

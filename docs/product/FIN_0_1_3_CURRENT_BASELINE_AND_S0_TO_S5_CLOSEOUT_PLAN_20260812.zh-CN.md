@@ -60,9 +60,10 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
     - Research Context Closure R3/R4 与 replacement Chat R2 已完成：R2 正确消费 8 个 NumericFact、4 条同口径 relation、6 条 RoleMethod step 和 1 条当前 Graph edge，并保持 ASP／unit／PVM 为 open gap。最终仍把多因素公司／ISG 利润改善过强归因于 AI server，并加入未绑定的 semi-fixed cost 机制，故因果归因 L1 fail，五单元继续 blocked。
 22. **角色 Skill／图谱／DeepSeek Harness 重新资格（只读审计已完成）**：旧 fundamental、industry/supply-chain、product、valuation、risk、lead、writer、verifier 方法选择性迁移；旧 renderer／aggregator 和重复版本不恢复。旧图数据不复用，完整 typed graph handler 留在 S1。官方 Harness 的 scoped Skill、progressive disclosure、context log 和 preset 只作为 provider-neutral pack 的可选 shadow 宿主，不接管金融 Evidence／NumericFact 权威。
 23. **S1→S3 全链审计（只读完成、纵切方向已获 Owner 授权）**：审计确认当前主链的最早产品断点是 `candidate → EvidenceResponse` 未在 Agent loop 内闭合；S2 只对标准公司财务事实形成权威，订单／积压／销量／ASP／PVM／产品利润桥与估值仍缺 typed authority；S3 则缺 claim scope 与 causal bridge 强制门。原先单独的 S3 causal gate 仍有必要，但若不与 S1 Evidence 回流和 S2 operating-metric／bridge 纵切一起设计，只会得到更安全但可能更空的结论。Owner 已授权在完整 fixed-Pack 通过后闭合这条动态 Research Truth Spine；该授权不允许跳过 fixed-Pack 门或直接运行五单元。
-24. **三层验收与第一层（fixed-Pack 已关闭，动态单单元 L1 修复在途）**：fixed Pack 只测试“给定合格资料时能否可靠分析”，不计作 Agentic Research；第二层才是 DELL 单单元动态 S1/S2/EvidenceResponse 纵切；第三层才是五单元动态完整案例。动态 R1 加 R3 successor 已自然完成 planner、当前 S1/S2 和三片段 Judgment，但独立 L1 发现公司毛利率同比关系与另一报告期的服务器组合材料被写成“同期”。`RC-S3-028` 归 S3 时间关系权威：先零调用编译 TemporalAuthority、回放真实失败，再只允许一次 counter 同片段非思考修复；planner、S1/S2、thesis、mechanism 和 counter analysis 均不得重跑。动态单单元 L1／内容门通过后，仍须先处理 `RC-S1-019` reviewed transcript 与当前索引／来源路由不同步，才进入高质量五单元。
-25. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
-26. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
+24. **三层验收前两层与 S1 来源同步（已关闭）**：fixed Pack 只测试“给定合格资料时能否可靠分析”，不计作 Agentic Research；第二层 DELL `value_capture` 已自然经历 planner、当前 S1/S2、reviewed-only EvidenceResponse、三个 Judgment 片段和一次有界同片段修复，独立 L1 与适用内容质量 `21/24` 通过。`RC-S3-028` 已由 TemporalAuthority 和模型自有修正文关闭。随后三案全量回放关闭 `RC-S1-019`：Dell 与 TSMC 已审法说进入当前对象库和受控 slot 路由，三案 reviewed source 对象级缺失为 0；formal v1.4 普通 DELL demand request 可命中 Dell 法说且未审候选 0 晋升。该同步不等于 S1 排序／角色质量或 S3 产品通过。
+25. **DELL 五单元动态完整案例（下一产品门）**：先做有限 S2 非回归，证明法说叙事不会越权成为 NumericFact；再为需求真实性、经营表现、价值捕获、现金／资产负债表、瓶颈／反方／WWC 五单元迁移最小 RoleMethodPack 和本案即时 GraphContextPack。零调用复证通过后才执行自然动态案例，并依次验收身份／期间／来源／数值 L1、逐单元判断、跨单元综合、八维绝对质量、paired gain 和 qualified-human 内容。一次完整运行不能自动等同 S3 acceptance。
+26. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
+27. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
 ## 4A. 2026-08-15／16 Owner 连续执行授权
 

@@ -34,17 +34,18 @@ flowchart LR
 官方补充源 live R1–R4 也分别保留：
 
 - NVDA Q1 FY2027 10-Q 成功 capture，并进入当前对象库。
-- Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 经官方 IR 页面确认真实存在，但当前产品 transport 在有界尝试中超时。
+- Dell Q1 FY2027 transcript、Micron Q3 FY2026 prepared remarks 经官方 IR 页面确认真实存在；历史自动 transport 在有界尝试中超时。Dell 后续经人工官方 PDF intake、统一 parser 和 Evidence Gate 入库，Micron prepared remarks 仍为 typed gap。
 - R1 暴露隐藏 retry 计数不诚实，R3 暴露外层 timeout 与 retry 总预算不一致；当前 runner 已改成显式 transport、显式 retry ceiling、安全异常和不可变 attempt。R4 到停止线后不再追加轮试。
 
-因此，Dell/Micron 不是“资料不存在”，而是当前产品 transport 未取得原始 PDF；它们归 S1-D 补源，不允许用搜索摘要冒充正文。
+因此，Micron 不是“资料不存在”，而是当前产品 transport 尚未取得原始 PDF；它继续归 S1-D 补源，不允许用搜索摘要冒充正文。Dell 的历史失败和后续人工官方入库均保留，不把成功结果倒写回旧 attempt。
 
 ## 3. 当前工程结果
 
-- 父文档：`28`
-- retrieval children：`1,805`
-- 来自 immutable current capture 的 children：`290`
-- DELL / MU / NVDA / TSM children：`666 / 436 / 261 / 2`（另有 MSFT 关系背景 `440`）
+- 父文档：`30`
+- retrieval children：`1,841`
+- 来自 immutable current capture 的 children：`326`
+- DELL / MU / NVDA / TSM children：`680 / 436 / 261 / 24`（另有 MSFT 关系背景 `440`）
+- `EARNINGS_CALL_TRANSCRIPT` children：`36`（Dell `14`／TSMC `22`）
 - table children：`627`；不平衡表：`0`
 - 最大 child：`8,449` 字符；超限 child：`0`
 - 三案 17/17 lane 均非空，required source role 和身份/截至日硬约束均无失败。
@@ -68,7 +69,7 @@ flowchart LR
 
 S1-B 记为工程通过但带 typed gaps；S1 整体仍未通过。下一项只做 S1-C：
 
-1. 冻结这份 `1,805`-child store，sparse、dense 和 rerank 必须消费同一对象与同一 qrels。
+1. 冻结这份 `1,841`-child successor store，sparse、dense 和 rerank 必须消费同一对象与同一 qrels。
 2. 以具体业务错误衡量排序：旧期压新期、风险段冒充现金、主题共现冒充关系、通用股价风险冒充估值。
 3. dense/rerank 只有在提高 required-slot target-in-pool 且不扩大错实体、错期和关系污染时才可进入 Runtime。
 4. S1-C 后再由真实 residual gaps 驱动 S1-D；当前已知 S1-D 包括 Dell/Micron PDF transport、TSM 先进封装和新鲜估值数据。
@@ -83,3 +84,17 @@ S1-B 记为工程通过但带 typed gaps；S1 整体仍未通过。下一项只�
 - 真实数据移动端第一次复证因长 lane ID/来源标签出现横向溢出而失败；当前消费者已允许有界换行，随后两种数据模式均通过。
 - Secret scan：6,254 个文件、0 finding。
 - 本阶段未调用模型；来源 live 仅限前述有界官方 capture R1–R4，达到停止线后未再轮试。
+
+## 7. 2026-08-16 reviewed Pack 同步 successor
+
+动态 DELL 单单元暴露了一个新的 S1 一致性缺口：Dell 法说已是 current reviewed Evidence，却不在 current object store 中。全量三案回放进一步发现 TSMC 法说也存在同类漂移。根因是组合 Evidence Pack 的逐 artifact 私有根目录没有进入 snapshot 编译合同，且 source manifest 未登记两份解析后的官方 PDF；这不是 BM25、Embedding 或 DeepSeek 的错误。
+
+successor 做了三项结构修复：
+
+1. snapshot builder 对每个 Evidence artifact 使用其内容寻址的 `private_object_root_relative`，并对越界路径、缺文件、超限字节和 digest 漂移 fail closed；
+2. Dell 与 TSMC parsed official transcript 进入唯一 current source manifest 和对象构建入口；
+3. `EARNINGS_CALL_TRANSCRIPT` 只授权给需求、经营、价值捕获和供给执行等相关 slot，关系主体仍须精确绑定。Transcript 数字不获得 S2 NumericFact 权威。
+
+结果是三案 reviewed source 的对象级缺失归零；普通 DELL demand 请求可在不预喂 Pack 的情况下从当前 S1 命中 Dell 法说。TSMC 法说只有在供应关系边界下作为候选，不会成为 Dell 自述或供应分配证明；MU／NVDA 的跨案匹配保持 false。current snapshot digest=`d63aadd3...f44a`，formal Truth Spine v1.4 digest=`816ad515...a82`。
+
+这一关闭只解决“资料已经复核，却无法被当前检索发现”。reviewed target 仍可能因为查询、对象形状、金融角色或排序而未进入 top-k；candidate 也仍不是 Evidence。S1-C 排名／Evidence Role、MU prepared remarks 和 PIT 估值继续开放。

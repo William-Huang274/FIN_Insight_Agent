@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层和 DELL `value_capture` 动态单单元均已关闭：自然用户问题实际经过 DeepSeek planner、当前 S1/S2、request-scoped reviewed-only EvidenceResponse、三个模型判断片段和一次有界时间关系自修正，最终合同、独立 L1 与适用内容质量 `21/24` 通过，未审候选 0 晋升，终态诚实保持 `insufficient_evidence / not_inferable / bridge_unavailable`。R4 明确把 Q3 FY2026 服务器 mix 材料降为历史背景，并说明其与 Q1 FY2027 对 Q1 FY2026 毛利率变化的同期关系未证明；`RC-S3-028` 因此关闭。该结果仍只是一个动态研究单元，不是五单元研报或 S3 通过。当前最早责任层回到 S1：reviewed Dell transcript 在 Pack 中可见、动态检索却不可发现；必须关闭 `RC-S1-019` 并重编受影响输入后，才可签发 DELL 五单元。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
+FIN 0.1.3 的 fixed-Pack 第一层和 DELL `value_capture` 动态单单元均已关闭：自然用户问题实际经过 DeepSeek planner、当前 S1/S2、request-scoped reviewed-only EvidenceResponse、三个模型判断片段和一次有界时间关系自修正，最终合同、独立 L1 与适用内容质量 `21/24` 通过，未审候选 0 晋升，终态诚实保持 `insufficient_evidence / not_inferable / bridge_unavailable`。`RC-S3-028` 已关闭。随后 `RC-S1-019` 的全量三案回放发现并修复了 Dell 与 TSMC 已审法说“在 Pack 中可见、在当前检索对象库中不可发现”的共同漂移；30 个父文档、1,841 个子对象和三案 reviewed source 的对象级缺失现为 0，动态零调用 Truth Spine 已自然从普通 S1 请求命中 Dell 法说。该结果只关闭来源同步工程缺口，不等于 S1 排序／Evidence Role、五单元研报或 S3 产品验收通过。下一项是有限 S2 依赖回归和 DELL 五研究单元动态案例的资格化，不包含静默改变模型、数据采购、S4 publication 或 S5 release。
 
 ## 当前唯一产品边界
 
@@ -15,7 +15,7 @@ FIN 0.1.3 的 fixed-Pack 第一层和 DELL `value_capture` 动态单单元均已
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。受控计划 API 已能把 Objective/atoms 同时送入 S1 联合候选与 private S2 mart；Operations 可按预登记官方 route 自动抓取或人工上传 PDF，并保证原始字节先进入私有不可变 source-only capture。S3 fixed-Pack 第一层已自然形成并验收 DELL `value_capture` 的 thesis、mechanism、counterargument／WWC 与一次 typed repair。动态控制面已真实完成 DELL 单单元的自然 planner、S1/S2、EvidenceResponse 和三个模型片段，但独立 L1 抓到跨报告期“同期”越界，因此当前只证明动态链能运行且诚实保留 gap，不能声称动态单单元或 Agentic Research 已通过。TemporalAuthority 正在补齐；reviewed Pack 与检索索引也尚未完全同步，五单元与 S3 产品通过继续禁止；reviewed Evidence 页面本身的结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。当前对象库也已把这两份法说纳入受控查询路线：Dell 法说可由本案需求、经营、价值捕获和供给单元检索，TSMC 法说只能在绑定关系方向时作为供应链背景，不能冒充 Dell 自述或供应分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；动态单元真实经历 planner、S1/S2、EvidenceResponse、三个模型片段和一次有界修复。当前仍未证明的是其他四单元、跨单元综合、完整八维研报质量、MU/NVDA／留出案例泛化和 S3 产品验收；reviewed Evidence 页面本身的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 
@@ -318,3 +318,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 模型自行说明较早期间服务器 mix 材料与近季公司毛利率变化的同期关联未证明，只能作为历史背景；公司毛利率同比下降仍只作为公司层反方观察，没有归因给 AI 服务器或升级成产品盈亏事实。
 - 独立 L1 通过；单单元适用内容质量 `21/24`。非阻断 L2 为“新增加价型”措辞不精确，以及 WWC 仍应更直接请求产品收入—成本—利润桥。正式八维完整研报分仍待五单元。
 - `RC-S3-028` 关闭，DELL `value_capture` 动态单单元 accepted。下一项回到最早责任层 `RC-S1-019`，同步 reviewed Dell transcript 与当前检索对象／来源路由并重编受影响输入；五单元、异质泛化和 S3 acceptance 继续为 false。
+
+## 2026-08-16 S1 reviewed source 与当前检索同步关闭
+
+- `RC-S1-019` 的全量回放确认根因不是单条 Dell URL，而是 reviewed Pack 与 current source manifest／object store 由两套清单维护。Dell Q1 FY2027 法说和 TSMC Q2 2026 法说页均已审、已进入当前 DELL Pack，但旧 current object store 不理解组合 Pack 的逐 artifact 私有根目录，也未登记两份解析文档。
+- 当前 successor source manifest 已将两份解析后的官方法说纳入同一 capture-bound 对象构建入口；对象库由 `28／1,805／290` 更新为 `30／1,841／326`（父文档／子对象／来自当前不可变 capture 的子对象），其中法说子对象 36 条：Dell 14、TSMC 22。三案 reviewed source 的对象级缺失均为 0。
+- `EARNINGS_CALL_TRANSCRIPT` 只加入需求、经营、价值捕获和供给执行等相关 slot；它没有获得 S2 NumericFact 权限。TSMC 法说只有在当前 Case 绑定供应关系时才可进入候选，不能成为 Dell 自述或精确供应分配权威；MU／NVDA 看到 Dell 法说时 `reviewed_pack_match=false`，不会跨案晋升。
+- current compiled objects=`20,761`（claim 12,055／metric row 7,500／bounded parent context 1,206）；Qwen3 dense cache 与 snapshot 已重建，snapshot digest=`d63aadd3...f44a`，Runtime Registry 晋升 R12。formal Truth Spine v1.4 digest=`816ad515...a82`，普通 DELL demand request 实际命中 Dell 法说 page 3，未审候选晋升为 0，三案污染／顺序／日期／promotion mutation 全部 fail closed。
+- 全仓 `393 passed`；active baseline=`131／8／10／0`；secret scan=`6,744／0`。实现提交 `6c4e6592...12a` 已推送。
+- 关闭边界：这只证明 reviewed source 能被当前检索发现并安全进入 reviewed-only EvidenceResponse。S1 排名头部稳定性、Evidence Role、MU prepared remarks、PIT 估值仍未关闭；当前 reviewed target 进入 top candidate 的比例仍有限。不得把本结果写成 S1 产品通过、自然五单元、完整研报、泛化或 S3 acceptance。
+- 下一步：先做有限 S2 依赖回归，确认 transcript 没有越权生成 NumericFact；然后迁移其余四个 RoleMethodPack／cell-scoped GraphContextPack，先零调用复证，再决定并执行 DELL 五单元自然动态案例。

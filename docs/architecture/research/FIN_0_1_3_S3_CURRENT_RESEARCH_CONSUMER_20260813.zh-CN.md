@@ -44,7 +44,7 @@ Harness 不得生成或改写研究结论；模型也不得自由重写精确事
 
 ### 3.1 Reviewed source policy 与开放检索 policy 分离
 
-Dell/TSM 官方托管 transcript 已经过人工 route、parser、对象编译和 Evidence Gate，因此可以作为 reviewed Evidence 被 S3 消费；这不会把 `EARNINGS_CALL_TRANSCRIPT` 自动加入 S1 开放检索白名单，也不会让 transcript 数字获得 S2 NumericFact 权限。
+Dell/TSM 官方托管 transcript 已经过人工 route、parser、对象编译和 Evidence Gate，因此可以作为 reviewed Evidence 被 S3 消费。`RC-S1-019` successor 还把它们加入 current S1 对象库，但只对需求、经营、价值捕获和供给执行等相关 slot 开放，并继续执行本案身份与关系方向硬约束；这不是全局白名单。Transcript 数字仍不获得 S2 NumericFact 权限。
 
 ### 3.2 request 级重复不能冒充多份经济证据
 
@@ -371,3 +371,11 @@ fixed-Pack ClaimRelation 模板不是动态研究的默认权限清单。Evidenc
 - abstaining thesis 对终态形成上限，后续 mechanism／counterargument 只能补充边界，不能升格结论。
 
 这一合同关闭的是动态 Judgment 集成安全，不是研究内容能力。formal v1.2 的 DELL controlled fragments 能形成完整终态与 deliverable，但终态只能是 `insufficient_evidence / not_inferable / bridge_unavailable`；模型、Provider 和外部网络调用均为 0。自然 planner、自然 Judgment、动态 Agentic Research、五单元和三案例泛化仍必须由后续独立 live 与内容验收证明。
+
+## 17. Reviewed source 同步后的 S3 输入边界
+
+`RC-S1-019` 关闭后，动态 S3 不再需要在 SEC-only 与 current reviewed Pack 之间做临时二选一。普通 EvidenceRequest 可以执行当前 S1，并把已被本案 reviewed Pack 精确复核的 Dell transcript 候选回接成 EvidenceResponse；未审候选仍只返回 candidate／typed gap，0 自动晋升。
+
+formal Truth Spine v1.4 已在零模型下证明：DELL demand 请求自然命中 Dell transcript page 3；TSMC transcript 只在关系方向匹配时出现；跨 Case、重排、未审文本注入、日期漂移、非法晋升、thesis 越权和未绑定期间关系全部 fail closed。这个结果是工程门，不是自然五单元内容门。
+
+五单元前仍需两个前置动作：第一，做有限 S2 回归，确认新增 transcript 只提供 source-bound QualitativeFact／Evidence，不生成精确 NumericFact；第二，为其余四单元逐一迁移最小 RoleMethodPack 和只从本案当前 Case／Evidence／NumericFact／typed relation 编译的 GraphContextPack。不得恢复旧图数据，也不得把五份 Pack 拼成重复长 Prompt。

@@ -364,3 +364,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - `RC-S2-004` 未被假装关闭。DELL 产品收入到公司／分部利润的权威桥仍缺失；本次只允许模型保留 typed gap 或得出不可推断，不允许正向 AI 利润归因。`RC-S3-014/015` 只对这一次有界完整案例放行，不授予泛化或 S3 acceptance。
 - 当前五单元预投影为 8 个请求、8 条已审 Evidence、106 个未审候选、10 个 typed gap、0 promotion。全仓 `413 passed`、compileall 通过、active baseline `133／8／10／0`、secret scan `6,765／0`。
 - 下一步从本轮干净同步提交签发唯一 fresh authority 并执行自然 DELL 五单元；自然结果仍须独立做金融 L1、逐单元内容、跨单元综合、八维质量、paired 和 qualified-human 验收。
+
+## 2026-08-17 S3 DELL 五单元 R1–R3 最新状态
+
+- R1 的自然 Planner、当前 S1/S2 与动态输入保持不可变；policy v1.4 已修复价值获取 10 条合法 NumericFact 与旧静态上限 8 的容量矛盾。
+- R2 精确复用该前缀，需求质量与经营表现通过；价值、现金、反方三个分析节点均在旧 8,000 completion 预算中耗尽。R2 已不可变保存。
+- provider-neutral 紧凑 analysis-only 视图和 authority-driven 部分节点恢复已通过正式零调用门：保留所有 Evidence／NumericFact／Relation／Method／Graph／gap，去除交卷 schema 与 transport 诊断；两次独立 102 tests、全仓 423、活动图与 secret scan 通过。
+- R3 只执行三个失败单元。三次分析均自然完成，三次严格 Tool Call 均返回；现金转换通过，价值获取因 `mechanism_atom` 写入 `10-Q`、反方因 `thesis_atom` 写入 `FY27 Q1` 与 `8-K` 被当前 no-digit atom 合同拒绝。R3 共 6 calls，0 retry／fallback／network／new Evidence，综合未执行。
+- 这不是 R2 的容量复发。请求与 Tool description 已明确声明 prose 不得带数字、日期、URL、ref 或数值带；模型仍复制分析草稿中的来源期次，而服务端 schema 尚未把该语义写成 `pattern`。当前最早责任层为 S3 统一语义合同编译器＋严格提交 profile，不是 S1/S2、Skill、Graph 或网络。
+- 下一步只允许零调用编译同一 forbidden-surface predicate 到 strict JSON Schema `pattern`，保留本地校验，并让稳定 runner 复用 R3 两份成功分析，只重做价值／反方交卷和两次综合，最多 4 次新调用。不得手工清洗 R3，也不得重跑 Planner、S1/S2 或三个已验证 Judgment。
+- 即使下一 successor 合同通过，价值获取原始文字中“AI 组合压低毛利率”的方向性机制仍须独立金融 L1 审查。五单元、完整报告、八维质量、异质泛化、qualified-human 与 S3 acceptance 继续为 false。

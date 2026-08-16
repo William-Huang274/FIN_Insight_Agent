@@ -1,0 +1,155 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_partial_successor_live_failure_assessment_v1_0",
+  "status": "terminal_partial_three_of_five_contract_valid_two_strict_submission_surface_rejected",
+  "recorded_at": "2026-08-17T04:33:06+08:00",
+  "case_key": "DELL",
+  "run_id": "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_partial_successor_chat_live_authority_v1_0.json",
+  "authority_sha256": "2f38000a7cd4289d35466d8053328c24c9e1a252cf3db1999c19695f71047c3a",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_partial_successor_chat_live_result_v1_0.json",
+  "result_sha256": "8bdb2d20cda22c8b8afa2e5a9cf900ba616b185a76728b3dd34260b2c9d29232",
+  "result_digest": "cbc22e5898645e8e4c3213fa46b9e8ec3709fcc3457281f30ca371f98dc2f051",
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/full_result.json",
+  "private_full_result_sha256": "4e71e208b276c4bfea6ecdb8103c6f455d84b167bb696d6aa18761373fb46766",
+  "observed": {
+    "immutable_R1_planner_reused": true,
+    "immutable_current_S1_S2_reused": true,
+    "immutable_R2_valid_cell_judgments_reused": 2,
+    "planner_or_retrieval_reruns": 0,
+    "model_calls_attempted": 6,
+    "analysis_nodes_naturally_completed": 3,
+    "strict_tool_calls_returned": 3,
+    "accepted_cell_judgments_total": 3,
+    "accepted_cell_ids": [
+      "CELL::demand_quality",
+      "CELL::operating_performance",
+      "CELL::cash_conversion"
+    ],
+    "newly_accepted_cell_ids": ["CELL::cash_conversion"],
+    "rejected_cell_ids": ["CELL::value_capture", "CELL::counterevidence"],
+    "synthesis_attempted": false,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0
+  },
+  "analysis_convergence": [
+    {
+      "cell_id": "CELL::value_capture",
+      "finish_reason": "stop",
+      "prompt_tokens": 4898,
+      "completion_tokens": 5475,
+      "reasoning_tokens": 4440,
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/FIVE-CELL-R3-VALUE-ANALYSIS-01/model_visible_request.json",
+      "request_capture_sha256": "8cb6d74fa7db50ea8ae7a4256160c398f47fbcd96b072071ab49a32d0d460d3c",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/FIVE-CELL-R3-VALUE-ANALYSIS-01/provider_response.json",
+      "response_capture_sha256": "495df80c9211ece6eebc7b77621f6f30e644531307cf4fba21f7ce7746799a94"
+    },
+    {
+      "cell_id": "CELL::cash_conversion",
+      "finish_reason": "stop",
+      "prompt_tokens": 4449,
+      "completion_tokens": 6747,
+      "reasoning_tokens": 5926,
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/FIVE-CELL-R3-CASH-ANALYSIS-01/model_visible_request.json",
+      "request_capture_sha256": "18080489b270c00d11463d4c65fc7cda8a6b2b7adb4e11fb05633220d4a054dc",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/FIVE-CELL-R3-CASH-ANALYSIS-01/provider_response.json",
+      "response_capture_sha256": "0ac490266c2e8c2dcb7a1cfa69764d01d81860964a7f9ad73e9f64f11c8d5c33"
+    },
+    {
+      "cell_id": "CELL::counterevidence",
+      "finish_reason": "stop",
+      "prompt_tokens": 2432,
+      "completion_tokens": 7528,
+      "reasoning_tokens": 6793,
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/FIVE-CELL-R3-COUNTER-ANALYSIS-01/model_visible_request.json",
+      "request_capture_sha256": "e507946107f310002e21e0a47aa915dae270eb697bb190037cce01bfc8cea0da",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/FIVE-CELL-R3-COUNTER-ANALYSIS-01/provider_response.json",
+      "response_capture_sha256": "2ce532f54a02dc3c3e6ea968d2ca0a860e3d54ddded838ea4cc43de640fe9bc7"
+    }
+  ],
+  "strict_submission_findings": [
+    {
+      "cell_id": "CELL::value_capture",
+      "failure_code": "research_consumer_mechanism_atom_invalid",
+      "field": "mechanism_atom",
+      "field_chars": 174,
+      "forbidden_surface": "10-Q",
+      "other_atom_surface_failures": 0,
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/FIVE-CELL-R3-VALUE-SUBMISSION-01/model_visible_request.json",
+      "request_capture_sha256": "981487db0ca238e000a3218b4f168e675232216e08ce3726bd3fe3b25d4ee20f",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/FIVE-CELL-R3-VALUE-SUBMISSION-01/provider_response.json",
+      "response_capture_sha256": "f97c85b7dbfdc1ede6792d2aa9422990dd5bb8d21e5a9892b46ffe6c19528e20"
+    },
+    {
+      "cell_id": "CELL::counterevidence",
+      "failure_code": "research_consumer_thesis_atom_invalid",
+      "field": "thesis_atom",
+      "field_chars": 119,
+      "forbidden_surfaces": ["FY27 Q1", "8-K"],
+      "other_atom_surface_failures": 0,
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/FIVE-CELL-R3-COUNTER-SUBMISSION-01/model_visible_request.json",
+      "request_capture_sha256": "ab184329eef1e6b2b646ba6e52bdfc058204631b71b068ec5d9c4d6289275959",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R3/FIVE-CELL-R3-COUNTER-SUBMISSION-01/provider_response.json",
+      "response_capture_sha256": "c30528d0ef3a9682a8c97004f904ecf2020bb3689a9594e3a77f042ddd4160f3"
+    }
+  ],
+  "contract_visibility_audit": {
+    "submission_messages_say_atoms_without_digits": true,
+    "tool_descriptions_say_atoms_without_digits_units_dates_URLs_refs_or_verbal_numeric_bands": true,
+    "tool_strict_enabled": true,
+    "server_schema_encoded_forbidden_surface_pattern": false,
+    "local_validator_enforced_forbidden_surface_predicate": true,
+    "conclusion": "The model ignored an explicit semantic surface rule, while strict JSON guaranteed shape only because the same local predicate was not encoded as a JSON Schema string pattern."
+  },
+  "business_assessment": {
+    "cash_conversion": "通过本地 Judgment 合同。模型用净利到经营现金流、再扣资本开支和资本化软件开发的公司层现金桥判断现金转换为正且改善，同时把应付时点和资本开支增速作为边界，并明确不能把公司现金改善自动归因给 AI 服务器。",
+    "value_capture": "未取得可验收 Judgment。除文件名表面违规外，原始机制句仍含 AI 服务器组合压低毛利率的方向性因果措辞；即使下一次合同通过，也必须由独立金融 L1 检查其是否越过现有产品到公司利润桥 typed gap。",
+    "counterevidence": "未取得可验收 Judgment。原始内容能够区分库存约束与已实现需求恶化，并承认公司全栈结果缺少 AI 单一桥梁；但来源期次表面违规，且必须在有效 Judgment 后再检查其证据角色与时间权威。",
+    "new_financial_L1_in_cash_conversion": false,
+    "formal_five_cell_L1": false,
+    "reason_formal_five_cell_L1_false": "value_capture、counterevidence 与跨单元综合均未形成有效合同产物。"
+  },
+  "root_cause": {
+    "owning_layer": "S3 provider-neutral semantic contract compiler plus DeepSeek strict-submission profile",
+    "classification": "explicit_semantic_surface_rule_not_compiled_into_server_schema_pattern_plus_model_submission_noncompliance",
+    "evidence": [
+      "both failed requests explicitly described all three atoms as digit-free",
+      "both tool calls were structurally valid but copied filing or fiscal-period labels from the analysis draft",
+      "the local validator rejected exactly the two digit-bearing fields and no other atom field",
+      "DeepSeek GA strict Tool Calls officially supports JSON Schema string pattern while the current tool schema uses description only"
+    ],
+    "not_caused_by": [
+      "R2 analysis-view density or completion budget",
+      "network or HTTP transport",
+      "natural planner",
+      "current S1 retrieval or S2 NumericFact",
+      "RoleMethodPack or GraphContextPack absence",
+      "JSON shape, enum, ref identity or tool-call transport",
+      "a false positive in the currently approved no-digit atom policy"
+    ]
+  },
+  "successor_disposition": {
+    "preserve_R1_R2_and_R3": true,
+    "salvage_rejected_R3_tool_arguments": false,
+    "rerun_natural_planner_or_current_S1_S2": false,
+    "rerun_three_valid_cell_judgments": false,
+    "rerun_R3_analysis_nodes": false,
+    "reuse_R3_value_and_counter_analysis_drafts_as_immutable_working_text": true,
+    "repair_scope": "compile the existing provider-neutral forbidden-surface predicate into every strict model-owned prose string schema using a supported JSON Schema pattern, retain the local validator, replay R3 and mutations, and add within-cell analysis-node resume",
+    "remaining_fresh_nodes": [
+      "CELL::value_capture submission",
+      "CELL::counterevidence submission",
+      "five-cell synthesis analysis",
+      "five-cell synthesis submission"
+    ],
+    "maximum_fresh_model_calls": 4,
+    "retry_count": 0,
+    "new_evidence_or_authority": false,
+    "contract_relaxation": false,
+    "document_identifier_policy": "filing identifiers may remain in structured source metadata or qualified evidence_route only; they remain forbidden in model-owned judgment atoms",
+    "scope_if_successful": "validate all five cells, run synthesis, compile the report and perform independent financial L1 and content-quality assessment",
+    "scope_if_failed_again": "preserve the successor and decide whether DeepSeek retains strict prose-submission authority; do not add another prompt-only reminder or per-field patch"
+  },
+  "known_boundary": "R3 proves that the compact analysis view solved the prior three-node convergence failure and adds one valid cash-conversion judgment. It does not prove value capture, counterevidence, five-cell synthesis, complete-report L1, content quality, heterogeneous generalization, qualified-human acceptance, S3 acceptance, publication or release."
+}

@@ -30,6 +30,7 @@ from sec_agent.research.current_consumer import (
     validate_current_research_evidence_route,
     validate_current_research_output,
 )
+import sec_agent.research.current_consumer as current_consumer
 from sec_agent.research.claim_authority import (
     compile_claim_authority_research_input,
     load_claim_authority_policy,
@@ -45,6 +46,10 @@ POLICY = ROOT / (
 FIVE_CELL_POLICY = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_3.json"
+)
+FIVE_CELL_POLICY_SUCCESSOR = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_4.json"
 )
 OBJECTIVE = ROOT / (
     "configs/research/evals/"
@@ -990,6 +995,153 @@ def five_cell_context_input(
         evidence_pack=evidence_pack,
         controlled_plan=controlled,
     )
+
+
+def _value_capture_capacity_fixture() -> tuple[
+    list[dict[str, object]], list[dict[str, object]]
+]:
+    cards: list[dict[str, object]] = []
+    relations: list[dict[str, object]] = []
+    for metric_id in (
+        "revenue",
+        "gross_profit",
+        "gross_margin",
+        "operating_income",
+        "operating_margin",
+    ):
+        current_ref = f"NUM::{metric_id.upper()}::CURRENT"
+        prior_ref = f"NUM::{metric_id.upper()}::PRIOR"
+        cards.extend(
+            [
+                {
+                    "numeric_ref": current_ref,
+                    "ticker": "DELL",
+                    "metric_id": metric_id,
+                },
+                {
+                    "numeric_ref": prior_ref,
+                    "ticker": "DELL",
+                    "metric_id": metric_id,
+                },
+            ]
+        )
+        relations.append(
+            {
+                "current_numeric_ref": current_ref,
+                "comparison_numeric_ref": prior_ref,
+            }
+        )
+    return cards, relations
+
+
+def test_five_cell_policy_successor_derives_value_capacity_from_atomic_bundle(
+) -> None:
+    policy = load_current_research_consumer_policy(
+        _json(FIVE_CELL_POLICY_SUCCESSOR)
+    )
+    contract = next(
+        row
+        for row in policy["cell_contracts"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    capacity = contract["numeric_capacity_contract"]
+    assert contract["maximum_numeric_facts"] == 10
+    assert len(capacity["allowed_metric_ids"]) == 5
+    assert capacity["maximum_periods_per_metric"] == 2
+    assert capacity["same_cadence_pair_atomic"] is True
+
+    weakened = _json(FIVE_CELL_POLICY_SUCCESSOR)
+    next(
+        row
+        for row in weakened["cell_contracts"]
+        if row["cell_id"] == "CELL::value_capture"
+    )["maximum_numeric_facts"] = 9
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_numeric_capacity_contract_invalid",
+    ):
+        load_current_research_consumer_policy(weakened)
+
+
+def test_value_capture_atomic_ten_is_order_stable_and_plus_one_fails_closed(
+) -> None:
+    policy = load_current_research_consumer_policy(
+        _json(FIVE_CELL_POLICY_SUCCESSOR)
+    )
+    contract = next(
+        row
+        for row in policy["cell_contracts"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    cards, relations = _value_capture_capacity_fixture()
+    current_consumer._enforce_cell_numeric_capacity(
+        cards=cards,
+        relation_cards=relations,
+        contract=contract,
+        case_key="DELL",
+    )
+    current_consumer._enforce_cell_numeric_capacity(
+        cards=list(reversed(cards)),
+        relation_cards=list(reversed(relations)),
+        contract=contract,
+        case_key="DELL",
+    )
+
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_cell_capacity_exceeded",
+    ):
+        current_consumer._enforce_cell_numeric_capacity(
+            cards=cards
+            + [
+                {
+                    "numeric_ref": "NUM::NET_INCOME::CURRENT",
+                    "ticker": "DELL",
+                    "metric_id": "net_income",
+                }
+            ],
+            relation_cards=relations,
+            contract=contract,
+            case_key="DELL",
+        )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_code"),
+    [
+        ("duplicate", "research_consumer_numeric_capacity_duplicate_invalid"),
+        ("cross_case", "research_consumer_numeric_capacity_ticker_invalid"),
+        (
+            "missing_pair_relation",
+            "research_consumer_numeric_capacity_comparable_pair_invalid",
+        ),
+    ],
+)
+def test_value_capture_atomic_bundle_mutations_fail_closed(
+    mutation: str, expected_code: str
+) -> None:
+    policy = load_current_research_consumer_policy(
+        _json(FIVE_CELL_POLICY_SUCCESSOR)
+    )
+    contract = next(
+        row
+        for row in policy["cell_contracts"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    cards, relations = _value_capture_capacity_fixture()
+    if mutation == "duplicate":
+        cards[-1] = dict(cards[0])
+    elif mutation == "cross_case":
+        cards[0] = {**cards[0], "ticker": "MU"}
+    else:
+        relations = relations[1:]
+    with pytest.raises(CurrentResearchConsumerError, match=expected_code):
+        current_consumer._enforce_cell_numeric_capacity(
+            cards=cards,
+            relation_cards=relations,
+            contract=contract,
+            case_key="DELL",
+        )
 
 
 def test_five_cell_context_successor_preserves_v1_2_and_binds_one_method_pack_per_cell(

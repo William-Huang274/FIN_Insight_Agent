@@ -264,42 +264,18 @@ def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() 
     assert result["credential_value_persisted"] is False
 
 
-def test_dynamic_five_cell_decision_binds_proof_predecessors_and_profiles() -> None:
-    result = build_preflight(
-        root=ROOT,
-        decision_ref=DYNAMIC_FIVE_CELL_DECISION_REF,
-        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
-        check_repository=False,
-    )
-
-    assert result["status"] == "pass_current_decision_bound_preflight"
-    assert result["run_scope_id"] == "one_DELL_dynamic_five_cell_exact_once"
-    assert result["decision_projection"]["dynamic_five_cell_successor"] is True
-    assert result["decision_projection"]["node_profiles"] == {
-        "planner_profile_ref": {
-            "thinking": {"type": "enabled"},
-            "reasoning_effort": "max",
-            "max_tokens": 16000,
-        },
-        "analysis_profile_ref": {
-            "thinking": {"type": "enabled"},
-            "reasoning_effort": "high",
-            "max_tokens": 8000,
-        },
-        "submission_profile_ref": {
-            "thinking": {"type": "disabled"},
-            "reasoning_effort": None,
-            "max_tokens": 2000,
-        },
-    }
-    assert {
-        "RC-S2-004-product-operating-metric-and-profit-bridge-authority-missing",
-        "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget",
-        "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence",
-    }.issubset(set(result["scope_projection"]["explicit_allow_issue_ids"]))
-    assert result["network_calls"] == 0
-    assert result["provider_calls"] == 0
-    assert result["credential_value_persisted"] is False
+def test_historical_dynamic_five_cell_decision_fails_closed_after_consumer_successor(
+) -> None:
+    with pytest.raises(
+        ValueError,
+        match="project_os_five_cell_runner_source_drift:current_consumer",
+    ):
+        build_preflight(
+            root=ROOT,
+            decision_ref=DYNAMIC_FIVE_CELL_DECISION_REF,
+            environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+            check_repository=False,
+        )
 
 
 def test_dynamic_five_cell_decision_rejects_weakened_runner_proof(

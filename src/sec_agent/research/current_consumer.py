@@ -32,6 +32,13 @@ from .claim_surface_authority import (
 CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION = (
     "fin_ia_current_research_consumer_policy_v1_2"
 )
+CURRENT_RESEARCH_CONSUMER_POLICY_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_current_research_consumer_policy_v1_3"
+)
+_SUPPORTED_CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSIONS = {
+    CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION,
+    CURRENT_RESEARCH_CONSUMER_POLICY_SUCCESSOR_SCHEMA_VERSION,
+}
 CURRENT_RESEARCH_INPUT_SCHEMA_VERSION = "fin_ia_current_research_input_v1_1"
 CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION = (
     "fin_ia_current_research_judgment_payload_v1_2"
@@ -137,10 +144,15 @@ def load_current_research_consumer_policy(
         "authority",
     }
     _require(set(payload) == expected, "research_consumer_policy_fields_invalid")
+    schema_version = str(payload.get("schema_version") or "")
     _require(
-        payload.get("schema_version")
-        == CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION,
+        schema_version
+        in _SUPPORTED_CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSIONS,
         "research_consumer_policy_schema_invalid",
+    )
+    successor_capacity_contract = (
+        schema_version
+        == CURRENT_RESEARCH_CONSUMER_POLICY_SUCCESSOR_SCHEMA_VERSION
     )
     _require(
         payload.get("status")
@@ -208,6 +220,8 @@ def load_current_research_consumer_policy(
         "maximum_evidence_items",
         "maximum_numeric_facts",
     }
+    if successor_capacity_contract:
+        cell_fields.add("numeric_capacity_contract")
     for raw in raw_cells:
         row = _mapping(raw, "research_consumer_cell_contract_invalid")
         _require(
@@ -224,6 +238,57 @@ def load_current_research_consumer_policy(
         )
         max_evidence = int(row.get("maximum_evidence_items") or 0)
         max_numeric = int(row.get("maximum_numeric_facts") or 0)
+        capacity_contract: dict[str, Any] | None = None
+        if successor_capacity_contract:
+            raw_capacity = _mapping(
+                row.get("numeric_capacity_contract"),
+                "research_consumer_numeric_capacity_contract_invalid",
+            )
+            mode = str(raw_capacity.get("mode") or "")
+            if mode == "static_upper_bound":
+                _require(
+                    dict(raw_capacity) == {"mode": "static_upper_bound"},
+                    "research_consumer_numeric_capacity_contract_invalid",
+                )
+                capacity_contract = {"mode": mode}
+            elif mode == "metric_period_bundle":
+                _require(
+                    set(raw_capacity)
+                    == {
+                        "mode",
+                        "allowed_metric_ids",
+                        "maximum_periods_per_metric",
+                        "same_cadence_pair_atomic",
+                        "subject_ticker_only",
+                    },
+                    "research_consumer_numeric_capacity_contract_invalid",
+                )
+                allowed_metric_ids = _unique_strings(
+                    raw_capacity.get("allowed_metric_ids"),
+                    "research_consumer_numeric_capacity_metrics_invalid",
+                )
+                maximum_periods = int(
+                    raw_capacity.get("maximum_periods_per_metric") or 0
+                )
+                _require(
+                    maximum_periods == 2
+                    and raw_capacity.get("same_cadence_pair_atomic") is True
+                    and raw_capacity.get("subject_ticker_only") is True
+                    and len(allowed_metric_ids) * maximum_periods
+                    == max_numeric,
+                    "research_consumer_numeric_capacity_contract_invalid",
+                )
+                capacity_contract = {
+                    "mode": mode,
+                    "allowed_metric_ids": list(allowed_metric_ids),
+                    "maximum_periods_per_metric": maximum_periods,
+                    "same_cadence_pair_atomic": True,
+                    "subject_ticker_only": True,
+                }
+            else:
+                raise CurrentResearchConsumerError(
+                    "research_consumer_numeric_capacity_contract_invalid"
+                )
         _require(
             cell_id
             and title
@@ -241,6 +306,11 @@ def load_current_research_consumer_policy(
             {
                 **dict(row),
                 "supplemental_context_slot_ids": list(supplemental),
+                **(
+                    {"numeric_capacity_contract": capacity_contract}
+                    if successor_capacity_contract
+                    else {}
+                ),
             }
         )
     numeric_selection = _mapping(
@@ -736,6 +806,91 @@ def _select_numeric_cards(
     }
 
 
+def _enforce_cell_numeric_capacity(
+    *,
+    cards: Sequence[Mapping[str, Any]],
+    relation_cards: Sequence[Mapping[str, Any]],
+    contract: Mapping[str, Any],
+    case_key: str,
+) -> None:
+    """Validate a cell's selected facts against its declared atomic view.
+
+    Historical policies use a static upper bound.  The v1.3 policy successor
+    can additionally bind a complete metric-by-period bundle.  That prevents a
+    route from legally producing more facts than the downstream consumer can
+    accept, while keeping comparable current/prior pairs intact.
+    """
+
+    maximum = int(contract["maximum_numeric_facts"])
+    _require(
+        len(cards) <= maximum,
+        "research_consumer_cell_capacity_exceeded",
+    )
+    capacity = contract.get("numeric_capacity_contract")
+    if not isinstance(capacity, Mapping):
+        return
+    mode = str(capacity.get("mode") or "")
+    if mode == "static_upper_bound":
+        return
+    _require(
+        mode == "metric_period_bundle",
+        "research_consumer_numeric_capacity_contract_invalid",
+    )
+    allowed_metrics = set(capacity.get("allowed_metric_ids") or ())
+    maximum_periods = int(capacity.get("maximum_periods_per_metric") or 0)
+    _require(
+        len(allowed_metrics) * maximum_periods == maximum,
+        "research_consumer_numeric_capacity_contract_invalid",
+    )
+    refs = [str(row.get("numeric_ref") or "") for row in cards]
+    _require(
+        all(refs) and len(refs) == len(set(refs)),
+        "research_consumer_numeric_capacity_duplicate_invalid",
+    )
+    _require(
+        all(str(row.get("metric_id") or "") in allowed_metrics for row in cards),
+        "research_consumer_numeric_capacity_metric_invalid",
+    )
+    if capacity.get("subject_ticker_only") is True:
+        _require(
+            all(str(row.get("ticker") or "").upper() == case_key for row in cards),
+            "research_consumer_numeric_capacity_ticker_invalid",
+        )
+
+    grouped: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+    for row in cards:
+        grouped.setdefault(
+            (
+                str(row.get("ticker") or "").upper(),
+                str(row.get("metric_id") or ""),
+            ),
+            [],
+        ).append(row)
+    _require(
+        all(len(rows) <= maximum_periods for rows in grouped.values()),
+        "research_consumer_numeric_capacity_period_count_invalid",
+    )
+    if capacity.get("same_cadence_pair_atomic") is not True:
+        return
+    relation_pairs = {
+        frozenset(
+            {
+                str(row.get("current_numeric_ref") or ""),
+                str(row.get("comparison_numeric_ref") or ""),
+            }
+        )
+        for row in relation_cards
+    }
+    for rows in grouped.values():
+        if len(rows) != maximum_periods:
+            continue
+        pair = frozenset(str(row.get("numeric_ref") or "") for row in rows)
+        _require(
+            pair in relation_pairs,
+            "research_consumer_numeric_capacity_comparable_pair_invalid",
+        )
+
+
 def _decimal_text(value: Decimal) -> str:
     text = format(value, "f")
     if "." in text:
@@ -999,9 +1154,14 @@ def compile_current_research_input(
             row for row in gap_cards if row["slot_id"] in eligible_slots
         ]
         _require(
-            len(cell_evidence) <= int(contract["maximum_evidence_items"])
-            and len(cell_numeric) <= int(contract["maximum_numeric_facts"]),
+            len(cell_evidence) <= int(contract["maximum_evidence_items"]),
             "research_consumer_cell_capacity_exceeded",
+        )
+        _enforce_cell_numeric_capacity(
+            cards=cell_numeric,
+            relation_cards=cell_numeric_relations,
+            contract=contract,
+            case_key=case_key,
         )
         facets = sorted(
             {
@@ -2270,6 +2430,7 @@ def compile_current_research_deliverable(
 
 __all__ = [
     "CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION",
+    "CURRENT_RESEARCH_CONSUMER_POLICY_SUCCESSOR_SCHEMA_VERSION",
     "CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION",
     "CURRENT_RESEARCH_INPUT_SCHEMA_VERSION",
     "CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION",

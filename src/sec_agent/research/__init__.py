@@ -25,7 +25,10 @@ from .official_pdf_evidence import (
     validate_official_pdf_evidence_policy,
 )
 from .current_consumer import (
+    CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
     CurrentResearchConsumerError,
+    bind_current_research_model_text_schema_definition,
+    compile_current_research_model_text_schema,
     compile_current_research_deliverable,
     compile_current_research_input,
     compile_current_research_messages,
@@ -104,6 +107,7 @@ from .paired_submission import (
 )
 
 __all__ = [
+    "CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN",
     "ReviewedEvidencePackError",
     "CompiledResearchPlan",
     "DeferredPlannerAtom",
@@ -112,6 +116,8 @@ __all__ = [
     "ResearchPlanningPolicy",
     "OfficialPdfEvidenceError",
     "CurrentResearchConsumerError",
+    "bind_current_research_model_text_schema_definition",
+    "compile_current_research_model_text_schema",
     "ClaimAuthorityError",
     "ClaimSurfaceAuthorityError",
     "BoundedFinanceLoopError",

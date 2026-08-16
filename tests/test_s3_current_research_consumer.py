@@ -4,6 +4,7 @@ from copy import deepcopy
 import importlib.util
 import json
 from pathlib import Path
+import re
 import sys
 
 import pytest
@@ -21,13 +22,17 @@ from apps.workbench.backend.application.research_retrieval_service import (
     ResearchRetrievalService,
 )
 from sec_agent.research.current_consumer import (
+    CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
     CurrentResearchConsumerError,
+    bind_current_research_model_text_schema_definition,
+    compile_current_research_model_text_schema,
     compile_current_research_deliverable,
     compile_current_research_input,
     compile_current_research_messages,
     load_current_research_consumer_policy,
     parse_current_research_output,
     validate_current_research_evidence_route,
+    validate_current_research_model_text,
     validate_current_research_output,
 )
 import sec_agent.research.current_consumer as current_consumer
@@ -905,6 +910,80 @@ def test_parser_requires_exact_json() -> None:
         parse_current_research_output("```json\n{}\n```")
     with pytest.raises(CurrentResearchConsumerError, match="json_invalid"):
         parse_current_research_output("not-json")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "公司需求存在支撑但利润转化仍需直接证据验证",
+        "Demand is supported while the profit bridge remains unproven",
+    ],
+)
+def test_model_text_server_pattern_accepts_valid_financial_prose(
+    text: str,
+) -> None:
+    assert re.fullmatch(CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN, text)
+    assert (
+        validate_current_research_model_text(
+            text,
+            maximum=200,
+            code="test_model_text_invalid",
+        )
+        == text
+    )
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "The conclusion follows from the 10-Q filing",
+        "The FY27 Q1 result supports the conclusion",
+        "The 8-K filing supports the conclusion",
+        "Margin improved by 20% according to the filing",
+        "Revenue reached $ amount while profit lagged",
+        "Revenue stated in USD supports the conclusion",
+        "Verify the conclusion at https://example.com/source",
+        "The selected NUM::DELL::REVENUE ref supports the conclusion",
+        "利润改善处于中个位数区间但归因仍不明确",
+        "利润改善处于两位数区间但归因仍不明确",
+        "利润改善约三十个基点但归因仍不明确",
+    ],
+)
+def test_model_text_server_pattern_and_local_validator_reject_same_surfaces(
+    text: str,
+) -> None:
+    assert re.fullmatch(CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN, text) is None
+    with pytest.raises(CurrentResearchConsumerError, match="test_model_text_invalid"):
+        validate_current_research_model_text(
+            text,
+            maximum=200,
+            code="test_model_text_invalid",
+        )
+
+
+def test_model_text_schema_uses_one_shared_server_predicate() -> None:
+    field = compile_current_research_model_text_schema(
+        description="Model-owned financial judgment atom."
+    )
+    schema = bind_current_research_model_text_schema_definition(
+        {
+            "type": "object",
+            "properties": {"thesis_atom": field},
+            "required": ["thesis_atom"],
+            "additionalProperties": False,
+        }
+    )
+
+    assert field == {
+        "$ref": "#/$defs/t",
+        "description": "Model-owned financial judgment atom.",
+    }
+    assert schema["$defs"] == {
+        "t": {
+            "type": "string",
+            "pattern": CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
+        }
+    }
 
 
 def test_clean_reproof_authority_binds_head_upstream_and_only_itself_untracked(

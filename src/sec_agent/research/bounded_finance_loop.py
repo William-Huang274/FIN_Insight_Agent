@@ -25,6 +25,8 @@ from sec_agent.providers.agent_protocol import (
 
 from .current_consumer import (
     CurrentResearchConsumerError,
+    bind_current_research_model_text_schema_definition,
+    compile_current_research_model_text_schema,
     compile_current_research_deliverable,
     validate_current_research_model_text,
     validate_current_research_output,
@@ -1100,18 +1102,16 @@ def _judgment_parameters(
         return schema
     wwc = _strict_object(
         {
-            "observable": {
-                "type": "string",
-                "description": "Observable variable without digits or refs.",
-            },
+            "observable": compile_current_research_model_text_schema(
+                description="Observable variable without digits or refs."
+            ),
             "direction": {
                 "type": "string",
                 "enum": list(contract["allowed_wwc_directions"]),
             },
-            "time_horizon": {
-                "type": "string",
-                "description": "Bounded non-numeric horizon.",
-            },
+            "time_horizon": compile_current_research_model_text_schema(
+                description="Bounded non-numeric horizon."
+            ),
             "evidence_route": {
                 "type": "string",
                 "description": "Where to verify without URL or citation.",
@@ -1274,34 +1274,33 @@ def _judgment_parameters(
                 graph_edge_refs,
                 description="Current GraphContextPack edges actually used.",
             ),
-            "thesis_atom": {
-                "type": "string",
-                "description": (
+            "thesis_atom": compile_current_research_model_text_schema(
+                description=(
                     "Company-specific conclusion without digits, units, dates, "
                     "URLs, reference IDs or verbal numeric bands. Select NUM/QF "
                     "refs instead and refer generically to the stated target; "
                     "the Harness renders authoritative value surfaces."
-                ),
-            },
-            "mechanism_atom": {
-                "type": "string",
-                "description": (
+                )
+            ),
+            "mechanism_atom": compile_current_research_model_text_schema(
+                description=(
                     "Economic mechanism without digits, units, dates, URLs, "
                     "reference IDs or verbal numeric bands. Select NUM/QF refs "
                     "instead; the Harness renders authoritative value surfaces."
-                ),
-            },
-            "counterargument_atom": {
-                "type": "string",
-                "description": (
+                )
+            ),
+            "counterargument_atom": compile_current_research_model_text_schema(
+                description=(
                     "Strongest bounded alternative without digits, units, dates, "
                     "URLs, reference IDs or verbal numeric bands. Select NUM/QF "
                     "refs instead; the Harness renders authoritative value surfaces."
-                ),
-            },
+                )
+            ),
             "what_would_change": wwc,
         }
-    return _strict_object(properties)
+    return bind_current_research_model_text_schema_definition(
+        _strict_object(properties)
+    )
 
 
 def _micro_ref_array(
@@ -1455,16 +1454,15 @@ def _micro_judgment_parameters(
                 "type": "string",
                 "enum": list(contract["allowed_causal_bridge_authorities"]),
             },
-            "thesis_atom": {
-                "type": "string",
-                "description": (
+            "thesis_atom": compile_current_research_model_text_schema(
+                description=(
                     "Company-specific conclusion without digits, units, dates, "
                     "URLs, reference IDs or verbal numeric bands such as "
                     "'single-digit' or '中个位数'. Select NUM/QF refs "
                     "instead and refer generically to the stated target; the "
                     "Harness renders authoritative value surfaces."
-                ),
-            },
+                )
+            ),
         }
     elif atom_field == "mechanism_atom":
         common = {
@@ -1476,14 +1474,13 @@ def _micro_judgment_parameters(
                     "Inference authority for this mechanism fragment only."
                 ),
             },
-            "mechanism_atom": {
-                "type": "string",
-                "description": (
+            "mechanism_atom": compile_current_research_model_text_schema(
+                description=(
                     "Economic mechanism without digits, units, dates, URLs, "
                     "reference IDs or verbal numeric bands. Select NUM/QF refs "
                     "instead; the Harness renders authoritative value surfaces."
-                ),
-            },
+                )
+            ),
         }
     else:
         common = {
@@ -1495,34 +1492,31 @@ def _micro_judgment_parameters(
                     "Inference authority for this counterargument fragment only."
                 ),
             },
-            "counterargument_atom": {
-                "type": "string",
-                "description": (
+            "counterargument_atom": compile_current_research_model_text_schema(
+                description=(
                     "Strongest bounded alternative without digits, units, dates, "
                     "URLs, reference IDs or verbal numeric bands. Select NUM/QF "
                     "refs instead; the Harness renders authoritative value surfaces."
-                ),
-            },
+                )
+            ),
             "what_would_change": _strict_object(
                 {
-                    "observable": {
-                        "type": "string",
-                        "description": (
+                    "observable": compile_current_research_model_text_schema(
+                        description=(
                             "Observable variable without digits, dates, units, "
                             "reference IDs or verbal numeric bands."
-                        ),
-                    },
+                        )
+                    ),
                     "direction": {
                         "type": "string",
                         "enum": list(contract["allowed_wwc_directions"]),
                     },
-                    "time_horizon": {
-                        "type": "string",
-                        "description": (
+                    "time_horizon": compile_current_research_model_text_schema(
+                        description=(
                             "Bounded non-numeric horizon without a calendar value; "
                             "the Harness binds authoritative periods separately."
-                        ),
-                    },
+                        )
+                    ),
                     "evidence_route": {
                         "type": "string",
                         "description": "Where to verify without URL or citation.",
@@ -1535,7 +1529,9 @@ def _micro_judgment_parameters(
                 }
             ),
         }
-    return _strict_object(common)
+    return bind_current_research_model_text_schema_definition(
+        _strict_object(common)
+    )
 
 
 def compile_finance_micro_judgment_tools(

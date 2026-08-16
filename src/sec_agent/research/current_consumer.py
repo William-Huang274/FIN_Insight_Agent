@@ -76,6 +76,18 @@ _VERBAL_NUMERIC_SURFACE = re.compile(
 _ALIAS_IN_PROSE = re.compile(
     r"\b(?:EV|NUM|REL|GAP|METHOD|GRAPH|QF)::[A-Z0-9:_-]{4,128}\b"
 )
+CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN = (
+    r"^(?![\s\S]*(?:"
+    r"[0-9０-９$€£¥￥%％]"
+    r"|\b(?:[Uu][Ss][Dd]|[Cc][Nn][Yy]|[Ee][Uu][Rr]|[Jj][Pp][Yy]|[Bb][Pp][Ss]?)\b"
+    r"|[Hh][Tt][Tt][Pp][Ss]?://"
+    r"|\b(?:EV|NUM|REL|GAP|METHOD|GRAPH|QF)::[A-Z0-9:_-]{4,128}\b"
+    r"|百分之[零一二两三四五六七八九十百千万亿点]+"
+    r"|[零一二两三四五六七八九十百千万亿]+位数"
+    r"|(?:个|两|双|多)位数"
+    r"|[零一二两三四五六七八九十百千万亿点]+个基点"
+    r"))[\s\S]+$"
+)
 _YEAR_OVER_YEAR_SURFACE = re.compile(
     r"同比|较上年同期|year[- ]over[- ]year|\byoy\b|prior[- ]year quarter",
     re.IGNORECASE,
@@ -1799,14 +1811,48 @@ def validate_current_research_model_text(
     text = str(value or "").strip()
     _require(
         minimum <= len(text) <= maximum
-        and not _DIGIT_OR_FINANCIAL_SURFACE.search(text)
-        and not _VERBAL_NUMERIC_SURFACE.search(text)
-        and not _ALIAS_IN_PROSE.search(text)
-        and "http://" not in text.casefold()
-        and "https://" not in text.casefold(),
+        and re.fullmatch(CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN, text)
+        is not None,
         code,
     )
     return text
+
+
+def compile_current_research_model_text_schema(
+    *, description: str
+) -> dict[str, str]:
+    """Reference the shared strict-wire model-prose predicate.
+
+    Length remains a local contract because the current DeepSeek strict JSON
+    Schema subset supports ``pattern`` but not ``minLength`` or ``maxLength``.
+    """
+
+    normalized = str(description or "").strip()
+    _require(bool(normalized), "research_consumer_model_text_schema_invalid")
+    return {
+        "$ref": "#/$defs/t",
+        "description": normalized,
+    }
+
+
+def bind_current_research_model_text_schema_definition(
+    schema: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Attach one reusable definition instead of duplicating a long pattern."""
+
+    _require(
+        isinstance(schema, Mapping) and "$defs" not in schema,
+        "research_consumer_model_text_schema_invalid",
+    )
+    return {
+        **deepcopy(dict(schema)),
+        "$defs": {
+            "t": {
+                "type": "string",
+                "pattern": CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
+            }
+        },
+    }
 
 
 def validate_current_research_evidence_route(
@@ -2429,12 +2475,15 @@ def compile_current_research_deliverable(
 
 
 __all__ = [
+    "CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN",
     "CURRENT_RESEARCH_CONSUMER_POLICY_SCHEMA_VERSION",
     "CURRENT_RESEARCH_CONSUMER_POLICY_SUCCESSOR_SCHEMA_VERSION",
     "CURRENT_RESEARCH_DELIVERABLE_SCHEMA_VERSION",
     "CURRENT_RESEARCH_INPUT_SCHEMA_VERSION",
     "CURRENT_RESEARCH_JUDGMENT_SCHEMA_VERSION",
     "CurrentResearchConsumerError",
+    "bind_current_research_model_text_schema_definition",
+    "compile_current_research_model_text_schema",
     "compile_current_research_deliverable",
     "compile_current_research_input",
     "compile_current_research_messages",

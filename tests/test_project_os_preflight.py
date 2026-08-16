@@ -11,6 +11,7 @@ from sec_agent.project_os_preflight import (
     FIXED_PACK_SCOPE,
     FRAGMENT_VALIDATION_REPAIR_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
+    _validate_dynamic_five_cell_partial_successor_decision,
     _validate_fragment_validation_repair_decision,
     _validate_failed_fragment_submission_successor_decision,
     build_preflight,
@@ -301,20 +302,16 @@ def test_historical_dynamic_five_cell_remaining_nodes_successor_fails_after_part
         )
 
 
-def test_dynamic_five_cell_partial_successor_binds_compact_projection_and_failed_nodes() -> None:
-    result = build_preflight(
+def test_historical_dynamic_five_cell_partial_successor_remains_bound_but_closed_after_r3() -> None:
+    decision = json.loads(
+        (ROOT / DYNAMIC_FIVE_CELL_PARTIAL_SUCCESSOR_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    projection = _validate_dynamic_five_cell_partial_successor_decision(
         root=ROOT,
-        decision_ref=DYNAMIC_FIVE_CELL_PARTIAL_SUCCESSOR_DECISION_REF,
-        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
-        check_repository=False,
+        decision=decision,
     )
-
-    assert result["status"] == "pass_current_decision_bound_preflight"
-    assert result["run_scope_id"] == (
-        "one_DELL_dynamic_five_cell_partial_successor_"
-        "failed_three_plus_synthesis"
-    )
-    projection = result["decision_projection"]
     assert projection["dynamic_five_cell_partial_successor"] is True
     assert projection["dynamic_five_cell_remaining_nodes_successor"] is False
     assert projection["node_profiles"] == {
@@ -329,9 +326,22 @@ def test_dynamic_five_cell_partial_successor_binds_compact_projection_and_failed
             "max_tokens": 2000,
         },
     }
-    assert result["network_calls"] == 0
-    assert result["provider_calls"] == 0
-    assert result["credential_value_persisted"] is False
+
+    with pytest.raises(
+        ValueError,
+        match="project_os_dynamic_five_cell_partial_scope_allowance_missing",
+    ):
+        build_preflight(
+            root=ROOT,
+            decision_ref=DYNAMIC_FIVE_CELL_PARTIAL_SUCCESSOR_DECISION_REF,
+            environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+            check_repository=False,
+        )
+
+    assert decision["run_scope_id"] == (
+        "one_DELL_dynamic_five_cell_partial_successor_"
+        "failed_three_plus_synthesis"
+    )
 
 
 def test_dynamic_five_cell_decision_rejects_weakened_runner_proof(

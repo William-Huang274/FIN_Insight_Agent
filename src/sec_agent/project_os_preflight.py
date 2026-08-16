@@ -170,6 +170,22 @@ def _git_blob_sha256(*, root: Path, commit: str, ref: str) -> str:
     return hashlib.sha256(completed.stdout).hexdigest()
 
 
+def _git_latest_commit_for_ref(*, root: Path, ref: str) -> str:
+    _repo_path(root, ref)
+    completed = subprocess.run(
+        ["git", "log", "-1", "--format=%H", "--", ref],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    commit = completed.stdout.strip().lower()
+    if completed.returncode != 0 or not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise ValueError("project_os_historical_ref_commit_missing")
+    return commit
+
+
 def _repo_path(root: Path, ref: str) -> Path:
     if not ref or Path(ref).is_absolute():
         raise ValueError(f"project_os_ref_not_repo_relative:{ref}")
@@ -1368,13 +1384,23 @@ def _validate_dynamic_five_cell_partial_successor_decision(
         raise ValueError(
             "project_os_five_cell_partial_successor_bindings_invalid"
         )
+    implementation_commit = str(proof.get("implementation_commit") or "")
+    proof_commit = _git_latest_commit_for_ref(
+        root=root,
+        ref=str(decision.get("partial_successor_zero_call_result_ref") or ""),
+    )
     for name, row in source_bindings.items():
         if not isinstance(row, Mapping):
             raise ValueError(
                 "project_os_five_cell_partial_successor_bindings_invalid"
             )
-        path = _repo_path(root, str(row.get("ref") or ""))
-        if _sha256(path) != str(row.get("sha256") or ""):
+        ref = str(row.get("ref") or "")
+        _repo_path(root, ref)
+        expected_sha = str(row.get("sha256") or "")
+        if not any(
+            _git_blob_sha256(root=root, commit=commit, ref=ref) == expected_sha
+            for commit in {implementation_commit, proof_commit}
+        ):
             raise ValueError(
                 f"project_os_five_cell_partial_successor_source_drift:{name}"
             )

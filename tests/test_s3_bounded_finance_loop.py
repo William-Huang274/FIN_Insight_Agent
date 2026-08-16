@@ -61,6 +61,7 @@ from sec_agent.research.bounded_finance_loop import (
     validate_finance_micro_judgment_fragment,
 )
 from sec_agent.research.current_consumer import (
+    CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
     CurrentResearchConsumerError,
     compile_current_research_deliverable,
     compile_current_research_input,
@@ -560,7 +561,19 @@ def test_claim_relation_alias_loop_compacts_wire_and_retains_private_lineage(
     )
     prior = _json(CLAIM_SURFACE_R1_CAPACITY_ASSESSMENT)["observed"]
     assert message_chars < prior["step_two_model_visible_message_chars"] / 2
-    assert tool_chars < prior["step_two_tool_schema_chars"] * 0.55
+    submit_schema = tools[-1]["function"]["parameters"]
+    assert submit_schema["$defs"] == {
+        "t": {
+            "type": "string",
+            "pattern": CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
+        }
+    }
+    assert submit_schema["properties"]["thesis_atom"]["$ref"] == "#/$defs/t"
+    assert submit_schema["properties"]["mechanism_atom"]["$ref"] == "#/$defs/t"
+    assert submit_schema["properties"]["counterargument_atom"]["$ref"] == (
+        "#/$defs/t"
+    )
+    assert tool_chars < prior["step_two_tool_schema_chars"] * 0.58
 
     tool_results = [
         json.loads(row["content"])
@@ -713,6 +726,18 @@ def test_micro_judgment_loop_keeps_model_authorship_and_compiles_terminal_cell(
     assert "counterargument_atom" in counter_schema["properties"]
     assert "inference_authority" in counter_schema["properties"]
     assert "what_would_change" in counter_schema["properties"]
+    for schema, field in (
+        (thesis_schema, "thesis_atom"),
+        (mechanism_schema, "mechanism_atom"),
+        (counter_schema, "counterargument_atom"),
+    ):
+        assert schema["$defs"] == {
+            "t": {
+                "type": "string",
+                "pattern": CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
+            }
+        }
+        assert schema["properties"][field]["$ref"] == "#/$defs/t"
 
     fragments = _micro_alias_fragments()
     observed_active_tools: list[list[str]] = []

@@ -7,6 +7,8 @@ from typing import Any, Mapping, Sequence
 from .bounded_finance_loop import compile_finance_judgment_tool
 from .current_consumer import (
     CurrentResearchConsumerError,
+    bind_current_research_model_text_schema_definition,
+    compile_current_research_model_text_schema,
     compile_current_research_messages,
     validate_current_research_evidence_route,
     validate_current_research_model_text,
@@ -569,20 +571,25 @@ def compile_five_cell_synthesis_submission(
             "from_cell_id": {"type": "string", "enum": cell_ids},
             "to_cell_id": {"type": "string", "enum": cell_ids},
             "relation": {"type": "string", "enum": sorted(_LINK_RELATIONS)},
-            "explanation": {
-                "type": "string",
-                "description": "Cross-cell relation without digits, dates, units, refs or citations.",
-            },
+            "explanation": compile_current_research_model_text_schema(
+                description=(
+                    "Cross-cell relation without digits, dates, units, refs or citations."
+                )
+            ),
         }
     )
     wwc = strict_object(
         {
-            "observable": {"type": "string"},
+            "observable": compile_current_research_model_text_schema(
+                description="Observable variable without digits, dates, units or refs."
+            ),
             "direction": {
                 "type": "string",
                 "enum": list(contract["allowed_wwc_directions"]),
             },
-            "time_horizon": {"type": "string"},
+            "time_horizon": compile_current_research_model_text_schema(
+                description="Bounded non-numeric horizon without a calendar value."
+            ),
             "evidence_route": {"type": "string"},
             "threshold_numeric_ref": {
                 "type": "string",
@@ -590,7 +597,7 @@ def compile_five_cell_synthesis_submission(
             },
         }
     )
-    parameters = strict_object(
+    parameters = bind_current_research_model_text_schema_definition(strict_object(
         {
             "overall_judgment": {
                 "type": "string",
@@ -604,9 +611,15 @@ def compile_five_cell_synthesis_submission(
                 "type": "string",
                 "enum": list(contract["allowed_inference_authorities"]),
             },
-            "executive_thesis": {"type": "string"},
-            "cross_cell_mechanism": {"type": "string"},
-            "strongest_counterargument": {"type": "string"},
+            "executive_thesis": compile_current_research_model_text_schema(
+                description="Five-cell executive thesis without digits, dates, units, URLs or refs."
+            ),
+            "cross_cell_mechanism": compile_current_research_model_text_schema(
+                description="Cross-cell economic mechanism without digits, dates, units, URLs or refs."
+            ),
+            "strongest_counterargument": compile_current_research_model_text_schema(
+                description="Strongest cross-cell alternative without digits, dates, units, URLs or refs."
+            ),
             "key_cell_ids": {
                 "type": "array",
                 "items": {"type": "string", "enum": cell_ids},
@@ -628,7 +641,7 @@ def compile_five_cell_synthesis_submission(
             "remaining_gap_refs": ref_array(selected["remaining_gap_refs"]),
             "what_would_change": wwc,
         }
-    )
+    ))
     tool = {
         "type": "function",
         "function": {

@@ -19,6 +19,7 @@ from apps.workbench.backend.application.research_retrieval_service import (
 )
 from scripts.research.run_s3_current_research_consumer_zero_call import _services
 from sec_agent.research.current_consumer import (
+    CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
     compile_current_research_deliverable,
     compile_current_research_input,
     compile_current_research_messages,
@@ -271,6 +272,22 @@ def test_five_cell_synthesis_uses_only_validated_cell_refs(
     assert all("numeric_relations" not in row for row in synthesis_view["cells"])
     assert len(submission) == 4
     assert tool["function"]["name"] == "submit_five_cell_synthesis"
+    synthesis_schema = tool["function"]["parameters"]
+    assert synthesis_schema["$defs"] == {
+        "t": {
+            "type": "string",
+            "pattern": CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
+        }
+    }
+    for field in (
+        "executive_thesis",
+        "cross_cell_mechanism",
+        "strongest_counterargument",
+    ):
+        assert synthesis_schema["properties"][field]["$ref"] == "#/$defs/t"
+    assert synthesis_schema["properties"]["cell_links"]["items"]["properties"][
+        "explanation"
+    ]["$ref"] == "#/$defs/t"
 
     report = compile_five_cell_report(
         research_input=five_cell_input,

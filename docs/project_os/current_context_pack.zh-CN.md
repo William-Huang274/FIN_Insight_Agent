@@ -232,3 +232,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 新 profile 显式 `thinking=disabled` 且省略 `reasoning_effort`；provider-neutral 核心新增合法 fragment prefix resume compiler。R6 已成功的五个模型节点按不可变摘要复用，下一次只能重交失败的 counter／WWC，不能重跑分析或前序提交。
 - formal v1.7 两个 fresh process 字节等价，result digest=`3e762d63...e7b0`；profile／分析 mutation 均 fail closed，三案例 full-fake 无 identity／Graph 污染。实现提交 `a5b2f6be...`，本轮治理复证全仓 `358 passed`，active baseline `127/8/10/0`，secret scan `6,681/0`。
 - 当前仍只是 engineering pass。须完成 decision-bound Project OS preflight 和唯一 failed-node successor live；自然 Tool、终态 Judgment、fixed-Pack L1 与内容质量通过前，动态 Truth Spine、五单元、异质泛化报告、S3 acceptance 与发布均为 false。
+
+## 2026-08-16 S3 失败节点 successor R7
+
+- R7 只执行了 R6 失败的 counter／WWC 交卷，前五个模型节点按摘要复用。新的 `thinking=disabled`／省略 `reasoning_effort` profile 在 540 completion tokens 内返回一个完整 Tool Call；R6 的 reasoning budget exhaustion 未复发，RC-S3-022 获得 live closure。
+- 模型选择 `PROFIT_BRIDGE_GAP` 与 `not_inferable`，但 counter atom 又把低毛利 AI 服务器占比、其他分部组合和一次性因素写成公司毛利率回落的正向“驱动”。当前 Evidence Pack 没有这些因果权威；同分句 guard 命中 AI 服务器主体、毛利结果、`驱动` 且无否定，因此 `claim_surface_narrative_relation_conflict` 是真实 L1 拒绝，不是 validator 误报。
+- R7 保持不可变，不能删词 salvage，也不能放宽因果门。新的最早产品缺口是：Runtime 尚未把 typed terminal validation failure 作为 Tool result 返回给模型做一次有界修正。下一项是 provider-neutral 的同片段 repair turn：不重跑分析或前五节点、不增证据、不改合同，最多一次新交卷；先保存响应 replay、mutation、完整终态 fake 和 fresh proof，再决定 live repair。
+- fixed-Pack Layer One、动态 Truth Spine、DELL 五单元、异质泛化报告、S3 acceptance 与发布仍为 false。

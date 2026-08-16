@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_s3_failed_fragment_validation_repair_fixture_v1_0",
+  "source_run_id": "FIN013-S3-DELL-VC-COUNTER-SUBMISSION-SUCCESSOR-R1",
+  "source_attempt_id": "COUNTER-SUBMISSION-SUCCESSOR-R1",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_failed_counter_submission_successor_chat_live_result_v1_0.json",
+  "source_result_sha256": "072e630392552c614cb7c632d822f6b3934ae081b313ecce4a2114af9d7307d1",
+  "source_result_digest": "4a036d98f892016952df642c89583cfb1e8dbb0d8acde4dd9657b7d5672b629f",
+  "source_response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-VC-COUNTER-SUBMISSION-SUCCESSOR-R1/COUNTER-SUBMISSION-SUCCESSOR-R1/provider_response.json",
+  "source_response_capture_sha256": "9902de03ace22fdaa357e0cc63d6c8110adcdce09a9db949e51db53f61e5f504",
+  "source_response_digest": "3e3592d247f06f8cee3ec9eb9ff64d2f7e415db998b48bce8a9a493bb0fb16b7",
+  "source_tool_call_id": "call_00_LyBvAyaiVnSAKOq4ZgaF9365",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "fragment_tool": "submit_research_counterargument_and_wwc",
+  "terminal_failure_code": "claim_surface_narrative_relation_conflict",
+  "rejected_fragment": {
+    "cell_id": "CELL::value_capture",
+    "claim_relation_ref": "CR::DELL::PROFIT_BRIDGE_GAP",
+    "evidence_uses": [
+      {
+        "evidence_ref": "EV::0063F22F643B94ED",
+        "use_role": "context"
+      }
+    ],
+    "numeric_refs": [
+      "NUM::33642A79CE277E0B",
+      "NUM::AB89B02ADCCB77E0"
+    ],
+    "numeric_relation_refs": [
+      "REL::B60164179DFFDF5A"
+    ],
+    "qualitative_fact_refs": [],
+    "method_step_refs": [
+      "METHOD::VC::CAUSAL_BOUNDARY",
+      "METHOD::VC::COUNTERREAD",
+      "METHOD::VC::MATERIAL_GAP_ROUTE",
+      "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+      "METHOD::VC::WHAT_WOULD_CHANGE",
+      "METHOD::VC::PERIOD_BASIS"
+    ],
+    "graph_edge_refs": [
+      "GRAPH::2B17375548682087"
+    ],
+    "inference_authority": "not_inferable",
+    "counterargument_atom": "公司整体毛利率的同期回落可以不由 AI 服务器产品盈利未达标来解释，而是由低毛利 AI 服务器占比上升、其他分部组合波动或一次性因素驱动；管理层同时提及传统服务器利润率稳定、存储利润率上升与 CSG 增长，说明存在多因素背景，因此产品达标与公司毛利率下降并存本身不能确认利润转化。",
+    "what_would_change": {
+      "observable": "公司整体毛利率的同口径同期变动方向",
+      "direction": "resolve_gap",
+      "time_horizon": "未来一至两个季度",
+      "evidence_route": "官方定期报告、管理层预备发言稿及后续电话会议的材料",
+      "threshold_numeric_ref": ""
+    }
+  },
+  "rejected_fragment_digest": "8c8fa662d98b557137da4d39f554ca7bdf7f70b88f5d3a94bec5abeccbd3374f",
+  "violating_clause": "而是由低毛利 AI 服务器占比上升、其他分部组合波动或一次性因素驱动",
+  "violation_semantics": "The selected bridge_not_established relation forbids presenting unsupported alternative drivers as a positive product-to-company causal explanation.",
+  "local_guard_false_positive": false,
+  "rejected_fragment_promoted_to_business_truth": false,
+  "manual_rewrite_or_salvage_performed": false
+}

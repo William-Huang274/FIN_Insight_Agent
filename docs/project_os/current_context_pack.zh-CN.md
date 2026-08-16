@@ -281,3 +281,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 缺失前缀、预注入 counter fragment、上下文／消息漂移均 fail closed。正式 proof result digest=`73f8c877...9b41`，0 model／Provider／network／embedding。
 - successor 预算只含一次 16k max-thinking counter 分析和一次 2k non-thinking 严格交卷；planner、S1/S2、thesis、mechanism、Evidence、产品指针均不得重跑或变化，R1 继续保持 failed。
 - 全仓 `382 passed`，compileall、active baseline `131／8／10／0` 与 secret scan `6716／0` 通过。下一步为 clean commit/push、Project OS preflight、fresh exact-once authority 和唯一 successor live；再次 16k 非收敛时转架构处置，不自动进入第二次分析重试。
+
+## 2026-08-16 S3 successor v1.0 历史绑定入口失败
+
+- v1.0 authority 在 Provider 调用前以 `dynamic_live_bound_input_drift:runner_ref` 停止；model／Provider／network／capture 均为 0，R1 未变化。
+- R1 authority 绑定的是提交 `ba02a24b...` 中 runner 的历史 SHA；旧入口却拿它与 successor 演进后的当前路径比较。Git 历史 blob 仍完全匹配，问题属于项目内历史 authority 验证语义，不是实际 R1 漂移。
+- `RC-S3-026` 要求从 R1 的 immutable Git commit 验证全部历史输入，并把 successor 当前要消费的 loop／dynamic policy 直接绑定到新 authority。v1.0 authority 和 identity 不重用；修复后必须另做 v1.1 proof、decision、preflight 和新身份。

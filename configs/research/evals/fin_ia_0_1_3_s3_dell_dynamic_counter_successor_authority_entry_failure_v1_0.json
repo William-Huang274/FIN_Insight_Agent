@@ -1,0 +1,36 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_single_cell_failed_counter_successor_authority_entry_failure_v1_0",
+  "status": "entry_failed_zero_model_calls_historical_runner_current_path_drift",
+  "recorded_at": "2026-08-16T20:28:00+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_counter_successor_chat_live_authority_v1_0.json",
+  "authority_sha256": "9ab16f0d2d19ae5c4f605d34eb84d957ccdabe32ee432ac82da658bafed72fb0",
+  "authority_implementation_commit": "72942f3c6b98522118ec846b6a20fbdca79e1082",
+  "entry_failure_code": "dynamic_live_bound_input_drift:runner_ref",
+  "observed_calls": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "embedding_calls": 0
+  },
+  "root_cause": {
+    "owning_layer": "S3 exact-once successor historical authority binding",
+    "classification": "historical_authority_was_revalidated_against_mutable_current_paths",
+    "detail": "R1 authority correctly bound runner SHA 2290069f at implementation commit ba02a24b, but the successor entry gate compared that historical SHA with the evolved current runner path. The old Git commit still contains the exact bound blob; R1 itself did not drift.",
+    "not_caused_by": [
+      "DeepSeek connectivity or model behavior",
+      "credential state",
+      "R1 Evidence or accepted fragment drift",
+      "S1/S2",
+      "financial validation"
+    ]
+  },
+  "required_fix": {
+    "validate_predecessor_bound_inputs_from_its_immutable_git_commit": true,
+    "bind_current_loop_and_dynamic_micro_policies_directly_in_successor": true,
+    "reuse_v1_0_authority_or_output_identity": false,
+    "new_v1_1_zero_call_proof_decision_and_authority_required": true
+  },
+  "known_boundary": "The v1.0 authority failed before any provider request and is permanently consumed as entry-failure evidence. It does not alter R1, prove a successor, or authorize reuse of its output identities."
+}

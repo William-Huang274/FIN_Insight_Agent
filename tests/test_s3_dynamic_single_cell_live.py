@@ -174,3 +174,23 @@ def test_dynamic_successor_replays_only_the_failed_counter_context(
     with pytest.raises(DynamicSingleCellLiveError) as exc:
         runner._compile_successor_replay_state(extra_fragment)
     assert exc.value.code == "dynamic_successor_predecessor_prefix_invalid"
+
+
+def test_dynamic_successor_validates_R1_inputs_from_historical_commit() -> None:
+    authority_path = (
+        ROOT
+        / "configs/research/evals/"
+        "fin_ia_0_1_3_s3_dell_dynamic_value_capture_chat_live_"
+        "authority_v1_0.json"
+    )
+    authority = json.loads(authority_path.read_text(encoding="utf-8"))
+
+    runner._validate_historical_authority_inputs(authority)
+
+    drifted = deepcopy(authority)
+    drifted["bound_inputs"]["runner_sha256"] = "0" * 64
+    with pytest.raises(DynamicSingleCellLiveError) as exc:
+        runner._validate_historical_authority_inputs(drifted)
+    assert exc.value.code == (
+        "dynamic_successor_historical_bound_input_drift:runner_ref"
+    )

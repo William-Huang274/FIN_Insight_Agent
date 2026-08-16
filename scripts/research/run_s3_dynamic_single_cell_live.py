@@ -92,16 +92,16 @@ AUTHORITY_STATUS = "signed_exact_once_DELL_dynamic_value_capture_chat_live"
 RESULT_SCHEMA = "fin_ia_s3_dynamic_single_cell_live_result_v1_0"
 FULL_RESULT_SCHEMA = "fin_ia_s3_dynamic_single_cell_live_full_v1_0"
 SUCCESSOR_AUTHORITY_SCHEMA = (
-    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_authority_v1_0"
+    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_authority_v1_1"
 )
 SUCCESSOR_AUTHORITY_STATUS = (
     "signed_exact_once_DELL_dynamic_counter_analysis_submission_successor"
 )
 SUCCESSOR_RESULT_SCHEMA = (
-    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_result_v1_0"
+    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_result_v1_1"
 )
 SUCCESSOR_FULL_RESULT_SCHEMA = (
-    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_full_v1_0"
+    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_full_v1_1"
 )
 
 
@@ -152,6 +152,51 @@ def _git(*args: str) -> str:
         encoding="utf-8",
     )
     return completed.stdout.strip()
+
+
+def _git_blob_sha256(*, commit: str, ref: str) -> str:
+    _resolve(ref)
+    if not re.fullmatch(r"[0-9a-f]{40}", commit.lower()):
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_historical_commit_invalid"
+        )
+    completed = subprocess.run(
+        ["git", "show", f"{commit}:{ref}"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        raise DynamicSingleCellLiveError(
+            f"dynamic_successor_historical_blob_missing:{ref}"
+        )
+    return hashlib.sha256(completed.stdout).hexdigest()
+
+
+def _validate_historical_authority_inputs(
+    authority: Mapping[str, Any],
+) -> None:
+    commit = str(authority.get("implementation_commit") or "").lower()
+    bound = authority.get("bound_inputs")
+    if not isinstance(bound, Mapping):
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_historical_bound_inputs_invalid"
+        )
+    ref_keys = {key for key in bound if key.endswith("_ref")}
+    if not ref_keys:
+        raise DynamicSingleCellLiveError(
+            "dynamic_successor_historical_bound_inputs_invalid"
+        )
+    for key in sorted(ref_keys):
+        ref = str(bound.get(key) or "")
+        expected_sha = str(bound.get(key[:-4] + "_sha256") or "")
+        if (
+            not re.fullmatch(r"[0-9a-f]{64}", expected_sha.lower())
+            or _git_blob_sha256(commit=commit, ref=ref) != expected_sha
+        ):
+            raise DynamicSingleCellLiveError(
+                f"dynamic_successor_historical_bound_input_drift:{key}"
+            )
 
 
 def _now() -> str:
@@ -209,6 +254,8 @@ def _bound_paths(authority: Mapping[str, Any]) -> dict[str, Path]:
         "dynamic_runtime_ref",
         "bounded_loop_ref",
         "provider_transport_ref",
+        "loop_policy_ref",
+        "dynamic_micro_policy_ref",
     }
     ref_keys = {key for key in bound if key.endswith("_ref")}
     scalar_keys = {
@@ -628,7 +675,7 @@ def validate_successor_authority(
     paths = _successor_bound_paths(payload)
     bound = payload["bound_inputs"]
     predecessor_authority = _json(paths["predecessor_authority_ref"])
-    predecessor_paths = _bound_paths(predecessor_authority)
+    _validate_historical_authority_inputs(predecessor_authority)
     predecessor_public = _json(paths["predecessor_public_result_ref"])
     predecessor_full = _json(paths["predecessor_private_result_ref"])
     assessment = _json(paths["failure_assessment_ref"])
@@ -666,7 +713,6 @@ def validate_successor_authority(
         raise DynamicSingleCellLiveError(
             "dynamic_successor_predecessor_invalid"
         )
-    del predecessor_paths
     _compile_successor_replay_state(predecessor_full)
 
     analysis_profile = load_chat_completion_profile(
@@ -1143,14 +1189,13 @@ def run_successor(
         _json(paths["submission_profile_ref"])
     )
     predecessor_authority = _json(paths["predecessor_authority_ref"])
-    predecessor_paths = _bound_paths(predecessor_authority)
     kernel, route, _ = _runtime_contracts()
     micro_policy = load_dynamic_micro_judgment_policy(
-        _json(predecessor_paths["dynamic_micro_policy_ref"])
+        _json(paths["dynamic_micro_policy_ref"])
     )
     scoped = scope_bounded_finance_micro_judgment_policy(
         load_bounded_finance_loop_policy(
-            _json(predecessor_paths["loop_policy_ref"])
+            _json(paths["loop_policy_ref"])
         ),
         micro_policy=micro_policy,
         cell_count=1,

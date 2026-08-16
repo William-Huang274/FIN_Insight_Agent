@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。R3 后批准的两项结构假设已经得到新证据：thesis 片段上下文从完整单元投影为全部合法关系的最小权威并集，再把高推理可见分析与低推理严格交卷分开。零调用门与唯一 FAS-R1 均通过；自然运行形成 940 字分析、唯一合法 thesis Tool Call，单 thesis L1 通过且不再把 AI 产品归因成公司／分部利润。该结果只资格化一个 thesis，不是完整 Judgment 或 fixed-Pack 第一层通过。Owner 已于 2026-08-16 审阅并授权继续：先把同一模式零调用扩展到 mechanism、counterargument／WWC，再执行一次完整 fixed-Pack Judgment；通过后依次闭合动态 Research Truth Spine、DELL 动态单单元、DELL 五单元和跨案例泛化验收。业务／合同失败必须保留原 attempt 并在最早责任层以新 attempt 续跑，不再因一次 live fail 自动返回；网络连通性按本机代理／TUN／DNS／TLS／IncompleteRead 分类并做有界重连。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。完整 fixed-Pack 的 FFJ-R3 已自然完成 6/6 次调用并交出三个受约束片段：产品目标只保留为管理层口径，产品到分部／公司利润桥明确缺失，同口径公司毛利率只作为反向观察。终局失败来自项目把同一来源在不同 claim 中的 support／context 角色强行合并，并忽略 typed bridge gap 与 same-scope NumericRelation 的边界权威；不是本轮新金融 L1。provider-neutral claim-local role＋typed boundary v1.4 已用保存的三个原始片段、负向 mutation、三案例 full-fake 和两个 fresh process 正式复证通过。当前仍未把 R3 追认为成功；唯一下一步是在 clean push 与真实 preflight 后签发 fresh FFJ-R4，只有其完整 Judgment 同时通过 L1 与内容门，才进入动态 Research Truth Spine、DELL 动态单单元、五单元和异质泛化报告。业务／合同失败继续保留原 attempt 并在最早责任层以新 attempt 续跑；网络连通性按本机代理／TUN／DNS／TLS／IncompleteRead 分类并做有界重连。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
 
 ## 当前唯一产品边界
 
@@ -15,7 +15,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。受控计划 API 已能把 Objective/atoms 同时送入 S1 联合候选与 private S2 mart；Operations 可按预登记官方 route 自动抓取或人工上传 PDF，并保证原始字节先进入私有不可变 source-only capture。当前 S3 consumer 已由 DELL `value_capture` 自然模型证明可消费 reviewed Evidence、NumericFact、typed relation、RoleMethodPack 和 GraphContextPack 并产出结构化单元底稿预览，但其因果内容未过 L1，也尚未进入五单元或 Workbench 产品面；reviewed Evidence 页面本身的结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。受控计划 API 已能把 Objective/atoms 同时送入 S1 联合候选与 private S2 mart；Operations 可按预登记官方 route 自动抓取或人工上传 PDF，并保证原始字节先进入私有不可变 source-only capture。当前 S3 consumer 已由 DELL `value_capture` 自然模型证明可消费 reviewed Evidence、NumericFact、typed relation、RoleMethodPack 和 GraphContextPack，并能分别形成 thesis、mechanism、counterargument／WWC 三个受约束片段；claim-local Evidence role 和 typed boundary 的终局编译已达到零调用工程通过。fresh FFJ-R4 尚未执行，因此完整 Judgment、fixed-Pack 第一层、动态研究、五单元和 Workbench 产品面仍未通过；reviewed Evidence 页面本身的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 
@@ -181,3 +181,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 业务内容保持克制：产品目标只写成管理层口径；mechanism 明确产品到分部／公司利润桥未建立；counter 用同口径公司毛利率关系做反向观察，并明确不能归因到产品。当前没有观察到新的金融 L1，但因终局未形成，正式完整 Judgment L1 仍为 false。
 - 终局首先以 `finance_loop_micro_evidence_role_conflict` 失败：同一 Dell 法说在 thesis 中是 support、在 mechanism 中只是 context，旧 compiler 却强制每份 Evidence 全报告只能有一个角色。零调用继续还发现旧 Claim Authority 只承认标为 `limit` 的网页，不承认已验证的 `bridge_not_established`、typed gaps 和 same-basis NumericRelation 作为边界。
 - R3 不 salvage。下一项是一个 provider-neutral claim-local role＋typed boundary 结构包：逐 atom 保留 Evidence role，终局 summary 不得替片段借 support，显式桥缺口／关系绑定数值可成为边界；保存 R3 三片段必须原样通过 full consumer/deliverable、负向 mutation 和 two-fresh-process proof 后，才允许 fresh R4。
+
+## 2026-08-16 S3 claim-local role＋typed boundary v1.4 零调用闭环
+
+- `RC-S3-019` 已在最早责任层关闭。Evidence use 不再按整份报告压成“每个来源唯一角色”，而是逐 claim 保存；终局 Evidence summary 只做确定性摘要，不能替任何片段借到它没有选择的 support。
+- 保存的 FFJ-R3 三个模型 Tool payload 未改一个判断字，现可形成 `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only` 的完整 Judgment。边界来源恰为 `typed_bridge_gap_relation` 与 `typed_same_scope_counter_relation`；它们只能限制归因，不能被晋升成产品利润支持。
+- 两个关键负向用例继续 fail closed：把全局 support 借给局部 claim 时返回 `claim_surface_required_authority_missing`；删除 typed boundary 时返回 `claim_authority_multi_driver_boundary_missing`。Harness 没有生成研究判断，模型叙事逐字保留。
+- 首次 formal v1.3 proof 因把历史 v1.1 输入 digest 与 R3 v1.2 policy 混在同一证明 lane 而零调用失败；该失败独立保存。v1.4 把历史 micro lane 与 R3 replay lane 分离，两个 fresh process 字节等价，result digest=`b03de3f0...0d3d`。这只构成 engineering pass，不追认 R3，也不证明自然 FFJ-R4、动态 Research、五单元、泛化或 S3 acceptance。
+- fresh FFJ-R4 的 decision 已收窄为同一 DELL fixed Pack、6 model calls／3 tool calls／0 EvidenceRequest／0 retry／0 fallback。只有 clean push、真实 Project OS preflight 和新 authority 后才可执行。

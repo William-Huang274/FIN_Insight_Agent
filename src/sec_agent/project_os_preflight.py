@@ -32,6 +32,10 @@ FULL_FRAGMENT_RELATION_ROLE_FIXED_PACK_DECISION_SCHEMA = (
     "fin_ia_s3_fixed_pack_full_fragment_judgment_relation_role_"
     "live_scope_decision_v1_2"
 )
+FULL_FRAGMENT_CLAIM_LOCAL_BOUNDARY_DECISION_SCHEMA = (
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_claim_local_boundary_"
+    "live_scope_decision_v1_3"
+)
 FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS = (
     "full_fragment_zero_call_pass_one_fresh_chat_judgment_authorized"
 )
@@ -124,6 +128,13 @@ def _validate_fixed_pack_decision(
         FULL_FRAGMENT_RELATION_ROLE_FIXED_PACK_DECISION_SCHEMA,
     }:
         return _validate_full_fragment_fixed_pack_decision(
+            root=root, decision=decision
+        )
+    if (
+        decision.get("schema_version")
+        == FULL_FRAGMENT_CLAIM_LOCAL_BOUNDARY_DECISION_SCHEMA
+    ):
+        return _validate_claim_local_boundary_fixed_pack_decision(
             root=root, decision=decision
         )
     if decision.get("schema_version") == MICRO_FIXED_PACK_DECISION_SCHEMA:
@@ -283,6 +294,250 @@ def _validate_fixed_pack_decision(
         "recent_provider_steps": len(health["provider_steps"]),
         "claim_relation_alias_capacity_successor": alias_mode,
         "micro_judgment_successor": False,
+    }
+
+
+def _validate_claim_local_boundary_fixed_pack_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_equal = {
+        "status": FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "run_scope_id": FIXED_PACK_SCOPE,
+        "evidence_mode": "reviewed_fixed_pack_unit_test",
+        "next_authorized_scope": (
+            "one_clean_synced_exact_once_DELL_value_capture_full_three_"
+            "fragment_analysis_submission_Chat_R4"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                "project_os_claim_local_decision_field_invalid:"
+                f"{field}"
+            )
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "same_evidence_pack",
+        "terminal_contract_parity_required",
+        "fragment_surface_contract_parity_required",
+        "claim_local_evidence_roles_required",
+        "deterministic_report_evidence_summary_required",
+        "global_support_laundering_forbidden",
+        "typed_bridge_gap_boundary_required",
+        "typed_same_scope_counter_boundary_required",
+        "saved_R3_replay_required",
+        "clock_derived_authority_timestamp_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                "project_os_claim_local_decision_true_required:"
+                f"{field}"
+            )
+    for field in (
+        "historical_failure_promoted",
+        "immutable_thesis_predecessor_reused",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "dynamic_layer_two_authorized",
+        "five_cell_live_authorized",
+        "heterogeneous_generalization_authorized",
+        "product_publication_authorized",
+        "reasoning_or_token_limit_increase",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                "project_os_claim_local_decision_false_required:"
+                f"{field}"
+            )
+    numeric_equal = {
+        "maximum_model_calls": 6,
+        "maximum_provider_transport_attempts": 6,
+        "maximum_tool_calls": 3,
+        "maximum_analysis_completion_tokens_per_call": 8000,
+        "maximum_submission_completion_tokens_per_call": 2000,
+        "maximum_total_completion_tokens": 30000,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+    }
+    for field, expected in numeric_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                "project_os_claim_local_decision_budget_invalid:"
+                f"{field}"
+            )
+
+    _, clean = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="clean_zero_call_result_ref",
+        sha_field="clean_zero_call_result_sha256",
+        digest_field="clean_zero_call_result_digest",
+    )
+    replay = (clean.get("normalized_proof") or {}).get(
+        "saved_r3_claim_local_boundary_replay"
+    ) or {}
+    clean_acceptance = clean.get("acceptance") or {}
+    if not (
+        clean.get("status")
+        == "zero_call_micro_judgment_fresh_process_proof_pass"
+        and clean.get("fresh_process_results_byte_equivalent") is True
+        and clean_acceptance.get("saved_r3_terminal_replay_pass") is True
+        and clean_acceptance.get("natural_model_submission_proven") is False
+        and replay.get("claim_local_roles_preserved") is True
+        and replay.get("report_level_summary_deterministic") is True
+        and set(replay.get("boundary_authority_sources") or ())
+        == {
+            "typed_bridge_gap_relation",
+            "typed_same_scope_counter_relation",
+        }
+        and (replay.get("mutation_failure_codes") or {}).get(
+            "global_support_laundering"
+        )
+        == "claim_surface_required_authority_missing"
+        and (replay.get("mutation_failure_codes") or {}).get(
+            "typed_boundary_removed"
+        )
+        == "claim_authority_multi_driver_boundary_missing"
+    ):
+        raise ValueError("project_os_claim_local_clean_proof_invalid")
+
+    _, disposition = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="scope_disposition_ref",
+        sha_field="scope_disposition_sha256",
+    )
+    if not (
+        disposition.get("status")
+        == "approved_fresh_full_three_fragment_analysis_submission_Chat_R4"
+        and disposition.get("decision_digest")
+        == decision.get("scope_disposition_decision_digest")
+        and (disposition.get("execution_budget") or {}).get(
+            "maximum_model_calls"
+        )
+        == 6
+        and disposition.get("claim_local_evidence_roles_required") is True
+        and disposition.get("typed_bridge_gap_boundary_required") is True
+        and disposition.get("typed_same_scope_counter_boundary_required")
+        is True
+        and disposition.get("prior_failed_attempt_reused") is False
+        and disposition.get("dynamic_agentic_research_authorized") is False
+    ):
+        raise ValueError("project_os_claim_local_disposition_invalid")
+
+    _, predecessor = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="immutable_predecessor_result_ref",
+        sha_field="immutable_predecessor_result_sha256",
+        digest_field="immutable_predecessor_result_digest",
+    )
+    _, predecessor_assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_assessment_ref",
+        sha_field="predecessor_assessment_sha256",
+    )
+    if not (
+        predecessor.get("status")
+        == "completed_fragment_contract_valid_content_assessment_pending"
+        and predecessor_assessment.get("status")
+        == "single_thesis_L1_pass_content_materially_improved_two_hypotheses_qualified_no_automatic_expansion"
+        and decision.get("immutable_thesis_predecessor_reused") is False
+    ):
+        raise ValueError("project_os_claim_local_predecessor_invalid")
+
+    _, failed = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="immutable_failed_full_fragment_result_ref",
+        sha_field="immutable_failed_full_fragment_result_sha256",
+        digest_field="immutable_failed_full_fragment_result_digest",
+    )
+    _, failed_assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_full_fragment_assessment_ref",
+        sha_field="failed_full_fragment_assessment_sha256",
+    )
+    if not (
+        failed.get("status") == "terminal_failed_no_retry"
+        and failed.get("failure_code")
+        == "finance_loop_micro_evidence_role_conflict"
+        and failed.get("failure_fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+        and (failed.get("execution") or {}).get("model_calls_attempted") == 6
+        and (failed.get("execution") or {}).get("tool_calls_accepted") == 3
+        and (failed.get("execution") or {}).get("retries") == 0
+        and failed_assessment.get("status")
+        == "terminal_contract_failure_claim_local_evidence_role_and_typed_boundary_aggregation_defect_new_attempt_required"
+        and (failed_assessment.get("disposition") or {}).get(
+            "immutable_R3_preserved"
+        )
+        is True
+    ):
+        raise ValueError("project_os_claim_local_failed_R3_invalid")
+
+    _, analysis_profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="analysis_profile_ref",
+        sha_field="analysis_profile_sha256",
+    )
+    _, submission_profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="submission_profile_ref",
+        sha_field="submission_profile_sha256",
+    )
+    for profile in (analysis_profile, submission_profile):
+        if not (
+            profile.get("wire_api")
+            == "openai_compatible_chat_completions"
+            and profile.get("provider_id") == "deepseek"
+            and profile.get("model") == "deepseek-v4-pro"
+            and (profile.get("authority") or {}).get("retry_count") == 0
+        ):
+            raise ValueError("project_os_claim_local_profile_invalid")
+    analysis_defaults = analysis_profile.get("request_defaults") or {}
+    submission_defaults = submission_profile.get("request_defaults") or {}
+    if not (
+        analysis_defaults.get("reasoning_effort") == "high"
+        and analysis_defaults.get("max_tokens") == 8000
+        and submission_defaults.get("reasoning_effort") == "low"
+        and submission_defaults.get("max_tokens") == 2000
+    ):
+        raise ValueError("project_os_claim_local_profile_budget_drift")
+    return {
+        "clean_proof_status": clean["status"],
+        "predecessor_status": predecessor["status"],
+        "prior_failed_full_fragment_status": failed["status"],
+        "provider_id": analysis_profile["provider_id"],
+        "provider_model": analysis_profile["model"],
+        "api_key_env": analysis_profile["api_key_env"],
+        "recent_provider_steps": 6,
+        "claim_relation_alias_capacity_successor": False,
+        "micro_judgment_successor": False,
+        "full_fragment_judgment_successor": True,
+        "relation_role_successor": False,
+        "claim_local_boundary_successor": True,
+        "node_profiles": {
+            "fragment_analysis": {
+                "reasoning_effort": analysis_defaults["reasoning_effort"],
+                "max_tokens": analysis_defaults["max_tokens"],
+            },
+            "contract_submission": {
+                "reasoning_effort": submission_defaults[
+                    "reasoning_effort"
+                ],
+                "max_tokens": submission_defaults["max_tokens"],
+            },
+        },
     }
 
 

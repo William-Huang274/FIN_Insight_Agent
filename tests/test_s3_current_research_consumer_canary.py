@@ -171,6 +171,26 @@ FULL_FRAGMENT_R2_FAILURE_ASSESSMENT = ROOT / (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "full_fragment_judgment_chat_live_failure_assessment_v1_1.json"
 )
+FULL_FRAGMENT_CLAIM_LOCAL_ZERO_CALL_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_local_boundary_zero_call_result_v1_4.json"
+)
+FULL_FRAGMENT_CLAIM_LOCAL_DISPOSITION = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_local_boundary_live_disposition_v1_3.json"
+)
+FULL_FRAGMENT_R3_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_chat_live_result_v1_2.json"
+)
+FULL_FRAGMENT_R3_FAILURE_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_chat_live_failure_assessment_v1_2.json"
+)
 MICRO_R3_RESULT = ROOT / (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -1449,6 +1469,49 @@ def test_full_fragment_judgment_authority_binds_clean_runtime_and_scope(
     assert exc.value.code == (
         "research_consumer_full_fragment_runtime_digest_drift"
     )
+
+    claim_local_paths = dict(paths)
+    claim_local_paths.update(
+        {
+            "full_fragment_zero_call_result_ref": (
+                FULL_FRAGMENT_CLAIM_LOCAL_ZERO_CALL_RESULT
+            ),
+            "full_fragment_disposition_ref": (
+                FULL_FRAGMENT_CLAIM_LOCAL_DISPOSITION
+            ),
+            "prior_full_fragment_result_ref": FULL_FRAGMENT_R3_RESULT,
+            "prior_full_fragment_failure_assessment_ref": (
+                FULL_FRAGMENT_R3_FAILURE_ASSESSMENT
+            ),
+        }
+    )
+    claim_local_bound = {
+        "research_input_digest": research_input["research_input_digest"],
+        "initial_fragment_context_digest": initial_context[
+            "projection_digest"
+        ],
+        "fragment_tool_schema_digests": {
+            name: runner.canonical_digest(tools[name])
+            for name in MICRO_JUDGMENT_TOOL_NAMES
+        },
+    }
+    for key, path in claim_local_paths.items():
+        claim_local_bound[key] = path.relative_to(ROOT).as_posix()
+        claim_local_bound[key[:-4] + "_sha256"] = runner._sha(path)
+    claim_local_authority = json.loads(json.dumps(authority))
+    claim_local_authority["schema_version"] = (
+        runner.FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA
+    )
+    claim_local_authority["bound_inputs"] = claim_local_bound
+    validated_claim_local = (
+        runner.validate_full_fragment_judgment_authority(
+            claim_local_authority,
+            authority_path=authority_path,
+        )
+    )
+    assert validated_claim_local[
+        "full_fragment_zero_call_result_ref"
+    ] == FULL_FRAGMENT_CLAIM_LOCAL_ZERO_CALL_RESULT
 
 
 def test_fixed_pack_claim_surface_live_path_uses_surface_contract(

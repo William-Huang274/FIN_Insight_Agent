@@ -126,6 +126,9 @@ FRAGMENT_ANALYSIS_SUBMISSION_RESULT_SCHEMA = (
 FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA = (
     "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_2"
 )
+FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_3"
+)
 FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS = (
     "signed_exact_once_fixed_pack_full_three_fragment_analysis_submission_chat_live"
 )
@@ -1457,9 +1460,16 @@ def validate_full_fragment_judgment_authority(
     *,
     authority_path: Path,
 ) -> dict[str, Path]:
+    claim_local_successor = (
+        payload.get("schema_version")
+        == FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA
+    )
     if not (
         payload.get("schema_version")
-        == FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA
+        in {
+            FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA,
+            FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA,
+        }
         and payload.get("status")
         == FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS
         and payload.get("case_key") == "DELL"
@@ -1567,21 +1577,76 @@ def validate_full_fragment_judgment_authority(
     prior_full_assessment = _json(
         paths["prior_full_fragment_failure_assessment_ref"]
     )
-    if not (
-        zero_call.get("status")
-        == "zero_call_relation_support_and_fragment_local_disposition_pass"
-        and zero_call.get("execution", {}).get("model_calls") == 0
-        and zero_call.get("immutable_predecessor", {}).get(
-            "reuse_in_full_judgment_authorized"
-        )
-        is False
-        and disposition.get("status")
-        == "approved_fresh_full_three_fragment_analysis_submission_Chat_R3"
-        and disposition.get("execution_budget") == expected_budget
-        and prior_result.get("status")
+    common_predecessor_valid = (
+        prior_result.get("status")
         == "completed_fragment_contract_valid_content_assessment_pending"
         and prior_assessment.get("status")
         == "single_thesis_L1_pass_content_materially_improved_two_hypotheses_qualified_no_automatic_expansion"
+    )
+    if claim_local_successor:
+        replay = (zero_call.get("normalized_proof") or {}).get(
+            "saved_r3_claim_local_boundary_replay"
+        ) or {}
+        successor_valid = (
+            zero_call.get("status")
+            == "zero_call_micro_judgment_fresh_process_proof_pass"
+            and zero_call.get("fresh_process_results_byte_equivalent") is True
+            and (zero_call.get("acceptance") or {}).get(
+                "saved_r3_terminal_replay_pass"
+            )
+            is True
+            and replay.get("claim_local_roles_preserved") is True
+            and replay.get("report_level_summary_deterministic") is True
+            and set(replay.get("boundary_authority_sources") or ())
+            == {
+                "typed_bridge_gap_relation",
+                "typed_same_scope_counter_relation",
+            }
+            and (replay.get("mutation_failure_codes") or {}).get(
+                "global_support_laundering"
+            )
+            == "claim_surface_required_authority_missing"
+            and disposition.get("status")
+            == "approved_fresh_full_three_fragment_analysis_submission_Chat_R4"
+            and disposition.get("execution_budget") == expected_budget
+            and disposition.get("claim_local_evidence_roles_required") is True
+            and disposition.get("typed_bridge_gap_boundary_required") is True
+            and disposition.get("typed_same_scope_counter_boundary_required")
+            is True
+            and disposition.get("prior_failed_attempt_reused") is False
+            and prior_full_result.get("status") == "terminal_failed_no_retry"
+            and prior_full_result.get("failure_code")
+            == "finance_loop_micro_evidence_role_conflict"
+            and prior_full_result.get("failure_fragment_tool")
+            == SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+            and prior_full_result.get("execution", {}).get(
+                "model_calls_attempted"
+            )
+            == 6
+            and prior_full_result.get("execution", {}).get(
+                "tool_calls_accepted"
+            )
+            == 3
+            and prior_full_result.get("execution", {}).get("retries") == 0
+            and prior_full_assessment.get("status")
+            == "terminal_contract_failure_claim_local_evidence_role_and_typed_boundary_aggregation_defect_new_attempt_required"
+            and prior_full_assessment.get("disposition", {}).get(
+                "immutable_R3_preserved"
+            )
+            is True
+        )
+    else:
+        successor_valid = (
+            zero_call.get("status")
+            == "zero_call_relation_support_and_fragment_local_disposition_pass"
+            and zero_call.get("execution", {}).get("model_calls") == 0
+            and zero_call.get("immutable_predecessor", {}).get(
+                "reuse_in_full_judgment_authorized"
+            )
+            is False
+            and disposition.get("status")
+            == "approved_fresh_full_three_fragment_analysis_submission_Chat_R3"
+            and disposition.get("execution_budget") == expected_budget
         and prior_full_result.get("status") == "terminal_failed_no_retry"
         and prior_full_result.get("failure_code")
         == "finance_loop_micro_required_authority_missing"
@@ -1635,7 +1700,8 @@ def validate_full_fragment_judgment_authority(
         and zero_call.get("fresh_process_results_byte_equivalent") is True
         and disposition.get("relation_support_set_v1_2_required") is True
         and disposition.get("prior_failed_attempt_reused") is False
-    ):
+        )
+    if not (common_predecessor_valid and successor_valid):
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_full_fragment_disposition_invalid"
         )
@@ -3245,10 +3311,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     authority_path = _resolve(args.authority)
     authority = _json(authority_path)
-    if (
-        authority.get("schema_version")
-        == FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA
-    ):
+    if authority.get("schema_version") in {
+        FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA,
+        FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA,
+    }:
         result = run_full_fragment_judgment(authority_path)
     elif (
         authority.get("schema_version")

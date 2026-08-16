@@ -40,6 +40,11 @@ FULL_FRAGMENT_RELATION_ROLE_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "full_fragment_judgment_relation_role_live_scope_decision_v1_2.json"
 )
+FULL_FRAGMENT_CLAIM_LOCAL_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_local_boundary_live_scope_decision_v1_3.json"
+)
 ALIAS_CLEAN_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -214,6 +219,35 @@ def test_full_fragment_relation_role_successor_binds_failed_R2_and_context_role(
     assert result["decision_projection"]["node_profiles"] == {
         "fragment_analysis": {"reasoning_effort": "high", "max_tokens": 8000},
         "contract_submission": {"reasoning_effort": "low", "max_tokens": 2000},
+    }
+    assert result["network_calls"] == 0
+    assert result["provider_calls"] == 0
+
+
+def test_claim_local_boundary_successor_binds_failed_R3_and_typed_boundaries() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=FULL_FRAGMENT_CLAIM_LOCAL_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["decision_projection"][
+        "claim_local_boundary_successor"
+    ] is True
+    assert result["decision_projection"][
+        "prior_failed_full_fragment_status"
+    ] == "terminal_failed_no_retry"
+    assert result["decision_projection"]["node_profiles"] == {
+        "fragment_analysis": {
+            "reasoning_effort": "high",
+            "max_tokens": 8000,
+        },
+        "contract_submission": {
+            "reasoning_effort": "low",
+            "max_tokens": 2000,
+        },
     }
     assert result["network_calls"] == 0
     assert result["provider_calls"] == 0

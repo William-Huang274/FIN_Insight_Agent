@@ -2672,3 +2672,11 @@ Owner 授权 S3 在不改变产品范围、数据采购、模型主路线、S4 p
 5. relation card、model-visible role contract、Tool Schema、Validator、fake/replay 和 terminal compiler 必须从同一 provider-neutral 合同演化，禁止为单个 Provider 或 attempt 增加例外。
 
 FFJ-R2 是该要求的自然反例：DeepSeek 正确选择法说为 support、8-K 为 context，并否定产品到分部／公司利润桥；旧合同仍将它拒绝。v1.2 已用保存输出 replay、context-only 负向 mutation、完整 fake Judgment 和两个 fresh process 关闭该项目缺陷，但不追认 R2 为完整通过。只有 fresh natural FFJ-R3 的三片段 Judgment 同时通过 L1 和内容质量，fixed-Pack 第一层才可关闭；动态 Research Truth Spine、五单元与异质泛化仍需独立产品证明。
+
+### 16.35 claim-local Evidence 权限与 typed boundary（2026-08-16）
+
+FFJ-R3 进一步证明，“每份来源在整份报告中只有一个 Evidence role”不符合真实研究：同一份法说可以直接支持管理层目标，也可以只是另一个机制 claim 的上下文。Evidence 权限必须是 claim-local；终局 report summary 只做可读汇总，不得让某个 claim 从其他片段借到 support。每个 claim 仍需独立满足 required support，只有 context 时不能被全局标签洗白。
+
+跨层因果边界也不只来自一份被标成 `limit` 的网页。经过 Case、cell、期间、主体、关系和 lineage 绑定的 `bridge_not_established`／typed gap，以及同主体同口径的 NumericRelation counter observation，均可成为 typed boundary。它们只能限制或否定因果桥，不能升级为产品利润支持，也不能替代 required Evidence。
+
+FFJ-R3 的三个模型片段已经自然形成且没有观察到新的金融 L1，但旧终局对象合同拒绝了它；历史结果不得追认为成功。provider-neutral v1.4 必须证明：逐 claim role 保留、summary 非授权、typed boundary 生效、全局 support laundering 与删除 boundary 均 fail closed、模型叙事不由 Harness 改写。通过只构成 engineering pass；仍需 fresh natural FFJ-R4 的完整 Judgment、L1、内容质量和后续动态研究验收。此前 16.34 中“fresh FFJ-R3 才可关闭”的执行编号由本条 successor 更新为 FFJ-R4，不改变三层验收或通过标准。

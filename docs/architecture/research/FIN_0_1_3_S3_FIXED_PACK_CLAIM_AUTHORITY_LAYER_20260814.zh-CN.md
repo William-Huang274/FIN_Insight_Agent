@@ -2,7 +2,7 @@
 
 日期：2026-08-14
 
-状态：`claim_scope_and_alias_live_failures_immutable / micro_judgment_formal_clean_proof_pass / canonical_live_gate_clean_pass / natural_micro_R3_terminal_capacity_failure / project_level_disposition_required / layer_two_blocked`
+状态：`historical_live_failures_immutable / full_fragment_R3_three_model_fragments_complete_terminal_project_defect / claim_local_role_and_typed_boundary_v1_4_engineering_pass / fresh_R4_pending / layer_two_blocked`
 
 ## 1. 为什么需要这一层
 
@@ -116,3 +116,29 @@ canonical live gate、双节点 profile 和 Project OS preflight 已在 clean/sy
 - 当前 Agent 提交面仍未收敛：把 monolithic output 拆成微片段并减半预算，没有解决完整单元上下文、高 thinking 和强制 Tool Call 之间的交互。
 
 因此不能把下一步继续写成“再缩一个字段”或“再多给 token”。长期 provider-neutral 金融合同保持不变；候选变化只应位于可替换的上下文投影、分析／提交 profile、协议适配器或自主权 profile。R3 没有可见 thesis，故既不是 L1 pass 也不是 L1 fail；Layer Two、五单元和三案例仍 blocked。
+
+## 11. FFJ-R3 暴露的终局对象错误
+
+FFJ-R3 与前面的 natural micro R3 不是同一个 attempt。片段投影和分析／交卷分离生效后，FFJ-R3 完成了 6/6 次调用，三个片段都各自通过。模型的业务判断为：管理层的 AI server 产品盈利目标可作为产品范围陈述；当前 Pack 没有产品到 ISG／公司的利润桥；同口径公司毛利率下降只能作为公司层反向观察，不能反推产品因果。
+
+旧终局 compiler 仍做了两件错误的事：
+
+1. 把同一 Evidence ref 在整份报告中压成一个全局角色，因此法说不能同时在 thesis 中作 support、在 mechanism 中作 context；
+2. Claim Authority 只把标成 `limit` 的网页当作边界，忽略已经验证的 `bridge_not_established`／typed gap 和 same-scope NumericRelation。
+
+这两项都是 provider-neutral 对象合同缺陷。它们与 Chat／Responses／Anthropic 传输无关，也不能靠重写 Prompt 或让 DeepSeek 再生成一次来解决。
+
+## 12. claim-local role 与 typed boundary v1.4
+
+当前合同按 claim 保存 `evidence_uses`，终局只生成一个确定性 report summary。summary 可以告诉用户一份来源在不同 claim 中承担过哪些角色，但不能反向授权片段。每个 claim 仍必须独立满足自己的 required support；“报告其他地方用过 support”不能洗白只拿到 context 的 claim。
+
+Claim Authority 同时承认两类经过当前对象绑定的边界：
+
+- `typed_bridge_gap_relation`：明确表达当前 Pack 没有建立跨产品／分部／公司利润桥；
+- `typed_same_scope_counter_relation`：同主体、同口径、同期间关系的反向数值观察。
+
+两者都只有 boundary 权限，没有 support 权限。它们可以迫使跨层因果降级或 abstain，不能证明 AI 产品贡献了公司利润。
+
+保存的 FFJ-R3 三个 Tool payload 在不改模型文字的情况下现可编译为 `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only`。全局 support 借用和删除 typed boundary 两类 mutation 继续分别以 `claim_surface_required_authority_missing`、`claim_authority_multi_driver_boundary_missing` fail closed。formal v1.3 proof 因历史 input/policy lane 混用而零调用失败，v1.4 将历史 micro proof 与 R3 terminal replay 分开后两个 fresh process 字节等价。
+
+该结果是 engineering pass，不是自然产品通过。FFJ-R3 保持失败；fresh FFJ-R4 必须重新取得 clean/synced authority，按同一 fixed Pack、6 model calls／3 submissions／0 EvidenceRequest／0 retry 执行，并独立完成 L1 与内容质量验收。通过后才可进入动态 Research Truth Spine。

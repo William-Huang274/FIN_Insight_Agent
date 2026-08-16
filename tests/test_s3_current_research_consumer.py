@@ -27,6 +27,7 @@ from sec_agent.research.current_consumer import (
     compile_current_research_messages,
     load_current_research_consumer_policy,
     parse_current_research_output,
+    validate_current_research_evidence_route,
     validate_current_research_output,
 )
 from sec_agent.research.claim_authority import (
@@ -620,6 +621,42 @@ def test_v1_1_payload_injects_trusted_envelope_and_renders_typed_uses(
     ]
     assert all("evidence" in row for row in demand["evidence_uses_rendered"])
     assert demand["remaining_gap_refs"] == ["GAP::00730082A5C08C4C"]
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        "官方业绩稿或 10-Q 的毛利与收入，按既有公式生成同口径关系",
+        "后续 10-K 与 8-K 的已审财务表和公司说明",
+        "发行人 20-F、40-F 或 6-K 中的同口径官方披露",
+    ],
+)
+def test_wwc_route_accepts_only_qualified_document_identifiers(
+    route: str,
+) -> None:
+    assert validate_current_research_evidence_route(
+        route,
+        maximum=180,
+    ) == route
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        "官方 10-Q 显示毛利率增长 20% 后再作判断",
+        "官方 10-Q 在 2027 年的下一期披露",
+        "官方 12-Z 的毛利与收入披露",
+        "https://example.com/10-Q 中的毛利与收入",
+    ],
+)
+def test_wwc_route_rejects_unregistered_or_financial_numeric_surface(
+    route: str,
+) -> None:
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_wwc_evidence_route_invalid",
+    ):
+        validate_current_research_evidence_route(route, maximum=180)
 
 
 @pytest.mark.parametrize(

@@ -73,6 +73,14 @@ _YEAR_OVER_YEAR_SURFACE = re.compile(
     r"同比|较上年同期|year[- ]over[- ]year|\byoy\b|prior[- ]year quarter",
     re.IGNORECASE,
 )
+_QUALIFIED_EVIDENCE_ROUTE_DOCUMENT_IDENTIFIERS = (
+    "10-K",
+    "10-Q",
+    "8-K",
+    "20-F",
+    "40-F",
+    "6-K",
+)
 
 
 class CurrentResearchConsumerError(ValueError):
@@ -155,6 +163,14 @@ def load_current_research_consumer_policy(
     source_types = _unique_strings(
         source_policy.get("allowed_source_types"),
         "research_consumer_source_types_invalid",
+    )
+    digit_bearing_source_types = {
+        value for value in source_types if any(char.isdigit() for char in value)
+    }
+    _require(
+        digit_bearing_source_types
+        == set(_QUALIFIED_EVIDENCE_ROUTE_DOCUMENT_IDENTIFIERS),
+        "research_consumer_route_document_identifier_policy_invalid",
     )
     source_tiers = _unique_strings(
         source_policy.get("allowed_source_tiers"),
@@ -1597,6 +1613,35 @@ def validate_current_research_model_text(
     return text
 
 
+def validate_current_research_evidence_route(
+    value: object,
+    *,
+    maximum: int,
+    code: str = "research_consumer_wwc_evidence_route_invalid",
+) -> str:
+    """Validate a WWC route without treating official form IDs as numbers."""
+
+    text = str(value or "").strip()
+    numeric_surface = text
+    for identifier in _QUALIFIED_EVIDENCE_ROUTE_DOCUMENT_IDENTIFIERS:
+        numeric_surface = re.sub(
+            rf"(?<![A-Z0-9]){re.escape(identifier)}(?![A-Z0-9])",
+            " ",
+            numeric_surface,
+            flags=re.IGNORECASE,
+        )
+    _require(
+        12 <= len(text) <= maximum
+        and not _DIGIT_OR_FINANCIAL_SURFACE.search(numeric_surface)
+        and not _VERBAL_NUMERIC_SURFACE.search(numeric_surface)
+        and not _ALIAS_IN_PROSE.search(text)
+        and "http://" not in text.casefold()
+        and "https://" not in text.casefold(),
+        code,
+    )
+    return text
+
+
 def validate_current_research_output(
     payload: Mapping[str, Any],
     *,
@@ -1929,10 +1974,9 @@ def validate_current_research_output(
                 code="research_consumer_wwc_horizon_invalid",
                 minimum=4,
             ),
-            "evidence_route": validate_current_research_model_text(
+            "evidence_route": validate_current_research_evidence_route(
                 wwc.get("evidence_route"),
                 maximum=int(contract["maximum_wwc_evidence_route_chars"]),
-                code="research_consumer_wwc_evidence_route_invalid",
             ),
             "threshold_numeric_ref": threshold,
         }
@@ -2200,5 +2244,6 @@ __all__ = [
     "load_current_research_consumer_policy",
     "parse_current_research_output",
     "validate_current_research_model_text",
+    "validate_current_research_evidence_route",
     "validate_current_research_output",
 ]

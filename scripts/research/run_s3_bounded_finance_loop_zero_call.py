@@ -1697,6 +1697,192 @@ def _saved_r4_causal_polarity_replay(
     }
 
 
+def _saved_r5_wwc_route_identifier_replay(
+    *,
+    paths: Mapping[str, Path],
+    base_research_input: Mapping[str, Any],
+) -> dict[str, Any]:
+    required = {
+        "claim_authority_policy_ref",
+        "r5_claim_surface_authority_policy_ref",
+        "r5_submitted_fragments_ref",
+        "r5_live_result_ref",
+        "r5_failure_assessment_ref",
+    }
+    missing = required.difference(paths)
+    if missing:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r5_replay_bound_inputs_missing:"
+            + ",".join(sorted(missing))
+        )
+    fixture = _json(paths["r5_submitted_fragments_ref"])
+    prior_result = _json(paths["r5_live_result_ref"])
+    prior_assessment = _json(paths["r5_failure_assessment_ref"])
+    if not (
+        fixture.get("source_result_sha256")
+        == _sha(paths["r5_live_result_ref"])
+        and prior_result.get("failure_code")
+        == "research_consumer_wwc_evidence_route_invalid"
+        and prior_result.get("execution", {}).get("model_calls_attempted") == 6
+        and prior_result.get("execution", {}).get("tool_calls_accepted") == 3
+        and prior_assessment.get("root_cause", {}).get("owner_layer")
+        == "S3_provider_neutral_field_scoped_model_text_validation"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r5_replay_predecessor_drift"
+        )
+    research_input = compile_claim_surface_authority_research_input(
+        compile_claim_authority_research_input(
+            base_research_input,
+            policy=_json(paths["claim_authority_policy_ref"]),
+        ),
+        policy=_json(paths["r5_claim_surface_authority_policy_ref"]),
+    )
+    fragments = fixture.get("fragments")
+    if not isinstance(fragments, Mapping) or set(fragments) != set(
+        MICRO_JUDGMENT_TOOL_NAMES
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r5_replay_fragment_shape_invalid"
+        )
+    accepted: dict[str, dict[str, Any]] = {}
+    for tool_name in MICRO_JUDGMENT_TOOL_NAMES:
+        raw = fragments[tool_name]
+        if not isinstance(raw, Mapping):
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_r5_replay_fragment_shape_invalid"
+            )
+        accepted[tool_name] = validate_finance_micro_judgment_fragment(
+            tool_name=tool_name,
+            arguments=deepcopy(raw),
+            research_input=research_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=accepted.get(SUBMIT_RESEARCH_THESIS_TOOL),
+        )
+    cell = next(
+        row
+        for row in research_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    terminal = compile_finance_micro_judgment_fragments(accepted, cell=cell)
+    deliverable = compile_current_research_deliverable(
+        research_input=research_input,
+        judgment_output={"cells": [terminal]},
+        required_cell_ids=["CELL::value_capture"],
+    )
+    rendered = deliverable["cells"][0]
+    expected_route = str(
+        fragments[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL][
+            "what_would_change"
+        ]["evidence_route"]
+    )
+    source_atoms = [
+        str(fragments[name][field])
+        for name, field in zip(
+            MICRO_JUDGMENT_TOOL_NAMES,
+            ("thesis_atom", "mechanism_atom", "counterargument_atom"),
+        )
+    ]
+    if not (
+        source_atoms
+        == [
+            terminal["thesis_atom"],
+            terminal["mechanism_atom"],
+            terminal["counterargument_atom"],
+        ]
+        and terminal["what_would_change"]["evidence_route"]
+        == expected_route
+        and rendered["what_would_change"]["evidence_route"]
+        == expected_route
+        and set(
+            rendered["claim_authority_receipt"][
+                "boundary_authority_sources"
+            ]
+        )
+        == {
+            "typed_bridge_gap_relation",
+            "typed_same_scope_counter_relation",
+        }
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r5_replay_terminal_invalid"
+        )
+
+    mutation_failure_codes: dict[str, str] = {}
+    for name, route in {
+        "percentage_after_qualified_identifier": (
+            "官方 10-Q 显示毛利率增长 20% 后再作判断"
+        ),
+        "year_after_qualified_identifier": "官方 10-Q 在 2027 年的下一期披露",
+        "unknown_digit_identifier": "官方 12-Z 的毛利与收入披露",
+        "url_with_qualified_identifier": (
+            "https://example.com/10-Q 中的毛利与收入"
+        ),
+    }.items():
+        mutation = deepcopy(terminal)
+        mutation["what_would_change"]["evidence_route"] = route
+        try:
+            compile_current_research_deliverable(
+                research_input=research_input,
+                judgment_output={"cells": [mutation]},
+                required_cell_ids=["CELL::value_capture"],
+            )
+        except CurrentResearchConsumerError as exc:
+            if exc.code != "research_consumer_wwc_evidence_route_invalid":
+                raise
+            mutation_failure_codes[name] = exc.code
+        else:
+            raise BoundedFinanceLoopProofError(
+                f"finance_loop_r5_replay_route_mutation_passed:{name}"
+            )
+
+    narrative_mutation = deepcopy(terminal)
+    narrative_mutation["thesis_atom"] += " 相关核验文件为 10-Q。"
+    try:
+        compile_current_research_deliverable(
+            research_input=research_input,
+            judgment_output={"cells": [narrative_mutation]},
+            required_cell_ids=["CELL::value_capture"],
+        )
+    except CurrentResearchConsumerError as exc:
+        if exc.code != "research_consumer_thesis_atom_invalid":
+            raise
+        mutation_failure_codes["document_identifier_in_narrative"] = exc.code
+    else:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r5_replay_narrative_relaxation_detected"
+        )
+
+    return {
+        "predecessor_result_digest": prior_result["result_digest"],
+        "predecessor_failure_code": prior_result["failure_code"],
+        "submitted_fragment_fixture_sha256": _sha(
+            paths["r5_submitted_fragments_ref"]
+        ),
+        "accepted_fragment_digests": {
+            name: canonical_digest(accepted[name])
+            for name in MICRO_JUDGMENT_TOOL_NAMES
+        },
+        "terminal_judgment_digest": canonical_digest(terminal),
+        "deliverable_digest": deliverable["deliverable_digest"],
+        "judgment_status": rendered["judgment_status"],
+        "inference_authority": rendered["inference_authority"],
+        "claim_scope": rendered["claim_scope"],
+        "financial_scope": rendered["financial_scope"],
+        "causal_bridge_authority": rendered["causal_bridge_authority"],
+        "qualified_document_identifier": "10-Q",
+        "qualified_route_preserved_exactly": True,
+        "field_scoped_numeric_surface_guard": True,
+        "unregistered_numeric_surface_fail_closed": True,
+        "boundary_authority_sources": rendered[
+            "claim_authority_receipt"
+        ]["boundary_authority_sources"],
+        "model_narratives_preserved_exactly": True,
+        "harness_generated_research_judgment": False,
+        "mutation_failure_codes": mutation_failure_codes,
+    }
+
+
 def _run_fake_matrix(
     *,
     research_input: Mapping[str, Any],
@@ -2110,6 +2296,14 @@ def _execute(
             if "r4_submitted_fragments_ref" in paths
             else None
         )
+        r5_replay = (
+            _saved_r5_wwc_route_identifier_replay(
+                paths=paths,
+                base_research_input=research_input,
+            )
+            if "r5_submitted_fragments_ref" in paths
+            else None
+        )
         normalized = {
             **micro_matrix,
             **(
@@ -2120,6 +2314,11 @@ def _execute(
             **(
                 {"saved_r4_causal_polarity_replay": r4_replay}
                 if r4_replay is not None
+                else {}
+            ),
+            **(
+                {"saved_r5_wwc_route_identifier_replay": r5_replay}
+                if r5_replay is not None
                 else {}
             ),
             "three_case_context_digest": canonical_digest(three_case_context),
@@ -2174,6 +2373,7 @@ def _execute(
                 "mutation_and_cross_case_fail_closed": True,
                 "three_case_existing_runtime_unchanged": True,
                 "saved_r3_terminal_replay_pass": r3_replay is not None,
+                "saved_r5_terminal_replay_pass": r5_replay is not None,
                 "natural_model_submission_proven": False,
                 "fixed_pack_layer_one_accepted": False,
                 "dynamic_agentic_research_authorized": False,

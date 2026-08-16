@@ -236,6 +236,21 @@ FULL_FRAGMENT_R6_SUCCESSOR_FIXTURE = ROOT / (
     "fin_ia_0_1_3_s3_dell_full_fragment_chat_r6_"
     "submission_successor_fixture_v1_0.json"
 )
+R7_REJECTED_COUNTER_FIXTURE = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_failed_counter_submission_r7_"
+    "rejected_fragment_v1_0.json"
+)
+R7_LIVE_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_failed_counter_"
+    "submission_successor_chat_live_result_v1_0.json"
+)
+R7_FAILURE_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_failed_counter_"
+    "submission_successor_chat_live_failure_assessment_v1_0.json"
+)
 FULL_FRAGMENT_R5_SUBMITTED_FRAGMENTS = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_full_fragment_chat_r5_"
@@ -1551,6 +1566,129 @@ def test_failed_fragment_submission_successor_reuses_five_calls_and_runs_one(
         (tmp_path / "private/full_result.json").read_text(encoding="utf-8")
     )
     assert set(full["accepted_fragments"]) == set(MICRO_JUDGMENT_TOOL_NAMES)
+    assert full["authorship"]["harness_generated_research_judgment"] is False
+
+
+def test_failed_fragment_validation_repair_uses_typed_feedback_once(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = _runner()
+    paths = _full_fragment_validation_paths()
+    paths.update(
+        {
+            "submission_profile_ref": NON_THINKING_SUBMISSION_PROFILE,
+            "submission_successor_fixture_ref": (
+                FULL_FRAGMENT_R6_SUCCESSOR_FIXTURE
+            ),
+            "rejected_fragment_fixture_ref": R7_REJECTED_COUNTER_FIXTURE,
+            "prior_live_result_ref": R7_LIVE_RESULT,
+            "prior_failure_assessment_ref": R7_FAILURE_ASSESSMENT,
+        }
+    )
+    authority_path = tmp_path / "authority.json"
+    authority = {
+        "schema_version": runner.FRAGMENT_VALIDATION_REPAIR_AUTHORITY_SCHEMA,
+        "status": runner.FRAGMENT_VALIDATION_REPAIR_AUTHORITY_STATUS,
+        "implementation_commit": "a" * 40,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "rejected_fragment_tool": MICRO_JUDGMENT_TOOL_NAMES[2],
+        "terminal_failure_code": "claim_surface_narrative_relation_conflict",
+        "execution_budget": {},
+        "bound_inputs": {},
+        "output_contract": {
+            "capture_root_ref": "capture",
+            "private_output_root_ref": "private",
+            "public_result_ref": "public.json",
+            "run_id": "validation-repair-r1",
+            "attempt_id": "counter-repair-r1",
+            "product_publication": "forbidden",
+        },
+        "known_boundary": "one typed validation repair unit test",
+    }
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+    destinations = {
+        "capture": tmp_path / "capture",
+        "private": tmp_path / "private",
+        "public.json": tmp_path / "public.json",
+    }
+    monkeypatch.setattr(
+        runner,
+        "validate_failed_fragment_validation_repair_authority",
+        lambda _payload, authority_path: paths,
+    )
+    original_resolve = runner._resolve
+    monkeypatch.setattr(
+        runner,
+        "_resolve",
+        lambda ref: destinations.get(str(ref), original_resolve(ref)),
+    )
+    monkeypatch.setattr(runner, "_relative", lambda path: Path(path).name)
+    repaired = json.loads(
+        FULL_FRAGMENT_R5_SUBMITTED_FRAGMENTS.read_text(encoding="utf-8")
+    )["fragments"][MICRO_JUDGMENT_TOOL_NAMES[2]]
+    calls: list[dict[str, object]] = []
+
+    def submit(**kwargs):
+        calls.append(kwargs)
+        assert [row["role"] for row in kwargs["messages"]] == [
+            "system",
+            "user",
+            "assistant",
+            "tool",
+            "user",
+        ]
+        feedback = json.loads(kwargs["messages"][3]["content"])
+        assert feedback["failure_code"] == (
+            "claim_surface_narrative_relation_conflict"
+        )
+        assert feedback["remaining_repair_turns"] == 1
+        return ChatCompletionToolStepResult(
+            status="completed_exact_once_tool_step",
+            provider_id="deepseek",
+            model="deepseek-v4-pro",
+            content="",
+            reasoning_content="",
+            tool_calls=(
+                {
+                    "id": "call-counter-validation-repair",
+                    "type": "function",
+                    "function": {
+                        "name": MICRO_JUDGMENT_TOOL_NAMES[2],
+                        "arguments": json.dumps(repaired, ensure_ascii=False),
+                    },
+                },
+            ),
+            finish_reason="tool_calls",
+            usage={"prompt_tokens": 100, "completion_tokens": 100},
+            request_capture_ref=str(tmp_path / "request.json"),
+            response_capture_ref=str(tmp_path / "response.json"),
+            request_digest="1" * 64,
+            response_digest="2" * 64,
+            private_reasoning_fields_redacted=0,
+        )
+
+    monkeypatch.setattr(
+        runner,
+        "execute_chat_completion_tool_step_exact_once",
+        submit,
+    )
+    result = runner.run_failed_fragment_validation_repair(authority_path)
+    assert result["status"] == (
+        "completed_failed_fragment_validation_repair_contract_valid_"
+        "content_assessment_pending"
+    )
+    assert len(calls) == 1
+    assert result["execution"]["successful_predecessor_model_calls_reused"] == 6
+    assert result["execution"]["logical_chain_model_calls"] == 7
+    assert result["execution"]["maximum_repair_turns"] == 1
+    assert result["acceptance"]["typed_validation_feedback_repair_pass"] is True
+    assert result["acceptance"]["causal_guard_preserved"] is True
+    full = json.loads(
+        (tmp_path / "private/full_result.json").read_text(encoding="utf-8")
+    )
+    assert full["authorship"]["rejected_fragment_model_owned_but_not_promoted"]
     assert full["authorship"]["harness_generated_research_judgment"] is False
 
 

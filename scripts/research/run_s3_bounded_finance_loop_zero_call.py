@@ -47,6 +47,7 @@ from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     SUBMIT_RESEARCH_THESIS_TOOL,
     compile_finance_micro_fragment_context,
     compile_finance_micro_fragment_submission_successor,
+    compile_finance_micro_fragment_validation_repair_successor,
     compile_finance_micro_fragment_submission_messages,
     compile_finance_loop_messages,
     compile_finance_micro_judgment_fragments,
@@ -2080,6 +2081,185 @@ def _saved_r6_non_thinking_submission_successor_replay(
     }
 
 
+def _saved_r7_validation_repair_successor_replay(
+    *,
+    paths: Mapping[str, Path],
+    base_research_input: Mapping[str, Any],
+) -> dict[str, Any]:
+    required = {
+        "claim_authority_policy_ref",
+        "r7_claim_surface_authority_policy_ref",
+        "r6_submission_successor_fixture_ref",
+        "r7_rejected_fragment_fixture_ref",
+        "r7_live_result_ref",
+        "r7_failure_assessment_ref",
+        "r5_submitted_fragments_ref",
+    }
+    missing = required.difference(paths)
+    if missing:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r7_repair_bound_inputs_missing:"
+            + ",".join(sorted(missing))
+        )
+    prefix_fixture = _json(paths["r6_submission_successor_fixture_ref"])
+    rejected_fixture = _json(paths["r7_rejected_fragment_fixture_ref"])
+    prior_result = _json(paths["r7_live_result_ref"])
+    prior_assessment = _json(paths["r7_failure_assessment_ref"])
+    if not (
+        rejected_fixture.get("source_result_sha256")
+        == _sha(paths["r7_live_result_ref"])
+        and rejected_fixture.get("source_result_digest")
+        == prior_result.get("result_digest")
+        and prior_result.get("failure_code")
+        == "claim_surface_narrative_relation_conflict"
+        and prior_result.get("failure_phase")
+        == "local_terminal_judgment_validation"
+        and prior_result.get("execution", {}).get("fresh_model_calls_attempted")
+        == 1
+        and prior_result.get("execution", {}).get("fresh_tool_calls_accepted")
+        == 1
+        and prior_result.get("execution", {}).get(
+            "successful_predecessor_model_calls_reused"
+        )
+        == 5
+        and prior_assessment.get("root_cause", {}).get(
+            "local_validator_false_positive"
+        )
+        is False
+        and prior_assessment.get("root_cause", {}).get("financial_L1_observed")
+        is True
+        and rejected_fixture.get("rejected_fragment_digest")
+        == prior_result.get("validated_counter_fragment_digest")
+        and rejected_fixture.get("local_guard_false_positive") is False
+        and rejected_fixture.get("rejected_fragment_promoted_to_business_truth")
+        is False
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r7_repair_predecessor_drift"
+        )
+    research_input = compile_claim_surface_authority_research_input(
+        compile_claim_authority_research_input(
+            base_research_input,
+            policy=_json(paths["claim_authority_policy_ref"]),
+        ),
+        policy=_json(paths["r7_claim_surface_authority_policy_ref"]),
+    )
+    if prefix_fixture.get("research_input_digest") != research_input.get(
+        "research_input_digest"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r7_repair_research_input_drift"
+        )
+    repair = compile_finance_micro_fragment_validation_repair_successor(
+        research_input=research_input,
+        cell_id="CELL::value_capture",
+        rejected_tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        accepted_prefix_fragments=prefix_fixture["accepted_fragments"],
+        rejected_fragment=rejected_fixture["rejected_fragment"],
+        terminal_failure_code=rejected_fixture["terminal_failure_code"],
+    )
+    if repair.get("rejected_fragment_digest") != rejected_fixture.get(
+        "rejected_fragment_digest"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r7_repair_fragment_digest_drift"
+        )
+    messages = repair["repair_messages"]
+    if [row["role"] for row in messages] != [
+        "system",
+        "user",
+        "assistant",
+        "tool",
+        "user",
+    ]:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r7_repair_message_sequence_invalid"
+        )
+    tool_feedback = json.loads(messages[3]["content"])
+    if not (
+        tool_feedback.get("status")
+        == "rejected_not_promoted_repairable_once"
+        and tool_feedback.get("failure_code")
+        == "claim_surface_narrative_relation_conflict"
+        and tool_feedback.get("remaining_repair_turns") == 1
+        and repair.get("maximum_repair_turns") == 1
+        and repair.get("rejected_fragment_promoted_to_business_truth") is False
+        and repair.get("harness_generated_research_judgment") is False
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r7_repair_feedback_invalid"
+        )
+
+    fake_fragments = _json(paths["r5_submitted_fragments_ref"]).get("fragments")
+    if not isinstance(fake_fragments, Mapping):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r7_repair_fake_fragment_missing"
+        )
+    repaired_counter = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        arguments=deepcopy(
+            fake_fragments[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL]
+        ),
+        research_input=research_input,
+        cell_id="CELL::value_capture",
+        thesis_fragment=repair["accepted_prefix_fragments"][
+            SUBMIT_RESEARCH_THESIS_TOOL
+        ],
+    )
+    repaired_fragments = {
+        **deepcopy(repair["accepted_prefix_fragments"]),
+        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL: repaired_counter,
+    }
+    cell = next(
+        row
+        for row in research_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    terminal = compile_finance_micro_judgment_fragments(
+        repaired_fragments,
+        cell=cell,
+    )
+    deliverable = compile_current_research_deliverable(
+        research_input=research_input,
+        judgment_output={"cells": [terminal]},
+        required_cell_ids=["CELL::value_capture"],
+    )
+
+    try:
+        compile_finance_micro_fragment_validation_repair_successor(
+            research_input=research_input,
+            cell_id="CELL::value_capture",
+            rejected_tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+            accepted_prefix_fragments=prefix_fixture["accepted_fragments"],
+            rejected_fragment=rejected_fixture["rejected_fragment"],
+            terminal_failure_code="claim_surface_required_authority_missing",
+        )
+    except BoundedFinanceLoopError as exc:
+        wrong_code_failure = exc.code
+    else:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r7_repair_wrong_failure_code_passed"
+        )
+    return {
+        "predecessor_result_digest": prior_result["result_digest"],
+        "predecessor_failure_code": prior_result["failure_code"],
+        "successful_predecessor_model_calls_reused": 6,
+        "fresh_model_calls_in_repair_successor": 1,
+        "rejected_fragment_digest": repair["rejected_fragment_digest"],
+        "repair_feedback_digest": repair["repair_feedback_digest"],
+        "repair_messages_digest": repair["repair_messages_digest"],
+        "typed_tool_feedback_sequence": True,
+        "maximum_repair_turns": 1,
+        "wrong_failure_code_mutation": wrong_code_failure,
+        "fake_repaired_terminal_judgment_digest": canonical_digest(terminal),
+        "fake_repaired_deliverable_digest": deliverable["deliverable_digest"],
+        "fake_only_not_business_promotion": True,
+        "local_causal_guard_preserved": True,
+        "rejected_fragment_promoted_to_business_truth": False,
+        "harness_generated_research_judgment": False,
+    }
+
+
 def _run_fake_matrix(
     *,
     research_input: Mapping[str, Any],
@@ -2509,6 +2689,14 @@ def _execute(
             if "r6_submission_successor_fixture_ref" in paths
             else None
         )
+        r7_repair_replay = (
+            _saved_r7_validation_repair_successor_replay(
+                paths=paths,
+                base_research_input=research_input,
+            )
+            if "r7_rejected_fragment_fixture_ref" in paths
+            else None
+        )
         normalized = {
             **micro_matrix,
             **(
@@ -2533,6 +2721,15 @@ def _execute(
                     )
                 }
                 if r6_successor_replay is not None
+                else {}
+            ),
+            **(
+                {
+                    "saved_r7_validation_repair_successor_replay": (
+                        r7_repair_replay
+                    )
+                }
+                if r7_repair_replay is not None
                 else {}
             ),
             "three_case_context_digest": canonical_digest(three_case_context),
@@ -2590,6 +2787,9 @@ def _execute(
                 "saved_r5_terminal_replay_pass": r5_replay is not None,
                 "saved_r6_submission_successor_replay_pass": (
                     r6_successor_replay is not None
+                ),
+                "saved_r7_validation_repair_successor_replay_pass": (
+                    r7_repair_replay is not None
                 ),
                 "natural_model_submission_proven": False,
                 "fixed_pack_layer_one_accepted": False,

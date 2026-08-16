@@ -43,6 +43,7 @@ from sec_agent.research.bounded_finance_loop import (
     SUBMIT_RESEARCH_THESIS_TOOL,
     compile_finance_micro_fragment_analysis_messages,
     compile_finance_micro_fragment_context,
+    compile_finance_micro_fragment_validation_repair_successor,
     compile_finance_micro_fragment_submission_messages,
     compile_finance_micro_judgment_fragments,
     compile_finance_micro_judgment_tools,
@@ -172,6 +173,21 @@ R6_SUBMISSION_SUCCESSOR_FIXTURE = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_full_fragment_chat_r6_"
     "submission_successor_fixture_v1_0.json"
+)
+R7_REJECTED_COUNTER_FIXTURE = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_failed_counter_submission_r7_"
+    "rejected_fragment_v1_0.json"
+)
+R7_LIVE_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_failed_counter_"
+    "submission_successor_chat_live_result_v1_0.json"
+)
+R7_FAILURE_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_failed_counter_"
+    "submission_successor_chat_live_failure_assessment_v1_0.json"
 )
 R6_LIVE_RESULT = ROOT / (
     "configs/research/evals/"
@@ -2316,6 +2332,108 @@ def test_zero_call_runner_replays_r6_failed_node_non_thinking_successor(
     assert replay["reasoning_effort_omitted"] is True
     assert replay["analysis_content_mutation_detected"] is True
     assert replay["fake_only_not_business_promotion"] is True
+    assert replay["harness_generated_research_judgment"] is False
+
+
+def test_terminal_validation_repair_compiles_typed_tool_feedback(
+    contracts,
+) -> None:
+    _, base_research_input, _, _, _ = contracts
+    research_input = compile_claim_surface_authority_research_input(
+        compile_claim_authority_research_input(
+            base_research_input,
+            policy=_json(CLAIM_AUTHORITY_POLICY),
+        ),
+        policy=_json(CLAIM_RELATION_SUPPORT_POLICY),
+    )
+    r6 = _json(R6_SUBMISSION_SUCCESSOR_FIXTURE)
+    r7 = _json(R7_REJECTED_COUNTER_FIXTURE)
+    repair = compile_finance_micro_fragment_validation_repair_successor(
+        research_input=research_input,
+        cell_id="CELL::value_capture",
+        rejected_tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        accepted_prefix_fragments=r6["accepted_fragments"],
+        rejected_fragment=r7["rejected_fragment"],
+        terminal_failure_code=r7["terminal_failure_code"],
+    )
+
+    assert repair["rejected_fragment_digest"] == r7["rejected_fragment_digest"]
+    assert repair["repair_feedback"]["status"] == (
+        "rejected_not_promoted_repairable_once"
+    )
+    assert repair["maximum_repair_turns"] == 1
+    assert repair["rejected_fragment_promoted_to_business_truth"] is False
+    assert [row["role"] for row in repair["repair_messages"]] == [
+        "system",
+        "user",
+        "assistant",
+        "tool",
+        "user",
+    ]
+    assert repair["repair_messages"][2]["tool_calls"][0]["function"][
+        "arguments"
+    ] == json.dumps(
+        r7["rejected_fragment"],
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    feedback = json.loads(repair["repair_messages"][3]["content"])
+    assert feedback["failure_code"] == (
+        "claim_surface_narrative_relation_conflict"
+    )
+    assert feedback["remaining_repair_turns"] == 1
+
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_fragment_repair_failure_code_invalid",
+    ):
+        compile_finance_micro_fragment_validation_repair_successor(
+            research_input=research_input,
+            cell_id="CELL::value_capture",
+            rejected_tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+            accepted_prefix_fragments=r6["accepted_fragments"],
+            rejected_fragment=r7["rejected_fragment"],
+            terminal_failure_code="claim_surface_required_authority_missing",
+        )
+
+
+def test_zero_call_runner_replays_r7_typed_validation_repair(
+    contracts,
+) -> None:
+    runner = _zero_call_runner()
+    _, research_input, _, _, _ = contracts
+    replay = runner._saved_r7_validation_repair_successor_replay(
+        paths={
+            "claim_authority_policy_ref": CLAIM_AUTHORITY_POLICY,
+            "r7_claim_surface_authority_policy_ref": (
+                CLAIM_RELATION_SUPPORT_POLICY
+            ),
+            "r6_submission_successor_fixture_ref": (
+                R6_SUBMISSION_SUCCESSOR_FIXTURE
+            ),
+            "r7_rejected_fragment_fixture_ref": (
+                R7_REJECTED_COUNTER_FIXTURE
+            ),
+            "r7_live_result_ref": R7_LIVE_RESULT,
+            "r7_failure_assessment_ref": R7_FAILURE_ASSESSMENT,
+            "r5_submitted_fragments_ref": R5_SUBMITTED_FRAGMENT_REPLAY,
+        },
+        base_research_input=research_input,
+    )
+
+    assert replay["predecessor_failure_code"] == (
+        "claim_surface_narrative_relation_conflict"
+    )
+    assert replay["typed_tool_feedback_sequence"] is True
+    assert replay["maximum_repair_turns"] == 1
+    assert replay["successful_predecessor_model_calls_reused"] == 6
+    assert replay["fresh_model_calls_in_repair_successor"] == 1
+    assert replay["local_causal_guard_preserved"] is True
+    assert replay["rejected_fragment_promoted_to_business_truth"] is False
+    assert replay["wrong_failure_code_mutation"] == (
+        "finance_loop_fragment_repair_failure_code_invalid"
+    )
     assert replay["harness_generated_research_judgment"] is False
 
 

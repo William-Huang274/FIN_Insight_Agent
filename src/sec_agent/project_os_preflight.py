@@ -40,6 +40,10 @@ FULL_FRAGMENT_CAUSAL_POLARITY_DECISION_SCHEMA = (
     "fin_ia_s3_fixed_pack_full_fragment_judgment_causal_polarity_"
     "live_scope_decision_v1_4"
 )
+FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_DECISION_SCHEMA = (
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_wwc_route_identifier_"
+    "live_scope_decision_v1_5"
+)
 FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS = (
     "full_fragment_zero_call_pass_one_fresh_chat_judgment_authorized"
 )
@@ -137,6 +141,7 @@ def _validate_fixed_pack_decision(
     if decision.get("schema_version") in {
         FULL_FRAGMENT_CLAIM_LOCAL_BOUNDARY_DECISION_SCHEMA,
         FULL_FRAGMENT_CAUSAL_POLARITY_DECISION_SCHEMA,
+        FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_DECISION_SCHEMA,
     }:
         return _validate_claim_local_boundary_fixed_pack_decision(
             root=root, decision=decision
@@ -304,10 +309,14 @@ def _validate_fixed_pack_decision(
 def _validate_claim_local_boundary_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
-    causal_polarity_successor = (
+    route_identifier_successor = (
         decision.get("schema_version")
-        == FULL_FRAGMENT_CAUSAL_POLARITY_DECISION_SCHEMA
+        == FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_DECISION_SCHEMA
     )
+    causal_polarity_successor = decision.get("schema_version") in {
+        FULL_FRAGMENT_CAUSAL_POLARITY_DECISION_SCHEMA,
+        FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_DECISION_SCHEMA,
+    }
     required_equal = {
         "status": FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS,
         "case_key": "DELL",
@@ -317,7 +326,11 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         "next_authorized_scope": (
             "one_clean_synced_exact_once_DELL_value_capture_full_three_"
             "fragment_analysis_submission_Chat_"
-            + ("R5" if causal_polarity_successor else "R4")
+            + (
+                "R6"
+                if route_identifier_successor
+                else ("R5" if causal_polarity_successor else "R4")
+            )
         ),
     }
     for field, expected in required_equal.items():
@@ -352,6 +365,15 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         if causal_polarity_successor
         else ("saved_R3_replay_required",)
     )
+    if route_identifier_successor:
+        true_fields.extend(
+            (
+                "saved_R5_route_identifier_replay_required",
+                "registered_document_identifier_only_in_wwc_route_required",
+                "unregistered_or_financial_numeric_surface_fail_closed",
+                "document_identifier_in_narrative_fail_closed",
+            )
+        )
     for field in true_fields:
         if decision.get(field) is not True:
             raise ValueError(
@@ -404,6 +426,9 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         "saved_r3_claim_local_boundary_replay"
     ) or {}
     r4_replay = normalized_proof.get("saved_r4_causal_polarity_replay") or {}
+    r5_replay = normalized_proof.get(
+        "saved_r5_wwc_route_identifier_replay"
+    ) or {}
     clean_acceptance = clean.get("acceptance") or {}
     common_clean_valid = (
         clean.get("status")
@@ -461,9 +486,33 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         )
         == "claim_surface_narrative_relation_conflict"
     )
+    route_identifier_clean_valid = (
+        not route_identifier_successor
+        or (
+            clean_acceptance.get("saved_r5_terminal_replay_pass") is True
+            and r5_replay.get("predecessor_failure_code")
+            == "research_consumer_wwc_evidence_route_invalid"
+            and r5_replay.get("qualified_document_identifier") == "10-Q"
+            and r5_replay.get("qualified_route_preserved_exactly") is True
+            and r5_replay.get("field_scoped_numeric_surface_guard") is True
+            and r5_replay.get("unregistered_numeric_surface_fail_closed")
+            is True
+            and r5_replay.get("model_narratives_preserved_exactly") is True
+            and r5_replay.get("harness_generated_research_judgment") is False
+            and set((r5_replay.get("mutation_failure_codes") or {}))
+            == {
+                "percentage_after_qualified_identifier",
+                "year_after_qualified_identifier",
+                "unknown_digit_identifier",
+                "url_with_qualified_identifier",
+                "document_identifier_in_narrative",
+            }
+        )
+    )
     if not (
         common_clean_valid
         and (not causal_polarity_successor or causal_clean_valid)
+        and route_identifier_clean_valid
     ):
         raise ValueError("project_os_claim_local_clean_proof_invalid")
 
@@ -477,7 +526,11 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         disposition.get("status")
         == (
             "approved_fresh_full_three_fragment_analysis_submission_Chat_"
-            + ("R5" if causal_polarity_successor else "R4")
+            + (
+                "R6"
+                if route_identifier_successor
+                else ("R5" if causal_polarity_successor else "R4")
+            )
         )
         and disposition.get("decision_digest")
         == decision.get("scope_disposition_decision_digest")
@@ -506,6 +559,23 @@ def _validate_claim_local_boundary_fixed_pack_decision(
                 is True
                 and disposition.get(
                     "positive_cross_scope_causal_surface_fail_closed"
+                )
+                is True
+            )
+        )
+        and (
+            not route_identifier_successor
+            or (
+                disposition.get(
+                    "registered_document_identifier_only_in_wwc_route_required"
+                )
+                is True
+                and disposition.get(
+                    "unregistered_or_financial_numeric_surface_fail_closed"
+                )
+                is True
+                and disposition.get(
+                    "document_identifier_in_narrative_fail_closed"
                 )
                 is True
             )
@@ -552,9 +622,13 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         failed.get("status") == "terminal_failed_no_retry"
         and failed.get("failure_code")
         == (
-            "claim_surface_narrative_relation_conflict"
-            if causal_polarity_successor
-            else "finance_loop_micro_evidence_role_conflict"
+            "research_consumer_wwc_evidence_route_invalid"
+            if route_identifier_successor
+            else (
+                "claim_surface_narrative_relation_conflict"
+                if causal_polarity_successor
+                else "finance_loop_micro_evidence_role_conflict"
+            )
         )
         and failed.get("failure_fragment_tool")
         == "submit_research_counterargument_and_wwc"
@@ -563,16 +637,25 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         and (failed.get("execution") or {}).get("retries") == 0
         and failed_assessment.get("status")
         == (
-            "terminal_contract_failure_clause_and_negation_blind_lexical_"
-            "guard_false_positive_new_attempt_required"
-            if causal_polarity_successor
-            else "terminal_contract_failure_claim_local_evidence_role_and_"
-            "typed_boundary_aggregation_defect_new_attempt_required"
+            "terminal_contract_failure_wwc_document_identifier_numeric_"
+            "surface_false_positive_new_attempt_required"
+            if route_identifier_successor
+            else (
+                "terminal_contract_failure_clause_and_negation_blind_lexical_"
+                "guard_false_positive_new_attempt_required"
+                if causal_polarity_successor
+                else "terminal_contract_failure_claim_local_evidence_role_and_"
+                "typed_boundary_aggregation_defect_new_attempt_required"
+            )
         )
         and (failed_assessment.get("disposition") or {}).get(
             "immutable_R4_preserved"
-            if causal_polarity_successor
-            else "immutable_R3_preserved"
+            if causal_polarity_successor and not route_identifier_successor
+            else (
+                "immutable_R5_preserved"
+                if route_identifier_successor
+                else "immutable_R3_preserved"
+            )
         )
         is True
     )
@@ -623,6 +706,7 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         "relation_role_successor": False,
         "claim_local_boundary_successor": True,
         "causal_polarity_successor": causal_polarity_successor,
+        "wwc_route_identifier_successor": route_identifier_successor,
         "node_profiles": {
             "fragment_analysis": {
                 "reasoning_effort": analysis_defaults["reasoning_effort"],

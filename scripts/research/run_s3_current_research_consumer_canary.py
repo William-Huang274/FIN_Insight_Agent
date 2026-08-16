@@ -132,6 +132,9 @@ FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA = (
 FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA = (
     "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_4"
 )
+FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_5"
+)
 FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS = (
     "signed_exact_once_fixed_pack_full_three_fragment_analysis_submission_chat_live"
 )
@@ -1467,16 +1470,21 @@ def validate_full_fragment_judgment_authority(
         payload.get("schema_version")
         == FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA
     )
-    causal_polarity_successor = (
+    route_identifier_successor = (
         payload.get("schema_version")
-        == FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA
+        == FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_AUTHORITY_SCHEMA
     )
+    causal_polarity_successor = payload.get("schema_version") in {
+        FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA,
+        FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_AUTHORITY_SCHEMA,
+    }
     if not (
         payload.get("schema_version")
         in {
             FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA,
             FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA,
             FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA,
+            FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_AUTHORITY_SCHEMA,
         }
         and payload.get("status")
         == FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS
@@ -1599,6 +1607,49 @@ def validate_full_fragment_judgment_authority(
         r4_replay = normalized_proof.get(
             "saved_r4_causal_polarity_replay"
         ) or {}
+        r5_replay = normalized_proof.get(
+            "saved_r5_wwc_route_identifier_replay"
+        ) or {}
+        expected_disposition_status = (
+            "approved_fresh_full_three_fragment_analysis_submission_Chat_R6"
+            if route_identifier_successor
+            else "approved_fresh_full_three_fragment_analysis_submission_Chat_R5"
+        )
+        expected_predecessor_failure = (
+            "research_consumer_wwc_evidence_route_invalid"
+            if route_identifier_successor
+            else "claim_surface_narrative_relation_conflict"
+        )
+        expected_assessment_status = (
+            "terminal_contract_failure_wwc_document_identifier_numeric_"
+            "surface_false_positive_new_attempt_required"
+            if route_identifier_successor
+            else "terminal_contract_failure_clause_and_negation_blind_lexical_"
+            "guard_false_positive_new_attempt_required"
+        )
+        route_identifier_valid = (
+            not route_identifier_successor
+            or (
+                r5_replay.get("predecessor_failure_code")
+                == "research_consumer_wwc_evidence_route_invalid"
+                and r5_replay.get("qualified_document_identifier") == "10-Q"
+                and r5_replay.get("qualified_route_preserved_exactly") is True
+                and r5_replay.get("field_scoped_numeric_surface_guard") is True
+                and r5_replay.get("unregistered_numeric_surface_fail_closed")
+                is True
+                and r5_replay.get("model_narratives_preserved_exactly") is True
+                and r5_replay.get("harness_generated_research_judgment")
+                is False
+                and set((r5_replay.get("mutation_failure_codes") or {}))
+                == {
+                    "percentage_after_qualified_identifier",
+                    "year_after_qualified_identifier",
+                    "unknown_digit_identifier",
+                    "url_with_qualified_identifier",
+                    "document_identifier_in_narrative",
+                }
+            )
+        )
         successor_valid = (
             zero_call.get("status")
             == "zero_call_micro_judgment_fresh_process_proof_pass"
@@ -1641,8 +1692,8 @@ def validate_full_fragment_judgment_authority(
                 "positive_cross_scope_causal_en"
             )
             == "claim_surface_narrative_relation_conflict"
-            and disposition.get("status")
-            == "approved_fresh_full_three_fragment_analysis_submission_Chat_R5"
+            and route_identifier_valid
+            and disposition.get("status") == expected_disposition_status
             and disposition.get("execution_budget") == expected_budget
             and disposition.get("claim_local_evidence_roles_required") is True
             and disposition.get("typed_bridge_gap_boundary_required") is True
@@ -1661,10 +1712,27 @@ def validate_full_fragment_judgment_authority(
                 "positive_cross_scope_causal_surface_fail_closed"
             )
             is True
+            and (
+                not route_identifier_successor
+                or (
+                    disposition.get(
+                        "registered_document_identifier_only_in_wwc_route_required"
+                    )
+                    is True
+                    and disposition.get(
+                        "unregistered_or_financial_numeric_surface_fail_closed"
+                    )
+                    is True
+                    and disposition.get(
+                        "document_identifier_in_narrative_fail_closed"
+                    )
+                    is True
+                )
+            )
             and disposition.get("prior_failed_attempt_reused") is False
             and prior_full_result.get("status") == "terminal_failed_no_retry"
             and prior_full_result.get("failure_code")
-            == "claim_surface_narrative_relation_conflict"
+            == expected_predecessor_failure
             and prior_full_result.get("failure_fragment_tool")
             == SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
             and prior_full_result.get("execution", {}).get(
@@ -1677,16 +1745,20 @@ def validate_full_fragment_judgment_authority(
             == 3
             and prior_full_result.get("execution", {}).get("retries") == 0
             and prior_full_assessment.get("status")
-            == "terminal_contract_failure_clause_and_negation_blind_lexical_"
-            "guard_false_positive_new_attempt_required"
+            == expected_assessment_status
             and prior_full_assessment.get("disposition", {}).get(
-                "immutable_R4_preserved"
+                "immutable_R5_preserved"
+                if route_identifier_successor
+                else "immutable_R4_preserved"
             )
             is True
-            and prior_full_assessment.get("disposition", {}).get(
-                "positive_cross_scope_causal_assertion_must_still_fail_closed"
+            and (
+                route_identifier_successor
+                or prior_full_assessment.get("disposition", {}).get(
+                    "positive_cross_scope_causal_assertion_must_still_fail_closed"
+                )
+                is True
             )
-            is True
         )
     elif claim_local_successor:
         replay = (zero_call.get("normalized_proof") or {}).get(
@@ -3420,6 +3492,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA,
         FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA,
         FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA,
+        FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_AUTHORITY_SCHEMA,
     }:
         result = run_full_fragment_judgment(authority_path)
     elif (

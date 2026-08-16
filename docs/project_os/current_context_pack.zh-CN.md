@@ -211,3 +211,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 业务判断仍保持边界：产品盈利只是管理层未经审计的产品口径；缺少价格、数量和配置拆解使产品到分部／公司的利润桥不可推断；同口径公司毛利率收缩只作为反方观察，明确不归因于单一产品或分部。当前未观察到新的金融 L1。
 - R5 在终态以 `research_consumer_wwc_evidence_route_invalid` 失败。WWC 路线写明从“官方业绩稿或 10-Q”取得下一同财季毛利和收入并本地重算关系；`10-Q` 已是 reviewed source policy 明确允许的官方文件类型，却被复用自叙事字段的全局 no-digit validator 当成自由数字拒绝。
 - R5 保持不可变，不删去 `10-Q` salvage。下一项只处理 provider-neutral field-scoped text validation：Evidence route 可使用严格白名单中的完整文件类型标识；百分比、日期、金额、年份和未知数字仍 fail closed。必须先对保存 R5 做完整终态 replay、正负 mutation、三案例非回归和 fresh proof，之后才可决定新 attempt。动态 Truth Spine、五单元、异质泛化与 S3 acceptance 继续为 false。
+
+## 2026-08-16 S3 WWC 来源路线字段 v1.6 零调用闭环
+
+- `RC-S3-021` 已在最早责任层关闭。WWC `evidence_route` 现在只允许 reviewed source policy 已注册的完整官方表单标识（`10-K／10-Q／8-K／20-F／40-F／6-K`）绕过数字表面扫描；金额、百分比、年份、日期、URL、未知数字标识和其他叙事字段均未放宽。
+- 保存的 FFJ-R5 三个 Tool payload 未删除 `10-Q`、未改写任何判断字，现可形成 `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only` 的完整 Judgment；终态 digest=`b8f09b70...4b80`，deliverable digest=`0993061b...6cf`。
+- `20%`、`2027`、未知 `12-Z`、URL 和把 `10-Q` 写入 thesis 的 mutation 均以原字段对应错误 fail closed；R3 claim-local、R4 causal-polarity、三案例 full-fake 与身份／Graph 污染检查均继续通过。两个 fresh process 字节等价，formal result digest=`d7667e84...526f`，0 model／provider／network／embedding／retry。
+- 实现已在 clean/synced commit `ac80d804...` 上通过全仓 `355 passed`；compileall、active baseline `127 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 与 secret scan `6,672 files / 0 finding` 均通过。R6 decision 仍固定同一 DELL fixed Pack、6 model calls／3 tool calls／0 EvidenceRequest／0 retry／0 fallback；须在本次 gate 提交 clean push、真实 Project OS preflight 和 fresh authority 后才可执行。
+- 该结果只构成 provider-neutral engineering pass，不追认 R5。R6 的自然完整 Judgment、正式 L1 与内容质量通过前，动态 Truth Spine、五单元、异质泛化报告和 S3 acceptance 仍为 false。

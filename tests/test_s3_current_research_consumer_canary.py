@@ -191,6 +191,16 @@ FULL_FRAGMENT_CAUSAL_POLARITY_DISPOSITION = ROOT / (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "causal_polarity_live_disposition_v1_4.json"
 )
+FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_ZERO_CALL_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "wwc_route_identifier_zero_call_result_v1_6.json"
+)
+FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_DISPOSITION = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "wwc_route_identifier_live_disposition_v1_5.json"
+)
 FULL_FRAGMENT_R4_RESULT = ROOT / (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -200,6 +210,16 @@ FULL_FRAGMENT_R4_FAILURE_ASSESSMENT = ROOT / (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "full_fragment_judgment_chat_live_failure_assessment_v1_3.json"
+)
+FULL_FRAGMENT_R5_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_chat_live_result_v1_4.json"
+)
+FULL_FRAGMENT_R5_FAILURE_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_chat_live_failure_assessment_v1_4.json"
 )
 FULL_FRAGMENT_R3_RESULT = ROOT / (
     "configs/research/evals/"
@@ -1573,6 +1593,47 @@ def test_full_fragment_judgment_authority_binds_clean_runtime_and_scope(
     assert validated_causal[
         "full_fragment_zero_call_result_ref"
     ] == FULL_FRAGMENT_CAUSAL_POLARITY_ZERO_CALL_RESULT
+
+    route_paths = dict(paths)
+    route_paths.update(
+        {
+            "full_fragment_zero_call_result_ref": (
+                FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_ZERO_CALL_RESULT
+            ),
+            "full_fragment_disposition_ref": (
+                FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_DISPOSITION
+            ),
+            "prior_full_fragment_result_ref": FULL_FRAGMENT_R5_RESULT,
+            "prior_full_fragment_failure_assessment_ref": (
+                FULL_FRAGMENT_R5_FAILURE_ASSESSMENT
+            ),
+        }
+    )
+    route_bound = {
+        "research_input_digest": research_input["research_input_digest"],
+        "initial_fragment_context_digest": initial_context[
+            "projection_digest"
+        ],
+        "fragment_tool_schema_digests": {
+            name: runner.canonical_digest(tools[name])
+            for name in MICRO_JUDGMENT_TOOL_NAMES
+        },
+    }
+    for key, path in route_paths.items():
+        route_bound[key] = path.relative_to(ROOT).as_posix()
+        route_bound[key[:-4] + "_sha256"] = runner._sha(path)
+    route_authority = json.loads(json.dumps(authority))
+    route_authority["schema_version"] = (
+        runner.FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_AUTHORITY_SCHEMA
+    )
+    route_authority["bound_inputs"] = route_bound
+    validated_route = runner.validate_full_fragment_judgment_authority(
+        route_authority,
+        authority_path=authority_path,
+    )
+    assert validated_route[
+        "full_fragment_zero_call_result_ref"
+    ] == FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_ZERO_CALL_RESULT
 
 
 def test_fixed_pack_claim_surface_live_path_uses_surface_contract(

@@ -88,37 +88,37 @@ def main() -> int:
     )
     parser.add_argument(
         "--kernel",
-        default="configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json",
+        default="configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json",
     )
     parser.add_argument(
         "--policy",
-        default="configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_0.json",
+        default="configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_2.json",
     )
     parser.add_argument(
         "--documents",
         default=(
             "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/"
-            "v1/documents.jsonl"
+            "v2/documents.jsonl"
         ),
     )
     parser.add_argument(
         "--records",
         default=(
             "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/"
-            "v1/records.jsonl"
+            "v2/records.jsonl"
         ),
     )
     parser.add_argument(
         "--output-dir",
         default=(
-            "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v2"
+            "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v3"
         ),
     )
     parser.add_argument(
         "--result-output",
         default=(
             "configs/retrieval/"
-            "fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_1.json"
+            "fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_2.json"
         ),
     )
     args = parser.parse_args()

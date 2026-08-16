@@ -29,25 +29,17 @@ from retrieval.query_plan import (
     compile_query_facet_plan,
     compile_query_facet_plan_for_request,
 )
+from sec_agent.runtime_resource_registry import resolve_registered_runtime_resource
 
 
-KERNEL_PATH = (
-    ROOT
-    / "configs"
-    / "retrieval"
-    / "fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json"
+KERNEL_PATH = resolve_registered_runtime_resource(
+    ROOT, "application.config.current_financial_research_kernel"
 )
-SNAPSHOT_PATH = (
-    ROOT
-    / "configs"
-    / "runtime"
-    / "fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
+SNAPSHOT_PATH = resolve_registered_runtime_resource(
+    ROOT, "application.result.current_research_retrieval_snapshot"
 )
-RANKING_PROJECTION_PATH = (
-    ROOT
-    / "configs"
-    / "runtime"
-    / "fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json"
+RANKING_PROJECTION_PATH = resolve_registered_runtime_resource(
+    ROOT, "application.result.current_s1c_ranking_comparison_projection"
 )
 
 

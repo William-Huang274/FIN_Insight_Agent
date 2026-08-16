@@ -137,7 +137,14 @@ def _one_slot_inputs(case_key: str) -> tuple[dict[str, Any], dict[str, Any]]:
         "task_type": "company_deep_dive",
         "case_key": case_key,
         "required_slot_ids": ["pricing_mix_value_capture"],
-        "allowed_source_types": ["10-K", "10-Q", "8-K", "20-F", "6-K"],
+        "allowed_source_types": [
+            "10-K",
+            "10-Q",
+            "8-K",
+            "20-F",
+            "6-K",
+            "EARNINGS_CALL_TRANSCRIPT",
+        ],
         "forbidden_source_types": [],
         "output_format": "investment_research_memo",
         "gap_policy": "return_typed_gap",
@@ -183,7 +190,34 @@ def _one_slot_inputs(case_key: str) -> tuple[dict[str, Any], dict[str, Any]]:
 
 def _case_inputs(case_key: str) -> tuple[dict[str, Any], dict[str, Any]]:
     if case_key == "DELL":
-        return _json(DELL_OBJECTIVE), _json(DELL_ATOMS)
+        draft = _json(DELL_OBJECTIVE)
+        draft["allowed_source_types"] = [
+            *draft["allowed_source_types"],
+            "EARNINGS_CALL_TRANSCRIPT",
+        ]
+        kernel = load_financial_research_kernel(
+            read_registered_runtime_json(
+                ROOT, "application.config.current_financial_research_kernel"
+            )
+        )
+        route_policy = load_query_object_fact_route_policy(
+            read_registered_runtime_json(
+                ROOT, "application.config.current_query_object_fact_route_policy"
+            ),
+            kernel,
+        )
+        planning = load_research_planning_policy(
+            read_registered_runtime_json(
+                ROOT, "application.config.current_research_planning_policy"
+            ),
+            route_policy,
+        )
+        objective = compile_research_objective(
+            draft, kernel=kernel, policy=planning
+        )
+        atoms = _json(DELL_ATOMS)
+        atoms["objective_id"] = objective.objective_id
+        return draft, atoms
     return _one_slot_inputs(case_key)
 
 
@@ -768,11 +802,19 @@ def main() -> int:
     total_promotions = sum(
         int(row["summary"]["new_evidence_promotions"]) for row in cases
     )
+    dell_transcript_selected = any(
+        str(source_id).startswith(
+            "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::"
+        )
+        for request in cases[0]["requests"]
+        for source_id in request["accepted_source_record_ids"]
+    )
     case_keys = [row["case_key"] for row in cases]
     passed = (
         case_keys == ["DELL", "MU", "NVDA"]
         and len(set(case_keys)) == 3
         and total_promotions == 0
+        and dell_transcript_selected
         and all(mutations.values())
         and cases[0]["summary"]["accepted_reviewed_evidence_count"] > 0
         and cases[0]["dynamic_research_input_compiled"] is True
@@ -790,7 +832,7 @@ def main() -> int:
         }
     )
     body = {
-        "schema_version": "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_3",
+        "schema_version": "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_4",
         "status": (
             "zero_call_dynamic_truth_spine_engineering_pass"
             if passed
@@ -816,6 +858,9 @@ def main() -> int:
             "real_current_s2_typed_fact_requests_executed": True,
             "typed_evidence_responses_compiled": True,
             "already_reviewed_evidence_only": True,
+            "reviewed_dell_transcript_reached_by_current_s1": (
+                dell_transcript_selected
+            ),
             "unreviewed_candidate_text_excluded": True,
             "three_case_identity_isolation": True,
             "dynamic_dell_claim_authority_narrowed": passed,
@@ -837,9 +882,9 @@ def main() -> int:
             "services, then compiles request-scoped EvidenceResponses. Planner "
             "atoms and Judgment fragments remain controlled fixtures, so this is "
             "an engineering proof, not natural Agentic Research. The current S1 "
-            "object route does not "
-            "yet discover reviewed earnings-call transcripts; those remain an "
-            "explicit source-route gap rather than being silently prefed."
+            "object route now reaches the already-reviewed Dell transcript through "
+            "the ordinary request, object and index path; it is not silently prefed "
+            "and does not grant new Evidence authority."
         ),
     }
     result = {**body, "result_digest": canonical_digest(body)}

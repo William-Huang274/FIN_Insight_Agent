@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -13,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from ingestion.section_splitter import find_sec_filing_sections
+from scripts.data_retrieval.build_current_retrieval_snapshot import _reviewed_targets
 from retrieval.financial_objects import (
     FinancialObjectError,
     attach_legacy_aliases,
@@ -219,3 +221,150 @@ def test_repository_manifest_is_provider_neutral_and_contains_typed_gaps() -> No
         "mu_q3_fy2026_prepared_remarks_product_transport_gap",
         "three_case_market_valuation_fields_missing",
     }
+
+
+def test_successor_manifest_projects_reviewed_dell_transcript_without_hiding_other_gaps() -> None:
+    manifest_path = (
+        ROOT
+        / "configs"
+        / "retrieval"
+        / "fin_ia_0_1_3_s1b_current_source_object_manifest_v1_1.json"
+    )
+    manifest = validate_source_object_manifest(
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+    )
+
+    transcripts = [
+        row
+        for row in manifest["sources"]
+        if row.get("source_type") == "EARNINGS_CALL_TRANSCRIPT"
+    ]
+    assert {row["ticker"] for row in transcripts} == {"DELL", "TSM"}
+    assert all(
+        row["input_kind"] == "parsed_official_pdf_document"
+        for row in transcripts
+    )
+    assert {
+        row["ticker"]: row["publication_date"] for row in transcripts
+    } == {"DELL": "2026-05-28", "TSM": "2026-07-16"}
+    gap_ids = {row["gap_id"] for row in manifest["typed_gaps"]}
+    assert "dell_q1_fy2027_transcript_product_transport_gap" not in gap_ids
+    assert "tsm_advanced_packaging_current_source_not_captured" not in gap_ids
+    assert {
+        "mu_q3_fy2026_prepared_remarks_product_transport_gap",
+        "three_case_market_valuation_fields_missing",
+    }.issubset(gap_ids)
+
+
+def test_successor_kernel_grants_transcript_route_only_to_relevant_slots() -> None:
+    payload = json.loads(
+        (
+            ROOT
+            / "configs"
+            / "retrieval"
+            / "fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json"
+        ).read_text(encoding="utf-8")
+    )
+    transcript_slots = {
+        row["slot_id"]
+        for row in payload["evidence_slots"]
+        if "EARNINGS_CALL_TRANSCRIPT" in row["source_types"]
+    }
+    assert transcript_slots == {
+        "demand_volume_quality",
+        "operating_performance",
+        "pricing_mix_value_capture",
+        "capacity_inputs_execution",
+    }
+
+
+def test_current_snapshot_reaches_transcript_as_dell_evidence_candidate_only() -> None:
+    snapshot = json.loads(
+        (
+            ROOT
+            / "configs"
+            / "runtime"
+            / "fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert snapshot["status"].endswith("ready_with_typed_gaps")
+    cases = {row["case_key"]: row for row in snapshot["cases"]}
+
+    dell_transcript_candidates = []
+    for lane in cases["DELL"]["retrieval"]["lane_results"]:
+        for candidate in lane["candidates"]:
+            if "EARNINGS_CALL_TRANSCRIPT" in str(
+                candidate.get("source_record_id") or ""
+            ):
+                dell_transcript_candidates.append(candidate)
+    assert dell_transcript_candidates
+    assert any(
+        candidate["reviewed_pack_match"] is True
+        for candidate in dell_transcript_candidates
+    )
+
+    for case_key in ("MU", "NVDA"):
+        related_transcript_candidates = []
+        for lane in cases[case_key]["retrieval"]["lane_results"]:
+            for candidate in lane["candidates"]:
+                if "EARNINGS_CALL_TRANSCRIPT" in str(
+                    candidate.get("source_record_id") or ""
+                ):
+                    related_transcript_candidates.append(candidate)
+        assert related_transcript_candidates
+        assert all(
+            candidate["source_role"] == "related_entity_context"
+            and candidate["reviewed_pack_match"] is False
+            for candidate in related_transcript_candidates
+        )
+
+
+def test_composed_pack_private_root_override_fails_closed_on_escape_or_drift(
+    tmp_path: Path,
+) -> None:
+    kernel = SimpleNamespace(slots=())
+    base = tmp_path / "private"
+    default_root = base / "default"
+    default_root.mkdir(parents=True)
+
+    escape = {
+        "pack_artifacts": {
+            "DELL": {
+                "private_object_root_relative": "../escape",
+                "object_key": "pack.json",
+                "byte_size": 1,
+                "digest": "0" * 64,
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="private_object_root_invalid"):
+        _reviewed_targets(
+            kernel=kernel,
+            pack_result=escape,
+            pack_object_root=default_root,
+            pack_private_root_base=base,
+            case_key="DELL",
+        )
+
+    object_root = base / "case-root"
+    object_root.mkdir()
+    pack_path = object_root / "pack.json"
+    pack_path.write_text('{"evidence_items": []}', encoding="utf-8")
+    drift = {
+        "pack_artifacts": {
+            "DELL": {
+                "private_object_root_relative": "case-root",
+                "object_key": "pack.json",
+                "byte_size": pack_path.stat().st_size,
+                "digest": "0" * 64,
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="pack_object_identity_drift"):
+        _reviewed_targets(
+            kernel=kernel,
+            pack_result=drift,
+            pack_object_root=default_root,
+            pack_private_root_base=base,
+            case_key="DELL",
+        )

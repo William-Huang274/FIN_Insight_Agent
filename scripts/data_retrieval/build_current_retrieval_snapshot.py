@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import sys
 from typing import Any, Mapping
 
@@ -52,11 +52,30 @@ def _reviewed_targets(
     kernel: Any,
     pack_result: Mapping[str, Any],
     pack_object_root: Path,
+    pack_private_root_base: Path,
     case_key: str,
 ) -> dict[str, set[str]]:
     artifact = dict(pack_result["pack_artifacts"][case_key])
-    pack_path = (pack_object_root / str(artifact["object_key"])).resolve()
-    pack_path.relative_to(pack_object_root.resolve())
+    root_ref = str(artifact.get("private_object_root_relative") or "")
+    object_root = pack_object_root.resolve()
+    if root_ref:
+        root_relative = PurePosixPath(root_ref)
+        if root_relative.is_absolute() or "\\" in root_ref or ".." in root_relative.parts:
+            raise ValueError("retrieval_snapshot_private_object_root_invalid")
+        object_root = pack_private_root_base.joinpath(*root_relative.parts).resolve()
+        object_root.relative_to(pack_private_root_base.resolve())
+    object_key = str(artifact.get("object_key") or "")
+    relative = PurePosixPath(object_key)
+    if not object_key or relative.is_absolute() or "\\" in object_key or ".." in relative.parts:
+        raise ValueError("retrieval_snapshot_pack_object_key_invalid")
+    pack_path = object_root.joinpath(*relative.parts).resolve()
+    pack_path.relative_to(object_root)
+    if (
+        not pack_path.is_file()
+        or pack_path.stat().st_size != int(artifact.get("byte_size") or 0)
+        or _sha256(pack_path) != str(artifact.get("digest") or "")
+    ):
+        raise ValueError("retrieval_snapshot_pack_object_identity_drift")
     pack = _read_json(pack_path)
     reviewed_to_current: dict[str, set[str]] = {}
     for slot in kernel.slots:
@@ -84,6 +103,7 @@ def build_snapshot(
     records_path: Path,
     pack_result_path: Path,
     pack_object_root: Path,
+    pack_private_root_base: Path,
     source_object_result_path: Path | None = None,
 ) -> dict[str, Any]:
     kernel_payload = _read_json(kernel_path)
@@ -113,6 +133,7 @@ def build_snapshot(
             kernel=kernel,
             pack_result=pack_result,
             pack_object_root=pack_object_root,
+            pack_private_root_base=pack_private_root_base,
             case_key=case_key,
         )
         retrieval = retrieve_query_plan(
@@ -188,7 +209,11 @@ def build_snapshot(
     unsigned = {
         "schema_version": SNAPSHOT_SCHEMA_VERSION,
         "status": status,
-        "recorded_at": "2026-08-12",
+        "recorded_at": str(
+            (source_object_result or {}).get("recorded_at")
+            or pack_result.get("recorded_at")
+            or ""
+        ),
         "scope": (
             "FIN_0_1_3_S1B_CURRENT_SOURCE_OBJECT_RETRIEVAL"
             if source_object_result is not None
@@ -225,11 +250,10 @@ def build_snapshot(
         "acceptance": acceptance,
         "known_boundary": (
             "S1-B connects a bounded parent-child financial object store, current official "
-            "captures, inherited semantic children and point-in-time market roles to the same "
-            "provider-neutral candidate runtime. Candidates are not Evidence; Dell and Micron "
-            "call-material transport, TSM advanced-packaging evidence, fresh 2026-08-06 market "
-            "data and valuation fields remain typed gaps; "
-            "dense retrieval, reranking, Evidence Pack promotion and model research remain open."
+            "captures and transcripts, inherited semantic children and point-in-time market "
+            "roles to the same provider-neutral candidate runtime. Candidates are not Evidence; "
+            "the bound source-object result remains authoritative for unresolved source and "
+            "valuation gaps, while Evidence promotion and model research remain separate."
             if source_object_result is not None
             else "S1-A proves a provider-neutral typed query plan, pre-score identity/date/source "
             "constraints, local lexical candidate generation and a Workbench-consumable "
@@ -298,29 +322,40 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--kernel",
-        default="configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_0.json",
+        default="configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json",
     )
     parser.add_argument(
         "--source-object-result",
-        default=None,
+        default=(
+            "configs/runtime/"
+            "fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_1.json"
+        ),
         help="Optional S1-B object-store result bound into the snapshot.",
     )
     parser.add_argument(
         "--records",
         default=(
-            "data/indexes/bm25/"
-            "sector_depth_full238_us_v0_3_mixed_with_8k_fy2023_2027/records.jsonl"
+            "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/"
+            "v2/records.jsonl"
         ),
     )
     parser.add_argument(
         "--pack-result",
-        default="configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json",
+        default="configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
     )
     parser.add_argument(
         "--pack-object-root",
         default=(
             "data/workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/"
             "zero-call-r1/objects"
+        ),
+    )
+    parser.add_argument(
+        "--pack-private-root-base",
+        default="data/workbench_private",
+        help=(
+            "Base for per-artifact private_object_root_relative overrides in the "
+            "current composed Evidence Pack result."
         ),
     )
     parser.add_argument(
@@ -338,6 +373,7 @@ def main() -> int:
         records_path=_resolve(args.records),
         pack_result_path=_resolve(args.pack_result),
         pack_object_root=_resolve(args.pack_object_root),
+        pack_private_root_base=_resolve(args.pack_private_root_base),
         source_object_result_path=(
             _resolve(args.source_object_result)
             if args.source_object_result

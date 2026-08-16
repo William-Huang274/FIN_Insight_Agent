@@ -269,7 +269,15 @@ def build_object_store(
             for row in child_rows
             if row.get("ticker") == ticker
             and row.get("source_type")
-            in {"10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"}
+            in {
+                "10-K",
+                "10-Q",
+                "8-K",
+                "20-F",
+                "40-F",
+                "6-K",
+                "EARNINGS_CALL_TRANSCRIPT",
+            }
         ]
         market_children = [
             row
@@ -339,7 +347,7 @@ def build_object_store(
     unsigned = {
         "schema_version": RESULT_SCHEMA_VERSION,
         "status": status,
-        "recorded_at": "2026-08-12",
+        "recorded_at": str(manifest.get("recorded_at") or ""),
         "manifest_ref": _relative(manifest_path),
         "manifest_digest": content_digest(manifest),
         "source_results": source_results,
@@ -363,10 +371,11 @@ def build_object_store(
         "typed_gaps": manifest.get("typed_gaps") or [],
         "acceptance": acceptance,
         "known_boundary": (
-            "This S1-B result compiles current official disclosures, inherited semantic "
-            "children and point-in-time market snapshots into one parent-child object store. "
-            "It does not promote candidates to Evidence, does not supply missing Dell prepared "
-            "remarks, and does not claim valuation readiness from a price-only stale snapshot."
+            "This S1-B result compiles current official disclosures, parsed official "
+            "transcripts, inherited semantic children and point-in-time market snapshots "
+            "into one parent-child object store. Candidate projection never grants Evidence "
+            "or NumericFact authority; unresolved source and valuation boundaries remain "
+            "explicit typed gaps from the bound manifest."
         ),
     }
     result = {**unsigned, "result_digest": content_digest(unsigned)}
@@ -401,21 +410,21 @@ def parse_args() -> argparse.Namespace:
         "--manifest",
         default=(
             "configs/retrieval/"
-            "fin_ia_0_1_3_s1b_current_source_object_manifest_v1_0.json"
+            "fin_ia_0_1_3_s1b_current_source_object_manifest_v1_1.json"
         ),
     )
     parser.add_argument(
         "--output-root",
         default=(
             "data/workbench_private/"
-            "fin_0_1_3_s1b_current_financial_object_store/v1"
+            "fin_0_1_3_s1b_current_financial_object_store/v2"
         ),
     )
     parser.add_argument(
         "--summary-output",
         default=(
             "configs/runtime/"
-            "fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_0.json"
+            "fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_1.json"
         ),
     )
     return parser.parse_args()

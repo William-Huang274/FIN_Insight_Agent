@@ -1,0 +1,79 @@
+{
+  "acceptance": {
+    "L1_content_assessment_pending": true,
+    "dynamic_single_cell_contract_pass": true,
+    "five_cell_execution": false,
+    "heterogeneous_generalization": false,
+    "planner_or_S1_S2_rerun": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false,
+    "s3_product_acceptance": false,
+    "same_fragment_temporal_repair_executed": true,
+    "workbench_publication": false
+  },
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_counter_temporal_repair_chat_live_authority_v1_0.json",
+  "authority_sha256": "72a49f56de23a6b38ccee27df10dfe50a473c70645b4a2a0b58b24e1751f0f98",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "deliverable_digest": "d1be69e41d450d588722c5ab321d0bedea299772fd2ef86c5b6cdf3bfc4cc3e5",
+  "execution": {
+    "candidate_promotions": 0,
+    "current_S1_S2_rerun": 0,
+    "external_source_network_calls": 0,
+    "fallbacks": 0,
+    "fresh_model_calls_attempted": 1,
+    "fresh_tool_calls_accepted": 1,
+    "maximum_fresh_model_calls": 1,
+    "new_evidence": 0,
+    "planner_calls_rerun": 0,
+    "product_publication": false,
+    "protocol_switches": 0,
+    "rejected_predecessor_submission_reused_as_business_truth": false,
+    "retries": 0,
+    "successful_predecessor_model_nodes_reused": 6,
+    "thesis_mechanism_or_counter_analysis_calls_rerun": 0,
+    "total_fragments_accepted": 3
+  },
+  "failure_capture_ref": "",
+  "failure_code": "",
+  "failure_phase": "",
+  "fragment_context_digest": "a67290ad231ec10f1b46ca3b607e8a164c598af3244800e7528b3cf26861f68e",
+  "implementation_commit": "3bedd989d570ef962b5d170a92fcbb1bab8a15ea",
+  "known_boundary": "This exact-once authority reuses six immutable DELL dynamic R1/R3 model nodes, preserves the rejected R3 counter fragment as failure evidence, and permits only one non-thinking strict temporal-repair submission. It forbids upstream reruns, new evidence, retries, fallbacks, protocol switches, a second repair, five-cell execution, publication, S3 acceptance and release claims.",
+  "predecessor_private_result_digest": "2759ff7f3e2db29f93fda281e6b346556ed6cb897da5690ca3a7e6d58bd3c647",
+  "predecessor_public_result_digest": "eb86bb30d2eb3b2e7d7509a3e549b4329988afa483994c7353820d3f5e9b4e5b",
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_single_cell/FIN013-S3-DELL-DYNAMIC-VC-COUNTER-TEMPORAL-REPAIR-R4/full_result.json",
+  "private_full_result_sha256": "2fd568b88a81cfc94abcb8347b3e8371ee79b029a8d0b00023f12d399842d278",
+  "recorded_at": "2026-08-16T13:59:48+00:00",
+  "rejected_fragment_digest": "0a425b99d68336d2f12f50b879be85dad39ed4f41ef739f06d5d726fe2f1f77b",
+  "repair_feedback_digest": "142ed1db59c327424cffeffe665490b03f1d6c905e0a729fa76d95ebfdb35814",
+  "repair_messages_digest": "9118004e629da8edf8f8bd558f1ecffedb097e92778ca6302d8f91a31bf2964f",
+  "repaired_fragment_tool": "submit_research_counterargument_and_wwc",
+  "result_digest": "aa5cda3d1b797b34d8fc6a7287de718292f7428574141106dd7ec825ae524a73",
+  "schema_version": "fin_ia_s3_dynamic_single_cell_temporal_fragment_repair_result_v1_0",
+  "status": "completed_dynamic_counter_temporal_repair_contract_valid_content_assessment_pending",
+  "submission": {
+    "finish_reason": "tool_calls",
+    "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-COUNTER-TEMPORAL-REPAIR-R4/DYNAMIC-VC-COUNTER-TEMPORAL-REPAIR-R4-SUBMISSION-01/model_visible_request.json",
+    "request_digest": "4c87d5b21f67a57c557f45cb27e35499b4e214d406b93ea347a221f482be1e94",
+    "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-COUNTER-TEMPORAL-REPAIR-R4/DYNAMIC-VC-COUNTER-TEMPORAL-REPAIR-R4-SUBMISSION-01/provider_response.json",
+    "response_digest": "087d3779bcbb881cf13a41f0b0ff9a2df5dce60b6b9def99a30463d2a6ae6492",
+    "usage": {
+      "completion_tokens": 622,
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 7424,
+      "prompt_tokens": 7424,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 8046
+    }
+  },
+  "terminal_disposition": {
+    "causal_bridge_authority": "bridge_unavailable",
+    "inference_authority": "not_inferable",
+    "judgment_status": "insufficient_evidence"
+  },
+  "terminal_judgment_digest": "a9e602c78457b708564fc45372ffcc834e064d1fea7e4bcf2f40ef5e93692252",
+  "validated_fragment_digest": "f50f2b00ee5f2e1de7594c13c07ba991eebb412342cf6184e2ce7e5b15500169"
+}

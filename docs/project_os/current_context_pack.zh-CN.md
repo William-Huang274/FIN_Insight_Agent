@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层已经关闭：DELL `value_capture` 的完整 Judgment、独立 L1 和适用内容质量 `21/24` 通过，但该结果只证明“给定已审资料时能分析和自我修正”。动态单单元现已真实执行自然 DeepSeek planner、当前 S1/S2、request-scoped EvidenceResponse 和三个模型判断片段；R1 加 R3 successor 共形成完整 Judgment，未审候选 0 晋升，终态保持 `insufficient_evidence / not_inferable / bridge_unavailable`。独立 L1 拒绝 R3：模型把 Q1 FY2027 对 Q1 FY2026 的公司毛利率比较，与 Q3 FY2026 的服务器组合材料写成“同期”，但输入没有跨材料同期间关系。`RC-S3-028` 的 provider-neutral TemporalAuthority、真实失败回放、三案例 mutation 和一次性 repair compiler 已在正式零调用证明中通过，当前状态为 `engineering_closed_one_live_repair_pending`；只待 clean/synced 后的一次非思考同片段交卷，不得重跑 planner、S1/S2、前两片段或 counter 分析。动态单单元、五单元和异质泛化尚未通过。另有 S1 最早责任层问题仍保留：reviewed Dell transcript 在 Pack 中可见、动态检索却不可发现。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
+FIN 0.1.3 的 fixed-Pack 第一层和 DELL `value_capture` 动态单单元均已关闭：自然用户问题实际经过 DeepSeek planner、当前 S1/S2、request-scoped reviewed-only EvidenceResponse、三个模型判断片段和一次有界时间关系自修正，最终合同、独立 L1 与适用内容质量 `21/24` 通过，未审候选 0 晋升，终态诚实保持 `insufficient_evidence / not_inferable / bridge_unavailable`。R4 明确把 Q3 FY2026 服务器 mix 材料降为历史背景，并说明其与 Q1 FY2027 对 Q1 FY2026 毛利率变化的同期关系未证明；`RC-S3-028` 因此关闭。该结果仍只是一个动态研究单元，不是五单元研报或 S3 通过。当前最早责任层回到 S1：reviewed Dell transcript 在 Pack 中可见、动态检索却不可发现；必须关闭 `RC-S1-019` 并重编受影响输入后，才可签发 DELL 五单元。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
 
 ## 当前唯一产品边界
 
@@ -311,3 +311,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - `TemporalAuthority` 现在只从 source-bound QualitativeFact 与 NumericRelation 精确期间端点编译；Evidence 日期或 NumericRelation 自身比较都不能借权给另一对象。无绑定的中英文同期间叙事在片段层以 `finance_loop_micro_temporal_relation_unbound` fail closed。
 - 正式零调用结果绑定提交 `3c2e274f...0646`，digest=`d21bda1b...a61a99`；三案例隔离、真实 R3 replay、正负 mutation 和一次性 repair compiler 通过，模型／Provider／网络／新 Evidence=`0／0／0／0`。
 - live scope decision 已通过离线 Project OS 预检：复用六个成功节点，只准一次 2k non-thinking counter repair submission。当前状态为 `engineering_closed_one_live_repair_pending`；五单元、泛化与 S3 acceptance 继续为 false。
+
+## 2026-08-16 S3 DELL 动态单单元关闭
+
+- clean/synced `3bedd989...15ea` 上的 R4 只执行一次 non-thinking counter repair submission；622 completion tokens 内返回一个完整 Tool Call。六个成功节点复用，R3 被拒交卷不作为业务真相；0 retry／fallback／新 Evidence／候选晋升／外源网络／协议切换。
+- 模型自行说明较早期间服务器 mix 材料与近季公司毛利率变化的同期关联未证明，只能作为历史背景；公司毛利率同比下降仍只作为公司层反方观察，没有归因给 AI 服务器或升级成产品盈亏事实。
+- 独立 L1 通过；单单元适用内容质量 `21/24`。非阻断 L2 为“新增加价型”措辞不精确，以及 WWC 仍应更直接请求产品收入—成本—利润桥。正式八维完整研报分仍待五单元。
+- `RC-S3-028` 关闭，DELL `value_capture` 动态单单元 accepted。下一项回到最早责任层 `RC-S1-019`，同步 reviewed Dell transcript 与当前检索对象／来源路由并重编受影响输入；五单元、异质泛化和 S3 acceptance 继续为 false。

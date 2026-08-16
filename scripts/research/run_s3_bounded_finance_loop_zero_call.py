@@ -1532,6 +1532,171 @@ def _saved_r3_claim_local_boundary_replay(
     }
 
 
+def _saved_r4_causal_polarity_replay(
+    *,
+    paths: Mapping[str, Path],
+    base_research_input: Mapping[str, Any],
+) -> dict[str, Any]:
+    required = {
+        "claim_authority_policy_ref",
+        "r4_claim_surface_authority_policy_ref",
+        "r4_submitted_fragments_ref",
+        "r4_live_result_ref",
+        "r4_failure_assessment_ref",
+    }
+    missing = required.difference(paths)
+    if missing:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r4_replay_bound_inputs_missing:"
+            + ",".join(sorted(missing))
+        )
+    fixture = _json(paths["r4_submitted_fragments_ref"])
+    prior_result = _json(paths["r4_live_result_ref"])
+    prior_assessment = _json(paths["r4_failure_assessment_ref"])
+    if not (
+        fixture.get("source_result_sha256")
+        == _sha(paths["r4_live_result_ref"])
+        and prior_result.get("failure_code")
+        == "claim_surface_narrative_relation_conflict"
+        and prior_result.get("execution", {}).get("model_calls_attempted") == 6
+        and prior_result.get("execution", {}).get("tool_calls_accepted") == 3
+        and prior_assessment.get("root_cause", {}).get("owner_layer")
+        == "S3_provider_neutral_narrative_conflict_defense_in_depth"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r4_replay_predecessor_drift"
+        )
+    research_input = compile_claim_surface_authority_research_input(
+        compile_claim_authority_research_input(
+            base_research_input,
+            policy=_json(paths["claim_authority_policy_ref"]),
+        ),
+        policy=_json(paths["r4_claim_surface_authority_policy_ref"]),
+    )
+    fragments = fixture.get("fragments")
+    if not isinstance(fragments, Mapping) or set(fragments) != set(
+        MICRO_JUDGMENT_TOOL_NAMES
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r4_replay_fragment_shape_invalid"
+        )
+    accepted: dict[str, dict[str, Any]] = {}
+    for tool_name in MICRO_JUDGMENT_TOOL_NAMES:
+        raw = fragments[tool_name]
+        if not isinstance(raw, Mapping):
+            raise BoundedFinanceLoopProofError(
+                "finance_loop_r4_replay_fragment_shape_invalid"
+            )
+        accepted[tool_name] = validate_finance_micro_judgment_fragment(
+            tool_name=tool_name,
+            arguments=deepcopy(raw),
+            research_input=research_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=accepted.get(SUBMIT_RESEARCH_THESIS_TOOL),
+        )
+    cell = next(
+        row
+        for row in research_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    terminal = compile_finance_micro_judgment_fragments(
+        accepted,
+        cell=cell,
+    )
+    deliverable = compile_current_research_deliverable(
+        research_input=research_input,
+        judgment_output={"cells": [terminal]},
+        required_cell_ids=["CELL::value_capture"],
+    )
+    rendered = deliverable["cells"][0]
+    source_atoms = [
+        str(fragments[name][field])
+        for name, field in zip(
+            MICRO_JUDGMENT_TOOL_NAMES,
+            ("thesis_atom", "mechanism_atom", "counterargument_atom"),
+        )
+    ]
+    if not (
+        source_atoms
+        == [
+            terminal["thesis_atom"],
+            terminal["mechanism_atom"],
+            terminal["counterargument_atom"],
+        ]
+        and set(
+            rendered["claim_authority_receipt"][
+                "boundary_authority_sources"
+            ]
+        )
+        == {
+            "typed_bridge_gap_relation",
+            "typed_same_scope_counter_relation",
+        }
+        and rendered["claim_surface_authority_receipt"][
+            "narrative_conflict_guard_pass"
+        ]
+        is True
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r4_replay_terminal_invalid"
+        )
+
+    mutation_failure_codes: dict[str, str] = {}
+    for name, surface in {
+        "positive_cross_scope_causal_zh": (
+            "AI 服务器增长驱动 Dell 公司利润改善。"
+        ),
+        "positive_cross_scope_causal_en": (
+            "AI server revenue translates into Dell company profit."
+        ),
+    }.items():
+        mutation = deepcopy(terminal)
+        mutation["mechanism_atom"] = surface
+        try:
+            compile_current_research_deliverable(
+                research_input=research_input,
+                judgment_output={"cells": [mutation]},
+                required_cell_ids=["CELL::value_capture"],
+            )
+        except CurrentResearchConsumerError as exc:
+            if exc.code != "claim_surface_narrative_relation_conflict":
+                raise
+            mutation_failure_codes[name] = exc.code
+        else:
+            raise BoundedFinanceLoopProofError(
+                f"finance_loop_r4_replay_positive_causal_passed:{name}"
+            )
+
+    return {
+        "predecessor_result_digest": prior_result["result_digest"],
+        "predecessor_failure_code": prior_result["failure_code"],
+        "submitted_fragment_fixture_sha256": _sha(
+            paths["r4_submitted_fragments_ref"]
+        ),
+        "accepted_fragment_digests": {
+            name: canonical_digest(accepted[name])
+            for name in MICRO_JUDGMENT_TOOL_NAMES
+        },
+        "terminal_judgment_digest": canonical_digest(terminal),
+        "deliverable_digest": deliverable["deliverable_digest"],
+        "judgment_status": rendered["judgment_status"],
+        "inference_authority": rendered["inference_authority"],
+        "claim_scope": rendered["claim_scope"],
+        "financial_scope": rendered["financial_scope"],
+        "causal_bridge_authority": rendered["causal_bridge_authority"],
+        "clause_scoped_guard": True,
+        "negated_or_unsupported_causal_surface_pass": True,
+        "single_character_cjk_substring_not_authoritative": True,
+        "positive_cross_scope_causal_surface_fail_closed": True,
+        "boundary_authority_sources": rendered[
+            "claim_authority_receipt"
+        ]["boundary_authority_sources"],
+        "model_narratives_preserved_exactly": True,
+        "harness_generated_research_judgment": False,
+        "mutation_failure_codes": mutation_failure_codes,
+    }
+
+
 def _run_fake_matrix(
     *,
     research_input: Mapping[str, Any],
@@ -1937,11 +2102,24 @@ def _execute(
             if "r3_submitted_fragments_ref" in paths
             else None
         )
+        r4_replay = (
+            _saved_r4_causal_polarity_replay(
+                paths=paths,
+                base_research_input=research_input,
+            )
+            if "r4_submitted_fragments_ref" in paths
+            else None
+        )
         normalized = {
             **micro_matrix,
             **(
                 {"saved_r3_claim_local_boundary_replay": r3_replay}
                 if r3_replay is not None
+                else {}
+            ),
+            **(
+                {"saved_r4_causal_polarity_replay": r4_replay}
+                if r4_replay is not None
                 else {}
             ),
             "three_case_context_digest": canonical_digest(three_case_context),

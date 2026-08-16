@@ -2680,3 +2680,15 @@ FFJ-R3 进一步证明，“每份来源在整份报告中只有一个 Evidence 
 跨层因果边界也不只来自一份被标成 `limit` 的网页。经过 Case、cell、期间、主体、关系和 lineage 绑定的 `bridge_not_established`／typed gap，以及同主体同口径的 NumericRelation counter observation，均可成为 typed boundary。它们只能限制或否定因果桥，不能升级为产品利润支持，也不能替代 required Evidence。
 
 FFJ-R3 的三个模型片段已经自然形成且没有观察到新的金融 L1，但旧终局对象合同拒绝了它；历史结果不得追认为成功。provider-neutral v1.4 必须证明：逐 claim role 保留、summary 非授权、typed boundary 生效、全局 support laundering 与删除 boundary 均 fail closed、模型叙事不由 Harness 改写。通过只构成 engineering pass；仍需 fresh natural FFJ-R4 的完整 Judgment、L1、内容质量和后续动态研究验收。此前 16.34 中“fresh FFJ-R3 才可关闭”的执行编号由本条 successor 更新为 FFJ-R4，不改变三层验收或通过标准。
+
+### 16.36 防御性因果文本门必须识别命题与极性（2026-08-16）
+
+结构化 ClaimRelation 是因果权限的主要合同，文本 guard 只负责捕捉“所选关系与实际叙事明显矛盾”的残余风险。它不得只做全文关键词共现。至少必须满足：
+
+1. subject、financial outcome 和 causal term 属于同一可解释分句，不能从几句不同的边界说明中拼出一个不存在的正向命题；
+2. 单字 CJK 子串没有独立因果权威，尤其“使”不得在“服务器”中误命中；
+3. “不能据此、不可推断、尚未建立、缺乏支持、无法归因”及等价英文否定，必须阻止该 causal surface 被解释为正向断言；
+4. 明确写出的中英文跨层正向因果仍硬失败，不能因为新增否定识别而放宽；
+5. 保存的 natural payload、正向／否定／引号命题 mutation、终局 deliverable 和两个 fresh process 必须共同复证。
+
+FFJ-R4 的三个 fragment 均自然完成，内容明确否定产品到公司利润桥，却因旧全文关键词规则失败。该结果保持不可变，不得删词 salvage；successor 关闭工程缺陷后仍需 fresh FFJ-R5 的自然完整 Judgment、L1 与内容门。

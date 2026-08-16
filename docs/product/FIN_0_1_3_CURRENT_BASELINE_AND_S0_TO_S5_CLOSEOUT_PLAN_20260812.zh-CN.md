@@ -60,7 +60,7 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
     - Research Context Closure R3/R4 与 replacement Chat R2 已完成：R2 正确消费 8 个 NumericFact、4 条同口径 relation、6 条 RoleMethod step 和 1 条当前 Graph edge，并保持 ASP／unit／PVM 为 open gap。最终仍把多因素公司／ISG 利润改善过强归因于 AI server，并加入未绑定的 semi-fixed cost 机制，故因果归因 L1 fail，五单元继续 blocked。
 22. **角色 Skill／图谱／DeepSeek Harness 重新资格（只读审计已完成）**：旧 fundamental、industry/supply-chain、product、valuation、risk、lead、writer、verifier 方法选择性迁移；旧 renderer／aggregator 和重复版本不恢复。旧图数据不复用，完整 typed graph handler 留在 S1。官方 Harness 的 scoped Skill、progressive disclosure、context log 和 preset 只作为 provider-neutral pack 的可选 shadow 宿主，不接管金融 Evidence／NumericFact 权威。
 23. **S1→S3 全链审计（只读完成、纵切方向已获 Owner 授权）**：审计确认当前主链的最早产品断点是 `candidate → EvidenceResponse` 未在 Agent loop 内闭合；S2 只对标准公司财务事实形成权威，订单／积压／销量／ASP／PVM／产品利润桥与估值仍缺 typed authority；S3 则缺 claim scope 与 causal bridge 强制门。原先单独的 S3 causal gate 仍有必要，但若不与 S1 Evidence 回流和 S2 operating-metric／bridge 纵切一起设计，只会得到更安全但可能更空的结论。Owner 已授权在完整 fixed-Pack 通过后闭合这条动态 Research Truth Spine；该授权不允许跳过 fixed-Pack 门或直接运行五单元。
-24. **三层验收与第一层（完整自然片段已获得，fresh terminal Judgment 待验收）**：fixed Pack 只测试“给定合格资料时能否可靠分析”，不计作 Agentic Research；第二层才是 DELL 单单元动态 S1/S2/EvidenceResponse 纵切；第三层才是五单元动态完整案例。FAS-R1 首先资格化单 thesis；随后 FFJ-R3 自然完成 6/6 次调用并提交 thesis、mechanism、counterargument／WWC 三个受约束片段，未观察到新的金融 L1。R3 因项目把 Evidence role 错误地全报告合并、又忽略 typed bridge gap 和 same-scope NumericRelation 的边界权威而终局失败，保持不可变。claim-local role＋typed boundary v1.4 已用保存片段、负向 mutation、三案例 full-fake 和 two-fresh-process replay 工程通过；它不追认 R3。当前只允许 fresh FFJ-R4；完整 fixed-Pack Judgment、动态第二层和五单元仍未通过。
+24. **三层验收与第一层（完整自然片段已连续获得，terminal lexical polarity successor 在途）**：fixed Pack 只测试“给定合格资料时能否可靠分析”，不计作 Agentic Research；第二层才是 DELL 单单元动态 S1/S2/EvidenceResponse 纵切；第三层才是五单元动态完整案例。FAS-R1 首先资格化单 thesis；FFJ-R3 与 R4 都自然完成 6/6 次调用和三个受约束片段，均未观察到新的金融 L1。R3 的全局 Evidence role／typed boundary 项目缺陷已工程关闭。R4 则因 lexical defense-in-depth 把“服务器”中的单字“使”和被明确否定的“转化”误判成正向因果而终局失败，保持不可变。当前 successor 只修 clause scope、否定极性和单字 CJK 子串，不放宽真正的跨层强因果；formal replay 与 fresh R5 前，完整 fixed-Pack Judgment、动态第二层和五单元仍未通过。
 25. **S4 产品闭环**：提供真实任务输入、澄清、计划查看和人工修改界面，并把通过验收的研究结果接入当前 Workbench；补齐 human review、repair 和 artifact lineage。
 26. **S5 release**：扩大案例与对抗测试，执行发布、回滚、成本和 Owner acceptance。
 
@@ -68,7 +68,7 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 
 Owner 已把原三层验收扩展为同一 FIN 0.1.3 内的连续执行范围：完整 fixed-Pack Judgment、动态 Research Truth Spine、DELL 单单元、DELL 五单元，以及 MU／NVDA 同核心迁移和跨案例验收。执行仍受前置门约束：项目缺陷留在 S1／S2／S3 最早责任层修复；每个失败 attempt 保持不可变，修复后使用新 attempt／authority，不得在同一 attempt 隐式 retry 或把失败改写为成功。一次 live 未通过不再自动触发 Owner 返回点；只有产品范围、数据采购／授权、模型主路线、S4 publication 或 S5 release 的实质变化需要暂停决策。
 
-当前第一项的最早实现工作已经推进到 claim-local role＋typed boundary v1.4 engineering pass。接下来先把该证明、R4 decision、PRD／架构／Project OS 和验证代码 clean commit/push，再执行真实 Project OS preflight；只有这些绑定一致，才签发一次新的 0 retry DeepSeek Chat FFJ-R4。R4 完整 Judgment 的 L1 与内容门通过前，不进入动态第二层。
+当前第一项的最早责任层已推进到 `RC-S3-020`：不再增加 Prompt、token 或 Provider 分支，只把 defense-in-depth 从“全文关键词共现”改为“同一分句中的正向因果命题”，并识别明确否定。先保存 R4、完成 replay／mutation／全仓复证和 clean push，再由 Project OS 独立决定是否签发 0 retry FFJ-R5。R5 完整 Judgment 的 L1 与内容门通过前，不进入动态第二层。
 
 2026-08-15 更新：上述接线与 preflight 已完成，但 natural Chat R1 在 mandatory reads 后因 16000 reasoning token 耗尽、零最终 tool call 而终止。该失败既不能算内容失败，也不能归咎为单纯 DS 不遵循；当前模型视图重复了 Claim／Method／Graph 卡，发送了完整审计 lineage 和零预算 EvidenceRequest schema，并要求模型逐原子重复七个已冻结的关系字段。第一项因此插入 provider-neutral 的 alias／compact-view successor，formal proof 通过前不得进入动态第二项。
 

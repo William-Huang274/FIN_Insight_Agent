@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。完整 fixed-Pack 的 FFJ-R3 已自然完成 6/6 次调用并交出三个受约束片段：产品目标只保留为管理层口径，产品到分部／公司利润桥明确缺失，同口径公司毛利率只作为反向观察。终局失败来自项目把同一来源在不同 claim 中的 support／context 角色强行合并，并忽略 typed bridge gap 与 same-scope NumericRelation 的边界权威；不是本轮新金融 L1。provider-neutral claim-local role＋typed boundary v1.4 已用保存的三个原始片段、负向 mutation、三案例 full-fake 和两个 fresh process 正式复证通过。当前仍未把 R3 追认为成功；唯一下一步是在 clean push 与真实 preflight 后签发 fresh FFJ-R4，只有其完整 Judgment 同时通过 L1 与内容门，才进入动态 Research Truth Spine、DELL 动态单单元、五单元和异质泛化报告。业务／合同失败继续保留原 attempt 并在最早责任层以新 attempt 续跑；网络连通性按本机代理／TUN／DNS／TLS／IncompleteRead 分类并做有界重连。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
+FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。claim-local role＋typed boundary v1.4 已关闭 FFJ-R3 的项目缺陷；随后 fresh FFJ-R4 再次完整完成 6/6 次调用和三个片段。三段内容仍明确区分管理层产品目标、缺失的产品到公司利润桥和仅属公司层的毛利率反向观察，未观察到新的金融 L1。R4 终局被旧 lexical defense-in-depth 误拒绝：单字因果词“使”命中“服务器”，系统又跨分句组合词项并忽略“不能据此／不可推断／缺乏支持／无法归因”的否定极性。R4 保持失败且不 salvage。当前只处理 provider-neutral 的 clause-scoped、negation-aware positive-causal guard，并保留中英文真实跨层强因果 mutation 继续 fail closed；formal zero-call proof 和 fresh FFJ-R5 通过前，动态 Research Truth Spine、DELL 动态单单元、五单元和异质泛化报告均继续 blocked。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
 
 ## 当前唯一产品边界
 
@@ -189,3 +189,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 两个关键负向用例继续 fail closed：把全局 support 借给局部 claim 时返回 `claim_surface_required_authority_missing`；删除 typed boundary 时返回 `claim_authority_multi_driver_boundary_missing`。Harness 没有生成研究判断，模型叙事逐字保留。
 - 首次 formal v1.3 proof 因把历史 v1.1 输入 digest 与 R3 v1.2 policy 混在同一证明 lane 而零调用失败；该失败独立保存。v1.4 把历史 micro lane 与 R3 replay lane 分离，两个 fresh process 字节等价，result digest=`b03de3f0...0d3d`。这只构成 engineering pass，不追认 R3，也不证明自然 FFJ-R4、动态 Research、五单元、泛化或 S3 acceptance。
 - fresh FFJ-R4 的 decision 已收窄为同一 DELL fixed Pack、6 model calls／3 tool calls／0 EvidenceRequest／0 retry／0 fallback。只有 clean push、真实 Project OS preflight 和新 authority 后才可执行。
+
+## 2026-08-16 S3 完整片段 Chat FFJ-R4
+
+- clean/synced `ac5b84ca...` 上的 R4 已完成全部 6 次 DeepSeek 调用，三个分析均有可见内容、三个 submission 均只有一个 Tool Call，三个 fragment 均单独验证通过；0 retry／fallback／外源／协议切换。
+- 自然内容继续保持边界：产品盈利只作为未经审计的管理层目标；产品价格、量、配置拆分缺失使产品到分部／公司利润桥不可推断；公司毛利率同口径收缩只用于反向观察，明确无法归因于单一产品。当前未观察到新的金融 L1，但终局失败使正式 L1 与内容 acceptance 仍为 false。
+- 终局以 `claim_surface_narrative_relation_conflict` 失败。旧 guard 把单个汉字“使”当因果词，因而会在“服务器”中误命中；它还跨分句拼接 subject／outcome／causal term，并忽略“不能据此”“不可推断”“缺乏支持”“无法归因”等否定极性。该失败属于 S3 provider-neutral defense-in-depth，不是 transport、DeepSeek 合同不遵循或新的金融判断错误。
+- R4 不 salvage。successor 必须按分句寻找一条正向因果命题、忽略无独立语义的单字 CJK 子串，并识别明确否定／不支持表面；中英文“AI server revenue drives/translates into company profit”仍须 fail closed。保存 R4 三片段、正负 mutation、R3 claim-local 非回归、三案例 full-fake 与 two-fresh-process proof 全部通过后，才允许 fresh R5。

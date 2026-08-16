@@ -138,6 +138,21 @@ R3_FAILURE_ASSESSMENT = ROOT / (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_"
     "judgment_chat_live_failure_assessment_v1_2.json"
 )
+R4_SUBMITTED_FRAGMENT_REPLAY = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_full_fragment_chat_r4_"
+    "submitted_fragments_v1_0.json"
+)
+R4_LIVE_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_"
+    "judgment_chat_live_result_v1_3.json"
+)
+R4_FAILURE_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_"
+    "judgment_chat_live_failure_assessment_v1_3.json"
+)
 CLAIM_RELATION_ALIAS_FAKE = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -2149,6 +2164,45 @@ def test_zero_call_runner_replays_saved_r3_claim_local_boundary(
         ),
         "typed_boundary_removed": (
             "claim_authority_multi_driver_boundary_missing"
+        ),
+    }
+
+
+def test_zero_call_runner_replays_saved_r4_negated_causal_boundary(
+    contracts,
+) -> None:
+    runner = _zero_call_runner()
+    _, research_input, _, _, _ = contracts
+    replay = runner._saved_r4_causal_polarity_replay(
+        paths={
+            "claim_authority_policy_ref": CLAIM_AUTHORITY_POLICY,
+            "r4_claim_surface_authority_policy_ref": (
+                CLAIM_RELATION_SUPPORT_POLICY
+            ),
+            "r4_submitted_fragments_ref": R4_SUBMITTED_FRAGMENT_REPLAY,
+            "r4_live_result_ref": R4_LIVE_RESULT,
+            "r4_failure_assessment_ref": R4_FAILURE_ASSESSMENT,
+        },
+        base_research_input=research_input,
+    )
+
+    assert replay["predecessor_failure_code"] == (
+        "claim_surface_narrative_relation_conflict"
+    )
+    assert replay["clause_scoped_guard"] is True
+    assert replay["negated_or_unsupported_causal_surface_pass"] is True
+    assert replay["single_character_cjk_substring_not_authoritative"] is True
+    assert replay["model_narratives_preserved_exactly"] is True
+    assert set(replay["boundary_authority_sources"]) == {
+        "typed_bridge_gap_relation",
+        "typed_same_scope_counter_relation",
+    }
+    assert replay["mutation_failure_codes"] == {
+        "positive_cross_scope_causal_zh": (
+            "claim_surface_narrative_relation_conflict"
+        ),
+        "positive_cross_scope_causal_en": (
+            "claim_surface_narrative_relation_conflict"
         ),
     }
 

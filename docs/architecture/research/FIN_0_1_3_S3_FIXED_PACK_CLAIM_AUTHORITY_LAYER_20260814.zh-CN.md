@@ -142,3 +142,17 @@ Claim Authority 同时承认两类经过当前对象绑定的边界：
 保存的 FFJ-R3 三个 Tool payload 在不改模型文字的情况下现可编译为 `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only`。全局 support 借用和删除 typed boundary 两类 mutation 继续分别以 `claim_surface_required_authority_missing`、`claim_authority_multi_driver_boundary_missing` fail closed。formal v1.3 proof 因历史 input/policy lane 混用而零调用失败，v1.4 将历史 micro proof 与 R3 terminal replay 分开后两个 fresh process 字节等价。
 
 该结果是 engineering pass，不是自然产品通过。FFJ-R3 保持失败；fresh FFJ-R4 必须重新取得 clean/synced authority，按同一 fixed Pack、6 model calls／3 submissions／0 EvidenceRequest／0 retry 执行，并独立完成 L1 与内容质量验收。通过后才可进入动态 Research Truth Spine。
+
+## 13. FFJ-R4 与 lexical defense-in-depth 极性边界
+
+FFJ-R4 在 claim-local／typed-boundary 修复后再次完成全部三个自然片段。终局不再出现 Evidence role 或 Claim Authority 错误，而是在旧 `narrative_conflict_guard` 上失败。诊断把错误缩到三个可复现条件：
+
+1. `direct_causal_terms` 中的单字“使”会作为普通子串命中“服务器”；
+2. subject、financial outcome 和 causal term 可以来自不同分句，系统仍把它们拼成同一命题；
+3. “不能据此”“不可推断”“缺乏支持”“无法归因”等否定没有改变词项极性。
+
+因此旧实现检测的是“全文出现过几类词”，不是“模型正向断言了跨层因果”。这会把边界写得越清楚的报告反而拒绝掉。
+
+successor 不取消 lexical guard。结构化 ClaimRelation 仍是主要权威，lexical guard 继续作为纵深防御，但只在同一分句出现 subject、outcome 和有独立语义的 causal term，且没有明确否定／不支持标记时，判为正向因果表面。单字 CJK 子串不拥有独立因果权威。中英文真实正向“AI server revenue drives/translates into company profit”仍必须 fail closed；否定、不可推断或被明确质疑的命题不能被误升级为正向断言。
+
+该规则不替模型写观点，也不把 R4 追认为成功。R4 三个提交参数作为无 reasoning fixture 保存；formal proof 必须原样 replay 通过，并同时证明正向 mutation、R3 claim-local、typed boundary、三案例身份和完整 fake 路径均未放宽。之后只能用 fresh authority 执行 FFJ-R5。

@@ -320,6 +320,65 @@ def test_saved_failed_live_replay_exposes_both_missing_contract_layers(
     assert exc.value.code == "claim_surface_narrative_relation_conflict"
 
 
+@pytest.mark.parametrize(
+    "mechanism_atom",
+    [
+        (
+            "管理层关于 AI 服务器产品盈利符合其所述目标的表述属自述口径，"
+            "未经独立审计，不能据此建立产品到分部或公司利润的财务桥；"
+            "产品级价格、量与配置拆分的缺失使产品盈利如何转化为分部或"
+            "公司利润不可推断。"
+        ),
+        (
+            "“AI 服务器收入转化为公司利润”的命题缺乏直接证据，"
+            "不能据此建立产品到公司的利润桥。"
+        ),
+        (
+            "The evidence does not establish that AI server revenue drives "
+            "company profit, so the product-to-company bridge remains unproven."
+        ),
+    ],
+)
+def test_negated_or_unsupported_causal_surface_is_not_a_positive_conflict(
+    alias_surface_input: dict[str, object],
+    mechanism_atom: str,
+) -> None:
+    payload = _json(ALIAS_POSITIVE_PAYLOAD)
+    payload["cells"][0]["mechanism_atom"] = mechanism_atom
+
+    validated = validate_current_research_output(
+        payload,
+        research_input=alias_surface_input,
+        required_cell_ids=["CELL::value_capture"],
+    )
+
+    assert validated["cells"][0]["mechanism_atom"] == mechanism_atom
+
+
+@pytest.mark.parametrize(
+    "mechanism_atom",
+    [
+        "AI 服务器增长驱动 Dell 公司利润改善。",
+        "AI server revenue translates into Dell company profit.",
+    ],
+)
+def test_positive_cross_scope_causal_surface_still_fails_closed(
+    alias_surface_input: dict[str, object],
+    mechanism_atom: str,
+) -> None:
+    payload = _json(ALIAS_POSITIVE_PAYLOAD)
+    payload["cells"][0]["mechanism_atom"] = mechanism_atom
+
+    with pytest.raises(CurrentResearchConsumerError) as exc:
+        validate_current_research_output(
+            payload,
+            research_input=alias_surface_input,
+            required_cell_ids=["CELL::value_capture"],
+        )
+
+    assert exc.value.code == "claim_surface_narrative_relation_conflict"
+
+
 def test_corrected_successor_renders_qualitative_surface_without_point_estimate(
     surface_input: dict[str, object],
 ) -> None:

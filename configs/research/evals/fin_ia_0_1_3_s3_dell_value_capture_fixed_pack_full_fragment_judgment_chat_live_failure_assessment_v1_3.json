@@ -1,0 +1,46 @@
+{
+  "schema_version": "fin_ia_s3_full_fragment_judgment_live_failure_assessment_v1_3",
+  "status": "terminal_contract_failure_clause_and_negation_blind_lexical_guard_false_positive_new_attempt_required",
+  "recorded_at": "2026-08-16T13:40:00+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_authority_v1_3.json",
+  "authority_sha256": "02f21ca3882dad061c3cddf541e9467ad7ed3f87b71e32995526d3f9d155c89d",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_3.json",
+  "result_sha256": "0bb9f6cbc88094ba64fb46824cb2e55fcbd2e0e57c616abd770d3b9d9f61049c",
+  "result_digest": "53abb84e1f6ff982ce4c51024457ee8e331af169e318278f9e5bb704e6da49e7",
+  "failure_phase": "local_terminal_judgment_validation",
+  "failure_code": "claim_surface_narrative_relation_conflict",
+  "failure_fragment_tool": "submit_research_counterargument_and_wwc",
+  "execution": {
+    "model_calls_attempted": 6,
+    "tool_calls_accepted": 3,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "protocol_switches": 0
+  },
+  "root_cause": {
+    "owner_layer": "S3_provider_neutral_narrative_conflict_defense_in_depth",
+    "deepseek_contract_failure": false,
+    "transport_failure": false,
+    "financial_L1_observed": false,
+    "single_character_false_match": "The configured direct-causal term 使 matched the same character inside 服务器.",
+    "clause_scope_false_match": "Subject, financial outcome and causal terms were combined across separate clauses instead of requiring one positive causal proposition.",
+    "polarity_false_match": "不能据此, 不可推断, 缺乏支持 and 无法归因 were ignored, so a denied proposition was classified as an asserted causal bridge."
+  },
+  "business_content_observation": {
+    "thesis": "Management product profitability statement remains unaudited and does not establish a product-to-segment or company bridge.",
+    "mechanism": "The model explicitly states that missing product price, volume and mix decomposition makes the profit bridge not inferable.",
+    "counterargument": "Same-basis company gross-margin contraction is used only as a company-scope counter observation and is explicitly not attributed to one product.",
+    "formal_content_acceptance": false
+  },
+  "disposition": {
+    "immutable_R4_preserved": true,
+    "same_attempt_retry_forbidden": true,
+    "manual_text_deletion_or_salvage_forbidden": true,
+    "repair_scope": "provider_neutral_clause_scoped_negation_aware_positive_causal_surface_guard",
+    "positive_cross_scope_causal_assertion_must_still_fail_closed": true,
+    "fresh_zero_call_replay_and_new_attempt_required": true,
+    "dynamic_truth_spine_remains_blocked": true
+  },
+  "known_boundary": "R4 contains three natural accepted fragments and no observed financial L1, but it did not form a terminal Judgment under its bound contract and cannot be promoted."
+}

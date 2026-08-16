@@ -41,6 +41,51 @@ CLAIM_SURFACE_AUTHORITY_ATOM_FIELDS = (
     "counterargument_atom",
 )
 
+_NARRATIVE_CLAUSE_BOUNDARY = re.compile(r"[。！？!?；;，,\n]+")
+_CAUSAL_NEGATION_MARKERS = (
+    "不能据此",
+    "无法据此",
+    "不可推断",
+    "无法推断",
+    "不能推断",
+    "不能归因",
+    "无法归因",
+    "不应归因",
+    "不能证明",
+    "不足以",
+    "未建立",
+    "尚未",
+    "并未",
+    "未能",
+    "不能",
+    "不可",
+    "无法",
+    "不得",
+    "没有",
+    "缺乏",
+    "不支持",
+    "不代表",
+    "并非",
+    "no evidence",
+    "not established",
+    "cannot infer",
+    "cannot attribute",
+    "cannot",
+    "can't",
+    "could not",
+    "does not",
+    "did not",
+    "do not",
+    "without",
+    "insufficient",
+    "unproven",
+    "fails to",
+    "failed to",
+    "lacking",
+    "lacks",
+    "lack",
+)
+
 
 class ClaimSurfaceAuthorityError(ValueError):
     """Fail-closed error for source-bound qualitative facts and claim relations."""
@@ -79,6 +124,54 @@ def _strings(
 
 def _normalized_source_surface(value: object) -> str:
     return re.sub(r"[\s\-_]+", "", str(value or "").casefold())
+
+
+def _specific_guard_terms(values: Sequence[str]) -> tuple[str, ...]:
+    """Drop ambiguous one-character CJK substrings from lexical guards."""
+
+    return tuple(
+        term.casefold()
+        for value in values
+        if (term := str(value or "").strip())
+        and not (
+            len(term) == 1
+            and re.fullmatch(r"[\u3400-\u9fff]", term) is not None
+        )
+    )
+
+
+def _has_positive_direct_causal_surface(
+    narrative: str,
+    *,
+    guard: Mapping[str, Any],
+) -> bool:
+    """Find a positive causal assertion without combining unrelated clauses.
+
+    The structured relation remains the primary authority.  This lexical
+    check is only defense in depth, so a negated or explicitly unsupported
+    proposition must not be promoted into a positive causal assertion.
+    """
+
+    subject_terms = _specific_guard_terms(guard["subject_terms"])
+    outcome_terms = _specific_guard_terms(guard["financial_outcome_terms"])
+    causal_terms = _specific_guard_terms(guard["direct_causal_terms"])
+    for raw_clause in _NARRATIVE_CLAUSE_BOUNDARY.split(
+        str(narrative or "").casefold()
+    ):
+        clause = raw_clause.strip()
+        if not clause:
+            continue
+        if not any(term in clause for term in subject_terms):
+            continue
+        if not any(term in clause for term in outcome_terms):
+            continue
+        causal_matches = [term for term in causal_terms if term in clause]
+        if not causal_matches:
+            continue
+        if any(marker in clause for marker in _CAUSAL_NEGATION_MARKERS):
+            continue
+        return True
+    return False
 
 
 def load_claim_surface_authority_policy(
@@ -830,45 +923,22 @@ def validate_claim_surface_authority_selection(
             "claim_surface_required_authority_missing",
         )
         text = str(narrative_by_field[atom_field]).casefold()
+        positive_direct_causal_surface = _has_positive_direct_causal_surface(
+            text,
+            guard=guard,
+        )
         if relation in guarded_relations:
-            has_subject = any(
-                term.casefold() in text for term in guard["subject_terms"]
-            )
-            has_outcome = any(
-                term.casefold() in text
-                for term in guard["financial_outcome_terms"]
-            )
-            has_causal = any(
-                term.casefold() in text
-                for term in guard["direct_causal_terms"]
-            )
             attributed = any(
                 term.casefold() in text
                 for term in guard["management_attribution_terms"]
             )
             _require(
-                not (
-                    has_subject
-                    and has_outcome
-                    and has_causal
-                    and not attributed
-                ),
+                not (positive_direct_causal_surface and not attributed),
                 "claim_surface_narrative_relation_conflict",
             )
         if relation in forbidden_causal_relations:
-            has_subject = any(
-                term.casefold() in text for term in guard["subject_terms"]
-            )
-            has_outcome = any(
-                term.casefold() in text
-                for term in guard["financial_outcome_terms"]
-            )
-            has_causal = any(
-                term.casefold() in text
-                for term in guard["direct_causal_terms"]
-            )
             _require(
-                not (has_subject and has_outcome and has_causal),
+                not positive_direct_causal_surface,
                 "claim_surface_narrative_relation_conflict",
             )
         validated_relations.append(

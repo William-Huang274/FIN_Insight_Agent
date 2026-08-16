@@ -18,6 +18,7 @@ from apps.workbench.backend.application.research_retrieval_service import (
     ResearchRetrievalPrincipal,
 )
 from scripts.research.run_s3_current_research_consumer_zero_call import _services
+from sec_agent.providers.deepseek_strict import project_deepseek_strict_tool
 from sec_agent.research.current_consumer import (
     CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
     compile_current_research_deliverable,
@@ -299,6 +300,37 @@ def test_five_cell_synthesis_uses_only_validated_cell_refs(
     assert report["rendering_authority"][
         "harness_generated_research_conclusion"
     ] is False
+
+
+def test_deepseek_projection_preserves_shared_pattern_for_cell_and_synthesis(
+    five_cell_input: dict[str, object],
+    validated_judgment: tuple[dict[str, object], dict[str, object]],
+) -> None:
+    judgment, deliverable = validated_judgment
+    _, cell_tool = compile_five_cell_submission(
+        research_input=five_cell_input,
+        cell_id="CELL::value_capture",
+        analysis_draft="公司层面价值获取有所改善，但产品利润与现金桥接仍不完整。",
+    )
+    _, synthesis_tool = compile_five_cell_synthesis_submission(
+        research_input=five_cell_input,
+        judgment_output=judgment,
+        structured_deliverable=deliverable,
+        analysis_draft="五个研究单元共同表明需求有支撑，但价值获取与现金转化仍保留关键缺口。",
+    )
+
+    for canonical in (cell_tool, synthesis_tool):
+        wire, receipt = project_deepseek_strict_tool(canonical)
+        parameters = wire["function"]["parameters"]
+        assert "$defs" not in parameters
+        assert parameters["$def"]["t"]["pattern"] == (
+            CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN
+        )
+        assert receipt["finance_contract_weakened"] is False
+        rendered = json.dumps(wire, ensure_ascii=False)
+        assert '"minItems"' not in rendered
+        assert '"maxItems"' not in rendered
+        assert '"uniqueItems"' not in rendered
 
 
 def test_five_cell_synthesis_fails_closed_on_free_number_or_unselected_ref(

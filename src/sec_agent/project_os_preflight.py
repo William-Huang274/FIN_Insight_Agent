@@ -97,6 +97,15 @@ DYNAMIC_FIVE_CELL_PARTIAL_SUCCESSOR_DECISION_STATUS = (
 DYNAMIC_FIVE_CELL_PARTIAL_SUCCESSOR_SCOPE = (
     "one_DELL_dynamic_five_cell_partial_successor_failed_three_plus_synthesis"
 )
+DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_node_successor_live_scope_decision_v1_0"
+)
+DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_DECISION_STATUS = (
+    "approved_one_DELL_dynamic_five_cell_two_submissions_plus_synthesis_exact_once"
+)
+DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_SCOPE = (
+    "one_DELL_dynamic_five_cell_node_successor_two_submissions_plus_synthesis"
+)
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_0 = (
     "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
     "live_scope_decision_v1_0"
@@ -251,6 +260,14 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if (
+        decision.get("schema_version")
+        == DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_DECISION_SCHEMA
+    ):
+        return _validate_dynamic_five_cell_node_successor_decision(
+            root=root,
+            decision=decision,
+        )
     if (
         decision.get("schema_version")
         == DYNAMIC_FIVE_CELL_PARTIAL_SUCCESSOR_DECISION_SCHEMA
@@ -1519,6 +1536,334 @@ def _validate_dynamic_five_cell_partial_successor_decision(
         "dynamic_five_cell_successor": False,
         "dynamic_five_cell_remaining_nodes_successor": False,
         "dynamic_five_cell_partial_successor": True,
+        "dynamic_single_cell_successor": False,
+        "micro_judgment_successor": False,
+        "node_profiles": profiles,
+    }
+
+
+def _validate_dynamic_five_cell_node_successor_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_cells = (
+        "CELL::demand_quality",
+        "CELL::operating_performance",
+        "CELL::value_capture",
+        "CELL::cash_conversion",
+        "CELL::counterevidence",
+    )
+    reused_cells = (
+        "CELL::demand_quality",
+        "CELL::operating_performance",
+        "CELL::cash_conversion",
+    )
+    resubmission_cells = (
+        "CELL::value_capture",
+        "CELL::counterevidence",
+    )
+    required_equal = {
+        "status": DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "TWO_SUBMISSIONS_PLUS_SYNTHESIS",
+        "run_scope_id": DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_SCOPE,
+        "evidence_mode": (
+            "immutable_dynamic_R3_three_valid_cells_two_analysis_drafts_no_new_evidence"
+        ),
+        "next_authorized_scope": (
+            "one_DELL_dynamic_five_cell_two_submissions_plus_synthesis_chat_exact_once"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_five_cell_node_successor_field_invalid:{field}"
+            )
+    if not (
+        tuple(decision.get("required_cell_ids") or ()) == required_cells
+        and tuple(decision.get("reused_cell_ids") or ()) == reused_cells
+        and tuple(decision.get("resubmission_cell_ids") or ())
+        == resubmission_cells
+    ):
+        raise ValueError("project_os_five_cell_node_successor_cells_invalid")
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "reuse_predecessor_planner",
+        "reuse_predecessor_current_S1_S2",
+        "reuse_predecessor_valid_cells",
+        "reuse_predecessor_analysis_drafts",
+        "same_current_product_pointer_required",
+        "synthesis_requires_all_cells",
+        "immutable_R3_predecessor_required",
+        "positive_product_profit_attribution_requires_authoritative_bridge",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                f"project_os_five_cell_node_successor_true_required:{field}"
+            )
+    for field in (
+        "rerun_planner",
+        "rerun_current_S1_S2",
+        "rerun_valid_cells",
+        "rerun_cell_analysis",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "S3_acceptance_authorized",
+        "heterogeneous_generalization_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                f"project_os_five_cell_node_successor_false_required:{field}"
+            )
+    expected_budget = {
+        "maximum_model_calls": 4,
+        "maximum_transport_attempts": 4,
+        "maximum_planner_calls": 0,
+        "reused_predecessor_planner_calls": 1,
+        "maximum_cell_analysis_calls": 0,
+        "reused_predecessor_cell_analysis_drafts": 2,
+        "maximum_cell_submission_calls": 2,
+        "reused_predecessor_cell_judgments": 3,
+        "maximum_synthesis_analysis_calls": 1,
+        "maximum_synthesis_submission_calls": 1,
+        "maximum_evidence_requests": 0,
+        "reused_predecessor_evidence_requests": 8,
+        "maximum_tool_calls": 3,
+        "retries": 0,
+        "fallbacks": 0,
+        "external_source_network_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if decision.get("execution_budget") != expected_budget:
+        raise ValueError("project_os_five_cell_node_successor_budget_invalid")
+
+    _, proof = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="node_successor_zero_call_result_ref",
+        sha_field="node_successor_zero_call_result_sha256",
+        digest_field="node_successor_zero_call_result_digest",
+    )
+    acceptance = proof.get("acceptance") or {}
+    replay = proof.get("node_successor_fake_replay") or {}
+    capture = proof.get("R3_capture_replay") or {}
+    test_runs = proof.get("independent_test_processes") or []
+    if not (
+        proof.get("schema_version")
+        == "fin_ia_s3_dynamic_five_cell_node_successor_zero_call_result_v1_0"
+        and proof.get("status")
+        == "engineering_pass_zero_call_R3_node_successor_strict_resubmission"
+        and isinstance(test_runs, list)
+        and len(test_runs) == 2
+        and all(
+            isinstance(row, Mapping)
+            and row.get("status") == "passed"
+            and int(row.get("passed_tests") or 0) >= 100
+            and row.get("model_calls") == 0
+            and row.get("provider_calls") == 0
+            and row.get("network_calls") == 0
+            for row in test_runs
+        )
+        and replay.get("fresh_model_calls_attempted") == 4
+        and replay.get("planner_calls_attempted") == 0
+        and replay.get("current_S1_S2_executions") == 0
+        and replay.get("reused_predecessor_cell_judgments") == 3
+        and replay.get("reused_predecessor_analysis_drafts") == 2
+        and replay.get("cell_analysis_calls_attempted") == 0
+        and replay.get("cell_submission_calls_attempted") == 2
+        and replay.get("cell_judgments_accepted") == 5
+        and replay.get("synthesis_analysis_calls_attempted") == 1
+        and replay.get("synthesis_submission_calls_attempted") == 1
+        and replay.get("strict_projected_submission_tools") == 3
+        and replay.get("synthesis_contract_valid") is True
+        and capture.get("analysis_capture_count") == 2
+        and capture.get("all_request_response_digests_match") is True
+        and capture.get("all_response_bodies_complete") is True
+        and capture.get("all_saved_analysis_content_matches") is True
+        and acceptance.get("R3_preserved") is True
+        and acceptance.get("three_valid_judgments_reused_not_rerun") is True
+        and acceptance.get(
+            "two_analysis_drafts_capture_verified_and_reused"
+        )
+        is True
+        and acceptance.get("only_two_cell_submissions_executed") is True
+        and acceptance.get(
+            "strict_projection_applied_to_all_three_submission_tools"
+        )
+        is True
+        and acceptance.get("fresh_model_calls_equal_four") is True
+        and acceptance.get("synthesis_requires_all_five_cells") is True
+        and acceptance.get("natural_model_quality_proven") is False
+        and acceptance.get("node_successor_live_authorized") is False
+        and acceptance.get("product_publication_authorized") is False
+    ):
+        raise ValueError("project_os_five_cell_node_successor_proof_invalid")
+
+    source_bindings = proof.get("source_bindings") or {}
+    required_binding_names = {
+        "runner",
+        "five_cell_runtime",
+        "strict_projection",
+        "project_os_preflight",
+        "runner_tests",
+        "runtime_tests",
+        "projection_tests",
+    }
+    if set(source_bindings) != required_binding_names:
+        raise ValueError("project_os_five_cell_node_successor_bindings_invalid")
+    implementation_commit = str(proof.get("implementation_commit") or "")
+    proof_commit = _git_latest_commit_for_ref(
+        root=root,
+        ref=str(decision.get("node_successor_zero_call_result_ref") or ""),
+    )
+    for name, row in source_bindings.items():
+        if not isinstance(row, Mapping):
+            raise ValueError(
+                "project_os_five_cell_node_successor_bindings_invalid"
+            )
+        ref = str(row.get("ref") or "")
+        _repo_path(root, ref)
+        expected_sha = str(row.get("sha256") or "")
+        if not any(
+            _git_blob_sha256(root=root, commit=commit, ref=ref) == expected_sha
+            for commit in {implementation_commit, proof_commit}
+        ):
+            raise ValueError(
+                f"project_os_five_cell_node_successor_source_drift:{name}"
+            )
+
+    _, predecessor = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_result_ref",
+        sha_field="predecessor_result_sha256",
+        digest_field="predecessor_result_digest",
+    )
+    cells = predecessor.get("cells") or []
+    expected_valid = {0, 1, 3}
+    if not (
+        predecessor.get("schema_version")
+        == "fin_ia_s3_dynamic_five_cell_partial_successor_live_result_v1_0"
+        and predecessor.get("status") == "terminal_failed_or_partial_no_retry"
+        and (predecessor.get("execution") or {}).get(
+            "cell_judgments_accepted"
+        )
+        == 3
+        and len(cells) == 5
+        and [row.get("cell_id") for row in cells] == list(required_cells)
+        and all(cells[index].get("validated_cell_digest") for index in expected_valid)
+        and all(not cells[index].get("failure_code") for index in expected_valid)
+        and cells[2].get("failure_code")
+        == "research_consumer_mechanism_atom_invalid"
+        and cells[4].get("failure_code")
+        == "research_consumer_thesis_atom_invalid"
+    ):
+        raise ValueError(
+            "project_os_five_cell_node_successor_predecessor_invalid"
+        )
+    _, predecessor_assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_failure_assessment_ref",
+        sha_field="predecessor_failure_assessment_sha256",
+    )
+    if not (
+        predecessor_assessment.get("status")
+        == "terminal_partial_three_of_five_contract_valid_two_strict_submission_surface_rejected"
+        and predecessor_assessment.get("result_digest")
+        == predecessor.get("result_digest")
+    ):
+        raise ValueError(
+            "project_os_five_cell_node_successor_assessment_invalid"
+        )
+    _, strict_canary = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="strict_canary_result_ref",
+        sha_field="strict_canary_result_sha256",
+        digest_field="strict_canary_result_digest",
+    )
+    if not (
+        strict_canary.get("status")
+        == "completed_deepseek_beta_strict_pattern_qualified"
+        and (strict_canary.get("acceptance") or {}).get(
+            "deepseek_beta_endpoint_accepted_schema"
+        )
+        is True
+        and (strict_canary.get("execution") or {}).get("retries") == 0
+    ):
+        raise ValueError("project_os_five_cell_node_successor_canary_invalid")
+
+    profiles: dict[str, Any] = {}
+    profile_specs = (
+        (
+            "analysis_profile_ref",
+            "analysis_profile_sha256",
+            "https://api.deepseek.com",
+            {"type": "enabled"},
+            "max",
+            16000,
+        ),
+        (
+            "submission_profile_ref",
+            "submission_profile_sha256",
+            "https://api.deepseek.com/beta",
+            {"type": "disabled"},
+            None,
+            2000,
+        ),
+    )
+    for ref_field, sha_field, base_url, thinking, reasoning, tokens in profile_specs:
+        _, profile = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field=ref_field,
+            sha_field=sha_field,
+        )
+        defaults = profile.get("request_defaults") or {}
+        if not (
+            profile.get("provider_id") == "deepseek"
+            and profile.get("model") == "deepseek-v4-pro"
+            and profile.get("wire_api")
+            == "openai_compatible_chat_completions"
+            and profile.get("base_url") == base_url
+            and profile.get("endpoint") == "/chat/completions"
+            and (profile.get("authority") or {}).get("retry_count") == 0
+            and defaults.get("stream") is False
+            and defaults.get("thinking") == thinking
+            and defaults.get("max_tokens") == tokens
+            and (
+                defaults.get("reasoning_effort") == reasoning
+                if reasoning is not None
+                else "reasoning_effort" not in defaults
+            )
+            and "temperature" not in defaults
+            and "top_p" not in defaults
+        ):
+            raise ValueError(
+                f"project_os_five_cell_node_successor_profile_invalid:{ref_field}"
+            )
+        profiles[ref_field] = {
+            "base_url": base_url,
+            "thinking": thinking,
+            "reasoning_effort": reasoning,
+            "max_tokens": tokens,
+        }
+    return {
+        "clean_proof_status": proof["status"],
+        "provider_id": "deepseek",
+        "provider_model": "deepseek-v4-pro",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "recent_provider_steps": 1,
+        "dynamic_five_cell_successor": False,
+        "dynamic_five_cell_remaining_nodes_successor": False,
+        "dynamic_five_cell_partial_successor": False,
+        "dynamic_five_cell_node_successor": True,
         "dynamic_single_cell_successor": False,
         "micro_judgment_successor": False,
         "node_profiles": profiles,
@@ -3772,6 +4117,18 @@ def build_preflight(
             raise ValueError(
                 "project_os_dynamic_five_cell_partial_scope_allowance_missing"
             )
+    if decision_projection.get("dynamic_five_cell_node_successor") is True:
+        required_allowances = {
+            "RC-S2-004-product-operating-metric-and-profit-bridge-authority-missing",
+            "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget",
+            "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence",
+            "RC-S3-033-strict-tool-semantic-surface-predicate-not-encoded-in-server-schema",
+        }
+        actual_allowances = set(scope_projection["explicit_allow_issue_ids"])
+        if not required_allowances.issubset(actual_allowances):
+            raise ValueError(
+                "project_os_dynamic_five_cell_node_scope_allowance_missing"
+            )
     if (
         decision_projection.get("relation_role_successor") is True
         and not _issue_explicitly_allows(
@@ -3813,7 +4170,17 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("dynamic_five_cell_partial_successor") is True:
+    if decision_projection.get("dynamic_five_cell_node_successor") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one decision-bound "
+            "DELL dynamic five-cell node successor. It reuses the immutable "
+            "R3 planner, current S1/S2, three valid judgments and two "
+            "capture-verified analysis drafts; permits only two strict Beta "
+            "submissions plus synthesis after all five judgments validate; "
+            "and forbids analysis reruns, new Evidence, publication, S3 "
+            "acceptance, heterogeneous generalization or release."
+        )
+    elif decision_projection.get("dynamic_five_cell_partial_successor") is True:
         known_boundary = (
             "This current-baseline preflight permits only one decision-bound "
             "DELL dynamic five-cell partial successor. It reuses the immutable "

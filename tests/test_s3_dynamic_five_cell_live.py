@@ -16,6 +16,7 @@ from sec_agent.providers.chat_completions import (
     ChatCompletionResult,
     ChatCompletionToolStepResult,
 )
+from sec_agent.research.reviewed_evidence_pack import canonical_digest
 
 
 def _analysis_step(tmp_path: Path, index: int) -> ChatCompletionResult:
@@ -73,8 +74,9 @@ def _prepare_runner(
     *,
     successor_mode: bool = False,
     partial_successor_mode: bool = False,
+    node_successor_mode: bool = False,
 ) -> tuple[Path, Path, Path, dict[str, int]]:
-    assert not (successor_mode and partial_successor_mode)
+    assert sum((successor_mode, partial_successor_mode, node_successor_mode)) <= 1
     authority_path = tmp_path / "authority.json"
     private_root = tmp_path / "private"
     public_path = tmp_path / "public.json"
@@ -98,28 +100,41 @@ def _prepare_runner(
         },
         "product_publication": "forbidden",
     }
-    if successor_mode or partial_successor_mode:
+    if successor_mode or partial_successor_mode or node_successor_mode:
         output.pop("planner_attempt_id")
     if partial_successor_mode:
         output["cell_attempt_ids"] = {
             cell_id: output["cell_attempt_ids"][cell_id]
             for cell_id in runner.PARTIAL_SUCCESSOR_REMAINING_CELL_IDS
         }
+    if node_successor_mode:
+        output["cell_attempt_ids"] = {
+            cell_id: {
+                "submission_attempt_id": output["cell_attempt_ids"][cell_id][
+                    "submission_attempt_id"
+                ]
+            }
+            for cell_id in runner.NODE_SUCCESSOR_RESUBMISSION_CELL_IDS
+        }
     authority = {
         "schema_version": (
-            runner.PARTIAL_SUCCESSOR_AUTHORITY_SCHEMA
-            if partial_successor_mode
+            runner.NODE_SUCCESSOR_AUTHORITY_SCHEMA
+            if node_successor_mode
             else (
-                runner.SUCCESSOR_AUTHORITY_SCHEMA
-                if successor_mode
-                else "fixture"
+                runner.PARTIAL_SUCCESSOR_AUTHORITY_SCHEMA
+                if partial_successor_mode
+                else (
+                    runner.SUCCESSOR_AUTHORITY_SCHEMA
+                    if successor_mode
+                    else "fixture"
+                )
             )
         ),
         "implementation_commit": "a" * 40,
         "known_boundary": "fixture orchestration proof; not product acceptance",
         "output_contract": output,
     }
-    if successor_mode or partial_successor_mode:
+    if successor_mode or partial_successor_mode or node_successor_mode:
         authority["bound_inputs"] = {
             "predecessor_plan_digest": "plan-digest",
             "expected_evidence_pack_artifact_digest": "artifact",
@@ -132,6 +147,11 @@ def _prepare_runner(
         )
         authority["remaining_cell_ids"] = list(
             runner.PARTIAL_SUCCESSOR_REMAINING_CELL_IDS
+        )
+    if node_successor_mode:
+        authority["reused_cell_ids"] = list(runner.NODE_SUCCESSOR_REUSED_CELL_IDS)
+        authority["resubmission_cell_ids"] = list(
+            runner.NODE_SUCCESSOR_RESUBMISSION_CELL_IDS
         )
     authority_path.write_text(json.dumps(authority), encoding="utf-8")
     profile_path = tmp_path / "profile.json"
@@ -147,7 +167,7 @@ def _prepare_runner(
         "consumer_policy_ref": profile_path,
     }
     values = {authority_path: authority, profile_path: {}, objective_path: {}}
-    if successor_mode or partial_successor_mode:
+    if successor_mode or partial_successor_mode or node_successor_mode:
         predecessor_path = tmp_path / "predecessor.json"
         predecessor_authority_path = tmp_path / "predecessor-authority.json"
         predecessor_public_path = tmp_path / "predecessor-public.json"
@@ -170,31 +190,49 @@ def _prepare_runner(
                 "compiled_plan": {"plan_digest": "plan-digest"}
             },
         }
-        if partial_successor_mode:
+        if partial_successor_mode or node_successor_mode:
+            valid_ids = (
+                set(runner.NODE_SUCCESSOR_REUSED_CELL_IDS)
+                if node_successor_mode
+                else set(runner.PARTIAL_SUCCESSOR_REUSED_CELL_IDS)
+            )
             predecessor["cell_steps"] = [
                 {
                     "analysis_messages_digest": f"analysis-{index}",
                     "analysis_step": _analysis_step(tmp_path, index).as_dict(),
                     "cell_id": cell_id,
                     "failure_capture_ref": "",
-                    "failure_code": "" if index <= 2 else "saved_failure",
-                    "failure_phase": "" if index <= 2 else "saved_phase",
+                    "failure_code": (
+                        "" if cell_id in valid_ids else "saved_failure"
+                    ),
+                    "failure_phase": (
+                        "" if cell_id in valid_ids else "saved_phase"
+                    ),
                     "raw_model_arguments": (
-                        {"cell_id": cell_id} if index <= 2 else {}
+                        {"cell_id": cell_id} if cell_id in valid_ids else {}
                     ),
                     "submission_messages_digest": f"submission-{index}",
                     "submission_step": (
-                        {"finish_reason": "tool_calls"} if index <= 2 else {}
+                        {"finish_reason": "tool_calls"}
+                        if cell_id in valid_ids
+                        else {}
                     ),
                     "tool_schema_digest": f"tool-{index}",
                     "validated_cell": (
-                        {"cell_id": cell_id} if index <= 2 else {}
+                        {"cell_id": cell_id} if cell_id in valid_ids else {}
                     ),
                 }
                 for index, cell_id in enumerate(
                     runner.REQUIRED_CELL_IDS, start=1
                 )
             ]
+            if node_successor_mode:
+                authority["bound_inputs"]["expected_reused_analysis_digests"] = {
+                    row["cell_id"]: runner._reused_analysis_digest(row)
+                    for row in predecessor["cell_steps"]
+                    if row["cell_id"]
+                    in runner.NODE_SUCCESSOR_RESUBMISSION_CELL_IDS
+                }
         values[predecessor_path] = predecessor
         values[predecessor_authority_path] = {}
         values[predecessor_public_path] = {}
@@ -212,6 +250,25 @@ def _prepare_runner(
     monkeypatch.setattr(runner, "_resolve", lambda ref: destinations[str(ref)])
     monkeypatch.setattr(runner, "_relative", lambda path: Path(path).as_posix())
     monkeypatch.setattr(runner, "_sha", lambda _path: "f" * 64)
+    monkeypatch.setattr(
+        runner,
+        "_validate_reused_analysis_capture",
+        lambda row: {
+            "analysis_reuse_digest": runner._reused_analysis_digest(row),
+            "content_digest": "capture-content",
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "project_deepseek_strict_tool",
+        lambda tool: (
+            tool,
+            {
+                "projection_digest": "strict-projection",
+                "finance_contract_weakened": False,
+            },
+        ),
+    )
     monkeypatch.setattr(runner, "load_chat_completion_profile", lambda _: object())
     objective = SimpleNamespace(
         objective_id="OBJECTIVE::DELL::FIVE-CELL",
@@ -345,6 +402,86 @@ def _planner(tmp_path: Path) -> ChatCompletionResult:
         response_digest="b" * 64,
         private_reasoning_fields_redacted=1,
     )
+
+
+def _captured_analysis_row(tmp_path: Path) -> tuple[dict, Path, Path]:
+    messages = [{"role": "user", "content": "analyze bounded evidence"}]
+    request_body = {"model": "fixture", "messages": messages}
+    response_body = {
+        "choices": [
+            {
+                "finish_reason": "stop",
+                "message": {"role": "assistant", "content": "bounded draft"},
+            }
+        ]
+    }
+    request_path = tmp_path / "captured-request.json"
+    response_path = tmp_path / "captured-response.json"
+    request = {
+        "run_id": "R3",
+        "attempt_id": "VALUE-ANALYSIS",
+        "request_body": request_body,
+        "request_digest": canonical_digest(request_body),
+    }
+    response = {
+        "run_id": "R3",
+        "attempt_id": "VALUE-ANALYSIS",
+        "response_body": response_body,
+        "response_digest": canonical_digest(response_body),
+        "response_body_complete": True,
+        "response_body_persisted": True,
+        "eligible_for_contract_parse": True,
+        "partial_response_received": False,
+        "truncated": False,
+        "transport_error": "",
+    }
+    request_path.write_text(json.dumps(request), encoding="utf-8")
+    response_path.write_text(json.dumps(response), encoding="utf-8")
+    row = {
+        "cell_id": "CELL::value_capture",
+        "analysis_messages_digest": canonical_digest(messages),
+        "analysis_step": {
+            "finish_reason": "stop",
+            "content": "bounded draft",
+            "request_capture_ref": str(request_path),
+            "response_capture_ref": str(response_path),
+            "request_digest": request["request_digest"],
+            "response_digest": response["response_digest"],
+        },
+    }
+    return row, request_path, response_path
+
+
+def test_reused_analysis_capture_is_content_and_transport_bound(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    row, request_path, response_path = _captured_analysis_row(tmp_path)
+    monkeypatch.setattr(runner, "_resolve_capture_ref", lambda ref: Path(ref))
+    monkeypatch.setattr(runner, "_relative", lambda path: Path(path).as_posix())
+
+    receipt = runner._validate_reused_analysis_capture(row)
+
+    assert receipt["analysis_reuse_digest"] == runner._reused_analysis_digest(row)
+    assert receipt["request_capture_sha256"] == runner._sha(request_path)
+    assert receipt["response_capture_sha256"] == runner._sha(response_path)
+
+
+def test_reused_analysis_capture_mutation_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    row, _, response_path = _captured_analysis_row(tmp_path)
+    monkeypatch.setattr(runner, "_resolve_capture_ref", lambda ref: Path(ref))
+    mutated = json.loads(response_path.read_text(encoding="utf-8"))
+    mutated["response_body"]["choices"][0]["message"]["content"] = "mutated"
+    response_path.write_text(json.dumps(mutated), encoding="utf-8")
+
+    with pytest.raises(
+        runner.DynamicFiveCellLiveError,
+        match="five_cell_node_successor_capture_integrity_invalid",
+    ):
+        runner._validate_reused_analysis_capture(row)
 
 
 def test_five_cell_live_runs_all_cells_then_synthesis_and_redacts_public_result(
@@ -509,6 +646,124 @@ def test_five_cell_partial_successor_reuses_two_cells_and_runs_only_eight_nodes(
         False,
     ]
     assert counters == {"analysis": 4, "submission": 4}
+    assert public_path.is_file()
+    assert (private_root / "full_result.json").is_file()
+
+
+def test_five_cell_node_successor_reuses_three_judgments_and_two_analyses(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    authority_path, private_root, public_path, counters = _prepare_runner(
+        monkeypatch, tmp_path, node_successor_mode=True
+    )
+
+    def planner_must_not_run(**_kwargs):
+        raise AssertionError("node successor must not rerun planner")
+
+    def analyze(**kwargs):
+        counters["analysis"] += 1
+        assert kwargs["attempt_id"] == "synthesis-analysis-01"
+        return _analysis_step(tmp_path, 9)
+
+    def submit(**kwargs):
+        counters["submission"] += 1
+        tool = kwargs["tools"][0]["function"]
+        arguments = (
+            {"executive_thesis": "all cells synthesized"}
+            if tool["name"] == "submit_five_cell_synthesis"
+            else {"cell_id": tool["description"]}
+        )
+        return _submission_step(
+            tmp_path,
+            counters["submission"] + 10,
+            tool_name=tool["name"],
+            arguments=arguments,
+        )
+
+    result = runner.run(
+        authority_path,
+        planner_executor=planner_must_not_run,
+        analysis_executor=analyze,
+        submission_executor=submit,
+    )
+
+    assert result["schema_version"] == runner.NODE_SUCCESSOR_RESULT_SCHEMA
+    assert result["status"].startswith("completed_")
+    assert result["execution"]["model_calls_attempted"] == 4
+    assert result["execution"]["maximum_model_calls"] == 4
+    assert result["execution"]["cell_analysis_calls_attempted"] == 0
+    assert result["execution"]["cell_analysis_drafts_reused"] == 2
+    assert result["execution"]["cell_submission_calls_attempted"] == 2
+    assert result["execution"]["cell_judgments_reused"] == 3
+    assert result["execution"]["cell_judgments_accepted"] == 5
+    assert result["acceptance"]["analysis_drafts_reused_not_rerun"] is True
+    assert result["acceptance"][
+        "valid_cell_judgments_reused_not_rerun"
+    ] is True
+    assert [row["reused_from_predecessor"] for row in result["cells"]] == [
+        True,
+        True,
+        False,
+        True,
+        False,
+    ]
+    assert [
+        row["analysis_reused_from_predecessor"] for row in result["cells"]
+    ] == [True, True, True, True, True]
+    projected = [
+        row["tool_projection_receipt"]
+        for row in result["cells"]
+        if not row["reused_from_predecessor"]
+    ] + [result["synthesis"]["tool_projection_receipt"]]
+    assert len(projected) == 3
+    assert all(row["projection_digest"] == "strict-projection" for row in projected)
+    assert counters == {"analysis": 1, "submission": 3}
+    assert public_path.is_file()
+    assert (private_root / "full_result.json").is_file()
+
+
+def test_five_cell_node_successor_preserves_failed_resubmission_and_skips_synthesis(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    authority_path, private_root, public_path, counters = _prepare_runner(
+        monkeypatch, tmp_path, node_successor_mode=True
+    )
+
+    def analysis_must_not_run(**_kwargs):
+        raise AssertionError("synthesis must not run with four valid cells")
+
+    def submit(**kwargs):
+        counters["submission"] += 1
+        tool = kwargs["tools"][0]["function"]
+        name = tool["name"] if counters["submission"] == 1 else "wrong_tool"
+        return _submission_step(
+            tmp_path,
+            counters["submission"] + 20,
+            tool_name=name,
+            arguments={"cell_id": tool["description"]},
+        )
+
+    result = runner.run(
+        authority_path,
+        planner_executor=lambda **_: (_ for _ in ()).throw(
+            AssertionError("planner must not run")
+        ),
+        analysis_executor=analysis_must_not_run,
+        submission_executor=submit,
+    )
+
+    assert result["status"] == "terminal_failed_or_partial_no_retry"
+    assert result["execution"]["model_calls_attempted"] == 2
+    assert result["execution"]["cell_judgments_accepted"] == 4
+    assert result["synthesis"]["failure_code"] == (
+        "five_cell_synthesis_requires_all_cells"
+    )
+    assert result["cells"][4]["failure_code"] == (
+        "five_cell_live_submission_tool_invalid"
+    )
+    assert counters == {"analysis": 0, "submission": 2}
     assert public_path.is_file()
     assert (private_root / "full_result.json").is_file()
 

@@ -929,6 +929,9 @@ def _validate_dynamic_five_cell_successor_decision(
         "case_key": "DELL",
         "cell_id": "ALL_FIVE_RESEARCH_CELLS",
         "run_scope_id": DYNAMIC_FIVE_CELL_SUCCESSOR_SCOPE,
+        "evidence_mode": (
+            "immutable_dynamic_R1_planner_current_S1_S2_prefix_no_new_evidence"
+        ),
         "next_authorized_scope": (
             "one_DELL_dynamic_five_cell_remaining_twelve_nodes_chat_exact_once"
         ),

@@ -608,6 +608,8 @@ def _validate_successor_authority(
         == "approved_one_DELL_dynamic_five_cell_remaining_twelve_nodes_exact_once"
         and decision.get("run_scope_id")
         == "one_DELL_dynamic_five_cell_successor_remaining_twelve_nodes"
+        and decision.get("evidence_mode")
+        == "immutable_dynamic_R1_planner_current_S1_S2_prefix_no_new_evidence"
         and tuple(decision.get("required_cell_ids") or ()) == REQUIRED_CELL_IDS
         and decision.get("execution_budget") == SUCCESSOR_EXPECTED_BUDGET
         and decision.get("reuse_predecessor_planner") is True

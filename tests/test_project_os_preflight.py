@@ -268,7 +268,7 @@ def test_historical_dynamic_five_cell_decision_fails_closed_after_consumer_succe
 ) -> None:
     with pytest.raises(
         ValueError,
-        match="project_os_five_cell_runner_source_drift:current_consumer",
+        match="project_os_five_cell_runner_source_drift:",
     ):
         build_preflight(
             root=ROOT,

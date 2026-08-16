@@ -79,6 +79,15 @@ DYNAMIC_FIVE_CELL_DECISION_STATUS = (
     "approved_one_DELL_dynamic_five_cell_exact_once"
 )
 DYNAMIC_FIVE_CELL_SCOPE = "one_DELL_dynamic_five_cell_exact_once"
+DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_successor_live_scope_decision_v1_0"
+)
+DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_STATUS = (
+    "approved_one_DELL_dynamic_five_cell_remaining_twelve_nodes_exact_once"
+)
+DYNAMIC_FIVE_CELL_SUCCESSOR_SCOPE = (
+    "one_DELL_dynamic_five_cell_successor_remaining_twelve_nodes"
+)
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_0 = (
     "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
     "live_scope_decision_v1_0"
@@ -217,6 +226,14 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if (
+        decision.get("schema_version")
+        == DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_SCHEMA
+    ):
+        return _validate_dynamic_five_cell_successor_decision(
+            root=root,
+            decision=decision,
+        )
     if decision.get("schema_version") == DYNAMIC_FIVE_CELL_DECISION_SCHEMA:
         return _validate_dynamic_five_cell_decision(
             root=root,
@@ -891,6 +908,280 @@ def _validate_dynamic_five_cell_decision(
         "api_key_env": "DEEPSEEK_API_KEY",
         "recent_provider_steps": 1,
         "dynamic_five_cell_successor": True,
+        "dynamic_single_cell_successor": False,
+        "micro_judgment_successor": False,
+        "node_profiles": profiles,
+    }
+
+
+def _validate_dynamic_five_cell_successor_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_cells = (
+        "CELL::demand_quality",
+        "CELL::operating_performance",
+        "CELL::value_capture",
+        "CELL::cash_conversion",
+        "CELL::counterevidence",
+    )
+    required_equal = {
+        "status": DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "ALL_FIVE_RESEARCH_CELLS",
+        "run_scope_id": DYNAMIC_FIVE_CELL_SUCCESSOR_SCOPE,
+        "next_authorized_scope": (
+            "one_DELL_dynamic_five_cell_remaining_twelve_nodes_chat_exact_once"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_five_cell_successor_decision_field_invalid:{field}"
+            )
+    if tuple(decision.get("required_cell_ids") or ()) != required_cells:
+        raise ValueError(
+            "project_os_five_cell_successor_required_cells_invalid"
+        )
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "reuse_predecessor_planner",
+        "reuse_predecessor_current_S1_S2",
+        "same_current_product_pointer_required",
+        "continue_after_cell_failure",
+        "synthesis_requires_all_cells",
+        "immutable_R1_predecessor_required",
+        "positive_product_profit_attribution_requires_authoritative_bridge",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                f"project_os_five_cell_successor_true_required:{field}"
+            )
+    for field in (
+        "rerun_planner",
+        "rerun_current_S1_S2",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "S3_acceptance_authorized",
+        "heterogeneous_generalization_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                f"project_os_five_cell_successor_false_required:{field}"
+            )
+    expected_budget = {
+        "maximum_model_calls": 12,
+        "maximum_transport_attempts": 12,
+        "maximum_planner_calls": 0,
+        "reused_predecessor_planner_calls": 1,
+        "maximum_cell_analysis_calls": 5,
+        "maximum_cell_submission_calls": 5,
+        "maximum_synthesis_analysis_calls": 1,
+        "maximum_synthesis_submission_calls": 1,
+        "maximum_evidence_requests": 0,
+        "reused_predecessor_evidence_requests": 8,
+        "maximum_tool_calls": 6,
+        "retries": 0,
+        "fallbacks": 0,
+        "external_source_network_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if decision.get("execution_budget") != expected_budget:
+        raise ValueError(
+            "project_os_five_cell_successor_decision_budget_invalid"
+        )
+
+    _, proof = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="successor_runner_zero_call_result_ref",
+        sha_field="successor_runner_zero_call_result_sha256",
+        digest_field="successor_runner_zero_call_result_digest",
+    )
+    proof_acceptance = proof.get("acceptance") or {}
+    replay = proof.get("successor_fake_replay") or {}
+    test_runs = proof.get("independent_test_processes") or []
+    if not (
+        proof.get("schema_version")
+        == "fin_ia_s3_dynamic_five_cell_successor_runner_zero_call_result_v1_0"
+        and proof.get("status")
+        == "engineering_pass_zero_call_stable_successor_remaining_twelve_nodes"
+        and isinstance(test_runs, list)
+        and len(test_runs) == 2
+        and all(
+            isinstance(row, Mapping)
+            and row.get("status") == "passed"
+            and int(row.get("passed_tests") or 0) >= 65
+            and row.get("model_calls") == 0
+            and row.get("provider_calls") == 0
+            and row.get("network_calls") == 0
+            for row in test_runs
+        )
+        and replay.get("fresh_model_calls_attempted") == 12
+        and replay.get("planner_calls_attempted") == 0
+        and replay.get("current_S1_S2_executions") == 0
+        and replay.get("reused_predecessor_planner_calls") == 1
+        and replay.get("reused_predecessor_current_S1_S2") is True
+        and replay.get("cell_judgments_accepted") == 5
+        and replay.get("synthesis_contract_valid") is True
+        and proof_acceptance.get("R1_preserved") is True
+        and proof_acceptance.get("only_remaining_twelve_nodes_authorized")
+        is True
+        and proof_acceptance.get("natural_model_quality_proven") is False
+        and proof_acceptance.get("product_publication_authorized") is False
+    ):
+        raise ValueError(
+            "project_os_five_cell_successor_runner_proof_invalid"
+        )
+    source_bindings = proof.get("source_bindings") or {}
+    required_binding_names = {
+        "runner",
+        "project_os_preflight",
+        "current_consumer",
+        "consumer_policy",
+        "runner_tests",
+        "project_os_tests",
+        "consumer_tests",
+    }
+    if set(source_bindings) != required_binding_names:
+        raise ValueError(
+            "project_os_five_cell_successor_proof_bindings_invalid"
+        )
+    for name, row in source_bindings.items():
+        if not isinstance(row, Mapping):
+            raise ValueError(
+                "project_os_five_cell_successor_proof_bindings_invalid"
+            )
+        path = _repo_path(root, str(row.get("ref") or ""))
+        if _sha256(path) != str(row.get("sha256") or ""):
+            raise ValueError(
+                f"project_os_five_cell_successor_source_drift:{name}"
+            )
+
+    _, capacity = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="capacity_successor_result_ref",
+        sha_field="capacity_successor_result_sha256",
+        digest_field="capacity_successor_result_digest",
+    )
+    if not (
+        capacity.get("status")
+        == "engineering_pass_zero_call_R1_capacity_contract_successor"
+        and (capacity.get("acceptance") or {}).get("R1_preserved") is True
+        and (capacity.get("acceptance") or {}).get(
+            "value_capture_five_metrics_two_periods_equal_ten"
+        )
+        is True
+        and (capacity.get("acceptance") or {}).get(
+            "successor_live_authorized"
+        )
+        is False
+    ):
+        raise ValueError(
+            "project_os_five_cell_successor_capacity_proof_invalid"
+        )
+
+    _, predecessor_public = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_public_result_ref",
+        sha_field="predecessor_public_result_sha256",
+        digest_field="predecessor_public_result_digest",
+    )
+    _, predecessor_private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_private_result_ref",
+        sha_field="predecessor_private_result_sha256",
+    )
+    if not (
+        predecessor_public.get("status")
+        == "terminal_failed_or_partial_no_retry"
+        and predecessor_private.get("status")
+        == "terminal_failed_or_partial_no_retry"
+        and (predecessor_private.get("orchestration_failure") or {}).get(
+            "failure_code"
+        )
+        == "research_consumer_cell_capacity_exceeded"
+        and (predecessor_private.get("execution") or {}).get(
+            "model_calls_attempted"
+        )
+        == 1
+        and (predecessor_private.get("execution") or {}).get(
+            "cell_analysis_calls_attempted"
+        )
+        == 0
+    ):
+        raise ValueError(
+            "project_os_five_cell_successor_R1_predecessor_invalid"
+        )
+
+    profile_specs = (
+        (
+            "analysis_profile_ref",
+            "analysis_profile_sha256",
+            {"type": "enabled"},
+            "high",
+            8000,
+        ),
+        (
+            "submission_profile_ref",
+            "submission_profile_sha256",
+            {"type": "disabled"},
+            None,
+            2000,
+        ),
+    )
+    profiles: dict[str, dict[str, Any]] = {}
+    for ref_field, sha_field, thinking, reasoning, tokens in profile_specs:
+        _, profile = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field=ref_field,
+            sha_field=sha_field,
+        )
+        defaults = profile.get("request_defaults") or {}
+        if not (
+            profile.get("provider_id") == "deepseek"
+            and profile.get("model") == "deepseek-v4-pro"
+            and profile.get("wire_api")
+            == "openai_compatible_chat_completions"
+            and profile.get("base_url") == "https://api.deepseek.com"
+            and profile.get("endpoint") == "/chat/completions"
+            and (profile.get("authority") or {}).get("retry_count") == 0
+            and defaults.get("stream") is False
+            and defaults.get("thinking") == thinking
+            and defaults.get("max_tokens") == tokens
+            and (
+                defaults.get("reasoning_effort") == reasoning
+                if reasoning is not None
+                else "reasoning_effort" not in defaults
+            )
+            and "temperature" not in defaults
+            and "top_p" not in defaults
+        ):
+            raise ValueError(
+                f"project_os_five_cell_successor_profile_invalid:{ref_field}"
+            )
+        profiles[ref_field] = {
+            "thinking": thinking,
+            "reasoning_effort": reasoning,
+            "max_tokens": tokens,
+        }
+    return {
+        "clean_proof_status": proof["status"],
+        "provider_id": "deepseek",
+        "provider_model": "deepseek-v4-pro",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "recent_provider_steps": 1,
+        "dynamic_five_cell_successor": False,
+        "dynamic_five_cell_remaining_nodes_successor": True,
         "dynamic_single_cell_successor": False,
         "micro_judgment_successor": False,
         "node_profiles": profiles,
@@ -3118,6 +3409,21 @@ def build_preflight(
                 "project_os_dynamic_five_cell_scope_allowance_missing"
             )
     if (
+        decision_projection.get("dynamic_five_cell_remaining_nodes_successor")
+        is True
+    ):
+        required_allowances = {
+            "RC-S2-004-product-operating-metric-and-profit-bridge-authority-missing",
+            "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget",
+            "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence",
+            "RC-S3-031-five-cell-route-metric-bundle-and-consumer-capacity-contract-mismatch",
+        }
+        actual_allowances = set(scope_projection["explicit_allow_issue_ids"])
+        if not required_allowances.issubset(actual_allowances):
+            raise ValueError(
+                "project_os_dynamic_five_cell_remaining_nodes_scope_allowance_missing"
+            )
+    if (
         decision_projection.get("relation_role_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -3158,7 +3464,20 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("dynamic_five_cell_successor") is True:
+    if (
+        decision_projection.get("dynamic_five_cell_remaining_nodes_successor")
+        is True
+    ):
+        known_boundary = (
+            "This current-baseline preflight permits only one decision-bound "
+            "DELL dynamic five-cell successor over the remaining twelve Chat "
+            "nodes. It reuses the immutable successful R1 planner and current "
+            "S1/S2 prefix, permits five cell analyses, five strict submissions "
+            "and synthesis only after five valid judgments, and forbids prefix "
+            "reruns, publication, S3 acceptance, heterogeneous generalization "
+            "or release."
+        )
+    elif decision_projection.get("dynamic_five_cell_successor") is True:
         known_boundary = (
             "This current-baseline preflight permits only one decision-bound "
             "DELL dynamic five-cell Chat run. It requires natural planning, "

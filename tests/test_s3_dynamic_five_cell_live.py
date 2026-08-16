@@ -70,6 +70,8 @@ def _submission_step(
 def _prepare_runner(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    *,
+    successor_mode: bool = False,
 ) -> tuple[Path, Path, Path, dict[str, int]]:
     authority_path = tmp_path / "authority.json"
     private_root = tmp_path / "private"
@@ -94,11 +96,23 @@ def _prepare_runner(
         },
         "product_publication": "forbidden",
     }
+    if successor_mode:
+        output.pop("planner_attempt_id")
     authority = {
+        "schema_version": (
+            runner.SUCCESSOR_AUTHORITY_SCHEMA if successor_mode else "fixture"
+        ),
         "implementation_commit": "a" * 40,
         "known_boundary": "fixture orchestration proof; not product acceptance",
         "output_contract": output,
     }
+    if successor_mode:
+        authority["bound_inputs"] = {
+            "predecessor_plan_digest": "plan-digest",
+            "expected_evidence_pack_artifact_digest": "artifact",
+            "expected_evidence_pack_payload_digest": "payload",
+            "expected_research_input_digest": "research-input",
+        }
     authority_path.write_text(json.dumps(authority), encoding="utf-8")
     profile_path = tmp_path / "profile.json"
     objective_path = tmp_path / "objective.json"
@@ -113,6 +127,31 @@ def _prepare_runner(
         "consumer_policy_ref": profile_path,
     }
     values = {authority_path: authority, profile_path: {}, objective_path: {}}
+    if successor_mode:
+        predecessor_path = tmp_path / "predecessor.json"
+        predecessor_authority_path = tmp_path / "predecessor-authority.json"
+        predecessor_public_path = tmp_path / "predecessor-public.json"
+        predecessor_path.write_text("{}", encoding="utf-8")
+        predecessor_authority_path.write_text("{}", encoding="utf-8")
+        predecessor_public_path.write_text("{}", encoding="utf-8")
+        paths["predecessor_private_result_ref"] = predecessor_path
+        paths["predecessor_authority_ref"] = predecessor_authority_path
+        paths["predecessor_public_result_ref"] = predecessor_public_path
+        values[predecessor_path] = {
+            "planner_step": {"finish_reason": "stop"},
+            "planner_output": {"atoms": []},
+            "compiled_plan": {
+                "plan_digest": "plan-digest",
+                "proposed_atoms": [{"atom_id": "A1"}],
+                "planner_atoms": [{"atom_id": "A1"}],
+                "deferred_atoms": [],
+            },
+            "controlled_plan": {
+                "compiled_plan": {"plan_digest": "plan-digest"}
+            },
+        }
+        values[predecessor_authority_path] = {}
+        values[predecessor_public_path] = {}
     monkeypatch.setattr(runner, "_json", lambda path: values[path])
     monkeypatch.setattr(
         runner,
@@ -307,6 +346,59 @@ def test_five_cell_live_runs_all_cells_then_synthesis_and_redacts_public_result(
     assert "transient private reasoning" not in rendered_public
     assert "分析草案" not in rendered_public
     assert '"tool_calls":' not in rendered_public
+
+
+def test_five_cell_successor_reuses_prefix_and_attempts_only_twelve_nodes(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    authority_path, private_root, public_path, counters = _prepare_runner(
+        monkeypatch, tmp_path, successor_mode=True
+    )
+
+    def planner_must_not_run(**_kwargs):
+        raise AssertionError("successor must not rerun planner")
+
+    def analyze(**_kwargs):
+        counters["analysis"] += 1
+        return _analysis_step(tmp_path, counters["analysis"])
+
+    def submit(**kwargs):
+        counters["submission"] += 1
+        tool = kwargs["tools"][0]["function"]
+        arguments = (
+            {"executive_thesis": "all cells synthesized"}
+            if tool["name"] == "submit_five_cell_synthesis"
+            else {"cell_id": tool["description"]}
+        )
+        return _submission_step(
+            tmp_path,
+            counters["submission"],
+            tool_name=tool["name"],
+            arguments=arguments,
+        )
+
+    result = runner.run(
+        authority_path,
+        planner_executor=planner_must_not_run,
+        analysis_executor=analyze,
+        submission_executor=submit,
+    )
+
+    assert result["schema_version"] == runner.SUCCESSOR_RESULT_SCHEMA
+    assert result["status"].startswith("completed_")
+    assert result["planner"]["reused_from_predecessor"] is True
+    assert result["execution"]["model_calls_attempted"] == 12
+    assert result["execution"]["maximum_model_calls"] == 12
+    assert result["execution"]["planner_calls_completed"] == 0
+    assert result["execution"]["planner_calls_reused"] == 1
+    assert result["execution"]["current_S1_S2_executed"] is False
+    assert result["execution"]["current_S1_S2_reused"] is True
+    assert result["acceptance"]["natural_planner_reused_not_rerun"] is True
+    assert result["acceptance"]["current_S1_S2_reused_not_rerun"] is True
+    assert counters == {"analysis": 6, "submission": 6}
+    assert public_path.is_file()
+    assert (private_root / "full_result.json").is_file()
 
 
 def test_five_cell_live_continues_after_one_cell_failure_and_skips_synthesis(

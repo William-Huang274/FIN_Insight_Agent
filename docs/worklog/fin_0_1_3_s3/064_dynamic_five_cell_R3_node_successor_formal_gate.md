@@ -20,4 +20,8 @@ R3 保持不可变，不手工清洗失败 Tool Call，也不重跑 Planner、�
 
 ## 尚未成立
 
-本门没有证明 value_capture 的 AI 利润归因、counterevidence 的反方质量、跨单元综合或最终报告正确。尤其 R3 value 分析草稿仍含“AI 组合压低毛利率”方向性文字，R4 即使合同通过也必须独立做金融 L1 与内容质量审查。当前下一步是 clean commit／push 后执行 repository-bound Project OS preflight；通过前不得签发 live authority。
+本门没有证明 value_capture 的 AI 利润归因、counterevidence 的反方质量、跨单元综合或最终报告正确。尤其 R3 value 分析草稿仍含“AI 组合压低毛利率”方向性文字，R4 即使合同通过也必须独立做金融 L1 与内容质量审查。
+
+## Repository-bound preflight
+
+proof／scope artifacts 已在提交 `ec9a53099f50d9f977415b21a2aefb2ff2da3829` 推送后执行真实 Project OS preflight：仓库 clean／synced、凭据只检查存在性、四个 blocker 均仅对当前 scope 显式放行，结果为 `pass_current_decision_bound_preflight`。正向和“禁止重跑 analysis”负向回归共 `25 passed`。下一步只允许提交该回归和状态账本，然后以唯一未跟踪文件签发 fresh R4 authority。

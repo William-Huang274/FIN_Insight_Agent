@@ -11,6 +11,7 @@ from sec_agent.project_os_preflight import (
     FIXED_PACK_SCOPE,
     FRAGMENT_VALIDATION_REPAIR_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
+    _validate_dynamic_five_cell_node_successor_decision,
     _validate_dynamic_five_cell_partial_successor_decision,
     _validate_fragment_validation_repair_decision,
     _validate_failed_fragment_submission_successor_decision,
@@ -129,6 +130,11 @@ DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_REF = (
 DYNAMIC_FIVE_CELL_PARTIAL_SUCCESSOR_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_dynamic_five_cell_partial_successor_"
+    "live_scope_decision_v1_0.json"
+)
+DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_dynamic_five_cell_node_successor_"
     "live_scope_decision_v1_0.json"
 )
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_REF = (
@@ -342,6 +348,57 @@ def test_historical_dynamic_five_cell_partial_successor_remains_bound_but_closed
         "one_DELL_dynamic_five_cell_partial_successor_"
         "failed_three_plus_synthesis"
     )
+
+
+def test_dynamic_five_cell_node_successor_binds_R3_captures_and_strict_profiles() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["run_scope_id"] == (
+        "one_DELL_dynamic_five_cell_node_successor_"
+        "two_submissions_plus_synthesis"
+    )
+    projection = result["decision_projection"]
+    assert projection["dynamic_five_cell_node_successor"] is True
+    assert projection["dynamic_five_cell_partial_successor"] is False
+    assert projection["node_profiles"]["submission_profile_ref"] == {
+        "base_url": "https://api.deepseek.com/beta",
+        "thinking": {"type": "disabled"},
+        "reasoning_effort": None,
+        "max_tokens": 2000,
+    }
+    assert set(result["scope_projection"]["explicit_allow_issue_ids"]) >= {
+        "RC-S2-004-product-operating-metric-and-profit-bridge-authority-missing",
+        "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget",
+        "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence",
+        "RC-S3-033-strict-tool-semantic-surface-predicate-not-encoded-in-server-schema",
+    }
+    assert result["model_calls"] == 0
+    assert result["provider_calls"] == 0
+    assert result["network_calls"] == 0
+
+
+def test_dynamic_five_cell_node_successor_rejects_analysis_rerun() -> None:
+    decision = json.loads(
+        (ROOT / DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    decision["rerun_cell_analysis"] = True
+
+    with pytest.raises(
+        ValueError,
+        match="project_os_five_cell_node_successor_false_required:rerun_cell_analysis",
+    ):
+        _validate_dynamic_five_cell_node_successor_decision(
+            root=ROOT,
+            decision=decision,
+        )
 
 
 def test_dynamic_five_cell_decision_rejects_weakened_runner_proof(

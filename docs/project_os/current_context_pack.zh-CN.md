@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack`、稳定 runner 与 Project OS 范围门均已通过正式零调用。自然 DELL 五单元 R1 随后真实执行：DeepSeek Planner 正常提出 10 条研究原子，Harness 选中 8 条；当前 S1/S2 完成 8 条 lane、128 个 hybrid 候选和 30 个 typed fact request。链路在任何 cell 模型调用前因项目自己的容量合同失败：`value_capture` 合法形成 5 个指标 × 当期／上年同期 = 10 条 NumericFact，而 consumer policy v1.3 静态上限仍为 8。R1 仅消耗 1 次 planner 调用，0 retry，失败与 capture 均保持不可变。policy v1.4 已按五指标双期间关闭容量矛盾；同一稳定 runner 的 remaining-nodes successor、真实 scope decision 和 Project OS 回归也已正式零调用通过：复用 Planner/S1/S2，只允许五个单元分析、五个严格交卷和两次综合共 12 个新节点。两次独立相关测试均为 `83/83`、全仓 `420/420`。当前唯一下一项是 clean commit/push、真实 repository-bound preflight 和 fresh authority，之后执行一次 successor live。模型尚未自然完成任何五单元 Judgment、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack`、稳定 runner 与 Project OS 范围门均已通过正式零调用。自然 DELL 五单元 R1 的 Planner/S1/S2 前缀保持不可变；policy v1.4 已关闭其 10 条合法 NumericFact 与旧静态上限 8 的容量矛盾。R2 随后精确复用该前缀并尝试剩余节点：需求质量和经营表现两单元自然通过本地 Judgment 合同，且未发现新的金融 L1；价值获取、现金转换和反方证据三单元均在分析阶段用尽 8,000 completion token，跨单元综合未执行。三个失败都是 HTTP 200，0 retry/fallback，不是网络、S1/S2、Skill、GraphContext 或严格 Tool 交卷问题。最早责任层重新定位到 S3 分析视图仍携带交卷 schema、重复目录和完整 route 诊断，并与隐藏推理共用过小预算。下一项是统一的紧凑 cell-local 分析投影、R2 capture replay/mutation 和只复用两个成功 Judgment 的部分节点 successor；不得重跑 Planner、S1/S2、需求或经营单元。模型尚未自然完成全部五单元、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。
 
 ## 当前唯一产品边界
 

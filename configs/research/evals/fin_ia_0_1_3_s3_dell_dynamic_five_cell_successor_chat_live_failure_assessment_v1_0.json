@@ -1,0 +1,131 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_successor_live_failure_assessment_v1_0",
+  "status": "terminal_partial_two_of_five_contract_valid_three_analysis_budget_exhausted",
+  "recorded_at": "2026-08-17T03:32:00+08:00",
+  "case_key": "DELL",
+  "run_id": "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_successor_chat_live_authority_v1_0.json",
+  "authority_sha256": "0ce654d39a37a618810e20f0ff91c65ff63414ebccbbc117b680b5dccf50d208",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_successor_chat_live_result_v1_0.json",
+  "result_sha256": "8f5b930863d00a1846d17c3bf0688a4fe5ace7ec8d870d6b832394692c94b3cb",
+  "result_digest": "fdaf4368359ca581fd27600b40a2d1581334df2948cc1452e41b29847cac25bc",
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/full_result.json",
+  "private_full_result_sha256": "a751b1e43a8f9377274f278d04599f5d838cf43864160053f47cfeae676a1635",
+  "observed": {
+    "immutable_R1_planner_reused": true,
+    "immutable_current_S1_S2_reused": true,
+    "planner_or_retrieval_reruns": 0,
+    "model_calls_attempted": 7,
+    "accepted_cell_judgments": 2,
+    "accepted_cell_ids": [
+      "CELL::demand_quality",
+      "CELL::operating_performance"
+    ],
+    "failed_cell_ids": [
+      "CELL::value_capture",
+      "CELL::cash_conversion",
+      "CELL::counterevidence"
+    ],
+    "synthesis_attempted": false,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0
+  },
+  "failed_nodes": [
+    {
+      "cell_id": "CELL::value_capture",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-VALUE-ANALYSIS-01/model_visible_request.json",
+      "request_capture_sha256": "425de55f693e5f064295b753c75ef9ad75564b70d238c2ccaa1f78acd855f624",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-VALUE-ANALYSIS-01/provider_response.json",
+      "response_capture_sha256": "3425988abd234997297560a85135971a30a90f55a0bdf0c5813eef14afb1e050",
+      "http_status": 200,
+      "finish_reason": "length",
+      "prompt_tokens": 6421,
+      "completion_tokens": 8000,
+      "reasoning_tokens": 8000,
+      "visible_chars": 0,
+      "failure_code": "model_gateway_reasoning_budget_exhausted"
+    },
+    {
+      "cell_id": "CELL::cash_conversion",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-CASH-ANALYSIS-01/model_visible_request.json",
+      "request_capture_sha256": "ab7f6200a02cfc34cc4a3342931dcc21ea2f65f95721208cdad1265712e300f2",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-CASH-ANALYSIS-01/provider_response.json",
+      "response_capture_sha256": "51d07912435bd58f30f3f7faf09cd50b11e0c7c991bff9ed8f22a6aaf9bcc327",
+      "http_status": 200,
+      "finish_reason": "length",
+      "prompt_tokens": 5996,
+      "completion_tokens": 8000,
+      "reasoning_tokens": 7286,
+      "visible_chars": 2969,
+      "failure_code": "five_cell_live_cell_analysis_length_stop"
+    },
+    {
+      "cell_id": "CELL::counterevidence",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-COUNTER-ANALYSIS-01/model_visible_request.json",
+      "request_capture_sha256": "2b9e0b79e0d48aa5068077ebd3be1bfc019ce924ef945f40182eb986372c3618",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-COUNTER-ANALYSIS-01/provider_response.json",
+      "response_capture_sha256": "6d62b2616e51a31124c93fe866b698a488d3c3b35e3bcf52258c2a2468703273",
+      "http_status": 200,
+      "finish_reason": "length",
+      "prompt_tokens": 4037,
+      "completion_tokens": 8000,
+      "reasoning_tokens": 8000,
+      "visible_chars": 0,
+      "failure_code": "model_gateway_reasoning_budget_exhausted"
+    }
+  ],
+  "business_assessment": {
+    "demand_quality": "通过本地 Judgment 合同。模型把订单、AI 服务器收入和 backlog 视为公司自述的可观察需求链，同时明确保留提前锁货、客户准备度、组件切换和订单到出货非线性的限制，没有把 backlog 线性外推为收入。",
+    "operating_performance": "通过本地 Judgment 合同。模型只在公司整体口径判断收入、利润和现金同步改善，并明确毛利率下降、营业利润率上升更可能反映规模或经营杠杆，不能把改善直接归因于 AI 服务器。",
+    "new_financial_L1_in_accepted_cells": false,
+    "formal_five_cell_L1": false,
+    "reason_formal_five_cell_L1_false": "三个单元与跨单元综合未完成，不能把两个局部成功冒充完整五单元研究或报告。"
+  },
+  "root_cause": {
+    "owning_layer": "S3 model-visible cell analysis projection and replaceable DeepSeek cognitive profile",
+    "classification": "duplicated_analysis_authority_plus_shared_reasoning_visible_output_budget_nonconvergence",
+    "evidence": [
+      "analysis request still includes the strict output contract although no Tool submission is allowed in that step",
+      "cell-local evidence and numeric catalogs are repeated beside already-bound local views",
+      "residual gap cards carry full route diagnostics rather than the minimum decision-relevant gap projection",
+      "all three failures reached HTTP 200 and consumed the full 8000-token completion budget; two emitted no visible draft"
+    ],
+    "not_caused_by": [
+      "network or HTTP transport",
+      "natural planner",
+      "current S1 retrieval",
+      "S2 NumericFact or same-basis relations",
+      "RoleMethodPack or GraphContextPack absence",
+      "strict non-thinking Tool submission",
+      "financial validator rejection"
+    ]
+  },
+  "secondary_finding": {
+    "code": "successor_public_acceptance_execution_label_misleading",
+    "detail": "The public acceptance field current_S1_S2_EvidenceResponse_executed is true because a reused response exists, while the execution ledger correctly says current_S1_S2_executed=false and current_S1_S2_reused=true. Future results must distinguish availability from execution without modifying R2."
+  },
+  "successor_disposition": {
+    "preserve_R1_and_R2": true,
+    "rerun_natural_planner": false,
+    "rerun_current_S1_S2": false,
+    "rerun_accepted_demand_or_operating_cells": false,
+    "reuse_accepted_cell_digests": true,
+    "remaining_cell_ids": [
+      "CELL::value_capture",
+      "CELL::cash_conversion",
+      "CELL::counterevidence"
+    ],
+    "repair_scope": "one provider-neutral compact analysis projection, partial-node resume, stored-capture replay and mutation proof",
+    "analysis_profile": "reuse the existing versioned DeepSeek GA 16000-token max-thinking agent profile only for the three failed analyses and synthesis analysis",
+    "submission_profile": "reuse the existing 2000-token non-thinking strict Tool submission profile",
+    "maximum_fresh_model_calls": 8,
+    "retry_count": 0,
+    "new_evidence_or_authority": false,
+    "contract_relaxation": false,
+    "scope_if_successful": "validate all five cells, run cross-cell synthesis, compile the report, then perform independent L1 and content assessment",
+    "scope_if_failed_again": "preserve the new successor and make a model/profile/action-surface decision; do not create an automatic third capacity patch"
+  },
+  "known_boundary": "R2 proves two natural cell judgments and honest later-cell failure isolation. It does not prove all five cells, synthesis, a complete report, heterogeneous generalization, qualified-human acceptance, S3 acceptance, publication or release."
+}

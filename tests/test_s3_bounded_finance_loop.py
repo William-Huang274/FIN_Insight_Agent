@@ -2121,21 +2121,17 @@ def test_zero_call_runner_replays_saved_r3_claim_local_boundary(
 ) -> None:
     runner = _zero_call_runner()
     _, research_input, _, _, _ = contracts
-    claim_input = compile_claim_authority_research_input(
-        research_input,
-        policy=_json(CLAIM_AUTHORITY_POLICY),
-    )
-    alias_input = compile_claim_surface_authority_research_input(
-        claim_input,
-        policy=_json(CLAIM_RELATION_SUPPORT_POLICY),
-    )
     replay = runner._saved_r3_claim_local_boundary_replay(
         paths={
+            "claim_authority_policy_ref": CLAIM_AUTHORITY_POLICY,
+            "r3_claim_surface_authority_policy_ref": (
+                CLAIM_RELATION_SUPPORT_POLICY
+            ),
             "r3_submitted_fragments_ref": R3_SUBMITTED_FRAGMENT_REPLAY,
             "r3_live_result_ref": R3_LIVE_RESULT,
             "r3_failure_assessment_ref": R3_FAILURE_ASSESSMENT,
         },
-        research_input=alias_input,
+        base_research_input=research_input,
     )
 
     assert replay["predecessor_failure_code"] == (

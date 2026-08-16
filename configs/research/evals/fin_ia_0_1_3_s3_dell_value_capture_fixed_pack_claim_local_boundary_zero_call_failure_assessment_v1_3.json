@@ -1,0 +1,32 @@
+{
+  "schema_version": "fin_ia_s3_claim_local_boundary_zero_call_failure_assessment_v1_0",
+  "status": "proof_orchestration_contract_mismatch_no_product_or_model_call",
+  "recorded_at": "2026-08-16T12:49:09.6349708+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_local_boundary_zero_call_authority_v1_3.json",
+  "authority_sha256": "1001f6175ecac746fee5303d67c6e82b6c5e9baa48c17fbe89773f1ac02381a3",
+  "failure_code": "finance_loop_micro_prior_capacity_failure_drift",
+  "failure_phase": "zero_call_proof_orchestration",
+  "root_cause": {
+    "owner_layer": "S3_zero_call_proof_contract_routing",
+    "business_runtime_defect": false,
+    "deepseek_failure": false,
+    "network_failure": false,
+    "explanation": "The proof bound the R3 claim-relation v1.2 policy as the only claim-surface policy. The historical micro-judgment non-regression lane is intentionally tied to the earlier v1.1 input digest, so the proof correctly rejected the mixed contract before R3 replay.",
+    "required_repair": "Keep the historical micro lane on v1.1 and compile the saved R3 replay independently with an explicitly bound v1.2 policy. Do not change or waive either digest."
+  },
+  "execution": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "embedding_calls": 0,
+    "retries": 0,
+    "output_materialized": false
+  },
+  "disposition": {
+    "authority_v1_3_consumed_and_preserved": true,
+    "silent_reuse_forbidden": true,
+    "new_clean_implementation_and_fresh_authority_required": true,
+    "product_scope_unchanged": true,
+    "next_scope": "one_fresh_zero_call_proof_with_separate_v1_1_historical_and_v1_2_R3_contract_lanes"
+  }
+}

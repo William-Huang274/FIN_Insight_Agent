@@ -1314,9 +1314,11 @@ def _run_micro_judgment_matrix(
 def _saved_r3_claim_local_boundary_replay(
     *,
     paths: Mapping[str, Path],
-    research_input: Mapping[str, Any],
+    base_research_input: Mapping[str, Any],
 ) -> dict[str, Any]:
     required = {
+        "claim_authority_policy_ref",
+        "r3_claim_surface_authority_policy_ref",
         "r3_submitted_fragments_ref",
         "r3_live_result_ref",
         "r3_failure_assessment_ref",
@@ -1341,6 +1343,13 @@ def _saved_r3_claim_local_boundary_replay(
         raise BoundedFinanceLoopProofError(
             "finance_loop_r3_replay_predecessor_drift"
         )
+    research_input = compile_claim_surface_authority_research_input(
+        compile_claim_authority_research_input(
+            base_research_input,
+            policy=_json(paths["claim_authority_policy_ref"]),
+        ),
+        policy=_json(paths["r3_claim_surface_authority_policy_ref"]),
+    )
     fragments = fixture.get("fragments")
     if not isinstance(fragments, Mapping) or set(fragments) != set(
         MICRO_JUDGMENT_TOOL_NAMES
@@ -1923,10 +1932,7 @@ def _execute(
         r3_replay = (
             _saved_r3_claim_local_boundary_replay(
                 paths=paths,
-                research_input=_claim_relation_alias_input(
-                    paths=paths,
-                    research_input=research_input,
-                ),
+                base_research_input=research_input,
             )
             if "r3_submitted_fragments_ref" in paths
             else None

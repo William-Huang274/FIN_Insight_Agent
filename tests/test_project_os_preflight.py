@@ -10,6 +10,7 @@ import pytest
 from sec_agent.project_os_preflight import (
     FIXED_PACK_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
+    _validate_failed_fragment_submission_successor_decision,
     build_preflight,
 )
 
@@ -54,6 +55,30 @@ FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "wwc_route_identifier_live_scope_decision_v1_5.json"
+)
+NON_THINKING_SUCCESSOR_ZERO_RESULT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "non_thinking_submission_successor_zero_call_result_v1_7.json"
+)
+FULL_FRAGMENT_R6_RESULT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_chat_live_result_v1_5.json"
+)
+FULL_FRAGMENT_R6_ASSESSMENT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_chat_live_failure_assessment_v1_5.json"
+)
+FULL_FRAGMENT_R6_SUCCESSOR_FIXTURE_REF = (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_full_fragment_chat_r6_"
+    "submission_successor_fixture_v1_0.json"
+)
+NON_THINKING_SUBMISSION_PROFILE_REF = (
+    "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_"
+    "contract_submission_non_thinking_profile_v1_0.json"
 )
 ALIAS_CLEAN_REF = (
     "configs/research/evals/"
@@ -308,6 +333,103 @@ def test_wwc_route_identifier_successor_binds_failed_R5_field_guard() -> None:
     ] == "terminal_failed_no_retry"
     assert result["network_calls"] == 0
     assert result["provider_calls"] == 0
+
+
+def test_failed_fragment_submission_successor_binds_R6_and_non_thinking() -> None:
+    clean = json.loads(
+        (ROOT / NON_THINKING_SUCCESSOR_ZERO_RESULT_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    failed = json.loads(
+        (ROOT / FULL_FRAGMENT_R6_RESULT_REF).read_text(encoding="utf-8")
+    )
+    decision = {
+        "schema_version": (
+            "fin_ia_s3_fixed_pack_failed_fragment_submission_successor_"
+            "live_scope_decision_v1_6"
+        ),
+        "status": (
+            "failed_fragment_zero_call_pass_one_non_thinking_submission_"
+            "successor_authorized"
+        ),
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "failed_fragment_tool": "submit_research_counterargument_and_wwc",
+        "run_scope_id": FIXED_PACK_SCOPE,
+        "evidence_mode": "reviewed_fixed_pack_unit_test",
+        "next_authorized_scope": (
+            "one_clean_synced_exact_once_R6_failed_counter_submission_"
+            "successor"
+        ),
+        "replacement_is_new_attempt_not_retry": True,
+        "chat_live_authorized": True,
+        "credential_presence_required": True,
+        "same_evidence_pack": True,
+        "immutable_successful_prefix_reused": True,
+        "immutable_counter_analysis_reused": True,
+        "failed_node_only_execution_required": True,
+        "non_thinking_submission_required": True,
+        "reasoning_effort_omitted_required": True,
+        "terminal_contract_parity_required": True,
+        "clock_derived_authority_timestamp_required": True,
+        "historical_failure_promoted": False,
+        "successful_predecessor_nodes_rerun": False,
+        "analysis_node_rerun": False,
+        "responses_live_authorized": False,
+        "anthropic_live_authorized": False,
+        "dynamic_layer_two_authorized": False,
+        "five_cell_live_authorized": False,
+        "heterogeneous_generalization_authorized": False,
+        "product_publication_authorized": False,
+        "reasoning_or_token_limit_increase": False,
+        "successful_predecessor_model_calls_reused": 5,
+        "maximum_fresh_model_calls": 1,
+        "maximum_provider_transport_attempts": 1,
+        "maximum_tool_calls": 1,
+        "maximum_submission_completion_tokens": 2000,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "clean_zero_call_result_ref": NON_THINKING_SUCCESSOR_ZERO_RESULT_REF,
+        "clean_zero_call_result_sha256": _sha(
+            ROOT / NON_THINKING_SUCCESSOR_ZERO_RESULT_REF
+        ),
+        "clean_zero_call_result_digest": clean["result_digest"],
+        "immutable_failed_result_ref": FULL_FRAGMENT_R6_RESULT_REF,
+        "immutable_failed_result_sha256": _sha(
+            ROOT / FULL_FRAGMENT_R6_RESULT_REF
+        ),
+        "immutable_failed_result_digest": failed["result_digest"],
+        "failed_result_assessment_ref": FULL_FRAGMENT_R6_ASSESSMENT_REF,
+        "failed_result_assessment_sha256": _sha(
+            ROOT / FULL_FRAGMENT_R6_ASSESSMENT_REF
+        ),
+        "submission_successor_fixture_ref": (
+            FULL_FRAGMENT_R6_SUCCESSOR_FIXTURE_REF
+        ),
+        "submission_successor_fixture_sha256": _sha(
+            ROOT / FULL_FRAGMENT_R6_SUCCESSOR_FIXTURE_REF
+        ),
+        "submission_profile_ref": NON_THINKING_SUBMISSION_PROFILE_REF,
+        "submission_profile_sha256": _sha(
+            ROOT / NON_THINKING_SUBMISSION_PROFILE_REF
+        ),
+    }
+    result = _validate_failed_fragment_submission_successor_decision(
+        root=ROOT,
+        decision=decision,
+    )
+    assert result["failed_fragment_submission_successor"] is True
+    assert result["successful_predecessor_model_calls_reused"] == 5
+    assert result["fresh_model_calls_authorized"] == 1
+    assert result["node_profiles"] == {
+        "contract_submission": {
+            "thinking": "disabled",
+            "reasoning_effort": "omitted",
+            "max_tokens": 2000,
+        }
+    }
 
 
 def test_micro_judgment_profile_digest_drift_fails_closed(

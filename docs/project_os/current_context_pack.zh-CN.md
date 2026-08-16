@@ -226,3 +226,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 最后一次 counter／WWC submission 返回 HTTP 200 完整 JSON，但 `finish_reason=length`、`completion=2,000`、`reasoning=2,000`，可见内容和 Tool Call 均为 0，因此以 `model_gateway_reasoning_budget_exhausted` 结束；完整 Judgment、正式 L1 与内容 acceptance 仍为 false。
 - 根因属于 replaceable DeepSeek profile：所谓 `low-thinking` submission 实际同时发送 `thinking=enabled` 与 `reasoning_effort=low`，而 GA 官方文档明确 thinking mode 下 `low／medium` 映射为 `high`。这不是网络、传输、金融合同或检索失败。
 - R6 保持不可变。后续只允许新建 `thinking=disabled` 且不发送 `reasoning_effort` 的 provider-only submission profile，零调用复用前五个成功节点并证明终态，然后仅执行一次 fresh counter／WWC submission successor；不得重跑前五节点或扩大金融合同预算。
+## 2026-08-16 S3 可恢复片段提交 v1.7 零调用闭环
+
+- R6 的直接阻塞已定位为 DeepSeek provider profile 语义：`thinking=enabled + reasoning_effort=low` 实际仍进入高推理，最终 counter／WWC submission 把 2,000 completion tokens 全部用于 reasoning，未形成 Tool Call。网络、HTTP、WWC `10-Q` 字段和前五个自然节点均正常。
+- 新 profile 显式 `thinking=disabled` 且省略 `reasoning_effort`；provider-neutral 核心新增合法 fragment prefix resume compiler。R6 已成功的五个模型节点按不可变摘要复用，下一次只能重交失败的 counter／WWC，不能重跑分析或前序提交。
+- formal v1.7 两个 fresh process 字节等价，result digest=`3e762d63...e7b0`；profile／分析 mutation 均 fail closed，三案例 full-fake 无 identity／Graph 污染。实现提交 `a5b2f6be...`，本轮治理复证全仓 `358 passed`，active baseline `127/8/10/0`，secret scan `6,681/0`。
+- 当前仍只是 engineering pass。须完成 decision-bound Project OS preflight 和唯一 failed-node successor live；自然 Tool、终态 Judgment、fixed-Pack L1 与内容质量通过前，动态 Truth Spine、五单元、异质泛化报告、S3 acceptance 与发布均为 false。

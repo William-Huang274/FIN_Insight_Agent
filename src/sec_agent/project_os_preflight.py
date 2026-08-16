@@ -44,6 +44,14 @@ FULL_FRAGMENT_WWC_ROUTE_IDENTIFIER_DECISION_SCHEMA = (
     "fin_ia_s3_fixed_pack_full_fragment_judgment_wwc_route_identifier_"
     "live_scope_decision_v1_5"
 )
+FAILED_FRAGMENT_SUBMISSION_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_fixed_pack_failed_fragment_submission_successor_"
+    "live_scope_decision_v1_6"
+)
+FAILED_FRAGMENT_SUBMISSION_SUCCESSOR_DECISION_STATUS = (
+    "failed_fragment_zero_call_pass_one_non_thinking_submission_"
+    "successor_authorized"
+)
 FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS = (
     "full_fragment_zero_call_pass_one_fresh_chat_judgment_authorized"
 )
@@ -130,6 +138,14 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if (
+        decision.get("schema_version")
+        == FAILED_FRAGMENT_SUBMISSION_SUCCESSOR_DECISION_SCHEMA
+    ):
+        return _validate_failed_fragment_submission_successor_decision(
+            root=root,
+            decision=decision,
+        )
     if decision.get("schema_version") in {
         FULL_FRAGMENT_FIXED_PACK_DECISION_SCHEMA,
         FULL_FRAGMENT_SURFACE_FIXED_PACK_DECISION_SCHEMA,
@@ -303,6 +319,199 @@ def _validate_fixed_pack_decision(
         "recent_provider_steps": len(health["provider_steps"]),
         "claim_relation_alias_capacity_successor": alias_mode,
         "micro_judgment_successor": False,
+    }
+
+
+def _validate_failed_fragment_submission_successor_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_equal = {
+        "status": FAILED_FRAGMENT_SUBMISSION_SUCCESSOR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "failed_fragment_tool": "submit_research_counterargument_and_wwc",
+        "run_scope_id": FIXED_PACK_SCOPE,
+        "evidence_mode": "reviewed_fixed_pack_unit_test",
+        "next_authorized_scope": (
+            "one_clean_synced_exact_once_R6_failed_counter_submission_"
+            "successor"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                "project_os_submission_successor_decision_field_invalid:"
+                f"{field}"
+            )
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "same_evidence_pack",
+        "immutable_successful_prefix_reused",
+        "immutable_counter_analysis_reused",
+        "failed_node_only_execution_required",
+        "non_thinking_submission_required",
+        "reasoning_effort_omitted_required",
+        "terminal_contract_parity_required",
+        "clock_derived_authority_timestamp_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                "project_os_submission_successor_decision_true_required:"
+                f"{field}"
+            )
+    for field in (
+        "historical_failure_promoted",
+        "successful_predecessor_nodes_rerun",
+        "analysis_node_rerun",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "dynamic_layer_two_authorized",
+        "five_cell_live_authorized",
+        "heterogeneous_generalization_authorized",
+        "product_publication_authorized",
+        "reasoning_or_token_limit_increase",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                "project_os_submission_successor_decision_false_required:"
+                f"{field}"
+            )
+    numeric_equal = {
+        "successful_predecessor_model_calls_reused": 5,
+        "maximum_fresh_model_calls": 1,
+        "maximum_provider_transport_attempts": 1,
+        "maximum_tool_calls": 1,
+        "maximum_submission_completion_tokens": 2000,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+    }
+    for field, expected in numeric_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                "project_os_submission_successor_budget_invalid:"
+                f"{field}"
+            )
+
+    _, clean = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="clean_zero_call_result_ref",
+        sha_field="clean_zero_call_result_sha256",
+        digest_field="clean_zero_call_result_digest",
+    )
+    replay = (clean.get("normalized_proof") or {}).get(
+        "saved_r6_non_thinking_submission_successor_replay"
+    ) or {}
+    if not (
+        clean.get("status")
+        == "zero_call_micro_judgment_fresh_process_proof_pass"
+        and clean.get("fresh_process_results_byte_equivalent") is True
+        and (clean.get("acceptance") or {}).get(
+            "saved_r6_submission_successor_replay_pass"
+        )
+        is True
+        and replay.get("predecessor_failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and replay.get("successful_predecessor_model_calls_reused") == 5
+        and replay.get("fresh_model_calls_in_successor") == 1
+        and replay.get("reasoning_effort_omitted") is True
+        and replay.get("fake_only_not_business_promotion") is True
+        and replay.get("harness_generated_research_judgment") is False
+    ):
+        raise ValueError("project_os_submission_successor_clean_proof_invalid")
+
+    _, failed = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="immutable_failed_result_ref",
+        sha_field="immutable_failed_result_sha256",
+        digest_field="immutable_failed_result_digest",
+    )
+    _, assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_result_assessment_ref",
+        sha_field="failed_result_assessment_sha256",
+    )
+    if not (
+        failed.get("status") == "terminal_failed_no_retry"
+        and failed.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and failed.get("failure_fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+        and (failed.get("execution") or {}).get("model_calls_attempted") == 6
+        and (failed.get("execution") or {}).get("tool_calls_accepted") == 2
+        and (failed.get("execution") or {}).get("retries") == 0
+        and (assessment.get("root_cause") or {}).get("owner_layer")
+        == "S3_replaceable_DeepSeek_contract_submission_profile"
+    ):
+        raise ValueError("project_os_submission_successor_failed_R6_invalid")
+
+    _, fixture = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="submission_successor_fixture_ref",
+        sha_field="submission_successor_fixture_sha256",
+    )
+    if not (
+        fixture.get("source_result_sha256")
+        == decision.get("immutable_failed_result_sha256")
+        and fixture.get("source_result_digest")
+        == decision.get("immutable_failed_result_digest")
+        and fixture.get("failed_fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+        and set(fixture.get("accepted_fragments") or {})
+        == {"submit_research_thesis", "submit_research_mechanism"}
+        and bool(str(fixture.get("counter_analysis_content") or ""))
+        and fixture.get("private_reasoning_persisted") is False
+        and fixture.get("manual_fragment_or_tool_payload_constructed") is False
+    ):
+        raise ValueError("project_os_submission_successor_fixture_invalid")
+
+    _, profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="submission_profile_ref",
+        sha_field="submission_profile_sha256",
+    )
+    defaults = profile.get("request_defaults") or {}
+    if not (
+        profile.get("wire_api") == "openai_compatible_chat_completions"
+        and profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and (profile.get("authority") or {}).get("retry_count") == 0
+        and defaults
+        == {
+            "max_tokens": 2000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+        and "reasoning_effort" not in defaults
+    ):
+        raise ValueError("project_os_submission_successor_profile_invalid")
+    return {
+        "clean_proof_status": clean["status"],
+        "prior_failed_full_fragment_status": failed["status"],
+        "provider_id": profile["provider_id"],
+        "provider_model": profile["model"],
+        "api_key_env": profile["api_key_env"],
+        "recent_provider_steps": 6,
+        "claim_relation_alias_capacity_successor": False,
+        "micro_judgment_successor": False,
+        "full_fragment_judgment_successor": False,
+        "failed_fragment_submission_successor": True,
+        "successful_predecessor_model_calls_reused": 5,
+        "fresh_model_calls_authorized": 1,
+        "node_profiles": {
+            "contract_submission": {
+                "thinking": "disabled",
+                "reasoning_effort": "omitted",
+                "max_tokens": defaults["max_tokens"],
+            }
+        },
     }
 
 
@@ -1398,6 +1607,21 @@ def build_preflight(
     ):
         raise ValueError("project_os_full_fragment_scope_allowance_missing")
     if (
+        decision_projection.get("failed_fragment_submission_successor")
+        is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-022-contract-submission-thinking-profile-semantic-"
+                "mismatch"
+            ),
+            allowed_scope=FIXED_PACK_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_failed_fragment_submission_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("relation_role_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -1438,6 +1662,35 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
+    if decision_projection.get("failed_fragment_submission_successor") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one decision-bound "
+            "R6 failed counter/WWC contract-submission successor. It reuses "
+            "five immutable successful model calls and does not authorize "
+            "analysis reruns, dynamic Agentic Research, five-cell acceptance, "
+            "publication, or release."
+        )
+    elif decision_projection.get("full_fragment_judgment_successor") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only the decision-bound "
+            "DELL value_capture full three-fragment fixed-Pack Chat successor. "
+            "It is not exact-live authority, dynamic Agentic Research, "
+            "five-cell acceptance, publication, or release."
+        )
+    elif decision_projection.get("micro_judgment_successor") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only the decision-bound "
+            "DELL value_capture fixed-Pack micro-judgment Chat successor. It "
+            "is not exact-live authority, natural submission proof, dynamic "
+            "Agentic Research, five-cell acceptance, publication, or release."
+        )
+    else:
+        known_boundary = (
+            "This current-baseline preflight permits only the decision-bound "
+            "DELL value_capture fixed-Pack Chat replacement. It is not exact-"
+            "live authority, dynamic Agentic Research, five-cell acceptance, "
+            "publication, or release."
+        )
     return {
         "schema_version": CURRENT_PREFLIGHT_SCHEMA,
         "status": "pass_current_decision_bound_preflight",
@@ -1465,26 +1718,5 @@ def build_preflight(
         "model_calls": 0,
         "provider_calls": 0,
         "credential_value_persisted": False,
-        "known_boundary": (
-            (
-                "This current-baseline preflight permits only the decision-bound "
-                "DELL value_capture full three-fragment fixed-Pack Chat successor. "
-                "It is not exact-live authority, dynamic Agentic Research, "
-                "five-cell acceptance, publication, or release."
-            )
-            if decision_projection.get("full_fragment_judgment_successor") is True
-            else (
-                "This current-baseline preflight permits only the decision-bound DELL "
-                "value_capture fixed-Pack micro-judgment Chat successor. It is not "
-                "exact-live authority, natural submission proof, dynamic Agentic "
-                "Research, five-cell acceptance, publication, or release."
-                if decision_projection.get("micro_judgment_successor") is True
-                else (
-                    "This current-baseline preflight permits only the decision-bound "
-                    "DELL value_capture fixed-Pack Chat replacement. It is not "
-                    "exact-live authority, dynamic Agentic Research, five-cell "
-                    "acceptance, publication, or release."
-                )
-            )
-        ),
+        "known_boundary": known_boundary,
     }

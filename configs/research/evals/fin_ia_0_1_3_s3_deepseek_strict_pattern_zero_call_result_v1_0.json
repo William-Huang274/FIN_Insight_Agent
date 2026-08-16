@@ -1,0 +1,70 @@
+{
+  "schema_version": "fin_ia_s3_deepseek_strict_pattern_zero_call_result_v1_0",
+  "status": "engineering_pass_zero_call_deepseek_strict_projection",
+  "recorded_at": "2026-08-17T05:13:19+08:00",
+  "implementation_commit": "67e877d4c2f77b59db5b185770bc68e660d90697",
+  "source_bindings": {
+    "profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_contract_submission_non_thinking_strict_beta_profile_v1_0.json",
+      "sha256": "2de80ae04c77a97fc7cd1b47f07de964b4be60d720d8297e4c58e6967e8b31ef"
+    },
+    "runner": {
+      "ref": "scripts/research/run_s3_deepseek_strict_pattern_canary.py",
+      "sha256": "84102afd4051057fa4ee3ea52f6494a1530f3606a2e44fce2c90c4cc4ee4b544"
+    },
+    "projection_implementation": {
+      "ref": "src/sec_agent/providers/deepseek_strict.py",
+      "sha256": "bda97e92b71cd87ffe66c18105939d658f4aeb01aa1f4deb0e4d017934f5165c"
+    },
+    "model_text_contract": {
+      "ref": "src/sec_agent/research/current_consumer.py",
+      "sha256": "6ef0755e2ec2498ec596f9484f899fc9d2ff39f8458232ba487d5d64841e9665"
+    },
+    "projection_tests": {
+      "ref": "tests/test_deepseek_strict.py",
+      "sha256": "06b4e9a2185a925f5cdaf73ea1b0a83b901f880fcfb40977e43e1c54d73a80a3"
+    },
+    "runner_tests": {
+      "ref": "tests/test_s3_deepseek_strict_pattern_canary.py",
+      "sha256": "4679e280352963319348519c89feb19a47461bf1bc9c6cdbe5f857b8513ae991"
+    }
+  },
+  "projection_replay": {
+    "canonical_tool_digest": "302d0ab7d4da89049c9d8e023d73b9ce90f33f41c7f0e20efa3c5d9f2a58e79b",
+    "projected_tool_digest": "6d332ecc40cb0f260c172c0bfcbe3204cbd07e477088c3bbd9d0ec83ade41b54",
+    "projection_digest": "4bbe8f8bb69f6a440e56ec0c7809ab40f13ed7bc4c871f7bee852360e8a94b6e",
+    "definitions_renamed": 1,
+    "references_rewritten": 1,
+    "removed_schema_keywords": {},
+    "server_pattern_present": true,
+    "canonical_schema_unchanged": true,
+    "local_full_contract_validation_required": true
+  },
+  "verification": {
+    "focused_tests": 124,
+    "full_repository_tests": 442,
+    "python_compileall": "passed",
+    "active_python_files": 134,
+    "active_frontend_files": 8,
+    "active_runtime_resources": 10,
+    "forbidden_active_references": 0,
+    "secret_scan_files": 6791,
+    "secret_scan_findings": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0
+  },
+  "acceptance": {
+    "provider_specific_projection_outside_finance_core": true,
+    "deepseek_documented_def_surface_compiled": true,
+    "unsupported_length_and_array_keywords_removed_on_wire_only": true,
+    "model_text_pattern_preserved_on_wire": true,
+    "full_local_finance_contract_remains_authoritative": true,
+    "natural_provider_schema_acceptance_proven": false,
+    "natural_pattern_adherence_proven": false,
+    "product_promotion_authorized": false
+  },
+  "live_authorized": false,
+  "known_boundary": "This zero-call result proves only deterministic projection into DeepSeek's documented Beta strict subset. It does not prove the live endpoint accepts the schema or that the model obeys the pattern.",
+  "result_digest": "e55c349c11dfd62f905e52351f0b9a1d389eee28fcab20a34de07770e87a36e6"
+}

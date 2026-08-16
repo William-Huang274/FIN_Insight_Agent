@@ -1,0 +1,27 @@
+{
+  "schema_version": "fin_ia_s3_deepseek_strict_pattern_live_scope_decision_v1_0",
+  "status": "approved_one_deepseek_beta_strict_pattern_canary_exact_once",
+  "recorded_at": "2026-08-17T05:13:19+08:00",
+  "run_scope_id": "one_deepseek_beta_strict_pattern_transport_qualification",
+  "purpose": "Qualify whether DeepSeek Beta strict Tool mode accepts the provider-projected model-text pattern and prevents filing identifiers, periods, digits, units, URLs and refs from entering one model-owned atom.",
+  "zero_call_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_deepseek_strict_pattern_zero_call_result_v1_0.json",
+  "zero_call_result_sha256": "6274263fdb7c21ae3048822cd70035a66326746c8ed78007c02c985c3adf7b92",
+  "zero_call_result_digest": "e55c349c11dfd62f905e52351f0b9a1d389eee28fcab20a34de07770e87a36e6",
+  "profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_contract_submission_non_thinking_strict_beta_profile_v1_0.json",
+  "profile_sha256": "2de80ae04c77a97fc7cd1b47f07de964b4be60d720d8297e4c58e6967e8b31ef",
+  "execution_budget": {
+    "maximum_model_calls": 1,
+    "maximum_transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "financial_evidence_calls": 0,
+    "product_publication": 0
+  },
+  "deepseek_beta_endpoint_authorized": true,
+  "canonical_finance_contract_promotion_authorized": false,
+  "five_cell_runtime_authorized": false,
+  "product_promotion_authorized": false,
+  "S3_acceptance_authorized": false,
+  "stop_rule": "Preserve any schema validation, transport or model-output failure as the terminal canary result. Do not retry or weaken the canonical local finance contract.",
+  "known_boundary": "A successful canary qualifies only this submission transport profile. The DELL value and counter submissions still require a separate node-successor proof and fresh authority."
+}

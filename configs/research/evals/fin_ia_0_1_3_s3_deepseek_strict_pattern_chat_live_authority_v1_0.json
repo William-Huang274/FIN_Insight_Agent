@@ -1,0 +1,38 @@
+{
+  "schema_version": "fin_ia_s3_deepseek_strict_pattern_canary_authority_v1_0",
+  "status": "signed_exact_once_deepseek_beta_strict_pattern_canary",
+  "issued_at": "2026-08-17T05:23:47+08:00",
+  "implementation_commit": "7814490066d214df7c11a31b495119738e596aec",
+  "execution_budget": {
+    "maximum_model_calls": 1,
+    "maximum_transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "financial_evidence_calls": 0,
+    "product_publication": 0
+  },
+  "bound_inputs": {
+    "profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_contract_submission_non_thinking_strict_beta_profile_v1_0.json",
+    "profile_sha256": "2de80ae04c77a97fc7cd1b47f07de964b4be60d720d8297e4c58e6967e8b31ef",
+    "zero_call_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_deepseek_strict_pattern_zero_call_result_v1_0.json",
+    "zero_call_result_sha256": "6274263fdb7c21ae3048822cd70035a66326746c8ed78007c02c985c3adf7b92",
+    "scope_decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_deepseek_strict_pattern_live_scope_decision_v1_0.json",
+    "scope_decision_sha256": "985c886f0e1fd7d6d78bad23ade2538e7d33c75558090ece77c46b6481597c70",
+    "runner_ref": "scripts/research/run_s3_deepseek_strict_pattern_canary.py",
+    "runner_sha256": "84102afd4051057fa4ee3ea52f6494a1530f3606a2e44fce2c90c4cc4ee4b544",
+    "projection_implementation_ref": "src/sec_agent/providers/deepseek_strict.py",
+    "projection_implementation_sha256": "bda97e92b71cd87ffe66c18105939d658f4aeb01aa1f4deb0e4d017934f5165c",
+    "model_text_contract_ref": "src/sec_agent/research/current_consumer.py",
+    "model_text_contract_sha256": "6ef0755e2ec2498ec596f9484f899fc9d2ff39f8458232ba487d5d64841e9665"
+  },
+  "output_contract": {
+    "capture_root_ref": "data/captures/provider_calls",
+    "private_output_root_ref": "data/workbench_private/s3_strict_pattern/FIN013-S3-DEEPSEEK-STRICT-PATTERN-R1",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_deepseek_strict_pattern_chat_live_result_v1_0.json",
+    "run_id": "FIN013-S3-DEEPSEEK-STRICT-PATTERN-R1",
+    "attempt_id": "STRICT-PATTERN-R1-SUBMISSION-01",
+    "product_publication": "forbidden"
+  },
+  "product_promotion_authorized": false,
+  "known_boundary": "This authority permits one nonfinancial DeepSeek Beta strict-pattern transport qualification only. It does not authorize financial Evidence consumption, DELL node resubmission, product publication, S3 acceptance, generalization or release. Any failure is terminal and must be preserved without retry or local-contract relaxation."
+}

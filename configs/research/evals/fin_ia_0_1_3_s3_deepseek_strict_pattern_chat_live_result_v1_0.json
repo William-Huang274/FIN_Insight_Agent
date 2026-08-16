@@ -1,0 +1,63 @@
+{
+  "acceptance": {
+    "canonical_finance_contract_promoted": false,
+    "deepseek_beta_endpoint_accepted_schema": true,
+    "product_publication": false,
+    "strict_pattern_output_locally_valid": true
+  },
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_deepseek_strict_pattern_chat_live_authority_v1_0.json",
+  "authority_sha256": "3706b9fed01c3f4566e33f356d953cd457b7fe340a4b6e6fac1c5430647b6aea",
+  "execution": {
+    "fallbacks": 0,
+    "financial_evidence_calls": 0,
+    "model_calls_attempted": 1,
+    "product_publication": false,
+    "retries": 0,
+    "transport_attempts": 1
+  },
+  "failure": {
+    "capture_ref": "",
+    "code": "",
+    "phase": ""
+  },
+  "implementation_commit": "7814490066d214df7c11a31b495119738e596aec",
+  "known_boundary": "This authority permits one nonfinancial DeepSeek Beta strict-pattern transport qualification only. It does not authorize financial Evidence consumption, DELL node resubmission, product publication, S3 acceptance, generalization or release. Any failure is terminal and must be preserved without retry or local-contract relaxation.",
+  "messages_digest": "9091e15ea08f05044c5ff0c43f9f02a5d1bf2c442210c0531177b8edcf691ff4",
+  "private_full_result_ref": "data/workbench_private/s3_strict_pattern/FIN013-S3-DEEPSEEK-STRICT-PATTERN-R1/full_result.json",
+  "private_full_result_sha256": "f172a55a97d10119d34a7cf5f9600de9d915ae5e9ed725c98d61a41fd4ce5d6e",
+  "projection_receipt": {
+    "canonical_tool_digest": "302d0ab7d4da89049c9d8e023d73b9ce90f33f41c7f0e20efa3c5d9f2a58e79b",
+    "definitions_renamed": 1,
+    "finance_contract_weakened": false,
+    "local_full_contract_validation_required": true,
+    "projected_tool_digest": "6d332ecc40cb0f260c172c0bfcbe3204cbd07e477088c3bbd9d0ec83ade41b54",
+    "projection_digest": "4bbe8f8bb69f6a440e56ec0c7809ab40f13ed7bc4c871f7bee852360e8a94b6e",
+    "provider_id": "deepseek",
+    "provider_surface": "chat_completions_beta_strict",
+    "references_rewritten": 1,
+    "removed_schema_keywords": {},
+    "schema_version": "fin_ia_deepseek_strict_tool_projection_v1_0"
+  },
+  "provider_step": {
+    "finish_reason": "tool_calls",
+    "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DEEPSEEK-STRICT-PATTERN-R1/STRICT-PATTERN-R1-SUBMISSION-01/model_visible_request.json",
+    "request_digest": "aae72b9ff9cccfc44f99a74973fb001e4e8f9d800df437244cf35e17abcd1754",
+    "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DEEPSEEK-STRICT-PATTERN-R1/STRICT-PATTERN-R1-SUBMISSION-01/provider_response.json",
+    "response_digest": "0f937116283de4d721a2c571ee78e40c2eece94b44054c57d71868ad73be07f1",
+    "usage": {
+      "completion_tokens": 69,
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 591,
+      "prompt_tokens": 591,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 660
+    }
+  },
+  "recorded_at": "2026-08-16T21:24:22+00:00",
+  "result_digest": "71a3a8b261fdecedc2dbd090c97857829f17a4d394e81ae10babf2aa13d6a140",
+  "safe_atom_digest": "79234a44283ab2d726adb21542070fd38e7ff9d0e8aea04b00b6ff14bb6a3f12",
+  "schema_version": "fin_ia_s3_deepseek_strict_pattern_canary_result_v1_0",
+  "status": "completed_deepseek_beta_strict_pattern_qualified"
+}

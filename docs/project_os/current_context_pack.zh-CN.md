@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。DELL 五单元 R3 已精确复用 R1/R2 前缀和两个旧 Judgment，并让 value、cash、counter 三个分析自然收敛；cash Judgment 合同通过，value/counter 则因模型把 `10-Q`、`FY27 Q1`、`8-K` 写入禁止数字／日期／引用的 atom 而被本地门禁正确拒绝，综合未执行。该失败是 Tool Schema 没有把既有语义规则编译为服务端可执行 `pattern`，不是检索、NumericFact、Skill、图上下文或分析容量问题。当前 provider-neutral 模型文本谓词已在干净远端提交 `e68e3414...` 同时接入最终 Judgment、微判断与五单元综合；全仓 437 tests、活动图和 6,786 文件 secret scan 通过。DeepSeek strict Beta 的 `$defs→$def` 与不支持关键字差异已隔离在 Provider profile，干净提交 `67e877d4...` 上全仓 442 tests、活动图 134 Python／8 frontend／10 Runtime 和 6,791 文件 secret scan 通过。下一项先执行一次不带金融事实的最小 strict-pattern 传输资格 canary；通过后只复用 R3 两份分析草案，重新提交 value/counter，再执行综合，最多 4 次新模型调用。不得重跑 Planner、S1/S2、五个分析或三个有效 Judgment。模型尚未自然完成五单元综合、完整八维研报、qualified-human 验收或异质泛化，S3 仍未通过。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。DELL 五单元 R3 已精确复用 R1/R2 前缀和两个旧 Judgment，并让 value、cash、counter 三个分析自然收敛；cash Judgment 合同通过，value/counter 则因模型把 `10-Q`、`FY27 Q1`、`8-K` 写入禁止数字／日期／引用的 atom 而被本地门禁正确拒绝，综合未执行。该失败是 Tool Schema 没有把既有语义规则编译为服务端可执行 `pattern`，不是检索、NumericFact、Skill、图上下文或分析容量问题。provider-neutral 模型文本谓词与 DeepSeek wire 投影已分别在干净远端提交 `e68e3414...`、`67e877d4...` 完成；全仓 442 tests、活动图 134 Python／8 frontend／10 Runtime 和 6,791 文件 secret scan 通过。唯一 strict-pattern canary 在提交 `78144900...` 上一次通过：DeepSeek Beta 接受 Schema、返回 1 个 Tool Call，提示中 `10-Q`／`FY27 Q1` 未进入最终 atom，本地完整合同通过，1 model／1 transport／0 retry／0 Evidence／0 产品晋升。下一项只允许零调用建立 R3 node successor，校验并复用三份有效 Judgment 与 value/counter 两份分析草案；通过后才可重新提交 value/counter，再执行综合，最多 4 次新模型调用。不得重跑 Planner、S1/S2、五个分析或三个有效 Judgment。模型尚未自然完成五单元综合、完整八维研报、qualified-human 验收或异质泛化，S3 仍未通过。
 
 ## 当前唯一产品边界
 

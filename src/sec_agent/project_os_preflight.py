@@ -62,6 +62,15 @@ FRAGMENT_VALIDATION_REPAIR_DECISION_STATUS = (
 FRAGMENT_VALIDATION_REPAIR_SCOPE = (
     "one_fresh_same_fragment_repair_after_clean_gate"
 )
+DYNAMIC_SINGLE_CELL_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_live_scope_decision_v1_0"
+)
+DYNAMIC_SINGLE_CELL_DECISION_STATUS = (
+    "approved_one_honest_DELL_SEC_only_dynamic_single_cell"
+)
+DYNAMIC_SINGLE_CELL_SCOPE = (
+    "one_honest_DELL_SEC_only_dynamic_single_cell"
+)
 FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS = (
     "full_fragment_zero_call_pass_one_fresh_chat_judgment_authorized"
 )
@@ -148,6 +157,11 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if decision.get("schema_version") == DYNAMIC_SINGLE_CELL_DECISION_SCHEMA:
+        return _validate_dynamic_single_cell_decision(
+            root=root,
+            decision=decision,
+        )
     if decision.get("schema_version") == FRAGMENT_VALIDATION_REPAIR_DECISION_SCHEMA:
         return _validate_fragment_validation_repair_decision(
             root=root,
@@ -334,6 +348,195 @@ def _validate_fixed_pack_decision(
         "recent_provider_steps": len(health["provider_steps"]),
         "claim_relation_alias_capacity_successor": alias_mode,
         "micro_judgment_successor": False,
+    }
+
+
+def _validate_dynamic_single_cell_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_equal = {
+        "status": DYNAMIC_SINGLE_CELL_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "run_scope_id": DYNAMIC_SINGLE_CELL_SCOPE,
+        "evidence_mode": "current_reviewed_pack_request_scoped_reselection",
+        "next_authorized_scope": (
+            "one_DELL_value_capture_dynamic_single_cell_chat_live"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_dynamic_decision_field_invalid:{field}"
+            )
+
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "natural_planner_required",
+        "current_S1_S2_execution_required",
+        "candidate_promotion_forbidden",
+        "transcript_prefeed_forbidden",
+        "same_current_product_pointer_required",
+        "immutable_zero_call_predecessor_required",
+        "S1_RC_S1_019_remains_open",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                f"project_os_dynamic_decision_true_required:{field}"
+            )
+    for field in (
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "five_cell_authorized",
+        "product_publication_authorized",
+        "S3_acceptance_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                f"project_os_dynamic_decision_false_required:{field}"
+            )
+
+    expected_budget = {
+        "maximum_model_calls": 7,
+        "maximum_transport_attempts": 7,
+        "maximum_planner_calls": 1,
+        "maximum_fragment_analysis_calls": 3,
+        "maximum_fragment_submission_calls": 3,
+        "maximum_evidence_requests": 8,
+        "maximum_tool_calls": 3,
+        "retries": 0,
+        "fallbacks": 0,
+        "external_source_network_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if decision.get("execution_budget") != expected_budget:
+        raise ValueError("project_os_dynamic_decision_budget_invalid")
+
+    _, zero = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="zero_call_result_ref",
+        sha_field="zero_call_result_sha256",
+        digest_field="zero_call_result_digest",
+    )
+    zero_acceptance = zero.get("stage_acceptance") or {}
+    if not (
+        zero.get("schema_version")
+        == "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_2"
+        and zero.get("status")
+        == "zero_call_dynamic_truth_spine_engineering_pass"
+        and zero_acceptance.get(
+            "dynamic_dell_terminal_deliverable_compiled"
+        )
+        is True
+        and zero_acceptance.get("natural_model_planner_executed") is False
+        and zero_acceptance.get("natural_model_judgment_executed") is False
+    ):
+        raise ValueError("project_os_dynamic_zero_call_predecessor_invalid")
+
+    profile_specs = (
+        (
+            "planner_profile_ref",
+            "planner_profile_sha256",
+            {"type": "enabled"},
+            "max",
+            16000,
+            {"type": "json_object"},
+        ),
+        (
+            "analysis_profile_ref",
+            "analysis_profile_sha256",
+            {"type": "enabled"},
+            "high",
+            8000,
+            None,
+        ),
+        (
+            "submission_profile_ref",
+            "submission_profile_sha256",
+            {"type": "disabled"},
+            None,
+            2000,
+            None,
+        ),
+    )
+    profiles: dict[str, dict[str, Any]] = {}
+    for ref_field, sha_field, thinking, reasoning, tokens, response_format in profile_specs:
+        _, profile = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field=ref_field,
+            sha_field=sha_field,
+        )
+        defaults = profile.get("request_defaults") or {}
+        common_valid = (
+            profile.get("provider_id") == "deepseek"
+            and profile.get("model") == "deepseek-v4-pro"
+            and profile.get("wire_api")
+            == "openai_compatible_chat_completions"
+            and profile.get("base_url") == "https://api.deepseek.com"
+            and profile.get("endpoint") == "/chat/completions"
+            and (profile.get("authority") or {}).get("retry_count") == 0
+            and defaults.get("stream") is False
+            and defaults.get("thinking") == thinking
+            and defaults.get("max_tokens") == tokens
+            and "temperature" not in defaults
+            and "top_p" not in defaults
+        )
+        reasoning_valid = (
+            defaults.get("reasoning_effort") == reasoning
+            if reasoning is not None
+            else "reasoning_effort" not in defaults
+        )
+        response_format_valid = (
+            defaults.get("response_format") == response_format
+            if response_format is not None
+            else "response_format" not in defaults
+        )
+        if not (common_valid and reasoning_valid and response_format_valid):
+            raise ValueError(
+                f"project_os_dynamic_provider_profile_invalid:{ref_field}"
+            )
+        profiles[ref_field] = {
+            "thinking": thinking,
+            "reasoning_effort": reasoning,
+            "max_tokens": tokens,
+        }
+
+    _, health = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="provider_health_evidence_ref",
+        sha_field="provider_health_evidence_sha256",
+        digest_field="provider_health_evidence_result_digest",
+    )
+    repair_submission = health.get("repair_submission") or {}
+    if not (
+        health.get("status")
+        == (
+            "completed_failed_fragment_validation_repair_contract_valid_"
+            "content_assessment_pending"
+        )
+        and (health.get("execution") or {}).get("retries") == 0
+        and repair_submission.get("attempted") is True
+        and repair_submission.get("finish_reason") == "tool_calls"
+        and repair_submission.get("tool_call_count") == 1
+    ):
+        raise ValueError("project_os_dynamic_provider_health_invalid")
+
+    return {
+        "clean_proof_status": zero["status"],
+        "provider_id": "deepseek",
+        "provider_model": "deepseek-v4-pro",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "recent_provider_steps": 1,
+        "dynamic_single_cell_successor": True,
+        "micro_judgment_successor": False,
+        "node_profiles": profiles,
     }
 
 
@@ -1911,7 +2114,15 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("fragment_validation_repair_successor") is True:
+    if decision_projection.get("dynamic_single_cell_successor") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one decision-bound "
+            "DELL SEC-only dynamic value_capture single-cell Chat run. It "
+            "requires natural planning and current S1/S2 execution, forbids "
+            "candidate promotion and transcript prefeed, and does not authorize "
+            "five-cell acceptance, publication, or release."
+        )
+    elif decision_projection.get("fragment_validation_repair_successor") is True:
         known_boundary = (
             "This current-baseline preflight permits only one decision-bound "
             "R7 failed counter/WWC validation-repair submission. It reuses "

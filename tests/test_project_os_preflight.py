@@ -112,6 +112,10 @@ CAPACITY_PREDECESSOR_REF = (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "claim_surface_authority_chat_live_result_v1_0.json"
 )
+DYNAMIC_SINGLE_CELL_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_dynamic_value_capture_live_scope_decision_v1_0.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -178,6 +182,41 @@ def test_current_fixed_pack_decision_passes_without_network_or_secret_read() -> 
         "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use"
         in result["scope_projection"]["closed_precondition_issue_ids"]
     )
+
+
+def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=DYNAMIC_SINGLE_CELL_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["run_scope_id"] == (
+        "one_honest_DELL_SEC_only_dynamic_single_cell"
+    )
+    assert result["decision_projection"]["dynamic_single_cell_successor"] is True
+    assert result["decision_projection"]["node_profiles"] == {
+        "planner_profile_ref": {
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+            "max_tokens": 16000,
+        },
+        "analysis_profile_ref": {
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "high",
+            "max_tokens": 8000,
+        },
+        "submission_profile_ref": {
+            "thinking": {"type": "disabled"},
+            "reasoning_effort": None,
+            "max_tokens": 2000,
+        },
+    }
+    assert result["network_calls"] == 0
+    assert result["provider_calls"] == 0
+    assert result["credential_value_persisted"] is False
 
 
 def test_missing_provider_credential_fails_closed() -> None:

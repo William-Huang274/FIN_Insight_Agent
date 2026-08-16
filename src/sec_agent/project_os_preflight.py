@@ -79,12 +79,20 @@ DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS_V1_0 = (
     "dynamic_R1_preserved_one_counter_analysis_submission_"
     "successor_authorized"
 )
-DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA = (
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_1 = (
     "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
     "live_scope_decision_v1_1"
 )
-DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS = (
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS_V1_1 = (
     "dynamic_R1_historical_binding_pass_one_counter_analysis_submission_"
+    "successor_authorized"
+)
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
+    "live_scope_decision_v1_2"
+)
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS = (
+    "dynamic_R1_authority_contract_pass_one_counter_analysis_submission_"
     "successor_authorized"
 )
 DYNAMIC_COUNTER_SUCCESSOR_SCOPE = (
@@ -180,6 +188,7 @@ def _validate_fixed_pack_decision(
         decision.get("schema_version")
         in {
             DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_0,
+            DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_1,
             DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA,
         }
     ):
@@ -573,15 +582,23 @@ def _validate_dynamic_single_cell_decision(
 def _validate_dynamic_counter_successor_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
-    historical_binding_v1_1 = (
-        decision.get("schema_version")
-        == DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA
+    decision_schema = decision.get("schema_version")
+    historical_binding = decision_schema in {
+        DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_1,
+        DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA,
+    }
+    authority_contract_v1_2 = (
+        decision_schema == DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA
     )
     required_equal = {
         "status": (
             DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS
-            if historical_binding_v1_1
-            else DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS_V1_0
+            if authority_contract_v1_2
+            else (
+                DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS_V1_1
+                if historical_binding
+                else DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS_V1_0
+            )
         ),
         "case_key": "DELL",
         "cell_id": "CELL::value_capture",
@@ -612,11 +629,21 @@ def _validate_dynamic_counter_successor_decision(
             raise ValueError(
                 f"project_os_dynamic_counter_decision_true_required:{field}"
             )
-    if historical_binding_v1_1:
+    if historical_binding:
         for field in (
             "historical_git_blob_validation_required",
             "current_runtime_policies_directly_bound",
             "obsolete_v1_0_identity_reuse_forbidden",
+        ):
+            if decision.get(field) is not True:
+                raise ValueError(
+                    "project_os_dynamic_counter_decision_true_required:"
+                    f"{field}"
+                )
+    if authority_contract_v1_2:
+        for field in (
+            "real_authority_fixture_shape_required",
+            "obsolete_v1_1_identity_reuse_forbidden",
         ):
             if decision.get(field) is not True:
                 raise ValueError(
@@ -672,13 +699,22 @@ def _validate_dynamic_counter_successor_decision(
     replay = zero.get("replay_observation") or {}
     expected_zero_schema = (
         "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
-        f"zero_call_result_{'v1_1' if historical_binding_v1_1 else 'v1_0'}"
+        "zero_call_result_"
+        + (
+            "v1_2"
+            if authority_contract_v1_2
+            else ("v1_1" if historical_binding else "v1_0")
+        )
     )
     expected_zero_status = (
-        "zero_call_failed_counter_successor_historical_binding_"
-        "engineering_pass"
-        if historical_binding_v1_1
-        else "zero_call_failed_counter_successor_engineering_pass"
+        "zero_call_failed_counter_successor_authority_contract_engineering_pass"
+        if authority_contract_v1_2
+        else (
+            "zero_call_failed_counter_successor_historical_binding_"
+            "engineering_pass"
+            if historical_binding
+            else "zero_call_failed_counter_successor_engineering_pass"
+        )
     )
     if not (
         zero.get("schema_version") == expected_zero_schema
@@ -699,18 +735,31 @@ def _validate_dynamic_counter_successor_decision(
         )
     ):
         raise ValueError("project_os_dynamic_counter_zero_call_invalid")
-    if historical_binding_v1_1 and not (
+    if historical_binding and not (
         zero_acceptance.get(
             "historical_authority_validated_from_immutable_git_commit"
         )
         is True
         and zero_acceptance.get("current_runtime_policies_directly_bound")
         is True
-        and zero_acceptance.get("obsolete_v1_0_identity_reuse_forbidden")
-        is True
+        and (
+            zero_acceptance.get("obsolete_v1_0_identity_reuse_forbidden")
+            is True
+            if not authority_contract_v1_2
+            else zero_acceptance.get(
+                "obsolete_v1_0_and_v1_1_identity_reuse_forbidden"
+            )
+            is True
+        )
     ):
         raise ValueError(
             "project_os_dynamic_counter_historical_acceptance_invalid"
+        )
+    if authority_contract_v1_2 and zero_acceptance.get(
+        "real_authority_fixture_shape_validated"
+    ) is not True:
+        raise ValueError(
+            "project_os_dynamic_counter_authority_contract_acceptance_invalid"
         )
 
     _, predecessor_public = _validate_artifact_binding(
@@ -788,7 +837,7 @@ def _validate_dynamic_counter_successor_decision(
     if _sha256(runner_path) != str(decision.get("runner_sha256") or ""):
         raise ValueError("project_os_dynamic_counter_runner_drift")
 
-    if historical_binding_v1_1:
+    if historical_binding:
         _, obsolete_authority = _validate_artifact_binding(
             root=root,
             decision=decision,
@@ -824,6 +873,35 @@ def _validate_dynamic_counter_successor_decision(
             raise ValueError(
                 "project_os_dynamic_counter_historical_binding_invalid"
             )
+        if authority_contract_v1_2:
+            _, obsolete_authority_v1_1 = _validate_artifact_binding(
+                root=root,
+                decision=decision,
+                ref_field="obsolete_entry_authority_v1_1_ref",
+                sha_field="obsolete_entry_authority_v1_1_sha256",
+            )
+            _, obsolete_failure_v1_1 = _validate_artifact_binding(
+                root=root,
+                decision=decision,
+                ref_field="obsolete_entry_failure_v1_1_ref",
+                sha_field="obsolete_entry_failure_v1_1_sha256",
+            )
+            if not (
+                obsolete_authority_v1_1.get("schema_version")
+                == (
+                    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
+                    "authority_v1_1"
+                )
+                and obsolete_failure_v1_1.get("status")
+                == "entry_failed_zero_model_calls_current_policy_required_set_omission"
+                and sum(
+                    (obsolete_failure_v1_1.get("observed_calls") or {}).values()
+                )
+                == 0
+            ):
+                raise ValueError(
+                    "project_os_dynamic_counter_authority_contract_history_invalid"
+                )
         for ref_field, sha_field in (
             ("loop_policy_ref", "loop_policy_sha256"),
             ("dynamic_micro_policy_ref", "dynamic_micro_policy_sha256"),
@@ -919,7 +997,9 @@ def _validate_dynamic_counter_successor_decision(
         "recent_provider_steps": 1,
         "dynamic_counter_successor": True,
         "historical_binding_version": (
-            "v1_1" if historical_binding_v1_1 else "v1_0_obsolete"
+            "v1_2"
+            if authority_contract_v1_2
+            else ("v1_1_obsolete" if historical_binding else "v1_0_obsolete")
         ),
         "micro_judgment_successor": False,
         "node_profiles": profiles,

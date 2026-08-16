@@ -298,3 +298,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 
 - v1.1 authority 在 0 调用处以 `dynamic_successor_bound_inputs_invalid` 停止：authority 已带 current loop／dynamic policy，但 validator 的 canonical required-set 漏列两键，因此把合法绑定误判为多余字段。
 - v1.1 identity 不重用；`RC-S3-027` 要求 canonical set 补齐并直接用真实 authority fixture 测试。历史 Git blob 修复本身仍有效，R1 未变化。
+
+## 2026-08-16 S3 successor v1.2 authority contract 闭环
+
+- `RC-S3-027` 已零调用关闭：successor canonical set 现在包含 11 个 ref，current loop／dynamic policy 不再是 authority 有、validator 无；真实保存的 v1.1 authority fixture 已进入测试。
+- v1.0／v1.1 identity 均禁止重用。v1.2 proof result digest=`fc2d15a0...ac3b`；缺失／多余 ref、policy SHA、历史 blob、prefix 和 replay mutation 均 fail closed。
+- 全仓 `386 passed`，compileall、active baseline `131／8／10／0` 与 secret scan `6728／0` 通过。下一步只剩 clean/synced v1.2 preflight、新 authority 身份和唯一两调用 successor。动态完整 Judgment、五单元与 S3 acceptance 仍为 false。

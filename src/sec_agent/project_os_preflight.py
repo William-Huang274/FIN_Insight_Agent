@@ -52,6 +52,16 @@ FAILED_FRAGMENT_SUBMISSION_SUCCESSOR_DECISION_STATUS = (
     "failed_fragment_zero_call_pass_one_non_thinking_submission_"
     "successor_authorized"
 )
+FRAGMENT_VALIDATION_REPAIR_DECISION_SCHEMA = (
+    "fin_ia_s3_fixed_pack_fragment_validation_repair_"
+    "live_scope_decision_v1_8"
+)
+FRAGMENT_VALIDATION_REPAIR_DECISION_STATUS = (
+    "zero_call_pass_one_validation_repair_authorized"
+)
+FRAGMENT_VALIDATION_REPAIR_SCOPE = (
+    "one_fresh_same_fragment_repair_after_clean_gate"
+)
 FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS = (
     "full_fragment_zero_call_pass_one_fresh_chat_judgment_authorized"
 )
@@ -138,6 +148,11 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if decision.get("schema_version") == FRAGMENT_VALIDATION_REPAIR_DECISION_SCHEMA:
+        return _validate_fragment_validation_repair_decision(
+            root=root,
+            decision=decision,
+        )
     if (
         decision.get("schema_version")
         == FAILED_FRAGMENT_SUBMISSION_SUCCESSOR_DECISION_SCHEMA
@@ -507,6 +522,209 @@ def _validate_failed_fragment_submission_successor_decision(
         "fresh_model_calls_authorized": 1,
         "node_profiles": {
             "contract_submission": {
+                "thinking": "disabled",
+                "reasoning_effort": "omitted",
+                "max_tokens": defaults["max_tokens"],
+            }
+        },
+    }
+
+
+def _validate_fragment_validation_repair_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_equal = {
+        "status": FRAGMENT_VALIDATION_REPAIR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "failed_fragment_tool": "submit_research_counterargument_and_wwc",
+        "terminal_failure_code": "claim_surface_narrative_relation_conflict",
+        "run_scope_id": FRAGMENT_VALIDATION_REPAIR_SCOPE,
+        "evidence_mode": "reviewed_fixed_pack_unit_test",
+        "next_authorized_scope": (
+            "one_clean_synced_exact_once_R7_failed_counter_validation_repair"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                "project_os_validation_repair_decision_field_invalid:"
+                f"{field}"
+            )
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "same_evidence_pack",
+        "immutable_successful_prefix_reused",
+        "rejected_fragment_preserved",
+        "failed_node_only_execution_required",
+        "typed_validation_feedback_required",
+        "non_thinking_submission_required",
+        "terminal_contract_parity_required",
+        "clock_derived_authority_timestamp_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                "project_os_validation_repair_decision_true_required:"
+                f"{field}"
+            )
+    for field in (
+        "historical_failure_promoted",
+        "successful_predecessor_nodes_rerun",
+        "analysis_node_rerun",
+        "causal_guard_relaxation",
+        "manual_text_rewrite",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "dynamic_layer_two_authorized",
+        "five_cell_live_authorized",
+        "heterogeneous_generalization_authorized",
+        "product_publication_authorized",
+        "reasoning_or_token_limit_increase",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                "project_os_validation_repair_decision_false_required:"
+                f"{field}"
+            )
+    numeric_equal = {
+        "successful_predecessor_model_calls_reused": 6,
+        "maximum_fresh_model_calls": 1,
+        "maximum_provider_transport_attempts": 1,
+        "maximum_tool_calls": 1,
+        "maximum_submission_completion_tokens": 2000,
+        "maximum_repair_turns": 1,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+    }
+    for field, expected in numeric_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                "project_os_validation_repair_budget_invalid:"
+                f"{field}"
+            )
+
+    _, clean = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="clean_zero_call_result_ref",
+        sha_field="clean_zero_call_result_sha256",
+        digest_field="clean_zero_call_result_digest",
+    )
+    replay = (clean.get("normalized_proof") or {}).get(
+        "saved_r7_validation_repair_successor_replay"
+    ) or {}
+    if not (
+        clean.get("status") == "zero_call_micro_judgment_fresh_process_proof_pass"
+        and clean.get("fresh_process_results_byte_equivalent") is True
+        and (clean.get("acceptance") or {}).get(
+            "saved_r7_validation_repair_successor_replay_pass"
+        )
+        is True
+        and replay.get("predecessor_failure_code")
+        == "claim_surface_narrative_relation_conflict"
+        and replay.get("successful_predecessor_model_calls_reused") == 6
+        and replay.get("fresh_model_calls_in_repair_successor") == 1
+        and replay.get("maximum_repair_turns") == 1
+        and replay.get("typed_tool_feedback_sequence") is True
+        and replay.get("local_causal_guard_preserved") is True
+        and replay.get("rejected_fragment_promoted_to_business_truth") is False
+        and replay.get("harness_generated_research_judgment") is False
+    ):
+        raise ValueError("project_os_validation_repair_clean_proof_invalid")
+
+    _, failed = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="immutable_failed_result_ref",
+        sha_field="immutable_failed_result_sha256",
+        digest_field="immutable_failed_result_digest",
+    )
+    _, assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_result_assessment_ref",
+        sha_field="failed_result_assessment_sha256",
+    )
+    if not (
+        failed.get("status") == "terminal_failed_no_retry"
+        and failed.get("failure_code")
+        == "claim_surface_narrative_relation_conflict"
+        and failed.get("failed_fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+        and (failed.get("execution") or {}).get("fresh_model_calls_attempted") == 1
+        and (failed.get("execution") or {}).get(
+            "successful_predecessor_model_calls_reused"
+        )
+        == 5
+        and (failed.get("execution") or {}).get("retries") == 0
+        and (assessment.get("root_cause") or {}).get("financial_L1_observed")
+        is True
+        and (assessment.get("root_cause") or {}).get(
+            "local_validator_false_positive"
+        )
+        is False
+    ):
+        raise ValueError("project_os_validation_repair_failed_R7_invalid")
+
+    _, fixture = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="rejected_fragment_fixture_ref",
+        sha_field="rejected_fragment_fixture_sha256",
+    )
+    if not (
+        fixture.get("source_result_sha256")
+        == decision.get("immutable_failed_result_sha256")
+        and fixture.get("source_result_digest")
+        == decision.get("immutable_failed_result_digest")
+        and fixture.get("fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+        and fixture.get("rejected_fragment_digest")
+        == replay.get("rejected_fragment_digest")
+    ):
+        raise ValueError("project_os_validation_repair_fixture_invalid")
+
+    _, profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="submission_profile_ref",
+        sha_field="submission_profile_sha256",
+    )
+    defaults = profile.get("request_defaults") or {}
+    if not (
+        profile.get("wire_api") == "openai_compatible_chat_completions"
+        and profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and (profile.get("authority") or {}).get("retry_count") == 0
+        and defaults
+        == {
+            "max_tokens": 2000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+        and "reasoning_effort" not in defaults
+    ):
+        raise ValueError("project_os_validation_repair_profile_invalid")
+    return {
+        "clean_proof_status": clean["status"],
+        "prior_failed_full_fragment_status": failed["status"],
+        "provider_id": profile["provider_id"],
+        "provider_model": profile["model"],
+        "api_key_env": profile["api_key_env"],
+        "recent_provider_steps": 1,
+        "claim_relation_alias_capacity_successor": False,
+        "micro_judgment_successor": False,
+        "full_fragment_judgment_successor": False,
+        "failed_fragment_submission_successor": False,
+        "fragment_validation_repair_successor": True,
+        "successful_predecessor_model_calls_reused": 6,
+        "fresh_model_calls_authorized": 1,
+        "maximum_repair_turns": 1,
+        "node_profiles": {
+            "contract_submission_repair": {
                 "thinking": "disabled",
                 "reasoning_effort": "omitted",
                 "max_tokens": defaults["max_tokens"],
@@ -1622,6 +1840,21 @@ def build_preflight(
             "project_os_failed_fragment_submission_scope_allowance_missing"
         )
     if (
+        decision_projection.get("fragment_validation_repair_successor")
+        is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-023-model-counterargument-positive-causal-overreach-"
+                "and-missing-bounded-validation-repair"
+            ),
+            allowed_scope=FRAGMENT_VALIDATION_REPAIR_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_fragment_validation_repair_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("relation_role_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -1662,7 +1895,16 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("failed_fragment_submission_successor") is True:
+    if decision_projection.get("fragment_validation_repair_successor") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one decision-bound "
+            "R7 failed counter/WWC validation-repair submission. It reuses "
+            "six immutable successful model calls, preserves the rejected "
+            "fragment and causal guard, and does not authorize another repair, "
+            "dynamic Agentic Research, five-cell acceptance, publication, or "
+            "release."
+        )
+    elif decision_projection.get("failed_fragment_submission_successor") is True:
         known_boundary = (
             "This current-baseline preflight permits only one decision-bound "
             "R6 failed counter/WWC contract-submission successor. It reuses "

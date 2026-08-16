@@ -156,3 +156,11 @@ FFJ-R4 在 claim-local／typed-boundary 修复后再次完成全部三个自然�
 successor 不取消 lexical guard。结构化 ClaimRelation 仍是主要权威，lexical guard 继续作为纵深防御，但只在同一分句出现 subject、outcome 和有独立语义的 causal term，且没有明确否定／不支持标记时，判为正向因果表面。单字 CJK 子串不拥有独立因果权威。中英文真实正向“AI server revenue drives/translates into company profit”仍必须 fail closed；否定、不可推断或被明确质疑的命题不能被误升级为正向断言。
 
 该规则不替模型写观点，也不把 R4 追认为成功。R4 三个提交参数作为无 reasoning fixture 保存；formal proof 必须原样 replay 通过，并同时证明正向 mutation、R3 claim-local、typed boundary、三案例身份和完整 fake 路径均未放宽。之后只能用 fresh authority 执行 FFJ-R5。
+
+## 14. typed terminal rejection 与一次性 repair
+
+终态 Validator 拒绝模型片段后，Runtime 不应靠 Harness 删词，也不应重跑整条链。当前 provider-neutral 合同把可修复的 `claim_surface_narrative_relation_conflict` 编译为一个 typed Tool result，包含失败码、通用规则和“只重交当前 fragment”的要求；原 Tool Call、上下文、Tool schema 和全部前序片段按摘要保持不变。
+
+repair 不是新的研究轮次。它不能增加 Evidence／NumericFact／关系权限，不能改变因果 guard，不能重新运行分析节点，也不能由本地代码生成观点。每个失败片段最多一次 repair；第二次失败形成新的不可变终态，必须转入内容／模型权限处置，不能自动扩成 retry loop。
+
+v1.8 已用 R7 真失败回放、错误 failure-code mutation、R5 假终态物化、DELL／MU／NVDA full-fake 和两个 fresh process 证明该结构。该证明只授权一次 exact-once live repair；只有自然修复后的完整三片段 Judgment 再通过 L1 与内容质量，fixed-Pack Layer One 才可能关闭。

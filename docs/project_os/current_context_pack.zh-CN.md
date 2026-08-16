@@ -239,3 +239,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 模型选择 `PROFIT_BRIDGE_GAP` 与 `not_inferable`，但 counter atom 又把低毛利 AI 服务器占比、其他分部组合和一次性因素写成公司毛利率回落的正向“驱动”。当前 Evidence Pack 没有这些因果权威；同分句 guard 命中 AI 服务器主体、毛利结果、`驱动` 且无否定，因此 `claim_surface_narrative_relation_conflict` 是真实 L1 拒绝，不是 validator 误报。
 - R7 保持不可变，不能删词 salvage，也不能放宽因果门。新的最早产品缺口是：Runtime 尚未把 typed terminal validation failure 作为 Tool result 返回给模型做一次有界修正。下一项是 provider-neutral 的同片段 repair turn：不重跑分析或前五节点、不增证据、不改合同，最多一次新交卷；先保存响应 replay、mutation、完整终态 fake 和 fresh proof，再决定 live repair。
 - fixed-Pack Layer One、动态 Truth Spine、DELL 五单元、异质泛化报告、S3 acceptance 与发布仍为 false。
+
+## 2026-08-16 S3 typed validation repair v1.8 零调用闭环
+
+- Runtime 现在会把 R7 的终态拒绝作为 typed Tool result 返回给模型，说明失败码、违规规则和同片段修正边界；模型最多重交一次 counter／WWC。R7 原输出继续保持 rejected，Harness 不删词、不代写观点、不增加 Evidence，也不重跑前六个模型节点。
+- 保存的 R5、R6、R7 路径均回放通过；错误失败码 mutation fail closed，因果门禁保持不变，DELL／MU／NVDA full-fake 无身份或 Graph 污染。两个 fresh process 字节等价，formal result digest=`2328029b...e82`，0 model／provider／network／embedding／retry。
+- 这只关闭了“系统无法把可修复错误反馈给模型”的工程缺口，没有证明 DeepSeek 会自然修正。当前唯一允许的下一步是在 clean/synced gate 后执行一次非思考、同 Pack、同 Tool 的 exact-once repair；若再次失败，不再自动扩展第二轮修复。终态 Judgment、fixed-Pack L1、八维质量、动态 Truth Spine、五单元、异质泛化与 S3 acceptance 仍为 false。

@@ -9,7 +9,9 @@ import pytest
 
 from sec_agent.project_os_preflight import (
     FIXED_PACK_SCOPE,
+    FRAGMENT_VALIDATION_REPAIR_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
+    _validate_fragment_validation_repair_decision,
     _validate_failed_fragment_submission_successor_decision,
     build_preflight,
 )
@@ -79,6 +81,26 @@ FULL_FRAGMENT_R6_SUCCESSOR_FIXTURE_REF = (
 NON_THINKING_SUBMISSION_PROFILE_REF = (
     "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_"
     "contract_submission_non_thinking_profile_v1_0.json"
+)
+VALIDATION_REPAIR_ZERO_RESULT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "validation_repair_zero_call_result_v1_8.json"
+)
+FAILED_COUNTER_R7_RESULT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "failed_counter_submission_successor_chat_live_result_v1_0.json"
+)
+FAILED_COUNTER_R7_ASSESSMENT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "failed_counter_submission_successor_chat_live_failure_assessment_v1_0.json"
+)
+FAILED_COUNTER_R7_FIXTURE_REF = (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_failed_counter_submission_r7_"
+    "rejected_fragment_v1_0.json"
 )
 ALIAS_CLEAN_REF = (
     "configs/research/evals/"
@@ -425,6 +447,100 @@ def test_failed_fragment_submission_successor_binds_R6_and_non_thinking() -> Non
     assert result["fresh_model_calls_authorized"] == 1
     assert result["node_profiles"] == {
         "contract_submission": {
+            "thinking": "disabled",
+            "reasoning_effort": "omitted",
+            "max_tokens": 2000,
+        }
+    }
+
+
+def test_fragment_validation_repair_binds_R7_and_preserves_guard() -> None:
+    clean = json.loads(
+        (ROOT / VALIDATION_REPAIR_ZERO_RESULT_REF).read_text(encoding="utf-8")
+    )
+    failed = json.loads(
+        (ROOT / FAILED_COUNTER_R7_RESULT_REF).read_text(encoding="utf-8")
+    )
+    decision = {
+        "schema_version": (
+            "fin_ia_s3_fixed_pack_fragment_validation_repair_"
+            "live_scope_decision_v1_8"
+        ),
+        "status": "zero_call_pass_one_validation_repair_authorized",
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "failed_fragment_tool": "submit_research_counterargument_and_wwc",
+        "terminal_failure_code": "claim_surface_narrative_relation_conflict",
+        "run_scope_id": FRAGMENT_VALIDATION_REPAIR_SCOPE,
+        "evidence_mode": "reviewed_fixed_pack_unit_test",
+        "next_authorized_scope": (
+            "one_clean_synced_exact_once_R7_failed_counter_validation_repair"
+        ),
+        "replacement_is_new_attempt_not_retry": True,
+        "chat_live_authorized": True,
+        "credential_presence_required": True,
+        "same_evidence_pack": True,
+        "immutable_successful_prefix_reused": True,
+        "rejected_fragment_preserved": True,
+        "failed_node_only_execution_required": True,
+        "typed_validation_feedback_required": True,
+        "non_thinking_submission_required": True,
+        "terminal_contract_parity_required": True,
+        "clock_derived_authority_timestamp_required": True,
+        "historical_failure_promoted": False,
+        "successful_predecessor_nodes_rerun": False,
+        "analysis_node_rerun": False,
+        "causal_guard_relaxation": False,
+        "manual_text_rewrite": False,
+        "responses_live_authorized": False,
+        "anthropic_live_authorized": False,
+        "dynamic_layer_two_authorized": False,
+        "five_cell_live_authorized": False,
+        "heterogeneous_generalization_authorized": False,
+        "product_publication_authorized": False,
+        "reasoning_or_token_limit_increase": False,
+        "successful_predecessor_model_calls_reused": 6,
+        "maximum_fresh_model_calls": 1,
+        "maximum_provider_transport_attempts": 1,
+        "maximum_tool_calls": 1,
+        "maximum_submission_completion_tokens": 2000,
+        "maximum_repair_turns": 1,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "clean_zero_call_result_ref": VALIDATION_REPAIR_ZERO_RESULT_REF,
+        "clean_zero_call_result_sha256": _sha(
+            ROOT / VALIDATION_REPAIR_ZERO_RESULT_REF
+        ),
+        "clean_zero_call_result_digest": clean["result_digest"],
+        "immutable_failed_result_ref": FAILED_COUNTER_R7_RESULT_REF,
+        "immutable_failed_result_sha256": _sha(
+            ROOT / FAILED_COUNTER_R7_RESULT_REF
+        ),
+        "immutable_failed_result_digest": failed["result_digest"],
+        "failed_result_assessment_ref": FAILED_COUNTER_R7_ASSESSMENT_REF,
+        "failed_result_assessment_sha256": _sha(
+            ROOT / FAILED_COUNTER_R7_ASSESSMENT_REF
+        ),
+        "rejected_fragment_fixture_ref": FAILED_COUNTER_R7_FIXTURE_REF,
+        "rejected_fragment_fixture_sha256": _sha(
+            ROOT / FAILED_COUNTER_R7_FIXTURE_REF
+        ),
+        "submission_profile_ref": NON_THINKING_SUBMISSION_PROFILE_REF,
+        "submission_profile_sha256": _sha(
+            ROOT / NON_THINKING_SUBMISSION_PROFILE_REF
+        ),
+    }
+    result = _validate_fragment_validation_repair_decision(
+        root=ROOT,
+        decision=decision,
+    )
+    assert result["fragment_validation_repair_successor"] is True
+    assert result["successful_predecessor_model_calls_reused"] == 6
+    assert result["fresh_model_calls_authorized"] == 1
+    assert result["maximum_repair_turns"] == 1
+    assert result["node_profiles"] == {
+        "contract_submission_repair": {
             "thinking": "disabled",
             "reasoning_effort": "omitted",
             "max_tokens": 2000,

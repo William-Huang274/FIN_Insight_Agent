@@ -181,6 +181,26 @@ FULL_FRAGMENT_CLAIM_LOCAL_DISPOSITION = ROOT / (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
     "claim_local_boundary_live_disposition_v1_3.json"
 )
+FULL_FRAGMENT_CAUSAL_POLARITY_ZERO_CALL_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "causal_polarity_zero_call_result_v1_5.json"
+)
+FULL_FRAGMENT_CAUSAL_POLARITY_DISPOSITION = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "causal_polarity_live_disposition_v1_4.json"
+)
+FULL_FRAGMENT_R4_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_chat_live_result_v1_3.json"
+)
+FULL_FRAGMENT_R4_FAILURE_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "full_fragment_judgment_chat_live_failure_assessment_v1_3.json"
+)
 FULL_FRAGMENT_R3_RESULT = ROOT / (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -1512,6 +1532,47 @@ def test_full_fragment_judgment_authority_binds_clean_runtime_and_scope(
     assert validated_claim_local[
         "full_fragment_zero_call_result_ref"
     ] == FULL_FRAGMENT_CLAIM_LOCAL_ZERO_CALL_RESULT
+
+    causal_paths = dict(paths)
+    causal_paths.update(
+        {
+            "full_fragment_zero_call_result_ref": (
+                FULL_FRAGMENT_CAUSAL_POLARITY_ZERO_CALL_RESULT
+            ),
+            "full_fragment_disposition_ref": (
+                FULL_FRAGMENT_CAUSAL_POLARITY_DISPOSITION
+            ),
+            "prior_full_fragment_result_ref": FULL_FRAGMENT_R4_RESULT,
+            "prior_full_fragment_failure_assessment_ref": (
+                FULL_FRAGMENT_R4_FAILURE_ASSESSMENT
+            ),
+        }
+    )
+    causal_bound = {
+        "research_input_digest": research_input["research_input_digest"],
+        "initial_fragment_context_digest": initial_context[
+            "projection_digest"
+        ],
+        "fragment_tool_schema_digests": {
+            name: runner.canonical_digest(tools[name])
+            for name in MICRO_JUDGMENT_TOOL_NAMES
+        },
+    }
+    for key, path in causal_paths.items():
+        causal_bound[key] = path.relative_to(ROOT).as_posix()
+        causal_bound[key[:-4] + "_sha256"] = runner._sha(path)
+    causal_authority = json.loads(json.dumps(authority))
+    causal_authority["schema_version"] = (
+        runner.FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA
+    )
+    causal_authority["bound_inputs"] = causal_bound
+    validated_causal = runner.validate_full_fragment_judgment_authority(
+        causal_authority,
+        authority_path=authority_path,
+    )
+    assert validated_causal[
+        "full_fragment_zero_call_result_ref"
+    ] == FULL_FRAGMENT_CAUSAL_POLARITY_ZERO_CALL_RESULT
 
 
 def test_fixed_pack_claim_surface_live_path_uses_surface_contract(

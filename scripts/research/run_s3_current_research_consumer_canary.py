@@ -129,6 +129,9 @@ FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA = (
 FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA = (
     "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_3"
 )
+FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_live_authority_v1_4"
+)
 FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS = (
     "signed_exact_once_fixed_pack_full_three_fragment_analysis_submission_chat_live"
 )
@@ -1464,11 +1467,16 @@ def validate_full_fragment_judgment_authority(
         payload.get("schema_version")
         == FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA
     )
+    causal_polarity_successor = (
+        payload.get("schema_version")
+        == FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA
+    )
     if not (
         payload.get("schema_version")
         in {
             FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA,
             FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA,
+            FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA,
         }
         and payload.get("status")
         == FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS
@@ -1583,7 +1591,104 @@ def validate_full_fragment_judgment_authority(
         and prior_assessment.get("status")
         == "single_thesis_L1_pass_content_materially_improved_two_hypotheses_qualified_no_automatic_expansion"
     )
-    if claim_local_successor:
+    if causal_polarity_successor:
+        normalized_proof = zero_call.get("normalized_proof") or {}
+        r3_replay = normalized_proof.get(
+            "saved_r3_claim_local_boundary_replay"
+        ) or {}
+        r4_replay = normalized_proof.get(
+            "saved_r4_causal_polarity_replay"
+        ) or {}
+        successor_valid = (
+            zero_call.get("status")
+            == "zero_call_micro_judgment_fresh_process_proof_pass"
+            and zero_call.get("fresh_process_results_byte_equivalent") is True
+            and r3_replay.get("claim_local_roles_preserved") is True
+            and r3_replay.get("report_level_summary_deterministic") is True
+            and r4_replay.get("predecessor_failure_code")
+            == "claim_surface_narrative_relation_conflict"
+            and r4_replay.get("judgment_status") == "bounded_support"
+            and r4_replay.get("inference_authority") == "bounded_inference"
+            and r4_replay.get("claim_scope") == "multi_scope"
+            and r4_replay.get("financial_scope") == "multi_scope_financial"
+            and r4_replay.get("causal_bridge_authority")
+            == "multi_driver_context_only"
+            and r4_replay.get("clause_scoped_guard") is True
+            and r4_replay.get(
+                "negated_or_unsupported_causal_surface_pass"
+            )
+            is True
+            and r4_replay.get(
+                "single_character_cjk_substring_not_authoritative"
+            )
+            is True
+            and r4_replay.get(
+                "positive_cross_scope_causal_surface_fail_closed"
+            )
+            is True
+            and set(r4_replay.get("boundary_authority_sources") or ())
+            == {
+                "typed_bridge_gap_relation",
+                "typed_same_scope_counter_relation",
+            }
+            and r4_replay.get("model_narratives_preserved_exactly") is True
+            and r4_replay.get("harness_generated_research_judgment") is False
+            and (r4_replay.get("mutation_failure_codes") or {}).get(
+                "positive_cross_scope_causal_zh"
+            )
+            == "claim_surface_narrative_relation_conflict"
+            and (r4_replay.get("mutation_failure_codes") or {}).get(
+                "positive_cross_scope_causal_en"
+            )
+            == "claim_surface_narrative_relation_conflict"
+            and disposition.get("status")
+            == "approved_fresh_full_three_fragment_analysis_submission_Chat_R5"
+            and disposition.get("execution_budget") == expected_budget
+            and disposition.get("claim_local_evidence_roles_required") is True
+            and disposition.get("typed_bridge_gap_boundary_required") is True
+            and disposition.get("typed_same_scope_counter_boundary_required")
+            is True
+            and disposition.get("clause_scoped_causal_guard_required") is True
+            and disposition.get(
+                "negated_or_unsupported_causal_surface_allowed"
+            )
+            is True
+            and disposition.get(
+                "ambiguous_single_character_cjk_term_forbidden"
+            )
+            is True
+            and disposition.get(
+                "positive_cross_scope_causal_surface_fail_closed"
+            )
+            is True
+            and disposition.get("prior_failed_attempt_reused") is False
+            and prior_full_result.get("status") == "terminal_failed_no_retry"
+            and prior_full_result.get("failure_code")
+            == "claim_surface_narrative_relation_conflict"
+            and prior_full_result.get("failure_fragment_tool")
+            == SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+            and prior_full_result.get("execution", {}).get(
+                "model_calls_attempted"
+            )
+            == 6
+            and prior_full_result.get("execution", {}).get(
+                "tool_calls_accepted"
+            )
+            == 3
+            and prior_full_result.get("execution", {}).get("retries") == 0
+            and prior_full_assessment.get("status")
+            == "terminal_contract_failure_clause_and_negation_blind_lexical_"
+            "guard_false_positive_new_attempt_required"
+            and prior_full_assessment.get("disposition", {}).get(
+                "immutable_R4_preserved"
+            )
+            is True
+            and prior_full_assessment.get("disposition", {}).get(
+                "positive_cross_scope_causal_assertion_must_still_fail_closed"
+            )
+            is True
+        )
+    elif claim_local_successor:
         replay = (zero_call.get("normalized_proof") or {}).get(
             "saved_r3_claim_local_boundary_replay"
         ) or {}
@@ -3314,6 +3419,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if authority.get("schema_version") in {
         FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA,
         FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA,
+        FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA,
     }:
         result = run_full_fragment_judgment(authority_path)
     elif (

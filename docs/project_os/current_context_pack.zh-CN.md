@@ -196,3 +196,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 自然内容继续保持边界：产品盈利只作为未经审计的管理层目标；产品价格、量、配置拆分缺失使产品到分部／公司利润桥不可推断；公司毛利率同口径收缩只用于反向观察，明确无法归因于单一产品。当前未观察到新的金融 L1，但终局失败使正式 L1 与内容 acceptance 仍为 false。
 - 终局以 `claim_surface_narrative_relation_conflict` 失败。旧 guard 把单个汉字“使”当因果词，因而会在“服务器”中误命中；它还跨分句拼接 subject／outcome／causal term，并忽略“不能据此”“不可推断”“缺乏支持”“无法归因”等否定极性。该失败属于 S3 provider-neutral defense-in-depth，不是 transport、DeepSeek 合同不遵循或新的金融判断错误。
 - R4 不 salvage。successor 必须按分句寻找一条正向因果命题、忽略无独立语义的单字 CJK 子串，并识别明确否定／不支持表面；中英文“AI server revenue drives/translates into company profit”仍须 fail closed。保存 R4 三片段、正负 mutation、R3 claim-local 非回归、三案例 full-fake 与 two-fresh-process proof 全部通过后，才允许 fresh R5。
+
+## 2026-08-16 S3 causal-polarity v1.5 零调用闭环
+
+- `RC-S3-020` 的工程根因已关闭。文本 guard 现在只在同一分句内识别完整的正向因果命题；单字 CJK 子串不再具有独立权威，明确否定、证据不足和不可归因表述不会被误判为正向桥接。
+- 保存的 FFJ-R4 三个 Tool payload 未删词、未改写，现可形成完整 `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only` Judgment；终态 digest=`3a6214e3...3b36`，deliverable digest=`d3ea0ee1...c6cd`。
+- 中文与英文真正的跨层强因果 mutation 仍以 `claim_surface_narrative_relation_conflict` fail closed；R3 claim-local 边界回放、三案例 full-fake、身份／图污染检查均继续通过。两个 fresh process 字节等价，formal result digest=`d2607c9e...1be8`，0 model／provider／network／embedding／retry。
+- R5 decision-bound gate 纳入后，定向 `34 passed`、全仓 `346 passed`、compileall、active baseline `127 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 与 secret scan `6,662 files / 0 finding` 均通过。
+- 该结果只构成 provider-neutral engineering pass，不追认 R4。R5 决策固定同一 DELL fixed Pack、6 model calls／3 tool calls／0 EvidenceRequest／0 retry／0 fallback；须在 clean push 与真实 Project OS preflight 后签发 fresh authority。R5 的自然完整 Judgment、L1 与内容门通过前，动态 Truth Spine、五单元、异质泛化报告和 S3 acceptance 均为 false。

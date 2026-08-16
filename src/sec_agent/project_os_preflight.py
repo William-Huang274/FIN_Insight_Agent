@@ -36,6 +36,10 @@ FULL_FRAGMENT_CLAIM_LOCAL_BOUNDARY_DECISION_SCHEMA = (
     "fin_ia_s3_fixed_pack_full_fragment_judgment_claim_local_boundary_"
     "live_scope_decision_v1_3"
 )
+FULL_FRAGMENT_CAUSAL_POLARITY_DECISION_SCHEMA = (
+    "fin_ia_s3_fixed_pack_full_fragment_judgment_causal_polarity_"
+    "live_scope_decision_v1_4"
+)
 FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS = (
     "full_fragment_zero_call_pass_one_fresh_chat_judgment_authorized"
 )
@@ -130,10 +134,10 @@ def _validate_fixed_pack_decision(
         return _validate_full_fragment_fixed_pack_decision(
             root=root, decision=decision
         )
-    if (
-        decision.get("schema_version")
-        == FULL_FRAGMENT_CLAIM_LOCAL_BOUNDARY_DECISION_SCHEMA
-    ):
+    if decision.get("schema_version") in {
+        FULL_FRAGMENT_CLAIM_LOCAL_BOUNDARY_DECISION_SCHEMA,
+        FULL_FRAGMENT_CAUSAL_POLARITY_DECISION_SCHEMA,
+    }:
         return _validate_claim_local_boundary_fixed_pack_decision(
             root=root, decision=decision
         )
@@ -300,6 +304,10 @@ def _validate_fixed_pack_decision(
 def _validate_claim_local_boundary_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    causal_polarity_successor = (
+        decision.get("schema_version")
+        == FULL_FRAGMENT_CAUSAL_POLARITY_DECISION_SCHEMA
+    )
     required_equal = {
         "status": FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS,
         "case_key": "DELL",
@@ -308,7 +316,8 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         "evidence_mode": "reviewed_fixed_pack_unit_test",
         "next_authorized_scope": (
             "one_clean_synced_exact_once_DELL_value_capture_full_three_"
-            "fragment_analysis_submission_Chat_R4"
+            "fragment_analysis_submission_Chat_"
+            + ("R5" if causal_polarity_successor else "R4")
         ),
     }
     for field, expected in required_equal.items():
@@ -317,7 +326,7 @@ def _validate_claim_local_boundary_fixed_pack_decision(
                 "project_os_claim_local_decision_field_invalid:"
                 f"{field}"
             )
-    for field in (
+    true_fields = [
         "replacement_is_new_attempt_not_retry",
         "chat_live_authorized",
         "credential_presence_required",
@@ -329,9 +338,21 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         "global_support_laundering_forbidden",
         "typed_bridge_gap_boundary_required",
         "typed_same_scope_counter_boundary_required",
-        "saved_R3_replay_required",
         "clock_derived_authority_timestamp_required",
-    ):
+    ]
+    true_fields.extend(
+        (
+            "saved_R3_regression_replay_required",
+            "saved_R4_causal_polarity_replay_required",
+            "clause_scoped_causal_guard_required",
+            "negated_or_unsupported_causal_surface_allowed",
+            "ambiguous_single_character_cjk_term_forbidden",
+            "positive_cross_scope_causal_surface_fail_closed",
+        )
+        if causal_polarity_successor
+        else ("saved_R3_replay_required",)
+    )
+    for field in true_fields:
         if decision.get(field) is not True:
             raise ValueError(
                 "project_os_claim_local_decision_true_required:"
@@ -378,11 +399,13 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         sha_field="clean_zero_call_result_sha256",
         digest_field="clean_zero_call_result_digest",
     )
-    replay = (clean.get("normalized_proof") or {}).get(
+    normalized_proof = clean.get("normalized_proof") or {}
+    replay = normalized_proof.get(
         "saved_r3_claim_local_boundary_replay"
     ) or {}
+    r4_replay = normalized_proof.get("saved_r4_causal_polarity_replay") or {}
     clean_acceptance = clean.get("acceptance") or {}
-    if not (
+    common_clean_valid = (
         clean.get("status")
         == "zero_call_micro_judgment_fresh_process_proof_pass"
         and clean.get("fresh_process_results_byte_equivalent") is True
@@ -403,6 +426,44 @@ def _validate_claim_local_boundary_fixed_pack_decision(
             "typed_boundary_removed"
         )
         == "claim_authority_multi_driver_boundary_missing"
+    )
+    causal_clean_valid = (
+        r4_replay.get("predecessor_failure_code")
+        == "claim_surface_narrative_relation_conflict"
+        and r4_replay.get("judgment_status") == "bounded_support"
+        and r4_replay.get("inference_authority") == "bounded_inference"
+        and r4_replay.get("claim_scope") == "multi_scope"
+        and r4_replay.get("financial_scope") == "multi_scope_financial"
+        and r4_replay.get("causal_bridge_authority")
+        == "multi_driver_context_only"
+        and r4_replay.get("clause_scoped_guard") is True
+        and r4_replay.get("negated_or_unsupported_causal_surface_pass")
+        is True
+        and r4_replay.get(
+            "single_character_cjk_substring_not_authoritative"
+        )
+        is True
+        and r4_replay.get("positive_cross_scope_causal_surface_fail_closed")
+        is True
+        and set(r4_replay.get("boundary_authority_sources") or ())
+        == {
+            "typed_bridge_gap_relation",
+            "typed_same_scope_counter_relation",
+        }
+        and r4_replay.get("model_narratives_preserved_exactly") is True
+        and r4_replay.get("harness_generated_research_judgment") is False
+        and (r4_replay.get("mutation_failure_codes") or {}).get(
+            "positive_cross_scope_causal_zh"
+        )
+        == "claim_surface_narrative_relation_conflict"
+        and (r4_replay.get("mutation_failure_codes") or {}).get(
+            "positive_cross_scope_causal_en"
+        )
+        == "claim_surface_narrative_relation_conflict"
+    )
+    if not (
+        common_clean_valid
+        and (not causal_polarity_successor or causal_clean_valid)
     ):
         raise ValueError("project_os_claim_local_clean_proof_invalid")
 
@@ -414,7 +475,10 @@ def _validate_claim_local_boundary_fixed_pack_decision(
     )
     if not (
         disposition.get("status")
-        == "approved_fresh_full_three_fragment_analysis_submission_Chat_R4"
+        == (
+            "approved_fresh_full_three_fragment_analysis_submission_Chat_"
+            + ("R5" if causal_polarity_successor else "R4")
+        )
         and disposition.get("decision_digest")
         == decision.get("scope_disposition_decision_digest")
         and (disposition.get("execution_budget") or {}).get(
@@ -427,6 +491,25 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         is True
         and disposition.get("prior_failed_attempt_reused") is False
         and disposition.get("dynamic_agentic_research_authorized") is False
+        and (
+            not causal_polarity_successor
+            or (
+                disposition.get("clause_scoped_causal_guard_required")
+                is True
+                and disposition.get(
+                    "negated_or_unsupported_causal_surface_allowed"
+                )
+                is True
+                and disposition.get(
+                    "ambiguous_single_character_cjk_term_forbidden"
+                )
+                is True
+                and disposition.get(
+                    "positive_cross_scope_causal_surface_fail_closed"
+                )
+                is True
+            )
+        )
     ):
         raise ValueError("project_os_claim_local_disposition_invalid")
 
@@ -465,22 +548,35 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         ref_field="failed_full_fragment_assessment_ref",
         sha_field="failed_full_fragment_assessment_sha256",
     )
-    if not (
+    failed_valid = (
         failed.get("status") == "terminal_failed_no_retry"
         and failed.get("failure_code")
-        == "finance_loop_micro_evidence_role_conflict"
+        == (
+            "claim_surface_narrative_relation_conflict"
+            if causal_polarity_successor
+            else "finance_loop_micro_evidence_role_conflict"
+        )
         and failed.get("failure_fragment_tool")
         == "submit_research_counterargument_and_wwc"
         and (failed.get("execution") or {}).get("model_calls_attempted") == 6
         and (failed.get("execution") or {}).get("tool_calls_accepted") == 3
         and (failed.get("execution") or {}).get("retries") == 0
         and failed_assessment.get("status")
-        == "terminal_contract_failure_claim_local_evidence_role_and_typed_boundary_aggregation_defect_new_attempt_required"
+        == (
+            "terminal_contract_failure_clause_and_negation_blind_lexical_"
+            "guard_false_positive_new_attempt_required"
+            if causal_polarity_successor
+            else "terminal_contract_failure_claim_local_evidence_role_and_"
+            "typed_boundary_aggregation_defect_new_attempt_required"
+        )
         and (failed_assessment.get("disposition") or {}).get(
-            "immutable_R3_preserved"
+            "immutable_R4_preserved"
+            if causal_polarity_successor
+            else "immutable_R3_preserved"
         )
         is True
-    ):
+    )
+    if not failed_valid:
         raise ValueError("project_os_claim_local_failed_R3_invalid")
 
     _, analysis_profile = _validate_artifact_binding(
@@ -526,6 +622,7 @@ def _validate_claim_local_boundary_fixed_pack_decision(
         "full_fragment_judgment_successor": True,
         "relation_role_successor": False,
         "claim_local_boundary_successor": True,
+        "causal_polarity_successor": causal_polarity_successor,
         "node_profiles": {
             "fragment_analysis": {
                 "reasoning_effort": analysis_defaults["reasoning_effort"],
@@ -1229,6 +1326,20 @@ def build_preflight(
     ):
         raise ValueError(
             "project_os_full_fragment_relation_role_scope_allowance_missing"
+        )
+    if (
+        decision_projection.get("causal_polarity_successor") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-020-clause-and-negation-blind-causal-lexical-guard-"
+                "false-positive"
+            ),
+            allowed_scope="one_fresh_R5_after_clean_synced_proof_and_preflight",
+        )
+    ):
+        raise ValueError(
+            "project_os_full_fragment_causal_polarity_scope_allowance_missing"
         )
 
     env = os.environ if environment is None else environment

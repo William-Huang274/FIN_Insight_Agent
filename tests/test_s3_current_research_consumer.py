@@ -42,6 +42,10 @@ POLICY = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_2.json"
 )
+FIVE_CELL_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_3.json"
+)
 OBJECTIVE = ROOT / (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json"
@@ -53,6 +57,10 @@ ATOMS = ROOT / (
 FAKE_PAYLOAD_V1_2 = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_2.json"
+)
+FIVE_CELL_FAKE_PAYLOAD = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_3.json"
 )
 CLAIM_AUTHORITY_POLICY = ROOT / (
     "configs/research/"
@@ -73,6 +81,18 @@ def _zero_call_runner():
     path = ROOT / "scripts/research/run_s3_current_research_consumer_zero_call.py"
     spec = importlib.util.spec_from_file_location(
         "s3_current_research_consumer_zero_call_runner",
+        path,
+    )
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _bounded_zero_call_runner():
+    path = ROOT / "scripts/research/run_s3_bounded_finance_loop_zero_call.py"
+    spec = importlib.util.spec_from_file_location(
+        "s3_bounded_finance_loop_zero_call_runner",
         path,
     )
     assert spec and spec.loader
@@ -957,4 +977,223 @@ def test_v1_1_runner_binds_content_audit_to_immutable_failed_payload(
         "demand_durability_overreach",
         "supply_easing_unproven",
         "unbound_comparative_margin_and_leverage_claim",
+    ]
+
+
+@pytest.fixture(scope="module")
+def five_cell_context_input(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> dict[str, object]:
+    evidence_pack, controlled, _ = current_inputs
+    return compile_current_research_input(
+        policy=_json(FIVE_CELL_POLICY),
+        evidence_pack=evidence_pack,
+        controlled_plan=controlled,
+    )
+
+
+def test_five_cell_context_successor_preserves_v1_2_and_binds_one_method_pack_per_cell(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+    five_cell_context_input: dict[str, object],
+) -> None:
+    _, _, historical_input = current_inputs
+    assert historical_input["research_input_digest"] != five_cell_context_input[
+        "research_input_digest"
+    ]
+    assert sum(
+        bool(row.get("role_method_pack")) for row in historical_input["cells"]
+    ) == 1
+
+    expected = {
+        "CELL::demand_quality": "ROLE_METHOD::DEMAND_QUALITY::V1",
+        "CELL::operating_performance": "ROLE_METHOD::OPERATING_PERFORMANCE::V1",
+        "CELL::value_capture": "ROLE_METHOD::VALUE_CAPTURE::V1",
+        "CELL::cash_conversion": "ROLE_METHOD::CASH_CONVERSION::V1",
+        "CELL::counterevidence": "ROLE_METHOD::COUNTEREVIDENCE::V1",
+    }
+    assert {
+        row["cell_id"]: row["role_method_pack"]["pack_id"]
+        for row in five_cell_context_input["cells"]
+    } == expected
+    assert all(
+        row["role_method_pack"]["cell_id"] == row["cell_id"]
+        and row["context_consumption_contract"]["minimum_method_step_refs"] == 4
+        for row in five_cell_context_input["cells"]
+    )
+
+    serialized = json.dumps(
+        [row["role_method_pack"] for row in five_cell_context_input["cells"]],
+        ensure_ascii=False,
+    )
+    for case_specific_name in (
+        "Dell Technologies",
+        "Micron Technology",
+        "NVIDIA Corporation",
+    ):
+        assert case_specific_name not in serialized
+
+
+def test_five_cell_context_is_cell_local_current_and_capacity_bounded(
+    five_cell_context_input: dict[str, object],
+) -> None:
+    full_messages = compile_current_research_messages(five_cell_context_input)
+    assert len(full_messages[1]["content"]) <= five_cell_context_input[
+        "model_input_contract"
+    ]["maximum_user_message_chars"]
+
+    evidence_by_ref = {
+        row["evidence_ref"]: row
+        for row in five_cell_context_input["evidence_cards"]
+    }
+    for cell in five_cell_context_input["cells"]:
+        local = json.loads(
+            compile_current_research_messages(
+                five_cell_context_input,
+                required_cell_ids=[cell["cell_id"]],
+            )[1]["content"]
+        )
+        assert [row["cell_id"] for row in local["cells"]] == [cell["cell_id"]]
+        assert local["cells"][0]["role_method_pack"]["pack_id"] == cell[
+            "role_method_pack"
+        ]["pack_id"]
+        assert len(local["research_context_injection_receipt"]["selection"]) == 5
+
+        graph = cell["graph_context_pack"]
+        assert graph["case_key"] == "DELL"
+        assert graph["authority"] == {
+            "compiled_from_current_case_reviewed_evidence_and_numeric_facts": True,
+            "archived_graph_rows_used": False,
+            "scope_or_context_edge_grants_fact_authority": False,
+        }
+        assert all(
+            set(edge["evidence_refs"]).issubset(cell["allowed_evidence_refs"])
+            and edge["grants_company_fact_or_causality"] is False
+            for edge in graph["edges"]
+        )
+        expected_entities = {"DELL"} | {
+            str(evidence_by_ref[ref]["evidence_owner_ticker"]).upper()
+            for ref in cell["allowed_evidence_refs"]
+        }
+        assert {row["entity_id"] for row in graph["nodes"]}.issubset(
+            expected_entities
+        )
+
+
+def test_five_cell_fake_judgment_consumes_all_methods_without_harness_authorship(
+    five_cell_context_input: dict[str, object],
+) -> None:
+    payload = _json(FIVE_CELL_FAKE_PAYLOAD)
+    validated = validate_current_research_output(
+        payload,
+        research_input=five_cell_context_input,
+    )
+    deliverable = compile_current_research_deliverable(
+        research_input=five_cell_context_input,
+        judgment_output=payload,
+    )
+
+    assert len(validated["cells"]) == 5
+    assert all(
+        len(row["context_consumption_receipt"]["consumed_method_step_refs"]) >= 4
+        for row in validated["cells"]
+    )
+    assert deliverable["rendering_authority"][
+        "harness_generated_research_conclusion"
+    ] is False
+
+
+@pytest.mark.parametrize(
+    "cell_id",
+    [
+        "CELL::demand_quality",
+        "CELL::operating_performance",
+        "CELL::value_capture",
+        "CELL::cash_conversion",
+        "CELL::counterevidence",
+    ],
+)
+def test_five_cell_method_consumption_mutations_fail_closed(
+    five_cell_context_input: dict[str, object],
+    cell_id: str,
+) -> None:
+    payload = deepcopy(_json(FIVE_CELL_FAKE_PAYLOAD))
+    cell = next(row for row in payload["cells"] if row["cell_id"] == cell_id)
+    cell["method_step_refs"] = cell["method_step_refs"][:3]
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_method_consumption_invalid",
+    ):
+        validate_current_research_output(
+            payload,
+            research_input=five_cell_context_input,
+        )
+
+    payload = deepcopy(_json(FIVE_CELL_FAKE_PAYLOAD))
+    cell = next(row for row in payload["cells"] if row["cell_id"] == cell_id)
+    cell["method_step_refs"][0] = "METHOD::OTHER_CELL::BORROWED"
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_method_consumption_invalid",
+    ):
+        validate_current_research_output(
+            payload,
+            research_input=five_cell_context_input,
+        )
+
+
+def test_five_cell_cross_case_graph_reference_fails_closed(
+    five_cell_context_input: dict[str, object],
+) -> None:
+    payload = deepcopy(_json(FIVE_CELL_FAKE_PAYLOAD))
+    payload["cells"][0]["graph_edge_refs"] = ["GRAPH::MU::BORROWED"]
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_graph_consumption_invalid",
+    ):
+        validate_current_research_output(
+            payload,
+            research_input=five_cell_context_input,
+        )
+
+
+def test_five_cell_context_runs_through_one_bounded_loop_without_fixed_nine_calls(
+    five_cell_context_input: dict[str, object],
+) -> None:
+    runner = _bounded_zero_call_runner()
+    kernel, route, planning, _, _ = runner._runtime_components()
+    loop_policy = runner.load_bounded_finance_loop_policy(
+        _json(
+            ROOT
+            / "configs/research/"
+            "fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_1.json"
+        )
+    )
+    matrix = runner._run_fake_matrix(
+        research_input=five_cell_context_input,
+        kernel=kernel,
+        route=route,
+        planning=planning,
+        policy=loop_policy,
+        fake=_json(FIVE_CELL_FAKE_PAYLOAD),
+    )
+
+    assert matrix["single_cell"]["status"] == "completed_all_required_cells"
+    assert matrix["single_cell"]["step_count"] == 3
+    assert matrix["single_cell"]["tool_call_count"] == 4
+    assert matrix["five_cell"]["status"] == "completed_all_required_cells"
+    assert matrix["five_cell"]["step_count"] == 10
+    assert matrix["five_cell"]["tool_call_count"] == 15
+
+
+def test_five_cell_zero_call_runner_covers_method_and_graph_pollution(
+    five_cell_context_input: dict[str, object],
+) -> None:
+    runner = _zero_call_runner()
+    codes = runner._mutation_codes(
+        research_input=five_cell_context_input,
+        fake=_json(FIVE_CELL_FAKE_PAYLOAD),
+    )
+    assert codes[-2:] == [
+        "research_consumer_method_consumption_invalid",
+        "research_consumer_graph_consumption_invalid",
     ]

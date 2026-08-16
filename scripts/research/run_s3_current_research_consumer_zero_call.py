@@ -492,6 +492,18 @@ def _mutation_codes(
         "NUM::ADC81E7A547FAB94"
     )
     cases.append(cross_cell)
+    method_shortfall = deepcopy(dict(fake))
+    method_cell = next(
+        row for row in method_shortfall["cells"] if row["method_step_refs"]
+    )
+    method_cell["method_step_refs"] = method_cell["method_step_refs"][:3]
+    cases.append(method_shortfall)
+    graph_borrow = deepcopy(dict(fake))
+    graph_cell = next(
+        row for row in graph_borrow["cells"] if row["graph_edge_refs"]
+    )
+    graph_cell["graph_edge_refs"] = ["GRAPH::CROSS_CASE_BORROWED"]
+    cases.append(graph_borrow)
     output = []
     for mutation in cases:
         try:
@@ -1900,6 +1912,28 @@ def run(authority_path: Path) -> dict[str, Any]:
     source_types = sorted(
         {row["source_type"] for row in research_input["evidence_cards"]}
     )
+    context_cells = [
+        {
+            "cell_id": row["cell_id"],
+            "role_method_pack_id": (
+                row["role_method_pack"]["pack_id"]
+                if row.get("role_method_pack")
+                else None
+            ),
+            "method_step_count": len(
+                (row.get("role_method_pack") or {}).get("method_steps", ())
+            ),
+            "minimum_consumed_method_steps": row[
+                "context_consumption_contract"
+            ]["minimum_method_step_refs"],
+            "graph_node_count": len(row["graph_context_pack"]["nodes"]),
+            "graph_edge_count": len(row["graph_context_pack"]["edges"]),
+            "archived_graph_rows_used": row["graph_context_pack"]["authority"][
+                "archived_graph_rows_used"
+            ],
+        }
+        for row in research_input["cells"]
+    ]
     summary_body = {
         "schema_version": result_schema,
         "status": "engineering_pass_zero_call_current_consumer_contract_successor",
@@ -1939,6 +1973,11 @@ def run(authority_path: Path) -> dict[str, Any]:
                 research_input["residual_gap_cards"]
             ),
             "research_cell_count": len(research_input["cells"]),
+            "research_context_cells": context_cells,
+            "role_method_pack_count": sum(
+                row["role_method_pack_id"] is not None for row in context_cells
+            ),
+            "graph_context_pack_count": len(context_cells),
             "mutation_failure_codes": mutations,
             "failed_r1_model_visible_user_chars": 48380,
             "successor_model_visible_user_chars": len(messages[1]["content"]),
@@ -1958,6 +1997,14 @@ def run(authority_path: Path) -> dict[str, Any]:
             "trusted_envelope_harness_injected": True,
             "exact_model_visible_enums_exposed": True,
             "typed_evidence_use_and_inference_authority": True,
+            "all_five_cells_have_role_method_pack": (
+                len(context_cells) == 5
+                and all(row["role_method_pack_id"] for row in context_cells)
+            ),
+            "all_graph_context_compiled_from_current_case": all(
+                row["archived_graph_rows_used"] is False
+                for row in context_cells
+            ),
             "all_visible_residual_gaps_preserved": True,
             "failed_r1_not_silently_salvaged": True,
             "harness_generated_research_conclusion": False,

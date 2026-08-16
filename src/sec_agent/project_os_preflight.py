@@ -71,6 +71,17 @@ DYNAMIC_SINGLE_CELL_DECISION_STATUS = (
 DYNAMIC_SINGLE_CELL_SCOPE = (
     "one_honest_DELL_SEC_only_dynamic_single_cell"
 )
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
+    "live_scope_decision_v1_0"
+)
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS = (
+    "dynamic_R1_preserved_one_counter_analysis_submission_"
+    "successor_authorized"
+)
+DYNAMIC_COUNTER_SUCCESSOR_SCOPE = (
+    "one_dynamic_counter_WWC_failed_node_successor_after_clean_zero_call_gate"
+)
 FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS = (
     "full_fragment_zero_call_pass_one_fresh_chat_judgment_authorized"
 )
@@ -157,6 +168,14 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if (
+        decision.get("schema_version")
+        == DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA
+    ):
+        return _validate_dynamic_counter_successor_decision(
+            root=root,
+            decision=decision,
+        )
     if decision.get("schema_version") == DYNAMIC_SINGLE_CELL_DECISION_SCHEMA:
         return _validate_dynamic_single_cell_decision(
             root=root,
@@ -535,6 +554,275 @@ def _validate_dynamic_single_cell_decision(
         "api_key_env": "DEEPSEEK_API_KEY",
         "recent_provider_steps": 1,
         "dynamic_single_cell_successor": True,
+        "micro_judgment_successor": False,
+        "node_profiles": profiles,
+    }
+
+
+def _validate_dynamic_counter_successor_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_equal = {
+        "status": DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "run_scope_id": DYNAMIC_COUNTER_SUCCESSOR_SCOPE,
+        "evidence_mode": "immutable_dynamic_R1_prefix_no_new_evidence",
+        "next_authorized_scope": (
+            "one_DELL_dynamic_counter_WWC_analysis_submission_successor"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_dynamic_counter_decision_field_invalid:{field}"
+            )
+
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "immutable_successful_prefix_reuse_required",
+        "failed_node_only_required",
+        "max_thinking_analysis_required",
+        "non_thinking_submission_required",
+        "predecessor_R1_remains_failed",
+        "same_current_product_pointer_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                f"project_os_dynamic_counter_decision_true_required:{field}"
+            )
+    for field in (
+        "planner_rerun_authorized",
+        "current_S1_S2_rerun_authorized",
+        "thesis_or_mechanism_rerun_authorized",
+        "new_evidence_authorized",
+        "candidate_promotion_authorized",
+        "contract_relaxation_authorized",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "automatic_second_analysis_retry_authorized",
+        "five_cell_authorized",
+        "product_publication_authorized",
+        "S3_acceptance_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                f"project_os_dynamic_counter_decision_false_required:{field}"
+            )
+
+    expected_budget = {
+        "successful_predecessor_model_nodes_reused": 5,
+        "maximum_fresh_model_calls": 2,
+        "maximum_transport_attempts": 2,
+        "maximum_counter_analysis_calls": 1,
+        "maximum_counter_submission_calls": 1,
+        "maximum_analysis_completion_tokens": 16000,
+        "maximum_submission_completion_tokens": 2000,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "external_source_network_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if decision.get("execution_budget") != expected_budget:
+        raise ValueError("project_os_dynamic_counter_decision_budget_invalid")
+
+    _, zero = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="zero_call_result_ref",
+        sha_field="zero_call_result_sha256",
+        digest_field="zero_call_result_digest",
+    )
+    zero_acceptance = zero.get("acceptance") or {}
+    replay = zero.get("replay_observation") or {}
+    if not (
+        zero.get("schema_version")
+        == (
+            "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
+            "zero_call_result_v1_0"
+        )
+        and zero.get("status")
+        == "zero_call_failed_counter_successor_engineering_pass"
+        and zero_acceptance.get("immutable_successful_prefix_reused") is True
+        and zero_acceptance.get("failed_counter_context_recompiled_exactly")
+        is True
+        and zero_acceptance.get("failed_counter_messages_recompiled_exactly")
+        is True
+        and zero_acceptance.get("new_evidence_or_candidate_promotion") is False
+        and zero_acceptance.get("natural_successor_executed") is False
+        and replay.get("successful_predecessor_model_nodes_reused") == 5
+        and replay.get("failed_analysis_step_absent") is True
+        and replay.get("failed_submission_step_absent") is True
+        and replay.get("failed_validated_fragment_absent") is True
+        and all(
+            value == 0 for value in (zero.get("observed_calls") or {}).values()
+        )
+    ):
+        raise ValueError("project_os_dynamic_counter_zero_call_invalid")
+
+    _, predecessor_public = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_public_result_ref",
+        sha_field="predecessor_public_result_sha256",
+        digest_field="predecessor_public_result_digest",
+    )
+    predecessor_execution = predecessor_public.get("execution") or {}
+    if not (
+        predecessor_public.get("schema_version")
+        == "fin_ia_s3_dynamic_single_cell_live_result_v1_0"
+        and predecessor_public.get("status") == "terminal_failed_no_retry"
+        and predecessor_public.get("failure_code")
+        == "model_gateway_generation_budget_exhausted"
+        and predecessor_public.get("failure_fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+        and predecessor_execution.get("model_calls_attempted") == 6
+        and predecessor_execution.get("fragment_tool_calls_accepted") == 2
+    ):
+        raise ValueError("project_os_dynamic_counter_predecessor_public_invalid")
+
+    _, predecessor_private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_private_result_ref",
+        sha_field="predecessor_private_result_sha256",
+    )
+    failed_rows = [
+        row
+        for row in predecessor_private.get("fragment_steps") or ()
+        if row.get("fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+    ]
+    if not (
+        predecessor_private.get("schema_version")
+        == "fin_ia_s3_dynamic_single_cell_live_full_v1_0"
+        and predecessor_private.get("status") == "terminal_failed_no_retry"
+        and predecessor_private.get("full_result_digest")
+        == decision.get("predecessor_private_result_digest")
+        and set(predecessor_private.get("accepted_fragments") or {})
+        == {"submit_research_thesis", "submit_research_mechanism"}
+        and len(failed_rows) == 1
+        and not failed_rows[0].get("analysis_step")
+        and not failed_rows[0].get("submission_step")
+        and not failed_rows[0].get("validated_fragment")
+    ):
+        raise ValueError("project_os_dynamic_counter_predecessor_private_invalid")
+
+    _, assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failure_assessment_ref",
+        sha_field="failure_assessment_sha256",
+    )
+    disposition = assessment.get("successor_disposition") or {}
+    if not (
+        assessment.get("schema_version")
+        == "fin_ia_s3_dynamic_single_cell_live_failure_assessment_v1_0"
+        and assessment.get("status")
+        == "terminal_failed_counter_WWC_analysis_generation_budget_exhausted"
+        and disposition.get("preserve_R1") is True
+        and disposition.get("maximum_fresh_model_calls") == 2
+        and disposition.get("rerun_natural_planner") is False
+        and disposition.get("rerun_current_S1_S2") is False
+        and disposition.get("rerun_thesis_or_mechanism") is False
+        and disposition.get("retry_count") == 0
+        and disposition.get("new_evidence_or_authority") is False
+        and disposition.get("contract_relaxation") is False
+    ):
+        raise ValueError("project_os_dynamic_counter_assessment_invalid")
+
+    runner_path = _repo_path(root, str(decision.get("runner_ref") or ""))
+    if _sha256(runner_path) != str(decision.get("runner_sha256") or ""):
+        raise ValueError("project_os_dynamic_counter_runner_drift")
+
+    profiles: dict[str, dict[str, Any]] = {}
+    profile_specs = (
+        (
+            "analysis_profile_ref",
+            "analysis_profile_sha256",
+            {"type": "enabled"},
+            "max",
+            16000,
+        ),
+        (
+            "submission_profile_ref",
+            "submission_profile_sha256",
+            {"type": "disabled"},
+            None,
+            2000,
+        ),
+    )
+    for ref_field, sha_field, thinking, reasoning, tokens in profile_specs:
+        _, profile = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field=ref_field,
+            sha_field=sha_field,
+        )
+        defaults = profile.get("request_defaults") or {}
+        if not (
+            profile.get("provider_id") == "deepseek"
+            and profile.get("model") == "deepseek-v4-pro"
+            and profile.get("wire_api")
+            == "openai_compatible_chat_completions"
+            and profile.get("base_url") == "https://api.deepseek.com"
+            and profile.get("endpoint") == "/chat/completions"
+            and (profile.get("authority") or {}).get("retry_count") == 0
+            and defaults.get("stream") is False
+            and defaults.get("thinking") == thinking
+            and defaults.get("max_tokens") == tokens
+            and (
+                defaults.get("reasoning_effort") == reasoning
+                if reasoning is not None
+                else "reasoning_effort" not in defaults
+            )
+            and "response_format" not in defaults
+            and "temperature" not in defaults
+            and "top_p" not in defaults
+        ):
+            raise ValueError(
+                f"project_os_dynamic_counter_provider_profile_invalid:{ref_field}"
+            )
+        profiles[ref_field] = {
+            "thinking": thinking,
+            "reasoning_effort": reasoning,
+            "max_tokens": tokens,
+        }
+
+    _, health = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="provider_health_evidence_ref",
+        sha_field="provider_health_evidence_sha256",
+        digest_field="provider_health_evidence_result_digest",
+    )
+    repair_submission = health.get("repair_submission") or {}
+    if not (
+        health.get("status")
+        == (
+            "completed_failed_fragment_validation_repair_contract_valid_"
+            "content_assessment_pending"
+        )
+        and (health.get("execution") or {}).get("retries") == 0
+        and repair_submission.get("attempted") is True
+        and repair_submission.get("finish_reason") == "tool_calls"
+        and repair_submission.get("tool_call_count") == 1
+    ):
+        raise ValueError("project_os_dynamic_counter_provider_health_invalid")
+
+    return {
+        "clean_proof_status": zero["status"],
+        "predecessor_status": predecessor_public["status"],
+        "provider_id": "deepseek",
+        "provider_model": "deepseek-v4-pro",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "recent_provider_steps": 1,
+        "dynamic_counter_successor": True,
         "micro_judgment_successor": False,
         "node_profiles": profiles,
     }
@@ -2074,6 +2362,20 @@ def build_preflight(
             "project_os_fragment_validation_repair_scope_allowance_missing"
         )
     if (
+        decision_projection.get("dynamic_counter_successor") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-025-dynamic-counter-WWC-analysis-high-thinking-"
+                "nonconvergence"
+            ),
+            allowed_scope=DYNAMIC_COUNTER_SUCCESSOR_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_dynamic_counter_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("relation_role_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -2114,7 +2416,16 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("dynamic_single_cell_successor") is True:
+    if decision_projection.get("dynamic_counter_successor") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one decision-bound "
+            "failed-node successor for DELL dynamic value_capture counter/WWC. "
+            "It reuses five immutable successful model nodes and permits one "
+            "max-thinking analysis plus one non-thinking strict submission. "
+            "It does not authorize new evidence, another analysis retry, "
+            "five-cell execution, publication, S3 acceptance, or release."
+        )
+    elif decision_projection.get("dynamic_single_cell_successor") is True:
         known_boundary = (
             "This current-baseline preflight permits only one decision-bound "
             "DELL SEC-only dynamic value_capture single-cell Chat run. It "

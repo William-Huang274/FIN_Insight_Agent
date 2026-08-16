@@ -116,6 +116,11 @@ DYNAMIC_SINGLE_CELL_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_dynamic_value_capture_live_scope_decision_v1_0.json"
 )
+DYNAMIC_COUNTER_SUCCESSOR_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_dynamic_counter_successor_"
+    "live_scope_decision_v1_0.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -207,6 +212,39 @@ def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() 
             "thinking": {"type": "enabled"},
             "reasoning_effort": "high",
             "max_tokens": 8000,
+        },
+        "submission_profile_ref": {
+            "thinking": {"type": "disabled"},
+            "reasoning_effort": None,
+            "max_tokens": 2000,
+        },
+    }
+    assert result["network_calls"] == 0
+    assert result["provider_calls"] == 0
+    assert result["credential_value_persisted"] is False
+
+
+def test_dynamic_counter_successor_binds_R1_prefix_and_two_node_budget() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=DYNAMIC_COUNTER_SUCCESSOR_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["run_scope_id"] == (
+        "one_dynamic_counter_WWC_failed_node_successor_after_clean_zero_call_gate"
+    )
+    assert result["decision_projection"]["dynamic_counter_successor"] is True
+    assert result["decision_projection"]["predecessor_status"] == (
+        "terminal_failed_no_retry"
+    )
+    assert result["decision_projection"]["node_profiles"] == {
+        "analysis_profile_ref": {
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+            "max_tokens": 16000,
         },
         "submission_profile_ref": {
             "thinking": {"type": "disabled"},

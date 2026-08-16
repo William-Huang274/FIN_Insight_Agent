@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 from pathlib import Path
 import sys
@@ -153,3 +154,23 @@ def test_dynamic_successor_replays_only_the_failed_counter_context(
     with pytest.raises(DynamicSingleCellLiveError) as exc:
         runner._compile_successor_replay_state(predecessor)
     assert exc.value.code == "dynamic_successor_failed_fragment_replay_drift"
+
+    missing_prefix = deepcopy(predecessor)
+    missing_prefix["fragment_steps"][0]["analysis_messages_digest"] = (
+        canonical_digest(list(messages))
+    )
+    del missing_prefix["accepted_fragments"]["submit_research_mechanism"]
+    with pytest.raises(DynamicSingleCellLiveError) as exc:
+        runner._compile_successor_replay_state(missing_prefix)
+    assert exc.value.code == "dynamic_successor_predecessor_prefix_invalid"
+
+    extra_fragment = deepcopy(predecessor)
+    extra_fragment["fragment_steps"][0]["analysis_messages_digest"] = (
+        canonical_digest(list(messages))
+    )
+    extra_fragment["accepted_fragments"][
+        "submit_research_counterargument_and_wwc"
+    ] = {"fragment": "must not already exist"}
+    with pytest.raises(DynamicSingleCellLiveError) as exc:
+        runner._compile_successor_replay_state(extra_fragment)
+    assert exc.value.code == "dynamic_successor_predecessor_prefix_invalid"

@@ -274,3 +274,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - thesis 与 mechanism 的四个模型节点均自然通过。模型保守判断产品收入到分部／公司利润桥不可推断，并只把同财季公司毛利率下降作为公司层观察，没有把它归因到 AI 服务器。当前两片段未观察到新的金融 L1。
 - counter／WWC 分析节点返回 HTTP 200，但 7,999 completion tokens 全部为 reasoning、可见输出 0，以 `model_gateway_generation_budget_exhausted` 原子终止。R1 共尝试 6 次调用、成功前缀 5 节点、accepted fragments 2、retry／fallback／外源均为 0。
 - 该失败属于 replaceable DeepSeek analysis profile 的第三片段非收敛，不是 S1/S2、Evidence Gate、Tool contract 或金融 Validator。只允许复用成功前缀的两调用 successor：一次现有 16k max-thinking agent profile 分析、一次 2k non-thinking 严格交卷；不得重跑 planner／检索／前两片段或增加 Evidence。完整动态 Judgment、L1、内容质量、五单元与 S3 acceptance 继续为 false。
+
+## 2026-08-16 S3 动态 counter／WWC successor 零调用门
+
+- 稳定 runner 已支持失败节点恢复，不新建 attempt-only runner。它精确重放 R1 的研究输入、thesis／mechanism 成功前缀和 counter 上下文；研究输入 digest=`3d1247e1...3329`、context digest=`c87824ce...2ae6`、messages digest=`c2c3062d...9c2b`，与 R1 保存值一致。
+- 缺失前缀、预注入 counter fragment、上下文／消息漂移均 fail closed。正式 proof result digest=`73f8c877...9b41`，0 model／Provider／network／embedding。
+- successor 预算只含一次 16k max-thinking counter 分析和一次 2k non-thinking 严格交卷；planner、S1/S2、thesis、mechanism、Evidence、产品指针均不得重跑或变化，R1 继续保持 failed。
+- 全仓 `382 passed`，compileall、active baseline `131／8／10／0` 与 secret scan `6716／0` 通过。下一步为 clean commit/push、Project OS preflight、fresh exact-once authority 和唯一 successor live；再次 16k 非收敛时转架构处置，不自动进入第二次分析重试。

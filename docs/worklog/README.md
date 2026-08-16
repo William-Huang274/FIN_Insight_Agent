@@ -12,3 +12,4 @@
   - 当前连续执行与异质泛化评测治理：`fin_0_1_3_s3/027_continuous_execution_and_heterogeneous_generalization_evaluation_governance.md`
   - 当前五单元 R3 node successor 工程门：`fin_0_1_3_s3/063_dynamic_five_cell_R3_node_successor_engineering.md`
   - 当前五单元 R3 node successor 正式门：`fin_0_1_3_s3/064_dynamic_five_cell_R3_node_successor_formal_gate.md`
+  - 当前五单元 R4 strict 非遵循与金融权威失败：`fin_0_1_3_s3/065_dynamic_five_cell_R4_strict_nonconformance_and_financial_authority_failure.md`

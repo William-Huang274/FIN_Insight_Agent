@@ -1,0 +1,116 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_node_successor_live_failure_assessment_v1_0",
+  "status": "terminal_three_of_five_contract_valid_remote_strict_pattern_nonconforming_and_financial_authority_fail_closed",
+  "recorded_at": "2026-08-17T06:20:00+08:00",
+  "case_key": "DELL",
+  "run_id": "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R4",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_node_successor_chat_live_authority_v1_0.json",
+  "authority_sha256": "ca1d5e50c138752e1e0456d6420f88f0697a141ba1976a364238b9c2b5130429",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_node_successor_chat_live_result_v1_0.json",
+  "result_sha256": "538c6f3026ee2a7d65e5a48d5fe7fb8d0f4708a903bf0a8b1c789055d96fc3d9",
+  "result_digest": "73c3a577446d11a5f1fe3035317aadfbc3dae1c17eaa1bce9ccaa6882a468766",
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R4/full_result.json",
+  "private_full_result_sha256": "c29dee4c2602b7698a707f3b1b05222a7ddbce4d7bbd6954a106ceecd3575299",
+  "private_full_result_digest": "ddb85d920b3a51a55c12da51092d0786da4ce2ff16647725ad95c19d0f977f32",
+  "observed": {
+    "immutable_R1_planner_reused": true,
+    "immutable_current_S1_S2_reused": true,
+    "immutable_R2_R3_valid_cell_judgments_reused": 3,
+    "immutable_R3_analysis_drafts_reused": 2,
+    "planner_retrieval_or_analysis_reruns": 0,
+    "model_calls_attempted": 2,
+    "strict_tool_calls_returned": 2,
+    "accepted_cell_judgments_total": 3,
+    "accepted_cell_ids": [
+      "CELL::demand_quality",
+      "CELL::operating_performance",
+      "CELL::cash_conversion"
+    ],
+    "rejected_cell_ids": [
+      "CELL::value_capture",
+      "CELL::counterevidence"
+    ],
+    "synthesis_attempted": false,
+    "retries": 0,
+    "fallbacks": 0,
+    "protocol_switches": 0,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0,
+    "product_publication": false
+  },
+  "provider_strict_conformance_audit": {
+    "provider_surface": "deepseek_chat_completions_beta_strict",
+    "both_requests_strict_true": true,
+    "both_requests_contained_shared_model_text_pattern": true,
+    "both_responses_finish_reason": "tool_calls",
+    "provider_returned_arguments_despite_pattern_violation": true,
+    "independent_local_json_schema_validator": "jsonschema.Draft202012Validator",
+    "value_schema_error_count": 1,
+    "value_schema_error_path": "$.mechanism_atom",
+    "value_schema_error_keyword": "pattern",
+    "counter_schema_error_count": 1,
+    "counter_schema_error_path": "$.thesis_atom",
+    "counter_schema_error_keyword": "pattern",
+    "official_contract_claim_ref": "https://api-docs.deepseek.com/guides/tool_calls",
+    "official_contract_claim_checked": "strict mode claims JSON Schema adherence and lists pattern plus $def/$ref as supported",
+    "conclusion": "The nonfinancial canary proved schema acceptance and one naturally compliant response, not adversarial remote enforcement. The real finance requests prove that remote strict output cannot be the semantic authority. Local validation correctly remained fail closed.",
+    "exact_remote_cause": "unknown_provider_regex_or_strict_enforcement_behavior_not_proven"
+  },
+  "submission_findings": [
+    {
+      "cell_id": "CELL::value_capture",
+      "failure_code": "research_consumer_mechanism_atom_invalid",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R4/FIVE-CELL-R4-VALUE-SUBMISSION-01/model_visible_request.json",
+      "request_capture_sha256": "097dcd3a6d8606d14c56415fa0780a1363040d7a3f312470470532335c3bffec",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R4/FIVE-CELL-R4-VALUE-SUBMISSION-01/provider_response.json",
+      "response_capture_sha256": "fd9d9350c37ddea2eaf3169f0d686af7bc2fa2938f8fd9953f8dd8945b9bbf40",
+      "remote_schema_violation": "mechanism_atom contained a filing identifier with digits despite the exact wire pattern",
+      "independent_financial_L1_finding": "The mechanism asserted that the AI-optimized-server mix compressed company gross margin even though the current truth spine exposes no typed product-to-company or product-to-segment margin bridge. A later caveat does not cancel the preceding causal assertion."
+    },
+    {
+      "cell_id": "CELL::counterevidence",
+      "failure_code": "research_consumer_supported_judgment_without_evidence",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R4/FIVE-CELL-R4-COUNTER-SUBMISSION-01/model_visible_request.json",
+      "request_capture_sha256": "b208e9b7ea0c5b425b17915f569aea0410ea8eedce4deddcf38c3c7a19969e33",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R4/FIVE-CELL-R4-COUNTER-SUBMISSION-01/provider_response.json",
+      "response_capture_sha256": "de92c89e3e55242d01f2c3f9216fdd350694e60028c4f64b27c4ef8f13b205e7",
+      "remote_schema_violation": "thesis_atom contained fiscal-period digits despite the exact wire pattern",
+      "independent_financial_L1_finding": "The model selected mixed and bounded_inference while citing one reviewed issuer disclosure only as limit. The thesis nevertheless treated demand, revenue, EPS and cash coexistence as support for new-revenue-to-profit-and-cash conversion. The authority label and the selected evidence role are inconsistent."
+    }
+  ],
+  "root_cause": {
+    "owning_stage": "S3",
+    "classification": "provider_strict_is_only_shape_assistance_plus_project_submission_authority_not_deterministically_compiled",
+    "project_owned_parts": [
+      "The runtime relied too heavily on remote pattern enforcement even though local validation remained authoritative.",
+      "The low-reasoning submitter still saw source-heavy and numeric-heavy working text and was asked to reproduce prose under a digit-free surface rule.",
+      "judgment_status and inference_authority duplicate facts that can be derived from selected support, limit and gap authority.",
+      "The dynamic five-cell contract lacks a direct product-or-segment to company-or-segment margin and profit bridge gate for both positive and negative causal attribution."
+    ],
+    "external_or_bounded_part": "DeepSeek Beta accepted the full finance schema but returned arguments that a standards-based local validator rejects against the exact accepted pattern. The provider-side reason is unknown and cannot be repaired inside FIN.",
+    "not_caused_by": [
+      "network, proxy, HTTP transport or incomplete response",
+      "natural planner or current S1/S2 execution",
+      "analysis convergence or completion-token capacity",
+      "missing RoleMethodPack or GraphContextPack injection",
+      "local validator false positive",
+      "JSON decoding, enum identity or tool-call absence"
+    ]
+  },
+  "disposition": {
+    "preserve_R1_R2_R3_and_R4_immutable": true,
+    "salvage_rejected_R4_arguments_as_business_truth": false,
+    "rerun_planner_S1_S2_or_three_valid_cells": false,
+    "immediate_next_scope": "zero-call provider-neutral submission-authority closure",
+    "required_structural_changes": [
+      "treat provider strict as shape assistance only and retain local full validation as authority",
+      "compile an authority-stripped submission view from the model-owned analysis draft so filing, period, exact numeric and ref surfaces are not copied back into prose",
+      "derive final judgment status and inference authority from selected evidence roles and visible typed gaps instead of trusting a second model choice",
+      "add an explicit product-or-segment to margin-profit causal bridge gate that rejects a causal assertion even when a later caveat is present",
+      "keep model authorship of thesis, mechanism, counterargument and WWC; the Harness must not invent or rewrite a conclusion"
+    ],
+    "next_live_rule": "Only after replay, mutation, three-case isolation, full regression, clean push, scope decision and fresh authority may a new attempt repair the value analysis and resubmit only affected nodes. No automatic R5 is authorized by this failed authority itself.",
+    "generalization_rule": "MU, NVDA and holdout cases remain blocked until DELL reaches five valid cells, synthesis and independent L1/content acceptance."
+  },
+  "known_boundary": "R4 proves remote strict-pattern nonconformance on two real finance tools and correctly preserves three valid cells. It does not produce a complete DELL five-cell judgment, synthesis, report, financial L1 pass, eight-dimension quality pass, heterogeneous generalization, qualified-human acceptance, S3 acceptance, Workbench publication or release."
+}

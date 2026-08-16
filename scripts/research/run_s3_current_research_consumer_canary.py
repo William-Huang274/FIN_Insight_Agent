@@ -2115,6 +2115,7 @@ def validate_failed_fragment_submission_successor_authority(
         "runner_ref",
         "loop_implementation_ref",
         "provider_transport_ref",
+        "scope_decision_ref",
         "zero_call_result_ref",
         "prior_full_fragment_result_ref",
         "prior_full_fragment_failure_assessment_ref",
@@ -2151,6 +2152,7 @@ def validate_failed_fragment_submission_successor_authority(
     assessment = _json(paths["prior_full_fragment_failure_assessment_ref"])
     fixture = _json(paths["submission_successor_fixture_ref"])
     zero_call = _json(paths["zero_call_result_ref"])
+    scope_decision = _json(paths["scope_decision_ref"])
     replay = (zero_call.get("normalized_proof") or {}).get(
         "saved_r6_non_thinking_submission_successor_replay"
     ) or {}
@@ -2160,7 +2162,35 @@ def validate_failed_fragment_submission_successor_authority(
         node_class="contract_submission_non_thinking",
     )
     if not (
-        prior.get("status") == "terminal_failed_no_retry"
+        scope_decision.get("schema_version")
+        == (
+            "fin_ia_s3_fixed_pack_failed_fragment_submission_successor_"
+            "live_scope_decision_v1_6"
+        )
+        and scope_decision.get("status")
+        == (
+            "failed_fragment_zero_call_pass_one_non_thinking_submission_"
+            "successor_authorized"
+        )
+        and scope_decision.get("maximum_fresh_model_calls") == 1
+        and scope_decision.get("successful_predecessor_model_calls_reused")
+        == 5
+        and scope_decision.get("failed_node_only_execution_required") is True
+        and scope_decision.get("successful_predecessor_nodes_rerun") is False
+        and scope_decision.get("analysis_node_rerun") is False
+        and scope_decision.get("clean_zero_call_result_sha256")
+        == _sha(paths["zero_call_result_ref"])
+        and scope_decision.get("clean_zero_call_result_digest")
+        == zero_call.get("result_digest")
+        and scope_decision.get("immutable_failed_result_sha256")
+        == _sha(paths["prior_full_fragment_result_ref"])
+        and scope_decision.get("immutable_failed_result_digest")
+        == prior.get("result_digest")
+        and scope_decision.get("submission_successor_fixture_sha256")
+        == _sha(paths["submission_successor_fixture_ref"])
+        and scope_decision.get("submission_profile_sha256")
+        == _sha(paths["submission_profile_ref"])
+        and prior.get("status") == "terminal_failed_no_retry"
         and prior.get("failure_code")
         == "model_gateway_reasoning_budget_exhausted"
         and prior.get("failure_fragment_tool")

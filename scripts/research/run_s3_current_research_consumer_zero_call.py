@@ -1937,7 +1937,7 @@ def run(authority_path: Path) -> dict[str, Any]:
     summary_body = {
         "schema_version": result_schema,
         "status": "engineering_pass_zero_call_current_consumer_contract_successor",
-        "recorded_at": "2026-08-13",
+        "recorded_at": str(authority["issued_at"]),
         "result_id": str(output["result_id"]),
         "authority_ref": _relative(authority_path),
         "authority_sha256": _sha(authority_path),
@@ -2013,10 +2013,18 @@ def run(authority_path: Path) -> dict[str, Any]:
             "s3_product_acceptance": False,
         },
         "next_decision": (
-            "Make a separate value-cost-risk decision before any replacement "
-            "DeepSeek call. If authorized later, test this changed synthesis "
-            "contract once; require deterministic L1, absolute content-quality, "
-            "paired and qualified-human review before any product publication."
+            "Use a separate clean exact-once execution authority for the natural "
+            "DELL five-cell dynamic case; this zero-call proof itself grants no "
+            "model permission. Require L1, absolute content-quality, paired and "
+            "qualified-human review before product publication."
+            if len(context_cells) == 5
+            and all(row["role_method_pack_id"] for row in context_cells)
+            else (
+                "Make a separate value-cost-risk decision before any replacement "
+                "DeepSeek call. If authorized later, test this changed synthesis "
+                "contract once; require deterministic L1, absolute content-quality, "
+                "paired and qualified-human review before any product publication."
+            )
         ),
         "known_boundary": str(authority["known_boundary"]),
     }

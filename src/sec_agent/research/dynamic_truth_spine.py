@@ -9,6 +9,11 @@ from sec_agent.research.claim_authority import (
     CLAIM_AUTHORITY_DYNAMIC_POLICY_SCHEMA_VERSION,
     load_claim_authority_policy,
 )
+from sec_agent.research.claim_surface_authority import (
+    CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_POLICY_SCHEMA_VERSION,
+    CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION,
+    load_claim_surface_authority_policy,
+)
 
 
 DYNAMIC_TRUTH_SPINE_POLICY_SCHEMA_VERSION = (
@@ -829,6 +834,179 @@ def compile_dynamic_claim_authority_policy(
     return body
 
 
+def compile_dynamic_claim_surface_policy(
+    *,
+    claim_authority_input: Mapping[str, Any],
+    template_policy: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Project a fixed relation surface onto dynamic reviewed authority.
+
+    The projection is monotonic: unavailable facts and relations are removed.
+    The sole permitted expansion is allowing an already-authorized
+    ``bridge_unavailable`` relation to fill ``thesis_atom`` when no positive
+    thesis relation survives.  That expansion can only express an explicit
+    ``not_inferable`` / ``insufficient_evidence`` abstention and grants no new
+    Evidence, NumericFact or causal authority.
+    """
+
+    _require(
+        claim_authority_input.get("schema_version")
+        == "fin_ia_dynamic_current_research_input_v1_1"
+        and claim_authority_input.get("model_output_contract", {}).get(
+            "payload_schema_version"
+        )
+        == "fin_ia_current_research_judgment_payload_v1_3"
+        and isinstance(
+            claim_authority_input.get("claim_authority_contract"), Mapping
+        )
+        and claim_authority_input["claim_authority_contract"].get(
+            "dynamic_retrieval_executed"
+        )
+        is True
+        and claim_authority_input["claim_authority_contract"].get(
+            "candidate_promotions"
+        )
+        == 0,
+        "dynamic_truth_spine_claim_surface_input_invalid",
+    )
+    template = load_claim_surface_authority_policy(template_policy)
+    _require(
+        template["schema_version"]
+        == CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION,
+        "dynamic_truth_spine_claim_surface_template_invalid",
+    )
+    qualified = template["qualified_scope"]
+    case_key = str(
+        claim_authority_input.get("case_identity", {}).get("case_key") or ""
+    )
+    cell_id = str(qualified.get("cell_id") or "")
+    _require(
+        case_key == str(qualified.get("case_key") or ""),
+        "dynamic_truth_spine_claim_surface_case_not_qualified",
+    )
+    cells = {
+        str(row.get("cell_id") or ""): row
+        for row in claim_authority_input.get("cells") or ()
+        if isinstance(row, Mapping)
+    }
+    _require(
+        cell_id in cells,
+        "dynamic_truth_spine_claim_surface_cell_not_qualified",
+    )
+    cell = cells[cell_id]
+    available_evidence = set(cell.get("allowed_evidence_refs") or ())
+    available_numeric_relations = set(
+        cell.get("allowed_numeric_relation_refs") or ()
+    )
+    available_gaps = set(cell.get("visible_gap_refs") or ())
+
+    facts = [
+        deepcopy(dict(row))
+        for row in template["source_bound_qualitative_facts"]
+        if str(row.get("source_evidence_ref") or "") in available_evidence
+    ]
+    available_qualitative_facts = {
+        str(row["qualitative_fact_ref"]) for row in facts
+    }
+
+    combinations = [
+        deepcopy(dict(row))
+        for row in template["allowed_structured_claim_combinations"]
+        if set(row["required_qualitative_fact_refs"]).issubset(
+            available_qualitative_facts
+        )
+        and set(row["required_evidence_refs"]).issubset(available_evidence)
+        and set(row["required_numeric_relation_refs"]).issubset(
+            available_numeric_relations
+        )
+        and set(row["required_gap_refs"]).issubset(available_gaps)
+    ]
+    _require(
+        combinations,
+        "dynamic_truth_spine_no_claim_surface_authority_available",
+    )
+
+    gap_only_thesis_enabled = False
+    if not any(
+        "thesis_atom" in set(row["allowed_atom_fields"])
+        for row in combinations
+    ):
+        gap_relation = next(
+            (
+                row
+                for row in combinations
+                if row["causal_bridge_authority"] == "bridge_unavailable"
+                and "not_inferable"
+                in set(row["allowed_inference_authorities"])
+                and "insufficient_evidence"
+                in set(row["allowed_judgment_statuses"])
+            ),
+            None,
+        )
+        _require(
+            gap_relation is not None,
+            "dynamic_truth_spine_no_safe_thesis_surface_available",
+        )
+        gap_relation["allowed_atom_fields"] = [
+            *gap_relation["allowed_atom_fields"],
+            "thesis_atom",
+        ]
+        gap_relation["allowed_inference_authorities"] = ["not_inferable"]
+        gap_relation["allowed_judgment_statuses"] = [
+            "insufficient_evidence"
+        ]
+        gap_only_thesis_enabled = True
+
+    body = {
+        "schema_version": (
+            CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_POLICY_SCHEMA_VERSION
+        ),
+        "status": "provider_neutral_dynamic_claim_relation_alias_authority",
+        "qualified_scope": {
+            "case_key": case_key,
+            "cell_id": cell_id,
+            "base_claim_authority_input_digest": claim_authority_input[
+                "research_input_digest"
+            ],
+            "base_claim_authority_judgment_schema_version": (
+                "fin_ia_current_research_judgment_payload_v1_3"
+            ),
+        },
+        "allowed_claim_subjects": deepcopy(
+            template["allowed_claim_subjects"]
+        ),
+        "allowed_claim_outcomes": deepcopy(
+            template["allowed_claim_outcomes"]
+        ),
+        "allowed_claim_relations": deepcopy(
+            template["allowed_claim_relations"]
+        ),
+        "allowed_attribution_bases": deepcopy(
+            template["allowed_attribution_bases"]
+        ),
+        "source_bound_qualitative_facts": facts,
+        "allowed_structured_claim_combinations": combinations,
+        "narrative_conflict_guard": deepcopy(
+            template["narrative_conflict_guard"]
+        ),
+        "authority": {
+            **deepcopy(template["authority"]),
+            "dynamic_request_scoped_reselection": True,
+            "candidate_promotion_forbidden": True,
+            "gap_only_thesis_may_abstain": True,
+        },
+    }
+    _require(
+        gap_only_thesis_enabled
+        or any(
+            "thesis_atom" in set(row["allowed_atom_fields"])
+            for row in combinations
+        ),
+        "dynamic_truth_spine_thesis_surface_invalid",
+    )
+    return body
+
+
 __all__ = [
     "DYNAMIC_EVIDENCE_RESPONSE_SET_SCHEMA_VERSION",
     "DYNAMIC_REVIEWED_PACK_VIEW_SCHEMA_VERSION",
@@ -840,5 +1018,6 @@ __all__ = [
     "compile_dynamic_reviewed_pack_view",
     "bind_dynamic_evidence_responses_to_research_input",
     "compile_dynamic_claim_authority_policy",
+    "compile_dynamic_claim_surface_policy",
     "load_dynamic_truth_spine_policy",
 ]

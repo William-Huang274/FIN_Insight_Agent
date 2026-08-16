@@ -13,6 +13,9 @@ CLAIM_SURFACE_AUTHORITY_POLICY_SCHEMA_VERSION = (
 CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION = (
     "fin_ia_claim_surface_authority_policy_v1_1"
 )
+CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_POLICY_SCHEMA_VERSION = (
+    "fin_ia_claim_surface_authority_policy_v1_2"
+)
 CLAIM_SURFACE_AUTHORITY_INPUT_SCHEMA_VERSION = (
     "fin_ia_current_research_input_v1_3"
 )
@@ -24,6 +27,9 @@ CLAIM_SURFACE_AUTHORITY_DELIVERABLE_SCHEMA_VERSION = (
 )
 CLAIM_SURFACE_RELATION_ALIAS_INPUT_SCHEMA_VERSION = (
     "fin_ia_current_research_input_v1_4"
+)
+CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_INPUT_SCHEMA_VERSION = (
+    "fin_ia_dynamic_current_research_input_v1_2"
 )
 CLAIM_SURFACE_RELATION_ALIAS_JUDGMENT_SCHEMA_VERSION = (
     "fin_ia_current_research_judgment_payload_v1_5"
@@ -195,20 +201,28 @@ def load_claim_surface_authority_policy(
         "claim_surface_policy_fields_invalid",
     )
     schema_version = str(payload.get("schema_version") or "")
-    alias_mode = schema_version == CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION
-    _require(
-        (
-            schema_version == CLAIM_SURFACE_AUTHORITY_POLICY_SCHEMA_VERSION
-            and payload.get("status")
-            == "provider_neutral_fixed_pack_claim_surface_authority"
-        )
-        or (
-            alias_mode
-            and payload.get("status")
-            == "provider_neutral_fixed_pack_claim_relation_alias_authority"
-        ),
-        "claim_surface_policy_status_invalid",
+    dynamic_mode = (
+        schema_version
+        == CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_POLICY_SCHEMA_VERSION
     )
+    alias_mode = schema_version in {
+        CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION,
+        CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_POLICY_SCHEMA_VERSION,
+    }
+    valid_status = (
+        schema_version == CLAIM_SURFACE_AUTHORITY_POLICY_SCHEMA_VERSION
+        and payload.get("status")
+        == "provider_neutral_fixed_pack_claim_surface_authority"
+    ) or (
+        schema_version == CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION
+        and payload.get("status")
+        == "provider_neutral_fixed_pack_claim_relation_alias_authority"
+    ) or (
+        dynamic_mode
+        and payload.get("status")
+        == "provider_neutral_dynamic_claim_relation_alias_authority"
+    )
+    _require(valid_status, "claim_surface_policy_status_invalid")
     qualified = _mapping(
         payload.get("qualified_scope"),
         "claim_surface_qualified_scope_invalid",
@@ -248,7 +262,7 @@ def load_claim_surface_authority_policy(
 
     raw_facts = payload.get("source_bound_qualitative_facts")
     _require(
-        isinstance(raw_facts, list) and bool(raw_facts),
+        isinstance(raw_facts, list) and (dynamic_mode or bool(raw_facts)),
         "claim_surface_qualitative_facts_invalid",
     )
     facts: list[dict[str, Any]] = []
@@ -481,18 +495,25 @@ def load_claim_surface_authority_policy(
         payload.get("authority"),
         "claim_surface_policy_authority_invalid",
     )
+    expected_authority = {
+        "model_selects_structured_claim_relation": True,
+        "model_selects_only_source_bound_qualitative_fact_refs": True,
+        "model_owns_narrative_judgment": True,
+        "harness_renders_selected_fact_surface_without_point_estimate": True,
+        "harness_may_validate_but_not_invent_claim_relation": True,
+        "legacy_lexical_guard_is_defense_in_depth_only": True,
+        "fixed_pack_test_is_not_agentic_research": True,
+        "qualified_human_content_review_required": True,
+    }
+    if dynamic_mode:
+        expected_authority = {
+            **expected_authority,
+            "dynamic_request_scoped_reselection": True,
+            "candidate_promotion_forbidden": True,
+            "gap_only_thesis_may_abstain": True,
+        }
     _require(
-        dict(authority)
-        == {
-            "model_selects_structured_claim_relation": True,
-            "model_selects_only_source_bound_qualitative_fact_refs": True,
-            "model_owns_narrative_judgment": True,
-            "harness_renders_selected_fact_surface_without_point_estimate": True,
-            "harness_may_validate_but_not_invent_claim_relation": True,
-            "legacy_lexical_guard_is_defense_in_depth_only": True,
-            "fixed_pack_test_is_not_agentic_research": True,
-            "qualified_human_content_review_required": True,
-        },
+        dict(authority) == expected_authority,
         "claim_surface_policy_authority_invalid",
     )
     return {
@@ -518,9 +539,17 @@ def compile_claim_surface_authority_research_input(
 
     loaded = load_claim_surface_authority_policy(policy)
     qualified = loaded["qualified_scope"]
+    dynamic_mode = (
+        loaded["schema_version"]
+        == CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_POLICY_SCHEMA_VERSION
+    )
     _require(
         claim_authority_input.get("schema_version")
-        == "fin_ia_current_research_input_v1_2"
+        == (
+            "fin_ia_dynamic_current_research_input_v1_1"
+            if dynamic_mode
+            else "fin_ia_current_research_input_v1_2"
+        )
         and claim_authority_input.get("research_input_digest")
         == qualified["base_claim_authority_input_digest"]
         and claim_authority_input.get("model_output_contract", {}).get(
@@ -588,10 +617,10 @@ def compile_claim_surface_authority_research_input(
             and set(row["required_gap_refs"]).issubset(allowed_gaps),
             "claim_surface_combination_binding_drift",
         )
-    alias_mode = (
-        loaded["schema_version"]
-        == CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION
-    )
+    alias_mode = loaded["schema_version"] in {
+        CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION,
+        CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_POLICY_SCHEMA_VERSION,
+    }
     relation_card_body = {
         "card_schema_version": (
             "fin_ia_structured_claim_relation_card_v1_1"
@@ -641,9 +670,13 @@ def compile_claim_surface_authority_research_input(
     unsigned = deepcopy(dict(claim_authority_input))
     unsigned.pop("research_input_digest", None)
     unsigned["schema_version"] = (
-        CLAIM_SURFACE_RELATION_ALIAS_INPUT_SCHEMA_VERSION
-        if alias_mode
-        else CLAIM_SURFACE_AUTHORITY_INPUT_SCHEMA_VERSION
+        CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_INPUT_SCHEMA_VERSION
+        if dynamic_mode
+        else (
+            CLAIM_SURFACE_RELATION_ALIAS_INPUT_SCHEMA_VERSION
+            if alias_mode
+            else CLAIM_SURFACE_AUTHORITY_INPUT_SCHEMA_VERSION
+        )
     )
     unsigned["source_bound_qualitative_fact_cards"] = deepcopy(compiled_facts)
     for row in unsigned["cells"]:
@@ -701,9 +734,19 @@ def compile_claim_surface_authority_research_input(
         "narrative_conflict_guard": deepcopy(
             loaded["narrative_conflict_guard"]
         ),
-        "fixed_pack_unit_test_only": True,
-        "dynamic_retrieval_executed": False,
+        "fixed_pack_unit_test_only": not dynamic_mode,
+        "dynamic_retrieval_executed": dynamic_mode,
         "agentic_research_claimed": False,
+        **(
+            {
+                "qualification_mode": (
+                    "dynamic_request_scoped_reviewed_evidence"
+                ),
+                "candidate_promotions": 0,
+            }
+            if dynamic_mode
+            else {}
+        ),
         "authority": deepcopy(loaded["authority"]),
     }
     return {**unsigned, "research_input_digest": canonical_digest(unsigned)}
@@ -1009,6 +1052,8 @@ __all__ = [
     "CLAIM_SURFACE_RELATION_ALIAS_INPUT_SCHEMA_VERSION",
     "CLAIM_SURFACE_RELATION_ALIAS_JUDGMENT_SCHEMA_VERSION",
     "CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION",
+    "CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_INPUT_SCHEMA_VERSION",
+    "CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_POLICY_SCHEMA_VERSION",
     "ClaimSurfaceAuthorityError",
     "compile_claim_surface_authority_research_input",
     "load_claim_surface_authority_policy",

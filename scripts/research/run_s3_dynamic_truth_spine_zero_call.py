@@ -24,11 +24,15 @@ from apps.workbench.backend.application.research_retrieval_service import (
 from sec_agent.research.claim_authority import (
     compile_claim_authority_research_input,
 )
+from sec_agent.research.claim_surface_authority import (
+    compile_claim_surface_authority_research_input,
+)
 from sec_agent.research.current_consumer import compile_current_research_input
 from sec_agent.research.dynamic_truth_spine import (
     DynamicTruthSpineError,
     bind_dynamic_evidence_responses_to_research_input,
     compile_dynamic_claim_authority_policy,
+    compile_dynamic_claim_surface_policy,
     compile_dynamic_evidence_responses,
     compile_dynamic_reviewed_pack_view,
 )
@@ -60,6 +64,11 @@ DELL_ATOMS = ROOT / (
 DELL_CLAIM_TEMPLATE = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_v1_0.json"
+)
+DELL_CLAIM_SURFACE_TEMPLATE = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_v1_2.json"
 )
 
 
@@ -339,6 +348,17 @@ def main() -> int:
                     dynamic_input,
                     policy=dynamic_claim_policy,
                 )
+                dynamic_surface_policy = compile_dynamic_claim_surface_policy(
+                    claim_authority_input=claim_input,
+                    template_policy=_json(DELL_CLAIM_SURFACE_TEMPLATE),
+                )
+                surface_input = compile_claim_surface_authority_research_input(
+                    claim_input,
+                    policy=dynamic_surface_policy,
+                )
+                surface_relations = dynamic_surface_policy[
+                    "allowed_structured_claim_combinations"
+                ]
                 cases[-1]["dynamic_claim_authority"] = {
                     "policy_digest": canonical_digest(dynamic_claim_policy),
                     "compiled_input_digest": claim_input["research_input_digest"],
@@ -347,6 +367,34 @@ def main() -> int:
                     ],
                     "candidate_promotions": claim_input[
                         "claim_authority_contract"
+                    ]["candidate_promotions"],
+                }
+                cases[-1]["dynamic_claim_surface"] = {
+                    "policy_digest": canonical_digest(dynamic_surface_policy),
+                    "compiled_input_digest": surface_input[
+                        "research_input_digest"
+                    ],
+                    "allowed_claim_relation_refs": [
+                        row["claim_relation_ref"] for row in surface_relations
+                    ],
+                    "fragment_coverage": {
+                        field: any(
+                            field in set(row["allowed_atom_fields"])
+                            for row in surface_relations
+                        )
+                        for field in (
+                            "thesis_atom",
+                            "mechanism_atom",
+                            "counterargument_atom",
+                        )
+                    },
+                    "gap_only_thesis_abstention_available": any(
+                        row["causal_bridge_authority"] == "bridge_unavailable"
+                        and "thesis_atom" in set(row["allowed_atom_fields"])
+                        for row in surface_relations
+                    ),
+                    "candidate_promotions": surface_input[
+                        "claim_surface_authority_contract"
                     ]["candidate_promotions"],
                 }
     assert dell_private is not None
@@ -367,9 +415,13 @@ def main() -> int:
         and cases[0]["summary"]["accepted_reviewed_evidence_count"] > 0
         and cases[0]["dynamic_research_input_compiled"] is True
         and cases[0]["dynamic_claim_authority"]["candidate_promotions"] == 0
+        and cases[0]["dynamic_claim_surface"]["candidate_promotions"] == 0
+        and all(
+            cases[0]["dynamic_claim_surface"]["fragment_coverage"].values()
+        )
     )
     body = {
-        "schema_version": "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_0",
+        "schema_version": "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_1",
         "status": (
             "zero_call_dynamic_truth_spine_engineering_pass"
             if passed
@@ -395,6 +447,8 @@ def main() -> int:
             "unreviewed_candidate_text_excluded": True,
             "three_case_identity_isolation": True,
             "dynamic_dell_claim_authority_narrowed": passed,
+            "dynamic_dell_claim_relation_surface_compiled": passed,
+            "gap_only_thesis_can_only_abstain": passed,
             "natural_model_planner_executed": False,
             "dynamic_agentic_research_claimed": False,
             "s3_product_acceptance_claimed": False,

@@ -16,10 +16,14 @@ from sec_agent.research.dynamic_truth_spine import (
     bind_dynamic_evidence_responses_to_research_input,
     compile_dynamic_evidence_responses,
     compile_dynamic_claim_authority_policy,
+    compile_dynamic_claim_surface_policy,
     compile_dynamic_reviewed_pack_view,
 )
 from sec_agent.research.claim_authority import (
     compile_claim_authority_research_input,
+)
+from sec_agent.research.claim_surface_authority import (
+    compile_claim_surface_authority_research_input,
 )
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 
@@ -30,6 +34,11 @@ POLICY = ROOT / (
 CLAIM_TEMPLATE = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_v1_0.json"
+)
+CLAIM_SURFACE_TEMPLATE = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
+    "claim_surface_authority_v1_2.json"
 )
 
 
@@ -459,6 +468,102 @@ def test_dynamic_claim_policy_only_removes_unavailable_authority() -> None:
         row["causal_bridge_authority"]
         for row in narrowed["allowed_combinations"]
     } == {"same_scope_observation_only", "bridge_unavailable"}
+
+
+def test_dynamic_claim_surface_removes_missing_source_and_keeps_safe_abstention(
+) -> None:
+    pack = _pack([_item()])
+    responses = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=_controlled([]),
+        evidence_pack=pack,
+    )
+    claim_template = _json(CLAIM_TEMPLATE)
+    surface_template = _json(CLAIM_SURFACE_TEMPLATE)
+    base = {
+        "schema_version": "fin_ia_current_research_input_v1_1",
+        "case_identity": {"case_key": "DELL"},
+        "evidence_cards": [],
+        "cells": [
+            {
+                "cell_id": "CELL::value_capture",
+                "primary_slot_id": "pricing_mix_value_capture",
+                "supplemental_context_slot_ids": [],
+                "allowed_evidence_refs": [],
+                "allowed_numeric_refs": ["NUM::CURRENT"],
+                "allowed_numeric_relation_refs": ["REL::B60164179DFFDF5A"],
+                "visible_gap_refs": list(claim_template["bridge_gap_refs"]),
+            }
+        ],
+        "model_output_contract": {
+            "payload_schema_version": (
+                "fin_ia_current_research_judgment_payload_v1_2"
+            ),
+            "model_owned_cell_fields": [],
+            "harness_injected_cell_fields": [],
+        },
+        "known_boundary": "base",
+        "research_input_digest": "base-digest",
+    }
+    dynamic = bind_dynamic_evidence_responses_to_research_input(
+        research_input=base,
+        evidence_responses=responses,
+    )
+    claim_policy = compile_dynamic_claim_authority_policy(
+        research_input=dynamic,
+        template_policy=claim_template,
+    )
+    claim_input = compile_claim_authority_research_input(
+        dynamic,
+        policy=claim_policy,
+    )
+    surface_policy = compile_dynamic_claim_surface_policy(
+        claim_authority_input=claim_input,
+        template_policy=surface_template,
+    )
+
+    relations = {
+        row["claim_relation_ref"]: row
+        for row in surface_policy["allowed_structured_claim_combinations"]
+    }
+    assert set(relations) == {
+        "CR::DELL::COMPANY_MARGIN_OBSERVATION",
+        "CR::DELL::PROFIT_BRIDGE_GAP",
+    }
+    assert "thesis_atom" not in relations[
+        "CR::DELL::COMPANY_MARGIN_OBSERVATION"
+    ]["allowed_atom_fields"]
+    assert "thesis_atom" in relations[
+        "CR::DELL::PROFIT_BRIDGE_GAP"
+    ]["allowed_atom_fields"]
+    assert relations["CR::DELL::PROFIT_BRIDGE_GAP"][
+        "allowed_inference_authorities"
+    ] == ["not_inferable"]
+    assert relations["CR::DELL::PROFIT_BRIDGE_GAP"][
+        "allowed_judgment_statuses"
+    ] == ["insufficient_evidence"]
+    assert surface_policy["source_bound_qualitative_facts"] == []
+    assert surface_policy["authority"]["gap_only_thesis_may_abstain"] is True
+
+    compiled = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=surface_policy,
+    )
+    assert compiled["schema_version"] == (
+        "fin_ia_dynamic_current_research_input_v1_2"
+    )
+    assert compiled["claim_surface_authority_contract"][
+        "dynamic_retrieval_executed"
+    ] is True
+    assert compiled["claim_surface_authority_contract"][
+        "fixed_pack_unit_test_only"
+    ] is False
+    assert compiled["claim_surface_authority_contract"][
+        "candidate_promotions"
+    ] == 0
+    assert set(
+        compiled["model_output_contract"]["allowed_claim_relation_refs"]
+    ) == set(relations)
 
 
 def test_pack_binding_and_case_mutations_fail_closed() -> None:

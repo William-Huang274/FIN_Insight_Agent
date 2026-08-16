@@ -219,3 +219,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - `20%`、`2027`、未知 `12-Z`、URL 和把 `10-Q` 写入 thesis 的 mutation 均以原字段对应错误 fail closed；R3 claim-local、R4 causal-polarity、三案例 full-fake 与身份／Graph 污染检查均继续通过。两个 fresh process 字节等价，formal result digest=`d7667e84...526f`，0 model／provider／network／embedding／retry。
 - 实现已在 clean/synced commit `ac80d804...` 上通过全仓 `355 passed`；compileall、active baseline `127 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 与 secret scan `6,672 files / 0 finding` 均通过。R6 decision 仍固定同一 DELL fixed Pack、6 model calls／3 tool calls／0 EvidenceRequest／0 retry／0 fallback；须在本次 gate 提交 clean push、真实 Project OS preflight 和 fresh authority 后才可执行。
 - 该结果只构成 provider-neutral engineering pass，不追认 R5。R6 的自然完整 Judgment、正式 L1 与内容质量通过前，动态 Truth Spine、五单元、异质泛化报告和 S3 acceptance 仍为 false。
+
+## 2026-08-16 S3 完整片段 Chat FFJ-R6
+
+- clean/synced `f08d391c...` 上的 R6 执行完 6/6 次 DeepSeek 调用。thesis、mechanism 的分析／交卷／验证通过；counter／WWC 的可见分析也完整结束。`10-Q` 字段误判没有复发，0 retry／fallback／外源／embedding／协议切换。
+- 最后一次 counter／WWC submission 返回 HTTP 200 完整 JSON，但 `finish_reason=length`、`completion=2,000`、`reasoning=2,000`，可见内容和 Tool Call 均为 0，因此以 `model_gateway_reasoning_budget_exhausted` 结束；完整 Judgment、正式 L1 与内容 acceptance 仍为 false。
+- 根因属于 replaceable DeepSeek profile：所谓 `low-thinking` submission 实际同时发送 `thinking=enabled` 与 `reasoning_effort=low`，而 GA 官方文档明确 thinking mode 下 `low／medium` 映射为 `high`。这不是网络、传输、金融合同或检索失败。
+- R6 保持不可变。后续只允许新建 `thinking=disabled` 且不发送 `reasoning_effort` 的 provider-only submission profile，零调用复用前五个成功节点并证明终态，然后仅执行一次 fresh counter／WWC submission successor；不得重跑前五节点或扩大金融合同预算。

@@ -1,0 +1,56 @@
+{
+  "schema_version": "fin_ia_s3_full_fragment_submission_successor_fixture_v1_0",
+  "source_run_id": "FIN013-S3-DELL-VC-FULL-FRAGMENT-CHAT-FFJ-R6",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_5.json",
+  "source_result_sha256": "2feb55c28e6b8fa89f3f21a78a41181bae88a38dda6acc7e4bfbebc06d55f454",
+  "source_result_digest": "4b590ebc21fce90ef60e5aaf2f40ea36e1a61761827fc60b7e3020403904a317",
+  "source_full_result_sha256": "5f59c929640d304f94b23aafd6a60642cff79678c020b92c7df018021c2009f9",
+  "source_full_result_digest": "293617b064d86f0e06b1597276fe92e573e39d312bcff5eff43e3bc2f539166d",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "research_input_digest": "f6359b3a9684f78a0b5b7bdb688e6d847069c7bc029572f164dcb390a61f9854",
+  "failed_fragment_tool": "submit_research_counterargument_and_wwc",
+  "failed_submission_code": "model_gateway_reasoning_budget_exhausted",
+  "counter_context_digest": "2021a9a7d89dccff002b3b97b5eab67ef7240106c05b974630acd7ce3dedc95f",
+  "counter_analysis_messages_digest": "528357c799ed9ef40f7cc95f6ef825d87f86f57a211da2e96837d0a5bb9e3d94",
+  "counter_submission_messages_digest": "baa604871e6e6ba64a2e10a8efe9c19f21c1dfdff8530ebc6713627b975b6650",
+  "counter_analysis_content_digest": "3cc466ed77323fe7d41d4a3dbd1763448984d10aed08d057c5bfc62ffe140b43",
+  "counter_analysis_content": "最合适的 ClaimRelation 是 **CR::DELL::PROFIT_BRIDGE_GAP**。理由：本单元格是 counterargument_and_wwc，核心不是否认管理层对产品盈利的表述，而是反驳“产品盈利符合目标即可推导公司利润获取”。PROFIT_BRIDGE_GAP 明确要求保留量、价、mix 三类缺口，允许判断为 insufficient_evidence，与反方逻辑最吻合。COMPANY_MARGIN_OBSERVATION 只能观察公司毛利率同季度同比下降，但禁止产品归因，反方力度弱；MULTI_DRIVER_CONTEXT 可引入管理层多因素表述，却缺少结构性缺口，且易把管理层口径误升为审计事实。\n\n**判断**：选择 PROFIT_BRIDGE_GAP，判断状态 insufficient_evidence，推理权威 not_inferable。  \n**证据**：管理层电话会议称 AI 服务器盈利符合中个位数经营利润率目标；同口径公司毛利率较上年同期收缩；typed gaps 显示无 AI 服务器 ASP、无出货台数或等价算力单位、无价格-数量-配置桥。这些证据共同形成反方：产品盈利达标与公司毛利率下降并存，不能确认利润转化。  \n**边界**：管理层声明不是经审计产品分部利润；公司毛利率数值关系只说明整体变化，不提供产品分配；gap 本身不授予事实权威。  \n**最强替代解释**：公司毛利率下降可由低毛利 AI 服务器占比上升、其他分部组合波动或一次性因素驱动，而非 AI 服务器盈利未达标；电话会议同时提到传统服务器利润率稳定、存储利润率上升、CSG 增长，说明整体毛利率确有多因素背景。  \n**仍缺什么**：产品级收入拆分量、AI 服务器 ASP、出货台数或算力单位、可复算的价格-配置桥，以及产品利润对公司利润的增量贡献。\n\n**What-Would-Change**  \n- **方向**：若未来 1—2 个季度官方材料提供 AI 服务器 ASP、出货量或配置桥，且同口径公司毛利率同比变化不再收缩或转正，同时产品盈利仍符合目标，则“利润桥未建立”的反方明显减弱；若毛利率继续同口径下滑且仍无量价拆分，反方增强。  \n- **时间范围**：未来 1—2 个季度。  \n- **证据路线**：优先官方 10-Q、prepared remarks、后续电话会议；商业数据或行业出货数据不可得时，维持 typed gap。  \n- **数值阈值**：不设新绝对阈值，仅以当前同季度公司毛利率 NumericFact 为参照，观察未来同口径同比方向，不用新数字。",
+  "accepted_fragments": {
+    "submit_research_thesis": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::PRODUCT_TARGET",
+      "evidence_uses": [{"evidence_ref": "EV::0063F22F643B94ED", "use_role": "support"}],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "qualitative_fact_refs": ["QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"],
+      "method_step_refs": ["METHOD::VC::PRODUCT_FINANCIAL_BRIDGE", "METHOD::VC::CAUSAL_BOUNDARY", "METHOD::VC::COUNTERREAD"],
+      "graph_edge_refs": ["GRAPH::2B17375548682087"],
+      "judgment_status": "supported",
+      "confidence_basis": "direct_source_only",
+      "inference_authority": "directly_supported",
+      "claim_scope": "product",
+      "financial_scope": "product_financial",
+      "causal_bridge_authority": "management_assertion_only",
+      "thesis_atom": "管理层报告 AI 服务器产品盈利水平符合其所述经营利润率目标。"
+    },
+    "submit_research_mechanism": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::PROFIT_BRIDGE_GAP",
+      "evidence_uses": [{"evidence_ref": "EV::0063F22F643B94ED", "use_role": "context"}],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "qualitative_fact_refs": [],
+      "method_step_refs": ["METHOD::VC::CAUSAL_BOUNDARY", "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE", "METHOD::VC::MATERIAL_GAP_ROUTE", "METHOD::VC::WHAT_WOULD_CHANGE", "METHOD::VC::COUNTERREAD"],
+      "graph_edge_refs": [],
+      "inference_authority": "not_inferable",
+      "mechanism_atom": "AI 服务器产品盈利符合管理层所述目标，但产品到分部或公司利润的可复核桥尚未建立；现有证据不能把产品表现归因为分部或公司利润。"
+    }
+  },
+  "accepted_fragment_digests": {
+    "submit_research_thesis": "57b1ac56292de387515280a4231fc4d5e0078f35635a9b4ded855bb459ac55f2",
+    "submit_research_mechanism": "49d0d1523b51d8f843e708d60f1311f6b0d91a1a4e14c3f96539fc458121d282"
+  },
+  "private_reasoning_persisted": false,
+  "manual_fragment_or_tool_payload_constructed": false
+}

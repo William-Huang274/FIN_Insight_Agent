@@ -29,6 +29,12 @@ from .responses import (
     execute_responses_tool_step_exact_once,
 )
 from .transport_dispatch import execute_agent_tool_step_exact_once
+from .deepseek_strict import (
+    DEEPSEEK_STRICT_UNSUPPORTED_SCHEMA_KEYWORDS,
+    DeepSeekStrictProjectionError,
+    project_deepseek_strict_tool,
+    validate_deepseek_strict_submission_profile,
+)
 
 __all__ = [
     "ChatCompletionProfile",
@@ -54,4 +60,8 @@ __all__ = [
     "load_agent_transport_profile",
     "project_tool_definitions",
     "validate_deepseek_ga_live_transport",
+    "DEEPSEEK_STRICT_UNSUPPORTED_SCHEMA_KEYWORDS",
+    "DeepSeekStrictProjectionError",
+    "project_deepseek_strict_tool",
+    "validate_deepseek_strict_submission_profile",
 ]

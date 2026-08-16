@@ -359,3 +359,15 @@ fixed-Pack ClaimRelation 模板不是动态研究的默认权限清单。Evidenc
 - analysis／submission／Validator／Renderer 继续消费同一个关系卡；Chat、Responses 与其他 Provider 只做外层协议投影。
 
 当前 DELL SEC-only 零调用 successor 删除了依赖 transcript 的 `PRODUCT_TARGET` 与 `MULTI_DRIVER_CONTEXT`，只保留 `COMPANY_MARGIN_OBSERVATION` 和 `PROFIT_BRIDGE_GAP`。后者是唯一 thesis 出口且只能 abstain；candidate promotion 仍为 0。该结构通过不代表自然 planner 或动态 Judgment 已通过。
+
+## 16. 动态 micro-Judgment 的 request-scoped 消费合同
+
+动态关系面可编译不等于三片段 Runtime 已安全消费它。formal v1.2 进一步冻结以下 provider-neutral 规则：
+
+- fixed-Pack 与 dynamic 使用独立、显式 policy mode；半切换或用 fixed-only policy 消费 dynamic input 必须拒绝；
+- cell-level `allowed_evidence_refs` 只能来自与该 cell Evidence Slot 相关的本轮 EvidenceResponse，不得从 case-level reviewed Pack 或其他请求补齐；
+- GraphContext edge 的全部 supporting Evidence 都必须属于同一 request-scoped 集合，否则删除；若没有合格 edge，minimum edge requirement 同步收窄，不能保留陈旧最低数量；
+- 每个 fragment 按自己的 ClaimRelation `inference_authority` 判定局部 status，terminal compiler 才做跨片段最保守聚合；
+- abstaining thesis 对终态形成上限，后续 mechanism／counterargument 只能补充边界，不能升格结论。
+
+这一合同关闭的是动态 Judgment 集成安全，不是研究内容能力。formal v1.2 的 DELL controlled fragments 能形成完整终态与 deliverable，但终态只能是 `insufficient_evidence / not_inferable / bridge_unavailable`；模型、Provider 和外部网络调用均为 0。自然 planner、自然 Judgment、动态 Agentic Research、五单元和三案例泛化仍必须由后续独立 live 与内容验收证明。

@@ -69,9 +69,29 @@ successor 在 provider-neutral Runtime 中加入动态 ClaimRelation 投影：
 
 实现提交 `5db21089f074c3314fbd7f41dfc77963dcea767b`。formal successor 为 `configs/research/evals/fin_ia_0_1_3_s3_dynamic_truth_spine_zero_call_result_v1_1.json`，result digest=`1082988fd41b1a58d992e76238f005a9dfdb73ac8d5b026e2f539576c042df08`。最终全仓 `374 passed`，compileall、active baseline `129 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 和 secret scan `6,702 files / 0 finding` 通过。它仍使用 controlled atoms 与本地 Qwen embedding，只证明动态交卷结构，不证明自然 planner、自然 Judgment 或 Agentic Research。
 
+## 动态 micro-Judgment 终态工程闭环
+
+第二个 successor 把动态关系面真正接回 fixed-Pack 已验证的三片段 Tool Contract、终态 Judgment 和 deliverable compiler，但没有复用 fixed-Pack 的默认权限：
+
+- 动态模式必须显式选择独立 policy；fixed／dynamic 标志半切换会 fail closed；
+- 每个研究单元只保留本轮相关 EvidenceResponse 实际返回的 reviewed Evidence，禁止从同一案例的其他请求借 Evidence；
+- GraphContext edge 只有在其全部 Evidence refs 都属于本轮 request-scoped 集合时才能保留；没有合法 edge 时，最低图边要求确定性收窄为 0；
+- thesis、mechanism、counterargument／WWC 使用各自关系的局部推论权限；终态才做最保守聚合；
+- thesis 若为 `not_inferable / insufficient_evidence`，后续片段不得将终态升级为 bounded 或 supported。
+
+实现过程中依次暴露并关闭了三个项目集成问题，而非 DeepSeek 问题：
+
+1. 动态输入最初仍被 fixed-Pack-only policy 拒绝，说明“关系已投影”与“完整交卷合同可消费动态输入”尚未真正连接；
+2. 单元上下文会从案例级 allowed Evidence 与旧 graph minimum 借到其他请求的权威，可能让未被本轮 EvidenceResponse 返回的资料进入 Judgment；
+3. thesis 的聚合 `insufficient_evidence` 被错误提前套给 mechanism／counter relation，导致合法的公司同口径观察被拒绝。
+
+最终 formal v1.2 绑定实现提交 `66920fdbfabeccd14f05f0fc8a102165e7e341e8`，结果为 `configs/research/evals/fin_ia_0_1_3_s3_dynamic_truth_spine_zero_call_result_v1_2.json`，result digest=`13409368c69c6dadd8ced2b29e43de08e7ea4c2ec73f19f13a28f82845deaa0d`。DELL 的三个 controlled fragment、终态 Judgment 和 deliverable 均可物化，终态为 `insufficient_evidence / not_inferable / bridge_unavailable`；5 个 Tool Schema、6 个 mutation 全部通过。三案仍为 0 model／0 provider／0 network，candidate promotion=0。全仓为 `376 passed`，compileall、active baseline `129 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 和 secret scan `6,704 files / 0 finding` 通过。
+
+controlled fragment 明确不是产品 Judgment。该证明只说明动态证据不足时系统能安全、完整地交卷，不说明 DeepSeek 会自然规划、自然选择证据或写出合格判断。
+
 ## 下一步
 
-1. 先登记并推送上述 dynamic ClaimRelation successor，在 clean/synced HEAD 上签发 fresh authority。
+1. 登记并推送 formal v1.2，在 clean/synced HEAD 上签发 fresh authority。
 2. 只给自然 DELL `value_capture` planner 用户问题、公司身份、as-of 和工具权限，让其提出 EvidenceRequest。
-3. 真实执行 S1/S2、返回 EvidenceResponse，并在当前有限权威下完成一次动态 Judgment。
+3. 真实执行 S1/S2、返回 EvidenceResponse，并在当前有限权威下完成一次自然动态 Judgment。
 4. 保留 S1 transcript/index 同步缺口；根据自然纵切结果决定在进入五单元前的最小同步修复，不把缺口偷塞进 S3。

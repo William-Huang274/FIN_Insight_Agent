@@ -43,6 +43,7 @@
   - [x] provider-neutral EvidenceResponse、reviewed-only 重选、动态 claim authority、三案 identity/mutation 零调用工程纵切
   - [x] 动态 ClaimRelation 投影与 gap-only thesis abstain（三片段结构零调用 successor；0 candidate promotion）
   - [x] 动态 request-scoped micro-Judgment、终态与 deliverable 零调用闭环（跨请求借权、陈旧 graph minimum、全局／局部 status 混用已关闭；controlled fragments 非产品 Judgment）
+  - [x] 共用动态投影与稳定单单元 live runner（自然 planner＋当前 S1/S2＋三片段交卷；379 tests；真实 live 待执行）
   - [ ] 自然 planner→真实 S1/S2→动态 Judgment；不得把工程证明或 controlled atoms 计作 Agentic Research
   - [ ] S1 reviewed Pack↔当前检索对象库／来源路由同步（Dell transcript 已审但动态不可发现；MU/NVDA 当前请求 0 reviewed match）
 - [ ] DELL `value_capture` 单单元动态 Agentic Research

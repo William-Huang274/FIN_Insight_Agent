@@ -260,3 +260,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - clean implementation commit=`b731f4e7...715e`，formal result digest=`6e13f687...baab`；全仓 `373 passed`，active baseline `129／8／10／0`，secret scan `6700／0`。这里 0 model call 指 0 生成式 DeepSeek／Provider；当前 S1 确实执行本地 Qwen embedding。
 - dynamic ClaimRelation successor 已在实现提交 `5db21089...767b` 上通过，formal result digest=`1082988f...df08`。当前只暴露 `COMPANY_MARGIN_OBSERVATION` 与 `PROFIT_BRIDGE_GAP`；gap-only thesis 被硬性收窄为 `not_inferable / insufficient_evidence`，三片段可交卷但不能制造正向结论。
 - 当前工程控制面通过，但自然 planner、动态 Judgment 和 Agentic Research 均为 false。新开的 `RC-S1-019` 记录 reviewed Pack 与 current candidate index／source route 漂移：Dell transcript 已审但动态不可发现。下一步在 clean/synced gate 后执行一次诚实的 DELL SEC-only 自然单单元纵切；三案例产品门和高质量五单元报告仍须先处理该 S1 同步缺口。
+
+## 2026-08-16 S3 动态单单元 live runner 与范围门
+
+- 动态 EvidenceResponse、Claim Authority 与 Claim Surface 已抽成 provider-neutral 共用 Runtime；formal v1.2 和 live 不再各自复制一套投影。重构回放保持三案业务结果与 mutation 完全相同。
+- 稳定 runner `scripts/research/run_s3_dynamic_single_cell_live.py` 已在提交 `db97f9bf...6c90` 冻结并推送。它从自然 DELL 用户问题开始，依次执行 1 次 planner、当前 S1/S2、reviewed-only EvidenceResponse，以及三组“分析＋非思考严格交卷”，最多 7 次模型调用；0 retry／fallback／外源网络／candidate promotion。
+- runner 对本地编译与产品服务的 `plan_digest` 做精确绑定；S1/S2／Pack 服务错误进入 typed terminal；私有结果保存完整模型可见请求与最终输出，公开结果不保存模型文字、Tool 参数或私有 reasoning。
+- 全仓 `379 passed`，compileall、active baseline `131／8／10／0`、secret scan `6707／0` 通过。范围门只批准一次诚实的 DELL SEC-only `value_capture` 动态纵切；`RC-S1-019` 继续 open，禁止偷喂 transcript。自然 live、L1、内容质量、五单元、泛化报告与 S3 acceptance 仍为 false。

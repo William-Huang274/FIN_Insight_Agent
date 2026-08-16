@@ -1001,7 +1001,7 @@ def test_dynamic_fragment_projection_binds_request_scoped_response_receipts(
         tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
     )
     assert context["schema_version"] == (
-        "fin_ia_micro_fragment_context_projection_v1_3"
+        "fin_ia_micro_fragment_context_projection_v1_4"
     )
     assert context["dynamic_retrieval_executed"] is True
     assert context["candidate_promotions"] == 0
@@ -1014,6 +1014,13 @@ def test_dynamic_fragment_projection_binds_request_scoped_response_receipts(
     assert context["projection_manifest"][
         "request_scoped_context_evidence_refs"
     ] == ["EV::0063F22F643B94ED"]
+    assert context["projection_manifest"]["temporal_binding_refs"] == []
+    assert context["temporal_authority"]["authority"] == {
+        "numeric_relation_authorizes_its_own_comparison_only": True,
+        "evidence_date_alone_does_not_authorize_cross_item_contemporaneity": True,
+        "cross_item_same_period_requires_source_bound_qualitative_fact": True,
+        "unbound_cross_item_temporal_language_forbidden": True,
+    }
     assert {
         row["evidence_ref"] for row in context["reviewed_evidence"]
     } == {
@@ -1048,6 +1055,136 @@ def test_dynamic_fragment_projection_binds_request_scoped_response_receipts(
             cell_id="CELL::value_capture",
             tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
         )
+
+
+def test_dynamic_fragment_rejects_unbound_cross_item_same_period_narrative(
+    contracts,
+) -> None:
+    _, research_input, _, _, _ = contracts
+    claim_input = compile_claim_authority_research_input(
+        research_input,
+        policy=_json(CLAIM_AUTHORITY_POLICY),
+    )
+    dynamic_input = compile_claim_surface_authority_research_input(
+        claim_input,
+        policy=_json(CLAIM_RELATION_ALIAS_POLICY),
+    )
+    dynamic_input = deepcopy(dynamic_input)
+    dynamic_input["claim_surface_authority_contract"].update(
+        {
+            "dynamic_retrieval_executed": True,
+            "fixed_pack_unit_test_only": False,
+            "candidate_promotions": 0,
+        }
+    )
+    dynamic_input["dynamic_truth_spine_contract"] = {
+        "candidate_promotions": 0,
+        "candidate_text_exposed_to_model": False,
+        "cell_evidence_is_request_scoped": True,
+        "graph_edges_require_request_scoped_evidence": True,
+    }
+    response_ref = "ER::DELL::VALUE-CAPTURE"
+    dynamic_input["dynamic_evidence_response_cards"] = [
+        {
+            "evidence_response_ref": response_ref,
+            "request_id": "REQ::DELL::VALUE-CAPTURE",
+            "request_bindings": [
+                {
+                    "slot_id": "pricing_mix_value_capture",
+                    "facet_id": "margin_and_incremental_profit",
+                }
+            ],
+            "candidate_route": "hybrid_object_retrieval",
+            "candidate_count": 2,
+            "accepted_evidence_refs": ["EV::7F4D7E6762C21D83"],
+            "rejected_reviewed_binding_count": 0,
+            "unreviewed_candidate_count": 1,
+            "typed_gaps": [],
+            "numeric_result_digest": "numeric-result-digest",
+            "authority": {
+                "candidate_promoted_to_evidence": False,
+                "reviewed_evidence_reselected": True,
+                "numeric_authority_remains_s2": True,
+                "model_decision_used": False,
+            },
+            "evidence_response_card_digest": "response-card-digest",
+        }
+    ]
+    cell = next(
+        row
+        for row in dynamic_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    cell["allowed_evidence_response_refs"] = [response_ref]
+
+    fragments = _micro_alias_fragments()
+    thesis = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_THESIS_TOOL,
+        arguments=fragments[SUBMIT_RESEARCH_THESIS_TOOL],
+        research_input=dynamic_input,
+        cell_id="CELL::value_capture",
+    )
+    bad_counter = deepcopy(
+        fragments[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL]
+    )
+    bad_counter["counterargument_atom"] = (
+        "公司毛利率同财季同比下降，同期人工智能服务器组合上升并压低毛利率。"
+    )
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_micro_temporal_relation_unbound",
+    ):
+        validate_finance_micro_judgment_fragment(
+            tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+            arguments=bad_counter,
+            research_input=dynamic_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=thesis,
+        )
+
+    mechanism = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_MECHANISM_TOOL,
+        arguments=fragments[SUBMIT_RESEARCH_MECHANISM_TOOL],
+        research_input=dynamic_input,
+        cell_id="CELL::value_capture",
+        thesis_fragment=thesis,
+    )
+    repair = compile_finance_micro_fragment_validation_repair_successor(
+        research_input=dynamic_input,
+        cell_id="CELL::value_capture",
+        rejected_tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        accepted_prefix_fragments={
+            SUBMIT_RESEARCH_THESIS_TOOL: thesis,
+            SUBMIT_RESEARCH_MECHANISM_TOOL: mechanism,
+        },
+        rejected_fragment=bad_counter,
+        terminal_failure_code="finance_loop_micro_temporal_relation_unbound",
+    )
+    assert repair["repair_feedback"]["rejected_at"] == "fragment_validation"
+    assert repair["repair_feedback"]["failure_code"] == (
+        "finance_loop_micro_temporal_relation_unbound"
+    )
+    assert repair["fragment_context"]["schema_version"] == (
+        "fin_ia_micro_fragment_context_projection_v1_4"
+    )
+    assert repair["maximum_repair_turns"] == 1
+    assert repair["rejected_fragment_promoted_to_business_truth"] is False
+
+    safe_counter = deepcopy(bad_counter)
+    safe_counter["counterargument_atom"] = (
+        "公司毛利率同财季同比下降；历史背景材料曾提及人工智能服务器组合压力，"
+        "但不能证明二者同期或存在因果关系。"
+    )
+    validated = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        arguments=safe_counter,
+        research_input=dynamic_input,
+        cell_id="CELL::value_capture",
+        thesis_fragment=thesis,
+    )
+    assert validated["counterargument_atom"] == safe_counter[
+        "counterargument_atom"
+    ]
 
 
 def test_saved_R2_mechanism_passes_relation_support_v1_2_and_terminal_lowers_status(

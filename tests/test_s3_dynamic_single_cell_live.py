@@ -207,6 +207,9 @@ def test_dynamic_successor_bound_set_includes_current_runtime_policies() -> None
     authority["bound_inputs"]["runner_sha256"] = runner._sha(
         ROOT / authority["bound_inputs"]["runner_ref"]
     )
+    authority["bound_inputs"]["bounded_loop_sha256"] = runner._sha(
+        ROOT / authority["bound_inputs"]["bounded_loop_ref"]
+    )
 
     paths = runner._successor_bound_paths(authority)
 
@@ -214,3 +217,219 @@ def test_dynamic_successor_bound_set_includes_current_runtime_policies() -> None
     assert paths["dynamic_micro_policy_ref"].name.endswith(
         "dynamic_micro_judgment_policy_v1_0.json"
     )
+
+
+def test_dynamic_temporal_repair_replays_rejected_fragment_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    surface_input = {"research_input_digest": "dynamic-input"}
+    prefix = {
+        "submit_research_thesis": {"fragment": "thesis"},
+        "submit_research_mechanism": {"fragment": "mechanism"},
+    }
+    rejected = {
+        "cell_id": "CELL::value_capture",
+        "counterargument_atom": "同期关系未绑定",
+    }
+    observed: dict[str, object] = {}
+
+    def compile_repair(**kwargs):
+        observed.update(kwargs)
+        return {
+            "repair_messages_digest": "repair-messages",
+            "repair_feedback": {"rejected_at": "fragment_validation"},
+            "maximum_repair_turns": 1,
+        }
+
+    monkeypatch.setattr(
+        runner,
+        "compile_finance_micro_fragment_validation_repair_successor",
+        compile_repair,
+    )
+    replay = runner._compile_temporal_repair_replay_state(
+        predecessor_full={
+            "predecessor_accepted_fragments": prefix,
+            "validated_fragment": rejected,
+        },
+        base_predecessor_full={
+            "surface_projection": {
+                "claim_surface_research_input": surface_input
+            }
+        },
+    )
+
+    assert replay["surface_input"] == surface_input
+    assert replay["accepted_fragments"] == prefix
+    assert replay["rejected_fragment"] == rejected
+    assert observed["terminal_failure_code"] == (
+        "finance_loop_micro_temporal_relation_unbound"
+    )
+    assert observed["rejected_fragment"] == rejected
+    assert observed["accepted_prefix_fragments"] == prefix
+
+    with pytest.raises(DynamicSingleCellLiveError) as exc:
+        runner._compile_temporal_repair_replay_state(
+            predecessor_full={
+                "predecessor_accepted_fragments": {
+                    "submit_research_thesis": {"fragment": "thesis"}
+                },
+                "validated_fragment": rejected,
+            },
+            base_predecessor_full={
+                "surface_projection": {
+                    "claim_surface_research_input": surface_input
+                }
+            },
+        )
+    assert exc.value.code == (
+        "dynamic_temporal_repair_predecessor_state_invalid"
+    )
+
+
+def test_dynamic_temporal_repair_runner_uses_one_submission_only(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    authority_path = tmp_path / "authority.json"
+    authority_path.write_text("{}", encoding="utf-8")
+    predecessor_path = tmp_path / "predecessor.json"
+    base_path = tmp_path / "base.json"
+    public_predecessor_path = tmp_path / "predecessor_public.json"
+    profile_path = tmp_path / "profile.json"
+    loop_path = tmp_path / "loop.json"
+    micro_path = tmp_path / "micro.json"
+    output_path = tmp_path / "result.json"
+    private_root = tmp_path / "private"
+    capture_root = tmp_path / "captures"
+    authority = {
+        "implementation_commit": "a" * 40,
+        "known_boundary": "one repair only",
+        "output_contract": {
+            "capture_root_ref": "captures",
+            "private_output_root_ref": "private",
+            "public_result_ref": "result.json",
+            "run_id": "repair-run",
+            "submission_attempt_id": "repair-submission",
+            "product_publication": "forbidden",
+        },
+    }
+    predecessor_full = {
+        "full_result_digest": "predecessor-full",
+    }
+    base_full = {"full_result_digest": "base-full"}
+    predecessor_public = {"result_digest": "predecessor-public"}
+    values = {
+        authority_path: authority,
+        predecessor_path: predecessor_full,
+        base_path: base_full,
+        public_predecessor_path: predecessor_public,
+        profile_path: {},
+        loop_path: {},
+        micro_path: {},
+    }
+    monkeypatch.setattr(runner, "_json", lambda path: values[path])
+    monkeypatch.setattr(
+        runner,
+        "validate_temporal_repair_authority",
+        lambda *_args, **_kwargs: {
+            "predecessor_private_result_ref": predecessor_path,
+            "base_predecessor_private_result_ref": base_path,
+            "predecessor_public_result_ref": public_predecessor_path,
+            "submission_profile_ref": profile_path,
+            "loop_policy_ref": loop_path,
+            "dynamic_micro_policy_ref": micro_path,
+        },
+    )
+    resolved = {
+        "captures": capture_root,
+        "private": private_root,
+        "result.json": output_path,
+    }
+    monkeypatch.setattr(runner, "_resolve", lambda ref: resolved[ref])
+    monkeypatch.setattr(runner, "_relative", lambda path: Path(path).as_posix())
+    surface_input = {
+        "cells": [{"cell_id": "CELL::value_capture"}],
+    }
+    counter = {
+        "cell_id": "CELL::value_capture",
+        "counterargument_atom": "不同报告期不能写成同期。",
+    }
+    monkeypatch.setattr(
+        runner,
+        "_compile_temporal_repair_replay_state",
+        lambda **_: {
+            "surface_input": surface_input,
+            "accepted_fragments": {
+                "submit_research_thesis": {"fragment": "thesis"},
+                "submit_research_mechanism": {"fragment": "mechanism"},
+            },
+            "rejected_fragment": {"fragment": "rejected"},
+            "repair": {
+                "repair_messages": [{"role": "user", "content": "repair"}],
+                "repair_messages_digest": "repair-messages",
+                "repair_feedback": {"rejected_at": "fragment_validation"},
+                "repair_feedback_digest": "repair-feedback",
+                "fragment_context": {"schema_version": "context-v1"},
+                "fragment_context_digest": "context-digest",
+            },
+        },
+    )
+    monkeypatch.setattr(runner, "load_chat_completion_profile", lambda _: object())
+    monkeypatch.setattr(runner, "_runtime_contracts", lambda: (object(), object(), object()))
+    monkeypatch.setattr(runner, "load_dynamic_micro_judgment_policy", lambda _: object())
+    monkeypatch.setattr(runner, "load_bounded_finance_loop_policy", lambda _: object())
+    monkeypatch.setattr(runner, "scope_bounded_finance_micro_judgment_policy", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(
+        runner,
+        "compile_finance_micro_judgment_tools",
+        lambda **_: [
+            {
+                "type": "function",
+                "function": {
+                    "name": "submit_research_counterargument_and_wwc"
+                },
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        runner,
+        "validate_finance_micro_judgment_fragment",
+        lambda **kwargs: kwargs["arguments"],
+    )
+    terminal = {
+        "judgment_status": "insufficient_evidence",
+        "inference_authority": "not_inferable",
+        "causal_bridge_authority": "bridge_unavailable",
+    }
+    monkeypatch.setattr(
+        runner,
+        "compile_finance_micro_judgment_fragments",
+        lambda *_args, **_kwargs: terminal,
+    )
+    monkeypatch.setattr(
+        runner,
+        "compile_current_research_deliverable",
+        lambda **_: {"deliverable_digest": "deliverable"},
+    )
+    calls: list[dict[str, object]] = []
+
+    def submit(**kwargs):
+        calls.append(kwargs)
+        return _step(
+            tool_name="submit_research_counterargument_and_wwc",
+            arguments=counter,
+        )
+
+    result = runner.run_temporal_repair(
+        authority_path,
+        submission_executor=submit,
+    )
+
+    assert len(calls) == 1
+    assert result["status"].startswith("completed_")
+    assert result["execution"]["fresh_model_calls_attempted"] == 1
+    assert result["execution"]["planner_calls_rerun"] == 0
+    assert result["execution"]["current_S1_S2_rerun"] == 0
+    assert result["execution"]["new_evidence"] == 0
+    assert output_path.is_file()
+    assert (private_root / "full_result.json").is_file()

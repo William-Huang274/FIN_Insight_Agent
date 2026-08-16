@@ -179,3 +179,17 @@ v1.8 已用 R7 真失败回放、错误 failure-code mutation、R5 假终态物�
 首轮三案真实零调用纵切得到：DELL 8 个请求中 5 个取回 6 条既有 Evidence，112 个未审候选保持未晋升，12 个 gap 保留；MU、NVDA 的单请求各有 16 个候选但 0 条 exact reviewed match。候选重排、恶意 candidate text、跨案例和 Pack digest mutation 均 fail closed。该结果只构成 EvidenceResponse 控制面的 engineering pass。自然 planner、动态 Judgment、五单元和 S3 acceptance 仍为 false。
 
 该纵切还暴露一个 S1 集成缺口：Dell 官方 transcript 已在 reviewed Pack，却未进入当前 candidate object/index，当前 source whitelist 也未覆盖 `EARNINGS_CALL_TRANSCRIPT`，因此动态检索看不见 fixed Pack 已经看见的关键法说。这个问题归 S1 source/index synchronization；它不能靠放宽 S3 join 或把 transcript 静默预喂给模型解决。
+
+## 16. 动态跨材料时间关系权威
+
+动态 DELL R1 加 R3 successor 已自然完成三个片段，但 R3 counter 把一条 Q1 FY2027 对 Q1 FY2026 的公司毛利率 NumericRelation，与 Q3 FY2026 10-Q 中的服务器组合材料写成“同期”。两条资料各自真实，不等于二者之间的时间连接真实。
+
+因此时间权威从 Evidence 和 NumericRelation 中独立出来：
+
+- NumericRelation 只授权其内部 current／comparison 的同口径比较；
+- Evidence 的 publication date 或 reporting-period metadata 只说明该对象自身，不自动授权它与另一对象同期；
+- cross-item same-period binding 只有在选中的 source-bound QualitativeFact period 与 NumericRelation 某一端精确相等时才可编译；
+- 没有 binding 时，模型可以把较早材料写成 historical context，并明确“不证明同期或因果”，但不能写“同期、同时、同季、concurrently”等跨对象连接；
+- 该边界必须由 provider-neutral context、Validator、真实失败 replay、正负 mutation、fake 与 live 共用，不能靠 Prompt 提醒或 Harness 事后删词。
+
+R3 继续保持 contract pass／L1 fail。successor 只允许使用已完成的 counter analysis 和同一 Evidence 权威，返回 typed validation feedback 后重交一次严格 Tool Call；旧提交不得晋升为业务真值，Harness 不改写模型文字。

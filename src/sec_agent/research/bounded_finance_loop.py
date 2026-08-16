@@ -77,7 +77,43 @@ _REPAIRABLE_EVIDENCE_REQUEST_CODES = frozenset(
     }
 )
 _REPAIRABLE_MICRO_FRAGMENT_TERMINAL_CODES = frozenset(
-    {"claim_surface_narrative_relation_conflict"}
+    {
+        "claim_surface_narrative_relation_conflict",
+        "finance_loop_micro_temporal_relation_unbound",
+    }
+)
+
+_TEMPORAL_CLAUSE_BOUNDARY = re.compile(r"[。！？!?；;，,\n]+")
+_CROSS_ITEM_TEMPORAL_MARKERS = (
+    "同期",
+    "同时",
+    "同一期间",
+    "同一时期",
+    "同一财季",
+    "contemporaneous",
+    "concurrently",
+    "same period",
+    "same quarter",
+    "at the same time",
+)
+_TEMPORAL_NEGATION_MARKERS = (
+    "并非同期",
+    "不是同期",
+    "不能证明同期",
+    "无法证明同期",
+    "不能判断是否同期",
+    "无法判断是否同期",
+    "时间不一致",
+    "期间不一致",
+    "不同期间",
+    "历史背景",
+    "此前",
+    "not contemporaneous",
+    "not the same period",
+    "cannot establish the same period",
+    "cannot establish contemporaneity",
+    "historical context",
+    "different period",
 )
 
 SUBMIT_RESEARCH_THESIS_TOOL = "submit_research_thesis"
@@ -109,6 +145,204 @@ class BoundedFinanceLoopError(RuntimeError):
 def _require(condition: bool, code: str) -> None:
     if not condition:
         raise BoundedFinanceLoopError(code)
+
+
+def _micro_temporal_authority_card(
+    *,
+    research_input: Mapping[str, Any],
+    evidence_refs: Sequence[str],
+    numeric_relation_refs: Sequence[str],
+    qualitative_fact_refs: Sequence[str],
+) -> dict[str, Any]:
+    """Compile cross-item temporal authority without inventing a join.
+
+    A NumericRelation can authorize its own same-basis comparison.  It does
+    not, by itself, make an independently dated narrative Evidence item
+    contemporaneous.  A cross-item same-period binding is emitted only when a
+    source-bound QualitativeFact selected from that Evidence has an exact
+    period endpoint in the NumericRelation.
+    """
+
+    evidence_by_ref = {
+        str(row.get("evidence_ref") or ""): row
+        for row in research_input.get("evidence_cards") or ()
+        if isinstance(row, Mapping)
+    }
+    relation_by_ref = {
+        str(row.get("numeric_relation_ref") or ""): row
+        for row in research_input.get("numeric_relation_cards") or ()
+        if isinstance(row, Mapping)
+    }
+    fact_by_ref = {
+        str(row.get("qualitative_fact_ref") or ""): row
+        for row in research_input.get(
+            "source_bound_qualitative_fact_cards", ()
+        )
+        if isinstance(row, Mapping)
+    }
+    selected_evidence = [
+        deepcopy(evidence_by_ref[ref])
+        for ref in evidence_refs
+        if ref in evidence_by_ref
+    ]
+    selected_relations = [
+        deepcopy(relation_by_ref[ref])
+        for ref in numeric_relation_refs
+        if ref in relation_by_ref
+    ]
+    selected_facts = [
+        deepcopy(fact_by_ref[ref])
+        for ref in qualitative_fact_refs
+        if ref in fact_by_ref
+    ]
+    _require(
+        len(selected_evidence) == len(set(evidence_refs))
+        and len(selected_relations) == len(set(numeric_relation_refs))
+        and len(selected_facts) == len(set(qualitative_fact_refs)),
+        "finance_loop_micro_temporal_authority_object_missing",
+    )
+
+    bindings: list[dict[str, str]] = []
+    for fact in selected_facts:
+        fact_period_end = str(fact.get("period_end") or "")
+        source_evidence_ref = str(fact.get("source_evidence_ref") or "")
+        if not fact_period_end or source_evidence_ref not in set(evidence_refs):
+            continue
+        for relation in selected_relations:
+            relation_ref = str(relation["numeric_relation_ref"])
+            for endpoint_role in ("current", "comparison"):
+                endpoint = str(
+                    relation.get(f"{endpoint_role}_period_end") or ""
+                )
+                if endpoint and endpoint == fact_period_end:
+                    binding_body = {
+                        "source_evidence_ref": source_evidence_ref,
+                        "qualitative_fact_ref": str(
+                            fact["qualitative_fact_ref"]
+                        ),
+                        "numeric_relation_ref": relation_ref,
+                        "endpoint_role": endpoint_role,
+                        "period_end": endpoint,
+                    }
+                    bindings.append(
+                        {
+                            "temporal_binding_ref": (
+                                f"TEMP::{canonical_digest(binding_body)[:20].upper()}"
+                            ),
+                            **binding_body,
+                        }
+                    )
+
+    evidence_periods = [
+        {
+            "evidence_ref": str(row["evidence_ref"]),
+            "publication_date": str(row.get("publication_date") or ""),
+            "source_reporting_period_end": str(
+                row.get("source_reporting_period_end") or ""
+            ),
+        }
+        for row in selected_evidence
+    ]
+    relation_periods = [
+        {
+            "numeric_relation_ref": str(row["numeric_relation_ref"]),
+            "relation_type": str(row.get("relation_type") or ""),
+            "current_period_end": str(row.get("current_period_end") or ""),
+            "comparison_period_end": str(
+                row.get("comparison_period_end") or ""
+            ),
+        }
+        for row in selected_relations
+    ]
+    body = {
+        "schema_version": "fin_ia_micro_temporal_authority_card_v1_0",
+        "evidence_periods": evidence_periods,
+        "numeric_relation_periods": relation_periods,
+        "cross_item_same_period_bindings": bindings,
+        "authority": {
+            "numeric_relation_authorizes_its_own_comparison_only": True,
+            "evidence_date_alone_does_not_authorize_cross_item_contemporaneity": True,
+            "cross_item_same_period_requires_source_bound_qualitative_fact": True,
+            "unbound_cross_item_temporal_language_forbidden": True,
+        },
+    }
+    return {**body, "card_digest": canonical_digest(body)}
+
+
+def _validate_micro_temporal_narrative(
+    *,
+    narrative: str,
+    relation: Mapping[str, Any],
+    evidence_refs: Sequence[str],
+    numeric_relation_refs: Sequence[str],
+    qualitative_fact_refs: Sequence[str],
+    research_input: Mapping[str, Any],
+) -> None:
+    """Reject an invented same-period join across product and finance facts."""
+
+    surface_contract = research_input.get(
+        "claim_surface_authority_contract", {}
+    )
+    if not (
+        isinstance(surface_contract, Mapping)
+        and surface_contract.get("dynamic_retrieval_executed") is True
+    ):
+        return
+    guard = surface_contract.get("narrative_conflict_guard", {})
+    subject_term_set: set[str] = set()
+    for value in guard.get("subject_terms", ()):
+        term = str(value).strip().casefold()
+        if not term:
+            continue
+        subject_term_set.add(term)
+        # Product descriptions often omit the AI qualifier in a later clause
+        # (for example "AI-optimized server" -> "优化服务器" or
+        # "server").  The guard therefore keeps a bounded head-noun alias;
+        # it does not infer a company, period or relationship.
+        stripped = re.sub(
+            r"^(?:ai\s*[- ]?optimized|ai|人工智能)\s*",
+            "",
+            term,
+        ).strip(" -")
+        if len(stripped) >= 2:
+            subject_term_set.add(stripped)
+        if "服务器" in term:
+            subject_term_set.add("服务器")
+        if "server" in term:
+            subject_term_set.add("server")
+    subject_terms = tuple(sorted(subject_term_set))
+    outcome_terms = tuple(
+        str(value).casefold()
+        for value in guard.get("financial_outcome_terms", ())
+        if str(value).strip()
+    )
+    if not subject_terms or not outcome_terms:
+        return
+    card = _micro_temporal_authority_card(
+        research_input=research_input,
+        evidence_refs=evidence_refs,
+        numeric_relation_refs=numeric_relation_refs,
+        qualitative_fact_refs=qualitative_fact_refs,
+    )
+    has_binding = bool(card["cross_item_same_period_bindings"])
+    for raw_clause in _TEMPORAL_CLAUSE_BOUNDARY.split(
+        str(narrative or "").casefold()
+    ):
+        clause = raw_clause.strip()
+        if not clause:
+            continue
+        if not any(marker in clause for marker in _CROSS_ITEM_TEMPORAL_MARKERS):
+            continue
+        if not any(term in clause for term in subject_terms):
+            continue
+        if not any(term in clause for term in outcome_terms):
+            continue
+        if any(marker in clause for marker in _TEMPORAL_NEGATION_MARKERS):
+            continue
+        _require(
+            has_binding,
+            "finance_loop_micro_temporal_relation_unbound",
+        )
 
 
 def _strings(
@@ -2259,9 +2493,19 @@ def compile_finance_micro_fragment_context(
         }
         for name in expected_prior_names
     ]
+    temporal_authority = (
+        _micro_temporal_authority_card(
+            research_input=research_input,
+            evidence_refs=evidence_refs,
+            numeric_relation_refs=numeric_relation_refs,
+            qualitative_fact_refs=qualitative_fact_refs,
+        )
+        if dynamic_mode
+        else None
+    )
     body: dict[str, Any] = {
         "schema_version": (
-            "fin_ia_micro_fragment_context_projection_v1_3"
+            "fin_ia_micro_fragment_context_projection_v1_4"
             if dynamic_mode
             else "fin_ia_micro_fragment_context_projection_v1_2"
         ),
@@ -2294,6 +2538,7 @@ def compile_finance_micro_fragment_context(
                 "dynamic_evidence_responses": dynamic_response_cards,
                 "dynamic_retrieval_executed": True,
                 "candidate_promotions": 0,
+                "temporal_authority": temporal_authority,
             }
             if dynamic_mode
             else {}
@@ -2362,6 +2607,12 @@ def compile_finance_micro_fragment_context(
                     "request_scoped_context_evidence_refs": (
                         request_scoped_context_evidence_refs
                     ),
+                    "temporal_binding_refs": [
+                        row["temporal_binding_ref"]
+                        for row in temporal_authority[
+                            "cross_item_same_period_bindings"
+                        ]
+                    ],
                 }
                 if dynamic_mode
                 else {}
@@ -2384,6 +2635,13 @@ def compile_finance_micro_fragment_context(
                 if dynamic_mode
                 else "This is a fixed-Pack unit test and not dynamic Agentic Research."
             ),
+            *(
+                [
+                    "A NumericRelation authorizes only its own comparison. Do not call separately dated product Evidence and a financial NumericRelation contemporaneous unless temporal_authority contains an exact cross-item same-period binding. Historical Evidence must remain explicitly historical context."
+                ]
+                if dynamic_mode
+                else []
+            ),
         ],
     }
     body["projection_digest"] = canonical_digest(body)
@@ -2398,6 +2656,7 @@ def compile_finance_micro_fragment_analysis_messages(
         in {
             "fin_ia_micro_fragment_context_projection_v1_2",
             "fin_ia_micro_fragment_context_projection_v1_3",
+            "fin_ia_micro_fragment_context_projection_v1_4",
         },
         "finance_loop_fragment_context_invalid",
     )
@@ -2602,62 +2861,96 @@ def compile_finance_micro_fragment_validation_repair_successor(
             "typed validation feedback to correct that Tool Call."
         ),
     )
-    validated_rejected = validate_finance_micro_judgment_fragment(
-        tool_name=rejected_tool_name,
-        arguments=rejected_fragment,
-        research_input=research_input,
-        cell_id=cell_id,
-        thesis_fragment=successor["accepted_prefix_fragments"].get(
-            SUBMIT_RESEARCH_THESIS_TOOL
-        ),
-    )
-    _require(
-        dict(rejected_fragment) == validated_rejected,
-        "finance_loop_fragment_repair_rejected_fragment_drift",
-    )
-    all_fragments = {
-        **deepcopy(successor["accepted_prefix_fragments"]),
-        rejected_tool_name: deepcopy(validated_rejected),
-    }
-    cell = _selected_cells(research_input, [cell_id])[0]
-    terminal = compile_finance_micro_judgment_fragments(
-        all_fragments,
-        cell=cell,
-    )
+    rejected_at = "terminal_validation"
     try:
-        compile_current_research_deliverable(
+        validated_rejected = validate_finance_micro_judgment_fragment(
+            tool_name=rejected_tool_name,
+            arguments=rejected_fragment,
             research_input=research_input,
-            judgment_output={"cells": [terminal]},
-            required_cell_ids=[cell_id],
+            cell_id=cell_id,
+            thesis_fragment=successor["accepted_prefix_fragments"].get(
+                SUBMIT_RESEARCH_THESIS_TOOL
+            ),
         )
-    except CurrentResearchConsumerError as exc:
+    except BoundedFinanceLoopError as exc:
         _require(
             exc.code == terminal_failure_code,
             "finance_loop_fragment_repair_terminal_failure_drift",
         )
+        rejected_at = "fragment_validation"
+        validated_rejected = deepcopy(dict(rejected_fragment))
     else:
-        raise BoundedFinanceLoopError(
-            "finance_loop_fragment_repair_predecessor_not_rejected"
+        _require(
+            dict(rejected_fragment) == validated_rejected,
+            "finance_loop_fragment_repair_rejected_fragment_drift",
         )
+        all_fragments = {
+            **deepcopy(successor["accepted_prefix_fragments"]),
+            rejected_tool_name: deepcopy(validated_rejected),
+        }
+        cell = _selected_cells(research_input, [cell_id])[0]
+        terminal = compile_finance_micro_judgment_fragments(
+            all_fragments,
+            cell=cell,
+        )
+        try:
+            compile_current_research_deliverable(
+                research_input=research_input,
+                judgment_output={"cells": [terminal]},
+                required_cell_ids=[cell_id],
+            )
+        except CurrentResearchConsumerError as exc:
+            _require(
+                exc.code == terminal_failure_code,
+                "finance_loop_fragment_repair_terminal_failure_drift",
+            )
+        else:
+            raise BoundedFinanceLoopError(
+                "finance_loop_fragment_repair_predecessor_not_rejected"
+            )
+
+    feedback_by_code = {
+        "claim_surface_narrative_relation_conflict": {
+            "failure_semantics": (
+                "The selected ClaimRelation does not authorize a positive direct "
+                "causal statement in this narrative. An unsupported alternative "
+                "must remain explicitly unresolved; state in the same proposition "
+                "that current evidence cannot determine or attribute the driver."
+            ),
+            "required_action": (
+                "Submit one corrected Tool Call under the unchanged fragment "
+                "contract. Preserve evidence authority, do not add facts, and do "
+                "not state that an unverified subject caused or drove a financial "
+                "outcome."
+            ),
+        },
+        "finance_loop_micro_temporal_relation_unbound": {
+            "failure_semantics": (
+                "The narrative links a product or source statement to a financial "
+                "observation as contemporaneous, but the current TemporalAuthority "
+                "contains no exact cross-item same-period binding. Individually "
+                "true facts from different reporting periods cannot be joined as "
+                "the same period."
+            ),
+            "required_action": (
+                "Submit one corrected Tool Call under the unchanged fragment "
+                "contract. Keep the NumericRelation's own same-basis comparison, "
+                "but describe differently dated source material only as historical "
+                "context or explicitly state that contemporaneity is unproven."
+            ),
+        },
+    }
+    feedback = feedback_by_code[terminal_failure_code]
 
     repair_feedback = {
         "schema_version": "fin_ia_micro_fragment_validation_feedback_v1_0",
         "status": "rejected_not_promoted_repairable_once",
         "failure_code": terminal_failure_code,
+        "rejected_at": rejected_at,
         "fragment_tool": rejected_tool_name,
         "rejected_fragment_digest": canonical_digest(validated_rejected),
-        "failure_semantics": (
-            "The selected ClaimRelation does not authorize a positive direct "
-            "causal statement in this narrative. An unsupported alternative "
-            "must remain explicitly unresolved; state in the same proposition "
-            "that current evidence cannot determine or attribute the driver."
-        ),
-        "required_action": (
-            "Submit one corrected Tool Call under the unchanged fragment "
-            "contract. Preserve evidence authority, do not add facts, and do "
-            "not state that an unverified subject caused or drove a financial "
-            "outcome."
-        ),
+        "failure_semantics": feedback["failure_semantics"],
+        "required_action": feedback["required_action"],
         "forbidden_actions": [
             "weaken_or_ignore_the_validation_failure",
             "invent_or_add_external_evidence",
@@ -3254,6 +3547,14 @@ def _validate_micro_judgment_fragment(
                 "finance_loop_micro_what_would_change_invalid",
             )
             output["what_would_change"] = deepcopy(dict(raw_wwc))
+    _validate_micro_temporal_narrative(
+        narrative=str(output[atom_field]),
+        relation=relation,
+        evidence_refs=[row["evidence_ref"] for row in evidence_uses],
+        numeric_relation_refs=numeric_relation_refs,
+        qualitative_fact_refs=qualitative_fact_refs,
+        research_input=research_input,
+    )
     return output
 
 

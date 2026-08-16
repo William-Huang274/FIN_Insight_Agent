@@ -30,6 +30,7 @@ from sec_agent.research.bounded_finance_loop import (
     compile_finance_micro_fragment_analysis_messages,
     compile_finance_micro_fragment_context,
     compile_finance_micro_fragment_submission_messages,
+    compile_finance_micro_fragment_validation_repair_successor,
     compile_finance_micro_judgment_fragments,
     compile_finance_micro_judgment_tools,
     load_bounded_finance_loop_policy,
@@ -517,6 +518,49 @@ def _dynamic_micro_judgment_projection(
             "finance_loop_micro_thesis_disposition_invalid"
         )
 
+    temporal_overreach = deepcopy(
+        accepted[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL]
+    )
+    temporal_overreach["counterargument_atom"] = (
+        "公司毛利率同财季同比下降，同期优化服务器组合上升并压低毛利率；"
+        "现有材料仍不能建立产品到公司利润的可复算桥。"
+    )
+    temporal_overreach_failed = False
+    temporal_repair = None
+    try:
+        validate_finance_micro_judgment_fragment(
+            tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+            arguments=temporal_overreach,
+            research_input=surface_input,
+            cell_id=cell_id,
+            thesis_fragment=accepted[SUBMIT_RESEARCH_THESIS_TOOL],
+        )
+    except BoundedFinanceLoopError as exc:
+        temporal_overreach_failed = str(exc) == (
+            "finance_loop_micro_temporal_relation_unbound"
+        )
+        if temporal_overreach_failed:
+            temporal_repair = (
+                compile_finance_micro_fragment_validation_repair_successor(
+                    research_input=surface_input,
+                    cell_id=cell_id,
+                    rejected_tool_name=(
+                        SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+                    ),
+                    accepted_prefix_fragments={
+                        key: accepted[key]
+                        for key in (
+                            SUBMIT_RESEARCH_THESIS_TOOL,
+                            SUBMIT_RESEARCH_MECHANISM_TOOL,
+                        )
+                    },
+                    rejected_fragment=temporal_overreach,
+                    terminal_failure_code=(
+                        "finance_loop_micro_temporal_relation_unbound"
+                    ),
+                )
+            )
+
     summary = {
         "policy_ref": str(DYNAMIC_MICRO_POLICY.relative_to(ROOT)).replace(
             "\\", "/"
@@ -525,7 +569,7 @@ def _dynamic_micro_judgment_projection(
         "tool_names": [row["function"]["name"] for row in tools],
         "tool_contract_digest": canonical_digest(list(tools)),
         "fragment_context_schema_version": (
-            "fin_ia_micro_fragment_context_projection_v1_3"
+            "fin_ia_micro_fragment_context_projection_v1_4"
         ),
         "fragment_context_digests": context_digests,
         "fragment_evidence_response_refs": context_response_refs,
@@ -541,6 +585,25 @@ def _dynamic_micro_judgment_projection(
             "causal_bridge_authority": terminal["causal_bridge_authority"],
         },
         "candidate_promotions": 0,
+        "temporal_relation_boundary": {
+            "unbound_contemporaneity_rejected": temporal_overreach_failed,
+            "repair_compiled": temporal_repair is not None,
+            "repair_rejected_at": (
+                temporal_repair["repair_feedback"]["rejected_at"]
+                if temporal_repair
+                else ""
+            ),
+            "repair_messages_digest": (
+                temporal_repair["repair_messages_digest"]
+                if temporal_repair
+                else ""
+            ),
+            "maximum_repair_turns": (
+                temporal_repair["maximum_repair_turns"]
+                if temporal_repair
+                else 0
+            ),
+        },
         "model_calls": 0,
         "controlled_fragments_are_product_judgment": False,
     }
@@ -548,6 +611,9 @@ def _dynamic_micro_judgment_projection(
         "dynamic_candidate_promotion_failed_closed": promotion_failed,
         "abstaining_thesis_cannot_be_escalated_by_later_fragments": (
             thesis_escalation_failed
+        ),
+        "unbound_cross_item_temporal_relation_failed_closed": (
+            temporal_overreach_failed and temporal_repair is not None
         ),
     }
 
@@ -724,7 +790,7 @@ def main() -> int:
         }
     )
     body = {
-        "schema_version": "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_2",
+        "schema_version": "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_3",
         "status": (
             "zero_call_dynamic_truth_spine_engineering_pass"
             if passed
@@ -760,6 +826,7 @@ def main() -> int:
             "dynamic_candidate_promotion_and_thesis_escalation_fail_closed": (
                 passed
             ),
+            "unbound_cross_item_temporal_relation_fails_closed": passed,
             "natural_model_planner_executed": False,
             "natural_model_judgment_executed": False,
             "dynamic_agentic_research_claimed": False,

@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-16 | 动态 DELL 单单元已自然完成 planner、当前 S1/S2 与三片段 Judgment，但 R3 把不同报告期的公司毛利率关系和服务器组合材料写成“同期”，独立 L1 拒绝。新增 TemporalAuthority：NumericRelation 只授权自身比较，跨 Evidence／NumericRelation 的同期叙事必须绑定 source-bound QualitativeFact 的精确期间端点；无绑定时只能写为明确的历史背景。真实失败保持不通过，零调用证明后最多一次同片段 repair，禁止重跑规划、检索、数值和前序片段。 |
 | 2026-08-16 | 动态单元交卷新增 request-scoped 消费要求：每个研究单元只能使用本轮相关 EvidenceResponse 实际返回的已审 Evidence，不能从案例级 Pack、其他请求或陈旧 GraphContext 借权；thesis 若因证据不足而 abstain，后续机制或反方不得把终态升级。formal v1.2 已证明三片段、终态和 deliverable 在证据不足时仍可完整、安全物化，但因使用 controlled fragments 且 0 模型调用，仍不计自然 Judgment 或 Agentic Research。 |
 | 2026-08-16 | 动态 Research Truth Spine 的 Judgment 入口补齐 provider-neutral ClaimRelation 投影：模型只能看到本轮 EvidenceResponse／NumericFact／gap 仍然具备的关系，固定 Pack 中依赖未取回 transcript 的产品目标与多因素关系会被删除。若本轮没有任何正向 thesis 权限，只允许既有 `bridge_unavailable` 关系以 `not_inferable + insufficient_evidence` 提交明确 abstain；不得借“证据不足”通道生成有限支持或正向因果结论。formal successor 只证明动态三片段交卷结构可执行，仍不计自然 planner、Agentic Research 或 S3 产品通过。 |
 | 2026-08-16 | S1→S3 动态 Truth Spine 完成首轮真实零调用工程纵切：EvidenceRequest 进入当前 S1/S2 后，只能按 case／owner／source／as-of／period／slot／lineage 重选当前 reviewed Pack 中已有 Evidence；未审候选统一返回 needs-human-review，排名、模型判断或 reranker 不得授予 Evidence 权威。DELL 8 个请求中 5 个取回 6 条既有 Evidence，112 个未审候选未晋升并保留 12 个 gap；MU、NVDA 单请求均为 0 条 exact reviewed match。该结果关闭 proposal-only 控制面缺口，但不计 Agentic Research，并暴露 reviewed Pack 与检索对象库／来源路由漂移：Dell transcript 已审却无法动态发现。下一步先做 clean proof，再执行自然 DELL 单单元；S1 同步缺口保留最早责任层，不得以 S3 静默预喂规避。 |
@@ -2695,3 +2696,11 @@ FFJ-R3 的三个模型片段已经自然形成且没有观察到新的金融 L1�
 5. 保存的 natural payload、正向／否定／引号命题 mutation、终局 deliverable 和两个 fresh process 必须共同复证。
 
 FFJ-R4 的三个 fragment 均自然完成，内容明确否定产品到公司利润桥，却因旧全文关键词规则失败。该结果保持不可变，不得删词 salvage；successor 关闭工程缺陷后仍需 fresh FFJ-R5 的自然完整 Judgment、L1 与内容门。
+
+### 16.37 跨材料“同期”必须有显式 TemporalRelation（2026-08-16）
+
+Evidence 和 NumericRelation 各自有日期，不代表模型可以自行把它们连接为同期。动态研究中，任何“同期、同时、同季、concurrently”等把产品／来源陈述与财务结果连接起来的叙事，必须选择当前输入中显式编译的 cross-item temporal binding。该 binding 至少绑定来源 Evidence、source-bound QualitativeFact、NumericRelation、期间端点和 lineage。
+
+NumericRelation 只授权它自己的同口径 current／comparison 比较；Evidence 日期本身不能授权跨对象同期。不同报告期的材料可作为明确标注的历史背景，但必须同时说明同期性未证明。无绑定的跨对象同期叙事属于金融事实 L1 硬失败，不得降级为写作分，也不得由 Harness 删除词语后 salvage。
+
+DELL dynamic R3 是自然反例：公司毛利率比较属于 Q1 FY2027／Q1 FY2026，服务器组合材料属于 Q3 FY2026，模型仍写成“同期”。该 attempt 保持 contract pass／L1 fail。provider-neutral TemporalAuthority 完成真实输出回放和 mutation 后，只允许一次同片段模型 repair；不得重跑规划、检索、数值、前序片段或增加 Evidence。

@@ -49,6 +49,7 @@ from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     compile_finance_micro_fragment_analysis_messages,
     compile_finance_micro_fragment_context,
     compile_finance_micro_fragment_submission_messages,
+    compile_finance_micro_fragment_validation_repair_successor,
     compile_finance_micro_judgment_fragments,
     compile_finance_micro_judgment_tools,
     load_bounded_finance_loop_policy,
@@ -102,6 +103,18 @@ SUCCESSOR_RESULT_SCHEMA = (
 )
 SUCCESSOR_FULL_RESULT_SCHEMA = (
     "fin_ia_s3_dynamic_single_cell_failed_counter_successor_full_v1_1"
+)
+TEMPORAL_REPAIR_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_temporal_fragment_repair_authority_v1_0"
+)
+TEMPORAL_REPAIR_AUTHORITY_STATUS = (
+    "signed_exact_once_DELL_dynamic_counter_temporal_validation_repair"
+)
+TEMPORAL_REPAIR_RESULT_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_temporal_fragment_repair_result_v1_0"
+)
+TEMPORAL_REPAIR_FULL_RESULT_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_temporal_fragment_repair_full_v1_0"
 )
 
 
@@ -621,6 +634,104 @@ def _compile_successor_replay_state(
     }
 
 
+def _temporal_repair_bound_paths(
+    authority: Mapping[str, Any],
+) -> dict[str, Path]:
+    bound = authority.get("bound_inputs")
+    if not isinstance(bound, Mapping):
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_bound_inputs_invalid"
+        )
+    required_refs = {
+        "predecessor_authority_ref",
+        "predecessor_public_result_ref",
+        "predecessor_private_result_ref",
+        "base_predecessor_private_result_ref",
+        "content_assessment_ref",
+        "zero_call_result_ref",
+        "submission_profile_ref",
+        "runner_ref",
+        "bounded_loop_ref",
+        "provider_transport_ref",
+        "loop_policy_ref",
+        "dynamic_micro_policy_ref",
+    }
+    scalar_keys = {
+        "predecessor_public_result_digest",
+        "predecessor_private_result_digest",
+        "base_predecessor_private_result_digest",
+        "zero_call_result_digest",
+        "rejected_fragment_digest",
+        "repair_messages_digest",
+    }
+    expected = {
+        item
+        for key in required_refs
+        for item in (key, key[:-4] + "_sha256")
+    } | scalar_keys
+    if set(bound) != expected:
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_bound_inputs_invalid"
+        )
+    paths: dict[str, Path] = {}
+    for key in required_refs:
+        path = _resolve(str(bound[key]))
+        if not path.is_file() or _sha(path) != str(
+            bound[key[:-4] + "_sha256"]
+        ):
+            raise DynamicSingleCellLiveError(
+                f"dynamic_temporal_repair_bound_input_drift:{key}"
+            )
+        paths[key] = path
+    return paths
+
+
+def _compile_temporal_repair_replay_state(
+    *,
+    predecessor_full: Mapping[str, Any],
+    base_predecessor_full: Mapping[str, Any],
+) -> dict[str, Any]:
+    surface_input = (
+        base_predecessor_full.get("surface_projection") or {}
+    ).get("claim_surface_research_input") or {}
+    accepted_prefix = deepcopy(
+        dict(predecessor_full.get("predecessor_accepted_fragments") or {})
+    )
+    rejected_fragment = deepcopy(
+        dict(predecessor_full.get("validated_fragment") or {})
+    )
+    if not (
+        surface_input
+        and set(accepted_prefix)
+        == {"submit_research_thesis", "submit_research_mechanism"}
+        and rejected_fragment
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_predecessor_state_invalid"
+        )
+    try:
+        repair = compile_finance_micro_fragment_validation_repair_successor(
+            research_input=surface_input,
+            cell_id="CELL::value_capture",
+            rejected_tool_name="submit_research_counterargument_and_wwc",
+            accepted_prefix_fragments=accepted_prefix,
+            rejected_fragment=rejected_fragment,
+            terminal_failure_code=(
+                "finance_loop_micro_temporal_relation_unbound"
+            ),
+        )
+    except BoundedFinanceLoopError as exc:
+        raise DynamicSingleCellLiveError(
+            f"dynamic_temporal_repair_replay_invalid:{exc.code}"
+        ) from exc
+    return {
+        "surface_input": surface_input,
+        "accepted_fragments": accepted_prefix,
+        "rejected_fragment": rejected_fragment,
+        "repair": repair,
+    }
+
+
 def validate_successor_authority(
     payload: Mapping[str, Any], *, authority_path: Path
 ) -> dict[str, Path]:
@@ -760,6 +871,173 @@ def validate_successor_authority(
     ):
         raise DynamicSingleCellLiveError(
             "dynamic_successor_identity_consumed"
+        )
+    return paths
+
+
+def validate_temporal_repair_authority(
+    payload: Mapping[str, Any], *, authority_path: Path
+) -> dict[str, Path]:
+    if not (
+        payload.get("schema_version") == TEMPORAL_REPAIR_AUTHORITY_SCHEMA
+        and payload.get("status") == TEMPORAL_REPAIR_AUTHORITY_STATUS
+        and payload.get("case_key") == "DELL"
+        and payload.get("cell_id") == "CELL::value_capture"
+        and payload.get("rejected_fragment_tool")
+        == "submit_research_counterargument_and_wwc"
+        and payload.get("terminal_failure_code")
+        == "finance_loop_micro_temporal_relation_unbound"
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_authority_invalid"
+        )
+    commit = str(payload.get("implementation_commit") or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_commit_invalid"
+        )
+    if _git("rev-parse", "HEAD").lower() != commit:
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_head_drift"
+        )
+    if _git("rev-parse", "@{upstream}").lower() != commit:
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_upstream_drift"
+        )
+    allowed = f"?? {_relative(authority_path)}"
+    status = _git("status", "--porcelain=v1", "--untracked-files=all")
+    if [line for line in status.splitlines() if line] != [allowed]:
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_worktree_not_clean"
+        )
+
+    expected_budget = {
+        "successful_predecessor_model_nodes_reused": 6,
+        "rejected_predecessor_submission_reused_as_business_truth": False,
+        "maximum_fresh_model_calls": 1,
+        "maximum_transport_attempts": 1,
+        "maximum_counter_repair_submission_calls": 1,
+        "maximum_submission_completion_tokens": 2000,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "external_source_network_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if payload.get("execution_budget") != expected_budget:
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_budget_invalid"
+        )
+    paths = _temporal_repair_bound_paths(payload)
+    bound = payload["bound_inputs"]
+    predecessor_authority = _json(paths["predecessor_authority_ref"])
+    predecessor_public = _json(paths["predecessor_public_result_ref"])
+    predecessor_full = _json(paths["predecessor_private_result_ref"])
+    base_full = _json(paths["base_predecessor_private_result_ref"])
+    assessment = _json(paths["content_assessment_ref"])
+    zero = _json(paths["zero_call_result_ref"])
+    predecessor_r1_authority_ref = str(
+        (predecessor_authority.get("bound_inputs") or {}).get(
+            "predecessor_authority_ref", ""
+        )
+    )
+    if predecessor_r1_authority_ref:
+        _validate_historical_authority_inputs(
+            _json(_resolve(predecessor_r1_authority_ref))
+        )
+    replay = _compile_temporal_repair_replay_state(
+        predecessor_full=predecessor_full,
+        base_predecessor_full=base_full,
+    )
+    repair = replay["repair"]
+    if not (
+        predecessor_authority.get("schema_version")
+        == SUCCESSOR_AUTHORITY_SCHEMA
+        and predecessor_authority.get("status")
+        == SUCCESSOR_AUTHORITY_STATUS
+        and predecessor_public.get("schema_version")
+        == SUCCESSOR_RESULT_SCHEMA
+        and predecessor_public.get("status")
+        == "completed_dynamic_counter_successor_contract_valid_content_assessment_pending"
+        and predecessor_public.get("result_digest")
+        == bound["predecessor_public_result_digest"]
+        and predecessor_full.get("schema_version")
+        == SUCCESSOR_FULL_RESULT_SCHEMA
+        and predecessor_full.get("status")
+        == "completed_dynamic_counter_successor_contract_valid_content_assessment_pending"
+        and predecessor_full.get("full_result_digest")
+        == bound["predecessor_private_result_digest"]
+        and predecessor_full.get("predecessor_private_result_ref")
+        == bound["base_predecessor_private_result_ref"]
+        and predecessor_full.get("predecessor_private_result_digest")
+        == bound["base_predecessor_private_result_digest"]
+        and base_full.get("full_result_digest")
+        == bound["base_predecessor_private_result_digest"]
+        and assessment.get("schema_version")
+        == "fin_ia_s3_dynamic_single_cell_failed_counter_successor_content_assessment_v1_0"
+        and assessment.get("status")
+        == "dynamic_single_cell_contract_pass_L1_fail_temporal_relation_overreach_repair_required"
+        and (assessment.get("root_cause") or {}).get("issue_id")
+        == "RC-S3-028-dynamic-narrative-temporal-relation-unbound"
+        and zero.get("schema_version")
+        == "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_3"
+        and zero.get("status")
+        == "zero_call_dynamic_truth_spine_engineering_pass"
+        and zero.get("result_digest") == bound["zero_call_result_digest"]
+        and (zero.get("stage_acceptance") or {}).get(
+            "unbound_cross_item_temporal_relation_fails_closed"
+        )
+        is True
+        and canonical_digest(replay["rejected_fragment"])
+        == bound["rejected_fragment_digest"]
+        and repair["repair_messages_digest"]
+        == bound["repair_messages_digest"]
+        and repair["repair_feedback"]["rejected_at"]
+        == "fragment_validation"
+        and repair["maximum_repair_turns"] == 1
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_predecessor_invalid"
+        )
+
+    submission_profile = load_chat_completion_profile(
+        _json(paths["submission_profile_ref"])
+    )
+    validate_deepseek_ga_node_profile(
+        submission_profile, node_class="contract_submission_non_thinking"
+    )
+    output = payload.get("output_contract")
+    required_output = {
+        "capture_root_ref",
+        "private_output_root_ref",
+        "public_result_ref",
+        "run_id",
+        "submission_attempt_id",
+        "product_publication",
+    }
+    if not (
+        isinstance(output, Mapping)
+        and set(output) == required_output
+        and output.get("product_publication") == "forbidden"
+        and all(
+            str(output.get(key) or "")
+            for key in required_output - {"product_publication"}
+        )
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_output_invalid"
+        )
+    capture_run = _resolve(str(output["capture_root_ref"])) / str(
+        output["run_id"]
+    )
+    if (
+        capture_run.exists()
+        or _resolve(str(output["private_output_root_ref"])).exists()
+        or _resolve(str(output["public_result_ref"])).exists()
+    ):
+        raise DynamicSingleCellLiveError(
+            "dynamic_temporal_repair_identity_consumed"
         )
     return paths
 
@@ -1449,17 +1727,270 @@ def run_successor(
     return public
 
 
+def run_temporal_repair(
+    authority_path: Path,
+    *,
+    submission_executor: Callable[..., ChatCompletionToolStepResult] = (
+        execute_chat_completion_tool_step_exact_once
+    ),
+) -> dict[str, Any]:
+    authority = _json(authority_path)
+    paths = validate_temporal_repair_authority(
+        authority, authority_path=authority_path
+    )
+    output = authority["output_contract"]
+    capture_root = _resolve(str(output["capture_root_ref"]))
+    private_root = _resolve(str(output["private_output_root_ref"]))
+    predecessor_full = _json(paths["predecessor_private_result_ref"])
+    base_full = _json(paths["base_predecessor_private_result_ref"])
+    replay = _compile_temporal_repair_replay_state(
+        predecessor_full=predecessor_full,
+        base_predecessor_full=base_full,
+    )
+    surface_input = replay["surface_input"]
+    accepted_fragments = deepcopy(replay["accepted_fragments"])
+    repair = replay["repair"]
+    submission_profile = load_chat_completion_profile(
+        _json(paths["submission_profile_ref"])
+    )
+    kernel, route, _ = _runtime_contracts()
+    micro_policy = load_dynamic_micro_judgment_policy(
+        _json(paths["dynamic_micro_policy_ref"])
+    )
+    scoped = scope_bounded_finance_micro_judgment_policy(
+        load_bounded_finance_loop_policy(_json(paths["loop_policy_ref"])),
+        micro_policy=micro_policy,
+        cell_count=1,
+        maximum_evidence_requests=0,
+    )
+    tools = compile_finance_micro_judgment_tools(
+        research_input=surface_input,
+        required_cell_ids=["CELL::value_capture"],
+        kernel=kernel,
+        route_policy=route,
+        policy=scoped,
+        strict=True,
+    )
+    tool_name = "submit_research_counterargument_and_wwc"
+    tool_by_name = {row["function"]["name"]: row for row in tools}
+
+    submission_step: dict[str, Any] = {}
+    validated_fragment: dict[str, Any] = {}
+    judgment_output: dict[str, Any] = {}
+    structured_deliverable: dict[str, Any] = {}
+    failure_phase = ""
+    failure_code = ""
+    failure_capture_ref = ""
+    model_calls_attempted = 0
+    try:
+        model_calls_attempted = 1
+        submission = submission_executor(
+            profile=submission_profile,
+            messages=repair["repair_messages"],
+            tools=[tool_by_name[tool_name]],
+            capture_root=capture_root,
+            run_id=str(output["run_id"]),
+            attempt_id=str(output["submission_attempt_id"]),
+            tool_choice=None,
+        )
+        submission_step = submission.as_dict()
+        validated_fragment = validate_finance_micro_judgment_fragment(
+            tool_name=tool_name,
+            arguments=_tool_arguments(
+                submission, expected_tool=tool_name
+            ),
+            research_input=surface_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=accepted_fragments[
+                SUBMIT_RESEARCH_THESIS_TOOL
+            ],
+        )
+        accepted_fragments[tool_name] = validated_fragment
+        cell = next(
+            row
+            for row in surface_input["cells"]
+            if row["cell_id"] == "CELL::value_capture"
+        )
+        terminal = compile_finance_micro_judgment_fragments(
+            accepted_fragments, cell=cell
+        )
+        judgment_output = {"cells": [terminal]}
+        structured_deliverable = compile_current_research_deliverable(
+            research_input=surface_input,
+            judgment_output=judgment_output,
+            required_cell_ids=["CELL::value_capture"],
+        )
+    except ModelGatewayError as exc:
+        failure_phase = "provider_transport_or_response"
+        failure_code = exc.code
+        failure_capture_ref = exc.capture_ref
+    except BoundedFinanceLoopError as exc:
+        failure_phase = "dynamic_fragment_or_terminal_validation"
+        failure_code = exc.code
+    except CurrentResearchConsumerError as exc:
+        failure_phase = "dynamic_deliverable_validation"
+        failure_code = exc.code
+    except DynamicSingleCellLiveError as exc:
+        failure_phase = "dynamic_temporal_repair_orchestration"
+        failure_code = exc.code
+
+    succeeded = bool(structured_deliverable)
+    status = (
+        "completed_dynamic_counter_temporal_repair_contract_valid_content_assessment_pending"
+        if succeeded
+        else "terminal_failed_no_retry"
+    )
+    predecessor_public = _json(paths["predecessor_public_result_ref"])
+    full_body: dict[str, Any] = {
+        "schema_version": TEMPORAL_REPAIR_FULL_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": _now(),
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "repaired_fragment_tool": tool_name,
+        "predecessor_public_result_ref": _relative(
+            paths["predecessor_public_result_ref"]
+        ),
+        "predecessor_public_result_digest": predecessor_public[
+            "result_digest"
+        ],
+        "predecessor_private_result_ref": _relative(
+            paths["predecessor_private_result_ref"]
+        ),
+        "predecessor_private_result_digest": predecessor_full[
+            "full_result_digest"
+        ],
+        "base_predecessor_private_result_ref": _relative(
+            paths["base_predecessor_private_result_ref"]
+        ),
+        "base_predecessor_private_result_digest": base_full[
+            "full_result_digest"
+        ],
+        "accepted_prefix_fragments": replay["accepted_fragments"],
+        "rejected_fragment": replay["rejected_fragment"],
+        "repair_feedback": repair["repair_feedback"],
+        "fragment_context": repair["fragment_context"],
+        "repair_messages_digest": repair["repair_messages_digest"],
+        "submission_step": submission_step,
+        "validated_fragment": validated_fragment,
+        "judgment_output": judgment_output,
+        "structured_deliverable": structured_deliverable,
+        "failure_phase": failure_phase,
+        "failure_code": failure_code,
+        "failure_capture_ref": (
+            _relative(failure_capture_ref) if failure_capture_ref else ""
+        ),
+        "execution": {
+            "successful_predecessor_model_nodes_reused": 6,
+            "rejected_predecessor_submission_reused_as_business_truth": False,
+            "fresh_model_calls_attempted": model_calls_attempted,
+            "maximum_fresh_model_calls": 1,
+            "fresh_tool_calls_accepted": int(bool(validated_fragment)),
+            "total_fragments_accepted": len(accepted_fragments),
+            "planner_calls_rerun": 0,
+            "current_S1_S2_rerun": 0,
+            "thesis_mechanism_or_counter_analysis_calls_rerun": 0,
+            "new_evidence": 0,
+            "candidate_promotions": 0,
+            "retries": 0,
+            "fallbacks": 0,
+            "external_source_network_calls": 0,
+            "protocol_switches": 0,
+            "product_publication": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    full = {
+        **full_body,
+        "full_result_digest": canonical_digest(full_body),
+    }
+    _write_new(private_root / "full_result.json", full)
+    terminal = (judgment_output.get("cells") or [{}])[0]
+    public_body: dict[str, Any] = {
+        "schema_version": TEMPORAL_REPAIR_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": full["recorded_at"],
+        "authority_ref": full["authority_ref"],
+        "authority_sha256": full["authority_sha256"],
+        "implementation_commit": full["implementation_commit"],
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "repaired_fragment_tool": tool_name,
+        "predecessor_public_result_digest": predecessor_public[
+            "result_digest"
+        ],
+        "predecessor_private_result_digest": predecessor_full[
+            "full_result_digest"
+        ],
+        "rejected_fragment_digest": canonical_digest(
+            replay["rejected_fragment"]
+        ),
+        "repair_feedback_digest": repair["repair_feedback_digest"],
+        "repair_messages_digest": repair["repair_messages_digest"],
+        "fragment_context_digest": repair["fragment_context_digest"],
+        "submission": _public_provider_step(submission_step),
+        "validated_fragment_digest": (
+            canonical_digest(validated_fragment)
+            if validated_fragment
+            else ""
+        ),
+        "terminal_disposition": {
+            "judgment_status": terminal.get("judgment_status", ""),
+            "inference_authority": terminal.get("inference_authority", ""),
+            "causal_bridge_authority": terminal.get(
+                "causal_bridge_authority", ""
+            ),
+        },
+        "terminal_judgment_digest": (
+            canonical_digest(terminal) if terminal else ""
+        ),
+        "deliverable_digest": structured_deliverable.get(
+            "deliverable_digest", ""
+        ),
+        "failure_phase": failure_phase,
+        "failure_code": failure_code,
+        "failure_capture_ref": full["failure_capture_ref"],
+        "execution": full["execution"],
+        "private_full_result_ref": _relative(
+            private_root / "full_result.json"
+        ),
+        "private_full_result_sha256": _sha(
+            private_root / "full_result.json"
+        ),
+        "acceptance": {
+            "same_fragment_temporal_repair_executed": succeeded,
+            "dynamic_single_cell_contract_pass": succeeded,
+            "L1_content_assessment_pending": succeeded,
+            "planner_or_S1_S2_rerun": False,
+            "five_cell_execution": False,
+            "heterogeneous_generalization": False,
+            "qualified_human_acceptance": False,
+            "s3_product_acceptance": False,
+            "workbench_publication": False,
+            "release_ready": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_new(_resolve(str(output["public_result_ref"])), public)
+    return public
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--authority", type=Path, required=True)
     args = parser.parse_args(argv)
     authority_path = args.authority.resolve()
     schema = _json(authority_path).get("schema_version")
-    result = (
-        run_successor(authority_path)
-        if schema == SUCCESSOR_AUTHORITY_SCHEMA
-        else run(authority_path)
-    )
+    if schema == TEMPORAL_REPAIR_AUTHORITY_SCHEMA:
+        result = run_temporal_repair(authority_path)
+    elif schema == SUCCESSOR_AUTHORITY_SCHEMA:
+        result = run_successor(authority_path)
+    else:
+        result = run(authority_path)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 0 if result["status"].startswith("completed_") else 2
 

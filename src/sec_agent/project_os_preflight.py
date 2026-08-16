@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 from typing import Any
 
@@ -98,6 +99,16 @@ DYNAMIC_COUNTER_SUCCESSOR_DECISION_STATUS = (
 DYNAMIC_COUNTER_SUCCESSOR_SCOPE = (
     "one_dynamic_counter_WWC_failed_node_successor_after_clean_zero_call_gate"
 )
+DYNAMIC_TEMPORAL_REPAIR_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_single_cell_temporal_fragment_repair_"
+    "live_scope_decision_v1_0"
+)
+DYNAMIC_TEMPORAL_REPAIR_DECISION_STATUS = (
+    "dynamic_temporal_authority_zero_call_pass_one_counter_repair_authorized"
+)
+DYNAMIC_TEMPORAL_REPAIR_SCOPE = (
+    "one_DELL_dynamic_counter_temporal_fragment_repair_after_clean_zero_call_gate"
+)
 FULL_FRAGMENT_FIXED_PACK_DECISION_STATUS = (
     "full_fragment_zero_call_pass_one_fresh_chat_judgment_authorized"
 )
@@ -117,6 +128,21 @@ def _sha256(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _git_blob_sha256(*, root: Path, commit: str, ref: str) -> str:
+    if not re.fullmatch(r"[0-9a-f]{40}", str(commit or "").lower()):
+        raise ValueError("project_os_historical_commit_invalid")
+    _repo_path(root, ref)
+    completed = subprocess.run(
+        ["git", "show", f"{commit}:{ref}"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        raise ValueError("project_os_historical_blob_missing")
+    return hashlib.sha256(completed.stdout).hexdigest()
 
 
 def _repo_path(root: Path, ref: str) -> Path:
@@ -184,6 +210,11 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if decision.get("schema_version") == DYNAMIC_TEMPORAL_REPAIR_DECISION_SCHEMA:
+        return _validate_dynamic_temporal_repair_decision(
+            root=root,
+            decision=decision,
+        )
     if (
         decision.get("schema_version")
         in {
@@ -834,7 +865,16 @@ def _validate_dynamic_counter_successor_decision(
         raise ValueError("project_os_dynamic_counter_assessment_invalid")
 
     runner_path = _repo_path(root, str(decision.get("runner_ref") or ""))
-    if _sha256(runner_path) != str(decision.get("runner_sha256") or ""):
+    runner_digest = (
+        _git_blob_sha256(
+            root=root,
+            commit=str(decision.get("implementation_commit") or ""),
+            ref=str(decision.get("runner_ref") or ""),
+        )
+        if authority_contract_v1_2
+        else _sha256(runner_path)
+    )
+    if runner_digest != str(decision.get("runner_sha256") or ""):
         raise ValueError("project_os_dynamic_counter_runner_drift")
 
     if historical_binding:
@@ -1003,6 +1043,219 @@ def _validate_dynamic_counter_successor_decision(
         ),
         "micro_judgment_successor": False,
         "node_profiles": profiles,
+    }
+
+
+def _validate_dynamic_temporal_repair_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_equal = {
+        "schema_version": DYNAMIC_TEMPORAL_REPAIR_DECISION_SCHEMA,
+        "status": DYNAMIC_TEMPORAL_REPAIR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "run_scope_id": DYNAMIC_TEMPORAL_REPAIR_SCOPE,
+        "evidence_mode": "immutable_dynamic_R3_same_evidence_no_new_evidence",
+        "next_authorized_scope": (
+            "one_non_thinking_counter_temporal_repair_submission"
+        ),
+        "terminal_failure_code": (
+            "finance_loop_micro_temporal_relation_unbound"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_dynamic_temporal_repair_field_invalid:{field}"
+            )
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "temporal_authority_required",
+        "immutable_successful_nodes_reuse_required",
+        "rejected_fragment_preserved_as_failure_evidence",
+        "same_current_product_pointer_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                "project_os_dynamic_temporal_repair_true_required:"
+                f"{field}"
+            )
+    for field in (
+        "planner_rerun_authorized",
+        "current_S1_S2_rerun_authorized",
+        "thesis_or_mechanism_rerun_authorized",
+        "counter_analysis_rerun_authorized",
+        "new_evidence_authorized",
+        "candidate_promotion_authorized",
+        "contract_relaxation_authorized",
+        "automatic_second_repair_authorized",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "five_cell_authorized",
+        "product_publication_authorized",
+        "S3_acceptance_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                "project_os_dynamic_temporal_repair_false_required:"
+                f"{field}"
+            )
+    expected_budget = {
+        "successful_predecessor_model_nodes_reused": 6,
+        "rejected_predecessor_submission_reused_as_business_truth": False,
+        "maximum_fresh_model_calls": 1,
+        "maximum_transport_attempts": 1,
+        "maximum_counter_repair_submission_calls": 1,
+        "maximum_submission_completion_tokens": 2000,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "external_source_network_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if decision.get("execution_budget") != expected_budget:
+        raise ValueError(
+            "project_os_dynamic_temporal_repair_budget_invalid"
+        )
+
+    _, zero = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="zero_call_result_ref",
+        sha_field="zero_call_result_sha256",
+        digest_field="zero_call_result_digest",
+    )
+    if not (
+        zero.get("schema_version")
+        == "fin_ia_s3_dynamic_truth_spine_zero_call_result_v1_3"
+        and zero.get("status")
+        == "zero_call_dynamic_truth_spine_engineering_pass"
+        and (zero.get("stage_acceptance") or {}).get(
+            "unbound_cross_item_temporal_relation_fails_closed"
+        )
+        is True
+        and (zero.get("observed_counts") or {}).get("model_calls") == 0
+    ):
+        raise ValueError(
+            "project_os_dynamic_temporal_repair_zero_call_invalid"
+        )
+
+    _, predecessor_public = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_public_result_ref",
+        sha_field="predecessor_public_result_sha256",
+        digest_field="predecessor_public_result_digest",
+    )
+    _, predecessor_private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_private_result_ref",
+        sha_field="predecessor_private_result_sha256",
+    )
+    _, base_private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="base_predecessor_private_result_ref",
+        sha_field="base_predecessor_private_result_sha256",
+    )
+    _, assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="content_assessment_ref",
+        sha_field="content_assessment_sha256",
+    )
+    if not (
+        predecessor_public.get("schema_version")
+        == "fin_ia_s3_dynamic_single_cell_failed_counter_successor_result_v1_1"
+        and predecessor_public.get("status")
+        == "completed_dynamic_counter_successor_contract_valid_content_assessment_pending"
+        and predecessor_private.get("schema_version")
+        == "fin_ia_s3_dynamic_single_cell_failed_counter_successor_full_v1_1"
+        and predecessor_private.get("status")
+        == "completed_dynamic_counter_successor_contract_valid_content_assessment_pending"
+        and predecessor_private.get("full_result_digest")
+        == decision.get("predecessor_private_result_digest")
+        and base_private.get("full_result_digest")
+        == decision.get("base_predecessor_private_result_digest")
+        and predecessor_private.get("predecessor_private_result_digest")
+        == base_private.get("full_result_digest")
+        and assessment.get("schema_version")
+        == "fin_ia_s3_dynamic_single_cell_failed_counter_successor_content_assessment_v1_0"
+        and assessment.get("status")
+        == "dynamic_single_cell_contract_pass_L1_fail_temporal_relation_overreach_repair_required"
+        and (assessment.get("root_cause") or {}).get("issue_id")
+        == "RC-S3-028-dynamic-narrative-temporal-relation-unbound"
+        and (assessment.get("disposition") or {}).get(
+            "maximum_future_model_calls_after_zero_call_proof"
+        )
+        == 1
+    ):
+        raise ValueError(
+            "project_os_dynamic_temporal_repair_predecessor_invalid"
+        )
+
+    for ref_field, sha_field in (
+        ("runner_ref", "runner_sha256"),
+        ("bounded_loop_ref", "bounded_loop_sha256"),
+    ):
+        if _sha256(_repo_path(root, str(decision.get(ref_field) or ""))) != str(
+            decision.get(sha_field) or ""
+        ):
+            raise ValueError(
+                f"project_os_dynamic_temporal_repair_runtime_drift:{ref_field}"
+            )
+    _, profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="submission_profile_ref",
+        sha_field="submission_profile_sha256",
+    )
+    defaults = profile.get("request_defaults") or {}
+    if not (
+        profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and profile.get("wire_api") == "openai_compatible_chat_completions"
+        and profile.get("base_url") == "https://api.deepseek.com"
+        and profile.get("endpoint") == "/chat/completions"
+        and defaults.get("stream") is False
+        and defaults.get("thinking") == {"type": "disabled"}
+        and defaults.get("max_tokens") == 2000
+        and "reasoning_effort" not in defaults
+        and (profile.get("authority") or {}).get("retry_count") == 0
+    ):
+        raise ValueError(
+            "project_os_dynamic_temporal_repair_profile_invalid"
+        )
+    predecessor_submission = predecessor_public.get("submission") or {}
+    if not (
+        predecessor_submission.get("finish_reason") == "tool_calls"
+        and (predecessor_public.get("execution") or {}).get("retries") == 0
+    ):
+        raise ValueError(
+            "project_os_dynamic_temporal_repair_provider_health_invalid"
+        )
+    return {
+        "clean_proof_status": zero["status"],
+        "predecessor_status": predecessor_public["status"],
+        "provider_id": "deepseek",
+        "provider_model": "deepseek-v4-pro",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "recent_provider_steps": 1,
+        "dynamic_temporal_repair_successor": True,
+        "dynamic_counter_successor": False,
+        "micro_judgment_successor": False,
+        "node_profiles": {
+            "submission_profile_ref": {
+                "thinking": {"type": "disabled"},
+                "reasoning_effort": None,
+                "max_tokens": 2000,
+            }
+        },
     }
 
 
@@ -2554,6 +2807,19 @@ def build_preflight(
             "project_os_dynamic_counter_scope_allowance_missing"
         )
     if (
+        decision_projection.get("dynamic_temporal_repair_successor") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-028-dynamic-narrative-temporal-relation-unbound"
+            ),
+            allowed_scope=DYNAMIC_TEMPORAL_REPAIR_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_dynamic_temporal_repair_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("relation_role_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -2594,7 +2860,16 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("dynamic_counter_successor") is True:
+    if decision_projection.get("dynamic_temporal_repair_successor") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one decision-bound "
+            "DELL dynamic counter temporal-validation repair submission. It "
+            "reuses six successful model nodes, preserves the rejected R3 "
+            "submission as failure evidence, and does not authorize new "
+            "evidence, upstream reruns, a second repair, five-cell execution, "
+            "publication, S3 acceptance, or release."
+        )
+    elif decision_projection.get("dynamic_counter_successor") is True:
         known_boundary = (
             "This current-baseline preflight permits only one decision-bound "
             "failed-node successor for DELL dynamic value_capture counter/WWC. "

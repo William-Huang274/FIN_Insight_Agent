@@ -595,17 +595,29 @@ def validate_deepseek_ga_node_profile(
     """Validate a provider-only cognitive profile for one core node class."""
 
     expected = {
-        "tool_routing": {"reasoning_effort": "low", "max_tokens": 2000},
+        "tool_routing": {
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "low",
+            "max_tokens": 2000,
+        },
         "bounded_financial_judgment": {
+            "thinking": {"type": "enabled"},
             "reasoning_effort": "high",
             "max_tokens": 8000,
         },
         "bounded_financial_analysis": {
+            "thinking": {"type": "enabled"},
             "reasoning_effort": "high",
             "max_tokens": 8000,
         },
         "contract_submission": {
+            "thinking": {"type": "enabled"},
             "reasoning_effort": "low",
+            "max_tokens": 2000,
+        },
+        "contract_submission_non_thinking": {
+            "thinking": {"type": "disabled"},
+            "reasoning_effort": None,
             "max_tokens": 2000,
         },
     }
@@ -622,9 +634,13 @@ def validate_deepseek_ga_node_profile(
         and base_url == "https://api.deepseek.com"
         and not set(defaults).intersection(_DISALLOWED_SAMPLING_FIELDS)
         and defaults.get("stream") is False
-        and defaults.get("thinking") == {"type": "enabled"}
-        and defaults.get("reasoning_effort")
-        == expected[node_class]["reasoning_effort"]
+        and defaults.get("thinking") == expected[node_class]["thinking"]
+        and (
+            defaults.get("reasoning_effort")
+            == expected[node_class]["reasoning_effort"]
+            if expected[node_class]["reasoning_effort"] is not None
+            else "reasoning_effort" not in defaults
+        )
         and defaults.get("max_tokens")
         == expected[node_class]["max_tokens"]
         and "response_format" not in defaults,
@@ -2228,6 +2244,84 @@ def compile_finance_micro_fragment_submission_messages(
             ),
         },
     )
+
+
+def compile_finance_micro_fragment_submission_successor(
+    *,
+    research_input: Mapping[str, Any],
+    cell_id: str,
+    pending_tool_name: str,
+    accepted_fragments: Mapping[str, Mapping[str, Any]],
+    analysis_draft: str,
+) -> dict[str, Any]:
+    """Compile a digest-bound resume point for one pending fragment.
+
+    The function is provider-neutral and attempt-neutral.  It only accepts an
+    exact valid prefix of the canonical fragment order, then recompiles the
+    pending fragment context and submission messages from current contracts.
+    A run-specific fixture may bind the returned digests, but cannot change
+    the accepted prefix or inject a model judgment.
+    """
+
+    _require(
+        pending_tool_name in MICRO_JUDGMENT_TOOL_NAMES,
+        "finance_loop_fragment_successor_pending_tool_invalid",
+    )
+    pending_index = MICRO_JUDGMENT_TOOL_NAMES.index(pending_tool_name)
+    expected_prefix = MICRO_JUDGMENT_TOOL_NAMES[:pending_index]
+    _require(
+        set(accepted_fragments) == set(expected_prefix),
+        "finance_loop_fragment_successor_prefix_invalid",
+    )
+    validated_prefix: dict[str, dict[str, Any]] = {}
+    for name in expected_prefix:
+        validated = validate_finance_micro_judgment_fragment(
+            tool_name=name,
+            arguments=accepted_fragments[name],
+            research_input=research_input,
+            cell_id=cell_id,
+            thesis_fragment=validated_prefix.get(SUBMIT_RESEARCH_THESIS_TOOL),
+        )
+        _require(
+            dict(accepted_fragments[name]) == validated,
+            "finance_loop_fragment_successor_prefix_invalid",
+        )
+        validated_prefix[name] = validated
+    context = compile_finance_micro_fragment_context(
+        research_input=research_input,
+        cell_id=cell_id,
+        tool_name=pending_tool_name,
+        accepted_fragments=validated_prefix,
+    )
+    messages = compile_finance_micro_fragment_submission_messages(
+        fragment_context=context,
+        analysis_draft=analysis_draft,
+    )
+    body: dict[str, Any] = {
+        "schema_version": (
+            "fin_ia_micro_fragment_submission_successor_projection_v1_0"
+        ),
+        "case_key": str(research_input["case_identity"]["case_key"]),
+        "cell_id": cell_id,
+        "pending_tool_name": pending_tool_name,
+        "accepted_prefix_tool_names": list(expected_prefix),
+        "accepted_prefix_fragments": deepcopy(validated_prefix),
+        "accepted_prefix_fragment_digests": {
+            name: canonical_digest(validated_prefix[name])
+            for name in expected_prefix
+        },
+        "fragment_context": context,
+        "fragment_context_digest": context["projection_digest"],
+        "analysis_draft": str(analysis_draft or "").strip(),
+        "analysis_draft_digest": canonical_digest(
+            {"content": str(analysis_draft or "").strip()}
+        ),
+        "submission_messages": list(messages),
+        "submission_messages_digest": canonical_digest(list(messages)),
+        "harness_generated_research_judgment": False,
+    }
+    body["successor_projection_digest"] = canonical_digest(body)
+    return body
 
 
 def validate_finance_micro_judgment_fragment(

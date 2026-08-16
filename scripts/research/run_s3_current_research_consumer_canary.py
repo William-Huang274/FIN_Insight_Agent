@@ -50,6 +50,7 @@ from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     SUBMIT_RESEARCH_THESIS_TOOL,
     compile_finance_micro_fragment_analysis_messages,
     compile_finance_micro_fragment_context,
+    compile_finance_micro_fragment_submission_successor,
     compile_finance_micro_fragment_submission_messages,
     compile_finance_micro_judgment_fragments,
     compile_finance_micro_judgment_tools,
@@ -140,6 +141,17 @@ FULL_FRAGMENT_JUDGMENT_AUTHORITY_STATUS = (
 )
 FULL_FRAGMENT_JUDGMENT_RESULT_SCHEMA = (
     "fin_ia_s3_fixed_pack_full_fragment_judgment_live_result_v1_0"
+)
+FRAGMENT_SUBMISSION_SUCCESSOR_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_fixed_pack_failed_fragment_submission_successor_"
+    "live_authority_v1_0"
+)
+FRAGMENT_SUBMISSION_SUCCESSOR_AUTHORITY_STATUS = (
+    "signed_exact_once_failed_counter_submission_successor_chat_live"
+)
+FRAGMENT_SUBMISSION_SUCCESSOR_RESULT_SCHEMA = (
+    "fin_ia_s3_fixed_pack_failed_fragment_submission_successor_"
+    "live_result_v1_0"
 )
 
 
@@ -1949,6 +1961,294 @@ def validate_full_fragment_judgment_authority(
     return paths
 
 
+def _failed_fragment_submission_successor_artifacts(
+    paths: Mapping[str, Path],
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, dict[str, Any]],
+    dict[str, Any],
+    tuple[dict[str, str], ...],
+    dict[str, Any],
+]:
+    research_input, cell, tool_by_name, _ = _full_fragment_judgment_artifacts(
+        paths
+    )
+    fixture = _json(paths["submission_successor_fixture_ref"])
+    if not (
+        fixture.get("schema_version")
+        == "fin_ia_s3_full_fragment_submission_successor_fixture_v1_0"
+        and fixture.get("case_key") == "DELL"
+        and fixture.get("cell_id") == "CELL::value_capture"
+        and fixture.get("failed_fragment_tool")
+        == SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+        and fixture.get("research_input_digest")
+        == research_input.get("research_input_digest")
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_fixture_invalid"
+        )
+    raw_fragments = fixture.get("accepted_fragments")
+    if not isinstance(raw_fragments, Mapping) or set(raw_fragments) != {
+        SUBMIT_RESEARCH_THESIS_TOOL,
+        SUBMIT_RESEARCH_MECHANISM_TOOL,
+    }:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_predecessor_shape_invalid"
+        )
+    successor = compile_finance_micro_fragment_submission_successor(
+        research_input=research_input,
+        cell_id="CELL::value_capture",
+        pending_tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        accepted_fragments=raw_fragments,
+        analysis_draft=str(fixture.get("counter_analysis_content") or ""),
+    )
+    if successor.get("accepted_prefix_fragment_digests") != fixture.get(
+        "accepted_fragment_digests"
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_fragment_drift"
+        )
+    context = successor["fragment_context"]
+    if successor.get("fragment_context_digest") != fixture.get(
+        "counter_context_digest"
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_context_drift"
+        )
+    if successor.get("analysis_draft_digest") != fixture.get(
+        "counter_analysis_content_digest"
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_analysis_drift"
+        )
+    if successor.get("submission_messages_digest") != fixture.get(
+        "counter_submission_messages_digest"
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_messages_drift"
+        )
+    return (
+        research_input,
+        cell,
+        tool_by_name[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL],
+        successor["accepted_prefix_fragments"],
+        context,
+        tuple(successor["submission_messages"]),
+        fixture,
+    )
+
+
+def validate_failed_fragment_submission_successor_authority(
+    payload: Mapping[str, Any],
+    *,
+    authority_path: Path,
+) -> dict[str, Path]:
+    if not (
+        payload.get("schema_version")
+        == FRAGMENT_SUBMISSION_SUCCESSOR_AUTHORITY_SCHEMA
+        and payload.get("status")
+        == FRAGMENT_SUBMISSION_SUCCESSOR_AUTHORITY_STATUS
+        and payload.get("case_key") == "DELL"
+        and payload.get("cell_id") == "CELL::value_capture"
+        and payload.get("failed_fragment_tool")
+        == SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_authority_invalid"
+        )
+    commit = str(payload.get("implementation_commit") or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_commit_invalid"
+        )
+    if _git("rev-parse", "HEAD").lower() != commit:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_head_drift"
+        )
+    if _git("rev-parse", "@{upstream}").lower() != commit:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_upstream_drift"
+        )
+    allowed = f"?? {_relative(authority_path)}"
+    status = _git("status", "--porcelain=v1", "--untracked-files=all")
+    if [line for line in status.splitlines() if line] != [allowed]:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_worktree_not_clean"
+        )
+    expected_budget = {
+        "maximum_model_calls": 1,
+        "maximum_transport_attempts": 1,
+        "maximum_tool_calls": 1,
+        "successful_predecessor_model_calls_reused": 5,
+        "maximum_evidence_requests": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "planner_calls": 0,
+        "external_retrieval_calls": 0,
+        "embedding_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if payload.get("execution_budget") != expected_budget:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_budget_invalid"
+        )
+    bound = payload.get("bound_inputs")
+    output = payload.get("output_contract")
+    if not isinstance(bound, Mapping) or not isinstance(output, Mapping):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_shape_invalid"
+        )
+    required_refs = {
+        "consumer_policy_ref",
+        "objective_ref",
+        "planner_atoms_ref",
+        "current_evidence_pack_result_ref",
+        "runtime_registry_ref",
+        "claim_authority_policy_ref",
+        "claim_surface_authority_policy_ref",
+        "loop_policy_ref",
+        "micro_policy_ref",
+        "submission_profile_ref",
+        "runner_ref",
+        "loop_implementation_ref",
+        "provider_transport_ref",
+        "zero_call_result_ref",
+        "prior_full_fragment_result_ref",
+        "prior_full_fragment_failure_assessment_ref",
+        "submission_successor_fixture_ref",
+    }
+    ref_keys = {key for key in bound if key.endswith("_ref")}
+    digest_keys = {
+        "research_input_digest",
+        "counter_fragment_context_digest",
+        "counter_submission_messages_digest",
+        "counter_tool_schema_digest",
+        "accepted_predecessor_fragment_digests",
+    }
+    expected_keys = {
+        value
+        for key in ref_keys
+        for value in (key, key[:-4] + "_sha256")
+    } | digest_keys
+    if ref_keys != required_refs or set(bound) != expected_keys:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_bindings_invalid"
+        )
+    paths: dict[str, Path] = {}
+    for key in ref_keys:
+        path = _resolve(str(bound[key]))
+        if not path.is_file() or _sha(path) != str(
+            bound.get(key[:-4] + "_sha256") or ""
+        ):
+            raise CurrentResearchConsumerCanaryError(
+                f"research_consumer_submission_successor_bound_input_drift:{key}"
+            )
+        paths[key] = path
+    prior = _json(paths["prior_full_fragment_result_ref"])
+    assessment = _json(paths["prior_full_fragment_failure_assessment_ref"])
+    fixture = _json(paths["submission_successor_fixture_ref"])
+    zero_call = _json(paths["zero_call_result_ref"])
+    replay = (zero_call.get("normalized_proof") or {}).get(
+        "saved_r6_non_thinking_submission_successor_replay"
+    ) or {}
+    profile = load_chat_completion_profile(_json(paths["submission_profile_ref"]))
+    validate_deepseek_ga_node_profile(
+        profile,
+        node_class="contract_submission_non_thinking",
+    )
+    if not (
+        prior.get("status") == "terminal_failed_no_retry"
+        and prior.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and prior.get("failure_fragment_tool")
+        == SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+        and prior.get("execution", {}).get("model_calls_attempted") == 6
+        and prior.get("execution", {}).get("tool_calls_accepted") == 2
+        and assessment.get("root_cause", {}).get("owner_layer")
+        == "S3_replaceable_DeepSeek_contract_submission_profile"
+        and fixture.get("source_result_sha256")
+        == _sha(paths["prior_full_fragment_result_ref"])
+        and fixture.get("source_result_digest") == prior.get("result_digest")
+        and zero_call.get("status")
+        == "zero_call_micro_judgment_fresh_process_proof_pass"
+        and zero_call.get("fresh_process_results_byte_equivalent") is True
+        and (zero_call.get("acceptance") or {}).get(
+            "saved_r6_submission_successor_replay_pass"
+        )
+        is True
+        and replay.get("predecessor_result_digest") == prior.get("result_digest")
+        and replay.get("successful_predecessor_model_calls_reused") == 5
+        and replay.get("fresh_model_calls_in_successor") == 1
+        and replay.get("reasoning_effort_omitted") is True
+        and replay.get("fake_only_not_business_promotion") is True
+        and replay.get("harness_generated_research_judgment") is False
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_disposition_invalid"
+        )
+    (
+        research_input,
+        _,
+        counter_tool,
+        accepted,
+        context,
+        submission_messages,
+        _,
+    ) = _failed_fragment_submission_successor_artifacts(paths)
+    expected_fragment_digests = {
+        name: canonical_digest(fragment)
+        for name, fragment in accepted.items()
+    }
+    if not (
+        bound.get("research_input_digest")
+        == research_input.get("research_input_digest")
+        and bound.get("counter_fragment_context_digest")
+        == context.get("projection_digest")
+        and bound.get("counter_submission_messages_digest")
+        == canonical_digest(list(submission_messages))
+        and bound.get("counter_tool_schema_digest")
+        == canonical_digest(counter_tool)
+        and bound.get("accepted_predecessor_fragment_digests")
+        == expected_fragment_digests
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_runtime_digest_drift"
+        )
+    required_output = {
+        "capture_root_ref",
+        "private_output_root_ref",
+        "public_result_ref",
+        "run_id",
+        "attempt_id",
+        "product_publication",
+    }
+    if not (
+        set(output) == required_output
+        and output.get("product_publication") == "forbidden"
+        and all(str(output.get(key) or "") for key in required_output - {"product_publication"})
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_output_invalid"
+        )
+    capture_attempt = (
+        _resolve(str(output["capture_root_ref"]))
+        / str(output["run_id"])
+        / str(output["attempt_id"])
+    )
+    if (
+        capture_attempt.exists()
+        or _resolve(str(output["private_output_root_ref"])).exists()
+        or _resolve(str(output["public_result_ref"])).exists()
+    ):
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_submission_successor_identity_consumed"
+        )
+    return paths
+
+
 def _tool_loop_contracts(paths: Mapping[str, Path]):
     kernel_payload = read_registered_runtime_json(
         ROOT, "application.config.current_financial_research_kernel"
@@ -3482,13 +3782,279 @@ def run_full_fragment_judgment(authority_path: Path) -> dict[str, Any]:
     return summary
 
 
+def run_failed_fragment_submission_successor(
+    authority_path: Path,
+) -> dict[str, Any]:
+    authority = _json(authority_path)
+    paths = validate_failed_fragment_submission_successor_authority(
+        authority,
+        authority_path=authority_path,
+    )
+    (
+        research_input,
+        cell,
+        counter_tool,
+        accepted_fragments,
+        context,
+        submission_messages,
+        fixture,
+    ) = _failed_fragment_submission_successor_artifacts(paths)
+    submission_profile = load_chat_completion_profile(
+        _json(paths["submission_profile_ref"])
+    )
+    validate_deepseek_ga_node_profile(
+        submission_profile,
+        node_class="contract_submission_non_thinking",
+    )
+    output = authority["output_contract"]
+    capture_root = _resolve(str(output["capture_root_ref"]))
+    private_root = _resolve(str(output["private_output_root_ref"]))
+    run_id = str(output["run_id"])
+    attempt_id = str(output["attempt_id"])
+    submission_step: dict[str, Any] = {}
+    validated_counter: dict[str, Any] = {}
+    judgment_output: dict[str, Any] = {}
+    structured_deliverable: dict[str, Any] = {}
+    failure_phase = ""
+    failure_code = ""
+    failure_capture_ref = ""
+    model_call_attempted = False
+
+    try:
+        model_call_attempted = True
+        submission = execute_chat_completion_tool_step_exact_once(
+            profile=submission_profile,
+            messages=submission_messages,
+            tools=[counter_tool],
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_id=attempt_id,
+            tool_choice=None,
+        )
+        submission_step = submission.as_dict()
+        if submission.finish_reason == "length":
+            raise CurrentResearchConsumerCanaryError(
+                "research_consumer_submission_successor_length_stop"
+            )
+        if len(submission.tool_calls) != 1:
+            raise CurrentResearchConsumerCanaryError(
+                "research_consumer_submission_successor_tool_call_count_invalid"
+            )
+        call = submission.tool_calls[0]
+        function = call.get("function")
+        if not (
+            isinstance(function, Mapping)
+            and function.get("name")
+            == SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+        ):
+            raise CurrentResearchConsumerCanaryError(
+                "research_consumer_submission_successor_tool_name_invalid"
+            )
+        try:
+            arguments = json.loads(str(function.get("arguments") or ""))
+        except json.JSONDecodeError as exc:
+            raise CurrentResearchConsumerCanaryError(
+                "research_consumer_submission_successor_arguments_invalid_json"
+            ) from exc
+        if not isinstance(arguments, Mapping):
+            raise CurrentResearchConsumerCanaryError(
+                "research_consumer_submission_successor_arguments_invalid"
+            )
+        validated_counter = validate_finance_micro_judgment_fragment(
+            tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+            arguments=arguments,
+            research_input=research_input,
+            cell_id="CELL::value_capture",
+            thesis_fragment=accepted_fragments[SUBMIT_RESEARCH_THESIS_TOOL],
+        )
+        accepted_fragments[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL] = (
+            validated_counter
+        )
+        normalized = compile_finance_micro_judgment_fragments(
+            accepted_fragments,
+            cell=cell,
+        )
+        judgment_output = {"cells": [normalized]}
+        structured_deliverable = compile_current_research_deliverable(
+            research_input=research_input,
+            judgment_output=judgment_output,
+            required_cell_ids=["CELL::value_capture"],
+        )
+    except ModelGatewayError as exc:
+        failure_phase = "provider_transport_or_response"
+        failure_code = exc.code
+        failure_capture_ref = exc.capture_ref
+    except BoundedFinanceLoopError as exc:
+        failure_phase = "local_finance_fragment_or_terminal_validation"
+        failure_code = exc.code
+    except CurrentResearchConsumerError as exc:
+        failure_phase = "local_terminal_judgment_validation"
+        failure_code = exc.code
+    except CurrentResearchConsumerCanaryError as exc:
+        failure_phase = "local_failed_fragment_successor_validation"
+        failure_code = exc.code
+
+    if failure_code and not failure_capture_ref and submission_step:
+        failure_capture_ref = str(
+            submission_step.get("response_capture_ref") or ""
+        )
+    succeeded = bool(structured_deliverable)
+    status = (
+        "completed_failed_fragment_submission_successor_contract_valid_"
+        "content_assessment_pending"
+        if succeeded
+        else "terminal_failed_no_retry"
+    )
+    predecessor_result = _json(paths["prior_full_fragment_result_ref"])
+    full_body: dict[str, Any] = {
+        "schema_version": FRAGMENT_SUBMISSION_SUCCESSOR_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": _now(),
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "failed_fragment_tool": SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        "research_input_digest": research_input["research_input_digest"],
+        "counter_fragment_context": context,
+        "counter_submission_messages_digest": canonical_digest(
+            list(submission_messages)
+        ),
+        "predecessor": {
+            "result_ref": _relative(paths["prior_full_fragment_result_ref"]),
+            "result_sha256": _sha(paths["prior_full_fragment_result_ref"]),
+            "result_digest": predecessor_result["result_digest"],
+            "run_id": fixture["source_run_id"],
+            "successful_model_calls_reused": 5,
+            "accepted_fragment_digests": fixture[
+                "accepted_fragment_digests"
+            ],
+            "counter_analysis_content_digest": fixture[
+                "counter_analysis_content_digest"
+            ],
+        },
+        "successor_submission_step": submission_step,
+        "validated_counter_fragment": validated_counter,
+        "validated_counter_fragment_digest": (
+            canonical_digest(validated_counter) if validated_counter else ""
+        ),
+        "accepted_fragments": accepted_fragments,
+        "judgment_output": judgment_output,
+        "structured_deliverable": structured_deliverable,
+        "failure_phase": failure_phase,
+        "failure_code": failure_code,
+        "failure_capture_ref": (
+            _relative(failure_capture_ref) if failure_capture_ref else ""
+        ),
+        "execution": {
+            "fresh_model_calls_attempted": int(model_call_attempted),
+            "maximum_fresh_model_calls": 1,
+            "successful_predecessor_model_calls_reused": 5,
+            "logical_chain_model_calls": 6 if model_call_attempted else 5,
+            "fresh_tool_calls_accepted": int(bool(validated_counter)),
+            "total_fragments_accepted": len(accepted_fragments),
+            "retries": 0,
+            "fallbacks": 0,
+            "external_retrieval_calls": 0,
+            "embedding_calls": 0,
+            "protocol_switches": 0,
+            "product_publication": False,
+        },
+        "authorship": {
+            "predecessor_fragments_model_owned": True,
+            "counter_analysis_draft_model_owned": True,
+            "counter_submission_model_owned": succeeded,
+            "harness_generated_research_judgment": False,
+            "harness_validated_and_aggregated_authority": succeeded,
+            "analysis_draft_promoted_to_business_truth": False,
+            "private_reasoning_persisted": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    full = {**full_body, "full_result_digest": canonical_digest(full_body)}
+    full_path = private_root / "full_result.json"
+    _write_new(full_path, full)
+    public_submission = {
+        "attempted": bool(submission_step),
+        "finish_reason": submission_step.get("finish_reason", ""),
+        "tool_call_count": len(submission_step.get("tool_calls", ())),
+        "visible_chars": len(submission_step.get("content", "")),
+        "usage": submission_step.get("usage", {}),
+        "request_capture_ref": (
+            _relative(submission_step["request_capture_ref"])
+            if submission_step
+            else ""
+        ),
+        "response_capture_ref": (
+            _relative(submission_step["response_capture_ref"])
+            if submission_step
+            else ""
+        ),
+    }
+    public_body: dict[str, Any] = {
+        "schema_version": FRAGMENT_SUBMISSION_SUCCESSOR_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": full["recorded_at"],
+        "authority_ref": full["authority_ref"],
+        "authority_sha256": full["authority_sha256"],
+        "implementation_commit": full["implementation_commit"],
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "failed_fragment_tool": SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        "research_input_digest": research_input["research_input_digest"],
+        "predecessor_result_digest": predecessor_result["result_digest"],
+        "counter_fragment_context_digest": context["projection_digest"],
+        "counter_submission_messages_digest": full[
+            "counter_submission_messages_digest"
+        ],
+        "successor_submission": public_submission,
+        "validated_counter_fragment_digest": full[
+            "validated_counter_fragment_digest"
+        ],
+        "judgment_output_digest": (
+            canonical_digest(judgment_output) if judgment_output else ""
+        ),
+        "deliverable_digest": str(
+            structured_deliverable.get("deliverable_digest") or ""
+        ),
+        "failure_phase": failure_phase,
+        "failure_code": failure_code,
+        "failure_capture_ref": full["failure_capture_ref"],
+        "full_result_ref": _relative(full_path),
+        "full_result_sha256": _sha(full_path),
+        "execution": full["execution"],
+        "acceptance": {
+            "failed_node_only_successor_pass": succeeded,
+            "predecessor_successful_nodes_reused": True,
+            "full_three_fragment_contract_pass": succeeded,
+            "terminal_judgment_contract_pass": succeeded,
+            "content_assessment_pending": succeeded,
+            "fixed_pack_layer_one_acceptance": False,
+            "dynamic_agentic_research_acceptance": False,
+            "five_cell_live_authorized": False,
+            "s3_product_acceptance": False,
+            "qualified_human_acceptance": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    summary = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_new(_resolve(str(output["public_result_ref"])), summary)
+    return summary
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--authority", required=True)
     args = parser.parse_args(argv)
     authority_path = _resolve(args.authority)
     authority = _json(authority_path)
-    if authority.get("schema_version") in {
+    if (
+        authority.get("schema_version")
+        == FRAGMENT_SUBMISSION_SUCCESSOR_AUTHORITY_SCHEMA
+    ):
+        result = run_failed_fragment_submission_successor(authority_path)
+    elif authority.get("schema_version") in {
         FULL_FRAGMENT_JUDGMENT_AUTHORITY_SCHEMA,
         FULL_FRAGMENT_CLAIM_LOCAL_AUTHORITY_SCHEMA,
         FULL_FRAGMENT_CAUSAL_POLARITY_AUTHORITY_SCHEMA,
@@ -3519,6 +4085,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "completed_contract_valid_content_assessment_pending",
             "completed_fragment_contract_valid_content_assessment_pending",
             "completed_full_fragment_judgment_contract_valid_content_assessment_pending",
+            "completed_failed_fragment_submission_successor_contract_valid_content_assessment_pending",
         }
         else 2
     )

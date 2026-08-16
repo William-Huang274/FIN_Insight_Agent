@@ -168,6 +168,25 @@ R5_FAILURE_ASSESSMENT = ROOT / (
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_"
     "judgment_chat_live_failure_assessment_v1_4.json"
 )
+R6_SUBMISSION_SUCCESSOR_FIXTURE = ROOT / (
+    "tests/fixtures/research/"
+    "fin_ia_0_1_3_s3_dell_full_fragment_chat_r6_"
+    "submission_successor_fixture_v1_0.json"
+)
+R6_LIVE_RESULT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_"
+    "judgment_chat_live_result_v1_5.json"
+)
+R6_FAILURE_ASSESSMENT = ROOT / (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_"
+    "judgment_chat_live_failure_assessment_v1_5.json"
+)
+NON_THINKING_SUBMISSION_PROFILE = ROOT / (
+    "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_"
+    "contract_submission_non_thinking_profile_v1_0.json"
+)
 CLAIM_RELATION_ALIAS_FAKE = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -2260,6 +2279,46 @@ def test_zero_call_runner_replays_saved_r5_qualified_route_identifier(
     }
 
 
+def test_zero_call_runner_replays_r6_failed_node_non_thinking_successor(
+    contracts,
+) -> None:
+    runner = _zero_call_runner()
+    _, research_input, _, _, _ = contracts
+    replay = runner._saved_r6_non_thinking_submission_successor_replay(
+        paths={
+            "claim_authority_policy_ref": CLAIM_AUTHORITY_POLICY,
+            "r6_claim_surface_authority_policy_ref": (
+                CLAIM_RELATION_SUPPORT_POLICY
+            ),
+            "r6_submission_successor_fixture_ref": (
+                R6_SUBMISSION_SUCCESSOR_FIXTURE
+            ),
+            "r6_live_result_ref": R6_LIVE_RESULT,
+            "r6_failure_assessment_ref": R6_FAILURE_ASSESSMENT,
+            "r5_submitted_fragments_ref": R5_SUBMITTED_FRAGMENT_REPLAY,
+            "non_thinking_submission_profile_ref": (
+                NON_THINKING_SUBMISSION_PROFILE
+            ),
+        },
+        base_research_input=research_input,
+    )
+
+    assert replay["predecessor_failure_code"] == (
+        "model_gateway_reasoning_budget_exhausted"
+    )
+    assert replay["successful_predecessor_model_calls_reused"] == 5
+    assert replay["fresh_model_calls_in_successor"] == 1
+    assert replay["non_thinking_request_defaults"] == {
+        "max_tokens": 2000,
+        "stream": False,
+        "thinking": {"type": "disabled"},
+    }
+    assert replay["reasoning_effort_omitted"] is True
+    assert replay["analysis_content_mutation_detected"] is True
+    assert replay["fake_only_not_business_promotion"] is True
+    assert replay["harness_generated_research_judgment"] is False
+
+
 def test_chat_and_responses_lanes_share_one_finance_loop_core(contracts) -> None:
     base_policy, research_input, kernel, route, planning = contracts
     cell_id = "CELL::value_capture"
@@ -2966,6 +3025,14 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
             "fin_ia_0_1_3_deepseek_v4_pro_ga_micro_judgment_profile_v1_0.json"
         )
     )
+    non_thinking_submission = load_chat_completion_profile(
+        _json(
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_"
+            "contract_submission_non_thinking_profile_v1_0.json"
+        )
+    )
     validate_deepseek_ga_node_profile(
         micro_read,
         node_class="tool_routing",
@@ -2982,6 +3049,15 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
         micro_read,
         node_class="contract_submission",
     )
+    validate_deepseek_ga_node_profile(
+        non_thinking_submission,
+        node_class="contract_submission_non_thinking",
+    )
+    assert non_thinking_submission.request_defaults == {
+        "max_tokens": 2000,
+        "stream": False,
+        "thinking": {"type": "disabled"},
+    }
     with pytest.raises(
         BoundedFinanceLoopError,
         match="node_profile_invalid",

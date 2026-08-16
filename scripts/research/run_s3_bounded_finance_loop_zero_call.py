@@ -45,6 +45,9 @@ from sec_agent.research.bounded_finance_loop import (  # noqa: E402
     SUBMIT_RESEARCH_JUDGMENT_TOOL,
     SUBMIT_RESEARCH_MECHANISM_TOOL,
     SUBMIT_RESEARCH_THESIS_TOOL,
+    compile_finance_micro_fragment_context,
+    compile_finance_micro_fragment_submission_successor,
+    compile_finance_micro_fragment_submission_messages,
     compile_finance_loop_messages,
     compile_finance_micro_judgment_fragments,
     compile_finance_micro_judgment_tools,
@@ -1883,6 +1886,200 @@ def _saved_r5_wwc_route_identifier_replay(
     }
 
 
+def _saved_r6_non_thinking_submission_successor_replay(
+    *,
+    paths: Mapping[str, Path],
+    base_research_input: Mapping[str, Any],
+) -> dict[str, Any]:
+    required = {
+        "claim_authority_policy_ref",
+        "r6_claim_surface_authority_policy_ref",
+        "r6_submission_successor_fixture_ref",
+        "r6_live_result_ref",
+        "r6_failure_assessment_ref",
+        "r5_submitted_fragments_ref",
+        "non_thinking_submission_profile_ref",
+    }
+    missing = required.difference(paths)
+    if missing:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_bound_inputs_missing:"
+            + ",".join(sorted(missing))
+        )
+    fixture = _json(paths["r6_submission_successor_fixture_ref"])
+    prior_result = _json(paths["r6_live_result_ref"])
+    prior_assessment = _json(paths["r6_failure_assessment_ref"])
+    if not (
+        fixture.get("source_result_sha256")
+        == _sha(paths["r6_live_result_ref"])
+        and fixture.get("source_result_digest")
+        == prior_result.get("result_digest")
+        and prior_result.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and prior_result.get("failure_fragment_tool")
+        == SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL
+        and prior_result.get("execution", {}).get("model_calls_attempted") == 6
+        and prior_result.get("execution", {}).get("tool_calls_accepted") == 2
+        and prior_assessment.get("root_cause", {}).get("owner_layer")
+        == "S3_replaceable_DeepSeek_contract_submission_profile"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_predecessor_drift"
+        )
+    profile_payload = _json(paths["non_thinking_submission_profile_ref"])
+    profile = load_chat_completion_profile(profile_payload)
+    validate_deepseek_ga_node_profile(
+        profile,
+        node_class="contract_submission_non_thinking",
+    )
+    if not (
+        profile.request_defaults
+        == {
+            "max_tokens": 2000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+        and "reasoning_effort" not in profile.request_defaults
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_profile_not_non_thinking"
+        )
+    research_input = compile_claim_surface_authority_research_input(
+        compile_claim_authority_research_input(
+            base_research_input,
+            policy=_json(paths["claim_authority_policy_ref"]),
+        ),
+        policy=_json(paths["r6_claim_surface_authority_policy_ref"]),
+    )
+    if fixture.get("research_input_digest") != research_input.get(
+        "research_input_digest"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_research_input_drift"
+        )
+    raw_fragments = fixture.get("accepted_fragments")
+    if not isinstance(raw_fragments, Mapping) or set(raw_fragments) != {
+        SUBMIT_RESEARCH_THESIS_TOOL,
+        SUBMIT_RESEARCH_MECHANISM_TOOL,
+    }:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_fragment_shape_invalid"
+        )
+    analysis_content = str(fixture.get("counter_analysis_content") or "")
+    successor = compile_finance_micro_fragment_submission_successor(
+        research_input=research_input,
+        cell_id="CELL::value_capture",
+        pending_tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        accepted_fragments=raw_fragments,
+        analysis_draft=analysis_content,
+    )
+    accepted = successor["accepted_prefix_fragments"]
+    if successor.get("accepted_prefix_fragment_digests") != fixture.get(
+        "accepted_fragment_digests"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_fragment_digest_drift"
+        )
+    context = successor["fragment_context"]
+    if successor.get("fragment_context_digest") != fixture.get(
+        "counter_context_digest"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_context_drift"
+        )
+    if successor.get("analysis_draft_digest") != fixture.get(
+        "counter_analysis_content_digest"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_analysis_digest_drift"
+        )
+    submission_messages = tuple(successor["submission_messages"])
+    if successor.get("submission_messages_digest") != fixture.get(
+        "counter_submission_messages_digest"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_submission_message_drift"
+        )
+
+    r5_fragments = _json(paths["r5_submitted_fragments_ref"]).get("fragments")
+    if not isinstance(r5_fragments, Mapping):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_fake_fragment_missing"
+        )
+    counter = validate_finance_micro_judgment_fragment(
+        tool_name=SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL,
+        arguments=deepcopy(
+            r5_fragments[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL]
+        ),
+        research_input=research_input,
+        cell_id="CELL::value_capture",
+        thesis_fragment=accepted[SUBMIT_RESEARCH_THESIS_TOOL],
+    )
+    accepted[SUBMIT_RESEARCH_COUNTERARGUMENT_WWC_TOOL] = counter
+    cell = next(
+        row
+        for row in research_input["cells"]
+        if row["cell_id"] == "CELL::value_capture"
+    )
+    terminal = compile_finance_micro_judgment_fragments(accepted, cell=cell)
+    deliverable = compile_current_research_deliverable(
+        research_input=research_input,
+        judgment_output={"cells": [terminal]},
+        required_cell_ids=["CELL::value_capture"],
+    )
+
+    enabled_profile = deepcopy(profile_payload)
+    enabled_profile["request_defaults"]["thinking"] = {"type": "enabled"}
+    enabled_profile["request_defaults"]["reasoning_effort"] = "low"
+    try:
+        validate_deepseek_ga_node_profile(
+            load_chat_completion_profile(enabled_profile),
+            node_class="contract_submission_non_thinking",
+        )
+    except BoundedFinanceLoopError as exc:
+        profile_mutation_code = exc.code
+    else:
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_thinking_profile_mutation_passed"
+        )
+    changed_messages = compile_finance_micro_fragment_submission_messages(
+        fragment_context=context,
+        analysis_draft=analysis_content + "\nchanged",
+    )
+    if canonical_digest(list(changed_messages)) == fixture.get(
+        "counter_submission_messages_digest"
+    ):
+        raise BoundedFinanceLoopProofError(
+            "finance_loop_r6_successor_analysis_mutation_not_detected"
+        )
+    return {
+        "predecessor_result_digest": prior_result["result_digest"],
+        "predecessor_failure_code": prior_result["failure_code"],
+        "successful_predecessor_model_calls_reused": 5,
+        "fresh_model_calls_in_successor": 1,
+        "accepted_predecessor_fragment_digests": {
+            name: canonical_digest(accepted[name])
+            for name in (SUBMIT_RESEARCH_THESIS_TOOL, SUBMIT_RESEARCH_MECHANISM_TOOL)
+        },
+        "counter_context_digest": context["projection_digest"],
+        "counter_analysis_content_digest": fixture[
+            "counter_analysis_content_digest"
+        ],
+        "counter_submission_messages_digest": canonical_digest(
+            list(submission_messages)
+        ),
+        "non_thinking_request_defaults": dict(profile.request_defaults),
+        "reasoning_effort_omitted": True,
+        "thinking_enabled_profile_mutation_failure": profile_mutation_code,
+        "analysis_content_mutation_detected": True,
+        "fake_terminal_judgment_digest": canonical_digest(terminal),
+        "fake_deliverable_digest": deliverable["deliverable_digest"],
+        "fake_only_not_business_promotion": True,
+        "model_narratives_from_R6_preserved_exactly": True,
+        "harness_generated_research_judgment": False,
+    }
+
+
 def _run_fake_matrix(
     *,
     research_input: Mapping[str, Any],
@@ -2304,6 +2501,14 @@ def _execute(
             if "r5_submitted_fragments_ref" in paths
             else None
         )
+        r6_successor_replay = (
+            _saved_r6_non_thinking_submission_successor_replay(
+                paths=paths,
+                base_research_input=research_input,
+            )
+            if "r6_submission_successor_fixture_ref" in paths
+            else None
+        )
         normalized = {
             **micro_matrix,
             **(
@@ -2319,6 +2524,15 @@ def _execute(
             **(
                 {"saved_r5_wwc_route_identifier_replay": r5_replay}
                 if r5_replay is not None
+                else {}
+            ),
+            **(
+                {
+                    "saved_r6_non_thinking_submission_successor_replay": (
+                        r6_successor_replay
+                    )
+                }
+                if r6_successor_replay is not None
                 else {}
             ),
             "three_case_context_digest": canonical_digest(three_case_context),
@@ -2374,6 +2588,9 @@ def _execute(
                 "three_case_existing_runtime_unchanged": True,
                 "saved_r3_terminal_replay_pass": r3_replay is not None,
                 "saved_r5_terminal_replay_pass": r5_replay is not None,
+                "saved_r6_submission_successor_replay_pass": (
+                    r6_successor_replay is not None
+                ),
                 "natural_model_submission_proven": False,
                 "fixed_pack_layer_one_accepted": False,
                 "dynamic_agentic_research_authorized": False,

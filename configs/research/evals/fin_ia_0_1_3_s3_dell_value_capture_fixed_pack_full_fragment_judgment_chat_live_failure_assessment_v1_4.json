@@ -1,0 +1,48 @@
+{
+  "schema_version": "fin_ia_s3_full_fragment_judgment_live_failure_assessment_v1_4",
+  "status": "terminal_contract_failure_wwc_document_identifier_numeric_surface_false_positive_new_attempt_required",
+  "recorded_at": "2026-08-16T14:27:07.2366781+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_authority_v1_4.json",
+  "authority_sha256": "a5ea4b835ee8ec89ef2321eee6f81caba5f8f5096098b3ccbeb97f001ab28a06",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_4.json",
+  "result_sha256": "68650f68b31cdd004715e0f32ee1ab6715494d530498e503262a17f73455a8f9",
+  "result_digest": "b7bf4277ef32baec56226b4e49c578349e3b9eb3921379af9088ba87c266cdc4",
+  "failure_phase": "local_terminal_judgment_validation",
+  "failure_code": "research_consumer_wwc_evidence_route_invalid",
+  "failure_fragment_tool": "submit_research_counterargument_and_wwc",
+  "execution": {
+    "model_calls_attempted": 6,
+    "tool_calls_accepted": 3,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "protocol_switches": 0
+  },
+  "root_cause": {
+    "owner_layer": "S3_provider_neutral_field_scoped_model_text_validation",
+    "deepseek_contract_failure": false,
+    "transport_failure": false,
+    "financial_L1_observed": false,
+    "valid_route_identifier": "10-Q is an exact official filing type already allowed by the reviewed source policy, not a free numeric claim.",
+    "validator_conflation": "The same global no-digit narrative validator was applied to thesis atoms and to the WWC evidence-route field, so an official document identifier was rejected as numeric prose.",
+    "safe_fix_boundary": "Only exact policy-qualified document identifiers may be ignored by the numeric-surface scan in evidence_route; percentages, dates, amounts, years and unregistered digit strings must still fail closed."
+  },
+  "business_content_observation": {
+    "thesis": "Management product profitability remains an unaudited product-scope assertion and is not presented as audited product profit.",
+    "mechanism": "Missing price, volume and configuration decomposition keeps the product-to-segment and product-to-company profit bridge not inferable.",
+    "counterargument": "Same-basis company gross-margin contraction is used only as a company-level counter observation and is explicitly not attributed to one product or segment.",
+    "what_would_change": "The model asks for the next same-fiscal-quarter company gross-margin observation from an official earnings release or 10-Q and binds the current-period threshold; this may weaken the counter observation but does not itself establish the missing product profit bridge.",
+    "formal_content_acceptance": false
+  },
+  "disposition": {
+    "immutable_R5_preserved": true,
+    "same_attempt_retry_forbidden": true,
+    "manual_text_deletion_or_salvage_forbidden": true,
+    "repair_scope": "provider_neutral_field_scoped_qualified_document_identifier_numeric_surface_validation",
+    "unregistered_numeric_surface_must_still_fail_closed": true,
+    "saved_R5_full_terminal_replay_and_mutation_proof_required": true,
+    "fresh_new_attempt_required": true,
+    "dynamic_truth_spine_remains_blocked": true
+  },
+  "known_boundary": "R5 contains six complete provider responses and three accepted natural fragments with no observed financial L1, but it did not form a terminal Judgment under its bound contract and cannot be promoted."
+}

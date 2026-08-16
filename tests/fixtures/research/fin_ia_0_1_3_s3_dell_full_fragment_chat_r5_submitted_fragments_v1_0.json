@@ -1,0 +1,80 @@
+{
+  "schema_version": "fin_ia_s3_saved_full_fragment_submission_fixture_v1_0",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_authority_v1_4.json",
+  "source_authority_sha256": "a5ea4b835ee8ec89ef2321eee6f81caba5f8f5096098b3ccbeb97f001ab28a06",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_4.json",
+  "source_result_sha256": "68650f68b31cdd004715e0f32ee1ab6715494d530498e503262a17f73455a8f9",
+  "fragments": {
+    "submit_research_thesis": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::PRODUCT_TARGET",
+      "evidence_uses": [
+        {"evidence_ref": "EV::0063F22F643B94ED", "use_role": "support"}
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "qualitative_fact_refs": ["QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"],
+      "method_step_refs": [
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::COUNTERREAD",
+        "METHOD::VC::MATERIAL_GAP_ROUTE"
+      ],
+      "graph_edge_refs": ["GRAPH::2B17375548682087"],
+      "judgment_status": "supported",
+      "confidence_basis": "direct_source_only",
+      "inference_authority": "directly_supported",
+      "claim_scope": "product",
+      "financial_scope": "product_financial",
+      "causal_bridge_authority": "management_assertion_only",
+      "thesis_atom": "管理层表示 AI 服务器盈利水平符合其所述产品经营利润率目标，属管理层自我披露而非经审计的产品级利润确认。"
+    },
+    "submit_research_mechanism": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::PROFIT_BRIDGE_GAP",
+      "evidence_uses": [
+        {"evidence_ref": "EV::0063F22F643B94ED", "use_role": "context"}
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "qualitative_fact_refs": [],
+      "method_step_refs": [
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::COUNTERREAD",
+        "METHOD::VC::MATERIAL_GAP_ROUTE",
+        "METHOD::VC::WHAT_WOULD_CHANGE"
+      ],
+      "graph_edge_refs": ["GRAPH::2B17375548682087"],
+      "inference_authority": "bounded_inference",
+      "mechanism_atom": "AI 服务器产品层面的盈利表述尚未经由可独立复核的价格、数量与配置拆解桥接到分部或公司利润，因此价值获取的传导只停留在管理层对产品盈利水平符合其所述目标的自我披露，公司层利润率变化亦不能归因于该产品或任何单一分部，桥的缺口仍然成立。"
+    },
+    "submit_research_counterargument_and_wwc": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::COMPANY_MARGIN_OBSERVATION",
+      "evidence_uses": [
+        {"evidence_ref": "EV::0063F22F643B94ED", "use_role": "context"}
+      ],
+      "numeric_refs": ["NUM::33642A79CE277E0B", "NUM::AB89B02ADCCB77E0"],
+      "numeric_relation_refs": ["REL::B60164179DFFDF5A"],
+      "qualitative_fact_refs": ["QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"],
+      "method_step_refs": [
+        "METHOD::VC::PERIOD_BASIS",
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::COUNTERREAD",
+        "METHOD::VC::WHAT_WOULD_CHANGE",
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE"
+      ],
+      "graph_edge_refs": ["GRAPH::2B17375548682087"],
+      "inference_authority": "bounded_inference",
+      "counterargument_atom": "管理层称 AI 服务器产品盈利水平符合其所述目标，但公司同口径毛利率较上年同季收缩；这最直接反驳新增收入已转化为公司层利润的推论。该收缩只是公司层观察，不能归因于该产品或任何单一分部，替代解释是低毛利硬件组合、传统服务器与存储或其他分部因素共同所致；产品层盈利达标仅是管理层自我披露，尚未桥接到公司层。",
+      "what_would_change": {
+        "observable": "同口径公司毛利率（同财季）",
+        "direction": "increase",
+        "time_horizon": "下一同财季",
+        "evidence_route": "官方业绩稿或 10-Q 的毛利与收入，按既有公式生成同口径关系",
+        "threshold_numeric_ref": "NUM::AB89B02ADCCB77E0"
+      }
+    }
+  }
+}

@@ -608,7 +608,7 @@ _DATA_BUILD_STEPS = {
                 "output",
                 "--output",
                 "受追踪构建与验收摘要",
-                default="configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_0.json",
+                default="configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json",
             ),
         ],
         output_parameters=["sqlite", "output"],

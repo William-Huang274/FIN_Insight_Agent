@@ -222,14 +222,24 @@ def _evaluate_mutations(sqlite_path: Path) -> dict[str, Any]:
             and len(dell_fcf.facts) == 1
             and dell_fcf.facts[0].value_decimal == "3118000000"
         ),
-        "open_period_does_not_mix_stale_ytd_with_latest_q1": (
+        "open_period_keeps_same_cadence_comparable_without_stale_ytd": (
             dell_current_series.status == "resolved"
             and {fact.period_role for fact in dell_current_series.facts}
             == {"quarter_discrete", "fiscal_year"}
-            and all(
-                fact.period_end in {"2026-05-01", "2026-01-30"}
+            and {
+                (
+                    fact.fiscal_year,
+                    fact.fiscal_period,
+                    fact.period_role,
+                    fact.period_end,
+                )
                 for fact in dell_current_series.facts
-            )
+            }
+            == {
+                (2027, "Q1", "quarter_discrete", "2026-05-01"),
+                (2026, "Q1", "quarter_discrete", "2025-05-02"),
+                (2026, "FY", "fiscal_year", "2026-01-30"),
+            }
         ),
     }
     return {
@@ -258,7 +268,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--output",
-        default="configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_0.json",
+        default="configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json",
     )
     args = parser.parse_args()
     policy_path = _resolve(args.policy)

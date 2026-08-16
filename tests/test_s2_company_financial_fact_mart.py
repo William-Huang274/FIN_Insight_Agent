@@ -541,7 +541,7 @@ def test_tracked_real_build_closes_annual_and_current_interim_qrels() -> None:
     result = json.loads(
         (
             ROOT
-            / "configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_0.json"
+            / "configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json"
         ).read_text(encoding="utf-8")
     )
 
@@ -552,6 +552,55 @@ def test_tracked_real_build_closes_annual_and_current_interim_qrels() -> None:
     }
     assert result["mutation_evaluation"]["all_pass"] is True
     assert result["acceptance"]["candidate_or_metric_row_grants_numeric_authority"] is False
+
+
+def test_current_transcript_objects_cannot_enter_the_s2_numeric_fact_mart() -> None:
+    policy = json.loads(
+        (
+            ROOT
+            / "configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_policy_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    source_manifest = json.loads(
+        (
+            ROOT
+            / "configs/retrieval/fin_ia_0_1_3_s1b_current_source_object_manifest_v1_1.json"
+        ).read_text(encoding="utf-8")
+    )
+    mart_result = json.loads(
+        (
+            ROOT
+            / "configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert any(
+        row.get("source_type") == "EARNINGS_CALL_TRANSCRIPT"
+        for row in source_manifest["sources"]
+    )
+    assert policy["allowed_forms"] == ["10-K", "10-Q"]
+    assert all(
+        set(row) >= {
+            "companyfacts_ref",
+            "companyfacts_sha256",
+            "submissions_ref",
+            "submissions_sha256",
+        }
+        and "transcript" not in json.dumps(row, ensure_ascii=False).casefold()
+        for row in policy["source_bindings"]
+    )
+
+    assert mart_result["source_summary"]["source_count"] == 3
+    assert {
+        row["ticker"] for row in mart_result["source_summary"]["sources"]
+    } == {"DELL", "MU", "NVDA"}
+    assert "transcript" not in json.dumps(
+        mart_result["source_summary"], ensure_ascii=False
+    ).casefold()
+    assert (
+        mart_result["authority"]["candidate_or_metric_row_grants_numeric_authority"]
+        is False
+    )
 
 
 def _canonical_sha(value: object) -> str:

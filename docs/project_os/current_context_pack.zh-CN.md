@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层已经关闭：DELL `value_capture` 的完整 Judgment、独立 L1 和适用内容质量 `21/24` 通过，但该结果只证明“给定已审资料时能分析和自我修正”。动态单单元现已真实执行自然 DeepSeek planner、当前 S1/S2、request-scoped EvidenceResponse 和三个模型判断片段；R1 加 R3 successor 共形成完整 Judgment，未审候选 0 晋升，终态保持 `insufficient_evidence / not_inferable / bridge_unavailable`。独立 L1 仍拒绝该结果：模型把 Q1 FY2027 对 Q1 FY2026 的公司毛利率比较，与 Q3 FY2026 的服务器组合材料写成“同期”，但输入没有跨材料同期间关系。该问题已归属 `RC-S3-028`，当前正在用 provider-neutral TemporalAuthority、真实失败回放和一次性同片段 repair 关闭；不得重跑 planner、S1/S2 或前两片段。动态单单元、五单元和异质泛化尚未通过。另有 S1 最早责任层问题仍保留：reviewed Dell transcript 在 Pack 中可见、动态检索却不可发现。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
+FIN 0.1.3 的 fixed-Pack 第一层已经关闭：DELL `value_capture` 的完整 Judgment、独立 L1 和适用内容质量 `21/24` 通过，但该结果只证明“给定已审资料时能分析和自我修正”。动态单单元现已真实执行自然 DeepSeek planner、当前 S1/S2、request-scoped EvidenceResponse 和三个模型判断片段；R1 加 R3 successor 共形成完整 Judgment，未审候选 0 晋升，终态保持 `insufficient_evidence / not_inferable / bridge_unavailable`。独立 L1 拒绝 R3：模型把 Q1 FY2027 对 Q1 FY2026 的公司毛利率比较，与 Q3 FY2026 的服务器组合材料写成“同期”，但输入没有跨材料同期间关系。`RC-S3-028` 的 provider-neutral TemporalAuthority、真实失败回放、三案例 mutation 和一次性 repair compiler 已在正式零调用证明中通过，当前状态为 `engineering_closed_one_live_repair_pending`；只待 clean/synced 后的一次非思考同片段交卷，不得重跑 planner、S1/S2、前两片段或 counter 分析。动态单单元、五单元和异质泛化尚未通过。另有 S1 最早责任层问题仍保留：reviewed Dell transcript 在 Pack 中可见、动态检索却不可发现。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
 
 ## 当前唯一产品边界
 
@@ -304,3 +304,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - `RC-S3-027` 已零调用关闭：successor canonical set 现在包含 11 个 ref，current loop／dynamic policy 不再是 authority 有、validator 无；真实保存的 v1.1 authority fixture 已进入测试。
 - v1.0／v1.1 identity 均禁止重用。v1.2 proof result digest=`fc2d15a0...ac3b`；缺失／多余 ref、policy SHA、历史 blob、prefix 和 replay mutation 均 fail closed。
 - 全仓 `386 passed`，compileall、active baseline `131／8／10／0` 与 secret scan `6728／0` 通过。下一步只剩 clean/synced v1.2 preflight、新 authority 身份和唯一两调用 successor。动态完整 Judgment、五单元与 S3 acceptance 仍为 false。
+
+## 2026-08-16 S3 动态时间权威正式修复门
+
+- R3 successor 已自然收敛并完成严格 Tool Call，但独立 L1 发现它把 Q3 FY2026 的服务器组合材料与 Q1 FY2027 对 Q1 FY2026 的公司毛利率比较写成“同期”。两条事实各自成立，跨条目同期关系没有权威，因此 R3 保持 contract pass／L1 fail。
+- `TemporalAuthority` 现在只从 source-bound QualitativeFact 与 NumericRelation 精确期间端点编译；Evidence 日期或 NumericRelation 自身比较都不能借权给另一对象。无绑定的中英文同期间叙事在片段层以 `finance_loop_micro_temporal_relation_unbound` fail closed。
+- 正式零调用结果绑定提交 `3c2e274f...0646`，digest=`d21bda1b...a61a99`；三案例隔离、真实 R3 replay、正负 mutation 和一次性 repair compiler 通过，模型／Provider／网络／新 Evidence=`0／0／0／0`。
+- live scope decision 已通过离线 Project OS 预检：复用六个成功节点，只准一次 2k non-thinking counter repair submission。当前状态为 `engineering_closed_one_live_repair_pending`；五单元、泛化与 S3 acceptance 继续为 false。

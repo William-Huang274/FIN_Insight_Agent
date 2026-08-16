@@ -29,6 +29,10 @@ DELL `value_capture` 的 dynamic R1 加 R3 successor 已经自然完成 planner�
 
 ## 当前边界与下一步
 
-当前只是 engineering repair gate。正式 clean proof、Project OS preflight 和 fresh authority 通过后，最多执行一次 non-thinking counter repair submission。修复结果仍须独立通过 L1 和适用内容质量；未通过时保留新失败，不自动扩成第二次修复循环。
+正式零调用证明已经绑定实现提交 `3c2e274fd71f73b6f205047b10419ec0d4ff0646` 并通过，result digest=`d21bda1b...a61a99`。证明覆盖 DELL／MU／NVDA 身份隔离、当前 S1/S2 请求、真实 R3 fragment 重放、无绑定跨条目同期叙事拒绝和一次性 typed repair；模型、Provider、网络与新 Evidence 晋升均为 0。
+
+范围决策 `fin_ia_0_1_3_s3_dell_dynamic_counter_temporal_repair_live_scope_decision_v1_0.json` 已通过离线 Project OS 预检。它复用六个成功模型节点，只允许一次 `thinking=disabled` 的 counter 修复交卷；R3 被拒片段仍是失败证据，不作为业务真相。提交并推送该 gate 后，才可在 clean/synced HEAD 上签发 fresh authority。
+
+因此当前状态是 `engineering_closed_one_live_repair_pending`，不是动态单单元通过。修复结果仍须独立通过 L1 和适用内容质量；未通过时保留新失败，不自动扩成第二次修复循环。
 
 即使动态单单元通过，高质量 DELL 五单元仍受 `RC-S1-019` 阻断：已审 Dell transcript 尚未同步到当前动态检索对象／来源路线。该问题归 S1，不得用 S3 预喂或放宽时间合同掩盖。

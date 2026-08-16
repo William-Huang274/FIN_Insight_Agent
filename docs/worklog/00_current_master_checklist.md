@@ -47,7 +47,8 @@
   - [ ] 自然 planner→真实 S1/S2→动态 Judgment；不得把工程证明或 controlled atoms 计作 Agentic Research
     - [x] 动态 R1 已完成自然 planner、当前 S1/S2、thesis 和 mechanism；counter/WWC 分析 7,999 reasoning tokens 后无可见输出，R1 原子失败并保留
     - [x] 只复用成功前缀的 counter/WWC 分析＋交卷 successor；R3 自然完成三片段与终态，未重跑前五个成功节点
-    - [ ] RC-S3-028 时间关系修复：R3 把不同报告期材料写成“同期”；TemporalAuthority 零调用证明后只允许一次 counter 同片段交卷修复
+    - [x] RC-S3-028 时间关系工程修复：TemporalAuthority、真实 R3 replay、三案 mutation、一次性 repair compiler 与正式 zero-call decision gate 通过
+    - [ ] RC-S3-028 唯一 live 关闭：只允许一次 counter 同片段非思考交卷，并须独立通过 L1／内容质量
   - [ ] S1 reviewed Pack↔当前检索对象库／来源路由同步（Dell transcript 已审但动态不可发现；MU/NVDA 当前请求 0 reviewed match）
 - [ ] DELL `value_capture` 单单元动态 Agentic Research（合同链已完整运行；L1 temporal repair 与内容验收待完成）
 - [ ] DELL 五单元动态案例、底稿与报告验收

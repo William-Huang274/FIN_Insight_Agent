@@ -41,6 +41,7 @@
 - [x] S3 fixed-Pack 第一层自然 Judgment、一次 typed repair、独立 L1 与适用内容质量（21/24；只算模型分析单元测试）
 - [ ] S1→S3 动态 Research Truth Spine（EvidenceRequest→S1/S2→EvidenceResponse）
   - [x] provider-neutral EvidenceResponse、reviewed-only 重选、动态 claim authority、三案 identity/mutation 零调用工程纵切
+  - [x] 动态 ClaimRelation 投影与 gap-only thesis abstain（三片段结构零调用 successor；0 candidate promotion）
   - [ ] 自然 planner→真实 S1/S2→动态 Judgment；不得把工程证明或 controlled atoms 计作 Agentic Research
   - [ ] S1 reviewed Pack↔当前检索对象库／来源路由同步（Dell transcript 已审但动态不可发现；MU/NVDA 当前请求 0 reviewed match）
 - [ ] DELL `value_capture` 单单元动态 Agentic Research

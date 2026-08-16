@@ -347,3 +347,15 @@ FFJ-R2 证明 `required_evidence_refs` 不能继续同时表达“必须直接�
 保存的 R2 Tool Calls 在 v1.2 下原样 replay：thesis 与 mechanism 均通过，8-K 继续保持 context；context-only mutation 仍以 `finance_loop_micro_required_authority_missing` 拒绝。最终 fake Judgment 被保守汇总为 `bounded_support / bounded_inference / multi_scope / multi_scope_financial / multi_driver_context_only`。这项设计的目的不是让更多模型输出“过门”，而是避免把真实上下文伪装成直接证据，同时让片段责任与最终报告责任各归其位。
 
 该关系角色合同属于 provider-neutral 金融控制面，Chat／Responses／Anthropic 投影必须共享；不得为 DeepSeek 或某次 attempt 增加特殊分支。零调用 closure 只授权一个 fresh FFJ-R3，不能代替自然完整 Judgment、动态检索、五研究单元、异质泛化或 S3 产品验收。
+
+## 15. 动态 ClaimRelation 投影与安全 abstain
+
+fixed-Pack ClaimRelation 模板不是动态研究的默认权限清单。EvidenceRequest 执行后，Runtime 必须以本轮 request-scoped reviewed Evidence、NumericRelation 和 typed gap 为输入，重新投影当前单元可提交的关系：
+
+- 任一 required Evidence、QF、NumericRelation 或 gap 不可用时，对应关系整体移除；不得因它存在于固定 Pack 模板而继续暴露给模型。
+- 动态投影只能删除权限，不得创建 Evidence、NumericFact、日期、身份、来源或因果桥。
+- 若删除后没有关系可承担 `thesis_atom`，只有已经存在且完整绑定 typed gaps 的 `bridge_unavailable` 可以临时承担 thesis；其 inference/status 同时收窄为 `not_inferable / insufficient_evidence`。
+- 该 gap-only thesis 只是让模型能够诚实交卷，不是 Harness 代写观点，也不能与 `bounded_support` 或正面归因组合。
+- analysis／submission／Validator／Renderer 继续消费同一个关系卡；Chat、Responses 与其他 Provider 只做外层协议投影。
+
+当前 DELL SEC-only 零调用 successor 删除了依赖 transcript 的 `PRODUCT_TARGET` 与 `MULTI_DRIVER_CONTEXT`，只保留 `COMPANY_MARGIN_OBSERVATION` 和 `PROFIT_BRIDGE_GAP`。后者是唯一 thesis 出口且只能 abstain；candidate promotion 仍为 0。该结构通过不代表自然 planner 或动态 Judgment 已通过。

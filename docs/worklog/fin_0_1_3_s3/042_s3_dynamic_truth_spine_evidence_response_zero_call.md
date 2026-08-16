@@ -53,10 +53,25 @@
 
 Dell Q1 FY2027 官方 transcript 已经进入 reviewed Pack，但当前 S1 candidate object/index 没有该对象，source whitelist 也没有 `EARNINGS_CALL_TRANSCRIPT`。因此 fixed-Pack 测试能看见法说，动态检索却看不见。MU、NVDA 的 0/16 也说明 reviewed Pack 与当前候选对象之间还没有稳定同步合同。
 
-这不是 DeepSeek 问题，也不能靠 S3 把 transcript 静默预喂给模型解决。它归 S1 source/index synchronization。它不阻断一次诚实的 DELL SEC-only 动态实验，但阻断三案例 S1 产品通过和高质量动态报告。
+这不是 DeepSeek 问题，也不能靠 S3 把 transcript 静默预喂给模型解决。它归 S1 source/index synchronization，唯一编号更正为 `RC-S1-019`（早先 `RC-S1-015` 已用于 reranker 评测问题）。它不阻断一次诚实的 DELL SEC-only 动态实验，但阻断三案例 S1 产品通过和高质量动态报告。
+
+## 动态 ClaimRelation successor
+
+首轮 EvidenceResponse proof 只能编译到动态 Claim Authority，尚不能直接复用 fixed-Pack 已验证的 thesis／mechanism／counterargument 三片段交卷。若此时直接 live，只能退回旧的单次长 JSON，等于绕过已经证明的片段合同。
+
+successor 在 provider-neutral Runtime 中加入动态 ClaimRelation 投影：
+
+- 本轮未取回 transcript 后，`PRODUCT_TARGET` 与 `MULTI_DRIVER_CONTEXT` 被删除；
+- 仍有同口径 NumericRelation 时，保留 `COMPANY_MARGIN_OBSERVATION`；
+- 三个 typed bridge gap 完整存在时，保留 `PROFIT_BRIDGE_GAP`；
+- 因没有正向 thesis 权限，gap relation 只允许以 `not_inferable / insufficient_evidence` 承担 thesis，不允许 `bounded_support`；
+- 三个片段均有合法提交出口，0 candidate promotion，且固定 Pack 旧合同回归不变。
+
+实现提交 `5db21089f074c3314fbd7f41dfc77963dcea767b`。formal successor 为 `configs/research/evals/fin_ia_0_1_3_s3_dynamic_truth_spine_zero_call_result_v1_1.json`，result digest=`1082988fd41b1a58d992e76238f005a9dfdb73ac8d5b026e2f539576c042df08`。最终全仓 `374 passed`，compileall、active baseline `129 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 和 secret scan `6,702 files / 0 finding` 通过。它仍使用 controlled atoms 与本地 Qwen embedding，只证明动态交卷结构，不证明自然 planner、自然 Judgment 或 Agentic Research。
 
 ## 下一步
 
-1. 只给自然 DELL `value_capture` planner 用户问题、公司身份、as-of 和工具权限，让其提出 EvidenceRequest。
-2. 真实执行 S1/S2、返回 EvidenceResponse，并在当前有限权威下完成一次动态 Judgment。
-3. 保留 S1 transcript/index 同步缺口；根据自然纵切结果决定在进入五单元前的最小同步修复，不把缺口偷塞进 S3。
+1. 先登记并推送上述 dynamic ClaimRelation successor，在 clean/synced HEAD 上签发 fresh authority。
+2. 只给自然 DELL `value_capture` planner 用户问题、公司身份、as-of 和工具权限，让其提出 EvidenceRequest。
+3. 真实执行 S1/S2、返回 EvidenceResponse，并在当前有限权威下完成一次动态 Judgment。
+4. 保留 S1 transcript/index 同步缺口；根据自然纵切结果决定在进入五单元前的最小同步修复，不把缺口偷塞进 S3。

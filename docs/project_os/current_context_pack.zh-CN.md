@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack` 已通过正式零调用 R2；稳定、可恢复的五单元 runner 也已完成 engineering regression：一次 planner／当前 S1／S2，五组 cell-local 分析与严格交卷，全部通过后才做模型自有综合，单元失败仍继续暴露后续问题。模型尚未自然完成五单元、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。下一项是 formal runner zero-call、clean authority 和自然 DELL 五单元，不包含静默改变模型、数据采购、S4 publication 或 S5 release。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。五研究单元的 provider-neutral `RoleMethodPack + current-case GraphContextPack` 已通过正式零调用 R2；稳定、可恢复的五单元 runner 与 Project OS 范围门也已通过正式零调用：一次 planner／当前 S1／S2，五组 cell-local 分析与严格交卷，全部通过后才做模型自有综合，单元失败仍继续暴露后续问题。正式 proof 绑定两次独立 `59/59` 回归、当前 S1/S2 五单元投影、源码哈希和三个既有 blocker 的有界许可；全仓 `413 passed`，活动图 `133 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference`，secret scan `6,765 / 0`。模型尚未自然完成五单元、跨单元综合、完整八维研报或 qualified-human 验收，S3 仍未通过。下一项是 clean authority 和自然 DELL 五单元，不包含静默改变模型、数据采购、S4 publication 或 S5 release。
 
 ## 当前唯一产品边界
 
@@ -89,7 +89,7 @@ FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、revi
 
 Owner 已批准从第一层连续推进到 S3 三案例验收；每一层仍需独立工程、L1 与内容门：`FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_ONE → Research Truth Spine → DELL dynamic single cell → DELL five cells → heterogeneous generalization report`
 
-截至 2026-08-17，前三层已关闭，DELL five-cell 的方法／图上下文零调用 R2 与稳定 runner 工程回归也已通过；当前唯一下一动作是 formal runner zero-call、fresh authority、自然 live 与独立内容验收。零调用与 fake 结果不授予模型权限，也不发布到 Workbench。
+截至 2026-08-17，前三层已关闭，DELL five-cell 的方法／图上下文零调用 R2、稳定 runner 工程回归和 formal runner zero-call／Project OS 范围门均已通过；当前唯一下一动作是从干净同步提交签发 fresh authority、执行自然 live 与独立内容验收。零调用与 fake 结果不授予模型权限，也不发布到 Workbench。
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
@@ -355,3 +355,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - DELL 新 objective 显式允许当前已审官方法说 transcript；旧 objective 保持不可变，避免用旧 SEC-only 范围把资料缺口误记成模型能力问题。
 - current S1／S2 预回放把旧自然 atoms 仅作为测试形状重新绑定新 objective：8 个请求中 6 个返回 8 条已审 Evidence，106 个未审候选 0 晋升，10 个 typed gap 保留；旧 objective ID 原样复用会正确拒绝，真实 live 必须重新规划。
 - 定向回归 `59 passed`、全仓 `411 passed`；active baseline 为 `133／8／10／0`。当前仍是 engineering pass，未调用模型或外部网络。下一步是 formal runner zero-call、clean push、fresh authority 和唯一自然 DELL 五单元。
+
+## 2026-08-17 S3 五单元正式零调用与范围门
+
+- formal proof 绑定 runner、动态 Runtime、五单元 Runtime、consumer 和三组测试源码 SHA；两个独立 pytest 进程均为 `59/59`，源码或关键验收语义漂移后不能沿用旧资格。
+- Project OS 新增的不是第二套 runner，而是现有稳定 runner 的唯一范围入口。它要求 fresh natural planner、当前 S1/S2、五个 cell attempt、5/5 后才综合；最大 13 次调用，0 retry／fallback／protocol switch／external source network／publication。
+- authority 入口审计发现并修复一个旧字段漂移：正式单单元验收字段是 `dynamic_single_cell_L1`，runner 过去读取不存在的 `dynamic_single_cell_L1_pass`。若不在零调用门修正，真实 live 会在任何模型调用前必然失败。
+- `RC-S2-004` 未被假装关闭。DELL 产品收入到公司／分部利润的权威桥仍缺失；本次只允许模型保留 typed gap 或得出不可推断，不允许正向 AI 利润归因。`RC-S3-014/015` 只对这一次有界完整案例放行，不授予泛化或 S3 acceptance。
+- 当前五单元预投影为 8 个请求、8 条已审 Evidence、106 个未审候选、10 个 typed gap、0 promotion。全仓 `413 passed`、compileall 通过、active baseline `133／8／10／0`、secret scan `6,765／0`。
+- 下一步从本轮干净同步提交签发唯一 fresh authority 并执行自然 DELL 五单元；自然结果仍须独立做金融 L1、逐单元内容、跨单元综合、八维质量、paired 和 qualified-human 验收。

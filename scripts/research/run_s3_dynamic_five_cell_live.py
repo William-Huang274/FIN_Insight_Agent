@@ -210,6 +210,7 @@ def _bound_paths(authority: Mapping[str, Any]) -> dict[str, Path]:
         "submission_profile_ref",
         "five_cell_context_result_ref",
         "dynamic_single_cell_assessment_ref",
+        "runner_zero_call_result_ref",
         "scope_decision_ref",
         "runner_ref",
         "dynamic_runtime_ref",
@@ -222,6 +223,7 @@ def _bound_paths(authority: Mapping[str, Any]) -> dict[str, Path]:
         "objective_id",
         "planner_messages_digest",
         "five_cell_context_result_digest",
+        "runner_zero_call_result_digest",
     }
     expected = {
         item
@@ -282,6 +284,7 @@ def validate_authority(
     paths = _bound_paths(payload)
     context = _json(paths["five_cell_context_result_ref"])
     single = _json(paths["dynamic_single_cell_assessment_ref"])
+    proof = _json(paths["runner_zero_call_result_ref"])
     decision = _json(paths["scope_decision_ref"])
     bound = payload["bound_inputs"]
     if not (
@@ -301,10 +304,30 @@ def validate_authority(
         is False
         and single.get("status")
         == "dynamic_single_cell_L1_and_applicable_content_pass_S1_sync_then_five_cell"
-        and single.get("acceptance", {}).get(
-            "dynamic_single_cell_L1_pass"
+        and single.get("acceptance", {}).get("dynamic_single_cell_L1")
+        is True
+        and proof.get("schema_version")
+        == "fin_ia_s3_dynamic_five_cell_runner_zero_call_result_v1_0"
+        and proof.get("status")
+        == "engineering_pass_zero_call_stable_five_cell_runner"
+        and proof.get("result_digest")
+        == bound["runner_zero_call_result_digest"]
+        and proof.get("acceptance", {}).get(
+            "success_path_exact_thirteen_calls"
         )
         is True
+        and proof.get("acceptance", {}).get(
+            "cell_failure_does_not_hide_later_cells"
+        )
+        is True
+        and proof.get("acceptance", {}).get(
+            "synthesis_requires_all_five_cells"
+        )
+        is True
+        and proof.get("acceptance", {}).get(
+            "natural_model_quality_proven"
+        )
+        is False
         and decision.get("schema_version")
         == "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
         and decision.get("status")

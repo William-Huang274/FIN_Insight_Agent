@@ -72,6 +72,13 @@ DYNAMIC_SINGLE_CELL_DECISION_STATUS = (
 DYNAMIC_SINGLE_CELL_SCOPE = (
     "one_honest_DELL_SEC_only_dynamic_single_cell"
 )
+DYNAMIC_FIVE_CELL_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
+)
+DYNAMIC_FIVE_CELL_DECISION_STATUS = (
+    "approved_one_DELL_dynamic_five_cell_exact_once"
+)
+DYNAMIC_FIVE_CELL_SCOPE = "one_DELL_dynamic_five_cell_exact_once"
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_0 = (
     "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
     "live_scope_decision_v1_0"
@@ -210,6 +217,11 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if decision.get("schema_version") == DYNAMIC_FIVE_CELL_DECISION_SCHEMA:
+        return _validate_dynamic_five_cell_decision(
+            root=root,
+            decision=decision,
+        )
     if decision.get("schema_version") == DYNAMIC_TEMPORAL_REPAIR_DECISION_SCHEMA:
         return _validate_dynamic_temporal_repair_decision(
             root=root,
@@ -605,6 +617,281 @@ def _validate_dynamic_single_cell_decision(
         "api_key_env": "DEEPSEEK_API_KEY",
         "recent_provider_steps": 1,
         "dynamic_single_cell_successor": True,
+        "micro_judgment_successor": False,
+        "node_profiles": profiles,
+    }
+
+
+def _validate_dynamic_five_cell_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_cells = (
+        "CELL::demand_quality",
+        "CELL::operating_performance",
+        "CELL::value_capture",
+        "CELL::cash_conversion",
+        "CELL::counterevidence",
+    )
+    required_equal = {
+        "status": DYNAMIC_FIVE_CELL_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "ALL_FIVE_RESEARCH_CELLS",
+        "run_scope_id": DYNAMIC_FIVE_CELL_SCOPE,
+        "evidence_mode": (
+            "current_reviewed_pack_request_scoped_reselection_with_typed_gaps"
+        ),
+        "next_authorized_scope": "one_DELL_dynamic_five_cell_chat_exact_once",
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_five_cell_decision_field_invalid:{field}"
+            )
+    if tuple(decision.get("required_cell_ids") or ()) != required_cells:
+        raise ValueError("project_os_five_cell_required_cells_invalid")
+
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "natural_planner_required",
+        "current_S1_S2_execution_required",
+        "candidate_promotion_forbidden",
+        "transcript_prefeed_forbidden",
+        "same_current_product_pointer_required",
+        "continue_after_cell_failure",
+        "synthesis_requires_all_cells",
+        "immutable_zero_call_predecessor_required",
+        "positive_product_profit_attribution_requires_authoritative_bridge",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                f"project_os_five_cell_decision_true_required:{field}"
+            )
+    for field in (
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "S3_acceptance_authorized",
+        "heterogeneous_generalization_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                f"project_os_five_cell_decision_false_required:{field}"
+            )
+
+    expected_budget = {
+        "maximum_model_calls": 13,
+        "maximum_transport_attempts": 13,
+        "maximum_planner_calls": 1,
+        "maximum_cell_analysis_calls": 5,
+        "maximum_cell_submission_calls": 5,
+        "maximum_synthesis_analysis_calls": 1,
+        "maximum_synthesis_submission_calls": 1,
+        "maximum_evidence_requests": 8,
+        "maximum_tool_calls": 6,
+        "retries": 0,
+        "fallbacks": 0,
+        "external_source_network_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if decision.get("execution_budget") != expected_budget:
+        raise ValueError("project_os_five_cell_decision_budget_invalid")
+
+    _, proof = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="runner_zero_call_result_ref",
+        sha_field="runner_zero_call_result_sha256",
+        digest_field="runner_zero_call_result_digest",
+    )
+    proof_acceptance = proof.get("acceptance") or {}
+    replay = proof.get("current_S1_S2_replay") or {}
+    test_runs = proof.get("independent_test_processes") or []
+    if not (
+        proof.get("schema_version")
+        == "fin_ia_s3_dynamic_five_cell_runner_zero_call_result_v1_0"
+        and proof.get("status")
+        == "engineering_pass_zero_call_stable_five_cell_runner"
+        and isinstance(test_runs, list)
+        and len(test_runs) == 2
+        and all(
+            isinstance(row, Mapping)
+            and row.get("status") == "passed"
+            and int(row.get("passed_tests") or 0) >= 59
+            and row.get("model_calls") == 0
+            and row.get("provider_calls") == 0
+            and row.get("network_calls") == 0
+            for row in test_runs
+        )
+        and replay.get("case_key") == "DELL"
+        and replay.get("requested_evidence_count") == 8
+        and replay.get("candidate_promotions") == 0
+        and tuple(replay.get("research_context_cells") or ()) == required_cells
+        and proof_acceptance.get("stale_objective_binding_fails_closed") is True
+        and proof_acceptance.get("success_path_exact_thirteen_calls") is True
+        and proof_acceptance.get("cell_failure_does_not_hide_later_cells")
+        is True
+        and proof_acceptance.get("synthesis_requires_all_five_cells") is True
+        and proof_acceptance.get("public_result_redacts_model_content") is True
+        and proof_acceptance.get("natural_model_quality_proven") is False
+        and proof_acceptance.get("product_publication_authorized") is False
+    ):
+        raise ValueError("project_os_five_cell_runner_proof_invalid")
+    source_bindings = proof.get("source_bindings") or {}
+    required_binding_names = {
+        "runner",
+        "dynamic_runtime",
+        "five_cell_runtime",
+        "current_consumer",
+        "runner_tests",
+        "runtime_tests",
+        "consumer_tests",
+    }
+    if set(source_bindings) != required_binding_names:
+        raise ValueError("project_os_five_cell_runner_proof_bindings_invalid")
+    for name, row in source_bindings.items():
+        if not isinstance(row, Mapping):
+            raise ValueError(
+                "project_os_five_cell_runner_proof_bindings_invalid"
+            )
+        path = _repo_path(root, str(row.get("ref") or ""))
+        if _sha256(path) != str(row.get("sha256") or ""):
+            raise ValueError(
+                f"project_os_five_cell_runner_source_drift:{name}"
+            )
+
+    _, context = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="five_cell_context_result_ref",
+        sha_field="five_cell_context_result_sha256",
+        digest_field="five_cell_context_result_digest",
+    )
+    if not (
+        context.get("status")
+        == "engineering_pass_zero_call_current_consumer_contract_successor"
+        and (context.get("acceptance") or {}).get(
+            "all_five_cells_have_role_method_pack"
+        )
+        is True
+        and (context.get("acceptance") or {}).get(
+            "all_graph_context_compiled_from_current_case"
+        )
+        is True
+        and (context.get("acceptance") or {}).get("natural_model_quality_proven")
+        is False
+    ):
+        raise ValueError("project_os_five_cell_context_predecessor_invalid")
+
+    _, single = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="dynamic_single_cell_assessment_ref",
+        sha_field="dynamic_single_cell_assessment_sha256",
+    )
+    if not (
+        single.get("status")
+        == (
+            "dynamic_single_cell_L1_and_applicable_content_pass_"
+            "S1_sync_then_five_cell"
+        )
+        and (single.get("acceptance") or {}).get("dynamic_single_cell_L1") is True
+        and (single.get("acceptance") or {}).get(
+            "DELL_value_capture_dynamic_single_cell_accepted"
+        )
+        is True
+        and (single.get("acceptance") or {}).get("five_cell_live_authorized")
+        is False
+    ):
+        raise ValueError("project_os_five_cell_single_cell_predecessor_invalid")
+
+    profile_specs = (
+        (
+            "planner_profile_ref",
+            "planner_profile_sha256",
+            {"type": "enabled"},
+            "max",
+            16000,
+            {"type": "json_object"},
+        ),
+        (
+            "analysis_profile_ref",
+            "analysis_profile_sha256",
+            {"type": "enabled"},
+            "high",
+            8000,
+            None,
+        ),
+        (
+            "submission_profile_ref",
+            "submission_profile_sha256",
+            {"type": "disabled"},
+            None,
+            2000,
+            None,
+        ),
+    )
+    profiles: dict[str, dict[str, Any]] = {}
+    for (
+        ref_field,
+        sha_field,
+        thinking,
+        reasoning,
+        tokens,
+        response_format,
+    ) in profile_specs:
+        _, profile = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field=ref_field,
+            sha_field=sha_field,
+        )
+        defaults = profile.get("request_defaults") or {}
+        if not (
+            profile.get("provider_id") == "deepseek"
+            and profile.get("model") == "deepseek-v4-pro"
+            and profile.get("wire_api")
+            == "openai_compatible_chat_completions"
+            and profile.get("base_url") == "https://api.deepseek.com"
+            and profile.get("endpoint") == "/chat/completions"
+            and (profile.get("authority") or {}).get("retry_count") == 0
+            and defaults.get("stream") is False
+            and defaults.get("thinking") == thinking
+            and defaults.get("max_tokens") == tokens
+            and (
+                defaults.get("reasoning_effort") == reasoning
+                if reasoning is not None
+                else "reasoning_effort" not in defaults
+            )
+            and (
+                defaults.get("response_format") == response_format
+                if response_format is not None
+                else "response_format" not in defaults
+            )
+            and "temperature" not in defaults
+            and "top_p" not in defaults
+        ):
+            raise ValueError(
+                f"project_os_five_cell_provider_profile_invalid:{ref_field}"
+            )
+        profiles[ref_field] = {
+            "thinking": thinking,
+            "reasoning_effort": reasoning,
+            "max_tokens": tokens,
+        }
+
+    return {
+        "clean_proof_status": proof["status"],
+        "provider_id": "deepseek",
+        "provider_model": "deepseek-v4-pro",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "recent_provider_steps": 1,
+        "dynamic_five_cell_successor": True,
+        "dynamic_single_cell_successor": False,
         "micro_judgment_successor": False,
         "node_profiles": profiles,
     }
@@ -2819,6 +3106,17 @@ def build_preflight(
         raise ValueError(
             "project_os_dynamic_temporal_repair_scope_allowance_missing"
         )
+    if decision_projection.get("dynamic_five_cell_successor") is True:
+        required_allowances = {
+            "RC-S2-004-product-operating-metric-and-profit-bridge-authority-missing",
+            "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget",
+            "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence",
+        }
+        actual_allowances = set(scope_projection["explicit_allow_issue_ids"])
+        if not required_allowances.issubset(actual_allowances):
+            raise ValueError(
+                "project_os_dynamic_five_cell_scope_allowance_missing"
+            )
     if (
         decision_projection.get("relation_role_successor") is True
         and not _issue_explicitly_allows(
@@ -2860,7 +3158,17 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("dynamic_temporal_repair_successor") is True:
+    if decision_projection.get("dynamic_five_cell_successor") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one decision-bound "
+            "DELL dynamic five-cell Chat run. It requires natural planning, "
+            "current S1/S2 execution, all five cell attempts, and synthesis "
+            "only after five valid judgments. Missing product-profit bridge "
+            "authority must remain a typed gap. It does not authorize "
+            "publication, S3 acceptance, heterogeneous generalization, or "
+            "release."
+        )
+    elif decision_projection.get("dynamic_temporal_repair_successor") is True:
         known_boundary = (
             "This current-baseline preflight permits only one decision-bound "
             "DELL dynamic counter temporal-validation repair submission. It "

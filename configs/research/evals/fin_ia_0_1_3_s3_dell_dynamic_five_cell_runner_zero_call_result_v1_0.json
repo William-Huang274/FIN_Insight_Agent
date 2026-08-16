@@ -1,0 +1,146 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_runner_zero_call_result_v1_0",
+  "status": "engineering_pass_zero_call_stable_five_cell_runner",
+  "recorded_at": "2026-08-17T01:38:57+08:00",
+  "result_id": "FIN-0.1.3-S3-DELL-DYNAMIC-FIVE-CELL-RUNNER-ZERO-CALL-R1",
+  "pre_gate_baseline_commit": "d2a129a997bb54a94db6ac0e3fd96d1468aa695a",
+  "source_bindings": {
+    "runner": {
+      "ref": "scripts/research/run_s3_dynamic_five_cell_live.py",
+      "sha256": "2d704af1dfd5cc5e174f3621c7c379dceccbfb48264cf898a6b4a58768eafbd2"
+    },
+    "dynamic_runtime": {
+      "ref": "src/sec_agent/research/dynamic_research_runtime.py",
+      "sha256": "0250e30db8b447ab5981abd8f0b657003504725c5cace5293adc97384f476a54"
+    },
+    "five_cell_runtime": {
+      "ref": "src/sec_agent/research/five_cell_runtime.py",
+      "sha256": "c7103167e5029227b412235e88faf41f6a1493bc1502595e0d38a6abccbffa0a"
+    },
+    "current_consumer": {
+      "ref": "src/sec_agent/research/current_consumer.py",
+      "sha256": "2e4fcf92d7eb6a6133295ab100513affebc0138fcaa6ae4ce068ef37eb53124e"
+    },
+    "runner_tests": {
+      "ref": "tests/test_s3_dynamic_five_cell_live.py",
+      "sha256": "640a7d9a714f3b9295e1c8812e104f311fa6df6da4d9fc51cb502c0d0ec7516e"
+    },
+    "runtime_tests": {
+      "ref": "tests/test_s3_five_cell_runtime.py",
+      "sha256": "44f13c20bc2fb8b871fa734fb7f74da00ae48b42545fe6aee7a0799b60576f92"
+    },
+    "consumer_tests": {
+      "ref": "tests/test_s3_current_research_consumer.py",
+      "sha256": "cdf19b50f01b0937ad11bb93684801205a99d9509d0557a30d997cc01d768974"
+    }
+  },
+  "independent_test_processes": [
+    {
+      "process_id": "FIVE-CELL-ZERO-CALL-PYTEST-A",
+      "command": "python -m pytest -q tests/test_s3_dynamic_five_cell_live.py tests/test_s3_five_cell_runtime.py tests/test_s3_current_research_consumer.py",
+      "status": "passed",
+      "passed_tests": 59,
+      "elapsed_seconds": 2.47,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "network_calls": 0
+    },
+    {
+      "process_id": "FIVE-CELL-ZERO-CALL-PYTEST-B",
+      "command": "python -m pytest -q tests/test_s3_dynamic_five_cell_live.py tests/test_s3_five_cell_runtime.py tests/test_s3_current_research_consumer.py",
+      "status": "passed",
+      "passed_tests": 59,
+      "elapsed_seconds": 2.22,
+      "model_calls": 0,
+      "provider_calls": 0,
+      "network_calls": 0
+    }
+  ],
+  "current_S1_S2_replay": {
+    "case_key": "DELL",
+    "objective_id": "ROC::c1440c206aad66f719ee1c1e",
+    "planner_messages_digest": "5b98ef5e72d946ea77d2eb6664fae035685010d12914d0182f694dc9be07fd39",
+    "controlled_plan_digest": "f31166bfef0166d379e475e802da849542c6a1742785b1c37cd1e942f0629e9c",
+    "research_input_digest": "f1a6593f7ae7887e486de2eb7f9f516a1b1589aa964c8683f8474930a4b1867d",
+    "planner_atoms_used_as_test_shape_only": 10,
+    "selected_atoms": 8,
+    "deferred_atoms": 2,
+    "requested_evidence_count": 8,
+    "requests_with_accepted_evidence": 6,
+    "accepted_reviewed_evidence_count": 8,
+    "reviewed_binding_reject_count": 4,
+    "unreviewed_candidate_count": 106,
+    "typed_gap_count": 10,
+    "candidate_promotions": 0,
+    "research_context_cells": [
+      "CELL::demand_quality",
+      "CELL::operating_performance",
+      "CELL::value_capture",
+      "CELL::cash_conversion",
+      "CELL::counterevidence"
+    ],
+    "cell_projection": {
+      "CELL::demand_quality": {
+        "evidence_count": 4,
+        "numeric_fact_count": 0,
+        "numeric_relation_count": 0,
+        "typed_gap_count": 1,
+        "graph_edge_count": 1
+      },
+      "CELL::operating_performance": {
+        "evidence_count": 1,
+        "numeric_fact_count": 12,
+        "numeric_relation_count": 6,
+        "typed_gap_count": 0,
+        "graph_edge_count": 0
+      },
+      "CELL::value_capture": {
+        "evidence_count": 2,
+        "numeric_fact_count": 8,
+        "numeric_relation_count": 4,
+        "typed_gap_count": 3,
+        "graph_edge_count": 0
+      },
+      "CELL::cash_conversion": {
+        "evidence_count": 2,
+        "numeric_fact_count": 10,
+        "numeric_relation_count": 3,
+        "typed_gap_count": 1,
+        "graph_edge_count": 1
+      },
+      "CELL::counterevidence": {
+        "evidence_count": 1,
+        "numeric_fact_count": 3,
+        "numeric_relation_count": 0,
+        "typed_gap_count": 2,
+        "graph_edge_count": 0
+      }
+    },
+    "natural_planner_executed": false,
+    "natural_judgment_executed": false,
+    "generative_model_calls": 0,
+    "provider_calls": 0,
+    "external_network_calls": 0,
+    "local_Qwen_retrieval_runtime_loaded": true,
+    "local_embedding_query_call_count": "not_separately_metered_in_this_replay",
+    "known_boundary": "The prior natural planner atoms were rebound only as a deterministic test shape. The formal live must execute a fresh natural planner and may not reuse these atoms as business authority."
+  },
+  "acceptance": {
+    "stale_objective_binding_fails_closed": true,
+    "current_S1_S2_projection_replayed": true,
+    "all_five_cell_contexts_present": true,
+    "success_path_exact_thirteen_calls": true,
+    "cell_failure_does_not_hide_later_cells": true,
+    "partial_terminal_result_materialized": true,
+    "synthesis_requires_all_five_cells": true,
+    "unknown_cross_cell_and_numeric_refs_fail_closed": true,
+    "public_result_redacts_model_content": true,
+    "raw_private_capture_preserved": true,
+    "harness_generated_research_conclusion": false,
+    "natural_model_quality_proven": false,
+    "product_publication_authorized": false,
+    "S3_acceptance": false
+  },
+  "known_boundary": "This proof qualifies only the stable provider-neutral DELL five-cell orchestration and current S1/S2 projection. It does not authorize a model call, prove natural research quality, publish a report, prove heterogeneous generalization, close S3, or approve release.",
+  "result_digest": "c785f44cdc92e72746869d7ca8b9e7b183320dba04d20a9f196755f1020cb1c1"
+}

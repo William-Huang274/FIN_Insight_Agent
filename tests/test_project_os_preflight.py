@@ -116,6 +116,10 @@ DYNAMIC_SINGLE_CELL_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_dynamic_value_capture_live_scope_decision_v1_0.json"
 )
+DYNAMIC_FIVE_CELL_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_dynamic_five_cell_live_scope_decision_v1_0.json"
+)
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_dynamic_counter_successor_"
@@ -179,6 +183,32 @@ def _micro_fixture_root(tmp_path: Path) -> Path:
     return tmp_path
 
 
+def _dynamic_five_cell_fixture_root(tmp_path: Path) -> Path:
+    for ref in REQUIRED_PROJECT_OS_REFS:
+        _copy_ref(tmp_path, ref)
+    _copy_ref(tmp_path, DYNAMIC_FIVE_CELL_DECISION_REF)
+    decision = json.loads(
+        (ROOT / DYNAMIC_FIVE_CELL_DECISION_REF).read_text(encoding="utf-8")
+    )
+    for field in (
+        "runner_zero_call_result_ref",
+        "five_cell_context_result_ref",
+        "dynamic_single_cell_assessment_ref",
+        "planner_profile_ref",
+        "analysis_profile_ref",
+        "submission_profile_ref",
+    ):
+        _copy_ref(tmp_path, decision[field])
+    proof = json.loads(
+        (ROOT / decision["runner_zero_call_result_ref"]).read_text(
+            encoding="utf-8"
+        )
+    )
+    for row in proof["source_bindings"].values():
+        _copy_ref(tmp_path, row["ref"])
+    return tmp_path
+
+
 def test_current_fixed_pack_decision_passes_without_network_or_secret_read() -> None:
     result = build_preflight(
         root=ROOT,
@@ -232,6 +262,69 @@ def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() 
     assert result["network_calls"] == 0
     assert result["provider_calls"] == 0
     assert result["credential_value_persisted"] is False
+
+
+def test_dynamic_five_cell_decision_binds_proof_predecessors_and_profiles() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=DYNAMIC_FIVE_CELL_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["run_scope_id"] == "one_DELL_dynamic_five_cell_exact_once"
+    assert result["decision_projection"]["dynamic_five_cell_successor"] is True
+    assert result["decision_projection"]["node_profiles"] == {
+        "planner_profile_ref": {
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+            "max_tokens": 16000,
+        },
+        "analysis_profile_ref": {
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "high",
+            "max_tokens": 8000,
+        },
+        "submission_profile_ref": {
+            "thinking": {"type": "disabled"},
+            "reasoning_effort": None,
+            "max_tokens": 2000,
+        },
+    }
+    assert {
+        "RC-S2-004-product-operating-metric-and-profit-bridge-authority-missing",
+        "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget",
+        "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence",
+    }.issubset(set(result["scope_projection"]["explicit_allow_issue_ids"]))
+    assert result["network_calls"] == 0
+    assert result["provider_calls"] == 0
+    assert result["credential_value_persisted"] is False
+
+
+def test_dynamic_five_cell_decision_rejects_weakened_runner_proof(
+    tmp_path: Path,
+) -> None:
+    root = _dynamic_five_cell_fixture_root(tmp_path)
+    decision_path = root / DYNAMIC_FIVE_CELL_DECISION_REF
+    decision = json.loads(decision_path.read_text(encoding="utf-8"))
+    proof_path = root / decision["runner_zero_call_result_ref"]
+    proof = json.loads(proof_path.read_text(encoding="utf-8"))
+    proof["acceptance"]["cell_failure_does_not_hide_later_cells"] = False
+    proof_path.write_text(json.dumps(proof), encoding="utf-8")
+    decision["runner_zero_call_result_sha256"] = _sha(proof_path)
+    decision_path.write_text(json.dumps(decision), encoding="utf-8")
+
+    with pytest.raises(
+        ValueError,
+        match="project_os_five_cell_runner_proof_invalid",
+    ):
+        build_preflight(
+            root=root,
+            decision_ref=DYNAMIC_FIVE_CELL_DECISION_REF,
+            environment={"DEEPSEEK_API_KEY": "present"},
+            check_repository=False,
+        )
 
 
 def test_obsolete_dynamic_counter_successor_v1_0_fails_after_entry_drift() -> None:

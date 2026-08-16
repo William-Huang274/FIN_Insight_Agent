@@ -1,0 +1,488 @@
+from __future__ import annotations
+
+from copy import deepcopy
+import json
+from pathlib import Path
+import sys
+
+import pytest
+
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path[:0] = [str(ROOT), str(ROOT / "src")]
+
+from sec_agent.research.dynamic_truth_spine import (
+    DynamicTruthSpineError,
+    bind_dynamic_evidence_responses_to_research_input,
+    compile_dynamic_evidence_responses,
+    compile_dynamic_claim_authority_policy,
+    compile_dynamic_reviewed_pack_view,
+)
+from sec_agent.research.claim_authority import (
+    compile_claim_authority_research_input,
+)
+from sec_agent.research.reviewed_evidence_pack import canonical_digest
+
+
+POLICY = ROOT / (
+    "configs/research/fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_0.json"
+)
+CLAIM_TEMPLATE = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_v1_0.json"
+)
+
+
+def _json(path: Path) -> dict[str, object]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _item(
+    *,
+    digest: str = "evidence-digest-1",
+    source_id: str = "SOURCE::DELL::1",
+    case_key: str = "DELL",
+    owner: str = "DELL",
+    slot_id: str = "pricing_mix_value_capture",
+    source_type: str = "10-Q",
+    publication_date: str = "2026-05-30",
+    period_end: str = "2026-05-01",
+    writer_citable: bool = True,
+) -> dict[str, object]:
+    return {
+        "case_key": case_key,
+        "target_id": source_id,
+        "source_record_id": source_id,
+        "object_type": "source_segment",
+        "disposition": "accepted_direct_source_evidence",
+        "evidence_role": "issuer_direct_source",
+        "publication_date": publication_date,
+        "source_reporting_period_end": period_end,
+        "research_as_of": "2026-08-06",
+        "relationship_directions": ["subject_self_disclosure"],
+        "slot_bindings": [
+            {
+                "business_meaning_zh": "公司披露了与利润承接有关的事实。",
+                "claim_boundary_zh": "不得把公司口径直接归因到单一产品。",
+                "facet_ids": ["profit_capture_bridge"],
+                "qualification_id": "test-profit-bridge",
+                "slot_id": slot_id,
+            }
+        ],
+        "numeric_use_boundary": "typed facts only",
+        "causal_attribution_authorized": False,
+        "writer_citable": writer_citable,
+        "evidence_item_digest": digest,
+        "source": {
+            "material_ref": "MAT::1",
+            "source_record_id": source_id,
+            "evidence_owner_ticker": owner,
+            "source_tier": "primary_sec_filing",
+            "source_type": source_type,
+            "source_url": "https://example.invalid/filing",
+            "publication_date": publication_date,
+            "period_end": period_end,
+            "license_scope": "public",
+            "redistributable": False,
+            "source_text_digest": "source-text-digest",
+            "reviewed_source_excerpt": "reviewed evidence text",
+            "excerpt_truncated": False,
+            "excerpt_use_boundary": "internal review",
+        },
+    }
+
+
+def _pack(items: list[dict[str, object]]) -> dict[str, object]:
+    body = {
+        "schema_version": "fin_ia_current_research_evidence_pack_projection_v1_0",
+        "projection_mode": "current",
+        "status": "reviewed_local_evidence_pack_ready_with_declared_gaps",
+        "result_digest": "result-digest",
+        "case_key": "DELL",
+        "evidence_object_ready": True,
+        "artifact_digest": "artifact-digest",
+        "pack_payload_digest": "pack-payload-digest",
+        "summary": {},
+        "evidence_items": items,
+        "rejected_items": [],
+        "residual_gaps": [
+            {
+                "gap_id": "GAP::PRODUCT-PROFIT-BRIDGE",
+                "slot_id": "pricing_mix_value_capture",
+                "facet_id": "profit_capture_bridge",
+                "gap_code": "product_profit_bridge_missing",
+                "business_reason_zh": "尚无产品到公司的利润桥。",
+                "supplement_direction_zh": "补充分产品利润披露。",
+            },
+            {
+                "gap_id": "GAP::UNRELATED",
+                "slot_id": "demand_volume_quality",
+                "facet_id": "orders_and_backlog",
+                "gap_code": "order_detail_missing",
+                "business_reason_zh": "订单拆分不足。",
+                "supplement_direction_zh": "补订单资料。",
+            },
+        ],
+        "consumer_contract": {
+            "writer_may_consume_only_writer_citable_items": True,
+            "rejected_items_must_not_enter_prompt": True,
+            "residual_gaps_must_remain_visible": True,
+            "exact_numeric_surface_must_be_source_visible_or_typed": True,
+        },
+        "hard_boundaries": {},
+        "known_boundary": "fixture",
+    }
+    return {**body, "projection_digest": canonical_digest(body)}
+
+
+def _controlled(candidates: list[dict[str, object]]) -> dict[str, object]:
+    request = {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::DELL::VALUE",
+        "cell_id": "CELL::value_capture",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["DELL"],
+        "requested_facet_ids": ["margin_and_incremental_profit"],
+        "metric_intents": ["gross_margin"],
+        "product_intents": ["AI server product-to-company profit bridge"],
+        "period": {
+            "start_date": "2025-02-01",
+            "end_date": None,
+            "fiscal_years": [2026, 2027],
+        },
+        "granularity": "quarterly",
+        "unit": "mixed",
+        "acceptable_sources": ["10-Q", "8-K"],
+        "acceptable_proxy": False,
+        "forbidden_proxy": [],
+        "stop_condition": "bounded",
+        "clarification_policy": "return_typed_gap",
+    }
+    request_result = {
+        "request": request,
+        "request_digest": canonical_digest(request),
+        "query_plan": {
+            "lanes": [
+                {
+                    "lane_id": "LANE::VALUE",
+                    "slot_id": "pricing_mix_value_capture",
+                    "facet_id": "margin_and_incremental_profit",
+                }
+            ]
+        },
+        "typed_gaps": [],
+        "typed_fact_results": [],
+        "lanes": [],
+        "hybrid_object_retrieval": {
+            "candidate_state": "candidate_not_evidence",
+            "candidates": candidates,
+        },
+    }
+    return {
+        "status": "controlled_research_plan_zero_call_executed",
+        "objective": {
+            "objective_id": "OBJ::DELL::VALUE",
+            "case_key": "DELL",
+            "subject_ticker": "DELL",
+            "research_as_of": "2026-08-06",
+        },
+        "compiled_plan": {"evidence_requests": [request]},
+        "request_results": [request_result],
+        "projection_digest": "controlled-plan-digest",
+    }
+
+
+def _candidate(
+    source_id: str,
+    *,
+    owner: str = "DELL",
+    source_type: str = "10-Q",
+    rank: int = 1,
+) -> dict[str, object]:
+    return {
+        "rank": rank,
+        "compiled_object_id": f"COBJ::{rank}",
+        "source_record_id": source_id,
+        "lineage_source_record_ids": [source_id],
+        "ticker": owner,
+        "source_type": source_type,
+        "candidate_not_evidence": True,
+        "numeric_authority": False,
+        "evidence_role": {
+            "recommended_role": "direct_support",
+            "advisory_only": True,
+        },
+    }
+
+
+def test_exact_reviewed_request_match_is_reselected_without_promotion() -> None:
+    pack = _pack([_item()])
+    result = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=_controlled([_candidate("SOURCE::DELL::1")]),
+        evidence_pack=pack,
+    )
+
+    assert result["summary"]["accepted_reviewed_evidence_count"] == 1
+    assert result["summary"]["new_evidence_promotions"] == 0
+    response = result["responses"][0]
+    assert response["accepted"][0]["evidence_item_digest"] == "evidence-digest-1"
+    assert response["request_bindings"] == [
+        {
+            "slot_id": "pricing_mix_value_capture",
+            "facet_id": "margin_and_incremental_profit",
+        }
+    ]
+    assert response["authority"] == {
+        "candidate_promoted_to_evidence": False,
+        "reviewed_evidence_reselected": True,
+        "numeric_authority_remains_s2": True,
+        "model_decision_used": False,
+    }
+
+    view = compile_dynamic_reviewed_pack_view(
+        evidence_pack=pack,
+        evidence_responses=result,
+        required_slot_ids=["pricing_mix_value_capture"],
+    )
+    assert [row["evidence_item_digest"] for row in view["evidence_items"]] == [
+        "evidence-digest-1"
+    ]
+    assert {
+        row["slot_id"] for row in view["residual_gaps"]
+    } == {"pricing_mix_value_capture"}
+    assert view["dynamic_selection_binding"]["candidate_promotions"] == 0
+    assert view["dynamic_selection_binding"]["typed_evidence_response_gap_count"] == 0
+
+
+@pytest.mark.parametrize(
+    ("mutator", "reason"),
+    [
+        (lambda item: item.update(case_key="MU"), "cross_case_reviewed_item"),
+        (
+            lambda item: item["slot_bindings"][0].update(
+                slot_id="demand_volume_quality"
+            ),
+            "reviewed_item_outside_request_slot",
+        ),
+        (
+            lambda item: (
+                item.update(publication_date="2026-08-07"),
+                item["source"].update(publication_date="2026-08-07"),
+            ),
+            "reviewed_item_after_research_as_of",
+        ),
+        (
+            lambda item: item["source"].update(evidence_owner_ticker="MU"),
+            "reviewed_item_owner_outside_request",
+        ),
+        (
+            lambda item: item["source"].update(source_type="10-K"),
+            "reviewed_item_source_type_outside_request",
+        ),
+    ],
+)
+def test_reviewed_item_must_pass_every_request_gate(mutator, reason: str) -> None:
+    item = _item()
+    mutator(item)
+    result = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=_controlled([_candidate("SOURCE::DELL::1")]),
+        evidence_pack=_pack([item]),
+    )
+
+    response = result["responses"][0]
+    assert not response["accepted"]
+    assert response["rejected"][0]["reason"] == reason
+    assert any(
+        row["gap"]["gap_code"] == "no_request_matched_reviewed_evidence"
+        for row in response["typed_gaps"]
+    )
+
+
+def test_rank_and_advisory_role_cannot_promote_unreviewed_candidate() -> None:
+    result = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=_controlled([_candidate("SOURCE::UNREVIEWED", rank=1)]),
+        evidence_pack=_pack([_item()]),
+    )
+
+    response = result["responses"][0]
+    assert not response["accepted"]
+    assert response["needs_human_review"][0]["reason"] == (
+        "candidate_not_present_in_reviewed_pack"
+    )
+    assert "model_text" not in response["needs_human_review"][0]
+    with pytest.raises(DynamicTruthSpineError) as exc:
+        compile_dynamic_reviewed_pack_view(
+            evidence_pack=_pack([_item()]),
+            evidence_responses=result,
+        )
+    assert str(exc.value) == "dynamic_truth_spine_no_reviewed_evidence_selected"
+
+
+def test_candidate_lineage_can_reselect_exact_reviewed_child() -> None:
+    candidate = _candidate("SOURCE::PARENT")
+    candidate["lineage_source_record_ids"] = [
+        "SOURCE::PARENT",
+        "SOURCE::DELL::1",
+    ]
+    result = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=_controlled([candidate]),
+        evidence_pack=_pack([_item()]),
+    )
+    assert result["accepted_evidence_item_digests"] == ["evidence-digest-1"]
+
+
+def test_compact_response_receipt_binds_to_cell_without_candidate_text() -> None:
+    pack = _pack([_item()])
+    responses = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=_controlled([_candidate("SOURCE::DELL::1")]),
+        evidence_pack=pack,
+    )
+    base = {
+        "schema_version": "fin_ia_current_research_input_v1_1",
+        "case_identity": {"case_key": "DELL"},
+        "evidence_cards": [
+            {
+                "evidence_item_digest": "evidence-digest-1",
+                "evidence_ref": "EV::REVIEWED1",
+            }
+        ],
+        "cells": [
+            {
+                "cell_id": "CELL::value_capture",
+                "primary_slot_id": "pricing_mix_value_capture",
+                "supplemental_context_slot_ids": [],
+            }
+        ],
+        "known_boundary": "base",
+        "research_input_digest": "base-digest",
+    }
+    dynamic = bind_dynamic_evidence_responses_to_research_input(
+        research_input=base,
+        evidence_responses=responses,
+    )
+    card = dynamic["dynamic_evidence_response_cards"][0]
+    assert card["accepted_evidence_refs"] == ["EV::REVIEWED1"]
+    assert "model_text" not in json.dumps(card)
+    assert dynamic["cells"][0]["allowed_evidence_response_refs"] == [
+        card["evidence_response_ref"]
+    ]
+    assert dynamic["dynamic_truth_spine_contract"]["candidate_promotions"] == 0
+
+
+def test_dynamic_claim_policy_only_removes_unavailable_authority() -> None:
+    pack = _pack([_item()])
+    responses = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=_controlled([_candidate("SOURCE::DELL::1")]),
+        evidence_pack=pack,
+    )
+    template = _json(CLAIM_TEMPLATE)
+    management_ref = template["evidence_bindings"][
+        "management_assertion_evidence_refs"
+    ][0]
+    base = {
+        "schema_version": "fin_ia_current_research_input_v1_1",
+        "case_identity": {"case_key": "DELL"},
+        "evidence_cards": [
+            {
+                "evidence_item_digest": "evidence-digest-1",
+                "evidence_ref": management_ref,
+            }
+        ],
+        "cells": [
+            {
+                "cell_id": "CELL::value_capture",
+                "primary_slot_id": "pricing_mix_value_capture",
+                "supplemental_context_slot_ids": [],
+                "allowed_evidence_refs": [management_ref],
+                "allowed_numeric_refs": ["NUM::CURRENT"],
+                "allowed_numeric_relation_refs": [],
+                "visible_gap_refs": list(template["bridge_gap_refs"]),
+            }
+        ],
+        "model_output_contract": {
+            "payload_schema_version": "fin_ia_current_research_judgment_payload_v1_2",
+            "model_owned_cell_fields": [],
+            "harness_injected_cell_fields": [],
+        },
+        "known_boundary": "base",
+        "research_input_digest": "base-digest",
+    }
+    dynamic = bind_dynamic_evidence_responses_to_research_input(
+        research_input=base,
+        evidence_responses=responses,
+    )
+    policy = compile_dynamic_claim_authority_policy(
+        research_input=dynamic,
+        template_policy=template,
+    )
+    bridges = {
+        row["causal_bridge_authority"] for row in policy["allowed_combinations"]
+    }
+    assert bridges == {
+        "same_scope_observation_only",
+        "management_assertion_only",
+        "multi_driver_context_only",
+        "bridge_unavailable",
+    }
+    assert policy["authority"]["candidate_promotion_forbidden"] is True
+
+    compiled = compile_claim_authority_research_input(
+        dynamic,
+        policy=policy,
+    )
+    assert compiled["schema_version"] == (
+        "fin_ia_dynamic_current_research_input_v1_1"
+    )
+    assert compiled["claim_authority_contract"]["dynamic_retrieval_executed"] is True
+    assert compiled["claim_authority_contract"]["candidate_promotions"] == 0
+
+    missing = deepcopy(dynamic)
+    missing.pop("research_input_digest")
+    missing["cells"][0]["allowed_evidence_refs"] = []
+    missing["evidence_cards"] = []
+    missing["research_input_digest"] = canonical_digest(missing)
+    narrowed = compile_dynamic_claim_authority_policy(
+        research_input=missing,
+        template_policy=template,
+    )
+    assert {
+        row["causal_bridge_authority"]
+        for row in narrowed["allowed_combinations"]
+    } == {"same_scope_observation_only", "bridge_unavailable"}
+
+
+def test_pack_binding_and_case_mutations_fail_closed() -> None:
+    pack = _pack([_item()])
+    result = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=_controlled([_candidate("SOURCE::DELL::1")]),
+        evidence_pack=pack,
+    )
+    drift = deepcopy(pack)
+    drift["artifact_digest"] = "different-artifact"
+    with pytest.raises(DynamicTruthSpineError) as exc:
+        compile_dynamic_reviewed_pack_view(
+            evidence_pack=drift,
+            evidence_responses=result,
+        )
+    assert str(exc.value) == "dynamic_truth_spine_pack_binding_drift"
+
+    cross_case = deepcopy(_controlled([_candidate("SOURCE::DELL::1")]))
+    cross_case["objective"]["case_key"] = "MU"
+    with pytest.raises(DynamicTruthSpineError) as exc:
+        compile_dynamic_evidence_responses(
+            policy=_json(POLICY),
+            controlled_plan=cross_case,
+            evidence_pack=pack,
+        )
+    assert str(exc.value) == "dynamic_truth_spine_case_binding_invalid"

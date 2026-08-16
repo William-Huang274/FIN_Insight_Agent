@@ -7,7 +7,13 @@ from .reviewed_evidence_pack import canonical_digest
 
 
 CLAIM_AUTHORITY_POLICY_SCHEMA_VERSION = "fin_ia_claim_authority_policy_v1_0"
+CLAIM_AUTHORITY_DYNAMIC_POLICY_SCHEMA_VERSION = (
+    "fin_ia_claim_authority_policy_v1_1"
+)
 CLAIM_AUTHORITY_INPUT_SCHEMA_VERSION = "fin_ia_current_research_input_v1_2"
+CLAIM_AUTHORITY_DYNAMIC_INPUT_SCHEMA_VERSION = (
+    "fin_ia_dynamic_current_research_input_v1_1"
+)
 CLAIM_AUTHORITY_JUDGMENT_SCHEMA_VERSION = (
     "fin_ia_current_research_judgment_payload_v1_3"
 )
@@ -66,10 +72,19 @@ def load_claim_authority_policy(payload: Mapping[str, Any]) -> dict[str, Any]:
         "authority",
     }
     _require(set(payload) == expected, "claim_authority_policy_fields_invalid")
+    schema_version = str(payload.get("schema_version") or "")
+    dynamic_mode = schema_version == CLAIM_AUTHORITY_DYNAMIC_POLICY_SCHEMA_VERSION
     _require(
-        payload.get("schema_version") == CLAIM_AUTHORITY_POLICY_SCHEMA_VERSION
-        and payload.get("status")
-        == "provider_neutral_fixed_pack_claim_authority",
+        (
+            schema_version == CLAIM_AUTHORITY_POLICY_SCHEMA_VERSION
+            and payload.get("status")
+            == "provider_neutral_fixed_pack_claim_authority"
+        )
+        or (
+            dynamic_mode
+            and payload.get("status")
+            == "provider_neutral_dynamic_request_claim_authority"
+        ),
         "claim_authority_policy_status_invalid",
     )
     qualified = _mapping(
@@ -172,12 +187,15 @@ def load_claim_authority_policy(payload: Mapping[str, Any]) -> dict[str, Any]:
             _strings(
                 bindings.get(key),
                 "claim_authority_evidence_bindings_invalid",
+                allow_empty=dynamic_mode,
             )
         )
         for key in bindings
     }
     gap_refs = _strings(
-        payload.get("bridge_gap_refs"), "claim_authority_bridge_gaps_invalid"
+        payload.get("bridge_gap_refs"),
+        "claim_authority_bridge_gaps_invalid",
+        allow_empty=dynamic_mode,
     )
     guard = _mapping(
         payload.get("cross_scope_language_guard"),
@@ -202,16 +220,22 @@ def load_claim_authority_policy(payload: Mapping[str, Any]) -> dict[str, Any]:
     authority = _mapping(
         payload.get("authority"), "claim_authority_policy_authority_invalid"
     )
-    _require(
-        dict(authority)
-        == {
+    expected_authority = {
             "model_owns_narrative_judgment": True,
             "model_must_declare_claim_and_financial_scope": True,
             "model_must_select_only_compiled_bridge_authority": True,
             "harness_may_validate_but_not_invent_causal_claim": True,
             "fixed_pack_test_is_not_agentic_research": True,
             "qualified_human_content_review_required": True,
-        },
+        }
+    if dynamic_mode:
+        expected_authority = {
+            **expected_authority,
+            "dynamic_request_scoped_reselection": True,
+            "candidate_promotion_forbidden": True,
+        }
+    _require(
+        dict(authority) == expected_authority,
         "claim_authority_policy_authority_invalid",
     )
     return {
@@ -237,8 +261,16 @@ def compile_claim_authority_research_input(
 
     loaded = load_claim_authority_policy(policy)
     qualified = loaded["qualified_scope"]
+    dynamic_mode = (
+        loaded["schema_version"] == CLAIM_AUTHORITY_DYNAMIC_POLICY_SCHEMA_VERSION
+    )
     _require(
-        research_input.get("schema_version") == "fin_ia_current_research_input_v1_1"
+        research_input.get("schema_version")
+        == (
+            "fin_ia_dynamic_current_research_input_v1_0"
+            if dynamic_mode
+            else "fin_ia_current_research_input_v1_1"
+        )
         and research_input.get("research_input_digest")
         == qualified["base_research_input_digest"]
         and research_input.get("model_output_contract", {}).get(
@@ -297,7 +329,11 @@ def compile_claim_authority_research_input(
     card = {**card_body, "card_digest": canonical_digest(card_body)}
     unsigned = deepcopy(dict(research_input))
     unsigned.pop("research_input_digest", None)
-    unsigned["schema_version"] = CLAIM_AUTHORITY_INPUT_SCHEMA_VERSION
+    unsigned["schema_version"] = (
+        CLAIM_AUTHORITY_DYNAMIC_INPUT_SCHEMA_VERSION
+        if dynamic_mode
+        else CLAIM_AUTHORITY_INPUT_SCHEMA_VERSION
+    )
     for row in unsigned["cells"]:
         if row["cell_id"] == cell_id:
             row["claim_authority_card"] = deepcopy(card)
@@ -319,14 +355,24 @@ def compile_claim_authority_research_input(
         loaded["allowed_causal_bridge_authorities"]
     )
     unsigned["claim_authority_contract"] = {
-        "policy_schema_version": CLAIM_AUTHORITY_POLICY_SCHEMA_VERSION,
+        "policy_schema_version": loaded["schema_version"],
         "policy_digest": canonical_digest(loaded),
         "qualified_case_key": qualified["case_key"],
         "qualified_cell_ids": [cell_id],
         "base_research_input_digest": qualified["base_research_input_digest"],
-        "fixed_pack_unit_test_only": True,
-        "dynamic_retrieval_executed": False,
+        "fixed_pack_unit_test_only": not dynamic_mode,
+        "dynamic_retrieval_executed": dynamic_mode,
         "agentic_research_claimed": False,
+        **(
+            {
+                "qualification_mode": (
+                    "dynamic_request_scoped_reviewed_evidence"
+                ),
+                "candidate_promotions": 0,
+            }
+            if dynamic_mode
+            else {}
+        ),
         "authority": deepcopy(loaded["authority"]),
         "cross_scope_language_guard": deepcopy(
             loaded["cross_scope_language_guard"]
@@ -547,6 +593,8 @@ def validate_claim_authority_selection(
 
 
 __all__ = [
+    "CLAIM_AUTHORITY_DYNAMIC_INPUT_SCHEMA_VERSION",
+    "CLAIM_AUTHORITY_DYNAMIC_POLICY_SCHEMA_VERSION",
     "CLAIM_AUTHORITY_DELIVERABLE_SCHEMA_VERSION",
     "CLAIM_AUTHORITY_INPUT_SCHEMA_VERSION",
     "CLAIM_AUTHORITY_JUDGMENT_SCHEMA_VERSION",

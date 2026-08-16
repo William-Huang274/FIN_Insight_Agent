@@ -176,7 +176,7 @@ def test_current_fixed_pack_decision_passes_without_network_or_secret_read() -> 
     assert result["checks"]["provider_credential_present_value_unread"] is True
     assert (
         "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use"
-        in result["scope_projection"]["explicit_allow_issue_ids"]
+        in result["scope_projection"]["closed_precondition_issue_ids"]
     )
 
 

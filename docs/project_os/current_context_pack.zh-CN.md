@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S1-D 已把 TSM 官方 PDF 和 Owner 上传的 Dell Q1 FY2027 官方托管 transcript 提升到当前 DELL Pack；S2 同口径 NumericRelation、S3 source-route、value-capture RoleMethodPack 与当前 GraphContextPack 已通过三案例零调用证明。claim-local role＋typed boundary v1.4 已关闭 FFJ-R3 的项目缺陷；随后 fresh FFJ-R4 再次完整完成 6/6 次调用和三个片段。三段内容仍明确区分管理层产品目标、缺失的产品到公司利润桥和仅属公司层的毛利率反向观察，未观察到新的金融 L1。R4 终局被旧 lexical defense-in-depth 误拒绝：单字因果词“使”命中“服务器”，系统又跨分句组合词项并忽略“不能据此／不可推断／缺乏支持／无法归因”的否定极性。R4 保持失败且不 salvage。当前只处理 provider-neutral 的 clause-scoped、negation-aware positive-causal guard，并保留中英文真实跨层强因果 mutation 继续 fail closed；formal zero-call proof 和 fresh FFJ-R5 通过前，动态 Research Truth Spine、DELL 动态单单元、五单元和异质泛化报告均继续 blocked。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
+FIN 0.1.3 的 fixed-Pack 第一层已经关闭：DELL `value_capture` 的完整 Judgment、独立 L1 和适用内容质量 `21/24` 通过，但该结果只证明“给定已审资料时能分析和自我修正”。动态 Research Truth Spine 的 provider-neutral 控制面现已完成真实 S1/S2 零调用工程纵切：DELL 8 个 EvidenceRequest 中 5 个重新选择到 6 条既有 reviewed Evidence，112 个未审候选均未越权晋升，并保留 12 个 typed gap；MU、NVDA 的单请求各返回 16 个候选但 0 条可复用 reviewed Evidence。该结果关闭了 proposal-only／无 EvidenceResponse 的工程缺口，同时暴露新的 S1 最早责任层问题：当前 reviewed Pack 与检索对象库／来源路由没有同步，已审 Dell transcript 在 Pack 中可见、动态检索却不可发现。自然 DeepSeek planner、动态单单元 Judgment、五单元和异质泛化报告仍未执行或通过。该授权不包含静默改变模型、数据采购、S4 publication 或 S5 release。
 
 ## 当前唯一产品边界
 
@@ -15,7 +15,7 @@ FIN 0.1.3 的严格仓库重定基已合并远端 `main` 并通过 G01–G12。S
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。受控计划 API 已能把 Objective/atoms 同时送入 S1 联合候选与 private S2 mart；Operations 可按预登记官方 route 自动抓取或人工上传 PDF，并保证原始字节先进入私有不可变 source-only capture。当前 S3 consumer 已由 DELL `value_capture` 自然模型证明可消费 reviewed Evidence、NumericFact、typed relation、RoleMethodPack 和 GraphContextPack，并能分别形成 thesis、mechanism、counterargument／WWC 三个受约束片段；claim-local Evidence role 和 typed boundary 的终局编译已达到零调用工程通过。fresh FFJ-R4 尚未执行，因此完整 Judgment、fixed-Pack 第一层、动态研究、五单元和 Workbench 产品面仍未通过；reviewed Evidence 页面本身的结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。受控计划 API 已能把 Objective/atoms 同时送入 S1 联合候选与 private S2 mart；Operations 可按预登记官方 route 自动抓取或人工上传 PDF，并保证原始字节先进入私有不可变 source-only capture。S3 fixed-Pack 第一层已自然形成并验收 DELL `value_capture` 的 thesis、mechanism、counterargument／WWC 与一次 typed repair。动态控制面已经能把 EvidenceRequest 真正送入当前 S1/S2，并只按精确 lineage 重新选择既有 reviewed Evidence，返回 accepted／rejected／typed gap／needs-human-review 的 EvidenceResponse；候选排名、模型文字和 advisory role 都不能授予 Evidence 权威。当前尚未完成自然 planner 与动态 Judgment，reviewed Pack 与检索索引也尚未完全同步，因此不得声称动态 Agentic Research、五单元或 S3 产品通过；reviewed Evidence 页面本身的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 

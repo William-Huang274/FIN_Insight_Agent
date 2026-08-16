@@ -29,7 +29,7 @@
 - [x] S3 consumer v1.1 envelope／枚举／cell-scoped Evidence／推论权限结构处置
   - [x] provider-neutral 合同、immutable R1 replay、fake/mutation working-tree implementation
   - [x] 全仓回归、clean remote commit 与独立 zero-call proof
-- [ ] DeepSeek V4 Pro GA profile 与四工具最小研究循环资格验证
+- [x] DeepSeek V4 Pro GA profile 与四工具最小研究循环资格验证（传输、fixed-Pack Judgment 与 bounded repair 已证明；不等于动态研究）
   - [x] JSON control 单节点 v1.1 合同/L1/L2 与适用内容门通过；strict Beta 传输未资格化并停放
   - [x] 标准 Tool Calls R1 执行并保留：模型正确并行请求 Evidence/NumericFact，项目 wire `index` 与单工具策略不兼容，0 retry
   - [x] 只读并行兼容 successor、clean zero-call R3 与一个 replacement single-cell R2（两类 read 成功；proposal 合同编译失败，0 retry）
@@ -37,9 +37,12 @@
   - [x] Chat control／Responses candidate／Anthropic shadow 的 provider-neutral canonical transport projection；Anthropic live 代码级禁止
   - [x] DELL `value_capture` Chat/Responses paired single-cell exact-live：两路均 5 step／6 receipts、合同通过、0 retry；Responses live continuation 已观察
   - [x] paired 内容审计与协议处置：两路均因 comparable-period relation 无确定性 lineage 未过 L1；source class 与可执行 route 仍漂移；Chat 保留 provisional primary，Responses 保留 shadow/candidate
-  - [ ] 零调用 comparable-period Numeric relation＋EvidenceRequest source-route 合同包；通过后最多一条 Chat 单单元复验，五单元仍未授权
-- [ ] S3 fixed-Pack 第一层自然 replacement（Claim Surface formal R3 已通过；Chat R1 mandatory reads 后 reasoning budget 耗尽，0 retry 保留；alias／compact model-view 零调用 successor 处理中）
+  - [x] comparable-period Numeric relation＋EvidenceRequest source-route 与 Research Context Closure；fixed-Pack 后续实证已取代早期单节点复验
+- [x] S3 fixed-Pack 第一层自然 Judgment、一次 typed repair、独立 L1 与适用内容质量（21/24；只算模型分析单元测试）
 - [ ] S1→S3 动态 Research Truth Spine（EvidenceRequest→S1/S2→EvidenceResponse）
+  - [x] provider-neutral EvidenceResponse、reviewed-only 重选、动态 claim authority、三案 identity/mutation 零调用工程纵切
+  - [ ] 自然 planner→真实 S1/S2→动态 Judgment；不得把工程证明或 controlled atoms 计作 Agentic Research
+  - [ ] S1 reviewed Pack↔当前检索对象库／来源路由同步（Dell transcript 已审但动态不可发现；MU/NVDA 当前请求 0 reviewed match）
 - [ ] DELL `value_capture` 单单元动态 Agentic Research
 - [ ] DELL 五单元动态案例、底稿与报告验收
 - [ ] MU／NVDA 同核心迁移与三案例 S1–S3 内容质量验收

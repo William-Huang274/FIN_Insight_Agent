@@ -1163,6 +1163,10 @@ def compile_current_research_messages(
     gap_by_ref = {
         row["gap_ref"]: row for row in research_input["residual_gap_cards"]
     }
+    evidence_response_by_ref = {
+        row["evidence_response_ref"]: row
+        for row in research_input.get("dynamic_evidence_response_cards", ())
+    }
 
     def visible_evidence_fact(ref: str) -> dict[str, Any]:
         row = evidence_by_ref[ref]
@@ -1276,6 +1280,13 @@ def compile_current_research_messages(
         selected_qualitative_fact_refs.update(
             cell.get("allowed_qualitative_fact_refs", ())
         )
+        allowed_response_refs = list(
+            cell.get("allowed_evidence_response_refs", ())
+        )
+        _require(
+            set(allowed_response_refs).issubset(evidence_response_by_ref),
+            "research_consumer_dynamic_evidence_response_ref_invalid",
+        )
         method_pack = deepcopy(cell.get("role_method_pack"))
         graph_pack = deepcopy(cell["graph_context_pack"])
         visible_cells.append(
@@ -1298,6 +1309,16 @@ def compile_current_research_messages(
                 "allowed_numeric_relation_refs": cell[
                     "allowed_numeric_relation_refs"
                 ],
+                **(
+                    {
+                        "dynamic_evidence_responses": [
+                            deepcopy(evidence_response_by_ref[ref])
+                            for ref in allowed_response_refs
+                        ]
+                    }
+                    if allowed_response_refs
+                    else {}
+                ),
                 "role_method_pack": method_pack,
                 "graph_context_pack": graph_pack,
                 "context_consumption_contract": deepcopy(

@@ -166,3 +166,16 @@ repair 不是新的研究轮次。它不能增加 Evidence／NumericFact／关�
 v1.8 已用 R7 真失败回放、错误 failure-code mutation、R5 假终态物化、DELL／MU／NVDA full-fake 和两个 fresh process 证明该结构。该证明只授权一次 exact-once live repair；只有自然修复后的完整三片段 Judgment 再通过 L1 与内容质量，fixed-Pack Layer One 才可能关闭。
 
 该唯一 live repair 已在 clean/synced `78a2e13b...` 上完成。模型一次返回新 counter／WWC Tool Call，把未经证明的 margin driver 改为明确不可归因，旧 R7、guard 和前序片段均未改动；终态 Judgment、独立 L1 和单单元适用内容质量通过。fixed-Pack Layer One 因而关闭，但该结论只证明固定证据下的分析／纠错能力。动态 EvidenceRequest→EvidenceResponse→S2 authority→受影响单元重裁决仍须单独证明。
+
+## 15. 动态 EvidenceResponse 的 reviewed-only 边界
+
+动态 Truth Spine 不把 S1 候选直接交给研究模型，更不允许模型、候选排名或通用 reranker 自行把候选晋升为 Evidence。当前 provider-neutral 边界分成两条明确不同的路径：
+
+1. **本轮可执行的重选路径**：S1/S2 真实运行后，以 case、owner、source type、as-of／period、Evidence Slot 和精确 source lineage，重新选择当前 immutable reviewed Pack 中已经获准的 Evidence；结果可返回 `accepted / rejected / typed_gap / needs_human_review`。
+2. **新资料晋升路径**：候选若不在当前 reviewed Pack，即使排名第一、文字看似相关或模型认为重要，也只能保持 `needs_human_review`；它必须另经 S1 Evidence Gate 才能进入后续 Pack。
+
+动态模型视图只得到 accepted Evidence refs、S2 NumericFact／relation、typed gap code／digest 和完整 EvidenceResponse receipt，不得到未审候选原文。动态 Claim Authority 只能从 fixed-Pack 权限中减去本轮未取回的权威，不得增加新的 claim scope、因果桥或数字权限。请求执行层的 gap 与 Pack 已审 gap 使用不同 facet taxonomy，不能互相改名或洗白。
+
+首轮三案真实零调用纵切得到：DELL 8 个请求中 5 个取回 6 条既有 Evidence，112 个未审候选保持未晋升，12 个 gap 保留；MU、NVDA 的单请求各有 16 个候选但 0 条 exact reviewed match。候选重排、恶意 candidate text、跨案例和 Pack digest mutation 均 fail closed。该结果只构成 EvidenceResponse 控制面的 engineering pass。自然 planner、动态 Judgment、五单元和 S3 acceptance 仍为 false。
+
+该纵切还暴露一个 S1 集成缺口：Dell 官方 transcript 已在 reviewed Pack，却未进入当前 candidate object/index，当前 source whitelist 也未覆盖 `EARNINGS_CALL_TRANSCRIPT`，因此动态检索看不见 fixed Pack 已经看见的关键法说。这个问题归 S1 source/index synchronization；它不能靠放宽 S3 join 或把 transcript 静默预喂给模型解决。

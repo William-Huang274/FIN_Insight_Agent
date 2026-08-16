@@ -45,6 +45,14 @@ from .claim_surface_authority import (
     load_claim_surface_authority_policy,
     validate_claim_surface_authority_selection,
 )
+from .dynamic_truth_spine import (
+    DynamicTruthSpineError,
+    bind_dynamic_evidence_responses_to_research_input,
+    compile_dynamic_claim_authority_policy,
+    compile_dynamic_evidence_responses,
+    compile_dynamic_reviewed_pack_view,
+    load_dynamic_truth_spine_policy,
+)
 from .bounded_finance_loop import (
     FIXED_PACK_MICRO_JUDGMENT_POLICY_SCHEMA_VERSION,
     BoundedFinanceLoopError,
@@ -109,6 +117,12 @@ __all__ = [
     "compile_current_research_messages",
     "compile_claim_authority_research_input",
     "compile_claim_surface_authority_research_input",
+    "DynamicTruthSpineError",
+    "bind_dynamic_evidence_responses_to_research_input",
+    "compile_dynamic_claim_authority_policy",
+    "compile_dynamic_evidence_responses",
+    "compile_dynamic_reviewed_pack_view",
+    "load_dynamic_truth_spine_policy",
     "compile_finance_loop_messages",
     "compile_finance_micro_judgment_tools",
     "compile_finance_loop_tools",

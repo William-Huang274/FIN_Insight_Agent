@@ -1703,9 +1703,18 @@ def _scope_blocker_projection(
     )
     blocked: list[str] = []
     explicitly_allowed: list[str] = []
+    closed_preconditions: list[str] = []
     out_of_scope: list[str] = []
     for issue_id, row in sorted(ledger.items()):
         if row.get("full_chain_blocker") is not True:
+            if (
+                issue_id
+                == "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use"
+                and str(row.get("status") or "").startswith("closed_")
+                and bool(row.get("current_evidence_refs"))
+                and bool(str(row.get("verification_result") or ""))
+            ):
+                closed_preconditions.append(issue_id)
             continue
         blocking = {str(value) for value in row.get("blocking_run_scopes") or ()}
         allowed = {str(value) for value in row.get("allowed_run_scopes") or ()}
@@ -1718,11 +1727,18 @@ def _scope_blocker_projection(
             out_of_scope.append(issue_id)
     if blocked:
         raise ValueError("project_os_scope_blocked:" + ",".join(blocked))
-    if "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use" not in explicitly_allowed:
+    required_claim_surface_issue = (
+        "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use"
+    )
+    if (
+        required_claim_surface_issue not in explicitly_allowed
+        and required_claim_surface_issue not in closed_preconditions
+    ):
         raise ValueError("project_os_claim_surface_scope_allowance_missing")
     return {
         "blocking_issue_ids": blocked,
         "explicit_allow_issue_ids": explicitly_allowed,
+        "closed_precondition_issue_ids": closed_preconditions,
         "out_of_scope_full_chain_blocker_count": len(out_of_scope),
     }
 

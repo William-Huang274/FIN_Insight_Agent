@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-16 | S1→S3 动态 Truth Spine 完成首轮真实零调用工程纵切：EvidenceRequest 进入当前 S1/S2 后，只能按 case／owner／source／as-of／period／slot／lineage 重选当前 reviewed Pack 中已有 Evidence；未审候选统一返回 needs-human-review，排名、模型判断或 reranker 不得授予 Evidence 权威。DELL 8 个请求中 5 个取回 6 条既有 Evidence，112 个未审候选未晋升并保留 12 个 gap；MU、NVDA 单请求均为 0 条 exact reviewed match。该结果关闭 proposal-only 控制面缺口，但不计 Agentic Research，并暴露 reviewed Pack 与检索对象库／来源路由漂移：Dell transcript 已审却无法动态发现。下一步先做 clean proof，再执行自然 DELL 单单元；S1 同步缺口保留最早责任层，不得以 S3 静默预喂规避。 |
 | 2026-08-16 | FIN 0.1.3 S3 FAS-R1 证明：片段专属最小权威上下文＋高推理分析／低推理严格交卷可让 DELL `value_capture` 单 thesis 自然通过 L1，并消除旧 AI 产品→分部／公司利润越界；该结果不等于完整 Judgment 或 Agentic Research。Owner 授权连续完成其余片段、完整 fixed Pack、动态 Truth Spine、DELL 五单元及跨案例验收。普通 live failure 不再自动暂停，但必须保留 immutable attempt、在最早责任层修复并以新 authority 续跑。跨案例泛化必须预注册异质案例、逐案硬门和正式报告，禁止以相似案例或平均分冒充泛化。 |
 | 2026-08-16 | S3 片段执行进一步明确“分析可看值、交卷只选 ref、Harness 在 atom 外渲染值”：这一职责必须由同一 provider-neutral surface contract 编译到 fragment context、Tool Schema、submission prompt、Validator 与 Renderer；禁止分析层允许引用、提交层却只写“不得新增数字”而隐藏 verbal band 也会失败。验收必须同时证明旧失败 replay 仍拒绝、合规 atom 不含值、最终报告仍保留 QF／NumericFact surface，不能靠删数字通过。 |
 | 2026-08-14 | FIN 0.1.3 S3 第一层失败后新增 Claim Surface successor：来源允许引用的管理层 qualitative band 必须先编译成 source-bound QF，并由 Harness 确定性展示 surface／qualifier，禁止转为单点或 audited NumericFact；thesis、mechanism、counterargument 各自提交结构化 subject、outcome、relation、attribution 和 scope。旧关键词因果门降为纵深防御，不能继续承担关系证明。旧 live 不追认，formal zero-call proof 前不授权 replacement live 或动态第二层。 |

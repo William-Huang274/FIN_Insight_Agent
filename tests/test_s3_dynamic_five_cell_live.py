@@ -702,6 +702,70 @@ def test_claim_surface_successor_reuses_only_prefix_and_reruns_all_twelve_nodes(
     assert (private_root / "full_result.json").is_file()
 
 
+def test_claim_surface_successor_materializes_unexpected_cell_exception(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    authority_path, private_root, public_path, counters = _prepare_runner(
+        monkeypatch, tmp_path, claim_surface_successor_mode=True
+    )
+
+    def planner_must_not_run(**_kwargs):
+        raise AssertionError("claim-surface successor must not rerun planner")
+
+    def analyze(**_kwargs):
+        counters["analysis"] += 1
+        return _analysis_step(tmp_path, counters["analysis"])
+
+    def submit(**kwargs):
+        counters["submission"] += 1
+        tool = kwargs["tools"][0]["function"]
+        return _submission_step(
+            tmp_path,
+            counters["submission"],
+            tool_name=tool["name"],
+            arguments={"cell_id": tool["description"]},
+        )
+
+    def validate_with_one_project_exception(
+        payload,
+        *,
+        required_cell_ids,
+        **_kwargs,
+    ):
+        cell_id = required_cell_ids[0]
+        if cell_id == "CELL::demand_quality":
+            raise KeyError("allowed_qualitative_fact_refs")
+        return {"cells": [dict(payload["cells"][0])]}
+
+    monkeypatch.setattr(
+        runner,
+        "validate_current_research_output",
+        validate_with_one_project_exception,
+    )
+
+    result = runner.run(
+        authority_path,
+        planner_executor=planner_must_not_run,
+        analysis_executor=analyze,
+        submission_executor=submit,
+    )
+
+    assert result["status"] == "terminal_failed_or_partial_no_retry"
+    demand = result["cells"][0]
+    assert demand["cell_id"] == "CELL::demand_quality"
+    assert demand["failure_phase"] == "cell_unexpected_project_exception"
+    assert demand["failure_code"] == (
+        "five_cell_unexpected_project_exception_keyerror"
+    )
+    assert result["execution"]["model_calls_attempted"] == 10
+    assert result["execution"]["cell_judgments_accepted"] == 4
+    assert result["execution"]["retries"] == 0
+    assert counters == {"analysis": 5, "submission": 5}
+    assert public_path.is_file()
+    assert (private_root / "full_result.json").is_file()
+
+
 def test_five_cell_partial_successor_reuses_two_cells_and_runs_only_eight_nodes(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

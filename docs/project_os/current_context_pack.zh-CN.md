@@ -385,3 +385,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 旧 fixed-Pack 测试冻结在 v1.0 Evidence projection；current product 使用 v1.1。联合零调用回归 184 passed，当前 base／claim-surface digest 分别为 `5c6b0bd...afcc1`／`d8e915ac...f438b`。
 - 新 scope decision 只允许在 clean/synced commit 上签发一次 DELL claim-surface successor：复用 R4 planner 与 current S1/S2，五个 analysis、五个 submission 和两次 synthesis 全部重跑，共最多 12 calls，0 retry／fallback／external network。成功后仍须独立做 L1、逐单元内容、跨单元综合、八维质量、paired 和 qualified-human 验收；通过前不得进入异质泛化或宣称 S3 通过。
 - 全仓复证 `463 passed`，compileall、active baseline `135／8／11／0`、secret scan `6815／0` 通过。历史 fixed-Pack 依据 policy 绑定摘要显式回放 v1.0，current product 只使用 v1.1 anchor projection；旧 decision 可审计但其 exact-once scope 已关闭。当前唯一执行 scope 是 `one_DELL_dynamic_five_cell_claim_surface_successor_exact_once`。
+
+## 2026-08-17 S3 DELL 五单元 R5 跨单元合同泄漏与工程闭环
+
+- R5 已消费原唯一 scope。Demand analysis 与 submission 两次 DeepSeek 调用均 HTTP 200 且完整，submission 返回一个 Tool Call；随后项目本地以未捕获 `KeyError: allowed_qualitative_fact_refs` 中止，其他四单元和综合未执行。
+- 根因不是 DS 合同不遵循：旧 Runtime 把只属于 Value Capture 的 ClaimAuthority／ClaimRelation 字段和三条利润关系 alias 投影进 Demand 的严格 Tool，模型只选择了服务端明确允许的选项。该错误属于 S3 cell-local submission contract compiler。
+- R5 原始四份 capture 保持不可变，authority 不复用；后补公开 terminal 只记录崩溃事实，result digest=`e8e13386...b20b4fc`，不 salvage 模型输出、不冒充原 runner 已生成 private full result。
+- 修复后 Prompt、Tool Schema、普通 bounded loop 和本地 Validator 使用同一 cell-scoped contract：只有 `CELL::value_capture` 能看见 Claim／QF 字段；其他 cell 看不到且提交后会 fail closed。混合资格不能合成一个提交表面。
+- runner 现在会把未知项目异常物化为 typed terminal result 并保留已完成 capture。两个 fresh targeted process 均为 `138 passed`，全仓 `468 passed`，compileall、active baseline `135／8／11／0`、secret scan `6821／0` 通过；formal zero-call digest=`4537d7e1...1bf24`。
+- fresh R6 scope decision 已建立但尚未获得执行权。下一步只允许 clean push 与 repository-bound Project OS preflight；通过后可复用 R4 Planner/current S1S2，但必须用新身份重跑五个 analysis、五个 submission 和两次 synthesis。R6 结果通过金融 L1、逐单元、跨单元、八维、paired 和 qualified-human 验收前，DELL 五单元、泛化和 S3 acceptance 仍为 false。

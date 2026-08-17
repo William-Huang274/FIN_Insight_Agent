@@ -143,6 +143,11 @@ DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_dynamic_five_cell_"
     "claim_surface_successor_scope_decision_v1_0.json"
 )
+DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_dynamic_five_cell_"
+    "cell_scoped_claim_contract_successor_scope_decision_v1_1.json"
+)
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_dynamic_counter_successor_"
@@ -420,6 +425,66 @@ def test_dynamic_five_cell_claim_surface_successor_is_current_scope() -> None:
     assert result["model_calls"] == 0
     assert result["provider_calls"] == 0
     assert result["network_calls"] == 0
+
+
+def test_dynamic_five_cell_cell_scoped_claim_successor_is_current_scope() -> None:
+    decision = json.loads(
+        (
+            ROOT
+            / DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    projection = _validate_dynamic_five_cell_claim_surface_successor_decision(
+        root=ROOT,
+        decision=decision,
+    )
+    assert projection["dynamic_five_cell_claim_surface_successor"] is True
+    assert projection[
+        "dynamic_five_cell_cell_scoped_claim_contract_successor"
+    ] is True
+
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=(
+            DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_REF
+        ),
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["run_scope_id"] == (
+        "one_DELL_dynamic_five_cell_cell_scoped_claim_contract_"
+        "successor_exact_once"
+    )
+    assert (
+        "RC-S3-036-global-claim-authority-contract-leaks-value-"
+        "relations-into-nonqualified-cells"
+    ) in set(result["scope_projection"]["explicit_allow_issue_ids"])
+    assert result["model_calls"] == 0
+    assert result["provider_calls"] == 0
+    assert result["network_calls"] == 0
+
+
+def test_dynamic_five_cell_cell_scoped_claim_successor_binds_R5_failure() -> None:
+    decision = json.loads(
+        (
+            ROOT
+            / DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    decision["failed_attempt_reuse_forbidden"] = False
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "project_os_five_cell_claim_surface_successor_true_required:"
+            "failed_attempt_reuse_forbidden"
+        ),
+    ):
+        _validate_dynamic_five_cell_claim_surface_successor_decision(
+            root=ROOT,
+            decision=decision,
+        )
 
 
 def test_dynamic_five_cell_node_successor_rejects_analysis_rerun() -> None:

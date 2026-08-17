@@ -142,6 +142,20 @@ CLAIM_SURFACE_SUCCESSOR_RESULT_SCHEMA = (
 CLAIM_SURFACE_SUCCESSOR_FULL_RESULT_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_claim_surface_successor_live_full_v1_0"
 )
+CLAIM_SURFACE_SUCCESSOR_SCOPE_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_claim_surface_successor_scope_decision_v1_0"
+)
+CLAIM_SURFACE_SUCCESSOR_SCOPE_DECISION_STATUS = (
+    "approved_one_DELL_dynamic_five_cell_claim_surface_successor_exact_once"
+)
+CELL_SCOPED_CLAIM_SUCCESSOR_SCOPE_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_cell_scoped_claim_contract_"
+    "successor_scope_decision_v1_1"
+)
+CELL_SCOPED_CLAIM_SUCCESSOR_SCOPE_DECISION_STATUS = (
+    "approved_one_DELL_dynamic_five_cell_cell_scoped_claim_contract_"
+    "successor_exact_once"
+)
 
 REQUIRED_CELL_IDS = (
     "CELL::demand_quality",
@@ -1747,11 +1761,22 @@ def _validate_claim_surface_successor_authority(
         raise DynamicFiveCellLiveError(
             "five_cell_claim_surface_successor_failure_assessment_invalid"
         )
+    cell_scoped_successor = (
+        decision.get("schema_version")
+        == CELL_SCOPED_CLAIM_SUCCESSOR_SCOPE_DECISION_SCHEMA
+    )
+    expected_decision_status = (
+        CELL_SCOPED_CLAIM_SUCCESSOR_SCOPE_DECISION_STATUS
+        if cell_scoped_successor
+        else CLAIM_SURFACE_SUCCESSOR_SCOPE_DECISION_STATUS
+    )
     if not (
         decision.get("schema_version")
-        == "fin_ia_s3_dynamic_five_cell_claim_surface_successor_scope_decision_v1_0"
-        and decision.get("status")
-        == "approved_one_DELL_dynamic_five_cell_claim_surface_successor_exact_once"
+        in {
+            CLAIM_SURFACE_SUCCESSOR_SCOPE_DECISION_SCHEMA,
+            CELL_SCOPED_CLAIM_SUCCESSOR_SCOPE_DECISION_SCHEMA,
+        }
+        and decision.get("status") == expected_decision_status
         and decision.get("execution_budget")
         == CLAIM_SURFACE_SUCCESSOR_EXPECTED_BUDGET
         and decision.get("reuse_predecessor_planner_and_controlled_plan") is True
@@ -1764,6 +1789,63 @@ def _validate_claim_surface_successor_authority(
         raise DynamicFiveCellLiveError(
             "five_cell_claim_surface_successor_scope_decision_invalid"
         )
+    if cell_scoped_successor:
+        zero_path = _resolve(
+            str(decision.get("cell_scoped_zero_call_result_ref") or "")
+        )
+        failed_path = _resolve(
+            str(decision.get("failed_attempt_result_ref") or "")
+        )
+        assessment_path = _resolve(
+            str(
+                decision.get("failed_attempt_failure_assessment_ref") or ""
+            )
+        )
+        if not all(path.is_file() for path in (zero_path, failed_path, assessment_path)):
+            raise DynamicFiveCellLiveError(
+                "five_cell_claim_surface_successor_repair_artifact_missing"
+            )
+        zero_result = _json(zero_path)
+        failed_result = _json(failed_path)
+        failed_assessment = _json(assessment_path)
+        if not (
+            _sha(zero_path)
+            == decision.get("cell_scoped_zero_call_result_sha256")
+            and zero_result.get("result_digest")
+            == decision.get("cell_scoped_zero_call_result_digest")
+            and _sha(failed_path)
+            == decision.get("failed_attempt_result_sha256")
+            and failed_result.get("result_digest")
+            == decision.get("failed_attempt_result_digest")
+            and _sha(assessment_path)
+            == decision.get("failed_attempt_failure_assessment_sha256")
+            and failed_assessment.get("assessment_digest")
+            == decision.get("failed_attempt_failure_assessment_digest")
+            and decision.get("cell_scoped_claim_contract_required") is True
+            and decision.get("typed_unexpected_exception_terminal_required")
+            is True
+            and decision.get("failed_attempt_run_id")
+            == "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5"
+            and decision.get("failed_attempt_authority_consumed") is True
+            and decision.get("failed_attempt_reuse_forbidden") is True
+            and failed_result.get("status")
+            == "terminal_unexpected_project_exception_preserved_no_retry"
+            and (failed_assessment.get("disposition") or {}).get(
+                "R5_rerun_forbidden"
+            )
+            is True
+            and (zero_result.get("contract_proof") or {}).get(
+                "nonqualified_messages_omit_claim_contracts_and_relation_aliases"
+            )
+            is True
+            and (zero_result.get("contract_proof") or {}).get(
+                "unexpected_project_exception_materializes_terminal_result"
+            )
+            is True
+        ):
+            raise DynamicFiveCellLiveError(
+                "five_cell_claim_surface_successor_repair_artifact_invalid"
+            )
 
     _, _, _, objective, messages = _compile_planner_contract(paths)
     if not (
@@ -2003,6 +2085,10 @@ def _failure(
         "failure_code": code,
         "failure_capture_ref": _relative(capture_ref) if capture_ref else "",
     }
+
+
+def _unexpected_project_failure_code(exc: Exception) -> str:
+    return "five_cell_unexpected_project_exception_" + type(exc).__name__.lower()
 
 
 def run(
@@ -2380,6 +2466,13 @@ def run(
                 row.update(
                     _failure(phase="cell_live_orchestration", code=exc.code)
                 )
+            except Exception as exc:
+                row.update(
+                    _failure(
+                        phase="cell_unexpected_project_exception",
+                        code=_unexpected_project_failure_code(exc),
+                    )
+                )
 
         if len(accepted_raw_cells) == 5:
             judgment_output = validate_current_research_output(
@@ -2481,6 +2574,13 @@ def run(
                 synthesis_steps.update(
                     _failure(phase="synthesis_orchestration", code=exc.code)
                 )
+            except Exception as exc:
+                synthesis_steps.update(
+                    _failure(
+                        phase="synthesis_unexpected_project_exception",
+                        code=_unexpected_project_failure_code(exc),
+                    )
+                )
     except ModelGatewayError as exc:
         orchestration_failure = _failure(
             phase="planner_provider_transport_or_response",
@@ -2514,6 +2614,11 @@ def run(
     except DynamicFiveCellLiveError as exc:
         orchestration_failure = _failure(
             phase="five_cell_live_orchestration", code=exc.code
+        )
+    except Exception as exc:
+        orchestration_failure = _failure(
+            phase="five_cell_unexpected_project_exception",
+            code=_unexpected_project_failure_code(exc),
         )
 
     accepted_count = sum(bool(row["validated_cell"]) for row in cell_steps)

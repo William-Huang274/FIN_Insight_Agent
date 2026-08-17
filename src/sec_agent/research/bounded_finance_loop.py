@@ -1050,6 +1050,62 @@ def _selected_cells(
     return tuple(all_cells[cell_id] for cell_id in requested)
 
 
+def _scoped_judgment_contract(
+    *,
+    research_input: Mapping[str, Any],
+    cells: Sequence[Mapping[str, Any]],
+) -> tuple[dict[str, Any], bool, bool]:
+    """Project the global contract to one homogeneous cell authority scope."""
+
+    claim_authority_flags = {
+        "claim_authority_card" in row for row in cells
+    }
+    claim_surface_flags = {"claim_relation_card" in row for row in cells}
+    _require(
+        len(claim_authority_flags) == 1,
+        "finance_loop_mixed_claim_authority_scope_invalid",
+    )
+    _require(
+        len(claim_surface_flags) == 1,
+        "finance_loop_mixed_claim_surface_scope_invalid",
+    )
+    cell_has_claim_authority = claim_authority_flags == {True}
+    cell_has_claim_surface = claim_surface_flags == {True}
+    _require(
+        not cell_has_claim_surface or cell_has_claim_authority,
+        "finance_loop_claim_surface_without_claim_authority",
+    )
+    scoped_contract = deepcopy(research_input["model_output_contract"])
+    if not cell_has_claim_authority:
+        scoped_contract["model_owned_cell_fields"] = [
+            field
+            for field in scoped_contract["model_owned_cell_fields"]
+            if field
+            not in {"claim_scope", "financial_scope", "causal_bridge_authority"}
+        ]
+        for key in (
+            "allowed_claim_scopes",
+            "allowed_financial_scopes",
+            "allowed_causal_bridge_authorities",
+        ):
+            scoped_contract.pop(key, None)
+    if not cell_has_claim_surface:
+        scoped_contract["model_owned_cell_fields"] = [
+            field
+            for field in scoped_contract["model_owned_cell_fields"]
+            if field not in {"claim_relations", "qualitative_fact_refs"}
+        ]
+        for key in (
+            "allowed_claim_subjects",
+            "allowed_claim_outcomes",
+            "allowed_claim_relations",
+            "allowed_attribution_bases",
+            "allowed_claim_relation_refs",
+        ):
+            scoped_contract.pop(key, None)
+    return scoped_contract, cell_has_claim_authority, cell_has_claim_surface
+
+
 def _judgment_parameters(
     *,
     cell_ids: Sequence[str],
@@ -1627,6 +1683,12 @@ def compile_finance_loop_tool_contract(
     strict: bool,
 ) -> FinanceToolContract:
     cells = _selected_cells(research_input, required_cell_ids)
+    scoped_contract, _has_claim_authority, _has_claim_surface = (
+        _scoped_judgment_contract(
+            research_input=research_input,
+            cells=cells,
+        )
+    )
     cell_ids = [str(row["cell_id"]) for row in cells]
     evidence_refs = sorted(
         {str(ref) for row in cells for ref in row["allowed_evidence_refs"]}
@@ -1677,7 +1739,7 @@ def compile_finance_loop_tool_contract(
             method_step_refs=method_step_refs,
             graph_edge_refs=graph_edge_refs,
             qualitative_fact_refs=qualitative_fact_refs,
-            contract=research_input["model_output_contract"],
+            contract=scoped_contract,
         ),
         maximum_metric_intents=policy.evidence_request_max_metric_intents,
         maximum_product_intents=policy.evidence_request_max_product_intents,
@@ -1700,6 +1762,12 @@ def compile_finance_judgment_tool(
     """Compile the legacy paired lane's final tool without proposal surfaces."""
 
     cells = _selected_cells(research_input, required_cell_ids)
+    scoped_contract, _has_claim_authority, _has_claim_surface = (
+        _scoped_judgment_contract(
+            research_input=research_input,
+            cells=cells,
+        )
+    )
     function: dict[str, Any] = {
         "name": SUBMIT_RESEARCH_JUDGMENT_TOOL,
         "description": (
@@ -1743,7 +1811,7 @@ def compile_finance_judgment_tool(
                     for ref in row.get("allowed_qualitative_fact_refs", ())
                 }
             ),
-            contract=research_input["model_output_contract"],
+            contract=scoped_contract,
         ),
     }
     if strict:
@@ -1759,6 +1827,12 @@ def compile_finance_loop_messages(
     micro_judgment_mode: bool = False,
 ) -> tuple[dict[str, str], ...]:
     cells = _selected_cells(research_input, required_cell_ids)
+    _scoped_contract, cell_has_claim_authority, cell_has_claim_surface = (
+        _scoped_judgment_contract(
+            research_input=research_input,
+            cells=cells,
+        )
+    )
     compact_alias_view = research_input.get(
         "claim_surface_authority_contract", {}
     ).get("model_view_mode") == "claim_relation_alias_compact_v1"
@@ -1895,7 +1969,7 @@ def compile_finance_loop_messages(
             "Cite the injected method steps and current graph edges actually used; graph context never grants fact or causal authority.",
         ],
     }
-    if "claim_authority_contract" in research_input:
+    if cell_has_claim_authority:
         visible["claim_authority_contract"] = (
             {
                 "fixed_pack_unit_test_only": True,
@@ -1914,7 +1988,7 @@ def compile_finance_loop_messages(
                 "This fixed-pack unit test performs no retrieval and is not Agentic Research.",
             ]
         )
-    if "claim_surface_authority_contract" in research_input:
+    if cell_has_claim_surface:
         visible["claim_surface_authority_contract"] = (
             {
                 "model_view_mode": "claim_relation_alias_compact_v1",

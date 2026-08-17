@@ -1470,6 +1470,24 @@ def compile_current_research_messages(
         for cell in research_input["cells"]
         if cell["cell_id"] in selected_cell_id_set
     ]
+    selected_claim_authority_cells = [
+        cell for cell in selected_cells if "claim_authority_card" in cell
+    ]
+    selected_claim_surface_cells = [
+        cell for cell in selected_cells if "claim_relation_card" in cell
+    ]
+    _require(
+        not selected_claim_authority_cells
+        or len(selected_claim_authority_cells) == len(selected_cells),
+        "research_consumer_mixed_claim_authority_scope_requires_cell_local_submission",
+    )
+    _require(
+        not selected_claim_surface_cells
+        or len(selected_claim_surface_cells) == len(selected_cells),
+        "research_consumer_mixed_claim_surface_scope_requires_cell_local_submission",
+    )
+    selected_has_claim_authority = bool(selected_claim_authority_cells)
+    selected_has_claim_surface = bool(selected_claim_surface_cells)
     visible_cells = []
     selected_evidence_refs: set[str] = set()
     selected_numeric_refs: set[str] = set()
@@ -1582,7 +1600,7 @@ def compile_current_research_messages(
                 "financial_scope": "one financial scope listed in the cell ClaimAuthorityCard",
                 "causal_bridge_authority": "one bridge authority listed in the cell ClaimAuthorityCard",
             }
-            if "claim_authority_contract" in research_input
+            if selected_has_claim_authority
             else {}
         ),
         **(
@@ -1610,7 +1628,7 @@ def compile_current_research_messages(
                     "zero or more QF refs from this cell; select a reviewed source-bound qualitative fact instead of repeating its numeric surface in prose"
                 ],
             }
-            if "claim_surface_authority_contract" in research_input
+            if selected_has_claim_surface
             else {}
         ),
         "evidence_uses": [
@@ -1693,7 +1711,7 @@ def compile_current_research_messages(
                     in selected_qualitative_fact_refs
                 ]
             }
-            if "claim_surface_authority_contract" in research_input
+            if selected_has_claim_surface
             else {}
         ),
         "cells": visible_cells,
@@ -1745,7 +1763,7 @@ def compile_current_research_messages(
             "Do not infer an undisclosed threshold or claim a supply constraint is easing without directly bound allocation and timing evidence.",
         ],
     }
-    if "claim_authority_contract" in research_input:
+    if selected_has_claim_authority:
         visible["claim_authority_contract"] = deepcopy(
             research_input["claim_authority_contract"]
         )
@@ -1768,7 +1786,7 @@ def compile_current_research_messages(
                 "This fixed Evidence Pack test does not execute retrieval and must not be described as Agentic Research.",
             ]
         )
-    if "claim_surface_authority_contract" in research_input:
+    if selected_has_claim_surface:
         visible["claim_surface_authority_contract"] = deepcopy(
             research_input["claim_surface_authority_contract"]
         )
@@ -1977,7 +1995,6 @@ def validate_current_research_output(
         and set(output_cells) == set(input_cells),
         "research_consumer_output_cell_coverage_invalid",
     )
-    cell_fields = set(contract["model_owned_cell_fields"])
     use_roles = set(contract["allowed_evidence_use_roles"])
     inference_authorities = set(contract["allowed_inference_authorities"])
     claim_authority_contract = research_input.get("claim_authority_contract")
@@ -1997,6 +2014,38 @@ def validate_current_research_output(
         ),
         "research_consumer_claim_surface_contract_invalid",
     )
+    claim_authority_cell_ids = (
+        {
+            str(value)
+            for value in claim_authority_contract.get("qualified_cell_ids", ())
+        }
+        if isinstance(claim_authority_contract, Mapping)
+        else set()
+    )
+    claim_surface_cell_ids = (
+        {
+            str(value)
+            for value in claim_surface_contract.get("qualified_cell_ids", ())
+        }
+        if isinstance(claim_surface_contract, Mapping)
+        else set()
+    )
+    _require(
+        claim_authority_cell_ids
+        == {
+            cell_id
+            for cell_id, cell in all_input_cells.items()
+            if "claim_authority_card" in cell
+        }
+        and claim_surface_cell_ids
+        == {
+            cell_id
+            for cell_id, cell in all_input_cells.items()
+            if "claim_relation_card" in cell
+        }
+        and claim_surface_cell_ids.issubset(claim_authority_cell_ids),
+        "research_consumer_claim_authority_cell_scope_invalid",
+    )
     qualitative_fact_by_ref = {
         str(row["qualitative_fact_ref"]): row
         for row in research_input.get(
@@ -2007,6 +2056,13 @@ def validate_current_research_output(
     validated = []
     for cell_id in input_cells:
         raw = output_cells[cell_id]
+        cell_claim_authority = cell_id in claim_authority_cell_ids
+        cell_claim_surface = cell_id in claim_surface_cell_ids
+        cell_fields = set(contract["model_owned_cell_fields"])
+        if not cell_claim_authority:
+            cell_fields.difference_update(CLAIM_AUTHORITY_MODEL_FIELDS)
+        if not cell_claim_surface:
+            cell_fields.difference_update(CLAIM_SURFACE_AUTHORITY_MODEL_FIELDS)
         _require(
             set(raw) == cell_fields,
             "research_consumer_output_cell_fields_invalid",
@@ -2058,7 +2114,7 @@ def validate_current_research_output(
                 "research_consumer_qualitative_fact_refs_invalid",
                 allow_empty=True,
             )
-            if claim_surface_contract is not None
+            if cell_claim_surface
             else ()
         )
         method_steps = _unique_strings(
@@ -2091,10 +2147,12 @@ def validate_current_research_output(
             ),
             "research_consumer_numeric_relation_boundary_invalid",
         )
-        if claim_surface_contract is not None:
+        if cell_claim_surface:
             _require(
                 set(qualitative_facts).issubset(
-                    input_cells[cell_id]["allowed_qualitative_fact_refs"]
+                    input_cells[cell_id].get(
+                        "allowed_qualitative_fact_refs", ()
+                    )
                 )
                 and set(qualitative_facts).issubset(qualitative_fact_by_ref),
                 "research_consumer_qualitative_fact_boundary_invalid",
@@ -2167,7 +2225,7 @@ def validate_current_research_output(
             for field in _MODEL_TEXT_FIELDS
         }
         claim_surface_authority_receipt = None
-        if claim_surface_contract is not None:
+        if cell_claim_surface:
             relation_card = input_cells[cell_id].get(
                 "claim_relation_card"
             )
@@ -2183,9 +2241,9 @@ def validate_current_research_output(
                         claim_surface_contract=claim_surface_contract,
                         qualitative_fact_cards=tuple(
                             qualitative_fact_by_ref[ref]
-                            for ref in input_cells[cell_id][
-                                "allowed_qualitative_fact_refs"
-                            ]
+                            for ref in input_cells[cell_id].get(
+                                "allowed_qualitative_fact_refs", ()
+                            )
                         ),
                         evidence_uses=evidence_uses,
                         numeric_relation_refs=numeric_relations,
@@ -2198,7 +2256,7 @@ def validate_current_research_output(
             except ClaimSurfaceAuthorityError as exc:
                 raise CurrentResearchConsumerError(exc.code) from exc
         claim_authority_receipt = None
-        if claim_authority_contract is not None:
+        if cell_claim_authority:
             claim_card = input_cells[cell_id].get("claim_authority_card")
             _require(
                 isinstance(claim_card, Mapping),

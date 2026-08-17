@@ -1,0 +1,37 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_claim_surface_successor_failure_assessment_v1_0",
+  "status": "project_contract_scope_failure_zero_call_root_cause_repair_required",
+  "assessed_at": "2026-08-17T09:30:00+08:00",
+  "case_key": "DELL",
+  "run_id": "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_claim_surface_successor_chat_live_result_v1_0.json",
+  "result_digest": "e8e13386afa560175b3d590940b35bc609ddde1538fa9f018dc79d5acb20b4fc",
+  "classification": {
+    "owning_stage": "S3",
+    "owned_by_project": true,
+    "provider_transport_failure": false,
+    "model_contract_noncompliance_primary_cause": false,
+    "financial_content_failure_assessable": false,
+    "root_cause": "A global Value Capture ClaimAuthority and ClaimRelation contract was copied into the Demand submission message and strict tool. DeepSeek selected aliases that the server schema explicitly allowed. The local validator then treated every cell as claim-surface-qualified and indexed a Demand-only field that did not exist, raising an uncaught KeyError.",
+    "earliest_faulty_artifact": "compile_current_research_messages_and_compile_finance_judgment_tool_global_claim_contract_projection",
+    "impact": "R5 stopped after two paid calls, produced no validated cell, no synthesis and no report. Because the tool menu itself was wrong, the Demand output cannot be reclassified as a model failure or promoted as business truth."
+  },
+  "required_repair": [
+    "Compile ClaimAuthority and ClaimRelation fields, aliases, qualitative facts, prompts and schemas only for cells explicitly qualified by the current contract.",
+    "Reject mixed claim-authority scopes in one submission surface; five-cell execution must compile one cell-local submission at a time.",
+    "Validate the exact expected field set per cell and reject value-only fields when submitted for Demand, Operating, Cash or Counterevidence.",
+    "Materialize typed terminal results for unexpected project exceptions after preserving any completed captures.",
+    "Prove Demand omission, Value inclusion, cross-cell mutation rejection, complete fake orchestration and full repository regression before any new live authority."
+  ],
+  "disposition": {
+    "R5_authority_consumed": true,
+    "R5_rerun_forbidden": true,
+    "R5_output_salvage_forbidden": true,
+    "automatic_R6_forbidden_until_clean_proof": true,
+    "new_attempt_may_reuse_R4_planner_and_current_S1_S2_after_fresh_scope_decision": true,
+    "new_attempt_must_rerun_all_five_analysis_and_submission_nodes": true,
+    "product_publication_forbidden": true
+  },
+  "known_boundary": "The assessment closes only the explanation of R5. It does not prove the repair, authorize R6 by itself, assess DeepSeek research quality, close the missing current product-profit bridge, or approve DELL five-cell, heterogeneous generalization or S3.",
+  "assessment_digest": "148500488b897b166c005481209741ab52f7e83125471406579ac41a0689ddd7"
+}

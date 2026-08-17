@@ -20,6 +20,9 @@ from apps.workbench.backend.application.research_retrieval_service import (  # n
 from scripts.research.run_s3_current_research_consumer_zero_call import (  # noqa: E402
     _services,
 )
+from sec_agent.research.bounded_finance_loop import (  # noqa: E402
+    compile_finance_loop_messages,
+)
 from sec_agent.research.claim_surface_authority import (  # noqa: E402
     ClaimSurfaceAuthorityError,
 )
@@ -30,6 +33,9 @@ from sec_agent.research.current_consumer import (  # noqa: E402
 from sec_agent.research.dynamic_research_runtime import (  # noqa: E402
     compile_dynamic_claim_surface_projection,
     compile_dynamic_research_input_projection,
+)
+from sec_agent.research.five_cell_runtime import (  # noqa: E402
+    compile_five_cell_submission,
 )
 
 
@@ -167,6 +173,55 @@ def _positive_payload(research_input: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _demand_payload(research_input: dict[str, object]) -> dict[str, object]:
+    cell = next(
+        row
+        for row in research_input["cells"]
+        if row["cell_id"] == "CELL::demand_quality"
+    )
+    return {
+        "cell_id": "CELL::demand_quality",
+        "judgment_status": "mixed",
+        "confidence_basis": "direct_source_only",
+        "inference_authority": "bounded_inference",
+        "evidence_uses": [
+            {
+                "evidence_ref": cell["allowed_evidence_refs"][0],
+                "use_role": "support",
+            }
+        ],
+        "numeric_refs": [],
+        "numeric_relation_refs": [],
+        "method_step_refs": [
+            row["method_step_ref"]
+            for row in cell["role_method_pack"]["method_steps"]
+        ],
+        "graph_edge_refs": [
+            row["graph_edge_ref"]
+            for row in cell["graph_context_pack"]["edges"]
+        ],
+        "thesis_atom": (
+            "戴尔披露的需求信号支持当前方向，但现有材料仍不能单独"
+            "证明订单会持续转化。"
+        ),
+        "mechanism_atom": (
+            "客户采购、积压兑现和部署进度共同决定需求能否形成"
+            "持续收入。"
+        ),
+        "counterargument_atom": (
+            "提前采购和后续消化可能改变表面需求强度，现有资料"
+            "不能关闭这一反向解释。"
+        ),
+        "what_would_change": {
+            "observable": "订单兑现与客户复购保持一致方向",
+            "direction": "persist",
+            "time_horizon": "后续连续披露期",
+            "evidence_route": "公司业绩材料与客户采购披露",
+            "threshold_numeric_ref": None,
+        },
+    }
+
+
 def test_dynamic_surface_exposes_exact_reviewed_anchor_and_historical_relation(
     dynamic_surface_input: dict[str, object],
 ) -> None:
@@ -204,6 +259,106 @@ def test_dynamic_historical_relation_validates_without_cross_period_expansion(
     )
     assert thesis["causal_bridge_authority"] == "management_assertion_only"
     assert validated["cells"][0]["qualitative_fact_refs"] == [MARGIN_QF]
+
+
+def test_claim_surface_contract_is_compiled_only_for_qualified_value_cell(
+    dynamic_surface_input: dict[str, object],
+) -> None:
+    demand_cell = _demand_payload(dynamic_surface_input)
+    validated = validate_current_research_output(
+        {"cells": [demand_cell]},
+        research_input=dynamic_surface_input,
+        required_cell_ids=["CELL::demand_quality"],
+    )
+    assert validated["cells"][0]["cell_id"] == "CELL::demand_quality"
+
+    demand_messages, demand_tool = compile_five_cell_submission(
+        research_input=dynamic_surface_input,
+        cell_id="CELL::demand_quality",
+        analysis_draft=(
+            "需求披露能够支持当前判断，但持续性仍取决于订单兑现、"
+            "客户复购和供给缓解后的真实消化。"
+        ),
+    )
+    demand_properties = demand_tool["function"]["parameters"]["properties"]
+    claim_fields = {
+        "claim_scope",
+        "financial_scope",
+        "causal_bridge_authority",
+        "claim_relations",
+        "qualitative_fact_refs",
+    }
+    assert claim_fields.isdisjoint(demand_properties)
+    serialized_demand = json.dumps(
+        demand_messages, ensure_ascii=False, sort_keys=True
+    )
+    assert "CR::DELL::COMPANY_MARGIN_OBSERVATION" not in serialized_demand
+    assert "ClaimRelationCard" not in serialized_demand
+    loop_messages = compile_finance_loop_messages(
+        research_input=dynamic_surface_input,
+        required_cell_ids=["CELL::demand_quality"],
+    )
+    serialized_loop = json.dumps(
+        loop_messages, ensure_ascii=False, sort_keys=True
+    )
+    assert "CR::DELL::COMPANY_MARGIN_OBSERVATION" not in serialized_loop
+    assert "claim_surface_authority_contract" not in serialized_loop
+
+    _value_messages, value_tool = compile_five_cell_submission(
+        research_input=dynamic_surface_input,
+        cell_id="CELL::value_capture",
+        analysis_draft=(
+            "利润获取同时受到产品组合、成本与其他业务影响，现有资料"
+            "只能支持有边界的公司层判断。"
+        ),
+    )
+    value_properties = value_tool["function"]["parameters"]["properties"]
+    assert claim_fields.issubset(value_properties)
+    relation_enum = value_properties["claim_relations"]["items"][
+        "properties"
+    ]["claim_relation_ref"]["enum"]
+    assert "CR::DELL::COMPANY_MARGIN_OBSERVATION" in relation_enum
+
+
+def test_nonqualified_cell_rejects_value_only_claim_authority_fields(
+    dynamic_surface_input: dict[str, object],
+) -> None:
+    demand_cell = _demand_payload(dynamic_surface_input)
+    demand_cell.update(
+        {
+            "claim_scope": "company",
+            "financial_scope": "non_financial",
+            "causal_bridge_authority": "bridge_unavailable",
+            "claim_relations": [
+                {
+                    "atom_field": "thesis_atom",
+                    "claim_relation_ref": (
+                        "CR::DELL::COMPANY_MARGIN_OBSERVATION"
+                    ),
+                },
+                {
+                    "atom_field": "mechanism_atom",
+                    "claim_relation_ref": "CR::DELL::PROFIT_BRIDGE_GAP",
+                },
+                {
+                    "atom_field": "counterargument_atom",
+                    "claim_relation_ref": (
+                        "CR::DELL::HISTORICAL_MIX_PRESSURE"
+                    ),
+                },
+            ],
+            "qualitative_fact_refs": [],
+        }
+    )
+    with pytest.raises(
+        CurrentResearchConsumerError,
+        match="research_consumer_output_cell_fields_invalid",
+    ):
+        validate_current_research_output(
+            {"cells": [demand_cell]},
+            research_input=dynamic_surface_input,
+            required_cell_ids=["CELL::demand_quality"],
+        )
 
 
 def test_unattributed_direct_surface_and_cross_case_ref_fail_closed(

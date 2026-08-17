@@ -1,0 +1,133 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_claim_surface_successor_live_authority_v1_0",
+  "status": "signed_exact_once_DELL_dynamic_five_cell_claim_surface_successor",
+  "signed_at": "2026-08-17T09:11:59+08:00",
+  "authority_id": "FIN-0.1.3-S3-DELL-DYNAMIC-FIVE-CELL-CLAIM-SURFACE-SUCCESSOR-CHAT-LIVE-AUTHORITY-V1.0",
+  "implementation_commit": "318677b5ebffb141e146f9661057525c1540abed",
+  "case_key": "DELL",
+  "required_cell_ids": [
+    "CELL::demand_quality",
+    "CELL::operating_performance",
+    "CELL::value_capture",
+    "CELL::cash_conversion",
+    "CELL::counterevidence"
+  ],
+  "rerun_cell_ids": [
+    "CELL::demand_quality",
+    "CELL::operating_performance",
+    "CELL::value_capture",
+    "CELL::cash_conversion",
+    "CELL::counterevidence"
+  ],
+  "execution_budget": {
+    "maximum_model_calls": 12,
+    "maximum_transport_attempts": 12,
+    "maximum_planner_calls": 0,
+    "reused_predecessor_planner_calls": 1,
+    "maximum_cell_analysis_calls": 5,
+    "maximum_cell_submission_calls": 5,
+    "maximum_synthesis_analysis_calls": 1,
+    "maximum_synthesis_submission_calls": 1,
+    "maximum_evidence_requests": 0,
+    "reused_predecessor_evidence_requests": 8,
+    "maximum_tool_calls": 6,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_source_network_calls": 0,
+    "protocol_switches": 0,
+    "current_product_pointer_mutations": 0
+  },
+  "bound_inputs": {
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_objective_v1_0.json",
+    "objective_sha256": "7e9c3e94aff9cd532cea5e2cfecd362afbe1ada4ed8aacb5127040b645bfb63d",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "6e2e358620f8a69248725cadda281651de4820bc12ec980b723bdbfaad837099",
+    "truth_spine_policy_ref": "configs/research/fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_0.json",
+    "truth_spine_policy_sha256": "f329a31ebc044e29a0ee8657fbc6806f031bc5477d0bdeacc033da33bd956287",
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_4.json",
+    "consumer_policy_sha256": "86e946714b6fab53c703b1194b454bcdb45e6e66c05114b2ef9233a3bc7070c7",
+    "claim_authority_template_ref": "configs/research/fin_ia_0_1_3_s3_dell_value_capture_dynamic_claim_authority_v1_1.json",
+    "claim_authority_template_sha256": "691e669e5a7beacc6562879e3ecf420b6a2910bf4c4b7494897d203b45be10ca",
+    "claim_surface_template_ref": "configs/research/fin_ia_0_1_3_s3_dell_value_capture_dynamic_claim_surface_authority_v1_3.json",
+    "claim_surface_template_sha256": "e70bb2ee0a0ae1ab215ebab8fea894fa6488b6d1cbf2ff851b7b0a4dd66f32c3",
+    "analysis_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+    "analysis_profile_sha256": "dbc14dbcc186b81f24a5b048056e663649614cd62bef1aceb98b9873189603a1",
+    "submission_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_contract_submission_non_thinking_strict_beta_profile_v1_0.json",
+    "submission_profile_sha256": "2de80ae04c77a97fc7cd1b47f07de964b4be60d720d8297e4c58e6967e8b31ef",
+    "predecessor_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_node_successor_chat_live_authority_v1_0.json",
+    "predecessor_authority_sha256": "ca1d5e50c138752e1e0456d6420f88f0697a141ba1976a364238b9c2b5130429",
+    "predecessor_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_node_successor_chat_live_result_v1_0.json",
+    "predecessor_public_result_sha256": "538c6f3026ee2a7d65e5a48d5fe7fb8d0f4708a903bf0a8b1c789055d96fc3d9",
+    "predecessor_private_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R4/full_result.json",
+    "predecessor_private_result_sha256": "c29dee4c2602b7698a707f3b1b05222a7ddbce4d7bbd6954a106ceecd3575299",
+    "predecessor_failure_assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_node_successor_chat_live_failure_assessment_v1_0.json",
+    "predecessor_failure_assessment_sha256": "2e68ac353fb01b77c646a42c02bbd37947a8653da356a5d39445f89f98da17c1",
+    "scope_decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_claim_surface_successor_scope_decision_v1_0.json",
+    "scope_decision_sha256": "56ad575e05e38326788521db0e7ce245f836a65aa075ad422c30b6e462244818",
+    "runner_ref": "scripts/research/run_s3_dynamic_five_cell_live.py",
+    "runner_sha256": "91b945e2a97465059567c67b248d3b65f9336920be217fe1229d04d233fd7a3b",
+    "dynamic_runtime_ref": "src/sec_agent/research/dynamic_research_runtime.py",
+    "dynamic_runtime_sha256": "0250e30db8b447ab5981abd8f0b657003504725c5cace5293adc97384f476a54",
+    "claim_authority_runtime_ref": "src/sec_agent/research/claim_authority.py",
+    "claim_authority_runtime_sha256": "1fc963d8473c760fa289a7e52ca90f553100c298b7dc80e06c93caa444233b85",
+    "claim_surface_runtime_ref": "src/sec_agent/research/claim_surface_authority.py",
+    "claim_surface_runtime_sha256": "5a23062d39e21be6a16789a434d6f7ee9ddd92f42840dbdc5a08039d862874d0",
+    "five_cell_runtime_ref": "src/sec_agent/research/five_cell_runtime.py",
+    "five_cell_runtime_sha256": "a4b8bc0cceed8ae0956cd51d2e50cb0efea81e1c475ad50b209b9eb0f98040ea",
+    "current_consumer_ref": "src/sec_agent/research/current_consumer.py",
+    "current_consumer_sha256": "58142e34707b1f37da24c75c018d15deca5a9353f7469578588692a52758ef71",
+    "reviewed_anchor_runtime_ref": "src/sec_agent/research/reviewed_evidence_anchor.py",
+    "reviewed_anchor_runtime_sha256": "4166b77ac24792a4413ec3c500743762b4f20cd0300d820dd8a7d3a88cee6c4c",
+    "provider_transport_ref": "src/sec_agent/providers/chat_completions.py",
+    "provider_transport_sha256": "4e75b910b18ead890dff15d1125be87ed180163b7a215fd4c12d1421d51314f1",
+    "strict_projection_ref": "src/sec_agent/providers/deepseek_strict.py",
+    "strict_projection_sha256": "bda97e92b71cd87ffe66c18105939d658f4aeb01aa1f4deb0e4d017934f5165c",
+    "objective_id": "ROC::c1440c206aad66f719ee1c1e",
+    "planner_messages_digest": "5b98ef5e72d946ea77d2eb6664fae035685010d12914d0182f694dc9be07fd39",
+    "predecessor_plan_digest": "f964f9fe814e1ea5d50c5286fb57b3cb00144514c2ee47cc9c770b7d662debaf",
+    "predecessor_controlled_plan_digest": "c439694e64a1b24f2049ca6c073df25fb867f17e8c6879abb2128a43db701db1",
+    "predecessor_public_result_digest": "73c3a577446d11a5f1fe3035317aadfbc3dae1c17eaa1bce9ccaa6882a468766",
+    "predecessor_private_result_digest": "ddb85d920b3a51a55c12da51092d0786da4ce2ff16647725ad95c19d0f977f32",
+    "predecessor_failure_assessment_result_digest": "73c3a577446d11a5f1fe3035317aadfbc3dae1c17eaa1bce9ccaa6882a468766",
+    "expected_base_research_input_digest": "5c6b0bd2339bbcc84043f4b3dccacb9243f02916480164795f5be0e576aafcc1",
+    "expected_claim_surface_research_input_digest": "d8e915accf9d819c9e838802c8cdd852fd539b09ab0d88d5ccabddf57f1b438b",
+    "expected_evidence_pack_artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+    "expected_evidence_pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a",
+    "expected_reviewed_anchor_digest": "497279ac1832a19dd24f32e44c83acc329ef071adfdaf5223061ce8f851fcc1c",
+    "expected_reviewed_anchor_target_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05_CLAIM_CA0D3EC4"
+  },
+  "output_contract": {
+    "capture_root_ref": "data/captures/provider_calls",
+    "private_output_root_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_claim_surface_successor_chat_live_result_v1_0.json",
+    "run_id": "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5",
+    "cell_attempt_ids": {
+      "CELL::demand_quality": {
+        "analysis_attempt_id": "FIVE-CELL-R5-DEMAND-ANALYSIS-01",
+        "submission_attempt_id": "FIVE-CELL-R5-DEMAND-SUBMISSION-01"
+      },
+      "CELL::operating_performance": {
+        "analysis_attempt_id": "FIVE-CELL-R5-OPERATING-ANALYSIS-01",
+        "submission_attempt_id": "FIVE-CELL-R5-OPERATING-SUBMISSION-01"
+      },
+      "CELL::value_capture": {
+        "analysis_attempt_id": "FIVE-CELL-R5-VALUE-ANALYSIS-01",
+        "submission_attempt_id": "FIVE-CELL-R5-VALUE-SUBMISSION-01"
+      },
+      "CELL::cash_conversion": {
+        "analysis_attempt_id": "FIVE-CELL-R5-CASH-ANALYSIS-01",
+        "submission_attempt_id": "FIVE-CELL-R5-CASH-SUBMISSION-01"
+      },
+      "CELL::counterevidence": {
+        "analysis_attempt_id": "FIVE-CELL-R5-COUNTER-ANALYSIS-01",
+        "submission_attempt_id": "FIVE-CELL-R5-COUNTER-SUBMISSION-01"
+      }
+    },
+    "synthesis_attempt_ids": {
+      "analysis_attempt_id": "FIVE-CELL-R5-SYNTHESIS-ANALYSIS-01",
+      "submission_attempt_id": "FIVE-CELL-R5-SYNTHESIS-SUBMISSION-01"
+    },
+    "product_publication": "forbidden"
+  },
+  "known_boundary": "This exact-once authority reuses only the immutable R4 planner and current S1/S2 result, exposes reviewed exact claim anchors and one period-bound issuer historical relation, reruns all five analyses and submissions plus synthesis, and preserves local financial validation as final authority. It forbids new Evidence, current-period or product-profit causal promotion without a typed bridge, retries, fallbacks, protocol switching, external-source network, publication, heterogeneous generalization, S3 acceptance and release claims."
+}

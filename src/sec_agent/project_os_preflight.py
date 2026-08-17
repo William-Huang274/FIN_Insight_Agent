@@ -115,6 +115,18 @@ DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_STATUS = (
 DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_SCOPE = (
     "one_DELL_dynamic_five_cell_claim_surface_successor_exact_once"
 )
+DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_cell_scoped_claim_contract_"
+    "successor_scope_decision_v1_1"
+)
+DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_STATUS = (
+    "approved_one_DELL_dynamic_five_cell_cell_scoped_claim_contract_"
+    "successor_exact_once"
+)
+DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_SCOPE = (
+    "one_DELL_dynamic_five_cell_cell_scoped_claim_contract_"
+    "successor_exact_once"
+)
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_0 = (
     "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
     "live_scope_decision_v1_0"
@@ -269,10 +281,10 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
-    if (
-        decision.get("schema_version")
-        == DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_SCHEMA
-    ):
+    if decision.get("schema_version") in {
+        DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_SCHEMA,
+        DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_SCHEMA,
+    }:
         return _validate_dynamic_five_cell_claim_surface_successor_decision(
             root=root,
             decision=decision,
@@ -1890,7 +1902,10 @@ def _validate_dynamic_five_cell_node_successor_decision(
 def _validate_dynamic_five_cell_claim_surface_successor_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
-    del root
+    cell_scoped_successor = (
+        decision.get("schema_version")
+        == DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_SCHEMA
+    )
     required_cells = (
         "CELL::demand_quality",
         "CELL::operating_performance",
@@ -1899,13 +1914,29 @@ def _validate_dynamic_five_cell_claim_surface_successor_decision(
         "CELL::counterevidence",
     )
     required_equal = {
-        "status": DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_STATUS,
+        "status": (
+            DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_STATUS
+            if cell_scoped_successor
+            else DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_STATUS
+        ),
         "case_key": "DELL",
         "cell_id": "ALL_FIVE_RESEARCH_CELLS",
-        "run_scope_id": DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_SCOPE,
+        "run_scope_id": (
+            DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_SCOPE
+            if cell_scoped_successor
+            else DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_SCOPE
+        ),
         "evidence_mode": (
-            "immutable_R4_planner_and_current_S1_S2_with_reviewed_exact_"
-            "claim_anchor_and_period_bound_historical_relation"
+            (
+                "immutable_R4_planner_and_current_S1_S2_with_reviewed_exact_"
+                "claim_anchor_period_bound_historical_relation_and_cell_"
+                "scoped_submission_contract"
+            )
+            if cell_scoped_successor
+            else (
+                "immutable_R4_planner_and_current_S1_S2_with_reviewed_exact_"
+                "claim_anchor_and_period_bound_historical_relation"
+            )
         ),
     }
     for field, expected in required_equal.items():
@@ -1928,6 +1959,16 @@ def _validate_dynamic_five_cell_claim_surface_successor_decision(
         "synthesis_requires_all_cells",
         "chat_live_authorized",
         "credential_presence_required",
+        *(
+            (
+                "cell_scoped_claim_contract_required",
+                "typed_unexpected_exception_terminal_required",
+                "failed_attempt_authority_consumed",
+                "failed_attempt_reuse_forbidden",
+            )
+            if cell_scoped_successor
+            else ()
+        ),
     ):
         if decision.get(field) is not True:
             raise ValueError(
@@ -1971,6 +2012,66 @@ def _validate_dynamic_five_cell_claim_surface_successor_decision(
         raise ValueError(
             "project_os_five_cell_claim_surface_successor_budget_invalid"
         )
+    if cell_scoped_successor:
+        if decision.get("failed_attempt_run_id") != (
+            "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5"
+        ):
+            raise ValueError(
+                "project_os_five_cell_claim_surface_successor_failed_attempt_invalid"
+            )
+        _zero_path, zero_result = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="cell_scoped_zero_call_result_ref",
+            sha_field="cell_scoped_zero_call_result_sha256",
+            digest_field="cell_scoped_zero_call_result_digest",
+        )
+        _failed_path, failed_result = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="failed_attempt_result_ref",
+            sha_field="failed_attempt_result_sha256",
+            digest_field="failed_attempt_result_digest",
+        )
+        assessment_ref = str(
+            decision.get("failed_attempt_failure_assessment_ref") or ""
+        )
+        assessment_path = _repo_path(root, assessment_ref)
+        assessment = _load_json(assessment_path)
+        if not (
+            _sha256(assessment_path)
+            == decision.get("failed_attempt_failure_assessment_sha256")
+            and assessment.get("assessment_digest")
+            == decision.get("failed_attempt_failure_assessment_digest")
+            and zero_result.get("status")
+            == (
+                "formal_zero_call_engineering_pass_"
+                "fresh_live_scope_decision_pending"
+            )
+            and (zero_result.get("contract_proof") or {}).get(
+                "nonqualified_messages_omit_claim_contracts_and_relation_aliases"
+            )
+            is True
+            and (zero_result.get("contract_proof") or {}).get(
+                "unexpected_project_exception_materializes_terminal_result"
+            )
+            is True
+            and failed_result.get("run_id")
+            == "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5"
+            and failed_result.get("status")
+            == "terminal_unexpected_project_exception_preserved_no_retry"
+            and (assessment.get("disposition") or {}).get(
+                "R5_authority_consumed"
+            )
+            is True
+            and (assessment.get("disposition") or {}).get(
+                "R5_rerun_forbidden"
+            )
+            is True
+        ):
+            raise ValueError(
+                "project_os_five_cell_claim_surface_successor_repair_artifact_invalid"
+            )
     return {
         "clean_proof_status": "engineering_pass_scope_bound_zero_call_regression",
         "provider_id": "deepseek",
@@ -1982,6 +2083,9 @@ def _validate_dynamic_five_cell_claim_surface_successor_decision(
         "dynamic_five_cell_partial_successor": False,
         "dynamic_five_cell_node_successor": False,
         "dynamic_five_cell_claim_surface_successor": True,
+        "dynamic_five_cell_cell_scoped_claim_contract_successor": (
+            cell_scoped_successor
+        ),
         "dynamic_single_cell_successor": False,
         "micro_judgment_successor": False,
         "node_profiles": {},
@@ -4258,6 +4362,13 @@ def build_preflight(
             "RC-S3-033-strict-tool-semantic-surface-predicate-not-encoded-in-server-schema",
             "RC-S3-035-reviewed-claim-exact-source-hidden-by-prefix-projection",
         }
+        if decision_projection.get(
+            "dynamic_five_cell_cell_scoped_claim_contract_successor"
+        ) is True:
+            required_allowances.add(
+                "RC-S3-036-global-claim-authority-contract-leaks-value-"
+                "relations-into-nonqualified-cells"
+            )
         actual_allowances = set(scope_projection["explicit_allow_issue_ids"])
         if not required_allowances.issubset(actual_allowances):
             raise ValueError(
@@ -4304,7 +4415,19 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if (
+    if decision_projection.get(
+        "dynamic_five_cell_cell_scoped_claim_contract_successor"
+    ) is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one fresh "
+            "decision-bound DELL dynamic five-cell cell-scoped claim-contract "
+            "successor. It preserves R5 as a consumed project failure, reuses "
+            "only the immutable R4 planner and current S1/S2 result, reruns "
+            "all five analyses and submissions plus synthesis, and forbids "
+            "R5 reuse, new Evidence, cross-cell claim authority, publication, "
+            "S3 acceptance, heterogeneous generalization or release."
+        )
+    elif (
         decision_projection.get("dynamic_five_cell_claim_surface_successor")
         is True
     ):

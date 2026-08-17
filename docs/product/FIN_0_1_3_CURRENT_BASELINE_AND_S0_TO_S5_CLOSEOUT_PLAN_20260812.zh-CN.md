@@ -86,6 +86,20 @@ MU／NVDA 与留出案例验收必须先形成正式泛化评测设计和最终�
 5. 修复 candidate 仍需重新执行 L1/L2、正式八维、同输入 paired 和 qualified-human。DELL 通过前不运行 MU／NVDA 或留出 live；通过后才按预注册异质评测报告验证同核心泛化。
 6. 本轮不改变 FIN 0.1.3、S 阶段或产品范围；这是 S3 首份完整报告暴露出的所属阶段缺陷，不创建新版本。
 
+## 4C. 2026-08-17 S1 证据地基与动态研究结构的先后顺序更正
+
+Owner 接受“通用研究内核＋动态 ResearchBlueprint＋多形态 DeliveryPlan”的产品方向，但明确拒绝在当前 S1 资料面尚未形成质量闭环时直接开始代码泛化。该更正不否定 S3 已完成的 fixed-Pack、单单元和 R7 证据，也不把 R7 的 false absence 错归到 S1；它重新定义了完整产品验收的上游先决条件。
+
+当前顺序改为：
+
+1. **先冻结产品与技术范式，不改代码。** PRD 16.38–16.39 定义稳定研究内核、动态交付方向，以及 S1 `证据获取—反驳—补证—充分性验收` 产品链。
+2. **只读审计现有三案。** 从用户问题／Planner atom 开始，逐命题追踪 EvidenceRequest、QueryFacetPlan、candidate、EvidenceDecision、NumericFact、residual gap、外源补源和 S3 实际消费，形成业务级 Evidence Acquisition 尸检和跨案 failure atlas。
+3. **建立 task-relative Pack Readiness。** 区分 source access、candidate coverage、retrieval quality、Evidence admission、numeric／bridge authority 和真实公开资料 gap；不得用一个 Recall 或总分覆盖逐命题状态。
+4. **按最早责任层设计 S1 实现包。** source、parser、query、ranking、Evidence Role／Gate、S2 数值桥和 S3 consumption 分开处置；不预先假定需要重建全部索引、微调模型或购买数据。
+5. **S1 门通过后再迁移研究结构。** DELL 五单元作为兼容 blueprint 保留；随后才实现 Generic Cell Runtime、Answer Projector 和 Memo Compiler，并用 MU／NVDA 和新冻结异质案例证明泛化。
+
+本顺序下，S3 `RC-S3-043` 继续真实存在，但在 S1 只读审计和架构处置期间不自动签发新 live。S1 不充分主要解释报告覆盖、密度和证据桥不足；模型忽略已经可见事实仍由 S3 单独负责。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

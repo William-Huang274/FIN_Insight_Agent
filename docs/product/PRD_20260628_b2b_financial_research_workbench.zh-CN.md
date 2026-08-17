@@ -2709,3 +2709,38 @@ Evidence 和 NumericRelation 各自有日期，不代表模型可以自行把它
 NumericRelation 只授权它自己的同口径 current／comparison 比较；Evidence 日期本身不能授权跨对象同期。不同报告期的材料可作为明确标注的历史背景，但必须同时说明同期性未证明。无绑定的跨对象同期叙事属于金融事实 L1 硬失败，不得降级为写作分，也不得由 Harness 删除词语后 salvage。
 
 DELL dynamic R3 是自然反例：公司毛利率比较属于 Q1 FY2027／Q1 FY2026，服务器组合材料属于 Q3 FY2026，模型仍写成“同期”。该 attempt 保持 contract pass／L1 fail。provider-neutral TemporalAuthority 完成真实输出回放和 mutation 后，只允许一次同片段模型 repair；不得重跑规划、检索、数值、前序片段或增加 Evidence。
+
+### 16.38 通用研究内核、动态研究蓝图与多形态交付（2026-08-17）
+
+DELL 五单元证明了当前 Runtime 已能把 reviewed Evidence、NumericFact、方法、图上下文和 typed gap 组织为 Judgment、综合与内部报告，但它只是 `DELL AI infrastructure blueprint`，不能继续被当作所有公司、行业、Topic 和用户问题的固定目录。产品的稳定骨架应当是研究推理对象，而不是章节数量：Research Objective、Case／as-of、待判断命题、Evidence／NumericFact、Judgment、机制、反方与替代解释、跨命题依赖／冲突、material gap、What-Would-Change 和 lineage。
+
+在该稳定内核之上，产品后续应增加两层可变结构：
+
+1. `ResearchBlueprint` 根据用户问题、公司类型、行业方法、决策场景和资料状态选择 1–N 个 Research Cell，并保存选择理由、重要性、依赖、Evidence Need、完成／部分完成／不适用条件。DELL 当前五单元迁移为兼容蓝图，不删除历史 R7，也不晋升为通用模板。
+2. `DeliveryPlan` 把同一份已验收研究内核投影为短答、长答或正式研报。短答只展示直接结论、决定性证据、机制、关键保留和引用；长答可展开多个 Judgment 与综合；正式研报采用稳定外壳和动态正文模块。不同投影不得重新发明事实或产生互相冲突的核心判断。
+
+行业 Pack 只能提供候选模块、方法和指标，不得携带案例答案或强制固定目录。模型可以提出研究模块和叙事，Harness 负责身份、期间、来源、数字、依赖、权限、lineage 和确定性渲染，不代写研究判断。最终泛化验收按用户问题覆盖、证据质量、机制、反方、WWC 和决策价值评估，不按是否复制 DELL 五章评估。
+
+本项当前状态为 `product_decision_recorded／runtime_not_implemented`。在 S1 证据获取与 Pack 充分性产品门完成前，不进入 Generic Cell Runtime、Answer Projector 或 Memo Compiler 代码迁移；否则只会把不充分材料包装进更复杂结构。
+
+### 16.39 S1 必须形成“证据获取—反驳—补证—充分性验收”闭环（2026-08-17）
+
+此前 S1 已分别证明对象构建、BM25／dense／reranker 对照、请求编译、Source Intake、官方 PDF 入库和 reviewed Pack 同步，但这些局部结果不能共同推出“模型拿到了足以完成研究的材料”。当前最早产品缺口不是再换一个 Embedding 或再抓几篇网页，而是缺少一份 task-relative 的 Evidence Need、Evidence Coverage 和 Pack Readiness 合同：系统不能稳定说明某个研究命题已经有哪些直接证据、反方证据、数值桥、独立 read-through，仍缺什么，以及下一次检索为什么值得执行。
+
+S1 的正式产品链因此冻结为：
+
+`EvidenceRequest → QueryFacetPlan → 多路线候选 → capture／对象解析 → 排序与 Evidence Role → EvidenceDecision → EvidenceCoverageState → material residual gap／counter-hypothesis → 定向补证 → EvidencePackReadiness`
+
+产品要求如下：
+
+1. S3 负责提出研究命题、Evidence Need 和 material gap；S1 负责把请求转成可审计的证据响应，不负责生成最终研究结论。
+2. 模型可提出查询原子、替代解释、反方方向和第二轮补证需求；本地编译器继续绑定公司身份、截至日、期间、关系方向、来源类别、禁止代理、预算和停止条件。候选不得由模型自行晋升为 Evidence。
+3. 内源检索、SQL／NumericFact、官方来源和 broad external search 是并列路线。外源只补当前 Pack 的 material residual gap，不按网页数量或来源数量凑齐形式指标。
+4. 每个关键命题必须分别记录直接支持、限制／反方、替代解释、必要数值桥和 typed gap。相关事实存在但因果桥未建立，必须表达为 `causal_hypothesis_unresolved`，不能写成事实不存在。
+5. 补证循环每轮必须说明关闭了哪个 material gap、增加了什么新信息、是否改变 CoverageState；连续无实质增量时停止。成本、延迟和调用次数是约束，不是研究完整性的替代指标。
+6. Pack Ready 是相对于当前问题和交付深度的状态，而不是“该公司资料已全部找全”。允许 `ready_for_current_scope`、`partial_with_material_gaps`、`blocked_by_source_access`、`blocked_by_retrieval_quality` 和 `blocked_by_evidence_admission` 等明确结果。
+7. S1 验收不能只报 Recall、MRR、useful@10 或抓取成功率；必须同时报告候选覆盖上限、业务错因、来源权威与新鲜度、Evidence 晋升精度、反方覆盖、数值／因果桥覆盖、material gap 关闭率、外源边际信息增量和最终决策可用覆盖。
+
+该调整不把 R7 的错误全部归因于 S1。R7 错误否认模型已经看见的 AI revenue、orders 和 backlog，仍属于 S3 语义判断／真值对账缺陷；S1 资料不足主要解释报告议题覆盖、信息密度、利润桥、供应分配、估值和反方深度不足。两个 failure domain 必须分别修复和评分，不能互相代偿。
+
+下一步只允许文档与只读审计：先用 DELL／MU／NVDA 既有 request、candidate、Evidence、gap 和报告 artifacts 生成业务级 Evidence Acquisition 尸检与跨案 failure atlas，再决定 S1 最早责任层的实现包。完成 S1 Pack Readiness 产品门后，才恢复 16.38 的动态研究结构代码迁移与后续 S3 泛化。

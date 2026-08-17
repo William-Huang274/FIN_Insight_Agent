@@ -445,3 +445,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Counter 正确抽取 AI orders／backlog 两条 false absence，两个单元也都暴露 R7 真实使用本 cell 之外现金流事实；但 Operating 未命中特定 AI revenue alias，Counter 未命中 typed profit bridge，并有一个同 alias／polarity 重复导致 receipt 未物化。只读内存去重后仍保留 6 条 substantive finding，R3 不可 salvage。
 - 新的最早责任问题是：flat/grouped alias view 无法稳定区分相邻金融 facet，且当前 presence／absence／gap ontology 无法表达“相关事实存在，但某个因果解释仍未排除”。这不是网络、token、S1、S2 或源文本编码问题；一次显示乱码已证实只是 Python GBK stdout 诊断现象，不登记为产品根因。
 - R3 natural semantic extraction 正式拒绝；剩余三 cell、R7 repair／synthesis、DELL acceptance、泛化、S3 和发布继续 false。不得自动进入 R4/R5 Prompt 修补；下一步需要 Owner 在“拆分 proposition kind 与 alias resolution＋补 causal-hypothesis 语义”或“单独资格化 verifier／qualified-human gate”之间做项目级架构处置。
+
+## 2026-08-17 S1 Evidence Acquisition 与通用研究结构顺序更正
+
+- Owner 接受稳定 Research Kernel、动态 ResearchBlueprint 和短答／长答／正式研报 DeliveryPlan 的产品理解，但未授权代码迁移。
+- 新证据表明当前 S1 虽有对象、候选、排序 shadow、Source Intake、官方 PDF 和 reviewed Pack，却没有统一的 proposition-level EvidenceCoverageState、反驳／第二轮补证闭环或 task-relative EvidencePackReadiness；不能因若干部件可运行就宣称模型获得了充分材料。
+- 当前优先级改为文档和只读审计：用 DELL／MU／NVDA 既有 artifacts 生成 Evidence Acquisition 尸检与跨案 failure atlas，再按 source coverage、parser/object、query、ranking、Evidence Role／Gate、S2 numeric／bridge、dynamic loop 和 S3 consumption 分配最早责任层。
+- 该调整不改写 R7：AI revenue／orders／backlog 已对模型可见却被否认，仍属 S3；利润桥、供应分配／时点、估值、反方深度和资料面不足主要归 S1／S2。两个 failure domain 不得互相代偿。
+- 本轮只更新 PRD、S1 技术范式、当前计划、Project OS 与工作记录；0 code、model、Provider、network、retrieval、index、source promotion 或 live。S1 Pack Readiness 产品门通过前，不开始 Generic Cell Runtime／Answer Projector／Memo Compiler 实现。

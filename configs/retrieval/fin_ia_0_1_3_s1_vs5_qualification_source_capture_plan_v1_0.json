@@ -1,0 +1,96 @@
+{
+  "schema_version": "fin_ia_official_source_capture_plan_v1_0",
+  "status": "official_source_capture_plan",
+  "recorded_at": "2026-08-18",
+  "program_id": "FIN-0.1.3-S1-VS5-QUALIFICATION",
+  "qualification_preregistration_ref": "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json",
+  "policy": {
+    "capture_before_parse": true,
+    "https_only": true,
+    "credentials_forbidden": true,
+    "bounded_official_source_set": true,
+    "source_body_is_not_evidence_until_gate": true,
+    "runtime_labels_forbidden": true,
+    "broad_web_search_forbidden": true
+  },
+  "sources": [
+    {
+      "case_key": "COST",
+      "route_id": "COST_FY2024_10K",
+      "url": "https://www.sec.gov/Archives/edgar/data/909832/000090983224000049/cost-20240901.htm",
+      "allowed_hosts": ["www.sec.gov"],
+      "expected_content_types": ["text/html"],
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "timeout_seconds": 60,
+      "byte_ceiling": 12000000
+    },
+    {
+      "case_key": "COST",
+      "route_id": "COST_FY2025_10K",
+      "url": "https://www.sec.gov/Archives/edgar/data/909832/000090983225000101/cost-20250831.htm",
+      "allowed_hosts": ["www.sec.gov"],
+      "expected_content_types": ["text/html"],
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "timeout_seconds": 60,
+      "byte_ceiling": 12000000
+    },
+    {
+      "case_key": "JPM",
+      "route_id": "JPM_FY2025_10K",
+      "url": "https://www.sec.gov/Archives/edgar/data/19617/000162828026008131/jpm-20251231.htm",
+      "allowed_hosts": ["www.sec.gov"],
+      "expected_content_types": ["text/html"],
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "timeout_seconds": 90,
+      "byte_ceiling": 25000000
+    },
+    {
+      "case_key": "CAT",
+      "route_id": "CAT_FY2025_10K",
+      "url": "https://www.sec.gov/Archives/edgar/data/18230/000001823026000008/cat-20251231.htm",
+      "allowed_hosts": ["www.sec.gov"],
+      "expected_content_types": ["text/html"],
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "timeout_seconds": 60,
+      "byte_ceiling": 16000000
+    },
+    {
+      "case_key": "NVO",
+      "route_id": "NVO_FY2025_20F",
+      "url": "https://www.sec.gov/Archives/edgar/data/353278/000035327826000012/nvo-20251231.htm",
+      "allowed_hosts": ["www.sec.gov"],
+      "expected_content_types": ["text/html"],
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "timeout_seconds": 60,
+      "byte_ceiling": 16000000
+    },
+    {
+      "case_key": "SHEL",
+      "route_id": "SHEL_FY2025_20F",
+      "url": "https://www.sec.gov/Archives/edgar/data/1306965/000162828026017024/shel-20251231.htm",
+      "allowed_hosts": ["www.sec.gov"],
+      "expected_content_types": ["text/html"],
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "timeout_seconds": 90,
+      "byte_ceiling": 25000000
+    },
+    {
+      "case_key": "0700.HK",
+      "route_id": "TENCENT_FY2025_OFFICIAL_ANNUAL_REPORT",
+      "url": "https://static.www.tencent.com/uploads/2026/04/09/62d786fcf3d3c8cb7e54791ee95439ac.pdf",
+      "allowed_hosts": ["static.www.tencent.com"],
+      "expected_content_types": ["application/pdf"],
+      "transport": "curl",
+      "max_transport_retries": 1,
+      "retry_total_seconds": 120,
+      "timeout_seconds": 90,
+      "byte_ceiling": 60000000
+    }
+  ]
+}

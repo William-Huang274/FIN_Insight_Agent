@@ -15,6 +15,7 @@ import requests
 
 
 CAPTURE_SCHEMA_VERSION = "fin_ia_official_source_capture_v1_0"
+CAPTURE_PLAN_GENERIC_SCHEMA_VERSION = "fin_ia_official_source_capture_plan_v1_0"
 CAPTURE_PLAN_SCHEMA_VERSION = "fin_ia_s1b_official_source_capture_plan_v1_0"
 CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION = (
     "fin_ia_s1d_official_source_capture_plan_v1_1"
@@ -62,20 +63,18 @@ def validate_capture_plan(payload: Mapping[str, Any]) -> dict[str, Any]:
     value = dict(payload)
     schema_version = str(value.get("schema_version") or "")
     if schema_version not in {
+        CAPTURE_PLAN_GENERIC_SCHEMA_VERSION,
         CAPTURE_PLAN_SCHEMA_VERSION,
         CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION,
         CAPTURE_PLAN_BROWSER_SCHEMA_VERSION,
     }:
         raise OfficialSourceCaptureError("official_capture_plan_schema_invalid")
-    expected_status = (
-        "s1d_official_source_capture_plan"
-        if schema_version
-        in {
-            CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION,
-            CAPTURE_PLAN_BROWSER_SCHEMA_VERSION,
-        }
-        else "s1b_official_source_capture_plan"
-    )
+    expected_status = {
+        CAPTURE_PLAN_GENERIC_SCHEMA_VERSION: "official_source_capture_plan",
+        CAPTURE_PLAN_SCHEMA_VERSION: "s1b_official_source_capture_plan",
+        CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION: "s1d_official_source_capture_plan",
+        CAPTURE_PLAN_BROWSER_SCHEMA_VERSION: "s1d_official_source_capture_plan",
+    }[schema_version]
     if value.get("status") != expected_status:
         raise OfficialSourceCaptureError("official_capture_plan_status_invalid")
     policy = value.get("policy")
@@ -113,18 +112,7 @@ def validate_capture_plan(payload: Mapping[str, Any]) -> dict[str, Any]:
             and int(source.get("byte_ceiling") or 0) > 0
             and int(source.get("timeout_seconds") or 0) > 0
             and transport
-            in (
-                {
-                    "requests",
-                    "curl",
-                    "playwright_api_request",
-                    "playwright_browser_download",
-                }
-                if schema_version == CAPTURE_PLAN_BROWSER_SCHEMA_VERSION
-                else {"requests", "curl", "playwright_api_request"}
-                if schema_version == CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION
-                else {"requests", "curl"}
-            )
+            in _allowed_transports(schema_version)
             and 0 <= int(source.get("max_transport_retries") or 0) <= 2
         ):
             raise OfficialSourceCaptureError("official_capture_source_invalid")
@@ -175,24 +163,30 @@ def capture_plan(
                 transport_fetchers=transport_fetchers or {},
             )
         )
-    successor = (
-        validated["schema_version"]
-        in {
-            CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION,
-            CAPTURE_PLAN_BROWSER_SCHEMA_VERSION,
-        }
-    )
+    schema_version = str(validated["schema_version"])
+    successor = schema_version in {
+        CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION,
+        CAPTURE_PLAN_BROWSER_SCHEMA_VERSION,
+    }
+    generic = schema_version == CAPTURE_PLAN_GENERIC_SCHEMA_VERSION
     result_prefix = "s1d" if successor else "s1b"
     result = {
         "schema_version": (
+            "fin_ia_official_source_capture_result_v1_0"
+            if generic
+            else
             "fin_ia_s1d_official_source_capture_result_v1_2"
-            if validated["schema_version"] == CAPTURE_PLAN_BROWSER_SCHEMA_VERSION
+            if schema_version == CAPTURE_PLAN_BROWSER_SCHEMA_VERSION
             else "fin_ia_s1d_official_source_capture_result_v1_1"
             if successor
             else "fin_ia_s1b_official_source_capture_result_v1_0"
         ),
         "status": (
-            f"{result_prefix}_official_sources_captured"
+            "official_sources_captured"
+            if generic and all(row["status"] == "captured" for row in rows)
+            else "official_source_capture_incomplete"
+            if generic
+            else f"{result_prefix}_official_sources_captured"
             if all(row["status"] == "captured" for row in rows)
             else f"{result_prefix}_official_source_capture_incomplete"
         ),
@@ -211,6 +205,22 @@ def capture_plan(
     }
     _persist_result(root / "result.json", result)
     return result
+
+
+def _allowed_transports(schema_version: str) -> set[str]:
+    if schema_version in {
+        CAPTURE_PLAN_GENERIC_SCHEMA_VERSION,
+        CAPTURE_PLAN_BROWSER_SCHEMA_VERSION,
+    }:
+        return {
+            "requests",
+            "curl",
+            "playwright_api_request",
+            "playwright_browser_download",
+        }
+    if schema_version == CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION:
+        return {"requests", "curl", "playwright_api_request"}
+    return {"requests", "curl"}
 
 
 def _capture_source(
@@ -782,6 +792,7 @@ def _persist_result(path: Path, payload: Mapping[str, Any]) -> None:
 
 
 __all__ = [
+    "CAPTURE_PLAN_GENERIC_SCHEMA_VERSION",
     "CAPTURE_PLAN_SCHEMA_VERSION",
     "CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION",
     "CAPTURE_PLAN_BROWSER_SCHEMA_VERSION",

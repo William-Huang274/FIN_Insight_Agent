@@ -138,6 +138,67 @@ def _successor_plan() -> dict[str, object]:
     return plan
 
 
+def _generic_plan() -> dict[str, object]:
+    plan = _plan()
+    plan["schema_version"] = "fin_ia_official_source_capture_plan_v1_0"
+    plan["status"] = "official_source_capture_plan"
+    return plan
+
+
+def test_generic_capture_plan_reuses_one_capture_first_engine(
+    tmp_path: Path,
+) -> None:
+    result = capture_plan(
+        _generic_plan(),
+        output_root=tmp_path,
+        attempt_id="generic-r1",
+        session=_FakeSession(),
+    )
+
+    assert result["schema_version"] == "fin_ia_official_source_capture_result_v1_0"
+    assert result["status"] == "official_sources_captured"
+    assert result["model_calls"] == 0
+
+
+def test_vs5_qualification_capture_plan_matches_preregistered_targets() -> None:
+    plan = validate_capture_plan(
+        json.loads(
+            (
+                ROOT
+                / "configs"
+                / "retrieval"
+                / "fin_ia_0_1_3_s1_vs5_qualification_source_capture_plan_v1_0.json"
+            ).read_text(encoding="utf-8")
+        )
+    )
+    preregistration = json.loads(
+        (
+            ROOT
+            / "eval_sets"
+            / "fin_0_1_3_s1"
+            / "qualification_preregistration_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    expected = {
+        target["target_id"]
+        for case in preregistration["cases"]
+        for target in case["source_targets"]
+    }
+
+    assert {row["route_id"] for row in plan["sources"]} == expected
+    assert all(
+        int(row["max_transport_retries"]) + 1
+        <= next(
+            target["max_network_attempts"]
+            for case in preregistration["cases"]
+            for target in case["source_targets"]
+            if target["target_id"] == row["route_id"]
+        )
+        for row in plan["sources"]
+    )
+    assert plan["policy"]["runtime_labels_forbidden"] is True
+
+
 def test_playwright_successor_is_capture_first_with_injected_zero_network_fetcher(
     tmp_path: Path,
 ) -> None:

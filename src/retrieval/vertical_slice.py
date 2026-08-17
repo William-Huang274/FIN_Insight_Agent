@@ -13,10 +13,12 @@ from retrieval.artifact_spine import (
     build_artifact_envelope,
     canonical_json_digest,
     validate_artifact_chain,
+    validate_inline_payload_refs,
 )
 
 
 VS1_RESULT_SCHEMA_VERSION = "fin_ia_s1_vs1_vertical_slice_result_v1_0"
+VS1_RESULT_RESOURCE_ID = "application.result.current_s1_vs1_vertical_slice"
 VS1_DECISION_LEDGER_SCHEMA_VERSION = (
     "fin_ia_s1_candidate_decision_ledger_v1_0"
 )
@@ -709,7 +711,7 @@ def build_vs1_artifact_chain(
         producer_id="s1_candidate_decision_ledger",
         payload_schema_version=VS1_DECISION_LEDGER_SCHEMA_VERSION,
         payload_ref=f"{inline_payload_ref_prefix}/candidate_decision_ledger",
-        payload_sha256=str(decision_ledger["candidate_decision_ledger_digest"]),
+        payload_sha256=canonical_json_digest(decision_ledger),
         lifecycle_state="materialized",
         scope=case_scope,
         parent_refs=(ranking.as_ref("consumes"),),
@@ -720,7 +722,7 @@ def build_vs1_artifact_chain(
         producer_id="s1_evidence_coverage_compiler",
         payload_schema_version=VS1_COVERAGE_SCHEMA_VERSION,
         payload_ref=f"{inline_payload_ref_prefix}/evidence_coverage_state",
-        payload_sha256=str(coverage["coverage_state_digest"]),
+        payload_sha256=canonical_json_digest(coverage),
         lifecycle_state="materialized",
         scope=case_scope,
         parent_refs=(
@@ -734,7 +736,7 @@ def build_vs1_artifact_chain(
         producer_id="s1_evidence_pack_readiness_compiler",
         payload_schema_version=VS1_READINESS_SCHEMA_VERSION,
         payload_ref=f"{inline_payload_ref_prefix}/evidence_pack_readiness",
-        payload_sha256=str(readiness["readiness_digest"]),
+        payload_sha256=canonical_json_digest(readiness),
         lifecycle_state="materialized",
         scope=case_scope,
         parent_refs=(coverage_envelope.as_ref("derived_from"),),
@@ -745,7 +747,7 @@ def build_vs1_artifact_chain(
         producer_id="research_workbench_vs1_projection",
         payload_schema_version=VS1_WORKBENCH_SCHEMA_VERSION,
         payload_ref=f"{inline_payload_ref_prefix}/workbench_projection",
-        payload_sha256=str(workbench_projection["workbench_projection_digest"]),
+        payload_sha256=canonical_json_digest(workbench_projection),
         lifecycle_state="materialized",
         scope=case_scope,
         parent_refs=(readiness_envelope.as_ref("projects"),),
@@ -756,7 +758,7 @@ def build_vs1_artifact_chain(
         producer_id="vs1_frozen_consumer_probe",
         payload_schema_version="fin_ia_s1_frozen_consumer_probe_v1_0",
         payload_ref=f"{inline_payload_ref_prefix}/frozen_consumer_probe",
-        payload_sha256=str(frozen_consumer_probe["frozen_consumer_probe_digest"]),
+        payload_sha256=canonical_json_digest(frozen_consumer_probe),
         lifecycle_state="materialized",
         scope=case_scope,
         parent_refs=(readiness_envelope.as_ref("consumes"),),
@@ -871,6 +873,11 @@ def load_s1_vs1_vertical_slice_result(
         "vs1_result_artifact_coverage_missing",
     )
     validate_artifact_chain(envelopes, policy)
+    validate_inline_payload_refs(
+        value,
+        envelopes,
+        resource_id=VS1_RESULT_RESOURCE_ID,
+    )
     cases = value.get("cases")
     _require(isinstance(cases, Mapping) and set(cases) == {"DELL"}, "vs1_result_case_scope_invalid")
     case = _mapping(cases["DELL"], "vs1_result_case_invalid")
@@ -914,6 +921,7 @@ __all__ = [
     "VS1_DECISION_LEDGER_SCHEMA_VERSION",
     "VS1_READINESS_SCHEMA_VERSION",
     "VS1_RESULT_SCHEMA_VERSION",
+    "VS1_RESULT_RESOURCE_ID",
     "VS1_WORKBENCH_SCHEMA_VERSION",
     "build_vs1_artifact_chain",
     "compile_candidate_decision_ledger",

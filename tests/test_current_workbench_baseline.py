@@ -80,6 +80,13 @@ def test_operations_surface_reads_version_neutral_store_and_runtime(tmp_path: Pa
     evals = client.get("/api/operations/evals")
     assert evals.status_code == 200
     assert isinstance(evals.json()["evals"], list)
+    document_quality = client.get("/api/operations/s1/complex-document-quality")
+    assert document_quality.status_code == 200
+    quality_payload = document_quality.json()
+    assert quality_payload["product_case_enrollment"] is False
+    assert quality_payload["document_quality"]["table_region_count"] == 5
+    assert quality_payload["financial_objects"]["cross_page_relation_count"] == 1
+    assert quality_payload["coverage_summary"]["true_public_information_gap_count"] == 0
 
 
 def test_operations_runs_real_smoke_and_current_baseline_eval(tmp_path: Path) -> None:

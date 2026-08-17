@@ -61,7 +61,8 @@
         "NVDA",
         "ORCL",
         "ASML",
-        "ANET"
+        "ANET",
+        "IFX.DE"
       ],
       "configuration_frozen_before_execution": false
     },
@@ -124,6 +125,24 @@
         "visibility": "evaluator_only"
       },
       "example_count": 8
+    },
+    {
+      "catalog_id": "s1-vs2-complex-pdf-train-internal-v1.0",
+      "split": "train_internal",
+      "status": "active",
+      "input_asset": {
+        "ref": "eval_sets/fin_0_1_3_s1/inputs/train_internal/vs2_complex_pdf_inputs_v1_0.jsonl",
+        "sha256": "e9cd663c5ab7cfe4744ec43a58ca8361646de64535a30791b7c7b1a25ba75af6",
+        "role": "runtime_input",
+        "visibility": "runtime_visible"
+      },
+      "reference_asset": {
+        "ref": "eval_sets/fin_0_1_3_s1/references/train_internal/vs2_complex_pdf_references_v1_0.jsonl",
+        "sha256": "56abb32dc92b05ed4393c31b29598435033b7fa1d11a5d3598a48746aebfd95f",
+        "role": "evaluator_reference",
+        "visibility": "evaluator_only"
+      },
+      "example_count": 1
     },
     {
       "catalog_id": "s1-valid-temporal-reserved-v1.0",

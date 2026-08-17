@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
 import time
 from typing import Any, Callable
@@ -42,9 +43,13 @@ from sec_agent.workbench.store import (
     TraceInspectionReport,
     WorkbenchStore,
 )
+from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
 
 ACTIVE_BASELINE_EVAL_ID = "active_baseline_import_graph"
+CURRENT_S1_VS2_COMPLEX_PDF_RESOURCE_ID = (
+    "application.result.current_s1_vs2_complex_pdf_vertical"
+)
 
 
 class ImportEnvRequest(BaseModel):
@@ -135,6 +140,23 @@ def build_operations_router(
     @router.get("/status", operation_id="getOperationsStatus")
     def get_status() -> dict[str, Any]:
         return system_status()
+
+    @router.get(
+        "/s1/complex-document-quality",
+        operation_id="getS1ComplexDocumentQuality",
+    )
+    def get_s1_complex_document_quality() -> dict[str, Any]:
+        result = read_registered_runtime_json(
+            root, CURRENT_S1_VS2_COMPLEX_PDF_RESOURCE_ID
+        )
+        evaluation = result.get("evaluation") or {}
+        projection = evaluation.get("workbench_projection") or {}
+        return {
+            **dict(projection),
+            "result_digest": result.get("result_digest"),
+            "stage_acceptance": deepcopy(result.get("stage_acceptance") or {}),
+            "business_result": deepcopy(result.get("business_result") or {}),
+        }
 
     @router.post("/profiles/import-env")
     def import_env(payload: ImportEnvRequest) -> WorkbenchProfile:

@@ -37,6 +37,7 @@ _ROLE_BY_SOURCE_TYPE = {
     "20-F": "issuer_disclosure",
     "40-F": "issuer_disclosure",
     "6-K": "issuer_disclosure",
+    "ANNUAL_REPORT": "issuer_disclosure",
     "MARKET_SNAPSHOT": "point_in_time_market",
 }
 

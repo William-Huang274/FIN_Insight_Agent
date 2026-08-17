@@ -32,6 +32,7 @@ from retrieval.artifact_spine import (  # noqa: E402
 )
 from retrieval.vertical_slice import (  # noqa: E402
     VS1_RESULT_SCHEMA_VERSION,
+    VS1_RESULT_RESOURCE_ID,
     build_vs1_artifact_chain,
     compile_candidate_decision_ledger,
     compile_evidence_coverage_state,
@@ -46,7 +47,7 @@ from sec_agent.runtime_resource_registry import (  # noqa: E402
 )
 
 
-CURRENT_VS1_RESOURCE_ID = "application.result.current_s1_vs1_vertical_slice"
+CURRENT_VS1_RESOURCE_ID = VS1_RESULT_RESOURCE_ID
 CURRENT_PACK_RESOURCE_ID = "application.result.current_research_local_evidence_packs"
 CURRENT_SNAPSHOT_RESOURCE_ID = "application.result.current_research_retrieval_snapshot"
 CURRENT_SPINE_POLICY_REF = (
@@ -62,7 +63,7 @@ CURRENT_REQUEST_REF = (
     "configs/retrieval/fin_ia_0_1_3_s1_vs1_dell_pricing_mix_request_v1_0.json"
 )
 DEFAULT_OUTPUT_REF = (
-    "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json"
+    "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json"
 )
 RECORDED_AT = "2026-08-17"
 
@@ -149,6 +150,97 @@ def _pack_artifact(result: Mapping[str, Any], case_key: str) -> dict[str, Any]:
     if not isinstance(raw, Mapping):
         raise ValueError("vs1_pack_artifact_missing")
     return deepcopy(dict(raw))
+
+
+def _inline_payloads(
+    *,
+    source_manifest: Mapping[str, Any],
+    object_store_result: Mapping[str, Any],
+    request_result: Mapping[str, Any],
+    source_bindings: Mapping[str, Mapping[str, Any]],
+    ledger: Mapping[str, Any],
+    coverage: Mapping[str, Any],
+    readiness: Mapping[str, Any],
+    workbench: Mapping[str, Any],
+    frozen_probe: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Materialize every result-local payload asserted by an envelope."""
+
+    results = {
+        str(row.get("source_id") or ""): row
+        for row in object_store_result.get("source_results") or ()
+    }
+    source_routes: dict[str, Any] = {}
+    parsed_receipts: dict[str, Any] = {}
+    financial_objects: dict[str, Any] = {}
+    for source in source_manifest.get("sources") or ():
+        source_id = str(source.get("source_id") or "")
+        result = results[source_id]
+        source_routes[source_id] = {
+            "source_id": source_id,
+            "input_kind": source.get("input_kind"),
+            "source_url": source.get("source_url"),
+            "route_id": source.get("route_id"),
+            "expected_sha256": source.get("expected_sha256"),
+            "required": source.get("required"),
+        }
+        if str(source_bindings[source_id]["parsed_ref"]).startswith(
+            f"{CURRENT_VS1_RESOURCE_ID}#"
+        ):
+            parsed_receipts[source_id] = {
+                "source_id": source_id,
+                "input_kind": source.get("input_kind"),
+                "source_sha256": result.get("source_sha256"),
+                "document_parents_added": result.get("document_parents_added"),
+                "invalid_records_excluded": result.get("invalid_records_excluded"),
+            }
+        financial_objects[source_id] = {
+            "source_id": source_id,
+            "document_parents_added": result.get("document_parents_added"),
+            "retrieval_children_added": result.get("retrieval_children_added"),
+            "invalid_records_excluded": result.get("invalid_records_excluded"),
+            "source_sha256": result.get("source_sha256"),
+        }
+
+    candidate_ids: list[str] = []
+    seen: set[str] = set()
+    for lane in request_result.get("lanes") or ():
+        for candidate in lane.get("candidates") or ():
+            source_record_id = str(candidate.get("source_record_id") or "")
+            if source_record_id and source_record_id not in seen:
+                seen.add(source_record_id)
+                candidate_ids.append(source_record_id)
+
+    return {
+        "source_routes": source_routes,
+        "parsed_receipts": parsed_receipts,
+        "financial_objects": financial_objects,
+        "evidence_request": deepcopy(request_result["request"]),
+        "query_facet_plan": deepcopy(request_result["query_plan"]),
+        "candidate_set": {
+            "candidate_state": "candidate_not_evidence",
+            "request_id": request_result["request"].get("request_id"),
+            "source_record_ids": candidate_ids,
+        },
+        "candidate_ranking": {
+            "ranking_contract": "current_typed_financial_candidate_order",
+            "candidate_state": "candidate_not_evidence",
+            "rows": [
+                {
+                    "rank": row["rank"],
+                    "source_record_id": row["source_record_id"],
+                    "score": row.get("score"),
+                }
+                for row in ledger.get("decisions") or ()
+            ],
+        },
+        "candidate_decision_ledger": deepcopy(dict(ledger)),
+        "evidence_coverage_state": deepcopy(dict(coverage)),
+        "evidence_pack_readiness": deepcopy(dict(readiness)),
+        "workbench_projection": deepcopy(dict(workbench)),
+        "frozen_consumer_probe": deepcopy(dict(frozen_probe)),
+        "source_payload_bindings": deepcopy(dict(source_bindings)),
+    }
 
 
 def compile_result() -> dict[str, Any]:
@@ -316,23 +408,17 @@ def compile_result() -> dict[str, Any]:
             "new_evidence_promotions": 0,
             "capture_bound_reviewed_promotion_replayed": True,
         },
-        "payloads": {
-            "evidence_request": request_result["request"],
-            "query_facet_plan": request_result["query_plan"],
-            "candidate_set": {
-                "request_id": request_result["request"]["request_id"],
-                "candidate_count": ledger["candidate_count"],
-            },
-            "candidate_ranking": [
-                {
-                    "source_record_id": row["source_record_id"],
-                    "rank": row["rank"],
-                    "score": row["score"],
-                }
-                for row in ledger["decisions"]
-            ],
-            "source_payload_bindings": source_bindings,
-        },
+        "payloads": _inline_payloads(
+            source_manifest=source_manifest,
+            object_store_result=object_store_result,
+            request_result=request_result,
+            source_bindings=source_bindings,
+            ledger=ledger,
+            coverage=coverage,
+            readiness=readiness,
+            workbench=workbench,
+            frozen_probe=frozen_probe,
+        ),
         "cases": {"DELL": case_payload},
         "envelopes": [row.model_dump(mode="json") for row in envelopes],
         "stage_acceptance": {
@@ -371,7 +457,7 @@ def _update_runtime_registry(result_path: Path) -> None:
     registry_path = _resolve(DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF)
     registry = _read_json(registry_path)
     registry["registry_id"] = (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R14"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R16"
     )
     result_bytes = result_path.read_bytes()
     result_row = {

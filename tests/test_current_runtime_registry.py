@@ -25,7 +25,7 @@ def test_current_registry_is_exactly_the_current_product_resources() -> None:
     registry = load_runtime_resource_registry(ROOT)
 
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R14"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R16"
     )
     assert [row.repo_relative_path for row in registry.resources] == [
         "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json",
@@ -39,7 +39,8 @@ def test_current_registry_is_exactly_the_current_product_resources() -> None:
         "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
         "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
         "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json",
-        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
         "configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json",
     ]
     assert all("archive/" not in row.repo_relative_path for row in registry.resources)
@@ -87,7 +88,8 @@ def _copy_registry_fixture(tmp_path: Path) -> Path:
         Path("configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json"),
         Path("configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"),
         Path("configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json"),
-        Path("configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json"),
+        Path("configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json"),
+        Path("configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"),
     ]
     for relative in paths:
         target = fixture_root / relative

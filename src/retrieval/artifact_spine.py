@@ -497,6 +497,51 @@ def validate_artifact_chain(
         walk(artifact_id)
 
 
+def validate_inline_payload_refs(
+    result: Mapping[str, Any],
+    envelopes: Sequence[ArtifactEnvelope],
+    *,
+    resource_id: str,
+) -> None:
+    """Require every result-local envelope ref to resolve and match its digest.
+
+    A lineage graph can be structurally valid while an inline ``payload_ref``
+    points at a JSON path that was never materialized. That produces an
+    apparently complete Workbench projection but leaves no auditable payload
+    for replay or a successor. External file references remain the owning
+    adapter's responsibility; this check is intentionally scoped to one result.
+    """
+
+    prefix = f"{resource_id}#"
+    for envelope in envelopes:
+        if not envelope.payload_ref.startswith(prefix):
+            continue
+        pointer = envelope.payload_ref[len(prefix) :]
+        if not pointer.startswith("/"):
+            raise ArtifactSpineError("artifact_inline_payload_pointer_invalid")
+        current: Any = result
+        for raw_part in pointer[1:].split("/"):
+            part = raw_part.replace("~1", "/").replace("~0", "~")
+            if isinstance(current, Mapping) and part in current:
+                current = current[part]
+                continue
+            if isinstance(current, Sequence) and not isinstance(
+                current, (str, bytes, bytearray)
+            ):
+                try:
+                    current = current[int(part)]
+                    continue
+                except (ValueError, IndexError):
+                    pass
+            raise ArtifactSpineError(
+                f"artifact_inline_payload_missing:{envelope.artifact_type}"
+            )
+        if canonical_json_digest(current) != envelope.payload_sha256:
+            raise ArtifactSpineError(
+                f"artifact_inline_payload_digest_mismatch:{envelope.artifact_type}"
+            )
+
+
 def validate_coverage_matrix(
     *,
     repo_root: Path,
@@ -558,5 +603,6 @@ __all__ = [
     "load_implementation_coverage_matrix",
     "sha256_file",
     "validate_artifact_chain",
+    "validate_inline_payload_refs",
     "validate_coverage_matrix",
 ]

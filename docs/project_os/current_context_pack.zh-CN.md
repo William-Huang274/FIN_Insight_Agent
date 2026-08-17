@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 只作为责任坐标，实际按共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice 交付。程序基础与 VS1 当前数字原生 DELL pricing/mix 纵切现已进入 R14 Runtime 和 Workbench：55 个 envelopes，6 个候选中 2 accepted／4 needs-review，2 条既有 reviewed Evidence 未召回，3 个 gap 因 official／external supplement 未执行而禁止写成公开资料不存在；状态只记 `vertical_slice_integrated`。VS2 OCR／复杂表格、VS3 多路线排序资格、VS4 第二轮补证、VS5 隐藏留出与稳定资格仍开放。DELL fixed-Pack 第一层、`value_capture` 动态单单元、reviewed source 同步和有限 S2 回归仍保持已关闭；R7 仍是 `report contract pass / financial truth reconciliation fail`，RC-S3-043 也保持开放。当前下一步是 VS2，不运行用于产品资格的完整真实链，也不以 VS1 或任何局部 case／node live 追认 S1。
+Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 只作为责任坐标，实际按共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice 交付。VS1 与 VS2 现已进入 R16 Runtime 和 Workbench：VS1 的 DELL pricing/mix 仍为 2 accepted／4 needs-review／2 reviewed-not-recalled；VS2 的 IFX 复杂官方年报形成 67 个 page／table／row／footnote／cross-page 对象，但 4 个 reviewed 目标只有重述上下文进入前 20，另外 3 个对象存在却未被召回。R16 successor 补上全部 result-local payload ref 的真实解引用与完整 digest 门；旧 R14／R15 保持不可变。自然扫描、NumericFact、VS3 多路线排序资格、VS4 第二轮补证、VS5 隐藏留出与稳定资格仍开放。DELL fixed-Pack 第一层、`value_capture` 动态单单元、reviewed source 同步和有限 S2 回归仍保持已关闭；R7 仍是 `report contract pass / financial truth reconciliation fail`，RC-S3-043 也保持开放。当前下一步是 VS3，不运行用于产品资格的完整真实链，也不以 VS1／VS2 或任何局部 case／node live 追认 S1。
 
 ## 当前唯一产品边界
 
@@ -506,3 +506,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Evidence Pack、Retrieval API、Workspace Evidence API 与前端证据／检索页消费同一 `workbench_projection_digest` 和 Pack binding。桌面／移动 Playwright E2E 均通过，移动端机器状态与三列拥挤在同切片修成中文业务状态和两列布局。
 - 六门结果：局部／mutation、相邻 API、真实纵切、业务影响、MU／NVDA 非回归、Runtime 迁移／回退均通过。0 网络、0 模型、0 新 Evidence 晋升、0 index rebuild；前序 Pack 与索引不可变，可通过回退 R14 两项 Registry pointer 恢复。
 - 当前状态更新为 `VS1_vertical_slice_integrated / S1_qualification_false / full_product_chain_blocked`。VS1 暴露而非关闭排序与覆盖问题；下一责任切片是 VS2 扫描 PDF／OCR／复杂表格，随后才是 VS3 排序、VS4 补证和 VS5 资格。
+
+## 2026-08-17 S1 VS2 复杂文档纵切与 R16 lineage successor
+
+- VS2 使用 IFX 2025 官方年报作为 `train_internal` 复杂文档开发样本，不把 IFX 纳入当前产品 case，也不把已经观察的资料登记为隐藏泛化集。inputs 与 evaluator-only references 物理分离；评测程序现允许一个 active split 存在多个独立 catalog。
+- native layout 路径审核 192 页并选择第 164／166／167 页，保留 5 个复杂表区、56 个 metric-row、1 个脚注、1 个重述上下文和 1 个真实跨页 relation，共 67 个带 page／bbox／table locator 的候选金融对象。官方页 rasterized OCR mutation 保留全部预注册 material anchors；它只证明 OCR mutation 工程路径，`real_scanned_source_qualified=false`。
+- 当前查询／排序前 20 只召回并接受 4 个 reviewed target 中的重述上下文；Segment Result total row、脚注和跨页续表均在对象库中但未进入窗口。决策为 1 accepted／19 needs-review／3 reviewed-not-recalled。业务结论是 parser/object 已保住资料，最早未闭合层转到 VS3 ranking／parent expansion／finance-aware Evidence Role；VS2 不继续逐表补丁。
+- 所有解析和 OCR 输出继续是 candidate，不是 Evidence 或 NumericFact。S2 sibling 明确为 `candidate_rows_bound_numeric_adjudication_pending`，禁止将 `2,560`、`3,105` 等表格值直接写入权威事实。
+- 回归发现 R14 VS1 若干 envelope 的本地 `payload_ref` 指向未实际物化路径；UI 因读取 case／evaluation sibling 仍可展示，旧测试没有捕获。旧 R14 和首次 VS2 R15 保持不可变；R16 successor 为 VS1／VS2 全部 result-local refs 增加 JSON Pointer 可解引用和完整 payload digest 门，并重新物化当前 v1.1 结果。该修复不改变 VS1／VS2 业务判断。
+- 当前状态为 `VS1_and_VS2_vertical_slice_integrated / VS3_next / S1_qualification_false / full_product_chain_blocked`。下一步在同一 CandidateSet 上完成 multi-route recall、semantic rerank、parent expansion 和 finance-aware Evidence evaluator；不自动进入 S3 或完整产品链。

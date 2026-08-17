@@ -21,6 +21,13 @@ dependencies = [
   "uvicorn[standard]>=0.30.0",
 ]
 
+[project.optional-dependencies]
+complex-pdf = [
+  "pdfplumber>=0.11.9",
+  "pypdfium2>=5.7.1",
+  "rapidocr-onnxruntime>=1.4.4",
+]
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 

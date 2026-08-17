@@ -44,6 +44,50 @@ export type EvalCatalogItem = {
   runner?: string;
 };
 
+export type ComplexDocumentQuality = {
+  schema_version: string;
+  status: string;
+  display_scope: string;
+  product_case_enrollment: boolean;
+  source: {
+    ticker: string;
+    issuer_name: string;
+    document_type: string;
+    title: string;
+    publication_date: string;
+    page_count: number;
+    selected_page_numbers: number[];
+  };
+  document_quality: {
+    status: string;
+    complete_document_page_count_verified: boolean;
+    extraction_modes: Record<string, number>;
+    page_statuses: Record<string, number>;
+    table_region_count: number;
+    footnote_count: number;
+    low_confidence_material_token_count: number;
+    forced_ocr_pages: number[];
+  };
+  financial_objects: {
+    object_count: number;
+    object_type_counts: Record<string, number>;
+    cross_page_relation_count: number;
+    numeric_fact_authority_granted: boolean;
+  };
+  candidate_decision_summary: Record<string, number>;
+  coverage_summary: {
+    coverage_state: string;
+    accepted_evidence_count: number;
+    reviewed_not_recalled_count: number;
+    typed_boundary_count: number;
+    true_public_information_gap_count: number;
+  };
+  hard_boundaries: Record<string, boolean>;
+  stage_acceptance: Record<string, boolean>;
+  business_result: Record<string, boolean | string>;
+  result_digest: string;
+};
+
 export type SourceIntakeRoute = {
   route_id: string;
   case_key: string;
@@ -106,6 +150,12 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 export class OperationsApiClient {
   status(): Promise<SystemStatus> {
     return requestJson<SystemStatus>("/api/operations/status");
+  }
+
+  complexDocumentQuality(): Promise<ComplexDocumentQuality> {
+    return requestJson<ComplexDocumentQuality>(
+      "/api/operations/s1/complex-document-quality",
+    );
   }
 
   profiles(): Promise<StoredProfile[]> {

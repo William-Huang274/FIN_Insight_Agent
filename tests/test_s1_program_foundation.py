@@ -190,9 +190,9 @@ def test_eval_program_keeps_inputs_and_labels_physically_separate() -> None:
     result = validate_evaluation_program(repo_root=ROOT, manifest=manifest)
 
     assert result == {
-        "active_catalog_count": 1,
+        "active_catalog_count": 2,
         "reserved_catalog_count": 3,
-        "example_count": 8,
+        "example_count": 9,
         "qualification_ready": False,
     }
     train = next(row for row in manifest.catalogs if row.split == "train_internal")

@@ -1,0 +1,3619 @@
+{
+  "schema_version": "fin_ia_s1_vs1_vertical_slice_result_v1_0",
+  "status": "vs1_current_digital_native_vertical_integrated",
+  "recorded_at": "2026-08-17",
+  "slice_id": "FIN-0.1.3-S1-VS1-DELL-PRICING-MIX-V1.0",
+  "scope": {
+    "case_keys": [
+      "DELL"
+    ],
+    "source_shapes": [
+      "official_sec_html",
+      "official_hosted_text_pdf_transcript",
+      "legacy_immutable_financial_objects",
+      "point_in_time_market_snapshot"
+    ],
+    "network_calls": 0,
+    "model_calls": 0,
+    "index_rebuilds": 0,
+    "new_evidence_promotions": 0,
+    "capture_bound_reviewed_promotion_replayed": true
+  },
+  "payloads": {
+    "source_routes": {
+      "historical_sec_semantic_children": {
+        "source_id": "historical_sec_semantic_children",
+        "input_kind": "legacy_candidate_jsonl",
+        "source_url": null,
+        "route_id": null,
+        "expected_sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9",
+        "required": true
+      },
+      "dell_fy2026_10k_raw_capture": {
+        "source_id": "dell_fy2026_10k_raw_capture",
+        "input_kind": "raw_sec_html_capture",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm",
+        "route_id": null,
+        "expected_sha256": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+        "required": true
+      },
+      "dell_q1_fy2027_official_transcript_parsed_document": {
+        "source_id": "dell_q1_fy2027_official_transcript_parsed_document",
+        "input_kind": "parsed_official_pdf_document",
+        "source_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+        "route_id": "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT",
+        "expected_sha256": "479a76f55d907e394441571af89ddd4ada41eb7ee9a0b7e52da798e0d3a76324",
+        "required": true
+      },
+      "mu_q3_fy2026_earnings_release_raw_capture": {
+        "source_id": "mu_q3_fy2026_earnings_release_raw_capture",
+        "input_kind": "raw_sec_html_capture",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+        "route_id": null,
+        "expected_sha256": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+        "required": true
+      },
+      "mu_q3_fy2026_10q_raw_capture": {
+        "source_id": "mu_q3_fy2026_10q_raw_capture",
+        "input_kind": "raw_sec_html_capture",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+        "route_id": null,
+        "expected_sha256": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+        "required": true
+      },
+      "nvda_q1_fy2027_10q_raw_capture": {
+        "source_id": "nvda_q1_fy2027_10q_raw_capture",
+        "input_kind": "raw_sec_html_capture",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/nvda-20260426.htm",
+        "route_id": null,
+        "expected_sha256": "3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e",
+        "required": true
+      },
+      "tsm_q2_2026_6k_release_raw_capture": {
+        "source_id": "tsm_q2_2026_6k_release_raw_capture",
+        "input_kind": "raw_sec_html_capture",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1046179/000104617926000451/a2q26e_withguidancexfinal.htm",
+        "route_id": null,
+        "expected_sha256": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+        "required": true
+      },
+      "tsm_q2_2026_official_transcript_parsed_document": {
+        "source_id": "tsm_q2_2026_official_transcript_parsed_document",
+        "input_kind": "parsed_official_pdf_document",
+        "source_url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/547d1696765e05ce3adb81c108ce1c8c1682b80c/TSMC%202Q26%20Transcript.pdf",
+        "route_id": "TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT",
+        "expected_sha256": "3627c93c3f06c18c59b5f620fa4e2f65888b604c039adfc0539ac59d7d4560ea",
+        "required": true
+      },
+      "three_case_pit_market_snapshot_20260624": {
+        "source_id": "three_case_pit_market_snapshot_20260624",
+        "input_kind": "market_evidence_jsonl",
+        "source_url": null,
+        "route_id": null,
+        "expected_sha256": "db26ced97aadc0fc5d21b1bf331f01253315b147f43ea6573815fabfbe23c7f6",
+        "required": true
+      },
+      "retired_supplemental_chunk_aliases_v2": {
+        "source_id": "retired_supplemental_chunk_aliases_v2",
+        "input_kind": "legacy_qrel_alias_jsonl",
+        "source_url": null,
+        "route_id": null,
+        "expected_sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df",
+        "required": true
+      },
+      "retired_mu_10q_chunk_aliases_v3": {
+        "source_id": "retired_mu_10q_chunk_aliases_v3",
+        "input_kind": "legacy_qrel_alias_jsonl",
+        "source_url": null,
+        "route_id": null,
+        "expected_sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5",
+        "required": true
+      }
+    },
+    "parsed_receipts": {
+      "historical_sec_semantic_children": {
+        "source_id": "historical_sec_semantic_children",
+        "input_kind": "legacy_candidate_jsonl",
+        "source_sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9",
+        "document_parents_added": 20,
+        "invalid_records_excluded": 0
+      },
+      "dell_fy2026_10k_raw_capture": {
+        "source_id": "dell_fy2026_10k_raw_capture",
+        "input_kind": "raw_sec_html_capture",
+        "source_sha256": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+        "document_parents_added": 1,
+        "invalid_records_excluded": 0
+      },
+      "mu_q3_fy2026_earnings_release_raw_capture": {
+        "source_id": "mu_q3_fy2026_earnings_release_raw_capture",
+        "input_kind": "raw_sec_html_capture",
+        "source_sha256": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+        "document_parents_added": 1,
+        "invalid_records_excluded": 0
+      },
+      "mu_q3_fy2026_10q_raw_capture": {
+        "source_id": "mu_q3_fy2026_10q_raw_capture",
+        "input_kind": "raw_sec_html_capture",
+        "source_sha256": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+        "document_parents_added": 1,
+        "invalid_records_excluded": 0
+      },
+      "nvda_q1_fy2027_10q_raw_capture": {
+        "source_id": "nvda_q1_fy2027_10q_raw_capture",
+        "input_kind": "raw_sec_html_capture",
+        "source_sha256": "3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e",
+        "document_parents_added": 1,
+        "invalid_records_excluded": 0
+      },
+      "tsm_q2_2026_6k_release_raw_capture": {
+        "source_id": "tsm_q2_2026_6k_release_raw_capture",
+        "input_kind": "raw_sec_html_capture",
+        "source_sha256": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+        "document_parents_added": 1,
+        "invalid_records_excluded": 0
+      },
+      "three_case_pit_market_snapshot_20260624": {
+        "source_id": "three_case_pit_market_snapshot_20260624",
+        "input_kind": "market_evidence_jsonl",
+        "source_sha256": "db26ced97aadc0fc5d21b1bf331f01253315b147f43ea6573815fabfbe23c7f6",
+        "document_parents_added": 3,
+        "invalid_records_excluded": 0
+      },
+      "retired_supplemental_chunk_aliases_v2": {
+        "source_id": "retired_supplemental_chunk_aliases_v2",
+        "input_kind": "legacy_qrel_alias_jsonl",
+        "source_sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df",
+        "document_parents_added": 0,
+        "invalid_records_excluded": 0
+      },
+      "retired_mu_10q_chunk_aliases_v3": {
+        "source_id": "retired_mu_10q_chunk_aliases_v3",
+        "input_kind": "legacy_qrel_alias_jsonl",
+        "source_sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5",
+        "document_parents_added": 0,
+        "invalid_records_excluded": 0
+      }
+    },
+    "financial_objects": {
+      "historical_sec_semantic_children": {
+        "source_id": "historical_sec_semantic_children",
+        "document_parents_added": 20,
+        "retrieval_children_added": 1512,
+        "invalid_records_excluded": 0,
+        "source_sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9"
+      },
+      "dell_fy2026_10k_raw_capture": {
+        "source_id": "dell_fy2026_10k_raw_capture",
+        "document_parents_added": 1,
+        "retrieval_children_added": 153,
+        "invalid_records_excluded": 0,
+        "source_sha256": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388"
+      },
+      "dell_q1_fy2027_official_transcript_parsed_document": {
+        "source_id": "dell_q1_fy2027_official_transcript_parsed_document",
+        "document_parents_added": 1,
+        "retrieval_children_added": 14,
+        "invalid_records_excluded": 0,
+        "source_sha256": "479a76f55d907e394441571af89ddd4ada41eb7ee9a0b7e52da798e0d3a76324"
+      },
+      "mu_q3_fy2026_earnings_release_raw_capture": {
+        "source_id": "mu_q3_fy2026_earnings_release_raw_capture",
+        "document_parents_added": 1,
+        "retrieval_children_added": 10,
+        "invalid_records_excluded": 0,
+        "source_sha256": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846"
+      },
+      "mu_q3_fy2026_10q_raw_capture": {
+        "source_id": "mu_q3_fy2026_10q_raw_capture",
+        "document_parents_added": 1,
+        "retrieval_children_added": 82,
+        "invalid_records_excluded": 0,
+        "source_sha256": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d"
+      },
+      "nvda_q1_fy2027_10q_raw_capture": {
+        "source_id": "nvda_q1_fy2027_10q_raw_capture",
+        "document_parents_added": 1,
+        "retrieval_children_added": 43,
+        "invalid_records_excluded": 0,
+        "source_sha256": "3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e"
+      },
+      "tsm_q2_2026_6k_release_raw_capture": {
+        "source_id": "tsm_q2_2026_6k_release_raw_capture",
+        "document_parents_added": 1,
+        "retrieval_children_added": 2,
+        "invalid_records_excluded": 0,
+        "source_sha256": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64"
+      },
+      "tsm_q2_2026_official_transcript_parsed_document": {
+        "source_id": "tsm_q2_2026_official_transcript_parsed_document",
+        "document_parents_added": 1,
+        "retrieval_children_added": 22,
+        "invalid_records_excluded": 0,
+        "source_sha256": "3627c93c3f06c18c59b5f620fa4e2f65888b604c039adfc0539ac59d7d4560ea"
+      },
+      "three_case_pit_market_snapshot_20260624": {
+        "source_id": "three_case_pit_market_snapshot_20260624",
+        "document_parents_added": 3,
+        "retrieval_children_added": 3,
+        "invalid_records_excluded": 0,
+        "source_sha256": "db26ced97aadc0fc5d21b1bf331f01253315b147f43ea6573815fabfbe23c7f6"
+      },
+      "retired_supplemental_chunk_aliases_v2": {
+        "source_id": "retired_supplemental_chunk_aliases_v2",
+        "document_parents_added": 0,
+        "retrieval_children_added": 0,
+        "invalid_records_excluded": 0,
+        "source_sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df"
+      },
+      "retired_mu_10q_chunk_aliases_v3": {
+        "source_id": "retired_mu_10q_chunk_aliases_v3",
+        "document_parents_added": 0,
+        "retrieval_children_added": 0,
+        "invalid_records_excluded": 0,
+        "source_sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5"
+      }
+    },
+    "evidence_request": {
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "request_id": "REQ-DELL-VS1-PRICING-MIX-001",
+      "cell_id": "DELL-VS1-PRICING-MIX-CELL-001",
+      "requester_role": "value_capture_specialist",
+      "evidence_domain": "financial_research",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "research_as_of": "2026-08-06",
+      "target_entities": [
+        "DELL"
+      ],
+      "requested_facet_ids": [
+        "pricing_and_mix"
+      ],
+      "metric_intents": [
+        "gross margin",
+        "operating margin",
+        "price-volume-mix bridge"
+      ],
+      "product_intents": [
+        "AI-optimized servers",
+        "AI server profitability"
+      ],
+      "period": {
+        "start_date": "2025-01-01",
+        "end_date": "2026-08-06",
+        "fiscal_years": []
+      },
+      "granularity": "quarter_and_fiscal_year",
+      "unit": "reported_source_unit",
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "EARNINGS_CALL_TRANSCRIPT"
+      ],
+      "acceptable_proxy": false,
+      "forbidden_proxy": [
+        "unbound industry margin",
+        "segment profit treated as AI server profit",
+        "causal attribution without disclosure"
+      ],
+      "stop_condition": "Determine what current official evidence supports about Dell AI-server pricing, mix and profitability, and preserve every unresolved bridge as a typed gap.",
+      "clarification_policy": "return_typed_gap"
+    },
+    "query_facet_plan": {
+      "schema_version": "fin_ia_typed_query_facet_plan_v1_0",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "subject_legal_name": "Dell Technologies Inc.",
+      "research_as_of": "2026-08-06",
+      "industry_pack_id": "ai_infrastructure_oem",
+      "lanes": [
+        {
+          "lane_id": "dell__pricing_mix_value_capture__pricing_and_mix__lexical_v1",
+          "slot_id": "pricing_mix_value_capture",
+          "facet_id": "pricing_and_mix",
+          "business_question_zh": "价格与产品组合如何改变收入质量？",
+          "execution_mode": "local_lexical_candidate_generation",
+          "subject_ticker": "DELL",
+          "evidence_owner_tickers": [
+            "DELL"
+          ],
+          "relationship_constraints": [
+            "subject_self_disclosure"
+          ],
+          "publication_date_lte": "2026-08-06",
+          "source_types": [
+            "10-K",
+            "10-Q",
+            "8-K",
+            "EARNINGS_CALL_TRANSCRIPT"
+          ],
+          "required_source_roles": [
+            "issuer_disclosure"
+          ],
+          "exact_queries": [
+            "\"Dell Technologies\" \"pricing\"",
+            "\"Dell Technologies\" \"product mix\"",
+            "\"Dell Technologies\" \"average selling price\"",
+            "\"Dell\" \"pricing\"",
+            "\"Dell\" \"product mix\"",
+            "\"Dell\" \"average selling price\""
+          ],
+          "lexical_query": "pricing product mix average selling price price mix AI infrastructure AI-optimized server infrastructure solutions group ISG margin AI server revenue server mix AI-optimized servers revenue ISG operating income gross margin operating margin price-volume-mix bridge AI-optimized servers AI server profitability",
+          "lexical_tokens": [
+            "pricing",
+            "product",
+            "mix",
+            "average",
+            "selling",
+            "price",
+            "ai",
+            "infrastructure",
+            "ai-optimized",
+            "server",
+            "solutions",
+            "group",
+            "isg",
+            "margin",
+            "revenue",
+            "servers",
+            "operating",
+            "income",
+            "gross",
+            "price-volume-mix",
+            "bridge",
+            "profitability"
+          ],
+          "owner_queries": [
+            {
+              "evidence_owner_ticker": "DELL",
+              "relationship_direction": "subject_self_disclosure",
+              "lexical_query": "pricing product mix average selling price price mix AI infrastructure AI-optimized server infrastructure solutions group ISG margin AI server revenue server mix AI-optimized servers revenue ISG operating income gross margin operating margin price-volume-mix bridge AI-optimized servers AI server profitability",
+              "lexical_tokens": [
+                "pricing",
+                "product",
+                "mix",
+                "average",
+                "selling",
+                "price",
+                "ai",
+                "infrastructure",
+                "ai-optimized",
+                "server",
+                "solutions",
+                "group",
+                "isg",
+                "margin",
+                "revenue",
+                "servers",
+                "operating",
+                "income",
+                "gross",
+                "price-volume-mix",
+                "bridge",
+                "profitability"
+              ],
+              "anchor_token_groups": [
+                [
+                  "pricing"
+                ],
+                [
+                  "product",
+                  "mix"
+                ],
+                [
+                  "average",
+                  "selling",
+                  "price"
+                ],
+                [
+                  "isg",
+                  "margin"
+                ],
+                [
+                  "ai",
+                  "server",
+                  "revenue"
+                ],
+                [
+                  "server",
+                  "mix"
+                ],
+                [
+                  "ai-optimized",
+                  "servers",
+                  "revenue"
+                ],
+                [
+                  "isg",
+                  "operating",
+                  "income"
+                ]
+              ]
+            }
+          ],
+          "semantic_query": "截至 2026-08-06，回答“价格与产品组合如何改变收入质量？”。研究主体是 Dell Technologies Inc.；允许使用的披露主体为Dell Technologies Inc.，但必须区分主体自述、上下游背景和直接关系证据。 本次类型化请求限定的指标／产品意图为：gross margin、operating margin、price-volume-mix bridge、AI-optimized servers、AI server profitability；这些意图只能扩展语义和词法召回，不能改变身份、期间、来源、关系或事实权威。",
+          "graph_constraints": [
+            "evidence_owner=DELL",
+            "relationship=subject_self_disclosure"
+          ],
+          "forbidden_expansions": [
+            "unrelated business line",
+            "future publication",
+            "causal inference without disclosure"
+          ],
+          "candidate_budget": 8
+        }
+      ],
+      "plan_digest": "f708e1bcddba20b760a3fdbd3569bfa4c5835fd197128b0031125d8c4f96b67a"
+    },
+    "candidate_set": {
+      "candidate_state": "candidate_not_evidence",
+      "request_id": "REQ-DELL-VS1-PRICING-MIX-001",
+      "source_record_ids": [
+        "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+        "DELL_2025_10K_ITEM7_BLOCK_0019_PART_02_OF_03",
+        "DELL_2026_10Q_ITEM2_BLOCK_0013_PART_02_OF_02",
+        "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02",
+        "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004",
+        "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05"
+      ]
+    },
+    "candidate_ranking": {
+      "ranking_contract": "current_typed_financial_candidate_order",
+      "candidate_state": "candidate_not_evidence",
+      "rows": [
+        {
+          "rank": 1,
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+          "score": 35.746997
+        },
+        {
+          "rank": 2,
+          "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0019_PART_02_OF_03",
+          "score": 35.567026
+        },
+        {
+          "rank": 3,
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0013_PART_02_OF_02",
+          "score": 33.053682
+        },
+        {
+          "rank": 4,
+          "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02",
+          "score": 32.684527
+        },
+        {
+          "rank": 5,
+          "source_record_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004",
+          "score": 28.472975
+        },
+        {
+          "rank": 6,
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05",
+          "score": 27.018676
+        }
+      ]
+    },
+    "candidate_decision_ledger": {
+      "schema_version": "fin_ia_s1_candidate_decision_ledger_v1_0",
+      "status": "persistent_candidate_decisions_materialized",
+      "recorded_at": "2026-08-17",
+      "case_key": "DELL",
+      "research_as_of": "2026-08-06",
+      "request_id": "REQ-DELL-VS1-PRICING-MIX-001",
+      "request_digest": "5f97ac27fdd2814a41235894a22385ada03ea8ad8e9f759a93345ff91df8c462",
+      "request_slot_ids": [
+        "pricing_mix_value_capture"
+      ],
+      "candidate_count": 6,
+      "decision_counts": {
+        "accepted": 2,
+        "rejected": 0,
+        "unjudged": 0,
+        "needs_review": 4
+      },
+      "accepted_evidence_item_digests": [
+        "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1",
+        "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1"
+      ],
+      "decisions": [
+        {
+          "candidate_ref": "CAND::C3EF7B44F73478E71CA2F839",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+          "rank": 1,
+          "score": 35.746997,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "10-K",
+          "publication_date": "2026-03-16",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "4ec11a09cf72c5cbd0999db7b1ca8ce183c63dc5fa7936322db475f8456d8519"
+        },
+        {
+          "candidate_ref": "CAND::AA14562A29F3183946224F03",
+          "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0019_PART_02_OF_03",
+          "rank": 2,
+          "score": 35.567026,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "10-K",
+          "publication_date": "2025-03-25",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "196d6504919296edc261d1ee2160791591c5c5fa55877b7f40490490408cef34"
+        },
+        {
+          "candidate_ref": "CAND::53324B1CCF4C4F80CA6BB7DB",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0013_PART_02_OF_02",
+          "rank": 3,
+          "score": 33.053682,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "10-Q",
+          "publication_date": "2025-12-09",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "81772bc2b034048c4ac74f5fdc1ff1aa65a9ae9503a65be4642553011ddb026b"
+        },
+        {
+          "candidate_ref": "CAND::DD6810970E65AEC01A03870D",
+          "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02",
+          "rank": 4,
+          "score": 32.684527,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "10-K",
+          "publication_date": "2025-03-25",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "a61241cec35b56b540c1e5eb49022a5cf4569d71ccecfd6609112262f8f603bd"
+        },
+        {
+          "candidate_ref": "CAND::E26558F533138CBBF9E76533",
+          "source_record_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004",
+          "rank": 5,
+          "score": 28.472975,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "EARNINGS_CALL_TRANSCRIPT",
+          "publication_date": "2026-05-28",
+          "decision_state": "accepted",
+          "reason_codes": [
+            "exact_reviewed_pack_lineage_match",
+            "case_owner_source_period_slot_gate_passed"
+          ],
+          "decision_authority": "capture_bound_reviewed_evidence_gate_reused",
+          "accepted_evidence_item_digests": [
+            "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1"
+          ],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "e631ed5823a4b369488c4e6bfe538e91955f37590bc109639c46d6ba967f5ccc"
+        },
+        {
+          "candidate_ref": "CAND::30978CA6535C7AFDA5AB6FA7",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05",
+          "rank": 6,
+          "score": 27.018676,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "10-Q",
+          "publication_date": "2025-12-09",
+          "decision_state": "accepted",
+          "reason_codes": [
+            "exact_reviewed_pack_lineage_match",
+            "case_owner_source_period_slot_gate_passed"
+          ],
+          "decision_authority": "immutable_reviewed_pack_reselection",
+          "accepted_evidence_item_digests": [
+            "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1"
+          ],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "3c6d2b81cebb782415cf27fa737aefff4831964425c850550ebbe582d78e7792"
+        }
+      ],
+      "authority": {
+        "candidate_is_not_evidence": true,
+        "rank_never_grants_evidence_authority": true,
+        "reviewed_binding_or_separate_capture_gate_required": true,
+        "numeric_authority_remains_s2": true
+      },
+      "candidate_decision_ledger_digest": "df3294ef9db2053e6fc61841552278c2329dc60f49b28cf732392d67ac60afe1"
+    },
+    "evidence_coverage_state": {
+      "schema_version": "fin_ia_s1_evidence_coverage_state_v1_0",
+      "status": "proposition_level_coverage_materialized",
+      "recorded_at": "2026-08-17",
+      "case_key": "DELL",
+      "research_as_of": "2026-08-06",
+      "proposition_id": "PROP::E03F33AD2C60BFF6159871FB",
+      "research_question": "Determine what current official evidence supports about Dell AI-server pricing, mix and profitability, and preserve every unresolved bridge as a typed gap.",
+      "request_id": "REQ-DELL-VS1-PRICING-MIX-001",
+      "slot_ids": [
+        "pricing_mix_value_capture"
+      ],
+      "coverage_state": "bounded_evidence_with_unresolved_gaps",
+      "accepted_evidence_item_digests": [
+        "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1",
+        "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1"
+      ],
+      "reviewed_evidence_not_recalled_digests": [
+        "4d8ba7a500fa4bc6a43cc0cdfa5102e9899cdb5b0e1a6c1e2af1cb3da3cdbd36",
+        "e56d04955adef83b83bbbfda0bb36ed3967f869d34f9473849777a52d40f5305"
+      ],
+      "candidate_decision_counts": {
+        "accepted": 2,
+        "rejected": 0,
+        "unjudged": 0,
+        "needs_review": 4
+      },
+      "gap_eligibility_receipts": [
+        {
+          "gap_id": "dell-gap-pricing-asp",
+          "gap_code": "metric_not_disclosed",
+          "owning_stage": "S1",
+          "classification": "declared_pack_gap_not_public_information_absence",
+          "eligible_as_true_public_information_gap": false,
+          "checks": {
+            "local_object_and_index_checked": true,
+            "request_scoped_retrieval_executed": true,
+            "candidate_decisions_materialized": true,
+            "official_supplement_route_executed_for_this_gap": false,
+            "external_supplement_route_executed_for_this_gap": false,
+            "required_route_budget_proven_sufficient": false
+          },
+          "disposition": "supplement_route_not_yet_executed",
+          "last_checked_at": "2026-08-17",
+          "receipt_digest": "a530a4cd24c7b6e4d1531f5ab7f5230144c3de71b8b5c96d31fbe68af9c2b26e"
+        },
+        {
+          "gap_id": "dell-gap-price-volume-mix-bridge",
+          "gap_code": "formula_input_missing",
+          "owning_stage": "S1",
+          "classification": "declared_pack_gap_not_public_information_absence",
+          "eligible_as_true_public_information_gap": false,
+          "checks": {
+            "local_object_and_index_checked": true,
+            "request_scoped_retrieval_executed": true,
+            "candidate_decisions_materialized": true,
+            "official_supplement_route_executed_for_this_gap": false,
+            "external_supplement_route_executed_for_this_gap": false,
+            "required_route_budget_proven_sufficient": false
+          },
+          "disposition": "supplement_route_not_yet_executed",
+          "last_checked_at": "2026-08-17",
+          "receipt_digest": "5a51fd0b419c9e0f5ab50b8dadd69bff304351a090d38b3479647e43da53a56e"
+        },
+        {
+          "gap_id": "dell-gap-pricing-units",
+          "gap_code": "metric_not_disclosed",
+          "owning_stage": "S1",
+          "classification": "declared_pack_gap_not_public_information_absence",
+          "eligible_as_true_public_information_gap": false,
+          "checks": {
+            "local_object_and_index_checked": true,
+            "request_scoped_retrieval_executed": true,
+            "candidate_decisions_materialized": true,
+            "official_supplement_route_executed_for_this_gap": false,
+            "external_supplement_route_executed_for_this_gap": false,
+            "required_route_budget_proven_sufficient": false
+          },
+          "disposition": "supplement_route_not_yet_executed",
+          "last_checked_at": "2026-08-17",
+          "receipt_digest": "198f5c829efc97e30602d72d61cf72582abcb8515de0015b3db3448754f2015c"
+        }
+      ],
+      "known": [
+        "Current reviewed issuer evidence supports a bounded pricing/mix and profitability assessment.",
+        "Accepted evidence remains non-causal unless separately authorized."
+      ],
+      "unknown": [
+        "现有材料披露收入和 mix，但未披露 AI 服务器 ASP。",
+        "公司披露 AI 服务器 mix 压低毛利率，但没有把收入变化拆成价格、台数和配置组合三部分。",
+        "AI 服务器收入没有配套出货台数或等价算力单位。"
+      ],
+      "why_unknown": [
+        "The current local route and reviewed Pack do not provide the missing formula inputs.",
+        "Official and external supplement routes have not yet been executed for these gaps."
+      ],
+      "coverage_state_digest": "f89ad639f8927f4080557cf8c9502b992b46fee112f43820dcfa585f8278ae1f"
+    },
+    "evidence_pack_readiness": {
+      "schema_version": "fin_ia_s1_evidence_pack_readiness_v1_0",
+      "status": "task_relative_evidence_pack_readiness_materialized",
+      "recorded_at": "2026-08-17",
+      "case_key": "DELL",
+      "research_as_of": "2026-08-06",
+      "proposition_id": "PROP::E03F33AD2C60BFF6159871FB",
+      "readiness_state": "ready_for_bounded_research_not_complete_conclusion",
+      "pack_binding": {
+        "case_key": "DELL",
+        "artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+        "pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a"
+      },
+      "checks": {
+        "all_retrieved_candidates_have_persistent_decisions": true,
+        "accepted_evidence_is_writer_citable": true,
+        "capture_bound_promotion_lineage_visible": true,
+        "false_public_gap_prevented": true,
+        "complete_product_conclusion_ready": false,
+        "S1_qualified_stable": false
+      },
+      "accepted_evidence_count": 2,
+      "unresolved_gap_count": 3,
+      "known_boundary": "VS1 proves one current digital-native DELL vertical through the shared artifact spine. It permits bounded research on this proposition only; it does not qualify S1, close unexecuted supplement routes or authorize a complete financial conclusion.",
+      "readiness_digest": "ef6ceaf3cf6d4a837648b2c9a274655a4bfa16c900c58d16f3a3a262f50cf2ab"
+    },
+    "workbench_projection": {
+      "schema_version": "fin_ia_s1_workbench_lineage_projection_v1_0",
+      "status": "canonical_s1_lineage_ready",
+      "recorded_at": "2026-08-17",
+      "case_key": "DELL",
+      "research_as_of": "2026-08-06",
+      "proposition_id": "PROP::E03F33AD2C60BFF6159871FB",
+      "readiness_state": "ready_for_bounded_research_not_complete_conclusion",
+      "candidate_decision_summary": {
+        "accepted": 2,
+        "rejected": 0,
+        "unjudged": 0,
+        "needs_review": 4
+      },
+      "coverage_summary": {
+        "coverage_state": "bounded_evidence_with_unresolved_gaps",
+        "accepted_evidence_count": 2,
+        "reviewed_not_recalled_count": 2,
+        "unresolved_gap_count": 3,
+        "true_public_information_gap_count": 0
+      },
+      "decision_rows": [
+        {
+          "candidate_ref": "CAND::C3EF7B44F73478E71CA2F839",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+          "rank": 1,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "10-K",
+          "publication_date": "2026-03-16",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "decision_digest": "4ec11a09cf72c5cbd0999db7b1ca8ce183c63dc5fa7936322db475f8456d8519"
+        },
+        {
+          "candidate_ref": "CAND::AA14562A29F3183946224F03",
+          "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0019_PART_02_OF_03",
+          "rank": 2,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "10-K",
+          "publication_date": "2025-03-25",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "decision_digest": "196d6504919296edc261d1ee2160791591c5c5fa55877b7f40490490408cef34"
+        },
+        {
+          "candidate_ref": "CAND::53324B1CCF4C4F80CA6BB7DB",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0013_PART_02_OF_02",
+          "rank": 3,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "10-Q",
+          "publication_date": "2025-12-09",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "decision_digest": "81772bc2b034048c4ac74f5fdc1ff1aa65a9ae9503a65be4642553011ddb026b"
+        },
+        {
+          "candidate_ref": "CAND::DD6810970E65AEC01A03870D",
+          "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02",
+          "rank": 4,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "10-K",
+          "publication_date": "2025-03-25",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "decision_digest": "a61241cec35b56b540c1e5eb49022a5cf4569d71ccecfd6609112262f8f603bd"
+        },
+        {
+          "candidate_ref": "CAND::E26558F533138CBBF9E76533",
+          "source_record_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004",
+          "rank": 5,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "EARNINGS_CALL_TRANSCRIPT",
+          "publication_date": "2026-05-28",
+          "decision_state": "accepted",
+          "reason_codes": [
+            "exact_reviewed_pack_lineage_match",
+            "case_owner_source_period_slot_gate_passed"
+          ],
+          "decision_authority": "capture_bound_reviewed_evidence_gate_reused",
+          "accepted_evidence_item_digests": [
+            "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1"
+          ],
+          "decision_digest": "e631ed5823a4b369488c4e6bfe538e91955f37590bc109639c46d6ba967f5ccc"
+        },
+        {
+          "candidate_ref": "CAND::30978CA6535C7AFDA5AB6FA7",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05",
+          "rank": 6,
+          "evidence_owner_ticker": "DELL",
+          "source_type": "10-Q",
+          "publication_date": "2025-12-09",
+          "decision_state": "accepted",
+          "reason_codes": [
+            "exact_reviewed_pack_lineage_match",
+            "case_owner_source_period_slot_gate_passed"
+          ],
+          "decision_authority": "immutable_reviewed_pack_reselection",
+          "accepted_evidence_item_digests": [
+            "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1"
+          ],
+          "decision_digest": "3c6d2b81cebb782415cf27fa737aefff4831964425c850550ebbe582d78e7792"
+        }
+      ],
+      "gap_eligibility_receipts": [
+        {
+          "gap_id": "dell-gap-pricing-asp",
+          "gap_code": "metric_not_disclosed",
+          "owning_stage": "S1",
+          "classification": "declared_pack_gap_not_public_information_absence",
+          "eligible_as_true_public_information_gap": false,
+          "checks": {
+            "local_object_and_index_checked": true,
+            "request_scoped_retrieval_executed": true,
+            "candidate_decisions_materialized": true,
+            "official_supplement_route_executed_for_this_gap": false,
+            "external_supplement_route_executed_for_this_gap": false,
+            "required_route_budget_proven_sufficient": false
+          },
+          "disposition": "supplement_route_not_yet_executed",
+          "last_checked_at": "2026-08-17",
+          "receipt_digest": "a530a4cd24c7b6e4d1531f5ab7f5230144c3de71b8b5c96d31fbe68af9c2b26e"
+        },
+        {
+          "gap_id": "dell-gap-price-volume-mix-bridge",
+          "gap_code": "formula_input_missing",
+          "owning_stage": "S1",
+          "classification": "declared_pack_gap_not_public_information_absence",
+          "eligible_as_true_public_information_gap": false,
+          "checks": {
+            "local_object_and_index_checked": true,
+            "request_scoped_retrieval_executed": true,
+            "candidate_decisions_materialized": true,
+            "official_supplement_route_executed_for_this_gap": false,
+            "external_supplement_route_executed_for_this_gap": false,
+            "required_route_budget_proven_sufficient": false
+          },
+          "disposition": "supplement_route_not_yet_executed",
+          "last_checked_at": "2026-08-17",
+          "receipt_digest": "5a51fd0b419c9e0f5ab50b8dadd69bff304351a090d38b3479647e43da53a56e"
+        },
+        {
+          "gap_id": "dell-gap-pricing-units",
+          "gap_code": "metric_not_disclosed",
+          "owning_stage": "S1",
+          "classification": "declared_pack_gap_not_public_information_absence",
+          "eligible_as_true_public_information_gap": false,
+          "checks": {
+            "local_object_and_index_checked": true,
+            "request_scoped_retrieval_executed": true,
+            "candidate_decisions_materialized": true,
+            "official_supplement_route_executed_for_this_gap": false,
+            "external_supplement_route_executed_for_this_gap": false,
+            "required_route_budget_proven_sufficient": false
+          },
+          "disposition": "supplement_route_not_yet_executed",
+          "last_checked_at": "2026-08-17",
+          "receipt_digest": "198f5c829efc97e30602d72d61cf72582abcb8515de0015b3db3448754f2015c"
+        }
+      ],
+      "pack_binding": {
+        "case_key": "DELL",
+        "artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+        "pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a"
+      },
+      "hard_boundaries": {
+        "candidate_is_not_evidence": true,
+        "rank_never_grants_evidence_authority": true,
+        "unexecuted_route_is_not_public_information_gap": true,
+        "complete_product_conclusion_ready": false,
+        "S1_qualified_stable": false
+      },
+      "workbench_projection_digest": "eccd0802fe490961054e655c51c1fb3f3abeb2c845e80dd540ec69db1bdbf0e3"
+    },
+    "frozen_consumer_probe": {
+      "schema_version": "fin_ia_s1_frozen_consumer_probe_v1_0",
+      "status": "pack_and_workbench_share_readiness_lineage",
+      "case_key": "DELL",
+      "evidence_pack_consumer_binding": {
+        "case_key": "DELL",
+        "artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+        "pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a"
+      },
+      "workbench_consumer_binding": {
+        "case_key": "DELL",
+        "artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+        "pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a"
+      },
+      "readiness_digest": "ef6ceaf3cf6d4a837648b2c9a274655a4bfa16c900c58d16f3a3a262f50cf2ab",
+      "same_pack_binding": true,
+      "same_readiness_lineage": true,
+      "frozen_consumer_probe_digest": "e79d6bb0f222dc7b77d08991bb3fcf4126d9c49e8d16d9a521a3764f43edd600"
+    },
+    "source_payload_bindings": {
+      "historical_sec_semantic_children": {
+        "capture_ref": "data/indexes/bm25/sector_depth_full238_us_v0_3_mixed_with_8k_fy2023_2027/records.jsonl",
+        "capture_sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9",
+        "capture_schema_version": "fin_ia_existing_immutable_source_v1_0",
+        "parsed_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/historical_sec_semantic_children",
+        "parsed_sha256": "26f0bb7aacb5c8cd94066a0eb8e6fddde3596c4edcb7ee593e9c7242f14ab648",
+        "parsed_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0"
+      },
+      "dell_fy2026_10k_raw_capture": {
+        "capture_ref": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/22/71/2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388.json",
+        "capture_sha256": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+        "capture_schema_version": "fin_ia_existing_immutable_source_v1_0",
+        "parsed_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/dell_fy2026_10k_raw_capture",
+        "parsed_sha256": "ccc62f1f7766ef7ba8ba665692ef2a515e9ff95a277d3872d640c5d431cc8239",
+        "parsed_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0"
+      },
+      "dell_q1_fy2027_official_transcript_parsed_document": {
+        "capture_ref": "data/workbench_private/source_intake/raw/sha256/2e/2a/2e2a251d50608284f6e3ca91e1d71cd39152a214e4bafd8b66cdd240d90fc5c2.bin",
+        "capture_sha256": "2e2a251d50608284f6e3ca91e1d71cd39152a214e4bafd8b66cdd240d90fc5c2",
+        "capture_schema_version": "fin_ia_capture_first_raw_binary_v1_0",
+        "parsed_ref": "data/workbench_private/fin_0_1_3_s1d_dell_official_pdf_successor/zero-call-r1/parsed_document.json",
+        "parsed_sha256": "479a76f55d907e394441571af89ddd4ada41eb7ee9a0b7e52da798e0d3a76324",
+        "parsed_schema_version": "fin_ia_parsed_official_pdf_document_v1_0"
+      },
+      "mu_q3_fy2026_earnings_release_raw_capture": {
+        "capture_ref": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/23/c9/23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846.json",
+        "capture_sha256": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+        "capture_schema_version": "fin_ia_existing_immutable_source_v1_0",
+        "parsed_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/mu_q3_fy2026_earnings_release_raw_capture",
+        "parsed_sha256": "eed1efc154f1713921487eaeac3e7c8b0cd136e1f2bd5d536e59fdf86958fd6f",
+        "parsed_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0"
+      },
+      "mu_q3_fy2026_10q_raw_capture": {
+        "capture_ref": "data/workbench_private/fin_0_1_3_s1_internal_mu_10q_acquisition/live-r1/objects/fin-0.1.3/s1-internal-mu-10q-successor/raw/90/79/90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d.json",
+        "capture_sha256": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+        "capture_schema_version": "fin_ia_existing_immutable_source_v1_0",
+        "parsed_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/mu_q3_fy2026_10q_raw_capture",
+        "parsed_sha256": "b108788d27685189563f2d13ab872800f06ee5171b3b88cf5300baf4868ee243",
+        "parsed_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0"
+      },
+      "nvda_q1_fy2027_10q_raw_capture": {
+        "capture_ref": "data/workbench_private/fin_0_1_3_s1b_official_source_capture/live-r4/objects/raw/3c/bc/3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e.json",
+        "capture_sha256": "3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e",
+        "capture_schema_version": "fin_ia_existing_immutable_source_v1_0",
+        "parsed_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/nvda_q1_fy2027_10q_raw_capture",
+        "parsed_sha256": "c22cd24c5d929762a2a56042fb0a28436e98f19365b5f46c57a7010f97d383a3",
+        "parsed_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0"
+      },
+      "tsm_q2_2026_6k_release_raw_capture": {
+        "capture_ref": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/5a/9e/5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64.json",
+        "capture_sha256": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+        "capture_schema_version": "fin_ia_existing_immutable_source_v1_0",
+        "parsed_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/tsm_q2_2026_6k_release_raw_capture",
+        "parsed_sha256": "3dbe29a0a9804696d4dbd458c25b93c03c420807b3a0466dfaaf3d14d32509ae",
+        "parsed_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0"
+      },
+      "tsm_q2_2026_official_transcript_parsed_document": {
+        "capture_ref": "data/workbench_private/source_intake/raw/sha256/3e/21/3e21fe2dc69a4b95ebaf3e2e9a037ff5d704c5729e1eb7eff1554d03bdfea453.bin",
+        "capture_sha256": "3e21fe2dc69a4b95ebaf3e2e9a037ff5d704c5729e1eb7eff1554d03bdfea453",
+        "capture_schema_version": "fin_ia_capture_first_raw_binary_v1_0",
+        "parsed_ref": "data/workbench_private/fin_0_1_3_s1d_tsm_official_pdf_successor/zero-call-r2/parsed_document.json",
+        "parsed_sha256": "3627c93c3f06c18c59b5f620fa4e2f65888b604c039adfc0539ac59d7d4560ea",
+        "parsed_schema_version": "fin_ia_parsed_official_pdf_document_v1_0"
+      },
+      "three_case_pit_market_snapshot_20260624": {
+        "capture_ref": "data/processed_private/market/evidence_packs/20260624_market_yahoo_chart_603_3m_v1_3m_market_evidence.jsonl",
+        "capture_sha256": "db26ced97aadc0fc5d21b1bf331f01253315b147f43ea6573815fabfbe23c7f6",
+        "capture_schema_version": "fin_ia_existing_immutable_source_v1_0",
+        "parsed_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/three_case_pit_market_snapshot_20260624",
+        "parsed_sha256": "7e9116939749884afeec31d73b0fc923f901ec3d21e2837f5d5381433dc2a8d3",
+        "parsed_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0"
+      },
+      "retired_supplemental_chunk_aliases_v2": {
+        "capture_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/corpus/supplemental_evidence.jsonl",
+        "capture_sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df",
+        "capture_schema_version": "fin_ia_existing_immutable_source_v1_0",
+        "parsed_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/retired_supplemental_chunk_aliases_v2",
+        "parsed_sha256": "34df9db55e1574295c78b1b1c59c674ffecf58092da6618b9bf47f509b61fb79",
+        "parsed_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0"
+      },
+      "retired_mu_10q_chunk_aliases_v3": {
+        "capture_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v3_mu_10q/corpus/supplemental_evidence.jsonl",
+        "capture_sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5",
+        "capture_schema_version": "fin_ia_existing_immutable_source_v1_0",
+        "parsed_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/retired_mu_10q_chunk_aliases_v3",
+        "parsed_sha256": "662a7364ad24cac7085027561bcb8fe9e05bb69771cc7d98aee1df415006ef20",
+        "parsed_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0"
+      }
+    }
+  },
+  "cases": {
+    "DELL": {
+      "candidate_decision_ledger": {
+        "schema_version": "fin_ia_s1_candidate_decision_ledger_v1_0",
+        "status": "persistent_candidate_decisions_materialized",
+        "recorded_at": "2026-08-17",
+        "case_key": "DELL",
+        "research_as_of": "2026-08-06",
+        "request_id": "REQ-DELL-VS1-PRICING-MIX-001",
+        "request_digest": "5f97ac27fdd2814a41235894a22385ada03ea8ad8e9f759a93345ff91df8c462",
+        "request_slot_ids": [
+          "pricing_mix_value_capture"
+        ],
+        "candidate_count": 6,
+        "decision_counts": {
+          "accepted": 2,
+          "rejected": 0,
+          "unjudged": 0,
+          "needs_review": 4
+        },
+        "accepted_evidence_item_digests": [
+          "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1",
+          "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1"
+        ],
+        "decisions": [
+          {
+            "candidate_ref": "CAND::C3EF7B44F73478E71CA2F839",
+            "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+            "rank": 1,
+            "score": 35.746997,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-K",
+            "publication_date": "2026-03-16",
+            "decision_state": "needs_review",
+            "reason_codes": [
+              "candidate_not_present_in_reviewed_pack"
+            ],
+            "decision_authority": "candidate_only_no_evidence_authority",
+            "accepted_evidence_item_digests": [],
+            "model_decision_used": false,
+            "candidate_text_promoted": false,
+            "decision_digest": "4ec11a09cf72c5cbd0999db7b1ca8ce183c63dc5fa7936322db475f8456d8519"
+          },
+          {
+            "candidate_ref": "CAND::AA14562A29F3183946224F03",
+            "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0019_PART_02_OF_03",
+            "rank": 2,
+            "score": 35.567026,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-K",
+            "publication_date": "2025-03-25",
+            "decision_state": "needs_review",
+            "reason_codes": [
+              "candidate_not_present_in_reviewed_pack"
+            ],
+            "decision_authority": "candidate_only_no_evidence_authority",
+            "accepted_evidence_item_digests": [],
+            "model_decision_used": false,
+            "candidate_text_promoted": false,
+            "decision_digest": "196d6504919296edc261d1ee2160791591c5c5fa55877b7f40490490408cef34"
+          },
+          {
+            "candidate_ref": "CAND::53324B1CCF4C4F80CA6BB7DB",
+            "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0013_PART_02_OF_02",
+            "rank": 3,
+            "score": 33.053682,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-Q",
+            "publication_date": "2025-12-09",
+            "decision_state": "needs_review",
+            "reason_codes": [
+              "candidate_not_present_in_reviewed_pack"
+            ],
+            "decision_authority": "candidate_only_no_evidence_authority",
+            "accepted_evidence_item_digests": [],
+            "model_decision_used": false,
+            "candidate_text_promoted": false,
+            "decision_digest": "81772bc2b034048c4ac74f5fdc1ff1aa65a9ae9503a65be4642553011ddb026b"
+          },
+          {
+            "candidate_ref": "CAND::DD6810970E65AEC01A03870D",
+            "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02",
+            "rank": 4,
+            "score": 32.684527,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-K",
+            "publication_date": "2025-03-25",
+            "decision_state": "needs_review",
+            "reason_codes": [
+              "candidate_not_present_in_reviewed_pack"
+            ],
+            "decision_authority": "candidate_only_no_evidence_authority",
+            "accepted_evidence_item_digests": [],
+            "model_decision_used": false,
+            "candidate_text_promoted": false,
+            "decision_digest": "a61241cec35b56b540c1e5eb49022a5cf4569d71ccecfd6609112262f8f603bd"
+          },
+          {
+            "candidate_ref": "CAND::E26558F533138CBBF9E76533",
+            "source_record_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004",
+            "rank": 5,
+            "score": 28.472975,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "EARNINGS_CALL_TRANSCRIPT",
+            "publication_date": "2026-05-28",
+            "decision_state": "accepted",
+            "reason_codes": [
+              "exact_reviewed_pack_lineage_match",
+              "case_owner_source_period_slot_gate_passed"
+            ],
+            "decision_authority": "capture_bound_reviewed_evidence_gate_reused",
+            "accepted_evidence_item_digests": [
+              "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1"
+            ],
+            "model_decision_used": false,
+            "candidate_text_promoted": false,
+            "decision_digest": "e631ed5823a4b369488c4e6bfe538e91955f37590bc109639c46d6ba967f5ccc"
+          },
+          {
+            "candidate_ref": "CAND::30978CA6535C7AFDA5AB6FA7",
+            "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05",
+            "rank": 6,
+            "score": 27.018676,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-Q",
+            "publication_date": "2025-12-09",
+            "decision_state": "accepted",
+            "reason_codes": [
+              "exact_reviewed_pack_lineage_match",
+              "case_owner_source_period_slot_gate_passed"
+            ],
+            "decision_authority": "immutable_reviewed_pack_reselection",
+            "accepted_evidence_item_digests": [
+              "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1"
+            ],
+            "model_decision_used": false,
+            "candidate_text_promoted": false,
+            "decision_digest": "3c6d2b81cebb782415cf27fa737aefff4831964425c850550ebbe582d78e7792"
+          }
+        ],
+        "authority": {
+          "candidate_is_not_evidence": true,
+          "rank_never_grants_evidence_authority": true,
+          "reviewed_binding_or_separate_capture_gate_required": true,
+          "numeric_authority_remains_s2": true
+        },
+        "candidate_decision_ledger_digest": "df3294ef9db2053e6fc61841552278c2329dc60f49b28cf732392d67ac60afe1"
+      },
+      "candidate_decision_ledger_digest": "df3294ef9db2053e6fc61841552278c2329dc60f49b28cf732392d67ac60afe1",
+      "coverage_state": {
+        "schema_version": "fin_ia_s1_evidence_coverage_state_v1_0",
+        "status": "proposition_level_coverage_materialized",
+        "recorded_at": "2026-08-17",
+        "case_key": "DELL",
+        "research_as_of": "2026-08-06",
+        "proposition_id": "PROP::E03F33AD2C60BFF6159871FB",
+        "research_question": "Determine what current official evidence supports about Dell AI-server pricing, mix and profitability, and preserve every unresolved bridge as a typed gap.",
+        "request_id": "REQ-DELL-VS1-PRICING-MIX-001",
+        "slot_ids": [
+          "pricing_mix_value_capture"
+        ],
+        "coverage_state": "bounded_evidence_with_unresolved_gaps",
+        "accepted_evidence_item_digests": [
+          "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1",
+          "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1"
+        ],
+        "reviewed_evidence_not_recalled_digests": [
+          "4d8ba7a500fa4bc6a43cc0cdfa5102e9899cdb5b0e1a6c1e2af1cb3da3cdbd36",
+          "e56d04955adef83b83bbbfda0bb36ed3967f869d34f9473849777a52d40f5305"
+        ],
+        "candidate_decision_counts": {
+          "accepted": 2,
+          "rejected": 0,
+          "unjudged": 0,
+          "needs_review": 4
+        },
+        "gap_eligibility_receipts": [
+          {
+            "gap_id": "dell-gap-pricing-asp",
+            "gap_code": "metric_not_disclosed",
+            "owning_stage": "S1",
+            "classification": "declared_pack_gap_not_public_information_absence",
+            "eligible_as_true_public_information_gap": false,
+            "checks": {
+              "local_object_and_index_checked": true,
+              "request_scoped_retrieval_executed": true,
+              "candidate_decisions_materialized": true,
+              "official_supplement_route_executed_for_this_gap": false,
+              "external_supplement_route_executed_for_this_gap": false,
+              "required_route_budget_proven_sufficient": false
+            },
+            "disposition": "supplement_route_not_yet_executed",
+            "last_checked_at": "2026-08-17",
+            "receipt_digest": "a530a4cd24c7b6e4d1531f5ab7f5230144c3de71b8b5c96d31fbe68af9c2b26e"
+          },
+          {
+            "gap_id": "dell-gap-price-volume-mix-bridge",
+            "gap_code": "formula_input_missing",
+            "owning_stage": "S1",
+            "classification": "declared_pack_gap_not_public_information_absence",
+            "eligible_as_true_public_information_gap": false,
+            "checks": {
+              "local_object_and_index_checked": true,
+              "request_scoped_retrieval_executed": true,
+              "candidate_decisions_materialized": true,
+              "official_supplement_route_executed_for_this_gap": false,
+              "external_supplement_route_executed_for_this_gap": false,
+              "required_route_budget_proven_sufficient": false
+            },
+            "disposition": "supplement_route_not_yet_executed",
+            "last_checked_at": "2026-08-17",
+            "receipt_digest": "5a51fd0b419c9e0f5ab50b8dadd69bff304351a090d38b3479647e43da53a56e"
+          },
+          {
+            "gap_id": "dell-gap-pricing-units",
+            "gap_code": "metric_not_disclosed",
+            "owning_stage": "S1",
+            "classification": "declared_pack_gap_not_public_information_absence",
+            "eligible_as_true_public_information_gap": false,
+            "checks": {
+              "local_object_and_index_checked": true,
+              "request_scoped_retrieval_executed": true,
+              "candidate_decisions_materialized": true,
+              "official_supplement_route_executed_for_this_gap": false,
+              "external_supplement_route_executed_for_this_gap": false,
+              "required_route_budget_proven_sufficient": false
+            },
+            "disposition": "supplement_route_not_yet_executed",
+            "last_checked_at": "2026-08-17",
+            "receipt_digest": "198f5c829efc97e30602d72d61cf72582abcb8515de0015b3db3448754f2015c"
+          }
+        ],
+        "known": [
+          "Current reviewed issuer evidence supports a bounded pricing/mix and profitability assessment.",
+          "Accepted evidence remains non-causal unless separately authorized."
+        ],
+        "unknown": [
+          "现有材料披露收入和 mix，但未披露 AI 服务器 ASP。",
+          "公司披露 AI 服务器 mix 压低毛利率，但没有把收入变化拆成价格、台数和配置组合三部分。",
+          "AI 服务器收入没有配套出货台数或等价算力单位。"
+        ],
+        "why_unknown": [
+          "The current local route and reviewed Pack do not provide the missing formula inputs.",
+          "Official and external supplement routes have not yet been executed for these gaps."
+        ],
+        "coverage_state_digest": "f89ad639f8927f4080557cf8c9502b992b46fee112f43820dcfa585f8278ae1f"
+      },
+      "coverage_state_digest": "f89ad639f8927f4080557cf8c9502b992b46fee112f43820dcfa585f8278ae1f",
+      "readiness": {
+        "schema_version": "fin_ia_s1_evidence_pack_readiness_v1_0",
+        "status": "task_relative_evidence_pack_readiness_materialized",
+        "recorded_at": "2026-08-17",
+        "case_key": "DELL",
+        "research_as_of": "2026-08-06",
+        "proposition_id": "PROP::E03F33AD2C60BFF6159871FB",
+        "readiness_state": "ready_for_bounded_research_not_complete_conclusion",
+        "pack_binding": {
+          "case_key": "DELL",
+          "artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+          "pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a"
+        },
+        "checks": {
+          "all_retrieved_candidates_have_persistent_decisions": true,
+          "accepted_evidence_is_writer_citable": true,
+          "capture_bound_promotion_lineage_visible": true,
+          "false_public_gap_prevented": true,
+          "complete_product_conclusion_ready": false,
+          "S1_qualified_stable": false
+        },
+        "accepted_evidence_count": 2,
+        "unresolved_gap_count": 3,
+        "known_boundary": "VS1 proves one current digital-native DELL vertical through the shared artifact spine. It permits bounded research on this proposition only; it does not qualify S1, close unexecuted supplement routes or authorize a complete financial conclusion.",
+        "readiness_digest": "ef6ceaf3cf6d4a837648b2c9a274655a4bfa16c900c58d16f3a3a262f50cf2ab"
+      },
+      "readiness_digest": "ef6ceaf3cf6d4a837648b2c9a274655a4bfa16c900c58d16f3a3a262f50cf2ab",
+      "workbench_projection": {
+        "schema_version": "fin_ia_s1_workbench_lineage_projection_v1_0",
+        "status": "canonical_s1_lineage_ready",
+        "recorded_at": "2026-08-17",
+        "case_key": "DELL",
+        "research_as_of": "2026-08-06",
+        "proposition_id": "PROP::E03F33AD2C60BFF6159871FB",
+        "readiness_state": "ready_for_bounded_research_not_complete_conclusion",
+        "candidate_decision_summary": {
+          "accepted": 2,
+          "rejected": 0,
+          "unjudged": 0,
+          "needs_review": 4
+        },
+        "coverage_summary": {
+          "coverage_state": "bounded_evidence_with_unresolved_gaps",
+          "accepted_evidence_count": 2,
+          "reviewed_not_recalled_count": 2,
+          "unresolved_gap_count": 3,
+          "true_public_information_gap_count": 0
+        },
+        "decision_rows": [
+          {
+            "candidate_ref": "CAND::C3EF7B44F73478E71CA2F839",
+            "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+            "rank": 1,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-K",
+            "publication_date": "2026-03-16",
+            "decision_state": "needs_review",
+            "reason_codes": [
+              "candidate_not_present_in_reviewed_pack"
+            ],
+            "decision_authority": "candidate_only_no_evidence_authority",
+            "accepted_evidence_item_digests": [],
+            "decision_digest": "4ec11a09cf72c5cbd0999db7b1ca8ce183c63dc5fa7936322db475f8456d8519"
+          },
+          {
+            "candidate_ref": "CAND::AA14562A29F3183946224F03",
+            "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0019_PART_02_OF_03",
+            "rank": 2,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-K",
+            "publication_date": "2025-03-25",
+            "decision_state": "needs_review",
+            "reason_codes": [
+              "candidate_not_present_in_reviewed_pack"
+            ],
+            "decision_authority": "candidate_only_no_evidence_authority",
+            "accepted_evidence_item_digests": [],
+            "decision_digest": "196d6504919296edc261d1ee2160791591c5c5fa55877b7f40490490408cef34"
+          },
+          {
+            "candidate_ref": "CAND::53324B1CCF4C4F80CA6BB7DB",
+            "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0013_PART_02_OF_02",
+            "rank": 3,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-Q",
+            "publication_date": "2025-12-09",
+            "decision_state": "needs_review",
+            "reason_codes": [
+              "candidate_not_present_in_reviewed_pack"
+            ],
+            "decision_authority": "candidate_only_no_evidence_authority",
+            "accepted_evidence_item_digests": [],
+            "decision_digest": "81772bc2b034048c4ac74f5fdc1ff1aa65a9ae9503a65be4642553011ddb026b"
+          },
+          {
+            "candidate_ref": "CAND::DD6810970E65AEC01A03870D",
+            "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02",
+            "rank": 4,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-K",
+            "publication_date": "2025-03-25",
+            "decision_state": "needs_review",
+            "reason_codes": [
+              "candidate_not_present_in_reviewed_pack"
+            ],
+            "decision_authority": "candidate_only_no_evidence_authority",
+            "accepted_evidence_item_digests": [],
+            "decision_digest": "a61241cec35b56b540c1e5eb49022a5cf4569d71ccecfd6609112262f8f603bd"
+          },
+          {
+            "candidate_ref": "CAND::E26558F533138CBBF9E76533",
+            "source_record_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004",
+            "rank": 5,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "EARNINGS_CALL_TRANSCRIPT",
+            "publication_date": "2026-05-28",
+            "decision_state": "accepted",
+            "reason_codes": [
+              "exact_reviewed_pack_lineage_match",
+              "case_owner_source_period_slot_gate_passed"
+            ],
+            "decision_authority": "capture_bound_reviewed_evidence_gate_reused",
+            "accepted_evidence_item_digests": [
+              "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1"
+            ],
+            "decision_digest": "e631ed5823a4b369488c4e6bfe538e91955f37590bc109639c46d6ba967f5ccc"
+          },
+          {
+            "candidate_ref": "CAND::30978CA6535C7AFDA5AB6FA7",
+            "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05",
+            "rank": 6,
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-Q",
+            "publication_date": "2025-12-09",
+            "decision_state": "accepted",
+            "reason_codes": [
+              "exact_reviewed_pack_lineage_match",
+              "case_owner_source_period_slot_gate_passed"
+            ],
+            "decision_authority": "immutable_reviewed_pack_reselection",
+            "accepted_evidence_item_digests": [
+              "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1"
+            ],
+            "decision_digest": "3c6d2b81cebb782415cf27fa737aefff4831964425c850550ebbe582d78e7792"
+          }
+        ],
+        "gap_eligibility_receipts": [
+          {
+            "gap_id": "dell-gap-pricing-asp",
+            "gap_code": "metric_not_disclosed",
+            "owning_stage": "S1",
+            "classification": "declared_pack_gap_not_public_information_absence",
+            "eligible_as_true_public_information_gap": false,
+            "checks": {
+              "local_object_and_index_checked": true,
+              "request_scoped_retrieval_executed": true,
+              "candidate_decisions_materialized": true,
+              "official_supplement_route_executed_for_this_gap": false,
+              "external_supplement_route_executed_for_this_gap": false,
+              "required_route_budget_proven_sufficient": false
+            },
+            "disposition": "supplement_route_not_yet_executed",
+            "last_checked_at": "2026-08-17",
+            "receipt_digest": "a530a4cd24c7b6e4d1531f5ab7f5230144c3de71b8b5c96d31fbe68af9c2b26e"
+          },
+          {
+            "gap_id": "dell-gap-price-volume-mix-bridge",
+            "gap_code": "formula_input_missing",
+            "owning_stage": "S1",
+            "classification": "declared_pack_gap_not_public_information_absence",
+            "eligible_as_true_public_information_gap": false,
+            "checks": {
+              "local_object_and_index_checked": true,
+              "request_scoped_retrieval_executed": true,
+              "candidate_decisions_materialized": true,
+              "official_supplement_route_executed_for_this_gap": false,
+              "external_supplement_route_executed_for_this_gap": false,
+              "required_route_budget_proven_sufficient": false
+            },
+            "disposition": "supplement_route_not_yet_executed",
+            "last_checked_at": "2026-08-17",
+            "receipt_digest": "5a51fd0b419c9e0f5ab50b8dadd69bff304351a090d38b3479647e43da53a56e"
+          },
+          {
+            "gap_id": "dell-gap-pricing-units",
+            "gap_code": "metric_not_disclosed",
+            "owning_stage": "S1",
+            "classification": "declared_pack_gap_not_public_information_absence",
+            "eligible_as_true_public_information_gap": false,
+            "checks": {
+              "local_object_and_index_checked": true,
+              "request_scoped_retrieval_executed": true,
+              "candidate_decisions_materialized": true,
+              "official_supplement_route_executed_for_this_gap": false,
+              "external_supplement_route_executed_for_this_gap": false,
+              "required_route_budget_proven_sufficient": false
+            },
+            "disposition": "supplement_route_not_yet_executed",
+            "last_checked_at": "2026-08-17",
+            "receipt_digest": "198f5c829efc97e30602d72d61cf72582abcb8515de0015b3db3448754f2015c"
+          }
+        ],
+        "pack_binding": {
+          "case_key": "DELL",
+          "artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+          "pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a"
+        },
+        "hard_boundaries": {
+          "candidate_is_not_evidence": true,
+          "rank_never_grants_evidence_authority": true,
+          "unexecuted_route_is_not_public_information_gap": true,
+          "complete_product_conclusion_ready": false,
+          "S1_qualified_stable": false
+        },
+        "workbench_projection_digest": "eccd0802fe490961054e655c51c1fb3f3abeb2c845e80dd540ec69db1bdbf0e3"
+      },
+      "workbench_projection_digest": "eccd0802fe490961054e655c51c1fb3f3abeb2c845e80dd540ec69db1bdbf0e3",
+      "frozen_consumer_probe": {
+        "schema_version": "fin_ia_s1_frozen_consumer_probe_v1_0",
+        "status": "pack_and_workbench_share_readiness_lineage",
+        "case_key": "DELL",
+        "evidence_pack_consumer_binding": {
+          "case_key": "DELL",
+          "artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+          "pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a"
+        },
+        "workbench_consumer_binding": {
+          "case_key": "DELL",
+          "artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+          "pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a"
+        },
+        "readiness_digest": "ef6ceaf3cf6d4a837648b2c9a274655a4bfa16c900c58d16f3a3a262f50cf2ab",
+        "same_pack_binding": true,
+        "same_readiness_lineage": true,
+        "frozen_consumer_probe_digest": "e79d6bb0f222dc7b77d08991bb3fcf4126d9c49e8d16d9a521a3764f43edd600"
+      },
+      "frozen_consumer_probe_digest": "e79d6bb0f222dc7b77d08991bb3fcf4126d9c49e8d16d9a521a3764f43edd600",
+      "artifact_refs": {
+        "source_route_decision": [
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::972a5847c0748ff7bec4a61a",
+            "artifact_version": "v1.0",
+            "payload_sha256": "d13d706021cb5bf688d627aa4e9ac5df78b51bb09fdd0ecb4bca6803e704b378",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::9f2b72263254ed82635f3952",
+            "artifact_version": "v1.0",
+            "payload_sha256": "b0c281ac1505b104992fd1f946a7588174e2c8ff18b3ae2c6f072e9ab4e33029",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::92cf77c71258e088c07323cf",
+            "artifact_version": "v1.0",
+            "payload_sha256": "479212bdc365035b6523d2342caf98793780e12668502aa1b7350123d8d62199",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::349a53496da821d5e1919ec7",
+            "artifact_version": "v1.0",
+            "payload_sha256": "925aa408b4557a635d2d7ecf5eb82ac456f62510b29fc83d7adb3a9becff9478",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::679e712a855aa92128ba31b6",
+            "artifact_version": "v1.0",
+            "payload_sha256": "4967c5c6d1cf2083d659662e88ec52eb6e753a8eebf445d83e11a12128ee7ba6",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::7023262ac88fe8eaf0510c87",
+            "artifact_version": "v1.0",
+            "payload_sha256": "c2ccd515997ff67c81b8659f335c6578d578c17b33e089f9cc113e84c4c8622f",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::8f49dbe30dbb0fc2c7c02abc",
+            "artifact_version": "v1.0",
+            "payload_sha256": "74a708a02f99486659fbb8e0647e799dc4a981cda576aae9b1a3b88c8710ce71",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::f2a30f4ca9da929d41cf3387",
+            "artifact_version": "v1.0",
+            "payload_sha256": "c67591529f5963c025154c84dd92be644a6d7173eab09c5c81ecf6842247ada7",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::3c43b766e4c559f8ff56d607",
+            "artifact_version": "v1.0",
+            "payload_sha256": "c2e148f7bc863147477879854ccd305c7a24276cfc736a6954b290a5c4e630ca",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::e6f6c488846abf21b302d739",
+            "artifact_version": "v1.0",
+            "payload_sha256": "5eb54d58d7665c68307a0db54248a0b46fcfa4068e0807af16e9a3e85fb28b2d",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          },
+          {
+            "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::ed6fc0e522dce32d7c5270a9",
+            "artifact_version": "v1.0",
+            "payload_sha256": "c69bcfa73eb19a5909dd0e59f821b0c42455a6f3404b1eb4489657b1f757d75b",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          }
+        ],
+        "raw_source_capture": [
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::47c1be73973d87304d4498e7",
+            "artifact_version": "v1.0",
+            "payload_sha256": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+            "lineage_digest": "83c9efa1416fb42102dae26f09f5e956df7442298989ba580d430f1677e0075b"
+          },
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::01d1cc93654447fe6c334223",
+            "artifact_version": "v1.0",
+            "payload_sha256": "2e2a251d50608284f6e3ca91e1d71cd39152a214e4bafd8b66cdd240d90fc5c2",
+            "lineage_digest": "791c965623844c2127556579d1808305d9fdbc88f677b63cad4f88e21fb0c1d7"
+          },
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::25015fc66e385cf47375c454",
+            "artifact_version": "v1.0",
+            "payload_sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9",
+            "lineage_digest": "ccb626f210b0b6b135e302f4016ad3c8d3505207794e9d2432abcedea9d1c9f0"
+          },
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::efe6a26a92b50b864561afee",
+            "artifact_version": "v1.0",
+            "payload_sha256": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+            "lineage_digest": "bc22a5e23a21b19728d40337d6e78fbb3a7f44618c2c79e6e124d6875ab47aab"
+          },
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::5e0666b358503273c0aa711c",
+            "artifact_version": "v1.0",
+            "payload_sha256": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+            "lineage_digest": "a7f676153a1c4d62d6f938847620b23c2436b82f4a49f961d36b17e91b1c11eb"
+          },
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::334d6c01c817be22d9eefe3e",
+            "artifact_version": "v1.0",
+            "payload_sha256": "3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e",
+            "lineage_digest": "98d71e31d33f06d7370af4bbf27df3cbd3b39ae13f25f1dc747bf48078719ef5"
+          },
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::956b8a73135cf513764c8cd2",
+            "artifact_version": "v1.0",
+            "payload_sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5",
+            "lineage_digest": "5b2879841093eba511c381d055fe9c8ccf7dc98dc811d7ba4a4063d376dee7f1"
+          },
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::9847fc6c4d2bdb110bb72e5c",
+            "artifact_version": "v1.0",
+            "payload_sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df",
+            "lineage_digest": "174f431e067fd15ffa2038598b8264ff89343806bd8098b0c85c469409cde814"
+          },
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::c8a5dd4468cbfaf428d18c35",
+            "artifact_version": "v1.0",
+            "payload_sha256": "db26ced97aadc0fc5d21b1bf331f01253315b147f43ea6573815fabfbe23c7f6",
+            "lineage_digest": "7c6c712ec654c45246ee9e85643e9ee87dbfcd58cf2b2e326cfbb52713ef1739"
+          },
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::6586e959a5fffe5bb71229c1",
+            "artifact_version": "v1.0",
+            "payload_sha256": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+            "lineage_digest": "19ff0b713d97f72f86bcfa273b0361071ddbcca15d370c605a1292928941a3c1"
+          },
+          {
+            "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::d3c739c3c7d042fe87e08967",
+            "artifact_version": "v1.0",
+            "payload_sha256": "3e21fe2dc69a4b95ebaf3e2e9a037ff5d704c5729e1eb7eff1554d03bdfea453",
+            "lineage_digest": "2cd23d8c8d79dfb06a25790e969bba0d71fd7f9d55fa04ddbef5bf2dcd648b5c"
+          }
+        ],
+        "parsed_document": [
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::badf2eb92d68f14fb64a3f03",
+            "artifact_version": "v1.0",
+            "payload_sha256": "ccc62f1f7766ef7ba8ba665692ef2a515e9ff95a277d3872d640c5d431cc8239",
+            "lineage_digest": "1d1474956d66f21c8ac92e079063b91f37a08200468e1f585c0c2bdc4855a969"
+          },
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::18e96939296af2623ae9700c",
+            "artifact_version": "v1.0",
+            "payload_sha256": "479a76f55d907e394441571af89ddd4ada41eb7ee9a0b7e52da798e0d3a76324",
+            "lineage_digest": "9ddf4cb426e650d2e166f53ecb034c8467ef68f690c8020bef65e672f9580343"
+          },
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::f45f5d6bf514ad53f620f1d1",
+            "artifact_version": "v1.0",
+            "payload_sha256": "26f0bb7aacb5c8cd94066a0eb8e6fddde3596c4edcb7ee593e9c7242f14ab648",
+            "lineage_digest": "d667d30ba9fb94c1ef4feb99b85f7394fcb91b023d46f58aaef908dbd577b822"
+          },
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::6a4090d4e9ae05afa7acaa4f",
+            "artifact_version": "v1.0",
+            "payload_sha256": "b108788d27685189563f2d13ab872800f06ee5171b3b88cf5300baf4868ee243",
+            "lineage_digest": "3fb7dc5330f736c0a27a369154e980c49ca52aa90cc537ae7ee8b8921f4cd81d"
+          },
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::5dcc8759822cfda335e92a9a",
+            "artifact_version": "v1.0",
+            "payload_sha256": "eed1efc154f1713921487eaeac3e7c8b0cd136e1f2bd5d536e59fdf86958fd6f",
+            "lineage_digest": "ce5b58a8b9e09d201c015157d1be68612e31a9865c9ff3ada9032bf2036d21e4"
+          },
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::a6aba0d8b3aa5d1dc9ca6ef1",
+            "artifact_version": "v1.0",
+            "payload_sha256": "c22cd24c5d929762a2a56042fb0a28436e98f19365b5f46c57a7010f97d383a3",
+            "lineage_digest": "5cb9c34fdfe99301e49ebca6f75f1d9cff2b41aeb97eaa1e0eb4e02925cb5801"
+          },
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::dc4e3232f10bb7a54c33ddb9",
+            "artifact_version": "v1.0",
+            "payload_sha256": "662a7364ad24cac7085027561bcb8fe9e05bb69771cc7d98aee1df415006ef20",
+            "lineage_digest": "301636171101b7b49edf819df955b0296ac53f7332f06941ba47dca3e5554ead"
+          },
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::f7a32154a59aa5dcf9fc0735",
+            "artifact_version": "v1.0",
+            "payload_sha256": "34df9db55e1574295c78b1b1c59c674ffecf58092da6618b9bf47f509b61fb79",
+            "lineage_digest": "8c12a7a8b7d0e0eef0296eca7d0592cdd3a63f756825930ba4cb53a75d676fc7"
+          },
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::2afe33766aa54a9c05dce7e3",
+            "artifact_version": "v1.0",
+            "payload_sha256": "7e9116939749884afeec31d73b0fc923f901ec3d21e2837f5d5381433dc2a8d3",
+            "lineage_digest": "e98ff1f9ba408d26d48a1e63e8ced764f52dee411b16e62710c3211d11d34a78"
+          },
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::b7dc082a0f65d132a6d5052f",
+            "artifact_version": "v1.0",
+            "payload_sha256": "3dbe29a0a9804696d4dbd458c25b93c03c420807b3a0466dfaaf3d14d32509ae",
+            "lineage_digest": "f3b5a47470061b28f96735ed328b01a2b0a3d3bf6eb2f0256e25c224093158fc"
+          },
+          {
+            "artifact_id": "FIN-S1::PARSED_DOCUMENT::54830627304c056a7778c7a0",
+            "artifact_version": "v1.0",
+            "payload_sha256": "3627c93c3f06c18c59b5f620fa4e2f65888b604c039adfc0539ac59d7d4560ea",
+            "lineage_digest": "2d857aed7ddcf20336d2710d25dc1bd549e0f346c787a02e74a963e3d273a6ba"
+          }
+        ],
+        "financial_evidence_object": [
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::bcf4afc95f244c08b6758479",
+            "artifact_version": "v1.0",
+            "payload_sha256": "997b83d7598ebe7cafe1abace1bbc9586944d63f97bce9b02804e9f799a51359",
+            "lineage_digest": "7d29a7088c4e866aa1c127f3c8b3e6618abad5f23461f12ebeac80ea1e60e4be"
+          },
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::7fbfe18f7b22cb15cb2ba740",
+            "artifact_version": "v1.0",
+            "payload_sha256": "01285ea902dec11ada31829b77421ec93726fab930b3109a72d834238c12e677",
+            "lineage_digest": "a75ec5bce91128595cc6e8324d6b0ea58d100f801307250f45035d41b8577dec"
+          },
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::6d8c47e68c9ad167e8e853b9",
+            "artifact_version": "v1.0",
+            "payload_sha256": "04185243813e45de7ce7e87de4ad47e3cca7eab4f0c1d5445bef650cd41f1675",
+            "lineage_digest": "aafd3767c7aebc8711be307ac1c3cb80195116d55b238f265b9231fe26d99e63"
+          },
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::239c916a00bb43a4bfc7e60b",
+            "artifact_version": "v1.0",
+            "payload_sha256": "7d5b8f7f13f2720fc23ffc951c6c63c153c142a4f1e761f64ef2fd145e501ffd",
+            "lineage_digest": "3f907ff0380017fa40c66c8bf527a08b21e094676bdbc31ca7e8e045419f8318"
+          },
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::1a6e77e3415263041cd61654",
+            "artifact_version": "v1.0",
+            "payload_sha256": "ef61a3bc58136507c7a1fcc8381506ddbfe29e6a6bf6a5eb8d227b2c90937267",
+            "lineage_digest": "2d1b4ba2ff6b988ef650ab68ebf12492f181a03509b2fd188d8d56d9dfe55dbe"
+          },
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::3aef48b3050dae297680c2ca",
+            "artifact_version": "v1.0",
+            "payload_sha256": "b1255170060d958ffde1d1d9df95ea36837c40c7f986b1ebebae7db48174664b",
+            "lineage_digest": "f9c2f97c14daf287d20978e10e575ac5d84de2a928caa2f0e2111e49e509b15f"
+          },
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::6ab90e9ae23423b5a4caeead",
+            "artifact_version": "v1.0",
+            "payload_sha256": "71fda610e9af6536066e12c3c5f7cb32493653e63d6070ec8612269cb863e3df",
+            "lineage_digest": "e64f1f2357cadc7b8c2bf0c9f62ac961ca9586968239539821c42722531d628e"
+          },
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::c38a307324a2e08ce0a3712c",
+            "artifact_version": "v1.0",
+            "payload_sha256": "810ce541f4b9f6b94c1ba4ad941e94ff9814e1edb4ea954afa6a82c414a5207e",
+            "lineage_digest": "615224b76e92a25f8f51b8bddeeb3f740a121c75951f9e53df424ffb6dd8f5ab"
+          },
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::78f04b1f8f2a811807f1bb24",
+            "artifact_version": "v1.0",
+            "payload_sha256": "cbb5f744f88ad0d945d14f82be98d7d810fc485bfd828955434a473d4b22e38f",
+            "lineage_digest": "28e392abe488888e4890c4ec77238a36d007c709b594dc52e8fdeff274f74042"
+          },
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::e2be33e243665460cdd46645",
+            "artifact_version": "v1.0",
+            "payload_sha256": "553e097e8c4d94faef949a3749aadc920c35283c381679063ed91cf75f40637e",
+            "lineage_digest": "43944a1ae42025baba7967dbae48ad058801ca2f380980ff02f2342d0e318c03"
+          },
+          {
+            "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::8dc580fa68ea07f9220f795d",
+            "artifact_version": "v1.0",
+            "payload_sha256": "87f6797fa6f9220be7826498c2535c069172af52fc4cbd9c1ad1d6b8a1085170",
+            "lineage_digest": "c91ae5118030ef6df8f56f4105b965647305d7f875f796f1c077c7faa57a9307"
+          }
+        ],
+        "object_manifest": [
+          {
+            "artifact_id": "FIN-S1::OBJECT_MANIFEST::162bb302c5f53aa30009f2ab",
+            "artifact_version": "v1.0",
+            "payload_sha256": "b41d7ba6773791c9133d3e5a56ceaaec19e3c18415dcd5e88d4efb131a03312f",
+            "lineage_digest": "d37fda7528352c3f8dea972fff880ac758f31f28f40218a2f5e7f8b5ab4ebab2"
+          }
+        ],
+        "index_snapshot": [
+          {
+            "artifact_id": "FIN-S1::INDEX_SNAPSHOT::304ef8a394fdd55418792eb8",
+            "artifact_version": "v1.0",
+            "payload_sha256": "444e321a566420f4f30bb655f7f1b8e2fdeadc2c6c25643598458247b99a0430",
+            "lineage_digest": "939a86d63d9adbde82c6dd58ae072d77f58c8d84ce506cf7302c8a7fca66a156"
+          }
+        ],
+        "evidence_request": [
+          {
+            "artifact_id": "FIN-S1::EVIDENCE_REQUEST::fc8d9b2a9df7666c4a3177c4",
+            "artifact_version": "v1.0",
+            "payload_sha256": "5f97ac27fdd2814a41235894a22385ada03ea8ad8e9f759a93345ff91df8c462",
+            "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+          }
+        ],
+        "query_facet_plan": [
+          {
+            "artifact_id": "FIN-S1::QUERY_FACET_PLAN::267ccfe254f3e6c6681da16d",
+            "artifact_version": "v1.0",
+            "payload_sha256": "fbc3e8ba31a5e81c667b0b97a404ea8ca03dc85b2d8a3720147042b3d87b7661",
+            "lineage_digest": "61136324bfa25ec77078d33588424cfe27e38b3b0436d79285f99a6b3205434a"
+          }
+        ],
+        "candidate_set": [
+          {
+            "artifact_id": "FIN-S1::CANDIDATE_SET::4abfbd5bc09e0fd78a77f388",
+            "artifact_version": "v1.0",
+            "payload_sha256": "a11ef5e8e74c621a709a1af9665c11b463c312f484c41ed4d5ad3123d1763469",
+            "lineage_digest": "db936dc0893517aa55c2c9761e87cea9de0d1f1537900afb72dc010135f8c5dc"
+          }
+        ],
+        "candidate_ranking": [
+          {
+            "artifact_id": "FIN-S1::CANDIDATE_RANKING::50e4d73f4ce6f6621f187239",
+            "artifact_version": "v1.0",
+            "payload_sha256": "6732aa1fdba4fdfc4f8ce0cab54a2a79b715e79467d7e5c5c9b55f29b819b243",
+            "lineage_digest": "5298ed6d70abf4dded443b0f50899c06df2e10ff3c12c1cf6d1052e69d694646"
+          }
+        ],
+        "candidate_decision": [
+          {
+            "artifact_id": "FIN-S1::CANDIDATE_DECISION::c81d3eee142dbd393263e57f",
+            "artifact_version": "v1.0",
+            "payload_sha256": "fc4fc565fd88013ff6c53d91efe41bb4c390f2307392294e11ba43cde4f14a4c",
+            "lineage_digest": "7bcf7853a7b2863cc616a9daf9c08e2050e859b0155cd45447c42ac97cf602a5"
+          }
+        ],
+        "evidence_coverage_state": [
+          {
+            "artifact_id": "FIN-S1::EVIDENCE_COVERAGE_STATE::dc9322ca1fd060c690b7690c",
+            "artifact_version": "v1.0",
+            "payload_sha256": "bd62fcd73231e989597923e20cce214cf286288b3d0b3dc775109dd91572b7df",
+            "lineage_digest": "d4f0fc347c15070add4c2abaec9224cf49752431b73508764fa1f3dee2eecefd"
+          }
+        ],
+        "evidence_pack_readiness": [
+          {
+            "artifact_id": "FIN-S1::EVIDENCE_PACK_READINESS::d51b266881e73076bd523b31",
+            "artifact_version": "v1.0",
+            "payload_sha256": "97f160215aecd3640a6c913d997c8783259cce05507370ef9d2a10b5138d417b",
+            "lineage_digest": "612ed1df33bffc7d608a79aed7e309aa6548555702eb43dc51d662625a946901"
+          }
+        ],
+        "workbench_projection": [
+          {
+            "artifact_id": "FIN-S1::WORKBENCH_PROJECTION::34fbc4c5ea7bec3dd23de845",
+            "artifact_version": "v1.0",
+            "payload_sha256": "03c1ed8d2309839bfb1c3c00876105391f63672560e260309b71bb664e75fa49",
+            "lineage_digest": "84cc9d46348de2a3a9c8db1fd365be10199bff9c65c0a7b58de07e40955962ad"
+          }
+        ],
+        "frozen_consumer_probe": [
+          {
+            "artifact_id": "FIN-S1::FROZEN_CONSUMER_PROBE::1a1fc094a5dffeb2f793fec0",
+            "artifact_version": "v1.0",
+            "payload_sha256": "feef1d4301f1a826dbd6a04f7f8fa3c90c4bc65e2090f0bf8025358e098cfb0c",
+            "lineage_digest": "2b7cd7c861bb34f10510d37161fc81d8738b2da2ae46b2f59f49918fdd9438f4"
+          }
+        ]
+      }
+    }
+  },
+  "envelopes": [
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::972a5847c0748ff7bec4a61a",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/dell_fy2026_10k_raw_capture",
+      "payload_sha256": "d13d706021cb5bf688d627aa4e9ac5df78b51bb09fdd0ecb4bca6803e704b378",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": "DELL",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::47c1be73973d87304d4498e7",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_existing_immutable_source_v1_0",
+      "payload_ref": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/22/71/2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388.json",
+      "payload_sha256": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": "DELL",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::972a5847c0748ff7bec4a61a",
+          "artifact_version": "v1.0",
+          "payload_sha256": "d13d706021cb5bf688d627aa4e9ac5df78b51bb09fdd0ecb4bca6803e704b378",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "83c9efa1416fb42102dae26f09f5e956df7442298989ba580d430f1677e0075b"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::badf2eb92d68f14fb64a3f03",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/dell_fy2026_10k_raw_capture",
+      "payload_sha256": "ccc62f1f7766ef7ba8ba665692ef2a515e9ff95a277d3872d640c5d431cc8239",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": "DELL",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::47c1be73973d87304d4498e7",
+          "artifact_version": "v1.0",
+          "payload_sha256": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "1d1474956d66f21c8ac92e079063b91f37a08200468e1f585c0c2bdc4855a969"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::bcf4afc95f244c08b6758479",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/dell_fy2026_10k_raw_capture",
+      "payload_sha256": "997b83d7598ebe7cafe1abace1bbc9586944d63f97bce9b02804e9f799a51359",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": "DELL",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::badf2eb92d68f14fb64a3f03",
+          "artifact_version": "v1.0",
+          "payload_sha256": "ccc62f1f7766ef7ba8ba665692ef2a515e9ff95a277d3872d640c5d431cc8239",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "7d29a7088c4e866aa1c127f3c8b3e6618abad5f23461f12ebeac80ea1e60e4be"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::9f2b72263254ed82635f3952",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/dell_q1_fy2027_official_transcript_parsed_document",
+      "payload_sha256": "b0c281ac1505b104992fd1f946a7588174e2c8ff18b3ae2c6f072e9ab4e33029",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": "DELL",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::01d1cc93654447fe6c334223",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_capture_first_raw_binary_v1_0",
+      "payload_ref": "data/workbench_private/source_intake/raw/sha256/2e/2a/2e2a251d50608284f6e3ca91e1d71cd39152a214e4bafd8b66cdd240d90fc5c2.bin",
+      "payload_sha256": "2e2a251d50608284f6e3ca91e1d71cd39152a214e4bafd8b66cdd240d90fc5c2",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": "DELL",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::9f2b72263254ed82635f3952",
+          "artifact_version": "v1.0",
+          "payload_sha256": "b0c281ac1505b104992fd1f946a7588174e2c8ff18b3ae2c6f072e9ab4e33029",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "791c965623844c2127556579d1808305d9fdbc88f677b63cad4f88e21fb0c1d7"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::18e96939296af2623ae9700c",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_parsed_official_pdf_document_v1_0",
+      "payload_ref": "data/workbench_private/fin_0_1_3_s1d_dell_official_pdf_successor/zero-call-r1/parsed_document.json",
+      "payload_sha256": "479a76f55d907e394441571af89ddd4ada41eb7ee9a0b7e52da798e0d3a76324",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": "DELL",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::01d1cc93654447fe6c334223",
+          "artifact_version": "v1.0",
+          "payload_sha256": "2e2a251d50608284f6e3ca91e1d71cd39152a214e4bafd8b66cdd240d90fc5c2",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "9ddf4cb426e650d2e166f53ecb034c8467ef68f690c8020bef65e672f9580343"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::7fbfe18f7b22cb15cb2ba740",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/dell_q1_fy2027_official_transcript_parsed_document",
+      "payload_sha256": "01285ea902dec11ada31829b77421ec93726fab930b3109a72d834238c12e677",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": "DELL",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::18e96939296af2623ae9700c",
+          "artifact_version": "v1.0",
+          "payload_sha256": "479a76f55d907e394441571af89ddd4ada41eb7ee9a0b7e52da798e0d3a76324",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "a75ec5bce91128595cc6e8324d6b0ea58d100f801307250f45035d41b8577dec"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::92cf77c71258e088c07323cf",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/historical_sec_semantic_children",
+      "payload_sha256": "479212bdc365035b6523d2342caf98793780e12668502aa1b7350123d8d62199",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::25015fc66e385cf47375c454",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_existing_immutable_source_v1_0",
+      "payload_ref": "data/indexes/bm25/sector_depth_full238_us_v0_3_mixed_with_8k_fy2023_2027/records.jsonl",
+      "payload_sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::92cf77c71258e088c07323cf",
+          "artifact_version": "v1.0",
+          "payload_sha256": "479212bdc365035b6523d2342caf98793780e12668502aa1b7350123d8d62199",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "ccb626f210b0b6b135e302f4016ad3c8d3505207794e9d2432abcedea9d1c9f0"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::f45f5d6bf514ad53f620f1d1",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/historical_sec_semantic_children",
+      "payload_sha256": "26f0bb7aacb5c8cd94066a0eb8e6fddde3596c4edcb7ee593e9c7242f14ab648",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::25015fc66e385cf47375c454",
+          "artifact_version": "v1.0",
+          "payload_sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "d667d30ba9fb94c1ef4feb99b85f7394fcb91b023d46f58aaef908dbd577b822"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::6d8c47e68c9ad167e8e853b9",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/historical_sec_semantic_children",
+      "payload_sha256": "04185243813e45de7ce7e87de4ad47e3cca7eab4f0c1d5445bef650cd41f1675",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::f45f5d6bf514ad53f620f1d1",
+          "artifact_version": "v1.0",
+          "payload_sha256": "26f0bb7aacb5c8cd94066a0eb8e6fddde3596c4edcb7ee593e9c7242f14ab648",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "aafd3767c7aebc8711be307ac1c3cb80195116d55b238f265b9231fe26d99e63"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::349a53496da821d5e1919ec7",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/mu_q3_fy2026_10q_raw_capture",
+      "payload_sha256": "925aa408b4557a635d2d7ecf5eb82ac456f62510b29fc83d7adb3a9becff9478",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "MU",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::efe6a26a92b50b864561afee",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_existing_immutable_source_v1_0",
+      "payload_ref": "data/workbench_private/fin_0_1_3_s1_internal_mu_10q_acquisition/live-r1/objects/fin-0.1.3/s1-internal-mu-10q-successor/raw/90/79/90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d.json",
+      "payload_sha256": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "MU",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::349a53496da821d5e1919ec7",
+          "artifact_version": "v1.0",
+          "payload_sha256": "925aa408b4557a635d2d7ecf5eb82ac456f62510b29fc83d7adb3a9becff9478",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "bc22a5e23a21b19728d40337d6e78fbb3a7f44618c2c79e6e124d6875ab47aab"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::6a4090d4e9ae05afa7acaa4f",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/mu_q3_fy2026_10q_raw_capture",
+      "payload_sha256": "b108788d27685189563f2d13ab872800f06ee5171b3b88cf5300baf4868ee243",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "MU",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::efe6a26a92b50b864561afee",
+          "artifact_version": "v1.0",
+          "payload_sha256": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "3fb7dc5330f736c0a27a369154e980c49ca52aa90cc537ae7ee8b8921f4cd81d"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::239c916a00bb43a4bfc7e60b",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/mu_q3_fy2026_10q_raw_capture",
+      "payload_sha256": "7d5b8f7f13f2720fc23ffc951c6c63c153c142a4f1e761f64ef2fd145e501ffd",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "MU",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::6a4090d4e9ae05afa7acaa4f",
+          "artifact_version": "v1.0",
+          "payload_sha256": "b108788d27685189563f2d13ab872800f06ee5171b3b88cf5300baf4868ee243",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "3f907ff0380017fa40c66c8bf527a08b21e094676bdbc31ca7e8e045419f8318"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::679e712a855aa92128ba31b6",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/mu_q3_fy2026_earnings_release_raw_capture",
+      "payload_sha256": "4967c5c6d1cf2083d659662e88ec52eb6e753a8eebf445d83e11a12128ee7ba6",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "MU",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::5e0666b358503273c0aa711c",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_existing_immutable_source_v1_0",
+      "payload_ref": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/23/c9/23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846.json",
+      "payload_sha256": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "MU",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::679e712a855aa92128ba31b6",
+          "artifact_version": "v1.0",
+          "payload_sha256": "4967c5c6d1cf2083d659662e88ec52eb6e753a8eebf445d83e11a12128ee7ba6",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "a7f676153a1c4d62d6f938847620b23c2436b82f4a49f961d36b17e91b1c11eb"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::5dcc8759822cfda335e92a9a",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/mu_q3_fy2026_earnings_release_raw_capture",
+      "payload_sha256": "eed1efc154f1713921487eaeac3e7c8b0cd136e1f2bd5d536e59fdf86958fd6f",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "MU",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::5e0666b358503273c0aa711c",
+          "artifact_version": "v1.0",
+          "payload_sha256": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "ce5b58a8b9e09d201c015157d1be68612e31a9865c9ff3ada9032bf2036d21e4"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::1a6e77e3415263041cd61654",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/mu_q3_fy2026_earnings_release_raw_capture",
+      "payload_sha256": "ef61a3bc58136507c7a1fcc8381506ddbfe29e6a6bf6a5eb8d227b2c90937267",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "MU",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::5dcc8759822cfda335e92a9a",
+          "artifact_version": "v1.0",
+          "payload_sha256": "eed1efc154f1713921487eaeac3e7c8b0cd136e1f2bd5d536e59fdf86958fd6f",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "2d1b4ba2ff6b988ef650ab68ebf12492f181a03509b2fd188d8d56d9dfe55dbe"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::7023262ac88fe8eaf0510c87",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/nvda_q1_fy2027_10q_raw_capture",
+      "payload_sha256": "c2ccd515997ff67c81b8659f335c6578d578c17b33e089f9cc113e84c4c8622f",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "NVDA",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::334d6c01c817be22d9eefe3e",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_existing_immutable_source_v1_0",
+      "payload_ref": "data/workbench_private/fin_0_1_3_s1b_official_source_capture/live-r4/objects/raw/3c/bc/3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e.json",
+      "payload_sha256": "3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "NVDA",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::7023262ac88fe8eaf0510c87",
+          "artifact_version": "v1.0",
+          "payload_sha256": "c2ccd515997ff67c81b8659f335c6578d578c17b33e089f9cc113e84c4c8622f",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "98d71e31d33f06d7370af4bbf27df3cbd3b39ae13f25f1dc747bf48078719ef5"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::a6aba0d8b3aa5d1dc9ca6ef1",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/nvda_q1_fy2027_10q_raw_capture",
+      "payload_sha256": "c22cd24c5d929762a2a56042fb0a28436e98f19365b5f46c57a7010f97d383a3",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "NVDA",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::334d6c01c817be22d9eefe3e",
+          "artifact_version": "v1.0",
+          "payload_sha256": "3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "5cb9c34fdfe99301e49ebca6f75f1d9cff2b41aeb97eaa1e0eb4e02925cb5801"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::3aef48b3050dae297680c2ca",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/nvda_q1_fy2027_10q_raw_capture",
+      "payload_sha256": "b1255170060d958ffde1d1d9df95ea36837c40c7f986b1ebebae7db48174664b",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "NVDA",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::a6aba0d8b3aa5d1dc9ca6ef1",
+          "artifact_version": "v1.0",
+          "payload_sha256": "c22cd24c5d929762a2a56042fb0a28436e98f19365b5f46c57a7010f97d383a3",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "f9c2f97c14daf287d20978e10e575ac5d84de2a928caa2f0e2111e49e509b15f"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::8f49dbe30dbb0fc2c7c02abc",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/retired_mu_10q_chunk_aliases_v3",
+      "payload_sha256": "74a708a02f99486659fbb8e0647e799dc4a981cda576aae9b1a3b88c8710ce71",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::956b8a73135cf513764c8cd2",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_existing_immutable_source_v1_0",
+      "payload_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v3_mu_10q/corpus/supplemental_evidence.jsonl",
+      "payload_sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::8f49dbe30dbb0fc2c7c02abc",
+          "artifact_version": "v1.0",
+          "payload_sha256": "74a708a02f99486659fbb8e0647e799dc4a981cda576aae9b1a3b88c8710ce71",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "5b2879841093eba511c381d055fe9c8ccf7dc98dc811d7ba4a4063d376dee7f1"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::dc4e3232f10bb7a54c33ddb9",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/retired_mu_10q_chunk_aliases_v3",
+      "payload_sha256": "662a7364ad24cac7085027561bcb8fe9e05bb69771cc7d98aee1df415006ef20",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::956b8a73135cf513764c8cd2",
+          "artifact_version": "v1.0",
+          "payload_sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "301636171101b7b49edf819df955b0296ac53f7332f06941ba47dca3e5554ead"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::6ab90e9ae23423b5a4caeead",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/retired_mu_10q_chunk_aliases_v3",
+      "payload_sha256": "71fda610e9af6536066e12c3c5f7cb32493653e63d6070ec8612269cb863e3df",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::dc4e3232f10bb7a54c33ddb9",
+          "artifact_version": "v1.0",
+          "payload_sha256": "662a7364ad24cac7085027561bcb8fe9e05bb69771cc7d98aee1df415006ef20",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "e64f1f2357cadc7b8c2bf0c9f62ac961ca9586968239539821c42722531d628e"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::f2a30f4ca9da929d41cf3387",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/retired_supplemental_chunk_aliases_v2",
+      "payload_sha256": "c67591529f5963c025154c84dd92be644a6d7173eab09c5c81ecf6842247ada7",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::9847fc6c4d2bdb110bb72e5c",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_existing_immutable_source_v1_0",
+      "payload_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/corpus/supplemental_evidence.jsonl",
+      "payload_sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::f2a30f4ca9da929d41cf3387",
+          "artifact_version": "v1.0",
+          "payload_sha256": "c67591529f5963c025154c84dd92be644a6d7173eab09c5c81ecf6842247ada7",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "174f431e067fd15ffa2038598b8264ff89343806bd8098b0c85c469409cde814"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::f7a32154a59aa5dcf9fc0735",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/retired_supplemental_chunk_aliases_v2",
+      "payload_sha256": "34df9db55e1574295c78b1b1c59c674ffecf58092da6618b9bf47f509b61fb79",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::9847fc6c4d2bdb110bb72e5c",
+          "artifact_version": "v1.0",
+          "payload_sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "8c12a7a8b7d0e0eef0296eca7d0592cdd3a63f756825930ba4cb53a75d676fc7"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::c38a307324a2e08ce0a3712c",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/retired_supplemental_chunk_aliases_v2",
+      "payload_sha256": "810ce541f4b9f6b94c1ba4ad941e94ff9814e1edb4ea954afa6a82c414a5207e",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::f7a32154a59aa5dcf9fc0735",
+          "artifact_version": "v1.0",
+          "payload_sha256": "34df9db55e1574295c78b1b1c59c674ffecf58092da6618b9bf47f509b61fb79",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "615224b76e92a25f8f51b8bddeeb3f740a121c75951f9e53df424ffb6dd8f5ab"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::3c43b766e4c559f8ff56d607",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/three_case_pit_market_snapshot_20260624",
+      "payload_sha256": "c2e148f7bc863147477879854ccd305c7a24276cfc736a6954b290a5c4e630ca",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::c8a5dd4468cbfaf428d18c35",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_existing_immutable_source_v1_0",
+      "payload_ref": "data/processed_private/market/evidence_packs/20260624_market_yahoo_chart_603_3m_v1_3m_market_evidence.jsonl",
+      "payload_sha256": "db26ced97aadc0fc5d21b1bf331f01253315b147f43ea6573815fabfbe23c7f6",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::3c43b766e4c559f8ff56d607",
+          "artifact_version": "v1.0",
+          "payload_sha256": "c2e148f7bc863147477879854ccd305c7a24276cfc736a6954b290a5c4e630ca",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "7c6c712ec654c45246ee9e85643e9ee87dbfcd58cf2b2e326cfbb52713ef1739"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::2afe33766aa54a9c05dce7e3",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/three_case_pit_market_snapshot_20260624",
+      "payload_sha256": "7e9116939749884afeec31d73b0fc923f901ec3d21e2837f5d5381433dc2a8d3",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::c8a5dd4468cbfaf428d18c35",
+          "artifact_version": "v1.0",
+          "payload_sha256": "db26ced97aadc0fc5d21b1bf331f01253315b147f43ea6573815fabfbe23c7f6",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "e98ff1f9ba408d26d48a1e63e8ced764f52dee411b16e62710c3211d11d34a78"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::78f04b1f8f2a811807f1bb24",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/three_case_pit_market_snapshot_20260624",
+      "payload_sha256": "cbb5f744f88ad0d945d14f82be98d7d810fc485bfd828955434a473d4b22e38f",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::2afe33766aa54a9c05dce7e3",
+          "artifact_version": "v1.0",
+          "payload_sha256": "7e9116939749884afeec31d73b0fc923f901ec3d21e2837f5d5381433dc2a8d3",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "28e392abe488888e4890c4ec77238a36d007c709b594dc52e8fdeff274f74042"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::e6f6c488846abf21b302d739",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/tsm_q2_2026_6k_release_raw_capture",
+      "payload_sha256": "5eb54d58d7665c68307a0db54248a0b46fcfa4068e0807af16e9a3e85fb28b2d",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "TSM",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::6586e959a5fffe5bb71229c1",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_existing_immutable_source_v1_0",
+      "payload_ref": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/5a/9e/5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64.json",
+      "payload_sha256": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "TSM",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::e6f6c488846abf21b302d739",
+          "artifact_version": "v1.0",
+          "payload_sha256": "5eb54d58d7665c68307a0db54248a0b46fcfa4068e0807af16e9a3e85fb28b2d",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "19ff0b713d97f72f86bcfa273b0361071ddbcca15d370c605a1292928941a3c1"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::b7dc082a0f65d132a6d5052f",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_vs1_existing_parser_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/parsed_receipts/tsm_q2_2026_6k_release_raw_capture",
+      "payload_sha256": "3dbe29a0a9804696d4dbd458c25b93c03c420807b3a0466dfaaf3d14d32509ae",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "TSM",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::6586e959a5fffe5bb71229c1",
+          "artifact_version": "v1.0",
+          "payload_sha256": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "f3b5a47470061b28f96735ed328b01a2b0a3d3bf6eb2f0256e25c224093158fc"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::e2be33e243665460cdd46645",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/tsm_q2_2026_6k_release_raw_capture",
+      "payload_sha256": "553e097e8c4d94faef949a3749aadc920c35283c381679063ed91cf75f40637e",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "TSM",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::b7dc082a0f65d132a6d5052f",
+          "artifact_version": "v1.0",
+          "payload_sha256": "3dbe29a0a9804696d4dbd458c25b93c03c420807b3a0466dfaaf3d14d32509ae",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "43944a1ae42025baba7967dbae48ad058801ca2f380980ff02f2342d0e318c03"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::ed6fc0e522dce32d7c5270a9",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/source_routes/tsm_q2_2026_official_transcript_parsed_document",
+      "payload_sha256": "c69bcfa73eb19a5909dd0e59f821b0c42455a6f3404b1eb4489657b1f757d75b",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "TSM",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::d3c739c3c7d042fe87e08967",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_ia_capture_first_raw_binary_v1_0",
+      "payload_ref": "data/workbench_private/source_intake/raw/sha256/3e/21/3e21fe2dc69a4b95ebaf3e2e9a037ff5d704c5729e1eb7eff1554d03bdfea453.bin",
+      "payload_sha256": "3e21fe2dc69a4b95ebaf3e2e9a037ff5d704c5729e1eb7eff1554d03bdfea453",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "TSM",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::ed6fc0e522dce32d7c5270a9",
+          "artifact_version": "v1.0",
+          "payload_sha256": "c69bcfa73eb19a5909dd0e59f821b0c42455a6f3404b1eb4489657b1f757d75b",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "2cd23d8c8d79dfb06a25790e969bba0d71fd7f9d55fa04ddbef5bf2dcd648b5c"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::54830627304c056a7778c7a0",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_parsed_official_pdf_document_v1_0",
+      "payload_ref": "data/workbench_private/fin_0_1_3_s1d_tsm_official_pdf_successor/zero-call-r2/parsed_document.json",
+      "payload_sha256": "3627c93c3f06c18c59b5f620fa4e2f65888b604c039adfc0539ac59d7d4560ea",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "TSM",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::d3c739c3c7d042fe87e08967",
+          "artifact_version": "v1.0",
+          "payload_sha256": "3e21fe2dc69a4b95ebaf3e2e9a037ff5d704c5729e1eb7eff1554d03bdfea453",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "2d857aed7ddcf20336d2710d25dc1bd549e0f346c787a02e74a963e3d273a6ba"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::8dc580fa68ea07f9220f795d",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/financial_objects/tsm_q2_2026_official_transcript_parsed_document",
+      "payload_sha256": "87f6797fa6f9220be7826498c2535c069172af52fc4cbd9c1ad1d6b8a1085170",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "source_only",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": "TSM",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::54830627304c056a7778c7a0",
+          "artifact_version": "v1.0",
+          "payload_sha256": "3627c93c3f06c18c59b5f620fa4e2f65888b604c039adfc0539ac59d7d4560ea",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "c91ae5118030ef6df8f56f4105b965647305d7f875f796f1c077c7faa57a9307"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "object_manifest",
+      "artifact_id": "FIN-S1::OBJECT_MANIFEST::162bb302c5f53aa30009f2ab",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_s1b_source_object_manifest_v1_0",
+      "payload_ref": "configs/retrieval/fin_ia_0_1_3_s1b_current_source_object_manifest_v1_1.json",
+      "payload_sha256": "b41d7ba6773791c9133d3e5a56ceaaec19e3c18415dcd5e88d4efb131a03312f",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::bcf4afc95f244c08b6758479",
+          "artifact_version": "v1.0",
+          "payload_sha256": "997b83d7598ebe7cafe1abace1bbc9586944d63f97bce9b02804e9f799a51359",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::7fbfe18f7b22cb15cb2ba740",
+          "artifact_version": "v1.0",
+          "payload_sha256": "01285ea902dec11ada31829b77421ec93726fab930b3109a72d834238c12e677",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::6d8c47e68c9ad167e8e853b9",
+          "artifact_version": "v1.0",
+          "payload_sha256": "04185243813e45de7ce7e87de4ad47e3cca7eab4f0c1d5445bef650cd41f1675",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::239c916a00bb43a4bfc7e60b",
+          "artifact_version": "v1.0",
+          "payload_sha256": "7d5b8f7f13f2720fc23ffc951c6c63c153c142a4f1e761f64ef2fd145e501ffd",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::1a6e77e3415263041cd61654",
+          "artifact_version": "v1.0",
+          "payload_sha256": "ef61a3bc58136507c7a1fcc8381506ddbfe29e6a6bf6a5eb8d227b2c90937267",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::3aef48b3050dae297680c2ca",
+          "artifact_version": "v1.0",
+          "payload_sha256": "b1255170060d958ffde1d1d9df95ea36837c40c7f986b1ebebae7db48174664b",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::6ab90e9ae23423b5a4caeead",
+          "artifact_version": "v1.0",
+          "payload_sha256": "71fda610e9af6536066e12c3c5f7cb32493653e63d6070ec8612269cb863e3df",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::c38a307324a2e08ce0a3712c",
+          "artifact_version": "v1.0",
+          "payload_sha256": "810ce541f4b9f6b94c1ba4ad941e94ff9814e1edb4ea954afa6a82c414a5207e",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::78f04b1f8f2a811807f1bb24",
+          "artifact_version": "v1.0",
+          "payload_sha256": "cbb5f744f88ad0d945d14f82be98d7d810fc485bfd828955434a473d4b22e38f",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::e2be33e243665460cdd46645",
+          "artifact_version": "v1.0",
+          "payload_sha256": "553e097e8c4d94faef949a3749aadc920c35283c381679063ed91cf75f40637e",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::8dc580fa68ea07f9220f795d",
+          "artifact_version": "v1.0",
+          "payload_sha256": "87f6797fa6f9220be7826498c2535c069172af52fc4cbd9c1ad1d6b8a1085170",
+          "relation": "consumes"
+        }
+      ],
+      "lineage_digest": "d37fda7528352c3f8dea972fff880ac758f31f28f40218a2f5e7f8b5ab4ebab2"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "index_snapshot",
+      "artifact_id": "FIN-S1::INDEX_SNAPSHOT::304ef8a394fdd55418792eb8",
+      "artifact_version": "v1.0",
+      "producer_id": "current_retrieval_snapshot_adapter",
+      "payload_schema_version": "fin_ia_current_retrieval_snapshot_v1_0",
+      "payload_ref": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
+      "payload_sha256": "444e321a566420f4f30bb655f7f1b8e2fdeadc2c6c25643598458247b99a0430",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "object_manifest",
+          "artifact_id": "FIN-S1::OBJECT_MANIFEST::162bb302c5f53aa30009f2ab",
+          "artifact_version": "v1.0",
+          "payload_sha256": "b41d7ba6773791c9133d3e5a56ceaaec19e3c18415dcd5e88d4efb131a03312f",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "939a86d63d9adbde82c6dd58ae072d77f58c8d84ce506cf7302c8a7fca66a156"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "evidence_request",
+      "artifact_id": "FIN-S1::EVIDENCE_REQUEST::fc8d9b2a9df7666c4a3177c4",
+      "artifact_version": "v1.0",
+      "producer_id": "research_retrieval_service",
+      "payload_schema_version": "fin_ia_evidence_request_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/evidence_request",
+      "payload_sha256": "5f97ac27fdd2814a41235894a22385ada03ea8ad8e9f759a93345ff91df8c462",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "query_facet_plan",
+      "artifact_id": "FIN-S1::QUERY_FACET_PLAN::267ccfe254f3e6c6681da16d",
+      "artifact_version": "v1.0",
+      "producer_id": "query_facet_plan_compiler",
+      "payload_schema_version": "fin_ia_typed_query_facet_plan_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/query_facet_plan",
+      "payload_sha256": "fbc3e8ba31a5e81c667b0b97a404ea8ca03dc85b2d8a3720147042b3d87b7661",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "evidence_request",
+          "artifact_id": "FIN-S1::EVIDENCE_REQUEST::fc8d9b2a9df7666c4a3177c4",
+          "artifact_version": "v1.0",
+          "payload_sha256": "5f97ac27fdd2814a41235894a22385ada03ea8ad8e9f759a93345ff91df8c462",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "61136324bfa25ec77078d33588424cfe27e38b3b0436d79285f99a6b3205434a"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "candidate_set",
+      "artifact_id": "FIN-S1::CANDIDATE_SET::4abfbd5bc09e0fd78a77f388",
+      "artifact_version": "v1.0",
+      "producer_id": "research_retrieval_service",
+      "payload_schema_version": "fin_ia_vs1_candidate_set_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/candidate_set",
+      "payload_sha256": "a11ef5e8e74c621a709a1af9665c11b463c312f484c41ed4d5ad3123d1763469",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "query_facet_plan",
+          "artifact_id": "FIN-S1::QUERY_FACET_PLAN::267ccfe254f3e6c6681da16d",
+          "artifact_version": "v1.0",
+          "payload_sha256": "fbc3e8ba31a5e81c667b0b97a404ea8ca03dc85b2d8a3720147042b3d87b7661",
+          "relation": "derived_from"
+        },
+        {
+          "artifact_type": "index_snapshot",
+          "artifact_id": "FIN-S1::INDEX_SNAPSHOT::304ef8a394fdd55418792eb8",
+          "artifact_version": "v1.0",
+          "payload_sha256": "444e321a566420f4f30bb655f7f1b8e2fdeadc2c6c25643598458247b99a0430",
+          "relation": "consumes"
+        }
+      ],
+      "lineage_digest": "db936dc0893517aa55c2c9761e87cea9de0d1f1537900afb72dc010135f8c5dc"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "candidate_ranking",
+      "artifact_id": "FIN-S1::CANDIDATE_RANKING::50e4d73f4ce6f6621f187239",
+      "artifact_version": "v1.0",
+      "producer_id": "financial_candidate_ranking_adapter",
+      "payload_schema_version": "fin_ia_vs1_candidate_ranking_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/candidate_ranking",
+      "payload_sha256": "6732aa1fdba4fdfc4f8ce0cab54a2a79b715e79467d7e5c5c9b55f29b819b243",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "candidate_set",
+          "artifact_id": "FIN-S1::CANDIDATE_SET::4abfbd5bc09e0fd78a77f388",
+          "artifact_version": "v1.0",
+          "payload_sha256": "a11ef5e8e74c621a709a1af9665c11b463c312f484c41ed4d5ad3123d1763469",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "5298ed6d70abf4dded443b0f50899c06df2e10ff3c12c1cf6d1052e69d694646"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "candidate_decision",
+      "artifact_id": "FIN-S1::CANDIDATE_DECISION::c81d3eee142dbd393263e57f",
+      "artifact_version": "v1.0",
+      "producer_id": "s1_candidate_decision_ledger",
+      "payload_schema_version": "fin_ia_s1_candidate_decision_ledger_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/candidate_decision_ledger",
+      "payload_sha256": "fc4fc565fd88013ff6c53d91efe41bb4c390f2307392294e11ba43cde4f14a4c",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "candidate_ranking",
+          "artifact_id": "FIN-S1::CANDIDATE_RANKING::50e4d73f4ce6f6621f187239",
+          "artifact_version": "v1.0",
+          "payload_sha256": "6732aa1fdba4fdfc4f8ce0cab54a2a79b715e79467d7e5c5c9b55f29b819b243",
+          "relation": "consumes"
+        }
+      ],
+      "lineage_digest": "7bcf7853a7b2863cc616a9daf9c08e2050e859b0155cd45447c42ac97cf602a5"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "evidence_coverage_state",
+      "artifact_id": "FIN-S1::EVIDENCE_COVERAGE_STATE::dc9322ca1fd060c690b7690c",
+      "artifact_version": "v1.0",
+      "producer_id": "s1_evidence_coverage_compiler",
+      "payload_schema_version": "fin_ia_s1_evidence_coverage_state_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/evidence_coverage_state",
+      "payload_sha256": "bd62fcd73231e989597923e20cce214cf286288b3d0b3dc775109dd91572b7df",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "evidence_request",
+          "artifact_id": "FIN-S1::EVIDENCE_REQUEST::fc8d9b2a9df7666c4a3177c4",
+          "artifact_version": "v1.0",
+          "payload_sha256": "5f97ac27fdd2814a41235894a22385ada03ea8ad8e9f759a93345ff91df8c462",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "candidate_decision",
+          "artifact_id": "FIN-S1::CANDIDATE_DECISION::c81d3eee142dbd393263e57f",
+          "artifact_version": "v1.0",
+          "payload_sha256": "fc4fc565fd88013ff6c53d91efe41bb4c390f2307392294e11ba43cde4f14a4c",
+          "relation": "consumes"
+        }
+      ],
+      "lineage_digest": "d4f0fc347c15070add4c2abaec9224cf49752431b73508764fa1f3dee2eecefd"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "evidence_pack_readiness",
+      "artifact_id": "FIN-S1::EVIDENCE_PACK_READINESS::d51b266881e73076bd523b31",
+      "artifact_version": "v1.0",
+      "producer_id": "s1_evidence_pack_readiness_compiler",
+      "payload_schema_version": "fin_ia_s1_evidence_pack_readiness_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/evidence_pack_readiness",
+      "payload_sha256": "97f160215aecd3640a6c913d997c8783259cce05507370ef9d2a10b5138d417b",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "evidence_coverage_state",
+          "artifact_id": "FIN-S1::EVIDENCE_COVERAGE_STATE::dc9322ca1fd060c690b7690c",
+          "artifact_version": "v1.0",
+          "payload_sha256": "bd62fcd73231e989597923e20cce214cf286288b3d0b3dc775109dd91572b7df",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "612ed1df33bffc7d608a79aed7e309aa6548555702eb43dc51d662625a946901"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "workbench_projection",
+      "artifact_id": "FIN-S1::WORKBENCH_PROJECTION::34fbc4c5ea7bec3dd23de845",
+      "artifact_version": "v1.0",
+      "producer_id": "research_workbench_vs1_projection",
+      "payload_schema_version": "fin_ia_s1_workbench_lineage_projection_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/workbench_projection",
+      "payload_sha256": "03c1ed8d2309839bfb1c3c00876105391f63672560e260309b71bb664e75fa49",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "evidence_pack_readiness",
+          "artifact_id": "FIN-S1::EVIDENCE_PACK_READINESS::d51b266881e73076bd523b31",
+          "artifact_version": "v1.0",
+          "payload_sha256": "97f160215aecd3640a6c913d997c8783259cce05507370ef9d2a10b5138d417b",
+          "relation": "projects"
+        }
+      ],
+      "lineage_digest": "84cc9d46348de2a3a9c8db1fd365be10199bff9c65c0a7b58de07e40955962ad"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "frozen_consumer_probe",
+      "artifact_id": "FIN-S1::FROZEN_CONSUMER_PROBE::1a1fc094a5dffeb2f793fec0",
+      "artifact_version": "v1.0",
+      "producer_id": "vs1_frozen_consumer_probe",
+      "payload_schema_version": "fin_ia_s1_frozen_consumer_probe_v1_0",
+      "payload_ref": "application.result.current_s1_vs1_vertical_slice#/payloads/frozen_consumer_probe",
+      "payload_sha256": "feef1d4301f1a826dbd6a04f7f8fa3c90c4bc65e2090f0bf8025358e098cfb0c",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2026-08-06",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "evidence_pack_readiness",
+          "artifact_id": "FIN-S1::EVIDENCE_PACK_READINESS::d51b266881e73076bd523b31",
+          "artifact_version": "v1.0",
+          "payload_sha256": "97f160215aecd3640a6c913d997c8783259cce05507370ef9d2a10b5138d417b",
+          "relation": "consumes"
+        }
+      ],
+      "lineage_digest": "2b7cd7c861bb34f10510d37161fc81d8738b2da2ae46b2f59f49918fdd9438f4"
+    }
+  ],
+  "stage_acceptance": {
+    "component_engineering_pass": true,
+    "vertical_slice_integrated": true,
+    "S1_qualified_stable": false,
+    "complete_product_chain_authorized": false
+  },
+  "known_boundary": "VS1 integrates one current DELL digital-native source-to-Workbench vertical. Existing capture-bound reviewed Evidence is replayed, not newly promoted. OCR, complex tables, multi-route ranking qualification, second-round supplementation, hidden holdout and full S1 qualification remain later slices.",
+  "result_digest": "96046f4a070507c604d6d8b037968e38877c1931f6b313d4b1fc8aa1c262fb45"
+}

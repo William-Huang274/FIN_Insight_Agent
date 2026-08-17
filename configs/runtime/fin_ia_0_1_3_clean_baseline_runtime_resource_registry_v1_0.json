@@ -14,10 +14,10 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R14",
-  "resource_bytes": 2205221,
-  "resource_canonical_digest": "62f06286b86bc17288f29c902221393584883f53b0565aaf764da3946e835412",
-  "resource_count": 13,
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R16",
+  "resource_bytes": 2347404,
+  "resource_canonical_digest": "046286303f8b45c6987e63f19d62fb11718cfcbb18fdaf3b3432867a070405e6",
+  "resource_count": 14,
   "resources": [
     {
       "bytes": 20734,
@@ -106,6 +106,7 @@
       "consumer_ids": [
         "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths",
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths",
+        "scripts.data_retrieval.materialize_s1_vertical_slices.compile_vs2_result",
         "scripts.data_retrieval.materialize_s1_vs1_vertical_slice.compile_result"
       ],
       "load_phase": "workbench_startup",
@@ -166,15 +167,28 @@
     },
     {
       "resource_id": "application.result.current_s1_vs1_vertical_slice",
-      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json",
-      "sha256": "7430b43efb639110cbfd84e6318e5942da5fdda236155886286e50d7e32df6ec",
-      "bytes": 135776,
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
+      "sha256": "1f29b58b5b51a39c5a5eb5a7bd5892c47fe71830d1da97d587a0b34b2e646861",
+      "bytes": 169451,
       "classification": "digest_bound_read_only_s1_vertical_slice_result",
       "consumer_ids": [
         "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths",
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "workbench_startup",
+      "required": true,
+      "source_owner": "S1_canonical_vertical_slice_program"
+    },
+    {
+      "resource_id": "application.result.current_s1_vs2_complex_pdf_vertical",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+      "sha256": "fce09702cab81a6f2922fb996bee17ec3201bd03a9bd86edffd3c2d66090d57a",
+      "bytes": 108508,
+      "classification": "digest_bound_read_only_s1_complex_document_vertical_result",
+      "consumer_ids": [
+        "apps.workbench.backend.api.operations.get_s1_complex_document_quality"
+      ],
+      "load_phase": "operations_request",
       "required": true,
       "source_owner": "S1_canonical_vertical_slice_program"
     },

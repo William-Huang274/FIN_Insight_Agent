@@ -1,0 +1,19 @@
+{
+  "schema_version": "fin_ia_s1_vs2_complex_pdf_source_spec_v1_0",
+  "status": "train_internal_complex_document_development_source",
+  "case_id": "S1-VS2-IFX-2025-ANNUAL-REPORT",
+  "ticker": "IFX.DE",
+  "company": "Infineon Technologies AG",
+  "source_type": "ANNUAL_REPORT",
+  "source_tier": "primary_company_disclosure",
+  "period_end": "2025-09-30",
+  "publication_date": "2025-11-28",
+  "fiscal_year": 2025,
+  "research_as_of": "2025-12-01",
+  "source_url": "https://www.infineon.com/assets/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+  "license_scope": "public_official_source_research_use",
+  "selected_page_numbers": [164, 166, 167],
+  "forced_ocr_mutation_page_numbers": [166],
+  "product_case_enrollment": false,
+  "qualification_boundary": "Official native-layout PDF plus rasterized-page OCR mutation; a naturally scanned financial filing remains required for final heterogeneous qualification."
+}

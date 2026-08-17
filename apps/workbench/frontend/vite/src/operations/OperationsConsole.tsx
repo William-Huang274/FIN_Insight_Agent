@@ -5,6 +5,7 @@ import {
   CircleStop,
   Database,
   ExternalLink,
+  FileSearch,
   FlaskConical,
   LoaderCircle,
   Play,
@@ -16,6 +17,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
+  ComplexDocumentQuality,
   EvalCatalogItem,
   OperationsApiClient,
   RunJob,
@@ -36,6 +38,7 @@ type Snapshot = {
   evals: EvalCatalogItem[];
   sourceRoutes: SourceIntakeRoute[];
   sourceAttempts: SourceIntakeAttempt[];
+  complexDocumentQuality: ComplexDocumentQuality;
 };
 
 type ViewState =
@@ -52,9 +55,9 @@ export function OperationsConsole() {
 
   const refresh = useCallback(() => {
     setState({ kind: "loading" });
-    Promise.all([api.status(), api.profiles(), api.sourceBundles(), api.runs(), api.evals(), api.sourceIntakeRoutes(), api.sourceIntakeAttempts()])
-      .then(([status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts]) => {
-        setState({ kind: "ready", snapshot: { status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts } });
+    Promise.all([api.status(), api.profiles(), api.sourceBundles(), api.runs(), api.evals(), api.sourceIntakeRoutes(), api.sourceIntakeAttempts(), api.complexDocumentQuality()])
+      .then(([status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality]) => {
+        setState({ kind: "ready", snapshot: { status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality } });
       })
       .catch((error: Error) => setState({ kind: "error", message: error.message }));
   }, []);
@@ -154,6 +157,8 @@ function OperationsSnapshot({ snapshot, action, onCancel, onUploadSource, onAuto
         <StatusCard icon={FlaskConical} label="Eval runners" value={String(snapshot.evals.length)} ok />
       </section>
 
+      <ComplexDocumentQualityPanel value={snapshot.complexDocumentQuality} />
+
       <section className="operations-console__columns">
         <article className="operations-console__panel is-wide">
           <div className="operations-console__panel-title"><h2>已保存作业</h2><span>{snapshot.runs.length} 条 · 仅供审计，不代表当前能力</span></div>
@@ -189,6 +194,47 @@ function OperationsSnapshot({ snapshot, action, onCancel, onUploadSource, onAuto
         </article>
       </section>
     </>
+  );
+}
+
+function ComplexDocumentQualityPanel({ value }: { value: ComplexDocumentQuality }) {
+  const counts = value.candidate_decision_summary;
+  const businessFailure = String(value.business_result.current_retrieval_failure_zh ?? "");
+  return (
+    <section className="operations-console__panel operations-console__document-quality">
+      <div className="operations-console__panel-title">
+        <h2><FileSearch size={18} />复杂文档纵切</h2>
+        <span>VS2 · 开发样本，不是产品案例</span>
+      </div>
+      <div className="operations-console__document-summary">
+        <div>
+          <p>官方来源</p>
+          <strong>{value.source.issuer_name}</strong>
+          <small>{value.source.document_type} · {value.source.publication_date} · 全文 {value.source.page_count} 页</small>
+        </div>
+        <div>
+          <p>解析对象</p>
+          <strong>{value.financial_objects.object_count}</strong>
+          <small>{value.document_quality.table_region_count} 个表格 · {value.document_quality.footnote_count} 个脚注 · {value.financial_objects.cross_page_relation_count} 个跨页关系</small>
+        </div>
+        <div>
+          <p>候选决策</p>
+          <strong>{counts.accepted ?? 0} accepted / {counts.needs_review ?? 0} review</strong>
+          <small>{value.coverage_summary.reviewed_not_recalled_count} 个经复核复杂对象未召回</small>
+        </div>
+        <div>
+          <p>权威边界</p>
+          <strong>Evidence / NumericFact 分离</strong>
+          <small>真实扫描件资格：未关闭 · S1：未通过</small>
+        </div>
+      </div>
+      <p className="operations-console__document-finding">{businessFailure}</p>
+      <div className="operations-console__document-meta">
+        <span>选页 {value.source.selected_page_numbers.join(" / ")}</span>
+        <span>OCR mutation {value.document_quality.forced_ocr_pages.join(" / ")}</span>
+        <code>{value.result_digest.slice(0, 12)}…{value.result_digest.slice(-8)}</code>
+      </div>
+    </section>
   );
 }
 

@@ -75,41 +75,46 @@
       "producer_refs": [
         "src/ingestion/parse_sec_filing.py",
         "src/ingestion/official_pdf.py",
+        "src/ingestion/pdf_layout.py",
         "src/ingestion/section_splitter.py"
       ],
       "consumer_refs": [
         "src/retrieval/financial_objects.py",
-        "src/retrieval/official_pdf_objects.py"
+        "src/retrieval/official_pdf_objects.py",
+        "src/retrieval/pdf_layout_objects.py"
       ],
       "current_artifact_refs": [
         "configs/retrieval/fin_ia_0_1_3_s1b_current_source_object_manifest_v1_1.json",
         "configs/retrieval/fin_ia_0_1_3_s1d_dell_official_pdf_successor_result_v1_0.json",
-        "configs/retrieval/fin_ia_0_1_3_s1d_tsm_official_pdf_successor_result_v1_1.json"
+        "configs/retrieval/fin_ia_0_1_3_s1d_tsm_official_pdf_successor_result_v1_1.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
       ],
       "test_refs": [
         "tests/test_s1d_official_pdf_pipeline.py",
         "tests/test_sec_20f_section_splitter.py",
-        "tests/test_s1b_current_financial_objects.py"
+        "tests/test_s1b_current_financial_objects.py",
+        "tests/test_s1_vs2_complex_pdf_vertical.py"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "SEC HTML 与数字原生 PDF 可提取正文和部分章节／表格结构",
         "Dell／TSM transcript 已形成 parsed document 并进入对象编译",
-        "VS1 已让数字原生 Dell transcript／SEC 解析结果继续贯穿到 CandidateDecision、Coverage、Pack 和 Workbench；复杂 OCR 范围仍未证明"
+        "VS1 已让数字原生 Dell transcript／SEC 解析结果继续贯穿到 CandidateDecision、Coverage、Pack 和 Workbench",
+        "VS2 已在同一 spine 上保留 IFX 官方年报 5 个复杂表区、1 个脚注、重述上下文和 1 个真实跨页续表关系；官方页栅格化 OCR mutation 也保留全部预注册 material anchor，且两路均不授予 Evidence／NumericFact 权威"
       ],
       "qualification_state": "open",
       "known_gaps": [
         {
           "gap_id": "S1-B-GAP-001",
-          "business_effect_zh": "扫描 PDF／OCR、页面坐标、跨页表格、脚注和低置信度数字尚无当前主线资格，复杂财报可能在检索前已丢失事实。",
+          "business_effect_zh": "VS2 已关闭当前复杂数字原生年报及官方页 OCR mutation 的页面坐标、跨页表格、脚注和低置信度 fail-closed 工程纵切；但尚无自然扫描金融资料样本，不能把 mutation 冒充异质来源资格。",
           "earliest_responsibility_axis": "S1-B",
-          "next_vertical_slice": "VS2"
+          "next_vertical_slice": "VS5"
         },
         {
           "gap_id": "S1-B-GAP-002",
-          "business_effect_zh": "解析质量没有统一 typed quality receipt，局部成功不能证明页数、表格和日期完整。",
+          "business_effect_zh": "VS2 已为全文页数、选页模式、表格、脚注、OCR material token 和 abstain 建立 typed quality receipt；不同语言、版式与自然扫描资料的稳定阈值仍待 VS5 资格化。",
           "earliest_responsibility_axis": "S1-B",
-          "next_vertical_slice": "VS2"
+          "next_vertical_slice": "VS5"
         }
       ],
       "migration_or_rollback_entry_refs": [
@@ -125,6 +130,7 @@
       ],
       "producer_refs": [
         "src/retrieval/financial_objects.py",
+        "src/retrieval/pdf_layout_objects.py",
         "src/retrieval/object_view_compiler.py",
         "src/retrieval/evidence_role_contract.py"
       ],
@@ -136,17 +142,20 @@
       "current_artifact_refs": [
         "configs/runtime/fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_1.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_object_role_review_set_v1_0.json",
-        "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json"
+        "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
       ],
       "test_refs": [
         "tests/test_s1b_current_financial_objects.py",
         "tests/test_s1c_object_role_contract.py",
-        "tests/test_evidence_role.py"
+        "tests/test_evidence_role.py",
+        "tests/test_s1_vs2_complex_pdf_vertical.py"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "当前 SEC／transcript 资料已形成 parent、section、claim／table／context 对象并进入检索",
-        "对象保留 source record、parent document 和内容 digest"
+        "对象保留 source record、parent document 和内容 digest",
+        "VS2 将复杂 PDF 编译为 page context、revision context、table region、metric row、footnote 与 cross-page relation 共 67 个带 page／bbox／table locator 的候选对象；所有 material number 继续指向 S2 sibling"
       ],
       "qualification_state": "open",
       "known_gaps": [
@@ -158,9 +167,9 @@
         },
         {
           "gap_id": "S1-C-GAP-002",
-          "business_effect_zh": "复杂表格的 metric-row、row-group、脚注和 parent expansion 尚未通过真实纵切。",
+          "business_effect_zh": "VS2 已让 metric-row、脚注、page parent 和跨页关系通过真实纵切；当前前 20 仍漏掉总计行、脚注与跨页目标，未闭合责任已转到 VS3 排序／金融角色与 parent expansion。",
           "earliest_responsibility_axis": "S1-C",
-          "next_vertical_slice": "VS2"
+          "next_vertical_slice": "VS3"
         }
       ],
       "migration_or_rollback_entry_refs": [
@@ -340,24 +349,27 @@
       "current_artifact_refs": [
         "configs/retrieval/fin_ia_0_1_3_s1c_ranking_comparison_result_v1_1.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_cross_encoder_safety_shadow_result_v1_0.json",
-        "configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json"
+        "configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
       ],
       "test_refs": [
         "tests/test_s1c_ranking_comparison.py",
         "tests/test_s1c_retrieval_stack_governance.py",
-        "tests/test_s1c_financial_role_eval.py"
+        "tests/test_s1c_financial_role_eval.py",
+        "tests/test_s1_vs2_complex_pdf_vertical.py"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "BM25、BGE、Qwen、RRF 和 Cross-Encoder 已做 shadow／离线比较",
         "同一 qrel 人口中的关键重排失误已被保留而未错误晋升",
-        "VS1 将当前 typed financial ranking 的真实顺序作为独立 CandidateRanking artifact 贯穿到决策账；仅证明可观测和不越权，不代表排序质量资格"
+        "VS1 将当前 typed financial ranking 的真实顺序作为独立 CandidateRanking artifact 贯穿到决策账；仅证明可观测和不越权，不代表排序质量资格",
+        "VS2 在同一候选链暴露出业务可解释的头部失败：4 个经复核复杂文档目标只有重述上下文进入前 20，分部结果总计行、脚注和跨页续表均未进入；解析对象仍在，因此最早责任明确属于 VS3 排序"
       ],
       "qualification_state": "open",
       "known_gaps": [
         {
           "gap_id": "S1-G-GAP-001",
-          "business_effect_zh": "不同 ranking 结果来自不同对象／qrel 阶段，尚无同一 CandidateSet、同一 split、同一头部稳定性资格。",
+          "business_effect_zh": "VS2 已提供同一 CandidateSet 的真实复杂文档失败样本，但 BM25／Dense／Cross-Encoder／结构信号尚未在该池和冻结 split 上完成同条件增量、头部稳定与排列资格。",
           "earliest_responsibility_axis": "S1-G",
           "next_vertical_slice": "VS3"
         },
@@ -383,7 +395,8 @@
         "src/retrieval/evidence_role.py",
         "src/retrieval/evidence_role_contract.py",
         "src/retrieval/financial_candidate_ranking.py",
-        "src/retrieval/vertical_slice.py"
+        "src/retrieval/vertical_slice.py",
+        "src/retrieval/complex_pdf_vertical.py"
       ],
       "consumer_refs": [
         "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
@@ -393,19 +406,22 @@
         "configs/retrieval/fin_ia_0_1_3_s1c_financial_role_eval_set_v1_1.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_object_role_shadow_result_v1_0.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_cross_encoder_role_shadow_result_v1_1.json",
-        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json"
+        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
       ],
       "test_refs": [
         "tests/test_evidence_role.py",
         "tests/test_s1c_object_role_contract.py",
         "tests/test_s1c_object_role_shadow.py",
-        "tests/test_s1_vs1_vertical_slice.py"
+        "tests/test_s1_vs1_vertical_slice.py",
+        "tests/test_s1_vs2_complex_pdf_vertical.py"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "对象角色、事实状态、直接性、背景性和 abstain 合同已建立",
         "规则和 Cross-Encoder shadow 已暴露语义相关但证据角色错误的样本",
-        "VS1 对 DELL pricing/mix 的 6 个真实候选逐一持久化 accepted／needs-review 决策；排名本身不授予 Evidence 权限"
+        "VS1 对 DELL pricing/mix 的 6 个真实候选逐一持久化 accepted／needs-review 决策；排名本身不授予 Evidence 权限",
+        "VS2 对 20 个复杂文档候选形成 1 accepted／19 needs-review 的持久决策，并保留 3 个 reviewed-not-recalled 目标；table-row、footnote 和 cross-page 对象未因语义相近自动晋升"
       ],
       "qualification_state": "open",
       "known_gaps": [
@@ -417,7 +433,7 @@
         },
         {
           "gap_id": "S1-H-GAP-002",
-          "business_effect_zh": "CandidateDecision 已在 VS1 的 DELL pricing/mix 命题成为 reviewed／rejected／unjudged／needs-review 持久账，但尚未覆盖所有命题、动态新候选和单独 capture-gate 晋升。",
+          "business_effect_zh": "CandidateDecision 已覆盖 VS1 数字原生和 VS2 复杂文档纵切，但尚无 finance-aware evaluator 能把总计行、脚注、跨页关系与泛化背景稳定分开，也尚未覆盖动态新候选和单独 capture-gate 晋升。",
           "earliest_responsibility_axis": "S1-H",
           "next_vertical_slice": "VS3"
         }
@@ -437,7 +453,8 @@
       "producer_refs": [
         "src/sec_agent/research/reviewed_evidence_pack.py",
         "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
-        "src/retrieval/vertical_slice.py"
+        "src/retrieval/vertical_slice.py",
+        "src/retrieval/complex_pdf_vertical.py"
       ],
       "consumer_refs": [
         "apps/workbench/backend/application/research_evidence_pack_service.py",
@@ -448,19 +465,22 @@
         "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
         "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_planner_residual_gap_audit_result_v1_1.json",
-        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json"
+        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
       ],
       "test_refs": [
         "tests/test_current_evidence_pack_promotion_runner.py",
         "tests/contract/test_fin_0_1_3_workbench_current_research_evidence_pack_projection.py",
         "tests/test_reviewed_evidence_anchor.py",
-        "tests/test_s1_vs1_vertical_slice.py"
+        "tests/test_s1_vs1_vertical_slice.py",
+        "tests/test_s1_vs2_complex_pdf_vertical.py"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "reviewed Evidence Pack、declared residual gap 和 current anchor binding 已有只读产品消费者",
         "Pack 可被当前 S3 consumer 和 Workbench 读取",
-        "VS1 已为 DELL pricing/mix 物化逐命题 CoverageState、3 份 GapEligibilityReceipt 和 task-relative readiness；未执行补源不会被冒充公开信息真空"
+        "VS1 已为 DELL pricing/mix 物化逐命题 CoverageState、3 份 GapEligibilityReceipt 和 task-relative readiness；未执行补源不会被冒充公开信息真空",
+        "VS2 将自然扫描资料资格和 S2 数值裁决分别保留为 typed boundary；当前 3 个 reviewed-not-recalled 属于可用对象未被检索到，禁止误写为公开资料不存在"
       ],
       "qualification_state": "open",
       "known_gaps": [
@@ -502,28 +522,31 @@
         "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
         "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_1.json",
         "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
-        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json"
+        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
       ],
       "test_refs": [
         "tests/test_current_runtime_registry.py",
         "tests/test_current_product_readiness.py",
         "tests/test_current_workbench_baseline.py",
         "tests/test_s1_vs1_vertical_slice.py",
+        "tests/test_s1_vs2_complex_pdf_vertical.py",
         "apps/workbench/frontend/e2e/workspace.spec.ts"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "当前 retrieval、ranking、Evidence Pack 和 source intake 有 Workbench／Operations 只读消费者",
         "Runtime Registry、digest、secret scan、active baseline 和多类 replay 已成为仓库治理门",
-        "VS1 的 candidate decision、漏召回、未补源缺口和 Pack binding 已在当前 Evidence／Retrieval 页面由同一投影展示，并通过桌面与移动 E2E"
+        "VS1 的 candidate decision、漏召回、未补源缺口和 Pack binding 已在当前 Evidence／Retrieval 页面由同一投影展示，并通过桌面与移动 E2E",
+        "VS2 的来源身份、解析对象数、OCR／NumericFact 权限边界和 1/4 复杂目标召回失败已接入 Operations 的永久只读面；R16 同时对 VS1／VS2 全部 inline payload ref 做真实解引用和 digest 校验"
       ],
       "qualification_state": "open",
       "known_gaps": [
         {
           "gap_id": "S1-J-GAP-001",
-          "business_effect_zh": "Workbench 已显示 VS1 的命题决策、Coverage、缺口资格和 Pack digest，但尚未提供 source→parse→object→index 的逐层钻取与 payload locator 视图。",
+          "business_effect_zh": "Workbench 已显示 VS1 命题决策和 VS2 复杂文档业务结果，但尚未提供 source→parse→object→index 的逐对象 bbox／table／payload locator 钻取；该可观测性补齐归 VS5，不阻塞 VS3 排序实验。",
           "earliest_responsibility_axis": "S1-J",
-          "next_vertical_slice": "VS2"
+          "next_vertical_slice": "VS5"
         },
         {
           "gap_id": "S1-J-GAP-002",

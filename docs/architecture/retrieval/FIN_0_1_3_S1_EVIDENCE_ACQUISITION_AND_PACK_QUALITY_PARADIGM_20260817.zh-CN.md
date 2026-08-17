@@ -432,4 +432,17 @@ VS1 已在上述范式下完成第一条真实数字原生纵切，并据此更�
 4. 当前 Evidence Pack service、Retrieval service、Workspace service 和桌面／移动 Workbench 消费相同 projection 与 Pack digest；跨案、未来日期、排列变化和 Pack drift 均有 fail-closed 测试。
 5. VS1 只改变交付状态为 `vertical_slice_integrated`。它没有改善或资格化 neural reranker，没有执行新 Evidence 晋升，没有证明 OCR／复杂表格、多 route contribution、Coverage delta、隐藏集或完整研报质量。
 
-下一顺序保持 VS2→VS3→VS4→VS5。若 VS2 的复杂文档对象迫使 spine 合同变化，必须重放本 VS1 golden vertical；不得把 VS1 代码复制成新的 attempt runner。
+VS1 当时冻结的下一顺序为 VS2→VS3→VS4→VS5。VS2 的复杂文档对象若迫使 spine 合同变化，必须重放本 VS1 golden vertical；不得把 VS1 代码复制成新的 attempt runner。该要求的实际执行结果见下一节。
+
+## 16. VS2 复杂文档纵切回证与 VS3 责任转移（2026-08-17）
+
+VS2 没有另造 parser runner 或新的 Pack 链，而是在 VS1 的同一 artifact spine 上加入一个 train-internal 的 IFX 2025 官方年报开发样本。它不属于当前产品案例，也不作为隐藏泛化样本。
+
+1. **复杂对象地基已贯穿当前消费者。** 192 页官方年报中预注册第 164／166／167 页；native layout 路径保留 5 个复杂表区、56 个 metric-row、1 个脚注、1 个重述上下文和 1 个从第 166 页 Segment Result 总计到第 167 页 reconciliation 的真实跨页关系，共 67 个带 page／bbox／table locator 的候选对象。解析结果继续只授予 candidate 权限。
+2. **OCR 只证明 mutation，不冒充自然扫描资格。** 第 166 页官方页面栅格化后强制 OCR，`Segment Result`、`2,560`、`3,105`、`14,662`、`14,955` 和 `previous year` 等预注册 anchor 均保留；但仓库尚无自然扫描、不同噪声／语言／版式的官方资料样本，因此 `real_scanned_source_qualified=false`，留到 VS5 异质资格。
+3. **业务失败已定位到排序而非解析。** 4 个 reviewed complex targets 中，仅重述上下文进入当前前 20 并被接受；Segment Result total row、财务脚注和跨页续表均存在于对象库，却没有进入候选窗口。当前决策账为 1 accepted／19 needs-review／3 reviewed-not-recalled。不得继续通过扩大 parser 正则、候选窗口或手工 URL 掩盖；VS3 必须在同一 CandidateSet 上解释 exact／BM25／dense／graph／SQL／parent expansion／rerank 的增量。
+4. **数值与产品身份边界保持关闭。** IFX 不加入 DELL／MU／NVDA 产品 case；table row 不自动成为 NumericFact。VS2 只产生 `S2_source_bound_numeric_adjudication_required` sibling typed gap，数值、期间、单位和跨页公式仍由 S2 独立裁决。
+5. **canonical spine 新增真实可解引用门。** 回归发现旧 VS1 envelope 的若干 result-local `payload_ref` 指向未物化 JSON path；UI 因读取 sibling projection 仍可展示，旧测试未发现。R16 successor 现要求每个本地 ref 可按 JSON Pointer 解引用，且 envelope `payload_sha256` 必须等于完整被引用 payload 的 canonical digest。旧 R14／R15 结果保持不可变，不能追认为满足新门。
+6. **评测仍保持 inputs／labels 物理分离。** VS2 runtime input 只含来源、选页、研究问题和 OCR mutation 指令；page/table/anchor/target 期望只在 evaluator reference 中加载。评测程序允许同一 active split 有多个独立 catalog，但 reserved split 仍只能保留一个空 catalog，防止把开发标签泄漏给 Runtime。
+
+VS2 状态为 `component_engineering_pass=true / vertical_slice_integrated=true / S1_qualified_stable=false`。当前下一项改为 VS3，不再扩大 VS2。VS3 通过仍不能跳过 VS4 的第二轮补证或 VS5 的 frozen／heterogeneous qualification。

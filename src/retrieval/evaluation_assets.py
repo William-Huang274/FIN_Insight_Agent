@@ -205,8 +205,20 @@ class EvaluationProgramManifest(_FrozenModel):
         if set(splits) != set(SplitName.__args__) or len(splits) != 4:
             raise ValueError("evaluation_split_policy_coverage_invalid")
         catalog_splits = [row.split for row in self.catalogs]
-        if set(catalog_splits) != set(SplitName.__args__) or len(catalog_splits) != 4:
+        if set(catalog_splits) != set(SplitName.__args__):
             raise ValueError("evaluation_catalog_split_coverage_invalid")
+        catalog_ids = [row.catalog_id for row in self.catalogs]
+        if len(catalog_ids) != len(set(catalog_ids)):
+            raise ValueError("evaluation_catalog_id_duplicate")
+        policies_by_split = {row.split: row for row in self.split_policies}
+        for split in SplitName.__args__:
+            rows = [row for row in self.catalogs if row.split == split]
+            policy = policies_by_split[split]
+            if policy.status == "active":
+                if not rows or any(row.status != "active" for row in rows):
+                    raise ValueError("evaluation_active_split_catalog_invalid")
+            elif len(rows) != 1 or rows[0].status != "reserved_unpopulated":
+                raise ValueError("evaluation_reserved_split_catalog_invalid")
         required = {
             "runtime_inputs_physically_separate_from_references",
             "labels_joined_only_inside_evaluator",

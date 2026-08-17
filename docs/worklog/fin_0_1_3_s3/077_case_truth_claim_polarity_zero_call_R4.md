@@ -1,7 +1,9 @@
 # 077 Case Truth claim-polarity 零调用 R4：正式工程门通过
 
-日期：2026-08-17  
-Authority：`FIN013-S3-CASE-TRUTH-RECONCILIATION-R4`  
+日期：2026-08-17
+
+Authority：`FIN013-S3-CASE-TRUTH-RECONCILIATION-R4`
+
 实现基线：`3656fe4bda6aa8c0809ce6737ad9aa1bd182fa43`
 
 ## 结论

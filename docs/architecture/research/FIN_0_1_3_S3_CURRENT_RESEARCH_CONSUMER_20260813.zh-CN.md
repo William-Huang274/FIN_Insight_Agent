@@ -507,3 +507,13 @@ current successor 因此使用以下 provider-neutral 合同：
 R2 还暴露出 R7 原 Judgment 本身存在真实 cross-cell claim scope：Operating／Counterevidence 写入各自 allowed view 之外的现金流、收入或需求事实。新 semantic gate 必须把这类结果与 alias 误选、合同 false positive 分开报告；不得只为命中预注册的三条 false absence 而压掉新增 finding。只有同两单元 fresh successor 证明 claim polarity、合法利润桥 gap、跨公司 context 和真实 outside-cell claim 均被正确分类，才允许修复 Judgment 或进入 Synthesis。
 
 formal R4 已在 clean/synced `3656fe4b...fa43` 上关闭该 provider-neutral 工程门。R2 的 9,919 字符 Operating 草稿与 Counter 单 surface 13 条 mapping 均在新 submission 前被容量门拒绝；R7 三条 false absence、合法 product-profit bridge gap、合法 cross-case context 和 outside-cell claim scope 可分别表达。主体公司事实冒充 context、跨案、未知 alias、digest 漂移、漏／重叠 slice 和超容量 mutation 均 fail closed；DELL／MU／NVDA 与留出案例顺序稳定。该结果不追认 R2 或 R7，也不证明自然语义分类。下一步仍只允许一次 clean repository-bound Operating／Counterevidence successor，最多四次调用、零 retry。
+
+## 24. Natural R3 与命题类型／alias resolution 的新边界
+
+R3 的四次自然调用全部完成，证明 non-thinking analysis＋4k strict submission 已解决节点可见性和传输容量；失败不再归因于协议或 token。模型能够识别 Counterevidence 对 AI orders／backlog 的两条错误缺失，也能够从原文中抽出 Operating／Counterevidence 的跨 cell 现金流使用，说明 semantic signal 有真实价值。
+
+但 current Tool 仍把两个不同任务压在同一步：先理解原文命题，再从大量相邻 alias 中直接选唯一编号。grouped presence card 对一组 alias 只提供共享 business meaning，case-only index 又只有 alias／owner／kind；因此模型把 quarter-discrete AI revenue 选成 order conversion，把 segment-profit bridge 选成 segment performance。更根本地，`mix / other segments / timing remain unexcluded` 是一个 unresolved causal hypothesis：相关 Evidence facet 可以存在，但该因果解释仍未被证实或排除。它不能可靠地用 fact presence、case absence 或 typed evidence gap 三态表达。
+
+Counter submission 另有一项完全相同的 MU inventory alias＋cross-case polarity 重复。本地拒绝原 payload 是正确的审计行为，但该重复不创造第二个金融命题；后续合同应把它与 L1 语义错误分开记录，不能让 wire schema 被移除的 `uniqueItems` 变成整单元不透明终止。
+
+因此不得再以新 Prompt、更多 token 或逐 alias 例外进入 R4/R5。项目级候选设计是：模型先提交 proposition text／kind／polarity；本地按 case、cell、owner 和 kind 缩小 alias candidates；必要时由独立 selector 选择；ontology 增加 `causal_hypothesis_not_established` 等不与 fact presence 冲突的状态。替代路线是让单独资格化 verifier 或 qualified human 承担语义审计。两条路线都必须先回放 R3、三案例和留出，且在 Owner 决定模型路线前不得执行新 live。

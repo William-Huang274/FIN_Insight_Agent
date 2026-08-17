@@ -1,0 +1,131 @@
+{
+  "schema_version": "fin_ia_s3_case_truth_reconciliation_slice_content_assessment_v1_0",
+  "status": "natural_semantic_extraction_rejected_architecture_disposition_required",
+  "recorded_at": "2026-08-17T14:05:00+08:00",
+  "assessment_kind": "independent_codex_full_surface_two_cell_semantic_assessment",
+  "case_key": "DELL",
+  "run_id": "FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R3",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_slice_chat_live_authority_v1_2.json",
+  "source_authority_sha256": "3814803d1d0fd058f6bd516754d2443712c8a215e62855a2f7c7e30e14d405fb",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_slice_chat_live_result_v1_2.json",
+  "source_result_sha256": "3316fd9ff5d05f083bb81d88c17bf3abc42d4214f6fc7549f1629df6e41b4a05",
+  "source_result_digest": "e49b2a9c4aabbe957e243174918281142b8ba40902b84847f6e0f0dacd07388d",
+  "private_full_result_ref": "data/workbench_private/s3_case_truth_reconciliation/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R3/full_result.json",
+  "private_full_result_sha256": "95a6520c704e0144431bddff964699021041b68fb4e3204b042ba8058e0af05c",
+  "implementation_commit": "fca6fbc1f913446fb10236a30313911203d0e482",
+  "execution": {
+    "model_calls": 4,
+    "provider_calls": 4,
+    "transport_attempts": 4,
+    "retries": 0,
+    "fallbacks": 0,
+    "protocol_switches": 0,
+    "external_source_calls": 0,
+    "research_rewrites": 0,
+    "report_generations": 0,
+    "prompt_tokens": 22692,
+    "completion_tokens": 3888,
+    "total_tokens": 26580,
+    "all_analysis_outputs_visible": true,
+    "all_submissions_finished_with_tool_calls": true,
+    "complete_local_receipts": 1,
+    "partial_or_failed_local_receipts": 1
+  },
+  "hard_gate_assessment": {
+    "provider_transport": "pass",
+    "analysis_visibility": "pass",
+    "strict_tool_transport": "pass_two_of_two_tool_calls",
+    "claim_polarity_contract_shape": "fail_counterevidence_duplicate_alias_same_polarity",
+    "automatic_critical_targets": "fail",
+    "natural_semantic_extraction": "fail",
+    "R7_repair_authorized": false,
+    "remaining_three_cells_authorized": false,
+    "overall": "fail"
+  },
+  "business_findings": [
+    {
+      "location": "CELL::operating_performance::thesis_atom",
+      "observation": "The source sentence falsely says current-quarter AI revenue is not sourced. The model did not bind the specific accelerated-compute or AI-infrastructure revenue alias; it selected the adjacent order-conversion facet instead.",
+      "classification": "model_alias_resolution_miss_against_a_real_R7_false_absence",
+      "impact": "The required current AI revenue contradiction was not automatically detected."
+    },
+    {
+      "location": "CELL::counterevidence::thesis_atom",
+      "observation": "The model correctly extracted that the prose claims AI orders and AI backlog are absent. Local Case Truth would reject both because the current reviewed case contains them.",
+      "classification": "successful_semantic_detection_of_two_real_R7_false_absences",
+      "impact": "This demonstrates useful model signal, but the cell receipt was not eligible because another assertion violated the submission contract."
+    },
+    {
+      "location": "CELL::operating_performance::thesis_and_mechanism plus CELL::counterevidence::mechanism",
+      "observation": "The model selected operating-cash-flow facts that the R7 prose actually uses, while those facts sit outside the corresponding cell visibility boundary.",
+      "classification": "successful_detection_of_real_R7_cross_cell_claim_scope",
+      "impact": "The original R7 judgments require scoped repair; the finding must not be hidden as an alias error."
+    },
+    {
+      "location": "CELL::counterevidence::thesis_atom",
+      "observation": "The prose says segment profit is absent, but the model selected the broad segment-or-product-performance presence facet rather than the typed product-to-segment or company profit-bridge gap.",
+      "classification": "model_alias_resolution_miss_and_alias_catalog_disambiguation_gap",
+      "impact": "The legitimate profit-bridge absence was not preserved at the preregistered surface."
+    },
+    {
+      "location": "Operating counterargument alternatives and Counterevidence durability statement",
+      "observation": "The prose says mix, other segments, timing or demand durability remain unexcluded or unresolved. The current ontology offers evidence-presence facets and selected typed gaps, but no distinct authority for an unresolved causal hypothesis. A related facet may be present while the causal explanation is still unresolved.",
+      "classification": "provider_neutral_truth_ontology_gap",
+      "impact": "The validator can incorrectly treat a legitimate unresolved research hypothesis as contradicting evidence presence."
+    },
+    {
+      "location": "CELL::counterevidence::counterargument_atom",
+      "observation": "The submission repeated the same MU inventory alias with the same cross-case-context polarity for two prose clauses.",
+      "classification": "idempotent_duplicate_submission_shape_failure",
+      "impact": "Local validation correctly refused the exact submitted payload, but this duplicate does not create a new financial fact and should be handled separately from L1 semantic errors in any successor contract."
+    }
+  ],
+  "diagnostic_only_duplicate_normalization": {
+    "performed_in_memory_only": true,
+    "source_result_modified_or_promoted": false,
+    "removed_mapping": {
+      "claim_surface_id": "CELL::counterevidence::counterargument_atom",
+      "truth_alias": "TRUTH::NUMERIC::NUM::5EF59EBA7D876FB8",
+      "claim_polarity": "claim_uses_cross_case_context"
+    },
+    "post_normalization_receipt_status": "case_truth_reconciliation_blocked",
+    "post_normalization_findings": {
+      "asserted_absent_but_present_in_case": 3,
+      "asserted_unresolved_without_typed_gap": 1,
+      "asserted_present_outside_cell_visibility": 2
+    },
+    "interpretation": "Removing the exact duplicate only exposes the remaining semantic findings; it does not salvage or accept R3."
+  },
+  "root_cause_disposition": {
+    "classification": "mixed_R7_true_positive_model_alias_miss_contract_shape_and_provider_neutral_ontology_gap",
+    "not_caused_by": [
+      "DeepSeek connectivity",
+      "thinking-token exhaustion",
+      "strict schema transport failure",
+      "completion-token capacity",
+      "S1 retrieval",
+      "S2 NumericFact",
+      "source-text encoding corruption"
+    ],
+    "architecture_decision_required": true,
+    "why_no_automatic_R4": "The single authorized natural successor has now shown that direct claim-to-flat-alias classification cannot reliably distinguish adjacent financial facets and cannot represent unresolved causal hypotheses. Another prompt or token patch would recreate the provider-specific repair loop that the project explicitly prohibited.",
+    "bounded_options": [
+      "Separate proposition extraction and proposition-kind classification from alias resolution, then narrow aliases deterministically before model selection.",
+      "Add provider-neutral causal-hypothesis or not-established semantics instead of overloading fact presence, absence and unresolved-gap states.",
+      "Treat exact duplicate alias plus polarity as an idempotent structural finding rather than a financial-truth failure, while preserving the raw submission and receipt.",
+      "Use a separately qualified semantic verifier or qualified-human review for this gate rather than granting more autonomy to the primary research model."
+    ]
+  },
+  "acceptance": {
+    "semantic_content_assessment_complete": true,
+    "natural_semantic_extraction_accepted": false,
+    "R7_repaired": false,
+    "dell_five_cell_accepted": false,
+    "generalization_accepted": false,
+    "s3_accepted": false,
+    "workbench_publication": false,
+    "release_ready": false
+  },
+  "next_scope": "project_level_case_truth_semantic_verifier_architecture_disposition_before_any_new_live_or_R7_repair",
+  "known_boundary": "R3 provides useful natural semantic signals and exposes real R7 cross-cell defects, but it does not pass the automatic or independent semantic gate. No R7 Judgment, synthesis, report or business artifact has been changed or promoted."
+}

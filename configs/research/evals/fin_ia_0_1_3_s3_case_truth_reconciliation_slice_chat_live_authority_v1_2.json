@@ -1,0 +1,113 @@
+{
+  "schema_version": "fin_ia_s3_case_truth_reconciliation_slice_live_authority_v1_0",
+  "status": "signed_exact_once_R7_two_cell_case_truth_semantic_successor",
+  "signed_at": "2026-08-17T13:50:00+08:00",
+  "authority_id": "FIN-0.1.3-S3-R7-TWO-CELL-CASE-TRUTH-CLAIM-POLARITY-NATURAL-SUCCESSOR-CHAT-LIVE-AUTHORITY-V1.2",
+  "case_key": "DELL",
+  "clean_implementation": {
+    "implementation_commit": "fca6fbc1f913446fb10236a30313911203d0e482",
+    "head_must_equal_implementation_commit": true,
+    "upstream_must_equal_implementation_commit": true,
+    "tracked_worktree_must_be_clean": true,
+    "only_authority_may_be_untracked": true
+  },
+  "execution_budget": {
+    "maximum_model_calls": 4,
+    "maximum_provider_calls": 4,
+    "maximum_transport_attempts": 4,
+    "retries": 0,
+    "fallbacks": 0,
+    "protocol_switches": 0,
+    "network_source_calls": 0,
+    "embedding_calls": 0,
+    "candidate_promotions": 0,
+    "research_rewrites": 0,
+    "report_generations": 0,
+    "product_publication": "forbidden"
+  },
+  "bound_inputs": {
+    "r7_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_value_submission_repair_successor_chat_live_result_v1_0.json",
+    "r7_public_result_sha256": "8bc9ad425858cdedba23f276ea8ae6382637cef9f26def656dd577ef99ae5ed8",
+    "r7_private_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R7/full_result.json",
+    "r7_private_result_sha256": "6b462933d6ed0dae92aa83e6a59b0b5d01ee42166b8c32c1f8dff979afa0b3b5",
+    "zero_call_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_zero_call_result_v1_3.json",
+    "zero_call_result_sha256": "d99e5969a6573b8fc6b1badf760aeae224e0bbab9b35d9c6edaad2d8aa0a8229",
+    "whole_document_live_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_chat_live_result_v1_0.json",
+    "whole_document_live_result_sha256": "270aa9efbecc2c527af00b86ffbb7e13a35e58eee09fdf01029180e349552320",
+    "analysis_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_semantic_reconciliation_analysis_non_thinking_profile_v1_0.json",
+    "analysis_profile_sha256": "d18ecbd7ae576448a58c68246ed03e42af825dd776437d4670ed2c4fc6f99831",
+    "submission_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_case_truth_submission_non_thinking_strict_beta_profile_v1_0.json",
+    "submission_profile_sha256": "59bee30a63ac0d220f13ef7345dca6ea774b6acda9711d04607ab0358eacb23f",
+    "expected_case_truth_packet_digest": "6d25591ef73087a24efc74a1dff124f13ae3db9fc92701909c956e22c132432e",
+    "expected_claim_document_digest": "83fcc205c8bc7cd9b88d573c55daecbbddf990f631053de0fbc2606e6607096c",
+    "expected_slice_contracts": {
+      "CELL::operating_performance": {
+        "surface_ids": [
+          "CELL::operating_performance::thesis_atom",
+          "CELL::operating_performance::mechanism_atom",
+          "CELL::operating_performance::counterargument_atom"
+        ],
+        "claim_document_digest": "74ecbe608e3d44231680fbe9cd708a56320be661d2987a9a46816307fc33173b",
+        "analysis_messages_digest": "8da83cbc9d8ead24641e8257729c9390039e4f22dd53f86e9bb2f0f58a576a66",
+        "canonical_tool_digest": "8a431d9e9880da4316b2efc596c27f982ec2ef01cef312c99bf6e88cc6fa683e",
+        "wire_tool_digest": "34fa4c4d840484e07a394f9fdf8ea52dde0030e0ab91bfaf8be2d4b11c645b5b"
+      },
+      "CELL::counterevidence": {
+        "surface_ids": [
+          "CELL::counterevidence::thesis_atom",
+          "CELL::counterevidence::mechanism_atom",
+          "CELL::counterevidence::counterargument_atom"
+        ],
+        "claim_document_digest": "604de172b4247022b073bf06a8ff0ea6f86a3f68fdb73ffd2fbc5ea4080120bb",
+        "analysis_messages_digest": "0c2c3488ea9178b05214f8de7d22aea50f4e6b3ac861a007a88d659ed69099a9",
+        "canonical_tool_digest": "f5286780b092e38a088753604570fb4a85157d3dc2084de6d7bac4ffde3904df",
+        "wire_tool_digest": "703f0ea746061c4d868ce1a818f5eb303893bc893cfeea5cd8a7d3cbd5b051e0"
+      }
+    }
+  },
+  "pre_registered_targets": {
+    "affected_cell_ids": [
+      "CELL::operating_performance",
+      "CELL::counterevidence"
+    ],
+    "required_surface_count": 6,
+    "required_false_absence_detections": [
+      {
+        "claim_surface_id": "CELL::operating_performance::thesis_atom",
+        "truth_alias": "TRUTH::FACET::operating_performance::accelerated_compute_or_ai_infrastructure_revenue"
+      },
+      {
+        "claim_surface_id": "CELL::counterevidence::thesis_atom",
+        "truth_alias": "TRUTH::FACET::demand_volume_quality::ai_orders"
+      },
+      {
+        "claim_surface_id": "CELL::counterevidence::thesis_atom",
+        "truth_alias": "TRUTH::FACET::demand_volume_quality::ai_backlog"
+      }
+    ],
+    "required_legitimate_absence": {
+      "claim_surface_id": "CELL::counterevidence::thesis_atom",
+      "truth_alias": "TRUTH::BRIDGE::CR::DELL::PROFIT_BRIDGE_GAP"
+    },
+    "semantic_assessment_after_run_required": true,
+    "automatic_targets_do_not_equal_final_acceptance": true
+  },
+  "output_contract": {
+    "capture_root_ref": "data/captures/provider_calls",
+    "private_output_ref": "data/workbench_private/s3_case_truth_reconciliation/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R3/full_result.json",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_slice_chat_live_result_v1_2.json",
+    "run_id": "FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R3",
+    "attempt_ids": {
+      "CELL::operating_performance": {
+        "analysis_attempt_id": "OPERATING-ANALYSIS-03",
+        "submission_attempt_id": "OPERATING-SUBMISSION-03"
+      },
+      "CELL::counterevidence": {
+        "analysis_attempt_id": "COUNTEREVIDENCE-ANALYSIS-03",
+        "submission_attempt_id": "COUNTEREVIDENCE-SUBMISSION-03"
+      }
+    },
+    "product_publication": "forbidden"
+  },
+  "known_boundary": "This authority permits exactly four DeepSeek calls over the immutable R7 Operating and Counterevidence claim slices using the formally proved claim-polarity contract. It forbids retries, fallback, protocol switching, source retrieval, embedding, candidate promotion, research rewriting, report generation, remaining-cell execution, synthesis repair, publication, generalization, S3 acceptance and release. Automatic target success still requires independent full-surface semantic assessment."
+}

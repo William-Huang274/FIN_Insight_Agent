@@ -438,3 +438,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R2 的 9,919 字符 Operating 草稿与 Counter 单 surface 13 条 mapping 在新合同下都会于 submission 前被拒绝；新 schema 将 claim polarity、authoritative truth 和 cross-case context 分开，并把每 surface 直接 proposition 限为 12。
 - R7 三条 false absence、一个合法利润桥 typed gap、合法跨公司 context 和真实 outside-cell claim scope 均可分别表达；subject-as-context、跨案、未知 alias、digest 漂移、漏／重叠 slice 与容量 mutation 全部 fail closed。DELL／MU／NVDA 和留出案例顺序稳定。
 - 该结果只关闭 RC-S3-042 的 provider-neutral 工程门，不证明 DeepSeek 自然语义分类通过，也没有改写 R7。下一步仅允许 clean commit/push 后的一次 Operating／Counterevidence 两单元 natural successor，最多 4 调用、0 retry；通过前不得进入剩余三单元、Judgment／Synthesis 修复、泛化、S3 acceptance 或发布。
+
+## 2026-08-17 S3 Case Truth 两单元 natural R3 架构边界
+
+- clean/synced `fca6fbc1...e482` 上的唯一 R3 已完成 4 次 DeepSeek 调用，两个 analysis 均可见、两个 submission 均为 Tool Call；总计 26,580 tokens，0 retry／fallback／协议切换／网络／改写／报告。之前的 reasoning exhaustion、2k 截断和 strict transport 问题均未复发。
+- Counter 正确抽取 AI orders／backlog 两条 false absence，两个单元也都暴露 R7 真实使用本 cell 之外现金流事实；但 Operating 未命中特定 AI revenue alias，Counter 未命中 typed profit bridge，并有一个同 alias／polarity 重复导致 receipt 未物化。只读内存去重后仍保留 6 条 substantive finding，R3 不可 salvage。
+- 新的最早责任问题是：flat/grouped alias view 无法稳定区分相邻金融 facet，且当前 presence／absence／gap ontology 无法表达“相关事实存在，但某个因果解释仍未排除”。这不是网络、token、S1、S2 或源文本编码问题；一次显示乱码已证实只是 Python GBK stdout 诊断现象，不登记为产品根因。
+- R3 natural semantic extraction 正式拒绝；剩余三 cell、R7 repair／synthesis、DELL acceptance、泛化、S3 和发布继续 false。不得自动进入 R4/R5 Prompt 修补；下一步需要 Owner 在“拆分 proposition kind 与 alias resolution＋补 causal-hypothesis 语义”或“单独资格化 verifier／qualified-human gate”之间做项目级架构处置。

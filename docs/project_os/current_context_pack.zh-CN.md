@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。标准与评测合同已写入 PRD、技术范式和独立 S1 eval，但 Runtime、gold／split、异质留出和资格尚未实现。DELL fixed-Pack 第一层、`value_capture` 动态单单元、reviewed source 同步和有限 S2 回归仍保持已关闭；R7 仍是 `report contract pass / financial truth reconciliation fail`，RC-S3-043 也保持开放。当前下一步是 S1-A–S1-J 实现／消费者／评测覆盖矩阵和第一确定性修复切片；S1 独立资格稳定前不运行用于产品资格的完整真实链，也不以任何局部 case／node live 追认 S1。
+Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 现只作为责任坐标，实际执行改为共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice；每个切片持续回放到 CandidateDecision／Coverage／Pack／Workbench，禁止十个组件各自收口后最后一次性集成。标准与评测合同已写入 PRD、技术范式和独立 S1 eval，但 Runtime、gold／split、异质留出和资格尚未实现。DELL fixed-Pack 第一层、`value_capture` 动态单单元、reviewed source 同步和有限 S2 回归仍保持已关闭；R7 仍是 `report contract pass / financial truth reconciliation fail`，RC-S3-043 也保持开放。当前下一步是 canonical spine／覆盖矩阵／split-safe gold program 和 VS1 第一确定性纵切；S1 独立资格稳定前不运行用于产品资格的完整真实链，也不以任何局部 case／node live 追认 S1。
 
 ## 当前唯一产品边界
 
@@ -87,7 +87,7 @@ Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全�
 
 ## 当前下一步
 
-Owner 早先批准的 S3 连续路径及其历史 attempt 均保持不可变，但最新 S1 更正改变了当前执行优先级，不再立即签发两单元 successor 或三案例完整链。当前程序为：`S1-A–S1-J 实现／消费者／评测覆盖矩阵 → split-safe gold／negative／mutation 资产 → CoverageState／candidate ledger／binding／capture-bound promotion 第一切片 → 按最早责任层补齐数据与检索门 → S1 frozen test／异质留出／稳定资格 → 完整真实 user→S3→S1→S2→S3→S4`。
+Owner 早先批准的 S3 连续路径及其历史 attempt 均保持不可变，但最新 S1 更正改变了当前执行优先级，不再立即签发两单元 successor 或三案例完整链。当前程序为：`canonical artifact spine＋A–J 责任覆盖矩阵＋split-safe gold → VS1 数字原生资料／CoverageState／candidate ledger／binding／promotion 全纵切 → VS2 OCR／复杂表格全纵切 → VS3 多路线 recall／rerank／金融精排全纵切 → VS4 Coverage 驱动第二轮补证 → VS5 frozen test／异质留出／稳定资格 → 完整真实 user→S3→S1→S2→S3→S4`。每个纵切都必须进入当前 Pack／Workbench；局部组件只可记 engineering pass，不能留到最终 big-bang integration。
 
 DELL R7 继续作为不可变的首份完整但内容未通过报告；RC-S3-038／043 与历史 Case Truth natural 结果继续保留，不被 S1 工作追认或关闭。S1 未资格化期间，可单独签发的 deterministic／shadow／node canary 必须明确为诊断，不能声称 S1、三案例泛化、完整产品链或 release。
 
@@ -479,3 +479,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 新的 S1 独立评测继承项目 L0–L5、Financial Truth、Evidence Authority、对抗测试和研究内容上游 ceiling，并增加 source／capture、OCR／parser、chunk／object、query／route、candidate ceiling、recall、rerank、finance-aware fine-rank、Evidence promotion、Coverage／gap、下游可用性、稳定性／资源与泛化门。身份、期间、单位、locator、跨案污染、critical false promotion 和 false gap 等硬门不可由平均分补偿。
 - 只有 S1 标准范式、独立 hard/performance gates、异质留出和稳定复证通过后，才允许用于产品资格的完整真实 `user→S3→S1→S2→S3 report→S4 Workbench`。此前节点 live 只能明确标为 deterministic／shadow／canary／diagnostic，不能追认 S1 或完整产品链通过。
 - 权威评测文件：`docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md`。当前状态仍为 `standard_and_eval_contract_documented / runtime_and_qualification_pending / full_product_chain_blocked`；本轮 0 Runtime／index／model／Provider／network／source promotion／full-chain。
+
+## 2026-08-17 S1 责任分层与纵向集成 Owner 更正
+
+- Owner 指出 S1-A–S1-J 若按十个独立小项目顺序完成，会在最后合并时重新暴露对象版本、期间、lineage、排名与 Evidence 语义冲突。该风险成立；上一版 4E 的线性文字容易诱导错误执行。
+- A–J 现只用于最早责任层归责。实际交付单位改为 VS1–VS5 纵向 release slice；每个切片从真实／冻结 source 或 Evidence Need 出发，复用同一 canonical artifact spine，贯穿到 CandidateDecision、CoverageState、Evidence Pack 和当前 Workbench／冻结 consumer probe。
+- 状态严格分为 `component_engineering_pass`、`vertical_slice_integrated` 和 `S1_qualified_stable`。局部 OCR／parser／chunk／ranker／Evidence evaluator 通过不能关闭责任层；任何合同变化至少重跑一条真实 golden vertical replay。
+- 每个切片合并前必须同时过局部 gold／mutation、相邻 schema／identity／period／digest／lineage 接缝、真实纵切、业务 Evidence／gap 影响、跨案非回归和 artifact 迁移／回滚六门。未修改层复用当前 accepted 实现但必须参加回放，不为本轮另造实现。
+- 当前下一动作仍不变成模型或网络 live：先建立 canonical spine、A–J 覆盖矩阵、split-safe gold 和 VS1 program；随后才实现第一确定性纵切。本文档更正没有执行 Runtime、index、model、Provider、network、source promotion 或 full-chain。

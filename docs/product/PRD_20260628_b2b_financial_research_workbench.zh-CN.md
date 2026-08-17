@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-17 | Owner 指出 S1-A–S1-J 若按十个独立小项目顺序收口，会在数据版本、接口与金融语义上形成新的集成债。S1-A–S1-J 因此只作为责任与故障定位坐标；实际交付必须按纵向 release slice 组织，每个切片从真实／冻结 source 或 Evidence Need 出发，复用同一 canonical artifact spine，贯穿 parse／object／index／query／candidate／EvidenceDecision／Coverage／Pack，并由当前 Workbench 与冻结下游 probe 消费。局部通过只记 `component_engineering_pass`，只有当前主线端到端回放通过才记 `vertical_slice_integrated`；S1 仍须最终达到 `S1_qualified_stable`。 |
 | 2026-08-17 | Owner 更正 S1 完成定义：CoverageState／候选账本／binding／动态晋升只是第一修复切片，S1 最终必须交付 source capture、HTML／PDF／OCR／表格清洗、chunk／金融对象化、存储／索引、QueryFacetPlan、召回、语义重排、金融精排／Evidence Role、Evidence Gate、补证／gap 与 replay 的完整标准范式、当前主线实现和独立资格报告。DELL／MU／NVDA 只作开发／回归，已观察案例不作隐藏测试；须以预注册异质留出和独立 S1 硬门／性能门证明稳定后，才允许产品资格完整真实链。 |
 | 2026-08-17 | Case Truth natural R3 证明模型能识别部分真实 false absence 与 cross-cell scope，但“直接从 flat/grouped alias 列表选编号”不足以稳定区分 AI revenue／order conversion、segment performance／profit bridge 等相邻金融语义；现有三态也不能表达“事实材料存在、但某个因果解释仍未排除”。产品合同因此要求将命题抽取／命题类型与 alias resolution 分责，并为 unresolved causal hypothesis 提供不与事实 presence 冲突的语义；或由单独资格化 verifier／qualified human 承担该门。R3 保持失败，不因内存去重或部分命中而追认为通过，且在项目级处置前不得继续剩余单元或修复报告。 |
 | 2026-08-17 | Case Truth claim-polarity formal R4 已完成 capture replay、三案例／留出、跨公司 context、真实 cross-cell scope 与容量 mutation，正式状态只记为 provider-neutral engineering pass。旧 R2 的过长草稿和 supporting-fact overmapping 会在新调用前 fail closed；R7 的三条 false absence 与合法利润桥 typed gap 仍被保留。产品验收仍要求一次 fresh 两单元自然消费证明，且通过后才允许修复受影响 Judgment／Synthesis；零调用 proof 不得冒充自然语义质量、报告修复或 S3 通过。 |
@@ -2782,5 +2783,11 @@ S1 必须在现有项目 L0–L5、Financial Truth、Evidence Authority、对抗
 案例使用分为三类：DELL／MU／NVDA 是开发与业务回归样本；ORCL／ASML／ANET 等已观察案例只能继续做回归；最终资格必须使用在看见结果前冻结、覆盖不同行业、来源形态、语言、资料充分度、关系方向和故障类型的新留出案例。阈值、gold／negative 标签、split 和报告模板必须在读取最终结果前预注册，不能在同一 test 上调参后继续声称独立通过。
 
 当前 16.40 的 CoverageState／candidate 账本／binding／capture-bound promotion 包仍然有效，但它只是 S1 标准范式的第一实现切片，不再被解释为 S1 最终验收的全部范围。只有全链范式、独立 S1 评测、异质留出泛化和稳定复证全部通过后，才允许执行用于产品资格的完整真实链路：用户问题 → S3 Research Objective／EvidenceRequest → S1 动态检索与补证 → S2 NumericFact／bridge → S3 判断与报告 → S4 Workbench。此前的模型或节点 canary 只能标记为诊断／单元验证，不能冒充完整产品测试。
+
+S1-A–S1-J 是同一条产品链上的责任坐标，不是十个可以各自完成、最后再一次性拼装的子产品。实施必须采用纵向 release slice：每个切片从一份真实或冻结的 source／Evidence Need 开始，沿同一份 canonical artifact spine 经过 source capture、parse、object、index、query、candidate、EvidenceDecision、CoverageState 和 Evidence Pack，最后被当前 Workbench 及冻结的 S2／S3 consumer probe 实际读取。未修改的责任层可以复用当前 accepted 实现，但必须参与回放，不能因“本轮没改”而从集成证明中消失。
+
+每个切片至少同时满足三类门：所改责任层的局部 gold／mutation；与上下游相邻合同的版本、identity、period、digest 和 lineage 兼容；从当前 raw source／Evidence Need 到 Pack／Workbench 的端到端业务回放。局部测试通过只允许标记 `component_engineering_pass`；只有完整纵切通过才允许标记 `vertical_slice_integrated`；只有所有必要纵切、独立 frozen test、异质留出和稳定性同时通过，才能标记 `S1_qualified_stable`。不得再使用 `S1-A done`、`OCR done` 或 `reranker done` 等表述代替产品链状态。
+
+任何 parser、chunk、对象 schema、index、query、ranker 或 Evidence evaluator 变更都必须声明受影响 artifact version、重建／迁移范围、旧新兼容与回滚入口，并至少重跑一条真实纵切。不得由 reranker 掩盖 parser／chunk 缺陷，也不得让上游局部改善在下游 Evidence Role、Coverage 或 Workbench 中丢失；集成问题必须在每个 release slice 内暴露，而不是留到 S1 最终合并。
 
 S1 独立评测权威见 `docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md`；技术范式继续以 `docs/architecture/retrieval/FIN_0_1_3_S1_EVIDENCE_ACQUISITION_AND_PACK_QUALITY_PARADIGM_20260817.zh-CN.md` 为当前源。

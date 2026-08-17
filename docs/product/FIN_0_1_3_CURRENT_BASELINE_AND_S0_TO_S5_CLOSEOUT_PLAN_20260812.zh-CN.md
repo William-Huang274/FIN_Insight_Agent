@@ -121,16 +121,16 @@ Owner 已接受有界第一修复方向，并补充两条不可退化的产品�
 
 Owner 进一步更正：4D 的 CoverageState、候选账本、binding 和 capture-bound promotion 只是 S1 的第一修复切片；DELL／MU／NVDA 只是用来测试切片和整条 S1 链的案例。不能在三个案例局部可用后直接写成 S1 结束，也不能跳过 OCR、解析、chunk、对象化、索引、召回、重排和金融精排等上游环节，只验收 Evidence Pack 终态。
 
-后续 S1 计划改为以下程序级顺序：
+后续 S1 计划改为“责任分层、纵向交付、持续集成”。S1-A–S1-J 只用于定位最早责任层，不能作为十个按顺序各自收口的小项目。每个 release slice 都必须复用当前唯一 canonical artifact spine，从真实／冻结 source 或 Evidence Need 贯穿到 CandidateDecision、CoverageState、Evidence Pack 和 Workbench／冻结 consumer probe；未改层参加回放，不能在最后一次性拼装。
 
-1. **冻结 S1 全链标准范式和独立评测合同。** 明确来源捕获、HTML／PDF／OCR／表格解析、数据清洗、chunk／parent-child／claim-table-context 对象化、版本化索引、QueryFacetPlan、召回、语义重排、金融精排／Evidence Role、Evidence Gate、CoverageState、第二轮补证、gap 资格和可观测回放各自的输入、输出、责任与停止条件。
-2. **对当前实现做范式覆盖矩阵。** 逐层标记 `implemented_and_consumed`、`implemented_not_qualified`、`shadow_only`、`missing`、`superseded`，同时列出真实 Workbench／S2／S3 消费者；不因为历史脚本存在就记为当前能力。
-3. **先修数据地基，再修检索头部。** 对 capture、OCR／parser、表格和期间、chunk／对象边界、去重／supersession、身份与 lineage 做独立 gold／mutation；这些门不通过时不得靠 reranker 隐藏上游损坏。
-4. **完成 provider-neutral 检索栈。** 保留 exact／BM25 等廉价高召回路线，按 ceiling 决定 dense／multi-vector／graph／SQL 的增量价值；只在真目标已入池后评估 Cross-Encoder 或其他 reranker。
-5. **分开重排与金融精排。** 重排回答“候选与请求语义是否相关”；金融精排／Evidence evaluator 回答“它能否以什么角色证明当前命题”。身份、期间、来源权威、直接性、关系方向、hard negative、abstain 和人工复核必须进入后者，相关性分数不能自动晋升 Evidence。
-6. **闭合命题覆盖与第二轮补证。** 执行 4D 的 CoverageState／候选账本／binding／capture-bound promotion，并用 DELL 三个不同故障面验证；随后让 MU／NVDA 从自然问题走等价路径。这里的结果用于发现范式缺陷，不用于给案例本身刷通过率。
-7. **执行 S1 独立资格。** 在当前项目 L0–L5、Financial Truth、Evidence Authority 和对抗测试基础上，新增来源、OCR／parser、chunk／对象、查询、召回、重排、金融精排、Evidence 晋升、Coverage／gap、稳定性／效率和异质泛化门。DELL／MU／NVDA 是开发／回归集，已观察 ORCL／ASML／ANET 不是最终隐藏集；最终资格使用预注册的新留出案例。
-8. **稳定后才进入完整真实链。** S1 独立硬门和性能门通过、确定性 replay 稳定、当前 Runtime／Workbench 可观测且没有 case-specific 分支后，才运行 `用户问题 → S3 → S1 → S2 → S3 报告 → S4` 的完整真实链。此前只允许清楚标记为 deterministic、shadow、node canary 或 diagnostic 的局部验证。
+1. **冻结 spine、覆盖矩阵和 split。** 明确 source→capture→parse→object→index→query→candidate→decision→Coverage→Pack→Workbench 的 schema／version／digest／lineage；逐层标记当前生产入口、消费者、qualification 状态、迁移／回滚和真实缺口；冻结 source-page-table-chunk-query-candidate-Evidence-gap gold／negative／mutation 与 train／valid／test 边界。
+2. **VS1：当前数字原生官方资料纵切。** 用当前 HTML／文本 PDF／transcript 的真实资料贯穿完整主线，同时实现 4D 的 CoverageState、候选账本、reviewed binding 和 capture-bound promotion。该切片要证明第一修复包确实进入 Pack／Workbench，而不是只新增 schema 或离线 runner。
+3. **VS2：复杂文档与数表纵切。** 用扫描 PDF／OCR、跨页表格、脚注和修订／重述贯穿同一条链；capture、OCR／parser、表格、期间、chunk／对象、去重／supersession 的任何修复都必须继续回放到 candidate、Evidence、Coverage 和消费者，不能只报 OCR／chunk 局部分数。
+4. **VS3：多路线检索与金融排序纵切。** 保留 exact／BM25 等高召回基线，在同一对象和候选边界比较 dense／multi-vector／graph／SQL／official／external 的增量，再分别验收 semantic rerank 和 finance-aware Evidence evaluator。只有最终 CandidateDecision／Evidence Pack 的业务质量改善才可晋升，不能用 reranker 掩盖上游 0 ceiling 或对象损坏。
+5. **VS4：Coverage 驱动的第二轮补证纵切。** 用 DELL 营运资金、发行人反方、上游反方验证 residual gap→counter-hypothesis→route→capture→decision→Coverage delta→typed stop／ready；随后让 MU／NVDA 从自然问题走同核心。案例用于暴露范式缺陷，不用于刷案例通过率。
+6. **持续集成而非最终集成。** 每个切片合并前必须同时通过局部门、相邻合同门、真实纵切门、业务影响门、跨案／错期／mutation 非回归和 artifact 迁移／回滚门。局部只记 `component_engineering_pass`；贯穿当前消费者才记 `vertical_slice_integrated`。任何 parser／chunk／index／ranker 变更至少重跑一条 golden vertical replay。
+7. **VS5：独立 S1 资格。** DELL／MU／NVDA 只作开发／回归；已观察 ORCL／ASML／ANET 不作最终隐藏集。最终使用预注册新异质留出，逐案通过来源、OCR／parser、chunk／对象、query／route、candidate ceiling、recall／rerank、金融精排、Evidence 晋升、Coverage／gap、下游 ceiling、稳定性／效率硬门与性能门。
+8. **达到 `S1_qualified_stable` 后才进入完整真实链。** 当前 Runtime／Workbench 可观测、确定性 replay 稳定且无 case-specific 分支后，才运行 `用户问题 → S3 → S1 → S2 → S3 报告 → S4`。此前只允许明确标记为 deterministic、shadow、node canary 或 diagnostic 的局部验证。
 
 S1 结束的必交付物不是一张指标表，而是：一份当前权威标准范式；一套可执行、可版本化的主线实现；一组带 train／valid／frozen-test 边界的 gold／hard-negative／mutation 评测资产；一份逐层资格报告；Workbench 运维／审计消费者；以及对未通过项和真实外部边界的 typed closeout。任何单一 Recall、MRR、网页数、Evidence 数或案例报告均不能替代。
 

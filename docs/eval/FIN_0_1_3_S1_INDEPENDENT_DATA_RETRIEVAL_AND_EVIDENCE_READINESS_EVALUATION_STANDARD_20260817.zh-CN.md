@@ -62,6 +62,26 @@ S1 独立评测覆盖十个对象：
 
 S2 独立拥有 NumericFact、PIT、单位、期间、公式、supersession 和产品到财务 bridge 权威。S1 可以解析表格、定位数字披露并发出 typed sibling request，但不能把检索到的文本数字直接晋升为 NumericFact。S3 独立拥有用户问题理解、Research Objective、命题优先级和最终 Judgment；S1 独立测试使用冻结 EvidenceRequest，不把固定 query pack 冒充自然用户链。
 
+### 3.1 责任层与集成验收的关系
+
+上述十个对象用于定位最早责任层，不构成十个可以各自完成后再统一集成的验收项目。S1 评测的最小交付单位是纵向 release slice；每个切片必须从真实／冻结 raw source 或 Evidence Need 开始，经当前 canonical artifact spine 进入 CandidateDecision、CoverageState、Evidence Pack，并由当前 Workbench 和冻结 consumer probe 消费。
+
+任何组件变更必须同时给出：
+
+- 本层 gold／mutation 结果；
+- 与直接上下游的 schema、identity、period、locator、digest、lineage 和失败码兼容结果；
+- 至少一条真实纵切的端到端业务结果；
+- 对最终 Evidence／gap／Coverage 的可解释影响；
+- 数据或索引合同变化时的重建、迁移和回滚结果。
+
+评测状态只允许按以下层级晋升：
+
+1. `component_engineering_pass`：局部正确，不能关闭责任层；
+2. `vertical_slice_integrated`：当前真实资料贯穿到永久消费者，相邻合同与业务语义通过；
+3. `S1_qualified_stable`：所有必要纵切、frozen test、异质留出和稳定性通过。
+
+例如 OCR 修复不能只报字符准确率；必须证明修复后的 claim／table 对象进入当前 index、能被正确 query 召回、不被错期／错公司对象压过、通过或正确拒绝 Evidence Gate，并在 Coverage／Workbench 中表现一致。反之，reranker 改善也不能掩盖 OCR／chunk 已经损坏目标对象。
+
 ## 4. 数据集与案例治理
 
 ### 4.1 Split 角色
@@ -237,6 +257,7 @@ S1 标记 `qualified_stable` 前必须全部成立：
 6. current Workbench／Operations 可查看完整 lineage 和最早故障层；
 7. 所有真实 gap 有资格 receipt，所有内部故障有 owner stage；
 8. 形成一份 qualified reviewer 可审的 S1 逐层报告，并明确哪些能力仍属于 S2／S3／S4。
+9. 每个进入主线的 parser／chunk／index／retrieval／rerank／Evidence evaluator 变更都有至少一条真实纵切通过记录；不存在只凭组件 test 晋升、最后一次性集成的 release slice。
 
 DELL、MU、NVDA 平均通过不能替代逐案和留出通过；一个案例资料确实缺失时可以 `blocked_external`，但必须证明系统正确识别该边界，而不是为了让案例凑齐 Evidence。
 
@@ -274,11 +295,14 @@ S1 未通过时仍可运行的模型或节点调用必须明确标为 determinis
 
 下一步程序为：
 
-1. 建立 S1-A–S1-J 当前实现／消费者／评测覆盖矩阵；
+1. 建立 S1-A–S1-J 当前实现／消费者／评测覆盖矩阵和唯一 canonical artifact spine；A–J 只作为责任坐标，不作为十个独立关闭项；
 2. 冻结 source-page-table-chunk-query-candidate-Evidence-gap 的 gold／negative／mutation schema 和 split；
-3. 完成 16.40 已批准的 CoverageState／candidate 账本／binding／capture-bound promotion 第一切片；
-4. 按评测暴露的最早责任层依次补齐 OCR／parser／chunk／index／recall／rerank／fine-rank，而不是一次重写；
-5. 完成 DELL／MU／NVDA 回归、新异质留出和稳定资格；
-6. 资格通过后再签发完整真实链。
+3. 执行 VS1 当前数字原生官方资料纵切，在同一条 source→Pack→Workbench 路径完成 16.40 已批准的 CoverageState／candidate 账本／binding／capture-bound promotion；
+4. 执行 VS2 复杂文档纵切，覆盖扫描 PDF／OCR、跨页表格、脚注和修订／重述；
+5. 执行 VS3 多路线检索与金融排序纵切，在同一候选边界验收 recall／rerank／fine-rank 对最终 Evidence Pack 的真实增益；
+6. 执行 VS4 Coverage 驱动的第二轮补证纵切，完成 DELL 三命题和 MU／NVDA 等价自然路径；
+7. 每个纵切均先在最早责任层修复，再回放到当前 Workbench／consumer probe；组件绿色但纵切失败时不得合并为主线能力；
+8. 完成 DELL／MU／NVDA 回归后执行 VS5 新异质留出和稳定资格；
+9. 达到 `S1_qualified_stable` 后再签发完整真实链。
 
 当前结论：`S1 independent evaluation contract documented / S1 not qualified / full product chain qualification blocked`。

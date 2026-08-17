@@ -453,3 +453,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 当前优先级改为文档和只读审计：用 DELL／MU／NVDA 既有 artifacts 生成 Evidence Acquisition 尸检与跨案 failure atlas，再按 source coverage、parser/object、query、ranking、Evidence Role／Gate、S2 numeric／bridge、dynamic loop 和 S3 consumption 分配最早责任层。
 - 该调整不改写 R7：AI revenue／orders／backlog 已对模型可见却被否认，仍属 S3；利润桥、供应分配／时点、估值、反方深度和资料面不足主要归 S1／S2。两个 failure domain 不得互相代偿。
 - 本轮只更新 PRD、S1 技术范式、当前计划、Project OS 与工作记录；0 code、model、Provider、network、retrieval、index、source promotion 或 live。S1 Pack Readiness 产品门通过前，不开始 Generic Cell Runtime／Answer Projector／Memo Compiler 实现。
+
+## 2026-08-17 S1 DELL／MU／NVDA Evidence Acquisition 只读尸检
+
+- 已完成三案 current authority／lineage 只读审计；活动树文件名盘点命中 622 个相关 artifacts，但历史 attempt、capture 和重复物化没有被重复当成产品证据。0 code／model／Provider／network／retrieval／index／source promotion／live。
+- DELL Pack 有 20 条 Evidence，其中 11 条 exact claim anchor；MU 为 16／2，NVDA 为 14／8。MU 的大多数证据仍是 broad source segment，Evidence 数量不能代表命题级可引用充分性。
+- DELL 八个请求共 128 candidates、111 unreviewed、8 个唯一 accepted reviewed Evidence、12 typed gaps、0 dynamic promotion。working-capital、issuer-counter 和 upstream-counter 三个请求均 0 accepted；当前链是 closed-world reviewed join，不是完整动态晋升与补证闭环。
+- R7 模型实际只看到 8 条 Evidence cards，全部为 DELL issuer direct；Pack 内 TSM／MU／NVDA ecosystem evidence 没有进入本次模型 Evidence view。与此同时，AI orders／revenue／backlog 已可见却被 Operating／Counter／Synthesis 否认，继续是独立 S3 failure。
+- MU／NVDA 各只有一个工程形状请求、0 accepted，未经历自然 Planner、第二轮补证、五单元模型消费或报告；不得称为跨案泛化。
+- 跨案最早责任图已经冻结：S1 request／source／object／ranking／admission／CoverageState／loop，S2 numeric／causal bridge，S3 visible-fact consumption 分开处置。当前不自动重建向量库、微调 Embedding／reranker、扩大 broad search 或补跑完整报告。
+- 权威报告：`docs/architecture/retrieval/FIN_0_1_3_S1_DELL_MU_NVDA_EVIDENCE_ACQUISITION_AUTOPSY_20260817.zh-CN.md`。下一步等待 Owner 决定有界修复范围。

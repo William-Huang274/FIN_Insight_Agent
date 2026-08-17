@@ -93,8 +93,8 @@ Owner 接受“通用研究内核＋动态 ResearchBlueprint＋多形态 Deliver
 当前顺序改为：
 
 1. **先冻结产品与技术范式，不改代码。** PRD 16.38–16.39 定义稳定研究内核、动态交付方向，以及 S1 `证据获取—反驳—补证—充分性验收` 产品链。
-2. **只读审计现有三案。** 从用户问题／Planner atom 开始，逐命题追踪 EvidenceRequest、QueryFacetPlan、candidate、EvidenceDecision、NumericFact、residual gap、外源补源和 S3 实际消费，形成业务级 Evidence Acquisition 尸检和跨案 failure atlas。
-3. **建立 task-relative Pack Readiness。** 区分 source access、candidate coverage、retrieval quality、Evidence admission、numeric／bridge authority 和真实公开资料 gap；不得用一个 Recall 或总分覆盖逐命题状态。
+2. **只读审计现有三案：已完成。** 当前报告位于 `docs/architecture/retrieval/FIN_0_1_3_S1_DELL_MU_NVDA_EVIDENCE_ACQUISITION_AUTOPSY_20260817.zh-CN.md`。DELL 已证明 Pack、动态晋升与 S3 消费存在不同故障；MU／NVDA 尚未走过等价动态研究链，不能计作泛化。
+3. **建立 task-relative Pack Readiness：等待 Owner 修复决策。** 审计已按 proposition 区分 source access、candidate coverage、retrieval quality、Evidence admission、numeric／bridge authority 和 S3 consumption；下一步不得在 Owner 选择实现范围前自动改 Runtime。
 4. **按最早责任层设计 S1 实现包。** source、parser、query、ranking、Evidence Role／Gate、S2 数值桥和 S3 consumption 分开处置；不预先假定需要重建全部索引、微调模型或购买数据。
 5. **S1 门通过后再迁移研究结构。** DELL 五单元作为兼容 blueprint 保留；随后才实现 Generic Cell Runtime、Answer Projector 和 Memo Compiler，并用 MU／NVDA 和新冻结异质案例证明泛化。
 

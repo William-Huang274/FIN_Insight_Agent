@@ -2,7 +2,7 @@
 
 日期：2026-08-17
 
-状态：`architecture_decision / runtime_not_implemented / read_only_audit_next`
+状态：`architecture_decision / runtime_not_implemented / read_only_audit_complete / owner_repair_decision_pending`
 产品依据：`docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md` 16.38–16.39
 
 ## 1. 为什么需要本范式
@@ -182,8 +182,8 @@ S1 不充分解释了当前报告信息面窄、利润桥／供应分配／估�
 ## 10. 后续执行顺序
 
 1. 冻结本文范式和 PRD 的产品门；不改 Runtime，不调用模型或网络。
-2. 用现有 DELL／MU／NVDA artifacts 做 Evidence Acquisition 尸检：逐命题追踪 request、candidate、Evidence、NumericFact、gap、补源和报告实际消费。
-3. 形成跨案 failure atlas，并把问题分到 source coverage、对象解析、query、ranking、Evidence Role／Gate、Numeric／bridge、dynamic loop 或 S3 consumption。
+2. 用现有 DELL／MU／NVDA artifacts 做 Evidence Acquisition 尸检：已完成，见 `FIN_0_1_3_S1_DELL_MU_NVDA_EVIDENCE_ACQUISITION_AUTOPSY_20260817.zh-CN.md`。
+3. 形成跨案 failure atlas：已完成；source coverage、对象解析、query、ranking、Evidence Role／Gate、Numeric／bridge、dynamic loop 与 S3 consumption 已分账，等待 Owner 选择有界修复范围。
 4. 只为最早责任层设计 S1 实现包与确定性验收；不得把所有问题塞入一个大重构。
 5. S1 达到 task-relative Pack Readiness 后，再恢复 ResearchBlueprint、Generic Cell Runtime 和 DeliveryPlan 的代码迁移。
 

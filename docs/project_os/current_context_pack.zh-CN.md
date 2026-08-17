@@ -560,3 +560,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 捕获后、腾讯 PDF 解析结果可见前发现预注册漏绑定 layout／OCR 实现；已新增 immutable execution binding，固定 response body 校验／CAS 物化、全页解析、低原生文本页自动 OCR、金融对象编译和 CLI 的代码摘要。案例、命题、路线、阈值和隐藏执行次数均未改变。
 - PDF／OCR 可以使用 CPU，但 learned Embedding／dense／multi-vector／Cross-Encoder 仍只允许 CUDA + FP16；GPU 不满足即 fail closed，禁止 CPU vector fallback。
 - 当前状态为 `all_sources_captured_once / parser_execution_bound_before_outcome / qualification_not_executed / S1_qualified_stable_false`。下一步在 clean push 后执行腾讯 PDF 解析，再把 6 份 SEC 文档与 PDF 对象编入同一通用对象库；不得为 VS5 再造平行对象链。
+
+## 2026-08-18 S1 VS5 腾讯 layout 结果与对象库通用化
+
+- 腾讯 FY2025 官方年报 282／282 页均走 native PDF layout；425 个表区、6 个脚注、1,264 个候选对象，0 低置信关键数字，0 网络／模型调用。该来源不是自然扫描件，故 `real_scanned_source_qualified=false` 保持不通过，禁止用人工 raster mutation 追认。
+- 现有对象库构建器正在增加 `qualification_candidate` profile 和 `parsed_pdf_layout_document` 输入，而不是复制 VS5 builder。旧 `current_product` profile 的行情门、状态和当前 Runtime 保持兼容。
+- 资格 profile 复用 digest、identity／period、parent／child lineage、表边界、容量和 candidate-not-Evidence 规则；不要求行情快照，也不授予 Evidence／NumericFact。下一步在 clean push 后只运行一次 7 来源对象构建。
+- learned vector／Cross-Encoder 尚未运行；后续仍严格 CUDA + FP16，禁止 CPU vector fallback。

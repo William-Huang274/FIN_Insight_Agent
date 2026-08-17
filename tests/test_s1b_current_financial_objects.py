@@ -14,6 +14,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from ingestion.section_splitter import find_sec_filing_sections
+import scripts.data_retrieval.build_current_financial_object_store as object_store_builder
+from scripts.data_retrieval.build_current_financial_object_store import (
+    build_object_store,
+)
 from scripts.data_retrieval.build_current_retrieval_snapshot import _reviewed_targets
 from retrieval.financial_objects import (
     FinancialObjectError,
@@ -22,6 +26,7 @@ from retrieval.financial_objects import (
     project_market_snapshot,
     validate_source_object_manifest,
 )
+from retrieval.object_store_manifest import validate_object_store_manifest
 
 
 def _raw_capture(html: str) -> dict[str, object]:
@@ -221,6 +226,84 @@ def test_repository_manifest_is_provider_neutral_and_contains_typed_gaps() -> No
         "mu_q3_fy2026_prepared_remarks_product_transport_gap",
         "three_case_market_valuation_fields_missing",
     }
+
+
+def test_qualification_manifest_accepts_layout_documents_without_market_requirement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(object_store_builder, "ROOT", tmp_path)
+    capture_path = tmp_path / "capture.json"
+    html = (
+        "<html><body><h1>ITEM 1 — BUSINESS</h1><p>"
+        + "membership sales demand facts " * 220
+        + "</p><h1>ITEM 1A — RISK FACTORS</h1><p>"
+        + "competition cost risk facts " * 220
+        + "</p><h1>ITEM 7 — MANAGEMENT’S DISCUSSION AND ANALYSIS</h1><p>"
+        + "margin inventory cash flow facts " * 220
+        + "</p><h1>ITEM 8 — FINANCIAL STATEMENTS</h1><p>"
+        + "financial statement facts " * 220
+        + "</p></body></html>"
+    )
+    capture_path.write_text(
+        json.dumps(_raw_capture(html), ensure_ascii=False), encoding="utf-8"
+    )
+    capture_sha = hashlib.sha256(capture_path.read_bytes()).hexdigest()
+    source = {
+        **_source_spec(),
+        "source_id": "qualification_sec_capture",
+        "input_kind": "raw_sec_html_capture",
+        "path": str(capture_path),
+        "expected_sha256": capture_sha,
+        "required": True,
+    }
+    manifest = {
+        "schema_version": "fin_ia_qualification_source_object_manifest_v1_0",
+        "status": "qualification_source_object_manifest",
+        "acceptance_profile": "qualification_candidate",
+        "recorded_at": "2026-08-18",
+        "policy": {
+            "immutable_capture_precedes_parse": True,
+            "document_parent_precedes_retrieval_child": True,
+            "candidate_is_not_evidence": True,
+            "market_snapshot_is_not_valuation": True,
+            "hidden_labels_forbidden": True,
+            "source_period_and_owner_fail_closed": True,
+            "numeric_fact_authority_granted": False,
+        },
+        "allowed_tickers": ["DELL"],
+        "case_tickers": ["DELL"],
+        "sources": [source],
+        "typed_gaps": [],
+    }
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False), encoding="utf-8"
+    )
+
+    result, parents, children = build_object_store(manifest_path=manifest_path)
+
+    assert result["status"] == (
+        "s1_qualification_financial_object_store_ready_candidates_only"
+    )
+    assert result["acceptance"]["profile_ready"] is True
+    assert result["acceptance"]["case_market_role_present"] is False
+    assert parents and children
+    layout_manifest = {
+        **manifest,
+        "sources": [
+            {
+                "source_id": "qualification_pdf_layout",
+                "input_kind": "parsed_pdf_layout_document",
+                "path": "private/parsed_layout.json",
+                "required": True,
+            }
+        ],
+    }
+    assert (
+        validate_object_store_manifest(layout_manifest)["sources"][0]["input_kind"]
+        == "parsed_pdf_layout_document"
+    )
 
 
 def test_successor_manifest_projects_reviewed_dell_transcript_without_hiding_other_gaps() -> None:

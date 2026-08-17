@@ -500,3 +500,9 @@ learned vector／reranker 在 VS5 只允许 CUDA FP16；CUDA 不可用、设备�
 捕获后、解析结果可见前发现原预注册没有显式绑定 PDF layout／OCR 实现。为防止根据腾讯解析好坏挑选 parser，新增 execution binding，固定 response-body 校验与 CAS 物化、全页 PDF layout、低原生文本页自动 OCR、page／table／row／footnote／continuation 对象编译器和唯一执行入口的代码摘要。该补充不改变案例、命题、来源、门槛或隐藏执行次数，解析产物也不获得 Evidence／NumericFact 权威。
 
 后续 learned vector 与 Cross-Encoder 仍严格 CUDA／FP16 only；CPU 可以承担 OCR 和确定性解析，但不能承担任何向量 fallback。当前状态为 `all_preregistered_sources_captured_once / parser_execution_bound_before_outcome / qualification_not_executed / S1_qualified_stable=false`。
+
+## 22. VS5 腾讯 layout 结果与通用对象库 profile（2026-08-18）
+
+腾讯 FY2025 官方年报全 282 页均为可用原生 PDF layout，识别 425 个表区、6 个脚注并生成 1,264 个候选对象，0 低置信 material numeric token。它证明 non-SEC CJK／英文混合官方 PDF 可进入同一对象合同，但没有自然扫描页；因此真实扫描来源资格门保持失败，人工 raster mutation 不得代替。
+
+为避免 VS5 再造对象链，现有 financial object store builder 增加 provider-neutral `qualification_candidate` profile 与 `parsed_pdf_layout_document` 输入。旧 `current_product` profile 继续要求三案 issuer＋market role，不改变当前 Runtime；资格 profile 只检查 digest-bound official source、case owner、期间、parent／child lineage、表边界与对象容量，不要求行情快照，也绝不授予 Evidence／NumericFact 权威。后续对象构建、split 物化和检索仍必须从同一 builder 输出继续。

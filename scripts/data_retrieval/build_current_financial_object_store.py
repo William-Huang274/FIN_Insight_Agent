@@ -25,12 +25,16 @@ from retrieval.financial_objects import (  # noqa: E402
     project_market_snapshot,
     sha256_file,
     summarize_object_store,
-    validate_source_object_manifest,
 )
+from retrieval.object_store_manifest import validate_object_store_manifest  # noqa: E402
 from retrieval.official_pdf_objects import compile_official_pdf_document  # noqa: E402
+from retrieval.pdf_layout_objects import compile_pdf_layout_document  # noqa: E402
 
 
 RESULT_SCHEMA_VERSION = "fin_ia_s1b_current_financial_object_store_result_v1_0"
+QUALIFICATION_RESULT_SCHEMA_VERSION = (
+    "fin_ia_qualification_financial_object_store_result_v1_0"
+)
 
 
 def _resolve(value: str) -> Path:
@@ -53,7 +57,8 @@ def build_object_store(
     *,
     manifest_path: Path,
 ) -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
-    manifest = validate_source_object_manifest(_read_json(manifest_path))
+    manifest = validate_object_store_manifest(_read_json(manifest_path))
+    acceptance_profile = str(manifest["acceptance_profile"])
     allowed_tickers = {
         str(value).strip().upper() for value in manifest["allowed_tickers"]
     }
@@ -176,6 +181,40 @@ def build_object_store(
             add_parent(parent)
             for child in parsed_children:
                 add_child(child)
+        elif input_kind == "parsed_pdf_layout_document":
+            layout_source_spec: Mapping[str, Any] = source
+            source_spec_path_value = str(source.get("source_spec_path") or "").strip()
+            if source_spec_path_value:
+                source_spec_path = _resolve(source_spec_path_value)
+                if not source_spec_path.is_file():
+                    raise FinancialObjectError(
+                        f"required_source_spec_missing:{source_id}"
+                    )
+                source_spec_sha256 = sha256_file(source_spec_path)
+                expected_source_spec_sha256 = str(
+                    source.get("source_spec_expected_sha256") or ""
+                )
+                if (
+                    expected_source_spec_sha256
+                    and source_spec_sha256 != expected_source_spec_sha256
+                ):
+                    raise FinancialObjectError(
+                        f"source_spec_digest_mismatch:{source_id}"
+                    )
+                layout_source_spec = _read_json(source_spec_path)
+            parent, parsed_children, _ = compile_pdf_layout_document(
+                _read_json(path),
+                source_spec=layout_source_spec,
+                parsed_ref=source_ref,
+                parsed_sha256=actual_sha256,
+            )
+            if str(parent["ticker"]) not in allowed_tickers:
+                raise FinancialObjectError(
+                    f"parsed_source_owner_not_allowed:{source_id}"
+                )
+            add_parent(parent)
+            for child in parsed_children:
+                add_child(child)
         elif input_kind == "market_evidence_jsonl":
             with path.open("r", encoding="utf-8") as handle:
                 for line in handle:
@@ -268,16 +307,7 @@ def build_object_store(
             row
             for row in child_rows
             if row.get("ticker") == ticker
-            and row.get("source_type")
-            in {
-                "10-K",
-                "10-Q",
-                "8-K",
-                "20-F",
-                "40-F",
-                "6-K",
-                "EARNINGS_CALL_TRANSCRIPT",
-            }
+            and row.get("source_type") != "MARKET_SNAPSHOT"
         ]
         market_children = [
             row
@@ -297,6 +327,13 @@ def build_object_store(
             ),
         }
 
+    case_issuer_children_present = all(
+        row["issuer_retrieval_children"] > 0 for row in case_readiness.values()
+    )
+    case_market_role_present = all(
+        row["point_in_time_market_children"] == 1
+        for row in case_readiness.values()
+    )
     acceptance = {
         "source_digests_verified": all(
             row.get("status") == "source_compiled" for row in source_results
@@ -312,14 +349,10 @@ def build_object_store(
             not store_summary["oversized_non_table_children"]
             and not store_summary["oversized_table_children"]
         ),
-        "three_case_issuer_children_present": all(
-            row["issuer_retrieval_children"] > 0
-            for row in case_readiness.values()
-        ),
-        "three_case_market_role_present": all(
-            row["point_in_time_market_children"] == 1
-            for row in case_readiness.values()
-        ),
+        "case_issuer_children_present": case_issuer_children_present,
+        "case_market_role_present": case_market_role_present,
+        "three_case_issuer_children_present": case_issuer_children_present,
+        "three_case_market_role_present": case_market_role_present,
         "required_qrel_aliases_mapped": not missing_required_aliases,
         "candidate_state": "candidate_not_evidence",
         "model_calls": 0,
@@ -329,23 +362,53 @@ def build_object_store(
         "complete_s1_claimed": False,
         "valuation_ready": False,
     }
-    ready_keys = (
+    common_ready_keys = (
         "source_digests_verified",
         "parent_child_lineage_complete",
         "parsed_current_sources_capture_bound",
         "table_boundaries_balanced",
         "retrieval_children_bounded",
-        "three_case_issuer_children_present",
-        "three_case_market_role_present",
+        "case_issuer_children_present",
         "required_qrel_aliases_mapped",
     )
-    status = (
-        "s1b_current_financial_object_store_ready_with_typed_gaps"
-        if all(acceptance[key] for key in ready_keys)
-        else "s1b_current_financial_object_store_failed"
+    profile_ready_keys = (
+        (*common_ready_keys, "case_market_role_present")
+        if acceptance_profile == "current_product"
+        else common_ready_keys
     )
+    acceptance["acceptance_profile"] = acceptance_profile
+    acceptance["profile_ready"] = all(
+        bool(acceptance[key]) for key in profile_ready_keys
+    )
+    if acceptance_profile == "current_product":
+        result_schema_version = RESULT_SCHEMA_VERSION
+        status = (
+            "s1b_current_financial_object_store_ready_with_typed_gaps"
+            if acceptance["profile_ready"]
+            else "s1b_current_financial_object_store_failed"
+        )
+        known_boundary = (
+            "This S1-B result compiles current official disclosures, parsed official "
+            "transcripts, inherited semantic children and point-in-time market snapshots "
+            "into one parent-child object store. Candidate projection never grants Evidence "
+            "or NumericFact authority; unresolved source and valuation boundaries remain "
+            "explicit typed gaps from the bound manifest."
+        )
+    else:
+        result_schema_version = QUALIFICATION_RESULT_SCHEMA_VERSION
+        status = (
+            "s1_qualification_financial_object_store_ready_candidates_only"
+            if acceptance["profile_ready"]
+            else "s1_qualification_financial_object_store_failed"
+        )
+        known_boundary = (
+            "This qualification object store compiles only digest-bound official source "
+            "captures and parsed official documents into candidate parents and children. "
+            "It does not grant Evidence, NumericFact, hidden-label, retrieval-quality or "
+            "S1 qualification authority."
+        )
     unsigned = {
-        "schema_version": RESULT_SCHEMA_VERSION,
+        "schema_version": result_schema_version,
         "status": status,
         "recorded_at": str(manifest.get("recorded_at") or ""),
         "manifest_ref": _relative(manifest_path),
@@ -370,13 +433,7 @@ def build_object_store(
         },
         "typed_gaps": manifest.get("typed_gaps") or [],
         "acceptance": acceptance,
-        "known_boundary": (
-            "This S1-B result compiles current official disclosures, parsed official "
-            "transcripts, inherited semantic children and point-in-time market snapshots "
-            "into one parent-child object store. Candidate projection never grants Evidence "
-            "or NumericFact authority; unresolved source and valuation boundaries remain "
-            "explicit typed gaps from the bound manifest."
-        ),
+        "known_boundary": known_boundary,
     }
     result = {**unsigned, "result_digest": content_digest(unsigned)}
     return result, parent_rows, child_rows
@@ -453,7 +510,7 @@ def main() -> int:
             indent=2,
         )
     )
-    return 0 if result["status"].endswith("_with_typed_gaps") else 1
+    return 0 if result["acceptance"]["profile_ready"] else 1
 
 
 if __name__ == "__main__":

@@ -163,3 +163,64 @@ def test_successor_locator_fails_closed_on_ambiguity_and_overlap() -> None:
             },
             target_by_key=unique,
         )
+
+
+def test_successor_expected_roles_support_structured_metric_locator() -> None:
+    first = _object("A", "TABLE-KEY", "NVDA", "Operating cash flow used")
+    first["object_kind"] = "metric_row"
+    first["structured_projection"] = {
+        "metric_row_label": "Operating cash flow used for operating leases"
+    }
+    second = _object("B", "TABLE-KEY", "NVDA", "Net cash provided")
+    second["object_kind"] = "metric_row"
+    second["structured_projection"] = {
+        "metric_row_label": "Net cash provided by operating activities"
+    }
+    index = _object_key_index({"A": first, "B": second})
+
+    labels = _labels_from_object_keys(
+        {
+            "positive_object_keys": [
+                {
+                    "object_key": "TABLE-KEY",
+                    "object_kind": "metric_row",
+                    "metric_row_label": "Net cash provided by operating activities",
+                }
+            ],
+            "hard_negative_object_keys": [
+                {
+                    "object_key": "TABLE-KEY",
+                    "object_kind": "metric_row",
+                    "metric_row_label": "Operating cash flow used for operating leases",
+                }
+            ],
+            "unjudged_object_keys": [],
+            "expected_roles_by_object_key": {},
+            "expected_roles_by_locator": [
+                {
+                    "locator": {
+                        "object_key": "TABLE-KEY",
+                        "object_kind": "metric_row",
+                        "metric_row_label": "Net cash provided by operating activities",
+                    },
+                    "roles": ["financial_statement_or_reconciliation"],
+                },
+                {
+                    "locator": {
+                        "object_key": "TABLE-KEY",
+                        "object_kind": "metric_row",
+                        "metric_row_label": "Operating cash flow used for operating leases",
+                    },
+                    "roles": ["financial_statement_or_reconciliation"],
+                },
+            ],
+        },
+        target_by_key=index,
+    )
+
+    assert labels["positive_object_ids"] == ["B"]
+    assert labels["hard_negative_object_ids"] == ["A"]
+    assert labels["expected_roles_by_object_id"] == {
+        "A": ["financial_statement_or_reconciliation"],
+        "B": ["financial_statement_or_reconciliation"],
+    }

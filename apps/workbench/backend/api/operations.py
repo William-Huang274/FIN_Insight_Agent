@@ -50,6 +50,9 @@ ACTIVE_BASELINE_EVAL_ID = "active_baseline_import_graph"
 CURRENT_S1_VS2_COMPLEX_PDF_RESOURCE_ID = (
     "application.result.current_s1_vs2_complex_pdf_vertical"
 )
+CURRENT_S1_VS3_RETRIEVAL_RESOURCE_ID = (
+    "application.result.current_s1_vs3_retrieval_vertical"
+)
 
 
 class ImportEnvRequest(BaseModel):
@@ -156,6 +159,27 @@ def build_operations_router(
             "result_digest": result.get("result_digest"),
             "stage_acceptance": deepcopy(result.get("stage_acceptance") or {}),
             "business_result": deepcopy(result.get("business_result") or {}),
+        }
+
+    @router.get(
+        "/s1/retrieval-quality",
+        operation_id="getS1RetrievalQuality",
+    )
+    def get_s1_retrieval_quality() -> dict[str, Any]:
+        result = read_registered_runtime_json(
+            root, CURRENT_S1_VS3_RETRIEVAL_RESOURCE_ID
+        )
+        return {
+            "schema_version": result.get("schema_version"),
+            "status": result.get("status"),
+            "slice_id": result.get("slice_id"),
+            "summary": deepcopy(result.get("summary") or {}),
+            "gate_results": deepcopy(result.get("gate_results") or {}),
+            "atom_summaries": deepcopy(result.get("atom_summaries") or []),
+            "decision": deepcopy(result.get("decision") or {}),
+            "business_findings": deepcopy(result.get("business_findings") or []),
+            "authority": deepcopy(result.get("authority") or {}),
+            "result_digest": result.get("result_digest"),
         }
 
     @router.post("/profiles/import-env")

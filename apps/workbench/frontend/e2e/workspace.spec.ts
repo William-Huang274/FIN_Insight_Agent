@@ -77,6 +77,11 @@ test("operations is isolated from the research product", async ({ page }, testIn
   await expect(page.getByRole("heading", { name: "复杂文档纵切" })).toBeVisible();
   await expect(page.getByText(/分部结果总计行、脚注和跨页续表未进入/)).toBeVisible();
   await expect(page.getByText("Evidence / NumericFact 分离", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "检索与金融排序纵切" })).toBeVisible();
+  await expect(page.getByText("15 / 15", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/确认 hard negative：0/)).toBeVisible();
+  await expect(page.getByText("纵切已集成", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Candidate ≠ Evidence/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "官方资料入库" })).toBeVisible();
   await expect(page.getByLabel("已登记来源")).toHaveValue(/DELL_Q1_FY2027/);
   await expect(page.getByText(/入库成功仍不是 Evidence/)).toBeVisible();

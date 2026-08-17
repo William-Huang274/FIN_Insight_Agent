@@ -1,0 +1,93 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_all_bounded_needs_independent_reranker_successor",
+  "recorded_at": "2026-08-17",
+  "experiment_id": "FIN-0.1.3-S1-VS3-MULTI-NEED-CANDIDATE-RANKING-V1.3",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_0.json",
+  "parent_policy_sha256_lf": "951a91d3cb2c4f492a4d434171d226c084f3c3b4df45db9e38671b0ac37024f2",
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_3.json",
+    "query_atom_eval_sha256_lf": "da75bd15db011bf092952b61149f4279bc1f2499031585fd70485df432f6599d"
+  },
+  "candidate_contract_overrides": {
+    "rank_authority_object_kinds": [
+      "claim",
+      "metric_row"
+    ],
+    "bounded_parent_context_attached_only_after_child_selection": true,
+    "typed_metric_row_exact_route": true,
+    "metric_row_exact_route_uses_request_metric_intent_only": true,
+    "metric_row_exact_route_prefers_direct_label_match_then_latest_eligible_publication": true,
+    "metric_row_role_surface_excludes_identity_and_table_title_metadata": true,
+    "judged_role_metrics_cover_all_registered_positive_and_hard_negative_labels": true,
+    "candidate_pool_role_metrics_reported_separately": true,
+    "rerank_each_candidate_against_all_needs": true,
+    "each_reranker_selects_its_own_best_need": true,
+    "persist_full_reranker_order_and_best_need": true
+  },
+  "decision_gate_overrides": {
+    "positive_target_in_head_minimum_rate": 0.8,
+    "judged_positive_role_compatible_minimum_rate": 0.8,
+    "judged_hard_negative_suppression_minimum_rate": 1.0
+  },
+  "token_budget_basis_overrides": {
+    "bge_reranker": {
+      "node_purpose": "Score every candidate against every bounded RetrievalNeed so the BGE cross-encoder, rather than a different embedding route, chooses the question that the candidate can answer.",
+      "input_scale": "At most 96 candidates per atom across 66 total bounded needs: no more than 6,336 query-candidate pairs for the eighteen-atom development set.",
+      "required_outputs": [
+        "one finite score per candidate-need pair",
+        "best need identity per candidate",
+        "complete candidate ordering"
+      ],
+      "schema_burden": "flat pair scores followed by deterministic candidate-major aggregation",
+      "materiality_and_quality_risk": "preselecting one need with BGE multi-vector made both cross-encoders answer a potentially wrong question; scoring all finite needs removes that cross-model selector bias",
+      "comparable_run_evidence": "v1.2 candidate generation recalled 13/15 positive atoms but BGE and Qwen rerankers placed only 0/15 and 1/15 in the top ten when both inherited one BGE-selected need",
+      "reasoning_profile": "local cross-encoder scoring; no generation, network access or training",
+      "stop_and_truncation": "maximum 1024 tokens per pair, batch 2, exact 6,336-or-fewer pair count, fail on any score-count or candidate/need identity drift"
+    },
+    "qwen_reranker": {
+      "node_purpose": "Independently score every candidate against every bounded RetrievalNeed and select Qwen's own best-matching need before ranking.",
+      "input_scale": "At most 96 candidates per atom across 66 total bounded needs: no more than 6,336 query-candidate pairs for the eighteen-atom development set.",
+      "required_outputs": [
+        "one finite score per candidate-need pair",
+        "best need identity per candidate",
+        "complete candidate ordering"
+      ],
+      "schema_burden": "flat pair scores followed by deterministic candidate-major aggregation",
+      "materiality_and_quality_risk": "a Qwen reranker result is not meaningful when BGE chose its query; independent all-need scoring tests actual direct-answerability without granting Evidence authority",
+      "comparable_run_evidence": "v1.2 Qwen placed 1/15 registered positive atoms in the top ten while VS1 pricing-and-mix reached the top five, indicating query-selection instability rather than a universal model failure",
+      "reasoning_profile": "local instruction-aware cross-encoder scoring; no generation, network access or training",
+      "stop_and_truncation": "maximum 1024 tokens per pair, batch 2, exact 6,336-or-fewer pair count, fail on any score-count or candidate/need identity drift"
+    }
+  },
+  "authority_overrides": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_requires_result": true,
+    "hidden_qualification_authorized": false,
+    "s1_complete_claimed": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false
+  },
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "The v1.2 candidate pool recalled thirteen of fifteen positive atoms, so the dominant remaining error is after candidate generation.",
+      "Both cross-encoders were forced to score each candidate against one RetrievalNeed selected by BGE multi-vector, which creates cross-model selector bias and can make a strong reranker answer the wrong question.",
+      "The RetrievalNeed set is finite, immutable and already compiled before labels, so scoring every candidate-need pair does not leak qrels or broaden the request.",
+      "Object-level CandidateDecision has proved that source review alone cannot repair a poor candidate head."
+    ],
+    "not_changed": [
+      "compiled object population",
+      "kernel and hard identity-period-source constraints",
+      "RetrievalNeed set and text",
+      "candidate generation routes and ceilings",
+      "local model identities",
+      "development qrel labels"
+    ],
+    "labels_joined_after_candidate_generation_and_all_model_scoring": true,
+    "no_gold_identity_or_answer_url_in_query": true,
+    "v1_0_v1_1_v1_2_results_remain_immutable": true,
+    "single_pre_registered_attempt_before_disposition": true
+  }
+}

@@ -21,8 +21,8 @@
 - [x] S1 canonical artifact spine、A–J 责任覆盖矩阵、真实消费者、artifact 迁移／回滚和 split-safe gold program（VS1 Runtime R14 已消费；valid／test／holdout 仍按计划预留）
 - [x] S1 VS1 数字原生官方资料→CandidateDecision→Coverage→Pack→Workbench 纵切（DELL pricing/mix：2 accepted／4 needs-review／2 reviewed-not-recalled／3 supplement-unexecuted；仅 `vertical_slice_integrated`，不等于 S1 资格）
 - [x] S1 VS2 复杂 PDF／OCR mutation／跨页表格／脚注／修订重述→Decision／Coverage／Workbench 纵切（IFX 开发样本：67 个金融对象；4 个 reviewed 目标仅 1 个进入前 20；自然扫描和 NumericFact 未资格化；R16 修复全部 inline payload ref 可解引用）
-- [ ] S1 VS3 同一 CandidateSet 的 exact／BM25／dense／graph／SQL／official／external 增量、semantic rerank、finance-aware Evidence evaluator 与头部稳定资格
-- [ ] S1 VS3 多路线 recall／rerank／金融精排→EvidenceDecision／Pack 纵切；同候选边界、业务增量和 current consumer 同时通过
+- [x] S1 VS3 同一 CandidateSet 的 BM25／BGE／Qwen／typed route 候选、CUDA-only semantic rerank、finance-aware Evidence evaluator 与头部稳定资格（15/15 入池；顺序稳定率 1.0；v1.6/v1.7 失败保留）
+- [x] S1 VS3 多路线 recall／rerank／金融精排→CandidateDecision／Coverage／Workbench 纵切（金融前十 15/15、0 confirmed hard negative；VS1 2/2 可追溯、VS2 4/4 最终审阅面；R17；不等于 S1 资格）
 - [ ] S1 VS4 Coverage 驱动第二轮补证纵切；DELL 三命题后执行 MU／NVDA 等价自然路径
 - [ ] S1 VS5 frozen test／新异质留出／稳定性资格；达到 `S1_qualified_stable` 前不得执行产品资格完整真实链
 - [x] 当前 Pack registry-atomic 提升（R11；按案例私有对象根；0 复制／0 网络／0 模型；Workbench 三案真实挂载复验通过）

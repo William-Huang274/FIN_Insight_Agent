@@ -1,19 +1,19 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-17
+更新时间：2026-08-18
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-s1-retrieval-vertical-slice`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 只作为责任坐标，实际按共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice 交付。VS1 与 VS2 现已进入 R16 Runtime 和 Workbench：VS1 的 DELL pricing/mix 仍为 2 accepted／4 needs-review／2 reviewed-not-recalled；VS2 的 IFX 复杂官方年报形成 67 个 page／table／row／footnote／cross-page 对象，但 4 个 reviewed 目标只有重述上下文进入前 20，另外 3 个对象存在却未被召回。R16 successor 补上全部 result-local payload ref 的真实解引用与完整 digest 门；旧 R14／R15 保持不可变。自然扫描、NumericFact、VS3 多路线排序资格、VS4 第二轮补证、VS5 隐藏留出与稳定资格仍开放。DELL fixed-Pack 第一层、`value_capture` 动态单单元、reviewed source 同步和有限 S2 回归仍保持已关闭；R7 仍是 `report contract pass / financial truth reconciliation fail`，RC-S3-043 也保持开放。当前下一步是 VS3，不运行用于产品资格的完整真实链，也不以 VS1／VS2 或任何局部 case／node live 追认 S1。
+Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 只作为责任坐标，实际按共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice 交付。VS1、VS2 与 VS3 现已进入 R17 Runtime 和 Workbench。VS3 在同一 33,085 对象快照上完成 CUDA-only 的 BM25／BGE／Qwen／typed route 候选与双 reranker 对照：最终有界候选池召回 15/15 个开发正例且顺序扰动稳定率为 1.0，金融审阅前十覆盖 15/15、确认 hard negative 为 0；VS1 两个历史对象仍可追溯，VS2 四个复杂目标均通过直接短名单或受限父级上下文进入最终审阅面。1,912 个候选均已获得持久 CandidateDecision（10 accepted／66 rejected／9 unjudged／1,827 needs-review），没有把候选、表格数字或开发标签自动晋升为 Evidence／NumericFact。旧 v1.6 的有限池漏项和 v1.7 的稳定性探针口径错误均保留为不可变失败证据。当前状态只记 `VS3_vertical_slice_integrated`，授权进入 VS4 有界第二轮补证；自然扫描、NumericFact 产品闭环、VS4、VS5 隐藏留出与 `S1_qualified_stable` 仍开放。DELL fixed-Pack、动态单单元和 R7 历史结论保持不变，不运行产品资格完整真实链。
 
 ## 当前唯一产品边界
 
 - 产品入口：`/workspace`
 - 运维入口：`/operations`
-- 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
+- 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/s1/complex-document-quality`、`/api/operations/s1/retrieval-quality`、`/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
 - 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。当前对象库也已把这两份法说纳入受控查询路线：Dell 法说可由本案需求、经营、价值捕获和供给单元检索，TSMC 法说只能在绑定关系方向时作为供应链背景，不能冒充 Dell 自述或供应分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；DELL 五单元也已自然执行并首次形成完整内部报告，但该报告因三条 material false absence 和由此产生的 false conflict 未过 L1/L2，未进入产品面。当前 Case Truth 完整权威、按 cell 分片、分析／交卷分离和本地聚合工程门已关闭；模型自然语义映射、修复后的完整报告、八维质量、MU/NVDA／留出案例泛化和 S3 产品验收仍未证明；reviewed Evidence 页面本身的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
@@ -515,3 +515,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 所有解析和 OCR 输出继续是 candidate，不是 Evidence 或 NumericFact。S2 sibling 明确为 `candidate_rows_bound_numeric_adjudication_pending`，禁止将 `2,560`、`3,105` 等表格值直接写入权威事实。
 - 回归发现 R14 VS1 若干 envelope 的本地 `payload_ref` 指向未实际物化路径；UI 因读取 case／evaluation sibling 仍可展示，旧测试没有捕获。旧 R14 和首次 VS2 R15 保持不可变；R16 successor 为 VS1／VS2 全部 result-local refs 增加 JSON Pointer 可解引用和完整 payload digest 门，并重新物化当前 v1.1 结果。该修复不改变 VS1／VS2 业务判断。
 - 当前状态为 `VS1_and_VS2_vertical_slice_integrated / VS3_next / S1_qualification_false / full_product_chain_blocked`。下一步在同一 CandidateSet 上完成 multi-route recall、semantic rerank、parent expansion 和 finance-aware Evidence evaluator；不自动进入 S3 或完整产品链。
+
+## 2026-08-18 S1 VS3 多路线检索与金融排序纵切
+
+- 当前对象快照固定为 33,085 个编译金融对象；所有 BGE／Qwen 向量与 Cross-Encoder 推理均 fail-closed 要求 CUDA，不存在 CPU fallback。CPU 只承担 tokenizer、JSON、排序编排和账本物化。
+- v1.6 自然暴露一个产品级问题：typed intent 已把 DELL reported-results 正例排到第 3，但全路线 RRF 在 128 个有限池中把它挤出，最终只有 14/15 正例入池。修复采用通用的 per-need 有界 route floor 后，v1.7 达到 15/15；v1.7 又因稳定性探针把“新 stratified forward”和“旧 unstratified reverse”误作同口径比较而失败。v1.8 只修探针口径，最终 15/15 入池、14/15 进入 union 前十、排列扰动稳定率 1.0。两次失败结果均不改写。
+- 最终金融 shortlisting 不是把某个 reranker 晋升为产品：它对完整候选池应用 identity／period／source／relationship hard boundary、RetrievalNeed specificity、Evidence Role、金融 intent、来源权威和稳定 tie-break。开发结果为 15/15 known positive 进入前十、MRR 0.933333、0 confirmed hard negative；BGE/Qwen 分数只是输入特征。
+- 复合 Evidence Role 回放覆盖 62 positive／68 hard negative：50/62 positive compatible、68/68 hard negative suppressed-or-abstained；候选池内为 48/56 与 46/46。该门仅证明开发关系上的误晋升防线，不授予 Runtime Evidence 权限或微调资格。
+- VS1 同运行时回放保留两个历史复核对象；旧 10-Q 对象位于金融短名单第 6，旧 transcript 对象第 15，前面是更新、更直接的 Dell 10-K／10-Q／官方 transcript。该结果被解释为“旧对象可追溯＋新材料待对象级复核”，不通过 case-specific 权重强拉旧答案。VS2 4/4 复杂目标均进入最终审阅面，其中 1 个直接 shortlist、3 个通过受限 parent context。
+- VS3 product gate 对 1,912 个候选物化 10 accepted／66 rejected／9 unjudged／1,827 needs-review，0 hard-negative false accept、0 source-only false accept；`Candidate != Evidence`、`NumericFact authority=false`、完整候选账本和未执行补源不得冒充 public gap 的边界均保持。
+- R17 Registry 新增 `application.result.current_s1_vs3_retrieval_vertical`，Operations API／页面真实消费 `/api/operations/s1/retrieval-quality`。后端、TypeScript、production build 与 Playwright desktop/mobile 均通过。VS3 只记 `vertical_slice_integrated`；下一项是 VS4 Coverage 驱动的第二轮补证，S1 与完整产品链仍未资格化。

@@ -8,10 +8,18 @@ from .query_plan import canonical_digest
 
 
 ROUTE_POLICY_SCHEMA_VERSION = "fin_ia_s1c_query_object_fact_route_policy_v1_1"
+ROUTE_POLICY_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_s1c_query_object_fact_route_policy_v1_2"
+)
+ROUTE_POLICY_QUERY_ATOM_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_s1c_query_object_fact_route_policy_v1_3"
+)
 ROUTE_POLICY_SCHEMA_VERSIONS = frozenset(
     {
         "fin_ia_s1c_query_object_fact_route_policy_v1_0",
         ROUTE_POLICY_SCHEMA_VERSION,
+        ROUTE_POLICY_SUCCESSOR_SCHEMA_VERSION,
+        ROUTE_POLICY_QUERY_ATOM_SUCCESSOR_SCHEMA_VERSION,
     }
 )
 EXECUTION_PLAN_SCHEMA_VERSION = "fin_ia_s1c_retrieval_execution_plan_v1_0"
@@ -280,11 +288,32 @@ def load_query_object_fact_route_policy(
         and 40 <= int(compiler.get("claim_min_characters") or 0)
         < int(compiler.get("claim_max_characters") or 0)
         <= 4000
-        and 1 <= int(compiler.get("max_claims_per_source_record") or 0) <= 32
+        and 1 <= int(compiler.get("max_claims_per_source_record") or 0) <= 128
         and 1 <= int(compiler.get("max_metric_rows_per_table") or 0) <= 256
         and 512 <= int(compiler.get("max_model_text_characters") or 0) <= 8000
         and compiler.get("numeric_authority") is False,
         "query_object_fact_object_compiler_invalid",
+    )
+    segmentation_mode = str(
+        compiler.get("claim_segmentation_mode") or "legacy_line_v1"
+    )
+    overflow_policy = str(
+        compiler.get("claim_overflow_policy") or "legacy_silent_limit"
+    )
+    _require(
+        segmentation_mode
+        in {"legacy_line_v1", "sentence_with_wrapped_line_reflow_v1"}
+        and overflow_policy
+        in {
+            "legacy_silent_limit",
+            "emit_typed_diagnostic_and_fail_qualification",
+        }
+        and (
+            segmentation_mode == "legacy_line_v1"
+            or overflow_policy
+            == "emit_typed_diagnostic_and_fail_qualification"
+        ),
+        "query_object_fact_claim_segmentation_policy_invalid",
     )
     authority = payload.get("authority")
     _require(
@@ -480,6 +509,7 @@ __all__ = [
     "QueryFamilyPolicy",
     "QueryObjectFactRoutePolicy",
     "ROUTE_POLICY_SCHEMA_VERSION",
+    "ROUTE_POLICY_QUERY_ATOM_SUCCESSOR_SCHEMA_VERSION",
     "RetrievalExecutionPlan",
     "TYPED_FACT_REQUEST_SCHEMA_VERSION",
     "TypedFactRequest",

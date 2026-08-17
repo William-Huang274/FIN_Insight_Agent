@@ -1,0 +1,83 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs1_current_ontology_cuda_required_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-VS1-SAME-RUNTIME-REPLAY-V1.2",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_0.json",
+  "parent_policy_sha256_lf": "951a91d3cb2c4f492a4d434171d226c084f3c3b4df45db9e38671b0ac37024f2",
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_vs1_same_runtime_query_atom_eval_v1_0.json",
+    "query_atom_eval_sha256_lf": "0cfe4a0f9908224cd374620b7b3a97e5bbd07e5962de831cdf7b72027526e3fa",
+    "retrieval_need_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_retrieval_need_compiler_policy_v1_1.json",
+    "retrieval_need_policy_sha256_lf": "e98f38c31a6e579b41004d3cad21d1ea2d81159a4d47083a9a9245cd7071f95e",
+    "financial_intent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+    "financial_intent_ontology_sha256_lf": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242"
+  },
+  "candidate_contract_overrides": {
+    "rank_authority_object_kinds": ["claim", "metric_row"],
+    "bounded_parent_context_attached_only_after_child_selection": true,
+    "typed_metric_row_exact_route": true,
+    "typed_metric_alias_route": true,
+    "typed_metric_alias_route_uses_request_metric_intent_only": true,
+    "typed_metric_alias_route_prefers_direct_label_match_then_latest_eligible_publication": true,
+    "typed_metric_product_alias_groups_require_one_match_per_group": true,
+    "product_proxy_terms_support_recall_but_not_final_compatibility": true,
+    "unrequested_metric_cues_suppressed_when_proxy_forbidden": true,
+    "industry_extensions_are_versioned_ontology_data_not_core_branches": true,
+    "metric_row_role_surface_excludes_identity_and_table_title_metadata": true,
+    "rerank_each_candidate_against_all_needs": true,
+    "each_reranker_selects_its_own_best_need": true,
+    "persist_full_reranker_order_and_best_need": true,
+    "financial_shortlist_runs_after_candidate_union": true,
+    "complex_document_context_expands_only_after_shortlist_selection": true,
+    "context_expansion_never_grants_evidence_or_numeric_authority": true,
+    "local_embedding_and_cross_encoder_device": "cuda_required",
+    "cpu_fallback_authorized": false
+  },
+  "decision_gate_overrides": {
+    "positive_target_in_head_minimum_rate": 0.8,
+    "judged_positive_role_compatible_minimum_rate": 0.8,
+    "judged_hard_negative_suppression_minimum_rate": 1.0
+  },
+  "token_budget_basis_overrides": {
+    "bge_reranker": {
+      "node_purpose": "Re-evaluate the original Dell pricing-and-mix request against all bounded needs under ontology v1.2.",
+      "input_scale": "One reviewed request, ten bounded needs and at most ninety-six candidates.",
+      "required_outputs": ["finite candidate-need matrix", "best need identity", "complete candidate ordering"],
+      "schema_burden": "stable candidate and need identities plus cache receipt",
+      "materiality_and_quality_risk": "older reviewed evidence may remain reachable while stronger current official evidence legitimately ranks ahead",
+      "comparable_run_evidence": "VS1 shortlist v1.0 kept both old targets in the pool but surfaced newer direct first-party disclosures in the review head",
+      "reasoning_profile": "local CUDA cross-encoder; no generation, network, training or CPU fallback",
+      "stop_and_truncation": "1024 tokens per pair, batch 2; fail closed on missing CUDA or contract drift"
+    },
+    "qwen_reranker": {
+      "node_purpose": "Provide an independent relevance signal for the same original Dell request.",
+      "input_scale": "The same finite one-request candidate-need matrix.",
+      "required_outputs": ["finite candidate-need matrix", "best need identity", "complete candidate ordering"],
+      "schema_burden": "instruction-aware scores and cache receipt",
+      "materiality_and_quality_risk": "a semantically close but weak disclosure must not become Evidence",
+      "comparable_run_evidence": "VS1 v1.1 showed generic rerankers alone are not a financial decision layer",
+      "reasoning_profile": "local CUDA shadow; no generation, network, training or CPU fallback",
+      "stop_and_truncation": "1024 tokens per pair, batch 2; fail closed on missing CUDA or contract drift"
+    }
+  },
+  "authority_overrides": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_requires_result": true,
+    "hidden_qualification_authorized": false,
+    "s1_complete_claimed": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "cpu_fallback_authorized": false
+  },
+  "successor_basis": {
+    "why_replay_is_required": ["the shared ontology changed", "the old targets must remain reachable without becoming a whitelist", "new stronger candidates require separate human adjudication rather than result-driven weights"],
+    "not_changed": ["compiled object population", "original VS1 labels", "candidate and Evidence authority boundaries"],
+    "labels_joined_after_candidate_generation_and_all_model_scoring": true,
+    "no_gold_identity_or_answer_url_in_query": true,
+    "v1_0_and_v1_1_results_remain_immutable": true,
+    "development_replay_not_product_acceptance": true
+  }
+}

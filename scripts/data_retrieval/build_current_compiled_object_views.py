@@ -24,6 +24,12 @@ from retrieval.route_compiler import (  # noqa: E402
 
 
 RESULT_SCHEMA_VERSION = "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_1"
+SUCCESSOR_RESULT_SCHEMA_VERSION = (
+    "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_2"
+)
+OBJECT_COMPILER_OVERLAY_SCHEMA_VERSION = (
+    "fin_ia_s1_object_compiler_policy_overlay_v1_0"
+)
 
 
 def _resolve(value: str) -> Path:
@@ -78,6 +84,36 @@ def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
             handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def _apply_object_compiler_overlay(
+    *,
+    policy_payload: dict[str, Any],
+    policy_path: Path,
+    overlay_path: Path,
+) -> dict[str, Any]:
+    overlay = _read_json(overlay_path)
+    base = overlay.get("base_policy")
+    overrides = overlay.get("object_compiler_overrides")
+    if (
+        overlay.get("schema_version") != OBJECT_COMPILER_OVERLAY_SCHEMA_VERSION
+        or not isinstance(base, dict)
+        or not isinstance(overrides, dict)
+        or base.get("ref") != _relative(policy_path)
+        or base.get("sha256") != _sha256(policy_path)
+    ):
+        raise ValueError("object_compiler_overlay_base_drift")
+    allowed = {
+        "claim_segmentation_mode",
+        "claim_overflow_policy",
+        "max_claims_per_source_record",
+    }
+    if set(overrides) != allowed:
+        raise ValueError("object_compiler_overlay_fields_invalid")
+    successor = json.loads(json.dumps(policy_payload))
+    successor["schema_version"] = "fin_ia_s1c_query_object_fact_route_policy_v1_2"
+    successor["object_compiler"].update(overrides)
+    return successor
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -121,6 +157,14 @@ def main() -> int:
             "fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_2.json"
         ),
     )
+    parser.add_argument(
+        "--object-compiler-overlay",
+        default=None,
+        help=(
+            "Optional digest-bound successor overlay for claim segmentation and "
+            "explicit overflow handling."
+        ),
+    )
     args = parser.parse_args()
 
     kernel_path = _resolve(args.kernel)
@@ -131,7 +175,19 @@ def main() -> int:
     result_output = _resolve(args.result_output)
 
     kernel = load_financial_research_kernel(_read_json(kernel_path))
-    policy = load_query_object_fact_route_policy(_read_json(policy_path), kernel)
+    policy_payload = _read_json(policy_path)
+    overlay_path = (
+        _resolve(args.object_compiler_overlay)
+        if args.object_compiler_overlay
+        else None
+    )
+    if overlay_path is not None:
+        policy_payload = _apply_object_compiler_overlay(
+            policy_payload=policy_payload,
+            policy_path=policy_path,
+            overlay_path=overlay_path,
+        )
+    policy = load_query_object_fact_route_policy(policy_payload, kernel)
     documents = _read_jsonl(documents_path)
     records = _read_jsonl(records_path)
     parents = {str(row["document_id"]): row for row in documents}
@@ -175,7 +231,11 @@ def main() -> int:
         "diagnostics_bytes": (output_dir / "diagnostics.jsonl").stat().st_size,
     }
     result = {
-        "schema_version": RESULT_SCHEMA_VERSION,
+        "schema_version": (
+            SUCCESSOR_RESULT_SCHEMA_VERSION
+            if overlay_path is not None
+            else RESULT_SCHEMA_VERSION
+        ),
         "status": "s1c_temporal_correct_object_route_zero_call_proven",
         "inputs": {
             "kernel": {
@@ -188,6 +248,15 @@ def main() -> int:
                 "sha256": _sha256(policy_path),
                 "bytes": policy_path.stat().st_size,
             },
+            "object_compiler_overlay": (
+                {
+                    "ref": _relative(overlay_path),
+                    "sha256": _sha256(overlay_path),
+                    "bytes": overlay_path.stat().st_size,
+                }
+                if overlay_path is not None
+                else None
+            ),
             "documents": {
                 "ref": _relative(documents_path),
                 "sha256": _sha256(documents_path),
@@ -224,6 +293,10 @@ def main() -> int:
             "all_kernel_facets_routed_once": len(policy.family_by_facet())
             == sum(len(row.facet_ids) for row in policy.query_families),
             "missing_parent_count_zero": compilation.summary["missing_parent_count"] == 0,
+            "claim_overflow_count_zero": compilation.summary[
+                "diagnostic_counts"
+            ].get("claim_unit_limit_exceeded", 0)
+            == 0,
             "candidate_not_evidence": True,
             "numeric_authority": False,
             "database_lane_preserved": True,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from dataclasses import replace
 import json
 from pathlib import Path
 import sys
@@ -418,11 +419,108 @@ def test_compiled_objects_share_reporting_period_binding_with_snapshot_candidate
 
     assert result.objects
     assert all(
-        row["schema_version"] == "fin_ia_compiled_financial_object_view_v1_1"
+        row["schema_version"] == "fin_ia_compiled_financial_object_view_v1_2"
         and row["base_object_view"]["period_end"] == "2026-05-01"
         and row["base_object_view"]["fiscal_year"] == 2027
         for row in result.objects
     )
+
+
+def test_successor_claim_compiler_reflows_pdf_lines_and_keeps_late_claims() -> None:
+    parent = {
+        "document_id": "CURRENT_DOC::DELL::TRANSCRIPT::WRAPPED",
+        "ticker": "DELL",
+        "company": "Dell Technologies Inc.",
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "source_tier": "official_hosted_management_call_transcript",
+        "publication_date": "2026-05-28",
+        "period_end": "2026-05-01",
+        "fiscal_year": 2027,
+    }
+    filler = "\n".join(
+        f"Management discussed operating topic {index} and the related financial implications for the current quarter."
+        for index in range(1, 20)
+    )
+    target = (
+        "AI server profitability was in line with our mid-\n"
+        "single-digit operating income rate target."
+    )
+    record = {
+        **parent,
+        "evidence_id": "DELL_TRANSCRIPT_WRAPPED_PAGE",
+        "section": "Fiscal year 2027 first quarter results transcript",
+        "subsection": "Transcript page 4",
+        "metadata": {"parent_document_id": parent["document_id"]},
+        "text": f"{filler}\n{target}",
+    }
+    policy = replace(
+        _policy(),
+        object_compiler={
+            **dict(_policy().object_compiler),
+            "claim_segmentation_mode": "sentence_with_wrapped_line_reflow_v1",
+            "claim_overflow_policy": "emit_typed_diagnostic_and_fail_qualification",
+            "max_claims_per_source_record": 96,
+        },
+    )
+    result = compile_object_store(
+        records=[record],
+        parents_by_id={parent["document_id"]: parent},
+        policy=policy,
+    )
+    target_rows = [
+        row
+        for row in result.objects
+        if "AI server profitability" in str(row.get("model_text") or "")
+    ]
+    assert len(target_rows) == 1
+    assert "mid-single-digit" in target_rows[0]["model_text"]
+    binding = target_rows[0]["base_object_view"]["focus_binding"]
+    assert binding["mode"] == "offset_bound_text"
+    assert record["text"][binding["char_start"] : binding["char_end"]] == target
+    assert result.summary["diagnostic_counts"].get(
+        "claim_unit_limit_exceeded", 0
+    ) == 0
+
+
+def test_successor_claim_compiler_makes_overflow_explicit() -> None:
+    parent = {
+        "document_id": "CURRENT_DOC::DELL::TRANSCRIPT::OVERFLOW",
+        "ticker": "DELL",
+        "company": "Dell Technologies Inc.",
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "source_tier": "official_hosted_management_call_transcript",
+        "publication_date": "2026-05-28",
+        "period_end": "2026-05-01",
+        "fiscal_year": 2027,
+    }
+    record = {
+        **parent,
+        "evidence_id": "DELL_TRANSCRIPT_OVERFLOW_PAGE",
+        "section": "Transcript",
+        "subsection": "Page",
+        "metadata": {"parent_document_id": parent["document_id"]},
+        "text": (
+            "First material sentence contains enough financial context for a claim object and explicitly discusses current-quarter operating performance. "
+            "Second material sentence contains enough financial context for another object and explicitly discusses the next-quarter margin outlook."
+        ),
+    }
+    policy = replace(
+        _policy(),
+        object_compiler={
+            **dict(_policy().object_compiler),
+            "claim_segmentation_mode": "sentence_with_wrapped_line_reflow_v1",
+            "claim_overflow_policy": "emit_typed_diagnostic_and_fail_qualification",
+            "max_claims_per_source_record": 1,
+        },
+    )
+    result = compile_object_store(
+        records=[record],
+        parents_by_id={parent["document_id"]: parent},
+        policy=policy,
+    )
+    assert result.summary["diagnostic_counts"] == {
+        "claim_unit_limit_exceeded": 1
+    }
 
 
 def test_table_period_rows_are_headers_and_business_unit_context_is_retained() -> None:

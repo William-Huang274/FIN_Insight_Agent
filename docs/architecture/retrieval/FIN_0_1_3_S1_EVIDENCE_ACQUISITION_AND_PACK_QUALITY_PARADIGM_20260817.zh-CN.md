@@ -446,3 +446,17 @@ VS2 没有另造 parser runner 或新的 Pack 链，而是在 VS1 的同一 arti
 6. **评测仍保持 inputs／labels 物理分离。** VS2 runtime input 只含来源、选页、研究问题和 OCR mutation 指令；page/table/anchor/target 期望只在 evaluator reference 中加载。评测程序允许同一 active split 有多个独立 catalog，但 reserved split 仍只能保留一个空 catalog，防止把开发标签泄漏给 Runtime。
 
 VS2 状态为 `component_engineering_pass=true / vertical_slice_integrated=true / S1_qualified_stable=false`。当前下一项改为 VS3，不再扩大 VS2。VS3 通过仍不能跳过 VS4 的第二轮补证或 VS5 的 frozen／heterogeneous qualification。
+
+## 17. VS3 多路线检索与金融排序回证（2026-08-18）
+
+VS3 证明的不是“某个向量模型胜出”，而是同一对象、同一有限候选边界和同一决策账本能否让多种召回信号组合后仍保持金融证据语义与权限边界。
+
+1. **计算与路线边界。** BGE-M3、Qwen Embedding、BGE/Qwen Cross-Encoder 均以 CUDA-only fail-closed 方式执行；BM25、typed intent、typed metric、parent context 和确定性金融 evaluator 与模型分数并行存在。任何单一路线都不拥有产品权威。
+2. **有限池必须分层保护，而不是无限扩大 top-k。** 自然 v1.6 中 DELL reported-results 正例在 typed route 第 3，却被多路线 RRF 挤出 128 候选池。通用 per-need bounded floor 只保护不同 RetrievalNeed 的少量头部，再由 RRF 填满剩余额度；它不读取 case、gold object 或答案 URL。最终 v1.8 达到 15/15 入池和 1.0 顺序稳定率。
+3. **金融精排是组合裁决。** 最终前十同时考虑硬身份／期间／来源／关系、need specificity、Evidence Role、metric/product intent、来源权威、route diversity 与稳定 tie-break；结果为 15/15 known positive、0 confirmed hard negative。BGE/Qwen reranker 仍只是特征，不能直接决定 Evidence。
+4. **复杂对象必须允许受限上下文扩展。** VS2 四个目标中 1 个直接 shortlist、3 个由同表／父级／跨页关系的 bounded context 接入最终审阅面。parent expansion 不能跨公司、跨期间、跨无关表，也不能授权 NumericFact。
+5. **持久决策优先于 review window。** 全部 1,912 个候选均保留 accepted／rejected／unjudged／needs-review；前 12／前 10 只决定审阅优先级，不删除候选。最终为 10 accepted／66 rejected／9 unjudged／1,827 needs-review，且 hard-negative/source-only false accept 均为 0。
+6. **旧标签允许证据继任，不允许结果驱动改权重。** VS1 两个历史对象均可追溯；更新的 Dell 10-K／10-Q／官方 transcript 可合法排在旧片段前。此类变化必须记录为对象级 successor review，不能把“旧 target 未在最前”自动算成退化，也不能事后把所有新头部标成 positive 来追分。
+7. **Workbench 是当前消费者。** R17 注册 VS3 结果，Operations 显示候选覆盖、金融前十、VS1／VS2 回归、待审数量和权限边界。页面不暴露 qrel identity、答案 URL 或模型内部标签。
+
+VS3 状态为 `vertical_slice_integrated=true / VS4_bounded_supplement_authorized=true / S1_qualified_stable=false`。下一步只能由 Coverage 的 residual gap 驱动 VS4，不允许因为 VS3 排序变好就跳过来源补证、gap 资格或 VS5 异质留出。

@@ -8,6 +8,14 @@ from .financial_objects import sha256_file
 from .query_plan import canonical_digest
 
 
+def _required_cuda_device(torch: Any) -> Any:
+    """Fail closed instead of silently moving financial reranking to CPU."""
+
+    if not torch.cuda.is_available():
+        raise RuntimeError("local_cross_encoder_cuda_required")
+    return torch.device("cuda")
+
+
 def cross_encoder_model_identity(
     model_dir: Path, *, model_id: str = "BAAI/bge-reranker-v2-m3"
 ) -> dict[str, Any]:
@@ -34,12 +42,12 @@ def load_local_cross_encoder(
     import torch
     from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = _required_cuda_device(torch)
     tokenizer = AutoTokenizer.from_pretrained(str(model_dir), local_files_only=True)
     model = AutoModelForSequenceClassification.from_pretrained(
         str(model_dir),
         local_files_only=True,
-        dtype=torch.float16 if device.type == "cuda" else torch.float32,
+        dtype=torch.float16,
     )
     model.to(device)
     model.eval()
@@ -89,7 +97,7 @@ def load_local_qwen3_reranker(
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = _required_cuda_device(torch)
     tokenizer = AutoTokenizer.from_pretrained(
         str(model_dir),
         padding_side="left",
@@ -98,7 +106,7 @@ def load_local_qwen3_reranker(
     model = AutoModelForCausalLM.from_pretrained(
         str(model_dir),
         local_files_only=True,
-        dtype=torch.float16 if device.type == "cuda" else torch.float32,
+        dtype=torch.float16,
     )
     model.to(device)
     model.eval()

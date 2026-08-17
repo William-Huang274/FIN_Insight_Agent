@@ -340,7 +340,9 @@
       "producer_refs": [
         "src/retrieval/ranking_comparison.py",
         "src/retrieval/cross_encoder.py",
-        "src/retrieval/embedding_runtime.py"
+        "src/retrieval/embedding_runtime.py",
+        "src/retrieval/candidate_ranking.py",
+        "scripts/data_retrieval/run_s1_candidate_ranking.py"
       ],
       "consumer_refs": [
         "apps/workbench/backend/application/research_retrieval_service.py",
@@ -350,34 +352,42 @@
         "configs/retrieval/fin_ia_0_1_3_s1c_ranking_comparison_result_v1_1.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_cross_encoder_safety_shadow_result_v1_0.json",
         "configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json",
-        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_result_v1_8.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_financial_shortlist_result_v1_8.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_product_gate_result_v1_2.json"
       ],
       "test_refs": [
         "tests/test_s1c_ranking_comparison.py",
         "tests/test_s1c_retrieval_stack_governance.py",
         "tests/test_s1c_financial_role_eval.py",
-        "tests/test_s1_vs2_complex_pdf_vertical.py"
+        "tests/test_s1_vs2_complex_pdf_vertical.py",
+        "tests/test_cross_encoder_cuda.py",
+        "tests/test_s1_vs3_candidate_ranking.py",
+        "tests/test_s1_vs3_product_gate.py"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "BM25、BGE、Qwen、RRF 和 Cross-Encoder 已做 shadow／离线比较",
         "同一 qrel 人口中的关键重排失误已被保留而未错误晋升",
         "VS1 将当前 typed financial ranking 的真实顺序作为独立 CandidateRanking artifact 贯穿到决策账；仅证明可观测和不越权，不代表排序质量资格",
-        "VS2 在同一候选链暴露出业务可解释的头部失败：4 个经复核复杂文档目标只有重述上下文进入前 20，分部结果总计行、脚注和跨页续表均未进入；解析对象仍在，因此最早责任明确属于 VS3 排序"
+        "VS2 在同一候选链暴露出业务可解释的头部失败：4 个经复核复杂文档目标只有重述上下文进入前 20，分部结果总计行、脚注和跨页续表均未进入；解析对象仍在，因此最早责任明确属于 VS3 排序",
+        "VS3 的通用 per-need 有界 route floor 修复有限池挤出而不读取 gold identity；最终 15/15 开发正例入池、顺序扰动稳定率 1.0",
+        "金融审阅前十达到 15/15、0 confirmed hard negative；VS1 2/2 可追溯、VS2 4/4 进入最终审阅面；没有单一 neural route 获得产品权威"
       ],
       "qualification_state": "open",
       "known_gaps": [
         {
           "gap_id": "S1-G-GAP-001",
-          "business_effect_zh": "VS2 已提供同一 CandidateSet 的真实复杂文档失败样本，但 BM25／Dense／Cross-Encoder／结构信号尚未在该池和冻结 split 上完成同条件增量、头部稳定与排列资格。",
+          "business_effect_zh": "VS3 已通过开发与回归纵切，但 frozen temporal test 和新异质留出尚未预注册并执行；当前路线只能作为 VS4 开发能力，不能声明 S1 稳定资格。",
           "earliest_responsibility_axis": "S1-G",
-          "next_vertical_slice": "VS3"
+          "next_vertical_slice": "VS5"
         },
         {
           "gap_id": "S1-G-GAP-002",
-          "business_effect_zh": "没有任何 neural reranker 被证明能稳定压低错角色、错期间和通用背景噪声，当前不能替换廉价召回基线。",
+          "business_effect_zh": "没有单一 neural reranker 获得生产权威；当前 provisional route 依赖多路候选、结构约束与金融排序共同工作，仍需在冻结时序和异质留出上证明头部稳定后才能晋升。",
           "earliest_responsibility_axis": "S1-G",
-          "next_vertical_slice": "VS3"
+          "next_vertical_slice": "VS5"
         }
       ],
       "migration_or_rollback_entry_refs": [
@@ -396,46 +406,59 @@
         "src/retrieval/evidence_role_contract.py",
         "src/retrieval/financial_candidate_ranking.py",
         "src/retrieval/vertical_slice.py",
-        "src/retrieval/complex_pdf_vertical.py"
+        "src/retrieval/complex_pdf_vertical.py",
+        "src/retrieval/financial_intent.py",
+        "src/retrieval/financial_evidence_shortlist.py",
+        "src/retrieval/candidate_decision.py"
       ],
       "consumer_refs": [
         "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
-        "apps/workbench/backend/application/research_evidence_pack_service.py"
+        "apps/workbench/backend/application/research_evidence_pack_service.py",
+        "apps/workbench/backend/api/operations.py"
       ],
       "current_artifact_refs": [
         "configs/retrieval/fin_ia_0_1_3_s1c_financial_role_eval_set_v1_1.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_object_role_shadow_result_v1_0.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_cross_encoder_role_shadow_result_v1_1.json",
         "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
-        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_evidence_role_replay_result_v1_4.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_financial_shortlist_result_v1_8.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_product_gate_result_v1_2.json"
       ],
       "test_refs": [
         "tests/test_evidence_role.py",
         "tests/test_s1c_object_role_contract.py",
         "tests/test_s1c_object_role_shadow.py",
         "tests/test_s1_vs1_vertical_slice.py",
-        "tests/test_s1_vs2_complex_pdf_vertical.py"
+        "tests/test_s1_vs2_complex_pdf_vertical.py",
+        "tests/test_financial_intent.py",
+        "tests/test_financial_evidence_shortlist.py",
+        "tests/test_s1_object_candidate_decision.py",
+        "tests/test_s1_vs3_product_gate.py"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "对象角色、事实状态、直接性、背景性和 abstain 合同已建立",
         "规则和 Cross-Encoder shadow 已暴露语义相关但证据角色错误的样本",
         "VS1 对 DELL pricing/mix 的 6 个真实候选逐一持久化 accepted／needs-review 决策；排名本身不授予 Evidence 权限",
-        "VS2 对 20 个复杂文档候选形成 1 accepted／19 needs-review 的持久决策，并保留 3 个 reviewed-not-recalled 目标；table-row、footnote 和 cross-page 对象未因语义相近自动晋升"
+        "VS2 对 20 个复杂文档候选形成 1 accepted／19 needs-review 的持久决策，并保留 3 个 reviewed-not-recalled 目标；table-row、footnote 和 cross-page 对象未因语义相近自动晋升",
+        "VS3 复合角色门在开发关系上保留 50/62 positive、拒绝或 abstain 68/68 hard negative；金融 shortlist 前十为 15/15、0 confirmed hard negative",
+        "VS3 为 1,912 个候选持久物化 10 accepted／66 rejected／9 unjudged／1,827 needs-review，0 hard-negative/source-only false accept，并由 R17 Workbench 消费"
       ],
       "qualification_state": "open",
       "known_gaps": [
         {
           "gap_id": "S1-H-GAP-001",
-          "business_effect_zh": "当前规则 Evidence Role 质量不足，Cross-Encoder 也有关键误排；尚无可进入 Runtime 的 finance-aware evaluator。",
+          "business_effect_zh": "finance-aware evaluator 已在开发纵切通过，但尚无独立异质留出资格；1,827 needs-review 是持久审阅状态而非自动 Evidence，不能在 VS5 前授予生产 Evidence promotion 权限。",
           "earliest_responsibility_axis": "S1-H",
-          "next_vertical_slice": "VS3"
+          "next_vertical_slice": "VS5"
         },
         {
           "gap_id": "S1-H-GAP-002",
-          "business_effect_zh": "CandidateDecision 已覆盖 VS1 数字原生和 VS2 复杂文档纵切，但尚无 finance-aware evaluator 能把总计行、脚注、跨页关系与泛化背景稳定分开，也尚未覆盖动态新候选和单独 capture-gate 晋升。",
+          "business_effect_zh": "VS3 已覆盖冻结候选的角色判断，但动态检索产生的新候选、独立 capture-gate 晋升与二轮补证后的受控重裁决尚未在真实闭环中证明。",
           "earliest_responsibility_axis": "S1-H",
-          "next_vertical_slice": "VS3"
+          "next_vertical_slice": "VS4"
         }
       ],
       "migration_or_rollback_entry_refs": [

@@ -22,10 +22,18 @@ QUERY_ATOM_EVAL_SCHEMA_VERSION = "fin_ia_s1c_runtime_query_atom_eval_v1_0"
 QUERY_ATOM_EVAL_SUCCESSOR_SCHEMA_VERSION = (
     "fin_ia_s1c_runtime_query_atom_eval_v1_1"
 )
+QUERY_ATOM_EVAL_SENTENCE_OBJECT_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_s1c_runtime_query_atom_eval_v1_2"
+)
+QUERY_ATOM_EVAL_REVIEWED_LABEL_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_s1c_runtime_query_atom_eval_v1_3"
+)
 QUERY_ATOM_EVAL_SCHEMA_VERSIONS = frozenset(
     {
         QUERY_ATOM_EVAL_SCHEMA_VERSION,
         QUERY_ATOM_EVAL_SUCCESSOR_SCHEMA_VERSION,
+        QUERY_ATOM_EVAL_SENTENCE_OBJECT_SUCCESSOR_SCHEMA_VERSION,
+        QUERY_ATOM_EVAL_REVIEWED_LABEL_SUCCESSOR_SCHEMA_VERSION,
     }
 )
 
@@ -314,6 +322,7 @@ def evaluate_controlled_evidence_roles(
                 "source_type": base.get("source_type"),
                 "object_kind": row.get("object_kind"),
                 "document_text": row.get("model_text"),
+                "structured_projection": row.get("structured_projection"),
             },
             slot_id=lane.slot_id,
             facet_id=lane.facet_id,
@@ -471,6 +480,7 @@ def evaluate_query_atom(
                 "source_type": base.get("source_type"),
                 "object_kind": row.get("object_kind"),
                 "document_text": row.get("model_text"),
+                "structured_projection": row.get("structured_projection"),
             },
             slot_id=lane.slot_id,
             facet_id=lane.facet_id,
@@ -692,6 +702,9 @@ def _unique_ids(values: Iterable[object]) -> tuple[str, ...]:
 
 __all__ = [
     "QUERY_ATOM_EVAL_SCHEMA_VERSION",
+    "QUERY_ATOM_EVAL_SCHEMA_VERSIONS",
+    "QUERY_ATOM_EVAL_SENTENCE_OBJECT_SUCCESSOR_SCHEMA_VERSION",
+    "QUERY_ATOM_EVAL_SUCCESSOR_SCHEMA_VERSION",
     "QueryAtom",
     "QueryAtomShadowError",
     "aggregate_evidence_role_metrics",

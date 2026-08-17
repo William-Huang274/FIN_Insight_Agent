@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import sys
 from typing import Any, Mapping
 
@@ -18,7 +19,9 @@ if hasattr(sys.stdout, "reconfigure"):
 from retrieval.contracts import load_evidence_request, load_financial_research_kernel  # noqa: E402
 from retrieval.query_atom_shadow import (  # noqa: E402
     QUERY_ATOM_EVAL_SCHEMA_VERSION,
-    QUERY_ATOM_EVAL_SUCCESSOR_SCHEMA_VERSION,
+    QUERY_ATOM_EVAL_SCHEMA_VERSIONS,
+    QUERY_ATOM_EVAL_REVIEWED_LABEL_SUCCESSOR_SCHEMA_VERSION,
+    QUERY_ATOM_EVAL_SENTENCE_OBJECT_SUCCESSOR_SCHEMA_VERSION,
     compile_atom_lane,
     load_query_atoms,
 )
@@ -26,8 +29,19 @@ from retrieval.query_plan import canonical_digest  # noqa: E402
 
 
 MANIFEST_SCHEMA_VERSION = "fin_ia_s1c_runtime_query_atom_manifest_v1_0"
-ADJUDICATION_SCHEMA_VERSION = (
-    "fin_ia_s1c_runtime_query_atom_v2_adjudication_v1_0"
+ADJUDICATION_SCHEMA_VERSION = "fin_ia_s1c_runtime_query_atom_v2_adjudication_v1_0"
+ADJUDICATION_REVIEWED_LABEL_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_s1c_runtime_query_atom_v2_adjudication_v1_1"
+)
+ADJUDICATION_STRUCTURED_LOCATOR_SCHEMA_VERSION = (
+    "fin_ia_s1c_runtime_query_atom_v2_adjudication_v1_2"
+)
+ADJUDICATION_SCHEMA_VERSIONS = frozenset(
+    {
+        ADJUDICATION_SCHEMA_VERSION,
+        ADJUDICATION_REVIEWED_LABEL_SUCCESSOR_SCHEMA_VERSION,
+        ADJUDICATION_STRUCTURED_LOCATOR_SCHEMA_VERSION,
+    }
 )
 LABEL_ID_FIELDS = (
     "positive_object_ids",
@@ -160,11 +174,72 @@ def _successor_for_source(
         if str(row.get("object_kind") or "") == source_kind
         and str(row.get("model_text") or "") == source_text
     ]
-    if len(matches) != 1:
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
         raise ValueError(
             f"runtime_query_atom_successor_identity_not_unique:{key}:{len(matches)}"
         )
-    return matches[0]
+
+    # A sentence-aware successor may legitimately rotate both the claim key and
+    # the source-record partition: an old PDF visual line can become one bounded
+    # sentence spanning two wrapped lines.  In that case object_key equality is
+    # not a stable semantic locator.  Migrate only when the old surface has one
+    # unique containment-equivalent claim inside the same immutable parent
+    # document and source identity.  Ambiguous paragraph-to-sentence splits stay
+    # fail closed and must be resolved by the explicit adjudication overlay.
+    if source_kind == "claim":
+        source_base = source.get("base_object_view")
+        if not isinstance(source_base, Mapping):
+            raise ValueError("runtime_query_atom_source_base_view_invalid")
+        source_parent = str(source_base.get("parent_document_id") or "")
+        source_identity = (
+            str(source_base.get("ticker") or "").upper(),
+            str(source_base.get("source_type") or "").upper(),
+            str(source_base.get("publication_date") or ""),
+        )
+        source_surface = _normalized_claim_surface(source_text)
+        candidates: list[Mapping[str, Any]] = []
+        for rows in target_by_key.values():
+            for row in rows:
+                if str(row.get("object_kind") or "") != "claim":
+                    continue
+                base = row.get("base_object_view")
+                if not isinstance(base, Mapping):
+                    continue
+                if str(base.get("parent_document_id") or "") != source_parent:
+                    continue
+                identity = (
+                    str(base.get("ticker") or "").upper(),
+                    str(base.get("source_type") or "").upper(),
+                    str(base.get("publication_date") or ""),
+                )
+                if identity != source_identity:
+                    continue
+                target_surface = _normalized_claim_surface(
+                    str(row.get("model_text") or "")
+                )
+                if min(len(source_surface), len(target_surface)) < 18:
+                    continue
+                if (
+                    source_surface in target_surface
+                    or target_surface in source_surface
+                ):
+                    candidates.append(row)
+        if len(candidates) == 1:
+            return candidates[0]
+        if candidates:
+            raise ValueError(
+                "runtime_query_atom_successor_claim_split_ambiguous:"
+                f"{key}:{len(candidates)}"
+            )
+    raise ValueError(
+        f"runtime_query_atom_successor_identity_not_unique:{key}:0"
+    )
+
+
+def _normalized_claim_surface(value: str) -> str:
+    return re.sub(r"\s+", " ", value).strip().casefold().replace("‐", "-").replace("‑", "-")
 
 
 def _labels_from_object_keys(
@@ -191,14 +266,45 @@ def _labels_from_object_keys(
     expected_raw = labels.get("expected_roles_by_object_key") or {}
     if not isinstance(expected_raw, Mapping):
         raise ValueError("runtime_query_atom_adjudication_expected_roles_invalid")
-    expected_targets = {
-        str(
+    expected_targets: dict[str, list[str]] = {}
+    for key, roles in expected_raw.items():
+        target_id = str(
             _resolve_target_locator(key, target_by_key=target_by_key)[
                 "compiled_object_id"
             ]
-        ): list(roles)
-        for key, roles in expected_raw.items()
-    }
+        )
+        expected_targets[target_id] = list(roles)
+
+    # One durable table object key can compile into several metric rows. JSON
+    # mapping keys cannot carry a structured locator, so v1.2 also accepts a
+    # list form that can bind metric_row_label/model_text_contains explicitly.
+    expected_by_locator = labels.get("expected_roles_by_locator") or []
+    if not isinstance(expected_by_locator, list):
+        raise ValueError(
+            "runtime_query_atom_adjudication_expected_roles_by_locator_invalid"
+        )
+    for entry in expected_by_locator:
+        if not isinstance(entry, Mapping):
+            raise ValueError(
+                "runtime_query_atom_adjudication_expected_role_locator_invalid"
+            )
+        roles = entry.get("roles")
+        if not isinstance(roles, list) or not roles or not all(
+            isinstance(role, str) and role.strip() for role in roles
+        ):
+            raise ValueError(
+                "runtime_query_atom_adjudication_expected_role_locator_roles_invalid"
+            )
+        target_id = str(
+            _resolve_target_locator(
+                entry.get("locator"), target_by_key=target_by_key
+            )["compiled_object_id"]
+        )
+        if target_id in expected_targets:
+            raise ValueError(
+                "runtime_query_atom_adjudication_expected_role_duplicate"
+            )
+        expected_targets[target_id] = list(roles)
     orphan = sorted(set(expected_targets) - labelled_ids)
     if orphan:
         raise ValueError(
@@ -402,9 +508,10 @@ def materialize_successor(
     source_eval = _read_json(source_eval_path)
     adjudication = _read_json(adjudication_path)
     kernel = load_financial_research_kernel(_read_json(kernel_path))
-    if source_eval.get("schema_version") != QUERY_ATOM_EVAL_SCHEMA_VERSION:
+    if source_eval.get("schema_version") not in QUERY_ATOM_EVAL_SCHEMA_VERSIONS:
         raise ValueError("runtime_query_atom_successor_source_schema_invalid")
-    if adjudication.get("schema_version") != ADJUDICATION_SCHEMA_VERSION:
+    adjudication_schema = adjudication.get("schema_version")
+    if adjudication_schema not in ADJUDICATION_SCHEMA_VERSIONS:
         raise ValueError("runtime_query_atom_adjudication_schema_invalid")
     load_query_atoms(source_eval)
 
@@ -505,10 +612,16 @@ def materialize_successor(
     if source_query_digest != target_query_digest:
         raise ValueError("runtime_query_atom_successor_query_contract_changed")
 
+    output_schema = (
+        QUERY_ATOM_EVAL_REVIEWED_LABEL_SUCCESSOR_SCHEMA_VERSION
+        if adjudication_schema
+        == ADJUDICATION_REVIEWED_LABEL_SUCCESSOR_SCHEMA_VERSION
+        else QUERY_ATOM_EVAL_SENTENCE_OBJECT_SUCCESSOR_SCHEMA_VERSION
+    )
     unsigned = {
-        "schema_version": QUERY_ATOM_EVAL_SUCCESSOR_SCHEMA_VERSION,
+        "schema_version": output_schema,
         "status": "current_object_qrels_successor_materialized_before_runtime_ranking",
-        "recorded_at": "2026-08-13",
+        "recorded_at": str(adjudication.get("recorded_at") or "2026-08-13"),
         "bound_inputs": {
             "source_eval_ref": _relative(source_eval_path),
             "source_eval_sha256_lf": _sha256(
@@ -529,6 +642,7 @@ def materialize_successor(
             **dict(source_eval["policy"]),
             "qrel_successor_not_attempt_rewrite": True,
             "stable_object_key_before_compiled_id": True,
+            "sentence_object_migration_uses_parent_bound_containment": True,
             "source_level_match_is_not_object_level_relevance": True,
             "adjudication_authority": str(policy["adjudication_authority"]),
             "owner_acceptance": False,

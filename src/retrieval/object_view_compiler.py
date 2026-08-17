@@ -12,7 +12,7 @@ from .query_plan import canonical_digest
 from .route_compiler import QueryObjectFactRoutePolicy
 
 
-COMPILED_OBJECT_SCHEMA_VERSION = "fin_ia_compiled_financial_object_view_v1_1"
+COMPILED_OBJECT_SCHEMA_VERSION = "fin_ia_compiled_financial_object_view_v1_2"
 OBJECT_STORE_COMPILATION_SCHEMA_VERSION = (
     "fin_ia_financial_object_store_compilation_v1_0"
 )
@@ -23,6 +23,10 @@ _TABLE_PATTERN = re.compile(
     re.DOTALL,
 )
 _SENTENCE_PATTERN = re.compile(r"[^.!?\n]+(?:[.!?](?:[\"”’])?|$)")
+_WRAPPED_SENTENCE_PATTERN = re.compile(
+    r".+?(?:[.!?](?:[\"”’])?(?=\s|$)|\Z)",
+    re.DOTALL,
+)
 _MONTH_PATTERN = re.compile(
     r"\b(?:January|February|March|April|May|June|July|August|September|"
     r"October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b",
@@ -115,6 +119,145 @@ def _is_navigation_only(text: str) -> bool:
     )
 
 
+def _normalize_model_text(value: str) -> str:
+    dehyphenated = re.sub(r"(?<=\w)-\s*\r?\n\s*(?=\w)", "-", value)
+    return " ".join(dehyphenated.split())
+
+
+def _trim_span(raw_text: str, start: int, end: int) -> tuple[int, int]:
+    while start < end and raw_text[start].isspace():
+        start += 1
+    while end > start and raw_text[end - 1].isspace():
+        end -= 1
+    return start, end
+
+
+def _bounded_spans(
+    raw_text: str,
+    start: int,
+    end: int,
+    *,
+    maximum: int,
+) -> list[tuple[int, int]]:
+    """Split an overlong exact source span without fabricating reflowed text."""
+
+    output: list[tuple[int, int]] = []
+    cursor = start
+    while cursor < end:
+        target = min(cursor + maximum, end)
+        if target < end:
+            split = target
+            while split > cursor and not raw_text[split - 1].isspace():
+                split -= 1
+            if split == cursor:
+                split = target
+            target = split
+        left, right = _trim_span(raw_text, cursor, target)
+        if left < right:
+            output.append((left, right))
+        cursor = max(target, cursor + 1)
+    return output
+
+
+def _successor_claim_units(
+    raw_text: str,
+    table_spans: list[tuple[int, int]],
+    *,
+    minimum: int,
+    maximum: int,
+    limit: int,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Compile layout-wrapped PDF text into complete, offset-bound claim units."""
+
+    boundaries = sorted(table_spans)
+    narrative_ranges: list[tuple[int, int]] = []
+    cursor = 0
+    for table_start, table_end in boundaries:
+        if cursor < table_start:
+            narrative_ranges.append((cursor, table_start))
+        cursor = max(cursor, table_end)
+    if cursor < len(raw_text):
+        narrative_ranges.append((cursor, len(raw_text)))
+
+    spans: list[tuple[int, int]] = []
+    for range_start, range_end in narrative_ranges:
+        range_output_start = len(spans)
+        segment = raw_text[range_start:range_end]
+        sentence_spans: list[tuple[int, int]] = []
+        for match in _WRAPPED_SENTENCE_PATTERN.finditer(segment):
+            start, end = _trim_span(
+                raw_text,
+                range_start + match.start(),
+                range_start + match.end(),
+            )
+            if start >= end or _is_navigation_only(raw_text[start:end]):
+                continue
+            sentence_spans.extend(
+                _bounded_spans(raw_text, start, end, maximum=maximum)
+            )
+
+        pending: tuple[int, int] | None = None
+        for start, end in sentence_spans:
+            if pending is None:
+                pending = (start, end)
+            elif end - pending[0] <= maximum:
+                pending = (pending[0], end)
+            else:
+                spans.append(pending)
+                pending = (start, end)
+            if pending is not None and len(_normalize_model_text(raw_text[pending[0]:pending[1]])) >= minimum:
+                spans.append(pending)
+                pending = None
+        if pending is not None:
+            if (
+                len(spans) > range_output_start
+                and spans[-1][1] <= pending[0]
+                and pending[1] - spans[-1][0] <= maximum
+            ):
+                spans[-1] = (spans[-1][0], pending[1])
+            elif len(_normalize_model_text(raw_text[pending[0]:pending[1]])) >= minimum:
+                spans.append(pending)
+
+    units: list[dict[str, Any]] = []
+    seen: set[tuple[int, int]] = set()
+    for start, end in spans:
+        if (start, end) in seen:
+            continue
+        seen.add((start, end))
+        surface = raw_text[start:end]
+        model_text = _normalize_model_text(surface)
+        if (
+            len(model_text) < minimum
+            or len(model_text) > maximum
+            or _is_navigation_only(model_text)
+        ):
+            continue
+        units.append(
+            {
+                "surface": surface,
+                "model_text": model_text,
+                "char_start": start,
+                "char_end": end,
+            }
+        )
+
+    diagnostics: list[dict[str, Any]] = []
+    if len(units) > limit:
+        omitted = units[limit:]
+        diagnostics.append(
+            {
+                "diagnostic_code": "claim_unit_limit_exceeded",
+                "candidate_claim_unit_count": len(units),
+                "emitted_claim_unit_count": limit,
+                "omitted_claim_unit_count": len(omitted),
+                "first_omitted_surface_digest": canonical_digest(
+                    omitted[0]["surface"]
+                ),
+            }
+        )
+    return units[:limit], diagnostics
+
+
 def _claim_units(
     raw_text: str,
     table_spans: list[tuple[int, int]],
@@ -122,7 +265,16 @@ def _claim_units(
     minimum: int,
     maximum: int,
     limit: int,
-) -> tuple[list[str], list[dict[str, Any]]]:
+    segmentation_mode: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    if segmentation_mode == "sentence_with_wrapped_line_reflow_v1":
+        return _successor_claim_units(
+            raw_text,
+            table_spans,
+            minimum=minimum,
+            maximum=maximum,
+            limit=limit,
+        )
     masked = list(raw_text)
     for start, end in table_spans:
         masked[start:end] = "\n" * (end - start)
@@ -160,7 +312,18 @@ def _claim_units(
                 add(match.group(0))
         if len(candidates) >= limit:
             break
-    return candidates[:limit], diagnostics
+    return (
+        [
+            {
+                "surface": value,
+                "model_text": value,
+                "char_start": raw_text.index(value),
+                "char_end": raw_text.index(value) + len(value),
+            }
+            for value in candidates[:limit]
+        ],
+        diagnostics,
+    )
 
 
 def _table_is_financial_or_operating(
@@ -412,18 +575,33 @@ def compile_record_object_views(
         minimum=int(policy.object_compiler["claim_min_characters"]),
         maximum=int(policy.object_compiler["claim_max_characters"]),
         limit=int(policy.object_compiler["max_claims_per_source_record"]),
+        segmentation_mode=str(
+            policy.object_compiler.get("claim_segmentation_mode")
+            or "legacy_line_v1"
+        ),
     )
     diagnostics.extend(
         {"source_record_id": source_record_id, **row}
         for row in claim_diagnostics
     )
     max_text = int(policy.object_compiler["max_model_text_characters"])
-    for index, surface in enumerate(claim_surfaces, start=1):
+    for index, claim_unit in enumerate(claim_surfaces, start=1):
+        surface = str(claim_unit["surface"])
         try:
             base = build_evidence_object_view(
                 object_key=f"{source_record_id}::claim::{index:02d}",
                 object_form="claim",
-                locator={"mode": "exact_text", "text": surface},
+                locator=(
+                    {
+                        "mode": "offset_bound_text",
+                        "char_start": int(claim_unit["char_start"]),
+                        "char_end": int(claim_unit["char_end"]),
+                        "surface_digest": canonical_digest(surface),
+                    }
+                    if str(policy.object_compiler.get("claim_segmentation_mode") or "")
+                    == "sentence_with_wrapped_line_reflow_v1"
+                    else {"mode": "exact_text", "text": surface}
+                ),
                 record=record,
                 parent=parent,
             ).as_dict()
@@ -442,7 +620,7 @@ def compile_record_object_views(
                 "object_kind": "claim",
                 "base_object_view": base,
                 "structured_projection": {},
-                "model_text": surface[:max_text],
+                "model_text": str(claim_unit["model_text"])[:max_text],
                 "candidate_not_evidence": True,
                 "numeric_authority": False,
                 "evidence_promoted": False,

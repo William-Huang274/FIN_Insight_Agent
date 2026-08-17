@@ -87,6 +87,15 @@ def test_operations_surface_reads_version_neutral_store_and_runtime(tmp_path: Pa
     assert quality_payload["document_quality"]["table_region_count"] == 5
     assert quality_payload["financial_objects"]["cross_page_relation_count"] == 1
     assert quality_payload["coverage_summary"]["true_public_information_gap_count"] == 0
+    retrieval_quality = client.get("/api/operations/s1/retrieval-quality")
+    assert retrieval_quality.status_code == 200
+    retrieval_payload = retrieval_quality.json()
+    assert retrieval_payload["summary"]["vs3_vertical_slice_integrated"] is True
+    assert retrieval_payload["summary"]["combined_union_positive_atom_count"] == 15
+    assert retrieval_payload["summary"]["financial_shortlist_positive_top10_count"] == 15
+    assert retrieval_payload["summary"]["financial_shortlist_hard_negative_top10_count"] == 0
+    assert retrieval_payload["authority"]["candidate_is_not_evidence"] is True
+    assert retrieval_payload["authority"]["s1_qualified_stable"] is False
 
 
 def test_operations_runs_real_smoke_and_current_baseline_eval(tmp_path: Path) -> None:

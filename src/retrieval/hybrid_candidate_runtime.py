@@ -337,6 +337,7 @@ def retrieve_hybrid_candidates(
                         "source_type": base.get("source_type"),
                         "object_kind": row.get("object_kind"),
                         "document_text": row.get("model_text"),
+                        "structured_projection": row.get("structured_projection"),
                     },
                     slot_id=lane.slot_id,
                     facet_id=lane.facet_id,

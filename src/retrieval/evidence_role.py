@@ -164,10 +164,67 @@ def _has_observed_change(text: str) -> bool:
     return bool(
         re.search(
             r"\b(was|were|grew|increased|decreased|rose|declined|generated|reported|"
-            r"accounted for|driven by|resulted in|recognized)\b",
+            r"accounted for|driven by|resulted in|recognized|versus)\b|"
+            r"\b(up|down)\s+\d+(?:\.\d+)?%|"
+            r"\byear over year\b|\brecord\s+(?:quarterly\s+)?(?:revenue|sales|income|cash flow)\b",
             text,
         )
     )
+
+
+def _is_context_dependent_fragment(text: str) -> bool:
+    surface = " ".join(str(text).casefold().split())
+    return bool(
+        re.match(
+            r"^(?:[•\-]\s*)?(?:the\s+)?(?:year[- ]over[- ]year|sequential)\s+"
+            r"(?:increase|decrease)\b|^(?:[•\-]\s*)?increases were as follows\b",
+            surface,
+        )
+    )
+
+
+def _role_surface(document: Mapping[str, Any]) -> tuple[str, str, str]:
+    """Return only the surface that is allowed to imply an evidence role.
+
+    A metric-row candidate may carry issuer and table-title metadata in its
+    retrieval rendering.  Those fields are useful for identity filtering but
+    must not make the row look like demand, supply or relationship evidence.
+    For metric rows, classify the row/header payload while the object kind
+    independently establishes its financial-statement role.
+    """
+
+    section = str(document.get("section") or "").casefold()
+    subsection = str(document.get("subsection") or "").casefold()
+    raw_text = str(document.get("document_text") or document.get("text") or "")
+    if str(document.get("object_kind") or "") != "metric_row":
+        return section, subsection, raw_text.casefold()
+
+    projection = document.get("structured_projection") or {}
+    if isinstance(projection, Mapping) and projection:
+        values: list[str] = []
+        for key in ("header_lines", "row_context_lines"):
+            rows = projection.get(key) or []
+            if isinstance(rows, list):
+                values.extend(str(value) for value in rows if str(value).strip())
+        for key in ("metric_row_label",):
+            value = str(projection.get(key) or "").strip()
+            if value:
+                values.append(value)
+        cells = projection.get("metric_row_cells") or []
+        if isinstance(cells, list):
+            values.extend(str(value) for value in cells if str(value).strip())
+        if values:
+            return "", "", " ".join(values).casefold()
+
+    # Backward-compatible fallback for callers that have not yet supplied the
+    # structured projection.  Exclude retrieval-only identity/source headers.
+    allowed_prefixes = ("header:", "row context:", "row:")
+    values = [
+        line.split(":", 1)[1].strip()
+        for line in raw_text.splitlines()
+        if line.casefold().startswith(allowed_prefixes) and ":" in line
+    ]
+    return "", "", " ".join(values).casefold()
 
 
 def evaluate_evidence_role(
@@ -185,13 +242,12 @@ def evaluate_evidence_role(
         raise ValueError(f"evidence_role_slot_unknown:{slot_id}")
     if facet_id is not None and facet_id not in FACET_COMPATIBLE_ROLES:
         raise ValueError(f"evidence_role_facet_unknown:{facet_id}")
-    section = str(document.get("section") or "").casefold()
-    subsection = str(document.get("subsection") or "").casefold()
+    section, subsection, role_surface = _role_surface(document)
     text = " ".join(
         (
             section,
             subsection,
-            str(document.get("document_text") or document.get("text") or "").casefold(),
+            role_surface,
         )
     )
     owner = str(
@@ -206,6 +262,8 @@ def evaluate_evidence_role(
         (
             "table of contents",
             "forward-looking statements",
+            "certain statements in this press release",
+            "statements as to:",
             "investor relations contact",
             "may be downloaded",
             "conference call information",
@@ -214,6 +272,9 @@ def evaluate_evidence_role(
     ):
         labels.add(ROLE_GENERIC)
         reasons.append("generic_or_boilerplate_surface")
+    if _is_context_dependent_fragment(role_surface):
+        labels.add(ROLE_GENERIC)
+        reasons.append("context_dependent_fragment_requires_parent")
 
     risk_section = "risk factor" in section or "risk factor" in subsection
     financial_statement = (
@@ -262,6 +323,18 @@ def evaluate_evidence_role(
             "customer demand",
             "deployments",
             "adoption",
+            "supply and demand",
+        ),
+    )
+    risk_demand_exposure = risk_section and _contains_any(
+        text,
+        (
+            "customer",
+            "sales",
+            "growth",
+            "revenue",
+            "orders",
+            "demand",
         ),
     )
     demand_risk = _contains_any(
@@ -279,7 +352,7 @@ def evaluate_evidence_role(
     if demand_terms and not risk_section:
         labels.add(ROLE_DIRECT_DEMAND)
         reasons.append("direct_demand_activity_surface")
-    if demand_risk or (risk_section and demand_terms):
+    if demand_risk or (risk_section and demand_terms) or risk_demand_exposure:
         labels.add(ROLE_DEMAND_RISK)
         reasons.append("demand_risk_or_counterevidence_surface")
 
@@ -297,9 +370,12 @@ def evaluate_evidence_role(
             "hbm",
             "yield",
             "lead time",
-            "manufacturing",
             "production ramp",
             "component availability",
+            "supply and demand",
+            "managing our supply",
+            "suppliers",
+            "capacity commitments",
         ),
     )
     supply_risk = _contains_any(
@@ -312,6 +388,8 @@ def evaluate_evidence_role(
             "purchase commitments",
             "non-cancellable",
             "inventory write-down",
+            "inventory provisions",
+            "capacity commitments exceed demand",
         ),
     )
     if supply_terms and not risk_section:
@@ -358,11 +436,17 @@ def evaluate_evidence_role(
             "partnership",
             "purchase commitments",
             "concentration",
+            "customer agreements",
+            "binding commitments",
+            "contract terms",
+            "specific volumes",
+            "cash deposits",
         ),
     )
     if relationship_terms and (
         relationship_direction not in {None, "", "subject_self_disclosure"}
         or owner != subject
+        or facet_id in {"subject_relationship_disclosure", "counterparty_direct_mention"}
     ):
         labels.add(ROLE_RELATIONSHIP)
         reasons.append("related_entity_relationship_context_surface")
@@ -380,8 +464,9 @@ def evaluate_evidence_role(
         if facet_id is not None
         else SLOT_COMPATIBLE_ROLES[slot_id]
     )
-    if ROLE_GENERIC in labels and not (labels - {ROLE_GENERIC}):
+    if ROLE_GENERIC in labels:
         compatibility = "incompatible"
+        reasons.append("generic_or_context_dependent_override")
     elif labels.intersection(compatible_roles):
         compatibility = "compatible"
     elif labels:

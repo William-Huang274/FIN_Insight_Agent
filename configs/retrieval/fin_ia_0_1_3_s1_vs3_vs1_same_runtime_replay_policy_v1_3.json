@@ -1,0 +1,26 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs1_stratified_typed_route_union_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-VS1-SAME-RUNTIME-REPLAY-V1.3-STRATIFIED-UNION",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_vs1_same_runtime_replay_policy_v1_2.json",
+  "parent_policy_sha256_lf": "26e3d8b3fc4857e8f077d85bba8decc7dcf00e5d7f8e802733a2a036b32f564f",
+  "candidate_contract_overrides": {
+    "candidate_union_route_minimum_per_need": {
+      "typed_intent_alias_groups": 3,
+      "typed_metric_row_exact": 3
+    },
+    "route_floor_is_label_blind_recall_protection": true,
+    "route_floor_is_not_evidence_or_final_rank_authority": true
+  },
+  "successor_basis": {
+    "why_replay_is_required": [
+      "VS1 must consume the same stratified candidate-union contract as the three-case path",
+      "old reviewed objects must remain reachable while newer official candidates are adjudicated independently",
+      "the route floor uses typed route rank only and cannot inspect the two reviewed object IDs"
+    ],
+    "not_changed": ["ontology v1.2", "original VS1 labels", "candidate and Evidence authority boundaries"],
+    "v1_2_result_remains_immutable": true,
+    "development_replay_not_product_acceptance": true
+  }
+}

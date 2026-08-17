@@ -1,0 +1,62 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "development_cases_only": true,
+    "fine_tuning_authorized": false,
+    "generation_model_calls_authorized": false,
+    "network_calls_authorized": false,
+    "numeric_fact_authority": false,
+    "owner_acceptance": false,
+    "runtime_evidence_promotion_authorized": false,
+    "runtime_route_promotion_authorized": false,
+    "s1_complete_claimed": false
+  },
+  "bound_inputs": {
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "financial_intent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_0.json",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_financial_shortlist_policy_v1_2.json",
+    "policy_sha256_lf": "aaec3a3d809647deb194077d87a3ad255497f404fe27ca8ba2fe6f539f50ae37",
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_4.json",
+    "ranking_full_result_ref": "data/workbench_private/fin_0_1_3_s1_vs3_candidate_ranking/v1_4/full_result_11682d100f8ea236b2b756cb108a9734ea1667a3c808da84af4f336048c44da4.json",
+    "ranking_full_result_sha256_lf": "259c8aa7e76ca1edb5cd317d9f589699f654e556a7c5b1380bff69a6b5103a02",
+    "ranking_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_result_v1_4.json",
+    "role_replay_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_evidence_role_replay_result_v1_0.json",
+    "shortlist_implementation_ref": "src/retrieval/financial_evidence_shortlist.py"
+  },
+  "decision": {
+    "development_head_quality_gate_passed": false,
+    "fine_tuning_authorized": false,
+    "owner_acceptance": false,
+    "review_queue_is_priority_projection_not_candidate_drop": true,
+    "runtime_evidence_promotion_authorized": false,
+    "runtime_route_promotion_authorized": false,
+    "s1_complete_claimed": false
+  },
+  "execution": {
+    "generation_model_calls": 0,
+    "labels_joined_after_shortlist_ranking": true,
+    "network_calls": 0,
+    "training_steps": 0
+  },
+  "experiment_id": "FIN-0.1.3-S1-VS3-FINANCIAL-SHORTLIST-V1.2-TYPED-INTENT",
+  "recorded_at": "2026-08-17",
+  "result_digest": "243b63c4244f69d5505a4136d4919b685e627c675a62195c647ff539155315a4",
+  "schema_version": "fin_ia_s1_vs3_financial_shortlist_summary_v1_0",
+  "status": "zero_call_financial_shortlist_materialized",
+  "storage": {
+    "full_result_digest": "243b63c4244f69d5505a4136d4919b685e627c675a62195c647ff539155315a4",
+    "full_result_ref": "data/workbench_private/fin_0_1_3_s1_vs3_financial_shortlist/v1_2/full_result_243b63c4244f69d5505a4136d4919b685e627c675a62195c647ff539155315a4.json",
+    "full_result_sha256_lf": "0470df2a5505a7e5373084507ec7f76eafd4e72ff7ac1edf3c7f9908f1ddbdb3"
+  },
+  "summary": {
+    "atom_count": 18,
+    "candidate_decision_universe_preserved": 1912,
+    "hard_negative_in_top10_count": 2,
+    "mean_reciprocal_rank": 0.90303,
+    "positive_atom_count": 15,
+    "positive_target_in_top10_count": 14,
+    "positive_target_in_top10_rate": 0.933333,
+    "review_queue_total": 216
+  }
+}

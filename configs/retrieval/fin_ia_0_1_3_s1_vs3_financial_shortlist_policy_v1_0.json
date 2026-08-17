@@ -1,0 +1,91 @@
+{
+  "schema_version": "fin_ia_s1_vs3_financial_shortlist_policy_v1_0",
+  "status": "pre_registered_zero_call_financial_shortlist_after_generic_reranker_disposition",
+  "recorded_at": "2026-08-17",
+  "experiment_id": "FIN-0.1.3-S1-VS3-FINANCIAL-SHORTLIST-V1.0",
+  "bound_inputs": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_3.json",
+    "query_atom_eval_sha256_lf": "da75bd15db011bf092952b61149f4279bc1f2499031585fd70485df432f6599d",
+    "ranking_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_result_v1_3.json",
+    "ranking_summary_sha256_lf": "3cac270c28e6534943f3817cd373dc3c1e0ad761fab96979eb91efd03979c51f",
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "compiled_objects_sha256_lf": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "kernel_sha256_lf": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5",
+    "role_replay_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_evidence_role_replay_result_v1_0.json",
+    "role_replay_result_sha256_lf": "c6fe0bc6a0bb2ed7da8a3a5a0026ab0f28b2ef7c494254ac3e77fb3bbdb8ca7a",
+    "shortlist_implementation_ref": "src/retrieval/financial_evidence_shortlist.py",
+    "shortlist_implementation_sha256_lf": "a6480083f615d5c95118c82243a8002e13b067d44885f9c84853c038ae5c91b2"
+  },
+  "shortlist_contract": {
+    "evaluation_top_k": 10,
+    "review_queue_per_atom": 12,
+    "rank_full_candidate_union_before_review_projection": true,
+    "labels_joined_only_after_ranking": true,
+    "priority_order": [
+      "facet-compatible Evidence Role",
+      "facet-specific role priority",
+      "financial fact specificity",
+      "typed or lexical route quality",
+      "source authority",
+      "route diversity",
+      "generic Cross-Encoder as tie-break only",
+      "recency and stable identity tie-break"
+    ],
+    "review_queue_is_not_candidate_rejection": true,
+    "candidate_not_evidence": true
+  },
+  "decision_gates": {
+    "positive_target_in_head_minimum_rate": 0.8,
+    "hard_negative_in_head_maximum_count": 0
+  },
+  "successor_basis": {
+    "why_structural_successor_is_required": [
+      "v1.3 recalled 13 of 15 positive atoms into the 128-object union but the best generic head placed only 5 of 15 in the top ten",
+      "independent all-need scoring produced no material gain, disproving cross-model RetrievalNeed selection as the dominant cause",
+      "RRF pushed single-route exact financial objects to union ranks 99 through 110 even when typed metric or dense routes placed them between ranks 3 and 15",
+      "the candidate universe must remain persistent while human and Evidence evaluation attention is bounded"
+    ],
+    "not_changed": [
+      "query atoms and development labels",
+      "compiled objects",
+      "candidate union",
+      "generic model scores",
+      "identity, period and source hard filters"
+    ],
+    "prohibited": [
+      "gold object identity lookup before ranking",
+      "per-case allowlist",
+      "candidate deletion",
+      "Evidence or NumericFact promotion",
+      "repeated feature-weight tuning after result inspection"
+    ]
+  },
+  "token_budget_basis": {
+    "node_purpose": "Produce a bounded, finance-aware review head over the full frozen candidate union after generic rerankers failed.",
+    "input_scale": "Eighteen atoms and 1,864 persistent candidate decisions; twelve review-priority rows per atom, without dropping the remaining candidates.",
+    "required_outputs": [
+      "full deterministic ranking",
+      "216-or-fewer review-priority rows",
+      "development head-quality metrics",
+      "hard-negative receipts"
+    ],
+    "schema_burden": "deterministic typed feature projection and ordering",
+    "materiality_and_quality_risk": "using generic semantic similarity as final authority promotes related background; using labels or per-case phrases would overfit the development cases",
+    "comparable_run_evidence": "v1.3 candidate union 13/15, best generic head 5/15, judged Evidence Role 24/24 after structural replay",
+    "reasoning_profile": "zero-call deterministic financial evaluator; generic rerankers are tie-break inputs only",
+    "stop_and_truncation": "rank every candidate in the frozen union, emit at most twelve review rows per atom, fail closed on digest or identity drift"
+  },
+  "authority": {
+    "development_cases_only": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "runtime_route_promotion_authorized": false,
+    "runtime_evidence_promotion_authorized": false,
+    "fine_tuning_authorized": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "owner_acceptance": false,
+    "s1_complete_claimed": false
+  }
+}

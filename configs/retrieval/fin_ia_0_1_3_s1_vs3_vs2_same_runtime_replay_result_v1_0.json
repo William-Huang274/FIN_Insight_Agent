@@ -1,0 +1,138 @@
+{
+  "authority": {
+    "IFX_is_not_a_product_case": true,
+    "candidate_is_not_evidence": true,
+    "development_case_only": true,
+    "numeric_fact_authority": false,
+    "runtime_route_promotion_authorized": false
+  },
+  "bound_inputs": {
+    "object_identity_digest": "324c074c08678dda7e4ee95964ca6f5d05939b3e48602204cb9ee0b7af737f9f",
+    "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_1.json",
+    "policy_sha256_lf": "e8281a3cb3a750f1deb191bf632d77f273af51e901d60b34dc10e1b8e9e0a549",
+    "vs2_evaluator_ref": "eval_sets/fin_0_1_3_s1/references/train_internal/vs2_complex_pdf_references_v1_0.jsonl",
+    "vs2_evaluator_sha256_lf": "56abb32dc92b05ed4393c31b29598435033b7fa1d11a5d3598a48746aebfd95f",
+    "vs2_result_ref": "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+    "vs2_result_sha256_lf": "fce09702cab81a6f2922fb996bee17ec3201bd03a9bd86edffd3c2d66090d57a"
+  },
+  "execution": {
+    "bge_embedding_cache": {
+      "build_seconds": 3.101,
+      "cache_hit": false,
+      "dense_dtype": "float16",
+      "dense_sha256": "9619a2cd94f33def69be6463553c45b92127a92a3e5d3b0adfaa00c5b0c8e5e5",
+      "embedding_dimensions": 1024,
+      "learned_sparse_dtype": "float32",
+      "maximum_sequence_length": 512,
+      "model_digest": "d6d4a7fc2980e5bde67c1cd013ef87d1a8709464ba982d61a28653070e440cd5",
+      "object_count": 67,
+      "object_identity_digest": "1caa8af19efcca1331649546892ccefa5c11edab5d83c98efb7c29a6c3370678",
+      "object_sha256": "324c074c08678dda7e4ee95964ca6f5d05939b3e48602204cb9ee0b7af737f9f",
+      "schema_version": "fin_ia_s1c_bge_m3_compiled_object_cache_v1_0",
+      "sparse_nonzero_count": 3692,
+      "sparse_sha256": "74896c1572940d02252809beac9ff6d26a21a04cc57ce674afb892988c2de071",
+      "sparse_vocabulary_size": 250002
+    },
+    "candidate_pool_count": 63,
+    "generation_model_calls": 0,
+    "labels_joined_after_candidate_generation": true,
+    "network_calls": 0,
+    "object_count": 67,
+    "qwen_embedding_cache": {
+      "build_seconds": 2.168,
+      "cache_hit": false,
+      "dense_dtype": "float16",
+      "dense_sha256": "1114bce0281e9a39e6e13d0aac3e64350b5cda83e9e2211cffdf98e9f15c9e5c",
+      "embedding_dimensions": 1024,
+      "maximum_sequence_length": 512,
+      "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+      "object_count": 67,
+      "object_identity_digest": "1caa8af19efcca1331649546892ccefa5c11edab5d83c98efb7c29a6c3370678",
+      "object_sha256": "324c074c08678dda7e4ee95964ca6f5d05939b3e48602204cb9ee0b7af737f9f",
+      "schema_version": "fin_ia_s1c_qwen3_embedding_compiled_object_cache_v1_0"
+    },
+    "retrieval_need_count": 9,
+    "training_steps": 0
+  },
+  "recorded_at": "2026-08-17",
+  "result_digest": "921bb7377c410fdec3da0e64cc24dc6fa7098678294ce6392570ed7c923ffbf4",
+  "schema_version": "fin_ia_s1_vs3_vs2_same_runtime_replay_result_v1_0",
+  "selector_results": [
+    {
+      "compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+      "contains_all": [
+        "comparative figures for the previous year",
+        "adjusted accordingly"
+      ],
+      "evidence_type": "revision_or_restatement_context",
+      "in_any_top_k": true,
+      "in_combined_pool": true,
+      "route_ranks": {
+        "bge_m3_multi_vector_refinement": 62,
+        "bge_reranker_v2_m3": 61,
+        "combined_need_union": 25,
+        "qwen3_reranker_0_6b": 5,
+        "role_guarded_dual_reranker_shadow": 63
+      }
+    },
+    {
+      "compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008",
+      "contains_all": [
+        "Total | 2,560 | 3,105"
+      ],
+      "evidence_type": "financial_table_metric_row",
+      "in_any_top_k": true,
+      "in_combined_pool": true,
+      "route_ranks": {
+        "bge_m3_multi_vector_refinement": 27,
+        "bge_reranker_v2_m3": 49,
+        "combined_need_union": 59,
+        "qwen3_reranker_0_6b": 3,
+        "role_guarded_dual_reranker_shadow": 13
+      }
+    },
+    {
+      "compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+      "contains_all": [
+        "previous year’s figures have been adjusted accordingly"
+      ],
+      "evidence_type": "financial_table_footnote",
+      "in_any_top_k": false,
+      "in_combined_pool": true,
+      "route_ranks": {
+        "bge_m3_multi_vector_refinement": 17,
+        "bge_reranker_v2_m3": 63,
+        "combined_need_union": 28,
+        "qwen3_reranker_0_6b": 36,
+        "role_guarded_dual_reranker_shadow": 56
+      }
+    },
+    {
+      "compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::CROSS_PAGE_RELATION_01",
+      "contains_all": [
+        "2,560",
+        "3,105",
+        "Previous page row",
+        "Following page row"
+      ],
+      "evidence_type": "cross_page_table_continuation_candidate",
+      "in_any_top_k": true,
+      "in_combined_pool": true,
+      "route_ranks": {
+        "bge_m3_multi_vector_refinement": 50,
+        "bge_reranker_v2_m3": 62,
+        "combined_need_union": 39,
+        "qwen3_reranker_0_6b": 1,
+        "role_guarded_dual_reranker_shadow": 62
+      }
+    }
+  ],
+  "status": "vs2_same_runtime_candidate_replay_complete",
+  "summary": {
+    "minimum_required_in_pool": 3,
+    "reviewed_target_count": 4,
+    "same_runtime_replay_passed": true,
+    "target_in_any_top_k_count": 3,
+    "target_in_combined_pool_count": 4
+  }
+}

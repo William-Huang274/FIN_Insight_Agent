@@ -33,6 +33,7 @@ def load_compiled_objects(rows: Iterable[Mapping[str, Any]]) -> tuple[dict[str, 
             in {
                 "fin_ia_compiled_financial_object_view_v1_0",
                 "fin_ia_compiled_financial_object_view_v1_1",
+                "fin_ia_compiled_financial_object_view_v1_2",
             }
             and object_id
             and object_id not in identities

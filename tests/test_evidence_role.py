@@ -114,3 +114,163 @@ def test_metric_row_is_financial_evidence_role_without_numeric_authority() -> No
     assert result.compatibility == "compatible"
     assert "financial_statement_or_reconciliation" in result.labels
     assert result.evidence_promoted is False
+
+
+def test_metric_row_issuer_name_cannot_imply_supply_role() -> None:
+    document = {
+        "ticker": "TSM",
+        "section": "6-K current official disclosure",
+        "subsection": "Taiwan Semiconductor Manufacturing Company results",
+        "document_text": (
+            "Company: Taiwan Semiconductor Manufacturing Company Limited (TSM)\n"
+            "Table: TSMC second quarter consolidated results\n"
+            "Row: Net sales | 1,270,381 | 933,792 | 36.0"
+        ),
+        "source_type": "6-K",
+        "object_kind": "metric_row",
+        "structured_projection": {
+            "header_lines": [],
+            "row_context_lines": [],
+            "metric_row_label": "Net sales",
+            "metric_row_cells": ["1,270,381", "933,792", "36.0"],
+        },
+    }
+    result = evaluate_evidence_role(
+        document,
+        slot_id="capacity_inputs_execution",
+        facet_id="upstream_capacity_context",
+        subject_ticker="NVDA",
+        evidence_owner_ticker="TSM",
+        relationship_direction="supplier_to_subject",
+    )
+
+    assert result.compatibility == "incompatible"
+    assert "financial_statement_or_reconciliation" in result.labels
+    assert "direct_supply_capacity_signal" not in result.labels
+
+
+def test_reported_highlight_with_year_over_year_change_is_observed_result() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "DELL",
+            "section": "Exhibit 99.1 Earnings Release",
+            "object_kind": "claim",
+            "document_text": (
+                "Record revenue of $43.8 billion, up 88% year over year; "
+                "record cash flow from operations of $4.1 billion."
+            ),
+        },
+        slot_id="operating_performance",
+        facet_id="reported_results",
+        subject_ticker="DELL",
+        evidence_owner_ticker="DELL",
+        relationship_direction="subject_self_disclosure",
+    )
+
+    assert result.compatibility == "compatible"
+    assert "observed_operating_result" in result.labels
+
+
+def test_risk_factor_with_customer_growth_exposure_is_demand_counterevidence() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "DELL",
+            "section": "Item 1A. Risk Factors",
+            "object_kind": "claim",
+            "document_text": (
+                "If we do not expand sales to a broader base of customers, "
+                "our ability to maintain growth may be limited."
+            ),
+        },
+        slot_id="counterevidence_and_what_would_change",
+        facet_id="issuer_counterevidence",
+        subject_ticker="DELL",
+        evidence_owner_ticker="DELL",
+        relationship_direction="subject_self_disclosure",
+    )
+
+    assert result.compatibility == "compatible"
+    assert "demand_risk_or_counterevidence" in result.labels
+
+
+def test_subject_disclosed_binding_customer_agreement_has_relationship_role() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "MU",
+            "section": "Item 2. Management's Discussion and Analysis",
+            "object_kind": "claim",
+            "document_text": (
+                "These customer agreements include binding commitments for "
+                "specific volumes over the multi-year contract terms."
+            ),
+        },
+        slot_id="relationship_attribution",
+        facet_id="subject_relationship_disclosure",
+        subject_ticker="MU",
+        evidence_owner_ticker="MU",
+        relationship_direction="subject_self_disclosure",
+    )
+
+    assert result.compatibility == "compatible"
+    assert "relationship_context" in result.labels
+
+
+def test_supply_and_demand_risk_can_answer_downstream_counterevidence() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "NVDA",
+            "section": "Item 1A. Risk Factors",
+            "object_kind": "claim",
+            "document_text": (
+                "Managing our supply and demand may create volatility in revenue."
+            ),
+        },
+        slot_id="demand_volume_quality",
+        facet_id="downstream_demand_context",
+        subject_ticker="MU",
+        evidence_owner_ticker="NVDA",
+        relationship_direction="downstream_customer_disclosure",
+    )
+
+    assert result.compatibility == "compatible"
+    assert "demand_risk_or_counterevidence" in result.labels
+
+
+def test_safe_harbor_boilerplate_overrides_keyword_role_hits() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "NVDA",
+            "section": "Exhibit 99.1 Earnings Release",
+            "document_text": (
+                "Certain statements in this press release including, but not limited "
+                "to, statements as to: AI factory demand, supply, growth and capacity."
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="operating_performance",
+        facet_id="downstream_demand_context",
+        subject_ticker="MU",
+        evidence_owner_ticker="NVDA",
+        relationship_direction="downstream_customer_disclosure",
+    )
+    assert "generic_or_boilerplate" in result.labels
+    assert result.compatibility == "incompatible"
+
+
+def test_anaphoric_change_fragment_requires_parent_context() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "NVDA",
+            "section": "Management's Discussion and Analysis",
+            "document_text": (
+                "The year over year increase was primarily driven by a higher mix "
+                "of Data Center revenue."
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="operating_performance",
+        facet_id="reported_results",
+        subject_ticker="NVDA",
+    )
+    assert "context_dependent_fragment_requires_parent" in result.reason_codes
+    assert result.compatibility == "incompatible"

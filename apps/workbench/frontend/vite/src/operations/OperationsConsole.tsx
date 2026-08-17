@@ -20,6 +20,7 @@ import {
   ComplexDocumentQuality,
   EvalCatalogItem,
   OperationsApiClient,
+  RetrievalQuality,
   RunJob,
   SourceIntakeAttempt,
   SourceIntakeRoute,
@@ -39,6 +40,7 @@ type Snapshot = {
   sourceRoutes: SourceIntakeRoute[];
   sourceAttempts: SourceIntakeAttempt[];
   complexDocumentQuality: ComplexDocumentQuality;
+  retrievalQuality: RetrievalQuality;
 };
 
 type ViewState =
@@ -55,9 +57,9 @@ export function OperationsConsole() {
 
   const refresh = useCallback(() => {
     setState({ kind: "loading" });
-    Promise.all([api.status(), api.profiles(), api.sourceBundles(), api.runs(), api.evals(), api.sourceIntakeRoutes(), api.sourceIntakeAttempts(), api.complexDocumentQuality()])
-      .then(([status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality]) => {
-        setState({ kind: "ready", snapshot: { status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality } });
+    Promise.all([api.status(), api.profiles(), api.sourceBundles(), api.runs(), api.evals(), api.sourceIntakeRoutes(), api.sourceIntakeAttempts(), api.complexDocumentQuality(), api.retrievalQuality()])
+      .then(([status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality, retrievalQuality]) => {
+        setState({ kind: "ready", snapshot: { status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality, retrievalQuality } });
       })
       .catch((error: Error) => setState({ kind: "error", message: error.message }));
   }, []);
@@ -158,6 +160,7 @@ function OperationsSnapshot({ snapshot, action, onCancel, onUploadSource, onAuto
       </section>
 
       <ComplexDocumentQualityPanel value={snapshot.complexDocumentQuality} />
+      <RetrievalQualityPanel value={snapshot.retrievalQuality} />
 
       <section className="operations-console__columns">
         <article className="operations-console__panel is-wide">
@@ -232,6 +235,47 @@ function ComplexDocumentQualityPanel({ value }: { value: ComplexDocumentQuality 
       <div className="operations-console__document-meta">
         <span>选页 {value.source.selected_page_numbers.join(" / ")}</span>
         <span>OCR mutation {value.document_quality.forced_ocr_pages.join(" / ")}</span>
+        <code>{value.result_digest.slice(0, 12)}…{value.result_digest.slice(-8)}</code>
+      </div>
+    </section>
+  );
+}
+
+function RetrievalQualityPanel({ value }: { value: RetrievalQuality }) {
+  const summary = value.summary;
+  const stage = summary.vs3_vertical_slice_integrated ? "纵切已集成" : "门禁未通过";
+  return (
+    <section className="operations-console__panel operations-console__document-quality">
+      <div className="operations-console__panel-title">
+        <h2><FileSearch size={18} />检索与金融排序纵切</h2>
+        <span>VS3 · 开发资格，不是 S1 发布资格</span>
+      </div>
+      <div className="operations-console__document-summary">
+        <div>
+          <p>有限候选池</p>
+          <strong>{summary.combined_union_positive_atom_count} / {summary.positive_atom_count}</strong>
+          <small>已知正例进入候选池；完整 CandidateDecision 仍保留</small>
+        </div>
+        <div>
+          <p>金融审阅前十</p>
+          <strong>{summary.financial_shortlist_positive_top10_count} / {summary.positive_atom_count}</strong>
+          <small>确认 hard negative：{summary.financial_shortlist_hard_negative_top10_count}</small>
+        </div>
+        <div>
+          <p>跨纵切回归</p>
+          <strong>VS1 {summary.vs1_reviewed_objects_in_candidate_pool} / VS2 {summary.vs2_reviewed_objects_in_candidate_pool}</strong>
+          <small>数字原生与复杂文档共同消费同一候选合同</small>
+        </div>
+        <div>
+          <p>阶段结论</p>
+          <strong>{stage}</strong>
+          <small>Candidate ≠ Evidence · NumericFact 权威未授予 · S1 未通过</small>
+        </div>
+      </div>
+      <p className="operations-console__document-finding">{value.business_findings[0] ?? "暂无业务结论"}</p>
+      <div className="operations-console__document-meta">
+        <span>{summary.accepted_object_count} 个已绑定对象</span>
+        <span>{summary.needs_review_candidate_count} 个候选待审，不等于缺口</span>
         <code>{value.result_digest.slice(0, 12)}…{value.result_digest.slice(-8)}</code>
       </div>
     </section>

@@ -88,6 +88,32 @@ export type ComplexDocumentQuality = {
   result_digest: string;
 };
 
+export type RetrievalQuality = {
+  schema_version: string;
+  status: string;
+  slice_id: string;
+  summary: {
+    positive_atom_count: number;
+    combined_union_positive_atom_count: number;
+    financial_shortlist_positive_top10_count: number;
+    financial_shortlist_hard_negative_top10_count: number;
+    vs1_reviewed_objects_in_candidate_pool: number;
+    vs2_reviewed_objects_in_candidate_pool: number;
+    judged_composite_positive_compatible_rate: number;
+    judged_composite_hard_negative_suppression_rate: number;
+    accepted_object_count: number;
+    needs_review_candidate_count: number;
+    all_candidates_have_persistent_decisions: boolean;
+    vs3_vertical_slice_integrated: boolean;
+  };
+  gate_results: Record<string, boolean>;
+  atom_summaries: Array<Record<string, unknown>>;
+  decision: Record<string, unknown>;
+  business_findings: string[];
+  authority: Record<string, unknown>;
+  result_digest: string;
+};
+
 export type SourceIntakeRoute = {
   route_id: string;
   case_key: string;
@@ -155,6 +181,12 @@ export class OperationsApiClient {
   complexDocumentQuality(): Promise<ComplexDocumentQuality> {
     return requestJson<ComplexDocumentQuality>(
       "/api/operations/s1/complex-document-quality",
+    );
+  }
+
+  retrievalQuality(): Promise<RetrievalQuality> {
+    return requestJson<RetrievalQuality>(
+      "/api/operations/s1/retrieval-quality",
     );
   }
 

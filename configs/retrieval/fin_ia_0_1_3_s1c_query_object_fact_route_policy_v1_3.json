@@ -1,0 +1,128 @@
+{
+  "schema_version": "fin_ia_s1c_query_object_fact_route_policy_v1_3",
+  "status": "provider_neutral_successor_policy_no_model_or_evidence_authority",
+  "bound_kernel": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "sha256": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5"
+  },
+  "candidate_routes": [
+    "typed_exact_fact_lookup",
+    "bm25_lexical",
+    "dense_embedding",
+    "learned_sparse",
+    "multi_vector",
+    "typed_relationship_graph"
+  ],
+  "query_families": [
+    {
+      "family_id": "customer_demand_read_through",
+      "facet_ids": ["orders_and_backlog", "conversion_and_durability", "downstream_demand_context"],
+      "allowed_object_forms": ["claim", "metric_row", "bounded_parent_context"],
+      "candidate_routes": ["bm25_lexical", "dense_embedding", "learned_sparse", "multi_vector", "typed_relationship_graph"]
+    },
+    {
+      "family_id": "reported_results",
+      "facet_ids": ["reported_results"],
+      "allowed_object_forms": ["claim", "metric_row", "bounded_parent_context"],
+      "candidate_routes": ["typed_exact_fact_lookup", "bm25_lexical", "dense_embedding", "learned_sparse", "multi_vector"]
+    },
+    {
+      "family_id": "management_guidance",
+      "facet_ids": ["guidance_and_outlook"],
+      "allowed_object_forms": ["claim", "bounded_parent_context"],
+      "candidate_routes": ["bm25_lexical", "dense_embedding", "learned_sparse", "multi_vector"]
+    },
+    {
+      "family_id": "pricing_and_value_capture",
+      "facet_ids": ["pricing_and_mix", "margin_and_incremental_profit"],
+      "allowed_object_forms": ["claim", "metric_row", "bounded_parent_context"],
+      "candidate_routes": ["typed_exact_fact_lookup", "bm25_lexical", "dense_embedding", "learned_sparse", "multi_vector"]
+    },
+    {
+      "family_id": "cash_conversion",
+      "facet_ids": ["cash_generation", "working_capital_risk"],
+      "allowed_object_forms": ["claim", "metric_row", "bounded_parent_context"],
+      "candidate_routes": ["typed_exact_fact_lookup", "bm25_lexical", "dense_embedding", "learned_sparse", "multi_vector"]
+    },
+    {
+      "family_id": "supply_capacity_execution",
+      "facet_ids": ["subject_execution", "upstream_capacity_context"],
+      "allowed_object_forms": ["claim", "metric_row", "bounded_parent_context"],
+      "candidate_routes": ["bm25_lexical", "dense_embedding", "learned_sparse", "multi_vector", "typed_relationship_graph"]
+    },
+    {
+      "family_id": "relationship_attribution",
+      "facet_ids": ["subject_relationship_disclosure", "counterparty_direct_mention"],
+      "allowed_object_forms": ["claim", "bounded_parent_context"],
+      "candidate_routes": ["bm25_lexical", "dense_embedding", "learned_sparse", "multi_vector", "typed_relationship_graph"]
+    },
+    {
+      "family_id": "counterevidence_and_risk",
+      "facet_ids": ["issuer_counterevidence", "upstream_or_demand_counterevidence"],
+      "allowed_object_forms": ["claim", "bounded_parent_context"],
+      "candidate_routes": ["bm25_lexical", "dense_embedding", "learned_sparse", "multi_vector", "typed_relationship_graph"]
+    },
+    {
+      "family_id": "regulatory_exposure",
+      "facet_ids": ["issuer_policy_exposure"],
+      "allowed_object_forms": ["claim", "bounded_parent_context"],
+      "candidate_routes": ["bm25_lexical", "dense_embedding", "learned_sparse", "multi_vector"]
+    },
+    {
+      "family_id": "capital_allocation",
+      "facet_ids": ["capital_allocation"],
+      "allowed_object_forms": ["claim", "metric_row", "bounded_parent_context"],
+      "candidate_routes": ["typed_exact_fact_lookup", "bm25_lexical", "dense_embedding", "learned_sparse", "multi_vector"]
+    },
+    {
+      "family_id": "valuation",
+      "facet_ids": ["point_in_time_valuation"],
+      "allowed_object_forms": ["metric_row", "bounded_parent_context"],
+      "candidate_routes": ["typed_exact_fact_lookup", "bm25_lexical"]
+    }
+  ],
+  "metric_routes": [
+    {"metric_id": "revenue", "aliases": ["revenue", "net revenue", "sales"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["reported_results", "pricing_and_value_capture"], "formula": null},
+    {"metric_id": "gross_profit", "aliases": ["gross profit"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["reported_results", "pricing_and_value_capture"], "formula": null},
+    {"metric_id": "gross_margin", "aliases": ["gross margin", "gross profit percentage"], "authority_domain": "standardized_or_issuer_reported_ratio", "storage_route": "company_financial_fact_mart", "unit_family": "percentage", "allowed_query_families": ["reported_results", "pricing_and_value_capture", "management_guidance"], "formula": "gross_profit / revenue"},
+    {"metric_id": "operating_income", "aliases": ["operating income", "income from operations"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["reported_results", "pricing_and_value_capture"], "formula": null},
+    {"metric_id": "operating_margin", "aliases": ["operating margin"], "authority_domain": "standardized_or_issuer_reported_ratio", "storage_route": "company_financial_fact_mart", "unit_family": "percentage", "allowed_query_families": ["reported_results", "pricing_and_value_capture", "management_guidance"], "formula": "operating_income / revenue"},
+    {"metric_id": "net_income", "aliases": ["net income", "net earnings"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["reported_results"], "formula": null},
+    {"metric_id": "diluted_eps", "aliases": ["diluted eps", "diluted earnings per share"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency_per_share", "allowed_query_families": ["reported_results", "valuation"], "formula": null},
+    {"metric_id": "operating_cash_flow", "aliases": ["operating cash flow", "cash flow from operations", "net cash provided by operating activities"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["cash_conversion"], "formula": null},
+    {"metric_id": "capital_expenditures", "aliases": ["capital expenditures", "capex", "purchases of property plant and equipment"], "authority_domain": "standardized_or_policy_mapped_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["cash_conversion", "supply_capacity_execution"], "formula": null},
+    {"metric_id": "free_cash_flow", "aliases": ["free cash flow"], "authority_domain": "deterministic_formula", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["cash_conversion"], "formula": "operating_cash_flow - capital_expenditures"},
+    {"metric_id": "inventory", "aliases": ["inventory", "inventories"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["cash_conversion", "counterevidence_and_risk"], "formula": null},
+    {"metric_id": "accounts_receivable", "aliases": ["accounts receivable", "receivables"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["cash_conversion"], "formula": null},
+    {"metric_id": "accounts_payable", "aliases": ["accounts payable", "payables"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["cash_conversion"], "formula": null},
+    {"metric_id": "cash_and_equivalents", "aliases": ["cash and cash equivalents", "cash balance"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["cash_conversion", "capital_allocation"], "formula": null},
+    {"metric_id": "total_debt", "aliases": ["total debt", "long-term debt", "net debt"], "authority_domain": "standardized_or_deterministic_formula", "storage_route": "company_financial_fact_mart", "unit_family": "currency", "allowed_query_families": ["capital_allocation", "valuation"], "formula": null},
+    {"metric_id": "shares_outstanding", "aliases": ["shares outstanding", "diluted shares"], "authority_domain": "standardized_financial_statement", "storage_route": "company_financial_fact_mart", "unit_family": "shares", "allowed_query_families": ["capital_allocation", "valuation"], "formula": null},
+    {"metric_id": "market_price", "aliases": ["market price", "share price", "stock price"], "authority_domain": "point_in_time_market", "storage_route": "market_snapshot_fact_mart", "unit_family": "currency_per_share", "allowed_query_families": ["valuation"], "formula": null},
+    {"metric_id": "orders", "aliases": ["orders", "order growth"], "authority_domain": "issuer_reported_operating_metric", "storage_route": "company_financial_fact_mart", "unit_family": "issuer_reported", "allowed_query_families": ["customer_demand_read_through"], "formula": null},
+    {"metric_id": "backlog", "aliases": ["backlog", "remaining performance obligations"], "authority_domain": "issuer_reported_operating_metric", "storage_route": "company_financial_fact_mart", "unit_family": "issuer_reported", "allowed_query_families": ["customer_demand_read_through"], "formula": null},
+    {"metric_id": "shipments", "aliases": ["shipments", "units shipped"], "authority_domain": "issuer_reported_operating_metric", "storage_route": "company_financial_fact_mart", "unit_family": "issuer_reported", "allowed_query_families": ["customer_demand_read_through", "supply_capacity_execution"], "formula": null},
+    {"metric_id": "capacity", "aliases": ["capacity", "production capacity"], "authority_domain": "issuer_reported_operating_metric", "storage_route": "company_financial_fact_mart", "unit_family": "issuer_reported", "allowed_query_families": ["supply_capacity_execution"], "formula": null},
+    {"metric_id": "yield", "aliases": ["yield", "manufacturing yield"], "authority_domain": "issuer_reported_operating_metric", "storage_route": "company_financial_fact_mart", "unit_family": "percentage_or_issuer_reported", "allowed_query_families": ["supply_capacity_execution"], "formula": null},
+    {"metric_id": "customer_count", "aliases": ["customer count", "customers"], "authority_domain": "issuer_reported_operating_metric", "storage_route": "company_financial_fact_mart", "unit_family": "count", "allowed_query_families": ["customer_demand_read_through", "relationship_attribution"], "formula": null},
+    {"metric_id": "average_selling_price", "aliases": ["average selling price", "asp"], "authority_domain": "issuer_reported_operating_metric", "storage_route": "company_financial_fact_mart", "unit_family": "currency_per_unit_or_index", "allowed_query_families": ["pricing_and_value_capture"], "formula": null}
+  ],
+  "object_compiler": {
+    "claim_min_characters": 80,
+    "claim_max_characters": 1200,
+    "max_claims_per_source_record": 12,
+    "max_metric_rows_per_table": 64,
+    "max_model_text_characters": 2400,
+    "table_projection_fields": ["table_title", "header_lines", "period_hints", "unit_hints", "metric_row_label", "metric_row_cells", "parent_section"],
+    "numeric_authority": false
+  },
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "fact_request_is_not_numeric_fact": true,
+    "table_row_is_not_numeric_authority": true,
+    "embedding_or_reranker_grants_authority": false,
+    "typed_fact_executor_required_for_numeric_authority": true,
+    "model_or_training_calls_authorized": false
+  }
+}
+

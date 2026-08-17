@@ -1,0 +1,20 @@
+{
+  "schema_version": "fin_ia_s1_object_compiler_policy_overlay_v1_0",
+  "status": "provider_neutral_wrapped_line_claim_segmentation_successor",
+  "base_policy": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_2.json",
+    "sha256": "887dfd79016fe0327e43703eadb10d2967b9e6160c7a23ca43a0976eb6008306"
+  },
+  "object_compiler_overrides": {
+    "claim_segmentation_mode": "sentence_with_wrapped_line_reflow_v1",
+    "claim_overflow_policy": "emit_typed_diagnostic_and_fail_qualification",
+    "max_claims_per_source_record": 96
+  },
+  "authority": {
+    "source_offsets_remain_authoritative": true,
+    "model_text_is_whitespace_normalized_projection": true,
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "overflow_must_not_be_silent": true
+  }
+}

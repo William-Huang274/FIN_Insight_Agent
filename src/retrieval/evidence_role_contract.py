@@ -8,7 +8,7 @@ from .query_plan import canonical_digest
 from .temporal import reporting_temporal_projection
 
 
-EVIDENCE_OBJECT_VIEW_SCHEMA_VERSION = "fin_ia_evidence_object_view_v1_1"
+EVIDENCE_OBJECT_VIEW_SCHEMA_VERSION = "fin_ia_evidence_object_view_v1_2"
 EVIDENCE_OBJECT_ANNOTATION_SCHEMA_VERSION = (
     "fin_ia_evidence_object_annotation_v1_0"
 )
@@ -54,7 +54,14 @@ BACKGROUND_STATES = frozenset(
 )
 RELEVANCE_JUDGEMENTS = frozenset({"positive", "hard_negative", "unjudged"})
 FOCUS_BINDING_MODES = frozenset(
-    {"exact_text", "bounded_text", "balanced_table", "full_source_segment", "parent_context"}
+    {
+        "exact_text",
+        "offset_bound_text",
+        "bounded_text",
+        "balanced_table",
+        "full_source_segment",
+        "parent_context",
+    }
 )
 
 _ANNOTATION_ONLY_KEYS = frozenset(
@@ -119,6 +126,25 @@ def _surface_from_locator(
         _require(surface and raw_text.count(surface) == 1, "evidence_object_exact_text_not_unique")
         start = raw_text.index(surface)
         binding = {"mode": mode, "char_start": start, "char_end": start + len(surface)}
+    elif mode == "offset_bound_text":
+        start = locator.get("char_start")
+        end = locator.get("char_end")
+        _require(
+            isinstance(start, int)
+            and not isinstance(start, bool)
+            and isinstance(end, int)
+            and not isinstance(end, bool)
+            and 0 <= start < end <= len(raw_text),
+            "evidence_object_offset_bounds_invalid",
+        )
+        surface = raw_text[start:end]
+        expected_digest = str(locator.get("surface_digest") or "")
+        _require(
+            len(expected_digest) == 64
+            and canonical_digest(surface) == expected_digest,
+            "evidence_object_offset_surface_drift",
+        )
+        binding = {"mode": mode, "char_start": start, "char_end": end}
     elif mode == "bounded_text":
         start_text = str(locator.get("start_text") or "")
         end_text = str(locator.get("end_text") or "")
@@ -171,7 +197,10 @@ def _surface_from_locator(
     if object_form == "metric_table":
         _require(mode == "balanced_table", "evidence_object_metric_table_binding_invalid")
     if object_form == "claim":
-        _require(mode in {"exact_text", "bounded_text"}, "evidence_object_claim_binding_invalid")
+        _require(
+            mode in {"exact_text", "offset_bound_text", "bounded_text"},
+            "evidence_object_claim_binding_invalid",
+        )
         _require("[TABLE_START" not in surface, "evidence_object_claim_contains_table")
     if object_form == "parent_context":
         _require(mode == "parent_context", "evidence_object_parent_binding_invalid")

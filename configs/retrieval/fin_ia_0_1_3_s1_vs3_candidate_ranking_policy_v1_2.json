@@ -1,0 +1,54 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_role_surface_and_honest_promotion_successor",
+  "recorded_at": "2026-08-17",
+  "experiment_id": "FIN-0.1.3-S1-VS3-MULTI-NEED-CANDIDATE-RANKING-V1.2",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_0.json",
+  "parent_policy_sha256_lf": "951a91d3cb2c4f492a4d434171d226c084f3c3b4df45db9e38671b0ac37024f2",
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_3.json",
+    "query_atom_eval_sha256_lf": "da75bd15db011bf092952b61149f4279bc1f2499031585fd70485df432f6599d"
+  },
+  "candidate_contract_overrides": {
+    "rank_authority_object_kinds": [
+      "claim",
+      "metric_row"
+    ],
+    "bounded_parent_context_attached_only_after_child_selection": true,
+    "typed_metric_row_exact_route": true,
+    "metric_row_exact_route_uses_request_metric_intent_only": true,
+    "metric_row_exact_route_prefers_direct_label_match_then_latest_eligible_publication": true,
+    "metric_row_role_surface_excludes_identity_and_table_title_metadata": true,
+    "judged_role_metrics_cover_all_registered_positive_and_hard_negative_labels": true,
+    "candidate_pool_role_metrics_reported_separately": true
+  },
+  "authority_overrides": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_requires_result": true,
+    "hidden_qualification_authorized": false,
+    "s1_complete_claimed": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false
+  },
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "The v1.1 Evidence Role diagnostic falsely inferred supply evidence from the word manufacturing in TSMC issuer metadata rather than from the metric-row payload.",
+      "The v1.1 fine-tuning eligibility count included unjudged runtime candidates instead of reviewed positive and hard-negative relations.",
+      "The v1.1 result treated object identity mapping as VS1 retrieval proof and omitted the separate VS2 and head-quality gates, so its runtime promotion field was not authoritative.",
+      "VS1 and VS2 have now been replayed under the same runtime and must be combined by a separate disposition gate."
+    ],
+    "not_changed": [
+      "compiled object population",
+      "kernel and hard identity-period-source constraints",
+      "retrieval need text",
+      "local model identities and token budgets",
+      "candidate ceilings",
+      "development qrel labels"
+    ],
+    "labels_joined_after_candidate_generation": true,
+    "no_gold_identity_or_answer_url_in_query": true,
+    "failed_v1_0_and_v1_1_results_remain_immutable": true
+  }
+}

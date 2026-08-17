@@ -119,6 +119,7 @@ def candidate_financial_features(
             "source_type": base.get("source_type"),
             "object_kind": object_kind,
             "document_text": text,
+            "structured_projection": row.get("structured_projection"),
         },
         slot_id=lane.slot_id,
         facet_id=lane.facet_id,

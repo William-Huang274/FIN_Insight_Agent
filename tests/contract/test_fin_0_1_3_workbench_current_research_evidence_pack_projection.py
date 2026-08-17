@@ -344,7 +344,7 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R16"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R17"
     )
     assert set(registry.by_id()) == {
         "application.config.current_financial_research_kernel",
@@ -360,9 +360,11 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
             "application.result.current_research_retrieval_snapshot",
             "application.result.current_s1_vs1_vertical_slice",
             "application.result.current_s1_vs2_complex_pdf_vertical",
+            "application.result.current_s1_vs3_retrieval_vertical",
             "application.result.current_s1c_ranking_comparison_projection",
     }
     assert registry.detector_python_refs == (
+        "apps/workbench/backend/api/operations.py",
         "apps/workbench/backend/application/research_evidence_pack_service.py",
         "apps/workbench/backend/application/research_retrieval_service.py",
         "apps/workbench/backend/application/research_workspace_service.py",

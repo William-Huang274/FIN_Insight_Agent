@@ -1,0 +1,142 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_0",
+  "status": "pre_registered_local_model_shadow_with_product_vertical_replay",
+  "recorded_at": "2026-08-17",
+  "experiment_id": "FIN-0.1.3-S1-VS3-MULTI-NEED-CANDIDATE-RANKING-V1.0",
+  "bound_inputs": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_2.json",
+    "query_atom_eval_sha256_lf": "944ed42c294c936afa272be13efc6f9275202962c6d3f7f6cce38fee3ede8207",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "kernel_sha256_lf": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json",
+    "route_policy_sha256_lf": "6404fdd9035b0c3428b73ddde125c57b8328e7862a35d4566bca9739cf99365a",
+    "retrieval_need_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_retrieval_need_compiler_policy_v1_0.json",
+    "retrieval_need_policy_sha256_lf": "012656974c61b08ace65219e6c78f49892a679e5cea29f8bf0a512766e16005b",
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "compiled_objects_sha256": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "vs1_result_ref": "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
+    "vs1_result_sha256_lf": "1f29b58b5b51a39c5a5eb5a7bd5892c47fe71830d1da97d587a0b34b2e646861",
+    "reviewed_claim_anchor_catalog_ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json",
+    "reviewed_claim_anchor_catalog_sha256_lf": "e68123e8fb29f81aa700a98db6ee24943f98fb862f66628ee45483981fc9c4a8",
+    "vs2_result_ref": "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+    "vs2_result_sha256_lf": "fce09702cab81a6f2922fb996bee17ec3201bd03a9bd86edffd3c2d66090d57a",
+    "vs2_evaluator_ref": "eval_sets/fin_0_1_3_s1/references/train_internal/vs2_complex_pdf_references_v1_0.jsonl",
+    "vs2_evaluator_sha256_lf": "56abb32dc92b05ed4393c31b29598435033b7fa1d11a5d3598a48746aebfd95f",
+    "bge_embedding_model_digest": "d6d4a7fc2980e5bde67c1cd013ef87d1a8709464ba982d61a28653070e440cd5",
+    "qwen_embedding_model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+    "bge_reranker_model_digest": "80b469d6bddb1e240987d002aae27658be43f83ec3dbbe3ee94ecb4b9301b994",
+    "qwen_reranker_model_digest": "9fa9d067824c3aae0aeee7a773cbb42fac95a06c981ab72e075294bb10845ad2"
+  },
+  "models": {
+    "bge_embedding": {
+      "model_id": "BAAI/bge-m3",
+      "local_directory": "D:/hf_models/BAAI__bge-m3",
+      "maximum_sequence_length": 512,
+      "batch_size": 4
+    },
+    "qwen_embedding": {
+      "model_id": "Qwen/Qwen3-Embedding-0.6B",
+      "local_directory": "D:/hf_models/Qwen__Qwen3-Embedding-0.6B",
+      "maximum_sequence_length": 512,
+      "batch_size": 8,
+      "query_instruction": "Given an identity-, period- and source-bound financial retrieval need, retrieve a passage that directly serves the stated evidence role. Related background is not direct evidence."
+    },
+    "bge_reranker": {
+      "model_id": "BAAI/bge-reranker-v2-m3",
+      "local_directory": "D:/hf_models/modelscope_BAAI__bge-reranker-v2-m3",
+      "maximum_sequence_length": 1024,
+      "batch_size": 2
+    },
+    "qwen_reranker": {
+      "model_id": "Qwen/Qwen3-Reranker-0.6B",
+      "local_directory": "D:/hf_models/Qwen__Qwen3-Reranker-0.6B",
+      "maximum_sequence_length": 1024,
+      "batch_size": 2,
+      "instruction": "Rank source-bound financial candidates by direct answerability, correct evidence role, fact state, issuer, period and relationship direction. Abstain from promoting merely related background."
+    }
+  },
+  "candidate_contract": {
+    "first_stage_per_need_limit": 24,
+    "atom_candidate_union_limit": 128,
+    "multi_vector_pool_limit": 96,
+    "reranker_pool_limit": 96,
+    "top_k": 10,
+    "reciprocal_rank_constant": 60,
+    "labels_joined_after_candidate_generation_and_scoring": true,
+    "same_candidate_pool_for_both_rerankers": true,
+    "parent_context_is_projection_not_rank_authority": true,
+    "graph_is_constraint_route_not_narrative_ranker": true,
+    "sql_numeric_route_owned_by_s2": true,
+    "official_and_external_acquisition_owned_by_vs4": true
+  },
+  "token_budget_basis": {
+    "bge_embedding": {
+      "node_purpose": "Generate dense, learned-sparse and multi-vector candidate signals on the same sentence-level financial object population.",
+      "input_scale": "33085 objects once plus at most 180 bounded retrieval needs; candidate-only, no Evidence promotion.",
+      "required_outputs": ["dense vectors", "learned sparse vectors", "bounded multi-vector scores"],
+      "schema_burden": "numeric arrays and immutable cache manifest only",
+      "materiality_and_quality_risk": "truncation may hide the precise evidence-bearing sentence; 512 tokens covers each compiled object whose renderer is capped at 2400 characters",
+      "comparable_run_evidence": "prior 20340-object BGE cache completed in about 193 seconds; expanded sentence objects increase count by about 63 percent",
+      "reasoning_profile": "local retrieval encoder; no generative reasoning",
+      "stop_and_truncation": "maximum 512 tokens, batch 4, fail on object/cache identity drift, no silent object omission"
+    },
+    "qwen_embedding": {
+      "node_purpose": "Provide an independent semantic challenger using exactly the same objects, needs and hard filters.",
+      "input_scale": "33085 objects once plus at most 180 bounded retrieval needs.",
+      "required_outputs": ["normalized dense vectors", "immutable cache manifest"],
+      "schema_burden": "numeric arrays only",
+      "materiality_and_quality_risk": "a semantic challenger may increase topical noise; it cannot become the default unless it adds reviewed positives without increasing critical false promotion",
+      "comparable_run_evidence": "prior 20340-object Qwen cache completed in about 376 seconds and improved some query-atom recall while remaining unstable at the head",
+      "reasoning_profile": "local retrieval encoder; no generative reasoning",
+      "stop_and_truncation": "maximum 512 tokens, batch 8, fail on model/object identity drift, no network fallback"
+    },
+    "bge_reranker": {
+      "node_purpose": "Reorder at most the shared 96-candidate pool per atom without changing candidate membership.",
+      "input_scale": "at most 1728 query-candidate pairs across 18 atoms plus bounded VS1/VS2 replay pairs.",
+      "required_outputs": ["one finite score per pair", "pair-order invariant ranking"],
+      "schema_burden": "flat score vector",
+      "materiality_and_quality_risk": "semantic similarity can promote wrong evidence roles; Evidence Role remains an independent gate and the reranker has no authority",
+      "comparable_run_evidence": "prior controlled BGE reranker showed insufficient natural-pool quality and remains a shadow challenger",
+      "reasoning_profile": "local cross-encoder scoring",
+      "stop_and_truncation": "maximum 1024 tokens, batch 2, exact score-count match required"
+    },
+    "qwen_reranker": {
+      "node_purpose": "Independent same-pool financial relevance challenger, not a second candidate generator.",
+      "input_scale": "at most 1728 query-candidate pairs across 18 atoms plus bounded VS1/VS2 replay pairs.",
+      "required_outputs": ["one finite score per pair", "same-pool ranked IDs"],
+      "schema_burden": "flat score vector",
+      "materiality_and_quality_risk": "instruction-following may improve role separation but cannot override issuer, period, relationship or Evidence authority",
+      "comparable_run_evidence": "prior Qwen reranker surfaced more positives than BGE on natural pools but did not prove stable hard-negative suppression",
+      "reasoning_profile": "local cross-encoder scoring",
+      "stop_and_truncation": "maximum 1024 tokens, batch 2, exact score-count match required"
+    }
+  },
+  "decision_gates": {
+    "hard_filter_violation_maximum": 0,
+    "positive_target_in_union_minimum_rate": 0.8,
+    "critical_false_promotion_maximum": 0,
+    "head_stability_minimum": 0.9,
+    "minimum_reviewed_relations_before_fine_tuning": 200,
+    "minimum_development_cases_before_fine_tuning": 6,
+    "vs1_reviewed_target_must_remain_recalled": true,
+    "vs2_complex_target_in_pool_minimum": 3
+  },
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_requires_result": true,
+    "hidden_qualification_authorized": false,
+    "s1_complete_claimed": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false
+  },
+  "stop_conditions": [
+    "Do not tune against ORCL, ASML, ANET or any hidden qualification case.",
+    "Do not inject qrel IDs, target object IDs or answer URLs into RetrievalNeed generation.",
+    "Do not call a reranker improvement when its first-stage pool lacked the target.",
+    "Do not convert table or narrative ranking scores into NumericFact authority.",
+    "Do not force a model route into production merely because VS3 was scheduled to choose a winner.",
+    "Do not declare a public-information gap from a retrieval miss before local object, index, tool execution and acquisition eligibility are receipted."
+  ]
+}

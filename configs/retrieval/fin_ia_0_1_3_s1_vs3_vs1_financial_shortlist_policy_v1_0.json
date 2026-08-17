@@ -1,0 +1,31 @@
+{
+  "schema_version": "fin_ia_s1_vs3_financial_shortlist_policy_v1_1",
+  "status": "pre_registered_vs1_final_financial_shortlist_replay",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-VS1-FINANCIAL-SHORTLIST-V1.0",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_financial_shortlist_policy_v1_7.json",
+  "parent_policy_sha256_lf": "a0a54c549b42820b16c0a7b24f3000899c5f8bd9a5bae967839446747a56ab58",
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_vs1_same_runtime_query_atom_eval_v1_0.json",
+    "query_atom_eval_sha256_lf": "0cfe4a0f9908224cd374620b7b3a97e5bbd07e5962de831cdf7b72027526e3fa",
+    "ranking_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_vs1_same_runtime_replay_result_v1_1.json",
+    "ranking_summary_sha256_lf": "c491f3ce48411bb17457033deab443d9a777bd1ceeda5281a5585a466a6799d1"
+  },
+  "successor_basis": {
+    "why_replay_is_required": [
+      "the final three-case shortlist must also recover both reviewed VS1 DELL pricing-and-mix objects under the exact original request",
+      "candidate-pool recall alone is insufficient because VS1 previously placed accepted objects at ranks five and six in one route but outside other heads",
+      "the review head is a priority projection only and cannot grant Evidence authority"
+    ],
+    "not_changed": [
+      "compiled object population and reviewed VS1 target identities",
+      "financial shortlist implementation and final intent ontology",
+      "candidate, Evidence and NumericFact authority boundaries"
+    ],
+    "prohibited": [
+      "target identity lookup before ranking",
+      "per-case scoring branches",
+      "automatic Evidence promotion or S1 completion claim"
+    ]
+  }
+}

@@ -116,7 +116,7 @@ def test_object_view_uses_reported_period_metadata_without_erasing_source_date()
         parent=parent,
     ).as_dict()
 
-    assert view["schema_version"] == "fin_ia_evidence_object_view_v1_1"
+    assert view["schema_version"] == "fin_ia_evidence_object_view_v1_2"
     assert view["period_end"] == "2026-05-01"
     assert view["fiscal_year"] == 2027
     assert "period_end: 2026-05-01" in view["surface_text"]

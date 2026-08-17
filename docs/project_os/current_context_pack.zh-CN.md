@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。DELL R7 已首次物化五个 contract-valid Judgment、跨单元综合和完整内部报告，但内容验收发现 Operating／Counterevidence 把当前 Case 已存在的 AI revenue、orders、backlog 写成缺失，综合又把错误前提升级为 conflict，因此 R7 保持 `report contract pass / financial truth reconciliation fail`。provider-neutral Case Truth 合同已正式零调用通过；随后唯一 15-surface natural R1 在 HTTP 200 完整响应中把 8,000 completion tokens 全部耗作 reasoning，零 content／Tool Call，故语义内容不可评价。该失败不是网络或合同校验，而是“全案语义分析＋大 strict 交卷”仍在同一节点。cell/surface slice＋analysis／non-thinking submission＋本地聚合已经实现并通过 486 个整库测试；正式零调用 R2 因 proof runner 错把 canonical `minItems` 要求施加到兼容 wire projection 而在 0 调用下终止，失败身份已保留，证明逻辑已分责修正，待 clean/synced 后 fresh R3 复证。R7 修复、DELL 内容验收、paired、qualified-human 与异质泛化仍未通过。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。DELL R7 已首次物化五个 contract-valid Judgment、跨单元综合和完整内部报告，但内容验收发现 Operating／Counterevidence 把当前 Case 已存在的 AI revenue、orders、backlog 写成缺失，综合又把错误前提升级为 conflict，因此 R7 保持 `report contract pass / financial truth reconciliation fail`。provider-neutral Case Truth 合同已正式零调用通过；随后唯一 15-surface natural R1 在 HTTP 200 完整响应中把 8,000 completion tokens 全部耗作 reasoning，零 content／Tool Call，故语义内容不可评价。该失败不是网络或合同校验，而是“全案语义分析＋大 strict 交卷”仍在同一节点。cell/surface slice＋analysis／non-thinking submission＋本地聚合已经实现并通过 formal R3：五个 cell、每 cell 三个 surface、父级 `15/15` 覆盖，三条 R7 false absence 保持可检出，真实利润桥 gap 保留，漏片／重片 fail closed。R2 的 canonical／wire proof 断言错误保持失败且未接触 Provider。下一项只允许 Operating／Counterevidence 两个受影响 cell 的四调用 natural semantic successor；R7 修复、DELL 内容验收、paired、qualified-human 与异质泛化仍未通过。
 
 ## 当前唯一产品边界
 
@@ -15,7 +15,7 @@ FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、revi
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。当前对象库也已把这两份法说纳入受控查询路线：Dell 法说可由本案需求、经营、价值捕获和供给单元检索，TSMC 法说只能在绑定关系方向时作为供应链背景，不能冒充 Dell 自述或供应分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；DELL 五单元也已自然执行并首次形成完整内部报告，但该报告因三条 material false absence 和由此产生的 false conflict 未过 L1/L2，未进入产品面。当前 Case Truth 工程门已关闭，模型自然语义映射、修复后的完整报告、八维质量、MU/NVDA／留出案例泛化和 S3 产品验收仍未证明；reviewed Evidence 页面本身的结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。当前对象库也已把这两份法说纳入受控查询路线：Dell 法说可由本案需求、经营、价值捕获和供给单元检索，TSMC 法说只能在绑定关系方向时作为供应链背景，不能冒充 Dell 自述或供应分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；DELL 五单元也已自然执行并首次形成完整内部报告，但该报告因三条 material false absence 和由此产生的 false conflict 未过 L1/L2，未进入产品面。当前 Case Truth 完整权威、按 cell 分片、分析／交卷分离和本地聚合工程门已关闭；模型自然语义映射、修复后的完整报告、八维质量、MU/NVDA／留出案例泛化和 S3 产品验收仍未证明；reviewed Evidence 页面本身的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 
@@ -89,7 +89,7 @@ FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、revi
 
 Owner 已批准从第一层连续推进到 S3 三案例验收；每一层仍需独立工程、L1 与内容门：`FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_ONE → Research Truth Spine → DELL dynamic single cell → DELL five cells → heterogeneous generalization report`
 
-截至 2026-08-17，前三层已关闭；DELL R7 保留为不可变的首份完整但内容未通过报告。RC-S3-038 的确定性 Case Truth 工程门已关闭；15-surface natural R1 因 8k reasoning exhaustion 终止，0 retry。当前只能先做零调用的 claim-document slice＋语义 analysis／non-thinking submission 分离和 receipt 聚合；通过后只对 Operating／Counterevidence 两个受影响 cell 做新 semantic successor canary。Demand、Value、Cash、Planner、S1/S2、五个研究 analysis 和 R7 报告继续按 digest 保留，不因语义节点失败重跑。
+截至 2026-08-17，前三层已关闭；DELL R7 保留为不可变的首份完整但内容未通过报告。RC-S3-038 的确定性 Case Truth 工程门与 RC-S3-039 的 cell slice／分析交卷分离工程门均已由 formal R3 关闭；15-surface natural R1 因 8k reasoning exhaustion 终止，0 retry，R2 proof runner 断言失败也保持不可变。当前只允许 Operating／Counterevidence 两个受影响 cell 做一轮四调用 semantic successor canary；通过后才考虑其余三 cell 与受影响 Judgment／Synthesis。Demand、Value、Cash、Planner、S1/S2、五个研究 analysis 和 R7 报告继续按 digest 保留，不因语义节点失败重跑。
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 

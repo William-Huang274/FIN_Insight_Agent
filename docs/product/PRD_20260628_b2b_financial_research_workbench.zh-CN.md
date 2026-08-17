@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-17 | Case Truth natural R1 证明一次性要求模型读取全案 truth view、分析 15 个 surface 并严格交卷会耗尽推理预算。产品合同据此明确：模型语义分析与严格提交是两个责任节点；按研究单元提供最小 claim slice；Harness 用完整本地权威包做最终校验并聚合 parent-bound receipts。Provider wire schema 兼容投影不得替代 canonical 金融合同或本地 Validator。正式零调用 R3 已证明五单元 `15/15` surface 的完整覆盖与漏项／重复 fail-closed；这仍不等于自然语义质量、R7 修复或产品验收。 |
 | 2026-08-17 | DELL R7 首次以 3 次 successor 调用完整物化五单元 workpaper、synthesis 与内部报告；身份、期间、数值、引用和 AI 产品到公司利润／现金的因果边界通过，但 Operating／Counterevidence 把 Evidence 已披露的 AI server revenue、AI orders／backlog 写成缺失，Synthesis 又将错误缺失升级为 conflict，故结果保持 contract pass／L1-L2 fail。产品合同新增 case-level fact presence、cell-local visibility 与 typed absence 三态；只有 Harness 可从 reviewed catalog＋typed gap 签发全案缺失，综合 conflict premise 必须与全案 truth packet 一致。禁止短语正则和手工改报告；DELL 修复验收前不进入 MU/NVDA 泛化或 Workbench publication。 |
 | 2026-08-16 | 动态 DELL 单单元已自然完成 planner、当前 S1/S2 与三片段 Judgment，但 R3 把不同报告期的公司毛利率关系和服务器组合材料写成“同期”，独立 L1 拒绝。新增 TemporalAuthority：NumericRelation 只授权自身比较，跨 Evidence／NumericRelation 的同期叙事必须绑定 source-bound QualitativeFact 的精确期间端点；无绑定时只能写为明确的历史背景。真实失败保持不通过，零调用证明后最多一次同片段 repair，禁止重跑规划、检索、数值和前序片段。 |
 | 2026-08-16 | 动态单元交卷新增 request-scoped 消费要求：每个研究单元只能使用本轮相关 EvidenceResponse 实际返回的已审 Evidence，不能从案例级 Pack、其他请求或陈旧 GraphContext 借权；thesis 若因证据不足而 abstain，后续机制或反方不得把终态升级。formal v1.2 已证明三片段、终态和 deliverable 在证据不足时仍可完整、安全物化，但因使用 controlled fragments 且 0 模型调用，仍不计自然 Judgment 或 Agentic Research。 |

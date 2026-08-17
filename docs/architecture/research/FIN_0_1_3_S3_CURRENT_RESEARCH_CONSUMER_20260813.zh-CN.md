@@ -477,6 +477,16 @@ Synthesis 输入不扩大为完整 Evidence Pack，而增加一份紧凑的 case
 
 DELL R7 当前完整权威包约 `49.6k` 字符；分组并去重后的模型可见包约 `26.7k`，连同十五个待分类 surface 的消息约 `33.1k`。这个压缩不是放宽金融合同，而是把本地审计状态从模型工作记忆中移出，避免再次形成高密度 Harness 提示词。该尺寸结果只属于工程资格，不证明 DeepSeek 能自然完成语义映射。
 
+15-surface natural R1 随后证明“压缩数据”仍不等于“拆开责任”：同一低思考节点在 HTTP 200 完整响应中把 8,000 completion token 全部用作 reasoning，零可见 content／Tool Call。当前维护合同因此不再把全案语义分析和严格交卷放在同一次调用中：
+
+- 父级 Judgment document 按 cell 编译为 5 个不可变 slice，每个 slice 恰好包含 thesis、mechanism、counterargument／WWC 三个 surface，并绑定父 document digest；
+- analysis 节点只读取完整 compact truth view 与一个 slice，输出可见语义映射草稿，不带 Tool Schema，不得修文或创造事实；
+- non-thinking submission 节点只读取 truth packet digest、该 slice 与已形成的草稿，负责映射成 canonical strict tool；它不再接收完整 truth catalog，也不得重新研究；
+- canonical tool 保留 exact surface count 等完整金融合同；Provider wire projection 只负责可传输兼容性，可能移除服务端不支持的 JSON Schema 关键词；本地 Validator 始终执行穷尽覆盖与跨字段金融约束，三者不得混为一份断言；
+- Harness 只接受互不重叠、完整覆盖父级 15 surface、packet/document digest 均一致的 5 份 receipt。缺一个 slice、重复 surface、未知 alias、跨 Case 或 digest 漂移均 fail closed。
+
+正式零调用 R3 对 R7 完整回放：direct submission user message 为 `33,092` 字符，最大 analysis slice 为 `28,483`，最大 strict submission 为 `3,951`；canonical tool 从 `6,526` 降至最大 `5,213` 字符。五个 slice 覆盖 `15/15` surface，原三条 false absence 仍被检出，真实 product-profit bridge gap 保留，缺失／重复 slice mutation 均拒绝。R2 曾因 proof runner 错把 canonical `minItems` 要求施加到 wire projection 而在 0 调用下失败；该身份保持不可变，R3 证明分责后的结构。上述数字仍只证明工程可执行，不证明自然语义分类、R7 修复或内容验收。
+
 任何把 `present_in_current_case` 写成全案缺失的 cell submission 必须在进入 synthesis 前 fail closed；任何 cross-cell conflict 的 premise 与 fact catalog 冲突，也必须拒绝。实现不得依赖“未披露／not disclosed”等短语正则，因为同义表达、语言切换和合法局部缺失都会使该方案失效。
 
 R7、五个原 Judgment 和综合结果保持不可变。新结构先用 R7 capture replay、DELL／MU／NVDA fake 和异质 holdout mutation 证明；通过后只能以新 authority 重交受影响的 Operating／Counterevidence 与 Synthesis。上游输入或依赖 digest 没有改变时，不得重跑 Planner、S1/S2、Demand、Value、Cash 或五个 analysis。该关闭只解决跨单元事实一致性，不关闭产品利润桥、需求持续性、正式八维、paired、qualified-human、泛化、S3 acceptance 或发布。

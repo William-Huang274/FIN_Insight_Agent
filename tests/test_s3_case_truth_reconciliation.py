@@ -18,6 +18,9 @@ from apps.workbench.backend.application.research_retrieval_service import (
     ResearchRetrievalPrincipal,
 )
 from scripts.research.run_s3_current_research_consumer_zero_call import _services
+from scripts.research.run_s3_case_truth_reconciliation_live import (
+    assess_pre_registered_targets,
+)
 from sec_agent.research.case_truth_reconciliation import (
     CASE_TRUTH_MODEL_VIEW_SCHEMA_VERSION,
     CaseTruthReconciliationError,
@@ -663,3 +666,92 @@ def test_compiler_is_case_generic_and_cross_case_packet_cannot_be_reused() -> No
     }
     with pytest.raises(CaseTruthReconciliationError):
         validate_case_truth_packet(packets["MU"], research_input=mutated_input)
+
+
+def test_live_target_assessment_requires_false_absences_and_real_gap(
+    research_input: dict[str, object],
+    judgment_and_deliverable: tuple[dict[str, object], dict[str, object]],
+) -> None:
+    judgment, _ = judgment_and_deliverable
+    packet = compile_case_truth_packet(research_input)
+    document = compile_cell_judgment_claim_document(judgment)
+    payload = _eligible_reconciliation(packet, document)
+    targets = {
+        "required_surface_count": 15,
+        "required_false_absence_detections": [
+            {
+                "claim_surface_id": "CELL::operating_performance::thesis_atom",
+                "truth_alias": (
+                    "TRUTH::FACET::operating_performance::"
+                    "accelerated_compute_or_ai_infrastructure_revenue"
+                ),
+            },
+            {
+                "claim_surface_id": "CELL::counterevidence::thesis_atom",
+                "truth_alias": "TRUTH::FACET::demand_volume_quality::ai_orders",
+            },
+            {
+                "claim_surface_id": "CELL::counterevidence::thesis_atom",
+                "truth_alias": "TRUTH::FACET::demand_volume_quality::ai_backlog",
+            },
+        ],
+        "required_legitimate_absence": {
+            "claim_surface_id": "CELL::counterevidence::thesis_atom",
+            "truth_alias": "TRUTH::BRIDGE::CR::GENERIC::PROFIT_BRIDGE_GAP",
+        },
+    }
+    _set_assertions(
+        payload,
+        "CELL::operating_performance::thesis_atom",
+        [
+            {
+                "truth_alias": targets["required_false_absence_detections"][0][
+                    "truth_alias"
+                ],
+                "asserted_state": "absent_from_current_case",
+            }
+        ],
+    )
+    _set_assertions(
+        payload,
+        "CELL::counterevidence::thesis_atom",
+        [
+            {
+                "truth_alias": row["truth_alias"],
+                "asserted_state": "absent_from_current_case",
+            }
+            for row in targets["required_false_absence_detections"][1:]
+        ]
+        + [
+            {
+                "truth_alias": targets["required_legitimate_absence"][
+                    "truth_alias"
+                ],
+                "asserted_state": "absent_from_current_case",
+            }
+        ],
+    )
+    receipt = validate_case_truth_reconciliation(
+        payload,
+        case_truth_packet=packet,
+        claim_document=document,
+    )
+    assessment = assess_pre_registered_targets(
+        arguments=payload,
+        receipt=receipt,
+        targets=targets,
+    )
+    assert assessment["automatic_critical_targets_pass"] is True
+
+    payload["surface_assertions"] = [
+        row
+        for row in payload["surface_assertions"]
+        if row["claim_surface_id"]
+        != "CELL::cash_conversion::counterargument_atom"
+    ]
+    assessment = assess_pre_registered_targets(
+        arguments=payload,
+        receipt=receipt,
+        targets=targets,
+    )
+    assert assessment["automatic_critical_targets_pass"] is False

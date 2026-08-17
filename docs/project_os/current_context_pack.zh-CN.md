@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。DELL 五单元 R6 已完成 5 个 analysis 与 5 个 submission，所有 Provider 响应完整，Demand、Operating、Cash、Counterevidence 四单元有效；Value 因旧合同把已选 NumericRelation 的端点、已审 QF 与 Evidence 角色重复交给模型选择而失败，综合未执行。当前零调用结构包已把这些表面统一收敛为 provider-neutral 的依赖权威编译：关系端点和 relation-required reviewed facts 本地绑定、结构化事实支持精确观察、Evidence 角色按 atom 校验；日期／数字自由叙事门禁不放宽，R6 原始 Value 仍稳定失败。两个独立 126-test 进程、全仓 477 tests、active baseline `135／8／11／0`、secret scan `6,829／0` 和 R6 capture replay 已通过，scope decision 已准备；当前唯一下一动作是 clean push、repository-bound preflight 后签发最多 3 次调用的 R7，只重交 Value 并在五单元全部有效后综合。DELL 五单元 L1、八维研报、paired、qualified-human 与异质泛化仍未通过。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。DELL R7 已首次物化五个 contract-valid Judgment、跨单元综合和完整内部报告，但内容验收发现 Operating／Counterevidence 把当前 Case 已存在的 AI revenue、orders、backlog 写成缺失，综合又把错误前提升级为 conflict，因此 R7 保持 `report contract pass / financial truth reconciliation fail`。当前 provider-neutral Case Truth 合同已在 clean/synced `2e56eb22...` 上通过正式零调用证明：R7 三条错误和 false conflict 全部 fail closed，真实 product-profit bridge gap 保留，DELL／MU／NVDA 与异质留出 packet 稳定，完整本地权威包约 `49.6k`、紧凑模型视图约 `26.7k` 字符。全仓 `484 passed`、active baseline `137／8／11／0`；实现门 secret scan=`6,836／0`，补入结果与文档后为 `6,839／0`。自然语义映射、R7 修复、DELL 内容验收、paired、qualified-human 与异质泛化仍未通过；当前唯一下一动作是一条低思考、零修文的 R7 semantic reconciliation canary。
 
 ## 当前唯一产品边界
 
@@ -15,7 +15,7 @@ FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、revi
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。当前对象库也已把这两份法说纳入受控查询路线：Dell 法说可由本案需求、经营、价值捕获和供给单元检索，TSMC 法说只能在绑定关系方向时作为供应链背景，不能冒充 Dell 自述或供应分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；五个单元的方法包与本案图上下文也已通过正式零调用资格化。当前仍未证明的是五单元自然判断、跨单元综合、完整八维研报质量、MU/NVDA／留出案例泛化和 S3 产品验收；reviewed Evidence 页面本身的结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。当前对象库也已把这两份法说纳入受控查询路线：Dell 法说可由本案需求、经营、价值捕获和供给单元检索，TSMC 法说只能在绑定关系方向时作为供应链背景，不能冒充 Dell 自述或供应分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；DELL 五单元也已自然执行并首次形成完整内部报告，但该报告因三条 material false absence 和由此产生的 false conflict 未过 L1/L2，未进入产品面。当前 Case Truth 工程门已关闭，模型自然语义映射、修复后的完整报告、八维质量、MU/NVDA／留出案例泛化和 S3 产品验收仍未证明；reviewed Evidence 页面本身的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 
@@ -89,7 +89,7 @@ FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、revi
 
 Owner 已批准从第一层连续推进到 S3 三案例验收；每一层仍需独立工程、L1 与内容门：`FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_ONE → Research Truth Spine → DELL dynamic single cell → DELL five cells → heterogeneous generalization report`
 
-截至 2026-08-17，前三层已关闭；DELL five-cell R6 保留为不可变失败证据。依赖权威编译、真实 capture replay、四个有效单元复用、一次 typed Value repair 与五单元 fake synthesis 已完成工程闭环；全仓、活动图和 secret scan 复证也已通过。当前只能先完成 clean push 和 repository-bound Project OS preflight，再签发一个 fresh R7：复用 R6 Planner、S1/S2、四个有效 Judgment 与 Value analysis，只允许 Value submission、synthesis analysis、synthesis submission三次调用，0 retry。零调用与 fake 结果不授予模型权限，也不发布到 Workbench；R7 若形成报告，仍须经过金融 L1、八维质量、paired comparison 和 qualified-human review。
+截至 2026-08-17，前三层已关闭；DELL R7 保留为不可变的首份完整但内容未通过报告。RC-S3-038 的全案事实 presence、cell visibility、typed absence、语义 reconciliation 和综合／报告 fail-closed 门已完成正式零调用证明。当前只允许一条低思考 semantic reconciliation canary：读取 R7 不可变 claim surfaces 和紧凑 Case Truth 视图，穷尽映射事实状态，不修文、不生成报告、0 retry。只有模型自然识别三条 false absence、保留真实利润桥 gap 且不漏 material surface，才考虑只重交 Operating、Counterevidence 和 Synthesis；Demand、Value、Cash、Planner、S1/S2 和五个 analysis 继续按 digest 复用。
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 

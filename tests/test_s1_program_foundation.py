@@ -20,6 +20,7 @@ from retrieval.evaluation_assets import (
     EvaluationInput,
     EvaluationProgramManifest,
     EvaluationReference,
+    QualificationPreRegistration,
     load_evaluation_program_manifest,
     validate_evaluation_program,
 )
@@ -35,6 +36,9 @@ MATRIX = (
     / "configs/retrieval/fin_ia_0_1_3_s1_implementation_coverage_matrix_v1_0.json"
 )
 PROGRAM = ROOT / "eval_sets/fin_0_1_3_s1/program_manifest_v1_0.json"
+PREREGISTRATION = (
+    ROOT / "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json"
+)
 
 
 def test_canonical_spine_policy_and_coverage_matrix_are_complete() -> None:
@@ -193,6 +197,7 @@ def test_eval_program_keeps_inputs_and_labels_physically_separate() -> None:
         "active_catalog_count": 2,
         "reserved_catalog_count": 3,
         "example_count": 9,
+        "qualification_preregistered_case_count": 6,
         "qualification_ready": False,
     }
     train = next(row for row in manifest.catalogs if row.split == "train_internal")
@@ -222,6 +227,26 @@ def test_runtime_visible_eval_input_rejects_embedded_gold() -> None:
         EvaluationInput.model_validate(valid)
 
 
+def test_vs5_preregistration_is_unseen_split_complete_and_cuda_only() -> None:
+    value = QualificationPreRegistration.model_validate_json(
+        PREREGISTRATION.read_text(encoding="utf-8")
+    )
+
+    assert {row.split for row in value.cases} == {
+        "valid_temporal",
+        "test_frozen",
+        "holdout_heterogeneous",
+    }
+    assert not (set(value.observed_case_keys) & {row.case_key for row in value.cases})
+    assert value.execution_policy.learned_vector_device_required == "cuda"
+    assert value.execution_policy.learned_vector_precision == "fp16"
+    assert value.execution_policy.cpu_vector_fallback_allowed is False
+    assert value.execution_policy.test_frozen_max_executions == 1
+    assert value.execution_policy.holdout_heterogeneous_max_executions == 1
+    assert value.metric_contract.natural_scanned_official_source_required is True
+    assert value.metric_contract.averages_cannot_compensate_hard_gates is True
+
+
 def test_checked_in_json_schemas_match_current_models() -> None:
     expected = {
         "artifact_envelope.schema.json": __import__(
@@ -231,6 +256,9 @@ def test_checked_in_json_schemas_match_current_models() -> None:
         "evaluation_reference.schema.json": EvaluationReference.model_json_schema(),
         "evaluation_program_manifest.schema.json": (
             EvaluationProgramManifest.model_json_schema()
+        ),
+        "qualification_preregistration.schema.json": (
+            QualificationPreRegistration.model_json_schema()
         ),
     }
     schema_root = ROOT / "eval_sets/fin_0_1_3_s1/schemas"

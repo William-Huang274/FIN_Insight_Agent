@@ -22,6 +22,7 @@ from retrieval.evaluation_assets import (  # noqa: E402
     EvaluationInput,
     EvaluationProgramManifest,
     EvaluationReference,
+    QualificationPreRegistration,
     load_evaluation_program_manifest,
     validate_evaluation_program,
 )
@@ -39,6 +40,7 @@ SCHEMA_REFS = {
     "evaluation_input.schema.json": EvaluationInput,
     "evaluation_reference.schema.json": EvaluationReference,
     "evaluation_program_manifest.schema.json": EvaluationProgramManifest,
+    "qualification_preregistration.schema.json": QualificationPreRegistration,
 }
 
 

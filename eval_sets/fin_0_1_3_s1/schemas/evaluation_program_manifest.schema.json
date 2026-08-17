@@ -13,7 +13,8 @@
             "evaluator_reference",
             "legacy_development_asset",
             "source_fixture",
-            "schema"
+            "schema",
+            "qualification_preregistration"
           ],
           "title": "Role",
           "type": "string"
@@ -199,6 +200,9 @@
       "title": "Program Version",
       "type": "string"
     },
+    "qualification_preregistration": {
+      "$ref": "#/$defs/EvaluationAssetRef"
+    },
     "recorded_at": {
       "title": "Recorded At",
       "type": "string"
@@ -236,6 +240,7 @@
     "recorded_at",
     "policies",
     "schemas",
+    "qualification_preregistration",
     "split_policies",
     "catalogs",
     "legacy_development_assets",

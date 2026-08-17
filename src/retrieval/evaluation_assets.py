@@ -56,6 +56,7 @@ class EvaluationAssetRef(_FrozenModel):
         "legacy_development_asset",
         "source_fixture",
         "schema",
+        "qualification_preregistration",
     ]
     visibility: Literal["runtime_visible", "evaluator_only", "governance_only"]
 
@@ -192,6 +193,7 @@ class EvaluationProgramManifest(_FrozenModel):
     recorded_at: str
     policies: Mapping[str, bool]
     schemas: tuple[EvaluationAssetRef, ...]
+    qualification_preregistration: EvaluationAssetRef
     split_policies: tuple[SplitPolicy, ...]
     catalogs: tuple[EvaluationCatalog, ...]
     legacy_development_assets: tuple[EvaluationAssetRef, ...]
@@ -231,11 +233,193 @@ class EvaluationProgramManifest(_FrozenModel):
             self.policies[key] for key in required
         ):
             raise ValueError("evaluation_program_policy_invalid")
+        if not (
+            self.qualification_preregistration.role
+            == "qualification_preregistration"
+            and self.qualification_preregistration.visibility == "governance_only"
+        ):
+            raise ValueError("evaluation_qualification_preregistration_ref_invalid")
+        return self
+
+
+class QualificationBoundRef(_FrozenModel):
+    ref: str
+    sha256: str
+    purpose: str = Field(min_length=1)
+
+    @field_validator("ref")
+    @classmethod
+    def validate_ref(cls, value: str) -> str:
+        normalized = value.strip().replace("\\", "/")
+        if not normalized or normalized.startswith("/") or ".." in Path(normalized).parts:
+            raise ValueError("qualification_bound_ref_invalid")
+        return normalized
+
+    @field_validator("sha256")
+    @classmethod
+    def validate_digest(cls, value: str) -> str:
+        if len(value) != 64 or any(ch not in "0123456789abcdef" for ch in value):
+            raise ValueError("qualification_bound_digest_invalid")
+        return value
+
+
+class QualificationSourceTarget(_FrozenModel):
+    target_id: str = Field(min_length=1)
+    route_family: Literal["sec_filing", "official_ir_pdf"]
+    form_type: str = Field(min_length=1)
+    fiscal_year: int = Field(ge=2000, le=2100)
+    period_label: str = Field(min_length=1)
+    source_format: Literal[
+        "sec_inline_xbrl_html",
+        "official_pdf_format_to_be_adjudicated",
+    ]
+    languages: tuple[Literal["en", "zh-Hans", "zh-Hant"], ...]
+    required: bool
+    max_network_attempts: int = Field(ge=1, le=3)
+
+
+class QualificationProposition(_FrozenModel):
+    proposition_id: str = Field(min_length=1)
+    question_zh: str = Field(min_length=1)
+    required_facets: tuple[
+        Literal[
+            "direct_support",
+            "counterevidence",
+            "alternative_explanation",
+            "numeric_bridge",
+            "independent_readthrough",
+        ],
+        ...,
+    ]
+    required_roles: tuple[Literal["direct", "counter", "bridge", "context"], ...]
+    query_languages: tuple[Literal["en", "zh-Hans", "zh-Hant"], ...]
+
+
+class QualificationCaseSpec(_FrozenModel):
+    case_key: str = Field(min_length=1)
+    legal_name: str = Field(min_length=1)
+    split: Literal["valid_temporal", "test_frozen", "holdout_heterogeneous"]
+    case_role: Literal[
+        "temporal_validation", "frozen_test", "heterogeneous_holdout"
+    ]
+    industry_group: str = Field(min_length=1)
+    jurisdiction: str = Field(min_length=1)
+    accounting_basis: Literal["US_GAAP", "IFRS"]
+    source_targets: tuple[QualificationSourceTarget, ...]
+    propositions: tuple[QualificationProposition, ...]
+
+    @model_validator(mode="after")
+    def validate_case_split_and_ids(self) -> "QualificationCaseSpec":
+        expected_role = {
+            "valid_temporal": "temporal_validation",
+            "test_frozen": "frozen_test",
+            "holdout_heterogeneous": "heterogeneous_holdout",
+        }[self.split]
+        if self.case_role != expected_role:
+            raise ValueError("qualification_case_role_split_invalid")
+        target_ids = [row.target_id for row in self.source_targets]
+        proposition_ids = [row.proposition_id for row in self.propositions]
+        if not self.source_targets or len(target_ids) != len(set(target_ids)):
+            raise ValueError("qualification_source_target_ids_invalid")
+        if not self.propositions or len(proposition_ids) != len(set(proposition_ids)):
+            raise ValueError("qualification_proposition_ids_invalid")
+        return self
+
+
+class QualificationMetricContract(_FrozenModel):
+    candidate_review_k: int = Field(ge=1, le=100)
+    proposition_any_hit_minimum: float = Field(ge=0, le=1)
+    all_positive_object_recall_minimum: float = Field(ge=0, le=1)
+    material_facet_coverage_minimum: float = Field(ge=0, le=1)
+    required_role_coverage_minimum: float = Field(ge=0, le=1)
+    hard_negative_false_accept_maximum: int = Field(ge=0)
+    wrong_case_period_unit_promotion_maximum: int = Field(ge=0)
+    false_public_gap_maximum: int = Field(ge=0)
+    replay_stability_minimum: float = Field(ge=0, le=1)
+    material_ocr_anchor_recall_minimum: float = Field(ge=0, le=1)
+    natural_scanned_official_source_required: bool
+    downstream_evidence_pack_readiness_required: bool
+    averages_cannot_compensate_hard_gates: bool
+
+
+class QualificationExecutionPolicy(_FrozenModel):
+    labels_physically_separate_from_runtime_inputs: bool
+    observed_cases_forbidden_from_qualification: bool
+    learned_vector_device_required: Literal["cuda"]
+    learned_vector_precision: Literal["fp16"]
+    cpu_vector_fallback_allowed: Literal[False]
+    cpu_allowed_work: tuple[
+        Literal[
+            "bm25",
+            "tokenization",
+            "sql",
+            "hard_filters",
+            "ledger",
+            "deterministic_orchestration",
+        ],
+        ...,
+    ]
+    generative_model_calls_allowed: Literal[False]
+    valid_temporal_max_executions: int = Field(ge=1, le=3)
+    test_frozen_max_executions: Literal[1]
+    holdout_heterogeneous_max_executions: Literal[1]
+    threshold_or_route_tuning_after_hidden_execution_allowed: Literal[False]
+
+
+class QualificationPreRegistration(_FrozenModel):
+    schema_version: Literal["fin_ia_s1_vs5_qualification_preregistration_v1_0"]
+    status: Literal["frozen_before_source_outcome_inspection"]
+    program_id: str = Field(min_length=1)
+    recorded_at: str = Field(min_length=1)
+    design_baseline_commit: str
+    observed_case_keys: tuple[str, ...]
+    bound_configuration: tuple[QualificationBoundRef, ...]
+    execution_policy: QualificationExecutionPolicy
+    metric_contract: QualificationMetricContract
+    cases: tuple[QualificationCaseSpec, ...]
+    source_morphology_requirements: tuple[str, ...]
+    known_pre_execution_boundaries_zh: tuple[str, ...]
+
+    @field_validator("design_baseline_commit")
+    @classmethod
+    def validate_commit(cls, value: str) -> str:
+        if len(value) != 40 or any(ch not in "0123456789abcdef" for ch in value):
+            raise ValueError("qualification_design_baseline_commit_invalid")
+        return value
+
+    @model_validator(mode="after")
+    def validate_split_and_leakage_contract(self) -> "QualificationPreRegistration":
+        case_keys = [row.case_key for row in self.cases]
+        if len(case_keys) != len(set(case_keys)):
+            raise ValueError("qualification_case_key_duplicate")
+        overlap = sorted(set(case_keys) & set(self.observed_case_keys))
+        if overlap:
+            raise ValueError(f"qualification_observed_case_leak:{','.join(overlap)}")
+        if {row.split for row in self.cases} != {
+            "valid_temporal",
+            "test_frozen",
+            "holdout_heterogeneous",
+        }:
+            raise ValueError("qualification_split_coverage_invalid")
+        if not (
+            self.execution_policy.labels_physically_separate_from_runtime_inputs
+            and self.execution_policy.observed_cases_forbidden_from_qualification
+            and self.metric_contract.averages_cannot_compensate_hard_gates
+        ):
+            raise ValueError("qualification_noncompensable_policy_invalid")
+        if not self.bound_configuration:
+            raise ValueError("qualification_bound_configuration_missing")
         return self
 
 
 def load_evaluation_program_manifest(path: Path) -> EvaluationProgramManifest:
     return EvaluationProgramManifest.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+def load_qualification_preregistration(path: Path) -> QualificationPreRegistration:
+    return QualificationPreRegistration.model_validate_json(
+        path.read_text(encoding="utf-8")
+    )
 
 
 def validate_evaluation_program(
@@ -245,6 +429,12 @@ def validate_evaluation_program(
     total_examples = 0
     for asset in (*manifest.schemas, *manifest.legacy_development_assets):
         _validate_bound_asset(repo_root, asset)
+    preregistration_path = _validate_bound_asset(
+        repo_root, manifest.qualification_preregistration
+    )
+    preregistration = load_qualification_preregistration(preregistration_path)
+    for asset in preregistration.bound_configuration:
+        _validate_qualification_bound_ref(repo_root, asset)
 
     for catalog in manifest.catalogs:
         policy = split_policies[catalog.split]
@@ -279,6 +469,7 @@ def validate_evaluation_program(
             row.status == "reserved_unpopulated" for row in manifest.catalogs
         ),
         "example_count": total_examples,
+        "qualification_preregistered_case_count": len(preregistration.cases),
         "qualification_ready": False,
     }
 
@@ -289,6 +480,17 @@ def _validate_bound_asset(repo_root: Path, asset: EvaluationAssetRef) -> Path:
         raise EvaluationAssetError(f"evaluation_asset_missing:{asset.ref}")
     if sha256_file(path) != asset.sha256:
         raise EvaluationAssetError(f"evaluation_asset_digest_drift:{asset.ref}")
+    return path
+
+
+def _validate_qualification_bound_ref(
+    repo_root: Path, asset: QualificationBoundRef
+) -> Path:
+    path = repo_root / asset.ref
+    if not path.is_file():
+        raise EvaluationAssetError(f"qualification_bound_asset_missing:{asset.ref}")
+    if sha256_file(path) != asset.sha256:
+        raise EvaluationAssetError(f"qualification_bound_asset_digest_drift:{asset.ref}")
     return path
 
 
@@ -329,6 +531,9 @@ __all__ = [
     "EvaluationInput",
     "EvaluationProgramManifest",
     "EvaluationReference",
+    "QualificationPreRegistration",
+    "QualificationCaseSpec",
     "load_evaluation_program_manifest",
+    "load_qualification_preregistration",
     "validate_evaluation_program",
 ]

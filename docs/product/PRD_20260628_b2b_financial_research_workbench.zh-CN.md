@@ -2810,3 +2810,13 @@ DELL／MU／NVDA 三案 VS4 已证明同一 provider-neutral 合同可以把 res
 任何一项平均分不得掩盖身份、期间、来源、Evidence 晋升或关键 material facet 的硬失败。候选覆盖不足必须留在 S1-G／S1-J，不得由 S3 Writer 用更保守的措辞伪装为资料充分。
 
 learned Embedding、dense／multi-vector 和 Cross-Encoder／reranker 的正式构建、对照与资格运行必须绑定具体 CUDA device receipt，并使用项目声明的 FP16／受控精度。CUDA 不可用、模型权重或缓存身份漂移时必须在模型加载或结果晋升前 fail closed；严禁静默回退 CPU 后把延迟、批大小、数值精度或排序行为不同的结果与 CUDA 基线混为一谈。CPU 仍可承担 BM25、分词、SQL、身份／期间／来源硬过滤、账本和确定性短名单／上下文视图编排，因为这些不是 learned vector execution。该资源规则服务于结果可比性和开发效率，不改变 Candidate≠Evidence、NumericFact 独立权威或 VS5 独立留出门。
+
+### 16.43 VS5 资格人口必须在结果可见前冻结（2026-08-18）
+
+当前 VS5 已以机器可校验预注册固定 6 个未观察案例：COST 用于 FY2024／FY2025 跨期验证；JPM／CAT 用于 frozen test；NVO／SHEL／腾讯用于外国发行人、IFRS、医药／能源／互联网、20-F、非 SEC CJK PDF 与自然扫描边界的异质留出。DELL／MU／NVDA／ORCL／ASML／ANET／IFX.DE 明确不得进入隐藏资格。
+
+资格评测不能只看命题是否命中一条材料。它必须分别计算 proposition any-hit、all-positive object recall、material-facet coverage 与 required direct／counter／bridge／context role coverage，并把 parser、object、index、query、route、ranking、Evidence admission 与真实资料边界分别归责。跨案／错期／错单位晋升、hard-negative false accept 和 false public gap 是不可补偿硬门。
+
+valid temporal 最多两次，只用于配置选择；test frozen 与 heterogeneous holdout 各只有一次正式执行。正式 hidden outcome 可见后，不允许调阈值、换路线或修 case patch 后沿用该次通过结论。腾讯官方 PDF 若不包含自然扫描的实质页，必须保留自然扫描资格失败；人工栅格化只能作为 OCR mutation，不能冒充真实来源形态。
+
+预注册资产只冻结测试设计，不等于资格执行。只有官方来源 capture、runtime input／evaluator reference 物理分离、clean commit／模型／CUDA／cache digest 冻结以及同一 canonical spine 的完整输出都成立，才能将 qualification catalog 激活并执行。

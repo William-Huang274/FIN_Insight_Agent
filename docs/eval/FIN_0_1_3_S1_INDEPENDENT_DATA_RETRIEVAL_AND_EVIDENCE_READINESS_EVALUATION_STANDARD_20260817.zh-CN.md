@@ -306,7 +306,7 @@ S1 未通过时仍可运行的模型或节点调用必须明确标为 determinis
 下一步程序为：
 
 1. **程序基础与当前 Runtime 迁移已建立**：`src/retrieval/artifact_spine.py`、canonical policy、A–J evidence-backed coverage matrix 和统一校验入口已存在；spine 显式区分 CandidateSet、CandidateRanking、CandidateDecision，A–J 仍只作为责任坐标；
-2. **已冻结 schema／开发集／split 规则，未冻结隐藏资格集**：runtime-visible input 与 evaluator-only reference 物理分离，当前 train-internal fixture 和 legacy qrels／role eval 只作开发资产；三案例 VS4 已确认同一核心可迁移，下一步必须在读取结果前预注册 valid／test／heterogeneous holdout；
+2. **已冻结 schema／开发集／split 规则与 VS5 资格预注册，尚未建立 hidden gold**：runtime-visible input 与 evaluator-only reference 物理分离，当前 train-internal fixture 和 legacy qrels／role eval 只作开发资产；COST temporal、JPM／CAT frozen test、NVO／SHEL／0700.HK heterogeneous holdout 已在读取结果前冻结，资格 catalog 在来源 capture 与盲审 reference 建立前继续保持空；
 3. **VS1 已完成。** 当前 DELL pricing/mix 数字原生路径已从 source→Pack→Workbench 贯通：55 envelopes、6 candidate decisions（2 accepted／4 needs-review）、2 reviewed-not-recalled、3 个 supplement-unexecuted GapEligibilityReceipt；该结果只记 `vertical_slice_integrated`，不注册为 valid／test／holdout 资格结果；
 4. **VS2 已完成开发纵切。** IFX 复杂官方 PDF 的表格、脚注、重述和跨页对象已进入同一 spine；自然扫描异质性和 NumericFact 仍未资格化；
 5. **VS3 已完成开发纵切。** 同一对象快照上的多路线候选、CUDA semantic rerank、金融精排和完整 CandidateDecision 已进入 R17 Workbench；该结果没有授予单模型 winner 或自动 Evidence 权限；
@@ -316,3 +316,17 @@ S1 未通过时仍可运行的模型或节点调用必须明确标为 determinis
 9. 达到 `S1_qualified_stable` 后再签发完整真实链。
 
 当前结论：`S1 evaluation foundation + VS1-to-VS3 + three-case VS4 integrated / VS5 all-positive and independent qualification open / S1 not qualified / full product chain qualification blocked`。
+
+## 11. VS5 预注册资格人口与执行次数（2026-08-18）
+
+机器权威为 `eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json`。它在读取新案例检索结果前冻结：
+
+- `valid_temporal`：COST FY2024／FY2025 10-K，最多两次；
+- `test_frozen`：JPM、CAT FY2025 10-K，只允许一次正式执行；
+- `holdout_heterogeneous`：NVO、SHEL FY2025 20-F 和腾讯 FY2025 官方中英文年报 PDF，只允许一次正式执行；
+- 6 个案例、7 个官方文档目标和 30 个研究命题；
+- 候选审阅窗为 20；any-hit=100%、all-positive≥90%、material-facet≥85%、required-role=100%；
+- hard-negative false accept、跨案／错期／错单位晋升和 false public gap 均为 0；
+- learned vector／reranker 只能 CUDA FP16，CPU fallback 禁止；资格阶段生成模型调用为 0。
+
+DELL／MU／NVDA／ORCL／ASML／ANET／IFX.DE 已被机器合同排除。腾讯 PDF 只有在 capture 后证明存在自然扫描的官方实质页时，才可满足 natural-scan 门；人工 raster mutation 不能补偿。当前三个 qualification catalog 仍是 `reserved_unpopulated`，因此本节只表示 `qualification_preregistered`，不表示 hidden gold、正式执行或 S1 资格已完成。

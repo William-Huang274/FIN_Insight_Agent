@@ -543,3 +543,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - learned Embedding／Cross-Encoder 当前实际绑定 RTX 4060 Laptop、CUDA 12.6、FP16；CUDA 不可用直接 `candidate_ranking_cuda_required`，不允许 CPU fallback。CPU 仅承担 BM25、SQL、分词、硬过滤、账本和确定性编排。
 - 丰富 Pack 自然暴露 MU 空 cell 与 NVDA cell capacity 两个相邻接缝问题；现用 typed S2 bridge gap 和只在实际 overflow 时生效的确定性 coverage-first cell view 关闭。完整 Pack 权威不裁剪，省略项均 receipt，历史 fixed-Pack 顺序与 digest 不变。
 - Operations 已从 DELL 单案改为三案例 summary；TypeScript typecheck、production build、Operations desktop E2E、三案 S3 回放和全仓 `592 passed`。当前状态为 `three_case_VS4_vertical_slice_integrated / VS5_pending / S1_qualified_stable_false`。
+
+## 2026-08-18 S1 VS5 独立资格预注册
+
+- 在读取任何新案例检索结果前，VS5 已冻结 6 个未观察案例：COST temporal；JPM／CAT frozen test；NVO／SHEL／0700.HK heterogeneous holdout。共 7 个官方文档目标、30 个业务命题；DELL／MU／NVDA／ORCL／ASML／ANET／IFX.DE 明确禁止冒充隐藏资格。
+- 资格门分开计算 proposition any-hit、all-positive object recall、material-facet coverage 与 required-role coverage；不再允许用“每题命中一条”掩盖其他关键正例、反方或数值桥未召回。跨案／错期／错单位晋升、hard-negative false accept 和 false public gap 必须为 0，平均分不可补偿。
+- learned vector／reranker 只允许 CUDA FP16，CUDA 不可用即资格失败；CPU 只运行 BM25、SQL、分词、硬过滤、账本与确定性编排。资格阶段生成模型调用为 0。
+- valid temporal 最多执行两次；test frozen 与 heterogeneous holdout 各只能正式执行一次。腾讯官方 PDF 若没有自然扫描的实质页，不得用人工 raster mutation 冒充，该硬门保持失败。
+- program manifest 已内容寻址绑定预注册、12 份当前实现／配置和新 schema；foundation 定向 11 tests 通过。三个 qualification catalog 仍为空，因为来源与 evaluator-only gold 尚未建立；当前状态为 `qualification_preregistered / qualification_not_executed / S1_qualified_stable_false`。
+- 下一步先提交并推送预注册时间边界，再发现官方 URL、capture-first 获取来源、对象化与盲审 reference；在任何 hidden outcome 可见前另行冻结 execution commit、输入／reference、CUDA device 与模型缓存 digest。

@@ -36,11 +36,23 @@
     },
     {
       "ref": "eval_sets/fin_0_1_3_s1/schemas/evaluation_program_manifest.schema.json",
-      "sha256": "18e4e6883f86d75c42c2cb60ae4790b0d345dd150e8a8f2fd1b8e83eb430c754",
+      "sha256": "facc52180130cc30a13faece6807056a8f72e76b08a76c9e6cd1241bda92fd29",
+      "role": "schema",
+      "visibility": "governance_only"
+    },
+    {
+      "ref": "eval_sets/fin_0_1_3_s1/schemas/qualification_preregistration.schema.json",
+      "sha256": "30a1af38b399e17b684b72293dacc7cb222b78ae3f22fbaa46155b49d2dafe31",
       "role": "schema",
       "visibility": "governance_only"
     }
   ],
+  "qualification_preregistration": {
+    "ref": "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json",
+    "sha256": "e16db48de84e6cb0e5c586032e4bff446307d2dbdad898999de8a935b7124749",
+    "role": "qualification_preregistration",
+    "visibility": "governance_only"
+  },
   "split_policies": [
     {
       "split": "train_internal",

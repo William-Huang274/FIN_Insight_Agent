@@ -482,3 +482,13 @@ MU、NVDA 已复用 DELL 的 provider-neutral supplement contract 完成同等�
 本轮排名结果必须按正确语义解释：10/10 是 `proposition_any_hit_at_10`，不是 all-positive recall。MU cycle reversal、NVDA cancellation、NVDA production delay 和 TSM bottleneck tools 四个 reviewed positive 没有进入 candidate union，且没有被静默补入或重标。因此最早开放层转为 VS5 的候选覆盖与独立资格：同时测 all-positive object recall、material-facet／required-role coverage、valid temporal、frozen test、新异质留出、mutation 和双 clean replay。
 
 learned Embedding、dense／multi-vector 与 Cross-Encoder 继续统一为 CUDA／FP16 only；每次正式运行必须保存具体 device／runtime／precision／model／cache receipt，CUDA 不可用即 fail closed，不允许 CPU fallback。CPU 只承担 BM25、SQL、分词、硬过滤、账本和确定性编排。当前状态更新为 `three_case_VS4_vertical_slice_integrated=true / VS5_pending=true / S1_qualified_stable=false`。
+
+## 20. VS5 split-safe 资格预注册（2026-08-18）
+
+VS5 不复用已观察案例作为隐藏集。当前预注册以 COST 跨期、JPM／CAT frozen test、NVO／SHEL／腾讯异质 holdout 组成 6 案 7 文档目标，覆盖美国发行人、银行复杂报表、工业业务、外国发行人 20-F／IFRS、非 SEC CJK 官方 PDF 与自然扫描待裁决面。案例、命题、来源形态、配置 digest、执行次数和门槛均先于 source outcome 冻结。
+
+资格运行仍走同一 canonical spine，不建立“测试专用简化链”：official route→capture→parse／OCR→parent／claim／table／context→index→QueryFacetPlan→CandidateSet→CUDA CandidateRanking→finance shortlist／Evidence Role→CandidateDecision→Coverage／gap→Evidence Pack／consumer probe。新案例 adapter 只能填充身份、来源与行业 pack；不得在核心层增加 ticker 分支或答案 URL。
+
+四种覆盖结果必须并存：any-hit、all-positive object recall、material-facet coverage、required-role coverage。前者只说明至少有一条材料，后三者决定资料是否足以支撑研究。任何 parser、query、ranking 或 evaluator 修复若发生在 valid temporal 后，必须重新冻结配置；一旦查看 frozen／holdout 正式结果，只能登记失败和归责，不能原地调参后继续沿用该次资格。
+
+learned vector／reranker 在 VS5 只允许 CUDA FP16；CUDA 不可用、设备／模型／cache digest 漂移时在运行前 fail closed。CPU 继续仅承载 BM25、SQL、分词、硬过滤、账本和确定性编排。这是可比性与执行身份合同，不让 GPU 分数获得 Evidence 权威。

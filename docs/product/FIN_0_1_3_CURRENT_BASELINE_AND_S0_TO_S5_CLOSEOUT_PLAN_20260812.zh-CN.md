@@ -136,6 +136,14 @@ S1 结束的必交付物不是一张指标表，而是：一份当前权威标�
 
 独立评测源：`docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md`。S1 当前状态为 `VS1_to_VS3_and_three_case_VS4_vertical_slice_integrated / VS5_all_positive_and_independent_qualification_pending`，不授权 full-chain product qualification。
 
+## 4F. 2026-08-18 VS5 资格人口与 CUDA 执行边界
+
+VS1–VS4 的当前开发能力不再扩大。VS5 已预注册 COST temporal、JPM／CAT frozen test、NVO／SHEL／0700.HK heterogeneous holdout；所有案例在活动代码／评测中此前均未出现。DELL／MU／NVDA 与 ORCL／ASML／ANET／IFX.DE 只做开发／回归，禁止改名为隐藏资格。
+
+后续顺序固定为：提交预注册时间边界 → official capture-first 来源获取 → evaluator-only gold 与 runtime input 物理分离 → valid temporal → 配置冻结 → frozen test／heterogeneous holdout 各一次 → 双 clean replay／Workbench consumer → S1 逐门资格报告。test／holdout 结果可用于归责，不能用于同轮调阈值后重跑追认。
+
+向量、dense／multi-vector 和 Cross-Encoder／reranker 一律 CUDA FP16，CUDA 不可用即失败，不允许 CPU fallback。CPU 只承担 BM25、SQL、分词、硬过滤、账本和确定性编排。该要求不能替代 all-positive／material-facet／required-role、Evidence 权限、gap 资格与自然扫描等产品硬门。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

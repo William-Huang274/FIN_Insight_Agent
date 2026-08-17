@@ -1,0 +1,506 @@
+{
+  "$defs": {
+    "QualificationBoundRef": {
+      "additionalProperties": false,
+      "properties": {
+        "purpose": {
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "ref": {
+          "title": "Ref",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "sha256",
+        "purpose"
+      ],
+      "title": "QualificationBoundRef",
+      "type": "object"
+    },
+    "QualificationCaseSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "accounting_basis": {
+          "enum": [
+            "US_GAAP",
+            "IFRS"
+          ],
+          "title": "Accounting Basis",
+          "type": "string"
+        },
+        "case_key": {
+          "minLength": 1,
+          "title": "Case Key",
+          "type": "string"
+        },
+        "case_role": {
+          "enum": [
+            "temporal_validation",
+            "frozen_test",
+            "heterogeneous_holdout"
+          ],
+          "title": "Case Role",
+          "type": "string"
+        },
+        "industry_group": {
+          "minLength": 1,
+          "title": "Industry Group",
+          "type": "string"
+        },
+        "jurisdiction": {
+          "minLength": 1,
+          "title": "Jurisdiction",
+          "type": "string"
+        },
+        "legal_name": {
+          "minLength": 1,
+          "title": "Legal Name",
+          "type": "string"
+        },
+        "propositions": {
+          "items": {
+            "$ref": "#/$defs/QualificationProposition"
+          },
+          "title": "Propositions",
+          "type": "array"
+        },
+        "source_targets": {
+          "items": {
+            "$ref": "#/$defs/QualificationSourceTarget"
+          },
+          "title": "Source Targets",
+          "type": "array"
+        },
+        "split": {
+          "enum": [
+            "valid_temporal",
+            "test_frozen",
+            "holdout_heterogeneous"
+          ],
+          "title": "Split",
+          "type": "string"
+        }
+      },
+      "required": [
+        "case_key",
+        "legal_name",
+        "split",
+        "case_role",
+        "industry_group",
+        "jurisdiction",
+        "accounting_basis",
+        "source_targets",
+        "propositions"
+      ],
+      "title": "QualificationCaseSpec",
+      "type": "object"
+    },
+    "QualificationExecutionPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "cpu_allowed_work": {
+          "items": {
+            "enum": [
+              "bm25",
+              "tokenization",
+              "sql",
+              "hard_filters",
+              "ledger",
+              "deterministic_orchestration"
+            ],
+            "type": "string"
+          },
+          "title": "Cpu Allowed Work",
+          "type": "array"
+        },
+        "cpu_vector_fallback_allowed": {
+          "const": false,
+          "title": "Cpu Vector Fallback Allowed",
+          "type": "boolean"
+        },
+        "generative_model_calls_allowed": {
+          "const": false,
+          "title": "Generative Model Calls Allowed",
+          "type": "boolean"
+        },
+        "holdout_heterogeneous_max_executions": {
+          "const": 1,
+          "title": "Holdout Heterogeneous Max Executions",
+          "type": "integer"
+        },
+        "labels_physically_separate_from_runtime_inputs": {
+          "title": "Labels Physically Separate From Runtime Inputs",
+          "type": "boolean"
+        },
+        "learned_vector_device_required": {
+          "const": "cuda",
+          "title": "Learned Vector Device Required",
+          "type": "string"
+        },
+        "learned_vector_precision": {
+          "const": "fp16",
+          "title": "Learned Vector Precision",
+          "type": "string"
+        },
+        "observed_cases_forbidden_from_qualification": {
+          "title": "Observed Cases Forbidden From Qualification",
+          "type": "boolean"
+        },
+        "test_frozen_max_executions": {
+          "const": 1,
+          "title": "Test Frozen Max Executions",
+          "type": "integer"
+        },
+        "threshold_or_route_tuning_after_hidden_execution_allowed": {
+          "const": false,
+          "title": "Threshold Or Route Tuning After Hidden Execution Allowed",
+          "type": "boolean"
+        },
+        "valid_temporal_max_executions": {
+          "maximum": 3,
+          "minimum": 1,
+          "title": "Valid Temporal Max Executions",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "labels_physically_separate_from_runtime_inputs",
+        "observed_cases_forbidden_from_qualification",
+        "learned_vector_device_required",
+        "learned_vector_precision",
+        "cpu_vector_fallback_allowed",
+        "cpu_allowed_work",
+        "generative_model_calls_allowed",
+        "valid_temporal_max_executions",
+        "test_frozen_max_executions",
+        "holdout_heterogeneous_max_executions",
+        "threshold_or_route_tuning_after_hidden_execution_allowed"
+      ],
+      "title": "QualificationExecutionPolicy",
+      "type": "object"
+    },
+    "QualificationMetricContract": {
+      "additionalProperties": false,
+      "properties": {
+        "all_positive_object_recall_minimum": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "All Positive Object Recall Minimum",
+          "type": "number"
+        },
+        "averages_cannot_compensate_hard_gates": {
+          "title": "Averages Cannot Compensate Hard Gates",
+          "type": "boolean"
+        },
+        "candidate_review_k": {
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Candidate Review K",
+          "type": "integer"
+        },
+        "downstream_evidence_pack_readiness_required": {
+          "title": "Downstream Evidence Pack Readiness Required",
+          "type": "boolean"
+        },
+        "false_public_gap_maximum": {
+          "minimum": 0,
+          "title": "False Public Gap Maximum",
+          "type": "integer"
+        },
+        "hard_negative_false_accept_maximum": {
+          "minimum": 0,
+          "title": "Hard Negative False Accept Maximum",
+          "type": "integer"
+        },
+        "material_facet_coverage_minimum": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Material Facet Coverage Minimum",
+          "type": "number"
+        },
+        "material_ocr_anchor_recall_minimum": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Material Ocr Anchor Recall Minimum",
+          "type": "number"
+        },
+        "natural_scanned_official_source_required": {
+          "title": "Natural Scanned Official Source Required",
+          "type": "boolean"
+        },
+        "proposition_any_hit_minimum": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Proposition Any Hit Minimum",
+          "type": "number"
+        },
+        "replay_stability_minimum": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Replay Stability Minimum",
+          "type": "number"
+        },
+        "required_role_coverage_minimum": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Required Role Coverage Minimum",
+          "type": "number"
+        },
+        "wrong_case_period_unit_promotion_maximum": {
+          "minimum": 0,
+          "title": "Wrong Case Period Unit Promotion Maximum",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "candidate_review_k",
+        "proposition_any_hit_minimum",
+        "all_positive_object_recall_minimum",
+        "material_facet_coverage_minimum",
+        "required_role_coverage_minimum",
+        "hard_negative_false_accept_maximum",
+        "wrong_case_period_unit_promotion_maximum",
+        "false_public_gap_maximum",
+        "replay_stability_minimum",
+        "material_ocr_anchor_recall_minimum",
+        "natural_scanned_official_source_required",
+        "downstream_evidence_pack_readiness_required",
+        "averages_cannot_compensate_hard_gates"
+      ],
+      "title": "QualificationMetricContract",
+      "type": "object"
+    },
+    "QualificationProposition": {
+      "additionalProperties": false,
+      "properties": {
+        "proposition_id": {
+          "minLength": 1,
+          "title": "Proposition Id",
+          "type": "string"
+        },
+        "query_languages": {
+          "items": {
+            "enum": [
+              "en",
+              "zh-Hans",
+              "zh-Hant"
+            ],
+            "type": "string"
+          },
+          "title": "Query Languages",
+          "type": "array"
+        },
+        "question_zh": {
+          "minLength": 1,
+          "title": "Question Zh",
+          "type": "string"
+        },
+        "required_facets": {
+          "items": {
+            "enum": [
+              "direct_support",
+              "counterevidence",
+              "alternative_explanation",
+              "numeric_bridge",
+              "independent_readthrough"
+            ],
+            "type": "string"
+          },
+          "title": "Required Facets",
+          "type": "array"
+        },
+        "required_roles": {
+          "items": {
+            "enum": [
+              "direct",
+              "counter",
+              "bridge",
+              "context"
+            ],
+            "type": "string"
+          },
+          "title": "Required Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "proposition_id",
+        "question_zh",
+        "required_facets",
+        "required_roles",
+        "query_languages"
+      ],
+      "title": "QualificationProposition",
+      "type": "object"
+    },
+    "QualificationSourceTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "fiscal_year": {
+          "maximum": 2100,
+          "minimum": 2000,
+          "title": "Fiscal Year",
+          "type": "integer"
+        },
+        "form_type": {
+          "minLength": 1,
+          "title": "Form Type",
+          "type": "string"
+        },
+        "languages": {
+          "items": {
+            "enum": [
+              "en",
+              "zh-Hans",
+              "zh-Hant"
+            ],
+            "type": "string"
+          },
+          "title": "Languages",
+          "type": "array"
+        },
+        "max_network_attempts": {
+          "maximum": 3,
+          "minimum": 1,
+          "title": "Max Network Attempts",
+          "type": "integer"
+        },
+        "period_label": {
+          "minLength": 1,
+          "title": "Period Label",
+          "type": "string"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        },
+        "route_family": {
+          "enum": [
+            "sec_filing",
+            "official_ir_pdf"
+          ],
+          "title": "Route Family",
+          "type": "string"
+        },
+        "source_format": {
+          "enum": [
+            "sec_inline_xbrl_html",
+            "official_pdf_format_to_be_adjudicated"
+          ],
+          "title": "Source Format",
+          "type": "string"
+        },
+        "target_id": {
+          "minLength": 1,
+          "title": "Target Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_id",
+        "route_family",
+        "form_type",
+        "fiscal_year",
+        "period_label",
+        "source_format",
+        "languages",
+        "required",
+        "max_network_attempts"
+      ],
+      "title": "QualificationSourceTarget",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "bound_configuration": {
+      "items": {
+        "$ref": "#/$defs/QualificationBoundRef"
+      },
+      "title": "Bound Configuration",
+      "type": "array"
+    },
+    "cases": {
+      "items": {
+        "$ref": "#/$defs/QualificationCaseSpec"
+      },
+      "title": "Cases",
+      "type": "array"
+    },
+    "design_baseline_commit": {
+      "title": "Design Baseline Commit",
+      "type": "string"
+    },
+    "execution_policy": {
+      "$ref": "#/$defs/QualificationExecutionPolicy"
+    },
+    "known_pre_execution_boundaries_zh": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Known Pre Execution Boundaries Zh",
+      "type": "array"
+    },
+    "metric_contract": {
+      "$ref": "#/$defs/QualificationMetricContract"
+    },
+    "observed_case_keys": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Observed Case Keys",
+      "type": "array"
+    },
+    "program_id": {
+      "minLength": 1,
+      "title": "Program Id",
+      "type": "string"
+    },
+    "recorded_at": {
+      "minLength": 1,
+      "title": "Recorded At",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "fin_ia_s1_vs5_qualification_preregistration_v1_0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_morphology_requirements": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Source Morphology Requirements",
+      "type": "array"
+    },
+    "status": {
+      "const": "frozen_before_source_outcome_inspection",
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "program_id",
+    "recorded_at",
+    "design_baseline_commit",
+    "observed_case_keys",
+    "bound_configuration",
+    "execution_policy",
+    "metric_contract",
+    "cases",
+    "source_morphology_requirements",
+    "known_pre_execution_boundaries_zh"
+  ],
+  "title": "QualificationPreRegistration",
+  "type": "object"
+}

@@ -117,9 +117,19 @@ def _json(path: Path) -> dict[str, object]:
 
 def _current_inputs() -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
     paths = resolve_runtime_paths(ROOT)
-    evidence_config = read_registered_runtime_json(
-        ROOT, "application.config.current_research_evidence_pack_projection"
+    evidence_config = deepcopy(
+        read_registered_runtime_json(
+            ROOT, "application.config.current_research_evidence_pack_projection"
+        )
     )
+    # Historical fixed-Pack authority fixtures below are digest-bound to the
+    # pre-anchor projection. Keep that immutable replay surface separate from
+    # the current anchored product path exercised by the dedicated anchor and
+    # dynamic Runtime tests.
+    evidence_config["schema_version"] = (
+        "fin_ia_current_research_evidence_pack_projection_config_v1_0"
+    )
+    evidence_config.pop("reviewed_anchor_catalog_resource_id")
     evidence_service = ResearchEvidencePackService(
         config=evidence_config,
         result=read_registered_runtime_json(
@@ -496,7 +506,7 @@ def test_v1_1_message_exposes_exact_enums_and_cell_local_views(
     visible = json.loads(messages[1]["content"])
     contract = visible["output_contract"]
 
-    assert len(messages[1]["content"]) == 72700
+    assert len(messages[1]["content"]) == 72862
     assert len(messages[1]["content"]) <= 80000
     assert contract["allowed_judgment_statuses"] == [
         "supported",
@@ -653,6 +663,27 @@ def test_v1_1_payload_injects_trusted_envelope_and_renders_typed_uses(
     assert demand["remaining_gap_refs"] == ["GAP::00730082A5C08C4C"]
 
 
+def test_one_evidence_may_support_a_fact_and_limit_a_broader_inference(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> None:
+    _, _, research_input = current_inputs
+    payload = deepcopy(_json(FAKE_PAYLOAD_V1_2))
+    payload["cells"][0]["evidence_uses"].append(
+        {"evidence_ref": "EV::734A9C177164E08E", "use_role": "limit"}
+    )
+
+    validated = validate_current_research_output(
+        payload, research_input=research_input
+    )
+
+    roles = {
+        (row["evidence_ref"], row["use_role"])
+        for row in validated["cells"][0]["evidence_uses"]
+    }
+    assert ("EV::734A9C177164E08E", "support") in roles
+    assert ("EV::734A9C177164E08E", "limit") in roles
+
+
 @pytest.mark.parametrize(
     "route",
     [
@@ -694,7 +725,7 @@ def test_wwc_route_rejects_unregistered_or_financial_numeric_surface(
     [
         (
             lambda value: value["cells"][0]["evidence_uses"].append(
-                {"evidence_ref": "EV::734A9C177164E08E", "use_role": "limit"}
+                {"evidence_ref": "EV::734A9C177164E08E", "use_role": "support"}
             ),
             "research_consumer_evidence_use_invalid",
         ),

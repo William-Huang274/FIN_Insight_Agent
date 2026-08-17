@@ -14,10 +14,10 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R12",
-  "resource_bytes": 2043086,
-  "resource_canonical_digest": "2c2d5b1433697e2237509ee673f421f1429bd334c9ed78111027046a46e89ecb",
-  "resource_count": 10,
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R13",
+  "resource_bytes": 2064216,
+  "resource_canonical_digest": "6469b86e9b8afd9a230d48be3539919e41040a3075fa0f4b7e701954a3030820",
+  "resource_count": 11,
   "resources": [
     {
       "bytes": 20734,
@@ -59,7 +59,7 @@
       "source_owner": "src.retrieval.route_compiler.load_query_object_fact_route_policy"
     },
     {
-      "bytes": 1183,
+      "bytes": 1411,
       "classification": "application_runtime_config",
       "consumer_ids": [
         "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
@@ -68,7 +68,7 @@
       "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_research_evidence_pack_projection_v1_0.json",
       "required": true,
       "resource_id": "application.config.current_research_evidence_pack_projection",
-      "sha256": "165d301730f6af4d2fde724308fcdf13ded96ff694846c480da042665ecff890",
+      "sha256": "d4fde7d4cf4b1d688656f06888edd2cae0588aa1a8abba06744d514e3e33a537",
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
     },
     {
@@ -135,6 +135,19 @@
       "resource_id": "application.result.current_research_retrieval_snapshot",
       "sha256": "444e321a566420f4f30bb655f7f1b8e2fdeadc2c6c25643598458247b99a0430",
       "source_owner": "apps.workbench.backend.application.research_retrieval_service"
+    },
+    {
+      "bytes": 20902,
+      "classification": "digest_bound_read_only_product_result",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json",
+      "required": true,
+      "resource_id": "application.result.current_reviewed_claim_anchors",
+      "sha256": "e68123e8fb29f81aa700a98db6ee24943f98fb862f66628ee45483981fc9c4a8",
+      "source_owner": "sec_agent.research.reviewed_evidence_anchor.load_reviewed_evidence_anchor_catalog"
     },
     {
       "bytes": 77871,

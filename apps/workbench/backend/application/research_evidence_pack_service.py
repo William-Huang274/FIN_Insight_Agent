@@ -14,6 +14,13 @@ from sec_agent.research.reviewed_evidence_pack import (
     file_sha256,
     validate_reviewed_evidence_pack,
 )
+from sec_agent.research.reviewed_evidence_anchor import (
+    ReviewedEvidenceAnchorCatalog,
+    ReviewedEvidenceAnchorError,
+    load_reviewed_evidence_anchor_catalog,
+    project_reviewed_claim_anchor,
+    validate_anchor_catalog_pack_binding,
+)
 
 
 CURRENT_RESEARCH_EVIDENCE_PACK_CONFIG_RESOURCE_ID = (
@@ -21,6 +28,9 @@ CURRENT_RESEARCH_EVIDENCE_PACK_CONFIG_RESOURCE_ID = (
 )
 EXPECTED_CONFIG_SCHEMA = (
     "fin_ia_current_research_evidence_pack_projection_config_v1_0"
+)
+EXPECTED_ANCHORED_CONFIG_SCHEMA = (
+    "fin_ia_current_research_evidence_pack_projection_config_v1_1"
 )
 EXPECTED_RESULT_SCHEMAS = frozenset(
     {
@@ -93,9 +103,33 @@ class ResearchEvidencePackService:
         result: Mapping[str, Any],
         private_object_root: str | Path,
         private_root_base: str | Path | None = None,
+        reviewed_anchor_catalog: Mapping[str, Any] | None = None,
     ) -> None:
         self._config = self._validate_config(config)
         self._result = self._validate_result(result, self._config)
+        try:
+            self._anchor_catalog = (
+                load_reviewed_evidence_anchor_catalog(reviewed_anchor_catalog)
+                if reviewed_anchor_catalog is not None
+                else None
+            )
+        except ReviewedEvidenceAnchorError as exc:
+            raise ResearchEvidencePackServiceError(
+                exc.code, 503
+            ) from exc
+        _require(
+            (
+                self._config["schema_version"] == EXPECTED_CONFIG_SCHEMA
+                and self._anchor_catalog is None
+            )
+            or (
+                self._config["schema_version"]
+                == EXPECTED_ANCHORED_CONFIG_SCHEMA
+                and self._anchor_catalog is not None
+            ),
+            "current_research_evidence_anchor_catalog_required",
+            503,
+        )
         self._object_root = Path(private_object_root).resolve()
         self._private_root_base = (
             Path(private_root_base).resolve()
@@ -123,6 +157,14 @@ class ResearchEvidencePackService:
             repository_root,
             str(config.get("source_result_resource_id") or ""),
         )
+        anchor_catalog = (
+            read_registered_runtime_json(
+                repository_root,
+                str(config.get("reviewed_anchor_catalog_resource_id") or ""),
+            )
+            if config.get("reviewed_anchor_catalog_resource_id")
+            else None
+        )
         default_object_root = (
             runtime_paths.reviewed_evidence_root
             / str(config.get("private_object_root_relative") or "")
@@ -132,6 +174,7 @@ class ResearchEvidencePackService:
             result=result,
             private_object_root=default_object_root,
             private_root_base=runtime_paths.reviewed_evidence_root,
+            reviewed_anchor_catalog=anchor_catalog,
         )
 
     @property
@@ -310,6 +353,18 @@ class ResearchEvidencePackService:
             case_key=case_key,
         )
         self._validate_source_materials(pack, case_key)
+        if self._anchor_catalog is not None:
+            try:
+                validate_anchor_catalog_pack_binding(
+                    self._anchor_catalog,
+                    case_key=case_key,
+                    artifact_digest=str(artifact["digest"]),
+                    pack_payload_digest=str(pack["pack_payload_digest"]),
+                )
+            except ReviewedEvidenceAnchorError as exc:
+                raise ResearchEvidencePackServiceError(
+                    exc.code, 503, case_key=case_key
+                ) from exc
         return pack, artifact
 
     def _artifact_object_root(self, artifact: Mapping[str, Any]) -> Path:
@@ -367,9 +422,40 @@ class ResearchEvidencePackService:
         source_by_ref: Mapping[str, Mapping[str, Any]],
     ) -> dict[str, Any]:
         source = dict(source_by_ref[str(item["source_material_ref"])])
-        source_text = str(source.get("source_text") or "").strip()
+        raw_source_text = str(source.get("source_text") or "")
+        source_text = (
+            raw_source_text
+            if self._anchor_catalog is not None
+            else raw_source_text.strip()
+        )
         maximum = int(self._config["max_reviewed_source_excerpt_chars"])
-        excerpt = source_text[:maximum]
+        excerpt_projection = {
+            "reviewed_source_excerpt": source_text[:maximum],
+            "excerpt_truncated": len(source_text) > maximum,
+        }
+        if self._anchor_catalog is not None:
+            excerpt_projection.update(
+                {
+                    "excerpt_projection_kind": "bounded_source_prefix",
+                    "reviewed_anchor_bound": False,
+                }
+            )
+        if str(item.get("object_type") or "") == "claim" and (
+            self._anchor_catalog is not None
+        ):
+            try:
+                excerpt_projection = project_reviewed_claim_anchor(
+                    catalog=self._anchor_catalog,
+                    item=item,
+                    source=source,
+                )
+            except ReviewedEvidenceAnchorError as exc:
+                raise ResearchEvidencePackServiceError(
+                    exc.code,
+                    503,
+                    case_key=str(item.get("case_key") or ""),
+                    target_id=str(item.get("target_id") or ""),
+                ) from exc
         projected = {
             key: deepcopy(item[key])
             for key in (
@@ -413,8 +499,7 @@ class ResearchEvidencePackService:
         }
         projected["source"].update(
             {
-                "reviewed_source_excerpt": excerpt,
-                "excerpt_truncated": len(source_text) > len(excerpt),
+                **excerpt_projection,
                 "excerpt_use_boundary": (
                     "Authenticated internal review only; never auto-promote the excerpt "
                     "into a deliverable or financial-truth store."
@@ -486,10 +571,30 @@ class ResearchEvidencePackService:
     @staticmethod
     def _validate_config(config: Mapping[str, Any]) -> dict[str, Any]:
         value = deepcopy(dict(config))
+        schema_version = str(value.get("schema_version") or "")
         cases = list(value.get("published_case_keys") or ())
         surface = value.get("surface_policy")
+        common_fields = {
+            "schema_version",
+            "status",
+            "source_result_resource_id",
+            "private_object_root_relative",
+            "published_case_keys",
+            "read_mode",
+            "read_permission",
+            "max_reviewed_source_excerpt_chars",
+            "surface_policy",
+            "known_boundary",
+        }
+        expected_fields = (
+            common_fields
+            if schema_version == EXPECTED_CONFIG_SCHEMA
+            else common_fields | {"reviewed_anchor_catalog_resource_id"}
+        )
         _require(
-            value.get("schema_version") == EXPECTED_CONFIG_SCHEMA
+            schema_version
+            in {EXPECTED_CONFIG_SCHEMA, EXPECTED_ANCHORED_CONFIG_SCHEMA}
+            and set(value) == expected_fields
             and value.get("status") == "active_read_only_workbench_projection"
             and str(value.get("source_result_resource_id") or "")
             and str(value.get("private_object_root_relative") or "")
@@ -507,6 +612,11 @@ class ResearchEvidencePackService:
             and surface.get("residual_gaps_remain_visible") is True,
             "current_research_evidence_pack_config_invalid",
         )
+        if schema_version == EXPECTED_ANCHORED_CONFIG_SCHEMA:
+            _require(
+                str(value.get("reviewed_anchor_catalog_resource_id") or ""),
+                "current_research_evidence_anchor_resource_invalid",
+            )
         return value
 
     @staticmethod

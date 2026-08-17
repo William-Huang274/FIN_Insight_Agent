@@ -1,7 +1,8 @@
 {
-  "schema_version": "fin_ia_current_research_evidence_pack_projection_config_v1_0",
+  "schema_version": "fin_ia_current_research_evidence_pack_projection_config_v1_1",
   "status": "active_read_only_workbench_projection",
   "source_result_resource_id": "application.result.current_research_local_evidence_packs",
+  "reviewed_anchor_catalog_resource_id": "application.result.current_reviewed_claim_anchors",
   "private_object_root_relative": "fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects",
   "published_case_keys": [
     "DELL",
@@ -21,5 +22,5 @@
     "model_provider_or_live_network_calls": 0,
     "residual_gaps_remain_visible": true
   },
-  "known_boundary": "This version-neutral Workbench projection exposes reviewed local evidence, bounded internal excerpts, citations and residual gaps. It is not a complete investment report, an external-source-complete pack, or a mutable financial-truth surface."
+  "known_boundary": "This version-neutral Workbench projection exposes reviewed local evidence, exact reviewer-bound source anchors for claim objects, bounded prefixes for source-segment objects, citations and residual gaps. Reviewer business meaning never substitutes for source text. It is not a complete investment report, an external-source-complete pack, or a mutable financial-truth surface."
 }

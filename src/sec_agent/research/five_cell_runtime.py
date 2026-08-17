@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import json
+import re
 from typing import Any, Mapping, Sequence
 
 from .bounded_finance_loop import compile_finance_judgment_tool
@@ -48,6 +49,23 @@ _LINK_FIELDS = {
     "explanation",
 }
 _LINK_RELATIONS = {"supports", "limits", "conflicts", "independent"}
+
+_DRAFT_AUTHORITY_SURFACE = re.compile(
+    r"(?:"
+    r"https?://\S+"
+    r"|\b(?:EV|NUM|REL|GAP|METHOD|GRAPH|QF)::[A-Z0-9:_-]{4,128}\b"
+    r"|\b(?:10-[KQ]|8-K|20-F|40-F|6-K)\b"
+    r"|[0-9０-９]+(?:[.,][0-9０-９]+)*"
+    r"|[$€£¥￥%％]"
+    r"|\b(?:USD|CNY|EUR|JPY|bps?)\b"
+    r"|百分之[零一二两三四五六七八九十百千万亿点]+"
+    r"|[零一二两三四五六七八九十百千万亿]+位数"
+    r"|(?:个|两|双|多)位数"
+    r"|[零一二两三四五六七八九十百千万亿点]+个基点"
+    r")",
+    re.IGNORECASE,
+)
+_DRAFT_OMISSION_MARKER = "[authoritative surface omitted]"
 
 
 class FiveCellResearchError(ValueError):
@@ -342,6 +360,38 @@ def compile_five_cell_analysis_messages(
     )
 
 
+def compile_five_cell_submission_draft_projection(
+    analysis_draft: str,
+) -> str:
+    """Remove final-contract-owned surfaces from a model-owned analysis draft.
+
+    The full draft remains immutable in the analysis capture.  The submission
+    node receives its reasoning and prose, but exact values, aliases, filing
+    identifiers and URLs must be re-selected from the canonical contract
+    instead of being copied from free text.  This projection removes surfaces;
+    it never adds or rewrites a research conclusion.
+    """
+
+    draft = str(analysis_draft or "").strip()
+    _require(24 <= len(draft) <= 16000, "five_cell_analysis_draft_invalid")
+    projected = _DRAFT_AUTHORITY_SURFACE.sub(
+        f" {_DRAFT_OMISSION_MARKER} ", draft
+    )
+    projected = re.sub(
+        rf"(?:\s*{re.escape(_DRAFT_OMISSION_MARKER)}\s*)+",
+        f" {_DRAFT_OMISSION_MARKER} ",
+        projected,
+    )
+    projected = re.sub(r"[ \t]+", " ", projected)
+    projected = re.sub(r" *\n *", "\n", projected).strip()
+    _require(
+        len(projected) >= 24
+        and not _DRAFT_AUTHORITY_SURFACE.search(projected),
+        "five_cell_submission_draft_projection_invalid",
+    )
+    return projected
+
+
 def compile_five_cell_submission(
     *,
     research_input: Mapping[str, Any],
@@ -350,11 +400,7 @@ def compile_five_cell_submission(
 ) -> tuple[tuple[dict[str, str], ...], dict[str, Any]]:
     """Bind a model-owned draft to the unchanged strict cell contract."""
 
-    draft = str(analysis_draft or "").strip()
-    _require(
-        24 <= len(draft) <= 16000,
-        "five_cell_analysis_draft_invalid",
-    )
+    draft = compile_five_cell_submission_draft_projection(analysis_draft)
     strict_messages = compile_current_research_messages(
         research_input,
         required_cell_ids=[cell_id],
@@ -371,7 +417,15 @@ def compile_five_cell_submission(
                 "submit_research_judgment tool exactly once. Keep only claims and "
                 "references supported by the unchanged cell-local authority above. "
                 "The analysis draft is model-owned working text, not evidence; do "
-                "not copy any unsupported statement from it."
+                "not copy any unsupported statement from it. Classify an EV as "
+                "support when it directly supports the submitted thesis, as limit "
+                "when it bounds or rebuts the thesis, and as context when it does "
+                "neither alone. A supported, bounded-support or mixed judgment must "
+                "contain at least one support use. The same EV may be selected once "
+                "per distinct role when it both supports a source fact and limits a "
+                "broader inference. Re-select all exact values, relations, dates and "
+                "refs from the canonical contract; omitted draft surfaces are not "
+                "missing evidence."
             ),
         },
     )
@@ -885,6 +939,7 @@ __all__ = [
     "FiveCellResearchError",
     "compile_five_cell_analysis_view",
     "compile_five_cell_analysis_messages",
+    "compile_five_cell_submission_draft_projection",
     "compile_five_cell_report",
     "compile_five_cell_submission",
     "compile_five_cell_synthesis_analysis_messages",

@@ -1,0 +1,44 @@
+{
+  "schema_version": "fin_ia_reviewed_claim_anchor_decisions_v1_0",
+  "status": "reviewed_manual_overrides_for_non_structured_or_truncated_claims",
+  "structured_claim_catalog_ref": "data/processed_private/structured_objects/sector_depth_full238_us_v0_2_mixed_with_8k_fy2023_2027_claims.jsonl",
+  "manual_anchors": [
+    {
+      "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572",
+      "anchor_text": "Important factors that could cause actual results to differ materially include: global economic and political conditions; NVIDIA’s reliance on third parties to manufacture, assemble, package and test NVIDIA’s products;",
+      "decision_reason": "The legacy extracted claim was truncated. This exact source sentence fragment preserves only the reviewed third-party manufacturing dependency."
+    },
+    {
+      "target_id": "CURRENT_DOC::TSM::EARNINGS_CALL_TRANSCRIPT::FD1E9D9F5068C82A2227::PAGE_010::CLAIM::5CE3DA5CE045",
+      "anchor_text": "Well, let me say that our packaging capacity is so tight that now it limits my customers' growth. So we welcome that additional flexibility in the market and so that will help TSMC's frontend wafer business growth, which is a majority part of TSMC's business.",
+      "decision_reason": "Binds the reviewed advanced-packaging constraint without implying a Dell-specific allocation."
+    },
+    {
+      "target_id": "CURRENT_DOC::TSM::EARNINGS_CALL_TRANSCRIPT::FD1E9D9F5068C82A2227::PAGE_020::CLAIM::C6F6015F1313",
+      "anchor_text": "I mean, so the tester in shortage, so we have to put more CapEx in the tester or in the packaging or in other areas.",
+      "decision_reason": "Binds the reviewed tester and packaging bottleneck discussion without converting it into Dell supply evidence."
+    },
+    {
+      "target_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_003::CLAIM::9BA6EA00E4ED",
+      "anchor_text": "In Q1, we booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue. We exited the quarter with a record $51.3 billion of AI backlog, and our pipeline continued to grow sequentially and remains multiples of our backlog, even after converting $24.4 billion into orders. Demand continues to exceed supply with memory as the primary constraint and we expect to exit the year with meaningful backlog. Our customer count surpassed 5,000 with growth across neocloud, sovereigns and enterprise customers.",
+      "decision_reason": "Binds the reviewed demand, conversion, backlog, memory constraint and customer-breadth passage."
+    },
+    {
+      "target_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_003::CLAIM::13E051CFBA20",
+      "anchor_text": "The memory uncertainty is driving customers to proactively secure access to infrastructure across both traditional and AI workloads over longer periods of time. We also continued to execute the pricing and margin discipline we established in Q4.",
+      "decision_reason": "Binds the reviewed buy-ahead motivation and pricing-discipline context while preserving the unquantified pull-forward gap."
+    },
+    {
+      "target_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004::CLAIM::106E3CED4229",
+      "anchor_text": "AI server profitability was in line with our mid- single-digit operating income rate target.",
+      "decision_reason": "Binds the exact management target statement without turning it into an audited point estimate."
+    }
+  ],
+  "authority": {
+    "manual_text_must_be_exact_source_substring": true,
+    "manual_anchor_is_review_decision_not_model_generation": true,
+    "business_meaning_cannot_substitute_for_source_text": true,
+    "model_or_network_calls": 0
+  },
+  "known_boundary": "These overrides select source-visible passages for claims whose structured claim surface is absent or truncated. They do not create new Evidence, NumericFacts, causal authority or case relationships."
+}

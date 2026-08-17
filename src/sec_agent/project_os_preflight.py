@@ -106,6 +106,15 @@ DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_DECISION_STATUS = (
 DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_SCOPE = (
     "one_DELL_dynamic_five_cell_node_successor_two_submissions_plus_synthesis"
 )
+DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_claim_surface_successor_scope_decision_v1_0"
+)
+DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_STATUS = (
+    "approved_one_DELL_dynamic_five_cell_claim_surface_successor_exact_once"
+)
+DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_SCOPE = (
+    "one_DELL_dynamic_five_cell_claim_surface_successor_exact_once"
+)
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_0 = (
     "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
     "live_scope_decision_v1_0"
@@ -260,6 +269,14 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if (
+        decision.get("schema_version")
+        == DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_SCHEMA
+    ):
+        return _validate_dynamic_five_cell_claim_surface_successor_decision(
+            root=root,
+            decision=decision,
+        )
     if (
         decision.get("schema_version")
         == DYNAMIC_FIVE_CELL_NODE_SUCCESSOR_DECISION_SCHEMA
@@ -1867,6 +1884,107 @@ def _validate_dynamic_five_cell_node_successor_decision(
         "dynamic_single_cell_successor": False,
         "micro_judgment_successor": False,
         "node_profiles": profiles,
+    }
+
+
+def _validate_dynamic_five_cell_claim_surface_successor_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    del root
+    required_cells = (
+        "CELL::demand_quality",
+        "CELL::operating_performance",
+        "CELL::value_capture",
+        "CELL::cash_conversion",
+        "CELL::counterevidence",
+    )
+    required_equal = {
+        "status": DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "ALL_FIVE_RESEARCH_CELLS",
+        "run_scope_id": DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_SCOPE,
+        "evidence_mode": (
+            "immutable_R4_planner_and_current_S1_S2_with_reviewed_exact_"
+            "claim_anchor_and_period_bound_historical_relation"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_five_cell_claim_surface_successor_field_invalid:{field}"
+            )
+    if tuple(decision.get("required_cell_ids") or ()) != required_cells:
+        raise ValueError(
+            "project_os_five_cell_claim_surface_successor_cells_invalid"
+        )
+    for field in (
+        "reuse_predecessor_planner_and_controlled_plan",
+        "rerun_all_five_analysis_and_submission_nodes",
+        "same_current_product_pointer_required",
+        "reviewed_exact_source_anchor_required",
+        "historical_relation_is_period_bound_and_issuer_attributed",
+        "historical_relation_is_not_current_quarter_causality",
+        "continue_after_cell_failure",
+        "synthesis_requires_all_cells",
+        "chat_live_authorized",
+        "credential_presence_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                "project_os_five_cell_claim_surface_successor_true_required:"
+                + field
+            )
+    for field in (
+        "reuse_predecessor_cell_analysis_or_judgments",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "S3_acceptance_authorized",
+        "heterogeneous_generalization_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                "project_os_five_cell_claim_surface_successor_false_required:"
+                + field
+            )
+    expected_budget = {
+        "maximum_model_calls": 12,
+        "maximum_transport_attempts": 12,
+        "maximum_planner_calls": 0,
+        "reused_predecessor_planner_calls": 1,
+        "maximum_cell_analysis_calls": 5,
+        "maximum_cell_submission_calls": 5,
+        "maximum_synthesis_analysis_calls": 1,
+        "maximum_synthesis_submission_calls": 1,
+        "maximum_evidence_requests": 0,
+        "reused_predecessor_evidence_requests": 8,
+        "maximum_tool_calls": 6,
+        "retries": 0,
+        "fallbacks": 0,
+        "external_source_network_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if decision.get("execution_budget") != expected_budget:
+        raise ValueError(
+            "project_os_five_cell_claim_surface_successor_budget_invalid"
+        )
+    return {
+        "clean_proof_status": "engineering_pass_scope_bound_zero_call_regression",
+        "provider_id": "deepseek",
+        "provider_model": "deepseek-v4-pro",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "recent_provider_steps": 0,
+        "dynamic_five_cell_successor": False,
+        "dynamic_five_cell_remaining_nodes_successor": False,
+        "dynamic_five_cell_partial_successor": False,
+        "dynamic_five_cell_node_successor": False,
+        "dynamic_five_cell_claim_surface_successor": True,
+        "dynamic_single_cell_successor": False,
+        "micro_judgment_successor": False,
+        "node_profiles": {},
     }
 
 
@@ -4130,6 +4248,22 @@ def build_preflight(
                 "project_os_dynamic_five_cell_node_scope_allowance_missing"
             )
     if (
+        decision_projection.get("dynamic_five_cell_claim_surface_successor")
+        is True
+    ):
+        required_allowances = {
+            "RC-S2-004-product-operating-metric-and-profit-bridge-authority-missing",
+            "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget",
+            "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence",
+            "RC-S3-033-strict-tool-semantic-surface-predicate-not-encoded-in-server-schema",
+            "RC-S3-035-reviewed-claim-exact-source-hidden-by-prefix-projection",
+        }
+        actual_allowances = set(scope_projection["explicit_allow_issue_ids"])
+        if not required_allowances.issubset(actual_allowances):
+            raise ValueError(
+                "project_os_dynamic_five_cell_claim_surface_scope_allowance_missing"
+            )
+    if (
         decision_projection.get("relation_role_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -4170,7 +4304,20 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("dynamic_five_cell_node_successor") is True:
+    if (
+        decision_projection.get("dynamic_five_cell_claim_surface_successor")
+        is True
+    ):
+        known_boundary = (
+            "This current-baseline preflight permits only one decision-bound "
+            "DELL dynamic five-cell claim-surface successor. It reuses only "
+            "the immutable R4 planner and current S1/S2 result, reruns all "
+            "five analyses and submissions plus synthesis, exposes one "
+            "reviewed period-bound issuer attribution, and forbids new "
+            "Evidence, current-period causal promotion, publication, S3 "
+            "acceptance, heterogeneous generalization or release."
+        )
+    elif decision_projection.get("dynamic_five_cell_node_successor") is True:
         known_boundary = (
             "This current-baseline preflight permits only one decision-bound "
             "DELL dynamic five-cell node successor. It reuses the immutable "

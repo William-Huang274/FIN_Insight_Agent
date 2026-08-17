@@ -55,3 +55,21 @@ R4 从干净、已同步提交 `05894415096b9de8d4d9fe7fba29021134a94120` 签发
 - private full result：`data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R4/full_result.json`
 - public result digest：`73c3a577446d11a5f1fe3035317aadfbc3dae1c17eaa1bce9ccaa6882a468766`
 - private full result digest：`ddb85d920b3a51a55c12da51092d0786da4ce2ff16647725ad95c19d0f977f32`
+
+## 后续证据更正（2026-08-17）
+
+R4 的 Provider strict 不守 `pattern`、本地 no-digit 校验正确拒绝，以及反方单元“只选 limit 却提交支持性结论”的判断均保持不变。但本记录把价值获取单元写成“当前材料完全没有 AI 服务器组合与公司毛利率方向关系”，范围过宽，必须更正。
+
+当前 reviewed Dell `10-Q` 原文中确实存在一句由公司披露、绑定 FY2026 Q3 的历史方向关系：`The decreases in gross margin percentage and non-GAAP gross margin percentage were primarily driven by a shift in mix towards our AI-optimized server offerings.`。它能够支持“公司在该历史期间把毛利率下降主要归因于 AI 优化服务器组合变化”这一带归属、带期间的历史陈述；它不能自动外推 FY2027 Q1，不能证明独立因果，也不能提供产品毛利、ASP、台数、PVM 或利润分配。
+
+R4 当时没有看见这句原文，不是因为 Evidence 不存在，而是当前 Evidence Pack 只把来源前 1,200 字符投影给模型；该句位于原文 2,273–2,433 字符处。模型只看见人工复核中文摘要，导致“来源存在、审计可追溯、模型不可见”。最早责任层因此修订为 S1/S3 之间的 reviewed Evidence projection，而不是简单归为 S2 bridge 全缺失。
+
+后续结构处置为：
+
+1. claim 对象通过内容寻址的 reviewed anchor catalog 暴露经过复核的精确原句，而不是扩大所有来源的通用前缀上限；
+2. 新增 `issuer_attributed_historical_directional_relation`，强制绑定公司、Evidence、source digest、item digest、期间和原句 anchor；
+3. analysis 仍可见精确原文、数字和期间；submission 只接收去除 URL、内部 ref、日期和数值表面的同一模型草稿，不替模型写判断；
+4. 同一 Evidence 可以分别以 support 与 limit 使用一次，但模型仍须明确提交判断状态，本地 Validator 继续检查叙事是否超出所选 Evidence；不采用 Harness 自动推导 status 的方案，因为它可能把一段实质上无支持的正面叙事伪装成合法状态；
+5. 新 successor 只复用 R4 的 planner 与 current S1/S2 结果，五个分析、五个交卷和两次综合全部重跑，不复用 R4 单元草稿或 Judgment。
+
+因此 `RC-S2-004` 仍未关闭，但边界改为：历史、发行人归属的期间内方向关系可用；跨期间、独立因果、产品到分部／公司的利润与现金桥仍不可用。R4 仍是 immutable failure，不能因本次更正被追认为通过。

@@ -374,3 +374,14 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 这不是 R2 的容量复发。请求与 Tool description 已明确声明 prose 不得带数字、日期、URL、ref 或数值带；模型仍复制分析草稿中的来源期次，而服务端 schema 尚未把该语义写成 `pattern`。当前最早责任层为 S3 统一语义合同编译器＋严格提交 profile，不是 S1/S2、Skill、Graph 或网络。
 - 下一步只允许零调用编译同一 forbidden-surface predicate 到 strict JSON Schema `pattern`，保留本地校验，并让稳定 runner 复用 R3 两份成功分析，只重做价值／反方交卷和两次综合，最多 4 次新调用。不得手工清洗 R3，也不得重跑 Planner、S1/S2 或三个已验证 Judgment。
 - 即使下一 successor 合同通过，价值获取原始文字中“AI 组合压低毛利率”的方向性机制仍须独立金融 L1 审查。五单元、完整报告、八维质量、异质泛化、qualified-human 与 S3 acceptance 继续为 false。
+
+## 2026-08-17 S3 R4 证据投影更正与 claim-surface successor 工程门
+
+- R4 的远端 strict `pattern` 不守约和本地拒绝保持成立；但“当前 Evidence 完全没有 AI server mix 与公司毛利率历史方向关系”的判断过宽。Dell reviewed `10-Q` 确有一条 FY2026 Q3 发行人历史归因原句，只是位于来源 2,273–2,433 字符处，旧 1,200 字符前缀没有投影给模型。
+- current Evidence Pack projection 已升级为 v1.1：claim 通过内容寻址 reviewed anchor 暴露精确原句，其他对象仍使用有界前缀。catalog 共 21 条 anchor：DELL 11、MU 2、NVDA 8；cross-case、target、source／item digest、期间与区间 mutation 均 fail closed。
+- 动态 Claim Surface 新增 `CR::DELL::HISTORICAL_MIX_PRESSURE`，只授予带公司归属和 FY2026 Q3 期间的历史方向权限。它不关闭 `RC-S2-004`，不允许 FY2027 Q1 外推、独立因果、产品毛利、ASP／数量／PVM 或利润分配。
+- analysis 保留完整事实视图；submission 使用确定性去权威表面投影，移除 URL、ref、filing ID、日期、数字和 verbal numeric band，但不替模型写观点。Provider strict 继续只是形状辅助，本地完整 Validator 是最终权威。
+- 同一 Evidence 可分别作为 support 与 limit 使用一次；同一 Evidence＋role 重复仍拒绝。没有采用自动推导 `judgment_status` 的方案，因为它会掩盖 R4 这类“文字作出支持性结论、却只选 limit”的真实冲突。
+- 旧 fixed-Pack 测试冻结在 v1.0 Evidence projection；current product 使用 v1.1。联合零调用回归 184 passed，当前 base／claim-surface digest 分别为 `5c6b0bd...afcc1`／`d8e915ac...f438b`。
+- 新 scope decision 只允许在 clean/synced commit 上签发一次 DELL claim-surface successor：复用 R4 planner 与 current S1/S2，五个 analysis、五个 submission 和两次 synthesis 全部重跑，共最多 12 calls，0 retry／fallback／external network。成功后仍须独立做 L1、逐单元内容、跨单元综合、八维质量、paired 和 qualified-human 验收；通过前不得进入异质泛化或宣称 S3 通过。
+- 全仓复证 `463 passed`，compileall、active baseline `135／8／11／0`、secret scan `6815／0` 通过。历史 fixed-Pack 依据 policy 绑定摘要显式回放 v1.0，current product 只使用 v1.1 anchor projection；旧 decision 可审计但其 exact-once scope 已关闭。当前唯一执行 scope 是 `one_DELL_dynamic_five_cell_claim_surface_successor_exact_once`。

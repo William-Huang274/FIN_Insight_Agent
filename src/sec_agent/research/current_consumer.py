@@ -551,7 +551,7 @@ def _evidence_card(item: Mapping[str, Any], *, case_key: str) -> dict[str, Any]:
                 "claim_boundary_zh": boundary,
             }
         )
-    return {
+    card = {
         "evidence_ref": alias,
         "target_id": str(item.get("target_id") or ""),
         "source_record_id": str(item.get("source_record_id") or ""),
@@ -577,6 +577,21 @@ def _evidence_card(item: Mapping[str, Any], *, case_key: str) -> dict[str, Any]:
         "evidence_item_digest": str(item.get("evidence_item_digest") or ""),
         "source_text_digest": str(source.get("source_text_digest") or ""),
     }
+    if source.get("reviewed_anchor_bound") is True:
+        card["reviewed_anchor_receipt"] = {
+            "projection_kind": str(
+                source.get("excerpt_projection_kind") or ""
+            ),
+            "anchor_digest": str(
+                source.get("reviewed_anchor_digest") or ""
+            ),
+            "anchor_catalog_digest": str(
+                source.get("reviewed_anchor_catalog_digest") or ""
+            ),
+            "anchor_start": source.get("reviewed_anchor_start"),
+            "anchor_end": source.get("reviewed_anchor_end"),
+        }
+    return card
 
 
 def _validate_evidence_source(
@@ -602,6 +617,23 @@ def _validate_evidence_source(
         and card.get("source_url"),
         "research_consumer_evidence_source_incomplete",
     )
+    anchor_receipt = card.get("reviewed_anchor_receipt")
+    if anchor_receipt is not None:
+        _require(
+            isinstance(anchor_receipt, Mapping)
+            and anchor_receipt.get("projection_kind")
+            == "reviewed_claim_anchor"
+            and len(str(anchor_receipt.get("anchor_digest") or "")) == 64
+            and len(
+                str(anchor_receipt.get("anchor_catalog_digest") or "")
+            )
+            == 64
+            and type(anchor_receipt.get("anchor_start")) is int
+            and type(anchor_receipt.get("anchor_end")) is int
+            and int(anchor_receipt["anchor_start"])
+            < int(anchor_receipt["anchor_end"]),
+            "research_consumer_reviewed_anchor_receipt_invalid",
+        )
     if card.get("source_type") == "EARNINGS_CALL_TRANSCRIPT":
         transcript = source_policy["earnings_call_transcript_constraints"]
         _require(
@@ -1343,7 +1375,12 @@ def compile_current_research_messages(
     def visible_evidence_fact(ref: str) -> dict[str, Any]:
         row = evidence_by_ref[ref]
         excerpt = str(row["source_visible_fact_excerpt"])
-        return {
+        if "reviewed_anchor_receipt" in row:
+            _require(
+                len(excerpt) <= maximum_excerpt,
+                "research_consumer_reviewed_anchor_exceeds_model_capacity",
+            )
+        visible = {
             "evidence_ref": ref,
             "evidence_owner_ticker": row["evidence_owner_ticker"],
             "source_type": row["source_type"],
@@ -1359,6 +1396,11 @@ def compile_current_research_messages(
                 or len(excerpt) > maximum_excerpt
             ),
         }
+        if "reviewed_anchor_receipt" in row:
+            visible["reviewed_anchor_receipt"] = deepcopy(
+                row["reviewed_anchor_receipt"]
+            )
+        return visible
 
     def visible_cell_evidence(
         ref: str, *, slot_ids: set[str]
@@ -1574,7 +1616,12 @@ def compile_current_research_messages(
         "evidence_uses": [
             {
                 "evidence_ref": "one EV ref from this cell only",
-                "use_role": "support, limit or context",
+                "use_role": (
+                    "support when the EV directly supports the submitted thesis, "
+                    "limit when it bounds or rebuts the thesis, or context when it "
+                    "does neither alone; the same EV may appear once per distinct "
+                    "role"
+                ),
             }
         ],
         "numeric_refs": ["zero or more NUM refs from this cell only"],
@@ -1979,7 +2026,7 @@ def validate_current_research_output(
             "research_consumer_evidence_uses_invalid",
         )
         evidence_uses = []
-        seen_evidence: set[str] = set()
+        seen_evidence_uses: set[tuple[str, str]] = set()
         for raw_use in raw_uses:
             use = _mapping(
                 raw_use, "research_consumer_evidence_use_invalid"
@@ -1989,11 +2036,11 @@ def validate_current_research_output(
             _require(
                 set(use) == {"evidence_ref", "use_role"}
                 and ref in set(input_cells[cell_id]["allowed_evidence_refs"])
-                and ref not in seen_evidence
-                and role in use_roles,
+                and role in use_roles
+                and (ref, role) not in seen_evidence_uses,
                 "research_consumer_evidence_use_invalid",
             )
-            seen_evidence.add(ref)
+            seen_evidence_uses.add((ref, role))
             evidence_uses.append({"evidence_ref": ref, "use_role": role})
         numeric = _unique_strings(
             raw.get("numeric_refs"),

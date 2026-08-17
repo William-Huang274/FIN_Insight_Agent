@@ -180,6 +180,22 @@ R6_SUBMISSION_SUCCESSOR_FIXTURE = ROOT / (
     "fin_ia_0_1_3_s3_dell_full_fragment_chat_r6_"
     "submission_successor_fixture_v1_0.json"
 )
+
+
+def _legacy_fixed_pack_evidence_config(
+    current_config: dict[str, object],
+) -> dict[str, object]:
+    """Freeze old fixed-Pack replays against their original v1.0 projection."""
+
+    assert current_config["schema_version"] == (
+        "fin_ia_current_research_evidence_pack_projection_config_v1_1"
+    )
+    legacy = deepcopy(current_config)
+    legacy["schema_version"] = (
+        "fin_ia_current_research_evidence_pack_projection_config_v1_0"
+    )
+    legacy.pop("reviewed_anchor_catalog_resource_id")
+    return legacy
 R7_REJECTED_COUNTER_FIXTURE = ROOT / (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_failed_counter_submission_r7_"
@@ -252,8 +268,11 @@ def contracts():
     kernel = load_financial_research_kernel(kernel_payload)
     route = load_query_object_fact_route_policy(route_payload, kernel)
     planning = load_research_planning_policy(planning_payload, route)
-    evidence_config = read_registered_runtime_json(
+    current_evidence_config = read_registered_runtime_json(
         ROOT, "application.config.current_research_evidence_pack_projection"
+    )
+    evidence_config = _legacy_fixed_pack_evidence_config(
+        current_evidence_config
     )
     evidence_service = ResearchEvidencePackService(
         config=evidence_config,
@@ -2340,6 +2359,10 @@ def test_three_case_current_context_full_fake_has_no_identity_or_graph_pollution
             / str(evidence_config["private_object_root_relative"])
         ),
         private_root_base=paths.reviewed_evidence_root,
+        reviewed_anchor_catalog=read_registered_runtime_json(
+            ROOT,
+            str(evidence_config["reviewed_anchor_catalog_resource_id"]),
+        ),
     )
     retrieval = ResearchRetrievalService(
         snapshot=read_registered_runtime_json(

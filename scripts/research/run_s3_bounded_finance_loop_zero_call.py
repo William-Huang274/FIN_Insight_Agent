@@ -267,6 +267,10 @@ def _runtime_components():
             / str(evidence_config["private_object_root_relative"])
         ),
         private_root_base=runtime_paths.reviewed_evidence_root,
+        reviewed_anchor_catalog=read_registered_runtime_json(
+            ROOT,
+            str(evidence_config["reviewed_anchor_catalog_resource_id"]),
+        ),
     )
     retrieval = ResearchRetrievalService(
         snapshot=read_registered_runtime_json(

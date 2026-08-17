@@ -31,6 +31,7 @@ from sec_agent.research.five_cell_runtime import (
     compile_five_cell_analysis_view,
     compile_five_cell_report,
     compile_five_cell_submission,
+    compile_five_cell_submission_draft_projection,
     compile_five_cell_synthesis_analysis_messages,
     compile_five_cell_synthesis_submission,
     validate_five_cell_synthesis,
@@ -189,6 +190,36 @@ def test_five_cell_analysis_and_submission_are_cell_local(
     ]
     assert tool["function"]["name"] == "submit_research_judgment"
     assert tool["function"]["strict"] is True
+
+
+def test_submission_projection_preserves_reasoning_but_removes_owned_surfaces(
+    five_cell_input: dict[str, object],
+) -> None:
+    raw = (
+        "The 10-Q says revenue rose 12% to USD 43.8B while "
+        "EV::734A9C177164E08E supports the factual result. "
+        "This supports demand, but it does not by itself prove that AI servers "
+        "caused company profit growth; the broader attribution remains bounded."
+    )
+
+    projected = compile_five_cell_submission_draft_projection(raw)
+    submission, _ = compile_five_cell_submission(
+        research_input=five_cell_input,
+        cell_id="CELL::demand_quality",
+        analysis_draft=raw,
+    )
+
+    assert "supports demand" in projected
+    assert "broader attribution remains bounded" in projected
+    assert "10-Q" not in projected
+    assert "12" not in projected
+    assert "43.8" not in projected
+    assert "USD" not in projected
+    assert "EV::" not in projected
+    assert projected == submission[2]["content"]
+    assert "same EV may be selected once per distinct role" in submission[3][
+        "content"
+    ]
 
 
 def test_five_cell_analysis_view_removes_submission_and_transport_duplication(

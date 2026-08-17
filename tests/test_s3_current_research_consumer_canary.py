@@ -2416,8 +2416,10 @@ def test_live_runner_is_case_bound_and_has_exact_once_budget() -> None:
     source = SCRIPT.read_text(encoding="utf-8")
 
     assert 'case_key = str(authority["case_key"])' in source
-    assert 'evidence_service.get_case(\n        case_key,' in source
-    assert 'retrieval_service.execute_controlled_plan(\n        case_key,' in source
+    assert "evidence_service.get_case(" in source
+    assert "retrieval_service.execute_controlled_plan(" in source
+    assert "case_key, ResearchEvidencePackPrincipal" in source
+    assert "case_key,\n            objective," in source
     assert '"model_calls": 1' in source
     assert '"transport_attempts": 1' in source
     assert '"retries": 0' in source

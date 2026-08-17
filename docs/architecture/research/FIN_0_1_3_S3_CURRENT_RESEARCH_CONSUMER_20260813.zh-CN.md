@@ -418,3 +418,15 @@ R2 的最早责任层是共享的 S3 model-visible analysis projection，而不�
 6. R2、capture 和失败评估保持不可变，0 retry／fallback／新 Evidence／publication。
 
 只有该零调用门和 clean Project OS preflight 通过，才能签发一次 partial successor。若同类 hidden-reasoning／visible-output budget failure 再次出现，不再自动增加预算或新增 capacity patch；应转为模型 profile、分析动作面或提交职责的项目级选择。若运行成功，后续仍须独立完成五单元金融 L1、八维绝对内容质量、同输入 paired gain 与 qualified-human 内容验收，才能讨论 MU／NVDA 和异质留出案例。
+
+## 20. Reviewed claim anchor、历史关系与 submission 表面分层
+
+R4 证明“已审 Evidence 存在”不等于“模型看见了作出判断所需的原句”。Dell 历史毛利率方向句位于来源长文的 2,273–2,433 字符处，而旧模型视图只投影前 1,200 字符。当前合同不得通过放大全部来源前缀解决；claim 对象必须使用内容寻址的 reviewed anchor，绑定 case、target、Evidence、source／item digest、期间、字符区间和 anchor digest。只有全部绑定仍成立时，精确原句才进入模型视图。
+
+历史原句获得的是 `issuer_attributed_historical_directional_relation` 权限：可以复述发行人在该报告期的归因，但不能自动外推到当前期、升级为独立因果，或推导产品毛利、ASP、台数、PVM、分部／公司利润分配。`RC-S2-004` 因而不是“任何历史方向都禁止”，而是“当前 typed bridge 仍不足以支持更强的跨期或产品级结论”。
+
+analysis 与 submission 继续分层。分析节点看见 reviewed 原句、NumericFact、期间和来源；交卷节点消费同一模型草稿的确定性 authority-surface-stripped 投影，移除 URL、内部 ref、filing ID、日期、数字和文字数值带，但不替模型改写观点。Provider strict 只帮助 JSON 形状，本地 Validator 仍执行完整文本与金融语义合同。
+
+Evidence role 采用 claim-local 多角色语义：同一 Evidence 可以各出现一次 support、limit 或 context；同一 `Evidence＋role` 重复仍拒绝。`judgment_status` 与 `inference_authority` 不由 Harness 自动推导，因为 Evidence role 无法替代对模型叙事的检查；模型必须明确提交，Validator 必须拒绝“只选 limit 却写支持性结论”等内部矛盾。
+
+兼容规则同时冻结：历史 fixed-Pack replay 使用它原来的 v1.0 Evidence projection；current product 使用带 reviewed anchor 的 v1.1 projection。不能通过修改旧合同 digest 追认历史结果，也不能让旧测试随当前产品投影漂移。

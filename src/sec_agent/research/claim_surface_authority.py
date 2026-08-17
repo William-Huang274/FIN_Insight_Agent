@@ -46,6 +46,12 @@ CLAIM_SURFACE_AUTHORITY_ATOM_FIELDS = (
     "mechanism_atom",
     "counterargument_atom",
 )
+CLAIM_SURFACE_QUALITATIVE_FACT_UNIT_BY_KIND = {
+    "management_target": "percentage_rate",
+    "issuer_attributed_historical_directional_relation": (
+        "directional_relation"
+    ),
+}
 
 _NARRATIVE_CLAUSE_BOUNDARY = re.compile(r"[。！？!?；;，,\n]+")
 _CAUSAL_NEGATION_MARKERS = (
@@ -299,13 +305,17 @@ def load_claim_surface_authority_policy(
         _require(
             ref.startswith("QF::")
             and ref not in fact_refs
-            and row.get("fact_kind") == "management_target"
+            and str(row.get("fact_kind") or "")
+            in CLAIM_SURFACE_QUALITATIVE_FACT_UNIT_BY_KIND
             and str(row.get("case_key") or "") == qualified["case_key"]
             and str(row.get("cell_id") or "") == qualified["cell_id"]
             and str(row.get("subject") or "") in subjects
             and str(row.get("metric_id") or "").strip()
             and str(row.get("qualitative_band") or "").strip()
-            and str(row.get("unit") or "") == "percentage_rate"
+            and str(row.get("unit") or "")
+            == CLAIM_SURFACE_QUALITATIVE_FACT_UNIT_BY_KIND[
+                str(row.get("fact_kind") or "")
+            ]
             and isinstance(row.get("fiscal_year"), int)
             and str(row.get("fiscal_period") or "").startswith("Q")
             and re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(row.get("period_end") or ""))
@@ -594,6 +604,8 @@ def compile_claim_surface_authority_research_input(
             and evidence.get("evidence_item_digest")
             == raw["source_evidence_item_digest"]
             and evidence.get("source_text_digest") == raw["source_text_digest"]
+            and evidence.get("source_reporting_period_end")
+            == raw["period_end"]
             and _normalized_source_surface(raw["source_surface"])
             in _normalized_source_surface(
                 evidence.get("source_visible_fact_excerpt")
@@ -621,6 +633,20 @@ def compile_claim_surface_authority_research_input(
         CLAIM_SURFACE_RELATION_ALIAS_POLICY_SCHEMA_VERSION,
         CLAIM_SURFACE_DYNAMIC_RELATION_ALIAS_POLICY_SCHEMA_VERSION,
     }
+    qualitative_fact_kinds = {
+        str(row.get("fact_kind") or "")
+        for row in loaded["source_bound_qualitative_facts"]
+    }
+    qualitative_fact_rule = (
+        "A management target remains an attributed, unaudited qualitative "
+        "fact and never becomes a point estimate."
+        if qualitative_fact_kinds.issubset({"management_target"})
+        else (
+            "A source-bound qualitative fact remains attributed, period-bound "
+            "and unaudited; it never becomes a point estimate or a broader "
+            "causal bridge."
+        )
+    )
     relation_card_body = {
         "card_schema_version": (
             "fin_ia_structured_claim_relation_card_v1_1"
@@ -658,7 +684,7 @@ def compile_claim_surface_authority_research_input(
         ),
         "rules": [
             "The structured relation is the authoritative semantic commitment selected by the model.",
-            "A management target remains an attributed, unaudited qualitative fact and never becomes a point estimate.",
+            qualitative_fact_rule,
             "Narrative atoms remain model-authored but may not contradict or broaden the selected relation.",
             "The harness renders the selected fact surface and receipt; it does not invent the research conclusion.",
         ],

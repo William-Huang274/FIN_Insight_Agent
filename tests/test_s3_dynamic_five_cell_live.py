@@ -75,8 +75,16 @@ def _prepare_runner(
     successor_mode: bool = False,
     partial_successor_mode: bool = False,
     node_successor_mode: bool = False,
+    claim_surface_successor_mode: bool = False,
 ) -> tuple[Path, Path, Path, dict[str, int]]:
-    assert sum((successor_mode, partial_successor_mode, node_successor_mode)) <= 1
+    assert sum(
+        (
+            successor_mode,
+            partial_successor_mode,
+            node_successor_mode,
+            claim_surface_successor_mode,
+        )
+    ) <= 1
     authority_path = tmp_path / "authority.json"
     private_root = tmp_path / "private"
     public_path = tmp_path / "public.json"
@@ -100,7 +108,12 @@ def _prepare_runner(
         },
         "product_publication": "forbidden",
     }
-    if successor_mode or partial_successor_mode or node_successor_mode:
+    if (
+        successor_mode
+        or partial_successor_mode
+        or node_successor_mode
+        or claim_surface_successor_mode
+    ):
         output.pop("planner_attempt_id")
     if partial_successor_mode:
         output["cell_attempt_ids"] = {
@@ -118,15 +131,19 @@ def _prepare_runner(
         }
     authority = {
         "schema_version": (
-            runner.NODE_SUCCESSOR_AUTHORITY_SCHEMA
-            if node_successor_mode
+            runner.CLAIM_SURFACE_SUCCESSOR_AUTHORITY_SCHEMA
+            if claim_surface_successor_mode
             else (
-                runner.PARTIAL_SUCCESSOR_AUTHORITY_SCHEMA
-                if partial_successor_mode
+                runner.NODE_SUCCESSOR_AUTHORITY_SCHEMA
+                if node_successor_mode
                 else (
-                    runner.SUCCESSOR_AUTHORITY_SCHEMA
-                    if successor_mode
-                    else "fixture"
+                    runner.PARTIAL_SUCCESSOR_AUTHORITY_SCHEMA
+                    if partial_successor_mode
+                    else (
+                        runner.SUCCESSOR_AUTHORITY_SCHEMA
+                        if successor_mode
+                        else "fixture"
+                    )
                 )
             )
         ),
@@ -134,12 +151,26 @@ def _prepare_runner(
         "known_boundary": "fixture orchestration proof; not product acceptance",
         "output_contract": output,
     }
-    if successor_mode or partial_successor_mode or node_successor_mode:
+    if (
+        successor_mode
+        or partial_successor_mode
+        or node_successor_mode
+        or claim_surface_successor_mode
+    ):
         authority["bound_inputs"] = {
             "predecessor_plan_digest": "plan-digest",
             "expected_evidence_pack_artifact_digest": "artifact",
             "expected_evidence_pack_payload_digest": "payload",
-            "expected_research_input_digest": "research-input",
+            **(
+                {
+                    "expected_base_research_input_digest": "research-input",
+                    "expected_claim_surface_research_input_digest": (
+                        "claim-surface-input"
+                    ),
+                }
+                if claim_surface_successor_mode
+                else {"expected_research_input_digest": "research-input"}
+            ),
         }
     if partial_successor_mode:
         authority["reused_cell_ids"] = list(
@@ -153,6 +184,8 @@ def _prepare_runner(
         authority["resubmission_cell_ids"] = list(
             runner.NODE_SUCCESSOR_RESUBMISSION_CELL_IDS
         )
+    if claim_surface_successor_mode:
+        authority["rerun_cell_ids"] = list(runner.REQUIRED_CELL_IDS)
     authority_path.write_text(json.dumps(authority), encoding="utf-8")
     profile_path = tmp_path / "profile.json"
     objective_path = tmp_path / "objective.json"
@@ -166,8 +199,16 @@ def _prepare_runner(
         "truth_spine_policy_ref": profile_path,
         "consumer_policy_ref": profile_path,
     }
+    if claim_surface_successor_mode:
+        paths["claim_authority_template_ref"] = profile_path
+        paths["claim_surface_template_ref"] = profile_path
     values = {authority_path: authority, profile_path: {}, objective_path: {}}
-    if successor_mode or partial_successor_mode or node_successor_mode:
+    if (
+        successor_mode
+        or partial_successor_mode
+        or node_successor_mode
+        or claim_surface_successor_mode
+    ):
         predecessor_path = tmp_path / "predecessor.json"
         predecessor_authority_path = tmp_path / "predecessor-authority.json"
         predecessor_public_path = tmp_path / "predecessor-public.json"
@@ -318,6 +359,17 @@ def _prepare_runner(
             "evidence_responses": {
                 "summary": {"response_count": 5},
                 "evidence_response_set_digest": "response-set",
+            },
+            "candidate_promotions": 0,
+        },
+    )
+    monkeypatch.setattr(
+        runner,
+        "compile_dynamic_claim_surface_projection",
+        lambda **_: {
+            "claim_surface_research_input": {
+                **research_input,
+                "research_input_digest": "claim-surface-input",
             },
             "candidate_promotions": 0,
         },
@@ -579,6 +631,72 @@ def test_five_cell_successor_reuses_prefix_and_attempts_only_twelve_nodes(
     assert result["execution"]["current_S1_S2_reused"] is True
     assert result["acceptance"]["natural_planner_reused_not_rerun"] is True
     assert result["acceptance"]["current_S1_S2_reused_not_rerun"] is True
+    assert counters == {"analysis": 6, "submission": 6}
+    assert public_path.is_file()
+    assert (private_root / "full_result.json").is_file()
+
+
+def test_claim_surface_successor_reuses_only_prefix_and_reruns_all_twelve_nodes(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    authority_path, private_root, public_path, counters = _prepare_runner(
+        monkeypatch, tmp_path, claim_surface_successor_mode=True
+    )
+
+    def planner_must_not_run(**_kwargs):
+        raise AssertionError("claim-surface successor must not rerun planner")
+
+    def analyze(**_kwargs):
+        counters["analysis"] += 1
+        return _analysis_step(tmp_path, counters["analysis"])
+
+    def submit(**kwargs):
+        counters["submission"] += 1
+        tool = kwargs["tools"][0]["function"]
+        arguments = (
+            {"executive_thesis": "all cells synthesized"}
+            if tool["name"] == "submit_five_cell_synthesis"
+            else {"cell_id": tool["description"]}
+        )
+        return _submission_step(
+            tmp_path,
+            counters["submission"],
+            tool_name=tool["name"],
+            arguments=arguments,
+        )
+
+    result = runner.run(
+        authority_path,
+        planner_executor=planner_must_not_run,
+        analysis_executor=analyze,
+        submission_executor=submit,
+    )
+
+    assert result["schema_version"] == runner.CLAIM_SURFACE_SUCCESSOR_RESULT_SCHEMA
+    assert result["status"].startswith("completed_")
+    assert result["dynamic_research_input_digest"] == "claim-surface-input"
+    assert result["execution"]["model_calls_attempted"] == 12
+    assert result["execution"]["maximum_model_calls"] == 12
+    assert result["execution"]["planner_calls_completed"] == 0
+    assert result["execution"]["planner_calls_reused"] == 1
+    assert result["execution"]["cell_analysis_calls_attempted"] == 5
+    assert result["execution"]["cell_analysis_drafts_reused"] == 0
+    assert result["execution"]["cell_submission_calls_attempted"] == 5
+    assert result["execution"]["cell_judgments_reused"] == 0
+    assert result["execution"]["cell_judgments_accepted"] == 5
+    full_result = json.loads(
+        (private_root / "full_result.json").read_text(encoding="utf-8")
+    )
+    prefix = full_result["successor_prefix_reuse"]
+    assert prefix["valid_cells_rerun"] is True
+    assert prefix["cell_analysis_rerun"] is True
+    assert prefix["claim_surface_successor"] is True
+    projected = [
+        row["tool_projection_receipt"] for row in result["cells"]
+    ] + [result["synthesis"]["tool_projection_receipt"]]
+    assert len(projected) == 6
+    assert all(row["projection_digest"] == "strict-projection" for row in projected)
     assert counters == {"analysis": 6, "submission": 6}
     assert public_path.is_file()
     assert (private_root / "full_result.json").is_file()

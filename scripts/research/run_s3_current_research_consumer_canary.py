@@ -358,11 +358,38 @@ def validate_authority(
     return paths
 
 
-def _services() -> tuple[ResearchEvidencePackService, ResearchRetrievalService]:
+def _services(
+    *,
+    evidence_projection_version: str = "current",
+) -> tuple[ResearchEvidencePackService, ResearchRetrievalService]:
     runtime_paths = resolve_runtime_paths(ROOT)
     evidence_config = read_registered_runtime_json(
         ROOT, "application.config.current_research_evidence_pack_projection"
     )
+    reviewed_anchor_catalog: Mapping[str, Any] | None
+    if evidence_projection_version == "current":
+        reviewed_anchor_catalog = read_registered_runtime_json(
+            ROOT,
+            str(evidence_config["reviewed_anchor_catalog_resource_id"]),
+        )
+    elif evidence_projection_version == "legacy_v1_0":
+        if (
+            evidence_config.get("schema_version")
+            != "fin_ia_current_research_evidence_pack_projection_config_v1_1"
+        ):
+            raise CurrentResearchConsumerCanaryError(
+                "research_consumer_legacy_projection_source_invalid"
+            )
+        evidence_config = dict(evidence_config)
+        evidence_config["schema_version"] = (
+            "fin_ia_current_research_evidence_pack_projection_config_v1_0"
+        )
+        evidence_config.pop("reviewed_anchor_catalog_resource_id", None)
+        reviewed_anchor_catalog = None
+    else:
+        raise CurrentResearchConsumerCanaryError(
+            "research_consumer_evidence_projection_version_invalid"
+        )
     evidence = ResearchEvidencePackService(
         config=evidence_config,
         result=read_registered_runtime_json(
@@ -373,6 +400,7 @@ def _services() -> tuple[ResearchEvidencePackService, ResearchRetrievalService]:
             / str(evidence_config["private_object_root_relative"])
         ),
         private_root_base=runtime_paths.reviewed_evidence_root,
+        reviewed_anchor_catalog=reviewed_anchor_catalog,
     )
     retrieval = ResearchRetrievalService(
         snapshot=read_registered_runtime_json(
@@ -405,31 +433,62 @@ def _compile_runtime_input(
     required_cell_ids: Sequence[str] | None = None,
     submission_transport: str = "json",
 ) -> tuple[dict[str, Any], dict[str, Any], tuple[dict[str, str], ...]]:
-    evidence_service, retrieval_service = _services()
     read = frozenset({"current_product:read"})
     objective = _json(paths["objective_ref"])
     if str(objective.get("case_key") or "").strip().upper() != case_key:
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_canary_objective_case_drift"
         )
-    evidence_pack = evidence_service.get_case(
-        case_key, ResearchEvidencePackPrincipal("current", read)
+    claim_policy = (
+        _json(paths["claim_authority_policy_ref"])
+        if "claim_authority_policy_ref" in paths
+        else None
     )
-    controlled = retrieval_service.execute_controlled_plan(
-        case_key,
-        objective,
-        _json(paths["planner_atoms_ref"]),
-        ResearchRetrievalPrincipal("current", read),
+    required_base_digest = str(
+        ((claim_policy or {}).get("qualified_scope") or {}).get(
+            "base_research_input_digest"
+        )
+        or ""
     )
-    research_input = compile_current_research_input(
-        policy=_json(paths["consumer_policy_ref"]),
-        evidence_pack=evidence_pack,
-        controlled_plan=controlled,
-    )
+
+    def compile_base(
+        evidence_projection_version: str,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        evidence_service, retrieval_service = _services(
+            evidence_projection_version=evidence_projection_version
+        )
+        evidence_pack = evidence_service.get_case(
+            case_key, ResearchEvidencePackPrincipal("current", read)
+        )
+        controlled = retrieval_service.execute_controlled_plan(
+            case_key,
+            objective,
+            _json(paths["planner_atoms_ref"]),
+            ResearchRetrievalPrincipal("current", read),
+        )
+        research_input = compile_current_research_input(
+            policy=_json(paths["consumer_policy_ref"]),
+            evidence_pack=evidence_pack,
+            controlled_plan=controlled,
+        )
+        return evidence_pack, research_input
+
+    evidence_pack, research_input = compile_base("current")
+    if (
+        required_base_digest
+        and research_input.get("research_input_digest") != required_base_digest
+    ):
+        legacy_evidence_pack, legacy_research_input = compile_base("legacy_v1_0")
+        if (
+            legacy_research_input.get("research_input_digest")
+            == required_base_digest
+        ):
+            evidence_pack = legacy_evidence_pack
+            research_input = legacy_research_input
     if "claim_authority_policy_ref" in paths:
         research_input = compile_claim_authority_research_input(
             research_input,
-            policy=_json(paths["claim_authority_policy_ref"]),
+            policy=claim_policy or {},
         )
     if "claim_surface_authority_policy_ref" in paths:
         if "claim_authority_policy_ref" not in paths:

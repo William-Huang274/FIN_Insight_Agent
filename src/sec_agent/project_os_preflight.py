@@ -127,6 +127,17 @@ DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_SCOPE = (
     "one_DELL_dynamic_five_cell_cell_scoped_claim_contract_"
     "successor_exact_once"
 )
+DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_value_submission_repair_"
+    "successor_scope_decision_v1_0"
+)
+DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_DECISION_STATUS = (
+    "approved_one_DELL_dynamic_five_cell_value_submission_"
+    "repair_plus_synthesis_exact_once"
+)
+DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_SCOPE = (
+    "one_DELL_dynamic_five_cell_value_submission_repair_plus_synthesis"
+)
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_SCHEMA_V1_0 = (
     "fin_ia_s3_dynamic_single_cell_failed_counter_successor_"
     "live_scope_decision_v1_0"
@@ -281,6 +292,14 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if (
+        decision.get("schema_version")
+        == DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_DECISION_SCHEMA
+    ):
+        return _validate_dynamic_five_cell_value_repair_successor_decision(
+            root=root,
+            decision=decision,
+        )
     if decision.get("schema_version") in {
         DYNAMIC_FIVE_CELL_CLAIM_SURFACE_SUCCESSOR_DECISION_SCHEMA,
         DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_SCHEMA,
@@ -2086,6 +2105,207 @@ def _validate_dynamic_five_cell_claim_surface_successor_decision(
         "dynamic_five_cell_cell_scoped_claim_contract_successor": (
             cell_scoped_successor
         ),
+        "dynamic_single_cell_successor": False,
+        "micro_judgment_successor": False,
+        "node_profiles": {},
+    }
+
+
+def _validate_dynamic_five_cell_value_repair_successor_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_cells = (
+        "CELL::demand_quality",
+        "CELL::operating_performance",
+        "CELL::value_capture",
+        "CELL::cash_conversion",
+        "CELL::counterevidence",
+    )
+    reused_cells = (
+        "CELL::demand_quality",
+        "CELL::operating_performance",
+        "CELL::cash_conversion",
+        "CELL::counterevidence",
+    )
+    resubmission_cells = ("CELL::value_capture",)
+    required_equal = {
+        "status": DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "VALUE_SUBMISSION_REPAIR_PLUS_SYNTHESIS",
+        "run_scope_id": DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_SCOPE,
+        "evidence_mode": (
+            "immutable_R6_four_valid_cells_value_analysis_and_current_S1_S2"
+        ),
+        "next_authorized_scope": (
+            "one_DELL_value_submission_repair_plus_synthesis_chat_exact_once"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_five_cell_value_repair_field_invalid:{field}"
+            )
+    if not (
+        tuple(decision.get("required_cell_ids") or ()) == required_cells
+        and tuple(decision.get("reused_cell_ids") or ()) == reused_cells
+        and tuple(decision.get("resubmission_cell_ids") or ())
+        == resubmission_cells
+    ):
+        raise ValueError("project_os_five_cell_value_repair_cells_invalid")
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "reuse_predecessor_planner",
+        "reuse_predecessor_current_S1_S2",
+        "reuse_predecessor_valid_cells",
+        "reuse_predecessor_value_analysis",
+        "reuse_rejected_value_call_only_as_typed_feedback",
+        "same_current_product_pointer_required",
+        "synthesis_requires_all_cells",
+        "immutable_R6_predecessor_required",
+        "relation_endpoints_bind_locally",
+        "structured_financial_support_is_valid_support_channel",
+        "narrative_date_number_ref_gate_unchanged",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                f"project_os_five_cell_value_repair_true_required:{field}"
+            )
+    for field in (
+        "rerun_planner",
+        "rerun_current_S1_S2",
+        "rerun_valid_cells",
+        "rerun_cell_analysis",
+        "harness_rewrites_model_judgment",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "S3_acceptance_authorized",
+        "heterogeneous_generalization_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                f"project_os_five_cell_value_repair_false_required:{field}"
+            )
+    expected_budget = {
+        "maximum_model_calls": 3,
+        "maximum_transport_attempts": 3,
+        "maximum_planner_calls": 0,
+        "reused_predecessor_planner_calls": 1,
+        "maximum_cell_analysis_calls": 0,
+        "reused_predecessor_cell_analysis_drafts": 1,
+        "maximum_cell_submission_calls": 1,
+        "reused_predecessor_cell_judgments": 4,
+        "maximum_synthesis_analysis_calls": 1,
+        "maximum_synthesis_submission_calls": 1,
+        "maximum_evidence_requests": 0,
+        "reused_predecessor_evidence_requests": 8,
+        "maximum_tool_calls": 2,
+        "retries": 0,
+        "fallbacks": 0,
+        "external_source_network_calls": 0,
+        "protocol_switches": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if decision.get("execution_budget") != expected_budget:
+        raise ValueError("project_os_five_cell_value_repair_budget_invalid")
+
+    _, proof = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="value_repair_zero_call_result_ref",
+        sha_field="value_repair_zero_call_result_sha256",
+        digest_field="value_repair_zero_call_result_digest",
+    )
+    _, failed_result = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_attempt_result_ref",
+        sha_field="failed_attempt_result_sha256",
+        digest_field="failed_attempt_result_digest",
+    )
+    assessment_ref = str(decision.get("failed_attempt_failure_assessment_ref") or "")
+    assessment_path = _repo_path(root, assessment_ref)
+    assessment = _load_json(assessment_path)
+    acceptance = proof.get("acceptance") or {}
+    replay = proof.get("successor_fake_replay") or {}
+    capture = proof.get("R6_capture_replay") or {}
+    test_runs = proof.get("independent_test_processes") or []
+    if not (
+        proof.get("schema_version")
+        == (
+            "fin_ia_s3_dynamic_five_cell_value_submission_repair_"
+            "successor_zero_call_result_v1_0"
+        )
+        and proof.get("status")
+        == "engineering_pass_zero_call_R6_value_repair_plus_synthesis_successor"
+        and isinstance(test_runs, list)
+        and len(test_runs) == 2
+        and all(
+            isinstance(row, Mapping)
+            and row.get("status") == "passed"
+            and int(row.get("passed_tests") or 0) >= 100
+            and row.get("model_calls") == 0
+            and row.get("provider_calls") == 0
+            and row.get("network_calls") == 0
+            for row in test_runs
+        )
+        and replay.get("fresh_model_calls_attempted") == 3
+        and replay.get("reused_predecessor_cell_judgments") == 4
+        and replay.get("reused_predecessor_analysis_drafts") == 1
+        and replay.get("cell_submission_calls_attempted") == 1
+        and replay.get("cell_judgments_accepted") == 5
+        and replay.get("synthesis_analysis_calls_attempted") == 1
+        and replay.get("synthesis_submission_calls_attempted") == 1
+        and replay.get("synthesis_contract_valid") is True
+        and capture.get("analysis_capture_count") == 1
+        and capture.get("all_request_response_digests_match") is True
+        and capture.get("all_response_bodies_complete") is True
+        and capture.get("saved_analysis_content_matches") is True
+        and capture.get("rejected_submission_digest_matches") is True
+        and capture.get("rejected_submission_replays_to_typed_failure")
+        == "research_consumer_thesis_atom_invalid"
+        and acceptance.get("R6_preserved") is True
+        and acceptance.get("four_valid_judgments_reused_not_rerun") is True
+        and acceptance.get("value_analysis_capture_verified_and_reused") is True
+        and acceptance.get("rejected_value_submission_not_promoted") is True
+        and acceptance.get("relation_endpoints_bind_locally") is True
+        and acceptance.get("structured_financial_support_recognized") is True
+        and acceptance.get("only_one_typed_value_repair_submission") is True
+        and acceptance.get("synthesis_requires_all_five_cells") is True
+        and acceptance.get("natural_model_quality_proven") is False
+        and acceptance.get("successor_live_authorized") is False
+        and failed_result.get("status")
+        == "terminal_failed_or_partial_no_retry"
+        and failed_result.get("result_digest")
+        == decision.get("failed_attempt_result_digest")
+        and _sha256(assessment_path)
+        == decision.get("failed_attempt_failure_assessment_sha256")
+        and assessment.get("assessment_digest")
+        == decision.get("failed_attempt_failure_assessment_digest")
+        and assessment.get("run_id") == "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6"
+        and (assessment.get("disposition") or {}).get("R6_authority_consumed")
+        is True
+        and (assessment.get("disposition") or {}).get("R6_rerun_forbidden")
+        is True
+    ):
+        raise ValueError("project_os_five_cell_value_repair_proof_invalid")
+    return {
+        "clean_proof_status": proof["status"],
+        "provider_id": "deepseek",
+        "provider_model": "deepseek-v4-pro",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "recent_provider_steps": 10,
+        "dynamic_five_cell_successor": False,
+        "dynamic_five_cell_remaining_nodes_successor": False,
+        "dynamic_five_cell_partial_successor": False,
+        "dynamic_five_cell_node_successor": False,
+        "dynamic_five_cell_claim_surface_successor": False,
+        "dynamic_five_cell_cell_scoped_claim_contract_successor": False,
+        "dynamic_five_cell_value_repair_successor": True,
         "dynamic_single_cell_successor": False,
         "micro_judgment_successor": False,
         "node_profiles": {},
@@ -4352,6 +4572,24 @@ def build_preflight(
                 "project_os_dynamic_five_cell_node_scope_allowance_missing"
             )
     if (
+        decision_projection.get("dynamic_five_cell_value_repair_successor")
+        is True
+    ):
+        required_allowances = {
+            "RC-S2-004-product-operating-metric-and-profit-bridge-authority-missing",
+            "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget",
+            "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence",
+            "RC-S3-033-strict-tool-semantic-surface-predicate-not-encoded-in-server-schema",
+            "RC-S3-035-reviewed-claim-exact-source-hidden-by-prefix-projection",
+            "RC-S3-036-global-claim-authority-contract-leaks-value-relations-into-nonqualified-cells",
+            "RC-S3-037-value-numeric-relation-endpoint-redundancy-and-structured-support-not-recognized",
+        }
+        actual_allowances = set(scope_projection["explicit_allow_issue_ids"])
+        if not required_allowances.issubset(actual_allowances):
+            raise ValueError(
+                "project_os_dynamic_five_cell_value_repair_scope_allowance_missing"
+            )
+    if (
         decision_projection.get("dynamic_five_cell_claim_surface_successor")
         is True
     ):
@@ -4416,6 +4654,18 @@ def build_preflight(
         "synced": "not_checked",
     }
     if decision_projection.get(
+        "dynamic_five_cell_value_repair_successor"
+    ) is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one fresh "
+            "decision-bound DELL Value submission repair plus synthesis. It "
+            "preserves R6 as failed, reuses its four valid judgments and "
+            "capture-verified Value analysis, permits one typed Value repair "
+            "submission and synthesis only after all five cells validate, "
+            "and forbids new Evidence, Harness-authored judgment, publication, "
+            "S3 acceptance, heterogeneous generalization or release."
+        )
+    elif decision_projection.get(
         "dynamic_five_cell_cell_scoped_claim_contract_successor"
     ) is True:
         known_boundary = (

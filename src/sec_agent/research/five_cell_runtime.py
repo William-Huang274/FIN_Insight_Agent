@@ -13,6 +13,7 @@ from .current_consumer import (
     compile_current_research_messages,
     validate_current_research_evidence_route,
     validate_current_research_model_text,
+    validate_current_research_output,
 )
 from .reviewed_evidence_pack import canonical_digest
 
@@ -308,7 +309,7 @@ def compile_five_cell_analysis_view(
             "Residual gaps remain authoritative; do not silently close them.",
             "Do not attribute group, segment, balance-sheet or upstream results to AI or Dell without a direct bridge.",
             "Contemporaneous movement is not causation.",
-            "Use year-over-year language only with a same-basis REL ref and both NumericFact endpoints.",
+            "Use year-over-year language only with a same-basis REL ref; its authorized endpoints bind locally.",
             "Do not invent identities, dates, exact numbers, units, currencies, citations or thresholds.",
             "An unavailable industry, commercial or market route remains a typed gap.",
             "Stop after a concise decision-ready draft; do not write a publishable report or Tool Call.",
@@ -420,8 +421,10 @@ def compile_five_cell_submission(
                 "not copy any unsupported statement from it. Classify an EV as "
                 "support when it directly supports the submitted thesis, as limit "
                 "when it bounds or rebuts the thesis, and as context when it does "
-                "neither alone. A supported, bounded-support or mixed judgment must "
-                "contain at least one support use. The same EV may be selected once "
+                "neither alone. Source-bound NumericFacts, NumericRelations and "
+                "reviewed QualitativeFacts can directly support their exact "
+                "structured financial observation; do not mislabel an unrelated EV "
+                "as support. The same EV may be selected once "
                 "per distinct role when it both supports a source fact and limits a "
                 "broader inference. Re-select all exact values, relations, dates and "
                 "refs from the canonical contract; omitted draft surfaces are not "
@@ -435,6 +438,124 @@ def compile_five_cell_submission(
         strict=True,
     )
     return messages, tool
+
+
+def compile_five_cell_submission_repair(
+    *,
+    research_input: Mapping[str, Any],
+    cell_id: str,
+    analysis_draft: str,
+    rejected_arguments: Mapping[str, Any],
+    terminal_failure_code: str,
+) -> tuple[tuple[dict[str, Any], ...], dict[str, Any], dict[str, Any]]:
+    """Compile one typed repair turn without rewriting the model's judgment."""
+
+    _require(
+        terminal_failure_code == "research_consumer_thesis_atom_invalid",
+        "five_cell_submission_repair_failure_code_invalid",
+    )
+    rejected = deepcopy(dict(rejected_arguments))
+    try:
+        validate_current_research_output(
+            {"cells": [rejected]},
+            research_input=research_input,
+            required_cell_ids=[cell_id],
+        )
+    except CurrentResearchConsumerError as exc:
+        _require(
+            exc.code == terminal_failure_code,
+            "five_cell_submission_repair_failure_drift",
+        )
+    else:
+        raise FiveCellResearchError(
+            "five_cell_submission_repair_predecessor_not_rejected"
+        )
+
+    base_messages, tool = compile_five_cell_submission(
+        research_input=research_input,
+        cell_id=cell_id,
+        analysis_draft=analysis_draft,
+    )
+    rejected_call_id = "rejected_five_cell_submission_1"
+    feedback = {
+        "schema_version": "fin_ia_five_cell_submission_feedback_v1_0",
+        "status": "rejected_not_promoted_repairable_once",
+        "failure_code": terminal_failure_code,
+        "failure_semantics": (
+            "The thesis narrative copied a date, number, unit or reference "
+            "surface. Those surfaces must be selected structurally and rendered "
+            "by the Harness, not repeated in model-owned prose."
+        ),
+        "contract_clarifications": [
+            "A selected NumericRelation already binds its two authorized endpoints locally.",
+            "A selected claim-relation alias binds its required reviewed QF locally; do not duplicate that selection merely to satisfy transport shape.",
+            "Source-bound NUM, REL and reviewed QF refs support only their exact structured observations.",
+            "For a counterargument, a globally selected source may be a limit rather than support; keep EV roles semantically accurate.",
+        ],
+        "required_action": (
+            "Submit one corrected Tool Call. Preserve the company-level "
+            "judgment and its causal boundary, but express the thesis without "
+            "dates, digits, units, URLs or reference identifiers."
+        ),
+        "forbidden_actions": [
+            "add_new_evidence_or_relations",
+            "upgrade_product_to_company_profit_causality",
+            "ask_the_harness_to_rewrite_model_prose",
+            "promote_the_rejected_call_as_business_truth",
+        ],
+        "remaining_repair_turns": 1,
+    }
+    messages: tuple[dict[str, Any], ...] = (
+        *base_messages,
+        {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": rejected_call_id,
+                    "type": "function",
+                    "function": {
+                        "name": "submit_research_judgment",
+                        "arguments": json.dumps(
+                            rejected,
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        ),
+                    },
+                }
+            ],
+        },
+        {
+            "role": "tool",
+            "tool_call_id": rejected_call_id,
+            "content": json.dumps(
+                feedback,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                "Correct the rejected judgment now. Return exactly one call to "
+                "submit_research_judgment and no explanatory prose."
+            ),
+        },
+    )
+    receipt = {
+        "schema_version": "fin_ia_five_cell_submission_repair_projection_v1_0",
+        "cell_id": cell_id,
+        "terminal_failure_code": terminal_failure_code,
+        "rejected_arguments_digest": canonical_digest(rejected),
+        "feedback_digest": canonical_digest(feedback),
+        "repair_messages_digest": canonical_digest(list(messages)),
+        "maximum_repair_turns": 1,
+        "harness_generated_research_judgment": False,
+        "rejected_submission_promoted": False,
+    }
+    return messages, tool, receipt
 
 
 def _selected_ref_sets(
@@ -942,6 +1063,7 @@ __all__ = [
     "compile_five_cell_submission_draft_projection",
     "compile_five_cell_report",
     "compile_five_cell_submission",
+    "compile_five_cell_submission_repair",
     "compile_five_cell_synthesis_analysis_messages",
     "compile_five_cell_synthesis_submission",
     "validate_five_cell_synthesis",

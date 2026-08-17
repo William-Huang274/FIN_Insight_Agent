@@ -1320,7 +1320,7 @@ def _judgment_parameters(
             },
             "numeric_relation_refs": ref_array(
                 numeric_relation_refs,
-                description="Same-basis numeric relations actually used.",
+                description="Selected relations; endpoint facts bind locally.",
             ),
             "method_step_refs": ref_array(
                 method_step_refs,

@@ -1758,7 +1758,8 @@ def compile_current_research_messages(
             "directly_supported permits only conclusions explicitly stated by current subject evidence; bounded_inference must use cautious language and preserve limiting Evidence or respect visible residual gaps; not_inferable must not assert the unavailable mechanism.",
             "Do not attribute group, segment, balance-sheet or upstream results to AI or Dell without direct subject-bound evidence; contemporaneous movement is not causation.",
             "Do not repeat or alter identities, dates, exact numbers, units, currencies or citations in prose; select structured refs instead.",
-            "Use year-over-year or prior-year-quarter language only when selecting a same-basis REL ref and both of its NumericFact endpoints.",
+            "Use year-over-year or prior-year-quarter language only with a same-basis REL ref; its two authorized endpoints bind locally.",
+            "Structured NUM, REL and reviewed QF refs support only their exact observations; never relabel unrelated EV as support.",
             "Submit an EvidenceRequest only through a source class and route shown as requestable; an unavailable industry, commercial or market route must remain a typed gap.",
             "Do not infer an undisclosed threshold or claim a supply constraint is easing without directly bound allocation and timing evidence.",
         ],
@@ -2098,7 +2099,7 @@ def validate_current_research_output(
             )
             seen_evidence_uses.add((ref, role))
             evidence_uses.append({"evidence_ref": ref, "use_role": role})
-        numeric = _unique_strings(
+        model_selected_numeric = _unique_strings(
             raw.get("numeric_refs"),
             "research_consumer_numeric_refs_invalid",
             allow_empty=True,
@@ -2129,23 +2130,34 @@ def validate_current_research_output(
         )
         gaps = tuple(input_cells[cell_id]["visible_gap_refs"])
         _require(
+            set(numeric_relations).issubset(
+                input_cells[cell_id]["allowed_numeric_relation_refs"]
+            ),
+            "research_consumer_numeric_relation_boundary_invalid",
+        )
+        relation_endpoint_numeric = tuple(
+            dict.fromkeys(
+                ref
+                for relation_ref in numeric_relations
+                for ref in (
+                    relation_by_ref[relation_ref]["current_numeric_ref"],
+                    relation_by_ref[relation_ref]["comparison_numeric_ref"],
+                )
+            )
+        )
+        deterministically_added_numeric = tuple(
+            ref
+            for ref in relation_endpoint_numeric
+            if ref not in set(model_selected_numeric)
+        )
+        numeric = tuple(
+            dict.fromkeys((*model_selected_numeric, *relation_endpoint_numeric))
+        )
+        _require(
             set(numeric).issubset(
                 input_cells[cell_id]["allowed_numeric_refs"]
             ),
             "research_consumer_output_ref_boundary_invalid",
-        )
-        _require(
-            set(numeric_relations).issubset(
-                input_cells[cell_id]["allowed_numeric_relation_refs"]
-            )
-            and all(
-                {
-                    relation_by_ref[ref]["current_numeric_ref"],
-                    relation_by_ref[ref]["comparison_numeric_ref"],
-                }.issubset(numeric)
-                for ref in numeric_relations
-            ),
-            "research_consumer_numeric_relation_boundary_invalid",
         )
         if cell_claim_surface:
             _require(
@@ -2191,11 +2203,6 @@ def validate_current_research_output(
             for use in evidence_uses
             if use["use_role"] == "limit"
         ]
-        if status in {"supported", "bounded_support", "mixed"}:
-            _require(
-                bool(supporting),
-                "research_consumer_supported_judgment_without_evidence",
-            )
         if status == "insufficient_evidence" or inference == "not_inferable":
             _require(
                 bool(gaps),
@@ -2253,8 +2260,28 @@ def validate_current_research_output(
                         narrative_atoms=tuple(validated_text.values()),
                     )
                 )
+                qualitative_facts = tuple(
+                    claim_surface_authority_receipt[
+                        "qualitative_fact_refs"
+                    ]
+                )
             except ClaimSurfaceAuthorityError as exc:
                 raise CurrentResearchConsumerError(exc.code) from exc
+        # Evidence sufficiency must be evaluated against the compiled evidence
+        # view.  A structured claim relation may deterministically bind its
+        # already-reviewed qualitative fact after the model-facing boundary
+        # check above; testing the raw model selection here would incorrectly
+        # reject that source-bound support.
+        if status in {"supported", "bounded_support", "mixed"}:
+            _require(
+                bool(
+                    supporting
+                    or numeric
+                    or numeric_relations
+                    or qualitative_facts
+                ),
+                "research_consumer_supported_judgment_without_evidence",
+            )
         claim_authority_receipt = None
         if cell_claim_authority:
             claim_card = input_cells[cell_id].get("claim_authority_card")
@@ -2336,6 +2363,25 @@ def validate_current_research_output(
                 "evidence_uses": evidence_uses,
                 "numeric_refs": list(numeric),
                 "numeric_relation_refs": list(numeric_relations),
+                **(
+                    {
+                        "numeric_relation_endpoint_receipt": {
+                            "model_selected_numeric_refs": list(
+                                model_selected_numeric
+                            ),
+                            "deterministically_added_numeric_refs": list(
+                                deterministically_added_numeric
+                            ),
+                            "compiled_numeric_refs": list(numeric),
+                            "selected_numeric_relation_refs": list(
+                                numeric_relations
+                            ),
+                            "new_relation_or_fact_authority_created": False,
+                        }
+                    }
+                    if deterministically_added_numeric
+                    else {}
+                ),
                 **(
                     {
                         "qualitative_fact_refs": list(

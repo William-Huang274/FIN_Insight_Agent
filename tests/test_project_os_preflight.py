@@ -14,6 +14,7 @@ from sec_agent.project_os_preflight import (
     _validate_dynamic_five_cell_claim_surface_successor_decision,
     _validate_dynamic_five_cell_node_successor_decision,
     _validate_dynamic_five_cell_partial_successor_decision,
+    _validate_dynamic_five_cell_value_repair_successor_decision,
     _validate_fragment_validation_repair_decision,
     _validate_failed_fragment_submission_successor_decision,
     build_preflight,
@@ -147,6 +148,11 @@ DYNAMIC_FIVE_CELL_CELL_SCOPED_CLAIM_SUCCESSOR_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_dynamic_five_cell_"
     "cell_scoped_claim_contract_successor_scope_decision_v1_1.json"
+)
+DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_dynamic_five_cell_"
+    "value_submission_repair_successor_scope_decision_v1_0.json"
 )
 DYNAMIC_COUNTER_SUCCESSOR_DECISION_REF = (
     "configs/research/evals/"
@@ -482,6 +488,81 @@ def test_dynamic_five_cell_cell_scoped_claim_successor_binds_R5_failure() -> Non
         ),
     ):
         _validate_dynamic_five_cell_claim_surface_successor_decision(
+            root=ROOT,
+            decision=decision,
+        )
+
+
+def test_dynamic_five_cell_value_repair_successor_binds_R6_and_proof() -> None:
+    decision = json.loads(
+        (
+            ROOT / DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    projection = _validate_dynamic_five_cell_value_repair_successor_decision(
+        root=ROOT,
+        decision=decision,
+    )
+    assert projection["dynamic_five_cell_value_repair_successor"] is True
+    assert projection["recent_provider_steps"] == 10
+    assert projection["provider_model"] == "deepseek-v4-pro"
+
+    preflight = build_preflight(
+        root=ROOT,
+        decision_ref=DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    assert preflight["status"] == "pass_current_decision_bound_preflight"
+    assert preflight["run_scope_id"] == (
+        "one_DELL_dynamic_five_cell_value_submission_repair_plus_synthesis"
+    )
+    assert set(preflight["scope_projection"]["explicit_allow_issue_ids"]) >= {
+        "RC-S2-004-product-operating-metric-and-profit-bridge-authority-missing",
+        "RC-S3-014-claim-surface-model-view-contract-density-exhausts-reasoning-budget",
+        "RC-S3-015-monolithic-final-judgment-max-thinking-nonconvergence",
+        "RC-S3-033-strict-tool-semantic-surface-predicate-not-encoded-in-server-schema",
+        "RC-S3-035-reviewed-claim-exact-source-hidden-by-prefix-projection",
+        "RC-S3-036-global-claim-authority-contract-leaks-value-relations-into-nonqualified-cells",
+        "RC-S3-037-value-numeric-relation-endpoint-redundancy-and-structured-support-not-recognized",
+    }
+    assert preflight["model_calls"] == 0
+    assert preflight["provider_calls"] == 0
+    assert preflight["network_calls"] == 0
+
+
+def test_dynamic_five_cell_value_repair_successor_rejects_budget_drift() -> None:
+    decision = json.loads(
+        (
+            ROOT / DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    decision["execution_budget"]["maximum_model_calls"] = 4
+    with pytest.raises(
+        ValueError,
+        match="project_os_five_cell_value_repair_budget_invalid",
+    ):
+        _validate_dynamic_five_cell_value_repair_successor_decision(
+            root=ROOT,
+            decision=decision,
+        )
+
+
+def test_dynamic_five_cell_value_repair_successor_rejects_analysis_rerun() -> None:
+    decision = json.loads(
+        (
+            ROOT / DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    decision["rerun_cell_analysis"] = True
+    with pytest.raises(
+        ValueError,
+        match=(
+            "project_os_five_cell_value_repair_false_required:"
+            "rerun_cell_analysis"
+        ),
+    ):
+        _validate_dynamic_five_cell_value_repair_successor_decision(
             root=ROOT,
             decision=decision,
         )

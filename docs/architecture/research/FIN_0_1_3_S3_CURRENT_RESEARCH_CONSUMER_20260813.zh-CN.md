@@ -430,3 +430,19 @@ analysis 与 submission 继续分层。分析节点看见 reviewed 原句、Nume
 Evidence role 采用 claim-local 多角色语义：同一 Evidence 可以各出现一次 support、limit 或 context；同一 `Evidence＋role` 重复仍拒绝。`judgment_status` 与 `inference_authority` 不由 Harness 自动推导，因为 Evidence role 无法替代对模型叙事的检查；模型必须明确提交，Validator 必须拒绝“只选 limit 却写支持性结论”等内部矛盾。
 
 兼容规则同时冻结：历史 fixed-Pack replay 使用它原来的 v1.0 Evidence projection；current product 使用带 reviewed anchor 的 v1.1 projection。不能通过修改旧合同 digest 追认历史结果，也不能让旧测试随当前产品投影漂移。
+
+## 21. 关系依赖权威编译与一次 typed repair
+
+R6 证明，模型选择一个合法 relation alias 后再要求它重复选择该 relation 已经确定的每个依赖字段，会同时降低可靠性和语义清晰度。旧合同在三个位置重复了同一种设计错误：`NumericRelation` 与其两个端点、`ClaimRelation` 与其 required reviewed QF，以及跨 atom 的 Evidence support／limit 角色。它们不是三个 DeepSeek 专用补丁，而是一个 provider-neutral 的跨字段依赖编译问题。
+
+当前合同统一按以下原则处理：
+
+- 模型负责选择 relation alias、研究状态、引用用途和 model-owned narrative；
+- Harness 只从已选 alias 的当前 Case 权威卡中绑定确定的 NumericFact 端点和 required reviewed QF，并留下 model-selected／deterministically-added／compiled 三组 receipt；
+- source-bound NumericFact、NumericRelation 和 reviewed QF 只能支持其精确结构化观察，不会因此获得产品到分部／公司的利润因果权威；
+- Evidence 角色按具体 atom 验证。对 counterargument 而言，能够限制主 thesis 的全局来源可以合法是 `limit`；局部 relation 自己的直接材料仍必须满足其 support 要求；
+- 任何未知 alias、跨 Case 依赖、期间漂移、未审 QF、真实正向跨层因果或自由日期／数字叙事继续 fail closed。
+
+R6 使用的 claim-surface v1.3 保持不可变；v1.4 只修正当前产品的依赖编译和 `COMPANY_MARGIN_OBSERVATION` 可承担的 Value atom 范围，不新增事实或因果桥。R6 原始 Value Tool Call 在 v1.4 下仍以 `research_consumer_thesis_atom_invalid` 失败，证明模型拥有的日期叙事问题没有被 Harness 隐藏。
+
+因此恢复路径不是重跑完整案例，也不是本地改写 thesis。stable runner 可绑定 R6 的四个有效 Judgment 和一份完整 Value analysis capture，把原失败 Tool Call作为不可晋升的 typed feedback，再允许模型提交一次修正 Tool Call。只有五个 cell 都重新通过当前 Validator 后，才允许跨单元 synthesis。该 successor 总预算为三次模型调用、零 retry；其 fake replay 只证明运行时可以完整物化，不能充当自然模型结果、金融 L1、内容质量或产品验收。

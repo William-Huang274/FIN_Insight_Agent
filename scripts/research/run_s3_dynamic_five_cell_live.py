@@ -69,6 +69,7 @@ from sec_agent.research.five_cell_runtime import (  # noqa: E402
     compile_five_cell_analysis_messages,
     compile_five_cell_report,
     compile_five_cell_submission,
+    compile_five_cell_submission_repair,
     compile_five_cell_synthesis_analysis_messages,
     compile_five_cell_synthesis_submission,
     validate_five_cell_synthesis,
@@ -141,6 +142,30 @@ CLAIM_SURFACE_SUCCESSOR_RESULT_SCHEMA = (
 )
 CLAIM_SURFACE_SUCCESSOR_FULL_RESULT_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_claim_surface_successor_live_full_v1_0"
+)
+VALUE_REPAIR_SUCCESSOR_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_value_submission_repair_"
+    "successor_live_authority_v1_0"
+)
+VALUE_REPAIR_SUCCESSOR_AUTHORITY_STATUS = (
+    "signed_exact_once_DELL_dynamic_five_cell_value_submission_"
+    "repair_plus_synthesis"
+)
+VALUE_REPAIR_SUCCESSOR_RESULT_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_value_submission_repair_"
+    "successor_live_result_v1_0"
+)
+VALUE_REPAIR_SUCCESSOR_FULL_RESULT_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_value_submission_repair_"
+    "successor_live_full_v1_0"
+)
+VALUE_REPAIR_SUCCESSOR_SCOPE_DECISION_SCHEMA = (
+    "fin_ia_s3_dynamic_five_cell_value_submission_repair_"
+    "successor_scope_decision_v1_0"
+)
+VALUE_REPAIR_SUCCESSOR_SCOPE_DECISION_STATUS = (
+    "approved_one_DELL_dynamic_five_cell_value_submission_"
+    "repair_plus_synthesis_exact_once"
 )
 CLAIM_SURFACE_SUCCESSOR_SCOPE_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_claim_surface_successor_scope_decision_v1_0"
@@ -258,6 +283,33 @@ NODE_SUCCESSOR_EXPECTED_BUDGET = {
 CLAIM_SURFACE_SUCCESSOR_EXPECTED_BUDGET = {
     **SUCCESSOR_EXPECTED_BUDGET,
     "maximum_tool_calls": 6,
+}
+VALUE_REPAIR_SUCCESSOR_REUSED_CELL_IDS = (
+    "CELL::demand_quality",
+    "CELL::operating_performance",
+    "CELL::cash_conversion",
+    "CELL::counterevidence",
+)
+VALUE_REPAIR_SUCCESSOR_RESUBMISSION_CELL_IDS = ("CELL::value_capture",)
+VALUE_REPAIR_SUCCESSOR_EXPECTED_BUDGET = {
+    "maximum_model_calls": 3,
+    "maximum_transport_attempts": 3,
+    "maximum_planner_calls": 0,
+    "reused_predecessor_planner_calls": 1,
+    "maximum_cell_analysis_calls": 0,
+    "reused_predecessor_cell_analysis_drafts": 1,
+    "maximum_cell_submission_calls": 1,
+    "reused_predecessor_cell_judgments": 4,
+    "maximum_synthesis_analysis_calls": 1,
+    "maximum_synthesis_submission_calls": 1,
+    "maximum_evidence_requests": 0,
+    "reused_predecessor_evidence_requests": 8,
+    "maximum_tool_calls": 2,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_source_network_calls": 0,
+    "protocol_switches": 0,
+    "current_product_pointer_mutations": 0,
 }
 
 
@@ -740,6 +792,79 @@ def _bound_claim_surface_successor_paths(
         if not path.is_file() or _sha(path) != str(bound[key[:-4] + "_sha256"]):
             raise DynamicFiveCellLiveError(
                 f"five_cell_claim_surface_successor_bound_input_drift:{key}"
+            )
+        paths[key] = path
+    return paths
+
+
+def _bound_value_repair_successor_paths(
+    authority: Mapping[str, Any],
+) -> dict[str, Path]:
+    bound = authority.get("bound_inputs")
+    if not isinstance(bound, Mapping):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_bound_inputs_invalid"
+        )
+    required_refs = {
+        "objective_ref",
+        "runtime_registry_ref",
+        "truth_spine_policy_ref",
+        "consumer_policy_ref",
+        "claim_authority_template_ref",
+        "claim_surface_template_ref",
+        "analysis_profile_ref",
+        "submission_profile_ref",
+        "predecessor_authority_ref",
+        "predecessor_public_result_ref",
+        "predecessor_private_result_ref",
+        "predecessor_failure_assessment_ref",
+        "value_repair_zero_call_result_ref",
+        "scope_decision_ref",
+        "runner_ref",
+        "dynamic_runtime_ref",
+        "claim_authority_runtime_ref",
+        "claim_surface_runtime_ref",
+        "five_cell_runtime_ref",
+        "current_consumer_ref",
+        "reviewed_anchor_runtime_ref",
+        "provider_transport_ref",
+        "strict_projection_ref",
+    }
+    scalar_keys = {
+        "objective_id",
+        "planner_messages_digest",
+        "predecessor_plan_digest",
+        "predecessor_controlled_plan_digest",
+        "predecessor_public_result_digest",
+        "predecessor_private_result_digest",
+        "predecessor_failure_assessment_digest",
+        "value_repair_zero_call_result_digest",
+        "expected_base_research_input_digest",
+        "expected_claim_surface_research_input_digest",
+        "expected_evidence_pack_artifact_digest",
+        "expected_evidence_pack_payload_digest",
+        "expected_reviewed_anchor_digest",
+        "expected_reviewed_anchor_target_id",
+        "expected_reused_cell_digests",
+        "expected_value_analysis_reuse_digest",
+        "expected_rejected_arguments_digest",
+    }
+    expected = {
+        item
+        for key in required_refs
+        for item in (key, key[:-4] + "_sha256")
+    } | scalar_keys
+    ref_keys = {key for key in bound if key.endswith("_ref")}
+    if ref_keys != required_refs or set(bound) != expected:
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_bound_inputs_invalid"
+        )
+    paths: dict[str, Path] = {}
+    for key in required_refs:
+        path = _resolve(str(bound[key]))
+        if not path.is_file() or _sha(path) != str(bound[key[:-4] + "_sha256"]):
+            raise DynamicFiveCellLiveError(
+                f"five_cell_value_repair_successor_bound_input_drift:{key}"
             )
         paths[key] = path
     return paths
@@ -1994,9 +2119,367 @@ def _validate_claim_surface_successor_authority(
     return paths
 
 
+def _validate_value_repair_successor_authority(
+    payload: Mapping[str, Any], *, authority_path: Path
+) -> dict[str, Path]:
+    if not (
+        payload.get("schema_version") == VALUE_REPAIR_SUCCESSOR_AUTHORITY_SCHEMA
+        and payload.get("status") == VALUE_REPAIR_SUCCESSOR_AUTHORITY_STATUS
+        and payload.get("case_key") == "DELL"
+        and tuple(payload.get("required_cell_ids") or ()) == REQUIRED_CELL_IDS
+        and tuple(payload.get("reused_cell_ids") or ())
+        == VALUE_REPAIR_SUCCESSOR_REUSED_CELL_IDS
+        and tuple(payload.get("resubmission_cell_ids") or ())
+        == VALUE_REPAIR_SUCCESSOR_RESUBMISSION_CELL_IDS
+        and payload.get("execution_budget")
+        == VALUE_REPAIR_SUCCESSOR_EXPECTED_BUDGET
+    ):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_authority_invalid"
+        )
+    commit = str(payload.get("implementation_commit") or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_commit_invalid"
+        )
+    if _git("rev-parse", "HEAD").lower() != commit:
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_head_drift"
+        )
+    if _git("rev-parse", "@{upstream}").lower() != commit:
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_upstream_drift"
+        )
+    allowed = f"?? {_relative(authority_path)}"
+    status = _git("status", "--porcelain=v1", "--untracked-files=all")
+    if [line for line in status.splitlines() if line] != [allowed]:
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_worktree_not_clean"
+        )
+
+    paths = _bound_value_repair_successor_paths(payload)
+    bound = payload["bound_inputs"]
+    predecessor_authority = _json(paths["predecessor_authority_ref"])
+    predecessor_public = _json(paths["predecessor_public_result_ref"])
+    predecessor_full = _json(paths["predecessor_private_result_ref"])
+    failure_assessment = _json(paths["predecessor_failure_assessment_ref"])
+    proof = _json(paths["value_repair_zero_call_result_ref"])
+    decision = _json(paths["scope_decision_ref"])
+    predecessor_steps = {
+        str(row.get("cell_id") or ""): row
+        for row in predecessor_full.get("cell_steps") or ()
+    }
+    expected_reused = bound.get("expected_reused_cell_digests")
+    execution = predecessor_full.get("execution") or {}
+    if not (
+        predecessor_authority.get("schema_version")
+        == CLAIM_SURFACE_SUCCESSOR_AUTHORITY_SCHEMA
+        and predecessor_public.get("schema_version")
+        == CLAIM_SURFACE_SUCCESSOR_RESULT_SCHEMA
+        and predecessor_full.get("schema_version")
+        == CLAIM_SURFACE_SUCCESSOR_FULL_RESULT_SCHEMA
+        and predecessor_public.get("status")
+        == "terminal_failed_or_partial_no_retry"
+        and predecessor_full.get("status")
+        == "terminal_failed_or_partial_no_retry"
+        and predecessor_public.get("result_digest")
+        == bound["predecessor_public_result_digest"]
+        and predecessor_full.get("full_result_digest")
+        == bound["predecessor_private_result_digest"]
+        and (predecessor_full.get("compiled_plan") or {}).get("plan_digest")
+        == bound["predecessor_plan_digest"]
+        and canonical_digest(predecessor_full.get("controlled_plan") or {})
+        == bound["predecessor_controlled_plan_digest"]
+        and execution.get("model_calls_attempted") == 10
+        and execution.get("cell_analysis_calls_attempted") == 5
+        and execution.get("cell_submission_calls_attempted") == 5
+        and execution.get("cell_judgments_accepted") == 4
+        and execution.get("synthesis_analysis_attempted") == 0
+        and execution.get("synthesis_submission_attempted") == 0
+        and execution.get("retries") == 0
+        and execution.get("fallbacks") == 0
+        and set(predecessor_steps) == set(REQUIRED_CELL_IDS)
+        and isinstance(expected_reused, Mapping)
+        and set(expected_reused) == set(VALUE_REPAIR_SUCCESSOR_REUSED_CELL_IDS)
+    ):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_predecessor_invalid"
+        )
+    for cell_id in VALUE_REPAIR_SUCCESSOR_REUSED_CELL_IDS:
+        row = predecessor_steps[cell_id]
+        if not (
+            row.get("validated_cell")
+            and row.get("raw_model_arguments")
+            and not row.get("failure_code")
+            and canonical_digest(row["validated_cell"])
+            == str(expected_reused[cell_id])
+        ):
+            raise DynamicFiveCellLiveError(
+                "five_cell_value_repair_successor_reused_cell_invalid"
+            )
+    value_row = predecessor_steps["CELL::value_capture"]
+    analysis_receipt = _validate_reused_analysis_capture(value_row)
+    if not (
+        not value_row.get("validated_cell")
+        and value_row.get("failure_phase") == "cell_judgment_contract"
+        and value_row.get("failure_code")
+        == "research_consumer_numeric_relation_boundary_invalid"
+        and canonical_digest(value_row.get("raw_model_arguments") or {})
+        == bound["expected_rejected_arguments_digest"]
+        and analysis_receipt["analysis_reuse_digest"]
+        == bound["expected_value_analysis_reuse_digest"]
+    ):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_value_capture_invalid"
+        )
+    if not (
+        failure_assessment.get("schema_version")
+        == (
+            "fin_ia_s3_dynamic_five_cell_cell_scoped_claim_contract_"
+            "successor_failure_assessment_v1_0"
+        )
+        and failure_assessment.get("status")
+        == (
+            "terminal_four_of_five_value_relation_endpoint_and_"
+            "structured_support_contract_failure"
+        )
+        and failure_assessment.get("assessment_digest")
+        == bound["predecessor_failure_assessment_digest"]
+        and (failure_assessment.get("disposition") or {}).get(
+            "R6_authority_consumed"
+        )
+        is True
+        and (failure_assessment.get("disposition") or {}).get(
+            "R6_rerun_forbidden"
+        )
+        is True
+        and (failure_assessment.get("disposition") or {}).get(
+            "fresh_successor_maximum_model_calls"
+        )
+        == 3
+    ):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_failure_assessment_invalid"
+        )
+
+    proof_acceptance = proof.get("acceptance") or {}
+    replay = proof.get("successor_fake_replay") or {}
+    if not (
+        proof.get("schema_version")
+        == (
+            "fin_ia_s3_dynamic_five_cell_value_submission_repair_"
+            "successor_zero_call_result_v1_0"
+        )
+        and proof.get("status")
+        == "engineering_pass_zero_call_R6_value_repair_plus_synthesis_successor"
+        and proof.get("result_digest")
+        == bound["value_repair_zero_call_result_digest"]
+        and replay.get("fresh_model_calls_attempted") == 3
+        and replay.get("reused_predecessor_cell_judgments") == 4
+        and replay.get("reused_predecessor_analysis_drafts") == 1
+        and replay.get("cell_submission_calls_attempted") == 1
+        and replay.get("cell_judgments_accepted") == 5
+        and replay.get("synthesis_analysis_calls_attempted") == 1
+        and replay.get("synthesis_submission_calls_attempted") == 1
+        and proof_acceptance.get("R6_preserved") is True
+        and proof_acceptance.get("four_valid_judgments_reused_not_rerun")
+        is True
+        and proof_acceptance.get("value_analysis_capture_verified_and_reused")
+        is True
+        and proof_acceptance.get("rejected_value_submission_not_promoted")
+        is True
+        and proof_acceptance.get("relation_endpoints_bind_locally") is True
+        and proof_acceptance.get("structured_financial_support_recognized")
+        is True
+        and proof_acceptance.get("only_one_typed_value_repair_submission")
+        is True
+        and proof_acceptance.get("synthesis_requires_all_five_cells") is True
+        and proof_acceptance.get("natural_model_quality_proven") is False
+        and proof_acceptance.get("successor_live_authorized") is False
+    ):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_zero_call_proof_invalid"
+        )
+    if not (
+        decision.get("schema_version")
+        == VALUE_REPAIR_SUCCESSOR_SCOPE_DECISION_SCHEMA
+        and decision.get("status")
+        == VALUE_REPAIR_SUCCESSOR_SCOPE_DECISION_STATUS
+        and decision.get("run_scope_id")
+        == "one_DELL_dynamic_five_cell_value_submission_repair_plus_synthesis"
+        and decision.get("evidence_mode")
+        == "immutable_R6_four_valid_cells_value_analysis_and_current_S1_S2"
+        and tuple(decision.get("reused_cell_ids") or ())
+        == VALUE_REPAIR_SUCCESSOR_REUSED_CELL_IDS
+        and tuple(decision.get("resubmission_cell_ids") or ())
+        == VALUE_REPAIR_SUCCESSOR_RESUBMISSION_CELL_IDS
+        and decision.get("execution_budget")
+        == VALUE_REPAIR_SUCCESSOR_EXPECTED_BUDGET
+        and decision.get("reuse_predecessor_planner") is True
+        and decision.get("reuse_predecessor_current_S1_S2") is True
+        and decision.get("reuse_predecessor_valid_cells") is True
+        and decision.get("reuse_predecessor_value_analysis") is True
+        and decision.get("reuse_rejected_value_call_only_as_typed_feedback")
+        is True
+        and decision.get("rerun_planner") is False
+        and decision.get("rerun_current_S1_S2") is False
+        and decision.get("rerun_cell_analysis") is False
+        and decision.get("product_publication_authorized") is False
+        and decision.get("S3_acceptance_authorized") is False
+        and decision.get("heterogeneous_generalization_authorized") is False
+    ):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_scope_decision_invalid"
+        )
+
+    _, _, _, objective, messages = _compile_planner_contract(paths)
+    if not (
+        objective.objective_id == bound["objective_id"]
+        and canonical_digest(list(messages)) == bound["planner_messages_digest"]
+    ):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_planner_binding_drift"
+        )
+    analysis_profile = load_chat_completion_profile(
+        _json(paths["analysis_profile_ref"])
+    )
+    submission_profile = load_chat_completion_profile(
+        _json(paths["submission_profile_ref"])
+    )
+    validate_deepseek_ga_profile(analysis_profile, strict_tools=False)
+    if analysis_profile.request_defaults.get("max_tokens") != 16000:
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_analysis_profile_invalid"
+        )
+    validate_deepseek_strict_submission_profile(submission_profile)
+
+    evidence_service, _ = _services()
+    permissions = frozenset({"current_product:read"})
+    evidence_pack = evidence_service.get_case(
+        "DELL", ResearchEvidencePackPrincipal("current", permissions)
+    )
+    base_projection = compile_dynamic_research_input_projection(
+        truth_spine_policy=_json(paths["truth_spine_policy_ref"]),
+        consumer_policy=_json(paths["consumer_policy_ref"]),
+        controlled_plan=predecessor_full["controlled_plan"],
+        evidence_pack=evidence_pack,
+    )
+    base_input = base_projection["dynamic_research_input"]
+    surface_projection = compile_dynamic_claim_surface_projection(
+        dynamic_research_input=base_input,
+        claim_authority_template=_json(paths["claim_authority_template_ref"]),
+        claim_surface_template=_json(paths["claim_surface_template_ref"]),
+    )
+    surface_input = surface_projection["claim_surface_research_input"]
+    margin_evidence = next(
+        (
+            row
+            for row in surface_input.get("evidence_cards") or ()
+            if row.get("evidence_ref") == "EV::5388E016C17032C1"
+        ),
+        None,
+    )
+    if not (
+        evidence_pack.get("artifact_digest")
+        == bound["expected_evidence_pack_artifact_digest"]
+        and evidence_pack.get("pack_payload_digest")
+        == bound["expected_evidence_pack_payload_digest"]
+        and base_input.get("research_input_digest")
+        == bound["expected_base_research_input_digest"]
+        and surface_input.get("research_input_digest")
+        == bound["expected_claim_surface_research_input_digest"]
+        and isinstance(margin_evidence, Mapping)
+        and margin_evidence.get("target_id")
+        == bound["expected_reviewed_anchor_target_id"]
+        and (margin_evidence.get("reviewed_anchor_receipt") or {}).get(
+            "anchor_digest"
+        )
+        == bound["expected_reviewed_anchor_digest"]
+    ):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_projection_drift"
+        )
+    try:
+        validate_current_research_output(
+            {"cells": [value_row["raw_model_arguments"]]},
+            research_input=surface_input,
+            required_cell_ids=VALUE_REPAIR_SUCCESSOR_RESUBMISSION_CELL_IDS,
+        )
+    except CurrentResearchConsumerError as exc:
+        if exc.code != "research_consumer_thesis_atom_invalid":
+            raise DynamicFiveCellLiveError(
+                "five_cell_value_repair_successor_replay_failure_drift"
+            ) from exc
+    else:
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_rejected_call_became_valid"
+        )
+
+    output = payload.get("output_contract")
+    required_output = {
+        "capture_root_ref",
+        "private_output_root_ref",
+        "public_result_ref",
+        "run_id",
+        "cell_attempt_ids",
+        "synthesis_attempt_ids",
+        "product_publication",
+    }
+    if not isinstance(output, Mapping) or set(output) != required_output:
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_output_invalid"
+        )
+    cells = output.get("cell_attempt_ids")
+    synthesis = output.get("synthesis_attempt_ids")
+    if not (
+        output.get("product_publication") == "forbidden"
+        and all(
+            str(output.get(key) or "")
+            for key in required_output
+            - {"cell_attempt_ids", "synthesis_attempt_ids", "product_publication"}
+        )
+        and isinstance(cells, Mapping)
+        and set(cells) == set(VALUE_REPAIR_SUCCESSOR_RESUBMISSION_CELL_IDS)
+        and all(
+            isinstance(row, Mapping)
+            and set(row) == {"submission_attempt_id"}
+            and str(row.get("submission_attempt_id") or "")
+            for row in cells.values()
+        )
+        and isinstance(synthesis, Mapping)
+        and set(synthesis) == {"analysis_attempt_id", "submission_attempt_id"}
+        and all(str(value or "") for value in synthesis.values())
+    ):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_output_invalid"
+        )
+    identities = {
+        *(str(row["submission_attempt_id"]) for row in cells.values()),
+        *(str(value) for value in synthesis.values()),
+    }
+    if len(identities) != 3:
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_output_identity_invalid"
+        )
+    capture_run = _resolve(str(output["capture_root_ref"])) / str(output["run_id"])
+    if (
+        capture_run.exists()
+        or _resolve(str(output["private_output_root_ref"])).exists()
+        or _resolve(str(output["public_result_ref"])).exists()
+    ):
+        raise DynamicFiveCellLiveError(
+            "five_cell_value_repair_successor_identity_consumed"
+        )
+    return paths
+
+
 def validate_authority(
     payload: Mapping[str, Any], *, authority_path: Path
 ) -> dict[str, Path]:
+    if payload.get("schema_version") == VALUE_REPAIR_SUCCESSOR_AUTHORITY_SCHEMA:
+        return _validate_value_repair_successor_authority(
+            payload, authority_path=authority_path
+        )
     if payload.get("schema_version") == CLAIM_SURFACE_SUCCESSOR_AUTHORITY_SCHEMA:
         return _validate_claim_surface_successor_authority(
             payload, authority_path=authority_path
@@ -2105,6 +2588,10 @@ def run(
     ),
 ) -> dict[str, Any]:
     authority = _json(authority_path)
+    value_repair_successor_mode = (
+        authority.get("schema_version")
+        == VALUE_REPAIR_SUCCESSOR_AUTHORITY_SCHEMA
+    )
     node_successor_mode = (
         authority.get("schema_version") == NODE_SUCCESSOR_AUTHORITY_SCHEMA
     )
@@ -2115,28 +2602,40 @@ def run(
         authority.get("schema_version")
         == CLAIM_SURFACE_SUCCESSOR_AUTHORITY_SCHEMA
     )
+    claim_surface_input_mode = (
+        claim_surface_successor_mode or value_repair_successor_mode
+    )
     successor_mode = authority.get("schema_version") in {
         SUCCESSOR_AUTHORITY_SCHEMA,
         PARTIAL_SUCCESSOR_AUTHORITY_SCHEMA,
         NODE_SUCCESSOR_AUTHORITY_SCHEMA,
         CLAIM_SURFACE_SUCCESSOR_AUTHORITY_SCHEMA,
+        VALUE_REPAIR_SUCCESSOR_AUTHORITY_SCHEMA,
     }
     paths = validate_authority(authority, authority_path=authority_path)
     reused_cell_ids = (
         tuple(authority.get("reused_cell_ids") or ())
-        if partial_successor_mode or node_successor_mode
+        if (
+            partial_successor_mode
+            or node_successor_mode
+            or value_repair_successor_mode
+        )
         else ()
     )
     remaining_cell_ids = (
         tuple(authority.get("resubmission_cell_ids") or ())
-        if node_successor_mode
+        if node_successor_mode or value_repair_successor_mode
         else (
             tuple(authority.get("remaining_cell_ids") or ())
             if partial_successor_mode
             else REQUIRED_CELL_IDS
         )
     )
-    if (partial_successor_mode or node_successor_mode) and not (
+    if (
+        partial_successor_mode
+        or node_successor_mode
+        or value_repair_successor_mode
+    ) and not (
         set(reused_cell_ids).isdisjoint(remaining_cell_ids)
         and set(reused_cell_ids) | set(remaining_cell_ids)
         == set(REQUIRED_CELL_IDS)
@@ -2264,7 +2763,7 @@ def run(
             raise DynamicFiveCellLiveError(
                 "five_cell_live_no_reviewed_evidence_selected"
             )
-        if claim_surface_successor_mode:
+        if claim_surface_input_mode:
             if base_research_input.get("research_input_digest") != authority[
                 "bound_inputs"
             ]["expected_base_research_input_digest"]:
@@ -2298,7 +2797,7 @@ def run(
             research_input = base_research_input
         if (
             successor_mode
-            and not claim_surface_successor_mode
+            and not claim_surface_input_mode
             and research_input.get("research_input_digest")
             != authority["bound_inputs"]["expected_research_input_digest"]
         ):
@@ -2314,12 +2813,18 @@ def run(
                 str(row.get("cell_id") or ""): row
                 for row in predecessor.get("cell_steps") or []
             }
-            if partial_successor_mode or node_successor_mode
+            if (
+                partial_successor_mode
+                or node_successor_mode
+                or value_repair_successor_mode
+            )
             else {}
         )
         for cell_id in REQUIRED_CELL_IDS:
             if (
-                partial_successor_mode or node_successor_mode
+                partial_successor_mode
+                or node_successor_mode
+                or value_repair_successor_mode
             ) and cell_id in reused_cell_ids:
                 row = deepcopy(predecessor_cells[cell_id])
                 raw = deepcopy(row.get("raw_model_arguments") or {})
@@ -2342,6 +2847,7 @@ def run(
                 row.setdefault("analysis_capture_receipt", {})
                 row.setdefault("wire_tool_schema_digest", "")
                 row.setdefault("tool_projection_receipt", {})
+                row.setdefault("submission_repair_receipt", {})
                 cell_steps.append(row)
                 accepted_raw_cells.append(raw)
                 continue
@@ -2357,6 +2863,7 @@ def run(
                 "tool_schema_digest": "",
                 "wire_tool_schema_digest": "",
                 "tool_projection_receipt": {},
+                "submission_repair_receipt": {},
                 "analysis_step": {},
                 "submission_step": {},
                 "raw_model_arguments": {},
@@ -2367,17 +2874,21 @@ def run(
             }
             cell_steps.append(row)
             try:
-                if node_successor_mode:
+                if node_successor_mode or value_repair_successor_mode:
                     predecessor_row = predecessor_cells[cell_id]
                     receipt = _validate_reused_analysis_capture(predecessor_row)
                     expected_digest = str(
                         authority["bound_inputs"][
+                            "expected_value_analysis_reuse_digest"
+                        ]
+                        if value_repair_successor_mode
+                        else authority["bound_inputs"][
                             "expected_reused_analysis_digests"
                         ][cell_id]
                     )
                     if receipt["analysis_reuse_digest"] != expected_digest:
                         raise DynamicFiveCellLiveError(
-                            "five_cell_node_successor_analysis_digest_drift"
+                            "five_cell_successor_analysis_digest_drift"
                         )
                     row["analysis_reused_from_predecessor"] = True
                     row["analysis_capture_receipt"] = receipt
@@ -2410,17 +2921,38 @@ def run(
                             "five_cell_live_cell_analysis_length_stop"
                         )
                     analysis_draft = analysis.content
-                submission_messages, tool = compile_five_cell_submission(
-                    research_input=research_input,
-                    cell_id=cell_id,
-                    analysis_draft=analysis_draft,
-                )
+                if value_repair_successor_mode:
+                    predecessor_row = predecessor_cells[cell_id]
+                    submission_messages, tool, repair_receipt = (
+                        compile_five_cell_submission_repair(
+                            research_input=research_input,
+                            cell_id=cell_id,
+                            analysis_draft=analysis_draft,
+                            rejected_arguments=predecessor_row[
+                                "raw_model_arguments"
+                            ],
+                            terminal_failure_code=(
+                                "research_consumer_thesis_atom_invalid"
+                            ),
+                        )
+                    )
+                    row["submission_repair_receipt"] = repair_receipt
+                else:
+                    submission_messages, tool = compile_five_cell_submission(
+                        research_input=research_input,
+                        cell_id=cell_id,
+                        analysis_draft=analysis_draft,
+                    )
                 row["submission_messages_digest"] = canonical_digest(
                     list(submission_messages)
                 )
                 row["tool_schema_digest"] = canonical_digest(tool)
                 wire_tool = tool
-                if node_successor_mode or claim_surface_successor_mode:
+                if (
+                    node_successor_mode
+                    or claim_surface_successor_mode
+                    or value_repair_successor_mode
+                ):
                     wire_tool, projection = project_deepseek_strict_tool(tool)
                     row["tool_projection_receipt"] = projection
                 row["wire_tool_schema_digest"] = canonical_digest(wire_tool)
@@ -2523,7 +3055,11 @@ def run(
                     synthesis_tool
                 )
                 wire_synthesis_tool = synthesis_tool
-                if node_successor_mode or claim_surface_successor_mode:
+                if (
+                    node_successor_mode
+                    or claim_surface_successor_mode
+                    or value_repair_successor_mode
+                ):
                     wire_synthesis_tool, projection = project_deepseek_strict_tool(
                         synthesis_tool
                     )
@@ -2629,52 +3165,64 @@ def run(
         else "terminal_failed_or_partial_no_retry"
     )
     full_result_schema = (
-        CLAIM_SURFACE_SUCCESSOR_FULL_RESULT_SCHEMA
-        if claim_surface_successor_mode
+        VALUE_REPAIR_SUCCESSOR_FULL_RESULT_SCHEMA
+        if value_repair_successor_mode
         else (
-            NODE_SUCCESSOR_FULL_RESULT_SCHEMA
-            if node_successor_mode
+            CLAIM_SURFACE_SUCCESSOR_FULL_RESULT_SCHEMA
+            if claim_surface_successor_mode
             else (
-                PARTIAL_SUCCESSOR_FULL_RESULT_SCHEMA
-                if partial_successor_mode
+                NODE_SUCCESSOR_FULL_RESULT_SCHEMA
+                if node_successor_mode
                 else (
-                    SUCCESSOR_FULL_RESULT_SCHEMA
-                    if successor_mode
-                    else FULL_RESULT_SCHEMA
+                    PARTIAL_SUCCESSOR_FULL_RESULT_SCHEMA
+                    if partial_successor_mode
+                    else (
+                        SUCCESSOR_FULL_RESULT_SCHEMA
+                        if successor_mode
+                        else FULL_RESULT_SCHEMA
+                    )
                 )
             )
         )
     )
     public_result_schema = (
-        CLAIM_SURFACE_SUCCESSOR_RESULT_SCHEMA
-        if claim_surface_successor_mode
+        VALUE_REPAIR_SUCCESSOR_RESULT_SCHEMA
+        if value_repair_successor_mode
         else (
-            NODE_SUCCESSOR_RESULT_SCHEMA
-            if node_successor_mode
+            CLAIM_SURFACE_SUCCESSOR_RESULT_SCHEMA
+            if claim_surface_successor_mode
             else (
-                PARTIAL_SUCCESSOR_RESULT_SCHEMA
-                if partial_successor_mode
+                NODE_SUCCESSOR_RESULT_SCHEMA
+                if node_successor_mode
                 else (
-                    SUCCESSOR_RESULT_SCHEMA
-                    if successor_mode
-                    else RESULT_SCHEMA
+                    PARTIAL_SUCCESSOR_RESULT_SCHEMA
+                    if partial_successor_mode
+                    else (
+                        SUCCESSOR_RESULT_SCHEMA
+                        if successor_mode
+                        else RESULT_SCHEMA
+                    )
                 )
             )
         )
     )
     maximum_model_calls = (
-        CLAIM_SURFACE_SUCCESSOR_EXPECTED_BUDGET["maximum_model_calls"]
-        if claim_surface_successor_mode
+        VALUE_REPAIR_SUCCESSOR_EXPECTED_BUDGET["maximum_model_calls"]
+        if value_repair_successor_mode
         else (
-            NODE_SUCCESSOR_EXPECTED_BUDGET["maximum_model_calls"]
-            if node_successor_mode
+            CLAIM_SURFACE_SUCCESSOR_EXPECTED_BUDGET["maximum_model_calls"]
+            if claim_surface_successor_mode
             else (
-                PARTIAL_SUCCESSOR_EXPECTED_BUDGET["maximum_model_calls"]
-                if partial_successor_mode
+                NODE_SUCCESSOR_EXPECTED_BUDGET["maximum_model_calls"]
+                if node_successor_mode
                 else (
-                    SUCCESSOR_EXPECTED_BUDGET["maximum_model_calls"]
-                    if successor_mode
-                    else EXPECTED_BUDGET["maximum_model_calls"]
+                    PARTIAL_SUCCESSOR_EXPECTED_BUDGET["maximum_model_calls"]
+                    if partial_successor_mode
+                    else (
+                        SUCCESSOR_EXPECTED_BUDGET["maximum_model_calls"]
+                        if successor_mode
+                        else EXPECTED_BUDGET["maximum_model_calls"]
+                    )
                 )
             )
         )
@@ -2715,22 +3263,35 @@ def run(
                 "current_S1_S2_rerun": False,
                 "reused_cell_ids": (
                     list(reused_cell_ids)
-                    if partial_successor_mode or node_successor_mode
+                    if (
+                        partial_successor_mode
+                        or node_successor_mode
+                        or value_repair_successor_mode
+                    )
                     else []
                 ),
                 "remaining_cell_ids": (
                     list(remaining_cell_ids)
-                    if partial_successor_mode or node_successor_mode
+                    if (
+                        partial_successor_mode
+                        or node_successor_mode
+                        or value_repair_successor_mode
+                    )
                     else list(REQUIRED_CELL_IDS)
                 ),
                 "valid_cells_rerun": claim_surface_successor_mode,
-                "analysis_drafts_reused": node_successor_mode,
+                "analysis_drafts_reused": (
+                    node_successor_mode or value_repair_successor_mode
+                ),
                 "cell_analysis_rerun": (
                     False
-                    if node_successor_mode
+                    if node_successor_mode or value_repair_successor_mode
                     else (True if claim_surface_successor_mode else None)
                 ),
                 "claim_surface_successor": claim_surface_successor_mode,
+                "value_submission_repair_successor": (
+                    value_repair_successor_mode
+                ),
             }
             if successor_mode
             else {}
@@ -2846,6 +3407,9 @@ def run(
                 "tool_projection_receipt": row.get(
                     "tool_projection_receipt", {}
                 ),
+                "submission_repair_receipt": row.get(
+                    "submission_repair_receipt", {}
+                ),
                 "analysis": _public_provider_step(row["analysis_step"]),
                 "submission": _public_provider_step(row["submission_step"]),
                 "validated_cell_digest": (
@@ -2913,11 +3477,23 @@ def run(
                     node_successor_mode
                     and full_body["execution"]["cell_judgments_reused"] == 3
                 )
+                or (
+                    value_repair_successor_mode
+                    and full_body["execution"]["cell_judgments_reused"] == 4
+                )
             ),
             "analysis_drafts_reused_not_rerun": (
-                node_successor_mode
-                and full_body["execution"]["cell_analysis_drafts_reused"] == 2
+                (node_successor_mode or value_repair_successor_mode)
+                and full_body["execution"]["cell_analysis_drafts_reused"]
+                == (1 if value_repair_successor_mode else 2)
                 and full_body["execution"]["cell_analysis_calls_attempted"] == 0
+            ),
+            "typed_value_submission_repair_executed": (
+                value_repair_successor_mode
+                and any(
+                    bool(row.get("submission_repair_receipt"))
+                    for row in cell_steps
+                )
             ),
             "all_five_cell_judgments_contract_valid": accepted_count == 5,
             "cross_cell_synthesis_contract_valid": bool(

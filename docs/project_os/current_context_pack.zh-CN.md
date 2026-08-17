@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。DELL 五单元 R4 已在干净提交上精确复用 R1–R3 的 Planner、S1/S2、三份有效 Judgment 与两份分析草稿，只执行 value/counter 两次严格交卷；两次均返回 Tool Call，但独立标准 JSON Schema 校验确认真实响应分别违反真实请求中 `mechanism_atom`／`thesis_atom` 的 `pattern`，本地门禁正确拒绝，综合未执行。R4 同时暴露两个不能靠删字符串掩盖的金融问题：value 把 AI 服务器组合因果归为公司毛利率下降，而产品到公司／分部利润桥仍是 typed gap；counter 只有 `limit` Evidence，却选择 `mixed + bounded_inference` 并形成正向利润现金支持。DeepSeek Beta strict 因此只能降为形状辅助，本地完整 Validator 继续是权威。当前唯一下一动作是 S3 零调用 submission-authority closure：隔离权威表面、从 Evidence 角色／gap 确定性编译状态，并补产品／分部到利润率的双向 causal bridge gate。不得追认 R4、逐字段补 Prompt 或重跑有效前缀；DELL 五单元、完整八维研报、qualified-human 与异质泛化仍未通过。
+FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。DELL 五单元 R6 已完成 5 个 analysis 与 5 个 submission，所有 Provider 响应完整，Demand、Operating、Cash、Counterevidence 四单元有效；Value 因旧合同把已选 NumericRelation 的端点、已审 QF 与 Evidence 角色重复交给模型选择而失败，综合未执行。当前零调用结构包已把这些表面统一收敛为 provider-neutral 的依赖权威编译：关系端点和 relation-required reviewed facts 本地绑定、结构化事实支持精确观察、Evidence 角色按 atom 校验；日期／数字自由叙事门禁不放宽，R6 原始 Value 仍稳定失败。两个独立 126-test 进程、全仓 477 tests、active baseline `135／8／11／0`、secret scan `6,829／0` 和 R6 capture replay 已通过，scope decision 已准备；当前唯一下一动作是 clean push、repository-bound preflight 后签发最多 3 次调用的 R7，只重交 Value 并在五单元全部有效后综合。DELL 五单元 L1、八维研报、paired、qualified-human 与异质泛化仍未通过。
 
 ## 当前唯一产品边界
 
@@ -89,7 +89,7 @@ FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、revi
 
 Owner 已批准从第一层连续推进到 S3 三案例验收；每一层仍需独立工程、L1 与内容门：`FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_ONE → Research Truth Spine → DELL dynamic single cell → DELL five cells → heterogeneous generalization report`
 
-截至 2026-08-17，前三层已关闭；DELL five-cell R4 已保留为不可变失败证据。当前唯一下一动作不是 R5 付费重跑，而是零调用关闭 submission-authority：把 Provider strict 降为形状辅助、构造不替模型写观点的权威表面隔离投影、由 Evidence role／gap 编译权威状态，并增加产品／分部到利润率的 typed bridge gate。工程、回放、全仓、clean push 与新 scope decision 均通过后，才决定一个只修受影响节点的新 attempt。零调用与 fake 结果不授予模型权限，也不发布到 Workbench。
+截至 2026-08-17，前三层已关闭；DELL five-cell R6 保留为不可变失败证据。依赖权威编译、真实 capture replay、四个有效单元复用、一次 typed Value repair 与五单元 fake synthesis 已完成工程闭环；全仓、活动图和 secret scan 复证也已通过。当前只能先完成 clean push 和 repository-bound Project OS preflight，再签发一个 fresh R7：复用 R6 Planner、S1/S2、四个有效 Judgment 与 Value analysis，只允许 Value submission、synthesis analysis、synthesis submission三次调用，0 retry。零调用与 fake 结果不授予模型权限，也不发布到 Workbench；R7 若形成报告，仍须经过金融 L1、八维质量、paired comparison 和 qualified-human review。
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
@@ -402,4 +402,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Value 选择五条同口径同比 relation，却漏选收入 relation 自动指向的两个 NumericFact 端点，首先以 `research_consumer_numeric_relation_boundary_invalid` fail closed。零调用端点闭包继续暴露：Validator 只承认文本 EV support、不承认 source-bound NumericFact／Relation；仅为诊断绕过后，唯一剩余硬失败为 Value thesis 写入 `FY2026 Q1/FY2027 Q1`。
 - 责任被拆成两类：relation 选择后重复要求模型再选端点、以及结构化数值事实不计 support，属于项目合同；叙事复制日期属于模型交卷问题，no-date 门不放宽且 Harness 不代写。
 - R6 终态 digest=`d2bfeefb...4052e`，四个有效 cell 与 Value analysis capture 可在新 successor 中按 digest 复用；R6 invalid Value Tool Call 只能作为 typed repair feedback，不能 salvage 或进入业务结果。
+
+## 2026-08-17 S3 R6 Value repair successor 零调用闭环
+
+- RC-S3-037 被确认为一个通用的跨字段依赖问题，而不是三个独立字段补丁：模型选择 NumericRelation 后，本地绑定两个端点；选择 ClaimRelation 后，本地绑定该 alias 已审 QF；Evidence 的 support／limit 按具体 atom 语义校验。模型仍拥有 Judgment 与叙事，Harness 不生成观点。
+- v1.4 claim-surface policy 允许同口径公司观察用于 Value 的 thesis／mechanism／counterargument，但没有增加产品利润桥、当前期因果或未审事实。R6 的 v1.3 保持不可变。
+- R6 原始 Value arguments digest=`028f0f49...6388e` 在当前输入下稳定返回 `research_consumer_thesis_atom_invalid`；它没有被清洗或晋升。Value analysis capture reuse digest=`076efa18...fa18`，四个有效 cell digest 均保持历史值。
+- 一份明确标为 fake 的合规 Value payload 证明：本地补入两个收入同比端点和一条 reviewed margin QF 后，五个 Judgment、workpaper、synthesis 和 internal report 均可物化；cross-case relation、capture 漂移和日期叙事 mutation 继续 fail closed。
+- 两个独立定向进程均为 `126 passed`，0 model／provider／network。formal proof=`57eb413f...a9b3`，scope decision 固定 R7 最多 3 次调用、0 retry／fallback／外源／协议切换，并继续禁止 publication、generalization 与 S3 acceptance。
+- 全仓与仓库治理复证已经通过；当前仍须完成 clean commit/push、真实 repository-bound preflight 和 fresh authority，这些完成前没有执行权。
 - 下一步仍留在 S3：先做零调用 relation endpoint compiler＋structured support semantics＋Value repair replay/mutation；通过后最多只允许一次 Value resubmission 和两次 synthesis，共 3 次新调用。DELL 五单元、完整报告、八维质量、paired、qualified-human、异质泛化与 S3 acceptance 仍为 false。

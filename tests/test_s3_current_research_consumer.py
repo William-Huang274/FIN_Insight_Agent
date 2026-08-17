@@ -506,7 +506,7 @@ def test_v1_1_message_exposes_exact_enums_and_cell_local_views(
     visible = json.loads(messages[1]["content"])
     contract = visible["output_contract"]
 
-    assert len(messages[1]["content"]) == 72862
+    assert len(messages[1]["content"]) == 72978
     assert len(messages[1]["content"]) <= 80000
     assert contract["allowed_judgment_statuses"] == [
         "supported",
@@ -791,13 +791,6 @@ def test_v1_1_mutations_fail_closed(
         ),
         (
             lambda value: value["cells"][2].__setitem__(
-                "numeric_refs",
-                value["cells"][2]["numeric_refs"][1:],
-            ),
-            "research_consumer_numeric_relation_boundary_invalid",
-        ),
-        (
-            lambda value: value["cells"][2].__setitem__(
                 "method_step_refs",
                 value["cells"][2]["method_step_refs"][:3],
             ),
@@ -825,6 +818,46 @@ def test_v1_2_context_and_same_basis_mutations_fail_closed(
             research_input=research_input,
             judgment_output=payload,
         )
+
+
+def test_numeric_relation_deterministically_binds_missing_endpoint(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> None:
+    _, _, research_input = current_inputs
+    payload = deepcopy(_json(FAKE_PAYLOAD_V1_2))
+    value = payload["cells"][2]
+    omitted = value["numeric_refs"].pop(0)
+
+    validated = validate_current_research_output(
+        payload,
+        research_input=research_input,
+    )
+    compiled = validated["cells"][2]
+
+    assert omitted in compiled["numeric_refs"]
+    receipt = compiled["numeric_relation_endpoint_receipt"]
+    assert omitted in receipt["deterministically_added_numeric_refs"]
+    assert omitted not in receipt["model_selected_numeric_refs"]
+    assert receipt["new_relation_or_fact_authority_created"] is False
+
+
+def test_source_bound_numeric_relations_are_structured_support(
+    current_inputs: tuple[dict[str, object], dict[str, object], dict[str, object]],
+) -> None:
+    _, _, research_input = current_inputs
+    payload = deepcopy(_json(FAKE_PAYLOAD_V1_2))
+    value = payload["cells"][2]
+    value["evidence_uses"] = [
+        row for row in value["evidence_uses"] if row["use_role"] != "support"
+    ]
+
+    validated = validate_current_research_output(
+        payload,
+        research_input=research_input,
+    )
+
+    assert validated["cells"][2]["judgment_status"] == "mixed"
+    assert validated["cells"][2]["numeric_relation_refs"]
 
 
 def test_immutable_r1_response_is_not_silently_promoted_to_v1_1(

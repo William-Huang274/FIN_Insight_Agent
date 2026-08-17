@@ -797,7 +797,7 @@ def validate_claim_surface_authority_selection(
         and len(raw_relations) == len(CLAIM_SURFACE_AUTHORITY_ATOM_FIELDS),
         "claim_surface_claim_relations_invalid",
     )
-    qualitative_refs = _strings(
+    model_selected_qualitative_refs = _strings(
         raw.get("qualitative_fact_refs"),
         "claim_surface_qualitative_fact_refs_invalid",
         allow_empty=True,
@@ -826,6 +826,7 @@ def validate_claim_surface_authority_selection(
     validated_relations: list[dict[str, str]] = []
     seen_atom_fields: set[str] = set()
     required_qualitative_refs: set[str] = set()
+    required_qualitative_roles: dict[str, set[str]] = {}
     alias_mode = (
         claim_surface_contract.get("model_view_mode")
         == "claim_relation_alias_compact_v1"
@@ -979,6 +980,19 @@ def validate_claim_surface_authority_selection(
         required_qualitative_refs.update(
             combination["required_qualitative_fact_refs"]
         )
+        required_source_roles = (
+            {"support"}
+            if claim_local_evidence_explicit
+            else (
+                {"limit"}
+                if atom_field == "counterargument_atom"
+                else {"support"}
+            )
+        )
+        for ref in combination["required_qualitative_fact_refs"]:
+            required_qualitative_roles.setdefault(ref, set()).update(
+                required_source_roles
+            )
         relation_roles_by_ref: Mapping[str, set[str]] = roles_by_ref
         if claim_local_evidence_explicit:
             relation_roles: dict[str, set[str]] = {}
@@ -989,7 +1003,10 @@ def validate_claim_surface_authority_selection(
             relation_roles_by_ref = relation_roles
         _require(
             all(
-                "support" in relation_roles_by_ref.get(ref, set())
+                bool(
+                    required_source_roles
+                    & relation_roles_by_ref.get(ref, set())
+                )
                 for ref in combination["required_evidence_refs"]
             )
             and set(combination["required_numeric_relation_refs"]).issubset(
@@ -1050,24 +1067,55 @@ def validate_claim_surface_authority_selection(
         seen_atom_fields == set(CLAIM_SURFACE_AUTHORITY_ATOM_FIELDS),
         "claim_surface_claim_relation_coverage_invalid",
     )
+    deterministically_added_qualitative_refs = tuple(
+        sorted(
+            required_qualitative_refs
+            - set(model_selected_qualitative_refs)
+        )
+    )
+    qualitative_refs = tuple(
+        dict.fromkeys(
+            (
+                *model_selected_qualitative_refs,
+                *sorted(required_qualitative_refs),
+            )
+        )
+    )
     _require(
-        set(qualitative_refs).issubset(facts)
+        set(model_selected_qualitative_refs).issubset(facts)
         and set(qualitative_refs) == required_qualitative_refs,
         "claim_surface_qualitative_fact_boundary_invalid",
     )
     _require(
         all(
-            "support"
-            in roles_by_ref.get(
-                str(facts[ref]["source_evidence_ref"]), set()
+            roles.issubset(
+                roles_by_ref.get(
+                    str(facts[ref]["source_evidence_ref"]), set()
+                )
             )
-            for ref in qualitative_refs
+            for ref, roles in required_qualitative_roles.items()
         ),
         "claim_surface_qualitative_fact_source_not_supported",
     )
     receipt_body = {
         "claim_relations": validated_relations,
         "qualitative_fact_refs": list(qualitative_refs),
+        **(
+            {
+                "qualitative_fact_binding_receipt": {
+                    "model_selected_qualitative_fact_refs": list(
+                        model_selected_qualitative_refs
+                    ),
+                    "deterministically_added_qualitative_fact_refs": list(
+                        deterministically_added_qualitative_refs
+                    ),
+                    "compiled_qualitative_fact_refs": list(qualitative_refs),
+                    "new_qualitative_fact_authority_created": False,
+                }
+            }
+            if deterministically_added_qualitative_refs
+            else {}
+        ),
         "claim_relation_card_digest": claim_relation_card["card_digest"],
         "structured_claim_relation_primary": True,
         "narrative_conflict_guard_pass": True,

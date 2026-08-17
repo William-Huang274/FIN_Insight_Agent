@@ -76,6 +76,7 @@ def _prepare_runner(
     partial_successor_mode: bool = False,
     node_successor_mode: bool = False,
     claim_surface_successor_mode: bool = False,
+    value_repair_successor_mode: bool = False,
 ) -> tuple[Path, Path, Path, dict[str, int]]:
     assert sum(
         (
@@ -83,6 +84,7 @@ def _prepare_runner(
             partial_successor_mode,
             node_successor_mode,
             claim_surface_successor_mode,
+            value_repair_successor_mode,
         )
     ) <= 1
     authority_path = tmp_path / "authority.json"
@@ -113,6 +115,7 @@ def _prepare_runner(
         or partial_successor_mode
         or node_successor_mode
         or claim_surface_successor_mode
+        or value_repair_successor_mode
     ):
         output.pop("planner_attempt_id")
     if partial_successor_mode:
@@ -129,20 +132,33 @@ def _prepare_runner(
             }
             for cell_id in runner.NODE_SUCCESSOR_RESUBMISSION_CELL_IDS
         }
+    if value_repair_successor_mode:
+        output["cell_attempt_ids"] = {
+            cell_id: {
+                "submission_attempt_id": output["cell_attempt_ids"][cell_id][
+                    "submission_attempt_id"
+                ]
+            }
+            for cell_id in runner.VALUE_REPAIR_SUCCESSOR_RESUBMISSION_CELL_IDS
+        }
     authority = {
         "schema_version": (
-            runner.CLAIM_SURFACE_SUCCESSOR_AUTHORITY_SCHEMA
-            if claim_surface_successor_mode
+            runner.VALUE_REPAIR_SUCCESSOR_AUTHORITY_SCHEMA
+            if value_repair_successor_mode
             else (
-                runner.NODE_SUCCESSOR_AUTHORITY_SCHEMA
-                if node_successor_mode
+                runner.CLAIM_SURFACE_SUCCESSOR_AUTHORITY_SCHEMA
+                if claim_surface_successor_mode
                 else (
-                    runner.PARTIAL_SUCCESSOR_AUTHORITY_SCHEMA
-                    if partial_successor_mode
+                    runner.NODE_SUCCESSOR_AUTHORITY_SCHEMA
+                    if node_successor_mode
                     else (
-                        runner.SUCCESSOR_AUTHORITY_SCHEMA
-                        if successor_mode
-                        else "fixture"
+                        runner.PARTIAL_SUCCESSOR_AUTHORITY_SCHEMA
+                        if partial_successor_mode
+                        else (
+                            runner.SUCCESSOR_AUTHORITY_SCHEMA
+                            if successor_mode
+                            else "fixture"
+                        )
                     )
                 )
             )
@@ -156,6 +172,7 @@ def _prepare_runner(
         or partial_successor_mode
         or node_successor_mode
         or claim_surface_successor_mode
+        or value_repair_successor_mode
     ):
         authority["bound_inputs"] = {
             "predecessor_plan_digest": "plan-digest",
@@ -168,7 +185,7 @@ def _prepare_runner(
                         "claim-surface-input"
                     ),
                 }
-                if claim_surface_successor_mode
+                if claim_surface_successor_mode or value_repair_successor_mode
                 else {"expected_research_input_digest": "research-input"}
             ),
         }
@@ -183,6 +200,13 @@ def _prepare_runner(
         authority["reused_cell_ids"] = list(runner.NODE_SUCCESSOR_REUSED_CELL_IDS)
         authority["resubmission_cell_ids"] = list(
             runner.NODE_SUCCESSOR_RESUBMISSION_CELL_IDS
+        )
+    if value_repair_successor_mode:
+        authority["reused_cell_ids"] = list(
+            runner.VALUE_REPAIR_SUCCESSOR_REUSED_CELL_IDS
+        )
+        authority["resubmission_cell_ids"] = list(
+            runner.VALUE_REPAIR_SUCCESSOR_RESUBMISSION_CELL_IDS
         )
     if claim_surface_successor_mode:
         authority["rerun_cell_ids"] = list(runner.REQUIRED_CELL_IDS)
@@ -199,7 +223,7 @@ def _prepare_runner(
         "truth_spine_policy_ref": profile_path,
         "consumer_policy_ref": profile_path,
     }
-    if claim_surface_successor_mode:
+    if claim_surface_successor_mode or value_repair_successor_mode:
         paths["claim_authority_template_ref"] = profile_path
         paths["claim_surface_template_ref"] = profile_path
     values = {authority_path: authority, profile_path: {}, objective_path: {}}
@@ -208,6 +232,7 @@ def _prepare_runner(
         or partial_successor_mode
         or node_successor_mode
         or claim_surface_successor_mode
+        or value_repair_successor_mode
     ):
         predecessor_path = tmp_path / "predecessor.json"
         predecessor_authority_path = tmp_path / "predecessor-authority.json"
@@ -231,11 +256,17 @@ def _prepare_runner(
                 "compiled_plan": {"plan_digest": "plan-digest"}
             },
         }
-        if partial_successor_mode or node_successor_mode:
+        if (
+            partial_successor_mode
+            or node_successor_mode
+            or value_repair_successor_mode
+        ):
             valid_ids = (
-                set(runner.NODE_SUCCESSOR_REUSED_CELL_IDS)
-                if node_successor_mode
+                set(runner.VALUE_REPAIR_SUCCESSOR_REUSED_CELL_IDS)
+                if value_repair_successor_mode
                 else set(runner.PARTIAL_SUCCESSOR_REUSED_CELL_IDS)
+                if partial_successor_mode
+                else set(runner.NODE_SUCCESSOR_REUSED_CELL_IDS)
             )
             predecessor["cell_steps"] = [
                 {
@@ -249,9 +280,7 @@ def _prepare_runner(
                     "failure_phase": (
                         "" if cell_id in valid_ids else "saved_phase"
                     ),
-                    "raw_model_arguments": (
-                        {"cell_id": cell_id} if cell_id in valid_ids else {}
-                    ),
+                    "raw_model_arguments": {"cell_id": cell_id},
                     "submission_messages_digest": f"submission-{index}",
                     "submission_step": (
                         {"finish_reason": "tool_calls"}
@@ -274,6 +303,18 @@ def _prepare_runner(
                     if row["cell_id"]
                     in runner.NODE_SUCCESSOR_RESUBMISSION_CELL_IDS
                 }
+            if value_repair_successor_mode:
+                value_row = next(
+                    row
+                    for row in predecessor["cell_steps"]
+                    if row["cell_id"] == "CELL::value_capture"
+                )
+                authority["bound_inputs"][
+                    "expected_value_analysis_reuse_digest"
+                ] = runner._reused_analysis_digest(value_row)
+                authority["bound_inputs"][
+                    "expected_rejected_arguments_digest"
+                ] = canonical_digest(value_row["raw_model_arguments"])
         values[predecessor_path] = predecessor
         values[predecessor_authority_path] = {}
         values[predecessor_public_path] = {}
@@ -392,6 +433,29 @@ def _prepare_runner(
                     "name": runner.SUBMIT_RESEARCH_JUDGMENT_TOOL,
                     "description": kwargs["cell_id"],
                 },
+            },
+        ),
+    )
+    monkeypatch.setattr(
+        runner,
+        "compile_five_cell_submission_repair",
+        lambda **kwargs: (
+            (
+                {
+                    "role": "user",
+                    "content": f"repair:{kwargs['cell_id']}",
+                },
+            ),
+            {
+                "type": "function",
+                "function": {
+                    "name": runner.SUBMIT_RESEARCH_JUDGMENT_TOOL,
+                    "description": kwargs["cell_id"],
+                },
+            },
+            {
+                "schema_version": "fixture-repair-receipt",
+                "rejected_submission_promoted": False,
             },
         ),
     )
@@ -901,6 +965,80 @@ def test_five_cell_node_successor_reuses_three_judgments_and_two_analyses(
     assert len(projected) == 3
     assert all(row["projection_digest"] == "strict-projection" for row in projected)
     assert counters == {"analysis": 1, "submission": 3}
+    assert public_path.is_file()
+    assert (private_root / "full_result.json").is_file()
+
+
+def test_five_cell_value_repair_successor_reuses_four_cells_and_one_analysis(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    authority_path, private_root, public_path, counters = _prepare_runner(
+        monkeypatch, tmp_path, value_repair_successor_mode=True
+    )
+
+    def planner_must_not_run(**_kwargs):
+        raise AssertionError("value repair successor must not rerun planner")
+
+    def analyze(**kwargs):
+        counters["analysis"] += 1
+        assert kwargs["attempt_id"] == "synthesis-analysis-01"
+        return _analysis_step(tmp_path, 19)
+
+    def submit(**kwargs):
+        counters["submission"] += 1
+        tool = kwargs["tools"][0]["function"]
+        arguments = (
+            {"executive_thesis": "all cells synthesized"}
+            if tool["name"] == "submit_five_cell_synthesis"
+            else {"cell_id": tool["description"]}
+        )
+        return _submission_step(
+            tmp_path,
+            counters["submission"] + 30,
+            tool_name=tool["name"],
+            arguments=arguments,
+        )
+
+    result = runner.run(
+        authority_path,
+        planner_executor=planner_must_not_run,
+        analysis_executor=analyze,
+        submission_executor=submit,
+    )
+
+    assert result["schema_version"] == runner.VALUE_REPAIR_SUCCESSOR_RESULT_SCHEMA
+    assert result["status"].startswith("completed_"), (
+        result["orchestration_failure"],
+        [(row["cell_id"], row["failure_code"]) for row in result["cells"]],
+        result["synthesis"],
+    )
+    assert result["execution"]["model_calls_attempted"] == 3
+    assert result["execution"]["maximum_model_calls"] == 3
+    assert result["execution"]["cell_analysis_calls_attempted"] == 0
+    assert result["execution"]["cell_analysis_drafts_reused"] == 1
+    assert result["execution"]["cell_submission_calls_attempted"] == 1
+    assert result["execution"]["cell_judgments_reused"] == 4
+    assert result["execution"]["cell_judgments_accepted"] == 5
+    assert result["acceptance"]["analysis_drafts_reused_not_rerun"] is True
+    assert result["acceptance"][
+        "valid_cell_judgments_reused_not_rerun"
+    ] is True
+    assert result["acceptance"]["typed_value_submission_repair_executed"] is True
+    value = next(
+        row for row in result["cells"] if row["cell_id"] == "CELL::value_capture"
+    )
+    assert value["submission_repair_receipt"][
+        "rejected_submission_promoted"
+    ] is False
+    assert [row["reused_from_predecessor"] for row in result["cells"]] == [
+        True,
+        True,
+        False,
+        True,
+        True,
+    ]
+    assert counters == {"analysis": 1, "submission": 2}
     assert public_path.is_file()
     assert (private_root / "full_result.json").is_file()
 

@@ -1,0 +1,67 @@
+{
+  "R6_capture_replay": {
+    "all_request_response_digests_match": true,
+    "all_response_bodies_complete": true,
+    "analysis_capture_count": 1,
+    "rejected_submission_digest": "028f0f49724aef1e37dd227feee0f1f78b1bfd1814b89fc9f14a99fac586388e",
+    "rejected_submission_digest_matches": true,
+    "rejected_submission_replays_to_typed_failure": "research_consumer_thesis_atom_invalid",
+    "saved_analysis_content_matches": true,
+    "value_analysis_reuse_digest": "076efa18e68cc533063e7ebced693c76cc2c615086b70d259ccca3bbfa04fa18"
+  },
+  "acceptance": {
+    "R6_preserved": true,
+    "four_valid_judgments_reused_not_rerun": true,
+    "natural_model_quality_proven": false,
+    "only_one_typed_value_repair_submission": true,
+    "rejected_value_submission_not_promoted": true,
+    "relation_endpoints_bind_locally": true,
+    "structured_financial_support_recognized": true,
+    "successor_live_authorized": false,
+    "synthesis_requires_all_five_cells": true,
+    "value_analysis_capture_verified_and_reused": true
+  },
+  "case_key": "DELL",
+  "independent_test_processes": [
+    {
+      "model_calls": 0,
+      "network_calls": 0,
+      "passed_tests": 126,
+      "process_id": "targeted_process_A",
+      "provider_calls": 0,
+      "status": "passed"
+    },
+    {
+      "model_calls": 0,
+      "network_calls": 0,
+      "passed_tests": 126,
+      "process_id": "targeted_process_B",
+      "provider_calls": 0,
+      "status": "passed"
+    }
+  ],
+  "known_boundary": "This zero-call result preserves R6 as failed and proves only that one capture-bound Value repair submission can be followed by synthesis after all five cells validate. The corrected fake payload is not model output or business truth and does not authorize a live run, DELL acceptance, heterogeneous generalization, publication, S3 acceptance or release.",
+  "observed_digests": {
+    "base_research_input_digest": "5c6b0bd2339bbcc84043f4b3dccacb9243f02916480164795f5be0e576aafcc1",
+    "claim_surface_research_input_digest": "9a929d2e4a576dcea6ab94e186897138efc11f1a9a8468ef4fcd8887efce001d",
+    "evidence_pack_artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+    "evidence_pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a",
+    "R6_plan_digest": "f964f9fe814e1ea5d50c5286fb57b3cb00144514c2ee47cc9c770b7d662debaf",
+    "R6_controlled_plan_digest": "c439694e64a1b24f2049ca6c073df25fb867f17e8c6879abb2128a43db701db1"
+  },
+  "recorded_at": "2026-08-17T10:52:58+08:00",
+  "result_digest": "57eb413f11ff1fa2f464febeb76970d168949efe1c874766f6a130053d54a9b3",
+  "schema_version": "fin_ia_s3_dynamic_five_cell_value_submission_repair_successor_zero_call_result_v1_0",
+  "status": "engineering_pass_zero_call_R6_value_repair_plus_synthesis_successor",
+  "successor_fake_replay": {
+    "cell_judgments_accepted": 5,
+    "cell_submission_calls_attempted": 1,
+    "fresh_model_calls_attempted": 3,
+    "harness_generated_research_judgment": false,
+    "reused_predecessor_analysis_drafts": 1,
+    "reused_predecessor_cell_judgments": 4,
+    "synthesis_analysis_calls_attempted": 1,
+    "synthesis_contract_valid": true,
+    "synthesis_submission_calls_attempted": 1
+  }
+}

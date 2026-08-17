@@ -21,6 +21,7 @@ from scripts.research.run_s3_current_research_consumer_zero_call import _service
 from scripts.research.run_s3_case_truth_reconciliation_live import (
     assess_pre_registered_targets,
 )
+from sec_agent.providers import load_chat_completion_profile
 from sec_agent.research.case_truth_reconciliation import (
     CASE_TRUTH_MODEL_VIEW_SCHEMA_VERSION,
     CaseTruthReconciliationError,
@@ -310,6 +311,26 @@ def test_model_view_is_compact_but_remains_bound_to_full_authority(
     assert len(
         json.dumps(model_view, ensure_ascii=False, sort_keys=True)
     ) < len(json.dumps(packet, ensure_ascii=False, sort_keys=True))
+
+
+def test_semantic_analysis_profile_is_bounded_visible_classification() -> None:
+    profile = load_chat_completion_profile(
+        _json(
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_"
+            "semantic_reconciliation_analysis_non_thinking_profile_v1_0.json"
+        )
+    )
+    assert profile.provider_id == "deepseek"
+    assert profile.model == "deepseek-v4-pro"
+    assert profile.base_url == "https://api.deepseek.com"
+    assert dict(profile.request_defaults) == {
+        "max_tokens": 4000,
+        "stream": False,
+        "thinking": {"type": "disabled"},
+    }
+    assert profile.authority["retry_count"] == 0
 
 
 def test_r7_false_absence_bundle_is_blocked_but_real_profit_gap_is_legal(

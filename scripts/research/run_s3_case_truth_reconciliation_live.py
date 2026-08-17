@@ -571,10 +571,9 @@ def _run_slice_successor(
         and analysis_profile.endpoint == "/chat/completions"
         and dict(analysis_profile.request_defaults)
         == {
-            "max_tokens": 16000,
+            "max_tokens": 4000,
             "stream": False,
-            "thinking": {"type": "enabled"},
-            "reasoning_effort": "max",
+            "thinking": {"type": "disabled"},
         }
         and submission_profile.provider_id == "deepseek"
         and submission_profile.model == "deepseek-v4-pro"

@@ -1,6 +1,6 @@
 {
-  "schema_version": "fin_insight_project_os_full_chain_preflight_checklist_v0_2",
-  "updated_at": "2026-08-15",
+  "schema_version": "fin_insight_project_os_full_chain_preflight_checklist_v0_3",
+  "updated_at": "2026-08-17",
   "checks": [
     {
       "check_id": "project_os_context_pack_read",
@@ -15,7 +15,7 @@
     {
       "check_id": "token_budget_preflight_passed",
       "required": true,
-      "description": "Run token-budget preflight before provider/model calls."
+      "description": "Before every provider/model node, record a task-specific TokenBudgetBasis covering mission, input inventory, required outputs, schema burden, materiality and quality risk, comparable usage evidence, reasoning profile, headroom, and stop/truncation semantics. Cost and latency are secondary and required research work cannot be silently removed to meet a cap."
     },
     {
       "check_id": "provider_health_preflight_passed",

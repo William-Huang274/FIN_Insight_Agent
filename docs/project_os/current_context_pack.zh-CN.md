@@ -463,3 +463,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - MU／NVDA 各只有一个工程形状请求、0 accepted，未经历自然 Planner、第二轮补证、五单元模型消费或报告；不得称为跨案泛化。
 - 跨案最早责任图已经冻结：S1 request／source／object／ranking／admission／CoverageState／loop，S2 numeric／causal bridge，S3 visible-fact consumption 分开处置。当前不自动重建向量库、微调 Embedding／reranker、扩大 broad search 或补跑完整报告。
 - 权威报告：`docs/architecture/retrieval/FIN_0_1_3_S1_DELL_MU_NVDA_EVIDENCE_ACQUISITION_AUTOPSY_20260817.zh-CN.md`。下一步等待 Owner 决定有界修复范围。
+
+## 2026-08-17 S1 有界第一修复方向与预算治理 Owner 更正
+
+- Owner 接受第一修复方向：proposition-level CoverageState、全候选决策账、reviewed Evidence binding、capture-bound 动态晋升、DELL working-capital／issuer-counter／upstream-counter 第二轮，再执行 MU／NVDA 自然问题等价动态链。
+- S1 后续必须按三个责任面出结论：本地 capture／chunk／object／index／SQL／binding；资料可达但 query／route／ranking／Gate／模型工具执行失败；只有前两类留下排除凭证后才允许真实免费公共信息 gap。
+- `source_temporarily_unreachable`、`not_yet_searched`、`budget_insufficient_for_required_route` 不是公开信息不存在。每个真实 gap 必须带本地查询、官方／外源路线、candidate 决策、可达性和最后检查时间的 `GapEligibilityReceipt`。
+- 从现在起每个自然模型节点和 paid authority 必须保存 `TokenBudgetBasis`：任务、输入、必交付项、schema、materiality／质量风险、历史 usage、profile、安全余量和停止／截断语义。成本／延迟只能作为二级约束；不得静默删题或用预算不足制造业务 gap。
+- 本轮只同步 PRD、S1 技术范式、当前计划、Project OS 和工作记录；没有改 Runtime、索引、Pack、模型或历史 attempt。下一步是有界实现设计与确定性验收，不是全面重建向量库或自动签发 full-chain live。

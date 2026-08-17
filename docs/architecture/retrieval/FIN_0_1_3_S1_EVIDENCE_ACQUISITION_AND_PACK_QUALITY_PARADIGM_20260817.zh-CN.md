@@ -2,7 +2,7 @@
 
 日期：2026-08-17
 
-状态：`architecture_decision / runtime_not_implemented / read_only_audit_complete / owner_repair_decision_pending`
+状态：`architecture_decision / runtime_not_implemented / read_only_audit_complete / owner_bounded_first_repair_direction_accepted`
 产品依据：`docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md` 16.38–16.39
 
 ## 1. 为什么需要本范式
@@ -99,7 +99,80 @@ CoverageState 必须逐 proposition 保存：已满足需求、引用、来源�
 
 模型可以提出 counter-hypothesis 和查询原子，但本地 compiler 必须将它绑定到当前 Case、proposition、source role、relationship direction、period、route 和预算。第二轮结果仍经过完整 Evidence Gate，不能因其由 Agent 主动请求就获得更高权威。
 
-## 6. 质量门
+## 6. 故障归责与 gap 资格
+
+空结果不是 gap。每个 proposition／EvidenceRequest／candidate 都必须先形成 `FailureProvenanceRecord`，按以下顺序定位最早责任层。
+
+### 6.1 A 类：本地数据面或对象面故障
+
+源材料已经保存、应当已经入库，或者权威结构化事实客观存在，但在以下环节丢失：
+
+- capture 未进入当前 source registry；
+- PDF／HTML／表格解析错误，parent／claim／metric-row／context 切分不完整；
+- 发行人、期间、单位、文档类型、关系方向或 parent-child lineage 错绑；
+- sparse／dense 索引没有包含已存在对象，或缓存／向量版本漂移；
+- SQL mart 缺行、错期、错单位、错误 supersession，或 S1 到 S2 exact lookup／join 断裂；
+- reviewed Evidence 已存在，却因 slot／facet／objective binding 错误没有进入当前 CoverageState。
+
+这类结果使用 `blocked_by_local_data_materialization`、`blocked_by_object_or_index_integrity`、`blocked_by_sql_or_numeric_authority` 或 `blocked_by_binding_integrity`。它们是项目内部 S1／S2 故障，不得写成“公开信息搜不到”。
+
+### 6.2 B 类：可检索但检索、工具或 Agent 执行失败
+
+资料在合法内源／官方／外源路线可以到达，或候选已经出现在池中，但以下任一环节未完成：
+
+- EvidenceRequest／QueryFacetPlan 没有表达正确实体、期间、产品、关系方向或 source role；
+- 应执行的 exact／lexical／semantic／graph／SQL／official／external route 没有被调用；
+- 网络、redirect、TLS、代理、下载、parser 或 Provider adapter 失败；
+- 有效对象未被召回，或召回后被 hard negative 压出可审范围；
+- candidate 已进入池，但没有 Evidence Role／directness／period／source authority 判断；
+- candidate 被拒绝却没有理由，或模型没有按 material gap 发起第二轮请求；
+- 模型发起了无效、重复或错误路线，Harness 也没有返回可解释的 typed failure。
+
+这类结果分别记录 `query_or_route_compile_failure`、`route_not_executed`、`source_transport_or_parse_failure`、`candidate_not_recalled`、`candidate_recalled_not_ranked`、`candidate_unjudged`、`candidate_retrieved_not_admitted` 或 `model_did_not_execute_required_research_step`。它们仍是产品可修复故障，不得晋升为真实信息 gap。
+
+### 6.3 C 类：真实公共信息边界
+
+只有 A、B 两类已经被排除或修复，并留下以下凭证后，才允许形成公共信息 gap：
+
+- 本地 capture／对象／索引／SQL 查询均完成且无匹配权威事实；
+- 适用的 exact、lexical、semantic、graph 和关系方向路线都已执行；
+- 发行人 SEC／IR、供应商／客户／同行官方披露、适用行业／监管来源及其 HTML／PDF／feed／语言变体已做有界尝试；
+- 所有候选都有 accepted／rejected／unjudged／needs-human-review 决策，不存在静默丢失；
+- 来源可达性和最后检查时间可审计；
+- 结果确为公司未披露、免费公共资料不足，或必须依赖商业／私有数据，而不是工具没跑、适配器失败或预算被截断。
+
+合法终态至少区分：
+
+- `public_information_not_disclosed`；
+- `commercial_or_private_data_required`；
+- `source_temporarily_unreachable`（来源存在，不能当作信息不存在）；
+- `not_yet_searched`（尚未执行，不能当作 gap）；
+- `budget_insufficient_for_required_route`（预算不足，不能当作 gap）。
+
+每个真实 gap 必须附 `GapEligibilityReceipt`：命题、需要的 Evidence 类型、已查本地通道、已执行外部／官方路线、候选决策汇总、可达性、最后检查时间、为何不是项目内部故障，以及下一条可行路线或商业数据边界。
+
+## 7. Candidate 账本、受控晋升与第一修复包
+
+候选不能只以 top-k 列表短暂存在。每个 candidate 必须进入同一账本，并且恰好处于 `accepted`、`rejected`、`unjudged` 或 `needs_human_review` 之一；保存 capture ref、对象 ref、query／slot／facet、rank、Evidence Role、直接性、期间、来源权威、决策理由和 lineage。`unjudged` 是显式待处理状态，不能在终局统计中消失。
+
+当前第一修复包按以下因果顺序执行：
+
+1. 建立 proposition-level `EvidenceCoverageState`，让系统先知道每条重要命题已经有哪些支持、反方、替代解释、数值／因果桥和真实缺口；
+2. 打通完整 CandidateDecision 账本，定位 111 个 DELL unreviewed 候选为何没有成为 Evidence；
+3. 修复 reviewed Evidence 的 slot／facet／objective 绑定，避免 Pack 中已有材料在本轮被误判为空；
+4. 允许 capture-bound 新候选在当前回合受控晋升：候选必须来自不可变 capture，经过身份、期间、来源、引用和 Evidence Gate，模型或 rank 分数不能单独授权；
+5. 用 DELL 三条命题执行一次真正第二轮：营运资金用于验证本地对象／SQL／绑定边界，发行人反方用于验证 issuer 查询—排序—晋升，上游反方用于验证关系方向和生态外源路线；
+6. DELL 只证明通用闭环可工作后，MU／NVDA 必须从各自自然问题重新规划和执行同一核心，不复用 DELL 标准答案、URL 或手写 case 分支。
+
+这个包不是为了“先把 DELL 做到通过”，而是用三个不同故障面验证归责机制、动态晋升和第二轮信息增量。若 DELL 失败点被证明属于真实公共信息边界，系统应保留合格 gap；若属于本地或工具层，则在其最早责任层修复，不扩大到全部索引重建或模型微调。
+
+## 8. TokenBudgetBasis 与研究完整性
+
+S1 中任何模型辅助的查询生成、候选评估、反方生成、Evidence Role 或补证节点，都必须在 authority 中保存 `TokenBudgetBasis`。依据至少包括节点任务、输入对象／证据／gap 数量、必交付项、schema 复杂度、materiality 风险、历史同类 usage、reasoning profile、安全余量和截断／分批语义。
+
+成本、延迟和调用次数只作为二级约束。不得因为固定 token 上限静默删掉命题、候选、反方或第二轮路线；容量不足时必须确定性分批、按 materiality 做 typed deferral，或返回 `budget_insufficient_for_required_scope`。开放分析与严格交卷应分别估算，不能让交卷预算替代研究预算，也不能看到一次耗尽就无依据扩大上限。全局细则以 `docs/project_os/token_budget_policy.zh-CN.md` 为准。
+
+## 9. 质量门
 
 ### Gate A：请求质量
 
@@ -139,13 +212,14 @@ CoverageState 必须逐 proposition 保存：已满足需求、引用、来源�
 - 外源补充带来可说明的边际信息增量；
 - 连续无进展、重复来源或低价值候选触发停止。
 
-## 7. Pack Readiness 状态
+## 10. Pack Readiness 状态
 
 状态必须相对于当前问题和交付深度，而非对公司做永久结论：
 
 - `ready_for_current_scope`：当前重要命题具备足够支持、反方和必要数值／桥状态，可交给 S3 判断；
 - `partial_with_material_gaps`：可以形成有边界的部分判断，但关键 gap 必须进入正文和 WWC；
 - `blocked_by_source_access`：合法来源存在但当前网络、授权或传输不可取得；
+- `blocked_by_local_data_materialization`：材料或事实已在本地责任范围，但 capture、对象、索引、SQL 或绑定未正确物化；
 - `blocked_by_candidate_coverage`：对象或来源池缺少当前命题所需候选；
 - `blocked_by_retrieval_quality`：有效对象存在，但查询、过滤或排序无法可靠呈现；
 - `blocked_by_evidence_admission`：候选相关但直接性、来源角色、期间或引用不足，不能晋升；
@@ -153,7 +227,7 @@ CoverageState 必须逐 proposition 保存：已满足需求、引用、来源�
 
 这些状态不能互相覆盖。例如 DELL 已有 AI revenue／orders／backlog，不允许因产品利润桥缺失而说“需求事实不存在”；正确状态是需求事实 ready、利润桥 blocked。
 
-## 8. 评测矩阵
+## 11. 评测矩阵
 
 评测必须分层，且逐案解释业务含义：
 
@@ -167,9 +241,11 @@ CoverageState 必须逐 proposition 保存：已满足需求、引用、来源�
 | 补证 | 第二轮是否真正增加信息 | material gap closure、route contribution、边际增量 |
 | 下游 | S3 是否因此得到更好判断 | 同 Evidence Need 的 Judgment／内容质量增益 |
 
+每个指标必须同时报告故障归责和业务例子。例如“DELL working-capital 0 accepted”必须进一步说明是本地对象不存在、可达候选未召回、候选被错排／错拒、模型未执行第二轮，还是公司确实未公开披露；不能用一个 0／1 或 Recall 数字替代原因。
+
 DELL／MU／NVDA 用于当前开发和回放；ORCL／ASML／ANET 已经被观察过，只能继续作为工程泛化样本，不能独立承担最终隐藏测试。最终准入还需新冻结的跨行业、跨来源形态和不同 Evidence 充分度案例。
 
-## 9. 与 S3 当前失败的分账
+## 12. 与 S3 当前失败的分账
 
 S1 不充分解释了当前报告信息面窄、利润桥／供应分配／估值不足和反方深度弱，但不能解释 R7 对已经可见 AI revenue、orders 和 backlog 的错误否认。后者继续属于 S3 claim semantics／Case Truth reconciliation。后续报告必须分别给出：
 
@@ -179,12 +255,13 @@ S1 不充分解释了当前报告信息面窄、利润桥／供应分配／估�
 
 不得通过补更多资料掩盖模型忽略已见事实，也不得在 Pack 不充分时只靠更强 Prompt 追求研报质量。
 
-## 10. 后续执行顺序
+## 13. 后续执行顺序
 
 1. 冻结本文范式和 PRD 的产品门；不改 Runtime，不调用模型或网络。
 2. 用现有 DELL／MU／NVDA artifacts 做 Evidence Acquisition 尸检：已完成，见 `FIN_0_1_3_S1_DELL_MU_NVDA_EVIDENCE_ACQUISITION_AUTOPSY_20260817.zh-CN.md`。
 3. 形成跨案 failure atlas：已完成；source coverage、对象解析、query、ranking、Evidence Role／Gate、Numeric／bridge、dynamic loop 与 S3 consumption 已分账，等待 Owner 选择有界修复范围。
-4. 只为最早责任层设计 S1 实现包与确定性验收；不得把所有问题塞入一个大重构。
-5. S1 达到 task-relative Pack Readiness 后，再恢复 ResearchBlueprint、Generic Cell Runtime 和 DeliveryPlan 的代码迁移。
+4. 先实施本文第 7 节的有界第一修复包，并按第 6 节逐命题归责；不得把所有问题塞入一个大重构。
+5. DELL 第二轮证明闭环后，让 MU／NVDA 从自然问题执行同核心动态链；没有相同运行深度不能称为泛化。
+6. S1 达到 task-relative Pack Readiness 后，再恢复 ResearchBlueprint、Generic Cell Runtime 和 DeliveryPlan 的代码迁移。
 
 本文不授权代码、索引重建、模型调用、网络补源、标签重写或产品发布。

@@ -100,6 +100,23 @@ Owner 接受“通用研究内核＋动态 ResearchBlueprint＋多形态 Deliver
 
 本顺序下，S3 `RC-S3-043` 继续真实存在，但在 S1 只读审计和架构处置期间不自动签发新 live。S1 不充分主要解释报告覆盖、密度和证据桥不足；模型忽略已经可见事实仍由 S3 单独负责。
 
+## 4D. 2026-08-17 S1 第一修复包、gap 资格与节点预算治理
+
+Owner 已接受有界第一修复方向，并补充两条不可退化的产品要求：S1 必须把本地数据处理故障、可检索但链路／工具／模型执行失败、真实公共信息边界分开；从现在起所有模型节点 token 预算必须有任务依据，不能再只按省钱或速度设置。
+
+当前实施顺序因此冻结为：
+
+1. 为每个 material proposition 建立 `EvidenceCoverageState` 和三层 `FailureProvenanceRecord`；空结果不能直接成为 gap。
+2. 让所有 candidate 进入 accepted／rejected／unjudged／needs-human-review 账本，修复 reviewed Evidence 的 slot／facet／objective binding。
+3. 实现 capture-bound 受控晋升；只有不可变来源、身份、期间、引用和 Evidence Gate 通过才能成为 Evidence，模型或 rank 不能单独授权。
+4. 用 DELL working-capital、issuer-counter、upstream-counter 分别验证本地数据／绑定、发行人检索／晋升和跨公司关系／外源路线，完成一次真正的第二轮补证。
+5. DELL 闭环成立后，MU／NVDA 从自然问题重新规划并执行同核心；没有等价运行深度不得称为泛化。
+6. 每个模型节点执行前保存 `TokenBudgetBasis`，执行后用实际 usage、required-output coverage 和内容质量校准；预算不足必须 typed 终止或显式延期，不能静默删题。
+
+公共信息 gap 只有在本地 capture／对象／索引／SQL、适用检索路线、候选决策和来源可达性全部留下凭证后成立。`source_temporarily_unreachable`、`not_yet_searched`、`budget_insufficient_for_required_route` 均不能冒充真实 gap。
+
+本次仍不授权全面索引重建、Embedding／reranker 微调、无界外源采购或模型 full-chain。实现只处理审计已证明的最早断点；后续新证据可以调整包内顺序，但必须先更新 Project OS 并说明业务影响。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

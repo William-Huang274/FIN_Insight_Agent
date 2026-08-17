@@ -2744,3 +2744,19 @@ S1 的正式产品链因此冻结为：
 该调整不把 R7 的错误全部归因于 S1。R7 错误否认模型已经看见的 AI revenue、orders 和 backlog，仍属于 S3 语义判断／真值对账缺陷；S1 资料不足主要解释报告议题覆盖、信息密度、利润桥、供应分配、估值和反方深度不足。两个 failure domain 必须分别修复和评分，不能互相代偿。
 
 下一步只允许文档与只读审计：先用 DELL／MU／NVDA 既有 request、candidate、Evidence、gap 和报告 artifacts 生成业务级 Evidence Acquisition 尸检与跨案 failure atlas，再决定 S1 最早责任层的实现包。完成 S1 Pack Readiness 产品门后，才恢复 16.38 的动态研究结构代码迁移与后续 S3 泛化。
+
+### 16.40 S1 gap 必须举证，模型节点预算必须有任务依据（2026-08-17）
+
+三案尸检表明，当前“没有 Evidence”至少可能来自三种完全不同的业务状态：资料已在本地但 capture／解析／chunk／对象／索引／SQL／绑定链丢失；资料可由内外源取得但 query、route、网络、排序、Evidence Gate 或模型工具执行没有把它带到当前命题；公开免费资料确实没有披露。产品不得再用一个通用 `gap` 覆盖三者。
+
+S1 必须为每个 material proposition 建立 `FailureProvenanceRecord`，按以下顺序归责：
+
+1. **本地数据面**：检查 source registry、capture、parent／claim／table／context、sparse／dense index、SQL mart、身份／期间／单位和 slot／facet／objective binding。材料已经存在但这些环节失败时，属于 S1／S2 owned failure。
+2. **检索与执行面**：检查 QueryFacetPlan、应执行路线、工具调用、网络／parser、candidate 入池与排名、EvidenceDecision，以及模型是否发起必要第二轮。资料可搜到但链路未执行或未呈现时，属于 query／retrieval／tool／Agent failure。
+3. **信息边界**：只有前两层留下完整凭证且未发现权威材料后，才允许 `public_information_not_disclosed` 或 `commercial_or_private_data_required`。临时不可达、尚未检索、预算不足均不是“信息不存在”。
+
+每个候选必须进入 accepted／rejected／unjudged／needs-human-review 账本；每个真实 gap 必须带 `GapEligibilityReceipt`，说明本地查询、官方／外源路线、候选决策、可达性、最后检查时间及为何不是项目故障。数字和商业桥继续由 S2 权威，文本检索没有资格自行宣布数值不存在。
+
+Owner 接受的第一个实现包限定为：命题级 CoverageState → 完整候选决策账 → reviewed Evidence 绑定修复 → capture-bound 受控晋升 → DELL 营运资金／发行人反方／上游反方第二轮补证 → MU／NVDA 自然问题等价动态链。它不授权全面重建向量库、微调 Embedding／reranker、无界 broad search 或模型 full-chain。
+
+从本条生效起，每个自然模型节点和 paid authority 必须保存 `TokenBudgetBasis`：节点任务、输入规模、必交付项、schema 负担、materiality／质量风险、历史同类 usage、reasoning profile、安全余量和截断／停止语义。成本与延迟是二级约束，不能成为静默删掉研究命题、候选、反方或必答项的理由。容量不足必须确定性分批、typed deferral 或返回 `budget_insufficient_for_required_scope`；分析与严格交卷分别估算。预算通过不等于事实 L1、内容质量或产品验收通过。

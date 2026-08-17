@@ -6,6 +6,7 @@
 - FIN 0.1.3 S1：`fin_0_1_3_s1/`
   - 当前 S1 证据获取与 Evidence Pack 质量范式：`fin_0_1_3_s1/015_s1_evidence_acquisition_and_pack_quality_paradigm_decision.md`
   - DELL／MU／NVDA 证据获取尸检与跨案业务故障图：`fin_0_1_3_s1/016_s1_three_case_evidence_acquisition_autopsy.md`
+  - S1 故障归责、gap 资格与 Token 预算治理：`fin_0_1_3_s1/017_s1_failure_provenance_gap_eligibility_and_token_budget_governance.md`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`

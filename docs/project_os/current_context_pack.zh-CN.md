@@ -431,3 +431,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R2 说明旧 `asserted_state` 把“claim 说了什么”和“Case Truth 实际是什么”混在一列，且没有表达合法跨公司 `context_only` 的状态；完整五单元 catalog 也诱发 supporting-fact 枚举、错误 synonym 和跨单元 alias 选择。Operating 三个 surface 被扩成 30 余条 mapping，容量失败只是这一语义膨胀的结果。
 - 14 条 finding 不是单一模型错误：有错误 alias／polarity，也有现合同的 false positive，更有 R7 Judgment 真实使用 allowed cell view 之外现金流、收入或需求事实的 cross-cell leakage。不能为了命中三条预注册目标而隐藏新增问题。
 - 当前唯一允许工作仍在 S3 同层：把输出改成 claim polarity＋cross-case context，编译 current-cell／case-only／typed-absence 分层 alias view，禁止枚举支撑事实，保留本地 truth authority；用 R2 capture、三案例和留出做零调用 proof。通过后最多一次 fresh 两单元 successor；此前不执行剩余三单元、R7 修文、综合、泛化或发布。
+
+## 2026-08-17 S3 Case Truth claim-polarity formal R4
+
+- clean/synced `3656fe4b...fa43` 上签发并执行 formal R4，状态为 `zero_call_case_truth_claim_polarity_engineering_pass`；0 model／Provider／network。public digest=`0a8393bf...286e`，private full-result SHA-256=`17da3ad...28f1`。
+- R2 的 9,919 字符 Operating 草稿与 Counter 单 surface 13 条 mapping 在新合同下都会于 submission 前被拒绝；新 schema 将 claim polarity、authoritative truth 和 cross-case context 分开，并把每 surface 直接 proposition 限为 12。
+- R7 三条 false absence、一个合法利润桥 typed gap、合法跨公司 context 和真实 outside-cell claim scope 均可分别表达；subject-as-context、跨案、未知 alias、digest 漂移、漏／重叠 slice 与容量 mutation 全部 fail closed。DELL／MU／NVDA 和留出案例顺序稳定。
+- 该结果只关闭 RC-S3-042 的 provider-neutral 工程门，不证明 DeepSeek 自然语义分类通过，也没有改写 R7。下一步仅允许 clean commit/push 后的一次 Operating／Counterevidence 两单元 natural successor，最多 4 调用、0 retry；通过前不得进入剩余三单元、Judgment／Synthesis 修复、泛化、S3 acceptance 或发布。

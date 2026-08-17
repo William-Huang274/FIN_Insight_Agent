@@ -1,0 +1,149 @@
+{
+  "schema_version": "fin_ia_s3_case_truth_reconciliation_zero_call_result_v1_2",
+  "status": "zero_call_case_truth_claim_polarity_engineering_pass",
+  "run_id": "FIN013-S3-CASE-TRUTH-RECONCILIATION-R4",
+  "recorded_at": "2026-08-17T13:41:13.9131167+08:00",
+  "implementation_commit": "3656fe4bda6aa8c0809ce6737ad9aa1bd182fa43",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_zero_call_authority_v1_3.json",
+  "authority_sha256": "89a4c57d0b6ed14324b3e107ee00c6e1ba9b9ac2af32cd1c47a8dbdb7502b1c9",
+  "private_result_ref": "data/workbench_private/s3_case_truth_reconciliation/FIN013-S3-CASE-TRUTH-RECONCILIATION-R4/full_result.json",
+  "private_result_sha256": "17da3ad9949d037ccce28724320f4af56534f3799895f68464d22b74fe1228f1",
+  "r7_replay": {
+    "case_truth_packet_digest": "6d25591ef73087a24efc74a1dff124f13ae3db9fc92701909c956e22c132432e",
+    "cell_reconciliation_status": "case_truth_reconciliation_blocked",
+    "cell_finding_codes": [
+      "asserted_absent_but_present_in_case",
+      "asserted_absent_but_present_in_case",
+      "asserted_absent_but_present_in_case"
+    ],
+    "cell_finding_surfaces": [
+      "CELL::operating_performance::thesis_atom",
+      "CELL::counterevidence::thesis_atom",
+      "CELL::counterevidence::thesis_atom"
+    ],
+    "typed_profit_bridge_gap_accepted": true,
+    "synthesis_reconciliation_status": "case_truth_reconciliation_blocked",
+    "synthesis_finding_codes": [
+      "asserted_absent_but_present_in_case",
+      "asserted_absent_but_present_in_case"
+    ],
+    "false_cross_cell_conflict_blocked": true,
+    "synthesis_gate_failed_closed": true
+  },
+  "r2_capture_replay": {
+    "run_id": "FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2",
+    "operating_analysis_chars": 9919,
+    "operating_submission_finish_reason": "length",
+    "operating_oversize_draft_failed_before_new_submission": true,
+    "counter_original_finding_count": 14,
+    "counter_thirteen_assertion_surface_failed_before_new_submission": true
+  },
+  "case_matrix": [
+    {
+      "case_key": "DELL",
+      "case_truth_packet_digest": "6d25591ef73087a24efc74a1dff124f13ae3db9fc92701909c956e22c132432e",
+      "presence_alias_count": 61,
+      "typed_gap_alias_count": 7,
+      "typed_bridge_boundary_count": 1,
+      "cell_count": 5,
+      "permutation_stable": true
+    },
+    {
+      "case_key": "MU",
+      "case_truth_packet_digest": "349d614121ed159424fa8c57b1d5bb0aef119e3aa15595f68ed65427eac3b12b",
+      "presence_alias_count": 49,
+      "typed_gap_alias_count": 10,
+      "typed_bridge_boundary_count": 0,
+      "cell_count": 5,
+      "permutation_stable": true
+    },
+    {
+      "case_key": "NVDA",
+      "case_truth_packet_digest": "c32ce5c5f550c2ecc993d9286897e4c554dae13b8df93013a3d8fdd49634ccf8",
+      "presence_alias_count": 55,
+      "typed_gap_alias_count": 10,
+      "typed_bridge_boundary_count": 0,
+      "cell_count": 5,
+      "permutation_stable": true
+    }
+  ],
+  "holdout_mutation": {
+    "case_key": "HOLDOUT_INDUSTRIAL",
+    "external_owner_preserved": true,
+    "presence_and_gap_coexistence_preserved": true,
+    "typed_gap_only_absence_authorized": true,
+    "case_truth_packet_digest": "26422a7ebc11d85d18987fbe3f7cf69f1240f168ebac937ac80498c1261a2f75"
+  },
+  "mutations": {
+    "candidate_and_catalog_permutation_stable": true,
+    "cross_case_packet_reuse_failed_closed": true,
+    "required_material_surface_cannot_silently_abstain": true,
+    "unknown_alias_and_surface_digest_drift_fail_closed": true,
+    "missing_slice_failed_closed": true,
+    "overlapping_slice_failed_closed": true,
+    "cross_case_context_accepted_only_for_non_subject_fact": true,
+    "subject_fact_as_cross_case_context_failed_closed": true,
+    "outside_cell_presence_failed_closed": true,
+    "thirteen_direct_propositions_failed_closed": true
+  },
+  "tool_contract": {
+    "provider_neutral_canonical_tool_name": "submit_case_truth_reconciliation",
+    "deepseek_strict_projection_qualified": true,
+    "finance_contract_weakened": false,
+    "local_exhaustive_surface_validation_required": true,
+    "tool_emits_claim_polarity_not_authoritative_state": true,
+    "maximum_direct_propositions_per_surface": 12,
+    "full_authority_packet_chars": 49568,
+    "compact_model_view_chars": 26671,
+    "compact_model_view_bound_to_full_packet_digest": true,
+    "cell_hidden_fact_repetition_omitted_from_model_view": true,
+    "claim_scoped_tiered_alias_view": true
+  },
+  "split_analysis_submission_contract": {
+    "cell_slice_count": 5,
+    "claim_surfaces_per_slice": 3,
+    "parent_claim_surfaces_covered": 15,
+    "direct_submission_user_chars": 34067,
+    "direct_canonical_tool_chars": 6680,
+    "largest_analysis_user_chars": 22075,
+    "largest_submission_user_chars": 4136,
+    "largest_canonical_tool_chars": 5367,
+    "analysis_and_submission_are_separate_calls": true,
+    "submission_does_not_receive_full_truth_catalog": true,
+    "analysis_maps_direct_propositions_not_supporting_fact_inventory": true,
+    "local_aggregate_is_parent_digest_bound": true,
+    "aggregate_finding_codes": [
+      "asserted_absent_but_present_in_case",
+      "asserted_absent_but_present_in_case",
+      "asserted_absent_but_present_in_case"
+    ],
+    "legitimate_product_profit_gap_preserved": true
+  },
+  "acceptance": {
+    "case_presence_catalog_compiled": true,
+    "cell_visibility_matrix_compiled": true,
+    "typed_absence_authority_compiled": true,
+    "r7_false_absence_detected": true,
+    "r7_false_conflict_detected": true,
+    "legitimate_product_profit_gap_preserved": true,
+    "dell_mu_nvda_packet_compilation": true,
+    "heterogeneous_holdout_mutation": true,
+    "five_cell_slice_compilation": true,
+    "analysis_submission_separation": true,
+    "parent_bound_slice_aggregation": true,
+    "claim_polarity_separated_from_authoritative_truth": true,
+    "cross_case_context_semantics": true,
+    "claim_scoped_alias_projection": true,
+    "r2_capture_replay": true,
+    "natural_semantic_extraction_proven": false,
+    "r7_judgments_repaired": false,
+    "r7_synthesis_repaired": false,
+    "dell_five_cell_content_accepted": false,
+    "generalization_accepted": false,
+    "s3_accepted": false,
+    "release_ready": false
+  },
+  "next_decision": "After clean repository proof, one final bounded natural successor over the same two R7 cells may be considered. It must use the tiered alias view and claim-polarity contract, identify all three false absences, preserve the legitimate product-profit bridge gap, and separately surface real cross-cell claim leakage. No remaining cell or research repair may run before that content assessment.",
+  "known_boundary": "This zero-call result proves deterministic truth-packet compilation, claim-scoped alias projection, claim-polarity versus truth separation, cross-case-context semantics, bounded assertion capacity, slice aggregation, transport projection and fail-closed downstream gating. Fake semantic mappings are test fixtures, not natural model quality or business truth. It does not repair R7, itself authorize a paid successor, prove DELL content quality, generalization, S3, Workbench publication or release.",
+  "result_digest": "0a8393bfd5aad4e1f1fccf0437d4edef2eb4491e00d14fa48441cd794014286e"
+}

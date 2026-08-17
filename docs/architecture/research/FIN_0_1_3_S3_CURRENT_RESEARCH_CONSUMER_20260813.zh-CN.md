@@ -505,3 +505,5 @@ current successor 因此使用以下 provider-neutral 合同：
 - Case Truth strict submission 使用独立 non-thinking 4k profile。增加容量是为了容纳三 surface 的有界直接命题，不用于容忍无界 supporting-fact inventory；旧 R2 的 2k 截断与 13 条单-surface overmapping 会在新 Runtime 调用前直接失败。
 
 R2 还暴露出 R7 原 Judgment 本身存在真实 cross-cell claim scope：Operating／Counterevidence 写入各自 allowed view 之外的现金流、收入或需求事实。新 semantic gate 必须把这类结果与 alias 误选、合同 false positive 分开报告；不得只为命中预注册的三条 false absence 而压掉新增 finding。只有同两单元 fresh successor 证明 claim polarity、合法利润桥 gap、跨公司 context 和真实 outside-cell claim 均被正确分类，才允许修复 Judgment 或进入 Synthesis。
+
+formal R4 已在 clean/synced `3656fe4b...fa43` 上关闭该 provider-neutral 工程门。R2 的 9,919 字符 Operating 草稿与 Counter 单 surface 13 条 mapping 均在新 submission 前被容量门拒绝；R7 三条 false absence、合法 product-profit bridge gap、合法 cross-case context 和 outside-cell claim scope 可分别表达。主体公司事实冒充 context、跨案、未知 alias、digest 漂移、漏／重叠 slice 和超容量 mutation 均 fail closed；DELL／MU／NVDA 与留出案例顺序稳定。该结果不追认 R2 或 R7，也不证明自然语义分类。下一步仍只允许一次 clean repository-bound Operating／Counterevidence successor，最多四次调用、零 retry。

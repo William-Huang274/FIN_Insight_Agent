@@ -1,0 +1,51 @@
+{
+  "schema_version": "fin_ia_s3_case_truth_reconciliation_zero_call_authority_v1_2",
+  "status": "fresh_zero_call_case_truth_reconciliation_proof_authorized",
+  "run_id": "FIN013-S3-CASE-TRUTH-RECONCILIATION-R4",
+  "issued_at": "2026-08-17T13:41:13.9131167+08:00",
+  "purpose": "Prove the provider-neutral claim-polarity contract, claim-scoped tiered alias view, cross-case context semantics, direct-proposition capacity, immutable R2 capture replay, and unchanged local Case Truth authority before any further paid semantic successor.",
+  "clean_implementation": {
+    "implementation_commit": "3656fe4bda6aa8c0809ce6737ad9aa1bd182fa43",
+    "head_must_equal_implementation_commit": true,
+    "upstream_must_equal_implementation_commit": true,
+    "tracked_worktree_must_be_clean": true,
+    "only_authority_may_be_untracked": true
+  },
+  "execution_budget": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "embedding_calls": 0,
+    "retries": 0,
+    "candidate_promotions": 0,
+    "business_report_publication": "forbidden"
+  },
+  "bound_inputs": {
+    "r7_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_value_submission_repair_successor_chat_live_result_v1_0.json",
+    "r7_public_result_sha256": "8bc9ad425858cdedba23f276ea8ae6382637cef9f26def656dd577ef99ae5ed8",
+    "r7_private_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R7/full_result.json",
+    "r7_private_result_sha256": "6b462933d6ed0dae92aa83e6a59b0b5d01ee42166b8c32c1f8dff979afa0b3b5",
+    "r2_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_slice_chat_live_result_v1_1.json",
+    "r2_public_result_sha256": "0820a900abc0a6fe36972b3a82604fc4ebe2caec414c46dd183aa86ad9719733",
+    "r2_private_result_ref": "data/workbench_private/s3_case_truth_reconciliation/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/full_result.json",
+    "r2_private_result_sha256": "f0653469b572c6ffd85a2dcb3b0decd4f250535099cfbf0a75c0805bbb3ca9a3",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "6e2e358620f8a69248725cadda281651de4820bc12ec980b723bdbfaad837099",
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_3.json",
+    "consumer_policy_sha256": "c48eb3a035d9600fe5948d7439f0c964eb5d083c2c6f5ed89f3ff750cef7e05e"
+  },
+  "output_contract": {
+    "private_output_ref": "data/workbench_private/s3_case_truth_reconciliation/FIN013-S3-CASE-TRUTH-RECONCILIATION-R4/full_result.json",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_zero_call_result_v1_3.json"
+  },
+  "acceptance_boundary": {
+    "engineering_claim_polarity_reconciliation_proof_only": true,
+    "natural_semantic_extraction": false,
+    "r7_repair": false,
+    "dell_five_cell_acceptance": false,
+    "generalization": false,
+    "s3_acceptance": false,
+    "publication": false,
+    "release": false
+  }
+}

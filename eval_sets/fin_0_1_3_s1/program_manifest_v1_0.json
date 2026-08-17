@@ -36,13 +36,19 @@
     },
     {
       "ref": "eval_sets/fin_0_1_3_s1/schemas/evaluation_program_manifest.schema.json",
-      "sha256": "facc52180130cc30a13faece6807056a8f72e76b08a76c9e6cd1241bda92fd29",
+      "sha256": "5f60b06c4d57ce80c1132354bb4a3b083119d27c9e2bf3034327c50b16e19c79",
       "role": "schema",
       "visibility": "governance_only"
     },
     {
       "ref": "eval_sets/fin_0_1_3_s1/schemas/qualification_preregistration.schema.json",
       "sha256": "30a1af38b399e17b684b72293dacc7cb222b78ae3f22fbaa46155b49d2dafe31",
+      "role": "schema",
+      "visibility": "governance_only"
+    },
+    {
+      "ref": "eval_sets/fin_0_1_3_s1/schemas/qualification_execution_binding.schema.json",
+      "sha256": "2cba10b8d353590baba52c6605fab783f6fa0113d0e77182896707e5d20c9131",
       "role": "schema",
       "visibility": "governance_only"
     }
@@ -53,6 +59,14 @@
     "role": "qualification_preregistration",
     "visibility": "governance_only"
   },
+  "qualification_execution_bindings": [
+    {
+      "ref": "eval_sets/fin_0_1_3_s1/qualification_execution_binding_v1_0.json",
+      "sha256": "d22043426ad3e26363dd2d064b3b728f3392bdcd63438e5ad64ae9b4e0a52fd0",
+      "role": "qualification_execution_binding",
+      "visibility": "governance_only"
+    }
+  ],
   "split_policies": [
     {
       "split": "train_internal",

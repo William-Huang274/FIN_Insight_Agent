@@ -20,6 +20,7 @@ from retrieval.evaluation_assets import (
     EvaluationInput,
     EvaluationProgramManifest,
     EvaluationReference,
+    QualificationExecutionBinding,
     QualificationPreRegistration,
     load_evaluation_program_manifest,
     validate_evaluation_program,
@@ -198,6 +199,7 @@ def test_eval_program_keeps_inputs_and_labels_physically_separate() -> None:
         "reserved_catalog_count": 3,
         "example_count": 9,
         "qualification_preregistered_case_count": 6,
+        "qualification_execution_binding_count": 1,
         "qualification_ready": False,
     }
     train = next(row for row in manifest.catalogs if row.split == "train_internal")
@@ -259,6 +261,9 @@ def test_checked_in_json_schemas_match_current_models() -> None:
         ),
         "qualification_preregistration.schema.json": (
             QualificationPreRegistration.model_json_schema()
+        ),
+        "qualification_execution_binding.schema.json": (
+            QualificationExecutionBinding.model_json_schema()
         ),
     }
     schema_root = ROOT / "eval_sets/fin_0_1_3_s1/schemas"

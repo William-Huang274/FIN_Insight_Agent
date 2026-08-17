@@ -16,6 +16,7 @@ from ingestion.official_source_capture import (  # noqa: E402
     OfficialSourceCaptureError,
     _TransportResponse,
     capture_plan,
+    materialize_response_body_capture,
     validate_capture_plan,
 )
 
@@ -81,6 +82,37 @@ def test_capture_is_persisted_before_parse_without_sensitive_headers(
     assert capture["credential_cookie_authorization_present"] is False
     assert capture["headers"] == {"content-type": "text/html"}
     assert "forbidden" not in json.dumps(capture).lower()
+
+
+def test_captured_body_materialization_is_digest_bound_and_not_evidence(
+    tmp_path: Path,
+) -> None:
+    result = capture_plan(
+        _plan(),
+        output_root=tmp_path / "captures",
+        attempt_id="r1",
+        session=_FakeSession(),
+    )
+    response_capture = json.loads(
+        Path(result["sources"][0]["response_capture"]["object_ref"]).read_text(
+            encoding="utf-8"
+        )
+    )
+
+    first = materialize_response_body_capture(
+        response_capture, output_root=tmp_path / "bodies"
+    )
+    second = materialize_response_body_capture(
+        response_capture, output_root=tmp_path / "bodies"
+    )
+
+    assert Path(first["body_path"]).read_bytes() == (
+        b"<html><body>official source</body></html>"
+    )
+    assert first["body_sha256"] == response_capture["body_sha256"]
+    assert first["source_body_is_evidence"] is False
+    assert first["body_reused"] is False
+    assert second["body_reused"] is True
 
 
 def test_attempt_id_is_immutable(tmp_path: Path) -> None:

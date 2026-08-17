@@ -57,6 +57,7 @@ class EvaluationAssetRef(_FrozenModel):
         "source_fixture",
         "schema",
         "qualification_preregistration",
+        "qualification_execution_binding",
     ]
     visibility: Literal["runtime_visible", "evaluator_only", "governance_only"]
 
@@ -194,6 +195,7 @@ class EvaluationProgramManifest(_FrozenModel):
     policies: Mapping[str, bool]
     schemas: tuple[EvaluationAssetRef, ...]
     qualification_preregistration: EvaluationAssetRef
+    qualification_execution_bindings: tuple[EvaluationAssetRef, ...]
     split_policies: tuple[SplitPolicy, ...]
     catalogs: tuple[EvaluationCatalog, ...]
     legacy_development_assets: tuple[EvaluationAssetRef, ...]
@@ -239,6 +241,12 @@ class EvaluationProgramManifest(_FrozenModel):
             and self.qualification_preregistration.visibility == "governance_only"
         ):
             raise ValueError("evaluation_qualification_preregistration_ref_invalid")
+        if not self.qualification_execution_bindings or any(
+            row.role != "qualification_execution_binding"
+            or row.visibility != "governance_only"
+            for row in self.qualification_execution_bindings
+        ):
+            raise ValueError("evaluation_qualification_execution_bindings_invalid")
         return self
 
 
@@ -412,12 +420,69 @@ class QualificationPreRegistration(_FrozenModel):
         return self
 
 
+class QualificationSourceBodyBinding(_FrozenModel):
+    route_id: str = Field(min_length=1)
+    body_sha256: str
+    body_bytes: int = Field(gt=0)
+    content_type: Literal["text/html", "application/pdf"]
+
+    @field_validator("body_sha256")
+    @classmethod
+    def validate_digest(cls, value: str) -> str:
+        if len(value) != 64 or any(ch not in "0123456789abcdef" for ch in value):
+            raise ValueError("qualification_source_body_digest_invalid")
+        return value
+
+
+class QualificationParserExecutionPolicy(_FrozenModel):
+    parser_outcome_inspected_before_binding: Literal[False]
+    all_pdf_pages_selected: Literal[True]
+    ocr_policy: Literal["automatic_low_native_text_pages"]
+    candidates_only_not_evidence: Literal[True]
+    numeric_fact_authority_granted: Literal[False]
+    thresholds_or_routes_changed: Literal[False]
+    parse_network_calls: Literal[0]
+    parse_model_calls: Literal[0]
+    learned_vector_execution: Literal[
+        "later_cuda_fp16_only_no_cpu_fallback"
+    ]
+
+
+class QualificationExecutionBinding(_FrozenModel):
+    schema_version: Literal["fin_ia_s1_vs5_qualification_execution_binding_v1_0"]
+    status: Literal["frozen_after_capture_before_parse_outcome_inspection"]
+    program_id: str = Field(min_length=1)
+    recorded_at: str = Field(min_length=1)
+    preregistration: QualificationBoundRef
+    source_capture_plan: QualificationBoundRef
+    source_capture_public_result: QualificationBoundRef
+    bound_implementation: tuple[QualificationBoundRef, ...]
+    source_bodies: tuple[QualificationSourceBodyBinding, ...]
+    execution_policy: QualificationParserExecutionPolicy
+    known_boundary_zh: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_binding(self) -> "QualificationExecutionBinding":
+        route_ids = [row.route_id for row in self.source_bodies]
+        if len(route_ids) != len(set(route_ids)) or not route_ids:
+            raise ValueError("qualification_source_body_route_ids_invalid")
+        if not self.bound_implementation:
+            raise ValueError("qualification_parser_implementation_missing")
+        return self
+
+
 def load_evaluation_program_manifest(path: Path) -> EvaluationProgramManifest:
     return EvaluationProgramManifest.model_validate_json(path.read_text(encoding="utf-8"))
 
 
 def load_qualification_preregistration(path: Path) -> QualificationPreRegistration:
     return QualificationPreRegistration.model_validate_json(
+        path.read_text(encoding="utf-8")
+    )
+
+
+def load_qualification_execution_binding(path: Path) -> QualificationExecutionBinding:
+    return QualificationExecutionBinding.model_validate_json(
         path.read_text(encoding="utf-8")
     )
 
@@ -435,6 +500,34 @@ def validate_evaluation_program(
     preregistration = load_qualification_preregistration(preregistration_path)
     for asset in preregistration.bound_configuration:
         _validate_qualification_bound_ref(repo_root, asset)
+    expected_route_ids = {
+        target.target_id
+        for case in preregistration.cases
+        for target in case.source_targets
+    }
+    for asset in manifest.qualification_execution_bindings:
+        binding_path = _validate_bound_asset(repo_root, asset)
+        binding = load_qualification_execution_binding(binding_path)
+        for bound in (
+            binding.preregistration,
+            binding.source_capture_plan,
+            binding.source_capture_public_result,
+            *binding.bound_implementation,
+        ):
+            _validate_qualification_bound_ref(repo_root, bound)
+        if (
+            binding.preregistration.ref
+            != manifest.qualification_preregistration.ref
+            or binding.preregistration.sha256
+            != manifest.qualification_preregistration.sha256
+        ):
+            raise EvaluationAssetError(
+                "qualification_execution_preregistration_binding_invalid"
+            )
+        if {row.route_id for row in binding.source_bodies} != expected_route_ids:
+            raise EvaluationAssetError(
+                "qualification_execution_source_body_coverage_invalid"
+            )
 
     for catalog in manifest.catalogs:
         policy = split_policies[catalog.split]
@@ -470,6 +563,9 @@ def validate_evaluation_program(
         ),
         "example_count": total_examples,
         "qualification_preregistered_case_count": len(preregistration.cases),
+        "qualification_execution_binding_count": len(
+            manifest.qualification_execution_bindings
+        ),
         "qualification_ready": False,
     }
 
@@ -533,7 +629,9 @@ __all__ = [
     "EvaluationReference",
     "QualificationPreRegistration",
     "QualificationCaseSpec",
+    "QualificationExecutionBinding",
     "load_evaluation_program_manifest",
     "load_qualification_preregistration",
+    "load_qualification_execution_binding",
     "validate_evaluation_program",
 ]

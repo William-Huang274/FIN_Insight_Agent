@@ -1,0 +1,104 @@
+{
+  "schema_version": "fin_ia_s1_vs5_qualification_execution_binding_v1_0",
+  "status": "frozen_after_capture_before_parse_outcome_inspection",
+  "program_id": "FIN-0.1.3-S1-VS5-QUALIFICATION",
+  "recorded_at": "2026-08-18",
+  "preregistration": {
+    "ref": "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json",
+    "sha256": "e16db48de84e6cb0e5c586032e4bff446307d2dbdad898999de8a935b7124749",
+    "purpose": "immutable cases thresholds split policy and CUDA-only learned retrieval contract"
+  },
+  "source_capture_plan": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_source_capture_plan_v1_0.json",
+    "sha256": "f7f2386038dd5276cff3b647116fceb24f4b68e3cfd2238a4a71761064097898",
+    "purpose": "bounded official source routes frozen before source capture"
+  },
+  "source_capture_public_result": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_source_capture_result_v1_0.json",
+    "sha256": "c5140197dd7253ab7443b57025321c878b0cfd8167907603ec2de5197a2fd052",
+    "purpose": "safe capture status sizes and body digests without source content"
+  },
+  "bound_implementation": [
+    {
+      "ref": "src/ingestion/official_source_capture.py",
+      "sha256": "06ce186c6cbe547d92853aeee070934e75b8f5499861110394158d1533dd4643",
+      "purpose": "capture response body digest validation and private CAS materialization"
+    },
+    {
+      "ref": "src/ingestion/pdf_layout.py",
+      "sha256": "04f4f2c6e2713d613870f7bc3fbc1ac09fbbed989410f5bbfd1ce2af192e4b50",
+      "purpose": "full-page native layout inventory and automatic low-text OCR"
+    },
+    {
+      "ref": "src/retrieval/pdf_layout_objects.py",
+      "sha256": "0f5e2df1bb1863816a7cdb08784223c082287249beeccf5333f31a5c1f1fb1cb",
+      "purpose": "layout page table row footnote and continuation candidate compiler"
+    },
+    {
+      "ref": "scripts/data_retrieval/parse_captured_official_pdf_layout.py",
+      "sha256": "2baa0841afcc1fe71fbdf50e52e4d23334a4b53d24b2bb3f74976e395dc1fe0f",
+      "purpose": "all-pages zero-network qualification PDF pipeline"
+    },
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_tencent_fy2025_pdf_source_spec_v1_0.json",
+      "sha256": "3c74f7405543b590b58910ebcc78c24228fd1c35059035dbfa29387dcc633cb0",
+      "purpose": "Tencent FY2025 identity period source and parser policy"
+    }
+  ],
+  "source_bodies": [
+    {
+      "route_id": "COST_FY2024_10K",
+      "body_sha256": "02f59d813caef1917d773104629133fd7a7414759a5ea8a9c6918e070c970638",
+      "body_bytes": 1497890,
+      "content_type": "text/html"
+    },
+    {
+      "route_id": "COST_FY2025_10K",
+      "body_sha256": "2cf71f4336c8f36b008a584403551d95ab3b7e4addc9179a99b62029810f7c9a",
+      "body_bytes": 1438962,
+      "content_type": "text/html"
+    },
+    {
+      "route_id": "JPM_FY2025_10K",
+      "body_sha256": "4d9febdbc2038dcdca8726053286df4cbbfd48885051cbd781efcc3becb66a23",
+      "body_bytes": 12927325,
+      "content_type": "text/html"
+    },
+    {
+      "route_id": "CAT_FY2025_10K",
+      "body_sha256": "090ce2bd6d7dd1e85d4397ab152d3c3c3fb059fd4af0eb9aa979c1eb2ff92f15",
+      "body_bytes": 6100469,
+      "content_type": "text/html"
+    },
+    {
+      "route_id": "NVO_FY2025_20F",
+      "body_sha256": "bc3b95895aa5c5ce37bbeb9b511ab60f9bfa5b9c072bbb24e58c0b093f92edd9",
+      "body_bytes": 1425751,
+      "content_type": "text/html"
+    },
+    {
+      "route_id": "SHEL_FY2025_20F",
+      "body_sha256": "964866953ee25cc6827fa10d16ed9b2a395170e173e6258957b139d05eb79a99",
+      "body_bytes": 10268427,
+      "content_type": "text/html"
+    },
+    {
+      "route_id": "TENCENT_FY2025_OFFICIAL_ANNUAL_REPORT",
+      "body_sha256": "2a7547168077c3d9994af673125e77612e8656bc0f17ad189371d7e4088f4e98",
+      "body_bytes": 3999857,
+      "content_type": "application/pdf"
+    }
+  ],
+  "execution_policy": {
+    "parser_outcome_inspected_before_binding": false,
+    "all_pdf_pages_selected": true,
+    "ocr_policy": "automatic_low_native_text_pages",
+    "candidates_only_not_evidence": true,
+    "numeric_fact_authority_granted": false,
+    "thresholds_or_routes_changed": false,
+    "parse_network_calls": 0,
+    "parse_model_calls": 0,
+    "learned_vector_execution": "later_cuda_fp16_only_no_cpu_fallback"
+  },
+  "known_boundary_zh": "原预注册漏绑定 PDF layout/OCR 实现；本 addendum 在查看腾讯 PDF 解析结果前只补齐实现身份与全页策略，不改变案例、命题、阈值、隐藏执行次数或 CUDA-only 规则。"
+}

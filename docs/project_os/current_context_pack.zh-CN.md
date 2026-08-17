@@ -552,3 +552,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - valid temporal 最多执行两次；test frozen 与 heterogeneous holdout 各只能正式执行一次。腾讯官方 PDF 若没有自然扫描的实质页，不得用人工 raster mutation 冒充，该硬门保持失败。
 - program manifest 已内容寻址绑定预注册、12 份当前实现／配置和新 schema；foundation 定向 11 tests 通过。三个 qualification catalog 仍为空，因为来源与 evaluator-only gold 尚未建立；当前状态为 `qualification_preregistered / qualification_not_executed / S1_qualified_stable_false`。
 - 下一步先提交并推送预注册时间边界，再发现官方 URL、capture-first 获取来源、对象化与盲审 reference；在任何 hidden outcome 可见前另行冻结 execution commit、输入／reference、CUDA device 与模型缓存 digest。
+
+## 2026-08-18 S1 VS5 官方来源捕获与解析执行绑定
+
+- 预注册 7 条官方来源路线均在首次传输尝试成功：COST 两期 10-K、JPM／CAT 10-K、NVO／SHEL 20-F 和腾讯 FY2025 官方年报 PDF；共 7 次网络请求、0 模型调用，完整响应先进入 private content-addressed store。
+- 公开 capture 结果只保存状态、字节数和正文 SHA-256，不把来源正文登记为 Evidence。来源可达不等于解析、检索、排序或 Evidence Pack 已通过。
+- 捕获后、腾讯 PDF 解析结果可见前发现预注册漏绑定 layout／OCR 实现；已新增 immutable execution binding，固定 response body 校验／CAS 物化、全页解析、低原生文本页自动 OCR、金融对象编译和 CLI 的代码摘要。案例、命题、路线、阈值和隐藏执行次数均未改变。
+- PDF／OCR 可以使用 CPU，但 learned Embedding／dense／multi-vector／Cross-Encoder 仍只允许 CUDA + FP16；GPU 不满足即 fail closed，禁止 CPU vector fallback。
+- 当前状态为 `all_sources_captured_once / parser_execution_bound_before_outcome / qualification_not_executed / S1_qualified_stable_false`。下一步在 clean push 后执行腾讯 PDF 解析，再把 6 份 SEC 文档与 PDF 对象编入同一通用对象库；不得为 VS5 再造平行对象链。

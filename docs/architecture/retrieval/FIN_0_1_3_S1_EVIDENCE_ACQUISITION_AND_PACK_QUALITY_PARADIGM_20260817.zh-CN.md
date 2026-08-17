@@ -492,3 +492,11 @@ VS5 不复用已观察案例作为隐藏集。当前预注册以 COST 跨期、J
 四种覆盖结果必须并存：any-hit、all-positive object recall、material-facet coverage、required-role coverage。前者只说明至少有一条材料，后三者决定资料是否足以支撑研究。任何 parser、query、ranking 或 evaluator 修复若发生在 valid temporal 后，必须重新冻结配置；一旦查看 frozen／holdout 正式结果，只能登记失败和归责，不能原地调参后继续沿用该次资格。
 
 learned vector／reranker 在 VS5 只允许 CUDA FP16；CUDA 不可用、设备／模型／cache digest 漂移时在运行前 fail closed。CPU 继续仅承载 BM25、SQL、分词、硬过滤、账本和确定性编排。这是可比性与执行身份合同，不让 GPU 分数获得 Evidence 权威。
+
+## 21. VS5 官方来源捕获与解析实现绑定（2026-08-18）
+
+预注册的 7 个官方文档目标已在一次 capture attempt 中全部成功：COST 两期 10-K、JPM／CAT 10-K、NVO／SHEL 20-F 和腾讯官方年报 PDF。每条路线均只执行 1 次网络传输，完整响应先进入 private content-addressed store；公开投影只保存状态、正文摘要和字节数。此时 source body 仍不是 Evidence。
+
+捕获后、解析结果可见前发现原预注册没有显式绑定 PDF layout／OCR 实现。为防止根据腾讯解析好坏挑选 parser，新增 execution binding，固定 response-body 校验与 CAS 物化、全页 PDF layout、低原生文本页自动 OCR、page／table／row／footnote／continuation 对象编译器和唯一执行入口的代码摘要。该补充不改变案例、命题、来源、门槛或隐藏执行次数，解析产物也不获得 Evidence／NumericFact 权威。
+
+后续 learned vector 与 Cross-Encoder 仍严格 CUDA／FP16 only；CPU 可以承担 OCR 和确定性解析，但不能承担任何向量 fallback。当前状态为 `all_preregistered_sources_captured_once / parser_execution_bound_before_outcome / qualification_not_executed / S1_qualified_stable=false`。

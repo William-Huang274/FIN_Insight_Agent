@@ -14,7 +14,8 @@
             "legacy_development_asset",
             "source_fixture",
             "schema",
-            "qualification_preregistration"
+            "qualification_preregistration",
+            "qualification_execution_binding"
           ],
           "title": "Role",
           "type": "string"
@@ -200,6 +201,13 @@
       "title": "Program Version",
       "type": "string"
     },
+    "qualification_execution_bindings": {
+      "items": {
+        "$ref": "#/$defs/EvaluationAssetRef"
+      },
+      "title": "Qualification Execution Bindings",
+      "type": "array"
+    },
     "qualification_preregistration": {
       "$ref": "#/$defs/EvaluationAssetRef"
     },
@@ -241,6 +249,7 @@
     "policies",
     "schemas",
     "qualification_preregistration",
+    "qualification_execution_bindings",
     "split_policies",
     "catalogs",
     "legacy_development_assets",

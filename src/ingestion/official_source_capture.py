@@ -15,6 +15,9 @@ import requests
 
 
 CAPTURE_SCHEMA_VERSION = "fin_ia_official_source_capture_v1_0"
+MATERIALIZED_SOURCE_BODY_SCHEMA_VERSION = (
+    "fin_ia_materialized_official_source_body_v1_0"
+)
 CAPTURE_PLAN_GENERIC_SCHEMA_VERSION = "fin_ia_official_source_capture_plan_v1_0"
 CAPTURE_PLAN_SCHEMA_VERSION = "fin_ia_s1b_official_source_capture_plan_v1_0"
 CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION = (
@@ -791,13 +794,91 @@ def _persist_result(path: Path, payload: Mapping[str, Any]) -> None:
     path.write_bytes(_canonical_json_bytes(payload))
 
 
+def materialize_response_body_capture(
+    response_capture: Mapping[str, Any],
+    *,
+    output_root: Path,
+) -> dict[str, Any]:
+    """Materialize a validated captured response body into private CAS storage."""
+
+    if not (
+        response_capture.get("schema_version") == CAPTURE_SCHEMA_VERSION
+        and response_capture.get("capture_kind") == "source_response"
+        and response_capture.get("capture_before_parse") is True
+        and response_capture.get("credential_cookie_authorization_present") is False
+        and 200 <= int(response_capture.get("status_code") or 0) < 300
+    ):
+        raise OfficialSourceCaptureError(
+            "official_source_response_materialization_boundary_invalid"
+        )
+    try:
+        body = base64.b64decode(
+            str(response_capture.get("body_base64") or ""), validate=True
+        )
+    except (ValueError, TypeError) as exc:
+        raise OfficialSourceCaptureError(
+            "official_source_response_body_invalid"
+        ) from exc
+    digest = hashlib.sha256(body).hexdigest()
+    if (
+        not body
+        or digest != str(response_capture.get("body_sha256") or "")
+        or len(body) != int(response_capture.get("body_bytes") or 0)
+    ):
+        raise OfficialSourceCaptureError(
+            "official_source_response_body_digest_mismatch"
+        )
+    content_type = str(
+        (response_capture.get("headers") or {}).get("content-type") or ""
+    ).split(";", 1)[0].lower()
+    suffix = ".pdf" if content_type == "application/pdf" else ".bin"
+    path = (
+        output_root.resolve()
+        / "sha256"
+        / digest[:2]
+        / digest[2:4]
+        / f"{digest}{suffix}"
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    reused = path.exists()
+    if reused:
+        if path.read_bytes() != body:
+            raise OfficialSourceCaptureError(
+                "official_source_materialized_body_cas_collision"
+            )
+    else:
+        try:
+            with path.open("xb") as handle:
+                handle.write(body)
+        except FileExistsError:
+            if path.read_bytes() != body:
+                raise OfficialSourceCaptureError(
+                    "official_source_materialized_body_cas_collision"
+                )
+            reused = True
+    return {
+        "schema_version": MATERIALIZED_SOURCE_BODY_SCHEMA_VERSION,
+        "route_id": str(response_capture.get("route_id") or ""),
+        "case_key": str(response_capture.get("case_key") or ""),
+        "content_type": content_type,
+        "body_sha256": digest,
+        "body_bytes": len(body),
+        "body_path": path.as_posix(),
+        "body_reused": reused,
+        "capture_before_materialization": True,
+        "source_body_is_evidence": False,
+    }
+
+
 __all__ = [
     "CAPTURE_PLAN_GENERIC_SCHEMA_VERSION",
     "CAPTURE_PLAN_SCHEMA_VERSION",
     "CAPTURE_PLAN_SUCCESSOR_SCHEMA_VERSION",
     "CAPTURE_PLAN_BROWSER_SCHEMA_VERSION",
     "CAPTURE_SCHEMA_VERSION",
+    "MATERIALIZED_SOURCE_BODY_SCHEMA_VERSION",
     "OfficialSourceCaptureError",
     "capture_plan",
+    "materialize_response_body_capture",
     "validate_capture_plan",
 ]

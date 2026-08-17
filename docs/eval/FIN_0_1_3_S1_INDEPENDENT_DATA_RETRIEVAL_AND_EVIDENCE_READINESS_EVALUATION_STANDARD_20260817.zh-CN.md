@@ -301,7 +301,7 @@ S1 未通过时仍可运行的模型或节点调用必须明确标为 determinis
 
 1. **已建立程序基础，未完成 Runtime 迁移**：`src/retrieval/artifact_spine.py`、canonical policy、A–J evidence-backed coverage matrix 和统一校验入口已存在；spine 显式区分 CandidateSet、CandidateRanking、CandidateDecision，A–J 仍只作为责任坐标；
 2. **已冻结 schema／开发集／split 规则，未冻结隐藏资格集**：runtime-visible input 与 evaluator-only reference 物理分离，8 条 VS1 train-internal fixture 和 legacy qrels／role eval 只作开发资产；valid／test／heterogeneous holdout 保持预留，待 VS1–VS3 合同稳定后再预注册；
-3. 执行 VS1 当前数字原生官方资料纵切，在同一条 source→Pack→Workbench 路径完成 16.40 已批准的 CoverageState／candidate 账本／binding／capture-bound promotion；
+3. **VS1 已完成。** 当前 DELL pricing/mix 数字原生路径已从 source→Pack→Workbench 贯通：55 envelopes、6 candidate decisions（2 accepted／4 needs-review）、2 reviewed-not-recalled、3 个 supplement-unexecuted GapEligibilityReceipt；该结果只记 `vertical_slice_integrated`，不注册为 valid／test／holdout 资格结果；
 4. 执行 VS2 复杂文档纵切，覆盖扫描 PDF／OCR、跨页表格、脚注和修订／重述；
 5. 执行 VS3 多路线检索与金融排序纵切，在同一候选边界验收 recall／rerank／fine-rank 对最终 Evidence Pack 的真实增益；
 6. 执行 VS4 Coverage 驱动的第二轮补证纵切，完成 DELL 三命题和 MU／NVDA 等价自然路径；
@@ -309,4 +309,4 @@ S1 未通过时仍可运行的模型或节点调用必须明确标为 determinis
 8. 完成 DELL／MU／NVDA 回归后执行 VS5 新异质留出和稳定资格；
 9. 达到 `S1_qualified_stable` 后再签发完整真实链。
 
-当前结论：`S1 independent evaluation contract documented / S1 not qualified / full product chain qualification blocked`。
+当前结论：`S1 evaluation program foundation and VS1 integrated / VS2-to-VS5 open / S1 not qualified / full product chain qualification blocked`。

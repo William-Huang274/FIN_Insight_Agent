@@ -21,10 +21,21 @@ from sec_agent.research.reviewed_evidence_anchor import (
     project_reviewed_claim_anchor,
     validate_anchor_catalog_pack_binding,
 )
+from retrieval.artifact_spine import ArtifactSpinePolicy
+from retrieval.vertical_slice import (
+    load_s1_vs1_vertical_slice_result,
+    project_s1_vs1_case,
+)
 
 
 CURRENT_RESEARCH_EVIDENCE_PACK_CONFIG_RESOURCE_ID = (
     "application.config.current_research_evidence_pack_projection"
+)
+CURRENT_S1_ARTIFACT_SPINE_POLICY_RESOURCE_ID = (
+    "application.config.current_s1_artifact_spine_policy"
+)
+CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID = (
+    "application.result.current_s1_vs1_vertical_slice"
 )
 EXPECTED_CONFIG_SCHEMA = (
     "fin_ia_current_research_evidence_pack_projection_config_v1_0"
@@ -104,6 +115,8 @@ class ResearchEvidencePackService:
         private_object_root: str | Path,
         private_root_base: str | Path | None = None,
         reviewed_anchor_catalog: Mapping[str, Any] | None = None,
+        s1_vertical_slice: Mapping[str, Any] | None = None,
+        artifact_spine_policy: Mapping[str, Any] | None = None,
     ) -> None:
         self._config = self._validate_config(config)
         self._result = self._validate_result(result, self._config)
@@ -142,12 +155,32 @@ class ResearchEvidencePackService:
             if str(row.get("case_key") or "")
             in self._config["published_case_keys"]
         }
+        if (s1_vertical_slice is None) != (artifact_spine_policy is None):
+            raise ResearchEvidencePackServiceError(
+                "current_research_evidence_vertical_slice_policy_binding_invalid",
+                503,
+            )
+        self._s1_vertical_slice = None
+        if s1_vertical_slice is not None and artifact_spine_policy is not None:
+            try:
+                self._s1_vertical_slice = load_s1_vs1_vertical_slice_result(
+                    s1_vertical_slice,
+                    policy=ArtifactSpinePolicy.model_validate(
+                        artifact_spine_policy
+                    ),
+                )
+            except (ValueError, TypeError) as exc:
+                raise ResearchEvidencePackServiceError(
+                    "current_research_evidence_vertical_slice_invalid", 503
+                ) from exc
 
     @classmethod
     def from_runtime_paths(
         cls,
         repository_root: str | Path,
         runtime_paths: RuntimePathRegistry,
+        *,
+        load_s1_vertical_slice: bool = True,
     ) -> "ResearchEvidencePackService":
         config = read_registered_runtime_json(
             repository_root,
@@ -175,6 +208,22 @@ class ResearchEvidencePackService:
             private_object_root=default_object_root,
             private_root_base=runtime_paths.reviewed_evidence_root,
             reviewed_anchor_catalog=anchor_catalog,
+            s1_vertical_slice=(
+                read_registered_runtime_json(
+                    repository_root,
+                    CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID,
+                )
+                if load_s1_vertical_slice
+                else None
+            ),
+            artifact_spine_policy=(
+                read_registered_runtime_json(
+                    repository_root,
+                    CURRENT_S1_ARTIFACT_SPINE_POLICY_RESOURCE_ID,
+                )
+                if load_s1_vertical_slice
+                else None
+            ),
         )
 
     @property
@@ -195,14 +244,20 @@ class ResearchEvidencePackService:
         for case_key in self._config["published_case_keys"]:
             summary = self._summaries[case_key]
             artifact = dict(artifacts[case_key])
-            items.append(
-                {
-                    **deepcopy(summary),
-                    "artifact_digest": str(artifact["digest"]),
-                    "artifact_type": str(artifact["artifact_type"]),
-                    "evidence_object_ready": readiness_by_case[case_key],
-                }
-            )
+            item = {
+                **deepcopy(summary),
+                "artifact_digest": str(artifact["digest"]),
+                "artifact_type": str(artifact["artifact_type"]),
+                "evidence_object_ready": readiness_by_case[case_key],
+            }
+            if self._s1_vertical_slice is not None:
+                item["canonical_vertical_ready"] = (
+                    project_s1_vs1_case(
+                        self._s1_vertical_slice, case_key=case_key
+                    )
+                    is not None
+                )
+            items.append(item)
         return _projection(
             {
                 "schema_version": PROJECTION_SCHEMA,
@@ -288,7 +343,38 @@ class ResearchEvidencePackService:
             "hard_boundaries": self._hard_boundaries(),
             "known_boundary": str(pack["known_boundary"]),
         }
+        canonical_spine = self._canonical_spine_for_pack(
+            normalized,
+            artifact_digest=str(artifact["digest"]),
+            pack_payload_digest=str(pack["pack_payload_digest"]),
+        )
+        if self._s1_vertical_slice is not None:
+            body["canonical_spine"] = canonical_spine
         return _projection(body)
+
+    def _canonical_spine_for_pack(
+        self,
+        case_key: str,
+        *,
+        artifact_digest: str,
+        pack_payload_digest: str,
+    ) -> dict[str, Any] | None:
+        if self._s1_vertical_slice is None:
+            return None
+        projection = project_s1_vs1_case(
+            self._s1_vertical_slice, case_key=case_key
+        )
+        if projection is None:
+            return None
+        binding = dict(projection.get("pack_binding") or {})
+        _require(
+            binding.get("case_key") == case_key
+            and binding.get("artifact_digest") == artifact_digest
+            and binding.get("pack_payload_digest") == pack_payload_digest,
+            "current_research_evidence_vertical_slice_pack_binding_drift",
+            503,
+        )
+        return projection
 
     def _load_pack(self, case_key: str) -> tuple[dict[str, Any], dict[str, Any]]:
         artifact = dict(self._result["pack_artifacts"][case_key])

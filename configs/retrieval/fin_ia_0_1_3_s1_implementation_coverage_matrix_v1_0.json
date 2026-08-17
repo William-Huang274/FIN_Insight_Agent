@@ -2,7 +2,7 @@
   "schema_version": "fin_ia_s1_implementation_coverage_matrix_v1_0",
   "status": "current_implementation_evidence_backed_snapshot",
   "matrix_id": "FIN-0.1.3-S1-A-TO-J-CURRENT-IMPLEMENTATION-COVERAGE",
-  "audited_git_commit": "bafb5ea6f864bffaff29a5d5c4eca77eef57fc79",
+  "audited_git_commit": "1eaa63488759153fca3dbdc23b98a67294dd7e6d",
   "recorded_at": "2026-08-17",
   "policy": {
     "evidence_refs_required": true,
@@ -43,7 +43,8 @@
       "proven_scope_zh": [
         "SEC HTML、官方数字原生 PDF 和人工上传 PDF 已有 capture-first 路径",
         "请求、响应、transport failure 和 digest 可保存并在 Operations 查看",
-        "已有若干真实 capture 进入当前对象库和 reviewed Pack"
+        "已有若干真实 capture 进入当前对象库和 reviewed Pack",
+        "VS1 将当前 11 类实际 source 输入及 Dell transcript 原始 PDF 绑定进同一 canonical envelope 链"
       ],
       "qualification_state": "open",
       "known_gaps": [
@@ -90,10 +91,11 @@
         "tests/test_sec_20f_section_splitter.py",
         "tests/test_s1b_current_financial_objects.py"
       ],
-      "highest_proven_state": "component_engineering_pass",
+      "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "SEC HTML 与数字原生 PDF 可提取正文和部分章节／表格结构",
-        "Dell／TSM transcript 已形成 parsed document 并进入对象编译"
+        "Dell／TSM transcript 已形成 parsed document 并进入对象编译",
+        "VS1 已让数字原生 Dell transcript／SEC 解析结果继续贯穿到 CandidateDecision、Coverage、Pack 和 Workbench；复杂 OCR 范围仍未证明"
       ],
       "qualification_state": "open",
       "known_gaps": [
@@ -345,10 +347,11 @@
         "tests/test_s1c_retrieval_stack_governance.py",
         "tests/test_s1c_financial_role_eval.py"
       ],
-      "highest_proven_state": "component_engineering_pass",
+      "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "BM25、BGE、Qwen、RRF 和 Cross-Encoder 已做 shadow／离线比较",
-        "同一 qrel 人口中的关键重排失误已被保留而未错误晋升"
+        "同一 qrel 人口中的关键重排失误已被保留而未错误晋升",
+        "VS1 将当前 typed financial ranking 的真实顺序作为独立 CandidateRanking artifact 贯穿到决策账；仅证明可观测和不越权，不代表排序质量资格"
       ],
       "qualification_state": "open",
       "known_gaps": [
@@ -379,7 +382,8 @@
       "producer_refs": [
         "src/retrieval/evidence_role.py",
         "src/retrieval/evidence_role_contract.py",
-        "src/retrieval/financial_candidate_ranking.py"
+        "src/retrieval/financial_candidate_ranking.py",
+        "src/retrieval/vertical_slice.py"
       ],
       "consumer_refs": [
         "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
@@ -388,17 +392,20 @@
       "current_artifact_refs": [
         "configs/retrieval/fin_ia_0_1_3_s1c_financial_role_eval_set_v1_1.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_object_role_shadow_result_v1_0.json",
-        "configs/retrieval/fin_ia_0_1_3_s1c_cross_encoder_role_shadow_result_v1_1.json"
+        "configs/retrieval/fin_ia_0_1_3_s1c_cross_encoder_role_shadow_result_v1_1.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json"
       ],
       "test_refs": [
         "tests/test_evidence_role.py",
         "tests/test_s1c_object_role_contract.py",
-        "tests/test_s1c_object_role_shadow.py"
+        "tests/test_s1c_object_role_shadow.py",
+        "tests/test_s1_vs1_vertical_slice.py"
       ],
-      "highest_proven_state": "component_engineering_pass",
+      "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "对象角色、事实状态、直接性、背景性和 abstain 合同已建立",
-        "规则和 Cross-Encoder shadow 已暴露语义相关但证据角色错误的样本"
+        "规则和 Cross-Encoder shadow 已暴露语义相关但证据角色错误的样本",
+        "VS1 对 DELL pricing/mix 的 6 个真实候选逐一持久化 accepted／needs-review 决策；排名本身不授予 Evidence 权限"
       ],
       "qualification_state": "open",
       "known_gaps": [
@@ -410,9 +417,9 @@
         },
         {
           "gap_id": "S1-H-GAP-002",
-          "business_effect_zh": "CandidateDecision 还没有成为 reviewed、rejected、unjudged、needs-review 的统一持久账本，动态候选无法安全晋升。",
+          "business_effect_zh": "CandidateDecision 已在 VS1 的 DELL pricing/mix 命题成为 reviewed／rejected／unjudged／needs-review 持久账，但尚未覆盖所有命题、动态新候选和单独 capture-gate 晋升。",
           "earliest_responsibility_axis": "S1-H",
-          "next_vertical_slice": "VS1"
+          "next_vertical_slice": "VS3"
         }
       ],
       "migration_or_rollback_entry_refs": [
@@ -429,7 +436,8 @@
       ],
       "producer_refs": [
         "src/sec_agent/research/reviewed_evidence_pack.py",
-        "scripts/data_retrieval/run_current_evidence_pack_promotion.py"
+        "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
+        "src/retrieval/vertical_slice.py"
       ],
       "consumer_refs": [
         "apps/workbench/backend/application/research_evidence_pack_service.py",
@@ -439,25 +447,28 @@
       "current_artifact_refs": [
         "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
         "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json",
-        "configs/retrieval/fin_ia_0_1_3_s1c_planner_residual_gap_audit_result_v1_1.json"
+        "configs/retrieval/fin_ia_0_1_3_s1c_planner_residual_gap_audit_result_v1_1.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json"
       ],
       "test_refs": [
         "tests/test_current_evidence_pack_promotion_runner.py",
         "tests/contract/test_fin_0_1_3_workbench_current_research_evidence_pack_projection.py",
-        "tests/test_reviewed_evidence_anchor.py"
+        "tests/test_reviewed_evidence_anchor.py",
+        "tests/test_s1_vs1_vertical_slice.py"
       ],
-      "highest_proven_state": "component_engineering_pass",
+      "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "reviewed Evidence Pack、declared residual gap 和 current anchor binding 已有只读产品消费者",
-        "Pack 可被当前 S3 consumer 和 Workbench 读取"
+        "Pack 可被当前 S3 consumer 和 Workbench 读取",
+        "VS1 已为 DELL pricing/mix 物化逐命题 CoverageState、3 份 GapEligibilityReceipt 和 task-relative readiness；未执行补源不会被冒充公开信息真空"
       ],
       "qualification_state": "open",
       "known_gaps": [
         {
           "gap_id": "S1-I-GAP-001",
-          "business_effect_zh": "尚无逐命题 EvidenceCoverageState，系统不能区分支持、反方、桥、未裁决候选、未执行路线和真实信息边界。",
+          "business_effect_zh": "VS1 已建立首个逐命题 EvidenceCoverageState，但尚未覆盖支持／反方／桥等多命题组合，也未执行真实第二轮补证后的 Coverage delta。",
           "earliest_responsibility_axis": "S1-I",
-          "next_vertical_slice": "VS1"
+          "next_vertical_slice": "VS4"
         },
         {
           "gap_id": "S1-I-GAP-002",
@@ -490,25 +501,29 @@
       "current_artifact_refs": [
         "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
         "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_1.json",
-        "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
+        "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
+        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json"
       ],
       "test_refs": [
         "tests/test_current_runtime_registry.py",
         "tests/test_current_product_readiness.py",
-        "tests/test_current_workbench_baseline.py"
+        "tests/test_current_workbench_baseline.py",
+        "tests/test_s1_vs1_vertical_slice.py",
+        "apps/workbench/frontend/e2e/workspace.spec.ts"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "当前 retrieval、ranking、Evidence Pack 和 source intake 有 Workbench／Operations 只读消费者",
-        "Runtime Registry、digest、secret scan、active baseline 和多类 replay 已成为仓库治理门"
+        "Runtime Registry、digest、secret scan、active baseline 和多类 replay 已成为仓库治理门",
+        "VS1 的 candidate decision、漏召回、未补源缺口和 Pack binding 已在当前 Evidence／Retrieval 页面由同一投影展示，并通过桌面与移动 E2E"
       ],
       "qualification_state": "open",
       "known_gaps": [
         {
           "gap_id": "S1-J-GAP-001",
-          "business_effect_zh": "Workbench 尚不能沿 canonical spine 查看 source→object→query→candidate→decision→Coverage→Pack 的完整差异和拒绝理由。",
+          "business_effect_zh": "Workbench 已显示 VS1 的命题决策、Coverage、缺口资格和 Pack digest，但尚未提供 source→parse→object→index 的逐层钻取与 payload locator 视图。",
           "earliest_responsibility_axis": "S1-J",
-          "next_vertical_slice": "VS1"
+          "next_vertical_slice": "VS2"
         },
         {
           "gap_id": "S1-J-GAP-002",

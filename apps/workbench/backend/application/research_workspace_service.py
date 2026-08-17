@@ -182,6 +182,7 @@ class ResearchWorkspaceService:
                 "residual_gaps": deepcopy(pack["residual_gaps"]),
                 "consumer_contract": deepcopy(pack["consumer_contract"]),
                 "hard_boundaries": deepcopy(pack["hard_boundaries"]),
+                "canonical_spine": deepcopy(pack.get("canonical_spine")),
                 "known_boundary": str(self._config["known_boundary"]),
             }
         )

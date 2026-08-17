@@ -18,8 +18,8 @@
 - [x] S1-C 保存 Planner 10 atoms 产品输入审计（10→8+2；8 request／128 candidates／19 resolved／9 typed gap／45 NumericFacts；逐 facet 归责完成）
 - [x] S1-D 本轮有界 residual-gap 补源与 DELL Evidence Pack 复编译（TSM 2 条 bounded Evidence；Dell 官方 transcript 3 条 direct Evidence；当前 DELL 20 Evidence／14 gaps；MU/NVDA 不变；S1 总产品门仍开）
 - [x] S1 全链标准范式与独立评测完成定义（source/capture→OCR/parser/cleaning→chunk/object→index→query/recall/rerank/fine-rank→Evidence/Coverage/gap；文档冻结，Runtime 未完成）
-- [ ] S1 canonical artifact spine、A–J 责任覆盖矩阵、真实消费者、artifact 迁移／回滚和 split-safe gold program
-- [ ] S1 VS1 数字原生官方资料→CandidateDecision→Coverage→Pack→Workbench 纵切（含 CoverageState／candidate ledger／binding／capture-bound promotion）
+- [x] S1 canonical artifact spine、A–J 责任覆盖矩阵、真实消费者、artifact 迁移／回滚和 split-safe gold program（VS1 Runtime R14 已消费；valid／test／holdout 仍按计划预留）
+- [x] S1 VS1 数字原生官方资料→CandidateDecision→Coverage→Pack→Workbench 纵切（DELL pricing/mix：2 accepted／4 needs-review／2 reviewed-not-recalled／3 supplement-unexecuted；仅 `vertical_slice_integrated`，不等于 S1 资格）
 - [ ] S1 VS2 扫描 PDF／OCR／复杂表格／脚注／修订重述→Pack／Workbench 纵切；数据地基修复不得只做局部资格
 - [ ] S1 VS3 多路线 recall／rerank／金融精排→EvidenceDecision／Pack 纵切；同候选边界、业务增量和 current consumer 同时通过
 - [ ] S1 VS4 Coverage 驱动第二轮补证纵切；DELL 三命题后执行 MU／NVDA 等价自然路径

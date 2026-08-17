@@ -21,6 +21,7 @@ import {
   ResearchCaseSummary,
   ResearchEvidenceView,
   ResearchRetrievalView,
+  S1CanonicalSpineView,
   ResearchWorkspaceApiClient,
 } from "../api/researchWorkspace";
 import "./research-workspace.css";
@@ -223,6 +224,7 @@ function RetrievalSurface({ retrieval }: { retrieval: ResearchRetrievalView }) {
   const missing = Object.entries(retrieval.summary.slots_missing_required_source_roles);
   return (
     <>
+      <CanonicalSpinePanel spine={retrieval.canonical_spine ?? null} />
       <section className="research-workspace__overview-grid">
         <article className="research-workspace__panel">
           <h2>当前候选检索</h2>
@@ -275,6 +277,19 @@ const rankingRouteLabels: Record<string, string> = {
   dense_bge_m3: "BGE-M3 语义",
   fusion_rrf_1_1: "1:1 RRF 融合",
   typed_financial_rerank: "金融角色重排",
+};
+
+const decisionStateLabels: Record<S1CanonicalSpineView["decision_rows"][number]["decision_state"], string> = {
+  accepted: "已接受",
+  rejected: "已拒绝",
+  unjudged: "未裁决",
+  needs_review: "待复核",
+};
+
+const decisionReasonLabels: Record<string, string> = {
+  exact_reviewed_pack_lineage_match: "与已审 Pack 谱系完全一致",
+  case_owner_source_period_slot_gate_passed: "公司、来源、期间与槽位校验通过",
+  candidate_not_present_in_reviewed_pack: "尚未进入已审 Pack",
 };
 
 function RankingComparisonPanel({ comparison }: { comparison: NonNullable<ResearchRetrievalView["ranking_comparison"]> }) {
@@ -360,17 +375,55 @@ function CaseOverview({ detail, evidence }: { detail: ResearchCaseDetail; eviden
 
 function EvidenceSurface({ evidence }: { evidence: ResearchEvidenceView }) {
   return (
-    <section className="research-workspace__evidence-columns">
-      <div className="research-workspace__panel">
-        <div className="research-workspace__section-title"><h2>已审 Evidence</h2><span>{evidence.evidence_items.length} 条</span></div>
-        <div className="research-workspace__evidence-list">
-          {evidence.evidence_items.map((item) => <EvidenceCard key={item.evidence_item_digest} item={item} />)}
+    <>
+      <CanonicalSpinePanel spine={evidence.canonical_spine ?? null} />
+      <section className="research-workspace__evidence-columns">
+        <div className="research-workspace__panel">
+          <div className="research-workspace__section-title"><h2>已审 Evidence</h2><span>{evidence.evidence_items.length} 条</span></div>
+          <div className="research-workspace__evidence-list">
+            {evidence.evidence_items.map((item) => <EvidenceCard key={item.evidence_item_digest} item={item} />)}
+          </div>
         </div>
+        <aside className="research-workspace__panel research-workspace__gap-panel">
+          <div className="research-workspace__section-title"><h2>Residual Gaps</h2><span>{evidence.residual_gaps.length} 条</span></div>
+          <GapList gaps={evidence.residual_gaps} />
+        </aside>
+      </section>
+    </>
+  );
+}
+
+function CanonicalSpinePanel({ spine }: { spine: S1CanonicalSpineView | null }) {
+  if (!spine) return null;
+  return (
+    <section className="research-workspace__panel research-workspace__canonical-spine">
+      <div className="research-workspace__section-title">
+        <h2>S1 命题级证据账本</h2>
+        <span>可用于有边界研究，尚不足以形成完整结论</span>
       </div>
-      <aside className="research-workspace__panel research-workspace__gap-panel">
-        <div className="research-workspace__section-title"><h2>Residual Gaps</h2><span>{evidence.residual_gaps.length} 条</span></div>
-        <GapList gaps={evidence.residual_gaps} />
-      </aside>
+      <div className="research-workspace__metrics is-large">
+        <Metric value={spine.candidate_decision_summary.accepted} label="已接受 Evidence" />
+        <Metric value={spine.candidate_decision_summary.needs_review} label="候选待复核" warn />
+        <Metric value={spine.coverage_summary.reviewed_not_recalled_count} label="既有证据未召回" warn />
+        <Metric value={spine.coverage_summary.unresolved_gap_count} label="尚未补证缺口" warn />
+      </div>
+      <p className="research-workspace__canonical-note">
+        当前 {spine.coverage_summary.unresolved_gap_count} 个缺口尚未完成官方或外源补证，因此不能宣称“公开资料不存在”；本轮可认定的公开信息真空为 {spine.coverage_summary.true_public_information_gap_count}。
+      </p>
+      <div className="research-workspace__decision-ledger">
+        {spine.decision_rows.map((row) => (
+          <article key={row.decision_digest} className={`is-${row.decision_state}`}>
+            <header><strong>#{row.rank} · {row.source_type}</strong><span>{decisionStateLabels[row.decision_state]}</span></header>
+            <p>{row.source_record_id}</p>
+            <small>{row.reason_codes.map((code) => decisionReasonLabels[code] ?? code).join(" · ")}</small>
+          </article>
+        ))}
+      </div>
+      <div className="research-workspace__canonical-bindings">
+        <DigestRow label="Evidence artifact" value={spine.pack_binding.artifact_digest} />
+        <DigestRow label="Pack payload" value={spine.pack_binding.pack_payload_digest} />
+        <DigestRow label="Workbench projection" value={spine.workbench_projection_digest} />
+      </div>
     </section>
   );
 }

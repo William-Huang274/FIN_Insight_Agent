@@ -421,3 +421,15 @@ S1 不充分解释了当前报告信息面窄、利润桥／供应分配／估�
 11. S1 通过后才恢复 ResearchBlueprint、Generic Cell Runtime 和 DeliveryPlan 迁移，并执行完整真实 `user→S3→S1→S2→S3→S4` 产品链。
 
 本文不授权代码、索引重建、模型调用、网络补源、标签重写、完整真实链或产品发布。
+
+## 15. VS1 实施回证（2026-08-17）
+
+VS1 已在上述范式下完成第一条真实数字原生纵切，并据此更正“Runtime 尚未接入”的历史描述：
+
+1. 当前正式 source manifest 的 11 类输入经薄 adapter 绑定 route、capture、parse 和 financial object，再与当前 index、DELL pricing/mix EvidenceRequest、CandidateSet、CandidateRanking、CandidateDecision、Coverage、Pack readiness、Workbench projection 连接；共 55 个 content-addressed envelope。正文、SQL、Graph 和外源 route 仍是并行 data plane，没有被复制进单一向量库。
+2. 6 个真实候选中只有第 5／6 位与现有 reviewed Pack 的公司、来源、期间、slot 和 lineage 完全一致并被接受；前 4 位只进入 needs-review。该结果证明 decision seam 可运行，也直接说明当前头部排序仍不够好，不能被 VS1 的工程通过掩盖。
+3. 两条已有 reviewed Evidence 未被该请求召回；三个 residual gap 仍未执行 official／external supplement。CoverageState 因此分别保留 `reviewed_not_recalled` 和 `supplement_route_not_yet_executed`，不把任何一项包装成真实公开信息边界。
+4. 当前 Evidence Pack service、Retrieval service、Workspace service 和桌面／移动 Workbench 消费相同 projection 与 Pack digest；跨案、未来日期、排列变化和 Pack drift 均有 fail-closed 测试。
+5. VS1 只改变交付状态为 `vertical_slice_integrated`。它没有改善或资格化 neural reranker，没有执行新 Evidence 晋升，没有证明 OCR／复杂表格、多 route contribution、Coverage delta、隐藏集或完整研报质量。
+
+下一顺序保持 VS2→VS3→VS4→VS5。若 VS2 的复杂文档对象迫使 spine 合同变化，必须重放本 VS1 golden vertical；不得把 VS1 代码复制成新的 attempt runner。

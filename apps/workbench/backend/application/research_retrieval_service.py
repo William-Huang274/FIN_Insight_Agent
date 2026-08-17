@@ -22,6 +22,11 @@ from retrieval.route_compiler import (
     compile_retrieval_execution_plan,
     load_query_object_fact_route_policy,
 )
+from retrieval.artifact_spine import ArtifactSpinePolicy
+from retrieval.vertical_slice import (
+    load_s1_vs1_vertical_slice_result,
+    project_s1_vs1_case,
+)
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.research.planning import (
@@ -51,6 +56,12 @@ CURRENT_RESEARCH_PLANNING_POLICY_RESOURCE_ID = (
 )
 CURRENT_HYBRID_CANDIDATE_RUNTIME_POLICY_RESOURCE_ID = (
     "application.config.current_hybrid_candidate_runtime_policy"
+)
+CURRENT_S1_ARTIFACT_SPINE_POLICY_RESOURCE_ID = (
+    "application.config.current_s1_artifact_spine_policy"
+)
+CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID = (
+    "application.result.current_s1_vs1_vertical_slice"
 )
 EXPECTED_SCHEMA = "fin_ia_current_retrieval_snapshot_v1_0"
 EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
@@ -90,6 +101,8 @@ class ResearchRetrievalService:
         planning_policy: ResearchPlanningPolicy | Mapping[str, Any] | None = None,
         hybrid_candidate_runtime: Any | None = None,
         company_financial_fact_mart_path: str | Path | None = None,
+        s1_vertical_slice: Mapping[str, Any] | None = None,
+        artifact_spine_policy: Mapping[str, Any] | None = None,
     ) -> None:
         self._snapshot = self._validate(snapshot)
         self._cases = {
@@ -139,6 +152,23 @@ class ResearchRetrievalService:
             if company_financial_fact_mart_path is not None
             else None
         )
+        if (s1_vertical_slice is None) != (artifact_spine_policy is None):
+            raise ResearchRetrievalServiceError(
+                "research_retrieval_vertical_slice_policy_binding_invalid", 503
+            )
+        self._s1_vertical_slice = None
+        if s1_vertical_slice is not None and artifact_spine_policy is not None:
+            try:
+                self._s1_vertical_slice = load_s1_vs1_vertical_slice_result(
+                    s1_vertical_slice,
+                    policy=ArtifactSpinePolicy.model_validate(
+                        artifact_spine_policy
+                    ),
+                )
+            except (ValueError, TypeError) as exc:
+                raise ResearchRetrievalServiceError(
+                    "research_retrieval_vertical_slice_invalid", 503
+                ) from exc
 
     @classmethod
     def from_runtime_paths(
@@ -146,6 +176,8 @@ class ResearchRetrievalService:
         repository_root: str | Path,
         runtime_paths: RuntimePathRegistry | None = None,
         hybrid_candidate_runtime: Any | None = None,
+        *,
+        load_s1_vertical_slice: bool = True,
     ) -> "ResearchRetrievalService":
         paths = runtime_paths or resolve_runtime_paths(repository_root)
         active_hybrid_runtime = hybrid_candidate_runtime
@@ -181,6 +213,22 @@ class ResearchRetrievalService:
             hybrid_candidate_runtime=active_hybrid_runtime,
             company_financial_fact_mart_path=(
                 paths.company_financial_fact_mart_path
+            ),
+            s1_vertical_slice=(
+                read_registered_runtime_json(
+                    repository_root,
+                    CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID,
+                )
+                if load_s1_vertical_slice
+                else None
+            ),
+            artifact_spine_policy=(
+                read_registered_runtime_json(
+                    repository_root,
+                    CURRENT_S1_ARTIFACT_SPINE_POLICY_RESOURCE_ID,
+                )
+                if load_s1_vertical_slice
+                else None
             ),
         )
 
@@ -253,6 +301,10 @@ class ResearchRetrievalService:
             "lanes": lanes,
             "known_boundary": str(self._snapshot["known_boundary"]),
         }
+        if self._s1_vertical_slice is not None:
+            body["canonical_spine"] = project_s1_vs1_case(
+                self._s1_vertical_slice, case_key=key
+            )
         return {**body, "projection_digest": canonical_digest(body)}
 
     def execute_controlled_plan(
@@ -792,6 +844,8 @@ __all__ = [
     "CURRENT_QUERY_OBJECT_FACT_ROUTE_POLICY_RESOURCE_ID",
     "CURRENT_RETRIEVAL_KERNEL_RESOURCE_ID",
     "CURRENT_RANKING_COMPARISON_RESOURCE_ID",
+    "CURRENT_S1_ARTIFACT_SPINE_POLICY_RESOURCE_ID",
+    "CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID",
     "CURRENT_RETRIEVAL_SNAPSHOT_RESOURCE_ID",
     "ResearchRetrievalPrincipal",
     "ResearchRetrievalService",

@@ -1,0 +1,46 @@
+{
+  "schema_version": "fin_ia_evidence_request_v1_0",
+  "request_id": "REQ-DELL-VS1-PRICING-MIX-001",
+  "cell_id": "DELL-VS1-PRICING-MIX-CELL-001",
+  "requester_role": "value_capture_specialist",
+  "evidence_domain": "financial_research",
+  "case_key": "DELL",
+  "subject_ticker": "DELL",
+  "research_as_of": "2026-08-06",
+  "target_entities": [
+    "DELL"
+  ],
+  "requested_facet_ids": [
+    "pricing_and_mix"
+  ],
+  "metric_intents": [
+    "gross margin",
+    "operating margin",
+    "price-volume-mix bridge"
+  ],
+  "product_intents": [
+    "AI-optimized servers",
+    "AI server profitability"
+  ],
+  "period": {
+    "start_date": "2025-01-01",
+    "end_date": "2026-08-06",
+    "fiscal_years": []
+  },
+  "granularity": "quarter_and_fiscal_year",
+  "unit": "reported_source_unit",
+  "acceptable_sources": [
+    "10-K",
+    "10-Q",
+    "8-K",
+    "EARNINGS_CALL_TRANSCRIPT"
+  ],
+  "acceptable_proxy": false,
+  "forbidden_proxy": [
+    "unbound industry margin",
+    "segment profit treated as AI server profit",
+    "causal attribution without disclosure"
+  ],
+  "stop_condition": "Determine what current official evidence supports about Dell AI-server pricing, mix and profitability, and preserve every unresolved bridge as a typed gap.",
+  "clarification_policy": "return_typed_gap"
+}

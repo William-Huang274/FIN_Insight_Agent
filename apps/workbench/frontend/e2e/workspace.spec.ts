@@ -43,9 +43,16 @@ test("workspace exposes the three identity-bound reviewed cases", async ({ page 
   await expect(page.getByText(/CIK 0001571996/)).toBeVisible();
   await expect(page.getByText("不可变绑定")).toBeVisible();
   await page.getByRole("button", { name: /证据与缺口/ }).click();
+  await expect(page.getByRole("heading", { name: "S1 命题级证据账本" })).toBeVisible();
+  await expect(page.getByText(/当前 3 个缺口尚未完成官方或外源补证/)).toBeVisible();
+  await expect(page.getByText(/本轮可认定的公开信息真空为 0/)).toBeVisible();
+  for (const label of ["已接受 Evidence", "候选待复核", "既有证据未召回", "尚未补证缺口"]) {
+    await expect(page.getByText(label, { exact: true })).toBeVisible();
+  }
   await expect(page.getByRole("heading", { name: "已审 Evidence" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Residual Gaps" })).toBeVisible();
   await page.getByRole("button", { name: /检索候选/ }).click();
+  await expect(page.getByRole("heading", { name: "S1 命题级证据账本" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "当前候选检索" })).toBeVisible();
   await expect(page.getByText("candidate_not_evidence", { exact: false })).toHaveCount(0);
   await expect(page.getByText(/这些是待审候选，不是 Evidence/)).toBeVisible();

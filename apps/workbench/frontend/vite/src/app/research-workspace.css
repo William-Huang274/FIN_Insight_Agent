@@ -172,6 +172,18 @@
 .research-workspace__candidate p { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin: 9px 0; color: #44504c; line-height: 1.55; font-size: 11px; }
 .research-workspace__candidate small { color: #84643c; line-height: 1.45; }
 
+.research-workspace__canonical-spine { border-top: 3px solid var(--research-green); }
+.research-workspace__canonical-note { margin: 14px 0; padding: 11px 13px; border-radius: 8px; background: #fff8e9; color: #765725; font-size: 12px; line-height: 1.6; }
+.research-workspace__decision-ledger { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.research-workspace__decision-ledger article { min-width: 0; padding: 11px; border: 1px solid #e1e7e3; border-radius: 8px; background: var(--research-paper); }
+.research-workspace__decision-ledger article.is-accepted { border-left: 3px solid var(--research-green); }
+.research-workspace__decision-ledger article.is-needs_review { border-left: 3px solid #bd8737; }
+.research-workspace__decision-ledger header { display: flex; justify-content: space-between; gap: 9px; color: var(--research-muted); font-size: 10px; }
+.research-workspace__decision-ledger header strong { color: var(--research-ink); }
+.research-workspace__decision-ledger p { margin: 8px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #44504c; font-size: 10px; }
+.research-workspace__decision-ledger small { color: var(--research-muted); font-size: 9px; line-height: 1.4; }
+.research-workspace__canonical-bindings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+
 .research-workspace__gap-list { display: grid; gap: 10px; }
 .research-workspace__gap-list article { min-width: 0; display: flex; align-items: flex-start; gap: 9px; padding: 13px; background: #fff9ed; border: 1px solid #f0dfbe; border-radius: 8px; color: var(--research-warn); }
 .research-workspace__gap-list article > div { min-width: 0; }
@@ -191,6 +203,8 @@
   .research-workspace__overview-grid,
   .research-workspace__evidence-columns { grid-template-columns: 1fr; }
   .research-workspace__candidate-list { grid-template-columns: 1fr; }
+  .research-workspace__decision-ledger,
+  .research-workspace__canonical-bindings { grid-template-columns: 1fr; }
   .research-workspace__ranking-routes,
   .research-workspace__ranking-queries > article > div { grid-template-columns: 1fr 1fr; }
   .research-workspace__gap-panel { position: static; max-height: none; }
@@ -206,6 +220,7 @@
   .research-workspace__case-title h1 { font-size: 36px; }
   .research-workspace__identity-badge { min-width: 0; }
   .research-workspace__panel { padding: 18px; }
+  .research-workspace__canonical-spine .research-workspace__metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .research-workspace__ranking-routes,
   .research-workspace__ranking-queries > article > div { grid-template-columns: 1fr; }
   .research-workspace__section-title { flex-wrap: wrap; }

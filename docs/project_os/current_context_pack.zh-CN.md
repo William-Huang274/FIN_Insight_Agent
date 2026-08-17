@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 现只作为责任坐标，实际执行改为共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice；每个切片持续回放到 CandidateDecision／Coverage／Pack／Workbench，禁止十个组件各自收口后最后一次性集成。标准与评测合同已写入 PRD、技术范式和独立 S1 eval，但 Runtime、gold／split、异质留出和资格尚未实现。DELL fixed-Pack 第一层、`value_capture` 动态单单元、reviewed source 同步和有限 S2 回归仍保持已关闭；R7 仍是 `report contract pass / financial truth reconciliation fail`，RC-S3-043 也保持开放。当前下一步是 canonical spine／覆盖矩阵／split-safe gold program 和 VS1 第一确定性纵切；S1 独立资格稳定前不运行用于产品资格的完整真实链，也不以任何局部 case／node live 追认 S1。
+Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 只作为责任坐标，实际按共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice 交付。程序基础与 VS1 当前数字原生 DELL pricing/mix 纵切现已进入 R14 Runtime 和 Workbench：55 个 envelopes，6 个候选中 2 accepted／4 needs-review，2 条既有 reviewed Evidence 未召回，3 个 gap 因 official／external supplement 未执行而禁止写成公开资料不存在；状态只记 `vertical_slice_integrated`。VS2 OCR／复杂表格、VS3 多路线排序资格、VS4 第二轮补证、VS5 隐藏留出与稳定资格仍开放。DELL fixed-Pack 第一层、`value_capture` 动态单单元、reviewed source 同步和有限 S2 回归仍保持已关闭；R7 仍是 `report contract pass / financial truth reconciliation fail`，RC-S3-043 也保持开放。当前下一步是 VS2，不运行用于产品资格的完整真实链，也不以 VS1 或任何局部 case／node live 追认 S1。
 
 ## 当前唯一产品边界
 
@@ -496,4 +496,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - split-safe eval foundation 已建立：8 条 train-internal 开发样例，runtime-visible inputs 与 evaluator-only references 物理分离并绑定 digest；valid、temporal frozen test、heterogeneous holdout 三个 split 仅保留 schema 和角色，因现有案例均已观察，未伪造隐藏资格资产。
 - Haystack、GraphRAG、Phoenix／OpenAI eval 的 typed seam、显式 artifact 和版本化 split 模式已选择性采用；没有引入新框架依赖、LLM 图索引或转移 FIN 金融权威。
 - foundation validator、全仓 498、Project OS 31、compileall、active baseline `141／8／11／0`、secret scan `6887／0`、JSON／JSONL 与 diff check 通过。0 model／Provider／network／source promotion／index rebuild／full-chain。
-- 当前状态为 `program_foundation_engineering_pass / VS1_runtime_integration_pending / S1_qualification_false`。下一步必须让现有 source／object／retrieval／Pack／Workbench 通过最薄 adapter 实际消费同一 spine，并实现 CandidateDecision／Coverage 持久账；不得继续扩 schema 或另造平行 Runtime。
+- 该轮 foundation 结束时状态为 `program_foundation_engineering_pass / VS1_runtime_integration_pending / S1_qualification_false`；后续 VS1 实施结果见下一节。其执行约束是让现有 source／object／retrieval／Pack／Workbench 通过最薄 adapter 实际消费同一 spine，不扩 schema 或另造平行 Runtime。
+
+## 2026-08-17 S1 VS1 当前数字原生资料纵切
+
+- VS1 复用当前正式 source manifest、financial object store、retrieval snapshot 和 reviewed Evidence Pack，没有另造第二套检索或 Pack Runtime。现有生产 artifact 通过薄 adapter 形成 55 个 canonical envelopes；Runtime Registry 升至 R14，新增 spine policy 与 VS1 result 两个 digest-bound 资源。
+- DELL pricing/mix 的真实请求得到 6 个候选。第 5 位 Dell 官方 transcript 与第 6 位 10-Q 精确匹配 reviewed Pack 并被接受；前 4 位候选只记 needs-review，排名和文本均未获得 Evidence 权威。现有 reviewed 8-K 与 transcript page 3 未被本请求召回，作为 2 条 `reviewed_not_recalled` 明示保留。
+- ASP、price-volume-mix bridge、unit／volume 三个 residual gap 均生成 GapEligibilityReceipt。因为 official／external supplement 未执行且预算充分性未证明，三个都不是“公开信息不存在”；只允许表述为“补源路线尚未执行”。
+- Evidence Pack、Retrieval API、Workspace Evidence API 与前端证据／检索页消费同一 `workbench_projection_digest` 和 Pack binding。桌面／移动 Playwright E2E 均通过，移动端机器状态与三列拥挤在同切片修成中文业务状态和两列布局。
+- 六门结果：局部／mutation、相邻 API、真实纵切、业务影响、MU／NVDA 非回归、Runtime 迁移／回退均通过。0 网络、0 模型、0 新 Evidence 晋升、0 index rebuild；前序 Pack 与索引不可变，可通过回退 R14 两项 Registry pointer 恢复。
+- 当前状态更新为 `VS1_vertical_slice_integrated / S1_qualification_false / full_product_chain_blocked`。VS1 暴露而非关闭排序与覆盖问题；下一责任切片是 VS2 扫描 PDF／OCR／复杂表格，随后才是 VS3 排序、VS4 补证和 VS5 资格。

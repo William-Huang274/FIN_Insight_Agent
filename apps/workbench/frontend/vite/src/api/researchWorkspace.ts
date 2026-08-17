@@ -122,6 +122,63 @@ export type ResidualGap = {
   supplement_direction_zh?: string;
 };
 
+export type S1CanonicalSpineView = {
+  schema_version: "fin_ia_s1_workbench_lineage_projection_v1_0";
+  status: "canonical_s1_lineage_ready";
+  recorded_at: string;
+  case_key: string;
+  research_as_of: string;
+  proposition_id: string;
+  readiness_state: string;
+  candidate_decision_summary: {
+    accepted: number;
+    rejected: number;
+    unjudged: number;
+    needs_review: number;
+  };
+  coverage_summary: {
+    coverage_state: string;
+    accepted_evidence_count: number;
+    reviewed_not_recalled_count: number;
+    unresolved_gap_count: number;
+    true_public_information_gap_count: number;
+  };
+  decision_rows: Array<{
+    candidate_ref: string;
+    source_record_id: string;
+    rank: number;
+    evidence_owner_ticker: string;
+    source_type: string;
+    publication_date: string;
+    decision_state: "accepted" | "rejected" | "unjudged" | "needs_review";
+    reason_codes: string[];
+    decision_authority: string;
+    accepted_evidence_item_digests: string[];
+    decision_digest: string;
+  }>;
+  gap_eligibility_receipts: Array<{
+    gap_id: string;
+    gap_code: string;
+    classification: string;
+    eligible_as_true_public_information_gap: boolean;
+    disposition: string;
+    receipt_digest: string;
+  }>;
+  pack_binding: {
+    case_key: string;
+    artifact_digest: string;
+    pack_payload_digest: string;
+  };
+  hard_boundaries: {
+    candidate_is_not_evidence: boolean;
+    rank_never_grants_evidence_authority: boolean;
+    unexecuted_route_is_not_public_information_gap: boolean;
+    complete_product_conclusion_ready: boolean;
+    S1_qualified_stable: boolean;
+  };
+  workbench_projection_digest: string;
+};
+
 export type ResearchEvidenceView = {
   status: "identity_bound_reviewed_evidence_ready";
   case_id: string;
@@ -136,6 +193,7 @@ export type ResearchEvidenceView = {
   residual_gaps: ResidualGap[];
   consumer_contract: Record<string, unknown>;
   hard_boundaries: Record<string, unknown>;
+  canonical_spine?: S1CanonicalSpineView | null;
   known_boundary: string;
   projection_digest: string;
 };
@@ -232,6 +290,7 @@ export type ResearchRetrievalView = {
     known_boundary: string;
     projection_digest: string;
   };
+  canonical_spine?: S1CanonicalSpineView | null;
   lanes: RetrievalLane[];
   known_boundary: string;
   projection_digest: string;

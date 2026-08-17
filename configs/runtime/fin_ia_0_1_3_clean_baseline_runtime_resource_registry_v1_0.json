@@ -14,10 +14,10 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R13",
-  "resource_bytes": 2064216,
-  "resource_canonical_digest": "6469b86e9b8afd9a230d48be3539919e41040a3075fa0f4b7e701954a3030820",
-  "resource_count": 11,
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R14",
+  "resource_bytes": 2205221,
+  "resource_canonical_digest": "62f06286b86bc17288f29c902221393584883f53b0565aaf764da3946e835412",
+  "resource_count": 13,
   "resources": [
     {
       "bytes": 20734,
@@ -98,6 +98,21 @@
       "source_owner": "apps.workbench.backend.application.research_workspace_service"
     },
     {
+      "resource_id": "application.config.current_s1_artifact_spine_policy",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_canonical_artifact_spine_policy_v1_0.json",
+      "sha256": "fa44e61da4a11ceded587d483d348149e701488950513b42c2fa7ba41b0aad4d",
+      "bytes": 5229,
+      "classification": "provider_neutral_s1_canonical_artifact_spine_policy",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths",
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths",
+        "scripts.data_retrieval.materialize_s1_vs1_vertical_slice.compile_result"
+      ],
+      "load_phase": "workbench_startup",
+      "required": true,
+      "source_owner": "S1_canonical_artifact_spine_program"
+    },
+    {
       "bytes": 2449,
       "classification": "application_runtime_config",
       "consumer_ids": [
@@ -148,6 +163,20 @@
       "resource_id": "application.result.current_reviewed_claim_anchors",
       "sha256": "e68123e8fb29f81aa700a98db6ee24943f98fb862f66628ee45483981fc9c4a8",
       "source_owner": "sec_agent.research.reviewed_evidence_anchor.load_reviewed_evidence_anchor_catalog"
+    },
+    {
+      "resource_id": "application.result.current_s1_vs1_vertical_slice",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_0.json",
+      "sha256": "7430b43efb639110cbfd84e6318e5942da5fdda236155886286e50d7e32df6ec",
+      "bytes": 135776,
+      "classification": "digest_bound_read_only_s1_vertical_slice_result",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths",
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "workbench_startup",
+      "required": true,
+      "source_owner": "S1_canonical_vertical_slice_program"
     },
     {
       "bytes": 77871,

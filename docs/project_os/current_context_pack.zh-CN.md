@@ -487,3 +487,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 状态严格分为 `component_engineering_pass`、`vertical_slice_integrated` 和 `S1_qualified_stable`。局部 OCR／parser／chunk／ranker／Evidence evaluator 通过不能关闭责任层；任何合同变化至少重跑一条真实 golden vertical replay。
 - 每个切片合并前必须同时过局部 gold／mutation、相邻 schema／identity／period／digest／lineage 接缝、真实纵切、业务 Evidence／gap 影响、跨案非回归和 artifact 迁移／回滚六门。未修改层复用当前 accepted 实现但必须参加回放，不为本轮另造实现。
 - 当前下一动作仍不变成模型或网络 live：先建立 canonical spine、A–J 覆盖矩阵、split-safe gold 和 VS1 program；随后才实现第一确定性纵切。本文档更正没有执行 Runtime、index、model、Provider、network、source promotion 或 full-chain。
+
+## 2026-08-17 S1 canonical spine、覆盖矩阵与 split-safe 评测基础
+
+- provider-neutral 的 S1 canonical artifact spine 已机器化：16 种 artifact，从 source route／capture／parse／financial object 延伸到 index／query／CandidateSet／CandidateRanking／CandidateDecision／Coverage／Pack／Workbench 与 frozen consumer。identity、period、locator、schema、digest、lineage 和消费者绑定 fail closed；正文／表格、SQL NumericFact、Graph、official／external route 仍保留并行 data plane。
+- 原设计从 CandidateSet 直接进入 CandidateDecision，无法归责 S1-G 排序；本轮主动补入 `CandidateRanking`，明确召回边界、排序结果和 Evidence 晋升是三份不同 artifact。
+- 当前 A–J 覆盖矩阵已绑定真实 producer／consumer／artifact／test／migration ref，共 20 个 open gap；所有 qualification state 均为 open，S1 未通过。关键风险仍是复杂文档检索前丢失、旧新对象／索引 snapshot 漂移、rerank／Evidence evaluator 未资格化，以及 false gap 责任不清。
+- split-safe eval foundation 已建立：8 条 train-internal 开发样例，runtime-visible inputs 与 evaluator-only references 物理分离并绑定 digest；valid、temporal frozen test、heterogeneous holdout 三个 split 仅保留 schema 和角色，因现有案例均已观察，未伪造隐藏资格资产。
+- Haystack、GraphRAG、Phoenix／OpenAI eval 的 typed seam、显式 artifact 和版本化 split 模式已选择性采用；没有引入新框架依赖、LLM 图索引或转移 FIN 金融权威。
+- foundation validator、全仓 498、Project OS 31、compileall、active baseline `141／8／11／0`、secret scan `6887／0`、JSON／JSONL 与 diff check 通过。0 model／Provider／network／source promotion／index rebuild／full-chain。
+- 当前状态为 `program_foundation_engineering_pass / VS1_runtime_integration_pending / S1_qualification_false`。下一步必须让现有 source／object／retrieval／Pack／Workbench 通过最薄 adapter 实际消费同一 spine，并实现 CandidateDecision／Coverage 持久账；不得继续扩 schema 或另造平行 Runtime。

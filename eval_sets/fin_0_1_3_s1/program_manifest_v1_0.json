@@ -1,0 +1,168 @@
+{
+  "schema_version": "fin_ia_s1_evaluation_program_v1_0",
+  "status": "split_safe_foundation_ready_not_qualified",
+  "program_id": "FIN-0.1.3-S1-INDEPENDENT-EVALUATION-PROGRAM",
+  "program_version": "v1.0",
+  "recorded_at": "2026-08-17",
+  "policies": {
+    "runtime_inputs_physically_separate_from_references": true,
+    "labels_joined_only_inside_evaluator": true,
+    "observed_cases_not_hidden_qualification": true,
+    "test_snapshot_immutable_after_first_execution": true,
+    "model_generated_examples_not_final_gold": true,
+    "average_score_cannot_compensate_hard_gate": true,
+    "source_payloads_referenced_not_copied": true,
+    "private_raw_sources_remain_outside_git": true,
+    "component_and_vertical_slice_metrics_both_required": true
+  },
+  "schemas": [
+    {
+      "ref": "eval_sets/fin_0_1_3_s1/schemas/artifact_envelope.schema.json",
+      "sha256": "9b0727271750d047f2f0ef709664abc9ad4b605940afaed3affbc2532f062169",
+      "role": "schema",
+      "visibility": "governance_only"
+    },
+    {
+      "ref": "eval_sets/fin_0_1_3_s1/schemas/evaluation_input.schema.json",
+      "sha256": "b823885097c8da7c475873f563a361568b93c5781940b7c748d2c4df6112bc46",
+      "role": "schema",
+      "visibility": "governance_only"
+    },
+    {
+      "ref": "eval_sets/fin_0_1_3_s1/schemas/evaluation_reference.schema.json",
+      "sha256": "ddedbbd0a213038932b131de743f0fe05f05072fd2efe17c47b514a11cf732de",
+      "role": "schema",
+      "visibility": "governance_only"
+    },
+    {
+      "ref": "eval_sets/fin_0_1_3_s1/schemas/evaluation_program_manifest.schema.json",
+      "sha256": "18e4e6883f86d75c42c2cb60ae4790b0d345dd150e8a8f2fd1b8e83eb430c754",
+      "role": "schema",
+      "visibility": "governance_only"
+    }
+  ],
+  "split_policies": [
+    {
+      "split": "train_internal",
+      "status": "active",
+      "allowed_uses": [
+        "contract development",
+        "failure analysis",
+        "parser chunk query rank and evidence-evaluator iteration",
+        "threshold exploration"
+      ],
+      "forbidden_uses": [
+        "final S1 qualification",
+        "hidden generalization claim"
+      ],
+      "observed_case_keys": [
+        "DELL",
+        "MU",
+        "NVDA",
+        "ORCL",
+        "ASML",
+        "ANET"
+      ],
+      "configuration_frozen_before_execution": false
+    },
+    {
+      "split": "valid_temporal",
+      "status": "reserved_unpopulated",
+      "allowed_uses": [
+        "cross-period and cross-document validation after VS1 contract freeze"
+      ],
+      "forbidden_uses": [
+        "training",
+        "final qualification after repeated inspection"
+      ],
+      "observed_case_keys": [],
+      "configuration_frozen_before_execution": false
+    },
+    {
+      "split": "test_frozen",
+      "status": "reserved_unpopulated",
+      "allowed_uses": [
+        "one frozen-configuration qualification run after VS1-VS3 contract stabilization"
+      ],
+      "forbidden_uses": [
+        "threshold tuning",
+        "route tuning",
+        "same-cycle remediation and rerun"
+      ],
+      "observed_case_keys": [],
+      "configuration_frozen_before_execution": true
+    },
+    {
+      "split": "holdout_heterogeneous",
+      "status": "reserved_unpopulated",
+      "allowed_uses": [
+        "pre-registered cross-industry source-format language and failure-boundary qualification"
+      ],
+      "forbidden_uses": [
+        "selection from already observed cases",
+        "average-score-only acceptance"
+      ],
+      "observed_case_keys": [],
+      "configuration_frozen_before_execution": true
+    }
+  ],
+  "catalogs": [
+    {
+      "catalog_id": "s1-vs1-foundation-train-internal-v1.0",
+      "split": "train_internal",
+      "status": "active",
+      "input_asset": {
+        "ref": "eval_sets/fin_0_1_3_s1/inputs/train_internal/vs1_foundation_inputs_v1_0.jsonl",
+        "sha256": "731ece19d02f645413dfba4b4e6b3ba39aa7e024b1b63da05027ccb3f6ea08e8",
+        "role": "runtime_input",
+        "visibility": "runtime_visible"
+      },
+      "reference_asset": {
+        "ref": "eval_sets/fin_0_1_3_s1/references/train_internal/vs1_foundation_references_v1_0.jsonl",
+        "sha256": "1a9b30e18b0c9da92adf13610dbf4427173d1b7ca09921eb5952e4fa113401b2",
+        "role": "evaluator_reference",
+        "visibility": "evaluator_only"
+      },
+      "example_count": 8
+    },
+    {
+      "catalog_id": "s1-valid-temporal-reserved-v1.0",
+      "split": "valid_temporal",
+      "status": "reserved_unpopulated",
+      "input_asset": null,
+      "reference_asset": null,
+      "example_count": 0
+    },
+    {
+      "catalog_id": "s1-test-frozen-reserved-v1.0",
+      "split": "test_frozen",
+      "status": "reserved_unpopulated",
+      "input_asset": null,
+      "reference_asset": null,
+      "example_count": 0
+    },
+    {
+      "catalog_id": "s1-holdout-heterogeneous-reserved-v1.0",
+      "split": "holdout_heterogeneous",
+      "status": "reserved_unpopulated",
+      "input_asset": null,
+      "reference_asset": null,
+      "example_count": 0
+    }
+  ],
+  "legacy_development_assets": [
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json",
+      "sha256": "1d56f1deef3d7082b4e308a9caae1e7b70941a66cd025620adbcc80231b7562b",
+      "role": "legacy_development_asset",
+      "visibility": "evaluator_only"
+    },
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_financial_role_eval_set_v1_1.json",
+      "sha256": "0d26866ac3c2eb7f52ca57b6e4e8a07096a1a51eb6602a4263290776c3871dac",
+      "role": "legacy_development_asset",
+      "visibility": "evaluator_only"
+    }
+  ],
+  "final_threshold_state": "schema_and_non_compensable_gates_frozen_performance_thresholds_open"
+}

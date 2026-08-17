@@ -1,0 +1,78 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "adjudication_authority": {
+      "minLength": 1,
+      "title": "Adjudication Authority",
+      "type": "string"
+    },
+    "example_id": {
+      "title": "Example Id",
+      "type": "string"
+    },
+    "expected_outcome": {
+      "additionalProperties": true,
+      "title": "Expected Outcome",
+      "type": "object"
+    },
+    "hard_gate": {
+      "title": "Hard Gate",
+      "type": "boolean"
+    },
+    "label_type": {
+      "enum": [
+        "accept",
+        "reject",
+        "abstain",
+        "typed_gap",
+        "typed_failure",
+        "exact_binding",
+        "ordered_candidates"
+      ],
+      "title": "Label Type",
+      "type": "string"
+    },
+    "rationale_zh": {
+      "minLength": 1,
+      "title": "Rationale Zh",
+      "type": "string"
+    },
+    "review_state": {
+      "enum": [
+        "development_reviewed",
+        "owner_reviewed",
+        "qualification_blinded"
+      ],
+      "title": "Review State",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "fin_ia_s1_evaluation_reference_v1_0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "split": {
+      "enum": [
+        "train_internal",
+        "valid_temporal",
+        "test_frozen",
+        "holdout_heterogeneous"
+      ],
+      "title": "Split",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "example_id",
+    "split",
+    "label_type",
+    "expected_outcome",
+    "hard_gate",
+    "rationale_zh",
+    "adjudication_authority",
+    "review_state"
+  ],
+  "title": "EvaluationReference",
+  "type": "object"
+}

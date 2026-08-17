@@ -123,7 +123,7 @@ Owner 进一步更正：4D 的 CoverageState、候选账本、binding 和 captur
 
 后续 S1 计划改为“责任分层、纵向交付、持续集成”。S1-A–S1-J 只用于定位最早责任层，不能作为十个按顺序各自收口的小项目。每个 release slice 都必须复用当前唯一 canonical artifact spine，从真实／冻结 source 或 Evidence Need 贯穿到 CandidateDecision、CoverageState、Evidence Pack 和 Workbench／冻结 consumer probe；未改层参加回放，不能在最后一次性拼装。
 
-1. **冻结 spine、覆盖矩阵和 split。** 明确 source→capture→parse→object→index→query→candidate→decision→Coverage→Pack→Workbench 的 schema／version／digest／lineage；逐层标记当前生产入口、消费者、qualification 状态、迁移／回滚和真实缺口；冻结 source-page-table-chunk-query-candidate-Evidence-gap gold／negative／mutation 与 train／valid／test 边界。
+1. **spine／覆盖矩阵／评测程序基础已建立，Runtime 迁移和隐藏集仍开放。** 当前 machine-readable spine 明确 source→capture→parse→object→index→query→CandidateSet→CandidateRanking→CandidateDecision→Coverage→Pack→Workbench 的 schema／version／digest／lineage，并以 A–J 矩阵登记 producer、consumer、artifact、test、20 个当前 gap 和迁移／回滚入口。评测程序已把 runtime-visible input 与 evaluator-only reference 物理分离，建立 8 条 train-internal fixture；valid／frozen test／heterogeneous holdout 必须等 VS1–VS3 合同稳定后预注册，不能现在假装已经冻结。该基础本身不算 VS1 integrated，也不改变任何现有 Runtime resource。
 2. **VS1：当前数字原生官方资料纵切。** 用当前 HTML／文本 PDF／transcript 的真实资料贯穿完整主线，同时实现 4D 的 CoverageState、候选账本、reviewed binding 和 capture-bound promotion。该切片要证明第一修复包确实进入 Pack／Workbench，而不是只新增 schema 或离线 runner。
 3. **VS2：复杂文档与数表纵切。** 用扫描 PDF／OCR、跨页表格、脚注和修订／重述贯穿同一条链；capture、OCR／parser、表格、期间、chunk／对象、去重／supersession 的任何修复都必须继续回放到 candidate、Evidence、Coverage 和消费者，不能只报 OCR／chunk 局部分数。
 4. **VS3：多路线检索与金融排序纵切。** 保留 exact／BM25 等高召回基线，在同一对象和候选边界比较 dense／multi-vector／graph／SQL／official／external 的增量，再分别验收 semantic rerank 和 finance-aware Evidence evaluator。只有最终 CandidateDecision／Evidence Pack 的业务质量改善才可晋升，不能用 reranker 掩盖上游 0 ceiling 或对象损坏。

@@ -1,0 +1,526 @@
+{
+  "schema_version": "fin_ia_s1_implementation_coverage_matrix_v1_0",
+  "status": "current_implementation_evidence_backed_snapshot",
+  "matrix_id": "FIN-0.1.3-S1-A-TO-J-CURRENT-IMPLEMENTATION-COVERAGE",
+  "audited_git_commit": "bafb5ea6f864bffaff29a5d5c4eca77eef57fc79",
+  "recorded_at": "2026-08-17",
+  "policy": {
+    "evidence_refs_required": true,
+    "responsibility_axes_are_not_release_units": true,
+    "highest_state_is_scope_bounded": true,
+    "open_gap_cannot_be_hidden_by_average_score": true,
+    "private_payloads_are_referenced_not_copied": true
+  },
+  "rows": [
+    {
+      "responsibility_axis": "S1-A",
+      "name_zh": "Source／Capture",
+      "canonical_artifact_types": [
+        "source_route_decision",
+        "raw_source_capture"
+      ],
+      "producer_refs": [
+        "src/ingestion/source_intake.py",
+        "src/ingestion/official_source_capture.py",
+        "apps/workbench/backend/application/source_intake_service.py"
+      ],
+      "consumer_refs": [
+        "src/retrieval/financial_objects.py",
+        "apps/workbench/backend/api/source_intake.py",
+        "apps/workbench/frontend/vite/src/operations/SourceIntakePanel.tsx"
+      ],
+      "current_artifact_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_policy_v1_0.json",
+        "configs/retrieval/fin_ia_0_1_3_s1b_current_source_object_manifest_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_automatic_result_v1_1.json"
+      ],
+      "test_refs": [
+        "tests/test_source_intake.py",
+        "tests/test_source_intake_api.py",
+        "tests/test_official_source_capture.py"
+      ],
+      "highest_proven_state": "vertical_slice_integrated",
+      "proven_scope_zh": [
+        "SEC HTML、官方数字原生 PDF 和人工上传 PDF 已有 capture-first 路径",
+        "请求、响应、transport failure 和 digest 可保存并在 Operations 查看",
+        "已有若干真实 capture 进入当前对象库和 reviewed Pack"
+      ],
+      "qualification_state": "open",
+      "known_gaps": [
+        {
+          "gap_id": "S1-A-GAP-001",
+          "business_effect_zh": "官方 IR、feed、redirect、外源搜索和受限站点的路线覆盖仍不完整，可能把未执行路线误写成公开信息缺口。",
+          "earliest_responsibility_axis": "S1-A",
+          "next_vertical_slice": "VS4"
+        },
+        {
+          "gap_id": "S1-A-GAP-002",
+          "business_effect_zh": "不同 transport 的 source identity／canonical URL 仍未统一进入 canonical envelope。",
+          "earliest_responsibility_axis": "S1-A",
+          "next_vertical_slice": "VS1"
+        }
+      ],
+      "migration_or_rollback_entry_refs": [
+        "scripts/data_retrieval/run_s1d_source_intake.py",
+        "scripts/data_retrieval/capture_s1b_official_sources.py"
+      ]
+    },
+    {
+      "responsibility_axis": "S1-B",
+      "name_zh": "Parse／Clean",
+      "canonical_artifact_types": [
+        "parsed_document"
+      ],
+      "producer_refs": [
+        "src/ingestion/parse_sec_filing.py",
+        "src/ingestion/official_pdf.py",
+        "src/ingestion/section_splitter.py"
+      ],
+      "consumer_refs": [
+        "src/retrieval/financial_objects.py",
+        "src/retrieval/official_pdf_objects.py"
+      ],
+      "current_artifact_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1b_current_source_object_manifest_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1d_dell_official_pdf_successor_result_v1_0.json",
+        "configs/retrieval/fin_ia_0_1_3_s1d_tsm_official_pdf_successor_result_v1_1.json"
+      ],
+      "test_refs": [
+        "tests/test_s1d_official_pdf_pipeline.py",
+        "tests/test_sec_20f_section_splitter.py",
+        "tests/test_s1b_current_financial_objects.py"
+      ],
+      "highest_proven_state": "component_engineering_pass",
+      "proven_scope_zh": [
+        "SEC HTML 与数字原生 PDF 可提取正文和部分章节／表格结构",
+        "Dell／TSM transcript 已形成 parsed document 并进入对象编译"
+      ],
+      "qualification_state": "open",
+      "known_gaps": [
+        {
+          "gap_id": "S1-B-GAP-001",
+          "business_effect_zh": "扫描 PDF／OCR、页面坐标、跨页表格、脚注和低置信度数字尚无当前主线资格，复杂财报可能在检索前已丢失事实。",
+          "earliest_responsibility_axis": "S1-B",
+          "next_vertical_slice": "VS2"
+        },
+        {
+          "gap_id": "S1-B-GAP-002",
+          "business_effect_zh": "解析质量没有统一 typed quality receipt，局部成功不能证明页数、表格和日期完整。",
+          "earliest_responsibility_axis": "S1-B",
+          "next_vertical_slice": "VS2"
+        }
+      ],
+      "migration_or_rollback_entry_refs": [
+        "scripts/data_retrieval/build_current_financial_object_store.py",
+        "scripts/data_retrieval/run_s1d_official_pdf_successor.py"
+      ]
+    },
+    {
+      "responsibility_axis": "S1-C",
+      "name_zh": "Chunk／Object",
+      "canonical_artifact_types": [
+        "financial_evidence_object"
+      ],
+      "producer_refs": [
+        "src/retrieval/financial_objects.py",
+        "src/retrieval/object_view_compiler.py",
+        "src/retrieval/evidence_role_contract.py"
+      ],
+      "consumer_refs": [
+        "src/retrieval/candidate_retriever.py",
+        "src/retrieval/hybrid_candidate_runtime.py",
+        "src/retrieval/evidence_role.py"
+      ],
+      "current_artifact_refs": [
+        "configs/runtime/fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_object_role_review_set_v1_0.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json"
+      ],
+      "test_refs": [
+        "tests/test_s1b_current_financial_objects.py",
+        "tests/test_s1c_object_role_contract.py",
+        "tests/test_evidence_role.py"
+      ],
+      "highest_proven_state": "vertical_slice_integrated",
+      "proven_scope_zh": [
+        "当前 SEC／transcript 资料已形成 parent、section、claim／table／context 对象并进入检索",
+        "对象保留 source record、parent document 和内容 digest"
+      ],
+      "qualification_state": "open",
+      "known_gaps": [
+        {
+          "gap_id": "S1-C-GAP-001",
+          "business_effect_zh": "历史固定字符 chunk 与新金融对象仍混在当前人口中，语义检索和 qrel 结果可能受旧对象形状影响。",
+          "earliest_responsibility_axis": "S1-C",
+          "next_vertical_slice": "VS1"
+        },
+        {
+          "gap_id": "S1-C-GAP-002",
+          "business_effect_zh": "复杂表格的 metric-row、row-group、脚注和 parent expansion 尚未通过真实纵切。",
+          "earliest_responsibility_axis": "S1-C",
+          "next_vertical_slice": "VS2"
+        }
+      ],
+      "migration_or_rollback_entry_refs": [
+        "scripts/data_retrieval/build_current_financial_object_store.py",
+        "scripts/data_retrieval/build_current_compiled_object_views.py"
+      ]
+    },
+    {
+      "responsibility_axis": "S1-D",
+      "name_zh": "Store／Index",
+      "canonical_artifact_types": [
+        "object_manifest",
+        "index_snapshot",
+        "s2_sibling_binding"
+      ],
+      "producer_refs": [
+        "scripts/data_retrieval/build_current_financial_object_store.py",
+        "src/indexing/build_bm25_index.py",
+        "scripts/data_retrieval/build_s2_company_financial_fact_mart.py"
+      ],
+      "consumer_refs": [
+        "src/retrieval/candidate_retriever.py",
+        "src/retrieval/hybrid_candidate_runtime.py",
+        "src/financial_facts/executor.py"
+      ],
+      "current_artifact_refs": [
+        "configs/runtime/fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_3.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_2.json"
+      ],
+      "test_refs": [
+        "tests/test_s1c_hybrid_candidate_runtime.py",
+        "tests/test_s2_company_financial_fact_mart.py",
+        "tests/test_retrieval_vertical_slice.py"
+      ],
+      "highest_proven_state": "vertical_slice_integrated",
+      "proven_scope_zh": [
+        "BM25、Qwen dense cache 和 S2 company fact mart 有版本／digest 绑定并参与当前受控纵切",
+        "标准公司财务 NumericFact 已有独立 SQL 权威路线"
+      ],
+      "qualification_state": "open",
+      "known_gaps": [
+        {
+          "gap_id": "S1-D-GAP-001",
+          "business_effect_zh": "对象 manifest、sparse／dense index 和 S2 sibling 尚无一份统一 snapshot binding，旧新索引可能被分别加载。",
+          "earliest_responsibility_axis": "S1-D",
+          "next_vertical_slice": "VS1"
+        },
+        {
+          "gap_id": "S1-D-GAP-002",
+          "business_effect_zh": "route policy 声明 graph，但当前产品 Runtime 没有 graph handler；产品／分部利润桥和估值也未达到 S2 同等级权威。",
+          "earliest_responsibility_axis": "S1-D",
+          "next_vertical_slice": "VS3"
+        }
+      ],
+      "migration_or_rollback_entry_refs": [
+        "scripts/data_retrieval/build_current_financial_object_store.py",
+        "scripts/data_retrieval/build_current_retrieval_snapshot.py",
+        "scripts/data_retrieval/build_s2_company_financial_fact_mart.py"
+      ]
+    },
+    {
+      "responsibility_axis": "S1-E",
+      "name_zh": "Query／Route",
+      "canonical_artifact_types": [
+        "evidence_request",
+        "query_facet_plan"
+      ],
+      "producer_refs": [
+        "src/retrieval/contracts.py",
+        "src/retrieval/query_plan.py",
+        "src/retrieval/route_compiler.py"
+      ],
+      "consumer_refs": [
+        "apps/workbench/backend/application/research_retrieval_service.py",
+        "src/sec_agent/research/dynamic_research_runtime.py"
+      ],
+      "current_artifact_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_2.json",
+        "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
+      ],
+      "test_refs": [
+        "tests/test_retrieval_vertical_slice.py",
+        "tests/test_s1c_query_object_fact_route.py",
+        "tests/test_s1c_query_atom_successor.py"
+      ],
+      "highest_proven_state": "vertical_slice_integrated",
+      "proven_scope_zh": [
+        "EvidenceRequest 可按公司、as-of、facet、source、period 和关系方向编译 QueryFacetPlan",
+        "Workbench controlled plan 可调用当前本地检索和 S2 fact route"
+      ],
+      "qualification_state": "open",
+      "known_gaps": [
+        {
+          "gap_id": "S1-E-GAP-001",
+          "business_effect_zh": "自然用户问题到动态 EvidenceRequest 的泛化尚未通过；现有 kernel 仍主要由已观察案例和固定 facet 塑形。",
+          "earliest_responsibility_axis": "S1-E",
+          "next_vertical_slice": "VS4"
+        },
+        {
+          "gap_id": "S1-E-GAP-002",
+          "business_effect_zh": "补证请求可能声明行业／外源需求却被编译到只支持 SEC 的路线，造成假 gap。",
+          "earliest_responsibility_axis": "S1-E",
+          "next_vertical_slice": "VS3"
+        }
+      ],
+      "migration_or_rollback_entry_refs": [
+        "scripts/data_retrieval/build_current_retrieval_snapshot.py",
+        "scripts/data_retrieval/materialize_s1c_runtime_query_atoms.py"
+      ]
+    },
+    {
+      "responsibility_axis": "S1-F",
+      "name_zh": "Recall",
+      "canonical_artifact_types": [
+        "candidate_set"
+      ],
+      "producer_refs": [
+        "src/retrieval/candidate_retriever.py",
+        "src/retrieval/hybrid_candidate_runtime.py"
+      ],
+      "consumer_refs": [
+        "apps/workbench/backend/application/research_retrieval_service.py",
+        "src/retrieval/ranking_comparison.py"
+      ],
+      "current_artifact_refs": [
+        "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_3.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json"
+      ],
+      "test_refs": [
+        "tests/test_retrieval_vertical_slice.py",
+        "tests/test_s1c_hybrid_candidate_runtime.py",
+        "tests/test_s1c_compiled_object_retrieval_comparison.py"
+      ],
+      "highest_proven_state": "vertical_slice_integrated",
+      "proven_scope_zh": [
+        "当前 BM25＋Qwen 候选联合已进入 Workbench 与 DELL 受控 S1／S2／S3 纵切",
+        "身份、as-of、每文档预算和 candidate-not-evidence 约束已存在"
+      ],
+      "qualification_state": "open",
+      "known_gaps": [
+        {
+          "gap_id": "S1-F-GAP-001",
+          "business_effect_zh": "当前 qrels 与对象人口不覆盖完整 S1 来源形态；candidate ceiling 低时无法区分源缺失、解析丢失、索引漏入或 query 错误。",
+          "earliest_responsibility_axis": "S1-F",
+          "next_vertical_slice": "VS3"
+        },
+        {
+          "gap_id": "S1-F-GAP-002",
+          "business_effect_zh": "graph、SQL sibling、official／external route contribution 未在同一 CandidateSet 合同下比较。",
+          "earliest_responsibility_axis": "S1-F",
+          "next_vertical_slice": "VS3"
+        }
+      ],
+      "migration_or_rollback_entry_refs": [
+        "scripts/data_retrieval/build_current_retrieval_snapshot.py",
+        "scripts/data_retrieval/run_s1c_compiled_object_retriever_comparison.py"
+      ]
+    },
+    {
+      "responsibility_axis": "S1-G",
+      "name_zh": "Rerank",
+      "canonical_artifact_types": [
+        "candidate_ranking"
+      ],
+      "producer_refs": [
+        "src/retrieval/ranking_comparison.py",
+        "src/retrieval/cross_encoder.py",
+        "src/retrieval/embedding_runtime.py"
+      ],
+      "consumer_refs": [
+        "apps/workbench/backend/application/research_retrieval_service.py",
+        "src/retrieval/evidence_role.py"
+      ],
+      "current_artifact_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1c_ranking_comparison_result_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_cross_encoder_safety_shadow_result_v1_0.json",
+        "configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json"
+      ],
+      "test_refs": [
+        "tests/test_s1c_ranking_comparison.py",
+        "tests/test_s1c_retrieval_stack_governance.py",
+        "tests/test_s1c_financial_role_eval.py"
+      ],
+      "highest_proven_state": "component_engineering_pass",
+      "proven_scope_zh": [
+        "BM25、BGE、Qwen、RRF 和 Cross-Encoder 已做 shadow／离线比较",
+        "同一 qrel 人口中的关键重排失误已被保留而未错误晋升"
+      ],
+      "qualification_state": "open",
+      "known_gaps": [
+        {
+          "gap_id": "S1-G-GAP-001",
+          "business_effect_zh": "不同 ranking 结果来自不同对象／qrel 阶段，尚无同一 CandidateSet、同一 split、同一头部稳定性资格。",
+          "earliest_responsibility_axis": "S1-G",
+          "next_vertical_slice": "VS3"
+        },
+        {
+          "gap_id": "S1-G-GAP-002",
+          "business_effect_zh": "没有任何 neural reranker 被证明能稳定压低错角色、错期间和通用背景噪声，当前不能替换廉价召回基线。",
+          "earliest_responsibility_axis": "S1-G",
+          "next_vertical_slice": "VS3"
+        }
+      ],
+      "migration_or_rollback_entry_refs": [
+        "scripts/data_retrieval/run_s1c_ranking_comparison.py",
+        "scripts/data_retrieval/run_s1c_cross_encoder_role_shadow.py"
+      ]
+    },
+    {
+      "responsibility_axis": "S1-H",
+      "name_zh": "Fine Rank／Evidence Eval",
+      "canonical_artifact_types": [
+        "candidate_decision"
+      ],
+      "producer_refs": [
+        "src/retrieval/evidence_role.py",
+        "src/retrieval/evidence_role_contract.py",
+        "src/retrieval/financial_candidate_ranking.py"
+      ],
+      "consumer_refs": [
+        "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
+        "apps/workbench/backend/application/research_evidence_pack_service.py"
+      ],
+      "current_artifact_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1c_financial_role_eval_set_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_object_role_shadow_result_v1_0.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_cross_encoder_role_shadow_result_v1_1.json"
+      ],
+      "test_refs": [
+        "tests/test_evidence_role.py",
+        "tests/test_s1c_object_role_contract.py",
+        "tests/test_s1c_object_role_shadow.py"
+      ],
+      "highest_proven_state": "component_engineering_pass",
+      "proven_scope_zh": [
+        "对象角色、事实状态、直接性、背景性和 abstain 合同已建立",
+        "规则和 Cross-Encoder shadow 已暴露语义相关但证据角色错误的样本"
+      ],
+      "qualification_state": "open",
+      "known_gaps": [
+        {
+          "gap_id": "S1-H-GAP-001",
+          "business_effect_zh": "当前规则 Evidence Role 质量不足，Cross-Encoder 也有关键误排；尚无可进入 Runtime 的 finance-aware evaluator。",
+          "earliest_responsibility_axis": "S1-H",
+          "next_vertical_slice": "VS3"
+        },
+        {
+          "gap_id": "S1-H-GAP-002",
+          "business_effect_zh": "CandidateDecision 还没有成为 reviewed、rejected、unjudged、needs-review 的统一持久账本，动态候选无法安全晋升。",
+          "earliest_responsibility_axis": "S1-H",
+          "next_vertical_slice": "VS1"
+        }
+      ],
+      "migration_or_rollback_entry_refs": [
+        "scripts/data_retrieval/materialize_s1c_object_role_review_set.py",
+        "scripts/data_retrieval/run_current_evidence_pack_promotion.py"
+      ]
+    },
+    {
+      "responsibility_axis": "S1-I",
+      "name_zh": "Coverage／Supplement",
+      "canonical_artifact_types": [
+        "evidence_coverage_state",
+        "evidence_pack_readiness"
+      ],
+      "producer_refs": [
+        "src/sec_agent/research/reviewed_evidence_pack.py",
+        "scripts/data_retrieval/run_current_evidence_pack_promotion.py"
+      ],
+      "consumer_refs": [
+        "apps/workbench/backend/application/research_evidence_pack_service.py",
+        "src/sec_agent/research/dynamic_research_runtime.py",
+        "src/sec_agent/research/current_consumer.py"
+      ],
+      "current_artifact_refs": [
+        "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+        "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_planner_residual_gap_audit_result_v1_1.json"
+      ],
+      "test_refs": [
+        "tests/test_current_evidence_pack_promotion_runner.py",
+        "tests/contract/test_fin_0_1_3_workbench_current_research_evidence_pack_projection.py",
+        "tests/test_reviewed_evidence_anchor.py"
+      ],
+      "highest_proven_state": "component_engineering_pass",
+      "proven_scope_zh": [
+        "reviewed Evidence Pack、declared residual gap 和 current anchor binding 已有只读产品消费者",
+        "Pack 可被当前 S3 consumer 和 Workbench 读取"
+      ],
+      "qualification_state": "open",
+      "known_gaps": [
+        {
+          "gap_id": "S1-I-GAP-001",
+          "business_effect_zh": "尚无逐命题 EvidenceCoverageState，系统不能区分支持、反方、桥、未裁决候选、未执行路线和真实信息边界。",
+          "earliest_responsibility_axis": "S1-I",
+          "next_vertical_slice": "VS1"
+        },
+        {
+          "gap_id": "S1-I-GAP-002",
+          "business_effect_zh": "DELL 营运资金、发行人反方和上游反方仍无真正的 Coverage 驱动第二轮补证与 GapEligibilityReceipt。",
+          "earliest_responsibility_axis": "S1-I",
+          "next_vertical_slice": "VS4"
+        }
+      ],
+      "migration_or_rollback_entry_refs": [
+        "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
+        "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json"
+      ]
+    },
+    {
+      "responsibility_axis": "S1-J",
+      "name_zh": "Observability／Qualification",
+      "canonical_artifact_types": [
+        "workbench_projection",
+        "frozen_consumer_probe"
+      ],
+      "producer_refs": [
+        "apps/workbench/backend/application/research_retrieval_service.py",
+        "apps/workbench/backend/application/research_evidence_pack_service.py",
+        "src/sec_agent/runtime_resource_registry.py"
+      ],
+      "consumer_refs": [
+        "apps/workbench/frontend/vite/src/app/ResearchWorkspace.tsx",
+        "apps/workbench/frontend/vite/src/operations/OperationsConsole.tsx"
+      ],
+      "current_artifact_refs": [
+        "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+        "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_1.json",
+        "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
+      ],
+      "test_refs": [
+        "tests/test_current_runtime_registry.py",
+        "tests/test_current_product_readiness.py",
+        "tests/test_current_workbench_baseline.py"
+      ],
+      "highest_proven_state": "vertical_slice_integrated",
+      "proven_scope_zh": [
+        "当前 retrieval、ranking、Evidence Pack 和 source intake 有 Workbench／Operations 只读消费者",
+        "Runtime Registry、digest、secret scan、active baseline 和多类 replay 已成为仓库治理门"
+      ],
+      "qualification_state": "open",
+      "known_gaps": [
+        {
+          "gap_id": "S1-J-GAP-001",
+          "business_effect_zh": "Workbench 尚不能沿 canonical spine 查看 source→object→query→candidate→decision→Coverage→Pack 的完整差异和拒绝理由。",
+          "earliest_responsibility_axis": "S1-J",
+          "next_vertical_slice": "VS1"
+        },
+        {
+          "gap_id": "S1-J-GAP-002",
+          "business_effect_zh": "split-safe gold、frozen test、异质留出、性能阈值和稳定资格尚未执行，S1 不能关闭。",
+          "earliest_responsibility_axis": "S1-J",
+          "next_vertical_slice": "VS5"
+        }
+      ],
+      "migration_or_rollback_entry_refs": [
+        "scripts/engineering/verify_active_baseline.py",
+        "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json"
+      ]
+    }
+  ]
+}

@@ -95,6 +95,10 @@ S2 独立拥有 NumericFact、PIT、单位、期间、公式、supersession 和�
 
 标签、目标 source／object、qrels、hard negatives 和 gap 真值必须与模型／Runtime 可见输入物理分离。test 结果揭示的新问题进入下一轮 train／valid，不回调同一 test。
 
+当前评测程序基础已建立在 `eval_sets/fin_0_1_3_s1/`：Pydantic 生成的 JSON Schema、8 条 `train_internal` 最小真实业务 fixture、单独的 evaluator-only reference、四类 split manifest 和 digest 校验已经存在。DELL／MU／NVDA／ORCL／ASML／ANET 均已被开发过程观察，只能作为开发或回归资产。`valid_temporal`、`test_frozen` 和 `holdout_heterogeneous` 当前明确是 `reserved_unpopulated`；这不是缺少记录，而是防止在 canonical contract 尚未经 VS1–VS3 稳定前提前消耗隐藏集。
+
+冻结顺序必须是：先冻结 eval schema、非补偿硬门和 train-internal label protocol；再用 VS1–VS3 稳定 source／object／query／CandidateSet／CandidateRanking／CandidateDecision 合同；随后预注册 valid／test／heterogeneous holdout 的案例分层、配置 digest 和执行次数。不得先挑几个案例反复看结果，最后再把它们改名为 frozen test。
+
 ### 4.2 当前案例角色
 
 - **DELL／MU／NVDA**：开发、业务尸检和持续回归；用于覆盖服务器 OEM、memory cycle、AI 平台／供应生态，但不承担最终隐藏资格。
@@ -295,8 +299,8 @@ S1 未通过时仍可运行的模型或节点调用必须明确标为 determinis
 
 下一步程序为：
 
-1. 建立 S1-A–S1-J 当前实现／消费者／评测覆盖矩阵和唯一 canonical artifact spine；A–J 只作为责任坐标，不作为十个独立关闭项；
-2. 冻结 source-page-table-chunk-query-candidate-Evidence-gap 的 gold／negative／mutation schema 和 split；
+1. **已建立程序基础，未完成 Runtime 迁移**：`src/retrieval/artifact_spine.py`、canonical policy、A–J evidence-backed coverage matrix 和统一校验入口已存在；spine 显式区分 CandidateSet、CandidateRanking、CandidateDecision，A–J 仍只作为责任坐标；
+2. **已冻结 schema／开发集／split 规则，未冻结隐藏资格集**：runtime-visible input 与 evaluator-only reference 物理分离，8 条 VS1 train-internal fixture 和 legacy qrels／role eval 只作开发资产；valid／test／heterogeneous holdout 保持预留，待 VS1–VS3 合同稳定后再预注册；
 3. 执行 VS1 当前数字原生官方资料纵切，在同一条 source→Pack→Workbench 路径完成 16.40 已批准的 CoverageState／candidate 账本／binding／capture-bound promotion；
 4. 执行 VS2 复杂文档纵切，覆盖扫描 PDF／OCR、跨页表格、脚注和修订／重述；
 5. 执行 VS3 多路线检索与金融排序纵切，在同一候选边界验收 recall／rerank／fine-rank 对最终 Evidence Pack 的真实增益；

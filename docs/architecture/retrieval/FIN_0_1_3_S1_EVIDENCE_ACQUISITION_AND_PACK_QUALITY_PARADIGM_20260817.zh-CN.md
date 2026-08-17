@@ -127,13 +127,26 @@ SourceRouteDecision
   → ObjectManifest / IndexSnapshot / S2SiblingBinding
   → EvidenceRequest / QueryFacetPlan
   → CandidateSet
+  → CandidateRanking
   → CandidateDecision
   → EvidenceCoverageState
   → EvidencePackReadiness
   → WorkbenchProjection / FrozenConsumerProbe
 ```
 
-每个转换至少绑定 `case / source owner / discussed entity / as-of / reporting period / locator / parent lineage / schema version / payload digest` 的适用项。Prompt、离线 eval、Runtime、Workbench 和 replay 不得分别维护另一份字段语义。parser、chunk、object schema、index、query、ranker 或 Evidence evaluator 发生合同变化时，必须生成新 artifact version、明确重建／迁移清单和回滚入口；旧新 artifact 不得静默混用。
+每个转换至少绑定 `case / source owner / discussed entity / as-of / reporting period / locator / parent lineage / schema version / payload digest` 的适用项。Prompt、离线 eval、Runtime、Workbench 和 replay 不得分别维护另一份字段语义。`CandidateSet` 保存 route-scoped 召回边界，`CandidateRanking` 保存同一候选边界上的排序方法、分数和稳定性，`CandidateDecision` 才保存 Evidence Role、directness、authority、accept／reject／abstain／needs-review；三者不得合并为一个无法归责的总分。parser、chunk、object schema、index、query、ranker 或 Evidence evaluator 发生合同变化时，必须生成新 artifact version、明确重建／迁移清单和回滚入口；旧新 artifact 不得静默混用。
+
+该 spine 是一层薄的控制面合同，不是要求所有数据走一个物理流水线。正文／表格对象、SQL `NumericFact`、关系图、official／external source 可以保留并行 data plane；统一的是 identity、period、locator、schema version、payload digest、parent lineage、decision state 和消费者绑定。S2 数字权威不会因进入 S1 spine 而转交给文本检索，Graph 也不能因语义相近自动晋升 Evidence。
+
+当前可执行基础位于：
+
+- `src/retrieval/artifact_spine.py`：canonical envelope、parent seam、scope 和 lineage 校验；
+- `configs/retrieval/fin_ia_0_1_3_s1_canonical_artifact_spine_policy_v1_0.json`：artifact type、责任层和合法 parent 关系；
+- `configs/retrieval/fin_ia_0_1_3_s1_implementation_coverage_matrix_v1_0.json`：A–J 当前 producer／consumer／artifact／test／gap／迁移入口；
+- `eval_sets/fin_0_1_3_s1/`：物理分离的 runtime-visible inputs、evaluator-only references、schema 和 split manifest；
+- `scripts/data_retrieval/validate_s1_program_foundation.py`：零网络、零模型的统一校验入口。
+
+这里的 `CandidateRanking` 是对原 canonical 列表的必要补充：没有这个 artifact，S1-G 的 rerank 输出只能藏在 CandidateSet 或 CandidateDecision 里，无法在完全相同候选池上公平比较 BM25、Dense、Cross-Encoder，也无法判断头部错误究竟发生在召回、排序还是证据晋升。
 
 #### 3.1.3 纵向 release slice 组合
 

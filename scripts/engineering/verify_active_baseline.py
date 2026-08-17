@@ -35,6 +35,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/data_retrieval/run_s1c_cross_encoder_role_shadow.py",
     "scripts/data_retrieval/run_s1c_object_role_shadow.py",
     "scripts/data_retrieval/run_s1c_ranking_comparison.py",
+    "scripts/data_retrieval/validate_s1_program_foundation.py",
     "scripts/data_sec/build_sec_8k_earnings_chunks.py",
     "scripts/data_sec/build_sec_8k_earnings_manifest.py",
     "scripts/data_sec/build_sec_chunks.py",

@@ -1,0 +1,246 @@
+{
+  "$defs": {
+    "EvaluationAssetRef": {
+      "additionalProperties": false,
+      "properties": {
+        "ref": {
+          "title": "Ref",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "runtime_input",
+            "evaluator_reference",
+            "legacy_development_asset",
+            "source_fixture",
+            "schema"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "visibility": {
+          "enum": [
+            "runtime_visible",
+            "evaluator_only",
+            "governance_only"
+          ],
+          "title": "Visibility",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "sha256",
+        "role",
+        "visibility"
+      ],
+      "title": "EvaluationAssetRef",
+      "type": "object"
+    },
+    "EvaluationCatalog": {
+      "additionalProperties": false,
+      "properties": {
+        "catalog_id": {
+          "title": "Catalog Id",
+          "type": "string"
+        },
+        "example_count": {
+          "minimum": 0,
+          "title": "Example Count",
+          "type": "integer"
+        },
+        "input_asset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvaluationAssetRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reference_asset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvaluationAssetRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "split": {
+          "enum": [
+            "train_internal",
+            "valid_temporal",
+            "test_frozen",
+            "holdout_heterogeneous"
+          ],
+          "title": "Split",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "reserved_unpopulated",
+            "retired"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "catalog_id",
+        "split",
+        "status",
+        "example_count"
+      ],
+      "title": "EvaluationCatalog",
+      "type": "object"
+    },
+    "SplitPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_uses": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Uses",
+          "type": "array"
+        },
+        "configuration_frozen_before_execution": {
+          "title": "Configuration Frozen Before Execution",
+          "type": "boolean"
+        },
+        "forbidden_uses": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden Uses",
+          "type": "array"
+        },
+        "observed_case_keys": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Observed Case Keys",
+          "type": "array"
+        },
+        "split": {
+          "enum": [
+            "train_internal",
+            "valid_temporal",
+            "test_frozen",
+            "holdout_heterogeneous"
+          ],
+          "title": "Split",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "reserved_unpopulated"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "split",
+        "status",
+        "allowed_uses",
+        "forbidden_uses",
+        "observed_case_keys",
+        "configuration_frozen_before_execution"
+      ],
+      "title": "SplitPolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "catalogs": {
+      "items": {
+        "$ref": "#/$defs/EvaluationCatalog"
+      },
+      "title": "Catalogs",
+      "type": "array"
+    },
+    "final_threshold_state": {
+      "const": "schema_and_non_compensable_gates_frozen_performance_thresholds_open",
+      "title": "Final Threshold State",
+      "type": "string"
+    },
+    "legacy_development_assets": {
+      "items": {
+        "$ref": "#/$defs/EvaluationAssetRef"
+      },
+      "title": "Legacy Development Assets",
+      "type": "array"
+    },
+    "policies": {
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "title": "Policies",
+      "type": "object"
+    },
+    "program_id": {
+      "title": "Program Id",
+      "type": "string"
+    },
+    "program_version": {
+      "title": "Program Version",
+      "type": "string"
+    },
+    "recorded_at": {
+      "title": "Recorded At",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "fin_ia_s1_evaluation_program_v1_0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "schemas": {
+      "items": {
+        "$ref": "#/$defs/EvaluationAssetRef"
+      },
+      "title": "Schemas",
+      "type": "array"
+    },
+    "split_policies": {
+      "items": {
+        "$ref": "#/$defs/SplitPolicy"
+      },
+      "title": "Split Policies",
+      "type": "array"
+    },
+    "status": {
+      "const": "split_safe_foundation_ready_not_qualified",
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "program_id",
+    "program_version",
+    "recorded_at",
+    "policies",
+    "schemas",
+    "split_policies",
+    "catalogs",
+    "legacy_development_assets",
+    "final_threshold_state"
+  ],
+  "title": "EvaluationProgramManifest",
+  "type": "object"
+}

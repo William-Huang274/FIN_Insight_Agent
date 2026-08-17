@@ -467,6 +467,16 @@ Synthesis 输入不扩大为完整 Evidence Pack，而增加一份紧凑的 case
 - cell claim 对 presence／absence 的选择与校验 receipt；
 - conflict premise 与 case truth 的一致性检查。
 
+实现时进一步把这份合同拆成两个同 digest 绑定、但面向不同责任人的视图：
+
+- **本地完整权威包**保存 reviewed Evidence facet、NumericFact、NumericRelation、source-bound qualitative fact、typed gap、bridge boundary，以及每个 cell 的可见与不可见 alias。它用于审计、确定性校验和最终 fail-closed，不发送给 Provider；
+- **模型紧凑视图**只保留语义分类所需的 presence group、期间、owner、来源 ref、业务含义、claim boundary、当前 cell 可见 alias、typed gap 与 bridge boundary。重复的 cell-hidden 清单和全 alias 副本不发送，但模型视图必须绑定完整权威包 digest；
+- 模型只对每个 thesis、mechanism、counterargument、WWC 及综合 premise 做 `present / absent / locally invisible / unresolved` 语义映射，不得改写研报、生成事实或签发 absence；
+- Harness 对模型映射做穷尽性和交叉字段校验。十五个 material atom surface 不允许静默 `no claim`，未知 alias、漏 surface、跨 Case、错误 digest、把全案已存在事实写成缺失、把 cell 不可见事实写成当前 cell 已见均 fail closed；
+- 只有 cell 与 synthesis 两级 reconciliation receipt 都通过，v1.1 report 才可物化。历史 v1.0 报告和调用入口保持兼容且不可变。
+
+DELL R7 当前完整权威包约 `49.6k` 字符；分组并去重后的模型可见包约 `26.7k`，连同十五个待分类 surface 的消息约 `33.1k`。这个压缩不是放宽金融合同，而是把本地审计状态从模型工作记忆中移出，避免再次形成高密度 Harness 提示词。该尺寸结果只属于工程资格，不证明 DeepSeek 能自然完成语义映射。
+
 任何把 `present_in_current_case` 写成全案缺失的 cell submission 必须在进入 synthesis 前 fail closed；任何 cross-cell conflict 的 premise 与 fact catalog 冲突，也必须拒绝。实现不得依赖“未披露／not disclosed”等短语正则，因为同义表达、语言切换和合法局部缺失都会使该方案失效。
 
 R7、五个原 Judgment 和综合结果保持不可变。新结构先用 R7 capture replay、DELL／MU／NVDA fake 和异质 holdout mutation 证明；通过后只能以新 authority 重交受影响的 Operating／Counterevidence 与 Synthesis。上游输入或依赖 digest 没有改变时，不得重跑 Planner、S1/S2、Demand、Value、Cash 或五个 analysis。该关闭只解决跨单元事实一致性，不关闭产品利润桥、需求持续性、正式八维、paired、qualified-human、泛化、S3 acceptance 或发布。

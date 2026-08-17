@@ -6,6 +6,13 @@ import re
 from typing import Any, Mapping, Sequence
 
 from .bounded_finance_loop import compile_finance_judgment_tool
+from .case_truth_reconciliation import (
+    compile_cell_judgment_claim_document,
+    compile_case_truth_model_view,
+    compile_synthesis_claim_document,
+    require_eligible_truth_reconciliation,
+    validate_case_truth_packet,
+)
 from .current_consumer import (
     CurrentResearchConsumerError,
     bind_current_research_model_text_schema_definition,
@@ -20,6 +27,9 @@ from .reviewed_evidence_pack import canonical_digest
 
 FIVE_CELL_SYNTHESIS_SCHEMA_VERSION = "fin_ia_five_cell_synthesis_v1_0"
 FIVE_CELL_REPORT_SCHEMA_VERSION = "fin_ia_five_cell_research_report_v1_0"
+FIVE_CELL_TRUTH_RECONCILED_REPORT_SCHEMA_VERSION = (
+    "fin_ia_five_cell_research_report_v1_1"
+)
 
 _SYNTHESIS_FIELDS = {
     "overall_judgment",
@@ -599,6 +609,8 @@ def _synthesis_view(
     research_input: Mapping[str, Any],
     judgment_output: Mapping[str, Any],
     structured_deliverable: Mapping[str, Any],
+    case_truth_packet: Mapping[str, Any] | None = None,
+    cell_truth_reconciliation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     selected = _selected_ref_sets(
         research_input=research_input,
@@ -623,8 +635,54 @@ def _synthesis_view(
                 "remaining_gap_refs": list(row["remaining_gap_refs"]),
             }
         )
+    truth_enabled = (
+        case_truth_packet is not None or cell_truth_reconciliation is not None
+    )
+    _require(
+        not truth_enabled
+        or (case_truth_packet is not None and cell_truth_reconciliation is not None),
+        "five_cell_synthesis_truth_inputs_incomplete",
+    )
+    truth_projection: dict[str, Any] = {}
+    if truth_enabled:
+        assert case_truth_packet is not None
+        assert cell_truth_reconciliation is not None
+        trusted_packet = validate_case_truth_packet(
+            case_truth_packet, research_input=research_input
+        )
+        claim_document = compile_cell_judgment_claim_document(judgment_output)
+        require_eligible_truth_reconciliation(
+            cell_truth_reconciliation,
+            case_truth_packet=trusted_packet,
+            claim_document=claim_document,
+        )
+        truth_projection = {
+            "case_truth_packet": compile_case_truth_model_view(trusted_packet),
+            "cell_truth_reconciliation": deepcopy(
+                dict(cell_truth_reconciliation)
+            ),
+        }
+    authority = {
+        "model_may_synthesize_only_validated_cell_judgments": True,
+        "model_may_not_upgrade_a_gap_or_context_item_to_fact": True,
+        "model_may_not_invent_a_cross_cell_causal_bridge": True,
+        "exact_numeric_and_citation_surfaces_are_harness_rendered": True,
+        "analysis_draft_is_not_business_truth": True,
+        "qualified_human_review_required": True,
+    }
+    if truth_enabled:
+        authority.update(
+            {
+                "cell_local_invisibility_is_not_case_absence": True,
+                "case_level_absence_requires_truth_packet_authority": True,
+            }
+        )
     return {
-        "schema_version": "fin_ia_five_cell_synthesis_input_v1_0",
+        "schema_version": (
+            "fin_ia_five_cell_synthesis_input_v1_1"
+            if truth_enabled
+            else "fin_ia_five_cell_synthesis_input_v1_0"
+        ),
         "case_identity": deepcopy(research_input["case_identity"]),
         "research_question": research_input["objective"]["raw_question"],
         "research_input_digest": research_input["research_input_digest"],
@@ -635,14 +693,8 @@ def _synthesis_view(
             for key, value in selected.items()
             if key != "cell_ids"
         },
-        "authority": {
-            "model_may_synthesize_only_validated_cell_judgments": True,
-            "model_may_not_upgrade_a_gap_or_context_item_to_fact": True,
-            "model_may_not_invent_a_cross_cell_causal_bridge": True,
-            "exact_numeric_and_citation_surfaces_are_harness_rendered": True,
-            "analysis_draft_is_not_business_truth": True,
-            "qualified_human_review_required": True,
-        },
+        "authority": authority,
+        **truth_projection,
     }
 
 
@@ -651,25 +703,43 @@ def compile_five_cell_synthesis_analysis_messages(
     research_input: Mapping[str, Any],
     judgment_output: Mapping[str, Any],
     structured_deliverable: Mapping[str, Any],
+    case_truth_packet: Mapping[str, Any] | None = None,
+    cell_truth_reconciliation: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, str], ...]:
     view = _synthesis_view(
         research_input=research_input,
         judgment_output=judgment_output,
         structured_deliverable=structured_deliverable,
+        case_truth_packet=case_truth_packet,
+        cell_truth_reconciliation=cell_truth_reconciliation,
     )
+    system_content = (
+        "You are the lead financial research synthesizer. Integrate the "
+        "five independently validated research cells into one coherent "
+        "investment-research view. Preserve disagreement and evidence "
+        "gaps. Do not turn coexistence into causality, do not invent a "
+        "product-to-segment or product-to-company profit bridge, and do "
+        "not submit a tool call yet. Produce a concise analysis draft of "
+        "1800-3200 visible characters and stop after the cross-cell view, "
+        "strongest counterargument and decision-changing evidence."
+    )
+    if case_truth_packet is not None:
+        system_content = (
+            "You are the lead financial research synthesizer. Integrate the "
+            "five independently validated and case-truth-reconciled research "
+            "cells into one coherent investment-research view. Preserve "
+            "disagreement and evidence gaps. Do not turn coexistence into "
+            "causality, do not invent a product-to-segment or product-to-company "
+            "profit bridge, and do not promote cell-local invisibility to "
+            "case-level absence. Do not submit a tool call yet. Produce a "
+            "concise analysis draft of 1800-3200 visible characters and stop "
+            "after the cross-cell view, strongest counterargument and "
+            "decision-changing evidence."
+        )
     return (
         {
             "role": "system",
-            "content": (
-                "You are the lead financial research synthesizer. Integrate the "
-                "five independently validated research cells into one coherent "
-                "investment-research view. Preserve disagreement and evidence "
-                "gaps. Do not turn coexistence into causality, do not invent a "
-                "product-to-segment or product-to-company profit bridge, and do "
-                "not submit a tool call yet. Produce a concise analysis draft of "
-                "1800-3200 visible characters and stop after the cross-cell view, "
-                "strongest counterargument and decision-changing evidence."
-            ),
+            "content": system_content,
         },
         {
             "role": "user",
@@ -686,6 +756,8 @@ def compile_five_cell_synthesis_submission(
     judgment_output: Mapping[str, Any],
     structured_deliverable: Mapping[str, Any],
     analysis_draft: str,
+    case_truth_packet: Mapping[str, Any] | None = None,
+    cell_truth_reconciliation: Mapping[str, Any] | None = None,
 ) -> tuple[tuple[dict[str, str], ...], dict[str, Any]]:
     draft = str(analysis_draft or "").strip()
     _require(
@@ -696,6 +768,8 @@ def compile_five_cell_synthesis_submission(
         research_input=research_input,
         judgment_output=judgment_output,
         structured_deliverable=structured_deliverable,
+        case_truth_packet=case_truth_packet,
+        cell_truth_reconciliation=cell_truth_reconciliation,
     )
     messages = (
         analysis_messages[0],
@@ -1003,7 +1077,68 @@ def compile_five_cell_report(
     research_input: Mapping[str, Any],
     structured_deliverable: Mapping[str, Any],
     synthesis: Mapping[str, Any],
+    case_truth_packet: Mapping[str, Any] | None = None,
+    cell_truth_reconciliation: Mapping[str, Any] | None = None,
+    synthesis_truth_reconciliation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    truth_enabled = any(
+        value is not None
+        for value in (
+            case_truth_packet,
+            cell_truth_reconciliation,
+            synthesis_truth_reconciliation,
+        )
+    )
+    _require(
+        not truth_enabled
+        or all(
+            value is not None
+            for value in (
+                case_truth_packet,
+                cell_truth_reconciliation,
+                synthesis_truth_reconciliation,
+            )
+        ),
+        "five_cell_report_truth_inputs_incomplete",
+    )
+    truth_receipts: dict[str, Any] = {}
+    if truth_enabled:
+        assert case_truth_packet is not None
+        assert cell_truth_reconciliation is not None
+        assert synthesis_truth_reconciliation is not None
+        trusted_packet = validate_case_truth_packet(
+            case_truth_packet, research_input=research_input
+        )
+        cell_document = compile_cell_judgment_claim_document(
+            {
+                "cells": structured_deliverable["cells"],
+                "judgment_output_digest": structured_deliverable[
+                    "judgment_output_digest"
+                ],
+            }
+        )
+        synthesis_document = compile_synthesis_claim_document(synthesis)
+        require_eligible_truth_reconciliation(
+            cell_truth_reconciliation,
+            case_truth_packet=trusted_packet,
+            claim_document=cell_document,
+        )
+        require_eligible_truth_reconciliation(
+            synthesis_truth_reconciliation,
+            case_truth_packet=trusted_packet,
+            claim_document=synthesis_document,
+        )
+        truth_receipts = {
+            "case_truth_packet_digest": trusted_packet[
+                "case_truth_packet_digest"
+            ],
+            "cell_truth_reconciliation_digest": cell_truth_reconciliation[
+                "truth_reconciliation_digest"
+            ],
+            "synthesis_truth_reconciliation_digest": (
+                synthesis_truth_reconciliation["truth_reconciliation_digest"]
+            ),
+        }
     evidence = {
         str(row["evidence_ref"]): row
         for row in research_input["evidence_cards"]
@@ -1020,8 +1155,23 @@ def compile_five_cell_report(
         str(row["gap_ref"]): row
         for row in research_input["residual_gap_cards"]
     }
+    rendering_authority = {
+        "model_authored_cells_and_synthesis": True,
+        "harness_rendered_identity_numeric_citations_and_gaps": True,
+        "harness_generated_research_conclusion": False,
+        "qualified_human_review_required": True,
+        "product_publication": False,
+    }
+    if truth_enabled:
+        rendering_authority[
+            "case_truth_reconciliation_required_and_passed"
+        ] = True
     unsigned = {
-        "schema_version": FIVE_CELL_REPORT_SCHEMA_VERSION,
+        "schema_version": (
+            FIVE_CELL_TRUTH_RECONCILED_REPORT_SCHEMA_VERSION
+            if truth_enabled
+            else FIVE_CELL_REPORT_SCHEMA_VERSION
+        ),
         "status": "five_cell_internal_research_report_compiled",
         "case_identity": deepcopy(research_input["case_identity"]),
         "research_question": research_input["objective"]["raw_question"],
@@ -1038,25 +1188,22 @@ def compile_five_cell_report(
             ],
             "remaining_gaps": [deepcopy(gaps[ref]) for ref in synthesis["remaining_gap_refs"]],
         },
-        "rendering_authority": {
-            "model_authored_cells_and_synthesis": True,
-            "harness_rendered_identity_numeric_citations_and_gaps": True,
-            "harness_generated_research_conclusion": False,
-            "qualified_human_review_required": True,
-            "product_publication": False,
-        },
+        "rendering_authority": rendering_authority,
         "known_boundary": (
             "This is an internal five-cell candidate report. Contract validity "
             "does not prove financial L1, absolute content quality, paired gain, "
             "qualified-human acceptance, generalization, S3 acceptance or release."
         ),
     }
+    if truth_enabled:
+        unsigned["truth_reconciliation_receipts"] = truth_receipts
     return {**unsigned, "report_digest": canonical_digest(unsigned)}
 
 
 __all__ = [
     "FIVE_CELL_REPORT_SCHEMA_VERSION",
     "FIVE_CELL_SYNTHESIS_SCHEMA_VERSION",
+    "FIVE_CELL_TRUTH_RECONCILED_REPORT_SCHEMA_VERSION",
     "FiveCellResearchError",
     "compile_five_cell_analysis_view",
     "compile_five_cell_analysis_messages",

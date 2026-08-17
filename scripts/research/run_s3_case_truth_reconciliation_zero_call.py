@@ -26,10 +26,14 @@ from retrieval.route_compiler import load_query_object_fact_route_policy
 from sec_agent.providers.deepseek_strict import project_deepseek_strict_tool
 from sec_agent.research.case_truth_reconciliation import (
     CaseTruthReconciliationError,
+    aggregate_case_truth_reconciliation_receipts,
+    compile_case_truth_reconciliation_analysis_messages,
     compile_case_truth_model_view,
     compile_case_truth_packet,
     compile_case_truth_reconciliation_submission,
+    compile_case_truth_reconciliation_submission_from_analysis,
     compile_cell_judgment_claim_document,
+    compile_claim_document_slice,
     compile_synthesis_claim_document,
     validate_case_truth_packet,
     validate_case_truth_reconciliation,
@@ -48,10 +52,10 @@ from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
 
 AUTHORITY_SCHEMA_VERSION = (
-    "fin_ia_s3_case_truth_reconciliation_zero_call_authority_v1_0"
+    "fin_ia_s3_case_truth_reconciliation_zero_call_authority_v1_1"
 )
 RESULT_SCHEMA_VERSION = (
-    "fin_ia_s3_case_truth_reconciliation_zero_call_result_v1_0"
+    "fin_ia_s3_case_truth_reconciliation_zero_call_result_v1_1"
 )
 
 
@@ -628,6 +632,173 @@ def run(authority_path: Path) -> dict[str, Any]:
     ):
         raise CaseTruthProofError("case_truth_proof_tool_projection_invalid")
 
+    direct_submission_chars = len(messages[1]["content"])
+    direct_tool_chars = len(
+        json.dumps(tool, ensure_ascii=False, sort_keys=True)
+    )
+    slice_documents = []
+    slice_receipts = []
+    split_contracts = []
+    for cell in r7_judgment["cells"]:
+        cell_id = str(cell["cell_id"])
+        surface_ids = [
+            str(row["claim_surface_id"])
+            for row in document["claim_surfaces"]
+            if row["cell_id"] == cell_id
+        ]
+        slice_document = compile_claim_document_slice(
+            document,
+            claim_surface_ids=surface_ids,
+        )
+        slice_payload = _eligible_fixture_payload(packet, slice_document)
+        if cell_id == "CELL::operating_performance":
+            _replace_assertions(
+                slice_payload,
+                f"{cell_id}::thesis_atom",
+                [
+                    {
+                        "truth_alias": revenue_alias,
+                        "asserted_state": "absent_from_current_case",
+                    }
+                ],
+            )
+        elif cell_id == "CELL::counterevidence":
+            _replace_assertions(
+                slice_payload,
+                f"{cell_id}::thesis_atom",
+                [
+                    {
+                        "truth_alias": order_alias,
+                        "asserted_state": "absent_from_current_case",
+                    },
+                    {
+                        "truth_alias": backlog_alias,
+                        "asserted_state": "absent_from_current_case",
+                    },
+                    {
+                        "truth_alias": bridge_alias,
+                        "asserted_state": "absent_from_current_case",
+                    },
+                ],
+            )
+        analysis_messages = compile_case_truth_reconciliation_analysis_messages(
+            case_truth_packet=packet,
+            claim_document=slice_document,
+        )
+        analysis_draft = json.dumps(
+            slice_payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        submission_messages, slice_tool = (
+            compile_case_truth_reconciliation_submission_from_analysis(
+                case_truth_packet=packet,
+                claim_document=slice_document,
+                analysis_draft=analysis_draft,
+            )
+        )
+        wire_slice_tool, slice_projection = project_deepseek_strict_tool(
+            slice_tool
+        )
+        item_contract = wire_slice_tool["function"]["parameters"][
+            "properties"
+        ]["surface_assertions"]
+        if not (
+            len(surface_ids) == 3
+            and item_contract["minItems"] == 3
+            and item_contract["maxItems"] == 3
+            and slice_projection["finance_contract_weakened"] is False
+            and len(analysis_messages[1]["content"])
+            < direct_submission_chars
+            and len(submission_messages[1]["content"])
+            < direct_submission_chars
+            and len(
+                json.dumps(slice_tool, ensure_ascii=False, sort_keys=True)
+            )
+            < direct_tool_chars
+        ):
+            raise CaseTruthProofError(
+                "case_truth_proof_split_contract_not_materially_smaller"
+            )
+        receipt = validate_case_truth_reconciliation(
+            slice_payload,
+            case_truth_packet=packet,
+            claim_document=slice_document,
+        )
+        slice_documents.append(slice_document)
+        slice_receipts.append(receipt)
+        split_contracts.append(
+            {
+                "cell_id": cell_id,
+                "claim_surface_ids": surface_ids,
+                "claim_document_digest": slice_document[
+                    "claim_document_digest"
+                ],
+                "analysis_user_chars": len(analysis_messages[1]["content"]),
+                "submission_user_chars": len(
+                    submission_messages[1]["content"]
+                ),
+                "canonical_tool_chars": len(
+                    json.dumps(slice_tool, ensure_ascii=False, sort_keys=True)
+                ),
+                "finance_contract_weakened": False,
+                "truth_reconciliation_digest": receipt[
+                    "truth_reconciliation_digest"
+                ],
+                "finding_codes": [
+                    row["finding_code"] for row in receipt["findings"]
+                ],
+            }
+        )
+
+    aggregate_receipt = aggregate_case_truth_reconciliation_receipts(
+        case_truth_packet=packet,
+        parent_claim_document=document,
+        slice_claim_documents=slice_documents,
+        slice_receipts=slice_receipts,
+    )
+    if not (
+        aggregate_receipt["claim_surfaces_checked"] == 15
+        and [
+            row["finding_code"] for row in aggregate_receipt["findings"]
+        ]
+        == expected_cell_findings
+        and not any(
+            row.get("truth_alias") == bridge_alias
+            for row in aggregate_receipt["findings"]
+        )
+    ):
+        raise CaseTruthProofError("case_truth_proof_slice_aggregate_drift")
+
+    missing_slice_failed = False
+    try:
+        aggregate_case_truth_reconciliation_receipts(
+            case_truth_packet=packet,
+            parent_claim_document=document,
+            slice_claim_documents=slice_documents[:-1],
+            slice_receipts=slice_receipts[:-1],
+        )
+    except CaseTruthReconciliationError as exc:
+        missing_slice_failed = (
+            exc.code
+            == "case_truth_receipt_aggregation_surface_coverage_invalid"
+        )
+    overlapping_slice_failed = False
+    try:
+        aggregate_case_truth_reconciliation_receipts(
+            case_truth_packet=packet,
+            parent_claim_document=document,
+            slice_claim_documents=[*slice_documents, slice_documents[0]],
+            slice_receipts=[*slice_receipts, slice_receipts[0]],
+        )
+    except CaseTruthReconciliationError as exc:
+        overlapping_slice_failed = (
+            exc.code == "case_truth_receipt_aggregation_surface_overlap"
+        )
+    if not (missing_slice_failed and overlapping_slice_failed):
+        raise CaseTruthProofError("case_truth_proof_slice_mutation_failed_open")
+
     consumer_policy = _json(paths["consumer_policy_ref"])
     kernel, planning, evidence, retrieval = _case_services()
     case_inputs = {"DELL": r7_input}
@@ -700,13 +871,17 @@ def run(authority_path: Path) -> dict[str, Any]:
         raise CaseTruthProofError("case_truth_proof_holdout_state_invalid")
 
     private_unsigned = {
-        "schema_version": "fin_ia_s3_case_truth_reconciliation_private_proof_v1_0",
+        "schema_version": "fin_ia_s3_case_truth_reconciliation_private_proof_v1_1",
         "run_id": authority["run_id"],
         "implementation_commit": commit,
         "r7_case_truth_packet": packet,
         "r7_case_truth_model_view": model_view,
         "r7_cell_claim_document": document,
         "r7_cell_reconciliation_receipt": r7_cell_receipt,
+        "r7_cell_slice_claim_documents": slice_documents,
+        "r7_cell_slice_reconciliation_receipts": slice_receipts,
+        "r7_cell_slice_aggregate_receipt": aggregate_receipt,
+        "split_analysis_submission_contracts": split_contracts,
         "r7_synthesis_claim_document": synthesis_document,
         "r7_synthesis_reconciliation_receipt": r7_synthesis_receipt,
         "case_packets": case_packets,
@@ -770,6 +945,8 @@ def run(authority_path: Path) -> dict[str, Any]:
             "cross_case_packet_reuse_failed_closed": cross_case_failed,
             "required_material_surface_cannot_silently_abstain": True,
             "unknown_alias_and_surface_digest_drift_fail_closed": True,
+            "missing_slice_failed_closed": missing_slice_failed,
+            "overlapping_slice_failed_closed": overlapping_slice_failed,
         },
         "tool_contract": {
             "provider_neutral_canonical_tool_name": tool["function"]["name"],
@@ -781,6 +958,32 @@ def run(authority_path: Path) -> dict[str, Any]:
             "compact_model_view_bound_to_full_packet_digest": True,
             "cell_hidden_fact_repetition_omitted_from_model_view": True,
         },
+        "split_analysis_submission_contract": {
+            "cell_slice_count": len(split_contracts),
+            "claim_surfaces_per_slice": 3,
+            "parent_claim_surfaces_covered": aggregate_receipt[
+                "claim_surfaces_checked"
+            ],
+            "direct_submission_user_chars": direct_submission_chars,
+            "direct_canonical_tool_chars": direct_tool_chars,
+            "largest_analysis_user_chars": max(
+                row["analysis_user_chars"] for row in split_contracts
+            ),
+            "largest_submission_user_chars": max(
+                row["submission_user_chars"] for row in split_contracts
+            ),
+            "largest_canonical_tool_chars": max(
+                row["canonical_tool_chars"] for row in split_contracts
+            ),
+            "analysis_and_submission_are_separate_calls": True,
+            "submission_does_not_receive_full_truth_catalog": True,
+            "local_aggregate_is_parent_digest_bound": True,
+            "aggregate_finding_codes": [
+                row["finding_code"]
+                for row in aggregate_receipt["findings"]
+            ],
+            "legitimate_product_profit_gap_preserved": True,
+        },
         "acceptance": {
             "case_presence_catalog_compiled": True,
             "cell_visibility_matrix_compiled": True,
@@ -790,6 +993,9 @@ def run(authority_path: Path) -> dict[str, Any]:
             "legitimate_product_profit_gap_preserved": True,
             "dell_mu_nvda_packet_compilation": True,
             "heterogeneous_holdout_mutation": True,
+            "five_cell_slice_compilation": True,
+            "analysis_submission_separation": True,
+            "parent_bound_slice_aggregation": True,
             "natural_semantic_extraction_proven": False,
             "r7_judgments_repaired": False,
             "r7_synthesis_repaired": False,
@@ -799,17 +1005,18 @@ def run(authority_path: Path) -> dict[str, Any]:
             "release_ready": False,
         },
         "next_decision": (
-            "A single natural low-thinking semantic reconciliation canary over "
-            "the immutable R7 claim surfaces is now justified. It must prove "
-            "exhaustive extraction of the three false absences while preserving "
-            "the legitimate product-profit bridge gap before any affected-node "
-            "successor authority is considered."
+            "A bounded natural successor over the two affected R7 cells is now "
+            "justified. Each cell must use one visible semantic-analysis call and "
+            "one non-thinking strict-submission call. It must detect all three "
+            "false absences and preserve the legitimate product-profit bridge gap "
+            "before the remaining three cells or any research repair is run."
         ),
         "known_boundary": (
             "This zero-call result proves deterministic truth-packet compilation, "
-            "local adjudication, transport projection and fail-closed downstream "
-            "gating. Fake semantic mappings are test fixtures, not natural model "
-            "quality or business truth. It does not repair R7, authorize a paid "
+            "slice compilation, analysis/submission separation, parent-bound local "
+            "aggregation, transport projection and fail-closed downstream gating. "
+            "Fake semantic mappings are test fixtures, not natural model quality "
+            "or business truth. It does not repair R7, itself authorize a paid "
             "successor, prove DELL content quality, generalization, S3, Workbench "
             "publication or release."
         ),

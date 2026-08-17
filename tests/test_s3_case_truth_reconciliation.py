@@ -24,10 +24,14 @@ from scripts.research.run_s3_case_truth_reconciliation_live import (
 from sec_agent.research.case_truth_reconciliation import (
     CASE_TRUTH_MODEL_VIEW_SCHEMA_VERSION,
     CaseTruthReconciliationError,
+    aggregate_case_truth_reconciliation_receipts,
+    compile_case_truth_reconciliation_analysis_messages,
     compile_case_truth_model_view,
     compile_case_truth_packet,
     compile_case_truth_reconciliation_submission,
+    compile_case_truth_reconciliation_submission_from_analysis,
     compile_cell_judgment_claim_document,
+    compile_claim_document_slice,
     compile_synthesis_claim_document,
     validate_case_truth_packet,
     validate_case_truth_reconciliation,
@@ -501,6 +505,150 @@ def test_reconciler_contract_is_exhaustive_and_fails_closed_on_drift(
     with pytest.raises(CaseTruthReconciliationError) as exc:
         validate_case_truth_packet(forged, research_input=research_input)
     assert exc.value.code == "case_truth_packet_binding_drift"
+
+
+def test_cell_slices_separate_analysis_submission_and_aggregate_exhaustively(
+    research_input: dict[str, object],
+    judgment_and_deliverable: tuple[dict[str, object], dict[str, object]],
+) -> None:
+    judgment, _ = judgment_and_deliverable
+    packet = compile_case_truth_packet(research_input)
+    parent = compile_cell_judgment_claim_document(judgment)
+    direct_messages, _ = compile_case_truth_reconciliation_submission(
+        case_truth_packet=packet,
+        claim_document=parent,
+    )
+    direct_chars = len(direct_messages[1]["content"])
+    revenue_alias = (
+        "TRUTH::FACET::operating_performance::"
+        "accelerated_compute_or_ai_infrastructure_revenue"
+    )
+    order_alias = "TRUTH::FACET::demand_volume_quality::ai_orders"
+    backlog_alias = "TRUTH::FACET::demand_volume_quality::ai_backlog"
+    bridge_alias = "TRUTH::BRIDGE::CR::GENERIC::PROFIT_BRIDGE_GAP"
+    documents = []
+    receipts = []
+    for cell_id in [row["cell_id"] for row in judgment["cells"]]:
+        surface_ids = [
+            row["claim_surface_id"]
+            for row in parent["claim_surfaces"]
+            if row["cell_id"] == cell_id
+        ]
+        document = compile_claim_document_slice(
+            parent,
+            claim_surface_ids=surface_ids,
+        )
+        assert document["parent_claim_document_digest"] == parent[
+            "claim_document_digest"
+        ]
+        assert len(document["claim_surfaces"]) == 3
+        analysis_messages = compile_case_truth_reconciliation_analysis_messages(
+            case_truth_packet=packet,
+            claim_document=document,
+        )
+        analysis_view = json.loads(analysis_messages[1]["content"])
+        assert len(analysis_view["claim_document"]["claim_surfaces"]) == 3
+        assert analysis_view["task"] == (
+            "analyze_case_truth_claim_slice_without_tool_submission"
+        )
+        submission_messages, tool = (
+            compile_case_truth_reconciliation_submission_from_analysis(
+                case_truth_packet=packet,
+                claim_document=document,
+                analysis_draft=(
+                    "Prepared mapping for the three supplied surfaces; every "
+                    "alias and state remains bound to the immutable truth view."
+                ),
+            )
+        )
+        submission_view = json.loads(submission_messages[1]["content"])
+        assert "case_truth_packet" not in submission_view
+        assert submission_view["case_truth_packet_digest"] == packet[
+            "case_truth_packet_digest"
+        ]
+        assert len(submission_messages[1]["content"]) < direct_chars
+        items = tool["function"]["parameters"]["properties"][
+            "surface_assertions"
+        ]
+        assert items["minItems"] == items["maxItems"] == 3
+
+        payload = _eligible_reconciliation(packet, document)
+        if cell_id == "CELL::operating_performance":
+            _set_assertions(
+                payload,
+                f"{cell_id}::thesis_atom",
+                [
+                    {
+                        "truth_alias": revenue_alias,
+                        "asserted_state": "absent_from_current_case",
+                    }
+                ],
+            )
+        elif cell_id == "CELL::counterevidence":
+            _set_assertions(
+                payload,
+                f"{cell_id}::thesis_atom",
+                [
+                    {
+                        "truth_alias": order_alias,
+                        "asserted_state": "absent_from_current_case",
+                    },
+                    {
+                        "truth_alias": backlog_alias,
+                        "asserted_state": "absent_from_current_case",
+                    },
+                    {
+                        "truth_alias": bridge_alias,
+                        "asserted_state": "absent_from_current_case",
+                    },
+                ],
+            )
+        receipts.append(
+            validate_case_truth_reconciliation(
+                payload,
+                case_truth_packet=packet,
+                claim_document=document,
+            )
+        )
+        documents.append(document)
+
+    aggregate = aggregate_case_truth_reconciliation_receipts(
+        case_truth_packet=packet,
+        parent_claim_document=parent,
+        slice_claim_documents=documents,
+        slice_receipts=receipts,
+    )
+    assert aggregate["claim_surfaces_checked"] == 15
+    assert aggregate["surface_assertion_count"] == 17
+    assert aggregate["downstream_eligible"] is False
+    assert [row["finding_code"] for row in aggregate["findings"]] == [
+        "asserted_absent_but_present_in_case",
+        "asserted_absent_but_present_in_case",
+        "asserted_absent_but_present_in_case",
+    ]
+    assert not any(
+        row["truth_alias"] == bridge_alias for row in aggregate["findings"]
+    )
+
+    with pytest.raises(CaseTruthReconciliationError) as exc:
+        aggregate_case_truth_reconciliation_receipts(
+            case_truth_packet=packet,
+            parent_claim_document=parent,
+            slice_claim_documents=documents[:-1],
+            slice_receipts=receipts[:-1],
+        )
+    assert exc.value.code == (
+        "case_truth_receipt_aggregation_surface_coverage_invalid"
+    )
+
+    with pytest.raises(CaseTruthReconciliationError) as exc:
+        aggregate_case_truth_reconciliation_receipts(
+            case_truth_packet=packet,
+            parent_claim_document=parent,
+            slice_claim_documents=documents + [documents[0]],
+            slice_receipts=receipts + [receipts[0]],
+        )
+    assert exc.value.code == "case_truth_receipt_aggregation_surface_overlap"
 
 
 def test_truth_reconciliation_gates_synthesis_and_final_report(

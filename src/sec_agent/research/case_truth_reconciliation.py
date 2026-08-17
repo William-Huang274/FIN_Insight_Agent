@@ -656,6 +656,155 @@ def compile_cell_judgment_claim_document(
     return {**unsigned, "claim_document_digest": canonical_digest(unsigned)}
 
 
+def compile_claim_document_slice(
+    claim_document: Mapping[str, Any],
+    *,
+    claim_surface_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Compile an immutable subset without changing parent claim semantics."""
+
+    document_digest = str(claim_document.get("claim_document_digest") or "")
+    _require(
+        document_digest
+        and document_digest
+        == canonical_digest(
+            {
+                key: deepcopy(value)
+                for key, value in claim_document.items()
+                if key != "claim_document_digest"
+            }
+        ),
+        "case_truth_slice_parent_document_invalid",
+    )
+    requested = _strings(
+        claim_surface_ids,
+        "case_truth_slice_surface_ids_invalid",
+    )
+    _require(
+        len(requested) == len(set(requested)),
+        "case_truth_slice_surface_ids_invalid",
+    )
+    surfaces = {
+        str(row["claim_surface_id"]): row
+        for row in _rows(
+            claim_document.get("claim_surfaces"),
+            "case_truth_claim_surfaces_invalid",
+        )
+    }
+    _require(
+        set(requested).issubset(surfaces),
+        "case_truth_slice_surface_unknown",
+    )
+    selected = [deepcopy(surfaces[surface_id]) for surface_id in requested]
+    unsigned = {
+        "schema_version": CASE_TRUTH_DOCUMENT_SCHEMA_VERSION,
+        "document_kind": f"{claim_document.get('document_kind')}_slice",
+        "binding_digest": str(claim_document.get("binding_digest") or ""),
+        "parent_claim_document_digest": document_digest,
+        "claim_surfaces": selected,
+    }
+    return {**unsigned, "claim_document_digest": canonical_digest(unsigned)}
+
+
+def compile_case_truth_reconciliation_analysis_messages(
+    *,
+    case_truth_packet: Mapping[str, Any],
+    claim_document: Mapping[str, Any],
+) -> tuple[dict[str, str], ...]:
+    """Ask for visible semantic analysis without a simultaneous Tool Call."""
+
+    surfaces = _rows(
+        claim_document.get("claim_surfaces"),
+        "case_truth_claim_surfaces_invalid",
+    )
+    _require(
+        1 <= len(surfaces) <= 3,
+        "case_truth_analysis_slice_size_invalid",
+    )
+    view = {
+        "task": "analyze_case_truth_claim_slice_without_tool_submission",
+        "case_truth_packet": compile_case_truth_model_view(case_truth_packet),
+        "claim_document": deepcopy(dict(claim_document)),
+        "required_visible_draft_format": [
+            "One section per claim_surface_id, in supplied order.",
+            "For every material assertion, write the exact truth_alias and one exact state: present_in_current_case, absent_from_current_case, not_visible_in_current_cell, or unresolved_or_partially_covered.",
+            "Split bundled assertions; explicitly retain legitimate typed gaps or bridge boundaries.",
+            "Do not repair, rewrite or improve the research claim.",
+            "Do not call a tool in this analysis step.",
+        ],
+    }
+    return (
+        {
+            "role": "system",
+            "content": (
+                "You are a semantic case-truth analyst, not a financial writer. "
+                "Analyze only the supplied claim slice against the immutable truth "
+                "aliases. Produce a concise visible mapping draft. Do not call tools, "
+                "repair prose, add facts or decide whether the report should pass."
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                view, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ),
+        },
+    )
+
+
+def compile_case_truth_reconciliation_submission_from_analysis(
+    *,
+    case_truth_packet: Mapping[str, Any],
+    claim_document: Mapping[str, Any],
+    analysis_draft: str,
+) -> tuple[tuple[dict[str, str], ...], dict[str, Any]]:
+    """Map an already-visible analysis draft into the canonical strict tool."""
+
+    draft = str(analysis_draft or "").strip()
+    _require(
+        24 <= len(draft) <= 12000,
+        "case_truth_analysis_draft_invalid",
+    )
+    _direct_messages, tool = compile_case_truth_reconciliation_submission(
+        case_truth_packet=case_truth_packet,
+        claim_document=claim_document,
+    )
+    submission_view = {
+        "task": "submit_prepared_case_truth_mapping_only",
+        "case_truth_packet_digest": case_truth_packet["case_truth_packet_digest"],
+        "claim_document": deepcopy(dict(claim_document)),
+        "analysis_draft": draft,
+        "rules": [
+            "Map the prepared analysis exactly; do not re-analyze or repair research.",
+            "Return every supplied claim surface exactly once.",
+            "Use only aliases and states already named in the prepared analysis.",
+            "Call submit_case_truth_reconciliation exactly once and add no prose.",
+        ],
+    }
+    return (
+        (
+            {
+                "role": "system",
+                "content": (
+                    "You are a low-complexity contract submission node. Map the "
+                    "prepared semantic analysis into the supplied strict tool exactly "
+                    "once. Do not perform new research or rewrite any claim."
+                ),
+            },
+            {
+                "role": "user",
+                "content": json.dumps(
+                    submission_view,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+            },
+        ),
+        tool,
+    )
+
+
 def compile_synthesis_claim_document(
     synthesis: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -1100,6 +1249,149 @@ def validate_case_truth_reconciliation(
     }
 
 
+def aggregate_case_truth_reconciliation_receipts(
+    *,
+    case_truth_packet: Mapping[str, Any],
+    parent_claim_document: Mapping[str, Any],
+    slice_claim_documents: Sequence[Mapping[str, Any]],
+    slice_receipts: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Aggregate disjoint slice receipts into one parent-bound receipt."""
+
+    packet_digest = str(case_truth_packet.get("case_truth_packet_digest") or "")
+    parent_digest = str(parent_claim_document.get("claim_document_digest") or "")
+    _require(
+        packet_digest
+        and parent_digest
+        and packet_digest
+        == canonical_digest(
+            {
+                key: deepcopy(value)
+                for key, value in case_truth_packet.items()
+                if key != "case_truth_packet_digest"
+            }
+        )
+        and parent_digest
+        == canonical_digest(
+            {
+                key: deepcopy(value)
+                for key, value in parent_claim_document.items()
+                if key != "claim_document_digest"
+            }
+        )
+        and len(slice_claim_documents) == len(slice_receipts)
+        and bool(slice_receipts),
+        "case_truth_receipt_aggregation_binding_invalid",
+    )
+    parent_surfaces = {
+        str(row["claim_surface_id"]): row
+        for row in _rows(
+            parent_claim_document.get("claim_surfaces"),
+            "case_truth_claim_surfaces_invalid",
+        )
+    }
+    covered: dict[str, Mapping[str, Any]] = {}
+    findings: list[dict[str, Any]] = []
+    slice_bindings = []
+    assertion_count = 0
+    for document, receipt in zip(
+        slice_claim_documents,
+        slice_receipts,
+        strict=True,
+    ):
+        document_digest = str(document.get("claim_document_digest") or "")
+        receipt_unsigned = {
+            key: deepcopy(value)
+            for key, value in receipt.items()
+            if key != "truth_reconciliation_digest"
+        }
+        _require(
+            document.get("parent_claim_document_digest") == parent_digest
+            and document_digest
+            == canonical_digest(
+                {
+                    key: deepcopy(value)
+                    for key, value in document.items()
+                    if key != "claim_document_digest"
+                }
+            )
+            and receipt.get("schema_version")
+            == CASE_TRUTH_RECONCILIATION_SCHEMA_VERSION
+            and receipt.get("case_truth_packet_digest") == packet_digest
+            and receipt.get("claim_document_digest") == document_digest
+            and receipt.get("truth_reconciliation_digest")
+            == canonical_digest(receipt_unsigned),
+            "case_truth_receipt_aggregation_slice_invalid",
+        )
+        for row in _rows(
+            receipt.get("surface_assertions"),
+            "case_truth_receipt_aggregation_surfaces_invalid",
+        ):
+            surface_id = str(row.get("claim_surface_id") or "")
+            _require(
+                surface_id in parent_surfaces and surface_id not in covered,
+                "case_truth_receipt_aggregation_surface_overlap",
+            )
+            covered[surface_id] = deepcopy(row)
+        findings.extend(
+            deepcopy(
+                _rows(
+                    receipt.get("findings"),
+                    "case_truth_receipt_aggregation_findings_invalid",
+                )
+            )
+        )
+        assertion_count += int(receipt.get("surface_assertion_count") or 0)
+        slice_bindings.append(
+            {
+                "claim_document_digest": document_digest,
+                "truth_reconciliation_digest": receipt[
+                    "truth_reconciliation_digest"
+                ],
+                "downstream_eligible": bool(receipt.get("downstream_eligible")),
+            }
+        )
+    _require(
+        set(covered) == set(parent_surfaces),
+        "case_truth_receipt_aggregation_surface_coverage_invalid",
+    )
+    trusted_surfaces = [covered[surface_id] for surface_id in parent_surfaces]
+    eligible = not findings
+    unsigned = {
+        "schema_version": CASE_TRUTH_RECONCILIATION_SCHEMA_VERSION,
+        "status": (
+            "case_truth_reconciled"
+            if eligible
+            else "case_truth_reconciliation_blocked"
+        ),
+        "case_truth_packet_digest": packet_digest,
+        "claim_document_kind": str(
+            parent_claim_document.get("document_kind") or ""
+        ),
+        "claim_document_binding_digest": str(
+            parent_claim_document.get("binding_digest") or ""
+        ),
+        "claim_document_digest": parent_digest,
+        "surface_assertion_count": assertion_count,
+        "claim_surfaces_checked": len(trusted_surfaces),
+        "surface_assertions": trusted_surfaces,
+        "findings": findings,
+        "downstream_eligible": eligible,
+        "slice_receipts": slice_bindings,
+        "authority": {
+            "semantic_classifier_created_financial_truth": False,
+            "semantic_classifier_authored_or_repaired_research": False,
+            "local_case_truth_adjudication_is_final": True,
+            "qualified_human_content_review_still_required": True,
+            "slice_aggregation_changed_semantic_assertions": False,
+        },
+    }
+    return {
+        **unsigned,
+        "truth_reconciliation_digest": canonical_digest(unsigned),
+    }
+
+
 def require_eligible_truth_reconciliation(
     receipt: Mapping[str, Any],
     *,
@@ -1137,9 +1429,13 @@ __all__: Sequence[str] = (
     "CaseTruthReconciliationError",
     "compile_case_truth_packet",
     "compile_case_truth_model_view",
+    "compile_claim_document_slice",
+    "compile_case_truth_reconciliation_analysis_messages",
     "compile_case_truth_reconciliation_submission",
+    "compile_case_truth_reconciliation_submission_from_analysis",
     "compile_cell_judgment_claim_document",
     "compile_synthesis_claim_document",
+    "aggregate_case_truth_reconciliation_receipts",
     "require_eligible_truth_reconciliation",
     "validate_case_truth_packet",
     "validate_case_truth_reconciliation",

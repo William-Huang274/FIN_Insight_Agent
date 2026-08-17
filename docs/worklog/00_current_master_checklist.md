@@ -17,6 +17,12 @@
   - [x] 同候选 BGE／Qwen Reranker 与独立 Evidence Role＋abstain（Qwen reranker 仅 shadow；Role F1=0.5818，拒绝上线）
 - [x] S1-C 保存 Planner 10 atoms 产品输入审计（10→8+2；8 request／128 candidates／19 resolved／9 typed gap／45 NumericFacts；逐 facet 归责完成）
 - [x] S1-D 本轮有界 residual-gap 补源与 DELL Evidence Pack 复编译（TSM 2 条 bounded Evidence；Dell 官方 transcript 3 条 direct Evidence；当前 DELL 20 Evidence／14 gaps；MU/NVDA 不变；S1 总产品门仍开）
+- [x] S1 全链标准范式与独立评测完成定义（source/capture→OCR/parser/cleaning→chunk/object→index→query/recall/rerank/fine-rank→Evidence/Coverage/gap；文档冻结，Runtime 未完成）
+- [ ] S1-A–S1-J 当前实现／消费者／评测覆盖矩阵与 program tickets
+- [ ] S1 source／OCR／parser／table／chunk／object 数据地基独立资格
+- [ ] S1 query／route／recall／rerank／金融精排／Evidence admission 独立资格
+- [ ] S1 Coverage／第二轮补证／gap 资格／Workbench 可观测闭环
+- [ ] S1 frozen test／新异质留出／稳定性资格；通过前不得执行产品资格完整真实链
 - [x] 当前 Pack registry-atomic 提升（R11；按案例私有对象根；0 复制／0 网络／0 模型；Workbench 三案真实挂载复验通过）
 - [x] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归（engineering pass）
 - [x] S2 request-scoped Runtime 接入（真实 DELL 6/6 resolved；S3／前端消费未完成）
@@ -49,7 +55,7 @@
     - [x] 只复用成功前缀的 counter/WWC 分析＋交卷 successor；R3 自然完成三片段与终态，未重跑前五个成功节点
     - [x] RC-S3-028 时间关系工程修复：TemporalAuthority、真实 R3 replay、三案 mutation、一次性 repair compiler 与正式 zero-call decision gate 通过
     - [x] RC-S3-028 唯一 live 关闭：一次 counter 同片段非思考交卷完成，独立 L1 与适用内容质量通过
-  - [ ] S1 reviewed Pack↔当前检索对象库／来源路由同步（Dell transcript 已审但动态不可发现；MU/NVDA 当前请求 0 reviewed match）
+  - [x] S1 reviewed Pack↔当前检索对象库／来源路由同步（Dell／TSMC transcript 已进入 current object store；MU／NVDA 等价自然动态链与 S1 总产品门仍开）
 - [x] DELL `value_capture` 单单元动态 Agentic Research（自然 planner→当前 S1/S2→三片段→一次有界 repair；L1 与适用内容质量 21/24）
 - [ ] DELL 五单元动态案例、底稿与报告验收
 - [ ] MU／NVDA 同核心迁移与三案例 S1–S3 内容质量验收

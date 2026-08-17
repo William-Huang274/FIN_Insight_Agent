@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、reviewed source 同步和有限 S2 依赖回归均已关闭。DELL R7 已首次物化五个 contract-valid Judgment、跨单元综合和完整内部报告，但内容验收发现 Operating／Counterevidence 把当前 Case 已存在的 AI revenue、orders、backlog 写成缺失，综合又把错误前提升级为 conflict，因此 R7 保持 `report contract pass / financial truth reconciliation fail`。provider-neutral Case Truth 合同与 cell slice／analysis-submission 分离均已正式零调用通过。两单元 natural slice R1 随后执行，但 Operating／Counterevidence 的 `thinking=max` 分析分别把 16,000 completion token 全部耗作 reasoning，完整 HTTP 200、零可见 content，两个 submission 未执行；这不是网络或内容错判，而是 bounded semantic classification 与 max-thinking profile 不匹配。当前只允许保持合同和输入不变、把 visible analysis 换成最多 4k 的 non-thinking profile 后做 fresh 两单元 successor；不得加 token、重跑上游或进入其他单元。R7 修复、DELL 内容验收、paired、qualified-human 与异质泛化仍未通过。
+Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。标准与评测合同已写入 PRD、技术范式和独立 S1 eval，但 Runtime、gold／split、异质留出和资格尚未实现。DELL fixed-Pack 第一层、`value_capture` 动态单单元、reviewed source 同步和有限 S2 回归仍保持已关闭；R7 仍是 `report contract pass / financial truth reconciliation fail`，RC-S3-043 也保持开放。当前下一步是 S1-A–S1-J 实现／消费者／评测覆盖矩阵和第一确定性修复切片；S1 独立资格稳定前不运行用于产品资格的完整真实链，也不以任何局部 case／node live 追认 S1。
 
 ## 当前唯一产品边界
 
@@ -87,9 +87,9 @@ FIN 0.1.3 的 fixed-Pack 第一层、DELL `value_capture` 动态单单元、revi
 
 ## 当前下一步
 
-Owner 已批准从第一层连续推进到 S3 三案例验收；每一层仍需独立工程、L1 与内容门：`FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_ONE → Research Truth Spine → DELL dynamic single cell → DELL five cells → heterogeneous generalization report`
+Owner 早先批准的 S3 连续路径及其历史 attempt 均保持不可变，但最新 S1 更正改变了当前执行优先级，不再立即签发两单元 successor 或三案例完整链。当前程序为：`S1-A–S1-J 实现／消费者／评测覆盖矩阵 → split-safe gold／negative／mutation 资产 → CoverageState／candidate ledger／binding／capture-bound promotion 第一切片 → 按最早责任层补齐数据与检索门 → S1 frozen test／异质留出／稳定资格 → 完整真实 user→S3→S1→S2→S3→S4`。
 
-截至 2026-08-17，前三层已关闭；DELL R7 保留为不可变的首份完整但内容未通过报告。RC-S3-038 的确定性 Case Truth 工程门与 RC-S3-039 的 cell slice／分析交卷分离工程门均已由 formal R3 关闭；15-surface natural R1 与两单元 slice R1 均因 thinking budget exhaustion 终止，后者两次 16k reasoning、0 visible、只用 `2/4` 调用。当前只允许把语义分析 profile 改为 non-thinking、最多 4k 后做 fresh 同输入 successor；通过后才考虑其余三 cell 与受影响 Judgment／Synthesis。Demand、Value、Cash、Planner、S1/S2、五个研究 analysis 和 R7 报告继续按 digest 保留，不因语义节点失败重跑。
+DELL R7 继续作为不可变的首份完整但内容未通过报告；RC-S3-038／043 与历史 Case Truth natural 结果继续保留，不被 S1 工作追认或关闭。S1 未资格化期间，可单独签发的 deterministic／shadow／node canary 必须明确为诊断，不能声称 S1、三案例泛化、完整产品链或 release。
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。
 
@@ -471,3 +471,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - `source_temporarily_unreachable`、`not_yet_searched`、`budget_insufficient_for_required_route` 不是公开信息不存在。每个真实 gap 必须带本地查询、官方／外源路线、candidate 决策、可达性和最后检查时间的 `GapEligibilityReceipt`。
 - 从现在起每个自然模型节点和 paid authority 必须保存 `TokenBudgetBasis`：任务、输入、必交付项、schema、materiality／质量风险、历史 usage、profile、安全余量和停止／截断语义。成本／延迟只能作为二级约束；不得静默删题或用预算不足制造业务 gap。
 - 本轮只同步 PRD、S1 技术范式、当前计划、Project OS 和工作记录；没有改 Runtime、索引、Pack、模型或历史 attempt。下一步是有界实现设计与确定性验收，不是全面重建向量库或自动签发 full-chain live。
+
+## 2026-08-17 S1 最终完成定义与独立评测 Owner 更正
+
+- Owner 明确：CoverageState／候选账本／binding／capture-bound promotion 只是第一修复切片；S1 结束时必须产出从 source capture、HTML／PDF／OCR／表格解析与清洗、chunk／金融对象化、存储／索引、QueryFacetPlan、候选召回、语义重排、金融精排／Evidence Role、Evidence Gate、Coverage／补证到 gap／replay 的完整标准范式、当前主线实现和资格报告。
+- DELL／MU／NVDA 是开发和业务回归案例，不是 S1 交付物；ORCL／ASML／ANET 等已观察案例也不能冒充最终隐藏测试。最终资格须预注册覆盖跨行业、来源形态、语言、关系方向、资料充分度和故障类型的新异质留出案例。
+- 新的 S1 独立评测继承项目 L0–L5、Financial Truth、Evidence Authority、对抗测试和研究内容上游 ceiling，并增加 source／capture、OCR／parser、chunk／object、query／route、candidate ceiling、recall、rerank、finance-aware fine-rank、Evidence promotion、Coverage／gap、下游可用性、稳定性／资源与泛化门。身份、期间、单位、locator、跨案污染、critical false promotion 和 false gap 等硬门不可由平均分补偿。
+- 只有 S1 标准范式、独立 hard/performance gates、异质留出和稳定复证通过后，才允许用于产品资格的完整真实 `user→S3→S1→S2→S3 report→S4 Workbench`。此前节点 live 只能明确标为 deterministic／shadow／canary／diagnostic，不能追认 S1 或完整产品链通过。
+- 权威评测文件：`docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md`。当前状态仍为 `standard_and_eval_contract_documented / runtime_and_qualification_pending / full_product_chain_blocked`；本轮 0 Runtime／index／model／Provider／network／source promotion／full-chain。

@@ -1,9 +1,9 @@
-# FIN 0.1.3 S1 证据获取、反驳补证与 Evidence Pack 质量范式
+# FIN 0.1.3 S1 数据清洗、检索、证据获取与 Evidence Pack 质量标准范式
 
 日期：2026-08-17
 
-状态：`architecture_decision / runtime_not_implemented / read_only_audit_complete / owner_bounded_first_repair_direction_accepted`
-产品依据：`docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md` 16.38–16.39
+状态：`architecture_decision / full_stack_standard_scope_corrected / runtime_not_implemented / read_only_audit_complete`
+产品依据：`docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md` 16.38–16.41
 
 ## 1. 为什么需要本范式
 
@@ -17,7 +17,7 @@
 - dense／reranker 能补充 BM25 漏项，但也会把主题相近、证据角色错误的材料推到前列；
 - S3 能记录补证提案，但过去多条路径停在候选或 reviewed-only response，模型没有获得“检索—评估—发现残余缺口—反驳—再检索”的闭环。
 
-因此，S1 的交付物不应定义为“若干候选”或“若干抓取成功网页”，而应定义为对当前研究命题可审计的 Evidence Pack Readiness。
+因此，S1 的交付物不应定义为“若干候选”“若干抓取成功网页”或“三个案例得到一份 Pack”。S1 的最终交付是从原始金融资料到 task-relative Evidence Pack Readiness 的一套标准范式、当前主线实现和独立资格报告；DELL、MU、NVDA 只是验证这套范式的开发／回归样本。
 
 ## 2. 阶段责任
 
@@ -55,15 +55,19 @@ S2 继续独立提供 NumericFact、period／unit／PIT、公式和 product-to-f
 ## 3. 标准数据流
 
 ```text
+source registry / route plan
+  → capture-first raw source acquisition
+  → HTML / PDF / OCR / table / feed parsing
+  → normalization, deduplication and temporal/source identity
+  → parent / section / claim / table / metric-row / context objects
+  → versioned sparse / dense / graph indexes + S2 SQL sibling
 Evidence Need
   → EvidenceRequest
   → QueryFacetPlan
-  → route-specific queries
-  → capture-first source acquisition
-  → parent/claim/table/context objects
-  → sparse/dense/graph/SQL candidate union
-  → structural filtering and ranking
-  → Evidence Role / directness / owner / period evaluation
+  → exact / lexical / semantic / graph / SQL / official / external recall
+  → structural filters and candidate union
+  → semantic reranking
+  → finance-aware fine ranking / Evidence Role / directness / owner / period
   → EvidenceDecision
   → proposition-level EvidenceCoverageState
   → material gap or counter-hypothesis
@@ -72,6 +76,32 @@ Evidence Need
 ```
 
 该流转允许多轮，但每轮必须有明确的 gap、预期信息增量和停止条件。不得用“继续搜索”作为默认动作。
+
+### 3.1 S1 子阶段与边界
+
+| 子阶段 | 必须解决的问题 | 标准输出 | 不得偷换为 |
+|---|---|---|---|
+| S1-A Source／Capture | 来源是谁、何时发布、能否合法取得、原始响应是否完整 | 不可变 capture、source identity、route／transport receipt | 搜索摘要或临时网页文本 |
+| S1-B Parse／Clean | HTML、PDF、扫描 PDF、表格、feed 如何还原，质量是否足够 | 版面／页码／坐标／OCR 置信度、表格与脚注、typed parse status | 静默缺页、乱码或错表仍标 success |
+| S1-C Chunk／Object | 什么是可检索、可引用、可扩上下文的金融对象 | parent／section／claim／table／metric-row／context 与 lineage | 固定字符切块或无父级上下文片段 |
+| S1-D Store／Index | 当前对象是否完整进入索引、图和 SQL sibling，版本是否一致 | object manifest、index coverage、digest、rebuild／rollback 入口 | 历史缓存存在即视为当前可用 |
+| S1-E Query／Route | 当前命题应查谁、什么期间、什么关系和哪类来源 | EvidenceRequest、QueryFacetPlan、route plan | 固定 17 题或偷塞标准答案 URL |
+| S1-F Recall | 所需资料能否进入可解释候选池 | route-scoped candidates、ceiling、target-in-pool、route contribution | 用 reranker 掩盖 0 有效候选 |
+| S1-G Rerank | 候选与请求语义是否相关，头部是否更稳定 | 同候选池排序、hard-negative 与稳定性报告 | Evidence 权威决定 |
+| S1-H Fine Rank／Evidence Eval | 候选能否以何种证据角色服务当前命题 | role／directness／owner／period／source authority、abstain、review decision | 单一 embedding／reranker 分数自动晋升 |
+| S1-I Coverage／Supplement | 已知、未知、反方和下一合法路线是什么 | CoverageState、CandidateDecision、GapEligibilityReceipt、补证增量 | 网页数、Evidence 数或通用 gap |
+| S1-J Observability／Qualification | 每层能否重放、解释、比较和稳定运行 | stage receipts、metrics、resource／budget basis、qualification report | 一次成功 case 或 full-chain 日志 |
+
+这些名称表达责任层，不要求每层各有一个独立模型或服务。实现可以合并相邻计算，但合同、指标和故障归责不能合并成一个不可解释总分。
+
+### 3.2 OCR、表格和 chunk 的最低合同
+
+- 扫描 PDF 先做页面级可读性检测，再决定 text extraction 或 OCR；OCR 结果必须保存页码、坐标、语言、置信度和原始页面回指。
+- material 数字、单位、期间、表头、合并单元格和脚注必须有独立准确性检查。低置信度数字不能直接进入 S2，低质量正文不能静默进入 Evidence。
+- HTML／PDF／transcript／feed 使用各自 parser，但输出到同一 source-bound 对象合同；第三方解析库只负责候选解析，FIN 本地 adjudicator 负责发布日期、期间和来源身份。
+- chunk 以金融语义边界优先：标题／段落／列表／表格／脚注／发言人／问答回合／claim；长度上限只用于二次拆分。每个 child 必须可回到 parent、source locator 和相邻上下文。
+- 表格既生成保留结构的 table object，也可生成检索用 metric-row／row-group object；后者只是候选，不自动成为 NumericFact。
+- 去重必须区分完全重复、同源多片段、修订／重述、同内容不同 locator 和跨期相似披露；不得把有业务意义的期间差异去掉。
 
 ## 4. Evidence Need 与 CoverageState
 
@@ -172,9 +202,37 @@ S1 中任何模型辅助的查询生成、候选评估、反方生成、Evidence
 
 成本、延迟和调用次数只作为二级约束。不得因为固定 token 上限静默删掉命题、候选、反方或第二轮路线；容量不足时必须确定性分批、按 materiality 做 typed deferral，或返回 `budget_insufficient_for_required_scope`。开放分析与严格交卷应分别估算，不能让交卷预算替代研究预算，也不能看到一次耗尽就无依据扩大上限。全局细则以 `docs/project_os/token_budget_policy.zh-CN.md` 为准。
 
-## 9. 质量门
+## 9. S1 最终必交付物
 
-### Gate A：请求质量
+S1 结束不能只留下实现代码或测试数字，必须同时具备：
+
+1. **标准范式**：本文覆盖的 source／capture、OCR／parser／cleaning、chunk／object、store／index、query／route、recall、rerank、fine-rank／Evidence evaluator、Coverage／supplement 和 observability 合同均有当前版本与 owner stage。
+2. **当前主线实现**：每项标准能指向活动树中的唯一生产入口、配置编译源和真实消费者；shadow、历史脚本、fixture 和 archive 不算实现。
+3. **数据与模型资产清单**：parser、OCR、chunk policy、对象 schema、index snapshot、embedding／reranker profile、SQL／graph sibling、source route 和依赖版本均内容寻址、可重建、可回滚。
+4. **独立评测资产**：train-internal、validation、frozen test／holdout 的 source、page、table、chunk、query、candidate、hard-negative、Evidence Role、gap 和 mutation gold；标签与模型可见输入物理分离。
+5. **逐层资格报告**：不只报总分，必须按最早责任层列出业务错例、ceiling、修复影响、未通过项、外部边界和是否允许下游。
+6. **Workbench／Operations 消费者**：可查看 source→object→query→candidate→decision→Coverage→Pack 的 lineage、拒绝理由、typed failure、版本和差异，不靠一次性脚本解释主链。
+7. **稳定性与关闭声明**：确定性 replay、排列／重复／跨案例／错期／解析失败 mutation、资源与 TokenBudgetBasis 通过；开放问题明确留在 S1、S2 或 S3，不用完整 Agent 报告掩盖。
+
+DELL／MU／NVDA 的作用是验证这些交付物能否处理三种不同业务和资料形态；它们不是标准范式本身。ORCL／ASML／ANET 等已经被开发过程观察，只能做回归，不得继续冒充最终隐藏资格集。
+
+## 10. 质量门
+
+### Gate 0：来源、解析与清洗质量
+
+- capture 完整、不可变、身份／日期／文档类型／语言／格式可审计；
+- HTML／PDF／OCR／table parser 的失败、缺页、乱码、低置信度和日期冲突 typed；
+- accepted 对象中 material 数字、单位、期间、表头和脚注无静默损坏；
+- 原始 source locator、页码／坐标、对象和最终 Evidence lineage 连续。
+
+### Gate 1：chunk／对象／索引质量
+
+- claim、table、metric-row、context 与 parent 边界不截断核心语义；
+- 父子上下文、发言人、被谈及实体、期间和 source role 绑定正确；
+- 安全港、导航、联系人、重复页和跨期模板不会系统性占据对象池；
+- current object manifest 与 sparse／dense／graph／SQL sibling 覆盖一致，缓存漂移 fail closed。
+
+### Gate 2：请求质量
 
 - Case、主体、截至日、期间和关系方向正确；
 - Evidence Need 类型明确；
@@ -182,29 +240,32 @@ S1 中任何模型辅助的查询生成、候选评估、反方生成、Evidence
 - 禁止代理、预算和停止条件明确；
 - 不偷塞标准答案 URL 或跨案事实。
 
-### Gate B：候选覆盖与来源可达
+### Gate 3：候选覆盖与来源可达
 
 - required facet 的 target-in-pool／candidate ceiling 可解释；
 - 内源、官方、外源各 route 的边际贡献可见；
 - 来源权威、新鲜度、语言和文档形态覆盖适合当前任务；
 - 不能用 reranker 从 0 个有效候选中“救回”不存在的资料。
 
-### Gate C：对象与排序质量
+### Gate 4：召回、重排与头部稳定性
 
-- claim／table／context 与父级上下文完整；
 - 发行人、披露方、被谈及实体和关系方向正确；
 - 期间与发布日期不混淆；
 - hard negative、主题共现、导航垃圾和安全港不会稳定占据头部；
 - 排名报告同时解释具体业务错误，不只报 Recall／MRR。
+- 重排只在真目标已经进入候选池后验收；若 candidate ceiling 不足，先回到 Gate 0–3；
+- dense／reranker 的增益必须对同一候选边界、相同过滤条件和预注册 split 成立，不能用 valid／test 泄漏调参。
 
-### Gate D：Evidence 晋升质量
+### Gate 5：金融精排与 Evidence 晋升质量
 
 - accepted Evidence 的精度、directness、source role 和引用坐标通过；
 - candidate、搜索摘要、未审正文与 NumericFact 权限严格分离；
 - proxy／read-through 不冒充研究主体事实；
 - 争议项进入 `needs_human_review`，而不是弱规则自动放行。
+- 相关性、Evidence Role、来源权威和命题直接性分别保存；通用 Cross-Encoder 只能作为一个输入信号；
+- 错公司、错期间、错关系方向和越权来源的 Evidence 晋升为 0，不能由平均 precision 补偿。
 
-### Gate E：命题覆盖与 Pack Readiness
+### Gate 6：命题覆盖与 Pack Readiness
 
 - 每个 material proposition 的支持、限制、反方、替代解释及必要数值／因果桥状态可见；
 - 冲突不平均化，typed gap 不被通用边界话术掩盖；
@@ -212,7 +273,14 @@ S1 中任何模型辅助的查询生成、候选评估、反方生成、Evidence
 - 外源补充带来可说明的边际信息增量；
 - 连续无进展、重复来源或低价值候选触发停止。
 
-## 10. Pack Readiness 状态
+### Gate 7：可观测性、资源与稳定性
+
+- 每层输入、输出、版本、耗时、资源、失败位置和下游影响可追溯；
+- 确定性阶段在 clean fresh process 下 replay digest 稳定；ANN／模型等非确定性阶段按冻结输入报告分布和头部稳定性；
+- 付费／模型节点有 TokenBudgetBasis，预算不足进入 typed deferral／terminal，不制造业务 gap；
+- 无 attempt-specific 生产分支、无 case-specific 标准答案逻辑、无未登记的 fallback 或 silent retry。
+
+## 11. Pack Readiness 状态
 
 状态必须相对于当前问题和交付深度，而非对公司做永久结论：
 
@@ -227,7 +295,7 @@ S1 中任何模型辅助的查询生成、候选评估、反方生成、Evidence
 
 这些状态不能互相覆盖。例如 DELL 已有 AI revenue／orders／backlog，不允许因产品利润桥缺失而说“需求事实不存在”；正确状态是需求事实 ready、利润桥 blocked。
 
-## 11. 评测矩阵
+## 12. 评测矩阵
 
 评测必须分层，且逐案解释业务含义：
 
@@ -245,7 +313,9 @@ S1 中任何模型辅助的查询生成、候选评估、反方生成、Evidence
 
 DELL／MU／NVDA 用于当前开发和回放；ORCL／ASML／ANET 已经被观察过，只能继续作为工程泛化样本，不能独立承担最终隐藏测试。最终准入还需新冻结的跨行业、跨来源形态和不同 Evidence 充分度案例。
 
-## 12. 与 S3 当前失败的分账
+独立 S1 资格的指标、split、硬门和案例治理以 `docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md` 为准。本文的 Gate 0–7 是技术责任边界；评测文档负责冻结如何测、用什么集、如何判定通过。
+
+## 13. 与 S3 当前失败的分账
 
 S1 不充分解释了当前报告信息面窄、利润桥／供应分配／估值不足和反方深度弱，但不能解释 R7 对已经可见 AI revenue、orders 和 backlog 的错误否认。后者继续属于 S3 claim semantics／Case Truth reconciliation。后续报告必须分别给出：
 
@@ -255,13 +325,15 @@ S1 不充分解释了当前报告信息面窄、利润桥／供应分配／估�
 
 不得通过补更多资料掩盖模型忽略已见事实，也不得在 Pack 不充分时只靠更强 Prompt 追求研报质量。
 
-## 13. 后续执行顺序
+## 14. 后续执行顺序
 
-1. 冻结本文范式和 PRD 的产品门；不改 Runtime，不调用模型或网络。
+1. 冻结本文全链范式、PRD 产品门和独立 S1 评测合同；不改 Runtime，不调用模型或网络。
 2. 用现有 DELL／MU／NVDA artifacts 做 Evidence Acquisition 尸检：已完成，见 `FIN_0_1_3_S1_DELL_MU_NVDA_EVIDENCE_ACQUISITION_AUTOPSY_20260817.zh-CN.md`。
 3. 形成跨案 failure atlas：已完成；source coverage、对象解析、query、ranking、Evidence Role／Gate、Numeric／bridge、dynamic loop 与 S3 consumption 已分账，等待 Owner 选择有界修复范围。
-4. 先实施本文第 7 节的有界第一修复包，并按第 6 节逐命题归责；不得把所有问题塞入一个大重构。
-5. DELL 第二轮证明闭环后，让 MU／NVDA 从自然问题执行同核心动态链；没有相同运行深度不能称为泛化。
-6. S1 达到 task-relative Pack Readiness 后，再恢复 ResearchBlueprint、Generic Cell Runtime 和 DeliveryPlan 的代码迁移。
+4. 建立当前实现对 S1-A–S1-J 的覆盖矩阵，先识别 capture／OCR／parser／chunk／object／index 的真实缺口，再实施本文第 7 节的有界第一修复包；不得把所有问题塞入一个大重构。
+5. 在冻结的开发／validation 集上分别关闭数据地基、candidate ceiling、重排和金融精排；上游 ceiling 不足时禁止用下游模型调参掩盖。
+6. DELL 第二轮证明闭环后，让 MU／NVDA 从自然问题执行同核心动态链；这些案例用于迭代和回归，不构成最终隐藏资格。
+7. 在预注册的新异质留出案例上执行独立 S1 资格，全部硬门与性能门通过并稳定复证后，才能标记 S1 完成。
+8. S1 通过后才恢复 ResearchBlueprint、Generic Cell Runtime 和 DeliveryPlan 迁移，并执行完整真实 `user→S3→S1→S2→S3→S4` 产品链。
 
-本文不授权代码、索引重建、模型调用、网络补源、标签重写或产品发布。
+本文不授权代码、索引重建、模型调用、网络补源、标签重写、完整真实链或产品发布。

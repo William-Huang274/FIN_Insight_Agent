@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S1_object_route_and_Dell_targeted_source_engineering_pass / S1_candidate_to_Evidence_product_open / S2_company_fact_mart_pass / S2_product_bridge_open / fixed_pack_and_dynamic_single_cell_accepted / DELL_R7_complete_five_cell_report_contract_pass_truth_reconciliation_fail / cross_cell_truth_contract_next / generalization_pending / product_iteration_not_closed`
+状态：`repository_baseline_complete / S1_full_stack_standard_and_independent_eval_documented / S1_runtime_gold_holdout_and_qualification_open / S2_company_fact_mart_pass / S2_product_bridge_open / fixed_pack_and_dynamic_single_cell_accepted / DELL_R7_complete_five_cell_report_contract_pass_truth_reconciliation_fail / full_product_chain_blocked_until_S1_qualified / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -21,7 +21,7 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 | 阶段 | 只拥有的责任 | 当前事实 | 通过条件 |
 | --- | --- | --- | --- |
 | S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线 | G01–G12 已通过并合并远端 main | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿 |
-| S1 | 类型化 EvidenceRequest、内外源发现、解析、chunk/object、SQL/lexical/semantic/graph 路由、rerank、Evidence Role、来源覆盖 | 保存的自然 Planner atoms 已执行 8 个 request／128 个 Qwen＋BM25 候选并逐项归责；两个新 ranker 与 Evidence Role 均未晋升。TSM 与 Dell 官方 PDF 已经共用 parser/Gate 进入当前 DELL Pack，当前为 20 Evidence／14 gaps；MU/NVDA 未偷换。route policy 声明 `typed_relationship_graph`，当前 Runtime 尚无执行 handler | 三案及独立留出案例的 request-to-plan、required-slot target-in-pool、日期/实体/关系、route contribution 和 Evidence Role 正确；数值请求可靠路由到 S2 exact lookup，图路线只能在真实 handler 与来源权限通过后计为能力，外源只补真实 residual gap |
+| S1 | source/capture、HTML/PDF/OCR/table 解析清洗、chunk/object、版本化 index、类型化 EvidenceRequest、SQL/lexical/semantic/graph/official/external 路由、recall/rerank/金融精排、Evidence Role/Gate、Coverage/补证/gap 和 replay | 已有对象、候选、排名 shadow、Source Intake、Dell/TSM PDF、reviewed Pack 和第一修复方向；但完整 S1-A–S1-J 标准只有文档，OCR/cleaning/chunk/index/rank/fine-rank 独立资格、gold/split、新异质留出和稳定性均未完成。DELL/MU/NVDA 只作开发/回归，不是 S1 交付物 | 当前主线逐层通过独立 S1 L0–L5：source/capture、OCR/parser、chunk/object、query/route、candidate ceiling、recall、rerank、金融精排/Evidence admission、Coverage/gap、下游 ceiling、稳定性/资源；新异质留出逐案通过硬门且无 case patch，随后才允许产品资格完整真实链 |
 | S2 | 公司财务事实 mart、Evidence/NumericFact 编译、PIT、单位/期间、引用和冲突 | private mart 已从三案 SEC capture 建立，1,319 observations、24/24 精确事实查询及 mutation 通过；DELL 受控纵切为 7/7 typed request resolved、21 NumericFacts、0 gap/conflict | 数值事实从权威对象确定性入库和查询，跨案/错期/错单位 fail closed，typed exact lookup 返回 NumericFact 或可信 gap；自然 planner、研究消费和三案依赖回归证明产品价值 |
 | S3 | 动态规划、工具使用、重裁决、研究综合、角色方法、单元级图上下文、Workpaper/Report | fixed-Pack 与 DELL `value_capture` 动态单单元已 accepted；DELL R7 已自然执行五单元并形成首份完整内部报告，但 false absence／false conflict 使 L1/L2 未通过；Case Truth 工程门已正式零调用通过，待自然语义 canary 与受影响节点 successor | DELL 修复后的完整动态案例与异质跨案例泛化均通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收；每个 model-visible RoleMethodPack／GraphContextPack 可重建并有自然消费 receipt；逐案硬门不得被平均分掩盖 |
 | S4 | 用户任务、Evidence/Gap/Workpaper/Review/Repair 产品闭环 | 只有只读 Evidence Workspace 和独立 Operations | 当前 S3 candidate 被真实 UI 消费；review/repair/lineage 可完成且不依赖旧产品面 |
@@ -116,6 +116,25 @@ Owner 已接受有界第一修复方向，并补充两条不可退化的产品�
 公共信息 gap 只有在本地 capture／对象／索引／SQL、适用检索路线、候选决策和来源可达性全部留下凭证后成立。`source_temporarily_unreachable`、`not_yet_searched`、`budget_insufficient_for_required_route` 均不能冒充真实 gap。
 
 本次仍不授权全面索引重建、Embedding／reranker 微调、无界外源采购或模型 full-chain。实现只处理审计已证明的最早断点；后续新证据可以调整包内顺序，但必须先更新 Project OS 并说明业务影响。
+
+## 4E. 2026-08-17 S1 最终完成定义与完整真实链顺序更正
+
+Owner 进一步更正：4D 的 CoverageState、候选账本、binding 和 capture-bound promotion 只是 S1 的第一修复切片；DELL／MU／NVDA 只是用来测试切片和整条 S1 链的案例。不能在三个案例局部可用后直接写成 S1 结束，也不能跳过 OCR、解析、chunk、对象化、索引、召回、重排和金融精排等上游环节，只验收 Evidence Pack 终态。
+
+后续 S1 计划改为以下程序级顺序：
+
+1. **冻结 S1 全链标准范式和独立评测合同。** 明确来源捕获、HTML／PDF／OCR／表格解析、数据清洗、chunk／parent-child／claim-table-context 对象化、版本化索引、QueryFacetPlan、召回、语义重排、金融精排／Evidence Role、Evidence Gate、CoverageState、第二轮补证、gap 资格和可观测回放各自的输入、输出、责任与停止条件。
+2. **对当前实现做范式覆盖矩阵。** 逐层标记 `implemented_and_consumed`、`implemented_not_qualified`、`shadow_only`、`missing`、`superseded`，同时列出真实 Workbench／S2／S3 消费者；不因为历史脚本存在就记为当前能力。
+3. **先修数据地基，再修检索头部。** 对 capture、OCR／parser、表格和期间、chunk／对象边界、去重／supersession、身份与 lineage 做独立 gold／mutation；这些门不通过时不得靠 reranker 隐藏上游损坏。
+4. **完成 provider-neutral 检索栈。** 保留 exact／BM25 等廉价高召回路线，按 ceiling 决定 dense／multi-vector／graph／SQL 的增量价值；只在真目标已入池后评估 Cross-Encoder 或其他 reranker。
+5. **分开重排与金融精排。** 重排回答“候选与请求语义是否相关”；金融精排／Evidence evaluator 回答“它能否以什么角色证明当前命题”。身份、期间、来源权威、直接性、关系方向、hard negative、abstain 和人工复核必须进入后者，相关性分数不能自动晋升 Evidence。
+6. **闭合命题覆盖与第二轮补证。** 执行 4D 的 CoverageState／候选账本／binding／capture-bound promotion，并用 DELL 三个不同故障面验证；随后让 MU／NVDA 从自然问题走等价路径。这里的结果用于发现范式缺陷，不用于给案例本身刷通过率。
+7. **执行 S1 独立资格。** 在当前项目 L0–L5、Financial Truth、Evidence Authority 和对抗测试基础上，新增来源、OCR／parser、chunk／对象、查询、召回、重排、金融精排、Evidence 晋升、Coverage／gap、稳定性／效率和异质泛化门。DELL／MU／NVDA 是开发／回归集，已观察 ORCL／ASML／ANET 不是最终隐藏集；最终资格使用预注册的新留出案例。
+8. **稳定后才进入完整真实链。** S1 独立硬门和性能门通过、确定性 replay 稳定、当前 Runtime／Workbench 可观测且没有 case-specific 分支后，才运行 `用户问题 → S3 → S1 → S2 → S3 报告 → S4` 的完整真实链。此前只允许清楚标记为 deterministic、shadow、node canary 或 diagnostic 的局部验证。
+
+S1 结束的必交付物不是一张指标表，而是：一份当前权威标准范式；一套可执行、可版本化的主线实现；一组带 train／valid／frozen-test 边界的 gold／hard-negative／mutation 评测资产；一份逐层资格报告；Workbench 运维／审计消费者；以及对未通过项和真实外部边界的 typed closeout。任何单一 Recall、MRR、网页数、Evidence 数或案例报告均不能替代。
+
+独立评测源：`docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md`。S1 当前状态仍为 `standard_and_eval_contract_documented / runtime_and_qualification_pending`，不授权 full-chain product qualification。
 
 ## 5. 防止再次膨胀的工程规则
 

@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-17 | Owner 更正 S1 完成定义：CoverageState／候选账本／binding／动态晋升只是第一修复切片，S1 最终必须交付 source capture、HTML／PDF／OCR／表格清洗、chunk／金融对象化、存储／索引、QueryFacetPlan、召回、语义重排、金融精排／Evidence Role、Evidence Gate、补证／gap 与 replay 的完整标准范式、当前主线实现和独立资格报告。DELL／MU／NVDA 只作开发／回归，已观察案例不作隐藏测试；须以预注册异质留出和独立 S1 硬门／性能门证明稳定后，才允许产品资格完整真实链。 |
 | 2026-08-17 | Case Truth natural R3 证明模型能识别部分真实 false absence 与 cross-cell scope，但“直接从 flat/grouped alias 列表选编号”不足以稳定区分 AI revenue／order conversion、segment performance／profit bridge 等相邻金融语义；现有三态也不能表达“事实材料存在、但某个因果解释仍未排除”。产品合同因此要求将命题抽取／命题类型与 alias resolution 分责，并为 unresolved causal hypothesis 提供不与事实 presence 冲突的语义；或由单独资格化 verifier／qualified human 承担该门。R3 保持失败，不因内存去重或部分命中而追认为通过，且在项目级处置前不得继续剩余单元或修复报告。 |
 | 2026-08-17 | Case Truth claim-polarity formal R4 已完成 capture replay、三案例／留出、跨公司 context、真实 cross-cell scope 与容量 mutation，正式状态只记为 provider-neutral engineering pass。旧 R2 的过长草稿和 supporting-fact overmapping 会在新调用前 fail closed；R7 的三条 false absence 与合法利润桥 typed gap 仍被保留。产品验收仍要求一次 fresh 两单元自然消费证明，且通过后才允许修复受影响 Judgment／Synthesis；零调用 proof 不得冒充自然语义质量、报告修复或 S3 通过。 |
 | 2026-08-17 | Case Truth 两单元 natural R2 纠正了一个产品合同歧义：模型必须提交“原文声称什么”的 claim polarity，不能提交或复制 Harness 的 authoritative truth state；跨公司资料可被研究单元看见但只能标为 context，不能被误写成当前公司事实或“本单元不可见”。每个 claim slice 应获得 current-cell eligible、case-only outside-cell 与 typed absence 分层 alias view，只映射原文直接 proposition，不枚举所有支撑数字／关系。Harness 继续对 false absence、无权缺失、跨单元引用、跨案污染和合法 typed gap 做最终裁决。R2 的截断与 14 条 mixed finding 保持失败证据；新合同须先过 capture replay、三案／留出和容量 mutation，再允许一次 fresh 两单元自然复验。 |
@@ -2760,3 +2761,26 @@ S1 必须为每个 material proposition 建立 `FailureProvenanceRecord`，按�
 Owner 接受的第一个实现包限定为：命题级 CoverageState → 完整候选决策账 → reviewed Evidence 绑定修复 → capture-bound 受控晋升 → DELL 营运资金／发行人反方／上游反方第二轮补证 → MU／NVDA 自然问题等价动态链。它不授权全面重建向量库、微调 Embedding／reranker、无界 broad search 或模型 full-chain。
 
 从本条生效起，每个自然模型节点和 paid authority 必须保存 `TokenBudgetBasis`：节点任务、输入规模、必交付项、schema 负担、materiality／质量风险、历史同类 usage、reasoning profile、安全余量和截断／停止语义。成本与延迟是二级约束，不能成为静默删掉研究命题、候选、反方或必答项的理由。容量不足必须确定性分批、typed deferral 或返回 `budget_insufficient_for_required_scope`；分析与严格交卷分别估算。预算通过不等于事实 L1、内容质量或产品验收通过。
+
+### 16.41 S1 完成定义是全链标准范式与独立资格，不是三个案例跑通（2026-08-17）
+
+Owner 更正 S1 的最终完成定义：DELL、MU、NVDA 以及后续留出案例是用来暴露和验证 S1 链路表现的测试样本，不是 S1 本身的交付物。某几个案例得到可用 Evidence Pack，不能替代一套可迁移、可维护、可独立验收的数据与检索标准范式。
+
+S1 结束时必须同时交付并证明以下完整能力面：
+
+1. **来源捕获与身份**：官方、内源和外源资料先 capture-first 留存，绑定公司、披露方、文档类型、发布日期、报告期、截至日、语言、格式、来源权限和不可变摘要；下载或来源失败必须 typed。
+2. **解析与数据清洗**：HTML、PDF、扫描 PDF、表格、feed 和重定向均有明确解析路线；OCR 必须保留页码、坐标、置信度和原文回指，数字、单位、期间、表头、脚注及阅读顺序不能静默损坏；低质量结果必须 abstain／人工复核，而不是伪装成可检索正文。
+3. **chunk 与金融对象化**：定义 parent／section／claim／table／metric-row／context 等对象边界、重叠与父子上下文策略，保留引用锚点、表格语义、发行人／被谈及实体、期间和 lineage；不得只按固定字符数切块，也不得让安全港、导航、联系人和重复页稳定压过实质披露。
+4. **存储与索引**：对象、sparse、dense／multi-vector、关系图和 S2 SQL／NumericFact sibling 路线有版本、摘要、覆盖清单和可重建入口；索引缺失、缓存漂移、错期或错单位必须与真实资料缺失分开。
+5. **请求理解与路由**：`EvidenceRequest → QueryFacetPlan` 必须保留主体、披露方、关系方向、期间、产品／指标、Evidence Role、来源类型、语言和禁止扩展；内源、官方、外源、图与 SQL 路线按任务需要选择，不能永远运行固定查询包。
+6. **召回、重排与金融精排**：第一阶段以高召回生成可解释候选；第二阶段在同一候选池做语义重排；第三阶段按身份、期间、来源权威、直接性、Evidence Role、关系方向、对象质量和当前 Evidence Need 做金融精排／准入。相关性模型只能提供信号，不能单独授予 Evidence 权威。
+7. **Evidence 决策与补证**：所有候选进入决策账，形成 proposition-level CoverageState、GapEligibilityReceipt、反方／替代解释和有界第二轮补证，最终输出 task-relative EvidencePackReadiness 与可审计停止理由。
+8. **可观测、回放与运维**：每层都能回答输入、输出、拒绝原因、版本、耗时、资源、失败位置和下游影响；确定性部分可回放，非确定性模型／Provider 路线有冻结输入、预算依据和结果账本。
+
+S1 必须在现有项目 L0–L5、Financial Truth、Evidence Authority、对抗测试和内容质量上游 ceiling 约束之上，另设独立 S1 资格标准。独立标准至少覆盖：来源／capture 完整性、OCR／parser 准确性、chunk／对象质量、查询与路由正确性、candidate ceiling、召回、重排、金融精排与 abstain、Evidence 晋升、命题覆盖、第二轮信息增量、gap 资格、跨案例污染、回放稳定性、延迟／资源和泛化。身份、期间、单位、引用、跨案例和错误 Evidence 晋升等硬门不得由平均分补偿。
+
+案例使用分为三类：DELL／MU／NVDA 是开发与业务回归样本；ORCL／ASML／ANET 等已观察案例只能继续做回归；最终资格必须使用在看见结果前冻结、覆盖不同行业、来源形态、语言、资料充分度、关系方向和故障类型的新留出案例。阈值、gold／negative 标签、split 和报告模板必须在读取最终结果前预注册，不能在同一 test 上调参后继续声称独立通过。
+
+当前 16.40 的 CoverageState／candidate 账本／binding／capture-bound promotion 包仍然有效，但它只是 S1 标准范式的第一实现切片，不再被解释为 S1 最终验收的全部范围。只有全链范式、独立 S1 评测、异质留出泛化和稳定复证全部通过后，才允许执行用于产品资格的完整真实链路：用户问题 → S3 Research Objective／EvidenceRequest → S1 动态检索与补证 → S2 NumericFact／bridge → S3 判断与报告 → S4 Workbench。此前的模型或节点 canary 只能标记为诊断／单元验证，不能冒充完整产品测试。
+
+S1 独立评测权威见 `docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md`；技术范式继续以 `docs/architecture/retrieval/FIN_0_1_3_S1_EVIDENCE_ACQUISITION_AND_PACK_QUALITY_PARADIGM_20260817.zh-CN.md` 为当前源。

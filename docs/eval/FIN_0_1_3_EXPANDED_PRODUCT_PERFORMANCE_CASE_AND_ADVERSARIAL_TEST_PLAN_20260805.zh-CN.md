@@ -5,6 +5,8 @@
 
 > **2026-08-06 research-quality gate**：研究内容质量从普通 finding 升级为 release-blocking。三正式案例必须逐案通过 `FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md` 的八维绝对门槛、paired material gain 和 qualified human content acceptance；工程完整性、Artifact 数量和模型自评均不能替代。
 
+> **2026-08-17 S1 independent qualification gate**：DELL／MU／NVDA 是 S1 的开发／回归样本，不是 S1 交付物。用于产品资格的完整真实链之前，必须先按 `FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md` 独立验收 source／capture、OCR／parser／cleaning、chunk／object、index、query／route、recall、rerank、金融精排／Evidence admission、Coverage／gap、异质留出和稳定性。局部 case 或 node canary 不得替代。
+
 ## 1. 目标
 
 本计划用于证明 FIN 0.1.3 修复后的产品表现，不以增加 full-chain 次数为目标。测试分层执行：大量 deterministic truth/adversarial fixture、少量 changed-node natural canary、一次最终三案例 product qualification。
@@ -92,9 +94,9 @@
 
 ## 5. 执行与成本纪律
 
-1. 先建立 gold/negative fixtures 和 ceiling；ceiling 不足时修 S1，不训练/调用下游模型。
+1. 先建立 source／page／table／chunk／query／candidate／Evidence／gap gold／negative fixtures 和 ceiling；按 S1 独立标准逐层通过。ceiling 不足时修 S1，不训练／调用下游模型。
 2. 不为每个字段单独 live。合同 family 完成后最多一个 node canary。
-3. 正式三案例 full-chain 只在 S0–S4 deterministic gate 全绿后执行。
+3. 正式三案例 full-chain 只在 S1 独立资格与 S0–S4 deterministic gate 全绿后执行；DELL／MU／NVDA 自身的 S1 回归结果不能反向替代 S1 资格。
 4. 任一新 L1 停在责任阶段，不自动 replacement；L2–L4 finding 按预注册 release blocking 级别处置。
 5. 外部来源、模型调用、token、成本、attempt、capture 和 terminal result 必须进入 run ledger。
 

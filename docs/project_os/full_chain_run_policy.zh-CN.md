@@ -11,7 +11,10 @@ full-chain 是集成验收工具，不是日常 debugging 工具。
 3. token-budget preflight 通过或用户明确批准诊断性 override；
 4. provider health preflight 通过；
 5. 需要真实检索的 case 必须启用 real evidence operators；
-6. 运行结果能写回 run audit / artifact refs / AIE / data-script audit。
+6. 如果运行声称完整真实产品链或产品资格，S1 的 source／capture、OCR／parser／cleaning、chunk／object、index、query／route、recall、rerank、金融精排／Evidence admission、Coverage／gap、异质留出和稳定性独立资格已经通过；
+7. 运行结果能写回 run audit / artifact refs / AIE / data-script audit。
+
+DELL／MU／NVDA 的局部或节点 canary 可以在明确 decision-bound、diagnostic-only 且不声称 S1／完整链通过时单独签发。它们不能替代 S1 独立资格，也不能因为某个案例得到可用 Pack 就自动解锁完整真实产品链。
 
 ## 当前干净基线：decision-bound preflight（v1.1，2026-08-15）
 
@@ -48,6 +51,7 @@ full-chain 是集成验收工具，不是日常 debugging 工具。
 - token 预算超限且没有用户明确批准。
 - case 需要真实证据但只跑 dry-run evidence operators。
 - 当前目标只是修 parser、formatter、selector、budget、schema 或 route，这些应先用 deterministic test。
+- S1 标准范式或独立评测尚未通过，却准备运行声称产品资格的完整 `user→S3→S1→S2→S3→S4` 链路。
 - 上一轮 full-chain 暴露的问题还没有 root-cause row 和修复证据。
 
 ## 可跑条件

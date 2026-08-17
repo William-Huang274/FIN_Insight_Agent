@@ -1,5 +1,5 @@
 {
-  "schema_version": "fin_insight_project_os_full_chain_preflight_checklist_v0_3",
+  "schema_version": "fin_insight_project_os_full_chain_preflight_checklist_v0_4",
   "updated_at": "2026-08-17",
   "checks": [
     {
@@ -26,6 +26,11 @@
       "check_id": "real_evidence_mode_required_when_case_demands_it",
       "required": true,
       "description": "Cases requiring dynamic retrieval cannot be validated with dry-run evidence operators. A reviewed fixed Evidence Pack is valid only when the decision labels the run as a model-analysis unit test and forbids any Agentic Research or product claim."
+    },
+    {
+      "check_id": "s1_independent_qualification_required_for_full_product_chain",
+      "required": true,
+      "description": "A run claiming complete real-chain or product qualification requires the S1 source/capture, OCR/parser/cleaning, chunk/object, index, query/route, recall, rerank, finance-aware fine-rank, Evidence admission, Coverage/gap, heterogeneous holdout, and stability qualification to pass. Narrow deterministic, shadow, or node canaries may proceed only when explicitly labeled diagnostic and cannot claim S1 or full-chain product acceptance."
     },
     {
       "check_id": "aie_and_data_script_gate_clean_for_known_blockers",

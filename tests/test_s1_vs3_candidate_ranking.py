@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import importlib.util
+from pathlib import Path
+
 import numpy as np
+import pytest
 
 from retrieval.candidate_ranking import (
     NeedRouteRanking,
@@ -13,10 +17,33 @@ from retrieval.candidate_ranking import (
     rank_need_lexical_routes,
     rank_need_metric_row_routes,
     ranking_candidate_order_stable,
+    role_guarded_primary_ranking,
     route_membership,
 )
 from retrieval.object_retrieval_comparison import CandidateScore
 from retrieval.retrieval_need import RetrievalNeed
+
+
+def _candidate_ranking_runner():
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "scripts/data_retrieval/run_s1_candidate_ranking.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "s1_candidate_ranking_cuda_contract_test", path
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_learned_ranking_fails_closed_when_cuda_is_unavailable(monkeypatch) -> None:
+    import torch
+
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+    with pytest.raises(RuntimeError, match="candidate_ranking_cuda_required"):
+        _candidate_ranking_runner()._required_cuda_execution_receipt()
 
 
 def _need(identity: str, query: str, phrase: str = "") -> RetrievalNeed:
@@ -405,3 +432,33 @@ def test_aggregated_ranking_stability_rebinds_scores_by_candidate() -> None:
         candidate_ids=("a", "b"),
         rows=ranking,
     )
+
+
+def test_role_guard_preserves_primary_order_within_compatible_stratum() -> None:
+    primary = (
+        CandidateScore("target", 0.9),
+        CandidateScore("other", 0.8),
+        CandidateScore("noise", 0.7),
+    )
+    shadow = (
+        CandidateScore("other", 0.9),
+        CandidateScore("noise", 0.8),
+        CandidateScore("target", 0.1),
+    )
+
+    result = role_guarded_primary_ranking(
+        candidate_ids=("target", "other", "noise"),
+        primary_rows=primary,
+        shadow_rows=shadow,
+        compatibility_by_id={
+            "target": "compatible",
+            "other": "compatible",
+            "noise": "incompatible",
+        },
+    )
+
+    assert [row.compiled_object_id for row in result] == [
+        "target",
+        "other",
+        "noise",
+    ]

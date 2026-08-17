@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
@@ -35,6 +35,9 @@ QUERY_ATOM_EVAL_SCHEMA_VERSIONS = frozenset(
         QUERY_ATOM_EVAL_SENTENCE_OBJECT_SUCCESSOR_SCHEMA_VERSION,
         QUERY_ATOM_EVAL_REVIEWED_LABEL_SUCCESSOR_SCHEMA_VERSION,
     }
+)
+QUERY_ATOM_LABEL_ADJUDICATION_SCHEMA_VERSION = (
+    "fin_ia_query_atom_label_adjudication_v1_0"
 )
 
 
@@ -119,6 +122,65 @@ def load_query_atoms(payload: Mapping[str, Any]) -> tuple[QueryAtom, ...]:
             )
         )
     return tuple(atoms)
+
+
+def apply_query_atom_label_adjudications(
+    atoms: Sequence[QueryAtom], payload: Mapping[str, Any]
+) -> tuple[QueryAtom, ...]:
+    """Apply a reviewed label successor without rewriting the frozen qrel file."""
+
+    if payload.get("schema_version") != QUERY_ATOM_LABEL_ADJUDICATION_SCHEMA_VERSION:
+        raise QueryAtomShadowError("query_atom_adjudication_schema_invalid")
+    authority = payload.get("authority")
+    if not (
+        isinstance(authority, Mapping)
+        and authority.get("candidate_is_not_evidence") is True
+        and authority.get("numeric_authority") is False
+        and authority.get("owner_acceptance") is False
+    ):
+        raise QueryAtomShadowError("query_atom_adjudication_authority_invalid")
+    changes = payload.get("adjudications")
+    if not isinstance(changes, list) or not changes:
+        raise QueryAtomShadowError("query_atom_adjudication_rows_missing")
+    by_id = {atom.atom_id: atom for atom in atoms}
+    if len(by_id) != len(atoms):
+        raise QueryAtomShadowError("query_atom_adjudication_base_identity_invalid")
+    touched: set[str] = set()
+    for raw in changes:
+        if not isinstance(raw, Mapping):
+            raise QueryAtomShadowError("query_atom_adjudication_row_invalid")
+        atom_id = str(raw.get("atom_id") or "").strip()
+        if atom_id not in by_id or atom_id in touched:
+            raise QueryAtomShadowError("query_atom_adjudication_atom_invalid")
+        added = _unique_ids(raw.get("add_positive_object_ids") or ())
+        expected_raw = raw.get("expected_roles_by_object_id")
+        if not added or not isinstance(expected_raw, Mapping):
+            raise QueryAtomShadowError("query_atom_adjudication_positive_invalid")
+        expected = {
+            str(object_id): tuple(str(role) for role in roles)
+            for object_id, roles in expected_raw.items()
+            if isinstance(roles, list) and roles
+        }
+        if set(expected) != set(added):
+            raise QueryAtomShadowError("query_atom_adjudication_role_scope_invalid")
+        atom = by_id[atom_id]
+        existing = {
+            *atom.positive_object_ids,
+            *atom.hard_negative_object_ids,
+            *atom.unjudged_object_ids,
+        }
+        if existing.intersection(added):
+            raise QueryAtomShadowError("query_atom_adjudication_label_overlap")
+        by_id[atom_id] = replace(
+            atom,
+            positive_object_ids=(*atom.positive_object_ids, *added),
+            expected_roles_by_object_id={
+                **atom.expected_roles_by_object_id,
+                **expected,
+            },
+        )
+        touched.add(atom_id)
+    return tuple(by_id[atom.atom_id] for atom in atoms)
 
 
 def compile_atom_lane(
@@ -701,12 +763,14 @@ def _unique_ids(values: Iterable[object]) -> tuple[str, ...]:
 
 
 __all__ = [
+    "QUERY_ATOM_LABEL_ADJUDICATION_SCHEMA_VERSION",
     "QUERY_ATOM_EVAL_SCHEMA_VERSION",
     "QUERY_ATOM_EVAL_SCHEMA_VERSIONS",
     "QUERY_ATOM_EVAL_SENTENCE_OBJECT_SUCCESSOR_SCHEMA_VERSION",
     "QUERY_ATOM_EVAL_SUCCESSOR_SCHEMA_VERSION",
     "QueryAtom",
     "QueryAtomShadowError",
+    "apply_query_atom_label_adjudications",
     "aggregate_evidence_role_metrics",
     "aggregate_query_atom_results",
     "compile_atom_lane",

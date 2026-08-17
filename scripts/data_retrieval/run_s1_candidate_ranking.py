@@ -34,6 +34,7 @@ from retrieval.candidate_ranking import (  # noqa: E402
     rank_need_sparse_routes,
     ranking_candidate_order_stable,
     rank_scores,
+    role_guarded_primary_ranking,
     route_membership,
 )
 from retrieval.bounded_context import expand_bounded_candidate_context  # noqa: E402
@@ -63,6 +64,7 @@ from retrieval.object_retrieval_comparison import (  # noqa: E402
     load_compiled_objects,
 )
 from retrieval.query_atom_shadow import (  # noqa: E402
+    apply_query_atom_label_adjudications,
     compile_atom_lane,
     eligible_atom_indices,
     label_eligibility_rows,
@@ -192,6 +194,36 @@ def _empty_cuda() -> None:
         pass
 
 
+def _required_cuda_execution_receipt() -> dict[str, Any]:
+    """Bind learned retrieval execution to a real CUDA device.
+
+    The S1 contract does not permit an implicit CPU fallback for embedding or
+    Cross-Encoder work.  Capture the concrete device before loading any model
+    so a completed result proves which accelerator executed the learned lanes.
+    """
+
+    try:
+        import torch
+    except ImportError as exc:
+        raise RuntimeError("candidate_ranking_cuda_runtime_missing") from exc
+    if not torch.cuda.is_available():
+        raise RuntimeError("candidate_ranking_cuda_required")
+    device_index = int(torch.cuda.current_device())
+    properties = torch.cuda.get_device_properties(device_index)
+    return {
+        "execution_device": f"cuda:{device_index}",
+        "device_name": str(properties.name),
+        "compute_capability": [int(properties.major), int(properties.minor)],
+        "total_memory_bytes": int(properties.total_memory),
+        "torch_version": str(torch.__version__),
+        "cuda_runtime_version": str(torch.version.cuda or ""),
+        "embedding_precision": "fp16",
+        "reranker_precision": "fp16",
+        "cpu_fallback_allowed": False,
+        "failure_policy": "fail_closed_before_model_load",
+    }
+
+
 def _score_cache_key(
     *,
     scorer_id: str,
@@ -286,11 +318,34 @@ def _validate_bindings(policy: Mapping[str, Any]) -> dict[str, Path]:
                 "candidate_ranking_binding_drift:financial_intent_ontology"
             )
         paths["financial_intent_ontology"] = intent_path
+    if bindings.get("qrel_adjudication_ref"):
+        adjudication_path = _resolve(str(bindings["qrel_adjudication_ref"]))
+        if _sha256_lf(adjudication_path) != str(
+            bindings.get("qrel_adjudication_sha256_lf") or ""
+        ):
+            raise ValueError("candidate_ranking_binding_drift:qrel_adjudication")
+        paths["qrel_adjudication"] = adjudication_path
     object_path = _resolve(str(bindings["compiled_objects_ref"]))
     if sha256_file(object_path) != str(bindings["compiled_objects_sha256"]):
         raise ValueError("candidate_ranking_binding_drift:compiled_objects")
     paths["compiled_objects"] = object_path
     return paths
+
+
+def _load_bound_query_atoms(paths: Mapping[str, Path]) -> tuple[Any, ...]:
+    atoms = load_query_atoms(_read_json(paths["query_atom_eval"]))
+    adjudication_path = paths.get("qrel_adjudication")
+    if adjudication_path is None:
+        return atoms
+    adjudication = _read_json(adjudication_path)
+    if (
+        str(adjudication.get("parent_query_atom_eval_ref") or "")
+        != _relative(paths["query_atom_eval"])
+        or str(adjudication.get("parent_query_atom_eval_sha256_lf") or "")
+        != _sha256_lf(paths["query_atom_eval"])
+    ):
+        raise ValueError("candidate_ranking_qrel_adjudication_parent_drift")
+    return apply_query_atom_label_adjudications(atoms, adjudication)
 
 
 def _model_identities(policy: Mapping[str, Any]) -> tuple[dict[str, Any], dict[str, Path]]:
@@ -450,25 +505,21 @@ def _role_guarded_ranking(
     qwen_rows: Sequence[CandidateScore],
     role_rows: Sequence[Mapping[str, Any]],
 ) -> tuple[CandidateScore, ...]:
-    bge_rank = {row.compiled_object_id: rank for rank, row in enumerate(bge_rows, 1)}
-    qwen_rank = {row.compiled_object_id: rank for rank, row in enumerate(qwen_rows, 1)}
     compatibility = {
         row["compiled_object_id"]: row["evaluation"]["compatibility"]
         for row in role_rows
     }
-    penalty = {"compatible": 0.0, "abstain": -1.0, "incompatible": -2.0}
-    scores = [
-        penalty[compatibility[object_id]]
-        + 1.0 / (60 + bge_rank[object_id])
-        + 1.0 / (60 + qwen_rank[object_id])
-        for object_id in candidate_ids
-    ]
-    return rank_scores(candidate_ids, scores)
+    return role_guarded_primary_ranking(
+        candidate_ids=candidate_ids,
+        primary_rows=qwen_rows,
+        shadow_rows=bge_rows,
+        compatibility_by_id=compatibility,
+    )
 
 
 def _earliest_failure(
     *, atom: Any, label_audit: Sequence[Mapping[str, Any]], combined: Mapping[str, Any],
-    rerankers: Mapping[str, Mapping[str, Any]], role_guarded: Mapping[str, Any]
+    rerankers: Mapping[str, Mapping[str, Any]], final_shortlist: Mapping[str, Any]
 ) -> str:
     if not atom.positive_object_ids:
         return "pre_registered_typed_gap_no_public_positive"
@@ -482,8 +533,8 @@ def _earliest_failure(
         return "first_stage_recall"
     if not any(row["positive_target_in_top_k"] for row in rerankers.values()):
         return "reranker_head"
-    if not role_guarded["positive_target_in_top_k"]:
-        return "evidence_role_head"
+    if not final_shortlist["positive_target_in_top_k"]:
+        return "financial_shortlist_head"
     return "development_query_passed"
 
 
@@ -1073,6 +1124,7 @@ def run_vs2_replay(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
 
 
 def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
+    cuda_execution_receipt = _required_cuda_execution_receipt()
     policy = _load_policy(policy_path)
     paths = _validate_bindings(policy)
     kernel = load_financial_research_kernel(_read_json(paths["kernel"]))
@@ -1085,7 +1137,7 @@ def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
         if "financial_intent_ontology" in paths
         else None
     )
-    atoms = load_query_atoms(_read_json(paths["query_atom_eval"]))
+    atoms = _load_bound_query_atoms(paths)
     objects = list(load_compiled_objects(_read_jsonl(paths["compiled_objects"])))
     objects_by_id = {str(row["compiled_object_id"]): row for row in objects}
     object_sha256 = sha256_file(paths["compiled_objects"])
@@ -1502,6 +1554,15 @@ def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
             candidate_ids=rerank_ids,
             objects_by_id=objects_by_id,
         )
+        audit = label_eligibility_rows(
+            objects,
+            atom=atom,
+            lane=row["lane"],
+            route_policy=route_policy,
+        )
+        eligibility_by_id = {
+            str(value["compiled_object_id"]): value for value in audit
+        }
         judged_role_ids = tuple(
             dict.fromkeys(
                 (*atom.positive_object_ids, *atom.hard_negative_object_ids)
@@ -1513,11 +1574,57 @@ def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
             candidate_ids=judged_role_ids,
             objects_by_id=objects_by_id,
         )
+        for judged_row in judged_roles:
+            eligibility = eligibility_by_id[judged_row["compiled_object_id"]]
+            judged_row["eligibility"] = {
+                "eligible": bool(eligibility["eligible"]),
+                "exclusion_reason": eligibility["exclusion_reason"],
+            }
+        eligible_judged_roles = [
+            value
+            for value in judged_roles
+            if value["eligibility"]["eligible"]
+        ]
         role_guarded = _role_guarded_ranking(
             candidate_ids=rerank_ids,
             bge_rows=bge_rows,
             qwen_rows=qwen_rows,
             role_rows=roles,
+        )
+        cross_rankings = {
+            "bge_reranker_v2_m3": bge_rows,
+            "qwen3_reranker_0_6b": qwen_rows,
+            "role_guarded_dual_reranker_shadow": role_guarded,
+        }
+        cross_rank_maps = {
+            route_id: {
+                value.compiled_object_id: rank
+                for rank, value in enumerate(values, start=1)
+            }
+            for route_id, values in cross_rankings.items()
+        }
+        shortlist = rank_financial_evidence_shortlist(
+            union_object_ids=manifest["candidate_ids"],
+            objects_by_id=objects_by_id,
+            lane=row["lane"],
+            route_membership=atom_rows[index]["route_membership"],
+            cross_encoder_ranks_by_id={
+                object_id: {
+                    route_id: ranks.get(object_id)
+                    for route_id, ranks in cross_rank_maps.items()
+                }
+                for object_id in manifest["candidate_ids"]
+            },
+            request=atom.request_payload if intent_ontology is not None else None,
+            intent_ontology=intent_ontology,
+            retrieval_needs=[value.as_dict() for value in manifest["needs"]],
+        )
+        shortlist_rows = tuple(
+            CandidateScore(
+                compiled_object_id=str(value["compiled_object_id"]),
+                score=float(len(shortlist) - rank),
+            )
+            for rank, value in enumerate(shortlist)
         )
         rerankers = {
             "bge_reranker_v2_m3": _route_summary(bge_rows, atom, top_k=top_k),
@@ -1525,13 +1632,10 @@ def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
             "role_guarded_dual_reranker_shadow": _route_summary(
                 role_guarded, atom, top_k=top_k
             ),
+            "financial_evidence_shortlist_v1": _route_summary(
+                shortlist_rows, atom, top_k=top_k
+            ),
         }
-        audit = label_eligibility_rows(
-            objects,
-            atom=atom,
-            lane=row["lane"],
-            route_policy=route_policy,
-        )
         route_floors = contract.get("candidate_union_route_minimum_per_need") or {}
         reversed_fusion = (
             fuse_need_rankings_with_route_floors(
@@ -1564,8 +1668,17 @@ def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
                     "rows": roles,
                     "metrics": _role_metrics(roles),
                     "judged_label_rows": judged_roles,
-                    "judged_label_metrics": _role_metrics(judged_roles),
+                    "judged_label_metrics": _role_metrics(eligible_judged_roles),
+                    "judged_label_metrics_scope": (
+                        "hard_boundary_eligible_labels_only"
+                    ),
+                    "ineligible_judged_label_count": (
+                        len(judged_roles) - len(eligible_judged_roles)
+                    ),
                     "runtime_authority": "shadow_only",
+                    "ranking_strategy": (
+                        "qwen_primary_with_evidence_role_strata_and_bge_tie_shadow"
+                    ),
                 },
                 "reranker_need_selection": {
                     "strategy": (
@@ -1587,6 +1700,18 @@ def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
                     "role_guarded_dual_reranker_shadow": [
                         value.compiled_object_id for value in role_guarded
                     ],
+                    "financial_evidence_shortlist_v1": [
+                        value.compiled_object_id for value in shortlist_rows
+                    ],
+                },
+                "financial_evidence_shortlist": {
+                    "top_rows": list(shortlist[: max(top_k, 20)]),
+                    "candidate_count": len(shortlist),
+                    "candidate_is_not_evidence": True,
+                    "numeric_authority": False,
+                    "ranking_basis": (
+                        "typed_intent_role_source_period_directness_routes_and_cross_encoder"
+                    ),
                 },
                 "label_eligibility": audit,
                 "stability": {
@@ -1606,7 +1731,7 @@ def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
             label_audit=audit,
             combined=atom_rows[index]["first_stage"]["combined_need_union"],
             rerankers=rerankers,
-            role_guarded=rerankers["role_guarded_dual_reranker_shadow"],
+            final_shortlist=rerankers["financial_evidence_shortlist_v1"],
         )
 
     first_stage_summary = _aggregate_routes(atom_rows, "first_stage")
@@ -1623,8 +1748,13 @@ def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
         for row in atom_rows
         for role in row["evidence_role"]["judged_label_rows"]
     ]
+    eligible_judged_role_rows = [
+        role
+        for role in judged_role_rows
+        if role.get("eligibility", {}).get("eligible") is True
+    ]
     candidate_role_metrics = _role_metrics(candidate_role_rows)
-    role_metrics = _role_metrics(judged_role_rows)
+    role_metrics = _role_metrics(eligible_judged_role_rows)
     earliest_counts: dict[str, int] = {}
     for row in atom_rows:
         key = row["earliest_failure_layer"]
@@ -1684,6 +1814,7 @@ def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
             "compiled_objects_sha256": object_sha256,
         },
         "execution": {
+            "cuda_execution_receipt": cuda_execution_receipt,
             "model_identities": identities,
             "bge_embedding_cache": bge_cache,
             "qwen_embedding_cache": qwen_cache,
@@ -1732,7 +1863,7 @@ def run(*, policy_path: Path, cache_root: Path) -> dict[str, Any]:
                 "composite_vs1_vs2_head_quality_and_candidate_decision_gate_required"
             ),
             "evidence_role_runtime_authority": "shadow_only",
-            "fine_tuning_eligible": len(judged_role_rows)
+            "fine_tuning_eligible": len(eligible_judged_role_rows)
             >= int(gates["minimum_reviewed_relations_before_fine_tuning"])
             and len({row["case_key"] for row in atom_rows})
             >= int(gates["minimum_development_cases_before_fine_tuning"]),
@@ -1766,7 +1897,7 @@ def run_typed_route_proof(*, policy_path: Path) -> dict[str, Any]:
     if "financial_intent_ontology" not in paths:
         raise ValueError("typed_route_proof_financial_intent_ontology_missing")
     intent_ontology = _read_json(paths["financial_intent_ontology"])
-    atoms = load_query_atoms(_read_json(paths["query_atom_eval"]))
+    atoms = _load_bound_query_atoms(paths)
     objects = list(load_compiled_objects(_read_jsonl(paths["compiled_objects"])))
     contract = policy["candidate_contract"]
     per_need_limit = int(contract["first_stage_per_need_limit"])

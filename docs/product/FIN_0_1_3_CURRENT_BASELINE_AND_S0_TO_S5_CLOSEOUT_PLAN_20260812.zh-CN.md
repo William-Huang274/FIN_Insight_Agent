@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S1_VS1_to_VS3_and_DELL_VS4_vertical_slices_integrated / MU_NVDA_VS4_VS5_and_qualification_open / S2_company_fact_mart_pass / S2_product_bridge_open / fixed_pack_and_dynamic_single_cell_accepted / DELL_R7_complete_five_cell_report_contract_pass_truth_reconciliation_fail / full_product_chain_blocked_until_S1_qualified / product_iteration_not_closed`
+状态：`repository_baseline_complete / S1_VS1_to_VS3_and_DELL_MU_NVDA_VS4_vertical_slices_integrated / VS5_all_positive_frozen_holdout_and_qualification_open / S2_company_fact_mart_pass / S2_product_bridge_open / fixed_pack_and_dynamic_single_cell_accepted / DELL_R7_complete_five_cell_report_contract_pass_truth_reconciliation_fail / full_product_chain_blocked_until_S1_qualified / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -123,18 +123,18 @@ Owner 进一步更正：4D 的 CoverageState、候选账本、binding 和 captur
 
 后续 S1 计划改为“责任分层、纵向交付、持续集成”。S1-A–S1-J 只用于定位最早责任层，不能作为十个按顺序各自收口的小项目。每个 release slice 都必须复用当前唯一 canonical artifact spine，从真实／冻结 source 或 Evidence Need 贯穿到 CandidateDecision、CoverageState、Evidence Pack 和 Workbench／冻结 consumer probe；未改层参加回放，不能在最后一次性拼装。
 
-1. **spine／覆盖矩阵／评测程序基础、VS1／VS2／VS3 与 DELL VS4 Runtime 迁移已完成，隐藏资格集仍开放。** machine-readable spine、A–J 矩阵和开发资产已进入当前 R18 Runtime；valid／frozen test／heterogeneous holdout 必须在 MU／NVDA 等价 VS4 路径稳定后另行预注册，不能把已观察案例改名为隐藏集。R16 的 result-local ref 门继续有效；旧 R14／R15、VS3 v1.6／v1.7 及 VS4 query v1.0／ranking v1.1–v1.2 失败均保持历史证据，不被原地改写。
+1. **spine／覆盖矩阵／评测程序基础、VS1／VS2／VS3 与三案例 VS4 Runtime 迁移已完成，隐藏资格集仍开放。** machine-readable spine、A–J 矩阵和开发资产已进入当前 R19 Runtime；DELL／MU／NVDA 都已消费 capture-bound successor lineage，但它们仍是开发／回归案例。valid／frozen test／heterogeneous holdout 必须另行预注册，不能把已观察案例改名为隐藏集。R16 的 result-local ref 门继续有效；旧 R14／R15、VS3 v1.6／v1.7 及 VS4 各失败 query／ranking／materialization attempt 均保持历史证据，不被原地改写。
 2. **VS1：当前数字原生官方资料纵切已达到 `vertical_slice_integrated`。** DELL pricing/mix 真实路径产生 55 个 canonical envelopes，当前 Workbench 与 Evidence Pack 消费同一 lineage；6 个候选形成 2 accepted／4 needs-review，另有 2 条 reviewed Evidence 未召回、3 条 gap 因补源未执行而禁止认定公开信息不存在。0 网络、0 模型、0 新晋升、0 index rebuild；当前 successor 只补齐可解引用 payload，不改变业务结论。
 3. **VS2：复杂文档与数表纵切已达到 `vertical_slice_integrated`。** IFX 2025 官方年报仅作 train-internal 开发样本，不加入产品案例。当前 parser／object 路径保留 5 个复杂表区、56 个 metric-row、1 个脚注、1 个重述上下文和 1 个真实跨页关系；官方页栅格 OCR mutation 保留预注册 material anchors，但没有自然扫描资料资格。4 个 reviewed 目标只有 1 个进入前 20；分部总计行、脚注和跨页续表对象都存在但未被召回，因此最早未闭合层已转到 VS3。S2 sibling 保持 typed gap，任何表格数字均未获得 NumericFact 权威。
 4. **VS3：多路线检索与金融排序纵切已达到 `vertical_slice_integrated`。** 33,085 个对象上的有界候选池召回 15/15 开发正例，路线顺序扰动稳定率 1.0；金融审阅前十为 15/15、确认 hard negative 为 0。VS1 两个历史对象均可追溯，VS2 四个复杂目标均进入最终审阅面。1,912 个候选全部持久决策，0 hard-negative/source-only false accept。BGE／Qwen／typed route 与 reranker 仍是组合输入，不存在单模型产品晋升；Candidate、Evidence、NumericFact 权限继续分离。
-5. **VS4：DELL 已完成，MU／NVDA 为当前下一项。** DELL 营运资金、发行人反方和上游反方已走完 residual proposition→route→CUDA candidate→Evidence Role→capture-bound decision→successor Pack→Coverage delta→Workbench。前序 20 Evidence 退役 3 条宽片段、新增 5 条精确 claim，得到 22 Evidence；14 个 gap 保持 14，仅 1 条被窄化，0 条关闭，0 Candidate／NumericFact 越权。它证明当前 capture 上的有界二轮补证，不等于开放网络补源或 S1 通过。下一步让 MU／NVDA 从自然命题走同核心，不为 ticker 写专用分支。
+5. **VS4：DELL／MU／NVDA 三案纵切已完成。** 三案均走完 residual proposition→route→CUDA candidate→Evidence Role→capture-bound decision→successor Pack→Coverage delta→Workbench，未增加 ticker 专用核心分支。DELL 为 `22 Evidence / 14 gaps`，MU 为 `11 / 15`，NVDA 为 `19 / 13`；旧宽 Evidence 分别退役 3／16／14 条，新增精确 claim 5／11／19 条，gap 窄化 1／2／3、关闭 0，MU 另增加 2 个 S2 bridge typed gap。三案 Candidate／NumericFact 越权与 hard-negative false accept 均为 0。通用 reranker 仍不合格，当前开发纵切由确定性金融短名单提供候选视图；它证明当前 capture 上的有界二轮补证，不等于开放网络补源或 S1 通过。
 6. **持续集成而非最终集成。** 每个切片合并前必须同时通过局部门、相邻合同门、真实纵切门、业务影响门、跨案／错期／mutation 非回归和 artifact 迁移／回滚门。局部只记 `component_engineering_pass`；贯穿当前消费者才记 `vertical_slice_integrated`。任何 parser／chunk／index／ranker 变更至少重跑一条 golden vertical replay。
-7. **VS5：独立 S1 资格。** DELL／MU／NVDA 只作开发／回归；已观察 ORCL／ASML／ANET 不作最终隐藏集。最终使用预注册新异质留出，逐案通过来源、OCR／parser、chunk／对象、query／route、candidate ceiling、recall／rerank、金融精排、Evidence 晋升、Coverage／gap、下游 ceiling、稳定性／效率硬门与性能门。
+7. **VS5：独立 S1 资格。** DELL／MU／NVDA 只作开发／回归；已观察 ORCL／ASML／ANET 不作最终隐藏集。当前 10/10 只代表每个命题至少有一条有效目标进入前十，仍有 4 个 reviewed positive 未进入 candidate union；因此 VS5 必须另测 all-positive material-facet coverage。最终使用预注册新异质留出，逐案通过来源、OCR／parser、chunk／对象、query／route、candidate ceiling、recall／rerank、金融精排、Evidence 晋升、Coverage／gap、下游 ceiling、稳定性／效率硬门与性能门。所有向量／Cross-Encoder 计算只允许 CUDA／FP16，CUDA 不可用即 fail closed，不得以 CPU 回退制造不可比结果。
 8. **达到 `S1_qualified_stable` 后才进入完整真实链。** 当前 Runtime／Workbench 可观测、确定性 replay 稳定且无 case-specific 分支后，才运行 `用户问题 → S3 → S1 → S2 → S3 报告 → S4`。此前只允许明确标记为 deterministic、shadow、node canary 或 diagnostic 的局部验证。
 
-S1 结束的必交付物不是一张指标表，而是：一份当前权威标准范式；一套可执行、可版本化的主线实现；一组带 train／valid／frozen-test 边界的 gold／hard-negative／mutation 评测资产；一份逐层资格报告；Workbench 运维／审计消费者；以及对未通过项和真实外部边界的 typed closeout。任何单一 Recall、MRR、网页数、Evidence 数或案例报告均不能替代。
+S1 结束的必交付物不是一张指标表，而是：一份当前权威标准范式；一套可执行、可版本化的主线实现；一组带 train／valid／frozen-test 边界的 gold／hard-negative／mutation 评测资产；一份逐层资格报告；Workbench 运维／审计消费者；以及对未通过项和真实外部边界的 typed closeout。任何单一 Recall、MRR、网页数、Evidence 数或案例报告均不能替代；“每个问题至少命中一条正例”也不能替代“所有 material facet 的已审正例覆盖”。
 
-独立评测源：`docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md`。S1 当前状态为 `VS1_to_VS3_and_DELL_VS4_vertical_slice_integrated / MU_NVDA_VS4_and_VS5_independent_qualification_pending`，不授权 full-chain product qualification。
+独立评测源：`docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md`。S1 当前状态为 `VS1_to_VS3_and_three_case_VS4_vertical_slice_integrated / VS5_all_positive_and_independent_qualification_pending`，不授权 full-chain product qualification。
 
 ## 5. 防止再次膨胀的工程规则
 

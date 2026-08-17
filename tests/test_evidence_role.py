@@ -409,3 +409,51 @@ def test_management_bottleneck_and_tester_shortage_are_supply_evidence() -> None
 
         assert result.compatibility == "compatible"
         assert "direct_supply_capacity_signal" in result.labels
+
+
+def test_generic_ai_adoption_statement_is_not_direct_customer_demand() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "MSFT",
+            "section": "Item 1. Business",
+            "document_text": (
+                "Digital transformation and adoption of AI continues to "
+                "revolutionize more business workstreams for organizations in "
+                "every sector across the globe."
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="demand_volume_quality",
+        facet_id="downstream_demand_context",
+        subject_ticker="MU",
+        evidence_owner_ticker="MSFT",
+        relationship_direction="downstream_customer_disclosure",
+    )
+
+    assert result.compatibility == "abstain"
+    assert "direct_demand_signal" not in result.labels
+
+
+def test_production_delay_and_supply_management_challenge_is_counterevidence() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "NVDA",
+            "section": "Item 1A. Risk Factors",
+            "document_text": (
+                "The complexity of bringing up our product architecture and "
+                "sophisticated system configurations has caused and may in the "
+                "future cause delays in production and create challenges in "
+                "managing supply and demand."
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="counterevidence_and_what_would_change",
+        facet_id="issuer_counterevidence",
+        subject_ticker="NVDA",
+        evidence_owner_ticker="NVDA",
+        relationship_direction="subject_self_disclosure",
+    )
+
+    assert result.compatibility == "compatible"
+    assert "supply_risk_or_counterevidence" in result.labels
+    assert "direct_supply_capacity_signal" not in result.labels

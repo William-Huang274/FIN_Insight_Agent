@@ -472,3 +472,13 @@ VS4 的 DELL 开发纵切已经把三项 residual proposition 从 Coverage 账�
 5. **当前消费者不夸大状态。** R18 和 `/api/operations/s1/supplement-quality` 显示命题已知／未知、精确 Evidence 替换、gap receipt 和权限边界；页面持续显示 `complete_s1_ready=false` 与 `numeric_fact_ready=false`。
 
 当前状态为 `DELL_VS4_vertical_slice_integrated=true / MU_NVDA_equivalent_paths_pending=true / VS5_pending=true / S1_qualified_stable=false`。下一步不是继续为 DELL 扩大补丁，而是让 MU、NVDA 从自然命题走同一核心；只有三案回归稳定后才进入预注册 valid／frozen／heterogeneous qualification。
+
+## 19. VS4 三案例 successor 与 VS5 资格边界（2026-08-18）
+
+MU、NVDA 已复用 DELL 的 provider-neutral supplement contract 完成同等纵切，没有为 ticker 添加核心查询、排序、Evidence Gate 或 Pack 分支。R19 current Runtime 现在同时绑定 DELL `22 Evidence / 14 gaps`、MU `11 / 15`、NVDA `19 / 13`；三案旧宽片段分别退役 3／16／14 条，加入 5／11／19 条精确 capture-bound claim，gap 窄化 1／2／3、关闭 0。MU 另增加两个显式 S1→S2 bridge gap，避免退役宽片段后把空 research cell 误写成公共信息不存在或直接生成公司级利润／现金结论。Candidate 自动晋升、NumericFact 新授权和 hard-negative false accept 均为 0。
+
+三项结构问题也由同一纵切自然暴露并关闭：旧 parent 缺 capture metadata 时通过 raw file digest、source URL 和 exact claim surface 做严格 attestation，而不是放宽 capture-first；多案例 summary 在 member 标准化后才计算外层 digest，确保 replay 幂等；完整 Pack 超过单 research cell 容量时，Pack 权威不裁剪，只为模型编译确定性 coverage-first 有界视图并 receipt omitted-but-preserved Evidence。历史 fixed-Pack 输入在未溢出时保持原顺序与 digest。
+
+本轮排名结果必须按正确语义解释：10/10 是 `proposition_any_hit_at_10`，不是 all-positive recall。MU cycle reversal、NVDA cancellation、NVDA production delay 和 TSM bottleneck tools 四个 reviewed positive 没有进入 candidate union，且没有被静默补入或重标。因此最早开放层转为 VS5 的候选覆盖与独立资格：同时测 all-positive object recall、material-facet／required-role coverage、valid temporal、frozen test、新异质留出、mutation 和双 clean replay。
+
+learned Embedding、dense／multi-vector 与 Cross-Encoder 继续统一为 CUDA／FP16 only；每次正式运行必须保存具体 device／runtime／precision／model／cache receipt，CUDA 不可用即 fail closed，不允许 CPU fallback。CPU 只承担 BM25、SQL、分词、硬过滤、账本和确定性编排。当前状态更新为 `three_case_VS4_vertical_slice_integrated=true / VS5_pending=true / S1_qualified_stable=false`。

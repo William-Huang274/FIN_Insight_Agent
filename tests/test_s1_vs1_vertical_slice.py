@@ -301,9 +301,24 @@ def test_pack_binding_drift_is_rejected_at_the_consumer_seam(runtime_services) -
         packs._s1_vertical_slice = original
 
 
-def test_non_vs1_cases_remain_available_without_false_canonical_projection(
+def test_non_vs1_cases_receive_capture_bound_lineage_without_false_qualification(
     runtime_services,
 ) -> None:
     retrieval, packs, _workspace = runtime_services
-    assert retrieval.get_case("MU", _retrieval_principal())["canonical_spine"] is None
-    assert packs.get_case("NVDA", _pack_principal())["canonical_spine"] is None
+    for case_key in ("MU", "NVDA"):
+        retrieval_spine = retrieval.get_case(
+            case_key, _retrieval_principal()
+        )["canonical_spine"]
+        pack_spine = packs.get_case(case_key, _pack_principal())["canonical_spine"]
+        assert retrieval_spine == pack_spine
+        assert pack_spine["case_key"] == case_key
+        assert pack_spine["pack_binding"]["case_key"] == case_key
+        assert pack_spine["status"] == (
+            "canonical_s1_lineage_with_capture_bound_supplement"
+        )
+        assert pack_spine["hard_boundaries"][
+            "base_vs1_decision_rows_available"
+        ] is False
+        assert pack_spine["hard_boundaries"]["S1_qualified_stable"] is False
+        assert pack_spine["supplement_vertical"]["numeric_fact_authorized"] is False
+        assert pack_spine["supplement_vertical"]["complete_s1_qualified"] is False

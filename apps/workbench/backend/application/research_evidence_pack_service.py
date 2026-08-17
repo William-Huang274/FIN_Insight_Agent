@@ -29,7 +29,7 @@ from retrieval.vertical_slice import (
 from retrieval.supplement_vertical import (
     SupplementVerticalError,
     project_capture_bound_supplement_lineage,
-    validate_supplement_vertical_summary,
+    validate_supplement_vertical_resource,
 )
 
 
@@ -184,7 +184,7 @@ class ResearchEvidencePackService:
                 ) from exc
         try:
             self._s1_supplement_vertical = (
-                validate_supplement_vertical_summary(s1_supplement_vertical)
+                validate_supplement_vertical_resource(s1_supplement_vertical)
                 if s1_supplement_vertical is not None
                 else None
             )

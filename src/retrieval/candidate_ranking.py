@@ -530,6 +530,51 @@ def rank_scores(
     return tuple(rows)
 
 
+def role_guarded_primary_ranking(
+    *,
+    candidate_ids: Sequence[str],
+    primary_rows: Sequence[CandidateScore],
+    shadow_rows: Sequence[CandidateScore],
+    compatibility_by_id: Mapping[str, str],
+) -> tuple[CandidateScore, ...]:
+    """Apply role strata without averaging away the selected reranker's order.
+
+    Evidence Role is a financial eligibility/advisory layer, not a second
+    semantic relevance model. It may separate compatible, abstain and
+    incompatible candidates, but within a stratum the provisional winner is
+    authoritative. A weaker shadow reranker is retained only as a stable
+    sub-tie signal and cannot demote a primary top result.
+    """
+
+    candidate_set = set(candidate_ids)
+    primary_rank = {
+        row.compiled_object_id: rank
+        for rank, row in enumerate(primary_rows, start=1)
+    }
+    shadow_rank = {
+        row.compiled_object_id: rank
+        for rank, row in enumerate(shadow_rows, start=1)
+    }
+    if (
+        set(primary_rank) != candidate_set
+        or set(shadow_rank) != candidate_set
+        or set(compatibility_by_id) != candidate_set
+    ):
+        raise CandidateRankingError("role_guarded_candidate_identity_mismatch")
+    penalty = {"compatible": 0.0, "abstain": -1.0, "incompatible": -2.0}
+    if any(value not in penalty for value in compatibility_by_id.values()):
+        raise CandidateRankingError("role_guarded_compatibility_invalid")
+    return rank_scores(
+        candidate_ids,
+        tuple(
+            penalty[compatibility_by_id[object_id]]
+            + 1.0 / (1 + primary_rank[object_id])
+            + 1e-6 / (1 + shadow_rank[object_id])
+            for object_id in candidate_ids
+        ),
+    )
+
+
 def aggregate_all_need_pair_scores(
     *,
     candidate_ids: Sequence[str],
@@ -639,5 +684,6 @@ __all__ = [
     "rank_authority_indices",
     "ranking_candidate_order_stable",
     "rank_scores",
+    "role_guarded_primary_ranking",
     "route_membership",
 ]

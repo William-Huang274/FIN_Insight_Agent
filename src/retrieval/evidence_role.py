@@ -388,6 +388,12 @@ def evaluate_evidence_role(
         labels.add(ROLE_OBSERVED_RESULT)
         reasons.append("observed_period_result_surface")
 
+    # "Adoption" by itself is a topic statement, not a direct demand signal.
+    # A generic sentence such as "AI adoption continues across industries"
+    # describes a trend but proves neither an order, deployment, usage level nor
+    # customer readiness for the research subject.  Keep direct-demand authority
+    # on observable activity surfaces; broader adoption language can still be
+    # retrieved and reviewed as unjudged context.
     demand_terms = _contains_any(
         text,
         (
@@ -397,7 +403,6 @@ def evaluate_evidence_role(
             "customer readiness",
             "customer demand",
             "deployments",
-            "adoption",
             "supply and demand",
         ),
     )
@@ -424,7 +429,7 @@ def evaluate_evidence_role(
             "demand could",
         ),
     )
-    if demand_terms and not risk_section:
+    if demand_terms and not risk_section and not demand_risk:
         labels.add(ROLE_DIRECT_DEMAND)
         reasons.append("direct_demand_activity_surface")
     if demand_risk or (risk_section and demand_terms) or risk_demand_exposure:
@@ -470,6 +475,9 @@ def evaluate_evidence_role(
             "supply demand mismatch",
             "quality issues",
             "production delays",
+            "delays in production",
+            "delay in production",
+            "delay supply",
             "capacity agreement",
             "purchase commitments",
             "non-cancellable",
@@ -478,6 +486,28 @@ def evaluate_evidence_role(
             "capacity commitments exceed demand",
         ),
     )
+    supply_risk = supply_risk or (
+        supply_terms
+        and _contains_any(
+            text,
+            (
+                "may delay",
+                "could delay",
+                "may be delayed",
+                "challenges in managing",
+                "shortage",
+                "bottleneck",
+                "constraint",
+                "unavailable",
+                "unable to",
+                "failure to",
+            ),
+        )
+    )
+    # Outside an explicit risk section, an observed bottleneck/shortage can be
+    # both a direct capacity fact and counterevidence (for example management
+    # explaining that it is buying bottleneck tools).  Preserve both roles;
+    # explicit risk-factor prose remains counterevidence-only.
     if supply_terms and not risk_section:
         labels.add(ROLE_DIRECT_SUPPLY)
         reasons.append("direct_supply_or_capacity_surface")

@@ -1,0 +1,20 @@
+{
+  "schema_version": "fin_ia_s1_local_model_failure_receipt_v1_0",
+  "status": "operator_stopped_before_result_materialization",
+  "recorded_at": "2026-08-18",
+  "attempt_id": "FIN-0.1.3-S1-VS4-MU-NVDA-CUDA-RANKING-V1.2-A1",
+  "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_candidate_ranking_policy_v1_2.json",
+  "failure_phase": "compiled_object_embedding_cache_selection",
+  "failure_code": "noncanonical_empty_cache_root_would_duplicate_object_vectors",
+  "root_cause": "The command supplied a new experiment-local cache root instead of the existing canonical VS3 object-vector cache. The runtime correctly began CUDA computation, but completing it would create a duplicate 33,085-object vector cache with identical model and object identities.",
+  "impact": "The attempt was stopped during CUDA BGE object embedding before Qwen embedding, reranking, result materialization, Evidence promotion or Runtime mutation.",
+  "disposition": "Use a new attempt ID and bind execution to .codex_runtime/fin_0_1_3_s1_vs3_candidate_ranking so immutable cache identities are reused and only new query/pair work executes.",
+  "execution": {
+    "execution_device": "cuda:0",
+    "cpu_fallback_used": false,
+    "result_materialized": false,
+    "network_calls": 0,
+    "generation_model_calls": 0,
+    "evidence_state_changed": false
+  }
+}

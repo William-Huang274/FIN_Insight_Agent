@@ -172,6 +172,10 @@ S2 独立拥有 NumericFact、PIT、单位、期间、公式、supersession 和�
 必须报告：
 
 - required-slot `target_in_pool`／candidate ceiling；
+- `proposition_any_hit_at_k`：每个命题是否至少有一个有效目标进入候选窗口；
+- `all_positive_object_recall_at_k`：全部已审 material positive 是否进入候选池／审阅窗口；
+- `material_facet_coverage`：直接支持、反方、替代解释、数值桥和独立 read-through 等必需 facet 是否分别覆盖；
+- `required_role_coverage`：当前任务要求的 direct／counter／bridge／context role 是否缺失；
 - exact／BM25／dense／multi-vector／graph／SQL／official／external 各路线的独立和边际贡献；
 - target 缺失属于 source、object、index、query、filter 还是 route；
 - 召回候选中的重复率、跨案率、过期率和来源多样性；
@@ -239,6 +243,8 @@ S1 不给最终报告打八维分，但必须把 Pack 交给一个冻结、无�
 
 硬门：确定性阶段两次独立 clean replay 结果一致；关键失败均 typed 并保留部分结果；没有用 token／成本上限静默删掉 required scope；没有未登记 case patch。
 
+Learned Embedding、dense／multi-vector 与 Cross-Encoder／reranker 的资格运行还必须保存具体 CUDA device、runtime、precision、模型和缓存 identity receipt。CUDA 不可用时必须 fail closed；禁止静默回退 CPU 后把性能、数值精度、批大小或排名行为不同的结果并入同一资格基线。BM25、SQL、分词、硬过滤、账本和确定性编排可使用 CPU，但必须与 learned route 的资源统计分开。
+
 ## 6. 指标与阈值冻结规则
 
 S1 同时使用三类判定：
@@ -287,26 +293,26 @@ S1 未通过时仍可运行的模型或节点调用必须明确标为 determinis
 
 ## 9. 当前已知基线与不应误读的数字
 
-- DELL／MU／NVDA reviewed Pack 分别为 20／16／14 Evidence，但只有 11／2／8 exact claim anchor；数量不代表对象质量或命题充分性。
-- DELL 当前 8 个请求／128 candidates／111 unreviewed／8 unique accepted／0 dynamic promotion；working-capital、issuer-counter、upstream-counter 均 0 accepted。这首先要求 candidate ledger、binding、admission 和 failure provenance，而不是立即扩大 broad search。
+- DELL／MU／NVDA current successor Pack 分别为 22／11／19 Evidence、14／15／13 gaps；精确 Evidence 数量增加仍不代表命题充分性或 S1 资格。
+- 三案 VS4 的 10/10 表示每个开发命题至少有一个有效目标进入确定性金融短名单前十；另有 4 个 reviewed positive 未进入 candidate union。因此 `proposition_any_hit_at_10` 通过而 `all_positive_object_recall` 仍开放，二者不得混写。
 - 既有 BM25、BGE、Qwen、RRF、Cross-Encoder 和规则 Evidence Role 结果来自不同对象／qrel 阶段，不能混成一个排行榜。当前没有任何 neural reranker 或 Role evaluator 获得最终主线资格。
 - reviewed Dell／TSMC transcript 已同步进 current object store，但这只关闭 source registry／object drift，不证明 OCR／chunk／ranking／Evidence Readiness 全链通过。
 - S2 公司财务 mart 已证明标准财务事实路线，但产品／分部利润桥、ASP／PVM、估值等仍是独立 typed authority 缺口。
 
 ## 10. 当前执行边界与下一步
 
-本文件初版只冻结评测合同；当前执行证据已推进到 VS1／VS2／VS3 与 DELL VS4。所有这些结果仍属于开发／回归纵切，不进入 valid／test／heterogeneous gold，也不授权 full-chain。
+本文件初版只冻结评测合同；当前执行证据已推进到 VS1／VS2／VS3 与 DELL／MU／NVDA 三案 VS4。所有这些结果仍属于开发／回归纵切，不进入 valid／test／heterogeneous gold，也不授权 full-chain。
 
 下一步程序为：
 
 1. **程序基础与当前 Runtime 迁移已建立**：`src/retrieval/artifact_spine.py`、canonical policy、A–J evidence-backed coverage matrix 和统一校验入口已存在；spine 显式区分 CandidateSet、CandidateRanking、CandidateDecision，A–J 仍只作为责任坐标；
-2. **已冻结 schema／开发集／split 规则，未冻结隐藏资格集**：runtime-visible input 与 evaluator-only reference 物理分离，当前 train-internal fixture 和 legacy qrels／role eval 只作开发资产；valid／test／heterogeneous holdout 保持预留，待 MU／NVDA 等价 VS4 路径确认通用合同不再变化后预注册；
+2. **已冻结 schema／开发集／split 规则，未冻结隐藏资格集**：runtime-visible input 与 evaluator-only reference 物理分离，当前 train-internal fixture 和 legacy qrels／role eval 只作开发资产；三案例 VS4 已确认同一核心可迁移，下一步必须在读取结果前预注册 valid／test／heterogeneous holdout；
 3. **VS1 已完成。** 当前 DELL pricing/mix 数字原生路径已从 source→Pack→Workbench 贯通：55 envelopes、6 candidate decisions（2 accepted／4 needs-review）、2 reviewed-not-recalled、3 个 supplement-unexecuted GapEligibilityReceipt；该结果只记 `vertical_slice_integrated`，不注册为 valid／test／holdout 资格结果；
 4. **VS2 已完成开发纵切。** IFX 复杂官方 PDF 的表格、脚注、重述和跨页对象已进入同一 spine；自然扫描异质性和 NumericFact 仍未资格化；
 5. **VS3 已完成开发纵切。** 同一对象快照上的多路线候选、CUDA semantic rerank、金融精排和完整 CandidateDecision 已进入 R17 Workbench；该结果没有授予单模型 winner 或自动 Evidence 权限；
-6. **VS4 DELL 已完成，MU／NVDA 待执行。** DELL 三命题形成 5 条 capture-bound 精确 Evidence、3 条宽 Evidence 退役和 1 条 gap 窄化；0 gap 关闭、0 NumericFact 授权。该结果只注册为开发纵切，不能作为跨案或隐藏资格；
+6. **VS4 三案例已完成。** DELL／MU／NVDA 分别形成 22／11／19 条 current exact Evidence 与 14／15／13 个 visible gap；Candidate 自动晋升、NumericFact 新授权和 hard-negative false accept 均为 0。该结果只注册为开发纵切，不能作为隐藏资格；10/10 any-hit 不得替代 all-positive／material-facet coverage；
 7. 每个纵切均先在最早责任层修复，再回放到当前 Workbench／consumer probe；组件绿色但纵切失败时不得合并为主线能力；
-8. 完成 DELL／MU／NVDA 回归后执行 VS5 新异质留出和稳定资格；
+8. 执行 VS5 all-positive coverage、valid temporal、frozen test、新异质留出和稳定资格；
 9. 达到 `S1_qualified_stable` 后再签发完整真实链。
 
-当前结论：`S1 evaluation foundation + VS1-to-VS3 + DELL VS4 integrated / MU-NVDA VS4 + VS5 open / S1 not qualified / full product chain qualification blocked`。
+当前结论：`S1 evaluation foundation + VS1-to-VS3 + three-case VS4 integrated / VS5 all-positive and independent qualification open / S1 not qualified / full product chain qualification blocked`。

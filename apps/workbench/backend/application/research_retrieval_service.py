@@ -30,7 +30,8 @@ from retrieval.vertical_slice import (
 from retrieval.supplement_vertical import (
     SupplementVerticalError,
     project_capture_bound_supplement_lineage,
-    validate_supplement_vertical_summary,
+    resolve_supplement_successor_binding,
+    validate_supplement_vertical_resource,
 )
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
@@ -180,7 +181,7 @@ class ResearchRetrievalService:
                 ) from exc
         try:
             self._s1_supplement_vertical = (
-                validate_supplement_vertical_summary(s1_supplement_vertical)
+                validate_supplement_vertical_resource(s1_supplement_vertical)
                 if s1_supplement_vertical is not None
                 else None
             )
@@ -347,15 +348,21 @@ class ResearchRetrievalService:
         base_projection = project_s1_vs1_case(
             self._s1_vertical_slice, case_key=case_key
         )
-        if base_projection is None:
+        successor_binding = resolve_supplement_successor_binding(
+            self._s1_supplement_vertical, case_key=case_key
+        )
+        if base_projection is None and successor_binding is None:
             return None
-        binding = dict(base_projection.get("pack_binding") or {})
+        binding = dict(
+            base_projection.get("pack_binding") or {}
+            if base_projection is not None
+            else {}
+        )
         artifact_digest = str(binding.get("artifact_digest") or "")
         pack_payload_digest = str(binding.get("pack_payload_digest") or "")
-        if self._s1_supplement_vertical is not None and case_key == "DELL":
-            storage = dict(self._s1_supplement_vertical["storage"])
-            artifact_digest = str(storage["successor_pack_sha256"])
-            pack_payload_digest = str(storage["successor_pack_payload_digest"])
+        if successor_binding is not None:
+            artifact_digest = successor_binding["artifact_digest"]
+            pack_payload_digest = successor_binding["pack_payload_digest"]
         try:
             return project_capture_bound_supplement_lineage(
                 base_projection=base_projection,

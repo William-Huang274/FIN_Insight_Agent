@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 只作为责任坐标，实际按共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice 交付。VS1、VS2、VS3 与 DELL VS4 已进入 R18 Runtime 和 Workbench。DELL VS4 从三条自然命题出发，复用当前 CUDA-only 检索栈与 immutable Dell／TSMC capture，6/6 已审正例 compatible、7/7 hard negative rejected／abstained；当前 Pack 由 20 增至 22 条 Evidence（退役 3 条宽片段，加入 5 条精确 claim），14 个 gap 中窄化 1、关闭 0，NumericFact 新授权为 0。`/workspace`、Evidence API、Retrieval API 与 Operations 已消费同一 successor lineage；历史 S3 fixed-Pack authority 继续固定读取原 v1.1 Pack，活动 current 指针不再改写历史证明。当前只记 `DELL_VS4_vertical_slice_integrated`，MU／NVDA 等价路径、自然扫描、NumericFact 产品闭环、VS5 隐藏留出与 `S1_qualified_stable` 仍开放，不运行产品资格完整真实链。
+Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 只作为责任坐标，实际按共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice 交付。VS1、VS2、VS3 与 DELL／MU／NVDA 三案 VS4 已进入 R19 Runtime 和 Workbench。当前 successor Pack 为 DELL `22 Evidence / 14 gaps`、MU `11 / 15`、NVDA `19 / 13`；旧宽片段分别退役 3／16／14 条，加入 5／11／19 条 capture-bound 精确 claim，gap 分别窄化 1／2／3、关闭 0，MU 另增加 2 个明确归属 S2 的财务桥接 gap。三案 Candidate 自动晋升、NumericFact 新授权和 hard-negative false accept 均为 0。所有 learned Embedding／Cross-Encoder 只允许 CUDA／FP16，CUDA 不可用即 fail closed，绝不回退 CPU。当前只记 `three_case_VS4_vertical_slice_integrated`；10/10 命题有任一有效 top10 目标不等于所有正例找全，仍有 4 个 reviewed positive 未进入 candidate union，故 VS5 必须另测 all-positive material-facet coverage、frozen test、异质留出与 clean replay，`S1_qualified_stable` 仍为 false，不运行产品资格完整真实链。
 
 ## 当前唯一产品边界
 
@@ -15,7 +15,7 @@ Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全�
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/s1/complex-document-quality`、`/api/operations/s1/retrieval-quality`、`/api/operations/s1/supplement-quality`、`/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL 当前 Pack 已包含 SEC、Dell IR 官方托管法说和 TSM IR 官方托管法说，MU/NVDA 暂保留旧 Pack。当前对象库也已把这两份法说纳入受控查询路线：Dell 法说可由本案需求、经营、价值捕获和供给单元检索，TSMC 法说只能在绑定关系方向时作为供应链背景，不能冒充 Dell 自述或供应分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；DELL 五单元也已自然执行并首次形成完整内部报告，但该报告因三条 material false absence 和由此产生的 false conflict 未过 L1/L2，未进入产品面。当前 Case Truth 完整权威、按 cell 分片、分析／交卷分离和本地聚合工程门已关闭；模型自然语义映射、修复后的完整报告、八维质量、MU/NVDA／留出案例泛化和 S3 产品验收仍未证明；reviewed Evidence 页面本身的结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL、MU、NVDA 三案当前均已从旧宽片段继任到精确 capture-bound claim，并共享一个多案例 supplement summary、current Pack、anchor catalog、Workspace catalog 与 canonical lineage。当前对象库也已把 Dell／TSMC 法说等官方资料纳入受控查询路线；跨公司资料只能在绑定关系方向时作为供应链背景，不能冒充本案公司自述或分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；DELL 五单元也已自然执行并首次形成完整内部报告，但该报告因三条 material false absence 和由此产生的 false conflict 未过 L1/L2，未进入产品面。当前 Case Truth 完整权威、按 cell 分片、分析／交卷分离和本地聚合工程门已关闭；模型自然语义映射、修复后的完整报告、八维质量、MU/NVDA／留出案例泛化和 S3 产品验收仍未证明；reviewed Evidence 页面本身的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 
@@ -29,7 +29,7 @@ Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全�
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、Coverage-driven capture-bound supplement、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影。fixed-Pack 微判断仍复用该循环和最终金融 Validator：模型依次提交 thesis、mechanism、counterargument＋WWC，Harness 只校验、展开预编译 relation alias、合并引用并生成一个终态 Judgment，不得补写缺失观点；DeepSeek 的 low/high reasoning 配置只存在于可替换 Provider profile。consumer policy v1.3 已为五个研究单元各编译一份 case-neutral RoleMethodPack，并只从当前 Case／Evidence／NumericFact／typed relation 即时编译 cell-local GraphContextPack；这些包不注册为独立产品资源，也不授予事实或因果权威。Runtime Registry 当前为 R18／16 个资源；模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册。Embedding 与 Cross-Encoder 显式要求 CUDA／FP16且禁止 CPU fallback；CPU 只承担 sparse recall、硬过滤与确定性编排。当前 route policy 声明 `typed_relationship_graph`，但 hybrid candidate Runtime 只执行 BM25＋Qwen，完整图查询 handler 仍未实现；S3 当前 GraphContextPack 不得被误称为关闭该 S1 缺口。
+当前活动图新增 provider-neutral Research Objective／planner atom 编译、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、Coverage-driven capture-bound supplement、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影。fixed-Pack 微判断仍复用该循环和最终金融 Validator：模型依次提交 thesis、mechanism、counterargument＋WWC，Harness 只校验、展开预编译 relation alias、合并引用并生成一个终态 Judgment，不得补写缺失观点；DeepSeek 的 low/high reasoning 配置只存在于可替换 Provider profile。consumer policy v1.3 已为五个研究单元各编译一份 case-neutral RoleMethodPack，并只从当前 Case／Evidence／NumericFact／typed relation 即时编译 cell-local GraphContextPack；这些包不注册为独立产品资源，也不授予事实或因果权威。Runtime Registry 当前为 R19／16 个资源；模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册。Embedding 与 Cross-Encoder 显式要求 CUDA／FP16且禁止 CPU fallback；CPU 只承担 sparse recall、硬过滤与确定性编排。当前 route policy 声明 `typed_relationship_graph`，但 hybrid candidate Runtime 只执行 BM25＋Qwen，完整图查询 handler 仍未实现；S3 当前 GraphContextPack 不得被误称为关闭该 S1 缺口。
 
 ## 已完成的重定基事实
 
@@ -37,7 +37,7 @@ Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全�
 2. Case 公司身份合同和 Case→Evidence Pack digest 绑定已经实现。
 3. `/workspace` 已成为唯一研究产品入口；旧产品页面重定向，旧产品 API 返回 typed HTTP 410。
 4. `/operations` 独立保留运行配置、来源包、受控数据构建、运行记录与基线检查，不承诺旧 Agent 产品能力。
-5. S0 冻结时 Runtime Registry 只有三个活动资源；S1-A/S1-B 增加当前检索快照，S1-C 增加剥离 qrel identity 的排名安全投影，当时清单为六个活动资源。S1-D／Workspace／Source Intake 后为 R11／10 个活动资源；VS1–VS4 后当前为 R18／16 个活动资源。对象构建、embedding cache、角色复核标签、private S2 mart 和 live attempt 仍不进入产品 Runtime Registry。
+5. S0 冻结时 Runtime Registry 只有三个活动资源；S1-A/S1-B 增加当前检索快照，S1-C 增加剥离 qrel identity 的排名安全投影，当时清单为六个活动资源。S1-D／Workspace／Source Intake 后为 R11／10 个活动资源；DELL VS4 为 R18，三案例 VS4 successor 后当前为 R19／16 个活动资源。对象构建、embedding cache、角色复核标签、private S2 mart 和 live attempt 仍不进入产品 Runtime Registry。
 6. 6,052 个旧实现/证明/尝试文件、被替换的规范快照、旧 HTML 原型、脱敏 fixture 以及已完成使命的一次性迁移程序，均已按推断版本非破坏性迁移到 `archive/versions/`；逐文件保留 source、archive、SHA256、原因和替代物。156 个过长路径已用可逆 path map 改为可移植短路径，两份冲突的旧 S0–S5 流水账也已归档。
 7. S1-B 收口时 59 个 Python tests、TypeScript、Vite production build，以及桌面/移动 × 无数据/挂载数据共 12 个 Playwright tests 均通过；真实挂载数据曾自然暴露移动端长检索字段横向溢出，修复后两种模式均为 6/6。
 8. 三案业务验收继续受其有界范围约束；本轮 secret scan 扫描 6,254 个文件为 0 finding。
@@ -87,7 +87,7 @@ Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全�
 
 ## 当前下一步
 
-Owner 早先批准的 S3 连续路径及其历史 attempt 均保持不可变，但最新 S1 更正改变了当前执行优先级，不再立即签发两单元 successor 或三案例完整链。当前程序为：`canonical artifact spine＋A–J 责任覆盖矩阵＋split-safe gold → VS1 数字原生资料／CoverageState／candidate ledger／binding／promotion 全纵切 → VS2 OCR／复杂表格全纵切 → VS3 多路线 recall／rerank／金融精排全纵切 → VS4 Coverage 驱动第二轮补证 → VS5 frozen test／异质留出／稳定资格 → 完整真实 user→S3→S1→S2→S3→S4`。当前已完成 DELL VS4，下一步是 MU／NVDA 等价自然路径；每个纵切都必须进入当前 Pack／Workbench，局部组件只可记 engineering pass，不能留到最终 big-bang integration。
+Owner 早先批准的 S3 连续路径及其历史 attempt 均保持不可变，但最新 S1 更正改变了当前执行优先级，不再立即签发两单元 successor 或三案例完整链。当前程序为：`canonical artifact spine＋A–J 责任覆盖矩阵＋split-safe gold → VS1 数字原生资料／CoverageState／candidate ledger／binding／promotion 全纵切 → VS2 OCR／复杂表格全纵切 → VS3 多路线 recall／rerank／金融精排全纵切 → VS4 Coverage 驱动第二轮补证 → VS5 frozen test／异质留出／稳定资格 → 完整真实 user→S3→S1→S2→S3→S4`。当前已完成 DELL／MU／NVDA 三案 VS4，下一步是 VS5 的 all-positive coverage、valid temporal、frozen test、新异质留出与稳定资格；每个纵切都必须进入当前 Pack／Workbench，局部组件只可记 engineering pass，不能留到最终 big-bang integration。
 
 DELL R7 继续作为不可变的首份完整但内容未通过报告；RC-S3-038／043 与历史 Case Truth natural 结果继续保留，不被 S1 工作追认或关闭。S1 未资格化期间，可单独签发的 deterministic／shadow／node canary 必须明确为诊断，不能声称 S1、三案例泛化、完整产品链或 release。
 
@@ -534,3 +534,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 产品指针更新首次使全仓出现 56 failures／36 errors：历史 S3 fixed-Pack 测试错误地跟随活动 current Pack，合法 S1 更新因此改写旧研究输入。修复后当前产品读 v1.2，历史 authority／attempt 显式读其原始 v1.1 Pack；全仓 `581 passed`，不是用新证据重写旧判断或批量更新 expected output。
 - TypeScript、production build、Playwright desktop Operations 1/1、真实数据桌面／移动 6/6、S1 foundation 与 active baseline 均通过。Embedding／Cross-Encoder 持续 CUDA／FP16 only，CUDA 不可用即 fail closed；不存在 CPU vector fallback。
 - 当前状态为 `DELL_VS4_vertical_slice_integrated / MU_NVDA_equivalent_paths_pending / VS5_pending / S1_qualified_stable_false`。下一步复用同一合同运行 MU／NVDA 自然 Coverage 路径；不为公司增加核心分支，也不把未执行路线、临时不可达或预算不足写成公共信息不存在。
+
+## 2026-08-18 S1 VS4 三案例 successor 与 R19
+
+- MU／NVDA 已复用 DELL 的同一 supplement contract，没有 ticker 专用核心分支。当前三案分别为 DELL `22 Evidence / 14 gaps`、MU `11 / 15`、NVDA `19 / 13`；旧宽 Evidence 退役 3／16／14，精确 capture-bound claim 新增 5／11／19，gap 窄化 1／2／3、关闭 0。MU 增加 2 个明确归属 S2 的 bridge gap，不冒充公共信息不存在。
+- current Pack v1.3、anchor v1.2、Workspace v1.3 与三案例 supplement summary set 进入 R19／16 resources；Evidence、Retrieval、Workspace、Operations 与 S3 current consumer 读取同一 case-bound lineage。Candidate 自动晋升、NumericFact 新授权和 hard-negative false accept 均为 0。
+- 10/10 只代表每个开发命题至少有一个有效目标进入前十；MU cycle reversal、NVDA cancellation、NVDA production delay 和 TSM bottleneck tools 四个 reviewed positive 没进入 candidate union。它们未被静默补入或重标，最早开放层归 VS5 all-positive／material-facet coverage。
+- learned Embedding／Cross-Encoder 当前实际绑定 RTX 4060 Laptop、CUDA 12.6、FP16；CUDA 不可用直接 `candidate_ranking_cuda_required`，不允许 CPU fallback。CPU 仅承担 BM25、SQL、分词、硬过滤、账本和确定性编排。
+- 丰富 Pack 自然暴露 MU 空 cell 与 NVDA cell capacity 两个相邻接缝问题；现用 typed S2 bridge gap 和只在实际 overflow 时生效的确定性 coverage-first cell view 关闭。完整 Pack 权威不裁剪，省略项均 receipt，历史 fixed-Pack 顺序与 digest 不变。
+- Operations 已从 DELL 单案改为三案例 summary；TypeScript typecheck、production build、Operations desktop E2E、三案 S3 回放和全仓 `592 passed`。当前状态为 `three_case_VS4_vertical_slice_integrated / VS5_pending / S1_qualified_stable_false`。

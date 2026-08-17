@@ -643,6 +643,123 @@ def _validate_evidence_source(
         )
 
 
+def _select_cell_evidence_cards(
+    cards: Sequence[Mapping[str, Any]],
+    *,
+    contract: Mapping[str, Any],
+    case_key: str,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Compile a bounded, coverage-first cell view without dropping Pack truth.
+
+    The reviewed Pack remains the immutable authority.  This selector only
+    decides which cards enter one model-visible cell when a richer Pack exceeds
+    that cell's declared context capacity.  It is deterministic, label-free and
+    favors the primary slot, new facet/owner coverage and subject disclosures;
+    omitted cards remain available in the Pack and are receipted here.
+    """
+
+    maximum = int(contract["maximum_evidence_items"])
+    primary_slot = str(contract["primary_slot_id"])
+    candidates = [deepcopy(dict(row)) for row in cards]
+
+    def _date_rank(value: Mapping[str, Any]) -> int:
+        raw = str(value.get("publication_date") or "").replace("-", "")
+        return int(raw) if raw.isdigit() else 0
+
+    def _base_key(value: Mapping[str, Any]) -> tuple[Any, ...]:
+        bindings = value.get("slot_bindings") or ()
+        primary = any(
+            str(row.get("slot_id") or "") == primary_slot
+            for row in bindings
+            if isinstance(row, Mapping)
+        )
+        subject = str(value.get("evidence_owner_ticker") or "") == case_key
+        return (
+            0 if primary else 1,
+            0 if subject else 1,
+            -_date_rank(value),
+            str(value.get("source_record_id") or ""),
+            str(value.get("evidence_ref") or ""),
+        )
+
+    if len(candidates) <= maximum:
+        selected = candidates
+    else:
+        candidates.sort(key=_base_key)
+        selected = []
+        remaining = list(candidates)
+        covered_bindings: set[tuple[str, str]] = set()
+        covered_owners: set[str] = set()
+        covered_sources: set[str] = set()
+        while remaining and len(selected) < maximum:
+            scored: list[tuple[int, int, dict[str, Any]]] = []
+            for index, card in enumerate(remaining):
+                binding_keys = {
+                    (str(binding.get("slot_id") or ""), str(facet))
+                    for binding in card.get("slot_bindings") or ()
+                    if isinstance(binding, Mapping)
+                    for facet in binding.get("facet_ids") or ()
+                }
+                primary = any(slot == primary_slot for slot, _ in binding_keys)
+                new_primary = sum(
+                    key not in covered_bindings and key[0] == primary_slot
+                    for key in binding_keys
+                )
+                new_supplemental = sum(
+                    key not in covered_bindings and key[0] != primary_slot
+                    for key in binding_keys
+                )
+                owner = str(card.get("evidence_owner_ticker") or "")
+                source_record = str(card.get("source_record_id") or "")
+                score = (
+                    100 * new_primary
+                    + 80 * new_supplemental
+                    + 20 * (owner not in covered_owners)
+                    + 5 * (source_record not in covered_sources)
+                    + 10 * primary
+                    + 4 * (owner == case_key)
+                )
+                scored.append((score, -index, card))
+            _, _, chosen = max(scored, key=lambda row: (row[0], row[1]))
+            selected.append(chosen)
+            remaining.remove(chosen)
+            covered_owners.add(str(chosen.get("evidence_owner_ticker") or ""))
+            covered_sources.add(str(chosen.get("source_record_id") or ""))
+            for binding in chosen.get("slot_bindings") or ():
+                if not isinstance(binding, Mapping):
+                    continue
+                covered_bindings.update(
+                    (str(binding.get("slot_id") or ""), str(facet))
+                    for facet in binding.get("facet_ids") or ()
+                )
+        selected.sort(key=_base_key)
+
+    selected_refs = [str(row["evidence_ref"]) for row in selected]
+    selected_set = set(selected_refs)
+    omitted_refs = [
+        str(row["evidence_ref"])
+        for row in candidates
+        if str(row["evidence_ref"]) not in selected_set
+    ]
+    receipt = {
+        "strategy": "deterministic_primary_slot_facet_owner_coverage_v1",
+        "input_evidence_count": len(candidates),
+        "maximum_evidence_items": maximum,
+        "selected_evidence_count": len(selected),
+        "omitted_but_preserved_in_pack_count": len(omitted_refs),
+        "selected_evidence_refs": selected_refs,
+        "omitted_evidence_refs": omitted_refs,
+        "primary_slot_id": primary_slot,
+        "selection_basis": (
+            "primary slot, new slot/facet coverage, evidence owner diversity, "
+            "source-record diversity, subject authority and publication date"
+        ),
+        "model_calls": 0,
+        "pack_authority_changed": False,
+    }
+    return selected, receipt
+
+
 def _numeric_signature(fact: Mapping[str, Any]) -> dict[str, Any]:
     # A first-quarter observation can legitimately be exposed by the S2 mart as
     # both ``quarter_discrete`` and ``fiscal_ytd``.  Those rows have the same
@@ -1172,7 +1289,7 @@ def compile_current_research_input(
             contract["primary_slot_id"],
             *contract["supplemental_context_slot_ids"],
         }
-        cell_evidence = [
+        eligible_cell_evidence = [
             row
             for row in evidence_cards
             if any(
@@ -1180,6 +1297,11 @@ def compile_current_research_input(
                 for binding in row["slot_bindings"]
             )
         ]
+        cell_evidence, evidence_selection_receipt = _select_cell_evidence_cards(
+            eligible_cell_evidence,
+            contract=contract,
+            case_key=case_key,
+        )
         cell_numeric = [
             row
             for row in numeric_cards
@@ -1197,10 +1319,6 @@ def compile_current_research_input(
         cell_gaps = [
             row for row in gap_cards if row["slot_id"] in eligible_slots
         ]
-        _require(
-            len(cell_evidence) <= int(contract["maximum_evidence_items"]),
-            "research_consumer_cell_capacity_exceeded",
-        )
         _enforce_cell_numeric_capacity(
             cards=cell_numeric,
             relation_cards=cell_numeric_relations,
@@ -1227,6 +1345,13 @@ def compile_current_research_input(
                 "allowed_evidence_refs": [
                     row["evidence_ref"] for row in cell_evidence
                 ],
+                **(
+                    {"evidence_selection_receipt": evidence_selection_receipt}
+                    if evidence_selection_receipt[
+                        "omitted_but_preserved_in_pack_count"
+                    ]
+                    else {}
+                ),
                 "allowed_numeric_refs": [
                     row["numeric_ref"] for row in cell_numeric
                 ],
@@ -1310,6 +1435,21 @@ def compile_current_research_input(
                 evidence_pack.get("evidence_items") or ()
             ),
             "model_visible_evidence_count": len(evidence_cards),
+            **(
+                {
+                    "cell_view_evidence_omission_count": sum(
+                        int(
+                            cell["evidence_selection_receipt"][
+                                "omitted_but_preserved_in_pack_count"
+                            ]
+                        )
+                        for cell in cells
+                        if "evidence_selection_receipt" in cell
+                    )
+                }
+                if any("evidence_selection_receipt" in cell for cell in cells)
+                else {}
+            ),
             "reviewed_pack_gap_count": len(
                 evidence_pack.get("residual_gaps") or ()
             ),

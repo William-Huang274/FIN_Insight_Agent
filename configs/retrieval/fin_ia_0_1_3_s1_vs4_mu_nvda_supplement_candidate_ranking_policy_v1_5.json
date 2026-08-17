@@ -1,0 +1,25 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs4_mu_nvda_role_metric_and_primary_order_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS4-MU-NVDA-SUPPLEMENT-CANDIDATE-PROBE-V1.5",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_candidate_ranking_policy_v1_4.json",
+  "parent_policy_sha256_lf": "1e42f58354a6989c0307e90b7268ce1184ca6e9831512af3d3e5f173a9d72689",
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "the immutable v1.4 result proved candidate-pool Evidence Role classification at 20 of 20 positives and 5 of 5 hard negatives but exposed two evaluation/orchestration defects after result materialization",
+      "the global judged-role aggregate ignored the per-label hard-boundary eligibility receipt and still counted one intentionally out-of-period metric row",
+      "the role-guarded route averaged the selected Qwen winner with the materially weaker BGE shadow, demoting a current NVIDIA result from Qwen rank 4 to role-guarded rank 24 behind generic compatible metric rows",
+      "v1.5 scopes the aggregate to eligible labels and preserves Qwen order inside role strata while retaining BGE only as a deterministic sub-tie shadow"
+    ],
+    "not_changed": [
+      "query atoms, qrels, objects, typed routes, model identities, cached vectors, cached pair scores, hard filters, budgets and Evidence authority",
+      "the v1.4 output remains immutable",
+      "no Runtime route is promoted by this development successor"
+    ],
+    "required_cache_root": ".codex_runtime/fin_0_1_3_s1_vs3_candidate_ranking",
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "training_steps_authorized": 0
+  }
+}

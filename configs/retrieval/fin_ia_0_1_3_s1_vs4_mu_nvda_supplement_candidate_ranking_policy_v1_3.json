@@ -1,0 +1,24 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs4_mu_nvda_canonical_cuda_cache_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS4-MU-NVDA-SUPPLEMENT-CANDIDATE-PROBE-V1.3",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_candidate_ranking_policy_v1_2.json",
+  "parent_policy_sha256_lf": "aca54fc526cfd9e1f8b0f03cf9637d20f7e245df0a020bcff16d7d798d7c9421",
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "the v1.2 learned run was stopped before result materialization after the command selected an empty experiment-local cache root and began duplicating the canonical object vectors",
+      "v1.3 binds the execution decision to reuse the existing VS3 BGE-M3 and Qwen object caches after their object, model and manifest identities pass validation",
+      "new MU/NVDA query vectors, multi-vector candidate refinement and Cross-Encoder pair scores still execute on CUDA and receive a concrete device receipt"
+    ],
+    "not_changed": [
+      "query atoms, labels, typed-route proof, objects, models, hard filters, candidate limits, Evidence Role and Evidence authority",
+      "no partially generated vector file is accepted without a complete matching manifest",
+      "the stopped v1.2 attempt remains recorded and is not relabeled as a product result"
+    ],
+    "required_cache_root": ".codex_runtime/fin_0_1_3_s1_vs3_candidate_ranking",
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "training_steps_authorized": 0
+  }
+}

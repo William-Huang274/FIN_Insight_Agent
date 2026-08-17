@@ -1,0 +1,557 @@
+{
+  "schema_version": "fin_ia_s1c_runtime_query_atom_eval_v1_2",
+  "status": "vs4_mu_nvda_natural_coverage_supplement_pre_registered",
+  "recorded_at": "2026-08-18",
+  "policy": {
+    "compile_request_before_label_join": true,
+    "one_facet_and_one_owner_per_atom": true,
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "typed_gap_is_valid_outcome": true,
+    "observed_validation_cases_forbidden_from_tuning": [
+      "ORCL",
+      "ASML",
+      "ANET"
+    ],
+    "qrel_successor_not_attempt_rewrite": true,
+    "stable_object_key_before_compiled_id": true,
+    "source_level_match_is_not_object_level_relevance": true,
+    "adjudication_authority": "codex_business_semantic_development_review",
+    "owner_acceptance": false,
+    "sentence_object_migration_uses_parent_bound_containment": true
+  },
+  "summary": {
+    "atom_count": 10,
+    "case_count": 2,
+    "positive_label_count": 31,
+    "hard_negative_label_count": 19,
+    "unjudged_label_count": 0,
+    "typed_gap_atom_count": 0
+  },
+  "atoms": [
+    {
+      "atom_id": "S1_VS4_MU_DOWNSTREAM_MSFT",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1_VS4_MU_DOWNSTREAM_MSFT",
+        "cell_id": "CELL::S1_VS4_MU_DOWNSTREAM_MSFT",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "MU",
+        "subject_ticker": "MU",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["MSFT"],
+        "requested_facet_ids": ["downstream_demand_context"],
+        "metric_intents": ["cloud capital expenditures"],
+        "product_intents": ["AI infrastructure deployment and data-center demand"],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [2025, 2026, 2027]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-Q", "10-K", "8-K"],
+        "acceptable_proxy": true,
+        "forbidden_proxy": [
+          "Microsoft disclosure treated as Micron purchase volume",
+          "generic cloud metric definition",
+          "future publication",
+          "unbound downstream entity"
+        ],
+        "stop_condition": "return Microsoft-authored current AI infrastructure demand context with a Micron attribution boundary, otherwise return a typed downstream gap",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::c649445947ddfb68fa3cb1fb",
+          "COBJ::32e86517a12652405137a787",
+          "COBJ::0d0917c0dd2f8846d85842fb"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::5d4863574fd88759f0524130",
+          "COBJ::d9cac3187c586d77fd0192d2"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::c649445947ddfb68fa3cb1fb": ["direct_demand_signal", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::32e86517a12652405137a787": ["direct_demand_signal", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::0d0917c0dd2f8846d85842fb": ["observed_operating_result", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::5d4863574fd88759f0524130": ["generic_company_description"],
+          "COBJ::d9cac3187c586d77fd0192d2": ["unrelated_financial_surface"]
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_MU_HBM_COMMITMENTS",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1_VS4_MU_HBM_COMMITMENTS",
+        "cell_id": "CELL::S1_VS4_MU_HBM_COMMITMENTS",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "MU",
+        "subject_ticker": "MU",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["MU"],
+        "requested_facet_ids": ["subject_relationship_disclosure"],
+        "metric_intents": [],
+        "product_intents": ["HBM shipments, customer qualification, take-or-pay commitments and customer deposits"],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [2025, 2026, 2027]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-Q", "10-K", "8-K"],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "safe-harbor list treated as a customer commitment",
+          "future publication",
+          "unbound issuer"
+        ],
+        "stop_condition": "return Micron-authored current customer commitment evidence without inventing customer identity or order volume, otherwise return a typed relationship gap",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::f9c13c79a8c50dd1eeb57394",
+          "COBJ::85f4f169d8566e7c4e5209b4",
+          "COBJ::c27b82b71738dcf287ac514f"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::8291e3bae5a16df8c79008d0",
+          "COBJ::943853b07216f8e127800af7"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::f9c13c79a8c50dd1eeb57394": ["relationship_context", "observed_shipment_signal"],
+          "COBJ::85f4f169d8566e7c4e5209b4": ["relationship_context", "binding_customer_commitment"],
+          "COBJ::c27b82b71738dcf287ac514f": ["relationship_context", "customer_financial_commitment"],
+          "COBJ::8291e3bae5a16df8c79008d0": ["generic_forward_looking_boilerplate"],
+          "COBJ::943853b07216f8e127800af7": ["generic_forward_looking_boilerplate"]
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_MU_HBM_SUPPLY_EXECUTION",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1_VS4_MU_HBM_SUPPLY_EXECUTION",
+        "cell_id": "CELL::S1_VS4_MU_HBM_SUPPLY_EXECUTION",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "MU",
+        "subject_ticker": "MU",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["MU"],
+        "requested_facet_ids": ["subject_execution"],
+        "metric_intents": [],
+        "product_intents": ["HBM advanced packaging capacity, wafer intensity, yield and production execution"],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [2025, 2026, 2027]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-Q", "10-K", "8-K"],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "generic risk preamble",
+          "facility timing treated as usable yield",
+          "future publication",
+          "unbound issuer"
+        ],
+        "stop_condition": "return Micron-authored HBM supply execution evidence while preserving capacity and yield gaps, otherwise return a typed supply gap",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::4113595bbddedf191029ba24",
+          "COBJ::8ce9daeffe417c82615e9857",
+          "COBJ::bbe786a4c79083a0dc2464e8"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::8291e3bae5a16df8c79008d0",
+          "COBJ::f35efea3fdc96e077621e43e"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::4113595bbddedf191029ba24": ["direct_supply_capacity_signal", "capacity_timing"],
+          "COBJ::8ce9daeffe417c82615e9857": ["direct_supply_capacity_signal", "wafer_intensity"],
+          "COBJ::bbe786a4c79083a0dc2464e8": ["supply_risk_or_counterevidence", "yield_and_packaging_barrier"],
+          "COBJ::8291e3bae5a16df8c79008d0": ["generic_forward_looking_boilerplate"],
+          "COBJ::f35efea3fdc96e077621e43e": ["generic_forward_looking_boilerplate"]
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_MU_ISSUER_COUNTER",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1_VS4_MU_ISSUER_COUNTER",
+        "cell_id": "CELL::S1_VS4_MU_ISSUER_COUNTER",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "MU",
+        "subject_ticker": "MU",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["MU"],
+        "requested_facet_ids": ["issuer_counterevidence"],
+        "metric_intents": [],
+        "product_intents": ["customer concentration, data-center buildout delays, HBM demand reversal and supply-cycle risk"],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [2025, 2026, 2027]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-Q", "10-K", "8-K"],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "generic safe-harbor language",
+          "future publication",
+          "unbound issuer"
+        ],
+        "stop_condition": "return the strongest current Micron-authored evidence that could weaken HBM durability, otherwise return a typed counterevidence gap",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::285b39bddd1212c5c28d8ad5",
+          "COBJ::d00bda426ae5573aea76b94f",
+          "COBJ::d5b8fada2b8960683ecd1afd"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::8291e3bae5a16df8c79008d0",
+          "COBJ::943853b07216f8e127800af7"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::285b39bddd1212c5c28d8ad5": ["demand_risk_or_counterevidence", "customer_concentration"],
+          "COBJ::d00bda426ae5573aea76b94f": ["demand_risk_or_counterevidence", "data_center_buildout_constraint"],
+          "COBJ::d5b8fada2b8960683ecd1afd": ["demand_risk_or_counterevidence", "supply_cycle_reversal"],
+          "COBJ::8291e3bae5a16df8c79008d0": ["generic_forward_looking_boilerplate"],
+          "COBJ::943853b07216f8e127800af7": ["generic_forward_looking_boilerplate"]
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_DOWNSTREAM_MSFT",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1_VS4_NVDA_DOWNSTREAM_MSFT",
+        "cell_id": "CELL::S1_VS4_NVDA_DOWNSTREAM_MSFT",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["MSFT"],
+        "requested_facet_ids": ["downstream_demand_context"],
+        "metric_intents": ["cloud capital expenditures"],
+        "product_intents": ["AI infrastructure deployment, data-center demand and power constraints"],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [2025, 2026, 2027]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-Q", "10-K", "8-K"],
+        "acceptable_proxy": true,
+        "forbidden_proxy": [
+          "Microsoft disclosure treated as NVIDIA order volume",
+          "generic cloud metric definition",
+          "future publication",
+          "unbound downstream entity"
+        ],
+        "stop_condition": "return Microsoft-authored current AI infrastructure demand context with an NVIDIA attribution boundary, otherwise return a typed downstream gap",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::c649445947ddfb68fa3cb1fb",
+          "COBJ::32e86517a12652405137a787",
+          "COBJ::0d0917c0dd2f8846d85842fb"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::5d4863574fd88759f0524130",
+          "COBJ::d9cac3187c586d77fd0192d2"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::c649445947ddfb68fa3cb1fb": ["direct_demand_signal", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::32e86517a12652405137a787": ["direct_demand_signal", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::0d0917c0dd2f8846d85842fb": ["observed_operating_result", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::5d4863574fd88759f0524130": ["generic_company_description"],
+          "COBJ::d9cac3187c586d77fd0192d2": ["unrelated_financial_surface"]
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_REPORTED_RESULTS",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1_VS4_NVDA_REPORTED_RESULTS",
+        "cell_id": "CELL::S1_VS4_NVDA_REPORTED_RESULTS",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["NVDA"],
+        "requested_facet_ids": ["reported_results"],
+        "metric_intents": ["revenue", "data center revenue"],
+        "product_intents": ["Blackwell ramp and networking demand"],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [2026, 2027]
+        },
+        "granularity": "quarter",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-Q", "10-K", "8-K"],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "metric row promoted as narrative Evidence",
+          "safe-harbor language",
+          "future publication",
+          "unbound issuer"
+        ],
+        "stop_condition": "return a current NVIDIA-authored operating-result claim; exact numerical authority remains S2-owned",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": ["COBJ::b040d306c476a706260935e5"],
+        "hard_negative_object_ids": [
+          "COBJ::fe4531005e104268c95eeacd",
+          "COBJ::f01c7ab83ca70f037245b84c"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::b040d306c476a706260935e5": ["observed_operating_result"],
+          "COBJ::fe4531005e104268c95eeacd": ["unrelated_financial_surface"],
+          "COBJ::f01c7ab83ca70f037245b84c": ["unrelated_financial_surface"]
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_SUPPLY_EXECUTION",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1_VS4_NVDA_SUPPLY_EXECUTION",
+        "cell_id": "CELL::S1_VS4_NVDA_SUPPLY_EXECUTION",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["NVDA"],
+        "requested_facet_ids": ["subject_execution"],
+        "metric_intents": [],
+        "product_intents": ["long-term supply commitments, manufacturing lead times, capacity and supply-demand mismatch"],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [2025, 2026, 2027]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-Q", "10-K", "8-K"],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "contact table or safe-harbor list treated as supply evidence",
+          "capacity commitment treated as usable allocation or yield",
+          "future publication",
+          "unbound issuer"
+        ],
+        "stop_condition": "return NVIDIA-authored supply execution evidence while preserving supplier-allocation and yield boundaries, otherwise return a typed supply gap",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::0065ea7ccdb7dc162734bf2f",
+          "COBJ::105491ae67a1a5e0c775beb2",
+          "COBJ::446f4a4bcb2e34a40fd756f6",
+          "COBJ::fd70285573b56aa0930a9188",
+          "COBJ::db735740b6438e6ce6dd3d13"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::6af329cf3f9ccf9b6b81ae7e",
+          "COBJ::56380e85ea7d074cc6ceba21"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::0065ea7ccdb7dc162734bf2f": ["direct_supply_capacity_signal"],
+          "COBJ::105491ae67a1a5e0c775beb2": ["supply_risk_or_counterevidence", "capacity_commitment"],
+          "COBJ::446f4a4bcb2e34a40fd756f6": ["direct_supply_capacity_signal", "capacity_commitment"],
+          "COBJ::fd70285573b56aa0930a9188": ["supply_risk_or_counterevidence", "lead_time"],
+          "COBJ::db735740b6438e6ce6dd3d13": ["supply_risk_or_counterevidence", "supply_demand_mismatch"],
+          "COBJ::6af329cf3f9ccf9b6b81ae7e": ["contact_or_parent_context"],
+          "COBJ::56380e85ea7d074cc6ceba21": ["generic_forward_looking_boilerplate"]
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_ISSUER_COUNTER",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1_VS4_NVDA_ISSUER_COUNTER",
+        "cell_id": "CELL::S1_VS4_NVDA_ISSUER_COUNTER",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["NVDA"],
+        "requested_facet_ids": ["issuer_counterevidence"],
+        "metric_intents": [],
+        "product_intents": ["demand overestimate, customer cancellation, stranded supply commitments and data-center buildout constraints"],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [2025, 2026, 2027]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-Q", "10-K", "8-K"],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "generic safe-harbor language",
+          "contact table",
+          "future publication",
+          "unbound issuer"
+        ],
+        "stop_condition": "return the strongest current NVIDIA-authored evidence that could weaken demand durability, otherwise return a typed counterevidence gap",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::8274b77a68bad84f7820827c",
+          "COBJ::6bad3b80a28f25e2d0cb3f9a",
+          "COBJ::9b7f2b4641672046d1bcff73",
+          "COBJ::a12318a5213895b69196e5ab"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::6af329cf3f9ccf9b6b81ae7e",
+          "COBJ::56380e85ea7d074cc6ceba21"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::8274b77a68bad84f7820827c": ["demand_risk_or_counterevidence", "cancellation_risk"],
+          "COBJ::6bad3b80a28f25e2d0cb3f9a": ["demand_risk_or_counterevidence", "stranded_commitment_risk"],
+          "COBJ::9b7f2b4641672046d1bcff73": ["supply_risk_or_counterevidence", "production_delay"],
+          "COBJ::a12318a5213895b69196e5ab": ["demand_risk_or_counterevidence", "data_center_buildout_constraint"],
+          "COBJ::6af329cf3f9ccf9b6b81ae7e": ["contact_or_parent_context"],
+          "COBJ::56380e85ea7d074cc6ceba21": ["generic_forward_looking_boilerplate"]
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_UPSTREAM_MU",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1_VS4_NVDA_UPSTREAM_MU",
+        "cell_id": "CELL::S1_VS4_NVDA_UPSTREAM_MU",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["MU"],
+        "requested_facet_ids": ["upstream_capacity_context"],
+        "metric_intents": [],
+        "product_intents": ["HBM shipments, wafer intensity, yield and advanced packaging constraints"],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [2025, 2026, 2027]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-Q", "10-K", "8-K"],
+        "acceptable_proxy": true,
+        "forbidden_proxy": [
+          "Micron HBM disclosure treated as NVIDIA supplier allocation",
+          "generic safe-harbor language",
+          "future publication",
+          "unbound upstream entity"
+        ],
+        "stop_condition": "return Micron-authored HBM ecosystem evidence with an explicit NVIDIA attribution boundary, otherwise return a typed upstream gap",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::f9c13c79a8c50dd1eeb57394",
+          "COBJ::8ce9daeffe417c82615e9857",
+          "COBJ::bbe786a4c79083a0dc2464e8"
+        ],
+        "hard_negative_object_ids": ["COBJ::8291e3bae5a16df8c79008d0"],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::f9c13c79a8c50dd1eeb57394": ["direct_supply_capacity_signal", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::8ce9daeffe417c82615e9857": ["direct_supply_capacity_signal", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::bbe786a4c79083a0dc2464e8": ["supply_risk_or_counterevidence", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::8291e3bae5a16df8c79008d0": ["generic_forward_looking_boilerplate"]
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_UPSTREAM_TSM",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1_VS4_NVDA_UPSTREAM_TSM",
+        "cell_id": "CELL::S1_VS4_NVDA_UPSTREAM_TSM",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["TSM"],
+        "requested_facet_ids": ["upstream_capacity_context"],
+        "metric_intents": [],
+        "product_intents": ["advanced packaging bottlenecks, tester shortages and customer growth constraints"],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [2025, 2026, 2027]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["20-F", "6-K", "EARNINGS_CALL_TRANSCRIPT"],
+        "acceptable_proxy": true,
+        "forbidden_proxy": [
+          "industry bottleneck treated as NVIDIA allocation",
+          "analyst question treated as management evidence",
+          "future publication",
+          "unbound upstream entity"
+        ],
+        "stop_condition": "return TSMC-authored upstream supply evidence with an NVIDIA-specific attribution boundary, otherwise return a typed upstream gap",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::bb4b07ecca957f89a598fc06",
+          "COBJ::07ef64bd2d61623d1f4d9262",
+          "COBJ::dbe25978af4e48df2d32a099"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::fb5256da9e0d1792bd8a5c41",
+          "COBJ::e76fccb687af63f01005e69c"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::bb4b07ecca957f89a598fc06": ["supply_risk_or_counterevidence", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::07ef64bd2d61623d1f4d9262": ["supply_risk_or_counterevidence", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::dbe25978af4e48df2d32a099": ["supply_risk_or_counterevidence", "counterparty_or_ecosystem_readthrough"],
+          "COBJ::fb5256da9e0d1792bd8a5c41": ["analyst_question_not_management_evidence"],
+          "COBJ::e76fccb687af63f01005e69c": ["question_restated_not_management_evidence"]
+        }
+      }
+    }
+  ]
+}

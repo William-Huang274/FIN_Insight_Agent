@@ -99,12 +99,26 @@ def test_operations_surface_reads_version_neutral_store_and_runtime(tmp_path: Pa
     supplement_quality = client.get("/api/operations/s1/supplement-quality")
     assert supplement_quality.status_code == 200
     supplement_payload = supplement_quality.json()
-    assert supplement_payload["coverage_delta"]["retired_broad_or_legacy_evidence_count"] == 3
-    assert supplement_payload["coverage_delta"]["added_capture_bound_claim_count"] == 5
-    assert supplement_payload["coverage_delta"]["narrowed_gap_count"] == 1
-    assert supplement_payload["coverage_delta"]["closed_gap_count"] == 0
-    assert all(row["proposition_ready"] for row in supplement_payload["proposition_rows"])
-    assert supplement_payload["authority"]["complete_s1_qualified"] is False
+    case_summaries = {
+        row["case_key"]: row for row in supplement_payload["case_summaries"]
+    }
+    assert tuple(case_summaries) == ("DELL", "MU", "NVDA")
+    expected = {
+        "DELL": {"retired": 3, "added": 5, "narrowed": 1, "new_gap": 0, "gaps": 14},
+        "MU": {"retired": 16, "added": 11, "narrowed": 2, "new_gap": 2, "gaps": 15},
+        "NVDA": {"retired": 14, "added": 19, "narrowed": 3, "new_gap": 0, "gaps": 13},
+    }
+    for case_key, values in expected.items():
+        row = case_summaries[case_key]
+        delta = row["coverage_delta"]
+        assert delta["retired_broad_or_legacy_evidence_count"] == values["retired"]
+        assert delta["added_capture_bound_claim_count"] == values["added"]
+        assert delta["narrowed_gap_count"] == values["narrowed"]
+        assert delta.get("added_gap_count", 0) == values["new_gap"]
+        assert delta["closed_gap_count"] == 0
+        assert delta["successor_gap_count"] == values["gaps"]
+        assert all(item["proposition_ready"] for item in row["proposition_rows"])
+        assert row["authority"]["complete_s1_qualified"] is False
 
 
 def test_operations_runs_real_smoke_and_current_baseline_eval(tmp_path: Path) -> None:

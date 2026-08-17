@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import date
+from functools import lru_cache
 import hashlib
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
@@ -20,10 +22,40 @@ WORKBENCH_SCHEMA_VERSION = "fin_ia_s1_supplement_workbench_projection_v1_0"
 SUPPLEMENT_SUMMARY_SCHEMA_VERSION = (
     "fin_ia_s1_vs4_dell_supplement_vertical_summary_v1_0"
 )
+CASE_SUPPLEMENT_SUMMARY_SCHEMA_VERSION = (
+    "fin_ia_s1_vs4_case_supplement_vertical_summary_v1_0"
+)
+SUPPLEMENT_SUMMARY_SET_SCHEMA_VERSION = (
+    "fin_ia_s1_vs4_case_supplement_vertical_summary_set_v1_0"
+)
 
 
 class SupplementVerticalError(ValueError):
     """A bounded S1 supplement violated evidence or lineage authority."""
+
+
+class _VisibleHTMLText(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+
+    def handle_data(self, data: str) -> None:
+        if data:
+            self.parts.append(data)
+
+
+@lru_cache(maxsize=16)
+def _normalized_html_capture_text(path_value: str, expected_sha256: str) -> str:
+    path = Path(path_value)
+    _require(path.is_file(), "supplement_capture_file_missing")
+    _require(
+        _file_sha256(path) == expected_sha256,
+        "supplement_capture_sha256_drift",
+    )
+    parser = _VisibleHTMLText()
+    parser.feed(path.read_text(encoding="utf-8", errors="ignore"))
+    parser.close()
+    return _normalized(" ".join(parser.parts))
 
 
 def _require(condition: bool, code: str) -> None:
@@ -80,6 +112,7 @@ def verify_capture_bound_object(
     parent_document: Mapping[str, Any],
     research_as_of: str,
     capture_resolver: Callable[[str], Path],
+    legacy_capture_attestation: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Prove that a ranked claim is backed by an immutable source capture."""
 
@@ -113,10 +146,6 @@ def verify_capture_bound_object(
         == str(base.get("parent_document_digest") or ""),
         "supplement_parent_document_binding_invalid",
     )
-    _require(
-        parent_document.get("lineage_state") == "immutable_capture_bound",
-        "supplement_parent_not_immutable_capture_bound",
-    )
     for key in ("ticker", "source_type", "publication_date", "period_end"):
         _require(
             str(base.get(key) or "") == str(source_record.get(key) or "")
@@ -136,28 +165,64 @@ def verify_capture_bound_object(
         and _normalized(surface) in _normalized(source_record.get("text")),
         "supplement_claim_surface_not_bound_to_source_record",
     )
-    capture_ref = str(
-        metadata.get("source_capture_ref")
-        or parent_document.get("capture_ref")
-        or ""
-    )
-    capture_sha256 = str(
-        metadata.get("source_capture_sha256")
-        or parent_document.get("capture_sha256")
-        or ""
-    )
-    _require(
-        capture_ref
-        and capture_sha256
-        and capture_sha256 == str(parent_document.get("capture_sha256") or ""),
-        "supplement_capture_binding_missing",
-    )
+    immutable_parent = parent_document.get("lineage_state") == "immutable_capture_bound"
+    attested_legacy_parent = False
+    if immutable_parent:
+        capture_ref = str(
+            metadata.get("source_capture_ref")
+            or parent_document.get("capture_ref")
+            or ""
+        )
+        capture_sha256 = str(
+            metadata.get("source_capture_sha256")
+            or parent_document.get("capture_sha256")
+            or ""
+        )
+        _require(
+            capture_ref
+            and capture_sha256
+            and capture_sha256 == str(parent_document.get("capture_sha256") or ""),
+            "supplement_capture_binding_missing",
+        )
+    else:
+        attestation = _mapping(
+            legacy_capture_attestation,
+            "supplement_parent_not_immutable_capture_bound",
+        )
+        _require(
+            attestation.get("schema_version")
+            == "fin_ia_legacy_local_capture_attestation_v1_0"
+            and attestation.get("status")
+            == "legacy_local_source_capture_attested"
+            and str(attestation.get("parent_document_id") or "") == parent_id
+            and str(attestation.get("parent_document_digest") or "")
+            == canonical_digest(dict(parent_document))
+            and str(attestation.get("source_url") or "")
+            == str(source_record.get("source_url") or "")
+            and attestation.get("capture_format") == "html"
+            and attestation.get("extraction_method")
+            == "stdlib_htmlparser_visible_text_v1",
+            "supplement_legacy_capture_attestation_invalid",
+        )
+        capture_ref = str(attestation.get("capture_ref") or "")
+        capture_sha256 = str(attestation.get("capture_sha256") or "")
+        _require(
+            capture_ref and len(capture_sha256) == 64,
+            "supplement_capture_binding_missing",
+        )
+        attested_legacy_parent = True
     capture_path = capture_resolver(capture_ref)
     _require(capture_path.is_file(), "supplement_capture_file_missing")
     _require(
         _file_sha256(capture_path) == capture_sha256,
         "supplement_capture_sha256_drift",
     )
+    if attested_legacy_parent:
+        _require(
+            _normalized(surface)
+            in _normalized_html_capture_text(str(capture_path), capture_sha256),
+            "supplement_claim_surface_not_found_in_legacy_capture",
+        )
     body = {
         "schema_version": CAPTURE_RECEIPT_SCHEMA_VERSION,
         "status": "capture_bound_object_verified",
@@ -168,6 +233,11 @@ def verify_capture_bound_object(
         "parent_document_digest": str(base.get("parent_document_digest") or ""),
         "capture_ref": capture_ref,
         "capture_sha256": capture_sha256,
+        "capture_binding_kind": (
+            "legacy_local_capture_attestation"
+            if attested_legacy_parent
+            else "immutable_parent_capture"
+        ),
         "evidence_owner_ticker": str(base.get("ticker") or "").upper(),
         "source_type": base.get("source_type"),
         "publication_date": base.get("publication_date"),
@@ -178,6 +248,8 @@ def verify_capture_bound_object(
             "source_record_digest_matched": True,
             "parent_document_digest_matched": True,
             "immutable_capture_sha256_matched": True,
+            "legacy_capture_attestation_used": attested_legacy_parent,
+            "legacy_capture_surface_matched": attested_legacy_parent,
             "identity_period_and_source_matched": True,
             "claim_surface_bound_to_source_record": True,
             "publication_not_after_research_as_of": True,
@@ -304,6 +376,9 @@ def build_capture_bound_pack_successor(
     parent_documents_by_id: Mapping[str, Mapping[str, Any]],
     capture_resolver: Callable[[str], Path],
     recorded_at: str,
+    legacy_capture_attestations_by_parent_id: Mapping[
+        str, Mapping[str, Any]
+    ] | None = None,
 ) -> dict[str, Any]:
     """Adjudicate a bounded supplement and materialize an immutable Pack successor."""
 
@@ -405,6 +480,11 @@ def build_capture_bound_pack_successor(
             parent_document=parent,
             research_as_of=research_as_of,
             capture_resolver=capture_resolver,
+            legacy_capture_attestation=(
+                dict(legacy_capture_attestations_by_parent_id or {}).get(
+                    str(parent.get("document_id") or "")
+                )
+            ),
         )
         capture_receipts.append(capture)
         evidence_spec = _mapping(
@@ -515,6 +595,7 @@ def build_capture_bound_pack_successor(
 
     gaps = [deepcopy(dict(value)) for value in predecessor.get("residual_gaps") or ()]
     gaps_by_id = {str(row.get("gap_id") or ""): row for row in gaps}
+    gap_order = [str(row.get("gap_id") or "") for row in gaps]
     gap_change_receipts: list[dict[str, Any]] = []
     for update in policy.get("gap_updates") or ():
         update = _mapping(update, "supplement_gap_update_invalid")
@@ -544,7 +625,35 @@ def build_capture_bound_pack_successor(
         gap_change_receipts.append(
             {**receipt_body, "receipt_digest": canonical_digest(receipt_body)}
         )
-    gaps = [gaps_by_id[str(row.get("gap_id") or "")] for row in gaps]
+    for addition in policy.get("gap_additions") or ():
+        addition = _mapping(addition, "supplement_gap_addition_invalid")
+        replacement = deepcopy(dict(addition.get("gap") or {}))
+        gap_id = str(replacement.get("gap_id") or "")
+        _require(
+            gap_id
+            and gap_id not in gaps_by_id
+            and replacement.get("gap_code")
+            and replacement.get("slot_id")
+            and replacement.get("facet_id"),
+            "supplement_gap_addition_invalid",
+        )
+        gaps_by_id[gap_id] = replacement
+        gap_order.append(gap_id)
+        receipt_body = {
+            "schema_version": GAP_RECEIPT_SCHEMA_VERSION,
+            "gap_id": gap_id,
+            "action": "add",
+            "before": None,
+            "after": replacement,
+            "classification": str(addition.get("classification") or ""),
+            "eligible_as_blanket_public_information_absence": False,
+            "route_checks": deepcopy(dict(addition.get("route_checks") or {})),
+            "known_boundary": str(addition.get("known_boundary") or ""),
+        }
+        gap_change_receipts.append(
+            {**receipt_body, "receipt_digest": canonical_digest(receipt_body)}
+        )
+    gaps = [gaps_by_id[gap_id] for gap_id in gap_order]
 
     successor = deepcopy(dict(predecessor))
     successor.pop("pack_payload_digest", None)
@@ -594,7 +703,12 @@ def build_capture_bound_pack_successor(
         "added_capture_bound_claim_count": len(additions),
         "predecessor_gap_count": len(predecessor.get("residual_gaps") or ()),
         "successor_gap_count": len(gaps),
-        "narrowed_gap_count": len(gap_change_receipts),
+        "narrowed_gap_count": sum(
+            row.get("action") == "narrow" for row in gap_change_receipts
+        ),
+        "added_gap_count": sum(
+            row.get("action") == "add" for row in gap_change_receipts
+        ),
         "closed_gap_count": 0,
         "candidate_text_promoted_count": 0,
         "numeric_authority_granted_count": 0,
@@ -630,17 +744,20 @@ def build_capture_bound_pack_successor(
 def compile_supplement_workbench_projection(
     *, result: Mapping[str, Any], proposition_rows: Sequence[Mapping[str, Any]]
 ) -> dict[str, Any]:
+    case_key = str(result.get("case_key") or "").upper()
+    _require(case_key, "supplement_projection_case_key_missing")
     body = {
         "schema_version": WORKBENCH_SCHEMA_VERSION,
         "status": "s1_supplement_vertical_ready",
-        "case_key": result.get("case_key"),
+        "case_key": case_key,
         "research_as_of": result.get("research_as_of"),
         "coverage_delta": deepcopy(dict(result.get("coverage_delta") or {})),
         "propositions": [deepcopy(dict(row)) for row in proposition_rows],
         "gap_receipts": deepcopy(list(result.get("gap_change_receipts") or ())),
         "authority": deepcopy(dict(result.get("authority") or {})),
         "readiness": {
-            "bounded_dell_supplement_ready": True,
+            "bounded_case_supplement_ready": True,
+            f"bounded_{case_key.lower()}_supplement_ready": True,
             "complete_s1_ready": False,
             "complete_research_ready": False,
             "numeric_fact_ready": False,
@@ -666,11 +783,29 @@ def validate_supplement_vertical_summary(
     bound = _mapping(
         value.get("bound_inputs"), "supplement_summary_bound_inputs_invalid"
     )
+    schema_version = str(value.get("schema_version") or "")
+    case_key = str(
+        value.get("case_key") or projection.get("case_key") or ""
+    ).upper()
+    legacy_dell = schema_version == SUPPLEMENT_SUMMARY_SCHEMA_VERSION
+    generic_case = schema_version == CASE_SUPPLEMENT_SUMMARY_SCHEMA_VERSION
     _require(
-        value.get("schema_version") == SUPPLEMENT_SUMMARY_SCHEMA_VERSION
-        and value.get("status")
-        == "vs4_dell_capture_bound_supplement_vertical_materialized"
-        and str(projection.get("case_key") or "") == "DELL"
+        (legacy_dell or generic_case)
+        and (
+            (
+                legacy_dell
+                and value.get("status")
+                == "vs4_dell_capture_bound_supplement_vertical_materialized"
+                and case_key == "DELL"
+            )
+            or (
+                generic_case
+                and value.get("status")
+                == "vs4_case_capture_bound_supplement_vertical_materialized"
+                and bool(case_key)
+            )
+        )
+        and str(projection.get("case_key") or "").upper() == case_key
         and decision.get("successor_pack_authorized") is True
         and decision.get("complete_s1_qualified") is False
         and str(value.get("result_digest") or "")
@@ -681,7 +816,86 @@ def validate_supplement_vertical_summary(
         and len(str(bound.get("predecessor_pack_payload_digest") or "")) == 64,
         "supplement_summary_identity_invalid",
     )
+    value["case_key"] = case_key
     return value
+
+
+def validate_supplement_vertical_summary_set(
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    value = deepcopy(dict(payload))
+    summaries = _mapping(
+        value.get("case_summaries"), "supplement_summary_set_cases_invalid"
+    )
+    digest = str(value.pop("summary_set_digest", ""))
+    _require(
+        value.get("schema_version") == SUPPLEMENT_SUMMARY_SET_SCHEMA_VERSION
+        and value.get("status") == "vs4_case_supplement_summary_set_ready"
+        and bool(summaries)
+        and digest == canonical_digest(value),
+        "supplement_summary_set_identity_invalid",
+    )
+    validated: dict[str, dict[str, Any]] = {}
+    for raw_key, summary in summaries.items():
+        key = str(raw_key or "").upper()
+        _require(
+            key and key not in validated,
+            "supplement_summary_set_case_key_invalid",
+        )
+        validated_summary = validate_supplement_vertical_summary(
+            _mapping(summary, "supplement_summary_set_case_invalid")
+        )
+        _require(
+            validated_summary["case_key"] == key,
+            "supplement_summary_set_case_binding_invalid",
+        )
+        validated[key] = validated_summary
+    value["case_summaries"] = validated
+    value["summary_set_digest"] = digest
+    return value
+
+
+def select_supplement_vertical_summary(
+    payload: Mapping[str, Any] | None,
+    *,
+    case_key: str,
+) -> dict[str, Any] | None:
+    if payload is None:
+        return None
+    key = str(case_key or "").upper()
+    if payload.get("schema_version") == SUPPLEMENT_SUMMARY_SET_SCHEMA_VERSION:
+        summary_set = validate_supplement_vertical_summary_set(payload)
+        summary = summary_set["case_summaries"].get(key)
+        return deepcopy(dict(summary)) if summary is not None else None
+    summary = validate_supplement_vertical_summary(payload)
+    return summary if summary["case_key"] == key else None
+
+
+def validate_supplement_vertical_resource(
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    if payload.get("schema_version") == SUPPLEMENT_SUMMARY_SET_SCHEMA_VERSION:
+        return validate_supplement_vertical_summary_set(payload)
+    return validate_supplement_vertical_summary(payload)
+
+
+def resolve_supplement_successor_binding(
+    payload: Mapping[str, Any] | None,
+    *,
+    case_key: str,
+) -> dict[str, str] | None:
+    summary = select_supplement_vertical_summary(payload, case_key=case_key)
+    if summary is None:
+        return None
+    storage = _mapping(
+        summary.get("storage"), "supplement_summary_storage_invalid"
+    )
+    return {
+        "artifact_digest": str(storage.get("successor_pack_sha256") or ""),
+        "pack_payload_digest": str(
+            storage.get("successor_pack_payload_digest") or ""
+        ),
+    }
 
 
 def project_capture_bound_supplement_lineage(
@@ -692,39 +906,127 @@ def project_capture_bound_supplement_lineage(
     artifact_digest: str,
     pack_payload_digest: str,
 ) -> dict[str, Any] | None:
-    if base_projection is None:
+    supplement = select_supplement_vertical_summary(
+        supplement_summary, case_key=case_key
+    )
+    if base_projection is None and supplement is None:
         return None
-    base = deepcopy(dict(base_projection))
-    binding = _mapping(
-        base.get("pack_binding"), "supplement_base_pack_binding_invalid"
-    )
-    if (
-        binding.get("case_key") == case_key
-        and binding.get("artifact_digest") == artifact_digest
-        and binding.get("pack_payload_digest") == pack_payload_digest
-    ):
-        return base
-    _require(
-        supplement_summary is not None and case_key == "DELL",
-        "supplement_current_pack_binding_drift",
-    )
-    supplement = validate_supplement_vertical_summary(supplement_summary)
+    if base_projection is not None:
+        base = deepcopy(dict(base_projection))
+        binding = _mapping(
+            base.get("pack_binding"), "supplement_base_pack_binding_invalid"
+        )
+        if (
+            binding.get("case_key") == case_key
+            and binding.get("artifact_digest") == artifact_digest
+            and binding.get("pack_payload_digest") == pack_payload_digest
+        ):
+            return base
+    else:
+        base = {}
+        binding = {}
+    _require(supplement is not None, "supplement_current_pack_binding_drift")
     storage = _mapping(
         supplement["storage"], "supplement_summary_storage_invalid"
     )
     predecessor = _mapping(
         supplement["bound_inputs"], "supplement_summary_bound_inputs_invalid"
     )
-    _require(
-        binding.get("case_key") == case_key
-        and binding.get("artifact_digest")
-        == predecessor.get("predecessor_pack_sha256")
-        and binding.get("pack_payload_digest")
-        == predecessor.get("predecessor_pack_payload_digest")
-        and storage.get("successor_pack_sha256") == artifact_digest
-        and storage.get("successor_pack_payload_digest") == pack_payload_digest,
-        "supplement_current_pack_binding_drift",
+    successor_matches = (
+        storage.get("successor_pack_sha256") == artifact_digest
+        and storage.get("successor_pack_payload_digest") == pack_payload_digest
     )
+    if base_projection is not None:
+        _require(
+            binding.get("case_key") == case_key
+            and binding.get("artifact_digest")
+            == predecessor.get("predecessor_pack_sha256")
+            and binding.get("pack_payload_digest")
+            == predecessor.get("predecessor_pack_payload_digest")
+            and successor_matches,
+            "supplement_current_pack_binding_drift",
+        )
+    else:
+        _require(successor_matches, "supplement_current_pack_binding_drift")
+        workbench = _mapping(
+            supplement["workbench_projection"],
+            "supplement_summary_projection_invalid",
+        )
+        propositions = [
+            _mapping(row, "supplement_summary_proposition_invalid")
+            for row in workbench.get("propositions") or ()
+        ]
+        decision_counts = {
+            key: sum(
+                int(
+                    (
+                        row.get("candidate_decision_counts")
+                        if isinstance(
+                            row.get("candidate_decision_counts"), Mapping
+                        )
+                        else {}
+                    ).get(key)
+                    or 0
+                )
+                for row in propositions
+            )
+            for key in ("accepted", "rejected", "unjudged", "needs_review")
+        }
+        coverage = _mapping(
+            supplement.get("coverage_delta"),
+            "supplement_summary_coverage_invalid",
+        )
+        base = {
+            "schema_version": "fin_ia_s1_workbench_lineage_projection_v1_0",
+            "status": (
+                "canonical_s1_lineage_initialized_from_capture_bound_supplement"
+            ),
+            "recorded_at": str(supplement["recorded_at"]),
+            "case_key": case_key,
+            "research_as_of": workbench.get("research_as_of"),
+            "proposition_id": None,
+            "proposition_ids": sorted(
+                str(row.get("proposition_id") or "")
+                for row in propositions
+                if str(row.get("proposition_id") or "")
+            ),
+            "readiness_state": (
+                "ready_for_bounded_research_not_complete_conclusion"
+            ),
+            "candidate_decision_summary": decision_counts,
+            "coverage_summary": {
+                "coverage_state": (
+                    "bounded_capture_bound_supplement_with_unresolved_gaps"
+                ),
+                "accepted_evidence_count": int(
+                    coverage.get("successor_evidence_count") or 0
+                ),
+                # The compact VS4 summary does not carry the complete v2 qrel
+                # pool. VS5 owns all-positive recall qualification.
+                "reviewed_not_recalled_count": None,
+                "unresolved_gap_count": int(
+                    coverage.get("successor_gap_count") or 0
+                ),
+                "true_public_information_gap_count": 0,
+            },
+            "decision_rows": [],
+            "gap_eligibility_receipts": deepcopy(
+                list(workbench.get("gap_receipts") or ())
+            ),
+            "pack_binding": {
+                "case_key": case_key,
+                "artifact_digest": artifact_digest,
+                "pack_payload_digest": pack_payload_digest,
+            },
+            "hard_boundaries": {
+                "candidate_is_not_evidence": True,
+                "rank_never_grants_evidence_authority": True,
+                "unexecuted_route_is_not_public_information_gap": True,
+                "complete_product_conclusion_ready": False,
+                "S1_qualified_stable": False,
+                "base_vs1_decision_rows_available": False,
+            },
+        }
     base.pop("workbench_projection_digest", None)
     base["status"] = "canonical_s1_lineage_with_capture_bound_supplement"
     base["recorded_at"] = str(supplement["recorded_at"])
@@ -751,14 +1053,20 @@ def project_capture_bound_supplement_lineage(
 
 __all__ = [
     "CAPTURE_RECEIPT_SCHEMA_VERSION",
+    "CASE_SUPPLEMENT_SUMMARY_SCHEMA_VERSION",
     "GAP_RECEIPT_SCHEMA_VERSION",
     "SUPPLEMENT_RESULT_SCHEMA_VERSION",
     "SUPPLEMENT_SUMMARY_SCHEMA_VERSION",
+    "SUPPLEMENT_SUMMARY_SET_SCHEMA_VERSION",
     "SupplementVerticalError",
     "WORKBENCH_SCHEMA_VERSION",
     "build_capture_bound_pack_successor",
     "compile_supplement_workbench_projection",
     "project_capture_bound_supplement_lineage",
+    "resolve_supplement_successor_binding",
+    "select_supplement_vertical_summary",
+    "validate_supplement_vertical_resource",
     "validate_supplement_vertical_summary",
+    "validate_supplement_vertical_summary_set",
     "verify_capture_bound_object",
 ]

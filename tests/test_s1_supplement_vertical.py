@@ -8,10 +8,15 @@ import pytest
 
 from retrieval.query_plan import canonical_digest
 from retrieval.supplement_vertical import (
+    CASE_SUPPLEMENT_SUMMARY_SCHEMA_VERSION,
+    SUPPLEMENT_SUMMARY_SET_SCHEMA_VERSION,
     SupplementVerticalError,
     build_capture_bound_pack_successor,
     compile_supplement_workbench_projection,
     project_capture_bound_supplement_lineage,
+    resolve_supplement_successor_binding,
+    validate_supplement_vertical_summary,
+    validate_supplement_vertical_summary_set,
 )
 from sec_agent.research.reviewed_evidence_pack import (
     REVIEWED_EVIDENCE_PACK_CONTRACT,
@@ -245,7 +250,12 @@ def _fixture(tmp_path: Path) -> dict[str, object]:
     }
 
 
-def _run(fixture: dict[str, object], *, policy: dict[str, object] | None = None):
+def _run(
+    fixture: dict[str, object],
+    *,
+    policy: dict[str, object] | None = None,
+    legacy_capture_attestations: dict[str, dict[str, object]] | None = None,
+):
     source_record = fixture["source_record"]
     parent = fixture["parent"]
     positive = fixture["positive"]
@@ -267,6 +277,7 @@ def _run(fixture: dict[str, object], *, policy: dict[str, object] | None = None)
         parent_documents_by_id={parent["document_id"]: parent},
         capture_resolver=lambda _ref: fixture["capture_path"],
         recorded_at="2026-08-18",
+        legacy_capture_attestations_by_parent_id=legacy_capture_attestations,
     )
 
 
@@ -285,6 +296,7 @@ def test_capture_bound_successor_replaces_broad_evidence_and_narrows_gap(
         "predecessor_gap_count": 1,
         "successor_gap_count": 1,
         "narrowed_gap_count": 1,
+        "added_gap_count": 0,
         "closed_gap_count": 0,
         "candidate_text_promoted_count": 0,
         "numeric_authority_granted_count": 0,
@@ -301,6 +313,63 @@ def test_capture_bound_successor_replaces_broad_evidence_and_narrows_gap(
         and row["numeric_authority"] is False
         for row in result["review_receipts"]
     )
+
+
+def test_legacy_local_html_capture_attestation_preserves_object_identity(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    source = deepcopy(fixture["source_record"])
+    parent = deepcopy(fixture["parent"])
+    parent["lineage_state"] = "local_candidate_store_lineage_only"
+    parent["capture_ref"] = None
+    parent["capture_sha256"] = None
+    source["metadata"].pop("source_capture_ref")
+    source["metadata"].pop("source_capture_sha256")
+    capture = tmp_path / "legacy.html"
+    capture.write_text(
+        f"<html><body><p>{source['text']}</p></body></html>",
+        encoding="utf-8",
+    )
+    capture_sha256 = hashlib.sha256(capture.read_bytes()).hexdigest()
+    fixture["capture_path"] = capture
+    fixture["source_record"] = source
+    fixture["parent"] = parent
+    for key in ("positive", "negative"):
+        fixture[key]["base_object_view"]["source_record_digest"] = canonical_digest(
+            source
+        )
+        fixture[key]["base_object_view"]["parent_document_digest"] = canonical_digest(
+            parent
+        )
+    attestation = {
+        "schema_version": "fin_ia_legacy_local_capture_attestation_v1_0",
+        "status": "legacy_local_source_capture_attested",
+        "parent_document_id": parent["document_id"],
+        "parent_document_digest": canonical_digest(parent),
+        "source_url": source["source_url"],
+        "capture_ref": "legacy.html",
+        "capture_sha256": capture_sha256,
+        "capture_format": "html",
+        "extraction_method": "stdlib_htmlparser_visible_text_v1",
+    }
+
+    result = _run(
+        fixture,
+        legacy_capture_attestations={parent["document_id"]: attestation},
+    )
+    assert all(
+        receipt["capture_binding_kind"] == "legacy_local_capture_attestation"
+        for receipt in result["capture_receipts"]
+    )
+
+    broken = deepcopy(attestation)
+    broken["capture_sha256"] = "0" * 64
+    with pytest.raises(SupplementVerticalError, match="capture_sha256_drift"):
+        _run(
+            fixture,
+            legacy_capture_attestations={parent["document_id"]: broken},
+        )
 
 
 def test_positive_candidate_must_have_ranked_retrieval_lineage(tmp_path: Path) -> None:
@@ -376,8 +445,49 @@ def test_workbench_projection_does_not_claim_s1_or_numeric_readiness(
         ],
     )
     assert projection["readiness"]["bounded_dell_supplement_ready"] is True
+    assert projection["readiness"]["bounded_case_supplement_ready"] is True
     assert projection["readiness"]["complete_s1_ready"] is False
     assert projection["readiness"]["numeric_fact_ready"] is False
+
+
+def test_successor_can_add_owned_cross_stage_gap_without_claiming_public_absence(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    policy = deepcopy(fixture["policy"])
+    policy["gap_additions"] = [
+        {
+            "classification": "owned_s2_numeric_bridge_pending",
+            "gap": {
+                "gap_id": "dell-gap-value-bridge",
+                "gap_code": "formula_input_missing",
+                "slot_id": "pricing_mix_value_capture",
+                "facet_id": "price_volume_mix_bridge",
+                "business_reason_zh": "精确叙事不能替代数值桥。",
+                "supplement_direction_zh": "交由 S2。",
+                "attempted_lane_ids": ["ATOM::WC"],
+            },
+            "route_checks": {
+                "s2_numeric_bridge_required": True,
+                "external_public_information_absence_claimed": False,
+            },
+            "known_boundary": "不是公开信息不存在。",
+        }
+    ]
+
+    result = _run(fixture, policy=policy)
+
+    assert result["coverage_delta"]["predecessor_gap_count"] == 1
+    assert result["coverage_delta"]["successor_gap_count"] == 2
+    assert result["coverage_delta"]["added_gap_count"] == 1
+    receipt = next(
+        row
+        for row in result["gap_change_receipts"]
+        if row["gap_id"] == "dell-gap-value-bridge"
+    )
+    assert receipt["action"] == "add"
+    assert receipt["before"] is None
+    assert receipt["eligible_as_blanket_public_information_absence"] is False
 
 
 def test_capture_bound_lineage_projection_requires_exact_predecessor_and_successor(
@@ -454,3 +564,141 @@ def test_capture_bound_lineage_projection_requires_exact_predecessor_and_success
                 artifact_digest=successor_artifact,
                 pack_payload_digest=successor_payload,
             )
+
+
+def test_generic_case_summary_set_projects_without_dell_special_case(
+    tmp_path: Path,
+) -> None:
+    result = _run(_fixture(tmp_path))
+    projection_input = deepcopy(result)
+    projection_input["case_key"] = "MU"
+    projection = compile_supplement_workbench_projection(
+        result=projection_input,
+        proposition_rows=[
+            {"proposition_id": "PROP::MU", "coverage_state": "narrowed"}
+        ],
+    )
+    predecessor_payload = _predecessor_pack()["pack_payload_digest"]
+    successor_payload = result["successor_pack"]["pack_payload_digest"]
+    predecessor_artifact = "1" * 64
+    successor_artifact = "2" * 64
+    summary = {
+        "schema_version": CASE_SUPPLEMENT_SUMMARY_SCHEMA_VERSION,
+        "status": "vs4_case_capture_bound_supplement_vertical_materialized",
+        "recorded_at": "2026-08-18",
+        "case_key": "MU",
+        "result_digest": result["result_digest"],
+        "bound_inputs": {
+            "predecessor_pack_sha256": predecessor_artifact,
+            "predecessor_pack_payload_digest": predecessor_payload,
+        },
+        "storage": {
+            "full_result_digest": result["result_digest"],
+            "successor_pack_sha256": successor_artifact,
+            "successor_pack_payload_digest": successor_payload,
+        },
+        "coverage_delta": result["coverage_delta"],
+        "decision": {
+            "successor_pack_authorized": True,
+            "complete_s1_qualified": False,
+        },
+        "workbench_projection": projection,
+    }
+    set_body = {
+        "schema_version": SUPPLEMENT_SUMMARY_SET_SCHEMA_VERSION,
+        "status": "vs4_case_supplement_summary_set_ready",
+        "recorded_at": "2026-08-18",
+        "case_summaries": {"MU": summary},
+    }
+    summary_set = {
+        **set_body,
+        "summary_set_digest": canonical_digest(set_body),
+    }
+    base = {
+        "status": "canonical_s1_lineage_ready",
+        "pack_binding": {
+            "case_key": "MU",
+            "artifact_digest": predecessor_artifact,
+            "pack_payload_digest": predecessor_payload,
+        },
+    }
+
+    assert resolve_supplement_successor_binding(
+        summary_set, case_key="MU"
+    ) == {
+        "artifact_digest": successor_artifact,
+        "pack_payload_digest": successor_payload,
+    }
+    assert resolve_supplement_successor_binding(
+        summary_set, case_key="NVDA"
+    ) is None
+    projected = project_capture_bound_supplement_lineage(
+        base_projection=base,
+        supplement_summary=summary_set,
+        case_key="MU",
+        artifact_digest=successor_artifact,
+        pack_payload_digest=successor_payload,
+    )
+    assert projected["pack_binding"]["case_key"] == "MU"
+    assert projected["supplement_vertical"]["complete_s1_qualified"] is False
+
+    initialized = project_capture_bound_supplement_lineage(
+        base_projection=None,
+        supplement_summary=summary_set,
+        case_key="MU",
+        artifact_digest=successor_artifact,
+        pack_payload_digest=successor_payload,
+    )
+    assert initialized["pack_binding"]["case_key"] == "MU"
+    assert initialized["coverage_summary"]["reviewed_not_recalled_count"] is None
+    assert initialized["hard_boundaries"]["base_vs1_decision_rows_available"] is False
+
+
+def test_summary_set_validation_is_idempotent_for_legacy_dell_member(
+    tmp_path: Path,
+) -> None:
+    result = _run(_fixture(tmp_path))
+    projection = compile_supplement_workbench_projection(
+        result=result,
+        proposition_rows=[
+            {"proposition_id": "PROP::WC", "coverage_state": "narrowed"}
+        ],
+    )
+    legacy = {
+        "schema_version": "fin_ia_s1_vs4_dell_supplement_vertical_summary_v1_0",
+        "status": "vs4_dell_capture_bound_supplement_vertical_materialized",
+        "recorded_at": "2026-08-18",
+        "result_digest": result["result_digest"],
+        "bound_inputs": {
+            "predecessor_pack_sha256": "1" * 64,
+            "predecessor_pack_payload_digest": _predecessor_pack()[
+                "pack_payload_digest"
+            ],
+        },
+        "storage": {
+            "full_result_digest": result["result_digest"],
+            "successor_pack_sha256": "2" * 64,
+            "successor_pack_payload_digest": result["successor_pack"][
+                "pack_payload_digest"
+            ],
+        },
+        "coverage_delta": result["coverage_delta"],
+        "decision": {
+            "successor_pack_authorized": True,
+            "complete_s1_qualified": False,
+        },
+        "workbench_projection": projection,
+    }
+    normalized = validate_supplement_vertical_summary(legacy)
+    body = {
+        "schema_version": SUPPLEMENT_SUMMARY_SET_SCHEMA_VERSION,
+        "status": "vs4_case_supplement_summary_set_ready",
+        "recorded_at": "2026-08-18",
+        "case_summaries": {"DELL": normalized},
+    }
+    payload = {**body, "summary_set_digest": canonical_digest(body)}
+
+    once = validate_supplement_vertical_summary_set(payload)
+    twice = validate_supplement_vertical_summary_set(once)
+
+    assert twice == once

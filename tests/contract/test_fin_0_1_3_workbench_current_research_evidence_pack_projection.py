@@ -20,12 +20,17 @@ from apps.workbench.backend.application.research_evidence_pack_service import (
     ResearchEvidencePackService,
     ResearchEvidencePackServiceError,
 )
+from apps.workbench.backend.application.research_retrieval_service import (
+    ResearchRetrievalPrincipal,
+    ResearchRetrievalService,
+)
 from apps.workbench.backend.application.research_workspace_service import (
     ResearchWorkspacePrincipal,
     ResearchWorkspaceService,
     ResearchWorkspaceServiceError,
 )
 from sec_agent.runtime_resource_registry import load_runtime_resource_registry
+from sec_agent.runtime_bridge.paths import resolve_runtime_paths
 from sec_agent.research.reviewed_evidence_pack import (
     REVIEWED_EVIDENCE_PACK_CONTRACT as CONTRACT_REF,
     REVIEWED_EVIDENCE_PACK_SCHEMA as PACK_SCHEMA,
@@ -344,7 +349,7 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R18"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R19"
     )
     assert set(registry.by_id()) == {
         "application.config.current_financial_research_kernel",
@@ -381,6 +386,54 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
         "apps/workbench/backend/application/research_evidence_pack_service.py"
         in registry.detector_python_refs
     )
+
+
+def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None:
+    paths = resolve_runtime_paths(ROOT)
+    evidence = ResearchEvidencePackService.from_runtime_paths(ROOT, paths)
+    workspace = ResearchWorkspaceService.from_runtime_paths(ROOT, evidence)
+    retrieval = ResearchRetrievalService.from_runtime_paths(
+        ROOT,
+        paths,
+        hybrid_candidate_runtime=object(),
+    )
+    pack_principal = ResearchEvidencePackPrincipal(
+        "current", frozenset({"current_product:read"})
+    )
+    workspace_principal = ResearchWorkspacePrincipal(
+        "current", frozenset({"current_product:read"})
+    )
+    retrieval_principal = ResearchRetrievalPrincipal(
+        "current", frozenset({"current_product:read"})
+    )
+    expected_counts = {"DELL": 22, "MU": 11, "NVDA": 19}
+
+    for case_key, expected_count in expected_counts.items():
+        pack = evidence.get_case(case_key, pack_principal)
+        case_id = f"case_{case_key.lower()}_current"
+        workspace_evidence = workspace.get_evidence(
+            case_id, workspace_principal
+        )
+        retrieval_case = retrieval.get_case(case_key, retrieval_principal)
+
+        assert len(pack["evidence_items"]) == expected_count
+        assert pack["canonical_spine"]["pack_binding"]["case_key"] == case_key
+        assert (
+            pack["canonical_spine"]["supplement_vertical"]
+            ["complete_s1_qualified"]
+            is False
+        )
+        assert (
+            pack["canonical_spine"]["supplement_vertical"]
+            ["numeric_fact_authorized"]
+            is False
+        )
+        assert len(workspace_evidence["evidence_items"]) == expected_count
+        assert retrieval_case["candidate_state"] == "candidate_not_evidence"
+        assert (
+            retrieval_case["canonical_spine"]["pack_binding"]["case_key"]
+            == case_key
+        )
 
 
 def test_workbench_api_exposes_reviewed_content_and_gaps_without_raw_material(

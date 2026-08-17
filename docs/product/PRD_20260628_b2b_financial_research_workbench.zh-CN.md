@@ -2794,3 +2794,19 @@ S1-A–S1-J 是同一条产品链上的责任坐标，不是十个可以各自�
 任何 parser、chunk、对象 schema、index、query、ranker 或 Evidence evaluator 变更都必须声明受影响 artifact version、重建／迁移范围、旧新兼容与回滚入口，并至少重跑一条真实纵切。不得由 reranker 掩盖 parser／chunk 缺陷，也不得让上游局部改善在下游 Evidence Role、Coverage 或 Workbench 中丢失；集成问题必须在每个 release slice 内暴露，而不是留到 S1 最终合并。
 
 S1 独立评测权威见 `docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md`；技术范式继续以 `docs/architecture/retrieval/FIN_0_1_3_S1_EVIDENCE_ACQUISITION_AND_PACK_QUALITY_PARADIGM_20260817.zh-CN.md` 为当前源。
+
+### 16.42 S1 候选覆盖必须区分 any-hit 与 all-positive，learned retrieval 只允许 CUDA（2026-08-18）
+
+DELL／MU／NVDA 三案 VS4 已证明同一 provider-neutral 合同可以把 residual proposition 贯穿到 query、CUDA candidate、Evidence Role、capture-bound decision、successor Pack、Coverage delta 和 Workbench；它们仍是开发／业务回归案例，不是最终资格集。当前三案 successor 分别为 DELL `22 Evidence / 14 gaps`、MU `11 / 15`、NVDA `19 / 13`，Candidate 自动晋升、NumericFact 新授权和 hard-negative false accept 均为 0。该结果只授权 `three_case_VS4_vertical_slice_integrated`，不授权 `S1_qualified_stable`。
+
+本轮同时暴露出一个会误导产品判断的评测差异：10/10 命题有至少一条有效目标进入前十，只能记为 `proposition_any_hit_at_10`；它不代表同一命题的所有 material facet、直接支持、反方、数值桥和独立 read-through 均已进入候选池。当前仍有 4 个 reviewed positive 未进入 candidate union。S1 资格评测因此必须同时保存并报告：
+
+1. proposition any-hit；
+2. all-positive object recall；
+3. material-facet coverage；
+4. required direct／counter／bridge role coverage；
+5. 未召回对象的最早责任层与对最终研究结论的影响。
+
+任何一项平均分不得掩盖身份、期间、来源、Evidence 晋升或关键 material facet 的硬失败。候选覆盖不足必须留在 S1-G／S1-J，不得由 S3 Writer 用更保守的措辞伪装为资料充分。
+
+learned Embedding、dense／multi-vector 和 Cross-Encoder／reranker 的正式构建、对照与资格运行必须绑定具体 CUDA device receipt，并使用项目声明的 FP16／受控精度。CUDA 不可用、模型权重或缓存身份漂移时必须在模型加载或结果晋升前 fail closed；严禁静默回退 CPU 后把延迟、批大小、数值精度或排序行为不同的结果与 CUDA 基线混为一谈。CPU 仍可承担 BM25、分词、SQL、身份／期间／来源硬过滤、账本和确定性短名单／上下文视图编排，因为这些不是 learned vector execution。该资源规则服务于结果可比性和开发效率，不改变 Candidate≠Evidence、NumericFact 独立权威或 VS5 独立留出门。

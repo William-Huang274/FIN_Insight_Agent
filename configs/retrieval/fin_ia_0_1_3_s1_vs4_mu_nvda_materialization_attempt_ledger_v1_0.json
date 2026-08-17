@@ -1,0 +1,133 @@
+{
+  "schema_version": "fin_ia_s1_vs4_materialization_attempt_ledger_v1_0",
+  "status": "closed_successor_materialized_with_open_vs5_qualification_boundary",
+  "ledger_id": "FIN-0.1.3-S1-VS4-MU-NVDA-MATERIALIZATION",
+  "recorded_at": "2026-08-18",
+  "execution_boundary": {
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "learned_vector_execution": "cuda_fp16_only",
+    "cpu_vector_or_reranker_fallback_authorized": false,
+    "cpu_allowed_for": [
+      "BM25",
+      "tokenization",
+      "identity_period_and_source_filters",
+      "SQL_and_ledger_operations",
+      "deterministic_candidate_and_cell_view_selection"
+    ]
+  },
+  "attempts": [
+    {
+      "attempt_id": "FIN013-S1-VS4-MU-NVDA-MATERIALIZE-ATTEMPT-01",
+      "terminal_state": "failed_preserved",
+      "observed_problem": "MU and NVDA predecessor objects referenced legacy parent records without current immutable capture metadata even though the raw HTML captures remained on disk.",
+      "owning_layer": "S1-A_source_capture_lineage",
+      "disposition": "Do not relax capture-first. Add a strict local-capture attestation bridge that verifies file digest, source URL and exact claim surface before legacy parent lineage can be consumed.",
+      "business_effect": "A locally available official disclosure is no longer misreported as absent, while an unverified old object still cannot become Evidence.",
+      "successor_evidence_refs": [
+        "src/retrieval/supplement_vertical.py",
+        "scripts/data_retrieval/materialize_s1_vs4_case_supplement_vertical.py"
+      ]
+    },
+    {
+      "attempt_id": "FIN013-S1-VS4-MU-NVDA-MATERIALIZE-ATTEMPT-02",
+      "terminal_state": "failed_preserved",
+      "observed_problem": "Several legacy 8-K hard-negative rows carried mixed or incorrect period metadata relative to the current case request.",
+      "owning_layer": "S1-C_object_period_and_qrel_lineage",
+      "disposition": "Do not rewrite or promote those rows. Preserve the negative proof, keep the period mismatch visible and bind successor Evidence only to exact current-period claim objects.",
+      "business_effect": "Wrong-period text cannot be used to improve a score or silently become current evidence.",
+      "successor_evidence_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_qrel_adjudication_v1_0.json",
+        "src/retrieval/query_atom_shadow.py"
+      ]
+    },
+    {
+      "attempt_id": "FIN013-S1-VS4-MU-NVDA-RANKING-ATTEMPT-07",
+      "terminal_state": "component_pass_qualification_open",
+      "observed_problem": "The development summary reported 10 of 10 propositions with at least one relevant target in the deterministic top ten, but four additional reviewed positive objects were absent from the candidate union.",
+      "missing_reviewed_positive_object_ids": [
+        "COBJ::d5fdbb0907d383ff22f57ba1",
+        "COBJ::827d0d9273f191402ce676c5",
+        "COBJ::9b78bf22aa3f1aa8d8530235",
+        "COBJ::07ef64bd2d61623d1f4d9262"
+      ],
+      "owning_layer": "S1-G_candidate_coverage_and_S1-J_qualification",
+      "disposition": "Keep the 10/10 result as an any-hit development metric only. VS5 must measure all-positive material-facet coverage and cannot inherit S1 qualification from this result.",
+      "business_effect": "The product will not confuse one useful document per question with a complete evidence surface.",
+      "successor_evidence_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_candidate_ranking_result_v1_7.json",
+        "data/workbench_private/fin_0_1_3_s1_vs4_mu_nvda_supplement_candidate_ranking/v1_7/full_result_8b48b41306f68cd70ccc5ae4d1dbf6e359b854f9720c9127fd37f10f01935ff7.json"
+      ]
+    },
+    {
+      "attempt_id": "FIN013-S1-VS4-MU-NVDA-MATERIALIZE-ATTEMPT-03",
+      "terminal_state": "failed_preserved",
+      "observed_problem": "The first multi-case summary set normalized the inherited DELL member after calculating the outer digest, so a second validation changed the payload identity.",
+      "owning_layer": "S1-J_artifact_identity_and_replay",
+      "disposition": "Normalize and validate every member before calculating the set digest, then validate the exact set again before writing or registering it.",
+      "business_effect": "Workbench and Runtime Registry now read a replay-stable three-case summary instead of a digest that changes on inspection.",
+      "successor_evidence_refs": [
+        "src/retrieval/supplement_vertical.py",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs4_case_supplement_vertical_result_v1_0.json"
+      ]
+    },
+    {
+      "attempt_id": "FIN013-S1-VS4-MU-NVDA-CONSUMER-ATTEMPT-01",
+      "terminal_state": "failed_preserved_then_fixed",
+      "observed_problem": "After broad legacy Evidence was retired, two MU research cells had neither an eligible Evidence card nor an explicit gap, so the S3 consumer could not honestly materialize those cells.",
+      "owning_layer": "S1-I_pack_to_S2_gap_handoff",
+      "disposition": "Add two typed S1-to-S2 bridge gaps for product value capture and cash conversion. They are not public-information absence claims and they do not grant NumericFact authority.",
+      "business_effect": "The model sees an explicit unresolved financial bridge instead of an empty cell or a fabricated conclusion.",
+      "successor_evidence_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_capture_bound_supplement_policy_v1_0.json",
+        "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_3.json"
+      ]
+    },
+    {
+      "attempt_id": "FIN013-S1-VS4-MU-NVDA-CONSUMER-ATTEMPT-02",
+      "terminal_state": "failed_preserved_then_fixed",
+      "observed_problem": "The richer NVDA exact Pack exceeded a research cell's declared model-visible Evidence capacity even though every item remained valid Pack authority.",
+      "owning_layer": "S3_current_consumer_context_projection",
+      "disposition": "Keep the complete Pack immutable and compile a deterministic coverage-first bounded cell view only when the cell actually overflows. Receipt every omitted-but-preserved Evidence reference; do not increase a limit blindly and do not use a model to select.",
+      "business_effect": "The model receives a bounded but diverse view without deleting valid Evidence or changing historical fixed-Pack digests.",
+      "successor_evidence_refs": [
+        "src/sec_agent/research/current_consumer.py",
+        "tests/test_s3_bounded_finance_loop.py"
+      ]
+    },
+    {
+      "attempt_id": "FIN013-S1-VS4-MU-NVDA-MATERIALIZE-ATTEMPT-04",
+      "terminal_state": "succeeded",
+      "observed_problem": null,
+      "owning_layer": "S1_VS4_cross_case_vertical_integration",
+      "disposition": "Materialize exact MU and NVDA successor Packs, bind all three development cases to one summary set and R19 Runtime, and replay current Workbench, S3 consumers and historical fixed inputs.",
+      "business_effect": "MU now exposes exact HBM shipment, commitment, packaging and counterevidence claims plus explicit S2 bridge gaps; NVDA exposes exact current results, supply commitments, issuer risk and upstream context. Broad predecessor chunks no longer hold Evidence authority.",
+      "successor_evidence_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_vs4_case_supplement_vertical_result_v1_0.json",
+        "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_3.json",
+        "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_2.json",
+        "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_3.json",
+        "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json"
+      ]
+    }
+  ],
+  "final_verification": {
+    "full_python_test_result": "592_passed",
+    "frontend_typecheck": "passed",
+    "development_case_evidence_counts": {
+      "DELL": 22,
+      "MU": 11,
+      "NVDA": 19
+    },
+    "development_case_gap_counts": {
+      "DELL": 14,
+      "MU": 15,
+      "NVDA": 13
+    },
+    "candidate_text_promoted_count": 0,
+    "numeric_fact_authority_granted_count": 0,
+    "hard_negative_false_accept_count": 0,
+    "s1_qualified_stable": false,
+    "next_gate": "VS5_all_positive_coverage_split_safe_frozen_test_heterogeneous_holdout_and_clean_replay"
+  }
+}

@@ -114,9 +114,8 @@ export type RetrievalQuality = {
   result_digest: string;
 };
 
-export type SupplementQuality = {
-  schema_version: string;
-  status: string;
+export type SupplementCaseQuality = {
+  case_key: string;
   slice_id: string;
   coverage_delta: {
     predecessor_evidence_count: number;
@@ -126,6 +125,7 @@ export type SupplementQuality = {
     predecessor_gap_count: number;
     successor_gap_count: number;
     narrowed_gap_count: number;
+    added_gap_count?: number;
     closed_gap_count: number;
   };
   proposition_rows: Array<{
@@ -143,6 +143,14 @@ export type SupplementQuality = {
   business_findings: string[];
   authority: Record<string, unknown>;
   result_digest: string;
+};
+
+export type SupplementQuality = {
+  schema_version: string;
+  status: string;
+  case_summaries: SupplementCaseQuality[];
+  decision: Record<string, unknown>;
+  summary_set_digest: string;
 };
 
 export type SourceIntakeRoute = {

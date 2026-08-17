@@ -286,43 +286,56 @@ function RetrievalQualityPanel({ value }: { value: RetrievalQuality }) {
 }
 
 function SupplementQualityPanel({ value }: { value: SupplementQuality }) {
-  const delta = value.coverage_delta;
-  const readyCount = value.proposition_rows.filter((row) => row.proposition_ready).length;
-  const falseAccepts = value.proposition_rows.reduce((total, row) => total + row.hard_negative_accepted_object_ids.length, 0);
   return (
     <section className="operations-console__panel operations-console__document-quality">
       <div className="operations-console__panel-title">
         <h2><FileSearch size={18} />命题补证与缺口窄化</h2>
-        <span>VS4 · DELL 有界纵切，不是 S1 发布资格</span>
+        <span>VS4 · DELL/MU/NVDA 开发纵切，不是 S1 发布资格</span>
       </div>
-      <div className="operations-console__document-summary">
-        <div>
-          <p>证据继任</p>
-          <strong>{delta.retired_broad_or_legacy_evidence_count} 退役 / {delta.added_capture_bound_claim_count} 新增</strong>
-          <small>宽 chunk 与整页材料替换为精确 capture-bound claim</small>
-        </div>
-        <div>
-          <p>命题覆盖</p>
-          <strong>{readyCount} / {value.proposition_rows.length}</strong>
-          <small>营运资金、发行人反方、上游反方</small>
-        </div>
-        <div>
-          <p>错误晋升</p>
-          <strong>{falseAccepts}</strong>
-          <small>分析师提问、同页无关句不得借用管理层事实权限</small>
-        </div>
-        <div>
-          <p>缺口处置</p>
-          <strong>{delta.narrowed_gap_count} 窄化 / {delta.closed_gap_count} 关闭</strong>
-          <small>机制已知不等于量化归属或 Dell 分配已知</small>
-        </div>
-      </div>
-      <p className="operations-console__document-finding">{value.business_findings[0] ?? "暂无业务结论"}</p>
-      <div className="operations-console__document-meta">
-        <span>Successor Evidence {delta.successor_evidence_count}</span>
-        <span>S1 仍未通过 · NumericFact 未授权</span>
-        <code>{value.result_digest.slice(0, 12)}…{value.result_digest.slice(-8)}</code>
-      </div>
+      {value.case_summaries.map((caseSummary) => {
+        const delta = caseSummary.coverage_delta;
+        const readyCount = caseSummary.proposition_rows.filter((row) => row.proposition_ready).length;
+        const falseAccepts = caseSummary.proposition_rows.reduce(
+          (total, row) => total + row.hard_negative_accepted_object_ids.length,
+          0,
+        );
+        return (
+          <div key={caseSummary.case_key}>
+            <div className="operations-console__document-summary">
+              <div>
+                <p>{caseSummary.case_key} · 证据继任</p>
+                <strong>{delta.retired_broad_or_legacy_evidence_count} 退役 / {delta.added_capture_bound_claim_count} 新增</strong>
+                <small>宽 chunk 与整页材料替换为精确 capture-bound claim</small>
+              </div>
+              <div>
+                <p>命题覆盖</p>
+                <strong>{readyCount} / {caseSummary.proposition_rows.length}</strong>
+                <small>每个命题仍保留已知、未知与来源边界</small>
+              </div>
+              <div>
+                <p>错误晋升</p>
+                <strong>{falseAccepts}</strong>
+                <small>候选文本和 hard negative 不得自动获得 Evidence 权限</small>
+              </div>
+              <div>
+                <p>缺口处置</p>
+                <strong>
+                  {delta.narrowed_gap_count} 窄化 / {delta.added_gap_count ?? 0} 新增 / {delta.closed_gap_count} 关闭
+                </strong>
+                <small>新增缺口可表示 S1→S2 的明确交接，不冒充公开信息不存在</small>
+              </div>
+            </div>
+            <p className="operations-console__document-finding">
+              {caseSummary.business_findings[0] ?? "暂无业务结论"}
+            </p>
+            <div className="operations-console__document-meta">
+              <span>{caseSummary.case_key} Successor Evidence {delta.successor_evidence_count}</span>
+              <span>S1 仍未通过 · NumericFact 未授权</span>
+              <code>{caseSummary.result_digest.slice(0, 12)}…{caseSummary.result_digest.slice(-8)}</code>
+            </div>
+          </div>
+        );
+      })}
     </section>
   );
 }

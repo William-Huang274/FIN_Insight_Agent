@@ -14,6 +14,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 from retrieval.contracts import load_financial_research_kernel
 from retrieval.query_atom_shadow import (
     QueryAtomShadowError,
+    apply_query_atom_label_adjudications,
     aggregate_evidence_role_metrics,
     aggregate_query_atom_results,
     compile_atom_lane,
@@ -176,6 +177,61 @@ def test_query_atom_rejects_label_overlap() -> None:
     payload["atoms"][0]["labels"]["hard_negative_object_ids"] = ["OBJ-POS"]
     with pytest.raises(QueryAtomShadowError, match="query_atom_eval_label_overlap"):
         load_query_atoms(payload)
+
+
+def test_qrel_adjudication_adds_reviewed_positive_without_rewriting_base() -> None:
+    atoms = load_query_atoms(_payload())
+    result = apply_query_atom_label_adjudications(
+        atoms,
+        {
+            "schema_version": "fin_ia_query_atom_label_adjudication_v1_0",
+            "authority": {
+                "candidate_is_not_evidence": True,
+                "numeric_authority": False,
+                "owner_acceptance": False,
+            },
+            "adjudications": [
+                {
+                    "atom_id": "DELL_DOWNSTREAM_MSFT",
+                    "add_positive_object_ids": ["OBJ-NEW"],
+                    "expected_roles_by_object_id": {
+                        "OBJ-NEW": ["direct_demand_signal"]
+                    },
+                }
+            ],
+        },
+    )
+
+    assert atoms[0].positive_object_ids == ("OBJ-POS",)
+    assert result[0].positive_object_ids == ("OBJ-POS", "OBJ-NEW")
+    assert result[0].expected_roles_by_object_id["OBJ-NEW"] == (
+        "direct_demand_signal",
+    )
+
+
+def test_qrel_adjudication_rejects_existing_label_reclassification() -> None:
+    atoms = load_query_atoms(_payload())
+    with pytest.raises(QueryAtomShadowError, match="label_overlap"):
+        apply_query_atom_label_adjudications(
+            atoms,
+            {
+                "schema_version": "fin_ia_query_atom_label_adjudication_v1_0",
+                "authority": {
+                    "candidate_is_not_evidence": True,
+                    "numeric_authority": False,
+                    "owner_acceptance": False,
+                },
+                "adjudications": [
+                    {
+                        "atom_id": "DELL_DOWNSTREAM_MSFT",
+                        "add_positive_object_ids": ["OBJ-NEG"],
+                        "expected_roles_by_object_id": {
+                            "OBJ-NEG": ["direct_demand_signal"]
+                        },
+                    }
+                ],
+            },
+        )
 
 
 def test_controlled_pool_isolates_reranker_and_role_without_changing_candidates() -> None:

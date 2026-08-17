@@ -1,0 +1,429 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "cpu_fallback_authorized": false,
+    "cpu_vector_or_reranker_fallback_authorized": false,
+    "cuda_required": true,
+    "development_case_only": true,
+    "fine_tuning_authorized": false,
+    "generation_model_calls_authorized": false,
+    "hidden_qualification_authorized": false,
+    "network_calls_authorized": false,
+    "numeric_fact_authority": false,
+    "runtime_route_promotion_authorized": false,
+    "runtime_route_promotion_requires_result": true,
+    "s1_complete_claimed": false
+  },
+  "bound_inputs": {
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "compiled_objects_sha256": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "financial_intent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_candidate_ranking_policy_v1_4.json",
+    "policy_sha256_lf": "1e42f58354a6989c0307e90b7268ce1184ca6e9831512af3d3e5f173a9d72689",
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_query_atoms_v1_1.json",
+    "retrieval_need_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_retrieval_need_compiler_policy_v1_1.json",
+    "reviewed_claim_anchor_catalog_ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json",
+    "vs1_result_ref": "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
+    "vs2_evaluator_ref": "eval_sets/fin_0_1_3_s1/references/train_internal/vs2_complex_pdf_references_v1_0.jsonl",
+    "vs2_result_ref": "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
+  },
+  "decision": {
+    "candidate_generation_gate_passed": true,
+    "evidence_role_runtime_authority": "shadow_only",
+    "fine_tuning_authorized": false,
+    "fine_tuning_eligible": false,
+    "provisional_first_stage_route": "combined_need_union",
+    "provisional_reranker_route": "qwen3_reranker_0_6b",
+    "runtime_route_promotion_authorized": false,
+    "runtime_route_promotion_blocker": "composite_vs1_vs2_head_quality_and_candidate_decision_gate_required",
+    "s1_complete_claimed": false,
+    "vs2_complex_vertical_evaluation": "pending_same_runtime_replay",
+    "vs4_acquisition_authorized": false
+  },
+  "execution": {
+    "bge_embedding_cache": {
+      "build_seconds": 305.377,
+      "cache_hit": true,
+      "dense_dtype": "float16",
+      "dense_sha256": "3d28b1cfd092b74b21c19ddd3189b4dc8b02b79c0fa219059e8eac2b6a129cc9",
+      "embedding_dimensions": 1024,
+      "learned_sparse_dtype": "float32",
+      "maximum_sequence_length": 512,
+      "model_digest": "d6d4a7fc2980e5bde67c1cd013ef87d1a8709464ba982d61a28653070e440cd5",
+      "object_count": 33085,
+      "object_identity_digest": "e6223814a613a7f9b0779a973bdb8f39ea9e6768de48312a9b99add51fe545a4",
+      "object_sha256": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+      "schema_version": "fin_ia_s1c_bge_m3_compiled_object_cache_v1_0",
+      "sparse_nonzero_count": 1283340,
+      "sparse_sha256": "a38d553045e269ccef0ac4c4201daab7ca1aa93ea611305fcc7ae35cb04282ae",
+      "sparse_vocabulary_size": 250002
+    },
+    "bge_multi_vector_seconds": 10.972,
+    "bge_query_seconds": 1.802,
+    "bge_reranker_seconds": 0.0,
+    "cuda_execution_receipt": {
+      "compute_capability": [
+        8,
+        9
+      ],
+      "cpu_fallback_allowed": false,
+      "cuda_runtime_version": "12.6",
+      "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "embedding_precision": "fp16",
+      "execution_device": "cuda:0",
+      "failure_policy": "fail_closed_before_model_load",
+      "reranker_precision": "fp16",
+      "torch_version": "2.10.0+cu126",
+      "total_memory_bytes": 8585216000
+    },
+    "generation_model_calls": 0,
+    "labels_joined_after_candidate_generation": true,
+    "model_identities": {
+      "bge_embedding": {
+        "directory_name": "BAAI__bge-m3",
+        "files": [
+          {
+            "bytes": 687,
+            "name": "config.json",
+            "sha256": "26159e7ad065073448460117eb24b7a4572f6f4e78eadff65dc0a11c052449fa"
+          },
+          {
+            "bytes": 2271145830,
+            "name": "pytorch_model.bin",
+            "sha256": "b5e0ce3470abf5ef3831aa1bd5553b486803e83251590ab7ff35a117cf6aad38"
+          },
+          {
+            "bytes": 17098108,
+            "name": "tokenizer.json",
+            "sha256": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08"
+          },
+          {
+            "bytes": 444,
+            "name": "tokenizer_config.json",
+            "sha256": "a62b2b6784f990259fddef5f16388693a8043be4f69179e6a5257eeb3f9abac4"
+          },
+          {
+            "bytes": 5069051,
+            "name": "sentencepiece.bpe.model",
+            "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+          }
+        ],
+        "model_digest": "d6d4a7fc2980e5bde67c1cd013ef87d1a8709464ba982d61a28653070e440cd5",
+        "model_name": "BAAI/bge-m3"
+      },
+      "bge_reranker": {
+        "files": [
+          {
+            "bytes": 795,
+            "name": "config.json",
+            "sha256": "13dcd6c31d9fec9d1d8e158702072f62d7fa7d312a64b9fe057bec9a08cfe41a"
+          },
+          {
+            "bytes": 2271071852,
+            "name": "model.safetensors",
+            "sha256": "d9e3e081faff1eefb84019509b2f5558fd74c1a05a2c7db22f74174fcedb5286"
+          }
+        ],
+        "local_directory_name": "modelscope_BAAI__bge-reranker-v2-m3",
+        "model_digest": "80b469d6bddb1e240987d002aae27658be43f83ec3dbbe3ee94ecb4b9301b994",
+        "model_id": "BAAI/bge-reranker-v2-m3"
+      },
+      "qwen_embedding": {
+        "directory_name": "Qwen__Qwen3-Embedding-0.6B",
+        "files": [
+          {
+            "bytes": 727,
+            "name": "config.json",
+            "sha256": "b5bf1f51fc45be473a54718cef92448d90a1be001bf9b9a44b8c7f10a19feaa9"
+          },
+          {
+            "bytes": 1191586416,
+            "name": "model.safetensors",
+            "sha256": "0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd"
+          },
+          {
+            "bytes": 11423705,
+            "name": "tokenizer.json",
+            "sha256": "def76fb086971c7867b829c23a26261e38d9d74e02139253b38aeb9df8b4b50a"
+          },
+          {
+            "bytes": 9706,
+            "name": "tokenizer_config.json",
+            "sha256": "253153d0738ceb4c668d2eff957714dd2bea0b56de772a9fdccd96cbf517e6a0"
+          }
+        ],
+        "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+        "model_name": "Qwen/Qwen3-Embedding-0.6B"
+      },
+      "qwen_reranker": {
+        "files": [
+          {
+            "bytes": 727,
+            "name": "config.json",
+            "sha256": "d479c427a9ca5295218063d4f9aca4f297ab4ac27487cca7af42c84643d51ef0"
+          },
+          {
+            "bytes": 1191588280,
+            "name": "model.safetensors",
+            "sha256": "27cd75a405b9c1b46b59abfd88aaa209e6fed2a1972cde9b70e7659537c5e65b"
+          }
+        ],
+        "local_directory_name": "Qwen__Qwen3-Reranker-0.6B",
+        "model_digest": "9fa9d067824c3aae0aeee7a773cbb42fac95a06c981ab72e075294bb10845ad2",
+        "model_id": "Qwen/Qwen3-Reranker-0.6B"
+      }
+    },
+    "network_calls": 0,
+    "qwen_embedding_cache": {
+      "build_seconds": 569.351,
+      "cache_hit": true,
+      "dense_dtype": "float16",
+      "dense_sha256": "8ec129579e3d38ee6e328439c22c250c4f1735b3537b73c5a05e4931d3e13555",
+      "embedding_dimensions": 1024,
+      "maximum_sequence_length": 512,
+      "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+      "object_count": 33085,
+      "object_identity_digest": "e6223814a613a7f9b0779a973bdb8f39ea9e6768de48312a9b99add51fe545a4",
+      "object_sha256": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+      "schema_version": "fin_ia_s1c_qwen3_embedding_compiled_object_cache_v1_0"
+    },
+    "qwen_query_seconds": 1.036,
+    "qwen_reranker_seconds": 0.0,
+    "reranker_pair_count_per_model": 4128,
+    "reranker_score_cache": {
+      "bge_cache_key": "2ee44c98ece524c8a5d2dcb44f9ccff1111a8c7c1d0a5f8d862d7b62ded7f873",
+      "bge_reused": true,
+      "pair_manifest_digest": "50f58f895e8497112e531a361c381df55c173768d65931d0fa2c15706b33d251",
+      "qwen_cache_key": "f980aae49b6b1607de847c5208701a5839840342d3a097341070c1c5b1246341",
+      "qwen_reused": true
+    },
+    "training_steps": 0
+  },
+  "experiment_id": "FIN-0.1.3-S1-VS4-MU-NVDA-SUPPLEMENT-CANDIDATE-PROBE-V1.4",
+  "recorded_at": "2026-08-17",
+  "result_digest": "16accaf3bc001fc0f1a656b56bed31f02484792154bfe6c326ebc6fd5b820d4a",
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_summary_v1_0",
+  "status": "vs3_candidate_ranking_complete_development_decision_materialized",
+  "storage": {
+    "full_result_digest": "16accaf3bc001fc0f1a656b56bed31f02484792154bfe6c326ebc6fd5b820d4a",
+    "full_result_ref": "data/workbench_private/fin_0_1_3_s1_vs4_mu_nvda_supplement_candidate_ranking/v1_4/full_result_16accaf3bc001fc0f1a656b56bed31f02484792154bfe6c326ebc6fd5b820d4a.json",
+    "full_result_sha256": "e8e21ec4c8cc391fd248bfd11a94cf6aa7fb2aae46511364a0ea1ce4c7db3ac3"
+  },
+  "summary": {
+    "atom_count": 10,
+    "candidate_pool_evidence_role": {
+      "hard_negative_count": 5,
+      "hard_negative_suppressed_or_abstained_rate": 1.0,
+      "positive_compatible_rate": 1.0,
+      "positive_count": 20
+    },
+    "case_count": 2,
+    "earliest_failure_counts": {
+      "development_query_passed": 3,
+      "evidence_role_head": 1,
+      "reranker_head": 6
+    },
+    "evidence_role": {
+      "hard_negative_count": 19,
+      "hard_negative_suppressed_or_abstained_rate": 0.947368,
+      "positive_compatible_rate": 1.0,
+      "positive_count": 31
+    },
+    "first_stage": {
+      "bge_m3_dense": {
+        "hard_negative_in_ranking_count": 3,
+        "mean_reciprocal_rank": 0.010723,
+        "pairwise_accuracy": 0.5,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 3,
+        "positive_target_in_top_k_count": 0
+      },
+      "bge_m3_learned_sparse": {
+        "hard_negative_in_ranking_count": 5,
+        "mean_reciprocal_rank": 0.085533,
+        "pairwise_accuracy": 0.909091,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 7,
+        "positive_target_in_top_k_count": 3
+      },
+      "bge_m3_multi_vector_refinement": {
+        "hard_negative_in_ranking_count": 5,
+        "mean_reciprocal_rank": 0.024386,
+        "pairwise_accuracy": 0.636364,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 9,
+        "positive_target_in_top_k_count": 0
+      },
+      "bm25_need_lexical": {
+        "hard_negative_in_ranking_count": 0,
+        "mean_reciprocal_rank": 0.119033,
+        "pairwise_accuracy": null,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 10,
+        "positive_target_in_top_k_count": 3
+      },
+      "broad_lane_bm25_baseline": {
+        "hard_negative_in_ranking_count": 3,
+        "mean_reciprocal_rank": 0.220263,
+        "pairwise_accuracy": 1.0,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 10,
+        "positive_target_in_top_k_count": 4
+      },
+      "combined_need_union": {
+        "hard_negative_in_ranking_count": 7,
+        "mean_reciprocal_rank": 0.410237,
+        "pairwise_accuracy": 0.894737,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 10,
+        "positive_target_in_top_k_count": 8
+      },
+      "qwen3_embedding_0_6b_dense": {
+        "hard_negative_in_ranking_count": 0,
+        "mean_reciprocal_rank": 0.347688,
+        "pairwise_accuracy": null,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 9,
+        "positive_target_in_top_k_count": 4
+      },
+      "typed_exact_phrase": {
+        "hard_negative_in_ranking_count": 0,
+        "mean_reciprocal_rank": 0.206798,
+        "pairwise_accuracy": null,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 5,
+        "positive_target_in_top_k_count": 3
+      },
+      "typed_intent_alias_groups": {
+        "hard_negative_in_ranking_count": 0,
+        "mean_reciprocal_rank": 0.449681,
+        "pairwise_accuracy": null,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 9,
+        "positive_target_in_top_k_count": 7
+      },
+      "typed_metric_row_exact": {
+        "hard_negative_in_ranking_count": 0,
+        "mean_reciprocal_rank": 0.0,
+        "pairwise_accuracy": null,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 0,
+        "positive_target_in_top_k_count": 0
+      }
+    },
+    "head_stability_rate": 1.0,
+    "positive_atom_count": 10,
+    "positive_target_in_combined_union_rate": 1.0,
+    "rerankers": {
+      "bge_reranker_v2_m3": {
+        "hard_negative_in_ranking_count": 5,
+        "mean_reciprocal_rank": 0.021704,
+        "pairwise_accuracy": 0.545455,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 9,
+        "positive_target_in_top_k_count": 0
+      },
+      "qwen3_reranker_0_6b": {
+        "hard_negative_in_ranking_count": 5,
+        "mean_reciprocal_rank": 0.123037,
+        "pairwise_accuracy": 1.0,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 9,
+        "positive_target_in_top_k_count": 3
+      },
+      "role_guarded_dual_reranker_shadow": {
+        "hard_negative_in_ranking_count": 5,
+        "mean_reciprocal_rank": 0.086421,
+        "pairwise_accuracy": 1.0,
+        "positive_atom_count": 10,
+        "positive_target_in_ranking_count": 9,
+        "positive_target_in_top_k_count": 3
+      }
+    },
+    "retrieval_need_count": 43,
+    "typed_gap_atom_count": 0,
+    "vs1_reviewed_successor_mapping": {
+      "mappings": [
+        {
+          "compiled_object_ids": [
+            "COBJ::de1ffc625650689ae815fc0d"
+          ],
+          "evidence_item_digest": "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1",
+          "source_record_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004",
+          "unique_successor": true
+        },
+        {
+          "compiled_object_ids": [
+            "COBJ::bdf4cccd61345dcce1c99b1c"
+          ],
+          "evidence_item_digest": "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05",
+          "unique_successor": true
+        }
+      ],
+      "reviewed_target_count": 2,
+      "unique_successor_count": 2
+    }
+  },
+  "token_budget_basis": {
+    "bge_embedding": {
+      "comparable_run_evidence": "DELL VS4 encoded three natural propositions on the same immutable object cache and recovered every pre-registered positive into the candidate union.",
+      "input_scale": "33085 cached compiled objects plus retrieval needs from ten pre-registered atoms across MU and NVDA; no document re-encoding unless cache identity fails.",
+      "materiality_and_quality_risk": "truncation can hide shipment, contract, capacity, customer-concentration or counterevidence qualifiers; 512 tokens covers each atomic need and exact claim surface.",
+      "node_purpose": "Encode the ten natural MU/NVDA proposition requests while reusing the immutable BGE-M3 object cache.",
+      "reasoning_profile": "local retrieval encoder on CUDA FP16; no generative reasoning",
+      "required_outputs": [
+        "dense query vectors",
+        "learned-sparse query vectors",
+        "bounded multi-vector scores",
+        "concrete CUDA device receipt"
+      ],
+      "schema_burden": "numeric arrays, cache identity and hardware receipt only",
+      "stop_and_truncation": "maximum 512 tokens, batch 4, fail on CUDA, model, object or cache identity drift; no CPU or network fallback"
+    },
+    "bge_reranker": {
+      "comparable_run_evidence": "DELL VS4 proved transport and full hard-negative suppression under the same scorer, while retaining Evidence Role as a separate gate.",
+      "input_scale": "at most 5120 query-candidate pairs across ten atoms before cache reuse.",
+      "materiality_and_quality_risk": "a semantic reranker can promote wrong speaker, period or evidence role; explicit safe-harbor, contact and unrelated-financial hard negatives test this boundary.",
+      "node_purpose": "Score the shared bounded candidate pools for ten business propositions without changing membership or Evidence authority.",
+      "reasoning_profile": "local Cross-Encoder on CUDA FP16",
+      "required_outputs": [
+        "one finite score per pair",
+        "pair-order invariant ranking",
+        "concrete CUDA device receipt"
+      ],
+      "schema_burden": "flat score vectors plus deterministic pair manifest",
+      "stop_and_truncation": "maximum 1024 tokens, batch 2, exact score-count match and CUDA required; no CPU fallback"
+    },
+    "qwen_embedding": {
+      "comparable_run_evidence": "DELL VS4 and VS3 showed Qwen can add candidate recall but cannot independently grant Evidence authority.",
+      "input_scale": "33085 cached compiled objects plus retrieval needs from ten pre-registered atoms.",
+      "materiality_and_quality_risk": "semantic similarity may confuse safe-harbor, contact, metric or cross-company text with usable financial Evidence; hard negatives and the Evidence Role gate remain independent.",
+      "node_purpose": "Provide a provider-neutral semantic challenger for the same ten MU/NVDA propositions on the unchanged object snapshot.",
+      "reasoning_profile": "local retrieval encoder on CUDA FP16; no generative reasoning",
+      "required_outputs": [
+        "normalized dense query vectors",
+        "immutable cache identity",
+        "concrete CUDA device receipt"
+      ],
+      "schema_burden": "numeric arrays, cache identity and hardware receipt only",
+      "stop_and_truncation": "maximum 512 tokens, batch 8, fail on CUDA or identity drift; no CPU or network fallback"
+    },
+    "qwen_reranker": {
+      "comparable_run_evidence": "DELL VS4 showed Qwen head quality is useful as one signal but not sufficient for Evidence promotion.",
+      "input_scale": "at most 5120 query-candidate pairs across ten atoms before cache reuse.",
+      "materiality_and_quality_risk": "instruction following must not override issuer, period, source, relationship direction or ecosystem attribution boundaries.",
+      "node_purpose": "Independently score the same ten candidate pools for direct answerability and financial relevance.",
+      "reasoning_profile": "local Cross-Encoder on CUDA FP16",
+      "required_outputs": [
+        "one finite score per pair",
+        "same-pool ranked IDs",
+        "concrete CUDA device receipt"
+      ],
+      "schema_burden": "flat score vectors plus deterministic pair manifest",
+      "stop_and_truncation": "maximum 1024 tokens, batch 2, exact score-count match and CUDA required; no CPU fallback"
+    }
+  }
+}

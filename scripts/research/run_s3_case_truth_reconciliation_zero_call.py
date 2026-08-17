@@ -701,7 +701,7 @@ def run(authority_path: Path) -> dict[str, Any]:
         wire_slice_tool, slice_projection = project_deepseek_strict_tool(
             slice_tool
         )
-        item_contract = wire_slice_tool["function"]["parameters"][
+        item_contract = slice_tool["function"]["parameters"][
             "properties"
         ]["surface_assertions"]
         if not (
@@ -709,6 +709,8 @@ def run(authority_path: Path) -> dict[str, Any]:
             and item_contract["minItems"] == 3
             and item_contract["maxItems"] == 3
             and slice_projection["finance_contract_weakened"] is False
+            and wire_slice_tool["function"]["name"]
+            == "submit_case_truth_reconciliation"
             and len(analysis_messages[1]["content"])
             < direct_submission_chars
             and len(submission_messages[1]["content"])

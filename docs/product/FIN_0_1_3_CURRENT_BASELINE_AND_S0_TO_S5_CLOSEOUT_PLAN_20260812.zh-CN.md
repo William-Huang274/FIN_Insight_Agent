@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / runtime_registry_R11 / S1_object_route_and_Dell_targeted_source_engineering_pass / S1_candidate_to_Evidence_product_open / S2_company_fact_mart_and_transcript_numeric_nonregression_pass / S2_operating_metric_and_product_bridge_open / fixed_pack_and_dynamic_single_cell_accepted / five_cell_R2_partial_two_valid_three_analysis_budget_failed / compact_partial_node_successor_under_engineering_qualification / natural_five_cell_and_generalization_pending / product_iteration_not_closed`
+状态：`repository_baseline_complete / S1_object_route_and_Dell_targeted_source_engineering_pass / S1_candidate_to_Evidence_product_open / S2_company_fact_mart_pass / S2_product_bridge_open / fixed_pack_and_dynamic_single_cell_accepted / DELL_R7_complete_five_cell_report_contract_pass_truth_reconciliation_fail / cross_cell_truth_contract_next / generalization_pending / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -76,6 +76,15 @@ Owner 已把原三层验收扩展为同一 FIN 0.1.3 内的连续执行范围：
 2026-08-16 更新：FAS-R1 已证明片段专属上下文＋高推理分析／低推理交卷对单 thesis 有效。Owner 现授权先把同一模式零调用扩到 mechanism 和 counterargument／WWC，再做一次完整 fixed-Pack Judgment；若失败，允许在最早责任层修复并以新 attempt 续跑，不因普通 live failure 自动停下。网络错误必须区分本机代理／TUN／DNS／TLS／IncompleteRead 与业务合同失败，采用有界连通性恢复，不能把 transport 问题记成模型内容失败。
 
 MU／NVDA 与留出案例验收必须先形成正式泛化评测设计和最终报告。开发案例、已观察 validation 和 test-precut／真正留出要分账；案例须覆盖不同产业、商业模式、来源形态、Evidence 充足度、期间与因果边界。验收至少逐案报告身份／期间／来源／数值 L1、EvidenceRequest 与 route 覆盖、Evidence 晋升与 abstain、NumericFact／bridge、动态补证、五单元内容、八维质量、paired gain、人工验收、成本和延迟。任何逐案 L1 失败不得被平均分掩盖，也不得只用几个与 DELL 相似的案例给“泛化通过”打标。
+
+## 4B. 2026-08-17 R7 后的当前执行顺序
+
+1. R7 保持不可变：五个 contract-valid Judgment 和完整 report 只能作为待修 candidate，不进入 Workbench 产品面。
+2. 当前最早责任层仍为 S3，但不是再补一个 Prompt 字段。先建立 case-level reviewed fact presence catalog、cell visibility matrix 和 typed absence authority，综合 conflict 必须与全案事实目录一致。
+3. 零调用回放必须覆盖 R7 的三条错误、合法产品利润 gap、DELL／MU／NVDA 三案以及异质留出 mutation；不得用本案短语表或模型专用分支伪造泛化。
+4. 结构门通过后，只允许新 authority 下修复 Operating、Counterevidence 和 Synthesis；Demand、Value、Cash、Planner、S1/S2 与五个 analysis 默认复用。是否需要重跑某节点必须由输入或判断 digest 的真实依赖决定。
+5. 修复 candidate 仍需重新执行 L1/L2、正式八维、同输入 paired 和 qualified-human。DELL 通过前不运行 MU／NVDA 或留出 live；通过后才按预注册异质评测报告验证同核心泛化。
+6. 本轮不改变 FIN 0.1.3、S 阶段或产品范围；这是 S3 首份完整报告暴露出的所属阶段缺陷，不创建新版本。
 
 ## 5. 防止再次膨胀的工程规则
 

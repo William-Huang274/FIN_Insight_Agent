@@ -412,3 +412,14 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 两个独立定向进程均为 `126 passed`，0 model／provider／network。formal proof=`57eb413f...a9b3`，scope decision 固定 R7 最多 3 次调用、0 retry／fallback／外源／协议切换，并继续禁止 publication、generalization 与 S3 acceptance。
 - 全仓与仓库治理复证已经通过；当前仍须完成 clean commit/push、真实 repository-bound preflight 和 fresh authority，这些完成前没有执行权。
 - 下一步仍留在 S3：先做零调用 relation endpoint compiler＋structured support semantics＋Value repair replay/mutation；通过后最多只允许一次 Value resubmission 和两次 synthesis，共 3 次新调用。DELL 五单元、完整报告、八维质量、paired、qualified-human、异质泛化与 S3 acceptance 仍为 false。
+
+## 2026-08-17 S3 DELL 五单元 R7 完整报告与跨单元真值失败
+
+- clean/synced preflight 后，R7 按唯一 authority 完成 Value repair submission、synthesis analysis 和 synthesis submission 三次调用；0 retry／fallback／协议切换／外源／candidate promotion。四个 R6 Judgment、Value analysis、Planner 和当前 S1/S2 均按 digest 复用。
+- 五个单元合同、workpaper、synthesis 和 internal report 首次完整物化。新调用合计 36,008 tokens；公开 result digest=`ec6f3393...e843`，report digest=`ae91cc35...eb87`。
+- 独立内容验收确认身份、期间、数值 lineage、引用、跨案边界和 AI 产品→公司利润／现金因果边界均通过；Value repair 本身成立。
+- 但 Operating 错称没有当季 AI revenue，Counterevidence 错称没有 AI orders，Synthesis 又把“AI orders/backlog 未披露”升级为 cross-cell conflict。当前 Evidence 明确给出 AI orders 244 亿美元、当季 AI server revenue 161 亿美元和 backlog 513 亿美元；真正缺失的是产品／分部利润桥与需求持续性证明。
+- 因此 R7 是 `report contract pass / financial truth and evidence reconciliation fail`。冻结八维 Rubric 不允许在 L1/L2 fail 后给正式分；诊断仅为 `21/32`。DELL 五单元、qualified-human、MU/NVDA／留出泛化、S3 acceptance、Workbench publication 和 release 均为 false。
+- 根因登记为 `RC-S3-038`：当前合同没有区分 `本 cell 未看见` 与 `全 case 不存在`，综合输入也没有 case-level reviewed fact presence／gap matrix。模型忽略可见事实是直接失败，项目缺少负面事实权威是放大器。
+- 下一步只允许零调用的跨单元真值收敛合同：从 reviewed Evidence／NumericFact／typed relation／gap 编译全案 fact presence catalog 和 cell visibility matrix；只有 Harness 可签发 case-level absence；与 catalog 冲突的 synthesis premise 必须 fail closed。不得做短语正则、手工改报告或直接进入 MU/NVDA。
+- 零调用 DELL/MU/NVDA 与留出 mutation 通过后，才可另行决定是否只重交 Operating、Counterevidence 和 Synthesis；不自动重跑 Demand、Value、Cash、Planner、S1/S2 或五个 analysis。

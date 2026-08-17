@@ -446,3 +446,27 @@ R6 证明，模型选择一个合法 relation alias 后再要求它重复选择�
 R6 使用的 claim-surface v1.3 保持不可变；v1.4 只修正当前产品的依赖编译和 `COMPANY_MARGIN_OBSERVATION` 可承担的 Value atom 范围，不新增事实或因果桥。R6 原始 Value Tool Call 在 v1.4 下仍以 `research_consumer_thesis_atom_invalid` 失败，证明模型拥有的日期叙事问题没有被 Harness 隐藏。
 
 因此恢复路径不是重跑完整案例，也不是本地改写 thesis。stable runner 可绑定 R6 的四个有效 Judgment 和一份完整 Value analysis capture，把原失败 Tool Call作为不可晋升的 typed feedback，再允许模型提交一次修正 Tool Call。只有五个 cell 都重新通过当前 Validator 后，才允许跨单元 synthesis。该 successor 总预算为三次模型调用、零 retry；其 fake replay 只证明运行时可以完整物化，不能充当自然模型结果、金融 L1、内容质量或产品验收。
+
+## 22. Case-level fact presence 与跨单元真值收敛
+
+R7 首次完整物化五单元报告，也证明仅有 cell-local ref validation 仍不足以保护负面事实。Operating 与 Counterevidence 的 Tool Call 均引用真实 reviewed Evidence，却分别把已披露的当季 AI server revenue 和 AI orders 写成缺失；Synthesis 随后把 AI orders／backlog 的错误缺失提升为正式 conflict。此处没有错数字、错公司或产品利润因果越权，但“未披露”本身是 material financial truth claim，必须获得独立权威。
+
+后续共享合同必须区分三种状态：
+
+1. `present_in_current_case`：当前 Case reviewed Evidence／NumericFact／typed relation 明确包含；
+2. `not_visible_in_current_cell`：全案存在，但当前 cell 为最小上下文没有投影；
+3. `absent_from_current_case`：全案 catalog 查无对应 reviewed fact，且存在相容 typed gap／coverage receipt。
+
+模型可以选择事实、解释机制和提出 gap，但不得仅凭自由 prose 把第二种状态升级成第三种。case-level absence 必须由 Harness 从当前、内容寻址的 catalog 与 typed gap 编译，并留下 coverage receipt；这不是 Harness 代写观点，而是与 NumericFact、引用和期间相同的事实权威控制。
+
+Synthesis 输入不扩大为完整 Evidence Pack，而增加一份紧凑的 case truth packet：
+
+- reviewed fact presence aliases 及其 owner、期间、slot/facet 和 Evidence ref；
+- 每个 cell 实际可见 alias；
+- genuine typed gap aliases；
+- cell claim 对 presence／absence 的选择与校验 receipt；
+- conflict premise 与 case truth 的一致性检查。
+
+任何把 `present_in_current_case` 写成全案缺失的 cell submission 必须在进入 synthesis 前 fail closed；任何 cross-cell conflict 的 premise 与 fact catalog 冲突，也必须拒绝。实现不得依赖“未披露／not disclosed”等短语正则，因为同义表达、语言切换和合法局部缺失都会使该方案失效。
+
+R7、五个原 Judgment 和综合结果保持不可变。新结构先用 R7 capture replay、DELL／MU／NVDA fake 和异质 holdout mutation 证明；通过后只能以新 authority 重交受影响的 Operating／Counterevidence 与 Synthesis。上游输入或依赖 digest 没有改变时，不得重跑 Planner、S1/S2、Demand、Value、Cash 或五个 analysis。该关闭只解决跨单元事实一致性，不关闭产品利润桥、需求持续性、正式八维、paired、qualified-human、泛化、S3 acceptance 或发布。

@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-17 | DELL R7 首次以 3 次 successor 调用完整物化五单元 workpaper、synthesis 与内部报告；身份、期间、数值、引用和 AI 产品到公司利润／现金的因果边界通过，但 Operating／Counterevidence 把 Evidence 已披露的 AI server revenue、AI orders／backlog 写成缺失，Synthesis 又将错误缺失升级为 conflict，故结果保持 contract pass／L1-L2 fail。产品合同新增 case-level fact presence、cell-local visibility 与 typed absence 三态；只有 Harness 可从 reviewed catalog＋typed gap 签发全案缺失，综合 conflict premise 必须与全案 truth packet 一致。禁止短语正则和手工改报告；DELL 修复验收前不进入 MU/NVDA 泛化或 Workbench publication。 |
 | 2026-08-16 | 动态 DELL 单单元已自然完成 planner、当前 S1/S2 与三片段 Judgment，但 R3 把不同报告期的公司毛利率关系和服务器组合材料写成“同期”，独立 L1 拒绝。新增 TemporalAuthority：NumericRelation 只授权自身比较，跨 Evidence／NumericRelation 的同期叙事必须绑定 source-bound QualitativeFact 的精确期间端点；无绑定时只能写为明确的历史背景。真实失败保持不通过，零调用证明后最多一次同片段 repair，禁止重跑规划、检索、数值和前序片段。 |
 | 2026-08-16 | 动态单元交卷新增 request-scoped 消费要求：每个研究单元只能使用本轮相关 EvidenceResponse 实际返回的已审 Evidence，不能从案例级 Pack、其他请求或陈旧 GraphContext 借权；thesis 若因证据不足而 abstain，后续机制或反方不得把终态升级。formal v1.2 已证明三片段、终态和 deliverable 在证据不足时仍可完整、安全物化，但因使用 controlled fragments 且 0 模型调用，仍不计自然 Judgment 或 Agentic Research。 |
 | 2026-08-16 | 动态 Research Truth Spine 的 Judgment 入口补齐 provider-neutral ClaimRelation 投影：模型只能看到本轮 EvidenceResponse／NumericFact／gap 仍然具备的关系，固定 Pack 中依赖未取回 transcript 的产品目标与多因素关系会被删除。若本轮没有任何正向 thesis 权限，只允许既有 `bridge_unavailable` 关系以 `not_inferable + insufficient_evidence` 提交明确 abstain；不得借“证据不足”通道生成有限支持或正向因果结论。formal successor 只证明动态三片段交卷结构可执行，仍不计自然 planner、Agentic Research 或 S3 产品通过。 |

@@ -414,11 +414,20 @@ def assess_pre_registered_targets(
     receipt: Mapping[str, Any],
     targets: Mapping[str, Any],
 ) -> dict[str, Any]:
+    legacy_polarity = {
+        "present_in_current_case": "claim_asserts_present",
+        "absent_from_current_case": "claim_asserts_absent",
+        "unresolved_or_partially_covered": "claim_asserts_unresolved",
+        "not_visible_in_current_cell": "legacy_claims_cell_invisible",
+    }
     assertions = {
         (
             str(surface.get("claim_surface_id") or ""),
             str(assertion.get("truth_alias") or ""),
-            str(assertion.get("asserted_state") or ""),
+            str(assertion.get("claim_polarity") or "")
+            or legacy_polarity.get(
+                str(assertion.get("asserted_state") or ""), ""
+            ),
         )
         for surface in arguments.get("surface_assertions") or []
         if isinstance(surface, Mapping)
@@ -439,7 +448,7 @@ def assess_pre_registered_targets(
         key = (
             str(row["claim_surface_id"]),
             str(row["truth_alias"]),
-            "absent_from_current_case",
+            "claim_asserts_absent",
         )
         finding_key = (
             key[0],
@@ -458,7 +467,7 @@ def assess_pre_registered_targets(
     accepted_key = (
         str(accepted["claim_surface_id"]),
         str(accepted["truth_alias"]),
-        "absent_from_current_case",
+        "claim_asserts_absent",
     )
     legitimate_selected = accepted_key in assertions
     legitimate_rejected = any(
@@ -528,9 +537,13 @@ def _run_slice_successor(
         == _sha(paths["r7_private_result_ref"])
         and r7_private.get("case_key") == "DELL"
         and zero_call.get("status")
-        == "zero_call_case_truth_reconciliation_engineering_pass"
+        == "zero_call_case_truth_claim_polarity_engineering_pass"
         and zero_call.get("acceptance", {}).get(
             "analysis_submission_separation"
+        )
+        is True
+        and zero_call.get("acceptance", {}).get(
+            "claim_polarity_separated_from_authoritative_truth"
         )
         is True
         and whole_document.get("status") == "terminal_failed_no_retry"
@@ -582,7 +595,7 @@ def _run_slice_successor(
         and submission_profile.endpoint == "/chat/completions"
         and dict(submission_profile.request_defaults)
         == {
-            "max_tokens": 2000,
+            "max_tokens": 4000,
             "stream": False,
             "thinking": {"type": "disabled"},
         }
@@ -908,7 +921,10 @@ def run(
         == _sha(paths["r7_private_result_ref"])
         and r7_private.get("case_key") == "DELL"
         and zero_call.get("status")
-        == "zero_call_case_truth_reconciliation_engineering_pass"
+        in {
+            "zero_call_case_truth_reconciliation_engineering_pass",
+            "zero_call_case_truth_claim_polarity_engineering_pass",
+        }
     ):
         raise CaseTruthLiveError("case_truth_live_predecessor_binding_invalid")
     research_input = r7_private["dynamic_projection"]["claim_surface_projection"][

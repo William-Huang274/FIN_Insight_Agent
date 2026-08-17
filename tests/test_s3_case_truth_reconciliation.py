@@ -27,6 +27,7 @@ from sec_agent.research.case_truth_reconciliation import (
     CaseTruthReconciliationError,
     aggregate_case_truth_reconciliation_receipts,
     compile_case_truth_reconciliation_analysis_messages,
+    compile_case_truth_claim_model_view,
     compile_case_truth_model_view,
     compile_case_truth_packet,
     compile_case_truth_reconciliation_submission,
@@ -332,6 +333,22 @@ def test_semantic_analysis_profile_is_bounded_visible_classification() -> None:
     }
     assert profile.authority["retry_count"] == 0
 
+    submission_profile = load_chat_completion_profile(
+        _json(
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_"
+            "case_truth_submission_non_thinking_strict_beta_profile_v1_0.json"
+        )
+    )
+    assert submission_profile.base_url == "https://api.deepseek.com/beta"
+    assert dict(submission_profile.request_defaults) == {
+        "max_tokens": 4000,
+        "stream": False,
+        "thinking": {"type": "disabled"},
+    }
+    assert submission_profile.authority["retry_count"] == 0
+
 
 def test_r7_false_absence_bundle_is_blocked_but_real_profit_gap_is_legal(
     research_input: dict[str, object],
@@ -486,6 +503,14 @@ def test_reconciler_contract_is_exhaustive_and_fails_closed_on_drift(
     )
     assert len(messages) == 2
     assert tool["function"]["strict"] is True
+    assertion_schema = tool["function"]["parameters"]["properties"][
+        "surface_assertions"
+    ]["items"]["properties"]["assertions"]
+    assert assertion_schema["maxItems"] == 12
+    assert set(assertion_schema["items"]["properties"]) == {
+        "truth_alias",
+        "claim_polarity",
+    }
     assert tool["function"]["parameters"]["properties"][
         "surface_assertions"
     ]["minItems"] == 15
@@ -526,6 +551,95 @@ def test_reconciler_contract_is_exhaustive_and_fails_closed_on_drift(
     with pytest.raises(CaseTruthReconciliationError) as exc:
         validate_case_truth_packet(forged, research_input=research_input)
     assert exc.value.code == "case_truth_packet_binding_drift"
+
+
+def test_claim_scoped_view_and_claim_polarity_separate_text_from_truth(
+    research_input: dict[str, object],
+    judgment_and_deliverable: tuple[dict[str, object], dict[str, object]],
+) -> None:
+    judgment, _ = judgment_and_deliverable
+    packet = compile_case_truth_packet(research_input)
+    parent = compile_cell_judgment_claim_document(judgment)
+    cell_id = "CELL::counterevidence"
+    document = compile_claim_document_slice(
+        parent,
+        claim_surface_ids=[
+            row["claim_surface_id"]
+            for row in parent["claim_surfaces"]
+            if row["cell_id"] == cell_id
+        ],
+    )
+    view = compile_case_truth_claim_model_view(packet, document)
+    assert view["scope_mode"] == "single_cell_claim_slice"
+    assert view["claim_cell_id"] == cell_id
+    assert "cell_visibility_matrix" not in view
+    assert "whole_case_truth_view" not in view
+    assert {
+        row["truth_alias"] for row in view["case_only_outside_cell_alias_index"]
+    }.issuperset(
+        {
+            "TRUTH::FACET::demand_volume_quality::ai_orders",
+            "TRUTH::FACET::demand_volume_quality::ai_backlog",
+        }
+    )
+
+    cross_alias = next(
+        alias
+        for alias in view["cross_case_context_aliases_visible_in_claim_cell"]
+    )
+    payload = _eligible_reconciliation(packet, document)
+    _set_assertions(
+        payload,
+        f"{cell_id}::mechanism_atom",
+        [
+            {
+                "truth_alias": cross_alias,
+                "claim_polarity": "claim_uses_cross_case_context",
+            }
+        ],
+    )
+    receipt = validate_case_truth_reconciliation(
+        payload,
+        case_truth_packet=packet,
+        claim_document=document,
+    )
+    assert not any(
+        row.get("truth_alias") == cross_alias for row in receipt["findings"]
+    )
+
+    subject_alias = next(
+        alias
+        for row in packet["presence_catalog"]
+        if packet["case_identity"]["subject_ticker"] in row.get(
+            "owner_tickers", []
+        )
+        for alias in [row["truth_alias"]]
+        if alias
+        in next(
+            matrix["visible_presence_aliases"]
+            for matrix in packet["cell_visibility_matrix"]
+            if matrix["cell_id"] == cell_id
+        )
+    )
+    _set_assertions(
+        payload,
+        f"{cell_id}::mechanism_atom",
+        [
+            {
+                "truth_alias": subject_alias,
+                "claim_polarity": "claim_uses_cross_case_context",
+            }
+        ],
+    )
+    blocked = validate_case_truth_reconciliation(
+        payload,
+        case_truth_packet=packet,
+        claim_document=document,
+    )
+    assert any(
+        row["finding_code"] == "claimed_cross_case_context_for_subject_fact"
+        for row in blocked["findings"]
+    )
 
 
 def test_cell_slices_separate_analysis_submission_and_aggregate_exhaustively(

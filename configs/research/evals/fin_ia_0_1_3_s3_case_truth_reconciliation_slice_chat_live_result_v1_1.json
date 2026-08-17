@@ -1,0 +1,185 @@
+{
+  "schema_version": "fin_ia_s3_case_truth_reconciliation_slice_live_result_v1_0",
+  "status": "terminal_partial_failed_no_retry",
+  "run_id": "FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2",
+  "recorded_at": "2026-08-17T13:11:21.7148534+08:00",
+  "implementation_commit": "6827efe04990ba484a683078b1f07b3113287738",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_slice_chat_live_authority_v1_1.json",
+  "authority_sha256": "b8f74cccf5941778294c0eeaa971d7811a563342e5399aefca2ab5df74d12a5d",
+  "private_result_ref": "data/workbench_private/s3_case_truth_reconciliation/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/full_result.json",
+  "private_result_sha256": "f0653469b572c6ffd85a2dcb3b0decd4f250535099cfbf0a75c0805bbb3ca9a3",
+  "predecessors": {
+    "r7_report_status": "completed_five_cell_report_contract_valid_content_assessment_pending",
+    "whole_document_semantic_status": "terminal_failed_no_retry",
+    "split_zero_call_run_id": "FIN013-S3-CASE-TRUTH-RECONCILIATION-R3"
+  },
+  "cell_runs": [
+    {
+      "cell_id": "CELL::operating_performance",
+      "claim_document_digest": "74ecbe608e3d44231680fbe9cd708a56320be661d2987a9a46816307fc33173b",
+      "surface_count": 3,
+      "analysis": {
+        "provider_id": "deepseek",
+        "model": "deepseek-v4-pro",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 9964,
+          "completion_tokens": 2811,
+          "total_tokens": 12775,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 9964
+        },
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/OPERATING-ANALYSIS-02/model_visible_request.json",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/OPERATING-ANALYSIS-02/provider_response.json",
+        "private_reasoning_persisted": false
+      },
+      "submission": {
+        "provider_id": "deepseek",
+        "model": "deepseek-v4-pro",
+        "finish_reason": "length",
+        "usage": {
+          "prompt_tokens": 5850,
+          "completion_tokens": 2000,
+          "total_tokens": 7850,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 5850
+        },
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/OPERATING-SUBMISSION-02/model_visible_request.json",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/OPERATING-SUBMISSION-02/provider_response.json",
+        "private_reasoning_persisted": false
+      },
+      "local_reconciliation_status": "",
+      "local_finding_codes": [],
+      "failure": {
+        "phase": "analysis_submission_or_local_semantic_validation",
+        "code": "case_truth_live_length_stop",
+        "capture_ref": "data/captures/provider_calls/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/OPERATING-SUBMISSION-02/provider_response.json"
+      }
+    },
+    {
+      "cell_id": "CELL::counterevidence",
+      "claim_document_digest": "604de172b4247022b073bf06a8ff0ea6f86a3f68fdb73ffd2fbc5ea4080120bb",
+      "surface_count": 3,
+      "analysis": {
+        "provider_id": "deepseek",
+        "model": "deepseek-v4-pro",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 9885,
+          "completion_tokens": 1269,
+          "total_tokens": 11154,
+          "prompt_tokens_details": {
+            "cached_tokens": 1152
+          },
+          "prompt_cache_hit_tokens": 1152,
+          "prompt_cache_miss_tokens": 8733
+        },
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/COUNTEREVIDENCE-ANALYSIS-02/model_visible_request.json",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/COUNTEREVIDENCE-ANALYSIS-02/provider_response.json",
+        "private_reasoning_persisted": false
+      },
+      "submission": {
+        "provider_id": "deepseek",
+        "model": "deepseek-v4-pro",
+        "finish_reason": "tool_calls",
+        "usage": {
+          "prompt_tokens": 4093,
+          "completion_tokens": 1415,
+          "total_tokens": 5508,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 4093
+        },
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/COUNTEREVIDENCE-SUBMISSION-02/model_visible_request.json",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-CASE-TRUTH-SEMANTIC-SLICE-R2/COUNTEREVIDENCE-SUBMISSION-02/provider_response.json",
+        "private_reasoning_persisted": false
+      },
+      "local_reconciliation_status": "case_truth_reconciliation_blocked",
+      "local_finding_codes": [
+        "asserted_present_outside_cell_visibility",
+        "asserted_present_outside_cell_visibility",
+        "asserted_present_without_reviewed_presence",
+        "asserted_present_outside_cell_visibility",
+        "asserted_present_outside_cell_visibility",
+        "asserted_present_outside_cell_visibility",
+        "asserted_cell_local_invisibility_invalid",
+        "asserted_present_outside_cell_visibility",
+        "asserted_present_outside_cell_visibility",
+        "asserted_present_outside_cell_visibility",
+        "asserted_present_outside_cell_visibility",
+        "asserted_present_outside_cell_visibility",
+        "asserted_present_outside_cell_visibility",
+        "asserted_cell_local_invisibility_invalid"
+      ],
+      "failure": {
+        "phase": "",
+        "code": "",
+        "capture_ref": ""
+      }
+    }
+  ],
+  "pre_registered_target_assessment": {
+    "required_false_absence_detections": [
+      {
+        "claim_surface_id": "CELL::operating_performance::thesis_atom",
+        "truth_alias": "TRUTH::FACET::operating_performance::accelerated_compute_or_ai_infrastructure_revenue",
+        "model_extracted_required_assertion": false,
+        "local_authority_rejected_false_absence": false
+      },
+      {
+        "claim_surface_id": "CELL::counterevidence::thesis_atom",
+        "truth_alias": "TRUTH::FACET::demand_volume_quality::ai_orders",
+        "model_extracted_required_assertion": false,
+        "local_authority_rejected_false_absence": false
+      },
+      {
+        "claim_surface_id": "CELL::counterevidence::thesis_atom",
+        "truth_alias": "TRUTH::FACET::demand_volume_quality::ai_backlog",
+        "model_extracted_required_assertion": false,
+        "local_authority_rejected_false_absence": false
+      }
+    ],
+    "all_required_false_absences_extracted_and_rejected": false,
+    "legitimate_profit_bridge_absence_extracted": false,
+    "legitimate_profit_bridge_absence_preserved": false,
+    "surface_count": 3,
+    "automatic_critical_targets_pass": false,
+    "semantic_content_assessment_pending": true
+  },
+  "execution": {
+    "model_calls_attempted": 4,
+    "provider_calls_attempted": 4,
+    "transport_attempts": 4,
+    "retries": 0,
+    "fallbacks": 0,
+    "protocol_switches": 0,
+    "network_source_calls": 0,
+    "embedding_calls": 0,
+    "candidate_promotions": 0,
+    "research_rewrites": 0,
+    "report_generations": 0,
+    "product_publication": false
+  },
+  "acceptance": {
+    "both_cell_receipts_materialized": false,
+    "automatic_critical_targets_pass": false,
+    "semantic_content_assessment_complete": false,
+    "natural_semantic_extraction_accepted": false,
+    "remaining_three_cells_authorized": false,
+    "r7_repaired": false,
+    "dell_five_cell_accepted": false,
+    "generalization_accepted": false,
+    "s3_accepted": false,
+    "release_ready": false
+  },
+  "known_boundary": "This four-call successor only tests natural semantic mapping for the immutable R7 Operating and Counterevidence claim slices. It does not rewrite either Judgment, run the remaining three cells, repair synthesis or report, accept DELL, prove generalization, publish to Workbench, accept S3 or release. Automatic target success still requires independent inspection of every submitted assertion.",
+  "result_digest": "d23ed3bff4e6d8ed0d95257abffd2ede4771787815645327d418dfbb42026fe8"
+}

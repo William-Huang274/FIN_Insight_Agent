@@ -423,3 +423,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 根因登记为 `RC-S3-038`：当前合同没有区分 `本 cell 未看见` 与 `全 case 不存在`，综合输入也没有 case-level reviewed fact presence／gap matrix。模型忽略可见事实是直接失败，项目缺少负面事实权威是放大器。
 - 下一步只允许零调用的跨单元真值收敛合同：从 reviewed Evidence／NumericFact／typed relation／gap 编译全案 fact presence catalog 和 cell visibility matrix；只有 Harness 可签发 case-level absence；与 catalog 冲突的 synthesis premise 必须 fail closed。不得做短语正则、手工改报告或直接进入 MU/NVDA。
 - 零调用 DELL/MU/NVDA 与留出 mutation 通过后，才可另行决定是否只重交 Operating、Counterevidence 和 Synthesis；不自动重跑 Demand、Value、Cash、Planner、S1/S2 或五个 analysis。
+
+## 2026-08-17 S3 Case Truth 两单元 natural R1–R2 与当前结构处置
+
+- R1 在 Operating／Counterevidence 两个三-surface slice 上使用 max thinking；两次调用分别耗尽 16k reasoning，零可见输出，证明该 bounded classification 与研究型 profile 不匹配。
+- 专用 non-thinking profile 已通过全仓工程门。R2 四次调用均 HTTP 200：两份 analysis 都有可见内容；Operating strict submission 在 2k completion 截断，Counterevidence strict submission完成但被 14 条本地 finding 阻断。0 retry／fallback／网络／embedding／改写或报告。
+- R2 说明旧 `asserted_state` 把“claim 说了什么”和“Case Truth 实际是什么”混在一列，且没有表达合法跨公司 `context_only` 的状态；完整五单元 catalog 也诱发 supporting-fact 枚举、错误 synonym 和跨单元 alias 选择。Operating 三个 surface 被扩成 30 余条 mapping，容量失败只是这一语义膨胀的结果。
+- 14 条 finding 不是单一模型错误：有错误 alias／polarity，也有现合同的 false positive，更有 R7 Judgment 真实使用 allowed cell view 之外现金流、收入或需求事实的 cross-cell leakage。不能为了命中三条预注册目标而隐藏新增问题。
+- 当前唯一允许工作仍在 S3 同层：把输出改成 claim polarity＋cross-case context，编译 current-cell／case-only／typed-absence 分层 alias view，禁止枚举支撑事实，保留本地 truth authority；用 R2 capture、三案例和留出做零调用 proof。通过后最多一次 fresh 两单元 successor；此前不执行剩余三单元、R7 修文、综合、泛化或发布。

@@ -11,7 +11,10 @@ CASE_TRUTH_PACKET_SCHEMA_VERSION = "fin_ia_case_truth_packet_v1_0"
 CASE_TRUTH_MODEL_VIEW_SCHEMA_VERSION = "fin_ia_case_truth_model_view_v1_0"
 CASE_TRUTH_DOCUMENT_SCHEMA_VERSION = "fin_ia_case_truth_claim_document_v1_0"
 CASE_TRUTH_RECONCILIATION_SCHEMA_VERSION = (
-    "fin_ia_case_truth_semantic_reconciliation_v1_0"
+    "fin_ia_case_truth_semantic_reconciliation_v1_1"
+)
+CASE_TRUTH_CLAIM_MODEL_VIEW_SCHEMA_VERSION = (
+    "fin_ia_case_truth_claim_model_view_v1_0"
 )
 
 _ASSERTED_STATES = {
@@ -20,6 +23,19 @@ _ASSERTED_STATES = {
     "absent_from_current_case",
     "unresolved_or_partially_covered",
 }
+_CLAIM_POLARITIES = {
+    "claim_asserts_present",
+    "claim_asserts_absent",
+    "claim_asserts_unresolved",
+    "claim_uses_cross_case_context",
+}
+_LEGACY_STATE_TO_CLAIM_POLARITY = {
+    "present_in_current_case": "claim_asserts_present",
+    "absent_from_current_case": "claim_asserts_absent",
+    "unresolved_or_partially_covered": "claim_asserts_unresolved",
+    "not_visible_in_current_cell": "legacy_claims_cell_invisible",
+}
+_MAX_ASSERTIONS_PER_SURFACE = 12
 _COVERAGE_STATUSES = {
     "claims_mapped",
     "no_case_truth_claim",
@@ -599,6 +615,161 @@ def compile_case_truth_model_view(
     return {**unsigned, "case_truth_model_view_digest": canonical_digest(unsigned)}
 
 
+def compile_case_truth_claim_model_view(
+    case_truth_packet: Mapping[str, Any],
+    claim_document: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Project truth authority by claim scope without hiding case-level conflicts.
+
+    A cell slice receives rich metadata for aliases that its research input was
+    allowed to see, a compact index for case facts outside that cell, and all
+    typed absence / unresolved authorities.  This keeps false cross-cell claims
+    detectable without flattening the five-cell truth matrix into every prompt.
+    """
+
+    full_view = compile_case_truth_model_view(case_truth_packet)
+    document_digest = str(claim_document.get("claim_document_digest") or "")
+    _require(
+        document_digest
+        and document_digest
+        == canonical_digest(
+            {
+                key: deepcopy(value)
+                for key, value in claim_document.items()
+                if key != "claim_document_digest"
+            }
+        ),
+        "case_truth_claim_model_view_document_invalid",
+    )
+    surfaces = _rows(
+        claim_document.get("claim_surfaces"),
+        "case_truth_claim_surfaces_invalid",
+    )
+    cell_ids = {
+        str(row.get("cell_id") or "")
+        for row in surfaces
+        if str(row.get("cell_id") or "")
+    }
+    single_cell = len(cell_ids) == 1 and all(
+        str(row.get("cell_id") or "") in cell_ids for row in surfaces
+    )
+    if not single_cell:
+        unsigned = {
+            "schema_version": CASE_TRUTH_CLAIM_MODEL_VIEW_SCHEMA_VERSION,
+            "scope_mode": "whole_case",
+            "case_truth_packet_digest": full_view["case_truth_packet_digest"],
+            "claim_document_digest": document_digest,
+            "case_identity": deepcopy(full_view["case_identity"]),
+            "whole_case_truth_view": full_view,
+            "authority": {
+                "claim_polarity_is_not_authoritative_truth": True,
+                "harness_remains_final_truth_authority": True,
+            },
+        }
+        return {
+            **unsigned,
+            "case_truth_claim_model_view_digest": canonical_digest(unsigned),
+        }
+
+    cell_id = next(iter(cell_ids))
+    visibility_rows = {
+        str(row.get("cell_id") or ""): row
+        for row in full_view["cell_visibility_matrix"]
+    }
+    _require(cell_id in visibility_rows, "case_truth_claim_cell_visibility_missing")
+    visibility = visibility_rows[cell_id]
+    visible_presence = set(visibility["visible_presence_aliases"])
+    visible_gaps = set(visibility["visible_gap_aliases"])
+    visible_bridges = set(visibility["visible_bridge_boundary_aliases"])
+
+    eligible_presence_catalog = []
+    outside_cell_alias_index = []
+    for group in full_view["presence_catalog"]:
+        aliases = list(group["truth_aliases"])
+        eligible = [alias for alias in aliases if alias in visible_presence]
+        outside = [alias for alias in aliases if alias not in visible_presence]
+        if eligible:
+            eligible_presence_catalog.append(
+                {**deepcopy(group), "truth_aliases": eligible}
+            )
+        for alias in outside:
+            compact = {
+                "truth_alias": alias,
+                "truth_kind": group["truth_kind"],
+            }
+            for key in (
+                "owner_tickers",
+                "metric_id",
+                "period_end",
+                "fiscal_period",
+                "fiscal_year",
+                "unit",
+                "relation_type",
+                "current_period_end",
+                "comparison_period_end",
+                "direction",
+                "display_surface_zh",
+                "qualifier_zh",
+            ):
+                if key in group:
+                    compact[key] = deepcopy(group[key])
+            outside_cell_alias_index.append(compact)
+
+    subject_ticker = str(full_view["case_identity"]["subject_ticker"]).upper()
+    cross_case_context_aliases = []
+    for group in eligible_presence_catalog:
+        owners = {str(value).upper() for value in group.get("owner_tickers") or []}
+        if owners and subject_ticker not in owners:
+            cross_case_context_aliases.extend(group["truth_aliases"])
+
+    typed_gap_catalog = []
+    for row in full_view["typed_gap_catalog"]:
+        typed_gap_catalog.append(
+            {
+                **deepcopy(row),
+                "visible_in_claim_cell": row["truth_alias"] in visible_gaps,
+            }
+        )
+    bridge_catalog = []
+    for row in full_view["typed_bridge_boundary_catalog"]:
+        bridge_catalog.append(
+            {
+                **deepcopy(row),
+                "visible_in_claim_cell": row["truth_alias"] in visible_bridges,
+            }
+        )
+
+    unsigned = {
+        "schema_version": CASE_TRUTH_CLAIM_MODEL_VIEW_SCHEMA_VERSION,
+        "scope_mode": "single_cell_claim_slice",
+        "case_truth_packet_digest": full_view["case_truth_packet_digest"],
+        "claim_document_digest": document_digest,
+        "case_identity": deepcopy(full_view["case_identity"]),
+        "claim_cell_id": cell_id,
+        "eligible_current_cell_presence_catalog": eligible_presence_catalog,
+        "case_only_outside_cell_alias_index": sorted(
+            outside_cell_alias_index, key=lambda row: row["truth_alias"]
+        ),
+        "typed_gap_catalog": typed_gap_catalog,
+        "typed_bridge_boundary_catalog": bridge_catalog,
+        "cross_case_context_aliases_visible_in_claim_cell": sorted(
+            set(cross_case_context_aliases)
+        ),
+        "authority": {
+            "claim_polarity_is_what_the_sentence_says_not_case_truth": True,
+            "outside_cell_aliases_are_case_known_but_not_cell_authorized": True,
+            "cross_case_context_is_visible_but_not_subject_company_truth": True,
+            "case_absence_requires_typed_gap_or_bridge_boundary": True,
+            "presence_and_residual_gap_may_coexist": True,
+            "harness_remains_final_truth_authority": True,
+        },
+    }
+    return {
+        **unsigned,
+        "case_truth_claim_model_view_digest": canonical_digest(unsigned),
+    }
+
+
 def _claim_surface(
     *,
     surface_id: str,
@@ -723,12 +894,20 @@ def compile_case_truth_reconciliation_analysis_messages(
     )
     view = {
         "task": "analyze_case_truth_claim_slice_without_tool_submission",
-        "case_truth_packet": compile_case_truth_model_view(case_truth_packet),
+        "case_truth_claim_view": compile_case_truth_claim_model_view(
+            case_truth_packet,
+            claim_document,
+        ),
         "claim_document": deepcopy(dict(claim_document)),
         "required_visible_draft_format": [
             "One section per claim_surface_id, in supplied order.",
-            "For every material assertion, write the exact truth_alias and one exact state: present_in_current_case, absent_from_current_case, not_visible_in_current_cell, or unresolved_or_partially_covered.",
-            "Split bundled assertions; explicitly retain legitimate typed gaps or bridge boundaries.",
+            "Extract only propositions explicitly asserted by the claim text. Do not enumerate facts, numeric endpoints or aliases that merely support the proposition.",
+            "For each direct proposition, write one most-specific truth_alias and one claim_polarity: claim_asserts_present, claim_asserts_absent, claim_asserts_unresolved, or claim_uses_cross_case_context.",
+            "Claim polarity describes what the sentence says, not what the Case Truth authority says. A sentence saying an item was not disclosed is claim_asserts_absent even when the catalog shows that item is present.",
+            "Use claim_uses_cross_case_context only when the text explicitly treats another company's fact as context rather than subject-company truth.",
+            "Prefer a Relation alias for a directional or comparative proposition. Use a NumericFact alias only when the claim itself states that exact value or period.",
+            f"Map no more than {_MAX_ASSERTIONS_PER_SURFACE} direct propositions per surface; if an explicit proposition has no exact alias, mark the surface MATERIAL_CLAIM_UNMAPPED rather than inventing or substituting an alias.",
+            "Split bundled propositions and retain legitimate typed gaps or bridge boundaries, but do not copy the authority state as the claim polarity.",
             "Do not repair, rewrite or improve the research claim.",
             "Do not call a tool in this analysis step.",
         ],
@@ -737,10 +916,11 @@ def compile_case_truth_reconciliation_analysis_messages(
         {
             "role": "system",
             "content": (
-                "You are a semantic case-truth analyst, not a financial writer. "
-                "Analyze only the supplied claim slice against the immutable truth "
-                "aliases. Produce a concise visible mapping draft. Do not call tools, "
-                "repair prose, add facts or decide whether the report should pass."
+                "You extract claim propositions, not supporting evidence and not "
+                "authoritative truth. Analyze only the supplied claim slice against "
+                "the immutable aliases. Produce a concise visible mapping draft. "
+                "Do not call tools, repair prose, add facts or decide whether the "
+                "report should pass."
             ),
         },
         {
@@ -762,7 +942,7 @@ def compile_case_truth_reconciliation_submission_from_analysis(
 
     draft = str(analysis_draft or "").strip()
     _require(
-        24 <= len(draft) <= 12000,
+        24 <= len(draft) <= 8000,
         "case_truth_analysis_draft_invalid",
     )
     _direct_messages, tool = compile_case_truth_reconciliation_submission(
@@ -777,7 +957,9 @@ def compile_case_truth_reconciliation_submission_from_analysis(
         "rules": [
             "Map the prepared analysis exactly; do not re-analyze or repair research.",
             "Return every supplied claim surface exactly once.",
-            "Use only aliases and states already named in the prepared analysis.",
+            "Use only aliases and claim polarities already named in the prepared analysis.",
+            "Claim polarity is what the sentence asserts, not the authoritative Case Truth state.",
+            f"Return at most {_MAX_ASSERTIONS_PER_SURFACE} direct propositions per claim surface and never enumerate supporting facts.",
             "Call submit_case_truth_reconciliation exactly once and add no prose.",
         ],
     }
@@ -786,9 +968,10 @@ def compile_case_truth_reconciliation_submission_from_analysis(
             {
                 "role": "system",
                 "content": (
-                    "You are a low-complexity contract submission node. Map the "
-                    "prepared semantic analysis into the supplied strict tool exactly "
-                    "once. Do not perform new research or rewrite any claim."
+                    "You are a low-complexity claim-polarity submission node. Map "
+                    "the prepared semantic analysis into the supplied strict tool "
+                    "exactly once. Do not infer authoritative truth, perform new "
+                    "research or rewrite any claim."
                 ),
             },
             {
@@ -881,12 +1064,18 @@ def compile_case_truth_reconciliation_submission(
     )
     view = {
         "task": "semantic_case_truth_reconciliation_only",
-        "case_truth_packet": compile_case_truth_model_view(case_truth_packet),
+        "case_truth_claim_view": compile_case_truth_claim_model_view(
+            case_truth_packet,
+            claim_document,
+        ),
         "claim_document": deepcopy(dict(claim_document)),
         "rules": [
-            "Classify every supplied claim surface; do not write or repair research.",
-            "Map every material assertion about whether a fact, metric, relation or bridge exists, is absent, is locally invisible or remains unresolved.",
-            "Split bundled assertions across distinct truth aliases.",
+            "Extract and classify every direct proposition in each supplied claim surface; do not write or repair research.",
+            "Do not enumerate facts, numeric endpoints or aliases that only support a proposition.",
+            "Claim polarity records what the sentence asserts, not the authoritative Case Truth state.",
+            "Split bundled direct propositions across the most-specific truth aliases.",
+            "Use a Relation alias for a directional/comparative proposition and a NumericFact alias only when the claim states that exact value or period.",
+            "Use claim_uses_cross_case_context only for a fact explicitly presented as another-company context rather than subject-company truth.",
             "Use no_case_truth_claim only when truth_assertion_required is false and the surface makes no material presence, absence, visibility or unresolved-coverage assertion.",
             "Use material_claim_unmapped when a material assertion has no exact truth alias; never invent an alias.",
             "The Harness truth packet, not this classifier, remains final fact and absence authority.",
@@ -896,10 +1085,10 @@ def compile_case_truth_reconciliation_submission(
         {
             "role": "system",
             "content": (
-                "You are a semantic reconciliation node, not a financial "
-                "researcher or writer. Exhaustively classify the supplied "
-                "surfaces against the immutable case truth aliases. Split "
-                "bundled claims. Submit exactly one tool call and add no facts."
+                "You are a claim-proposition reconciliation node, not a financial "
+                "researcher or writer. Map only what each supplied surface directly "
+                "asserts against immutable aliases. Do not copy authoritative truth "
+                "states or enumerate supporting facts. Submit exactly one tool call."
             ),
         },
         {
@@ -914,12 +1103,15 @@ def compile_case_truth_reconciliation_submission(
         "type": "object",
         "properties": {
             "truth_alias": {"type": "string", "enum": aliases},
-            "asserted_state": {
+            "claim_polarity": {
                 "type": "string",
-                "enum": sorted(_ASSERTED_STATES),
+                "enum": sorted(_CLAIM_POLARITIES),
+                "description": (
+                    "What the claim text says, never the authoritative truth state."
+                ),
             },
         },
-        "required": ["truth_alias", "asserted_state"],
+        "required": ["truth_alias", "claim_polarity"],
         "additionalProperties": False,
     }
     surface = {
@@ -934,7 +1126,11 @@ def compile_case_truth_reconciliation_submission(
                 "type": "string",
                 "enum": sorted(_COVERAGE_STATUSES),
             },
-            "assertions": {"type": "array", "items": assertion},
+            "assertions": {
+                "type": "array",
+                "items": assertion,
+                "maxItems": _MAX_ASSERTIONS_PER_SURFACE,
+            },
         },
         "required": [
             "claim_surface_id",
@@ -949,7 +1145,8 @@ def compile_case_truth_reconciliation_submission(
         "function": {
             "name": "submit_case_truth_reconciliation",
             "description": (
-                "Classify claim surfaces against immutable case truth aliases."
+                "Extract direct claim propositions and their claim polarity against "
+                "immutable aliases; local Harness adjudicates truth separately."
             ),
             "parameters": {
                 "type": "object",
@@ -1102,6 +1299,10 @@ def validate_case_truth_reconciliation(
         assertions = _rows(
             row.get("assertions"), "case_truth_assertions_invalid"
         )
+        _require(
+            len(assertions) <= _MAX_ASSERTIONS_PER_SURFACE,
+            "case_truth_assertion_capacity_invalid",
+        )
         if status == "no_case_truth_claim":
             _require(not assertions, "case_truth_no_claim_with_assertions")
             if source.get("truth_assertion_required") is True:
@@ -1129,16 +1330,32 @@ def validate_case_truth_reconciliation(
         seen_aliases: set[str] = set()
         trusted_assertions = []
         for assertion in assertions:
+            fields = set(assertion)
+            is_legacy = fields == {"truth_alias", "asserted_state"}
+            is_claim_polarity = fields == {"truth_alias", "claim_polarity"}
             _require(
-                set(assertion) == {"truth_alias", "asserted_state"},
+                is_legacy or is_claim_polarity,
                 "case_truth_assertion_fields_invalid",
             )
             alias = str(assertion.get("truth_alias") or "")
-            asserted = str(assertion.get("asserted_state") or "")
+            legacy_asserted = str(assertion.get("asserted_state") or "")
+            claim_polarity = str(assertion.get("claim_polarity") or "")
+            if is_legacy:
+                _require(
+                    legacy_asserted in _ASSERTED_STATES,
+                    "case_truth_assertion_invalid",
+                )
+                claim_polarity = _LEGACY_STATE_TO_CLAIM_POLARITY[
+                    legacy_asserted
+                ]
+            else:
+                _require(
+                    claim_polarity in _CLAIM_POLARITIES,
+                    "case_truth_assertion_invalid",
+                )
             _require(
                 alias in all_aliases
-                and alias not in seen_aliases
-                and asserted in _ASSERTED_STATES,
+                and alias not in seen_aliases,
                 "case_truth_assertion_invalid",
             )
             seen_aliases.add(alias)
@@ -1158,6 +1375,19 @@ def validate_case_truth_reconciliation(
             locally_visible = (
                 alias in cell_visibility.get("presence", set()) if cell_id else True
             )
+            owner_tickers = {
+                str(value).upper()
+                for value in presence.get(alias, {}).get("owner_tickers") or []
+            }
+            subject_ticker = str(
+                case_truth_packet.get("case_identity", {}).get(
+                    "subject_ticker"
+                )
+                or ""
+            ).upper()
+            cross_case_context = bool(
+                owner_tickers and subject_ticker not in owner_tickers
+            )
             authoritative = (
                 "present_with_typed_gap"
                 if has_presence and (has_gap or has_bridge)
@@ -1170,44 +1400,62 @@ def validate_case_truth_reconciliation(
                 else "unknown"
             )
             finding_code = ""
-            if asserted == "present_in_current_case" and not has_presence:
+            if claim_polarity == "claim_asserts_present" and not has_presence:
                 finding_code = "asserted_present_without_reviewed_presence"
             elif (
-                asserted == "present_in_current_case"
+                claim_polarity == "claim_asserts_present"
                 and cell_id
                 and not locally_visible
             ):
                 finding_code = "asserted_present_outside_cell_visibility"
-            elif asserted == "not_visible_in_current_cell" and not (
+            elif claim_polarity == "legacy_claims_cell_invisible" and not (
                 cell_id and has_presence and not locally_visible
             ):
                 finding_code = "asserted_cell_local_invisibility_invalid"
-            elif asserted == "absent_from_current_case" and not absence_authorized:
+            elif claim_polarity == "claim_asserts_absent" and not absence_authorized:
                 finding_code = (
                     "asserted_absent_but_present_in_case"
                     if has_presence
                     else "asserted_absent_without_typed_authority"
                 )
-            elif asserted == "unresolved_or_partially_covered" and not (
+            elif claim_polarity == "claim_asserts_unresolved" and not (
                 has_gap or has_bridge
             ):
                 finding_code = "asserted_unresolved_without_typed_gap"
+            elif claim_polarity == "claim_uses_cross_case_context":
+                if not has_presence:
+                    finding_code = (
+                        "claimed_cross_case_context_without_reviewed_presence"
+                    )
+                elif cell_id and not locally_visible:
+                    finding_code = (
+                        "claimed_cross_case_context_outside_cell_visibility"
+                    )
+                elif not cross_case_context:
+                    finding_code = "claimed_cross_case_context_for_subject_fact"
             if finding_code:
                 findings.append(
                     {
                         "finding_code": finding_code,
                         "claim_surface_id": surface_id,
                         "truth_alias": alias,
-                        "asserted_state": asserted,
+                        "claim_polarity": claim_polarity,
+                        "legacy_asserted_state": (
+                            legacy_asserted if is_legacy else None
+                        ),
                         "authoritative_state": authoritative,
                     }
                 )
             trusted_assertions.append(
                 {
                     "truth_alias": alias,
-                    "asserted_state": asserted,
+                    "claim_polarity": claim_polarity,
+                    "legacy_asserted_state": (
+                        legacy_asserted if is_legacy else None
+                    ),
                     "authoritative_state": authoritative,
                     "locally_visible": locally_visible,
+                    "cross_case_context": cross_case_context,
                 }
             )
         trusted_surfaces.append(
@@ -1422,12 +1670,14 @@ def require_eligible_truth_reconciliation(
 
 
 __all__: Sequence[str] = (
+    "CASE_TRUTH_CLAIM_MODEL_VIEW_SCHEMA_VERSION",
     "CASE_TRUTH_DOCUMENT_SCHEMA_VERSION",
     "CASE_TRUTH_MODEL_VIEW_SCHEMA_VERSION",
     "CASE_TRUTH_PACKET_SCHEMA_VERSION",
     "CASE_TRUTH_RECONCILIATION_SCHEMA_VERSION",
     "CaseTruthReconciliationError",
     "compile_case_truth_packet",
+    "compile_case_truth_claim_model_view",
     "compile_case_truth_model_view",
     "compile_claim_document_slice",
     "compile_case_truth_reconciliation_analysis_messages",

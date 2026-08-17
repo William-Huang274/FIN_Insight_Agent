@@ -490,3 +490,18 @@ DELL R7 当前完整权威包约 `49.6k` 字符；分组并去重后的模型可
 任何把 `present_in_current_case` 写成全案缺失的 cell submission 必须在进入 synthesis 前 fail closed；任何 cross-cell conflict 的 premise 与 fact catalog 冲突，也必须拒绝。实现不得依赖“未披露／not disclosed”等短语正则，因为同义表达、语言切换和合法局部缺失都会使该方案失效。
 
 R7、五个原 Judgment 和综合结果保持不可变。新结构先用 R7 capture replay、DELL／MU／NVDA fake 和异质 holdout mutation 证明；通过后只能以新 authority 重交受影响的 Operating／Counterevidence 与 Synthesis。上游输入或依赖 digest 没有改变时，不得重跑 Planner、S1/S2、Demand、Value、Cash 或五个 analysis。该关闭只解决跨单元事实一致性，不关闭产品利润桥、需求持续性、正式八维、paired、qualified-human、泛化、S3 acceptance 或发布。
+
+## 23. Claim polarity、分层 alias view 与跨公司 context
+
+两单元 natural R2 证明第 22 节仍混合了两种责任：`present_in_current_case / absent_from_current_case` 既像是在要求模型复述权威结果，又被 Validator 当成“claim 原文声称的状态”。当原文写“未单独披露订单／积压”而 Case Truth 实际存在这些事实时，语义节点必须忠实提交“claim asserts absent”，再由本地拒绝；不能要求模型先把错误原文改成 truth，也不能让它复制 catalog 的 present 状态后冒充已经完成审计。
+
+current successor 因此使用以下 provider-neutral 合同：
+
+- Tool 输出字段为 `claim_polarity`：`claim_asserts_present`、`claim_asserts_absent`、`claim_asserts_unresolved`、`claim_uses_cross_case_context`；前 3 项描述句子命题，最后一项描述“可见的其他公司事实仅作上下文”。它们都不是 Case Truth authority；
+- Harness 独立计算 `authoritative_state`，并对 false absence、无权 absence、outside-cell presence、主体公司事实冒充 cross-case context、未知 alias 和合法 typed gap 做最终裁决；旧 `asserted_state` 只为不可变历史 replay 保留兼容入口，不再出现在 current Tool Schema；
+- 每个单元的模型视图分为三层：当前 cell 可用事实的富元数据、全案存在但当前 cell 未授权的紧凑 alias index、全部 typed gap／bridge boundary。这样既能识别真实 cross-cell leakage，又不再平铺五份 visibility matrix；
+- 语义 analysis 只抽取 claim 文本直接表达的 proposition。不得枚举用于支撑结论的每个 NumericFact、Relation 或 Facet；比较命题优先映射 Relation，只有原文给出精确值／期间时才映射 NumericFact；
+- 每个 surface 最多 12 个直接 proposition，analysis draft 最多 8,000 字符。该边界同时编译进 canonical Tool 和本地 Validator；Provider projection 只作传输兼容，不能放宽本地门；
+- Case Truth strict submission 使用独立 non-thinking 4k profile。增加容量是为了容纳三 surface 的有界直接命题，不用于容忍无界 supporting-fact inventory；旧 R2 的 2k 截断与 13 条单-surface overmapping 会在新 Runtime 调用前直接失败。
+
+R2 还暴露出 R7 原 Judgment 本身存在真实 cross-cell claim scope：Operating／Counterevidence 写入各自 allowed view 之外的现金流、收入或需求事实。新 semantic gate 必须把这类结果与 alias 误选、合同 false positive 分开报告；不得只为命中预注册的三条 false absence 而压掉新增 finding。只有同两单元 fresh successor 证明 claim polarity、合法利润桥 gap、跨公司 context 和真实 outside-cell claim 均被正确分类，才允许修复 Judgment 或进入 Synthesis。

@@ -82,7 +82,7 @@ MU／NVDA 与留出案例验收必须先形成正式泛化评测设计和最终�
 1. R7 保持不可变：五个 contract-valid Judgment 和完整 report 只能作为待修 candidate，不进入 Workbench 产品面。
 2. 当前最早责任层仍为 S3，但不是再补一个 Prompt 字段。先建立 case-level reviewed fact presence catalog、cell visibility matrix 和 typed absence authority，综合 conflict 必须与全案事实目录一致。
 3. 零调用回放已完成：R7 三条错误、合法产品利润 gap、DELL／MU／NVDA、排列／跨案及异质留出 mutation 全部通过；实现不含本案短语表或模型专用金融分支。
-4. 下一门是一条自然低思考 semantic reconciliation canary，只分类 R7 的不可变十五个 claim surface。通过后才允许新 authority 下修复 Operating、Counterevidence 和 Synthesis；Demand、Value、Cash、Planner、S1/S2 与五个 analysis 默认复用。是否需要重跑某节点必须由输入或判断 digest 的真实依赖决定。
+4. 15-surface 低思考 semantic R1 已执行，但在完整 HTTP 200 响应中把 8k completion 全部耗作 reasoning，零可见 Tool Call；它保持不可变且不算内容失败。下一门改为 claim-document slice＋语义 analysis／non-thinking submission 两阶段，并聚合本地 receipt；先验证 Operating／Counterevidence 两个受影响 cell。通过后才允许新 authority 下修复 Operating、Counterevidence 和 Synthesis；Demand、Value、Cash、Planner、S1/S2 与五个研究 analysis 默认复用。
 5. 修复 candidate 仍需重新执行 L1/L2、正式八维、同输入 paired 和 qualified-human。DELL 通过前不运行 MU／NVDA 或留出 live；通过后才按预注册异质评测报告验证同核心泛化。
 6. 本轮不改变 FIN 0.1.3、S 阶段或产品范围；这是 S3 首份完整报告暴露出的所属阶段缺陷，不创建新版本。
 

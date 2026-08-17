@@ -1,0 +1,55 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_cell_scoped_claim_contract_successor_failure_assessment_v1_0",
+  "status": "terminal_four_of_five_value_relation_endpoint_and_structured_support_contract_failure",
+  "assessed_at": "2026-08-17T10:12:52+08:00",
+  "case_key": "DELL",
+  "run_id": "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_cell_scoped_claim_contract_successor_chat_live_authority_v1_0.json",
+  "authority_sha256": "e2be8062ad4fc203aa95de576bf022f8f49197420a5bcee1a7d8707bbb463db0",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_cell_scoped_claim_contract_successor_chat_live_result_v1_0.json",
+  "result_sha256": "1ca2a18ccb83caa5b62323a6f8d464e557cc12925283bce90d4f051d39e83cc7",
+  "result_digest": "d2bfeefbcae2cf545e8d1fa7dc7efd14fd6963d46ec57fa4d4a679a0e7b4052e",
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/full_result.json",
+  "private_full_result_sha256": "a7cd8da0d64d4922921ea59f35ae291fb8867bfc69826d086df530644c53de09",
+  "private_full_result_digest": "d10a30b638aa2bf56a082e2465a5cf77825d86543b0e8934116d68bed4ac8aa0",
+  "classification": {
+    "owning_stage": "S3",
+    "owned_by_project": true,
+    "provider_transport_failure": false,
+    "cross_cell_claim_authority_leak_recurred": false,
+    "model_submission_defect_present": true,
+    "project_contract_redundancy_present": true,
+    "financial_content_partially_assessable": true,
+    "first_failure": "The Value model selected REL::E07667E373A33286 but omitted both source-bound revenue NumericFact endpoints even though the relation and both endpoint aliases were visible. The local validator therefore rejected the cell with research_consumer_numeric_relation_boundary_invalid.",
+    "zero_call_successor_replay": "Deterministically adding the two endpoints exposed research_consumer_supported_judgment_without_evidence because the validator counted only textual EV support and ignored selected source-bound NumericFacts and same-basis relations. Bypassing that project rule only for diagnosis then exposed research_consumer_thesis_atom_invalid: the thesis copied FY2026 Q1 and FY2027 Q1 despite the no-date narrative rule.",
+    "root_cause": "One relation was represented three times as a relation alias plus two endpoint selections, creating a redundant dependent-field task that the remote strict schema could not enforce. The local support rule also misclassified structured NumericFacts as non-evidence. The remaining no-date thesis violation is a real model resubmission issue and must not be rewritten by the Harness.",
+    "impact": "Demand, Operating, Cash and Counterevidence were locally valid; Value failed; synthesis and report were correctly not attempted. Ten complete paid calls and all captures are preserved with zero retry, fallback, protocol switch, external-source network or business promotion."
+  },
+  "required_repair": [
+    "Compile every selected NumericRelation into its two already-authorized NumericFact endpoints and record model-selected versus deterministically-added refs; never invent or select a new relation.",
+    "Treat selected source-bound NumericFacts, NumericRelations and reviewed QualitativeFacts as structured support channels instead of forcing an unrelated EV to be mislabeled support.",
+    "Keep the no-number, no-date and no-ref narrative gate unchanged. Give the model one typed repair submission turn for the rejected Value thesis; the Harness must not edit its prose.",
+    "Replay the R6 Value capture plus negative mutations, then use a fresh successor that reuses four valid cells and the capture-verified Value analysis, reruns only Value submission, and runs synthesis only after all five cells validate."
+  ],
+  "disposition": {
+    "R6_authority_consumed": true,
+    "R6_rerun_forbidden": true,
+    "R6_invalid_value_submission_promotion_forbidden": true,
+    "R6_four_valid_cells_reusable_after_digest_binding": true,
+    "R6_value_analysis_draft_reusable_after_capture_binding": true,
+    "R6_invalid_value_tool_call_may_be_used_only_as_repair_feedback": true,
+    "fresh_successor_maximum_model_calls": 3,
+    "new_evidence_or_external_network_forbidden": true,
+    "automatic_generalization_forbidden": true,
+    "product_publication_forbidden": true
+  },
+  "preliminary_content_observation": {
+    "demand_quality": "substantive_mixed_judgment_with_order_backlog_buy_ahead_and_conversion_boundary",
+    "operating_performance": "company_level_growth_and_profit_conversion_supported_product_attribution_bounded",
+    "cash_conversion": "company_level_cash_conversion_supported_but_main_driver_language_requires_later_content_review",
+    "counterevidence": "contract_valid_but_independent_counterevidence_depth_remains_thin",
+    "value_capture": "raw_submission_contains_useful_company_level_reasoning_and_explicitly_denies_product_profit_attribution_but_is_not_business_truth_until_repaired_and_validated"
+  },
+  "known_boundary": "This assessment explains and preserves R6. It does not retroactively validate the Value output, authorize automatic repair, prove synthesis or report quality, close the product-profit bridge, approve DELL five-cell, generalization, S3, publication or release.",
+  "assessment_digest": "ef54d8ea0dc904a60e0f480e34361f500ca5a5654bef8b9534d18f921c30481e"
+}

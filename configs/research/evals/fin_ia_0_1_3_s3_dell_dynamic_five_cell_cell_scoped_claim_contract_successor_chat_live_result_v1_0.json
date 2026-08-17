@@ -1,0 +1,458 @@
+{
+  "acceptance": {
+    "absolute_content_quality_pending": false,
+    "all_five_cell_judgments_contract_valid": false,
+    "analysis_drafts_reused_not_rerun": false,
+    "cross_cell_synthesis_contract_valid": false,
+    "current_S1_S2_EvidenceResponse_available": true,
+    "current_S1_S2_EvidenceResponse_executed": false,
+    "current_S1_S2_reused_not_rerun": true,
+    "financial_L1_assessment_pending": false,
+    "five_cell_report_compiled": false,
+    "heterogeneous_generalization": false,
+    "natural_planner_executed": false,
+    "natural_planner_reused_not_rerun": true,
+    "paired_gain_pending": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false,
+    "s3_product_acceptance": false,
+    "valid_cell_judgments_reused_not_rerun": false,
+    "workbench_publication": false
+  },
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_cell_scoped_claim_contract_successor_chat_live_authority_v1_0.json",
+  "authority_sha256": "e2be8062ad4fc203aa95de576bf022f8f49197420a5bcee1a7d8707bbb463db0",
+  "case_key": "DELL",
+  "cell_workpaper_digest": "",
+  "cells": [
+    {
+      "analysis": {
+        "finish_reason": "stop",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-DEMAND-ANALYSIS-01/model_visible_request.json",
+        "request_digest": "ca93e700d41cec650a1b6a9bca7b6f303cf9c86d7ddce4b1c7a6ac46e1f203ba",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-DEMAND-ANALYSIS-01/provider_response.json",
+        "response_digest": "227b37764d3a94f26f11bf08ea5dc9409ee2f4ea9b67a794062b9d9794f69c5e",
+        "usage": {
+          "completion_tokens": 4000,
+          "completion_tokens_details": {
+            "reasoning_tokens": 3202
+          },
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 3100,
+          "prompt_tokens": 3356,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 7356
+        }
+      },
+      "analysis_capture_receipt": {},
+      "analysis_messages_digest": "ba34e83e302f6fa6ec05455e0a958b244a49bace5f23a9bef77e1b68f00bee14",
+      "analysis_reused_from_predecessor": false,
+      "cell_id": "CELL::demand_quality",
+      "failure_capture_ref": "",
+      "failure_code": "",
+      "failure_phase": "",
+      "reused_from_predecessor": false,
+      "submission": {
+        "finish_reason": "tool_calls",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-DEMAND-SUBMISSION-01/model_visible_request.json",
+        "request_digest": "cf48a2ccd6ddda557b554fb363a842e0390704247be8b0de9792d993e40ebc88",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-DEMAND-SUBMISSION-01/provider_response.json",
+        "response_digest": "528a54f1c0e98d4ae80fa5651a525728d923b07dedaa1fc501aab3f0834e758f",
+        "usage": {
+          "completion_tokens": 865,
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 7145,
+          "prompt_tokens": 7401,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 8266
+        }
+      },
+      "submission_messages_digest": "a076761f55255902abfa9f19447c00293e3829045da6a34ddbae316ce5ad0b95",
+      "tool_projection_receipt": {
+        "canonical_tool_digest": "7ce468bec312e69e2c860520ca58a34271ef8841620f38295f2443f39e43bfdc",
+        "definitions_renamed": 1,
+        "finance_contract_weakened": false,
+        "local_full_contract_validation_required": true,
+        "projected_tool_digest": "4027edc6c32be6d31c1e1799e82133ebbcb0a83fdaa3b6fe4fdd762e4654bde1",
+        "projection_digest": "9523983404c2cf37d1726fa2f8c73e362ccbeeb51314851b0986d5486b12e9b9",
+        "provider_id": "deepseek",
+        "provider_surface": "chat_completions_beta_strict",
+        "references_rewritten": 5,
+        "removed_schema_keywords": {
+          "maxItems": 2,
+          "uniqueItems": 3
+        },
+        "schema_version": "fin_ia_deepseek_strict_tool_projection_v1_0"
+      },
+      "tool_schema_digest": "7ce468bec312e69e2c860520ca58a34271ef8841620f38295f2443f39e43bfdc",
+      "validated_cell_digest": "cf298e12c5a8318199bbc38101dc11769090b86f2419d2626221827ed2355c22",
+      "wire_tool_schema_digest": "4027edc6c32be6d31c1e1799e82133ebbcb0a83fdaa3b6fe4fdd762e4654bde1"
+    },
+    {
+      "analysis": {
+        "finish_reason": "stop",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-OPERATING-ANALYSIS-01/model_visible_request.json",
+        "request_digest": "ed489f424968f263a603c87fcfba3689de67e3c49ffc1c790085a13b8c48446d",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-OPERATING-ANALYSIS-01/provider_response.json",
+        "response_digest": "c8415bea88a2146ed8cff7bd54fcb625eae9bcb855b6d41a498494657ddeb0cf",
+        "usage": {
+          "completion_tokens": 4195,
+          "completion_tokens_details": {
+            "reasoning_tokens": 3400
+          },
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 4883,
+          "prompt_tokens": 5139,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 9334
+        }
+      },
+      "analysis_capture_receipt": {},
+      "analysis_messages_digest": "ddf4826192e6af6d43cf1fa48cf56e16f251dcc96609b8538a3117b03863050e",
+      "analysis_reused_from_predecessor": false,
+      "cell_id": "CELL::operating_performance",
+      "failure_capture_ref": "",
+      "failure_code": "",
+      "failure_phase": "",
+      "reused_from_predecessor": false,
+      "submission": {
+        "finish_reason": "tool_calls",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-OPERATING-SUBMISSION-01/model_visible_request.json",
+        "request_digest": "e80da8b01a67b317007ba1b5414c6d6f5df611a7c649da8ce14d736bf557271d",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-OPERATING-SUBMISSION-01/provider_response.json",
+        "response_digest": "167eab3d2d17ccafe1fdc4e4129339f4f71c693bcf44c02b8e504dc53a9ccb81",
+        "usage": {
+          "completion_tokens": 992,
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 8449,
+          "prompt_tokens": 8705,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 9697
+        }
+      },
+      "submission_messages_digest": "156a06ddd3cbf214633effa4c78cdddf4c553bad48244f74533b5ced078efdaf",
+      "tool_projection_receipt": {
+        "canonical_tool_digest": "ad32d96396a8fbccaca683fb0a91f787e2f1640dda4e229ba2cd415ef42b7d53",
+        "definitions_renamed": 1,
+        "finance_contract_weakened": false,
+        "local_full_contract_validation_required": true,
+        "projected_tool_digest": "7af16e222b93d6a5953c202371d6c41c1cb3de08aa0613af5832b315bb1feb94",
+        "projection_digest": "bb872a4cc877677b31fd146420f4c7f827fb326485eb55bcead9ad24988eddbf",
+        "provider_id": "deepseek",
+        "provider_surface": "chat_completions_beta_strict",
+        "references_rewritten": 5,
+        "removed_schema_keywords": {
+          "uniqueItems": 3
+        },
+        "schema_version": "fin_ia_deepseek_strict_tool_projection_v1_0"
+      },
+      "tool_schema_digest": "ad32d96396a8fbccaca683fb0a91f787e2f1640dda4e229ba2cd415ef42b7d53",
+      "validated_cell_digest": "45243e0c490fe302e413004bf2e46062fde43212fc2568857dd8ddd485e02b12",
+      "wire_tool_schema_digest": "7af16e222b93d6a5953c202371d6c41c1cb3de08aa0613af5832b315bb1feb94"
+    },
+    {
+      "analysis": {
+        "finish_reason": "stop",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-VALUE-ANALYSIS-01/model_visible_request.json",
+        "request_digest": "f51852c2e327a948689f2e623b778ecfe5c420a2dd5f09a25b22cbeb68a16a9b",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-VALUE-ANALYSIS-01/provider_response.json",
+        "response_digest": "92b95d4703561cc697bbd1878741abbd78627229e799354fc1319c2fc09e16e0",
+        "usage": {
+          "completion_tokens": 3213,
+          "completion_tokens_details": {
+            "reasoning_tokens": 2230
+          },
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 4638,
+          "prompt_tokens": 4894,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 8107
+        }
+      },
+      "analysis_capture_receipt": {},
+      "analysis_messages_digest": "767db0b9f6f2f1194ce9c5fce5cbb2817299799112e2291ead82931cd634d2aa",
+      "analysis_reused_from_predecessor": false,
+      "cell_id": "CELL::value_capture",
+      "failure_capture_ref": "",
+      "failure_code": "research_consumer_numeric_relation_boundary_invalid",
+      "failure_phase": "cell_judgment_contract",
+      "reused_from_predecessor": false,
+      "submission": {
+        "finish_reason": "tool_calls",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-VALUE-SUBMISSION-01/model_visible_request.json",
+        "request_digest": "c6c0a0c5b774bd6280a63c527ff72056b4d0d55332d3c111e9ed315c73d60da5",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-VALUE-SUBMISSION-01/provider_response.json",
+        "response_digest": "93bcc0647abb72afc898042bf6b5235e8e6b7f026b273c1ac973677c89c3767a",
+        "usage": {
+          "completion_tokens": 983,
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 13198,
+          "prompt_tokens": 13454,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 14437
+        }
+      },
+      "submission_messages_digest": "bccf059bfce02889c2e62896c1cd9cd91929847410670f42a65bb4845ab767a4",
+      "tool_projection_receipt": {
+        "canonical_tool_digest": "9f86b0dfd259103e4e790d43434f68a3b6ffb5c96b60b3fc3d30288f0815948b",
+        "definitions_renamed": 1,
+        "finance_contract_weakened": false,
+        "local_full_contract_validation_required": true,
+        "projected_tool_digest": "0a62fa629b5cfe33a8061711419e1f1203392fed7017e5b778fd2af93f7c4a7a",
+        "projection_digest": "f8c056a9d61430c6634274365ae0f2fad58caaf073a09dfe3f8f861e1179f977",
+        "provider_id": "deepseek",
+        "provider_surface": "chat_completions_beta_strict",
+        "references_rewritten": 5,
+        "removed_schema_keywords": {
+          "maxItems": 2,
+          "minItems": 1,
+          "uniqueItems": 4
+        },
+        "schema_version": "fin_ia_deepseek_strict_tool_projection_v1_0"
+      },
+      "tool_schema_digest": "9f86b0dfd259103e4e790d43434f68a3b6ffb5c96b60b3fc3d30288f0815948b",
+      "validated_cell_digest": "",
+      "wire_tool_schema_digest": "0a62fa629b5cfe33a8061711419e1f1203392fed7017e5b778fd2af93f7c4a7a"
+    },
+    {
+      "analysis": {
+        "finish_reason": "stop",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-CASH-ANALYSIS-01/model_visible_request.json",
+        "request_digest": "1e0637810e533953eda9d6306464d298c5b73b1e576460b983035ede9101b7e6",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-CASH-ANALYSIS-01/provider_response.json",
+        "response_digest": "36fdaa1de2b79f5c0e82fd6cbedf32c0f97f6eb1978ddc2bda18aeff4743bcab",
+        "usage": {
+          "completion_tokens": 5254,
+          "completion_tokens_details": {
+            "reasoning_tokens": 4180
+          },
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 4197,
+          "prompt_tokens": 4453,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 9707
+        }
+      },
+      "analysis_capture_receipt": {},
+      "analysis_messages_digest": "317de8f97d5d59186ec6a98b4e2a9cbf4b8b0a9d9afa2a3d5734761e66547e3c",
+      "analysis_reused_from_predecessor": false,
+      "cell_id": "CELL::cash_conversion",
+      "failure_capture_ref": "",
+      "failure_code": "",
+      "failure_phase": "",
+      "reused_from_predecessor": false,
+      "submission": {
+        "finish_reason": "tool_calls",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-CASH-SUBMISSION-01/model_visible_request.json",
+        "request_digest": "f6db3420321629596d282ab529e8b5070fdc1906ad0ddeffa761c410e81899b9",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-CASH-SUBMISSION-01/provider_response.json",
+        "response_digest": "a4c2dbb64ea0be6ab891c725cca803d1041fd05a3f757d20bf2975c0fa1c7c28",
+        "usage": {
+          "completion_tokens": 993,
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 8392,
+          "prompt_tokens": 8648,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 9641
+        }
+      },
+      "submission_messages_digest": "d12d39fbf04104a3166b8dfd62bdab9f39b328ed98318b9241c9309d6eb3bef6",
+      "tool_projection_receipt": {
+        "canonical_tool_digest": "b9fdcf3762b9696528f60a47b1df11f3eebf0afb86e808c1c3100fe95aabdd7d",
+        "definitions_renamed": 1,
+        "finance_contract_weakened": false,
+        "local_full_contract_validation_required": true,
+        "projected_tool_digest": "ebf125f19be6f6dc4e22b63d5fc1d019a57097b0aef1fe51ca357d63d7b9013a",
+        "projection_digest": "2948c1b35ebf8bcace7b64225db91bd5d4805729e99d657e53d4d55a876807d4",
+        "provider_id": "deepseek",
+        "provider_surface": "chat_completions_beta_strict",
+        "references_rewritten": 5,
+        "removed_schema_keywords": {
+          "uniqueItems": 3
+        },
+        "schema_version": "fin_ia_deepseek_strict_tool_projection_v1_0"
+      },
+      "tool_schema_digest": "b9fdcf3762b9696528f60a47b1df11f3eebf0afb86e808c1c3100fe95aabdd7d",
+      "validated_cell_digest": "68fb76dee98cbdee6ac32f2edc062cc0775c5f00572b8ae286579005668e3e19",
+      "wire_tool_schema_digest": "ebf125f19be6f6dc4e22b63d5fc1d019a57097b0aef1fe51ca357d63d7b9013a"
+    },
+    {
+      "analysis": {
+        "finish_reason": "stop",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-COUNTER-ANALYSIS-01/model_visible_request.json",
+        "request_digest": "28893811a8a3d3aa1146b64de3e22d0218011b79513d4033061ab23bc4c66137",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-COUNTER-ANALYSIS-01/provider_response.json",
+        "response_digest": "a8dc50b2c398b0e2ce5b615260755ffcd66b846ce43697f1c85bb6f77627d9f8",
+        "usage": {
+          "completion_tokens": 4045,
+          "completion_tokens_details": {
+            "reasoning_tokens": 3245
+          },
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 2168,
+          "prompt_tokens": 2424,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 6469
+        }
+      },
+      "analysis_capture_receipt": {},
+      "analysis_messages_digest": "b428f2cdfec0cb18738b671e55c585060c1c741e9f838e2bcc92e9bdb9e6b972",
+      "analysis_reused_from_predecessor": false,
+      "cell_id": "CELL::counterevidence",
+      "failure_capture_ref": "",
+      "failure_code": "",
+      "failure_phase": "",
+      "reused_from_predecessor": false,
+      "submission": {
+        "finish_reason": "tool_calls",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-COUNTER-SUBMISSION-01/model_visible_request.json",
+        "request_digest": "71b54d499ff35646e826e3c49e26cd729cffbfce4525e322772cb33ec9ada9d7",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/FIVE-CELL-R6-COUNTER-SUBMISSION-01/provider_response.json",
+        "response_digest": "043e9eb7905addc0156f2caeccb11935e3ab9d72b915970cf348b2d8841ba7b6",
+        "usage": {
+          "completion_tokens": 635,
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 5921,
+          "prompt_tokens": 6177,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 6812
+        }
+      },
+      "submission_messages_digest": "5769b21fb03910f0d7711f13daba1b4fca496398da84a97478fad815383e79d4",
+      "tool_projection_receipt": {
+        "canonical_tool_digest": "0d8f6dee6387dee975b7a2a73c9937aed05dce9a6ad48c50a2da84dbbcec06a4",
+        "definitions_renamed": 1,
+        "finance_contract_weakened": false,
+        "local_full_contract_validation_required": true,
+        "projected_tool_digest": "5ffec8e425262b4da77099d52838f1fba6a2d0d8dff5001f099c30e174cf6503",
+        "projection_digest": "8ac736a24ab6ced4527354e302b6ca196e27bed750284c0659341990e15abd42",
+        "provider_id": "deepseek",
+        "provider_surface": "chat_completions_beta_strict",
+        "references_rewritten": 5,
+        "removed_schema_keywords": {
+          "maxItems": 2,
+          "uniqueItems": 3
+        },
+        "schema_version": "fin_ia_deepseek_strict_tool_projection_v1_0"
+      },
+      "tool_schema_digest": "0d8f6dee6387dee975b7a2a73c9937aed05dce9a6ad48c50a2da84dbbcec06a4",
+      "validated_cell_digest": "786d4b61cad6dda699c9f1f8d7919bfc1d035fa7829475685be27dcb1baec4c2",
+      "wire_tool_schema_digest": "5ffec8e425262b4da77099d52838f1fba6a2d0d8dff5001f099c30e174cf6503"
+    }
+  ],
+  "dynamic_research_input_digest": "d8e915accf9d819c9e838802c8cdd852fd539b09ab0d88d5ccabddf57f1b438b",
+  "evidence_response_set_digest": "8beadf8f13ba8c84bd76557760a7d5198b5ff0e47ea73c764c79689c32ea58bb",
+  "evidence_response_summary": {
+    "accepted_reviewed_evidence_count": 8,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_promotions": 0,
+    "rejected_reviewed_binding_count": 5,
+    "request_count": 8,
+    "requests_with_accepted_evidence": 6,
+    "typed_gap_count": 10,
+    "unreviewed_candidate_count": 105
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "cell_analysis_calls_attempted": 5,
+    "cell_analysis_drafts_reused": 0,
+    "cell_judgments_accepted": 4,
+    "cell_judgments_reused": 0,
+    "cell_submission_calls_attempted": 5,
+    "current_S1_S2_executed": false,
+    "current_S1_S2_reused": true,
+    "external_source_network_calls": 0,
+    "fallbacks": 0,
+    "maximum_model_calls": 12,
+    "model_calls_attempted": 10,
+    "planner_calls_completed": 0,
+    "planner_calls_reused": 1,
+    "product_publication": false,
+    "protocol_switches": 0,
+    "retries": 0,
+    "synthesis_analysis_attempted": 0,
+    "synthesis_submission_attempted": 0
+  },
+  "implementation_commit": "8ce579c41c9f56fc65e3faa354b7c575b0093341",
+  "known_boundary": "This exact-once authority permits only one fresh R6 DELL five-cell successor on commit 8ce579c4. It preserves R5 as consumed, reuses only the immutable R4 planner and current S1/S2 result, reruns all five analyses and submissions plus synthesis with cell-scoped ClaimAuthority, and keeps local financial validation final. It forbids new Evidence, R5 reuse, current-period or product-profit causal promotion without a typed bridge, retries, fallbacks, protocol switching, external-source network, publication, heterogeneous generalization, S3 acceptance and release claims.",
+  "objective_id": "ROC::c1440c206aad66f719ee1c1e",
+  "orchestration_failure": {
+    "failure_capture_ref": "",
+    "failure_code": "",
+    "failure_phase": ""
+  },
+  "planner": {
+    "deferred_atom_count": 2,
+    "plan_digest": "f964f9fe814e1ea5d50c5286fb57b3cb00144514c2ee47cc9c770b7d662debaf",
+    "proposed_atom_count": 10,
+    "provider_step": {
+      "finish_reason": "stop",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R1/FIVE-CELL-R1-PLANNER-01/model_visible_request.json",
+      "request_digest": "a9c08008154626ee5a27df369581c22b4b69a57643f84091a16d34d551167e24",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R1/FIVE-CELL-R1-PLANNER-01/provider_response.json",
+      "response_digest": "a49019b8512004cb8b48f1ec96e0abb3a7fc3f31099ce31f25a9ab951096e318",
+      "usage": {
+        "completion_tokens": 6103,
+        "completion_tokens_details": {
+          "reasoning_tokens": 5033
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1302,
+        "prompt_tokens": 1302,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 7405
+      }
+    },
+    "reused_from_predecessor": true,
+    "selected_atom_count": 8
+  },
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R6/full_result.json",
+  "private_full_result_sha256": "a7cd8da0d64d4922921ea59f35ae291fb8867bfc69826d086df530644c53de09",
+  "recorded_at": "2026-08-17T02:07:25+00:00",
+  "report_digest": "",
+  "required_cell_ids": [
+    "CELL::demand_quality",
+    "CELL::operating_performance",
+    "CELL::value_capture",
+    "CELL::cash_conversion",
+    "CELL::counterevidence"
+  ],
+  "result_digest": "d2bfeefbcae2cf545e8d1fa7dc7efd14fd6963d46ec57fa4d4a679a0e7b4052e",
+  "schema_version": "fin_ia_s3_dynamic_five_cell_claim_surface_successor_live_result_v1_0",
+  "status": "terminal_failed_or_partial_no_retry",
+  "synthesis": {
+    "analysis": {},
+    "analysis_messages_digest": "",
+    "failure_capture_ref": "",
+    "failure_code": "five_cell_synthesis_requires_all_cells",
+    "failure_phase": "not_attempted",
+    "submission": {},
+    "submission_messages_digest": "",
+    "tool_projection_receipt": {},
+    "tool_schema_digest": "",
+    "validated_synthesis_digest": "",
+    "wire_tool_schema_digest": ""
+  }
+}

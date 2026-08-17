@@ -394,3 +394,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 修复后 Prompt、Tool Schema、普通 bounded loop 和本地 Validator 使用同一 cell-scoped contract：只有 `CELL::value_capture` 能看见 Claim／QF 字段；其他 cell 看不到且提交后会 fail closed。混合资格不能合成一个提交表面。
 - runner 现在会把未知项目异常物化为 typed terminal result 并保留已完成 capture。两个 fresh targeted process 均为 `138 passed`，全仓 `468 passed`，compileall、active baseline `135／8／11／0`、secret scan `6821／0` 通过；formal zero-call digest=`4537d7e1...1bf24`。
 - fresh R6 scope decision 已建立但尚未获得执行权。下一步只允许 clean push 与 repository-bound Project OS preflight；通过后可复用 R4 Planner/current S1S2，但必须用新身份重跑五个 analysis、五个 submission 和两次 synthesis。R6 结果通过金融 L1、逐单元、跨单元、八维、paired 和 qualified-human 验收前，DELL 五单元、泛化和 S3 acceptance 仍为 false。
+
+## 2026-08-17 S3 DELL 五单元 R6 最新状态
+
+- clean/synced 提交 `8ce579c4` 的 repository-bound Project OS preflight 通过，R6 authority 随后以唯一未跟踪文件签发并消费。
+- R6 完成 5 analysis＋5 submission，共 10 次 DeepSeek 调用；所有响应 HTTP 200／complete，0 retry、fallback、protocol switch、external-source network 或 candidate promotion。Demand、Operating、Cash、Counterevidence 四单元通过；R5 跨单元 ClaimAuthority 泄漏未复发。
+- Value 选择五条同口径同比 relation，却漏选收入 relation 自动指向的两个 NumericFact 端点，首先以 `research_consumer_numeric_relation_boundary_invalid` fail closed。零调用端点闭包继续暴露：Validator 只承认文本 EV support、不承认 source-bound NumericFact／Relation；仅为诊断绕过后，唯一剩余硬失败为 Value thesis 写入 `FY2026 Q1/FY2027 Q1`。
+- 责任被拆成两类：relation 选择后重复要求模型再选端点、以及结构化数值事实不计 support，属于项目合同；叙事复制日期属于模型交卷问题，no-date 门不放宽且 Harness 不代写。
+- R6 终态 digest=`d2bfeefb...4052e`，四个有效 cell 与 Value analysis capture 可在新 successor 中按 digest 复用；R6 invalid Value Tool Call 只能作为 typed repair feedback，不能 salvage 或进入业务结果。
+- 下一步仍留在 S3：先做零调用 relation endpoint compiler＋structured support semantics＋Value repair replay/mutation；通过后最多只允许一次 Value resubmission 和两次 synthesis，共 3 次新调用。DELL 五单元、完整报告、八维质量、paired、qualified-human、异质泛化与 S3 acceptance 仍为 false。

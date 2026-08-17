@@ -27,6 +27,11 @@ from retrieval.vertical_slice import (
     load_s1_vs1_vertical_slice_result,
     project_s1_vs1_case,
 )
+from retrieval.supplement_vertical import (
+    SupplementVerticalError,
+    project_capture_bound_supplement_lineage,
+    validate_supplement_vertical_summary,
+)
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.research.planning import (
@@ -62,6 +67,9 @@ CURRENT_S1_ARTIFACT_SPINE_POLICY_RESOURCE_ID = (
 )
 CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID = (
     "application.result.current_s1_vs1_vertical_slice"
+)
+CURRENT_S1_VS4_SUPPLEMENT_VERTICAL_RESOURCE_ID = (
+    "application.result.current_s1_vs4_supplement_vertical"
 )
 EXPECTED_SCHEMA = "fin_ia_current_retrieval_snapshot_v1_0"
 EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
@@ -102,6 +110,7 @@ class ResearchRetrievalService:
         hybrid_candidate_runtime: Any | None = None,
         company_financial_fact_mart_path: str | Path | None = None,
         s1_vertical_slice: Mapping[str, Any] | None = None,
+        s1_supplement_vertical: Mapping[str, Any] | None = None,
         artifact_spine_policy: Mapping[str, Any] | None = None,
     ) -> None:
         self._snapshot = self._validate(snapshot)
@@ -169,6 +178,25 @@ class ResearchRetrievalService:
                 raise ResearchRetrievalServiceError(
                     "research_retrieval_vertical_slice_invalid", 503
                 ) from exc
+        try:
+            self._s1_supplement_vertical = (
+                validate_supplement_vertical_summary(s1_supplement_vertical)
+                if s1_supplement_vertical is not None
+                else None
+            )
+        except SupplementVerticalError as exc:
+            raise ResearchRetrievalServiceError(
+                "research_retrieval_supplement_vertical_invalid",
+                503,
+                supplement_reason=str(exc),
+            ) from exc
+        if (
+            self._s1_supplement_vertical is not None
+            and self._s1_vertical_slice is None
+        ):
+            raise ResearchRetrievalServiceError(
+                "research_retrieval_supplement_without_base_vertical", 503
+            )
 
     @classmethod
     def from_runtime_paths(
@@ -218,6 +246,14 @@ class ResearchRetrievalService:
                 read_registered_runtime_json(
                     repository_root,
                     CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID,
+                )
+                if load_s1_vertical_slice
+                else None
+            ),
+            s1_supplement_vertical=(
+                read_registered_runtime_json(
+                    repository_root,
+                    CURRENT_S1_VS4_SUPPLEMENT_VERTICAL_RESOURCE_ID,
                 )
                 if load_s1_vertical_slice
                 else None
@@ -302,10 +338,38 @@ class ResearchRetrievalService:
             "known_boundary": str(self._snapshot["known_boundary"]),
         }
         if self._s1_vertical_slice is not None:
-            body["canonical_spine"] = project_s1_vs1_case(
-                self._s1_vertical_slice, case_key=key
-            )
+            body["canonical_spine"] = self._canonical_spine_for_case(key)
         return {**body, "projection_digest": canonical_digest(body)}
+
+    def _canonical_spine_for_case(self, case_key: str) -> dict[str, Any] | None:
+        if self._s1_vertical_slice is None:
+            return None
+        base_projection = project_s1_vs1_case(
+            self._s1_vertical_slice, case_key=case_key
+        )
+        if base_projection is None:
+            return None
+        binding = dict(base_projection.get("pack_binding") or {})
+        artifact_digest = str(binding.get("artifact_digest") or "")
+        pack_payload_digest = str(binding.get("pack_payload_digest") or "")
+        if self._s1_supplement_vertical is not None and case_key == "DELL":
+            storage = dict(self._s1_supplement_vertical["storage"])
+            artifact_digest = str(storage["successor_pack_sha256"])
+            pack_payload_digest = str(storage["successor_pack_payload_digest"])
+        try:
+            return project_capture_bound_supplement_lineage(
+                base_projection=base_projection,
+                supplement_summary=self._s1_supplement_vertical,
+                case_key=case_key,
+                artifact_digest=artifact_digest,
+                pack_payload_digest=pack_payload_digest,
+            )
+        except SupplementVerticalError as exc:
+            raise ResearchRetrievalServiceError(
+                "research_retrieval_supplement_pack_binding_drift",
+                503,
+                supplement_reason=str(exc),
+            ) from exc
 
     def execute_controlled_plan(
         self,

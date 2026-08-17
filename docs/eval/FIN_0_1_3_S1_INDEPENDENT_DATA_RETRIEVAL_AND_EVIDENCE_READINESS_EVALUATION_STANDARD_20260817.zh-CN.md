@@ -295,18 +295,18 @@ S1 未通过时仍可运行的模型或节点调用必须明确标为 determinis
 
 ## 10. 当前执行边界与下一步
 
-本文件只冻结评测合同，没有运行 OCR、parser、chunk、index、Embedding、Reranker、模型、Provider、网络、source promotion 或 full-chain。
+本文件初版只冻结评测合同；当前执行证据已推进到 VS1／VS2／VS3 与 DELL VS4。所有这些结果仍属于开发／回归纵切，不进入 valid／test／heterogeneous gold，也不授权 full-chain。
 
 下一步程序为：
 
-1. **已建立程序基础，未完成 Runtime 迁移**：`src/retrieval/artifact_spine.py`、canonical policy、A–J evidence-backed coverage matrix 和统一校验入口已存在；spine 显式区分 CandidateSet、CandidateRanking、CandidateDecision，A–J 仍只作为责任坐标；
-2. **已冻结 schema／开发集／split 规则，未冻结隐藏资格集**：runtime-visible input 与 evaluator-only reference 物理分离，8 条 VS1 train-internal fixture 和 legacy qrels／role eval 只作开发资产；valid／test／heterogeneous holdout 保持预留，待 VS1–VS3 合同稳定后再预注册；
+1. **程序基础与当前 Runtime 迁移已建立**：`src/retrieval/artifact_spine.py`、canonical policy、A–J evidence-backed coverage matrix 和统一校验入口已存在；spine 显式区分 CandidateSet、CandidateRanking、CandidateDecision，A–J 仍只作为责任坐标；
+2. **已冻结 schema／开发集／split 规则，未冻结隐藏资格集**：runtime-visible input 与 evaluator-only reference 物理分离，当前 train-internal fixture 和 legacy qrels／role eval 只作开发资产；valid／test／heterogeneous holdout 保持预留，待 MU／NVDA 等价 VS4 路径确认通用合同不再变化后预注册；
 3. **VS1 已完成。** 当前 DELL pricing/mix 数字原生路径已从 source→Pack→Workbench 贯通：55 envelopes、6 candidate decisions（2 accepted／4 needs-review）、2 reviewed-not-recalled、3 个 supplement-unexecuted GapEligibilityReceipt；该结果只记 `vertical_slice_integrated`，不注册为 valid／test／holdout 资格结果；
-4. 执行 VS2 复杂文档纵切，覆盖扫描 PDF／OCR、跨页表格、脚注和修订／重述；
-5. 执行 VS3 多路线检索与金融排序纵切，在同一候选边界验收 recall／rerank／fine-rank 对最终 Evidence Pack 的真实增益；
-6. 执行 VS4 Coverage 驱动的第二轮补证纵切，完成 DELL 三命题和 MU／NVDA 等价自然路径；
+4. **VS2 已完成开发纵切。** IFX 复杂官方 PDF 的表格、脚注、重述和跨页对象已进入同一 spine；自然扫描异质性和 NumericFact 仍未资格化；
+5. **VS3 已完成开发纵切。** 同一对象快照上的多路线候选、CUDA semantic rerank、金融精排和完整 CandidateDecision 已进入 R17 Workbench；该结果没有授予单模型 winner 或自动 Evidence 权限；
+6. **VS4 DELL 已完成，MU／NVDA 待执行。** DELL 三命题形成 5 条 capture-bound 精确 Evidence、3 条宽 Evidence 退役和 1 条 gap 窄化；0 gap 关闭、0 NumericFact 授权。该结果只注册为开发纵切，不能作为跨案或隐藏资格；
 7. 每个纵切均先在最早责任层修复，再回放到当前 Workbench／consumer probe；组件绿色但纵切失败时不得合并为主线能力；
 8. 完成 DELL／MU／NVDA 回归后执行 VS5 新异质留出和稳定资格；
 9. 达到 `S1_qualified_stable` 后再签发完整真实链。
 
-当前结论：`S1 evaluation program foundation and VS1 integrated / VS2-to-VS5 open / S1 not qualified / full product chain qualification blocked`。
+当前结论：`S1 evaluation foundation + VS1-to-VS3 + DELL VS4 integrated / MU-NVDA VS4 + VS5 open / S1 not qualified / full product chain qualification blocked`。

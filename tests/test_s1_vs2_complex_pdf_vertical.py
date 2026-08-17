@@ -273,6 +273,14 @@ def test_vs1_replay_is_byte_stable_after_vs2_parser_and_object_contracts() -> No
     existing = read_registered_runtime_json(
         ROOT, "application.result.current_s1_vs1_vertical_slice"
     )
-    replay = compile_vs1_result()
+    replay = compile_vs1_result(
+        evidence_pack_result_ref=(
+            "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json"
+        ),
+        reviewed_anchor_catalog_ref=(
+            "configs/runtime/"
+            "fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json"
+        ),
+    )
     assert replay["result_digest"] == existing["result_digest"]
     assert json.loads(json.dumps(replay, ensure_ascii=False)) == existing

@@ -1,0 +1,180 @@
+{
+  "attempt_id": "20260818_s1_vs4_dell_capture_bound_current_product_successor",
+  "candidate_manifest_digest": "4468c5206b289670de53d9a07d4460bb239ec38d0edbba8e65ca0e557e26709e",
+  "case_summaries": [
+    {
+      "accepted_evidence_items": 22,
+      "bounded_context_items": 9,
+      "case_key": "DELL",
+      "direct_evidence_items": 13,
+      "rejected_items": 0,
+      "residual_gaps": 14,
+      "source_materials": 22,
+      "status": "local_evidence_pack_ready_with_declared_residual_gaps"
+    },
+    {
+      "accepted_evidence_items": 16,
+      "bounded_context_items": 4,
+      "case_key": "MU",
+      "direct_evidence_items": 12,
+      "rejected_items": 0,
+      "residual_gaps": 13,
+      "source_materials": 16,
+      "status": "local_evidence_pack_ready_with_declared_residual_gaps"
+    },
+    {
+      "accepted_evidence_items": 14,
+      "bounded_context_items": 4,
+      "case_key": "NVDA",
+      "direct_evidence_items": 10,
+      "rejected_items": 0,
+      "residual_gaps": 13,
+      "source_materials": 13,
+      "status": "local_evidence_pack_ready_with_declared_residual_gaps"
+    },
+    {
+      "accepted_evidence_items": 13,
+      "bounded_context_items": 0,
+      "case_key": "ORCL",
+      "direct_evidence_items": 13,
+      "rejected_items": 14,
+      "residual_gaps": 26,
+      "source_materials": 0,
+      "status": "local_evidence_pack_ready_with_declared_residual_gaps"
+    },
+    {
+      "accepted_evidence_items": 12,
+      "bounded_context_items": 0,
+      "case_key": "ASML",
+      "direct_evidence_items": 12,
+      "rejected_items": 1,
+      "residual_gaps": 31,
+      "source_materials": 0,
+      "status": "local_evidence_pack_ready_with_declared_residual_gaps"
+    },
+    {
+      "accepted_evidence_items": 14,
+      "bounded_context_items": 0,
+      "case_key": "ANET",
+      "direct_evidence_items": 14,
+      "rejected_items": 13,
+      "residual_gaps": 27,
+      "source_materials": 0,
+      "status": "local_evidence_pack_ready_with_declared_residual_gaps"
+    }
+  ],
+  "contract_ref": "fin_0_1_3.S1.candidate_to_local_evidence_pack:v1",
+  "current_composition_lineage": {
+    "predecessor_result_digest": "c2b39d21bd3dddf0a698affa46bfe82b49b3f4c51183a8c2ba2f74fb18492d4b",
+    "private_object_copy_performed": false,
+    "promotion_kind": "capture_bound_precision_and_coverage_successor",
+    "replacement_case_key": "DELL",
+    "retained_case_keys": [
+      "MU",
+      "NVDA",
+      "ORCL",
+      "ASML",
+      "ANET"
+    ],
+    "schema_version": "fin_ia_current_pack_composition_lineage_v1_1",
+    "successor_pack_artifact_sha256": "5b60f38cfbf455dda1fc91126122d025ea08b8ac5c52a26453002df60b15e68c",
+    "successor_pack_payload_digest": "c61ea7a02634ec21944ec6edc9b127c474e3474116dfe501932455664fc3dc23",
+    "successor_result_digest": "7d751f28234f35c0404cf1939fd7e44fe615d1a42081ac0e62bc6d629f1f9e50"
+  },
+  "known_boundary": "Current composition exposes the DELL VS4 capture-bound precision successor while retaining MU, NVDA and development holdout packs by digest. It proves one bounded current-product supplement vertical, not open-web completeness, NumericFact authority, S1 qualification, report quality or release.",
+  "materialization_order": [
+    "DELL",
+    "MU",
+    "NVDA",
+    "ORCL",
+    "ASML",
+    "ANET"
+  ],
+  "observed_counts": {
+    "embedding_calls": 0,
+    "evidence_items": 91,
+    "manifest_candidates_adjudicated": 93,
+    "model_calls": 0,
+    "narrative_queue_items_adjudicated": 19,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "rejected_items": 28,
+    "rerank_calls": 0,
+    "residual_gaps": 124
+  },
+  "pack_artifacts": {
+    "ANET": {
+      "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps",
+      "byte_size": 48391,
+      "digest": "ebe4e2aa615e0126d130b2427bc083ba16eaadc55debc4bb5dd50cf9c240126c",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/anet/v1/eb/e4/ebe4e2aa615e0126d130b2427bc083ba16eaadc55debc4bb5dd50cf9c240126c.json"
+    },
+    "ASML": {
+      "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps",
+      "byte_size": 41445,
+      "digest": "55fad48bfa82edbe69662158939083e82d4b7844f9c67d5f66bae83de212efd1",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/asml/v1/55/fa/55fad48bfa82edbe69662158939083e82d4b7844f9c67d5f66bae83de212efd1.json"
+    },
+    "DELL": {
+      "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps",
+      "byte_size": 122852,
+      "digest": "5b60f38cfbf455dda1fc91126122d025ea08b8ac5c52a26453002df60b15e68c",
+      "media_type": "application/json",
+      "object_key": "packs/dell/c61ea7a02634ec21944ec6edc9b127c474e3474116dfe501932455664fc3dc23.json",
+      "private_object_root_relative": "fin_0_1_3_s1_vs4_dell_supplement_vertical/v1_0"
+    },
+    "MU": {
+      "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps",
+      "byte_size": 78664,
+      "digest": "93ce23a039a000e5a9e83956804f28b425232f6b1992e9c21cc59f0aac01c371",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/mu/v1/93/ce/93ce23a039a000e5a9e83956804f28b425232f6b1992e9c21cc59f0aac01c371.json"
+    },
+    "NVDA": {
+      "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps",
+      "byte_size": 90045,
+      "digest": "03a2f5da4fbfeef1b7a404eea480a53056f8c66d532cbbfeef1ea7d91c49cba4",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/nvda/v1/03/a2/03a2f5da4fbfeef1b7a404eea480a53056f8c66d532cbbfeef1ea7d91c49cba4.json"
+    },
+    "ORCL": {
+      "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps",
+      "byte_size": 46141,
+      "digest": "dfe9440043bdc30b9cb56fe79aaf7a857e9f364c9ce2af956a62d82307ae3be9",
+      "media_type": "application/json",
+      "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/orcl/v1/df/e9/dfe9440043bdc30b9cb56fe79aaf7a857e9f364c9ce2af956a62d82307ae3be9.json"
+    }
+  },
+  "pack_payload_digests": {
+    "ANET": "49422886291e495d736066c790d7344052bc3b4796c48b4351226b345408ccf3",
+    "ASML": "2f975a03b5a646c1da54bb63ad0ee8f3ec977e5848c06ff71075f02e92f1c683",
+    "DELL": "c61ea7a02634ec21944ec6edc9b127c474e3474116dfe501932455664fc3dc23",
+    "MU": "1c2b787a955bb145fef6acd4e1ebf70566f472259006c06891b3fd9dde0f2964",
+    "NVDA": "9372a57bb60bbb573a8b53fd7dda2a45d70caaf89298456982714ea84ecaf066",
+    "ORCL": "fab997d54e67c13ebae8d3dee9647678c9beebccd1693a22861cd9a844ad58b7"
+  },
+  "recorded_at": "2026-08-18",
+  "result_digest": "46a102aee335dba05d4eda6623c4ca3aa9427b758c52f6a99973568c916243cb",
+  "retrieval_result_digest": "dfc2e69a444db1b011d0cf61d02b592f84e7c6da6524accfc3abc6e56bc3914a",
+  "run_scope": "CURRENT_RESEARCH_EVIDENCE_PACK_COMPOSITION_ZERO_CALL",
+  "schema_version": "fin_ia_current_research_evidence_pack_result_v1_1",
+  "stage_acceptance": {
+    "all_manifest_candidates_adjudicated": true,
+    "all_narrative_queue_items_adjudicated": true,
+    "complete_investment_report_claimed": false,
+    "core_research_ready": true,
+    "current_pack_composition_digest_bound": true,
+    "dell_capture_bound_supplement_promoted": true,
+    "dell_first_content_gate_proven": true,
+    "dell_official_transcript_evidence_promoted": true,
+    "dell_vs4_vertical_integrated": true,
+    "rejected_surfaces_blocked_from_writer": true,
+    "residual_gaps_visible_for_external_supplement": true,
+    "s1_product_acceptance": false,
+    "same_core_transferred_to_five_cases": true,
+    "source_text_and_structured_metric_lineage_verified": true
+  },
+  "status": "terminal_succeeded_current_pack_composition_with_declared_gaps"
+}

@@ -98,9 +98,13 @@ def _pack_item_gate_reason(
     item: Mapping[str, Any],
     material: Mapping[str, Any],
     *,
+    compiled_object_id: str,
     request: Mapping[str, Any],
     lane: QueryLane,
 ) -> str | None:
+    bound_object_id = str(item.get("compiled_object_id") or "")
+    if bound_object_id and bound_object_id != compiled_object_id:
+        return "reviewed_item_bound_to_different_compiled_object"
     if str(item.get("case_key") or "").upper() != str(
         request.get("case_key") or ""
     ).upper():
@@ -225,7 +229,11 @@ def compile_object_candidate_decision_ledger(
             (item, material)
             for item, material in matches
             if _pack_item_gate_reason(
-                item, material, request=request, lane=lane
+                item,
+                material,
+                compiled_object_id=object_id,
+                request=request,
+                lane=lane,
             )
             is None
         ]
@@ -277,7 +285,11 @@ def compile_object_candidate_decision_ledger(
                     for item, material in matches
                     if (
                         reason := _pack_item_gate_reason(
-                            item, material, request=request, lane=lane
+                            item,
+                            material,
+                            compiled_object_id=object_id,
+                            request=request,
+                            lane=lane,
                         )
                     )
                     is not None

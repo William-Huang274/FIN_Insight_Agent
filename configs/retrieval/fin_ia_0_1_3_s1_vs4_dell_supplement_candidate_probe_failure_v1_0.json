@@ -1,0 +1,34 @@
+{
+  "schema_version": "fin_ia_s1_vs4_dell_supplement_probe_failure_v1_0",
+  "attempt_id": "FIN-0.1.3-S1-VS4-DELL-SUPPLEMENT-CANDIDATE-PROBE-V1.0",
+  "recorded_at": "2026-08-18",
+  "status": "terminal_failed_before_embedding",
+  "bound_inputs": {
+    "query_atom_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_query_atoms_v1_0.json",
+    "query_atom_sha256_lf": "db62a62ebbbd760c5d0bf0334df789053cb5cdd51071232a9af7505d46f50efc",
+    "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_candidate_ranking_policy_v1_0.json"
+  },
+  "failure": {
+    "phase": "evidence_request_to_query_facet_plan",
+    "code": "evidence_request_source_not_allowed",
+    "affected_atom_id": "S1_VS4_DELL_UPSTREAM_COUNTER",
+    "business_cause_zh": "上游反方请求被直接编译到不允许 EARNINGS_CALL_TRANSCRIPT 的反方槽位，但已审 TSMC 先进封装证据来自官方法说会。该失败属于来源路线与研究意图错配，不是公开信息缺失、检索模型失败或 DeepSeek 失败。",
+    "corrective_boundary_zh": "successor 只把来源发现路由到允许法说会的 upstream_capacity_context；证据取得后仍由 Coverage／Evidence Gate 决定能否作为 Dell 的有界反方背景，不扩大 Dell 特定分配或因果权限。"
+  },
+  "execution": {
+    "network_calls": 0,
+    "generation_model_calls": 0,
+    "embedding_model_calls": 0,
+    "reranker_model_calls": 0,
+    "cpu_vector_fallback_calls": 0,
+    "evidence_promotions": 0
+  },
+  "authority": {
+    "failed_attempt_immutable": true,
+    "new_attempt_id_required": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "public_information_gap_claimed": false,
+    "s1_complete_claimed": false
+  }
+}

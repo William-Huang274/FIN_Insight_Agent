@@ -26,6 +26,11 @@ from retrieval.vertical_slice import (
     load_s1_vs1_vertical_slice_result,
     project_s1_vs1_case,
 )
+from retrieval.supplement_vertical import (
+    SupplementVerticalError,
+    project_capture_bound_supplement_lineage,
+    validate_supplement_vertical_summary,
+)
 
 
 CURRENT_RESEARCH_EVIDENCE_PACK_CONFIG_RESOURCE_ID = (
@@ -36,6 +41,9 @@ CURRENT_S1_ARTIFACT_SPINE_POLICY_RESOURCE_ID = (
 )
 CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID = (
     "application.result.current_s1_vs1_vertical_slice"
+)
+CURRENT_S1_VS4_SUPPLEMENT_VERTICAL_RESOURCE_ID = (
+    "application.result.current_s1_vs4_supplement_vertical"
 )
 EXPECTED_CONFIG_SCHEMA = (
     "fin_ia_current_research_evidence_pack_projection_config_v1_0"
@@ -116,6 +124,7 @@ class ResearchEvidencePackService:
         private_root_base: str | Path | None = None,
         reviewed_anchor_catalog: Mapping[str, Any] | None = None,
         s1_vertical_slice: Mapping[str, Any] | None = None,
+        s1_supplement_vertical: Mapping[str, Any] | None = None,
         artifact_spine_policy: Mapping[str, Any] | None = None,
     ) -> None:
         self._config = self._validate_config(config)
@@ -173,6 +182,25 @@ class ResearchEvidencePackService:
                 raise ResearchEvidencePackServiceError(
                     "current_research_evidence_vertical_slice_invalid", 503
                 ) from exc
+        try:
+            self._s1_supplement_vertical = (
+                validate_supplement_vertical_summary(s1_supplement_vertical)
+                if s1_supplement_vertical is not None
+                else None
+            )
+        except SupplementVerticalError as exc:
+            raise ResearchEvidencePackServiceError(
+                "current_research_evidence_supplement_vertical_invalid",
+                503,
+                supplement_reason=str(exc),
+            ) from exc
+        if (
+            self._s1_supplement_vertical is not None
+            and self._s1_vertical_slice is None
+        ):
+            raise ResearchEvidencePackServiceError(
+                "current_research_evidence_supplement_without_base_vertical", 503
+            )
 
     @classmethod
     def from_runtime_paths(
@@ -212,6 +240,14 @@ class ResearchEvidencePackService:
                 read_registered_runtime_json(
                     repository_root,
                     CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID,
+                )
+                if load_s1_vertical_slice
+                else None
+            ),
+            s1_supplement_vertical=(
+                read_registered_runtime_json(
+                    repository_root,
+                    CURRENT_S1_VS4_SUPPLEMENT_VERTICAL_RESOURCE_ID,
                 )
                 if load_s1_vertical_slice
                 else None
@@ -361,20 +397,23 @@ class ResearchEvidencePackService:
     ) -> dict[str, Any] | None:
         if self._s1_vertical_slice is None:
             return None
-        projection = project_s1_vs1_case(
+        base_projection = project_s1_vs1_case(
             self._s1_vertical_slice, case_key=case_key
         )
-        if projection is None:
-            return None
-        binding = dict(projection.get("pack_binding") or {})
-        _require(
-            binding.get("case_key") == case_key
-            and binding.get("artifact_digest") == artifact_digest
-            and binding.get("pack_payload_digest") == pack_payload_digest,
-            "current_research_evidence_vertical_slice_pack_binding_drift",
-            503,
-        )
-        return projection
+        try:
+            return project_capture_bound_supplement_lineage(
+                base_projection=base_projection,
+                supplement_summary=self._s1_supplement_vertical,
+                case_key=case_key,
+                artifact_digest=artifact_digest,
+                pack_payload_digest=pack_payload_digest,
+            )
+        except SupplementVerticalError as exc:
+            raise ResearchEvidencePackServiceError(
+                "current_research_evidence_vertical_slice_pack_binding_drift",
+                503,
+                supplement_reason=str(exc),
+            ) from exc
 
     def _load_pack(self, case_key: str) -> tuple[dict[str, Any], dict[str, Any]]:
         artifact = dict(self._result["pack_artifacts"][case_key])

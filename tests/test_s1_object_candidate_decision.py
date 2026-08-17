@@ -195,3 +195,25 @@ def test_hard_negative_stays_rejected_even_when_source_is_reviewed() -> None:
     assert ledger["decisions"][0]["reason_codes"] == [
         "exact_object_reviewed_hard_negative"
     ]
+
+
+def test_exact_compiled_object_binding_cannot_authorize_sibling_claim() -> None:
+    objects = {"OBJ-SIBLING": _object("OBJ-SIBLING", "SRC-1")}
+    pack = _pack()
+    pack["evidence_items"][0]["compiled_object_id"] = "OBJ-ORIGINAL"
+
+    ledger = compile_object_candidate_decision_ledger(
+        request=_request(),
+        lane=_lane(),
+        ranked_object_ids=("OBJ-SIBLING",),
+        objects_by_id=objects,
+        reviewed_relations={"OBJ-SIBLING": {"judgement": "positive"}},
+        evidence_pack=pack,
+        recorded_at="2026-08-18",
+    )
+
+    assert ledger["decision_counts"]["accepted"] == 0
+    assert ledger["decision_counts"]["needs_review"] == 1
+    assert ledger["decisions"][0]["reason_codes"] == [
+        "positive_development_object_not_bound_to_current_reviewed_pack"
+    ]

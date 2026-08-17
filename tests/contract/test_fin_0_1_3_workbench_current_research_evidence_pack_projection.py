@@ -344,7 +344,7 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R17"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R18"
     )
     assert set(registry.by_id()) == {
         "application.config.current_financial_research_kernel",
@@ -352,16 +352,17 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
         "application.config.current_query_object_fact_route_policy",
         "application.config.current_research_planning_policy",
         "application.config.current_research_evidence_pack_projection",
-            "application.config.current_research_workspace_catalog",
-            "application.config.current_s1_artifact_spine_policy",
-            "application.config.current_source_intake_policy",
+        "application.config.current_research_workspace_catalog",
+        "application.config.current_s1_artifact_spine_policy",
+        "application.config.current_source_intake_policy",
         "application.result.current_research_local_evidence_packs",
         "application.result.current_reviewed_claim_anchors",
-            "application.result.current_research_retrieval_snapshot",
-            "application.result.current_s1_vs1_vertical_slice",
-            "application.result.current_s1_vs2_complex_pdf_vertical",
-            "application.result.current_s1_vs3_retrieval_vertical",
-            "application.result.current_s1c_ranking_comparison_projection",
+        "application.result.current_research_retrieval_snapshot",
+        "application.result.current_s1_vs1_vertical_slice",
+        "application.result.current_s1_vs2_complex_pdf_vertical",
+        "application.result.current_s1_vs3_retrieval_vertical",
+        "application.result.current_s1_vs4_supplement_vertical",
+        "application.result.current_s1c_ranking_comparison_projection",
     }
     assert registry.detector_python_refs == (
         "apps/workbench/backend/api/operations.py",

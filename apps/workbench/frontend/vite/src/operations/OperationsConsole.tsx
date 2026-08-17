@@ -21,6 +21,7 @@ import {
   EvalCatalogItem,
   OperationsApiClient,
   RetrievalQuality,
+  SupplementQuality,
   RunJob,
   SourceIntakeAttempt,
   SourceIntakeRoute,
@@ -41,6 +42,7 @@ type Snapshot = {
   sourceAttempts: SourceIntakeAttempt[];
   complexDocumentQuality: ComplexDocumentQuality;
   retrievalQuality: RetrievalQuality;
+  supplementQuality: SupplementQuality;
 };
 
 type ViewState =
@@ -57,9 +59,9 @@ export function OperationsConsole() {
 
   const refresh = useCallback(() => {
     setState({ kind: "loading" });
-    Promise.all([api.status(), api.profiles(), api.sourceBundles(), api.runs(), api.evals(), api.sourceIntakeRoutes(), api.sourceIntakeAttempts(), api.complexDocumentQuality(), api.retrievalQuality()])
-      .then(([status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality, retrievalQuality]) => {
-        setState({ kind: "ready", snapshot: { status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality, retrievalQuality } });
+    Promise.all([api.status(), api.profiles(), api.sourceBundles(), api.runs(), api.evals(), api.sourceIntakeRoutes(), api.sourceIntakeAttempts(), api.complexDocumentQuality(), api.retrievalQuality(), api.supplementQuality()])
+      .then(([status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality, retrievalQuality, supplementQuality]) => {
+        setState({ kind: "ready", snapshot: { status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality, retrievalQuality, supplementQuality } });
       })
       .catch((error: Error) => setState({ kind: "error", message: error.message }));
   }, []);
@@ -161,6 +163,7 @@ function OperationsSnapshot({ snapshot, action, onCancel, onUploadSource, onAuto
 
       <ComplexDocumentQualityPanel value={snapshot.complexDocumentQuality} />
       <RetrievalQualityPanel value={snapshot.retrievalQuality} />
+      <SupplementQualityPanel value={snapshot.supplementQuality} />
 
       <section className="operations-console__columns">
         <article className="operations-console__panel is-wide">
@@ -276,6 +279,48 @@ function RetrievalQualityPanel({ value }: { value: RetrievalQuality }) {
       <div className="operations-console__document-meta">
         <span>{summary.accepted_object_count} 个已绑定对象</span>
         <span>{summary.needs_review_candidate_count} 个候选待审，不等于缺口</span>
+        <code>{value.result_digest.slice(0, 12)}…{value.result_digest.slice(-8)}</code>
+      </div>
+    </section>
+  );
+}
+
+function SupplementQualityPanel({ value }: { value: SupplementQuality }) {
+  const delta = value.coverage_delta;
+  const readyCount = value.proposition_rows.filter((row) => row.proposition_ready).length;
+  const falseAccepts = value.proposition_rows.reduce((total, row) => total + row.hard_negative_accepted_object_ids.length, 0);
+  return (
+    <section className="operations-console__panel operations-console__document-quality">
+      <div className="operations-console__panel-title">
+        <h2><FileSearch size={18} />命题补证与缺口窄化</h2>
+        <span>VS4 · DELL 有界纵切，不是 S1 发布资格</span>
+      </div>
+      <div className="operations-console__document-summary">
+        <div>
+          <p>证据继任</p>
+          <strong>{delta.retired_broad_or_legacy_evidence_count} 退役 / {delta.added_capture_bound_claim_count} 新增</strong>
+          <small>宽 chunk 与整页材料替换为精确 capture-bound claim</small>
+        </div>
+        <div>
+          <p>命题覆盖</p>
+          <strong>{readyCount} / {value.proposition_rows.length}</strong>
+          <small>营运资金、发行人反方、上游反方</small>
+        </div>
+        <div>
+          <p>错误晋升</p>
+          <strong>{falseAccepts}</strong>
+          <small>分析师提问、同页无关句不得借用管理层事实权限</small>
+        </div>
+        <div>
+          <p>缺口处置</p>
+          <strong>{delta.narrowed_gap_count} 窄化 / {delta.closed_gap_count} 关闭</strong>
+          <small>机制已知不等于量化归属或 Dell 分配已知</small>
+        </div>
+      </div>
+      <p className="operations-console__document-finding">{value.business_findings[0] ?? "暂无业务结论"}</p>
+      <div className="operations-console__document-meta">
+        <span>Successor Evidence {delta.successor_evidence_count}</span>
+        <span>S1 仍未通过 · NumericFact 未授权</span>
         <code>{value.result_digest.slice(0, 12)}…{value.result_digest.slice(-8)}</code>
       </div>
     </section>

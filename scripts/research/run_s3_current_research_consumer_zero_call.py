@@ -91,6 +91,12 @@ CLAIM_RELATION_ALIAS_AUTHORITY_SCHEMA = (
 CLAIM_RELATION_ALIAS_RESULT_SCHEMA = (
     "fin_ia_fixed_pack_claim_relation_alias_zero_call_result_v1_0"
 )
+PRE_VS4_EVIDENCE_PACK_RESULT = ROOT / (
+    "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json"
+)
+PRE_VS4_REVIEWED_ANCHOR_CATALOG = ROOT / (
+    "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json"
+)
 
 
 class CurrentResearchConsumerRunnerError(RuntimeError):
@@ -420,25 +426,30 @@ def validate_authority(
     return paths, result_schema
 
 
-def _services() -> tuple[ResearchEvidencePackService, ResearchRetrievalService]:
+def _services(
+    *, evidence_result_path: Path | None = None
+) -> tuple[ResearchEvidencePackService, ResearchRetrievalService]:
+    """Build the immutable fixed-Pack services used by historical S3 proofs.
+
+    The product pointer may advance as S1 admits new Evidence.  These S3
+    attempts must instead replay the evidence result that their authority
+    bound, otherwise a legitimate S1 successor silently rewrites history.
+    """
+
     runtime_paths = resolve_runtime_paths(ROOT)
+    bound_result_path = evidence_result_path or PRE_VS4_EVIDENCE_PACK_RESULT
     evidence_config = read_registered_runtime_json(
         ROOT, "application.config.current_research_evidence_pack_projection"
     )
     evidence = ResearchEvidencePackService(
         config=evidence_config,
-        result=read_registered_runtime_json(
-            ROOT, str(evidence_config["source_result_resource_id"])
-        ),
+        result=_json(bound_result_path),
         private_object_root=(
             runtime_paths.reviewed_evidence_root
             / str(evidence_config["private_object_root_relative"])
         ),
         private_root_base=runtime_paths.reviewed_evidence_root,
-        reviewed_anchor_catalog=read_registered_runtime_json(
-            ROOT,
-            str(evidence_config["reviewed_anchor_catalog_resource_id"]),
-        ),
+        reviewed_anchor_catalog=_json(PRE_VS4_REVIEWED_ANCHOR_CATALOG),
     )
     retrieval = ResearchRetrievalService(
         snapshot=read_registered_runtime_json(
@@ -1844,7 +1855,9 @@ def run(authority_path: Path) -> dict[str, Any]:
         authority,
         authority_path=authority_path,
     )
-    evidence_service, retrieval_service = _services()
+    evidence_service, retrieval_service = _services(
+        evidence_result_path=paths.get("current_evidence_pack_result_ref")
+    )
     read = frozenset({"current_product:read"})
     evidence_pack = evidence_service.get_case(
         "DELL", ResearchEvidencePackPrincipal("current", read)

@@ -98,6 +98,12 @@ from sec_agent.runtime_resource_registry import (  # noqa: E402
 
 
 AUTHORITY_SCHEMA = "fin_ia_current_research_consumer_canary_authority_v1_1"
+PRE_VS4_EVIDENCE_PACK_RESULT = ROOT / (
+    "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json"
+)
+PRE_VS4_REVIEWED_ANCHOR_CATALOG = ROOT / (
+    "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json"
+)
 RESULT_SCHEMA = "fin_ia_current_research_consumer_canary_result_v1_1"
 FULL_SCHEMA = "fin_ia_current_research_consumer_canary_full_v1_1"
 PAIRED_AUTHORITY_SCHEMA = (
@@ -361,6 +367,7 @@ def validate_authority(
 def _services(
     *,
     evidence_projection_version: str = "current",
+    evidence_result_path: Path | None = None,
 ) -> tuple[ResearchEvidencePackService, ResearchRetrievalService]:
     runtime_paths = resolve_runtime_paths(ROOT)
     evidence_config = read_registered_runtime_json(
@@ -368,10 +375,17 @@ def _services(
     )
     reviewed_anchor_catalog: Mapping[str, Any] | None
     if evidence_projection_version == "current":
-        reviewed_anchor_catalog = read_registered_runtime_json(
-            ROOT,
-            str(evidence_config["reviewed_anchor_catalog_resource_id"]),
-        )
+        if evidence_result_path is None:
+            evidence_result = read_registered_runtime_json(
+                ROOT, str(evidence_config["source_result_resource_id"])
+            )
+            reviewed_anchor_catalog = read_registered_runtime_json(
+                ROOT,
+                str(evidence_config["reviewed_anchor_catalog_resource_id"]),
+            )
+        else:
+            evidence_result = _json(evidence_result_path)
+            reviewed_anchor_catalog = _json(PRE_VS4_REVIEWED_ANCHOR_CATALOG)
     elif evidence_projection_version == "legacy_v1_0":
         if (
             evidence_config.get("schema_version")
@@ -386,15 +400,16 @@ def _services(
         )
         evidence_config.pop("reviewed_anchor_catalog_resource_id", None)
         reviewed_anchor_catalog = None
+        evidence_result = _json(
+            evidence_result_path or PRE_VS4_EVIDENCE_PACK_RESULT
+        )
     else:
         raise CurrentResearchConsumerCanaryError(
             "research_consumer_evidence_projection_version_invalid"
         )
     evidence = ResearchEvidencePackService(
         config=evidence_config,
-        result=read_registered_runtime_json(
-            ROOT, str(evidence_config["source_result_resource_id"])
-        ),
+        result=evidence_result,
         private_object_root=(
             runtime_paths.reviewed_evidence_root
             / str(evidence_config["private_object_root_relative"])
@@ -455,7 +470,8 @@ def _compile_runtime_input(
         evidence_projection_version: str,
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         evidence_service, retrieval_service = _services(
-            evidence_projection_version=evidence_projection_version
+            evidence_projection_version=evidence_projection_version,
+            evidence_result_path=paths.get("current_evidence_pack_result_ref"),
         )
         evidence_pack = evidence_service.get_case(
             case_key, ResearchEvidencePackPrincipal("current", read)

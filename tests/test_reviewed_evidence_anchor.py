@@ -134,7 +134,7 @@ def test_current_runtime_binds_every_claim_and_exposes_dell_margin_sentence() ->
             assert source["reviewed_anchor_bound"] is True
             assert source["excerpt_projection_kind"] == "reviewed_claim_anchor"
             anchored.append((case_key, item))
-    assert len(anchored) == 21
+    assert len(anchored) == 24
 
     target = next(
         item

@@ -274,3 +274,138 @@ def test_anaphoric_change_fragment_requires_parent_context() -> None:
     )
     assert "context_dependent_fragment_requires_parent" in result.reason_codes
     assert result.compatibility == "incompatible"
+
+
+def test_working_capital_observed_mechanism_is_compatible() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "DELL",
+            "section": "Item 7. Management's Discussion and Analysis",
+            "document_text": (
+                "Working capital during Fiscal 2025 was primarily impacted by AI "
+                "dynamics, which led to higher inventory, accounts receivable, "
+                "and accounts payable levels."
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="cash_conversion_balance_sheet",
+        facet_id="working_capital_risk",
+        subject_ticker="DELL",
+        evidence_owner_ticker="DELL",
+        relationship_direction="subject_self_disclosure",
+    )
+
+    assert result.compatibility == "compatible"
+    assert "observed_operating_result" in result.labels
+
+
+def test_unrelated_lease_reconciliation_cannot_answer_working_capital() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "DELL",
+            "section": "Item 8. Financial Statements and Supplementary Data",
+            "document_text": (
+                "The table reconciles undiscounted cash flows for non-cancelable "
+                "leases to the recognized lease liability."
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="cash_conversion_balance_sheet",
+        facet_id="working_capital_risk",
+        subject_ticker="DELL",
+        evidence_owner_ticker="DELL",
+        relationship_direction="subject_self_disclosure",
+    )
+
+    assert result.compatibility == "abstain"
+    assert "working_capital_semantic_anchor_missing" in result.reason_codes
+
+
+def test_transcript_analyst_question_is_not_management_evidence() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "TSM",
+            "section": "TSMC Q2 2026 Earnings Call Transcript",
+            "document_text": (
+                "Jim Fontanelli - Arete Research LLC - Analyst Could I ask about "
+                "the risk around customer concentration as AI demand grows?"
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="capacity_inputs_execution",
+        facet_id="upstream_capacity_context",
+        subject_ticker="DELL",
+        evidence_owner_ticker="TSM",
+        relationship_direction="supplier_to_subject",
+    )
+
+    assert result.compatibility == "incompatible"
+    assert "transcript_question_without_management_answer" in result.reason_codes
+
+
+def test_transcript_ir_question_restatement_is_not_management_evidence() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "TSM",
+            "section": "TSMC Q2 2026 Earnings Call Transcript",
+            "document_text": (
+                "Jeff Su - Taiwan Semiconductor Manufacturing Co Ltd - Director "
+                "of Investor Relations. Jim's first question is risk around "
+                "customer concentration."
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="capacity_inputs_execution",
+        facet_id="upstream_capacity_context",
+        subject_ticker="DELL",
+        evidence_owner_ticker="TSM",
+        relationship_direction="supplier_to_subject",
+    )
+
+    assert result.compatibility == "incompatible"
+    assert "transcript_question_without_management_answer" in result.reason_codes
+
+
+def test_question_only_transcript_fragment_is_not_fact_evidence() -> None:
+    result = evaluate_evidence_role(
+        {
+            "ticker": "TSM",
+            "section": "TSMC Q2 2026 Earnings Call Transcript",
+            "document_text": (
+                "We have large customers that are getting larger. Are we worried "
+                "that we have too many big customers?"
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="capacity_inputs_execution",
+        facet_id="upstream_capacity_context",
+        subject_ticker="DELL",
+        evidence_owner_ticker="TSM",
+        relationship_direction="supplier_to_subject",
+    )
+
+    assert result.compatibility == "incompatible"
+    assert "transcript_question_without_management_answer" in result.reason_codes
+
+
+def test_management_bottleneck_and_tester_shortage_are_supply_evidence() -> None:
+    for text in (
+        "Sometimes we have a bottleneck, so we buy the bottleneck tools.",
+        "The tester is in shortage, so we put more CapEx in packaging and testing.",
+    ):
+        result = evaluate_evidence_role(
+            {
+                "ticker": "TSM",
+                "section": "TSMC Q2 2026 Earnings Call Transcript",
+                "document_text": text,
+                "object_kind": "claim",
+            },
+            slot_id="capacity_inputs_execution",
+            facet_id="upstream_capacity_context",
+            subject_ticker="DELL",
+            evidence_owner_ticker="TSM",
+            relationship_direction="supplier_to_subject",
+        )
+
+        assert result.compatibility == "compatible"
+        assert "direct_supply_capacity_signal" in result.labels

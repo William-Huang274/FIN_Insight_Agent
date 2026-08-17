@@ -96,6 +96,15 @@ def test_operations_surface_reads_version_neutral_store_and_runtime(tmp_path: Pa
     assert retrieval_payload["summary"]["financial_shortlist_hard_negative_top10_count"] == 0
     assert retrieval_payload["authority"]["candidate_is_not_evidence"] is True
     assert retrieval_payload["authority"]["s1_qualified_stable"] is False
+    supplement_quality = client.get("/api/operations/s1/supplement-quality")
+    assert supplement_quality.status_code == 200
+    supplement_payload = supplement_quality.json()
+    assert supplement_payload["coverage_delta"]["retired_broad_or_legacy_evidence_count"] == 3
+    assert supplement_payload["coverage_delta"]["added_capture_bound_claim_count"] == 5
+    assert supplement_payload["coverage_delta"]["narrowed_gap_count"] == 1
+    assert supplement_payload["coverage_delta"]["closed_gap_count"] == 0
+    assert all(row["proposition_ready"] for row in supplement_payload["proposition_rows"])
+    assert supplement_payload["authority"]["complete_s1_qualified"] is False
 
 
 def test_operations_runs_real_smoke_and_current_baseline_eval(tmp_path: Path) -> None:

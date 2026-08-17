@@ -82,6 +82,10 @@ test("operations is isolated from the research product", async ({ page }, testIn
   await expect(page.getByText(/确认 hard negative：0/)).toBeVisible();
   await expect(page.getByText("纵切已集成", { exact: true })).toBeVisible();
   await expect(page.getByText(/Candidate ≠ Evidence/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "命题补证与缺口窄化" })).toBeVisible();
+  await expect(page.getByText("3 退役 / 5 新增", { exact: true })).toBeVisible();
+  await expect(page.getByText("1 窄化 / 0 关闭", { exact: true })).toBeVisible();
+  await expect(page.getByText(/S1 仍未通过/)).toBeVisible();
   await expect(page.getByRole("heading", { name: "官方资料入库" })).toBeVisible();
   await expect(page.getByLabel("已登记来源")).toHaveValue(/DELL_Q1_FY2027/);
   await expect(page.getByText(/入库成功仍不是 Evidence/)).toBeVisible();

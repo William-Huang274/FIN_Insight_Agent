@@ -409,7 +409,8 @@
         "src/retrieval/complex_pdf_vertical.py",
         "src/retrieval/financial_intent.py",
         "src/retrieval/financial_evidence_shortlist.py",
-        "src/retrieval/candidate_decision.py"
+        "src/retrieval/candidate_decision.py",
+        "src/retrieval/supplement_vertical.py"
       ],
       "consumer_refs": [
         "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
@@ -424,7 +425,9 @@
         "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
         "configs/retrieval/fin_ia_0_1_3_s1_vs3_evidence_role_replay_result_v1_4.json",
         "configs/retrieval/fin_ia_0_1_3_s1_vs3_financial_shortlist_result_v1_8.json",
-        "configs/retrieval/fin_ia_0_1_3_s1_vs3_product_gate_result_v1_2.json"
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_product_gate_result_v1_2.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_candidate_ranking_result_v1_3.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_vertical_result_v1_0.json"
       ],
       "test_refs": [
         "tests/test_evidence_role.py",
@@ -435,7 +438,8 @@
         "tests/test_financial_intent.py",
         "tests/test_financial_evidence_shortlist.py",
         "tests/test_s1_object_candidate_decision.py",
-        "tests/test_s1_vs3_product_gate.py"
+        "tests/test_s1_vs3_product_gate.py",
+        "tests/test_s1_supplement_vertical.py"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
@@ -444,7 +448,9 @@
         "VS1 对 DELL pricing/mix 的 6 个真实候选逐一持久化 accepted／needs-review 决策；排名本身不授予 Evidence 权限",
         "VS2 对 20 个复杂文档候选形成 1 accepted／19 needs-review 的持久决策，并保留 3 个 reviewed-not-recalled 目标；table-row、footnote 和 cross-page 对象未因语义相近自动晋升",
         "VS3 复合角色门在开发关系上保留 50/62 positive、拒绝或 abstain 68/68 hard negative；金融 shortlist 前十为 15/15、0 confirmed hard negative",
-        "VS3 为 1,912 个候选持久物化 10 accepted／66 rejected／9 unjudged／1,827 needs-review，0 hard-negative/source-only false accept，并由 R17 Workbench 消费"
+        "VS3 为 1,912 个候选持久物化 10 accepted／66 rejected／9 unjudged／1,827 needs-review，0 hard-negative/source-only false accept，并由 R17 Workbench 消费",
+        "VS4 DELL 用同一金融角色合同复核营运资金、发行人反方和上游反方；6 个正例均可受控晋升，7 个确认 hard negative 全部拒绝或 abstain，分析师提问和同页无关句不再继承管理层事实权限",
+        "VS4 DELL 只把 capture、身份、期间、locator 与精确对象全部相符的五条 claim 加入 successor Pack；candidate text、排名分数和表格数字均未获得 Evidence／NumericFact 权限"
       ],
       "qualification_state": "open",
       "known_gaps": [
@@ -456,7 +462,7 @@
         },
         {
           "gap_id": "S1-H-GAP-002",
-          "business_effect_zh": "VS3 已覆盖冻结候选的角色判断，但动态检索产生的新候选、独立 capture-gate 晋升与二轮补证后的受控重裁决尚未在真实闭环中证明。",
+          "business_effect_zh": "VS4 已在 DELL 三命题证明动态候选的角色复核、capture-bound 晋升与 hard-negative 抑制；MU／NVDA 尚未走等价自然路径，独立异质留出资格仍归 VS5。",
           "earliest_responsibility_axis": "S1-H",
           "next_vertical_slice": "VS4"
         }
@@ -477,7 +483,9 @@
         "src/sec_agent/research/reviewed_evidence_pack.py",
         "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
         "src/retrieval/vertical_slice.py",
-        "src/retrieval/complex_pdf_vertical.py"
+        "src/retrieval/complex_pdf_vertical.py",
+        "src/retrieval/supplement_vertical.py",
+        "scripts/data_retrieval/materialize_s1_vs4_dell_supplement_vertical.py"
       ],
       "consumer_refs": [
         "apps/workbench/backend/application/research_evidence_pack_service.py",
@@ -489,33 +497,37 @@
         "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json",
         "configs/retrieval/fin_ia_0_1_3_s1c_planner_residual_gap_audit_result_v1_1.json",
         "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
-        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_vertical_result_v1_0.json"
       ],
       "test_refs": [
         "tests/test_current_evidence_pack_promotion_runner.py",
         "tests/contract/test_fin_0_1_3_workbench_current_research_evidence_pack_projection.py",
         "tests/test_reviewed_evidence_anchor.py",
         "tests/test_s1_vs1_vertical_slice.py",
-        "tests/test_s1_vs2_complex_pdf_vertical.py"
+        "tests/test_s1_vs2_complex_pdf_vertical.py",
+        "tests/test_s1_supplement_vertical.py"
       ],
       "highest_proven_state": "vertical_slice_integrated",
       "proven_scope_zh": [
         "reviewed Evidence Pack、declared residual gap 和 current anchor binding 已有只读产品消费者",
         "Pack 可被当前 S3 consumer 和 Workbench 读取",
         "VS1 已为 DELL pricing/mix 物化逐命题 CoverageState、3 份 GapEligibilityReceipt 和 task-relative readiness；未执行补源不会被冒充公开信息真空",
-        "VS2 将自然扫描资料资格和 S2 数值裁决分别保留为 typed boundary；当前 3 个 reviewed-not-recalled 属于可用对象未被检索到，禁止误写为公开资料不存在"
+        "VS2 将自然扫描资料资格和 S2 数值裁决分别保留为 typed boundary；当前 3 个 reviewed-not-recalled 属于可用对象未被检索到，禁止误写为公开资料不存在",
+        "VS4 DELL 已把三项 residual propositions 走完查询、候选、角色审阅、capture 复核、successor Pack 与 Coverage delta：旧 20 条 Evidence 中退役 3 条宽片段，新增 5 条精确 claim，形成 22 条 successor Evidence",
+        "营运资金 gap 只从完全定性缺口窄化为产品级金额、周转天数和归属桥缺口；gap 总数仍为 14，关闭数为 0，因此没有把部分新证据冒充完整充分性"
       ],
       "qualification_state": "open",
       "known_gaps": [
         {
           "gap_id": "S1-I-GAP-001",
-          "business_effect_zh": "VS1 已建立首个逐命题 EvidenceCoverageState，但尚未覆盖支持／反方／桥等多命题组合，也未执行真实第二轮补证后的 Coverage delta。",
+          "business_effect_zh": "DELL 已覆盖营运资金、发行人反方和上游反方三类命题并形成真实 Coverage delta；MU／NVDA 尚未从自然命题走同一闭环，跨案例通用性仍未证明。",
           "earliest_responsibility_axis": "S1-I",
           "next_vertical_slice": "VS4"
         },
         {
           "gap_id": "S1-I-GAP-002",
-          "business_effect_zh": "DELL 营运资金、发行人反方和上游反方仍无真正的 Coverage 驱动第二轮补证与 GapEligibilityReceipt。",
+          "business_effect_zh": "DELL 当前只对营运资金缺口形成窄化 receipt，其他 residual gaps 的 typed stop／route exhaustion 尚未逐项完成；MU／NVDA 的 GapEligibilityReceipt 也尚未物化。",
           "earliest_responsibility_axis": "S1-I",
           "next_vertical_slice": "VS4"
         }
@@ -546,7 +558,9 @@
         "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_1.json",
         "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
         "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
-        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json"
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_product_gate_result_v1_2.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_vertical_result_v1_0.json"
       ],
       "test_refs": [
         "tests/test_current_runtime_registry.py",
@@ -554,6 +568,7 @@
         "tests/test_current_workbench_baseline.py",
         "tests/test_s1_vs1_vertical_slice.py",
         "tests/test_s1_vs2_complex_pdf_vertical.py",
+        "tests/test_s1_supplement_vertical.py",
         "apps/workbench/frontend/e2e/workspace.spec.ts"
       ],
       "highest_proven_state": "vertical_slice_integrated",
@@ -561,7 +576,8 @@
         "当前 retrieval、ranking、Evidence Pack 和 source intake 有 Workbench／Operations 只读消费者",
         "Runtime Registry、digest、secret scan、active baseline 和多类 replay 已成为仓库治理门",
         "VS1 的 candidate decision、漏召回、未补源缺口和 Pack binding 已在当前 Evidence／Retrieval 页面由同一投影展示，并通过桌面与移动 E2E",
-        "VS2 的来源身份、解析对象数、OCR／NumericFact 权限边界和 1/4 复杂目标召回失败已接入 Operations 的永久只读面；R16 同时对 VS1／VS2 全部 inline payload ref 做真实解引用和 digest 校验"
+        "VS2 的来源身份、解析对象数、OCR／NumericFact 权限边界和 1/4 复杂目标召回失败已接入 Operations 的永久只读面；R16 同时对 VS1／VS2 全部 inline payload ref 做真实解引用和 digest 校验",
+        "R17 显示多路线候选、金融短名单和 CandidateDecision；R18 新增 DELL 命题补证、精确 Evidence 替换、gap 窄化与权限边界面板，Workbench 不把该单案结果显示为 S1 完成"
       ],
       "qualification_state": "open",
       "known_gaps": [

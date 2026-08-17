@@ -460,3 +460,15 @@ VS3 证明的不是“某个向量模型胜出”，而是同一对象、同一�
 7. **Workbench 是当前消费者。** R17 注册 VS3 结果，Operations 显示候选覆盖、金融前十、VS1／VS2 回归、待审数量和权限边界。页面不暴露 qrel identity、答案 URL 或模型内部标签。
 
 VS3 状态为 `vertical_slice_integrated=true / VS4_bounded_supplement_authorized=true / S1_qualified_stable=false`。下一步只能由 Coverage 的 residual gap 驱动 VS4，不允许因为 VS3 排序变好就跳过来源补证、gap 资格或 VS5 异质留出。
+
+## 18. VS4 DELL Coverage 驱动补证回证（2026-08-18）
+
+VS4 的 DELL 开发纵切已经把三项 residual proposition 从 Coverage 账本送回当前对象库与金融排序，再经过角色审阅、capture 复核、Evidence successor、Coverage delta 和 Workbench。它复用已保存的 Dell／TSMC 官方法说，0 网络、0 生成模型调用；因此只证明 capture-bound 二轮补证闭环，不把它写成开放式联网研究完成。
+
+1. **先修最早路线错误。** 初始 upstream counter 请求被编译到不允许 transcript 的 facet，在向量执行前 fail closed。修正为适用的 upstream capacity 路线后，CUDA 候选已包含全部三类命题正例，说明该失败不是模型或信息不存在。
+2. **Evidence Role 必须包含说话人权限。** 实际候选暴露分析师问题、IR 主持人复述和同页兄弟句会误继承管理层事实。通用 successor 现在将 question-only／主持人转述降为 generic 或 incompatible；营运资金要求对应主体锚点，上游瓶颈只授予 ecosystem context。最终 6/6 开发正例 compatible，7/7 hard negative rejected／abstained。
+3. **候选不能借同源 Evidence 的权限。** 即使对象来自同一 capture、同一页或同一 parent，若现有 Evidence 显式绑定另一 `compiled_object_id`，当前 claim 仍必须独立审阅。Source digest、parent digest、capture SHA、身份、期间、locator 和原文包含关系全部一致后，才允许生成精确 claim Evidence。
+4. **Coverage delta 不以数量冒充充分性。** DELL 前序 20 Evidence 退役 3 条宽片段／整页对象，加入 5 条精确 claim，successor 为 22 Evidence；14 个 gap 保持 14，仅营运资金 gap 被 narrow，0 close、0 candidate text promotion、0 NumericFact authority。已知的是 AI 动态会提高库存、应收、应付和大单营运资金占用，以及上游封装／测试瓶颈；未知仍包括产品级金额、周转桥、Dell 分配量和释放时点。
+5. **当前消费者不夸大状态。** R18 和 `/api/operations/s1/supplement-quality` 显示命题已知／未知、精确 Evidence 替换、gap receipt 和权限边界；页面持续显示 `complete_s1_ready=false` 与 `numeric_fact_ready=false`。
+
+当前状态为 `DELL_VS4_vertical_slice_integrated=true / MU_NVDA_equivalent_paths_pending=true / VS5_pending=true / S1_qualified_stable=false`。下一步不是继续为 DELL 扩大补丁，而是让 MU、NVDA 从自然命题走同一核心；只有三案回归稳定后才进入预注册 valid／frozen／heterogeneous qualification。

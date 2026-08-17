@@ -266,6 +266,17 @@ def test_pack_retrieval_and_workbench_consume_the_same_canonical_lineage(
         "artifact_digest": pack_view["artifact_digest"],
         "pack_payload_digest": pack_view["pack_payload_digest"],
     }
+    assert pack_view["canonical_spine"]["status"] == (
+        "canonical_s1_lineage_with_capture_bound_supplement"
+    )
+    assert pack_view["canonical_spine"]["supplement_vertical"][
+        "coverage_delta"
+    ]["added_capture_bound_claim_count"] == 5
+    assert pack_view["canonical_spine"]["supplement_vertical"][
+        "complete_s1_qualified"
+    ] is False
+    assert len(pack_view["evidence_items"]) == 22
+    assert len(pack_view["residual_gaps"]) == 14
     ResearchRetrievalResponse.model_validate(retrieval_view)
     ResearchEvidencePackResponse.model_validate(pack_view)
     ResearchWorkspaceEvidenceResponse.model_validate(workspace_view)

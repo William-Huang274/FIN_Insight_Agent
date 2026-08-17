@@ -183,6 +183,62 @@ def _is_context_dependent_fragment(text: str) -> bool:
     )
 
 
+def _is_transcript_question_without_management_answer(text: str) -> bool:
+    """Reject questions and IR restatements as evidence of management facts.
+
+    Transcript parsing can produce a claim-sized child that contains an analyst
+    question or an investor-relations restatement but not the management answer.
+    Topic similarity is useful for recall, yet the question itself has no fact
+    authority.  Keep the test deliberately speaker based so that it generalizes
+    across companies instead of memorizing a particular transcript.
+    """
+
+    surface = " ".join(str(text).casefold().split())
+    management_titles = (
+        "chief executive officer",
+        "chief financial officer",
+        "president and chief",
+        "chairman and chief",
+    )
+    has_management_answer = _contains_any(surface, management_titles)
+    analyst_question = " - analyst" in surface and (
+        "?" in surface
+        or _contains_any(
+            surface,
+            (
+                "could i ask",
+                "my question",
+                "first question",
+                "second question",
+                "follow-up",
+                "would like to understand",
+                "are we worried",
+            ),
+        )
+    )
+    ir_restatement = (
+        "director of investor relations" in surface
+        and _contains_any(
+            surface,
+            (
+                "question is",
+                "question was",
+                "first question is",
+                "first question was",
+                "wants to know",
+                "is noting",
+                "question's is",
+            ),
+        )
+    )
+    question_only_transcript_fragment = (
+        "earnings call transcript" in surface and "?" in surface
+    )
+    return not has_management_answer and (
+        analyst_question or ir_restatement or question_only_transcript_fragment
+    )
+
+
 def _role_surface(document: Mapping[str, Any]) -> tuple[str, str, str]:
     """Return only the surface that is allowed to imply an evidence role.
 
@@ -257,6 +313,10 @@ def evaluate_evidence_role(
     labels: set[str] = set()
     reasons: list[str] = []
 
+    transcript_question_only = _is_transcript_question_without_management_answer(
+        text
+    )
+
     if _contains_any(
         text,
         (
@@ -275,6 +335,9 @@ def evaluate_evidence_role(
     if _is_context_dependent_fragment(role_surface):
         labels.add(ROLE_GENERIC)
         reasons.append("context_dependent_fragment_requires_parent")
+    if transcript_question_only:
+        labels.add(ROLE_GENERIC)
+        reasons.append("transcript_question_without_management_answer")
 
     risk_section = "risk factor" in section or "risk factor" in subsection
     financial_statement = (
@@ -309,6 +372,18 @@ def evaluate_evidence_role(
             "system shipments",
         ),
     )
+    if facet_id == "working_capital_risk":
+        result_terms = result_terms or _contains_any(
+            text,
+            (
+                "working capital",
+                "inventory",
+                "accounts receivable",
+                "accounts payable",
+                "operating cash flow",
+                "cash provided by operating activities",
+            ),
+        )
     if result_terms and _has_observed_change(text) and not risk_section:
         labels.add(ROLE_OBSERVED_RESULT)
         reasons.append("observed_period_result_surface")
@@ -378,6 +453,17 @@ def evaluate_evidence_role(
             "capacity commitments",
         ),
     )
+    if facet_id == "upstream_capacity_context":
+        supply_terms = supply_terms or _contains_any(
+            text,
+            (
+                "packaging capacity",
+                "packaging",
+                "tester",
+                "shortage",
+                "bottleneck",
+            ),
+        )
     supply_risk = _contains_any(
         text,
         (
@@ -464,6 +550,22 @@ def evaluate_evidence_role(
         if facet_id is not None
         else SLOT_COMPATIBLE_ROLES[slot_id]
     )
+    if facet_id == "working_capital_risk":
+        working_capital_anchor = _contains_any(
+            text,
+            (
+                "working capital",
+                "inventory",
+                "accounts receivable",
+                "accounts payable",
+                "operating cash flow",
+                "cash provided by operating activities",
+                "customer credit",
+            ),
+        )
+        if not working_capital_anchor:
+            labels.discard(ROLE_FINANCIAL_STATEMENT)
+            reasons.append("working_capital_semantic_anchor_missing")
     if ROLE_GENERIC in labels:
         compatibility = "incompatible"
         reasons.append("generic_or_context_dependent_override")

@@ -53,6 +53,9 @@ CURRENT_S1_VS2_COMPLEX_PDF_RESOURCE_ID = (
 CURRENT_S1_VS3_RETRIEVAL_RESOURCE_ID = (
     "application.result.current_s1_vs3_retrieval_vertical"
 )
+CURRENT_S1_VS4_SUPPLEMENT_RESOURCE_ID = (
+    "application.result.current_s1_vs4_supplement_vertical"
+)
 
 
 class ImportEnvRequest(BaseModel):
@@ -176,6 +179,30 @@ def build_operations_router(
             "summary": deepcopy(result.get("summary") or {}),
             "gate_results": deepcopy(result.get("gate_results") or {}),
             "atom_summaries": deepcopy(result.get("atom_summaries") or []),
+            "decision": deepcopy(result.get("decision") or {}),
+            "business_findings": deepcopy(result.get("business_findings") or []),
+            "authority": deepcopy(result.get("authority") or {}),
+            "result_digest": result.get("result_digest"),
+        }
+
+    @router.get(
+        "/s1/supplement-quality",
+        operation_id="getS1SupplementQuality",
+    )
+    def get_s1_supplement_quality() -> dict[str, Any]:
+        result = read_registered_runtime_json(
+            root, CURRENT_S1_VS4_SUPPLEMENT_RESOURCE_ID
+        )
+        return {
+            "schema_version": result.get("schema_version"),
+            "status": result.get("status"),
+            "slice_id": result.get("slice_id"),
+            "coverage_delta": deepcopy(result.get("coverage_delta") or {}),
+            "proposition_rows": deepcopy(result.get("proposition_rows") or []),
+            "workbench_projection": deepcopy(
+                result.get("workbench_projection") or {}
+            ),
+            "gate_results": deepcopy(result.get("gate_results") or {}),
             "decision": deepcopy(result.get("decision") or {}),
             "business_findings": deepcopy(result.get("business_findings") or []),
             "authority": deepcopy(result.get("authority") or {}),

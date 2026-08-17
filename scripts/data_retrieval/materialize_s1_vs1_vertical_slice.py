@@ -243,7 +243,11 @@ def _inline_payloads(
     }
 
 
-def compile_result() -> dict[str, Any]:
+def compile_result(
+    *,
+    evidence_pack_result_ref: str | None = None,
+    reviewed_anchor_catalog_ref: str | None = None,
+) -> dict[str, Any]:
     runtime_paths = resolve_runtime_paths(ROOT)
     # Bootstrap from the predecessor Runtime without trying to read the VS1
     # result that this command is currently materializing.
@@ -252,11 +256,32 @@ def compile_result() -> dict[str, Any]:
         runtime_paths,
         load_s1_vertical_slice=False,
     )
-    evidence_packs = ResearchEvidencePackService.from_runtime_paths(
-        ROOT,
-        runtime_paths,
-        load_s1_vertical_slice=False,
-    )
+    if evidence_pack_result_ref is None:
+        evidence_packs = ResearchEvidencePackService.from_runtime_paths(
+            ROOT,
+            runtime_paths,
+            load_s1_vertical_slice=False,
+        )
+        pack_result = read_registered_runtime_json(ROOT, CURRENT_PACK_RESOURCE_ID)
+    else:
+        evidence_config = read_registered_runtime_json(
+            ROOT, "application.config.current_research_evidence_pack_projection"
+        )
+        if reviewed_anchor_catalog_ref is None:
+            raise ValueError("vs1_historical_anchor_catalog_required")
+        pack_result = _read_json(_resolve(evidence_pack_result_ref))
+        evidence_packs = ResearchEvidencePackService(
+            config=evidence_config,
+            result=pack_result,
+            private_object_root=(
+                runtime_paths.reviewed_evidence_root
+                / str(evidence_config["private_object_root_relative"])
+            ),
+            private_root_base=runtime_paths.reviewed_evidence_root,
+            reviewed_anchor_catalog=_read_json(
+                _resolve(reviewed_anchor_catalog_ref)
+            ),
+        )
     request = _read_json(_resolve(CURRENT_REQUEST_REF))
     principal = ResearchRetrievalPrincipal(
         mode="current", permissions=frozenset({"current_product:read"})
@@ -270,7 +295,6 @@ def compile_result() -> dict[str, Any]:
     )
     # The safe projection is enough for decisions, but the pack artifact and
     # capture-bound successor lineage remain bound through the current result.
-    pack_result = read_registered_runtime_json(ROOT, CURRENT_PACK_RESOURCE_ID)
     pack_artifact = _pack_artifact(pack_result, "DELL")
     pack_root = runtime_paths.reviewed_evidence_root
     if pack_artifact.get("private_object_root_relative"):

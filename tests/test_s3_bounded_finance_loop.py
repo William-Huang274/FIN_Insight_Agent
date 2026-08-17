@@ -276,8 +276,9 @@ def contracts():
     )
     evidence_service = ResearchEvidencePackService(
         config=evidence_config,
-        result=read_registered_runtime_json(
-            ROOT, str(evidence_config["source_result_resource_id"])
+        result=_json(
+            ROOT
+            / "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json"
         ),
         private_object_root=(
             paths.reviewed_evidence_root

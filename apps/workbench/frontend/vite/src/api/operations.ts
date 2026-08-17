@@ -114,6 +114,37 @@ export type RetrievalQuality = {
   result_digest: string;
 };
 
+export type SupplementQuality = {
+  schema_version: string;
+  status: string;
+  slice_id: string;
+  coverage_delta: {
+    predecessor_evidence_count: number;
+    successor_evidence_count: number;
+    retired_broad_or_legacy_evidence_count: number;
+    added_capture_bound_claim_count: number;
+    predecessor_gap_count: number;
+    successor_gap_count: number;
+    narrowed_gap_count: number;
+    closed_gap_count: number;
+  };
+  proposition_rows: Array<{
+    atom_id: string;
+    coverage_state: string;
+    positive_reviewed_object_count: number;
+    positive_accepted_object_count: number;
+    hard_negative_accepted_object_ids: string[];
+    proposition_ready: boolean;
+    known: string[];
+    unknown: string[];
+  }>;
+  gate_results: Record<string, boolean | number>;
+  decision: Record<string, unknown>;
+  business_findings: string[];
+  authority: Record<string, unknown>;
+  result_digest: string;
+};
+
 export type SourceIntakeRoute = {
   route_id: string;
   case_key: string;
@@ -187,6 +218,12 @@ export class OperationsApiClient {
   retrievalQuality(): Promise<RetrievalQuality> {
     return requestJson<RetrievalQuality>(
       "/api/operations/s1/retrieval-quality",
+    );
+  }
+
+  supplementQuality(): Promise<SupplementQuality> {
+    return requestJson<SupplementQuality>(
+      "/api/operations/s1/supplement-quality",
     );
   }
 

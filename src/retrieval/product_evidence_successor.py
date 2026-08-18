@@ -20,7 +20,7 @@ ADJUDICATION_PLAN_SCHEMA_VERSION = (
     "fin_ia_s1_product_evidence_adjudication_plan_v1_0"
 )
 POLICY_SCHEMA_VERSION = "fin_ia_s1_product_evidence_adjudication_policy_v1_0"
-RESULT_SCHEMA_VERSION = "fin_ia_s1_product_evidence_successor_result_v1_0"
+RESULT_SCHEMA_VERSION = "fin_ia_s1_product_evidence_successor_result_v1_1"
 DECISION_ACTIONS = (
     "accept_for_requirements",
     "accept_for_request_context",
@@ -368,6 +368,7 @@ def build_product_evidence_successor(
         receipt_body = {
             "review_item_ref": review_ref,
             "review_item_digest": review.get("review_item_digest"),
+            "request_id": review.get("request_id"),
             "compiled_object_id": object_id,
             "action": action,
             "requirement_ids": list(requirement_ids),
@@ -532,6 +533,27 @@ def build_product_evidence_successor(
     successor = deepcopy(dict(predecessor))
     successor.pop("pack_payload_digest", None)
     successor["research_as_of"] = research_as_of
+    new_receipt_keys = {
+        (str(row.get("request_id") or ""), str(row.get("compiled_object_id") or ""))
+        for row in decision_receipts
+    }
+    retained_receipts = [
+        deepcopy(dict(row))
+        for row in predecessor.get("candidate_adjudication_receipts") or ()
+        if isinstance(row, Mapping)
+        and (
+            str(row.get("request_id") or ""),
+            str(row.get("compiled_object_id") or ""),
+        )
+        not in new_receipt_keys
+    ]
+    successor["candidate_adjudication_receipts"] = sorted(
+        retained_receipts + decision_receipts,
+        key=lambda row: (
+            str(row.get("request_id") or ""),
+            str(row.get("compiled_object_id") or ""),
+        ),
+    )
     successor["evidence_items"] = live_items
     successor["source_materials"] = materials
     successor["observed_counts"] = {

@@ -22,10 +22,10 @@ from retrieval.query_plan import canonical_digest  # noqa: E402
 
 
 FULL_RESULT_SCHEMA_VERSION = (
-    "fin_ia_s1_product_evidence_successor_full_result_v1_0"
+    "fin_ia_s1_product_evidence_successor_full_result_v1_1"
 )
 PUBLIC_RESULT_SCHEMA_VERSION = (
-    "fin_ia_s1_product_evidence_successor_public_result_v1_0"
+    "fin_ia_s1_product_evidence_successor_public_result_v1_1"
 )
 
 

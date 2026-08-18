@@ -236,6 +236,40 @@ def _request_material_requirement_ids(
     return requirement_ids
 
 
+def _candidate_adjudications_by_object(
+    evidence_pack: Mapping[str, Any], *, request_id: str
+) -> dict[str, Mapping[str, Any]]:
+    output: dict[str, Mapping[str, Any]] = {}
+    for raw_receipt in evidence_pack.get("candidate_adjudication_receipts") or ():
+        receipt = _mapping(
+            raw_receipt, "product_candidate_adjudication_receipt_invalid"
+        )
+        if str(receipt.get("request_id") or "") != request_id:
+            continue
+        body = dict(receipt)
+        digest = str(body.pop("decision_receipt_digest", ""))
+        object_id = str(receipt.get("compiled_object_id") or "")
+        action = str(receipt.get("action") or "")
+        _require(
+            digest == canonical_digest(body)
+            and object_id
+            and object_id not in output
+            and action
+            in {
+                "accept_for_requirements",
+                "accept_for_request_context",
+                "reject_for_current_scope",
+                "delegate_to_s2_numeric_authority",
+            }
+            and receipt.get("candidate_text_promoted") is False
+            and receipt.get("numeric_authority_granted") is False
+            and receipt.get("S1_qualification_authorized") is False,
+            "product_candidate_adjudication_receipt_binding_invalid",
+        )
+        output[object_id] = receipt
+    return output
+
+
 def compile_product_candidate_decision_ledger(
     *,
     request_result: Mapping[str, Any],
@@ -270,6 +304,9 @@ def compile_product_candidate_decision_ledger(
     )
     request_requirement_ids = _request_material_requirement_ids(
         hybrid, seeds=seeds
+    )
+    adjudications_by_object = _candidate_adjudications_by_object(
+        evidence_pack, request_id=str(request.get("request_id") or "")
     )
     seed_ids = [
         str(
@@ -342,6 +379,7 @@ def compile_product_candidate_decision_ledger(
             str(value) for value in seed.get("selected_requirement_ids") or ()
         )
         accepted_by_requirement: dict[str, set[str]] = {}
+        accepted_context_digests: set[str] = set()
         requirement_binding_modes: set[str] = set()
         for item, _ in eligible_matches:
             requirement_ids, binding_mode = _reviewed_item_requirement_binding(
@@ -354,6 +392,16 @@ def compile_product_candidate_decision_ledger(
             digest = str(item.get("evidence_item_digest") or "")
             for requirement_id in requirement_ids:
                 accepted_by_requirement.setdefault(requirement_id, set()).add(digest)
+            if any(
+                isinstance(binding, Mapping)
+                and binding.get("binding_kind") == "request_context"
+                and str(binding.get("slot_id") or "")
+                == str(lane.get("slot_id") or "")
+                and str(lane.get("facet_id") or "")
+                in {str(value) for value in binding.get("facet_ids") or ()}
+                for binding in item.get("slot_bindings") or ()
+            ):
+                accepted_context_digests.add(digest)
         accepted_digests = sorted(
             {
                 digest
@@ -361,7 +409,68 @@ def compile_product_candidate_decision_ledger(
                 for digest in digests
             }
         )
-        if accepted_by_requirement:
+        adjudication = adjudications_by_object.get(object_id)
+        adjudication_action = str(
+            (adjudication or {}).get("action") or ""
+        )
+        if adjudication_action in {
+            "reject_for_current_scope",
+            "delegate_to_s2_numeric_authority",
+        }:
+            state = "rejected"
+            reasons = sorted(
+                {
+                    *(
+                        str(value)
+                        for value in (adjudication or {}).get("reason_codes") or ()
+                    ),
+                    (
+                        "candidate_delegated_to_S2_numeric_authority"
+                        if adjudication_action
+                        == "delegate_to_s2_numeric_authority"
+                        else "candidate_rejected_by_bound_internal_adjudication"
+                    ),
+                }
+            )
+            authority = "bound_internal_engineering_candidate_adjudication"
+            accepted_by_requirement = {}
+            accepted_digests = []
+        elif adjudication_action == "accept_for_requirements":
+            _require(
+                bool(accepted_by_requirement),
+                "accepted_candidate_receipt_without_requirement_bound_evidence",
+            )
+            state = "accepted"
+            reasons = [
+                "existing_reviewed_evidence_reuse",
+                "exact_object_case_slot_facet_period_relationship_gate_passed",
+                "reviewed_evidence_resolved_to_material_requirement",
+                "accepted_by_bound_internal_adjudication",
+            ]
+            authority = "bound_internal_engineering_evidence_adjudication"
+            accepted_evidence.update(accepted_digests)
+            accepted_objects.add(object_id)
+            for requirement_id, digests in accepted_by_requirement.items():
+                accepted_evidence_by_requirement.setdefault(
+                    requirement_id, set()
+                ).update(digests)
+        elif adjudication_action == "accept_for_request_context":
+            _require(
+                bool(accepted_context_digests),
+                "accepted_context_receipt_without_request_context_evidence",
+            )
+            state = "accepted"
+            accepted_digests = sorted(accepted_context_digests)
+            reasons = [
+                "existing_reviewed_request_context_reuse",
+                "exact_object_case_slot_facet_period_relationship_gate_passed",
+                "request_context_does_not_satisfy_material_requirement",
+                "accepted_by_bound_internal_adjudication",
+            ]
+            authority = "bound_internal_engineering_request_context_adjudication"
+            accepted_evidence.update(accepted_digests)
+            accepted_objects.add(object_id)
+        elif accepted_by_requirement:
             state = "accepted"
             reasons = [
                 "existing_reviewed_evidence_reuse",
@@ -460,6 +569,9 @@ def compile_product_candidate_decision_ledger(
                 )
             },
             "requirement_binding_modes": sorted(requirement_binding_modes),
+            "candidate_adjudication_receipt_digest": (
+                (adjudication or {}).get("decision_receipt_digest")
+            ),
             "candidate_text_promoted": False,
             "new_evidence_created": False,
             "numeric_authority": False,

@@ -348,6 +348,10 @@ def test_successor_merges_one_claim_into_explicit_proposition_bindings(
         "candidate_text_promoted_count": 0,
         "numeric_authority_granted_count": 0,
     }
+    assert len(successor["candidate_adjudication_receipts"]) == 2
+    assert {
+        row["request_id"] for row in successor["candidate_adjudication_receipts"]
+    } == {"REQ-1", "REQ-2"}
     assert result["authority"]["qualified_human_review"] is False
 
 

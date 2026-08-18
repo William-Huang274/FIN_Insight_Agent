@@ -6,6 +6,7 @@ from retrieval.product_pack_readiness import (
     compile_product_candidate_decision_ledger,
     compile_product_pack_readiness,
 )
+from retrieval.query_plan import canonical_digest
 
 
 def _pack() -> dict[str, object]:
@@ -374,3 +375,39 @@ def test_explicit_review_can_correct_automatic_requirement_selection() -> None:
         "MER-1": "ready_for_current_scope",
         "MER-2": "blocked_by_evidence_admission",
     }
+
+
+def test_bound_rejection_receipt_overrides_stale_predecessor_evidence() -> None:
+    pack = _pack()
+    receipt_body = {
+        "review_item_ref": "CANDOBJ::REJECTED",
+        "review_item_digest": "f" * 64,
+        "request_id": "REQ-1",
+        "compiled_object_id": "OBJ-1",
+        "action": "reject_for_current_scope",
+        "requirement_ids": [],
+        "reason_codes": ["not_selected_for_current_proposition_bound_pack"],
+        "adjudicator_class": "internal_engineering_not_qualified_human",
+        "candidate_text_promoted": False,
+        "numeric_authority_granted": False,
+        "S1_qualification_authorized": False,
+    }
+    pack["candidate_adjudication_receipts"] = [
+        {
+            **receipt_body,
+            "decision_receipt_digest": canonical_digest(receipt_body),
+        }
+    ]
+
+    ledger = compile_product_candidate_decision_ledger(
+        request_result=_request_result(),
+        evidence_pack=pack,
+        recorded_at="2026-08-19",
+    )
+
+    decision = ledger["decisions"][0]
+    assert decision["decision_state"] == "rejected"
+    assert decision["accepted_evidence_by_requirement"] == {}
+    assert decision["candidate_adjudication_receipt_digest"] == canonical_digest(
+        receipt_body
+    )

@@ -1,0 +1,361 @@
+{
+  "schema_version": "fin_ia_s1_vs5_qualification_source_review_v1_0",
+  "status": "codex_source_bound_blinded_review_owner_confirmation_pending",
+  "recorded_at": "2026-08-18",
+  "adjudication_authority": "FIN VS5 Codex source-bound independent review v1.0; owner or qualified-human confirmation pending",
+  "authority": {
+    "runtime_visible": false,
+    "candidate_is_evidence": false,
+    "metric_row_is_numeric_fact": false,
+    "final_gold_claimed": false,
+    "owner_review_pending": true,
+    "public_information_gap_declared": false
+  },
+  "proposition_reviews": [
+    {
+      "example_id": "VS5::COST::COST_MEMBERSHIP_VALUE_CAPTURE",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::781a3d0018dd2a6e4b385a68", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "FY2025 会员费收入、续费率与会员结构的发行人直接披露。"},
+        {"compiled_object_id": "COBJ::51aa2f12f4a992b9209791cb", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "会员费上调及递延确认机制，解释收入质量与利润获取时点。"},
+        {"compiled_object_id": "COBJ::0ec30b71dab4c9274ed69237", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "会员忠诚、续费或会员体系变化相关的发行人风险边界。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "两期年报对象足以覆盖直接、反方与数值桥；候选仍不具 Evidence 或 NumericFact 权威。"}],
+      "rationale_zh": "会员价值获取需要同时看会员费金额与确认机制、续费质量和反方风险，不能只用会员费增长一个数字代替完整判断。"
+    },
+    {
+      "example_id": "VS5::COST::COST_COMPARABLE_SALES_DEMAND",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::de46a9f08b10b72af3565aec", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "同店销售、流量与客单价的直接经营披露。"},
+        {"compiled_object_id": "COBJ::e94907e84bb5ad085b278a77", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "汽油价格与销量对同店销售表面的替代解释。"},
+        {"compiled_object_id": "COBJ::55310e159614e4148b1b3d45", "roles": ["direct", "context"], "facets": ["direct_support", "alternative_explanation"], "review_note_zh": "购物频次和客单价对需求变化的机制拆分。"},
+        {"compiled_object_id": "COBJ::19c6e815ef836356e3adb7ec", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "同店销售口径定义，防止把汽油和汇率影响误作核心需求。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "直接需求、口径桥与汽油/汇率替代解释均在官方年报对象中。"}],
+      "rationale_zh": "同店销售必须拆成流量、客单价、电商以及汽油和汇率口径，单一同比不能证明需求质量。"
+    },
+    {
+      "example_id": "VS5::COST::COST_MARGIN_PRESSURES",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::4c955ddfa6eea8444fab1548", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "FY2025 毛利率桥的直接管理层解释。"},
+        {"compiled_object_id": "COBJ::408df395122c210584b77dd8", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "汽油业务在流量与毛利率之间的组合效应。"},
+        {"compiled_object_id": "COBJ::00f62b113d8d33388b5f94dd", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "库存、缺货或损耗等可削弱利润率判断的风险。"},
+        {"compiled_object_id": "COBJ::4bd4b772ee316ac05f5fb19b", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "FY2025/2024/2023 毛利金额表格候选，用于同口径背景而非 NumericFact。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "工资、商品成本、汽油组合和损耗风险可形成正反解释；表格候选不自动晋升 NumericFact。"}],
+      "rationale_zh": "毛利率应由经营桥、业务组合和风险因素共同解释，避免把汽油或单一成本项目误作唯一驱动。"
+    },
+    {
+      "example_id": "VS5::COST::COST_WORKING_CAPITAL",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::a4f308875452d74388815918", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "FY2025 经营现金流及营运资金解释。"},
+        {"compiled_object_id": "COBJ::50d7e5ccce3fb3ee2079d331", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "2025/2024/2023 经营现金流同口径表格候选。"},
+        {"compiled_object_id": "COBJ::1268e346953e97e4d6f199fa", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "经营资产和负债变化的表格候选。"},
+        {"compiled_object_id": "COBJ::c148dfc8fded2e353503e513", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "FY2024 经营现金流同口径基线。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "经营现金流、库存和应付账款候选链存在；精确数字仍由 S2 裁决。"}],
+      "rationale_zh": "现金转换需要经营现金流与库存、应付账款变动共同成立，表格行只作为检索候选。"
+    },
+    {
+      "example_id": "VS5::COST::COST_TEMPORAL_CHANGE",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::d180352c88efef3312c4594f", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "FY2024 会员经营基线。"},
+        {"compiled_object_id": "COBJ::781a3d0018dd2a6e4b385a68", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "FY2025 同公司会员经营结果。"},
+        {"compiled_object_id": "COBJ::2c65bb6ba6864706a20ecaba", "roles": ["counter", "bridge"], "facets": ["counterevidence", "numeric_bridge"], "review_note_zh": "FY2024 现金流基线，用于检验期间和口径。"},
+        {"compiled_object_id": "COBJ::a4f308875452d74388815918", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "FY2025 现金流结果，与上一期形成同公司比较。"},
+        {"compiled_object_id": "COBJ::50d7e5ccce3fb3ee2079d331", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "一张表内的 2025/2024/2023 同口径关系。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "FY2024 与 FY2025 官方来源同时存在，可独立检查同公司、同口径与期间。"}],
+      "rationale_zh": "时间验证以两期独立来源和同口径表格共同约束，旧期事实不得被新期替换。"
+    },
+
+    {
+      "example_id": "VS5::JPM::JPM_NET_INTEREST_INCOME",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::723a4648e82d2fa109a8ef35", "roles": ["counter", "context"], "facets": ["counterevidence", "direct_support"], "review_note_zh": "利率上升与净利息收入之间的发行人风险解释，只能作方向背景。"},
+        {"compiled_object_id": "COBJ::068441adb091142c69034514", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "存款流失或重定价迁移的反方风险。"},
+        {"compiled_object_id": "COBJ::7ab2ca2e5fa1df1dcfe56c1e", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "净息差压缩相关风险表面。"}
+      ],
+      "coverage_findings": [{"failure_class": "parser_object_failure", "detail_zh": "13MB 官方 10-K 已捕获，但对象库几乎只保留风险因素；实际 NII 结果、存贷结构和同口径表格未对象化，direct/bridge 不得被误报为公开资料不存在。"}],
+      "rationale_zh": "当前只能复核利率和存款风险，不能用风险措辞替代 FY2025 净利息收入与存贷结构的直接结果。"
+    },
+    {
+      "example_id": "VS5::JPM::JPM_CREDIT_QUALITY",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::3157433cb43dba05fad74bc7", "roles": ["counter", "context"], "facets": ["counterevidence", "direct_support"], "review_note_zh": "失业、逾期、ACL 与核销恶化的风险链。"},
+        {"compiled_object_id": "COBJ::cf565f908468226de88a912b", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "商业地产逾期、违约和核销风险。"},
+        {"compiled_object_id": "COBJ::87ef11965690638d2f9d915e", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "融资成本上升可能推高 ACL 和净核销。"}
+      ],
+      "coverage_findings": [{"failure_class": "parser_object_failure", "detail_zh": "净核销、拨备、逾期和储备的 FY2025 结果表在来源中存在但未形成可检索对象；direct/bridge 缺失归解析/表格对象化层。"}],
+      "rationale_zh": "风险段落能说明潜在恶化机制，但不能替代实际信用质量结果和数值桥。"
+    },
+    {
+      "example_id": "VS5::JPM::JPM_CAPITAL_LIQUIDITY",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::3266889db3700293f21ac91f", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "资本缓冲不足会限制分配的反方边界。"},
+        {"compiled_object_id": "COBJ::cf170b6bf02ab37a345c7f21", "roles": ["counter", "context"], "facets": ["counterevidence", "direct_support"], "review_note_zh": "资本与流动性监管框架背景。"}
+      ],
+      "coverage_findings": [{"failure_class": "parser_object_failure", "detail_zh": "CET1、RWA 与流动性资源的实际 FY2025 数字没有从已捕获 10-K 进入对象库；缺失为本地对象化失败。"}],
+      "rationale_zh": "监管风险不能冒充资本充足率和流动性结果，缺少的 direct/bridge 必须回到解析和表格对象化层。"
+    },
+    {
+      "example_id": "VS5::JPM::JPM_FEE_AND_MARKETS_MIX",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::88ab101b0b8664a28323d3ef", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "资产与财富管理费用受市场和资产水平影响的背景。"},
+        {"compiled_object_id": "COBJ::62f169509eeafbd03f461a0c", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "交易与投行业务量波动的背景。"}
+      ],
+      "coverage_findings": [{"failure_class": "parser_object_failure", "detail_zh": "投行费、Markets 和 AWM 的实际收入组合未从 10-K 结果表进入对象库；direct/bridge 缺失不能由通用业务描述补齐。"}],
+      "rationale_zh": "费用和市场收入组合必须依赖实际分部结果，当前对象只能解释敏感性，不能支持盈利质量结论。"
+    },
+    {
+      "example_id": "VS5::JPM::JPM_COUNTEREVIDENCE",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::3157433cb43dba05fad74bc7", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "宏观失业和消费信用恶化链。"},
+        {"compiled_object_id": "COBJ::cf565f908468226de88a912b", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "商业地产信用恶化反方。"},
+        {"compiled_object_id": "COBJ::3266889db3700293f21ac91f", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "监管资本与分配约束。"},
+        {"compiled_object_id": "COBJ::723a4648e82d2fa109a8ef35", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "利率上升既可能支持 NII 也可能损害客户信用。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "宏观、监管、利率和资产质量反方在发行人 10-K 风险对象中覆盖充分。"}],
+      "rationale_zh": "该命题本身是反方检索，风险因素可以作为有效材料，但不得反向冒充已发生经营结果。"
+    },
+
+    {
+      "example_id": "VS5::CAT::CAT_END_USER_DEMAND",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::139cf588e54dd15585a55e40", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "北美终端销量与经销商库存变化拆分。"},
+        {"compiled_object_id": "COBJ::8af908e7565c95bbec471e7e", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "终端设备销售、订单率和 backlog 的发行人展望。"},
+        {"compiled_object_id": "COBJ::d49d1940a03a199612678b3c", "roles": ["counter", "context"], "facets": ["counterevidence"], "review_note_zh": "经销商库存上升与机器库存下降的反向观察。"},
+        {"compiled_object_id": "COBJ::2c1efb7ac548cf78b91bc8eb", "roles": ["counter", "context"], "facets": ["counterevidence"], "review_note_zh": "经销商库存决策可能失真的发行人风险。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_plan_coverage_failure", "detail_zh": "预注册要求 independent_readthrough，但来源计划只有 CAT 发行人 10-K；该 facet 无法由同一发行人资料自证，不能伪造第三方证据。"}],
+      "rationale_zh": "发行人能够区分终端销量与经销商库存，但独立行业验证没有进入预注册来源面。"
+    },
+    {
+      "example_id": "VS5::CAT::CAT_PRICE_COST",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::307461ec76990d5a7739d1ba", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "公司经营利润的制造成本、价格和销量桥。"},
+        {"compiled_object_id": "COBJ::68d308c8bae18df00739000f", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "Construction Industries 利润桥。"},
+        {"compiled_object_id": "COBJ::87c73c8529d87b15e4dabcae", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "Power & Energy 销量、价格和利润桥。"},
+        {"compiled_object_id": "COBJ::a617bd73ae1d00189fc3e6a9", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "销量定义和新品影响口径。"},
+        {"compiled_object_id": "COBJ::fdf848f5e23edfae9044471a", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "销量、价格、汇率和其他项的分部桥表格候选。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "价格、销量、组合和制造成本的直接及数值桥均存在。"}],
+      "rationale_zh": "利润率判断必须使用分部桥和口径定义，不能只看公司总利润变化。"
+    },
+    {
+      "example_id": "VS5::CAT::CAT_BACKLOG_CAPACITY",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::e12f0ba1ec0e32e899acad38", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "强 backlog 与健康终端市场支持 2026 销售展望。"},
+        {"compiled_object_id": "COBJ::8af908e7565c95bbec471e7e", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "订单率、backlog 与终端交付展望。"},
+        {"compiled_object_id": "COBJ::d28cd68b954e891055d0871a", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "需求上升或供应链中断可造成零部件约束。"},
+        {"compiled_object_id": "COBJ::00ad9dc887a05b99c68fd1ce", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "供应链、劳动力和材料短缺对交付的反方风险。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "backlog 支持和供应约束反方均在同一官方来源中。"}],
+      "rationale_zh": "backlog 不是交付保证，必须与零部件、供应链和产能约束共同解释。"
+    },
+    {
+      "example_id": "VS5::CAT::CAT_CASH_CONVERSION",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::2122e8b097db1184463f7540", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "经营现金流同比及营运资金原因。"},
+        {"compiled_object_id": "COBJ::ebdfc724072b3943956121af", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "MP&E 自由现金流定义和用途。"},
+        {"compiled_object_id": "COBJ::39ffeffc86fa707905783cb1", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "合并现金流表格候选。"},
+        {"compiled_object_id": "COBJ::33c522c2fb2af62173724634", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "MP&E 与 Financial Products 现金流拆分表格候选。"},
+        {"compiled_object_id": "COBJ::d49d1940a03a199612678b3c", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "经销商库存变化对营运资金解释的上下文。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "经营现金流、自由现金流定义和库存桥均可检索。"}],
+      "rationale_zh": "现金转换需要把营运资金原因、GAAP 现金流和非 GAAP 自由现金流口径分开。"
+    },
+    {
+      "example_id": "VS5::CAT::CAT_CYCLE_COUNTEREVIDENCE",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::d49d1940a03a199612678b3c", "roles": ["counter", "context"], "facets": ["counterevidence"], "review_note_zh": "经销商库存变化可能弱化终端需求持续性。"},
+        {"compiled_object_id": "COBJ::6955a9ff5302dccfdaef702e", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "Construction Industries 销售下降与价格不利。"},
+        {"compiled_object_id": "COBJ::f05bc68b70c3407abde383c7", "roles": ["counter", "context"], "facets": ["counterevidence"], "review_note_zh": "拉美地区销量、价格和汇率反方。"},
+        {"compiled_object_id": "COBJ::e3e7fc2e03b8f91d491f0a42", "roles": ["counter", "context"], "facets": ["counterevidence"], "review_note_zh": "宏观事件导致客户需求波动的发行人风险。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_plan_coverage_failure", "detail_zh": "命题要求行业/地区 independent_readthrough，但预注册只捕获发行人 10-K；独立第三方资料未执行。"}],
+      "rationale_zh": "发行人地区和库存反方存在，但独立周期验证缺失，不能把同一发行人风险段落标成独立读穿。"
+    },
+
+    {
+      "example_id": "VS5::NVO::NVO_GLP1_DEMAND",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::1a0e180c7fe78ef84cce5159", "roles": ["direct", "context"], "facets": ["direct_support", "counterevidence"], "review_note_zh": "GLP-1 市场增长与竞争格局。"},
+        {"compiled_object_id": "COBJ::a6a1c329ba409532fd4ea9df", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "核心产品处方领先地位被竞争产品超越。"},
+        {"compiled_object_id": "COBJ::59aa1b6831312429b3938042", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "美国 PBM 定价压力和渠道风险。"},
+        {"compiled_object_id": "COBJ::1a34b02e803bdcf77543df6e", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "产品/地区 2025 销售表格候选。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "需求、竞争、渠道压力和产品/地区销售桥均有候选。"}],
+      "rationale_zh": "GLP-1 需求质量必须同时检验市场增长、处方竞争、渠道定价和地域销售结构。"
+    },
+    {
+      "example_id": "VS5::NVO::NVO_SUPPLY_CAPACITY",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::772fc84d7c41ee5ea7c7d36b", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "供应能力逐步增加以满足未来需求。"},
+        {"compiled_object_id": "COBJ::60374b760087d501e97d744c", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "2025 年部分产品和市场仍有周期性供应约束。"},
+        {"compiled_object_id": "COBJ::3de4084a9fdbae5643ae425a", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "天津无菌生产/产能扩建。"},
+        {"compiled_object_id": "COBJ::08df4131ea83e9e8fbd5e805", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "临床制造设施扩建。"},
+        {"compiled_object_id": "COBJ::cc75c0fb4abde450bdbb30bf", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "自然灾害和供应中断的风险缓解边界。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "扩产动作和现实供应约束均能被对象化。"}],
+      "rationale_zh": "产能公告只证明投入路径，实际供应约束仍在，因此 direct 与 counter 必须同时保留。"
+    },
+    {
+      "example_id": "VS5::NVO::NVO_PRICE_MIX_MARGIN",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::0e19cabdf83066ab4c016caf", "roles": ["direct", "context"], "facets": ["direct_support", "alternative_explanation"], "review_note_zh": "价格、数量、组合、成本与汇率共同影响经营利润和现金流。"},
+        {"compiled_object_id": "COBJ::77e7b048febcfaca3a66fb03", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "2026 定价压力展望。"},
+        {"compiled_object_id": "COBJ::59aa1b6831312429b3938042", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "PBM 施加的价格压力。"},
+        {"compiled_object_id": "COBJ::1a34b02e803bdcf77543df6e", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "产品和地区销售数值结构。"},
+        {"compiled_object_id": "COBJ::3a6e017a76ba996404807f9b", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "美国销售返利计量不确定性。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "价格、组合、地区、汇率和返利不确定性均有来源候选。"}],
+      "rationale_zh": "利润率不是单一价格效应，销售地域表和返利/汇率背景必须共同约束。"
+    },
+    {
+      "example_id": "VS5::NVO::NVO_COMPETITION_RISK",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::a6a1c329ba409532fd4ea9df", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "竞争产品超过既有处方领先地位。"},
+        {"compiled_object_id": "COBJ::907d158e54b69b408ca21bee", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "临床与监管成功率、时点和成本不可可靠估计。"},
+        {"compiled_object_id": "COBJ::b270a162a8edcbd692df36d9", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "临床结果或审批可能失败。"},
+        {"compiled_object_id": "COBJ::59aa1b6831312429b3938042", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "渠道和定价竞争风险。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_partial", "detail_zh": "竞争、临床和监管风险覆盖充分；复配药的直接对象化证据较弱，不能声称该子面已完整。"}],
+      "rationale_zh": "反方资料能限制增长判断，但复配药子面仍需在执行结果中单独检查而不能被其他风险平均补偿。"
+    },
+    {
+      "example_id": "VS5::NVO::NVO_CASH_AND_REINVESTMENT",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::0e19cabdf83066ab4c016caf", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "经营现金流来源与经营驱动。"},
+        {"compiled_object_id": "COBJ::3a1f87514e4119bb1304638e", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "扩产金额、已投入金额和经营现金流融资。"},
+        {"compiled_object_id": "COBJ::af943c86f7ebf5416805ee16", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "API 产能投资规模和投产时点。"},
+        {"compiled_object_id": "COBJ::5de9a9951c7a61b2e80ba5ff", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "Akero 收购带来的再投资与执行风险。"},
+        {"compiled_object_id": "COBJ::619b4b7b747b2663f0ca0ee9", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "股份回购计划规模。"},
+        {"compiled_object_id": "COBJ::907d158e54b69b408ca21bee", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "研发项目时点与成本不可可靠估计。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "研发/临床风险、扩产、收购、现金流融资和回购均有候选。"}],
+      "rationale_zh": "资本配置需要同时覆盖现金来源、产能投入、收购、研发不确定性和股东回报。"
+    },
+
+    {
+      "example_id": "VS5::SHEL::SHEL_UPSTREAM_PRICE_VOLUME",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::cfd2f3787bebee13f44f277d", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "2025 油气可售产量及同比变化原因。"},
+        {"compiled_object_id": "COBJ::11a63c78257eeacaacd3debb", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "油气可售产量表格候选。"},
+        {"compiled_object_id": "COBJ::9ae7594880d94290a20c9d81", "roles": ["direct", "context"], "facets": ["direct_support", "alternative_explanation"], "review_note_zh": "实现价格、LNG、交易优化和化工利润对收益的共同影响。"},
+        {"compiled_object_id": "COBJ::087910a0453c20d577a3d4ec", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "价格、产量和炼化/营销利润对 CFFO 的共同影响。"},
+        {"compiled_object_id": "COBJ::1cf89408acb60c5a7e7b18e2", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "全球天然气价格环境背景。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "产量、实现价格、收益和运营背景均有直接候选。"}],
+      "rationale_zh": "上游业绩需要产量、价格和资产/运营因素共同解释，单一价格或产量不足以形成桥。"
+    },
+    {
+      "example_id": "VS5::SHEL::SHEL_LNG_VALUE_CAPTURE",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::1aa48efd43426573eb55f9a7", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "LNG 液化量和运营表现。"},
+        {"compiled_object_id": "COBJ::f841875822f2660ba9192a69", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "LNG 销量增长及第三方采购原因。"},
+        {"compiled_object_id": "COBJ::9ae7594880d94290a20c9d81", "roles": ["counter", "bridge"], "facets": ["counterevidence", "numeric_bridge"], "review_note_zh": "较低实现价格和交易优化下降对收益的反方。"},
+        {"compiled_object_id": "COBJ::5be2827cf45e366df6864f2b", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "亚洲 LNG spot 价格及市场联动背景。"},
+        {"compiled_object_id": "COBJ::087910a0453c20d577a3d4ec", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "价格、产量、交易和炼化共同影响现金流。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "LNG 数量、价格、交易优化和收益反方均可检索。"}],
+      "rationale_zh": "LNG 价值获取必须区分液化量、销售量、第三方采购、价格和交易优化。"
+    },
+    {
+      "example_id": "VS5::SHEL::SHEL_CAPEX_CASH_RETURNS",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::135e16e52ae208f4038681ca", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "资本开支范围与 CFFO 分配目标。"},
+        {"compiled_object_id": "COBJ::ba23d7917fd37fa928b02fa0", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "2025 CFFO 同比及主要驱动。"},
+        {"compiled_object_id": "COBJ::444330b7410d508e0ad4ab5a", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "投资现金流和 cash capex 同比。"},
+        {"compiled_object_id": "COBJ::ff372709486d9d8e52b3c0ed", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "分红、回购和占 CFFO 比例。"},
+        {"compiled_object_id": "COBJ::087910a0453c20d577a3d4ec", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "CFFO 对价格、产量、利润和营运资金的敏感性。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "资本开支、现金流、分红、回购和现金流敏感性均有来源。"}],
+      "rationale_zh": "股东回报必须受 CFFO 和资本开支共同约束，不能只引用分配目标。"
+    },
+    {
+      "example_id": "VS5::SHEL::SHEL_COMMODITY_COUNTEREVIDENCE",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::6b007dad10f5985bf1edc5ae", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "较低商品价格假设触发减值。"},
+        {"compiled_object_id": "COBJ::148d9e5b5c03a0b36cec9dde", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "商品价格、炼化/化工利润和贴现率敏感性。"},
+        {"compiled_object_id": "COBJ::0cc9ee32c11812ba45f1af2b", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "减值损失数值表格候选。"},
+        {"compiled_object_id": "COBJ::342ec9f692a4b89265712da7", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "化工利润率下降的市场背景。"},
+        {"compiled_object_id": "COBJ::dbde7e6dea820d6066329999", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "LNG 实物合同与衍生品会计时点错配。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "价格、炼化利润、减值和会计时点替代解释均有候选。"}],
+      "rationale_zh": "反方应同时覆盖经济价格风险、资产减值与会计表面差异。"
+    },
+    {
+      "example_id": "VS5::SHEL::SHEL_TRANSITION_EXECUTION",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::8c256fa02d3e82592d06912c", "roles": ["direct", "counter"], "facets": ["direct_support", "counterevidence"], "review_note_zh": "停止不具竞争力的生物燃料项目，体现资本纪律与执行权衡。"},
+        {"compiled_object_id": "COBJ::79bb87a098316d8ec0f00503", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "低碳平台资本占用与股东价值目标。"},
+        {"compiled_object_id": "COBJ::9c7fe5f080acc54dbba95ffa", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "转型过快或过慢都可能损害收益的双向风险。"},
+        {"compiled_object_id": "COBJ::2821af5b1b1bf051ce10c69c", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "需求、诉讼、监管和低碳业务商业风险。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_plan_coverage_failure", "detail_zh": "预注册要求 independent_readthrough，但来源计划只有 Shell 发行人 20-F；不得把发行人自述标成独立验证。"}],
+      "rationale_zh": "发行人披露能证明资本纪律和风险，但不能满足外部独立读穿。"
+    },
+
+    {
+      "example_id": "VS5::0700.HK::TENCENT_GAMES_ADS_DEMAND",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::d312a677c4d18c4c37c695d2", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "本土市场游戏年度收入与同比。"},
+        {"compiled_object_id": "COBJ::57a528585f1224b6d19a799e", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "国际市场游戏年度收入和产品贡献。"},
+        {"compiled_object_id": "COBJ::87336b020364e129578cca96", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "营销服务年度收入与同比。"},
+        {"compiled_object_id": "COBJ::fcdc11a5ecf7e85a4d0b13ec", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "广告负载仍低于同业，增长未必来自加大 ad load。"},
+        {"compiled_object_id": "COBJ::dcd6569d08a18403084e050e", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "国际游戏收入规模与长青产品增长。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "中英文年度报告中游戏、广告、地域和商业化候选均可对象化。"}],
+      "rationale_zh": "需求质量必须拆开本土/国际游戏、广告收入和广告负载，而不是只看总收入。"
+    },
+    {
+      "example_id": "VS5::0700.HK::TENCENT_FINTECH_CLOUD",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::b624f2647a9a0482b1bed814", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "云业务规模化盈利与 AI 工作负载需求。"},
+        {"compiled_object_id": "COBJ::c211508a258fb142bdaa3ad4", "roles": ["direct", "context"], "facets": ["direct_support", "alternative_explanation"], "review_note_zh": "云规模、金融科技收入组合和成本效率。"},
+        {"compiled_object_id": "COBJ::2090d4f9021006f68b283fba", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "金融科技及企业服务季度收入变化。"},
+        {"compiled_object_id": "COBJ::8b3b263beb21801a5202deae", "roles": ["context"], "facets": ["alternative_explanation"], "review_note_zh": "金融科技及企业服务收入组成。"},
+        {"compiled_object_id": "COBJ::5d63f4a3910c1bf199c67c90", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "云与金融科技成本效率对毛利率的表面桥。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "收入、云业务、支付/金融科技组成与利润表面均有候选。"}],
+      "rationale_zh": "金融科技和云必须区分业务组成、收入变化、AI 需求与成本效率。"
+    },
+    {
+      "example_id": "VS5::0700.HK::TENCENT_MARGIN_MIX",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::5d63f4a3910c1bf199c67c90", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "搜索营销、金融科技和云成本效率及毛利率。"},
+        {"compiled_object_id": "COBJ::8f80ef244672d2cf66ead101", "roles": ["direct", "bridge"], "facets": ["direct_support", "numeric_bridge"], "review_note_zh": "自研游戏贡献与毛利率同比。"},
+        {"compiled_object_id": "COBJ::7a2d79c925856c4f004e3c59", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "高毛利收入流增长。"},
+        {"compiled_object_id": "COBJ::50c3d353905a46e318f2f98e", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "云规模、金融科技组合与成本效率。"},
+        {"compiled_object_id": "COBJ::f558494dcf547f9f0e57cd55", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "单季游戏毛利率环比回落的反方。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "高毛利组合、成本效率、同比改善和单季回落均有候选。"}],
+      "rationale_zh": "利润率需要同时观察结构改善和单季反向变化，不能把 AI 或成本纪律当成唯一原因。"
+    },
+    {
+      "example_id": "VS5::0700.HK::TENCENT_AI_CAPEX",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::7772fdf395883d73b45bd0a3", "roles": ["direct"], "facets": ["direct_support"], "review_note_zh": "支持 AI 的资本开支现金流表面。"},
+        {"compiled_object_id": "COBJ::cf848bea42dc53df21aa8cec", "roles": ["direct", "context"], "facets": ["direct_support"], "review_note_zh": "AI 人才与基础设施升级。"},
+        {"compiled_object_id": "COBJ::b624f2647a9a0482b1bed814", "roles": ["direct", "context"], "facets": ["direct_support"], "review_note_zh": "云业务从 AI 工作负载获得企业需求并实现规模化盈利。"},
+        {"compiled_object_id": "COBJ::206c23dc301ae15557134bd2", "roles": ["counter"], "facets": ["counterevidence"], "review_note_zh": "资本配置需考虑盈利、财务状况、债务约束和营运资金。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_plan_coverage_failure", "detail_zh": "预注册要求 independent_readthrough，但来源计划只有腾讯官方年报；第三方算力/云需求验证未执行。"}],
+      "rationale_zh": "官方年报能说明投入与部分变现，但不能自证行业独立读穿。"
+    },
+    {
+      "example_id": "VS5::0700.HK::TENCENT_REGULATION_CASH_RETURN",
+      "positive_candidates": [
+        {"compiled_object_id": "COBJ::d6d1fe3f5d0dc7538e96c6b6", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "互联网、游戏、金融、反洗钱和外资等监管暴露。"},
+        {"compiled_object_id": "COBJ::46f2331e73daa2f37d435f66", "roles": ["counter", "context"], "facets": ["counterevidence", "alternative_explanation"], "review_note_zh": "外资进入增值电信业务的监管限制。"},
+        {"compiled_object_id": "COBJ::704ed2ceaa5cf16e8a8bb127", "roles": ["context", "bridge"], "facets": ["alternative_explanation", "numeric_bridge"], "review_note_zh": "投资组合规模。"},
+        {"compiled_object_id": "COBJ::aed3a2b1085371de6226d9cc", "roles": ["context", "bridge"], "facets": ["alternative_explanation", "numeric_bridge"], "review_note_zh": "投资组合回报及同比。"},
+        {"compiled_object_id": "COBJ::366ca6369061d46f9d485f04", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "年度股份回购数量。"},
+        {"compiled_object_id": "COBJ::1deae8218fcbdab09cc1679b", "roles": ["bridge"], "facets": ["numeric_bridge"], "review_note_zh": "股份回购金额。"},
+        {"compiled_object_id": "COBJ::efcd980c4ec00bc977be1a94", "roles": ["context", "bridge"], "facets": ["alternative_explanation", "numeric_bridge"], "review_note_zh": "年度末期股息建议。"}
+      ],
+      "coverage_findings": [{"failure_class": "source_review_complete", "detail_zh": "监管暴露、投资组合、回购和股息均有候选；内容风险仍需在执行中检查召回深度。"}],
+      "rationale_zh": "股东回报判断应同时受到监管、投资组合回报、回购与股息约束。"
+    }
+  ]
+}

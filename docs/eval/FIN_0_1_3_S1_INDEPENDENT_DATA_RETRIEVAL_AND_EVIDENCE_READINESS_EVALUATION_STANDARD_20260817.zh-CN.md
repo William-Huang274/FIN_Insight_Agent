@@ -2,7 +2,7 @@
 
 日期：2026-08-17
 
-状态：`owner_direction_accepted / evaluation_contract_documented / gold_manifest_and_runtime_qualification_pending / full_chain_blocked`
+状态：`owner_direction_accepted / evaluator_reference_materialized_human_review_pending / cuda_preflight_eligible / runtime_qualification_pending / full_chain_blocked`
 
 产品依据：
 
@@ -306,7 +306,7 @@ S1 未通过时仍可运行的模型或节点调用必须明确标为 determinis
 下一步程序为：
 
 1. **程序基础与当前 Runtime 迁移已建立**：`src/retrieval/artifact_spine.py`、canonical policy、A–J evidence-backed coverage matrix 和统一校验入口已存在；spine 显式区分 CandidateSet、CandidateRanking、CandidateDecision，A–J 仍只作为责任坐标；
-2. **已冻结 schema／开发集／split 规则与 VS5 资格预注册，尚未建立 hidden gold**：runtime-visible input 与 evaluator-only reference 物理分离，当前 train-internal fixture 和 legacy qrels／role eval 只作开发资产；COST temporal、JPM／CAT frozen test、NVO／SHEL／0700.HK heterogeneous holdout 已在读取结果前冻结，资格 catalog 在来源 capture 与盲审 reference 建立前继续保持空；
+2. **已冻结 schema／开发集／split 规则与 VS5 资格预注册，并物化待人工确认的 evaluator reference**：runtime-visible input 与 evaluator-only reference 物理分离，当前 train-internal fixture 和 legacy qrels／role eval 只作开发资产；COST temporal、JPM／CAT frozen test、NVO／SHEL／0700.HK heterogeneous holdout 已在读取检索排名前冻结，三个 qualification catalog 已绑定 5／10／15 条 input/reference；reference 仍为 `qualification_blinded`，不得冒充 owner-reviewed final gold；
 3. **VS1 已完成。** 当前 DELL pricing/mix 数字原生路径已从 source→Pack→Workbench 贯通：55 envelopes、6 candidate decisions（2 accepted／4 needs-review）、2 reviewed-not-recalled、3 个 supplement-unexecuted GapEligibilityReceipt；该结果只记 `vertical_slice_integrated`，不注册为 valid／test／holdout 资格结果；
 4. **VS2 已完成开发纵切。** IFX 复杂官方 PDF 的表格、脚注、重述和跨页对象已进入同一 spine；自然扫描异质性和 NumericFact 仍未资格化；
 5. **VS3 已完成开发纵切。** 同一对象快照上的多路线候选、CUDA semantic rerank、金融精排和完整 CandidateDecision 已进入 R17 Workbench；该结果没有授予单模型 winner 或自动 Evidence 权限；
@@ -329,4 +329,12 @@ S1 未通过时仍可运行的模型或节点调用必须明确标为 determinis
 - hard-negative false accept、跨案／错期／错单位晋升和 false public gap 均为 0；
 - learned vector／reranker 只能 CUDA FP16，CPU fallback 禁止；资格阶段生成模型调用为 0。
 
-DELL／MU／NVDA／ORCL／ASML／ANET／IFX.DE 已被机器合同排除。腾讯 PDF 只有在 capture 后证明存在自然扫描的官方实质页时，才可满足 natural-scan 门；人工 raster mutation 不能补偿。当前三个 qualification catalog 仍是 `reserved_unpopulated`，因此本节只表示 `qualification_preregistered`，不表示 hidden gold、正式执行或 S1 资格已完成。
+DELL／MU／NVDA／ORCL／ASML／ANET／IFX.DE 已被机器合同排除。腾讯 PDF 只有在 capture 后证明存在自然扫描的官方实质页时，才可满足 natural-scan 门；人工 raster mutation 不能补偿。实际 282 页均为 native layout，因此该硬门已经失败且不可由平均分补偿。
+
+## 12. VS5 reference、来源故障归因与 CUDA 预检（2026-08-18）
+
+- 30 个命题共绑定 130 个 source-bound positive candidate；reference 与 input 物理分离，Runtime 不可读取 label，Candidate 和 metric row 均不获得 Evidence／NumericFact 权威。
+- 当前 source review 结果为 21 complete、1 partial、4 parser/object failure、4 source-plan coverage failure。JPM 四个业务命题的核心财务表未进入对象库，属于 parser／table／objectization；若预注册要求 independent readthrough 而来源计划只有发行人年报，则属于 source-plan coverage。两者均不是 public-information gap。
+- evaluator reference 仍待 Owner／qualified-human 复核；这不妨碍运行 label-free temporal candidate generation，但在复核前不得执行或评分一次性的 frozen test／heterogeneous holdout 为最终资格结论。
+- CUDA preflight 已在 RTX 4060 Laptop 的 `cuda:0` 以 FP16 tensor 实际通过，四个本地 Embedding／Reranker 模型 digest 已绑定，CPU fallback 禁止。预检本身没有加载完整模型、没有生成对象向量，也不构成 execution authority。
+- 后续先运行 valid temporal；只有 runner、cache、结果与 reference review 都绑定干净 commit 后，才允许 test frozen 与 heterogeneous holdout 各执行一次。已知 natural-scan 硬门失败意味着本轮 VS5 不能最终通过，但其他门仍应自然执行并逐层归因，不能提前掩盖其余产品问题。

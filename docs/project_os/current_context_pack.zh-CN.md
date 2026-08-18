@@ -575,3 +575,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 30 个命题已物化为 label-free runtime inputs，并按 5 temporal／10 frozen test／15 heterogeneous holdout 物理分离。每条都包含结构化 EvidenceRequest、QueryFacetPlan 与 RetrievalExecutionPlan；gold、target object、hard negative 与 expected outcome 均不可见。
 - learned execution 尚未开始。Embedding、dense、learned-sparse、multi-vector 与 Cross-Encoder 固定为 CUDA＋FP16，禁止 CPU fallback；四节点均有基于 10,618 对象、30 命题和每命题 96 reranker pool 的 task-specific TokenBudgetBasis。
 - 当前下一门是 evaluator-only source-bound 盲审 reference＋CUDA device／model／cache execution binding。腾讯自然扫描硬门已经客观失败；若单一发行人年度资料不能满足预注册 independent readthrough，也必须记来源覆盖失败，不得伪造资料或误写公开信息 gap。
+
+## 2026-08-18 S1 VS5 evaluator reference 与 CUDA 预检
+
+- 30 个命题已经形成与 Runtime input 物理分离的 evaluator-only reference：共绑定 130 个 source-bound positive candidate；每个绑定都保留对象、来源、期间与摘要 digest，且明确 `Candidate != Evidence`、`metric row != NumericFact`、Runtime 不可读取 reference。当前仍为 `qualification_blinded / owner_or_qualified_human_review_pending`，不能冒充最终人工 gold。
+- 来源审阅没有把“没在当前对象里找到”统一写成公开信息 gap：21 个命题当前来源审阅完整，1 个部分完整；JPM 的净利息收入、信用质量、资本流动性和费用／市场收入 4 个命题归因于已捕获 10-K 的 parser／table／objectization 丢失；CAT、SHEL、Tencent 等 4 个命题归因于发行人单源计划无法满足预注册 independent readthrough。两类都不得转嫁给 Embedding、Reranker、模型或免费公开信息边界。
+- 腾讯 282 页官方 PDF 全部为可读 native layout，不满足预注册 natural scanned official source 硬门；该非补偿门已经客观失败。后续排序运行仍可用于暴露其他责任层，但不得把平均检索分或其他案例成功合成 S1 通过。
+- program manifest 的 temporal／frozen／heterogeneous 三个 catalog 已从 reserved 激活，分别绑定 5／10／15 份 label-free input 与 evaluator-only reference 的内容摘要；开发集和隐藏资格资产仍物理分离。
+- CUDA 预检实际绑定 `NVIDIA GeForce RTX 4060 Laptop GPU / cuda:0 / PyTorch 2.10.0+cu126 / CUDA 12.6`，FP16 tensor 冒烟计算通过；BGE-M3、Qwen3 Embedding、BGE reranker 与 Qwen3 reranker 模型 digest 与既有当前版本一致。Embedding／dense／learned-sparse／multi-vector／Cross-Encoder 只能 CUDA＋FP16，CPU vector fallback 为 false；预检没有加载完整模型或计算 10,618 对象向量，也尚未签发 hidden execution。
+- 当前下一步：先 clean commit／push 上述输入、reference、program manifest、CUDA preflight 与测试；随后只实现一个 qualification runner，先执行 `valid_temporal`。test frozen 与 heterogeneous holdout 在一次性执行前仍需绑定干净 commit、runner、cache identity 和经过确认的 evaluator reference，不得因 temporal 结果调 hidden 路线或阈值。

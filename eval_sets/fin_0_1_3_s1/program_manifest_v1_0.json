@@ -3,7 +3,7 @@
   "status": "split_safe_foundation_ready_not_qualified",
   "program_id": "FIN-0.1.3-S1-INDEPENDENT-EVALUATION-PROGRAM",
   "program_version": "v1.0",
-  "recorded_at": "2026-08-17",
+  "recorded_at": "2026-08-18",
   "policies": {
     "runtime_inputs_physically_separate_from_references": true,
     "labels_joined_only_inside_evaluator": true,
@@ -94,7 +94,7 @@
     },
     {
       "split": "valid_temporal",
-      "status": "reserved_unpopulated",
+      "status": "active",
       "allowed_uses": [
         "cross-period and cross-document validation after VS1 contract freeze"
       ],
@@ -102,12 +102,14 @@
         "training",
         "final qualification after repeated inspection"
       ],
-      "observed_case_keys": [],
-      "configuration_frozen_before_execution": false
+      "observed_case_keys": [
+        "COST"
+      ],
+      "configuration_frozen_before_execution": true
     },
     {
       "split": "test_frozen",
-      "status": "reserved_unpopulated",
+      "status": "active",
       "allowed_uses": [
         "one frozen-configuration qualification run after VS1-VS3 contract stabilization"
       ],
@@ -116,12 +118,15 @@
         "route tuning",
         "same-cycle remediation and rerun"
       ],
-      "observed_case_keys": [],
+      "observed_case_keys": [
+        "JPM",
+        "CAT"
+      ],
       "configuration_frozen_before_execution": true
     },
     {
       "split": "holdout_heterogeneous",
-      "status": "reserved_unpopulated",
+      "status": "active",
       "allowed_uses": [
         "pre-registered cross-industry source-format language and failure-boundary qualification"
       ],
@@ -129,7 +134,11 @@
         "selection from already observed cases",
         "average-score-only acceptance"
       ],
-      "observed_case_keys": [],
+      "observed_case_keys": [
+        "NVO",
+        "SHEL",
+        "0700.HK"
+      ],
       "configuration_frozen_before_execution": true
     }
   ],
@@ -171,28 +180,58 @@
       "example_count": 1
     },
     {
-      "catalog_id": "s1-valid-temporal-reserved-v1.0",
+      "catalog_id": "s1-vs5-valid-temporal-v1.0",
       "split": "valid_temporal",
-      "status": "reserved_unpopulated",
-      "input_asset": null,
-      "reference_asset": null,
-      "example_count": 0
+      "status": "active",
+      "input_asset": {
+        "ref": "eval_sets/fin_0_1_3_s1/inputs/valid_temporal/vs5_qualification_inputs_v1_0.jsonl",
+        "sha256": "1406ec9b56b36e59083fc37206520b52c067734a219a9e4c81e6ddae77c6b11d",
+        "role": "runtime_input",
+        "visibility": "runtime_visible"
+      },
+      "reference_asset": {
+        "ref": "eval_sets/fin_0_1_3_s1/references/valid_temporal/vs5_qualification_references_v1_0.jsonl",
+        "sha256": "d05533ae284103aae6ab187660cd9459059ec126e6f6bcc436fecbc48c3fc0fb",
+        "role": "evaluator_reference",
+        "visibility": "evaluator_only"
+      },
+      "example_count": 5
     },
     {
-      "catalog_id": "s1-test-frozen-reserved-v1.0",
+      "catalog_id": "s1-vs5-test-frozen-v1.0",
       "split": "test_frozen",
-      "status": "reserved_unpopulated",
-      "input_asset": null,
-      "reference_asset": null,
-      "example_count": 0
+      "status": "active",
+      "input_asset": {
+        "ref": "eval_sets/fin_0_1_3_s1/inputs/test_frozen/vs5_qualification_inputs_v1_0.jsonl",
+        "sha256": "b4eeed46e050e04833252c76e938829a61d9be542b424f578fc11a0feab85689",
+        "role": "runtime_input",
+        "visibility": "runtime_visible"
+      },
+      "reference_asset": {
+        "ref": "eval_sets/fin_0_1_3_s1/references/test_frozen/vs5_qualification_references_v1_0.jsonl",
+        "sha256": "667977a8dffff6855383667040f737468e6402c172bdb780368974b4f121e5d0",
+        "role": "evaluator_reference",
+        "visibility": "evaluator_only"
+      },
+      "example_count": 10
     },
     {
-      "catalog_id": "s1-holdout-heterogeneous-reserved-v1.0",
+      "catalog_id": "s1-vs5-holdout-heterogeneous-v1.0",
       "split": "holdout_heterogeneous",
-      "status": "reserved_unpopulated",
-      "input_asset": null,
-      "reference_asset": null,
-      "example_count": 0
+      "status": "active",
+      "input_asset": {
+        "ref": "eval_sets/fin_0_1_3_s1/inputs/holdout_heterogeneous/vs5_qualification_inputs_v1_0.jsonl",
+        "sha256": "a38dd149071fa3813f90ceebe53ffc172f2e8bcb4e258bec107117ce365572df",
+        "role": "runtime_input",
+        "visibility": "runtime_visible"
+      },
+      "reference_asset": {
+        "ref": "eval_sets/fin_0_1_3_s1/references/holdout_heterogeneous/vs5_qualification_references_v1_0.jsonl",
+        "sha256": "321e72b2fb5b23b965e9c2c82b7520012ba0486db8de8b93d997b632aac255ab",
+        "role": "evaluator_reference",
+        "visibility": "evaluator_only"
+      },
+      "example_count": 15
     }
   ],
   "legacy_development_assets": [

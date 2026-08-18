@@ -195,9 +195,9 @@ def test_eval_program_keeps_inputs_and_labels_physically_separate() -> None:
     result = validate_evaluation_program(repo_root=ROOT, manifest=manifest)
 
     assert result == {
-        "active_catalog_count": 2,
-        "reserved_catalog_count": 3,
-        "example_count": 9,
+        "active_catalog_count": 5,
+        "reserved_catalog_count": 0,
+        "example_count": 39,
         "qualification_preregistered_case_count": 6,
         "qualification_execution_binding_count": 1,
         "qualification_ready": False,

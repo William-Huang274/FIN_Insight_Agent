@@ -23,10 +23,14 @@
 - [x] S1 VS2 复杂 PDF／OCR mutation／跨页表格／脚注／修订重述→Decision／Coverage／Workbench 纵切（IFX 开发样本：67 个金融对象；4 个 reviewed 目标仅 1 个进入前 20；自然扫描和 NumericFact 未资格化；R16 修复全部 inline payload ref 可解引用）
 - [x] S1 VS3 同一 CandidateSet 的 BM25／BGE／Qwen／typed route 候选、CUDA-only semantic rerank、finance-aware Evidence evaluator 与头部稳定资格（15/15 入池；顺序稳定率 1.0；v1.6/v1.7 失败保留）
 - [x] S1 VS3 多路线 recall／rerank／金融精排→CandidateDecision／Coverage／Workbench 纵切（金融前十 15/15、0 confirmed hard negative；VS1 2/2 可追溯、VS2 4/4 最终审阅面；R17；不等于 S1 资格）
-- [ ] S1 VS4 Coverage 驱动第二轮补证纵切
+- [x] S1 VS4 Coverage 驱动第二轮补证纵切
   - [x] DELL 三命题自然路径、capture-bound successor 与当前 `/workspace`／Operations 双消费者整合（20→22 Evidence；退役 3、精确新增 5；14 gaps 中窄化 1、关闭 0；R18；不等于 S1 资格）
-  - [ ] MU／NVDA 等价自然 Coverage→query→candidate→decision→capture→Pack→Workbench 路径
+  - [x] MU／NVDA 等价自然 Coverage→query→candidate→decision→capture→Pack→Workbench 路径（三案 R19 同一 registry／consumer；不等于 S1 资格）
 - [ ] S1 VS5 frozen test／新异质留出／稳定性资格；达到 `S1_qualified_stable` 前不得执行产品资格完整真实链
+  - [x] 6 个未观察案例／7 份官方来源／30 命题预注册，来源 capture、腾讯全页 layout、10,618 对象与 5／10／15 split-safe Runtime input
+  - [x] evaluator-only source review/reference（130 positive candidates；JPM 4 个 parser/object failure；4 个 source-plan coverage failure；人工最终复核待完成）
+  - [x] CUDA＋FP16 fail-closed 预检（RTX 4060 Laptop，四模型 digest 绑定，0 完整模型加载／0 qualification vector execution）
+  - [ ] valid temporal 资格运行、reference review 与一次性 frozen／heterogeneous 执行
 - [x] 当前 Pack registry-atomic 提升（R11；按案例私有对象根；0 复制／0 网络／0 模型；Workbench 三案真实挂载复验通过）
 - [x] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归（engineering pass）
 - [x] S2 request-scoped Runtime 接入（真实 DELL 6/6 resolved；S3／前端消费未完成）

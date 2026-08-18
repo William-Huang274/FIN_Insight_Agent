@@ -1,0 +1,129 @@
+{
+  "acceptance": {
+    "all_kernel_facets_routed_once": true,
+    "candidate_not_evidence": true,
+    "claim_overflow_count_zero": true,
+    "complete_s1_claimed": false,
+    "complete_s2_claimed": false,
+    "database_lane_preserved": true,
+    "missing_parent_count_zero": true,
+    "model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false
+  },
+  "business_findings_zh": [
+    "旧 child 重叠会重复生成同一 claim、表格行和父级上下文；当前编译器按父文档和对象内容去重，同时保留全部 source-record lineage。",
+    "高管姓名、年龄和职位等数值型非财务表不会再冒充 metric rows；候选必须同时满足期间／单位表头或金融行标签门禁。",
+    "空 TABLE_START/TABLE_END 不再吞掉其后的真实叙事；本次恢复了 TSMC 领先制程需求与 2nm ramp 的来源绑定 claim。",
+    "同一表内重复的 Revenue／Gross margin 行会保留 Cloud Memory、Core Data Center 等行组上下文，避免检索后串错业务单元。",
+    "财报表格行仅用于召回和上下文展示，不能成为 NumericFact；精确数值必须通过 S2 typed fact executor 和公司财务事实库。",
+    "公司财务事实库由独立 S2 Runtime 提供；对象候选只保留上下文，不能替代 NumericFact、期间、单位或公式血缘。",
+    "8-K 业绩稿同时保留原始 current-report 日期和元数据中的实际报告期；对象检索按报告期过滤，不再把发布日期误当财季结束日。"
+  ],
+  "diagnostic_examples": {
+    "claim_surface_not_unique": {
+      "diagnostic_code": "claim_surface_not_unique",
+      "source_record_id": "CURRENT_DOC::0700_HK::ANNUAL_REPORT::961AAFAEC773F241FE32::PAGE_071::CONTEXT",
+      "surface_digest": "b4bfe8d7d0378e3fd0a7aca4d576b4b5c329ba31505d549980980a8386d9d978"
+    },
+    "financial_table_has_no_compilable_metric_row": {
+      "diagnostic_code": "financial_table_has_no_compilable_metric_row",
+      "source_record_id": "CURRENT_DOC::CAT::10_K::0000018230_26_000008::ITEM_1::BLOCK_0003::PART_01_OF_02",
+      "table_id": "10"
+    },
+    "nonfinancial_table_not_compiled_as_metric_rows": {
+      "diagnostic_code": "nonfinancial_table_not_compiled_as_metric_rows",
+      "source_record_id": "CURRENT_DOC::CAT::10_K::0000018230_26_000008::ITEM_1::BLOCK_0009::PART_01_OF_02",
+      "table_id": "12"
+    }
+  },
+  "inputs": {
+    "documents": {
+      "bytes": 8493,
+      "ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_object_store/live-r1/documents.jsonl",
+      "sha256": "8cdb6cfcdfa5c82cb55f04bf9c244155f448a9feb84982d6ba01d6ed9a2e34e0"
+    },
+    "kernel": {
+      "bytes": 21381,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+      "sha256": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5"
+    },
+    "object_compiler_overlay": null,
+    "records": {
+      "bytes": 8119814,
+      "ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_object_store/live-r1/records.jsonl",
+      "sha256": "3abb821ea9b539ce48753ae764339c65b937b1958049e4158d29233f8cd7d0bb"
+    },
+    "route_policy": {
+      "bytes": 12105,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json",
+      "sha256": "6404fdd9035b0c3428b73ddde125c57b8328e7862a35d4566bca9739cf99365a"
+    }
+  },
+  "object_compilation_summary": {
+    "candidate_not_evidence": true,
+    "compiled_object_count": 10618,
+    "deduplicated_object_count": 1653,
+    "diagnostic_count": 1469,
+    "diagnostic_counts": {
+      "claim_surface_not_unique": 48,
+      "financial_table_has_no_compilable_metric_row": 1033,
+      "nonfinancial_table_not_compiled_as_metric_rows": 388
+    },
+    "duplicate_object_group_count": 1178,
+    "missing_parent_count": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false,
+    "object_kind_counts": {
+      "bounded_parent_context": 1655,
+      "claim": 7285,
+      "metric_row": 1678
+    },
+    "parent_document_count": 7,
+    "raw_compiled_object_count": 12271,
+    "source_record_count": 2211
+  },
+  "output_binding": {
+    "diagnostics_bytes": 283635,
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_compiled_objects/live-r1/diagnostics.jsonl",
+    "diagnostics_sha256": "5cf8a600dbd643b4e017dc7ccd643acdec1449450bdbcea9b223dcb03f195601",
+    "objects_bytes": 29613900,
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_compiled_objects/live-r1/objects.jsonl",
+    "objects_sha256": "adf1da6a85d3d0bf34f2752521ffbf6e6813313238b1c9c7ca2fb8ddb2f4449c"
+  },
+  "payload_digest": "c4344ec737751e7a75b9b9447488896a7312a1962f3f09f7a3aeb6a93037eccf",
+  "query_route_summary": {
+    "company_financial_fact_mart_status": "separate_s2_runtime_integrated_not_object_candidate_authority",
+    "database_owning_stage": "S2",
+    "kernel_facet_count": 18,
+    "market_snapshot_fact_mart_status": "typed_route_only_store_unavailable",
+    "metric_route_count": 24,
+    "query_family_count": 11
+  },
+  "sample_objects": [
+    {
+      "compiled_object_id": "COBJ::83e49de42dc3f28e01924e3e",
+      "model_text_preview": "I am pleased to present our annual report for the year ended 31 December 2025 to the shareholders.",
+      "numeric_authority": false,
+      "object_kind": "claim",
+      "source_record_id": "CURRENT_DOC::0700_HK::ANNUAL_REPORT::961AAFAEC773F241FE32::PAGE_005::CONTEXT"
+    },
+    {
+      "compiled_object_id": "COBJ::fdf848f5e23edfae9044471a",
+      "model_text_preview": "Company: Caterpillar Inc. (CAT)\nSource: 10-K published 2026-02-13\nSection: Item 7. Management's Discussion and Analysis\nTable: CONSOLIDATED SALES AND REVENUES\nHeader: Sales and Revenues by Segment\nRow context: Sales and Revenues by Segment\nRow: (Millions of dollars) | 2024 | Sales Volume | Price Realization | Currency | Inter-Segment/Other | 2025 | $ Change | % Change",
+      "numeric_authority": false,
+      "object_kind": "metric_row",
+      "source_record_id": "CURRENT_DOC::CAT::10_K::0000018230_26_000008::ITEM_7::BLOCK_0004::PART_01_OF_02"
+    },
+    {
+      "compiled_object_id": "COBJ::2c1a6afd1fc863cb80e792f4",
+      "model_text_preview": "ticker: 0700.HK\ncompany: Tencent Holdings Limited\nsource_type: ANNUAL_REPORT\nsource_tier: primary_company_disclosure\npublication_date: 2026-04-09\nperiod_end: 2025-12-31\nfiscal_year: 2025\nsection: Tencent Holdings Limited 2025 Annual Report\nsubsection: Page 1 context",
+      "numeric_authority": false,
+      "object_kind": "bounded_parent_context",
+      "source_record_id": "CURRENT_DOC::0700_HK::ANNUAL_REPORT::961AAFAEC773F241FE32::PAGE_001::CONTEXT"
+    }
+  ],
+  "schema_version": "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_1",
+  "status": "s1c_temporal_correct_object_route_zero_call_proven"
+}

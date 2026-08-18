@@ -567,3 +567,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 现有对象库构建器正在增加 `qualification_candidate` profile 和 `parsed_pdf_layout_document` 输入，而不是复制 VS5 builder。旧 `current_product` profile 的行情门、状态和当前 Runtime 保持兼容。
 - 资格 profile 复用 digest、identity／period、parent／child lineage、表边界、容量和 candidate-not-Evidence 规则；不要求行情快照，也不授予 Evidence／NumericFact。下一步在 clean push 后只运行一次 7 来源对象构建。
 - learned vector／Cross-Encoder 尚未运行；后续仍严格 CUDA + FP16，禁止 CPU vector fallback。
+
+## 2026-08-18 S1 VS5 统一对象与 split-safe Runtime 输入
+
+- 7 份官方来源已通过同一对象链形成 7 个父文档、2,211 个 child；统一对象视图为 10,618 个候选：7,285 claim／1,678 metric row／1,655 bounded parent context。表边界、容量、parent lineage 与 claim overflow 门通过；0 Evidence／NumericFact 晋升。
+- 预注册核心 kernel 保持不可变。外层 qualification overlay 只增加 COST／JPM／CAT／NVO／SHEL／0700.HK 身份、行业词包和查询面；腾讯保持 `ANNUAL_REPORT` 原身份，不伪装成 10-K／20-F。
+- 30 个命题已物化为 label-free runtime inputs，并按 5 temporal／10 frozen test／15 heterogeneous holdout 物理分离。每条都包含结构化 EvidenceRequest、QueryFacetPlan 与 RetrievalExecutionPlan；gold、target object、hard negative 与 expected outcome 均不可见。
+- learned execution 尚未开始。Embedding、dense、learned-sparse、multi-vector 与 Cross-Encoder 固定为 CUDA＋FP16，禁止 CPU fallback；四节点均有基于 10,618 对象、30 命题和每命题 96 reranker pool 的 task-specific TokenBudgetBasis。
+- 当前下一门是 evaluator-only source-bound 盲审 reference＋CUDA device／model／cache execution binding。腾讯自然扫描硬门已经客观失败；若单一发行人年度资料不能满足预注册 independent readthrough，也必须记来源覆盖失败，不得伪造资料或误写公开信息 gap。

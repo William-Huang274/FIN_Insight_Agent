@@ -81,3 +81,13 @@ R3 在 clean／synced 提交 `94fef96e...` 上通过 Project OS preflight 后 ex
 不能把这些上下文短语直接晋升为 Evidence。只做这种粗暴替换，会把 Micron 的内存供给描述误当作“GPU 供应约束”，把相邻财务表误当作“AI 增量利润”证明。RC-S1-029 因此限定为候选送审与 Evidence 通过的分层：非时间型 `collective_axes` 可让同一请求、facet、role 下的自然短语贡献到有界复核 bundle，但必须继续标记 `abstain / candidate-not-Evidence / numeric-authority=false`；CandidateDecision／Evidence Gate 再依据实际文本逐 requirement 接受、拒绝或保留复核。`single_binding` 时间比较不得使用该放宽。
 
 正式公开结果为 `configs/retrieval/fin_ia_0_1_3_s1_dell_material_scope_product_replay_result_v1_0.json`，处置说明为 `configs/retrieval/fin_ia_0_1_3_s1_dell_material_scope_product_replay_assessment_v1_0.json`。当前 0／8 不是公共资料 gap，也不证明 DeepSeek、Embedding 或网络失败；S1、Pack Readiness、完整 S3 与发布仍为 false。
+
+## RC-S1-029 候选送审修复结果与 S2 联合就绪度边界
+
+候选送审 successor 已在同一 R3 payload、同一 8 个请求、同一 `review_k=16` 和同一 CUDA／FP16 Runtime 上完成。自然请求短语现在只能在非时间型 `collective_axes` 中贡献到有界复核 bundle；每个所选 metric 与 natural product term 都必须被候选组合覆盖，错 role、相邻短语和跨期 `single_binding` 均保持 fail closed。所有候选仍为 `abstain / candidate-not-Evidence / numeric-authority=false`。
+
+结果从 0／12 requirement 提升到 7／12、从 0／8 complete candidate material set 提升到 3／8。DELL 的 AI-server backlog、需求到出货非线性、发行人反方和部分上游／需求反方已能进入送审面。与此同时，逐请求审计发现剩余 5 个未满足项不能继续统一归因于 S1：reported results、margin、cash 和 working-capital 缺少的叙事 metric term 已由当前 S2 fact mart 全部解析为 NumericFact；若继续要求 S1 文本候选重复覆盖，只会让检索指标替代产品权威。orders／conversion 的 backlog、orders、customer_count、shipments 则仍为 S2 typed metric gap，只能保留定性 Evidence 候选，不能伪造精确数字。
+
+反过来，upstream requirement 虽在候选层 complete，却含 Micron memory supply、Microsoft AI infrastructure cost 和 NVIDIA inventory／export-control 等相邻披露。它们值得复核，但不能仅凭 query alignment 自动证明 Dell GPU 供应约束或 hyperscaler capex slowdown。RC-S1-029 因此只在 Candidate review 层关闭；Evidence 晋升仍必须逐 requirement 给出 accepted／rejected／unjudged／needs-review。
+
+下一责任层登记为 RC-S1-030：把当前 reviewed Evidence Pack 的精确 object／slot／facet／period 绑定与 12 个自然 requirement 对齐，再由 S2 NumericFact 独立满足 metric 轴，形成联合 Pack Readiness。不得把 candidate material completeness 当 Evidence completeness，也不得把 S2 已解决的数字误报成 S1 gap。

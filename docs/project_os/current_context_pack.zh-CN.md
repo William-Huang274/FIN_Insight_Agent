@@ -659,3 +659,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - RC-S1-028 已由零调用集合编译修复关闭：同一 R3 payload 现编译为 12 个相关 requirement，各请求容量 `3／3／2／2／2／3／1／2`，CUDA／FP16 产品 replay 完整结束，0 网络／0 生成模型／0 CPU fallback。
 - replay 得到 8／8 scope-ready、128 个候选、58 个 NumericFact，但 12／12 requirement 未满足、0／8 candidate material set complete。业务审计确认候选并非为空：Dell 10-K 已有 AI-server demand→backlog 直接表述，报表也有 results／margin／cash／working-capital 对象；断点是 R3 选出的自然 hard axis 只保存在候选的 unclassified-context 字段，而 selector 只读取 canonical product binding。
 - RC-S1-029 已登记。下一步只能把“值得送审”与“已成为 Evidence”拆开：`collective_axes` 可让 exact request-visible natural intent 进入有界 Candidate review，但必须保留 abstain／candidate-not-Evidence／无数字权威；CandidateDecision／Evidence Gate 再逐 requirement 判断。不得把相邻的 Micron memory supply 文本自动当作 GPU 约束，也不得把当前未满足项写成公开资料 gap。时间型 `single_binding` 不放宽。
+
+## 2026-08-18 S1 DELL 自然材料候选送审 v1.1
+
+- RC-S1-029 的候选送审 seam 已通过零调用 successor：同一 R3 scope 在当前 BM25＋Qwen CUDA／FP16 路径上得到 8／8 scope-ready、7／12 requirement met、3／8 candidate material set complete；相较前一版为 0／12 与 0／8。0 网络／0 生成模型／0 CPU vector fallback。
+- 修复只允许非时间型 `collective_axes` 的 exact request-visible natural intent 进入有界复核，并要求候选组合覆盖每个所选 metric／product term；错 role、相邻短语和跨期 `single_binding` 仍 fail closed。候选继续是 abstain／candidate-not-Evidence／无 NumericFact 权威。
+- 未满足的 narrative metric term 不能一律算 S1 缺口：reported results、margin、cash、working capital 的请求指标已由 S2 fact mart 全部解析为 NumericFact。orders／conversion 的 backlog、orders、customer_count、shipments 仍为 typed metric gap，但已有部分定性 issuer Evidence 候选。
+- upstream 候选层 complete 也不能自动成为 Evidence：Micron memory supply、Microsoft AI infrastructure cost、NVIDIA inventory／export-control 只是相邻反方，尚不能证明 Dell GPU supply 或 hyperscaler capex 命题。
+- RC-S1-030 打开：审计当前 DELL reviewed Evidence Pack 的精确 object／slot／facet／period 绑定，建立逐 requirement CandidateDecision，并与 S2 NumericFact 合成 Pack Readiness。不得用 candidate completeness 冒充 Evidence completeness，不得把 S2 已解决的数字重新归为检索失败。S1、完整 S3、发布仍为 false。

@@ -698,3 +698,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 每个 material requirement 分别标记：候选并集内是否已形成完整材料组、支撑候选是否进入最终审阅面、最早观察到的限制是 union 之前／之内还是 post-union cut。收据不读取 qrel／gold，不输出候选 ID，也不授予 Evidence、NumericFact 或 source-gap 权威。
 - 即使 union 为 0、first-stage／union 达到上限、路线未执行或材料组不完整，`public_information_gap_eligible` 仍固定为 false；公开信息 gap 仍需 source disclosure、local pipeline 和可达外源 route exhaustion 三类独立证据。
 - 工程验证为 targeted 70、全仓 730 通过；当前直接产品请求已验证，DELL 同一不可变 R3 scope 的 CUDA／FP16 产品 replay 尚待从干净提交执行。RC-S1-035 因此是 engineering seam proven，而非关闭；RC-S1-034 产品 EvidenceDecision／GapEligibility／PackReadiness producer 仍未开始。
+
+## 2026-08-18 S1 DELL candidate-ceiling 当前产品回放
+
+- 从干净提交 `37d69688...` 完成同一不可变 R3 scope 的当前 Workbench replay：8／8 scope-ready、3／8 candidate material set complete、7／12 requirement 保留至最终审阅、5／12 在 bounded union 内不完整、0 个完整材料组在 union 后被截掉。RTX 4060／FP16、0 CPU vector fallback、0 网络、0 模型。
+- 8 条请求均达到 BM25 64、Qwen 64 和 union 96 上限，故 5 个不完整 requirement 只能诚实定位为 `at_or_before_candidate_union`，不能推导“公开资料没有”。当前产品金融精排与 Evidence Role evaluator 均未执行，这一事实已进入评估，不得用 BM25＋Qwen top16 冒充完成的 S1 检索栈。
+- 业务上，Dell 已有 AI demand／backlog、ISG results／margin、cash、working-capital 风险材料；真正未闭合的是精确 orders／customer count、AI-specific incremental margin、AI revenue→cash conversion、AI-specific receivable／inventory allocation，以及 total company／segment 数字到 AI 产品的因果桥。S2 已有的 NumericFact 不得再要求 S1 叙事重复提供，也不得被模型用于过强 AI 归因。
+- RC-S1-035 的 candidate-ceiling 产品 seam 已由真实 DELL 路径证明；source disclosure、OCR／parse／object 内容充分性、候选上限以下的召回、金融精排、EvidenceDecision、GapEligibilityReceipt 与 PackReadiness 仍未证明。下一步先做等价 MU／NVDA 当前请求 replay，再进入 RC-S1-034 产品 producer；S1、动态 S3、发布和 release 仍为 false。
+- 治理复证：定向 59 passed、compileall、active baseline 165 Python／8 frontend／22 resources／0 forbidden、JSON／JSONL、diff check 和 7,202-file secret scan 全部通过。

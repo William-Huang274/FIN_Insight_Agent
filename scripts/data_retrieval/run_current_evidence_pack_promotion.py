@@ -977,7 +977,10 @@ def _validate_product_successor_link(
     authority = successor.get("authority") or {}
     if not (
         successor.get("schema_version")
-        == "fin_ia_s1_product_evidence_successor_public_result_v1_2"
+        in {
+            "fin_ia_s1_product_evidence_successor_public_result_v1_1",
+            "fin_ia_s1_product_evidence_successor_public_result_v1_2",
+        }
         and successor.get("status")
         == "proposition_bound_evidence_successor_materialized"
         and successor.get("case_key") == case_key

@@ -41,6 +41,10 @@ PROFILE_REF = (
     "configs/providers/"
     "fin_ia_0_1_3_deepseek_v4_pro_ga_material_scope_profile_v1_0.json"
 )
+CURRENT_DELL_INPUT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_canary_input_v1_1.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -188,6 +192,28 @@ def test_canary_input_is_candidate_blind_and_digest_bound() -> None:
     assert payload["product_diagnostic"]["request_diagnostics"][0][
         "request_id"
     ] == "REQ::DELL-WORKING-CAPITAL-SCOPE"
+
+
+def test_current_dell_input_is_clean_commit_bound_and_fully_traceable() -> None:
+    payload = _json(CURRENT_DELL_INPUT_REF)
+    validate_material_scope_canary_input(payload)
+    diagnostic = payload["product_diagnostic"]
+    assert payload["prepared_from_commit"] == (
+        "20ca2768eab3d8e70785d85b3a956416736289e3"
+    )
+    assert len(payload["required_request_ids"]) == 8
+    assert [
+        row["request_id"] for row in diagnostic["request_diagnostics"]
+    ] == payload["required_request_ids"]
+    assert diagnostic["proposed_atom_count"] == 10
+    assert diagnostic["selected_atom_count"] == 8
+    assert diagnostic["deferred_atom_count"] == 2
+    assert diagnostic["material_scope_required_request_count"] == 8
+    assert diagnostic["material_scope_ready_request_count"] == 0
+    assert diagnostic["hybrid_selected_candidate_count"] == 128
+    assert diagnostic["numeric_fact_count"] == 58
+    assert diagnostic["network_calls"] == 0
+    assert diagnostic["model_calls"] == 0
 
 
 def _copy(root: Path, ref: str) -> None:

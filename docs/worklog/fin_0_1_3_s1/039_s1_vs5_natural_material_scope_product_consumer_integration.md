@@ -45,3 +45,5 @@ canary 通过后，只将同一 payload 接回当前 Workbench 计划并复跑�
 当前已补齐 provider profile、候选盲 input、exact-once authority、capture-first terminal result 和 Project OS preflight 的统一执行路径；fake exact-once、profile／input digest 漂移、合同失败物化与当前 Runtime 注册表均通过测试。这里的“qualified”仅指执行基础设施具备签发条件，不表示 DeepSeek 已通过自然范围任务。
 
 第一次零调用输入 `v1_0` 绑定提交 `035d2210...`，完整复现 10 个 proposed／8 个 selected／2 个 deferred、8 个 explicit-scope request、128 个候选、58 个 NumericFact、0 网络／0 生成模型调用。模型消息只含请求公开索引与闭合枚举，不含候选、对象、qrel、reference、URL 或答案。该输入的每请求审计摘要因产品结果将 request ID 放在嵌套 `request` 对象而显示 `null`；模型可见内容与 required request binding 没有受影响，但该版本只保留为 superseded 审计证据，不进入付费 authority。修复后的输入必须由一个包含执行实现的干净提交重新生成，不能覆盖 `v1_0`。
+
+执行实现已在干净远端提交 `20ca2768...` 冻结。随后生成的 `v1_1` 与 `v1_0` 具有相同 plan digest 和 model-visible messages digest，但 8／8 请求审计 ID 均完整，且输入声明的 `prepared_from_commit` 精确绑定 `20ca2768...`。`v1_1` 才是后续 exact-once authority 唯一允许绑定的输入；它仍不是模型结果、Evidence、S1 资格或产品发布。

@@ -1,13 +1,21 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-18
+更新时间：2026-08-19
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-s1-retrieval-vertical-slice`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 只作为责任坐标，实际按共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice 交付。VS1、VS2、VS3 与 DELL／MU／NVDA 三案 VS4 原已进入 R19 Runtime 和 Workbench；自然材料范围与产品消费者 seam 现将当前注册表推进到 R20。当前 successor Pack 为 DELL `22 Evidence / 14 gaps`、MU `11 / 15`、NVDA `19 / 13`；旧宽片段分别退役 3／16／14 条，加入 5／11／19 条 capture-bound 精确 claim，gap 分别窄化 1／2／3、关闭 0，MU 另增加 2 个明确归属 S2 的财务桥接 gap。三案 Candidate 自动晋升、NumericFact 新授权和 hard-negative false accept 均为 0。所有 learned Embedding／Cross-Encoder 只允许 CUDA／FP16，CUDA 不可用即 fail closed，绝不回退 CPU。当前只记 `three_case_VS4_vertical_slice_integrated`；10/10 命题有任一有效 top10 目标不等于所有正例找全，仍有 4 个 reviewed positive 未进入 candidate union，故 VS5 必须另测 all-positive material-facet coverage、frozen test、异质留出与 clean replay，`S1_qualified_stable` 仍为 false，不运行产品资格完整真实链。
+Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化。当前 Runtime Registry 已推进到 R24／26 个活动资源；1,841 条来源、34,117 个金融对象、Qwen CUDA FP16 cache、S2 SQLite、reviewed Evidence 与 DELL／MU／NVDA 三份正式 ProductReadiness 已由 binding v1.1 绑定，并由 `/workspace` 消费。三案 Candidate 自动晋升、NumericFact 新授权和 public-gap 声明仍为 0。DELL 8／8 请求等待 S3 明确自然材料范围；MU 为 4 个候选覆盖阻断＋4 个 Evidence 准入阻断，NVDA 为 3＋5。RC-S1-034 的产品生产者缺失已关闭，当前最早责任层转为候选级 Evidence admission、对象级 Workbench lineage 与独立资格；`S1_qualified_stable` 仍为 false，不能运行产品资格完整真实链或恢复 S3 主线。
+
+## 2026-08-19 S1 ProductReadiness 当前增量
+
+- RC-S1-041 的原子命题与 Evidence Role v3 已进入当前候选决策：Micron HBM4 high-volume shipment 和多年期具体数量约束客户协议不再被静默拒绝，现为 `needs_human_review`；它们尚不是 Evidence。
+- 三案 ProductReadiness 已注册并进入 Workbench。产品面能区分候选覆盖、Evidence 准入、S2 数值／桥接、来源访问和 S3 范围责任，不再把所有未就绪状态写成资料 gap。
+- 私有 full-result 路径、候选正文、候选 ID 与 private source material 不进入 Workbench readiness 响应。
+- 复证为全仓 `755 passed`、Vite production build、真实挂载 Chromium desktop `3 passed`、active baseline `169 Python / 8 frontend / 26 Runtime / 0 forbidden`、secret scan `7,257 / 0`。
+- 下一步只做 MU／NVDA 候选级只读审阅与对象 lineage；通过后才允许受控 Evidence successor、三案 readiness 重物化和 replacement qualification。不得因候选已找到自动晋升 Evidence，也不得把未执行路线或未审候选登记为公开信息不存在。
 
 最新增量已把 request-bound Material Evidence Set v1.1 和候选盲的自然材料范围合同接入当前 Workbench 受控研究计划。四案保存资产的 fallback 候选材料组仍全部完整且排列稳定，但只有 MU 4／4、NVDA 6／6 请求达到 `runtime_scope_ready`；COST 2／5、DELL 0／3 的复合主题仍需自然 ResearchBlueprint。实际 DELL 产品纵切选择 8 个请求、延后 2 个，8／8 候选面非空，S2 返回 19 resolved／9 typed gap／58 NumericFact；learned route 在 CUDA／FP16 执行，产品正确返回 8／8 `explicit_scope_required`，没有把“候选能覆盖 fallback”冒充成“研究范围已准备”。当前状态为 `product_consumer_integrated / deterministic_scope_replay_proven / natural_scope_execution_path_qualified / live_not_run / S1_qualified_stable_false`；Candidate 仍非 Evidence，COST 人工 reference 与 replacement blind qualification 仍开放。
 

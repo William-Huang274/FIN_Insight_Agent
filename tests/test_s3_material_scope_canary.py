@@ -5,8 +5,12 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import sys
 
 import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from retrieval.contracts import load_evidence_request, load_financial_research_kernel
 from retrieval.evidence_set_coverage import compile_requirement_plan
@@ -38,10 +42,6 @@ from sec_agent.research.material_scope_canary import (
 from scripts.research.run_s3_material_scope_canary import (
     _public_product_replay_projection,
 )
-
-
-ROOT = Path(__file__).resolve().parents[1]
-
 
 def _json(ref: str) -> dict:
     return json.loads((ROOT / ref).read_text(encoding="utf-8"))
@@ -423,6 +423,26 @@ def test_product_replay_public_projection_keeps_candidate_identities_private() -
                         },
                     },
                 },
+                "candidate_ceiling_provenance": {
+                    "hybrid_candidate_ceiling": {
+                        "candidate_union_count": 96,
+                        "candidate_union_limit": 96,
+                        "union_ceiling_reached": True,
+                        "bm25_first_stage_ceiling_reached": True,
+                        "qwen_first_stage_ceiling_reached": True,
+                    },
+                    "earliest_observed_limitation": "at_or_before_candidate_union",
+                    "material_requirements": [
+                        {
+                            "observed_loss_stage": (
+                                "at_or_before_bounded_candidate_union_ceiling"
+                            )
+                        }
+                    ],
+                    "gap_eligibility": {
+                        "public_information_gap_eligible": False
+                    },
+                },
             }
         ],
     }
@@ -431,6 +451,10 @@ def test_product_replay_public_projection_keeps_candidate_identities_private() -
     assert public["request_diagnostics"][0][
         "selected_material_candidate_count"
     ] == 1
+    assert public["request_diagnostics"][0]["union_ceiling_reached"] is True
+    assert public["request_diagnostics"][0][
+        "public_information_gap_eligible"
+    ] is False
     assert "SECRET::CANDIDATE" not in json.dumps(public)
 
 

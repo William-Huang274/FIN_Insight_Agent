@@ -454,6 +454,7 @@ def test_typed_request_api_requires_current_read_permission() -> None:
     assert response.json()["summary"]["compiled_lane_count"] == 1
     assert response.json()["runtime_binding"] is None
     assert response.json()["route_execution_truth"] is None
+    assert response.json()["candidate_ceiling_provenance"] is None
     assert response.headers["etag"].startswith('"evidence-request=')
 
 

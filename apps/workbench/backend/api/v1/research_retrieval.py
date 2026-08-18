@@ -85,6 +85,7 @@ class EvidenceRequestExecutionResponse(BaseModel):
     typed_fact_results: list[dict[str, Any]]
     runtime_binding: dict[str, Any] | None = None
     route_execution_truth: dict[str, Any] | None = None
+    candidate_ceiling_provenance: dict[str, Any] | None = None
     lanes: list[dict[str, Any]]
     known_boundary: str
     projection_digest: str

@@ -3,9 +3,17 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 from pathlib import Path
+import sys
 
 import pytest
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from apps.workbench.backend.application.research_retrieval_service import (
+    ResearchRetrievalPrincipal,
+    ResearchRetrievalService,
+)
 from retrieval.current_runtime_binding import (
     CurrentS1RuntimeBindingError,
     project_request_route_execution_truth,
@@ -13,7 +21,6 @@ from retrieval.current_runtime_binding import (
 )
 
 
-ROOT = Path(__file__).resolve().parents[1]
 POLICY = (
     ROOT
     / "configs"
@@ -135,3 +142,55 @@ def test_current_runtime_receipt_rebuilds_against_bound_assets() -> None:
     assert receipt["source_object_index_lineage"][
         "all_source_records_lineage_bound"
     ] is True
+
+
+def test_current_product_direct_request_exposes_non_gap_candidate_ceiling() -> None:
+    service = ResearchRetrievalService.from_runtime_paths(
+        ROOT,
+        hybrid_candidate_runtime=object(),
+    )
+    request = {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ-DELL-CURRENT-BINDING-001",
+        "cell_id": "DELL-DEMAND-CELL-001",
+        "requester_role": "demand_specialist",
+        "evidence_domain": "demand",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["DELL"],
+        "requested_facet_ids": ["orders_and_backlog"],
+        "metric_intents": ["orders", "backlog"],
+        "product_intents": ["AI-optimized servers"],
+        "period": {
+            "start_date": None,
+            "end_date": "2026-08-06",
+            "fiscal_years": [],
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": ["10-K", "10-Q", "8-K"],
+        "acceptable_proxy": False,
+        "forbidden_proxy": ["unbound industry demand"],
+        "stop_condition": "return candidates or a typed gap",
+        "clarification_policy": "return_typed_gap",
+    }
+    projection = service.execute_request(
+        "DELL",
+        request,
+        ResearchRetrievalPrincipal(
+            mode="current",
+            permissions=frozenset({"current_product:read"}),
+        ),
+    )
+
+    provenance = projection["candidate_ceiling_provenance"]
+    assert provenance["runtime_binding_digest"] == projection[
+        "runtime_binding"
+    ]["result_digest"]
+    assert provenance["earliest_observed_limitation"] == (
+        "hybrid_candidate_runtime_not_executed"
+    )
+    assert provenance["gap_eligibility"][
+        "public_information_gap_eligible"
+    ] is False

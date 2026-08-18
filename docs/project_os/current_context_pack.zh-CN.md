@@ -691,3 +691,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 对 2026-08-17 的 20 项 immutable coverage gap 已完成一次 successor disposition：只有 source identity、旧 chunk→当前对象归一化、当前快照绑定 3 项可诚实关闭。其余分别归入 S1 内部产品工作、S2／S3 handoff、qualified-human／blind／自然扫描等外部门，不因历史工程很多而追认 S1 通过。
 - 当前最早内部责任层为请求级 candidate-ceiling provenance：必须说明材料是在 source、parse、object/index、query/route、candidate union 还是 ranking cut 丢失。之后才能注册产品级 EvidenceDecision、GapEligibilityReceipt 与 PackReadiness producer，再做 Workbench drilldown 和 DELL／MU／NVDA 回放。
 - 当前状态：`current_product_lineage_bound / route_execution_truth_explicit / historical_gaps_dispositioned / candidate_ceiling_and_product_decision_open / S1_qualified_stable=false`。DELL v1.1 就绪度仍是 development/audit 结果，不是 Workbench 每次运行自动产出的产品结果。
+
+## 2026-08-18 S1 请求级 candidate-ceiling provenance 工程门
+
+- Workbench 的直接 EvidenceRequest 现在会诚实标明“只执行静态快照过滤，Hybrid 尚未执行”；受控研究计划在 BM25＋Qwen 执行后则记录 eligible object、两路 first-stage、bounded union、材料 reservation、来源配额和 final review 的数量及上限。
+- 每个 material requirement 分别标记：候选并集内是否已形成完整材料组、支撑候选是否进入最终审阅面、最早观察到的限制是 union 之前／之内还是 post-union cut。收据不读取 qrel／gold，不输出候选 ID，也不授予 Evidence、NumericFact 或 source-gap 权威。
+- 即使 union 为 0、first-stage／union 达到上限、路线未执行或材料组不完整，`public_information_gap_eligible` 仍固定为 false；公开信息 gap 仍需 source disclosure、local pipeline 和可达外源 route exhaustion 三类独立证据。
+- 工程验证为 targeted 70、全仓 730 通过；当前直接产品请求已验证，DELL 同一不可变 R3 scope 的 CUDA／FP16 产品 replay 尚待从干净提交执行。RC-S1-035 因此是 engineering seam proven，而非关闭；RC-S1-034 产品 EvidenceDecision／GapEligibility／PackReadiness producer 仍未开始。

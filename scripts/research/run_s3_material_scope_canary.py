@@ -194,6 +194,12 @@ def _public_product_replay_projection(
         material = hybrid.get("material_evidence") or {}
         plan = material.get("requirement_plan") or {}
         selection = material.get("selection") or {}
+        provenance = result.get("candidate_ceiling_provenance") or {}
+        ceiling = provenance.get("hybrid_candidate_ceiling") or {}
+        loss_counts: dict[str, int] = {}
+        for row in provenance.get("material_requirements") or ():
+            loss = str(row.get("observed_loss_stage") or "unknown")
+            loss_counts[loss] = loss_counts.get(loss, 0) + 1
         request_rows.append(
             {
                 "request_id": request.get("request_id"),
@@ -227,6 +233,30 @@ def _public_product_replay_projection(
                 ),
                 "selected_material_candidate_count": len(
                     selection.get("selected_candidate_ids") or ()
+                ),
+                "candidate_union_count": ceiling.get(
+                    "candidate_union_count"
+                ),
+                "candidate_union_limit": ceiling.get(
+                    "candidate_union_limit"
+                ),
+                "union_ceiling_reached": ceiling.get(
+                    "union_ceiling_reached"
+                ),
+                "first_stage_ceiling_reached": {
+                    "bm25": ceiling.get("bm25_first_stage_ceiling_reached"),
+                    "qwen": ceiling.get("qwen_first_stage_ceiling_reached"),
+                },
+                "earliest_observed_limitation": provenance.get(
+                    "earliest_observed_limitation"
+                ),
+                "requirement_loss_stage_counts": dict(
+                    sorted(loss_counts.items())
+                ),
+                "public_information_gap_eligible": (
+                    (provenance.get("gap_eligibility") or {}).get(
+                        "public_information_gap_eligible"
+                    )
                 ),
             }
         )
@@ -312,9 +342,12 @@ def replay_product_scope(
         "hybrid_candidate_runtime": _binding(
             ROOT / "src/retrieval/hybrid_candidate_runtime.py"
         ),
+        "candidate_ceiling_provenance": _binding(
+            ROOT / "src/retrieval/candidate_ceiling_provenance.py"
+        ),
     }
     full_body = {
-        "schema_version": "fin_ia_s1_material_scope_product_replay_full_v1_0",
+        "schema_version": "fin_ia_s1_material_scope_product_replay_full_v1_1",
         "status": public_projection["status"],
         "recorded_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         "prepared_from_commit": _head(),
@@ -340,7 +373,7 @@ def replay_product_scope(
     full = {**full_body, "result_digest": canonical_digest(full_body)}
     write_new_json(private_output_path, full)
     public_body = {
-        "schema_version": "fin_ia_s1_material_scope_product_replay_v1_0",
+        "schema_version": "fin_ia_s1_material_scope_product_replay_v1_1",
         "status": public_projection["status"],
         "recorded_at": full["recorded_at"],
         "prepared_from_commit": full["prepared_from_commit"],

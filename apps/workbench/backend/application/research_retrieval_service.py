@@ -23,6 +23,10 @@ from retrieval.current_runtime_binding import (
     project_request_route_execution_truth,
     validate_current_s1_runtime_binding_receipt,
 )
+from retrieval.candidate_ceiling_provenance import (
+    CandidateCeilingProvenanceError,
+    build_candidate_ceiling_provenance,
+)
 from retrieval.material_evidence_runtime import (
     MaterialEvidenceRuntimeError,
     compile_material_requirement_plan_from_runtime_input,
@@ -144,6 +148,7 @@ class ResearchRetrievalService:
         route_policy: QueryObjectFactRoutePolicy | Mapping[str, Any] | None = None,
         planning_policy: ResearchPlanningPolicy | Mapping[str, Any] | None = None,
         hybrid_candidate_runtime: Any | None = None,
+        hybrid_candidate_policy: Mapping[str, Any] | None = None,
         material_scope_policy: Mapping[str, Any] | None = None,
         material_runtime_policy: Mapping[str, Any] | None = None,
         financial_intent_ontology: Mapping[str, Any] | None = None,
@@ -199,6 +204,14 @@ class ResearchRetrievalService:
             else planning_policy
         )
         self._hybrid_candidate_runtime = hybrid_candidate_runtime
+        self._hybrid_candidate_contract: dict[str, Any] | None = None
+        if hybrid_candidate_policy is not None:
+            contract = hybrid_candidate_policy.get("candidate_contract")
+            if not isinstance(contract, Mapping):
+                raise ResearchRetrievalServiceError(
+                    "hybrid_candidate_contract_invalid", 503
+                )
+            self._hybrid_candidate_contract = dict(contract)
         material_contracts = (
             material_scope_policy,
             material_runtime_policy,
@@ -240,6 +253,10 @@ class ResearchRetrievalService:
             runtime_binding_policy is not None
             and runtime_binding_receipt is not None
         ):
+            if self._hybrid_candidate_contract is None:
+                raise ResearchRetrievalServiceError(
+                    "research_runtime_binding_candidate_contract_missing", 503
+                )
             try:
                 self._runtime_binding_receipt = (
                     validate_current_s1_runtime_binding_receipt(
@@ -306,14 +323,15 @@ class ResearchRetrievalService:
         load_s1_vertical_slice: bool = True,
     ) -> "ResearchRetrievalService":
         paths = runtime_paths or resolve_runtime_paths(repository_root)
+        hybrid_candidate_policy = read_registered_runtime_json(
+            repository_root,
+            CURRENT_HYBRID_CANDIDATE_RUNTIME_POLICY_RESOURCE_ID,
+        )
         active_hybrid_runtime = hybrid_candidate_runtime
         if active_hybrid_runtime is None:
             active_hybrid_runtime = LazyLocalQwenHybridCandidateRuntime(
                 repository_root,
-                read_registered_runtime_json(
-                    repository_root,
-                    CURRENT_HYBRID_CANDIDATE_RUNTIME_POLICY_RESOURCE_ID,
-                ),
+                hybrid_candidate_policy,
             )
         return cls(
             snapshot=read_registered_runtime_json(
@@ -337,6 +355,7 @@ class ResearchRetrievalService:
                 CURRENT_RESEARCH_PLANNING_POLICY_RESOURCE_ID,
             ),
             hybrid_candidate_runtime=active_hybrid_runtime,
+            hybrid_candidate_policy=hybrid_candidate_policy,
             material_scope_policy=read_registered_runtime_json(
                 repository_root,
                 CURRENT_MATERIAL_SCOPE_POLICY_RESOURCE_ID,
@@ -649,22 +668,31 @@ class ResearchRetrievalService:
                 raise ResearchRetrievalServiceError(
                     "hybrid_candidate_result_count_invalid", 503
                 )
-            request_results = [
-                {
+            enriched_results: list[dict[str, Any]] = []
+            for result, hybrid in zip(request_results, hybrid_results):
+                route_truth = (
+                    project_request_route_execution_truth(
+                        execution_plan=result.get("execution_plan"),
+                        binding_receipt=self._runtime_binding_receipt,
+                        hybrid_result=hybrid,
+                    )
+                    if self._runtime_binding_receipt is not None
+                    else None
+                )
+                enriched = {
                     **result,
                     "hybrid_object_retrieval": hybrid,
-                    "route_execution_truth": (
-                        project_request_route_execution_truth(
-                            execution_plan=result.get("execution_plan"),
-                            binding_receipt=self._runtime_binding_receipt,
-                            hybrid_result=hybrid,
-                        )
-                        if self._runtime_binding_receipt is not None
-                        else None
-                    ),
+                    "route_execution_truth": route_truth,
                 }
-                for result, hybrid in zip(request_results, hybrid_results)
-            ]
+                enriched["candidate_ceiling_provenance"] = (
+                    self._candidate_ceiling_projection(
+                        result=enriched,
+                        route_execution_truth=route_truth,
+                        hybrid_result=hybrid,
+                    )
+                )
+                enriched_results.append(enriched)
+            request_results = enriched_results
         candidate_ids = {
             str(candidate["source_record_id"])
             for result in request_results
@@ -1030,7 +1058,45 @@ class ResearchRetrievalService:
                 "complete S1/S3 product acceptance."
             ),
         }
+        body["candidate_ceiling_provenance"] = (
+            self._candidate_ceiling_projection(
+                result=body,
+                route_execution_truth=body.get("route_execution_truth"),
+                hybrid_result=None,
+            )
+        )
         return {**body, "projection_digest": canonical_digest(body)}
+
+    def _candidate_ceiling_projection(
+        self,
+        *,
+        result: Mapping[str, Any],
+        route_execution_truth: Mapping[str, Any] | None,
+        hybrid_result: Mapping[str, Any] | None,
+    ) -> dict[str, Any] | None:
+        if (
+            self._runtime_binding_receipt is None
+            or self._hybrid_candidate_contract is None
+            or route_execution_truth is None
+        ):
+            return None
+        try:
+            return build_candidate_ceiling_provenance(
+                request=result["request"],
+                request_digest=str(result["request_digest"]),
+                static_summary=result["summary"],
+                static_lanes=result["lanes"],
+                route_execution_truth=route_execution_truth,
+                runtime_binding_receipt=self._runtime_binding_receipt,
+                candidate_contract=self._hybrid_candidate_contract,
+                hybrid_result=hybrid_result,
+            )
+        except CandidateCeilingProvenanceError as exc:
+            raise ResearchRetrievalServiceError(
+                "research_candidate_ceiling_provenance_invalid",
+                503,
+                typed_reason=str(exc),
+            ) from exc
 
     def _runtime_binding_projection(self) -> dict[str, Any] | None:
         if self._runtime_binding_receipt is None:

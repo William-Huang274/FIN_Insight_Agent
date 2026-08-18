@@ -1,0 +1,45 @@
+{
+  "authority": {
+    "S1_qualification_claimed": false,
+    "accepted_claims_capture_bound": true,
+    "accepted_evidence_proposition_bound": true,
+    "candidate_is_not_evidence": true,
+    "generation_model_calls": 0,
+    "metric_row_promoted_as_narrative_evidence": false,
+    "network_calls": 0,
+    "numeric_fact_authority": false,
+    "product_publication": false,
+    "qualified_human_review": false
+  },
+  "capture_receipt_count": 8,
+  "case_key": "NVDA",
+  "coverage_delta": {
+    "added_or_rebound_evidence_count": 8,
+    "candidate_text_promoted_count": 0,
+    "numeric_authority_granted_count": 0,
+    "numeric_rows_delegated_to_S2": 4,
+    "predecessor_evidence_count": 19,
+    "retired_evidence_count": 3,
+    "successor_evidence_count": 24
+  },
+  "decision_counts": {
+    "accept_for_request_context": 2,
+    "accept_for_requirements": 7,
+    "delegate_to_s2_numeric_authority": 4,
+    "reject_for_current_scope": 17
+  },
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1_product_evidence_successor/nvda-r1/full_result.json",
+  "full_result_sha256": "bc6fcf464ca8d2cb4bde38023d772f282bbd4e2273e08839c60ad0bdb4fb2051",
+  "known_boundary": "This tracked projection records an internal engineering adjudication. Accepted claims are immutable-capture-bound and explicitly attached to a named requirement or request context. Request context does not satisfy a hard material requirement, metric rows remain delegated to S2, and this result does not qualify S1, grant qualified-human review or authorize publication. Candidate text and private object identities remain private.",
+  "plan_digest": "953bdb026b3154768085d0c1c4210f6dbe13ed45d808dc1781111644919aedd2",
+  "plan_id": "FIN-0.1.3-S1-NVDA-PROPOSITION-BOUND-EVIDENCE-R1",
+  "predecessor_pack_payload_digest": "3f851319bc7a9e63488c570f5fc2e5ba47250816fdea869022122d4a80c3bbf7",
+  "prepared_from_commit": "b8bfa3666474f82f8e22892e83607a4ceba2c968",
+  "private_pack_ref": "data/workbench_private/fin_0_1_3_s1_product_evidence_successor/nvda-r1/pack.json",
+  "private_pack_sha256": "f3de167ad3db86a117442c0556aa3c873f0d9c3def8a09a7f36aacaf5e038e8f",
+  "recorded_at": "2026-08-18T19:43:33+00:00",
+  "result_digest": "4bbf1b1479b096c316e2d0b0f1e1b148f12b6083bd8a611ead47f3f55962f1c3",
+  "schema_version": "fin_ia_s1_product_evidence_successor_public_result_v1_0",
+  "status": "proposition_bound_evidence_successor_materialized",
+  "successor_pack_payload_digest": "c016d60384087883767d89459c64993dbe15f7e86ac9bec21d84a927802206a7"
+}

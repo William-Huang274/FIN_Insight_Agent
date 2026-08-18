@@ -154,6 +154,8 @@ COST R1 是当前 VS5 的第一次正式 valid-temporal 候选资格。它通过
 
 剩余五条 miss 不是同一问题：汽油替代解释、毛利表格和同口径现金流表格均排在第 21，说明单对象 top-k 没有保证完整研究材料组；另外两条会员经营对象并不属于该 EvidenceRequest 冻结的 revenue／gross-margin／operating-cash-flow metric 集，说明 provisional reference 与请求存在待人工裁决的不一致。两次 valid-temporal 已消耗，禁止 COST R3 和隐藏集执行。下一步先冻结 request-bound evidence-set／temporal-pair 评测合同，在开发／回归案例验证后预注册新的 unseen temporal valid case；R1／R2 历史分数不改写，S1 与 FIN 0.1.3 均未通过。
 
+随后一次范围过宽的仓库搜索披露了现有 JPM／CAT 和 NVO／SHEL／腾讯 hidden reference 的部分标签；没有 hidden run 或据标签调参，但盲性已经破坏。现有 hidden 文件保留不可变，只可在 Owner 后续决定后作为 disclosed regression，不能再承担 FIN 0.1.3 泛化资格。replacement qualification 必须使用 Git 外的受控 label store 和独立 adjudication；这属于 S1 评测程序修正，不创建产品新版本，也不允许绕过新 valid 直接进入 S3。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

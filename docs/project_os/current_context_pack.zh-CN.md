@@ -91,6 +91,8 @@ Owner 早先批准的 S3 连续路径及其历史 attempt 均保持不可变，�
 
 RC-S1-024 的 provider-neutral v2 successor 已完成零调用工程复证并执行唯一 R2。R2 在 `cuda:0`／FP16 完成 5 个命题、113 个 RetrievalNeed、每个 reranker 1,440 对，0 CPU vector fallback／network／generation model／retry；candidate public 已在 `7862c393` 冻结。分离 evaluator 使用与 R1 相同的 reference、业务模板和门槛，结果由 12/20 提升为 15/20：any-hit、material facet 和 required role 通过，但 all-positive object recall `0.75 < 0.90`，故 R2 仍失败。三条有效候选排在第 21，说明单对象 top-k 未保证完整材料组；两条会员对象又与被冻结 request 的 metric 集不一致，说明 provisional reference consistency 待人工裁决。两次 valid-temporal 已消耗，禁止 COST R3、JPM／CAT frozen test 和 NVO／SHEL／腾讯 holdout。下一步只做 request-bound evidence-set／temporal-pair 评测合同、开发回归与新 unseen temporal valid case 预注册；R1／R2 永不改写，S1 仍未资格化。
 
+2026-08-18 随后的合同搜索意外把 `eval_sets` 纳入递归范围，输出了现有 JPM／CAT test-frozen 与 NVO／SHEL／腾讯 holdout reference 的部分标签内容。没有执行 hidden case、没有读取 hidden candidate／result、没有据此改代码或门槛，但实现者上下文已观察 expected outcome，故这两份资产在当前资格程序中不再盲。RC-S1-025 已登记；现有文件保持不可变且只能在 Owner 另行决定后作为 disclosed regression，不能支撑泛化资格。`.rgignore` 已增加防误触边界；未来 blind labels 必须在 Git 外的 private／external store 由独立 qualified human 或 Owner 明确授权的隔离评审流程生成。隔离处置通过全仓 `633 passed`、active baseline 和 7,134-file secret scan；当前 Codex 只能继续 COST／开发案例的零调用合同工作，不能自封 replacement hidden adjudicator。
+
 DELL R7 继续作为不可变的首份完整但内容未通过报告；RC-S3-038／043 与历史 Case Truth natural 结果继续保留，不被 S1 工作追认或关闭。S1 未资格化期间，可单独签发的 deterministic／shadow／node canary 必须明确为诊断，不能声称 S1、三案例泛化、完整产品链或 release。
 
 Dell 人工入库、共用 PDF successor、有限 S2 回归和 current Pack 提升均已完成；Runtime Registry R11 与 Workbench 三案消费复验通过。当前基线已补上唯一 provider-neutral `Evidence Pack + NumericFact → research judgment / workpaper / report` consumer；归档中的旧 9-call/attempt runner没有复活。

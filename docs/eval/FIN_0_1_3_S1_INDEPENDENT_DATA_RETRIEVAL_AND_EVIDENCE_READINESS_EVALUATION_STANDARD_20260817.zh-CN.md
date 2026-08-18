@@ -364,3 +364,9 @@ R2 使用与 R1 完全相同的 provisional reference、阈值和业务影响模
 该失败不得被平均指标补偿，也不得通过把 review window 从 20 临时改成 21 来追认。五条 miss 分为两类：三条候选已进入 pool 但排在第 21，说明单对象排序没有保证 direct／counter／bridge／temporal-pair 的材料组覆盖；两条会员经营对象与该问题已冻结的 revenue／gross-margin／operating-cash-flow request 不一致，属于 provisional reference consistency 待人工裁决，不应自动算成检索器错误或据结果删标。
 
 两次 valid-temporal candidate execution 已消耗完毕，COST R3 禁止。JPM／CAT frozen test 与 NVO／SHEL／0700.HK holdout 继续封闭。下一评测合同必须在新 unseen temporal case 结果可见前冻结 request-bound evidence-set coverage、同口径 temporal pair 和 exact-object diagnostic 的边界；已完成的 R1／R2 分数永不改写。
+
+## 15. 现有 hidden reference 披露后的资格更正（2026-08-18）
+
+一次范围过宽的仓库全文检索输出了现有 test-frozen 与 heterogeneous-holdout reference 的部分 expected outcome。虽然没有执行 hidden case、没有读取其候选结果、也没有据此调参，但实现者上下文已被标签污染。因此这两份 reference 从本次事故起不得继续称为 blind qualification，未来即使全绿也只能作为 disclosed regression。
+
+新资格程序必须把 case/source preregistration 与 expected outcome 分离：前者可以进入 Git，后者只进入 private／external access-controlled store；candidate 冻结后才由独立 qualified human 或经 Owner 明确授权的上下文隔离流程评分。`.rgignore` 只防普通搜索误触，不是安全边界。现有 reference 的摘要与事故状态由 machine disposition 保存，文件和已完成 COST R1／R2 均不改写。

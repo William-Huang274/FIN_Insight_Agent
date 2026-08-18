@@ -1,0 +1,58 @@
+{
+  "schema_version": "fin_ia_s1_vs5_hidden_reference_disclosure_disposition_v1_0",
+  "status": "existing_hidden_references_ineligible_for_blind_qualification",
+  "recorded_at": "2026-08-18",
+  "incident_id": "FIN-0.1.3-S1-VS5-HIDDEN-REFERENCE-DISCLOSURE-20260818",
+  "incident": {
+    "trigger": "repository_wide_text_search_scope_included_eval_sets",
+    "observed_content": "partial_label_rows_and_business_notes_from_both_tracked_hidden_reference_files",
+    "candidate_or_result_execution_performed": false,
+    "hidden_candidate_outputs_read": false,
+    "hidden_runtime_inputs_materialized_by_successor": false,
+    "code_or_threshold_tuned_from_hidden_labels": false,
+    "why_contaminated": "A blind qualification set stops being blind once the implementing agent context has observed its expected outcomes, even when no hidden run was executed."
+  },
+  "contaminated_assets": [
+    {
+      "split": "test_frozen",
+      "ref": "eval_sets/fin_0_1_3_s1/references/test_frozen/vs5_qualification_references_v1_0.jsonl",
+      "sha256": "667977a8dffff6855383667040f737468e6402c172bdb780368974b4f121e5d0",
+      "qualification_eligible": false
+    },
+    {
+      "split": "holdout_heterogeneous",
+      "ref": "eval_sets/fin_0_1_3_s1/references/holdout_heterogeneous/vs5_qualification_references_v1_0.jsonl",
+      "sha256": "321e72b2fb5b23b965e9c2c82b7520012ba0486db8de8b93d997b632aac255ab",
+      "qualification_eligible": false
+    }
+  ],
+  "preservation": {
+    "mutate_or_delete_existing_assets": false,
+    "reinterpret_completed_R1_or_R2": false,
+    "allowed_future_role": "disclosed_development_or_regression_only_after_owner_decision",
+    "hidden_qualification_claim_allowed": false
+  },
+  "successor_isolation_contract": {
+    "new_hidden_labels_must_be_git_tracked": false,
+    "new_hidden_label_storage": "private_untracked_or_external_access_controlled_store",
+    "repository_may_track": [
+      "case_and_source_preregistration_without_expected_outcomes",
+      "content_digest_and_access_policy",
+      "candidate_freeze_receipt",
+      "post_evaluation_public_projection"
+    ],
+    "independent_adjudication_required": true,
+    "implementing_agent_must_not_receive_expected_outcomes_before_candidate_freeze": true,
+    "ordinary_recursive_search_guard": ".rgignore",
+    "tool_guard_is_defense_in_depth_not_security_boundary": true
+  },
+  "authority": {
+    "COST_R3_authorized": false,
+    "existing_test_frozen_execution_authorized": false,
+    "existing_holdout_execution_authorized": false,
+    "S1_qualified": false,
+    "publication_authorized": false,
+    "release_authorized": false
+  },
+  "known_boundary": "The current agent can continue zero-call contract work using COST and existing development cases, but cannot create or self-certify a replacement blind reference."
+}

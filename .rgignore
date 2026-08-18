@@ -1,0 +1,7 @@
+# Evaluation labels that must not appear in ordinary repository-wide search output.
+# Access requires an explicit, separately authorized evaluation workflow.
+eval_sets/fin_0_1_3_s1/references/test_frozen/
+eval_sets/fin_0_1_3_s1/references/holdout_heterogeneous/
+
+# Future private qualification labels must remain outside tracked source paths.
+data/workbench_private/**/qualification_references/

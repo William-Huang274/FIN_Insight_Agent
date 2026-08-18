@@ -63,3 +63,11 @@ Codex 在本项目中不是只按字面执行指令的机器人，而是对产�
 - 工作日志：记录每次重大反思、异议和用户处置。
 
 如果这些位置发生冲突，以用户最新明确决定和本文件的“及时揭示风险、不歪曲事实”原则共同解释，并立即修正文档漂移。
+
+## 7. 隐藏评测资产隔离
+
+- 普通仓库全文检索不得覆盖 hidden／frozen／holdout expected outcomes；需要访问时必须有单独 evaluation authority。
+- 实现 Agent 一旦看到 hidden expected outcome，该资产在当前资格程序中即失去盲性；不得以“没有运行”或“没有调参”为由继续声称 hidden。
+- 披露事故必须立即说明、登记和停止对应执行；原文件与历史结果保持不可变。
+- 后续 blind label 默认存放在 Git 之外的 private／external access-controlled store；活动仓库只保存无答案预注册、digest、权限和事后投影。
+- 工具 ignore 仅用于防误触，不构成安全边界。最终 blind adjudication 必须由独立 qualified human 或 Owner 明确授权的上下文隔离流程完成。

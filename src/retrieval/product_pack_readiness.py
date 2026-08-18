@@ -747,13 +747,73 @@ def _route_state(request_result: Mapping[str, Any]) -> dict[str, Any]:
         for route in routes
         if str(route.get("execution_state") or "") != "executed"
     ]
+    required_routes = [
+        route
+        for route in routes
+        if (
+            route.get("required_for_current_runtime") is True
+            or (
+                "required_for_current_runtime" not in route
+                and str(route.get("capability_state") or "") != "not_configured"
+            )
+        )
+    ]
+    required_unexecuted = [
+        str(route.get("declared_route") or "")
+        for route in required_routes
+        if str(route.get("execution_state") or "") != "executed"
+    ]
+    source_truth = request_result.get("source_route_execution_truth")
+    source_summary: Mapping[str, Any] = {}
+    source_truth_bound = False
+    if isinstance(source_truth, Mapping):
+        _require(
+            source_truth.get("schema_version")
+            == "fin_ia_s1_source_route_execution_truth_v1_0"
+            and str(source_truth.get("request_id") or "")
+            == str(request_result.get("request", {}).get("request_id") or ""),
+            "product_readiness_source_route_truth_invalid",
+        )
+        source_summary = _mapping(
+            source_truth.get("summary"),
+            "product_readiness_source_route_summary_invalid",
+        )
+        source_truth_bound = True
     return {
         "declared_route_count": len(routes),
         "execution_state_counts": dict(sorted(states.items())),
         "executed_routes": sorted(set(executed)),
         "unexecuted_or_unavailable_routes": sorted(set(unexecuted)),
         "all_declared_routes_executed": bool(routes) and not unexecuted,
-        "official_or_external_supplement_route_exhausted": False,
+        "required_candidate_routes": sorted(
+            {
+                str(route.get("declared_route") or "")
+                for route in required_routes
+            }
+        ),
+        "required_candidate_routes_all_executed": bool(required_routes)
+        and not required_unexecuted,
+        "required_candidate_routes_unexecuted": sorted(set(required_unexecuted)),
+        "source_route_execution_truth_bound": source_truth_bound,
+        "source_supplement_route_required": bool(
+            source_truth.get("supplement_route_required")
+            if isinstance(source_truth, Mapping)
+            else False
+        ),
+        "source_route_execution_state_counts": dict(
+            source_summary.get("route_execution_state_counts") or {}
+        ),
+        "official_or_external_supplement_route_exhausted": bool(
+            source_summary.get("official_or_external_supplement_route_exhausted")
+        ),
+        "source_non_disclosure_adjudicated": bool(
+            source_truth_bound
+            and source_truth.get("requirements")
+            and all(
+                row.get("source_non_disclosure_adjudicated") is True
+                for row in source_truth.get("requirements") or ()
+            )
+        ),
     }
 
 
@@ -803,17 +863,21 @@ def _gap_receipt(
     blockers = []
     if not source_state.get("all_source_records_lineage_bound"):
         blockers.append("local_source_object_lineage_not_complete")
-    if not route["all_declared_routes_executed"]:
-        blockers.append("one_or_more_declared_routes_not_executed")
+    if not route["required_candidate_routes_all_executed"]:
+        blockers.append("one_or_more_required_candidate_routes_not_executed")
     if ceiling.get("union_ceiling_reached") is True:
         blockers.append("bounded_candidate_union_ceiling_reached")
     if requirement_receipt.get("complete") is not True:
         blockers.append("material_requirement_incomplete_in_bounded_union")
     if decision_counts["unjudged"] or decision_counts["needs_human_review"]:
         blockers.append("candidate_decisions_not_terminally_adjudicated")
-    if not route["official_or_external_supplement_route_exhausted"]:
-        blockers.append("official_or_external_supplement_route_not_exhausted")
-    blockers.append("source_non_disclosure_not_adjudicated")
+    if requirement_state == "blocked_by_candidate_coverage":
+        if not route["source_route_execution_truth_bound"]:
+            blockers.append("source_route_execution_truth_missing")
+        if not route["official_or_external_supplement_route_exhausted"]:
+            blockers.append("official_or_external_supplement_route_not_exhausted")
+        if not route["source_non_disclosure_adjudicated"]:
+            blockers.append("source_non_disclosure_not_adjudicated")
     body = {
         "schema_version": GAP_ELIGIBILITY_RECEIPT_SCHEMA_VERSION,
         "recorded_at": recorded_at,
@@ -851,10 +915,18 @@ def _gap_receipt(
             "candidate_runtime_executed": ceiling.get("execution_state")
             == "executed",
             "declared_routes_all_executed": route["all_declared_routes_executed"],
+            "required_candidate_routes_all_executed": route[
+                "required_candidate_routes_all_executed"
+            ],
+            "source_route_execution_truth_bound": route[
+                "source_route_execution_truth_bound"
+            ],
             "official_or_external_supplement_route_exhausted": route[
                 "official_or_external_supplement_route_exhausted"
             ],
-            "source_non_disclosure_adjudicated": False,
+            "source_non_disclosure_adjudicated": route[
+                "source_non_disclosure_adjudicated"
+            ],
             "candidate_union_ceiling_reached": ceiling.get(
                 "union_ceiling_reached"
             )

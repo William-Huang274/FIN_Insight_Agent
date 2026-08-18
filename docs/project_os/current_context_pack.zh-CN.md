@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化。当前 Runtime Registry 已推进到 R25／26 个活动资源；1,841 条来源、34,117 个金融对象、Qwen CUDA FP16 cache、S2 SQLite、reviewed Evidence、三案 ProductReadiness 与对象级 candidate review lineage 已由 binding v1.2 绑定，并由 `/workspace` 消费。MU 现有 34 条审阅关系／22 个唯一对象，NVDA 为 31／25，其中 1 条可复用既有 Evidence；DELL 因自然材料范围未定而保持 0 条，不伪造 fallback 审阅。Candidate 自动晋升、NumericFact 新授权和 public-gap 声明仍为 0。RC-S1-042 的安全对象 lineage 子门已关闭，当前最早责任层为 RC-S1-043 受控 Evidence successor、精确 slot 绑定和三案 readiness 重物化；`S1_qualified_stable` 仍为 false，不能运行产品资格完整真实链或恢复 S3 主线。
+当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3 与共享 current lineage 已进入 Runtime Registry R27／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 与 execution-truth Runtime 已完成工程实现，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开；三案正式 successor 尚待在干净提交上物化。当前最早责任层为 RC-S1-046 current source-truth replay／ProductReadiness successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
 
 ## 2026-08-19 S1 retrieval-context 容量一致性修复
 
@@ -779,3 +779,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Workbench 现在显示当前精确绑定 Evidence 数；没有对 successor 做等价召回复证时，“既有证据未召回”显示为未复证，避免把未知伪装成 0。artifact、payload、ProductReadiness、case、digest 或 authority 漂移均 fail closed。
 - 全仓 `780 passed`，TypeScript／Vite、compileall、active baseline `170 Python／8 frontend／26 Runtime／0 forbidden`、7,304-file secret scan 与 diff check 通过。
 - 当前最早内部责任层已收敛为 request-level source-role dispatch 与 route exhaustion：行业、官方 IR、外源等需要必须落到真实 adapter，并记录 requested／available／executed／exhausted；未执行路线不能形成 public-information gap。graph、learned sparse 和 multi-vector 是否为 FIN 0.1.3 必需路线需单独作产品价值决策，不因“配置里列过”自动成为阻断。
+
+## 2026-08-19 S1 来源路线真相工程门
+
+- provider-neutral Source Route Portfolio 已进入 Runtime Registry R27；本地快照、SEC、已注册官方文档、发行人 IR、PIT 行情、行业源、diagnostic broad web 与人工上传不再混成一个“联网搜索”状态。
+- 只有候选覆盖不足才要求补源；Evidence admission 失败留在 Evidence Gate。未配置 learned sparse／multi-vector／graph 不再自动阻断当前候选 Runtime。
+- 三案零调用 replay 显示：DELL 0／8、MU 4／8、NVDA 3／8 请求需要补源；当前三案均为 0 个 public-gap eligible request。MU／NVDA 的不足主要是官方路线未按 requirement 执行、exact route 未注册或 adapter 未配置，不能写成免费公开信息不存在。
+- 供应链资料按 Evidence Owner 匹配官方 route；NVDA 案中的 TSM 文档不再因研究 Case 不同而被错误拒绝。
+- 全仓 `795 passed`，TypeScript／Vite／compileall／active baseline／secret scan 通过；0 网络、0 模型、0 learned-vector。当前代码工程门通过，但 formal three-case replay／readiness successor 尚未物化，RC-S1-046 保持打开。

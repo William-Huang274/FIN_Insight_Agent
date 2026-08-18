@@ -51,6 +51,15 @@ from retrieval.product_evidence_successor import (
     ProductEvidenceSuccessorError,
     project_current_product_evidence_successor_lineage,
 )
+from retrieval.source_route_dispatch import (
+    SourceRouteDispatchError,
+    SourceRoutePortfolioPolicy,
+    candidate_coverage_state_from_hybrid_result,
+    collect_source_route_candidate_rows,
+    compile_source_route_execution_truth,
+    load_source_route_portfolio_policy,
+)
+from ingestion.source_intake import SourceIntakePolicy, SourceIntakeStore
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.research.planning import (
@@ -118,6 +127,12 @@ CURRENT_RESEARCH_EVIDENCE_PACK_RESULT_RESOURCE_ID = (
 CURRENT_S1_PRODUCT_READINESS_CATALOG_RESOURCE_ID = (
     "application.config.current_s1_product_readiness_catalog"
 )
+CURRENT_S1_SOURCE_ROUTE_PORTFOLIO_RESOURCE_ID = (
+    "application.config.current_s1_source_route_portfolio"
+)
+CURRENT_SOURCE_INTAKE_POLICY_RESOURCE_ID = (
+    "application.config.current_source_intake_policy"
+)
 EXPECTED_SCHEMA = "fin_ia_current_retrieval_snapshot_v1_0"
 EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
 RETRIEVAL_PROJECTION_SCHEMA = "fin_ia_research_retrieval_projection_v1_0"
@@ -174,6 +189,9 @@ class ResearchRetrievalService:
         product_readiness_results: Mapping[
             str, Mapping[str, Any]
         ] | None = None,
+        source_route_policy: SourceRoutePortfolioPolicy | Mapping[str, Any] | None = None,
+        source_intake_policy: SourceIntakePolicy | Mapping[str, Any] | None = None,
+        source_intake_attempts: tuple[Mapping[str, Any], ...] = (),
     ) -> None:
         self._snapshot = self._validate(snapshot)
         self._cases = {
@@ -341,6 +359,23 @@ class ResearchRetrievalService:
             str(case_key).strip().upper(): deepcopy(dict(value))
             for case_key, value in (product_readiness_results or {}).items()
         }
+        self._source_route_policy = (
+            load_source_route_portfolio_policy(source_route_policy)
+            if isinstance(source_route_policy, Mapping)
+            else source_route_policy
+        )
+        self._source_intake_policy = (
+            SourceIntakePolicy.from_mapping(source_intake_policy)
+            if isinstance(source_intake_policy, Mapping)
+            else source_intake_policy
+        )
+        self._source_intake_attempts = tuple(
+            deepcopy(dict(row)) for row in source_intake_attempts
+        )
+        if (self._source_route_policy is None) != (self._source_intake_policy is None):
+            raise ResearchRetrievalServiceError(
+                "research_source_route_contract_binding_incomplete", 503
+            )
 
     @classmethod
     def from_runtime_paths(
@@ -374,6 +409,19 @@ class ResearchRetrievalService:
                 product_readiness_catalog.get("case_resource_ids") or {}
             ).items()
         }
+        source_intake_policy_payload = read_registered_runtime_json(
+            repository_root,
+            CURRENT_SOURCE_INTAKE_POLICY_RESOURCE_ID,
+        )
+        source_intake_policy = SourceIntakePolicy.from_mapping(
+            source_intake_policy_payload
+        )
+        source_intake_attempts = tuple(
+            SourceIntakeStore(
+                paths.workbench_private_root / "source_intake",
+                source_intake_policy,
+            ).list_attempts(limit=1000)
+        )
         return cls(
             snapshot=read_registered_runtime_json(
                 repository_root,
@@ -454,6 +502,12 @@ class ResearchRetrievalService:
                 CURRENT_RESEARCH_EVIDENCE_PACK_RESULT_RESOURCE_ID,
             ),
             product_readiness_results=product_readiness_results,
+            source_route_policy=read_registered_runtime_json(
+                repository_root,
+                CURRENT_S1_SOURCE_ROUTE_PORTFOLIO_RESOURCE_ID,
+            ),
+            source_intake_policy=source_intake_policy,
+            source_intake_attempts=source_intake_attempts,
         )
 
     def get_case(
@@ -747,6 +801,9 @@ class ResearchRetrievalService:
                     "hybrid_object_retrieval": hybrid,
                     "route_execution_truth": route_truth,
                 }
+                enriched["source_route_execution_truth"] = (
+                    self._source_route_projection(enriched, hybrid_result=hybrid)
+                )
                 enriched["candidate_ceiling_provenance"] = (
                     self._candidate_ceiling_projection(
                         result=enriched,
@@ -1121,6 +1178,7 @@ class ResearchRetrievalService:
                 "complete S1/S3 product acceptance."
             ),
         }
+        body["source_route_execution_truth"] = self._source_route_projection(body)
         body["candidate_ceiling_provenance"] = (
             self._candidate_ceiling_projection(
                 result=body,
@@ -1129,6 +1187,39 @@ class ResearchRetrievalService:
             )
         )
         return {**body, "projection_digest": canonical_digest(body)}
+
+    def _source_route_projection(
+        self,
+        result: Mapping[str, Any],
+        *,
+        hybrid_result: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
+        if self._source_route_policy is None or self._source_intake_policy is None:
+            return None
+        candidate_rows = collect_source_route_candidate_rows(
+            result, hybrid_result
+        )
+        try:
+            return compile_source_route_execution_truth(
+                request=result["request"],
+                query_plan=result["query_plan"],
+                policy=self._source_route_policy,
+                local_candidate_rows=candidate_rows,
+                candidate_coverage_state=(
+                    candidate_coverage_state_from_hybrid_result(hybrid_result)
+                ),
+                registered_intake_routes=[
+                    route.public_projection()
+                    for route in self._source_intake_policy.routes.values()
+                ],
+                intake_attempts=self._source_intake_attempts,
+            )
+        except SourceRouteDispatchError as exc:
+            raise ResearchRetrievalServiceError(
+                "research_source_route_projection_invalid",
+                503,
+                typed_reason=str(exc),
+            ) from exc
 
     def _candidate_ceiling_projection(
         self,

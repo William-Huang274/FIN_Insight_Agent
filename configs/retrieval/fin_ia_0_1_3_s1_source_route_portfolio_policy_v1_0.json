@@ -1,0 +1,121 @@
+{
+  "schema_version": "fin_ia_s1_source_route_portfolio_policy_v1_0",
+  "policy_id": "FIN-0.1.3-S1-SOURCE-ROUTE-PORTFOLIO-V1.0",
+  "status": "active_provider_neutral_source_route_portfolio",
+  "recorded_at": "2026-08-19",
+  "policy": {
+    "local_first": true,
+    "candidate_is_not_evidence": true,
+    "diagnostic_provider_cannot_prove_exhaustion": true,
+    "transport_failure_is_not_no_result": true,
+    "public_gap_requires_non_disclosure_adjudication": true,
+    "source_capture_precedes_parse": true,
+    "evidence_admission_failure_does_not_trigger_source_expansion": true
+  },
+  "routes": [
+    {
+      "route_id": "current_local_snapshot",
+      "route_kind": "local_snapshot",
+      "capability_state": "available",
+      "route_tier": "production",
+      "executor_id": "current_source_object_snapshot",
+      "case_scope": ["*"],
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K", "EARNINGS_CALL_TRANSCRIPT", "INVESTOR_PRESENTATION", "PRESS_RELEASE", "MARKET_SNAPSHOT", "INDUSTRY_DATA", "REGULATORY_PRIMARY"],
+      "source_roles": ["issuer_disclosure", "related_entity_context", "related_entity_disclosure", "point_in_time_market", "industry_context", "regulatory_primary"],
+      "capture_required": true,
+      "exhaustion_authority": false,
+      "exact_registry_required": false
+    },
+    {
+      "route_id": "sec_edgar_official_primary",
+      "route_kind": "official_primary",
+      "capability_state": "available",
+      "route_tier": "production",
+      "executor_id": "sec_edgar_connector_capture_first",
+      "case_scope": ["*"],
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"],
+      "source_roles": ["issuer_disclosure", "related_entity_context", "related_entity_disclosure"],
+      "capture_required": true,
+      "exhaustion_authority": true,
+      "exact_registry_required": false
+    },
+    {
+      "route_id": "registered_official_document_intake",
+      "route_kind": "official_ir",
+      "capability_state": "available_when_exact_route_registered",
+      "route_tier": "production",
+      "executor_id": "source_intake_registered_exact_document",
+      "case_scope": ["*"],
+      "source_types": ["EARNINGS_CALL_TRANSCRIPT", "INVESTOR_PRESENTATION", "PRESS_RELEASE"],
+      "source_roles": ["issuer_disclosure", "related_entity_context", "related_entity_disclosure"],
+      "capture_required": true,
+      "exhaustion_authority": true,
+      "exact_registry_required": true
+    },
+    {
+      "route_id": "issuer_ir_feed_or_sitemap",
+      "route_kind": "official_ir",
+      "capability_state": "not_configured",
+      "route_tier": "production",
+      "executor_id": "none",
+      "case_scope": ["*"],
+      "source_types": ["EARNINGS_CALL_TRANSCRIPT", "INVESTOR_PRESENTATION", "PRESS_RELEASE"],
+      "source_roles": ["issuer_disclosure", "related_entity_context", "related_entity_disclosure"],
+      "capture_required": true,
+      "exhaustion_authority": true,
+      "exact_registry_required": false
+    },
+    {
+      "route_id": "point_in_time_market_primary",
+      "route_kind": "structured_market",
+      "capability_state": "not_configured",
+      "route_tier": "production",
+      "executor_id": "none",
+      "case_scope": ["*"],
+      "source_types": ["MARKET_SNAPSHOT"],
+      "source_roles": ["point_in_time_market"],
+      "capture_required": true,
+      "exhaustion_authority": true,
+      "exact_registry_required": false
+    },
+    {
+      "route_id": "industry_primary_or_licensed_provider",
+      "route_kind": "industry_primary_or_licensed",
+      "capability_state": "not_configured",
+      "route_tier": "production",
+      "executor_id": "none",
+      "case_scope": ["*"],
+      "source_types": ["INDUSTRY_DATA", "REGULATORY_PRIMARY"],
+      "source_roles": ["industry_context", "regulatory_primary"],
+      "capture_required": true,
+      "exhaustion_authority": true,
+      "exact_registry_required": false
+    },
+    {
+      "route_id": "broad_web_discovery_diagnostic",
+      "route_kind": "diagnostic_discovery",
+      "capability_state": "diagnostic_only",
+      "route_tier": "diagnostic",
+      "executor_id": "provider_neutral_discovery_shadow",
+      "case_scope": ["*"],
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K", "EARNINGS_CALL_TRANSCRIPT", "INVESTOR_PRESENTATION", "PRESS_RELEASE", "INDUSTRY_DATA", "REGULATORY_PRIMARY"],
+      "source_roles": ["issuer_disclosure", "related_entity_context", "related_entity_disclosure", "industry_context", "regulatory_primary"],
+      "capture_required": true,
+      "exhaustion_authority": false,
+      "exact_registry_required": false
+    },
+    {
+      "route_id": "operator_official_upload",
+      "route_kind": "operator_fallback",
+      "capability_state": "manual_only",
+      "route_tier": "manual",
+      "executor_id": "workbench_source_intake_upload",
+      "case_scope": ["*"],
+      "source_types": ["EARNINGS_CALL_TRANSCRIPT", "INVESTOR_PRESENTATION", "PRESS_RELEASE"],
+      "source_roles": ["issuer_disclosure", "related_entity_context", "related_entity_disclosure"],
+      "capture_required": true,
+      "exhaustion_authority": false,
+      "exact_registry_required": false
+    }
+  ]
+}

@@ -664,6 +664,7 @@ def project_request_route_execution_truth(
                     {
                         **capability,
                         "execution_state": execution_state,
+                        "required_for_current_runtime": state != "not_configured",
                         "public_information_gap_eligible": False,
                     }
                 )
@@ -686,6 +687,12 @@ def project_request_route_execution_truth(
         ),
         "static_snapshot_filter_executed": True,
         "hybrid_candidate_runtime_executed": hybrid_result is not None,
+        "required_candidate_routes_all_executed": all(
+            route.get("execution_state") == "executed"
+            for request in narrative_rows
+            for route in request["routes"]
+            if route["required_for_current_runtime"]
+        ),
         "unavailable_or_unexecuted_route_is_not_a_public_information_gap": True,
         "candidate_is_not_evidence": True,
         "numeric_authority_remains_with_s2": True,

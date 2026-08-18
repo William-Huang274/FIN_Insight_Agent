@@ -224,6 +224,52 @@ def test_incomplete_candidate_requirement_is_not_public_information_gap() -> Non
     ]
 
 
+def test_bound_source_route_truth_separates_optional_candidate_routes_from_gap_routes() -> None:
+    request_result = _request_result(requirement_complete=False)
+    request_result["route_execution_truth"]["narrative_route_requests"][0][
+        "routes"
+    ].append(
+        {
+            "declared_route": "typed_relationship_graph",
+            "capability_state": "not_configured",
+            "execution_state": "not_executed_route_unavailable",
+            "required_for_current_runtime": False,
+        }
+    )
+    request_result["source_route_execution_truth"] = {
+        "schema_version": "fin_ia_s1_source_route_execution_truth_v1_0",
+        "request_id": "REQ-1",
+        "supplement_route_required": True,
+        "requirements": [
+            {
+                "source_non_disclosure_adjudicated": True,
+            }
+        ],
+        "summary": {
+            "route_execution_state_counts": {
+                "executed_local_snapshot": 1,
+                "terminal_no_eligible_source": 1,
+            },
+            "official_or_external_supplement_route_exhausted": True,
+        },
+    }
+
+    result = _compile(request_result, _pack())
+    route_state = result["requests"][0]["route_execution_state"]
+    receipt = result["gap_eligibility_receipts"][0]
+
+    assert route_state["all_declared_routes_executed"] is False
+    assert route_state["required_candidate_routes_all_executed"] is True
+    assert route_state["official_or_external_supplement_route_exhausted"] is True
+    assert "one_or_more_required_candidate_routes_not_executed" not in receipt[
+        "blockers"
+    ]
+    assert "official_or_external_supplement_route_not_exhausted" not in receipt[
+        "blockers"
+    ]
+    assert "source_non_disclosure_not_adjudicated" not in receipt["blockers"]
+
+
 def test_exact_source_with_wrong_facet_blocks_evidence_admission() -> None:
     pack = _pack()
     pack["evidence_items"][0]["slot_bindings"][0]["facet_ids"] = ["other"]
@@ -236,6 +282,9 @@ def test_exact_source_with_wrong_facet_blocks_evidence_admission() -> None:
     assert result["gap_eligibility_receipts"][0][
         "earliest_responsible_layer"
     ] == "S1_evidence_admission"
+    assert "official_or_external_supplement_route_not_exhausted" not in result[
+        "gap_eligibility_receipts"
+    ][0]["blockers"]
 
 
 def test_explicit_scope_pending_remains_candidate_audit_only() -> None:

@@ -156,6 +156,22 @@ def _public_projection(
                 "unexecuted_or_unavailable_routes": row[
                     "route_execution_state"
                 ]["unexecuted_or_unavailable_routes"],
+                "required_candidate_routes_all_executed": row[
+                    "route_execution_state"
+                ]["required_candidate_routes_all_executed"],
+                "required_candidate_routes_unexecuted": row[
+                    "route_execution_state"
+                ]["required_candidate_routes_unexecuted"],
+                "source_route_execution_truth": {
+                    key: row["route_execution_state"][key]
+                    for key in (
+                        "source_route_execution_truth_bound",
+                        "source_supplement_route_required",
+                        "source_route_execution_state_counts",
+                        "official_or_external_supplement_route_exhausted",
+                        "source_non_disclosure_adjudicated",
+                    )
+                },
                 "candidate_review_summary": {
                     "review_item_count": review["review_item_count"],
                     "human_review_required_count": review[

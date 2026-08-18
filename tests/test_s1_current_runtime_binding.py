@@ -32,7 +32,7 @@ RECEIPT = (
     ROOT
     / "configs"
     / "runtime"
-    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_3.json"
+    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_4.json"
 )
 
 
@@ -111,6 +111,12 @@ def test_request_route_truth_distinguishes_unavailable_route_from_source_gap() -
         "scheduled_in_current_hybrid_runtime",
         "not_executed_route_unavailable",
     ]
+    assert [row["required_for_current_runtime"] for row in routes] == [
+        True,
+        True,
+        False,
+    ]
+    assert scheduled["required_candidate_routes_all_executed"] is False
     assert all(row["public_information_gap_eligible"] is False for row in routes)
 
     executed = project_request_route_execution_truth(
@@ -125,6 +131,7 @@ def test_request_route_truth_distinguishes_unavailable_route_from_source_gap() -
     assert executed["narrative_route_requests"][0]["routes"][2][
         "execution_state"
     ] == "not_executed_route_unavailable"
+    assert executed["required_candidate_routes_all_executed"] is True
 
 
 def test_current_runtime_receipt_fails_closed_on_digest_mutation() -> None:
@@ -254,3 +261,13 @@ def test_current_product_direct_request_exposes_non_gap_candidate_ceiling() -> N
     assert provenance["gap_eligibility"][
         "public_information_gap_eligible"
     ] is False
+    source_truth = projection["source_route_execution_truth"]
+    assert source_truth["candidate_coverage_state"] == "not_evaluated"
+    assert source_truth["supplement_route_required"] is False
+    assert source_truth["requirements"][0]["local_candidate_count"] > 0
+    assert {
+        row["route_id"]: row["execution_state"]
+        for row in source_truth["requirements"][0]["source_routes"]
+    }["sec_edgar_official_primary"] == (
+        "not_scheduled_candidate_coverage_not_evaluated"
+    )

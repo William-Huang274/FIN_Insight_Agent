@@ -349,7 +349,7 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R26"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R27"
     )
     assert set(registry.by_id()) == {
         "application.config.current_financial_intent_ontology",
@@ -365,6 +365,7 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
         "application.config.current_s1_artifact_spine_policy",
         "application.config.current_s1_product_readiness_catalog",
         "application.config.current_s1_runtime_binding_policy",
+        "application.config.current_s1_source_route_portfolio",
         "application.config.current_source_intake_policy",
         "application.result.current_research_local_evidence_packs",
         "application.result.current_reviewed_claim_anchors",

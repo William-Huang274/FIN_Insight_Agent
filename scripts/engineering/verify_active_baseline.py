@@ -28,6 +28,8 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/data_retrieval/run_s1d_source_intake.py",
     "scripts/data_retrieval/run_s1d_official_pdf_successor.py",
     "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
+    "scripts/data_retrieval/materialize_s1_current_product_readiness.py",
+    "scripts/data_retrieval/materialize_s1_source_route_truth_successor.py",
     "scripts/data_retrieval/materialize_s1c_financial_role_eval_set.py",
     "scripts/data_retrieval/materialize_s1c_object_role_review_set.py",
     "scripts/data_retrieval/materialize_s1c_requalified_qrels.py",

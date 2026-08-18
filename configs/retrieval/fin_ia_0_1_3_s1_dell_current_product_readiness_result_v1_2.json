@@ -1,0 +1,331 @@
+{
+  "accepted_reviewed_evidence_count": 1,
+  "authority": {
+    "S1_qualification_claimed": false,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority_remains_with_S2": true,
+    "product_publication": false,
+    "public_information_gap_authority": false
+  },
+  "candidate_count": 768,
+  "candidate_review_packet_summary": {
+    "human_review_required_count": 0,
+    "issue_class_counts": {},
+    "private_packet_required_for_bounded_excerpt_projection": true,
+    "review_item_count": 0,
+    "review_packet_digest": "07cdee6c4fe7c84aa2cd38e8f3d763ff396178cc1c13b00e6721f128719c78b6",
+    "schema_version": "fin_ia_s1_product_candidate_review_packet_v1_0",
+    "status": "candidate_review_packet_materialized_no_promotion"
+  },
+  "case_key": "DELL",
+  "declared_pack_gap_receipt_count": 14,
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1_current_product_readiness/dell-r3/full_result.json",
+  "full_result_sha256": "986beb067b0644b6ef20148278c968d63d13a642c26fd53872b7ae379f501e75",
+  "gap_eligibility_receipt_count": 12,
+  "known_boundary": "This public projection reports product CandidateDecision, current reviewed Evidence reuse, S2 numeric authority and gap eligibility without exposing candidate text, object identifiers or private source material in the tracked artifact. A digest-bound private packet may be projected as bounded excerpts only inside the authenticated local Workbench. It does not qualify S1, declare a public-information gap or authorize publication.",
+  "prepared_from_commit": "aaf484808ebe930ed2f50371d3d32e0988377740",
+  "readiness_state": "candidate_audit_only_explicit_scope_pending",
+  "recorded_at": "2026-08-18T17:37:46+00:00",
+  "request_count": 8,
+  "request_state_counts": {
+    "blocked_by_candidate_coverage": 0,
+    "blocked_by_evidence_admission": 0,
+    "blocked_by_local_data_materialization": 0,
+    "blocked_by_numeric_or_bridge_authority": 0,
+    "blocked_by_retrieval_quality": 0,
+    "blocked_by_source_access": 0,
+    "candidate_audit_only_explicit_scope_pending": 8,
+    "partial_with_material_gaps": 0,
+    "ready_for_current_scope": 0
+  },
+  "requests": [
+    {
+      "business_question_zh": "订单与积压是否真实增长？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 16,
+        "rejected": 70,
+        "unjudged": 10
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 0,
+        "issue_class_counts": {},
+        "request_review_digest": "6149947ec56be2a3e88efbf459e3129186b806086ca6acb46e9ea02ed62919a7",
+        "review_item_count": 0
+      },
+      "facet_id": "orders_and_backlog",
+      "material_scope_ready": false,
+      "numeric_authority_state": {
+        "request_count": 4,
+        "resolved_count": 0,
+        "state": "typed_gap",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 4
+      },
+      "readiness_state": "candidate_audit_only_explicit_scope_pending",
+      "request_id": "REQ::463fa7c1beb1877555318e2d",
+      "requirement_count": 2,
+      "requirement_state_counts": {
+        "candidate_audit_only_explicit_scope_pending": 2
+      },
+      "slot_id": "demand_volume_quality",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "订单向出货与收入转化是否可持续，是否存在拉货或消化风险？",
+      "candidate_decision_counts": {
+        "accepted": 1,
+        "needs_human_review": 15,
+        "rejected": 62,
+        "unjudged": 18
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 0,
+        "issue_class_counts": {},
+        "request_review_digest": "22ebe462e7eeda9476fdff10bf1c7302367bf148f3ae097690b5f4a204f8dbed",
+        "review_item_count": 0
+      },
+      "facet_id": "conversion_and_durability",
+      "material_scope_ready": false,
+      "numeric_authority_state": {
+        "request_count": 3,
+        "resolved_count": 0,
+        "state": "typed_gap",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 3
+      },
+      "readiness_state": "candidate_audit_only_explicit_scope_pending",
+      "request_id": "REQ::9381920020dc3a82ba2994c3",
+      "requirement_count": 2,
+      "requirement_state_counts": {
+        "candidate_audit_only_explicit_scope_pending": 2
+      },
+      "slot_id": "demand_volume_quality",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "最新收入、增长与经营利润表现如何？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 16,
+        "rejected": 22,
+        "unjudged": 58
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 0,
+        "issue_class_counts": {},
+        "request_review_digest": "61a259a79f1ed005772ada65740a4ca6ae23e680033eecdad307b627f790f177",
+        "review_item_count": 0
+      },
+      "facet_id": "reported_results",
+      "material_scope_ready": false,
+      "numeric_authority_state": {
+        "request_count": 6,
+        "resolved_count": 6,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "candidate_audit_only_explicit_scope_pending",
+      "request_id": "REQ::d4469fa451da275fb07060bb",
+      "requirement_count": 1,
+      "requirement_state_counts": {
+        "candidate_audit_only_explicit_scope_pending": 1
+      },
+      "slot_id": "operating_performance",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector"
+      ]
+    },
+    {
+      "business_question_zh": "增长是否转化为毛利率、经营利润率和增量利润？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 16,
+        "rejected": 49,
+        "unjudged": 31
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 0,
+        "issue_class_counts": {},
+        "request_review_digest": "d4f2940ba0d79cf7e51dcf27b4fd16653bc1997b75ec579cf294dc2d5f51e75a",
+        "review_item_count": 0
+      },
+      "facet_id": "margin_and_incremental_profit",
+      "material_scope_ready": false,
+      "numeric_authority_state": {
+        "request_count": 4,
+        "resolved_count": 4,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "candidate_audit_only_explicit_scope_pending",
+      "request_id": "REQ::b2cfb69ae7e522f3b7df19cf",
+      "requirement_count": 1,
+      "requirement_state_counts": {
+        "candidate_audit_only_explicit_scope_pending": 1
+      },
+      "slot_id": "pricing_mix_value_capture",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector"
+      ]
+    },
+    {
+      "business_question_zh": "利润如何转化为经营现金流和自由现金流？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 16,
+        "rejected": 33,
+        "unjudged": 47
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 0,
+        "issue_class_counts": {},
+        "request_review_digest": "8b99fe79a209e4a25790c8b3471461b9f24979fb794649cee3e0c92725aa6978",
+        "review_item_count": 0
+      },
+      "facet_id": "cash_generation",
+      "material_scope_ready": false,
+      "numeric_authority_state": {
+        "request_count": 3,
+        "resolved_count": 3,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "candidate_audit_only_explicit_scope_pending",
+      "request_id": "REQ::383c1b59bb5a3b519ab71759",
+      "requirement_count": 1,
+      "requirement_state_counts": {
+        "candidate_audit_only_explicit_scope_pending": 1
+      },
+      "slot_id": "cash_conversion_balance_sheet",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector"
+      ]
+    },
+    {
+      "business_question_zh": "增长是否带来应收、库存、付款条款和信用风险？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 17,
+        "rejected": 72,
+        "unjudged": 7
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 0,
+        "issue_class_counts": {},
+        "request_review_digest": "ec5b82a0caef5c9ba7c3eadcbde78f7ee849dd24452e82e7dcc36f6d611ecb1e",
+        "review_item_count": 0
+      },
+      "facet_id": "working_capital_risk",
+      "material_scope_ready": false,
+      "numeric_authority_state": {
+        "request_count": 3,
+        "resolved_count": 3,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "candidate_audit_only_explicit_scope_pending",
+      "request_id": "REQ::a79c2cfffab96c6d0da6525d",
+      "requirement_count": 2,
+      "requirement_state_counts": {
+        "candidate_audit_only_explicit_scope_pending": 2
+      },
+      "slot_id": "cash_conversion_balance_sheet",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector"
+      ]
+    },
+    {
+      "business_question_zh": "研究主体披露的最强反方事实是什么？",
+      "candidate_decision_counts": {
+        "accepted": 1,
+        "needs_human_review": 7,
+        "rejected": 88,
+        "unjudged": 0
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 0,
+        "issue_class_counts": {},
+        "request_review_digest": "a57e2cd820af662d41d136a81cd286ed724e39b3b866ba608d7759169eee58e5",
+        "review_item_count": 0
+      },
+      "facet_id": "issuer_counterevidence",
+      "material_scope_ready": false,
+      "numeric_authority_state": {
+        "request_count": 1,
+        "resolved_count": 1,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "candidate_audit_only_explicit_scope_pending",
+      "request_id": "REQ::7a919c5c198606c94e04c1cb",
+      "requirement_count": 1,
+      "requirement_state_counts": {
+        "candidate_audit_only_explicit_scope_pending": 1
+      },
+      "slot_id": "counterevidence_and_what_would_change",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "上下游披露了哪些可能推翻当前判断的背景？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 16,
+        "rejected": 45,
+        "unjudged": 35
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 0,
+        "issue_class_counts": {},
+        "request_review_digest": "2b3982270c15497164932ca2539650c495cb63ccd7ac3094224dc3e17abb367c",
+        "review_item_count": 0
+      },
+      "facet_id": "upstream_or_demand_counterevidence",
+      "material_scope_ready": false,
+      "numeric_authority_state": {
+        "request_count": 4,
+        "resolved_count": 2,
+        "state": "partial_with_typed_gaps",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 2
+      },
+      "readiness_state": "candidate_audit_only_explicit_scope_pending",
+      "request_id": "REQ::00f962a9d1ec25c9354fad7e",
+      "requirement_count": 2,
+      "requirement_state_counts": {
+        "candidate_audit_only_explicit_scope_pending": 2
+      },
+      "slot_id": "counterevidence_and_what_would_change",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    }
+  ],
+  "result_digest": "7fb5dc520f4efade548991c70b89207b0f5172ae783bc86210fb2537d6bdb4c1",
+  "schema_version": "fin_ia_s1_current_product_readiness_result_v1_1",
+  "status": "current_product_pack_readiness_materialized"
+}
+

@@ -8,8 +8,8 @@ from typing import Any, Iterable, Mapping
 from .query_plan import canonical_digest
 
 
-POLICY_SCHEMA_VERSION = "fin_ia_s1_current_runtime_binding_policy_v1_1"
-RECEIPT_SCHEMA_VERSION = "fin_ia_s1_current_runtime_binding_receipt_v1_1"
+POLICY_SCHEMA_VERSION = "fin_ia_s1_current_runtime_binding_policy_v1_2"
+RECEIPT_SCHEMA_VERSION = "fin_ia_s1_current_runtime_binding_receipt_v1_2"
 
 
 class CurrentS1RuntimeBindingError(ValueError):
@@ -281,7 +281,7 @@ def build_current_s1_runtime_binding_receipt(
     catalog_resource_ids = product_readiness_catalog.get("case_resource_ids") or {}
     _require(
         product_readiness_catalog.get("schema_version")
-        == "fin_ia_current_s1_product_readiness_catalog_v1_0"
+        == "fin_ia_current_s1_product_readiness_catalog_v1_1"
         and product_readiness_catalog.get("status")
         == "active_read_only_s1_product_readiness_catalog"
         and product_readiness_catalog.get("published_case_keys")
@@ -296,7 +296,7 @@ def build_current_s1_runtime_binding_receipt(
         authority = readiness.get("authority") or {}
         _require(
             readiness.get("schema_version")
-            == "fin_ia_s1_current_product_readiness_result_v1_0"
+            == "fin_ia_s1_current_product_readiness_result_v1_1"
             and readiness.get("status")
             == "current_product_pack_readiness_materialized"
             and readiness.get("case_key") == case_key
@@ -304,6 +304,14 @@ def build_current_s1_runtime_binding_receipt(
             and authority.get("candidate_is_not_evidence") is True
             and authority.get("public_information_gap_authority") is False
             and authority.get("S1_qualification_claimed") is False
+            and str(readiness.get("full_result_ref") or "").startswith(
+                "data/workbench_private/"
+            )
+            and len(str(readiness.get("full_result_sha256") or "")) == 64
+            and (
+                readiness.get("candidate_review_packet_summary") or {}
+            ).get("private_packet_required_for_bounded_excerpt_projection")
+            is True
             and str(catalog_resource_ids[case_key])
             == str(assets_policy[asset_id].get("registry_resource_id") or ""),
             f"current_s1_runtime_product_readiness_invalid:{case_key}",
@@ -312,6 +320,18 @@ def build_current_s1_runtime_binding_receipt(
             "status": str(readiness.get("status") or ""),
             "readiness_state": str(readiness.get("readiness_state") or ""),
             "request_count": int(readiness.get("request_count") or 0),
+            "candidate_review_item_count": int(
+                (readiness.get("candidate_review_packet_summary") or {}).get(
+                    "review_item_count"
+                )
+                or 0
+            ),
+            "candidate_review_packet_digest": str(
+                (readiness.get("candidate_review_packet_summary") or {}).get(
+                    "review_packet_digest"
+                )
+                or ""
+            ),
             "result_digest": result_digest,
             "candidate_is_not_evidence": True,
             "public_information_gap_authority": False,
@@ -326,6 +346,11 @@ def build_current_s1_runtime_binding_receipt(
         )
         is True,
         "current_s1_runtime_product_readiness_consumer_not_registered",
+    )
+    _require(
+        product_consumer.get("workbench_per_object_lineage_drilldown_complete")
+        is True,
+        "current_s1_runtime_candidate_review_consumer_not_registered",
     )
 
     source_records = compiler.get("inputs", {}).get("records") or {}

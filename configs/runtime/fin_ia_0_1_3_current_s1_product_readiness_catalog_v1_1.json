@@ -1,0 +1,34 @@
+{
+  "schema_version": "fin_ia_current_s1_product_readiness_catalog_v1_1",
+  "status": "active_read_only_s1_product_readiness_catalog",
+  "recorded_at": "2026-08-19",
+  "published_case_keys": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "case_resource_ids": {
+    "DELL": "application.result.current_s1_dell_product_readiness",
+    "MU": "application.result.current_s1_mu_product_readiness",
+    "NVDA": "application.result.current_s1_nvda_product_readiness"
+  },
+  "read_mode": "current",
+  "read_permission": "current_product:read",
+  "max_candidate_review_excerpt_chars": 560,
+  "surface_policy": {
+    "tracked_candidate_text_exposure": false,
+    "tracked_private_source_material_exposure": false,
+    "tracked_object_identifier_exposure": false,
+    "authenticated_digest_bound_bounded_excerpt_exposure": true,
+    "authenticated_opaque_review_item_ref_exposure": true,
+    "authenticated_source_url_and_lineage_digest_exposure": true,
+    "raw_capture_exposure": false,
+    "private_filesystem_path_exposure": false,
+    "request_level_readiness_exposure": true,
+    "candidate_decision_count_exposure": true,
+    "automatic_evidence_promotion": false,
+    "public_information_gap_authority": false,
+    "S1_qualification_authority": false
+  },
+  "known_boundary": "This catalog exposes digest-bound S1 ProductReadiness plus bounded official-source Candidate review excerpts only inside the authenticated local Workbench. Tracked artifacts contain no candidate excerpts, object identifiers, private source material or raw captures. The surface does not promote Evidence, declare a public-information gap, qualify S1 or authorize publication."
+}

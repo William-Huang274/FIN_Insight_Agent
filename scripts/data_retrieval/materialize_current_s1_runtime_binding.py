@@ -51,14 +51,14 @@ def main() -> int:
         "--policy",
         default=(
             "configs/retrieval/"
-            "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_1.json"
+            "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_2.json"
         ),
     )
     parser.add_argument(
         "--output",
         default=(
             "configs/runtime/"
-            "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_1.json"
+            "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_2.json"
         ),
     )
     args = parser.parse_args()

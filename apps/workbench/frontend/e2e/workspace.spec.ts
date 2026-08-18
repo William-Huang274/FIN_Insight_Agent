@@ -45,7 +45,7 @@ test("workspace exposes the three identity-bound reviewed cases", async ({ page 
   await page.getByRole("button", { name: /证据与缺口/ }).click();
   await expect(page.getByRole("heading", { name: "当前 S1 产品就绪诊断" })).toBeVisible();
   await expect(page.getByText("等待 S3 明确研究范围", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText(/候选排名不会自动授予证据权威/)).toBeVisible();
+  await expect(page.getByText(/不会因展示而自动成为 Evidence/)).toBeVisible();
   await expect(page.getByText(/workbench_private/)).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "S1 命题级证据账本" })).toBeVisible();
   await expect(page.getByText(/当前 3 个缺口尚未完成官方或外源补证/)).toBeVisible();
@@ -70,6 +70,18 @@ test("workspace exposes the three identity-bound reviewed cases", async ({ page 
   await capture(page, "dell-evidence", testInfo.project.name);
   await page.getByRole("button", { name: /返回案例列表/ }).click();
   await expect(page.getByRole("heading", { name: "当前研究案例" })).toBeVisible();
+
+  await page.getByRole("button", { name: /Micron Technology/ }).click();
+  await page.getByRole("button", { name: /证据与缺口/ }).click();
+  await expect(page.getByText("对象级待复核", { exact: true })).toBeVisible();
+  const hbmRequest = page.getByText("订单与积压是否真实增长？", { exact: true }).locator("xpath=ancestor::article[1]");
+  await hbmRequest.getByText(/查看 \d+ 条对象级候选/).click();
+  await expect(page.getByText(/HBM4.*high-volume shipments/).first()).toBeVisible();
+  await expect(page.getByText(/多年期|multi-year contract terms/).first()).toBeVisible();
+  await expect(page.getByText(/workbench_private/)).toHaveCount(0);
+  await expect(page.getByText(/CURRENT_DOC::|COBJ::/)).toHaveCount(0);
+  await expectNoHorizontalOverflow(page);
+  await capture(page, "mu-candidate-review", testInfo.project.name);
 });
 
 

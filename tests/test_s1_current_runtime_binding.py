@@ -25,13 +25,13 @@ POLICY = (
     ROOT
     / "configs"
     / "retrieval"
-    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_1.json"
+    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_2.json"
 )
 RECEIPT = (
     ROOT
     / "configs"
     / "runtime"
-    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_1.json"
+    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_2.json"
 )
 
 
@@ -68,6 +68,15 @@ def test_current_runtime_receipt_preserves_lineage_and_open_gates() -> None:
     assert receipt["product_readiness"]["cases"]["NVDA"][
         "readiness_state"
     ] == "blocked_by_candidate_coverage"
+    assert receipt["product_readiness"]["cases"]["DELL"][
+        "candidate_review_item_count"
+    ] == 0
+    assert receipt["product_readiness"]["cases"]["MU"][
+        "candidate_review_item_count"
+    ] == 34
+    assert receipt["product_readiness"]["cases"]["NVDA"][
+        "candidate_review_item_count"
+    ] == 31
     assert receipt["acceptance"]["s1_qualified_stable"] is False
 
 

@@ -6,6 +6,7 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
+from urllib.parse import urlparse
 
 from sec_agent.runtime_bridge.paths import RuntimePathRegistry
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
@@ -80,10 +81,16 @@ EXPECTED_RESULT_CONTRACTS = frozenset(
 )
 PROJECTION_SCHEMA = "fin_ia_current_research_evidence_pack_projection_v1_0"
 EXPECTED_PRODUCT_READINESS_CATALOG_SCHEMA = (
-    "fin_ia_current_s1_product_readiness_catalog_v1_0"
+    "fin_ia_current_s1_product_readiness_catalog_v1_1"
 )
 EXPECTED_PRODUCT_READINESS_RESULT_SCHEMA = (
-    "fin_ia_s1_current_product_readiness_result_v1_0"
+    "fin_ia_s1_current_product_readiness_result_v1_1"
+)
+EXPECTED_PRODUCT_READINESS_PRIVATE_SCHEMA = (
+    "fin_ia_s1_current_product_readiness_full_result_v1_1"
+)
+EXPECTED_CANDIDATE_REVIEW_PACKET_SCHEMA = (
+    "fin_ia_s1_product_candidate_review_packet_v1_0"
 )
 EXPECTED_PRODUCT_READINESS_STATUS = (
     "current_product_pack_readiness_materialized"
@@ -142,6 +149,7 @@ class ResearchEvidencePackService:
         product_readiness_results: Mapping[
             str, Mapping[str, Any]
         ] | None = None,
+        product_readiness_private_root: str | Path | None = None,
     ) -> None:
         self._config = self._validate_config(config)
         self._result = self._validate_result(result, self._config)
@@ -220,6 +228,7 @@ class ResearchEvidencePackService:
         self._product_readiness = self._validate_product_readiness_surface(
             product_readiness_catalog,
             product_readiness_results,
+            product_readiness_private_root,
         )
 
     @classmethod
@@ -294,6 +303,7 @@ class ResearchEvidencePackService:
             ),
             product_readiness_catalog=product_readiness_catalog,
             product_readiness_results=product_readiness_results,
+            product_readiness_private_root=runtime_paths.workbench_private_root,
         )
 
     @property
@@ -437,6 +447,7 @@ class ResearchEvidencePackService:
         self,
         catalog: Mapping[str, Any] | None,
         results: Mapping[str, Mapping[str, Any]] | None,
+        private_root: str | Path | None,
     ) -> dict[str, dict[str, Any]]:
         if catalog is None and results is None:
             return {}
@@ -454,6 +465,15 @@ class ResearchEvidencePackService:
             "current_s1_product_readiness_catalog_invalid",
             503,
         )
+        _require(
+            private_root is not None
+            and int(catalog.get("max_candidate_review_excerpt_chars") or 0)
+            in range(120, 801),
+            "current_s1_product_readiness_private_review_binding_invalid",
+            503,
+        )
+        private_base = Path(private_root).resolve()
+        excerpt_limit = int(catalog["max_candidate_review_excerpt_chars"])
         resource_ids = {
             str(key).strip().upper(): str(value)
             for key, value in dict(
@@ -473,6 +493,9 @@ class ResearchEvidencePackService:
             digest = str(value.pop("result_digest", ""))
             requests = value.get("requests")
             authority = value.get("authority") or {}
+            private_ref = str(value.get("full_result_ref") or "")
+            private_sha256 = str(value.get("full_result_sha256") or "")
+            review_summary = value.get("candidate_review_packet_summary") or {}
             _require(
                 value.get("schema_version")
                 == EXPECTED_PRODUCT_READINESS_RESULT_SCHEMA
@@ -488,6 +511,22 @@ class ResearchEvidencePackService:
                 503,
                 case_key=case_key,
             )
+            private_result = self._load_product_readiness_private_result(
+                private_base=private_base,
+                repo_relative_ref=private_ref,
+                expected_sha256=private_sha256,
+                case_key=case_key,
+            )
+            review_packet = self._validate_candidate_review_packet(
+                private_result=private_result,
+                public_summary=review_summary,
+                case_key=case_key,
+                excerpt_limit=excerpt_limit,
+            )
+            review_requests = {
+                str(row.get("request_id") or ""): row
+                for row in review_packet["requests"]
+            }
             safe_requests = []
             for request in requests:
                 _require(
@@ -496,8 +535,31 @@ class ResearchEvidencePackService:
                     503,
                     case_key=case_key,
                 )
-                safe_requests.append(
-                    {
+                request_id = str(request.get("request_id") or "")
+                private_review = review_requests.get(request_id)
+                _require(
+                    isinstance(private_review, Mapping)
+                    and request.get("candidate_review_summary")
+                    == {
+                        "review_item_count": private_review.get(
+                            "review_item_count"
+                        ),
+                        "human_review_required_count": private_review.get(
+                            "human_review_required_count"
+                        ),
+                        "issue_class_counts": private_review.get(
+                            "issue_class_counts"
+                        ),
+                        "request_review_digest": private_review.get(
+                            "request_review_digest"
+                        ),
+                    },
+                    "current_s1_product_readiness_review_request_binding_invalid",
+                    503,
+                    case_key=case_key,
+                    request_id=request_id,
+                )
+                safe_request = {
                         key: deepcopy(request[key])
                         for key in (
                             "request_id",
@@ -511,10 +573,17 @@ class ResearchEvidencePackService:
                             "numeric_authority_state",
                             "readiness_state",
                             "unexecuted_or_unavailable_routes",
+                            "candidate_review_summary",
                         )
                         if key in request
-                    }
-                )
+                }
+                safe_request["candidate_review_items"] = [
+                    self._project_candidate_review_item(
+                        item, excerpt_limit=excerpt_limit
+                    )
+                    for item in private_review.get("review_items") or ()
+                ]
+                safe_requests.append(safe_request)
             validated[case_key] = {
                 key: deepcopy(value[key])
                 for key in (
@@ -530,6 +599,7 @@ class ResearchEvidencePackService:
                     "declared_pack_gap_receipt_count",
                     "gap_eligibility_receipt_count",
                     "request_state_counts",
+                    "candidate_review_packet_summary",
                     "authority",
                     "known_boundary",
                 )
@@ -538,6 +608,201 @@ class ResearchEvidencePackService:
             validated[case_key]["requests"] = safe_requests
             validated[case_key]["result_digest"] = digest
         return validated
+
+    @staticmethod
+    def _load_product_readiness_private_result(
+        *,
+        private_base: Path,
+        repo_relative_ref: str,
+        expected_sha256: str,
+        case_key: str,
+    ) -> dict[str, Any]:
+        ref = PurePosixPath(repo_relative_ref)
+        _require(
+            ref.parts[:2] == ("data", "workbench_private")
+            and len(ref.parts) > 2
+            and ".." not in ref.parts
+            and len(expected_sha256) == 64,
+            "current_s1_product_readiness_private_ref_invalid",
+            503,
+            case_key=case_key,
+        )
+        target = (private_base / Path(*ref.parts[2:])).resolve()
+        try:
+            target.relative_to(private_base)
+        except ValueError as exc:
+            raise ResearchEvidencePackServiceError(
+                "current_s1_product_readiness_private_ref_escape",
+                503,
+                case_key=case_key,
+            ) from exc
+        _require(
+            target.is_file() and file_sha256(target) == expected_sha256,
+            "current_s1_product_readiness_private_result_unavailable",
+            503,
+            case_key=case_key,
+        )
+        try:
+            value = json.loads(target.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ResearchEvidencePackServiceError(
+                "current_s1_product_readiness_private_result_invalid",
+                503,
+                case_key=case_key,
+            ) from exc
+        _require(
+            isinstance(value, dict)
+            and value.get("schema_version")
+            == EXPECTED_PRODUCT_READINESS_PRIVATE_SCHEMA
+            and value.get("case_key") == case_key,
+            "current_s1_product_readiness_private_result_invalid",
+            503,
+            case_key=case_key,
+        )
+        body = dict(value)
+        result_digest = str(body.pop("result_digest", ""))
+        _require(
+            result_digest == canonical_digest(body),
+            "current_s1_product_readiness_private_result_digest_invalid",
+            503,
+            case_key=case_key,
+        )
+        return value
+
+    @staticmethod
+    def _validate_candidate_review_packet(
+        *,
+        private_result: Mapping[str, Any],
+        public_summary: Mapping[str, Any],
+        case_key: str,
+        excerpt_limit: int,
+    ) -> dict[str, Any]:
+        packet = deepcopy(dict(private_result.get("candidate_review_packet") or {}))
+        digest = str(packet.pop("review_packet_digest", ""))
+        authority = packet.get("authority") or {}
+        requests = packet.get("requests")
+        _require(
+            packet.get("schema_version") == EXPECTED_CANDIDATE_REVIEW_PACKET_SCHEMA
+            and packet.get("status")
+            == "candidate_review_packet_materialized_no_promotion"
+            and packet.get("case_key") == case_key
+            and isinstance(requests, list)
+            and int(packet.get("request_count") or -1) == len(requests)
+            and digest == canonical_digest(packet)
+            and public_summary.get("review_packet_digest") == digest
+            and public_summary.get("review_item_count")
+            == packet.get("review_item_count")
+            and public_summary.get("human_review_required_count")
+            == packet.get("human_review_required_count")
+            and public_summary.get("issue_class_counts")
+            == packet.get("issue_class_counts")
+            and authority.get("candidate_is_not_evidence") is True
+            and authority.get("automatic_evidence_promotion") is False
+            and authority.get("numeric_fact_authority") is False
+            and authority.get("public_information_gap_authority") is False
+            and authority.get("S1_qualification_claimed") is False,
+            "current_s1_candidate_review_packet_invalid",
+            503,
+            case_key=case_key,
+        )
+        packet["review_packet_digest"] = digest
+        for request in requests:
+            _require(
+                isinstance(request, Mapping)
+                and int(request.get("review_item_count") or 0)
+                == len(request.get("review_items") or ()),
+                "current_s1_candidate_review_request_invalid",
+                503,
+                case_key=case_key,
+            )
+            for item in request.get("review_items") or ():
+                source = item.get("source") if isinstance(item, Mapping) else None
+                excerpt = (
+                    str(source.get("bounded_excerpt") or "")
+                    if isinstance(source, Mapping)
+                    else ""
+                )
+                _require(
+                    isinstance(item, Mapping)
+                    and item.get("candidate_is_not_evidence") is True
+                    and item.get("candidate_text_promoted") is False
+                    and item.get("new_evidence_created") is False
+                    and item.get("numeric_authority") is False
+                    and bool(excerpt)
+                    and len(excerpt) <= excerpt_limit,
+                    "current_s1_candidate_review_item_invalid",
+                    503,
+                    case_key=case_key,
+                )
+        return packet
+
+    @staticmethod
+    def _project_candidate_review_item(
+        item: Mapping[str, Any], *, excerpt_limit: int
+    ) -> dict[str, Any]:
+        source = dict(item.get("source") or {})
+        url = str(source.get("source_url") or "")
+        parsed = urlparse(url) if url else None
+        _require(
+            not url
+            or (
+                parsed is not None
+                and parsed.scheme in {"http", "https"}
+                and bool(parsed.netloc)
+            ),
+            "current_s1_candidate_review_source_url_invalid",
+            503,
+        )
+        excerpt = str(source.get("bounded_excerpt") or "")
+        _require(
+            bool(excerpt) and len(excerpt) <= excerpt_limit,
+            "current_s1_candidate_review_excerpt_invalid",
+            503,
+        )
+        safe_source = {
+            key: deepcopy(source[key])
+            for key in (
+                "company",
+                "source_type",
+                "source_tier",
+                "publication_date",
+                "period_end",
+                "section",
+                "subsection",
+                "source_url",
+                "surface_digest",
+                "bounded_excerpt",
+            )
+            if key in source
+        }
+        projected = {
+            key: deepcopy(item[key])
+            for key in (
+                "review_item_ref",
+                "review_item_digest",
+                "review_scope",
+                "source_lineage_digest",
+                "subject_ticker",
+                "evidence_owner_ticker",
+                "object_kind",
+                "requirement_contexts",
+                "advisory_evidence_role",
+                "rank_trace",
+                "route_membership",
+                "decision_state",
+                "reason_codes",
+                "issue_classes",
+                "next_legal_action",
+                "human_review_required",
+                "candidate_is_not_evidence",
+                "candidate_text_promoted",
+                "new_evidence_created",
+                "numeric_authority",
+            )
+            if key in item
+        }
+        projected["source"] = safe_source
+        return projected
 
     def _canonical_spine_for_pack(
         self,

@@ -7,7 +7,16 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化。当前 Runtime Registry 已推进到 R24／26 个活动资源；1,841 条来源、34,117 个金融对象、Qwen CUDA FP16 cache、S2 SQLite、reviewed Evidence 与 DELL／MU／NVDA 三份正式 ProductReadiness 已由 binding v1.1 绑定，并由 `/workspace` 消费。三案 Candidate 自动晋升、NumericFact 新授权和 public-gap 声明仍为 0。DELL 8／8 请求等待 S3 明确自然材料范围；MU 为 4 个候选覆盖阻断＋4 个 Evidence 准入阻断，NVDA 为 3＋5。RC-S1-034 的产品生产者缺失已关闭，当前最早责任层转为候选级 Evidence admission、对象级 Workbench lineage 与独立资格；`S1_qualified_stable` 仍为 false，不能运行产品资格完整真实链或恢复 S3 主线。
+Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化。当前 Runtime Registry 已推进到 R25／26 个活动资源；1,841 条来源、34,117 个金融对象、Qwen CUDA FP16 cache、S2 SQLite、reviewed Evidence、三案 ProductReadiness 与对象级 candidate review lineage 已由 binding v1.2 绑定，并由 `/workspace` 消费。MU 现有 34 条审阅关系／22 个唯一对象，NVDA 为 31／25，其中 1 条可复用既有 Evidence；DELL 因自然材料范围未定而保持 0 条，不伪造 fallback 审阅。Candidate 自动晋升、NumericFact 新授权和 public-gap 声明仍为 0。RC-S1-042 的安全对象 lineage 子门已关闭，当前最早责任层为 RC-S1-043 受控 Evidence successor、精确 slot 绑定和三案 readiness 重物化；`S1_qualified_stable` 仍为 false，不能运行产品资格完整真实链或恢复 S3 主线。
+
+## 2026-08-19 S1 候选对象审阅 lineage 增量
+
+- Workbench 的每个研究请求现在可展开来源绑定的候选对象：显示披露主体、来源／期间、受限摘录、Evidence Role、排名轨迹、待审原因和下一合法动作；不返回 object/source ID、私有路径或 raw capture。
+- MU 的 HBM4 high-volume shipment／multiple-customer qualification 与多年期具体数量约束客户协议已被证明是“当前对象库已找到但未合法绑定进 Evidence Pack”，不能再误报为公开资料不存在、联网工具失败或模型未执行。
+- DELL 仍为 0 个对象级审阅条目，因为其 8 个请求的自然 ResearchBlueprint 范围未定；这是一项有意 fail-closed 的 S3→S1 输入边界，不是 S1 召回为零。
+- Runtime Registry 为 R25／26 resources／2,548,793 bytes，binding v1.2 digest 为 `7a5fb837559cff61148e95b4255231fb8e06d26c30cba59abf0a4b2ce00a4c26`。
+- 复证为全仓 `759 passed`、TypeScript＋Vite production build、真实挂载 Chromium 对象下钻通过、active baseline `169 Python / 8 frontend / 26 Runtime / 0 forbidden`、secret scan `7,266 / 0`。
+- 下一步只复用 canonical reviewed-pack validator 与 promotion seam，形成 MU／NVDA 命题级 accept／reject／needs-review successor；S2 数值、qualified-human、external blind、public gap、S1 qualification 和 release 权威均不随本轮自动获得。
 
 ## 2026-08-19 S1 ProductReadiness 当前增量
 

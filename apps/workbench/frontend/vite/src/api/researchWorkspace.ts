@@ -202,10 +202,72 @@ export type S1ProductReadinessRequest = {
     typed_conflict_count: number;
   };
   unexecuted_or_unavailable_routes: string[];
+  candidate_review_summary: {
+    review_item_count: number;
+    human_review_required_count: number;
+    issue_class_counts: Record<string, number>;
+    request_review_digest: string;
+  };
+  candidate_review_items: S1CandidateReviewItem[];
+};
+
+export type S1CandidateReviewItem = {
+  review_item_ref: string;
+  review_item_digest: string;
+  review_scope: "requirement_bound" | "material_review_context";
+  source_lineage_digest: string;
+  subject_ticker: string;
+  evidence_owner_ticker: string;
+  object_kind: string;
+  requirement_contexts: Array<{
+    requirement_id: string;
+    facet_id: string;
+    role: string;
+    product_ids: string[];
+    metric_ids: string[];
+    target_entities: string[];
+    candidate_set_complete_in_bounded_union: boolean;
+    missing_required_product_ids: string[];
+    missing_required_metric_ids: string[];
+  }>;
+  advisory_evidence_role: {
+    compatibility: string;
+    labels: string[];
+    reason_codes: string[];
+    advisory_only: true;
+  };
+  rank_trace: {
+    raw_union_rank?: number | null;
+    financial_rank?: number | null;
+    review_priority_rank?: number | null;
+    final_output_rank?: number | null;
+  };
+  route_membership: string[];
+  decision_state: "accepted" | "needs_human_review";
+  reason_codes: string[];
+  issue_classes: string[];
+  next_legal_action: string;
+  human_review_required: boolean;
+  candidate_is_not_evidence: true;
+  candidate_text_promoted: false;
+  new_evidence_created: false;
+  numeric_authority: false;
+  source: {
+    company: string;
+    source_type: string;
+    source_tier: string;
+    publication_date: string;
+    period_end: string;
+    section: string;
+    subsection?: string;
+    source_url: string;
+    surface_digest: string;
+    bounded_excerpt: string;
+  };
 };
 
 export type S1ProductReadinessView = {
-  schema_version: "fin_ia_s1_current_product_readiness_result_v1_0";
+  schema_version: "fin_ia_s1_current_product_readiness_result_v1_1";
   status: "current_product_pack_readiness_materialized";
   recorded_at: string;
   prepared_from_commit: string;
@@ -217,6 +279,15 @@ export type S1ProductReadinessView = {
   accepted_reviewed_evidence_count: number;
   gap_eligibility_receipt_count: number;
   declared_pack_gap_receipt_count: number;
+  candidate_review_packet_summary: {
+    schema_version: "fin_ia_s1_product_candidate_review_packet_v1_0";
+    status: "candidate_review_packet_materialized_no_promotion";
+    review_item_count: number;
+    human_review_required_count: number;
+    issue_class_counts: Record<string, number>;
+    review_packet_digest: string;
+    private_packet_required_for_bounded_excerpt_projection: true;
+  };
   requests: S1ProductReadinessRequest[];
   authority: {
     candidate_is_not_evidence: boolean;

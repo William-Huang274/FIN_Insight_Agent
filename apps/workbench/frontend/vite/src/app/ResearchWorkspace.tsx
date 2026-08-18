@@ -305,6 +305,16 @@ const productReadinessLabels: Record<string, string> = {
   candidate_audit_only_explicit_scope_pending: "等待 S3 明确研究范围",
 };
 
+const candidateReviewIssueLabels: Record<string, string> = {
+  existing_reviewed_evidence_reuse: "已与现有审定 Evidence 精确绑定",
+  new_candidate_evidence_adjudication: "新候选尚待 Evidence Gate 审定",
+  reviewed_pack_exact_object_binding: "来源已审，但当前对象尚未精确绑定",
+  reviewed_pack_slot_facet_binding: "对象与当前命题槽位绑定待确认",
+  reviewed_pack_hard_boundary_mismatch: "公司、期间或来源硬边界不一致",
+  request_material_binding: "候选与当前研究命题的材料绑定待确认",
+  manual_candidate_review_required: "需要人工判断候选能证明什么",
+};
+
 function RankingComparisonPanel({ comparison }: { comparison: NonNullable<ResearchRetrievalView["ranking_comparison"]> }) {
   return (
     <section className="research-workspace__panel">
@@ -422,10 +432,10 @@ function ProductReadinessPanel({ readiness }: { readiness: S1ProductReadinessVie
         <Metric value={readyCount} label="当前范围可用" />
         <Metric value={coverageBlocked} label="候选覆盖阻断" warn />
         <Metric value={admissionBlocked} label="待 Evidence 准入" warn />
-        <Metric value={readiness.accepted_reviewed_evidence_count} label="已复用审定 Evidence" />
+        <Metric value={readiness.candidate_review_packet_summary.human_review_required_count} label="对象级待复核" warn />
       </div>
       <p className="research-workspace__product-readiness-note">
-        这里把“本地没找到候选”“候选已找到但尚未成为 Evidence”“等待 S2 数值”和“等待 S3 明确研究范围”分开显示。候选排名不会自动授予证据权威，当前也没有宣称 S1 已通过。
+        这里把“本地没找到候选”“候选已找到但尚未成为 Evidence”“等待 S2 数值”和“等待 S3 明确研究范围”分开显示。下方原文只来自摘要绑定的内部审阅包；不会暴露原始捕获或本地路径，也不会因展示而自动成为 Evidence。
       </p>
       <div className="research-workspace__product-readiness-grid">
         {readiness.requests.map((request) => (
@@ -441,11 +451,34 @@ function ProductReadinessPanel({ readiness }: { readiness: S1ProductReadinessVie
               <small>数值口径：{request.numeric_authority_state.state}（{request.numeric_authority_state.resolved_count}/{request.numeric_authority_state.request_count} 已解析）</small>
               {request.unexecuted_or_unavailable_routes.length ? <small>尚未执行路线：{request.unexecuted_or_unavailable_routes.join("、")}</small> : null}
             </div>
+            {request.candidate_review_items.length ? (
+              <details className="research-workspace__candidate-review">
+                <summary>查看 {request.candidate_review_items.length} 条对象级候选</summary>
+                <div>
+                  {request.candidate_review_items.map((item) => (
+                    <section key={item.review_item_ref} className="research-workspace__candidate-review-card">
+                      <header>
+                        <strong>{item.source.source_type} · {item.source.publication_date}</strong>
+                        <span>{item.human_review_required ? "待人工准入" : "已审证据复用"}</span>
+                      </header>
+                      <p>{item.source.bounded_excerpt}</p>
+                      <small>证据角色：{item.advisory_evidence_role.labels.join("、") || "尚未分类"}</small>
+                      <small>当前问题：{item.issue_classes.map((issue) => candidateReviewIssueLabels[issue] ?? issue).join("；")}</small>
+                      <footer>
+                        <code title={item.source_lineage_digest}>{shortDigest(item.source_lineage_digest)}</code>
+                        {item.source.source_url ? <a href={item.source.source_url} target="_blank" rel="noreferrer">官方来源 <ExternalLink size={11} /></a> : null}
+                      </footer>
+                    </section>
+                  ))}
+                </div>
+              </details>
+            ) : null}
           </article>
         ))}
       </div>
       <div className="research-workspace__canonical-bindings">
         <DigestRow label="Readiness result" value={readiness.result_digest} />
+        <DigestRow label="Review packet" value={readiness.candidate_review_packet_summary.review_packet_digest} />
         <DigestRow label="Prepared commit" value={readiness.prepared_from_commit} />
       </div>
     </section>

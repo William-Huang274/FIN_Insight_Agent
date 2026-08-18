@@ -349,7 +349,7 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R24"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R25"
     )
     assert set(registry.by_id()) == {
         "application.config.current_financial_intent_ontology",
@@ -427,6 +427,7 @@ def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None
         "MU": ("blocked_by_candidate_coverage", 4, 4, 0),
         "NVDA": ("blocked_by_candidate_coverage", 3, 5, 0),
     }
+    expected_review_items = {"DELL": 0, "MU": 34, "NVDA": 31}
 
     for case_key, expected_count in expected_counts.items():
         pack = evidence.get_case(case_key, pack_principal)
@@ -468,11 +469,33 @@ def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None
         }
         assert "full_result_ref" not in product_readiness
         assert "full_result_sha256" not in product_readiness
+        assert product_readiness["candidate_review_packet_summary"][
+            "review_item_count"
+        ] == expected_review_items[case_key]
+        review_items = [
+            item
+            for request in product_readiness["requests"]
+            for item in request["candidate_review_items"]
+        ]
+        assert len(review_items) == expected_review_items[case_key]
+        assert all(
+            item["candidate_is_not_evidence"] is True
+            and item["candidate_text_promoted"] is False
+            and item["new_evidence_created"] is False
+            and item["numeric_authority"] is False
+            and len(item["source"]["bounded_excerpt"]) <= 560
+            for item in review_items
+        )
         assert not {
             "candidate_text",
             "candidate_id",
             "source_text",
             "private_source_material",
+            "compiled_object_id",
+            "source_record_id",
+            "full_result_ref",
+            "full_result_sha256",
+            "source_capture_ref",
         }.intersection(_all_keys(product_readiness))
         assert pack["canonical_spine"]["pack_binding"]["case_key"] == case_key
         assert (
@@ -492,6 +515,25 @@ def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None
             retrieval_case["canonical_spine"]["pack_binding"]["case_key"]
             == case_key
         )
+
+    mu = evidence.get_case("MU", pack_principal)["product_readiness"]
+    mu_review_items = [
+        item
+        for request in mu["requests"]
+        for item in request["candidate_review_items"]
+    ]
+    assert any(
+        "HBM4" in item["source"]["bounded_excerpt"]
+        and "high-volume shipments" in item["source"]["bounded_excerpt"]
+        and "direct_demand_signal"
+        in item["advisory_evidence_role"]["labels"]
+        for item in mu_review_items
+    )
+    assert any(
+        "binding commitments for specific volumes"
+        in item["source"]["bounded_excerpt"]
+        for item in mu_review_items
+    )
 
 
 def test_workbench_api_exposes_reviewed_content_and_gaps_without_raw_material(

@@ -320,3 +320,57 @@ def test_multi_requirement_reuse_without_explicit_binding_fails_closed() -> None
     assert "reviewed_evidence_requirement_binding_missing_or_ambiguous" in ledger[
         "decisions"
     ][0]["reason_codes"]
+
+
+def test_explicit_review_can_correct_automatic_requirement_selection() -> None:
+    request_result = _request_result()
+    seed = request_result["hybrid_object_retrieval"]["candidate_decision_seed"][0]
+    seed["selected_requirement_ids"] = ["MER-2"]
+    material = request_result["hybrid_object_retrieval"]["material_evidence"]
+    material["requirement_plan"]["requirement_groups"].append(
+        {"requirement_id": "MER-2", "facet_id": "reported_results", "role": "counter"}
+    )
+    material["selection"]["requirement_receipts"].append(
+        {
+            "requirement_id": "MER-2",
+            "complete": True,
+            "selected_candidate_ids": ["OBJ-1"],
+        }
+    )
+    pack = _pack()
+    pack["evidence_items"][0]["slot_bindings"][0]["requirement_ids"] = [
+        "MER-1"
+    ]
+
+    ledger = compile_product_candidate_decision_ledger(
+        request_result=request_result,
+        evidence_pack=pack,
+        recorded_at="2026-08-19",
+    )
+    result = compile_product_pack_readiness(
+        product_projection={
+            "case_key": "DELL",
+            "objective": {"research_as_of": "2026-08-06"},
+            "request_results": [request_result],
+        },
+        evidence_pack=pack,
+        candidate_decision_ledgers=[ledger],
+        recorded_at="2026-08-19",
+    )
+
+    decision = ledger["decisions"][0]
+    assert decision["decision_state"] == "accepted"
+    assert decision["accepted_evidence_by_requirement"] == {
+        "MER-1": ["c" * 64]
+    }
+    assert decision["decision_authority"] == (
+        "current_reviewed_pack_explicit_request_requirement_rebinding"
+    )
+    requirement_states = {
+        row["requirement_id"]: row["readiness_state"]
+        for row in result["requests"][0]["requirements"]
+    }
+    assert requirement_states == {
+        "MER-1": "ready_for_current_scope",
+        "MER-2": "blocked_by_evidence_admission",
+    }

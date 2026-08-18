@@ -13,7 +13,7 @@ from .query_plan import canonical_digest
 
 
 PRODUCT_DECISION_LEDGER_SCHEMA_VERSION = (
-    "fin_ia_s1_product_candidate_decision_ledger_v1_1"
+    "fin_ia_s1_product_candidate_decision_ledger_v1_2"
 )
 PRODUCT_DECISION_STATES = (
     "accepted",
@@ -22,7 +22,7 @@ PRODUCT_DECISION_STATES = (
     "needs_human_review",
 )
 PRODUCT_PACK_READINESS_SCHEMA_VERSION = (
-    "fin_ia_s1_product_pack_readiness_v1_1"
+    "fin_ia_s1_product_pack_readiness_v1_2"
 )
 GAP_ELIGIBILITY_RECEIPT_SCHEMA_VERSION = (
     "fin_ia_s1_gap_eligibility_receipt_v1_0"
@@ -167,15 +167,17 @@ def _reviewed_item_requirement_binding(
     *,
     lane: Mapping[str, Any],
     selected_requirement_ids: Sequence[str],
+    request_requirement_ids: frozenset[str],
 ) -> tuple[tuple[str, ...], str]:
     """Resolve one reviewed Evidence item to the propositions it can satisfy.
 
     A slot/facet match is necessary but no longer sufficient when a candidate is
     reserved for several material requirements.  New successor packs name the
-    exact requirement IDs on their slot binding.  The legacy fallback is
-    intentionally limited to a single selected requirement, where no ambiguity
-    exists; a multi-requirement candidate without an explicit binding fails
-    closed for Evidence reuse.
+    exact requirement IDs on their slot binding.  That reviewed binding may
+    correct the automatic selector, but only within the current request's
+    declared requirement set.  The legacy fallback is intentionally limited to
+    one automatically selected requirement; a multi-requirement candidate
+    without an explicit binding fails closed for Evidence reuse.
     """
 
     selected = {str(value) for value in selected_requirement_ids if str(value)}
@@ -194,10 +196,44 @@ def _reviewed_item_requirement_binding(
         if str(requirement_id)
     }
     if explicit:
-        return tuple(sorted(selected & explicit)), "explicit_requirement_binding"
+        _require(
+            explicit <= request_requirement_ids,
+            "reviewed_item_requirement_outside_current_request",
+        )
+        return tuple(sorted(explicit)), "explicit_requirement_binding"
     if len(selected) == 1:
         return tuple(sorted(selected)), "legacy_single_requirement_unambiguous"
     return (), "missing_or_ambiguous_requirement_binding"
+
+
+def _request_material_requirement_ids(
+    hybrid: Mapping[str, Any],
+    *,
+    seeds: Sequence[Mapping[str, Any]],
+) -> frozenset[str]:
+    material = hybrid.get("material_evidence")
+    if isinstance(material, Mapping):
+        plan = _mapping(
+            material.get("requirement_plan"),
+            "product_candidate_decision_requirement_plan_missing",
+        )
+        requirement_ids = frozenset(
+            str(row.get("requirement_id") or "")
+            for row in plan.get("requirement_groups") or ()
+            if isinstance(row, Mapping)
+        )
+    else:
+        requirement_ids = frozenset(
+            str(requirement_id)
+            for seed in seeds
+            for requirement_id in seed.get("selected_requirement_ids") or ()
+            if str(requirement_id)
+        )
+    _require(
+        bool(requirement_ids) and all(requirement_ids),
+        "product_candidate_decision_requirement_set_invalid",
+    )
+    return requirement_ids
 
 
 def compile_product_candidate_decision_ledger(
@@ -231,6 +267,9 @@ def compile_product_candidate_decision_ledger(
     _require(
         seeds and len(seeds) == expected_count,
         "product_candidate_decision_seed_cardinality_invalid",
+    )
+    request_requirement_ids = _request_material_requirement_ids(
+        hybrid, seeds=seeds
     )
     seed_ids = [
         str(
@@ -309,6 +348,7 @@ def compile_product_candidate_decision_ledger(
                 item,
                 lane=lane,
                 selected_requirement_ids=selected_requirement_ids,
+                request_requirement_ids=request_requirement_ids,
             )
             requirement_binding_modes.add(binding_mode)
             digest = str(item.get("evidence_item_digest") or "")
@@ -321,21 +361,26 @@ def compile_product_candidate_decision_ledger(
                 for digest in digests
             }
         )
-        if (
-            alignment_state == "selected_for_material_review"
-            and accepted_by_requirement
-        ):
+        if accepted_by_requirement:
             state = "accepted"
             reasons = [
                 "existing_reviewed_evidence_reuse",
                 "exact_object_case_slot_facet_period_relationship_gate_passed",
                 "reviewed_evidence_resolved_to_material_requirement",
             ]
+            if alignment_state != "selected_for_material_review":
+                reasons.append(
+                    "explicit_reviewed_evidence_rebound_within_current_request"
+                )
             if set(selected_requirement_ids) - set(accepted_by_requirement):
                 reasons.append(
                     "one_or_more_selected_requirements_not_bound_to_this_evidence"
                 )
-            authority = "current_reviewed_pack_exact_object_reuse"
+            authority = (
+                "current_reviewed_pack_exact_object_reuse"
+                if set(accepted_by_requirement) <= set(selected_requirement_ids)
+                else "current_reviewed_pack_explicit_request_requirement_rebinding"
+            )
             accepted_evidence.update(accepted_digests)
             accepted_objects.add(object_id)
             for requirement_id, digests in accepted_by_requirement.items():
@@ -499,6 +544,15 @@ def _accepted_digests_for_requirement(
     return ()
 
 
+def _decision_mentions_requirement(
+    decision: Mapping[str, Any], requirement_id: str
+) -> bool:
+    binding = decision.get("accepted_evidence_by_requirement")
+    return requirement_id in set(
+        str(value) for value in decision.get("selected_requirement_ids") or ()
+    ) or (isinstance(binding, Mapping) and requirement_id in binding)
+
+
 def _numeric_state(request_result: Mapping[str, Any]) -> dict[str, Any]:
     rows = [
         _mapping(row, "product_readiness_typed_fact_result_invalid")
@@ -617,7 +671,7 @@ def _gap_receipt(
     decisions = [
         row
         for row in ledger.get("decisions") or ()
-        if requirement_id in set(row.get("selected_requirement_ids") or ())
+        if _decision_mentions_requirement(row, requirement_id)
     ]
     decision_counts = Counter(
         str(row.get("decision_state") or "") for row in decisions
@@ -827,7 +881,7 @@ def compile_product_pack_readiness(
             bound_decisions = [
                 row
                 for row in decisions
-                if requirement_id in set(row.get("selected_requirement_ids") or ())
+                if _decision_mentions_requirement(row, requirement_id)
             ]
             accepted_digests = sorted(
                 {

@@ -247,6 +247,13 @@ def _request_lanes(
     return lanes
 
 
+def _slot_binding_key(binding: Mapping[str, Any]) -> tuple[str, tuple[str, ...]]:
+    return (
+        str(binding.get("slot_id") or ""),
+        tuple(sorted(str(value) for value in binding.get("facet_ids") or ())),
+    )
+
+
 def _relationship_direction(
     lane: Mapping[str, Any], *, owner: str, subject: str
 ) -> str:
@@ -349,6 +356,9 @@ def build_product_evidence_successor(
     )
 
     accepted_by_object: dict[str, list[tuple[Mapping[str, Any], Mapping[str, Any]]]] = {}
+    adjudicated_binding_keys_by_object: dict[
+        str, set[tuple[str, tuple[str, ...]]]
+    ] = {}
     decision_receipts: list[dict[str, Any]] = []
     for review_ref in sorted(review_by_ref):
         review = review_by_ref[review_ref]
@@ -363,6 +373,15 @@ def build_product_evidence_successor(
         object_id = str(review.get("compiled_object_id") or "")
         object_kind = str(review.get("object_kind") or "")
         request_id = str(review.get("request_id") or "")
+        lane = _mapping(
+            lanes.get(request_id), f"product_evidence_lane_missing:{request_id}"
+        )
+        adjudicated_binding_keys_by_object.setdefault(object_id, set()).add(
+            (
+                str(lane.get("slot_id") or ""),
+                (str(lane.get("facet_id") or ""),),
+            )
+        )
         allowed_requirement_ids = requirement_ids_by_request.get(
             request_id, frozenset()
         )
@@ -434,6 +453,11 @@ def build_product_evidence_successor(
         for row in predecessor_items
         if str(row.get("compiled_object_id") or "") not in accepted_object_ids
     ]
+    retired_items_by_object: dict[str, list[Mapping[str, Any]]] = {}
+    for row in retired_items:
+        retired_items_by_object.setdefault(
+            str(row.get("compiled_object_id") or ""), []
+        ).append(row)
     live_material_refs = {
         str(row.get("source_material_ref") or "") for row in live_items
     }
@@ -528,6 +552,37 @@ def build_product_evidence_successor(
                     "qualification_id": policy.get("policy_id"),
                 }
             )
+        new_binding_keys = [_slot_binding_key(row) for row in slot_bindings]
+        _require(
+            len(new_binding_keys) == len(set(new_binding_keys)),
+            "product_evidence_new_slot_binding_duplicate",
+        )
+        adjudicated_keys = adjudicated_binding_keys_by_object.get(object_id, set())
+        for predecessor_item in retired_items_by_object.get(object_id, ()):
+            relationship_directions.update(
+                str(value)
+                for value in predecessor_item.get("relationship_directions") or ()
+                if str(value)
+            )
+            for raw_binding in predecessor_item.get("slot_bindings") or ():
+                binding = _mapping(
+                    raw_binding, "product_evidence_predecessor_slot_binding_invalid"
+                )
+                if _slot_binding_key(binding) not in adjudicated_keys:
+                    slot_bindings.append(deepcopy(dict(binding)))
+        merged_binding_keys = [_slot_binding_key(row) for row in slot_bindings]
+        _require(
+            all(key[0] and key[1] for key in merged_binding_keys)
+            and len(merged_binding_keys) == len(set(merged_binding_keys)),
+            "product_evidence_merged_slot_binding_invalid",
+        )
+        slot_bindings.sort(
+            key=lambda row: (
+                str(row.get("slot_id") or ""),
+                tuple(sorted(str(value) for value in row.get("facet_ids") or ())),
+                str(row.get("binding_kind") or ""),
+            )
+        )
         item, material = build_capture_bound_evidence_pair(
             case_key=case_key,
             research_as_of=research_as_of,

@@ -317,6 +317,74 @@ def test_compact_plan_preserves_informational_reviewed_evidence_without_redecisi
     assert policy["informational_review_item_count"] == 1
 
 
+def test_successor_preserves_unadjudicated_existing_binding_when_same_object_is_extended(
+    tmp_path: Path,
+) -> None:
+    compiled, source, parent, _ = _source_graph(tmp_path)
+    predecessor = _predecessor()
+    packet = _packet()
+    informational = packet["requests"][0]["review_items"][0]
+    informational["human_review_required"] = False
+    informational["decision_state"] = "accepted"
+    informational_body = dict(informational)
+    informational_body.pop("review_item_digest")
+    informational["review_item_digest"] = canonical_digest(informational_body)
+    packet_body = dict(packet)
+    packet_body.pop("review_packet_digest")
+    packet["review_packet_digest"] = canonical_digest(packet_body)
+    actionable = packet["requests"][1]["review_items"][0]
+    plan_body = {
+        "schema_version": ADJUDICATION_PLAN_SCHEMA_VERSION,
+        "status": "approved_internal_engineering_plan",
+        "plan_id": "PLAN-PRESERVE-1",
+        "case_key": "MU",
+        "research_as_of": "2026-08-06",
+        "candidate_review_packet_digest": packet["review_packet_digest"],
+        "predecessor_pack_payload_digest": predecessor["pack_payload_digest"],
+        "default_claim_action": "reject_for_current_scope",
+        "metric_row_action": "delegate_to_s2_numeric_authority",
+        "qualified_human_review": False,
+        "S1_qualification_authorized": False,
+        "product_publication_authorized": False,
+        "successor_known_boundary": "Internal engineering Evidence successor only.",
+        "accepted_items": [
+            {
+                "review_item_ref": actionable["review_item_ref"],
+                "action": "accept_for_requirements",
+                "requirement_ids": ["MER-2"],
+                "business_meaning_zh": "同一披露也可支持转化机制。",
+                "claim_boundary_zh": "不证明最终利润实现。",
+                "reason_codes": ["same_object_new_proposition"],
+            }
+        ],
+    }
+    plan = {**plan_body, "plan_digest": canonical_digest(plan_body)}
+    policy = compile_product_evidence_adjudication_policy(
+        candidate_review_packet=packet,
+        plan=plan,
+    )
+
+    result = build_product_evidence_successor(
+        predecessor=predecessor,
+        product_projection=_projection(),
+        candidate_review_packet=packet,
+        policy=policy,
+        compiled_objects_by_id={"COBJ::ONE": compiled},
+        source_records_by_id={"SRC-1": source},
+        parent_documents_by_id={"DOC-1": parent},
+        capture_resolver=Path,
+        recorded_at="2026-08-19T00:00:00+00:00",
+    )
+
+    bindings = result["successor_pack"]["evidence_items"][0]["slot_bindings"]
+    assert {
+        (row["slot_id"], tuple(row["facet_ids"])) for row in bindings
+    } == {
+        ("demand_volume_quality", ("orders_and_backlog",)),
+        ("demand_volume_quality", ("conversion_and_durability",)),
+    }
+
+
 def test_compact_plan_cannot_reference_candidate_outside_bound_packet() -> None:
     packet = _packet()
     predecessor = _predecessor()

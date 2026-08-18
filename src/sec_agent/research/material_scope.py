@@ -220,6 +220,162 @@ def _request_public_view(
     }
 
 
+def _model_visible_output_contract(
+    *,
+    research_plan_digest: str,
+    required_request_ids: Sequence[str],
+    requests: Sequence[EvidenceRequest],
+    policy: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Compile the model contract from the same vocabulary the validator uses."""
+
+    facets = sorted({request.requested_facet_ids[0] for request in requests})
+    # Per-request role membership is exposed in each request view; the schema
+    # carries the validator's provider-neutral closed role vocabulary.
+    roles = sorted(_MATERIAL_ROLES)
+    disposition_values = list(policy["allowed_intent_dispositions"])
+    period_values = list(policy["allowed_period_modes"])
+    coverage_values = list(policy["allowed_coverage_modes"])
+    return {
+        "top_level_fields_exact": [
+            "schema_version",
+            "research_plan_digest",
+            "request_scopes",
+        ],
+        "schema_version": MATERIAL_SCOPE_OUTPUT_SCHEMA,
+        "research_plan_digest": research_plan_digest,
+        "json_schema": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": [
+                "schema_version",
+                "research_plan_digest",
+                "request_scopes",
+            ],
+            "properties": {
+                "schema_version": {"const": MATERIAL_SCOPE_OUTPUT_SCHEMA},
+                "research_plan_digest": {"const": research_plan_digest},
+                "request_scopes": {
+                    "type": "array",
+                    "minItems": len(required_request_ids),
+                    "maxItems": len(required_request_ids),
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": [
+                            "request_id",
+                            "product_intent_dispositions",
+                            "requirement_atoms",
+                        ],
+                        "properties": {
+                            "request_id": {
+                                "enum": list(required_request_ids),
+                            },
+                            "product_intent_dispositions": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "additionalProperties": False,
+                                    "required": [
+                                        "product_intent_index",
+                                        "disposition",
+                                    ],
+                                    "properties": {
+                                        "product_intent_index": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                        },
+                                        "disposition": {
+                                            "enum": disposition_values,
+                                        },
+                                    },
+                                },
+                            },
+                            "requirement_atoms": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": policy[
+                                    "maximum_scope_atoms_per_request"
+                                ],
+                                "items": {
+                                    "type": "object",
+                                    "additionalProperties": False,
+                                    "required": [
+                                        "facet_id",
+                                        "role",
+                                        "metric_intent_indices",
+                                        "product_intent_indices",
+                                        "period_mode",
+                                        "coverage_mode",
+                                    ],
+                                    "properties": {
+                                        "facet_id": {"enum": facets},
+                                        "role": {"enum": roles},
+                                        "metric_intent_indices": {
+                                            "type": "array",
+                                            "items": {"type": "integer", "minimum": 0},
+                                        },
+                                        "product_intent_indices": {
+                                            "type": "array",
+                                            "items": {"type": "integer", "minimum": 0},
+                                        },
+                                        "period_mode": {"enum": period_values},
+                                        "coverage_mode": {"enum": coverage_values},
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        "enum_semantics": {
+            "hard_material_axis": (
+                "The Evidence must explicitly bind this product intent; only "
+                "indices with this disposition may appear in material atoms."
+            ),
+            "contextual_retrieval_only": (
+                "The intent may guide retrieval context but must not be required "
+                "as an explicit Evidence binding."
+            ),
+            "temporal_directive": (
+                "Use only when deterministic_temporal_directive is true."
+            ),
+            "any": (
+                "No same-basis multi-period bundle is required; use "
+                "coverage_mode collective_axes."
+            ),
+            "all_periods_same_basis": (
+                "Require the same metric across all listed fiscal years; use "
+                "coverage_mode single_binding with exactly one metric index and "
+                "at most one product index per atom."
+            ),
+            "collective_axes": (
+                "Several candidates may collectively cover the selected axes."
+            ),
+            "single_binding": (
+                "One correlated metric/product binding defines the temporal group."
+            ),
+        },
+        "cross_field_rules": [
+            "Use the exact key request_scopes (plural), never request_scope.",
+            "Return every required request_id exactly once and no other request_id.",
+            "Classify every product_intent_index exactly once; preserve any non-null fixed_disposition.",
+            "Use the request's exact facet_id and only its required_material_roles.",
+            "All index arrays must be sorted, unique and within that request's visible indices.",
+            "Only hard_material_axis product indices may appear in requirement atoms.",
+            "For each role with bind_requested_metrics=true, collectively cover every metric index; otherwise metric_intent_indices must be empty.",
+            "For each role with bind_hard_product_intents=true, collectively cover every hard_material_axis product index; otherwise product_intent_indices must be empty.",
+            "period_mode any requires coverage_mode collective_axes.",
+            "period_mode all_periods_same_basis requires at least two fiscal years, coverage_mode single_binding, exactly one metric index and at most one product index.",
+            "Do not paraphrase field names or enum values and do not add any field.",
+        ],
+        "maximum_scope_atoms_per_request": policy[
+            "maximum_scope_atoms_per_request"
+        ],
+    }
+
+
 def compile_research_material_scope_messages(
     *,
     research_plan_digest: str,
@@ -255,30 +411,12 @@ def compile_research_material_scope_messages(
             )
             for request_id in required
         ],
-        "output_contract": {
-            "schema_version": MATERIAL_SCOPE_OUTPUT_SCHEMA,
-            "research_plan_digest": research_plan_digest,
-            "request_scope_fields": [
-                "request_id",
-                "product_intent_dispositions",
-                "requirement_atoms",
-            ],
-            "product_intent_disposition_fields": [
-                "product_intent_index",
-                "disposition",
-            ],
-            "requirement_atom_fields": [
-                "facet_id",
-                "role",
-                "metric_intent_indices",
-                "product_intent_indices",
-                "period_mode",
-                "coverage_mode",
-            ],
-            "maximum_scope_atoms_per_request": policy[
-                "maximum_scope_atoms_per_request"
-            ],
-        },
+        "output_contract": _model_visible_output_contract(
+            research_plan_digest=research_plan_digest,
+            required_request_ids=required,
+            requests=[request_by_id[request_id] for request_id in required],
+            policy=policy,
+        ),
         "authority": dict(policy["authority"]),
         "token_budget_basis": dict(policy["token_budget_basis"]),
     }
@@ -288,8 +426,10 @@ def compile_research_material_scope_messages(
             "You are a financial-research material-scope planner. Return one exact "
             "JSON object matching the supplied contract. You may only select indices "
             "and enums shown in the request. Every product intent must be classified. "
-            "Every required material role must be covered. Do not write analysis, "
-            "citations, candidate identities, URLs or markdown."
+            "Every required material role must be covered. Use the exact top-level "
+            "key request_scopes (plural), exact field names and exact enum values; "
+            "never paraphrase them. Do not write analysis, citations, candidate "
+            "identities, URLs or markdown."
         ),
     }
     return system, {

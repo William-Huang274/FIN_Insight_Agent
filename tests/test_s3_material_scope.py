@@ -58,18 +58,20 @@ def _request(
     metric_intents: list[str] | None = None,
     product_intents: list[str] | None = None,
     fiscal_years: list[int] | None = None,
+    case_key: str = "DELL",
+    subject_ticker: str = "DELL",
 ):
     return load_evidence_request(
         {
             "schema_version": "fin_ia_evidence_request_v1_0",
             "request_id": request_id,
-            "cell_id": "CELL::DELL-MATERIAL-SCOPE",
+            "cell_id": f"CELL::{case_key}-MATERIAL-SCOPE",
             "requester_role": "cash_conversion_specialist",
             "evidence_domain": "operating_performance",
-            "case_key": "DELL",
-            "subject_ticker": "DELL",
+            "case_key": case_key,
+            "subject_ticker": subject_ticker,
             "research_as_of": "2026-08-06",
-            "target_entities": ["DELL"],
+            "target_entities": [subject_ticker],
             "requested_facet_ids": [facet_id],
             "metric_intents": metric_intents
             if metric_intents is not None
@@ -251,10 +253,94 @@ def test_material_scope_messages_are_request_visible_and_candidate_blind() -> No
         "index": 0,
         "value": "inventory",
     }
+    contract = visible["output_contract"]
+    schema = contract["json_schema"]
+    assert contract["top_level_fields_exact"] == [
+        "schema_version",
+        "research_plan_digest",
+        "request_scopes",
+    ]
+    assert schema["additionalProperties"] is False
+    assert schema["required"] == contract["top_level_fields_exact"]
+    scope_properties = schema["properties"]["request_scopes"]["items"][
+        "properties"
+    ]
+    disposition_enum = scope_properties["product_intent_dispositions"]["items"][
+        "properties"
+    ]["disposition"]["enum"]
+    atom_properties = scope_properties["requirement_atoms"]["items"]["properties"]
+    assert set(disposition_enum) == set(SCOPE_POLICY["allowed_intent_dispositions"])
+    assert set(atom_properties["period_mode"]["enum"]) == set(
+        SCOPE_POLICY["allowed_period_modes"]
+    )
+    assert set(atom_properties["coverage_mode"]["enum"]) == set(
+        SCOPE_POLICY["allowed_coverage_modes"]
+    )
+    assert any(
+        "request_scopes (plural)" in rule
+        for rule in contract["cross_field_rules"]
+    )
+    assert "request_scopes (plural)" in system["content"]
     assert "source_record_id" not in serialized
     assert "compiled_object_id" not in serialized
     assert "COBJ::" not in serialized
     assert "http://" not in serialized and "https://" not in serialized
+
+
+@pytest.mark.parametrize(
+    ("case_key", "facet_id", "metric", "product"),
+    [
+        ("DELL", "working_capital_risk", "inventory", "AI server inventory"),
+        ("MU", "upstream_capacity_context", "shipments", "HBM capacity"),
+        ("NVDA", "orders_and_backlog", "orders", "AI platform demand"),
+    ],
+)
+def test_model_visible_contract_is_case_neutral_and_request_bound(
+    case_key: str,
+    facet_id: str,
+    metric: str,
+    product: str,
+) -> None:
+    request = _request(
+        request_id=f"REQ::{case_key}-CONTRACT",
+        case_key=case_key,
+        subject_ticker=case_key,
+        facet_id=facet_id,
+        metric_intents=[metric],
+        product_intents=[product],
+    )
+    _, user = compile_research_material_scope_messages(
+        research_plan_digest=f"PLAN::{case_key}",
+        requests=[request],
+        required_request_ids=[request.request_id],
+        policy=SCOPE_POLICY,
+        material_runtime_policy=MATERIAL_POLICY,
+        intent_ontology=ONTOLOGY,
+    )
+    visible = json.loads(user["content"])
+    contract = visible["output_contract"]
+    request_id_enum = contract["json_schema"]["properties"]["request_scopes"][
+        "items"
+    ]["properties"]["request_id"]["enum"]
+    assert request_id_enum == [request.request_id]
+    assert visible["requests"][0]["facet_id"] == facet_id
+    assert "candidate_id" not in json.dumps(visible, ensure_ascii=False)
+
+
+def test_legacy_R2_singular_top_level_shape_remains_rejected() -> None:
+    request = _request()
+    payload = _working_capital_payload(request.request_id)
+    payload["request_scope"] = payload.pop("request_scopes")
+    with pytest.raises(ResearchMaterialScopeError, match="output_fields_invalid"):
+        compile_research_material_scope(
+            payload,
+            research_plan_digest="PLAN::DEVELOPMENT",
+            requests=[request],
+            required_request_ids=[request.request_id],
+            policy=SCOPE_POLICY,
+            material_runtime_policy=MATERIAL_POLICY,
+            intent_ontology=ONTOLOGY,
+        )
 
 
 @pytest.mark.parametrize(

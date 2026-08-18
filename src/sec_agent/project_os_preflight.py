@@ -12,6 +12,8 @@ from typing import Any
 
 from sec_agent.research.material_scope_canary import (
     MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
+    MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_SCHEMA,
+    MATERIAL_SCOPE_CONTRACT_REPAIR_RUN_SCOPE,
     MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA,
     MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE,
     validate_material_scope_canary_authority,
@@ -301,6 +303,7 @@ def _validate_fixed_pack_decision(
 ) -> dict[str, Any]:
     if decision.get("schema_version") in {
         MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
+        MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_SCHEMA,
         MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA,
     }:
         return _validate_material_scope_canary_decision(
@@ -594,7 +597,12 @@ def _validate_material_scope_canary_decision(
         "api_key_env": bound["api_key_env"],
         "recent_provider_steps": 0,
         "natural_material_scope_canary": True,
-        "material_scope_nonthinking_successor": bound["successor"],
+        "material_scope_nonthinking_successor": bound[
+            "nonthinking_successor"
+        ],
+        "material_scope_contract_repair_successor": bound[
+            "contract_repair_successor"
+        ],
         "run_scope_id": decision["run_scope_id"],
         "node_profiles": {"material_scope": node_profile},
     }
@@ -4508,6 +4516,21 @@ def build_preflight(
             "project_os_material_scope_successor_scope_allowance_missing"
         )
     if (
+        decision_projection.get("material_scope_contract_repair_successor")
+        is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S1-027-material-scope-model-visible-contract-omits-"
+                "validator-vocabulary-and-shape"
+            ),
+            allowed_scope=MATERIAL_SCOPE_CONTRACT_REPAIR_RUN_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_material_scope_contract_repair_scope_allowance_missing"
+        )
+    if (
         decision.get("status")
         == (
             "fixed_pack_claim_relation_alias_capacity_zero_call_pass_"
@@ -4733,7 +4756,21 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("material_scope_nonthinking_successor") is True:
+    if (
+        decision_projection.get("material_scope_contract_repair_successor")
+        is True
+    ):
+        known_boundary = (
+            "This current-baseline preflight permits only one exact-once "
+            "candidate-blind DELL material-scope contract-repair R3 over a "
+            "fresh message digest. It preserves R1 and R2 as failed, keeps "
+            "the non-thinking provider profile, and changes only the "
+            "provider-neutral model-visible shape, enums and binding rules. "
+            "It permits no retrieval, candidate, qrel, reference, hidden, "
+            "Evidence, NumericFact, publication, S1 acceptance, COST R3 or "
+            "full-chain authority."
+        )
+    elif decision_projection.get("material_scope_nonthinking_successor") is True:
         known_boundary = (
             "This current-baseline preflight permits only one exact-once "
             "candidate-blind DELL non-thinking successor over the unchanged "

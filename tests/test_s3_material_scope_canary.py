@@ -19,6 +19,9 @@ from sec_agent.research.material_scope_canary import (
     MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
     MATERIAL_SCOPE_CANARY_AUTHORITY_STATUS,
     MATERIAL_SCOPE_CANARY_RUN_SCOPE,
+    MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_SCHEMA,
+    MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_STATUS,
+    MATERIAL_SCOPE_CONTRACT_REPAIR_RUN_SCOPE,
     MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA,
     MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_STATUS,
     MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE,
@@ -64,6 +67,19 @@ R1_RESULT_REF = (
 R1_ASSESSMENT_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_material_scope_canary_failure_assessment_v1_0.json"
+)
+CONTRACT_REPAIR_POLICY_REF = (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_material_scope_contract_repair_"
+    "successor_policy_v1_0.json"
+)
+R2_RESULT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_canary_live_result_v1_1.json"
+)
+R2_ASSESSMENT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_canary_failure_assessment_v1_1.json"
 )
 CURRENT_DELL_INPUT_REF = (
     "configs/research/evals/"
@@ -442,6 +458,61 @@ def _successor_authority_root(tmp_path: Path) -> tuple[Path, dict, Path]:
     return root, authority, authority_path
 
 
+def _contract_repair_authority_root(
+    tmp_path: Path,
+) -> tuple[Path, dict, Path]:
+    root, authority, _ = _authority_root(tmp_path)
+    for ref in (
+        SUCCESSOR_PROFILE_REF,
+        CONTRACT_REPAIR_POLICY_REF,
+        R2_RESULT_REF,
+        R2_ASSESSMENT_REF,
+    ):
+        _copy(root, ref)
+    authority["schema_version"] = MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_SCHEMA
+    authority["authority_id"] = "TEST-MATERIAL-SCOPE-CONTRACT-REPAIR"
+    authority["status"] = MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_STATUS
+    authority["run_scope_id"] = MATERIAL_SCOPE_CONTRACT_REPAIR_RUN_SCOPE
+    authority["immutable_predecessor"] = {
+        "failure_result_ref": R2_RESULT_REF,
+        "failure_result_sha256": _sha(root / R2_RESULT_REF),
+        "failure_result_digest": _json(R2_RESULT_REF)["result_digest"],
+        "failure_assessment_ref": R2_ASSESSMENT_REF,
+        "failure_assessment_sha256": _sha(root / R2_ASSESSMENT_REF),
+    }
+    authority["bound_inputs"]["provider_profile_ref"] = SUCCESSOR_PROFILE_REF
+    authority["bound_inputs"]["provider_profile_sha256"] = _sha(
+        root / SUCCESSOR_PROFILE_REF
+    )
+    authority["bound_inputs"][
+        "contract_repair_policy_ref"
+    ] = CONTRACT_REPAIR_POLICY_REF
+    authority["bound_inputs"]["contract_repair_policy_sha256"] = _sha(
+        root / CONTRACT_REPAIR_POLICY_REF
+    )
+    authority["output_contract"] = {
+        "capture_root_ref": ".codex_runtime/test_material_scope_contract_repair",
+        "private_result_ref": (
+            "data/workbench_private/test_material_scope_contract_repair/full.json"
+        ),
+        "public_result_ref": (
+            "configs/research/evals/test_material_scope_contract_repair_result.json"
+        ),
+        "run_id": "TEST-MATERIAL-SCOPE-CONTRACT-REPAIR",
+        "attempt_id": "R3",
+        "product_publication": "forbidden",
+    }
+    authority_ref = (
+        "configs/research/evals/test_material_scope_contract_repair_authority.json"
+    )
+    authority_path = root / authority_ref
+    authority_path.write_text(
+        json.dumps(authority, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return root, authority, authority_path
+
+
 def test_authority_binds_one_call_profile_and_input(tmp_path: Path) -> None:
     root, authority, _ = _authority_root(tmp_path)
     bound = validate_material_scope_canary_authority(authority, root=root)
@@ -473,6 +544,34 @@ def test_successor_predecessor_drift_fails_closed(tmp_path: Path) -> None:
     with pytest.raises(
         MaterialScopeCanaryError,
         match="material_scope_successor_predecessor_invalid",
+    ):
+        validate_material_scope_canary_authority(authority, root=root)
+
+
+def test_contract_repair_authority_binds_R2_and_same_nonthinking_profile(
+    tmp_path: Path,
+) -> None:
+    root, authority, _ = _contract_repair_authority_root(tmp_path)
+    bound = validate_material_scope_canary_authority(authority, root=root)
+    assert bound["contract_repair_successor"] is True
+    assert bound["nonthinking_successor"] is False
+    assert bound["predecessor"]["failure"]["failure_code"] == (
+        "research_material_scope_output_fields_invalid"
+    )
+    assert bound["profile"].request_defaults["thinking"] == {
+        "type": "disabled"
+    }
+    assert bound["contract_repair_policy"]["contract_repair"][
+        "local_model_output_rewrite"
+    ] is False
+
+
+def test_contract_repair_predecessor_drift_fails_closed(tmp_path: Path) -> None:
+    root, authority, _ = _contract_repair_authority_root(tmp_path)
+    authority["immutable_predecessor"]["failure_result_digest"] = "e" * 64
+    with pytest.raises(
+        MaterialScopeCanaryError,
+        match="material_scope_contract_repair_predecessor_invalid",
     ):
         validate_material_scope_canary_authority(authority, root=root)
 

@@ -50,6 +50,18 @@ MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE = (
 MATERIAL_SCOPE_SUCCESSOR_POLICY_SCHEMA = (
     "fin_ia_s3_material_scope_nonthinking_successor_policy_v1_0"
 )
+MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_material_scope_contract_repair_successor_authority_v1_0"
+)
+MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_STATUS = (
+    "signed_one_DELL_candidate_blind_material_scope_contract_repair_R3_exact_once"
+)
+MATERIAL_SCOPE_CONTRACT_REPAIR_RUN_SCOPE = (
+    "one_DELL_candidate_blind_material_scope_contract_repair_R3"
+)
+MATERIAL_SCOPE_CONTRACT_REPAIR_POLICY_SCHEMA = (
+    "fin_ia_s3_material_scope_contract_repair_successor_policy_v1_0"
+)
 
 _FORBIDDEN_MODEL_VISIBLE_KEYS = frozenset(
     {
@@ -432,6 +444,60 @@ def _validate_successor_policy(payload: Mapping[str, Any]) -> None:
     )
 
 
+def _validate_contract_repair_policy(payload: Mapping[str, Any]) -> None:
+    expected = {
+        "schema_version",
+        "status",
+        "predecessor_failure_code",
+        "contract_repair",
+        "maximum_model_calls",
+        "maximum_transport_attempts",
+        "maximum_completion_tokens",
+        "thinking_mode",
+        "reasoning_effort_omitted",
+        "token_budget_basis",
+        "known_boundary",
+    }
+    basis = payload.get("token_budget_basis")
+    _require(
+        set(payload) == expected
+        and payload.get("schema_version")
+        == MATERIAL_SCOPE_CONTRACT_REPAIR_POLICY_SCHEMA
+        and payload.get("status")
+        == "provider_neutral_model_visible_contract_repair_successor_control"
+        and payload.get("predecessor_failure_code")
+        == "research_material_scope_output_fields_invalid"
+        and payload.get("contract_repair")
+        == {
+            "exact_top_level_shape_compiled": True,
+            "closed_enums_compiled_from_material_scope_policy": True,
+            "cross_field_rules_compiled_from_validator_contract": True,
+            "legacy_R2_vocabulary_rejected": True,
+            "local_model_output_rewrite": False,
+            "request_microbatching": False,
+        }
+        and payload.get("maximum_model_calls") == 1
+        and payload.get("maximum_transport_attempts") == 1
+        and payload.get("maximum_completion_tokens") == 8000
+        and payload.get("thinking_mode") == "disabled"
+        and payload.get("reasoning_effort_omitted") is True
+        and isinstance(basis, Mapping)
+        and set(basis)
+        == {
+            "node_purpose",
+            "input_scale",
+            "required_outputs",
+            "schema_burden",
+            "materiality_and_quality_risk",
+            "comparable_run_evidence",
+            "reasoning_profile",
+            "stop_and_truncation",
+        }
+        and all(basis.get(key) for key in basis),
+        "material_scope_contract_repair_policy_invalid",
+    )
+
+
 def _validate_successor_predecessor(
     authority: Mapping[str, Any], *, root: Path
 ) -> dict[str, Any]:
@@ -484,11 +550,71 @@ def _validate_successor_predecessor(
     return {"failure": failure, "assessment": assessment}
 
 
+def _validate_contract_repair_predecessor(
+    authority: Mapping[str, Any], *, root: Path
+) -> dict[str, Any]:
+    predecessor = authority.get("immutable_predecessor")
+    _require(
+        isinstance(predecessor, Mapping)
+        and set(predecessor)
+        == {
+            "failure_result_ref",
+            "failure_result_sha256",
+            "failure_result_digest",
+            "failure_assessment_ref",
+            "failure_assessment_sha256",
+        },
+        "material_scope_contract_repair_predecessor_fields_invalid",
+    )
+    _, failure = _bound_json(
+        root,
+        predecessor,
+        "failure_result_ref",
+        "failure_result_sha256",
+    )
+    _, assessment = _bound_json(
+        root,
+        predecessor,
+        "failure_assessment_ref",
+        "failure_assessment_sha256",
+    )
+    observed = assessment.get("observed") or {}
+    disposition = assessment.get("disposition") or {}
+    _require(
+        failure.get("status") == "terminal_failed_no_retry"
+        and failure.get("failure_code")
+        == "research_material_scope_output_fields_invalid"
+        and failure.get("result_digest")
+        == predecessor.get("failure_result_digest")
+        and assessment.get("status")
+        == "R2_preserved_visible_contract_vocabulary_omission_successor_required"
+        and observed.get("http_status") == 200
+        and observed.get("prompt_tokens") == 2689
+        and observed.get("completion_tokens") == 1842
+        and observed.get("reasoning_tokens") == 0
+        and observed.get("visible_content_characters") == 6444
+        and observed.get("finish_reason") == "stop"
+        and observed.get("request_scope_rows_produced") == 8
+        and observed.get("product_dispositions_produced") == 19
+        and observed.get("requirement_atoms_produced") == 12
+        and disposition.get("R2_retry_authorized") is False
+        and disposition.get("token_ceiling_increase_authorized") is False
+        and disposition.get("request_microbatching_authorized_now") is False
+        and disposition.get("provider_profile_change_authorized_now") is False,
+        "material_scope_contract_repair_predecessor_invalid",
+    )
+    return {"failure": failure, "assessment": assessment}
+
+
 def validate_material_scope_canary_authority(
     authority: Mapping[str, Any], *, root: Path
 ) -> dict[str, Any]:
     schema = authority.get("schema_version")
-    successor = schema == MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA
+    nonthinking_successor = schema == MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA
+    contract_repair_successor = (
+        schema == MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_SCHEMA
+    )
+    successor = nonthinking_successor or contract_repair_successor
     _require(
         successor or schema == MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
         "material_scope_canary_authority_schema_invalid",
@@ -520,16 +646,15 @@ def validate_material_scope_canary_authority(
     }
     if successor:
         expected_fields.add("immutable_predecessor")
-    expected_status = (
-        MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_STATUS
-        if successor
-        else MATERIAL_SCOPE_CANARY_AUTHORITY_STATUS
-    )
-    expected_scope = (
-        MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE
-        if successor
-        else MATERIAL_SCOPE_CANARY_RUN_SCOPE
-    )
+    if contract_repair_successor:
+        expected_status = MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_STATUS
+        expected_scope = MATERIAL_SCOPE_CONTRACT_REPAIR_RUN_SCOPE
+    elif nonthinking_successor:
+        expected_status = MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_STATUS
+        expected_scope = MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE
+    else:
+        expected_status = MATERIAL_SCOPE_CANARY_AUTHORITY_STATUS
+        expected_scope = MATERIAL_SCOPE_CANARY_RUN_SCOPE
     _require(
         set(authority) == expected_fields
         and authority.get("status") == expected_status
@@ -581,11 +706,14 @@ def validate_material_scope_canary_authority(
         authority.get("execution_budget") == expected_budget,
         "material_scope_canary_execution_budget_invalid",
     )
-    predecessor = (
-        _validate_successor_predecessor(authority, root=root)
-        if successor
-        else None
-    )
+    if contract_repair_successor:
+        predecessor = _validate_contract_repair_predecessor(
+            authority, root=root
+        )
+    elif nonthinking_successor:
+        predecessor = _validate_successor_predecessor(authority, root=root)
+    else:
+        predecessor = None
     bound = authority.get("bound_inputs")
     _require(
         isinstance(bound, Mapping),
@@ -611,9 +739,13 @@ def validate_material_scope_canary_authority(
         "implementation_sha256",
         "model_visible_messages_digest",
     }
-    if successor:
+    if nonthinking_successor:
         expected_bound_fields.update(
             {"successor_policy_ref", "successor_policy_sha256"}
+        )
+    elif contract_repair_successor:
+        expected_bound_fields.update(
+            {"contract_repair_policy_ref", "contract_repair_policy_sha256"}
         )
     _require(
         set(bound) == expected_bound_fields,
@@ -641,7 +773,9 @@ def validate_material_scope_canary_authority(
     kernel_path, kernel = _bound_json(root, bound, "kernel_ref", "kernel_sha256")
     successor_policy_path: Path | None = None
     successor_policy: dict[str, Any] | None = None
-    if successor:
+    contract_repair_policy_path: Path | None = None
+    contract_repair_policy: dict[str, Any] | None = None
+    if nonthinking_successor:
         successor_policy_path, successor_policy = _bound_json(
             root,
             bound,
@@ -649,6 +783,14 @@ def validate_material_scope_canary_authority(
             "successor_policy_sha256",
         )
         _validate_successor_policy(successor_policy)
+    elif contract_repair_successor:
+        contract_repair_policy_path, contract_repair_policy = _bound_json(
+            root,
+            bound,
+            "contract_repair_policy_ref",
+            "contract_repair_policy_sha256",
+        )
+        _validate_contract_repair_policy(contract_repair_policy)
     profile_path, profile_payload = _bound_json(
         root, bound, "provider_profile_ref", "provider_profile_sha256"
     )
@@ -728,8 +870,12 @@ def validate_material_scope_canary_authority(
         "kernel_path": kernel_path,
         "kernel": kernel,
         "successor": successor,
+        "nonthinking_successor": nonthinking_successor,
+        "contract_repair_successor": contract_repair_successor,
         "successor_policy_path": successor_policy_path,
         "successor_policy": successor_policy,
+        "contract_repair_policy_path": contract_repair_policy_path,
+        "contract_repair_policy": contract_repair_policy,
         "predecessor": predecessor,
         "profile_path": profile_path,
         "profile": profile,
@@ -1019,6 +1165,10 @@ __all__ = [
     "MATERIAL_SCOPE_CANARY_INPUT_SCHEMA",
     "MATERIAL_SCOPE_CANARY_RESULT_SCHEMA",
     "MATERIAL_SCOPE_CANARY_RUN_SCOPE",
+    "MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_SCHEMA",
+    "MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_STATUS",
+    "MATERIAL_SCOPE_CONTRACT_REPAIR_POLICY_SCHEMA",
+    "MATERIAL_SCOPE_CONTRACT_REPAIR_RUN_SCOPE",
     "MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA",
     "MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_STATUS",
     "MATERIAL_SCOPE_SUCCESSOR_POLICY_SCHEMA",

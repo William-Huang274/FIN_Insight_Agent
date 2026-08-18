@@ -1,0 +1,278 @@
+{
+  "accepted_reviewed_evidence_count": 5,
+  "authority": {
+    "S1_qualification_claimed": false,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority_remains_with_S2": true,
+    "product_publication": false,
+    "public_information_gap_authority": false
+  },
+  "candidate_count": 768,
+  "case_key": "NVDA",
+  "declared_pack_gap_receipt_count": 13,
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1_current_product_readiness/nvda-r2/full_result.json",
+  "full_result_sha256": "c82e1c6fe32011cdc627ea721e0053aa8b4e79f913d9a7193bbde182e9419efa",
+  "gap_eligibility_receipt_count": 23,
+  "known_boundary": "This public projection reports product CandidateDecision, current reviewed Evidence reuse, S2 numeric authority and gap eligibility without exposing candidate text or private source material. It does not qualify S1, declare a public-information gap or authorize publication.",
+  "prepared_from_commit": "200df95917e2d2f41da672520faa7ef1b86bc694",
+  "readiness_state": "blocked_by_candidate_coverage",
+  "recorded_at": "2026-08-18T16:32:06+00:00",
+  "request_count": 8,
+  "request_state_counts": {
+    "blocked_by_candidate_coverage": 3,
+    "blocked_by_evidence_admission": 5,
+    "blocked_by_local_data_materialization": 0,
+    "blocked_by_numeric_or_bridge_authority": 0,
+    "blocked_by_retrieval_quality": 0,
+    "blocked_by_source_access": 0,
+    "candidate_audit_only_explicit_scope_pending": 0,
+    "partial_with_material_gaps": 0,
+    "ready_for_current_scope": 0
+  },
+  "requests": [
+    {
+      "business_question_zh": "订单与积压是否真实增长？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 11,
+        "rejected": 85,
+        "unjudged": 0
+      },
+      "facet_id": "orders_and_backlog",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 3,
+        "resolved_count": 0,
+        "state": "typed_gap",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 3
+      },
+      "readiness_state": "blocked_by_candidate_coverage",
+      "request_id": "REQ::cf20af37f40f32db0d70f3de",
+      "requirement_count": 4,
+      "requirement_state_counts": {
+        "blocked_by_candidate_coverage": 3,
+        "blocked_by_evidence_admission": 1
+      },
+      "slot_id": "demand_volume_quality",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "订单向出货与收入转化是否可持续，是否存在拉货或消化风险？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 3,
+        "rejected": 93,
+        "unjudged": 0
+      },
+      "facet_id": "conversion_and_durability",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 2,
+        "resolved_count": 0,
+        "state": "typed_gap",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 2
+      },
+      "readiness_state": "blocked_by_candidate_coverage",
+      "request_id": "REQ::e57ad88297364b6daa67612a",
+      "requirement_count": 4,
+      "requirement_state_counts": {
+        "blocked_by_candidate_coverage": 3,
+        "blocked_by_evidence_admission": 1
+      },
+      "slot_id": "demand_volume_quality",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "最新收入、增长与经营利润表现如何？",
+      "candidate_decision_counts": {
+        "accepted": 1,
+        "needs_human_review": 15,
+        "rejected": 20,
+        "unjudged": 60
+      },
+      "facet_id": "reported_results",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 4,
+        "resolved_count": 4,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "blocked_by_evidence_admission",
+      "request_id": "REQ::bc817df38edd517b24d34383",
+      "requirement_count": 1,
+      "requirement_state_counts": {
+        "blocked_by_evidence_admission": 1
+      },
+      "slot_id": "operating_performance",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector"
+      ]
+    },
+    {
+      "business_question_zh": "增长是否转化为毛利率、经营利润率和增量利润？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 16,
+        "rejected": 58,
+        "unjudged": 22
+      },
+      "facet_id": "margin_and_incremental_profit",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 3,
+        "resolved_count": 3,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "blocked_by_evidence_admission",
+      "request_id": "REQ::04e15a1ed11e489f11546f8f",
+      "requirement_count": 1,
+      "requirement_state_counts": {
+        "blocked_by_evidence_admission": 1
+      },
+      "slot_id": "pricing_mix_value_capture",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector"
+      ]
+    },
+    {
+      "business_question_zh": "研究主体披露的部件、产能和交付约束是什么？",
+      "candidate_decision_counts": {
+        "accepted": 3,
+        "needs_human_review": 14,
+        "rejected": 75,
+        "unjudged": 4
+      },
+      "facet_id": "subject_execution",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 3,
+        "resolved_count": 0,
+        "state": "typed_gap",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 3
+      },
+      "readiness_state": "blocked_by_candidate_coverage",
+      "request_id": "REQ::da9efec898d0c4dec96c3519",
+      "requirement_count": 6,
+      "requirement_state_counts": {
+        "blocked_by_candidate_coverage": 1,
+        "blocked_by_evidence_admission": 4,
+        "ready_for_current_scope": 1
+      },
+      "slot_id": "capacity_inputs_execution",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "研究主体披露的最强反方事实是什么？",
+      "candidate_decision_counts": {
+        "accepted": 2,
+        "needs_human_review": 16,
+        "rejected": 78,
+        "unjudged": 0
+      },
+      "facet_id": "issuer_counterevidence",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 1,
+        "resolved_count": 1,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "blocked_by_evidence_admission",
+      "request_id": "REQ::3b255e85a116bbecbe0e8358",
+      "requirement_count": 2,
+      "requirement_state_counts": {
+        "blocked_by_evidence_admission": 2
+      },
+      "slot_id": "counterevidence_and_what_would_change",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "上下游披露了哪些可能推翻当前判断的背景？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 16,
+        "rejected": 64,
+        "unjudged": 16
+      },
+      "facet_id": "upstream_or_demand_counterevidence",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 4,
+        "resolved_count": 2,
+        "state": "partial_with_typed_gaps",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 2
+      },
+      "readiness_state": "blocked_by_evidence_admission",
+      "request_id": "REQ::c6861aa99a630a65b6a1d069",
+      "requirement_count": 4,
+      "requirement_state_counts": {
+        "blocked_by_evidence_admission": 4
+      },
+      "slot_id": "counterevidence_and_what_would_change",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "研究主体直接披露的出口、监管和合规暴露是什么？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 6,
+        "rejected": 90,
+        "unjudged": 0
+      },
+      "facet_id": "issuer_policy_exposure",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 0,
+        "resolved_count": 0,
+        "state": "not_requested",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "blocked_by_evidence_admission",
+      "request_id": "REQ::38c5bcb9e374ae86e5925ed6",
+      "requirement_count": 2,
+      "requirement_state_counts": {
+        "blocked_by_evidence_admission": 2
+      },
+      "slot_id": "regulatory_policy_exposure",
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector"
+      ]
+    }
+  ],
+  "result_digest": "ff02bbb3e6c5c241086ebb7e6dfe5150653f8c4c5987541e4a3ff9b36eea7760",
+  "schema_version": "fin_ia_s1_current_product_readiness_result_v1_0",
+  "status": "current_product_pack_readiness_materialized"
+}

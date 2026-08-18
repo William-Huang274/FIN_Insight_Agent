@@ -9,6 +9,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 只作为责任坐标，实际按共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice 交付。VS1、VS2、VS3 与 DELL／MU／NVDA 三案 VS4 已进入 R19 Runtime 和 Workbench。当前 successor Pack 为 DELL `22 Evidence / 14 gaps`、MU `11 / 15`、NVDA `19 / 13`；旧宽片段分别退役 3／16／14 条，加入 5／11／19 条 capture-bound 精确 claim，gap 分别窄化 1／2／3、关闭 0，MU 另增加 2 个明确归属 S2 的财务桥接 gap。三案 Candidate 自动晋升、NumericFact 新授权和 hard-negative false accept 均为 0。所有 learned Embedding／Cross-Encoder 只允许 CUDA／FP16，CUDA 不可用即 fail closed，绝不回退 CPU。当前只记 `three_case_VS4_vertical_slice_integrated`；10/10 命题有任一有效 top10 目标不等于所有正例找全，仍有 4 个 reviewed positive 未进入 candidate union，故 VS5 必须另测 all-positive material-facet coverage、frozen test、异质留出与 clean replay，`S1_qualified_stable` 仍为 false，不运行产品资格完整真实链。
 
+最新增量已让 request-bound Material Evidence Set v1.1 消费当前四案已保存候选完成纵切回放：18 个请求、40 个材料 requirement 均能成组保留且排列稳定，但只有 MU 4／4、NVDA 6／6 请求达到 `runtime_scope_ready`；COST 2／5、DELL 0／3 的复合研究主题仍需自然 ResearchBlueprint 明确材料范围。该模块尚未进入 Workbench 或动态 S1→S3 活动 import graph，Candidate 仍非 Evidence，COST 人工 reference 决策和 replacement blind qualification 仍开放，因此当前状态只能记 `current_candidate_vertical_replay_proven / product_consumer_pending / natural_blueprint_scope_open / S1_qualified_stable_false`。
+
 ## 当前唯一产品边界
 
 - 产品入口：`/workspace`
@@ -623,3 +625,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - DELL／MU／NVDA／COST 四种 synthetic development 形态共 10 个材料组通过，同一核心 0 ticker 分支、0 cross-case selected；13 个合同测试、34 个相邻测试与全仓 `646 passed`。这只证明合同翻译和开发回归，不证明当前 Runtime 已使用它。
 - 当前最早开放项是：COST request／reference 的 qualified-human 一致性裁决；当前 candidate metadata 到 material group 的 label-free adapter；自然 ResearchBlueprint 到 material requirements 的编译入口；当前纵切回放；新的 unseen temporal preregistration 与独立 blind reference。`S1_qualified_stable=false`，完整 S1→S3 产品链继续 blocked。
 - COST 人工复核包已生成但未签：冻结 temporal request 只问 revenue／gross margin／operating cash flow，两条 membership reference 超出范围。合法选择是未来先扩请求再纳入会员材料，或让未来 reference 对齐当前请求；当前非权威建议后者。任一选择都不改写 R1／R2，COST R3 仍禁止。
+
+## 2026-08-18 S1 Material Evidence Runtime v1.1 四案回放
+
+- 当前可复用 seam 已从真实 `EvidenceRequest`、narrative plan、RetrievalNeed／Evidence Role feature 与 compiled object 编译相关的 facet／role／metric／product／period／basis binding。时间比较短语不再伪装成产品；错公司、请求无关候选均不能填 review window。
+- 非跨期材料组允许指标表与独立机制叙事以 `collective_axes` 共同覆盖；跨期同口径仍要求单一相关 binding 或同 basis 的逐期 bundle。counter／context 不再因为主指标不匹配而被误杀，且不会获得 NumericFact／NumericRelation 权威。
+- 材料 reservation 已前移到普通 top-K 之前。回放因此能保留 DELL 排名 21 以后的营运资金反方，以及 COST 风险对象；不再把“先截断后丢失”误报成资料不存在。
+- 零网络／零模型回放覆盖 COST 5、DELL 3、MU 4、NVDA 6 个请求，共 40 个 requirement，全部 material set 完整且 permutation stable。MU 4／4、NVDA 6／6 scope-ready；COST 2／5、DELL 0／3 的复合主题被明确标为需要自然 ResearchBlueprint，没有用本体补词偷关门。
+- 公开摘要：`configs/retrieval/fin_ia_0_1_3_s1_material_evidence_runtime_replay_result_v1_1.json`。该结果不读取 qrel／reference／hidden，不晋升 Evidence，不改变 Pack／Workbench，不证明 S1 资格。
+- active-baseline import graph 复证显示新 seam 当前只有通用 replay 和 tests 消费，尚未成为 Workbench 或动态 Truth Spine 的活动产品消费者；因此不得使用 `Runtime integrated` 表述。
+- 当前下一责任层：实现自然 `ResearchBlueprint → MaterialEvidenceRequirementPlan v1.1` 并消费本 Runtime；完成 COST qualified-human request/reference 决策；另建 Git 外 replacement blind program。现有 COST R3、失盲 hidden execution 和完整产品资格链继续禁止。

@@ -542,3 +542,20 @@ COST R2 将 any-hit、material facet 和 required role 全部提升到门槛，�
 实现为 `src/retrieval/evidence_set_coverage.py`，策略为 `configs/retrieval/fin_ia_0_1_3_s1_material_evidence_set_coverage_policy_v1_0.json`。mutation 覆盖 request 越界、gold identity 泄漏、跨期容量不足、same-basis 缺失、错公司、排列扰动、等价对象、不可替代对象、plan／selection 篡改和 reference-plan 不一致。四案例 synthetic fixture 共 10 个组均由同一核心满足，0 ticker 分支，0 Evidence／NumericFact 晋升；全仓 `646 passed`。
 
 该状态只能记 `contract_translated_and_development_fixture_proven`。当前 qualification candidate 还需要一个 label-free metadata adapter，把 RetrievalNeed／Evidence Role／compiled object 的 case、facet、role、metric、product、period 和 basis 投影到本合同；自然 ResearchBlueprint 也尚未提交 material requirements。没有这两条真实消费者，不得把本节写成 VS5 Runtime 已集成或 S1 已通过。
+
+## 26. Material Evidence Runtime v1.1 与四案真实回放（2026-08-18）
+
+当前代码已增加一个 provider-neutral、零模型的材料集合可复用 seam。它从当前 `EvidenceRequest`、narrative execution plan、RetrievalNeed／Evidence Role shortlist feature 和 compiled financial object 编译 `MaterialEvidenceRequirementPlan v1.1` 与相关候选绑定；旧 v1.0 schema、synthetic fixture 和历史输出保持兼容且默认不变。当前消费者是绑定真实四案资产的通用 replay，并非 Workbench 或动态 S1→S3 产品路径。
+
+v1.1 关闭四类真实纵切语义错误：
+
+1. **相关绑定而非扁平标签。** 每个候选保存若干 `material_bindings`；facet、role、metric、product、period 和 basis 作为同一绑定存在，禁止把不同 feature 的字段摊平后组合成候选从未表达的虚假匹配。
+2. **单片段与集合覆盖分开。** `single_binding` 用于原子材料及同口径跨期；`collective_axes` 允许非跨期材料组由指标表和独立机制叙事共同完成。容量按最坏轴数预留，不能靠扩大字符或 top-K 掩盖对象形态差异。
+3. **角色决定绑定轴。** direct／bridge 可绑定请求指标与硬产品概念；context／counter 绑定硬产品概念但不被主指标兼容性误杀。反方风险材料因此不需要伪装成经营现金流或毛利数值证据，NumericFact／NumericRelation 权威仍为 false。
+4. **先材料保护、后有限审阅窗。** Runtime 必须让完整候选池参与材料 reservation，然后才形成 review window。DELL 营运资金反方在原始排名第 21 以后仍是已存在的有效候选；此前先截 top20 再做 coverage 会制造假缺失。错公司／错实体硬拒绝，请求无关候选不得用来填满窗口。
+
+自然范围编译采用显式 Blueprint 优先、确定性 fallback 次之。时间比较短语不会再被编译成产品。fallback 只把策略中声明的硬产品概念作为 material product axis；上下文主题和未分类复合题目仍可驱动检索，但不获得产品身份，并在 compiler receipt 中要求显式 ResearchBlueprint。多产品 temporal scope 若没有 Blueprint 直接 fail closed。
+
+通用回放入口为 `scripts/data_retrieval/run_s1_material_evidence_runtime_replay.py`。它只读取当前 DELL／MU／NVDA VS4 已保存 full ranking、COST 已披露 valid-temporal 输入／R2 candidate 与相应对象库；不读取 qrel、reference、hidden／holdout，不调用网络、模型、Embedding 或 reranker。DELL／MU／NVDA 从完整 96 候选池在材料 reservation 后再切 review；COST 使用已保存 v2 shortlist feature。四案 18 个请求、40 个 requirement 全部 `material_set_complete`，排列回放稳定；MU 4／4、NVDA 6／6 为 `runtime_scope_ready`，COST 2／5、DELL 0／3 因未分类复合主题需要自然 Blueprint。
+
+机器摘要为 `configs/retrieval/fin_ia_0_1_3_s1_material_evidence_runtime_replay_result_v1_1.json`，私有逐请求结果由其 digest 引用。active-baseline import graph 显示新 seam 尚未被 Workbench 或动态 Truth Spine 消费，因此该结果只记 `current_candidate_vertical_replay_proven / product_consumer_pending / natural_blueprint_scope_open / S1_qualification_false`。COST 人工 reference 一致性仍未签署，既有 hidden 资产仍失盲，COST R3、现有 frozen／holdout、Evidence 自动晋升、NumericFact 新授权和完整 S1→S3 产品链均未放行。

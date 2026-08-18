@@ -162,6 +162,14 @@ COST R1 是当前 VS5 的第一次正式 valid-temporal 候选资格。它通过
 
 该结果尚不是 current Runtime 纵切。下一步先做 COST reference consistency 的 qualified-human review pack，再补当前 candidate metadata→material group adapter 和自然 ResearchBlueprint→material requirements 编译入口；随后用当前开发纵切回放，才允许预注册新的 unseen temporal valid。现有 COST 禁止 R3，已披露 hidden 资产禁止作为 blind，S1 与完整真实链继续 blocked。
 
+## 4I. Material Evidence Runtime v1.1 回放与下一责任层（2026-08-18）
+
+当前 candidate metadata→material group adapter 与统一零调用回放已经完成，不再停留在 synthetic fixture。v1.1 保留 facet／role／metric／product／period／basis 的相关绑定，支持非跨期的集合轴覆盖，并把材料 reservation 放在普通 review top-K 之前；旧 v1.0 合同和历史 COST R1／R2 不改写。
+
+四案真实已保存候选回放共覆盖 18 个请求、40 个材料 requirement，全部材料组可完整保留且排列稳定。这个数字不能直接写成质量通过：MU 4／4、NVDA 6／6 请求的当前范围可由 deterministic contract 完整解释；COST 只有 2／5、DELL 0／3。其余请求包含会员价值、可比销售驱动、毛利压力、AI 服务器客户集中、营运资金机制和上游封装约束等复合研究主题，fallback 不具备替用户决定硬产品／机制边界的权限，已留下 `explicit_blueprint_required_for_full_product_scope`。
+
+因此下一项不再继续改 ranker、扩大 review_k 或为 DELL／COST 添本体词。当前最早责任层是自然 `ResearchBlueprint → MaterialEvidenceRequirementPlan v1.1`：让上游根据真实研究问题明确 material scope，再调用现有 S1 selection；随后才做 EvidenceDecision／Gate、S2 数值关系和 Pack Readiness 回放。并行治理项仍是 COST qualified-human request／reference 一致性签署，以及新的 Git 外 replacement blind program。任何一项未完成前，`S1_qualified_stable=false`、现有 COST R3／失盲 hidden execution／完整产品资格链均保持禁止。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

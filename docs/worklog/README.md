@@ -11,6 +11,7 @@
   - S1 责任分层、纵向 release slice 与持续集成更正：`fin_0_1_3_s1/019_s1_vertical_release_slice_and_continuous_integration_correction.md`
   - VS5 request-bound 材料组与同口径跨期合同：`fin_0_1_3_s1/036_s1_vs5_request_bound_material_evidence_set_contract.md`
   - VS5 COST request／reference 一致性人工复核包：`fin_0_1_3_s1/037_s1_vs5_cost_reference_consistency_qualified_human_review_packet.md`
+  - VS5 Material Evidence Runtime v1.1 与四案真实回放：`fin_0_1_3_s1/038_s1_vs5_material_evidence_runtime_v11_four_case_replay.md`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`

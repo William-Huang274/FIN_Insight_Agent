@@ -2832,3 +2832,17 @@ COST valid-temporal R2 证明，命题 any-hit、material facet 和 required rol
 5. 参考与请求不一致必须由 qualified human 裁决，不能据结果偷改 EvidenceRequest 或删标；历史 COST R1／R2 保持失败，禁止 R3。
 
 当前只完成 provider-neutral 合同、摘要绑定和 DELL／MU／NVDA／COST 四种业务形态的 synthetic development fixture。自然 ResearchBlueprint 编译、当前 candidate metadata adapter、真实纵切、replacement blind reference 和新 unseen temporal valid 均未完成，因此不改变 `S1_qualified_stable=false`。
+
+### 16.45 材料集合完整、研究范围完整与 Evidence Pack 就绪必须分开验收（2026-08-18）
+
+当前真实纵切回放进一步证明，“按材料角色找齐候选”仍不是“研究范围已经被正确理解”，更不是“Evidence Pack 已经可以交给研究 Agent”。产品必须保留三层独立状态：
+
+1. `material_set_complete`：在本次已声明的 facet／role／metric／product／entity／period 范围内，正式审阅面已经保留 direct、counter、bridge、context 或同口径跨期材料。此层仍是 Candidate 权限。
+2. `runtime_scope_ready`：ResearchBlueprint 已把用户研究主题拆成可执行、可审计的材料范围；没有把“AI 服务器客户集中、竞争定价、取消与库存风险”这类完整研究题目误当成一个产品名，也没有用本地本体猜测新行业主题的硬边界。
+3. `evidence_pack_ready`：前两层通过后，候选还必须经过 EvidenceDecision／Evidence Gate、来源与期间绑定、S2 NumericFact／NumericRelation、CoverageState 和 gap 资格，才能成为下游研究可用资料。前两层任何通过都不得自动授予 Evidence 或数值权威。
+
+ResearchBlueprint 对新公司、新行业和复合主题必须能够显式声明 material requirements。确定性 fallback 只允许处理已定义的稳定金融 facet、角色、指标及已归类的硬产品概念；无法分类的主题可以继续参与检索和上下文召回，但必须留下 `explicit_blueprint_required_for_full_product_scope`，不得为了让合同变绿而静默变成产品身份或被删除。
+
+材料组装顺序也属于产品语义：先在完整候选池中保护稀缺的 direct／counter／bridge／context 和跨期 bundle，再形成有限审阅窗；不得先截普通 top-K，再声称后续材料组不存在。一个数值表与另一段机制解释可以共同覆盖同一非跨期材料组；反方／背景材料不必冒充主指标数值证据。跨期同口径比较仍必须由一个相关绑定或同 `same_basis_key` 的逐期 bundle 满足，最终 NumericRelation 权威继续属于 S2。
+
+当前零模型、零网络回放覆盖 COST 5 个、DELL 3 个、MU 4 个、NVDA 6 个真实请求，共 40 个材料 requirement 均能由同一 v1.1 合同保留，且排列回放稳定。MU 4／4、NVDA 6／6 请求达到 `runtime_scope_ready`；COST 只有 2／5、DELL 0／3 达到该状态，其余请求明确要求自然 ResearchBlueprint。该结果只关闭 current candidate metadata adapter 与材料选择顺序的工程纵切，不关闭 qualified-human COST reference、replacement blind qualification、Evidence 晋升、S1 资格或完整真实产品链。

@@ -30,6 +30,8 @@
   - [x] 6 个未观察案例／7 份官方来源／30 命题预注册，来源 capture、腾讯全页 layout、10,618 对象与 5／10／15 split-safe Runtime input
   - [x] evaluator-only source review/reference（130 positive candidates；JPM 4 个 parser/object failure；4 个 source-plan coverage failure；人工最终复核待完成）
   - [x] CUDA＋FP16 fail-closed 预检（RTX 4060 Laptop，四模型 digest 绑定，0 完整模型加载／0 qualification vector execution）
+  - [x] request-bound Material Evidence Set v1.1、current candidate metadata adapter 与四案真实候选零调用回放（18 requests／40 requirements；材料组全保留；候选仍非 Evidence）
+  - [ ] 自然 ResearchBlueprint material scope、COST qualified-human reference 决策与 replacement blind qualification
   - [ ] valid temporal 资格运行、reference review 与一次性 frozen／heterogeneous 执行
 - [x] 当前 Pack registry-atomic 提升（R11；按案例私有对象根；0 复制／0 网络／0 模型；Workbench 三案真实挂载复验通过）
 - [x] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归（engineering pass）

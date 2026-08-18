@@ -15,11 +15,24 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R19",
-  "resource_bytes": 2469805,
-  "resource_canonical_digest": "11589459bffc30a2104d64d619273801ac54f8190d089b221e1b43b711f16bd9",
-  "resource_count": 16,
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R20",
+  "resource_bytes": 2488150,
+  "resource_canonical_digest": "494cb959d6911af3dfb2f6e83caf6cef256da3e96ab475a605615bb40fa056de",
+  "resource_count": 20,
   "resources": [
+    {
+      "bytes": 6339,
+      "classification": "provider_neutral_financial_intent_ontology",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "lazy_first_controlled_research_plan",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+      "required": true,
+      "resource_id": "application.config.current_financial_intent_ontology",
+      "sha256": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242",
+      "source_owner": "retrieval.material_evidence_runtime"
+    },
     {
       "bytes": 20734,
       "classification": "application_runtime_config",
@@ -45,6 +58,19 @@
       "resource_id": "application.config.current_hybrid_candidate_runtime_policy",
       "sha256": "3dabda7398fcc67d95e6969928a7ede862675528c5513d48a9757df92c16e8f5",
       "source_owner": "retrieval.hybrid_candidate_runtime.LocalQwenHybridCandidateRuntime.from_policy"
+    },
+    {
+      "bytes": 4747,
+      "classification": "provider_neutral_product_material_candidate_reservation_policy",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "lazy_first_controlled_research_plan",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_0.json",
+      "required": true,
+      "resource_id": "application.config.current_product_material_evidence_runtime_policy",
+      "sha256": "3f22aca6d3a7b18a9f096da24b9741573556c473ac9e782b83ee40a8b106e160",
+      "source_owner": "retrieval.material_evidence_runtime.compile_material_requirement_plan_from_runtime_input"
     },
     {
       "bytes": 12075,
@@ -73,6 +99,19 @@
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
     },
     {
+      "bytes": 2644,
+      "classification": "provider_neutral_request_visible_material_scope_policy",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "lazy_first_controlled_research_plan",
+      "repo_relative_path": "configs/research/fin_ia_0_1_3_s3_material_scope_policy_v1_0.json",
+      "required": true,
+      "resource_id": "application.config.current_research_material_scope_policy",
+      "sha256": "6f7f086aec3b3f1abd84d44719f84c09322b6f96512b5d5b719bbef769668194",
+      "source_owner": "sec_agent.research.material_scope.compile_research_material_scope"
+    },
+    {
       "bytes": 3921,
       "classification": "application_runtime_config",
       "consumer_ids": [
@@ -97,6 +136,19 @@
       "resource_id": "application.config.current_research_workspace_catalog",
       "sha256": "a527cfee8e599f0677da7290954d0c39e5428bed223eebc8f2c5ade413c4edb1",
       "source_owner": "apps.workbench.backend.application.research_workspace_service"
+    },
+    {
+      "bytes": 4615,
+      "classification": "provider_neutral_retrieval_need_compiler_policy",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "lazy_first_controlled_research_plan",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_2.json",
+      "required": true,
+      "resource_id": "application.config.current_retrieval_need_policy",
+      "sha256": "d2137c3a0e2288662d91afb4ff36c31a312414beb0f2940b85023d2090ffc976",
+      "source_owner": "retrieval.retrieval_need.compile_retrieval_needs"
     },
     {
       "bytes": 5229,

@@ -1,0 +1,373 @@
+from __future__ import annotations
+
+from copy import deepcopy
+import json
+from pathlib import Path
+import sys
+
+import pytest
+
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path[:0] = [str(ROOT), str(ROOT / "src")]
+
+from retrieval.contracts import (  # noqa: E402
+    load_evidence_request,
+    load_financial_research_kernel,
+)
+from sec_agent.research.material_scope import (  # noqa: E402
+    ResearchMaterialScopeError,
+    compile_research_material_scope,
+    compile_research_material_scope_messages,
+    parse_research_material_scope_output,
+)
+
+
+KERNEL = load_financial_research_kernel(
+    json.loads(
+        (
+            ROOT
+            / "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json"
+        ).read_text(encoding="utf-8")
+    )
+)
+SCOPE_POLICY = json.loads(
+    (
+        ROOT
+        / "configs/research/fin_ia_0_1_3_s3_material_scope_policy_v1_0.json"
+    ).read_text(encoding="utf-8")
+)
+MATERIAL_POLICY = json.loads(
+    (
+        ROOT
+        / "configs/retrieval/fin_ia_0_1_3_s1_material_evidence_runtime_policy_v1_0.json"
+    ).read_text(encoding="utf-8")
+)
+ONTOLOGY = json.loads(
+    (
+        ROOT
+        / "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json"
+    ).read_text(encoding="utf-8")
+)
+
+
+def _request(
+    *,
+    request_id: str = "REQ::DELL-WORKING-CAPITAL-SCOPE",
+    facet_id: str = "working_capital_risk",
+    metric_intents: list[str] | None = None,
+    product_intents: list[str] | None = None,
+    fiscal_years: list[int] | None = None,
+):
+    return load_evidence_request(
+        {
+            "schema_version": "fin_ia_evidence_request_v1_0",
+            "request_id": request_id,
+            "cell_id": "CELL::DELL-MATERIAL-SCOPE",
+            "requester_role": "cash_conversion_specialist",
+            "evidence_domain": "operating_performance",
+            "case_key": "DELL",
+            "subject_ticker": "DELL",
+            "research_as_of": "2026-08-06",
+            "target_entities": ["DELL"],
+            "requested_facet_ids": [facet_id],
+            "metric_intents": metric_intents
+            if metric_intents is not None
+            else ["inventory", "accounts_receivable"],
+            "product_intents": product_intents
+            if product_intents is not None
+            else ["AI infrastructure working-capital dynamics"],
+            "period": {
+                "start_date": "2025-02-01",
+                "end_date": "2026-08-06",
+                "fiscal_years": fiscal_years or [2026, 2027],
+            },
+            "granularity": "quarter_and_fiscal_year",
+            "unit": "reported_source_unit",
+            "acceptable_sources": ["10-K", "10-Q", "8-K"],
+            "acceptable_proxy": False,
+            "forbidden_proxy": ["unbound industry demand"],
+            "stop_condition": "return candidates, typed facts, or typed gaps",
+            "clarification_policy": "return_typed_gap",
+        },
+        KERNEL,
+    )
+
+
+def _working_capital_payload(request_id: str) -> dict[str, object]:
+    return {
+        "schema_version": "fin_ia_research_material_scope_atoms_v1_0",
+        "research_plan_digest": "PLAN::DEVELOPMENT",
+        "request_scopes": [
+            {
+                "request_id": request_id,
+                "product_intent_dispositions": [
+                    {
+                        "product_intent_index": 0,
+                        "disposition": "contextual_retrieval_only",
+                    }
+                ],
+                "requirement_atoms": [
+                    {
+                        "facet_id": "working_capital_risk",
+                        "role": "bridge",
+                        "metric_intent_indices": [0, 1],
+                        "product_intent_indices": [],
+                        "period_mode": "any",
+                        "coverage_mode": "collective_axes",
+                    },
+                    {
+                        "facet_id": "working_capital_risk",
+                        "role": "counter",
+                        "metric_intent_indices": [],
+                        "product_intent_indices": [],
+                        "period_mode": "any",
+                        "coverage_mode": "collective_axes",
+                    },
+                ],
+            }
+        ],
+    }
+
+
+def test_material_scope_compiles_composite_topic_without_literal_product_gate() -> None:
+    request = _request()
+    result = compile_research_material_scope(
+        _working_capital_payload(request.request_id),
+        research_plan_digest="PLAN::DEVELOPMENT",
+        requests=[request],
+        required_request_ids=[request.request_id],
+        policy=SCOPE_POLICY,
+        material_runtime_policy=MATERIAL_POLICY,
+        intent_ontology=ONTOLOGY,
+    )
+
+    scope = result["request_scopes"][0]
+    assert scope["explicit_scope_ready"] is True
+    assert scope["product_intent_dispositions"] == [
+        {
+            "product_intent_index": 0,
+            "product_intent": "AI infrastructure working-capital dynamics",
+            "disposition": "contextual_retrieval_only",
+        }
+    ]
+    requirements = scope["research_blueprint"]["material_requirements"]
+    assert len(requirements) == 3
+    assert {
+        (row["role"], tuple(row["metric_ids"]), tuple(row["product_ids"]))
+        for row in requirements
+    } == {
+        ("bridge", ("inventory",), ()),
+        ("bridge", ("accounts_receivable",), ()),
+        ("counter", (), ()),
+    }
+    assert result["summary"]["candidate_or_reference_inputs_read"] is False
+    assert result["authority"]["numeric_authority"] is False
+
+
+def test_material_scope_expands_hard_product_same_basis_by_metric() -> None:
+    request = _request(
+        request_id="REQ::COST-TEMPORAL-SCOPE",
+        facet_id="reported_results",
+        metric_intents=["revenue", "gross_profit"],
+        product_intents=["FY2024 FY2025 comparison", "membership fee revenue"],
+        fiscal_years=[2024, 2025],
+    )
+    payload = {
+        "schema_version": "fin_ia_research_material_scope_atoms_v1_0",
+        "research_plan_digest": "PLAN::TEMPORAL",
+        "request_scopes": [
+            {
+                "request_id": request.request_id,
+                "product_intent_dispositions": [
+                    {
+                        "product_intent_index": 0,
+                        "disposition": "temporal_directive",
+                    },
+                    {
+                        "product_intent_index": 1,
+                        "disposition": "hard_material_axis",
+                    },
+                ],
+                "requirement_atoms": [
+                    {
+                        "facet_id": "reported_results",
+                        "role": "direct",
+                        "metric_intent_indices": [0],
+                        "product_intent_indices": [1],
+                        "period_mode": "all_periods_same_basis",
+                        "coverage_mode": "single_binding",
+                    },
+                    {
+                        "facet_id": "reported_results",
+                        "role": "direct",
+                        "metric_intent_indices": [1],
+                        "product_intent_indices": [1],
+                        "period_mode": "all_periods_same_basis",
+                        "coverage_mode": "single_binding",
+                    },
+                ],
+            }
+        ],
+    }
+    result = compile_research_material_scope(
+        payload,
+        research_plan_digest="PLAN::TEMPORAL",
+        requests=[request],
+        required_request_ids=[request.request_id],
+        policy=SCOPE_POLICY,
+        material_runtime_policy=MATERIAL_POLICY,
+        intent_ontology=ONTOLOGY,
+    )
+
+    requirements = result["request_scopes"][0]["research_blueprint"][
+        "material_requirements"
+    ]
+    assert len(requirements) == 2
+    assert {tuple(row["metric_ids"]) for row in requirements} == {
+        ("revenue",),
+        ("gross_profit",),
+    }
+    assert all(row["product_ids"] == ["membership fee revenue"] for row in requirements)
+    assert all(row["fiscal_years"] == [2024, 2025] for row in requirements)
+
+
+def test_material_scope_messages_are_request_visible_and_candidate_blind() -> None:
+    request = _request()
+    system, user = compile_research_material_scope_messages(
+        research_plan_digest="PLAN::DEVELOPMENT",
+        requests=[request],
+        required_request_ids=[request.request_id],
+        policy=SCOPE_POLICY,
+        material_runtime_policy=MATERIAL_POLICY,
+        intent_ontology=ONTOLOGY,
+    )
+    visible = json.loads(user["content"])
+    serialized = json.dumps(visible, ensure_ascii=False)
+
+    assert system["role"] == "system"
+    assert visible["requests"][0]["request_id"] == request.request_id
+    assert visible["requests"][0]["metric_intents"][0] == {
+        "index": 0,
+        "value": "inventory",
+    }
+    assert "source_record_id" not in serialized
+    assert "compiled_object_id" not in serialized
+    assert "COBJ::" not in serialized
+    assert "http://" not in serialized and "https://" not in serialized
+
+
+@pytest.mark.parametrize(
+    ("mutation", "error"),
+    [
+        (
+            lambda value: value["request_scopes"][0][
+                "product_intent_dispositions"
+            ].clear(),
+            "product_disposition_coverage_invalid",
+        ),
+        (
+            lambda value: value["request_scopes"][0]["requirement_atoms"].pop(),
+            "metric_coverage_invalid",
+        ),
+        (
+            lambda value: value["request_scopes"][0]["requirement_atoms"][0].update(
+                {"metric_intent_indices": [2]}
+            ),
+            "metric_indices_invalid",
+        ),
+        (
+            lambda value: value["request_scopes"][0].update(
+                {"candidate_id": "COBJ::ANSWER"}
+            ),
+            "request_fields_invalid",
+        ),
+        (
+            lambda value: value["request_scopes"][0]["requirement_atoms"][1].update(
+                {"metric_intent_indices": [0]}
+            ),
+            "role_metric_axis_forbidden",
+        ),
+    ],
+)
+def test_material_scope_fails_closed_on_scope_expansion_and_missing_axes(
+    mutation, error: str
+) -> None:
+    request = _request()
+    payload = _working_capital_payload(request.request_id)
+    mutation(payload)
+    with pytest.raises(ResearchMaterialScopeError, match=error):
+        compile_research_material_scope(
+            payload,
+            research_plan_digest="PLAN::DEVELOPMENT",
+            requests=[request],
+            required_request_ids=[request.request_id],
+            policy=SCOPE_POLICY,
+            material_runtime_policy=MATERIAL_POLICY,
+            intent_ontology=ONTOLOGY,
+        )
+
+
+def test_material_scope_rejects_contextual_intent_as_hard_axis() -> None:
+    request = _request()
+    payload = _working_capital_payload(request.request_id)
+    payload["request_scopes"][0]["requirement_atoms"][0][
+        "product_intent_indices"
+    ] = [0]
+    with pytest.raises(ResearchMaterialScopeError, match="non_hard_product_bound"):
+        compile_research_material_scope(
+            payload,
+            research_plan_digest="PLAN::DEVELOPMENT",
+            requests=[request],
+            required_request_ids=[request.request_id],
+            policy=SCOPE_POLICY,
+            material_runtime_policy=MATERIAL_POLICY,
+            intent_ontology=ONTOLOGY,
+        )
+
+
+def test_material_scope_cannot_weaken_known_hard_product_when_resolving_new_topic() -> None:
+    request = _request(
+        product_intents=[
+            "AI-optimized servers",
+            "novel composite deployment economics",
+        ]
+    )
+    payload = _working_capital_payload(request.request_id)
+    payload["request_scopes"][0]["product_intent_dispositions"] = [
+        {
+            "product_intent_index": 0,
+            "disposition": "contextual_retrieval_only",
+        },
+        {
+            "product_intent_index": 1,
+            "disposition": "contextual_retrieval_only",
+        },
+    ]
+    with pytest.raises(
+        ResearchMaterialScopeError, match="fixed_disposition_changed"
+    ):
+        compile_research_material_scope(
+            payload,
+            research_plan_digest="PLAN::DEVELOPMENT",
+            requests=[request],
+            required_request_ids=[request.request_id],
+            policy=SCOPE_POLICY,
+            material_runtime_policy=MATERIAL_POLICY,
+            intent_ontology=ONTOLOGY,
+        )
+
+
+def test_material_scope_parser_requires_exact_json() -> None:
+    payload = _working_capital_payload("REQ::DELL-WORKING-CAPITAL-SCOPE")
+    parsed = parse_research_material_scope_output(
+        json.dumps(payload, ensure_ascii=False)
+    )
+    assert parsed["schema_version"] == "fin_ia_research_material_scope_atoms_v1_0"
+
+    with pytest.raises(ResearchMaterialScopeError, match="not_exact_json"):
+        parse_research_material_scope_output(
+            "```json\n" + json.dumps(payload) + "\n```"
+        )
+    with pytest.raises(ResearchMaterialScopeError, match="json_invalid"):
+        parse_research_material_scope_output("{not-json}")

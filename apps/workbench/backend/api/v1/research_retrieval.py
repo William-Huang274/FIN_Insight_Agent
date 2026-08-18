@@ -139,11 +139,50 @@ class ResearchPlannerAtomsBody(BaseModel):
     atoms: list[PlannerAtomBody]
 
 
+class MaterialProductIntentDispositionBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    product_intent_index: int
+    disposition: Literal[
+        "hard_material_axis",
+        "contextual_retrieval_only",
+        "temporal_directive",
+    ]
+
+
+class MaterialRequirementAtomBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    facet_id: str
+    role: Literal["direct", "bridge", "context", "counter"]
+    metric_intent_indices: list[int]
+    product_intent_indices: list[int]
+    period_mode: Literal["any", "all_periods_same_basis"]
+    coverage_mode: Literal["single_binding", "collective_axes"]
+
+
+class MaterialRequestScopeBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    request_id: str
+    product_intent_dispositions: list[MaterialProductIntentDispositionBody]
+    requirement_atoms: list[MaterialRequirementAtomBody]
+
+
+class ResearchMaterialScopeBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str
+    research_plan_digest: str
+    request_scopes: list[MaterialRequestScopeBody]
+
+
 class ControlledResearchPlanBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     objective: ResearchObjectiveDraftBody
     planner: ResearchPlannerAtomsBody
+    material_scope: ResearchMaterialScopeBody | None = None
 
 
 class ControlledResearchPlanExecutionResponse(BaseModel):
@@ -156,6 +195,7 @@ class ControlledResearchPlanExecutionResponse(BaseModel):
     objective: dict[str, Any]
     compiled_plan: dict[str, Any]
     summary: dict[str, Any]
+    material_scope: dict[str, Any] | None
     request_results: list[dict[str, Any]]
     known_boundary: str
     projection_digest: str
@@ -269,6 +309,11 @@ def build_research_retrieval_router(
                         if item.strip()
                     ),
                 ),
+                material_scope_payload=(
+                    request.material_scope.model_dump(mode="json")
+                    if request.material_scope is not None
+                    else None
+                ),
             )
         except ResearchRetrievalServiceError as exc:
             raise HTTPException(
@@ -289,6 +334,10 @@ __all__ = [
     "EvidenceRequestExecutionResponse",
     "EvidenceRequestPeriodBody",
     "PlannerAtomBody",
+    "MaterialProductIntentDispositionBody",
+    "MaterialRequirementAtomBody",
+    "MaterialRequestScopeBody",
+    "ResearchMaterialScopeBody",
     "ResearchObjectiveBudgetBody",
     "ResearchObjectiveDraftBody",
     "ResearchObjectivePeriodBody",

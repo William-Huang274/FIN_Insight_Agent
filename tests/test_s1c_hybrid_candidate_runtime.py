@@ -101,6 +101,29 @@ def _object(
     }
 
 
+def _material_runtime_contracts(review_k: int) -> tuple[dict, dict, dict]:
+    material_policy = json.loads(
+        (
+            ROOT
+            / "configs/retrieval/fin_ia_0_1_3_s1_material_evidence_runtime_policy_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    material_policy["review_k"] = review_k
+    ontology = json.loads(
+        (
+            ROOT
+            / "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json"
+        ).read_text(encoding="utf-8")
+    )
+    need_policy = json.loads(
+        (
+            ROOT
+            / "configs/retrieval/fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_2.json"
+        ).read_text(encoding="utf-8")
+    )
+    return material_policy, ontology, need_policy
+
+
 def test_hybrid_union_adds_semantic_candidate_but_preserves_hard_filters_and_source_quota() -> None:
     kernel, route, request = _contracts()
     objects = (
@@ -395,3 +418,177 @@ def test_owner_balanced_successor_preserves_each_disclosure_owner_for_role_revie
     assert all(row["evidence_role"]["advisory_only"] for row in result["candidates"])
     assert all(row["evidence_role"]["ranking_effect"] is False for row in result["candidates"])
     assert result["schema_version"].endswith("v1_2")
+
+
+def test_material_aware_successor_compiles_and_reserves_before_output_cut() -> None:
+    kernel, route, request = _contracts()
+    objects = (
+        _object(
+            "OBJ-GENERIC",
+            ticker="DELL",
+            source="SRC-GENERIC",
+            text="The company completed a broad infrastructure transition.",
+        ),
+        _object(
+            "OBJ-GENERIC-2",
+            ticker="DELL",
+            source="SRC-GENERIC-2",
+            text="The company completed another broad platform transition.",
+        ),
+        _object(
+            "OBJ-DIRECT",
+            ticker="DELL",
+            source="SRC-DIRECT",
+            text=(
+                "Dell reported current-quarter revenue from AI-optimized "
+                "servers and described the operating result."
+            ),
+        ),
+    )
+    material_policy, ontology, need_policy = _material_runtime_contracts(2)
+    runtime_input = {
+        "evidence_request": request.as_dict(),
+        "retrieval_execution_plan": {
+            "narrative_requests": [
+                {
+                    "facet_ids": ["reported_results"],
+                    "metric_context_ids": ["revenue"],
+                    "product_intents": ["AI-optimized servers"],
+                }
+            ]
+        },
+    }
+
+    result = retrieve_hybrid_candidates(
+        request=request,
+        kernel=kernel,
+        route_policy=route,
+        objects=objects,
+        qwen_document_embeddings=np.asarray(
+            [[1.0, 0.0], [0.9, 0.1], [0.0, 1.0]], dtype=np.float32
+        ),
+        qwen_query_embedding=np.asarray([1.0, 0.0], dtype=np.float32),
+        first_stage_limit=3,
+        candidate_union_limit=3,
+        output_limit=2,
+        max_candidates_per_source_record=1,
+        material_runtime_input=runtime_input,
+        material_runtime_policy=material_policy,
+        intent_ontology=ontology,
+        retrieval_need_policy=need_policy,
+    )
+
+    assert result["schema_version"].endswith("v1_3")
+    assert result["summary"]["material_reservation_active"] is True
+    assert result["summary"]["material_scope_ready"] is True
+    assert result["summary"]["material_set_complete"] is True
+    assert result["summary"]["material_reserved_candidate_count"] == 1
+    selected_ids = [row["compiled_object_id"] for row in result["candidates"]]
+    assert "OBJ-DIRECT" in selected_ids
+    direct = next(
+        row for row in result["candidates"] if row["compiled_object_id"] == "OBJ-DIRECT"
+    )
+    assert direct["material_reserved"] is True
+    assert (
+        result["material_evidence"]["reservation_stage"]
+        == "before_source_quota_owner_balance_and_output_cut"
+    )
+    assert result["authority"]["numeric_authority"] is False
+
+
+def test_material_requirement_reservation_does_not_exempt_filler_from_source_quota() -> None:
+    kernel, route, request = _contracts()
+    objects = (
+        _object(
+            "OBJ-DIRECT-1",
+            ticker="DELL",
+            source="SRC-SAME",
+            text="Dell reported revenue from AI-optimized servers.",
+        ),
+        _object(
+            "OBJ-DIRECT-2",
+            ticker="DELL",
+            source="SRC-SAME",
+            text="Dell also reported revenue for AI-optimized servers.",
+        ),
+        _object(
+            "OBJ-OTHER-SOURCE",
+            ticker="DELL",
+            source="SRC-OTHER",
+            text="The company completed a broad infrastructure transition.",
+        ),
+    )
+    material_policy, ontology, need_policy = _material_runtime_contracts(2)
+    runtime_input = {
+        "evidence_request": request.as_dict(),
+        "retrieval_execution_plan": {
+            "narrative_requests": [
+                {
+                    "facet_ids": ["reported_results"],
+                    "metric_context_ids": ["revenue"],
+                    "product_intents": ["AI-optimized servers"],
+                }
+            ]
+        },
+    }
+
+    result = retrieve_hybrid_candidates(
+        request=request,
+        kernel=kernel,
+        route_policy=route,
+        objects=objects,
+        qwen_document_embeddings=np.asarray(
+            [[1.0, 0.0], [0.9, 0.1], [0.8, 0.2]], dtype=np.float32
+        ),
+        qwen_query_embedding=np.asarray([1.0, 0.0], dtype=np.float32),
+        first_stage_limit=3,
+        candidate_union_limit=3,
+        output_limit=2,
+        max_candidates_per_source_record=1,
+        material_runtime_input=runtime_input,
+        material_runtime_policy=material_policy,
+        intent_ontology=ontology,
+        retrieval_need_policy=need_policy,
+    )
+
+    ids = [row["compiled_object_id"] for row in result["candidates"]]
+    assert sum(object_id.startswith("OBJ-DIRECT") for object_id in ids) == 1
+    assert "OBJ-OTHER-SOURCE" in ids
+    assert result["summary"]["material_reserved_candidate_count"] == 1
+    assert result["summary"]["material_review_order_candidate_count"] == 2
+
+
+def test_material_aware_successor_fails_closed_on_request_drift() -> None:
+    kernel, route, request = _contracts()
+    material_policy, ontology, need_policy = _material_runtime_contracts(1)
+    drifted = request.as_dict()
+    drifted["product_intents"] = ["different product"]
+
+    try:
+        retrieve_hybrid_candidates(
+            request=request,
+            kernel=kernel,
+            route_policy=route,
+            objects=(
+                _object(
+                    "OBJ-DIRECT",
+                    ticker="DELL",
+                    source="SRC-DIRECT",
+                    text="Dell reported revenue from AI-optimized servers.",
+                ),
+            ),
+            qwen_document_embeddings=np.asarray([[1.0, 0.0]], dtype=np.float32),
+            qwen_query_embedding=np.asarray([1.0, 0.0], dtype=np.float32),
+            first_stage_limit=1,
+            candidate_union_limit=1,
+            output_limit=1,
+            max_candidates_per_source_record=1,
+            material_runtime_input={"evidence_request": drifted},
+            material_runtime_policy=material_policy,
+            intent_ontology=ontology,
+            retrieval_need_policy=need_policy,
+        )
+    except ValueError as exc:
+        assert str(exc) == "hybrid_material_runtime_request_mismatch"
+    else:
+        raise AssertionError("request drift must fail closed")

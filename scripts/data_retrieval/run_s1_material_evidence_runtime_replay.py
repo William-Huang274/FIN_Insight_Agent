@@ -608,7 +608,14 @@ def _case_summary(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
                 ),
                 "unmet_requirement_count": len(unmet),
                 "unmet_requirements": unmet,
+                # Historical field retained for replay compatibility.  It means
+                # that the saved candidate pool can cover the fallback-compiled
+                # requirements; it does not mean that product scope is ready.
                 "material_set_complete_request_count": sum(
+                    row["summary"]["unmet_requirement_count"] == 0
+                    for row in case_rows
+                ),
+                "candidate_material_set_complete_request_count": sum(
                     row["summary"]["unmet_requirement_count"] == 0
                     for row in case_rows
                 ),

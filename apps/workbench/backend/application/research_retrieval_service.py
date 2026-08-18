@@ -13,9 +13,14 @@ from retrieval.contracts import (
     load_financial_research_kernel,
 )
 from retrieval.query_plan import compile_query_facet_plan_for_request
+from retrieval.evidence_set_coverage import EvidenceSetCoverageError
 from retrieval.hybrid_candidate_runtime import (
     HybridCandidateRuntimeError,
     LazyLocalQwenHybridCandidateRuntime,
+)
+from retrieval.material_evidence_runtime import (
+    MaterialEvidenceRuntimeError,
+    compile_material_requirement_plan_from_runtime_input,
 )
 from retrieval.route_compiler import (
     QueryObjectFactRoutePolicy,
@@ -42,6 +47,10 @@ from sec_agent.research.planning import (
     compile_research_plan,
     load_research_planning_policy,
 )
+from sec_agent.research.material_scope import (
+    ResearchMaterialScopeError,
+    compile_research_material_scope,
+)
 from sec_agent.runtime_bridge.paths import RuntimePathRegistry, resolve_runtime_paths
 
 
@@ -63,6 +72,18 @@ CURRENT_RESEARCH_PLANNING_POLICY_RESOURCE_ID = (
 CURRENT_HYBRID_CANDIDATE_RUNTIME_POLICY_RESOURCE_ID = (
     "application.config.current_hybrid_candidate_runtime_policy"
 )
+CURRENT_MATERIAL_SCOPE_POLICY_RESOURCE_ID = (
+    "application.config.current_research_material_scope_policy"
+)
+CURRENT_MATERIAL_RUNTIME_POLICY_RESOURCE_ID = (
+    "application.config.current_product_material_evidence_runtime_policy"
+)
+CURRENT_FINANCIAL_INTENT_ONTOLOGY_RESOURCE_ID = (
+    "application.config.current_financial_intent_ontology"
+)
+CURRENT_RETRIEVAL_NEED_POLICY_RESOURCE_ID = (
+    "application.config.current_retrieval_need_policy"
+)
 CURRENT_S1_ARTIFACT_SPINE_POLICY_RESOURCE_ID = (
     "application.config.current_s1_artifact_spine_policy"
 )
@@ -80,6 +101,9 @@ REQUEST_RETRIEVAL_PROJECTION_SCHEMA = (
 )
 RESEARCH_PLAN_EXECUTION_PROJECTION_SCHEMA = (
     "fin_ia_controlled_research_plan_execution_projection_v1_0"
+)
+RESEARCH_PLAN_MATERIAL_EXECUTION_PROJECTION_SCHEMA = (
+    "fin_ia_controlled_research_plan_execution_projection_v1_1"
 )
 
 
@@ -109,6 +133,10 @@ class ResearchRetrievalService:
         route_policy: QueryObjectFactRoutePolicy | Mapping[str, Any] | None = None,
         planning_policy: ResearchPlanningPolicy | Mapping[str, Any] | None = None,
         hybrid_candidate_runtime: Any | None = None,
+        material_scope_policy: Mapping[str, Any] | None = None,
+        material_runtime_policy: Mapping[str, Any] | None = None,
+        financial_intent_ontology: Mapping[str, Any] | None = None,
+        retrieval_need_policy: Mapping[str, Any] | None = None,
         company_financial_fact_mart_path: str | Path | None = None,
         s1_vertical_slice: Mapping[str, Any] | None = None,
         s1_supplement_vertical: Mapping[str, Any] | None = None,
@@ -157,6 +185,38 @@ class ResearchRetrievalService:
             else planning_policy
         )
         self._hybrid_candidate_runtime = hybrid_candidate_runtime
+        material_contracts = (
+            material_scope_policy,
+            material_runtime_policy,
+            financial_intent_ontology,
+            retrieval_need_policy,
+        )
+        if any(value is not None for value in material_contracts) and not all(
+            value is not None for value in material_contracts
+        ):
+            raise ResearchRetrievalServiceError(
+                "research_material_runtime_contract_binding_incomplete", 503
+            )
+        self._material_scope_policy = (
+            deepcopy(dict(material_scope_policy))
+            if material_scope_policy is not None
+            else None
+        )
+        self._material_runtime_policy = (
+            deepcopy(dict(material_runtime_policy))
+            if material_runtime_policy is not None
+            else None
+        )
+        self._financial_intent_ontology = (
+            deepcopy(dict(financial_intent_ontology))
+            if financial_intent_ontology is not None
+            else None
+        )
+        self._retrieval_need_policy = (
+            deepcopy(dict(retrieval_need_policy))
+            if retrieval_need_policy is not None
+            else None
+        )
         self._company_financial_fact_mart_path = (
             Path(company_financial_fact_mart_path).resolve()
             if company_financial_fact_mart_path is not None
@@ -240,6 +300,22 @@ class ResearchRetrievalService:
                 CURRENT_RESEARCH_PLANNING_POLICY_RESOURCE_ID,
             ),
             hybrid_candidate_runtime=active_hybrid_runtime,
+            material_scope_policy=read_registered_runtime_json(
+                repository_root,
+                CURRENT_MATERIAL_SCOPE_POLICY_RESOURCE_ID,
+            ),
+            material_runtime_policy=read_registered_runtime_json(
+                repository_root,
+                CURRENT_MATERIAL_RUNTIME_POLICY_RESOURCE_ID,
+            ),
+            financial_intent_ontology=read_registered_runtime_json(
+                repository_root,
+                CURRENT_FINANCIAL_INTENT_ONTOLOGY_RESOURCE_ID,
+            ),
+            retrieval_need_policy=read_registered_runtime_json(
+                repository_root,
+                CURRENT_RETRIEVAL_NEED_POLICY_RESOURCE_ID,
+            ),
             company_financial_fact_mart_path=(
                 paths.company_financial_fact_mart_path
             ),
@@ -384,6 +460,8 @@ class ResearchRetrievalService:
         objective_payload: Mapping[str, Any],
         planner_payload: Mapping[str, Any],
         principal: ResearchRetrievalPrincipal,
+        *,
+        material_scope_payload: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Compile bounded S3 atoms and execute their S1/S2 sibling requests."""
 
@@ -424,13 +502,96 @@ class ResearchRetrievalService:
             self.execute_request(key, request.as_dict(), principal)
             for request in compiled.evidence_requests
         ]
+        material_runtime_inputs: dict[str, dict[str, Any]] = {}
+        material_scope_projection: dict[str, Any] | None = None
+        if self._material_runtime_policy is not None:
+            fallback_receipts: list[dict[str, Any]] = []
+            required_scope_ids: list[str] = []
+            try:
+                for request, result in zip(
+                    compiled.evidence_requests, request_results
+                ):
+                    runtime_input = {
+                        "evidence_request": request.as_dict(),
+                        "retrieval_execution_plan": deepcopy(
+                            result["execution_plan"]
+                        ),
+                    }
+                    _, receipt = (
+                        compile_material_requirement_plan_from_runtime_input(
+                            runtime_input=runtime_input,
+                            policy=self._material_runtime_policy,
+                            ontology=self._financial_intent_ontology,
+                        )
+                    )
+                    material_runtime_inputs[request.request_id] = runtime_input
+                    fallback_receipts.append(receipt)
+                    if receipt[
+                        "explicit_blueprint_required_for_full_product_scope"
+                    ]:
+                        required_scope_ids.append(request.request_id)
+            except (MaterialEvidenceRuntimeError, EvidenceSetCoverageError) as exc:
+                raise ResearchRetrievalServiceError(
+                    "research_material_runtime_compilation_failed",
+                    503,
+                    typed_reason=str(exc),
+                ) from exc
+
+            scope_compilation: dict[str, Any] | None = None
+            if material_scope_payload is not None:
+                if not required_scope_ids:
+                    raise ResearchRetrievalServiceError(
+                        "research_material_scope_not_required", 422
+                    )
+                try:
+                    scope_compilation = compile_research_material_scope(
+                        material_scope_payload,
+                        research_plan_digest=compiled.plan_digest,
+                        requests=compiled.evidence_requests,
+                        required_request_ids=required_scope_ids,
+                        policy=self._material_scope_policy,
+                        material_runtime_policy=self._material_runtime_policy,
+                        intent_ontology=self._financial_intent_ontology,
+                    )
+                except ResearchMaterialScopeError as exc:
+                    raise ResearchRetrievalServiceError(str(exc), 422) from exc
+                for row in scope_compilation["request_scopes"]:
+                    material_runtime_inputs[row["request_id"]][
+                        "research_blueprint"
+                    ] = deepcopy(row["research_blueprint"])
+            material_scope_projection = {
+                "mode": (
+                    "explicit_request_visible_scope_compiled"
+                    if scope_compilation is not None
+                    else "deterministic_scope_ready"
+                    if not required_scope_ids
+                    else "explicit_scope_required"
+                ),
+                "research_plan_digest": compiled.plan_digest,
+                "required_request_ids": required_scope_ids,
+                "fallback_compiler_receipts": fallback_receipts,
+                "scope_compilation": scope_compilation,
+                "candidate_or_reference_inputs_read": False,
+                "generation_model_calls_in_endpoint": 0,
+                "candidate_is_not_evidence": True,
+                "numeric_authority": False,
+            }
         hybrid_results: tuple[dict[str, Any], ...] = ()
         if self._hybrid_candidate_runtime is not None:
             try:
+                hybrid_kwargs: dict[str, Any] = {}
+                if material_runtime_inputs:
+                    hybrid_kwargs = {
+                        "material_runtime_inputs": material_runtime_inputs,
+                        "material_runtime_policy": self._material_runtime_policy,
+                        "intent_ontology": self._financial_intent_ontology,
+                        "retrieval_need_policy": self._retrieval_need_policy,
+                    }
                 hybrid_results = self._hybrid_candidate_runtime.retrieve_many(
                     compiled.evidence_requests,
                     kernel=self._kernel,
                     route_policy=self._route_policy,
+                    **hybrid_kwargs,
                 )
             except HybridCandidateRuntimeError as exc:
                 raise ResearchRetrievalServiceError(
@@ -459,7 +620,11 @@ class ResearchRetrievalService:
             for fact in fact_result.get("facts", ())
         ]
         body = {
-            "schema_version": RESEARCH_PLAN_EXECUTION_PROJECTION_SCHEMA,
+            "schema_version": (
+                RESEARCH_PLAN_MATERIAL_EXECUTION_PROJECTION_SCHEMA
+                if material_scope_projection is not None
+                else RESEARCH_PLAN_EXECUTION_PROJECTION_SCHEMA
+            ),
             "status": "controlled_research_plan_zero_call_executed",
             "product_mode": "current",
             "case_key": key,
@@ -509,11 +674,25 @@ class ResearchRetrievalService:
                     row["summary"]["selected_count"]
                     for row in hybrid_results
                 ),
+                "material_scope_required_request_count": (
+                    len(material_scope_projection["required_request_ids"])
+                    if material_scope_projection is not None
+                    else 0
+                ),
+                "material_scope_ready_request_count": sum(
+                    row["summary"].get("material_scope_ready") is True
+                    for row in hybrid_results
+                ),
+                "material_set_complete_request_count": sum(
+                    row["summary"].get("material_set_complete") is True
+                    for row in hybrid_results
+                ),
                 "local_embedding_inference_batches": 1 if hybrid_results else 0,
                 "network_calls": 0,
                 "model_calls": 0,
                 "generation_model_calls": 0,
             },
+            "material_scope": material_scope_projection,
             "request_results": request_results,
             "known_boundary": (
                 "This projection proves deterministic user-objective binding, "
@@ -522,6 +701,11 @@ class ResearchRetrievalService:
                 "and S2 source-bound NumericFact execution. When configured, the "
                 "provisional S1 path also returns a hard-filtered BM25 plus local "
                 "Qwen embedding candidate union; those rows remain candidates. "
+                "When the material contracts are configured, each request compiles "
+                "a request-visible material set and reserves matching candidates "
+                "before source quota and output truncation. Composite or novel "
+                "product scope remains explicitly unresolved until a candidate-blind "
+                "natural material-scope payload is compiled. "
                 "All valid proposed atoms and stable defer reasons remain auditable; "
                 "only the execution-budget selection becomes EvidenceRequests. "
                 "Planner atoms are supplied as controlled input in this zero-call "

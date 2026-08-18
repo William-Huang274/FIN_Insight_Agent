@@ -170,6 +170,14 @@ COST R1 是当前 VS5 的第一次正式 valid-temporal 候选资格。它通过
 
 因此下一项不再继续改 ranker、扩大 review_k 或为 DELL／COST 添本体词。当前最早责任层是自然 `ResearchBlueprint → MaterialEvidenceRequirementPlan v1.1`：让上游根据真实研究问题明确 material scope，再调用现有 S1 selection；随后才做 EvidenceDecision／Gate、S2 数值关系和 Pack Readiness 回放。并行治理项仍是 COST qualified-human request／reference 一致性签署，以及新的 Git 外 replacement blind program。任何一项未完成前，`S1_qualified_stable=false`、现有 COST R3／失盲 hidden execution／完整产品资格链均保持禁止。
 
+## 4J. 自然材料范围与当前产品消费者（2026-08-18）
+
+自然材料范围已实现为 provider-neutral 的两步产品合同，而不是 DELL／COST 专用 Prompt：首次 Workbench 受控计划只使用确定性范围；无法完整分类时返回需要模型解释的请求索引和 plan digest。自然节点只能选择 request-visible metric／product／role／period 枚举，不可见候选、对象、qrel、reference 或答案 URL；本地随后校验全请求覆盖、hard product／metric／role 轴、固定分类和 digest，并把通过结果送回同一 Hybrid Candidate Runtime。
+
+材料保护现发生在完整 BM25＋Qwen 候选并集之后、来源配额和 review truncation 之前。只有 requirement receipt 明确绑定的候选可硬保留；其他材料候选仍受来源配额，避免提高材料覆盖时退化成单一来源堆叠。旧调用者不提供 material contract 时保持兼容。
+
+DELL 当前真实受控计划已证明产品消费者 seam：8 个请求均有候选，S2 同步返回 58 个 NumericFact，但 8 个复合研究范围均诚实要求自然 scope。这个结果只授权一次候选盲、0 网络、exact-once 的自然 scope canary；不授权报告、Evidence 自动晋升、COST R3、hidden 或 S1 资格。canary 通过后依次回放 CUDA 候选、CandidateDecision／Evidence Gate、S2 权威与 Pack Readiness，再决定新的 unseen temporal preregistration。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

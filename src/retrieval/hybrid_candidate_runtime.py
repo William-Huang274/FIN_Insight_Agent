@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import hashlib
 import json
 import os
@@ -17,6 +18,12 @@ from .embedding_runtime import (
 )
 from .financial_candidate_ranking import rank_financial_candidate_union
 from .evidence_role import evaluate_evidence_role
+from .evidence_set_coverage import select_request_bound_review
+from .financial_evidence_shortlist_v2 import candidate_shortlist_features
+from .material_evidence_runtime import (
+    adapt_material_candidate_from_feature_views,
+    compile_material_requirement_plan_from_runtime_input,
+)
 from .object_retrieval_comparison import (
     CandidateScore,
     bm25_rank,
@@ -26,6 +33,7 @@ from .object_retrieval_comparison import (
 )
 from .query_atom_shadow import eligible_request_indices
 from .query_plan import canonical_digest, compile_query_facet_plan_for_request
+from .retrieval_need import compile_retrieval_needs
 from .route_compiler import QueryObjectFactRoutePolicy
 
 
@@ -44,6 +52,9 @@ HYBRID_RESULT_SUCCESSOR_SCHEMA_VERSION = (
 )
 HYBRID_RESULT_OWNER_BALANCED_SCHEMA_VERSION = (
     "fin_ia_s1c_hybrid_candidate_result_v1_2"
+)
+HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_result_v1_3"
 )
 
 _REQUIRED_AUTHORITY = {
@@ -109,6 +120,141 @@ def _route_maps(
     )
 
 
+def _owner_lane(lane: Any, owner: str) -> Any:
+    try:
+        index = lane.evidence_owner_tickers.index(owner)
+    except ValueError as exc:
+        raise HybridCandidateRuntimeError(
+            f"hybrid_material_candidate_owner_outside_lane:{owner}"
+        ) from exc
+    owner_query = next(
+        (
+            value
+            for value in lane.owner_queries
+            if value.evidence_owner_ticker == owner
+        ),
+        None,
+    )
+    _require(
+        owner_query is not None,
+        f"hybrid_material_owner_query_missing:{owner}",
+    )
+    return replace(
+        lane,
+        evidence_owner_tickers=(owner,),
+        relationship_constraints=(lane.relationship_constraints[index],),
+        lexical_query=owner_query.lexical_query,
+        lexical_tokens=owner_query.lexical_tokens,
+        owner_queries=(owner_query,),
+    )
+
+
+def _material_candidate_metadata(
+    *,
+    request: EvidenceRequest,
+    lane: Any,
+    union_ids: Sequence[str],
+    objects_by_id: Mapping[str, Mapping[str, Any]],
+    route_maps_by_owner: Mapping[
+        str,
+        tuple[Mapping[str, int], Mapping[str, float], Mapping[str, int], Mapping[str, float]],
+    ],
+    fallback_route_maps: tuple[
+        Mapping[str, int], Mapping[str, float], Mapping[str, int], Mapping[str, float]
+    ],
+    material_runtime_policy: Mapping[str, Any],
+    intent_ontology: Mapping[str, Any],
+    retrieval_need_policy: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Project the full first-stage union before any quota or output cut."""
+
+    request_payload = request.as_dict()
+    needs_by_owner: dict[str, tuple[Any, tuple[Mapping[str, Any], ...]]] = {}
+    for owner in lane.evidence_owner_tickers:
+        narrowed_lane = _owner_lane(lane, owner)
+        need_set = compile_retrieval_needs(
+            request=request,
+            lane=narrowed_lane,
+            policy=retrieval_need_policy,
+            intent_ontology=intent_ontology,
+        )
+        needs_by_owner[owner] = (
+            narrowed_lane,
+            tuple(value.as_dict() for value in need_set.needs),
+        )
+
+    candidates: list[dict[str, Any]] = []
+    for union_rank, object_id in enumerate(union_ids, start=1):
+        object_row = objects_by_id[object_id]
+        base = object_row["base_object_view"]
+        owner = str(base["ticker"])
+        narrowed_lane, needs = needs_by_owner[owner]
+        bm25_ranks, bm25_scores, qwen_ranks, qwen_scores = (
+            route_maps_by_owner.get(owner, fallback_route_maps)
+        )
+        feature_views: list[dict[str, Any]] = []
+        for need in needs:
+            route_rows: list[dict[str, Any]] = []
+            if object_id in bm25_ranks:
+                route_rows.append(
+                    {
+                        "need_id": need["need_id"],
+                        "route_id": "bm25_need_lexical",
+                        "rank": bm25_ranks[object_id],
+                    }
+                )
+            if object_id in qwen_ranks:
+                route_rows.append(
+                    {
+                        "need_id": need["need_id"],
+                        "route_id": "qwen3_embedding_0_6b_dense",
+                        "rank": qwen_ranks[object_id],
+                    }
+                )
+            if not route_rows:
+                continue
+            feature_views.append(
+                {
+                    "facet_id": narrowed_lane.facet_id,
+                    "feature": candidate_shortlist_features(
+                        object_row,
+                        lane=narrowed_lane,
+                        route_rows=route_rows,
+                        union_rank=union_rank,
+                        cross_encoder_ranks={},
+                        request=request_payload,
+                        intent_ontology=intent_ontology,
+                        retrieval_needs=(need,),
+                    ),
+                }
+            )
+        route_scores = tuple(
+            value
+            for value in (
+                bm25_scores.get(object_id),
+                qwen_scores.get(object_id),
+            )
+            if value is not None
+        )
+        candidates.append(
+            adapt_material_candidate_from_feature_views(
+                case_key=request.case_key,
+                candidate_row={
+                    "compiled_object_id": object_id,
+                    "rank": union_rank,
+                    "score": max(route_scores, default=0.0),
+                },
+                object_row=object_row,
+                feature_views=feature_views,
+                evidence_request=request_payload,
+                accounting_basis="issuer_reported_candidate_surface",
+                policy=material_runtime_policy,
+                ontology=intent_ontology,
+            )
+        )
+    return candidates
+
+
 def retrieve_hybrid_candidates(
     *,
     request: EvidenceRequest,
@@ -124,6 +270,10 @@ def retrieve_hybrid_candidates(
     financial_ranking_enabled: bool = False,
     minimum_candidates_per_owner: int = 0,
     evidence_role_advisory_enabled: bool = False,
+    material_runtime_input: Mapping[str, Any] | None = None,
+    material_runtime_policy: Mapping[str, Any] | None = None,
+    intent_ontology: Mapping[str, Any] | None = None,
+    retrieval_need_policy: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a hard-filtered, source-diverse BM25 + Qwen candidate union."""
 
@@ -137,6 +287,26 @@ def retrieve_hybrid_candidates(
         0 <= minimum_candidates_per_owner <= output_limit,
         "hybrid_candidate_owner_floor_invalid",
     )
+    material_inputs = (
+        material_runtime_input,
+        material_runtime_policy,
+        intent_ontology,
+        retrieval_need_policy,
+    )
+    material_aware = all(value is not None for value in material_inputs)
+    _require(
+        material_aware or all(value is None for value in material_inputs),
+        "hybrid_material_runtime_inputs_incomplete",
+    )
+    if material_aware:
+        _require(
+            material_runtime_input.get("evidence_request") == request.as_dict(),
+            "hybrid_material_runtime_request_mismatch",
+        )
+        _require(
+            int(material_runtime_policy.get("review_k") or 0) == output_limit,
+            "hybrid_material_runtime_review_capacity_mismatch",
+        )
     plan = compile_query_facet_plan_for_request(kernel, request)
     _require(len(plan.lanes) == 1, "hybrid_candidate_lane_count_invalid")
     lane = plan.lanes[0]
@@ -174,7 +344,9 @@ def retrieve_hybrid_candidates(
     owner_balance_active = (
         minimum_candidates_per_owner > 0 and len(lane.evidence_owner_tickers) > 1
     )
-    if owner_balance_active:
+    if owner_balance_active or (
+        material_aware and len(lane.evidence_owner_tickers) > 1
+    ):
         for owner in lane.evidence_owner_tickers:
             owner_eligible = np.asarray(
                 [
@@ -207,6 +379,54 @@ def retrieve_hybrid_candidates(
                 *_route_maps(owner_bm25),
                 *_route_maps(owner_qwen),
             )
+    material_compiler_receipt: dict[str, Any] | None = None
+    material_requirement_plan: dict[str, Any] | None = None
+    material_selection: dict[str, Any] | None = None
+    material_candidates: list[dict[str, Any]] = []
+    material_candidates_by_id: dict[str, dict[str, Any]] = {}
+    material_review_order_ids: list[str] = []
+    reserved_material_ids: list[str] = []
+    if material_aware:
+        material_requirement_plan, material_compiler_receipt = (
+            compile_material_requirement_plan_from_runtime_input(
+                runtime_input=material_runtime_input,
+                policy=material_runtime_policy,
+                ontology=intent_ontology,
+            )
+        )
+        material_candidates = _material_candidate_metadata(
+            request=request,
+            lane=lane,
+            union_ids=union_ids,
+            objects_by_id=objects_by_id,
+            route_maps_by_owner=owner_route_maps,
+            fallback_route_maps=(
+                bm25_ranks,
+                bm25_scores,
+                qwen_ranks,
+                qwen_scores,
+            ),
+            material_runtime_policy=material_runtime_policy,
+            intent_ontology=intent_ontology,
+            retrieval_need_policy=retrieval_need_policy,
+        )
+        material_candidates_by_id = {
+            str(row["compiled_object_id"]): row for row in material_candidates
+        }
+        material_selection = select_request_bound_review(
+            candidates=material_candidates,
+            plan=material_requirement_plan,
+        )
+        material_review_order_ids = list(
+            material_selection["selected_candidate_ids"]
+        )
+        reserved_material_ids = list(
+            dict.fromkeys(
+                str(object_id)
+                for receipt in material_selection["requirement_receipts"]
+                for object_id in receipt["selected_candidate_ids"]
+            )
+        )
     financial_features_by_id: dict[str, dict[str, Any]] = {}
     ordered_ids = list(union_ids)
     if financial_ranking_enabled:
@@ -226,13 +446,28 @@ def retrieve_hybrid_candidates(
         financial_features_by_id = {
             str(row["compiled_object_id"]): row for row in ranked
         }
+    reserved_material_id_set = set(reserved_material_ids)
+    if material_review_order_ids:
+        material_review_order_id_set = set(material_review_order_ids)
+        ordered_ids = [
+            *material_review_order_ids,
+            *(
+                object_id
+                for object_id in ordered_ids
+                if object_id not in material_review_order_id_set
+            ),
+        ]
     selected_ids: list[str] = []
     source_counts: dict[str, int] = {}
     for object_id in ordered_ids:
         row = objects_by_id[object_id]
         base = row["base_object_view"]
         source_id = str(base["source_record_id"])
-        if source_counts.get(source_id, 0) >= max_candidates_per_source_record:
+        if (
+            source_counts.get(source_id, 0)
+            >= max_candidates_per_source_record
+            and object_id not in reserved_material_id_set
+        ):
             continue
         source_counts[source_id] = source_counts.get(source_id, 0) + 1
         selected_ids.append(object_id)
@@ -278,7 +513,8 @@ def retrieve_hybrid_candidates(
                         (
                             index
                             for index in range(len(selected_ids) - 1, -1, -1)
-                            if owner_counts[
+                            if selected_ids[index] not in reserved_material_id_set
+                            and owner_counts[
                                 str(
                                     objects_by_id[selected_ids[index]][
                                         "base_object_view"
@@ -383,6 +619,13 @@ def retrieve_hybrid_candidates(
                 "numeric_authority": False,
             }
         )
+        if material_aware:
+            selected[-1]["material_candidate"] = material_candidates_by_id.get(
+                object_id
+            )
+            selected[-1]["material_reserved"] = (
+                object_id in reserved_material_id_set
+            )
 
     both = sum(len(row["route_membership"]) == 2 for row in selected)
     bm25_only = sum(row["route_membership"] == ["bm25_lexical"] for row in selected)
@@ -390,9 +633,22 @@ def retrieve_hybrid_candidates(
         row["route_membership"] == ["qwen3_embedding_0_6b_dense"]
         for row in selected
     )
+    material_scope_ready = bool(
+        material_aware
+        and not material_compiler_receipt[
+            "explicit_blueprint_required_for_full_product_scope"
+        ]
+    )
+    material_set_complete = bool(
+        material_scope_ready
+        and material_selection
+        and not material_selection["unmet_requirement_ids"]
+    )
     body = {
         "schema_version": (
-            HYBRID_RESULT_OWNER_BALANCED_SCHEMA_VERSION
+            HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION
+            if material_aware
+            else HYBRID_RESULT_OWNER_BALANCED_SCHEMA_VERSION
             if owner_balance_active or evidence_role_advisory_enabled
             else HYBRID_RESULT_SUCCESSOR_SCHEMA_VERSION
             if financial_ranking_enabled
@@ -402,7 +658,9 @@ def retrieve_hybrid_candidates(
         "facet_id": lane.facet_id,
         "evidence_owner_tickers": list(lane.evidence_owner_tickers),
         "route_id": (
-            "bm25_qwen_owner_balanced_union_with_advisory_evidence_role_v1"
+            "bm25_qwen_union_with_request_bound_material_reservation_v1"
+            if material_aware
+            else "bm25_qwen_owner_balanced_union_with_advisory_evidence_role_v1"
             if owner_balance_active or evidence_role_advisory_enabled
             else
             "bm25_plus_qwen_union_then_financial_structure_rank_v1"
@@ -438,11 +696,29 @@ def retrieve_hybrid_candidates(
             },
             "owner_floor_unmet": sorted(set(owner_floor_unmet)),
             "evidence_role_advisory_enabled": evidence_role_advisory_enabled,
+            "material_reservation_active": material_aware,
+            "material_scope_ready": material_scope_ready,
+            "material_set_complete": material_set_complete,
+            "material_reserved_candidate_count": len(reserved_material_ids),
+            "material_review_order_candidate_count": len(
+                material_review_order_ids
+            ),
             "hard_filter_exclusions": exclusions,
         },
         "candidates": selected,
         "authority": dict(_REQUIRED_AUTHORITY),
     }
+    if material_aware:
+        body["material_evidence"] = {
+            "compiler_receipt": material_compiler_receipt,
+            "requirement_plan": material_requirement_plan,
+            "selection": material_selection,
+            "runtime_scope_ready": material_scope_ready,
+            "material_set_complete": material_set_complete,
+            "reservation_stage": "before_source_quota_owner_balance_and_output_cut",
+            "candidate_is_not_evidence": True,
+            "numeric_fact_authority": False,
+        }
     return {**body, "result_digest": canonical_digest(body)}
 
 
@@ -641,6 +917,10 @@ class LocalQwenHybridCandidateRuntime:
         *,
         kernel: FinancialResearchKernel,
         route_policy: QueryObjectFactRoutePolicy,
+        material_runtime_inputs: Mapping[str, Mapping[str, Any]] | None = None,
+        material_runtime_policy: Mapping[str, Any] | None = None,
+        intent_ontology: Mapping[str, Any] | None = None,
+        retrieval_need_policy: Mapping[str, Any] | None = None,
     ) -> tuple[dict[str, Any], ...]:
         lanes, encoded = self._encode_requests(requests, kernel=kernel)
         return tuple(
@@ -662,6 +942,14 @@ class LocalQwenHybridCandidateRuntime:
                 evidence_role_advisory_enabled=(
                     self._evidence_role_advisory_enabled
                 ),
+                material_runtime_input=(
+                    material_runtime_inputs.get(request.request_id)
+                    if material_runtime_inputs is not None
+                    else None
+                ),
+                material_runtime_policy=material_runtime_policy,
+                intent_ontology=intent_ontology,
+                retrieval_need_policy=retrieval_need_policy,
             )
             for index, request in enumerate(requests)
         )
@@ -773,16 +1061,25 @@ class LazyLocalQwenHybridCandidateRuntime:
         *,
         kernel: FinancialResearchKernel,
         route_policy: QueryObjectFactRoutePolicy,
+        material_runtime_inputs: Mapping[str, Mapping[str, Any]] | None = None,
+        material_runtime_policy: Mapping[str, Any] | None = None,
+        intent_ontology: Mapping[str, Any] | None = None,
+        retrieval_need_policy: Mapping[str, Any] | None = None,
     ) -> tuple[dict[str, Any], ...]:
         return self._runtime().retrieve_many(
             requests,
             kernel=kernel,
             route_policy=route_policy,
+            material_runtime_inputs=material_runtime_inputs,
+            material_runtime_policy=material_runtime_policy,
+            intent_ontology=intent_ontology,
+            retrieval_need_policy=retrieval_need_policy,
         )
 
 
 __all__ = [
     "HYBRID_RESULT_SCHEMA_VERSION",
+    "HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION",

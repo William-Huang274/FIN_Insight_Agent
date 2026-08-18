@@ -13,7 +13,7 @@ from fastapi.testclient import TestClient
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
-from retrieval.contracts import load_financial_research_kernel
+from retrieval.contracts import load_evidence_request, load_financial_research_kernel
 from retrieval.route_compiler import (
     compile_retrieval_execution_plan,
     load_query_object_fact_route_policy,
@@ -32,6 +32,9 @@ from sec_agent.research.planning import (
     compile_research_plan,
     load_research_planning_policy,
     parse_research_planner_output,
+)
+from sec_agent.research.material_scope import (
+    compile_research_material_scope_messages,
 )
 from sec_agent.runtime_resource_registry import resolve_registered_runtime_resource
 
@@ -622,3 +625,168 @@ def test_controlled_plan_product_surface_keeps_missing_database_as_s2_gaps(
     assert response.status_code == 200
     assert response.headers["etag"].startswith('"controlled-research-plan=')
     assert response.json()["projection_digest"] == projection["projection_digest"]
+
+
+class _MaterialAwareHybridRuntime:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, object]] = []
+
+    def retrieve_many(self, requests, **kwargs):
+        self.calls.append(dict(kwargs))
+        inputs = kwargs["material_runtime_inputs"]
+        return tuple(
+            {
+                "request_id": request.request_id,
+                "summary": {
+                    "selected_count": 0,
+                    "material_scope_ready": bool(
+                        inputs[request.request_id].get("research_blueprint")
+                    ),
+                    "material_set_complete": False,
+                },
+                "candidates": [],
+            }
+            for request in requests
+        )
+
+
+def test_controlled_plan_material_scope_is_two_step_and_bound_to_current_plan(
+    tmp_path: Path,
+) -> None:
+    kernel_payload = json.loads(KERNEL_PATH.read_text(encoding="utf-8"))
+    route_payload = json.loads(ROUTE_POLICY_PATH.read_text(encoding="utf-8"))
+    planning_payload = json.loads(PLANNING_POLICY_PATH.read_text(encoding="utf-8"))
+    material_scope_policy = json.loads(
+        (
+            ROOT
+            / "configs/research/fin_ia_0_1_3_s3_material_scope_policy_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    material_runtime_policy = json.loads(
+        (
+            ROOT
+            / "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    ontology = json.loads(
+        (
+            ROOT
+            / "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json"
+        ).read_text(encoding="utf-8")
+    )
+    need_policy = json.loads(
+        (
+            ROOT
+            / "configs/retrieval/fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_2.json"
+        ).read_text(encoding="utf-8")
+    )
+    hybrid = _MaterialAwareHybridRuntime()
+    service = ResearchRetrievalService(
+        snapshot=json.loads(
+            (
+                ROOT
+                / "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
+            ).read_text(encoding="utf-8")
+        ),
+        kernel=kernel_payload,
+        route_policy=route_payload,
+        planning_policy=planning_payload,
+        hybrid_candidate_runtime=hybrid,
+        material_scope_policy=material_scope_policy,
+        material_runtime_policy=material_runtime_policy,
+        financial_intent_ontology=ontology,
+        retrieval_need_policy=need_policy,
+        company_financial_fact_mart_path=tmp_path / "missing.sqlite",
+    )
+    principal = ResearchRetrievalPrincipal(
+        mode="current",
+        permissions=frozenset({"current_product:read"}),
+    )
+
+    first = service.execute_controlled_plan(
+        "DELL", _objective_draft(), _planner_atoms(), principal
+    )
+    required_ids = first["material_scope"]["required_request_ids"]
+    assert first["schema_version"].endswith("v1_1")
+    assert first["material_scope"]["mode"] == "explicit_scope_required"
+    assert required_ids
+    assert hybrid.calls[0]["material_runtime_inputs"]
+
+    kernel = load_financial_research_kernel(kernel_payload)
+    requests = [
+        load_evidence_request(row, kernel)
+        for row in first["compiled_plan"]["evidence_requests"]
+    ]
+    _, message = compile_research_material_scope_messages(
+        research_plan_digest=first["compiled_plan"]["plan_digest"],
+        requests=requests,
+        required_request_ids=required_ids,
+        policy=material_scope_policy,
+        material_runtime_policy=material_runtime_policy,
+        intent_ontology=ontology,
+    )
+    visible = json.loads(message["content"])
+    scopes = []
+    for row in visible["requests"]:
+        dispositions = [
+            {
+                "product_intent_index": item["index"],
+                "disposition": item["fixed_disposition"]
+                or "contextual_retrieval_only",
+            }
+            for item in row["product_intents"]
+        ]
+        hard_indices = [
+            item["product_intent_index"]
+            for item in dispositions
+            if item["disposition"] == "hard_material_axis"
+        ]
+        atoms = []
+        for role in row["required_material_roles"]:
+            axis = row["role_axis_contract"][role]
+            atoms.append(
+                {
+                    "facet_id": row["facet_id"],
+                    "role": role,
+                    "metric_intent_indices": (
+                        list(range(len(row["metric_intents"])))
+                        if axis["bind_requested_metrics"]
+                        else []
+                    ),
+                    "product_intent_indices": hard_indices,
+                    "period_mode": "any",
+                    "coverage_mode": "collective_axes",
+                }
+            )
+        scopes.append(
+            {
+                "request_id": row["request_id"],
+                "product_intent_dispositions": dispositions,
+                "requirement_atoms": atoms,
+            }
+        )
+    scope_payload = {
+        "schema_version": "fin_ia_research_material_scope_atoms_v1_0",
+        "research_plan_digest": first["compiled_plan"]["plan_digest"],
+        "request_scopes": scopes,
+    }
+
+    second = service.execute_controlled_plan(
+        "DELL",
+        _objective_draft(),
+        _planner_atoms(),
+        principal,
+        material_scope_payload=scope_payload,
+    )
+
+    assert second["material_scope"]["mode"] == (
+        "explicit_request_visible_scope_compiled"
+    )
+    second_inputs = hybrid.calls[1]["material_runtime_inputs"]
+    assert all(
+        "research_blueprint" in second_inputs[request_id]
+        for request_id in required_ids
+    )
+    assert second["material_scope"]["scope_compilation"]["summary"][
+        "candidate_or_reference_inputs_read"
+    ] is False

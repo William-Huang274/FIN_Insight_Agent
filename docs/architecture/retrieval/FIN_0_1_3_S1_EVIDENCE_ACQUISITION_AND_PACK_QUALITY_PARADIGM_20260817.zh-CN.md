@@ -559,3 +559,11 @@ v1.1 关闭四类真实纵切语义错误：
 通用回放入口为 `scripts/data_retrieval/run_s1_material_evidence_runtime_replay.py`。它只读取当前 DELL／MU／NVDA VS4 已保存 full ranking、COST 已披露 valid-temporal 输入／R2 candidate 与相应对象库；不读取 qrel、reference、hidden／holdout，不调用网络、模型、Embedding 或 reranker。DELL／MU／NVDA 从完整 96 候选池在材料 reservation 后再切 review；COST 使用已保存 v2 shortlist feature。四案 18 个请求、40 个 requirement 全部 `material_set_complete`，排列回放稳定；MU 4／4、NVDA 6／6 为 `runtime_scope_ready`，COST 2／5、DELL 0／3 因未分类复合主题需要自然 Blueprint。
 
 机器摘要为 `configs/retrieval/fin_ia_0_1_3_s1_material_evidence_runtime_replay_result_v1_1.json`，私有逐请求结果由其 digest 引用。active-baseline import graph 显示新 seam 尚未被 Workbench 或动态 Truth Spine 消费，因此该结果只记 `current_candidate_vertical_replay_proven / product_consumer_pending / natural_blueprint_scope_open / S1_qualification_false`。COST 人工 reference 一致性仍未签署，既有 hidden 资产仍失盲，COST R3、现有 frozen／holdout、Evidence 自动晋升、NumericFact 新授权和完整 S1→S3 产品链均未放行。
+
+## 27. 自然材料范围编译与产品消费 seam（2026-08-18）
+
+自然 `ResearchBlueprint` 不直接返回候选或完整 Evidence Pack，而只提交一组可验证的 material atoms。模型视图使用索引而非内部 ID，并只暴露当前请求的 facet、Evidence Role、metric、hard／context product 和 fiscal year 枚举。Harness 保留 Case identity、as-of、来源、request ID、容量和 lineage；解析后必须证明每个待解释请求恰好覆盖、必需角色与 metric／hard-product 轴没有丢失、固定本体分类没有被改弱，且首次受控计划 digest 不漂移。任何候选 ID、对象 ID、reference、qrel 或 URL 字段均 fail closed。
+
+当前 Workbench `controlled-research-plans` 已实现两步消费。第一次输出 deterministic material plan 与 `explicit_scope_required_request_ids`；第二次接收同 plan digest 的 scope payload，编译后再调用同一个 `HybridCandidateRuntime`。Runtime 在完整 BM25＋Qwen union 上生成 candidate metadata 和 request-bound requirement receipt，然后只硬保留 receipt 直接绑定的候选；其他材料候选只获得 review-order priority，仍受来源配额。该边界在真实集成时防止了“材料保护绕过来源多样性”的退化。
+
+四案公开 replay 的历史字段 `material_set_complete_request_count` 仅表示 fallback-compiled requirements 在保存 candidate pool 中可覆盖；新增同义明确字段 `candidate_material_set_complete_request_count`。产品是否可执行必须看 `runtime_scope_ready_request_count`。当前 DELL 产品纵切的 8 个自然请求全部需要 explicit scope，因此下一步只能做一个 candidate-blind natural canary；即使 canary 通过，也仍需 CandidateDecision、Evidence Gate、S2 数值权威、Pack Readiness 和独立 blind qualification，不能直接声明 S1 通过。

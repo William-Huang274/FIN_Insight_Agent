@@ -127,6 +127,16 @@ from .paired_submission import (
     run_paired_research_submission,
     shared_provider_failure,
 )
+from .material_scope import (
+    MATERIAL_SCOPE_COMPILATION_SCHEMA,
+    MATERIAL_SCOPE_OUTPUT_SCHEMA,
+    MATERIAL_SCOPE_POLICY_SCHEMA,
+    ResearchMaterialScopeError,
+    compile_research_material_scope,
+    compile_research_material_scope_messages,
+    parse_research_material_scope_output,
+    validate_material_scope_policy,
+)
 
 __all__ = [
     "CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN",
@@ -165,6 +175,10 @@ __all__ = [
     "SUBMIT_RESEARCH_THESIS_TOOL",
     "PairedResearchSubmission",
     "PairedSubmissionError",
+    "ResearchMaterialScopeError",
+    "MATERIAL_SCOPE_COMPILATION_SCHEMA",
+    "MATERIAL_SCOPE_OUTPUT_SCHEMA",
+    "MATERIAL_SCOPE_POLICY_SCHEMA",
     "build_reviewed_pack_successor",
     "canonical_digest",
     "compile_research_objective",
@@ -203,6 +217,8 @@ __all__ = [
     "compile_finance_micro_judgment_tools",
     "compile_finance_loop_tools",
     "compile_paired_research_submission",
+    "compile_research_material_scope",
+    "compile_research_material_scope_messages",
     "file_sha256",
     "evaluate_official_pdf_evidence",
     "load_research_planning_policy",
@@ -214,7 +230,9 @@ __all__ = [
     "load_fixed_pack_micro_judgment_policy",
     "parse_current_research_output",
     "parse_research_planner_output",
+    "parse_research_material_scope_output",
     "validate_reviewed_evidence_pack",
+    "validate_material_scope_policy",
     "validate_official_pdf_evidence_policy",
     "validate_current_research_output",
     "validate_claim_authority_selection",

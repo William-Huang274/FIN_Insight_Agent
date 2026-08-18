@@ -1,0 +1,41 @@
+{
+  "schema_version": "fin_ia_research_material_scope_policy_v1_0",
+  "status": "provider_neutral_request_visible_material_scope_control_plane",
+  "maximum_scope_atoms_per_request": 24,
+  "allowed_intent_dispositions": [
+    "hard_material_axis",
+    "contextual_retrieval_only",
+    "temporal_directive"
+  ],
+  "allowed_period_modes": [
+    "any",
+    "all_periods_same_basis"
+  ],
+  "allowed_coverage_modes": [
+    "single_binding",
+    "collective_axes"
+  ],
+  "authority": {
+    "model_selects_request_visible_indices_only": true,
+    "harness_owns_identity_dates_sources_roles_ids_and_capacity": true,
+    "candidate_qrel_reference_or_url_visible": false,
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false
+  },
+  "token_budget_basis": {
+    "node_purpose": "Resolve only the material-scope ambiguity that deterministic request compilation cannot classify, without performing retrieval or research judgment.",
+    "input_scale": "At most twelve compiled EvidenceRequests; each exposes one facet, up to six metric intents, up to four product intents, required material roles and requested fiscal years.",
+    "required_outputs": [
+      "one disposition for every request-visible product intent",
+      "complete coverage of every required material role",
+      "bounded request-visible metric and hard-product index combinations",
+      "explicit temporal and collective coverage modes"
+    ],
+    "schema_burden": "Exact JSON with request IDs, integer indices and closed enums only; the Harness derives identity, dates, sources, requirement IDs, target entities and capacity.",
+    "materiality_and_quality_risk": "A long research topic can otherwise be mistaken for one literal product, silently discarded as context, or expanded into invented aliases that make material coverage appear complete.",
+    "comparable_run_evidence": "The zero-call four-case replay found MU 4/4 and NVDA 6/6 scope-ready, but COST 3/5 and DELL 3/3 composite requests require explicit natural scope before product use.",
+    "reasoning_profile": "Bounded classification and decomposition; no candidate review, source search, financial fact inference or report writing.",
+    "stop_and_truncation": "Fail closed on missing request, product disposition, required role, metric coverage, hard-product coverage, invalid temporal pairing or output truncation; never infer omitted atoms locally."
+  },
+  "known_boundary": "This node only translates a request-visible composite theme into material requirements. It does not find sources, rank candidates, promote Evidence, create NumericFact or judge whether an Evidence Pack is research-ready."
+}

@@ -383,3 +383,17 @@ R2 使用与 R1 完全相同的 provisional reference、阈值和业务影响模
 6. 错公司、错期、错 basis、plan/reference 不一致、digest 篡改、Candidate→Evidence 或 metric-row→NumericFact 越权均为不可补偿失败。
 
 当前 DELL／MU／NVDA／COST 四业务形态只完成 synthetic development regression，不能注册为 valid／test／holdout。现有 tracked hidden reference 已失去盲性；replacement labels 必须由独立 qualified human 或 Owner 授权的隔离流程在 Git 外生成。当前 Codex 不得自我签发 blind gold。
+
+## 17. 自然材料范围与产品消费者独立门（2026-08-18）
+
+新 unseen case 的 material scope 评价必须把“候选池能够覆盖 fallback requirement”和“产品研究范围已经完整”分开：
+
+1. 确定性编译可完整解释时不得调用模型；无法解释的复合题必须返回 explicit scope required，不得靠增加案例专用同义词静默关门；
+2. 自然 scope 节点不得看到 candidate／object／qrel／reference／答案 URL，只能使用 request-visible 枚举和索引；
+3. scope 输出必须绑定首次 plan digest，并覆盖所有待解释请求、必需 Evidence Role、metric 轴、hard-product 轴和期间约束；
+4. fixed ontology disposition、Case identity、as-of、source role、capacity 和 lineage 只能由 Harness 决定；模型不能改弱或重分类；
+5. material reservation 必须发生在完整 candidate union 上且早于 review truncation，但只有 requirement receipt 直接绑定项可硬保留；普通 priority 不能绕过来源配额；
+6. `candidate_material_set_complete_request_count` 只属于候选诊断；`runtime_scope_ready_request_count`、CandidateDecision、Evidence Gate、Pack Readiness 和 downstream consumer quality 分别独立验收；
+7. 自然节点需要独立 `TokenBudgetBasis`，并保存 exact input／output／usage／finish reason／失败阶段；截断、schema failure 或 plan drift 均为失败，禁止在同一 attempt 内 retry。
+
+当前 DELL／COST 只可作为开发／回归验证，不可替代新的 unseen temporal valid 或外部 blind qualification。一次 DELL scope canary 即使通过，也不改变 COST R1／R2 失败、COST R3 禁止、现有 hidden 失盲和 `S1_qualified_stable=false`。

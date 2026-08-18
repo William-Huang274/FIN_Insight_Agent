@@ -73,6 +73,11 @@ CURRENT_DELL_AUTHORITY_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_material_scope_canary_authority_v1_0.json"
 )
+CURRENT_DELL_SUCCESSOR_AUTHORITY_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_nonthinking_"
+    "successor_authority_v1_0.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -260,6 +265,25 @@ def test_current_dell_R1_authority_remains_bound_but_scope_is_consumed() -> None
             environment={"DEEPSEEK_API_KEY": "present"},
             check_repository=False,
         )
+
+
+def test_current_dell_R2_successor_authority_is_zero_call_preflight_ready() -> None:
+    authority = _json(CURRENT_DELL_SUCCESSOR_AUTHORITY_REF)
+    bound = validate_material_scope_canary_authority(authority, root=ROOT)
+    preflight = build_preflight(
+        root=ROOT,
+        decision_ref=CURRENT_DELL_SUCCESSOR_AUTHORITY_REF,
+        environment={"DEEPSEEK_API_KEY": "present"},
+        check_repository=False,
+    )
+    assert bound["successor"] is True
+    assert bound["profile"].request_defaults["thinking"] == {
+        "type": "disabled"
+    }
+    assert preflight["status"] == "pass_current_decision_bound_preflight"
+    assert preflight["decision_projection"][
+        "material_scope_nonthinking_successor"
+    ] is True
 
 
 def _copy(root: Path, ref: str) -> None:

@@ -713,8 +713,15 @@ def _collective_bundle(
                 case_key=case_key,
                 plan_schema=plan_schema,
             )
-            gain = len(metrics.difference(covered_metrics)) + len(
-                products.difference(covered_products)
+            # Retrieval-context metrics are useful query hints, but they are
+            # deliberately outside S1 material completeness.  Do not let a
+            # higher-ranked metric-only candidate consume the bounded
+            # reservation capacity needed by a required narrative product
+            # proposition.
+            relevant_metrics = metrics.intersection(required_metrics)
+            relevant_products = products.intersection(required_products)
+            gain = len(relevant_metrics.difference(covered_metrics)) + len(
+                relevant_products.difference(covered_products)
             )
             if gain > best_gain:
                 best = candidate
@@ -728,8 +735,8 @@ def _collective_bundle(
             case_key=case_key,
             plan_schema=plan_schema,
         )
-        covered_metrics.update(metrics)
-        covered_products.update(products)
+        covered_metrics.update(metrics.intersection(required_metrics))
+        covered_products.update(products.intersection(required_products))
     required = int(group["minimum_candidates"])
     for candidate in ordered:
         if len(selected) >= required:

@@ -583,3 +583,9 @@ route 合同分成五种状态：`requested`、`capability available`、`schedul
 5. qualified-human COST 处置、Git 外新 blind labels、CUDA FP16 exact-once 资格。
 
 开发期 integrated readiness 编译器可继续用于发现合同错误，但在它成为注册产品 producer 前，不得把其输出描述为 Workbench 正式产物。当前 `S1_qualified_stable=false`。
+
+## 29. `retrieval_context_only` 的选择容量不变量（2026-08-19）
+
+非时间型 metric 可以帮助查询和候选解释，但当 requirement 声明 `metric_coverage_mode=retrieval_context_only` 时，它不属于 S1 材料完整性轴，也不得参与有限 reservation capacity 的 gain 竞争。否则一个只命中 shipments 词面的高排名对象会先占满容量，使真正证明 customer commitment 的低排名对象无法被选择，形成“合同说不考数字、算法却仍按数字抢位”的假缺失。
+
+当前选择器只以 required metric／product axes 计算增量和累计覆盖；receipt 仍可记录 observed contextual metrics 供诊断，但不得以此授予 NumericFact 或 Evidence 权威。该不变量使用 Micron take-or-pay 真实故障形状和排列稳定测试固定；正式产品结果仍需从干净提交重新回放并经过 proposition-bound Evidence admission。

@@ -9,6 +9,13 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化。当前 Runtime Registry 已推进到 R25／26 个活动资源；1,841 条来源、34,117 个金融对象、Qwen CUDA FP16 cache、S2 SQLite、reviewed Evidence、三案 ProductReadiness 与对象级 candidate review lineage 已由 binding v1.2 绑定，并由 `/workspace` 消费。MU 现有 34 条审阅关系／22 个唯一对象，NVDA 为 31／25，其中 1 条可复用既有 Evidence；DELL 因自然材料范围未定而保持 0 条，不伪造 fallback 审阅。Candidate 自动晋升、NumericFact 新授权和 public-gap 声明仍为 0。RC-S1-042 的安全对象 lineage 子门已关闭，当前最早责任层为 RC-S1-043 受控 Evidence successor、精确 slot 绑定和三案 readiness 重物化；`S1_qualified_stable` 仍为 false，不能运行产品资格完整真实链或恢复 S3 主线。
 
+## 2026-08-19 S1 retrieval-context 容量一致性修复
+
+- Micron 的 take-or-pay／多年期具体数量承诺已被 Evidence Role v3 和 material binding 正确识别，但旧集合选择器仍让 `retrieval_context_only` 的 orders／backlog／shipments 词面参与容量竞争，较高排名的 shipment-only 候选会耗掉本应留给 customer-commitment 命题的唯一位置。
+- 选择器现只让正式 required axes 参与 gain 与 coverage；metric-only 查询提示不再挤掉必需叙事命题。新增反例固定“较高排名 metric-only 与较低排名 required-product 同时存在”的真实故障形状。
+- dirty-tree 诊断回放使用现有 Qwen `cuda:0`／FP16、0 CPU fallback、0 网络、0 模型。MU customer commitment direct requirement 从未满足变为满足；NVDA 不退化。该诊断不替换旧 R4，也不构成正式 current product replay、Evidence 晋升或 S1 通过。
+- RC-S1-044 工程根因已关闭；RC-S1-043 受控 Evidence successor 仍是当前最早产品门。
+
 ## 2026-08-19 S1 候选对象审阅 lineage 增量
 
 - Workbench 的每个研究请求现在可展开来源绑定的候选对象：显示披露主体、来源／期间、受限摘录、Evidence Role、排名轨迹、待审原因和下一合法动作；不返回 object/source ID、私有路径或 raw capture。

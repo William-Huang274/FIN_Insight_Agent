@@ -652,6 +652,83 @@ def test_v12_non_temporal_metrics_are_retrieval_context_not_duplicate_numeric_ga
     assert result["numeric_fact_authority"] is False
 
 
+def test_v12_retrieval_context_metric_cannot_displace_required_product_proposition() -> None:
+    request = {
+        "request_id": "ER::V12::CONTEXT_METRIC_PRIORITY",
+        "case_key": "MU",
+        "target_entities": ["MU"],
+        "metric_intents": ["orders", "backlog", "shipments"],
+        "product_intents": ["customer commitment and purchase structure"],
+        "requested_facet_ids": ["orders_and_backlog"],
+        "period": {"fiscal_years": []},
+    }
+    plan = compile_requirement_plan(
+        evidence_request=request,
+        material_requirements=[
+            {
+                "requirement_id": "REQ::V12::CUSTOMER_COMMITMENT",
+                "facet_id": "orders_and_backlog",
+                "role": "direct",
+                "metric_ids": list(request["metric_intents"]),
+                "metric_coverage_mode": "retrieval_context_only",
+                "product_ids": list(request["product_intents"]),
+                "product_coverage_mode": "all_of",
+                "target_entities": ["MU"],
+                "period_mode": "any",
+                "fiscal_years": [],
+                "minimum_candidates": 1,
+                "coverage_mode": "collective_axes",
+                "priority": 1,
+            }
+        ],
+        review_k=2,
+        schema_version=PLAN_SCHEMA_V1_2,
+    )
+    common = {
+        "facet_id": "orders_and_backlog",
+        "role": "direct",
+        "fiscal_years": [2026],
+        "same_basis_key": "",
+    }
+    candidates = [
+        _candidate(
+            "COBJ::HIGHER_RANKED_SHIPMENT_ONLY",
+            1,
+            ticker="MU",
+            case_key="MU",
+            bindings=[
+                {
+                    **common,
+                    "metric_ids": ["shipments"],
+                    "product_ids": [],
+                }
+            ],
+        ),
+        _candidate(
+            "COBJ::LOWER_RANKED_COMMITMENT",
+            2,
+            ticker="MU",
+            case_key="MU",
+            bindings=[
+                {
+                    **common,
+                    "metric_ids": [],
+                    "product_ids": [
+                        "customer commitment and purchase structure"
+                    ],
+                }
+            ],
+        ),
+    ]
+    result = select_request_bound_review(candidates=candidates, plan=plan)
+    assert result["met_requirement_ids"] == [
+        "REQ::V12::CUSTOMER_COMMITMENT"
+    ]
+    assert result["requirement_receipts"][0]["selected_candidate_ids"] == [
+        "COBJ::LOWER_RANKED_COMMITMENT"
+    ]
+
+
 def test_v12_all_of_capacity_is_satisfiable_and_partial_axes_are_receipted() -> None:
     request = {
         "request_id": "ER::V12::ALL",

@@ -601,3 +601,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 10,618 对象 BGE／Qwen 首次缓存分别耗时 91.034／168.467 秒；BGE／Qwen reranker 分别 32.914／97.427 秒。RTX 4060 Laptop `cuda:0`，FP16，CPU vector fallback=0；0 network／generation model／training／retry／fallback。
 - raw SHA-256=`c851bd32...23a76`，raw result digest=`2b261b97...98555`；候选结果已先于 evaluation 物化，`labels_loaded=false`。Candidate 不是 Evidence，metric row 不是 NumericFact。
 - 当前状态为 `candidate_generation_complete_evaluation_pending`，尚无资格分数。下一步先提交候选输出，再由独立 evaluator 读取 valid-temporal reference；test frozen／holdout 仍未授权，natural scanned official source 硬门仍失败，S1 仍为 false。
+
+## 2026-08-18 S1 VS5 COST valid-temporal 评估失败
+
+- 候选结果先在 `b181c3d7...` 冻结，独立 evaluator 才加载 COST valid-temporal reference；JPM／CAT frozen test 与 heterogeneous holdout reference 未读取。评估为 0 network／model／learned-vector／CPU-vector-fallback／Evidence promotion。
+- 四项资格指标全部失败：proposition any-hit=`0.8`，all-positive object recall=`12/20=0.6`，material-facet coverage=`0.642857`，required-role coverage=`0.642857`；对应门槛为 `1.0 / 0.9 / 0.85 / 1.0`。natural scanned source 与 downstream Pack readiness 非补偿门也仍失败。
+- 业务结果：会员价值获取 `3/3`、营运资金 `4/4`；毛利率 `3/4`，漏库存／损耗反方；跨期比较 `2/5`；同店需求 `0/4`。同店前排被收入确认、税务风险和泛化风险占据，真正的流量／客单价／汽油替代解释／口径定义只排第 33–45。跨期查询没有构建同指标两期配对，两个会员基线对象连 96 reranker pool 都未进入。
+- 20 个 reference 对象全部存在于对象库，故本轮不是来源不存在、parser／chunk 全面失败、CUDA 或 DeepSeek 问题，也不得声明 public gap。2 条最早掉在 typed recall／pool cutoff，6 条掉在 financial shortlist／fusion；BGE／Qwen 前 20 positive recall 只有 `0.15／0.35`，最终规则恢复至 `0.60` 但仍不足。
+- 最早结构问题是 proposition-specific query materiality 与 temporal pairing：通用 slot seed 仍把 shipments／customer readiness／cancellation 混入 Costco 同店问题；`FY2024 FY2025 comparison` 仍只是 token，而不是同指标、同口径的成组约束；最终 shortlist 也未给 required facet／role 保留有界位置。
+- 当前状态为 `valid_temporal_failed / test_and_holdout_blocked / S1_qualified_stable_false`。COST reference 仍待 Owner／qualified-human 确认。不得自动调阈值或打开 hidden；建议把 COST 失败固化为 observed regression，以通用结构修复后另预注册一个新 temporal case。该资格样本归属变化需要 Owner 决策。

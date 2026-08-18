@@ -651,3 +651,4 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - `v1_0` 的产品诊断 request ID 因读取旧顶层字段而显示 `null`。该问题不影响模型消息或 scope binding，但会损害逐请求审计，故 `v1_0` 保留为 superseded 证据、不得进入付费 authority；修复后必须从干净实现提交生成新输入。
 - 当前只证明执行路径工程资格，DeepSeek live 尚未发生，不能声称自然范围质量、S1、完整产品链或 release 通过。
 - 执行实现已在远端干净提交 `20ca2768...` 冻结；从该提交生成的 `v1_1` 保持相同 plan／model-message digest，8／8 请求审计 ID 完整，且 `prepared_from_commit` 精确绑定该实现提交。后续 authority 只能绑定 `v1_1`，不能使用 superseded `v1_0`。
+- `v1_1` 已在远端干净提交 `c893c94f...` 冻结；R1 authority 精确绑定输入、模型消息、五份核心合同、provider profile、runner 和实现，只允许 1 模型／1 传输、0 retry／fallback／协议切换／检索／候选读取／产品写入。零调用 Project OS preflight 已通过，live 尚未发生。

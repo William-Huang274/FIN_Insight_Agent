@@ -47,3 +47,5 @@ canary 通过后，只将同一 payload 接回当前 Workbench 计划并复跑�
 第一次零调用输入 `v1_0` 绑定提交 `035d2210...`，完整复现 10 个 proposed／8 个 selected／2 个 deferred、8 个 explicit-scope request、128 个候选、58 个 NumericFact、0 网络／0 生成模型调用。模型消息只含请求公开索引与闭合枚举，不含候选、对象、qrel、reference、URL 或答案。该输入的每请求审计摘要因产品结果将 request ID 放在嵌套 `request` 对象而显示 `null`；模型可见内容与 required request binding 没有受影响，但该版本只保留为 superseded 审计证据，不进入付费 authority。修复后的输入必须由一个包含执行实现的干净提交重新生成，不能覆盖 `v1_0`。
 
 执行实现已在干净远端提交 `20ca2768...` 冻结。随后生成的 `v1_1` 与 `v1_0` 具有相同 plan digest 和 model-visible messages digest，但 8／8 请求审计 ID 均完整，且输入声明的 `prepared_from_commit` 精确绑定 `20ca2768...`。`v1_1` 才是后续 exact-once authority 唯一允许绑定的输入；它仍不是模型结果、Evidence、S1 资格或产品发布。
+
+`v1_1` 与回归测试已在干净远端提交 `c893c94f...` 冻结。R1 authority 逐项绑定该提交、输入及消息 digest、五份 provider-neutral 合同、DeepSeek profile、runner 和实现源码；预算仅允许 1 次模型／1 次传输、0 retry／fallback／协议切换／检索／embedding／候选读取／产品写入。Project OS 零调用预检确认 RC-S1-024 明确允许该 scope，另外 25 个 full-chain blocker 均保持 out of scope。authority 签发本身仍不表示 live 已发生。

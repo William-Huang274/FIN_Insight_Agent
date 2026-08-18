@@ -10,6 +10,7 @@ import pytest
 
 from retrieval.contracts import load_evidence_request, load_financial_research_kernel
 from sec_agent.providers.chat_completions import ChatCompletionResult
+from sec_agent.project_os_preflight import build_preflight
 from sec_agent.research.material_scope import compile_research_material_scope_messages
 from sec_agent.research.material_scope_canary import (
     MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
@@ -44,6 +45,10 @@ PROFILE_REF = (
 CURRENT_DELL_INPUT_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_material_scope_canary_input_v1_1.json"
+)
+CURRENT_DELL_AUTHORITY_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_canary_authority_v1_0.json"
 )
 
 
@@ -214,6 +219,25 @@ def test_current_dell_input_is_clean_commit_bound_and_fully_traceable() -> None:
     assert diagnostic["numeric_fact_count"] == 58
     assert diagnostic["network_calls"] == 0
     assert diagnostic["model_calls"] == 0
+
+
+def test_current_dell_authority_passes_project_os_without_repository_side_effects() -> None:
+    authority = _json(CURRENT_DELL_AUTHORITY_REF)
+    bound = validate_material_scope_canary_authority(authority, root=ROOT)
+    preflight = build_preflight(
+        root=ROOT,
+        decision_ref=CURRENT_DELL_AUTHORITY_REF,
+        environment={"DEEPSEEK_API_KEY": "present"},
+        check_repository=False,
+    )
+    assert bound["input"]["result_digest"] == (
+        "f19148cba25125fa7668d3aec8846d27e4a9d4ed22db6a1f143a4b0cbe562ed9"
+    )
+    assert preflight["status"] == "pass_current_decision_bound_preflight"
+    assert preflight["checks"]["root_cause_scope_allowed"] is True
+    assert preflight["checks"]["token_and_call_budget_bounded"] is True
+    assert preflight["checks"]["provider_credential_present_value_unread"] is True
+    assert preflight["decision_projection"]["natural_material_scope_canary"] is True
 
 
 def _copy(root: Path, ref: str) -> None:

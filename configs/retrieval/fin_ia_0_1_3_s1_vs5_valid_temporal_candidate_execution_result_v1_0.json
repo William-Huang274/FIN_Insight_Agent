@@ -1,0 +1,59 @@
+{
+  "attempt_id": "FIN-0.1.3-S1-VS5-VALID-TEMPORAL-CANDIDATE-R1",
+  "authority": {
+    "evaluator_reference_loaded": false,
+    "evidence_promotion_authorized": false,
+    "numeric_fact_authority": false,
+    "qualification_scored": false,
+    "s1_qualified": false
+  },
+  "design_baseline_commit": "c80e478af8aebe8f21fea71955cfa99bd5809cf2",
+  "execution": {
+    "bge_embedding_cache_hit": false,
+    "cpu_vector_fallback_calls": 0,
+    "cuda_execution_receipt": {
+      "compute_capability": [
+        8,
+        9
+      ],
+      "cpu_fallback_allowed": false,
+      "cuda_runtime_version": "12.6",
+      "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "embedding_precision": "fp16",
+      "execution_device": "cuda:0",
+      "failure_policy": "fail_closed_before_model_load",
+      "fp16_smoke_device": "cuda:0",
+      "fp16_smoke_dtype": "float16",
+      "fp16_smoke_value": 11.0,
+      "purpose": "S1 VS5 valid_temporal embedding and reranking",
+      "reranker_precision": "fp16",
+      "torch_version": "2.10.0+cu126",
+      "total_memory_bytes": 8585216000
+    },
+    "model_calls": 0,
+    "model_digests": {
+      "bge_embedding": "d6d4a7fc2980e5bde67c1cd013ef87d1a8709464ba982d61a28653070e440cd5",
+      "bge_reranker": "80b469d6bddb1e240987d002aae27658be43f83ec3dbbe3ee94ecb4b9301b994",
+      "qwen_embedding": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+      "qwen_reranker": "9fa9d067824c3aae0aeee7a773cbb42fac95a06c981ab72e075294bb10845ad2"
+    },
+    "network_calls": 0,
+    "qwen_embedding_cache_hit": false,
+    "reranker_pair_count_per_model": 1440
+  },
+  "raw_output_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_candidates/valid-temporal-r1/raw.json",
+  "raw_output_sha256": "c851bd32546849dbdebd205869571a03f9a04578a92eea0f3cffd13a80823a76",
+  "raw_result_digest": "2b261b97a6d35342e7e2f7d8aafdbde54eec7db435fc3ad4a8123aa8e3998555",
+  "recorded_at": "2026-08-18",
+  "schema_version": "fin_ia_s1_vs5_candidate_execution_result_v1_0",
+  "split": "valid_temporal",
+  "status": "candidate_generation_complete_evaluation_pending",
+  "summary": {
+    "candidate_is_not_evidence": true,
+    "candidate_review_k": 20,
+    "case_count": 1,
+    "example_count": 5,
+    "numeric_fact_authority": false,
+    "retrieval_need_count": 125
+  }
+}

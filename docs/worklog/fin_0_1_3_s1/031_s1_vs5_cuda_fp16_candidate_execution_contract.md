@@ -46,3 +46,12 @@
 3. 只运行 5 个 temporal 命题的 label-blind CUDA candidate generation。
 4. 先冻结 raw output，再由独立 evaluator 读取 reference 并做业务级错误解释；不得只汇报指标。
 5. temporal 和 reference 人工确认通过后，才决定 test frozen；holdout 仍须再下一道独立权限。
+
+## Valid temporal R1 实际执行
+
+- exact-once attempt：`FIN-0.1.3-S1-VS5-VALID-TEMPORAL-CANDIDATE-R1`。
+- COST 5 个命题全部完成，共编译 125 个 RetrievalNeed。每题候选 union 128、reranker pool 96、每模型 288 对；总计每模型 1,440 对，和 authority 上限精确一致。
+- BGE 10,618 对象缓存 91.034 秒，Qwen 168.467 秒；BGE／Qwen reranker 分别 32.914／97.427 秒。两份对象缓存均为首次建立，后续同对象、同模型、同配置 split 可内容寻址复用。
+- 运行设备为 RTX 4060 Laptop `cuda:0`，PyTorch `2.10.0+cu126`／CUDA `12.6`；编码与 reranker FP16，CPU vector fallback 0。0 network、0 generation model、0 training、0 retry／fallback。
+- raw output SHA-256=`c851bd32546849dbdebd205869571a03f9a04578a92eea0f3cffd13a80823a76`，result digest=`2b261b97a6d35342e7e2f7d8aafdbde54eec7db435fc3ad4a8123aa8e3998555`。
+- 状态严格为 `candidate_generation_complete_evaluation_pending`：reference 尚未读取、资格尚未评分、Evidence／NumericFact 晋升仍为 0。下一步必须先提交该不可变候选结果，再由独立 evaluator 加载 valid-temporal reference。

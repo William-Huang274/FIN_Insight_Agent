@@ -594,3 +594,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Git execution gate 允许设计基线后只增加一笔 authority-only commit，以避免权限文件无法自我绑定的 commit-hash 循环；除 authority 文件外出现任何代码、策略、对象或输入改动仍 fail closed。
 - candidate runner、pair compiler、CUDA ranking 与内容寻址缓存合同已实现，定向 `22 passed`；尚未执行 valid temporal、未读取 evaluator reference、未产生检索成绩或 Evidence。Candidate 仍不是 Evidence，metric row 仍不是 NumericFact。
 - 下一步先完成完整治理、clean commit／push，再单独签发一次 valid temporal exact-once authority。natural scanned official source 硬门仍失败，test frozen／holdout 仍未授权，S1 不能宣称通过。
+
+## 2026-08-18 S1 VS5 Valid Temporal CUDA Candidate R1
+
+- authority-only commit 后唯一一次 valid-temporal R1 成功：COST 5 个命题、125 个 RetrievalNeed；每题 union 128、reranker pool 96、每模型 288 对，总计每模型 1,440 对，精确匹配权限预算。没有删命题、抽样对象或扩大 pair。
+- 10,618 对象 BGE／Qwen 首次缓存分别耗时 91.034／168.467 秒；BGE／Qwen reranker 分别 32.914／97.427 秒。RTX 4060 Laptop `cuda:0`，FP16，CPU vector fallback=0；0 network／generation model／training／retry／fallback。
+- raw SHA-256=`c851bd32...23a76`，raw result digest=`2b261b97...98555`；候选结果已先于 evaluation 物化，`labels_loaded=false`。Candidate 不是 Evidence，metric row 不是 NumericFact。
+- 当前状态为 `candidate_generation_complete_evaluation_pending`，尚无资格分数。下一步先提交候选输出，再由独立 evaluator 读取 valid-temporal reference；test frozen／holdout 仍未授权，natural scanned official source 硬门仍失败，S1 仍为 false。

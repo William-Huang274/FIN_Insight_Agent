@@ -13,7 +13,7 @@ from .query_plan import canonical_digest
 
 
 PRODUCT_DECISION_LEDGER_SCHEMA_VERSION = (
-    "fin_ia_s1_product_candidate_decision_ledger_v1_0"
+    "fin_ia_s1_product_candidate_decision_ledger_v1_1"
 )
 PRODUCT_DECISION_STATES = (
     "accepted",
@@ -22,7 +22,7 @@ PRODUCT_DECISION_STATES = (
     "needs_human_review",
 )
 PRODUCT_PACK_READINESS_SCHEMA_VERSION = (
-    "fin_ia_s1_product_pack_readiness_v1_0"
+    "fin_ia_s1_product_pack_readiness_v1_1"
 )
 GAP_ELIGIBILITY_RECEIPT_SCHEMA_VERSION = (
     "fin_ia_s1_gap_eligibility_receipt_v1_0"
@@ -162,6 +162,44 @@ def _product_pack_item_gate_reasons(
     return tuple(sorted(set(reasons)))
 
 
+def _reviewed_item_requirement_binding(
+    item: Mapping[str, Any],
+    *,
+    lane: Mapping[str, Any],
+    selected_requirement_ids: Sequence[str],
+) -> tuple[tuple[str, ...], str]:
+    """Resolve one reviewed Evidence item to the propositions it can satisfy.
+
+    A slot/facet match is necessary but no longer sufficient when a candidate is
+    reserved for several material requirements.  New successor packs name the
+    exact requirement IDs on their slot binding.  The legacy fallback is
+    intentionally limited to a single selected requirement, where no ambiguity
+    exists; a multi-requirement candidate without an explicit binding fails
+    closed for Evidence reuse.
+    """
+
+    selected = {str(value) for value in selected_requirement_ids if str(value)}
+    matching_bindings = [
+        binding
+        for binding in item.get("slot_bindings") or ()
+        if isinstance(binding, Mapping)
+        and str(binding.get("slot_id") or "") == str(lane.get("slot_id") or "")
+        and str(lane.get("facet_id") or "")
+        in {str(value) for value in binding.get("facet_ids") or ()}
+    ]
+    explicit = {
+        str(requirement_id)
+        for binding in matching_bindings
+        for requirement_id in binding.get("requirement_ids") or ()
+        if str(requirement_id)
+    }
+    if explicit:
+        return tuple(sorted(selected & explicit)), "explicit_requirement_binding"
+    if len(selected) == 1:
+        return tuple(sorted(selected)), "legacy_single_requirement_unambiguous"
+    return (), "missing_or_ambiguous_requirement_binding"
+
+
 def compile_product_candidate_decision_ledger(
     *,
     request_result: Mapping[str, Any],
@@ -211,6 +249,7 @@ def compile_product_candidate_decision_ledger(
     decisions: list[dict[str, Any]] = []
     accepted_evidence: set[str] = set()
     accepted_objects: set[str] = set()
+    accepted_evidence_by_requirement: dict[str, set[str]] = {}
     for raw_seed in seeds:
         seed = _mapping(raw_seed, "product_candidate_decision_seed_invalid")
         object_id = str(seed.get("compiled_object_id") or "")
@@ -260,29 +299,63 @@ def compile_product_candidate_decision_ledger(
             },
             "product_candidate_decision_alignment_state_invalid",
         )
-        accepted_digests: list[str] = []
-        if alignment_state == "selected_for_material_review" and eligible_matches:
-            state = "accepted"
-            accepted_digests = sorted(
-                {
-                    str(item.get("evidence_item_digest") or "")
-                    for item, _ in eligible_matches
-                }
+        selected_requirement_ids = sorted(
+            str(value) for value in seed.get("selected_requirement_ids") or ()
+        )
+        accepted_by_requirement: dict[str, set[str]] = {}
+        requirement_binding_modes: set[str] = set()
+        for item, _ in eligible_matches:
+            requirement_ids, binding_mode = _reviewed_item_requirement_binding(
+                item,
+                lane=lane,
+                selected_requirement_ids=selected_requirement_ids,
             )
+            requirement_binding_modes.add(binding_mode)
+            digest = str(item.get("evidence_item_digest") or "")
+            for requirement_id in requirement_ids:
+                accepted_by_requirement.setdefault(requirement_id, set()).add(digest)
+        accepted_digests = sorted(
+            {
+                digest
+                for digests in accepted_by_requirement.values()
+                for digest in digests
+            }
+        )
+        if (
+            alignment_state == "selected_for_material_review"
+            and accepted_by_requirement
+        ):
+            state = "accepted"
             reasons = [
                 "existing_reviewed_evidence_reuse",
                 "exact_object_case_slot_facet_period_relationship_gate_passed",
+                "reviewed_evidence_resolved_to_material_requirement",
             ]
+            if set(selected_requirement_ids) - set(accepted_by_requirement):
+                reasons.append(
+                    "one_or_more_selected_requirements_not_bound_to_this_evidence"
+                )
             authority = "current_reviewed_pack_exact_object_reuse"
             accepted_evidence.update(accepted_digests)
             accepted_objects.add(object_id)
+            for requirement_id, digests in accepted_by_requirement.items():
+                accepted_evidence_by_requirement.setdefault(
+                    requirement_id, set()
+                ).update(digests)
         elif eligible_matches:
             state = "needs_human_review"
-            reasons = [
-                "reviewed_evidence_recalled_outside_current_material_review",
-                "query_or_material_binding_requires_adjudication",
-            ]
-            authority = "reviewed_evidence_not_currently_requirement_bound"
+            if alignment_state == "selected_for_material_review":
+                reasons = [
+                    "reviewed_evidence_requirement_binding_missing_or_ambiguous",
+                    "query_or_material_binding_requires_adjudication",
+                ]
+                authority = "reviewed_evidence_not_proposition_bound"
+            else:
+                reasons = [
+                    "reviewed_evidence_recalled_outside_current_material_review",
+                    "query_or_material_binding_requires_adjudication",
+                ]
+                authority = "reviewed_evidence_not_currently_requirement_bound"
         elif alignment_state == "selected_for_material_review":
             state = "needs_human_review"
             reasons = sorted(
@@ -329,14 +402,19 @@ def compile_product_candidate_decision_ledger(
                 "material_reserved_for_requirement"
             )
             is True,
-            "selected_requirement_ids": sorted(
-                str(value) for value in seed.get("selected_requirement_ids") or ()
-            ),
+            "selected_requirement_ids": selected_requirement_ids,
             "advisory_evidence_role": deepcopy(seed.get("evidence_role")),
             "decision_state": state,
             "reason_codes": reasons,
             "decision_authority": authority,
             "accepted_evidence_item_digests": accepted_digests,
+            "accepted_evidence_by_requirement": {
+                requirement_id: sorted(digests)
+                for requirement_id, digests in sorted(
+                    accepted_by_requirement.items()
+                )
+            },
+            "requirement_binding_modes": sorted(requirement_binding_modes),
             "candidate_text_promoted": False,
             "new_evidence_created": False,
             "numeric_authority": False,
@@ -361,6 +439,12 @@ def compile_product_candidate_decision_ledger(
         },
         "accepted_compiled_object_ids": sorted(accepted_objects),
         "accepted_evidence_item_digests": sorted(accepted_evidence),
+        "accepted_evidence_by_requirement": {
+            requirement_id: sorted(digests)
+            for requirement_id, digests in sorted(
+                accepted_evidence_by_requirement.items()
+            )
+        },
         "decisions": decisions,
         "source_result_digest": hybrid.get("result_digest"),
         "pack_payload_digest": evidence_pack.get("pack_payload_digest"),
@@ -368,6 +452,8 @@ def compile_product_candidate_decision_ledger(
             "every_bounded_union_candidate_decided_exactly_once": True,
             "rank_never_grants_evidence_authority": True,
             "reviewed_source_alone_cannot_authorize_child_object": True,
+            "ambiguous_multi_requirement_evidence_reuse": False,
+            "accepted_evidence_resolved_per_requirement": True,
             "existing_reviewed_evidence_reuse_only": True,
             "candidate_text_promoted": False,
             "new_evidence_created": False,
@@ -388,6 +474,29 @@ def _request_lane(request_result: Mapping[str, Any]) -> Mapping[str, Any]:
         _mapping(lanes[0], "product_readiness_lane_projection_invalid").get("lane"),
         "product_readiness_lane_missing",
     )
+
+
+def _accepted_digests_for_requirement(
+    decision: Mapping[str, Any], requirement_id: str
+) -> tuple[str, ...]:
+    """Read v1.1 proposition binding with a narrow legacy compatibility path."""
+
+    binding = decision.get("accepted_evidence_by_requirement")
+    if isinstance(binding, Mapping):
+        return tuple(
+            sorted(str(value) for value in binding.get(requirement_id) or ())
+        )
+    selected = tuple(
+        str(value) for value in decision.get("selected_requirement_ids") or ()
+    )
+    if selected == (requirement_id,):
+        return tuple(
+            sorted(
+                str(value)
+                for value in decision.get("accepted_evidence_item_digests") or ()
+            )
+        )
+    return ()
 
 
 def _numeric_state(request_result: Mapping[str, Any]) -> dict[str, Any]:
@@ -725,7 +834,9 @@ def compile_product_pack_readiness(
                     str(digest)
                     for row in bound_decisions
                     if row.get("decision_state") == "accepted"
-                    for digest in row.get("accepted_evidence_item_digests") or ()
+                    for digest in _accepted_digests_for_requirement(
+                        row, requirement_id
+                    )
                 }
             )
             if not scope_ready:
@@ -851,6 +962,8 @@ def compile_product_pack_readiness(
         },
         "checks": {
             "all_candidates_have_exactly_one_persistent_decision": True,
+            "accepted_evidence_resolved_per_requirement": True,
+            "ambiguous_multi_requirement_evidence_reuse": False,
             "candidate_text_promoted": False,
             "new_evidence_created": False,
             "narrative_evidence_and_numeric_authority_separated": True,

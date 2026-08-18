@@ -250,3 +250,73 @@ def test_explicit_scope_pending_remains_candidate_audit_only() -> None:
     assert result["gap_eligibility_receipts"][0][
         "earliest_responsible_layer"
     ] == "S3_research_scope"
+
+
+def test_one_reviewed_item_cannot_satisfy_an_unbound_sibling_requirement() -> None:
+    request_result = _request_result()
+    seed = request_result["hybrid_object_retrieval"]["candidate_decision_seed"][0]
+    seed["selected_requirement_ids"] = ["MER-1", "MER-2"]
+    material = request_result["hybrid_object_retrieval"]["material_evidence"]
+    material["requirement_plan"]["requirement_groups"].append(
+        {"requirement_id": "MER-2", "facet_id": "reported_results", "role": "counter"}
+    )
+    material["selection"]["requirement_receipts"].append(
+        {
+            "requirement_id": "MER-2",
+            "complete": True,
+            "selected_candidate_ids": ["OBJ-1"],
+        }
+    )
+    pack = _pack()
+    pack["evidence_items"][0]["slot_bindings"][0]["requirement_ids"] = [
+        "MER-1"
+    ]
+
+    ledger = compile_product_candidate_decision_ledger(
+        request_result=request_result,
+        evidence_pack=pack,
+        recorded_at="2026-08-19",
+    )
+    result = compile_product_pack_readiness(
+        product_projection={
+            "case_key": "DELL",
+            "objective": {"research_as_of": "2026-08-06"},
+            "request_results": [request_result],
+        },
+        evidence_pack=pack,
+        candidate_decision_ledgers=[ledger],
+        recorded_at="2026-08-19",
+    )
+
+    decision = ledger["decisions"][0]
+    assert decision["accepted_evidence_by_requirement"] == {
+        "MER-1": ["c" * 64]
+    }
+    requirement_states = {
+        row["requirement_id"]: row["readiness_state"]
+        for row in result["requests"][0]["requirements"]
+    }
+    assert requirement_states == {
+        "MER-1": "ready_for_current_scope",
+        "MER-2": "blocked_by_evidence_admission",
+    }
+    assert result["readiness_state"] == "blocked_by_evidence_admission"
+
+
+def test_multi_requirement_reuse_without_explicit_binding_fails_closed() -> None:
+    request_result = _request_result()
+    seed = request_result["hybrid_object_retrieval"]["candidate_decision_seed"][0]
+    seed["selected_requirement_ids"] = ["MER-1", "MER-2"]
+
+    ledger = compile_product_candidate_decision_ledger(
+        request_result=request_result,
+        evidence_pack=_pack(),
+        recorded_at="2026-08-19",
+    )
+
+    assert ledger["decision_counts"]["accepted"] == 0
+    assert ledger["decision_counts"]["needs_human_review"] == 1
+    assert ledger["accepted_evidence_by_requirement"] == {}
+    assert "reviewed_evidence_requirement_binding_missing_or_ambiguous" in ledger[
+        "decisions"
+    ][0]["reason_codes"]

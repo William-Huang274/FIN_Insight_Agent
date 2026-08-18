@@ -1,0 +1,118 @@
+{
+  "accepted_items": [
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "MU 已开始面向领先平台的大批量 HBM4 出货，并已向多个终端客户发送认证样品，可证明产品已进入真实客户交付阶段。",
+      "claim_boundary_zh": "仅证明 HBM4 出货与认证进展，不证明全部订单、积压规模、最终客户消化或利润兑现。",
+      "reason_codes": [
+        "current_official_HBM4_observed_shipment"
+      ],
+      "requirement_ids": [
+        "MER::6623212b15a2b55c651c",
+        "MER::bf4ac32f30a52efac224"
+      ],
+      "review_item_ref": "CANDOBJ::61AF586A992130B50D5E9839"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "MU 的战略客户协议采用 take-or-pay 结构，并包含多年期特定数量的约束性承诺，为客户需求可见性提供合同层支持。",
+      "claim_boundary_zh": "合同结构不等于实际订单全部转化为出货、收入或利润，也不能排除客户消化和执行风险。",
+      "reason_codes": [
+        "current_official_take_or_pay_structure"
+      ],
+      "requirement_ids": [
+        "MER::691249c4a1e7bd9a582f"
+      ],
+      "review_item_ref": "CANDOBJ::5614654F524999FE27074152"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "MU 明确披露已经签署带多年期特定数量约束性承诺的战略客户协议，补强客户承诺并非仅为模板性条款。",
+      "claim_boundary_zh": "该披露不提供客户名称、合同金额、履约进度或利润率，不能替代订单和收入桥接。",
+      "reason_codes": [
+        "current_official_executed_customer_commitment"
+      ],
+      "requirement_ids": [
+        "MER::691249c4a1e7bd9a582f"
+      ],
+      "review_item_ref": "CANDOBJ::B8C59ACF38471BECDD561625"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "HBM4 已进入大批量出货并向多个终端客户送样，说明订单向客户交付的转化已开始发生。",
+      "claim_boundary_zh": "该时点证据不能单独证明出货节奏可持续、客户不存在提前拉货，或后续收入与毛利继续增长。",
+      "reason_codes": [
+        "current_official_HBM4_conversion_observed"
+      ],
+      "requirement_ids": [
+        "MER::5f67e95f00c786a364cc",
+        "MER::d0ccc384d703a22d1095"
+      ],
+      "review_item_ref": "CANDOBJ::DC89564340093D999CA74B1E"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "多年期 take-or-pay 数量承诺为订单转化与持续性提供约束机制。",
+      "claim_boundary_zh": "约束机制只能降低而不能消除需求、履约、定价和客户库存调整风险。",
+      "reason_codes": [
+        "current_official_customer_commitment_durability_mechanism"
+      ],
+      "requirement_ids": [
+        "MER::0cf725974bd697eea4e3"
+      ],
+      "review_item_ref": "CANDOBJ::7F657F05A15B16D44960124A"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "MU 已签署多年期特定数量客户承诺，说明持续性机制已有实际合同承载。",
+      "claim_boundary_zh": "不证明每期实际提货、价格和利润，也不替代客户库存与终端需求证据。",
+      "reason_codes": [
+        "current_official_executed_commitment_durability"
+      ],
+      "requirement_ids": [
+        "MER::0cf725974bd697eea4e3"
+      ],
+      "review_item_ref": "CANDOBJ::574BFCA369B61089F0F28740"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "HBM4 大批量出货和多客户认证样品构成当前产品交付与认证进展的直接证据。",
+      "claim_boundary_zh": "不证明全部产能、良率、客户分配或未来季度交付不受约束。",
+      "reason_codes": [
+        "current_official_subject_execution_observed"
+      ],
+      "requirement_ids": [
+        "MER::47882f425fc0e0e3d98b",
+        "MER::d0d68d1d8f6a6734b12d"
+      ],
+      "review_item_ref": "CANDOBJ::88057F8F567D6DDE7BDA58E4"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "MU 当前 10-Q 明确警示 AI 与 HBM 长期需求轨迹未知、需求可能波动，且为未兑现需求预先投入会带来成本风险。",
+      "claim_boundary_zh": "这是发行人风险披露，证明不确定性边界，不代表管理层判断需求必然下滑。",
+      "reason_codes": [
+        "current_official_issuer_AI_demand_counterevidence"
+      ],
+      "requirement_ids": [
+        "MER::e39216b8a7b605a69650"
+      ],
+      "review_item_ref": "CANDOBJ::56AD568CF5698781CF7B7B6D"
+    }
+  ],
+  "candidate_review_packet_digest": "8cf26e9b8b93985ce361c7096908656e3a5a6272f3f5a4b8a853a5b2d4c375ce",
+  "case_key": "MU",
+  "default_claim_action": "reject_for_current_scope",
+  "metric_row_action": "delegate_to_s2_numeric_authority",
+  "parent_documents_sha256": "f24d72cd6a659a43eb183c21b353f07a2598ba8973fed1a5edd1d6698f25ff3b",
+  "plan_digest": "2504c1938cc329b298d806485c75137361f773d0f0e23d073ccc5c36b4cf4bd2",
+  "plan_id": "FIN-0.1.3-S1-MU-PROPOSITION-BOUND-EVIDENCE-R1",
+  "predecessor_pack_payload_digest": "07443e228b13a676de4a1da1d527fc2434e9d31505f7e3c259bfb24322220e69",
+  "product_publication_authorized": false,
+  "qualified_human_review": false,
+  "research_as_of": "2026-08-06",
+  "S1_qualification_authorized": false,
+  "schema_version": "fin_ia_s1_product_evidence_adjudication_plan_v1_0",
+  "status": "approved_internal_engineering_plan",
+  "successor_known_boundary": "Internal engineering adjudication only. Current immutable issuer evidence may satisfy only the named proposition bindings. Legacy non-capture-bound lookalikes remain rejected; metrics remain delegated to S2; missing upstream and customer-specific counterevidence remain unresolved."
+}

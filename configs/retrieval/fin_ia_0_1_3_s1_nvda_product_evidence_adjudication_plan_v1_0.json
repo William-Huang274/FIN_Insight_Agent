@@ -1,0 +1,123 @@
+{
+  "accepted_items": [
+    {
+      "action": "accept_for_request_context",
+      "business_meaning_zh": "NVDA 为需求预测增加供应与产能采购，说明管理层正按预期需求配置供给。",
+      "claim_boundary_zh": "这是管理层供给动作与需求预测背景，不是客户订单、积压或最终需求已经兑现的直接证据。",
+      "reason_codes": [
+        "current_official_demand_projection_context_only"
+      ],
+      "requirement_ids": [],
+      "review_item_ref": "CANDOBJ::FA2B1E07E6A1617CCE4E4FC3"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "NVDA 当前 10-Q 列明多项会导致需求高估或低估并改变收入时点和数量的因素，构成订单可见性的直接反方边界。",
+      "claim_boundary_zh": "该风险清单证明预测不确定性，不代表这些风险已经发生，也不提供订单或积压数量。",
+      "reason_codes": [
+        "current_official_demand_forecast_counterevidence"
+      ],
+      "requirement_ids": [
+        "MER::5b19d8c1dc4fd57cee55"
+      ],
+      "review_item_ref": "CANDOBJ::BFF7DBFCD69A411CE75E678A"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "NVDA 披露 FY2027 第一季度 Compute & Networking 同比增长由数据中心、Blackwell 系统爬坡以及 InfiniBand、Spectrum-X 和 NVLink 需求驱动，形成当期经营结果的发行人直接解释。",
+      "claim_boundary_zh": "仅证明当期收入增长驱动叙述；精确数值由 S2 提供，也不能据此单独推导利润或未来增速。",
+      "reason_codes": [
+        "current_official_reported_result_driver"
+      ],
+      "requirement_ids": [
+        "MER::65c6fb7f2730c7a8c983"
+      ],
+      "review_item_ref": "CANDOBJ::B66D9615E6723749B41138D3"
+    },
+    {
+      "action": "accept_for_request_context",
+      "business_meaning_zh": "NVDA 成本结构包含晶圆制造、封装、测试、板卡、设备和良率等要素，可用于解释供给约束如何传导到成本。",
+      "claim_boundary_zh": "成本构成定义不证明当前存在特定产能缺口、良率恶化或供应中断。",
+      "reason_codes": [
+        "current_official_supply_cost_mechanism_context"
+      ],
+      "requirement_ids": [],
+      "review_item_ref": "CANDOBJ::8DC695CCD3A3712DF35A6ABC"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "NVDA 正在增加现有与新供应商的供应及产能采购，以应对数据中心产品需求预测和复杂度上升，构成发行人当前执行动作。",
+      "claim_boundary_zh": "采购动作不证明产能已到位、良率达标、客户订单完全匹配或不存在过度采购。",
+      "reason_codes": [
+        "current_official_supply_capacity_purchase_action"
+      ],
+      "requirement_ids": [
+        "MER::a4502f63e9be13818d05"
+      ],
+      "review_item_ref": "CANDOBJ::351264472B253E8DB4F98EB1"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "NVDA 披露竞争者可能削弱其采购关键供应的能力，构成先进制造与封装供给约束的发行人反方证据。",
+      "claim_boundary_zh": "该披露不证明特定供应商、CoWoS 或某一季度已经发生短缺。",
+      "reason_codes": [
+        "current_official_competitive_supply_constraint"
+      ],
+      "requirement_ids": [
+        "MER::9a84c4a5b58d17a13363"
+      ],
+      "review_item_ref": "CANDOBJ::4BE5C62DC102062E0AD3A1FB"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "NVDA 为锁定未来供应支付溢价、押金并签署长期供应与产能承诺，且这些安排已经提高产品成本，构成供给执行的实质反方。",
+      "claim_boundary_zh": "该披露不量化各项承诺、可用产能或毛利影响，也不证明供应一定不足。",
+      "reason_codes": [
+        "current_official_long_term_supply_commitment_counterevidence"
+      ],
+      "requirement_ids": [
+        "MER::f453ffe791c2aea79930"
+      ],
+      "review_item_ref": "CANDOBJ::DD934D14D406F3442D8173DD"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "MU 披露新增洁净室与产能建设的投产时点，可作为 NVDA 上游内存供给扩张节奏的背景。",
+      "claim_boundary_zh": "该材料不证明 HBM 专属产能、NVDA 分配份额、先进封装可用量或当前季度供给充足。",
+      "reason_codes": [
+        "current_official_upstream_memory_capacity_context"
+      ],
+      "requirement_ids": [
+        "MER::b7a39ea4b9d62b29c840"
+      ],
+      "review_item_ref": "CANDOBJ::B5EAF5AEF2978922E2D6F93D"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "NVDA 当前 10-Q 明确披露数据中心 GPU 出口限制也可能压低配套网络产品需求，构成产品链条上的直接政策暴露。",
+      "claim_boundary_zh": "该披露不量化收入损失，也不代表所有地区或全部产品均受同等影响。",
+      "reason_codes": [
+        "current_official_data_center_export_control_exposure"
+      ],
+      "requirement_ids": [
+        "MER::edb64bbe240875767961"
+      ],
+      "review_item_ref": "CANDOBJ::198BCABC073F41359E36D2D1"
+    }
+  ],
+  "candidate_review_packet_digest": "0dece281a19ff39fcc6036131cbf0e534ea92d97cd526e2a182e9329dc8cff7c",
+  "case_key": "NVDA",
+  "default_claim_action": "reject_for_current_scope",
+  "metric_row_action": "delegate_to_s2_numeric_authority",
+  "parent_documents_sha256": "f24d72cd6a659a43eb183c21b353f07a2598ba8973fed1a5edd1d6698f25ff3b",
+  "plan_digest": "953bdb026b3154768085d0c1c4210f6dbe13ed45d808dc1781111644919aedd2",
+  "plan_id": "FIN-0.1.3-S1-NVDA-PROPOSITION-BOUND-EVIDENCE-R1",
+  "predecessor_pack_payload_digest": "3f851319bc7a9e63488c570f5fc2e5ba47250816fdea869022122d4a80c3bbf7",
+  "product_publication_authorized": false,
+  "qualified_human_review": false,
+  "research_as_of": "2026-08-06",
+  "S1_qualification_authorized": false,
+  "schema_version": "fin_ia_s1_product_evidence_adjudication_plan_v1_0",
+  "status": "approved_internal_engineering_plan",
+  "successor_known_boundary": "Internal engineering adjudication only. Current immutable issuer and upstream evidence may satisfy only the named proposition bindings. Orders/backlog, conversion durability, exact financial metrics, advanced-packaging allocation and some policy effects remain unresolved; metrics remain delegated to S2; no S1 or publication authority is granted."
+}

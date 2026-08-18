@@ -39,10 +39,10 @@ PLANNING_REF = (
 )
 RUNTIME_POLICY_REF = (
     "configs/retrieval/"
-    "fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_0.json"
+    "fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_1.json"
 )
 ONTOLOGY_REF = (
-    "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json"
+    "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_3.json"
 )
 
 

@@ -51,7 +51,7 @@ KERNEL_REF = "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.j
 SCOPE_POLICY_REF = "configs/research/fin_ia_0_1_3_s3_material_scope_policy_v1_0.json"
 RUNTIME_POLICY_REF = (
     "configs/retrieval/"
-    "fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_0.json"
+    "fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_1.json"
 )
 ONTOLOGY_REF = "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json"
 PROFILE_REF = (

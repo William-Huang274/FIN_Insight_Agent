@@ -12,9 +12,16 @@ from .evidence_set_coverage import (
 from .financial_intent import concept_aliases
 
 
-POLICY_SCHEMA = "fin_ia_s1_material_evidence_runtime_policy_v1_0"
+POLICY_SCHEMA_V1_0 = "fin_ia_s1_material_evidence_runtime_policy_v1_0"
+POLICY_SCHEMA_V1_1 = "fin_ia_s1_material_evidence_runtime_policy_v1_1"
+POLICY_SCHEMAS = frozenset({POLICY_SCHEMA_V1_0, POLICY_SCHEMA_V1_1})
+# Backward-compatible aliases remain bound to the historical schemas.  New
+# callers should use the versioned names instead of relabelling old receipts.
+POLICY_SCHEMA = POLICY_SCHEMA_V1_0
 CANDIDATE_SCHEMA = "fin_ia_material_candidate_metadata_v1_1"
-COMPILER_RECEIPT_SCHEMA = "fin_ia_material_requirement_compiler_receipt_v1_1"
+COMPILER_RECEIPT_SCHEMA_V1_1 = "fin_ia_material_requirement_compiler_receipt_v1_1"
+COMPILER_RECEIPT_SCHEMA_V1_2 = "fin_ia_material_requirement_compiler_receipt_v1_2"
+COMPILER_RECEIPT_SCHEMA = COMPILER_RECEIPT_SCHEMA_V1_1
 
 
 class MaterialEvidenceRuntimeError(ValueError):
@@ -72,7 +79,8 @@ def _is_period_only_intent(value: str) -> bool:
 
 
 def _validate_policy(policy: Mapping[str, Any]) -> None:
-    if policy.get("schema_version") != POLICY_SCHEMA:
+    schema_version = str(policy.get("schema_version") or "")
+    if schema_version not in POLICY_SCHEMAS:
         raise MaterialEvidenceRuntimeError("material_runtime_policy_schema_invalid")
     authority = policy.get("authority")
     if not (
@@ -108,6 +116,34 @@ def _validate_policy(policy: Mapping[str, Any]) -> None:
         != "context_only_and_require_explicit_blueprint_for_hard_scope"
     ):
         raise MaterialEvidenceRuntimeError("material_runtime_policy_axis_invalid")
+    if schema_version == POLICY_SCHEMA_V1_1:
+        decomposition = axis_contract.get("proposition_decomposition")
+        if not (
+            isinstance(decomposition, Mapping)
+            and decomposition.get("fallback_non_temporal_mode")
+            == "one_product_axis_per_role"
+            and isinstance(
+                decomposition.get("facet_promoted_contextual_concept_ids"),
+                Mapping,
+            )
+        ):
+            raise MaterialEvidenceRuntimeError(
+                "material_runtime_policy_proposition_decomposition_invalid"
+            )
+        promoted_by_facet = decomposition[
+            "facet_promoted_contextual_concept_ids"
+        ]
+        for facet_id, concept_ids in promoted_by_facet.items():
+            concepts = set(_strings(concept_ids))
+            if (
+                facet_id not in facet_roles
+                or not concepts
+                or not concepts.issubset(contextual)
+            ):
+                raise MaterialEvidenceRuntimeError(
+                    "material_runtime_policy_promoted_contextual_axis_invalid:"
+                    f"{facet_id}"
+                )
     if set(role_axis_contract) != {"direct", "bridge", "context", "counter"}:
         raise MaterialEvidenceRuntimeError("material_runtime_policy_role_axis_invalid")
     for role, row in role_axis_contract.items():
@@ -186,6 +222,64 @@ def _classify_product_intents(
         else:
             unclassified.append(value)
     return _unique(hard), _unique(contextual), _unique(unclassified)
+
+
+def _atomic_proposition_policy(policy: Mapping[str, Any]) -> bool:
+    return str(policy.get("schema_version") or "") == POLICY_SCHEMA_V1_1
+
+
+def _facet_material_product_intents(
+    values: Sequence[str],
+    *,
+    facet_id: str,
+    policy: Mapping[str, Any],
+    ontology: Mapping[str, Any],
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Return hard request spellings plus facet-promoted material propositions.
+
+    A topic can remain contextual for most research facets yet become a material
+    proposition for a facet whose business meaning requires it.  For example,
+    an executed customer commitment is material to orders/durability but should
+    not become a universal hard product axis for every financial query.
+    """
+
+    hard, contextual, _ = _classify_product_intents(
+        values,
+        policy=policy,
+        ontology=ontology,
+    )
+    if not _atomic_proposition_policy(policy):
+        return hard, ()
+    contract = policy["material_intent_axis_contract"][
+        "proposition_decomposition"
+    ]
+    promoted_concepts = set(
+        _strings(
+            contract["facet_promoted_contextual_concept_ids"].get(facet_id)
+        )
+    )
+    promoted = tuple(
+        value
+        for value in contextual
+        if _concept_id(
+            value,
+            family="product_concepts",
+            ontology=ontology,
+        )
+        in promoted_concepts
+    )
+    return _unique((*hard, *promoted)), _unique(promoted)
+
+
+def _non_temporal_product_axes(
+    values: Sequence[str], *, policy: Mapping[str, Any]
+) -> tuple[tuple[str, ...], ...]:
+    unique = _unique(values)
+    if not unique:
+        return ((),)
+    if _atomic_proposition_policy(policy):
+        return tuple((value,) for value in unique)
+    return (unique,)
 
 
 def _requirement_id(group: Mapping[str, Any]) -> str:
@@ -276,6 +370,7 @@ def compile_material_requirement_plan_from_runtime_input(
         explicit_temporal = bool(temporal_directives and len(years) >= 2)
         requirements = []
         seen: set[str] = set()
+        promoted_contextual_by_facet: dict[str, tuple[str, ...]] = {}
         for narrative in narratives:
             if not isinstance(narrative, Mapping):
                 raise MaterialEvidenceRuntimeError(
@@ -303,11 +398,6 @@ def compile_material_requirement_plan_from_runtime_input(
                 family="product_concepts",
                 ontology=ontology,
             ) if narrative_products else ()
-            product_values = tuple(
-                value
-                for value in aligned_narrative_products
-                if value in hard_request_products
-            )
             for facet_id in facets:
                 if facet_id not in policy["facet_required_roles"]:
                     raise MaterialEvidenceRuntimeError(
@@ -317,6 +407,21 @@ def compile_material_requirement_plan_from_runtime_input(
                 if not roles:
                     raise MaterialEvidenceRuntimeError(
                         f"material_requirement_facet_roles_empty:{facet_id}"
+                    )
+                product_values, promoted_contextual = (
+                    _facet_material_product_intents(
+                        aligned_narrative_products,
+                        facet_id=facet_id,
+                        policy=policy,
+                        ontology=ontology,
+                    )
+                )
+                if promoted_contextual:
+                    promoted_contextual_by_facet[facet_id] = _unique(
+                        (
+                            *promoted_contextual_by_facet.get(facet_id, ()),
+                            *promoted_contextual,
+                        )
                     )
                 if explicit_temporal:
                     if not metric_values:
@@ -367,31 +472,38 @@ def compile_material_requirement_plan_from_runtime_input(
                                 seen.add(signature)
                                 requirements.append(group)
                 else:
-                    for role in roles:
-                        role_axis = policy["material_role_axis_contract"][role]
-                        group = {
-                            "facet_id": facet_id,
-                            "role": role,
-                            "metric_ids": (
-                                list(metric_values)
-                                if role_axis["bind_requested_metrics"]
-                                else []
-                            ),
-                            "product_ids": (
-                                list(product_values)
-                                if role_axis["bind_hard_product_intents"]
-                                else []
-                            ),
-                            "target_entities": list(request_entities),
-                            "period_mode": "any",
-                            "fiscal_years": [],
-                            "minimum_candidates": 1,
-                            "coverage_mode": "collective_axes",
-                        }
-                        signature = canonical_digest(group)
-                        if signature not in seen:
-                            seen.add(signature)
-                            requirements.append(group)
+                    for product_axis in _non_temporal_product_axes(
+                        product_values,
+                        policy=policy,
+                    ):
+                        for role in roles:
+                            role_axis = policy["material_role_axis_contract"][role]
+                            group = {
+                                "facet_id": facet_id,
+                                "role": role,
+                                "metric_ids": (
+                                    list(metric_values)
+                                    if role_axis["bind_requested_metrics"]
+                                    else []
+                                ),
+                                "product_ids": (
+                                    list(product_axis)
+                                    if role_axis["bind_hard_product_intents"]
+                                    else []
+                                ),
+                                "target_entities": list(request_entities),
+                                "period_mode": "any",
+                                "fiscal_years": [],
+                                "minimum_candidates": 1,
+                                "coverage_mode": "collective_axes",
+                            }
+                            signature = canonical_digest(group)
+                            if signature not in seen:
+                                seen.add(signature)
+                                requirements.append(group)
+
+    if explicit:
+        promoted_contextual_by_facet = {}
 
     normalized_requirements: list[dict[str, Any]] = []
     for priority, raw in enumerate(requirements, 1):
@@ -419,7 +531,11 @@ def compile_material_requirement_plan_from_runtime_input(
         schema_version=PLAN_SCHEMA_V1_2,
     )
     receipt = {
-        "schema_version": COMPILER_RECEIPT_SCHEMA,
+        "schema_version": (
+            COMPILER_RECEIPT_SCHEMA_V1_2
+            if _atomic_proposition_policy(policy)
+            else COMPILER_RECEIPT_SCHEMA_V1_1
+        ),
         "request_id": request.get("request_id"),
         "compiler_mode": compiler_mode,
         "temporal_directives_excluded_from_product_scope": list(
@@ -443,11 +559,22 @@ def compile_material_requirement_plan_from_runtime_input(
             "non_temporal_metric_intents_guide_retrieval_but_do_not_duplicate_"
             "S2_NumericFact_completeness"
         ),
-        "product_axis_default": "all_of_with_explicit_reserved_capacity",
+        "product_axis_default": (
+            "one_product_proposition_per_role_collective_within_axis"
+            if _atomic_proposition_policy(policy)
+            else "all_of_with_explicit_reserved_capacity"
+        ),
         "candidate_or_reference_inputs_read": False,
         "generation_model_calls": 0,
         "plan_digest": plan["plan_digest"],
     }
+    if _atomic_proposition_policy(policy):
+        receipt["promoted_contextual_intents_by_facet"] = {
+            facet_id: list(values)
+            for facet_id, values in sorted(
+                promoted_contextual_by_facet.items()
+            )
+        }
     receipt["receipt_digest"] = canonical_digest(receipt)
     return plan, receipt
 
@@ -597,11 +724,6 @@ def adapt_material_candidate_from_feature_views(
         for value in _strings(evidence_request.get("product_intents"))
         if not _is_period_only_intent(value)
     )
-    hard_request_products, _, _ = _classify_product_intents(
-        request_products,
-        policy=policy,
-        ontology=ontology,
-    )
     for view in feature_views:
         if not isinstance(view, Mapping):
             continue
@@ -616,6 +738,12 @@ def adapt_material_candidate_from_feature_views(
         best_need = feature.get("best_retrieval_need") or {}
         if not facet_id or str(role.get("compatibility") or "") != "compatible":
             continue
+        facet_material_products, _ = _facet_material_product_intents(
+            request_products,
+            facet_id=facet_id,
+            policy=policy,
+            ontology=ontology,
+        )
         raw_metrics, raw_products = _need_intents(
             best_need, request=evidence_request, ontology=ontology
         )
@@ -640,20 +768,20 @@ def adapt_material_candidate_from_feature_views(
             if raw_products
             else ()
         )
-        hard_raw_products = tuple(
+        material_raw_products = tuple(
             value
             for value in aligned_raw_products
-            if value in hard_request_products
+            if value in facet_material_products
         )
         metric_axis_compatible = (
             not raw_metrics
             or str(intent.get("metric_compatibility") or "") == "compatible"
         )
         product_axis_compatible = (
-            not hard_raw_products
+            not material_raw_products
             or str(intent.get("product_compatibility") or "") == "compatible"
         )
-        product_ids = hard_raw_products
+        product_ids = material_raw_products
         material_roles = _unique(
             tuple(
                 material_role
@@ -703,7 +831,7 @@ def adapt_material_candidate_from_feature_views(
                 "contextual_or_unclassified_need_product_intents": [
                     value
                     for value in aligned_raw_products
-                    if value not in hard_raw_products
+                    if value not in material_raw_products
                 ],
             }
             signature = canonical_digest(binding)
@@ -749,8 +877,12 @@ def adapt_material_candidate_from_feature_views(
 __all__ = [
     "CANDIDATE_SCHEMA",
     "COMPILER_RECEIPT_SCHEMA",
+    "COMPILER_RECEIPT_SCHEMA_V1_1",
+    "COMPILER_RECEIPT_SCHEMA_V1_2",
     "MaterialEvidenceRuntimeError",
     "POLICY_SCHEMA",
+    "POLICY_SCHEMA_V1_0",
+    "POLICY_SCHEMA_V1_1",
     "adapt_material_candidate_from_feature_views",
     "compile_material_requirement_plan_from_runtime_input",
 ]

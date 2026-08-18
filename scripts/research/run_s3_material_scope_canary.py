@@ -153,6 +153,9 @@ def prepare(*, objective_path: Path, planner_path: Path, output_path: Path) -> d
         "hybrid_candidate_runtime": _binding(
             ROOT / "src/retrieval/hybrid_candidate_runtime.py"
         ),
+        "evidence_role_runtime": _binding(
+            ROOT / "src/retrieval/evidence_role_v3.py"
+        ),
         "material_scope_implementation": _binding(
             ROOT / "src/sec_agent/research/material_scope.py"
         ),
@@ -415,6 +418,9 @@ def replay_product_scope(
         "hybrid_candidate_runtime": _binding(
             ROOT / "src/retrieval/hybrid_candidate_runtime.py"
         ),
+        "evidence_role_runtime": _binding(
+            ROOT / "src/retrieval/evidence_role_v3.py"
+        ),
         "candidate_ceiling_provenance": _binding(
             ROOT / "src/retrieval/candidate_ceiling_provenance.py"
         ),
@@ -518,6 +524,9 @@ def replay_current_deterministic_scope(
         ),
         "hybrid_candidate_runtime": _binding(
             ROOT / "src/retrieval/hybrid_candidate_runtime.py"
+        ),
+        "evidence_role_runtime": _binding(
+            ROOT / "src/retrieval/evidence_role_v3.py"
         ),
         "candidate_ceiling_provenance": _binding(
             ROOT / "src/retrieval/candidate_ceiling_provenance.py"

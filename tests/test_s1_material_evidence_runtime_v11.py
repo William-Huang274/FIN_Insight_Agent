@@ -34,6 +34,18 @@ ONTOLOGY = json.loads(
         / "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json"
     ).read_text(encoding="utf-8")
 )
+CURRENT_POLICY = json.loads(
+    (
+        ROOT
+        / "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_1.json"
+    ).read_text(encoding="utf-8")
+)
+CURRENT_ONTOLOGY = json.loads(
+    (
+        ROOT
+        / "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_3.json"
+    ).read_text(encoding="utf-8")
+)
 
 
 def _temporal_runtime_input() -> dict:
@@ -1015,3 +1027,130 @@ def test_single_binding_does_not_use_unclassified_natural_review_phrase() -> Non
     result = select_request_bound_review(candidates=[candidate], plan=plan)
     assert result["selected_candidate_ids"] == []
     assert result["unmet_requirement_ids"] == ["REQ::TEMPORAL_NATURAL"]
+
+
+def test_v11_policy_splits_mixed_business_topics_into_atomic_propositions() -> None:
+    runtime_input = {
+        "case_identity": {"accounting_basis": "US_GAAP", "case_key": "MU"},
+        "evidence_request": {
+            "request_id": "ER::MU::ATOMIC_DEMAND",
+            "case_key": "MU",
+            "target_entities": ["MU"],
+            "metric_intents": ["revenue"],
+            "product_intents": [
+                "HBM and data center business",
+                "HBM4 shipment and capacity",
+                "customer commitment and purchase structure",
+            ],
+            "requested_facet_ids": ["orders_and_backlog"],
+            "period": {"fiscal_years": [2026]},
+            "unit": "issuer_reported_native_unit",
+        },
+        "retrieval_execution_plan": {
+            "narrative_requests": [
+                {
+                    "facet_ids": ["orders_and_backlog"],
+                    "metric_context_ids": ["revenue"],
+                    "product_intents": [
+                        "HBM and data center business",
+                        "HBM4 shipment and capacity",
+                        "customer commitment and purchase structure",
+                    ],
+                }
+            ]
+        },
+    }
+
+    plan, receipt = compile_material_requirement_plan_from_runtime_input(
+        runtime_input=runtime_input,
+        policy=CURRENT_POLICY,
+        ontology=CURRENT_ONTOLOGY,
+    )
+
+    assert receipt["schema_version"] == (
+        "fin_ia_material_requirement_compiler_receipt_v1_2"
+    )
+    assert receipt["promoted_contextual_intents_by_facet"] == {
+        "orders_and_backlog": ["customer commitment and purchase structure"]
+    }
+    groups = plan["requirement_groups"]
+    assert len(groups) == 6
+    assert {tuple(group["product_ids"]) for group in groups} == {
+        ("HBM and data center business",),
+        ("HBM4 shipment and capacity",),
+        ("customer commitment and purchase structure",),
+    }
+    assert all(len(group["product_ids"]) == 1 for group in groups)
+    assert plan["maximum_reserved_capacity"] <= CURRENT_POLICY["review_k"]
+
+
+def test_v11_adapter_binds_executed_commitment_to_demand_proposition() -> None:
+    request = {
+        "request_id": "ER::MU::COMMITMENT",
+        "case_key": "MU",
+        "target_entities": ["MU"],
+        "metric_intents": [],
+        "product_intents": ["customer commitment and purchase structure"],
+        "requested_facet_ids": ["orders_and_backlog"],
+        "period": {"fiscal_years": [2026]},
+    }
+    object_row = {
+        "compiled_object_id": "COBJ::MU::COMMITMENT",
+        "object_kind": "claim",
+        "model_text": (
+            "We entered into strategic customer agreements with binding "
+            "commitments for specific volumes over multi-year terms."
+        ),
+        "base_object_view": {
+            "ticker": "MU",
+            "fiscal_year": 2026,
+            "source_type": "10-Q",
+            "publication_date": "2026-07-01",
+        },
+        "structured_projection": {"period_hints": ["FY2026"]},
+    }
+    feature = {
+        "facet_id": "orders_and_backlog",
+        "feature": {
+            "compiled_object_id": "COBJ::MU::COMMITMENT",
+            "best_retrieval_need": {
+                "need_id": "NEED::COMMITMENT",
+                "need_kind": "product",
+                "intent_terms": ["strategic customer agreement"],
+            },
+            "evidence_role": {
+                "compatibility": "compatible",
+                "labels": ["direct_demand_signal"],
+            },
+            "financial_intent": {
+                "compatibility": "compatible",
+                "metric_compatibility": "not_requested",
+                "product_compatibility": "compatible",
+            },
+        },
+    }
+
+    candidate = adapt_material_candidate_from_feature_views(
+        case_key="MU",
+        candidate_row={
+            "compiled_object_id": "COBJ::MU::COMMITMENT",
+            "rank": 14,
+            "score": 0.31,
+        },
+        object_row=object_row,
+        feature_views=[feature],
+        evidence_request=request,
+        accounting_basis="US_GAAP",
+        policy=CURRENT_POLICY,
+        ontology=CURRENT_ONTOLOGY,
+    )
+
+    direct = next(
+        binding
+        for binding in candidate["material_bindings"]
+        if binding["role"] == "direct"
+    )
+    assert direct["product_ids"] == [
+        "customer commitment and purchase structure"
+    ]
+    assert direct["contextual_or_unclassified_need_product_intents"] == []

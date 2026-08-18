@@ -665,7 +665,7 @@ def test_controlled_plan_material_scope_is_two_step_and_bound_to_current_plan(
     material_runtime_policy = json.loads(
         (
             ROOT
-            / "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_0.json"
+            / "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_1.json"
         ).read_text(encoding="utf-8")
     )
     ontology = json.loads(

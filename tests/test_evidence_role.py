@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from retrieval.evidence_role import evaluate_evidence_role
+from retrieval.evidence_role_v3 import (
+    evaluate_evidence_role as evaluate_evidence_role_v3,
+)
 
 
 def _document(text: str, *, section: str = "Item 2. MD&A") -> dict[str, str]:
@@ -432,6 +435,74 @@ def test_generic_ai_adoption_statement_is_not_direct_customer_demand() -> None:
 
     assert result.compatibility == "abstain"
     assert "direct_demand_signal" not in result.labels
+
+
+def test_executed_binding_customer_commitment_is_direct_demand_evidence() -> None:
+    result = evaluate_evidence_role_v3(
+        {
+            "ticker": "MU",
+            "section": "Item 2. Management's Discussion and Analysis",
+            "document_text": (
+                "We entered into strategic customer agreements that include "
+                "binding commitments for specific volumes over multi-year terms."
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="demand_volume_quality",
+        facet_id="orders_and_backlog",
+        subject_ticker="MU",
+        evidence_owner_ticker="MU",
+        relationship_direction="subject_self_disclosure",
+    )
+
+    assert result.compatibility == "compatible"
+    assert "direct_demand_signal" in result.labels
+    assert "executed_customer_commitment_surface" in result.reason_codes
+    assert result.evidence_promoted is False
+
+
+def test_hypothetical_customer_agreement_is_not_direct_demand_evidence() -> None:
+    result = evaluate_evidence_role_v3(
+        {
+            "ticker": "MU",
+            "section": "Item 1A. Risk Factors",
+            "document_text": (
+                "We may enter customer agreements that include binding "
+                "commitments for specific volumes."
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="demand_volume_quality",
+        facet_id="orders_and_backlog",
+        subject_ticker="MU",
+        evidence_owner_ticker="MU",
+        relationship_direction="subject_self_disclosure",
+    )
+
+    assert "direct_demand_signal" not in result.labels
+
+
+def test_observed_hbm4_customer_shipments_are_demand_fulfillment() -> None:
+    result = evaluate_evidence_role_v3(
+        {
+            "ticker": "MU",
+            "section": "Quarterly Results",
+            "document_text": (
+                "HBM4 high-volume shipments for our lead customer's platform "
+                "began after qualification samples shipped."
+            ),
+            "object_kind": "claim",
+        },
+        slot_id="demand_volume_quality",
+        facet_id="conversion_and_durability",
+        subject_ticker="MU",
+        evidence_owner_ticker="MU",
+        relationship_direction="subject_self_disclosure",
+    )
+
+    assert result.compatibility == "compatible"
+    assert "direct_demand_signal" in result.labels
+    assert "observed_customer_fulfillment_surface" in result.reason_codes
 
 
 def test_production_delay_and_supply_management_challenge_is_counterevidence() -> None:

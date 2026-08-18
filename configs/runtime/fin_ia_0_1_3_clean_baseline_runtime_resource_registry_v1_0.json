@@ -15,9 +15,9 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R22",
-  "resource_bytes": 2503268,
-  "resource_canonical_digest": "43f90c9353400418c2ee62db15b4014a7f40c65c5ee94ee12d85e2168285078e",
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R23",
+  "resource_bytes": 2504341,
+  "resource_canonical_digest": "106879bcab54aa53a823cb31aff4d5109b822b3c2c20c0d627cd1516d360482e",
   "resource_count": 22,
   "resources": [
     {
@@ -60,16 +60,16 @@
       "source_owner": "retrieval.hybrid_candidate_runtime.LocalQwenHybridCandidateRuntime.from_policy"
     },
     {
-      "bytes": 4747,
+      "bytes": 5820,
       "classification": "provider_neutral_product_material_candidate_reservation_policy",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "lazy_first_controlled_research_plan",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_0.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_1.json",
       "required": true,
       "resource_id": "application.config.current_product_material_evidence_runtime_policy",
-      "sha256": "3f22aca6d3a7b18a9f096da24b9741573556c473ac9e782b83ee40a8b106e160",
+      "sha256": "c7348dcae12f84a89b0d2d66b43048bdf58162c97af8837feb767e9df88acae7",
       "source_owner": "retrieval.material_evidence_runtime.compile_material_requirement_plan_from_runtime_input"
     },
     {
@@ -241,7 +241,7 @@
       "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json",
       "required": true,
       "resource_id": "application.result.current_s1_runtime_binding_receipt",
-      "sha256": "11ff92134afae2b35bfb2478ddbbd38a69cc0a872180dcbd7fdcf7e175403277",
+      "sha256": "0c2afef6eabd7aec1858e2575d4443a66df66f1c173097e03b4158efe80f4364",
       "source_owner": "retrieval.current_runtime_binding.validate_current_s1_runtime_binding_receipt"
     },
     {

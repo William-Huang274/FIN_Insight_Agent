@@ -18,7 +18,7 @@ from .embedding_runtime import (
     sha256_file,
 )
 from .financial_candidate_ranking import rank_financial_candidate_union
-from .evidence_role import evaluate_evidence_role
+from .evidence_role_v3 import evaluate_evidence_role
 from .evidence_set_coverage import select_request_bound_review
 from .financial_evidence_shortlist_v2 import candidate_shortlist_features
 from .material_evidence_runtime import (
@@ -245,20 +245,40 @@ def _material_candidate_metadata(
                 )
             if not route_rows:
                 continue
-            feature_views.append(
+            feature = candidate_shortlist_features(
+                object_row,
+                lane=narrowed_lane,
+                route_rows=route_rows,
+                union_rank=union_rank,
+                cross_encoder_ranks={},
+                request=request_payload,
+                intent_ontology=intent_ontology,
+                retrieval_needs=(need,),
+            )
+            feature["evidence_role"] = evaluate_evidence_role(
                 {
-                    "facet_id": narrowed_lane.facet_id,
-                    "feature": candidate_shortlist_features(
-                        object_row,
-                        lane=narrowed_lane,
-                        route_rows=route_rows,
-                        union_rank=union_rank,
-                        cross_encoder_ranks={},
-                        request=request_payload,
-                        intent_ontology=intent_ontology,
-                        retrieval_needs=(need,),
+                    "ticker": base.get("ticker"),
+                    "section": base.get("section"),
+                    "subsection": base.get("subsection"),
+                    "source_type": base.get("source_type"),
+                    "object_kind": object_row.get("object_kind"),
+                    "document_text": object_row.get("model_text"),
+                    "structured_projection": object_row.get(
+                        "structured_projection"
                     ),
-                }
+                },
+                slot_id=narrowed_lane.slot_id,
+                facet_id=narrowed_lane.facet_id,
+                subject_ticker=narrowed_lane.subject_ticker,
+                evidence_owner_ticker=owner,
+                relationship_direction=narrowed_lane.relationship_constraints[0],
+                request_intent_terms=(
+                    tuple(request_payload.get("metric_intents") or ())
+                    + tuple(request_payload.get("product_intents") or ())
+                ),
+            ).as_dict()
+            feature_views.append(
+                {"facet_id": narrowed_lane.facet_id, "feature": feature}
             )
         route_scores = tuple(
             value
@@ -683,6 +703,10 @@ def retrieve_hybrid_candidates(
                     subject_ticker=lane.subject_ticker,
                     evidence_owner_ticker=owner,
                     relationship_direction=relationship_by_owner.get(owner),
+                    request_intent_terms=(
+                        tuple(request.metric_intents)
+                        + tuple(request.product_intents)
+                    ),
                 ).as_dict(),
                 "advisory_only": True,
                 "decision_authority": False,
@@ -768,6 +792,10 @@ def retrieve_hybrid_candidates(
                     subject_ticker=lane.subject_ticker,
                     evidence_owner_ticker=owner,
                     relationship_direction=relationship_by_owner.get(owner),
+                    request_intent_terms=(
+                        tuple(request.metric_intents)
+                        + tuple(request.product_intents)
+                    ),
                 ).as_dict(),
                 "advisory_only": True,
                 "ranking_effect": False,

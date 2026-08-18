@@ -713,3 +713,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 两案均为 10 proposed atoms、按统一 required-slot-first 策略选 8、明确延后 2；所有已选请求在当前 ontology 下均 `deterministic_scope_ready`，0 模型调用。该输入可测试 S1 跨公司执行，但不冒充 S3 planner autonomy。
 - 未新增 case-specific runner；现有 canonical material-scope replay 增加 `current-replay`，DELL 不可变 R3 入口保持兼容。公开投影现在正确识别 deterministic scope，并只公开 fallback receipt digest、候选阶段与上限，不泄露候选 ID。
 - 定向 31、全仓 733 passed；compileall、active baseline 165 Python／8 frontend／22 resources／0 forbidden、JSON／JSONL、policy binding、diff check 和 7,209-file secret scan 通过。下一步先 clean commit／push，再各执行一次 MU／NVDA 当前 CUDA／FP16 replay；仍禁止 Evidence 晋升、public-gap、S1 qualification、发布和 release。
+
+## 2026-08-18 S1 三案例 candidate-ceiling 回放与顺序重定
+
+- MU／NVDA 已在同一当前产品入口完成 CUDA／FP16 回放；与 DELL 合计 24／24 request scope-ready、5／24 material-set complete、12／36 requirement 保留完整，384 个候选、116 个 NumericFact。全部 24 条请求均达到 BM25 64、Qwen 64、union 96 上限；0 网络、0 生成模型、0 CPU vector fallback、0 public-gap 声明。
+- MU 对象库已有 take-or-pay、绑定采购量和多年期战略客户协议官方表述，但未进入 orders／conversion 的候选并集；NVDA 最新 Data Center 收入对象已在库内，但未进入 reported-results 并集。两者证明 QueryFacetPlan／召回／时点排序仍会丢失已知高价值对象，不能靠继续补源或后端从 0 个有效候选中救回。
+- NVDA metric-row 对象出现局部表格上下文污染：债务到期和利息收入行继承 `Gross Profit and Gross Margin` 表题。最早责任层回到 S1 source parse／object compilation；修复前不得把该类行送入 EvidenceDecision。
+- 当前 `collective_axes` 合同把多 metric／product 全部按 AND 处理，却只按“是否存在 metric 轴／product 轴”预留容量；同时让 S1 narrative completeness 重复承担 S2 NumericFact 数值义务。部分 `material incomplete` 因此是合同假阴性而非材料缺失。RC-S1-036 已打开。
+- MU net income 因两个不同 discrete quarter 同被标为 FY2025 Q3 而产生 typed conflict；fail-closed 正确，期间身份修复归 S2 的 RC-S2-006，不得在 S1 任选数字。
+- 顺序已从“直接实现 RC-S1-034 product producer”调整为：RC-S1-037 表格对象上下文 → RC-S1-036 coverage semantics → RC-S1-038 已知对象召回／时点 → CUDA/FP16 重建与三案 successor replay → product EvidenceDecision／GapEligibilityReceipt／PackReadiness。这样避免把错误 incompleteness 固化成正式产品结论。

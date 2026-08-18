@@ -1,0 +1,126 @@
+{
+  "schema_version": "fin_ia_s1_three_case_current_candidate_provenance_assessment_v1_0",
+  "status": "three_case_candidate_ceiling_replay_complete_earlier_S1_object_coverage_and_recall_repairs_required_before_product_readiness",
+  "recorded_at": "2026-08-18T19:17:10+08:00",
+  "prepared_from_commit": "a720fd06a5e9f6c4434eee6e46c6636a35fbe385",
+  "bound_results": {
+    "DELL": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_material_scope_product_replay_result_v1_2.json",
+      "assessment_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_material_scope_product_replay_assessment_v1_2.json"
+    },
+    "MU": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_mu_current_candidate_provenance_result_v1_0.json",
+      "sha256": "e88ca68b319920026d6a24fcac9d9f704977303d164edaa6636bad2ad2107574",
+      "private_full_result_ref": "data/workbench_private/fin_0_1_3_s1_candidate_provenance_replay/mu-r1/full_result.json",
+      "private_full_result_sha256": "1e8b91a1b734e27b333ea10a83a275a2bf8e7f650efad76c863e237f3edeedfc"
+    },
+    "NVDA": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_nvda_current_candidate_provenance_result_v1_0.json",
+      "sha256": "f7efefd48e9dcb7da1e013b4a032a7566d06d7d74ea576a805b367d88ab42c4c",
+      "private_full_result_ref": "data/workbench_private/fin_0_1_3_s1_candidate_provenance_replay/nvda-r1/full_result.json",
+      "private_full_result_sha256": "e378470bdc409a1e0912214a22902d9f1ca36c334bbd1d2996fbd714616541cd"
+    }
+  },
+  "execution_facts": {
+    "cases": 3,
+    "evidence_requests": 24,
+    "material_scope_ready_requests": 24,
+    "material_set_complete_requests": 5,
+    "requirement_groups": 36,
+    "requirements_without_observed_loss_through_review": 12,
+    "requirements_incomplete_at_or_before_candidate_union": 24,
+    "requirements_lost_after_complete_union": 0,
+    "requests_reaching_bm25_first_stage_limit": 24,
+    "requests_reaching_qwen_first_stage_limit": 24,
+    "requests_reaching_candidate_union_limit": 24,
+    "static_snapshot_nonempty_lanes": 23,
+    "selected_candidates": 384,
+    "numeric_facts": 116,
+    "typed_fact_requests": 71,
+    "typed_fact_resolved": 41,
+    "typed_fact_gaps": 29,
+    "typed_fact_conflicts": 1,
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "cuda_device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "embedding_precision": "float16",
+    "cpu_vector_fallbacks": 0,
+    "financial_ranking_executed": false,
+    "evidence_role_evaluator_executed": false,
+    "public_information_gap_declarations": 0
+  },
+  "case_findings": {
+    "DELL": {
+      "material_set_complete_requests": 3,
+      "requirements_met": 7,
+      "requirements_total": 12,
+      "business_readout": "Current filings provide usable demand, backlog, results, margin, cash and working-capital material. The unresolved surfaces are precise order and customer counts plus AI-specific profit, cash and working-capital attribution bridges; these are not proved public-information gaps."
+    },
+    "MU": {
+      "material_set_complete_requests": 1,
+      "requirements_met": 1,
+      "requirements_total": 12,
+      "business_readout": "Current material contains HBM shipment, capacity, packaging and issuer counterevidence. More importantly, the compiled store already contains strategic customer agreement language including take-or-pay and binding multi-year volume commitments, yet none reached the 96-candidate orders or conversion union. This is an internal query and recall failure, not absent disclosure.",
+      "additional_boundary": "The S2 mart returns a typed conflict for net income because two different quarter-discrete periods are both labelled FY2025 Q3. The fail-closed behavior is correct, while fiscal-period identity remains an S2-owned repair."
+    },
+    "NVDA": {
+      "material_set_complete_requests": 1,
+      "requirements_met": 4,
+      "requirements_total": 12,
+      "business_readout": "Current material contains Blackwell shipment and demand commentary, capacity commitments, data-center constraints and extensive export-control counterevidence. The newest data-center revenue result exists in the compiled store but does not enter the reported-results union, proving a current-period recall and ranking defect.",
+      "additional_boundary": "Debt maturity and interest-income rows are projected under a Gross Profit and Gross Margin table title. This source-context bleed can make irrelevant numeric rows look like margin evidence and must be repaired before ranking or EvidenceDecision."
+    }
+  },
+  "cross_case_root_causes": [
+    {
+      "issue_id": "RC-S1-036",
+      "finding": "The collective material contract treats every metric and product term as an AND obligation, but reserves capacity only by whether a metric axis and product axis exist. Some groups therefore cannot be satisfied within their own declared capacity. It also duplicates authoritative S2 numeric obligations inside narrative material completeness.",
+      "impact": "A useful Evidence set is reported incomplete even when the relevant narrative and NumericFacts exist; partial coverage is hidden behind one false group result.",
+      "earliest_owner": "S1 material requirement and coverage contract",
+      "required_disposition": "Define explicit atomic, any-of and all-of topic semantics; keep S2 numeric authority separate from narrative Evidence; validate that every compiled requirement is satisfiable within its reserved capacity."
+    },
+    {
+      "issue_id": "RC-S1-037",
+      "finding": "Table objects inherit a broad record subsection as table title even when the parsed row belongs to a different table region.",
+      "impact": "NVDA debt maturity and interest rows can be presented as gross-margin objects, polluting retrieval before any reranker runs.",
+      "earliest_owner": "S1 source parsing and financial object compilation",
+      "required_disposition": "Bind every metric row to a local table title, local header and table-region lineage; fail closed or demote rows whose local context cannot be proved."
+    },
+    {
+      "issue_id": "RC-S1-038",
+      "finding": "High-value current objects already present in the store do not enter a 96-object union: MU take-or-pay agreements miss the orders and conversion routes, and the newest NVDA data-center result misses reported results.",
+      "impact": "More sources alone would not fix the missing research material; query language, temporal preference and candidate routing are losing known useful objects.",
+      "earliest_owner": "S1 QueryFacetPlan, lexical and dense recall, temporal ranking",
+      "required_disposition": "After object-context repair, add provider-neutral financial synonyms and explicit current-period signals, then prove the known objects enter the candidate pool without hard-coding their identities."
+    },
+    {
+      "issue_id": "RC-S2-006",
+      "finding": "MU net-income observations bind two different discrete quarters to the same FY2025 Q3 label.",
+      "impact": "S2 correctly refuses to choose an authoritative value, but S1 readiness cannot honestly call the requested number resolved.",
+      "earliest_owner": "S2 fiscal-period identity and NumericFact binding",
+      "required_disposition": "Repair period-end and fiscal-quarter identity, preserve the conflict receipt, and rerun only the affected NumericFact projection."
+    }
+  ],
+  "sequence_change": {
+    "previous_next_step": "implement current product EvidenceDecision GapEligibilityReceipt and PackReadiness producer",
+    "revised_next_step": "first repair RC-S1-037 then RC-S1-036 then RC-S1-038; rebuild affected objects and CUDA FP16 index; replay all three cases under new attempt identities; only then implement the product decision producer",
+    "reason": "A decision producer built on unsound material requirements, polluted table objects and known recall misses would only make incorrect incompleteness more official."
+  },
+  "qualification_boundary": {
+    "proved": [
+      "all three current cases execute the same provider-neutral request and replay seam",
+      "candidate ceilings and earliest observable candidate loss are product-visible",
+      "no incomplete request is automatically declared a public-information gap",
+      "all learned vector work used CUDA float16 with zero CPU fallback"
+    ],
+    "not_proved": [
+      "financial object context correctness",
+      "material requirement satisfiability and partial-coverage semantics",
+      "known-object recall below or at candidate ceilings",
+      "financial reranking and Evidence Role execution",
+      "product EvidenceDecision GapEligibilityReceipt and PackReadiness",
+      "qualified-human blind or stable S1 acceptance"
+    ]
+  },
+  "known_boundary": "This is a three-case development audit, not an S1 pass. Candidate identifiers and full candidate text remain in restricted private captures. No qrel, gold, hidden label, generation model, network source or public-gap authority was used."
+}

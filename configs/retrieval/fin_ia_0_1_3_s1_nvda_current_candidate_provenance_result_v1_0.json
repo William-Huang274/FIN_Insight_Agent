@@ -1,0 +1,366 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false,
+    "product_publication": false,
+    "s1_qualification_claimed": false
+  },
+  "case_key": "NVDA",
+  "cuda_execution": {
+    "cpu_vector_fallbacks": 0,
+    "device": "cuda:0",
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "embedding_precision": "float16",
+    "embedding_runtime_ref": "src/retrieval/embedding_runtime.py",
+    "embedding_runtime_sha256": "e1778f246f56c2fe3ae5eb3baf09b1e0b647e95376beccd54b69a2c1885bada1",
+    "torch_version": "2.10.0+cu126"
+  },
+  "fallback_compiler_receipt_digests": [
+    "3510f4dc5c768c281c3d4cb3b8082cdce77890ae9c5c302cb351d552ef2fc4d3",
+    "e2d7d5ab1156f4b6fc919635f0294da433e153f16ca47419395690a9b601eebc",
+    "cd4fc001a64ce42af6279eeda6f8ccdb950a716eddd2bb8616b1bb18bacf3932",
+    "d16331a1b69a82839273c37a4e9a90d653278b6f5f6c0302b9cd62d85134deac",
+    "bbfaa3bbd1c41c97be341c77f919a63e358bc9c53dc64c08d56f1a4a3ad5157e",
+    "5e720d74c1d0e6f44c6aa6fd2572f0f25875810f5da68b28630fd2a4b46e5fc2",
+    "f5464aba006ba19738a55e1dbfa85fe6b3830f0aebd61b912841fc8b21e4fe1b",
+    "34c353cb7644c577e863a7d970c59bfbdecceab420de0bb5e9d3191e6160d6e2"
+  ],
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1_candidate_provenance_replay/nvda-r1/full_result.json",
+  "full_result_sha256": "e378470bdc409a1e0912214a22902d9f1ca36c334bbd1d2996fbd714616541cd",
+  "known_boundary": "This zero-model S1 development replay compiles the current case question, kernel facets and provider-neutral ontology into the registered Workbench BM25 plus Qwen CUDA path. It is not a model-planned dynamic research run, does not read qrels, gold or hidden labels, and grants no Evidence, NumericFact, public-gap, S1 qualification or publication authority.",
+  "material_scope_mode": "deterministic_scope_ready",
+  "prepared_from_commit": "a720fd06a5e9f6c4434eee6e46c6636a35fbe385",
+  "projection_digest": "8cf98ab3841a533373a54ef6ea14d92c69dbd77a274ddcc171635d00574af7f3",
+  "recorded_at": "2026-08-18T11:02:14+00:00",
+  "replay_mode": "current_case_question_kernel_ontology_deterministic_scope",
+  "request_diagnostics": [
+    {
+      "candidate_union_count": 96,
+      "candidate_union_limit": 96,
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "facet_ids": [
+        "orders_and_backlog"
+      ],
+      "first_stage_ceiling_reached": {
+        "bm25": true,
+        "qwen": true
+      },
+      "hard_reserved_material_candidate_count": 1,
+      "material_review_order_candidate_count": 16,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 3,
+      "met_requirement_ids": [
+        "MER::5d34418873fd13e4ccd9"
+      ],
+      "public_information_gap_eligible": false,
+      "request_id": "REQ::cf20af37f40f32db0d70f3de",
+      "requirement_group_count": 2,
+      "requirement_loss_stage_counts": {
+        "at_or_before_bounded_candidate_union_ceiling": 1,
+        "none_observed_through_candidate_review": 1
+      },
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 16,
+      "union_ceiling_reached": true,
+      "unmet_requirement_ids": [
+        "MER::14e3f39e83bf5cf02660"
+      ]
+    },
+    {
+      "candidate_union_count": 96,
+      "candidate_union_limit": 96,
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "facet_ids": [
+        "conversion_and_durability"
+      ],
+      "first_stage_ceiling_reached": {
+        "bm25": true,
+        "qwen": true
+      },
+      "hard_reserved_material_candidate_count": 1,
+      "material_review_order_candidate_count": 16,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 3,
+      "met_requirement_ids": [
+        "MER::3eb1813a1d6f2225fde5"
+      ],
+      "public_information_gap_eligible": false,
+      "request_id": "REQ::e57ad88297364b6daa67612a",
+      "requirement_group_count": 2,
+      "requirement_loss_stage_counts": {
+        "at_or_before_bounded_candidate_union_ceiling": 1,
+        "none_observed_through_candidate_review": 1
+      },
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 16,
+      "union_ceiling_reached": true,
+      "unmet_requirement_ids": [
+        "MER::ce99587e0186481aaf5f"
+      ]
+    },
+    {
+      "candidate_union_count": 96,
+      "candidate_union_limit": 96,
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "facet_ids": [
+        "reported_results"
+      ],
+      "first_stage_ceiling_reached": {
+        "bm25": true,
+        "qwen": true
+      },
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 16,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 2,
+      "met_requirement_ids": [],
+      "public_information_gap_eligible": false,
+      "request_id": "REQ::bc817df38edd517b24d34383",
+      "requirement_group_count": 1,
+      "requirement_loss_stage_counts": {
+        "at_or_before_bounded_candidate_union_ceiling": 1
+      },
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 16,
+      "union_ceiling_reached": true,
+      "unmet_requirement_ids": [
+        "MER::79647e0bd779a34b5a6a"
+      ]
+    },
+    {
+      "candidate_union_count": 96,
+      "candidate_union_limit": 96,
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "facet_ids": [
+        "margin_and_incremental_profit"
+      ],
+      "first_stage_ceiling_reached": {
+        "bm25": true,
+        "qwen": true
+      },
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 16,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 2,
+      "met_requirement_ids": [],
+      "public_information_gap_eligible": false,
+      "request_id": "REQ::04e15a1ed11e489f11546f8f",
+      "requirement_group_count": 1,
+      "requirement_loss_stage_counts": {
+        "at_or_before_bounded_candidate_union_ceiling": 1
+      },
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 16,
+      "union_ceiling_reached": true,
+      "unmet_requirement_ids": [
+        "MER::f3e477b5f3f858fbdd98"
+      ]
+    },
+    {
+      "candidate_union_count": 96,
+      "candidate_union_limit": 96,
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "facet_ids": [
+        "subject_execution"
+      ],
+      "first_stage_ceiling_reached": {
+        "bm25": true,
+        "qwen": true
+      },
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 16,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 3,
+      "met_requirement_ids": [],
+      "public_information_gap_eligible": false,
+      "request_id": "REQ::da9efec898d0c4dec96c3519",
+      "requirement_group_count": 2,
+      "requirement_loss_stage_counts": {
+        "at_or_before_bounded_candidate_union_ceiling": 2
+      },
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 16,
+      "union_ceiling_reached": true,
+      "unmet_requirement_ids": [
+        "MER::6a25f40da7cba5a01c38",
+        "MER::4f8ff16eca0eb640ddc2"
+      ]
+    },
+    {
+      "candidate_union_count": 96,
+      "candidate_union_limit": 96,
+      "earliest_observed_limitation": "none_observed_through_candidate_review",
+      "facet_ids": [
+        "issuer_counterevidence"
+      ],
+      "first_stage_ceiling_reached": {
+        "bm25": true,
+        "qwen": true
+      },
+      "hard_reserved_material_candidate_count": 1,
+      "material_review_order_candidate_count": 16,
+      "material_scope_ready": true,
+      "material_set_complete": true,
+      "maximum_reserved_capacity": 1,
+      "met_requirement_ids": [
+        "MER::ef24fe3c3e0cacd47c4c"
+      ],
+      "public_information_gap_eligible": false,
+      "request_id": "REQ::3b255e85a116bbecbe0e8358",
+      "requirement_group_count": 1,
+      "requirement_loss_stage_counts": {
+        "none_observed_through_candidate_review": 1
+      },
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 16,
+      "union_ceiling_reached": true,
+      "unmet_requirement_ids": []
+    },
+    {
+      "candidate_union_count": 96,
+      "candidate_union_limit": 96,
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "facet_ids": [
+        "upstream_or_demand_counterevidence"
+      ],
+      "first_stage_ceiling_reached": {
+        "bm25": true,
+        "qwen": true
+      },
+      "hard_reserved_material_candidate_count": 1,
+      "material_review_order_candidate_count": 16,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 2,
+      "met_requirement_ids": [
+        "MER::abf3277f601d5fba49f2"
+      ],
+      "public_information_gap_eligible": false,
+      "request_id": "REQ::c6861aa99a630a65b6a1d069",
+      "requirement_group_count": 2,
+      "requirement_loss_stage_counts": {
+        "at_or_before_bounded_candidate_union_ceiling": 1,
+        "none_observed_through_candidate_review": 1
+      },
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 16,
+      "union_ceiling_reached": true,
+      "unmet_requirement_ids": [
+        "MER::dd536ab7533710ccc397"
+      ]
+    },
+    {
+      "candidate_union_count": 96,
+      "candidate_union_limit": 96,
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "facet_ids": [
+        "issuer_policy_exposure"
+      ],
+      "first_stage_ceiling_reached": {
+        "bm25": true,
+        "qwen": true
+      },
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 14,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 1,
+      "met_requirement_ids": [],
+      "public_information_gap_eligible": false,
+      "request_id": "REQ::38c5bcb9e374ae86e5925ed6",
+      "requirement_group_count": 1,
+      "requirement_loss_stage_counts": {
+        "at_or_before_bounded_candidate_union_ceiling": 1
+      },
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 14,
+      "union_ceiling_reached": true,
+      "unmet_requirement_ids": [
+        "MER::08cb78128b66b891fffd"
+      ]
+    }
+  ],
+  "research_plan_digest": "d921cc8d80b2db2b4ef80e8e84e9f73bcaf259f4439862724b81b57138b7f5ca",
+  "result_digest": "1081d9b112ee74c257468d4c9431a9658117b2e719cdd367ed7a50217966eeff",
+  "schema_version": "fin_ia_s1_current_candidate_provenance_replay_v1_0",
+  "scope_compilation_digest": null,
+  "source_bindings": {
+    "candidate_ceiling_provenance": {
+      "ref": "src/retrieval/candidate_ceiling_provenance.py",
+      "sha256": "f7af050d016d7cd6cbcb0ac7b4ac5b722a716c93cda1c4b06a906161083ae643"
+    },
+    "hybrid_candidate_runtime": {
+      "ref": "src/retrieval/hybrid_candidate_runtime.py",
+      "sha256": "8de8a1a976a63e64d356ec8b4632dab671c2c5c6a869377647bae1b8bf36e523"
+    },
+    "intent_ontology": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+      "sha256": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242"
+    },
+    "kernel": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json",
+      "sha256": "faf85fb3b3074b979acf0b12e5e20dba934d94380383c5241164e2f4c899f1d2"
+    },
+    "material_runtime_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_0.json",
+      "sha256": "3f22aca6d3a7b18a9f096da24b9741573556c473ac9e782b83ee40a8b106e160"
+    },
+    "objective": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s1_nvda_current_candidate_provenance_objective_v1_0.json",
+      "sha256": "c73cbc618f87896e92f9369f8ec54c69ce3020658a92411e72efb829cf5c8e52"
+    },
+    "planner_atoms": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s1_nvda_current_candidate_provenance_atoms_v1_0.json",
+      "sha256": "d1e4a8f799b9cec51c55012573a1cbb85c8ba811278283ec2cdc36f9ca03c957"
+    },
+    "planning_policy": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_1.json",
+      "sha256": "e16119cf2b04f82d993c8ac9e465f161084fc01921c403dd88a62661dec236c4"
+    },
+    "runtime_registry": {
+      "ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+      "sha256": "e7c33b5eec11228b572133f3a808ba44ee0af07bf0c0bf9a65a3b3b98a730e0c"
+    },
+    "workbench_service": {
+      "ref": "apps/workbench/backend/application/research_retrieval_service.py",
+      "sha256": "9b224da76f6808d645a0dab401dfa478d28697905882f50de7799c888ad22929"
+    },
+    "workspace_catalog": {
+      "ref": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_3.json",
+      "sha256": "a527cfee8e599f0677da7290954d0c39e5428bed223eebc8f2c5ade413c4edb1"
+    }
+  },
+  "status": "completed_scope_ready_material_sets_incomplete",
+  "summary": {
+    "compiled_lane_count": 8,
+    "deferred_atom_count": 2,
+    "evidence_request_count": 8,
+    "execution_request_budget": 8,
+    "generation_model_calls": 0,
+    "hybrid_candidate_runtime": "bm25_plus_qwen_local_embedding",
+    "hybrid_selected_candidate_count": 128,
+    "local_embedding_inference_batches": 1,
+    "material_scope_ready_request_count": 8,
+    "material_scope_required_request_count": 0,
+    "material_set_complete_request_count": 1,
+    "model_calls": 0,
+    "network_calls": 0,
+    "nonempty_lane_count": 8,
+    "numeric_fact_count": 31,
+    "proposed_atom_count": 10,
+    "required_slot_count": 6,
+    "selected_atom_count": 8,
+    "typed_fact_conflict_count": 0,
+    "typed_fact_gap_count": 10,
+    "typed_fact_request_count": 20,
+    "typed_fact_resolved_count": 10,
+    "unique_narrative_candidates": 18
+  }
+}

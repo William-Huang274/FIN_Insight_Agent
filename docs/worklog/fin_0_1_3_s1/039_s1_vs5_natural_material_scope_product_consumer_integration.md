@@ -63,3 +63,11 @@ R2 已从 clean／synced 提交 `ae62e8b3...` 通过 Project OS preflight 后 ex
 R2 仍为 `terminal_failed_no_retry`，但最早责任已前移到 provider-neutral 合同编译器。模型可见 `output_contract` 只列字段名，没有列 validator 已经要求的三个顶层字段、三组 closed enum 及跨字段绑定规则。模型返回了 8 个 request row、19 个 product disposition 和 12 个 material atom，却自行使用 `request_scope`、`direct`、`span_2026_2027`、`all_products_all_metrics` 等未授权词汇；validator 正确以 `research_material_scope_output_fields_invalid` 拒绝。
 
 因此 R2 不能简单归因于 DeepSeek，也不应 microbatch、加 token、放宽 validator 或本地偷偷改写输出。R2 保持不可变且禁止重试。下一修复必须从 policy／validator 同一词汇表编译精确顶层结构、closed enum 与 binding rule，补 schema-drift、R2 replay 和跨案例零调用测试；模型可见消息改变后必须生成新的 clean-commit-bound input。只有新的 Project OS authority 可另行允许一次 R3，R3 仍不是产品 replay、Evidence、Pack Readiness 或 S1 资格。
+
+## R3 合同通过与产品回接的新最早责任层
+
+R3 在 clean／synced 提交 `94fef96e...` 上通过 Project OS preflight 后 exact-once 执行。它使用与 R2 相同的 8 个请求、相同的产品投影和非 thinking profile，只改变 provider-neutral 模型可见合同。结果为 HTTP 200、`finish_reason=stop`、prompt 3,754、completion 1,752、reasoning 0；8 个 request、19 个 product disposition、12 个 requirement atom 全部通过本地合同，0 retry／fallback／检索／候选读取／产品写入。RC-S1-027 因而关闭，R3 不需要也不允许重跑。
+
+同一不可变 R3 payload 随后接回当前 Workbench BM25＋Qwen CUDA／FP16 路径。运行在候选选择前以 `material_requirement_review_capacity_insufficient` 停止；这不是模型、Embedding、排序或公开资料 gap。审计显示 `_expand_atom` 把本应作为一个集合审阅的 `collective_axes` 原子按 metric×product 拆成单例 requirement：12 个 atom 被放大为 73 个 group、最坏预留容量 132。第一、二、三请求分别需要 27、21、36 个审阅位，而每请求 `review_k=16`；按 EvidenceSetCoverage v1.1 已有的集合语义，它们应只需 3、3、2 个位置。
+
+因此下一项限定为 RC-S1-028 零调用修复：每个非时间型 `collective_axes` atom 编译成一个保留相关多轴的 requirement；跨期 `single_binding` 原子性、候选身份边界、review_k 和 R3 payload 均不变。补足多指标＋多产品、跨期、排列变化和 DELL／MU／NVDA 回归后，复用同一 R3 payload 回接当前 CUDA 产品链。只有到达真实候选选择，才继续审查 CandidateDecision、Evidence Gate、S2 权威和 Pack Readiness。

@@ -1,0 +1,76 @@
+{
+  "schema_version": "fin_ia_s3_material_scope_canary_contract_assessment_v1_2",
+  "assessment_id": "FIN-0.1.3-S3-DELL-MATERIAL-SCOPE-R3-CONTRACT-ASSESSMENT",
+  "status": "R3_contract_valid_product_replay_blocked_by_collective_axis_cartesian_expansion",
+  "recorded_at": "2026-08-18T15:43:00+08:00",
+  "case_key": "DELL",
+  "cell_id": "MATERIAL_SCOPE",
+  "immutable_attempt": {
+    "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_material_scope_canary_live_result_v1_2.json",
+    "result_sha256": "2ff7e79540c27287507af48860db2eb513589a313f809d84d482a52b0198f240",
+    "result_digest": "a7982fc7397f26e6529d723f6c9a36308cbf5b96f9b56d84ff4e8edb3dfc2108",
+    "full_result_ref": "data/workbench_private/fin_0_1_3_s3_material_scope_canary/dell-r3/full_result.json",
+    "full_result_sha256": "8cb8e09c7ac29dd597df47833b807e55962e85c53f16603bbda7ce87f732ba09",
+    "request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_material_scope_canary/FIN013-S3-DELL-MATERIAL-SCOPE-CONTRACT-REPAIR/R3/model_visible_request.json",
+    "request_capture_sha256": "1b7d969a9301def9f6b84aaaf1b655bd5631ba3a20f1bc189345624e5d7832ad",
+    "request_digest": "f6967a0b64ad5a184862a3e204ef9588eb702adee269dab054d3fe447e8308e9",
+    "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_material_scope_canary/FIN013-S3-DELL-MATERIAL-SCOPE-CONTRACT-REPAIR/R3/provider_response.json",
+    "response_capture_sha256": "c2883039f81cd5e319ba7ae551b72fa964e7c8c25fae85fcea224532f3fe256b",
+    "response_digest": "86ec536a727c23b126c791a9760f909b22989db96cb09303761fc3015d7124e3"
+  },
+  "observed": {
+    "http_status": 200,
+    "finish_reason": "stop",
+    "prompt_tokens": 3754,
+    "completion_tokens": 1752,
+    "reasoning_tokens": 0,
+    "required_request_count": 8,
+    "compiled_request_count": 8,
+    "product_dispositions": 19,
+    "requirement_atoms": 12,
+    "compiled_material_requirements": 73,
+    "transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "candidate_or_reference_inputs_read": false,
+    "contract_valid": true,
+    "product_publication": false
+  },
+  "zero_call_product_replay": {
+    "same_research_plan_digest": "a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80",
+    "same_scope_compilation_digest": "d51f15b3e71ecb16aeed4ab8b5edbf71c63ed7598dce8ecb07bf8acc69980a4e",
+    "runtime": "current_Workbench_BM25_plus_Qwen_CUDA_FP16",
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "failure_code": "material_requirement_review_capacity_insufficient",
+    "failure_phase": "S1_material_requirement_plan_before_candidate_selection",
+    "per_request_current_group_counts": [15, 12, 18, 8, 6, 8, 2, 4],
+    "per_request_current_reserved_capacities": [27, 21, 36, 16, 12, 14, 2, 4],
+    "review_k_per_request": 16,
+    "collective_atom_group_counts_after_expected_repair": [2, 2, 1, 1, 1, 2, 1, 2],
+    "collective_atom_reserved_capacities_after_expected_repair": [3, 3, 2, 2, 2, 3, 1, 2]
+  },
+  "root_cause": {
+    "earliest_responsible_layer": "provider_neutral_research_material_scope_to_S1_requirement_plan_compiler",
+    "classification": "collective_axes_atom_expanded_as_metric_product_cartesian_requirements",
+    "finding": "The R3 model submitted twelve valid collective-axis atoms. The local _expand_atom compiler converted each multi-metric, multi-product atom into one requirement per metric-product pair even though EvidenceSetCoverage v1.1 defines collective_axes as one requirement that may be satisfied by several candidates covering the selected axes. This inflated twelve atoms into seventy-three groups and a worst-case capacity of 132, causing the first DELL request to fail before candidate selection.",
+    "excluded_causes": [
+      "DeepSeek_contract_noncompliance",
+      "provider_or_network_failure",
+      "CUDA_or_embedding_failure",
+      "candidate_ranking_failure",
+      "public_information_gap",
+      "insufficient_token_budget",
+      "review_k_too_small_without_compiler_inflation"
+    ]
+  },
+  "disposition": {
+    "R3_retry_authorized": false,
+    "R3_result_mutation_authorized": false,
+    "review_k_increase_authorized_now": false,
+    "new_model_call_required": false,
+    "required_fix": "Compile each non-temporal collective_axes atom as one correlated multi-axis requirement. Preserve single-binding temporal semantics, candidate identity boundaries and the existing review_k. Add multi-metric, multi-product, temporal, permutation and DELL/MU/NVDA regression, then replay the immutable R3 payload through the same current Workbench CUDA path.",
+    "next_boundary": "Only after the same R3 payload reaches candidate selection may CandidateDecision, Evidence Gate, S2 authority and Pack Readiness be assessed."
+  },
+  "known_boundary": "R3 closes the model-visible contract compiler defect but does not qualify material-scope content, candidate selection, Evidence, NumericFact, Pack Readiness, S1, publication or release."
+}

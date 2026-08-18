@@ -259,7 +259,7 @@ def verify_capture_bound_object(
     return {**body, "receipt_digest": canonical_digest(body)}
 
 
-def _build_evidence_pair(
+def build_capture_bound_evidence_pair(
     *,
     case_key: str,
     research_as_of: str,
@@ -513,7 +513,7 @@ def build_capture_bound_pack_successor(
                 "supplement_positive_action_invalid",
             )
             if action == "add_capture_bound_evidence":
-                item, material = _build_evidence_pair(
+                item, material = build_capture_bound_evidence_pair(
                     case_key=case_key,
                     research_as_of=research_as_of,
                     compiled_object=compiled_object,
@@ -1060,6 +1060,7 @@ __all__ = [
     "SUPPLEMENT_SUMMARY_SET_SCHEMA_VERSION",
     "SupplementVerticalError",
     "WORKBENCH_SCHEMA_VERSION",
+    "build_capture_bound_evidence_pair",
     "build_capture_bound_pack_successor",
     "compile_supplement_workbench_projection",
     "project_capture_bound_supplement_lineage",

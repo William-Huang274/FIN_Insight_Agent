@@ -1,0 +1,465 @@
+from __future__ import annotations
+
+from collections import Counter
+from copy import deepcopy
+from pathlib import Path
+from typing import Any, Callable, Mapping, Sequence
+
+from .evidence_role_v3 import evaluate_evidence_role
+from .query_plan import canonical_digest
+from .supplement_vertical import (
+    build_capture_bound_evidence_pair,
+    verify_capture_bound_object,
+)
+from sec_agent.research.reviewed_evidence_pack import (
+    validate_reviewed_evidence_pack,
+)
+
+
+POLICY_SCHEMA_VERSION = "fin_ia_s1_product_evidence_adjudication_policy_v1_0"
+RESULT_SCHEMA_VERSION = "fin_ia_s1_product_evidence_successor_result_v1_0"
+DECISION_ACTIONS = (
+    "accept_for_requirements",
+    "reject_for_current_scope",
+    "delegate_to_s2_numeric_authority",
+)
+
+
+class ProductEvidenceSuccessorError(ValueError):
+    """A controlled Candidate-to-Evidence successor violated authority."""
+
+
+def _require(condition: bool, code: str) -> None:
+    if not condition:
+        raise ProductEvidenceSuccessorError(code)
+
+
+def _mapping(value: object, code: str) -> Mapping[str, Any]:
+    _require(isinstance(value, Mapping), code)
+    return value
+
+
+def _review_items_by_ref(packet: Mapping[str, Any]) -> dict[str, Mapping[str, Any]]:
+    items = [
+        _mapping(item, "product_evidence_review_item_invalid")
+        for request in packet.get("requests") or ()
+        for item in _mapping(
+            request, "product_evidence_review_request_invalid"
+        ).get("review_items")
+        or ()
+    ]
+    by_ref = {str(item.get("review_item_ref") or ""): item for item in items}
+    _require(
+        items
+        and all(by_ref)
+        and len(items) == len(by_ref)
+        and len(items) == int(packet.get("review_item_count") or 0),
+        "product_evidence_review_item_identity_invalid",
+    )
+    return by_ref
+
+
+def _request_lanes(
+    product_projection: Mapping[str, Any],
+) -> dict[str, Mapping[str, Any]]:
+    lanes: dict[str, Mapping[str, Any]] = {}
+    for raw_result in product_projection.get("request_results") or ():
+        result = _mapping(raw_result, "product_evidence_request_result_invalid")
+        request = _mapping(
+            result.get("request"), "product_evidence_request_missing"
+        )
+        request_id = str(request.get("request_id") or "")
+        lane_rows = list(result.get("lanes") or ())
+        _require(
+            request_id and len(lane_rows) == 1 and request_id not in lanes,
+            "product_evidence_request_lane_identity_invalid",
+        )
+        lanes[request_id] = _mapping(
+            _mapping(
+                lane_rows[0], "product_evidence_lane_projection_invalid"
+            ).get("lane"),
+            "product_evidence_lane_missing",
+        )
+    return lanes
+
+
+def _relationship_direction(
+    lane: Mapping[str, Any], *, owner: str, subject: str
+) -> str:
+    directions = {
+        str(row.get("evidence_owner_ticker") or "").upper(): str(
+            row.get("relationship_direction") or ""
+        )
+        for row in lane.get("owner_queries") or ()
+        if isinstance(row, Mapping)
+    }
+    direction = directions.get(owner)
+    if not direction and owner == subject:
+        direction = "subject_self_disclosure"
+    _require(bool(direction), "product_evidence_relationship_direction_missing")
+    return direction
+
+
+def build_product_evidence_successor(
+    *,
+    predecessor: Mapping[str, Any],
+    product_projection: Mapping[str, Any],
+    candidate_review_packet: Mapping[str, Any],
+    policy: Mapping[str, Any],
+    compiled_objects_by_id: Mapping[str, Mapping[str, Any]],
+    source_records_by_id: Mapping[str, Mapping[str, Any]],
+    parent_documents_by_id: Mapping[str, Mapping[str, Any]],
+    capture_resolver: Callable[[str], Path],
+    recorded_at: str,
+    legacy_capture_attestations_by_parent_id: Mapping[
+        str, Mapping[str, Any]
+    ]
+    | None = None,
+) -> dict[str, Any]:
+    """Materialize an internally reviewed, proposition-bound Evidence Pack.
+
+    The policy must decide every item in the bounded review packet.  Narrative
+    claims may become capture-bound Evidence only for named requirement IDs.
+    Metric rows can only be delegated to S2; this function never grants numeric
+    authority or turns a table row into narrative Evidence.
+    """
+
+    validate_reviewed_evidence_pack(predecessor)
+    normalized_policy = deepcopy(dict(policy))
+    policy_digest = str(normalized_policy.pop("policy_digest", ""))
+    case_key = str(policy.get("case_key") or "").upper()
+    subject = str(product_projection.get("case_key") or "").upper()
+    research_as_of = str(policy.get("research_as_of") or "")
+    packet_digest = str(candidate_review_packet.get("review_packet_digest") or "")
+    _require(
+        policy.get("schema_version") == POLICY_SCHEMA_VERSION
+        and policy.get("status") == "approved_internal_engineering_adjudication"
+        and policy_digest == canonical_digest(normalized_policy)
+        and case_key
+        and case_key == subject
+        and case_key == str(predecessor.get("case_key") or "").upper()
+        and case_key == str(candidate_review_packet.get("case_key") or "").upper()
+        and research_as_of
+        == str((product_projection.get("objective") or {}).get("research_as_of") or "")
+        and research_as_of == str(predecessor.get("research_as_of") or "")
+        and str(policy.get("candidate_review_packet_digest") or "") == packet_digest
+        and str(policy.get("predecessor_pack_payload_digest") or "")
+        == str(predecessor.get("pack_payload_digest") or ""),
+        "product_evidence_policy_binding_invalid",
+    )
+    _require(
+        policy.get("qualified_human_review") is False
+        and policy.get("S1_qualification_authorized") is False
+        and policy.get("product_publication_authorized") is False,
+        "product_evidence_policy_authority_invalid",
+    )
+
+    review_by_ref = _review_items_by_ref(candidate_review_packet)
+    lanes = _request_lanes(product_projection)
+    raw_decisions = [
+        _mapping(value, "product_evidence_policy_decision_invalid")
+        for value in policy.get("decisions") or ()
+    ]
+    decision_by_ref = {
+        str(value.get("review_item_ref") or ""): value for value in raw_decisions
+    }
+    _require(
+        len(raw_decisions) == len(decision_by_ref)
+        and set(decision_by_ref) == set(review_by_ref),
+        "product_evidence_policy_decision_coverage_invalid",
+    )
+
+    accepted_by_object: dict[str, list[tuple[Mapping[str, Any], Mapping[str, Any]]]] = {}
+    decision_receipts: list[dict[str, Any]] = []
+    for review_ref in sorted(review_by_ref):
+        review = review_by_ref[review_ref]
+        decision = decision_by_ref[review_ref]
+        action = str(decision.get("action") or "")
+        _require(
+            action in DECISION_ACTIONS
+            and str(decision.get("review_item_digest") or "")
+            == str(review.get("review_item_digest") or ""),
+            "product_evidence_decision_identity_invalid",
+        )
+        object_id = str(review.get("compiled_object_id") or "")
+        object_kind = str(review.get("object_kind") or "")
+        allowed_requirement_ids = {
+            str(value.get("requirement_id") or "")
+            for value in review.get("requirement_contexts") or ()
+            if isinstance(value, Mapping)
+        }
+        requirement_ids = tuple(
+            sorted(str(value) for value in decision.get("requirement_ids") or ())
+        )
+        if action == "accept_for_requirements":
+            _require(
+                object_kind == "claim"
+                and requirement_ids
+                and set(requirement_ids) <= allowed_requirement_ids
+                and str(decision.get("business_meaning_zh") or "")
+                and str(decision.get("claim_boundary_zh") or ""),
+                "product_evidence_acceptance_scope_invalid",
+            )
+            accepted_by_object.setdefault(object_id, []).append((review, decision))
+        elif action == "delegate_to_s2_numeric_authority":
+            _require(
+                object_kind == "metric_row" and not requirement_ids,
+                "product_evidence_numeric_delegation_invalid",
+            )
+        else:
+            _require(
+                not requirement_ids,
+                "product_evidence_rejection_requirement_binding_invalid",
+            )
+        receipt_body = {
+            "review_item_ref": review_ref,
+            "review_item_digest": review.get("review_item_digest"),
+            "compiled_object_id": object_id,
+            "action": action,
+            "requirement_ids": list(requirement_ids),
+            "reason_codes": sorted(
+                str(value) for value in decision.get("reason_codes") or ()
+            ),
+            "adjudicator_class": "internal_engineering_not_qualified_human",
+            "candidate_text_promoted": False,
+            "numeric_authority_granted": False,
+            "S1_qualification_authorized": False,
+        }
+        decision_receipts.append(
+            {**receipt_body, "decision_receipt_digest": canonical_digest(receipt_body)}
+        )
+
+    predecessor_items = [
+        deepcopy(dict(value)) for value in predecessor.get("evidence_items") or ()
+    ]
+    predecessor_materials = [
+        deepcopy(dict(value)) for value in predecessor.get("source_materials") or ()
+    ]
+    accepted_object_ids = set(accepted_by_object)
+    retired_items = [
+        row
+        for row in predecessor_items
+        if str(row.get("compiled_object_id") or "") in accepted_object_ids
+    ]
+    live_items = [
+        row
+        for row in predecessor_items
+        if str(row.get("compiled_object_id") or "") not in accepted_object_ids
+    ]
+    live_material_refs = {
+        str(row.get("source_material_ref") or "") for row in live_items
+    }
+    materials = [
+        row
+        for row in predecessor_materials
+        if str(row.get("material_ref") or "") in live_material_refs
+    ]
+
+    capture_receipts: list[dict[str, Any]] = []
+    added_items: list[dict[str, Any]] = []
+    added_materials: list[dict[str, Any]] = []
+    for object_id in sorted(accepted_by_object):
+        rows = accepted_by_object[object_id]
+        compiled = _mapping(
+            compiled_objects_by_id.get(object_id),
+            f"product_evidence_compiled_object_missing:{object_id}",
+        )
+        base = _mapping(
+            compiled.get("base_object_view"),
+            "product_evidence_compiled_base_missing",
+        )
+        source_id = str(base.get("source_record_id") or "")
+        source = _mapping(
+            source_records_by_id.get(source_id),
+            f"product_evidence_source_record_missing:{source_id}",
+        )
+        metadata = _mapping(
+            source.get("metadata"), "product_evidence_source_metadata_missing"
+        )
+        parent_id = str(metadata.get("parent_document_id") or "")
+        parent = _mapping(
+            parent_documents_by_id.get(parent_id),
+            f"product_evidence_parent_document_missing:{parent_id}",
+        )
+        capture = verify_capture_bound_object(
+            compiled_object=compiled,
+            source_record=source,
+            parent_document=parent,
+            research_as_of=research_as_of,
+            capture_resolver=capture_resolver,
+            legacy_capture_attestation=(
+                dict(legacy_capture_attestations_by_parent_id or {}).get(parent_id)
+            ),
+        )
+        capture_receipts.append(capture)
+        slot_bindings: list[dict[str, Any]] = []
+        relationship_directions: set[str] = set()
+        for review, decision in sorted(
+            rows, key=lambda value: str(value[0].get("request_id") or "")
+        ):
+            request_id = str(review.get("request_id") or "")
+            lane = _mapping(
+                lanes.get(request_id),
+                f"product_evidence_lane_missing:{request_id}",
+            )
+            owner = str(review.get("evidence_owner_ticker") or "").upper()
+            direction = _relationship_direction(
+                lane, owner=owner, subject=subject
+            )
+            role = evaluate_evidence_role(
+                {
+                    **dict(base),
+                    "document_text": base.get("surface_text"),
+                    "object_kind": compiled.get("object_kind"),
+                },
+                slot_id=str(lane.get("slot_id") or ""),
+                facet_id=str(lane.get("facet_id") or ""),
+                subject_ticker=subject,
+                evidence_owner_ticker=owner,
+                relationship_direction=direction,
+            )
+            _require(
+                role.compatibility == "compatible",
+                "product_evidence_role_incompatible",
+            )
+            relationship_directions.add(direction)
+            slot_bindings.append(
+                {
+                    "slot_id": lane.get("slot_id"),
+                    "facet_ids": [lane.get("facet_id")],
+                    "requirement_ids": sorted(
+                        str(value) for value in decision.get("requirement_ids") or ()
+                    ),
+                    "business_meaning_zh": decision.get("business_meaning_zh"),
+                    "claim_boundary_zh": decision.get("claim_boundary_zh"),
+                    "qualification_id": policy.get("policy_id"),
+                }
+            )
+        item, material = build_capture_bound_evidence_pair(
+            case_key=case_key,
+            research_as_of=research_as_of,
+            compiled_object=compiled,
+            source_record=source,
+            capture_receipt=capture,
+            evidence_spec={
+                "slot_bindings": slot_bindings,
+                "relationship_directions": sorted(relationship_directions),
+                "disposition": (
+                    "accepted_direct_source_evidence"
+                    if str(base.get("ticker") or "").upper() == subject
+                    else "accepted_bounded_context_evidence"
+                ),
+            },
+        )
+        added_items.append(item)
+        added_materials.append(material)
+
+    target_ids = {str(row.get("target_id") or "") for row in live_items}
+    material_refs = {str(row.get("material_ref") or "") for row in materials}
+    for item, material in zip(added_items, added_materials, strict=True):
+        _require(
+            str(item.get("target_id") or "") not in target_ids
+            and str(material.get("material_ref") or "") not in material_refs,
+            "product_evidence_successor_identity_collision",
+        )
+        target_ids.add(str(item.get("target_id") or ""))
+        material_refs.add(str(material.get("material_ref") or ""))
+        live_items.append(item)
+        materials.append(material)
+
+    action_counts = Counter(
+        str(value.get("action") or "") for value in raw_decisions
+    )
+    successor = deepcopy(dict(predecessor))
+    successor.pop("pack_payload_digest", None)
+    successor["evidence_items"] = live_items
+    successor["source_materials"] = materials
+    successor["observed_counts"] = {
+        **dict(successor.get("observed_counts") or {}),
+        "accepted_evidence_items": len(live_items),
+        "direct_evidence_items": sum(
+            row.get("disposition") == "accepted_direct_source_evidence"
+            for row in live_items
+        ),
+        "bounded_context_items": sum(
+            row.get("disposition") == "accepted_bounded_context_evidence"
+            for row in live_items
+        ),
+        "source_materials": len(materials),
+        "residual_gaps": len(successor.get("residual_gaps") or ()),
+    }
+    successor["content_gate_basis"] = (
+        "reviewed_predecessor_plus_proposition_bound_capture_first_adjudication"
+    )
+    successor["successor_lineage"] = {
+        "recorded_at": recorded_at,
+        "policy_id": policy.get("policy_id"),
+        "policy_digest": policy_digest,
+        "candidate_review_packet_digest": packet_digest,
+        "predecessor_pack_payload_digest": predecessor.get("pack_payload_digest"),
+        "retired_evidence_item_digests": sorted(
+            str(row.get("evidence_item_digest") or "") for row in retired_items
+        ),
+        "added_evidence_item_digests": sorted(
+            str(row.get("evidence_item_digest") or "") for row in added_items
+        ),
+        "decision_receipt_digests": sorted(
+            str(row.get("decision_receipt_digest") or "")
+            for row in decision_receipts
+        ),
+        "capture_receipt_digests": sorted(
+            str(row.get("receipt_digest") or "") for row in capture_receipts
+        ),
+    }
+    successor["known_boundary"] = str(policy.get("successor_known_boundary") or "")
+    successor["pack_payload_digest"] = canonical_digest(successor)
+    validate_reviewed_evidence_pack(successor)
+
+    result_body = {
+        "schema_version": RESULT_SCHEMA_VERSION,
+        "status": "proposition_bound_evidence_successor_materialized",
+        "recorded_at": recorded_at,
+        "case_key": case_key,
+        "research_as_of": research_as_of,
+        "policy_id": policy.get("policy_id"),
+        "predecessor_pack_payload_digest": predecessor.get("pack_payload_digest"),
+        "successor_pack": successor,
+        "decision_counts": {
+            action: action_counts.get(action, 0) for action in DECISION_ACTIONS
+        },
+        "decision_receipts": decision_receipts,
+        "capture_receipts": capture_receipts,
+        "coverage_delta": {
+            "predecessor_evidence_count": len(predecessor_items),
+            "successor_evidence_count": len(live_items),
+            "retired_evidence_count": len(retired_items),
+            "added_or_rebound_evidence_count": len(added_items),
+            "numeric_rows_delegated_to_S2": action_counts[
+                "delegate_to_s2_numeric_authority"
+            ],
+            "candidate_text_promoted_count": 0,
+            "numeric_authority_granted_count": 0,
+        },
+        "authority": {
+            "candidate_is_not_evidence": True,
+            "accepted_claims_capture_bound": True,
+            "accepted_evidence_proposition_bound": True,
+            "metric_row_promoted_as_narrative_evidence": False,
+            "numeric_fact_authority": False,
+            "qualified_human_review": False,
+            "S1_qualification_claimed": False,
+            "product_publication": False,
+            "network_calls": 0,
+            "generation_model_calls": 0,
+        },
+    }
+    return {**result_body, "result_digest": canonical_digest(result_body)}
+
+
+__all__ = [
+    "DECISION_ACTIONS",
+    "POLICY_SCHEMA_VERSION",
+    "RESULT_SCHEMA_VERSION",
+    "ProductEvidenceSuccessorError",
+    "build_product_evidence_successor",
+]

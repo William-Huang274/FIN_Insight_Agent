@@ -8,6 +8,7 @@ from retrieval.integrated_pack_readiness import (
     IntegratedPackReadinessError,
     compile_integrated_requirement_readiness,
 )
+from retrieval.query_plan import canonical_digest
 
 
 def _inputs(*, typed_state: str = "resolved", review_state: str = "accepted"):
@@ -138,6 +139,50 @@ def _inputs(*, typed_state: str = "resolved", review_state: str = "accepted"):
             }
         ],
     }
+    polarity = "supports" if review_state == "accepted" else "boundary_only"
+    coverage = "addressed" if review_state != "partial" else "unaddressed"
+    polarity_plan = {
+        "case_key": "DELL",
+        "research_plan_digest": "PLAN",
+        "scope_compilation_digest": "SCOPE",
+        "evidence_pack_payload_digest": "PACK",
+        "predecessor_review_plan_digest": canonical_digest(review_plan),
+        "authority": {
+            "candidate_text_may_be_promoted": False,
+            "new_evidence_may_be_created": False,
+            "numeric_authority_may_be_granted": False,
+            "public_information_gap_may_be_declared": False,
+            "owner_or_qualified_human_acceptance_claimed": False,
+            "target_entities_may_be_expanded": False,
+        },
+        "requirement_polarity_reviews": [
+            {
+                "requirement_id": "MER::ONE",
+                "request_id": "REQ::ONE",
+                "facet_id": "reported_results",
+                "role": "direct",
+                "product_axis_decisions": [
+                    {
+                        "product_id": "AI server revenue contribution",
+                        "coverage_state": coverage,
+                        "evidence_polarity": (
+                            polarity if coverage == "addressed" else "not_assessed"
+                        ),
+                        "evidence_item_digests": (
+                            ["EVIDENCE"] if coverage == "addressed" else []
+                        ),
+                        "decision_reason_zh": "证据直接覆盖或界定该研究主题。",
+                        "claim_boundary_zh": (
+                            "只能证明公司收入，不能证明产品归因。"
+                            if polarity == "boundary_only"
+                            else ""
+                        ),
+                        "scope_boundary_codes": [],
+                    }
+                ],
+            }
+        ],
+    }
     anchors = {
         "case_pack_bindings": {"DELL": {"pack_payload_digest": "PACK"}},
         "entries": [
@@ -148,17 +193,18 @@ def _inputs(*, typed_state: str = "resolved", review_state: str = "accepted"):
             }
         ]
     }
-    return product, evidence_pack, review_plan, anchors
+    return product, evidence_pack, review_plan, polarity_plan, anchors
 
 
 def _compile(*, typed_state: str = "resolved", review_state: str = "accepted"):
-    product, pack, review, anchors = _inputs(
+    product, pack, review, polarity, anchors = _inputs(
         typed_state=typed_state, review_state=review_state
     )
     return compile_integrated_requirement_readiness(
         product_projection=product,
         evidence_pack=pack,
         review_plan=review,
+        polarity_plan=polarity,
         anchor_catalog=anchors,
         recorded_at="2026-08-18T16:30:00+08:00",
     )
@@ -200,7 +246,7 @@ def test_partial_evidence_does_not_become_pack_ready() -> None:
 
 
 def test_exact_anchor_requirement_fails_closed() -> None:
-    product, pack, review, anchors = _inputs()
+    product, pack, review, polarity, anchors = _inputs()
     anchors["entries"] = []
     with pytest.raises(
         IntegratedPackReadinessError,
@@ -210,13 +256,14 @@ def test_exact_anchor_requirement_fails_closed() -> None:
             product_projection=product,
             evidence_pack=pack,
             review_plan=review,
+            polarity_plan=polarity,
             anchor_catalog=anchors,
             recorded_at="2026-08-18T16:30:00+08:00",
         )
 
 
 def test_future_or_wrong_facet_evidence_fails_closed() -> None:
-    product, pack, review, anchors = _inputs()
+    product, pack, review, polarity, anchors = _inputs()
     pack["evidence_items"][0]["publication_date"] = "2026-08-07"
     with pytest.raises(
         IntegratedPackReadinessError, match="integrated_readiness_future_evidence"
@@ -225,6 +272,7 @@ def test_future_or_wrong_facet_evidence_fails_closed() -> None:
             product_projection=product,
             evidence_pack=pack,
             review_plan=review,
+            polarity_plan=polarity,
             anchor_catalog=anchors,
             recorded_at="2026-08-18T16:30:00+08:00",
         )
@@ -232,6 +280,7 @@ def test_future_or_wrong_facet_evidence_fails_closed() -> None:
     review["requirement_reviews"][0]["evidence_bindings"][0][
         "required_facet_ids"
     ] = ["reported_profitability"]
+    polarity["predecessor_review_plan_digest"] = canonical_digest(review)
     with pytest.raises(
         IntegratedPackReadinessError,
         match="integrated_readiness_facet_binding_missing",
@@ -240,33 +289,37 @@ def test_future_or_wrong_facet_evidence_fails_closed() -> None:
             product_projection=product,
             evidence_pack=pack,
             review_plan=review,
+            polarity_plan=polarity,
             anchor_catalog=anchors,
             recorded_at="2026-08-18T16:30:00+08:00",
         )
 
 
 def test_review_must_partition_every_natural_product_axis() -> None:
-    product, pack, review, anchors = _inputs()
+    product, pack, review, polarity, anchors = _inputs()
     review["requirement_reviews"][0]["supported_product_ids"] = []
+    polarity["predecessor_review_plan_digest"] = canonical_digest(review)
     with pytest.raises(
         IntegratedPackReadinessError,
-        match="integrated_readiness_product_partition_invalid",
+        match="integrated_readiness_legacy_product_partition_invalid",
     ):
         compile_integrated_requirement_readiness(
             product_projection=product,
             evidence_pack=pack,
             review_plan=review,
+            polarity_plan=polarity,
             anchor_catalog=anchors,
             recorded_at="2026-08-18T16:30:00+08:00",
         )
 
 
 def test_candidate_like_evidence_digest_not_in_current_pack_cannot_be_promoted() -> None:
-    product, pack, review, anchors = _inputs()
+    product, pack, review, polarity, anchors = _inputs()
     review = deepcopy(review)
     review["requirement_reviews"][0]["evidence_bindings"][0][
         "evidence_item_digest"
     ] = "CANDIDATE"
+    polarity["predecessor_review_plan_digest"] = canonical_digest(review)
     with pytest.raises(
         IntegratedPackReadinessError,
         match="integrated_readiness_evidence_not_in_pack",
@@ -275,13 +328,14 @@ def test_candidate_like_evidence_digest_not_in_current_pack_cannot_be_promoted()
             product_projection=product,
             evidence_pack=pack,
             review_plan=review,
+            polarity_plan=polarity,
             anchor_catalog=anchors,
             recorded_at="2026-08-18T16:30:00+08:00",
         )
 
 
 def test_review_authority_cannot_claim_runtime_promotion() -> None:
-    product, pack, review, anchors = _inputs()
+    product, pack, review, polarity, anchors = _inputs()
     review["review_authority"]["new_evidence_may_be_created"] = True
     with pytest.raises(
         IntegratedPackReadinessError,
@@ -291,13 +345,14 @@ def test_review_authority_cannot_claim_runtime_promotion() -> None:
             product_projection=product,
             evidence_pack=pack,
             review_plan=review,
+            polarity_plan=polarity,
             anchor_catalog=anchors,
             recorded_at="2026-08-18T16:30:00+08:00",
         )
 
 
 def test_anchor_catalog_must_bind_the_same_pack() -> None:
-    product, pack, review, anchors = _inputs()
+    product, pack, review, polarity, anchors = _inputs()
     anchors["case_pack_bindings"]["DELL"]["pack_payload_digest"] = "OTHER"
     with pytest.raises(
         IntegratedPackReadinessError,
@@ -307,6 +362,83 @@ def test_anchor_catalog_must_bind_the_same_pack() -> None:
             product_projection=product,
             evidence_pack=pack,
             review_plan=review,
+            polarity_plan=polarity,
+            anchor_catalog=anchors,
+            recorded_at="2026-08-18T16:30:00+08:00",
+        )
+
+
+def test_contradicting_evidence_still_addresses_the_material_topic() -> None:
+    product, pack, review, polarity, anchors = _inputs()
+    axis = polarity["requirement_polarity_reviews"][0]["product_axis_decisions"][0]
+    axis["evidence_polarity"] = "contradicts"
+    axis["scope_boundary_codes"] = ["entity_class_incomplete"]
+    axis["claim_boundary_zh"] = "该证据只反驳本实体的假设，不能推广到实体类别。"
+    result = compile_integrated_requirement_readiness(
+        product_projection=product,
+        evidence_pack=pack,
+        review_plan=review,
+        polarity_plan=polarity,
+        anchor_catalog=anchors,
+        recorded_at="2026-08-18T16:30:00+08:00",
+    )
+    row = result["requirements"][0]
+    assert row["evidence_decision_state"] == "accepted_bounded"
+    assert row["integrated_state"] == "ready_with_claim_boundary"
+    assert row["research_consumable"] is True
+    assert row["product_axis_decisions"][0]["scope_boundary_codes"] == [
+        "entity_class_incomplete"
+    ]
+
+
+def test_axis_cannot_use_evidence_outside_reviewed_binding() -> None:
+    product, pack, review, polarity, anchors = _inputs()
+    axis = polarity["requirement_polarity_reviews"][0]["product_axis_decisions"][0]
+    axis["evidence_item_digests"] = ["OTHER"]
+    with pytest.raises(
+        IntegratedPackReadinessError,
+        match="integrated_readiness_axis_evidence_outside_review_binding",
+    ):
+        compile_integrated_requirement_readiness(
+            product_projection=product,
+            evidence_pack=pack,
+            review_plan=review,
+            polarity_plan=polarity,
+            anchor_catalog=anchors,
+            recorded_at="2026-08-18T16:30:00+08:00",
+        )
+
+
+def test_unaddressed_axis_cannot_claim_evidence_or_polarity() -> None:
+    product, pack, review, polarity, anchors = _inputs()
+    axis = polarity["requirement_polarity_reviews"][0]["product_axis_decisions"][0]
+    axis["coverage_state"] = "unaddressed"
+    with pytest.raises(
+        IntegratedPackReadinessError,
+        match="integrated_readiness_unaddressed_axis_must_not_claim_evidence",
+    ):
+        compile_integrated_requirement_readiness(
+            product_projection=product,
+            evidence_pack=pack,
+            review_plan=review,
+            polarity_plan=polarity,
+            anchor_catalog=anchors,
+            recorded_at="2026-08-18T16:30:00+08:00",
+        )
+
+
+def test_polarity_successor_must_bind_exact_predecessor_review_plan() -> None:
+    product, pack, review, polarity, anchors = _inputs()
+    polarity["predecessor_review_plan_digest"] = "DRIFT"
+    with pytest.raises(
+        IntegratedPackReadinessError,
+        match="integrated_readiness_polarity_predecessor_digest_mismatch",
+    ):
+        compile_integrated_requirement_readiness(
+            product_projection=product,
+            evidence_pack=pack,
+            review_plan=review,
+            polarity_plan=polarity,
             anchor_catalog=anchors,
             recorded_at="2026-08-18T16:30:00+08:00",
         )

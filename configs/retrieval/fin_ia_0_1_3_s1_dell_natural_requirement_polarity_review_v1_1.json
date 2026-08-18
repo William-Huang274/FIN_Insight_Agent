@@ -1,0 +1,405 @@
+{
+  "schema_version": "fin_ia_s1_natural_requirement_polarity_review_v1_1",
+  "status": "provisional_project_audit_successor_pending_owner_or_qualified_human_review",
+  "recorded_at": "2026-08-18T17:05:00+08:00",
+  "case_key": "DELL",
+  "research_plan_digest": "a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80",
+  "scope_compilation_digest": "0ae0d3f74a5c8630047e7c2fd6b655490c3a74e9fd04efddfe9e8e2f4208f356",
+  "evidence_pack_payload_digest": "c61ea7a02634ec21944ec6edc9b127c474e3474116dfe501932455664fc3dc23",
+  "predecessor_review_plan_digest": "225587876b7f055268669725de94a6b4b40d75351bea9d99832db029864e4387",
+  "authority": {
+    "candidate_text_may_be_promoted": false,
+    "new_evidence_may_be_created": false,
+    "numeric_authority_may_be_granted": false,
+    "public_information_gap_may_be_declared": false,
+    "owner_or_qualified_human_acceptance_claimed": false,
+    "target_entities_may_be_expanded": false,
+    "allowed_consumer": "development_replay_and_product_boundary_audit_only"
+  },
+  "requirement_polarity_reviews": [
+    {
+      "requirement_id": "MER::5e03022a374c1ba30b99",
+      "request_id": "REQ::fb06661b946711fc3b334146",
+      "facet_id": "orders_and_backlog",
+      "role": "direct",
+      "additional_evidence_bindings": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI server order growth",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "evidence_item_digests": ["a35dc0a2d0492238478869c5af6f41d7114d96ef2dba0502291b0b96c031e2b1"],
+          "decision_reason_zh": "Dell 法说直接披露 AI orders 与收入。",
+          "claim_boundary_zh": "精确数值仍需 S2 NumericFact。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "backlog composition",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["a35dc0a2d0492238478869c5af6f41d7114d96ef2dba0502291b0b96c031e2b1", "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "资料给出 backlog、pipeline 与客户集中边界，但没有完整构成明细。",
+          "claim_boundary_zh": "不得把 backlog 总额写成已知产品、客户或账龄构成。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "customer concentration",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "evidence_item_digests": ["a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "10-K 明确披露少数大型客户集中。",
+          "claim_boundary_zh": "未披露前五大 AI 客户占比。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::9bf275775851d787e875",
+      "request_id": "REQ::fb06661b946711fc3b334146",
+      "facet_id": "orders_and_backlog",
+      "role": "counter",
+      "additional_evidence_bindings": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI server order growth",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "大单取消、延迟和竞争定价风险限制了订单增长的可兑现解释。",
+          "claim_boundary_zh": "风险披露不证明当前订单已取消。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "backlog composition",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "客户集中与大单跨期波动构成 backlog 质量反方。",
+          "claim_boundary_zh": "没有 backlog 账龄和取消率。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "customer concentration",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "evidence_item_digests": ["a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "发行人直接披露少数大型客户集中风险。",
+          "claim_boundary_zh": "没有客户级收入或订单占比。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::7ed57c7d23ef7375fffc",
+      "request_id": "REQ::eb2e808dd2e48b4fe7474223",
+      "facet_id": "conversion_and_durability",
+      "role": "counter",
+      "additional_evidence_bindings": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "channel inventory risk",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "发行人披露取消与库存过时风险，但没有渠道库存。",
+          "claim_boundary_zh": "不得把 Dell 自有库存风险写成渠道库存事实。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "demand durability",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "evidence_item_digests": ["bcb7ba6a7ca507f8f3cecf44a5b77164c82852518a62768739e14f7fc52b4183", "e56d04955adef83b83bbbfda0bb36ed3967f869d34f9473849777a52d40f5305", "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "需求、提前锁单和取消风险同时存在，方向混合。",
+          "claim_boundary_zh": "没有可量化的 pull-forward 或 digestion。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "order-to-shipment conversion",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "evidence_item_digests": ["bcb7ba6a7ca507f8f3cecf44a5b77164c82852518a62768739e14f7fc52b4183"],
+          "decision_reason_zh": "管理层直接说明需求到出货存在非线性。",
+          "claim_boundary_zh": "不能从订单线性外推未来出货。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::e03cb28b2ee5f0f76afe",
+      "request_id": "REQ::eb2e808dd2e48b4fe7474223",
+      "facet_id": "conversion_and_durability",
+      "role": "direct",
+      "additional_evidence_bindings": [
+        {
+          "evidence_item_digest": "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6",
+          "required_slot_id": "cash_conversion_balance_sheet",
+          "required_facet_ids": ["working_capital_risk"],
+          "require_exact_anchor": true
+        }
+      ],
+      "product_axis_decisions": [
+        {
+          "product_id": "channel inventory risk",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "当前只找到发行人库存风险边界，没有渠道库存。",
+          "claim_boundary_zh": "该主题已被检查但没有渠道级事实。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "demand durability",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "evidence_item_digests": ["a35dc0a2d0492238478869c5af6f41d7114d96ef2dba0502291b0b96c031e2b1", "bcb7ba6a7ca507f8f3cecf44a5b77164c82852518a62768739e14f7fc52b4183"],
+          "decision_reason_zh": "强需求与出货非线性并存。",
+          "claim_boundary_zh": "没有取消率或后续消化量。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "order-to-shipment conversion",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "evidence_item_digests": ["2dcdc6d95ba36cf5f19b9f2ead9424e081fd187b75db14211e57369a643a155b", "bcb7ba6a7ca507f8f3cecf44a5b77164c82852518a62768739e14f7fc52b4183"],
+          "decision_reason_zh": "同季订单与确认收入可观察转化，10-Q 同时说明出货时点非线性。",
+          "claim_boundary_zh": "精确 backlog、orders、shipments 仍为 S2 typed gap。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::d69b1ca4ad68a3befaf2",
+      "request_id": "REQ::e17c40f93e25438950673210",
+      "facet_id": "reported_results",
+      "role": "direct",
+      "additional_evidence_bindings": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI server revenue contribution",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "evidence_item_digests": ["2dcdc6d95ba36cf5f19b9f2ead9424e081fd187b75db14211e57369a643a155b", "4d8ba7a500fa4bc6a43cc0cdfa5102e9899cdb5b0e1a6c1e2af1cb3da3cdbd36"],
+          "decision_reason_zh": "公司业绩稿和表格直接披露 AI server revenue。",
+          "claim_boundary_zh": "不能从收入单独推导产品利润。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "EPS impact",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["2dcdc6d95ba36cf5f19b9f2ead9424e081fd187b75db14211e57369a643a155b"],
+          "decision_reason_zh": "公司 EPS 已知，但没有 AI 对 EPS 的独立归因。",
+          "claim_boundary_zh": "不得把公司 EPS 变化写成 AI 服务器导致。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "segment profitability",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["4d8ba7a500fa4bc6a43cc0cdfa5102e9899cdb5b0e1a6c1e2af1cb3da3cdbd36"],
+          "decision_reason_zh": "ISG 利润与 AI revenue 同表，但没有 AI 产品独立利润。",
+          "claim_boundary_zh": "ISG operating income 不等于 AI server operating income。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::0c91cf0e63fe496d5ff3",
+      "request_id": "REQ::081c06389f9dcb8487886b57",
+      "facet_id": "margin_and_incremental_profit",
+      "role": "bridge",
+      "additional_evidence_bindings": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "incremental margin on AI servers",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "evidence_item_digests": ["af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1", "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1", "4d8ba7a500fa4bc6a43cc0cdfa5102e9899cdb5b0e1a6c1e2af1cb3da3cdbd36"],
+          "decision_reason_zh": "AI server 中个位数利润率目标与 AI mix 压毛利并存。",
+          "claim_boundary_zh": "没有可复算的产品增量利润桥。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "operating leverage",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["4d8ba7a500fa4bc6a43cc0cdfa5102e9899cdb5b0e1a6c1e2af1cb3da3cdbd36"],
+          "decision_reason_zh": "分部结果提供经营利润基线，但没有 AI 单位量或固定成本桥。",
+          "claim_boundary_zh": "不得宣称 AI 收入已带来可量化 operating leverage。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::1451de316bc2fa342de3",
+      "request_id": "REQ::273bf40c53d28f49de438b41",
+      "facet_id": "cash_generation",
+      "role": "bridge",
+      "additional_evidence_bindings": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "capex for AI capacity",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["5cf08752a6c491a2cf952f7cf4e68dc12681c9d3fc66761cf7bade4c8c6f655f"],
+          "decision_reason_zh": "公司 capex 可复算，但未按 AI capacity 拆分。",
+          "claim_boundary_zh": "不能写 AI-specific capex。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "cash conversion of AI revenue",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["634ea66c659a2fba273b1477181239b267ada36f9f23a125ae5263711288a74b"],
+          "decision_reason_zh": "公司经营现金流可复算，但没有 AI revenue 到 cash 的产品桥。",
+          "claim_boundary_zh": "只能得出 AI cash conversion 不可推断。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::9914ab4118cac4f70b13",
+      "request_id": "REQ::c21c10d6e8f13263cf69ffa5",
+      "facet_id": "working_capital_risk",
+      "role": "counter",
+      "additional_evidence_bindings": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI component inventory buildup",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "evidence_item_digests": ["e406cfab513c214ccdbc5ada82db3e4b5a0641e1561f2d46daf639f67e2e01ed", "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "Dell 明确披露 AI 动态提高库存并带来过时风险。",
+          "claim_boundary_zh": "没有 AI 产品级金额。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "receivable risk from AI customers",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["e406cfab513c214ccdbc5ada82db3e4b5a0641e1561f2d46daf639f67e2e01ed"],
+          "decision_reason_zh": "AI 动态与应收上升相关，但没有客户级账龄或坏账。",
+          "claim_boundary_zh": "不得写 AI customers 已出现应收损失。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::b837404e81f27930cfdf",
+      "request_id": "REQ::c21c10d6e8f13263cf69ffa5",
+      "facet_id": "working_capital_risk",
+      "role": "bridge",
+      "additional_evidence_bindings": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI component inventory buildup",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "evidence_item_digests": ["024224e83105ed3cd13e5b4a1e6b68a39c541c044b1f4d2875c7d146ea34f721", "e406cfab513c214ccdbc5ada82db3e4b5a0641e1561f2d46daf639f67e2e01ed"],
+          "decision_reason_zh": "资产负债表基线与管理层 AI working-capital 解释可以形成方向性桥。",
+          "claim_boundary_zh": "AI 产品级金额不可得。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "receivable risk from AI customers",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "evidence_item_digests": ["024224e83105ed3cd13e5b4a1e6b68a39c541c044b1f4d2875c7d146ea34f721", "e406cfab513c214ccdbc5ada82db3e4b5a0641e1561f2d46daf639f67e2e01ed"],
+          "decision_reason_zh": "公司应收与 AI 方向已知，但没有 AI 客户级信用质量。",
+          "claim_boundary_zh": "只能形成 bounded bridge，不能量化 AI receivable risk。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::95a68adb95879ebf40ce",
+      "request_id": "REQ::07e898259cfe6b2e12d7f82c",
+      "facet_id": "issuer_counterevidence",
+      "role": "counter",
+      "additional_evidence_bindings": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "inventory write-down risk",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "evidence_item_digests": ["a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "发行人风险披露直接覆盖库存过时与减值风险。",
+          "claim_boundary_zh": "不证明本期已减值。",
+          "scope_boundary_codes": []
+        },
+        {
+          "product_id": "management caution on AI demand",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "evidence_item_digests": ["a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"],
+          "decision_reason_zh": "公司明确提醒大单时点、取消和竞争定价风险。",
+          "claim_boundary_zh": "不证明当前需求已经恶化。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::0499b0fb8968afc714d4",
+      "request_id": "REQ::39d61ebcc0dad17a756c1cac",
+      "facet_id": "upstream_or_demand_counterevidence",
+      "role": "context",
+      "additional_evidence_bindings": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "hyperscaler capex slowdown",
+          "coverage_state": "addressed",
+          "evidence_polarity": "contradicts",
+          "evidence_item_digests": ["7eeb3b3b847732fe61e60eff3e7d9af7a18428f0eb7cc942ccba334046ec8a22"],
+          "decision_reason_zh": "Microsoft 披露持续 AI infrastructure investment 与 AI usage 增长，当前证据反驳而非支持 slowdown。",
+          "claim_boundary_zh": "仅代表 MSFT，不能推广到 hyperscaler class。",
+          "scope_boundary_codes": ["hyperscaler_class_target_set_incomplete"]
+        },
+        {
+          "product_id": "supplier constraints on GPUs",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "evidence_item_digests": ["f1d99400c1e8471b1343272abafb3f7eb573a8d55c8f4d2326a1d9298cd97041", "9b05477354785b107d379ae69551304da3d09bcd5ceb56979d4fe621589a26a5"],
+          "decision_reason_zh": "TSMC 封装瓶颈与 NVIDIA 第三方制造依赖支持上游约束。",
+          "claim_boundary_zh": "不证明 Dell 分配量或损失。",
+          "scope_boundary_codes": []
+        }
+      ]
+    },
+    {
+      "requirement_id": "MER::fc576ac87ed6e6b0362e",
+      "request_id": "REQ::39d61ebcc0dad17a756c1cac",
+      "facet_id": "upstream_or_demand_counterevidence",
+      "role": "counter",
+      "additional_evidence_bindings": [
+        {
+          "evidence_item_digest": "7eeb3b3b847732fe61e60eff3e7d9af7a18428f0eb7cc942ccba334046ec8a22",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": ["deployment_or_utilization"],
+          "require_exact_anchor": true
+        }
+      ],
+      "product_axis_decisions": [
+        {
+          "product_id": "hyperscaler capex slowdown",
+          "coverage_state": "addressed",
+          "evidence_polarity": "contradicts",
+          "evidence_item_digests": ["7eeb3b3b847732fe61e60eff3e7d9af7a18428f0eb7cc942ccba334046ec8a22"],
+          "decision_reason_zh": "当前 MSFT 证据显示持续投入，反驳 slowdown 反方。",
+          "claim_boundary_zh": "目标实体集合只有 MSFT 一个 hyperscaler，不能形成行业结论。",
+          "scope_boundary_codes": ["hyperscaler_class_target_set_incomplete"]
+        },
+        {
+          "product_id": "supplier constraints on GPUs",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "evidence_item_digests": ["5177949adb6f1877362bc84a21d7d8872e8ac2038d71b54f26fd2c08bb51aedf", "f1d99400c1e8471b1343272abafb3f7eb573a8d55c8f4d2326a1d9298cd97041"],
+          "decision_reason_zh": "出口限制和封装瓶颈构成风险，但现有资料没有 Dell 特定分配或损失。",
+          "claim_boundary_zh": "只能作为上游反方背景。",
+          "scope_boundary_codes": []
+        }
+      ]
+    }
+  ],
+  "known_boundary": "This successor separates whether a material topic is addressed from whether Evidence supports or contradicts the hypothesis. It reuses only current reviewed Evidence, cannot expand the signed target entities, and leaves the hyperscaler-class entity omission with S3. It is not Owner or qualified-human acceptance and cannot qualify S1 or publish a report."
+}

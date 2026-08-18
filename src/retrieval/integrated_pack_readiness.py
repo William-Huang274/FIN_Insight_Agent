@@ -8,10 +8,21 @@ from .query_plan import canonical_digest
 
 
 INTEGRATED_READINESS_SCHEMA_VERSION = (
-    "fin_ia_s1_s2_integrated_requirement_readiness_v1_0"
+    "fin_ia_s1_s2_integrated_requirement_readiness_v1_1"
 )
 REVIEW_STATES = frozenset(
     {"accepted", "accepted_bounded", "partial", "needs_review", "rejected"}
+)
+AXIS_COVERAGE_STATES = frozenset({"addressed", "unaddressed", "needs_review"})
+EVIDENCE_POLARITIES = frozenset(
+    {
+        "supports",
+        "contradicts",
+        "mixed",
+        "context_only",
+        "boundary_only",
+        "not_assessed",
+    }
 )
 
 
@@ -248,14 +259,17 @@ def compile_integrated_requirement_readiness(
     product_projection: Mapping[str, Any],
     evidence_pack: Mapping[str, Any],
     review_plan: Mapping[str, Any],
+    polarity_plan: Mapping[str, Any],
     anchor_catalog: Mapping[str, Any],
     recorded_at: str,
 ) -> dict[str, Any]:
     """Combine reviewed Evidence and S2 NumericFacts without merging authority.
 
     The review plan may only map already accepted pack items to an exact material
-    requirement. It cannot promote candidate text, create a NumericFact, or turn
-    a retrieval miss into a public-information gap.
+    requirement. The polarity successor separately records whether each research
+    topic is supported, contradicted, mixed, contextual, or only bounded. Neither
+    input can promote candidate text, create a NumericFact, or turn a retrieval
+    miss into a public-information gap.
     """
 
     case_key = str(product_projection.get("case_key") or "").upper()
@@ -267,6 +281,10 @@ def compile_integrated_requirement_readiness(
     _require(
         str(review_plan.get("case_key") or "").upper() == case_key,
         "integrated_readiness_review_case_mismatch",
+    )
+    _require(
+        str(polarity_plan.get("case_key") or "").upper() == case_key,
+        "integrated_readiness_polarity_case_mismatch",
     )
     review_authority = _mapping(
         review_plan.get("review_authority"),
@@ -283,12 +301,33 @@ def compile_integrated_requirement_readiness(
             review_authority.get(field) is False,
             f"integrated_readiness_review_authority_invalid:{field}",
         )
+    polarity_authority = _mapping(
+        polarity_plan.get("authority"),
+        "integrated_readiness_polarity_authority_missing",
+    )
+    for field in (
+        "candidate_text_may_be_promoted",
+        "new_evidence_may_be_created",
+        "numeric_authority_may_be_granted",
+        "public_information_gap_may_be_declared",
+        "owner_or_qualified_human_acceptance_claimed",
+        "target_entities_may_be_expanded",
+    ):
+        _require(
+            polarity_authority.get(field) is False,
+            f"integrated_readiness_polarity_authority_invalid:{field}",
+        )
     pack_digest = str(evidence_pack.get("pack_payload_digest") or "")
     _require(
         pack_digest
         and str(review_plan.get("evidence_pack_payload_digest") or "")
         == pack_digest,
         "integrated_readiness_pack_digest_mismatch",
+    )
+    _require(
+        str(polarity_plan.get("evidence_pack_payload_digest") or "")
+        == pack_digest,
+        "integrated_readiness_polarity_pack_digest_mismatch",
     )
     research_plan_digest = str(product_projection.get("material_scope", {}).get(
         "research_plan_digest"
@@ -298,6 +337,11 @@ def compile_integrated_requirement_readiness(
         and str(review_plan.get("research_plan_digest") or "")
         == research_plan_digest,
         "integrated_readiness_research_plan_digest_mismatch",
+    )
+    _require(
+        str(polarity_plan.get("research_plan_digest") or "")
+        == research_plan_digest,
+        "integrated_readiness_polarity_research_plan_digest_mismatch",
     )
     scope_compilation = _mapping(
         _mapping(
@@ -310,6 +354,17 @@ def compile_integrated_requirement_readiness(
         str(review_plan.get("scope_compilation_digest") or "")
         == str(scope_compilation.get("compilation_digest") or ""),
         "integrated_readiness_scope_digest_mismatch",
+    )
+    _require(
+        str(polarity_plan.get("scope_compilation_digest") or "")
+        == str(scope_compilation.get("compilation_digest") or ""),
+        "integrated_readiness_polarity_scope_digest_mismatch",
+    )
+    review_plan_digest = canonical_digest(dict(review_plan))
+    _require(
+        str(polarity_plan.get("predecessor_review_plan_digest") or "")
+        == review_plan_digest,
+        "integrated_readiness_polarity_predecessor_digest_mismatch",
     )
     pack_items = _pack_items(evidence_pack)
     anchor_pack_bindings = _mapping(
@@ -374,10 +429,24 @@ def compile_integrated_requirement_readiness(
         set(review_rows) == set(requirements),
         "integrated_readiness_review_requirement_set_mismatch",
     )
+    polarity_rows: dict[str, Mapping[str, Any]] = {}
+    for raw in polarity_plan.get("requirement_polarity_reviews") or ():
+        row = _mapping(raw, "integrated_readiness_polarity_row_invalid")
+        requirement_id = str(row.get("requirement_id") or "")
+        _require(
+            requirement_id and requirement_id not in polarity_rows,
+            "integrated_readiness_polarity_requirement_id_invalid",
+        )
+        polarity_rows[requirement_id] = row
+    _require(
+        set(polarity_rows) == set(requirements),
+        "integrated_readiness_polarity_requirement_set_mismatch",
+    )
 
     compiled: list[dict[str, Any]] = []
     for requirement_id, (requirement, request_result) in requirements.items():
         review = review_rows[requirement_id]
+        polarity_review = polarity_rows[requirement_id]
         request = _mapping(
             request_result.get("request"), "integrated_readiness_request_missing"
         )
@@ -401,23 +470,28 @@ def compile_integrated_requirement_readiness(
             str(review.get("role") or "") == str(requirement.get("role") or ""),
             "integrated_readiness_review_role_mismatch",
         )
-        product_ids = frozenset(str(value) for value in requirement.get("product_ids") or ())
-        supported = frozenset(
-            _unique_strings(
-                review.get("supported_product_ids") or (),
-                "integrated_readiness_supported_products_invalid",
+        for field, expected in (
+            ("request_id", request_id),
+            ("facet_id", str(requirement.get("facet_id") or "")),
+            ("role", str(requirement.get("role") or "")),
+        ):
+            _require(
+                str(polarity_review.get(field) or "") == expected,
+                f"integrated_readiness_polarity_{field}_mismatch",
             )
+        product_ids = frozenset(
+            str(value) for value in requirement.get("product_ids") or ()
         )
-        unsupported = frozenset(
-            _unique_strings(
-                review.get("unsupported_product_ids") or (),
-                "integrated_readiness_unsupported_products_invalid",
-            )
+        legacy_supported = frozenset(
+            str(value) for value in review.get("supported_product_ids") or ()
+        )
+        legacy_unsupported = frozenset(
+            str(value) for value in review.get("unsupported_product_ids") or ()
         )
         _require(
-            not supported.intersection(unsupported)
-            and supported.union(unsupported) == product_ids,
-            "integrated_readiness_product_partition_invalid",
+            not legacy_supported.intersection(legacy_unsupported)
+            and legacy_supported.union(legacy_unsupported) == product_ids,
+            "integrated_readiness_legacy_product_partition_invalid",
         )
         evidence_bindings = [
             _binding_gate(
@@ -431,25 +505,129 @@ def compile_integrated_requirement_readiness(
             )
             for raw in review.get("evidence_bindings") or ()
         ]
+        additional_evidence_bindings = [
+            _binding_gate(
+                binding=_mapping(
+                    raw,
+                    "integrated_readiness_additional_evidence_binding_invalid",
+                ),
+                pack_items=pack_items,
+                anchor_digests=anchors,
+                case_key=case_key,
+                research_as_of=str(request.get("research_as_of") or ""),
+            )
+            for raw in polarity_review.get("additional_evidence_bindings") or ()
+        ]
+        evidence_binding_keys = [
+            (
+                str(row.get("evidence_item_digest") or ""),
+                str(row.get("required_slot_id") or ""),
+                tuple(row.get("required_facet_ids") or ()),
+            )
+            for row in [*evidence_bindings, *additional_evidence_bindings]
+        ]
+        _require(
+            len(evidence_binding_keys) == len(set(evidence_binding_keys)),
+            "integrated_readiness_duplicate_evidence_binding",
+        )
+        evidence_bindings = [*evidence_bindings, *additional_evidence_bindings]
         if state in {"accepted", "accepted_bounded", "partial"}:
             _require(
                 evidence_bindings,
                 "integrated_readiness_review_evidence_required",
             )
-        if state == "accepted":
+        bound_evidence_digests = {
+            str(row.get("evidence_item_digest") or "") for row in evidence_bindings
+        }
+        axis_rows: list[dict[str, Any]] = []
+        seen_axis_ids: set[str] = set()
+        for raw_axis in polarity_review.get("product_axis_decisions") or ():
+            axis = _mapping(raw_axis, "integrated_readiness_axis_decision_invalid")
+            product_id = str(axis.get("product_id") or "")
             _require(
-                supported == product_ids and not unsupported,
-                "integrated_readiness_accepted_must_cover_all_products",
+                product_id
+                and product_id in product_ids
+                and product_id not in seen_axis_ids,
+                "integrated_readiness_axis_product_id_invalid",
             )
-        if state in {"accepted_bounded", "partial"}:
+            seen_axis_ids.add(product_id)
+            coverage_state = str(axis.get("coverage_state") or "")
+            evidence_polarity = str(axis.get("evidence_polarity") or "")
             _require(
-                unsupported and str(review.get("claim_boundary_zh") or "").strip(),
-                "integrated_readiness_boundary_required",
+                coverage_state in AXIS_COVERAGE_STATES,
+                "integrated_readiness_axis_coverage_state_invalid",
             )
+            _require(
+                evidence_polarity in EVIDENCE_POLARITIES,
+                "integrated_readiness_axis_polarity_invalid",
+            )
+            axis_evidence = frozenset(
+                _unique_strings(
+                    axis.get("evidence_item_digests") or (),
+                    "integrated_readiness_axis_evidence_invalid",
+                )
+            )
+            if coverage_state == "addressed":
+                _require(
+                    evidence_polarity != "not_assessed" and axis_evidence,
+                    "integrated_readiness_addressed_axis_requires_evidence_and_polarity",
+                )
+                _require(
+                    axis_evidence.issubset(bound_evidence_digests),
+                    "integrated_readiness_axis_evidence_outside_review_binding",
+                )
+            else:
+                _require(
+                    evidence_polarity == "not_assessed" and not axis_evidence,
+                    "integrated_readiness_unaddressed_axis_must_not_claim_evidence",
+                )
+            scope_boundary_codes = tuple(
+                sorted(
+                    _unique_strings(
+                        axis.get("scope_boundary_codes") or (),
+                        "integrated_readiness_axis_scope_boundaries_invalid",
+                    )
+                )
+            )
+            axis_rows.append(
+                {
+                    "product_id": product_id,
+                    "coverage_state": coverage_state,
+                    "evidence_polarity": evidence_polarity,
+                    "evidence_item_digests": sorted(axis_evidence),
+                    "decision_reason_zh": str(axis.get("decision_reason_zh") or ""),
+                    "claim_boundary_zh": str(axis.get("claim_boundary_zh") or ""),
+                    "scope_boundary_codes": list(scope_boundary_codes),
+                }
+            )
+        _require(
+            seen_axis_ids == product_ids,
+            "integrated_readiness_axis_decision_set_mismatch",
+        )
+        addressed = {
+            row["product_id"]
+            for row in axis_rows
+            if row["coverage_state"] == "addressed"
+        }
+        unaddressed = product_ids - addressed
+        if not addressed:
+            derived_state = "needs_review"
+        elif unaddressed:
+            derived_state = "partial"
+        elif all(row["evidence_polarity"] == "supports" for row in axis_rows):
+            derived_state = "accepted"
+        else:
+            derived_state = "accepted_bounded"
+        _require(
+            derived_state != "accepted_bounded"
+            or str(review.get("claim_boundary_zh") or "").strip()
+            or any(str(row.get("claim_boundary_zh") or "").strip() for row in axis_rows),
+            "integrated_readiness_boundary_required",
+        )
         numeric = _numeric_coverage(
             requirement=requirement, request_result=request_result
         )
-        natural_ready = state in {"accepted", "accepted_bounded"}
+        natural_ready = derived_state in {"accepted", "accepted_bounded"}
         numeric_state = str(numeric["state"])
         if not natural_ready:
             integrated_state = "not_ready_s1_evidence"
@@ -460,7 +638,7 @@ def compile_integrated_requirement_readiness(
         elif numeric_state == "typed_gap":
             integrated_state = "qualitative_ready_s2_numeric_gap"
             research_consumable = True
-        elif state == "accepted_bounded":
+        elif derived_state == "accepted_bounded":
             integrated_state = "ready_with_claim_boundary"
             research_consumable = True
         else:
@@ -479,9 +657,13 @@ def compile_integrated_requirement_readiness(
                 str(value) for value in requirement.get("metric_ids") or ()
             ),
             "product_ids": sorted(product_ids),
-            "evidence_decision_state": state,
-            "supported_product_ids": sorted(supported),
-            "unsupported_product_ids": sorted(unsupported),
+            "evidence_decision_state": derived_state,
+            "legacy_v1_0_evidence_decision_state": state,
+            "addressed_product_ids": sorted(addressed),
+            "unaddressed_product_ids": sorted(unaddressed),
+            "product_axis_decisions": sorted(
+                axis_rows, key=lambda row: str(row["product_id"])
+            ),
             "evidence_bindings": evidence_bindings,
             "decision_reason_zh": str(review.get("decision_reason_zh") or ""),
             "claim_boundary_zh": str(review.get("claim_boundary_zh") or ""),
@@ -532,7 +714,8 @@ def compile_integrated_requirement_readiness(
         "research_plan_digest": research_plan_digest,
         "scope_compilation_digest": scope_compilation.get("compilation_digest"),
         "evidence_pack_payload_digest": pack_digest,
-        "review_plan_digest": canonical_digest(dict(review_plan)),
+        "review_plan_digest": review_plan_digest,
+        "polarity_plan_digest": canonical_digest(dict(polarity_plan)),
         "requirements": compiled,
         "requests": request_rows,
         "summary": {

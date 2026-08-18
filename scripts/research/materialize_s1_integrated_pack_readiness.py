@@ -34,16 +34,20 @@ DEFAULT_REVIEW_PLAN = (
     "configs/retrieval/"
     "fin_ia_0_1_3_s1_dell_natural_requirement_evidence_review_v1_0.json"
 )
+DEFAULT_POLARITY_PLAN = (
+    "configs/retrieval/"
+    "fin_ia_0_1_3_s1_dell_natural_requirement_polarity_review_v1_1.json"
+)
 DEFAULT_ANCHOR_CATALOG = (
     "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_2.json"
 )
 DEFAULT_PRIVATE_OUTPUT = (
     "data/workbench_private/fin_0_1_3_s1_integrated_pack_readiness/"
-    "dell-r3-v1/full_result.json"
+    "dell-r3-v2/full_result.json"
 )
 DEFAULT_PUBLIC_OUTPUT = (
     "configs/retrieval/"
-    "fin_ia_0_1_3_s1_dell_integrated_pack_readiness_result_v1_0.json"
+    "fin_ia_0_1_3_s1_dell_integrated_pack_readiness_result_v1_1.json"
 )
 
 
@@ -109,8 +113,19 @@ def _public_projection(
                 "facet_id": row["facet_id"],
                 "role": row["role"],
                 "evidence_decision_state": row["evidence_decision_state"],
-                "supported_product_ids": row["supported_product_ids"],
-                "unsupported_product_ids": row["unsupported_product_ids"],
+                "addressed_product_ids": row["addressed_product_ids"],
+                "unaddressed_product_ids": row["unaddressed_product_ids"],
+                "product_axis_decisions": [
+                    {
+                        "product_id": axis["product_id"],
+                        "coverage_state": axis["coverage_state"],
+                        "evidence_polarity": axis["evidence_polarity"],
+                        "decision_reason_zh": axis["decision_reason_zh"],
+                        "claim_boundary_zh": axis["claim_boundary_zh"],
+                        "scope_boundary_codes": axis["scope_boundary_codes"],
+                    }
+                    for axis in row["product_axis_decisions"]
+                ],
                 "numeric_state": numeric["state"],
                 "resolved_metric_count": numeric["resolved_metric_count"],
                 "typed_gap_metric_count": numeric["typed_gap_metric_count"],
@@ -138,7 +153,7 @@ def _public_projection(
         else "completed_development_readiness_with_residual_requests"
     )
     body = {
-        "schema_version": "fin_ia_s1_s2_integrated_pack_readiness_public_v1_0",
+        "schema_version": "fin_ia_s1_s2_integrated_pack_readiness_public_v1_1",
         "status": status,
         "recorded_at": full_result["recorded_at"],
         "prepared_from_commit": full_result["prepared_from_commit"],
@@ -147,6 +162,7 @@ def _public_projection(
         "scope_compilation_digest": result["scope_compilation_digest"],
         "evidence_pack_payload_digest": result["evidence_pack_payload_digest"],
         "review_plan_digest": result["review_plan_digest"],
+        "polarity_plan_digest": result["polarity_plan_digest"],
         "summary": result["summary"],
         "requests": result["requests"],
         "requirements": requirements,
@@ -164,6 +180,7 @@ def main() -> int:
     parser.add_argument("--product-replay", default=DEFAULT_PRODUCT_REPLAY)
     parser.add_argument("--evidence-pack", default=DEFAULT_EVIDENCE_PACK)
     parser.add_argument("--review-plan", default=DEFAULT_REVIEW_PLAN)
+    parser.add_argument("--polarity-plan", default=DEFAULT_POLARITY_PLAN)
     parser.add_argument("--anchor-catalog", default=DEFAULT_ANCHOR_CATALOG)
     parser.add_argument("--private-output", default=DEFAULT_PRIVATE_OUTPUT)
     parser.add_argument("--public-output", default=DEFAULT_PUBLIC_OUTPUT)
@@ -178,6 +195,7 @@ def main() -> int:
         "product_replay": _resolve(args.product_replay),
         "evidence_pack": _resolve(args.evidence_pack),
         "review_plan": _resolve(args.review_plan),
+        "polarity_plan": _resolve(args.polarity_plan),
         "anchor_catalog": _resolve(args.anchor_catalog),
     }
     inputs = {key: _load_json(path) for key, path in paths.items()}
@@ -188,6 +206,7 @@ def main() -> int:
         product_projection=product_projection,
         evidence_pack=inputs["evidence_pack"],
         review_plan=inputs["review_plan"],
+        polarity_plan=inputs["polarity_plan"],
         anchor_catalog=inputs["anchor_catalog"],
         recorded_at=recorded_at,
     )
@@ -196,7 +215,7 @@ def main() -> int:
         for key, path in paths.items()
     }
     full_body = {
-        "schema_version": "fin_ia_s1_s2_integrated_pack_readiness_full_v1_0",
+        "schema_version": "fin_ia_s1_s2_integrated_pack_readiness_full_v1_1",
         "status": "completed_zero_call_integrated_readiness",
         "recorded_at": recorded_at,
         "prepared_from_commit": prepared_from_commit,

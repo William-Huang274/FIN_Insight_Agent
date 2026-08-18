@@ -1,0 +1,49 @@
+{
+  "schema_version": "fin_ia_s1_vs5_valid_temporal_evaluation_authority_v1_0",
+  "status": "authorized_exact_once_valid_temporal_evaluation",
+  "recorded_at": "2026-08-18",
+  "attempt_id": "FIN-0.1.3-S1-VS5-VALID-TEMPORAL-EVALUATION-R1",
+  "split": "valid_temporal",
+  "case_keys": [
+    "COST"
+  ],
+  "max_executions": 1,
+  "design_baseline_commit": "228efde5a5a49bc7d70f16a016d9a995faf83f72",
+  "design_branch": "codex/fin013-s1-retrieval-vertical-slice",
+  "authority_commit_scope": "this_authority_file_only_after_design_baseline",
+  "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_evaluation_policy_v1_0.json",
+  "policy_sha256": "a8e486581fd098f0a7ac75be18b3e41e704199cd9102b708734a1ad573937826",
+  "raw_output_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_evaluations/valid-temporal-eval-r1/raw.json",
+  "public_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_evaluation_result_v1_0.json",
+  "execution_contract": {
+    "reference_access": "valid_temporal_only_after_candidate_freeze",
+    "test_frozen_reference_access_allowed": false,
+    "holdout_heterogeneous_reference_access_allowed": false,
+    "network_calls": 0,
+    "generation_model_calls": 0,
+    "learned_vector_computation_calls": 0,
+    "cpu_vector_fallback_calls": 0,
+    "deterministic_bookkeeping_cpu_allowed": true,
+    "retry_allowed": false,
+    "fallback_allowed": false,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "public_information_gap_authority": false,
+    "stop_on_existing_output": true,
+    "stop_on_git_or_digest_drift": true,
+    "repeat_in_memory_and_require_identical_digest": true
+  },
+  "post_execution_authority": {
+    "owner_gold_authority": false,
+    "evidence_promotion_authorized": false,
+    "numeric_fact_authority": false,
+    "test_frozen_authorized": false,
+    "heterogeneous_holdout_authorized": false,
+    "s1_qualification_authority": false
+  },
+  "authorization_basis": [
+    "The CUDA-only candidate output was content-frozen in commit b181c3d7b455cc36b6d5753934216a43241de874 before this evaluator could load references.",
+    "The split-safe evaluator and its policy passed 621 repository tests, compileall, active-baseline validation and a 7109-file zero-finding secret scan in clean design baseline 228efde5a5a49bc7d70f16a016d9a995faf83f72.",
+    "Owner authorized continuous VS1 execution and explicitly required all vector computation to use CUDA rather than CPU; this evaluation performs no vector computation."
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "accepted_items": [
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "MU 当前 10-Q 明确警示 AI 与 HBM 长期需求轨迹未知、需求可能波动，构成订单与需求可见性的发行人反方证据。",
+      "claim_boundary_zh": "该风险披露不代表需求已经转弱，也不提供订单、积压或客户提货数量。",
+      "reason_codes": [
+        "current_official_HBM_demand_uncertainty_counter"
+      ],
+      "requirement_ids": [
+        "MER::8052abdff23fe9d47e54",
+        "MER::d8c2f9b38361a6665d44"
+      ],
+      "review_item_ref": "CANDOBJ::33A2543B138565AE8D74D541"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "MU 当前 10-Q 对 AI 与 HBM 长期需求波动的警示，限制了仅凭当前出货推断持续转化的结论。",
+      "claim_boundary_zh": "该材料只证明持续性存在不确定性，不证明已发生提前拉货、库存积压或订单取消。",
+      "reason_codes": [
+        "current_official_HBM_conversion_durability_counter"
+      ],
+      "requirement_ids": [
+        "MER::4c73a912349f244071fa",
+        "MER::fb671bb36d0dff091e37"
+      ],
+      "review_item_ref": "CANDOBJ::21C7B415B064307D6B95C165"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "MU 当前 10-Q 披露日本 DRAM/AI memory 改造和新加坡 HBM 先进封装扩产，并给出 2027 年开始增加产能的时点。",
+      "claim_boundary_zh": "该材料证明扩产动作与时间表，不证明当前季度可用产能、良率、客户分配或实际出货规模。",
+      "reason_codes": [
+        "current_official_HBM_capacity_expansion_timing"
+      ],
+      "requirement_ids": [
+        "MER::47882f425fc0e0e3d98b",
+        "MER::d0d68d1d8f6a6734b12d"
+      ],
+      "review_item_ref": "CANDOBJ::BD6AD3B8670C405830657AA4"
+    },
+    {
+      "action": "accept_for_request_context",
+      "business_meaning_zh": "MU 已收到并预计继续收到客户押金和相关财务承诺，说明客户协议具有实际资金约束背景。",
+      "claim_boundary_zh": "押金与财务承诺不是反方证据，也不证明订单已全部转化、不可取消或利润已经实现。",
+      "reason_codes": [
+        "current_official_customer_deposit_context_only"
+      ],
+      "requirement_ids": [],
+      "review_item_ref": "CANDOBJ::2BD69FD85AAAAEECF9BC0045"
+    },
+    {
+      "action": "accept_for_requirements",
+      "business_meaning_zh": "MU 当前 10-Q 明确提示大客户关系中断或数据中心建设放缓可能导致需求显著下降，构成客户承诺与 HBM 需求的实质反方。",
+      "claim_boundary_zh": "风险披露不代表客户已经减少采购，也不量化单一客户、订单或收入影响。",
+      "reason_codes": [
+        "current_official_customer_and_data_center_demand_counter"
+      ],
+      "requirement_ids": [
+        "MER::c10db93272011805307d",
+        "MER::e39216b8a7b605a69650"
+      ],
+      "review_item_ref": "CANDOBJ::D231F362F3D0053EA0DD66EC"
+    },
+    {
+      "action": "accept_for_request_context",
+      "business_meaning_zh": "NVDA 披露出口限制可能压低数据中心 GPU 及配套网络产品需求，为 MU 的 HBM/数据中心需求研究提供生态链政策背景。",
+      "claim_boundary_zh": "该材料没有直接披露 MU 内存需求、客户分配或 CoWoS 产能，不能满足 MU 上游供给或 HBM 需求的硬命题。",
+      "reason_codes": [
+        "current_official_ecosystem_policy_context_only"
+      ],
+      "requirement_ids": [],
+      "review_item_ref": "CANDOBJ::529FDAF840EB828E7EDE00F6"
+    }
+  ],
+  "candidate_review_packet_digest": "25602ad7bc691f7f881f19a3e5d33fee79e37ac8bde9c6034752b573d2e6b135",
+  "case_key": "MU",
+  "default_claim_action": "reject_for_current_scope",
+  "metric_row_action": "delegate_to_s2_numeric_authority",
+  "parent_documents_sha256": "f24d72cd6a659a43eb183c21b353f07a2598ba8973fed1a5edd1d6698f25ff3b",
+  "plan_digest": "16f41ce225dab6c3aa44511394b2e4ca9e97fe3ba6d49fec63f97341fc12a81b",
+  "plan_id": "FIN-0.1.3-S1-MU-PROPOSITION-BOUND-EVIDENCE-R2",
+  "predecessor_pack_payload_digest": "a627a927e7e0433473c75af5dde1ad6fbc1284852729bdefc199d2b0628ce12e",
+  "product_publication_authorized": false,
+  "qualified_human_review": false,
+  "research_as_of": "2026-08-06",
+  "S1_qualification_authorized": false,
+  "schema_version": "fin_ia_s1_product_evidence_adjudication_plan_v1_0",
+  "status": "approved_internal_engineering_plan",
+  "successor_known_boundary": "Internal engineering adjudication only. Current issuer counterevidence and capacity timing may satisfy only the named propositions. Exact reported financials remain S2 authority; margin, cash, advanced-packaging counterevidence and customer-specific conversion evidence remain unresolved."
+}

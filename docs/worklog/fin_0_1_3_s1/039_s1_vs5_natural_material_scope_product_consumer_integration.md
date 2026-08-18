@@ -49,3 +49,9 @@ canary 通过后，只将同一 payload 接回当前 Workbench 计划并复跑�
 执行实现已在干净远端提交 `20ca2768...` 冻结。随后生成的 `v1_1` 与 `v1_0` 具有相同 plan digest 和 model-visible messages digest，但 8／8 请求审计 ID 均完整，且输入声明的 `prepared_from_commit` 精确绑定 `20ca2768...`。`v1_1` 才是后续 exact-once authority 唯一允许绑定的输入；它仍不是模型结果、Evidence、S1 资格或产品发布。
 
 `v1_1` 与回归测试已在干净远端提交 `c893c94f...` 冻结。R1 authority 逐项绑定该提交、输入及消息 digest、五份 provider-neutral 合同、DeepSeek profile、runner 和实现源码；预算仅允许 1 次模型／1 次传输、0 retry／fallback／协议切换／检索／embedding／候选读取／产品写入。Project OS 零调用预检确认 RC-S1-024 明确允许该 scope，另外 25 个 full-chain blocker 均保持 out of scope。authority 签发本身仍不表示 live 已发生。
+
+## R1 真实结果与最早责任层
+
+R1 在干净远端提交 `2ccfa1eb...` 上通过正式 Project OS preflight 后执行。唯一一次请求返回 HTTP 200，响应 body 完整；prompt 为 2,781 tokens，completion 为 12,000 tokens，其中 reasoning 为 12,000，`finish_reason=length`，可见 JSON 为 0。0 retry／fallback／检索／候选读取／产品写入，原始请求与脱敏响应均先行留存。由于没有任何 scope payload，不能评价材料范围质量，也不能进入 Workbench replay。
+
+这不是 S1 检索、网络或合同 validator 失败。最早责任层是可替换的 DeepSeek provider profile：任务专属 TokenBudgetBasis 把本节点定义为“有界分类与分解”，profile 却启用了 `thinking=max`，模型把全部可见输出容量消耗在私有推理。R1 保持不可变且禁止重试；successor 不增 token、不改输入、不改 provider-neutral 合同，只允许将合同提交 profile 改为 `thinking=disabled` 且不发送 `reasoning_effort`。若同输入非 thinking 提交仍无法形成完整结果，才考虑按请求 microbatch，不能现在就扩大核心 Harness。

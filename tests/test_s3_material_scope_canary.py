@@ -221,23 +221,22 @@ def test_current_dell_input_is_clean_commit_bound_and_fully_traceable() -> None:
     assert diagnostic["model_calls"] == 0
 
 
-def test_current_dell_authority_passes_project_os_without_repository_side_effects() -> None:
+def test_current_dell_R1_authority_remains_bound_but_scope_is_consumed() -> None:
     authority = _json(CURRENT_DELL_AUTHORITY_REF)
     bound = validate_material_scope_canary_authority(authority, root=ROOT)
-    preflight = build_preflight(
-        root=ROOT,
-        decision_ref=CURRENT_DELL_AUTHORITY_REF,
-        environment={"DEEPSEEK_API_KEY": "present"},
-        check_repository=False,
-    )
     assert bound["input"]["result_digest"] == (
         "f19148cba25125fa7668d3aec8846d27e4a9d4ed22db6a1f143a4b0cbe562ed9"
     )
-    assert preflight["status"] == "pass_current_decision_bound_preflight"
-    assert preflight["checks"]["root_cause_scope_allowed"] is True
-    assert preflight["checks"]["token_and_call_budget_bounded"] is True
-    assert preflight["checks"]["provider_credential_present_value_unread"] is True
-    assert preflight["decision_projection"]["natural_material_scope_canary"] is True
+    with pytest.raises(
+        ValueError,
+        match="project_os_material_scope_canary_scope_allowance_missing",
+    ):
+        build_preflight(
+            root=ROOT,
+            decision_ref=CURRENT_DELL_AUTHORITY_REF,
+            environment={"DEEPSEEK_API_KEY": "present"},
+            check_repository=False,
+        )
 
 
 def _copy(root: Path, ref: str) -> None:

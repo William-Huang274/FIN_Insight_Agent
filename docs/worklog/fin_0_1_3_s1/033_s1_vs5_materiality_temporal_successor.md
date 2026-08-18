@@ -1,7 +1,7 @@
 # S1 VS5 命题实质性与跨期候选 successor
 
 日期：2026-08-18
-状态：`engineering_pass / COST_valid_temporal_R2_not_yet_authorized / hidden_splits_unopened / S1_qualified=false`
+状态：`engineering_pass / COST_valid_temporal_R2_candidate_complete_evaluation_pending / hidden_splits_unopened / S1_qualified=false`
 
 ## 为什么要做 successor
 
@@ -75,12 +75,26 @@ Evidence Role v2 使用请求词＋事实状态判断当前候选究竟是实际
 
 复证结果：全仓 `629 passed`；successor、旧合同与旧 replay 定向 `10 passed`。只物化 `valid_temporal/vs5_qualification_inputs_v1_1.jsonl`，没有物化 hidden successor input。
 
+## COST R2 label-blind 候选执行
+
+设计在干净提交 `1fa65512` 冻结，独立 authority 提交为 `32a2a673`。唯一一次 `FIN-0.1.3-S1-VS5-VALID-TEMPORAL-CANDIDATE-R2` 已完成：
+
+- 5 个 COST 命题全部执行，编译 113 个命题级 RetrievalNeed；
+- BGE／Qwen 各重排 1,440 对；
+- learned execution 全部位于 `cuda:0`、FP16，设备为 NVIDIA GeForce RTX 4060 Laptop GPU；
+- 对象 embedding cache 命中，但 successor 查询和 pair manifest 已重新计算；
+- 0 网络、0 生成模型、0 CPU vector fallback、0 retry；
+- evaluator reference 未加载，候选没有 Evidence／NumericFact 权限；
+- private raw 为 1,405,046 bytes，SHA-256 `ff760f5a9ee77b07c7253d7e85727bdb9a995d66d22812119928e1a225af935c`。
+
+该结果只能说明候选生成成功，不能提前查看标签后宣布检索通过。public projection 必须先冻结提交，随后才允许独立 evaluator 加载 valid-temporal reference。
+
 ## 当前真实状态
 
-本轮只达到 `engineering_pass`：
+本轮达到 `engineering_pass` 并完成 label-blind R2 candidate execution：
 
-- 尚未签发 COST R2 execution authority；
-- 尚未计算新向量／reranker 分数；
+- COST R2 execution authority 已单独签发并消耗；
+- 新查询和双 reranker 分数已在 CUDA／FP16 完成；
 - 尚未读取 evaluator reference 进行 R2 评分；
 - 没有 Evidence／NumericFact 晋升；
 - current Runtime Registry、Evidence Pack、Workbench 和历史 S3 attempt 均未改变；
@@ -91,8 +105,8 @@ Evidence Role v2 使用请求词＋事实状态判断当前候选究竟是实际
 
 1. 将本记录、评测标准、架构说明、Project OS 与 RC-S1-024 同步；
 2. 运行 active baseline、Project OS、compileall、secret／JSON 治理；
-3. 精确 stage、commit、push 当前 successor 设计；
-4. 基于干净提交单独签发 `FIN-0.1.3-S1-VS5-VALID-TEMPORAL-CANDIDATE-R2`；
-5. 唯一一次 CUDA FP16 R2：0 retry、0 fallback、0 network、0 generation model；
-6. 冻结 raw 后再建立独立 evaluator authority；
-7. R2 若通过，只进入 qualified-human reference review 与隐藏执行资格决策；若失败，停止 COST 重跑并做架构／新 temporal case 处置。
+3. 当前 successor 设计已在 `1fa65512` clean push；
+4. R2 authority 已在 `32a2a673` clean push；
+5. 唯一一次 CUDA FP16 R2 candidate 已完成并保留 raw；
+6. 下一步先冻结 public candidate result，再建立独立 evaluator policy／authority；
+7. 评价若通过，只进入 qualified-human reference review 与隐藏执行资格决策；若失败，停止 COST 重跑并做架构／新 temporal case 处置。

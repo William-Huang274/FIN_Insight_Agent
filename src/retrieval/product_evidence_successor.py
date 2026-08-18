@@ -21,6 +21,12 @@ ADJUDICATION_PLAN_SCHEMA_VERSION = (
 )
 POLICY_SCHEMA_VERSION = "fin_ia_s1_product_evidence_adjudication_policy_v1_1"
 RESULT_SCHEMA_VERSION = "fin_ia_s1_product_evidence_successor_result_v1_2"
+CURRENT_COMPOSITION_LINEAGE_SCHEMA_VERSION = (
+    "fin_ia_current_pack_composition_lineage_v1_3"
+)
+CURRENT_PRODUCT_READINESS_SCHEMA_VERSION = (
+    "fin_ia_s1_current_product_readiness_result_v1_1"
+)
 DECISION_ACTIONS = (
     "accept_for_requirements",
     "accept_for_request_context",
@@ -31,6 +37,212 @@ DECISION_ACTIONS = (
 
 class ProductEvidenceSuccessorError(ValueError):
     """A controlled Candidate-to-Evidence successor violated authority."""
+
+
+def project_current_product_evidence_successor_lineage(
+    *,
+    historical_projection: Mapping[str, Any] | None,
+    current_result: Mapping[str, Any],
+    product_readiness: Mapping[str, Any],
+    case_key: str,
+) -> dict[str, Any] | None:
+    """Project a current Pack successor without rewriting its historical producer.
+
+    VS1/VS4 records remain immutable evidence of the Packs that those verticals
+    actually produced. When a later, proposition-bound Evidence successor is
+    promoted into the current composition, every Workbench consumer must show
+    that new Pack binding while retaining the older projection only as historical
+    lineage. This function is deliberately shared by Pack and Retrieval views so
+    they cannot invent competing definitions of "current".
+    """
+
+    result = deepcopy(dict(current_result))
+    lineage = _mapping(
+        result.get("current_composition_lineage") or {},
+        "current_product_successor_lineage_invalid",
+    )
+    if not (
+        lineage.get("schema_version")
+        == CURRENT_COMPOSITION_LINEAGE_SCHEMA_VERSION
+        and lineage.get("promotion_kind")
+        == "three_case_proposition_bound_evidence_successor"
+    ):
+        return None
+
+    normalized_case = str(case_key or "").strip().upper()
+    replacements = {
+        str(value or "").strip().upper()
+        for value in lineage.get("replacement_case_keys") or ()
+    }
+    if normalized_case not in replacements:
+        return None
+
+    result_body = deepcopy(result)
+    result_digest = str(result_body.pop("result_digest", ""))
+    _require(
+        result.get("schema_version")
+        == "fin_ia_current_research_evidence_pack_result_v1_1"
+        and result.get("status")
+        == "terminal_succeeded_current_pack_composition_with_declared_gaps"
+        and result_digest == canonical_digest(result_body),
+        "current_product_successor_result_invalid",
+    )
+    replacement_digests = _mapping(
+        lineage.get("replacement_result_digests"),
+        "current_product_successor_result_binding_invalid",
+    )
+    successor_result_digest = str(
+        replacement_digests.get(normalized_case) or ""
+    )
+    artifacts = _mapping(
+        result.get("pack_artifacts"),
+        "current_product_successor_pack_artifacts_invalid",
+    )
+    payload_digests = _mapping(
+        result.get("pack_payload_digests"),
+        "current_product_successor_pack_payload_digests_invalid",
+    )
+    artifact = _mapping(
+        artifacts.get(normalized_case),
+        "current_product_successor_pack_artifact_invalid",
+    )
+    artifact_digest = str(artifact.get("digest") or "")
+    pack_payload_digest = str(payload_digests.get(normalized_case) or "")
+    summaries = {
+        str(row.get("case_key") or "").strip().upper(): row
+        for row in result.get("case_summaries") or ()
+        if isinstance(row, Mapping)
+    }
+    summary = _mapping(
+        summaries.get(normalized_case),
+        "current_product_successor_case_summary_invalid",
+    )
+
+    readiness = deepcopy(dict(product_readiness))
+    readiness_body = deepcopy(readiness)
+    readiness_digest = str(readiness_body.pop("result_digest", ""))
+    requests = [
+        _mapping(row, "current_product_successor_request_invalid")
+        for row in readiness.get("requests") or ()
+    ]
+    authority = _mapping(
+        readiness.get("authority"),
+        "current_product_successor_authority_invalid",
+    )
+    _require(
+        successor_result_digest
+        and artifact_digest
+        and pack_payload_digest
+        and readiness.get("schema_version")
+        == CURRENT_PRODUCT_READINESS_SCHEMA_VERSION
+        and readiness.get("status")
+        == "current_product_pack_readiness_materialized"
+        and str(readiness.get("case_key") or "").strip().upper()
+        == normalized_case
+        and readiness_digest == canonical_digest(readiness_body)
+        and int(readiness.get("request_count") or -1) == len(requests)
+        and authority.get("candidate_is_not_evidence") is True
+        and authority.get("S1_qualification_claimed") is False
+        and authority.get("product_publication") is False,
+        "current_product_successor_readiness_invalid",
+    )
+
+    decision_summary = {
+        key: sum(
+            int(
+                _mapping(
+                    row.get("candidate_decision_counts") or {},
+                    "current_product_successor_candidate_counts_invalid",
+                ).get(key)
+                or 0
+            )
+            for row in requests
+        )
+        for key in ("accepted", "rejected", "unjudged")
+    }
+    decision_summary["needs_review"] = sum(
+        int(
+            _mapping(
+                row.get("candidate_decision_counts") or {},
+                "current_product_successor_candidate_counts_invalid",
+            ).get("needs_human_review")
+            or 0
+        )
+        for row in requests
+    )
+    historical = (
+        deepcopy(dict(historical_projection))
+        if historical_projection is not None
+        else None
+    )
+    historical_lineage = None
+    if historical is not None:
+        historical_lineage = {
+            "status": str(historical.get("status") or ""),
+            "recorded_at": str(historical.get("recorded_at") or ""),
+            "pack_binding": deepcopy(dict(historical.get("pack_binding") or {})),
+            "workbench_projection_digest": str(
+                historical.get("workbench_projection_digest") or ""
+            ),
+            "not_current_pack_producer": True,
+        }
+
+    body = {
+        "schema_version": "fin_ia_s1_workbench_lineage_projection_v1_0",
+        "status": "canonical_s1_lineage_with_product_evidence_successor",
+        "recorded_at": str(readiness.get("recorded_at") or ""),
+        "case_key": normalized_case,
+        "research_as_of": (
+            historical.get("research_as_of") if historical is not None else None
+        ),
+        "proposition_id": None,
+        "proposition_ids": sorted(
+            str(row.get("request_id") or "")
+            for row in requests
+            if str(row.get("request_id") or "")
+        ),
+        "readiness_state": str(readiness.get("readiness_state") or ""),
+        "candidate_decision_summary": decision_summary,
+        "coverage_summary": {
+            "coverage_state": "current_product_readiness_with_declared_gaps",
+            "accepted_evidence_count": int(
+                summary.get("accepted_evidence_items") or 0
+            ),
+            "current_exact_reviewed_evidence_count": int(
+                readiness.get("accepted_reviewed_evidence_count") or 0
+            ),
+            "reviewed_not_recalled_count": None,
+            "unresolved_gap_count": int(summary.get("residual_gaps") or 0),
+            "true_public_information_gap_count": 0,
+        },
+        # Prior VS1/VS4 decisions and gap receipts remain historical. They
+        # cannot be surfaced as if they adjudicated the successor candidate set.
+        "decision_rows": [],
+        "gap_eligibility_receipts": [],
+        "pack_binding": {
+            "case_key": normalized_case,
+            "artifact_digest": artifact_digest,
+            "pack_payload_digest": pack_payload_digest,
+        },
+        "evidence_successor": {
+            "successor_result_digest": successor_result_digest,
+            "product_readiness_result_digest": readiness_digest,
+            "candidate_is_not_evidence": True,
+            "numeric_fact_authorized": False,
+            "complete_s1_qualified": False,
+            "qualified_human_review_complete": False,
+        },
+        "historical_vertical_lineage": historical_lineage,
+        "hard_boundaries": {
+            "candidate_is_not_evidence": True,
+            "rank_never_grants_evidence_authority": True,
+            "unexecuted_route_is_not_public_information_gap": True,
+            "complete_product_conclusion_ready": False,
+            "S1_qualified_stable": False,
+            "historical_vs4_summary_not_relabelled_as_successor": True,
+        },
+    }
+    return {**body, "workbench_projection_digest": canonical_digest(body)}
 
 
 def _require(condition: bool, code: str) -> None:
@@ -734,10 +946,13 @@ def build_product_evidence_successor(
 
 __all__ = [
     "ADJUDICATION_PLAN_SCHEMA_VERSION",
+    "CURRENT_COMPOSITION_LINEAGE_SCHEMA_VERSION",
+    "CURRENT_PRODUCT_READINESS_SCHEMA_VERSION",
     "DECISION_ACTIONS",
     "POLICY_SCHEMA_VERSION",
     "RESULT_SCHEMA_VERSION",
     "ProductEvidenceSuccessorError",
     "compile_product_evidence_adjudication_policy",
     "build_product_evidence_successor",
+    "project_current_product_evidence_successor_lineage",
 ]

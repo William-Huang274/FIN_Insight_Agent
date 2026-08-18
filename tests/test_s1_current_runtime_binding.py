@@ -26,13 +26,13 @@ POLICY = (
     ROOT
     / "configs"
     / "retrieval"
-    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_2.json"
+    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_3.json"
 )
 RECEIPT = (
     ROOT
     / "configs"
     / "runtime"
-    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_2.json"
+    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_3.json"
 )
 
 
@@ -62,7 +62,7 @@ def test_current_runtime_receipt_preserves_lineage_and_open_gates() -> None:
     ] is True
     assert receipt["product_readiness"]["cases"]["DELL"][
         "readiness_state"
-    ] == "candidate_audit_only_explicit_scope_pending"
+    ] == "blocked_by_evidence_admission"
     assert receipt["product_readiness"]["cases"]["MU"][
         "readiness_state"
     ] == "blocked_by_candidate_coverage"
@@ -71,13 +71,13 @@ def test_current_runtime_receipt_preserves_lineage_and_open_gates() -> None:
     ] == "blocked_by_candidate_coverage"
     assert receipt["product_readiness"]["cases"]["DELL"][
         "candidate_review_item_count"
-    ] == 0
+    ] == 18
     assert receipt["product_readiness"]["cases"]["MU"][
         "candidate_review_item_count"
-    ] == 34
+    ] == 23
     assert receipt["product_readiness"]["cases"]["NVDA"][
         "candidate_review_item_count"
-    ] == 31
+    ] == 18
     assert receipt["acceptance"]["s1_qualified_stable"] is False
 
 

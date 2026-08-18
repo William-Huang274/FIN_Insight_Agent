@@ -267,15 +267,15 @@ def test_pack_retrieval_and_workbench_consume_the_same_canonical_lineage(
         "pack_payload_digest": pack_view["pack_payload_digest"],
     }
     assert pack_view["canonical_spine"]["status"] == (
-        "canonical_s1_lineage_with_capture_bound_supplement"
+        "canonical_s1_lineage_with_product_evidence_successor"
     )
-    assert pack_view["canonical_spine"]["supplement_vertical"][
-        "coverage_delta"
-    ]["added_capture_bound_claim_count"] == 5
-    assert pack_view["canonical_spine"]["supplement_vertical"][
+    assert pack_view["canonical_spine"]["evidence_successor"][
         "complete_s1_qualified"
     ] is False
-    assert len(pack_view["evidence_items"]) == 22
+    assert pack_view["canonical_spine"]["historical_vertical_lineage"][
+        "not_current_pack_producer"
+    ] is True
+    assert len(pack_view["evidence_items"]) == 29
     assert len(pack_view["residual_gaps"]) == 14
     ResearchRetrievalResponse.model_validate(retrieval_view)
     ResearchEvidencePackResponse.model_validate(pack_view)
@@ -294,11 +294,31 @@ def test_pack_binding_drift_is_rejected_at_the_consumer_seam(runtime_services) -
     try:
         with pytest.raises(
             ResearchEvidencePackServiceError,
-            match="current_research_evidence_vertical_slice_pack_binding_drift",
+            match="current_research_evidence_historical_lineage_invalid",
         ):
             packs.get_case("DELL", _pack_principal())
     finally:
         packs._s1_vertical_slice = original
+
+
+def test_current_product_pack_artifact_drift_fails_closed(runtime_services) -> None:
+    _retrieval, packs, _workspace = runtime_services
+    original = packs._result
+    mutated = deepcopy(original)
+    mutated["pack_artifacts"]["DELL"]["digest"] = "f" * 64
+    mutated["result_digest"] = canonical_json_digest(
+        {key: value for key, value in mutated.items() if key != "result_digest"}
+    )
+    packs._result = mutated
+
+    try:
+        with pytest.raises(
+            ResearchEvidencePackServiceError,
+            match="current_research_evidence_pack_object_identity_drift",
+        ):
+            packs.get_case("DELL", _pack_principal())
+    finally:
+        packs._result = original
 
 
 def test_non_vs1_cases_receive_capture_bound_lineage_without_false_qualification(
@@ -314,11 +334,11 @@ def test_non_vs1_cases_receive_capture_bound_lineage_without_false_qualification
         assert pack_spine["case_key"] == case_key
         assert pack_spine["pack_binding"]["case_key"] == case_key
         assert pack_spine["status"] == (
-            "canonical_s1_lineage_with_capture_bound_supplement"
+            "canonical_s1_lineage_with_product_evidence_successor"
         )
         assert pack_spine["hard_boundaries"][
-            "base_vs1_decision_rows_available"
-        ] is False
+            "historical_vs4_summary_not_relabelled_as_successor"
+        ] is True
         assert pack_spine["hard_boundaries"]["S1_qualified_stable"] is False
-        assert pack_spine["supplement_vertical"]["numeric_fact_authorized"] is False
-        assert pack_spine["supplement_vertical"]["complete_s1_qualified"] is False
+        assert pack_spine["evidence_successor"]["numeric_fact_authorized"] is False
+        assert pack_spine["evidence_successor"]["complete_s1_qualified"] is False

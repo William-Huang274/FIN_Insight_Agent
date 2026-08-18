@@ -30,7 +30,12 @@ from retrieval.vertical_slice import (
 from retrieval.supplement_vertical import (
     SupplementVerticalError,
     project_capture_bound_supplement_lineage,
+    resolve_supplement_successor_binding,
     validate_supplement_vertical_resource,
+)
+from retrieval.product_evidence_successor import (
+    ProductEvidenceSuccessorError,
+    project_current_product_evidence_successor_lineage,
 )
 
 
@@ -230,6 +235,14 @@ class ResearchEvidencePackService:
             product_readiness_results,
             product_readiness_private_root,
         )
+        # Keep the already validated, immutable public receipts separately for
+        # digest-bound lineage projection. The Workbench-safe projection above
+        # intentionally adds bounded review excerpts and therefore no longer has
+        # the same canonical digest as its source receipt.
+        self._product_readiness_lineage = {
+            str(case_key).strip().upper(): deepcopy(dict(value))
+            for case_key, value in (product_readiness_results or {}).items()
+        }
 
     @classmethod
     def from_runtime_paths(
@@ -816,6 +829,54 @@ class ResearchEvidencePackService:
         base_projection = project_s1_vs1_case(
             self._s1_vertical_slice, case_key=case_key
         )
+        historical_projection = None
+        historical_binding = resolve_supplement_successor_binding(
+            self._s1_supplement_vertical, case_key=case_key
+        )
+        if historical_binding is not None:
+            try:
+                historical_projection = project_capture_bound_supplement_lineage(
+                    base_projection=base_projection,
+                    supplement_summary=self._s1_supplement_vertical,
+                    case_key=case_key,
+                    artifact_digest=historical_binding["artifact_digest"],
+                    pack_payload_digest=historical_binding[
+                        "pack_payload_digest"
+                    ],
+                )
+            except SupplementVerticalError as exc:
+                raise ResearchEvidencePackServiceError(
+                    "current_research_evidence_historical_lineage_invalid",
+                    503,
+                    supplement_reason=str(exc),
+                ) from exc
+        try:
+            successor = project_current_product_evidence_successor_lineage(
+                historical_projection=historical_projection,
+                current_result=self._result,
+                product_readiness=self._product_readiness_lineage.get(case_key)
+                or {},
+                case_key=case_key,
+            )
+        except ProductEvidenceSuccessorError as exc:
+            raise ResearchEvidencePackServiceError(
+                "current_research_evidence_successor_lineage_invalid",
+                503,
+                successor_reason=str(exc),
+            ) from exc
+        if successor is not None:
+            _require(
+                successor["pack_binding"]
+                == {
+                    "case_key": case_key,
+                    "artifact_digest": artifact_digest,
+                    "pack_payload_digest": pack_payload_digest,
+                },
+                "current_research_evidence_successor_pack_binding_drift",
+                503,
+                case_key=case_key,
+            )
+            return successor
         try:
             return project_capture_bound_supplement_lineage(
                 base_projection=base_projection,

@@ -124,11 +124,12 @@ export type ResidualGap = {
 
 export type S1CanonicalSpineView = {
   schema_version: "fin_ia_s1_workbench_lineage_projection_v1_0";
-  status: "canonical_s1_lineage_ready";
+  status: string;
   recorded_at: string;
   case_key: string;
-  research_as_of: string;
-  proposition_id: string;
+  research_as_of: string | null;
+  proposition_id: string | null;
+  proposition_ids?: string[];
   readiness_state: string;
   candidate_decision_summary: {
     accepted: number;
@@ -139,7 +140,8 @@ export type S1CanonicalSpineView = {
   coverage_summary: {
     coverage_state: string;
     accepted_evidence_count: number;
-    reviewed_not_recalled_count: number;
+    current_exact_reviewed_evidence_count?: number;
+    reviewed_not_recalled_count: number | null;
     unresolved_gap_count: number;
     true_public_information_gap_count: number;
   };
@@ -169,12 +171,32 @@ export type S1CanonicalSpineView = {
     artifact_digest: string;
     pack_payload_digest: string;
   };
+  evidence_successor?: {
+    successor_result_digest: string;
+    product_readiness_result_digest: string;
+    candidate_is_not_evidence: boolean;
+    numeric_fact_authorized: boolean;
+    complete_s1_qualified: boolean;
+    qualified_human_review_complete: boolean;
+  };
+  historical_vertical_lineage?: {
+    status: string;
+    recorded_at: string;
+    pack_binding: {
+      case_key: string;
+      artifact_digest: string;
+      pack_payload_digest: string;
+    };
+    workbench_projection_digest: string;
+    not_current_pack_producer: boolean;
+  } | null;
   hard_boundaries: {
     candidate_is_not_evidence: boolean;
     rank_never_grants_evidence_authority: boolean;
     unexecuted_route_is_not_public_information_gap: boolean;
     complete_product_conclusion_ready: boolean;
     S1_qualified_stable: boolean;
+    historical_vs4_summary_not_relabelled_as_successor?: boolean;
   };
   workbench_projection_digest: string;
 };

@@ -136,8 +136,8 @@ def test_current_runtime_binds_every_claim_and_exposes_dell_margin_sentence() ->
             assert source["excerpt_projection_kind"] == "reviewed_claim_anchor"
             anchored.append((case_key, item))
     counts = Counter(case_key for case_key, _item in anchored)
-    assert counts == {"DELL": 14, "MU": 11, "NVDA": 19}
-    assert len(anchored) == 44
+    assert counts == {"DELL": 21, "MU": 14, "NVDA": 25}
+    assert len(anchored) == 60
 
     target = next(
         item

@@ -47,6 +47,10 @@ from retrieval.supplement_vertical import (
     resolve_supplement_successor_binding,
     validate_supplement_vertical_resource,
 )
+from retrieval.product_evidence_successor import (
+    ProductEvidenceSuccessorError,
+    project_current_product_evidence_successor_lineage,
+)
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.research.planning import (
@@ -108,6 +112,12 @@ CURRENT_S1_RUNTIME_BINDING_POLICY_RESOURCE_ID = (
 CURRENT_S1_RUNTIME_BINDING_RECEIPT_RESOURCE_ID = (
     "application.result.current_s1_runtime_binding_receipt"
 )
+CURRENT_RESEARCH_EVIDENCE_PACK_RESULT_RESOURCE_ID = (
+    "application.result.current_research_local_evidence_packs"
+)
+CURRENT_S1_PRODUCT_READINESS_CATALOG_RESOURCE_ID = (
+    "application.config.current_s1_product_readiness_catalog"
+)
 EXPECTED_SCHEMA = "fin_ia_current_retrieval_snapshot_v1_0"
 EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
 RETRIEVAL_PROJECTION_SCHEMA = "fin_ia_research_retrieval_projection_v1_0"
@@ -160,6 +170,10 @@ class ResearchRetrievalService:
         s1_vertical_slice: Mapping[str, Any] | None = None,
         s1_supplement_vertical: Mapping[str, Any] | None = None,
         artifact_spine_policy: Mapping[str, Any] | None = None,
+        current_evidence_pack_result: Mapping[str, Any] | None = None,
+        product_readiness_results: Mapping[
+            str, Mapping[str, Any]
+        ] | None = None,
     ) -> None:
         self._snapshot = self._validate(snapshot)
         self._cases = {
@@ -312,6 +326,21 @@ class ResearchRetrievalService:
             raise ResearchRetrievalServiceError(
                 "research_retrieval_supplement_without_base_vertical", 503
             )
+        if (current_evidence_pack_result is None) != (
+            product_readiness_results is None
+        ):
+            raise ResearchRetrievalServiceError(
+                "research_retrieval_product_successor_binding_incomplete", 503
+            )
+        self._current_evidence_pack_result = (
+            deepcopy(dict(current_evidence_pack_result))
+            if current_evidence_pack_result is not None
+            else None
+        )
+        self._product_readiness_results = {
+            str(case_key).strip().upper(): deepcopy(dict(value))
+            for case_key, value in (product_readiness_results or {}).items()
+        }
 
     @classmethod
     def from_runtime_paths(
@@ -333,6 +362,18 @@ class ResearchRetrievalService:
                 repository_root,
                 hybrid_candidate_policy,
             )
+        product_readiness_catalog = read_registered_runtime_json(
+            repository_root,
+            CURRENT_S1_PRODUCT_READINESS_CATALOG_RESOURCE_ID,
+        )
+        product_readiness_results = {
+            str(case_key).strip().upper(): read_registered_runtime_json(
+                repository_root, str(resource_id)
+            )
+            for case_key, resource_id in dict(
+                product_readiness_catalog.get("case_resource_ids") or {}
+            ).items()
+        }
         return cls(
             snapshot=read_registered_runtime_json(
                 repository_root,
@@ -408,6 +449,11 @@ class ResearchRetrievalService:
                 if load_s1_vertical_slice
                 else None
             ),
+            current_evidence_pack_result=read_registered_runtime_json(
+                repository_root,
+                CURRENT_RESEARCH_EVIDENCE_PACK_RESULT_RESOURCE_ID,
+            ),
+            product_readiness_results=product_readiness_results,
         )
 
     def get_case(
@@ -505,7 +551,7 @@ class ResearchRetrievalService:
             artifact_digest = successor_binding["artifact_digest"]
             pack_payload_digest = successor_binding["pack_payload_digest"]
         try:
-            return project_capture_bound_supplement_lineage(
+            historical_projection = project_capture_bound_supplement_lineage(
                 base_projection=base_projection,
                 supplement_summary=self._s1_supplement_vertical,
                 case_key=case_key,
@@ -518,6 +564,23 @@ class ResearchRetrievalService:
                 503,
                 supplement_reason=str(exc),
             ) from exc
+        if self._current_evidence_pack_result is None:
+            return historical_projection
+        try:
+            successor = project_current_product_evidence_successor_lineage(
+                historical_projection=historical_projection,
+                current_result=self._current_evidence_pack_result,
+                product_readiness=self._product_readiness_results.get(case_key)
+                or {},
+                case_key=case_key,
+            )
+        except ProductEvidenceSuccessorError as exc:
+            raise ResearchRetrievalServiceError(
+                "research_retrieval_product_successor_lineage_invalid",
+                503,
+                successor_reason=str(exc),
+            ) from exc
+        return successor if successor is not None else historical_projection
 
     def execute_controlled_plan(
         self,

@@ -494,9 +494,9 @@ function CanonicalSpinePanel({ spine }: { spine: S1CanonicalSpineView | null }) 
         <span>可用于有边界研究，尚不足以形成完整结论</span>
       </div>
       <div className="research-workspace__metrics is-large">
-        <Metric value={spine.candidate_decision_summary.accepted} label="已接受 Evidence" />
+        <Metric value={spine.coverage_summary.current_exact_reviewed_evidence_count ?? spine.coverage_summary.accepted_evidence_count} label="当前精确绑定 Evidence" />
         <Metric value={spine.candidate_decision_summary.needs_review} label="候选待复核" warn />
-        <Metric value={spine.coverage_summary.reviewed_not_recalled_count} label="既有证据未召回" warn />
+        <Metric value={spine.coverage_summary.reviewed_not_recalled_count ?? "未复证"} label="既有证据未召回" warn />
         <Metric value={spine.coverage_summary.unresolved_gap_count} label="尚未补证缺口" warn />
       </div>
       <p className="research-workspace__canonical-note">
@@ -556,7 +556,7 @@ function GapList({ gaps }: { gaps: ResearchEvidenceView["residual_gaps"] }) {
   );
 }
 
-function Metric({ value, label, warn = false }: { value: number; label: string; warn?: boolean }) {
+function Metric({ value, label, warn = false }: { value: number | string; label: string; warn?: boolean }) {
   return <div className={warn ? "research-workspace__metric is-warn" : "research-workspace__metric"}><strong>{value}</strong><span>{label}</span></div>;
 }
 

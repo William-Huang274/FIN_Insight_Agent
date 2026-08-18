@@ -765,3 +765,17 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 现有 reviewed Pack 与 current candidates 只有部分精确 source overlap；这是产品 EvidenceDecision 必须显式展示的状态。候选可触发“复用同源已审 Evidence”，但候选文字本身不得因此晋升。
 - 当前顺序恢复为：复用现有 candidate decision／integrated readiness 合同实现产品 producer → 三案 successor replay → Workbench drilldown → S1 独立 qualification。S1、动态 S3、发布与 release 仍为 false。
 - 本轮复证：定向 25、全仓 743 passed；compileall、S1 program foundation、active baseline 168 Python／8 frontend／22 resources／0 forbidden、7,234-file secret scan 与 diff check 通过。
+
+## 2026-08-19 S1 命题级 Evidence successor 与当前产品晋升
+
+- DELL／MU／NVDA 当前候选已经完成命题级内部工程 adjudication；相似文本、排名或表格数字不会自动成为 Evidence。DELL Pack `22→29`、MU `11→14`、NVDA `19→25`，残余 gap 数保持 `14／15／13`，Candidate 自动晋升、NumericFact 新授权和 public-gap 权威均为 0。
+- 当前产品已在干净、已推送提交 `85234f82...` 上通过唯一一次零模型、零网络晋升：Pack v1.4、Workspace v1.4、anchor catalog v1.3、runtime binding v1.3、Registry R26。精确 reviewed claim anchor 为 DELL 21、MU 14、NVDA 25，共 60。
+- 三案当前业务状态为：DELL `blocked_by_evidence_admission`，MU／NVDA `blocked_by_candidate_coverage`。这不是统一的“检索失败”：部分状态是当前命题仍无足够候选，部分是候选存在但还缺 Evidence 权威，部分数字／桥接继续由 S2 负责。
+- RC-S1-043 内部根因关闭。qualified-human、external blind、真实公开信息边界、S1 qualified stable、动态 S3、发布与 release 仍为 false。
+
+## 2026-08-19 S1 当前 Pack 消费者 lineage 统一
+
+- 晋升后发现 Evidence 页已经读取新 Pack，但 Retrieval canonical spine 仍把旧 VS4 supplement 当作当前生产者。该集成漂移已由共享 successor lineage 投影关闭：Evidence、Retrieval、Workspace 现在返回完全相同的当前 Pack binding；旧 VS1／VS4 只作为不可变历史 lineage 保留，不被追认或改写。
+- Workbench 现在显示当前精确绑定 Evidence 数；没有对 successor 做等价召回复证时，“既有证据未召回”显示为未复证，避免把未知伪装成 0。artifact、payload、ProductReadiness、case、digest 或 authority 漂移均 fail closed。
+- 全仓 `780 passed`，TypeScript／Vite、compileall、active baseline `170 Python／8 frontend／26 Runtime／0 forbidden`、7,304-file secret scan 与 diff check 通过。
+- 当前最早内部责任层已收敛为 request-level source-role dispatch 与 route exhaustion：行业、官方 IR、外源等需要必须落到真实 adapter，并记录 requested／available／executed／exhausted；未执行路线不能形成 public-information gap。graph、learned sparse 和 multi-vector 是否为 FIN 0.1.3 必需路线需单独作产品价值决策，不因“配置里列过”自动成为阻断。

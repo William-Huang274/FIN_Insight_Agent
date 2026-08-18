@@ -349,7 +349,7 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R25"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R26"
     )
     assert set(registry.by_id()) == {
         "application.config.current_financial_intent_ontology",
@@ -398,7 +398,7 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
     )
 
 
-def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None:
+def test_current_runtime_loads_three_product_evidence_successors() -> None:
     paths = resolve_runtime_paths(ROOT)
     evidence = ResearchEvidencePackService.from_runtime_paths(ROOT, paths)
     workspace = ResearchWorkspaceService.from_runtime_paths(ROOT, evidence)
@@ -416,18 +416,19 @@ def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None
     retrieval_principal = ResearchRetrievalPrincipal(
         "current", frozenset({"current_product:read"})
     )
-    expected_counts = {"DELL": 22, "MU": 11, "NVDA": 19}
+    expected_counts = {"DELL": 29, "MU": 14, "NVDA": 25}
     expected_readiness = {
         "DELL": (
-            "candidate_audit_only_explicit_scope_pending",
+            "blocked_by_evidence_admission",
             0,
-            0,
-            8,
+            4,
+            3,
+            1,
         ),
-        "MU": ("blocked_by_candidate_coverage", 4, 4, 0),
-        "NVDA": ("blocked_by_candidate_coverage", 3, 5, 0),
+        "MU": ("blocked_by_candidate_coverage", 4, 3, 0, 1),
+        "NVDA": ("blocked_by_candidate_coverage", 3, 3, 0, 2),
     }
-    expected_review_items = {"DELL": 0, "MU": 34, "NVDA": 31}
+    expected_review_items = {"DELL": 18, "MU": 23, "NVDA": 18}
 
     for case_key, expected_count in expected_counts.items():
         pack = evidence.get_case(case_key, pack_principal)
@@ -439,7 +440,7 @@ def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None
 
         assert len(pack["evidence_items"]) == expected_count
         product_readiness = pack["product_readiness"]
-        expected_state, candidate_blocked, admission_blocked, scope_pending = (
+        expected_state, candidate_blocked, admission_blocked, partial, ready = (
             expected_readiness[case_key]
         )
         assert product_readiness["case_key"] == case_key
@@ -456,9 +457,12 @@ def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None
             == admission_blocked
         )
         assert (
-            product_readiness["request_state_counts"]
-            ["candidate_audit_only_explicit_scope_pending"]
-            == scope_pending
+            product_readiness["request_state_counts"]["partial_with_material_gaps"]
+            == partial
+        )
+        assert (
+            product_readiness["request_state_counts"]["ready_for_current_scope"]
+            == ready
         )
         assert product_readiness["authority"] == {
             "S1_qualification_claimed": False,
@@ -499,22 +503,22 @@ def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None
         }.intersection(_all_keys(product_readiness))
         assert pack["canonical_spine"]["pack_binding"]["case_key"] == case_key
         assert (
-            pack["canonical_spine"]["supplement_vertical"]
+            pack["canonical_spine"]["evidence_successor"]
             ["complete_s1_qualified"]
             is False
         )
         assert (
-            pack["canonical_spine"]["supplement_vertical"]
+            pack["canonical_spine"]["evidence_successor"]
             ["numeric_fact_authorized"]
             is False
         )
+        assert pack["canonical_spine"]["hard_boundaries"][
+            "historical_vs4_summary_not_relabelled_as_successor"
+        ] is True
         assert len(workspace_evidence["evidence_items"]) == expected_count
         assert workspace_evidence["product_readiness"] == product_readiness
         assert retrieval_case["candidate_state"] == "candidate_not_evidence"
-        assert (
-            retrieval_case["canonical_spine"]["pack_binding"]["case_key"]
-            == case_key
-        )
+        assert retrieval_case["canonical_spine"] == pack["canonical_spine"]
 
     mu = evidence.get_case("MU", pack_principal)["product_readiness"]
     mu_review_items = [

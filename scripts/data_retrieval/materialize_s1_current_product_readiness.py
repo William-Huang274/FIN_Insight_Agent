@@ -26,6 +26,9 @@ from retrieval.product_candidate_review import (  # noqa: E402
     compile_product_candidate_review_packet,
 )
 from retrieval.query_plan import canonical_digest  # noqa: E402
+from sec_agent.research.reviewed_evidence_pack import (  # noqa: E402
+    validate_reviewed_evidence_pack,
+)
 from sec_agent.runtime_bridge.paths import resolve_runtime_paths  # noqa: E402
 
 
@@ -214,6 +217,7 @@ def materialize(
     replay_path: Path,
     compiled_objects_path: Path,
     source_records_path: Path,
+    evidence_pack_path: Path | None,
     private_output: Path,
     public_output: Path,
 ) -> dict[str, Any]:
@@ -223,12 +227,30 @@ def materialize(
     if not isinstance(projection, Mapping):
         raise ValueError("product_readiness_product_projection_missing")
     case_key = str(projection.get("case_key") or "").upper()
-    paths = resolve_runtime_paths(ROOT)
-    pack_service = ResearchEvidencePackService.from_runtime_paths(ROOT, paths)
-    principal = ResearchEvidencePackPrincipal(
-        mode="current", permissions=frozenset({"current_product:read"})
-    )
-    evidence_pack = pack_service.get_case(case_key, principal)
+    if evidence_pack_path is None:
+        paths = resolve_runtime_paths(ROOT)
+        pack_service = ResearchEvidencePackService.from_runtime_paths(ROOT, paths)
+        principal = ResearchEvidencePackPrincipal(
+            mode="current", permissions=frozenset({"current_product:read"})
+        )
+        evidence_pack = pack_service.get_case(case_key, principal)
+        evidence_pack_binding = {
+            "source_kind": "registered_current_product_projection",
+            "result_digest": evidence_pack.get("result_digest"),
+            "artifact_digest": evidence_pack.get("artifact_digest"),
+            "pack_payload_digest": evidence_pack.get("pack_payload_digest"),
+        }
+    else:
+        evidence_pack = _read_json(evidence_pack_path)
+        validate_reviewed_evidence_pack(evidence_pack)
+        if str(evidence_pack.get("case_key") or "").upper() != case_key:
+            raise ValueError("product_readiness_evidence_pack_case_mismatch")
+        evidence_pack_binding = {
+            "source_kind": "explicit_digest_bound_product_evidence_successor",
+            "ref": _relative(evidence_pack_path),
+            "sha256": _sha256(evidence_pack_path),
+            "pack_payload_digest": evidence_pack.get("pack_payload_digest"),
+        }
     recorded_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     ledgers = [
         compile_product_candidate_decision_ledger(
@@ -267,11 +289,7 @@ def materialize(
                 "sha256": _sha256(replay_path),
                 "result_digest": replay.get("result_digest"),
             },
-            "current_reviewed_evidence_projection": {
-                "result_digest": evidence_pack.get("result_digest"),
-                "artifact_digest": evidence_pack.get("artifact_digest"),
-                "pack_payload_digest": evidence_pack.get("pack_payload_digest"),
-            },
+            "current_reviewed_evidence_projection": evidence_pack_binding,
             "compiled_financial_objects": {
                 "ref": _relative(compiled_objects_path),
                 "sha256": _sha256(compiled_objects_path),
@@ -304,6 +322,7 @@ def main() -> int:
     parser.add_argument("--replay", required=True)
     parser.add_argument("--compiled-objects", required=True)
     parser.add_argument("--source-records", required=True)
+    parser.add_argument("--evidence-pack")
     parser.add_argument("--private-output", required=True)
     parser.add_argument("--public-output", required=True)
     args = parser.parse_args()
@@ -311,6 +330,9 @@ def main() -> int:
         replay_path=_resolve(args.replay),
         compiled_objects_path=_resolve(args.compiled_objects),
         source_records_path=_resolve(args.source_records),
+        evidence_pack_path=(
+            _resolve(args.evidence_pack) if args.evidence_pack else None
+        ),
         private_output=_resolve(args.private_output),
         public_output=_resolve(args.public_output),
     )

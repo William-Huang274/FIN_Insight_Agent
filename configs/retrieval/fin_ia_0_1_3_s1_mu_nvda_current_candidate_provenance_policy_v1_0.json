@@ -1,0 +1,99 @@
+{
+  "schema_version": "fin_ia_s1_current_case_candidate_provenance_policy_v1_0",
+  "status": "provider_neutral_zero_model_development_replay_authorized",
+  "recorded_at": "2026-08-18T19:05:00+08:00",
+  "purpose": "Exercise MU and NVDA through the same current S1 product path used by DELL without reading answers, qrels, gold or hidden labels and without pretending that a supervised development request is model-planned dynamic research.",
+  "input_authority": {
+    "workspace_catalog": {
+      "ref": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_3.json",
+      "sha256": "a527cfee8e599f0677da7290954d0c39e5428bed223eebc8f2c5ade413c4edb1"
+    },
+    "financial_research_kernel": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json",
+      "sha256": "faf85fb3b3074b979acf0b12e5e20dba934d94380383c5241164e2f4c899f1d2"
+    },
+    "financial_intent_ontology": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+      "sha256": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242"
+    },
+    "runner": {
+      "ref": "scripts/research/run_s3_material_scope_canary.py",
+      "sha256": "18f9a3868e7630d916571af07850565c0181c54a9acba60a49481371e3f4f7b8"
+    }
+  },
+  "case_inputs": [
+    {
+      "case_key": "MU",
+      "objective": {
+        "ref": "configs/research/evals/fin_ia_0_1_3_s1_mu_current_candidate_provenance_objective_v1_0.json",
+        "sha256": "91905a2d3dbead9f0e7382f00fec57e8d63917fdcaba312fea102f674c460cf5"
+      },
+      "planner_atoms": {
+        "ref": "configs/research/evals/fin_ia_0_1_3_s1_mu_current_candidate_provenance_atoms_v1_0.json",
+        "sha256": "99a3f87b7fee37e93532b4f29af6b10337e88b68e3766d3c2d023963164cbb82"
+      },
+      "compiled_plan_digest": "ad307d2ff881bd85d0591496271adae4ed9f61516fefcbee96b0f5dda1c7ba5e",
+      "proposed_atoms": 10,
+      "selected_requests": 8,
+      "deferred_atoms": 2
+    },
+    {
+      "case_key": "NVDA",
+      "objective": {
+        "ref": "configs/research/evals/fin_ia_0_1_3_s1_nvda_current_candidate_provenance_objective_v1_0.json",
+        "sha256": "c73cbc618f87896e92f9369f8ec54c69ce3020658a92411e72efb829cf5c8e52"
+      },
+      "planner_atoms": {
+        "ref": "configs/research/evals/fin_ia_0_1_3_s1_nvda_current_candidate_provenance_atoms_v1_0.json",
+        "sha256": "d1e4a8f799b9cec51c55012573a1cbb85c8ba811278283ec2cdc36f9ca03c957"
+      },
+      "compiled_plan_digest": "d921cc8d80b2db2b4ef80e8e84e9f73bcaf259f4439862724b81b57138b7f5ca",
+      "proposed_atoms": 10,
+      "selected_requests": 8,
+      "deferred_atoms": 2
+    }
+  ],
+  "construction_contract": {
+    "allowed_inputs": [
+      "owner-visible current case research question",
+      "current case identity and as-of",
+      "provider-neutral Evidence Slot and facet catalog",
+      "current industry pack and financial intent ontology",
+      "current route and metric contracts"
+    ],
+    "forbidden_inputs": [
+      "candidate rows or candidate IDs",
+      "reviewed-positive target IDs",
+      "qrels",
+      "gold answers",
+      "hidden or holdout labels",
+      "historical residual gaps used to reverse-engineer a query"
+    ],
+    "planning_input_mode": "Codex_supervised_natural_development_request_not_model_autonomous_planning",
+    "deterministic_scope_required": true,
+    "explicit_model_scope_calls": 0
+  },
+  "execution_contract": {
+    "maximum_cases": 2,
+    "maximum_requests_per_case": 8,
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "retries": 0,
+    "cuda_required": true,
+    "embedding_precision": "float16",
+    "cpu_vector_fallbacks": 0,
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "public_information_gap_authority": false,
+    "product_publication": false
+  },
+  "admission_checks": [
+    "objective case and planner target are identical",
+    "max_model_calls is zero",
+    "each case compiles ten proposed atoms into eight selected requests and two explicit deferrals",
+    "every selected request is deterministic-scope-ready under the current ontology",
+    "current runtime receipt and CUDA availability pass",
+    "repository is clean and the policy runner plus inputs are digest-bound"
+  ],
+  "known_boundary": "These inputs test cross-company S1 execution on natural business questions. They do not prove S3 planner autonomy, Evidence acceptance, public-source exhaustion, qualified-human labels, blind generalization, S1 stable qualification or release."
+}

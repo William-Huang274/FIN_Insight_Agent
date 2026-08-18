@@ -264,29 +264,100 @@ def _public_product_replay_projection(
     required = int(summary.get("material_scope_required_request_count") or 0)
     ready = int(summary.get("material_scope_ready_request_count") or 0)
     complete = int(summary.get("material_set_complete_request_count") or 0)
-    if required and ready == required and complete == required:
+    material_scope = projection.get("material_scope") or {}
+    material_scope_mode = material_scope.get("mode")
+    scope_request_count = (
+        int(summary.get("evidence_request_count") or 0)
+        if material_scope_mode == "deterministic_scope_ready"
+        else required
+    )
+    if (
+        scope_request_count
+        and ready == scope_request_count
+        and complete == scope_request_count
+    ):
         status = "completed_material_sets_ready_candidate_review_pending"
-    elif required and ready == required:
+    elif scope_request_count and ready == scope_request_count:
         status = "completed_scope_ready_material_sets_incomplete"
     else:
         status = "completed_material_scope_not_ready"
-    return {
+    public = {
         "status": status,
         "case_key": projection.get("case_key"),
         "research_plan_digest": (
             projection.get("compiled_plan") or {}
         ).get("plan_digest"),
         "projection_digest": projection.get("projection_digest"),
-        "material_scope_mode": (
-            projection.get("material_scope") or {}
-        ).get("mode"),
+        "material_scope_mode": material_scope_mode,
         "scope_compilation_digest": (
-            (projection.get("material_scope") or {}).get("scope_compilation")
+            material_scope.get("scope_compilation")
             or {}
         ).get("compilation_digest"),
         "summary": summary,
         "request_diagnostics": request_rows,
     }
+    if material_scope_mode == "deterministic_scope_ready":
+        public["fallback_compiler_receipt_digests"] = [
+            row.get("receipt_digest")
+            for row in material_scope.get("fallback_compiler_receipts") or ()
+        ]
+    return public
+
+
+def _materialize_product_replay(
+    *,
+    projection: Mapping[str, Any],
+    bindings: Mapping[str, Mapping[str, str]],
+    cuda_receipt: Mapping[str, Any],
+    private_output_path: Path,
+    public_output_path: Path,
+    replay_mode: str | None,
+    full_schema_version: str,
+    public_schema_version: str,
+    known_boundary: str,
+) -> dict[str, Any]:
+    public_projection = _public_product_replay_projection(projection)
+    full_body = {
+        "schema_version": full_schema_version,
+        "status": public_projection["status"],
+        "recorded_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "prepared_from_commit": _head(),
+        "source_bindings": dict(bindings),
+        "cuda_execution": dict(cuda_receipt),
+        "public_projection": public_projection,
+        "product_projection": projection,
+        "authority": {
+            "generation_model_calls": 0,
+            "network_calls": 0,
+            "candidate_is_not_evidence": True,
+            "numeric_authority": False,
+            "product_publication": False,
+            "s1_qualification_claimed": False,
+        },
+        "known_boundary": known_boundary,
+    }
+    if replay_mode is not None:
+        full_body["replay_mode"] = replay_mode
+    full = {**full_body, "result_digest": canonical_digest(full_body)}
+    write_new_json(private_output_path, full)
+    public_body = {
+        "schema_version": public_schema_version,
+        "status": public_projection["status"],
+        "recorded_at": full["recorded_at"],
+        "prepared_from_commit": full["prepared_from_commit"],
+        "source_bindings": dict(bindings),
+        "cuda_execution": dict(cuda_receipt),
+        **public_projection,
+        "full_result_ref": _relative(private_output_path),
+        "full_result_sha256": file_sha256(private_output_path),
+        "authority": dict(full["authority"]),
+        "known_boundary": known_boundary,
+    }
+    if replay_mode is not None:
+        public_body["replay_mode"] = replay_mode
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    write_new_json(public_output_path, public)
+    return public
 
 
 def replay_product_scope(
@@ -325,7 +396,6 @@ def replay_product_scope(
         principal,
         material_scope_payload=scope_payload,
     )
-    public_projection = _public_product_replay_projection(projection)
     bindings = {
         "objective": _binding(objective_path),
         "planner_atoms": _binding(planner_path),
@@ -346,48 +416,131 @@ def replay_product_scope(
             ROOT / "src/retrieval/candidate_ceiling_provenance.py"
         ),
     }
-    full_body = {
-        "schema_version": "fin_ia_s1_material_scope_product_replay_full_v1_1",
-        "status": public_projection["status"],
-        "recorded_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
-        "prepared_from_commit": _head(),
-        "source_bindings": bindings,
-        "cuda_execution": cuda_receipt,
-        "public_projection": public_projection,
-        "product_projection": projection,
-        "authority": {
-            "generation_model_calls": 0,
-            "network_calls": 0,
-            "candidate_is_not_evidence": True,
-            "numeric_authority": False,
-            "product_publication": False,
-            "s1_qualification_claimed": False,
-        },
-        "known_boundary": (
+    return _materialize_product_replay(
+        projection=projection,
+        bindings=bindings,
+        cuda_receipt=cuda_receipt,
+        private_output_path=private_output_path,
+        public_output_path=public_output_path,
+        replay_mode=None,
+        full_schema_version="fin_ia_s1_material_scope_product_replay_full_v1_1",
+        public_schema_version="fin_ia_s1_material_scope_product_replay_v1_1",
+        known_boundary=(
             "This zero-call replay applies the immutable candidate-blind R3 "
             "scope to the current Workbench BM25 plus Qwen CUDA path. Candidate "
             "rows remain private and are not Evidence. Incomplete material sets "
             "are retrieval or binding findings, not public-information gaps."
         ),
+    )
+
+
+def replay_current_deterministic_scope(
+    *,
+    case_key: str,
+    objective_path: Path,
+    planner_path: Path,
+    private_output_path: Path,
+    public_output_path: Path,
+) -> dict[str, Any]:
+    """Run one current case through the registered zero-model product path."""
+
+    key = str(case_key).strip().upper()
+    objective_payload = load_json(objective_path)
+    planner_payload = load_json(planner_path)
+    if objective_payload.get("case_key") != key:
+        raise ValueError("current_candidate_replay_objective_case_mismatch")
+    if int((objective_payload.get("budget") or {}).get("max_model_calls", -1)) != 0:
+        raise ValueError("current_candidate_replay_zero_model_budget_required")
+
+    cuda_receipt = _cuda_execution_receipt()
+    service = ResearchRetrievalService.from_runtime_paths(ROOT)
+    principal = ResearchRetrievalPrincipal(
+        mode="current",
+        permissions=frozenset({"current_product:read"}),
+    )
+    projection = service.execute_controlled_plan(
+        key,
+        objective_payload,
+        planner_payload,
+        principal,
+    )
+    material_scope = projection.get("material_scope") or {}
+    summary = projection.get("summary") or {}
+    if not (
+        projection.get("case_key") == key
+        and material_scope.get("mode") == "deterministic_scope_ready"
+        and not material_scope.get("required_request_ids")
+        and int(summary.get("model_calls") or 0) == 0
+        and int(summary.get("network_calls") or 0) == 0
+    ):
+        raise ValueError("current_candidate_replay_deterministic_scope_not_ready")
+
+    registry_path = (
+        ROOT
+        / "configs/runtime/"
+        "fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json"
+    )
+    bindings = {
+        "objective": _binding(objective_path),
+        "planner_atoms": _binding(planner_path),
+        "runtime_registry": _binding(registry_path),
+        "workspace_catalog": _binding(
+            resolve_registered_runtime_resource(
+                ROOT, "application.config.current_research_workspace_catalog"
+            )
+        ),
+        "kernel": _binding(
+            resolve_registered_runtime_resource(
+                ROOT, "application.config.current_financial_research_kernel"
+            )
+        ),
+        "planning_policy": _binding(
+            resolve_registered_runtime_resource(
+                ROOT, "application.config.current_research_planning_policy"
+            )
+        ),
+        "material_runtime_policy": _binding(
+            resolve_registered_runtime_resource(
+                ROOT,
+                "application.config.current_product_material_evidence_runtime_policy",
+            )
+        ),
+        "intent_ontology": _binding(
+            resolve_registered_runtime_resource(
+                ROOT, "application.config.current_financial_intent_ontology"
+            )
+        ),
+        "workbench_service": _binding(
+            ROOT
+            / "apps/workbench/backend/application/research_retrieval_service.py"
+        ),
+        "hybrid_candidate_runtime": _binding(
+            ROOT / "src/retrieval/hybrid_candidate_runtime.py"
+        ),
+        "candidate_ceiling_provenance": _binding(
+            ROOT / "src/retrieval/candidate_ceiling_provenance.py"
+        ),
     }
-    full = {**full_body, "result_digest": canonical_digest(full_body)}
-    write_new_json(private_output_path, full)
-    public_body = {
-        "schema_version": "fin_ia_s1_material_scope_product_replay_v1_1",
-        "status": public_projection["status"],
-        "recorded_at": full["recorded_at"],
-        "prepared_from_commit": full["prepared_from_commit"],
-        "source_bindings": bindings,
-        "cuda_execution": cuda_receipt,
-        **public_projection,
-        "full_result_ref": _relative(private_output_path),
-        "full_result_sha256": file_sha256(private_output_path),
-        "authority": dict(full["authority"]),
-        "known_boundary": full["known_boundary"],
-    }
-    public = {**public_body, "result_digest": canonical_digest(public_body)}
-    write_new_json(public_output_path, public)
-    return public
+    return _materialize_product_replay(
+        projection=projection,
+        bindings=bindings,
+        cuda_receipt=cuda_receipt,
+        private_output_path=private_output_path,
+        public_output_path=public_output_path,
+        replay_mode="current_case_question_kernel_ontology_deterministic_scope",
+        full_schema_version=(
+            "fin_ia_s1_current_candidate_provenance_replay_full_v1_0"
+        ),
+        public_schema_version="fin_ia_s1_current_candidate_provenance_replay_v1_0",
+        known_boundary=(
+            "This zero-model S1 development replay compiles the current case "
+            "question, kernel facets and provider-neutral ontology into the "
+            "registered Workbench BM25 plus Qwen CUDA path. It is not a model-"
+            "planned dynamic research run, does not read qrels, gold or hidden "
+            "labels, and grants no Evidence, NumericFact, public-gap, S1 "
+            "qualification or publication authority."
+        ),
+    )
 
 
 def main() -> int:
@@ -416,6 +569,12 @@ def main() -> int:
     replay_parser.add_argument(
         "--public-output", default=DEFAULT_PRODUCT_REPLAY_PUBLIC_OUTPUT
     )
+    current_replay_parser = subparsers.add_parser("current-replay")
+    current_replay_parser.add_argument("--case-key", required=True)
+    current_replay_parser.add_argument("--objective", required=True)
+    current_replay_parser.add_argument("--planner-atoms", required=True)
+    current_replay_parser.add_argument("--private-output", required=True)
+    current_replay_parser.add_argument("--public-output", required=True)
     args = parser.parse_args()
 
     if args.command == "prepare":
@@ -435,13 +594,21 @@ def main() -> int:
         summary = run_material_scope_canary(
             _resolve(args.authority), root=ROOT
         )
-    else:
+    elif args.command == "replay":
         summary = replay_product_scope(
             objective_path=_resolve(args.objective),
             planner_path=_resolve(args.planner_atoms),
             scope_payload_path=_resolve(args.scope_payload),
             live_result_path=_resolve(args.live_result),
             full_result_path=_resolve(args.full_result),
+            private_output_path=_resolve(args.private_output),
+            public_output_path=_resolve(args.public_output),
+        )
+    else:
+        summary = replay_current_deterministic_scope(
+            case_key=args.case_key,
+            objective_path=_resolve(args.objective),
+            planner_path=_resolve(args.planner_atoms),
             private_output_path=_resolve(args.private_output),
             public_output_path=_resolve(args.public_output),
         )

@@ -706,3 +706,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 业务上，Dell 已有 AI demand／backlog、ISG results／margin、cash、working-capital 风险材料；真正未闭合的是精确 orders／customer count、AI-specific incremental margin、AI revenue→cash conversion、AI-specific receivable／inventory allocation，以及 total company／segment 数字到 AI 产品的因果桥。S2 已有的 NumericFact 不得再要求 S1 叙事重复提供，也不得被模型用于过强 AI 归因。
 - RC-S1-035 的 candidate-ceiling 产品 seam 已由真实 DELL 路径证明；source disclosure、OCR／parse／object 内容充分性、候选上限以下的召回、金融精排、EvidenceDecision、GapEligibilityReceipt 与 PackReadiness 仍未证明。下一步先做等价 MU／NVDA 当前请求 replay，再进入 RC-S1-034 产品 producer；S1、动态 S3、发布和 release 仍为 false。
 - 治理复证：定向 59 passed、compileall、active baseline 165 Python／8 frontend／22 resources／0 forbidden、JSON／JSONL、diff check 和 7,202-file secret scan 全部通过。
+
+## 2026-08-18 S1 MU／NVDA 当前请求与统一 replay 入口
+
+- MU／NVDA 没有可诚实复用的当前模型自然 scope，因此未复制 DELL 词面、未读取 qrels／gold／hidden／历史 target，也未从残余 gap 反推查询。两案只从当前 Workbench research question、Case identity／as-of、canonical Evidence Slots、行业 Pack、route／metric contract 和 provider-neutral ontology 编译监督式自然开发请求。
+- 两案均为 10 proposed atoms、按统一 required-slot-first 策略选 8、明确延后 2；所有已选请求在当前 ontology 下均 `deterministic_scope_ready`，0 模型调用。该输入可测试 S1 跨公司执行，但不冒充 S3 planner autonomy。
+- 未新增 case-specific runner；现有 canonical material-scope replay 增加 `current-replay`，DELL 不可变 R3 入口保持兼容。公开投影现在正确识别 deterministic scope，并只公开 fallback receipt digest、候选阶段与上限，不泄露候选 ID。
+- 定向 31、全仓 733 passed；compileall、active baseline 165 Python／8 frontend／22 resources／0 forbidden、JSON／JSONL、policy binding、diff check 和 7,209-file secret scan 通过。下一步先 clean commit／push，再各执行一次 MU／NVDA 当前 CUDA／FP16 replay；仍禁止 Evidence 晋升、public-gap、S1 qualification、发布和 release。

@@ -98,6 +98,11 @@ CURRENT_DELL_SUCCESSOR_AUTHORITY_REF = (
     "fin_ia_0_1_3_s3_dell_material_scope_nonthinking_"
     "successor_authority_v1_0.json"
 )
+CURRENT_DELL_CONTRACT_REPAIR_AUTHORITY_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_contract_repair_"
+    "successor_authority_v1_0.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -359,6 +364,21 @@ def test_current_dell_R2_successor_authority_remains_bound_but_is_consumed() -> 
             environment={"DEEPSEEK_API_KEY": "present"},
             check_repository=False,
         )
+
+
+def test_current_dell_R3_contract_repair_authority_is_fresh_and_bound() -> None:
+    authority = _json(CURRENT_DELL_CONTRACT_REPAIR_AUTHORITY_REF)
+    bound = validate_material_scope_canary_authority(authority, root=ROOT)
+    assert bound["contract_repair_successor"] is True
+    assert bound["input"]["result_digest"] == (
+        "4b1d17b091e51eb74ee8cb3f46fa3352efa45de63d445203a2ea99ac6dd99f54"
+    )
+    assert bound["predecessor"]["failure"]["result_digest"] == (
+        "13a15230798d3680e84ad2bc9a8268ad53faed0cf1942b696aa053937025daf4"
+    )
+    assert bound["profile"].request_defaults["thinking"] == {
+        "type": "disabled"
+    }
 
 
 def _copy(root: Path, ref: str) -> None:

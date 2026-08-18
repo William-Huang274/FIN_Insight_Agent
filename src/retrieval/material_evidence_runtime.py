@@ -5,7 +5,7 @@ import re
 from typing import Any
 
 from .evidence_set_coverage import (
-    PLAN_SCHEMA_V1_1,
+    PLAN_SCHEMA_V1_2,
     canonical_digest,
     compile_requirement_plan,
 )
@@ -14,7 +14,7 @@ from .financial_intent import concept_aliases
 
 POLICY_SCHEMA = "fin_ia_s1_material_evidence_runtime_policy_v1_0"
 CANDIDATE_SCHEMA = "fin_ia_material_candidate_metadata_v1_1"
-COMPILER_RECEIPT_SCHEMA = "fin_ia_material_requirement_compiler_receipt_v1_0"
+COMPILER_RECEIPT_SCHEMA = "fin_ia_material_requirement_compiler_receipt_v1_1"
 
 
 class MaterialEvidenceRuntimeError(ValueError):
@@ -403,13 +403,20 @@ def compile_material_requirement_plan_from_runtime_input(
             if group.get("period_mode") == "all_periods_same_basis"
             else "collective_axes",
         )
+        group.setdefault(
+            "metric_coverage_mode",
+            "all_of"
+            if group.get("period_mode") == "all_periods_same_basis"
+            else "retrieval_context_only",
+        )
+        group.setdefault("product_coverage_mode", "all_of")
         group.setdefault("requirement_id", _requirement_id(group))
         normalized_requirements.append(group)
     plan = compile_requirement_plan(
         evidence_request=request,
         material_requirements=normalized_requirements,
         review_k=int(policy["review_k"]),
-        schema_version=PLAN_SCHEMA_V1_1,
+        schema_version=PLAN_SCHEMA_V1_2,
     )
     receipt = {
         "schema_version": COMPILER_RECEIPT_SCHEMA,
@@ -432,6 +439,11 @@ def compile_material_requirement_plan_from_runtime_input(
         "requirement_group_count": len(plan["requirement_groups"]),
         "maximum_reserved_capacity": plan["maximum_reserved_capacity"],
         "review_k": plan["review_k"],
+        "metric_authority_boundary": (
+            "non_temporal_metric_intents_guide_retrieval_but_do_not_duplicate_"
+            "S2_NumericFact_completeness"
+        ),
+        "product_axis_default": "all_of_with_explicit_reserved_capacity",
         "candidate_or_reference_inputs_read": False,
         "generation_model_calls": 0,
         "plan_digest": plan["plan_digest"],

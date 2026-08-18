@@ -9,6 +9,7 @@ import pytest
 from retrieval.evidence_set_coverage import (
     EvidenceSetCoverageError,
     PLAN_SCHEMA_V1_1,
+    PLAN_SCHEMA_V1_2,
     compile_requirement_plan,
     select_request_bound_review,
     validate_requirement_plan,
@@ -162,7 +163,7 @@ def test_real_temporal_directive_is_not_fabricated_as_product_scope() -> None:
         policy=POLICY,
         ontology=ONTOLOGY,
     )
-    assert plan["schema_version"] == PLAN_SCHEMA_V1_1
+    assert plan["schema_version"] == PLAN_SCHEMA_V1_2
     assert len(plan["requirement_groups"]) == 6
     assert plan["maximum_reserved_capacity"] == 11
     assert all(not group["product_ids"] for group in plan["requirement_groups"])
@@ -580,6 +581,183 @@ def test_collective_axis_bundle_can_join_metric_table_and_mechanism_narrative() 
         "COBJ::TABLE",
         "COBJ::NARRATIVE",
     ]
+
+
+def test_v12_non_temporal_metrics_are_retrieval_context_not_duplicate_numeric_gate() -> None:
+    request = {
+        "request_id": "ER::V12::AUTHORITY",
+        "case_key": "DELL",
+        "target_entities": ["DELL"],
+        "metric_intents": ["revenue", "operating income", "gross margin"],
+        "product_intents": ["AI server revenue contribution"],
+        "requested_facet_ids": ["reported_results"],
+        "period": {"fiscal_years": []},
+    }
+    plan = compile_requirement_plan(
+        evidence_request=request,
+        material_requirements=[
+            {
+                "requirement_id": "REQ::V12::AUTHORITY",
+                "facet_id": "reported_results",
+                "role": "direct",
+                "metric_ids": list(request["metric_intents"]),
+                "metric_coverage_mode": "retrieval_context_only",
+                "product_ids": list(request["product_intents"]),
+                "product_coverage_mode": "all_of",
+                "target_entities": ["DELL"],
+                "period_mode": "any",
+                "fiscal_years": [],
+                "minimum_candidates": 1,
+                "coverage_mode": "collective_axes",
+                "priority": 1,
+            }
+        ],
+        review_k=4,
+        schema_version=PLAN_SCHEMA_V1_2,
+    )
+    assert plan["maximum_reserved_capacity"] == 1
+    candidate = _candidate(
+        "COBJ::AI_SERVER_RESULT",
+        1,
+        ticker="DELL",
+        case_key="DELL",
+        bindings=[
+            {
+                "facet_id": "reported_results",
+                "role": "direct",
+                "metric_ids": [],
+                "product_ids": ["AI server revenue contribution"],
+                "fiscal_years": [2027],
+                "same_basis_key": "",
+            }
+        ],
+    )
+    result = select_request_bound_review(candidates=[candidate], plan=plan)
+    assert result["met_requirement_ids"] == ["REQ::V12::AUTHORITY"]
+    receipt = result["requirement_receipts"][0]
+    assert receipt["metric_coverage_mode"] == "retrieval_context_only"
+    assert receipt["missing_required_metric_ids"] == []
+    assert result["numeric_fact_authority"] is False
+
+
+def test_v12_all_of_capacity_is_satisfiable_and_partial_axes_are_receipted() -> None:
+    request = {
+        "request_id": "ER::V12::ALL",
+        "case_key": "MU",
+        "target_entities": ["MU"],
+        "metric_intents": [],
+        "product_intents": ["capacity", "shipments", "yield"],
+        "requested_facet_ids": ["subject_execution"],
+        "period": {"fiscal_years": []},
+    }
+    plan = compile_requirement_plan(
+        evidence_request=request,
+        material_requirements=[
+            {
+                "requirement_id": "REQ::V12::ALL",
+                "facet_id": "subject_execution",
+                "role": "direct",
+                "metric_ids": [],
+                "metric_coverage_mode": "retrieval_context_only",
+                "product_ids": list(request["product_intents"]),
+                "product_coverage_mode": "all_of",
+                "target_entities": ["MU"],
+                "period_mode": "any",
+                "fiscal_years": [],
+                "minimum_candidates": 1,
+                "coverage_mode": "collective_axes",
+                "priority": 1,
+            }
+        ],
+        review_k=3,
+        schema_version=PLAN_SCHEMA_V1_2,
+    )
+    assert plan["maximum_reserved_capacity"] == 3
+    common = {
+        "facet_id": "subject_execution",
+        "role": "direct",
+        "metric_ids": [],
+        "fiscal_years": [2026],
+        "same_basis_key": "",
+    }
+    candidates = [
+        _candidate(
+            "COBJ::CAPACITY",
+            1,
+            ticker="MU",
+            case_key="MU",
+            bindings=[{**common, "product_ids": ["capacity"]}],
+        ),
+        _candidate(
+            "COBJ::SHIPMENTS",
+            2,
+            ticker="MU",
+            case_key="MU",
+            bindings=[{**common, "product_ids": ["shipments"]}],
+        ),
+    ]
+    result = select_request_bound_review(candidates=candidates, plan=plan)
+    assert result["unmet_requirement_ids"] == ["REQ::V12::ALL"]
+    receipt = result["requirement_receipts"][0]
+    assert receipt["partial_coverage_observed"] is True
+    assert receipt["observed_product_ids"] == ["capacity", "shipments"]
+    assert receipt["missing_required_product_ids"] == ["yield"]
+
+
+def test_v12_any_of_product_topics_accepts_one_explicit_alternative() -> None:
+    request = {
+        "request_id": "ER::V12::ANY",
+        "case_key": "NVDA",
+        "target_entities": ["NVDA"],
+        "metric_intents": [],
+        "product_intents": ["GPU supply capacity", "data center platform"],
+        "requested_facet_ids": ["issuer_policy_exposure"],
+        "period": {"fiscal_years": []},
+    }
+    plan = compile_requirement_plan(
+        evidence_request=request,
+        material_requirements=[
+            {
+                "requirement_id": "REQ::V12::ANY",
+                "facet_id": "issuer_policy_exposure",
+                "role": "counter",
+                "metric_ids": [],
+                "metric_coverage_mode": "retrieval_context_only",
+                "product_ids": list(request["product_intents"]),
+                "product_coverage_mode": "any_of",
+                "target_entities": ["NVDA"],
+                "period_mode": "any",
+                "fiscal_years": [],
+                "minimum_candidates": 1,
+                "coverage_mode": "collective_axes",
+                "priority": 1,
+            }
+        ],
+        review_k=1,
+        schema_version=PLAN_SCHEMA_V1_2,
+    )
+    assert plan["maximum_reserved_capacity"] == 1
+    candidate = _candidate(
+        "COBJ::EXPORT_CONTROL",
+        1,
+        ticker="NVDA",
+        case_key="NVDA",
+        bindings=[
+            {
+                "facet_id": "issuer_policy_exposure",
+                "role": "counter",
+                "metric_ids": [],
+                "product_ids": ["GPU supply capacity"],
+                "fiscal_years": [2026],
+                "same_basis_key": "",
+            }
+        ],
+    )
+    result = select_request_bound_review(candidates=[candidate], plan=plan)
+    assert result["met_requirement_ids"] == ["REQ::V12::ANY"]
+    assert result["requirement_receipts"][0][
+        "missing_required_product_ids"
+    ] == []
 
 
 def test_collective_natural_need_can_enter_review_without_becoming_evidence() -> None:

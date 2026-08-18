@@ -16,7 +16,12 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 from retrieval.contracts import load_financial_research_kernel  # noqa: E402
-from retrieval.object_view_compiler import compile_object_store  # noqa: E402
+from retrieval.object_view_compiler import (  # noqa: E402
+    compile_object_store as compile_object_store_v1,
+)
+from retrieval.object_view_compiler_v2 import (  # noqa: E402
+    compile_object_store as compile_object_store_v2,
+)
 from retrieval.query_plan import canonical_digest  # noqa: E402
 from retrieval.route_compiler import (  # noqa: E402
     load_query_object_fact_route_policy,
@@ -26,6 +31,9 @@ from retrieval.route_compiler import (  # noqa: E402
 RESULT_SCHEMA_VERSION = "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_1"
 SUCCESSOR_RESULT_SCHEMA_VERSION = (
     "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_2"
+)
+TABLE_CONTEXT_SUCCESSOR_RESULT_SCHEMA_VERSION = (
+    "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_3"
 )
 OBJECT_COMPILER_OVERLAY_SCHEMA_VERSION = (
     "fin_ia_s1_object_compiler_policy_overlay_v1_0"
@@ -165,6 +173,14 @@ def main() -> int:
             "explicit overflow handling."
         ),
     )
+    parser.add_argument(
+        "--table-context-successor",
+        action="store_true",
+        help=(
+            "Use the v1.3 successor that binds each metric row to local "
+            "pre-table context without changing the frozen v1 compiler."
+        ),
+    )
     args = parser.parse_args()
 
     kernel_path = _resolve(args.kernel)
@@ -194,7 +210,12 @@ def main() -> int:
     if len(parents) != len(documents):
         raise ValueError("compiled_object_source_parent_identity_duplicate")
 
-    compilation = compile_object_store(
+    compiler = (
+        compile_object_store_v2
+        if args.table_context_successor
+        else compile_object_store_v1
+    )
+    compilation = compiler(
         records=records,
         parents_by_id=parents,
         policy=policy,
@@ -232,11 +253,18 @@ def main() -> int:
     }
     result = {
         "schema_version": (
-            SUCCESSOR_RESULT_SCHEMA_VERSION
+            TABLE_CONTEXT_SUCCESSOR_RESULT_SCHEMA_VERSION
+            if args.table_context_successor
+            else SUCCESSOR_RESULT_SCHEMA_VERSION
             if overlay_path is not None
             else RESULT_SCHEMA_VERSION
         ),
         "status": "s1c_temporal_correct_object_route_zero_call_proven",
+        "object_compiler_mode": (
+            "source_bound_local_table_context_v2"
+            if args.table_context_successor
+            else "frozen_v1"
+        ),
         "inputs": {
             "kernel": {
                 "ref": _relative(kernel_path),

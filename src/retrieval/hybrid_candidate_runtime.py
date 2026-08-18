@@ -10,6 +10,7 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
+from .balanced_lexical_recall import balanced_bm25_rank
 from .contracts import EvidenceRequest, FinancialResearchKernel
 from .embedding_runtime import (
     load_qwen_embedding_runtime,
@@ -32,7 +33,13 @@ from .object_retrieval_comparison import (
     union_candidate_ids,
 )
 from .query_atom_shadow import eligible_request_indices
-from .query_plan import canonical_digest, compile_query_facet_plan_for_request
+from .query_plan import (
+    canonical_digest,
+    compile_query_facet_plan_for_request as compile_query_facet_plan_for_request_v1,
+)
+from .query_plan_v3 import (
+    compile_query_facet_plan_for_request as compile_query_facet_plan_for_request_v3,
+)
 from .retrieval_need import compile_retrieval_needs
 from .route_compiler import QueryObjectFactRoutePolicy
 
@@ -46,6 +53,9 @@ HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION = (
 HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION = (
     "fin_ia_s1c_hybrid_candidate_runtime_policy_v1_2"
 )
+HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_runtime_policy_v1_3"
+)
 HYBRID_RESULT_SCHEMA_VERSION = "fin_ia_s1c_hybrid_candidate_result_v1_0"
 HYBRID_RESULT_SUCCESSOR_SCHEMA_VERSION = (
     "fin_ia_s1c_hybrid_candidate_result_v1_1"
@@ -55,6 +65,9 @@ HYBRID_RESULT_OWNER_BALANCED_SCHEMA_VERSION = (
 )
 HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION = (
     "fin_ia_s1c_hybrid_candidate_result_v1_3"
+)
+HYBRID_RESULT_TYPED_BALANCED_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_result_v1_4"
 )
 
 _REQUIRED_AUTHORITY = {
@@ -274,6 +287,7 @@ def retrieve_hybrid_candidates(
     material_runtime_policy: Mapping[str, Any] | None = None,
     intent_ontology: Mapping[str, Any] | None = None,
     retrieval_need_policy: Mapping[str, Any] | None = None,
+    typed_balanced_lexical_enabled: bool = False,
 ) -> dict[str, Any]:
     """Return a hard-filtered, source-diverse BM25 + Qwen candidate union."""
 
@@ -287,15 +301,17 @@ def retrieve_hybrid_candidates(
         0 <= minimum_candidates_per_owner <= output_limit,
         "hybrid_candidate_owner_floor_invalid",
     )
-    material_inputs = (
+    material_contract_inputs = (
         material_runtime_input,
         material_runtime_policy,
-        intent_ontology,
         retrieval_need_policy,
     )
-    material_aware = all(value is not None for value in material_inputs)
+    material_aware = all(
+        value is not None for value in material_contract_inputs
+    ) and intent_ontology is not None
     _require(
-        material_aware or all(value is None for value in material_inputs),
+        material_aware
+        or all(value is None for value in material_contract_inputs),
         "hybrid_material_runtime_inputs_incomplete",
     )
     if material_aware:
@@ -307,7 +323,15 @@ def retrieve_hybrid_candidates(
             int(material_runtime_policy.get("review_k") or 0) == output_limit,
             "hybrid_material_runtime_review_capacity_mismatch",
         )
-    plan = compile_query_facet_plan_for_request(kernel, request)
+    plan = (
+        compile_query_facet_plan_for_request_v3(
+            kernel,
+            request,
+            ontology=intent_ontology,
+        )
+        if typed_balanced_lexical_enabled
+        else compile_query_facet_plan_for_request_v1(kernel, request)
+    )
     _require(len(plan.lanes) == 1, "hybrid_candidate_lane_count_invalid")
     lane = plan.lanes[0]
     eligible, exclusions = eligible_request_indices(
@@ -316,12 +340,28 @@ def retrieve_hybrid_candidates(
         lane=lane,
         route_policy=route_policy,
     )
-    bm25 = bm25_rank(
-        objects,
-        eligible,
-        lane.lexical_query,
-        limit=first_stage_limit,
-    )
+    if typed_balanced_lexical_enabled:
+        lexical_recall = balanced_bm25_rank(
+            objects,
+            eligible,
+            lane.lexical_subqueries,
+            limit=first_stage_limit,
+        )
+        bm25 = list(lexical_recall.candidates)
+        lexical_recall_trace = dict(lexical_recall.trace)
+    else:
+        bm25 = bm25_rank(
+            objects,
+            eligible,
+            lane.lexical_query,
+            limit=first_stage_limit,
+        )
+        lexical_recall_trace = {
+            "mode": "single_broad_bm25_v1",
+            "subquery_count": 1,
+            "candidate_count": len(bm25),
+            "candidate_not_evidence": True,
+        }
     qwen = dense_rank(
         objects,
         eligible,
@@ -356,11 +396,22 @@ def retrieve_hybrid_candidates(
                 ],
                 dtype=np.int64,
             )
-            owner_bm25 = bm25_rank(
-                objects,
-                owner_eligible,
-                lane.lexical_query,
-                limit=first_stage_limit,
+            owner_bm25 = (
+                list(
+                    balanced_bm25_rank(
+                        objects,
+                        owner_eligible,
+                        lane.lexical_subqueries,
+                        limit=first_stage_limit,
+                    ).candidates
+                )
+                if typed_balanced_lexical_enabled
+                else bm25_rank(
+                    objects,
+                    owner_eligible,
+                    lane.lexical_query,
+                    limit=first_stage_limit,
+                )
             )
             owner_qwen = dense_rank(
                 objects,
@@ -646,7 +697,9 @@ def retrieve_hybrid_candidates(
     )
     body = {
         "schema_version": (
-            HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION
+            HYBRID_RESULT_TYPED_BALANCED_SCHEMA_VERSION
+            if typed_balanced_lexical_enabled
+            else HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION
             if material_aware
             else HYBRID_RESULT_OWNER_BALANCED_SCHEMA_VERSION
             if owner_balance_active or evidence_role_advisory_enabled
@@ -658,7 +711,11 @@ def retrieve_hybrid_candidates(
         "facet_id": lane.facet_id,
         "evidence_owner_tickers": list(lane.evidence_owner_tickers),
         "route_id": (
-            "bm25_qwen_union_with_request_bound_material_reservation_v1"
+            "typed_balanced_bm25_qwen_union_with_material_reservation_v2"
+            if typed_balanced_lexical_enabled and material_aware
+            else "typed_balanced_bm25_qwen_union_v1"
+            if typed_balanced_lexical_enabled
+            else "bm25_qwen_union_with_request_bound_material_reservation_v1"
             if material_aware
             else "bm25_qwen_owner_balanced_union_with_advisory_evidence_role_v1"
             if owner_balance_active or evidence_role_advisory_enabled
@@ -670,6 +727,7 @@ def retrieve_hybrid_candidates(
         "candidate_state": "candidate_not_evidence",
         "query": {
             "lexical": lane.lexical_query,
+            "lexical_recall": lexical_recall_trace,
             "semantic": lane.semantic_query,
             "relationship_constraints": list(lane.relationship_constraints),
             "required_source_roles": list(lane.required_source_roles),
@@ -696,6 +754,7 @@ def retrieve_hybrid_candidates(
             },
             "owner_floor_unmet": sorted(set(owner_floor_unmet)),
             "evidence_role_advisory_enabled": evidence_role_advisory_enabled,
+            "typed_balanced_lexical_enabled": typed_balanced_lexical_enabled,
             "material_reservation_active": material_aware,
             "material_scope_ready": material_scope_ready,
             "material_set_complete": material_set_complete,
@@ -740,6 +799,7 @@ class LocalQwenHybridCandidateRuntime:
         minimum_candidates_per_owner: int,
         evidence_role_advisory_enabled: bool,
         runtime_identity: Mapping[str, Any],
+        typed_balanced_lexical_enabled: bool = False,
     ) -> None:
         self._objects = tuple(objects)
         self._qwen_document_embeddings = qwen_document_embeddings
@@ -752,6 +812,7 @@ class LocalQwenHybridCandidateRuntime:
         self._financial_ranking_enabled = financial_ranking_enabled
         self._minimum_candidates_per_owner = minimum_candidates_per_owner
         self._evidence_role_advisory_enabled = evidence_role_advisory_enabled
+        self._typed_balanced_lexical_enabled = typed_balanced_lexical_enabled
         self.runtime_identity = dict(runtime_identity)
         self._inference_lock = Lock()
 
@@ -767,6 +828,9 @@ class LocalQwenHybridCandidateRuntime:
         owner_balanced = (
             schema_version == HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION
         )
+        typed_balanced = (
+            schema_version == HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION
+        )
         expected_fields = {
             "schema_version",
             "status",
@@ -779,6 +843,8 @@ class LocalQwenHybridCandidateRuntime:
             expected_fields.add("financial_ranking")
         if owner_balanced:
             expected_fields.update({"owner_balance", "evidence_role"})
+        if typed_balanced:
+            expected_fields.add("typed_query_recall")
         _require(set(payload) == expected_fields, "hybrid_runtime_policy_fields_invalid")
         _require(
             schema_version
@@ -786,13 +852,16 @@ class LocalQwenHybridCandidateRuntime:
                 HYBRID_RUNTIME_POLICY_SCHEMA_VERSION,
                 HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION,
                 HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION,
+                HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION,
             },
             "hybrid_runtime_policy_schema_invalid",
         )
         _require(
             payload.get("status")
             == (
-                "provisional_owner_balanced_candidate_runtime_not_evidence_authority"
+                "provisional_typed_balanced_candidate_runtime_not_evidence_authority"
+                if typed_balanced
+                else "provisional_owner_balanced_candidate_runtime_not_evidence_authority"
                 if owner_balanced
                 else
                 "provisional_financial_structure_ranker_not_evidence_authority"
@@ -811,6 +880,7 @@ class LocalQwenHybridCandidateRuntime:
         financial_ranking = payload.get("financial_ranking")
         owner_balance = payload.get("owner_balance")
         evidence_role = payload.get("evidence_role")
+        typed_query_recall = payload.get("typed_query_recall")
         _require(
             isinstance(object_policy, Mapping)
             and isinstance(model_policy, Mapping)
@@ -846,6 +916,19 @@ class LocalQwenHybridCandidateRuntime:
                     "evidence_authority": False,
                 },
                 "hybrid_runtime_owner_balance_policy_invalid",
+            )
+        if typed_balanced:
+            _require(
+                typed_query_recall
+                == {
+                    "enabled": True,
+                    "query_plan_schema": "fin_ia_typed_query_facet_plan_v1_2",
+                    "strategy": "per_request_metric_product_balanced_bm25_v1",
+                    "ontology_expansion_candidate_only": True,
+                    "result_or_label_access": False,
+                    "candidate_is_not_evidence": True,
+                },
+                "hybrid_runtime_typed_query_recall_policy_invalid",
             )
         objects_path = _resolve(root, str(object_policy.get("objects_ref") or ""))
         cache_path = _resolve(root, str(model_policy.get("dense_cache_ref") or ""))
@@ -908,6 +991,7 @@ class LocalQwenHybridCandidateRuntime:
             financial_ranking_enabled=successor,
             minimum_candidates_per_owner=(2 if owner_balanced else 0),
             evidence_role_advisory_enabled=owner_balanced,
+            typed_balanced_lexical_enabled=typed_balanced,
             runtime_identity=runtime_identity,
         )
 
@@ -922,7 +1006,11 @@ class LocalQwenHybridCandidateRuntime:
         intent_ontology: Mapping[str, Any] | None = None,
         retrieval_need_policy: Mapping[str, Any] | None = None,
     ) -> tuple[dict[str, Any], ...]:
-        lanes, encoded = self._encode_requests(requests, kernel=kernel)
+        lanes, encoded = self._encode_requests(
+            requests,
+            kernel=kernel,
+            intent_ontology=intent_ontology,
+        )
         return tuple(
             retrieve_hybrid_candidates(
                 request=request,
@@ -950,6 +1038,9 @@ class LocalQwenHybridCandidateRuntime:
                 material_runtime_policy=material_runtime_policy,
                 intent_ontology=intent_ontology,
                 retrieval_need_policy=retrieval_need_policy,
+                typed_balanced_lexical_enabled=(
+                    self._typed_balanced_lexical_enabled
+                ),
             )
             for index, request in enumerate(requests)
         )
@@ -1006,11 +1097,20 @@ class LocalQwenHybridCandidateRuntime:
         requests: Sequence[EvidenceRequest],
         *,
         kernel: FinancialResearchKernel,
+        intent_ontology: Mapping[str, Any] | None = None,
     ) -> tuple[list[Any], np.ndarray]:
         _require(bool(requests), "hybrid_runtime_requests_missing")
         lanes = []
         for request in requests:
-            plan = compile_query_facet_plan_for_request(kernel, request)
+            plan = (
+                compile_query_facet_plan_for_request_v3(
+                    kernel,
+                    request,
+                    ontology=intent_ontology,
+                )
+                if self._typed_balanced_lexical_enabled
+                else compile_query_facet_plan_for_request_v1(kernel, request)
+            )
             _require(len(plan.lanes) == 1, "hybrid_candidate_lane_count_invalid")
             lanes.append(plan.lanes[0])
         with self._inference_lock:
@@ -1080,9 +1180,11 @@ class LazyLocalQwenHybridCandidateRuntime:
 __all__ = [
     "HYBRID_RESULT_SCHEMA_VERSION",
     "HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION",
+    "HYBRID_RESULT_TYPED_BALANCED_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION",
+    "HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION",
     "HybridCandidateRuntimeError",
     "LazyLocalQwenHybridCandidateRuntime",
     "LocalQwenHybridCandidateRuntime",

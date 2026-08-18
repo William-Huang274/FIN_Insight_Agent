@@ -9,29 +9,45 @@ from typing import Any
 
 PLAN_SCHEMA_V1_0 = "fin_ia_material_evidence_requirement_plan_v1_0"
 PLAN_SCHEMA_V1_1 = "fin_ia_material_evidence_requirement_plan_v1_1"
-PLAN_SCHEMAS = {PLAN_SCHEMA_V1_0, PLAN_SCHEMA_V1_1}
+PLAN_SCHEMA_V1_2 = "fin_ia_material_evidence_requirement_plan_v1_2"
+PLAN_SCHEMAS = {PLAN_SCHEMA_V1_0, PLAN_SCHEMA_V1_1, PLAN_SCHEMA_V1_2}
+CORRELATED_PLAN_SCHEMAS = {PLAN_SCHEMA_V1_1, PLAN_SCHEMA_V1_2}
 PLAN_SCHEMA = PLAN_SCHEMA_V1_0
 REFERENCE_SCHEMA_V1_0 = "fin_ia_material_evidence_set_reference_v1_0"
 REFERENCE_SCHEMA_V1_1 = "fin_ia_material_evidence_set_reference_v1_1"
-REFERENCE_SCHEMAS = {REFERENCE_SCHEMA_V1_0, REFERENCE_SCHEMA_V1_1}
+REFERENCE_SCHEMA_V1_2 = "fin_ia_material_evidence_set_reference_v1_2"
+REFERENCE_SCHEMAS = {
+    REFERENCE_SCHEMA_V1_0,
+    REFERENCE_SCHEMA_V1_1,
+    REFERENCE_SCHEMA_V1_2,
+}
 REFERENCE_SCHEMA = REFERENCE_SCHEMA_V1_0
 SELECTION_SCHEMA_V1_0 = "fin_ia_request_bound_candidate_review_v1_0"
 SELECTION_SCHEMA_V1_1 = "fin_ia_request_bound_candidate_review_v1_1"
-SELECTION_SCHEMAS = {SELECTION_SCHEMA_V1_0, SELECTION_SCHEMA_V1_1}
+SELECTION_SCHEMA_V1_2 = "fin_ia_request_bound_candidate_review_v1_2"
+SELECTION_SCHEMAS = {
+    SELECTION_SCHEMA_V1_0,
+    SELECTION_SCHEMA_V1_1,
+    SELECTION_SCHEMA_V1_2,
+}
 SELECTION_SCHEMA = SELECTION_SCHEMA_V1_0
 PERIOD_MODES = {"any", "single_period", "all_periods_same_basis"}
 ROLES = {"direct", "counter", "bridge", "context"}
 COVERAGE_MODES = {"single_binding", "collective_axes"}
+METRIC_COVERAGE_MODES = {"all_of", "any_of", "retrieval_context_only"}
+PRODUCT_COVERAGE_MODES = {"all_of", "any_of"}
 PLAN_FIELDS = {"schema_version", "request_id", "requirement_groups"}
 GROUP_FIELDS = {
     "coverage_mode",
     "facet_id",
     "fiscal_years",
     "metric_ids",
+    "metric_coverage_mode",
     "minimum_candidates",
     "period_mode",
     "priority",
     "product_ids",
+    "product_coverage_mode",
     "requirement_id",
     "role",
     "target_entities",
@@ -165,6 +181,18 @@ def validate_requirement_plan(
         entities = set(_strings(raw.get("target_entities")))
         years = set(_ints(raw.get("fiscal_years")))
         minimum_candidates = int(raw.get("minimum_candidates") or 0)
+        metric_coverage_mode = str(
+            raw.get("metric_coverage_mode")
+            or (
+                "retrieval_context_only"
+                if plan_schema == PLAN_SCHEMA_V1_2
+                and period_mode != "all_periods_same_basis"
+                else "all_of"
+            )
+        )
+        product_coverage_mode = str(
+            raw.get("product_coverage_mode") or "all_of"
+        )
         if facet_id not in request_facets:
             raise EvidenceSetCoverageError(
                 f"material_requirement_facet_outside_request:{group_id}"
@@ -184,6 +212,20 @@ def validate_requirement_plan(
         if plan_schema == PLAN_SCHEMA_V1_0 and "coverage_mode" in raw:
             raise EvidenceSetCoverageError(
                 f"material_requirement_coverage_mode_unsupported:{group_id}"
+            )
+        if plan_schema != PLAN_SCHEMA_V1_2 and (
+            "metric_coverage_mode" in raw or "product_coverage_mode" in raw
+        ):
+            raise EvidenceSetCoverageError(
+                f"material_requirement_axis_coverage_mode_unsupported:{group_id}"
+            )
+        if metric_coverage_mode not in METRIC_COVERAGE_MODES:
+            raise EvidenceSetCoverageError(
+                f"material_requirement_metric_coverage_mode_invalid:{group_id}"
+            )
+        if product_coverage_mode not in PRODUCT_COVERAGE_MODES:
+            raise EvidenceSetCoverageError(
+                f"material_requirement_product_coverage_mode_invalid:{group_id}"
             )
         if (
             period_mode == "all_periods_same_basis"
@@ -229,6 +271,13 @@ def validate_requirement_plan(
             raise EvidenceSetCoverageError(
                 f"material_requirement_temporal_minimum_invalid:{group_id}"
             )
+        if period_mode == "all_periods_same_basis" and (
+            metric_coverage_mode != "all_of"
+            or product_coverage_mode != "all_of"
+        ):
+            raise EvidenceSetCoverageError(
+                f"material_requirement_temporal_axis_mode_invalid:{group_id}"
+            )
         if period_mode == "single_period" and len(years) != 1:
             raise EvidenceSetCoverageError(
                 f"material_requirement_single_period_invalid:{group_id}"
@@ -249,7 +298,22 @@ def validate_requirement_plan(
         if period_mode == "all_periods_same_basis":
             reserved_capacity = len(years)
         elif coverage_mode == "collective_axes":
-            axis_count = int(bool(metrics)) + int(bool(products))
+            if plan_schema == PLAN_SCHEMA_V1_2:
+                metric_capacity = (
+                    len(metrics)
+                    if metric_coverage_mode == "all_of"
+                    else int(bool(metrics))
+                    if metric_coverage_mode == "any_of"
+                    else 0
+                )
+                product_capacity = (
+                    len(products)
+                    if product_coverage_mode == "all_of"
+                    else int(bool(products))
+                )
+                axis_count = metric_capacity + product_capacity
+            else:
+                axis_count = int(bool(metrics)) + int(bool(products))
             reserved_capacity = max(minimum_candidates, axis_count or 1)
         else:
             reserved_capacity = minimum_candidates
@@ -270,6 +334,10 @@ def validate_requirement_plan(
             }
         if plan_schema == PLAN_SCHEMA_V1_1:
             normalized_group["coverage_mode"] = coverage_mode
+        elif plan_schema == PLAN_SCHEMA_V1_2:
+            normalized_group["coverage_mode"] = coverage_mode
+            normalized_group["metric_coverage_mode"] = metric_coverage_mode
+            normalized_group["product_coverage_mode"] = product_coverage_mode
         normalized.append(normalized_group)
     if maximum_reserved_capacity > int(review_k):
         raise EvidenceSetCoverageError("material_requirement_review_capacity_insufficient")
@@ -366,7 +434,7 @@ def _validate_candidates(
             raise EvidenceSetCoverageError("material_candidate_identity_invalid")
         if rank <= 0 or not math.isfinite(score):
             raise EvidenceSetCoverageError("material_candidate_rank_invalid")
-        if plan_schema == PLAN_SCHEMA_V1_1:
+        if plan_schema in CORRELATED_PLAN_SCHEMAS:
             if row.get("schema_version") != "fin_ia_material_candidate_metadata_v1_1":
                 raise EvidenceSetCoverageError("material_candidate_schema_invalid")
             bindings = row.get("material_bindings")
@@ -394,7 +462,7 @@ def _validate_candidates(
 def _candidate_bindings(
     candidate: Mapping[str, Any], *, plan_schema: str
 ) -> tuple[Mapping[str, Any], ...]:
-    if plan_schema == PLAN_SCHEMA_V1_1:
+    if plan_schema in CORRELATED_PLAN_SCHEMAS:
         return tuple(
             binding
             for binding in candidate.get("material_bindings") or ()
@@ -418,12 +486,12 @@ def _binding_matches(
 ) -> bool:
     binding_facets = (
         {str(binding.get("facet_id") or "")}
-        if plan_schema == PLAN_SCHEMA_V1_1
+        if plan_schema in CORRELATED_PLAN_SCHEMAS
         else set(_strings(binding.get("facet_ids")))
     )
     binding_roles = (
         {str(binding.get("role") or "")}
-        if plan_schema == PLAN_SCHEMA_V1_1
+        if plan_schema in CORRELATED_PLAN_SCHEMAS
         else set(_strings(binding.get("roles")))
     )
     if group["facet_id"] not in binding_facets:
@@ -446,12 +514,12 @@ def _binding_matches_base(
 ) -> bool:
     binding_facets = (
         {str(binding.get("facet_id") or "")}
-        if plan_schema == PLAN_SCHEMA_V1_1
+        if plan_schema in CORRELATED_PLAN_SCHEMAS
         else set(_strings(binding.get("facet_ids")))
     )
     binding_roles = (
         {str(binding.get("role") or "")}
-        if plan_schema == PLAN_SCHEMA_V1_1
+        if plan_schema in CORRELATED_PLAN_SCHEMAS
         else set(_strings(binding.get("roles")))
     )
     return (
@@ -495,7 +563,7 @@ def _collective_candidate_axes(
             required_metrics.intersection(_strings(binding.get("metric_ids")))
         )
         review_product_ids = set(_strings(binding.get("product_ids")))
-        if plan_schema == PLAN_SCHEMA_V1_1:
+        if plan_schema in CORRELATED_PLAN_SCHEMAS:
             review_product_ids.update(
                 _strings(
                     binding.get(
@@ -558,7 +626,9 @@ def _candidate_contributes(
             case_key=case_key,
             plan_schema=plan_schema,
         )
-    metric_required = bool(group["metric_ids"])
+    metric_required = bool(group["metric_ids"]) and group.get(
+        "metric_coverage_mode", "all_of"
+    ) != "retrieval_context_only"
     product_required = bool(group["product_ids"])
     if not metric_required and not product_required:
         if str(candidate.get("case_key") or "") != case_key or not set(
@@ -578,6 +648,26 @@ def _candidate_contributes(
     return bool(metrics or products)
 
 
+def _axis_is_complete(
+    *, required: set[str], covered: set[str], mode: str
+) -> bool:
+    if not required or mode == "retrieval_context_only":
+        return True
+    if mode == "any_of":
+        return bool(required.intersection(covered))
+    return required.issubset(covered)
+
+
+def _missing_axis_ids(
+    *, required: set[str], covered: set[str], mode: str
+) -> list[str]:
+    if not required or mode == "retrieval_context_only":
+        return []
+    if mode == "any_of" and required.intersection(covered):
+        return []
+    return sorted(required.difference(covered))
+
+
 def _collective_bundle(
     candidates: Sequence[Mapping[str, Any]],
     group: Mapping[str, Any],
@@ -588,15 +678,29 @@ def _collective_bundle(
     """Choose the smallest stable set whose correlated bindings cover axes."""
 
     ordered = sorted(candidates, key=_candidate_sort_key)
-    required_metrics = set(group["metric_ids"])
+    metric_coverage_mode = str(group.get("metric_coverage_mode") or "all_of")
+    product_coverage_mode = str(group.get("product_coverage_mode") or "all_of")
+    required_metrics = (
+        set()
+        if metric_coverage_mode == "retrieval_context_only"
+        else set(group["metric_ids"])
+    )
     required_products = set(group["product_ids"])
     capacity = int(group.get("reserved_candidate_capacity") or 0)
     selected: list[Mapping[str, Any]] = []
     covered_metrics: set[str] = set()
     covered_products: set[str] = set()
     while not (
-        required_metrics.issubset(covered_metrics)
-        and required_products.issubset(covered_products)
+        _axis_is_complete(
+            required=required_metrics,
+            covered=covered_metrics,
+            mode=metric_coverage_mode,
+        )
+        and _axis_is_complete(
+            required=required_products,
+            covered=covered_products,
+            mode=product_coverage_mode,
+        )
     ):
         best: Mapping[str, Any] | None = None
         best_gain = 0
@@ -726,7 +830,7 @@ def select_request_bound_review(
         for row in all_ordered
         if str(row.get("case_key") or "") != case_key
         or (
-            plan_schema == PLAN_SCHEMA_V1_1
+            plan_schema in CORRELATED_PLAN_SCHEMAS
             and not allowed_entities.intersection(
                 _strings(row.get("target_entities"))
             )
@@ -820,10 +924,39 @@ def select_request_bound_review(
                 str(row["compiled_object_id"]) for row in bundle
             ],
         }
-        if plan_schema == PLAN_SCHEMA_V1_1:
+        if plan_schema in CORRELATED_PLAN_SCHEMAS:
             receipt["coverage_mode"] = group.get(
                 "coverage_mode", "single_binding"
             )
+        if plan_schema == PLAN_SCHEMA_V1_2:
+            receipt["metric_coverage_mode"] = group["metric_coverage_mode"]
+            receipt["product_coverage_mode"] = group["product_coverage_mode"]
+            observed_metrics: set[str] = set()
+            observed_products: set[str] = set()
+            for candidate in eligible:
+                candidate_metrics, candidate_products = _collective_candidate_axes(
+                    candidate,
+                    group,
+                    case_key=case_key,
+                    plan_schema=plan_schema,
+                )
+                observed_metrics.update(candidate_metrics)
+                observed_products.update(candidate_products)
+            receipt["observed_metric_ids"] = sorted(observed_metrics)
+            receipt["observed_product_ids"] = sorted(observed_products)
+            receipt["missing_required_metric_ids"] = _missing_axis_ids(
+                required=set(group["metric_ids"]),
+                covered=observed_metrics,
+                mode=str(group["metric_coverage_mode"]),
+            )
+            receipt["missing_required_product_ids"] = _missing_axis_ids(
+                required=set(group["product_ids"]),
+                covered=observed_products,
+                mode=str(group["product_coverage_mode"]),
+            )
+            receipt["partial_coverage_observed"] = bool(
+                observed_metrics or observed_products
+            ) and not complete
         receipts.append(receipt)
     if len(selected) > review_k:
         raise EvidenceSetCoverageError("material_review_capacity_exceeded")
@@ -836,7 +969,9 @@ def select_request_bound_review(
             selected_ids.add(object_id)
     result = {
         "schema_version": (
-            SELECTION_SCHEMA_V1_1
+            SELECTION_SCHEMA_V1_2
+            if plan_schema == PLAN_SCHEMA_V1_2
+            else SELECTION_SCHEMA_V1_1
             if plan_schema == PLAN_SCHEMA_V1_1
             else SELECTION_SCHEMA_V1_0
         ),
@@ -861,7 +996,7 @@ def select_request_bound_review(
         "candidate_is_not_evidence": True,
         "numeric_fact_authority": False,
     }
-    if plan_schema == PLAN_SCHEMA_V1_1:
+    if plan_schema in CORRELATED_PLAN_SCHEMAS:
         result["request_alignment_excluded_candidate_ids"] = (
             request_alignment_excluded
         )
@@ -909,7 +1044,9 @@ def evaluate_material_reference(
     reference_schema = str(reference.get("schema_version") or "")
     selection_schema = str(selection.get("schema_version") or "")
     expected_reference_schema = (
-        REFERENCE_SCHEMA_V1_1
+        REFERENCE_SCHEMA_V1_2
+        if selection_schema == SELECTION_SCHEMA_V1_2
+        else REFERENCE_SCHEMA_V1_1
         if selection_schema == SELECTION_SCHEMA_V1_1
         else REFERENCE_SCHEMA_V1_0
     )
@@ -975,7 +1112,9 @@ def evaluate_material_reference(
     )
     result = {
         "schema_version": (
-            "fin_ia_material_evidence_set_evaluation_v1_1"
+            "fin_ia_material_evidence_set_evaluation_v1_2"
+            if selection_schema == SELECTION_SCHEMA_V1_2
+            else "fin_ia_material_evidence_set_evaluation_v1_1"
             if selection_schema == SELECTION_SCHEMA_V1_1
             else "fin_ia_material_evidence_set_evaluation_v1_0"
         ),
@@ -998,10 +1137,13 @@ __all__ = [
     "EvidenceSetCoverageError",
     "PLAN_SCHEMA_V1_0",
     "PLAN_SCHEMA_V1_1",
+    "PLAN_SCHEMA_V1_2",
     "REFERENCE_SCHEMA_V1_0",
     "REFERENCE_SCHEMA_V1_1",
+    "REFERENCE_SCHEMA_V1_2",
     "SELECTION_SCHEMA_V1_0",
     "SELECTION_SCHEMA_V1_1",
+    "SELECTION_SCHEMA_V1_2",
     "canonical_digest",
     "compile_requirement_plan",
     "evaluate_material_reference",

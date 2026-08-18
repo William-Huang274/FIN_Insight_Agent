@@ -717,8 +717,16 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 ## 2026-08-18 S1 三案例 candidate-ceiling 回放与顺序重定
 
 - MU／NVDA 已在同一当前产品入口完成 CUDA／FP16 回放；与 DELL 合计 24／24 request scope-ready、5／24 material-set complete、12／36 requirement 保留完整，384 个候选、116 个 NumericFact。全部 24 条请求均达到 BM25 64、Qwen 64、union 96 上限；0 网络、0 生成模型、0 CPU vector fallback、0 public-gap 声明。
-- MU 对象库已有 take-or-pay、绑定采购量和多年期战略客户协议官方表述，但未进入 orders／conversion 的候选并集；NVDA 最新 Data Center 收入对象已在库内，但未进入 reported-results 并集。两者证明 QueryFacetPlan／召回／时点排序仍会丢失已知高价值对象，不能靠继续补源或后端从 0 个有效候选中救回。
+- MU 对象库已有 take-or-pay、绑定采购量和多年期战略客户协议官方表述，但旧查询将其排到第 275—780 名，未进入 first-stage top 64。进一步读取私有候选后更正：NVDA 最新 Data Center 收入在旧 reported-results BM25 已排第 16、实际进入 bounded union；它被判 incomplete 是 coverage 合同假阴性，不是召回失败。旧 v1.0 审计保持不改写，本更正由 successor 工作记录 045 承接。
 - NVDA metric-row 对象出现局部表格上下文污染：债务到期和利息收入行继承 `Gross Profit and Gross Margin` 表题。最早责任层回到 S1 source parse／object compilation；修复前不得把该类行送入 EvidenceDecision。
 - 当前 `collective_axes` 合同把多 metric／product 全部按 AND 处理，却只按“是否存在 metric 轴／product 轴”预留容量；同时让 S1 narrative completeness 重复承担 S2 NumericFact 数值义务。部分 `material incomplete` 因此是合同假阴性而非材料缺失。RC-S1-036 已打开。
 - MU net income 因两个不同 discrete quarter 同被标为 FY2025 Q3 而产生 typed conflict；fail-closed 正确，期间身份修复归 S2 的 RC-S2-006，不得在 S1 任选数字。
 - 顺序已从“直接实现 RC-S1-034 product producer”调整为：RC-S1-037 表格对象上下文 → RC-S1-036 coverage semantics → RC-S1-038 已知对象召回／时点 → CUDA/FP16 重建与三案 successor replay → product EvidenceDecision／GapEligibilityReceipt／PackReadiness。这样避免把错误 incompleteness 固化成正式产品结论。
+
+## 2026-08-18 S1 对象、coverage 与类型化均衡召回 successor
+
+- 冻结的 object compiler v1 已恢复，避免资格资产摘要漂移；新 v2 在去重前使用每张表前的局部原文重建 metric-row 标题、上下文和身份。真实形状回归确认债务到期行不会继续冒充毛利表。
+- EvidenceSetCoverage v1.2 将 metric／product 的 `all_of`、`any_of` 与 `retrieval_context_only` 分开：非时间型叙事 metric 不再重复承担 S2 数字权威，product 默认逐项覆盖，预留容量按真实 required axes 计算，partial coverage 显式列 missing axes。
+- QueryFacetPlan v3 将一个请求拆成 raw request、metric aliases 和逐 product 财报表面；typed-balanced BM25 在同一 hard-filter corpus 分别召回后再融合。没有对象 ID／URL／ticker 特判。MU 三条战略客户协议从旧第 275—780 名进入新第 4／8／11 名。
+- 新行为均在 versioned successor seam，旧 QueryFacetPlan／对象编译器和历史 attempts 不改写；0 网络、0 模型、0 learned-vector、0 qrel／gold／hidden 读取。全仓 `739 passed`。
+- 当前 Runtime 仍未切换。下一步是一次性生成新对象快照、CUDA／FP16 dense cache、typed-balanced policy 与 binding，再做 DELL／MU／NVDA successor replay；通过后才恢复 RC-S1-034 产品 producer。S1、动态 S3、发布与 release 仍为 false。

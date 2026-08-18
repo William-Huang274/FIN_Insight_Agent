@@ -22,6 +22,9 @@ from retrieval.contracts import (
     load_financial_research_kernel,
 )
 from retrieval.object_view_compiler import compile_object_store
+from retrieval.object_view_compiler_v2 import (
+    compile_object_store as compile_object_store_v2,
+)
 from retrieval.route_compiler import (
     compile_retrieval_execution_plan,
     load_query_object_fact_route_policy,
@@ -568,6 +571,73 @@ def test_table_period_rows_are_headers_and_business_unit_context_is_retained() -
         ["Core Data Center Business Unit"],
     ]
     assert "Row context: Cloud Memory Business Unit" in rows[0]["model_text"]
+
+
+def test_table_rows_use_local_intro_instead_of_stale_record_subsection() -> None:
+    parent = {
+        "document_id": "CURRENT_DOC::NVDA::10_K::LOCAL_TABLE_CONTEXT",
+        "ticker": "NVDA",
+        "company": "NVIDIA Corporation",
+        "source_type": "10-K",
+        "source_tier": "primary_sec_filing",
+        "publication_date": "2026-02-25",
+        "period_end": "2026-01-25",
+        "fiscal_year": 2026,
+    }
+    record = {
+        **parent,
+        "evidence_id": "NVDA_LOCAL_TABLE_CONTEXT",
+        "section": "Item 7. Management's Discussion and Analysis",
+        # This deliberately represents the stale broad heading that caused
+        # debt rows to masquerade as gross-margin material in the real store.
+        "subsection": "Gross Profit and Gross Margin",
+        "metadata": {"parent_document_id": parent["document_id"]},
+        "text": (
+            "Gross Profit and Gross Margin\n"
+            "Gross margin improved during the year.\n"
+            "[TABLE_START id=1 rows=2]\n"
+            "Year Ended\n"
+            "January 25, 2026 | January 26, 2025\n"
+            "Gross margin | 75.0% | 73.0%\n"
+            "[TABLE_END]\n"
+            "Outstanding Indebtedness and Commercial Paper Program\n"
+            "Our aggregate debt maturities by year payable are as follows:\n"
+            "[TABLE_START id=2 rows=3]\n"
+            "January 25, 2026\n"
+            "(In millions)\n"
+            "Due in one year | $ | 1,000\n"
+            "Due in one to five years | 2,750\n"
+            "[TABLE_END]"
+        ),
+    }
+
+    result = compile_object_store_v2(
+        records=[record],
+        parents_by_id={parent["document_id"]: parent},
+        policy=_policy(),
+    )
+    debt_rows = [
+        row
+        for row in result.objects
+        if row["object_kind"] == "metric_row"
+        and str(row["structured_projection"]["metric_row_label"]).startswith("Due")
+    ]
+    assert len(debt_rows) == 2
+    assert all(
+        row["structured_projection"]["table_title"]
+        == "Outstanding Indebtedness and Commercial Paper Program"
+        for row in debt_rows
+    )
+    assert all(
+        row["structured_projection"]["table_title_source"]
+        == "local_pre_table_heading"
+        for row in debt_rows
+    )
+    assert all(
+        "aggregate debt maturities" in row["model_text"]
+        and "Gross Profit and Gross Margin" not in row["model_text"]
+        for row in debt_rows
+    )
 
 
 def test_current_runtime_exposes_database_sibling_as_typed_s2_gap(

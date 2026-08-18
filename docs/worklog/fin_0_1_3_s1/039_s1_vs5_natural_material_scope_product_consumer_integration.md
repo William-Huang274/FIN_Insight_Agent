@@ -99,3 +99,12 @@ R3 在 clean／synced 提交 `94fef96e...` 上通过 Project OS preflight 后 ex
 该真实结果同时暴露 RC-S1-031：v1.0 用 supported／unsupported 表达产品轴，但材料主题是否被覆盖与命题真假方向不是同一件事。微软披露“持续投入 AI infrastructure、AI usage 增长”不支持 `hyperscaler capex slowdown`，却是反驳 slowdown 的有效材料；把它记成 unsupported 会误报 S1 缺口。v1.0 因而只保留为诊断，不进入 S1 gate。successor 必须逐产品轴分别记录 addressed／unaddressed 和 supports／contradicts／mixed／context-only／boundary-only。
 
 同一请求还暴露跨阶段 RC-S3-045：R3 选择了 hyperscaler capex slowdown，却只在 NVDA／MU／TSM 之外给出 MSFT 一个 hyperscaler，没有 AMZN／GOOGL／META，也没有显式 proxy。S1 不得越权扩大实体；当前只能形成 MSFT-specific bounded conclusion，不能推广至 hyperscaler class。该问题回传 S3 ResearchBlueprint，不能算 S1 source gap。
+
+## DELL Evidence＋NumericFact 联合就绪度 v1.1 successor
+
+- v1.1 已把“这个议题有没有被材料触及”和“材料支持还是反驳假设”拆成两个独立字段。每个 product axis 都必须给出 `addressed／unaddressed／needs_review`，并另列 `supports／contradicts／mixed／context_only／boundary_only／not_assessed`；错 Evidence、前序 review digest 漂移、未覆盖却声称有 Evidence 等 mutation 均 fail closed。
+- 同一 DELL 8-request、同一 reviewed Pack 和同一 S2 结果零调用复跑得到：12／12 requirement research-consumable、8／8 request research-consumable；只有 1／12 requirement 和 1／8 request 达到最严格 `ready`，另有 9 项必须保留 claim boundary、2 项为“定性材料可用但 S2 精确数字仍 gap”。
+- 这里的 12／12 不是“所有证据都支持原假设”。例如微软持续投入 AI infrastructure 的材料明确记为 `contradicts hyperscaler capex slowdown`；它能帮助研究者否定或收窄假设，但只能代表 MSFT，不能推广到 hyperscaler class。
+- candidate review、reviewed Evidence、S2 NumericFact 和 S2 typed gap 已保持四套权威；0 candidate／Evidence 晋升、0 新 NumericFact、0 public-information gap 声明。RC-S1-030 与 RC-S1-031 的工程根因关闭。
+- RC-S3-045 继续开放：hyperscaler 类命题只签了 MSFT 一个 hyperscaler，属于 S3 ResearchBlueprint 的目标实体集合不完整，S1 不得擅自追加 AMZN／GOOGL／META。
+- 正式结果：`configs/retrieval/fin_ia_0_1_3_s1_dell_integrated_pack_readiness_result_v1_1.json`；结果 SHA-256=`66985110267ae6f145cf2acbf6899c3d807c320d59bf49276d4294b368bf1de7`，result digest=`6341f24cd2ffc06d895d5ba370801a5af1109ed0d536104074562580ea3fc987`。这仍只是当前 DELL scope 的 development readiness，不是 Owner／qualified-human mapping acceptance、blind qualification、S1 通过、动态全链或 release。

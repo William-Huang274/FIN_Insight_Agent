@@ -674,3 +674,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 初始结果为 3／12 requirement fully satisfied、10／12 research-consumable、7／8 request research-consumable。reported results、margin、cash、working-capital 数字由 S2 权威覆盖；backlog、orders、customer count、shipments 明确归为 S2 fact-mart typed gap，不再误报 S1。
 - RC-S1-031 打开：v1.0 把“材料主题已覆盖”和“材料支持该假设”混为 supported／unsupported。Microsoft 的持续 AI 投入证据虽反驳 `hyperscaler capex slowdown`，仍应算该主题被研究覆盖。v1.0 只作诊断，successor 必须把 coverage 与 supports／contradicts／mixed／context-only／boundary-only polarity 分开。
 - RC-S3-045 回传 S3：同一 scope 只指定 MSFT 一个 hyperscaler，遗漏 AMZN／GOOGL／META，S1 不得擅自扩实体，也不能从 MSFT 推导 hyperscaler-wide 结论。下一步仅允许零调用 polarity contract 修复和同 Pack／NumericFact successor；S1、完整 S3、发布仍为 false。
+
+## 2026-08-18 S1／S2 DELL 联合研究就绪度 v1.1
+
+- 当前 8 个 DELL 自然请求的 12 个 requirement 已逐项绑定 reviewed Evidence，并与同请求 S2 NumericFact／typed gap 独立合成；12／12 requirement、8／8 request 均可在明确边界下供研究使用，只有 1／12 和 1／8 达到最严格 ready。
+- material coverage 与 Evidence polarity 已分离。MSFT 持续 AI 投入正确记为“覆盖该议题但反驳 slowdown”，且只能代表 MSFT；不得从一个 hyperscaler 推导整个 hyperscaler class。
+- RC-S1-030、RC-S1-031 工程根因关闭；candidate、Evidence、NumericFact、typed gap 四种权威仍分离，0 自动晋升、0 public-gap 声明。
+- RC-S3-045 继续由 S3 拥有：ResearchBlueprint 必须补经济实体类别完整性或显式代理边界，S1 不得自行扩充 AMZN／GOOGL／META。
+- 下一步回到 S1 canonical spine／覆盖矩阵，逐项区分已完成工程、外部 qualified-human／blind 资格、自然扫描官方源门和跨阶段移交。当前结果不是 S1 通过、Owner acceptance、动态全链、发布或 release。

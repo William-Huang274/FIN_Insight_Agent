@@ -1,0 +1,71 @@
+{
+  "schema_version": "fin_ia_s1_s2_integrated_pack_readiness_assessment_v1_1",
+  "status": "development_readiness_all_requests_consumable_external_mapping_acceptance_and_s1_qualification_pending",
+  "recorded_at": "2026-08-18T17:11:19+08:00",
+  "case_key": "DELL",
+  "prepared_from_commit": "4e2f869e34fd229884947753f842cdf5b24d80c1",
+  "bound_result": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_integrated_pack_readiness_result_v1_1.json",
+    "sha256": "66985110267ae6f145cf2acbf6899c3d807c320d59bf49276d4294b368bf1de7"
+  },
+  "private_full_result": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_integrated_pack_readiness/dell-r3-v2/full_result.json",
+    "sha256": "0aaefed2cd3edc870a3dd947e957583aa70a5e5e20302435c893e97604bea72e",
+    "access": "restricted_requirement_evidence_numeric_audit_only"
+  },
+  "execution_facts": {
+    "requirements": 12,
+    "fully_satisfied_requirements": 1,
+    "research_consumable_requirements": 12,
+    "requests": 8,
+    "ready_requests": 1,
+    "research_consumable_requests": 8,
+    "integrated_state_counts": {
+      "ready": 1,
+      "ready_with_claim_boundary": 9,
+      "qualitative_ready_s2_numeric_gap": 2
+    },
+    "network_calls": 0,
+    "generation_model_calls": 0,
+    "embedding_calls": 0,
+    "reranker_calls": 0,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0,
+    "numeric_fact_creations": 0,
+    "public_information_gap_claims": 0
+  },
+  "proven_improvements": [
+    "material-topic coverage is now independent from supports, contradicts, mixed, context-only, boundary-only, or not-assessed Evidence polarity",
+    "all twelve natural material requirements bind exact already-reviewed Pack Evidence and preserve an explicit claim boundary",
+    "all eight selected requests are research-consumable without converting a candidate, adjacent-company statement, or S2 typed gap into Evidence",
+    "reported results, margin, cash, and working-capital metrics are supplied only by same-request S2 NumericFacts",
+    "backlog, orders, customer_count, and shipments remain S2-owned typed gaps while qualitative issuer Evidence remains usable",
+    "Microsoft continued AI investment is correctly recorded as contradiction to slowdown and is bounded to MSFT rather than generalized to all hyperscalers"
+  ],
+  "closed_root_causes": [
+    {
+      "issue_id": "RC-S1-030-candidate-review-and-integrated-pack-readiness-conflated",
+      "closure": "the runtime now keeps candidate review, accepted reviewed Evidence, S2 NumericFact, and S2 typed gap as separate authorities before compiling integrated readiness"
+    },
+    {
+      "issue_id": "RC-S1-031-material-topic-coverage-and-claim-truth-polarity-conflated",
+      "closure": "each product axis now has a separate coverage_state and evidence_polarity with fail-closed mutation coverage"
+    }
+  ],
+  "cross_stage_open_finding": {
+    "issue_id": "RC-S3-045-hyperscaler-topic-target-entity-set-economically-incomplete",
+    "owning_stage": "S3 ResearchBlueprint and target-entity planning",
+    "current_safe_conclusion": "the current Pack can discuss MSFT-specific evidence and upstream constraints but cannot support a hyperscaler-class conclusion",
+    "not_an_s1_retrieval_gap": true
+  },
+  "product_interpretation_zh": "12/12 表示当前签发范围内每项都已有可供研究使用的已审证据或明确边界，不表示 12 项都支持原假设。只有 1/12 同时达到无剩余命题边界且无所需数值缺口的最严格 ready；其余必须在报告中保留边界或 S2 typed gap。",
+  "still_pending": [
+    "Owner or qualified-human acceptance of the provisional requirement-to-Evidence and polarity mapping",
+    "replacement blind qualification that has not been exposed in the repository",
+    "a valid naturally scanned official-source qualification case",
+    "S1 canonical-spine product gate across source, object, retrieval, ranking, Evidence Gate, replay, and Workbench consumption",
+    "S3 repair of entity-class completeness before any hyperscaler-wide conclusion",
+    "full dynamic research-chain acceptance, publication, and release"
+  ],
+  "known_boundary": "This is a current DELL development-readiness proof under the signed eight-request scope. It is not Owner acceptance, blind qualification, S1 completion, a public-information completeness claim, full dynamic Agentic Research, publication, or release."
+}

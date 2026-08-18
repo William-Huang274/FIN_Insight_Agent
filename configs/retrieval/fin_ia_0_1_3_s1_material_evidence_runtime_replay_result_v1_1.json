@@ -1,0 +1,123 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "generation_model_calls": 0,
+    "hidden_or_holdout_inputs_read": false,
+    "network_calls": 0,
+    "numeric_fact_authority": false,
+    "numeric_relation_authority": false,
+    "qrel_or_reference_inputs_read": false,
+    "s1_qualification_claimed": false
+  },
+  "case_summaries": [
+    {
+      "all_requests_permutation_stable": true,
+      "case_key": "COST",
+      "explicit_blueprint_required_request_count": 3,
+      "material_set_complete_request_count": 5,
+      "met_requirement_count": 19,
+      "request_count": 5,
+      "requirement_count": 19,
+      "runtime_scope_ready_request_count": 2,
+      "scope_blocked_requests": [
+        {
+          "request_key": "VS5::COST::COST_MEMBERSHIP_VALUE_CAPTURE",
+          "unclassified_product_intents": [
+            "membership fee revenue",
+            "renewal rate",
+            "Executive membership"
+          ]
+        },
+        {
+          "request_key": "VS5::COST::COST_COMPARABLE_SALES_DEMAND",
+          "unclassified_product_intents": [
+            "comparable sales",
+            "traffic",
+            "average ticket",
+            "e-commerce",
+            "gasoline prices"
+          ]
+        },
+        {
+          "request_key": "VS5::COST::COST_MARGIN_PRESSURES",
+          "unclassified_product_intents": [
+            "merchandise costs",
+            "wages",
+            "shrink",
+            "gasoline business"
+          ]
+        }
+      ],
+      "unmet_requirement_count": 0,
+      "unmet_requirements": []
+    },
+    {
+      "all_requests_permutation_stable": true,
+      "case_key": "DELL",
+      "explicit_blueprint_required_request_count": 3,
+      "material_set_complete_request_count": 3,
+      "met_requirement_count": 5,
+      "request_count": 3,
+      "requirement_count": 5,
+      "runtime_scope_ready_request_count": 0,
+      "scope_blocked_requests": [
+        {
+          "request_key": "S1_VS4_DELL_WORKING_CAPITAL",
+          "unclassified_product_intents": [
+            "AI-optimized server demand and working-capital dynamics"
+          ]
+        },
+        {
+          "request_key": "S1_VS4_DELL_ISSUER_COUNTER",
+          "unclassified_product_intents": [
+            "AI server customer concentration, competitive pricing, cancellations and inventory risk"
+          ]
+        },
+        {
+          "request_key": "S1_VS4_DELL_UPSTREAM_COUNTER",
+          "unclassified_product_intents": [
+            "advanced packaging capacity bottleneck, tester shortage and customer growth constraints"
+          ]
+        }
+      ],
+      "unmet_requirement_count": 0,
+      "unmet_requirements": []
+    },
+    {
+      "all_requests_permutation_stable": true,
+      "case_key": "MU",
+      "explicit_blueprint_required_request_count": 0,
+      "material_set_complete_request_count": 4,
+      "met_requirement_count": 6,
+      "request_count": 4,
+      "requirement_count": 6,
+      "runtime_scope_ready_request_count": 4,
+      "scope_blocked_requests": [],
+      "unmet_requirement_count": 0,
+      "unmet_requirements": []
+    },
+    {
+      "all_requests_permutation_stable": true,
+      "case_key": "NVDA",
+      "explicit_blueprint_required_request_count": 0,
+      "material_set_complete_request_count": 6,
+      "met_requirement_count": 10,
+      "request_count": 6,
+      "requirement_count": 10,
+      "runtime_scope_ready_request_count": 6,
+      "scope_blocked_requests": [],
+      "unmet_requirement_count": 0,
+      "unmet_requirements": []
+    }
+  ],
+  "interpretation_zh": "本结果仅证明当前真实请求、已保存候选和金融对象能够通过同一材料集合合同回放；未读取 qrels/标准答案，未晋升 Evidence，未授予 NumericFact，也不代表 S1 通过。",
+  "recorded_at": "2026-08-18",
+  "result_digest": "fd97dc27701af2c49355e869b4068d019679ac9db1462d445b6c8c45abfbd4ef",
+  "schema_version": "fin_ia_s1_material_evidence_runtime_replay_summary_v1_1",
+  "status": "four_case_zero_call_runtime_replay_complete_not_s1_qualification",
+  "storage": {
+    "full_result_ref": "data/workbench_private/fin_0_1_3_s1_material_evidence_runtime_replay/v1_1/full_result.json",
+    "full_result_sha256": "ec2c30d8316dbb973e97e16f2bb7ebfa4ad4f85b2787e9363b75dc6d3cea1aca"
+  },
+  "summary_digest": "d3c9d839cdfffddb71d67a41f333d195f3bac4fda0ed817717ccfd73baf61a1d"
+}

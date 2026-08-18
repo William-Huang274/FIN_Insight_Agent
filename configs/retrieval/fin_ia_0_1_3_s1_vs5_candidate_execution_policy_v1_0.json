@@ -72,7 +72,7 @@
     },
     "qualification_candidate_runner": {
       "ref": "scripts/data_retrieval/run_s1_vs5_qualification_candidates.py",
-      "sha256": "1f23579be276129b08d453420a8dc688a40cdb9ba9747c5b2b2e6e9621e182ca"
+      "sha256": "f748120c7219cd20c553a1518f88c8cea0748134401b49a75a29c24d066d498a"
     }
   },
   "candidate_contract": {

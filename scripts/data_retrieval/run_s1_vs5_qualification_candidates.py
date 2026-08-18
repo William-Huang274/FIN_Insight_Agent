@@ -144,8 +144,23 @@ def _validate_authority(
     ):
         raise ValueError("qualification_candidate_authority_policy_drift")
     head = _git_output("rev-parse", "HEAD")
-    if head != str(authority.get("design_baseline_commit") or ""):
-        raise ValueError("qualification_candidate_authority_commit_drift")
+    baseline = str(authority.get("design_baseline_commit") or "")
+    if head != baseline:
+        ancestor = subprocess.run(
+            ("git", "merge-base", "--is-ancestor", baseline, head),
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        changed = {
+            value.strip()
+            for value in _git_output("diff", "--name-only", baseline, head).splitlines()
+            if value.strip()
+        }
+        if ancestor.returncode != 0 or changed != {_relative(authority_path)}:
+            raise ValueError("qualification_candidate_authority_commit_drift")
     if _git_output("status", "--porcelain"):
         raise ValueError("qualification_candidate_authority_worktree_not_clean")
     if policy.get("status") != "frozen_before_any_qualification_ranking":

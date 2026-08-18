@@ -22,6 +22,7 @@
 - dense 相似度、learned-sparse 点积与 multi-vector late interaction 全部显式在 CUDA FP16 上计算。PyTorch CUDA 不支持 FP16 sparse addmm，因此 learned-sparse 使用 CUDA FP16 gather＋`scatter_add_`，不退回 SciPy／CPU float32。
 - BGE／Qwen Cross-Encoder 继续 `cuda + FP16`。GPU、模型 digest、对象 digest、shape、非有限分数或输出已存在时均 fail closed。
 - CPU 只保留 BM25、SQL、tokenization、hard filter、账本、JSON 和确定性排序编排；这些不是 learned vector 计算。
+- Git 执行门允许设计基线之后仅多出一笔 authority-only commit；若该提交同时改动 runner、策略、输入、对象或其他文件即拒绝。这样 authority 可以先进入干净提交，又不会产生提交哈希自引用。
 
 ## 边界
 

@@ -357,3 +357,10 @@ COST R1 已执行并失败：5 个命题 any-hit=`0.80`、20 条关键对象 rec
 10. R2 通过仍只是 configuration selection evidence。test frozen、heterogeneous holdout、natural-scan、downstream Evidence Pack readiness、qualified-human reference review 和 Workbench consumer 均保持独立硬门。
 
 若 COST R2 再失败，不允许第三次 COST 资格重跑。此时须选择架构处置或另行预注册独立 temporal case，且不能沿用同一隐藏资格结论。
+## 14. COST valid-temporal R2 结果与停止线（2026-08-18）
+
+R2 使用与 R1 完全相同的 provisional reference、阈值和业务影响模板，候选在读取 reference 前已经内容冻结。结果由 `12/20` 提升为 `15/20`：五命题 any-hit、material-facet、required-role 均达到门槛，但 all-positive object recall 为 `0.75 < 0.90`，因此 candidate ranking gate 仍失败。
+
+该失败不得被平均指标补偿，也不得通过把 review window 从 20 临时改成 21 来追认。五条 miss 分为两类：三条候选已进入 pool 但排在第 21，说明单对象排序没有保证 direct／counter／bridge／temporal-pair 的材料组覆盖；两条会员经营对象与该问题已冻结的 revenue／gross-margin／operating-cash-flow request 不一致，属于 provisional reference consistency 待人工裁决，不应自动算成检索器错误或据结果删标。
+
+两次 valid-temporal candidate execution 已消耗完毕，COST R3 禁止。JPM／CAT frozen test 与 NVO／SHEL／0700.HK holdout 继续封闭。下一评测合同必须在新 unseen temporal case 结果可见前冻结 request-bound evidence-set coverage、同口径 temporal pair 和 exact-object diagnostic 的边界；已完成的 R1／R2 分数永不改写。

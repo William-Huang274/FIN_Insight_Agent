@@ -144,13 +144,15 @@ VS1–VS4 的当前开发能力不再扩大。VS5 已预注册 COST temporal、J
 
 向量、dense／multi-vector 和 Cross-Encoder／reranker 一律 CUDA FP16，CUDA 不可用即失败，不允许 CPU fallback。CPU 只承担 BM25、SQL、分词、硬过滤、账本和确定性编排。该要求不能替代 all-positive／material-facet／required-role、Evidence 权限、gap 资格与自然扫描等产品硬门。
 
-## 4G. 2026-08-18 COST valid-temporal R1 失败与有界 R2
+## 4G. 2026-08-18 COST valid-temporal R1／R2 失败与停止线
 
 COST R1 是当前 VS5 的第一次正式 valid-temporal 候选资格。它通过 CUDA／FP16、exact-once、capture／对象存在性和执行合同门，但产品质量未过：5 个命题 any-hit 为 `0.8`，20 个已审正例只命中 12 个，material-facet／required-role coverage 均为 `0.642857`；尤其同口径销售比较为 `0/4`，跨期变化为 `2/5`。全部 20 个目标对象都已在官方对象库，因此不能归因为公开信息缺失、模型没有调用或 GPU 执行失败。
 
 最早责任层是 S1-C／S1-G：命题级业务词被通用 facet 稀释，同口径年份没有形成候选组，有限审阅头又被重复的泛化会计与风险文本占用。现已建立 versioned v2 successor，将 typed request、精确未映射业务词、同口径跨期关系和 facet-balanced review 编入同一候选合同；旧 v1 代码、输入和 R1 失败保持不可变。零调用全仓结果为 `629 passed`，只记 `engineering_pass`，没有改动当前 Evidence Pack／Workbench 产品指针。
 
-预注册明确允许 valid-temporal 最多两次执行，因此此前“必须先增加新 temporal case 才能复验”的建议过严，现已纠正。当前只剩一次 COST R2：必须先形成 clean／synced 设计提交，再单独签发 exact-once authority；门槛不变，不打开 frozen test／holdout，不使用 qrel、目标 URL 或案例答案调参。R2 失败即停止，不自动进入 R3；R2 通过也只解除进入 qualified-human reference review 和隐藏资格决策的前置门，不等于 S1 或 FIN 0.1.3 通过。
+预注册明确允许 valid-temporal 最多两次执行，因此此前“必须先增加新 temporal case 才能复验”的建议过严，现已纠正。R2 已按 exact-once 完成：5 个命题、113 个命题级 need、每个 reranker 1,440 对，learned execution 全部为 CUDA／FP16，0 CPU vector fallback／network／generation model／retry。分离评价使用原 reference 和门槛，结果由 R1 的 12/20 提升到 15/20；any-hit、material facet 和 required role 通过，但 all-positive object recall 为 `0.75 < 0.90`，故仍失败。
+
+剩余五条 miss 不是同一问题：汽油替代解释、毛利表格和同口径现金流表格均排在第 21，说明单对象 top-k 没有保证完整研究材料组；另外两条会员经营对象并不属于该 EvidenceRequest 冻结的 revenue／gross-margin／operating-cash-flow metric 集，说明 provisional reference 与请求存在待人工裁决的不一致。两次 valid-temporal 已消耗，禁止 COST R3 和隐藏集执行。下一步先冻结 request-bound evidence-set／temporal-pair 评测合同，在开发／回归案例验证后预注册新的 unseen temporal valid case；R1／R2 历史分数不改写，S1 与 FIN 0.1.3 均未通过。
 
 ## 5. 防止再次膨胀的工程规则
 

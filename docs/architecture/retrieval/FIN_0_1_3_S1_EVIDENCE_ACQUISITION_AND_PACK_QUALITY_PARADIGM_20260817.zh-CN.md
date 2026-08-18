@@ -520,3 +520,13 @@ COST valid-temporal R1 证明：官方对象已经存在、CUDA／FP16 候选执
 5. R1 的 v1 合同、代码摘要、输入、输出和失败结果保持不可变。上述能力仅进入 versioned v2 successor；任何旧 replay 继续走 v1。隐藏 test／holdout 输入不得因 successor 物化或读取。
 
 该结构目前只达到零调用 `engineering_pass`。它说明“请求含义和跨期比较不再在进入 CUDA 前被丢掉”，不说明 COST 检索质量已经通过。下一证明只允许使用预注册所剩的一次 valid-temporal execution；门槛保持不变，失败后不得自动进入 R3，也不得打开隐藏集。
+
+## 24. R2 证明后的材料组选择边界（2026-08-18）
+
+COST R2 将 any-hit、material facet 和 required role 全部提升到门槛，但 all-positive object recall 仅为 15/20。三条有效候选都在第 21，另两条会员对象与已冻结请求的 metric 集不一致。这证明下一责任层不是继续扩展同一 COST query 或加大 `review_k`，而是区分三个概念：
+
+1. **Request alignment**：参考对象必须属于 EvidenceRequest 已点名或事先允许的 metric／关系，不得在结果可见后把额外主题当作强制召回目标。
+2. **Evidence-set coverage**：正式审阅面应先覆盖每个命题需要的 direct／counter／bridge／temporal-pair 材料组，再在组内选择具体对象；同一 facet 的相近 claim 不得耗尽组级容量。
+3. **Exact-object diagnostic**：具体 reviewed object 是否出现仍用于定位 parser／recall／ranking 退化，但当多个对象能证明同一材料角色时，不能单独冒充研究充分性或否定业务覆盖。
+
+这些边界必须先在开发／回归案例做零调用 replay 和 mutation，再在新 unseen temporal valid case 中正式评价。COST R1／R2 保持失败证据，禁止 R3；现有 hidden splits 继续关闭。

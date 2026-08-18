@@ -87,7 +87,6 @@ def _predecessor() -> dict:
         "schema_version": REVIEWED_EVIDENCE_PACK_SCHEMA,
         "contract_ref": REVIEWED_EVIDENCE_PACK_CONTRACT,
         "case_key": "MU",
-        "research_as_of": "2026-08-06",
         "evidence_items": [
             {
                 "case_key": "MU",
@@ -334,6 +333,7 @@ def test_successor_merges_one_claim_into_explicit_proposition_bindings(
     assert len(successor["evidence_items"]) == 1
     item = successor["evidence_items"][0]
     assert item["target_id"] != "OLD-TARGET"
+    assert successor["research_as_of"] == "2026-08-06"
     assert {
         requirement_id
         for binding in item["slot_bindings"]

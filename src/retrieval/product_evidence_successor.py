@@ -264,6 +264,16 @@ def build_product_evidence_successor(
     subject = str(product_projection.get("case_key") or "").upper()
     research_as_of = str(policy.get("research_as_of") or "")
     packet_digest = str(candidate_review_packet.get("review_packet_digest") or "")
+    predecessor_research_as_of_values = {
+        str(value.get("research_as_of") or "")
+        for value in predecessor.get("evidence_items") or ()
+        if isinstance(value, Mapping) and value.get("research_as_of")
+    }
+    predecessor_top_level_as_of = str(
+        predecessor.get("research_as_of") or ""
+    )
+    if predecessor_top_level_as_of:
+        predecessor_research_as_of_values.add(predecessor_top_level_as_of)
     _require(
         policy.get("schema_version") == POLICY_SCHEMA_VERSION
         and policy.get("status") == "approved_internal_engineering_adjudication"
@@ -274,7 +284,7 @@ def build_product_evidence_successor(
         and case_key == str(candidate_review_packet.get("case_key") or "").upper()
         and research_as_of
         == str((product_projection.get("objective") or {}).get("research_as_of") or "")
-        and research_as_of == str(predecessor.get("research_as_of") or "")
+        and predecessor_research_as_of_values in (set(), {research_as_of})
         and str(policy.get("candidate_review_packet_digest") or "") == packet_digest
         and str(policy.get("predecessor_pack_payload_digest") or "")
         == str(predecessor.get("pack_payload_digest") or ""),
@@ -521,6 +531,7 @@ def build_product_evidence_successor(
     )
     successor = deepcopy(dict(predecessor))
     successor.pop("pack_payload_digest", None)
+    successor["research_as_of"] = research_as_of
     successor["evidence_items"] = live_items
     successor["source_materials"] = materials
     successor["observed_counts"] = {

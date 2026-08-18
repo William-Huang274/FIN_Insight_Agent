@@ -15,6 +15,7 @@ from retrieval.contracts import (  # noqa: E402
     load_evidence_request,
     load_financial_research_kernel,
 )
+from retrieval.evidence_set_coverage import compile_requirement_plan  # noqa: E402
 from sec_agent.research.material_scope import (  # noqa: E402
     ResearchMaterialScopeError,
     compile_research_material_scope,
@@ -154,17 +155,144 @@ def test_material_scope_compiles_composite_topic_without_literal_product_gate() 
         }
     ]
     requirements = scope["research_blueprint"]["material_requirements"]
-    assert len(requirements) == 3
+    assert len(requirements) == 2
     assert {
         (row["role"], tuple(row["metric_ids"]), tuple(row["product_ids"]))
         for row in requirements
     } == {
-        ("bridge", ("inventory",), ()),
-        ("bridge", ("accounts_receivable",), ()),
+        ("bridge", ("inventory", "accounts_receivable"), ()),
         ("counter", (), ()),
     }
     assert result["summary"]["candidate_or_reference_inputs_read"] is False
     assert result["authority"]["numeric_authority"] is False
+
+
+@pytest.mark.parametrize(
+    ("case_key", "product_intents"),
+    [
+        (
+            "DELL",
+            [
+                "AI server revenue contribution",
+                "segment profitability",
+                "EPS impact",
+            ],
+        ),
+        (
+            "MU",
+            ["HBM revenue contribution", "memory profitability", "EPS impact"],
+        ),
+        (
+            "NVDA",
+            [
+                "data center revenue contribution",
+                "platform profitability",
+                "EPS impact",
+            ],
+        ),
+    ],
+)
+def test_collective_scope_preserves_multi_axis_set_without_cartesian_growth(
+    case_key: str, product_intents: list[str]
+) -> None:
+    request = _request(
+        request_id=f"REQ::{case_key}-REPORTED-RESULTS-SCOPE",
+        facet_id="reported_results",
+        metric_intents=[
+            "revenue",
+            "operating_income",
+            "net_income",
+            "diluted_eps",
+            "gross_margin",
+            "operating_margin",
+        ],
+        product_intents=product_intents,
+        case_key=case_key,
+        subject_ticker=case_key,
+    )
+    payload = {
+        "schema_version": "fin_ia_research_material_scope_atoms_v1_0",
+        "research_plan_digest": "PLAN::COLLECTIVE",
+        "request_scopes": [
+            {
+                "request_id": request.request_id,
+                "product_intent_dispositions": [
+                    {
+                        "product_intent_index": index,
+                        "disposition": "hard_material_axis",
+                    }
+                    for index in range(3)
+                ],
+                "requirement_atoms": [
+                    {
+                        "facet_id": "reported_results",
+                        "role": "direct",
+                        "metric_intent_indices": list(range(6)),
+                        "product_intent_indices": list(range(3)),
+                        "period_mode": "any",
+                        "coverage_mode": "collective_axes",
+                    }
+                ],
+            }
+        ],
+    }
+    result = compile_research_material_scope(
+        payload,
+        research_plan_digest="PLAN::COLLECTIVE",
+        requests=[request],
+        required_request_ids=[request.request_id],
+        policy=SCOPE_POLICY,
+        material_runtime_policy=MATERIAL_POLICY,
+        intent_ontology=ONTOLOGY,
+    )
+
+    requirements = result["request_scopes"][0]["research_blueprint"][
+        "material_requirements"
+    ]
+    assert len(requirements) == 1
+    assert requirements[0]["metric_ids"] == list(request.metric_intents)
+    assert requirements[0]["product_ids"] == list(request.product_intents)
+    runtime_requirements = [
+        {
+            **requirements[0],
+            "requirement_id": "REQ::COLLECTIVE-MULTI-AXIS",
+            "priority": 1,
+        }
+    ]
+    plan = compile_requirement_plan(
+        evidence_request=request.as_dict(),
+        material_requirements=runtime_requirements,
+        review_k=16,
+        schema_version="fin_ia_material_evidence_requirement_plan_v1_1",
+    )
+    assert plan["maximum_reserved_capacity"] == 2
+
+
+def test_collective_scope_compilation_is_stable_under_atom_permutation() -> None:
+    request = _request()
+    first_payload = _working_capital_payload(request.request_id)
+    second_payload = deepcopy(first_payload)
+    second_payload["request_scopes"][0]["requirement_atoms"].reverse()
+
+    first = compile_research_material_scope(
+        first_payload,
+        research_plan_digest="PLAN::DEVELOPMENT",
+        requests=[request],
+        required_request_ids=[request.request_id],
+        policy=SCOPE_POLICY,
+        material_runtime_policy=MATERIAL_POLICY,
+        intent_ontology=ONTOLOGY,
+    )
+    second = compile_research_material_scope(
+        second_payload,
+        research_plan_digest="PLAN::DEVELOPMENT",
+        requests=[request],
+        required_request_ids=[request.request_id],
+        policy=SCOPE_POLICY,
+        material_runtime_policy=MATERIAL_POLICY,
+        intent_ontology=ONTOLOGY,
+    )
+    assert first == second
 
 
 def test_material_scope_expands_hard_product_same_basis_by_metric() -> None:

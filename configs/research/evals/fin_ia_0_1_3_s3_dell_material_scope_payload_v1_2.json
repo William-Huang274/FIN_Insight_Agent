@@ -1,0 +1,304 @@
+{
+  "request_scopes": [
+    {
+      "product_intent_dispositions": [
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 0
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 1
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 2
+        }
+      ],
+      "request_id": "REQ::fb06661b946711fc3b334146",
+      "requirement_atoms": [
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "orders_and_backlog",
+          "metric_intent_indices": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1,
+            2
+          ],
+          "role": "direct"
+        },
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "orders_and_backlog",
+          "metric_intent_indices": [],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1,
+            2
+          ],
+          "role": "counter"
+        }
+      ]
+    },
+    {
+      "product_intent_dispositions": [
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 0
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 1
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 2
+        }
+      ],
+      "request_id": "REQ::eb2e808dd2e48b4fe7474223",
+      "requirement_atoms": [
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "conversion_and_durability",
+          "metric_intent_indices": [
+            0,
+            1,
+            2
+          ],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1,
+            2
+          ],
+          "role": "direct"
+        },
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "conversion_and_durability",
+          "metric_intent_indices": [],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1,
+            2
+          ],
+          "role": "counter"
+        }
+      ]
+    },
+    {
+      "product_intent_dispositions": [
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 0
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 1
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 2
+        }
+      ],
+      "request_id": "REQ::e17c40f93e25438950673210",
+      "requirement_atoms": [
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "reported_results",
+          "metric_intent_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1,
+            2
+          ],
+          "role": "direct"
+        }
+      ]
+    },
+    {
+      "product_intent_dispositions": [
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 0
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 1
+        }
+      ],
+      "request_id": "REQ::081c06389f9dcb8487886b57",
+      "requirement_atoms": [
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "margin_and_incremental_profit",
+          "metric_intent_indices": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1
+          ],
+          "role": "bridge"
+        }
+      ]
+    },
+    {
+      "product_intent_dispositions": [
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 0
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 1
+        }
+      ],
+      "request_id": "REQ::273bf40c53d28f49de438b41",
+      "requirement_atoms": [
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "cash_generation",
+          "metric_intent_indices": [
+            0,
+            1,
+            2
+          ],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1
+          ],
+          "role": "bridge"
+        }
+      ]
+    },
+    {
+      "product_intent_dispositions": [
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 0
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 1
+        }
+      ],
+      "request_id": "REQ::c21c10d6e8f13263cf69ffa5",
+      "requirement_atoms": [
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "working_capital_risk",
+          "metric_intent_indices": [
+            0,
+            1,
+            2
+          ],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1
+          ],
+          "role": "bridge"
+        },
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "working_capital_risk",
+          "metric_intent_indices": [],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1
+          ],
+          "role": "counter"
+        }
+      ]
+    },
+    {
+      "product_intent_dispositions": [
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 0
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 1
+        }
+      ],
+      "request_id": "REQ::07e898259cfe6b2e12d7f82c",
+      "requirement_atoms": [
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "issuer_counterevidence",
+          "metric_intent_indices": [],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1
+          ],
+          "role": "counter"
+        }
+      ]
+    },
+    {
+      "product_intent_dispositions": [
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 0
+        },
+        {
+          "disposition": "hard_material_axis",
+          "product_intent_index": 1
+        }
+      ],
+      "request_id": "REQ::39d61ebcc0dad17a756c1cac",
+      "requirement_atoms": [
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "upstream_or_demand_counterevidence",
+          "metric_intent_indices": [],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1
+          ],
+          "role": "counter"
+        },
+        {
+          "coverage_mode": "collective_axes",
+          "facet_id": "upstream_or_demand_counterevidence",
+          "metric_intent_indices": [],
+          "period_mode": "any",
+          "product_intent_indices": [
+            0,
+            1
+          ],
+          "role": "context"
+        }
+      ]
+    }
+  ],
+  "research_plan_digest": "a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80",
+  "schema_version": "fin_ia_research_material_scope_atoms_v1_0"
+}

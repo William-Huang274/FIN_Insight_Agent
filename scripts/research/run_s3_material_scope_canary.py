@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import subprocess
 import sys
+from typing import Any, Mapping
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -19,6 +21,7 @@ from retrieval.contracts import (  # noqa: E402
     load_evidence_request,
     load_financial_research_kernel,
 )
+from retrieval.query_plan import canonical_digest  # noqa: E402
 from sec_agent.research.material_scope import (  # noqa: E402
     compile_research_material_scope_messages,
 )
@@ -41,6 +44,26 @@ DEFAULT_OBJECTIVE = (
 DEFAULT_PLANNER_ATOMS = (
     "tests/fixtures/research/"
     "fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json"
+)
+DEFAULT_R3_SCOPE_PAYLOAD = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_payload_v1_2.json"
+)
+DEFAULT_R3_LIVE_RESULT = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_canary_live_result_v1_2.json"
+)
+DEFAULT_R3_FULL_RESULT = (
+    "data/workbench_private/fin_0_1_3_s3_material_scope_canary/"
+    "dell-r3/full_result.json"
+)
+DEFAULT_PRODUCT_REPLAY_PRIVATE_OUTPUT = (
+    "data/workbench_private/fin_0_1_3_s1_material_scope_product_replay/"
+    "dell-r3-v1/full_result.json"
+)
+DEFAULT_PRODUCT_REPLAY_PUBLIC_OUTPUT = (
+    "configs/retrieval/"
+    "fin_ia_0_1_3_s1_dell_material_scope_product_replay_result_v1_0.json"
 )
 
 
@@ -142,6 +165,198 @@ def prepare(*, objective_path: Path, planner_path: Path, output_path: Path) -> d
     return result
 
 
+def _cuda_execution_receipt() -> dict[str, Any]:
+    import torch
+
+    if not torch.cuda.is_available() or torch.cuda.device_count() < 1:
+        raise RuntimeError("material_scope_product_replay_cuda_required")
+    return {
+        "device": "cuda:0",
+        "device_name": torch.cuda.get_device_name(0),
+        "torch_version": torch.__version__,
+        "embedding_precision": "float16",
+        "cpu_vector_fallbacks": 0,
+        "embedding_runtime_ref": "src/retrieval/embedding_runtime.py",
+        "embedding_runtime_sha256": file_sha256(
+            ROOT / "src/retrieval/embedding_runtime.py"
+        ),
+    }
+
+
+def _public_product_replay_projection(
+    projection: Mapping[str, Any],
+) -> dict[str, Any]:
+    request_rows: list[dict[str, Any]] = []
+    for result in projection.get("request_results") or ():
+        request = result.get("request") or {}
+        hybrid = result.get("hybrid_object_retrieval") or {}
+        hybrid_summary = hybrid.get("summary") or {}
+        material = hybrid.get("material_evidence") or {}
+        plan = material.get("requirement_plan") or {}
+        selection = material.get("selection") or {}
+        request_rows.append(
+            {
+                "request_id": request.get("request_id"),
+                "facet_ids": list(request.get("requested_facet_ids") or ()),
+                "requirement_group_count": len(
+                    plan.get("requirement_groups") or ()
+                ),
+                "maximum_reserved_capacity": plan.get(
+                    "maximum_reserved_capacity"
+                ),
+                "selected_candidate_count": hybrid_summary.get(
+                    "selected_count", 0
+                ),
+                "material_scope_ready": hybrid_summary.get(
+                    "material_scope_ready", False
+                ),
+                "material_set_complete": hybrid_summary.get(
+                    "material_set_complete", False
+                ),
+                "hard_reserved_material_candidate_count": hybrid_summary.get(
+                    "material_reserved_candidate_count", 0
+                ),
+                "material_review_order_candidate_count": hybrid_summary.get(
+                    "material_review_order_candidate_count", 0
+                ),
+                "met_requirement_ids": list(
+                    selection.get("met_requirement_ids") or ()
+                ),
+                "unmet_requirement_ids": list(
+                    selection.get("unmet_requirement_ids") or ()
+                ),
+                "selected_material_candidate_count": len(
+                    selection.get("selected_candidate_ids") or ()
+                ),
+            }
+        )
+    summary = dict(projection.get("summary") or {})
+    required = int(summary.get("material_scope_required_request_count") or 0)
+    ready = int(summary.get("material_scope_ready_request_count") or 0)
+    complete = int(summary.get("material_set_complete_request_count") or 0)
+    if required and ready == required and complete == required:
+        status = "completed_material_sets_ready_candidate_review_pending"
+    elif required and ready == required:
+        status = "completed_scope_ready_material_sets_incomplete"
+    else:
+        status = "completed_material_scope_not_ready"
+    return {
+        "status": status,
+        "case_key": projection.get("case_key"),
+        "research_plan_digest": (
+            projection.get("compiled_plan") or {}
+        ).get("plan_digest"),
+        "projection_digest": projection.get("projection_digest"),
+        "material_scope_mode": (
+            projection.get("material_scope") or {}
+        ).get("mode"),
+        "scope_compilation_digest": (
+            (projection.get("material_scope") or {}).get("scope_compilation")
+            or {}
+        ).get("compilation_digest"),
+        "summary": summary,
+        "request_diagnostics": request_rows,
+    }
+
+
+def replay_product_scope(
+    *,
+    objective_path: Path,
+    planner_path: Path,
+    scope_payload_path: Path,
+    live_result_path: Path,
+    full_result_path: Path,
+    private_output_path: Path,
+    public_output_path: Path,
+) -> dict[str, Any]:
+    scope_payload = load_json(scope_payload_path)
+    live_result = load_json(live_result_path)
+    source_full = load_json(full_result_path)
+    if not (
+        live_result.get("status") == "completed_contract_valid"
+        and source_full.get("status") == "completed_contract_valid"
+        and source_full.get("scope_payload") == scope_payload
+        and live_result.get("full_result_sha256") == file_sha256(full_result_path)
+        and live_result.get("research_plan_digest")
+        == scope_payload.get("research_plan_digest")
+    ):
+        raise ValueError("material_scope_product_replay_R3_binding_invalid")
+
+    cuda_receipt = _cuda_execution_receipt()
+    service = ResearchRetrievalService.from_runtime_paths(ROOT)
+    principal = ResearchRetrievalPrincipal(
+        mode="current",
+        permissions=frozenset({"current_product:read"}),
+    )
+    projection = service.execute_controlled_plan(
+        "DELL",
+        load_json(objective_path),
+        load_json(planner_path),
+        principal,
+        material_scope_payload=scope_payload,
+    )
+    public_projection = _public_product_replay_projection(projection)
+    bindings = {
+        "objective": _binding(objective_path),
+        "planner_atoms": _binding(planner_path),
+        "scope_payload": _binding(scope_payload_path),
+        "R3_live_result": _binding(live_result_path),
+        "R3_full_result": _binding(full_result_path),
+        "workbench_service": _binding(
+            ROOT
+            / "apps/workbench/backend/application/research_retrieval_service.py"
+        ),
+        "material_scope_implementation": _binding(
+            ROOT / "src/sec_agent/research/material_scope.py"
+        ),
+        "hybrid_candidate_runtime": _binding(
+            ROOT / "src/retrieval/hybrid_candidate_runtime.py"
+        ),
+    }
+    full_body = {
+        "schema_version": "fin_ia_s1_material_scope_product_replay_full_v1_0",
+        "status": public_projection["status"],
+        "recorded_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "prepared_from_commit": _head(),
+        "source_bindings": bindings,
+        "cuda_execution": cuda_receipt,
+        "public_projection": public_projection,
+        "product_projection": projection,
+        "authority": {
+            "generation_model_calls": 0,
+            "network_calls": 0,
+            "candidate_is_not_evidence": True,
+            "numeric_authority": False,
+            "product_publication": False,
+            "s1_qualification_claimed": False,
+        },
+        "known_boundary": (
+            "This zero-call replay applies the immutable candidate-blind R3 "
+            "scope to the current Workbench BM25 plus Qwen CUDA path. Candidate "
+            "rows remain private and are not Evidence. Incomplete material sets "
+            "are retrieval or binding findings, not public-information gaps."
+        ),
+    }
+    full = {**full_body, "result_digest": canonical_digest(full_body)}
+    write_new_json(private_output_path, full)
+    public_body = {
+        "schema_version": "fin_ia_s1_material_scope_product_replay_v1_0",
+        "status": public_projection["status"],
+        "recorded_at": full["recorded_at"],
+        "prepared_from_commit": full["prepared_from_commit"],
+        "source_bindings": bindings,
+        "cuda_execution": cuda_receipt,
+        **public_projection,
+        "full_result_ref": _relative(private_output_path),
+        "full_result_sha256": file_sha256(private_output_path),
+        "authority": dict(full["authority"]),
+        "known_boundary": full["known_boundary"],
+    }
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    write_new_json(public_output_path, public)
+    return public
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -156,6 +371,18 @@ def main() -> int:
     prepare_parser.add_argument("--output", required=True)
     execute_parser = subparsers.add_parser("execute")
     execute_parser.add_argument("--authority", required=True)
+    replay_parser = subparsers.add_parser("replay")
+    replay_parser.add_argument("--objective", default=DEFAULT_OBJECTIVE)
+    replay_parser.add_argument("--planner-atoms", default=DEFAULT_PLANNER_ATOMS)
+    replay_parser.add_argument("--scope-payload", default=DEFAULT_R3_SCOPE_PAYLOAD)
+    replay_parser.add_argument("--live-result", default=DEFAULT_R3_LIVE_RESULT)
+    replay_parser.add_argument("--full-result", default=DEFAULT_R3_FULL_RESULT)
+    replay_parser.add_argument(
+        "--private-output", default=DEFAULT_PRODUCT_REPLAY_PRIVATE_OUTPUT
+    )
+    replay_parser.add_argument(
+        "--public-output", default=DEFAULT_PRODUCT_REPLAY_PUBLIC_OUTPUT
+    )
     args = parser.parse_args()
 
     if args.command == "prepare":
@@ -171,9 +398,19 @@ def main() -> int:
             "required_request_count": len(result["required_request_ids"]),
             "product_diagnostic": result["product_diagnostic"],
         }
-    else:
+    elif args.command == "execute":
         summary = run_material_scope_canary(
             _resolve(args.authority), root=ROOT
+        )
+    else:
+        summary = replay_product_scope(
+            objective_path=_resolve(args.objective),
+            planner_path=_resolve(args.planner_atoms),
+            scope_payload_path=_resolve(args.scope_payload),
+            live_result_path=_resolve(args.live_result),
+            full_result_path=_resolve(args.full_result),
+            private_output_path=_resolve(args.private_output),
+            public_output_path=_resolve(args.public_output),
         )
     print(json.dumps(summary, ensure_ascii=False, sort_keys=True, indent=2))
     return 0 if not str(summary.get("status") or "").startswith("terminal_failed") else 1

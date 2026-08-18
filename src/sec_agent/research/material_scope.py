@@ -507,36 +507,35 @@ def _expand_atom(
             "research_material_scope_non_temporal_atom_invalid",
         )
 
-    metrics: tuple[int | None, ...] = metric_indices or (None,)
-    products: tuple[int | None, ...] = product_indices or (None,)
-    groups: list[dict[str, Any]] = []
-    for metric_index in metrics:
-        for product_index in products:
-            group = {
-                "facet_id": atom["facet_id"],
-                "role": atom["role"],
-                "metric_ids": (
-                    [request.metric_intents[metric_index]]
-                    if metric_index is not None
-                    else []
-                ),
-                "product_ids": (
-                    [request.product_intents[product_index]]
-                    if product_index is not None
-                    else []
-                ),
-                "target_entities": list(request.target_entities),
-                "period_mode": period_mode,
-                "fiscal_years": (
-                    list(request.period.fiscal_years)
-                    if period_mode == "all_periods_same_basis"
-                    else []
-                ),
-                "minimum_candidates": 1,
-                "coverage_mode": coverage_mode,
-            }
-            groups.append(group)
-    return groups
+    # A collective atom is one correlated evidence-set requirement, not a
+    # metric-by-product Cartesian product.  The downstream v1.1 selector may
+    # combine a metric table with a separate mechanism narrative to cover the
+    # two axes.  Splitting here would turn one research requirement into many
+    # artificial singleton requirements and consume the review window before
+    # candidate selection.  Temporal single-binding atoms are already bounded
+    # to one metric and at most one product by the checks above, so the same
+    # representation preserves their atomicity.
+    return [
+        {
+            "facet_id": atom["facet_id"],
+            "role": atom["role"],
+            "metric_ids": [
+                request.metric_intents[index] for index in metric_indices
+            ],
+            "product_ids": [
+                request.product_intents[index] for index in product_indices
+            ],
+            "target_entities": list(request.target_entities),
+            "period_mode": period_mode,
+            "fiscal_years": (
+                list(request.period.fiscal_years)
+                if period_mode == "all_periods_same_basis"
+                else []
+            ),
+            "minimum_candidates": 1,
+            "coverage_mode": coverage_mode,
+        }
+    ]
 
 
 def compile_research_material_scope(
@@ -742,6 +741,11 @@ def compile_research_material_scope(
         _require(
             bool(requirements), "research_material_scope_requirements_empty"
         )
+        # Atom order has no contractual priority meaning. Canonicalize both
+        # audit atoms and executable requirements so semantically equivalent
+        # model submissions cannot alter review priority or compilation digest.
+        normalized_atoms.sort(key=canonical_digest)
+        requirements.sort(key=canonical_digest)
         compiled_rows.append(
             {
                 "request_id": request_id,

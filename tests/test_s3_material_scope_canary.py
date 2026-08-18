@@ -9,12 +9,16 @@ import shutil
 import pytest
 
 from retrieval.contracts import load_evidence_request, load_financial_research_kernel
+from retrieval.evidence_set_coverage import compile_requirement_plan
 from sec_agent.providers.chat_completions import (
     ChatCompletionResult,
     ModelGatewayError,
 )
 from sec_agent.project_os_preflight import build_preflight
-from sec_agent.research.material_scope import compile_research_material_scope_messages
+from sec_agent.research.material_scope import (
+    compile_research_material_scope,
+    compile_research_material_scope_messages,
+)
 from sec_agent.research.material_scope_canary import (
     MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
     MATERIAL_SCOPE_CANARY_AUTHORITY_STATUS,
@@ -30,6 +34,9 @@ from sec_agent.research.material_scope_canary import (
     run_material_scope_canary,
     validate_material_scope_canary_authority,
     validate_material_scope_canary_input,
+)
+from scripts.research.run_s3_material_scope_canary import (
+    _public_product_replay_projection,
 )
 
 
@@ -88,6 +95,10 @@ CURRENT_DELL_INPUT_REF = (
 CONTRACT_REPAIR_DELL_INPUT_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_material_scope_canary_input_v1_2.json"
+)
+CONTRACT_VALID_DELL_SCOPE_PAYLOAD_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_payload_v1_2.json"
 )
 CURRENT_DELL_AUTHORITY_REF = (
     "configs/research/evals/"
@@ -327,6 +338,100 @@ def test_contract_repair_dell_input_changes_only_the_model_contract() -> None:
         "single_binding",
         "collective_axes",
     ]
+
+
+def test_R3_scope_payload_compiles_collective_atoms_with_bounded_capacity() -> None:
+    input_payload = _json(CONTRACT_REPAIR_DELL_INPUT_REF)
+    scope_payload = _json(CONTRACT_VALID_DELL_SCOPE_PAYLOAD_REF)
+    kernel = load_financial_research_kernel(_json(KERNEL_REF))
+    requests = [
+        load_evidence_request(row, kernel)
+        for row in input_payload["evidence_requests"]
+    ]
+    compilation = compile_research_material_scope(
+        scope_payload,
+        research_plan_digest=input_payload["research_plan_digest"],
+        requests=requests,
+        required_request_ids=input_payload["required_request_ids"],
+        policy=_json(SCOPE_POLICY_REF),
+        material_runtime_policy=_json(RUNTIME_POLICY_REF),
+        intent_ontology=_json(ONTOLOGY_REF),
+    )
+
+    assert compilation["summary"]["requirement_atom_count"] == 12
+    assert compilation["summary"]["material_requirement_count"] == 12
+    capacities = []
+    requests_by_id = {request.request_id: request for request in requests}
+    for row in compilation["request_scopes"]:
+        runtime_requirements = [
+            {
+                **requirement,
+                "requirement_id": f"REQ::{index}",
+                "priority": index,
+            }
+            for index, requirement in enumerate(
+                row["research_blueprint"]["material_requirements"], 1
+            )
+        ]
+        plan = compile_requirement_plan(
+            evidence_request=requests_by_id[row["request_id"]].as_dict(),
+            material_requirements=runtime_requirements,
+            review_k=16,
+            schema_version="fin_ia_material_evidence_requirement_plan_v1_1",
+        )
+        capacities.append(plan["maximum_reserved_capacity"])
+    assert capacities == [3, 3, 2, 2, 2, 3, 1, 2]
+
+
+def test_product_replay_public_projection_keeps_candidate_identities_private() -> None:
+    projection = {
+        "case_key": "DELL",
+        "projection_digest": "projection",
+        "compiled_plan": {"plan_digest": "plan"},
+        "material_scope": {
+            "mode": "explicit_request_visible_scope_compiled",
+            "scope_compilation": {"compilation_digest": "scope"},
+        },
+        "summary": {
+            "material_scope_required_request_count": 1,
+            "material_scope_ready_request_count": 1,
+            "material_set_complete_request_count": 0,
+        },
+        "request_results": [
+            {
+                "request": {
+                    "request_id": "REQ::ONE",
+                    "requested_facet_ids": ["reported_results"],
+                },
+                "hybrid_object_retrieval": {
+                    "summary": {
+                        "selected_count": 16,
+                        "material_scope_ready": True,
+                        "material_set_complete": False,
+                        "material_reserved_candidate_count": 0,
+                        "material_review_order_candidate_count": 4,
+                    },
+                    "material_evidence": {
+                        "requirement_plan": {
+                            "maximum_reserved_capacity": 2,
+                            "requirement_groups": [{"requirement_id": "REQ::A"}],
+                        },
+                        "selection": {
+                            "met_requirement_ids": [],
+                            "unmet_requirement_ids": ["REQ::A"],
+                            "selected_candidate_ids": ["SECRET::CANDIDATE"],
+                        },
+                    },
+                },
+            }
+        ],
+    }
+    public = _public_product_replay_projection(projection)
+    assert public["status"] == "completed_scope_ready_material_sets_incomplete"
+    assert public["request_diagnostics"][0][
+        "selected_material_candidate_count"
+    ] == 1
+    assert "SECRET::CANDIDATE" not in json.dumps(public)
 
 
 def test_current_dell_R1_authority_remains_bound_but_scope_is_consumed() -> None:

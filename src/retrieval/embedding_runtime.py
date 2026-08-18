@@ -68,12 +68,14 @@ def load_qwen_embedding_runtime(model_dir: Path):
     os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
     from sentence_transformers import SentenceTransformer
 
-    return SentenceTransformer(
+    runtime = SentenceTransformer(
         str(model_dir),
         device="cuda",
         local_files_only=True,
         trust_remote_code=True,
     )
+    runtime.half()
+    return runtime
 
 
 def load_or_build_bge_m3_cache(

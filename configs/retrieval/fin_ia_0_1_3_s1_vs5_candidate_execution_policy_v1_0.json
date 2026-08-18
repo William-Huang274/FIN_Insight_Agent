@@ -1,0 +1,157 @@
+{
+  "schema_version": "fin_ia_s1_vs5_candidate_execution_policy_v1_0",
+  "status": "frozen_before_any_qualification_ranking",
+  "recorded_at": "2026-08-18",
+  "program_id": "FIN-0.1.3-S1-VS5-QUALIFICATION",
+  "purpose_zh": "在不读取 evaluator reference 的前提下，对 VS5 资格对象运行 CUDA FP16 候选生成、双重排和金融证据角色判断；输出仍是 Candidate，不是 Evidence 或 NumericFact。",
+  "budget_correction": {
+    "finding": "冻结 overlay 按每命题 96 个候选估算 2880 对，但继承的 VS3 策略要求每个候选对所有 RetrievalNeed 做笛卡尔积；在 30 个命题、每命题可有 20 至 30 个 need 时，两者并不一致。",
+    "disposition": "只把实际召回该候选的 need 送入重排，每候选最多 3 个；BGE 与 Qwen 在同一有限 pair manifest 上分别选择自己的最佳 need。",
+    "why_not_quality_reduction": "不删除命题、facet、查询路线、候选或重排器；只移除候选从未命中的无关 need 配对，保留 typed、lexical、dense、sparse 与 multi-vector 的真实召回关系。",
+    "all_needs_cartesian_product": false,
+    "maximum_relevant_needs_per_candidate": 3,
+    "changed_before_any_qualification_ranking": true,
+    "hidden_labels_or_references_used": false
+  },
+  "bound_inputs": {
+    "preregistration": {
+      "ref": "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json",
+      "sha256": "e16db48de84e6cb0e5c586032e4bff446307d2dbdad898999de8a935b7124749"
+    },
+    "runtime_overlay": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_runtime_overlay_v1_0.json",
+      "sha256": "38cafea92c71a4c4edd91e95083514f3ba33f04cebd6c4c7d7c44b36f9cb3f67"
+    },
+    "program_manifest": {
+      "ref": "eval_sets/fin_0_1_3_s1/program_manifest_v1_0.json",
+      "sha256": "392d114d5710121af335b7ed44ff3d0c20dd8797bad3e8010bc0f791deb1fe23"
+    },
+    "compiled_objects_result": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_compiled_objects_result_v1_0.json",
+      "sha256": "7d38fdaf0535a94953d70a27dca8cdf6075db5b77be243780f21a3deb0948f6f"
+    },
+    "cuda_preflight": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_cuda_preflight_result_v1_0.json",
+      "sha256": "cdeed003b93ea87ec7d1cd36c45b9f76c8a8cb259ef7659ed780bfa24cd0a0ca"
+    },
+    "candidate_ranking_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_8.json",
+      "sha256": "1d567e938eb688a3f2a997373b9d2a37fa77bebc172fed5b1e175bf34bf9cf72"
+    },
+    "retrieval_need_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_retrieval_need_compiler_policy_v1_1.json",
+      "sha256": "e98f38c31a6e579b41004d3cad21d1ea2d81159a4d47083a9a9245cd7071f95e"
+    },
+    "financial_intent_ontology": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+      "sha256": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242"
+    },
+    "qualification_runtime": {
+      "ref": "src/retrieval/qualification_runtime.py",
+      "sha256": "73771fc8fe2bdec8c99ff3526790f4875a07ce73cbb224559a7c41bb26f90fe7"
+    },
+    "embedding_runtime": {
+      "ref": "src/retrieval/embedding_runtime.py",
+      "sha256": "e1778f246f56c2fe3ae5eb3baf09b1e0b647e95376beccd54b69a2c1885bada1"
+    },
+    "cross_encoder_runtime": {
+      "ref": "src/retrieval/cross_encoder.py",
+      "sha256": "d05afdc80866393b9c288e078a01ba238bd000a34014aa37d2c4834e81265e21"
+    },
+    "qualification_ranking_runtime": {
+      "ref": "src/retrieval/qualification_ranking.py",
+      "sha256": "01ecbcb90b8f548b20e8854b7d4f64639d1c074afe44fa8f757a179ad667c196"
+    },
+    "qualification_execution_runtime": {
+      "ref": "src/retrieval/qualification_execution.py",
+      "sha256": "4f8674305ef73f2bc702fc57d8f14a8151d64afaea74ac282039d1e09a4cc487"
+    },
+    "qualification_cuda_ranking_runtime": {
+      "ref": "src/retrieval/qualification_cuda_ranking.py",
+      "sha256": "2021f641c028e0e7f03daa0e1792f9cc30cfd44483037bcb67561e8f5a334c0c"
+    },
+    "qualification_candidate_runner": {
+      "ref": "scripts/data_retrieval/run_s1_vs5_qualification_candidates.py",
+      "sha256": "1f23579be276129b08d453420a8dc688a40cdb9ba9747c5b2b2e6e9621e182ca"
+    }
+  },
+  "candidate_contract": {
+    "first_stage_per_need_limit": 24,
+    "proposition_candidate_union_limit": 128,
+    "multi_vector_pool_limit": 96,
+    "reranker_pool_limit": 96,
+    "candidate_review_k": 20,
+    "reciprocal_rank_constant": 60,
+    "rank_authority_object_kinds": [
+      "claim",
+      "metric_row"
+    ],
+    "candidate_union_route_minimum_per_need": {
+      "typed_intent_alias_groups": 3,
+      "typed_metric_row_exact": 3
+    },
+    "maximum_relevant_needs_per_candidate": 3,
+    "final_shortlist_minimum_per_lane": 3,
+    "rerank_each_candidate_against_all_needs": false,
+    "rerank_only_against_needs_that_recalled_candidate": true,
+    "each_reranker_selects_its_own_best_relevant_need": true,
+    "same_pair_manifest_for_both_rerankers": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "parent_context_is_projection_not_rank_authority": true,
+    "evidence_role_is_independent_of_reranker_score": true,
+    "learned_vector_device": "cuda:0",
+    "learned_vector_precision": "fp16",
+    "cpu_vector_fallback_allowed": false
+  },
+  "token_budget_basis": {
+    "embedding_execution": {
+      "node_purpose": "为固定的 10618 个资格对象和当前 split 的全部 RetrievalNeed 生成 BGE dense/sparse/multi-vector 与 Qwen dense 候选信号。",
+      "input_scale": "对象全集不抽样；valid_temporal 为 5 个命题，完整资格集为 30 个命题；查询数量由冻结 facet 编译结果决定。",
+      "required_outputs": [
+        "完整对象 FP16 向量缓存",
+        "全部当前查询的 FP16 向量",
+        "CUDA FP16 dense、learned-sparse 与 multi-vector 相似度",
+        "内容寻址模型、对象与缓存凭证"
+      ],
+      "schema_burden": "固定维度数值数组和缓存 manifest，无生成式文本。",
+      "materiality_and_quality_risk": "漏对象或静默截断会把本地处理故障误报成信息 gap，因此不得为了速度抽样；512 tokens 继承对象 renderer 上限。",
+      "comparable_run_evidence": "VS3 已在同一 RTX 4060 Laptop GPU 上完成 33085 对象 BGE/Qwen 缓存；本轮 10618 对象约为其三分之一。",
+      "reasoning_profile": "本地检索编码器；cuda:0；FP16；无生成推理。",
+      "stop_and_truncation": "BGE max 512/batch 4，Qwen max 512/batch 8；编码与 dense、learned-sparse、multi-vector 打分均为 CUDA FP16；GPU、模型 digest、对象 digest 或缓存身份漂移即失败；CPU fallback 为零。"
+    },
+    "reranker_per_model": {
+      "node_purpose": "在同一候选池上分别让 BGE 与 Qwen 判断候选是否直接满足实际召回它的金融 RetrievalNeed，并各自选择最佳 need。",
+      "input_scale": "每命题最多 96 个候选，每候选最多 3 个实际召回 need；完整 30 命题每模型最多 8640 对，valid_temporal 5 命题每模型最多 1440 对。",
+      "maximum_pair_count": 8640,
+      "valid_temporal_maximum_pair_count": 1440,
+      "required_outputs": [
+        "每个 pair 一个有限分数",
+        "每个候选每个 reranker 的最佳 need",
+        "完整有限候选顺序与 pair manifest digest"
+      ],
+      "schema_burden": "有界 query-document 分数向量、候选/need 身份和内容寻址缓存。",
+      "materiality_and_quality_risk": "只选单一预判 need 会偏置模型，所有 need 笛卡尔积又会稀释证据角色；因此保留最多 3 个真实召回 need，并让两个模型独立选优。",
+      "comparable_run_evidence": "VS3 证明双 reranker 对头部排序有增量但不能授予 Evidence；本轮只改变 pair 编译，不改变候选池和评价边界。",
+      "reasoning_profile": "本地 cross-encoder/causal reranker；cuda:0；FP16；无训练、无联网、无生成式研究。",
+      "stop_and_truncation": "每 pair max 1024 tokens、batch 2；超 pair 上限、非有限分数、shape/digest 漂移或 GPU 不可用即失败；禁止 CPU fallback。"
+    }
+  },
+  "execution_order": [
+    "valid_temporal_candidate_generation",
+    "labels_loaded_only_by_separate_evaluator_after_candidate_output_is_immutable",
+    "owner_or_qualified_human_reference_review",
+    "fresh_test_frozen_authority_if_temporal_gate_is_eligible",
+    "fresh_holdout_authority_only_after_frozen_gate"
+  ],
+  "authority": {
+    "qualification_execution_authorized_by_this_policy": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "fine_tuning_authorized": false,
+    "candidate_is_evidence": false,
+    "numeric_fact_authority": false,
+    "s1_qualified": false,
+    "natural_scanned_official_source_gate_already_failed": true
+  }
+}

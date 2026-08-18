@@ -584,3 +584,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - program manifest 的 temporal／frozen／heterogeneous 三个 catalog 已从 reserved 激活，分别绑定 5／10／15 份 label-free input 与 evaluator-only reference 的内容摘要；开发集和隐藏资格资产仍物理分离。
 - CUDA 预检实际绑定 `NVIDIA GeForce RTX 4060 Laptop GPU / cuda:0 / PyTorch 2.10.0+cu126 / CUDA 12.6`，FP16 tensor 冒烟计算通过；BGE-M3、Qwen3 Embedding、BGE reranker 与 Qwen3 reranker 模型 digest 与既有当前版本一致。Embedding／dense／learned-sparse／multi-vector／Cross-Encoder 只能 CUDA＋FP16，CPU vector fallback 为 false；预检没有加载完整模型或计算 10,618 对象向量，也尚未签发 hidden execution。
 - 当前下一步：先 clean commit／push 上述输入、reference、program manifest、CUDA preflight 与测试；随后只实现一个 qualification runner，先执行 `valid_temporal`。test frozen 与 heterogeneous holdout 在一次性执行前仍需绑定干净 commit、runner、cache identity 和经过确认的 evaluator reference，不得因 temporal 结果调 hidden 路线或阈值。
+
+## 2026-08-18 S1 VS5 CUDA FP16 候选执行合同
+
+- 在任何 qualification ranking 或标签读取前发现两项合同漂移：overlay 把 reranker 预算写成每命题 96 对，但继承策略实际要求候选与全部 RetrievalNeed 笛卡尔积；同时旧 dense／learned-sparse／multi-vector 相似度仍由 NumPy／SciPy／FlagEmbedding CPU helper 计算。
+- 新执行策略不删命题、facet、路线或候选，只把 reranker pair 限定为“实际召回该候选”的 need，每候选最多 3 个；BGE 与 Qwen 在同一 pair manifest 上分别选择最佳 need。完整 30 命题每模型最多 8,640 对，valid temporal 每模型最多 1,440 对，已补齐 task-specific TokenBudgetBasis。
+- 当前 qualification learned 路线从编码到 dense、learned-sparse、multi-vector 和双 reranker 打分均强制 `cuda:0 + FP16`。Qwen Embedding 显式 `.half()`；learned-sparse 使用 CUDA FP16 gather／scatter reduction，不回退到 SciPy；FlagEmbedding CPU `colbert_score` 不再进入资格路径。
+- CPU 只允许 BM25、SQL、tokenization、hard filters、账本、JSON 与稳定排序编排。GPU、模型／对象 digest、shape、非有限分数、输出重复或 worktree 漂移均 fail closed。
+- candidate runner、pair compiler、CUDA ranking 与内容寻址缓存合同已实现，定向 `22 passed`；尚未执行 valid temporal、未读取 evaluator reference、未产生检索成绩或 Evidence。Candidate 仍不是 Evidence，metric row 仍不是 NumericFact。
+- 下一步先完成完整治理、clean commit／push，再单独签发一次 valid temporal exact-once authority。natural scanned official source 硬门仍失败，test frozen／holdout 仍未授权，S1 不能宣称通过。

@@ -28,6 +28,22 @@ def _nonnegative_int(value: Any, code: str) -> int:
     return int(value)
 
 
+def candidate_provenance_scope_mode_valid(
+    material_scope: Mapping[str, Any],
+) -> bool:
+    """Accept auditable candidate runs without granting material readiness."""
+
+    mode = material_scope.get("mode")
+    required = material_scope.get("required_request_ids")
+    if not isinstance(required, list):
+        return False
+    if mode == "deterministic_scope_ready":
+        return not required
+    if mode == "explicit_scope_required":
+        return bool(required)
+    return False
+
+
 def _candidate_contract(value: Mapping[str, Any]) -> dict[str, int]:
     required = (
         "first_stage_limit",
@@ -424,5 +440,6 @@ __all__ = [
     "CandidateCeilingProvenanceError",
     "SCHEMA_VERSION",
     "build_candidate_ceiling_provenance",
+    "candidate_provenance_scope_mode_valid",
     "validate_candidate_ceiling_provenance",
 ]

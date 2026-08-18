@@ -47,8 +47,8 @@ def test_current_runtime_receipt_preserves_lineage_and_open_gates() -> None:
 
     lineage = receipt["source_object_index_lineage"]
     assert lineage["source_record_count"] == 1841
-    assert lineage["compiled_object_count"] == 20761
-    assert lineage["deduplicated_source_records_carried_only_by_lineage"] == 29
+    assert lineage["compiled_object_count"] == 34117
+    assert lineage["deduplicated_source_records_carried_only_by_lineage"] == 30
     assert lineage["all_source_records_lineage_bound"] is True
     assert lineage["source_records_missing_from_compiled_lineage"] == []
     assert receipt["embedding_index"]["dtype"] == "float16"

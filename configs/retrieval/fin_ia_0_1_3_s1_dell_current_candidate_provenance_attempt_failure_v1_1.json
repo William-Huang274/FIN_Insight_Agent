@@ -1,0 +1,21 @@
+{
+  "schema_version": "fin_ia_s1_current_candidate_provenance_attempt_failure_v1_0",
+  "status": "preserved_failed_replay_attempt",
+  "attempt_id": "FIN013-S1-DELL-CURRENT-CANDIDATE-PROVENANCE-R2",
+  "failure_phase": "candidate_provenance_result_materialization",
+  "failure_code": "current_candidate_replay_deterministic_scope_not_ready",
+  "first_credible_root_cause": "the candidate-audit runner required every request to have a deterministic material blueprint even though the product service had already executed and retained candidates for requests that correctly required later explicit scope",
+  "business_impact": "DELL retrieval ran, but no immutable full projection was written, so the business-level candidate result could not be audited",
+  "bound_inputs": {
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s1_dell_current_candidate_provenance_objective_v1_0.json",
+    "planner_atoms_ref": "configs/research/evals/fin_ia_0_1_3_s1_dell_current_candidate_provenance_atoms_v1_1.json"
+  },
+  "authority": {
+    "model_calls": 0,
+    "network_calls": 0,
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "s1_qualification_claimed": false
+  },
+  "disposition": "allow explicit_scope_required only in candidate-provenance audit mode, keep the result visibly material-scope incomplete, and use a fresh R3 replay"
+}

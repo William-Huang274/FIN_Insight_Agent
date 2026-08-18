@@ -79,6 +79,22 @@ _REQUIRED_AUTHORITY = {
 }
 
 
+def _policy_feature_flags(schema_version: str) -> tuple[bool, bool, bool]:
+    typed_balanced = (
+        schema_version == HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION
+    )
+    owner_balanced = schema_version in {
+        HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION,
+        HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION,
+    }
+    financial_ranking = schema_version in {
+        HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION,
+        HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION,
+        HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION,
+    }
+    return financial_ranking, owner_balanced, typed_balanced
+
+
 class HybridCandidateRuntimeError(ValueError):
     """Fail-closed error for the provisional BM25 + Qwen candidate runtime."""
 
@@ -824,12 +840,8 @@ class LocalQwenHybridCandidateRuntime:
     ) -> "LocalQwenHybridCandidateRuntime":
         root = Path(repository_root).resolve()
         schema_version = str(payload.get("schema_version") or "")
-        successor = schema_version == HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION
-        owner_balanced = (
-            schema_version == HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION
-        )
-        typed_balanced = (
-            schema_version == HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION
+        successor, owner_balanced, typed_balanced = _policy_feature_flags(
+            schema_version
         )
         expected_fields = {
             "schema_version",

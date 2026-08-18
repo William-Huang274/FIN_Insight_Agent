@@ -11,10 +11,10 @@
       "registry_resource_id": "application.result.current_research_retrieval_snapshot"
     },
     "object_compiler_result": {
-      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_2.json"
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_4.json"
     },
     "hybrid_runtime_policy": {
-      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_3.json",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_4.json",
       "registry_resource_id": "application.config.current_hybrid_candidate_runtime_policy"
     },
     "route_policy": {

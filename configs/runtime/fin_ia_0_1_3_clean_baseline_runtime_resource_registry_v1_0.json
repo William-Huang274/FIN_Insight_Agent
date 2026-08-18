@@ -15,22 +15,22 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R21",
-  "resource_bytes": 2501839,
-  "resource_canonical_digest": "89d0d8b915f974141952edb07b744ead62f05af93fc1d07f7d7909f65f1025e1",
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R22",
+  "resource_bytes": 2503268,
+  "resource_canonical_digest": "43f90c9353400418c2ee62db15b4014a7f40c65c5ee94ee12d85e2168285078e",
   "resource_count": 22,
   "resources": [
     {
-      "bytes": 6339,
+      "bytes": 6903,
       "classification": "provider_neutral_financial_intent_ontology",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "lazy_first_controlled_research_plan",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_3.json",
       "required": true,
       "resource_id": "application.config.current_financial_intent_ontology",
-      "sha256": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242",
+      "sha256": "6e0a977c0c2b55fcf9498fe51748e8da559c07c16859622aa87ac95ad73a4db0",
       "source_owner": "retrieval.material_evidence_runtime"
     },
     {
@@ -47,16 +47,16 @@
       "source_owner": "src.retrieval.contracts.load_financial_research_kernel"
     },
     {
-      "bytes": 1607,
+      "bytes": 2472,
       "classification": "application_runtime_config",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "lazy_first_controlled_research_plan",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_3.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_4.json",
       "required": true,
       "resource_id": "application.config.current_hybrid_candidate_runtime_policy",
-      "sha256": "3dabda7398fcc67d95e6969928a7ede862675528c5513d48a9757df92c16e8f5",
+      "sha256": "86c3b6fb9c4be3f0aefe4e22a242c0d1f596800b437e1bcf3f634a5359da1f88",
       "source_owner": "retrieval.hybrid_candidate_runtime.LocalQwenHybridCandidateRuntime.from_policy"
     },
     {
@@ -176,7 +176,7 @@
       "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_0.json",
       "required": true,
       "resource_id": "application.config.current_s1_runtime_binding_policy",
-      "sha256": "702bcf8ce21815bb6b5cdaf4c7be9be96a63fc99a39d20adba979199cee64048",
+      "sha256": "e9a2f661b41e27e1c7edb539a71afb16789b762ca9254975637de00653089fa7",
       "source_owner": "retrieval.current_runtime_binding.load_current_s1_runtime_binding_policy"
     },
     {
@@ -241,7 +241,7 @@
       "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json",
       "required": true,
       "resource_id": "application.result.current_s1_runtime_binding_receipt",
-      "sha256": "3a34dd83492de45db4d5251e1be81414625a93cfd7ef4e7cd17a3747f764b66a",
+      "sha256": "11ff92134afae2b35bfb2478ddbbd38a69cc0a872180dcbd7fdcf7e175403277",
       "source_owner": "retrieval.current_runtime_binding.validate_current_s1_runtime_binding_receipt"
     },
     {

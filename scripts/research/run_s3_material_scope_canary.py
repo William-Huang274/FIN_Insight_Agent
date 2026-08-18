@@ -21,6 +21,9 @@ from retrieval.contracts import (  # noqa: E402
     load_evidence_request,
     load_financial_research_kernel,
 )
+from retrieval.candidate_ceiling_provenance import (  # noqa: E402
+    candidate_provenance_scope_mode_valid,
+)
 from retrieval.query_plan import canonical_digest  # noqa: E402
 from sec_agent.research.material_scope import (  # noqa: E402
     compile_research_material_scope_messages,
@@ -468,12 +471,11 @@ def replay_current_deterministic_scope(
     summary = projection.get("summary") or {}
     if not (
         projection.get("case_key") == key
-        and material_scope.get("mode") == "deterministic_scope_ready"
-        and not material_scope.get("required_request_ids")
+        and candidate_provenance_scope_mode_valid(material_scope)
         and int(summary.get("model_calls") or 0) == 0
         and int(summary.get("network_calls") or 0) == 0
     ):
-        raise ValueError("current_candidate_replay_deterministic_scope_not_ready")
+        raise ValueError("current_candidate_replay_scope_state_invalid")
 
     registry_path = (
         ROOT
@@ -527,7 +529,11 @@ def replay_current_deterministic_scope(
         cuda_receipt=cuda_receipt,
         private_output_path=private_output_path,
         public_output_path=public_output_path,
-        replay_mode="current_case_question_kernel_ontology_deterministic_scope",
+        replay_mode=(
+            "current_case_question_kernel_ontology_deterministic_scope"
+            if material_scope.get("mode") == "deterministic_scope_ready"
+            else "current_case_question_candidate_provenance_explicit_scope_pending"
+        ),
         full_schema_version=(
             "fin_ia_s1_current_candidate_provenance_replay_full_v1_0"
         ),
@@ -538,7 +544,9 @@ def replay_current_deterministic_scope(
             "registered Workbench BM25 plus Qwen CUDA path. It is not a model-"
             "planned dynamic research run, does not read qrels, gold or hidden "
             "labels, and grants no Evidence, NumericFact, public-gap, S1 "
-            "qualification or publication authority."
+            "qualification or publication authority. A result whose material "
+            "scope mode is explicit_scope_required is retained only as a "
+            "candidate-provenance audit and remains material-scope incomplete."
         ),
     )
 

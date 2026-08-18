@@ -1,0 +1,58 @@
+{
+  "schema_version": "fin_ia_s1c_hybrid_candidate_runtime_policy_v1_3",
+  "status": "provisional_typed_balanced_candidate_runtime_not_evidence_authority",
+  "object_store": {
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v5/objects.jsonl",
+    "objects_sha256": "125f0f129f1d94ed80708c6f0f214e49e1df21e41b902700469360528e6cd0b6"
+  },
+  "qwen_embedding": {
+    "model_id": "Qwen/Qwen3-Embedding-0.6B",
+    "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+    "local_directory_env": "FINSIGHT_QWEN_EMBEDDING_MODEL_DIR",
+    "development_fallback_local_directory": "D:/hf_models/Qwen__Qwen3-Embedding-0.6B",
+    "dense_cache_ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v5/qwen3_embedding_0_6b_v1/dense.float16.npy",
+    "cache_manifest_ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v5/qwen3_embedding_0_6b_v1/manifest.json",
+    "maximum_sequence_length": 512,
+    "query_instruction": "Given a source-bound financial research request, retrieve passages that directly address the requested evidence facet while preserving issuer, period and relationship direction."
+  },
+  "candidate_contract": {
+    "first_stage_limit": 64,
+    "candidate_union_limit": 96,
+    "output_limit": 16,
+    "max_candidates_per_source_record": 2
+  },
+  "financial_ranking": {
+    "enabled": true,
+    "strategy": "lexicographic_financial_structure_v1",
+    "evidence_role_mode": "advisory_with_abstain",
+    "source_quota_after_ranking": true,
+    "candidate_is_not_evidence": true
+  },
+  "owner_balance": {
+    "enabled": true,
+    "minimum_candidates_per_owner": 2,
+    "apply_only_to_multi_owner_requests": true,
+    "candidate_is_not_evidence": true
+  },
+  "evidence_role": {
+    "mode": "advisory_with_abstain",
+    "ranking_effect": false,
+    "hard_drop": false,
+    "evidence_authority": false
+  },
+  "typed_query_recall": {
+    "enabled": true,
+    "query_plan_schema": "fin_ia_typed_query_facet_plan_v1_2",
+    "strategy": "per_request_metric_product_balanced_bm25_v1",
+    "ontology_expansion_candidate_only": true,
+    "result_or_label_access": false,
+    "candidate_is_not_evidence": true
+  },
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "embedding_grants_evidence_authority": false,
+    "database_lane_remains_independent": true,
+    "generation_model_calls_authorized": false
+  }
+}

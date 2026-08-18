@@ -1,0 +1,34 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "embedding_grants_evidence_authority": false,
+    "numeric_authority": false
+  },
+  "inputs": {
+    "batch_size": 8,
+    "maximum_sequence_length": 512,
+    "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+    "model_id": "Qwen/Qwen3-Embedding-0.6B",
+    "object_count": 34117,
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v5/objects.jsonl",
+    "objects_sha256": "125f0f129f1d94ed80708c6f0f214e49e1df21e41b902700469360528e6cd0b6"
+  },
+  "outputs": {
+    "cache_hit": false,
+    "cache_manifest_ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v5/qwen3_embedding_0_6b_v1/manifest.json",
+    "cache_manifest_sha256": "acf79b7546e730f9c54c9a26b13abdf660f24112ac0e0097a6188471321fb628",
+    "dense_cache_ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v5/qwen3_embedding_0_6b_v1/dense.float16.npy",
+    "dense_cache_sha256": "5e1b991f63823ba5a06b7e47b1ac7e490968ee37647058fb200ae7b356d7576c",
+    "embedding_dimensions": 1024
+  },
+  "runtime": {
+    "cache_dtype": "float16",
+    "cpu_fallback_count": 0,
+    "device": "cuda:0",
+    "model_calls": 0,
+    "network_calls": 0,
+    "parameter_dtype": "torch.float16"
+  },
+  "schema_version": "fin_ia_s1c_qwen_embedding_cache_materialization_result_v1_0",
+  "status": "cuda_fp16_candidate_embedding_cache_materialized"
+}

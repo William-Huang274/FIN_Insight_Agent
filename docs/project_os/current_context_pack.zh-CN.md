@@ -730,3 +730,14 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - QueryFacetPlan v3 将一个请求拆成 raw request、metric aliases 和逐 product 财报表面；typed-balanced BM25 在同一 hard-filter corpus 分别召回后再融合。没有对象 ID／URL／ticker 特判。MU 三条战略客户协议从旧第 275—780 名进入新第 4／8／11 名。
 - 新行为均在 versioned successor seam，旧 QueryFacetPlan／对象编译器和历史 attempts 不改写；0 网络、0 模型、0 learned-vector、0 qrel／gold／hidden 读取。全仓 `739 passed`。
 - 当前 Runtime 仍未切换。下一步是一次性生成新对象快照、CUDA／FP16 dense cache、typed-balanced policy 与 binding，再做 DELL／MU／NVDA successor replay；通过后才恢复 RC-S1-034 产品 producer。S1、动态 S3、发布与 release 仍为 false。
+
+## 2026-08-18 S1 当前对象／索引绑定与三案例 successor replay
+
+- 当前 Runtime 已从 20,761 个旧对象切换到 34,117 个 versioned successor 对象：24,379 claim、8,532 metric row、1,206 bounded context；1,841 条来源记录全部进入 lineage。Runtime registry 为 R22。
+- Qwen3-Embedding-0.6B 已在 `cuda:0` 生成 34,117×1,024 FP16 cache，0 CPU fallback。Hybrid policy v1.4 累积继承金融排序、owner balance 和 typed-balanced recall；新 schema 不再意外丢失旧特性。
+- DELL／MU／NVDA 各执行 8 条 current request，共 384 个 final-review candidates、116 个 NumericFact。DELL 12／12 material requirement 在 bounded union 内完整，但原自然 scope 仍为 `explicit_scope_required`，只能算 candidate-provenance audit；MU 为 6／12、NVDA 为 9／12。
+- MU 战略客户协议、binding volumes、customer deposits 与 take-or-pay 已从旧第 275—780 名进入当前 top 16；NVDA 最新 Data Center 收入也稳定进入 reported-results。已知对象召回问题不再能归咎于“国内 API”或简单 Embedding 弱。
+- 新的最早问题是三类：Evidence Role 未把 MU 采购承诺识别为 direct demand/durability；部分请求把订单、产品交付、供应反方等不同命题混入同一 direct／counter requirement；少数 metric row 仍有行层级语义漂移。它们必须由 RC-S1-034 producer 逐命题归责，不能统一写成公开资料 gap。
+- 现有 reviewed Pack 与 current candidates 只有部分精确 source overlap；这是产品 EvidenceDecision 必须显式展示的状态。候选可触发“复用同源已审 Evidence”，但候选文字本身不得因此晋升。
+- 当前顺序恢复为：复用现有 candidate decision／integrated readiness 合同实现产品 producer → 三案 successor replay → Workbench drilldown → S1 独立 qualification。S1、动态 S3、发布与 release 仍为 false。
+- 本轮复证：定向 25、全仓 743 passed；compileall、S1 program foundation、active baseline 168 Python／8 frontend／22 resources／0 forbidden、7,234-file secret scan 与 diff check 通过。

@@ -14,7 +14,11 @@ from retrieval.contracts import (
     load_evidence_request,
     load_financial_research_kernel,
 )
-from retrieval.hybrid_candidate_runtime import retrieve_hybrid_candidates
+from retrieval.hybrid_candidate_runtime import (
+    HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION,
+    _policy_feature_flags,
+    retrieve_hybrid_candidates,
+)
 from retrieval.query_plan_v3 import compile_query_facet_plan_for_request
 from retrieval.route_compiler import load_query_object_fact_route_policy
 
@@ -120,6 +124,12 @@ def test_query_plan_expands_canonical_metrics_and_disclosure_surfaces() -> None:
     assert "binding commitments for specific volumes" in surfaces
     assert "bookings" not in lane.lexical_query
     assert "COBJ::" not in surfaces and "http" not in surfaces
+
+
+def test_typed_balanced_policy_inherits_financial_ranking_and_owner_balance() -> None:
+    assert _policy_feature_flags(
+        HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION
+    ) == (True, True, True)
 
 
 def test_typed_balanced_recall_recovers_material_disclosure_crowded_out_by_broad_query() -> None:

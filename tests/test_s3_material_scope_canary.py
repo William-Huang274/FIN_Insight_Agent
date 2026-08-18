@@ -85,6 +85,10 @@ CURRENT_DELL_INPUT_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_material_scope_canary_input_v1_1.json"
 )
+CONTRACT_REPAIR_DELL_INPUT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_canary_input_v1_2.json"
+)
 CURRENT_DELL_AUTHORITY_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_material_scope_canary_authority_v1_0.json"
@@ -263,6 +267,61 @@ def test_current_dell_input_is_clean_commit_bound_and_fully_traceable() -> None:
     assert diagnostic["numeric_fact_count"] == 58
     assert diagnostic["network_calls"] == 0
     assert diagnostic["model_calls"] == 0
+
+
+def test_contract_repair_dell_input_changes_only_the_model_contract() -> None:
+    predecessor = _json(CURRENT_DELL_INPUT_REF)
+    payload = _json(CONTRACT_REPAIR_DELL_INPUT_REF)
+    validate_material_scope_canary_input(payload)
+
+    assert payload["prepared_from_commit"] == (
+        "e8d25979dd1d3a2bfb9b36aa910a36774369777f"
+    )
+    assert payload["research_plan_digest"] == predecessor["research_plan_digest"]
+    assert payload["product_projection_digest"] == predecessor[
+        "product_projection_digest"
+    ]
+    assert payload["required_request_ids"] == predecessor["required_request_ids"]
+    assert payload["evidence_requests"] == predecessor["evidence_requests"]
+    assert payload["product_diagnostic"] == predecessor["product_diagnostic"]
+    assert payload["model_visible_messages_digest"] == (
+        "78cca94ed3b3555e8960f5231b1436a0cb8c45e656d41918eae8dbaeb52946c5"
+    )
+    assert payload["model_visible_messages_digest"] != predecessor[
+        "model_visible_messages_digest"
+    ]
+
+    visible = json.loads(payload["model_visible_messages"][1]["content"])
+    schema = visible["output_contract"]["json_schema"]
+    assert schema["required"] == [
+        "schema_version",
+        "research_plan_digest",
+        "request_scopes",
+    ]
+    assert schema["additionalProperties"] is False
+    request_scope = schema["properties"]["request_scopes"]["items"]
+    assert request_scope["required"] == [
+        "request_id",
+        "product_intent_dispositions",
+        "requirement_atoms",
+    ]
+    assert request_scope["additionalProperties"] is False
+    dispositions = request_scope["properties"]["product_intent_dispositions"]
+    disposition = dispositions["items"]["properties"]["disposition"]
+    assert disposition["enum"] == [
+        "hard_material_axis",
+        "contextual_retrieval_only",
+        "temporal_directive",
+    ]
+    atom = request_scope["properties"]["requirement_atoms"]["items"]
+    assert atom["properties"]["period_mode"]["enum"] == [
+        "any",
+        "all_periods_same_basis",
+    ]
+    assert atom["properties"]["coverage_mode"]["enum"] == [
+        "single_binding",
+        "collective_axes",
+    ]
 
 
 def test_current_dell_R1_authority_remains_bound_but_scope_is_consumed() -> None:

@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
 from typing import Any, Callable, Mapping, Sequence
 
 from retrieval.contracts import load_evidence_request, load_financial_research_kernel
@@ -36,6 +37,18 @@ MATERIAL_SCOPE_CANARY_RUN_SCOPE = (
 )
 MATERIAL_SCOPE_CANARY_AUTHORITY_STATUS = (
     "signed_one_DELL_candidate_blind_material_scope_canary_exact_once"
+)
+MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_material_scope_nonthinking_successor_authority_v1_0"
+)
+MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_STATUS = (
+    "signed_one_DELL_candidate_blind_nonthinking_material_scope_successor_exact_once"
+)
+MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE = (
+    "one_DELL_candidate_blind_nonthinking_material_scope_successor"
+)
+MATERIAL_SCOPE_SUCCESSOR_POLICY_SCHEMA = (
+    "fin_ia_s3_material_scope_nonthinking_successor_policy_v1_0"
 )
 
 _FORBIDDEN_MODEL_VISIBLE_KEYS = frozenset(
@@ -354,9 +367,132 @@ def _bound_json(
     return path, load_json(path)
 
 
+def _source_binding_matches(
+    *, root: Path, ref: str, expected_sha256: str, implementation_commit: str
+) -> bool:
+    path = repo_path(root, ref)
+    if file_sha256(path) == expected_sha256:
+        return True
+    if not re.fullmatch(r"[0-9a-f]{40}", implementation_commit):
+        return False
+    completed = subprocess.run(
+        ["git", "show", f"{implementation_commit}:{ref}"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+    )
+    return bool(
+        completed.returncode == 0
+        and hashlib.sha256(completed.stdout).hexdigest() == expected_sha256
+    )
+
+
+def _validate_successor_policy(payload: Mapping[str, Any]) -> None:
+    expected = {
+        "schema_version",
+        "status",
+        "predecessor_failure_code",
+        "maximum_model_calls",
+        "maximum_transport_attempts",
+        "maximum_completion_tokens",
+        "thinking_mode",
+        "reasoning_effort_omitted",
+        "request_microbatching",
+        "token_budget_basis",
+        "known_boundary",
+    }
+    basis = payload.get("token_budget_basis")
+    _require(
+        set(payload) == expected
+        and payload.get("schema_version") == MATERIAL_SCOPE_SUCCESSOR_POLICY_SCHEMA
+        and payload.get("status")
+        == "provider_specific_nonthinking_contract_submission_successor_control"
+        and payload.get("predecessor_failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and payload.get("maximum_model_calls") == 1
+        and payload.get("maximum_transport_attempts") == 1
+        and payload.get("maximum_completion_tokens") == 8000
+        and payload.get("thinking_mode") == "disabled"
+        and payload.get("reasoning_effort_omitted") is True
+        and payload.get("request_microbatching") is False
+        and isinstance(basis, Mapping)
+        and set(basis)
+        == {
+            "node_purpose",
+            "input_scale",
+            "required_outputs",
+            "schema_burden",
+            "materiality_and_quality_risk",
+            "comparable_run_evidence",
+            "reasoning_profile",
+            "stop_and_truncation",
+        }
+        and all(basis.get(key) for key in basis),
+        "material_scope_successor_policy_invalid",
+    )
+
+
+def _validate_successor_predecessor(
+    authority: Mapping[str, Any], *, root: Path
+) -> dict[str, Any]:
+    predecessor = authority.get("immutable_predecessor")
+    _require(
+        isinstance(predecessor, Mapping)
+        and set(predecessor)
+        == {
+            "failure_result_ref",
+            "failure_result_sha256",
+            "failure_result_digest",
+            "failure_assessment_ref",
+            "failure_assessment_sha256",
+        },
+        "material_scope_successor_predecessor_fields_invalid",
+    )
+    _, failure = _bound_json(
+        root,
+        predecessor,
+        "failure_result_ref",
+        "failure_result_sha256",
+    )
+    _, assessment = _bound_json(
+        root,
+        predecessor,
+        "failure_assessment_ref",
+        "failure_assessment_sha256",
+    )
+    observed = assessment.get("observed") or {}
+    disposition = assessment.get("disposition") or {}
+    _require(
+        failure.get("status") == "terminal_failed_no_retry"
+        and failure.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and failure.get("result_digest")
+        == predecessor.get("failure_result_digest")
+        and assessment.get("status")
+        == "R1_preserved_provider_profile_reasoning_budget_mismatch_successor_required"
+        and observed.get("http_status") == 200
+        and observed.get("prompt_tokens") == 2781
+        and observed.get("completion_tokens") == 12000
+        and observed.get("reasoning_tokens") == 12000
+        and observed.get("visible_content_characters") == 0
+        and observed.get("finish_reason") == "length"
+        and disposition.get("R1_retry_authorized") is False
+        and disposition.get("token_ceiling_increase_authorized") is False
+        and disposition.get("request_microbatching_authorized_now") is False,
+        "material_scope_successor_predecessor_invalid",
+    )
+    return {"failure": failure, "assessment": assessment}
+
+
 def validate_material_scope_canary_authority(
     authority: Mapping[str, Any], *, root: Path
 ) -> dict[str, Any]:
+    schema = authority.get("schema_version")
+    successor = schema == MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA
+    _require(
+        successor or schema == MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
+        "material_scope_canary_authority_schema_invalid",
+    )
     expected_fields = {
         "schema_version",
         "authority_id",
@@ -382,13 +518,24 @@ def validate_material_scope_canary_authority(
         "output_contract",
         "known_boundary",
     }
+    if successor:
+        expected_fields.add("immutable_predecessor")
+    expected_status = (
+        MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_STATUS
+        if successor
+        else MATERIAL_SCOPE_CANARY_AUTHORITY_STATUS
+    )
+    expected_scope = (
+        MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE
+        if successor
+        else MATERIAL_SCOPE_CANARY_RUN_SCOPE
+    )
     _require(
         set(authority) == expected_fields
-        and authority.get("schema_version") == MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA
-        and authority.get("status") == MATERIAL_SCOPE_CANARY_AUTHORITY_STATUS
+        and authority.get("status") == expected_status
         and authority.get("case_key") == "DELL"
         and authority.get("cell_id") == "MATERIAL_SCOPE"
-        and authority.get("run_scope_id") == MATERIAL_SCOPE_CANARY_RUN_SCOPE
+        and authority.get("run_scope_id") == expected_scope
         and authority.get("evidence_mode")
         == "request_visible_scope_only_no_candidates_no_evidence"
         and authority.get("credential_presence_required") is True
@@ -409,7 +556,12 @@ def validate_material_scope_canary_authority(
         "material_scope_canary_authority_contract_invalid",
     )
     _require(
-        bool(re.fullmatch(r"[0-9a-f]{40}", str(authority.get("implementation_commit") or ""))),
+        bool(
+            re.fullmatch(
+                r"[0-9a-f]{40}",
+                str(authority.get("implementation_commit") or ""),
+            )
+        ),
         "material_scope_canary_implementation_commit_invalid",
     )
     expected_budget = {
@@ -429,8 +581,16 @@ def validate_material_scope_canary_authority(
         authority.get("execution_budget") == expected_budget,
         "material_scope_canary_execution_budget_invalid",
     )
+    predecessor = (
+        _validate_successor_predecessor(authority, root=root)
+        if successor
+        else None
+    )
     bound = authority.get("bound_inputs")
-    _require(isinstance(bound, Mapping), "material_scope_canary_bound_inputs_invalid")
+    _require(
+        isinstance(bound, Mapping),
+        "material_scope_canary_bound_inputs_invalid",
+    )
     expected_bound_fields = {
         "input_result_ref",
         "input_result_sha256",
@@ -451,6 +611,10 @@ def validate_material_scope_canary_authority(
         "implementation_sha256",
         "model_visible_messages_digest",
     }
+    if successor:
+        expected_bound_fields.update(
+            {"successor_policy_ref", "successor_policy_sha256"}
+        )
     _require(
         set(bound) == expected_bound_fields,
         "material_scope_canary_bound_input_fields_invalid",
@@ -475,28 +639,56 @@ def validate_material_scope_canary_authority(
         root, bound, "intent_ontology_ref", "intent_ontology_sha256"
     )
     kernel_path, kernel = _bound_json(root, bound, "kernel_ref", "kernel_sha256")
+    successor_policy_path: Path | None = None
+    successor_policy: dict[str, Any] | None = None
+    if successor:
+        successor_policy_path, successor_policy = _bound_json(
+            root,
+            bound,
+            "successor_policy_ref",
+            "successor_policy_sha256",
+        )
+        _validate_successor_policy(successor_policy)
     profile_path, profile_payload = _bound_json(
         root, bound, "provider_profile_ref", "provider_profile_sha256"
     )
     profile = load_chat_completion_profile(profile_payload)
     defaults = profile_payload.get("request_defaults") or {}
-    _require(
+    shared_profile_valid = (
         profile.provider_id == "deepseek"
         and profile.model == "deepseek-v4-pro"
         and profile.api_key_env == "DEEPSEEK_API_KEY"
-        and defaults.get("max_tokens") == 12000
         and defaults.get("response_format") == {"type": "json_object"}
-        and defaults.get("thinking") == {"type": "enabled"}
-        and defaults.get("reasoning_effort") == "max",
-        "material_scope_canary_provider_profile_invalid",
+        and defaults.get("stream") is False
     )
+    if successor:
+        profile_valid = (
+            shared_profile_valid
+            and defaults.get("max_tokens") == 8000
+            and defaults.get("thinking") == {"type": "disabled"}
+            and "reasoning_effort" not in defaults
+        )
+    else:
+        profile_valid = (
+            shared_profile_valid
+            and defaults.get("max_tokens") == 12000
+            and defaults.get("thinking") == {"type": "enabled"}
+            and defaults.get("reasoning_effort") == "max"
+        )
+    _require(profile_valid, "material_scope_canary_provider_profile_invalid")
     for ref_field, sha_field in (
         ("runner_ref", "runner_sha256"),
         ("implementation_ref", "implementation_sha256"),
     ):
-        path = repo_path(root, str(bound.get(ref_field) or ""))
         _require(
-            file_sha256(path) == bound.get(sha_field),
+            _source_binding_matches(
+                root=root,
+                ref=str(bound.get(ref_field) or ""),
+                expected_sha256=str(bound.get(sha_field) or ""),
+                implementation_commit=str(
+                    authority.get("implementation_commit") or ""
+                ),
+            ),
             f"material_scope_canary_source_sha_drift:{ref_field}",
         )
     output = authority.get("output_contract")
@@ -535,10 +727,70 @@ def validate_material_scope_canary_authority(
         "ontology": ontology,
         "kernel_path": kernel_path,
         "kernel": kernel,
+        "successor": successor,
+        "successor_policy_path": successor_policy_path,
+        "successor_policy": successor_policy,
+        "predecessor": predecessor,
         "profile_path": profile_path,
         "profile": profile,
         "api_key_env": profile.api_key_env,
     }
+
+
+def _failure_provider_projection(
+    *, root: Path, response_path: Path
+) -> dict[str, Any]:
+    """Project safe provider metadata from an immutable failed response capture.
+
+    The projection intentionally excludes assistant content and any provider-private
+    reasoning.  A malformed capture must not replace the original gateway failure,
+    so unavailable fields remain empty while the capture references stay preserved.
+    """
+
+    projection: dict[str, Any] = {}
+    try:
+        relative_ref(root, response_path)
+        if not response_path.is_file():
+            return projection
+        response_capture = load_json(response_path)
+        projection.update(
+            {
+                "provider_id": str(response_capture.get("provider_id") or ""),
+                "model": str(response_capture.get("model") or ""),
+                "response_capture_ref": response_path.as_posix(),
+                "response_digest": str(
+                    response_capture.get("response_digest") or ""
+                ),
+                "private_reasoning_fields_redacted": int(
+                    response_capture.get("private_reasoning_fields_redacted") or 0
+                ),
+            }
+        )
+        response_body = response_capture.get("response_body")
+        if isinstance(response_body, Mapping):
+            usage = response_body.get("usage")
+            if isinstance(usage, Mapping):
+                projection["usage"] = dict(usage)
+            choices = response_body.get("choices")
+            if (
+                isinstance(choices, list)
+                and len(choices) == 1
+                and isinstance(choices[0], Mapping)
+            ):
+                projection["finish_reason"] = str(
+                    choices[0].get("finish_reason") or ""
+                )
+        request_path = response_path.with_name("model_visible_request.json")
+        if request_path.is_file():
+            request_capture = load_json(request_path)
+            relative_ref(root, request_path)
+            projection["request_capture_ref"] = request_path.as_posix()
+            projection["request_digest"] = str(
+                request_capture.get("request_digest") or ""
+            )
+    except (OSError, ValueError, TypeError, json.JSONDecodeError, MaterialScopeCanaryError):
+        return {}
+    return projection
 
 
 def _terminal_summary(
@@ -557,8 +809,11 @@ def _terminal_summary(
     compilation: Mapping[str, Any] | None = None,
     request_capture_ref: str = "",
     response_capture_ref: str = "",
+    failure_provider: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     provider = provider_result.as_dict() if provider_result is not None else {}
+    if failure_provider:
+        provider = {**dict(failure_provider), **provider}
     body = {
         "schema_version": MATERIAL_SCOPE_CANARY_RESULT_SCHEMA,
         "status": status,
@@ -656,6 +911,7 @@ def run_material_scope_canary(
     transport_attempted = False
     request_capture_ref = ""
     response_capture_ref = ""
+    failure_provider: dict[str, Any] = {}
     try:
         model_call_attempted = True
         transport_attempted = True
@@ -728,6 +984,10 @@ def run_material_scope_canary(
                 request_path = response_path.with_name("model_visible_request.json")
                 if request_path.is_file():
                     request_capture_ref = relative_ref(root, request_path)
+                failure_provider = _failure_provider_projection(
+                    root=root,
+                    response_path=response_path,
+                )
         elif isinstance(exc, ResearchMaterialScopeError):
             phase = "scope_output_parse_or_contract"
             code = str(exc)
@@ -747,6 +1007,7 @@ def run_material_scope_canary(
             provider_result=provider_result,
             request_capture_ref=request_capture_ref,
             response_capture_ref=response_capture_ref,
+            failure_provider=failure_provider,
         )
     write_new_json(public_path, summary)
     return summary
@@ -758,6 +1019,10 @@ __all__ = [
     "MATERIAL_SCOPE_CANARY_INPUT_SCHEMA",
     "MATERIAL_SCOPE_CANARY_RESULT_SCHEMA",
     "MATERIAL_SCOPE_CANARY_RUN_SCOPE",
+    "MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA",
+    "MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_STATUS",
+    "MATERIAL_SCOPE_SUCCESSOR_POLICY_SCHEMA",
+    "MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE",
     "MaterialScopeCanaryError",
     "build_material_scope_canary_input",
     "file_sha256",

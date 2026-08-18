@@ -9,13 +9,19 @@ import shutil
 import pytest
 
 from retrieval.contracts import load_evidence_request, load_financial_research_kernel
-from sec_agent.providers.chat_completions import ChatCompletionResult
+from sec_agent.providers.chat_completions import (
+    ChatCompletionResult,
+    ModelGatewayError,
+)
 from sec_agent.project_os_preflight import build_preflight
 from sec_agent.research.material_scope import compile_research_material_scope_messages
 from sec_agent.research.material_scope_canary import (
     MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
     MATERIAL_SCOPE_CANARY_AUTHORITY_STATUS,
     MATERIAL_SCOPE_CANARY_RUN_SCOPE,
+    MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA,
+    MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_STATUS,
+    MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE,
     MaterialScopeCanaryError,
     build_material_scope_canary_input,
     run_material_scope_canary,
@@ -41,6 +47,23 @@ ONTOLOGY_REF = "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2
 PROFILE_REF = (
     "configs/providers/"
     "fin_ia_0_1_3_deepseek_v4_pro_ga_material_scope_profile_v1_0.json"
+)
+SUCCESSOR_PROFILE_REF = (
+    "configs/providers/"
+    "fin_ia_0_1_3_deepseek_v4_pro_ga_material_scope_"
+    "nonthinking_profile_v1_0.json"
+)
+SUCCESSOR_POLICY_REF = (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_material_scope_nonthinking_successor_policy_v1_0.json"
+)
+R1_RESULT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_canary_live_result_v1_0.json"
+)
+R1_ASSESSMENT_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_material_scope_canary_failure_assessment_v1_0.json"
 )
 CURRENT_DELL_INPUT_REF = (
     "configs/research/evals/"
@@ -344,6 +367,57 @@ def _authority_root(tmp_path: Path) -> tuple[Path, dict, Path]:
     return tmp_path, authority, authority_path
 
 
+def _successor_authority_root(tmp_path: Path) -> tuple[Path, dict, Path]:
+    root, authority, _ = _authority_root(tmp_path)
+    for ref in (
+        SUCCESSOR_PROFILE_REF,
+        SUCCESSOR_POLICY_REF,
+        R1_RESULT_REF,
+        R1_ASSESSMENT_REF,
+    ):
+        _copy(root, ref)
+    authority["schema_version"] = MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA
+    authority["authority_id"] = "TEST-MATERIAL-SCOPE-SUCCESSOR"
+    authority["status"] = MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_STATUS
+    authority["run_scope_id"] = MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE
+    authority["immutable_predecessor"] = {
+        "failure_result_ref": R1_RESULT_REF,
+        "failure_result_sha256": _sha(root / R1_RESULT_REF),
+        "failure_result_digest": _json(R1_RESULT_REF)["result_digest"],
+        "failure_assessment_ref": R1_ASSESSMENT_REF,
+        "failure_assessment_sha256": _sha(root / R1_ASSESSMENT_REF),
+    }
+    authority["bound_inputs"]["provider_profile_ref"] = SUCCESSOR_PROFILE_REF
+    authority["bound_inputs"]["provider_profile_sha256"] = _sha(
+        root / SUCCESSOR_PROFILE_REF
+    )
+    authority["bound_inputs"]["successor_policy_ref"] = SUCCESSOR_POLICY_REF
+    authority["bound_inputs"]["successor_policy_sha256"] = _sha(
+        root / SUCCESSOR_POLICY_REF
+    )
+    authority["output_contract"] = {
+        "capture_root_ref": ".codex_runtime/test_material_scope_successor",
+        "private_result_ref": (
+            "data/workbench_private/test_material_scope_successor/full.json"
+        ),
+        "public_result_ref": (
+            "configs/research/evals/test_material_scope_successor_result.json"
+        ),
+        "run_id": "TEST-MATERIAL-SCOPE-SUCCESSOR",
+        "attempt_id": "R2",
+        "product_publication": "forbidden",
+    }
+    authority_ref = (
+        "configs/research/evals/test_material_scope_successor_authority.json"
+    )
+    authority_path = root / authority_ref
+    authority_path.write_text(
+        json.dumps(authority, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return root, authority, authority_path
+
+
 def test_authority_binds_one_call_profile_and_input(tmp_path: Path) -> None:
     root, authority, _ = _authority_root(tmp_path)
     bound = validate_material_scope_canary_authority(authority, root=root)
@@ -352,6 +426,31 @@ def test_authority_binds_one_call_profile_and_input(tmp_path: Path) -> None:
     ]
     assert bound["profile"].model == "deepseek-v4-pro"
     assert bound["profile"].request_defaults["max_tokens"] == 12000
+
+
+def test_successor_authority_preserves_R1_and_uses_nonthinking_profile(
+    tmp_path: Path,
+) -> None:
+    root, authority, _ = _successor_authority_root(tmp_path)
+    bound = validate_material_scope_canary_authority(authority, root=root)
+    defaults = bound["profile"].request_defaults
+    assert bound["successor"] is True
+    assert bound["predecessor"]["failure"]["status"] == (
+        "terminal_failed_no_retry"
+    )
+    assert defaults["max_tokens"] == 8000
+    assert defaults["thinking"] == {"type": "disabled"}
+    assert "reasoning_effort" not in defaults
+
+
+def test_successor_predecessor_drift_fails_closed(tmp_path: Path) -> None:
+    root, authority, _ = _successor_authority_root(tmp_path)
+    authority["immutable_predecessor"]["failure_result_digest"] = "f" * 64
+    with pytest.raises(
+        MaterialScopeCanaryError,
+        match="material_scope_successor_predecessor_invalid",
+    ):
+        validate_material_scope_canary_authority(authority, root=root)
 
 
 def test_exact_once_canary_compiles_scope_and_materializes_terminal_result(
@@ -386,6 +485,102 @@ def test_exact_once_canary_compiles_scope_and_materializes_terminal_result(
     assert result["scope_summary"]["candidate_or_reference_inputs_read"] is False
     assert (root / result["full_result_ref"]).is_file()
     assert (root / "configs/research/evals/test_material_scope_result.json").is_file()
+
+
+def test_successor_exact_once_keeps_same_contract_and_compiles_scope(
+    tmp_path: Path,
+) -> None:
+    root, _, authority_path = _successor_authority_root(tmp_path)
+    calls: list[dict] = []
+
+    def executor(**kwargs):
+        calls.append(kwargs)
+        return ChatCompletionResult(
+            status="completed_exact_once",
+            provider_id="deepseek",
+            model="deepseek-v4-pro",
+            content=json.dumps(_scope_payload()),
+            finish_reason="stop",
+            usage={"prompt_tokens": 100, "completion_tokens": 200},
+            request_capture_ref=(root / ".codex_runtime/request-r2.json").as_posix(),
+            response_capture_ref=(root / ".codex_runtime/response-r2.json").as_posix(),
+            request_digest="3" * 64,
+            response_digest="4" * 64,
+            private_reasoning_fields_redacted=0,
+        )
+
+    result = run_material_scope_canary(
+        authority_path, root=root, executor=executor
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["profile"].request_defaults["thinking"] == {
+        "type": "disabled"
+    }
+    assert result["status"] == "completed_contract_valid"
+    assert result["scope_summary"]["required_request_count"] == 1
+    assert result["execution"]["retries"] == 0
+
+
+def test_failed_gateway_projects_capture_metadata_without_response_content(
+    tmp_path: Path,
+) -> None:
+    root, _, authority_path = _successor_authority_root(tmp_path)
+
+    def executor(**kwargs):
+        capture_dir = (
+            Path(kwargs["capture_root"])
+            / kwargs["run_id"]
+            / kwargs["attempt_id"]
+        )
+        capture_dir.mkdir(parents=True, exist_ok=True)
+        request_path = capture_dir / "model_visible_request.json"
+        response_path = capture_dir / "provider_response.json"
+        request_path.write_text(
+            json.dumps({"request_digest": "1" * 64}), encoding="utf-8"
+        )
+        response_path.write_text(
+            json.dumps(
+                {
+                    "provider_id": "deepseek",
+                    "model": "deepseek-v4-pro",
+                    "response_digest": "2" * 64,
+                    "private_reasoning_fields_redacted": 1,
+                    "response_body": {
+                        "choices": [
+                            {
+                                "finish_reason": "length",
+                                "message": {"content": ""},
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 2781,
+                            "completion_tokens": 8000,
+                            "completion_tokens_details": {
+                                "reasoning_tokens": 8000
+                            },
+                        },
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        raise ModelGatewayError(
+            "model_gateway_reasoning_budget_exhausted",
+            capture_ref=response_path.as_posix(),
+        )
+
+    result = run_material_scope_canary(
+        authority_path, root=root, executor=executor
+    )
+
+    assert result["status"] == "terminal_failed_no_retry"
+    assert result["provider"]["finish_reason"] == "length"
+    assert result["provider"]["usage"]["prompt_tokens"] == 2781
+    assert result["provider"]["request_digest"] == "1" * 64
+    assert result["provider"]["response_digest"] == "2" * 64
+    assert result["provider"]["private_reasoning_fields_redacted"] == 1
+    assert "response_body" not in result["provider"]
 
 
 def test_authority_profile_drift_fails_closed(tmp_path: Path) -> None:

@@ -12,7 +12,8 @@ from typing import Any
 
 from sec_agent.research.material_scope_canary import (
     MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
-    MATERIAL_SCOPE_CANARY_RUN_SCOPE,
+    MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA,
+    MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE,
     validate_material_scope_canary_authority,
 )
 
@@ -298,7 +299,10 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
-    if decision.get("schema_version") == MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA:
+    if decision.get("schema_version") in {
+        MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
+        MATERIAL_SCOPE_SUCCESSOR_AUTHORITY_SCHEMA,
+    }:
         return _validate_material_scope_canary_decision(
             root=root, decision=decision
         )
@@ -575,6 +579,14 @@ def _validate_material_scope_canary_decision(
         and diagnostic.get("model_calls") == 0
     ):
         raise ValueError("project_os_material_scope_canary_input_invalid")
+    defaults = bound["profile"].request_defaults
+    node_profile = {
+        "max_tokens": defaults["max_tokens"],
+        "response_format": defaults["response_format"],
+        "thinking": defaults["thinking"],
+    }
+    if "reasoning_effort" in defaults:
+        node_profile["reasoning_effort"] = defaults["reasoning_effort"]
     return {
         "clean_proof_status": input_payload["status"],
         "provider_id": bound["profile"].provider_id,
@@ -582,13 +594,9 @@ def _validate_material_scope_canary_decision(
         "api_key_env": bound["api_key_env"],
         "recent_provider_steps": 0,
         "natural_material_scope_canary": True,
-        "node_profiles": {
-            "material_scope": {
-                "reasoning_effort": "max",
-                "max_tokens": 12000,
-                "response_format": {"type": "json_object"},
-            }
-        },
+        "material_scope_nonthinking_successor": bound["successor"],
+        "run_scope_id": decision["run_scope_id"],
+        "node_profiles": {"material_scope": node_profile},
     }
 
 
@@ -4479,11 +4487,25 @@ def build_preflight(
                 "RC-S1-024-generic-query-facets-and-shortlist-fusion-drop-"
                 "proposition-materiality-and-temporal-pairs"
             ),
-            allowed_scope=MATERIAL_SCOPE_CANARY_RUN_SCOPE,
+            allowed_scope=str(decision_projection["run_scope_id"]),
         )
     ):
         raise ValueError(
             "project_os_material_scope_canary_scope_allowance_missing"
+        )
+    if (
+        decision_projection.get("material_scope_nonthinking_successor") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S1-026-material-scope-max-thinking-exhausts-visible-"
+                "contract-budget"
+            ),
+            allowed_scope=MATERIAL_SCOPE_SUCCESSOR_RUN_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_material_scope_successor_scope_allowance_missing"
         )
     if (
         decision.get("status")
@@ -4711,7 +4733,16 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("natural_material_scope_canary") is True:
+    if decision_projection.get("material_scope_nonthinking_successor") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one exact-once "
+            "candidate-blind DELL non-thinking successor over the unchanged "
+            "eight request-visible scopes. It preserves R1 as failed, changes "
+            "only the provider submission profile, and permits no retrieval, "
+            "candidate, qrel, reference, hidden, Evidence, NumericFact, "
+            "publication, S1 acceptance, COST R3 or full-chain authority."
+        )
+    elif decision_projection.get("natural_material_scope_canary") is True:
         known_boundary = (
             "This current-baseline preflight permits only one exact-once "
             "candidate-blind DELL natural material-scope call over eight "

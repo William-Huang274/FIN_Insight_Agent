@@ -1,0 +1,27 @@
+{
+  "schema_version": "fin_ia_s3_material_scope_nonthinking_successor_policy_v1_0",
+  "status": "provider_specific_nonthinking_contract_submission_successor_control",
+  "predecessor_failure_code": "model_gateway_reasoning_budget_exhausted",
+  "maximum_model_calls": 1,
+  "maximum_transport_attempts": 1,
+  "maximum_completion_tokens": 8000,
+  "thinking_mode": "disabled",
+  "reasoning_effort_omitted": true,
+  "request_microbatching": false,
+  "token_budget_basis": {
+    "node_purpose": "Submit the already frozen eight-request material-scope classification as visible exact JSON without private chain-of-thought consumption.",
+    "input_scale": "The immutable request contains 2781 prompt tokens, eight EvidenceRequests, nineteen product-intent dispositions and twelve required material-role surfaces.",
+    "required_outputs": [
+      "one disposition for each of nineteen product intents",
+      "at least one bounded material atom for each of twelve required role surfaces",
+      "the unchanged plan digest and all eight request IDs",
+      "one visible exact JSON object accepted by the unchanged provider-neutral validator"
+    ],
+    "schema_burden": "The compact output uses request IDs, closed enums and integer index arrays. One atom may bind several metric or product axes collectively; the Harness expands identities and requirement groups locally.",
+    "materiality_and_quality_risk": "Truncation or missing requests would silently omit research material, while enabling private reasoning again can consume the entire visible submission budget before any contract payload exists.",
+    "comparable_run_evidence": "R1 used the same 2781-token prompt with max thinking and consumed 12000 of 12000 completion tokens as private reasoning with zero visible content. Existing DeepSeek non-thinking submission profiles have produced visible bounded contract payloads, but this material-scope surface has not yet been qualified.",
+    "reasoning_profile": "Direct bounded classification and exact contract submission with thinking disabled; no financial research, retrieval, candidate review or narrative generation.",
+    "stop_and_truncation": "The 8000-token visible-output ceiling provides more than two times the estimated compact contract surface. Any finish_reason other than stop, missing request, invalid enum, truncation or contract failure terminates without retry, local completion or microbatch fallback."
+  },
+  "known_boundary": "This successor changes only the replaceable DeepSeek submission profile. It does not alter the input, provider-neutral material-scope contract, research plan, S1 candidate set, Evidence authority, NumericFact authority or product state."
+}

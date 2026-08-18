@@ -71,3 +71,13 @@ R3 在 clean／synced 提交 `94fef96e...` 上通过 Project OS preflight 后 ex
 同一不可变 R3 payload 随后接回当前 Workbench BM25＋Qwen CUDA／FP16 路径。运行在候选选择前以 `material_requirement_review_capacity_insufficient` 停止；这不是模型、Embedding、排序或公开资料 gap。审计显示 `_expand_atom` 把本应作为一个集合审阅的 `collective_axes` 原子按 metric×product 拆成单例 requirement：12 个 atom 被放大为 73 个 group、最坏预留容量 132。第一、二、三请求分别需要 27、21、36 个审阅位，而每请求 `review_k=16`；按 EvidenceSetCoverage v1.1 已有的集合语义，它们应只需 3、3、2 个位置。
 
 因此下一项限定为 RC-S1-028 零调用修复：每个非时间型 `collective_axes` atom 编译成一个保留相关多轴的 requirement；跨期 `single_binding` 原子性、候选身份边界、review_k 和 R3 payload 均不变。补足多指标＋多产品、跨期、排列变化和 DELL／MU／NVDA 回归后，复用同一 R3 payload 回接当前 CUDA 产品链。只有到达真实候选选择，才继续审查 CandidateDecision、Evidence Gate、S2 权威和 Pack Readiness。
+
+## RC-S1-028 关闭与候选送审语义的新断点
+
+零调用修复已把 12 个 R3 atom 保持为 12 个相关材料组，各请求最坏预留容量恢复为 `3／3／2／2／2／3／1／2`；跨期原子性、`review_k=16`、候选身份和不可变 R3 payload 均未变化。DELL／MU／NVDA、时间型和排列 mutation 通过，因此 RC-S1-028 关闭。
+
+同一 R3 payload 随后正式跑完当前 Workbench BM25＋Qwen CUDA／FP16 候选链：8／8 请求 scope-ready、128 个候选、58 个 NumericFact、19 个 typed fact resolved、9 个 typed gap，0 网络／0 生成模型调用／0 CPU vector fallback。但 12／12 requirement 仍未满足，0／8 material set complete。逐候选业务审计证明，这不是候选池为空：Dell 10-K 已有“AI 服务器需求推动 backlog 增长”的直接表述，业绩表也覆盖 revenue／income／EPS／margin；它们没有被 requirement receipt 预留，是因为 R3 把自然产品短语选为 hard axis，而候选编译器把相同短语仅保存在 `contextual_or_unclassified_need_product_intents`，集合选择器只读取 canonical `product_ids`。
+
+不能把这些上下文短语直接晋升为 Evidence。只做这种粗暴替换，会把 Micron 的内存供给描述误当作“GPU 供应约束”，把相邻财务表误当作“AI 增量利润”证明。RC-S1-029 因此限定为候选送审与 Evidence 通过的分层：非时间型 `collective_axes` 可让同一请求、facet、role 下的自然短语贡献到有界复核 bundle，但必须继续标记 `abstain / candidate-not-Evidence / numeric-authority=false`；CandidateDecision／Evidence Gate 再依据实际文本逐 requirement 接受、拒绝或保留复核。`single_binding` 时间比较不得使用该放宽。
+
+正式公开结果为 `configs/retrieval/fin_ia_0_1_3_s1_dell_material_scope_product_replay_result_v1_0.json`，处置说明为 `configs/retrieval/fin_ia_0_1_3_s1_dell_material_scope_product_replay_assessment_v1_0.json`。当前 0／8 不是公共资料 gap，也不证明 DeepSeek、Embedding 或网络失败；S1、Pack Readiness、完整 S3 与发布仍为 false。

@@ -1,0 +1,241 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false,
+    "product_publication": false,
+    "s1_qualification_claimed": false
+  },
+  "case_key": "DELL",
+  "cuda_execution": {
+    "cpu_vector_fallbacks": 0,
+    "device": "cuda:0",
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "embedding_precision": "float16",
+    "embedding_runtime_ref": "src/retrieval/embedding_runtime.py",
+    "embedding_runtime_sha256": "e1778f246f56c2fe3ae5eb3baf09b1e0b647e95376beccd54b69a2c1885bada1",
+    "torch_version": "2.10.0+cu126"
+  },
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1_material_scope_product_replay/dell-r3-v1/full_result.json",
+  "full_result_sha256": "f13221eabfddb8284f82ea0000d2800c84815980489f35a3fee46af57a9712c9",
+  "known_boundary": "This zero-call replay applies the immutable candidate-blind R3 scope to the current Workbench BM25 plus Qwen CUDA path. Candidate rows remain private and are not Evidence. Incomplete material sets are retrieval or binding findings, not public-information gaps.",
+  "material_scope_mode": "explicit_request_visible_scope_compiled",
+  "prepared_from_commit": "9cfd7f33fde6dd04e54f710e6e5ccfc5ca15dc3c",
+  "projection_digest": "9476a94d33b65f5066cfdac0733050cc1a4735d1b308c92589ae7ce1857e1d1c",
+  "recorded_at": "2026-08-18T07:54:53+00:00",
+  "request_diagnostics": [
+    {
+      "facet_ids": [
+        "orders_and_backlog"
+      ],
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 1,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 3,
+      "met_requirement_ids": [],
+      "request_id": "REQ::fb06661b946711fc3b334146",
+      "requirement_group_count": 2,
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 1,
+      "unmet_requirement_ids": [
+        "MER::5e03022a374c1ba30b99",
+        "MER::9bf275775851d787e875"
+      ]
+    },
+    {
+      "facet_ids": [
+        "conversion_and_durability"
+      ],
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 1,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 3,
+      "met_requirement_ids": [],
+      "request_id": "REQ::eb2e808dd2e48b4fe7474223",
+      "requirement_group_count": 2,
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 1,
+      "unmet_requirement_ids": [
+        "MER::7ed57c7d23ef7375fffc",
+        "MER::e03cb28b2ee5f0f76afe"
+      ]
+    },
+    {
+      "facet_ids": [
+        "reported_results"
+      ],
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 16,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 2,
+      "met_requirement_ids": [],
+      "request_id": "REQ::e17c40f93e25438950673210",
+      "requirement_group_count": 1,
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 16,
+      "unmet_requirement_ids": [
+        "MER::d69b1ca4ad68a3befaf2"
+      ]
+    },
+    {
+      "facet_ids": [
+        "margin_and_incremental_profit"
+      ],
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 16,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 2,
+      "met_requirement_ids": [],
+      "request_id": "REQ::081c06389f9dcb8487886b57",
+      "requirement_group_count": 1,
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 16,
+      "unmet_requirement_ids": [
+        "MER::0c91cf0e63fe496d5ff3"
+      ]
+    },
+    {
+      "facet_ids": [
+        "cash_generation"
+      ],
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 16,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 2,
+      "met_requirement_ids": [],
+      "request_id": "REQ::273bf40c53d28f49de438b41",
+      "requirement_group_count": 1,
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 16,
+      "unmet_requirement_ids": [
+        "MER::1451de316bc2fa342de3"
+      ]
+    },
+    {
+      "facet_ids": [
+        "working_capital_risk"
+      ],
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 5,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 3,
+      "met_requirement_ids": [],
+      "request_id": "REQ::c21c10d6e8f13263cf69ffa5",
+      "requirement_group_count": 2,
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 5,
+      "unmet_requirement_ids": [
+        "MER::9914ab4118cac4f70b13",
+        "MER::b837404e81f27930cfdf"
+      ]
+    },
+    {
+      "facet_ids": [
+        "issuer_counterevidence"
+      ],
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 0,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 1,
+      "met_requirement_ids": [],
+      "request_id": "REQ::07e898259cfe6b2e12d7f82c",
+      "requirement_group_count": 1,
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 0,
+      "unmet_requirement_ids": [
+        "MER::95a68adb95879ebf40ce"
+      ]
+    },
+    {
+      "facet_ids": [
+        "upstream_or_demand_counterevidence"
+      ],
+      "hard_reserved_material_candidate_count": 0,
+      "material_review_order_candidate_count": 0,
+      "material_scope_ready": true,
+      "material_set_complete": false,
+      "maximum_reserved_capacity": 2,
+      "met_requirement_ids": [],
+      "request_id": "REQ::39d61ebcc0dad17a756c1cac",
+      "requirement_group_count": 2,
+      "selected_candidate_count": 16,
+      "selected_material_candidate_count": 0,
+      "unmet_requirement_ids": [
+        "MER::0499b0fb8968afc714d4",
+        "MER::fc576ac87ed6e6b0362e"
+      ]
+    }
+  ],
+  "research_plan_digest": "a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80",
+  "result_digest": "f5f3b807fe183c907b99a0a59f3c964ad86eaa23072df718cccef1b37eb55a91",
+  "schema_version": "fin_ia_s1_material_scope_product_replay_v1_0",
+  "scope_compilation_digest": "0ae0d3f74a5c8630047e7c2fd6b655490c3a74e9fd04efddfe9e8e2f4208f356",
+  "source_bindings": {
+    "R3_full_result": {
+      "ref": "data/workbench_private/fin_0_1_3_s3_material_scope_canary/dell-r3/full_result.json",
+      "sha256": "8cb8e09c7ac29dd597df47833b807e55962e85c53f16603bbda7ce87f732ba09"
+    },
+    "R3_live_result": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_material_scope_canary_live_result_v1_2.json",
+      "sha256": "2ff7e79540c27287507af48860db2eb513589a313f809d84d482a52b0198f240"
+    },
+    "hybrid_candidate_runtime": {
+      "ref": "src/retrieval/hybrid_candidate_runtime.py",
+      "sha256": "8de8a1a976a63e64d356ec8b4632dab671c2c5c6a869377647bae1b8bf36e523"
+    },
+    "material_scope_implementation": {
+      "ref": "src/sec_agent/research/material_scope.py",
+      "sha256": "c457d5c00b3ac88bf3504047e011dbaa99e6f62d4c415e07ef572cb87600a4c4"
+    },
+    "objective": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json",
+      "sha256": "e458acb042447c9ef11ad6f0a2f8152b1f6abdd4de8dc65922d2593e34f93548"
+    },
+    "planner_atoms": {
+      "ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+      "sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d"
+    },
+    "scope_payload": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_material_scope_payload_v1_2.json",
+      "sha256": "7d3ffa608aa6cdbd257ed958ec804ed693ab3904cdcf6852db13464062bb0b79"
+    },
+    "workbench_service": {
+      "ref": "apps/workbench/backend/application/research_retrieval_service.py",
+      "sha256": "e9955378002b0aa77b49332a23df16d09d63116b014de9f702c39b71561e7592"
+    }
+  },
+  "status": "completed_scope_ready_material_sets_incomplete",
+  "summary": {
+    "compiled_lane_count": 8,
+    "deferred_atom_count": 2,
+    "evidence_request_count": 8,
+    "execution_request_budget": 8,
+    "generation_model_calls": 0,
+    "hybrid_candidate_runtime": "bm25_plus_qwen_local_embedding",
+    "hybrid_selected_candidate_count": 128,
+    "local_embedding_inference_batches": 1,
+    "material_scope_ready_request_count": 8,
+    "material_scope_required_request_count": 8,
+    "material_set_complete_request_count": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "nonempty_lane_count": 8,
+    "numeric_fact_count": 58,
+    "proposed_atom_count": 10,
+    "required_slot_count": 5,
+    "selected_atom_count": 8,
+    "typed_fact_conflict_count": 0,
+    "typed_fact_gap_count": 9,
+    "typed_fact_request_count": 28,
+    "typed_fact_resolved_count": 19,
+    "unique_narrative_candidates": 21
+  }
+}

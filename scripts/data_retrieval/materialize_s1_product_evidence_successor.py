@@ -22,10 +22,10 @@ from retrieval.query_plan import canonical_digest  # noqa: E402
 
 
 FULL_RESULT_SCHEMA_VERSION = (
-    "fin_ia_s1_product_evidence_successor_full_result_v1_1"
+    "fin_ia_s1_product_evidence_successor_full_result_v1_2"
 )
 PUBLIC_RESULT_SCHEMA_VERSION = (
-    "fin_ia_s1_product_evidence_successor_public_result_v1_1"
+    "fin_ia_s1_product_evidence_successor_public_result_v1_2"
 )
 
 
@@ -154,6 +154,7 @@ def _public_projection(
             "pack_payload_digest"
         ],
         "decision_counts": decisions,
+        "review_scope_counts": core["review_scope_counts"],
         "capture_receipt_count": len(core["capture_receipts"]),
         "coverage_delta": core["coverage_delta"],
         "private_pack_ref": _relative(private_pack_output),

@@ -19,8 +19,8 @@ from sec_agent.research.reviewed_evidence_pack import (
 ADJUDICATION_PLAN_SCHEMA_VERSION = (
     "fin_ia_s1_product_evidence_adjudication_plan_v1_0"
 )
-POLICY_SCHEMA_VERSION = "fin_ia_s1_product_evidence_adjudication_policy_v1_0"
-RESULT_SCHEMA_VERSION = "fin_ia_s1_product_evidence_successor_result_v1_1"
+POLICY_SCHEMA_VERSION = "fin_ia_s1_product_evidence_adjudication_policy_v1_1"
+RESULT_SCHEMA_VERSION = "fin_ia_s1_product_evidence_successor_result_v1_2"
 DECISION_ACTIONS = (
     "accept_for_requirements",
     "accept_for_request_context",
@@ -61,6 +61,32 @@ def _review_items_by_ref(packet: Mapping[str, Any]) -> dict[str, Mapping[str, An
         "product_evidence_review_item_identity_invalid",
     )
     return by_ref
+
+
+def _actionable_review_items_by_ref(
+    packet: Mapping[str, Any],
+) -> dict[str, Mapping[str, Any]]:
+    """Return only unresolved rows that the next successor may adjudicate.
+
+    A review packet intentionally includes already accepted Evidence so a human can
+    inspect the current answer beside new candidates.  Those informational rows are
+    immutable predecessor state, not fresh adjudication work.  Requiring every
+    successor to decide them again creates evidence churn and can accidentally retire
+    a valid binding when a compact plan only names the new candidates.
+    """
+
+    review_by_ref = _review_items_by_ref(packet)
+    actionable: dict[str, Mapping[str, Any]] = {}
+    for review_ref, review in review_by_ref.items():
+        human_review_required = review.get("human_review_required")
+        _require(
+            isinstance(human_review_required, bool),
+            "product_evidence_review_actionability_invalid",
+        )
+        if human_review_required:
+            actionable[review_ref] = review
+    _require(actionable, "product_evidence_actionable_review_set_empty")
+    return actionable
 
 
 def _requirement_ids_by_request(
@@ -131,7 +157,8 @@ def compile_product_evidence_adjudication_policy(
         and plan.get("product_publication_authorized") is False,
         "product_evidence_adjudication_plan_invalid",
     )
-    review_by_ref = _review_items_by_ref(candidate_review_packet)
+    all_review_by_ref = _review_items_by_ref(candidate_review_packet)
+    review_by_ref = _actionable_review_items_by_ref(candidate_review_packet)
     raw_overrides = [
         _mapping(value, "product_evidence_adjudication_override_invalid")
         for value in plan.get("accepted_items") or ()
@@ -187,6 +214,10 @@ def compile_product_evidence_adjudication_policy(
         "successor_known_boundary": plan.get("successor_known_boundary"),
         "source_plan_id": plan.get("plan_id"),
         "source_plan_digest": plan_digest,
+        "review_item_count": len(all_review_by_ref),
+        "actionable_review_item_count": len(review_by_ref),
+        "informational_review_item_count": len(all_review_by_ref) - len(review_by_ref),
+        "decision_coverage": "human_review_required_items_only",
         "decisions": decisions,
     }
     return {**policy_body, "policy_digest": canonical_digest(policy_body)}
@@ -251,10 +282,11 @@ def build_product_evidence_successor(
 ) -> dict[str, Any]:
     """Materialize an internally reviewed, proposition-bound Evidence Pack.
 
-    The policy must decide every item in the bounded review packet.  Narrative
-    claims may become capture-bound Evidence only for named requirement IDs.
-    Metric rows can only be delegated to S2; this function never grants numeric
-    authority or turns a table row into narrative Evidence.
+    The policy must decide every unresolved item in the bounded review packet.
+    Already accepted informational rows remain immutable predecessor state and are
+    not re-adjudicated. Narrative claims may become capture-bound Evidence only for
+    named requirement IDs. Metric rows can only be delegated to S2; this function
+    never grants numeric authority or turns a table row into narrative Evidence.
     """
 
     validate_reviewed_evidence_pack(predecessor)
@@ -297,7 +329,8 @@ def build_product_evidence_successor(
         "product_evidence_policy_authority_invalid",
     )
 
-    review_by_ref = _review_items_by_ref(candidate_review_packet)
+    all_review_by_ref = _review_items_by_ref(candidate_review_packet)
+    review_by_ref = _actionable_review_items_by_ref(candidate_review_packet)
     requirement_ids_by_request = _requirement_ids_by_request(
         candidate_review_packet
     )
@@ -608,6 +641,12 @@ def build_product_evidence_successor(
         "successor_pack": successor,
         "decision_counts": {
             action: action_counts.get(action, 0) for action in DECISION_ACTIONS
+        },
+        "review_scope_counts": {
+            "review_items": len(all_review_by_ref),
+            "actionable_review_items": len(review_by_ref),
+            "informational_review_items_preserved": len(all_review_by_ref)
+            - len(review_by_ref),
         },
         "decision_receipts": decision_receipts,
         "capture_receipts": capture_receipts,

@@ -180,6 +180,7 @@ def _review_item(*, request_id: str, requirement_id: str, suffix: str) -> dict:
         "source_record_id": "SRC-1",
         "evidence_owner_ticker": "MU",
         "object_kind": "claim",
+        "human_review_required": True,
         "requirement_contexts": [{"requirement_id": requirement_id}],
     }
     return {**body, "review_item_digest": canonical_digest(body)}
@@ -288,6 +289,32 @@ def test_compact_plan_expands_to_complete_item_decisions() -> None:
         "CANDOBJ::TWO": "reject_for_current_scope",
     }
     assert policy["source_plan_digest"] == _plan(packet, predecessor)["plan_digest"]
+
+
+def test_compact_plan_preserves_informational_reviewed_evidence_without_redecision() -> None:
+    packet = _packet()
+    informational = packet["requests"][1]["review_items"][0]
+    informational["human_review_required"] = False
+    informational["decision_state"] = "accepted"
+    body = dict(informational)
+    body.pop("review_item_digest")
+    informational["review_item_digest"] = canonical_digest(body)
+    packet_body = dict(packet)
+    packet_body.pop("review_packet_digest")
+    packet["review_packet_digest"] = canonical_digest(packet_body)
+    predecessor = _predecessor()
+
+    policy = compile_product_evidence_adjudication_policy(
+        candidate_review_packet=packet,
+        plan=_plan(packet, predecessor),
+    )
+
+    assert [row["review_item_ref"] for row in policy["decisions"]] == [
+        "CANDOBJ::ONE"
+    ]
+    assert policy["review_item_count"] == 2
+    assert policy["actionable_review_item_count"] == 1
+    assert policy["informational_review_item_count"] == 1
 
 
 def test_compact_plan_cannot_reference_candidate_outside_bound_packet() -> None:

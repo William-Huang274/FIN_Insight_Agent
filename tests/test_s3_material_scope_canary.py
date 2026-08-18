@@ -267,23 +267,23 @@ def test_current_dell_R1_authority_remains_bound_but_scope_is_consumed() -> None
         )
 
 
-def test_current_dell_R2_successor_authority_is_zero_call_preflight_ready() -> None:
+def test_current_dell_R2_successor_authority_remains_bound_but_is_consumed() -> None:
     authority = _json(CURRENT_DELL_SUCCESSOR_AUTHORITY_REF)
     bound = validate_material_scope_canary_authority(authority, root=ROOT)
-    preflight = build_preflight(
-        root=ROOT,
-        decision_ref=CURRENT_DELL_SUCCESSOR_AUTHORITY_REF,
-        environment={"DEEPSEEK_API_KEY": "present"},
-        check_repository=False,
-    )
     assert bound["successor"] is True
     assert bound["profile"].request_defaults["thinking"] == {
         "type": "disabled"
     }
-    assert preflight["status"] == "pass_current_decision_bound_preflight"
-    assert preflight["decision_projection"][
-        "material_scope_nonthinking_successor"
-    ] is True
+    with pytest.raises(
+        ValueError,
+        match="project_os_material_scope_canary_scope_allowance_missing",
+    ):
+        build_preflight(
+            root=ROOT,
+            decision_ref=CURRENT_DELL_SUCCESSOR_AUTHORITY_REF,
+            environment={"DEEPSEEK_API_KEY": "present"},
+            check_repository=False,
+        )
 
 
 def _copy(root: Path, ref: str) -> None:

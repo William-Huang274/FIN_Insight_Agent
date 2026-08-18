@@ -55,3 +55,11 @@ canary 通过后，只将同一 payload 接回当前 Workbench 计划并复跑�
 R1 在干净远端提交 `2ccfa1eb...` 上通过正式 Project OS preflight 后执行。唯一一次请求返回 HTTP 200，响应 body 完整；prompt 为 2,781 tokens，completion 为 12,000 tokens，其中 reasoning 为 12,000，`finish_reason=length`，可见 JSON 为 0。0 retry／fallback／检索／候选读取／产品写入，原始请求与脱敏响应均先行留存。由于没有任何 scope payload，不能评价材料范围质量，也不能进入 Workbench replay。
 
 这不是 S1 检索、网络或合同 validator 失败。最早责任层是可替换的 DeepSeek provider profile：任务专属 TokenBudgetBasis 把本节点定义为“有界分类与分解”，profile 却启用了 `thinking=max`，模型把全部可见输出容量消耗在私有推理。R1 保持不可变且禁止重试；successor 不增 token、不改输入、不改 provider-neutral 合同，只允许将合同提交 profile 改为 `thinking=disabled` 且不发送 `reasoning_effort`。若同输入非 thinking 提交仍无法形成完整结果，才考虑按请求 microbatch，不能现在就扩大核心 Harness。
+
+## R2 非 thinking successor 与合同编译器根因
+
+R2 已从 clean／synced 提交 `ae62e8b3...` 通过 Project OS preflight 后 exact-once 执行。非 thinking profile 解决了 R1 的提交层故障：HTTP 200、完整响应、`finish_reason=stop`、prompt 2,689、completion 1,842、reasoning 0、可见 JSON 6,444 字符；1 次模型／1 次传输，0 retry／fallback／检索／候选读取／产品写入。失败 terminal summary 现在能从 capture 投影 finish reason、usage 和 request／response digest，原始内容仍不进入业务结果。
+
+R2 仍为 `terminal_failed_no_retry`，但最早责任已前移到 provider-neutral 合同编译器。模型可见 `output_contract` 只列字段名，没有列 validator 已经要求的三个顶层字段、三组 closed enum 及跨字段绑定规则。模型返回了 8 个 request row、19 个 product disposition 和 12 个 material atom，却自行使用 `request_scope`、`direct`、`span_2026_2027`、`all_products_all_metrics` 等未授权词汇；validator 正确以 `research_material_scope_output_fields_invalid` 拒绝。
+
+因此 R2 不能简单归因于 DeepSeek，也不应 microbatch、加 token、放宽 validator 或本地偷偷改写输出。R2 保持不可变且禁止重试。下一修复必须从 policy／validator 同一词汇表编译精确顶层结构、closed enum 与 binding rule，补 schema-drift、R2 replay 和跨案例零调用测试；模型可见消息改变后必须生成新的 clean-commit-bound input。只有新的 Project OS authority 可另行允许一次 R3，R3 仍不是产品 replay、Evidence、Pack Readiness 或 S1 资格。

@@ -83,6 +83,8 @@ class EvidenceRequestExecutionResponse(BaseModel):
     summary: dict[str, Any]
     typed_gaps: list[dict[str, Any]]
     typed_fact_results: list[dict[str, Any]]
+    runtime_binding: dict[str, Any] | None = None
+    route_execution_truth: dict[str, Any] | None = None
     lanes: list[dict[str, Any]]
     known_boundary: str
     projection_digest: str
@@ -197,6 +199,8 @@ class ControlledResearchPlanExecutionResponse(BaseModel):
     summary: dict[str, Any]
     material_scope: dict[str, Any] | None
     request_results: list[dict[str, Any]]
+    runtime_binding: dict[str, Any] | None = None
+    route_execution_truth: dict[str, Any] | None = None
     known_boundary: str
     projection_digest: str
 

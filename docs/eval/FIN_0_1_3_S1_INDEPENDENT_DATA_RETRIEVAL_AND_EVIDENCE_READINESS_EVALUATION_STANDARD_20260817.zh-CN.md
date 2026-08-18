@@ -397,3 +397,21 @@ R2 使用与 R1 完全相同的 provisional reference、阈值和业务影响模
 7. 自然节点需要独立 `TokenBudgetBasis`，并保存 exact input／output／usage／finish reason／失败阶段；截断、schema failure 或 plan drift 均为失败，禁止在同一 attempt 内 retry。
 
 当前 DELL／COST 只可作为开发／回归验证，不可替代新的 unseen temporal valid 或外部 blind qualification。一次 DELL scope canary 即使通过，也不改变 COST R1／R2 失败、COST R3 禁止、现有 hidden 失盲和 `S1_qualified_stable=false`。
+
+## 18. 当前快照、route truth 与候选损失可解释性硬门（2026-08-18）
+
+S1 正式评价前必须先证明被评价的是同一可执行快照，而不是“来源用新版、向量用旧版、SQL 和 Pack 各自可读”的松散组合。至少要求：来源→对象 lineage 全覆盖；对象身份与 learned index manifest 一致；S2 SQL 结果与数据库 digest 一致；当前 Pack、anchor 和消费者由 registry 绑定；任一 digest 漂移 fail closed。
+
+每个 EvidenceRequest 的 route receipt 必须区分 requested、available、scheduled、executed 与 exhausted。以下状态不得记为公开资料 gap：route 未实现、未配置、未调度、执行前预算不足、网络／解析／索引失败、候选被 query filter 排除、进入 union 后被 ranking／review cut 截掉、仍待人工复核。
+
+候选质量评价必须同时产出 candidate-ceiling provenance。对每个 material requirement 至少能回答：
+
+- 当前绑定来源是否含有目标资料；
+- capture／parse／OCR／对象编译是否成功；
+- 目标对象是否进入当前索引或 SQL sibling；
+- 哪些路线具备能力、实际执行并返回多少候选；
+- 目标是否进入 union，若未进入最早在哪层丢失；
+- 若已进入 union，是否被排序、来源配额、材料 reservation 或 review window 截断；
+- 是否已有 reviewed Evidence／NumericFact，还是 CandidateDecision／人工复核待定。
+
+只有这些本地和可达路线状态全部闭合，且外部公开来源路线按预注册计划实际耗尽，才可签发 `GapEligibilityReceipt`。`candidate_count=0`、`top_k miss`、`route_not_executed` 和模型没有再次搜索都不能单独成为 gap。该 receipt 与 `EvidenceDecision`、`PackReadiness` 必须成为产品 Runtime 产物，开发脚本结果不能替代。

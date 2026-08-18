@@ -18,6 +18,11 @@ from retrieval.hybrid_candidate_runtime import (
     HybridCandidateRuntimeError,
     LazyLocalQwenHybridCandidateRuntime,
 )
+from retrieval.current_runtime_binding import (
+    CurrentS1RuntimeBindingError,
+    project_request_route_execution_truth,
+    validate_current_s1_runtime_binding_receipt,
+)
 from retrieval.material_evidence_runtime import (
     MaterialEvidenceRuntimeError,
     compile_material_requirement_plan_from_runtime_input,
@@ -93,6 +98,12 @@ CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID = (
 CURRENT_S1_VS4_SUPPLEMENT_VERTICAL_RESOURCE_ID = (
     "application.result.current_s1_vs4_supplement_vertical"
 )
+CURRENT_S1_RUNTIME_BINDING_POLICY_RESOURCE_ID = (
+    "application.config.current_s1_runtime_binding_policy"
+)
+CURRENT_S1_RUNTIME_BINDING_RECEIPT_RESOURCE_ID = (
+    "application.result.current_s1_runtime_binding_receipt"
+)
 EXPECTED_SCHEMA = "fin_ia_current_retrieval_snapshot_v1_0"
 EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
 RETRIEVAL_PROJECTION_SCHEMA = "fin_ia_research_retrieval_projection_v1_0"
@@ -137,6 +148,9 @@ class ResearchRetrievalService:
         material_runtime_policy: Mapping[str, Any] | None = None,
         financial_intent_ontology: Mapping[str, Any] | None = None,
         retrieval_need_policy: Mapping[str, Any] | None = None,
+        runtime_binding_policy: Mapping[str, Any] | None = None,
+        runtime_binding_receipt: Mapping[str, Any] | None = None,
+        runtime_binding_repository_root: str | Path | None = None,
         company_financial_fact_mart_path: str | Path | None = None,
         s1_vertical_slice: Mapping[str, Any] | None = None,
         s1_supplement_vertical: Mapping[str, Any] | None = None,
@@ -217,6 +231,29 @@ class ResearchRetrievalService:
             if retrieval_need_policy is not None
             else None
         )
+        if (runtime_binding_policy is None) != (runtime_binding_receipt is None):
+            raise ResearchRetrievalServiceError(
+                "research_runtime_binding_contract_incomplete", 503
+            )
+        self._runtime_binding_receipt: dict[str, Any] | None = None
+        if (
+            runtime_binding_policy is not None
+            and runtime_binding_receipt is not None
+        ):
+            try:
+                self._runtime_binding_receipt = (
+                    validate_current_s1_runtime_binding_receipt(
+                        runtime_binding_receipt,
+                        runtime_binding_policy,
+                        repository_root=runtime_binding_repository_root,
+                    )
+                )
+            except CurrentS1RuntimeBindingError as exc:
+                raise ResearchRetrievalServiceError(
+                    "research_runtime_binding_invalid",
+                    503,
+                    typed_reason=str(exc),
+                ) from exc
         self._company_financial_fact_mart_path = (
             Path(company_financial_fact_mart_path).resolve()
             if company_financial_fact_mart_path is not None
@@ -316,6 +353,15 @@ class ResearchRetrievalService:
                 repository_root,
                 CURRENT_RETRIEVAL_NEED_POLICY_RESOURCE_ID,
             ),
+            runtime_binding_policy=read_registered_runtime_json(
+                repository_root,
+                CURRENT_S1_RUNTIME_BINDING_POLICY_RESOURCE_ID,
+            ),
+            runtime_binding_receipt=read_registered_runtime_json(
+                repository_root,
+                CURRENT_S1_RUNTIME_BINDING_RECEIPT_RESOURCE_ID,
+            ),
+            runtime_binding_repository_root=repository_root,
             company_financial_fact_mart_path=(
                 paths.company_financial_fact_mart_path
             ),
@@ -604,7 +650,19 @@ class ResearchRetrievalService:
                     "hybrid_candidate_result_count_invalid", 503
                 )
             request_results = [
-                {**result, "hybrid_object_retrieval": hybrid}
+                {
+                    **result,
+                    "hybrid_object_retrieval": hybrid,
+                    "route_execution_truth": (
+                        project_request_route_execution_truth(
+                            execution_plan=result.get("execution_plan"),
+                            binding_receipt=self._runtime_binding_receipt,
+                            hybrid_result=hybrid,
+                        )
+                        if self._runtime_binding_receipt is not None
+                        else None
+                    ),
+                }
                 for result, hybrid in zip(request_results, hybrid_results)
             ]
         candidate_ids = {
@@ -946,6 +1004,19 @@ class ResearchRetrievalService:
             },
             "typed_gaps": typed_gaps,
             "typed_fact_results": typed_fact_results,
+            "runtime_binding": self._runtime_binding_projection(),
+            "route_execution_truth": (
+                project_request_route_execution_truth(
+                    execution_plan=(
+                        execution_plan.as_dict()
+                        if execution_plan is not None
+                        else None
+                    ),
+                    binding_receipt=self._runtime_binding_receipt,
+                )
+                if self._runtime_binding_receipt is not None
+                else None
+            ),
             "lanes": lanes,
             "known_boundary": (
                 "This endpoint consumes a typed EvidenceRequest and selects only "
@@ -960,6 +1031,30 @@ class ResearchRetrievalService:
             ),
         }
         return {**body, "projection_digest": canonical_digest(body)}
+
+    def _runtime_binding_projection(self) -> dict[str, Any] | None:
+        if self._runtime_binding_receipt is None:
+            return None
+        receipt = self._runtime_binding_receipt
+        lineage = receipt["source_object_index_lineage"]
+        return {
+            "status": receipt["status"],
+            "result_digest": receipt["result_digest"],
+            "source_record_count": lineage["source_record_count"],
+            "compiled_object_count": lineage["compiled_object_count"],
+            "all_source_records_lineage_bound": lineage[
+                "all_source_records_lineage_bound"
+            ],
+            "unavailable_routes": receipt["route_execution_truth"][
+                "unavailable_routes"
+            ],
+            "product_pack_readiness_producer_registered": receipt[
+                "acceptance"
+            ]["product_pack_readiness_producer_registered"],
+            "s1_qualified_stable": receipt["acceptance"][
+                "s1_qualified_stable"
+            ],
+        }
 
     def _company_fact_mart_available(self) -> bool:
         return bool(
@@ -1100,6 +1195,8 @@ __all__ = [
     "CURRENT_RETRIEVAL_KERNEL_RESOURCE_ID",
     "CURRENT_RANKING_COMPARISON_RESOURCE_ID",
     "CURRENT_S1_ARTIFACT_SPINE_POLICY_RESOURCE_ID",
+    "CURRENT_S1_RUNTIME_BINDING_POLICY_RESOURCE_ID",
+    "CURRENT_S1_RUNTIME_BINDING_RECEIPT_RESOURCE_ID",
     "CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID",
     "CURRENT_RETRIEVAL_SNAPSHOT_RESOURCE_ID",
     "ResearchRetrievalPrincipal",

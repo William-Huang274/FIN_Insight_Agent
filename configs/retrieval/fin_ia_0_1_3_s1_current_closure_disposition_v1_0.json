@@ -1,0 +1,342 @@
+{
+  "schema_version": "fin_ia_s1_current_closure_disposition_v1_0",
+  "status": "current_s1_closure_audited_not_qualified",
+  "recorded_at": "2026-08-18",
+  "audited_git_commit": "bb1077ef26a4e46cc2eb68b0f4e93b475f6a7fa6",
+  "predecessor_matrix": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_implementation_coverage_matrix_v1_0.json",
+    "sha256": "be2c924d15b179efafabea0e513fe90e66e923cff7053bed21575605f5b404ec",
+    "audited_git_commit": "1eaa63488759153fca3dbdc23b98a67294dd7e6d"
+  },
+  "principles": {
+    "development_vertical_is_not_product_qualification": true,
+    "candidate_evidence_numeric_authorities_remain_separate": true,
+    "route_not_executed_is_not_public_information_gap": true,
+    "sql_numeric_fact_is_parallel_sibling_not_candidate_route": true,
+    "cross_stage_reallocation_does_not_hide_open_work": true,
+    "external_human_and_blind_gates_cannot_be_self_signed": true
+  },
+  "dispositions": [
+    {
+      "gap_id": "S1-A-GAP-001",
+      "original_axis": "S1-A",
+      "disposition_state": "development_proven_qualification_open",
+      "current_owner": "S1-A_SOURCE_ACQUISITION_AND_ROUTE_COVERAGE",
+      "product_internal_blocking": true,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "docs/worklog/fin_0_1_3_s1/011_s1d_provider_neutral_source_intake_and_tun_diagnostic.md",
+        "docs/worklog/fin_0_1_3_s1/025_s1_vs4_mu_nvda_capture_bound_supplement_and_r19_integration.md"
+      ],
+      "finding_zh": "SEC、官方 PDF、人工上传和若干 capture-bound 补源已跑通，但官方 IR、feed、redirect、外部搜索和受限域并未形成任务相关且经资格验证的完整路线集合。",
+      "next_action_zh": "在同一 EvidenceRequest 下记录 requested／available／executed／exhausted 路线，并用真实 residual gap 做有限外源补源资格。"
+    },
+    {
+      "gap_id": "S1-A-GAP-002",
+      "original_axis": "S1-A",
+      "disposition_state": "closed_current_internal",
+      "current_owner": "S1-A_SOURCE_IDENTITY",
+      "product_internal_blocking": false,
+      "qualification_blocking": false,
+      "evidence_refs": [
+        "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_policy_v1_0.json"
+      ],
+      "finding_zh": "当前产品来源通过 canonical source identity、digest、capture 和 locator 进入统一 envelope；该结论只覆盖当前登记 transport。",
+      "next_action_zh": "新增 transport 时必须先扩展同一身份合同，不能新建旁路 source id。"
+    },
+    {
+      "gap_id": "S1-B-GAP-001",
+      "original_axis": "S1-B",
+      "disposition_state": "open_external_qualification",
+      "current_owner": "S1-B_NATURAL_SCANNED_SOURCE_QUALIFICATION",
+      "product_internal_blocking": false,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "docs/worklog/fin_0_1_3_s1/029_s1_vs5_tencent_layout_and_qualification_object_store_plan.md"
+      ],
+      "finding_zh": "复杂数字原生 PDF 与 OCR mutation 已证明工程能力，但腾讯样本不是自然扫描件；自然扫描官方金融资料门仍未满足。",
+      "next_action_zh": "取得一份自然扫描且包含实质金融内容的官方资料，按预注册解析和 abstain 门独立资格。"
+    },
+    {
+      "gap_id": "S1-B-GAP-002",
+      "original_axis": "S1-B",
+      "disposition_state": "open_external_qualification",
+      "current_owner": "S1-B_HETEROGENEOUS_PARSE_THRESHOLDS",
+      "product_internal_blocking": false,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+        "docs/worklog/fin_0_1_3_s1/030_s1_vs5_unified_objects_and_split_safe_runtime_inputs.md"
+      ],
+      "finding_zh": "页、表、脚注、OCR token 与 abstain receipt 已有合同，跨语言、跨版式和自然扫描阈值仍无独立资格证据。",
+      "next_action_zh": "在新异质来源上冻结阈值后执行，不得根据结果回调阈值。"
+    },
+    {
+      "gap_id": "S1-C-GAP-001",
+      "original_axis": "S1-C",
+      "disposition_state": "closed_current_internal",
+      "current_owner": "S1-C_FINANCIAL_OBJECT_COMPILATION",
+      "product_internal_blocking": false,
+      "qualification_blocking": false,
+      "evidence_refs": [
+        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_2.json"
+      ],
+      "finding_zh": "当前 1,841 条 source child 全部进入 20,761 个统一 claim／metric-row／bounded-context 视图的 base 或 deduplicated lineage；旧 chunk 形状不再直接作为 learned runtime 的排序单位。",
+      "next_action_zh": "后续重建必须维持 1,841／1,841 lineage coverage 和零外来 source id。"
+    },
+    {
+      "gap_id": "S1-C-GAP-002",
+      "original_axis": "S1-C",
+      "disposition_state": "development_proven_qualification_open",
+      "current_owner": "S1-C_COMPLEX_OBJECT_TARGET_COVERAGE",
+      "product_internal_blocking": false,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_product_gate_result_v1_2.json",
+        "docs/worklog/fin_0_1_3_s1/023_s1_vs3_multi_route_financial_ranking_vertical.md"
+      ],
+      "finding_zh": "开发纵切已对 metric-row、脚注、父子上下文和跨页目标增加结构化排名，但独立异质来源上的头部覆盖尚未通过。",
+      "next_action_zh": "把复杂对象目标纳入新的外部 blind qualification，不以开发 qrels 代替。"
+    },
+    {
+      "gap_id": "S1-D-GAP-001",
+      "original_axis": "S1-D",
+      "disposition_state": "closed_current_internal",
+      "current_owner": "S1-D_CURRENT_RUNTIME_SNAPSHOT_BINDING",
+      "product_internal_blocking": false,
+      "qualification_blocking": false,
+      "evidence_refs": [
+        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json"
+      ],
+      "finding_zh": "当前 source snapshot、编译对象、Qwen FP16 cache、S2 SQLite、reviewed Pack 与 anchor catalog 已由一份 digest-bound receipt 统一绑定。",
+      "next_action_zh": "Workbench 每次请求必须暴露该 receipt digest；任一资产漂移时启动失败而非混用。"
+    },
+    {
+      "gap_id": "S1-D-GAP-002",
+      "original_axis": "S1-D",
+      "disposition_state": "requirement_corrected_open_internal",
+      "current_owner": "S1-D_ROUTE_CAPABILITY_AND_S2_HANDOFF",
+      "product_internal_blocking": true,
+      "qualification_blocking": false,
+      "evidence_refs": [
+        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json",
+        "configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json"
+      ],
+      "finding_zh": "Graph、learned sparse 与 multi-vector 仍未配置，现已明确标记为未执行；产品／分部利润桥和估值属于 S2 数值权威，不应塞入 S1 CandidateSet。",
+      "next_action_zh": "决定 graph 是否为 FIN 0.1.3 必需路线；无论是否启用，都必须在请求级 receipt 中如实记录。S2 缺口继续留在 S2。"
+    },
+    {
+      "gap_id": "S1-E-GAP-001",
+      "original_axis": "S1-E",
+      "disposition_state": "reallocated_cross_stage",
+      "current_owner": "S3_USER_QUESTION_TO_RESEARCH_OBJECTIVE_WITH_S1_TYPED_INGRESS",
+      "product_internal_blocking": false,
+      "qualification_blocking": false,
+      "evidence_refs": [
+        "docs/worklog/fin_0_1_3_s1/039_s1_vs5_natural_material_scope_product_consumer_integration.md",
+        "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_1.json"
+      ],
+      "finding_zh": "S1 已负责 EvidenceRequest 到 QueryFacetPlan 和执行；自然用户问题到 Research Objective／动态 EvidenceRequest 的泛化属于 S3，不能以 S1 未完成为名重复实现 planner。",
+      "next_action_zh": "S1 关闭 typed ingress；S3 后续用同一入口做自然问题泛化。"
+    },
+    {
+      "gap_id": "S1-E-GAP-002",
+      "original_axis": "S1-E",
+      "disposition_state": "open_internal",
+      "current_owner": "S1-E_REQUEST_TO_EXECUTED_ROUTE_TRUTH",
+      "product_internal_blocking": true,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json",
+        "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_2.json"
+      ],
+      "finding_zh": "当前 receipt 已阻止把未配置路线误写为公开信息 gap，但行业／外源 source-role 请求仍未自动落到可执行的外源 adapter。",
+      "next_action_zh": "实现请求级 route state 与 source-role dispatch，只有 executed-and-exhausted 才能进入 GapEligibility。"
+    },
+    {
+      "gap_id": "S1-F-GAP-001",
+      "original_axis": "S1-F",
+      "disposition_state": "open_internal",
+      "current_owner": "S1-F_CANDIDATE_CEILING_PROVENANCE",
+      "product_internal_blocking": true,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json",
+        "docs/worklog/fin_0_1_3_s1/016_s1_three_case_evidence_acquisition_autopsy.md"
+      ],
+      "finding_zh": "当前已能证明对象和索引人口一致，但候选不足时仍缺 source missing／parse missing／index missing／query miss／rank miss 的逐命题归因 receipt。",
+      "next_action_zh": "把 route、candidate、decision 和 coverage ledger 串成命题级 ProvenanceState。"
+    },
+    {
+      "gap_id": "S1-F-GAP-002",
+      "original_axis": "S1-F",
+      "disposition_state": "requirement_corrected_open_internal",
+      "current_owner": "S1-F_MULTI_ROUTE_CONTRIBUTION_RECEIPT",
+      "product_internal_blocking": true,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_product_gate_result_v1_2.json"
+      ],
+      "finding_zh": "SQL NumericFact 不应与叙事候选强行合成一个 CandidateSet；正确验收单元是同一 EvidenceRequest 下的多路候选贡献加独立 S2 sibling receipt。当前 graph／外源路线仍无实际贡献。",
+      "next_action_zh": "建立 request-level multi-route receipt，分别评价召回贡献、证据角色和数值事实，不再要求一种物理集合。"
+    },
+    {
+      "gap_id": "S1-G-GAP-001",
+      "original_axis": "S1-G",
+      "disposition_state": "open_external_qualification",
+      "current_owner": "S1-G_SPLIT_SAFE_RANKING_QUALIFICATION",
+      "product_internal_blocking": false,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "docs/worklog/fin_0_1_3_s1/034_s1_vs5_cost_valid_temporal_R2_evaluation_failure.md",
+        "docs/worklog/fin_0_1_3_s1/035_s1_vs5_hidden_reference_disclosure_and_containment.md"
+      ],
+      "finding_zh": "开发与回归纵切有效，但 COST R2 未过且 hidden reference 已披露；现有集合不能再证明 blind 泛化。",
+      "next_action_zh": "由独立 qualified human／Git 外流程生成新 temporal 与异质 blind 资产后再执行一次。"
+    },
+    {
+      "gap_id": "S1-G-GAP-002",
+      "original_axis": "S1-G",
+      "disposition_state": "open_external_qualification",
+      "current_owner": "S1-G_PROVISIONAL_WINNER_QUALIFICATION",
+      "product_internal_blocking": false,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_vs3_product_gate_result_v1_2.json",
+        "docs/worklog/fin_0_1_3_s1/031_s1_vs5_cuda_fp16_candidate_execution_contract.md"
+      ],
+      "finding_zh": "BM25＋Qwen＋结构选择是当前候选路线，但没有单一 neural reranker 或组合路线取得独立生产资格；CUDA FP16 约束已冻结。",
+      "next_action_zh": "新 blind 资格同时检验头部稳定、hard negative、跨期和跨来源，不以单指标晋升。"
+    },
+    {
+      "gap_id": "S1-H-GAP-001",
+      "original_axis": "S1-H",
+      "disposition_state": "open_internal",
+      "current_owner": "S1-H_PRODUCT_EVIDENCE_DECISION_PRODUCER",
+      "product_internal_blocking": true,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json",
+        "docs/worklog/fin_0_1_3_s1/038_s1_vs5_material_evidence_runtime_v11_four_case_replay.md"
+      ],
+      "finding_zh": "finance-aware evaluator 与材料组选择已在开发回放证明，但 Workbench 当前运行不会把 candidate decision、reviewed Evidence 和 abstain 持久化为正式产品决策。",
+      "next_action_zh": "实现 current EvidenceDecision producer；只允许 reviewed Pack 复用或明确人工晋升，候选默认 abstain。"
+    },
+    {
+      "gap_id": "S1-H-GAP-002",
+      "original_axis": "S1-H",
+      "disposition_state": "development_proven_qualification_open",
+      "current_owner": "S1-H_ALL_POSITIVE_MATERIAL_FACET_COVERAGE",
+      "product_internal_blocking": false,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_dell_integrated_pack_readiness_assessment_v1_1.json",
+        "docs/worklog/fin_0_1_3_s1/025_s1_vs4_mu_nvda_capture_bound_supplement_and_r19_integration.md"
+      ],
+      "finding_zh": "三案与 DELL 自然材料组已证明 proposition-level 可消费性，但 all-positive、极性和材料 facet 的独立 blind 覆盖尚未证明。",
+      "next_action_zh": "新资格同时计 any-hit、all-positive、polarity、material-facet 和 abstain precision。"
+    },
+    {
+      "gap_id": "S1-I-GAP-001",
+      "original_axis": "S1-I",
+      "disposition_state": "open_external_qualification",
+      "current_owner": "S1-I_CROSS_INDUSTRY_BLIND_GENERALIZATION",
+      "product_internal_blocking": false,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "docs/worklog/fin_0_1_3_s1/026_s1_vs5_split_safe_qualification_preregistration.md",
+        "docs/worklog/fin_0_1_3_s1/035_s1_vs5_hidden_reference_disclosure_and_containment.md"
+      ],
+      "finding_zh": "DELL／MU／NVDA 是开发案例，ORCL／ASML／ANET 等原留出已被观察；跨行业、跨来源、跨失败类型的真正 blind 泛化仍为空。",
+      "next_action_zh": "外部预注册新的公司、行业、来源形态和失败类型矩阵，旧集合只做 regression。"
+    },
+    {
+      "gap_id": "S1-I-GAP-002",
+      "original_axis": "S1-I",
+      "disposition_state": "open_internal",
+      "current_owner": "S1-I_GAP_ELIGIBILITY_AND_PACK_READINESS",
+      "product_internal_blocking": true,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_dell_integrated_pack_readiness_assessment_v1_1.json",
+        "docs/worklog/fin_0_1_3_s1/017_s1_failure_provenance_gap_eligibility_and_token_budget_governance.md"
+      ],
+      "finding_zh": "DELL development readiness 能区分 Evidence、NumericFact 和 claim boundary，但 current Workbench 仍没有逐命题 GapEligibilityReceipt 与 PackReadiness producer。",
+      "next_action_zh": "在产品运行中物化 CoverageState、GapEligibilityReceipt 和 PackReadiness，未执行路线不得产生公开信息 gap。"
+    },
+    {
+      "gap_id": "S1-J-GAP-001",
+      "original_axis": "S1-J",
+      "disposition_state": "open_internal",
+      "current_owner": "S1-J_WORKBENCH_LINEAGE_DRILLDOWN",
+      "product_internal_blocking": true,
+      "qualification_blocking": false,
+      "evidence_refs": [
+        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json",
+        "docs/worklog/fin_0_1_3_s1/020_s1_canonical_spine_coverage_matrix_and_split_safe_eval_foundation.md"
+      ],
+      "finding_zh": "Workbench 可看纵切摘要和 Pack，但仍不能从命题逐层钻取 source→capture→parse→object→index→candidate→decision→Evidence／gap。",
+      "next_action_zh": "把 canonical spine locator 做成一个真实只读产品面，替代继续增加一次性审计脚本。"
+    },
+    {
+      "gap_id": "S1-J-GAP-002",
+      "original_axis": "S1-J",
+      "disposition_state": "open_external_qualification",
+      "current_owner": "S1-J_FINAL_SPLIT_SAFE_QUALIFICATION",
+      "product_internal_blocking": false,
+      "qualification_blocking": true,
+      "evidence_refs": [
+        "docs/worklog/fin_0_1_3_s1/034_s1_vs5_cost_valid_temporal_R2_evaluation_failure.md",
+        "docs/worklog/fin_0_1_3_s1/037_s1_vs5_cost_reference_consistency_qualified_human_review_packet.md"
+      ],
+      "finding_zh": "split-safe gold、new blind temporal／heterogeneous cases、性能阈值和 qualified-human 审核均未完成。",
+      "next_action_zh": "内部产品门关闭后再签发一次新的外部 blind 资格，不复用已披露 reference。"
+    }
+  ],
+  "current_gates": {
+    "closed_internal_gap_ids": [
+      "S1-A-GAP-002",
+      "S1-C-GAP-001",
+      "S1-D-GAP-001"
+    ],
+    "remaining_internal_work": [
+      "请求级 requested／available／executed／exhausted route receipt 与外源 source-role dispatch",
+      "候选不足的 source／parse／index／query／rank 最早责任归因",
+      "current EvidenceDecision、GapEligibilityReceipt 与 PackReadiness producer",
+      "Workbench canonical spine 逐对象钻取",
+      "Graph 路线在 FIN 0.1.3 是必需还是显式 optional 的产品决定"
+    ],
+    "cross_stage_handoffs": [
+      "S2：产品／分部利润桥、PIT 估值与缺失 NumericFact",
+      "S3：自然用户问题到 Research Objective／动态 EvidenceRequest 与跨命题研究综合"
+    ],
+    "external_gates": [
+      "自然扫描官方金融资料与跨版式解析资格",
+      "COST reference qualified-human 决策",
+      "Git 外新 blind temporal／跨行业／跨来源资格资产",
+      "qualified-human 对最终 Evidence Pack 研究充分性验收"
+    ]
+  },
+  "next_execution_sequence": [
+    "S1-INTERNAL-1 request route execution truth and candidate-ceiling provenance",
+    "S1-INTERNAL-2 product EvidenceDecision GapEligibility and PackReadiness producer",
+    "S1-INTERNAL-3 Workbench canonical lineage drilldown",
+    "S1-INTERNAL-4 DELL MU NVDA current product replay and independent S1 quality gate",
+    "S1-EXTERNAL-1 qualified-human COST disposition and new blind asset preregistration",
+    "S1-EXTERNAL-2 exact-once CUDA FP16 blind qualification",
+    "S1-CLOSEOUT or evidence-backed block"
+  ],
+  "acceptance": {
+    "all_predecessor_gaps_dispositioned_once": true,
+    "current_snapshot_lineage_bound": true,
+    "declared_route_truth_explicit": true,
+    "current_internal_closure_complete": false,
+    "external_qualification_complete": false,
+    "s1_qualified_stable": false
+  },
+  "known_boundary": "This is a successor disposition over the immutable 2026-08-17 coverage matrix. It does not rewrite historical failures, treat development cases as blind qualification, self-sign qualified-human labels, claim unavailable routes executed, or close S1. It defines the remaining current-product work and external gates from the latest FIN 0.1.3 baseline.",
+  "result_digest": "e7f626db638ef13bbab237a5683928cea85184a94f7447af07191a1a4b2f02ee"
+}

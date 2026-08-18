@@ -682,3 +682,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - RC-S1-030、RC-S1-031 工程根因关闭；candidate、Evidence、NumericFact、typed gap 四种权威仍分离，0 自动晋升、0 public-gap 声明。
 - RC-S3-045 继续由 S3 拥有：ResearchBlueprint 必须补经济实体类别完整性或显式代理边界，S1 不得自行扩充 AMZN／GOOGL／META。
 - 下一步回到 S1 canonical spine／覆盖矩阵，逐项区分已完成工程、外部 qualified-human／blind 资格、自然扫描官方源门和跨阶段移交。当前结果不是 S1 通过、Owner acceptance、动态全链、发布或 release。
+
+## 2026-08-18 S1 当前产品快照绑定与收口重定基
+
+- 当前权威来源库有 1,841 条记录，编译为 20,761 个金融对象；1,841／1,841 来源身份均进入对象 lineage，0 缺失、0 越界。29 条来源因内容去重只作为 lineage 保留，不是漏 parse、漏 chunk 或漏索引。
+- 当前 Qwen FP16 索引精确绑定 20,761 个对象；S2 SQL mart 独立绑定 1,319 个观测；当前 reviewed Evidence Pack、claim anchor 和 Workbench consumer 已由一张内容寻址 receipt 绑定，Runtime registry 升至 R21。Workbench 启动时若任一选定资源或 digest 漂移会 fail closed。
+- 当前产品真实候选路线只有 BM25 与 Qwen dense；typed exact fact lookup 是 S2 并行数值权威，不是候选路线；learned sparse、multi-vector、typed relationship graph 尚未配置。产品现在会逐请求返回 requested／available／executed 状态，未配置或未执行路线不得被写成 public-information gap。
+- 对 2026-08-17 的 20 项 immutable coverage gap 已完成一次 successor disposition：只有 source identity、旧 chunk→当前对象归一化、当前快照绑定 3 项可诚实关闭。其余分别归入 S1 内部产品工作、S2／S3 handoff、qualified-human／blind／自然扫描等外部门，不因历史工程很多而追认 S1 通过。
+- 当前最早内部责任层为请求级 candidate-ceiling provenance：必须说明材料是在 source、parse、object/index、query/route、candidate union 还是 ranking cut 丢失。之后才能注册产品级 EvidenceDecision、GapEligibilityReceipt 与 PackReadiness producer，再做 Workbench drilldown 和 DELL／MU／NVDA 回放。
+- 当前状态：`current_product_lineage_bound / route_execution_truth_explicit / historical_gaps_dispositioned / candidate_ceiling_and_product_decision_open / S1_qualified_stable=false`。DELL v1.1 就绪度仍是 development/audit 结果，不是 Workbench 每次运行自动产出的产品结果。

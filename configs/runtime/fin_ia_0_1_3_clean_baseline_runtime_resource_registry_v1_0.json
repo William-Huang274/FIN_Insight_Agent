@@ -15,10 +15,10 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R20",
-  "resource_bytes": 2488210,
-  "resource_canonical_digest": "b430e36f565de44f410b08b8aff7c5cceebfabe9622eab1a85f78222f9eb60c2",
-  "resource_count": 20,
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R21",
+  "resource_bytes": 2501839,
+  "resource_canonical_digest": "89d0d8b915f974141952edb07b744ead62f05af93fc1d07f7d7909f65f1025e1",
+  "resource_count": 22,
   "resources": [
     {
       "bytes": 6339,
@@ -167,6 +167,19 @@
       "source_owner": "S1_canonical_artifact_spine_program"
     },
     {
+      "bytes": 3870,
+      "classification": "provider_neutral_current_s1_runtime_binding_policy",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_0.json",
+      "required": true,
+      "resource_id": "application.config.current_s1_runtime_binding_policy",
+      "sha256": "702bcf8ce21815bb6b5cdaf4c7be9be96a63fc99a39d20adba979199cee64048",
+      "source_owner": "retrieval.current_runtime_binding.load_current_s1_runtime_binding_policy"
+    },
+    {
       "bytes": 2449,
       "classification": "application_runtime_config",
       "consumer_ids": [
@@ -217,6 +230,19 @@
       "resource_id": "application.result.current_reviewed_claim_anchors",
       "sha256": "256b140079a12ac51e530cbb1c253202a9d09802a92e9275a6a3e9191bb88b4e",
       "source_owner": "sec_agent.research.reviewed_evidence_anchor.load_reviewed_evidence_anchor_catalog"
+    },
+    {
+      "bytes": 9759,
+      "classification": "digest_bound_current_s1_runtime_binding_receipt",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json",
+      "required": true,
+      "resource_id": "application.result.current_s1_runtime_binding_receipt",
+      "sha256": "3a34dd83492de45db4d5251e1be81414625a93cfd7ef4e7cd17a3747f764b66a",
+      "source_owner": "retrieval.current_runtime_binding.validate_current_s1_runtime_binding_receipt"
     },
     {
       "bytes": 169451,

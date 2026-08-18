@@ -567,3 +567,19 @@ v1.1 关闭四类真实纵切语义错误：
 当前 Workbench `controlled-research-plans` 已实现两步消费。第一次输出 deterministic material plan 与 `explicit_scope_required_request_ids`；第二次接收同 plan digest 的 scope payload，编译后再调用同一个 `HybridCandidateRuntime`。Runtime 在完整 BM25＋Qwen union 上生成 candidate metadata 和 request-bound requirement receipt，然后只硬保留 receipt 直接绑定的候选；其他材料候选只获得 review-order priority，仍受来源配额。该边界在真实集成时防止了“材料保护绕过来源多样性”的退化。
 
 四案公开 replay 的历史字段 `material_set_complete_request_count` 仅表示 fallback-compiled requirements 在保存 candidate pool 中可覆盖；新增同义明确字段 `candidate_material_set_complete_request_count`。产品是否可执行必须看 `runtime_scope_ready_request_count`。当前 DELL 产品纵切的 8 个自然请求全部需要 explicit scope，因此下一步只能做一个 candidate-blind natural canary；即使 canary 通过，也仍需 CandidateDecision、Evidence Gate、S2 数值权威、Pack Readiness 和独立 blind qualification，不能直接声明 S1 通过。
+
+## 28. 当前产品快照、路由执行真相与收口顺序（2026-08-18）
+
+canonical spine 不能只画逻辑箭头；每次产品运行必须绑定一组真正可执行且内容一致的资源。当前 receipt 因此同时绑定 1,841 条来源记录、20,761 个金融对象、20,761 条 Qwen FP16 向量、S2 的 1,319 条 typed observation、reviewed Evidence Pack、claim anchor 和 Workbench consumer。来源去重允许一个对象携带多个 `lineage_source_record_ids`，但必须证明所有来源均被覆盖、没有对象引用当前来源库之外的身份。资产各自“存在”不再等于当前产品“可共同执行”。
+
+route 合同分成五种状态：`requested`、`capability available`、`scheduled`、`executed`、`exhausted`。当前候选产品只执行 BM25 与 Qwen dense；S2 typed lookup 是并行数值权威；learned sparse、multi-vector 和 typed relationship graph 尚未配置。声明在策略中的名字不是执行证明；未配置、未调度或未执行路线均不具备 public-information gap 资格。
+
+后续收口必须保持以下依赖顺序：
+
+1. 请求级 candidate-ceiling receipt：逐 requirement 记录 source、parse、object/index、query/route、candidate union 与 ranking cut 的最早损失层；
+2. 产品级 `CandidateDecision + GapEligibilityReceipt + PackReadiness` producer：只能消费第一步的可追溯结果，不自动晋升 Candidate，不合并 S2 NumericFact 权威；
+3. Workbench canonical lineage drilldown：用户可从结论／gap 反查 Evidence、CandidateDecision、route execution、对象、parse 和原始 capture；
+4. DELL／MU／NVDA 当前链回放和独立 S1 质量门；
+5. qualified-human COST 处置、Git 外新 blind labels、CUDA FP16 exact-once 资格。
+
+开发期 integrated readiness 编译器可继续用于发现合同错误，但在它成为注册产品 producer 前，不得把其输出描述为 Workbench 正式产物。当前 `S1_qualified_stable=false`。

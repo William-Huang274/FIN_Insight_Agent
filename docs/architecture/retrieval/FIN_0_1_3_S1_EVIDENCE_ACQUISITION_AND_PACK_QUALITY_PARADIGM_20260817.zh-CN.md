@@ -530,3 +530,15 @@ COST R2 将 any-hit、material facet 和 required role 全部提升到门槛，�
 3. **Exact-object diagnostic**：具体 reviewed object 是否出现仍用于定位 parser／recall／ranking 退化，但当多个对象能证明同一材料角色时，不能单独冒充研究充分性或否定业务覆盖。
 
 这些边界必须先在开发／回归案例做零调用 replay 和 mutation，再在新 unseen temporal valid case 中正式评价。COST R1／R2 保持失败证据，禁止 R3；现有 hidden splits 继续关闭。
+
+## 25. Request-bound Material Evidence Set 合同（2026-08-18）
+
+当前零调用 successor 把材料组边界编译为三个相互独立、内容寻址的对象：
+
+1. `MaterialEvidenceRequirementPlan`：由公开的 EvidenceRequest／ResearchBlueprint material requirements 编译。组字段只允许 facet、role、metric、product、target entity、period mode、fiscal years、minimum 和 priority；未知字段及 candidate／object／qrel／URL 身份一律拒绝。plan 同时绑定完整 EvidenceRequest digest。
+2. `RequestBoundCandidateReview`：先按 requirement priority 选择完整 direct／counter／bridge／context／temporal bundle，再用同案原始排名补满 `review_k`。跨期组必须是一个 metric、一个 product、一个 entity 和至少两个年份；同一多期对象或若干同 `same_basis_key` 的逐年对象均可满足。预检容量按逐年对象的最坏情况计算，避免实际选择时才发现审阅窗放不下。
+3. `MaterialEvidenceSetEvaluation`：candidate 冻结后才读取 evaluator reference；reference 必须绑定 plan digest，且 requirement IDs 与 Runtime plan 完全相同。每组可声明若干 acceptable candidate set；只有 Runtime 自身已判定组完整且其中一个集合全部进入审阅面时才算通过。canonical exact-object recall 单独报告，不覆盖组门。
+
+实现为 `src/retrieval/evidence_set_coverage.py`，策略为 `configs/retrieval/fin_ia_0_1_3_s1_material_evidence_set_coverage_policy_v1_0.json`。mutation 覆盖 request 越界、gold identity 泄漏、跨期容量不足、same-basis 缺失、错公司、排列扰动、等价对象、不可替代对象、plan／selection 篡改和 reference-plan 不一致。四案例 synthetic fixture 共 10 个组均由同一核心满足，0 ticker 分支，0 Evidence／NumericFact 晋升；全仓 `646 passed`。
+
+该状态只能记 `contract_translated_and_development_fixture_proven`。当前 qualification candidate 还需要一个 label-free metadata adapter，把 RetrievalNeed／Evidence Role／compiled object 的 case、facet、role、metric、product、period 和 basis 投影到本合同；自然 ResearchBlueprint 也尚未提交 material requirements。没有这两条真实消费者，不得把本节写成 VS5 Runtime 已集成或 S1 已通过。

@@ -1,0 +1,79 @@
+{
+  "schema_version": "fin_ia_s1_material_evidence_set_coverage_policy_v1_0",
+  "status": "zero_call_development_contract_frozen_before_replay",
+  "recorded_at": "2026-08-18",
+  "purpose_zh": "把用户请求所需的直接事实、反方、桥接与同口径跨期材料组在检索前显式化；候选选择按公开请求保留组级容量，独立 evaluator 再用事后 reference 判断，不把 qrel 或答案对象泄漏给 Runtime。",
+  "requirement_plan_contract": {
+    "schema_version": "fin_ia_material_evidence_requirement_plan_v1_0",
+    "source": "EvidenceRequest_or_ResearchBlueprint_compiled_before_retrieval",
+    "allowed_roles": [
+      "direct",
+      "counter",
+      "bridge",
+      "context"
+    ],
+    "allowed_period_modes": [
+      "any",
+      "single_period",
+      "all_periods_same_basis"
+    ],
+    "forbidden_runtime_plan_fields": [
+      "compiled_object_id",
+      "candidate_id",
+      "object_id",
+      "qrel_id",
+      "answer_url",
+      "source_url"
+    ],
+    "request_metric_product_facet_and_period_subset_required": true,
+    "target_entity_subset_required": true,
+    "review_k": 20,
+    "fail_if_required_capacity_exceeds_review_k": true,
+    "capacity_rule": "reserve_minimum_candidates_for_ordinary_groups_and_one_slot_per_requested_year_for_same_basis_temporal_groups_before_results_are_visible",
+    "temporal_group_is_atomic": "exactly_one_metric_one_product_one_target_entity_and_minimum_candidates_one"
+  },
+  "candidate_contract": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "requirement_match_inputs": [
+      "case_key",
+      "metric_ids",
+      "product_ids",
+      "facet_ids",
+      "roles",
+      "fiscal_years",
+      "same_basis_key"
+    ],
+    "gold_identity_visible": false,
+    "reference_visible": false,
+    "rank_then_object_id_tie_break": true,
+    "one_candidate_may_cover_multiple_public_requirements": true
+  },
+  "evaluation_contract": {
+    "reference_schema_version": "fin_ia_material_evidence_set_reference_v1_0",
+    "acceptable_alternative_sets_frozen_before_candidate_result": true,
+    "reference_must_bind_requirement_plan_digest": true,
+    "reference_requirement_ids_must_exactly_match_runtime_plan": true,
+    "required_group_coverage_minimum": 1.0,
+    "request_alignment_is_hard_gate": true,
+    "wrong_case_period_or_basis_cannot_satisfy_a_material_group": true,
+    "exact_object_recall_is_diagnostic": true,
+    "exact_object_recall_cannot_replace_group_coverage": true,
+    "group_coverage_cannot_hide_unique_object_requirement": true
+  },
+  "development_scope": {
+    "allowed_cases": [
+      "COST",
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "existing_test_frozen_or_holdout_reference_access": false,
+    "learned_vector_calls": 0,
+    "network_calls": 0,
+    "generation_model_calls": 0,
+    "evidence_promotion_authorized": false,
+    "S1_qualified": false
+  },
+  "known_boundary": "This policy defines request-bound selection and post-freeze evaluation semantics. It does not adjudicate COST reference consistency, authorize a COST R3, create replacement blind labels or open any hidden split."
+}

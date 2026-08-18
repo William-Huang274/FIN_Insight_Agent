@@ -156,6 +156,12 @@ COST R1 是当前 VS5 的第一次正式 valid-temporal 候选资格。它通过
 
 随后一次范围过宽的仓库搜索披露了现有 JPM／CAT 和 NVO／SHEL／腾讯 hidden reference 的部分标签；没有 hidden run 或据标签调参，但盲性已经破坏。现有 hidden 文件保留不可变，只可在 Owner 后续决定后作为 disclosed regression，不能再承担 FIN 0.1.3 泛化资格。replacement qualification 必须使用 Git 外的受控 label store 和独立 adjudication；这属于 S1 评测程序修正，不创建产品新版本，也不允许绕过新 valid 直接进入 S3。
 
+## 4H. Request-bound Evidence Set 零调用合同与当前剩余门（2026-08-18）
+
+材料组 successor 已完成 `contract_translated_and_development_fixture_proven`：运行前 plan 只接受请求公开的 case／entity／metric／product／facet／role／period；候选审阅先保留 direct／counter／bridge／context／同口径 temporal bundle，再按原排名补满；错误公司候选不进入本案审阅；plan 和 selection 均有内容摘要；事后 reference 必须与 plan requirement IDs 和 digest 完全一致。DELL／MU／NVDA／COST 四种 synthetic 业务形态共 10 组通过，同一核心无 ticker 分支；mutation 和全仓 `646 passed`。
+
+该结果尚不是 current Runtime 纵切。下一步先做 COST reference consistency 的 qualified-human review pack，再补当前 candidate metadata→material group adapter 和自然 ResearchBlueprint→material requirements 编译入口；随后用当前开发纵切回放，才允许预注册新的 unseen temporal valid。现有 COST 禁止 R3，已披露 hidden 资产禁止作为 blind，S1 与完整真实链继续 blocked。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

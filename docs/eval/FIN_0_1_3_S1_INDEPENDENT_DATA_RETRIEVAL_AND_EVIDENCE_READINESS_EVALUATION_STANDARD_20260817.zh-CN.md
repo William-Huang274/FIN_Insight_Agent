@@ -370,3 +370,16 @@ R2 使用与 R1 完全相同的 provisional reference、阈值和业务影响模
 一次范围过宽的仓库全文检索输出了现有 test-frozen 与 heterogeneous-holdout reference 的部分 expected outcome。虽然没有执行 hidden case、没有读取其候选结果、也没有据此调参，但实现者上下文已被标签污染。因此这两份 reference 从本次事故起不得继续称为 blind qualification，未来即使全绿也只能作为 disclosed regression。
 
 新资格程序必须把 case/source preregistration 与 expected outcome 分离：前者可以进入 Git，后者只进入 private／external access-controlled store；candidate 冻结后才由独立 qualified human 或经 Owner 明确授权的上下文隔离流程评分。`.rgignore` 只防普通搜索误触，不是安全边界。现有 reference 的摘要与事故状态由 machine disposition 保存，文件和已完成 COST R1／R2 均不改写。
+
+## 16. Request-bound Evidence Set 与 exact-object 的分层评价（2026-08-18）
+
+新 unseen temporal case 的参考与评分必须同时满足：
+
+1. candidate 生成前冻结 `MaterialEvidenceRequirementPlan`，且 plan 只能来自公开请求字段；任何 candidate／object／qrel／答案 URL 泄漏使运行无效。
+2. 每个 material group 都有唯一 requirement ID，并明确 direct／counter／bridge／context、metric、product、entity 和 period mode。reference group IDs 必须与 plan 完全相等，不能多出一个未请求主题，也不能漏掉一个运行前必答组。
+3. 同口径 temporal group 要求同一 basis 覆盖全部请求年份。容量预检按逐年对象最坏情况执行；一张合格多期表可以实际只占一席，但不能因此在运行前少配预算。
+4. `required_group_coverage=1.0` 是材料组硬门；reference 可在 candidate freeze 前定义多个等价对象集合。若某项必须是唯一对象，则只能登记该对象集合，不能被“同主题”对象替代。
+5. exact-object recall 继续报告，用于识别对象构建、召回和排序退化，但不能单独替代材料组充分性；反之，组级通过也不能掩盖 reference 明确声明的不可替代对象缺失。
+6. 错公司、错期、错 basis、plan/reference 不一致、digest 篡改、Candidate→Evidence 或 metric-row→NumericFact 越权均为不可补偿失败。
+
+当前 DELL／MU／NVDA／COST 四业务形态只完成 synthetic development regression，不能注册为 valid／test／holdout。现有 tracked hidden reference 已失去盲性；replacement labels 必须由独立 qualified human 或 Owner 授权的隔离流程在 Git 外生成。当前 Codex 不得自我签发 blind gold。

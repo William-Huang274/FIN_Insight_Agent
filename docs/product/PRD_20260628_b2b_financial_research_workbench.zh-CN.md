@@ -2820,3 +2820,15 @@ learned Embedding、dense／multi-vector 和 Cross-Encoder／reranker 的正式�
 valid temporal 最多两次，只用于配置选择；test frozen 与 heterogeneous holdout 各只有一次正式执行。正式 hidden outcome 可见后，不允许调阈值、换路线或修 case patch 后沿用该次通过结论。腾讯官方 PDF 若不包含自然扫描的实质页，必须保留自然扫描资格失败；人工栅格化只能作为 OCR mutation，不能冒充真实来源形态。
 
 预注册资产只冻结测试设计，不等于资格执行。只有官方来源 capture、runtime input／evaluator reference 物理分离、clean commit／模型／CUDA／cache digest 冻结以及同一 canonical spine 的完整输出都成立，才能将 qualification catalog 激活并执行。
+
+### 16.44 正式审阅面按请求所需的材料组组装，而不是只截取单对象前 K（2026-08-18）
+
+COST valid-temporal R2 证明，命题 any-hit、material facet 和 required role 达标仍不等于研究资料充分：三条对研究有用的对象恰好排在第 21，另两条 reference 对象又不在已冻结 EvidenceRequest 的 metric 范围内。产品因此必须把“请求要回答什么”“需要哪些材料角色”“具体由哪一个对象证明”分开治理。
+
+1. S3／ResearchBlueprint 在检索前提出 label-free `MaterialEvidenceRequirementPlan`，只允许使用本次请求已经公开的 case、实体、metric、product、facet、role 和 period；禁止出现 candidate／object／qrel、答案 URL 或事后 reference 身份。
+2. S1 的正式审阅面先为 direct、counter、bridge、context 和同口径 temporal bundle 保留有界容量，再按原排名补满。跨期组必须锁定同一实体、metric、product、basis 和全部请求年份；容量按最坏情况下每年一个对象预留，不能假定一定存在一张多期表。
+3. 错公司候选不能进入本案审阅面；错期或错 basis 候选不能满足 material group。被保留仍只是 Candidate，不获得 Evidence 或 NumericFact 权威。
+4. evaluator-only reference 必须绑定运行前 plan digest，并与其 requirement IDs 完全一致。可预先声明多个等价对象集合；组级覆盖决定资料是否完整，exact-object recall 只用于诊断 parser／recall／ranking 退化。若某对象确属不可替代，reference 只列该对象即可形成硬门。
+5. 参考与请求不一致必须由 qualified human 裁决，不能据结果偷改 EvidenceRequest 或删标；历史 COST R1／R2 保持失败，禁止 R3。
+
+当前只完成 provider-neutral 合同、摘要绑定和 DELL／MU／NVDA／COST 四种业务形态的 synthetic development fixture。自然 ResearchBlueprint 编译、当前 candidate metadata adapter、真实纵切、replacement blind reference 和新 unseen temporal valid 均未完成，因此不改变 `S1_qualified_stable=false`。

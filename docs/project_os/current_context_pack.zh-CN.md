@@ -614,3 +614,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 20 个 reference 对象全部存在于对象库，故本轮不是来源不存在、parser／chunk 全面失败、CUDA 或 DeepSeek 问题，也不得声明 public gap。2 条最早掉在 typed recall／pool cutoff，6 条掉在 financial shortlist／fusion；BGE／Qwen 前 20 positive recall 只有 `0.15／0.35`，最终规则恢复至 `0.60` 但仍不足。
 - 最早结构问题是 proposition-specific query materiality 与 temporal pairing：通用 slot seed 仍把 shipments／customer readiness／cancellation 混入 Costco 同店问题；`FY2024 FY2025 comparison` 仍只是 token，而不是同指标、同口径的成组约束；最终 shortlist 也未给 required facet／role 保留有界位置。
 - 当前状态为 `valid_temporal_failed / test_and_holdout_blocked / S1_qualified_stable_false`。COST reference 仍待 Owner／qualified-human 确认。不得自动调阈值或打开 hidden；建议把 COST 失败固化为 observed regression，以通用结构修复后另预注册一个新 temporal case。该资格样本归属变化需要 Owner 决策。
+
+## 2026-08-18 S1 VS5 COST R2、hidden 失盲与材料组 successor
+
+- COST R2 在不改门槛的前提下把 all-positive 从 `12/20` 提升到 `15/20`，any-hit／material-facet／required-role 均达到门槛，但 all-positive `0.75 < 0.90`，仍为正式失败；三条有用对象排在第 21，两条 membership reference 又超出被冻结请求的 metric 范围。R1／R2 均保持不可变，禁止 R3。
+- 一次过宽的仓库搜索披露了既有 test-frozen／heterogeneous-holdout reference 的部分标签。没有执行 hidden case，也没有据标签调参，但盲性已经失效；现有 hidden 资产只可作为 disclosed regression。replacement label 必须在 Git 外由独立 qualified human 或 Owner 明确授权的隔离流程生成，当前 Codex 不得自我签发。
+- 已建立 provider-neutral `MaterialEvidenceRequirementPlan → request-bound Candidate review → evaluator-only material-group reference` 合同。运行前计划只接受请求公开的 case／entity／metric／product／facet／role／period；同口径跨期组按每年一个对象的最坏情况预留容量；错公司候选不能进入本案审阅面；plan、selection 与 evaluation 均内容寻址；Candidate 不获得 Evidence／NumericFact 权威。
+- DELL／MU／NVDA／COST 四种 synthetic development 形态共 10 个材料组通过，同一核心 0 ticker 分支、0 cross-case selected；13 个合同测试、34 个相邻测试与全仓 `646 passed`。这只证明合同翻译和开发回归，不证明当前 Runtime 已使用它。
+- 当前最早开放项是：COST request／reference 的 qualified-human 一致性裁决；当前 candidate metadata 到 material group 的 label-free adapter；自然 ResearchBlueprint 到 material requirements 的编译入口；当前纵切回放；新的 unseen temporal preregistration 与独立 blind reference。`S1_qualified_stable=false`，完整 S1→S3 产品链继续 blocked。

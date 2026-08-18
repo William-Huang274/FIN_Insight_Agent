@@ -26,16 +26,6 @@
       "review_item_ref": "CANDOBJ::65E66D96BF4805FBFADB0390"
     },
     {
-      "action": "accept_for_request_context",
-      "business_meaning_zh": "NVDA 增加现有与新供应商的供应及产能采购，说明管理层正按需求预测和产品复杂度配置供给。",
-      "claim_boundary_zh": "采购动作不是反方事实，也不证明客户订单、产能到位、良率或最终消化。",
-      "reason_codes": [
-        "current_official_supply_purchase_context_only"
-      ],
-      "requirement_ids": [],
-      "review_item_ref": "CANDOBJ::AC9DDA9B49CE2A7BCC6F2FF0"
-    },
-    {
       "action": "accept_for_requirements",
       "business_meaning_zh": "NVDA 当前 10-Q 明确披露数据中心 GPU 出口限制也可能压低配套网络产品需求，构成数据中心平台判断的发行人反方。",
       "claim_boundary_zh": "该披露不量化收入损失，也不代表全部地区、产品或客户同等受影响。",
@@ -46,31 +36,6 @@
         "MER::67848330f8542e204e7c"
       ],
       "review_item_ref": "CANDOBJ::03C897E2A7C51CAEF61C0D76"
-    },
-    {
-      "action": "accept_for_requirements",
-      "business_meaning_zh": "MU 披露 HBM 先进封装设施将在 2027 年开始显著增加产能，可作为 NVDA 上游先进封装与 HBM 扩产节奏背景。",
-      "claim_boundary_zh": "该材料不证明 NVDA 分配份额、TSMC CoWoS 可用量、当前季度供给充足或特定产品良率。",
-      "reason_codes": [
-        "current_official_upstream_HBM_packaging_capacity_context"
-      ],
-      "requirement_ids": [
-        "MER::47ecb5f6f3d94bacca70",
-        "MER::b7a39ea4b9d62b29c840"
-      ],
-      "review_item_ref": "CANDOBJ::02735E081273FF2C4167F4B5"
-    },
-    {
-      "action": "accept_for_requirements",
-      "business_meaning_zh": "MU 披露若 HBM 需求转弱、供应商把产能转回传统 DRAM，可能显著增加传统 DRAM 供给，构成 HBM 需求与产能配置的上游反方。",
-      "claim_boundary_zh": "该材料是条件性风险，不代表 HBM 需求已经下降，也不直接量化 NVDA 的 HBM 供应或采购。",
-      "reason_codes": [
-        "current_official_upstream_HBM_demand_counter"
-      ],
-      "requirement_ids": [
-        "MER::96779bd6df1f6135bf74"
-      ],
-      "review_item_ref": "CANDOBJ::C780B44E05445D2DBBCD1EB1"
     },
     {
       "action": "accept_for_requirements",
@@ -90,7 +55,7 @@
   "default_claim_action": "reject_for_current_scope",
   "metric_row_action": "delegate_to_s2_numeric_authority",
   "parent_documents_sha256": "f24d72cd6a659a43eb183c21b353f07a2598ba8973fed1a5edd1d6698f25ff3b",
-  "plan_digest": "3611f69718b637553fa3445da5ad26a32f0540f719eafdb9467ee64392995f82",
+  "plan_digest": "a56c8ab273b12e5a7846f7797c4d1316d1abe1dc4158e8c57d0731eb68c03285",
   "plan_id": "FIN-0.1.3-S1-NVDA-PROPOSITION-BOUND-EVIDENCE-R2",
   "predecessor_pack_payload_digest": "f045c01d78bb001c050417e90d968cf713633425794ee69fc35ba8e4eb5f8c37",
   "product_publication_authorized": false,

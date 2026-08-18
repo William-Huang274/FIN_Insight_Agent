@@ -63,6 +63,39 @@ def _review_items_by_ref(packet: Mapping[str, Any]) -> dict[str, Mapping[str, An
     return by_ref
 
 
+def _requirement_ids_by_request(
+    packet: Mapping[str, Any],
+) -> dict[str, frozenset[str]]:
+    output: dict[str, frozenset[str]] = {}
+    for raw_request in packet.get("requests") or ():
+        request = _mapping(
+            raw_request, "product_evidence_review_request_invalid"
+        )
+        request_id = str(request.get("request_id") or "")
+        declared = {
+            str(value.get("requirement_id") or "")
+            for value in request.get("requirements") or ()
+            if isinstance(value, Mapping)
+        }
+        if not declared:
+            declared = {
+                str(value.get("requirement_id") or "")
+                for item in request.get("review_items") or ()
+                if isinstance(item, Mapping)
+                for value in item.get("requirement_contexts") or ()
+                if isinstance(value, Mapping)
+            }
+        _require(
+            bool(request_id)
+            and request_id not in output
+            and bool(declared)
+            and all(declared),
+            "product_evidence_request_requirement_identity_invalid",
+        )
+        output[request_id] = frozenset(declared)
+    return output
+
+
 def compile_product_evidence_adjudication_policy(
     *,
     candidate_review_packet: Mapping[str, Any],
@@ -255,6 +288,9 @@ def build_product_evidence_successor(
     )
 
     review_by_ref = _review_items_by_ref(candidate_review_packet)
+    requirement_ids_by_request = _requirement_ids_by_request(
+        candidate_review_packet
+    )
     lanes = _request_lanes(product_projection)
     raw_decisions = [
         _mapping(value, "product_evidence_policy_decision_invalid")
@@ -283,11 +319,10 @@ def build_product_evidence_successor(
         )
         object_id = str(review.get("compiled_object_id") or "")
         object_kind = str(review.get("object_kind") or "")
-        allowed_requirement_ids = {
-            str(value.get("requirement_id") or "")
-            for value in review.get("requirement_contexts") or ()
-            if isinstance(value, Mapping)
-        }
+        request_id = str(review.get("request_id") or "")
+        allowed_requirement_ids = requirement_ids_by_request.get(
+            request_id, frozenset()
+        )
         requirement_ids = tuple(
             sorted(str(value) for value in decision.get("requirement_ids") or ())
         )
@@ -304,7 +339,6 @@ def build_product_evidence_successor(
         elif action == "accept_for_request_context":
             _require(
                 object_kind == "claim"
-                and review.get("review_scope") == "material_review_context"
                 and not requirement_ids
                 and str(decision.get("business_meaning_zh") or "")
                 and str(decision.get("claim_boundary_zh") or ""),

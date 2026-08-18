@@ -193,8 +193,16 @@ def _packet() -> dict:
         "case_key": "MU",
         "review_item_count": 2,
         "requests": [
-            {"request_id": "REQ-1", "review_items": [first]},
-            {"request_id": "REQ-2", "review_items": [second]},
+            {
+                "request_id": "REQ-1",
+                "requirements": [{"requirement_id": "MER-1"}],
+                "review_items": [first],
+            },
+            {
+                "request_id": "REQ-2",
+                "requirements": [{"requirement_id": "MER-2"}],
+                "review_items": [second],
+            },
         ],
     }
     return {**body, "review_packet_digest": canonical_digest(body)}
@@ -391,6 +399,35 @@ def test_contract_description_without_execution_cannot_be_promoted(
             product_projection=_projection(),
             candidate_review_packet=packet,
             policy=_policy(packet, predecessor),
+            compiled_objects_by_id={"COBJ::ONE": compiled},
+            source_records_by_id={"SRC-1": source},
+            parent_documents_by_id={"DOC-1": parent},
+            capture_resolver=Path,
+            recorded_at="2026-08-19",
+        )
+
+
+def test_adjudicator_cannot_bind_candidate_to_sibling_request_requirement(
+    tmp_path: Path,
+) -> None:
+    compiled, source, parent, _ = _source_graph(tmp_path)
+    predecessor = _predecessor()
+    packet = _packet()
+    policy = _policy(packet, predecessor)
+    policy["decisions"][0]["requirement_ids"] = ["MER-2"]
+    policy_body = deepcopy(policy)
+    policy_body.pop("policy_digest")
+    policy["policy_digest"] = canonical_digest(policy_body)
+
+    with pytest.raises(
+        ProductEvidenceSuccessorError,
+        match="product_evidence_acceptance_scope_invalid",
+    ):
+        build_product_evidence_successor(
+            predecessor=predecessor,
+            product_projection=_projection(),
+            candidate_review_packet=packet,
+            policy=policy,
             compiled_objects_by_id={"COBJ::ONE": compiled},
             source_records_by_id={"SRC-1": source},
             parent_documents_by_id={"DOC-1": parent},

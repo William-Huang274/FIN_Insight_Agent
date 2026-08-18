@@ -414,6 +414,48 @@ def test_identity_mutation_fails_closed(tmp_path: Path) -> None:
         _run(fixture)
 
 
+def test_capture_binding_preserves_source_date_and_uses_reported_period(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    source = fixture["source_record"]
+    parent = fixture["parent"]
+    source["period_end"] = "2026-05-28"
+    source["metadata"]["reported_period_end"] = "2026-05-01"
+    parent["period_end"] = "2026-05-28"
+    temporal = {
+        "reporting_fiscal_year": None,
+        "reporting_fiscal_year_source": "source_record.fiscal_year",
+        "reporting_period_end": "2026-05-01",
+        "reporting_period_end_source": "metadata.reported_period_end",
+        "source_record_fiscal_year": None,
+        "source_record_period_end": "2026-05-28",
+    }
+    for key in ("positive", "negative"):
+        base = fixture[key]["base_object_view"]
+        base["period_end"] = "2026-05-01"
+        base["temporal_binding"] = temporal
+        base["source_record_digest"] = canonical_digest(source)
+        base["parent_document_digest"] = canonical_digest(parent)
+
+    result = _run(fixture)
+    receipt = result["capture_receipts"][0]
+    assert receipt["schema_version"] == "fin_ia_s1_capture_bound_object_receipt_v1_1"
+    assert receipt["period_end"] == "2026-05-01"
+    assert receipt["source_record_period_end"] == "2026-05-28"
+    assert receipt["reporting_period_end_source"] == "metadata.reported_period_end"
+    assert receipt["checks"]["reporting_period_projection_matched"] is True
+
+    fixture["positive"]["base_object_view"]["temporal_binding"] = {
+        **temporal,
+        "reporting_period_end": "2026-05-02",
+    }
+    with pytest.raises(
+        SupplementVerticalError, match="supplement_temporal_binding_invalid"
+    ):
+        _run(fixture)
+
+
 def test_gap_cannot_be_silently_closed(tmp_path: Path) -> None:
     fixture = _fixture(tmp_path)
     policy = deepcopy(fixture["policy"])

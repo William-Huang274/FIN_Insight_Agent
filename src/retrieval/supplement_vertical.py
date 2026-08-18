@@ -10,13 +10,14 @@ from typing import Any, Callable, Mapping, Sequence
 
 from .evidence_role import evaluate_evidence_role
 from .query_plan import canonical_digest
+from .temporal import reporting_temporal_projection
 from sec_agent.research.reviewed_evidence_pack import (
     validate_reviewed_evidence_pack,
 )
 
 
 SUPPLEMENT_RESULT_SCHEMA_VERSION = "fin_ia_s1_supplement_vertical_result_v1_0"
-CAPTURE_RECEIPT_SCHEMA_VERSION = "fin_ia_s1_capture_bound_object_receipt_v1_0"
+CAPTURE_RECEIPT_SCHEMA_VERSION = "fin_ia_s1_capture_bound_object_receipt_v1_1"
 GAP_RECEIPT_SCHEMA_VERSION = "fin_ia_s1_gap_eligibility_receipt_v1_0"
 WORKBENCH_SCHEMA_VERSION = "fin_ia_s1_supplement_workbench_projection_v1_0"
 SUPPLEMENT_SUMMARY_SCHEMA_VERSION = (
@@ -146,13 +147,36 @@ def verify_capture_bound_object(
         == str(base.get("parent_document_digest") or ""),
         "supplement_parent_document_binding_invalid",
     )
-    for key in ("ticker", "source_type", "publication_date", "period_end"):
+    for key in ("ticker", "source_type", "publication_date"):
         _require(
             str(base.get(key) or "") == str(source_record.get(key) or "")
             and str(source_record.get(key) or "")
             == str(parent_document.get(key) or ""),
             f"supplement_{key}_binding_invalid",
         )
+    _require(
+        str(source_record.get("period_end") or "")
+        == str(parent_document.get("period_end") or ""),
+        "supplement_source_period_end_binding_invalid",
+    )
+    temporal = reporting_temporal_projection(source_record)
+    base_temporal = base.get("temporal_binding")
+    if isinstance(base_temporal, Mapping):
+        _require(
+            dict(base_temporal) == temporal,
+            "supplement_temporal_binding_invalid",
+        )
+    else:
+        _require(
+            temporal.get("reporting_period_end_source")
+            == "source_record.period_end",
+            "supplement_temporal_binding_missing",
+        )
+    _require(
+        str(base.get("period_end") or "")
+        == str(temporal.get("reporting_period_end") or ""),
+        "supplement_reporting_period_end_binding_invalid",
+    )
     _require(
         _as_date(base.get("publication_date"), "supplement_publication_date_invalid")
         <= _as_date(research_as_of, "supplement_research_as_of_invalid"),
@@ -242,11 +266,17 @@ def verify_capture_bound_object(
         "source_type": base.get("source_type"),
         "publication_date": base.get("publication_date"),
         "period_end": base.get("period_end"),
+        "source_record_period_end": temporal.get("source_record_period_end"),
+        "reporting_period_end_source": temporal.get(
+            "reporting_period_end_source"
+        ),
+        "temporal_binding_digest": canonical_digest(temporal),
         "surface_digest": base.get("surface_digest"),
         "checks": {
             "candidate_not_evidence": True,
             "source_record_digest_matched": True,
             "parent_document_digest_matched": True,
+            "reporting_period_projection_matched": True,
             "immutable_capture_sha256_matched": True,
             "legacy_capture_attestation_used": attested_legacy_parent,
             "legacy_capture_surface_matched": attested_legacy_parent,

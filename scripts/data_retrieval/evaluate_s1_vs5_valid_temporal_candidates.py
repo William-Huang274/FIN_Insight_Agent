@@ -31,6 +31,10 @@ POLICY_SCHEMA = "fin_ia_s1_vs5_valid_temporal_evaluation_policy_v1_0"
 AUTHORITY_SCHEMA = "fin_ia_s1_vs5_valid_temporal_evaluation_authority_v1_0"
 RAW_SCHEMA = "fin_ia_s1_vs5_valid_temporal_evaluation_raw_v1_0"
 RESULT_SCHEMA = "fin_ia_s1_vs5_valid_temporal_evaluation_result_v1_0"
+SUCCESSOR_POLICY_SCHEMA = "fin_ia_s1_vs5_valid_temporal_evaluation_policy_v1_1"
+SUCCESSOR_AUTHORITY_SCHEMA = "fin_ia_s1_vs5_valid_temporal_evaluation_authority_v1_1"
+SUCCESSOR_RAW_SCHEMA = "fin_ia_s1_vs5_valid_temporal_evaluation_raw_v1_1"
+SUCCESSOR_RESULT_SCHEMA = "fin_ia_s1_vs5_valid_temporal_evaluation_result_v1_1"
 
 
 def _resolve(value: str | Path) -> Path:
@@ -65,12 +69,17 @@ def _git_output(*args: str) -> str:
 
 
 def _validate_authority(
-    *, policy_path: Path, policy: Mapping[str, Any], authority_path: Path
+    *,
+    policy_path: Path,
+    policy: Mapping[str, Any],
+    authority_path: Path,
+    expected_schema: str,
+    expected_status: str,
 ) -> dict[str, Any]:
     authority = read_json(authority_path)
     if (
-        authority.get("schema_version") != AUTHORITY_SCHEMA
-        or authority.get("status") != "authorized_exact_once_valid_temporal_evaluation"
+        authority.get("schema_version") != expected_schema
+        or authority.get("status") != expected_status
         or authority.get("split") != "valid_temporal"
         or authority.get("max_executions") != 1
     ):
@@ -112,6 +121,7 @@ def _validate_candidate_integrity(
     raw_path: Path,
     public: Mapping[str, Any],
     public_path: Path,
+    expected_public_status: str,
 ) -> None:
     if public.get("raw_output_ref") != _relative(raw_path):
         raise ValueError("qualification_evaluation_candidate_raw_ref_drift")
@@ -123,7 +133,7 @@ def _validate_candidate_integrity(
     expected_digest = str(raw_for_digest.pop("result_digest", ""))
     if canonical_digest(raw_for_digest) != expected_digest:
         raise ValueError("qualification_evaluation_candidate_raw_content_drift")
-    if public.get("status") != "candidate_generation_complete_evaluation_pending":
+    if public.get("status") != expected_public_status:
         raise ValueError("qualification_evaluation_candidate_public_status_invalid")
     if public.get("authority", {}).get("qualification_scored") is not False:
         raise ValueError("qualification_evaluation_candidate_already_scored")
@@ -162,9 +172,27 @@ def _public_proposition(row: Mapping[str, Any]) -> dict[str, Any]:
 
 def _run(*, policy_path: Path, authority_path: Path) -> tuple[dict[str, Any], Path, Path]:
     policy = read_json(policy_path)
+    policy_schema = str(policy.get("schema_version") or "")
+    if policy_schema == POLICY_SCHEMA:
+        authority_schema = AUTHORITY_SCHEMA
+        authority_status = "authorized_exact_once_valid_temporal_evaluation"
+        raw_schema = RAW_SCHEMA
+        result_schema = RESULT_SCHEMA
+        candidate_public_status = "candidate_generation_complete_evaluation_pending"
+    elif policy_schema == SUCCESSOR_POLICY_SCHEMA:
+        authority_schema = SUCCESSOR_AUTHORITY_SCHEMA
+        authority_status = (
+            "authorized_exact_once_valid_temporal_successor_evaluation"
+        )
+        raw_schema = SUCCESSOR_RAW_SCHEMA
+        result_schema = SUCCESSOR_RESULT_SCHEMA
+        candidate_public_status = (
+            "candidate_generation_successor_complete_evaluation_pending"
+        )
+    else:
+        raise ValueError("qualification_evaluation_policy_schema_invalid")
     if (
-        policy.get("schema_version") != POLICY_SCHEMA
-        or policy.get("status")
+        policy.get("status")
         != "frozen_after_candidate_output_before_evaluation_execution"
         or policy.get("split") != "valid_temporal"
         or policy.get("case_keys") != ["COST"]
@@ -182,7 +210,11 @@ def _run(*, policy_path: Path, authority_path: Path) -> tuple[dict[str, Any], Pa
     ):
         raise ValueError("qualification_evaluation_authority_boundary_invalid")
     authority = _validate_authority(
-        policy_path=policy_path, policy=policy, authority_path=authority_path
+        policy_path=policy_path,
+        policy=policy,
+        authority_path=authority_path,
+        expected_schema=authority_schema,
+        expected_status=authority_status,
     )
 
     bound = policy.get("bound_inputs") or {}
@@ -207,6 +239,7 @@ def _run(*, policy_path: Path, authority_path: Path) -> tuple[dict[str, Any], Pa
         raw_path=candidate_raw_path,
         public=public,
         public_path=candidate_public_path,
+        expected_public_status=candidate_public_status,
     )
     references = read_jsonl(reference_path)
     objects = read_jsonl(object_path)
@@ -230,7 +263,7 @@ def _run(*, policy_path: Path, authority_path: Path) -> tuple[dict[str, Any], Pa
 
     ranking_pass = bool(first["candidate_ranking_metric_gate_pass"])
     raw_evaluation = {
-        "schema_version": RAW_SCHEMA,
+        "schema_version": raw_schema,
         "status": "valid_temporal_provisional_evaluation_complete",
         "recorded_at": "2026-08-18",
         "attempt_id": authority["attempt_id"],
@@ -274,7 +307,7 @@ def _run(*, policy_path: Path, authority_path: Path) -> tuple[dict[str, Any], Pa
     write_json(raw_output_path, raw_evaluation)
 
     public_evaluation = {
-        "schema_version": RESULT_SCHEMA,
+        "schema_version": result_schema,
         "status": raw_evaluation["status"],
         "recorded_at": raw_evaluation["recorded_at"],
         "attempt_id": raw_evaluation["attempt_id"],

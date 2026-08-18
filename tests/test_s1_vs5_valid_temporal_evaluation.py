@@ -17,6 +17,10 @@ POLICY = (
     ROOT
     / "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_evaluation_policy_v1_0.json"
 )
+SUCCESSOR_POLICY = (
+    ROOT
+    / "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_evaluation_policy_v1_1.json"
+)
 
 
 def _sha256(path: Path) -> str:
@@ -134,6 +138,27 @@ def test_valid_temporal_evaluation_policy_binds_only_frozen_temporal_inputs() ->
     assert contract["holdout_heterogeneous_reference_access_allowed"] is False
 
 
+def test_successor_evaluation_policy_binds_frozen_r2_without_hidden_references() -> None:
+    value = json.loads(SUCCESSOR_POLICY.read_text(encoding="utf-8"))
+    assert value["status"] == "frozen_after_candidate_output_before_evaluation_execution"
+    assert value["lineage"]["thresholds_changed"] is False
+    assert value["lineage"]["reference_changed"] is False
+    assert value["lineage"]["hidden_references_opened"] is False
+    assert value["lineage"]["further_valid_temporal_candidate_execution_allowed"] is False
+    for binding in value["bound_inputs"].values():
+        path = ROOT / binding["ref"]
+        assert path.is_file()
+        assert _sha256(path) == binding["sha256"]
+    reference = value["bound_inputs"]["valid_temporal_evaluator_reference"]["ref"]
+    assert "/valid_temporal/" in reference
+    assert "test_frozen" not in reference
+    assert "holdout_heterogeneous" not in reference
+    contract = value["evaluation_contract"]
+    assert contract["learned_vector_computation_allowed"] is False
+    assert contract["network_calls_allowed"] is False
+    assert contract["generative_model_calls_allowed"] is False
+
+
 def test_evaluator_separates_recall_from_final_ranking_and_never_promotes() -> None:
     raw, references, objects, metrics = _fixture()
     result = evaluate_frozen_candidates(
@@ -185,3 +210,17 @@ def test_evaluator_rejects_candidate_output_that_loaded_labels() -> None:
             metric_contract=metrics,
             business_templates_zh={},
         )
+
+
+def test_evaluator_accepts_label_blind_successor_candidate_status() -> None:
+    raw, references, objects, metrics = _fixture()
+    raw["status"] = "candidate_generation_successor_complete_labels_not_loaded"
+    result = evaluate_frozen_candidates(
+        raw=raw,
+        references=references,
+        objects=objects,
+        metric_contract=metrics,
+        business_templates_zh={},
+    )
+    assert result["candidate_ranking_metric_gate_pass"] is False
+    assert result["authority_boundary"]["candidate_is_evidence"] is False

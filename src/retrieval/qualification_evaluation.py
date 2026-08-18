@@ -142,7 +142,10 @@ def evaluate_frozen_candidates(
     learned vector work must have happened in the preceding CUDA-only run.
     """
 
-    if raw.get("status") != "candidate_generation_complete_labels_not_loaded":
+    if raw.get("status") not in {
+        "candidate_generation_complete_labels_not_loaded",
+        "candidate_generation_successor_complete_labels_not_loaded",
+    }:
         raise QualificationEvaluationError("candidate_raw_status_invalid")
     execution = raw.get("execution") or {}
     authority = raw.get("authority") or {}

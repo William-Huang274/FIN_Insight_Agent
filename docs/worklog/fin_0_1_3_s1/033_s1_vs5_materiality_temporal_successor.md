@@ -89,6 +89,12 @@ Evidence Role v2 使用请求词＋事实状态判断当前候选究竟是实际
 
 该结果只能说明候选生成成功，不能提前查看标签后宣布检索通过。public projection 必须先冻结提交，随后才允许独立 evaluator 加载 valid-temporal reference。
 
+## 分离 evaluator 工程门
+
+R2 evaluator 沿用 R1 的同一参考、20 条目标、五项业务影响模板和不可补偿门槛；没有复制一套 attempt-only evaluator，而是让现有 canonical evaluator 同时识别 v1 与 v1.1 schema。旧候选状态仍按 v1 校验，successor 只增加新的 label-blind status；评价 policy 另行绑定 frozen public／private candidate、evaluation runtime 和 runner digest。
+
+工程复证为全仓 `631 passed`，active baseline 通过，secret scan 7,127 files／0 finding。此时尚未加载真实 COST reference；只有 evaluator design clean push、再签发独立 exact-once authority 后才能评分。
+
 ## 当前真实状态
 
 本轮达到 `engineering_pass` 并完成 label-blind R2 candidate execution：
@@ -108,5 +114,5 @@ Evidence Role v2 使用请求词＋事实状态判断当前候选究竟是实际
 3. 当前 successor 设计已在 `1fa65512` clean push；
 4. R2 authority 已在 `32a2a673` clean push；
 5. 唯一一次 CUDA FP16 R2 candidate 已完成并保留 raw；
-6. 下一步先冻结 public candidate result，再建立独立 evaluator policy／authority；
+6. public candidate result 已冻结；下一步 clean push evaluator policy，再单独签发 evaluator authority；
 7. 评价若通过，只进入 qualified-human reference review 与隐藏执行资格决策；若失败，停止 COST 重跑并做架构／新 temporal case 处置。

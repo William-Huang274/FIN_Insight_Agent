@@ -1,0 +1,101 @@
+{
+  "schema_version": "fin_ia_s1_vs5_valid_temporal_evaluation_policy_v1_1",
+  "status": "frozen_after_candidate_output_before_evaluation_execution",
+  "recorded_at": "2026-08-18",
+  "program_id": "FIN-0.1.3-S1-VS5-VALID-TEMPORAL-EVALUATION-R2",
+  "split": "valid_temporal",
+  "case_keys": [
+    "COST"
+  ],
+  "lineage": {
+    "parent_evaluation_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_evaluation_policy_v1_0.json",
+    "parent_evaluation_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_evaluation_result_v1_0.json",
+    "candidate_attempt_id": "FIN-0.1.3-S1-VS5-VALID-TEMPORAL-CANDIDATE-R2",
+    "candidate_public_frozen_commit": "7862c393",
+    "thresholds_changed": false,
+    "reference_changed": false,
+    "business_templates_changed": false,
+    "hidden_references_opened": false,
+    "valid_temporal_execution_count_after_candidate_R2": 2,
+    "further_valid_temporal_candidate_execution_allowed": false
+  },
+  "bound_inputs": {
+    "qualification_preregistration": {
+      "ref": "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json",
+      "sha256": "e16db48de84e6cb0e5c586032e4bff446307d2dbdad898999de8a935b7124749"
+    },
+    "valid_temporal_evaluator_reference": {
+      "ref": "eval_sets/fin_0_1_3_s1/references/valid_temporal/vs5_qualification_references_v1_0.jsonl",
+      "sha256": "d05533ae284103aae6ab187660cd9459059ec126e6f6bcc436fecbc48c3fc0fb"
+    },
+    "candidate_public_result": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_candidate_execution_result_v1_1.json",
+      "sha256": "dd215a60f4835c07c49d46239e4e1cf4d0b792d6f83a302ab41ceca281916619"
+    },
+    "candidate_raw_result": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_candidates/valid-temporal-r2/raw.json",
+      "sha256": "ff760f5a9ee77b07c7253d7e85727bdb9a995d66d22812119928e1a225af935c"
+    },
+    "compiled_objects": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_compiled_objects/live-r1/objects.jsonl",
+      "sha256": "adf1da6a85d3d0bf34f2752521ffbf6e6813313238b1c9c7ca2fb8ddb2f4449c"
+    },
+    "evaluation_runtime": {
+      "ref": "src/retrieval/qualification_evaluation.py",
+      "sha256": "fd0d78bd6a482b9b6527ab4f6e3bbecba12f9f08775febed735afdd2bf641e58"
+    },
+    "evaluation_runner": {
+      "ref": "scripts/data_retrieval/evaluate_s1_vs5_valid_temporal_candidates.py",
+      "sha256": "e475515cec5bea8f5183cb1946264bdb03d6e8c6978ff076dfa592df27fcd7d0"
+    }
+  },
+  "evaluation_contract": {
+    "candidate_review_stage": "candidate_review_top20",
+    "candidate_review_k": 20,
+    "metric_aggregation": "micro_over_required_reference_items_with_per_proposition_any_hit_hard_gate",
+    "diagnostic_stages": [
+      "candidate_union_top20",
+      "bge_reranker_top20",
+      "qwen_reranker_top20",
+      "role_guarded_top20",
+      "candidate_review_top20"
+    ],
+    "reference_may_be_loaded_only_after_candidate_output_is_content_frozen": true,
+    "valid_temporal_reference_only": true,
+    "test_frozen_reference_access_allowed": false,
+    "holdout_heterogeneous_reference_access_allowed": false,
+    "threshold_or_route_tuning_from_this_evaluation_allowed": false,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "public_information_gap_may_be_declared": false,
+    "generative_model_calls_allowed": false,
+    "network_calls_allowed": false,
+    "learned_vector_computation_allowed": false,
+    "cpu_vector_fallback_allowed": false,
+    "deterministic_bookkeeping_cpu_allowed": true,
+    "repeat_in_memory_and_require_identical_digest": true
+  },
+  "business_impact_templates_zh": {
+    "COST_MEMBERSHIP_VALUE_CAPTURE": "这会使报告只看到会员费增长表面，却无法同时回答续费质量、确认机制与会员模式的反方风险，因而不能可靠判断会员收入质量和利润获取。",
+    "COST_COMPARABLE_SALES_DEMAND": "这会使报告无法把购物频次、客单价和新店贡献与汽油价格、汇率等口径影响分开，容易把表面同店增速误写成核心需求改善。",
+    "COST_MARGIN_PRESSURES": "这会使报告无法同时权衡商品成本、工资、汽油组合和损耗，容易把毛利率变化错误归因给单一因素。",
+    "COST_WORKING_CAPITAL": "这会使报告无法把经营现金流与库存、应付账款的变化连接起来，现金转换判断会退化成只报一个总额。",
+    "COST_TEMPORAL_CHANGE": "这会使报告无法证明 FY2024 与 FY2025 使用同公司、同口径和正确期间，任何同比、扩张或压缩叙事都可能失真。"
+  },
+  "noncompensable_boundaries": {
+    "reference_owner_or_qualified_human_review_pending": true,
+    "natural_scanned_official_source_gate_already_failed": true,
+    "downstream_evidence_pack_readiness_not_yet_proved": true,
+    "candidate_metric_pass_cannot_qualify_s1": true,
+    "averages_cannot_compensate_hard_gates": true
+  },
+  "authority": {
+    "maximum_evaluation_executions": 1,
+    "evaluation_result_must_not_overwrite_candidate_result": true,
+    "evidence_promotion_authorized": false,
+    "numeric_fact_authority": false,
+    "owner_gold_authority": false,
+    "s1_qualification_authority": false
+  },
+  "known_boundary": "This policy scores the frozen COST R2 candidate output against the unchanged provisional valid-temporal reference. It performs no retrieval or vector work, opens no hidden reference, authorizes no R3 and cannot qualify S1 by itself."
+}

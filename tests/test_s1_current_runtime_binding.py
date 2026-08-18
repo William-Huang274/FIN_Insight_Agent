@@ -16,6 +16,7 @@ from apps.workbench.backend.application.research_retrieval_service import (
 )
 from retrieval.current_runtime_binding import (
     CurrentS1RuntimeBindingError,
+    build_current_s1_runtime_binding_receipt,
     project_request_route_execution_truth,
     validate_current_s1_runtime_binding_receipt,
 )
@@ -171,6 +172,36 @@ def test_current_runtime_receipt_rebuilds_against_bound_assets() -> None:
     assert receipt["source_object_index_lineage"][
         "all_source_records_lineage_bound"
     ] is True
+
+
+def test_current_runtime_receipt_can_build_against_prospective_registry() -> None:
+    registry = _read(
+        ROOT
+        / "configs"
+        / "runtime"
+        / "fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json"
+    )
+    registry["registry_id"] = (
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-PROSPECTIVE"
+    )
+
+    policy = _read(POLICY)
+    policy["binding_receipt_projection"] = {
+        "workbench_per_object_lineage_drilldown_complete": True,
+    }
+    receipt = build_current_s1_runtime_binding_receipt(
+        ROOT,
+        policy,
+        payload_overrides={"runtime_registry": registry},
+    )
+
+    assert receipt["registry_binding"]["registry_id"].endswith(
+        "PROSPECTIVE"
+    )
+    assert receipt["acceptance"][
+        "workbench_per_object_lineage_drilldown_complete"
+    ] is True
+    assert receipt["acceptance"]["s1_qualified_stable"] is False
 
 
 def test_current_product_direct_request_exposes_non_gap_candidate_ceiling() -> None:

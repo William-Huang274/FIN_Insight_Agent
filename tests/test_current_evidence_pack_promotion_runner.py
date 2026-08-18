@@ -16,9 +16,16 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from scripts.data_retrieval.run_current_evidence_pack_promotion import (  # noqa: E402
     CurrentEvidencePackPromotionError,
+    _compose_anchor_catalog,
     _compose_runtime_registry,
     compose_current_pack,
+    compose_current_pack_set,
     validate_authority,
+    validate_pack_set_authority,
+)
+from sec_agent.research.reviewed_evidence_anchor import (  # noqa: E402
+    compile_reviewed_evidence_anchor_catalog,
+    load_reviewed_evidence_anchor_catalog,
 )
 from sec_agent.research.reviewed_evidence_pack import (  # noqa: E402
     REVIEWED_EVIDENCE_PACK_CONTRACT,
@@ -406,3 +413,334 @@ def test_current_pack_promotion_authority_mutations_fail_closed(
 
     with pytest.raises(CurrentEvidencePackPromotionError):
         validate_authority(mutated, repository_root=repo)
+
+
+def _pack_for_case(case_key: str) -> dict[str, Any]:
+    pack = deepcopy(_successor_pack())
+    source_text = f"{case_key} management reported current demand and supply evidence."
+    source_digest = hashlib.sha256(source_text.encode("utf-8")).hexdigest()
+    pack["case_key"] = case_key
+    item = pack["evidence_items"][0]
+    item.update(
+        {
+            "case_key": case_key,
+            "target_id": f"{case_key}-target-current",
+            "source_record_id": f"{case_key}-source-current",
+            "source_material_ref": f"{case_key}-material-current",
+            "source_content_digest": source_digest,
+            "object_type": "claim",
+            "evidence_item_digest": hashlib.sha256(
+                f"{case_key}-evidence".encode()
+            ).hexdigest(),
+        }
+    )
+    pack["source_materials"][0].update(
+        {
+            "material_ref": f"{case_key}-material-current",
+            "source_record_id": f"{case_key}-source-current",
+            "evidence_owner_ticker": case_key,
+            "source_text": source_text,
+            "source_text_digest": source_digest,
+        }
+    )
+    pack["residual_gaps"][0]["gap_id"] = f"{case_key}-gap-current"
+    pack.pop("pack_payload_digest")
+    pack["pack_payload_digest"] = canonical_digest(pack)
+    return pack
+
+
+def _pack_set_fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, Any]]:
+    repo, _legacy_authority_path, legacy = _fixture(tmp_path)
+    predecessor_result_ref = legacy["bound_inputs"]["predecessor_result_ref"]
+    predecessor_workspace_ref = legacy["bound_inputs"]["predecessor_workspace_ref"]
+
+    anchor = compile_reviewed_evidence_anchor_catalog(
+        case_pack_bindings={
+            key: {
+                "artifact_digest": hashlib.sha256(f"{key}-a".encode()).hexdigest(),
+                "pack_payload_digest": hashlib.sha256(
+                    f"{key}-p".encode()
+                ).hexdigest(),
+            }
+            for key in ("DELL", "MU", "NVDA")
+        },
+        entries=[
+            {
+                "case_key": "DELL",
+                "target_id": "old-target",
+                "source_record_id": "old-source",
+                "evidence_item_digest": "1" * 64,
+                "source_text_digest": "2" * 64,
+                "anchor_kind": "structured_claim_text",
+                "anchor_text": "Old reviewed source surface for the DELL fixture.",
+                "anchor_start": 0,
+                "anchor_end": 49,
+                "anchor_digest": hashlib.sha256(
+                    "Old reviewed source surface for the DELL fixture.".encode()
+                ).hexdigest(),
+                "review_status": "reviewed_exact_source_surface",
+            }
+        ],
+        known_boundary="fixture",
+    )
+    anchor_ref = "configs/runtime/anchor.json"
+    _write_json(repo / anchor_ref, anchor)
+
+    policy = {
+        "schema_version": "fin_ia_s1_current_runtime_binding_policy_v1_2",
+        "status": "current_product_binding_policy",
+        "policy_id": "fixture-policy-old",
+        "assets": {
+            "current_evidence_pack_result": {"ref": predecessor_result_ref},
+            "current_reviewed_anchor_catalog": {"ref": anchor_ref},
+            "dell_product_readiness": {"ref": "old-dell.json"},
+            "mu_product_readiness": {"ref": "old-mu.json"},
+            "nvda_product_readiness": {"ref": "old-nvda.json"},
+        },
+    }
+    policy_ref = "configs/retrieval/binding-policy.json"
+    _write_json(repo / policy_ref, policy)
+
+    replacements: list[dict[str, Any]] = []
+    for case_key in ("DELL", "MU", "NVDA"):
+        pack = _pack_for_case(case_key)
+        pack_ref = f"data/workbench_private/successors/{case_key.lower()}/pack.json"
+        _write_json(repo / pack_ref, pack)
+        predecessor = json.loads(
+            (repo / predecessor_result_ref).read_text(encoding="utf-8")
+        )["pack_payload_digests"][case_key]
+        successor_body = {
+            "schema_version": (
+                "fin_ia_s1_product_evidence_successor_public_result_v1_2"
+            ),
+            "status": "proposition_bound_evidence_successor_materialized",
+            "case_key": case_key,
+            "predecessor_pack_payload_digest": predecessor,
+            "successor_pack_payload_digest": pack["pack_payload_digest"],
+            "private_pack_ref": pack_ref,
+            "private_pack_sha256": _sha(repo / pack_ref),
+            "authority": {
+                "accepted_claims_capture_bound": True,
+                "accepted_evidence_proposition_bound": True,
+                "candidate_is_not_evidence": True,
+                "generation_model_calls": 0,
+                "network_calls": 0,
+                "metric_row_promoted_as_narrative_evidence": False,
+                "numeric_fact_authority": False,
+                "qualified_human_review": False,
+                "S1_qualification_claimed": False,
+                "product_publication": False,
+            },
+        }
+        successor = {
+            **successor_body,
+            "result_digest": canonical_digest(successor_body),
+        }
+        successor_ref = f"configs/retrieval/{case_key.lower()}-successor.json"
+        _write_json(repo / successor_ref, successor)
+
+        readiness_full_ref = f"data/workbench_private/{case_key.lower()}-full.json"
+        _write_json(repo / readiness_full_ref, {"case_key": case_key})
+        readiness_body = {
+            "schema_version": "fin_ia_s1_current_product_readiness_result_v1_1",
+            "status": "current_product_pack_readiness_materialized",
+            "case_key": case_key,
+            "readiness_state": "blocked_by_evidence_admission",
+            "full_result_ref": readiness_full_ref,
+            "full_result_sha256": _sha(repo / readiness_full_ref),
+            "authority": {
+                "candidate_is_not_evidence": True,
+                "public_information_gap_authority": False,
+                "S1_qualification_claimed": False,
+            },
+        }
+        readiness = {
+            **readiness_body,
+            "result_digest": canonical_digest(readiness_body),
+        }
+        readiness_ref = f"configs/retrieval/{case_key.lower()}-readiness.json"
+        _write_json(repo / readiness_ref, readiness)
+        replacements.append(
+            {
+                "case_key": case_key,
+                "successor_result_chain": [
+                    {
+                        "result_ref": successor_ref,
+                        "result_sha256": _sha(repo / successor_ref),
+                    }
+                ],
+                "readiness_result_ref": readiness_ref,
+                "readiness_result_sha256": _sha(repo / readiness_ref),
+            }
+        )
+
+    proof_ref = "configs/retrieval/pack-set-proof.json"
+    _write_json(
+        repo / proof_ref,
+        {
+            "schema_version": (
+                "fin_ia_current_evidence_pack_set_promotion_zero_call_proof_v2_0"
+            ),
+            "status": "pass",
+            "current_pointer_mutated": False,
+            "private_object_copy_performed": False,
+            "model_calls": 0,
+            "network_calls": 0,
+            "mutation_results": [
+                "successor_chain_drift_rejected",
+                "readiness_digest_drift_rejected",
+                "retained_case_partition_drift_rejected",
+                "long_claim_without_reviewed_anchor_rejected",
+                "budget_expansion_rejected",
+            ],
+        },
+    )
+    registry_ref = legacy["bound_inputs"]["runtime_registry_ref"]
+    registry = json.loads((repo / registry_ref).read_text(encoding="utf-8"))
+    registry["registry_id"] = (
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R25"
+    )
+    _write_json(repo / registry_ref, registry)
+    authority = {
+        "schema_version": (
+            "fin_ia_current_evidence_pack_set_promotion_authority_v2_0"
+        ),
+        "authority_id": "fixture-current-pack-set-r1",
+        "recorded_at": "2026-08-19",
+        "status": "fresh_zero_call_current_pack_set_promotion_authorized",
+        "clean_implementation": {
+            "branch": "codex/test",
+            "git_commit": "a" * 40,
+            "working_tree_required_clean_before_execution": True,
+            "pushed_head_required": True,
+        },
+        "predecessor_contract": {
+            "current_result_ref": predecessor_result_ref,
+            "current_result_sha256": _sha(repo / predecessor_result_ref),
+            "current_workspace_ref": predecessor_workspace_ref,
+            "current_workspace_sha256": _sha(repo / predecessor_workspace_ref),
+            "current_anchor_catalog_ref": anchor_ref,
+            "current_anchor_catalog_sha256": _sha(repo / anchor_ref),
+            "current_binding_policy_ref": policy_ref,
+            "current_binding_policy_sha256": _sha(repo / policy_ref),
+            "runtime_registry_ref": registry_ref,
+            "runtime_registry_sha256": _sha(repo / registry_ref),
+            "zero_call_proof_ref": proof_ref,
+            "zero_call_proof_sha256": _sha(repo / proof_ref),
+            "runner_ref": RUNNER_REF,
+            "runner_sha256": _sha(repo / RUNNER_REF),
+        },
+        "replacement_chains": replacements,
+        "retained_case_keys": ["ORCL", "ASML", "ANET"],
+        "execution_budget": {
+            "network_calls": 0,
+            "provider_calls": 0,
+            "model_calls": 0,
+            "retries": 0,
+            "current_pointer_mutation": (
+                "replace_registered_pack_anchor_workspace_readiness_and_binding_once"
+            ),
+            "private_object_copy": "forbidden",
+            "raw_source_publication": "forbidden",
+        },
+        "output_contract": {
+            "result_id": "fixture-pack-set-result",
+            "composed_result_ref": "configs/runtime/current-pack-v2.json",
+            "composed_workspace_ref": "configs/runtime/workspace-v2.json",
+            "composed_anchor_catalog_ref": "configs/runtime/anchor-v2.json",
+            "binding_policy_ref": "configs/retrieval/binding-policy-v2.json",
+            "binding_receipt_ref": "configs/runtime/binding-receipt-v2.json",
+            "public_execution_result_ref": "configs/retrieval/promotion-v2.json",
+            "runtime_registry_ref": registry_ref,
+            "runtime_registry_id": (
+                "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R26"
+            ),
+            "binding_policy_id": "fixture-policy-v2",
+        },
+    }
+    authority_path = repo / "configs/retrieval/pack-set-authority.json"
+    _write_json(authority_path, authority)
+    return repo, authority_path, authority
+
+
+def test_current_pack_set_composes_three_cases_and_exact_anchors(
+    tmp_path: Path,
+) -> None:
+    repo, authority_path, authority = _pack_set_fixture(tmp_path)
+    validated = validate_pack_set_authority(authority, repository_root=repo)
+
+    result, workspace, anchors, policy, execution = compose_current_pack_set(
+        validated,
+        authority_path=authority_path,
+        repository_root=repo,
+    )
+
+    assert [row["accepted_evidence_items"] for row in result["case_summaries"][:3]] == [1, 1, 1]
+    assert result["stage_acceptance"][
+        "three_case_proposition_bound_evidence_successors_promoted"
+    ] is True
+    assert result["stage_acceptance"]["s1_product_acceptance"] is False
+    assert len({row["evidence_pack_binding"]["pack_payload_digest"] for row in workspace["cases"]}) == 3
+    loaded = load_reviewed_evidence_anchor_catalog(anchors)
+    assert {row["case_key"] for row in loaded.entries} == {"DELL", "MU", "NVDA"}
+    assert policy["policy_id"] == "fixture-policy-v2"
+    assert policy["assets"]["mu_product_readiness"]["ref"].endswith(
+        "mu-readiness.json"
+    )
+    assert execution["remaining_boundaries"]["S1_product_acceptance"] is False
+
+
+def test_current_pack_set_rejects_broken_successor_chain(tmp_path: Path) -> None:
+    repo, _authority_path, authority = _pack_set_fixture(tmp_path)
+    mutated = deepcopy(authority)
+    result_ref = mutated["replacement_chains"][0]["successor_result_chain"][0][
+        "result_ref"
+    ]
+    successor = json.loads((repo / result_ref).read_text(encoding="utf-8"))
+    body = deepcopy(successor)
+    body.pop("result_digest")
+    body["predecessor_pack_payload_digest"] = "0" * 64
+    successor = {**body, "result_digest": canonical_digest(body)}
+    _write_json(repo / result_ref, successor)
+    mutated["replacement_chains"][0]["successor_result_chain"][0][
+        "result_sha256"
+    ] = _sha(repo / result_ref)
+
+    with pytest.raises(
+        CurrentEvidencePackPromotionError,
+        match="current_pack_set_successor_link_invalid:DELL",
+    ):
+        validate_pack_set_authority(mutated, repository_root=repo)
+
+
+def test_current_pack_set_rejects_long_claim_without_reviewed_anchor(
+    tmp_path: Path,
+) -> None:
+    repo, _authority_path, authority = _pack_set_fixture(tmp_path)
+    predecessor = authority["predecessor_contract"]
+    anchor = load_reviewed_evidence_anchor_catalog(
+        json.loads(
+            (repo / predecessor["current_anchor_catalog_ref"]).read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+    pack = _pack_for_case("DELL")
+    long_text = "reviewed financial evidence " * 80
+    digest = hashlib.sha256(long_text.encode()).hexdigest()
+    pack["source_materials"][0]["source_text"] = long_text
+    pack["source_materials"][0]["source_text_digest"] = digest
+    pack["evidence_items"][0]["source_content_digest"] = digest
+    pack.pop("pack_payload_digest")
+    pack["pack_payload_digest"] = canonical_digest(pack)
+    pack_path = repo / "data/workbench_private/long/pack.json"
+    _write_json(pack_path, pack)
+
+    with pytest.raises(
+        CurrentEvidencePackPromotionError,
+        match="current_pack_set_explicit_anchor_required:DELL",
+    ):
+        _compose_anchor_catalog(
+            predecessor_anchor=anchor,
+            replacements={"DELL": (pack, pack_path, {}, {})},
+        )

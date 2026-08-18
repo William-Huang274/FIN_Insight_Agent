@@ -234,6 +234,8 @@ def load_current_s1_runtime_binding_policy(
 def build_current_s1_runtime_binding_receipt(
     repository_root: str | Path,
     policy_payload: Mapping[str, Any],
+    *,
+    payload_overrides: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     root = Path(repository_root).resolve()
     policy = load_current_s1_runtime_binding_policy(policy_payload)
@@ -246,6 +248,12 @@ def build_current_s1_runtime_binding_receipt(
         asset_id: _read_json(root / binding["ref"])
         for asset_id, binding in assets.items()
     }
+    for asset_id, payload in (payload_overrides or {}).items():
+        _require(
+            asset_id in payloads and isinstance(payload, Mapping),
+            f"current_s1_runtime_payload_override_invalid:{asset_id}",
+        )
+        payloads[asset_id] = dict(payload)
 
     registry = payloads["runtime_registry"]
     registry_rows = _registry_rows(registry)
@@ -461,6 +469,22 @@ def build_current_s1_runtime_binding_receipt(
         ),
         "s2_sqlite": _asset_binding(root, s2_sqlite.relative_to(root).as_posix()),
     }
+    receipt_projection = policy.get("binding_receipt_projection") or {}
+    drilldown_complete = (
+        receipt_projection.get("workbench_per_object_lineage_drilldown_complete")
+        is True
+    )
+    drilldown_boundary = (
+        "It registers a digest-bound product PackReadiness producer, a "
+        "request-level Workbench consumer and a digest-bound per-object lineage "
+        "drilldown. It does not supply natural scanned-source evidence or satisfy "
+        "independent blind qualification."
+        if drilldown_complete
+        else "It registers a digest-bound product PackReadiness producer and "
+        "request-level Workbench consumer, but does not complete per-object lineage "
+        "drilldown, supply natural scanned-source evidence or satisfy independent "
+        "blind qualification."
+    )
     body = {
         "schema_version": RECEIPT_SCHEMA_VERSION,
         "status": "current_product_lineage_bound_with_explicit_open_gates",
@@ -529,7 +553,7 @@ def build_current_s1_runtime_binding_receipt(
             "candidate_evidence_numeric_authority_separated": True,
             "product_pack_readiness_producer_registered": True,
             "product_pack_readiness_workbench_consumer_registered": True,
-            "workbench_per_object_lineage_drilldown_complete": False,
+            "workbench_per_object_lineage_drilldown_complete": drilldown_complete,
             "external_blind_qualification_complete": False,
             "s1_qualified_stable": False,
         },
@@ -539,11 +563,8 @@ def build_current_s1_runtime_binding_receipt(
             "Pack and reviewed claim anchors are identity-bound. It also makes every "
             "declared candidate-route capability explicit. It does not claim that "
             "unconfigured graph, learned-sparse or multi-vector routes ran; it does not "
-            "promote candidates to Evidence or claim S1 qualification. It registers a "
-            "digest-bound product PackReadiness producer and request-level Workbench "
-            "consumer, but does not complete per-object lineage drilldown, supply natural "
-            "scanned-source evidence "
-            "or satisfy independent blind qualification."
+            "promote candidates to Evidence or claim S1 qualification. "
+            + drilldown_boundary
         ),
     }
     return {**body, "result_digest": canonical_digest(body)}

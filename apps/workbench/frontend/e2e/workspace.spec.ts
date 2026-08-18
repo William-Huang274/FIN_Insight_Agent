@@ -43,6 +43,10 @@ test("workspace exposes the three identity-bound reviewed cases", async ({ page 
   await expect(page.getByText(/CIK 0001571996/)).toBeVisible();
   await expect(page.getByText("不可变绑定")).toBeVisible();
   await page.getByRole("button", { name: /证据与缺口/ }).click();
+  await expect(page.getByRole("heading", { name: "当前 S1 产品就绪诊断" })).toBeVisible();
+  await expect(page.getByText("等待 S3 明确研究范围", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/候选排名不会自动授予证据权威/)).toBeVisible();
+  await expect(page.getByText(/workbench_private/)).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "S1 命题级证据账本" })).toBeVisible();
   await expect(page.getByText(/当前 3 个缺口尚未完成官方或外源补证/)).toBeVisible();
   await expect(page.getByText(/本轮可认定的公开信息真空为 0/)).toBeVisible();

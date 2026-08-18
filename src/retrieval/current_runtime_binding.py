@@ -8,8 +8,8 @@ from typing import Any, Iterable, Mapping
 from .query_plan import canonical_digest
 
 
-POLICY_SCHEMA_VERSION = "fin_ia_s1_current_runtime_binding_policy_v1_0"
-RECEIPT_SCHEMA_VERSION = "fin_ia_s1_current_runtime_binding_receipt_v1_0"
+POLICY_SCHEMA_VERSION = "fin_ia_s1_current_runtime_binding_policy_v1_1"
+RECEIPT_SCHEMA_VERSION = "fin_ia_s1_current_runtime_binding_receipt_v1_1"
 
 
 class CurrentS1RuntimeBindingError(ValueError):
@@ -198,6 +198,10 @@ def load_current_s1_runtime_binding_policy(
         "s2_fact_mart_result",
         "current_evidence_pack_result",
         "current_reviewed_anchor_catalog",
+        "product_readiness_catalog",
+        "dell_product_readiness",
+        "mu_product_readiness",
+        "nvda_product_readiness",
     }
     _require(
         isinstance(assets, Mapping)
@@ -267,6 +271,62 @@ def build_current_s1_runtime_binding_receipt(
     s2_result = payloads["s2_fact_mart_result"]
     pack_result = payloads["current_evidence_pack_result"]
     anchor_catalog = payloads["current_reviewed_anchor_catalog"]
+    product_readiness_catalog = payloads["product_readiness_catalog"]
+
+    case_readiness_assets = {
+        "DELL": "dell_product_readiness",
+        "MU": "mu_product_readiness",
+        "NVDA": "nvda_product_readiness",
+    }
+    catalog_resource_ids = product_readiness_catalog.get("case_resource_ids") or {}
+    _require(
+        product_readiness_catalog.get("schema_version")
+        == "fin_ia_current_s1_product_readiness_catalog_v1_0"
+        and product_readiness_catalog.get("status")
+        == "active_read_only_s1_product_readiness_catalog"
+        and product_readiness_catalog.get("published_case_keys")
+        == list(case_readiness_assets)
+        and set(catalog_resource_ids) == set(case_readiness_assets),
+        "current_s1_runtime_product_readiness_catalog_invalid",
+    )
+    product_readiness: dict[str, dict[str, Any]] = {}
+    for case_key, asset_id in case_readiness_assets.items():
+        readiness = dict(payloads[asset_id])
+        result_digest = str(readiness.pop("result_digest", ""))
+        authority = readiness.get("authority") or {}
+        _require(
+            readiness.get("schema_version")
+            == "fin_ia_s1_current_product_readiness_result_v1_0"
+            and readiness.get("status")
+            == "current_product_pack_readiness_materialized"
+            and readiness.get("case_key") == case_key
+            and result_digest == canonical_digest(readiness)
+            and authority.get("candidate_is_not_evidence") is True
+            and authority.get("public_information_gap_authority") is False
+            and authority.get("S1_qualification_claimed") is False
+            and str(catalog_resource_ids[case_key])
+            == str(assets_policy[asset_id].get("registry_resource_id") or ""),
+            f"current_s1_runtime_product_readiness_invalid:{case_key}",
+        )
+        product_readiness[case_key] = {
+            "status": str(readiness.get("status") or ""),
+            "readiness_state": str(readiness.get("readiness_state") or ""),
+            "request_count": int(readiness.get("request_count") or 0),
+            "result_digest": result_digest,
+            "candidate_is_not_evidence": True,
+            "public_information_gap_authority": False,
+            "S1_qualification_claimed": False,
+        }
+    product_consumer = dict(policy.get("product_consumer") or {})
+    _require(
+        product_consumer.get("product_pack_readiness_producer_registered")
+        is True
+        and product_consumer.get(
+            "product_pack_readiness_workbench_consumer_registered"
+        )
+        is True,
+        "current_s1_runtime_product_readiness_consumer_not_registered",
+    )
 
     source_records = compiler.get("inputs", {}).get("records") or {}
     compiled_objects = compiler.get("output_binding") or {}
@@ -416,6 +476,16 @@ def build_current_s1_runtime_binding_receipt(
             "anchor_result_digest": str(anchor_catalog.get("result_digest") or ""),
             "candidate_does_not_grant_evidence_or_numeric_authority": True,
         },
+        "product_readiness": {
+            "catalog_status": str(
+                product_readiness_catalog.get("status") or ""
+            ),
+            "catalog_digest": canonical_digest(product_readiness_catalog),
+            "cases": product_readiness,
+            "candidate_is_not_evidence": True,
+            "public_information_gap_authority": False,
+            "s1_qualification_claimed": False,
+        },
         "route_execution_truth": {
             "declared_routes": declared_routes,
             "routes": route_truth,
@@ -423,7 +493,7 @@ def build_current_s1_runtime_binding_receipt(
             "unavailable_route_must_not_be_reported_as_public_information_gap": True,
             "sql_fact_route_is_parallel_sibling_not_candidate_set_member": True,
         },
-        "product_consumer": dict(policy.get("product_consumer") or {}),
+        "product_consumer": product_consumer,
         "acceptance": {
             "source_to_compiled_lineage_complete": True,
             "compiled_objects_bound_to_current_source_snapshot": True,
@@ -432,7 +502,8 @@ def build_current_s1_runtime_binding_receipt(
             "current_pack_and_anchor_catalog_registry_bound": True,
             "declared_route_states_explicit": True,
             "candidate_evidence_numeric_authority_separated": True,
-            "product_pack_readiness_producer_registered": False,
+            "product_pack_readiness_producer_registered": True,
+            "product_pack_readiness_workbench_consumer_registered": True,
             "workbench_per_object_lineage_drilldown_complete": False,
             "external_blind_qualification_complete": False,
             "s1_qualified_stable": False,
@@ -443,8 +514,10 @@ def build_current_s1_runtime_binding_receipt(
             "Pack and reviewed claim anchors are identity-bound. It also makes every "
             "declared candidate-route capability explicit. It does not claim that "
             "unconfigured graph, learned-sparse or multi-vector routes ran; it does not "
-            "promote candidates to Evidence, register a product PackReadiness producer, "
-            "complete Workbench object drilldown, supply natural scanned-source evidence "
+            "promote candidates to Evidence or claim S1 qualification. It registers a "
+            "digest-bound product PackReadiness producer and request-level Workbench "
+            "consumer, but does not complete per-object lineage drilldown, supply natural "
+            "scanned-source evidence "
             "or satisfy independent blind qualification."
         ),
     }
@@ -480,6 +553,8 @@ def validate_current_s1_runtime_binding_receipt(
                 "current_pack_and_anchor_catalog_registry_bound",
                 "declared_route_states_explicit",
                 "candidate_evidence_numeric_authority_separated",
+                "product_pack_readiness_producer_registered",
+                "product_pack_readiness_workbench_consumer_registered",
             )
         )
         and acceptance.get("s1_qualified_stable") is False,

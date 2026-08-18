@@ -179,6 +179,56 @@ export type S1CanonicalSpineView = {
   workbench_projection_digest: string;
 };
 
+export type S1ProductReadinessRequest = {
+  request_id: string;
+  slot_id: string;
+  facet_id: string;
+  business_question_zh: string;
+  readiness_state: string;
+  material_scope_ready: boolean;
+  requirement_count: number;
+  requirement_state_counts: Record<string, number>;
+  candidate_decision_counts: {
+    accepted: number;
+    needs_human_review: number;
+    rejected: number;
+    unjudged: number;
+  };
+  numeric_authority_state: {
+    state: string;
+    request_count: number;
+    resolved_count: number;
+    typed_gap_count: number;
+    typed_conflict_count: number;
+  };
+  unexecuted_or_unavailable_routes: string[];
+};
+
+export type S1ProductReadinessView = {
+  schema_version: "fin_ia_s1_current_product_readiness_result_v1_0";
+  status: "current_product_pack_readiness_materialized";
+  recorded_at: string;
+  prepared_from_commit: string;
+  case_key: string;
+  readiness_state: string;
+  request_count: number;
+  request_state_counts: Record<string, number>;
+  candidate_count: number;
+  accepted_reviewed_evidence_count: number;
+  gap_eligibility_receipt_count: number;
+  declared_pack_gap_receipt_count: number;
+  requests: S1ProductReadinessRequest[];
+  authority: {
+    candidate_is_not_evidence: boolean;
+    public_information_gap_authority: boolean;
+    numeric_fact_authority_remains_with_S2: boolean;
+    S1_qualification_claimed: boolean;
+    product_publication: boolean;
+  };
+  known_boundary: string;
+  result_digest: string;
+};
+
 export type ResearchEvidenceView = {
   status: "identity_bound_reviewed_evidence_ready";
   case_id: string;
@@ -194,6 +244,7 @@ export type ResearchEvidenceView = {
   consumer_contract: Record<string, unknown>;
   hard_boundaries: Record<string, unknown>;
   canonical_spine?: S1CanonicalSpineView | null;
+  product_readiness?: S1ProductReadinessView | null;
   known_boundary: string;
   projection_digest: string;
 };

@@ -24,7 +24,7 @@ POLICY = json.loads(
         ROOT
         / "configs"
         / "retrieval"
-        / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_0.json"
+        / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_1.json"
     ).read_text(encoding="utf-8")
 )
 RECEIPT = validate_current_s1_runtime_binding_receipt(
@@ -33,7 +33,7 @@ RECEIPT = validate_current_s1_runtime_binding_receipt(
             ROOT
             / "configs"
             / "runtime"
-            / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json"
+            / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_1.json"
         ).read_text(encoding="utf-8")
     ),
     POLICY,

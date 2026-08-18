@@ -45,6 +45,9 @@ CURRENT_S1_VS1_VERTICAL_SLICE_RESOURCE_ID = (
 CURRENT_S1_VS4_SUPPLEMENT_VERTICAL_RESOURCE_ID = (
     "application.result.current_s1_vs4_supplement_vertical"
 )
+CURRENT_S1_PRODUCT_READINESS_CATALOG_RESOURCE_ID = (
+    "application.config.current_s1_product_readiness_catalog"
+)
 EXPECTED_CONFIG_SCHEMA = (
     "fin_ia_current_research_evidence_pack_projection_config_v1_0"
 )
@@ -76,6 +79,15 @@ EXPECTED_RESULT_CONTRACTS = frozenset(
     }
 )
 PROJECTION_SCHEMA = "fin_ia_current_research_evidence_pack_projection_v1_0"
+EXPECTED_PRODUCT_READINESS_CATALOG_SCHEMA = (
+    "fin_ia_current_s1_product_readiness_catalog_v1_0"
+)
+EXPECTED_PRODUCT_READINESS_RESULT_SCHEMA = (
+    "fin_ia_s1_current_product_readiness_result_v1_0"
+)
+EXPECTED_PRODUCT_READINESS_STATUS = (
+    "current_product_pack_readiness_materialized"
+)
 
 
 @dataclass(frozen=True)
@@ -126,6 +138,10 @@ class ResearchEvidencePackService:
         s1_vertical_slice: Mapping[str, Any] | None = None,
         s1_supplement_vertical: Mapping[str, Any] | None = None,
         artifact_spine_policy: Mapping[str, Any] | None = None,
+        product_readiness_catalog: Mapping[str, Any] | None = None,
+        product_readiness_results: Mapping[
+            str, Mapping[str, Any]
+        ] | None = None,
     ) -> None:
         self._config = self._validate_config(config)
         self._result = self._validate_result(result, self._config)
@@ -201,6 +217,10 @@ class ResearchEvidencePackService:
             raise ResearchEvidencePackServiceError(
                 "current_research_evidence_supplement_without_base_vertical", 503
             )
+        self._product_readiness = self._validate_product_readiness_surface(
+            product_readiness_catalog,
+            product_readiness_results,
+        )
 
     @classmethod
     def from_runtime_paths(
@@ -226,6 +246,18 @@ class ResearchEvidencePackService:
             if config.get("reviewed_anchor_catalog_resource_id")
             else None
         )
+        product_readiness_catalog = read_registered_runtime_json(
+            repository_root,
+            CURRENT_S1_PRODUCT_READINESS_CATALOG_RESOURCE_ID,
+        )
+        product_readiness_results = {
+            str(case_key).strip().upper(): read_registered_runtime_json(
+                repository_root, str(resource_id)
+            )
+            for case_key, resource_id in dict(
+                product_readiness_catalog.get("case_resource_ids") or {}
+            ).items()
+        }
         default_object_root = (
             runtime_paths.reviewed_evidence_root
             / str(config.get("private_object_root_relative") or "")
@@ -260,6 +292,8 @@ class ResearchEvidencePackService:
                 if load_s1_vertical_slice
                 else None
             ),
+            product_readiness_catalog=product_readiness_catalog,
+            product_readiness_results=product_readiness_results,
         )
 
     @property
@@ -286,6 +320,14 @@ class ResearchEvidencePackService:
                 "artifact_type": str(artifact["artifact_type"]),
                 "evidence_object_ready": readiness_by_case[case_key],
             }
+            product_readiness = self._product_readiness.get(case_key)
+            if product_readiness is not None:
+                item["product_readiness_state"] = str(
+                    product_readiness["readiness_state"]
+                )
+                item["product_readiness_result_digest"] = str(
+                    product_readiness["result_digest"]
+                )
             if self._s1_vertical_slice is not None:
                 item["canonical_vertical_ready"] = (
                     project_s1_vs1_case(
@@ -386,7 +428,116 @@ class ResearchEvidencePackService:
         )
         if self._s1_vertical_slice is not None:
             body["canonical_spine"] = canonical_spine
+        product_readiness = self._product_readiness.get(normalized)
+        if product_readiness is not None:
+            body["product_readiness"] = deepcopy(product_readiness)
         return _projection(body)
+
+    def _validate_product_readiness_surface(
+        self,
+        catalog: Mapping[str, Any] | None,
+        results: Mapping[str, Mapping[str, Any]] | None,
+    ) -> dict[str, dict[str, Any]]:
+        if catalog is None and results is None:
+            return {}
+        _require(
+            isinstance(catalog, Mapping) and isinstance(results, Mapping),
+            "current_s1_product_readiness_surface_incomplete",
+            503,
+        )
+        _require(
+            catalog.get("schema_version")
+            == EXPECTED_PRODUCT_READINESS_CATALOG_SCHEMA
+            and catalog.get("status")
+            == "active_read_only_s1_product_readiness_catalog"
+            and catalog.get("read_permission") == "current_product:read",
+            "current_s1_product_readiness_catalog_invalid",
+            503,
+        )
+        resource_ids = {
+            str(key).strip().upper(): str(value)
+            for key, value in dict(
+                catalog.get("case_resource_ids") or {}
+            ).items()
+        }
+        expected_keys = tuple(self._config["published_case_keys"])
+        _require(
+            tuple(resource_ids) == expected_keys
+            and set(results) == set(expected_keys),
+            "current_s1_product_readiness_case_partition_invalid",
+            503,
+        )
+        validated: dict[str, dict[str, Any]] = {}
+        for case_key in expected_keys:
+            value = deepcopy(dict(results[case_key]))
+            digest = str(value.pop("result_digest", ""))
+            requests = value.get("requests")
+            authority = value.get("authority") or {}
+            _require(
+                value.get("schema_version")
+                == EXPECTED_PRODUCT_READINESS_RESULT_SCHEMA
+                and value.get("status") == EXPECTED_PRODUCT_READINESS_STATUS
+                and value.get("case_key") == case_key
+                and isinstance(requests, list)
+                and int(value.get("request_count") or -1) == len(requests)
+                and digest == canonical_digest(value)
+                and authority.get("candidate_is_not_evidence") is True
+                and authority.get("public_information_gap_authority") is False
+                and authority.get("S1_qualification_claimed") is False,
+                "current_s1_product_readiness_result_invalid",
+                503,
+                case_key=case_key,
+            )
+            safe_requests = []
+            for request in requests:
+                _require(
+                    isinstance(request, Mapping),
+                    "current_s1_product_readiness_request_invalid",
+                    503,
+                    case_key=case_key,
+                )
+                safe_requests.append(
+                    {
+                        key: deepcopy(request[key])
+                        for key in (
+                            "request_id",
+                            "slot_id",
+                            "facet_id",
+                            "business_question_zh",
+                            "material_scope_ready",
+                            "requirement_count",
+                            "requirement_state_counts",
+                            "candidate_decision_counts",
+                            "numeric_authority_state",
+                            "readiness_state",
+                            "unexecuted_or_unavailable_routes",
+                        )
+                        if key in request
+                    }
+                )
+            validated[case_key] = {
+                key: deepcopy(value[key])
+                for key in (
+                    "schema_version",
+                    "status",
+                    "recorded_at",
+                    "prepared_from_commit",
+                    "case_key",
+                    "readiness_state",
+                    "request_count",
+                    "accepted_reviewed_evidence_count",
+                    "candidate_count",
+                    "declared_pack_gap_receipt_count",
+                    "gap_eligibility_receipt_count",
+                    "request_state_counts",
+                    "authority",
+                    "known_boundary",
+                )
+                if key in value
+            }
+            validated[case_key]["requests"] = safe_requests
+            validated[case_key]["result_digest"] = digest
+        return validated
 
     def _canonical_spine_for_pack(
         self,

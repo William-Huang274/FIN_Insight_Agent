@@ -22,6 +22,7 @@ import {
   ResearchEvidenceView,
   ResearchRetrievalView,
   S1CanonicalSpineView,
+  S1ProductReadinessView,
   ResearchWorkspaceApiClient,
 } from "../api/researchWorkspace";
 import "./research-workspace.css";
@@ -292,6 +293,18 @@ const decisionReasonLabels: Record<string, string> = {
   candidate_not_present_in_reviewed_pack: "尚未进入已审 Pack",
 };
 
+const productReadinessLabels: Record<string, string> = {
+  ready_for_current_scope: "当前范围可用",
+  partial_with_material_gaps: "材料仍有缺口",
+  blocked_by_candidate_coverage: "候选覆盖不足",
+  blocked_by_evidence_admission: "候选待证据准入",
+  blocked_by_local_data_materialization: "本地解析或对象化阻断",
+  blocked_by_numeric_or_bridge_authority: "等待 S2 数值或桥接",
+  blocked_by_retrieval_quality: "检索或排序质量阻断",
+  blocked_by_source_access: "官方来源访问阻断",
+  candidate_audit_only_explicit_scope_pending: "等待 S3 明确研究范围",
+};
+
 function RankingComparisonPanel({ comparison }: { comparison: NonNullable<ResearchRetrievalView["ranking_comparison"]> }) {
   return (
     <section className="research-workspace__panel">
@@ -376,6 +389,7 @@ function CaseOverview({ detail, evidence }: { detail: ResearchCaseDetail; eviden
 function EvidenceSurface({ evidence }: { evidence: ResearchEvidenceView }) {
   return (
     <>
+      <ProductReadinessPanel readiness={evidence.product_readiness ?? null} />
       <CanonicalSpinePanel spine={evidence.canonical_spine ?? null} />
       <section className="research-workspace__evidence-columns">
         <div className="research-workspace__panel">
@@ -390,6 +404,51 @@ function EvidenceSurface({ evidence }: { evidence: ResearchEvidenceView }) {
         </aside>
       </section>
     </>
+  );
+}
+
+function ProductReadinessPanel({ readiness }: { readiness: S1ProductReadinessView | null }) {
+  if (!readiness) return null;
+  const readyCount = readiness.request_state_counts.ready_for_current_scope ?? 0;
+  const coverageBlocked = readiness.request_state_counts.blocked_by_candidate_coverage ?? 0;
+  const admissionBlocked = readiness.request_state_counts.blocked_by_evidence_admission ?? 0;
+  return (
+    <section className="research-workspace__panel research-workspace__product-readiness">
+      <div className="research-workspace__section-title">
+        <h2>当前 S1 产品就绪诊断</h2>
+        <span>{productReadinessLabels[readiness.readiness_state] ?? readiness.readiness_state}</span>
+      </div>
+      <div className="research-workspace__metrics is-large">
+        <Metric value={readyCount} label="当前范围可用" />
+        <Metric value={coverageBlocked} label="候选覆盖阻断" warn />
+        <Metric value={admissionBlocked} label="待 Evidence 准入" warn />
+        <Metric value={readiness.accepted_reviewed_evidence_count} label="已复用审定 Evidence" />
+      </div>
+      <p className="research-workspace__product-readiness-note">
+        这里把“本地没找到候选”“候选已找到但尚未成为 Evidence”“等待 S2 数值”和“等待 S3 明确研究范围”分开显示。候选排名不会自动授予证据权威，当前也没有宣称 S1 已通过。
+      </p>
+      <div className="research-workspace__product-readiness-grid">
+        {readiness.requests.map((request) => (
+          <article key={request.request_id} className={`is-${request.readiness_state}`}>
+            <header>
+              <strong>{request.business_question_zh}</strong>
+              <span>{productReadinessLabels[request.readiness_state] ?? request.readiness_state}</span>
+            </header>
+            <p>{request.slot_id} / {request.facet_id}</p>
+            <div>
+              <small>命题 {request.requirement_count} · 覆盖阻断 {request.requirement_state_counts.blocked_by_candidate_coverage ?? 0} · 待准入 {request.requirement_state_counts.blocked_by_evidence_admission ?? 0}</small>
+              <small>候选：接受 {request.candidate_decision_counts.accepted} · 待复核 {request.candidate_decision_counts.needs_human_review} · 拒绝 {request.candidate_decision_counts.rejected}</small>
+              <small>数值口径：{request.numeric_authority_state.state}（{request.numeric_authority_state.resolved_count}/{request.numeric_authority_state.request_count} 已解析）</small>
+              {request.unexecuted_or_unavailable_routes.length ? <small>尚未执行路线：{request.unexecuted_or_unavailable_routes.join("、")}</small> : null}
+            </div>
+          </article>
+        ))}
+      </div>
+      <div className="research-workspace__canonical-bindings">
+        <DigestRow label="Readiness result" value={readiness.result_digest} />
+        <DigestRow label="Prepared commit" value={readiness.prepared_from_commit} />
+      </div>
+    </section>
   );
 }
 

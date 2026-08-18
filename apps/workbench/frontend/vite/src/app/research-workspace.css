@@ -173,6 +173,18 @@
 .research-workspace__candidate small { color: #84643c; line-height: 1.45; }
 
 .research-workspace__canonical-spine { border-top: 3px solid var(--research-green); }
+.research-workspace__product-readiness { border-top: 3px solid #356b8d; }
+.research-workspace__product-readiness-note { margin: 14px 0; padding: 11px 13px; border-radius: 8px; background: #eef6fb; color: #31566d; font-size: 12px; line-height: 1.6; }
+.research-workspace__product-readiness-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.research-workspace__product-readiness-grid article { min-width: 0; padding: 13px; border: 1px solid #dce6ec; border-left: 3px solid #bd8737; border-radius: 8px; background: #fbfdfe; }
+.research-workspace__product-readiness-grid article.is-ready_for_current_scope { border-left-color: var(--research-green); }
+.research-workspace__product-readiness-grid article.is-candidate_audit_only_explicit_scope_pending { border-left-color: #718090; }
+.research-workspace__product-readiness-grid header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.research-workspace__product-readiness-grid header strong { color: var(--research-ink); font-size: 12px; line-height: 1.45; }
+.research-workspace__product-readiness-grid header span { flex: 0 0 auto; color: #765725; font-size: 9px; font-weight: 800; }
+.research-workspace__product-readiness-grid article > p { margin: 7px 0; color: var(--research-muted); font-size: 9px; overflow-wrap: anywhere; }
+.research-workspace__product-readiness-grid article > div { display: grid; gap: 4px; }
+.research-workspace__product-readiness-grid small { color: #52615c; font-size: 9px; line-height: 1.45; }
 .research-workspace__canonical-note { margin: 14px 0; padding: 11px 13px; border-radius: 8px; background: #fff8e9; color: #765725; font-size: 12px; line-height: 1.6; }
 .research-workspace__decision-ledger { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
 .research-workspace__decision-ledger article { min-width: 0; padding: 11px; border: 1px solid #e1e7e3; border-radius: 8px; background: var(--research-paper); }
@@ -204,6 +216,7 @@
   .research-workspace__evidence-columns { grid-template-columns: 1fr; }
   .research-workspace__candidate-list { grid-template-columns: 1fr; }
   .research-workspace__decision-ledger,
+  .research-workspace__product-readiness-grid,
   .research-workspace__canonical-bindings { grid-template-columns: 1fr; }
   .research-workspace__ranking-routes,
   .research-workspace__ranking-queries > article > div { grid-template-columns: 1fr 1fr; }

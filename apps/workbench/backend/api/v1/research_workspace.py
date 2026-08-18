@@ -72,6 +72,7 @@ class ResearchWorkspaceEvidenceResponse(BaseModel):
     consumer_contract: dict[str, Any]
     hard_boundaries: dict[str, Any]
     canonical_spine: dict[str, Any] | None = None
+    product_readiness: dict[str, Any] | None = None
     known_boundary: str
     projection_digest: str
 

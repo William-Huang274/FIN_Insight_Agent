@@ -183,6 +183,9 @@ class ResearchWorkspaceService:
                 "consumer_contract": deepcopy(pack["consumer_contract"]),
                 "hard_boundaries": deepcopy(pack["hard_boundaries"]),
                 "canonical_spine": deepcopy(pack.get("canonical_spine")),
+                "product_readiness": deepcopy(
+                    pack.get("product_readiness")
+                ),
                 "known_boundary": str(self._config["known_boundary"]),
             }
         )

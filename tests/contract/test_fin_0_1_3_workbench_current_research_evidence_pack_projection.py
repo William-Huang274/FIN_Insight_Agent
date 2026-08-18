@@ -349,7 +349,7 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R23"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R24"
     )
     assert set(registry.by_id()) == {
         "application.config.current_financial_intent_ontology",
@@ -363,11 +363,15 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
         "application.config.current_research_workspace_catalog",
         "application.config.current_retrieval_need_policy",
         "application.config.current_s1_artifact_spine_policy",
+        "application.config.current_s1_product_readiness_catalog",
         "application.config.current_s1_runtime_binding_policy",
         "application.config.current_source_intake_policy",
         "application.result.current_research_local_evidence_packs",
         "application.result.current_reviewed_claim_anchors",
         "application.result.current_research_retrieval_snapshot",
+        "application.result.current_s1_dell_product_readiness",
+        "application.result.current_s1_mu_product_readiness",
+        "application.result.current_s1_nvda_product_readiness",
         "application.result.current_s1_runtime_binding_receipt",
         "application.result.current_s1_vs1_vertical_slice",
         "application.result.current_s1_vs2_complex_pdf_vertical",
@@ -413,6 +417,16 @@ def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None
         "current", frozenset({"current_product:read"})
     )
     expected_counts = {"DELL": 22, "MU": 11, "NVDA": 19}
+    expected_readiness = {
+        "DELL": (
+            "candidate_audit_only_explicit_scope_pending",
+            0,
+            0,
+            8,
+        ),
+        "MU": ("blocked_by_candidate_coverage", 4, 4, 0),
+        "NVDA": ("blocked_by_candidate_coverage", 3, 5, 0),
+    }
 
     for case_key, expected_count in expected_counts.items():
         pack = evidence.get_case(case_key, pack_principal)
@@ -423,6 +437,43 @@ def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None
         retrieval_case = retrieval.get_case(case_key, retrieval_principal)
 
         assert len(pack["evidence_items"]) == expected_count
+        product_readiness = pack["product_readiness"]
+        expected_state, candidate_blocked, admission_blocked, scope_pending = (
+            expected_readiness[case_key]
+        )
+        assert product_readiness["case_key"] == case_key
+        assert product_readiness["readiness_state"] == expected_state
+        assert product_readiness["request_count"] == 8
+        assert (
+            product_readiness["request_state_counts"]
+            ["blocked_by_candidate_coverage"]
+            == candidate_blocked
+        )
+        assert (
+            product_readiness["request_state_counts"]
+            ["blocked_by_evidence_admission"]
+            == admission_blocked
+        )
+        assert (
+            product_readiness["request_state_counts"]
+            ["candidate_audit_only_explicit_scope_pending"]
+            == scope_pending
+        )
+        assert product_readiness["authority"] == {
+            "S1_qualification_claimed": False,
+            "candidate_is_not_evidence": True,
+            "numeric_fact_authority_remains_with_S2": True,
+            "product_publication": False,
+            "public_information_gap_authority": False,
+        }
+        assert "full_result_ref" not in product_readiness
+        assert "full_result_sha256" not in product_readiness
+        assert not {
+            "candidate_text",
+            "candidate_id",
+            "source_text",
+            "private_source_material",
+        }.intersection(_all_keys(product_readiness))
         assert pack["canonical_spine"]["pack_binding"]["case_key"] == case_key
         assert (
             pack["canonical_spine"]["supplement_vertical"]
@@ -435,6 +486,7 @@ def test_r19_default_runtime_loads_three_capture_bound_case_successors() -> None
             is False
         )
         assert len(workspace_evidence["evidence_items"]) == expected_count
+        assert workspace_evidence["product_readiness"] == product_readiness
         assert retrieval_case["candidate_state"] == "candidate_not_evidence"
         assert (
             retrieval_case["canonical_spine"]["pack_binding"]["case_key"]

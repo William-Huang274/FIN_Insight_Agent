@@ -1,0 +1,29 @@
+{
+  "schema_version": "fin_ia_current_s1_product_readiness_catalog_v1_0",
+  "status": "active_read_only_s1_product_readiness_catalog",
+  "recorded_at": "2026-08-19",
+  "published_case_keys": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "case_resource_ids": {
+    "DELL": "application.result.current_s1_dell_product_readiness",
+    "MU": "application.result.current_s1_mu_product_readiness",
+    "NVDA": "application.result.current_s1_nvda_product_readiness"
+  },
+  "read_mode": "current",
+  "read_permission": "current_product:read",
+  "surface_policy": {
+    "candidate_text_exposure": false,
+    "private_source_material_exposure": false,
+    "candidate_identifier_exposure": false,
+    "request_level_readiness_exposure": true,
+    "candidate_decision_count_exposure": true,
+    "earliest_responsibility_layer_exposure": true,
+    "automatic_evidence_promotion": false,
+    "public_information_gap_authority": false,
+    "S1_qualification_authority": false
+  },
+  "known_boundary": "This catalog exposes only digest-bound public S1 Product CandidateDecision and PackReadiness summaries to the local Workbench. It does not expose candidate text, promote Evidence, declare a public-information gap, qualify S1 or authorize publication."
+}

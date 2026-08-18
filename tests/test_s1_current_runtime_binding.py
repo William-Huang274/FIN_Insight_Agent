@@ -25,13 +25,13 @@ POLICY = (
     ROOT
     / "configs"
     / "retrieval"
-    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_0.json"
+    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_1.json"
 )
 RECEIPT = (
     ROOT
     / "configs"
     / "runtime"
-    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_0.json"
+    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_1.json"
 )
 
 
@@ -55,7 +55,19 @@ def test_current_runtime_receipt_preserves_lineage_and_open_gates() -> None:
     assert receipt["embedding_index"][
         "cuda_only_learned_execution_policy_preserved"
     ] is True
-    assert receipt["acceptance"]["product_pack_readiness_producer_registered"] is False
+    assert receipt["acceptance"]["product_pack_readiness_producer_registered"] is True
+    assert receipt["acceptance"][
+        "product_pack_readiness_workbench_consumer_registered"
+    ] is True
+    assert receipt["product_readiness"]["cases"]["DELL"][
+        "readiness_state"
+    ] == "candidate_audit_only_explicit_scope_pending"
+    assert receipt["product_readiness"]["cases"]["MU"][
+        "readiness_state"
+    ] == "blocked_by_candidate_coverage"
+    assert receipt["product_readiness"]["cases"]["NVDA"][
+        "readiness_state"
+    ] == "blocked_by_candidate_coverage"
     assert receipt["acceptance"]["s1_qualified_stable"] is False
 
 
@@ -116,6 +128,14 @@ def test_current_runtime_receipt_fails_closed_on_digest_mutation() -> None:
 def test_current_runtime_receipt_fails_closed_if_s1_is_relabelled_passed() -> None:
     receipt = deepcopy(_read(RECEIPT))
     receipt["acceptance"]["s1_qualified_stable"] = True
+
+    with pytest.raises(CurrentS1RuntimeBindingError):
+        validate_current_s1_runtime_binding_receipt(receipt, _read(POLICY))
+
+
+def test_current_runtime_receipt_fails_closed_if_product_readiness_is_removed() -> None:
+    receipt = deepcopy(_read(RECEIPT))
+    receipt["product_readiness"]["cases"].pop("MU")
 
     with pytest.raises(CurrentS1RuntimeBindingError):
         validate_current_s1_runtime_binding_receipt(receipt, _read(POLICY))

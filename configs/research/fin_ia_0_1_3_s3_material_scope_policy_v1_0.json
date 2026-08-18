@@ -33,7 +33,7 @@
     ],
     "schema_burden": "Exact JSON with request IDs, integer indices and closed enums only; the Harness derives identity, dates, sources, requirement IDs, target entities and capacity.",
     "materiality_and_quality_risk": "A long research topic can otherwise be mistaken for one literal product, silently discarded as context, or expanded into invented aliases that make material coverage appear complete.",
-    "comparable_run_evidence": "The zero-call four-case replay found MU 4/4 and NVDA 6/6 scope-ready, but COST 3/5 and DELL 3/3 composite requests require explicit natural scope before product use.",
+    "comparable_run_evidence": "The zero-call four-case replay found MU 4/4 and NVDA 6/6 scope-ready, but COST 3/5 and DELL 3/3 composite requests require explicit natural scope before product use; aggregate runtime-scope readiness is COST 2/5 and DELL 0/3.",
     "reasoning_profile": "Bounded classification and decomposition; no candidate review, source search, financial fact inference or report writing.",
     "stop_and_truncation": "Fail closed on missing request, product disposition, required role, metric coverage, hard-product coverage, invalid temporal pairing or output truncation; never infer omitted atoms locally."
   },

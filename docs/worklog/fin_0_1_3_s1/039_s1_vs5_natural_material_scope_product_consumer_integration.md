@@ -2,7 +2,7 @@
 
 日期：2026-08-18
 
-状态：`product_consumer_integrated / deterministic_scope_replay_proven / one_natural_scope_canary_qualified / S1_not_qualified`
+状态：`product_consumer_integrated / deterministic_scope_replay_proven / natural_scope_execution_path_qualified / live_not_run / S1_not_qualified`
 
 ## 本轮解决的业务问题
 
@@ -39,3 +39,9 @@
 下一步只允许一个 DELL 自然材料范围 canary，不访问网络、不运行检索、不读取候选或 gold，也不生成判断或报告。它一次处理当前 8 个 explicit-scope request；输入规模、输出原子上限、exact JSON 负担、研究重要性、可比零调用证据、reasoning profile、截断和停止行为均冻结在 `configs/research/fin_ia_0_1_3_s3_material_scope_policy_v1_0.json` 的任务专属 `token_budget_basis`。该调用的价值不是“再问模型一次”，而是验证模型能否在看不到答案的情况下把自然复合研究题转成完整、受约束、可执行的材料范围。
 
 canary 通过后，只将同一 payload 接回当前 Workbench 计划并复跑一次 CUDA 候选路径；随后才检查 CandidateDecision／Evidence Gate／S2 权威和 Pack Readiness。失败则保留原始 capture，最早责任归自然范围编译或 Provider 合同，不自动扩大本体、token 或重试。COST 人工 reference、一套新的 Git 外 blind qualification、Evidence 晋升与 S1 产品资格仍是独立门。
+
+## Exact-once 执行路径预备
+
+当前已补齐 provider profile、候选盲 input、exact-once authority、capture-first terminal result 和 Project OS preflight 的统一执行路径；fake exact-once、profile／input digest 漂移、合同失败物化与当前 Runtime 注册表均通过测试。这里的“qualified”仅指执行基础设施具备签发条件，不表示 DeepSeek 已通过自然范围任务。
+
+第一次零调用输入 `v1_0` 绑定提交 `035d2210...`，完整复现 10 个 proposed／8 个 selected／2 个 deferred、8 个 explicit-scope request、128 个候选、58 个 NumericFact、0 网络／0 生成模型调用。模型消息只含请求公开索引与闭合枚举，不含候选、对象、qrel、reference、URL 或答案。该输入的每请求审计摘要因产品结果将 request ID 放在嵌套 `request` 对象而显示 `null`；模型可见内容与 required request binding 没有受影响，但该版本只保留为 superseded 审计证据，不进入付费 authority。修复后的输入必须由一个包含执行实现的干净提交重新生成，不能覆盖 `v1_0`。

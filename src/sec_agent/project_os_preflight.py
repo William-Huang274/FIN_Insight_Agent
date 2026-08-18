@@ -10,6 +10,12 @@ import re
 import subprocess
 from typing import Any
 
+from sec_agent.research.material_scope_canary import (
+    MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
+    MATERIAL_SCOPE_CANARY_RUN_SCOPE,
+    validate_material_scope_canary_authority,
+)
+
 
 CURRENT_PREFLIGHT_SCHEMA = "fin_ia_current_decision_bound_project_os_preflight_v1_0"
 FIXED_PACK_SCOPE = (
@@ -292,6 +298,10 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if decision.get("schema_version") == MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA:
+        return _validate_material_scope_canary_decision(
+            root=root, decision=decision
+        )
     if (
         decision.get("schema_version")
         == DYNAMIC_FIVE_CELL_VALUE_REPAIR_SUCCESSOR_DECISION_SCHEMA
@@ -545,6 +555,40 @@ def _validate_fixed_pack_decision(
         "recent_provider_steps": len(health["provider_steps"]),
         "claim_relation_alias_capacity_successor": alias_mode,
         "micro_judgment_successor": False,
+    }
+
+
+def _validate_material_scope_canary_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    bound = validate_material_scope_canary_authority(decision, root=root)
+    input_payload = bound["input"]
+    diagnostic = input_payload.get("product_diagnostic") or {}
+    if not (
+        input_payload.get("case_key") == "DELL"
+        and len(input_payload.get("required_request_ids") or ()) == 8
+        and diagnostic.get("selected_atom_count") == 8
+        and diagnostic.get("deferred_atom_count") == 2
+        and diagnostic.get("material_scope_required_request_count") == 8
+        and diagnostic.get("material_scope_ready_request_count") == 0
+        and diagnostic.get("network_calls") == 0
+        and diagnostic.get("model_calls") == 0
+    ):
+        raise ValueError("project_os_material_scope_canary_input_invalid")
+    return {
+        "clean_proof_status": input_payload["status"],
+        "provider_id": bound["profile"].provider_id,
+        "provider_model": bound["profile"].model,
+        "api_key_env": bound["api_key_env"],
+        "recent_provider_steps": 0,
+        "natural_material_scope_canary": True,
+        "node_profiles": {
+            "material_scope": {
+                "reasoning_effort": "max",
+                "max_tokens": 12000,
+                "response_format": {"type": "json_object"},
+            }
+        },
     }
 
 
@@ -4428,6 +4472,20 @@ def build_preflight(
         root=root, run_scope_id=str(decision["run_scope_id"])
     )
     if (
+        decision_projection.get("natural_material_scope_canary") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S1-024-generic-query-facets-and-shortlist-fusion-drop-"
+                "proposition-materiality-and-temporal-pairs"
+            ),
+            allowed_scope=MATERIAL_SCOPE_CANARY_RUN_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_material_scope_canary_scope_allowance_missing"
+        )
+    if (
         decision.get("status")
         == (
             "fixed_pack_claim_relation_alias_capacity_zero_call_pass_"
@@ -4653,7 +4711,15 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get(
+    if decision_projection.get("natural_material_scope_canary") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one exact-once "
+            "candidate-blind DELL natural material-scope call over eight "
+            "request-visible scopes. It permits no retrieval, candidate, "
+            "qrel, reference, hidden, Evidence, NumericFact, publication, "
+            "S1 acceptance, COST R3 or full-chain authority."
+        )
+    elif decision_projection.get(
         "dynamic_five_cell_value_repair_successor"
     ) is True:
         known_boundary = (

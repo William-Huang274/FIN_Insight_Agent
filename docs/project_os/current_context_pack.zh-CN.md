@@ -9,7 +9,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 Owner 最新更正已把当前优先级从继续 S3 successor 调整为 S1 全栈标准化：S1 必须交付 source／capture、OCR／parser／cleaning、chunk／object、index、query／recall／rerank／金融精排、Evidence／Coverage／gap 和 replay 的完整标准范式、当前主线实现与独立资格报告；DELL／MU／NVDA 只是开发／回归案例。S1-A–S1-J 只作为责任坐标，实际按共享 canonical artifact spine 上的 VS1–VS5 纵向 release slice 交付。VS1、VS2、VS3 与 DELL／MU／NVDA 三案 VS4 原已进入 R19 Runtime 和 Workbench；自然材料范围与产品消费者 seam 现将当前注册表推进到 R20。当前 successor Pack 为 DELL `22 Evidence / 14 gaps`、MU `11 / 15`、NVDA `19 / 13`；旧宽片段分别退役 3／16／14 条，加入 5／11／19 条 capture-bound 精确 claim，gap 分别窄化 1／2／3、关闭 0，MU 另增加 2 个明确归属 S2 的财务桥接 gap。三案 Candidate 自动晋升、NumericFact 新授权和 hard-negative false accept 均为 0。所有 learned Embedding／Cross-Encoder 只允许 CUDA／FP16，CUDA 不可用即 fail closed，绝不回退 CPU。当前只记 `three_case_VS4_vertical_slice_integrated`；10/10 命题有任一有效 top10 目标不等于所有正例找全，仍有 4 个 reviewed positive 未进入 candidate union，故 VS5 必须另测 all-positive material-facet coverage、frozen test、异质留出与 clean replay，`S1_qualified_stable` 仍为 false，不运行产品资格完整真实链。
 
-最新增量已把 request-bound Material Evidence Set v1.1 和候选盲的自然材料范围合同接入当前 Workbench 受控研究计划。四案保存资产的 fallback 候选材料组仍全部完整且排列稳定，但只有 MU 4／4、NVDA 6／6 请求达到 `runtime_scope_ready`；COST 2／5、DELL 0／3 的复合主题仍需自然 ResearchBlueprint。实际 DELL 产品纵切选择 8 个请求、延后 2 个，8／8 候选面非空，S2 返回 19 resolved／9 typed gap／58 NumericFact；learned route 在 CUDA／FP16 执行，产品正确返回 8／8 `explicit_scope_required`，没有把“候选能覆盖 fallback”冒充成“研究范围已准备”。当前状态为 `product_consumer_integrated / deterministic_scope_replay_proven / one_natural_scope_canary_qualified / S1_qualified_stable_false`；Candidate 仍非 Evidence，COST 人工 reference 与 replacement blind qualification 仍开放。
+最新增量已把 request-bound Material Evidence Set v1.1 和候选盲的自然材料范围合同接入当前 Workbench 受控研究计划。四案保存资产的 fallback 候选材料组仍全部完整且排列稳定，但只有 MU 4／4、NVDA 6／6 请求达到 `runtime_scope_ready`；COST 2／5、DELL 0／3 的复合主题仍需自然 ResearchBlueprint。实际 DELL 产品纵切选择 8 个请求、延后 2 个，8／8 候选面非空，S2 返回 19 resolved／9 typed gap／58 NumericFact；learned route 在 CUDA／FP16 执行，产品正确返回 8／8 `explicit_scope_required`，没有把“候选能覆盖 fallback”冒充成“研究范围已准备”。当前状态为 `product_consumer_integrated / deterministic_scope_replay_proven / natural_scope_execution_path_qualified / live_not_run / S1_qualified_stable_false`；Candidate 仍非 Evidence，COST 人工 reference 与 replacement blind qualification 仍开放。
 
 ## 当前唯一产品边界
 
@@ -643,3 +643,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 一次真实 DELL CUDA 产品诊断选择 8 个请求、延后 2 个；8／8 narrative lane 非空，S2 为 28 个 typed fact request 返回 19 resolved／9 gap／58 NumericFact。8 个自然复合题均正确停在 explicit scope，不冒充 S1 ready。
 - 集成时发现“所有材料候选绕过来源配额”的错误；现已把 hard reservation 限定为 requirement receipt 明确候选，其余只获得排序优先级。全仓 `672 passed`，活动图 161 Python／8 frontend／20 resources／0 forbidden reference。
 - 下一步只签发一次 DELL 8-request 自然 scope canary；0 网络、0 候选／gold 可见、0 retry。通过后才把结果接回 CUDA 检索并检查 EvidenceDecision／Gate／Pack Readiness；S1 资格、COST R3、既有 hidden 和 full-chain 仍禁止。
+
+## 2026-08-18 S1 DELL 自然 material-scope exact-once 预备
+
+- 已建立 provider-specific profile 置于核心合同之外、候选盲 input、exact-once authority、capture-first terminal result 和 Project OS preflight 的统一执行路径；它只允许一次 DELL 8-request Chat 调用，不允许检索、候选／qrel／reference／hidden 读取、Evidence／NumericFact 晋升、产品发布或 S1 验收。
+- 零调用 `v1_0` 输入在提交 `035d2210...` 上复现 10 proposed／8 selected／2 deferred、8 required／0 ready、128 个候选、58 个 NumericFact、0 网络／0 生成模型调用；模型消息不含候选身份或答案。
+- `v1_0` 的产品诊断 request ID 因读取旧顶层字段而显示 `null`。该问题不影响模型消息或 scope binding，但会损害逐请求审计，故 `v1_0` 保留为 superseded 证据、不得进入付费 authority；修复后必须从干净实现提交生成新输入。
+- 当前只证明执行路径工程资格，DeepSeek live 尚未发生，不能声称自然范围质量、S1、完整产品链或 release 通过。

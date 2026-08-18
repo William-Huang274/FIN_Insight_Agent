@@ -16,8 +16,8 @@
     "traversal_and_symlink_escape_forbidden": true
   },
   "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R20",
-  "resource_bytes": 2488150,
-  "resource_canonical_digest": "494cb959d6911af3dfb2f6e83caf6cef256da3e96ab475a605615bb40fa056de",
+  "resource_bytes": 2488210,
+  "resource_canonical_digest": "b430e36f565de44f410b08b8aff7c5cceebfabe9622eab1a85f78222f9eb60c2",
   "resource_count": 20,
   "resources": [
     {
@@ -99,7 +99,7 @@
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
     },
     {
-      "bytes": 2644,
+      "bytes": 2704,
       "classification": "provider_neutral_request_visible_material_scope_policy",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
@@ -108,7 +108,7 @@
       "repo_relative_path": "configs/research/fin_ia_0_1_3_s3_material_scope_policy_v1_0.json",
       "required": true,
       "resource_id": "application.config.current_research_material_scope_policy",
-      "sha256": "6f7f086aec3b3f1abd84d44719f84c09322b6f96512b5d5b719bbef769668194",
+      "sha256": "ba495c3ee9954b752b0aff0e8ccd4c74ca8e9bfb644a3d8ce4fdb6da4defcf1c",
       "source_owner": "sec_agent.research.material_scope.compile_research_material_scope"
     },
     {

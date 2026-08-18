@@ -22,6 +22,9 @@ from retrieval.product_pack_readiness import (  # noqa: E402
     compile_product_candidate_decision_ledger,
     compile_product_pack_readiness,
 )
+from retrieval.product_candidate_review import (  # noqa: E402
+    compile_product_candidate_review_packet,
+)
 from retrieval.query_plan import canonical_digest  # noqa: E402
 from sec_agent.runtime_bridge.paths import resolve_runtime_paths  # noqa: E402
 
@@ -40,6 +43,26 @@ def _read_json(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"product_readiness_json_not_mapping:{path.name}")
     return value
+
+
+def _read_jsonl_by_id(path: Path, id_field: str) -> dict[str, dict[str, Any]]:
+    rows: dict[str, dict[str, Any]] = {}
+    with path.open("r", encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            value = json.loads(line)
+            if not isinstance(value, dict):
+                raise ValueError(
+                    f"product_readiness_jsonl_row_invalid:{path.name}:{line_number}"
+                )
+            row_id = str(value.get(id_field) or "")
+            if not row_id or row_id in rows:
+                raise ValueError(
+                    f"product_readiness_jsonl_identity_invalid:{path.name}:{line_number}"
+                )
+            rows[row_id] = value
+    return rows
 
 
 def _sha256(path: Path) -> str:
@@ -85,9 +108,14 @@ def _public_projection(
     private_output: Path,
 ) -> dict[str, Any]:
     readiness = full_result["pack_readiness"]
+    review_packet = full_result["candidate_review_packet"]
+    review_by_request = {
+        row["request_id"]: row for row in review_packet["requests"]
+    }
     request_rows = []
     for row in readiness["requests"]:
         requirements = list(row["requirements"])
+        review = review_by_request[row["request_id"]]
         request_rows.append(
             {
                 "request_id": row["request_id"],
@@ -125,10 +153,18 @@ def _public_projection(
                 "unexecuted_or_unavailable_routes": row[
                     "route_execution_state"
                 ]["unexecuted_or_unavailable_routes"],
+                "candidate_review_summary": {
+                    "review_item_count": review["review_item_count"],
+                    "human_review_required_count": review[
+                        "human_review_required_count"
+                    ],
+                    "issue_class_counts": review["issue_class_counts"],
+                    "request_review_digest": review["request_review_digest"],
+                },
             }
         )
     body = {
-        "schema_version": "fin_ia_s1_current_product_readiness_result_v1_0",
+        "schema_version": "fin_ia_s1_current_product_readiness_result_v1_1",
         "status": "current_product_pack_readiness_materialized",
         "recorded_at": full_result["recorded_at"],
         "prepared_from_commit": full_result["prepared_from_commit"],
@@ -147,21 +183,39 @@ def _public_projection(
             readiness["declared_pack_gap_receipts"]
         ),
         "requests": request_rows,
+        "candidate_review_packet_summary": {
+            "schema_version": review_packet["schema_version"],
+            "status": review_packet["status"],
+            "review_item_count": review_packet["review_item_count"],
+            "human_review_required_count": review_packet[
+                "human_review_required_count"
+            ],
+            "issue_class_counts": review_packet["issue_class_counts"],
+            "review_packet_digest": review_packet["review_packet_digest"],
+            "private_packet_required_for_bounded_excerpt_projection": True,
+        },
         "full_result_ref": _relative(private_output),
         "full_result_sha256": None,
         "authority": readiness["authority"],
         "known_boundary": (
             "This public projection reports product CandidateDecision, current reviewed "
             "Evidence reuse, S2 numeric authority and gap eligibility without exposing "
-            "candidate text or private source material. It does not qualify S1, declare "
-            "a public-information gap or authorize publication."
+            "candidate text, object identifiers or private source material in the tracked "
+            "artifact. A digest-bound private packet may be projected as bounded excerpts "
+            "only inside the authenticated local Workbench. It does not qualify S1, "
+            "declare a public-information gap or authorize publication."
         ),
     }
     return body
 
 
 def materialize(
-    *, replay_path: Path, private_output: Path, public_output: Path
+    *,
+    replay_path: Path,
+    compiled_objects_path: Path,
+    source_records_path: Path,
+    private_output: Path,
+    public_output: Path,
 ) -> dict[str, Any]:
     _require_clean()
     replay = _read_json(replay_path)
@@ -184,6 +238,17 @@ def materialize(
         )
         for request_result in projection.get("request_results") or ()
     ]
+    compiled_objects = _read_jsonl_by_id(
+        compiled_objects_path, "compiled_object_id"
+    )
+    source_records = _read_jsonl_by_id(source_records_path, "evidence_id")
+    review_packet = compile_product_candidate_review_packet(
+        product_projection=projection,
+        candidate_decision_ledgers=ledgers,
+        compiled_objects_by_id=compiled_objects,
+        source_records_by_id=source_records,
+        recorded_at=recorded_at,
+    )
     readiness = compile_product_pack_readiness(
         product_projection=projection,
         evidence_pack=evidence_pack,
@@ -191,7 +256,7 @@ def materialize(
         recorded_at=recorded_at,
     )
     body = {
-        "schema_version": "fin_ia_s1_current_product_readiness_full_result_v1_0",
+        "schema_version": "fin_ia_s1_current_product_readiness_full_result_v1_1",
         "status": "current_product_pack_readiness_materialized",
         "recorded_at": recorded_at,
         "prepared_from_commit": _head(),
@@ -207,8 +272,17 @@ def materialize(
                 "artifact_digest": evidence_pack.get("artifact_digest"),
                 "pack_payload_digest": evidence_pack.get("pack_payload_digest"),
             },
+            "compiled_financial_objects": {
+                "ref": _relative(compiled_objects_path),
+                "sha256": _sha256(compiled_objects_path),
+            },
+            "current_source_records": {
+                "ref": _relative(source_records_path),
+                "sha256": _sha256(source_records_path),
+            },
         },
         "candidate_decision_ledgers": ledgers,
+        "candidate_review_packet": review_packet,
         "pack_readiness": readiness,
         "authority": readiness["authority"],
     }
@@ -228,11 +302,15 @@ def main() -> int:
         description="Materialize current S1 CandidateDecision and PackReadiness."
     )
     parser.add_argument("--replay", required=True)
+    parser.add_argument("--compiled-objects", required=True)
+    parser.add_argument("--source-records", required=True)
     parser.add_argument("--private-output", required=True)
     parser.add_argument("--public-output", required=True)
     args = parser.parse_args()
     result = materialize(
         replay_path=_resolve(args.replay),
+        compiled_objects_path=_resolve(args.compiled_objects),
+        source_records_path=_resolve(args.source_records),
         private_output=_resolve(args.private_output),
         public_output=_resolve(args.public_output),
     )

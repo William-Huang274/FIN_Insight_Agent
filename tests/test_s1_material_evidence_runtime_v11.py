@@ -580,3 +580,260 @@ def test_collective_axis_bundle_can_join_metric_table_and_mechanism_narrative() 
         "COBJ::TABLE",
         "COBJ::NARRATIVE",
     ]
+
+
+def test_collective_natural_need_can_enter_review_without_becoming_evidence() -> None:
+    request = {
+        "request_id": "ER::NATURAL",
+        "case_key": "DELL",
+        "target_entities": ["DELL"],
+        "metric_intents": ["backlog", "orders"],
+        "product_intents": ["AI server order growth", "backlog composition"],
+        "requested_facet_ids": ["orders_and_backlog"],
+        "period": {"fiscal_years": []},
+    }
+    plan = compile_requirement_plan(
+        evidence_request=request,
+        material_requirements=[
+            {
+                "requirement_id": "REQ::NATURAL",
+                "facet_id": "orders_and_backlog",
+                "role": "direct",
+                "metric_ids": ["backlog", "orders"],
+                "product_ids": [
+                    "AI server order growth",
+                    "backlog composition",
+                ],
+                "target_entities": ["DELL"],
+                "period_mode": "any",
+                "fiscal_years": [],
+                "minimum_candidates": 1,
+                "coverage_mode": "collective_axes",
+                "priority": 1,
+            }
+        ],
+        review_k=2,
+        schema_version=PLAN_SCHEMA_V1_1,
+    )
+    base = {
+        "facet_id": "orders_and_backlog",
+        "role": "direct",
+        "fiscal_years": [2026],
+        "same_basis_key": "",
+        "financial_intent_compatibility": "abstain",
+        "candidate_comparability_only": True,
+        "numeric_relation_authority": False,
+    }
+    candidates = [
+        _candidate(
+            "COBJ::DELL::BACKLOG",
+            1,
+            ticker="DELL",
+            case_key="DELL",
+            bindings=[
+                {
+                    **base,
+                    "metric_ids": ["backlog", "orders"],
+                    "product_ids": [],
+                    "contextual_or_unclassified_need_product_intents": [
+                        "AI server order growth",
+                        "backlog composition",
+                    ],
+                }
+            ],
+        )
+    ]
+    result = select_request_bound_review(candidates=candidates, plan=plan)
+    assert result["met_requirement_ids"] == ["REQ::NATURAL"]
+    assert result["selected_candidate_ids"] == ["COBJ::DELL::BACKLOG"]
+    assert result["candidate_is_not_evidence"] is True
+    assert result["numeric_fact_authority"] is False
+    assert candidates[0]["material_bindings"][0]["product_ids"] == []
+    assert candidates[0]["material_bindings"][0][
+        "financial_intent_compatibility"
+    ] == "abstain"
+
+
+def test_collective_bundle_requires_every_selected_metric_and_product_term() -> None:
+    request = {
+        "request_id": "ER::EVERY_AXIS",
+        "case_key": "DELL",
+        "target_entities": ["DELL"],
+        "metric_intents": ["backlog", "orders"],
+        "product_intents": ["AI demand", "customer concentration"],
+        "requested_facet_ids": ["orders_and_backlog"],
+        "period": {"fiscal_years": []},
+    }
+    plan = compile_requirement_plan(
+        evidence_request=request,
+        material_requirements=[
+            {
+                "requirement_id": "REQ::EVERY_AXIS",
+                "facet_id": "orders_and_backlog",
+                "role": "direct",
+                "metric_ids": ["backlog", "orders"],
+                "product_ids": ["AI demand", "customer concentration"],
+                "target_entities": ["DELL"],
+                "period_mode": "any",
+                "fiscal_years": [],
+                "minimum_candidates": 1,
+                "coverage_mode": "collective_axes",
+                "priority": 1,
+            }
+        ],
+        review_k=2,
+        schema_version=PLAN_SCHEMA_V1_1,
+    )
+    partial = _candidate(
+        "COBJ::PARTIAL",
+        1,
+        ticker="DELL",
+        case_key="DELL",
+        bindings=[
+            {
+                "facet_id": "orders_and_backlog",
+                "role": "direct",
+                "metric_ids": ["backlog"],
+                "product_ids": [],
+                "contextual_or_unclassified_need_product_intents": ["AI demand"],
+                "fiscal_years": [2026],
+                "same_basis_key": "",
+            }
+        ],
+    )
+    result = select_request_bound_review(candidates=[partial], plan=plan)
+    assert result["met_requirement_ids"] == []
+    assert result["unmet_requirement_ids"] == ["REQ::EVERY_AXIS"]
+
+
+def test_collective_natural_need_remains_facet_role_and_exact_phrase_bound() -> None:
+    request = {
+        "request_id": "ER::BOUND_NATURAL",
+        "case_key": "DELL",
+        "target_entities": ["DELL"],
+        "metric_intents": [],
+        "product_intents": ["supplier constraints on GPUs"],
+        "requested_facet_ids": ["upstream_or_demand_counterevidence"],
+        "period": {"fiscal_years": []},
+    }
+    plan = compile_requirement_plan(
+        evidence_request=request,
+        material_requirements=[
+            {
+                "requirement_id": "REQ::BOUND_NATURAL",
+                "facet_id": "upstream_or_demand_counterevidence",
+                "role": "counter",
+                "metric_ids": [],
+                "product_ids": ["supplier constraints on GPUs"],
+                "target_entities": ["DELL"],
+                "period_mode": "any",
+                "fiscal_years": [],
+                "minimum_candidates": 1,
+                "coverage_mode": "collective_axes",
+                "priority": 1,
+            }
+        ],
+        review_k=3,
+        schema_version=PLAN_SCHEMA_V1_1,
+    )
+    common = {
+        "metric_ids": [],
+        "product_ids": [],
+        "fiscal_years": [2026],
+        "same_basis_key": "",
+    }
+    candidates = [
+        _candidate(
+            "COBJ::WRONG_ROLE",
+            1,
+            ticker="DELL",
+            case_key="DELL",
+            bindings=[
+                {
+                    **common,
+                    "facet_id": "upstream_or_demand_counterevidence",
+                    "role": "context",
+                    "contextual_or_unclassified_need_product_intents": [
+                        "supplier constraints on GPUs"
+                    ],
+                }
+            ],
+        ),
+        _candidate(
+            "COBJ::ADJACENT_PHRASE",
+            2,
+            ticker="DELL",
+            case_key="DELL",
+            bindings=[
+                {
+                    **common,
+                    "facet_id": "upstream_or_demand_counterevidence",
+                    "role": "counter",
+                    "contextual_or_unclassified_need_product_intents": [
+                        "memory industry supply constraints"
+                    ],
+                }
+            ],
+        ),
+    ]
+    result = select_request_bound_review(candidates=candidates, plan=plan)
+    assert result["selected_candidate_ids"] == []
+    assert result["request_alignment_excluded_candidate_ids"] == [
+        "COBJ::WRONG_ROLE",
+        "COBJ::ADJACENT_PHRASE",
+    ]
+    assert result["unmet_requirement_ids"] == ["REQ::BOUND_NATURAL"]
+
+
+def test_single_binding_does_not_use_unclassified_natural_review_phrase() -> None:
+    request = {
+        "request_id": "ER::TEMPORAL_NATURAL",
+        "case_key": "DELL",
+        "target_entities": ["DELL"],
+        "metric_intents": ["revenue"],
+        "product_intents": ["AI server revenue contribution"],
+        "requested_facet_ids": ["reported_results"],
+        "period": {"fiscal_years": [2025, 2026]},
+    }
+    plan = compile_requirement_plan(
+        evidence_request=request,
+        material_requirements=[
+            {
+                "requirement_id": "REQ::TEMPORAL_NATURAL",
+                "facet_id": "reported_results",
+                "role": "direct",
+                "metric_ids": ["revenue"],
+                "product_ids": ["AI server revenue contribution"],
+                "target_entities": ["DELL"],
+                "period_mode": "all_periods_same_basis",
+                "fiscal_years": [2025, 2026],
+                "minimum_candidates": 1,
+                "coverage_mode": "single_binding",
+                "priority": 1,
+            }
+        ],
+        review_k=2,
+        schema_version=PLAN_SCHEMA_V1_1,
+    )
+    candidate = _candidate(
+        "COBJ::TEMPORAL_CONTEXT_ONLY",
+        1,
+        ticker="DELL",
+        case_key="DELL",
+        bindings=[
+            {
+                "facet_id": "reported_results",
+                "role": "direct",
+                "metric_ids": ["revenue"],
+                "product_ids": [],
+                "contextual_or_unclassified_need_product_intents": [
+                    "AI server revenue contribution"
+                ],
+                "fiscal_years": [2025, 2026],
+                "same_basis_key": "BASIS::REVENUE",
+            }
+        ],
+    )
+    result = select_request_bound_review(candidates=[candidate], plan=plan)
+    assert result["selected_candidate_ids"] == []
+    assert result["unmet_requirement_ids"] == ["REQ::TEMPORAL_NATURAL"]

@@ -460,6 +460,53 @@ def _binding_matches_base(
     )
 
 
+def _collective_candidate_axes(
+    candidate: Mapping[str, Any],
+    group: Mapping[str, Any],
+    *,
+    case_key: str,
+    plan_schema: str,
+) -> tuple[frozenset[str], frozenset[str]]:
+    """Return request-visible axes that make a candidate worth reviewing.
+
+    A v1.1 natural ResearchBlueprint can require a product/topic phrase that is
+    deliberately absent from the deterministic product ontology.  The feature
+    compiler retains an exact request-visible phrase in
+    ``contextual_or_unclassified_need_product_intents``.  That is sufficient to
+    reserve the candidate for bounded review, but never to promote it to
+    Evidence.  Temporal ``single_binding`` paths do not call this helper and
+    therefore continue to require canonical correlated bindings.
+    """
+
+    if str(candidate.get("case_key") or "") != case_key:
+        return frozenset(), frozenset()
+    if not set(group["target_entities"]).intersection(
+        _strings(candidate.get("target_entities"))
+    ):
+        return frozenset(), frozenset()
+    metrics: set[str] = set()
+    products: set[str] = set()
+    required_metrics = set(group["metric_ids"])
+    required_products = set(group["product_ids"])
+    for binding in _candidate_bindings(candidate, plan_schema=plan_schema):
+        if not _binding_matches_base(binding, group, plan_schema=plan_schema):
+            continue
+        metrics.update(
+            required_metrics.intersection(_strings(binding.get("metric_ids")))
+        )
+        review_product_ids = set(_strings(binding.get("product_ids")))
+        if plan_schema == PLAN_SCHEMA_V1_1:
+            review_product_ids.update(
+                _strings(
+                    binding.get(
+                        "contextual_or_unclassified_need_product_intents"
+                    )
+                )
+            )
+        products.update(required_products.intersection(review_product_ids))
+    return frozenset(metrics), frozenset(products)
+
+
 def _matching_bindings(
     candidate: Mapping[str, Any],
     group: Mapping[str, Any],
@@ -511,38 +558,24 @@ def _candidate_contributes(
             case_key=case_key,
             plan_schema=plan_schema,
         )
-    if str(candidate.get("case_key") or "") != case_key:
-        return False
-    if not set(group["target_entities"]).intersection(
-        _strings(candidate.get("target_entities"))
-    ):
-        return False
-    base_bindings = tuple(
-        binding
-        for binding in _candidate_bindings(candidate, plan_schema=plan_schema)
-        if _binding_matches_base(binding, group, plan_schema=plan_schema)
-    )
-    if not base_bindings:
-        return False
     metric_required = bool(group["metric_ids"])
     product_required = bool(group["product_ids"])
     if not metric_required and not product_required:
-        return True
-    return any(
-        (
-            metric_required
-            and set(group["metric_ids"]).intersection(
-                _strings(binding.get("metric_ids"))
-            )
+        if str(candidate.get("case_key") or "") != case_key or not set(
+            group["target_entities"]
+        ).intersection(_strings(candidate.get("target_entities"))):
+            return False
+        return any(
+            _binding_matches_base(binding, group, plan_schema=plan_schema)
+            for binding in _candidate_bindings(candidate, plan_schema=plan_schema)
         )
-        or (
-            product_required
-            and set(group["product_ids"]).intersection(
-                _strings(binding.get("product_ids"))
-            )
-        )
-        for binding in base_bindings
+    metrics, products = _collective_candidate_axes(
+        candidate,
+        group,
+        case_key=case_key,
+        plan_schema=plan_schema,
     )
+    return bool(metrics or products)
 
 
 def _collective_bundle(
@@ -555,54 +588,51 @@ def _collective_bundle(
     """Choose the smallest stable set whose correlated bindings cover axes."""
 
     ordered = sorted(candidates, key=_candidate_sort_key)
-    metric_required = bool(group["metric_ids"])
-    product_required = bool(group["product_ids"])
-
-    def axes(candidate: Mapping[str, Any]) -> tuple[bool, bool]:
-        metric = False
-        product = False
-        for binding in _candidate_bindings(candidate, plan_schema=plan_schema):
-            if not _binding_matches_base(binding, group, plan_schema=plan_schema):
-                continue
-            metric = metric or bool(
-                set(group["metric_ids"]).intersection(
-                    _strings(binding.get("metric_ids"))
-                )
-            )
-            product = product or bool(
-                set(group["product_ids"]).intersection(
-                    _strings(binding.get("product_ids"))
-                )
-            )
-        return metric, product
-
+    required_metrics = set(group["metric_ids"])
+    required_products = set(group["product_ids"])
+    capacity = int(group.get("reserved_candidate_capacity") or 0)
     selected: list[Mapping[str, Any]] = []
-    metric_covered = not metric_required
-    product_covered = not product_required
-    while not (metric_covered and product_covered):
+    covered_metrics: set[str] = set()
+    covered_products: set[str] = set()
+    while not (
+        required_metrics.issubset(covered_metrics)
+        and required_products.issubset(covered_products)
+    ):
         best: Mapping[str, Any] | None = None
         best_gain = 0
         for candidate in ordered:
             if candidate in selected:
                 continue
-            metric, product = axes(candidate)
-            gain = int(metric and not metric_covered) + int(
-                product and not product_covered
+            metrics, products = _collective_candidate_axes(
+                candidate,
+                group,
+                case_key=case_key,
+                plan_schema=plan_schema,
+            )
+            gain = len(metrics.difference(covered_metrics)) + len(
+                products.difference(covered_products)
             )
             if gain > best_gain:
                 best = candidate
                 best_gain = gain
-        if best is None:
+        if best is None or len(selected) >= capacity:
             return []
         selected.append(best)
-        metric, product = axes(best)
-        metric_covered = metric_covered or metric
-        product_covered = product_covered or product
+        metrics, products = _collective_candidate_axes(
+            best,
+            group,
+            case_key=case_key,
+            plan_schema=plan_schema,
+        )
+        covered_metrics.update(metrics)
+        covered_products.update(products)
     required = int(group["minimum_candidates"])
     for candidate in ordered:
         if len(selected) >= required:
             break
         if candidate not in selected:
+            if len(selected) >= capacity:
+                return []
             selected.append(candidate)
     return selected
 

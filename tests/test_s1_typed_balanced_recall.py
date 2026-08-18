@@ -182,7 +182,22 @@ def test_typed_balanced_recall_recovers_material_disclosure_crowded_out_by_broad
 
     assert "OBJ-TARGET-AGREEMENT" not in predecessor_ids
     assert "OBJ-TARGET-AGREEMENT" in successor_ids
-    assert successor["schema_version"] == "fin_ia_s1c_hybrid_candidate_result_v1_4"
+    assert successor["schema_version"] == "fin_ia_s1c_hybrid_candidate_result_v1_5"
     assert successor["query"]["lexical_recall"]["subquery_count"] >= 3
     assert successor["authority"]["candidate_is_not_evidence"] is True
     assert successor["authority"]["numeric_authority"] is False
+    assert len(successor["candidate_decision_seed"]) == successor["summary"][
+        "union_count_before_source_quota"
+    ]
+    seed_ids = {
+        row["compiled_object_id"] for row in successor["candidate_decision_seed"]
+    }
+    assert len(seed_ids) == len(successor["candidate_decision_seed"])
+    assert "OBJ-TARGET-AGREEMENT" in seed_ids
+    assert all(
+        row["candidate_not_evidence"] is True
+        and row["candidate_text_included"] is False
+        and row["evidence_promoted"] is False
+        and row["numeric_authority"] is False
+        for row in successor["candidate_decision_seed"]
+    )

@@ -586,6 +586,7 @@ class ResearchEvidencePackService:
             for key in (
                 "case_key",
                 "target_id",
+                "compiled_object_id",
                 "source_record_id",
                 "object_type",
                 "disposition",

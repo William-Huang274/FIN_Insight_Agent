@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
 from retrieval.candidate_decision import (
     compile_object_candidate_decision_ledger,
     compile_object_coverage_state,
     compile_object_pack_readiness,
     compile_object_workbench_projection,
 )
+from retrieval.product_pack_readiness import compile_product_candidate_decision_ledger
 from retrieval.query_plan import OwnerQuery, QueryLane
 
 
@@ -105,6 +108,87 @@ def _pack() -> dict[str, object]:
             }
         ],
     }
+
+
+def _product_request_result() -> dict[str, object]:
+    request = _request()
+    return {
+        "request": request,
+        "request_digest": "d" * 64,
+        "lanes": [
+            {
+                "lane": {
+                    "slot_id": "operating_performance",
+                    "facet_id": "reported_results",
+                    "evidence_owner_tickers": ["DELL"],
+                    "source_types": ["10-Q"],
+                    "owner_queries": [
+                        {
+                            "evidence_owner_ticker": "DELL",
+                            "relationship_direction": "subject_self_disclosure",
+                        }
+                    ],
+                }
+            }
+        ],
+        "hybrid_object_retrieval": {
+            "result_digest": "e" * 64,
+            "summary": {"union_count_before_source_quota": 4},
+            "candidate_decision_seed": [
+                _product_seed("OBJ-1", "SRC-1", "selected_for_material_review", 1),
+                _product_seed("OBJ-SIBLING", "SRC-1", "selected_for_material_review", 2),
+                _product_seed(
+                    "OBJ-EXCLUDED",
+                    "SRC-3",
+                    "excluded_by_material_requirement_alignment",
+                    3,
+                ),
+                _product_seed("OBJ-4", "SRC-4", "eligible_not_selected", 4),
+            ],
+        },
+    }
+
+
+def _product_seed(
+    object_id: str, source_id: str, alignment: str, rank: int
+) -> dict[str, object]:
+    return {
+        "compiled_object_id": object_id,
+        "source_record_id": source_id,
+        "lineage_source_record_ids": [source_id],
+        "ticker": "DELL",
+        "source_type": "10-Q",
+        "source_tier": "primary_sec_filing",
+        "publication_date": "2026-05-28",
+        "period_end": "2026-05-01",
+        "object_kind": "claim",
+        "rank_trace": {
+            "raw_union_rank": rank,
+            "financial_rank": rank,
+            "review_priority_rank": rank,
+            "final_output_rank": rank if rank < 4 else None,
+        },
+        "route_membership": ["bm25_lexical"],
+        "material_alignment_state": alignment,
+        "material_reserved_for_requirement": rank == 1,
+        "selected_requirement_ids": ["MER-1"] if rank == 1 else [],
+        "evidence_role": {"compatibility": "compatible", "advisory_only": True},
+        "candidate_not_evidence": True,
+        "candidate_text_included": False,
+        "evidence_promoted": False,
+        "numeric_authority": False,
+    }
+
+
+def _product_pack() -> dict[str, object]:
+    pack = deepcopy(_pack())
+    item = pack["evidence_items"][0]
+    item["compiled_object_id"] = "OBJ-1"
+    item["disposition"] = "accepted_direct_evidence"
+    item["slot_bindings"] = [
+        {"slot_id": "operating_performance", "facet_ids": ["reported_results"]}
+    ]
+    return pack
 
 
 def test_reviewed_source_without_exact_object_relation_needs_review() -> None:
@@ -216,4 +300,51 @@ def test_exact_compiled_object_binding_cannot_authorize_sibling_claim() -> None:
     assert ledger["decision_counts"]["needs_review"] == 1
     assert ledger["decisions"][0]["reason_codes"] == [
         "positive_development_object_not_bound_to_current_reviewed_pack"
+    ]
+
+
+def test_product_decision_materializes_full_union_without_new_promotion() -> None:
+    ledger = compile_product_candidate_decision_ledger(
+        request_result=_product_request_result(),
+        evidence_pack=_product_pack(),
+        recorded_at="2026-08-18",
+    )
+
+    assert ledger["candidate_count"] == 4
+    assert ledger["decision_counts"] == {
+        "accepted": 1,
+        "rejected": 1,
+        "unjudged": 1,
+        "needs_human_review": 1,
+    }
+    assert ledger["accepted_compiled_object_ids"] == ["OBJ-1"]
+    assert ledger["accepted_evidence_item_digests"] == ["b" * 64]
+    accepted = next(
+        row for row in ledger["decisions"] if row["compiled_object_id"] == "OBJ-1"
+    )
+    assert accepted["decision_authority"] == "current_reviewed_pack_exact_object_reuse"
+    assert accepted["candidate_text_promoted"] is False
+    assert accepted["new_evidence_created"] is False
+    assert all(row["numeric_authority"] is False for row in ledger["decisions"])
+
+
+def test_product_decision_facet_mismatch_fails_closed() -> None:
+    pack = _product_pack()
+    pack["evidence_items"][0]["slot_bindings"][0]["facet_ids"] = [
+        "unrelated_facet"
+    ]
+
+    ledger = compile_product_candidate_decision_ledger(
+        request_result=_product_request_result(),
+        evidence_pack=pack,
+        recorded_at="2026-08-18",
+    )
+
+    assert ledger["decision_counts"]["accepted"] == 0
+    original = next(
+        row for row in ledger["decisions"] if row["compiled_object_id"] == "OBJ-1"
+    )
+    assert original["decision_state"] == "needs_human_review"
+    assert "reviewed_item_facet_not_bound_to_current_request" in original[
+        "reason_codes"
     ]

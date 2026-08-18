@@ -69,6 +69,9 @@ HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION = (
 HYBRID_RESULT_TYPED_BALANCED_SCHEMA_VERSION = (
     "fin_ia_s1c_hybrid_candidate_result_v1_4"
 )
+HYBRID_RESULT_PRODUCT_DECISION_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_result_v1_5"
+)
 
 _REQUIRED_AUTHORITY = {
     "candidate_is_not_evidence": True,
@@ -495,7 +498,8 @@ def retrieve_hybrid_candidates(
             )
         )
     financial_features_by_id: dict[str, dict[str, Any]] = {}
-    ordered_ids = list(union_ids)
+    raw_union_ids = list(union_ids)
+    ordered_ids = list(raw_union_ids)
     if financial_ranking_enabled:
         ranked = rank_financial_candidate_union(
             union_object_ids=union_ids,
@@ -513,6 +517,7 @@ def retrieve_hybrid_candidates(
         financial_features_by_id = {
             str(row["compiled_object_id"]): row for row in ranked
         }
+    financial_order_ids = list(ordered_ids)
     reserved_material_id_set = set(reserved_material_ids)
     if material_review_order_ids:
         material_review_order_id_set = set(material_review_order_ids)
@@ -524,6 +529,7 @@ def retrieve_hybrid_candidates(
                 if object_id not in material_review_order_id_set
             ),
         ]
+    review_priority_ids = list(ordered_ids)
     selected_ids: list[str] = []
     source_counts: dict[str, int] = {}
     for object_id in ordered_ids:
@@ -610,10 +616,125 @@ def retrieve_hybrid_candidates(
                 )
                 owner_counts[owner] += 1
 
-    selected: list[dict[str, Any]] = []
+    raw_union_rank_by_id = {
+        object_id: rank for rank, object_id in enumerate(raw_union_ids, start=1)
+    }
+    financial_rank_by_id = {
+        object_id: rank
+        for rank, object_id in enumerate(financial_order_ids, start=1)
+    }
+    review_priority_rank_by_id = {
+        object_id: rank
+        for rank, object_id in enumerate(review_priority_ids, start=1)
+    }
+    final_output_rank_by_id = {
+        object_id: rank for rank, object_id in enumerate(selected_ids, start=1)
+    }
+    material_selected_id_set = set(material_review_order_ids)
+    material_alignment_excluded_id_set = set(
+        (
+            material_selection.get("request_alignment_excluded_candidate_ids")
+            if material_selection
+            else ()
+        )
+        or ()
+    )
+    requirement_ids_by_candidate: dict[str, list[str]] = {}
+    if material_selection:
+        for receipt in material_selection.get("requirement_receipts") or ():
+            requirement_id = str(receipt.get("requirement_id") or "")
+            for object_id in receipt.get("selected_candidate_ids") or ():
+                requirement_ids_by_candidate.setdefault(str(object_id), []).append(
+                    requirement_id
+                )
+
     relationship_by_owner = dict(
         zip(lane.evidence_owner_tickers, lane.relationship_constraints)
     )
+    candidate_decision_seed: list[dict[str, Any]] = []
+    for object_id in raw_union_ids:
+        row = objects_by_id[object_id]
+        base = row["base_object_view"]
+        source_id = str(base["source_record_id"])
+        owner = str(base["ticker"])
+        owner_maps = owner_route_maps.get(owner)
+        effective_bm25_ranks = owner_maps[0] if owner_maps else bm25_ranks
+        effective_qwen_ranks = owner_maps[2] if owner_maps else qwen_ranks
+        routes = []
+        if object_id in effective_bm25_ranks:
+            routes.append("bm25_lexical")
+        if object_id in effective_qwen_ranks:
+            routes.append("qwen3_embedding_0_6b_dense")
+        evidence_role = None
+        if evidence_role_advisory_enabled:
+            evidence_role = {
+                **evaluate_evidence_role(
+                    {
+                        "ticker": owner,
+                        "section": base.get("section"),
+                        "subsection": base.get("subsection"),
+                        "source_type": base.get("source_type"),
+                        "object_kind": row.get("object_kind"),
+                        "document_text": row.get("model_text"),
+                        "structured_projection": row.get("structured_projection"),
+                    },
+                    slot_id=lane.slot_id,
+                    facet_id=lane.facet_id,
+                    subject_ticker=lane.subject_ticker,
+                    evidence_owner_ticker=owner,
+                    relationship_direction=relationship_by_owner.get(owner),
+                ).as_dict(),
+                "advisory_only": True,
+                "decision_authority": False,
+            }
+        if object_id in material_selected_id_set:
+            alignment_state = "selected_for_material_review"
+        elif object_id in material_alignment_excluded_id_set:
+            alignment_state = "excluded_by_material_requirement_alignment"
+        else:
+            alignment_state = "eligible_not_selected"
+        candidate_decision_seed.append(
+            {
+                "compiled_object_id": object_id,
+                "source_record_id": source_id,
+                "lineage_source_record_ids": list(
+                    row.get("lineage_source_record_ids") or (source_id,)
+                ),
+                "ticker": owner,
+                "source_type": str(base["source_type"]),
+                "source_tier": str(base["source_tier"]),
+                "publication_date": str(base["publication_date"]),
+                "period_end": str(base.get("period_end") or ""),
+                "object_kind": str(row["object_kind"]),
+                "rank_trace": {
+                    "raw_union_rank": raw_union_rank_by_id[object_id],
+                    "financial_rank": financial_rank_by_id[object_id],
+                    "review_priority_rank": review_priority_rank_by_id[object_id],
+                    "final_output_rank": final_output_rank_by_id.get(object_id),
+                },
+                "route_membership": routes,
+                "route_ranks": {
+                    "bm25_lexical": effective_bm25_ranks.get(object_id),
+                    "qwen3_embedding_0_6b_dense": effective_qwen_ranks.get(
+                        object_id
+                    ),
+                },
+                "material_alignment_state": alignment_state,
+                "material_reserved_for_requirement": (
+                    object_id in reserved_material_id_set
+                ),
+                "selected_requirement_ids": sorted(
+                    set(requirement_ids_by_candidate.get(object_id, ()))
+                ),
+                "evidence_role": evidence_role,
+                "candidate_not_evidence": True,
+                "candidate_text_included": False,
+                "evidence_promoted": False,
+                "numeric_authority": False,
+            }
+        )
+
+    selected: list[dict[str, Any]] = []
     for object_id in selected_ids:
         row = objects_by_id[object_id]
         base = row["base_object_view"]
@@ -713,7 +834,7 @@ def retrieve_hybrid_candidates(
     )
     body = {
         "schema_version": (
-            HYBRID_RESULT_TYPED_BALANCED_SCHEMA_VERSION
+            HYBRID_RESULT_PRODUCT_DECISION_SCHEMA_VERSION
             if typed_balanced_lexical_enabled
             else HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION
             if material_aware
@@ -783,6 +904,8 @@ def retrieve_hybrid_candidates(
         "candidates": selected,
         "authority": dict(_REQUIRED_AUTHORITY),
     }
+    if typed_balanced_lexical_enabled:
+        body["candidate_decision_seed"] = candidate_decision_seed
     if material_aware:
         body["material_evidence"] = {
             "compiler_receipt": material_compiler_receipt,
@@ -1193,6 +1316,7 @@ __all__ = [
     "HYBRID_RESULT_SCHEMA_VERSION",
     "HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION",
     "HYBRID_RESULT_TYPED_BALANCED_SCHEMA_VERSION",
+    "HYBRID_RESULT_PRODUCT_DECISION_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION",

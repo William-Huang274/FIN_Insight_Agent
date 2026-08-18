@@ -476,9 +476,10 @@ def test_material_aware_successor_compiles_and_reserves_before_output_cut() -> N
         material_runtime_policy=material_policy,
         intent_ontology=ontology,
         retrieval_need_policy=need_policy,
+        typed_balanced_lexical_enabled=True,
     )
 
-    assert result["schema_version"].endswith("v1_3")
+    assert result["schema_version"].endswith("v1_5")
     assert result["summary"]["material_reservation_active"] is True
     assert result["summary"]["material_scope_ready"] is True
     assert result["summary"]["material_set_complete"] is True
@@ -494,6 +495,23 @@ def test_material_aware_successor_compiles_and_reserves_before_output_cut() -> N
         == "before_source_quota_owner_balance_and_output_cut"
     )
     assert result["authority"]["numeric_authority"] is False
+    seeds = result["candidate_decision_seed"]
+    assert len(seeds) == result["summary"]["union_count_before_source_quota"]
+    assert len({row["compiled_object_id"] for row in seeds}) == len(seeds)
+    assert {
+        row["material_alignment_state"] for row in seeds
+    } <= {
+        "selected_for_material_review",
+        "excluded_by_material_requirement_alignment",
+        "eligible_not_selected",
+    }
+    direct_seed = next(
+        row for row in seeds if row["compiled_object_id"] == "OBJ-DIRECT"
+    )
+    assert direct_seed["material_reserved_for_requirement"] is True
+    assert direct_seed["selected_requirement_ids"]
+    assert direct_seed["rank_trace"]["final_output_rank"] is not None
+    assert all(row["candidate_text_included"] is False for row in seeds)
 
 
 def test_material_requirement_reservation_does_not_exempt_filler_from_source_quota() -> None:

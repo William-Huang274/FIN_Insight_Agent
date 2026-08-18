@@ -7,9 +7,11 @@ from pathlib import Path
 import pytest
 
 from retrieval.product_evidence_successor import (
+    ADJUDICATION_PLAN_SCHEMA_VERSION,
     POLICY_SCHEMA_VERSION,
     ProductEvidenceSuccessorError,
     build_product_evidence_successor,
+    compile_product_evidence_adjudication_policy,
 )
 from retrieval.query_plan import canonical_digest
 from sec_agent.research.reviewed_evidence_pack import (
@@ -231,6 +233,75 @@ def _policy(packet: dict, predecessor: dict) -> dict:
     return {**body, "policy_digest": canonical_digest(body)}
 
 
+def _plan(packet: dict, predecessor: dict) -> dict:
+    accepted = packet["requests"][0]["review_items"][0]
+    requirement_id = accepted["requirement_contexts"][0]["requirement_id"]
+    body = {
+        "schema_version": ADJUDICATION_PLAN_SCHEMA_VERSION,
+        "status": "approved_internal_engineering_plan",
+        "plan_id": "PLAN-1",
+        "case_key": "MU",
+        "research_as_of": "2026-08-06",
+        "candidate_review_packet_digest": packet["review_packet_digest"],
+        "predecessor_pack_payload_digest": predecessor["pack_payload_digest"],
+        "default_claim_action": "reject_for_current_scope",
+        "metric_row_action": "delegate_to_s2_numeric_authority",
+        "qualified_human_review": False,
+        "S1_qualification_authorized": False,
+        "product_publication_authorized": False,
+        "successor_known_boundary": "Internal engineering Evidence successor only.",
+        "accepted_items": [
+            {
+                "review_item_ref": accepted["review_item_ref"],
+                "action": "accept_for_requirements",
+                "requirement_ids": [requirement_id],
+                "business_meaning_zh": "多年期客户承诺支持需求可见性。",
+                "claim_boundary_zh": "不证明最终出货或利润实现。",
+                "reason_codes": ["official_current_claim_material"],
+            }
+        ],
+    }
+    return {**body, "plan_digest": canonical_digest(body)}
+
+
+def test_compact_plan_expands_to_complete_item_decisions() -> None:
+    packet = _packet()
+    predecessor = _predecessor()
+
+    policy = compile_product_evidence_adjudication_policy(
+        candidate_review_packet=packet,
+        plan=_plan(packet, predecessor),
+    )
+
+    actions = {
+        row["review_item_ref"]: row["action"] for row in policy["decisions"]
+    }
+    assert actions == {
+        "CANDOBJ::ONE": "accept_for_requirements",
+        "CANDOBJ::TWO": "reject_for_current_scope",
+    }
+    assert policy["source_plan_digest"] == _plan(packet, predecessor)["plan_digest"]
+
+
+def test_compact_plan_cannot_reference_candidate_outside_bound_packet() -> None:
+    packet = _packet()
+    predecessor = _predecessor()
+    plan = _plan(packet, predecessor)
+    plan["accepted_items"][0]["review_item_ref"] = "CANDOBJ::UNKNOWN"
+    plan_body = deepcopy(plan)
+    plan_body.pop("plan_digest")
+    plan["plan_digest"] = canonical_digest(plan_body)
+
+    with pytest.raises(
+        ProductEvidenceSuccessorError,
+        match="product_evidence_adjudication_override_identity_invalid",
+    ):
+        compile_product_evidence_adjudication_policy(
+            candidate_review_packet=packet,
+            plan=plan,
+        )
+
+
 def test_successor_merges_one_claim_into_explicit_proposition_bindings(
     tmp_path: Path,
 ) -> None:
@@ -376,3 +447,67 @@ def test_metric_row_can_only_delegate_to_s2(tmp_path: Path) -> None:
     assert result["decision_counts"]["delegate_to_s2_numeric_authority"] == 1
     assert result["successor_pack"]["evidence_items"] == predecessor["evidence_items"]
     assert result["authority"]["numeric_fact_authority"] is False
+
+
+def test_request_context_is_preserved_without_satisfying_a_requirement(
+    tmp_path: Path,
+) -> None:
+    compiled, source, parent, _ = _source_graph(tmp_path)
+    predecessor = _predecessor()
+    packet = _packet()
+    packet["requests"] = packet["requests"][:1]
+    item = packet["requests"][0]["review_items"][0]
+    item["review_scope"] = "material_review_context"
+    item["requirement_contexts"] = []
+    item_body = deepcopy(item)
+    item_body.pop("review_item_digest")
+    item["review_item_digest"] = canonical_digest(item_body)
+    packet_body = deepcopy(packet)
+    packet_body["review_item_count"] = 1
+    packet_body.pop("review_packet_digest")
+    packet = {**packet_body, "review_packet_digest": canonical_digest(packet_body)}
+    policy_body = {
+        "schema_version": POLICY_SCHEMA_VERSION,
+        "status": "approved_internal_engineering_adjudication",
+        "policy_id": "POLICY-CONTEXT",
+        "case_key": "MU",
+        "research_as_of": "2026-08-06",
+        "candidate_review_packet_digest": packet["review_packet_digest"],
+        "predecessor_pack_payload_digest": predecessor["pack_payload_digest"],
+        "qualified_human_review": False,
+        "S1_qualification_authorized": False,
+        "product_publication_authorized": False,
+        "successor_known_boundary": "Internal request context only.",
+        "decisions": [
+            {
+                "review_item_ref": item["review_item_ref"],
+                "review_item_digest": item["review_item_digest"],
+                "action": "accept_for_request_context",
+                "requirement_ids": [],
+                "business_meaning_zh": "作为当前需求判断的反方背景。",
+                "claim_boundary_zh": "不直接证明订单、出货或利润实现。",
+                "reason_codes": ["material_counter_context"],
+            }
+        ],
+    }
+    policy = {**policy_body, "policy_digest": canonical_digest(policy_body)}
+
+    result = build_product_evidence_successor(
+        predecessor=predecessor,
+        product_projection={
+            **_projection(),
+            "request_results": _projection()["request_results"][:1],
+        },
+        candidate_review_packet=packet,
+        policy=policy,
+        compiled_objects_by_id={"COBJ::ONE": compiled},
+        source_records_by_id={"SRC-1": source},
+        parent_documents_by_id={"DOC-1": parent},
+        capture_resolver=Path,
+        recorded_at="2026-08-19",
+    )
+
+    binding = result["successor_pack"]["evidence_items"][0]["slot_bindings"][0]
+    assert binding["binding_kind"] == "request_context"
+    assert binding["requirement_ids"] == []
+    assert result["decision_counts"]["accept_for_request_context"] == 1

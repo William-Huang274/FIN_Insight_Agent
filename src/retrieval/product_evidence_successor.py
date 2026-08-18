@@ -16,10 +16,14 @@ from sec_agent.research.reviewed_evidence_pack import (
 )
 
 
+ADJUDICATION_PLAN_SCHEMA_VERSION = (
+    "fin_ia_s1_product_evidence_adjudication_plan_v1_0"
+)
 POLICY_SCHEMA_VERSION = "fin_ia_s1_product_evidence_adjudication_policy_v1_0"
 RESULT_SCHEMA_VERSION = "fin_ia_s1_product_evidence_successor_result_v1_0"
 DECISION_ACTIONS = (
     "accept_for_requirements",
+    "accept_for_request_context",
     "reject_for_current_scope",
     "delegate_to_s2_numeric_authority",
 )
@@ -57,6 +61,102 @@ def _review_items_by_ref(packet: Mapping[str, Any]) -> dict[str, Mapping[str, An
         "product_evidence_review_item_identity_invalid",
     )
     return by_ref
+
+
+def compile_product_evidence_adjudication_policy(
+    *,
+    candidate_review_packet: Mapping[str, Any],
+    plan: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Expand a bounded adjudication plan into one decision per review item.
+
+    The tracked plan stays compact: only accepted items need bespoke business
+    reasoning.  Every unlisted claim is explicitly rejected for the current
+    scope and every metric row is delegated to S2.  The packet digest prevents
+    those defaults from silently applying to a different candidate set.
+    """
+
+    normalized_plan = deepcopy(dict(plan))
+    plan_digest = str(normalized_plan.pop("plan_digest", ""))
+    packet_digest = str(candidate_review_packet.get("review_packet_digest") or "")
+    case_key = str(plan.get("case_key") or "").upper()
+    _require(
+        plan.get("schema_version") == ADJUDICATION_PLAN_SCHEMA_VERSION
+        and plan.get("status") == "approved_internal_engineering_plan"
+        and plan_digest == canonical_digest(normalized_plan)
+        and case_key
+        and case_key
+        == str(candidate_review_packet.get("case_key") or "").upper()
+        and str(plan.get("candidate_review_packet_digest") or "")
+        == packet_digest
+        and str(plan.get("default_claim_action") or "")
+        == "reject_for_current_scope"
+        and str(plan.get("metric_row_action") or "")
+        == "delegate_to_s2_numeric_authority"
+        and plan.get("qualified_human_review") is False
+        and plan.get("S1_qualification_authorized") is False
+        and plan.get("product_publication_authorized") is False,
+        "product_evidence_adjudication_plan_invalid",
+    )
+    review_by_ref = _review_items_by_ref(candidate_review_packet)
+    raw_overrides = [
+        _mapping(value, "product_evidence_adjudication_override_invalid")
+        for value in plan.get("accepted_items") or ()
+    ]
+    overrides = {
+        str(value.get("review_item_ref") or ""): value for value in raw_overrides
+    }
+    _require(
+        len(raw_overrides) == len(overrides)
+        and set(overrides) <= set(review_by_ref)
+        and all(overrides),
+        "product_evidence_adjudication_override_identity_invalid",
+    )
+    decisions: list[dict[str, Any]] = []
+    for review_ref in sorted(review_by_ref):
+        review = review_by_ref[review_ref]
+        override = overrides.get(review_ref)
+        if override is not None:
+            decision = {
+                **dict(override),
+                "review_item_digest": review.get("review_item_digest"),
+            }
+        elif review.get("object_kind") == "metric_row":
+            decision = {
+                "review_item_ref": review_ref,
+                "review_item_digest": review.get("review_item_digest"),
+                "action": "delegate_to_s2_numeric_authority",
+                "requirement_ids": [],
+                "reason_codes": ["metric_authority_owned_by_S2"],
+            }
+        else:
+            decision = {
+                "review_item_ref": review_ref,
+                "review_item_digest": review.get("review_item_digest"),
+                "action": "reject_for_current_scope",
+                "requirement_ids": [],
+                "reason_codes": ["not_selected_for_current_proposition_bound_pack"],
+            }
+        decisions.append(decision)
+    policy_body = {
+        "schema_version": POLICY_SCHEMA_VERSION,
+        "status": "approved_internal_engineering_adjudication",
+        "policy_id": plan.get("plan_id"),
+        "case_key": case_key,
+        "research_as_of": plan.get("research_as_of"),
+        "candidate_review_packet_digest": packet_digest,
+        "predecessor_pack_payload_digest": plan.get(
+            "predecessor_pack_payload_digest"
+        ),
+        "qualified_human_review": False,
+        "S1_qualification_authorized": False,
+        "product_publication_authorized": False,
+        "successor_known_boundary": plan.get("successor_known_boundary"),
+        "source_plan_id": plan.get("plan_id"),
+        "source_plan_digest": plan_digest,
+        "decisions": decisions,
+    }
+    return {**policy_body, "policy_digest": canonical_digest(policy_body)}
 
 
 def _request_lanes(
@@ -201,6 +301,16 @@ def build_product_evidence_successor(
                 "product_evidence_acceptance_scope_invalid",
             )
             accepted_by_object.setdefault(object_id, []).append((review, decision))
+        elif action == "accept_for_request_context":
+            _require(
+                object_kind == "claim"
+                and review.get("review_scope") == "material_review_context"
+                and not requirement_ids
+                and str(decision.get("business_meaning_zh") or "")
+                and str(decision.get("claim_boundary_zh") or ""),
+                "product_evidence_context_acceptance_scope_invalid",
+            )
+            accepted_by_object.setdefault(object_id, []).append((review, decision))
         elif action == "delegate_to_s2_numeric_authority":
             _require(
                 object_kind == "metric_row" and not requirement_ids,
@@ -330,6 +440,11 @@ def build_product_evidence_successor(
                     "requirement_ids": sorted(
                         str(value) for value in decision.get("requirement_ids") or ()
                     ),
+                    "binding_kind": (
+                        "requirement_evidence"
+                        if decision.get("action") == "accept_for_requirements"
+                        else "request_context"
+                    ),
                     "business_meaning_zh": decision.get("business_meaning_zh"),
                     "claim_boundary_zh": decision.get("claim_boundary_zh"),
                     "qualification_id": policy.get("policy_id"),
@@ -457,9 +572,11 @@ def build_product_evidence_successor(
 
 
 __all__ = [
+    "ADJUDICATION_PLAN_SCHEMA_VERSION",
     "DECISION_ACTIONS",
     "POLICY_SCHEMA_VERSION",
     "RESULT_SCHEMA_VERSION",
     "ProductEvidenceSuccessorError",
+    "compile_product_evidence_adjudication_policy",
     "build_product_evidence_successor",
 ]

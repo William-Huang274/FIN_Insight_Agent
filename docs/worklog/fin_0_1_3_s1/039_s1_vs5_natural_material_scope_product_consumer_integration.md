@@ -91,3 +91,11 @@ R3 在 clean／synced 提交 `94fef96e...` 上通过 Project OS preflight 后 ex
 反过来，upstream requirement 虽在候选层 complete，却含 Micron memory supply、Microsoft AI infrastructure cost 和 NVIDIA inventory／export-control 等相邻披露。它们值得复核，但不能仅凭 query alignment 自动证明 Dell GPU 供应约束或 hyperscaler capex slowdown。RC-S1-029 因此只在 Candidate review 层关闭；Evidence 晋升仍必须逐 requirement 给出 accepted／rejected／unjudged／needs-review。
 
 下一责任层登记为 RC-S1-030：把当前 reviewed Evidence Pack 的精确 object／slot／facet／period 绑定与 12 个自然 requirement 对齐，再由 S2 NumericFact 独立满足 metric 轴，形成联合 Pack Readiness。不得把 candidate material completeness 当 Evidence completeness，也不得把 S2 已解决的数字误报成 S1 gap。
+
+## DELL Evidence＋NumericFact 联合就绪度 v1.0 诊断
+
+联合编译器已在 clean／synced 提交 `f9272cab...` 上零调用物化。12 个自然 requirement 均绑定显式审阅映射；当前 reviewed Pack 之外的候选不能晋升，S2 NumericFact 与 Evidence 权威保持分离。reported results、margin、cash、working capital 的 metric 轴由 S2 解析；backlog、orders、customer count、shipments 则诚实返回 S2-owned typed gap。初始统计为 3／12 fully satisfied、10／12 research-consumable、7／8 request research-consumable。
+
+该真实结果同时暴露 RC-S1-031：v1.0 用 supported／unsupported 表达产品轴，但材料主题是否被覆盖与命题真假方向不是同一件事。微软披露“持续投入 AI infrastructure、AI usage 增长”不支持 `hyperscaler capex slowdown`，却是反驳 slowdown 的有效材料；把它记成 unsupported 会误报 S1 缺口。v1.0 因而只保留为诊断，不进入 S1 gate。successor 必须逐产品轴分别记录 addressed／unaddressed 和 supports／contradicts／mixed／context-only／boundary-only。
+
+同一请求还暴露跨阶段 RC-S3-045：R3 选择了 hyperscaler capex slowdown，却只在 NVDA／MU／TSM 之外给出 MSFT 一个 hyperscaler，没有 AMZN／GOOGL／META，也没有显式 proxy。S1 不得越权扩大实体；当前只能形成 MSFT-specific bounded conclusion，不能推广至 hyperscaler class。该问题回传 S3 ResearchBlueprint，不能算 S1 source gap。

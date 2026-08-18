@@ -667,3 +667,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 未满足的 narrative metric term 不能一律算 S1 缺口：reported results、margin、cash、working capital 的请求指标已由 S2 fact mart 全部解析为 NumericFact。orders／conversion 的 backlog、orders、customer_count、shipments 仍为 typed metric gap，但已有部分定性 issuer Evidence 候选。
 - upstream 候选层 complete 也不能自动成为 Evidence：Micron memory supply、Microsoft AI infrastructure cost、NVIDIA inventory／export-control 只是相邻反方，尚不能证明 Dell GPU supply 或 hyperscaler capex 命题。
 - RC-S1-030 打开：审计当前 DELL reviewed Evidence Pack 的精确 object／slot／facet／period 绑定，建立逐 requirement CandidateDecision，并与 S2 NumericFact 合成 Pack Readiness。不得用 candidate completeness 冒充 Evidence completeness，不得把 S2 已解决的数字重新归为检索失败。S1、完整 S3、发布仍为 false。
+
+## 2026-08-18 S1／S2 DELL 联合 Pack Readiness v1.0 诊断
+
+- clean／synced 提交 `f9272cab...` 上完成一次零调用联合物化：当前 reviewed Evidence 逐 requirement 显式绑定，S2 NumericFact 独立满足 metric 轴；0 candidate／Evidence 晋升、0 新 NumericFact、0 public-gap 声明。
+- 初始结果为 3／12 requirement fully satisfied、10／12 research-consumable、7／8 request research-consumable。reported results、margin、cash、working-capital 数字由 S2 权威覆盖；backlog、orders、customer count、shipments 明确归为 S2 fact-mart typed gap，不再误报 S1。
+- RC-S1-031 打开：v1.0 把“材料主题已覆盖”和“材料支持该假设”混为 supported／unsupported。Microsoft 的持续 AI 投入证据虽反驳 `hyperscaler capex slowdown`，仍应算该主题被研究覆盖。v1.0 只作诊断，successor 必须把 coverage 与 supports／contradicts／mixed／context-only／boundary-only polarity 分开。
+- RC-S3-045 回传 S3：同一 scope 只指定 MSFT 一个 hyperscaler，遗漏 AMZN／GOOGL／META，S1 不得擅自扩实体，也不能从 MSFT 推导 hyperscaler-wide 结论。下一步仅允许零调用 polarity contract 修复和同 Pack／NumericFact successor；S1、完整 S3、发布仍为 false。

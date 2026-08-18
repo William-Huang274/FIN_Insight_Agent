@@ -1,0 +1,35 @@
+{
+  "authority": {
+    "next_gate": "evaluator_only_reference_and_cuda_execution_binding",
+    "qualification_execution_authorized": false
+  },
+  "bound_inputs": {
+    "overlay_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_runtime_overlay_v1_0.json",
+    "overlay_sha256": "38cafea92c71a4c4edd91e95083514f3ba33f04cebd6c4c7d7c44b36f9cb3f67",
+    "preregistration_ref": "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json",
+    "preregistration_sha256": "e16db48de84e6cb0e5c586032e4bff446307d2dbdad898999de8a935b7124749"
+  },
+  "outputs": [
+    {
+      "example_count": 5,
+      "ref": "eval_sets/fin_0_1_3_s1/inputs/valid_temporal/vs5_qualification_inputs_v1_1.jsonl",
+      "sha256": "0448a22f3fe8f741fc2a8103f9e62f71f56661879abdfe4d5ed98817096f6f3f",
+      "split": "valid_temporal",
+      "visibility": "runtime_visible"
+    }
+  ],
+  "recorded_at": "2026-08-18",
+  "schema_version": "fin_ia_s1_vs5_qualification_runtime_inputs_result_v1_1",
+  "status": "qualification_runtime_inputs_materialized_references_separate",
+  "summary": {
+    "candidate_is_not_evidence": true,
+    "case_count": 1,
+    "example_count": 5,
+    "generation_model_calls": 0,
+    "learned_vector_calls": 0,
+    "network_calls": 0,
+    "numeric_fact_authority": false,
+    "references_present_in_runtime_inputs": false,
+    "split_count": 1
+  }
+}

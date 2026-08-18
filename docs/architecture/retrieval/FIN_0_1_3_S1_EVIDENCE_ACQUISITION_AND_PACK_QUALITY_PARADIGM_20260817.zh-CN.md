@@ -506,3 +506,17 @@ learned vector／reranker 在 VS5 只允许 CUDA FP16；CUDA 不可用、设备�
 腾讯 FY2025 官方年报全 282 页均为可用原生 PDF layout，识别 425 个表区、6 个脚注并生成 1,264 个候选对象，0 低置信 material numeric token。它证明 non-SEC CJK／英文混合官方 PDF 可进入同一对象合同，但没有自然扫描页；因此真实扫描来源资格门保持失败，人工 raster mutation 不得代替。
 
 为避免 VS5 再造对象链，现有 financial object store builder 增加 provider-neutral `qualification_candidate` profile 与 `parsed_pdf_layout_document` 输入。旧 `current_product` profile 继续要求三案 issuer＋market role，不改变当前 Runtime；资格 profile 只检查 digest-bound official source、case owner、期间、parent／child lineage、表边界与对象容量，不要求行情快照，也绝不授予 Evidence／NumericFact 权威。后续对象构建、split 物化和检索仍必须从同一 builder 输出继续。
+
+## 23. VS5 命题重要性与跨期配对 successor（2026-08-18）
+
+COST valid-temporal R1 证明：官方对象已经存在、CUDA／FP16 候选执行也符合合同，但通用 QueryFacetPlan 把一个具体命题重新扩成了泛化的收入、会计政策和风险词；跨期比较又只表现为两个平铺年份，最终有限审阅头被重复的泛化候选占用。这不是继续更换 Embedding 就能关闭的问题，而是请求意图、时间关系和审阅容量在候选层丢失。
+
+当前 provider-neutral successor 因此增加以下约束，而不改变 Evidence 权限：
+
+1. `EvidenceRequest` 的实体、业务度量、产品／业务面、期间和关系先编译为独立 typed need；单项 need 先获得候选机会，再允许有界交叉组合，防止组合爆炸挤掉基础事实。
+2. 对当前请求中明确出现但尚未进入通用本体的精确业务短语，允许作为 exact-unmapped intent 检索；这只授予原词匹配，不授权同义词、代理指标或因果扩展。
+3. 同口径跨期问题必须携带 `same_metric_same_basis` 关系和所需财年组；短名单先保留每个请求年份的同一度量对象，再参与一般排序。
+4. 召回、learned reranker、Evidence Role 和最终审阅前缀继续分层。最终 review prefix 按候选 lane 有界轮转，避免一个 facet 或一条路线独占审阅容量；候选仍必须经过 Evidence Role、CandidateDecision 和 Evidence Gate，不能因为被保留就成为 Evidence。
+5. R1 的 v1 合同、代码摘要、输入、输出和失败结果保持不可变。上述能力仅进入 versioned v2 successor；任何旧 replay 继续走 v1。隐藏 test／holdout 输入不得因 successor 物化或读取。
+
+该结构目前只达到零调用 `engineering_pass`。它说明“请求含义和跨期比较不再在进入 CUDA 前被丢掉”，不说明 COST 检索质量已经通过。下一证明只允许使用预注册所剩的一次 valid-temporal execution；门槛保持不变，失败后不得自动进入 R3，也不得打开隐藏集。

@@ -10,6 +10,7 @@ from retrieval.candidate_ranking import (
     NeedRouteRanking,
     aggregate_all_need_pair_scores,
     evaluate_ranking,
+    fuse_lane_rankings_with_balanced_review_prefix,
     fuse_need_rankings,
     fuse_need_rankings_with_route_floors,
     rank_authority_indices,
@@ -180,6 +181,45 @@ def test_route_floor_is_ranking_input_order_invariant() -> None:
     assert [row.compiled_object_id for row in forward] == [
         row.compiled_object_id for row in reverse
     ]
+
+
+def test_balanced_review_prefix_prevents_one_lane_from_crowding_others() -> None:
+    lane_a = NeedRouteRanking(
+        route_id="financial_evidence_shortlist",
+        need_id="lane-a",
+        rows=tuple(
+            CandidateScore(compiled_object_id=value, score=float(10 - index))
+            for index, value in enumerate(("shared", "a2", "a3", "a4"))
+        ),
+    )
+    lane_b = NeedRouteRanking(
+        route_id="financial_evidence_shortlist",
+        need_id="lane-b",
+        rows=tuple(
+            CandidateScore(compiled_object_id=value, score=float(10 - index))
+            for index, value in enumerate(("shared", "b2", "b3", "b4"))
+        ),
+    )
+
+    result = fuse_lane_rankings_with_balanced_review_prefix(
+        (lane_b, lane_a), maximum=7, review_k=4
+    )
+
+    assert [row.compiled_object_id for row in result[:4]] == [
+        "shared",
+        "b2",
+        "a2",
+        "b3",
+    ]
+    assert {row.compiled_object_id for row in result} == {
+        "shared",
+        "a2",
+        "a3",
+        "a4",
+        "b2",
+        "b3",
+        "b4",
+    }
 
 
 def test_route_membership_does_not_create_authority() -> None:

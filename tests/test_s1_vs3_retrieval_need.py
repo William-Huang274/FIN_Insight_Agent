@@ -115,3 +115,78 @@ def test_retrieval_need_v11_cash_metric_aliases_exclude_free_cash_flow_cue() -> 
     metric = next(row for row in result.needs if row.need_kind == "metric")
     assert "net cash provided by operating activities" in metric.intent_alias_groups[0]
     assert "free cash flow" not in metric.role_cues
+
+
+def test_retrieval_need_budget_preserves_each_request_intent_before_cross_products() -> None:
+    _, request, lane, _ = _first_atom()
+    policy = _json(
+        "configs/retrieval/fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_2.json"
+    )
+    ontology = _json(
+        "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json"
+    )
+    request = replace(
+        request,
+        metric_intents=("revenue",),
+        product_intents=(
+            "comparable sales",
+            "traffic",
+            "average ticket",
+            "e-commerce",
+            "gasoline prices",
+        ),
+    )
+    result = compile_retrieval_needs(
+        request=request,
+        lane=lane,
+        policy=policy,
+        intent_ontology=ontology,
+    )
+
+    standalone = {
+        row.intent_terms[0]
+        for row in result.needs
+        if row.need_kind in {"metric", "product"}
+    }
+    assert standalone == {
+        "revenue",
+        "comparable sales",
+        "traffic",
+        "average ticket",
+        "e-commerce",
+        "gasoline prices",
+    }
+    assert all(
+        row.lexical_query == " ".join(row.intent_terms)
+        for row in result.needs
+        if row.need_kind != "facet_role"
+    )
+
+
+def test_period_only_product_surface_becomes_typed_temporal_constraint_not_product_need() -> None:
+    _, request, lane, _ = _first_atom()
+    policy = _json(
+        "configs/retrieval/fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_2.json"
+    )
+    ontology = _json(
+        "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json"
+    )
+    request = replace(
+        request,
+        metric_intents=("revenue", "operating cash flow"),
+        product_intents=("FY2024 FY2025 comparison",),
+        period=replace(request.period, fiscal_years=(2024, 2025)),
+    )
+    result = compile_retrieval_needs(
+        request=request,
+        lane=lane,
+        policy=policy,
+        intent_ontology=ontology,
+    )
+
+    assert all(
+        "FY2024 FY2025 comparison" not in row.intent_terms
+        for row in result.needs
+    )
+    assert all(row.fiscal_years == (2024, 2025) for row in result.needs)
+    assert all(row.same_basis_comparison_required for row in result.needs)

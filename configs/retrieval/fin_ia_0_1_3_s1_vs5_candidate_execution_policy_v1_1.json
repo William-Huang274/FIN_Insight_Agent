@@ -1,0 +1,216 @@
+{
+  "schema_version": "fin_ia_s1_vs5_candidate_execution_policy_v1_1",
+  "status": "frozen_before_successor_qualification_ranking",
+  "recorded_at": "2026-08-18",
+  "program_id": "FIN-0.1.3-S1-VS5-QUALIFICATION",
+  "purpose_zh": "在保持 COST R1 失败证据不可变、不得读取隐藏集的前提下，验证 provider-neutral 的命题意图保留、跨期同口径候选保留与 facet 均衡 review prefix；仍只生成 Candidate，不授予 Evidence 或 NumericFact。",
+  "lineage": {
+    "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_candidate_execution_policy_v1_0.json",
+    "parent_policy_sha256": "3ef075dce44d5a28a3722d175c5c772ce5af54a2bfc263ff13c80a701a9e7b19",
+    "parent_candidate_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_candidate_execution_result_v1_0.json",
+    "parent_candidate_result_sha256": "c9b8ca94632bcfe5aff26e47c57b79c6f94f3b6ca4ebd0f885d9220b5ff92994",
+    "parent_evaluation_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_evaluation_result_v1_0.json",
+    "parent_evaluation_result_sha256": "f3b04e96ce4aaccae4f0c00debe2e3238e2cc3ba8743189607bff8e04f7e9966",
+    "attempt_disposition": "valid_temporal_r2_of_maximum_two",
+    "thresholds_changed": false,
+    "hidden_inputs_or_references_opened": false
+  },
+  "budget_correction": {
+    "finding": "COST R1 证明对象和正确候选多数已存在，但通用查询编译把 facet/行业通用词重复塞入每个 need，有限预算先生成笛卡尔组合并挤掉后续命题意图，跨期问题也没有显式保留两期同口径候选；最终前 20 条还会被某一 facet 的重复候选占满。",
+    "disposition": "不改阈值、不加入 qrel 词、对象 ID 或答案 URL；每个请求点名的 metric/product 先生成独立 need，再生成组合；期间伪 product 编译为 typed temporal constraint；金融 shortlist 为请求的每个年度保留同指标候选；review prefix 在各 facet 间确定性轮转。",
+    "why_not_quality_reduction": "不删除命题、facet、对象、召回器或重排器，也不缩小 review_k；只让有限预算首先回答用户实际命题，并把候选多样性与 Evidence/NumericFact 权威继续分开。",
+    "all_needs_cartesian_product": false,
+    "maximum_relevant_needs_per_candidate": 3,
+    "changed_after_preserved_valid_temporal_r1_failure": true,
+    "hidden_labels_or_references_used": false
+  },
+  "bound_inputs": {
+    "preregistration": {
+      "ref": "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json",
+      "sha256": "e16db48de84e6cb0e5c586032e4bff446307d2dbdad898999de8a935b7124749"
+    },
+    "runtime_overlay": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_runtime_overlay_v1_0.json",
+      "sha256": "38cafea92c71a4c4edd91e95083514f3ba33f04cebd6c4c7d7c44b36f9cb3f67"
+    },
+    "runtime_inputs_result": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_runtime_inputs_result_v1_1.json",
+      "sha256": "6286ab67e6f2616015d9b17426594aa5df38f65bd100f8cff5d327aa37e2602b"
+    },
+    "compiled_objects_result": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_compiled_objects_result_v1_0.json",
+      "sha256": "7d38fdaf0535a94953d70a27dca8cdf6075db5b77be243780f21a3deb0948f6f"
+    },
+    "cuda_preflight": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_cuda_preflight_result_v1_0.json",
+      "sha256": "cdeed003b93ea87ec7d1cd36c45b9f76c8a8cb259ef7659ed780bfa24cd0a0ca"
+    },
+    "candidate_ranking_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_8.json",
+      "sha256": "1d567e938eb688a3f2a997373b9d2a37fa77bebc172fed5b1e175bf34bf9cf72"
+    },
+    "retrieval_need_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_2.json",
+      "sha256": "d2137c3a0e2288662d91afb4ff36c31a312414beb0f2940b85023d2090ffc976"
+    },
+    "financial_intent_ontology": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+      "sha256": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242"
+    },
+    "qualification_runtime": {
+      "ref": "src/retrieval/qualification_runtime_v2.py",
+      "sha256": "9d61a430979d83e1b3012f1721529b8da223eb3213df9b97d3147f35a2da8e06"
+    },
+    "embedding_runtime": {
+      "ref": "src/retrieval/embedding_runtime.py",
+      "sha256": "e1778f246f56c2fe3ae5eb3baf09b1e0b647e95376beccd54b69a2c1885bada1"
+    },
+    "cross_encoder_runtime": {
+      "ref": "src/retrieval/cross_encoder.py",
+      "sha256": "d05afdc80866393b9c288e078a01ba238bd000a34014aa37d2c4834e81265e21"
+    },
+    "qualification_ranking_runtime": {
+      "ref": "src/retrieval/qualification_ranking.py",
+      "sha256": "01ecbcb90b8f548b20e8854b7d4f64639d1c074afe44fa8f757a179ad667c196"
+    },
+    "qualification_execution_runtime": {
+      "ref": "src/retrieval/qualification_execution.py",
+      "sha256": "4f8674305ef73f2bc702fc57d8f14a8151d64afaea74ac282039d1e09a4cc487"
+    },
+    "qualification_cuda_ranking_runtime": {
+      "ref": "src/retrieval/qualification_cuda_ranking.py",
+      "sha256": "2021f641c028e0e7f03daa0e1792f9cc30cfd44483037bcb67561e8f5a334c0c"
+    },
+    "qualification_candidate_runner": {
+      "ref": "scripts/data_retrieval/run_s1_vs5_qualification_candidates_successor.py",
+      "sha256": "be4e84cdd1c39b4ef8d598336de0b0a3f12bf9e1103166b070fb9ddc0dbabc84"
+    },
+    "query_plan_runtime": {
+      "ref": "src/retrieval/query_plan_v2.py",
+      "sha256": "3f96532deedea29f6137f53a6baf9510bfca4a47447c9a216f9cc58786bca885"
+    },
+    "retrieval_need_runtime": {
+      "ref": "src/retrieval/retrieval_need.py",
+      "sha256": "f39f782364ffde7e70b48ad63165020988af3240c0934b4c03e9422fa7f32b56"
+    },
+    "financial_intent_runtime": {
+      "ref": "src/retrieval/financial_intent_v2.py",
+      "sha256": "bf59884cfb7a4397d41bcc9900065c070997a8712601f7a35e6ac1edb620b469"
+    },
+    "evidence_role_runtime": {
+      "ref": "src/retrieval/evidence_role_v2.py",
+      "sha256": "ff4d0c1ca8c6fb5e7280e4bc5f3e9b44f83db1581e92aaa065198f7785482b01"
+    },
+    "financial_shortlist_runtime": {
+      "ref": "src/retrieval/financial_evidence_shortlist_v2.py",
+      "sha256": "97e8ec7b32c6099a08d7e9b3562fa5aa75c2c50aa93db3d902c04b9d56e76ab3"
+    },
+    "candidate_ranking_runtime": {
+      "ref": "src/retrieval/candidate_ranking.py",
+      "sha256": "aed14113a09a852d94269c6333575638a747fff2e42e745ce5c4900550ff69da"
+    },
+    "runtime_input_materializer": {
+      "ref": "scripts/data_retrieval/materialize_s1_vs5_qualification_runtime_inputs.py",
+      "sha256": "45cfc7a2524dd4e0096303e486466d5aa4cd710cf58d98ef3229d4c34488538d"
+    },
+    "zero_call_regression": {
+      "ref": "tests/test_s1_vs5_materiality_successor.py",
+      "sha256": "b6869d95fca5c242840f46b4f66dc9aa185b3c5349aab8cd1002cfc85e9b0d65"
+    },
+    "query_plan_base_runtime": {
+      "ref": "src/retrieval/query_plan.py",
+      "sha256": "c026689b833b01417a0dbb571f12fe8f65d09f349295868d5ca53297de10aea5"
+    },
+    "financial_intent_base_runtime": {
+      "ref": "src/retrieval/financial_intent.py",
+      "sha256": "07fd827c9857c8d70050ee0670fa263d26647c117b39f29f60b88a262d89cacd"
+    },
+    "evidence_role_base_runtime": {
+      "ref": "src/retrieval/evidence_role.py",
+      "sha256": "9819d21765c18ebfeda7bee9df8baa71189ee6c5952a6254d2e6b03d37039cde"
+    }
+  },
+  "candidate_contract": {
+    "first_stage_per_need_limit": 24,
+    "proposition_candidate_union_limit": 128,
+    "multi_vector_pool_limit": 96,
+    "reranker_pool_limit": 96,
+    "candidate_review_k": 20,
+    "reciprocal_rank_constant": 60,
+    "rank_authority_object_kinds": [
+      "claim",
+      "metric_row"
+    ],
+    "candidate_union_route_minimum_per_need": {
+      "typed_intent_alias_groups": 3,
+      "typed_metric_row_exact": 3
+    },
+    "maximum_relevant_needs_per_candidate": 3,
+    "final_review_prefix_mode": "deterministic_round_robin_across_requested_facets",
+    "final_review_prefix_length": 20,
+    "same_basis_temporal_candidate_reservation": true,
+    "standalone_request_intents_before_cross_products": true,
+    "generic_facet_terms_excluded_from_typed_need_queries": true,
+    "rerank_each_candidate_against_all_needs": false,
+    "rerank_only_against_needs_that_recalled_candidate": true,
+    "each_reranker_selects_its_own_best_relevant_need": true,
+    "same_pair_manifest_for_both_rerankers": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "parent_context_is_projection_not_rank_authority": true,
+    "evidence_role_is_independent_of_reranker_score": true,
+    "learned_vector_device": "cuda:0",
+    "learned_vector_precision": "fp16",
+    "cpu_vector_fallback_allowed": false
+  },
+  "token_budget_basis": {
+    "embedding_execution": {
+      "node_purpose": "为固定的 10618 个资格对象和 COST R2 的全部命题级 RetrievalNeed 生成 BGE dense/sparse/multi-vector 与 Qwen dense 候选信号。",
+      "input_scale": "对象全集不抽样；只执行预注册 valid_temporal 的 5 个 COST 命题；每个 facet 的查询数由 v1.2 materiality-first 编译结果决定，隐藏集不物化 successor 输入也不执行。",
+      "required_outputs": [
+        "完整对象 FP16 向量缓存",
+        "全部当前查询的 FP16 向量",
+        "CUDA FP16 dense、learned-sparse 与 multi-vector 相似度",
+        "内容寻址模型、对象与缓存凭证"
+      ],
+      "schema_burden": "固定维度数值数组和缓存 manifest，无生成式文本。",
+      "materiality_and_quality_risk": "漏对象或静默截断会把本地处理故障误报成信息 gap，因此不得为了速度抽样；512 tokens 继承对象 renderer 上限。",
+      "comparable_run_evidence": "COST R1 已在同一 RTX 4060 Laptop GPU、同一 10618 对象全集完成编码与双重排；R2 复用对象缓存但必须重新编码查询并按新的 pair manifest 重排。",
+      "reasoning_profile": "本地检索编码器；cuda:0；FP16；无生成推理。",
+      "stop_and_truncation": "BGE max 512/batch 4，Qwen max 512/batch 8；编码与 dense、learned-sparse、multi-vector 打分均为 CUDA FP16；GPU、模型 digest、对象 digest 或缓存身份漂移即失败；CPU fallback 为零。"
+    },
+    "reranker_per_model": {
+      "node_purpose": "在 COST R2 同一候选池上分别让 BGE 与 Qwen 判断候选是否直接满足实际召回它的金融 RetrievalNeed，并各自选择最佳 need。",
+      "input_scale": "5 个命题全部执行；每命题最多 96 个候选，每候选最多 3 个实际召回 need；每模型最多 1440 对。",
+      "maximum_pair_count": 1440,
+      "valid_temporal_maximum_pair_count": 1440,
+      "required_outputs": [
+        "每个 pair 一个有限分数",
+        "每个候选每个 reranker 的最佳 need",
+        "完整有限候选顺序与 pair manifest digest"
+      ],
+      "schema_burden": "有界 query-document 分数向量、候选/need 身份和内容寻址缓存。",
+      "materiality_and_quality_risk": "只选单一预判 need 会偏置模型，所有 need 笛卡尔积又会稀释证据角色；因此保留最多 3 个真实召回 need，并让两个模型独立选优。",
+      "comparable_run_evidence": "COST R1 每模型实际使用同一有界 pair manifest；R2 不减少候选或重排器，只因命题级 need 改变而重新生成 pair manifest。",
+      "reasoning_profile": "本地 cross-encoder/causal reranker；cuda:0；FP16；无训练、无联网、无生成式研究。",
+      "stop_and_truncation": "每 pair max 1024 tokens、batch 2；超 pair 上限、非有限分数、shape/digest 漂移或 GPU 不可用即失败；禁止 CPU fallback。"
+    }
+  },
+  "execution_order": [
+    "valid_temporal_candidate_generation",
+    "labels_loaded_only_by_separate_evaluator_after_candidate_output_is_immutable",
+    "owner_or_qualified_human_reference_review",
+    "fresh_test_frozen_authority_if_temporal_gate_is_eligible",
+    "fresh_holdout_authority_only_after_frozen_gate"
+  ],
+  "authority": {
+    "qualification_execution_authorized_by_this_policy": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "fine_tuning_authorized": false,
+    "candidate_is_evidence": false,
+    "numeric_fact_authority": false,
+    "s1_qualified": false,
+    "natural_scanned_official_source_gate_already_failed": true
+  }
+}

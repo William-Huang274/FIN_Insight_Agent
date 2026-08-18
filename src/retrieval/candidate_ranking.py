@@ -462,6 +462,74 @@ def fuse_need_rankings_with_route_floors(
     return tuple((protected_rows + remaining_rows)[:maximum])
 
 
+def fuse_lane_rankings_with_balanced_review_prefix(
+    rankings: Sequence[NeedRouteRanking],
+    *,
+    maximum: int,
+    review_k: int,
+    reciprocal_rank_constant: int = 60,
+) -> tuple[CandidateScore, ...]:
+    """Give every requested facet an equal chance inside the review window.
+
+    Repetition across several lanes is still useful after the review prefix,
+    but it must not consume the finite human/Agent review window before a
+    proposition's other approved facets are represented. The prefix is a
+    deterministic round-robin over lane-local financial rankings and consults
+    neither qrels nor business labels.
+    """
+
+    _validate_budget(maximum)
+    _validate_budget(review_k)
+    if review_k > maximum:
+        raise CandidateRankingError("candidate_review_budget_exceeds_maximum")
+    if not rankings:
+        return ()
+    full = fuse_need_rankings(
+        rankings,
+        maximum=max(
+            maximum,
+            len(
+                {
+                    row.compiled_object_id
+                    for ranking in rankings
+                    for row in ranking.rows
+                }
+            ),
+        ),
+        reciprocal_rank_constant=reciprocal_rank_constant,
+    )
+    score_by_id = {row.compiled_object_id: row.score for row in full}
+    lanes = tuple(sorted(rankings, key=lambda value: (value.need_id, value.route_id)))
+    offsets = [0] * len(lanes)
+    prefix_ids: list[str] = []
+    selected: set[str] = set()
+    while len(prefix_ids) < review_k:
+        progressed = False
+        for index, ranking in enumerate(lanes):
+            while offsets[index] < len(ranking.rows):
+                object_id = ranking.rows[offsets[index]].compiled_object_id
+                offsets[index] += 1
+                if object_id in selected or object_id not in score_by_id:
+                    continue
+                prefix_ids.append(object_id)
+                selected.add(object_id)
+                progressed = True
+                break
+            if len(prefix_ids) >= review_k:
+                break
+        if not progressed:
+            break
+    prefix_ids.extend(
+        row.compiled_object_id
+        for row in full
+        if row.compiled_object_id not in selected
+    )
+    return tuple(
+        CandidateScore(compiled_object_id=object_id, score=score_by_id[object_id])
+        for object_id in prefix_ids[:maximum]
+    )
+
+
 def route_membership(
     rankings: Sequence[NeedRouteRanking],
     candidate_ids: Sequence[str],
@@ -676,6 +744,7 @@ __all__ = [
     "exact_phrase_rank",
     "fuse_need_rankings",
     "fuse_need_rankings_with_route_floors",
+    "fuse_lane_rankings_with_balanced_review_prefix",
     "rank_need_dense_routes",
     "rank_need_intent_alias_routes",
     "rank_need_lexical_routes",

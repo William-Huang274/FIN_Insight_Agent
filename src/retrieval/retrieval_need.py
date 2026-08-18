@@ -16,9 +16,13 @@ RETRIEVAL_NEED_POLICY_SCHEMA_VERSIONS = frozenset(
     {
         RETRIEVAL_NEED_POLICY_SCHEMA_VERSION,
         "fin_ia_s1_vs3_retrieval_need_compiler_policy_v1_1",
+        "fin_ia_s1_vs3_retrieval_need_compiler_policy_v1_2",
     }
 )
 RETRIEVAL_NEED_SET_SCHEMA_VERSION = "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+RETRIEVAL_NEED_SET_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_s1_vs3_retrieval_need_set_v1_2"
+)
 
 _FORBIDDEN_QUERY_SURFACES = (
     re.compile(r"\bCOBJ::", re.IGNORECASE),
@@ -45,9 +49,15 @@ class RetrievalNeed:
     semantic_query: str
     constraint_digest: str
     intent_alias_groups: tuple[tuple[str, ...], ...] = ()
+    fiscal_years: tuple[int, ...] = ()
+    same_basis_comparison_required: bool = False
 
-    def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+    def as_dict(self, *, include_temporal: bool = True) -> dict[str, Any]:
+        value = asdict(self)
+        if not include_temporal:
+            value.pop("fiscal_years")
+            value.pop("same_basis_comparison_required")
+        return value
 
 
 @dataclass(frozen=True)
@@ -60,12 +70,18 @@ class RetrievalNeedSet:
     need_set_digest: str
 
     def as_dict(self) -> dict[str, Any]:
+        include_temporal = (
+            self.schema_version == RETRIEVAL_NEED_SET_SUCCESSOR_SCHEMA_VERSION
+        )
         return {
             "schema_version": self.schema_version,
             "request_id": self.request_id,
             "lane_id": self.lane_id,
             "facet_id": self.facet_id,
-            "needs": [row.as_dict() for row in self.needs],
+            "needs": [
+                row.as_dict(include_temporal=include_temporal)
+                for row in self.needs
+            ],
             "need_set_digest": self.need_set_digest,
         }
 
@@ -85,6 +101,10 @@ def compile_retrieval_needs(
     """
 
     _validate_policy(policy, intent_ontology=intent_ontology)
+    materiality_first = (
+        policy.get("schema_version")
+        == "fin_ia_s1_vs3_retrieval_need_compiler_policy_v1_2"
+    )
     if len(lane.evidence_owner_tickers) != 1:
         raise RetrievalNeedError("retrieval_need_one_owner_lane_required")
     if tuple(request.requested_facet_ids) != (lane.facet_id,):
@@ -102,7 +122,11 @@ def compile_retrieval_needs(
         raise RetrievalNeedError("retrieval_need_facet_role_cues_invalid")
 
     metrics = _unique(request.metric_intents)
-    products = _unique(request.product_intents)
+    products = _unique(
+        value
+        for value in request.product_intents
+        if not materiality_first or not _is_period_only_intent(value)
+    )
     if (
         intent_ontology is not None
         and request.acceptable_proxy is False
@@ -130,20 +154,34 @@ def compile_retrieval_needs(
             ):
                 filtered.append(cue)
         role_cues = _unique(filtered)
-    exact_phrases = _unique(
-        phrase
-        for query in lane.exact_queries
-        for phrase in _quoted(query)[1:]
+    exact_phrases = (
+        _unique((*metrics, *products))
+        if materiality_first
+        else _unique(
+            phrase
+            for query in lane.exact_queries
+            for phrase in _quoted(query)[1:]
+        )
     )
     if not exact_phrases:
         exact_phrases = role_cues[:2]
 
     specifications: list[tuple[str, tuple[str, ...]]] = []
-    for metric in metrics:
+    if materiality_first:
+        # Preserve one independent lane per approved intent before adding
+        # cross-products.  Cartesian-first compilation can starve later facets
+        # when the bounded maximum is reached.
+        specifications.extend(("metric", (metric,)) for metric in metrics)
+        specifications.extend(("product", (product,)) for product in products)
         for product in products:
-            specifications.append(("metric_product", (metric, product)))
-    specifications.extend(("metric", (metric,)) for metric in metrics)
-    specifications.extend(("product", (product,)) for product in products)
+            for metric in metrics:
+                specifications.append(("metric_product", (metric, product)))
+    else:
+        for metric in metrics:
+            for product in products:
+                specifications.append(("metric_product", (metric, product)))
+        specifications.extend(("metric", (metric,)) for metric in metrics)
+        specifications.extend(("product", (product,)) for product in products)
     specifications.extend(
         ("exact_phrase", (phrase,))
         for phrase in exact_phrases[: int(policy["maximum_exact_phrase_needs"])]
@@ -171,6 +209,7 @@ def compile_retrieval_needs(
         "source_types": list(lane.source_types),
         "required_source_roles": list(lane.required_source_roles),
         "forbidden_expansions": list(lane.forbidden_expansions),
+        "period": request.period.as_dict(),
     }
     constraint_digest = canonical_digest(constraints)
     needs: list[RetrievalNeed] = []
@@ -191,14 +230,34 @@ def compile_retrieval_needs(
                 product_intents=product_terms,
                 ontology=intent_ontology,
             )
-        lexical_terms = _unique((*terms, *role_cues))
+        lexical_terms = _unique(
+            role_cues
+            if kind == "facet_role"
+            else terms
+            if materiality_first
+            else (*terms, *role_cues)
+        )
         lexical_query = " ".join(lexical_terms)
+        fiscal_years = (
+            tuple(sorted(request.period.fiscal_years))
+            if materiality_first
+            else ()
+        )
+        comparison_required = materiality_first and len(fiscal_years) >= 2
         semantic_query = (
             f"Evidence owner: {owner}. Relationship: {relationship}. "
             f"Research facet: {lane.business_question_zh} "
             f"Required evidence role: {semantic_role}. "
             f"Focused intent: {', '.join(terms) if terms else 'facet-level evidence'}."
         )
+        if fiscal_years:
+            semantic_query += (
+                f" Requested fiscal years: {', '.join(str(value) for value in fiscal_years)}."
+            )
+        if comparison_required:
+            semantic_query += (
+                " Preserve same issuer, metric, unit and reporting basis across periods."
+            )
         _reject_leakage((lexical_query, semantic_query, *terms))
         needs.append(
             RetrievalNeed(
@@ -214,19 +273,31 @@ def compile_retrieval_needs(
                 semantic_query=semantic_query,
                 constraint_digest=constraint_digest,
                 intent_alias_groups=alias_groups,
+                fiscal_years=fiscal_years,
+                same_basis_comparison_required=comparison_required,
             )
         )
     if not needs:
         raise RetrievalNeedError("retrieval_need_set_empty")
     unsigned = {
-        "schema_version": RETRIEVAL_NEED_SET_SCHEMA_VERSION,
+        "schema_version": (
+            RETRIEVAL_NEED_SET_SUCCESSOR_SCHEMA_VERSION
+            if materiality_first
+            else RETRIEVAL_NEED_SET_SCHEMA_VERSION
+        ),
         "request_id": request.request_id,
         "lane_id": lane.lane_id,
         "facet_id": lane.facet_id,
-        "needs": [row.as_dict() for row in needs],
+        "needs": [
+            row.as_dict(include_temporal=materiality_first) for row in needs
+        ],
     }
     return RetrievalNeedSet(
-        schema_version=RETRIEVAL_NEED_SET_SCHEMA_VERSION,
+        schema_version=(
+            RETRIEVAL_NEED_SET_SUCCESSOR_SCHEMA_VERSION
+            if materiality_first
+            else RETRIEVAL_NEED_SET_SCHEMA_VERSION
+        ),
         request_id=request.request_id,
         lane_id=lane.lane_id,
         facet_id=lane.facet_id,
@@ -244,7 +315,10 @@ def _validate_policy(
         raise RetrievalNeedError("retrieval_need_policy_schema_invalid")
     if (
         policy.get("schema_version")
-        == "fin_ia_s1_vs3_retrieval_need_compiler_policy_v1_1"
+        in {
+            "fin_ia_s1_vs3_retrieval_need_compiler_policy_v1_1",
+            "fin_ia_s1_vs3_retrieval_need_compiler_policy_v1_2",
+        }
         and intent_ontology is None
     ):
         raise RetrievalNeedError("retrieval_need_intent_ontology_missing")
@@ -268,10 +342,46 @@ def _validate_policy(
         and 0 <= exact_maximum <= maximum
     ):
         raise RetrievalNeedError("retrieval_need_policy_budget_invalid")
+    if policy.get("schema_version") == "fin_ia_s1_vs3_retrieval_need_compiler_policy_v1_2":
+        successor = policy.get("materiality_first_contract")
+        if not (
+            isinstance(successor, Mapping)
+            and successor.get("standalone_intents_before_cross_products") is True
+            and successor.get("typed_lexical_query_excludes_generic_role_cues") is True
+            and successor.get("period_only_intent_compiled_as_temporal_constraint") is True
+            and successor.get("same_basis_comparison_explicit") is True
+        ):
+            raise RetrievalNeedError("retrieval_need_materiality_contract_invalid")
 
 
 def _quoted(value: str) -> tuple[str, ...]:
     return tuple(match.group(1).strip() for match in re.finditer(r'"([^"]+)"', value))
+
+
+def _is_period_only_intent(value: str) -> bool:
+    normalized = " ".join(re.sub(r"[^a-z0-9]+", " ", value.casefold()).split())
+    if not normalized:
+        return False
+    tokens = normalized.split()
+    temporal = {
+        "compare",
+        "compared",
+        "comparison",
+        "fiscal",
+        "fy",
+        "period",
+        "to",
+        "versus",
+        "vs",
+        "year",
+        "yoy",
+    }
+    return all(
+        token in temporal
+        or token.isdigit()
+        or bool(re.fullmatch(r"fy\d{4}", token))
+        for token in tokens
+    ) and any(token.isdigit() or re.fullmatch(r"fy\d{4}", token) for token in tokens)
 
 
 def _unique(values: Iterable[object]) -> tuple[str, ...]:
@@ -296,6 +406,7 @@ __all__ = [
     "RETRIEVAL_NEED_POLICY_SCHEMA_VERSION",
     "RETRIEVAL_NEED_POLICY_SCHEMA_VERSIONS",
     "RETRIEVAL_NEED_SET_SCHEMA_VERSION",
+    "RETRIEVAL_NEED_SET_SUCCESSOR_SCHEMA_VERSION",
     "RetrievalNeed",
     "RetrievalNeedError",
     "RetrievalNeedSet",

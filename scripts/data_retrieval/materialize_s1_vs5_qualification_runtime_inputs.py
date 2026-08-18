@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import sys
 from typing import Any, Mapping
 
@@ -15,7 +16,10 @@ if str(SRC_ROOT) not in sys.path:
 
 from retrieval.evaluation_assets import load_qualification_preregistration  # noqa: E402
 from retrieval.qualification_runtime import (  # noqa: E402
-    load_qualification_runtime_bundle,
+    load_qualification_runtime_bundle as load_qualification_runtime_bundle_v1,
+)
+from retrieval.qualification_runtime_v2 import (  # noqa: E402
+    load_qualification_runtime_bundle as load_qualification_runtime_bundle_v2,
 )
 
 
@@ -79,23 +83,49 @@ def parse_args() -> argparse.Namespace:
         "--public-result",
         default="configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_runtime_inputs_result_v1_0.json",
     )
+    parser.add_argument(
+        "--artifact-version",
+        default="v1_0",
+        help="Filename/schema suffix for an immutable successor materialization.",
+    )
+    parser.add_argument(
+        "--split",
+        choices=("valid_temporal", "test_frozen", "holdout_heterogeneous"),
+        help="Materialize only one label-free split; omit for the original all-split flow.",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    artifact_version = str(args.artifact_version).strip()
+    if not re.fullmatch(r"v[1-9][0-9]*_[0-9]+", artifact_version):
+        raise ValueError("qualification_runtime_artifact_version_invalid")
     prereg_path = _resolve(args.preregistration)
     overlay_path = _resolve(args.overlay)
     prereg = load_qualification_preregistration(prereg_path)
-    bundle = load_qualification_runtime_bundle(
+    load_bundle = (
+        load_qualification_runtime_bundle_v1
+        if artifact_version == "v1_0"
+        else load_qualification_runtime_bundle_v2
+    )
+    bundle = load_bundle(
         repo_root=ROOT,
         preregistration=prereg,
         overlay_path=overlay_path,
     )
     output_root = _resolve(args.output_root)
     bindings: list[dict[str, Any]] = []
-    for split, rows in bundle.inputs_by_split.items():
-        path = output_root / split / "vs5_qualification_inputs_v1_0.jsonl"
+    materialized_case_keys: set[str] = set()
+    selected_splits = (
+        (args.split,) if args.split else tuple(bundle.inputs_by_split)
+    )
+    for split in selected_splits:
+        rows = bundle.inputs_by_split[split]
+        materialized_case_keys.update(
+            str(row.runtime_input["case_identity"]["case_key"]) for row in rows
+        )
+        path = output_root / split / f"vs5_qualification_inputs_{artifact_version}.jsonl"
         _write_jsonl(path, [row.model_dump(mode="json") for row in rows])
         bindings.append(
             {
@@ -107,7 +137,10 @@ def main() -> int:
             }
         )
     result = {
-        "schema_version": "fin_ia_s1_vs5_qualification_runtime_inputs_result_v1_0",
+        "schema_version": (
+            "fin_ia_s1_vs5_qualification_runtime_inputs_result_"
+            f"{artifact_version}"
+        ),
         "status": "qualification_runtime_inputs_materialized_references_separate",
         "recorded_at": "2026-08-18",
         "bound_inputs": {
@@ -120,7 +153,7 @@ def main() -> int:
         "summary": {
             "split_count": len(bindings),
             "example_count": sum(row["example_count"] for row in bindings),
-            "case_count": len(prereg.cases),
+            "case_count": len(materialized_case_keys),
             "references_present_in_runtime_inputs": False,
             "candidate_is_not_evidence": True,
             "numeric_fact_authority": False,

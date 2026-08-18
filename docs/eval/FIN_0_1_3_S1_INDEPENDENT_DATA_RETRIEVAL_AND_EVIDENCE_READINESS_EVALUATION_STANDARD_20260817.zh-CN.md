@@ -338,3 +338,22 @@ DELL／MU／NVDA／ORCL／ASML／ANET／IFX.DE 已被机器合同排除。腾讯
 - evaluator reference 仍待 Owner／qualified-human 复核；这不妨碍运行 label-free temporal candidate generation，但在复核前不得执行或评分一次性的 frozen test／heterogeneous holdout 为最终资格结论。
 - CUDA preflight 已在 RTX 4060 Laptop 的 `cuda:0` 以 FP16 tensor 实际通过，四个本地 Embedding／Reranker 模型 digest 已绑定，CPU fallback 禁止。预检本身没有加载完整模型、没有生成对象向量，也不构成 execution authority。
 - 后续先运行 valid temporal；只有 runner、cache、结果与 reference review 都绑定干净 commit 后，才允许 test frozen 与 heterogeneous holdout 各执行一次。已知 natural-scan 硬门失败意味着本轮 VS5 不能最终通过，但其他门仍应自然执行并逐层归因，不能提前掩盖其余产品问题。
+
+## 13. valid-temporal R1 后的命题实质性 successor（2026-08-18）
+
+COST R1 已执行并失败：5 个命题 any-hit=`0.80`、20 条关键对象 recall=`0.60`、material facet／required role 均为 `0.642857`。20 条参考对象全部存在于官方对象库，故失败归属 query／typed need／financial shortlist／temporal pairing，不属于 source gap、parser 全面失败、CUDA 或 DeepSeek。
+
+第二次 valid-temporal 仍在预注册的最多两次范围内，但必须同时满足：
+
+1. R1 candidate、evaluation、runner、policy 和 raw 保持不可变；
+2. valid 结果只可支持通用结构选择，不能写入 qrel object ID、答案 URL、案例特例或调性能门槛；
+3. typed EvidenceRequest 的 metric／product 必须先以独立 need 保留，cross-product 只能使用剩余预算；
+4. facet／行业 pack 可生成 broad plan，但不得在 typed request 中覆盖或稀释命题点名词；
+5. 多期请求必须以 `fiscal_years + same_basis_comparison_required` 表达，并在 Candidate review 层保留同指标各期候选；该保留不是数值裁决；
+6. finite review prefix 必须防止一个 facet 的重复候选挤掉其他请求 facet，但不得把 required role 或 gold 标签作为 runtime 输入；
+7. 未进入 ontology 的精确业务词可逐字匹配，但任何 synonym／proxy 扩展仍须 ontology 权威；
+8. 旧 v1 合同若已被预注册 digest 或历史 artifact 绑定，successor 必须使用明确版本模块，不得原地修改后破坏历史 replay；
+9. 只允许物化 valid-temporal successor input；frozen test 与 heterogeneous holdout 在新配置正式冻结、valid 处置和 reference review 完成前不得执行；
+10. R2 通过仍只是 configuration selection evidence。test frozen、heterogeneous holdout、natural-scan、downstream Evidence Pack readiness、qualified-human reference review 和 Workbench consumer 均保持独立硬门。
+
+若 COST R2 再失败，不允许第三次 COST 资格重跑。此时须选择架构处置或另行预注册独立 temporal case，且不能沿用同一隐藏资格结论。

@@ -97,3 +97,9 @@
 - public SHA-256：`f3b04e96ce4aaccae4f0c00debe2e3238e2cc3ba8743189607bff8e04f7e9966`
 
 治理复证：评估器进入权限基线前全仓 `621 passed`、compileall、active baseline 通过，secret scan `7,109 / 0`；结果物化后 evaluator＋Project OS 定向 `35 passed`、active baseline 通过，secret scan `7,112 / 0`。评估结果没有改动 current Runtime Registry、Evidence Pack、Workbench 或任何历史 attempt。
+
+## 2026-08-18 后续治理更正
+
+上文“另行预注册一个新的、未观察 temporal case”不再是执行 COST successor 前的强制条件。机器预注册合同已在观察结果前冻结 `valid_temporal_max_executions=2`，Owner 随后授权在当前 S1／VS5 内完成结构修复并执行剩余一次 valid run。
+
+正确边界为：R1 失败永久不可变；不得调门槛、写入对象 ID／答案 URL或打开 hidden split；第二次 COST 只用于验证跨案例通用结构修复，不能单独证明泛化或 S1 资格。若 R2 再失败，则不得进入 COST R3，届时才转为架构处置或新 temporal case 决策。具体 successor 设计与回放证据见 `033_s1_vs5_materiality_temporal_successor.md`。

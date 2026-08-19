@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-20 | R5 自然 continuation 暴露 partial-field 与 missing-field 不能共用同一完成标记：模型要原地续完被截断半句时，不应被要求先插入该字段的新标题；真正缺失的后续字段仍必须有精确标题和终态回执。Harness 必须区分“续写当前字段”和“新增缺失字段”，否则会把业务上完整的多轮恢复误判为失败。R5 仍保持 failed；修复须先用 immutable capture 零调用回放，再从严格 submission 续跑，不允许重做已完成分析或追认历史结果。 |
 | 2026-08-20 | R4 Multi-Agent Preview 证明：即使分析／交卷已分离，长分析仍可能在形成大量有效内容后截断；把整个节点作废或简单扩大上限都不是合格 Agent 行为。产品 Runtime 必须能把可见分析片段保存为无业务权限的 digest-bound checkpoint，向同一 Agent 返回已完成／缺失章节的 FeedbackReceipt，并以一次有界 continuation 只补缺失内容；合并后仍须经过原严格提交合同。该能力当前只完成零调用工程门，不等于通用上下文压缩、自然反思、S1／S3 或完整 Multi-Agent 报告通过。 |
 | 2026-08-19 | 完成 FIN 0.1.3 Agent Runtime／反思／上下文连续性全链审计。当前真实能力更正为“固定研究 workflow＋片段级 typed repair＋节点 successor”，尚无通用 AgentSession、失败反馈驱动重规划、动态 Skill／Graph 消费、跨 Agent 反思或长上下文 checkpoint／resume。产品责任拆为基础设施／工具、Harness、Agent 工作模式和 Skill×Graph 交叉层；S1/S2 必须先通过无生成式 AI 的人工可操作基线，不能让模型弥补底层检索故障。冻结 AgentSession、FeedbackReceipt、PlanDelta、GraphDelta、ContextCheckpoint、StopDecision 六合同；该合同只记架构冻结，Runtime、S3 和 release 均未通过。 |
 | 2026-08-18 | S1 VS3 已在同一 33,085 对象快照和同一 canonical spine 上贯穿多路线候选、CUDA-only Embedding／Reranker、金融 intent／Evidence Role、CandidateDecision、Coverage 与 Operations Workbench。最终有界候选池召回 15/15 个开发正例且顺序扰动稳定率为 1.0；金融审阅前十覆盖 15/15，确认 hard negative 为 0；VS1 两个历史对象继续可追溯，VS2 四个复杂文档目标均进入最终审阅面。1,912 个候选全部有 accepted／rejected／unjudged／needs-review 决策，未因排名、开发 qrel 或模型分数自动晋升 Evidence／NumericFact。R17 新增 `/api/operations/s1/retrieval-quality` 真实消费者。该结果只记 `VS3_vertical_slice_integrated` 并授权 VS4 有界补证；不授予单一检索模型、Runtime Evidence promotion、微调、S1 或完整产品链资格。 |

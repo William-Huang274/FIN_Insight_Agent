@@ -17,6 +17,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 - 合并草稿仍必须经过既有 non-thinking strict submission。成功／失败结果同时记录 checkpoint、SessionEvent、resume receipt 和 continuation 调用数；Harness 不补写研究观点。
 - 续写 profile 为 low reasoning／4,000 output token，依据是任务仅补三个已知缺失字段，不是成本优先；一次仍不完整则按无进展停止。
 - 零调用与 mutation 门已通过，真实 R5 尚未执行。该增量不关闭 S1、S3、泛化、qualified-human、Workbench 发布或 release，也不替代 S1 当前主线。
+- R5 已随后真实执行：一次 continuation 为 HTTP success／`finish_reason=stop`，输入 3,063、输出 1,106 token（reasoning 39），自然补完第 11 个协调问题并新增第 12／13 个问题，完整给出 information boundaries、stop conditions 和精确完成回执。但 Prompt 同时要求“原地续完半句”和“先写 partial 字段标题”，本地 Validator 因缺 `OUTPUT::coordination_questions` 拒绝，submission 为 0。最早责任层是 Harness 的 partial／missing 标记合同冲突，不是 S1、网络、模型规划或 token 不足。
+- R5 保持不可变失败。下一结构包只拆开 partial 与 missing 完成语义，用保存 response 零调用形成 merged-analysis checkpoint；通过后从 strict submission 续跑，不再付费重做已经完成的 continuation。
 
 ## 2026-08-19 Agent Runtime／反思／上下文连续性全链审计
 

@@ -33,6 +33,9 @@ TOKEN_BUDGET_BASIS_SCHEMA_VERSION = "fin_ia_token_budget_basis_v1_0"
 SPECIALIST_PLAN_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_specialist_plan_checkpoint_v1_0"
 )
+ANALYSIS_FRAGMENT_CHECKPOINT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_analysis_fragment_checkpoint_v1_0"
+)
 
 RESEARCH_LEAD_AGENT_ID = "AGENT::RESEARCH_LEAD"
 WRITER_AGENT_ID = "AGENT::WRITER"
@@ -712,6 +715,365 @@ def compile_analyzed_node_submission_messages(
             ),
         },
     )
+
+
+def compile_analysis_fragment_checkpoint(
+    *,
+    case_key: str,
+    run_id: str,
+    node_id: str,
+    source_authority_ref: str,
+    source_authority_sha256: str,
+    source_public_result_ref: str,
+    source_public_result_sha256: str,
+    source_public_result_digest: str,
+    request_capture_ref: str,
+    request_capture_sha256: str,
+    request_digest: str,
+    response_capture_ref: str,
+    response_capture_sha256: str,
+    response_digest: str,
+    partial_draft: str,
+    required_outputs: Sequence[str],
+    completed_required_outputs: Sequence[str],
+    partial_required_outputs: Sequence[str],
+    missing_required_outputs: Sequence[str],
+    usage: Mapping[str, Any],
+    recorded_at: str,
+) -> dict[str, Any]:
+    """Bind a length-truncated visible draft without promoting its content."""
+
+    draft = str(partial_draft or "").strip()
+    required = [str(item).strip() for item in required_outputs]
+    completed = [str(item).strip() for item in completed_required_outputs]
+    partial = [str(item).strip() for item in partial_required_outputs]
+    missing = [str(item).strip() for item in missing_required_outputs]
+    _require(
+        20 <= len(draft) <= 120_000,
+        "multi_agent_analysis_checkpoint_draft_invalid",
+    )
+    _require(
+        bool(required)
+        and len(required) == len(set(required))
+        and all(required)
+        and not (set(completed) & set(partial))
+        and not (set(completed) & set(missing))
+        and not (set(partial) & set(missing))
+        and set(completed) | set(partial) | set(missing) == set(required)
+        and bool(partial or missing),
+        "multi_agent_analysis_checkpoint_coverage_invalid",
+    )
+    digests = (
+        source_authority_sha256,
+        source_public_result_sha256,
+        source_public_result_digest,
+        request_capture_sha256,
+        request_digest,
+        response_capture_sha256,
+        response_digest,
+    )
+    _require(
+        all(
+            len(str(value)) == 64
+            and all(ch in "0123456789abcdef" for ch in str(value))
+            for value in digests
+        ),
+        "multi_agent_analysis_checkpoint_digest_binding_invalid",
+    )
+    body = {
+        "schema_version": ANALYSIS_FRAGMENT_CHECKPOINT_SCHEMA_VERSION,
+        "status": "length_truncated_visible_analysis_bound_for_one_continuation",
+        "case_key": str(case_key).upper(),
+        "run_id": str(run_id),
+        "node_id": str(node_id),
+        "source_authority_ref": str(source_authority_ref),
+        "source_authority_sha256": str(source_authority_sha256),
+        "source_public_result_ref": str(source_public_result_ref),
+        "source_public_result_sha256": str(source_public_result_sha256),
+        "source_public_result_digest": str(source_public_result_digest),
+        "request_capture_ref": str(request_capture_ref),
+        "request_capture_sha256": str(request_capture_sha256),
+        "request_digest": str(request_digest),
+        "response_capture_ref": str(response_capture_ref),
+        "response_capture_sha256": str(response_capture_sha256),
+        "response_digest": str(response_digest),
+        "finish_reason": "length",
+        "partial_draft_digest": canonical_digest(draft),
+        "partial_draft_character_count": len(draft),
+        "required_outputs": required,
+        "completed_required_outputs": completed,
+        "partial_required_outputs": partial,
+        "missing_required_outputs": missing,
+        "usage": deepcopy(dict(usage)),
+        "continuation_policy": {
+            "maximum_continuation_calls": 1,
+            "continue_missing_content_only": True,
+            "repeat_completed_sections_forbidden": True,
+            "new_fact_or_authority_forbidden": True,
+            "partial_draft_business_promotion": False,
+            "complete_merged_draft_required_before_submission": True,
+        },
+        "claims": {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+        "recorded_at": str(recorded_at),
+    }
+    _require(
+        bool(re.fullmatch(r"[A-Z0-9._-]+", body["case_key"]))
+        and all(
+            str(body[field]).strip()
+            for field in (
+                "run_id",
+                "node_id",
+                "source_authority_ref",
+                "source_public_result_ref",
+                "request_capture_ref",
+                "response_capture_ref",
+                "recorded_at",
+            )
+        ),
+        "multi_agent_analysis_checkpoint_identity_invalid",
+    )
+    return {**body, "checkpoint_digest": canonical_digest(body)}
+
+
+def validate_analysis_fragment_checkpoint(
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    value = deepcopy(dict(payload))
+    expected = {
+        "schema_version",
+        "status",
+        "case_key",
+        "run_id",
+        "node_id",
+        "source_authority_ref",
+        "source_authority_sha256",
+        "source_public_result_ref",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "request_capture_ref",
+        "request_capture_sha256",
+        "request_digest",
+        "response_capture_ref",
+        "response_capture_sha256",
+        "response_digest",
+        "finish_reason",
+        "partial_draft_digest",
+        "partial_draft_character_count",
+        "required_outputs",
+        "completed_required_outputs",
+        "partial_required_outputs",
+        "missing_required_outputs",
+        "usage",
+        "continuation_policy",
+        "claims",
+        "recorded_at",
+        "checkpoint_digest",
+    }
+    _require(
+        set(value) == expected
+        and value.get("schema_version")
+        == ANALYSIS_FRAGMENT_CHECKPOINT_SCHEMA_VERSION
+        and value.get("status")
+        == "length_truncated_visible_analysis_bound_for_one_continuation"
+        and bool(re.fullmatch(r"[A-Z0-9._-]+", str(value.get("case_key") or "")))
+        and value.get("finish_reason") == "length"
+        and value.get("continuation_policy")
+        == {
+            "maximum_continuation_calls": 1,
+            "continue_missing_content_only": True,
+            "repeat_completed_sections_forbidden": True,
+            "new_fact_or_authority_forbidden": True,
+            "partial_draft_business_promotion": False,
+            "complete_merged_draft_required_before_submission": True,
+        }
+        and value.get("claims")
+        == {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+        "multi_agent_analysis_checkpoint_shape_invalid",
+    )
+    digest_fields = (
+        "source_authority_sha256",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "request_capture_sha256",
+        "request_digest",
+        "response_capture_sha256",
+        "response_digest",
+        "partial_draft_digest",
+    )
+    _require(
+        all(
+            len(str(value.get(field) or "")) == 64
+            and all(
+                ch in "0123456789abcdef"
+                for ch in str(value.get(field) or "")
+            )
+            for field in digest_fields
+        )
+        and all(
+            str(value.get(field) or "").strip()
+            for field in (
+                "run_id",
+                "node_id",
+                "source_authority_ref",
+                "source_public_result_ref",
+                "request_capture_ref",
+                "response_capture_ref",
+                "recorded_at",
+            )
+        ),
+        "multi_agent_analysis_checkpoint_binding_invalid",
+    )
+    required = list(value.get("required_outputs") or [])
+    completed = list(value.get("completed_required_outputs") or [])
+    partial = list(value.get("partial_required_outputs") or [])
+    missing = list(value.get("missing_required_outputs") or [])
+    _require(
+        bool(required)
+        and len(required) == len(set(required))
+        and set(completed) | set(partial) | set(missing) == set(required)
+        and not (set(completed) & set(partial))
+        and not (set(completed) & set(missing))
+        and not (set(partial) & set(missing))
+        and bool(partial or missing)
+        and int(value.get("partial_draft_character_count") or 0) >= 20,
+        "multi_agent_analysis_checkpoint_coverage_invalid",
+    )
+    checkpoint_digest = str(value.pop("checkpoint_digest", ""))
+    _require(
+        checkpoint_digest == canonical_digest(value),
+        "multi_agent_analysis_checkpoint_digest_invalid",
+    )
+    return {**value, "checkpoint_digest": checkpoint_digest}
+
+
+def compile_analysis_continuation_messages(
+    *,
+    checkpoint: Mapping[str, Any],
+    partial_draft: str,
+    tool_name: str,
+) -> tuple[dict[str, str], ...]:
+    trusted = validate_analysis_fragment_checkpoint(checkpoint)
+    draft = str(partial_draft or "").strip()
+    _require(
+        canonical_digest(draft) == trusted["partial_draft_digest"]
+        and len(draft) == trusted["partial_draft_character_count"],
+        "multi_agent_analysis_checkpoint_content_drift",
+    )
+    remaining = [
+        *trusted["partial_required_outputs"],
+        *trusted["missing_required_outputs"],
+    ]
+    return (
+        {
+            "role": "system",
+            "content": (
+                "ANALYSIS CONTINUATION PHASE. Continue the preserved visible "
+                "draft exactly where it stopped. Do not call tools or emit JSON. "
+                "Do not repeat completed sections, redo the six-role synthesis, "
+                "add facts or broaden authority. Complete only the partial and "
+                "missing outputs, then end with a compact submission checklist. "
+                f"The later tool remains {tool_name}."
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                {
+                    "phase": "analysis_continuation_only_not_business_authority",
+                    "checkpoint_digest": trusted["checkpoint_digest"],
+                    "preserved_partial_draft": draft,
+                    "completed_outputs_do_not_repeat": trusted[
+                        "completed_required_outputs"
+                    ],
+                    "partial_outputs_finish_in_place": trusted[
+                        "partial_required_outputs"
+                    ],
+                    "missing_outputs_add": trusted["missing_required_outputs"],
+                    "remaining_output_order": remaining,
+                    "required_output_headings": [
+                        f"OUTPUT::{field}" for field in remaining
+                    ],
+                    "required_completion_receipt": (
+                        "COMPLETED_OUTPUTS::" + "|".join(remaining)
+                    ),
+                    "rules": [
+                        "start by finishing the exact truncated sentence",
+                        "do not restate role ownership facets facts or hypotheses",
+                        "use only information already present in the preserved draft",
+                        "keep the continuation concise enough to finish in one call",
+                        (
+                            "write one exact OUTPUT::<field> heading for each field "
+                            "in remaining_output_order"
+                        ),
+                        (
+                            "end with exact completion receipt "
+                            "COMPLETED_OUTPUTS::"
+                            + "|".join(remaining)
+                        ),
+                    ],
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        },
+    )
+
+
+def validate_analysis_continuation_completion(
+    *,
+    checkpoint: Mapping[str, Any],
+    continuation_draft: str,
+) -> str:
+    trusted = validate_analysis_fragment_checkpoint(checkpoint)
+    continuation = str(continuation_draft or "").strip()
+    remaining = [
+        *trusted["partial_required_outputs"],
+        *trusted["missing_required_outputs"],
+    ]
+    completed = list(trusted["completed_required_outputs"])
+    expected_receipt = "COMPLETED_OUTPUTS::" + "|".join(remaining)
+    _require(
+        20 <= len(continuation) <= 60_000
+        and all(f"OUTPUT::{field}" in continuation for field in remaining)
+        and not any(f"OUTPUT::{field}" in continuation for field in completed)
+        and continuation.splitlines()[-1].strip() == expected_receipt,
+        "multi_agent_analysis_continuation_semantically_incomplete",
+    )
+    return continuation
+
+
+def merge_analysis_draft_fragments(
+    *,
+    checkpoint: Mapping[str, Any],
+    partial_draft: str,
+    continuation_draft: str,
+) -> str:
+    trusted = validate_analysis_fragment_checkpoint(checkpoint)
+    partial = str(partial_draft or "").strip()
+    continuation = validate_analysis_continuation_completion(
+        checkpoint=trusted,
+        continuation_draft=continuation_draft,
+    )
+    _require(
+        canonical_digest(partial) == trusted["partial_draft_digest"]
+        and len(partial) == trusted["partial_draft_character_count"]
+        and 20 <= len(continuation) <= 60_000,
+        "multi_agent_analysis_fragment_merge_invalid",
+    )
+    return partial + "\n\n" + continuation
 
 
 def compile_specialist_plan_checkpoint(
@@ -2238,6 +2600,7 @@ def local_case_absence_findings(
 
 
 __all__ = [
+    "ANALYSIS_FRAGMENT_CHECKPOINT_SCHEMA_VERSION",
     "LEAD_PLAN_SCHEMA_VERSION",
     "LEAD_COORDINATION_DECISION_SCHEMA_VERSION",
     "MULTI_AGENT_EVALUATION_SCHEMA_VERSION",
@@ -2256,6 +2619,8 @@ __all__ = [
     "compile_challenge_catalog",
     "compile_analyzed_node_messages",
     "compile_analyzed_node_submission_messages",
+    "compile_analysis_fragment_checkpoint",
+    "compile_analysis_continuation_messages",
     "compile_lead_coordination_messages",
     "compile_lead_plan_messages",
     "compile_report_messages",
@@ -2264,6 +2629,7 @@ __all__ = [
     "compile_specialist_plan_checkpoint",
     "compile_specialist_workpaper_messages",
     "compile_token_budget_basis",
+    "merge_analysis_draft_fragments",
     "evaluation_tool",
     "lead_plan_tool",
     "lead_coordination_tool",
@@ -2273,6 +2639,8 @@ __all__ = [
     "specialist_plan_tool",
     "specialist_workpaper_tool",
     "validate_evaluation",
+    "validate_analysis_fragment_checkpoint",
+    "validate_analysis_continuation_completion",
     "validate_lead_plan",
     "validate_lead_coordination_decision",
     "validate_report_draft",

@@ -13,6 +13,8 @@ from sec_agent.research.multi_agent_preview import (
     SPECIALIST_PLAN_OPINION_SCHEMA_VERSION,
     SPECIALIST_WORKPAPER_SCHEMA_VERSION,
     MultiAgentPreviewError,
+    compile_analysis_continuation_messages,
+    compile_analysis_fragment_checkpoint,
     compile_challenge_catalog,
     compile_evaluation_messages,
     compile_lead_plan_messages,
@@ -32,6 +34,7 @@ from sec_agent.research.multi_agent_preview import (
     specialist_plan_tool,
     specialist_workpaper_tool,
     validate_evaluation,
+    validate_analysis_fragment_checkpoint,
     validate_lead_plan,
     validate_lead_coordination_decision,
     validate_report_draft,
@@ -50,6 +53,63 @@ def _topology() -> dict:
     return load_multi_agent_role_topology(
         json.loads(TOPOLOGY.read_text(encoding="utf-8"))
     )
+
+
+def _analysis_checkpoint(*, draft: str = "Preserved visible Lead draft with bounded facts.") -> dict:
+    return compile_analysis_fragment_checkpoint(
+        case_key="DELL",
+        run_id="PREVIEW-R4",
+        node_id="RESEARCH-LEAD-PLAN",
+        source_authority_ref="authority.json",
+        source_authority_sha256="a" * 64,
+        source_public_result_ref="result.json",
+        source_public_result_sha256="b" * 64,
+        source_public_result_digest="c" * 64,
+        request_capture_ref="capture/request.json",
+        request_capture_sha256="d" * 64,
+        request_digest="e" * 64,
+        response_capture_ref="capture/response.json",
+        response_capture_sha256="f" * 64,
+        response_digest="1" * 64,
+        partial_draft=draft,
+        required_outputs=("accepted_agent_ids", "stop_conditions"),
+        completed_required_outputs=("accepted_agent_ids",),
+        partial_required_outputs=(),
+        missing_required_outputs=("stop_conditions",),
+        usage={"prompt_tokens": 100, "completion_tokens": 200},
+        recorded_at="2026-08-20T12:00:00+00:00",
+    )
+
+
+def test_analysis_fragment_checkpoint_binds_content_and_remaining_scope() -> None:
+    draft = "Preserved visible Lead draft with bounded facts."
+    checkpoint = _analysis_checkpoint(draft=draft)
+    trusted = validate_analysis_fragment_checkpoint(checkpoint)
+    messages = compile_analysis_continuation_messages(
+        checkpoint=trusted,
+        partial_draft=draft,
+        tool_name="submit_lead_plan",
+    )
+    prompt = json.dumps(messages, ensure_ascii=False)
+    assert trusted["missing_required_outputs"] == ["stop_conditions"]
+    assert draft in prompt
+    assert "COMPLETED_OUTPUTS::stop_conditions" in prompt
+    assert "OUTPUT::stop_conditions" in prompt
+
+    drifted = dict(checkpoint)
+    drifted["response_capture_sha256"] = "not-a-digest"
+    drifted["checkpoint_digest"] = canonical_digest(
+        {key: value for key, value in drifted.items() if key != "checkpoint_digest"}
+    )
+    with pytest.raises(MultiAgentPreviewError, match="checkpoint_binding_invalid"):
+        validate_analysis_fragment_checkpoint(drifted)
+
+    with pytest.raises(MultiAgentPreviewError, match="checkpoint_content_drift"):
+        compile_analysis_continuation_messages(
+            checkpoint=checkpoint,
+            partial_draft=draft + " changed",
+            tool_name="submit_lead_plan",
+        )
 
 
 def _opinion(agent_id: str, facet_id: str, *extra_facets: str) -> dict:

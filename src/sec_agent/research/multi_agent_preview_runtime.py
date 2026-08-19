@@ -50,11 +50,14 @@ from .dynamic_truth_spine import (
     compile_dynamic_reviewed_pack_view,
 )
 from .multi_agent_preview import (
+    compile_analysis_continuation_messages,
     compile_analyzed_node_messages,
     compile_analyzed_node_submission_messages,
     compile_planner_payload_from_role_opinions,
     compile_specialist_context,
     compile_token_budget_basis,
+    merge_analysis_draft_fragments,
+    validate_analysis_fragment_checkpoint,
 )
 from .planning import (
     compile_research_objective,
@@ -455,6 +458,9 @@ def execute_analyzed_preview_node(
     analysis_output_token_ceiling: int,
     submission_output_token_ceiling: int,
     maximum_submission_successor_attempts: int = 1,
+    analysis_checkpoint: Mapping[str, Any] | None = None,
+    analysis_checkpoint_draft: str | None = None,
+    analysis_continuation_profile: ChatCompletionProfile | None = None,
     analysis_transport: AnalysisTransport = execute_chat_completion_exact_once,
     submission_transport: SubmissionTransport = (
         execute_chat_completion_tool_step_exact_once
@@ -472,21 +478,89 @@ def execute_analyzed_preview_node(
             "multi_agent_preview_submission_successor_budget_invalid"
         )
     tool_name = str(tool["function"]["name"])
-    analysis_messages = compile_analyzed_node_messages(
-        messages=messages,
-        tool_name=tool_name,
-        required_outputs=required_outputs,
-    )
-    analysis_basis = compile_token_budget_basis(
-        node_id=f"{node_id}::ANALYSIS",
-        purpose=(
+    checkpoint_mode = analysis_checkpoint is not None
+    if checkpoint_mode:
+        if analysis_checkpoint_draft is None or analysis_continuation_profile is None:
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_preview_analysis_checkpoint_inputs_missing"
+            )
+        trusted_checkpoint = validate_analysis_fragment_checkpoint(
+            analysis_checkpoint
+        )
+        if not (
+            trusted_checkpoint["node_id"] == node_id
+            and trusted_checkpoint["required_outputs"]
+            == [str(item) for item in required_outputs]
+            and trusted_checkpoint["continuation_policy"][
+                "maximum_continuation_calls"
+            ]
+            == 1
+        ):
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_preview_analysis_checkpoint_scope_invalid"
+            )
+        analysis_messages = compile_analysis_continuation_messages(
+            checkpoint=trusted_checkpoint,
+            partial_draft=analysis_checkpoint_draft,
+            tool_name=tool_name,
+        )
+        active_analysis_profile = analysis_continuation_profile
+        analysis_phase = "analysis_continuation"
+        analysis_purpose = (
+            f"{purpose} 本阶段只续写 checkpoint 标明的未完成内容，不重做已完成分析、"
+            "不提交合同、不晋升业务事实。"
+        )
+        analysis_required_outputs = (
+            "visible_analysis_continuation",
+            *trusted_checkpoint["partial_required_outputs"],
+            *trusted_checkpoint["missing_required_outputs"],
+        )
+        reasoning_effort = str(
+            active_analysis_profile.request_defaults.get("reasoning_effort")
+            or "provider_default"
+        )
+        analysis_stop_behavior = (
+            "require one non-empty continuation and finish_reason=stop; merge "
+            "with the immutable partial draft; no second continuation or restart"
+        )
+        analysis_input_reference_count = 1 + sum(
+            str(analysis_checkpoint_draft).count(prefix)
+            for prefix in ("EV::", "NUM::", "REL::", "GAP::")
+        )
+    else:
+        if analysis_checkpoint_draft is not None or analysis_continuation_profile is not None:
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_preview_analysis_checkpoint_inputs_unbound"
+            )
+        trusted_checkpoint = None
+        analysis_messages = compile_analyzed_node_messages(
+            messages=messages,
+            tool_name=tool_name,
+            required_outputs=required_outputs,
+        )
+        active_analysis_profile = analysis_profile
+        analysis_phase = "analysis"
+        analysis_purpose = (
             f"{purpose} 本阶段只形成可见分析草稿，不提交合同、不晋升业务事实。"
-        ),
+        )
+        analysis_required_outputs = ("visible_analysis_draft", *required_outputs)
+        reasoning_effort = str(
+            active_analysis_profile.request_defaults.get("reasoning_effort")
+            or "provider_default"
+        )
+        analysis_stop_behavior = (
+            "require non-empty visible draft and finish_reason=stop; fail closed "
+            "on empty reasoning-only completion or truncation; no analysis retry"
+        )
+        analysis_input_reference_count = input_reference_count
+    analysis_basis = compile_token_budget_basis(
+        node_id=f"{node_id}::{analysis_phase.upper()}",
+        purpose=analysis_purpose,
         input_characters=sum(
             len(str(row.get("content") or "")) for row in analysis_messages
         ),
-        input_reference_count=input_reference_count,
-        required_outputs=("visible_analysis_draft", *required_outputs),
+        input_reference_count=analysis_input_reference_count,
+        required_outputs=analysis_required_outputs,
         schema_burden="analysis-only projection; no tool or JSON submission",
         materiality_quality_risk=materiality_quality_risk,
         comparable_run_evidence=(
@@ -494,21 +568,89 @@ def execute_analyzed_preview_node(
             "DELL fragment analysis/submission FAS-R1",
             "DELL multi-agent preview R3 Lead capacity failure",
         ),
-        reasoning_profile=f"{analysis_profile.model} thinking=max visible analysis",
-        output_token_ceiling=analysis_output_token_ceiling,
-        stop_truncation_behavior=(
-            "require non-empty visible draft and finish_reason=stop; fail closed "
-            "on empty reasoning-only completion or truncation; no analysis retry"
+        reasoning_profile=(
+            f"{active_analysis_profile.model} thinking={reasoning_effort} "
+            f"visible {analysis_phase}"
         ),
+        output_token_ceiling=analysis_output_token_ceiling,
+        stop_truncation_behavior=analysis_stop_behavior,
     )
-    analysis_defaults = dict(analysis_profile.request_defaults)
+    analysis_defaults = dict(active_analysis_profile.request_defaults)
     analysis_defaults["max_tokens"] = analysis_output_token_ceiling
     node_analysis_profile = replace(
-        analysis_profile, request_defaults=analysis_defaults
+        active_analysis_profile, request_defaults=analysis_defaults
     )
     analysis_attempt_id = (
-        f"{_safe_id(run_id)}-{_safe_id(node_id)}-ANALYSIS-ATTEMPT-01"
+        f"{_safe_id(run_id)}-{_safe_id(node_id)}-"
+        f"{analysis_phase.upper().replace('_', '-')}-ATTEMPT-01"
     )
+    if checkpoint_mode and trusted_checkpoint is not None:
+        checkpoint_ref = "analysis-checkpoint://" + str(
+            trusted_checkpoint["checkpoint_digest"]
+        )
+        feedback_body = {
+            "feedback_id": "FEEDBACK::"
+            + canonical_digest(
+                {
+                    "checkpoint_digest": trusted_checkpoint["checkpoint_digest"],
+                    "partial": trusted_checkpoint["partial_required_outputs"],
+                    "missing": trusted_checkpoint["missing_required_outputs"],
+                }
+            )[:24].upper(),
+            "session_id": session_state.session["session_id"],
+            "source_node_id": node_id,
+            "target_node_id": node_id,
+            "failure_class": "visible_analysis_length_truncation",
+            "failure_code": "analysis_finish_reason_length_with_partial_draft",
+            "owning_plane": "agent_work_mode_plane",
+            "owning_stage": "S3",
+            "artifact_refs": [
+                checkpoint_ref,
+                str(trusted_checkpoint["response_capture_ref"]),
+            ],
+            "model_visible_summary": (
+                "上一分析片段已保存但因长度截断，不能提交。只续写 partial/missing "
+                "outputs，不重复 completed outputs，不增加事实或权限。"
+            ),
+            "permitted_next_actions": [
+                "从截断句继续并补齐 checkpoint 标明的剩余字段",
+                "完成后把合并草稿交给独立 non-thinking submission",
+            ],
+            "forbidden_interpretations": [
+                "不得把 partial draft 当作已验证 Lead plan",
+                "不得重跑六个 Specialist 或重做已完成章节",
+                "不得添加 checkpoint 以外的新事实、来源或数字权限",
+            ],
+            "created_at": _now(),
+        }
+        validated_feedback = validate_runtime_artifact(
+            "FeedbackReceipt", feedback_body
+        )
+        feedback_ref = str(validated_feedback["feedback_id"])
+        session_state.feedback_receipts.append(
+            {
+                **validated_feedback,
+                "feedback_digest": canonical_digest(validated_feedback),
+            }
+        )
+        session_state.append(
+            event_type="checkpoint_created",
+            actor_id="HARNESS::ANALYSIS_CHECKPOINT",
+            input_refs=(str(trusted_checkpoint["response_capture_ref"]),),
+            output_refs=(checkpoint_ref,),
+        )
+        session_state.append(
+            event_type="feedback_issued",
+            actor_id="HARNESS::ANALYSIS_COMPLETION",
+            feedback_refs=(feedback_ref,),
+        )
+        session_state.append(
+            event_type="session_resumed",
+            actor_id=session_state.agent_id,
+            input_refs=(checkpoint_ref,),
+            output_refs=(f"analysis-continuation://{node_id}",),
+            feedback_refs=(feedback_ref,),
+        )
     session_state.append(
         event_type="provider_attempt_requested",
         actor_id=session_state.agent_id,
@@ -529,7 +671,7 @@ def execute_analyzed_preview_node(
         )
     except ModelGatewayError as exc:
         failed = {
-            "phase": "analysis",
+            "phase": analysis_phase,
             "attempt_id": analysis_attempt_id,
             "status": "provider_transport_failed",
             "failure_code": exc.code,
@@ -538,7 +680,7 @@ def execute_analyzed_preview_node(
         attempts.append(failed)
         session_state.append(
             event_type="provider_attempt_failed",
-            actor_id="PROVIDER::" + analysis_profile.provider_id.upper(),
+            actor_id="PROVIDER::" + active_analysis_profile.provider_id.upper(),
             attempt_id=analysis_attempt_id,
             output_refs=((exc.capture_ref,) if exc.capture_ref else ()),
         )
@@ -547,15 +689,19 @@ def execute_analyzed_preview_node(
         ) from exc
     analysis_dict = {
         **analysis.as_dict(),
-        "phase": "analysis",
+        "phase": analysis_phase,
         "attempt_id": analysis_attempt_id,
-        "status": "analysis_draft_valid",
+        "status": (
+            "analysis_continuation_valid"
+            if checkpoint_mode
+            else "analysis_draft_valid"
+        ),
         "analysis_draft_digest": canonical_digest(analysis.content),
     }
     attempts.append(analysis_dict)
     session_state.append(
         event_type="provider_attempt_completed",
-        actor_id="PROVIDER::" + analysis_profile.provider_id.upper(),
+        actor_id="PROVIDER::" + active_analysis_profile.provider_id.upper(),
         attempt_id=analysis_attempt_id,
         output_refs=tuple(
             str(analysis_dict.get(key) or "")
@@ -565,15 +711,42 @@ def execute_analyzed_preview_node(
     )
     if analysis.finish_reason != "stop":
         code = (
-            "multi_agent_preview_analysis_finish_reason_invalid:"
+            "multi_agent_preview_"
+            + analysis_phase
+            + "_finish_reason_invalid:"
             + str(analysis.finish_reason or "missing")
         )
         attempts[-1] = {**attempts[-1], "status": "analysis_terminal_failed", "failure_code": code}
         raise MultiAgentPreviewRuntimeError(code, attempts=attempts)
 
+    try:
+        merged_analysis_draft = (
+            merge_analysis_draft_fragments(
+                checkpoint=trusted_checkpoint,
+                partial_draft=str(analysis_checkpoint_draft),
+                continuation_draft=analysis.content,
+            )
+            if checkpoint_mode and trusted_checkpoint is not None
+            else analysis.content
+        )
+    except (TypeError, ValueError, RuntimeError) as exc:
+        code = str(getattr(exc, "code", "") or str(exc) or type(exc).__name__)
+        attempts[-1] = {
+            **attempts[-1],
+            "status": "analysis_terminal_failed",
+            "failure_code": code,
+        }
+        raise MultiAgentPreviewRuntimeError(code, attempts=attempts) from exc
+    if checkpoint_mode and trusted_checkpoint is not None:
+        analysis_dict["analysis_checkpoint_digest"] = trusted_checkpoint[
+            "checkpoint_digest"
+        ]
+        analysis_dict["merged_analysis_draft_digest"] = canonical_digest(
+            merged_analysis_draft
+        )
     submission_messages = list(
         compile_analyzed_node_submission_messages(
-            analysis_draft=analysis.content,
+            analysis_draft=merged_analysis_draft,
             analysis_messages=analysis_messages,
             tool_name=tool_name,
             required_outputs=required_outputs,
@@ -589,7 +762,7 @@ def execute_analyzed_preview_node(
         )
         + len(json.dumps(tool, ensure_ascii=False, sort_keys=True)),
         input_reference_count=sum(
-            analysis.content.count(prefix)
+            merged_analysis_draft.count(prefix)
             for prefix in ("EV::", "NUM::", "REL::", "GAP::")
         ),
         required_outputs=required_outputs,
@@ -627,7 +800,11 @@ def execute_analyzed_preview_node(
                 f"messages://{canonical_digest(submission_messages)}",
                 f"tool://{canonical_digest(tool)}",
                 f"token-budget://{submission_basis['token_budget_basis_digest']}",
-                f"analysis-draft://{analysis_dict['analysis_draft_digest']}",
+                "analysis-draft://"
+                + str(
+                    analysis_dict.get("merged_analysis_draft_digest")
+                    or analysis_dict["analysis_draft_digest"]
+                ),
             ),
         )
         try:

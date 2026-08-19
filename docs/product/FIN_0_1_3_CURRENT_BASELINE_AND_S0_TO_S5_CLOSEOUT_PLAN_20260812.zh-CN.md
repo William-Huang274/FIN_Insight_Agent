@@ -205,6 +205,13 @@ Skill／Graph 位于 Harness 与 Agent 工作模式的交叉层：Harness 管选
 - qualified-human admission 私有审阅包已编译 16 个请求、22 条候选—命题绑定，候选仍非 Evidence。外部 blind handoff 已准备，但案例和标签必须由当前实现上下文之外的角色隔离保管，尚未执行。
 - S0 v1.1 及 31 条 S1／S2／Verifier FeedbackReceipt 已完成零调用回放；全仓 817 测试通过。这只关闭事件、恢复和失败路由的工程基础，不关闭自然反思、Skill／Graph 消费、S1／S3 资格或 release。
 
+## 4M. Multi-Agent Preview 分析片段 checkpoint successor（2026-08-20）
+
+- 六份 R3 Specialist 计划继续作为不可变成功前缀复用。R4 Research Lead 形成 9,932 字可见分析后在协调问题处达到长度上限；该结果保持 terminal failure，不能直接晋升为 Lead plan。
+- 当前已实现一次 provider-neutral 分析片段续跑：受限 checkpoint 绑定原始 capture／digest 和章节完成度，FeedbackReceipt 只授权同一 Agent 补齐剩余协调问题、信息边界和停止条件，禁止重做已完成部分。
+- continuation 最多一次；仍截断、缺字段、重复完成项或 checkpoint 漂移即停止。只有合并后的完整草稿才进入既有严格 submission，Harness 不补写观点。
+- 该零调用工程门只授权一次 R5 live，不改变 S1 当前优先级和 S1／S3／泛化／人工／发布状态。后续 Multi-Agent 节点仍按数据基建、Harness、Agent 编排、模型和 Evaluator 分层归责。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

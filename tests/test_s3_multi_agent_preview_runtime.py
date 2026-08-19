@@ -5,7 +5,10 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
+import pytest
+
 from sec_agent.providers import AgentTransportProfile, ChatCompletionProfile
+from sec_agent.research.multi_agent_preview import compile_analysis_fragment_checkpoint
 from sec_agent.research.multi_agent_preview_runtime import (
     compile_cross_role_feedback_receipt,
     execute_analyzed_preview_node,
@@ -113,6 +116,32 @@ def _tool() -> dict[str, Any]:
             },
         },
     }
+
+
+def _analysis_checkpoint(partial_draft: str) -> dict[str, Any]:
+    return compile_analysis_fragment_checkpoint(
+        case_key="DELL",
+        run_id="PREVIEW-R4-LENGTH",
+        node_id="RESEARCH-LEAD-PLAN",
+        source_authority_ref="authority.json",
+        source_authority_sha256="a" * 64,
+        source_public_result_ref="result.json",
+        source_public_result_sha256="b" * 64,
+        source_public_result_digest="c" * 64,
+        request_capture_ref="capture/request.json",
+        request_capture_sha256="d" * 64,
+        request_digest="e" * 64,
+        response_capture_ref="capture/response.json",
+        response_capture_sha256="f" * 64,
+        response_digest="1" * 64,
+        partial_draft=partial_draft,
+        required_outputs=("value",),
+        completed_required_outputs=(),
+        partial_required_outputs=("value",),
+        missing_required_outputs=(),
+        usage={"prompt_tokens": 100, "completion_tokens": 200},
+        recorded_at="2026-08-20T12:00:00+00:00",
+    )
 
 
 def test_contract_failure_is_visible_then_one_successor_can_repair(tmp_path: Path) -> None:
@@ -334,4 +363,183 @@ def test_analysis_length_finish_fails_before_submission(tmp_path: Path) -> None:
         assert "analysis_finish_reason_invalid:length" in str(exc)
     else:
         raise AssertionError("length-truncated analysis must fail closed")
+    assert submission_calls == 0
+
+
+def test_analysis_checkpoint_continues_once_then_submits_merged_draft(
+    tmp_path: Path,
+) -> None:
+    partial = "Preserved partial Lead draft with already reviewed business context."
+    checkpoint = _analysis_checkpoint(partial)
+    state = start_preview_agent_session(
+        agent_id="AGENT::RESEARCH_LEAD",
+        run_id="PREVIEW-R5-CONTINUE",
+        objective_ref="objective://dell",
+        active_plan_ref="plan://pending",
+    )
+    analysis_calls = 0
+    continuation_messages: list[Mapping[str, Any]] = []
+    submission_messages: list[Mapping[str, Any]] = []
+
+    def continue_analysis(**kwargs: Any) -> _FakeAnalysis:
+        nonlocal analysis_calls
+        analysis_calls += 1
+        continuation_messages.extend(kwargs["messages"])
+        assert kwargs["profile"].request_defaults["reasoning_effort"] == "low"
+        return _FakeAnalysis(
+            "OUTPUT::value\naccepted\nCOMPLETED_OUTPUTS::value"
+        )
+
+    def submit(**kwargs: Any) -> _FakeStep:
+        submission_messages.extend(kwargs["messages"])
+        return _FakeStep(
+            tool_calls=(
+                {
+                    "id": "call_1",
+                    "type": "function",
+                    "function": {
+                        "name": "submit_preview",
+                        "arguments": json.dumps({"value": "accepted"}),
+                    },
+                },
+            )
+        )
+
+    execution = execute_analyzed_preview_node(
+        analysis_profile=_chat_profile(thinking=True),
+        submission_profile=_chat_profile(thinking=False),
+        analysis_continuation_profile=ChatCompletionProfile(
+            **{
+                **_chat_profile(thinking=True).__dict__,
+                "request_defaults": {
+                    **_chat_profile(thinking=True).request_defaults,
+                    "reasoning_effort": "low",
+                },
+            }
+        ),
+        session_state=state,
+        messages=(
+            {"role": "system", "content": "ORIGINAL_SYSTEM_CONTEXT_DO_NOT_RESEND"},
+            {"role": "user", "content": "ORIGINAL_USER_CONTEXT_DO_NOT_RESEND"},
+        ),
+        tool=_tool(),
+        validator=dict,
+        capture_root=tmp_path,
+        run_id="PREVIEW-R5-CONTINUE",
+        node_id="RESEARCH-LEAD-PLAN",
+        purpose="只完成先前截断的 Lead 分析，然后映射既有合同。",
+        input_reference_count=99,
+        required_outputs=("value",),
+        schema_burden="one strict preview tool",
+        materiality_quality_risk="partial analysis cannot become a Lead plan",
+        comparable_run_evidence=("R4 visible length failure",),
+        analysis_output_token_ceiling=2000,
+        submission_output_token_ceiling=1000,
+        maximum_submission_successor_attempts=0,
+        analysis_checkpoint=checkpoint,
+        analysis_checkpoint_draft=partial,
+        analysis_transport=continue_analysis,
+        submission_transport=submit,
+    )
+    assert analysis_calls == 1
+    assert [row["phase"] for row in execution.attempts] == [
+        "analysis_continuation",
+        "submission",
+    ]
+    continuation_text = json.dumps(continuation_messages, ensure_ascii=False)
+    assert partial in continuation_text
+    assert "ORIGINAL_SYSTEM_CONTEXT_DO_NOT_RESEND" not in continuation_text
+    assert "ORIGINAL_USER_CONTEXT_DO_NOT_RESEND" not in continuation_text
+    submission_text = json.dumps(submission_messages, ensure_ascii=False)
+    assert partial in submission_text
+    assert "COMPLETED_OUTPUTS::value" in submission_text
+    assert len(state.feedback_receipts) == 1
+    assert state.feedback_receipts[0]["target_node_id"] == "RESEARCH-LEAD-PLAN"
+    assert {row["event_type"] for row in state.events} >= {
+        "checkpoint_created",
+        "feedback_issued",
+        "session_resumed",
+    }
+
+
+@pytest.mark.parametrize(
+    ("content", "finish_reason", "expected_code"),
+    [
+        (
+            "OUTPUT::value\naccepted",
+            "stop",
+            "analysis_continuation_semantically_incomplete",
+        ),
+        (
+            "OUTPUT::value\naccepted\nCOMPLETED_OUTPUTS::value",
+            "length",
+            "analysis_continuation_finish_reason_invalid:length",
+        ),
+    ],
+)
+def test_analysis_checkpoint_failure_never_recontinues_or_submits(
+    tmp_path: Path,
+    content: str,
+    finish_reason: str,
+    expected_code: str,
+) -> None:
+    partial = "Preserved partial Lead draft with already reviewed business context."
+    checkpoint = _analysis_checkpoint(partial)
+    state = start_preview_agent_session(
+        agent_id="AGENT::RESEARCH_LEAD",
+        run_id="PREVIEW-R5-FAIL",
+        objective_ref="objective://dell",
+        active_plan_ref="plan://pending",
+    )
+    analysis_calls = 0
+    submission_calls = 0
+
+    def continue_analysis(**_kwargs: Any) -> _FakeAnalysis:
+        nonlocal analysis_calls
+        analysis_calls += 1
+        return _FakeAnalysis(content, finish_reason=finish_reason)
+
+    def submit(**_kwargs: Any) -> _FakeStep:
+        nonlocal submission_calls
+        submission_calls += 1
+        return _FakeStep(tool_calls=())
+
+    with pytest.raises(Exception, match=expected_code):
+        execute_analyzed_preview_node(
+            analysis_profile=_chat_profile(thinking=True),
+            submission_profile=_chat_profile(thinking=False),
+            analysis_continuation_profile=ChatCompletionProfile(
+                **{
+                    **_chat_profile(thinking=True).__dict__,
+                    "request_defaults": {
+                        **_chat_profile(thinking=True).request_defaults,
+                        "reasoning_effort": "low",
+                    },
+                }
+            ),
+            session_state=state,
+            messages=(
+                {"role": "system", "content": "Do not resend this."},
+                {"role": "user", "content": "Do not resend this either."},
+            ),
+            tool=_tool(),
+            validator=dict,
+            capture_root=tmp_path,
+            run_id="PREVIEW-R5-FAIL",
+            node_id="RESEARCH-LEAD-PLAN",
+            purpose="只完成先前截断的 Lead 分析。",
+            input_reference_count=99,
+            required_outputs=("value",),
+            schema_burden="one strict preview tool",
+            materiality_quality_risk="partial analysis cannot become a Lead plan",
+            comparable_run_evidence=("R4 visible length failure",),
+            analysis_output_token_ceiling=2000,
+            submission_output_token_ceiling=1000,
+            maximum_submission_successor_attempts=0,
+            analysis_checkpoint=checkpoint,
+            analysis_checkpoint_draft=partial,
+            analysis_transport=continue_analysis,
+            submission_transport=submit,
+        )
+    assert analysis_calls == 1
     assert submission_calls == 0

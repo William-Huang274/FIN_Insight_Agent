@@ -1,6 +1,6 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-19
+更新时间：2026-08-20
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-s1-retrieval-vertical-slice`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
@@ -8,6 +8,15 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 ## 一句话状态
 
 当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
+
+## 2026-08-20 Multi-Agent Preview R5 分析片段续跑工程门
+
+- R4 的 Research Lead 已形成 9,932 字可见分析，但在协调问题中途达到长度上限。该失败确认最早责任是 Agent Runtime 把分析当成 one-shot，不是 S1 数据、Provider 连通、strict schema 或模型完全没有研究能力。
+- 当前已实现 provider-neutral `AnalysisFragmentCheckpoint`：绑定 R4 request／response capture、digest、部分草稿摘要和章节完成状态；原始草稿只保存在受限 capture，不进入公开 checkpoint，也不获得业务权限。
+- 同一 Lead 只能收到一次 `FeedbackReceipt` 并补齐 `coordination_questions / expected_information_boundaries / stop_conditions`；不得重发六角色完整原始上下文、重复已完成章节或进入第二次 continuation。
+- 合并草稿仍必须经过既有 non-thinking strict submission。成功／失败结果同时记录 checkpoint、SessionEvent、resume receipt 和 continuation 调用数；Harness 不补写研究观点。
+- 续写 profile 为 low reasoning／4,000 output token，依据是任务仅补三个已知缺失字段，不是成本优先；一次仍不完整则按无进展停止。
+- 零调用与 mutation 门已通过，真实 R5 尚未执行。该增量不关闭 S1、S3、泛化、qualified-human、Workbench 发布或 release，也不替代 S1 当前主线。
 
 ## 2026-08-19 Agent Runtime／反思／上下文连续性全链审计
 

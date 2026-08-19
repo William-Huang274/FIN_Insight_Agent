@@ -1,8 +1,8 @@
 # FIN 0.1.3 Agent Runtime、反思循环与上下文连续性全链审计
 
-更新时间：2026-08-19
+更新时间：2026-08-20
 
-状态：`architecture_audit_complete / contract_frozen / runtime_not_implemented`
+状态：`architecture_audit_complete / zero_call_session_feedback_and_bounded_analysis_resume_implemented / generalized_loop_not_implemented`
 
 机器合同：`configs/research/fin_ia_0_1_3_agent_runtime_reflection_context_continuity_contract_v1_0.json`
 
@@ -15,7 +15,7 @@
 - **固定 workflow 已存在。** Planner、S1/S2、五研究单元、Synthesis、报告编译按照预先确定的拓扑运行。
 - **局部 repair 已存在。** 某个交卷片段被 Validator 拒绝后，模型可看到一次结构化失败并重新提交同一片段。
 - **真正自主循环尚不存在。** 检索方向错、证据不充分、反方不足、跨单元冲突或 Verifier 发现内容问题后，没有统一机制让责任 Agent 接收反馈、修改计划、重新取证和留下可重放的停止决定。
-- **上下文连续性尚不存在。** 当前 successor 能复用不可变成功前缀，但没有统一 `AgentSession`、事件日志、压缩、checkpoint、resume 和 mutation 资格；长任务不能仅凭当前 Runtime 状态可靠恢复。
+- **上下文连续性只完成了两个有界工程切片。** 当前已有统一 `AgentSession`／append-only event／checkpoint／resume 基础，并已把 R4 的真实可见分析片段编译成一次性 continuation checkpoint；但全任务 compaction、跨角色共享记忆、通用 PlanDelta／GraphDelta 和长任务自然恢复仍未证明。
 
 这不是一个应该全归到 S3 Prompt 的问题。审计把责任拆为四个平面：基础设施／工具、Harness 控制、Agent 工作模式，以及 Skill×Graph 交叉层。只有最后两层需要模型主导的多轮反思；S1/S2 工具必须先在没有生成式 AI 的条件下可由人稳定使用。
 
@@ -254,10 +254,10 @@ S1 不因新增 Agent Runtime 而后移。相反，S1 必须先通过 AI-free �
 
 ## 14. 当前不能声称的能力
 
-截至本审计：
+截至本审计及 2026-08-20 有界实现增量：
 
 - 不能声称 FIN 已有通用 Multi-agent reflection loop；
-- 不能声称上下文压缩和长任务恢复已实现；
+- 不能把一次真实分析片段续写冒充完整上下文压缩和长任务恢复；
 - 不能声称 Skill／Graph 已经动态选择并被各 Agent 自然消费；
 - 不能用节点级 successor 数量或多次 Provider 调用冒充 Agentic Research；
 - 不能因未来 Runtime 计划而提前写 S1、S3 或 FIN 0.1.3 通过。
@@ -286,3 +286,11 @@ S1 不因新增 Agent Runtime 而后移。相反，S1 必须先通过 AI-free �
 5. S2 typed gap／conflict 只允许回到本地事实权威，不允许模型挑数字；Verifier 的研究内容 finding 回到 originating node，身份／期间／引用／schema 回 Harness，Skill／Graph 问题回交叉层。Verifier 不代写研报。
 
 当前零调用 proof 在 2 个 SessionEvent 中保留 31 条反馈，完成 checkpoint 和 resume，0 模型、0 网络、0 付费工具，并通过全仓 817 测试。权威状态为 `S0_session_feedback_foundation_engineering_pass / natural_reflection_live_pending / S1_qualified_stable=false / S3_acceptance=false`。
+
+## 17. R4 真实分析片段续跑增量（2026-08-20）
+
+R4 首次让 Research Lead 在六份 Specialist 计划上形成 9,932 字可见分析，但输出在协调问题中途达到长度上限。该实例把抽象的“上下文连续性”缺口具体化：Runtime 不能丢弃一份大部分完成的分析，也不能直接把截断内容当权威结果。
+
+当前 successor 新增 `AnalysisFragmentCheckpoint`、章节完成度检查、面向同一 Agent 的 `FeedbackReceipt` 和一次性 continuation。checkpoint 绑定原 request／response capture、digest、长度及完成／缺失字段；续写只处理缺失字段，原始六角色上下文不重发；合并结果仍须进入原严格提交合同。截断、漏项、重复已完成字段、digest 漂移或第二次续写均 fail closed。
+
+该实现证明的是一种 provider-neutral、可重放的局部上下文恢复方式，不是通用自主循环。它尚未证明模型自然续写成功、跨 Agent compaction、PlanDelta／GraphDelta、动态 Skill／Graph 消费或完整 S3 报告质量。S1 当前工具资格和来源门不因该增量后移。

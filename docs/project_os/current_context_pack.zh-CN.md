@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3 与共享 current lineage 已进入 Runtime Registry R27／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 与 execution-truth Runtime 已完成工程实现，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开；三案正式 successor 尚待在干净提交上物化。当前最早责任层为 RC-S1-046 current source-truth replay／ProductReadiness successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
+当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
 
 ## 2026-08-19 S1 retrieval-context 容量一致性修复
 
@@ -786,4 +786,6 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 只有候选覆盖不足才要求补源；Evidence admission 失败留在 Evidence Gate。未配置 learned sparse／multi-vector／graph 不再自动阻断当前候选 Runtime。
 - 三案零调用 replay 显示：DELL 0／8、MU 4／8、NVDA 3／8 请求需要补源；当前三案均为 0 个 public-gap eligible request。MU／NVDA 的不足主要是官方路线未按 requirement 执行、exact route 未注册或 adapter 未配置，不能写成免费公开信息不存在。
 - 供应链资料按 Evidence Owner 匹配官方 route；NVDA 案中的 TSM 文档不再因研究 Case 不同而被错误拒绝。
-- 全仓 `795 passed`，TypeScript／Vite／compileall／active baseline／secret scan 通过；0 网络、0 模型、0 learned-vector。当前代码工程门通过，但 formal three-case replay／readiness successor 尚未物化，RC-S1-046 保持打开。
+- 全仓 `795 passed`，TypeScript／Vite／compileall／active baseline／secret scan 通过；0 网络、0 模型、0 learned-vector。工程提交为 `974f87de`；formal three-case replay、ProductReadiness successor、Registry R28 与 Runtime Binding v1.5 已完成并由真实 Workbench 服务入口读取。
+- DELL source-truth result digest=`ec597ce1af6b924d34e9a9a8a5d1feee1da66d067a96967374352c069539e1fe`，8／8 complete、0 supplement；MU digest=`80b4485ad72d3bf43bd37fb6af72227af2487405cea70a7d3abd75612645270c`，4 complete／4 incomplete；NVDA digest=`0cba240a0bbc46ae431a86bc3bacbaa637869310719074360dfbcf65f89e5edb`，5 complete／3 incomplete。三案 public gap 均为 0。
+- 当前最早动作不再是继续改 source-truth 合同，而是按 MU／NVDA 的 requirement 执行可用官方路线并保存 capture-bound terminal receipt；DELL 留在 Evidence admission。IR／transcript 未配置、传输失败或没有执行过都不能登记为公开信息不存在。

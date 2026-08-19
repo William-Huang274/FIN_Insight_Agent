@@ -26,13 +26,13 @@ POLICY = (
     ROOT
     / "configs"
     / "retrieval"
-    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_3.json"
+    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_4.json"
 )
 RECEIPT = (
     ROOT
     / "configs"
     / "runtime"
-    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_4.json"
+    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_5.json"
 )
 
 

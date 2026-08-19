@@ -1,0 +1,473 @@
+{
+  "accepted_reviewed_evidence_count": 10,
+  "authority": {
+    "S1_qualification_claimed": false,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority_remains_with_S2": true,
+    "product_publication": false,
+    "public_information_gap_authority": false
+  },
+  "candidate_count": 768,
+  "candidate_review_packet_summary": {
+    "human_review_required_count": 12,
+    "issue_class_counts": {
+      "existing_reviewed_evidence_reuse": 6,
+      "new_candidate_evidence_adjudication": 6,
+      "reviewed_pack_exact_object_binding": 5,
+      "reviewed_pack_slot_facet_binding": 5
+    },
+    "private_packet_required_for_bounded_excerpt_projection": true,
+    "review_item_count": 18,
+    "review_packet_digest": "9417e0160cdeee7fd3c883f6a97f52607d5eb2932a2349797645ae9263141c43",
+    "schema_version": "fin_ia_s1_product_candidate_review_packet_v1_0",
+    "status": "candidate_review_packet_materialized_no_promotion"
+  },
+  "case_key": "NVDA",
+  "declared_pack_gap_receipt_count": 13,
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1_current_product_readiness/nvda-r7/full_result.json",
+  "full_result_sha256": "da42ac022f13bf08ea8ea792fe3a8c8fb0e2a5e87e4a144c799c5df610b50d98",
+  "gap_eligibility_receipt_count": 15,
+  "known_boundary": "This public projection reports product CandidateDecision, current reviewed Evidence reuse, S2 numeric authority and gap eligibility without exposing candidate text, object identifiers or private source material in the tracked artifact. A digest-bound private packet may be projected as bounded excerpts only inside the authenticated local Workbench. It does not qualify S1, declare a public-information gap or authorize publication.",
+  "prepared_from_commit": "974f87de52ac1f133f4da358e82f8b37498b3824",
+  "readiness_state": "blocked_by_candidate_coverage",
+  "recorded_at": "2026-08-18T23:48:20+00:00",
+  "request_count": 8,
+  "request_state_counts": {
+    "blocked_by_candidate_coverage": 3,
+    "blocked_by_evidence_admission": 3,
+    "blocked_by_local_data_materialization": 0,
+    "blocked_by_numeric_or_bridge_authority": 0,
+    "blocked_by_retrieval_quality": 0,
+    "blocked_by_source_access": 0,
+    "candidate_audit_only_explicit_scope_pending": 0,
+    "partial_with_material_gaps": 0,
+    "ready_for_current_scope": 2
+  },
+  "requests": [
+    {
+      "business_question_zh": "订单与积压是否真实增长？",
+      "candidate_decision_counts": {
+        "accepted": 2,
+        "needs_human_review": 6,
+        "rejected": 88,
+        "unjudged": 0
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 2,
+        "issue_class_counts": {
+          "existing_reviewed_evidence_reuse": 1,
+          "new_candidate_evidence_adjudication": 1,
+          "reviewed_pack_slot_facet_binding": 1
+        },
+        "request_review_digest": "f418f821f00d167066b071a163e04d94330c1c0dec9a50cda8c45e7c70098719",
+        "review_item_count": 3
+      },
+      "facet_id": "orders_and_backlog",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 3,
+        "resolved_count": 0,
+        "state": "typed_gap",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 3
+      },
+      "readiness_state": "blocked_by_candidate_coverage",
+      "request_id": "REQ::cf20af37f40f32db0d70f3de",
+      "required_candidate_routes_all_executed": true,
+      "required_candidate_routes_unexecuted": [],
+      "requirement_count": 4,
+      "requirement_state_counts": {
+        "blocked_by_candidate_coverage": 3,
+        "ready_for_current_scope": 1
+      },
+      "slot_id": "demand_volume_quality",
+      "source_route_execution_truth": {
+        "official_or_external_supplement_route_exhausted": false,
+        "source_non_disclosure_adjudicated": false,
+        "source_route_execution_state_counts": {
+          "available_not_executed": 1,
+          "executed_local_snapshot": 1,
+          "not_executed_diagnostic_only": 1,
+          "not_executed_manual_fallback": 1,
+          "not_executed_no_registered_exact_route": 1,
+          "not_executed_not_configured": 1
+        },
+        "source_route_execution_truth_bound": true,
+        "source_supplement_route_required": true
+      },
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "订单向出货与收入转化是否可持续，是否存在拉货或消化风险？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 0,
+        "rejected": 96,
+        "unjudged": 0
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 0,
+        "issue_class_counts": {},
+        "request_review_digest": "c917b9e379b78dd2f08c106e4a947ca9e8f26e1a3ed19555bafeeed80487fde2",
+        "review_item_count": 0
+      },
+      "facet_id": "conversion_and_durability",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 2,
+        "resolved_count": 0,
+        "state": "typed_gap",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 2
+      },
+      "readiness_state": "blocked_by_candidate_coverage",
+      "request_id": "REQ::e57ad88297364b6daa67612a",
+      "required_candidate_routes_all_executed": true,
+      "required_candidate_routes_unexecuted": [],
+      "requirement_count": 4,
+      "requirement_state_counts": {
+        "blocked_by_candidate_coverage": 3,
+        "blocked_by_evidence_admission": 1
+      },
+      "slot_id": "demand_volume_quality",
+      "source_route_execution_truth": {
+        "official_or_external_supplement_route_exhausted": false,
+        "source_non_disclosure_adjudicated": false,
+        "source_route_execution_state_counts": {
+          "available_not_executed": 1,
+          "executed_local_snapshot": 1,
+          "not_executed_diagnostic_only": 1,
+          "not_executed_manual_fallback": 1,
+          "not_executed_no_registered_exact_route": 1,
+          "not_executed_not_configured": 1
+        },
+        "source_route_execution_truth_bound": true,
+        "source_supplement_route_required": true
+      },
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "最新收入、增长与经营利润表现如何？",
+      "candidate_decision_counts": {
+        "accepted": 2,
+        "needs_human_review": 11,
+        "rejected": 23,
+        "unjudged": 60
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 2,
+        "issue_class_counts": {
+          "existing_reviewed_evidence_reuse": 1,
+          "new_candidate_evidence_adjudication": 1,
+          "reviewed_pack_exact_object_binding": 1
+        },
+        "request_review_digest": "a5b287503abc1baceab4efce89ec4df8ffc9893521cb299e69eb8f1520ebdcfb",
+        "review_item_count": 3
+      },
+      "facet_id": "reported_results",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 4,
+        "resolved_count": 4,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "ready_for_current_scope",
+      "request_id": "REQ::bc817df38edd517b24d34383",
+      "required_candidate_routes_all_executed": true,
+      "required_candidate_routes_unexecuted": [],
+      "requirement_count": 1,
+      "requirement_state_counts": {
+        "ready_for_current_scope": 1
+      },
+      "slot_id": "operating_performance",
+      "source_route_execution_truth": {
+        "official_or_external_supplement_route_exhausted": false,
+        "source_non_disclosure_adjudicated": false,
+        "source_route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 5
+        },
+        "source_route_execution_truth_bound": true,
+        "source_supplement_route_required": false
+      },
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector"
+      ]
+    },
+    {
+      "business_question_zh": "增长是否转化为毛利率、经营利润率和增量利润？",
+      "candidate_decision_counts": {
+        "accepted": 0,
+        "needs_human_review": 11,
+        "rejected": 63,
+        "unjudged": 22
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 2,
+        "issue_class_counts": {
+          "new_candidate_evidence_adjudication": 1,
+          "reviewed_pack_exact_object_binding": 1,
+          "reviewed_pack_slot_facet_binding": 1
+        },
+        "request_review_digest": "3793ff04cf68f50fd0b6d03c0dc93ad93c67c6306bef3d6b57840d4978571639",
+        "review_item_count": 2
+      },
+      "facet_id": "margin_and_incremental_profit",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 3,
+        "resolved_count": 3,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "blocked_by_evidence_admission",
+      "request_id": "REQ::04e15a1ed11e489f11546f8f",
+      "required_candidate_routes_all_executed": true,
+      "required_candidate_routes_unexecuted": [],
+      "requirement_count": 1,
+      "requirement_state_counts": {
+        "blocked_by_evidence_admission": 1
+      },
+      "slot_id": "pricing_mix_value_capture",
+      "source_route_execution_truth": {
+        "official_or_external_supplement_route_exhausted": false,
+        "source_non_disclosure_adjudicated": false,
+        "source_route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 5
+        },
+        "source_route_execution_truth_bound": true,
+        "source_supplement_route_required": false
+      },
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector"
+      ]
+    },
+    {
+      "business_question_zh": "研究主体披露的部件、产能和交付约束是什么？",
+      "candidate_decision_counts": {
+        "accepted": 4,
+        "needs_human_review": 9,
+        "rejected": 79,
+        "unjudged": 4
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 2,
+        "issue_class_counts": {
+          "existing_reviewed_evidence_reuse": 3,
+          "new_candidate_evidence_adjudication": 2
+        },
+        "request_review_digest": "61e1374a3369274d228a1e51d518b22fa59268e1fdd1547a81057a77ec5ce1df",
+        "review_item_count": 5
+      },
+      "facet_id": "subject_execution",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 3,
+        "resolved_count": 0,
+        "state": "typed_gap",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 3
+      },
+      "readiness_state": "blocked_by_candidate_coverage",
+      "request_id": "REQ::da9efec898d0c4dec96c3519",
+      "required_candidate_routes_all_executed": true,
+      "required_candidate_routes_unexecuted": [],
+      "requirement_count": 6,
+      "requirement_state_counts": {
+        "blocked_by_candidate_coverage": 1,
+        "blocked_by_evidence_admission": 2,
+        "ready_for_current_scope": 3
+      },
+      "slot_id": "capacity_inputs_execution",
+      "source_route_execution_truth": {
+        "official_or_external_supplement_route_exhausted": false,
+        "source_non_disclosure_adjudicated": false,
+        "source_route_execution_state_counts": {
+          "available_not_executed": 1,
+          "executed_local_snapshot": 1,
+          "not_executed_diagnostic_only": 1,
+          "not_executed_manual_fallback": 1,
+          "not_executed_no_registered_exact_route": 1,
+          "not_executed_not_configured": 1
+        },
+        "source_route_execution_truth_bound": true,
+        "source_supplement_route_required": true
+      },
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "研究主体披露的最强反方事实是什么？",
+      "candidate_decision_counts": {
+        "accepted": 2,
+        "needs_human_review": 13,
+        "rejected": 81,
+        "unjudged": 0
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 2,
+        "issue_class_counts": {
+          "new_candidate_evidence_adjudication": 1,
+          "reviewed_pack_exact_object_binding": 1,
+          "reviewed_pack_slot_facet_binding": 1
+        },
+        "request_review_digest": "02357feb9da57b7e2c666eee7b37fb3c098d5e34587c3ee4f46f9b584a5cbe06",
+        "review_item_count": 2
+      },
+      "facet_id": "issuer_counterevidence",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 1,
+        "resolved_count": 1,
+        "state": "resolved",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "ready_for_current_scope",
+      "request_id": "REQ::3b255e85a116bbecbe0e8358",
+      "required_candidate_routes_all_executed": true,
+      "required_candidate_routes_unexecuted": [],
+      "requirement_count": 2,
+      "requirement_state_counts": {
+        "ready_for_current_scope": 2
+      },
+      "slot_id": "counterevidence_and_what_would_change",
+      "source_route_execution_truth": {
+        "official_or_external_supplement_route_exhausted": false,
+        "source_non_disclosure_adjudicated": false,
+        "source_route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 2
+        },
+        "source_route_execution_truth_bound": true,
+        "source_supplement_route_required": false
+      },
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "上下游披露了哪些可能推翻当前判断的背景？",
+      "candidate_decision_counts": {
+        "accepted": 1,
+        "needs_human_review": 9,
+        "rejected": 70,
+        "unjudged": 16
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 2,
+        "issue_class_counts": {
+          "existing_reviewed_evidence_reuse": 1,
+          "reviewed_pack_exact_object_binding": 2,
+          "reviewed_pack_slot_facet_binding": 2
+        },
+        "request_review_digest": "207cdcd8adebf152dfaabf0266ffec19f21ac128a7125f7a8a1b96fa9fc76f7a",
+        "review_item_count": 3
+      },
+      "facet_id": "upstream_or_demand_counterevidence",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 4,
+        "resolved_count": 2,
+        "state": "partial_with_typed_gaps",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 2
+      },
+      "readiness_state": "blocked_by_evidence_admission",
+      "request_id": "REQ::c6861aa99a630a65b6a1d069",
+      "required_candidate_routes_all_executed": true,
+      "required_candidate_routes_unexecuted": [],
+      "requirement_count": 4,
+      "requirement_state_counts": {
+        "blocked_by_evidence_admission": 3,
+        "ready_for_current_scope": 1
+      },
+      "slot_id": "counterevidence_and_what_would_change",
+      "source_route_execution_truth": {
+        "official_or_external_supplement_route_exhausted": false,
+        "source_non_disclosure_adjudicated": false,
+        "source_route_execution_state_counts": {
+          "executed_local_snapshot": 4,
+          "not_required_local_candidate_set_complete": 8
+        },
+        "source_route_execution_truth_bound": true,
+        "source_supplement_route_required": false
+      },
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector",
+        "typed_relationship_graph"
+      ]
+    },
+    {
+      "business_question_zh": "研究主体直接披露的出口、监管和合规暴露是什么？",
+      "candidate_decision_counts": {
+        "accepted": 2,
+        "needs_human_review": 0,
+        "rejected": 94,
+        "unjudged": 0
+      },
+      "candidate_review_summary": {
+        "human_review_required_count": 0,
+        "issue_class_counts": {},
+        "request_review_digest": "f99e0de10a63ee89cfa946dcde3311a14b20b8856b3ce65cca18f697626c4e5d",
+        "review_item_count": 0
+      },
+      "facet_id": "issuer_policy_exposure",
+      "material_scope_ready": true,
+      "numeric_authority_state": {
+        "request_count": 0,
+        "resolved_count": 0,
+        "state": "not_requested",
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "readiness_state": "blocked_by_evidence_admission",
+      "request_id": "REQ::38c5bcb9e374ae86e5925ed6",
+      "required_candidate_routes_all_executed": true,
+      "required_candidate_routes_unexecuted": [],
+      "requirement_count": 2,
+      "requirement_state_counts": {
+        "blocked_by_evidence_admission": 1,
+        "ready_for_current_scope": 1
+      },
+      "slot_id": "regulatory_policy_exposure",
+      "source_route_execution_truth": {
+        "official_or_external_supplement_route_exhausted": false,
+        "source_non_disclosure_adjudicated": false,
+        "source_route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 2
+        },
+        "source_route_execution_truth_bound": true,
+        "source_supplement_route_required": false
+      },
+      "unexecuted_or_unavailable_routes": [
+        "learned_sparse",
+        "multi_vector"
+      ]
+    }
+  ],
+  "result_digest": "c75b913b4aaf93fc0bfb9e67710719e0d2369891092e51a7c9232bbc4888a17d",
+  "schema_version": "fin_ia_s1_current_product_readiness_result_v1_1",
+  "status": "current_product_pack_readiness_materialized"
+}

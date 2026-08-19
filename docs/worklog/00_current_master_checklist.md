@@ -36,7 +36,7 @@
 - [x] 当前 Pack registry-atomic 提升（R11；按案例私有对象根；0 复制／0 网络／0 模型；Workbench 三案真实挂载复验通过）
 - [ ] S1 请求级来源路线执行真相与公开 gap 资格
   - [x] provider-neutral Source Route Portfolio、Workbench Runtime、ProductReadiness 合同与三案 zero-call replay 工程门
-  - [ ] 干净提交上的三案 immutable successor、ProductReadiness 重物化与 Registry／Runtime Binding 晋升
+  - [x] 干净提交上的三案 immutable successor、ProductReadiness 重物化与 Registry R28／Runtime Binding v1.5 晋升
   - [ ] 对真实 residual gap 执行必要官方路线并形成 capture-bound terminal receipt；未执行、失败或未配置不得冒充公开信息 gap
 - [x] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归（engineering pass）
 - [x] S2 request-scoped Runtime 接入（真实 DELL 6/6 resolved；S3／前端消费未完成）

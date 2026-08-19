@@ -1,0 +1,281 @@
+{
+  "acceptance": {
+    "candidate_evidence_numeric_authority_separated": true,
+    "compiled_objects_bound_to_current_source_snapshot": true,
+    "current_pack_and_anchor_catalog_registry_bound": true,
+    "declared_route_states_explicit": true,
+    "embedding_cache_bound_to_compiled_objects": true,
+    "external_blind_qualification_complete": false,
+    "product_pack_readiness_producer_registered": true,
+    "product_pack_readiness_workbench_consumer_registered": true,
+    "s1_qualified_stable": false,
+    "s2_sqlite_bound_to_typed_fact_result": true,
+    "source_to_compiled_lineage_complete": true,
+    "workbench_per_object_lineage_drilldown_complete": true
+  },
+  "bindings": {
+    "compiled_objects": {
+      "bytes": 93859195,
+      "ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v5/objects.jsonl",
+      "sha256": "125f0f129f1d94ed80708c6f0f214e49e1df21e41b902700469360528e6cd0b6"
+    },
+    "current_evidence_pack_result": {
+      "bytes": 7793,
+      "ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_4.json",
+      "sha256": "75c1de22764001648d2e816425064357f9a686983bd65c8e963d1a09dbbdc5f6"
+    },
+    "current_reviewed_anchor_catalog": {
+      "bytes": 59527,
+      "ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_3.json",
+      "sha256": "96db85f61e1f11b6c52686be70882163de329068470d91445f5665cdaa0751ce"
+    },
+    "dell_product_readiness": {
+      "bytes": 17130,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_5.json",
+      "sha256": "4bb1024652b6a3178b3e7971910e5ac652f2586dce6a8bf5bc1202f0edd2f79f"
+    },
+    "embedding_dense_cache": {
+      "bytes": 69871744,
+      "ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v5/qwen3_embedding_0_6b_v1/dense.float16.npy",
+      "sha256": "5e1b991f63823ba5a06b7e47b1ac7e490968ee37647058fb200ae7b356d7576c"
+    },
+    "embedding_manifest": {
+      "bytes": 582,
+      "ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v5/qwen3_embedding_0_6b_v1/manifest.json",
+      "sha256": "acf79b7546e730f9c54c9a26b13abdf660f24112ac0e0097a6188471321fb628"
+    },
+    "hybrid_runtime_policy": {
+      "bytes": 2472,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_4.json",
+      "sha256": "86c3b6fb9c4be3f0aefe4e22a242c0d1f596800b437e1bcf3f634a5359da1f88"
+    },
+    "mu_product_readiness": {
+      "bytes": 17782,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_mu_current_product_readiness_result_v1_6.json",
+      "sha256": "19b0868508de8e260f55b4f9ec6e905fb8477dc9f0770fdfca7fcf5a407f478b"
+    },
+    "nvda_product_readiness": {
+      "bytes": 17894,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_nvda_current_product_readiness_result_v1_6.json",
+      "sha256": "8b04313117b21bd2d98ef8a35cee5728f176c920a5353a6d0abc76872c034233"
+    },
+    "object_compiler_result": {
+      "bytes": 6831,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_4.json",
+      "sha256": "6cc9b1110caee7f7eb106f7582186b9005cc13b0157c6798e7ba6a40db5f0ed3"
+    },
+    "product_readiness_catalog": {
+      "bytes": 1648,
+      "ref": "configs/runtime/fin_ia_0_1_3_current_s1_product_readiness_catalog_v1_1.json",
+      "sha256": "78e6a7c7dd250b5e827a11adf8a5f23098c1369bb655c81b813a4c906ab6cee4"
+    },
+    "retrieval_snapshot": {
+      "bytes": 1911945,
+      "ref": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
+      "sha256": "444e321a566420f4f30bb655f7f1b8e2fdeadc2c6c25643598458247b99a0430"
+    },
+    "route_policy": {
+      "bytes": 12075,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_2.json",
+      "sha256": "887dfd79016fe0327e43703eadb10d2967b9e6160c7a23ca43a0976eb6008306"
+    },
+    "runtime_registry": {
+      "binding_scope": "selected_registered_resources_only_no_self_hash",
+      "ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+      "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R28"
+    },
+    "s2_fact_mart_result": {
+      "bytes": 14824,
+      "ref": "configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json",
+      "sha256": "4dd68cb1822e49a70be20235a404c6c52c0961b29292a737a86ee7d9e84e6c22"
+    },
+    "s2_sqlite": {
+      "bytes": 1396736,
+      "ref": "data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_facts.sqlite",
+      "sha256": "d05b0cc8e08d063a252d3032db13f6840abe0048200f3696b3ffccaa9d93c585"
+    },
+    "source_records": {
+      "bytes": 10232724,
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v2/records.jsonl",
+      "sha256": "de3e7e7f3c5aa8ed117a58e2721a424355c37d7477b87060bfa8b8b9e18f7ab2"
+    }
+  },
+  "embedding_index": {
+    "cuda_only_learned_execution_policy_preserved": true,
+    "dimensions": 1024,
+    "dtype": "float16",
+    "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+    "model_id": "Qwen/Qwen3-Embedding-0.6B",
+    "object_count": 34117,
+    "object_identity_digest": "d3d9756f8ee781b07fe1df732920b2fa6f32ba206d66823956516b887133ef0b"
+  },
+  "known_boundary": "This receipt proves that the current source records, normalized financial object views, Qwen FP16 index cache, S2 typed fact mart, reviewed Evidence Pack and reviewed claim anchors are identity-bound. It also makes every declared candidate-route capability explicit. It does not claim that unconfigured graph, learned-sparse or multi-vector routes ran; it does not promote candidates to Evidence or claim S1 qualification. It registers a digest-bound product PackReadiness producer, a request-level Workbench consumer and a digest-bound per-object lineage drilldown. It does not supply natural scanned-source evidence or satisfy independent blind qualification.",
+  "policy_id": "FIN-0.1.3-S1-CURRENT-PRODUCT-RUNTIME-BINDING-V1.4",
+  "product_consumer": {
+    "consumer_id": "apps.workbench.research_retrieval_service.ResearchRetrievalService+apps.workbench.research_evidence_pack_service.ResearchEvidencePackService",
+    "hybrid_runtime_consumer_registered": true,
+    "integrated_pack_readiness_is_development_audit_only": true,
+    "product_pack_readiness_producer_registered": true,
+    "product_pack_readiness_workbench_consumer_registered": true,
+    "reviewed_pack_consumer_registered": true,
+    "s2_typed_fact_consumer_registered": true,
+    "source_snapshot_consumer_registered": true,
+    "workbench_per_object_lineage_drilldown_complete": true
+  },
+  "product_readiness": {
+    "candidate_is_not_evidence": true,
+    "cases": {
+      "DELL": {
+        "S1_qualification_claimed": false,
+        "candidate_is_not_evidence": true,
+        "candidate_review_item_count": 18,
+        "candidate_review_packet_digest": "4740a1c3e0a45378d9cfcbb2503427283916aeb718bb170e0eaafe38c1089b5b",
+        "public_information_gap_authority": false,
+        "readiness_state": "blocked_by_evidence_admission",
+        "request_count": 8,
+        "result_digest": "a86ba94ccc9bc4384610c5413a206cd8f750d66f3f10ace1d15bd52620a47149",
+        "status": "current_product_pack_readiness_materialized"
+      },
+      "MU": {
+        "S1_qualification_claimed": false,
+        "candidate_is_not_evidence": true,
+        "candidate_review_item_count": 23,
+        "candidate_review_packet_digest": "a73b6fa4887da0e14c8094bd9190786ab0cd54fc8c63dfabc9b69cd677945e44",
+        "public_information_gap_authority": false,
+        "readiness_state": "blocked_by_candidate_coverage",
+        "request_count": 8,
+        "result_digest": "3478309794de5c8546ee77f16bbe1d50d60d1c46b63b2b047b3fae151731c2a8",
+        "status": "current_product_pack_readiness_materialized"
+      },
+      "NVDA": {
+        "S1_qualification_claimed": false,
+        "candidate_is_not_evidence": true,
+        "candidate_review_item_count": 18,
+        "candidate_review_packet_digest": "9417e0160cdeee7fd3c883f6a97f52607d5eb2932a2349797645ae9263141c43",
+        "public_information_gap_authority": false,
+        "readiness_state": "blocked_by_candidate_coverage",
+        "request_count": 8,
+        "result_digest": "c75b913b4aaf93fc0bfb9e67710719e0d2369891092e51a7c9232bbc4888a17d",
+        "status": "current_product_pack_readiness_materialized"
+      }
+    },
+    "catalog_digest": "c6cce8f51f9092f5666e7c8eae5372866736d606ca24b0dcf8ac027f19107a6d",
+    "catalog_status": "active_read_only_s1_product_readiness_catalog",
+    "public_information_gap_authority": false,
+    "s1_qualification_claimed": false
+  },
+  "registry_binding": {
+    "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R28",
+    "selected_resource_digest": "166fedb84587b541c9f77a9ee5589b7d68f0b52e1cf2a96a0f3a2c4522d2fb69",
+    "selected_resource_ids": [
+      "application.config.current_hybrid_candidate_runtime_policy",
+      "application.config.current_query_object_fact_route_policy",
+      "application.config.current_s1_product_readiness_catalog",
+      "application.result.current_research_local_evidence_packs",
+      "application.result.current_research_retrieval_snapshot",
+      "application.result.current_reviewed_claim_anchors",
+      "application.result.current_s1_dell_product_readiness",
+      "application.result.current_s1_mu_product_readiness",
+      "application.result.current_s1_nvda_product_readiness"
+    ]
+  },
+  "result_digest": "3a5113c3bc7862502df8ddb1fd6f3dfc79ea566ee73189becee9bcd0fba203b5",
+  "reviewed_evidence": {
+    "anchor_result_digest": "",
+    "anchor_status": "reviewed_claim_surfaces_bound_to_current_evidence_items",
+    "candidate_does_not_grant_evidence_or_numeric_authority": true,
+    "pack_result_digest": "ae3e5ab8d5fea3fa7404221926186309c93d570684f511371e837968f6dc7de0",
+    "pack_status": "terminal_succeeded_current_pack_composition_with_declared_gaps"
+  },
+  "route_execution_truth": {
+    "declared_routes": [
+      "typed_exact_fact_lookup",
+      "bm25_lexical",
+      "dense_embedding",
+      "learned_sparse",
+      "multi_vector",
+      "typed_relationship_graph"
+    ],
+    "routes": [
+      {
+        "candidate_set_member": false,
+        "capability_state": "separate_sibling",
+        "declared_route": "typed_exact_fact_lookup",
+        "executor_id": "s2_company_financial_fact_mart",
+        "grants_numeric_authority_only_after_typed_execution": true,
+        "owning_stage": "S2"
+      },
+      {
+        "candidate_set_member": true,
+        "capability_state": "available",
+        "declared_route": "bm25_lexical",
+        "executor_id": "current_snapshot_bm25_and_hybrid_bm25",
+        "grants_numeric_authority_only_after_typed_execution": false,
+        "owning_stage": "S1"
+      },
+      {
+        "candidate_set_member": true,
+        "capability_state": "available",
+        "declared_route": "dense_embedding",
+        "executor_id": "qwen3_embedding_0_6b_dense_cuda_fp16",
+        "grants_numeric_authority_only_after_typed_execution": false,
+        "owning_stage": "S1"
+      },
+      {
+        "candidate_set_member": true,
+        "capability_state": "not_configured",
+        "declared_route": "learned_sparse",
+        "executor_id": "none",
+        "grants_numeric_authority_only_after_typed_execution": false,
+        "owning_stage": "S1"
+      },
+      {
+        "candidate_set_member": true,
+        "capability_state": "not_configured",
+        "declared_route": "multi_vector",
+        "executor_id": "none",
+        "grants_numeric_authority_only_after_typed_execution": false,
+        "owning_stage": "S1"
+      },
+      {
+        "candidate_set_member": true,
+        "capability_state": "not_configured",
+        "declared_route": "typed_relationship_graph",
+        "executor_id": "none",
+        "grants_numeric_authority_only_after_typed_execution": false,
+        "owning_stage": "S1"
+      }
+    ],
+    "sql_fact_route_is_parallel_sibling_not_candidate_set_member": true,
+    "unavailable_route_must_not_be_reported_as_public_information_gap": true,
+    "unavailable_routes": [
+      "learned_sparse",
+      "multi_vector",
+      "typed_relationship_graph"
+    ]
+  },
+  "s2_sibling": {
+    "database_is_parallel_numeric_authority_not_candidate_route": true,
+    "observation_count": 1319,
+    "observation_digest": "8bb7b9f452e9ad5d1da4f50b565aba8397a05f40d7ecd3a5b09e5a438af3ed97",
+    "result_digest": "0c25c917f08e4e14b30d481d0dbb2724b951797c052e52b0ff940b2971f595a1",
+    "result_status": "s2_company_financial_fact_mart_engineering_pass"
+  },
+  "schema_version": "fin_ia_s1_current_runtime_binding_receipt_v1_2",
+  "source_object_index_lineage": {
+    "all_source_records_lineage_bound": true,
+    "compiled_base_source_record_count": 1811,
+    "compiled_lineage_ids_outside_bound_source_store": [],
+    "compiled_lineage_source_record_count": 1841,
+    "compiled_object_count": 34117,
+    "compiled_object_kind_counts": {
+      "bounded_parent_context": 1206,
+      "claim": 24379,
+      "metric_row": 8532
+    },
+    "deduplicated_source_records_carried_only_by_lineage": 30,
+    "source_record_count": 1841,
+    "source_records_missing_from_compiled_lineage": []
+  },
+  "status": "current_product_lineage_bound_with_explicit_open_gates"
+}

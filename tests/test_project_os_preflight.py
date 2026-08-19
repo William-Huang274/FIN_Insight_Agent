@@ -10,6 +10,7 @@ import pytest
 from sec_agent.project_os_preflight import (
     FIXED_PACK_SCOPE,
     FRAGMENT_VALIDATION_REPAIR_SCOPE,
+    MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
     _validate_dynamic_five_cell_claim_surface_successor_decision,
     _validate_dynamic_five_cell_node_successor_decision,
@@ -18,6 +19,7 @@ from sec_agent.project_os_preflight import (
     _validate_fragment_validation_repair_decision,
     _validate_failed_fragment_submission_successor_decision,
     build_preflight,
+    validate_multi_agent_preview_scope_decision,
 )
 
 
@@ -169,6 +171,11 @@ DYNAMIC_COUNTER_SUCCESSOR_DECISION_V1_2_REF = (
     "fin_ia_0_1_3_s3_dell_dynamic_counter_successor_"
     "live_scope_decision_v1_2.json"
 )
+MULTI_AGENT_PREVIEW_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
+    "scope_decision_v1_0.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -261,6 +268,48 @@ def test_current_fixed_pack_decision_passes_without_network_or_secret_read() -> 
         "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use"
         in result["scope_projection"]["closed_precondition_issue_ids"]
     )
+
+
+def test_multi_agent_preview_scope_decision_passes_without_calls_or_stage_claims() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=MULTI_AGENT_PREVIEW_SCOPE_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["run_scope_id"] == MULTI_AGENT_PREVIEW_SCOPE
+    assert result["case_key"] == "DELL"
+    assert result["cell_id"] == "MULTI_AGENT_PREVIEW"
+    assert result["decision_projection"]["multi_agent_preview"] is True
+    assert result["decision_projection"]["specialist_agent_count"] == 6
+    assert result["network_calls"] == 0
+    assert result["model_calls"] == 0
+    assert result["provider_calls"] == 0
+    assert result["credential_value_persisted"] is False
+    assert (
+        "RC-AR-002-old-five-cell-workflow-lacked-independent-role-"
+        "coordination-and-feedback-loop"
+        in result["scope_projection"]["explicit_allow_issue_ids"]
+    )
+    assert "permits no external source network access" in result["known_boundary"]
+
+
+def test_multi_agent_preview_scope_decision_fails_if_execution_budget_expands() -> None:
+    decision = json.loads(
+        (ROOT / MULTI_AGENT_PREVIEW_SCOPE_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    decision["execution_limits"]["maximum_model_nodes"] = 23
+    with pytest.raises(
+        ValueError,
+        match="project_os_multi_agent_execution_limits_invalid",
+    ):
+        validate_multi_agent_preview_scope_decision(
+            root=ROOT, decision=decision
+        )
 
 
 def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:

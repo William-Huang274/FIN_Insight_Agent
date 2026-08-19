@@ -88,6 +88,13 @@ DYNAMIC_FIVE_CELL_DECISION_STATUS = (
     "approved_one_DELL_dynamic_five_cell_exact_once"
 )
 DYNAMIC_FIVE_CELL_SCOPE = "one_DELL_dynamic_five_cell_exact_once"
+MULTI_AGENT_PREVIEW_DECISION_SCHEMA = (
+    "fin_ia_s3_dell_multi_agent_preview_live_scope_decision_v1_0"
+)
+MULTI_AGENT_PREVIEW_DECISION_STATUS = (
+    "approved_one_clean_authorized_DELL_multi_agent_preview"
+)
+MULTI_AGENT_PREVIEW_SCOPE = "one_clean_authorized_DELL_multi_agent_preview"
 DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_successor_live_scope_decision_v1_0"
 )
@@ -301,6 +308,10 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if decision.get("schema_version") == MULTI_AGENT_PREVIEW_DECISION_SCHEMA:
+        return validate_multi_agent_preview_scope_decision(
+            root=root, decision=decision
+        )
     if decision.get("schema_version") in {
         MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
         MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_SCHEMA,
@@ -562,6 +573,233 @@ def _validate_fixed_pack_decision(
         "recent_provider_steps": len(health["provider_steps"]),
         "claim_relation_alias_capacity_successor": alias_mode,
         "micro_judgment_successor": False,
+    }
+
+
+def validate_multi_agent_preview_scope_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    expected_fields = {
+        "schema_version",
+        "status",
+        "case_key",
+        "cell_id",
+        "run_scope_id",
+        "evidence_mode",
+        "next_authorized_scope",
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "independent_specialist_sessions_required",
+        "lead_coordination_feedback_required",
+        "checkpoint_resume_required",
+        "conditional_writer_required",
+        "evaluation_rounds_required",
+        "historical_failure_promoted",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "qualified_human_acceptance_authorized",
+        "S1_acceptance_authorized",
+        "S3_acceptance_authorized",
+        "generalization_claim_authorized",
+        "topology_ref",
+        "topology_sha256",
+        "objective_ref",
+        "objective_sha256",
+        "zero_call_proof_ref",
+        "zero_call_proof_sha256",
+        "provider_profile_ref",
+        "provider_profile_sha256",
+        "historical_five_cell_assessment_ref",
+        "historical_five_cell_assessment_sha256",
+        "execution_limits",
+        "token_budget_basis_policy",
+        "authority_statement",
+    }
+    if set(decision) != expected_fields:
+        raise ValueError("project_os_multi_agent_decision_shape_invalid")
+
+    required_equal = {
+        "status": MULTI_AGENT_PREVIEW_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "MULTI_AGENT_PREVIEW",
+        "run_scope_id": MULTI_AGENT_PREVIEW_SCOPE,
+        "evidence_mode": (
+            "current_reviewed_Evidence_plus_current_S2_"
+            "no_candidate_promotion"
+        ),
+        "next_authorized_scope": (
+            "one_bounded_DELL_multi_agent_preview_live_attempt"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_multi_agent_decision_field_invalid:{field}"
+            )
+
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "independent_specialist_sessions_required",
+        "lead_coordination_feedback_required",
+        "checkpoint_resume_required",
+        "conditional_writer_required",
+        "evaluation_rounds_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                f"project_os_multi_agent_decision_true_required:{field}"
+            )
+    for field in (
+        "historical_failure_promoted",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "qualified_human_acceptance_authorized",
+        "S1_acceptance_authorized",
+        "S3_acceptance_authorized",
+        "generalization_claim_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                f"project_os_multi_agent_decision_false_required:{field}"
+            )
+
+    _, topology = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="topology_ref",
+        sha_field="topology_sha256",
+    )
+    preview_agents = topology.get("preview_agents") or ()
+    specialist_count = sum(
+        1
+        for row in preview_agents
+        if isinstance(row, Mapping)
+        and row.get("preview_state") == "true_agent"
+        and row.get("cell_id")
+    )
+    if not (
+        topology.get("status")
+        == "preview_topology_audited_not_product_qualified"
+        and topology.get("case_key") == "DELL"
+        and specialist_count == 6
+        and len(topology.get("evaluators") or ()) >= 5
+    ):
+        raise ValueError("project_os_multi_agent_topology_invalid")
+
+    _, objective = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="objective_ref",
+        sha_field="objective_sha256",
+    )
+    if not (
+        objective.get("case_key") == "DELL"
+        and objective.get("task_type") == "company_deep_dive"
+        and len(objective.get("required_slot_ids") or ()) == 7
+        and objective.get("gap_policy") == "return_typed_gap"
+    ):
+        raise ValueError("project_os_multi_agent_objective_invalid")
+
+    _, zero = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="zero_call_proof_ref",
+        sha_field="zero_call_proof_sha256",
+    )
+    zero_claims = zero.get("claims") or {}
+    if not (
+        zero.get("status") == "zero_call_topology_and_current_tool_spine_pass"
+        and zero.get("case_key") == "DELL"
+        and zero.get("independent_specialist_opinion_count") == 6
+        and zero.get("blocking_empty_role_ids") == []
+        and zero_claims.get("model_calls") == 0
+        and zero_claims.get("network_calls") == 0
+        and zero_claims.get("S1_pass") is False
+        and zero_claims.get("S3_pass") is False
+        and zero_claims.get("true_multi_agent_live_proven") is False
+    ):
+        raise ValueError("project_os_multi_agent_zero_call_proof_invalid")
+
+    _, profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="provider_profile_ref",
+        sha_field="provider_profile_sha256",
+    )
+    profile_authority = profile.get("authority") or {}
+    if not (
+        profile.get("wire_api") == "openai_compatible_chat_completions"
+        and profile.get("model") == "deepseek-v4-pro"
+        and profile_authority.get("retry_count") == 0
+        and profile_authority.get("capture_model_visible_request") is True
+        and profile_authority.get("capture_assistant_output") is True
+        and profile_authority.get("provider_private_reasoning_capture_forbidden")
+        is True
+    ):
+        raise ValueError("project_os_multi_agent_provider_profile_invalid")
+
+    _, historical = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="historical_five_cell_assessment_ref",
+        sha_field="historical_five_cell_assessment_sha256",
+    )
+    historical_execution = historical.get("execution") or {}
+    if not (
+        historical.get("case_key") == "DELL"
+        and "not_accepted" in str(historical.get("status") or "")
+        and historical_execution.get("new_model_calls", 0) > 0
+        and (historical.get("hard_gate_assessment") or {}).get("overall_L1_L2")
+        == "fail"
+    ):
+        raise ValueError("project_os_multi_agent_historical_boundary_invalid")
+
+    expected_limits = {
+        "maximum_model_nodes": 22,
+        "maximum_successor_attempts_per_node": 1,
+        "maximum_counter_challenge_repairs": 3,
+        "maximum_evaluator_repairs": 2,
+        "maximum_evaluation_rounds": 2,
+        "external_source_network_calls": 0,
+        "candidate_promotions": 0,
+        "product_publication": False,
+        "qualified_human_acceptance": False,
+    }
+    if decision.get("execution_limits") != expected_limits:
+        raise ValueError("project_os_multi_agent_execution_limits_invalid")
+    expected_budget_policy = {
+        "task_specific_basis_required_per_model_node": True,
+        "input_scale_and_reference_count_required": True,
+        "required_outputs_and_schema_burden_required": True,
+        "materiality_and_quality_risk_required": True,
+        "comparable_run_evidence_required": True,
+        "reasoning_profile_required": True,
+        "stop_and_truncation_behavior_required": True,
+        "cost_and_latency_are_secondary_constraints": True,
+    }
+    if decision.get("token_budget_basis_policy") != expected_budget_policy:
+        raise ValueError("project_os_multi_agent_token_budget_policy_invalid")
+
+    return {
+        "clean_proof_status": zero["status"],
+        "provider_id": profile["provider_id"],
+        "provider_model": profile["model"],
+        "api_key_env": profile["api_key_env"],
+        "recent_provider_steps": historical_execution["new_model_calls"],
+        "multi_agent_preview": True,
+        "run_scope_id": decision["run_scope_id"],
+        "specialist_agent_count": specialist_count,
+        "execution_limits": dict(expected_limits),
+        "token_budget_basis_policy": dict(expected_budget_policy),
     }
 
 
@@ -4488,6 +4726,20 @@ def build_preflight(
         root=root, run_scope_id=str(decision["run_scope_id"])
     )
     if (
+        decision_projection.get("multi_agent_preview") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-AR-002-old-five-cell-workflow-lacked-independent-role-"
+                "coordination-and-feedback-loop"
+            ),
+            allowed_scope=MULTI_AGENT_PREVIEW_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_multi_agent_preview_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("natural_material_scope_canary") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -4756,7 +5008,19 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if (
+    if decision_projection.get("multi_agent_preview") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one clean, "
+            "decision-bound DELL diagnostic Multi-Agent Preview over current "
+            "reviewed Evidence and current S2 NumericFact authority. It "
+            "requires six independent specialist sessions, Research Lead "
+            "coordination, typed feedback, checkpoint/resume, bounded local "
+            "repairs, independent evaluation and a conditional Writer. It "
+            "permits no external source network access, candidate promotion, "
+            "S1 or S3 acceptance, heterogeneous generalization, qualified-"
+            "human self-acceptance, Workbench publication or release."
+        )
+    elif (
         decision_projection.get("material_scope_contract_repair_successor")
         is True
     ):

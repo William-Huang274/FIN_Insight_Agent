@@ -816,3 +816,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Live runner 已实现真正独立会话、六专业意见、Lead 计划与挑战路由、角色工作底稿、FeedbackReceipt、checkpoint/resume、最多三次反方返工、最多两次 Evaluator 返工、两轮独立评估、StopDecision 和条件式 Writer。最多 22 模型节点，每节点单独 TokenBudgetBasis，最多一个独立 successor；0 外部来源网络／Candidate promotion／产品发布／qualified-human 自签。
 - 当前修复通过显式 dynamic Truth Spine successor policy v1.1 生效；历史 v1.0 继续保持原 hybrid-only 回放，旧 attempt 摘要不改写。全仓 831 tests、定向 26 tests、compileall、活动基线 `183／8／27／0` 与 7,355 文件秘密扫描通过。
 - 下一步：将已复证实现作干净提交并推送；再单独签发一次 DELL Live Preview authority。Live 结果只评价当前资料边界内的 Multi-Agent 工作模式，不签发 S1、S3、泛化、Workbench 或 release。
+
+## 2026-08-19 S3 Multi-Agent Preview 权限分层更正
+
+- 首次 v1.0 execution authority 被通用 Project OS preflight 误当成旧 fixed-pack scope decision，并在 `case_key` 处 fail closed；0 模型／Provider／网络／付费调用，Runtime 未执行。该 authority 和失败回执保持不可变且禁止复用。
+- 项目级 scope decision 与执行级 authority 现已分离：前者冻结运行价值、阶段边界与禁止声明；后者只在干净提交上绑定 scope decision、实现、输入摘要、预算和唯一输出身份。Live authority v1.1 若未绑定已校验 scope decision 或任一输入／预算漂移即 fail closed。
+- committed scope decision 仅允许一次 DELL reviewed-Evidence＋current-S2 诊断性 Preview：六专业独立会话、Lead 协调、反馈、checkpoint/resume、独立评估和条件式 Writer；外源网络、Candidate promotion、S1／S3／泛化／qualified-human／发布／release 均为 false。
+- 当前定向回归 45、全仓 833 passed；compileall、活动基线 `183／8／5／27／0`、7,359 文件秘密扫描和 diff check 通过。下一步只剩干净推送、Project OS preflight 和 fresh v1.1 authority；不得把 v1.0 补字段后重用。

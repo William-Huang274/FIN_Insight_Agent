@@ -1,0 +1,24 @@
+{
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_preflight_failure_v1_0",
+  "status": "failed_closed_before_execution",
+  "recorded_at": "2026-08-19T23:05:00+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_0.json",
+  "authority_sha256": "8161e90381c7b7823004e34bf5af2717535e7a52529c350fca8d92387d2cce33",
+  "failure_stage": "project_os_scope_preflight",
+  "failure_code": "project_os_decision_field_invalid:case_key",
+  "root_cause": "The generic Project OS preflight interpreted an execution authority as an older fixed-pack scope decision. Project-level scope authorization and execution-level exact bindings were conflated.",
+  "disposition": "Preserve authority v1.0 as consumed failure evidence. Introduce a committed Multi-Agent Preview scope decision, validate it independently, and require a fresh execution authority to bind that decision by digest.",
+  "execution": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "outputs_materialized": false
+  },
+  "claims": {
+    "multi_agent_runtime_failed": false,
+    "provider_failed": false,
+    "project_os_contract_mismatch_found": true,
+    "authority_reuse_forbidden": true
+  }
+}

@@ -51,9 +51,11 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     lead_plan_tool,
     load_multi_agent_role_topology,
     local_case_absence_findings,
+    merge_analysis_draft_fragments,
     report_draft_tool,
     specialist_workpaper_tool,
     validate_analysis_fragment_checkpoint,
+    validate_analysis_completion_checkpoint,
     validate_specialist_plan_checkpoint,
     validate_evaluation,
     validate_lead_coordination_decision,
@@ -67,6 +69,7 @@ from sec_agent.research.multi_agent_preview_runtime import (  # noqa: E402
     compile_cross_role_feedback_receipt,
     compile_multi_agent_preview_materialization,
     execute_analyzed_preview_node,
+    execute_checkpointed_preview_submission,
     rebind_preview_session_plan,
     start_preview_agent_session,
 )
@@ -74,10 +77,14 @@ from sec_agent.project_os_preflight import (  # noqa: E402
     MULTI_AGENT_PREVIEW_ANALYSIS_SUCCESSOR_DECISION_SCHEMA,
     MULTI_AGENT_PREVIEW_ANALYSIS_SUCCESSOR_DECISION_STATUS,
     MULTI_AGENT_PREVIEW_ANALYSIS_SUCCESSOR_SCOPE,
+    MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_DECISION_SCHEMA,
+    MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_DECISION_STATUS,
+    MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_DECISION_SCHEMA,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_DECISION_STATUS,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE,
     validate_multi_agent_preview_analysis_successor_scope_decision,
+    validate_multi_agent_preview_submission_successor_scope_decision,
     validate_multi_agent_preview_plan_successor_scope_decision,
 )
 
@@ -88,10 +95,15 @@ PLAN_SUCCESSOR_AUTHORITY_SCHEMA = (
 ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA = (
     "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_4"
 )
+SUBMISSION_SUCCESSOR_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_5"
+)
 FULL_SCHEMA_V1 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_1"
 FULL_SCHEMA_V2 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_2"
 PUBLIC_SCHEMA_V1 = "fin_ia_s3_dell_multi_agent_preview_live_result_v1_1"
 PUBLIC_SCHEMA_V2 = "fin_ia_s3_dell_multi_agent_preview_live_result_v1_2"
+FULL_SCHEMA_V3 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_3"
+PUBLIC_SCHEMA_V3 = "fin_ia_s3_dell_multi_agent_preview_live_result_v1_3"
 
 
 class MultiAgentPreviewLiveError(RuntimeError):
@@ -161,19 +173,29 @@ def _validate_authority(
     }
     schema = str(authority.get("schema_version") or "")
     analysis_successor = schema == ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA
+    submission_successor = schema == SUBMISSION_SUCCESSOR_AUTHORITY_SCHEMA
     expected_status = (
-        "approved_for_one_R4_analysis_checkpoint_feedback_continuation_"
+        "approved_for_one_R5_completed_analysis_strict_submission_"
         "successor_after_project_os_preflight"
-        if analysis_successor
+        if submission_successor
         else (
-            "approved_for_one_R3_plan_checkpoint_analysis_submission_"
+            "approved_for_one_R4_analysis_checkpoint_feedback_continuation_"
             "successor_after_project_os_preflight"
+            if analysis_successor
+            else (
+                "approved_for_one_R3_plan_checkpoint_analysis_submission_"
+                "successor_after_project_os_preflight"
+            )
         )
     )
     if not (
         set(authority) == expected
         and schema
-        in {PLAN_SUCCESSOR_AUTHORITY_SCHEMA, ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA}
+        in {
+            PLAN_SUCCESSOR_AUTHORITY_SCHEMA,
+            ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA,
+            SUBMISSION_SUCCESSOR_AUTHORITY_SCHEMA,
+        }
         and authority.get("status") == expected_status
         and authority.get("implementation_commit") == _git_head()
     ):
@@ -204,9 +226,16 @@ def _validate_authority(
         "historical_five_cell_assessment",
         "predecessor_plan_checkpoint",
     }
-    required_inputs = (
-        base_inputs
-        | {
+    if submission_successor:
+        required_inputs = base_inputs | {
+            "predecessor_scope_decision",
+            "predecessor_authority",
+            "predecessor_result",
+            "analysis_completion_checkpoint",
+            "submission_successor_zero_call_proof",
+        }
+    elif analysis_successor:
+        required_inputs = base_inputs | {
             "predecessor_scope_decision",
             "predecessor_authority",
             "predecessor_result",
@@ -214,15 +243,47 @@ def _validate_authority(
             "analysis_successor_zero_call_proof",
             "analysis_continuation_profile",
         }
-        if analysis_successor
-        else base_inputs | {"predecessor_authority", "predecessor_result"}
-    )
+    else:
+        required_inputs = base_inputs | {
+            "predecessor_authority",
+            "predecessor_result",
+        }
     if set(inputs) != required_inputs:
         raise MultiAgentPreviewLiveError(
             "multi_agent_preview_authority_inputs_invalid"
         )
     scope_decision = _json(inputs["project_os_scope_decision"])
-    if analysis_successor:
+    if submission_successor:
+        scope_projection = (
+            validate_multi_agent_preview_submission_successor_scope_decision(
+                root=ROOT, decision=scope_decision
+            )
+        )
+        predecessor_scope_decision = _json(
+            inputs["predecessor_scope_decision"]
+        )
+        base_scope_decision = _json(
+            _resolve(
+                str(
+                    predecessor_scope_decision[
+                        "predecessor_scope_decision_ref"
+                    ]
+                )
+            )
+        )
+        scope_valid = (
+            scope_decision.get("schema_version")
+            == MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_DECISION_SCHEMA
+            and scope_decision.get("status")
+            == MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_DECISION_STATUS
+            and scope_decision.get("run_scope_id")
+            == MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_SCOPE
+            and scope_projection.get(
+                "multi_agent_preview_submission_checkpoint_successor"
+            )
+            is True
+        )
+    elif analysis_successor:
         scope_projection = (
             validate_multi_agent_preview_analysis_successor_scope_decision(
                 root=ROOT, decision=scope_decision
@@ -299,7 +360,30 @@ def _validate_authority(
             raise MultiAgentPreviewLiveError(
                 f"multi_agent_preview_project_os_binding_drift:{input_name}"
             )
-    if analysis_successor:
+    if submission_successor:
+        current_scope_bindings = {
+            "predecessor_scope_decision": (
+                "predecessor_scope_decision_ref",
+                "predecessor_scope_decision_sha256",
+            ),
+            "predecessor_authority": (
+                "predecessor_live_authority_ref",
+                "predecessor_live_authority_sha256",
+            ),
+            "predecessor_result": (
+                "predecessor_live_result_ref",
+                "predecessor_live_result_sha256",
+            ),
+            "analysis_completion_checkpoint": (
+                "analysis_completion_checkpoint_ref",
+                "analysis_completion_checkpoint_sha256",
+            ),
+            "submission_successor_zero_call_proof": (
+                "submission_successor_zero_call_proof_ref",
+                "submission_successor_zero_call_proof_sha256",
+            ),
+        }
+    elif analysis_successor:
         current_scope_bindings = {
             "predecessor_scope_decision": (
                 "predecessor_scope_decision_ref",
@@ -370,7 +454,33 @@ def _validate_authority(
         raise MultiAgentPreviewLiveError(
             "multi_agent_preview_successor_zero_call_proof_not_passed"
         )
-    if analysis_successor:
+    if submission_successor:
+        submission_successor_zero = _json(
+            inputs["submission_successor_zero_call_proof"]
+        )
+        analysis_completion_checkpoint = (
+            validate_analysis_completion_checkpoint(
+                _json(inputs["analysis_completion_checkpoint"])
+            )
+        )
+        if not (
+            submission_successor_zero.get("status")
+            == "R5_completed_analysis_submission_successor_zero_call_pass"
+            and submission_successor_zero.get("result_digest")
+            == scope_decision.get(
+                "submission_successor_zero_call_proof_result_digest"
+            )
+            and analysis_completion_checkpoint.get("checkpoint_digest")
+            == scope_decision.get("analysis_completion_checkpoint_digest")
+            and analysis_completion_checkpoint.get("submission_policy", {}).get(
+                "analysis_rerun_forbidden"
+            )
+            is True
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_submission_successor_zero_call_not_passed"
+            )
+    elif analysis_successor:
         analysis_successor_zero = _json(
             inputs["analysis_successor_zero_call_proof"]
         )
@@ -416,10 +526,15 @@ def _validate_authority(
     if not (
         limits.get("maximum_new_model_nodes") == 16
         and (
+            limits.get("maximum_new_lead_analysis_calls") == 0
+            and limits.get("maximum_new_analysis_calls_per_other_node") == 1
+            if submission_successor
+            else (
             limits.get("maximum_resumed_lead_analysis_continuations") == 1
             and limits.get("maximum_new_analysis_calls_per_other_node") == 1
             if analysis_successor
             else limits.get("maximum_analysis_calls_per_node") == 1
+            )
         )
         and limits.get("maximum_submission_attempts_per_node") == 2
         and limits.get("reused_specialist_plan_count") == 6
@@ -509,6 +624,74 @@ def _load_bound_analysis_checkpoint_draft(
             "multi_agent_preview_analysis_checkpoint_content_drift"
         )
     return draft
+
+
+def _load_bound_completed_analysis_draft(
+    checkpoint: Mapping[str, Any],
+) -> str:
+    fragment_path = _resolve(str(checkpoint["fragment_checkpoint_ref"]))
+    request_path = _resolve(
+        str(checkpoint["continuation_request_capture_ref"])
+    )
+    response_path = _resolve(
+        str(checkpoint["continuation_response_capture_ref"])
+    )
+    if not (
+        _sha(fragment_path) == checkpoint["fragment_checkpoint_sha256"]
+        and _sha(request_path)
+        == checkpoint["continuation_request_capture_sha256"]
+        and _sha(response_path)
+        == checkpoint["continuation_response_capture_sha256"]
+    ):
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_completed_analysis_capture_drift"
+        )
+    fragment = validate_analysis_fragment_checkpoint(_json(fragment_path))
+    if fragment["checkpoint_digest"] != checkpoint["fragment_checkpoint_digest"]:
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_completed_analysis_fragment_drift"
+        )
+    partial_draft = _load_bound_analysis_checkpoint_draft(fragment)
+    request = _json(request_path)
+    response = _json(response_path)
+    try:
+        choice = response["response_body"]["choices"][0]
+        continuation_draft = str(choice["message"]["content"]).strip()
+        request_messages = request["request_body"]["messages"]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_completed_analysis_content_missing"
+        ) from exc
+    if not (
+        request.get("request_digest") == checkpoint["continuation_request_digest"]
+        and response.get("response_digest")
+        == checkpoint["continuation_response_digest"]
+        and canonical_digest(request_messages)
+        == checkpoint["continuation_messages_digest"]
+        and response.get("response_body_complete") is True
+        and response.get("eligible_for_business_promotion") is False
+        and choice.get("finish_reason") == "stop"
+        and canonical_digest(continuation_draft)
+        == checkpoint["continuation_draft_digest"]
+        and len(continuation_draft)
+        == checkpoint["continuation_draft_character_count"]
+    ):
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_completed_analysis_content_drift"
+        )
+    merged = merge_analysis_draft_fragments(
+        checkpoint=fragment,
+        partial_draft=partial_draft,
+        continuation_draft=continuation_draft,
+    )
+    if not (
+        canonical_digest(merged) == checkpoint["merged_analysis_draft_digest"]
+        and len(merged) == checkpoint["merged_analysis_draft_character_count"]
+    ):
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_completed_analysis_merge_drift"
+        )
+    return merged
 
 
 def _compile_evaluator_feedback_receipt(
@@ -740,8 +923,19 @@ def run(authority_path: Path) -> dict[str, Any]:
     analysis_successor = (
         authority["schema_version"] == ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA
     )
-    full_schema = FULL_SCHEMA_V2 if analysis_successor else FULL_SCHEMA_V1
-    public_schema = PUBLIC_SCHEMA_V2 if analysis_successor else PUBLIC_SCHEMA_V1
+    submission_successor = (
+        authority["schema_version"] == SUBMISSION_SUCCESSOR_AUTHORITY_SCHEMA
+    )
+    full_schema = (
+        FULL_SCHEMA_V3
+        if submission_successor
+        else (FULL_SCHEMA_V2 if analysis_successor else FULL_SCHEMA_V1)
+    )
+    public_schema = (
+        PUBLIC_SCHEMA_V3
+        if submission_successor
+        else (PUBLIC_SCHEMA_V2 if analysis_successor else PUBLIC_SCHEMA_V1)
+    )
     if not os.environ.get("DEEPSEEK_API_KEY"):
         raise MultiAgentPreviewLiveError("deepseek_api_key_missing")
     topology = load_multi_agent_role_topology(_json(paths["topology"]))
@@ -799,6 +993,23 @@ def run(authority_path: Path) -> dict[str, Any]:
         if analysis_checkpoint is not None
         else None
     )
+    submission_successor_zero = (
+        _json(paths["submission_successor_zero_call_proof"])
+        if submission_successor
+        else None
+    )
+    analysis_completion_checkpoint = (
+        validate_analysis_completion_checkpoint(
+            _json(paths["analysis_completion_checkpoint"])
+        )
+        if submission_successor
+        else None
+    )
+    completed_analysis_draft = (
+        _load_bound_completed_analysis_draft(analysis_completion_checkpoint)
+        if analysis_completion_checkpoint is not None
+        else None
+    )
     planning_overlay = _json(paths["planning_overlay"])
     run_id = str(outputs["run_id"])
     capture_root = outputs["capture_root_ref"]
@@ -826,6 +1037,42 @@ def run(authority_path: Path) -> dict[str, Any]:
         if analysis_successor
         and analysis_checkpoint is not None
         and analysis_successor_zero is not None
+        else {}
+    )
+    submission_successor_bindings = (
+        {
+            "predecessor_analysis_completion_checkpoint": {
+                "ref": _relative(paths["analysis_completion_checkpoint"]),
+                "sha256": _sha(paths["analysis_completion_checkpoint"]),
+                "checkpoint_digest": analysis_completion_checkpoint[
+                    "checkpoint_digest"
+                ],
+                "source_fragment_run_id": analysis_completion_checkpoint[
+                    "source_fragment_run_id"
+                ],
+                "source_continuation_run_id": analysis_completion_checkpoint[
+                    "source_continuation_run_id"
+                ],
+                "merged_analysis_draft_character_count": (
+                    analysis_completion_checkpoint[
+                        "merged_analysis_draft_character_count"
+                    ]
+                ),
+                "analysis_draft_business_promoted": False,
+            },
+            "submission_successor_zero_call_proof": {
+                "ref": _relative(
+                    paths["submission_successor_zero_call_proof"]
+                ),
+                "sha256": _sha(
+                    paths["submission_successor_zero_call_proof"]
+                ),
+                "result_digest": submission_successor_zero["result_digest"],
+            },
+        }
+        if submission_successor
+        and analysis_completion_checkpoint is not None
+        and submission_successor_zero is not None
         else {}
     )
 
@@ -856,6 +1103,7 @@ def run(authority_path: Path) -> dict[str, Any]:
         analysis_tokens: int,
         submission_tokens: int,
         resume_bound_analysis: bool = False,
+        resume_completed_analysis: bool = False,
     ) -> dict[str, Any]:
         nonlocal node_index
         node_index += 1
@@ -863,43 +1111,68 @@ def run(authority_path: Path) -> dict[str, Any]:
             raise MultiAgentPreviewLiveError(
                 "multi_agent_preview_model_node_budget_exceeded"
             )
-        execution = execute_analyzed_preview_node(
-            analysis_profile=analysis_profile,
-            submission_profile=submission_profile,
-            session_state=state(agent_id),
-            messages=messages,
-            tool=tool,
-            validator=validator,
-            capture_root=capture_root,
-            run_id=run_id,
-            node_id=f"{agent_id}::{node_suffix}",
-            purpose=purpose,
-            input_reference_count=_input_ref_count(messages),
-            required_outputs=required_outputs,
-            schema_burden="one strict nested financial research tool contract",
-            materiality_quality_risk=risk,
-            comparable_run_evidence=(
+        if resume_bound_analysis and resume_completed_analysis:
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_two_resume_modes_forbidden"
+            )
+        common = {
+            "submission_profile": submission_profile,
+            "session_state": state(agent_id),
+            "tool": tool,
+            "validator": validator,
+            "capture_root": capture_root,
+            "run_id": run_id,
+            "node_id": f"{agent_id}::{node_suffix}",
+            "purpose": purpose,
+            "required_outputs": required_outputs,
+            "schema_burden": (
+                "one strict nested financial research tool contract"
+            ),
+            "materiality_quality_risk": risk,
+            "comparable_run_evidence": (
                 "DELL dynamic five-cell R7 content assessment",
                 "DELL multi-agent zero-call preview v1.2",
             ),
-            analysis_output_token_ceiling=analysis_tokens,
-            submission_output_token_ceiling=submission_tokens,
-            maximum_submission_successor_attempts=(
+            "submission_output_token_ceiling": submission_tokens,
+            "maximum_submission_successor_attempts": (
                 authority["execution_limits"][
                     "maximum_submission_attempts_per_node"
                 ]
                 - 1
             ),
-            analysis_checkpoint=(
-                analysis_checkpoint if resume_bound_analysis else None
-            ),
-            analysis_checkpoint_draft=(
-                analysis_checkpoint_draft if resume_bound_analysis else None
-            ),
-            analysis_continuation_profile=(
-                continuation_profile if resume_bound_analysis else None
-            ),
-        )
+        }
+        if resume_completed_analysis:
+            if (
+                analysis_completion_checkpoint is None
+                or completed_analysis_draft is None
+            ):
+                raise MultiAgentPreviewLiveError(
+                    "multi_agent_preview_completed_analysis_inputs_missing"
+                )
+            execution = execute_checkpointed_preview_submission(
+                **common,
+                completed_analysis_checkpoint=analysis_completion_checkpoint,
+                merged_analysis_draft=completed_analysis_draft,
+            )
+        else:
+            execution = execute_analyzed_preview_node(
+                **common,
+                analysis_profile=analysis_profile,
+                messages=messages,
+                input_reference_count=_input_ref_count(messages),
+                analysis_output_token_ceiling=analysis_tokens,
+                analysis_checkpoint=(
+                    analysis_checkpoint if resume_bound_analysis else None
+                ),
+                analysis_checkpoint_draft=(
+                    analysis_checkpoint_draft
+                    if resume_bound_analysis
+                    else None
+                ),
+                analysis_continuation_profile=(
+                    continuation_profile if resume_bound_analysis else None
+                ),
+            )
         record = execution.as_dict()
         node_records.append(record)
         _write_new(
@@ -960,9 +1233,14 @@ def run(authority_path: Path) -> dict[str, Any]:
                 "stop_conditions",
             ),
             risk="dropping a role or Evidence Slot would create a structurally incomplete preview",
-            analysis_tokens=4000 if analysis_successor else 12000,
+            analysis_tokens=(
+                0
+                if submission_successor
+                else (4000 if analysis_successor else 12000)
+            ),
             submission_tokens=4000,
             resume_bound_analysis=analysis_successor,
+            resume_completed_analysis=submission_successor,
         )
         plan_ref = f"plan://{lead['lead_plan_digest']}"
         for session_state in sessions.values():
@@ -1288,6 +1566,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                 "result_digest": successor_zero["result_digest"],
             },
             **analysis_successor_bindings,
+            **submission_successor_bindings,
             "planning_overlay": {
                 "ref": _relative(paths["planning_overlay"]),
                 "sha256": _sha(paths["planning_overlay"]),
@@ -1332,7 +1611,17 @@ def run(authority_path: Path) -> dict[str, Any]:
                     if attempt.get("phase") == "submission"
                 ),
                 "provider_attempts": sum(
-                    len(row["attempts"]) for row in node_records
+                    1
+                    for row in node_records
+                    for attempt in row["attempts"]
+                    if attempt.get("phase")
+                    in {"analysis", "analysis_continuation", "submission"}
+                ),
+                "analysis_checkpoint_reuses": sum(
+                    1
+                    for row in node_records
+                    for attempt in row["attempts"]
+                    if attempt.get("phase") == "analysis_checkpoint_reuse"
                 ),
                 "successor_attempts": sum(
                     int(row["successor_attempt_count"]) for row in node_records
@@ -1354,7 +1643,11 @@ def run(authority_path: Path) -> dict[str, Any]:
                     in {attempt.get("phase") for attempt in row["attempts"]}
                     and bool(
                         {attempt.get("phase") for attempt in row["attempts"]}
-                        & {"analysis", "analysis_continuation"}
+                        & {
+                            "analysis",
+                            "analysis_continuation",
+                            "analysis_checkpoint_reuse",
+                        }
                     )
                     for row in node_records
                 ),
@@ -1374,6 +1667,21 @@ def run(authority_path: Path) -> dict[str, Any]:
                         == 1
                     }
                     if analysis_successor
+                    else {}
+                ),
+                **(
+                    {
+                        "R5_completed_analysis_checkpoint_reused_without_"
+                        "analysis_rerun": sum(
+                            1
+                            for row in node_records
+                            for attempt in row["attempts"]
+                            if attempt.get("phase")
+                            == "analysis_checkpoint_reuse"
+                        )
+                        == 1
+                    }
+                    if submission_successor
                     else {}
                 ),
                 "report_contract_valid": report is not None,
@@ -1401,6 +1709,7 @@ def run(authority_path: Path) -> dict[str, Any]:
             ],
             "successor_zero_call_proof": full["successor_zero_call_proof"],
             **analysis_successor_bindings,
+            **submission_successor_bindings,
             "planning_overlay": full["planning_overlay"],
             "role_inventory": {
                 "declared_true_agent_ids": [
@@ -1455,6 +1764,15 @@ def run(authority_path: Path) -> dict[str, Any]:
             "full_result_sha256": _sha(full_path),
             "known_boundary": (
                 (
+                    "This is one DELL R5-completed-analysis strict-submission "
+                    "Multi-Agent Preview successor over unchanged current local "
+                    "S1/S2 authority. The R4 fragment and R5 continuation were "
+                    "reused from an immutable completion checkpoint with no new "
+                    "Research Lead analysis call. "
+                )
+                if submission_successor
+                else (
+                    (
                     "This is one DELL R4-analysis-checkpoint feedback-and-"
                     "continuation Multi-Agent Preview successor over unchanged "
                     "current local S1/S2 authority. The incomplete Research Lead "
@@ -1462,12 +1780,13 @@ def run(authority_path: Path) -> dict[str, Any]:
                     "only for its missing outputs, then submitted through the "
                     "existing strict contract. "
                 )
-                if analysis_successor
-                else (
+                    if analysis_successor
+                    else (
                     "This is one DELL R3-plan-checkpoint Multi-Agent Preview "
                     "successor over unchanged current local S1/S2 authority. Six "
                     "validated specialist plans were reused without paid reruns; "
                     "all new nodes separated visible analysis from strict submission. "
+                    )
                 )
             )
             + (
@@ -1504,6 +1823,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                 "result_digest": successor_zero["result_digest"],
             },
             **analysis_successor_bindings,
+            **submission_successor_bindings,
             "planning_overlay": {
                 "ref": _relative(paths["planning_overlay"]),
                 "sha256": _sha(paths["planning_overlay"]),
@@ -1556,9 +1876,29 @@ def run(authority_path: Path) -> dict[str, Any]:
                     if attempt.get("phase") == "submission"
                 ),
                 "provider_attempts_preserved": sum(
-                    len(row["attempts"]) for row in node_records
+                    1
+                    for row in node_records
+                    for attempt in row["attempts"]
+                    if attempt.get("phase")
+                    in {"analysis", "analysis_continuation", "submission"}
                 )
-                + len(terminal_attempts),
+                + sum(
+                    1
+                    for attempt in terminal_attempts
+                    if attempt.get("phase")
+                    in {"analysis", "analysis_continuation", "submission"}
+                ),
+                "analysis_checkpoint_reuses_preserved": sum(
+                    1
+                    for row in node_records
+                    for attempt in row["attempts"]
+                    if attempt.get("phase") == "analysis_checkpoint_reuse"
+                )
+                + sum(
+                    1
+                    for attempt in terminal_attempts
+                    if attempt.get("phase") == "analysis_checkpoint_reuse"
+                ),
                 "external_source_network_calls": 0,
                 "candidate_promotions": 0,
                 "product_publication": False,
@@ -1584,6 +1924,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                 "successor_zero_call_proof"
             ],
             **analysis_successor_bindings,
+            **submission_successor_bindings,
             "planning_overlay": failure["planning_overlay"],
             "execution": failure["execution"],
             "full_result_ref": _relative(private_root / "terminal_failure.json"),

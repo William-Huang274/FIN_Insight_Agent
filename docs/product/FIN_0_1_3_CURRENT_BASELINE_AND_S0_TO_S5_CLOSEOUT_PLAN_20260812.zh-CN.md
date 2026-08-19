@@ -212,6 +212,21 @@ Skill／Graph 位于 Harness 与 Agent 工作模式的交叉层：Harness 管选
 - continuation 最多一次；仍截断、缺字段、重复完成项或 checkpoint 漂移即停止。只有合并后的完整草稿才进入既有严格 submission，Harness 不补写观点。
 - 该零调用工程门只授权一次 R5 live，不改变 S1 当前优先级和 S1／S3／泛化／人工／发布状态。后续 Multi-Agent 节点仍按数据基建、Harness、Agent 编排、模型和 Evaluator 分层归责。
 
+## 4N. R5 完整分析 checkpoint 与 R6 submission successor（2026-08-20）
+
+R5 已自然完成 Research Lead 剩余分析内容，但被本地 partial／missing 标记合同误拒绝。该 attempt 不追认为成功；其原始响应与 terminal result 保持不可变。最早责任层已在 S0 Harness 关闭：partial 原地补完与 wholly missing 标题物化分开校验，并由真实 capture replay 证明。
+
+当前顺序只增加一个有界 R6，不改变 FIN 0.1.3 阶段规划：
+
+1. 将 R4 fragment＋R5 continuation 固化为不可变 `AnalysisCompletionCheckpoint`；
+2. 通过零调用 fake／mutation 和 Project OS scope gate；
+3. R6 只执行 Lead 严格 submission，Lead 分析调用为 0；
+4. submission 通过后，按既有 Preview 继续 Specialist workpaper、挑战／反馈、Evaluator 和条件式 Writer；
+5. 所有结果继续按数据基建、Harness、Agent／模型、Evaluator 分层归责；
+6. 不以 R6 的工程完成签发 S1、S3、泛化、qualified-human、S4 或 release。
+
+若 R6 下游出现普通节点失败，保留 attempt 并只修最早责任层；不得因此重做已经成功的六份 Specialist 计划或 Lead 分析。只有产品范围、数据采购、模型职责或跨单元 L1 需要改变时才升级为项目级决策。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

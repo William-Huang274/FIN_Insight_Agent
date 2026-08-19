@@ -14,6 +14,7 @@ from sec_agent.research.multi_agent_preview import (
     SPECIALIST_WORKPAPER_SCHEMA_VERSION,
     MultiAgentPreviewError,
     compile_analysis_continuation_messages,
+    compile_analysis_completion_checkpoint,
     compile_analysis_fragment_checkpoint,
     compile_challenge_catalog,
     compile_evaluation_messages,
@@ -30,10 +31,13 @@ from sec_agent.research.multi_agent_preview import (
     lead_coordination_tool,
     load_multi_agent_role_topology,
     local_case_absence_findings,
+    merge_analysis_draft_fragments,
     report_draft_tool,
     specialist_plan_tool,
     specialist_workpaper_tool,
     validate_evaluation,
+    validate_analysis_continuation_completion,
+    validate_analysis_completion_checkpoint,
     validate_analysis_fragment_checkpoint,
     validate_lead_plan,
     validate_lead_coordination_decision,
@@ -110,6 +114,219 @@ def test_analysis_fragment_checkpoint_binds_content_and_remaining_scope() -> Non
             partial_draft=draft + " changed",
             tool_name="submit_lead_plan",
         )
+
+
+def test_analysis_continuation_distinguishes_partial_from_missing_outputs() -> None:
+    draft = "Question 11 asks which demand-quality judgment can be supported"
+    checkpoint = compile_analysis_fragment_checkpoint(
+        case_key="DELL",
+        run_id="PREVIEW-R4",
+        node_id="RESEARCH-LEAD-PLAN",
+        source_authority_ref="authority.json",
+        source_authority_sha256="a" * 64,
+        source_public_result_ref="result.json",
+        source_public_result_sha256="b" * 64,
+        source_public_result_digest="c" * 64,
+        request_capture_ref="capture/request.json",
+        request_capture_sha256="d" * 64,
+        request_digest="e" * 64,
+        response_capture_ref="capture/response.json",
+        response_capture_sha256="f" * 64,
+        response_digest="1" * 64,
+        partial_draft=draft,
+        required_outputs=(
+            "accepted_agent_ids",
+            "coordination_questions",
+            "expected_information_boundaries",
+            "stop_conditions",
+        ),
+        completed_required_outputs=("accepted_agent_ids",),
+        partial_required_outputs=("coordination_questions",),
+        missing_required_outputs=(
+            "expected_information_boundaries",
+            "stop_conditions",
+        ),
+        usage={"prompt_tokens": 100, "completion_tokens": 200},
+        recorded_at="2026-08-20T12:00:00+00:00",
+    )
+    continuation = (
+        "without issuer statements, and which atoms remain typed gaps?\n"
+        "OUTPUT::expected_information_boundaries\n"
+        "Only reviewed and source-bound facts may be promoted.\n"
+        "OUTPUT::stop_conditions\n"
+        "Stop after every required slot is answered or bounded.\n"
+        "COMPLETED_OUTPUTS::coordination_questions|"
+        "expected_information_boundaries|stop_conditions"
+    )
+    messages = compile_analysis_continuation_messages(
+        checkpoint=checkpoint,
+        partial_draft=draft,
+        tool_name="submit_lead_plan",
+    )
+    prompt = json.loads(messages[1]["content"])
+    assert prompt["required_output_headings"] == [
+        "OUTPUT::expected_information_boundaries",
+        "OUTPUT::stop_conditions",
+    ]
+    assert validate_analysis_continuation_completion(
+        checkpoint=checkpoint,
+        continuation_draft=continuation,
+    ) == continuation
+    assert merge_analysis_draft_fragments(
+        checkpoint=checkpoint,
+        partial_draft=draft,
+        continuation_draft=continuation,
+    ).endswith(continuation)
+
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="analysis_continuation_semantically_incomplete",
+    ):
+        validate_analysis_continuation_completion(
+            checkpoint=checkpoint,
+            continuation_draft=(
+                "OUTPUT::coordination_questions\ncontinued\n"
+                + continuation[continuation.index(
+                    "OUTPUT::expected_information_boundaries"
+                ):]
+            ),
+        )
+
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="analysis_continuation_semantically_incomplete",
+    ):
+        validate_analysis_continuation_completion(
+            checkpoint=checkpoint,
+            continuation_draft=continuation[
+                continuation.index("OUTPUT::expected_information_boundaries"):
+            ],
+        )
+
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="analysis_checkpoint_coverage_invalid",
+    ):
+        compile_analysis_fragment_checkpoint(
+            case_key="DELL",
+            run_id="PREVIEW-R4",
+            node_id="RESEARCH-LEAD-PLAN",
+            source_authority_ref="authority.json",
+            source_authority_sha256="a" * 64,
+            source_public_result_ref="result.json",
+            source_public_result_sha256="b" * 64,
+            source_public_result_digest="c" * 64,
+            request_capture_ref="capture/request.json",
+            request_capture_sha256="d" * 64,
+            request_digest="e" * 64,
+            response_capture_ref="capture/response.json",
+            response_capture_sha256="f" * 64,
+            response_digest="1" * 64,
+            partial_draft=draft,
+            required_outputs=("coordination_questions", "stop_conditions"),
+            completed_required_outputs=(),
+            partial_required_outputs=(
+                "coordination_questions",
+                "stop_conditions",
+            ),
+            missing_required_outputs=(),
+            usage={},
+            recorded_at="2026-08-20T12:00:00+00:00",
+        )
+
+
+def test_analysis_completion_checkpoint_binds_both_fragments_and_budget() -> None:
+    draft = "Question 11 asks which demand-quality judgment can be supported"
+    fragment = compile_analysis_fragment_checkpoint(
+        case_key="DELL",
+        run_id="PREVIEW-R4",
+        node_id="RESEARCH-LEAD-PLAN",
+        source_authority_ref="authority-r4.json",
+        source_authority_sha256="a" * 64,
+        source_public_result_ref="result-r4.json",
+        source_public_result_sha256="b" * 64,
+        source_public_result_digest="c" * 64,
+        request_capture_ref="capture/r4/request.json",
+        request_capture_sha256="d" * 64,
+        request_digest="e" * 64,
+        response_capture_ref="capture/r4/response.json",
+        response_capture_sha256="f" * 64,
+        response_digest="1" * 64,
+        partial_draft=draft,
+        required_outputs=("coordination_questions", "stop_conditions"),
+        completed_required_outputs=(),
+        partial_required_outputs=("coordination_questions",),
+        missing_required_outputs=("stop_conditions",),
+        usage={"prompt_tokens": 100, "completion_tokens": 200},
+        recorded_at="2026-08-20T12:00:00+00:00",
+    )
+    continuation = (
+        "without issuer statements?\n"
+        "OUTPUT::stop_conditions\n"
+        "Stop after every required slot is answered or bounded.\n"
+        "COMPLETED_OUTPUTS::coordination_questions|stop_conditions"
+    )
+    basis = compile_token_budget_basis(
+        node_id="RESEARCH-LEAD-PLAN::ANALYSIS_CONTINUATION",
+        purpose=(
+            "Continue the preserved analysis fragment without redoing any "
+            "completed research content."
+        ),
+        input_characters=1000,
+        input_reference_count=1,
+        required_outputs=(
+            "visible_analysis_continuation",
+            "coordination_questions",
+            "stop_conditions",
+        ),
+        schema_burden="analysis-only",
+        materiality_quality_risk="partial analysis cannot be submitted",
+        comparable_run_evidence=("R4 length failure",),
+        reasoning_profile="deepseek-v4-pro thinking=low",
+        output_token_ceiling=4000,
+        stop_truncation_behavior="one continuation; finish_reason stop",
+    )
+    checkpoint = compile_analysis_completion_checkpoint(
+        fragment_checkpoint=fragment,
+        fragment_checkpoint_ref="checkpoint-r4.json",
+        fragment_checkpoint_sha256="2" * 64,
+        partial_draft=draft,
+        source_continuation_run_id="PREVIEW-R5",
+        source_continuation_authority_ref="authority-r5.json",
+        source_continuation_authority_sha256="3" * 64,
+        source_continuation_result_ref="result-r5.json",
+        source_continuation_result_sha256="4" * 64,
+        source_continuation_result_digest="5" * 64,
+        continuation_request_capture_ref="capture/r5/request.json",
+        continuation_request_capture_sha256="6" * 64,
+        continuation_request_digest="7" * 64,
+        continuation_response_capture_ref="capture/r5/response.json",
+        continuation_response_capture_sha256="8" * 64,
+        continuation_response_digest="9" * 64,
+        continuation_messages_digest="0" * 64,
+        continuation_draft=continuation,
+        finish_reason="stop",
+        usage={"prompt_tokens": 300, "completion_tokens": 100},
+        source_analysis_token_budget_basis=basis,
+        recorded_at="2026-08-20T13:00:00+00:00",
+    )
+    trusted = validate_analysis_completion_checkpoint(checkpoint)
+    merged = merge_analysis_draft_fragments(
+        checkpoint=fragment,
+        partial_draft=draft,
+        continuation_draft=continuation,
+    )
+    assert trusted["merged_analysis_draft_digest"] == canonical_digest(merged)
+    assert trusted["completed_outputs"] == [
+        "coordination_questions",
+        "stop_conditions",
+    ]
+    assert trusted["source_analysis_token_budget_basis"] == basis
+
+    drifted = dict(checkpoint)
+    drifted["continuation_response_digest"] = "a" * 64
+    with pytest.raises(MultiAgentPreviewError, match="completion_digest_invalid"):
+        validate_analysis_completion_checkpoint(drifted)
 
 
 def _opinion(agent_id: str, facet_id: str, *extra_facets: str) -> dict:

@@ -867,3 +867,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R4 因 analysis 不完整 fail closed，strict submission、六份工作底稿、挑战／反馈、Evaluator 和 Writer 均未开始。0 外源网络、0 Candidate promotion、0 产品写入；S1／S3／泛化／release 均为 false。
 - 这与 R3 的“全部 completion 用于 reasoning、可见 content=0”不同：两阶段分工已让分析显现，但当前 Runtime 仍把长分析当作 one-shot，不能 checkpoint partial draft、反馈缺失章节并续写。RC-AR-005 打开。
 - 下一步不得只提高 token 上限或晋升 partial draft；应保存 R4 analysis checkpoint，本地生成章节完成度 FeedbackReceipt，只允许同一 Lead 续写一次缺失部分，合并后的完整草稿才进入 non-thinking submission。详细记录见 `docs/worklog/fin_0_1_3_s3/086_multi_agent_preview_R4_visible_analysis_length_failure.md`。
+
+## 2026-08-20 S3 Multi-Agent Preview R5 完整分析保留与 R6 交卷门
+
+- R5 真实 continuation 已正常返回 `finish_reason=stop`：在 R4 的 9,932 字片段后原地补完被截断的第 11 个协调问题，并新增第 12／13 个问题、信息边界、停止条件和精确完成回执，共 5,003 字。六份 Specialist 计划和 Lead 主分析均未重跑。
+- R5 仍保持 immutable terminal failure。失败原因是 Harness 同时要求“被截断字段原地续写”和“重复该字段标题”，Validator 因模型遵循前者而误拒绝；不是数据、S1、网络、token 或 DeepSeek 研究规划失败。
+- provider-neutral 合同现将字段状态拆为 `completed / partial / missing`：最多一个 partial 字段必须在第一个 missing heading 前非空原地补完且不得重复标题；所有 wholly missing 字段仍必须按序使用精确标题；最终完成回执继续覆盖 partial＋missing 全集。
+- R4 fragment 与 R5 continuation 已零调用合并成 14,937 字 `AnalysisCompletionCheckpoint`，绑定两次 capture、authority／result、内容 digest、usage、finish reason 与原 analysis TokenBudgetBasis；分析草稿仍无 Evidence、Judgment、报告或发布权限。
+- successor Runtime 只记录一次本地 `analysis_checkpoint_reuse`，然后执行严格 Lead submission；不得重新调用 Lead analysis／continuation。真实 capture replay、fake submission 及七类 mutation 通过，0 模型、0 网络、0 付费、0 Candidate promotion。
+- 当前只允许在 clean／synced 提交和 Project OS preflight 后签发一个 R6 submission successor。R6 即使通过，也只继续当前 DELL bounded Preview；S1、S3、泛化、qualified-human、Workbench 发布和 release 仍为 false。详细记录见 `docs/worklog/fin_0_1_3_s3/089_multi_agent_preview_R6_completed_analysis_submission_successor_zero_call.md`。
+- 本轮复证为定向 Preview 22、Project OS 42、全仓 855 tests 通过；compileall、active baseline `184 Python／8 frontend／27 Runtime／0 forbidden`、7,390-file secret scan 与 diff check 通过。

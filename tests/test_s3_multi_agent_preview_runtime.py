@@ -8,10 +8,16 @@ from typing import Any, Mapping
 import pytest
 
 from sec_agent.providers import AgentTransportProfile, ChatCompletionProfile
-from sec_agent.research.multi_agent_preview import compile_analysis_fragment_checkpoint
+from sec_agent.research.multi_agent_preview import (
+    compile_analysis_completion_checkpoint,
+    compile_analysis_fragment_checkpoint,
+    compile_token_budget_basis,
+    merge_analysis_draft_fragments,
+)
 from sec_agent.research.multi_agent_preview_runtime import (
     compile_cross_role_feedback_receipt,
     execute_analyzed_preview_node,
+    execute_checkpointed_preview_submission,
     execute_validated_preview_node,
     start_preview_agent_session,
 )
@@ -142,6 +148,59 @@ def _analysis_checkpoint(partial_draft: str) -> dict[str, Any]:
         usage={"prompt_tokens": 100, "completion_tokens": 200},
         recorded_at="2026-08-20T12:00:00+00:00",
     )
+
+
+def _analysis_completion_checkpoint(
+    partial_draft: str,
+    continuation_draft: str,
+) -> tuple[dict[str, Any], str]:
+    fragment = _analysis_checkpoint(partial_draft)
+    merged = merge_analysis_draft_fragments(
+        checkpoint=fragment,
+        partial_draft=partial_draft,
+        continuation_draft=continuation_draft,
+    )
+    basis = compile_token_budget_basis(
+        node_id="RESEARCH-LEAD-PLAN::ANALYSIS_CONTINUATION",
+        purpose=(
+            "Continue the preserved analysis fragment without redoing any "
+            "completed research content."
+        ),
+        input_characters=1000,
+        input_reference_count=1,
+        required_outputs=("visible_analysis_continuation", "value"),
+        schema_burden="analysis-only",
+        materiality_quality_risk="partial analysis cannot become a Lead plan",
+        comparable_run_evidence=("R4 visible length failure",),
+        reasoning_profile="deepseek-v4-pro thinking=low",
+        output_token_ceiling=4000,
+        stop_truncation_behavior="one continuation; finish_reason stop",
+    )
+    checkpoint = compile_analysis_completion_checkpoint(
+        fragment_checkpoint=fragment,
+        fragment_checkpoint_ref="checkpoint/r4.json",
+        fragment_checkpoint_sha256="2" * 64,
+        partial_draft=partial_draft,
+        source_continuation_run_id="PREVIEW-R5-CONTINUE",
+        source_continuation_authority_ref="authority/r5.json",
+        source_continuation_authority_sha256="3" * 64,
+        source_continuation_result_ref="result/r5.json",
+        source_continuation_result_sha256="4" * 64,
+        source_continuation_result_digest="5" * 64,
+        continuation_request_capture_ref="capture/r5/request.json",
+        continuation_request_capture_sha256="6" * 64,
+        continuation_request_digest="7" * 64,
+        continuation_response_capture_ref="capture/r5/response.json",
+        continuation_response_capture_sha256="8" * 64,
+        continuation_response_digest="9" * 64,
+        continuation_messages_digest="0" * 64,
+        continuation_draft=continuation_draft,
+        finish_reason="stop",
+        usage={"prompt_tokens": 100, "completion_tokens": 200},
+        source_analysis_token_budget_basis=basis,
+        recorded_at="2026-08-20T13:00:00+00:00",
+    )
+    return checkpoint, merged
 
 
 def test_contract_failure_is_visible_then_one_successor_can_repair(tmp_path: Path) -> None:
@@ -387,7 +446,7 @@ def test_analysis_checkpoint_continues_once_then_submits_merged_draft(
         continuation_messages.extend(kwargs["messages"])
         assert kwargs["profile"].request_defaults["reasoning_effort"] == "low"
         return _FakeAnalysis(
-            "OUTPUT::value\naccepted\nCOMPLETED_OUTPUTS::value"
+            "accepted\nCOMPLETED_OUTPUTS::value"
         )
 
     def submit(**kwargs: Any) -> _FakeStep:
@@ -466,12 +525,12 @@ def test_analysis_checkpoint_continues_once_then_submits_merged_draft(
     ("content", "finish_reason", "expected_code"),
     [
         (
-            "OUTPUT::value\naccepted",
+            "accepted",
             "stop",
             "analysis_continuation_semantically_incomplete",
         ),
         (
-            "OUTPUT::value\naccepted\nCOMPLETED_OUTPUTS::value",
+            "accepted\nCOMPLETED_OUTPUTS::value",
             "length",
             "analysis_continuation_finish_reason_invalid:length",
         ),
@@ -543,3 +602,97 @@ def test_analysis_checkpoint_failure_never_recontinues_or_submits(
         )
     assert analysis_calls == 1
     assert submission_calls == 0
+
+
+def test_completed_analysis_checkpoint_resumes_at_submission_only(
+    tmp_path: Path,
+) -> None:
+    partial = "Preserved partial Lead draft with already reviewed business context."
+    continuation = " accepted\nCOMPLETED_OUTPUTS::value"
+    checkpoint, merged = _analysis_completion_checkpoint(partial, continuation)
+    state = start_preview_agent_session(
+        agent_id="AGENT::RESEARCH_LEAD",
+        run_id="PREVIEW-R6-SUBMISSION",
+        objective_ref="objective://dell",
+        active_plan_ref="plan://pending",
+    )
+    submission_calls = 0
+    submission_messages: list[Mapping[str, Any]] = []
+
+    def submit(**kwargs: Any) -> _FakeStep:
+        nonlocal submission_calls
+        submission_calls += 1
+        submission_messages.extend(kwargs["messages"])
+        return _FakeStep(
+            tool_calls=(
+                {
+                    "id": "call_1",
+                    "type": "function",
+                    "function": {
+                        "name": "submit_preview",
+                        "arguments": json.dumps({"value": "accepted"}),
+                    },
+                },
+            )
+        )
+
+    execution = execute_checkpointed_preview_submission(
+        submission_profile=_chat_profile(thinking=False),
+        session_state=state,
+        completed_analysis_checkpoint=checkpoint,
+        merged_analysis_draft=merged,
+        tool=_tool(),
+        validator=dict,
+        capture_root=tmp_path,
+        run_id="PREVIEW-R6-SUBMISSION",
+        node_id="RESEARCH-LEAD-PLAN",
+        purpose=(
+            "Reuse the completed and bound Lead analysis, then perform only "
+            "the strict contract submission."
+        ),
+        required_outputs=("value",),
+        schema_burden="one strict preview tool",
+        materiality_quality_risk="checkpoint drift cannot become a Lead plan",
+        comparable_run_evidence=("R5 continuation capture",),
+        submission_output_token_ceiling=1000,
+        maximum_submission_successor_attempts=0,
+        submission_transport=submit,
+    )
+    assert submission_calls == 1
+    assert [row["phase"] for row in execution.attempts] == [
+        "analysis_checkpoint_reuse",
+        "submission",
+    ]
+    assert execution.attempts[0]["provider_call"] is False
+    assert set(execution.token_budget_basis) == {"source_analysis", "submission"}
+    submission_payload = json.loads(submission_messages[1]["content"])
+    assert submission_payload["analysis_draft"] == merged
+    assert {row["event_type"] for row in state.events} >= {
+        "checkpoint_created",
+        "session_resumed",
+    }
+
+    with pytest.raises(
+        Exception,
+        match="completed_analysis_checkpoint_scope_invalid",
+    ):
+        execute_checkpointed_preview_submission(
+            submission_profile=_chat_profile(thinking=False),
+            session_state=state,
+            completed_analysis_checkpoint=checkpoint,
+            merged_analysis_draft=merged + " drift",
+            tool=_tool(),
+            validator=dict,
+            capture_root=tmp_path,
+            run_id="PREVIEW-R6-DRIFT",
+            node_id="RESEARCH-LEAD-PLAN",
+            purpose="不得接受漂移草稿。",
+            required_outputs=("value",),
+            schema_burden="one strict preview tool",
+            materiality_quality_risk="checkpoint drift cannot become a Lead plan",
+            comparable_run_evidence=("R5 continuation capture",),
+            submission_output_token_ceiling=1000,
+            maximum_submission_successor_attempts=0,
+            submission_transport=submit,
+        )
+    assert submission_calls == 1

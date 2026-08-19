@@ -57,6 +57,7 @@ from .multi_agent_preview import (
     compile_specialist_context,
     compile_token_budget_basis,
     merge_analysis_draft_fragments,
+    validate_analysis_completion_checkpoint,
     validate_analysis_fragment_checkpoint,
 )
 from .planning import (
@@ -237,6 +238,231 @@ ToolTransport = Callable[..., AgentToolStepResult]
 AnalysisTransport = Callable[..., ChatCompletionResult]
 SubmissionTransport = Callable[..., ChatCompletionToolStepResult]
 PayloadValidator = Callable[[Mapping[str, Any]], Mapping[str, Any]]
+
+
+def _execute_preview_submission(
+    *,
+    submission_profile: ChatCompletionProfile,
+    session_state: PreviewAgentSessionState,
+    analysis_draft: str,
+    analysis_messages: Sequence[Mapping[str, Any]],
+    analysis_messages_digest: str | None,
+    analysis_draft_digest: str,
+    tool: Mapping[str, Any],
+    validator: PayloadValidator,
+    capture_root: str | Path,
+    run_id: str,
+    node_id: str,
+    purpose: str,
+    required_outputs: Sequence[str],
+    schema_burden: str,
+    materiality_quality_risk: str,
+    comparable_run_evidence: Sequence[str],
+    submission_output_token_ceiling: int,
+    maximum_submission_successor_attempts: int,
+    prior_attempts: Sequence[Mapping[str, Any]],
+    prior_token_budget_basis: Mapping[str, Any],
+    submission_transport: SubmissionTransport,
+) -> PreviewNodeExecution:
+    """Map a completed analysis draft through one shared strict submission path."""
+
+    if maximum_submission_successor_attempts not in {0, 1}:
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_submission_successor_budget_invalid"
+        )
+    tool_name = str(tool["function"]["name"])
+    submission_messages = list(
+        compile_analyzed_node_submission_messages(
+            analysis_draft=analysis_draft,
+            analysis_messages=analysis_messages,
+            analysis_messages_digest=analysis_messages_digest,
+            tool_name=tool_name,
+            required_outputs=required_outputs,
+        )
+    )
+    submission_basis = compile_token_budget_basis(
+        node_id=f"{node_id}::SUBMISSION",
+        purpose=(
+            f"{purpose} 本阶段只把已形成草稿映射到唯一严格合同，不重新研究。"
+        ),
+        input_characters=sum(
+            len(str(row.get("content") or "")) for row in submission_messages
+        )
+        + len(json.dumps(tool, ensure_ascii=False, sort_keys=True)),
+        input_reference_count=sum(
+            analysis_draft.count(prefix)
+            for prefix in ("EV::", "NUM::", "REL::", "GAP::")
+        ),
+        required_outputs=required_outputs,
+        schema_burden=schema_burden,
+        materiality_quality_risk=materiality_quality_risk,
+        comparable_run_evidence=(
+            *comparable_run_evidence,
+            "DELL fragment analysis/submission FAS-R1",
+        ),
+        reasoning_profile=(
+            f"{submission_profile.model} non-thinking strict contract mapper"
+        ),
+        output_token_ceiling=submission_output_token_ceiling,
+        stop_truncation_behavior=(
+            "require exactly one named tool call and full local contract; preserve "
+            "failure; at most one separately identified submission successor"
+        ),
+    )
+    submission_defaults = dict(submission_profile.request_defaults)
+    submission_defaults["max_tokens"] = submission_output_token_ceiling
+    node_submission_profile = replace(
+        submission_profile, request_defaults=submission_defaults
+    )
+    attempts = [deepcopy(dict(row)) for row in prior_attempts]
+    maximum_attempts = 1 + maximum_submission_successor_attempts
+    last_code = "multi_agent_preview_submission_not_executed"
+    for index in range(1, maximum_attempts + 1):
+        attempt_id = (
+            f"{_safe_id(run_id)}-{_safe_id(node_id)}-SUBMISSION-ATTEMPT-{index:02d}"
+        )
+        session_state.append(
+            event_type="provider_attempt_requested",
+            actor_id=session_state.agent_id,
+            attempt_id=attempt_id,
+            input_refs=(
+                f"messages://{canonical_digest(submission_messages)}",
+                f"tool://{canonical_digest(tool)}",
+                f"token-budget://{submission_basis['token_budget_basis_digest']}",
+                f"analysis-draft://{analysis_draft_digest}",
+            ),
+        )
+        try:
+            step = submission_transport(
+                profile=node_submission_profile,
+                messages=submission_messages,
+                tools=[tool],
+                capture_root=capture_root,
+                run_id=run_id,
+                attempt_id=attempt_id,
+                tool_choice={
+                    "type": "function",
+                    "function": {"name": tool_name},
+                },
+            )
+        except ModelGatewayError as exc:
+            last_code = exc.code
+            attempts.append(
+                {
+                    "phase": "submission",
+                    "attempt_id": attempt_id,
+                    "status": "provider_transport_failed",
+                    "failure_code": exc.code,
+                    "capture_ref": exc.capture_ref,
+                }
+            )
+            session_state.append(
+                event_type="provider_attempt_failed",
+                actor_id="PROVIDER::" + submission_profile.provider_id.upper(),
+                attempt_id=attempt_id,
+                output_refs=((exc.capture_ref,) if exc.capture_ref else ()),
+            )
+            if index >= maximum_attempts:
+                raise MultiAgentPreviewRuntimeError(
+                    last_code, attempts=attempts
+                ) from exc
+            submission_messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "The prior contract-mapping attempt ended before a valid "
+                        f"response ({exc.code}). Use the unchanged analysis draft "
+                        f"and issue exactly one {tool_name} call."
+                    ),
+                }
+            )
+            continue
+
+        step_dict = {**step.as_dict(), "phase": "submission"}
+        session_state.append(
+            event_type="provider_attempt_completed",
+            actor_id="PROVIDER::" + submission_profile.provider_id.upper(),
+            attempt_id=attempt_id,
+            output_refs=tuple(
+                str(step_dict.get(key) or "")
+                for key in ("request_capture_ref", "response_capture_ref")
+                if str(step_dict.get(key) or "")
+            ),
+        )
+        try:
+            if len(step.tool_calls) != 1:
+                raise MultiAgentPreviewRuntimeError(
+                    "multi_agent_preview_exactly_one_tool_call_required"
+                )
+            call = step.tool_calls[0]
+            function = call.get("function") or {}
+            if str(function.get("name") or "") != tool_name:
+                raise MultiAgentPreviewRuntimeError(
+                    "multi_agent_preview_tool_name_mismatch"
+                )
+            raw_payload = json.loads(str(function.get("arguments") or ""))
+            if not isinstance(raw_payload, Mapping):
+                raise MultiAgentPreviewRuntimeError(
+                    "multi_agent_preview_tool_arguments_not_object"
+                )
+            validated = deepcopy(dict(validator(raw_payload)))
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError, RuntimeError) as exc:
+            last_code = str(
+                getattr(exc, "code", "") or str(exc) or type(exc).__name__
+            )
+            attempts.append(
+                {
+                    **step_dict,
+                    "attempt_id": attempt_id,
+                    "status": "provider_completed_local_contract_failed",
+                    "failure_code": last_code,
+                }
+            )
+            if index >= maximum_attempts:
+                raise MultiAgentPreviewRuntimeError(
+                    last_code, attempts=attempts
+                ) from exc
+            feedback_ref = "contract-feedback://" + canonical_digest(
+                {"node_id": node_id, "code": last_code, "attempt_id": attempt_id}
+            )
+            session_state.append(
+                event_type="feedback_issued",
+                actor_id="HARNESS::CONTRACT_VALIDATOR",
+                feedback_refs=(feedback_ref,),
+            )
+            submission_messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "The preserved contract submission was rejected with code "
+                        f"{last_code}. Do not change the analysis or add facts. "
+                        f"Correct only the mapping and issue exactly one {tool_name} call."
+                    ),
+                }
+            )
+            continue
+
+        attempts.append(
+            {
+                **step_dict,
+                "attempt_id": attempt_id,
+                "status": "contract_valid",
+                "validated_payload_digest": canonical_digest(validated),
+            }
+        )
+        return PreviewNodeExecution(
+            node_id=node_id,
+            agent_id=session_state.agent_id,
+            tool_name=tool_name,
+            validated_payload=validated,
+            token_budget_basis={
+                **deepcopy(dict(prior_token_budget_basis)),
+                "submission": submission_basis,
+            },
+            attempts=tuple(attempts),
+            successor_attempt_count=index - 1,
+        )
+    raise MultiAgentPreviewRuntimeError(last_code, attempts=attempts)
 
 
 def execute_validated_preview_node(
@@ -744,200 +970,142 @@ def execute_analyzed_preview_node(
         analysis_dict["merged_analysis_draft_digest"] = canonical_digest(
             merged_analysis_draft
         )
-    submission_messages = list(
-        compile_analyzed_node_submission_messages(
-            analysis_draft=merged_analysis_draft,
-            analysis_messages=analysis_messages,
-            tool_name=tool_name,
-            required_outputs=required_outputs,
-        )
-    )
-    submission_basis = compile_token_budget_basis(
-        node_id=f"{node_id}::SUBMISSION",
-        purpose=(
-            f"{purpose} 本阶段只把已形成草稿映射到唯一严格合同，不重新研究。"
+    return _execute_preview_submission(
+        submission_profile=submission_profile,
+        session_state=session_state,
+        analysis_draft=merged_analysis_draft,
+        analysis_messages=analysis_messages,
+        analysis_messages_digest=None,
+        analysis_draft_digest=str(
+            analysis_dict.get("merged_analysis_draft_digest")
+            or analysis_dict["analysis_draft_digest"]
         ),
-        input_characters=sum(
-            len(str(row.get("content") or "")) for row in submission_messages
-        )
-        + len(json.dumps(tool, ensure_ascii=False, sort_keys=True)),
-        input_reference_count=sum(
-            merged_analysis_draft.count(prefix)
-            for prefix in ("EV::", "NUM::", "REL::", "GAP::")
-        ),
+        tool=tool,
+        validator=validator,
+        capture_root=capture_root,
+        run_id=run_id,
+        node_id=node_id,
+        purpose=purpose,
         required_outputs=required_outputs,
         schema_burden=schema_burden,
         materiality_quality_risk=materiality_quality_risk,
-        comparable_run_evidence=(
-            *comparable_run_evidence,
-            "DELL fragment analysis/submission FAS-R1",
+        comparable_run_evidence=comparable_run_evidence,
+        submission_output_token_ceiling=submission_output_token_ceiling,
+        maximum_submission_successor_attempts=(
+            maximum_submission_successor_attempts
         ),
-        reasoning_profile=(
-            f"{submission_profile.model} non-thinking strict contract mapper"
-        ),
-        output_token_ceiling=submission_output_token_ceiling,
-        stop_truncation_behavior=(
-            "require exactly one named tool call and full local contract; preserve "
-            "failure; at most one separately identified submission successor"
-        ),
+        prior_attempts=attempts,
+        prior_token_budget_basis={"analysis": analysis_basis},
+        submission_transport=submission_transport,
     )
-    submission_defaults = dict(submission_profile.request_defaults)
-    submission_defaults["max_tokens"] = submission_output_token_ceiling
-    node_submission_profile = replace(
-        submission_profile, request_defaults=submission_defaults
+
+
+def execute_checkpointed_preview_submission(
+    *,
+    submission_profile: ChatCompletionProfile,
+    session_state: PreviewAgentSessionState,
+    completed_analysis_checkpoint: Mapping[str, Any],
+    merged_analysis_draft: str,
+    tool: Mapping[str, Any],
+    validator: PayloadValidator,
+    capture_root: str | Path,
+    run_id: str,
+    node_id: str,
+    purpose: str,
+    required_outputs: Sequence[str],
+    schema_burden: str,
+    materiality_quality_risk: str,
+    comparable_run_evidence: Sequence[str],
+    submission_output_token_ceiling: int,
+    maximum_submission_successor_attempts: int = 1,
+    submission_transport: SubmissionTransport = (
+        execute_chat_completion_tool_step_exact_once
+    ),
+) -> PreviewNodeExecution:
+    """Resume at strict submission from an immutable completed-analysis checkpoint.
+
+    This path deliberately performs no analysis provider call.  The checkpoint
+    binds the two preserved source captures and the exact merged draft; the only
+    new model authority is strict contract mapping.
+    """
+
+    trusted = validate_analysis_completion_checkpoint(
+        completed_analysis_checkpoint
     )
-    maximum_attempts = 1 + maximum_submission_successor_attempts
-    last_code = "multi_agent_preview_submission_not_executed"
-    for index in range(1, maximum_attempts + 1):
-        attempt_id = (
-            f"{_safe_id(run_id)}-{_safe_id(node_id)}-SUBMISSION-ATTEMPT-{index:02d}"
+    draft = str(merged_analysis_draft or "").strip()
+    expected_outputs = [str(item) for item in required_outputs]
+    if not (
+        trusted["node_id"] == node_id
+        and trusted["case_key"] == session_state.session["case_id"]
+        and trusted["required_outputs"] == expected_outputs
+        and canonical_digest(draft) == trusted["merged_analysis_draft_digest"]
+        and len(draft) == trusted["merged_analysis_draft_character_count"]
+    ):
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_completed_analysis_checkpoint_scope_invalid"
         )
-        session_state.append(
-            event_type="provider_attempt_requested",
-            actor_id=session_state.agent_id,
-            attempt_id=attempt_id,
-            input_refs=(
-                f"messages://{canonical_digest(submission_messages)}",
-                f"tool://{canonical_digest(tool)}",
-                f"token-budget://{submission_basis['token_budget_basis_digest']}",
-                "analysis-draft://"
-                + str(
-                    analysis_dict.get("merged_analysis_draft_digest")
-                    or analysis_dict["analysis_draft_digest"]
-                ),
-            ),
-        )
-        try:
-            step = submission_transport(
-                profile=node_submission_profile,
-                messages=submission_messages,
-                tools=[tool],
-                capture_root=capture_root,
-                run_id=run_id,
-                attempt_id=attempt_id,
-                tool_choice={
-                    "type": "function",
-                    "function": {"name": tool_name},
-                },
-            )
-        except ModelGatewayError as exc:
-            last_code = exc.code
-            attempts.append(
-                {
-                    "phase": "submission",
-                    "attempt_id": attempt_id,
-                    "status": "provider_transport_failed",
-                    "failure_code": exc.code,
-                    "capture_ref": exc.capture_ref,
-                }
-            )
-            session_state.append(
-                event_type="provider_attempt_failed",
-                actor_id="PROVIDER::" + submission_profile.provider_id.upper(),
-                attempt_id=attempt_id,
-                output_refs=((exc.capture_ref,) if exc.capture_ref else ()),
-            )
-            if index >= maximum_attempts:
-                raise MultiAgentPreviewRuntimeError(
-                    last_code, attempts=attempts
-                ) from exc
-            submission_messages.append(
-                {
-                    "role": "user",
-                    "content": (
-                        "The prior contract-mapping attempt ended before a valid "
-                        f"response ({exc.code}). Use the unchanged analysis draft "
-                        f"and issue exactly one {tool_name} call."
-                    ),
-                }
-            )
-            continue
 
-        step_dict = {**step.as_dict(), "phase": "submission"}
-        session_state.append(
-            event_type="provider_attempt_completed",
-            actor_id="PROVIDER::" + submission_profile.provider_id.upper(),
-            attempt_id=attempt_id,
-            output_refs=tuple(
-                str(step_dict.get(key) or "")
-                for key in ("request_capture_ref", "response_capture_ref")
-                if str(step_dict.get(key) or "")
-            ),
-        )
-        try:
-            if len(step.tool_calls) != 1:
-                raise MultiAgentPreviewRuntimeError(
-                    "multi_agent_preview_exactly_one_tool_call_required"
-                )
-            call = step.tool_calls[0]
-            function = call.get("function") or {}
-            if str(function.get("name") or "") != tool_name:
-                raise MultiAgentPreviewRuntimeError(
-                    "multi_agent_preview_tool_name_mismatch"
-                )
-            raw_payload = json.loads(str(function.get("arguments") or ""))
-            if not isinstance(raw_payload, Mapping):
-                raise MultiAgentPreviewRuntimeError(
-                    "multi_agent_preview_tool_arguments_not_object"
-                )
-            validated = deepcopy(dict(validator(raw_payload)))
-        except (json.JSONDecodeError, KeyError, TypeError, ValueError, RuntimeError) as exc:
-            last_code = str(
-                getattr(exc, "code", "") or str(exc) or type(exc).__name__
-            )
-            attempts.append(
-                {
-                    **step_dict,
-                    "attempt_id": attempt_id,
-                    "status": "provider_completed_local_contract_failed",
-                    "failure_code": last_code,
-                }
-            )
-            if index >= maximum_attempts:
-                raise MultiAgentPreviewRuntimeError(
-                    last_code, attempts=attempts
-                ) from exc
-            feedback_ref = "contract-feedback://" + canonical_digest(
-                {"node_id": node_id, "code": last_code, "attempt_id": attempt_id}
-            )
-            session_state.append(
-                event_type="feedback_issued",
-                actor_id="HARNESS::CONTRACT_VALIDATOR",
-                feedback_refs=(feedback_ref,),
-            )
-            submission_messages.append(
-                {
-                    "role": "user",
-                    "content": (
-                        "The preserved contract submission was rejected with code "
-                        f"{last_code}. Do not change the analysis or add facts. "
-                        f"Correct only the mapping and issue exactly one {tool_name} call."
-                    ),
-                }
-            )
-            continue
-
-        attempts.append(
-            {
-                **step_dict,
-                "attempt_id": attempt_id,
-                "status": "contract_valid",
-                "validated_payload_digest": canonical_digest(validated),
-            }
-        )
-        return PreviewNodeExecution(
-            node_id=node_id,
-            agent_id=session_state.agent_id,
-            tool_name=tool_name,
-            validated_payload=validated,
-            token_budget_basis={
-                "analysis": analysis_basis,
-                "submission": submission_basis,
-            },
-            attempts=tuple(attempts),
-            successor_attempt_count=index - 1,
-        )
-    raise MultiAgentPreviewRuntimeError(last_code, attempts=attempts)
+    checkpoint_ref = (
+        "analysis-completion-checkpoint://" + trusted["checkpoint_digest"]
+    )
+    reuse_attempt_id = (
+        f"{_safe_id(run_id)}-{_safe_id(node_id)}-"
+        "ANALYSIS-CHECKPOINT-REUSE-01"
+    )
+    session_state.append(
+        event_type="checkpoint_created",
+        actor_id="HARNESS::ANALYSIS_COMPLETION_CHECKPOINT",
+        input_refs=(
+            str(trusted["fragment_checkpoint_ref"]),
+            str(trusted["continuation_response_capture_ref"]),
+        ),
+        output_refs=(checkpoint_ref,),
+    )
+    session_state.append(
+        event_type="session_resumed",
+        actor_id=session_state.agent_id,
+        attempt_id=reuse_attempt_id,
+        input_refs=(checkpoint_ref,),
+        output_refs=(f"strict-submission://{node_id}",),
+    )
+    reuse_receipt = {
+        "phase": "analysis_checkpoint_reuse",
+        "attempt_id": reuse_attempt_id,
+        "status": "completed_analysis_checkpoint_reused",
+        "provider_call": False,
+        "checkpoint_ref": checkpoint_ref,
+        "checkpoint_digest": trusted["checkpoint_digest"],
+        "source_fragment_run_id": trusted["source_fragment_run_id"],
+        "source_continuation_run_id": trusted["source_continuation_run_id"],
+        "analysis_draft_digest": trusted["merged_analysis_draft_digest"],
+    }
+    return _execute_preview_submission(
+        submission_profile=submission_profile,
+        session_state=session_state,
+        analysis_draft=draft,
+        analysis_messages=(),
+        analysis_messages_digest=trusted["continuation_messages_digest"],
+        analysis_draft_digest=trusted["merged_analysis_draft_digest"],
+        tool=tool,
+        validator=validator,
+        capture_root=capture_root,
+        run_id=run_id,
+        node_id=node_id,
+        purpose=purpose,
+        required_outputs=required_outputs,
+        schema_burden=schema_burden,
+        materiality_quality_risk=materiality_quality_risk,
+        comparable_run_evidence=comparable_run_evidence,
+        submission_output_token_ceiling=submission_output_token_ceiling,
+        maximum_submission_successor_attempts=(
+            maximum_submission_successor_attempts
+        ),
+        prior_attempts=(reuse_receipt,),
+        prior_token_budget_basis={
+            "source_analysis": trusted["source_analysis_token_budget_basis"],
+        },
+        submission_transport=submission_transport,
+    )
 
 
 def compile_cross_role_feedback_receipt(
@@ -1285,6 +1453,7 @@ __all__ = [
     "compile_cross_role_feedback_receipt",
     "compile_multi_agent_preview_materialization",
     "execute_analyzed_preview_node",
+    "execute_checkpointed_preview_submission",
     "execute_validated_preview_node",
     "load_preview_consumer_policy",
     "load_preview_planning_policy",

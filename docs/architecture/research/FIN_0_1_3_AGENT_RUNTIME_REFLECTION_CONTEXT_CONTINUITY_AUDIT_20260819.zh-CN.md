@@ -294,3 +294,15 @@ R4 首次让 Research Lead 在六份 Specialist 计划上形成 9,932 字可见�
 当前 successor 新增 `AnalysisFragmentCheckpoint`、章节完成度检查、面向同一 Agent 的 `FeedbackReceipt` 和一次性 continuation。checkpoint 绑定原 request／response capture、digest、长度及完成／缺失字段；续写只处理缺失字段，原始六角色上下文不重发；合并结果仍须进入原严格提交合同。截断、漏项、重复已完成字段、digest 漂移或第二次续写均 fail closed。
 
 该实现证明的是一种 provider-neutral、可重放的局部上下文恢复方式，不是通用自主循环。它尚未证明模型自然续写成功、跨 Agent compaction、PlanDelta／GraphDelta、动态 Skill／Graph 消费或完整 S3 报告质量。S1 当前工具资格和来源门不因该增量后移。
+
+## 18. R5 暴露的字段状态语义与 completed-analysis resume（2026-08-20）
+
+R5 证明自然 checkpoint→feedback→resume 已经能够工作：同一 Lead 只看 R4 片段、缺失清单和反馈后，正常补齐剩余分析并停止。终态失败来自本地合同把 partial 和 missing 都当作“必须重新打印标题”。因此运行时正式冻结三态字段语义：
+
+- `completed`：checkpoint 前已完整，续写禁止重做；
+- `partial`：checkpoint 前已开始，续写必须先原地完成且不重复标题；
+- `missing`：checkpoint 前未开始，续写必须按序显式输出精确标题。
+
+`AnalysisCompletionCheckpoint` 只在原 fragment、continuation、完成回执、usage、finish reason、TokenBudgetBasis 和合并内容 digest 全部校验后产生。下游 submission 读取该 checkpoint，只做合同映射；事件流明确记录本地 `analysis_checkpoint_reuse`，它不是 Provider call，也不能计入模型调用或 token 消耗。任何 digest 漂移、第二个 partial、漏 heading、错顺序、空续写或错误回执均 fail closed。
+
+这一设计减少重复分析与上下文浪费，但不等于通用 memory compaction。跨 Agent 摘要、长期 PlanDelta／GraphDelta、Skill 动态消费和多案例恢复仍需各自证明。

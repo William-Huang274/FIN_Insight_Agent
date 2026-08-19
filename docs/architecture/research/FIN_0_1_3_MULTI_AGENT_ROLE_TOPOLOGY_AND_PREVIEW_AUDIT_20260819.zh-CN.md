@@ -136,3 +136,9 @@ Preview 不是看“跑完没报错”，而要同时回答：
 仍未关闭的最早缺陷位于 S1 工具层：当前 reviewed Pack 有多条上游／关系资料，但动态检索仍不能稳定把这些目标召回到对应 EvidenceRequest。该缺陷保留为独立 S1 工作，不阻止在既有 reviewed authority 上做诊断性 Multi-Agent Preview，也不能因 Preview 能读到资料而宣称动态检索或 S1 已通过。
 
 Live Gate 已实现独立 AgentSession、专业意见、Lead 协调、角色底稿、结构化挑战、FeedbackReceipt、checkpoint/resume、局部修正、独立 Evaluator、StopDecision 和条件式 Writer。执行 authority 只能在干净实现提交后签发，并限制为 0 外部来源网络、0 Candidate promotion、0 产品发布；每个模型节点都必须带任务级 TokenBudgetBasis。
+
+## 九、R5／R6 对 Preview 编排的修正
+
+Research Lead 的职责规模显著大于单个 Specialist，不能把“形成综合分析”和“严格结构化交卷”塞进一次 completion。R4／R5 证明合理路径是：可见分析 → 片段 checkpoint → actionable feedback → 最多一次 continuation → 完整分析 checkpoint → non-thinking strict submission。分析与交卷仍由同一角色拥有，但它们使用不同责任、上下文和 TokenBudgetBasis。
+
+R6 不再重跑六个 Specialist 或 Lead 分析，只复用经 digest 验证的成功前缀并从严格 Lead submission 恢复。后续角色仍必须各自运行并留下独立会话、工具回执、挑战和修改记录；复用 checkpoint 不能把 Preview 偷换成单一 Lead 报告，也不能让 Harness 替 Agent 生成观点。

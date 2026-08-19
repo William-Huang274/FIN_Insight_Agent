@@ -2889,3 +2889,11 @@ S1 的“无 AI 基线”不能只指代码可运行。一名合格操作者必�
 Evidence admission 必须绑定 `Case + EvidenceRequest + material requirement + candidate + source lineage + decision`。当前已编译 16 个请求、22 条具体候选—命题绑定的私有审阅包；它们仍必须由 qualified human 作 `accept / reject / needs-review`。实现者、排名或语义相似度不能代签 Evidence 权威。
 
 replacement blind qualification 是独立外部门：至少 6 个未披露案例，覆盖跨公司、行业、披露制度、证据形态、时间／hard negative 和失败责任层。答案必须在 Git 外、candidate freeze 之后才对执行方可见；当前 Codex 不得自选案例、自建答案再自我评分。因此当前状态只是 `human_operability_engineering_ready / qualified_human_admission_pending / external_blind_pending / S1_qualified_stable=false`。
+
+### 16.48 长分析恢复必须区分完整字段、部分字段与缺失字段（2026-08-20）
+
+长任务 checkpoint 不能只记录“这一节点成功或失败”。每个模型输出字段必须拥有 `completed / partial / missing` 之一的可验证状态。`partial` 表示模型已开始该字段但在内容中途截断；恢复时应让同一 Agent 原地补完，不得为了机械解析强迫它重写整段或重复标题。`missing` 表示字段完全未开始，恢复时仍须使用精确字段标题并按合同顺序生成。首版只允许一个 partial 字段，避免无法证明的多位置拼接。
+
+Harness 必须保存原片段、续写、各自 capture／digest、完成字段集合、精确完成回执和合并后内容摘要。只有语义完整且通过原 submission 合同的结果才能成为正式 Agent 输出；checkpoint、分析草稿和 continuation 永远不能自动晋升为 Evidence、NumericFact、Judgment 或报告。已完成分析应通过内容寻址的 completion checkpoint 复用，禁止因下游结构化交卷失败而重新付费生成同一研究分析。
+
+该机制属于 S0 Agent Runtime 与 S3 工作模式的交叉能力，不是 DeepSeek 专用 Prompt 补丁。它只解决长节点的可恢复性与合同一致性，不证明资料充分、研究内容优质、跨 Agent 上下文压缩、S1／S3 资格或发布能力。

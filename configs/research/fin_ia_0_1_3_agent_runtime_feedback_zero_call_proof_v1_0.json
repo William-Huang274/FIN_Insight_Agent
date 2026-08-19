@@ -1,0 +1,83 @@
+{
+  "schema_version": "fin_ia_agent_runtime_feedback_zero_call_proof_v1_0",
+  "status": "zero_call_session_checkpoint_resume_and_feedback_routing_engineering_pass",
+  "recorded_at": "2026-08-19T12:00:00+08:00",
+  "source_bindings": {
+    "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_5.json": "4bb1024652b6a3178b3e7971910e5ac652f2586dce6a8bf5bc1202f0edd2f79f",
+    "configs/retrieval/fin_ia_0_1_3_s1_mu_current_product_readiness_result_v1_6.json": "19b0868508de8e260f55b4f9ec6e905fb8477dc9f0770fdfca7fcf5a407f478b",
+    "configs/retrieval/fin_ia_0_1_3_s1_nvda_current_product_readiness_result_v1_6.json": "8b04313117b21bd2d98ef8a35cee5728f176c920a5353a6d0abc76872c034233",
+    "configs/retrieval/fin_ia_0_1_3_s1_human_operability_and_blind_gate_program_v1_0.json": "c8d91b1dd3b401f9129aa18bdc3549d40ca3846f01b1792aaeed33cce04d3990",
+    "data/workbench_private/fin_0_1_3_s1_source_route_truth_replay/mu-r1/full_result.json": "3ab980f00b4eaeba50df90b639e0ffb3bd40a7c1c8086c41234e6f0039cb1723",
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_R7_content_assessment_v1_0.json": "63f02be58c23706454ed7db3e59c45ed8a0633d1ac498a42ffe55224f37cc676"
+  },
+  "execution": {
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "events": 2,
+    "feedback_receipts": 31
+  },
+  "session_proof": {
+    "session_id": "SESSION::FIN013::ZERO-CALL-FEEDBACK-R1",
+    "event_tail_digest": "05569990b653bd686850f26d500b58626b74347b44e79c941737027313c34e91",
+    "checkpoint_digest": "dedd4f92061f7250fd3705ed720c41110a3bf8299a947c533f6eff3357c3dea9",
+    "resume_receipt_digest": "32c9c4d6241a001c0719ffb2197f83d8153ea6ac05cf4fe7b11a16a7b7e2bbf2",
+    "six_artifact_contracts_validated": true,
+    "material_state_preserved": true
+  },
+  "feedback_summary": {
+    "S1": {
+      "DELL": {
+        "feedback_count": 7,
+        "failure_code_counts": {
+          "material_gap_not_public_boundary": 3,
+          "reviewed_evidence_admission_pending": 4
+        }
+      },
+      "MU": {
+        "feedback_count": 11,
+        "failure_code_counts": {
+          "reviewed_evidence_admission_pending": 3,
+          "reviewed_evidence_admission_pending_alongside_other_blocker": 4,
+          "source_present_candidate_material_requirement_not_recalled": 4
+        }
+      },
+      "NVDA": {
+        "feedback_count": 8,
+        "failure_code_counts": {
+          "reviewed_evidence_admission_pending": 3,
+          "reviewed_evidence_admission_pending_alongside_other_blocker": 2,
+          "source_present_candidate_material_requirement_not_recalled": 3
+        }
+      }
+    },
+    "S2": {
+      "typed_gap": 1,
+      "typed_conflict": 1
+    },
+    "Verifier": {
+      "material_findings": 3
+    },
+    "responsibility_planes": [
+      "agent_work_mode_plane",
+      "harness_control_plane",
+      "infrastructure_and_tool_plane"
+    ]
+  },
+  "business_examples_zh": {
+    "S1_source_present_retrieval": "MU 的“订单与积压是否真实增长？”仍缺少至少一个材料角色；当前期间的官方来源已经存在于本地对象快照，应回查对象化、查询、召回、排序或 Evidence Role，不能重复下载同一披露，也不能让模型自行补全。",
+    "S1_admission": "DELL 的“最新收入、增长与经营利润表现如何？”已有候选材料，但至少一个材料角色尚未绑定正式 Evidence 决策；继续扩大网页搜索不会自动获得证据权威。",
+    "S2": "MU 的 orders 未从当前 S2 mart 按请求期间和口径解析出来；该状态只证明 typed lookup 未解决，不证明公开信息不存在。",
+    "Verifier": "Verifier 拒绝当前判断：RC-S3-038-cell-local-missingness-promoted-to-case-level-absence-and-false-cross-cell-conflict（CELL::operating_performance.thesis_atom_and_mechanism_atom）。该失败必须回到最早责任节点，Verifier 不会代写结论。"
+  },
+  "authority": {
+    "failed_runs_relabelled": false,
+    "candidate_promoted": false,
+    "numeric_fact_created": false,
+    "public_gap_declared": false,
+    "S1_qualified_stable": false,
+    "natural_reflection_live_authorized": false,
+    "release_authority": false
+  },
+  "result_digest": "a3287cc18874421e305722878e909f43d4f3bfe6847c2c0bd761d262909a040d"
+}

@@ -274,3 +274,15 @@ S1 不因新增 Agent Runtime 而后移。相反，S1 必须先通过 AI-free �
 - OpenAI Agents SDK 的 session memory 语义：[Sessions](https://openai.github.io/openai-agents-python/sessions/)
 
 这些框架模式只提供运行宿主和工程参考，不获得 FIN 的 Evidence、NumericFact、Gap、金融关系或发布权威。
+
+## 16. 零调用 successor 实现结果（2026-08-19）
+
+本轮保留 v1.0 六合同语义，以 v1.1 successor 补齐可执行的 append-only 事件和恢复不变量：
+
+1. `AgentSession` 绑定 Case／version／as-of／Objective／Plan，`SessionEvent` 以连续 sequence 和 prior digest 串联；同一 Provider／tool attempt 只能有一个终态。
+2. `ContextCheckpoint` 除 open gaps／feedback 外强制保存 authority、counterevidence 和 open questions；resume 对事件打乱、digest 篡改、Case／期间／Plan 漂移或丢失关键状态 fail closed。
+3. 六种 Runtime artifact 使用同一 validator；本轮只证明 schema／replay／mutation，没有让模型生成 PlanDelta／GraphDelta。
+4. S1 `FeedbackReceipt` 先消费 source-asset reconciliation：已有当期官方资产时，失败路由到 object／query／recall／ranking／Evidence Role，不再路由到重复下载。同一请求若还有未准入候选，会另行保留 Evidence Gate 反馈，不把混合阻断压成一条。
+5. S2 typed gap／conflict 只允许回到本地事实权威，不允许模型挑数字；Verifier 的研究内容 finding 回到 originating node，身份／期间／引用／schema 回 Harness，Skill／Graph 问题回交叉层。Verifier 不代写研报。
+
+当前零调用 proof 在 2 个 SessionEvent 中保留 31 条反馈，完成 checkpoint 和 resume，0 模型、0 网络、0 付费工具，并通过全仓 817 测试。权威状态为 `S0_session_feedback_foundation_engineering_pass / natural_reflection_live_pending / S1_qualified_stable=false / S3_acceptance=false`。

@@ -1,0 +1,51 @@
+{
+  "authority": {
+    "S1_qualification_authority": false,
+    "candidate_is_evidence": false,
+    "numeric_fact_authority": false,
+    "qualified_human_receipts_pending": true
+  },
+  "candidate_binding_count": 22,
+  "case_count": 3,
+  "compiled_object_snapshot": {
+    "ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v5/objects.jsonl",
+    "sha256": "125f0f129f1d94ed80708c6f0f214e49e1df21e41b902700469360528e6cd0b6"
+  },
+  "pending_request_count": 16,
+  "pending_requirement_count": 22,
+  "private_packet_digest": "26daab13c10724801eb89955697f113861fe926a4c06759655a28bef6958ac43",
+  "private_packet_ref": "data/workbench_private/fin_0_1_3_s1_human_evidence_admission/r1/packet.json",
+  "private_packet_sha256": "43b5d712f75cc43f1c478667c6f386198cf9800a83b62aabd32b1c25ba6c7e40",
+  "program_ref": "configs/retrieval/fin_ia_0_1_3_s1_human_operability_and_blind_gate_program_v1_0.json",
+  "program_sha256": "c8d91b1dd3b401f9129aa18bdc3549d40ca3846f01b1792aaeed33cce04d3990",
+  "readiness_bindings": [
+    {
+      "case_key": "DELL",
+      "private_ref": "data/workbench_private/fin_0_1_3_s1_current_product_readiness/dell-r6/full_result.json",
+      "private_sha256": "43967c17bdb6d3ea8837e2d91cec2669c8bc1515d8b48541c2b7f9b874d98c32",
+      "public_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_5.json",
+      "public_sha256": "4bb1024652b6a3178b3e7971910e5ac652f2586dce6a8bf5bc1202f0edd2f79f"
+    },
+    {
+      "case_key": "MU",
+      "private_ref": "data/workbench_private/fin_0_1_3_s1_current_product_readiness/mu-r9/full_result.json",
+      "private_sha256": "9876084037bca1f2e0974aec2815fc767da115fb29cfc1f6312359fc0b883b37",
+      "public_ref": "configs/retrieval/fin_ia_0_1_3_s1_mu_current_product_readiness_result_v1_6.json",
+      "public_sha256": "19b0868508de8e260f55b4f9ec6e905fb8477dc9f0770fdfca7fcf5a407f478b"
+    },
+    {
+      "case_key": "NVDA",
+      "private_ref": "data/workbench_private/fin_0_1_3_s1_current_product_readiness/nvda-r7/full_result.json",
+      "private_sha256": "da42ac022f13bf08ea8ea792fe3a8c8fb0e2a5e87e4a144c799c5df610b50d98",
+      "public_ref": "configs/retrieval/fin_ia_0_1_3_s1_nvda_current_product_readiness_result_v1_6.json",
+      "public_sha256": "8b04313117b21bd2d98ef8a35cee5728f176c920a5353a6d0abc76872c034233"
+    }
+  ],
+  "recorded_at": "2026-08-19T14:00:00+08:00",
+  "schema_version": "fin_ia_s1_qualified_human_evidence_admission_manifest_v1_0",
+  "source_record_snapshot": {
+    "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v2/records.jsonl",
+    "sha256": "de3e7e7f3c5aa8ed117a58e2721a424355c37d7477b87060bfa8b8b9e18f7ab2"
+  },
+  "status": "review_packet_ready_qualified_human_receipts_pending"
+}

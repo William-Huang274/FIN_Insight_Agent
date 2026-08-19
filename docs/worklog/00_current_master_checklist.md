@@ -33,11 +33,18 @@
   - [x] request-bound Material Evidence Set v1.1、current candidate metadata adapter 与四案真实候选零调用回放（18 requests／40 requirements；材料组全保留；候选仍非 Evidence）
   - [ ] 自然 ResearchBlueprint material scope、COST qualified-human reference 决策与 replacement blind qualification
   - [ ] valid temporal 资格运行、reference review 与一次性 frozen／heterogeneous 执行
+- [ ] S1 人工可操作、Evidence admission 与 replacement blind 收口
+  - [x] 24 请求 AI-free 人工可操作预检、当前官方资产对账和业务可读处置
+  - [x] 16 请求／22 requirement 的 digest-bound 私有 qualified-human admission 包
+  - [x] 至少 6 个外部新案例的 Git 外 blind handoff／receipt 合同
+  - [ ] qualified-human 逐条 admission receipt 与 current readiness 重物化
+  - [ ] 外部隔离 case／label 分配、candidate freeze 和 blind qualification receipt
 - [x] 当前 Pack registry-atomic 提升（R11；按案例私有对象根；0 复制／0 网络／0 模型；Workbench 三案真实挂载复验通过）
 - [ ] S1 请求级来源路线执行真相与公开 gap 资格
   - [x] provider-neutral Source Route Portfolio、Workbench Runtime、ProductReadiness 合同与三案 zero-call replay 工程门
   - [x] 干净提交上的三案 immutable successor、ProductReadiness 重物化与 Registry R28／Runtime Binding v1.5 晋升
-  - [ ] 对真实 residual gap 执行必要官方路线并形成 capture-bound terminal receipt；未执行、失败或未配置不得冒充公开信息 gap
+  - [x] 先对账当前 source／object snapshot：原 MU 4／NVDA 3 个 source-pending 请求已证明官方资产存在，新增获取需求为 0
+  - [ ] 修复这 7 个请求的 object／query／recall／ranking／Evidence Role 最早覆盖损失；仍不得冒充公开信息 gap
 - [x] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归（engineering pass）
 - [x] S2 request-scoped Runtime 接入（真实 DELL 6/6 resolved；S3／前端消费未完成）
 - [x] DELL S1/S2/S3 零调用工程纵切（受控 S3 Objective／EvidenceRequest、Qwen＋BM25 联合候选、S2 7/7 resolved／21 NumericFacts）
@@ -60,7 +67,8 @@
   - [x] comparable-period Numeric relation＋EvidenceRequest source-route 与 Research Context Closure；fixed-Pack 后续实证已取代早期单节点复验
 - [x] S3 fixed-Pack 第一层自然 Judgment、一次 typed repair、独立 L1 与适用内容质量（21/24；只算模型分析单元测试）
 - [x] FIN 0.1.3 Agent Runtime／反思／上下文连续性全链只读审计与六合同冻结（区分基础设施／Harness／Agent／Skill×Graph；0 模型／网络；不等于 Runtime 实现）
-- [ ] S0 AgentSession／SessionEvent／FeedbackReceipt／PlanDelta／GraphDelta／ContextCheckpoint／StopDecision 零调用 Runtime、checkpoint／resume／compaction mutation
+- [x] S0 AgentSession／SessionEvent／FeedbackReceipt／PlanDelta／GraphDelta／ContextCheckpoint／StopDecision 零调用 Runtime、checkpoint／resume／compaction mutation 工程基础（不等于自然反思 live）
+- [x] S1／S2／Verifier typed failure → earliest-owner FeedbackReceipt 编译与 31 条零调用回放
 - [ ] S3 Skill／Graph 动态最小选择、注入／消费 receipt 与 FeedbackReceipt 驱动的有界 replan／stop 循环
 - [ ] S1→S3 动态 Research Truth Spine（EvidenceRequest→S1/S2→EvidenceResponse）
   - [x] provider-neutral EvidenceResponse、reviewed-only 重选、动态 claim authority、三案 identity/mutation 零调用工程纵切

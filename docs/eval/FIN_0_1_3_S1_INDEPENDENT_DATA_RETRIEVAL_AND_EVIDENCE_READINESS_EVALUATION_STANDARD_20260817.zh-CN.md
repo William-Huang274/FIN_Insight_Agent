@@ -443,3 +443,14 @@ S1 独立资格新增 `human_operable_without_generation_model` 硬门。评测�
 最终 S1 资格报告必须同时给出业务例子：具体命题、目标材料、实际错误候选、在哪一层丢失、为何算该类 failure，以及它对 Evidence Pack 和下游研究的影响；不得只列 Recall、MRR、延迟或网页数。
 
 当前 `S1_qualified_stable=false`，本节是标准修订，不是一次资格执行。
+
+## 20. 人工可操作预检与外部资格回执（2026-08-19）
+
+当前 DELL／MU／NVDA 24 个开发请求已执行第 19 节的工程预检。对账当前 source／object snapshot 后，新增官方资产请求为 0；原 MU 4／NVDA 3 个 source-pending 项已更正为 source-present candidate-coverage failure。这个更正只消除无效的重复下载动作，不给 candidate coverage 加分。
+
+Evidence admission 与 blind qualification 必须由两种回执分别证明：
+
+1. **Qualified-human admission receipt** 逐条绑定 Case、request、requirement、candidate、admission-item digest、source-lineage digest、来源／期间／角色／命题一致性和 `accept / reject / needs-review`。当前待审为 16 个请求、22 条具体绑定；未签前不得追认 Evidence。
+2. **External blind qualification receipt** 至少绑定 6 个未披露案例，覆盖跨公司、行业、披露制度、证据形态、时间／hard negative 和失败责任。它必须证明 candidate freeze 先于 label access、标签在 Git 外、无案例重叠，并交付 aggregate metrics 和可读的业务失败例。
+
+当前三案只能作开发回归，已披露 COST／JPM／CAT／NVO／SHEL／0700.HK 也禁止进入 replacement blind。当前状态为 `human_operability_engineering_pass / qualified_human_receipts_pending / external_blind_receipt_pending / S1_qualified_stable=false`。

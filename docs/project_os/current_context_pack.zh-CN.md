@@ -798,3 +798,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 全仓 `795 passed`，TypeScript／Vite／compileall／active baseline／secret scan 通过；0 网络、0 模型、0 learned-vector。工程提交为 `974f87de`；formal three-case replay、ProductReadiness successor、Registry R28 与 Runtime Binding v1.5 已完成并由真实 Workbench 服务入口读取。
 - DELL source-truth result digest=`ec597ce1af6b924d34e9a9a8a5d1feee1da66d067a96967374352c069539e1fe`，8／8 complete、0 supplement；MU digest=`80b4485ad72d3bf43bd37fb6af72227af2487405cea70a7d3abd75612645270c`，4 complete／4 incomplete；NVDA digest=`0cba240a0bbc46ae431a86bc3bacbaa637869310719074360dfbcf65f89e5edb`，5 complete／3 incomplete。三案 public gap 均为 0。
 - 当前最早动作不再是继续改 source-truth 合同，而是按 MU／NVDA 的 requirement 执行可用官方路线并保存 capture-bound terminal receipt；DELL 留在 Evidence admission。IR／transcript 未配置、传输失败或没有执行过都不能登记为公开信息不存在。
+
+## 2026-08-19 S1 人工可操作／资产对账与 S0 反馈基础
+
+- 后续 source-asset reconciliation 更正了上一节的动作判断：MU／NVDA 当期 10-K／10-Q／8-K 及必要关联方官方披露已在 1,841 条当前来源／34,117 个当前金融对象快照中。原 MU 4／NVDA 3 个 source-pending 请求应更正为 source-present candidate-coverage failure；重复下载同一披露无法修复对象、query／recall、ranking 或 Evidence Role。
+- S1 人工可操作预检已覆盖 24 个开发请求：新增官方资产请求 0；16 个请求／22 条具体候选—命题绑定等待 qualified-human admission；public-gap eligible 仍为 0。
+- replacement blind handoff 已准备，必须由外部角色选择至少 6 个新案例、在 Git 外保管标签并在 candidate freeze 后评分。当前 Codex 不自签盲测。
+- S0 v1.1 已实现 append-only SessionEvent、六合同 validator、checkpoint／resume 及 mutation；S1／S2／Verifier 当前失败编译为 31 条可行动 FeedbackReceipt。零调用 proof 与全仓 817 测试通过。
+- 当前边界：`S1_qualified_stable=false`、`natural_reflection_live=false`、`dynamic_skill_graph_consumption=false`、`S3_acceptance=false`、`release=false`。下一项先修 MU／NVDA 已有资产的最早覆盖损失，并将 22 条 admission 交给合格人工审阅；不允许直接跳自然 S3 full-chain。

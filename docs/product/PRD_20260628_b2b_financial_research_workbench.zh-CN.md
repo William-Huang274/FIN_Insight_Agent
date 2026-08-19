@@ -2876,4 +2876,14 @@ Exact-once 以一个 Provider attempt 或工具执行请求为单位。失败 at
 
 阶段归属修订为：S0 承担 Session／event／checkpoint／resume 基础；S1 承担无 AI 可资格化的检索工具及 typed tool feedback；S2 承担事实、可比关系、conflict 和 typed gap；S3 承担反思、PlanDelta／GraphDelta、多 Agent 协调和内容质量；S4 承担用户计划审阅、人工干预、暂停恢复与交付；S5 承担长任务 replay、停止行为、泛化 eval 与 release。
 
-该项当前状态为 `architecture_contract_frozen／runtime_not_implemented`。它不取消 S1 当前优先级：S1 必须先达到 `S1_qualified_stable`，否则更复杂的 Agent loop 只会反复调用一个未经资格的检索栈。完整技术审计见 `docs/architecture/research/FIN_0_1_3_AGENT_RUNTIME_REFLECTION_CONTEXT_CONTINUITY_AUDIT_20260819.zh-CN.md`。
+该项当前已从 `architecture_contract_frozen` 进入 `zero_call_runtime_foundation_engineering_pass`：append-only `SessionEvent`、checkpoint／resume、六合同 validator 与 S1／S2／Verifier `FeedbackReceipt` 编译已实现并完成回放／mutation，但自然 `observe→reflect→replan→stop` live 、动态 Skill／Graph 消费、S3 及发布均未授权。它不取消 S1 当前优先级：S1 必须先达到 `S1_qualified_stable`，否则更复杂的 Agent loop 只会反复调用一个未经资格的检索栈。完整技术审计见 `docs/architecture/research/FIN_0_1_3_AGENT_RUNTIME_REFLECTION_CONTEXT_CONTINUITY_AUDIT_20260819.zh-CN.md`。
+
+### 16.47 S1 人工可操作资格、来源资产对账与外部盲测是三个不同的门（2026-08-19）
+
+S1 的“无 AI 基线”不能只指代码可运行。一名合格操作者必须能从业务问题出发，逐请求看到当前有什么、在哪一层丢失、哪些候选待准入、下一个合法动作是什么，而不需要阅读内部 runner 或猜测状态码。当前 DELL／MU／NVDA 24 个开发请求已通过该工程预检，但这不是 S1 资格。
+
+在任何 source route dispatch 之前，系统必须先对账当前对象快照中已有的官方资产。“候选不足”不等于“需要重新下载”。当前对账更正了 7 个表面上的 source-pending 请求：MU／NVDA 当期 10-K／10-Q／8-K 以及必要关联方披露已在本地权威快照中，真实最早责任是对象化、query／recall、ranking 或 Evidence Role，而不是网络或免费信息边界。当前需新增官方资产的请求为 0，public-information gap 资格仍为 0。
+
+Evidence admission 必须绑定 `Case + EvidenceRequest + material requirement + candidate + source lineage + decision`。当前已编译 16 个请求、22 条具体候选—命题绑定的私有审阅包；它们仍必须由 qualified human 作 `accept / reject / needs-review`。实现者、排名或语义相似度不能代签 Evidence 权威。
+
+replacement blind qualification 是独立外部门：至少 6 个未披露案例，覆盖跨公司、行业、披露制度、证据形态、时间／hard negative 和失败责任层。答案必须在 Git 外、candidate freeze 之后才对执行方可见；当前 Codex 不得自选案例、自建答案再自我评分。因此当前状态只是 `human_operability_engineering_ready / qualified_human_admission_pending / external_blind_pending / S1_qualified_stable=false`。

@@ -30,12 +30,14 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
     "scripts/data_retrieval/materialize_s1_current_product_readiness.py",
     "scripts/data_retrieval/materialize_s1_source_route_truth_successor.py",
+    "scripts/data_retrieval/materialize_s1_human_evidence_admission_packet.py",
     "scripts/data_retrieval/materialize_s1c_financial_role_eval_set.py",
     "scripts/data_retrieval/materialize_s1c_object_role_review_set.py",
     "scripts/data_retrieval/materialize_s1c_requalified_qrels.py",
     "scripts/data_retrieval/materialize_s1_vs4_case_supplement_vertical.py",
     "scripts/data_retrieval/materialize_s1_vs4_dell_supplement_vertical.py",
     "scripts/data_retrieval/run_s1_candidate_ranking.py",
+    "scripts/data_retrieval/run_s1_human_operability_preflight.py",
     "scripts/data_retrieval/run_s1c_compiled_object_retriever_comparison.py",
     "scripts/data_retrieval/run_s1c_cross_encoder_role_shadow.py",
     "scripts/data_retrieval/run_s1c_object_role_shadow.py",
@@ -75,6 +77,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/research/run_s3_case_truth_reconciliation_live.py",
     "scripts/research/run_s3_tool_contract_transport_zero_call.py",
     "scripts/research/run_s3_transport_paired_canary.py",
+    "scripts/research/run_agent_runtime_feedback_zero_call_proof.py",
 )
 
 

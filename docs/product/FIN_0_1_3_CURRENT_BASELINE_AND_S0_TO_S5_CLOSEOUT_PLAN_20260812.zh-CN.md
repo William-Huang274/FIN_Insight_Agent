@@ -182,14 +182,14 @@ DELL 当前真实受控计划已证明产品消费者 seam：8 个请求均有�
 
 Owner 指出当前系统长期围绕单轮／伪多轮和确定性编译建设，尚未证明模型能在收到 Harness failure、证据不足或错误研究方向后反思并修改计划；长任务上下文压缩和各 Agent 独立研究能力也未进入统一 Runtime。全链审计确认当前真实形态是固定 workflow＋一次片段 repair＋不可变 successor，不是通用反思型 Multi-agent 系统。
 
-本次只冻结架构和合同，不执行模型、网络或 Runtime 迁移。统一合同为 `AgentSession / FeedbackReceipt / PlanDelta / GraphDelta / ContextCheckpoint / StopDecision`，权威源见 `configs/research/fin_ia_0_1_3_agent_runtime_reflection_context_continuity_contract_v1_0.json`。
+审计轮只冻结架构和合同；当前 successor 已完成零调用 Runtime 基础实现。统一六合同继续以 v1.0 为语义基线，v1.1 增加 append-only `SessionEvent`、checkpoint 扩展和 resume receipt；它不改变 Evidence、NumericFact、Gap 或发布权限。
 
 后续顺序修订为：
 
 1. **S1 当前主线继续，不被 Agent Runtime 议题替代。** 先以人工／fixture typed requests、0 生成式模型证明 source、清洗、对象、query、召回、重排、Evidence Role／Gate 和 gap 归责。人也无法查准即为工具 failure；不得让模型补分。
-2. **完成 S1 当前剩余门。** 执行 MU／NVDA 必要官方路线、候选准入、COST qualified-human reference 与 replacement blind qualification；达到 `S1_qualified_stable` 前不做产品资格 full-chain。
-3. **零调用实现 S0 反思 Runtime 基础。** 先实现 append-only SessionEvent、六合同 schema／validator／fake／replay、checkpoint／resume 和 compaction mutation；不修改 Evidence、NumericFact、Gap 或发布权限。
-4. **把现有 S1/S2/Verifier 结果编译成 FeedbackReceipt。** 工具 failure、候选损失、Evidence admission、数值 conflict、因果越界和内容 finding 分别路由给最早责任节点；新步骤用新 attempt ID，旧失败永久保留。
+2. **完成 S1 当前剩余门。** 来源资产对账已证明 MU／NVDA 所需当期官方披露在本地快照中；不再重复下载。后续只修复对象／query／recall／ranking／Evidence Role 的真实覆盖损失，完成 16 请求／22 条候选绑定的 qualified-human admission，并由外部隔离流程完成 replacement blind qualification。达到 `S1_qualified_stable` 前不做产品资格 full-chain。
+3. **S0 零调用 Runtime 基础已工程通过。** append-only SessionEvent、六合同 validator、checkpoint／resume 和事件／状态 mutation 通过；不修改 Evidence、NumericFact、Gap 或发布权限。
+4. **S1/S2/Verifier FeedbackReceipt 编译已工程通过。** 工具 failure、已有来源但未召回、Evidence admission、数值 gap／conflict 和 Verifier finding 已能分别回到最早责任节点；候选文本不因反馈而获得权威。自然 Agent 是否会消费反馈并改变计划仍待 S3 证明。
 5. **S3 先做一个 DELL 单单元反思纵切。** 只给用户问题、Case／as-of 和工具权限；模型自行规划、执行、反思、提交受验证 PlanDelta／GraphDelta 并 Stop。固定 Pack 继续只作模型分析单测。
 6. **再扩到五单元与 Lead。** Verifier finding 返回 owning cell，只重跑受影响节点；Skill／Graph 按角色、Objective、gap 和 Plan 动态最小加载并留下消费 receipt。
 7. **最后做 MU、NVDA 和异质留出，再进入 S4/S5。** 泛化必须覆盖跨公司、跨行业、跨来源形态、跨期和不同 failure，不以相似案例或平均分冒充通过。
@@ -197,6 +197,13 @@ Owner 指出当前系统长期围绕单轮／伪多轮和确定性编译建设�
 Skill／Graph 位于 Harness 与 Agent 工作模式的交叉层：Harness 管选择、版本、作用域、digest 和权限，Agent 负责实际使用方法和提出图关系增量；全部 Pack 固定注入、图边冒充事实或模型直接修改稳定本体均被禁止。
 
 该顺序不意味着 S1 与 Runtime 必须完全串行。S1 独立资格可继续推进，S0 只允许零调用合同／事件骨架并行；任何自然反思 live 必须等其依赖的 S1/S2 工具响应达到当前任务所需资格。当前 `S1_qualified_stable=false`、`generalized_reflection_loop=false`、`context_continuity=false`、S3/S4/S5 均未通过。
+
+## 4L. S1 人工可操作、admission／blind 门与 S0 反馈基础（2026-08-19）
+
+- 24 个开发请求已形成无生成式 AI 的人工可操作预检；每条都有业务问题、失败类、最早责任和合法下一动作。
+- 当前对象快照对账后，原认为需执行来源路线的 MU 4 条、NVDA 3 条已更正为“当期官方资产已存在，候选材料未被正确找到或定角”。新增官方资产请求为 0；这不说明 MU／NVDA 覆盖已通过。
+- qualified-human admission 私有审阅包已编译 16 个请求、22 条候选—命题绑定，候选仍非 Evidence。外部 blind handoff 已准备，但案例和标签必须由当前实现上下文之外的角色隔离保管，尚未执行。
+- S0 v1.1 及 31 条 S1／S2／Verifier FeedbackReceipt 已完成零调用回放；全仓 817 测试通过。这只关闭事件、恢复和失败路由的工程基础，不关闭自然反思、Skill／Graph 消费、S1／S3 资格或 release。
 
 ## 5. 防止再次膨胀的工程规则
 

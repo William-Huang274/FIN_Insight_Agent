@@ -606,3 +606,18 @@ S1 的模型边界据此冻结为：
 S1 独立资格通过后，才执行反思型消费者集成门：同一 `AgentSession` 中，Agent 根据 S1 的 typed response 产生受验证 `PlanDelta`，并证明第二轮补证增加新 Evidence、收窄判断，或留下合格信息边界。该集成门属于 S3 消费和全链资格，不反向修改 S1 的 AI-free 成绩。
 
 当前状态保持 `S1_qualified_stable=false`。本节只冻结责任和验收顺序，没有执行模型、网络、检索或产品资格运行。
+
+## 31. 人工可操作预检、来源资产对账与双外部门（2026-08-19）
+
+S1 的当前人工可操作预检使用同一份当前 ProductReadiness、来源快照和对象快照，不调用生成模型、网络或向量模型。它产出的不是只有计数的仪表板，而是逐请求的业务问题、failure class、最早责任层、operator action 与权限边界。
+
+来源资产对账是 source route dispatch 的强制前置。匹配至少绑定 owner identity、source type 和 publication window，只能得出“当期官方资产已存在／仍需获取”，不能直接得出“该资产已满足命题”。当前结果为 DELL／MU／NVDA 新增官方资产请求 0；MU 4 个、NVDA 3 个覆盖阻断因此必须留在 object／query／recall／ranking／Evidence Role，不得用重复下载或 broad search 掩盖。
+
+Evidence admission 审阅包以 exact binding 编译，当前覆盖 3 案、16 请求、22 条 requirement／Candidate 绑定。每个项目携带有界 source excerpt、source URL、period／type／role、object kind、source-lineage digest 和 admission-item digest；人工 receipt 必须与这些字段精确绑定。这个包是审阅入口，不是 Evidence 集。
+
+S1 最终资格还有两种不可由当前实现上下文自签的权限：
+
+1. qualified-human 对当前 22 条候选绑定的准入决策；
+2. Git 外 replacement blind qualification，至少 6 个新案例，必须跨公司／行业／披露制度／证据形态／时间与 hard negative／失败责任，且在 candidate freeze 前对执行方不可见。
+
+因此当前只允许 `AI_free_human_operability=engineering_pass`。原来被分类为 source pending 的状态更正后，不得反向追认为 candidate coverage、Evidence admission、external blind 或 `S1_qualified_stable` 已通过。

@@ -1,0 +1,41 @@
+{
+  "schema_version": "fin_ia_multi_agent_preview_consumer_overlay_v1_0",
+  "status": "diagnostic_preview_only_not_current_product_pointer",
+  "base_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_4.json",
+  "cell_overrides": [
+    {
+      "cell_id": "CELL::demand_quality",
+      "maximum_evidence_items_override": 20,
+      "append_supplemental_context_slot_ids": []
+    },
+    {
+      "cell_id": "CELL::operating_performance",
+      "maximum_evidence_items_override": 20,
+      "append_supplemental_context_slot_ids": []
+    },
+    {
+      "cell_id": "CELL::value_capture",
+      "maximum_evidence_items_override": 20,
+      "append_supplemental_context_slot_ids": []
+    },
+    {
+      "cell_id": "CELL::cash_conversion",
+      "maximum_evidence_items_override": 20,
+      "append_supplemental_context_slot_ids": []
+    },
+    {
+      "cell_id": "CELL::counterevidence",
+      "maximum_evidence_items_override": 20,
+      "append_supplemental_context_slot_ids": [
+        "relationship_attribution"
+      ]
+    }
+  ],
+  "reason": "A true Agent preview must first retain every request-scoped reviewed Evidence hit, then compile each independent role's minimal context. The historical fixed-cell ceilings could erase a newly recovered reviewed hit before role projection. The historical five-cell policy also projected capacity into counterevidence, omitted the distinct relationship slot and forced supply, relationship and counterevidence through one shared ceiling. This diagnostic overlay raises only the pre-role materialization ceiling; role-specific filtering and TokenBudgetBasis remain authoritative.",
+  "authority": {
+    "diagnostic_preview_only": true,
+    "does_not_promote_candidates": true,
+    "does_not_change_numeric_authority": true,
+    "does_not_mutate_current_product_pointer": true
+  }
+}

@@ -1,0 +1,703 @@
+from __future__ import annotations
+
+from copy import deepcopy
+from dataclasses import dataclass, field, replace
+from datetime import datetime, timezone
+import json
+from pathlib import Path
+import re
+from typing import Any, Callable, Mapping, Sequence
+
+from apps.workbench.backend.application.research_evidence_pack_service import (
+    ResearchEvidencePackPrincipal,
+    ResearchEvidencePackService,
+)
+from apps.workbench.backend.application.research_retrieval_service import (
+    ResearchRetrievalPrincipal,
+    ResearchRetrievalService,
+)
+from retrieval.contracts import load_financial_research_kernel
+from retrieval.route_compiler import load_query_object_fact_route_policy
+
+from sec_agent.runtime_bridge.paths import resolve_runtime_paths
+from sec_agent.runtime_resource_registry import read_registered_runtime_json
+from sec_agent.canonical_runtime import (
+    append_session_event,
+    canonical_digest,
+    create_agent_session,
+    validate_runtime_artifact,
+)
+from sec_agent.providers import (
+    AgentToolStepResult,
+    AgentTransportProfile,
+    ModelGatewayError,
+    execute_agent_tool_step_exact_once,
+)
+
+from .case_truth_reconciliation import compile_case_truth_packet
+from .current_consumer import (
+    compile_current_research_input,
+    load_current_research_consumer_policy,
+)
+from .dynamic_truth_spine import (
+    bind_dynamic_evidence_responses_to_research_input,
+    compile_dynamic_evidence_responses,
+    compile_dynamic_reviewed_pack_view,
+)
+from .multi_agent_preview import (
+    compile_planner_payload_from_role_opinions,
+    compile_specialist_context,
+    compile_token_budget_basis,
+)
+from .planning import (
+    compile_research_objective,
+    compile_research_plan,
+    load_research_planning_policy,
+)
+
+
+TRUTH_SPINE_REF = (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_1.json"
+)
+CONSUMER_OVERLAY_REF = (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_multi_agent_preview_consumer_overlay_v1_0.json"
+)
+
+
+class MultiAgentPreviewRuntimeError(RuntimeError):
+    """Raised when the local S1/S2/Harness spine is not safe to expose."""
+
+    def __init__(self, code: str, *, attempts: Sequence[Mapping[str, Any]] = ()) -> None:
+        self.code = code
+        self.attempts = tuple(deepcopy(dict(row)) for row in attempts)
+        super().__init__(code)
+
+
+def _json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _safe_id(value: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_-]+", "-", value).strip("-")
+
+
+@dataclass
+class PreviewAgentSessionState:
+    agent_id: str
+    session: dict[str, Any]
+    events: list[dict[str, Any]] = field(default_factory=list)
+    checkpoints: list[dict[str, Any]] = field(default_factory=list)
+    resume_receipts: list[dict[str, Any]] = field(default_factory=list)
+    feedback_receipts: list[dict[str, Any]] = field(default_factory=list)
+    stop_decisions: list[dict[str, Any]] = field(default_factory=list)
+
+    def append(
+        self,
+        *,
+        event_type: str,
+        actor_id: str,
+        attempt_id: str | None = None,
+        input_refs: Sequence[str] = (),
+        output_refs: Sequence[str] = (),
+        feedback_refs: Sequence[str] = (),
+        occurred_at: str | None = None,
+    ) -> dict[str, Any]:
+        event = append_session_event(
+            self.events,
+            session_id=self.session["session_id"],
+            event_type=event_type,
+            actor_id=actor_id,
+            attempt_id=attempt_id,
+            input_refs=input_refs,
+            output_refs=output_refs,
+            feedback_refs=feedback_refs,
+            occurred_at=occurred_at or _now(),
+        )
+        self.events.append(event)
+        return event
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "agent_id": self.agent_id,
+            "session": deepcopy(self.session),
+            "events": deepcopy(self.events),
+            "checkpoints": deepcopy(self.checkpoints),
+            "resume_receipts": deepcopy(self.resume_receipts),
+            "feedback_receipts": deepcopy(self.feedback_receipts),
+            "stop_decisions": deepcopy(self.stop_decisions),
+        }
+
+
+def start_preview_agent_session(
+    *,
+    agent_id: str,
+    run_id: str,
+    objective_ref: str,
+    active_plan_ref: str,
+    as_of_date: str = "2026-08-06",
+    case_version: str = "fin-0.1.3-preview",
+) -> PreviewAgentSessionState:
+    timestamp = _now()
+    session_id = f"SESSION::DELL::{_safe_id(run_id)}::{_safe_id(agent_id)}"
+    session = create_agent_session(
+        session_id=session_id,
+        run_id=run_id,
+        case_id="DELL",
+        case_version=case_version,
+        as_of_date=as_of_date,
+        objective_ref=objective_ref,
+        active_plan_ref=active_plan_ref,
+        created_at=timestamp,
+    )
+    state = PreviewAgentSessionState(agent_id=agent_id, session=session)
+    state.append(
+        event_type="session_created",
+        actor_id="HARNESS::MULTI_AGENT_PREVIEW",
+        output_refs=(session_id,),
+        occurred_at=timestamp,
+    )
+    state.append(
+        event_type="plan_bound",
+        actor_id="HARNESS::MULTI_AGENT_PREVIEW",
+        input_refs=(objective_ref,),
+        output_refs=(active_plan_ref,),
+    )
+    return state
+
+
+def rebind_preview_session_plan(
+    state: PreviewAgentSessionState,
+    *,
+    active_plan_ref: str,
+) -> None:
+    body = {
+        key: deepcopy(value)
+        for key, value in state.session.items()
+        if key != "session_digest"
+    }
+    previous = str(body["active_plan_ref"])
+    body["active_plan_ref"] = str(active_plan_ref)
+    body["updated_at"] = _now()
+    validated = validate_runtime_artifact("AgentSession", body)
+    state.session = {
+        **validated,
+        "session_digest": canonical_digest(validated),
+    }
+    state.append(
+        event_type="plan_bound",
+        actor_id="AGENT::RESEARCH_LEAD",
+        input_refs=(previous,),
+        output_refs=(str(active_plan_ref),),
+    )
+
+
+@dataclass(frozen=True)
+class PreviewNodeExecution:
+    node_id: str
+    agent_id: str
+    tool_name: str
+    validated_payload: Mapping[str, Any]
+    token_budget_basis: Mapping[str, Any]
+    attempts: tuple[Mapping[str, Any], ...]
+    successor_attempt_count: int
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "node_id": self.node_id,
+            "agent_id": self.agent_id,
+            "tool_name": self.tool_name,
+            "validated_payload": deepcopy(dict(self.validated_payload)),
+            "token_budget_basis": deepcopy(dict(self.token_budget_basis)),
+            "attempts": [deepcopy(dict(row)) for row in self.attempts],
+            "successor_attempt_count": self.successor_attempt_count,
+        }
+
+
+ToolTransport = Callable[..., AgentToolStepResult]
+PayloadValidator = Callable[[Mapping[str, Any]], Mapping[str, Any]]
+
+
+def execute_validated_preview_node(
+    *,
+    profile: AgentTransportProfile,
+    session_state: PreviewAgentSessionState,
+    messages: Sequence[Mapping[str, Any]],
+    tool: Mapping[str, Any],
+    validator: PayloadValidator,
+    capture_root: str | Path,
+    run_id: str,
+    node_id: str,
+    purpose: str,
+    input_reference_count: int,
+    required_outputs: Sequence[str],
+    schema_burden: str,
+    materiality_quality_risk: str,
+    comparable_run_evidence: Sequence[str],
+    output_token_ceiling: int,
+    maximum_successor_attempts: int = 1,
+    transport: ToolTransport = execute_agent_tool_step_exact_once,
+) -> PreviewNodeExecution:
+    """Run one provider-neutral node with at most one explicit successor.
+
+    A successor is allowed only to expose a transport or contract failure back
+    to the same role.  It receives no new evidence and cannot expand authority.
+    """
+
+    if maximum_successor_attempts not in {0, 1}:
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_successor_attempt_budget_invalid"
+        )
+    tool_name = str(tool["function"]["name"])
+    visible_messages = [deepcopy(dict(row)) for row in messages]
+    basis = compile_token_budget_basis(
+        node_id=node_id,
+        purpose=purpose,
+        input_characters=sum(len(str(row.get("content") or "")) for row in messages),
+        input_reference_count=input_reference_count,
+        required_outputs=required_outputs,
+        schema_burden=schema_burden,
+        materiality_quality_risk=materiality_quality_risk,
+        comparable_run_evidence=comparable_run_evidence,
+        reasoning_profile=f"{profile.model} thinking=max",
+        output_token_ceiling=output_token_ceiling,
+        stop_truncation_behavior=(
+            "fail closed on truncation or invalid contract; preserve captures; "
+            "at most one separately identified bounded successor attempt"
+        ),
+    )
+    defaults = dict(profile.request_defaults)
+    if "max_tokens" in defaults:
+        defaults["max_tokens"] = output_token_ceiling
+    elif "max_output_tokens" in defaults:
+        defaults["max_output_tokens"] = output_token_ceiling
+    node_profile = replace(profile, request_defaults=defaults)
+    attempts: list[dict[str, Any]] = []
+    last_code = "multi_agent_preview_node_not_executed"
+    maximum_attempts = 1 + maximum_successor_attempts
+    for index in range(1, maximum_attempts + 1):
+        attempt_id = (
+            f"{_safe_id(run_id)}-{_safe_id(node_id)}-ATTEMPT-{index:02d}"
+        )
+        message_digest = canonical_digest(visible_messages)
+        tool_digest = canonical_digest(tool)
+        session_state.append(
+            event_type="provider_attempt_requested",
+            actor_id=session_state.agent_id,
+            attempt_id=attempt_id,
+            input_refs=(
+                f"messages://{message_digest}",
+                f"tool://{tool_digest}",
+                f"token-budget://{basis['token_budget_basis_digest']}",
+            ),
+        )
+        try:
+            step = transport(
+                profile=node_profile,
+                messages=visible_messages,
+                tools=[tool],
+                capture_root=capture_root,
+                run_id=run_id,
+                attempt_id=attempt_id,
+                tool_choice={
+                    "type": "function",
+                    "function": {"name": tool_name},
+                },
+            )
+        except ModelGatewayError as exc:
+            last_code = exc.code
+            failed = {
+                "attempt_id": attempt_id,
+                "status": "provider_transport_failed",
+                "failure_code": exc.code,
+                "capture_ref": exc.capture_ref,
+            }
+            attempts.append(failed)
+            session_state.append(
+                event_type="provider_attempt_failed",
+                actor_id="PROVIDER::" + profile.provider_id.upper(),
+                attempt_id=attempt_id,
+                output_refs=((exc.capture_ref,) if exc.capture_ref else ()),
+            )
+            if index >= maximum_attempts:
+                raise MultiAgentPreviewRuntimeError(
+                    last_code, attempts=attempts
+                ) from exc
+            visible_messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "The prior provider attempt ended before a valid response was "
+                        f"available ({exc.code}). This is a new bounded successor "
+                        "attempt with identical evidence and authority. Submit the "
+                        f"required {tool_name} call only."
+                    ),
+                }
+            )
+            continue
+
+        step_dict = step.as_dict()
+        session_state.append(
+            event_type="provider_attempt_completed",
+            actor_id="PROVIDER::" + profile.provider_id.upper(),
+            attempt_id=attempt_id,
+            output_refs=tuple(
+                str(step_dict.get(key) or "")
+                for key in ("request_capture_ref", "response_capture_ref")
+                if str(step_dict.get(key) or "")
+            ),
+        )
+        try:
+            if len(step.tool_calls) != 1:
+                raise MultiAgentPreviewRuntimeError(
+                    "multi_agent_preview_exactly_one_tool_call_required"
+                )
+            call = step.tool_calls[0]
+            function = call.get("function") or {}
+            if str(function.get("name") or "") != tool_name:
+                raise MultiAgentPreviewRuntimeError(
+                    "multi_agent_preview_tool_name_mismatch"
+                )
+            raw_payload = json.loads(str(function.get("arguments") or ""))
+            if not isinstance(raw_payload, Mapping):
+                raise MultiAgentPreviewRuntimeError(
+                    "multi_agent_preview_tool_arguments_not_object"
+                )
+            validated = deepcopy(dict(validator(raw_payload)))
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError, RuntimeError) as exc:
+            last_code = str(getattr(exc, "code", "") or str(exc) or type(exc).__name__)
+            attempts.append(
+                {
+                    **step_dict,
+                    "attempt_id": attempt_id,
+                    "status": "provider_completed_local_contract_failed",
+                    "failure_code": last_code,
+                }
+            )
+            if index >= maximum_attempts:
+                raise MultiAgentPreviewRuntimeError(
+                    last_code, attempts=attempts
+                ) from exc
+            feedback_ref = f"contract-feedback://{canonical_digest({'node_id': node_id, 'code': last_code, 'attempt_id': attempt_id})}"
+            session_state.append(
+                event_type="feedback_issued",
+                actor_id="HARNESS::CONTRACT_VALIDATOR",
+                feedback_refs=(feedback_ref,),
+            )
+            visible_messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "The prior output was preserved but rejected by the local "
+                        f"contract validator with code {last_code}. Do not change the "
+                        "research authority or add facts. Correct only the contract "
+                        f"submission and issue exactly one {tool_name} call."
+                    ),
+                }
+            )
+            continue
+
+        attempts.append(
+            {
+                **step_dict,
+                "attempt_id": attempt_id,
+                "status": "contract_valid",
+                "validated_payload_digest": canonical_digest(validated),
+            }
+        )
+        return PreviewNodeExecution(
+            node_id=node_id,
+            agent_id=session_state.agent_id,
+            tool_name=tool_name,
+            validated_payload=validated,
+            token_budget_basis=basis,
+            attempts=tuple(attempts),
+            successor_attempt_count=index - 1,
+        )
+    raise MultiAgentPreviewRuntimeError(last_code, attempts=attempts)
+
+
+def compile_cross_role_feedback_receipt(
+    *,
+    target_session_id: str,
+    challenge: Mapping[str, Any],
+    created_at: str | None = None,
+) -> dict[str, Any]:
+    timestamp = created_at or _now()
+    challenge_id = str(challenge["challenge_id"])
+    body = {
+        "feedback_id": "FEEDBACK::" + canonical_digest(
+            {
+                "target_session_id": target_session_id,
+                "challenge_id": challenge_id,
+            }
+        )[:24].upper(),
+        "session_id": target_session_id,
+        "source_node_id": str(challenge["source_agent_id"]),
+        "target_node_id": str(challenge["target_agent_id"]),
+        "failure_class": "material_cross_role_judgment_challenge",
+        "failure_code": str(challenge["requested_action"]),
+        "owning_plane": "agent_work_mode_plane",
+        "owning_stage": "S3",
+        "artifact_refs": [
+            f"challenge://{challenge_id}",
+            f"workpaper://{challenge['source_workpaper_digest']}",
+        ],
+        "model_visible_summary": (
+            f"{challenge['challenge']} Material reason: "
+            f"{challenge['material_reason']}"
+        ),
+        "permitted_next_actions": [
+            "Re-read the existing role context and revise only the challenged judgment",
+            "Preserve facts, authority refs and remaining gaps that are not affected",
+            "If the challenge requires new data, return the existing typed gap rather than inventing evidence",
+        ],
+        "forbidden_interpretations": [
+            "The challenge is not new Evidence or a NumericFact",
+            "A role-local repair may not expand case, date, source or tool authority",
+            "A retrieval failure is not proof of public non-disclosure",
+        ],
+        "created_at": timestamp,
+    }
+    validated = validate_runtime_artifact("FeedbackReceipt", body)
+    return {**validated, "feedback_digest": canonical_digest(validated)}
+
+
+def load_preview_consumer_policy(repo_root: str | Path) -> dict[str, Any]:
+    root = Path(repo_root).resolve()
+    overlay = _json(root / CONSUMER_OVERLAY_REF)
+    if set(overlay) != {
+        "schema_version",
+        "status",
+        "base_policy_ref",
+        "cell_overrides",
+        "reason",
+        "authority",
+    }:
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_overlay_fields_invalid"
+        )
+    base_path = (root / str(overlay["base_policy_ref"])).resolve()
+    base_path.relative_to(root)
+    policy = _json(base_path)
+    by_cell = {str(row["cell_id"]): row for row in policy["cell_contracts"]}
+    for raw in overlay["cell_overrides"]:
+        row = by_cell[str(raw["cell_id"])]
+        maximum_override = raw.get("maximum_evidence_items_override")
+        if maximum_override is not None:
+            row["maximum_evidence_items"] = int(maximum_override)
+        for slot_id in raw["append_supplemental_context_slot_ids"]:
+            if slot_id not in row["supplemental_context_slot_ids"]:
+                row["supplemental_context_slot_ids"].append(slot_id)
+    load_current_research_consumer_policy(policy)
+    return policy
+
+
+@dataclass(frozen=True)
+class MultiAgentPreviewMaterialization:
+    objective: Any
+    plan: Any
+    compiled_planner_payload: Mapping[str, Any]
+    controlled_plan: Mapping[str, Any]
+    evidence_pack: Mapping[str, Any]
+    evidence_responses: Mapping[str, Any]
+    reviewed_pack_view: Mapping[str, Any]
+    dynamic_research_input: Mapping[str, Any]
+    research_input: Mapping[str, Any]
+    case_truth_packet: Mapping[str, Any]
+    specialist_contexts: tuple[Mapping[str, Any], ...]
+
+    def context_by_agent(self) -> dict[str, dict[str, Any]]:
+        return {
+            str(row["agent"]["agent_id"]): deepcopy(dict(row))
+            for row in self.specialist_contexts
+        }
+
+    def readiness_summary(self) -> dict[str, Any]:
+        roles = []
+        for context in self.specialist_contexts:
+            cell = context["cell_analysis_view"]["cell"]
+            roles.append(
+                {
+                    "agent_id": context["agent"]["agent_id"],
+                    "role_slot_ids": list(
+                        context["cell_analysis_view"]["projection_receipt"][
+                            "role_slot_ids"
+                        ]
+                    ),
+                    "reviewed_evidence_visible": len(
+                        cell["cell_evidence_views"]
+                    ),
+                    "numeric_facts_visible": len(cell["allowed_numeric_refs"]),
+                    "numeric_relations_visible": len(
+                        cell["allowed_numeric_relation_refs"]
+                    ),
+                    "typed_gaps_visible": len(cell["residual_gap_cards"]),
+                    "tool_execution_receipts_visible": len(
+                        context["tool_execution_receipts"]
+                    ),
+                    "context_digest": context["context_digest"],
+                }
+            )
+        return {
+            "compiled_evidence_request_count": len(self.plan.evidence_requests),
+            "controlled_plan_summary": deepcopy(
+                dict(self.controlled_plan["summary"])
+            ),
+            "role_readiness": roles,
+            "blocking_empty_role_ids": [
+                row["agent_id"]
+                for row in roles
+                if row["reviewed_evidence_visible"] == 0
+                and row["numeric_facts_visible"] == 0
+            ],
+        }
+
+
+def compile_multi_agent_preview_materialization(
+    *,
+    repo_root: str | Path,
+    topology: Mapping[str, Any],
+    objective_payload: Mapping[str, Any],
+    opinions: Sequence[Mapping[str, Any]],
+    lead_plan: Mapping[str, Any],
+) -> MultiAgentPreviewMaterialization:
+    """Execute the canonical local S1/S2 preview spine once.
+
+    Reviewed Evidence reading and dynamic candidate retrieval remain distinct:
+    candidate ranking may produce tool receipts, but it may neither erase nor
+    promote already-reviewed Evidence.
+    """
+
+    root = Path(repo_root).resolve()
+    kernel_payload = read_registered_runtime_json(
+        root, "application.config.current_financial_research_kernel"
+    )
+    route_payload = read_registered_runtime_json(
+        root, "application.config.current_query_object_fact_route_policy"
+    )
+    planning_payload = read_registered_runtime_json(
+        root, "application.config.current_research_planning_policy"
+    )
+    kernel = load_financial_research_kernel(kernel_payload)
+    route = load_query_object_fact_route_policy(route_payload, kernel)
+    planning = load_research_planning_policy(planning_payload, route)
+    objective = compile_research_objective(
+        objective_payload, kernel=kernel, policy=planning
+    )
+    compiled = compile_planner_payload_from_role_opinions(
+        objective_id=objective.objective_id,
+        opinions=opinions,
+        lead_plan=lead_plan,
+        topology=topology,
+    )
+    plan = compile_research_plan(
+        compiled["planner_payload"],
+        objective=objective,
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+    )
+
+    paths = resolve_runtime_paths(root)
+    retrieval = ResearchRetrievalService.from_runtime_paths(root, paths)
+    evidence_service = ResearchEvidencePackService.from_runtime_paths(root, paths)
+    permissions = frozenset({"current_product:read"})
+    controlled = retrieval.execute_controlled_plan(
+        "DELL",
+        objective_payload,
+        compiled["planner_payload"],
+        ResearchRetrievalPrincipal("current", permissions),
+    )
+    pack = evidence_service.get_case(
+        "DELL", ResearchEvidencePackPrincipal("current", permissions)
+    )
+    responses = compile_dynamic_evidence_responses(
+        policy=_json(root / TRUTH_SPINE_REF),
+        controlled_plan=controlled,
+        evidence_pack=pack,
+    )
+    reviewed_view = compile_dynamic_reviewed_pack_view(
+        evidence_pack=pack,
+        evidence_responses=responses,
+    )
+    policy = load_preview_consumer_policy(root)
+    response_input = compile_current_research_input(
+        policy=policy,
+        evidence_pack=reviewed_view,
+        controlled_plan=controlled,
+    )
+    visible_digests = {
+        str(row.get("evidence_item_digest") or "")
+        for row in response_input["evidence_cards"]
+    }
+    missing = set(responses["accepted_evidence_item_digests"]) - visible_digests
+    if missing:
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_accepted_evidence_not_projected:"
+            + ",".join(sorted(missing))
+        )
+    dynamic_input = bind_dynamic_evidence_responses_to_research_input(
+        research_input=response_input,
+        evidence_responses=responses,
+    )
+    if not dynamic_input:
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_no_reviewed_evidence_selected"
+        )
+
+    # Exact reading of reviewed Evidence is a separate authority surface from
+    # dynamic S1 retrieval.  The latter is attached as a receipt only.
+    research_input = compile_current_research_input(
+        policy=policy,
+        evidence_pack=pack,
+        controlled_plan=controlled,
+    )
+    truth = compile_case_truth_packet(research_input)
+    opinions_by_agent = {str(row["agent_id"]): row for row in opinions}
+    contexts = tuple(
+        compile_specialist_context(
+            topology=topology,
+            agent_id=agent_id,
+            research_input=research_input,
+            tool_execution_input=dynamic_input,
+            case_truth_packet=truth,
+            plan_opinion=opinions_by_agent[agent_id],
+            lead_plan=lead_plan,
+        )
+        for agent_id in lead_plan["ordered_agent_ids"]
+    )
+    return MultiAgentPreviewMaterialization(
+        objective=objective,
+        plan=plan,
+        compiled_planner_payload=compiled,
+        controlled_plan=controlled,
+        evidence_pack=pack,
+        evidence_responses=responses,
+        reviewed_pack_view=reviewed_view,
+        dynamic_research_input=dynamic_input,
+        research_input=research_input,
+        case_truth_packet=truth,
+        specialist_contexts=contexts,
+    )
+
+
+__all__ = [
+    "CONSUMER_OVERLAY_REF",
+    "PreviewAgentSessionState",
+    "PreviewNodeExecution",
+    "MultiAgentPreviewMaterialization",
+    "MultiAgentPreviewRuntimeError",
+    "TRUTH_SPINE_REF",
+    "compile_cross_role_feedback_receipt",
+    "compile_multi_agent_preview_materialization",
+    "execute_validated_preview_node",
+    "load_preview_consumer_policy",
+    "rebind_preview_session_plan",
+    "start_preview_agent_session",
+]

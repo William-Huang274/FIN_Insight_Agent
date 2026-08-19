@@ -19,6 +19,9 @@ from sec_agent.research.claim_surface_authority import (
 DYNAMIC_TRUTH_SPINE_POLICY_SCHEMA_VERSION = (
     "fin_ia_dynamic_truth_spine_policy_v1_0"
 )
+DYNAMIC_TRUTH_SPINE_POLICY_SUCCESSOR_SCHEMA_VERSION = (
+    "fin_ia_dynamic_truth_spine_policy_v1_1"
+)
 EVIDENCE_RESPONSE_SCHEMA_VERSION = "fin_ia_evidence_response_v1_0"
 DYNAMIC_EVIDENCE_RESPONSE_SET_SCHEMA_VERSION = (
     "fin_ia_dynamic_evidence_response_set_v1_0"
@@ -60,9 +63,13 @@ def load_dynamic_truth_spine_policy(
 ) -> dict[str, Any]:
     """Load the provider-neutral candidate-to-reviewed-Evidence selector policy."""
 
+    schema_version = str(payload.get("schema_version") or "")
     _require(
-        payload.get("schema_version")
-        == DYNAMIC_TRUTH_SPINE_POLICY_SCHEMA_VERSION,
+        schema_version
+        in {
+            DYNAMIC_TRUTH_SPINE_POLICY_SCHEMA_VERSION,
+            DYNAMIC_TRUTH_SPINE_POLICY_SUCCESSOR_SCHEMA_VERSION,
+        },
         "dynamic_truth_spine_policy_schema_invalid",
     )
     _require(
@@ -83,6 +90,17 @@ def load_dynamic_truth_spine_policy(
         payload.get("reviewed_evidence_matching"),
         "dynamic_truth_spine_matching_policy_invalid",
     )
+    route_merge = matching.get("candidate_route_merge")
+    if schema_version == DYNAMIC_TRUTH_SPINE_POLICY_SCHEMA_VERSION:
+        _require(
+            route_merge is None,
+            "dynamic_truth_spine_legacy_route_merge_forbidden",
+        )
+    else:
+        _require(
+            route_merge == "hybrid_plus_immutable_snapshot_union",
+            "dynamic_truth_spine_successor_route_merge_invalid",
+        )
     _require(
         matching.get("exact_case_identity_required") is True
         and matching.get("writer_citable_required") is True
@@ -152,16 +170,52 @@ def _request_bindings(
     return tuple(output[key] for key in sorted(output))
 
 
-def _candidate_rows(request_result: Mapping[str, Any]) -> tuple[dict[str, Any], ...]:
-    hybrid = request_result.get("hybrid_object_retrieval")
-    if isinstance(hybrid, Mapping):
-        _require(
-            hybrid.get("candidate_state") == "candidate_not_evidence",
-            "dynamic_truth_spine_candidate_state_invalid",
-        )
-        raw = hybrid.get("candidates")
-        _require(isinstance(raw, list), "dynamic_truth_spine_candidates_invalid")
-        return tuple(deepcopy(dict(row)) for row in raw if isinstance(row, Mapping))
+def _candidate_identity(candidate: Mapping[str, Any]) -> tuple[str, str]:
+    source_id = str(candidate.get("source_record_id") or "")
+    _require(source_id, "dynamic_truth_spine_candidate_source_id_missing")
+    return source_id, str(candidate.get("compiled_object_id") or "")
+
+
+def _merge_candidate_rows(
+    *candidate_groups: tuple[dict[str, Any], ...],
+) -> tuple[dict[str, Any], ...]:
+    """Keep every independently reached candidate without granting authority.
+
+    Hybrid ranking and immutable snapshot lookup are two candidate-producing
+    routes.  Neither is Evidence authority.  A ranked hybrid list therefore
+    must not erase an exact snapshot hit that may already bind to reviewed
+    Evidence.  The union remains candidate-only and is deterministically
+    de-duplicated by source/object identity.
+    """
+
+    merged: dict[tuple[str, str], dict[str, Any]] = {}
+    order: list[tuple[str, str]] = []
+    for group in candidate_groups:
+        for raw in group:
+            candidate = deepcopy(dict(raw))
+            key = _candidate_identity(candidate)
+            if key not in merged:
+                merged[key] = candidate
+                order.append(key)
+                continue
+            existing = merged[key]
+            lineage = {
+                str(value)
+                for value in existing.get("lineage_source_record_ids") or ()
+            }
+            lineage.update(
+                str(value)
+                for value in candidate.get("lineage_source_record_ids") or ()
+            )
+            lineage.discard("")
+            if lineage:
+                existing["lineage_source_record_ids"] = sorted(lineage)
+    return tuple(merged[key] for key in order)
+
+
+def _snapshot_candidate_rows(
+    request_result: Mapping[str, Any],
+) -> tuple[dict[str, Any], ...]:
     output: list[dict[str, Any]] = []
     for raw_lane in request_result.get("lanes") or ():
         lane = _mapping(raw_lane, "dynamic_truth_spine_result_lane_invalid")
@@ -175,6 +229,31 @@ def _candidate_rows(request_result: Mapping[str, Any]) -> tuple[dict[str, Any], 
             deepcopy(dict(row)) for row in raw if isinstance(row, Mapping)
         )
     return tuple(output)
+
+
+def _candidate_rows(
+    request_result: Mapping[str, Any],
+    *,
+    merge_immutable_snapshot: bool,
+) -> tuple[dict[str, Any], ...]:
+    snapshot = _snapshot_candidate_rows(request_result)
+    hybrid = request_result.get("hybrid_object_retrieval")
+    if isinstance(hybrid, Mapping):
+        _require(
+            hybrid.get("candidate_state") == "candidate_not_evidence",
+            "dynamic_truth_spine_candidate_state_invalid",
+        )
+        raw = hybrid.get("candidates")
+        _require(isinstance(raw, list), "dynamic_truth_spine_candidates_invalid")
+        hybrid_rows = tuple(
+            deepcopy(dict(row)) for row in raw if isinstance(row, Mapping)
+        )
+        return (
+            _merge_candidate_rows(hybrid_rows, snapshot)
+            if merge_immutable_snapshot
+            else hybrid_rows
+        )
+    return _merge_candidate_rows(snapshot) if merge_immutable_snapshot else snapshot
 
 
 def _candidate_lineage(candidate: Mapping[str, Any]) -> set[str]:
@@ -335,7 +414,14 @@ def compile_dynamic_evidence_responses(
         )
         request_slots = _request_slot_ids(result)
         request_bindings = _request_bindings(result)
-        candidates = _candidate_rows(result)
+        merge_immutable_snapshot = (
+            loaded["reviewed_evidence_matching"].get("candidate_route_merge")
+            == "hybrid_plus_immutable_snapshot_union"
+        )
+        candidates = _candidate_rows(
+            result,
+            merge_immutable_snapshot=merge_immutable_snapshot,
+        )
         accepted: dict[str, dict[str, Any]] = {}
         rejected: dict[tuple[str, str], dict[str, Any]] = {}
         needs_review: dict[str, dict[str, Any]] = {}
@@ -437,7 +523,11 @@ def compile_dynamic_evidence_responses(
             "request_slot_ids": sorted(request_slots),
             "request_bindings": list(request_bindings),
             "candidate_route": (
-                "hybrid_object_retrieval"
+                (
+                    "hybrid_plus_immutable_snapshot_union"
+                    if merge_immutable_snapshot
+                    else "hybrid_object_retrieval"
+                )
                 if isinstance(result.get("hybrid_object_retrieval"), Mapping)
                 else "immutable_snapshot_lanes"
             ),
@@ -1058,6 +1148,7 @@ __all__ = [
     "DYNAMIC_REVIEWED_PACK_VIEW_SCHEMA_VERSION",
     "DYNAMIC_RESEARCH_INPUT_SCHEMA_VERSION",
     "DYNAMIC_TRUTH_SPINE_POLICY_SCHEMA_VERSION",
+    "DYNAMIC_TRUTH_SPINE_POLICY_SUCCESSOR_SCHEMA_VERSION",
     "EVIDENCE_RESPONSE_SCHEMA_VERSION",
     "DynamicTruthSpineError",
     "compile_dynamic_evidence_responses",

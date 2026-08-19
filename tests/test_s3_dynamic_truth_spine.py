@@ -31,6 +31,9 @@ from sec_agent.research.reviewed_evidence_pack import canonical_digest
 POLICY = ROOT / (
     "configs/research/fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_0.json"
 )
+SUCCESSOR_POLICY = ROOT / (
+    "configs/research/fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_1.json"
+)
 CLAIM_TEMPLATE = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_v1_0.json"
@@ -266,6 +269,56 @@ def test_exact_reviewed_request_match_is_reselected_without_promotion() -> None:
     } == {"pricing_mix_value_capture"}
     assert view["dynamic_selection_binding"]["candidate_promotions"] == 0
     assert view["dynamic_selection_binding"]["typed_evidence_response_gap_count"] == 0
+
+
+def test_hybrid_candidates_cannot_erase_reviewed_snapshot_candidate() -> None:
+    controlled = _controlled([_candidate("SOURCE::UNREVIEWED", rank=1)])
+    controlled["request_results"][0]["lanes"] = [
+        {
+            "candidate_state": "candidate_not_evidence",
+            "candidates": [_candidate("SOURCE::DELL::1", rank=7)],
+        }
+    ]
+
+    result = compile_dynamic_evidence_responses(
+        policy=_json(SUCCESSOR_POLICY),
+        controlled_plan=controlled,
+        evidence_pack=_pack([_item()]),
+    )
+
+    response = result["responses"][0]
+    assert response["candidate_route"] == (
+        "hybrid_plus_immutable_snapshot_union"
+    )
+    assert response["candidate_count"] == 2
+    assert response["accepted"][0]["evidence_item_digest"] == (
+        "evidence-digest-1"
+    )
+    assert response["needs_human_review"][0]["reason"] == (
+        "candidate_not_present_in_reviewed_pack"
+    )
+    assert response["authority"]["candidate_promoted_to_evidence"] is False
+
+
+def test_legacy_policy_preserves_historical_hybrid_only_replay() -> None:
+    controlled = _controlled([_candidate("SOURCE::UNREVIEWED", rank=1)])
+    controlled["request_results"][0]["lanes"] = [
+        {
+            "candidate_state": "candidate_not_evidence",
+            "candidates": [_candidate("SOURCE::DELL::1", rank=7)],
+        }
+    ]
+
+    result = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=controlled,
+        evidence_pack=_pack([_item()]),
+    )
+
+    response = result["responses"][0]
+    assert response["candidate_route"] == "hybrid_object_retrieval"
+    assert response["candidate_count"] == 1
+    assert response["accepted"] == []
 
 
 @pytest.mark.parametrize(

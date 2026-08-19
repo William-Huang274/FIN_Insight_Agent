@@ -1,0 +1,488 @@
+{
+  "schema_version": "fin_ia_multi_agent_role_topology_v1_0",
+  "status": "preview_topology_audited_not_product_qualified",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "classification_rule": {
+    "true_agent": "拥有独立目标、独立会话状态、可选择受限工具、能接收 FeedbackReceipt 并提交 PlanDelta 或修正判断；一次性模型调用或角色名本身不算 Agent。",
+    "tool": "确定性读取、检索、计算、来源接入或渲染能力；工具不形成研究观点。",
+    "evaluator": "对事实、合同、内容质量或边际增益作独立检查；Evaluator 不代写研究结论。",
+    "label_only": "仅用于查询路由、权限、日志或旧 workflow 命名，当前没有独立会话、工具选择和反馈循环。",
+    "harness_component": "管理身份、期间、来源、证据晋升、上下文投影、反馈路由、停止和审计；Harness 不构造观点。"
+  },
+  "current_runtime_finding": {
+    "old_five_cell_is_true_multi_agent": false,
+    "old_five_cell_shape": "one_provider_fixed_workflow_with_five_sequential_research_nodes",
+    "independent_agent_sessions": 0,
+    "evidence_request_inside_model_loop_executes_s1": false,
+    "verifier_feedback_returns_to_originating_role": false,
+    "writer_is_model_agent": false,
+    "planner_and_synthesis_share_persistent_state": false
+  },
+  "preview_agents": [
+    {
+      "agent_id": "AGENT::RESEARCH_LEAD",
+      "name_zh": "研究负责人",
+      "current_state": "planner_and_synthesis_are_stateless_provider_nodes",
+      "preview_state": "true_agent",
+      "responsibilities": [
+        "解释用户任务并确定本案研究面",
+        "汇总各专业角色的独立计划意见",
+        "接受或拒绝 PlanDelta 与 GraphDelta",
+        "向冲突或缺口的最早责任角色发回 FeedbackReceipt",
+        "决定继续、局部重跑或停止"
+      ],
+      "model_tools": [
+        "read_case_readiness",
+        "read_specialist_opinions",
+        "submit_lead_plan",
+        "submit_plan_delta",
+        "submit_stop_decision"
+      ]
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "name_zh": "需求质量研究员",
+      "cell_id": "CELL::demand_quality",
+      "current_state": "fixed_cell_model_node",
+      "preview_state": "true_agent",
+      "responsibilities": [
+        "区分订单、backlog、收入、出货与终端消耗",
+        "检验提前采购、取消、推迟和转化持续性",
+        "给出需求判断、最强反方和可观察的判断改变条件"
+      ],
+      "model_tools": [
+        "submit_specialist_plan_opinion",
+        "read_reviewed_evidence",
+        "read_case_fact_presence",
+        "submit_evidence_request",
+        "submit_specialist_judgment"
+      ],
+      "allowed_facet_ids": ["orders_and_backlog", "conversion_and_durability"]
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "name_zh": "经营表现研究员",
+      "cell_id": "CELL::operating_performance",
+      "current_state": "fixed_cell_model_node",
+      "preview_state": "true_agent",
+      "responsibilities": [
+        "核对收入、增长、利润率与经营利润的同口径变化",
+        "区分公司、分部与产品口径",
+        "禁止把 cell-local 不可见写成 case-level 不存在"
+      ],
+      "model_tools": [
+        "submit_specialist_plan_opinion",
+        "read_reviewed_evidence",
+        "read_numeric_facts",
+        "read_case_fact_presence",
+        "submit_evidence_request",
+        "submit_specialist_judgment"
+      ],
+      "allowed_facet_ids": ["reported_results", "guidance_and_outlook"]
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "name_zh": "价值与利润获取研究员",
+      "cell_id": "CELL::value_capture",
+      "current_state": "fixed_cell_model_node",
+      "preview_state": "true_agent",
+      "responsibilities": [
+        "分析价格、配置、产品组合、成本与经营杠杆",
+        "要求产品到分部再到公司的因果桥",
+        "不能把管理层目标或公司利润同时变化升级为 AI 利润归因"
+      ],
+      "model_tools": [
+        "submit_specialist_plan_opinion",
+        "read_reviewed_evidence",
+        "read_numeric_facts",
+        "read_case_fact_presence",
+        "submit_evidence_request",
+        "submit_specialist_judgment"
+      ],
+      "allowed_facet_ids": ["margin_and_incremental_profit", "pricing_and_mix"]
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "name_zh": "现金转换研究员",
+      "cell_id": "CELL::cash_conversion",
+      "current_state": "fixed_cell_model_node",
+      "preview_state": "true_agent",
+      "responsibilities": [
+        "分析经营现金流、自由现金流、营运资金与资产负债表",
+        "区分合并现金表现与 AI 产品现金贡献",
+        "检查应收、库存、应付和信用风险"
+      ],
+      "model_tools": [
+        "submit_specialist_plan_opinion",
+        "read_reviewed_evidence",
+        "read_numeric_facts",
+        "submit_evidence_request",
+        "submit_specialist_judgment"
+      ],
+      "allowed_facet_ids": ["cash_generation", "working_capital_risk"]
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "name_zh": "供应链与关系研究员",
+      "cell_id": "CELL::counterevidence",
+      "current_state": "requester_role_labels_without_independent_session",
+      "preview_state": "true_agent",
+      "responsibilities": [
+        "读取 TSM、MU、NVDA 等披露并区分谁在谈谁",
+        "分析 memory、先进封装、交付、客户准备度和供给约束",
+        "只把上下游披露作为背景、反证或直接关系证据中的对应角色"
+      ],
+      "model_tools": [
+        "submit_specialist_plan_opinion",
+        "read_reviewed_evidence",
+        "read_case_fact_presence",
+        "submit_evidence_request",
+        "submit_graph_delta",
+        "submit_specialist_judgment"
+      ],
+      "allowed_facet_ids": ["upstream_capacity_context", "counterparty_direct_mention", "subject_relationship_disclosure"],
+      "preview_method_pack": {
+        "pack_id": "ROLE_METHOD::SUPPLY_RELATIONSHIP::PREVIEW_V1",
+        "role_id": "supply_relationship_analyst",
+        "minimum_consumed_method_steps": 4,
+        "method_steps": [
+          {
+            "method_step_ref": "METHOD::SR::OWNER_DIRECTION",
+            "instruction_zh": "先确认谁披露、在谈谁以及供应、客户、合作或背景关系方向；相关方披露不能冒充 Dell 自身事实。"
+          },
+          {
+            "method_step_ref": "METHOD::SR::CONSTRAINT_CHAIN",
+            "instruction_zh": "把晶圆、先进封装、HBM、系统集成、客户准备度和交付逐层拆开；一层扩产不能自动证明整条链约束解除。"
+          },
+          {
+            "method_step_ref": "METHOD::SR::ALLOCATION_TIMING_YIELD",
+            "instruction_zh": "没有 Dell 特定分配、时点、良率或利用率证据时，只能形成上游背景或有界 read-through。"
+          },
+          {
+            "method_step_ref": "METHOD::SR::GRAPH_EVIDENCE_BOUNDARY",
+            "instruction_zh": "Graph 只帮助发现关系和下一步查询；任何新增或修正边必须带 reviewed Evidence，不能靠模型记忆成为业务事实。"
+          },
+          {
+            "method_step_ref": "METHOD::SR::MATERIAL_GAP_WWC",
+            "instruction_zh": "只追问会改变交付与约束判断的分配、良率、时点和直接关系证据，并把改变条件写成可观察披露。"
+          }
+        ]
+      }
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "name_zh": "独立反方研究员",
+      "cell_id": "CELL::counterevidence",
+      "current_state": "fixed_cell_model_node",
+      "preview_state": "true_agent",
+      "responsibilities": [
+        "主动寻找能推翻主判断的发行人和上下游证据",
+        "检查替代解释、缺失桥和不可观察变量",
+        "向其他研究角色发起有命题指向的挑战"
+      ],
+      "model_tools": [
+        "submit_specialist_plan_opinion",
+        "read_reviewed_evidence",
+        "read_numeric_facts",
+        "read_case_fact_presence",
+        "submit_evidence_request",
+        "submit_specialist_challenge",
+        "submit_specialist_judgment"
+      ],
+      "allowed_facet_ids": ["issuer_counterevidence", "upstream_or_demand_counterevidence"]
+    },
+    {
+      "agent_id": "AGENT::WRITER",
+      "name_zh": "报告编纂员",
+      "current_state": "deterministic_renderer_only",
+      "preview_state": "experimental_true_agent",
+      "responsibilities": [
+        "根据已验收工作底稿选择可伸缩报告结构",
+        "保留事实、推断、反方、缺口和判断改变条件",
+        "不得新增事实、数字、引用或因果关系"
+      ],
+      "model_tools": [
+        "read_validated_workpapers",
+        "submit_report_blueprint",
+        "submit_report_draft"
+      ]
+    }
+  ],
+  "facet_catalog": {
+    "orders_and_backlog": {
+      "slot_id": "demand_volume_quality",
+      "target_entity": "DELL",
+      "metric_ids": ["orders", "backlog", "customer_count"],
+      "business_scope_zh": "AI 订单、backlog、客户数与订单质量"
+    },
+    "conversion_and_durability": {
+      "slot_id": "demand_volume_quality",
+      "target_entity": "DELL",
+      "metric_ids": ["orders", "backlog", "shipments"],
+      "business_scope_zh": "订单到出货和收入的转化、取消、推迟与消化风险"
+    },
+    "reported_results": {
+      "slot_id": "operating_performance",
+      "target_entity": "DELL",
+      "metric_ids": ["revenue", "gross_profit", "gross_margin", "operating_income", "operating_margin", "net_income"],
+      "business_scope_zh": "公司与分部的同口径经营结果"
+    },
+    "guidance_and_outlook": {
+      "slot_id": "operating_performance",
+      "target_entity": "DELL",
+      "metric_ids": ["gross_margin", "operating_margin"],
+      "business_scope_zh": "管理层指引及其隐含假设"
+    },
+    "margin_and_incremental_profit": {
+      "slot_id": "pricing_mix_value_capture",
+      "target_entity": "DELL",
+      "metric_ids": ["gross_margin", "operating_margin", "gross_profit", "operating_income", "revenue"],
+      "business_scope_zh": "增量收入、毛利和经营利润之间的可验证桥"
+    },
+    "pricing_and_mix": {
+      "slot_id": "pricing_mix_value_capture",
+      "target_entity": "DELL",
+      "metric_ids": ["average_selling_price", "gross_margin", "operating_margin", "revenue"],
+      "business_scope_zh": "价格、配置、产品组合和服务附加"
+    },
+    "cash_generation": {
+      "slot_id": "cash_conversion_balance_sheet",
+      "target_entity": "DELL",
+      "metric_ids": ["operating_cash_flow", "free_cash_flow", "capital_expenditures", "cash_and_equivalents"],
+      "business_scope_zh": "经营现金流、自由现金流与资本开支"
+    },
+    "working_capital_risk": {
+      "slot_id": "cash_conversion_balance_sheet",
+      "target_entity": "DELL",
+      "metric_ids": ["inventory", "accounts_receivable", "accounts_payable", "operating_cash_flow"],
+      "business_scope_zh": "库存、应收、应付、信用和营运资金风险"
+    },
+    "upstream_capacity_context": {
+      "slot_id": "capacity_inputs_execution",
+      "target_entity": "DELL",
+      "metric_ids": ["capacity", "yield"],
+      "business_scope_zh": "memory、先进封装和上游供给能力"
+    },
+    "counterparty_direct_mention": {
+      "slot_id": "relationship_attribution",
+      "target_entity": "DELL",
+      "metric_ids": [],
+      "business_scope_zh": "上下游对 Dell 或对应需求关系的直接披露"
+    },
+    "subject_relationship_disclosure": {
+      "slot_id": "relationship_attribution",
+      "target_entity": "DELL",
+      "metric_ids": [],
+      "business_scope_zh": "Dell 自身披露的供应商、客户与约束关系"
+    },
+    "issuer_counterevidence": {
+      "slot_id": "counterevidence_and_what_would_change",
+      "target_entity": "DELL",
+      "metric_ids": ["inventory"],
+      "business_scope_zh": "发行人披露的最强反方和风险事实"
+    },
+    "upstream_or_demand_counterevidence": {
+      "slot_id": "counterevidence_and_what_would_change",
+      "target_entity": "DELL",
+      "metric_ids": ["inventory"],
+      "business_scope_zh": "上下游披露中能削弱当前判断的证据"
+    }
+  },
+  "tools": [
+    {
+      "tool_id": "TOOL::S1_CURRENT_RETRIEVAL",
+      "name_zh": "当前内源检索",
+      "owning_stage": "S1",
+      "authority": "candidate_only",
+      "implementation": "ResearchRetrievalService"
+    },
+    {
+      "tool_id": "TOOL::S1_SOURCE_ROUTE",
+      "name_zh": "官方来源与外源路线",
+      "owning_stage": "S1",
+      "authority": "capture_first_source_intake",
+      "implementation": "SourceRoutePortfolio + SourceIntake",
+      "current_boundary": "issuer IR feed、行业主源和商业数据未形成完整生产路线"
+    },
+    {
+      "tool_id": "TOOL::S2_NUMERIC_FACT",
+      "name_zh": "结构化财务事实查询",
+      "owning_stage": "S2",
+      "authority": "company_reported_exact",
+      "implementation": "company_financial_fact_mart + execute_typed_fact_request"
+    },
+    {
+      "tool_id": "TOOL::REVIEWED_EVIDENCE_READER",
+      "name_zh": "已审证据读取器",
+      "owning_stage": "S1",
+      "authority": "reviewed_evidence_only"
+    },
+    {
+      "tool_id": "TOOL::CASE_FACT_PRESENCE",
+      "name_zh": "全案事实存在性目录",
+      "owning_stage": "S3",
+      "authority": "visibility_semantics_only",
+      "purpose": "区分本单元未加载、全案已存在、typed gap 和真实未披露"
+    },
+    {
+      "tool_id": "TOOL::DETERMINISTIC_RENDERER",
+      "name_zh": "确定性身份、数值与引用渲染器",
+      "owning_stage": "S3",
+      "authority": "render_only"
+    }
+  ],
+  "evaluators": [
+    {
+      "evaluator_id": "EVAL::L1_FINANCIAL_TRUTH",
+      "name_zh": "事实、身份、期间、数值和引用校验",
+      "may_write_research": false
+    },
+    {
+      "evaluator_id": "EVAL::CONTENT_QUALITY_EIGHT_DIMENSION",
+      "name_zh": "八维研究内容质量评估",
+      "may_write_research": false
+    },
+    {
+      "evaluator_id": "EVAL::MULTI_AGENT_COLLABORATION",
+      "name_zh": "多角色协作与上下文连续性评估",
+      "may_write_research": false
+    },
+    {
+      "evaluator_id": "EVAL::PAIRED_GAIN",
+      "name_zh": "相同证据下单节点、固定 workflow 与反思型 Multi-Agent 配对比较",
+      "may_write_research": false
+    },
+    {
+      "evaluator_id": "EVAL::QUALIFIED_HUMAN",
+      "name_zh": "合格人工内容验收",
+      "may_write_research": false,
+      "current_state": "external_owner_not_self_signable"
+    }
+  ],
+  "label_only_roles": [
+    {
+      "role_id": "demand_specialist",
+      "current_use": "EvidenceRequest requester_role",
+      "preview_disposition": "mapped_to_AGENT::DEMAND_QUALITY"
+    },
+    {
+      "role_id": "financial_specialist",
+      "current_use": "EvidenceRequest requester_role",
+      "preview_disposition": "split_between_operating_value_and_cash_agents"
+    },
+    {
+      "role_id": "supply_specialist",
+      "current_use": "EvidenceRequest requester_role",
+      "preview_disposition": "merged_into_AGENT::SUPPLY_RELATIONSHIP"
+    },
+    {
+      "role_id": "relationship_specialist",
+      "current_use": "EvidenceRequest requester_role",
+      "preview_disposition": "merged_into_AGENT::SUPPLY_RELATIONSHIP"
+    },
+    {
+      "role_id": "counterevidence_specialist",
+      "current_use": "EvidenceRequest requester_role",
+      "preview_disposition": "mapped_to_AGENT::COUNTEREVIDENCE"
+    },
+    {
+      "role_id": "risk_specialist",
+      "current_use": "EvidenceRequest requester_role",
+      "preview_disposition": "inactive_label_until_independent_scope_and_sources_exist"
+    },
+    {
+      "role_id": "capital_specialist",
+      "current_use": "EvidenceRequest requester_role",
+      "preview_disposition": "inactive_label_until_independent_scope_and_sources_exist"
+    },
+    {
+      "role_id": "valuation_specialist",
+      "current_use": "EvidenceRequest requester_role",
+      "preview_disposition": "inactive_label_because_PIT_valuation_route_is_not_production_ready"
+    }
+  ],
+  "harness_components": [
+    "case_identity_and_as_of_authority",
+    "query_and_tool_contract_compiler",
+    "evidence_gate_and_candidate_decision_ledger",
+    "numeric_fact_period_unit_and_lineage_authority",
+    "skill_and_graph_context_selector",
+    "agent_session_event_checkpoint_and_resume",
+    "feedback_receipt_and_owner_routing",
+    "plan_delta_and_graph_delta_validator",
+    "context_projection_and_compression",
+    "no_progress_and_stop_controller",
+    "capture_first_provider_transport",
+    "deterministic_identity_numeric_and_citation_renderer"
+  ],
+  "source_readiness_by_role": [
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "state": "preview_ready_with_material_gaps",
+      "available": ["Dell official earnings call", "Dell filings", "AI orders/revenue/backlog/customer count source-visible facts"],
+      "missing": ["cancellation and pushout series", "backlog aging and commitment composition", "end-demand consumption"]
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "state": "preview_ready",
+      "available": ["SEC company facts", "Dell filings", "Dell earnings materials"],
+      "missing": ["complete product-to-segment realized numeric bridge"]
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "state": "preview_ready_with_material_gaps",
+      "available": ["company financial statements", "management product margin statements", "same-basis company margin relations"],
+      "missing": ["AI product price-volume-mix bridge", "audited product profit contribution"]
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "state": "preview_ready",
+      "available": ["cash flow statement", "working-capital facts", "issuer risk disclosures"],
+      "missing": ["AI-specific cash attribution"]
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "state": "preview_ready_with_material_gaps",
+      "available": ["TSM earnings call", "MU filings", "NVDA filings", "Dell supply commentary"],
+      "missing": ["Dell-specific allocation", "yield and utilization", "complete HBM allocation data"]
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "state": "preview_ready_with_material_gaps",
+      "available": ["issuer risk factors", "working-capital facts", "upstream and downstream official disclosures"],
+      "missing": ["independent industry demand series", "commercial channel inventory and order cancellation data"]
+    },
+    {
+      "agent_id": "AGENT::VALUATION",
+      "state": "not_activated",
+      "available": ["three diagnostic market snapshots"],
+      "missing": ["production PIT market and valuation facts"]
+    }
+  ],
+  "preview_acceptance": {
+    "must_separate_failure_owners": [
+      "data_infrastructure_or_tool",
+      "harness_control",
+      "agent_orchestration_and_role_design",
+      "model_judgment",
+      "evaluator"
+    ],
+    "must_prove": [
+      "every activated research role has an independent session and opinion",
+      "S1 and S2 calls are real local tool executions rather than prompt text",
+      "feedback reaches the earliest owning role and can change a plan or judgment",
+      "cell-local invisibility is never promoted to case-level absence",
+      "the report is compiled from validated multi-role workpapers",
+      "multi-agent output is compared with the historical fixed five-cell run"
+    ],
+    "does_not_claim": [
+      "S1 qualified stable",
+      "external broad research complete",
+      "valuation ready",
+      "qualified human acceptance",
+      "S3 pass",
+      "release readiness"
+    ]
+  }
+}

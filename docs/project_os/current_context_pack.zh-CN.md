@@ -806,3 +806,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - replacement blind handoff 已准备，必须由外部角色选择至少 6 个新案例、在 Git 外保管标签并在 candidate freeze 后评分。当前 Codex 不自签盲测。
 - S0 v1.1 已实现 append-only SessionEvent、六合同 validator、checkpoint／resume 及 mutation；S1／S2／Verifier 当前失败编译为 31 条可行动 FeedbackReceipt。零调用 proof 与全仓 817 测试通过。
 - 当前边界：`S1_qualified_stable=false`、`natural_reflection_live=false`、`dynamic_skill_graph_consumption=false`、`S3_acceptance=false`、`release=false`。下一项先修 MU／NVDA 已有资产的最早覆盖损失，并将 22 条 admission 交给合格人工审阅；不允许直接跳自然 S3 full-chain。
+## 2026-08-19 S3 真正 Multi-Agent Preview 工程 Gate
+
+- 已完成全仓角色盘点：当前旧五单元是同 Provider 的固定工作流，不是真正 Multi-Agent。Preview 将 Research Lead、需求、经营、价值、现金、供应／关系、反方和实验性 Writer 定义为 Agent；S1/S2/Evidence reader/renderer 是工具；L1／八维／协作／paired／qualified-human 是 Evaluator；旧 specialist 名称中无独立会话和反馈能力者保留为标签。
+- 当前信息源以 SEC、公司财务事实和少量业绩会为主。它支持 DELL 公司经营／现金、AI 订单／收入／backlog／客户数、部分上下游背景与发行人反方；不支持完整行业份额、Dell 特定上游分配、产品利润桥、取消／账龄、完整 PIT 估值。不得把这些数据边界归因成 Agent 无用。
+- 零调用先关闭 RC-S1-048：hybrid candidate 不再替换 immutable reviewed snapshot，而是 candidate-only union；随后进一步把 exact reviewed Evidence reader 与 dynamic S1 retrieval 分离。动态检索失败只能成为工具回执，不能擦除 reviewed Evidence 或生成 public gap。
+- 零调用 `fin_ia_0_1_3_s3_multi_agent_preview_zero_call_result_v1_2` 通过：12 EvidenceRequest、192 hybrid selected candidate、40 typed fact request（25 resolved／15 gap），六角色均非空；Supply／Relationship 获得 10 reviewed Evidence。0 model／network／paid call／Candidate promotion。S1／S3／release 仍为 false。
+- RC-S1-049 仍开：上游 capacity／relationship reviewed Evidence 已存在，但 dynamic S1 retrieval 对对应目标的候选召回仍弱。它属于 S1 query／object／recall／ranking，不得由 Supply Agent 或编排层背锅；诊断性 Preview 通过 exact reader 使用既有权威，并继续暴露工具回执。
+- Live runner 已实现真正独立会话、六专业意见、Lead 计划与挑战路由、角色工作底稿、FeedbackReceipt、checkpoint/resume、最多三次反方返工、最多两次 Evaluator 返工、两轮独立评估、StopDecision 和条件式 Writer。最多 22 模型节点，每节点单独 TokenBudgetBasis，最多一个独立 successor；0 外部来源网络／Candidate promotion／产品发布／qualified-human 自签。
+- 当前修复通过显式 dynamic Truth Spine successor policy v1.1 生效；历史 v1.0 继续保持原 hybrid-only 回放，旧 attempt 摘要不改写。全仓 831 tests、定向 26 tests、compileall、活动基线 `183／8／27／0` 与 7,355 文件秘密扫描通过。
+- 下一步：将已复证实现作干净提交并推送；再单独签发一次 DELL Live Preview authority。Live 结果只评价当前资料边界内的 Multi-Agent 工作模式，不签发 S1、S3、泛化、Workbench 或 release。

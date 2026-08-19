@@ -415,3 +415,31 @@ S1 正式评价前必须先证明被评价的是同一可执行快照，而不�
 - 是否已有 reviewed Evidence／NumericFact，还是 CandidateDecision／人工复核待定。
 
 只有这些本地和可达路线状态全部闭合，且外部公开来源路线按预注册计划实际耗尽，才可签发 `GapEligibilityReceipt`。`candidate_count=0`、`top_k miss`、`route_not_executed` 和模型没有再次搜索都不能单独成为 gap。该 receipt 与 `EvidenceDecision`、`PackReadiness` 必须成为产品 Runtime 产物，开发脚本结果不能替代。
+
+## 19. 无生成式 AI 的人工可操作硬门与 Agent 集成分账（2026-08-19）
+
+S1 独立资格新增 `human_operable_without_generation_model` 硬门。评测者使用预注册、人工裁决的 typed requests，不调用 Planner、DeepSeek 或其他生成模型，直接验证每个责任层：
+
+1. source/capture 是否取得预期官方或许可资料，并保存 terminal receipt；
+2. OCR/parser/cleaning 是否保留 material text、表格、单位、期间、脚注和 locator；
+3. claim/table/context/metric-row 对象是否绑定正确 Case、披露方、期间与 parent；
+4. sparse/dense/graph/SQL 路线是否按请求执行，目标是否进入候选池；
+5. rerank／金融排序是否保持 material facet 与反方，不让重复背景噪声占满审阅窗；
+6. CandidateDecision／Evidence Gate 是否精确晋升、明确 abstain 并保留 lineage；
+7. GapEligibility 是否证明全部适用本地与来源路线，而不是把空结果直接改名为 gap。
+
+故障归责采用以下反事实：
+
+| 观察 | 归责 |
+|---|---|
+| 人工 typed request 也无法在已有材料中找到正确对象 | S1 数据／对象／索引／query／ranking／Gate failure |
+| 人工路径成功，但 Agent 未形成或未执行等价 EvidenceRequest | S3 Agent 工作模式 failure |
+| 正确 Candidate 已进入审阅面但未晋升 | Evidence admission／人工复核状态，不是召回 failure |
+| 官方／适用外源路线未执行、超时或解析失败 | source-route／transport／parser failure，不是公开 gap |
+| 本地与适用来源路线均完整执行且权威资料确未披露 | 只可成为 gap candidate，仍需 `GapEligibilityReceipt` |
+
+生成模型辅助 query、GraphDelta、第二轮补证和动态研究只进入后续 integration eval；它们不得参与、补分或掩盖本门。反之，S1 通过也只说明工具面合格，不说明 Agent 会正确调用、反思或停止。
+
+最终 S1 资格报告必须同时给出业务例子：具体命题、目标材料、实际错误候选、在哪一层丢失、为何算该类 failure，以及它对 Evidence Pack 和下游研究的影响；不得只列 Recall、MRR、延迟或网页数。
+
+当前 `S1_qualified_stable=false`，本节是标准修订，不是一次资格执行。

@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-19 | 完成 FIN 0.1.3 Agent Runtime／反思／上下文连续性全链审计。当前真实能力更正为“固定研究 workflow＋片段级 typed repair＋节点 successor”，尚无通用 AgentSession、失败反馈驱动重规划、动态 Skill／Graph 消费、跨 Agent 反思或长上下文 checkpoint／resume。产品责任拆为基础设施／工具、Harness、Agent 工作模式和 Skill×Graph 交叉层；S1/S2 必须先通过无生成式 AI 的人工可操作基线，不能让模型弥补底层检索故障。冻结 AgentSession、FeedbackReceipt、PlanDelta、GraphDelta、ContextCheckpoint、StopDecision 六合同；该合同只记架构冻结，Runtime、S3 和 release 均未通过。 |
 | 2026-08-18 | S1 VS3 已在同一 33,085 对象快照和同一 canonical spine 上贯穿多路线候选、CUDA-only Embedding／Reranker、金融 intent／Evidence Role、CandidateDecision、Coverage 与 Operations Workbench。最终有界候选池召回 15/15 个开发正例且顺序扰动稳定率为 1.0；金融审阅前十覆盖 15/15，确认 hard negative 为 0；VS1 两个历史对象继续可追溯，VS2 四个复杂文档目标均进入最终审阅面。1,912 个候选全部有 accepted／rejected／unjudged／needs-review 决策，未因排名、开发 qrel 或模型分数自动晋升 Evidence／NumericFact。R17 新增 `/api/operations/s1/retrieval-quality` 真实消费者。该结果只记 `VS3_vertical_slice_integrated` 并授权 VS4 有界补证；不授予单一检索模型、Runtime Evidence promotion、微调、S1 或完整产品链资格。 |
 | 2026-08-17 | S1 VS2 已用 IFX 2025 官方年报开发样本贯穿复杂 PDF→表格／脚注／跨页关系→CandidateDecision→Coverage→Operations Workbench：解析保留 5 个复杂表区、1 个脚注、1 个重述上下文、1 个真实跨页关系和 56 个 metric-row；官方页 OCR mutation 保留预注册 material anchors，但不能冒充自然扫描资料资格。4 个经复核复杂目标只有重述上下文进入前 20，分部总计行、脚注和跨页续表仍未进入，故最早未闭合责任转到 VS3 排序／金融证据角色，而非继续扩写 parser。产品审计合同同时补充：任何 envelope 的本地 `payload_ref` 必须真实可解引用且 digest 与被引用 payload 完全一致；UI 能显示 sibling projection 不得掩盖悬空 lineage。旧 R14／R15 结果保持不可变，当前 R16 以 successor 修复。VS2 只记 `vertical_slice_integrated`，不授予 IFX 产品案例、NumericFact、自然扫描、S1 或完整产品链资格。 |
 | 2026-08-17 | S1 VS1 已把当前 DELL 数字原生 SEC／官方 transcript 从 source/capture/parse/object/index 贯穿到 EvidenceRequest、CandidateRanking、持久 CandidateDecision、命题级 Coverage、task-relative Pack readiness 与 Workbench。产品面必须同时显示 accepted、needs-review、reviewed-not-recalled 和 GapEligibilityReceipt；候选排名不授予 Evidence 权限，未执行 official／external supplement 不得表述为“公开资料不存在”。VS1 只允许标记 `vertical_slice_integrated`；OCR／复杂表格、多路线排序资格、第二轮补证、隐藏留出和 `S1_qualified_stable` 仍开放。 |
@@ -2846,3 +2847,33 @@ ResearchBlueprint 对新公司、新行业和复合主题必须能够显式声�
 材料组装顺序也属于产品语义：先在完整候选池中保护稀缺的 direct／counter／bridge／context 和跨期 bundle，再形成有限审阅窗；不得先截普通 top-K，再声称后续材料组不存在。一个数值表与另一段机制解释可以共同覆盖同一非跨期材料组；反方／背景材料不必冒充主指标数值证据。跨期同口径比较仍必须由一个相关绑定或同 `same_basis_key` 的逐期 bundle 满足，最终 NumericRelation 权威继续属于 S2。
 
 当前零模型、零网络回放覆盖 COST 5 个、DELL 3 个、MU 4 个、NVDA 6 个真实请求，共 40 个材料 requirement 均能由同一 v1.1 合同保留，且排列回放稳定。MU 4／4、NVDA 6／6 请求达到 `runtime_scope_ready`；COST 只有 2／5、DELL 0／3 达到该状态，其余请求明确要求自然 ResearchBlueprint。该结果只关闭 current candidate metadata adapter 与材料选择顺序的工程纵切，不关闭 qualified-human COST reference、replacement blind qualification、Evidence 晋升、S1 资格或完整真实产品链。
+
+### 16.46 Agent Runtime、反思循环与上下文连续性是产品能力，不是调用次数（2026-08-19）
+
+FIN 的目标不是把一次 Prompt 拆成更多 Provider 调用，也不是让 Harness 替模型完成研究，而是让受控 Agent 在新证据、新失败和新冲突出现后能够改变下一步研究动作。当前 Planner→S1/S2→五研究单元→Synthesis→报告→Verifier 仍以固定拓扑为主；片段被拒绝后的一次 typed repair 只证明局部纠错，不能称为通用反思或完整 Agentic Research。
+
+产品正式区分四个责任平面：
+
+1. **基础设施／工具平面**：来源、capture、OCR／parser、清洗、金融对象、SQL、query、召回、重排和 Evidence Role。它必须先通过人工／fixture typed request 的无生成式 AI 基线；人按合格请求都找不到的资料属于数据或工具 failure，不能归罪模型，也不能登记公开信息 gap。
+2. **Harness 控制平面**：身份、期间、单位、来源、引用、Evidence／NumericFact／Gap 权限、合同、预算、exact-once、失败路由、事件日志和停止校验。Harness 不得代写观点或静默修改模型结论。
+3. **Agent 工作模式平面**：目标理解、假设／反方、EvidenceRequest、充分性反思、计划变更、Judgment、跨单元综合和 WWC。模型可以提出研究增量，但不能创造金融事实权限。
+4. **Skill×Graph 交叉平面**：RoleMethodPack 与图关系既要由 Harness 按角色、目标、gap 和决策面动态选择、版本化与留痕，也要被 Agent 实际消费来调整研究。禁止把全部 Pack 和整图固定塞给每个节点；Skill 不是事实，Graph hypothesis 也不是 Evidence。
+
+FIN 0.1.3 冻结以下运行对象：
+
+- `AgentSession`：绑定 Case／as-of、Objective、当前 Plan、事件历史和 checkpoint；
+- `FeedbackReceipt`：把 failure class、最早责任层、可见解释、允许动作和禁止误读送达责任 Agent；
+- `PlanDelta`：在当前 plan digest 上提出新增、修改、延期或取消研究动作；
+- `GraphDelta`：提出 run-local hypothesis／关系的新增、更正或撤回，只有绑定 reviewed Evidence 后才能晋升 source-bound edge；
+- `ContextCheckpoint`：事件历史的可验证压缩投影，用于暂停、上下文压缩和恢复；
+- `StopDecision`：明确区分充分完成、真实信息边界、预算耗尽、无进展、工具故障、合同失败和人工升级。
+
+不是所有组件都应同等 Agent 化。Planner／Research Lead、Specialist 和 Lead 需要有界 `observe→plan→act→evaluate→reflect→replan/stop`；S1/S2 默认是可靠工具；Writer 只在缺少支持时发起受控请求，不默认自由搜索；Verifier 只签发结构化 finding 并退回最早责任节点，不能自己修改研报。
+
+Exact-once 以一个 Provider attempt 或工具执行请求为单位。失败 attempt 永久保留；Agent 收到新的 typed feedback 后发起的新步骤拥有新输入和新 attempt ID，不属于覆盖旧失败的 retry。每个模型／付费节点继续强制 `TokenBudgetBasis`，成本与速度不能单独决定研究范围。
+
+长任务不能依赖无限聊天历史。产品必须把任务状态、证据记忆、append-only 事件、节点工作视图、原始 capture 和 checkpoint 分开；压缩／恢复测试必须证明 Case、期间、反方、material gap、未解决 feedback 和 Evidence refs 不会丢失或跨案污染。
+
+阶段归属修订为：S0 承担 Session／event／checkpoint／resume 基础；S1 承担无 AI 可资格化的检索工具及 typed tool feedback；S2 承担事实、可比关系、conflict 和 typed gap；S3 承担反思、PlanDelta／GraphDelta、多 Agent 协调和内容质量；S4 承担用户计划审阅、人工干预、暂停恢复与交付；S5 承担长任务 replay、停止行为、泛化 eval 与 release。
+
+该项当前状态为 `architecture_contract_frozen／runtime_not_implemented`。它不取消 S1 当前优先级：S1 必须先达到 `S1_qualified_stable`，否则更复杂的 Agent loop 只会反复调用一个未经资格的检索栈。完整技术审计见 `docs/architecture/research/FIN_0_1_3_AGENT_RUNTIME_REFLECTION_CONTEXT_CONTINUITY_AUDIT_20260819.zh-CN.md`。

@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S1_VS1_to_VS3_and_DELL_MU_NVDA_VS4_vertical_slices_integrated / VS5_all_positive_frozen_holdout_and_qualification_open / S2_company_fact_mart_pass / S2_product_bridge_open / fixed_pack_and_dynamic_single_cell_accepted / DELL_R7_complete_five_cell_report_contract_pass_truth_reconciliation_fail / full_product_chain_blocked_until_S1_qualified / product_iteration_not_closed`
+状态：`repository_baseline_complete / S1_VS1_to_VS3_and_DELL_MU_NVDA_VS4_vertical_slices_integrated / VS5_all_positive_frozen_holdout_and_qualification_open / S2_company_fact_mart_pass / S2_product_bridge_open / fixed_pack_and_dynamic_single_cell_accepted / DELL_R7_complete_five_cell_report_contract_pass_truth_reconciliation_fail / reflective_agent_runtime_contract_frozen_not_implemented / full_product_chain_blocked_until_S1_qualified / product_iteration_not_closed`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -20,10 +20,10 @@ FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵�
 
 | 阶段 | 只拥有的责任 | 当前事实 | 通过条件 |
 | --- | --- | --- | --- |
-| S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线 | G01–G12 已通过并合并远端 main | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿 |
+| S0 | 产品/技术合同、身份、权限、版本、仓库与运行时基线；AgentSession、事件、checkpoint、resume/compaction 基础 | G01–G12 已通过并合并远端 main；反思型 Runtime 六合同已冻结但会话／上下文连续性尚未实现 | 单主干、单消费者、archive 隔离、secret/CI/container/clean-main 全绿；长期任务事件可重放、checkpoint/resume mutation 通过 |
 | S1 | source/capture、HTML/PDF/OCR/table 解析清洗、chunk/object、版本化 index、类型化 EvidenceRequest、SQL/lexical/semantic/graph/official/external 路由、recall/rerank/金融精排、Evidence Role/Gate、Coverage/补证/gap 和 replay | 已有对象、候选、排名 shadow、Source Intake、Dell/TSM PDF、reviewed Pack 和第一修复方向；但完整 S1-A–S1-J 标准只有文档，OCR/cleaning/chunk/index/rank/fine-rank 独立资格、gold/split、新异质留出和稳定性均未完成。DELL/MU/NVDA 只作开发/回归，不是 S1 交付物 | 当前主线逐层通过独立 S1 L0–L5：source/capture、OCR/parser、chunk/object、query/route、candidate ceiling、recall、rerank、金融精排/Evidence admission、Coverage/gap、下游 ceiling、稳定性/资源；新异质留出逐案通过硬门且无 case patch，随后才允许产品资格完整真实链 |
 | S2 | 公司财务事实 mart、Evidence/NumericFact 编译、PIT、单位/期间、引用和冲突 | private mart 已从三案 SEC capture 建立，1,319 observations、24/24 精确事实查询及 mutation 通过；DELL 受控纵切为 7/7 typed request resolved、21 NumericFacts、0 gap/conflict | 数值事实从权威对象确定性入库和查询，跨案/错期/错单位 fail closed，typed exact lookup 返回 NumericFact 或可信 gap；自然 planner、研究消费和三案依赖回归证明产品价值 |
-| S3 | 动态规划、工具使用、重裁决、研究综合、角色方法、单元级图上下文、Workpaper/Report | fixed-Pack 与 DELL `value_capture` 动态单单元已 accepted；DELL R7 已自然执行五单元并形成首份完整内部报告，但 false absence／false conflict 使 L1/L2 未通过；Case Truth 工程门已正式零调用通过，待自然语义 canary 与受影响节点 successor | DELL 修复后的完整动态案例与异质跨案例泛化均通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收；每个 model-visible RoleMethodPack／GraphContextPack 可重建并有自然消费 receipt；逐案硬门不得被平均分掩盖 |
+| S3 | 动态规划、工具使用、反思／重裁决、研究综合、角色方法、run-local 图上下文、Workpaper/Report | fixed-Pack 与 DELL `value_capture` 动态单单元已 accepted；DELL R7 已自然执行五单元并形成首份完整内部报告，但 false absence／false conflict 使 L1/L2 未通过；当前仍是固定 workflow＋局部 repair，没有统一 FeedbackReceipt→PlanDelta／GraphDelta 循环 | DELL 修复后的完整动态案例与异质跨案例泛化均通过 L1、八维绝对质量、paired gain 与 qualified-human 内容验收；Skill／Graph 动态选择与自然消费可重放；失败能回到 owning Agent 改变计划并形成合法 StopDecision |
 | S4 | 用户任务、Evidence/Gap/Workpaper/Review/Repair 产品闭环 | 只有只读 Evidence Workspace 和独立 Operations | 当前 S3 candidate 被真实 UI 消费；review/repair/lineage 可完成且不依赖旧产品面 |
 | S5 | 发布、回滚、运行、成本、安全和 Owner acceptance | 未开始；本次仓库 merge 不是 S5 | RG1–RG5、clean deploy、回滚和 Owner 签署全部成立 |
 
@@ -177,6 +177,26 @@ COST R1 是当前 VS5 的第一次正式 valid-temporal 候选资格。它通过
 材料保护现发生在完整 BM25＋Qwen 候选并集之后、来源配额和 review truncation 之前。只有 requirement receipt 明确绑定的候选可硬保留；其他材料候选仍受来源配额，避免提高材料覆盖时退化成单一来源堆叠。旧调用者不提供 material contract 时保持兼容。
 
 DELL 当前真实受控计划已证明产品消费者 seam：8 个请求均有候选，S2 同步返回 58 个 NumericFact，但 8 个复合研究范围均诚实要求自然 scope。这个结果只授权一次候选盲、0 网络、exact-once 的自然 scope canary；不授权报告、Evidence 自动晋升、COST R3、hidden 或 S1 资格。canary 通过后依次回放 CUDA 候选、CandidateDecision／Evidence Gate、S2 权威与 Pack Readiness，再决定新的 unseen temporal preregistration。
+
+## 4K. 2026-08-19 Agent Runtime／反思／上下文连续性审计后的顺序
+
+Owner 指出当前系统长期围绕单轮／伪多轮和确定性编译建设，尚未证明模型能在收到 Harness failure、证据不足或错误研究方向后反思并修改计划；长任务上下文压缩和各 Agent 独立研究能力也未进入统一 Runtime。全链审计确认当前真实形态是固定 workflow＋一次片段 repair＋不可变 successor，不是通用反思型 Multi-agent 系统。
+
+本次只冻结架构和合同，不执行模型、网络或 Runtime 迁移。统一合同为 `AgentSession / FeedbackReceipt / PlanDelta / GraphDelta / ContextCheckpoint / StopDecision`，权威源见 `configs/research/fin_ia_0_1_3_agent_runtime_reflection_context_continuity_contract_v1_0.json`。
+
+后续顺序修订为：
+
+1. **S1 当前主线继续，不被 Agent Runtime 议题替代。** 先以人工／fixture typed requests、0 生成式模型证明 source、清洗、对象、query、召回、重排、Evidence Role／Gate 和 gap 归责。人也无法查准即为工具 failure；不得让模型补分。
+2. **完成 S1 当前剩余门。** 执行 MU／NVDA 必要官方路线、候选准入、COST qualified-human reference 与 replacement blind qualification；达到 `S1_qualified_stable` 前不做产品资格 full-chain。
+3. **零调用实现 S0 反思 Runtime 基础。** 先实现 append-only SessionEvent、六合同 schema／validator／fake／replay、checkpoint／resume 和 compaction mutation；不修改 Evidence、NumericFact、Gap 或发布权限。
+4. **把现有 S1/S2/Verifier 结果编译成 FeedbackReceipt。** 工具 failure、候选损失、Evidence admission、数值 conflict、因果越界和内容 finding 分别路由给最早责任节点；新步骤用新 attempt ID，旧失败永久保留。
+5. **S3 先做一个 DELL 单单元反思纵切。** 只给用户问题、Case／as-of 和工具权限；模型自行规划、执行、反思、提交受验证 PlanDelta／GraphDelta 并 Stop。固定 Pack 继续只作模型分析单测。
+6. **再扩到五单元与 Lead。** Verifier finding 返回 owning cell，只重跑受影响节点；Skill／Graph 按角色、Objective、gap 和 Plan 动态最小加载并留下消费 receipt。
+7. **最后做 MU、NVDA 和异质留出，再进入 S4/S5。** 泛化必须覆盖跨公司、跨行业、跨来源形态、跨期和不同 failure，不以相似案例或平均分冒充通过。
+
+Skill／Graph 位于 Harness 与 Agent 工作模式的交叉层：Harness 管选择、版本、作用域、digest 和权限，Agent 负责实际使用方法和提出图关系增量；全部 Pack 固定注入、图边冒充事实或模型直接修改稳定本体均被禁止。
+
+该顺序不意味着 S1 与 Runtime 必须完全串行。S1 独立资格可继续推进，S0 只允许零调用合同／事件骨架并行；任何自然反思 live 必须等其依赖的 S1/S2 工具响应达到当前任务所需资格。当前 `S1_qualified_stable=false`、`generalized_reflection_loop=false`、`context_continuity=false`、S3/S4/S5 均未通过。
 
 ## 5. 防止再次膨胀的工程规则
 

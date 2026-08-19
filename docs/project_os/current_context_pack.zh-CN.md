@@ -9,6 +9,15 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
 
+## 2026-08-19 Agent Runtime／反思／上下文连续性全链审计
+
+- 当前真实形态更正为：固定 Planner→S1/S2→五研究单元→Synthesis→报告 workflow、片段级一次 typed repair、不可变 node successor；尚无通用 AgentSession、失败驱动 PlanDelta／GraphDelta、跨 Agent reflection 或长上下文 checkpoint／resume。
+- 责任拆为四层：基础设施／工具、Harness、Agent 工作模式、Skill×Graph 交叉层。S1/S2 的 capture、OCR/parser、对象、query、召回、重排、SQL 和 Evidence Gate 必须先通过 0 生成式模型的人工作业基线；人也查不到的结果一律属于工具 failure，不能算模型 failure 或公开 gap。
+- 六合同已冻结但未实现：`AgentSession / FeedbackReceipt / PlanDelta / GraphDelta / ContextCheckpoint / StopDecision`。机器源为 `configs/research/fin_ia_0_1_3_agent_runtime_reflection_context_continuity_contract_v1_0.json`。
+- Skill／Graph 不是固定 Prompt 附件：Harness 按角色、Objective、gap、decision surface 和 Plan 动态选择最小 Pack，保存选择／注入／消费 receipt；Agent 可提 run-local GraphDelta，但稳定本体和 source-bound EvidenceGraph 仍由本地校验，Skill／Graph 均无事实权限。
+- 当前只完成架构审计和源文档同步：`S1_qualified_stable=false`、`generalized_reflection_loop=false`、`context_continuity=false`。下一主线仍先完成 S1 AI-free 资格和剩余来源／盲测门；S0 只允许并行做零调用 Session／event／checkpoint 骨架，任何自然反思 live 等待所依赖 S1/S2 工具资格。
+- 权威审计：`docs/architecture/research/FIN_0_1_3_AGENT_RUNTIME_REFLECTION_CONTEXT_CONTINUITY_AUDIT_20260819.zh-CN.md`。
+
 ## 2026-08-19 S1 retrieval-context 容量一致性修复
 
 - Micron 的 take-or-pay／多年期具体数量承诺已被 Evidence Role v3 和 material binding 正确识别，但旧集合选择器仍让 `retrieval_context_only` 的 orders／backlog／shipments 词面参与容量竞争，较高排名的 shipment-only 候选会耗掉本应留给 customer-commitment 命题的唯一位置。

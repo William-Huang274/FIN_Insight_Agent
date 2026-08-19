@@ -59,6 +59,9 @@
   - [x] paired 内容审计与协议处置：两路均因 comparable-period relation 无确定性 lineage 未过 L1；source class 与可执行 route 仍漂移；Chat 保留 provisional primary，Responses 保留 shadow/candidate
   - [x] comparable-period Numeric relation＋EvidenceRequest source-route 与 Research Context Closure；fixed-Pack 后续实证已取代早期单节点复验
 - [x] S3 fixed-Pack 第一层自然 Judgment、一次 typed repair、独立 L1 与适用内容质量（21/24；只算模型分析单元测试）
+- [x] FIN 0.1.3 Agent Runtime／反思／上下文连续性全链只读审计与六合同冻结（区分基础设施／Harness／Agent／Skill×Graph；0 模型／网络；不等于 Runtime 实现）
+- [ ] S0 AgentSession／SessionEvent／FeedbackReceipt／PlanDelta／GraphDelta／ContextCheckpoint／StopDecision 零调用 Runtime、checkpoint／resume／compaction mutation
+- [ ] S3 Skill／Graph 动态最小选择、注入／消费 receipt 与 FeedbackReceipt 驱动的有界 replan／stop 循环
 - [ ] S1→S3 动态 Research Truth Spine（EvidenceRequest→S1/S2→EvidenceResponse）
   - [x] provider-neutral EvidenceResponse、reviewed-only 重选、动态 claim authority、三案 identity/mutation 零调用工程纵切
   - [x] 动态 ClaimRelation 投影与 gap-only thesis abstain（三片段结构零调用 successor；0 candidate promotion）

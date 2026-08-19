@@ -589,3 +589,20 @@ route 合同分成五种状态：`requested`、`capability available`、`schedul
 非时间型 metric 可以帮助查询和候选解释，但当 requirement 声明 `metric_coverage_mode=retrieval_context_only` 时，它不属于 S1 材料完整性轴，也不得参与有限 reservation capacity 的 gain 竞争。否则一个只命中 shipments 词面的高排名对象会先占满容量，使真正证明 customer commitment 的低排名对象无法被选择，形成“合同说不考数字、算法却仍按数字抢位”的假缺失。
 
 当前选择器只以 required metric／product axes 计算增量和累计覆盖；receipt 仍可记录 observed contextual metrics 供诊断，但不得以此授予 NumericFact 或 Evidence 权威。该不变量使用 Micron take-or-pay 真实故障形状和排列稳定测试固定；正式产品结果仍需从干净提交重新回放并经过 proposition-bound Evidence admission。
+
+## 30. AI-free 人工可操作基线与反思型消费者边界（2026-08-19）
+
+S1 不因后续引入反思型 Agent 而变成“模型负责把检索救回来”。正式资格增加一条不可替代的前置硬门：用人工或 fixture 编写、身份／期间／产品／指标／关系方向／来源角色均合格的 `EvidenceRequest / QueryFacetPlan`，在 0 生成式模型条件下执行当前 source→capture→cleaning→object→index→query→candidate→rank→Evidence Role／Gate 纵切。若已知正确材料不能稳定进入可解释候选或合法审阅面，最早责任层仍是 S1 基础设施／工具，禁止登记为 Agent failure 或公开信息 gap。
+
+S1 的模型边界据此冻结为：
+
+1. S1 默认提供 typed tools，不默认成为自主 Agent；
+2. query、route、retrieval、ranking 和 Evidence Role 的核心资格不依赖模型生成 query；模型辅助 query expansion 只能作为通过 AI-free 基线后的 shadow／增量路线；
+3. 每次响应除 Candidate／Evidence 外，还必须给出来源路线执行状态、拒绝原因、候选损失位置、未决人工状态和合法下一动作，供上游编译 `FeedbackReceipt`；
+4. `source_transport_failure`、`parser_or_object_failure`、`index_or_query_failure`、`candidate_not_recalled`、`candidate_not_admitted`、`route_not_executed` 与 `public_information_boundary` 必须互斥可辨；
+5. Agent 可以根据 S1 响应选择新的 facet、合格替代路线或缩小请求，但不能把工具 failure 改写成 gap，也不能自行晋升 Candidate；
+6. Skill／Graph 只能帮助研究 Agent 形成 Evidence Need、关系方向和补证假设，不能掩盖 S1 工具缺陷，也不能替代 CandidateDecision／Evidence Gate。
+
+S1 独立资格通过后，才执行反思型消费者集成门：同一 `AgentSession` 中，Agent 根据 S1 的 typed response 产生受验证 `PlanDelta`，并证明第二轮补证增加新 Evidence、收窄判断，或留下合格信息边界。该集成门属于 S3 消费和全链资格，不反向修改 S1 的 AI-free 成绩。
+
+当前状态保持 `S1_qualified_stable=false`。本节只冻结责任和验收顺序，没有执行模型、网络、检索或产品资格运行。

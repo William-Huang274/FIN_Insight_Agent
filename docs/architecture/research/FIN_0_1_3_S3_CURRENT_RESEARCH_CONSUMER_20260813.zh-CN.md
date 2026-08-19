@@ -517,3 +517,26 @@ R3 的四次自然调用全部完成，证明 non-thinking analysis＋4k strict 
 Counter submission 另有一项完全相同的 MU inventory alias＋cross-case polarity 重复。本地拒绝原 payload 是正确的审计行为，但该重复不创造第二个金融命题；后续合同应把它与 L1 语义错误分开记录，不能让 wire schema 被移除的 `uniqueItems` 变成整单元不透明终止。
 
 因此不得再以新 Prompt、更多 token 或逐 alias 例外进入 R4/R5。项目级候选设计是：模型先提交 proposition text／kind／polarity；本地按 case、cell、owner 和 kind 缩小 alias candidates；必要时由独立 selector 选择；ontology 增加 `causal_hypothesis_not_established` 等不与 fact presence 冲突的状态。替代路线是让单独资格化 verifier 或 qualified human 承担语义审计。两条路线都必须先回放 R3、三案例和留出，且在 Owner 决定模型路线前不得执行新 live。
+
+## 25. 反思型 Agent Runtime、Skill／Graph 动态消费与上下文连续性（2026-08-19）
+
+全链审计把当前 S3 更正为“固定五单元 workflow＋片段级 local repair＋不可变 successor”，而不是已经完成的通用 Multi-agent reflection loop。Provider 调用多次、成功前缀可复用或某个 Tool Call 能重交，并不等于模型会根据新证据改变研究计划。
+
+后续 S3 必须运行在统一 `AgentSession` 上，并以六个 provider-neutral 合同完成闭环：
+
+- `FeedbackReceipt`：把 Evidence 不足、S2 conflict、Validator rejection、因果越界或 Verifier finding 送达最早责任节点；
+- `PlanDelta`：Planner／Specialist 针对当前 plan digest 增删改延研究动作；
+- `GraphDelta`：只修改 run-local ResearchGraph；source-bound edge 仍须 reviewed Evidence 和本地身份／期间／方向／lineage 校验；
+- `ContextCheckpoint`：保存 Objective、Plan、Evidence、NumericFact、gap、未解决反馈和 Agent 局部状态的可验证投影；
+- `StopDecision`：区分充分完成、信息边界、预算耗尽、无进展、工具故障、合同失败和人工升级；
+- `AgentSession`：把上述对象与 append-only 事件、Case／as-of 和当前状态绑定。
+
+角色自主权不平均分配：Planner／Research Lead、Specialist 和 Lead 需要有界 observe→plan→act→evaluate→reflect→replan／stop；S1/S2 是 typed tools；Writer 默认只编纂已验收研究并可受控请求缺失支持，不自由扩搜；Verifier 只签发结构化 finding 并路由给 owning cell，禁止自己改结论。
+
+RoleMethodPack 与 GraphContextPack 进入交叉控制层。Harness 按角色、Objective、decision surface、gap 和当前 Plan 选择最小相关 Pack，记录发现、选择、完整加载、作用域投影、注入和消费 receipt；禁止固定给所有 cell 塞入全部 Pack。Agent 可依据新披露提出 `GraphDelta` 和换用 MethodPack，但 Skill／Graph 均不获得 Evidence、NumericFact、Gap 或引用权威。
+
+上下文压缩必须依赖事件和 checkpoint，而不是截断聊天。resume mutation 至少覆盖丢失反方、错期间、跨 Case、删除 open gap、替换 plan digest 和打乱事件；任何 material 状态漂移必须 fail closed。
+
+实施顺序不跳过 S1：先让 S1 通过无生成式 AI 的人工可操作基线；再零调用实现 Session／event／六合同／checkpoint／resume；把 S1/S2 输出编译为 FeedbackReceipt；然后仅做 DELL `value_capture` 单元动态反思纵切，之后才扩到五单元、MU／NVDA 和异质留出。每个模型节点仍须独立 `TokenBudgetBasis`。
+
+当前状态为 `contract_frozen / generalized_reflection_loop_false / dynamic_skill_graph_consumption_false / context_continuity_false`。完整审计与消息流见 `docs/architecture/research/FIN_0_1_3_AGENT_RUNTIME_REFLECTION_CONTEXT_CONTINUITY_AUDIT_20260819.zh-CN.md`。

@@ -58,9 +58,12 @@ from .multi_agent_preview import (
     compile_planner_payload_from_role_opinions,
     compile_specialist_context,
     compile_token_budget_basis,
+    load_multi_agent_role_topology,
     merge_analysis_draft_fragments,
     validate_analysis_completion_checkpoint,
     validate_analysis_fragment_checkpoint,
+    validate_lead_plan_checkpoint,
+    validate_specialist_plan_checkpoint,
 )
 from .planning import (
     compile_research_objective,
@@ -1472,6 +1475,103 @@ def compile_multi_agent_preview_materialization(
     )
 
 
+def compile_lead_checkpoint_successor_zero_call_projection(
+    *,
+    repo_root: str | Path,
+    topology: Mapping[str, Any],
+    objective_payload: Mapping[str, Any],
+    specialist_plan_checkpoint: Mapping[str, Any],
+    lead_plan_checkpoint: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Prove the downstream-only successor from two immutable checkpoints.
+
+    This projection performs no provider, network, candidate-promotion or paid
+    tool call.  It validates both checkpoints, re-materializes the current local
+    S1/S2 view, and derives the remaining node ceiling from the actual preview
+    topology instead of carrying forward the already-completed Lead node.
+    """
+
+    trusted_topology = load_multi_agent_role_topology(topology)
+    specialist_checkpoint = validate_specialist_plan_checkpoint(
+        specialist_plan_checkpoint,
+        topology=trusted_topology,
+    )
+    opinions = [
+        deepcopy(dict(row))
+        for row in specialist_checkpoint["specialist_plans"]
+    ]
+    lead_checkpoint = validate_lead_plan_checkpoint(
+        lead_plan_checkpoint,
+        opinions=opinions,
+        topology=trusted_topology,
+    )
+    if not (
+        lead_checkpoint["specialist_plan_checkpoint_digest"]
+        == specialist_checkpoint["checkpoint_digest"]
+        and lead_checkpoint["new_model_calls"] == 0
+        and lead_checkpoint["new_network_calls"] == 0
+        and lead_checkpoint["new_candidate_promotions"] == 0
+    ):
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_lead_checkpoint_predecessor_drift"
+        )
+    materialization = compile_multi_agent_preview_materialization(
+        repo_root=repo_root,
+        topology=trusted_topology,
+        objective_payload=objective_payload,
+        opinions=opinions,
+        lead_plan=lead_checkpoint["lead_plan"],
+    )
+    readiness = materialization.readiness_summary()
+    if readiness["blocking_empty_role_ids"]:
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_lead_checkpoint_role_authority_empty"
+        )
+    specialist_count = len(lead_checkpoint["lead_plan"]["ordered_agent_ids"])
+    budget = {
+        "specialist_workpaper_nodes": specialist_count,
+        "lead_coordination_nodes": 1,
+        "maximum_counter_challenge_repairs": 3,
+        "maximum_evaluation_rounds": 2,
+        "maximum_evaluator_repairs": 2,
+        "conditional_writer_nodes": 1,
+    }
+    maximum_new_model_nodes = sum(budget.values())
+    body = {
+        "schema_version": (
+            "fin_ia_s3_dell_multi_agent_preview_R7_lead_checkpoint_"
+            "downstream_successor_zero_call_result_v1_0"
+        ),
+        "status": (
+            "R6_validated_lead_plan_checkpoint_downstream_successor_"
+            "zero_call_pass"
+        ),
+        "case_key": "DELL",
+        "specialist_plan_checkpoint_digest": specialist_checkpoint[
+            "checkpoint_digest"
+        ],
+        "lead_plan_checkpoint_digest": lead_checkpoint["checkpoint_digest"],
+        "lead_plan_digest": lead_checkpoint["lead_plan"]["lead_plan_digest"],
+        "reused_specialist_plan_count": specialist_count,
+        "reused_lead_plan_count": 1,
+        "downstream_node_budget_basis": budget,
+        "maximum_new_model_nodes": maximum_new_model_nodes,
+        "materialization_readiness": readiness,
+        "claims": {
+            "new_specialist_plan_model_calls": 0,
+            "new_lead_analysis_calls": 0,
+            "new_lead_submission_calls": 0,
+            "network_calls": 0,
+            "paid_tool_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+            "true_multi_agent_preview_completed": False,
+        },
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
 __all__ = [
     "CONSUMER_OVERLAY_REF",
     "PLANNING_OVERLAY_REF",
@@ -1481,6 +1581,7 @@ __all__ = [
     "MultiAgentPreviewRuntimeError",
     "TRUTH_SPINE_REF",
     "compile_cross_role_feedback_receipt",
+    "compile_lead_checkpoint_successor_zero_call_projection",
     "compile_multi_agent_preview_materialization",
     "execute_analyzed_preview_node",
     "execute_checkpointed_preview_submission",

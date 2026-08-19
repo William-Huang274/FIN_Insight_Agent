@@ -1,0 +1,135 @@
+{
+  "case_key": "DELL",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "network_calls": 0,
+    "new_lead_analysis_calls": 0,
+    "new_lead_submission_calls": 0,
+    "new_specialist_plan_model_calls": 0,
+    "paid_tool_calls": 0,
+    "true_multi_agent_preview_completed": false
+  },
+  "downstream_node_budget_basis": {
+    "conditional_writer_nodes": 1,
+    "lead_coordination_nodes": 1,
+    "maximum_counter_challenge_repairs": 3,
+    "maximum_evaluation_rounds": 2,
+    "maximum_evaluator_repairs": 2,
+    "specialist_workpaper_nodes": 6
+  },
+  "lead_plan_checkpoint_digest": "b3cf04f593aa81f990b6ab644f8f59adcd92e97063ba235f5927dba76c6831ef",
+  "lead_plan_digest": "64bd1e2095a1289b0f97adcb07f86ea517689099c9c9d0e4b93f5184b62f49f6",
+  "materialization_readiness": {
+    "blocking_empty_role_ids": [],
+    "compiled_evidence_request_count": 12,
+    "controlled_plan_summary": {
+      "compiled_lane_count": 12,
+      "deferred_atom_count": 1,
+      "evidence_request_count": 12,
+      "execution_request_budget": 12,
+      "generation_model_calls": 0,
+      "hybrid_candidate_runtime": "bm25_plus_qwen_local_embedding",
+      "hybrid_selected_candidate_count": 192,
+      "local_embedding_inference_batches": 1,
+      "material_scope_ready_request_count": 0,
+      "material_scope_required_request_count": 12,
+      "material_set_complete_request_count": 0,
+      "model_calls": 0,
+      "network_calls": 0,
+      "nonempty_lane_count": 12,
+      "numeric_fact_count": 87,
+      "proposed_atom_count": 13,
+      "required_slot_count": 7,
+      "selected_atom_count": 12,
+      "typed_fact_conflict_count": 0,
+      "typed_fact_gap_count": 17,
+      "typed_fact_request_count": 44,
+      "typed_fact_resolved_count": 27,
+      "unique_narrative_candidates": 30
+    },
+    "role_readiness": [
+      {
+        "agent_id": "AGENT::DEMAND_QUALITY",
+        "context_digest": "37cafc9eb489a53ecc7b02418fbe1381a204ea2f3f529868dc51ad40306e51a9",
+        "numeric_facts_visible": 0,
+        "numeric_relations_visible": 0,
+        "reviewed_evidence_visible": 10,
+        "role_slot_ids": [
+          "demand_volume_quality"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 1
+      },
+      {
+        "agent_id": "AGENT::OPERATING_PERFORMANCE",
+        "context_digest": "1b0440a8da35c70529980130d7c7b44899dc976236ffa0326cf59fb071ea1a43",
+        "numeric_facts_visible": 12,
+        "numeric_relations_visible": 6,
+        "reviewed_evidence_visible": 2,
+        "role_slot_ids": [
+          "operating_performance"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 0
+      },
+      {
+        "agent_id": "AGENT::VALUE_CAPTURE",
+        "context_digest": "74df1c16d157f55b70b599254ace681b48091e27c26579c5fb4ba272649a407a",
+        "numeric_facts_visible": 10,
+        "numeric_relations_visible": 5,
+        "reviewed_evidence_visible": 4,
+        "role_slot_ids": [
+          "pricing_mix_value_capture"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 3
+      },
+      {
+        "agent_id": "AGENT::CASH_CONVERSION",
+        "context_digest": "6739e8d588f7adb36ee7b2d9c14da90f9c316534b943f8bee8650f2f7bedc95d",
+        "numeric_facts_visible": 10,
+        "numeric_relations_visible": 3,
+        "reviewed_evidence_visible": 5,
+        "role_slot_ids": [
+          "cash_conversion_balance_sheet"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 1
+      },
+      {
+        "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+        "context_digest": "62358cab5cb14874bb5a6c93d3fbed6017ba4936e58ae446eefdbac1c58b3dfa",
+        "numeric_facts_visible": 0,
+        "numeric_relations_visible": 0,
+        "reviewed_evidence_visible": 10,
+        "role_slot_ids": [
+          "capacity_inputs_execution",
+          "relationship_attribution"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 4
+      },
+      {
+        "agent_id": "AGENT::COUNTEREVIDENCE",
+        "context_digest": "28f9796670f2602d1f6adb1f645ce803feeb189e93877f601cf11059ed551c84",
+        "numeric_facts_visible": 3,
+        "numeric_relations_visible": 0,
+        "reviewed_evidence_visible": 6,
+        "role_slot_ids": [
+          "counterevidence_and_what_would_change"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 2
+      }
+    ]
+  },
+  "maximum_new_model_nodes": 15,
+  "result_digest": "bbe0621f289b4f415aceca36e6ca995b83ce966a219d485cd6dcba3a539575fb",
+  "reused_lead_plan_count": 1,
+  "reused_specialist_plan_count": 6,
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_R7_lead_checkpoint_downstream_successor_zero_call_result_v1_0",
+  "specialist_plan_checkpoint_digest": "0ab73362d5ccd05d6096c86bc8a0d91f86b1674aac0df30eb5647d8b85e5fac8",
+  "status": "R6_validated_lead_plan_checkpoint_downstream_successor_zero_call_pass"
+}

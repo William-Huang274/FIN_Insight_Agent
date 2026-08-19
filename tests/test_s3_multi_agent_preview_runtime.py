@@ -16,11 +16,15 @@ from sec_agent.research.multi_agent_preview import (
 )
 from sec_agent.research.multi_agent_preview_runtime import (
     compile_cross_role_feedback_receipt,
+    compile_lead_checkpoint_successor_zero_call_projection,
     execute_analyzed_preview_node,
     execute_checkpointed_preview_submission,
     execute_validated_preview_node,
     start_preview_agent_session,
 )
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 @dataclass(frozen=True)
@@ -699,3 +703,52 @@ def test_completed_analysis_checkpoint_resumes_at_submission_only(
             submission_transport=submit,
         )
     assert submission_calls == 1
+
+
+def test_lead_checkpoint_successor_projection_skips_completed_lead_node() -> None:
+    topology = json.loads(
+        (
+            ROOT
+            / "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    objective = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_objective_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    specialist_checkpoint = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R3_specialist_plan_checkpoint_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    lead_checkpoint = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R6_lead_plan_checkpoint_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    result = compile_lead_checkpoint_successor_zero_call_projection(
+        repo_root=ROOT,
+        topology=topology,
+        objective_payload=objective,
+        specialist_plan_checkpoint=specialist_checkpoint,
+        lead_plan_checkpoint=lead_checkpoint,
+    )
+
+    assert result["status"].endswith("downstream_successor_zero_call_pass")
+    assert result["maximum_new_model_nodes"] == 15
+    assert result["downstream_node_budget_basis"] == {
+        "specialist_workpaper_nodes": 6,
+        "lead_coordination_nodes": 1,
+        "maximum_counter_challenge_repairs": 3,
+        "maximum_evaluation_rounds": 2,
+        "maximum_evaluator_repairs": 2,
+        "conditional_writer_nodes": 1,
+    }
+    assert result["claims"]["new_lead_analysis_calls"] == 0
+    assert result["claims"]["new_lead_submission_calls"] == 0
+    assert result["materialization_readiness"]["blocking_empty_role_ids"] == []

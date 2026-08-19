@@ -235,6 +235,12 @@ R6 两次 strict Tool Call 均完成，但旧 Schema／Validator 对协调问题
 
 下一步只允许新 attempt 从该 checkpoint 之后运行六份 Specialist workpaper、Lead challenge routing、局部 Feedback／repair、Evaluator 和条件式 Writer。已完成的六份 Specialist plan、Lead analysis 和 Lead submission 均不得重跑。该 successor 仍不签发 S1／S3、泛化、qualified-human、S4 或 release。
 
+### 4P. R7 从已验证 Lead plan 进入真实下游多角色链
+
+R7 的交付单位不是另一份计划，而是自然生成的六份角色底稿、Lead 挑战路由、必要的局部反馈修正、独立评估，以及仅在评估允许时生成的 Writer 报告。前缀复用与下游 Agent 运行必须同时可审计，不能把 checkpoint 复用说成新 Agent 调用，也不能让 Harness 代写研究观点。
+
+剩余最大模型节点为 15，并由真实拓扑而非成本目标派生。每个节点的 token 上限仍按输入规模、输出职责、合同负担、质量风险和历史运行证据分别决定；Writer 仅在全部 blocking finding 解除后运行。R7 成功只触发 L1／八维质量／人工内容检查，不自动关闭 S1、S3 或 FIN 0.1.3。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

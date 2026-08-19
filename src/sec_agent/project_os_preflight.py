@@ -20,8 +20,10 @@ from sec_agent.research.material_scope_canary import (
 )
 from sec_agent.research.multi_agent_preview import (
     SPECIALIST_AGENT_IDS,
+    load_multi_agent_role_topology,
     validate_analysis_completion_checkpoint,
     validate_analysis_fragment_checkpoint,
+    validate_lead_plan_checkpoint,
     validate_specialist_plan_checkpoint,
 )
 from sec_agent.providers import load_chat_completion_profile
@@ -138,6 +140,16 @@ MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_DECISION_STATUS = (
 )
 MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_SCOPE = (
     "one_clean_authorized_R5_completed_analysis_submission_successor"
+)
+MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dell_multi_agent_preview_live_scope_decision_v1_5"
+)
+MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_DECISION_STATUS = (
+    "R6_lead_contract_failure_preserved_one_validated_plan_checkpoint_"
+    "downstream_successor_authorized"
+)
+MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE = (
+    "one_clean_authorized_R6_Lead_checkpoint_downstream_successor"
 )
 DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_successor_live_scope_decision_v1_0"
@@ -378,6 +390,13 @@ def _validate_fixed_pack_decision(
         == MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_DECISION_SCHEMA
     ):
         return validate_multi_agent_preview_submission_successor_scope_decision(
+            root=root, decision=decision
+        )
+    if (
+        decision.get("schema_version")
+        == MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_DECISION_SCHEMA
+    ):
+        return validate_multi_agent_preview_lead_checkpoint_successor_scope_decision(
             root=root, decision=decision
         )
     if decision.get("schema_version") in {
@@ -2244,6 +2263,372 @@ def validate_multi_agent_preview_submission_successor_scope_decision(
         "specialist_agent_count": 6,
         "reused_specialist_plan_count": 6,
         "maximum_new_lead_analysis_calls": 0,
+        "execution_limits": dict(expected_limits),
+        "token_budget_basis_policy": dict(expected_budget_policy),
+    }
+
+
+def validate_multi_agent_preview_lead_checkpoint_successor_scope_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Validate one downstream-only successor from the R6 Lead checkpoint."""
+
+    expected_fields = {
+        "schema_version",
+        "status",
+        "case_key",
+        "cell_id",
+        "run_scope_id",
+        "evidence_mode",
+        "next_authorized_scope",
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "independent_specialist_sessions_required",
+        "lead_coordination_feedback_required",
+        "checkpoint_resume_required",
+        "lead_plan_checkpoint_required",
+        "new_lead_plan_model_calls_forbidden",
+        "downstream_only_execution_required",
+        "conditional_writer_required",
+        "evaluation_rounds_required",
+        "historical_failure_promoted",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "qualified_human_acceptance_authorized",
+        "S1_acceptance_authorized",
+        "S3_acceptance_authorized",
+        "generalization_claim_authorized",
+        "predecessor_scope_decision_ref",
+        "predecessor_scope_decision_sha256",
+        "predecessor_live_authority_ref",
+        "predecessor_live_authority_sha256",
+        "predecessor_live_result_ref",
+        "predecessor_live_result_sha256",
+        "topology_ref",
+        "topology_sha256",
+        "specialist_plan_checkpoint_ref",
+        "specialist_plan_checkpoint_sha256",
+        "specialist_plan_checkpoint_digest",
+        "lead_plan_checkpoint_ref",
+        "lead_plan_checkpoint_sha256",
+        "lead_plan_checkpoint_digest",
+        "lead_checkpoint_successor_zero_call_proof_ref",
+        "lead_checkpoint_successor_zero_call_proof_sha256",
+        "lead_checkpoint_successor_zero_call_proof_result_digest",
+        "successor_constraints",
+        "execution_limits",
+        "token_budget_basis_policy",
+        "authority_statement",
+    }
+    if set(decision) != expected_fields:
+        raise ValueError(
+            "project_os_multi_agent_lead_checkpoint_successor_shape_invalid"
+        )
+    required_equal = {
+        "schema_version": (
+            MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_DECISION_SCHEMA
+        ),
+        "status": MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "MULTI_AGENT_PREVIEW",
+        "run_scope_id": MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE,
+        "evidence_mode": (
+            "current_reviewed_Evidence_plus_current_S2_"
+            "no_candidate_promotion"
+        ),
+        "next_authorized_scope": (
+            "one_bounded_DELL_multi_agent_preview_R6_validated_Lead_plan_"
+            "downstream_successor_live_attempt"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                "project_os_multi_agent_lead_checkpoint_successor_field_invalid:"
+                + field
+            )
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "independent_specialist_sessions_required",
+        "lead_coordination_feedback_required",
+        "checkpoint_resume_required",
+        "lead_plan_checkpoint_required",
+        "new_lead_plan_model_calls_forbidden",
+        "downstream_only_execution_required",
+        "conditional_writer_required",
+        "evaluation_rounds_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                "project_os_multi_agent_lead_checkpoint_successor_true_required:"
+                + field
+            )
+    for field in (
+        "historical_failure_promoted",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "qualified_human_acceptance_authorized",
+        "S1_acceptance_authorized",
+        "S3_acceptance_authorized",
+        "generalization_claim_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                "project_os_multi_agent_lead_checkpoint_successor_false_required:"
+                + field
+            )
+
+    _, predecessor_scope = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_scope_decision_ref",
+        sha_field="predecessor_scope_decision_sha256",
+    )
+    predecessor_projection = (
+        validate_multi_agent_preview_submission_successor_scope_decision(
+            root=root, decision=predecessor_scope
+        )
+    )
+    _, predecessor_authority = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_live_authority_ref",
+        sha_field="predecessor_live_authority_sha256",
+    )
+    _, predecessor_result = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_live_result_ref",
+        sha_field="predecessor_live_result_sha256",
+    )
+    predecessor_scope_binding = (
+        predecessor_authority.get("bound_inputs", {}).get(
+            "project_os_scope_decision"
+        )
+        or {}
+    )
+    predecessor_execution = predecessor_result.get("execution") or {}
+    predecessor_acceptance = predecessor_result.get("acceptance") or {}
+    if not (
+        predecessor_projection.get(
+            "multi_agent_preview_submission_checkpoint_successor"
+        )
+        is True
+        and predecessor_authority.get("schema_version")
+        == "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_5"
+        and predecessor_scope_binding.get("ref")
+        == decision["predecessor_scope_decision_ref"]
+        and predecessor_scope_binding.get("sha256")
+        == decision["predecessor_scope_decision_sha256"]
+        and predecessor_result.get("status")
+        == "multi_agent_preview_terminal_failure_preserved"
+        and predecessor_result.get("authority_ref")
+        == decision["predecessor_live_authority_ref"]
+        and predecessor_result.get("failure_code")
+        == "multi_agent_lead_coordination_questions_invalid"
+        and predecessor_execution.get("new_model_nodes_started") == 1
+        and predecessor_execution.get("analysis_calls_preserved") == 0
+        and predecessor_execution.get("analysis_checkpoint_reuses_preserved")
+        == 1
+        and predecessor_execution.get("submission_attempts_preserved") == 2
+        and predecessor_execution.get("new_specialist_plan_model_calls") == 0
+        and predecessor_acceptance.get("true_multi_agent_preview_completed")
+        is False
+    ):
+        raise ValueError(
+            "project_os_multi_agent_lead_checkpoint_successor_predecessor_invalid"
+        )
+
+    topology_path = _repo_path(root, str(decision["topology_ref"]))
+    if _sha256(topology_path) != decision["topology_sha256"]:
+        raise ValueError(
+            "project_os_multi_agent_lead_checkpoint_successor_topology_drift"
+        )
+    topology = load_multi_agent_role_topology(_load_json(topology_path))
+    specialist_path, raw_specialist = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="specialist_plan_checkpoint_ref",
+        sha_field="specialist_plan_checkpoint_sha256",
+    )
+    del specialist_path
+    specialist = validate_specialist_plan_checkpoint(
+        raw_specialist, topology=topology
+    )
+    if specialist["checkpoint_digest"] != decision[
+        "specialist_plan_checkpoint_digest"
+    ]:
+        raise ValueError(
+            "project_os_multi_agent_lead_checkpoint_successor_specialist_drift"
+        )
+    lead_path, raw_lead = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="lead_plan_checkpoint_ref",
+        sha_field="lead_plan_checkpoint_sha256",
+    )
+    del lead_path
+    lead = validate_lead_plan_checkpoint(
+        raw_lead,
+        opinions=specialist["specialist_plans"],
+        topology=topology,
+    )
+    if not (
+        lead["checkpoint_digest"] == decision["lead_plan_checkpoint_digest"]
+        and lead["specialist_plan_checkpoint_ref"]
+        == decision["specialist_plan_checkpoint_ref"]
+        and lead["specialist_plan_checkpoint_sha256"]
+        == decision["specialist_plan_checkpoint_sha256"]
+        and lead["specialist_plan_checkpoint_digest"]
+        == decision["specialist_plan_checkpoint_digest"]
+        and lead["source_authority_ref"]
+        == decision["predecessor_live_authority_ref"]
+        and lead["source_authority_sha256"]
+        == decision["predecessor_live_authority_sha256"]
+        and lead["source_public_result_ref"]
+        == decision["predecessor_live_result_ref"]
+        and lead["source_public_result_sha256"]
+        == decision["predecessor_live_result_sha256"]
+        and lead["source_public_result_digest"]
+        == predecessor_result.get("result_digest")
+        and lead["source_failure_code"]
+        == predecessor_result.get("failure_code")
+    ):
+        raise ValueError(
+            "project_os_multi_agent_lead_checkpoint_successor_checkpoint_invalid"
+        )
+    for ref_field, sha_field in (
+        ("request_capture_ref", "request_capture_sha256"),
+        ("response_capture_ref", "response_capture_sha256"),
+    ):
+        artifact_path = _repo_path(root, str(lead[ref_field]))
+        if _sha256(artifact_path) != lead[sha_field]:
+            raise ValueError(
+                "project_os_multi_agent_lead_checkpoint_successor_capture_drift:"
+                + ref_field
+            )
+
+    _, proof = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="lead_checkpoint_successor_zero_call_proof_ref",
+        sha_field="lead_checkpoint_successor_zero_call_proof_sha256",
+        digest_field=(
+            "lead_checkpoint_successor_zero_call_proof_result_digest"
+        ),
+    )
+    readiness = proof.get("materialization_readiness") or {}
+    claims = proof.get("claims") or {}
+    if not (
+        proof.get("status")
+        == (
+            "R6_validated_lead_plan_checkpoint_downstream_successor_"
+            "zero_call_pass"
+        )
+        and proof.get("case_key") == "DELL"
+        and proof.get("specialist_plan_checkpoint_digest")
+        == specialist["checkpoint_digest"]
+        and proof.get("lead_plan_checkpoint_digest")
+        == lead["checkpoint_digest"]
+        and proof.get("lead_plan_digest")
+        == lead["lead_plan"]["lead_plan_digest"]
+        and proof.get("reused_specialist_plan_count") == 6
+        and proof.get("reused_lead_plan_count") == 1
+        and proof.get("maximum_new_model_nodes") == 15
+        and readiness.get("blocking_empty_role_ids") == []
+        and claims
+        == {
+            "new_specialist_plan_model_calls": 0,
+            "new_lead_analysis_calls": 0,
+            "new_lead_submission_calls": 0,
+            "network_calls": 0,
+            "paid_tool_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+            "true_multi_agent_preview_completed": False,
+        }
+    ):
+        raise ValueError(
+            "project_os_multi_agent_lead_checkpoint_successor_proof_invalid"
+        )
+
+    expected_constraints = {
+        "R6_terminal_failure_remains_immutable": True,
+        "reuse_exactly_six_R3_specialist_plans": True,
+        "reuse_exactly_one_validated_R6_lead_plan": True,
+        "rerun_successful_specialist_plans": False,
+        "rerun_lead_analysis_continuation_or_submission": False,
+        "downstream_execution_starts_at_specialist_workpapers": True,
+        "research_inputs_unchanged": True,
+    }
+    if decision.get("successor_constraints") != expected_constraints:
+        raise ValueError(
+            "project_os_multi_agent_lead_checkpoint_successor_constraints_invalid"
+        )
+    expected_limits = {
+        "maximum_new_model_nodes": 15,
+        "maximum_new_lead_plan_model_calls": 0,
+        "maximum_new_analysis_calls_per_other_node": 1,
+        "maximum_submission_attempts_per_node": 2,
+        "reused_specialist_plan_count": 6,
+        "reused_lead_plan_count": 1,
+        "maximum_counter_challenge_repairs": 3,
+        "maximum_evaluator_repairs": 2,
+        "maximum_evaluation_rounds": 2,
+        "external_source_network_calls": 0,
+        "candidate_promotions": 0,
+        "product_publication": False,
+        "qualified_human_acceptance": False,
+    }
+    if decision.get("execution_limits") != expected_limits:
+        raise ValueError(
+            "project_os_multi_agent_lead_checkpoint_successor_limits_invalid"
+        )
+    expected_budget_policy = {
+        "task_specific_basis_required_per_paid_phase": True,
+        "reused_lead_has_no_new_token_budget": True,
+        "analysis_basis_is_separate_per_downstream_node": True,
+        "submission_basis_is_separate_per_downstream_node": True,
+        "input_scale_and_reference_count_required": True,
+        "required_outputs_and_schema_burden_required": True,
+        "materiality_and_quality_risk_required": True,
+        "comparable_run_evidence_required": True,
+        "reasoning_profile_required": True,
+        "stop_and_truncation_behavior_required": True,
+        "cost_and_latency_are_secondary_constraints": True,
+    }
+    if decision.get("token_budget_basis_policy") != expected_budget_policy:
+        raise ValueError(
+            "project_os_multi_agent_lead_checkpoint_successor_budget_policy_invalid"
+        )
+    return {
+        "clean_proof_status": predecessor_projection["clean_proof_status"],
+        "successor_zero_call_proof_status": proof["status"],
+        "provider_id": predecessor_projection["provider_id"],
+        "provider_model": predecessor_projection["provider_model"],
+        "api_key_env": predecessor_projection["api_key_env"],
+        "recent_provider_steps": 0,
+        "multi_agent_preview": True,
+        "multi_agent_preview_transport_successor": False,
+        "multi_agent_preview_plan_checkpoint_successor": False,
+        "multi_agent_preview_analysis_checkpoint_successor": False,
+        "multi_agent_preview_submission_checkpoint_successor": False,
+        "multi_agent_preview_lead_checkpoint_downstream_successor": True,
+        "run_scope_id": MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE,
+        "specialist_agent_count": 6,
+        "reused_specialist_plan_count": 6,
+        "reused_lead_plan_count": 1,
+        "maximum_new_lead_plan_model_calls": 0,
         "execution_limits": dict(expected_limits),
         "token_budget_basis_policy": dict(expected_budget_policy),
     }
@@ -6237,6 +6622,23 @@ def build_preflight(
             "project_os_multi_agent_submission_successor_scope_allowance_missing"
         )
     if (
+        decision_projection.get(
+            "multi_agent_preview_lead_checkpoint_downstream_successor"
+        )
+        is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-AR-007-lead-plan-cardinality-schema-validator-and-"
+                "feedback-drift"
+            ),
+            allowed_scope=str(decision_projection["run_scope_id"]),
+        )
+    ):
+        raise ValueError(
+            "project_os_multi_agent_lead_checkpoint_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("natural_material_scope_canary") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -6507,6 +6909,22 @@ def build_preflight(
     }
     if decision_projection.get("multi_agent_preview") is True:
         if decision_projection.get(
+            "multi_agent_preview_lead_checkpoint_downstream_successor"
+        ) is True:
+            known_boundary = (
+                "This current-baseline preflight preserves R6 as a terminal "
+                "Harness failure and reuses six specialist plans plus one "
+                "capture-bound, newly validated Research Lead plan. It permits "
+                "no new specialist planning, Lead analysis, continuation or "
+                "Lead plan submission; the fresh attempt begins at six role "
+                "workpapers, followed by bounded Lead coordination, feedback/"
+                "checkpoint repair, independent evaluation and a conditional "
+                "Writer. It forbids changing research inputs, external source "
+                "network access, candidate promotion, S1 or S3 acceptance, "
+                "heterogeneous generalization, qualified-human self-acceptance, "
+                "Workbench publication or release."
+            )
+        elif decision_projection.get(
             "multi_agent_preview_submission_checkpoint_successor"
         ) is True:
             known_boundary = (

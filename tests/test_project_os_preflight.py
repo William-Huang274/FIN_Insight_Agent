@@ -13,6 +13,7 @@ from sec_agent.project_os_preflight import (
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_ANALYSIS_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_SCOPE,
+    MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
     _validate_dynamic_five_cell_claim_surface_successor_decision,
@@ -24,6 +25,7 @@ from sec_agent.project_os_preflight import (
     build_preflight,
     validate_multi_agent_preview_analysis_successor_scope_decision,
     validate_multi_agent_preview_submission_successor_scope_decision,
+    validate_multi_agent_preview_lead_checkpoint_successor_scope_decision,
     validate_multi_agent_preview_plan_successor_scope_decision,
     validate_multi_agent_preview_scope_decision,
 )
@@ -201,6 +203,11 @@ MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_SCOPE_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
     "scope_decision_v1_4.json"
+)
+MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
+    "scope_decision_v1_5.json"
 )
 
 
@@ -551,6 +558,57 @@ def test_multi_agent_preview_submission_successor_rejects_lead_analysis_rerun() 
         match="project_os_multi_agent_submission_successor_constraints_invalid",
     ):
         validate_multi_agent_preview_submission_successor_scope_decision(
+            root=ROOT, decision=decision
+        )
+
+
+def test_multi_agent_preview_lead_checkpoint_successor_starts_downstream() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=(
+            MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF
+        ),
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    projection = result["decision_projection"]
+    assert result["run_scope_id"] == (
+        MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE
+    )
+    assert (
+        projection["multi_agent_preview_lead_checkpoint_downstream_successor"]
+        is True
+    )
+    assert projection["maximum_new_lead_plan_model_calls"] == 0
+    assert projection["reused_specialist_plan_count"] == 6
+    assert projection["reused_lead_plan_count"] == 1
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 15
+    assert "fresh attempt begins at six role workpapers" in result[
+        "known_boundary"
+    ]
+    assert result["network_calls"] == 0
+    assert result["provider_calls"] == 0
+
+
+def test_multi_agent_preview_lead_checkpoint_successor_rejects_lead_rerun() -> None:
+    decision = json.loads(
+        (
+            ROOT
+            / MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    decision["successor_constraints"][
+        "rerun_lead_analysis_continuation_or_submission"
+    ] = True
+    with pytest.raises(
+        ValueError,
+        match=(
+            "project_os_multi_agent_lead_checkpoint_successor_"
+            "constraints_invalid"
+        ),
+    ):
+        validate_multi_agent_preview_lead_checkpoint_successor_scope_decision(
             root=ROOT, decision=decision
         )
 

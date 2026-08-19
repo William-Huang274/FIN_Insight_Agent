@@ -885,3 +885,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - provider-neutral 容量现从 13 facet、7 required slot、6 tool authority 派生为 13／13／9，同源生成 Schema、Validator、分析／submission constraints；合同失败反馈一次给出全部字段、实际值和允许范围。
 - R6 Attempt 02 原始 payload 在新合同下零调用验证并形成 `R6_lead_plan_checkpoint_v1_0`；Attempt 01 因停止条件内仍写“eleven”未被选择。三字段 max+1、duplicate、unknown facet 和 checkpoint digest mutation 均 fail closed。
 - 当前只允许干净提交后签发“Lead checkpoint 之后”的 DELL bounded Preview successor。六份 Specialist plan、Lead analysis 和 Lead submission 均不得重跑；S1／S3／泛化／qualified-human／Workbench／release 继续为 false。详见 `docs/worklog/fin_0_1_3_s3/090_multi_agent_preview_R6_lead_contract_alignment_and_checkpoint.md`。
+
+## 2026-08-20 S3 Multi-Agent Preview R7 下游 successor 工程门
+
+- R3 Specialist checkpoint 与 R6 Lead plan checkpoint 已共同通过零调用重物化；六角色 authority 均非空，当前本地结果仍为 12 EvidenceRequest／192 candidates／44 typed fact request（27 resolved／17 gap）／87 NumericFact。
+- 新 attempt 不再调用 Specialist plan、Lead plan analysis、continuation 或 submission，从六份 Specialist workpaper 开始。剩余最大 15 个模型节点由 `6 workpaper + 1 Lead coordination + 3 counter repairs + 2 evaluations + 2 evaluator repairs + 1 conditional Writer` 编译，不以省钱或速度为依据。
+- checkpoint reuse 作为本地 `plan_bound` SessionEvent 留痕，不计 Provider attempt；真正下游节点继续按 analysis／submission 两阶段分别记录 TokenBudgetBasis。
+- 当前是 engineering／zero-call pass，尚未执行 R7 live；报告内容、跨角色增益、Evaluator 判断、Writer 输出、S1／S3、泛化和人工验收均未证明。详见 `docs/worklog/fin_0_1_3_s3/091_multi_agent_preview_R7_lead_checkpoint_downstream_successor_gate.md`。

@@ -150,3 +150,9 @@ R6 两次 strict submission 均返回 13 个协调问题、11 条信息边界和
 不能用本地截断把计划压回旧常数。当前 13 个 facet、7 个 required slot 和 6 类工具权限决定 Lead 确实需要比单一 Specialist 更大的控制面。新策略按拓扑派生三类容量，并作为 Schema、Validator、分析 Prompt、submission Prompt 的共同来源；角色／facet／工具拓扑变化时只重新编译策略，不允许各层手写新上限。
 
 合同失败必须生成可行动回执：列出全部字段、实际数量、规则和允许范围；模型只修改结构映射，不重做研究或增加事实。R6 Attempt 02 已在新合同下零调用验证并形成内容寻址 Lead checkpoint，R6 本身仍是 immutable failure。后续运行从 checkpoint 之后开始，不能再次调用已经成功的 Specialist 计划、Lead 分析或 Lead submission。
+
+## 十一、Lead checkpoint 后的运行拓扑
+
+Lead checkpoint successor 不再经过 Planning 或 Lead-plan Provider 节点。Harness 只验证 Specialist／Lead checkpoint、重新物化当前 S1/S2 视图，并在 Research Lead Session 写入可追溯 `plan_bound` 事件；随后才激活六个 Specialist workpaper。Lead 之后可作为真正协调 Agent 消费底稿并路由挑战，但这与已经完成的 Lead-plan 节点是两个不同职责。
+
+剩余容量严格为：六份 workpaper、一次协调、最多三次反方 repair、两轮 Evaluator、最多两次 evaluator repair 和条件式 Writer，共 15 个模型节点。每个模型节点继续使用可见分析＋严格交卷，局部失败通过 FeedbackReceipt 和 checkpoint/resume 回到原责任 Agent。数据／工具失败不得路由成模型修文，Harness 失败不得被 Evaluator 解释成研报质量问题。

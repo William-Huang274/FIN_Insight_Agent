@@ -374,6 +374,9 @@ def test_analysis_and_submission_are_separate_and_submission_can_repair(
     assert "Complete draft" in json.dumps(
         submission_messages[0], ensure_ascii=False
     )
+    repair_prompt = json.dumps(submission_messages[1], ensure_ascii=False)
+    assert "ACTIONABLE_CONTRACT_FEEDBACK" in repair_prompt
+    assert "preview_value_invalid" in repair_prompt
 
 
 def test_analysis_length_finish_fails_before_submission(tmp_path: Path) -> None:

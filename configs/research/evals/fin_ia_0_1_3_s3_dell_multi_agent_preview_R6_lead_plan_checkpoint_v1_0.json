@@ -1,0 +1,157 @@
+{
+  "cardinality_policy": {
+    "facet_count": 13,
+    "fields": {
+      "coordination_questions": {
+        "basis": "one_primary_cross_role_question_per_topology_facet",
+        "maximum": 13,
+        "maximum_chars": 500,
+        "minimum": 2
+      },
+      "expected_information_boundaries": {
+        "basis": "tool_authorities_plus_required_evidence_slots",
+        "maximum": 13,
+        "maximum_chars": 500,
+        "minimum": 2
+      },
+      "stop_conditions": {
+        "basis": "required_evidence_slots_plus_two_case_closure_controls",
+        "maximum": 9,
+        "maximum_chars": 500,
+        "minimum": 2
+      }
+    },
+    "policy_digest": "c4797aed46435dc1861a6d7f43e2c8337b3d2afc3580ef8bce7dd7aa3be512f8",
+    "required_slot_count": 7,
+    "schema_version": "fin_ia_multi_agent_lead_plan_cardinality_policy_v1_0",
+    "tool_count": 6
+  },
+  "case_key": "DELL",
+  "checkpoint_digest": "b3cf04f593aa81f990b6ab644f8f59adcd92e97063ba235f5927dba76c6831ef",
+  "created_at": "2026-08-19T21:07:24+00:00",
+  "lead_plan": {
+    "accepted_agent_ids": [
+      "AGENT::DEMAND_QUALITY",
+      "AGENT::OPERATING_PERFORMANCE",
+      "AGENT::VALUE_CAPTURE",
+      "AGENT::CASH_CONVERSION",
+      "AGENT::SUPPLY_RELATIONSHIP",
+      "AGENT::COUNTEREVIDENCE"
+    ],
+    "accepted_facets": [
+      "orders_and_backlog",
+      "conversion_and_durability",
+      "reported_results",
+      "guidance_and_outlook",
+      "margin_and_incremental_profit",
+      "pricing_and_mix",
+      "cash_generation",
+      "working_capital_risk",
+      "upstream_capacity_context",
+      "counterparty_direct_mention",
+      "subject_relationship_disclosure",
+      "issuer_counterevidence",
+      "upstream_or_demand_counterevidence"
+    ],
+    "coordination_questions": [
+      "Which exact fiscal periods, reporting scopes and FCF treatments do OPERATING_PERFORMANCE, VALUE_CAPTURE and CASH_CONVERSION use for NUMERIC_FACT requests so reported_results, margin and cash facets share one same-basis baseline?",
+      "What bridge artifact prevents DEMAND_QUALITY backlog/order data from being treated as shipped revenue or realized profit/cash before VALUE_CAPTURE and CASH_CONVERSION test conversion?",
+      "How do VALUE_CAPTURE and CASH_CONVERSION register typed gap status and approve proxy indicators without reattributing consolidated margin or consolidated OCF/FCF to AI product contribution?",
+      "Who triggers CASE_FACT_PRESENCE, and where is the four-way status recorded: 本单元未加载 / 全案已存在 / typed gap / 真实未披露; which agent decides if a missing variable is genuine non-disclosure?",
+      "What rule does SUPPLY_RELATIONSHIP apply so TSM/MU/NVDA statements remain speaker-attributed read-through and are never converted into Dell-specific allocation, timing, yield or utilization facts?",
+      "When COUNTEREVIDENCE issues proposition-targeted challenges, which primary owner responds to each type (pull-forward/order cancellability, margin dilution, cash lag/inventory build, GPU allocation/false scarcity) and how is the response recorded?",
+      "OPERATING_PERFORMANCE owns guidance_and_outlook; who verifies no agent upgrades management AI margin or backlog commentary into audited realized profit or cash?",
+      "How is a shared inventory/receivable fact read consistently as working-capital risk, channel stocking/pull-forward or potential write-down without contradiction across working_capital_risk, conversion_and_durability, issuer_counterevidence and upstream_or_demand_counterevidence?",
+      "How do SUPPLY_RELATIONSHIP layered-constraint treatment and COUNTEREVIDENCE GPU-allocation/false-scarcity treatment reconcile, and what evidence distinguishes an end-to-end supply constraint from an allocation-driven transient that would later collapse backlog?",
+      "With SOURCE_ROUTE current boundary incomplete, which requested atoms are declared unserviceable and how do they become typed gap/boundary items rather than negative findings or silent coverage gaps?",
+      "Without independent industry demand sequence or channel-inventory data, which demand quality judgments can be supported without issuer statements and which atoms must be marked typed gap?",
+      "When COUNTEREVIDENCE proposes a reversal scenario, what minimum source type and speaker attribution must be present before the scenario is recorded as a genuine counterweight rather than a hypothetical risk?",
+      "With research_as_of null, which agent proposes the shared case cutoff or evidence freshness anchor, and how do dependent workpapers avoid mixing periods?"
+    ],
+    "expected_information_boundaries": [
+      "CURRENT_RETRIEVAL is candidate_only: only candidate atoms are retrievable, and claims outside the candidate set cannot be filled from memory or general knowledge.",
+      "SOURCE_ROUTE is capture_first_source_intake with boundary 发行人 IR 主源和商业数据未形成完整生产路线: any fact requiring an unavailable production route is declared unserviceable, not false or absent disclosure.",
+      "NUMERIC_FACT is company_reported_exact: only exact company-reported numeric facts are accepted, with no analyst-constructed, model-derived, peer-implied or approximate numeric attribution.",
+      "REVIEWED_EVIDENCE_READER is reviewed_evidence_only: only reviewed evidence may be inspected, and non-reviewed material cannot be promoted into the case record.",
+      "CASE_FACT_PRESENCE is visibility_semantics_only: it reports only whether a fact is loaded/present and whether it is a typed gap, without establishing truth, materiality or interpretation.",
+      "DETERMINISTIC_RENDERER is render_only: renderer output cannot alter, interpret or authorize facts.",
+      "Counterparty statements from TSM, MU, NVDA or other suppliers are speaker-attributed read-through only and cannot be converted into Dell-specific allocation, timing, yield, utilization or realized economics.",
+      "Company backlog, orders and AI-specific management commentary are unaudited and not shipped revenue, realized profit or realized cash; they may be used only through explicit conversion tests owned by the relevant specialist.",
+      "Independent industry demand sequences and channel-inventory data are not authorized under current SOURCE_ROUTE completeness; any conclusion depending on such external sequence is a typed gap/boundary item.",
+      "No consolidated margin, OCF/FCF or working-capital movement may be reattributed to AI product contribution unless an authorized proxy rule is recorded and the residual remains disclosed as inferred.",
+      "research_as_of is null, so no global cutoff or freshness anchor exists yet and cross-role comparisons remain provisional until a case-wide anchor is set."
+    ],
+    "lead_agent_id": "AGENT::RESEARCH_LEAD",
+    "lead_plan_digest": "64bd1e2095a1289b0f97adcb07f86ea517689099c9c9d0e4b93f5184b62f49f6",
+    "ordered_agent_ids": [
+      "AGENT::DEMAND_QUALITY",
+      "AGENT::OPERATING_PERFORMANCE",
+      "AGENT::VALUE_CAPTURE",
+      "AGENT::CASH_CONVERSION",
+      "AGENT::SUPPLY_RELATIONSHIP",
+      "AGENT::COUNTEREVIDENCE"
+    ],
+    "schema_version": "fin_ia_multi_agent_lead_plan_v1_0",
+    "stop_conditions": [
+      "Each primary owner has completed its owned facets with REVIEWED_EVIDENCE_READER, NUMERIC_FACT and CASE_FACT_PRESENCE outputs recorded at least once per required atom.",
+      "Every required slot has a rendered fact-anchored draft or an explicit typed gap declaration; no required slot is left silently empty.",
+      "COUNTEREVIDENCE has filed at least one proposition-targeted challenge for each positive thesis: order durability, realized margin capture, realized cash conversion, and supply-driven scarcity.",
+      "Each challenged proposition has a recorded response from its primary owner, or an explicit unresolved boundary item if the source route cannot service the challenge.",
+      "SOURCE_ROUTE boundary gaps are declared as unserviceable/typed gap items, not converted into negative findings or silent coverage gaps.",
+      "Shared facts used by more than one role such as inventory, receivables, backlog and customer concentration are read consistently across working_capital_risk, conversion_and_durability, issuer_counterevidence and upstream_or_demand_counterevidence.",
+      "No management backlog, order, AI-margin or AI-cash commentary has been upgraded into audited realized profit or realized cash by any specialist.",
+      "The coordination questions have recorded answers or explicit deferral statements with owner assignment.",
+      "The final judgment states what is supported, what is inference, what is typed gap, and what would change the judgment."
+    ]
+  },
+  "new_candidate_promotions": 0,
+  "new_model_calls": 0,
+  "new_network_calls": 0,
+  "node_id": "AGENT::RESEARCH_LEAD::LEAD_PLAN",
+  "predecessor_contract_feedback": {
+    "correction_rule": "Correct every listed violation in one submission. Preserve the completed analysis and authority; merge or select distinct items when a bounded array is over capacity, and do not add facts.",
+    "failure_code": "multi_agent_lead_coordination_questions_invalid",
+    "feedback_digest": "7082f0b2443e37723fd225fbc9334babad94b73c19cd2c60b34665066574debb",
+    "schema_version": "fin_ia_tool_contract_failure_feedback_v1_0",
+    "tool_name": "submit_lead_plan",
+    "violations": [
+      {
+        "allowed_maximum": 8,
+        "field": "coordination_questions",
+        "observed": 13,
+        "rule": "maxItems"
+      },
+      {
+        "allowed_maximum": 10,
+        "field": "expected_information_boundaries",
+        "observed": 11,
+        "rule": "maxItems"
+      },
+      {
+        "allowed_maximum": 8,
+        "field": "stop_conditions",
+        "observed": 9,
+        "rule": "maxItems"
+      }
+    ]
+  },
+  "request_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r6_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R6_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R6_20260820-AGENT-RESEARCH_LEAD-LEAD_PLAN-SUBMISSION-ATTEMPT-02/model_visible_request.json",
+  "request_capture_sha256": "51235932bb37ffcd3f712bbee9697b8be091472c8d7c56aa0403f76df40c6f89",
+  "request_digest": "a9b5f4f334ba560fae4844f6d7fa630b88201e0d6ebad807bfd58919b326b546",
+  "response_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r6_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R6_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R6_20260820-AGENT-RESEARCH_LEAD-LEAD_PLAN-SUBMISSION-ATTEMPT-02/provider_response.json",
+  "response_capture_sha256": "be958f823a2973cf19c7d8543fe8faf709a53a225e1925f67ade326c889e7e2f",
+  "response_digest": "b8e173a0db1ef5c274811768aea7a5d9ff4ba07504428a10e5e936b4069ef4a1",
+  "schema_version": "fin_ia_multi_agent_lead_plan_checkpoint_v1_0",
+  "selected_attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R6_20260820-AGENT-RESEARCH_LEAD-LEAD_PLAN-SUBMISSION-ATTEMPT-02",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_5.json",
+  "source_authority_sha256": "6ef0120c03f451eea7bb81ef94f17dfe4b454b97ca4557a722a3a4215c4667e0",
+  "source_failure_code": "multi_agent_lead_coordination_questions_invalid",
+  "source_public_result_digest": "d65591c604c34f9ce10e3ea0d28807afb1af6073519915cb28694b2bda7e2283",
+  "source_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_5.json",
+  "source_public_result_sha256": "39229d27d5d7f91a3eaeea36f298da555fdd70ddec4259f48a0bf9520f23e7c1",
+  "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R6_20260820",
+  "source_run_status_preserved_as_failure": true,
+  "specialist_plan_checkpoint_digest": "0ab73362d5ccd05d6096c86bc8a0d91f86b1674aac0df30eb5647d8b85e5fac8",
+  "specialist_plan_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R3_specialist_plan_checkpoint_v1_0.json",
+  "specialist_plan_checkpoint_sha256": "b8857eabe863ff7b259bf883ef4b6c79f8fcbc61a295940610b0a6d85aedd7e9"
+}

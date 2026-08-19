@@ -227,6 +227,14 @@ R5 已自然完成 Research Lead 剩余分析内容，但被本地 partial／mis
 
 若 R6 下游出现普通节点失败，保留 attempt 并只修最早责任层；不得因此重做已经成功的六份 Specialist 计划或 Lead 分析。只有产品范围、数据采购、模型职责或跨单元 L1 需要改变时才升级为项目级决策。
 
+## 4O. R6 Lead 合同失败与下游 checkpoint successor（2026-08-20）
+
+R6 两次 strict Tool Call 均完成，但旧 Schema／Validator 对协调问题、信息边界和停止条件维护了不一致的固定上限，失败反馈又只有错误码。13／11／9 项经业务复核后不是无意义冗余，不能为了通过而本地截断。最早责任层归 S0 Harness 合同编译与反馈，不归 S1、数据、网络或 DeepSeek 研究规划。
+
+新容量由当前 13 facet、7 required slot、6 工具权限统一派生，并同时生成 Schema、Validator 和 model-visible constraints。R6 Attempt 02 原始 payload 已零调用通过新合同并形成独立 Lead plan checkpoint；R6 仍保持 terminal failure。
+
+下一步只允许新 attempt 从该 checkpoint 之后运行六份 Specialist workpaper、Lead challenge routing、局部 Feedback／repair、Evaluator 和条件式 Writer。已完成的六份 Specialist plan、Lead analysis 和 Lead submission 均不得重跑。该 successor 仍不签发 S1／S3、泛化、qualified-human、S4 或 release。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

@@ -142,3 +142,11 @@ Live Gate 已实现独立 AgentSession、专业意见、Lead 协调、角色底�
 Research Lead 的职责规模显著大于单个 Specialist，不能把“形成综合分析”和“严格结构化交卷”塞进一次 completion。R4／R5 证明合理路径是：可见分析 → 片段 checkpoint → actionable feedback → 最多一次 continuation → 完整分析 checkpoint → non-thinking strict submission。分析与交卷仍由同一角色拥有，但它们使用不同责任、上下文和 TokenBudgetBasis。
 
 R6 不再重跑六个 Specialist 或 Lead 分析，只复用经 digest 验证的成功前缀并从严格 Lead submission 恢复。后续角色仍必须各自运行并留下独立会话、工具回执、挑战和修改记录；复用 checkpoint 不能把 Preview 偷换成单一 Lead 报告，也不能让 Harness 替 Agent 生成观点。
+
+## 十、R6 暴露的 Lead 合同容量与反馈问题
+
+R6 两次 strict submission 均返回 13 个协调问题、11 条信息边界和 9 条停止条件。旧 Tool Schema 分别限制为 8／10／8，本地 Validator 却统一限制为 10，且失败反馈只暴露错误码。这是 Harness 合同编译和反馈协议问题，不是 S1 数据或 Provider transport 问题。
+
+不能用本地截断把计划压回旧常数。当前 13 个 facet、7 个 required slot 和 6 类工具权限决定 Lead 确实需要比单一 Specialist 更大的控制面。新策略按拓扑派生三类容量，并作为 Schema、Validator、分析 Prompt、submission Prompt 的共同来源；角色／facet／工具拓扑变化时只重新编译策略，不允许各层手写新上限。
+
+合同失败必须生成可行动回执：列出全部字段、实际数量、规则和允许范围；模型只修改结构映射，不重做研究或增加事实。R6 Attempt 02 已在新合同下零调用验证并形成内容寻址 Lead checkpoint，R6 本身仍是 immutable failure。后续运行从 checkpoint 之后开始，不能再次调用已经成功的 Specialist 计划、Lead 分析或 Lead submission。

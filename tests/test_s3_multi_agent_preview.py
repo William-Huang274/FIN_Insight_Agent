@@ -19,6 +19,8 @@ from sec_agent.research.multi_agent_preview import (
     compile_challenge_catalog,
     compile_evaluation_messages,
     compile_lead_plan_messages,
+    compile_lead_plan_cardinality_policy,
+    compile_lead_plan_checkpoint,
     compile_lead_coordination_messages,
     compile_planner_payload_from_role_opinions,
     compile_report_messages,
@@ -26,6 +28,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_specialist_plan_messages,
     compile_specialist_workpaper_messages,
     compile_token_budget_basis,
+    compile_tool_contract_failure_feedback,
     evaluation_tool,
     lead_plan_tool,
     lead_coordination_tool,
@@ -40,6 +43,7 @@ from sec_agent.research.multi_agent_preview import (
     validate_analysis_completion_checkpoint,
     validate_analysis_fragment_checkpoint,
     validate_lead_plan,
+    validate_lead_plan_checkpoint,
     validate_lead_coordination_decision,
     validate_report_draft,
     validate_specialist_plan_opinion,
@@ -480,7 +484,132 @@ def test_topology_distinguishes_agents_tools_evaluators_and_labels() -> None:
         ["accepted_facets"]["maxItems"]
         == len(topology["facet_catalog"])
     )
+    cardinality = compile_lead_plan_cardinality_policy(topology=topology)
+    constraints = lead_tool["function"]["parameters"]["properties"]
+    assert cardinality["fields"]["coordination_questions"]["maximum"] == 13
+    assert cardinality["fields"]["expected_information_boundaries"]["maximum"] == 13
+    assert cardinality["fields"]["stop_conditions"]["maximum"] == 9
+    assert constraints["coordination_questions"]["maxItems"] == 13
+    assert constraints["expected_information_boundaries"]["maxItems"] == 13
+    assert constraints["stop_conditions"]["maxItems"] == 9
     assert evaluation_tool()["function"]["name"] == "submit_multi_agent_evaluation"
+
+
+def test_lead_cardinality_policy_is_shared_by_schema_validator_and_feedback() -> None:
+    topology = _topology()
+    opinions = _opinions()
+    raw = _lead(opinions)
+    raw.pop("lead_plan_digest")
+    raw["coordination_questions"] = [
+        f"跨角色协调问题 {index} 必须绑定明确责任人和证据状态。"
+        for index in range(13)
+    ]
+    raw["expected_information_boundaries"] = [
+        f"信息边界 {index} 必须区分工具不可达与真实未披露。"
+        for index in range(11)
+    ]
+    raw["stop_conditions"] = [
+        f"停止条件 {index} 必须留下可追溯的完成或延期状态。"
+        for index in range(9)
+    ]
+    validated = validate_lead_plan(raw, opinions=opinions, topology=topology)
+    assert len(validated["coordination_questions"]) == 13
+    assert len(validated["expected_information_boundaries"]) == 11
+    assert len(validated["stop_conditions"]) == 9
+
+    over = dict(raw)
+    over["coordination_questions"] = [
+        *raw["coordination_questions"],
+        "额外协调问题必须被容量合同拒绝而不能静默截断。",
+    ]
+    with pytest.raises(MultiAgentPreviewError) as exc:
+        validate_lead_plan(over, opinions=opinions, topology=topology)
+    assert exc.value.code == "multi_agent_lead_coordination_questions_invalid"
+
+    feedback = compile_tool_contract_failure_feedback(
+        tool=lead_plan_tool(topology=topology),
+        payload={
+            **raw,
+            "coordination_questions": over["coordination_questions"],
+            "expected_information_boundaries": [
+                *raw["expected_information_boundaries"],
+                "边界十二仍在拓扑容量内。",
+                "边界十三仍在拓扑容量内。",
+                "边界十四超过拓扑容量。",
+            ],
+            "stop_conditions": [
+                *raw["stop_conditions"],
+                "第十个停止条件超过拓扑容量。",
+            ],
+        },
+        failure_code="multi_agent_lead_coordination_questions_invalid",
+    )
+    max_item_fields = {
+        row["field"]
+        for row in feedback["violations"]
+        if row["rule"] == "maxItems"
+    }
+    assert max_item_fields == {
+        "coordination_questions",
+        "expected_information_boundaries",
+        "stop_conditions",
+    }
+
+
+def test_captured_lead_plan_checkpoint_preserves_failed_run_identity() -> None:
+    topology = _topology()
+    opinions = _opinions()
+    lead = _lead(opinions)
+    raw = dict(lead)
+    raw.pop("lead_plan_digest")
+    feedback = compile_tool_contract_failure_feedback(
+        tool=lead_plan_tool(topology=topology),
+        payload=raw,
+        failure_code="historical_validator_failure",
+    )
+    checkpoint = compile_lead_plan_checkpoint(
+        case_key="DELL",
+        node_id="AGENT::RESEARCH_LEAD::LEAD_PLAN",
+        source_run_id="R6",
+        source_authority_ref="authority.json",
+        source_authority_sha256="a" * 64,
+        source_public_result_ref="result.json",
+        source_public_result_sha256="b" * 64,
+        source_public_result_digest="c" * 64,
+        source_failure_code="historical_validator_failure",
+        selected_attempt_id="R6-SUBMISSION-ATTEMPT-02",
+        request_capture_ref="request.json",
+        request_capture_sha256="d" * 64,
+        request_digest="e" * 64,
+        response_capture_ref="response.json",
+        response_capture_sha256="f" * 64,
+        response_digest="1" * 64,
+        specialist_plan_checkpoint_ref="plans.json",
+        specialist_plan_checkpoint_sha256="2" * 64,
+        specialist_plan_checkpoint_digest="3" * 64,
+        lead_plan_payload=raw,
+        opinions=opinions,
+        topology=topology,
+        predecessor_contract_feedback=feedback,
+        created_at="2026-08-20T00:00:00+00:00",
+    )
+    trusted = validate_lead_plan_checkpoint(
+        checkpoint,
+        opinions=opinions,
+        topology=topology,
+    )
+    assert trusted["source_run_status_preserved_as_failure"] is True
+    assert trusted["new_model_calls"] == 0
+
+    mutated = dict(checkpoint)
+    mutated["checkpoint_digest"] = "0" * 64
+    with pytest.raises(MultiAgentPreviewError) as exc:
+        validate_lead_plan_checkpoint(
+            mutated,
+            opinions=opinions,
+            topology=topology,
+        )
+    assert exc.value.code == "multi_agent_lead_plan_checkpoint_digest_invalid"
 
 
 def test_role_opinions_compile_one_provider_neutral_planner_payload() -> None:
@@ -636,6 +765,7 @@ def test_model_message_compilers_keep_role_and_evaluator_boundaries() -> None:
     )
     assert len(lead_messages) == 2
     assert "specialist_opinions" in lead_messages[1]["content"]
+    assert "lead_plan_cardinality_policy" in lead_messages[1]["content"]
 
     context = _context("AGENT::DEMAND_QUALITY")
     workpaper = _workpaper("AGENT::DEMAND_QUALITY")

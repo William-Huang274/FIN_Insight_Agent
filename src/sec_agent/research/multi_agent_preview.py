@@ -39,6 +39,12 @@ ANALYSIS_FRAGMENT_CHECKPOINT_SCHEMA_VERSION = (
 ANALYSIS_COMPLETION_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_analysis_completion_checkpoint_v1_0"
 )
+LEAD_PLAN_CHECKPOINT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_lead_plan_checkpoint_v1_0"
+)
+LEAD_PLAN_CARDINALITY_POLICY_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_lead_plan_cardinality_policy_v1_0"
+)
 
 RESEARCH_LEAD_AGENT_ID = "AGENT::RESEARCH_LEAD"
 WRITER_AGENT_ID = "AGENT::WRITER"
@@ -123,6 +129,275 @@ def _agent_index(topology: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
         str(row["agent_id"]): deepcopy(dict(row))
         for row in topology["preview_agents"]
     }
+
+
+def compile_lead_plan_cardinality_policy(
+    *, topology: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Derive bounded Lead-plan capacities from the current role topology.
+
+    The Lead contract used to carry three unrelated literals in its JSON Schema
+    and a fourth shared literal in the local validator.  A topology change could
+    therefore make a natural plan invalid even when it covered the approved
+    research surface.  Capacities are now derived once and consumed by every
+    contract surface.
+    """
+
+    trusted = load_multi_agent_role_topology(topology)
+    facet_count = len(trusted["facet_catalog"])
+    tool_count = len(trusted["tools"])
+    required_slot_count = len(
+        {
+            str(row["slot_id"])
+            for row in trusted["facet_catalog"].values()
+        }
+    )
+    fields = {
+        # At most one primary cross-role coordination question per accepted
+        # facet.  Questions may cover several facets, so this is a ceiling, not
+        # a quota.
+        "coordination_questions": {
+            "minimum": 2,
+            "maximum": max(2, facet_count),
+            "maximum_chars": 500,
+            "basis": "one_primary_cross_role_question_per_topology_facet",
+        },
+        # Allow one explicit authority boundary per tool plus one
+        # evidence/content boundary per required Evidence Slot.
+        "expected_information_boundaries": {
+            "minimum": 2,
+            "maximum": max(2, tool_count + required_slot_count),
+            "maximum_chars": 500,
+            "basis": "tool_authorities_plus_required_evidence_slots",
+        },
+        # A bounded plan may state one closure condition per required slot and
+        # two case-wide controls: cross-role conflict closure and final judgment
+        # completeness.
+        "stop_conditions": {
+            "minimum": 2,
+            "maximum": max(2, required_slot_count + 2),
+            "maximum_chars": 500,
+            "basis": "required_evidence_slots_plus_two_case_closure_controls",
+        },
+    }
+    body = {
+        "schema_version": LEAD_PLAN_CARDINALITY_POLICY_SCHEMA_VERSION,
+        "facet_count": facet_count,
+        "tool_count": tool_count,
+        "required_slot_count": required_slot_count,
+        "fields": fields,
+    }
+    return {**body, "policy_digest": canonical_digest(body)}
+
+
+def compile_tool_contract_constraints(
+    tool: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Expose the actionable top-level part of a model-visible tool schema."""
+
+    function = dict(tool.get("function") or {})
+    parameters = dict(function.get("parameters") or {})
+    properties = dict(parameters.get("properties") or {})
+    supported = {
+        "type",
+        "enum",
+        "minItems",
+        "maxItems",
+        "uniqueItems",
+        "minLength",
+        "maxLength",
+    }
+    field_constraints: dict[str, Any] = {}
+    for field, raw in properties.items():
+        schema = dict(raw or {})
+        projected = {key: deepcopy(schema[key]) for key in supported if key in schema}
+        item_schema = dict(schema.get("items") or {})
+        item_projection = {
+            key: deepcopy(item_schema[key])
+            for key in supported
+            if key in item_schema
+        }
+        if item_projection:
+            projected["items"] = item_projection
+        field_constraints[str(field)] = projected
+    return {
+        "tool_name": str(function.get("name") or ""),
+        "additional_properties_allowed": parameters.get("additionalProperties")
+        is not False,
+        "required_fields": [str(row) for row in parameters.get("required") or ()],
+        "field_constraints": field_constraints,
+    }
+
+
+def compile_tool_contract_failure_feedback(
+    *,
+    tool: Mapping[str, Any],
+    payload: Mapping[str, Any] | None,
+    failure_code: str,
+) -> dict[str, Any]:
+    """Compile one deterministic, model-actionable contract failure receipt.
+
+    This is deliberately diagnostic rather than a replacement validator.  The
+    authoritative local validator still decides acceptance; this projection
+    tells the model *what* was structurally wrong instead of returning only an
+    opaque code.
+    """
+
+    contract = compile_tool_contract_constraints(tool)
+    value = dict(payload or {})
+    violations: list[dict[str, Any]] = []
+    required = set(contract["required_fields"])
+    for field in sorted(required - set(value)):
+        violations.append({"field": field, "rule": "required", "observed": "missing"})
+    if not contract["additional_properties_allowed"]:
+        for field in sorted(set(value) - set(contract["field_constraints"])):
+            violations.append(
+                {"field": field, "rule": "additionalProperties", "observed": "present"}
+            )
+    for field, constraints in contract["field_constraints"].items():
+        if field not in value:
+            continue
+        observed = value[field]
+        expected_type = constraints.get("type")
+        if expected_type == "array" and not isinstance(observed, list):
+            violations.append(
+                {
+                    "field": field,
+                    "rule": "type",
+                    "observed": type(observed).__name__,
+                    "allowed": "array",
+                }
+            )
+            continue
+        if expected_type == "string" and not isinstance(observed, str):
+            violations.append(
+                {
+                    "field": field,
+                    "rule": "type",
+                    "observed": type(observed).__name__,
+                    "allowed": "string",
+                }
+            )
+            continue
+        if "enum" in constraints and observed not in constraints["enum"]:
+            violations.append(
+                {
+                    "field": field,
+                    "rule": "enum",
+                    "observed": observed,
+                    "allowed": deepcopy(constraints["enum"]),
+                }
+            )
+        if isinstance(observed, list):
+            count = len(observed)
+            if "minItems" in constraints and count < int(constraints["minItems"]):
+                violations.append(
+                    {
+                        "field": field,
+                        "rule": "minItems",
+                        "observed": count,
+                        "allowed_minimum": int(constraints["minItems"]),
+                    }
+                )
+            if "maxItems" in constraints and count > int(constraints["maxItems"]):
+                violations.append(
+                    {
+                        "field": field,
+                        "rule": "maxItems",
+                        "observed": count,
+                        "allowed_maximum": int(constraints["maxItems"]),
+                    }
+                )
+            if constraints.get("uniqueItems") is True:
+                serialized = [
+                    json.dumps(row, ensure_ascii=False, sort_keys=True)
+                    for row in observed
+                ]
+                if len(serialized) != len(set(serialized)):
+                    violations.append(
+                        {
+                            "field": field,
+                            "rule": "uniqueItems",
+                            "observed": "duplicates_present",
+                        }
+                    )
+            item_constraints = dict(constraints.get("items") or {})
+            for index, item in enumerate(observed):
+                if "enum" in item_constraints and item not in item_constraints["enum"]:
+                    violations.append(
+                        {
+                            "field": field,
+                            "index": index,
+                            "rule": "item.enum",
+                            "observed": item,
+                        }
+                    )
+                if isinstance(item, str):
+                    length = len(item)
+                    if "minLength" in item_constraints and length < int(
+                        item_constraints["minLength"]
+                    ):
+                        violations.append(
+                            {
+                                "field": field,
+                                "index": index,
+                                "rule": "item.minLength",
+                                "observed": length,
+                                "allowed_minimum": int(item_constraints["minLength"]),
+                            }
+                        )
+                    if "maxLength" in item_constraints and length > int(
+                        item_constraints["maxLength"]
+                    ):
+                        violations.append(
+                            {
+                                "field": field,
+                                "index": index,
+                                "rule": "item.maxLength",
+                                "observed": length,
+                                "allowed_maximum": int(item_constraints["maxLength"]),
+                            }
+                        )
+        elif isinstance(observed, str):
+            length = len(observed)
+            if "minLength" in constraints and length < int(constraints["minLength"]):
+                violations.append(
+                    {
+                        "field": field,
+                        "rule": "minLength",
+                        "observed": length,
+                        "allowed_minimum": int(constraints["minLength"]),
+                    }
+                )
+            if "maxLength" in constraints and length > int(constraints["maxLength"]):
+                violations.append(
+                    {
+                        "field": field,
+                        "rule": "maxLength",
+                        "observed": length,
+                        "allowed_maximum": int(constraints["maxLength"]),
+                    }
+                )
+    if not violations:
+        violations.append(
+            {
+                "field": "$local_validator",
+                "rule": "semantic_or_cross_field_validation",
+                "observed": failure_code,
+            }
+        )
+    body = {
+        "schema_version": "fin_ia_tool_contract_failure_feedback_v1_0",
+        "tool_name": contract["tool_name"],
+        "failure_code": str(failure_code),
+        "violations": violations,
+        "correction_rule": (
+            "Correct every listed violation in one submission. Preserve the completed "
+            "analysis and authority; merge or select distinct items when a bounded "
+            "array is over capacity, and do not add facts."
+        ),
+    }
+    return {**body, "feedback_digest": canonical_digest(body)}
 
 
 def load_multi_agent_role_topology(payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -480,6 +755,7 @@ def validate_specialist_plan_opinion(
 def lead_plan_tool(*, topology: Mapping[str, Any]) -> dict[str, Any]:
     trusted = load_multi_agent_role_topology(topology)
     allowed_facets = list(trusted["facet_catalog"])
+    cardinality = compile_lead_plan_cardinality_policy(topology=trusted)["fields"]
     return {
         "type": "function",
         "function": {
@@ -524,24 +800,46 @@ def lead_plan_tool(*, topology: Mapping[str, Any]) -> dict[str, Any]:
                     },
                     "coordination_questions": {
                         "type": "array",
-                        "minItems": 2,
-                        "maxItems": 8,
+                        "minItems": cardinality["coordination_questions"]["minimum"],
+                        "maxItems": cardinality["coordination_questions"]["maximum"],
                         "uniqueItems": True,
-                        "items": {"type": "string", "minLength": 8, "maxLength": 500},
+                        "items": {
+                            "type": "string",
+                            "minLength": 8,
+                            "maxLength": cardinality["coordination_questions"][
+                                "maximum_chars"
+                            ],
+                        },
                     },
                     "expected_information_boundaries": {
                         "type": "array",
-                        "minItems": 2,
-                        "maxItems": 10,
+                        "minItems": cardinality[
+                            "expected_information_boundaries"
+                        ]["minimum"],
+                        "maxItems": cardinality[
+                            "expected_information_boundaries"
+                        ]["maximum"],
                         "uniqueItems": True,
-                        "items": {"type": "string", "minLength": 8, "maxLength": 500},
+                        "items": {
+                            "type": "string",
+                            "minLength": 8,
+                            "maxLength": cardinality[
+                                "expected_information_boundaries"
+                            ]["maximum_chars"],
+                        },
                     },
                     "stop_conditions": {
                         "type": "array",
-                        "minItems": 2,
-                        "maxItems": 8,
+                        "minItems": cardinality["stop_conditions"]["minimum"],
+                        "maxItems": cardinality["stop_conditions"]["maximum"],
                         "uniqueItems": True,
-                        "items": {"type": "string", "minLength": 8, "maxLength": 500},
+                        "items": {
+                            "type": "string",
+                            "minLength": 8,
+                            "maxLength": cardinality["stop_conditions"][
+                                "maximum_chars"
+                            ],
+                        },
                     },
                 },
             },
@@ -564,6 +862,9 @@ def compile_lead_plan_messages(
         "specialist_opinions": [deepcopy(dict(row)) for row in opinions],
         "facet_catalog": trusted["facet_catalog"],
         "available_tools": trusted["tools"],
+        "lead_plan_cardinality_policy": compile_lead_plan_cardinality_policy(
+            topology=trusted
+        ),
     }
     return (
         {
@@ -674,6 +975,7 @@ def compile_analyzed_node_submission_messages(
     tool_name: str,
     required_outputs: Sequence[str],
     analysis_messages_digest: str | None = None,
+    tool_contract_constraints: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, str], ...]:
     draft = str(analysis_draft or "").strip()
     _require(
@@ -713,6 +1015,9 @@ def compile_analyzed_node_submission_messages(
                     "analysis_draft": draft,
                     "analysis_messages_digest": context_digest,
                     "required_output_fields": requirements,
+                    "tool_contract_constraints": deepcopy(
+                        dict(tool_contract_constraints or {})
+                    ),
                     "rules": [
                         "use only identifiers and claims present in the draft",
                         "emit one tool call and no free prose",
@@ -1638,6 +1943,7 @@ def validate_lead_plan(
     topology: Mapping[str, Any],
 ) -> dict[str, Any]:
     trusted = load_multi_agent_role_topology(topology)
+    cardinality = compile_lead_plan_cardinality_policy(topology=trusted)["fields"]
     expected = {
         "schema_version",
         "lead_agent_id",
@@ -1716,15 +2022,193 @@ def validate_lead_plan(
         value[field] = _strings(
             value[field],
             f"multi_agent_lead_{field}_invalid",
-            minimum=2,
-            maximum=10,
-            maximum_chars=500,
+            minimum=int(cardinality[field]["minimum"]),
+            maximum=int(cardinality[field]["maximum"]),
+            maximum_chars=int(cardinality[field]["maximum_chars"]),
         )
     value["accepted_agent_ids"] = accepted
     value["ordered_agent_ids"] = ordered
     value["accepted_facets"] = accepted_facets
     value["lead_plan_digest"] = canonical_digest(value)
     return value
+
+
+def compile_lead_plan_checkpoint(
+    *,
+    case_key: str,
+    node_id: str,
+    source_run_id: str,
+    source_authority_ref: str,
+    source_authority_sha256: str,
+    source_public_result_ref: str,
+    source_public_result_sha256: str,
+    source_public_result_digest: str,
+    source_failure_code: str,
+    selected_attempt_id: str,
+    request_capture_ref: str,
+    request_capture_sha256: str,
+    request_digest: str,
+    response_capture_ref: str,
+    response_capture_sha256: str,
+    response_digest: str,
+    specialist_plan_checkpoint_ref: str,
+    specialist_plan_checkpoint_sha256: str,
+    specialist_plan_checkpoint_digest: str,
+    lead_plan_payload: Mapping[str, Any],
+    opinions: Sequence[Mapping[str, Any]],
+    topology: Mapping[str, Any],
+    predecessor_contract_feedback: Mapping[str, Any],
+    created_at: str,
+) -> dict[str, Any]:
+    """Bind one captured, newly revalidated Lead submission for successor use.
+
+    The predecessor run remains a terminal failure.  This checkpoint is a new
+    local artifact proving that the captured payload satisfies the corrected,
+    topology-derived contract without a model or network call.
+    """
+
+    trusted_topology = load_multi_agent_role_topology(topology)
+    validated = validate_lead_plan(
+        lead_plan_payload,
+        opinions=opinions,
+        topology=trusted_topology,
+    )
+    policy = compile_lead_plan_cardinality_policy(topology=trusted_topology)
+    hashes = (
+        source_authority_sha256,
+        source_public_result_sha256,
+        source_public_result_digest,
+        request_capture_sha256,
+        request_digest,
+        response_capture_sha256,
+        response_digest,
+        specialist_plan_checkpoint_sha256,
+        specialist_plan_checkpoint_digest,
+    )
+    _require(
+        case_key == "DELL"
+        and node_id == "AGENT::RESEARCH_LEAD::LEAD_PLAN"
+        and all(
+            len(value) == 64
+            and all(character in "0123456789abcdef" for character in value)
+            for value in hashes
+        )
+        and bool(source_run_id)
+        and bool(source_failure_code)
+        and bool(selected_attempt_id)
+        and bool(created_at),
+        "multi_agent_lead_plan_checkpoint_identity_invalid",
+    )
+    body = {
+        "schema_version": LEAD_PLAN_CHECKPOINT_SCHEMA_VERSION,
+        "case_key": case_key,
+        "node_id": node_id,
+        "source_run_id": source_run_id,
+        "source_authority_ref": source_authority_ref,
+        "source_authority_sha256": source_authority_sha256,
+        "source_public_result_ref": source_public_result_ref,
+        "source_public_result_sha256": source_public_result_sha256,
+        "source_public_result_digest": source_public_result_digest,
+        "source_failure_code": source_failure_code,
+        "source_run_status_preserved_as_failure": True,
+        "selected_attempt_id": selected_attempt_id,
+        "request_capture_ref": request_capture_ref,
+        "request_capture_sha256": request_capture_sha256,
+        "request_digest": request_digest,
+        "response_capture_ref": response_capture_ref,
+        "response_capture_sha256": response_capture_sha256,
+        "response_digest": response_digest,
+        "specialist_plan_checkpoint_ref": specialist_plan_checkpoint_ref,
+        "specialist_plan_checkpoint_sha256": specialist_plan_checkpoint_sha256,
+        "specialist_plan_checkpoint_digest": specialist_plan_checkpoint_digest,
+        "cardinality_policy": policy,
+        "predecessor_contract_feedback": deepcopy(
+            dict(predecessor_contract_feedback)
+        ),
+        "lead_plan": validated,
+        "new_model_calls": 0,
+        "new_network_calls": 0,
+        "new_candidate_promotions": 0,
+        "created_at": created_at,
+    }
+    return {**body, "checkpoint_digest": canonical_digest(body)}
+
+
+def validate_lead_plan_checkpoint(
+    payload: Mapping[str, Any],
+    *,
+    opinions: Sequence[Mapping[str, Any]],
+    topology: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected = {
+        "schema_version",
+        "case_key",
+        "node_id",
+        "source_run_id",
+        "source_authority_ref",
+        "source_authority_sha256",
+        "source_public_result_ref",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_failure_code",
+        "source_run_status_preserved_as_failure",
+        "selected_attempt_id",
+        "request_capture_ref",
+        "request_capture_sha256",
+        "request_digest",
+        "response_capture_ref",
+        "response_capture_sha256",
+        "response_digest",
+        "specialist_plan_checkpoint_ref",
+        "specialist_plan_checkpoint_sha256",
+        "specialist_plan_checkpoint_digest",
+        "cardinality_policy",
+        "predecessor_contract_feedback",
+        "lead_plan",
+        "new_model_calls",
+        "new_network_calls",
+        "new_candidate_promotions",
+        "created_at",
+        "checkpoint_digest",
+    }
+    value = deepcopy(dict(payload))
+    _require(
+        set(value) == expected
+        and value.get("schema_version") == LEAD_PLAN_CHECKPOINT_SCHEMA_VERSION
+        and value.get("case_key") == "DELL"
+        and value.get("node_id") == "AGENT::RESEARCH_LEAD::LEAD_PLAN"
+        and value.get("source_run_status_preserved_as_failure") is True
+        and value.get("new_model_calls") == 0
+        and value.get("new_network_calls") == 0
+        and value.get("new_candidate_promotions") == 0,
+        "multi_agent_lead_plan_checkpoint_identity_invalid",
+    )
+    trusted_topology = load_multi_agent_role_topology(topology)
+    expected_policy = compile_lead_plan_cardinality_policy(
+        topology=trusted_topology
+    )
+    _require(
+        value.get("cardinality_policy") == expected_policy,
+        "multi_agent_lead_plan_checkpoint_policy_drift",
+    )
+    preserved_lead = deepcopy(dict(value["lead_plan"]))
+    preserved_digest = preserved_lead.pop("lead_plan_digest", "")
+    lead = validate_lead_plan(
+        preserved_lead,
+        opinions=opinions,
+        topology=trusted_topology,
+    )
+    _require(
+        preserved_digest == lead["lead_plan_digest"],
+        "multi_agent_lead_plan_checkpoint_plan_digest_invalid",
+    )
+    digest = str(value.pop("checkpoint_digest") or "")
+    _require(
+        digest == canonical_digest(value),
+        "multi_agent_lead_plan_checkpoint_digest_invalid",
+    )
+    value["lead_plan"] = lead
+    return {**value, "checkpoint_digest": digest}
 
 
 def compile_planner_payload_from_role_opinions(

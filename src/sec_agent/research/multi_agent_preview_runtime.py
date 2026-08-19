@@ -53,6 +53,8 @@ from .multi_agent_preview import (
     compile_analysis_continuation_messages,
     compile_analyzed_node_messages,
     compile_analyzed_node_submission_messages,
+    compile_tool_contract_constraints,
+    compile_tool_contract_failure_feedback,
     compile_planner_payload_from_role_opinions,
     compile_specialist_context,
     compile_token_budget_basis,
@@ -278,6 +280,7 @@ def _execute_preview_submission(
             analysis_messages_digest=analysis_messages_digest,
             tool_name=tool_name,
             required_outputs=required_outputs,
+            tool_contract_constraints=compile_tool_contract_constraints(tool),
         )
     )
     submission_basis = compile_token_budget_basis(
@@ -332,6 +335,7 @@ def _execute_preview_submission(
                 f"analysis-draft://{analysis_draft_digest}",
             ),
         )
+        raw_payload: Mapping[str, Any] | None = None
         try:
             step = submission_transport(
                 profile=node_submission_profile,
@@ -400,8 +404,9 @@ def _execute_preview_submission(
                 raise MultiAgentPreviewRuntimeError(
                     "multi_agent_preview_tool_name_mismatch"
                 )
-            raw_payload = json.loads(str(function.get("arguments") or ""))
-            if not isinstance(raw_payload, Mapping):
+            parsed_payload = json.loads(str(function.get("arguments") or ""))
+            raw_payload = parsed_payload if isinstance(parsed_payload, Mapping) else None
+            if raw_payload is None:
                 raise MultiAgentPreviewRuntimeError(
                     "multi_agent_preview_tool_arguments_not_object"
                 )
@@ -410,21 +415,25 @@ def _execute_preview_submission(
             last_code = str(
                 getattr(exc, "code", "") or str(exc) or type(exc).__name__
             )
+            feedback = compile_tool_contract_failure_feedback(
+                tool=tool,
+                payload=raw_payload,
+                failure_code=last_code,
+            )
             attempts.append(
                 {
                     **step_dict,
                     "attempt_id": attempt_id,
                     "status": "provider_completed_local_contract_failed",
                     "failure_code": last_code,
+                    "contract_feedback": feedback,
                 }
             )
             if index >= maximum_attempts:
                 raise MultiAgentPreviewRuntimeError(
                     last_code, attempts=attempts
                 ) from exc
-            feedback_ref = "contract-feedback://" + canonical_digest(
-                {"node_id": node_id, "code": last_code, "attempt_id": attempt_id}
-            )
+            feedback_ref = "contract-feedback://" + feedback["feedback_digest"]
             session_state.append(
                 event_type="feedback_issued",
                 actor_id="HARNESS::CONTRACT_VALIDATOR",
@@ -434,9 +443,16 @@ def _execute_preview_submission(
                 {
                     "role": "user",
                     "content": (
-                        "The preserved contract submission was rejected with code "
-                        f"{last_code}. Do not change the analysis or add facts. "
-                        f"Correct only the mapping and issue exactly one {tool_name} call."
+                        "The preserved contract submission was rejected by the local "
+                        "validator. Do not change the analysis or add facts. Correct "
+                        "all listed violations in one mapping and issue exactly one "
+                        f"{tool_name} call. ACTIONABLE_CONTRACT_FEEDBACK="
+                        + json.dumps(
+                            feedback,
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        )
                     ),
                 }
             )
@@ -538,6 +554,7 @@ def execute_validated_preview_node(
                 f"token-budget://{basis['token_budget_basis_digest']}",
             ),
         )
+        raw_payload: Mapping[str, Any] | None = None
         try:
             step = transport(
                 profile=node_profile,
@@ -605,27 +622,34 @@ def execute_validated_preview_node(
                 raise MultiAgentPreviewRuntimeError(
                     "multi_agent_preview_tool_name_mismatch"
                 )
-            raw_payload = json.loads(str(function.get("arguments") or ""))
-            if not isinstance(raw_payload, Mapping):
+            parsed_payload = json.loads(str(function.get("arguments") or ""))
+            raw_payload = parsed_payload if isinstance(parsed_payload, Mapping) else None
+            if raw_payload is None:
                 raise MultiAgentPreviewRuntimeError(
                     "multi_agent_preview_tool_arguments_not_object"
                 )
             validated = deepcopy(dict(validator(raw_payload)))
         except (json.JSONDecodeError, KeyError, TypeError, ValueError, RuntimeError) as exc:
             last_code = str(getattr(exc, "code", "") or str(exc) or type(exc).__name__)
+            feedback = compile_tool_contract_failure_feedback(
+                tool=tool,
+                payload=raw_payload,
+                failure_code=last_code,
+            )
             attempts.append(
                 {
                     **step_dict,
                     "attempt_id": attempt_id,
                     "status": "provider_completed_local_contract_failed",
                     "failure_code": last_code,
+                    "contract_feedback": feedback,
                 }
             )
             if index >= maximum_attempts:
                 raise MultiAgentPreviewRuntimeError(
                     last_code, attempts=attempts
                 ) from exc
-            feedback_ref = f"contract-feedback://{canonical_digest({'node_id': node_id, 'code': last_code, 'attempt_id': attempt_id})}"
+            feedback_ref = "contract-feedback://" + feedback["feedback_digest"]
             session_state.append(
                 event_type="feedback_issued",
                 actor_id="HARNESS::CONTRACT_VALIDATOR",
@@ -636,9 +660,15 @@ def execute_validated_preview_node(
                     "role": "user",
                     "content": (
                         "The prior output was preserved but rejected by the local "
-                        f"contract validator with code {last_code}. Do not change the "
-                        "research authority or add facts. Correct only the contract "
-                        f"submission and issue exactly one {tool_name} call."
+                        "contract validator. Do not change the research authority or "
+                        "add facts. Correct all listed violations and issue exactly one "
+                        f"{tool_name} call. ACTIONABLE_CONTRACT_FEEDBACK="
+                        + json.dumps(
+                            feedback,
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        )
                     ),
                 }
             )

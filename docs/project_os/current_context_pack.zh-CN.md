@@ -877,3 +877,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - successor Runtime 只记录一次本地 `analysis_checkpoint_reuse`，然后执行严格 Lead submission；不得重新调用 Lead analysis／continuation。真实 capture replay、fake submission 及七类 mutation 通过，0 模型、0 网络、0 付费、0 Candidate promotion。
 - 当前只允许在 clean／synced 提交和 Project OS preflight 后签发一个 R6 submission successor。R6 即使通过，也只继续当前 DELL bounded Preview；S1、S3、泛化、qualified-human、Workbench 发布和 release 仍为 false。详细记录见 `docs/worklog/fin_0_1_3_s3/089_multi_agent_preview_R6_completed_analysis_submission_successor_zero_call.md`。
 - 本轮复证为定向 Preview 22、Project OS 42、全仓 855 tests 通过；compileall、active baseline `184 Python／8 frontend／27 Runtime／0 forbidden`、7,390-file secret scan 与 diff check 通过。
+
+## 2026-08-20 S3 Multi-Agent Preview R6 Lead 合同对齐
+
+- R6 复用六份 Specialist 计划和完整 Lead 分析，仅执行 strict submission。两次 DeepSeek 请求均正常完成唯一 Tool Call，但旧 Schema 上限 8／10／8、本地 Validator 上限 10／10／10，且反馈只有错误码，导致 13／11／9 项计划被重复误拒绝。R6 保持 immutable terminal failure。
+- 13 个协调问题逐项对应当前 13 facet；11 条边界覆盖工具权限和金融事实边界；9 条停止条件覆盖 7 required slot 与两个全案闭环。不得为通过而静默截断。
+- provider-neutral 容量现从 13 facet、7 required slot、6 tool authority 派生为 13／13／9，同源生成 Schema、Validator、分析／submission constraints；合同失败反馈一次给出全部字段、实际值和允许范围。
+- R6 Attempt 02 原始 payload 在新合同下零调用验证并形成 `R6_lead_plan_checkpoint_v1_0`；Attempt 01 因停止条件内仍写“eleven”未被选择。三字段 max+1、duplicate、unknown facet 和 checkpoint digest mutation 均 fail closed。
+- 当前只允许干净提交后签发“Lead checkpoint 之后”的 DELL bounded Preview successor。六份 Specialist plan、Lead analysis 和 Lead submission 均不得重跑；S1／S3／泛化／qualified-human／Workbench／release 继续为 false。详见 `docs/worklog/fin_0_1_3_s3/090_multi_agent_preview_R6_lead_contract_alignment_and_checkpoint.md`。

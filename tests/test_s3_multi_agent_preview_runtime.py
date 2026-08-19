@@ -5,9 +5,10 @@ import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from sec_agent.providers import AgentTransportProfile
+from sec_agent.providers import AgentTransportProfile, ChatCompletionProfile
 from sec_agent.research.multi_agent_preview_runtime import (
     compile_cross_role_feedback_receipt,
+    execute_analyzed_preview_node,
     execute_validated_preview_node,
     start_preview_agent_session,
 )
@@ -38,6 +39,27 @@ class _FakeStep:
         return {"role": "assistant", "content": "", "tool_calls": list(self.tool_calls)}
 
 
+@dataclass(frozen=True)
+class _FakeAnalysis:
+    content: str
+    finish_reason: str = "stop"
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "status": "completed_exact_once",
+            "provider_id": "deepseek",
+            "model": "deepseek-v4-pro",
+            "content": self.content,
+            "finish_reason": self.finish_reason,
+            "usage": {"prompt_tokens": 100, "completion_tokens": 200},
+            "request_capture_ref": "capture://analysis-request",
+            "response_capture_ref": "capture://analysis-response",
+            "request_digest": "3" * 64,
+            "response_digest": "4" * 64,
+            "private_reasoning_fields_redacted": 1,
+        }
+
+
 def _profile() -> AgentTransportProfile:
     return AgentTransportProfile(
         provider_id="deepseek",
@@ -53,6 +75,25 @@ def _profile() -> AgentTransportProfile:
             "stream": False,
             "thinking": {"type": "enabled"},
             "reasoning_effort": "max",
+        },
+        authority={},
+    )
+
+
+def _chat_profile(*, thinking: bool) -> ChatCompletionProfile:
+    return ChatCompletionProfile(
+        provider_id="deepseek",
+        base_url="https://api.deepseek.com",
+        endpoint="/chat/completions",
+        model="deepseek-v4-pro",
+        api_key_env="DEEPSEEK_API_KEY",
+        timeout_seconds=300,
+        maximum_response_bytes=2_097_152,
+        request_defaults={
+            "max_tokens": 8000 if thinking else 2000,
+            "stream": False,
+            "thinking": {"type": "enabled" if thinking else "disabled"},
+            **({"reasoning_effort": "max"} if thinking else {}),
         },
         authority={},
     )
@@ -153,3 +194,144 @@ def test_cross_role_challenge_becomes_typed_agent_feedback() -> None:
     assert receipt["owning_stage"] == "S3"
     assert receipt["target_node_id"] == "AGENT::VALUE_CAPTURE"
     assert receipt["feedback_digest"]
+
+
+def test_analysis_and_submission_are_separate_and_submission_can_repair(
+    tmp_path: Path,
+) -> None:
+    state = start_preview_agent_session(
+        agent_id="AGENT::RESEARCH_LEAD",
+        run_id="PREVIEW-R4",
+        objective_ref="objective://dell",
+        active_plan_ref="plan://pending",
+    )
+    analysis_calls = 0
+    submission_calls = 0
+    submission_messages: list[list[Mapping[str, Any]]] = []
+
+    def analyze(**_kwargs: Any) -> _FakeAnalysis:
+        nonlocal analysis_calls
+        analysis_calls += 1
+        return _FakeAnalysis(
+            "Complete draft: value=accepted. Preserve exact role and stop condition."
+        )
+
+    def submit(**kwargs: Any) -> _FakeStep:
+        nonlocal submission_calls
+        submission_calls += 1
+        submission_messages.append(list(kwargs["messages"]))
+        value = "bad" if submission_calls == 1 else "accepted"
+        return _FakeStep(
+            tool_calls=(
+                {
+                    "id": f"call_{submission_calls}",
+                    "type": "function",
+                    "function": {
+                        "name": "submit_preview",
+                        "arguments": json.dumps({"value": value}),
+                    },
+                },
+            )
+        )
+
+    execution = execute_analyzed_preview_node(
+        analysis_profile=_chat_profile(thinking=True),
+        submission_profile=_chat_profile(thinking=False),
+        session_state=state,
+        messages=(
+            {
+                "role": "system",
+                "content": "Research the role and submit exactly one tool call.",
+            },
+            {
+                "role": "user",
+                "content": "ORIGINAL_PRIVATE_TASK_CONTEXT",
+            },
+        ),
+        tool=_tool(),
+        validator=lambda payload: (
+            dict(payload)
+            if payload.get("value") == "accepted"
+            else (_ for _ in ()).throw(ValueError("preview_value_invalid"))
+        ),
+        capture_root=tmp_path,
+        run_id="PREVIEW-R4",
+        node_id="RESEARCH-LEAD-PLAN",
+        purpose="形成研究负责人共同计划并严格保持六角色边界与停止条件。",
+        input_reference_count=1,
+        required_outputs=("value",),
+        schema_burden="one strict preview tool",
+        materiality_quality_risk="invalid Lead plan would corrupt all downstream workpapers",
+        comparable_run_evidence=("R3 Lead capacity failure",),
+        analysis_output_token_ceiling=8000,
+        submission_output_token_ceiling=2000,
+        analysis_transport=analyze,
+        submission_transport=submit,
+    )
+    assert execution.validated_payload == {"value": "accepted"}
+    assert analysis_calls == 1
+    assert submission_calls == 2
+    assert execution.successor_attempt_count == 1
+    assert [row["phase"] for row in execution.attempts] == [
+        "analysis",
+        "submission",
+        "submission",
+    ]
+    assert set(execution.token_budget_basis) == {"analysis", "submission"}
+    assert execution.token_budget_basis["analysis"]["output_token_ceiling"] == 8000
+    assert execution.token_budget_basis["submission"]["output_token_ceiling"] == 2000
+    assert "ORIGINAL_PRIVATE_TASK_CONTEXT" not in json.dumps(
+        submission_messages[0], ensure_ascii=False
+    )
+    assert "Complete draft" in json.dumps(
+        submission_messages[0], ensure_ascii=False
+    )
+
+
+def test_analysis_length_finish_fails_before_submission(tmp_path: Path) -> None:
+    state = start_preview_agent_session(
+        agent_id="AGENT::RESEARCH_LEAD",
+        run_id="PREVIEW-R4-LENGTH",
+        objective_ref="objective://dell",
+        active_plan_ref="plan://pending",
+    )
+    submission_calls = 0
+
+    def analyze(**_kwargs: Any) -> _FakeAnalysis:
+        return _FakeAnalysis("partial but non-empty draft", finish_reason="length")
+
+    def submit(**_kwargs: Any) -> _FakeStep:
+        nonlocal submission_calls
+        submission_calls += 1
+        return _FakeStep(tool_calls=())
+
+    try:
+        execute_analyzed_preview_node(
+            analysis_profile=_chat_profile(thinking=True),
+            submission_profile=_chat_profile(thinking=False),
+            session_state=state,
+            messages=(
+                {"role": "system", "content": "Analyze and submit."},
+                {"role": "user", "content": "Current task authority."},
+            ),
+            tool=_tool(),
+            validator=dict,
+            capture_root=tmp_path,
+            run_id="PREVIEW-R4-LENGTH",
+            node_id="RESEARCH-LEAD-PLAN",
+            purpose="形成研究负责人共同计划并检查截断是否严格失败关闭。",
+            input_reference_count=0,
+            required_outputs=("value",),
+            schema_burden="one strict preview tool",
+            materiality_quality_risk="partial analysis cannot become a Lead plan",
+            comparable_run_evidence=("R3 Lead capacity failure",),
+            analysis_output_token_ceiling=8000,
+            submission_output_token_ceiling=2000,
+            analysis_transport=analyze,
+            submission_transport=submit,
+        )
+    except Exception as exc:
+        assert "analysis_finish_reason_invalid:length" in str(exc)
+    else:
+        raise AssertionError("length-truncated analysis must fail closed")
+    assert submission_calls == 0

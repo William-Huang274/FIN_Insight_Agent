@@ -19,6 +19,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_lead_coordination_messages,
     compile_planner_payload_from_role_opinions,
     compile_report_messages,
+    compile_specialist_plan_checkpoint,
     compile_specialist_plan_messages,
     compile_specialist_workpaper_messages,
     compile_token_budget_basis,
@@ -35,8 +36,10 @@ from sec_agent.research.multi_agent_preview import (
     validate_lead_coordination_decision,
     validate_report_draft,
     validate_specialist_plan_opinion,
+    validate_specialist_plan_checkpoint,
     validate_specialist_workpaper,
 )
+from sec_agent.research.reviewed_evidence_pack import canonical_digest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -193,7 +196,13 @@ def test_topology_distinguishes_agents_tools_evaluators_and_labels() -> None:
         "valuation_specialist",
     }
     assert specialist_plan_tool(topology, SPECIALIST_AGENT_IDS[0])["function"]["name"] == "submit_specialist_plan_opinion"
-    assert lead_plan_tool()["function"]["name"] == "submit_lead_plan"
+    lead_tool = lead_plan_tool(topology=topology)
+    assert lead_tool["function"]["name"] == "submit_lead_plan"
+    assert (
+        lead_tool["function"]["parameters"]["properties"]
+        ["accepted_facets"]["maxItems"]
+        == len(topology["facet_catalog"])
+    )
     assert evaluation_tool()["function"]["name"] == "submit_multi_agent_evaluation"
 
 
@@ -422,3 +431,71 @@ def test_research_lead_selects_bounded_cross_role_repairs() -> None:
         challenge_catalog=catalog,
     )
     assert decision["accepted_challenge_ids"] == [catalog[0]["challenge_id"]]
+
+
+def test_failed_preview_can_checkpoint_only_valid_specialist_plans() -> None:
+    opinions = _opinions()
+    nodes = []
+    for index, (agent_id, opinion) in enumerate(
+        zip(SPECIALIST_AGENT_IDS, opinions, strict=True), start=1
+    ):
+        attempts = [
+            {
+                "attempt_id": f"R3-{index:02d}",
+                "status": "contract_valid",
+                "request_digest": f"{index:x}" * 64,
+                "response_digest": f"{index + 6:x}" * 64,
+                "validated_payload_digest": canonical_digest(opinion),
+            }
+        ]
+        nodes.append(
+            {
+                "node_id": f"{agent_id}::PLAN",
+                "agent_id": agent_id,
+                "validated_payload": opinion,
+                "attempts": attempts,
+            }
+        )
+    terminal_body = {
+        "status": "multi_agent_preview_terminal_failure_preserved",
+        "failure_code": "model_gateway_reasoning_budget_exhausted",
+        "node_executions": nodes,
+        "terminal_node_attempts": [
+            {"failure_code": "model_gateway_reasoning_budget_exhausted"},
+            {"failure_code": "model_gateway_reasoning_budget_exhausted"},
+        ],
+        "execution": {
+            "model_nodes_started": 7,
+            "provider_attempts_preserved": 11,
+            "external_source_network_calls": 0,
+            "candidate_promotions": 0,
+        },
+    }
+    terminal = {
+        **terminal_body,
+        "full_result_digest": canonical_digest(terminal_body),
+    }
+    checkpoint = compile_specialist_plan_checkpoint(
+        topology=_topology(),
+        predecessor_authority_ref="configs/R3-authority.json",
+        predecessor_authority_sha256="a" * 64,
+        predecessor_result_ref="configs/R3-result.json",
+        predecessor_result_sha256="b" * 64,
+        predecessor_result_digest="c" * 64,
+        terminal_failure=terminal,
+    )
+    validated = validate_specialist_plan_checkpoint(
+        checkpoint, topology=_topology()
+    )
+    assert validated["reused_specialist_plan_count"] == 6
+    assert [row["agent_id"] for row in validated["specialist_plans"]] == list(
+        SPECIALIST_AGENT_IDS
+    )
+    assert validated["new_model_calls"] == 0
+
+    bad = json.loads(json.dumps(checkpoint))
+    bad["specialist_plans"][0]["requested_atoms"][0]["facet_id"] = (
+        "reported_results"
+    )
+    with pytest.raises(MultiAgentPreviewError):
+        validate_specialist_plan_checkpoint(bad, topology=_topology())

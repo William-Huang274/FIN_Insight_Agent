@@ -10,6 +10,7 @@ import pytest
 from sec_agent.project_os_preflight import (
     FIXED_PACK_SCOPE,
     FRAGMENT_VALIDATION_REPAIR_SCOPE,
+    MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
     _validate_dynamic_five_cell_claim_surface_successor_decision,
@@ -19,6 +20,7 @@ from sec_agent.project_os_preflight import (
     _validate_fragment_validation_repair_decision,
     _validate_failed_fragment_submission_successor_decision,
     build_preflight,
+    validate_multi_agent_preview_plan_successor_scope_decision,
     validate_multi_agent_preview_scope_decision,
 )
 
@@ -181,6 +183,11 @@ MULTI_AGENT_PREVIEW_SUCCESSOR_SCOPE_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
     "scope_decision_v1_1.json"
 )
+MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
+    "scope_decision_v1_2.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -255,6 +262,21 @@ def _dynamic_five_cell_fixture_root(tmp_path: Path) -> Path:
     return tmp_path
 
 
+def _multi_agent_plan_successor_fixture_root(tmp_path: Path) -> Path:
+    for ref in REQUIRED_PROJECT_OS_REFS:
+        _copy_ref(tmp_path, ref)
+    _copy_ref(tmp_path, MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE_DECISION_REF)
+    decision = json.loads(
+        (
+            ROOT / MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    for field, value in decision.items():
+        if field.endswith("_ref") and isinstance(value, str):
+            _copy_ref(tmp_path, value)
+    return tmp_path
+
+
 def test_current_fixed_pack_decision_passes_without_network_or_secret_read() -> None:
     result = build_preflight(
         root=ROOT,
@@ -275,30 +297,28 @@ def test_current_fixed_pack_decision_passes_without_network_or_secret_read() -> 
     )
 
 
-def test_multi_agent_preview_scope_decision_passes_without_calls_or_stage_claims() -> None:
-    result = build_preflight(
-        root=ROOT,
-        decision_ref=MULTI_AGENT_PREVIEW_SCOPE_DECISION_REF,
-        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
-        check_repository=False,
+def test_historical_multi_agent_preview_scope_remains_auditable_but_not_current() -> None:
+    decision = json.loads(
+        (ROOT / MULTI_AGENT_PREVIEW_SCOPE_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
     )
-
-    assert result["status"] == "pass_current_decision_bound_preflight"
-    assert result["run_scope_id"] == MULTI_AGENT_PREVIEW_SCOPE
-    assert result["case_key"] == "DELL"
-    assert result["cell_id"] == "MULTI_AGENT_PREVIEW"
-    assert result["decision_projection"]["multi_agent_preview"] is True
-    assert result["decision_projection"]["specialist_agent_count"] == 6
-    assert result["network_calls"] == 0
-    assert result["model_calls"] == 0
-    assert result["provider_calls"] == 0
-    assert result["credential_value_persisted"] is False
-    assert (
-        "RC-AR-002-old-five-cell-workflow-lacked-independent-role-"
-        "coordination-and-feedback-loop"
-        in result["scope_projection"]["explicit_allow_issue_ids"]
+    projection = validate_multi_agent_preview_scope_decision(
+        root=ROOT, decision=decision
     )
-    assert "permits no external source network access" in result["known_boundary"]
+    assert projection["run_scope_id"] == MULTI_AGENT_PREVIEW_SCOPE
+    assert projection["multi_agent_preview"] is True
+    assert projection["specialist_agent_count"] == 6
+    with pytest.raises(
+        ValueError,
+        match="project_os_multi_agent_preview_scope_allowance_missing",
+    ):
+        build_preflight(
+            root=ROOT,
+            decision_ref=MULTI_AGENT_PREVIEW_SCOPE_DECISION_REF,
+            environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+            check_repository=False,
+        )
 
 
 def test_multi_agent_preview_scope_decision_fails_if_execution_budget_expands() -> None:
@@ -317,22 +337,114 @@ def test_multi_agent_preview_scope_decision_fails_if_execution_budget_expands() 
         )
 
 
-def test_multi_agent_preview_transport_successor_binds_failed_r2_and_profile_fix() -> None:
+def test_historical_transport_successor_binds_R2_but_cannot_be_reauthorized() -> None:
+    decision = json.loads(
+        (ROOT / MULTI_AGENT_PREVIEW_SUCCESSOR_SCOPE_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    projection = validate_multi_agent_preview_scope_decision(
+        root=ROOT, decision=decision
+    )
+    assert projection["multi_agent_preview"] is True
+    assert projection["multi_agent_preview_transport_successor"] is True
+    assert projection["execution_limits"]["maximum_model_nodes"] == 22
+    with pytest.raises(
+        ValueError,
+        match="project_os_multi_agent_preview_scope_allowance_missing",
+    ):
+        build_preflight(
+            root=ROOT,
+            decision_ref=MULTI_AGENT_PREVIEW_SUCCESSOR_SCOPE_DECISION_REF,
+            environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+            check_repository=False,
+        )
+
+
+def test_multi_agent_preview_plan_checkpoint_successor_preserves_plans_and_separates_phases() -> None:
     result = build_preflight(
         root=ROOT,
-        decision_ref=MULTI_AGENT_PREVIEW_SUCCESSOR_SCOPE_DECISION_REF,
+        decision_ref=MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE_DECISION_REF,
         environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
         check_repository=False,
     )
 
-    assert result["status"] == "pass_current_decision_bound_preflight"
     projection = result["decision_projection"]
-    assert projection["multi_agent_preview"] is True
-    assert projection["multi_agent_preview_transport_successor"] is True
-    assert projection["execution_limits"]["maximum_model_nodes"] == 22
-    assert "only the provider profile may omit" in result["known_boundary"]
+    assert result["run_scope_id"] == MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE
+    assert projection["multi_agent_preview_plan_checkpoint_successor"] is True
+    assert projection["reused_specialist_plan_count"] == 6
+    assert (
+        projection["successor_zero_call_proof_status"]
+        == "R3_plan_checkpoint_successor_zero_call_pass"
+    )
+    assert projection["maximum_proposed_atoms"] == 20
+    assert projection["maximum_evidence_requests"] == 12
+    assert projection["proved_proposed_atom_count"] == 13
+    assert projection["proved_selected_atom_count"] == 12
+    assert projection["proved_deferred_atom_count"] == 1
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 16
+    assert "starting at Research Lead" in result["known_boundary"]
     assert result["network_calls"] == 0
     assert result["provider_calls"] == 0
+    assert {
+        "RC-AR-002-old-five-cell-workflow-lacked-independent-role-"
+        "coordination-and-feedback-loop",
+        "RC-AR-003-multi-agent-node-couples-max-thinking-analysis-and-"
+        "strict-contract-submission",
+    }.issubset(set(result["scope_projection"]["explicit_allow_issue_ids"]))
+
+
+def test_multi_agent_preview_plan_checkpoint_successor_rejects_specialist_rerun() -> None:
+    decision = json.loads(
+        (ROOT / MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    decision["successor_constraints"]["rerun_successful_specialist_plans"] = True
+    with pytest.raises(
+        ValueError,
+        match="project_os_multi_agent_plan_successor_constraints_invalid",
+    ):
+        validate_multi_agent_preview_plan_successor_scope_decision(
+            root=ROOT, decision=decision
+        )
+
+
+def test_multi_agent_preview_plan_checkpoint_successor_rejects_execution_budget_drift() -> None:
+    decision = json.loads(
+        (ROOT / MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    decision["successor_constraints"]["maximum_evidence_requests"] = 13
+    with pytest.raises(
+        ValueError,
+        match="project_os_multi_agent_plan_successor_constraints_invalid",
+    ):
+        validate_multi_agent_preview_plan_successor_scope_decision(
+            root=ROOT, decision=decision
+        )
+
+
+def test_multi_agent_preview_plan_checkpoint_successor_rejects_promoting_overlay(
+    tmp_path: Path,
+) -> None:
+    root = _multi_agent_plan_successor_fixture_root(tmp_path)
+    decision_path = root / MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE_DECISION_REF
+    decision = json.loads(decision_path.read_text(encoding="utf-8"))
+    overlay_path = root / decision["planning_overlay_ref"]
+    overlay = json.loads(overlay_path.read_text(encoding="utf-8"))
+    overlay["authority"]["product_pointer_promotion"] = True
+    overlay_path.write_text(json.dumps(overlay), encoding="utf-8")
+    decision["planning_overlay_sha256"] = _sha(overlay_path)
+
+    with pytest.raises(
+        ValueError,
+        match="project_os_multi_agent_plan_successor_planning_overlay_invalid",
+    ):
+        validate_multi_agent_preview_plan_successor_scope_decision(
+            root=root, decision=decision
+        )
 
 
 def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:

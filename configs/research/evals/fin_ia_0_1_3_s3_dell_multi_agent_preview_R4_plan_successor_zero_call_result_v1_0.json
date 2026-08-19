@@ -1,0 +1,166 @@
+{
+  "bindings": {
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_objective_v1_0.json",
+    "objective_sha256": "3772ead9ccbb7861013825d9d1e96e30588af33879725173f3791c140ea981d9",
+    "plan_checkpoint_digest": "0ab73362d5ccd05d6096c86bc8a0d91f86b1674aac0df30eb5647d8b85e5fac8",
+    "plan_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R3_specialist_plan_checkpoint_v1_0.json",
+    "plan_checkpoint_sha256": "b8857eabe863ff7b259bf883ef4b6c79f8fcbc61a295940610b0a6d85aedd7e9",
+    "topology_ref": "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json",
+    "topology_sha256": "1c2065c2e585984b8b4ef485c587a1d20425122d0fe625cb7c7d6f0c290d4c85"
+  },
+  "case_key": "DELL",
+  "checkpoint_resume": {
+    "lead_start_node": "AGENT::RESEARCH_LEAD::LEAD_PLAN",
+    "new_specialist_plan_model_calls": 0,
+    "reused_agent_ids": [
+      "AGENT::DEMAND_QUALITY",
+      "AGENT::OPERATING_PERFORMANCE",
+      "AGENT::VALUE_CAPTURE",
+      "AGENT::CASH_CONVERSION",
+      "AGENT::SUPPLY_RELATIONSHIP",
+      "AGENT::COUNTEREVIDENCE"
+    ],
+    "reused_specialist_plan_count": 6
+  },
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "true_multi_agent_live_completed": false
+  },
+  "execution_budget_projection": {
+    "conditional_writer_nodes": 1,
+    "lead_nodes": 2,
+    "maximum_analysis_calls_per_node": 1,
+    "maximum_counter_repair_nodes": 3,
+    "maximum_evaluator_nodes": 2,
+    "maximum_evaluator_repair_nodes": 2,
+    "maximum_new_model_nodes": 16,
+    "maximum_submission_attempts_per_node": 2,
+    "specialist_workpaper_nodes": 6
+  },
+  "generated_at": "2026-08-19T17:33:19+00:00",
+  "materialization_readiness": {
+    "blocking_empty_role_ids": [],
+    "compiled_evidence_request_count": 12,
+    "controlled_plan_summary": {
+      "compiled_lane_count": 12,
+      "deferred_atom_count": 1,
+      "evidence_request_count": 12,
+      "execution_request_budget": 12,
+      "generation_model_calls": 0,
+      "hybrid_candidate_runtime": "bm25_plus_qwen_local_embedding",
+      "hybrid_selected_candidate_count": 192,
+      "local_embedding_inference_batches": 1,
+      "material_scope_ready_request_count": 0,
+      "material_scope_required_request_count": 12,
+      "material_set_complete_request_count": 0,
+      "model_calls": 0,
+      "network_calls": 0,
+      "nonempty_lane_count": 12,
+      "numeric_fact_count": 87,
+      "proposed_atom_count": 13,
+      "required_slot_count": 7,
+      "selected_atom_count": 12,
+      "typed_fact_conflict_count": 0,
+      "typed_fact_gap_count": 17,
+      "typed_fact_request_count": 44,
+      "typed_fact_resolved_count": 27,
+      "unique_narrative_candidates": 30
+    },
+    "role_readiness": [
+      {
+        "agent_id": "AGENT::DEMAND_QUALITY",
+        "context_digest": "1424c9d762c8b571c73c1e0ed7cdcdbb658a08e922a5f3d419809a169208763a",
+        "numeric_facts_visible": 0,
+        "numeric_relations_visible": 0,
+        "reviewed_evidence_visible": 10,
+        "role_slot_ids": [
+          "demand_volume_quality"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 1
+      },
+      {
+        "agent_id": "AGENT::OPERATING_PERFORMANCE",
+        "context_digest": "86953d0162aa9e2efe96d6262b79883bfbc3604066a0d6ba0a700fcab7f22da3",
+        "numeric_facts_visible": 12,
+        "numeric_relations_visible": 6,
+        "reviewed_evidence_visible": 2,
+        "role_slot_ids": [
+          "operating_performance"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 0
+      },
+      {
+        "agent_id": "AGENT::VALUE_CAPTURE",
+        "context_digest": "d607bb56a536a192901d44c090192f03daccd8c0424ae8bebb5d5ca7e44b6537",
+        "numeric_facts_visible": 10,
+        "numeric_relations_visible": 5,
+        "reviewed_evidence_visible": 4,
+        "role_slot_ids": [
+          "pricing_mix_value_capture"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 3
+      },
+      {
+        "agent_id": "AGENT::CASH_CONVERSION",
+        "context_digest": "0b193b85f83344bc9e23fbfc6cead3caa4f2b2363e1b75f48615e719de90e08e",
+        "numeric_facts_visible": 10,
+        "numeric_relations_visible": 3,
+        "reviewed_evidence_visible": 5,
+        "role_slot_ids": [
+          "cash_conversion_balance_sheet"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 1
+      },
+      {
+        "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+        "context_digest": "96f0c42050978bbae3d15b0745f639d5621dd361ef3d81c734d10327f689f89c",
+        "numeric_facts_visible": 0,
+        "numeric_relations_visible": 0,
+        "reviewed_evidence_visible": 10,
+        "role_slot_ids": [
+          "capacity_inputs_execution",
+          "relationship_attribution"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 4
+      },
+      {
+        "agent_id": "AGENT::COUNTEREVIDENCE",
+        "context_digest": "6d02bf43c64d8c8c1a3326c7a6dbf22145630a72ddbb04277ebcd7b97a4baaa6",
+        "numeric_facts_visible": 3,
+        "numeric_relations_visible": 0,
+        "reviewed_evidence_visible": 6,
+        "role_slot_ids": [
+          "counterevidence_and_what_would_change"
+        ],
+        "tool_execution_receipts_visible": 2,
+        "typed_gaps_visible": 2
+      }
+    ]
+  },
+  "negative_mutations": {
+    "checkpoint_digest_mutation_rejected": true,
+    "missing_specialist_plan_rejected": true,
+    "original_context_not_copied_to_submission": true
+  },
+  "result_digest": "bc37c2f65bdfe7d6ad2f6cfdfa2359d35154f880fddaa59f71ed3a244d5d9295",
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_R4_plan_successor_zero_call_result_v1_0",
+  "status": "R3_plan_checkpoint_successor_zero_call_pass",
+  "two_phase_projection": {
+    "analysis_draft_business_promotion": false,
+    "analysis_has_original_role_context": true,
+    "analysis_message_count": 2,
+    "submission_contains_analysis_draft": true,
+    "submission_excludes_original_context_sentinel": true,
+    "submission_message_count": 2
+  }
+}

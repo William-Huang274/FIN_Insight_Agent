@@ -839,3 +839,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Research Lead 收到六份规划后，两次 `4,500` completion 都全部用于 reasoning，零可见 content、零 Tool Call；R3 以 `model_gateway_reasoning_budget_exhausted` 终止。工作底稿、挑战反馈、Evaluator、Writer 和最终报告均未运行，不能宣称 Preview、S1、S3 或产品通过。
 - 最早责任层是 Agent node 把分析与严格交卷合并在一个 max-thinking completion，且 Lead TokenBudgetBasis 未匹配六份计划的输入和综合职责；不是数据基建、S1、网络或金融内容 L1。RC-AR-003 打开。
 - 下一步保留 R3 和六份 validated plans，零调用生成 digest-bound checkpoint；复用项目已经验证的“可见分析草稿 → non-thinking 严格交卷”，为两阶段分别记录 TokenBudgetBasis，从 Lead 恢复而不重跑六个成功角色。通过 fake／mutation、clean push 和 Project OS preflight 后，才允许一个 R4 successor。
+
+## 2026-08-20 S3 Multi-Agent Preview R4 计划续跑零调用证明
+
+- 六份 R3 Specialist 自然计划已形成 digest-bound checkpoint；R4 从 Research Lead 恢复，新增 Specialist 计划模型调用为 0。checkpoint 缺角色、digest 漂移及错误复用均 fail closed。
+- 后续 Agent 节点已统一拆成“可见分析草稿”和“non-thinking 严格交卷”两阶段，各自具有 task-specific TokenBudgetBasis；分析草稿是私有模型数据，不能晋升为 Evidence、NumericFact、Judgment 或报告。
+- 零调用审计发现 13 个有效自然 facet，而历史 Lead／planning contract 把提案与执行都硬编码为 12。Preview-local、provider-neutral overlay 现在最多接收 20 个提案，但执行上限仍为 12；当前证明为 13 proposed／12 selected／1 deferred，未改变研究事实或执行预算。
+- 三条超过 EvidenceRequest 120 字符的自然意图由确定性 compiler 无损拆分；Workbench 仅在当前调用注入 scoped policy，不修改全局 policy。中文 intent 归一化从 ASCII-only 改为 Unicode-aware，避免不同中文研究请求全部折叠为空 key。
+- 当前物化为 12 EvidenceRequest、192 个 BM25＋Qwen 候选、44 个 typed fact request（27 resolved／17 gap）、87 个 NumericFact、0 typed conflict；六角色输入均非空。0 网络、0 Candidate promotion、0 模型／付费调用。
+- 定向 75、全仓 844 tests 通过。该结果只授权在干净提交和 Project OS preflight 后执行唯一一次 R4 live；S1、S3、动态开放检索、跨公司泛化、qualified-human、Workbench 发布和 release 仍为 false。详细记录见 `docs/worklog/fin_0_1_3_s3/085_multi_agent_preview_R4_plan_successor_zero_call.md`。

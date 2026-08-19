@@ -537,6 +537,33 @@ def test_unclassified_product_topic_requires_blueprint_without_becoming_hard_axi
     ] == ["AI server customer concentration, pricing and cancellation risk"]
 
 
+def test_multiple_chinese_product_intents_keep_distinct_exact_bindings() -> None:
+    runtime = _temporal_runtime_input()
+    chinese_intents = [
+        "积压订单的客户构成、集中度与取消条款",
+        "订单向收入、利润与经营现金流转化的持续性",
+    ]
+    runtime["evidence_request"]["product_intents"] = chinese_intents
+    runtime["evidence_request"]["period"]["fiscal_years"] = []
+    runtime["retrieval_execution_plan"]["narrative_requests"] = [
+        {
+            "facet_ids": ["reported_results"],
+            "metric_context_ids": ["revenue"],
+            "product_intents": chinese_intents,
+        }
+    ]
+    plan, receipt = compile_material_requirement_plan_from_runtime_input(
+        runtime_input=runtime,
+        policy=POLICY,
+        ontology=ONTOLOGY,
+    )
+    assert plan["requirement_groups"]
+    assert receipt["compiler_mode"] == "deterministic_narrative_plan_fallback"
+    assert receipt[
+        "unclassified_product_intents_excluded_from_hard_material_scope"
+    ] == chinese_intents
+
+
 def test_collective_axis_bundle_can_join_metric_table_and_mechanism_narrative() -> None:
     request = {
         "request_id": "ER::COLLECTIVE",

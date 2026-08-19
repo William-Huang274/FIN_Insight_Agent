@@ -30,8 +30,13 @@ from sec_agent.canonical_runtime import (
 from sec_agent.providers import (
     AgentToolStepResult,
     AgentTransportProfile,
+    ChatCompletionProfile,
+    ChatCompletionResult,
+    ChatCompletionToolStepResult,
     ModelGatewayError,
     execute_agent_tool_step_exact_once,
+    execute_chat_completion_exact_once,
+    execute_chat_completion_tool_step_exact_once,
 )
 
 from .case_truth_reconciliation import compile_case_truth_packet
@@ -45,6 +50,8 @@ from .dynamic_truth_spine import (
     compile_dynamic_reviewed_pack_view,
 )
 from .multi_agent_preview import (
+    compile_analyzed_node_messages,
+    compile_analyzed_node_submission_messages,
     compile_planner_payload_from_role_opinions,
     compile_specialist_context,
     compile_token_budget_basis,
@@ -63,6 +70,10 @@ TRUTH_SPINE_REF = (
 CONSUMER_OVERLAY_REF = (
     "configs/research/"
     "fin_ia_0_1_3_s3_multi_agent_preview_consumer_overlay_v1_0.json"
+)
+PLANNING_OVERLAY_REF = (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_multi_agent_preview_planning_overlay_v1_0.json"
 )
 
 
@@ -220,6 +231,8 @@ class PreviewNodeExecution:
 
 
 ToolTransport = Callable[..., AgentToolStepResult]
+AnalysisTransport = Callable[..., ChatCompletionResult]
+SubmissionTransport = Callable[..., ChatCompletionToolStepResult]
 PayloadValidator = Callable[[Mapping[str, Any]], Mapping[str, Any]]
 
 
@@ -422,6 +435,334 @@ def execute_validated_preview_node(
     raise MultiAgentPreviewRuntimeError(last_code, attempts=attempts)
 
 
+def execute_analyzed_preview_node(
+    *,
+    analysis_profile: ChatCompletionProfile,
+    submission_profile: ChatCompletionProfile,
+    session_state: PreviewAgentSessionState,
+    messages: Sequence[Mapping[str, Any]],
+    tool: Mapping[str, Any],
+    validator: PayloadValidator,
+    capture_root: str | Path,
+    run_id: str,
+    node_id: str,
+    purpose: str,
+    input_reference_count: int,
+    required_outputs: Sequence[str],
+    schema_burden: str,
+    materiality_quality_risk: str,
+    comparable_run_evidence: Sequence[str],
+    analysis_output_token_ceiling: int,
+    submission_output_token_ceiling: int,
+    maximum_submission_successor_attempts: int = 1,
+    analysis_transport: AnalysisTransport = execute_chat_completion_exact_once,
+    submission_transport: SubmissionTransport = (
+        execute_chat_completion_tool_step_exact_once
+    ),
+) -> PreviewNodeExecution:
+    """Run one logical Agent node as visible analysis then strict mapping.
+
+    The analysis draft is private model data.  It cannot become Evidence or a
+    validated output until a separate non-thinking submission passes the same
+    canonical tool contract and local validator.
+    """
+
+    if maximum_submission_successor_attempts not in {0, 1}:
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_submission_successor_budget_invalid"
+        )
+    tool_name = str(tool["function"]["name"])
+    analysis_messages = compile_analyzed_node_messages(
+        messages=messages,
+        tool_name=tool_name,
+        required_outputs=required_outputs,
+    )
+    analysis_basis = compile_token_budget_basis(
+        node_id=f"{node_id}::ANALYSIS",
+        purpose=(
+            f"{purpose} 本阶段只形成可见分析草稿，不提交合同、不晋升业务事实。"
+        ),
+        input_characters=sum(
+            len(str(row.get("content") or "")) for row in analysis_messages
+        ),
+        input_reference_count=input_reference_count,
+        required_outputs=("visible_analysis_draft", *required_outputs),
+        schema_burden="analysis-only projection; no tool or JSON submission",
+        materiality_quality_risk=materiality_quality_risk,
+        comparable_run_evidence=(
+            *comparable_run_evidence,
+            "DELL fragment analysis/submission FAS-R1",
+            "DELL multi-agent preview R3 Lead capacity failure",
+        ),
+        reasoning_profile=f"{analysis_profile.model} thinking=max visible analysis",
+        output_token_ceiling=analysis_output_token_ceiling,
+        stop_truncation_behavior=(
+            "require non-empty visible draft and finish_reason=stop; fail closed "
+            "on empty reasoning-only completion or truncation; no analysis retry"
+        ),
+    )
+    analysis_defaults = dict(analysis_profile.request_defaults)
+    analysis_defaults["max_tokens"] = analysis_output_token_ceiling
+    node_analysis_profile = replace(
+        analysis_profile, request_defaults=analysis_defaults
+    )
+    analysis_attempt_id = (
+        f"{_safe_id(run_id)}-{_safe_id(node_id)}-ANALYSIS-ATTEMPT-01"
+    )
+    session_state.append(
+        event_type="provider_attempt_requested",
+        actor_id=session_state.agent_id,
+        attempt_id=analysis_attempt_id,
+        input_refs=(
+            f"messages://{canonical_digest(list(analysis_messages))}",
+            f"token-budget://{analysis_basis['token_budget_basis_digest']}",
+        ),
+    )
+    attempts: list[dict[str, Any]] = []
+    try:
+        analysis = analysis_transport(
+            profile=node_analysis_profile,
+            messages=analysis_messages,
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_id=analysis_attempt_id,
+        )
+    except ModelGatewayError as exc:
+        failed = {
+            "phase": "analysis",
+            "attempt_id": analysis_attempt_id,
+            "status": "provider_transport_failed",
+            "failure_code": exc.code,
+            "capture_ref": exc.capture_ref,
+        }
+        attempts.append(failed)
+        session_state.append(
+            event_type="provider_attempt_failed",
+            actor_id="PROVIDER::" + analysis_profile.provider_id.upper(),
+            attempt_id=analysis_attempt_id,
+            output_refs=((exc.capture_ref,) if exc.capture_ref else ()),
+        )
+        raise MultiAgentPreviewRuntimeError(
+            exc.code, attempts=attempts
+        ) from exc
+    analysis_dict = {
+        **analysis.as_dict(),
+        "phase": "analysis",
+        "attempt_id": analysis_attempt_id,
+        "status": "analysis_draft_valid",
+        "analysis_draft_digest": canonical_digest(analysis.content),
+    }
+    attempts.append(analysis_dict)
+    session_state.append(
+        event_type="provider_attempt_completed",
+        actor_id="PROVIDER::" + analysis_profile.provider_id.upper(),
+        attempt_id=analysis_attempt_id,
+        output_refs=tuple(
+            str(analysis_dict.get(key) or "")
+            for key in ("request_capture_ref", "response_capture_ref")
+            if str(analysis_dict.get(key) or "")
+        ),
+    )
+    if analysis.finish_reason != "stop":
+        code = (
+            "multi_agent_preview_analysis_finish_reason_invalid:"
+            + str(analysis.finish_reason or "missing")
+        )
+        attempts[-1] = {**attempts[-1], "status": "analysis_terminal_failed", "failure_code": code}
+        raise MultiAgentPreviewRuntimeError(code, attempts=attempts)
+
+    submission_messages = list(
+        compile_analyzed_node_submission_messages(
+            analysis_draft=analysis.content,
+            analysis_messages=analysis_messages,
+            tool_name=tool_name,
+            required_outputs=required_outputs,
+        )
+    )
+    submission_basis = compile_token_budget_basis(
+        node_id=f"{node_id}::SUBMISSION",
+        purpose=(
+            f"{purpose} 本阶段只把已形成草稿映射到唯一严格合同，不重新研究。"
+        ),
+        input_characters=sum(
+            len(str(row.get("content") or "")) for row in submission_messages
+        )
+        + len(json.dumps(tool, ensure_ascii=False, sort_keys=True)),
+        input_reference_count=sum(
+            analysis.content.count(prefix)
+            for prefix in ("EV::", "NUM::", "REL::", "GAP::")
+        ),
+        required_outputs=required_outputs,
+        schema_burden=schema_burden,
+        materiality_quality_risk=materiality_quality_risk,
+        comparable_run_evidence=(
+            *comparable_run_evidence,
+            "DELL fragment analysis/submission FAS-R1",
+        ),
+        reasoning_profile=(
+            f"{submission_profile.model} non-thinking strict contract mapper"
+        ),
+        output_token_ceiling=submission_output_token_ceiling,
+        stop_truncation_behavior=(
+            "require exactly one named tool call and full local contract; preserve "
+            "failure; at most one separately identified submission successor"
+        ),
+    )
+    submission_defaults = dict(submission_profile.request_defaults)
+    submission_defaults["max_tokens"] = submission_output_token_ceiling
+    node_submission_profile = replace(
+        submission_profile, request_defaults=submission_defaults
+    )
+    maximum_attempts = 1 + maximum_submission_successor_attempts
+    last_code = "multi_agent_preview_submission_not_executed"
+    for index in range(1, maximum_attempts + 1):
+        attempt_id = (
+            f"{_safe_id(run_id)}-{_safe_id(node_id)}-SUBMISSION-ATTEMPT-{index:02d}"
+        )
+        session_state.append(
+            event_type="provider_attempt_requested",
+            actor_id=session_state.agent_id,
+            attempt_id=attempt_id,
+            input_refs=(
+                f"messages://{canonical_digest(submission_messages)}",
+                f"tool://{canonical_digest(tool)}",
+                f"token-budget://{submission_basis['token_budget_basis_digest']}",
+                f"analysis-draft://{analysis_dict['analysis_draft_digest']}",
+            ),
+        )
+        try:
+            step = submission_transport(
+                profile=node_submission_profile,
+                messages=submission_messages,
+                tools=[tool],
+                capture_root=capture_root,
+                run_id=run_id,
+                attempt_id=attempt_id,
+                tool_choice={
+                    "type": "function",
+                    "function": {"name": tool_name},
+                },
+            )
+        except ModelGatewayError as exc:
+            last_code = exc.code
+            attempts.append(
+                {
+                    "phase": "submission",
+                    "attempt_id": attempt_id,
+                    "status": "provider_transport_failed",
+                    "failure_code": exc.code,
+                    "capture_ref": exc.capture_ref,
+                }
+            )
+            session_state.append(
+                event_type="provider_attempt_failed",
+                actor_id="PROVIDER::" + submission_profile.provider_id.upper(),
+                attempt_id=attempt_id,
+                output_refs=((exc.capture_ref,) if exc.capture_ref else ()),
+            )
+            if index >= maximum_attempts:
+                raise MultiAgentPreviewRuntimeError(
+                    last_code, attempts=attempts
+                ) from exc
+            submission_messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "The prior contract-mapping attempt ended before a valid "
+                        f"response ({exc.code}). Use the unchanged analysis draft "
+                        f"and issue exactly one {tool_name} call."
+                    ),
+                }
+            )
+            continue
+
+        step_dict = {**step.as_dict(), "phase": "submission"}
+        session_state.append(
+            event_type="provider_attempt_completed",
+            actor_id="PROVIDER::" + submission_profile.provider_id.upper(),
+            attempt_id=attempt_id,
+            output_refs=tuple(
+                str(step_dict.get(key) or "")
+                for key in ("request_capture_ref", "response_capture_ref")
+                if str(step_dict.get(key) or "")
+            ),
+        )
+        try:
+            if len(step.tool_calls) != 1:
+                raise MultiAgentPreviewRuntimeError(
+                    "multi_agent_preview_exactly_one_tool_call_required"
+                )
+            call = step.tool_calls[0]
+            function = call.get("function") or {}
+            if str(function.get("name") or "") != tool_name:
+                raise MultiAgentPreviewRuntimeError(
+                    "multi_agent_preview_tool_name_mismatch"
+                )
+            raw_payload = json.loads(str(function.get("arguments") or ""))
+            if not isinstance(raw_payload, Mapping):
+                raise MultiAgentPreviewRuntimeError(
+                    "multi_agent_preview_tool_arguments_not_object"
+                )
+            validated = deepcopy(dict(validator(raw_payload)))
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError, RuntimeError) as exc:
+            last_code = str(
+                getattr(exc, "code", "") or str(exc) or type(exc).__name__
+            )
+            attempts.append(
+                {
+                    **step_dict,
+                    "attempt_id": attempt_id,
+                    "status": "provider_completed_local_contract_failed",
+                    "failure_code": last_code,
+                }
+            )
+            if index >= maximum_attempts:
+                raise MultiAgentPreviewRuntimeError(
+                    last_code, attempts=attempts
+                ) from exc
+            feedback_ref = "contract-feedback://" + canonical_digest(
+                {"node_id": node_id, "code": last_code, "attempt_id": attempt_id}
+            )
+            session_state.append(
+                event_type="feedback_issued",
+                actor_id="HARNESS::CONTRACT_VALIDATOR",
+                feedback_refs=(feedback_ref,),
+            )
+            submission_messages.append(
+                {
+                    "role": "user",
+                    "content": (
+                        "The preserved contract submission was rejected with code "
+                        f"{last_code}. Do not change the analysis or add facts. "
+                        f"Correct only the mapping and issue exactly one {tool_name} call."
+                    ),
+                }
+            )
+            continue
+
+        attempts.append(
+            {
+                **step_dict,
+                "attempt_id": attempt_id,
+                "status": "contract_valid",
+                "validated_payload_digest": canonical_digest(validated),
+            }
+        )
+        return PreviewNodeExecution(
+            node_id=node_id,
+            agent_id=session_state.agent_id,
+            tool_name=tool_name,
+            validated_payload=validated,
+            token_budget_basis={
+                "analysis": analysis_basis,
+                "submission": submission_basis,
+            },
+            attempts=tuple(attempts),
+            successor_attempt_count=index - 1,
+        )
+    raise MultiAgentPreviewRuntimeError(last_code, attempts=attempts)
+
+
 def compile_cross_role_feedback_receipt(
     *,
     target_session_id: str,
@@ -496,6 +837,77 @@ def load_preview_consumer_policy(repo_root: str | Path) -> dict[str, Any]:
                 row["supplemental_context_slot_ids"].append(slot_id)
     load_current_research_consumer_policy(policy)
     return policy
+
+
+def load_preview_planning_policy(
+    repo_root: str | Path,
+    *,
+    route_policy: Any,
+) -> Any:
+    """Separate proposal capacity from the unchanged execution budget.
+
+    The overlay is provider-neutral and preview-local.  It does not mutate the
+    globally registered policy or any historical authority that binds it.
+    """
+
+    root = Path(repo_root).resolve()
+    overlay = _json(root / PLANNING_OVERLAY_REF)
+    expected = {
+        "schema_version",
+        "status",
+        "base_policy_resource_id",
+        "max_proposed_atoms_override",
+        "max_evidence_requests_must_remain",
+        "selection_strategy_must_remain",
+        "authority",
+        "reason",
+    }
+    authority = overlay.get("authority") or {}
+    if not (
+        set(overlay) == expected
+        and overlay.get("schema_version")
+        == "fin_ia_multi_agent_preview_planning_overlay_v1_0"
+        and overlay.get("status")
+        == "provider_neutral_preview_proposal_execution_budget_separation"
+        and overlay.get("base_policy_resource_id")
+        == "application.config.current_research_planning_policy"
+        and overlay.get("max_proposed_atoms_override") == 20
+        and overlay.get("max_evidence_requests_must_remain") == 12
+        and overlay.get("selection_strategy_must_remain")
+        == "required_slot_first_then_provider_neutral_facet_priority"
+        and authority
+        == {
+            "changes_research_evidence_or_numeric_authority": False,
+            "changes_execution_request_budget": False,
+            "records_deferred_atoms": True,
+            "provider_or_model_specific": False,
+            "product_pointer_promotion": False,
+        }
+        and str(overlay.get("reason") or "").strip()
+    ):
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_planning_overlay_invalid"
+        )
+    payload = read_registered_runtime_json(
+        root, str(overlay["base_policy_resource_id"])
+    )
+    current_budget = payload.get("max_budget") or {}
+    current_selection = payload.get("atom_selection") or {}
+    if not (
+        current_budget.get("max_evidence_requests")
+        == overlay["max_evidence_requests_must_remain"]
+        and current_selection.get("strategy")
+        == overlay["selection_strategy_must_remain"]
+    ):
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_planning_overlay_base_drift"
+        )
+    scoped = deepcopy(dict(payload))
+    scoped["atom_selection"] = deepcopy(dict(current_selection))
+    scoped["atom_selection"]["max_proposed_atoms"] = int(
+        overlay["max_proposed_atoms_override"]
+    )
+    return load_research_planning_policy(scoped, route_policy)
 
 
 @dataclass(frozen=True)
@@ -581,12 +993,9 @@ def compile_multi_agent_preview_materialization(
     route_payload = read_registered_runtime_json(
         root, "application.config.current_query_object_fact_route_policy"
     )
-    planning_payload = read_registered_runtime_json(
-        root, "application.config.current_research_planning_policy"
-    )
     kernel = load_financial_research_kernel(kernel_payload)
     route = load_query_object_fact_route_policy(route_payload, kernel)
-    planning = load_research_planning_policy(planning_payload, route)
+    planning = load_preview_planning_policy(root, route_policy=route)
     objective = compile_research_objective(
         objective_payload, kernel=kernel, policy=planning
     )
@@ -613,6 +1022,7 @@ def compile_multi_agent_preview_materialization(
         objective_payload,
         compiled["planner_payload"],
         ResearchRetrievalPrincipal("current", permissions),
+        planning_policy=planning,
     )
     pack = evidence_service.get_case(
         "DELL", ResearchEvidencePackPrincipal("current", permissions)
@@ -689,6 +1099,7 @@ def compile_multi_agent_preview_materialization(
 
 __all__ = [
     "CONSUMER_OVERLAY_REF",
+    "PLANNING_OVERLAY_REF",
     "PreviewAgentSessionState",
     "PreviewNodeExecution",
     "MultiAgentPreviewMaterialization",
@@ -696,8 +1107,10 @@ __all__ = [
     "TRUTH_SPINE_REF",
     "compile_cross_role_feedback_receipt",
     "compile_multi_agent_preview_materialization",
+    "execute_analyzed_preview_node",
     "execute_validated_preview_node",
     "load_preview_consumer_policy",
+    "load_preview_planning_policy",
     "rebind_preview_session_plan",
     "start_preview_agent_session",
 ]

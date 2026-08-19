@@ -30,6 +30,9 @@ MULTI_AGENT_REPORT_DRAFT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_report_draft_v1_0"
 )
 TOKEN_BUDGET_BASIS_SCHEMA_VERSION = "fin_ia_token_budget_basis_v1_0"
+SPECIALIST_PLAN_CHECKPOINT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_specialist_plan_checkpoint_v1_0"
+)
 
 RESEARCH_LEAD_AGENT_ID = "AGENT::RESEARCH_LEAD"
 WRITER_AGENT_ID = "AGENT::WRITER"
@@ -468,7 +471,9 @@ def validate_specialist_plan_opinion(
     return value
 
 
-def lead_plan_tool() -> dict[str, Any]:
+def lead_plan_tool(*, topology: Mapping[str, Any]) -> dict[str, Any]:
+    trusted = load_multi_agent_role_topology(topology)
+    allowed_facets = list(trusted["facet_catalog"])
     return {
         "type": "function",
         "function": {
@@ -507,9 +512,9 @@ def lead_plan_tool() -> dict[str, Any]:
                     "accepted_facets": {
                         "type": "array",
                         "minItems": 5,
-                        "maxItems": 12,
+                        "maxItems": len(allowed_facets),
                         "uniqueItems": True,
-                        "items": {"type": "string"},
+                        "items": {"type": "string", "enum": allowed_facets},
                     },
                     "coordination_questions": {
                         "type": "array",
@@ -574,6 +579,345 @@ def compile_lead_plan_messages(
     )
 
 
+def compile_analyzed_node_messages(
+    *,
+    messages: Sequence[Mapping[str, Any]],
+    tool_name: str,
+    required_outputs: Sequence[str],
+) -> tuple[dict[str, str], ...]:
+    """Project a strict node into a visible analysis-only phase.
+
+    The original role brief remains visible, but any sentence asking for a tool
+    call is explicitly inactive in this phase.  The draft is model output for
+    the later contract mapper; it is never Evidence or business authority.
+    """
+
+    _require(bool(messages), "multi_agent_analysis_messages_missing")
+    rows = [
+        {
+            "role": str(row.get("role") or ""),
+            "content": str(row.get("content") or ""),
+        }
+        for row in messages
+    ]
+    _require(
+        all(
+            row["role"] in {"system", "user", "assistant"}
+            and row["content"].strip()
+            for row in rows
+        ),
+        "multi_agent_analysis_messages_invalid",
+    )
+    original_system = "\n\n".join(
+        row["content"] for row in rows if row["role"] == "system"
+    )
+    original_context = [row for row in rows if row["role"] != "system"]
+    _require(
+        bool(original_system) and bool(original_context),
+        "multi_agent_analysis_role_context_missing",
+    )
+    requirements = [str(item).strip() for item in required_outputs]
+    _require(
+        bool(requirements) and all(requirements),
+        "multi_agent_analysis_required_outputs_invalid",
+    )
+    return (
+        {
+            "role": "system",
+            "content": (
+                "ANALYSIS PHASE. Do not call tools and do not emit JSON. Form a "
+                "visible, concise research draft that a later non-thinking "
+                "contract mapper can submit without doing new research. Any "
+                "sentence in the original role brief asking for a tool call is "
+                "inactive during this phase. Preserve exact role IDs, facet IDs, "
+                "Evidence/NumericFact/Gap refs and allowed enum values when they "
+                "are needed by the final fields. Do not invent facts or authority. "
+                f"The later tool is {tool_name}; its required fields are "
+                f"{', '.join(requirements)}.\n\nORIGINAL ROLE BRIEF:\n"
+                + original_system
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                {
+                    "phase": "analysis_only_not_business_authority",
+                    "task_context": original_context,
+                    "required_draft_sections": requirements,
+                    "later_tool_name": tool_name,
+                    "rules": [
+                        "cover every required field in the draft",
+                        "keep identifiers and references exact",
+                        "separate known facts, hypotheses and information boundaries",
+                        "do not add a fact absent from task_context",
+                        "end with a compact submission checklist",
+                    ],
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        },
+    )
+
+
+def compile_analyzed_node_submission_messages(
+    *,
+    analysis_draft: str,
+    analysis_messages: Sequence[Mapping[str, Any]],
+    tool_name: str,
+    required_outputs: Sequence[str],
+) -> tuple[dict[str, str], ...]:
+    draft = str(analysis_draft or "").strip()
+    _require(
+        20 <= len(draft) <= 120_000,
+        "multi_agent_analysis_draft_invalid",
+    )
+    requirements = [str(item).strip() for item in required_outputs]
+    _require(
+        bool(requirements) and all(requirements),
+        "multi_agent_submission_required_outputs_invalid",
+    )
+    return (
+        {
+            "role": "system",
+            "content": (
+                "CONTRACT SUBMISSION PHASE. Map the supplied analysis draft into "
+                f"exactly one {tool_name} tool call. Do not redo the research, "
+                "add facts, broaden authority or copy explanatory prose outside "
+                "the tool call. The tool schema and local validator are "
+                "authoritative. If the draft is more cautious than the schema "
+                "permits, preserve the caution rather than strengthen the claim."
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                {
+                    "phase": "strict_contract_mapping_only",
+                    "analysis_draft": draft,
+                    "analysis_messages_digest": canonical_digest(
+                        [dict(row) for row in analysis_messages]
+                    ),
+                    "required_output_fields": requirements,
+                    "rules": [
+                        "use only identifiers and claims present in the draft",
+                        "emit one tool call and no free prose",
+                        "do not create Evidence NumericFact Gap date or company authority",
+                    ],
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        },
+    )
+
+
+def compile_specialist_plan_checkpoint(
+    *,
+    topology: Mapping[str, Any],
+    predecessor_authority_ref: str,
+    predecessor_authority_sha256: str,
+    predecessor_result_ref: str,
+    predecessor_result_sha256: str,
+    predecessor_result_digest: str,
+    terminal_failure: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Extract immutable, contract-valid specialist plans from a failed run."""
+
+    trusted = load_multi_agent_role_topology(topology)
+    terminal_body = deepcopy(dict(terminal_failure))
+    preserved_full_digest = str(terminal_body.pop("full_result_digest", ""))
+    _require(
+        preserved_full_digest == canonical_digest(terminal_body),
+        "multi_agent_plan_checkpoint_full_result_digest_invalid",
+    )
+    _require(
+        terminal_failure.get("status")
+        == "multi_agent_preview_terminal_failure_preserved"
+        and terminal_failure.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted",
+        "multi_agent_plan_checkpoint_predecessor_failure_invalid",
+    )
+    execution = terminal_failure.get("execution") or {}
+    nodes = terminal_failure.get("node_executions") or []
+    terminal_attempts = terminal_failure.get("terminal_node_attempts") or []
+    _require(
+        execution.get("model_nodes_started") == 7
+        and execution.get("provider_attempts_preserved") == 11
+        and execution.get("external_source_network_calls") == 0
+        and execution.get("candidate_promotions") == 0
+        and len(nodes) == len(SPECIALIST_AGENT_IDS)
+        and len(terminal_attempts) == 2
+        and all(
+            row.get("failure_code") == "model_gateway_reasoning_budget_exhausted"
+            for row in terminal_attempts
+        ),
+        "multi_agent_plan_checkpoint_predecessor_shape_invalid",
+    )
+    by_agent: dict[str, dict[str, Any]] = {}
+    receipts: list[dict[str, Any]] = []
+    for node in nodes:
+        agent_id = str(node.get("agent_id") or "")
+        _require(
+            agent_id in SPECIALIST_AGENT_IDS
+            and str(node.get("node_id") or "") == f"{agent_id}::PLAN"
+            and agent_id not in by_agent,
+            "multi_agent_plan_checkpoint_node_identity_invalid",
+        )
+        preserved_payload = deepcopy(dict(node.get("validated_payload") or {}))
+        preserved_plan_digest = preserved_payload.pop("plan_opinion_digest", "")
+        payload = validate_specialist_plan_opinion(
+            preserved_payload,
+            topology=trusted,
+            expected_agent_id=agent_id,
+        )
+        _require(
+            preserved_plan_digest == payload["plan_opinion_digest"],
+            "multi_agent_plan_checkpoint_plan_digest_invalid",
+        )
+        attempts = node.get("attempts") or []
+        _require(
+            bool(attempts)
+            and attempts[-1].get("status") == "contract_valid"
+            and attempts[-1].get("validated_payload_digest")
+            == canonical_digest(payload),
+            "multi_agent_plan_checkpoint_attempt_invalid",
+        )
+        by_agent[agent_id] = payload
+        receipts.append(
+            {
+                "agent_id": agent_id,
+                "node_id": str(node["node_id"]),
+                "attempt_ids": [str(row["attempt_id"]) for row in attempts],
+                "request_digests": [str(row.get("request_digest") or "") for row in attempts],
+                "response_digests": [str(row.get("response_digest") or "") for row in attempts],
+                "validated_payload_digest": canonical_digest(payload),
+            }
+        )
+    _require(
+        set(by_agent) == set(SPECIALIST_AGENT_IDS),
+        "multi_agent_plan_checkpoint_agent_set_invalid",
+    )
+    body = {
+        "schema_version": SPECIALIST_PLAN_CHECKPOINT_SCHEMA_VERSION,
+        "status": "six_R3_specialist_plans_valid_for_Lead_successor_resume",
+        "case_key": "DELL",
+        "predecessor_run_id": (
+            "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820"
+        ),
+        "predecessor_authority_ref": str(predecessor_authority_ref),
+        "predecessor_authority_sha256": str(predecessor_authority_sha256),
+        "predecessor_result_ref": str(predecessor_result_ref),
+        "predecessor_result_sha256": str(predecessor_result_sha256),
+        "predecessor_result_digest": str(predecessor_result_digest),
+        "predecessor_full_result_digest": str(
+            preserved_full_digest
+        ),
+        "specialist_plans": [
+            deepcopy(by_agent[agent_id]) for agent_id in SPECIALIST_AGENT_IDS
+        ],
+        "plan_attempt_receipts": receipts,
+        "reused_specialist_plan_count": len(SPECIALIST_AGENT_IDS),
+        "new_model_calls": 0,
+        "new_network_calls": 0,
+        "new_candidate_promotions": 0,
+        "checkpoint_authority": (
+            "Validated plan payloads may resume at Research Lead only; they are "
+            "not Evidence, NumericFact, research conclusions or stage acceptance."
+        ),
+    }
+    return {**body, "checkpoint_digest": canonical_digest(body)}
+
+
+def validate_specialist_plan_checkpoint(
+    payload: Mapping[str, Any],
+    *,
+    topology: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected = {
+        "schema_version",
+        "status",
+        "case_key",
+        "predecessor_run_id",
+        "predecessor_authority_ref",
+        "predecessor_authority_sha256",
+        "predecessor_result_ref",
+        "predecessor_result_sha256",
+        "predecessor_result_digest",
+        "predecessor_full_result_digest",
+        "specialist_plans",
+        "plan_attempt_receipts",
+        "reused_specialist_plan_count",
+        "new_model_calls",
+        "new_network_calls",
+        "new_candidate_promotions",
+        "checkpoint_authority",
+        "checkpoint_digest",
+    }
+    value = deepcopy(dict(payload))
+    _require(
+        set(value) == expected
+        and value.get("schema_version")
+        == SPECIALIST_PLAN_CHECKPOINT_SCHEMA_VERSION
+        and value.get("status")
+        == "six_R3_specialist_plans_valid_for_Lead_successor_resume"
+        and value.get("case_key") == "DELL"
+        and value.get("reused_specialist_plan_count") == len(SPECIALIST_AGENT_IDS)
+        and value.get("new_model_calls") == 0
+        and value.get("new_network_calls") == 0
+        and value.get("new_candidate_promotions") == 0,
+        "multi_agent_plan_checkpoint_identity_invalid",
+    )
+    plans = value.get("specialist_plans") or []
+    _require(
+        len(plans) == len(SPECIALIST_AGENT_IDS)
+        and len(value.get("plan_attempt_receipts") or [])
+        == len(SPECIALIST_AGENT_IDS),
+        "multi_agent_plan_checkpoint_count_invalid",
+    )
+    normalized = []
+    for row, agent_id in zip(plans, SPECIALIST_AGENT_IDS, strict=True):
+        preserved = deepcopy(dict(row))
+        preserved_digest = preserved.pop("plan_opinion_digest", "")
+        plan = validate_specialist_plan_opinion(
+            preserved,
+            topology=topology,
+            expected_agent_id=agent_id,
+        )
+        _require(
+            preserved_digest == plan["plan_opinion_digest"],
+            "multi_agent_plan_checkpoint_plan_digest_invalid",
+        )
+        normalized.append(plan)
+    receipt_by_agent = {
+        str(row.get("agent_id") or ""): row
+        for row in value["plan_attempt_receipts"]
+    }
+    _require(
+        set(receipt_by_agent) == set(SPECIALIST_AGENT_IDS)
+        and all(
+            receipt_by_agent[agent_id].get("validated_payload_digest")
+            == canonical_digest(plan)
+            and receipt_by_agent[agent_id].get("attempt_ids")
+            and all(receipt_by_agent[agent_id].get("request_digests") or [])
+            and all(receipt_by_agent[agent_id].get("response_digests") or [])
+            for agent_id, plan in zip(
+                SPECIALIST_AGENT_IDS, normalized, strict=True
+            )
+        ),
+        "multi_agent_plan_checkpoint_receipt_invalid",
+    )
+    digest = value.pop("checkpoint_digest")
+    _require(
+        digest == canonical_digest(value),
+        "multi_agent_plan_checkpoint_digest_invalid",
+    )
+    value["specialist_plans"] = normalized
+    return {**value, "checkpoint_digest": digest}
+
+
 def validate_lead_plan(
     payload: Mapping[str, Any],
     *,
@@ -631,7 +975,7 @@ def validate_lead_plan(
         value["accepted_facets"],
         "multi_agent_lead_facets_invalid",
         minimum=5,
-        maximum=12,
+        maximum=len(trusted["facet_catalog"]),
         maximum_chars=80,
     )
     _require(
@@ -699,10 +1043,18 @@ def compile_planner_payload_from_role_opinions(
             )
             row["proposing_agent_ids"].append(agent_id)
             for intent in raw["product_intents"]:
-                if intent not in row["product_intents"] and len(row["product_intents"]) < 4:
-                    row["product_intents"].append(intent)
+                executable_intents = _compile_executable_product_intents(
+                    str(intent)
+                )
+                for executable_intent in executable_intents:
+                    if executable_intent not in row["product_intents"]:
+                        row["product_intents"].append(executable_intent)
+            _require(
+                len(row["product_intents"]) <= 4,
+                "multi_agent_compiled_product_intent_budget_invalid",
+            )
     _require(
-        5 <= len(by_facet) <= 12
+        5 <= len(by_facet) <= len(trusted["facet_catalog"])
         and all(row["product_intents"] for row in by_facet.values()),
         "multi_agent_compiled_planner_atoms_invalid",
     )
@@ -735,6 +1087,49 @@ def compile_planner_payload_from_role_opinions(
         "role_facet_bindings": role_bindings,
         "planner_payload_digest": canonical_digest(payload),
     }
+
+
+def _compile_executable_product_intents(
+    value: str,
+    *,
+    maximum_chars: int = 120,
+) -> tuple[str, ...]:
+    """Losslessly split plan prose into EvidenceRequest-sized query atoms."""
+
+    text = str(value or "").strip()
+    _require(bool(text), "multi_agent_product_intent_missing")
+    if len(text) <= maximum_chars:
+        return (text,)
+    without_terminal = text.rstrip(".。；;")
+    if len(without_terminal) <= maximum_chars:
+        return (without_terminal,)
+    chunks: list[str] = []
+    remaining = text
+    preferred = ("。", ";", "；", ",", "，", " ")
+    while len(remaining) > maximum_chars:
+        window = remaining[: maximum_chars + 1]
+        split_at = -1
+        for delimiter in preferred:
+            candidate = window.rfind(delimiter)
+            if candidate >= max(20, maximum_chars // 2):
+                split_at = candidate + (0 if delimiter == " " else 1)
+                break
+        if split_at <= 0:
+            split_at = maximum_chars
+        chunk = remaining[:split_at].strip(" ,，;；")
+        _require(
+            bool(chunk) and len(chunk) <= maximum_chars,
+            "multi_agent_product_intent_split_invalid",
+        )
+        chunks.append(chunk)
+        remaining = remaining[split_at:].strip()
+    if remaining:
+        chunks.append(remaining.rstrip(".。；;").strip())
+    _require(
+        all(0 < len(chunk) <= maximum_chars for chunk in chunks),
+        "multi_agent_product_intent_split_invalid",
+    )
+    return tuple(chunks)
 
 
 def compile_specialist_context(
@@ -1852,17 +2247,21 @@ __all__ = [
     "RESEARCH_LEAD_AGENT_ID",
     "SPECIALIST_AGENT_IDS",
     "SPECIALIST_PLAN_OPINION_SCHEMA_VERSION",
+    "SPECIALIST_PLAN_CHECKPOINT_SCHEMA_VERSION",
     "SPECIALIST_WORKPAPER_SCHEMA_VERSION",
     "TOKEN_BUDGET_BASIS_SCHEMA_VERSION",
     "WRITER_AGENT_ID",
     "compile_planner_payload_from_role_opinions",
     "compile_evaluation_messages",
     "compile_challenge_catalog",
+    "compile_analyzed_node_messages",
+    "compile_analyzed_node_submission_messages",
     "compile_lead_coordination_messages",
     "compile_lead_plan_messages",
     "compile_report_messages",
     "compile_specialist_plan_messages",
     "compile_specialist_context",
+    "compile_specialist_plan_checkpoint",
     "compile_specialist_workpaper_messages",
     "compile_token_budget_basis",
     "evaluation_tool",
@@ -1878,5 +2277,6 @@ __all__ = [
     "validate_lead_coordination_decision",
     "validate_report_draft",
     "validate_specialist_plan_opinion",
+    "validate_specialist_plan_checkpoint",
     "validate_specialist_workpaper",
 ]

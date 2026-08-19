@@ -644,14 +644,16 @@ class ResearchRetrievalService:
         principal: ResearchRetrievalPrincipal,
         *,
         material_scope_payload: Mapping[str, Any] | None = None,
+        planning_policy: ResearchPlanningPolicy | None = None,
     ) -> dict[str, Any]:
         """Compile bounded S3 atoms and execute their S1/S2 sibling requests."""
 
         self._require_read(principal)
+        active_planning_policy = planning_policy or self._planning_policy
         if (
             self._kernel is None
             or self._route_policy is None
-            or self._planning_policy is None
+            or active_planning_policy is None
         ):
             raise ResearchRetrievalServiceError(
                 "controlled_research_planning_contract_unavailable", 503
@@ -660,14 +662,14 @@ class ResearchRetrievalService:
             objective = compile_research_objective(
                 objective_payload,
                 kernel=self._kernel,
-                policy=self._planning_policy,
+                policy=active_planning_policy,
             )
             compiled = compile_research_plan(
                 planner_payload,
                 objective=objective,
                 kernel=self._kernel,
                 route_policy=self._route_policy,
-                planning_policy=self._planning_policy,
+                planning_policy=active_planning_policy,
             )
         except ResearchPlanningError as exc:
             raise ResearchRetrievalServiceError(str(exc), 422) from exc

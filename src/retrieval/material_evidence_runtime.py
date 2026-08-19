@@ -47,7 +47,11 @@ def _unique(values: Sequence[str]) -> tuple[str, ...]:
 
 
 def _normalize(value: str) -> str:
-    return " ".join(re.sub(r"[^a-z0-9]+", " ", value.casefold()).split())
+    # ``\w`` is Unicode-aware in Python.  The historical ASCII-only pattern
+    # erased every Chinese intent into the same empty key and made otherwise
+    # exact request/narrative bindings appear ambiguous.
+    normalized = re.sub(r"[^\w]+", " ", value.casefold(), flags=re.UNICODE)
+    return " ".join(normalized.replace("_", " ").split())
 
 
 def _is_period_only_intent(value: str) -> bool:

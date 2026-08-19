@@ -135,6 +135,88 @@ def test_transport_profiles_and_tool_contract_round_trip() -> None:
         load_agent_transport_profile(invalid)
 
 
+def test_deepseek_v4_thinking_profile_omits_unsupported_tool_choice(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    profile = load_agent_transport_profile(
+        _json(
+            PROFILE_ROOT
+            / "fin_ia_0_1_3_deepseek_v4_pro_ga_chat_control_transport_profile_v1_1.json"
+        )
+    )
+    assert profile.authority["thinking_tool_choice_supported"] is False
+    assert (
+        profile.authority[
+            "thinking_tool_continuation_requires_reasoning_content"
+        ]
+        is True
+    )
+    captured: dict[str, object] = {}
+    sentinel = object()
+
+    def fake_chat_step(**kwargs):
+        captured.update(kwargs)
+        return sentinel
+
+    monkeypatch.setattr(
+        "sec_agent.providers.transport_dispatch."
+        "execute_chat_completion_tool_step_exact_once",
+        fake_chat_step,
+    )
+    result = execute_agent_tool_step_exact_once(
+        profile=profile,
+        messages=_messages()[:2],
+        tools=_chat_tools(),
+        capture_root="unused",
+        run_id="THINKING-TOOL-COMPAT",
+        attempt_id="ATTEMPT-01",
+        tool_choice={
+            "type": "function",
+            "function": {"name": "read_reviewed_evidence_for_cell"},
+        },
+    )
+    assert result is sentinel
+    assert captured["tool_choice"] is None
+
+
+def test_legacy_transport_profile_preserves_explicit_tool_choice(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    profile = load_agent_transport_profile(
+        _json(
+            PROFILE_ROOT
+            / "fin_ia_0_1_3_deepseek_v4_pro_ga_chat_control_transport_profile_v1_0.json"
+        )
+    )
+    captured: dict[str, object] = {}
+    sentinel = object()
+    requested = {
+        "type": "function",
+        "function": {"name": "read_reviewed_evidence_for_cell"},
+    }
+
+    def fake_chat_step(**kwargs):
+        captured.update(kwargs)
+        return sentinel
+
+    monkeypatch.setattr(
+        "sec_agent.providers.transport_dispatch."
+        "execute_chat_completion_tool_step_exact_once",
+        fake_chat_step,
+    )
+    result = execute_agent_tool_step_exact_once(
+        profile=profile,
+        messages=_messages()[:2],
+        tools=_chat_tools(),
+        capture_root="unused",
+        run_id="LEGACY-TOOL-CHOICE",
+        attempt_id="ATTEMPT-01",
+        tool_choice=requested,
+    )
+    assert result is sentinel
+    assert captured["tool_choice"] == requested
+
+
 def test_same_canonical_transcript_projects_to_three_wire_shapes() -> None:
     canonical = canonicalize_tool_definitions(
         _chat_tools(), wire_api=CHAT_COMPLETIONS_WIRE

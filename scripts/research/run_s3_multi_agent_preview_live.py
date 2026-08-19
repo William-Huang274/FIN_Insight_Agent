@@ -72,11 +72,13 @@ from sec_agent.project_os_preflight import (  # noqa: E402
     MULTI_AGENT_PREVIEW_DECISION_SCHEMA,
     MULTI_AGENT_PREVIEW_DECISION_STATUS,
     MULTI_AGENT_PREVIEW_SCOPE,
+    MULTI_AGENT_PREVIEW_SUCCESSOR_DECISION_SCHEMA,
+    MULTI_AGENT_PREVIEW_SUCCESSOR_DECISION_STATUS,
     validate_multi_agent_preview_scope_decision,
 )
 
 
-AUTHORITY_SCHEMA = "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_1"
+AUTHORITY_SCHEMA = "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_2"
 FULL_SCHEMA = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_0"
 PUBLIC_SCHEMA = "fin_ia_s3_dell_multi_agent_preview_live_result_v1_0"
 
@@ -150,7 +152,10 @@ def _validate_authority(
         set(authority) == expected
         and authority.get("schema_version") == AUTHORITY_SCHEMA
         and authority.get("status")
-        == "approved_for_one_bounded_preview_after_project_os_preflight"
+        == (
+            "approved_for_one_transport_compatibility_successor_"
+            "after_project_os_preflight"
+        )
         and authority.get("implementation_commit") == _git_head()
     ):
         raise MultiAgentPreviewLiveError(
@@ -186,11 +191,19 @@ def _validate_authority(
     )
     if not (
         scope_decision.get("schema_version")
-        == MULTI_AGENT_PREVIEW_DECISION_SCHEMA
+        in {
+            MULTI_AGENT_PREVIEW_DECISION_SCHEMA,
+            MULTI_AGENT_PREVIEW_SUCCESSOR_DECISION_SCHEMA,
+        }
         and scope_decision.get("status")
-        == MULTI_AGENT_PREVIEW_DECISION_STATUS
+        in {
+            MULTI_AGENT_PREVIEW_DECISION_STATUS,
+            MULTI_AGENT_PREVIEW_SUCCESSOR_DECISION_STATUS,
+        }
         and scope_decision.get("run_scope_id") == MULTI_AGENT_PREVIEW_SCOPE
         and scope_projection.get("multi_agent_preview") is True
+        and scope_projection.get("multi_agent_preview_transport_successor")
+        is True
     ):
         raise MultiAgentPreviewLiveError(
             "multi_agent_preview_project_os_scope_invalid"

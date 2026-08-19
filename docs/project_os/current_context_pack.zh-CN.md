@@ -823,3 +823,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 项目级 scope decision 与执行级 authority 现已分离：前者冻结运行价值、阶段边界与禁止声明；后者只在干净提交上绑定 scope decision、实现、输入摘要、预算和唯一输出身份。Live authority v1.1 若未绑定已校验 scope decision 或任一输入／预算漂移即 fail closed。
 - committed scope decision 仅允许一次 DELL reviewed-Evidence＋current-S2 诊断性 Preview：六专业独立会话、Lead 协调、反馈、checkpoint/resume、独立评估和条件式 Writer；外源网络、Candidate promotion、S1／S3／泛化／qualified-human／发布／release 均为 false。
 - 当前定向回归 45、全仓 833 passed；compileall、活动基线 `183／8／5／27／0`、7,359 文件秘密扫描和 diff check 通过。下一步只剩干净推送、Project OS preflight 和 fresh v1.1 authority；不得把 v1.0 补字段后重用。
+
+## 2026-08-19 S3 Multi-Agent Preview R2 Provider 传输失败
+
+- committed scope preflight 在干净同步提交 `e49e6b54...` 上通过。fresh R2/v1.1 authority 随后只启动第一个 Demand Quality 规划节点；两次独立 attempt 均返回 HTTP 400 `Thinking mode does not support this tool_choice`。原始请求、完整错误响应、会话事件和 terminal result 已保留；0 外源网络／Candidate promotion／产品发布。
+- 该失败属于 DeepSeek V4 thinking-mode Provider profile／transport projection，不是模型研究判断、数据基建、S1、角色编排或网络连通性。六角色规划、Lead、底稿、反馈、Evaluator 和 Writer 均未开始，不能据此评价 Multi-Agent 效果。
+- DeepSeek 官方文档确认 thinking 工具调用必须省略 `tool_choice`，Provider 内续轮还需回传 `reasoning_content` 和 assistant content。当前 Preview 不做 Provider 内工具续轮，因此 v1.1 profile 只通过显式 capability 让 transport dispatch 省略不受支持字段；S3 Runtime 仍本地要求唯一 Tool Call。
+- R2 authority/result 保持不可变。scope decision v1.1 仅授权一个研究输入完全不变、只更换 transport capability profile 的 R3 successor；仍禁止外源网络、Candidate promotion、S1／S3／泛化／人工／发布／release。
+- transport profile v1.1、dispatch projection 与 scope successor 已通过定向 52、全仓 836 tests；compileall、活动基线 `183／8／5／27／0`、7,364 文件秘密扫描和 diff check 通过。下一步只允许干净提交、Project OS preflight 和 fresh R3 authority。

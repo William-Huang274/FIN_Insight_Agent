@@ -95,6 +95,13 @@ MULTI_AGENT_PREVIEW_DECISION_STATUS = (
     "approved_one_clean_authorized_DELL_multi_agent_preview"
 )
 MULTI_AGENT_PREVIEW_SCOPE = "one_clean_authorized_DELL_multi_agent_preview"
+MULTI_AGENT_PREVIEW_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dell_multi_agent_preview_live_scope_decision_v1_1"
+)
+MULTI_AGENT_PREVIEW_SUCCESSOR_DECISION_STATUS = (
+    "R2_thinking_tool_choice_failure_preserved_one_profile_"
+    "compatibility_successor_authorized"
+)
 DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_successor_live_scope_decision_v1_0"
 )
@@ -308,7 +315,10 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
-    if decision.get("schema_version") == MULTI_AGENT_PREVIEW_DECISION_SCHEMA:
+    if decision.get("schema_version") in {
+        MULTI_AGENT_PREVIEW_DECISION_SCHEMA,
+        MULTI_AGENT_PREVIEW_SUCCESSOR_DECISION_SCHEMA,
+    }:
         return validate_multi_agent_preview_scope_decision(
             root=root, decision=decision
         )
@@ -579,6 +589,10 @@ def _validate_fixed_pack_decision(
 def validate_multi_agent_preview_scope_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    successor = (
+        decision.get("schema_version")
+        == MULTI_AGENT_PREVIEW_SUCCESSOR_DECISION_SCHEMA
+    )
     expected_fields = {
         "schema_version",
         "status",
@@ -619,11 +633,26 @@ def validate_multi_agent_preview_scope_decision(
         "token_budget_basis_policy",
         "authority_statement",
     }
+    if successor:
+        expected_fields.update(
+            {
+                "predecessor_authority_ref",
+                "predecessor_authority_sha256",
+                "predecessor_result_ref",
+                "predecessor_result_sha256",
+                "transport_fix_scope",
+                "unchanged_research_inputs_required",
+            }
+        )
     if set(decision) != expected_fields:
         raise ValueError("project_os_multi_agent_decision_shape_invalid")
 
     required_equal = {
-        "status": MULTI_AGENT_PREVIEW_DECISION_STATUS,
+        "status": (
+            MULTI_AGENT_PREVIEW_SUCCESSOR_DECISION_STATUS
+            if successor
+            else MULTI_AGENT_PREVIEW_DECISION_STATUS
+        ),
         "case_key": "DELL",
         "cell_id": "MULTI_AGENT_PREVIEW",
         "run_scope_id": MULTI_AGENT_PREVIEW_SCOPE,
@@ -632,7 +661,10 @@ def validate_multi_agent_preview_scope_decision(
             "no_candidate_promotion"
         ),
         "next_authorized_scope": (
-            "one_bounded_DELL_multi_agent_preview_live_attempt"
+            "one_bounded_DELL_multi_agent_preview_transport_successor_"
+            "live_attempt"
+            if successor
+            else "one_bounded_DELL_multi_agent_preview_live_attempt"
         ),
     }
     for field, expected in required_equal.items():
@@ -654,6 +686,52 @@ def validate_multi_agent_preview_scope_decision(
         if decision.get(field) is not True:
             raise ValueError(
                 f"project_os_multi_agent_decision_true_required:{field}"
+            )
+
+    if successor:
+        if decision.get("unchanged_research_inputs_required") is not True:
+            raise ValueError(
+                "project_os_multi_agent_successor_unchanged_inputs_required"
+            )
+        if decision.get("transport_fix_scope") != (
+            "omit_unsupported_tool_choice_in_thinking_mode_via_"
+            "provider_profile_capability"
+        ):
+            raise ValueError(
+                "project_os_multi_agent_successor_transport_scope_invalid"
+            )
+        _, predecessor_authority = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="predecessor_authority_ref",
+            sha_field="predecessor_authority_sha256",
+        )
+        _, predecessor_result = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="predecessor_result_ref",
+            sha_field="predecessor_result_sha256",
+        )
+        predecessor_execution = predecessor_result.get("execution") or {}
+        predecessor_acceptance = predecessor_result.get("acceptance") or {}
+        if not (
+            predecessor_authority.get("schema_version")
+            == "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_1"
+            and predecessor_authority.get("status")
+            == "approved_for_one_bounded_preview_after_project_os_preflight"
+            and predecessor_result.get("status")
+            == "multi_agent_preview_terminal_failure_preserved"
+            and predecessor_result.get("failure_code")
+            == "model_gateway_http_error:400"
+            and predecessor_execution.get("model_nodes_started") == 1
+            and predecessor_execution.get("provider_attempts_preserved") == 2
+            and predecessor_acceptance.get(
+                "true_multi_agent_preview_completed"
+            )
+            is False
+        ):
+            raise ValueError(
+                "project_os_multi_agent_successor_predecessor_invalid"
             )
     for field in (
         "historical_failure_promoted",
@@ -744,6 +822,23 @@ def validate_multi_agent_preview_scope_decision(
         and profile_authority.get("capture_assistant_output") is True
         and profile_authority.get("provider_private_reasoning_capture_forbidden")
         is True
+        and (
+            not successor
+            or (
+                profile.get("schema_version")
+                == "fin_ia_agent_transport_profile_v1_1"
+                and profile_authority.get("thinking_tool_choice_supported")
+                is False
+                and profile_authority.get(
+                    "thinking_tool_continuation_requires_reasoning_content"
+                )
+                is True
+                and profile_authority.get(
+                    "thinking_tool_continuation_requires_assistant_content"
+                )
+                is True
+            )
+        )
     ):
         raise ValueError("project_os_multi_agent_provider_profile_invalid")
 
@@ -796,6 +891,7 @@ def validate_multi_agent_preview_scope_decision(
         "api_key_env": profile["api_key_env"],
         "recent_provider_steps": historical_execution["new_model_calls"],
         "multi_agent_preview": True,
+        "multi_agent_preview_transport_successor": successor,
         "run_scope_id": decision["run_scope_id"],
         "specialist_agent_count": specialist_count,
         "execution_limits": dict(expected_limits),
@@ -5009,17 +5105,34 @@ def build_preflight(
         "synced": "not_checked",
     }
     if decision_projection.get("multi_agent_preview") is True:
-        known_boundary = (
-            "This current-baseline preflight permits only one clean, "
-            "decision-bound DELL diagnostic Multi-Agent Preview over current "
-            "reviewed Evidence and current S2 NumericFact authority. It "
-            "requires six independent specialist sessions, Research Lead "
-            "coordination, typed feedback, checkpoint/resume, bounded local "
-            "repairs, independent evaluation and a conditional Writer. It "
-            "permits no external source network access, candidate promotion, "
-            "S1 or S3 acceptance, heterogeneous generalization, qualified-"
-            "human self-acceptance, Workbench publication or release."
-        )
+        if decision_projection.get(
+            "multi_agent_preview_transport_successor"
+        ) is True:
+            known_boundary = (
+                "This current-baseline preflight preserves R2 as a failed "
+                "DeepSeek V4 thinking-tool transport attempt and permits "
+                "only one fresh DELL Multi-Agent Preview successor. The "
+                "research topology, objective, Evidence, S2 authority and "
+                "execution limits remain unchanged; only the provider "
+                "profile may omit the unsupported thinking-mode tool_choice "
+                "parameter. It permits no external source network access, "
+                "candidate promotion, S1 or S3 acceptance, heterogeneous "
+                "generalization, qualified-human self-acceptance, Workbench "
+                "publication or release."
+            )
+        else:
+            known_boundary = (
+                "This current-baseline preflight permits only one clean, "
+                "decision-bound DELL diagnostic Multi-Agent Preview over "
+                "current reviewed Evidence and current S2 NumericFact "
+                "authority. It requires six independent specialist sessions, "
+                "Research Lead coordination, typed feedback, checkpoint/"
+                "resume, bounded local repairs, independent evaluation and a "
+                "conditional Writer. It permits no external source network "
+                "access, candidate promotion, S1 or S3 acceptance, "
+                "heterogeneous generalization, qualified-human self-"
+                "acceptance, Workbench publication or release."
+            )
     elif (
         decision_projection.get("material_scope_contract_repair_successor")
         is True

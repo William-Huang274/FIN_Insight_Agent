@@ -176,6 +176,11 @@ MULTI_AGENT_PREVIEW_SCOPE_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
     "scope_decision_v1_0.json"
 )
+MULTI_AGENT_PREVIEW_SUCCESSOR_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
+    "scope_decision_v1_1.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -310,6 +315,24 @@ def test_multi_agent_preview_scope_decision_fails_if_execution_budget_expands() 
         validate_multi_agent_preview_scope_decision(
             root=ROOT, decision=decision
         )
+
+
+def test_multi_agent_preview_transport_successor_binds_failed_r2_and_profile_fix() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=MULTI_AGENT_PREVIEW_SUCCESSOR_SCOPE_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    projection = result["decision_projection"]
+    assert projection["multi_agent_preview"] is True
+    assert projection["multi_agent_preview_transport_successor"] is True
+    assert projection["execution_limits"]["maximum_model_nodes"] == 22
+    assert "only the provider profile may omit" in result["known_boundary"]
+    assert result["network_calls"] == 0
+    assert result["provider_calls"] == 0
 
 
 def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:

@@ -1,0 +1,32 @@
+{
+  "schema_version": "fin_ia_agent_transport_profile_v1_1",
+  "status": "experimental_transport_profile_not_product_authority",
+  "provider_id": "deepseek",
+  "wire_api": "openai_compatible_chat_completions",
+  "base_url": "https://api.deepseek.com",
+  "endpoint": "/chat/completions",
+  "model": "deepseek-v4-pro",
+  "api_key_env": "DEEPSEEK_API_KEY",
+  "timeout_seconds": 300,
+  "maximum_response_bytes": 2097152,
+  "request_defaults": {
+    "max_tokens": 16000,
+    "stream": false,
+    "thinking": {"type": "enabled"},
+    "reasoning_effort": "max"
+  },
+  "authority": {
+    "transport_attempt_ceiling": 1,
+    "retry_count": 0,
+    "capture_model_visible_request": true,
+    "capture_assistant_output": true,
+    "credential_capture_forbidden": true,
+    "provider_private_reasoning_capture_forbidden": true,
+    "provider_specific_profile_outside_core": true,
+    "local_tool_budget_is_authoritative": true,
+    "silently_ignored_provider_parameters_forbidden": true,
+    "thinking_tool_choice_supported": false,
+    "thinking_tool_continuation_requires_reasoning_content": true,
+    "thinking_tool_continuation_requires_assistant_content": true
+  }
+}

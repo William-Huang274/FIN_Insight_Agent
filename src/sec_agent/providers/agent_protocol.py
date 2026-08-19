@@ -16,6 +16,9 @@ SUPPORTED_AGENT_WIRES = frozenset(
 )
 _TRANSIENT_CONTINUATION_KEY = "_provider_continuation"
 AGENT_TRANSPORT_PROFILE_SCHEMA_VERSION = "fin_ia_agent_transport_profile_v1_0"
+AGENT_TRANSPORT_PROFILE_SCHEMA_VERSION_V1_1 = (
+    "fin_ia_agent_transport_profile_v1_1"
+)
 _REQUIRED_PROFILE_AUTHORITY = {
     "transport_attempt_ceiling": 1,
     "retry_count": 0,
@@ -26,6 +29,11 @@ _REQUIRED_PROFILE_AUTHORITY = {
     "provider_specific_profile_outside_core": True,
     "local_tool_budget_is_authoritative": True,
     "silently_ignored_provider_parameters_forbidden": True,
+}
+_REQUIRED_THINKING_TOOL_CAPABILITIES = {
+    "thinking_tool_choice_supported": False,
+    "thinking_tool_continuation_requires_reasoning_content": True,
+    "thinking_tool_continuation_requires_assistant_content": True,
 }
 
 
@@ -105,8 +113,13 @@ def load_agent_transport_profile(
         "authority",
     }
     _require(set(payload) == expected, "agent_transport_profile_fields_invalid")
+    schema_version = str(payload.get("schema_version") or "")
     _require(
-        payload.get("schema_version") == AGENT_TRANSPORT_PROFILE_SCHEMA_VERSION,
+        schema_version
+        in {
+            AGENT_TRANSPORT_PROFILE_SCHEMA_VERSION,
+            AGENT_TRANSPORT_PROFILE_SCHEMA_VERSION_V1_1,
+        },
         "agent_transport_profile_schema_invalid",
     )
     _require(
@@ -132,9 +145,12 @@ def load_agent_transport_profile(
         isinstance(defaults, Mapping) and not _contains_sensitive_key(defaults),
         "agent_transport_profile_defaults_invalid",
     )
+    expected_authority = dict(_REQUIRED_PROFILE_AUTHORITY)
+    if schema_version == AGENT_TRANSPORT_PROFILE_SCHEMA_VERSION_V1_1:
+        expected_authority.update(_REQUIRED_THINKING_TOOL_CAPABILITIES)
     _require(
         isinstance(authority, Mapping)
-        and dict(authority) == _REQUIRED_PROFILE_AUTHORITY,
+        and dict(authority) == expected_authority,
         "agent_transport_profile_authority_invalid",
     )
     unsupported_responses = {
@@ -600,6 +616,7 @@ def compile_agent_request_projection(
 
 
 __all__ = [
+    "AGENT_TRANSPORT_PROFILE_SCHEMA_VERSION_V1_1",
     "AGENT_TRANSPORT_PROFILE_SCHEMA_VERSION",
     "ANTHROPIC_MESSAGES_WIRE",
     "CHAT_COMPLETIONS_WIRE",

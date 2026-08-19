@@ -60,6 +60,15 @@ def execute_agent_tool_step_exact_once(
     qualification proves its continuation and capture semantics.
     """
 
+    projected_tool_choice = tool_choice
+    thinking = profile.request_defaults.get("thinking")
+    if (
+        isinstance(thinking, Mapping)
+        and thinking.get("type") == "enabled"
+        and profile.authority.get("thinking_tool_choice_supported") is False
+    ):
+        projected_tool_choice = None
+
     if profile.wire_api == CHAT_COMPLETIONS_WIRE:
         return execute_chat_completion_tool_step_exact_once(
             profile=_legacy_chat_profile(profile),
@@ -68,7 +77,7 @@ def execute_agent_tool_step_exact_once(
             capture_root=capture_root,
             run_id=run_id,
             attempt_id=attempt_id,
-            tool_choice=tool_choice,
+            tool_choice=projected_tool_choice,
         )
     if profile.wire_api == RESPONSES_WIRE:
         return execute_responses_tool_step_exact_once(
@@ -78,7 +87,7 @@ def execute_agent_tool_step_exact_once(
             capture_root=capture_root,
             run_id=run_id,
             attempt_id=attempt_id,
-            tool_choice=tool_choice,
+            tool_choice=projected_tool_choice,
         )
     if profile.wire_api == ANTHROPIC_MESSAGES_WIRE:
         raise ModelGatewayError("anthropic_messages_shadow_live_not_qualified")

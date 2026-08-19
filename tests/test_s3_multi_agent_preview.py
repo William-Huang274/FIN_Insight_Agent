@@ -25,6 +25,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_planner_payload_from_role_opinions,
     compile_report_messages,
     compile_specialist_plan_checkpoint,
+    compile_specialist_workpaper_checkpoint,
     compile_specialist_plan_messages,
     compile_specialist_workpaper_messages,
     compile_token_budget_basis,
@@ -48,6 +49,7 @@ from sec_agent.research.multi_agent_preview import (
     validate_report_draft,
     validate_specialist_plan_opinion,
     validate_specialist_plan_checkpoint,
+    validate_specialist_workpaper_checkpoint,
     validate_specialist_workpaper,
 )
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
@@ -801,16 +803,177 @@ def test_empty_reference_enums_remain_valid_but_unselectable() -> None:
     )
     claim = tool["function"]["parameters"]["properties"]["sourced_claims"]["items"]
     numeric = claim["properties"]["numeric_refs"]
-    assert numeric["maxItems"] == 0
+    assert numeric["maxItems"] == 1
     assert numeric["items"]["enum"] == ["__NO_VALID_REF__"]
+
+    payload = _workpaper("AGENT::SUPPLY_RELATIONSHIP")
+    payload.pop("workpaper_digest")
+    payload.pop("context_digest")
+    payload["sourced_claims"][0]["numeric_refs"] = ["__NO_VALID_REF__"]
+    payload["sourced_claims"][0]["numeric_relation_refs"] = [
+        "__NO_VALID_REF__"
+    ]
+    validated = validate_specialist_workpaper(
+        payload,
+        context=context,
+        expected_agent_id="AGENT::SUPPLY_RELATIONSHIP",
+    )
+    assert validated["sourced_claims"][0]["numeric_refs"] == []
+    assert validated["sourced_claims"][0]["numeric_relation_refs"] == []
 
     workpaper = _workpaper("AGENT::DEMAND_QUALITY")
     workpaper["sourced_claims"][0]["numeric_refs"] = []
     report_tool = report_draft_tool(workpapers=[workpaper])
     section = report_tool["function"]["parameters"]["properties"]["sections"]["items"]
     report_numeric = section["properties"]["numeric_refs"]
-    assert report_numeric["maxItems"] == 0
+    assert report_numeric["maxItems"] == 1
     assert report_numeric["items"]["enum"] == ["__NO_VALID_REF__"]
+
+
+def test_contract_feedback_reports_nested_workpaper_violations() -> None:
+    context = _context("AGENT::SUPPLY_RELATIONSHIP")
+    context["cell_analysis_view"]["cell"]["allowed_numeric_refs"] = []
+    context["cell_analysis_view"]["cell"]["allowed_numeric_relation_refs"] = []
+    tool = specialist_workpaper_tool(
+        agent_id="AGENT::SUPPLY_RELATIONSHIP", context=context
+    )
+    payload = _workpaper("AGENT::SUPPLY_RELATIONSHIP")
+    payload.pop("workpaper_digest")
+    payload.pop("context_digest")
+    payload["stop_reason"] = "x" * 701
+    payload["sourced_claims"][0]["numeric_refs"] = ["NUM::OUT_OF_SCOPE"]
+    feedback = compile_tool_contract_failure_feedback(
+        tool=tool,
+        payload=payload,
+        failure_code="multi_agent_workpaper_ref_out_of_scope",
+    )
+    paths = {row["field"] for row in feedback["violations"]}
+    assert "stop_reason" in paths
+    assert "sourced_claims[0].numeric_refs[0]" in paths
+
+
+def test_failed_R7_replays_five_workpapers_without_model_calls() -> None:
+    contexts = {agent_id: _context(agent_id) for agent_id in SPECIALIST_AGENT_IDS}
+    contexts["AGENT::SUPPLY_RELATIONSHIP"]["cell_analysis_view"]["cell"][
+        "allowed_numeric_refs"
+    ] = []
+    contexts["AGENT::SUPPLY_RELATIONSHIP"]["cell_analysis_view"]["cell"][
+        "allowed_numeric_relation_refs"
+    ] = []
+    nodes = []
+    for index, agent_id in enumerate(SPECIALIST_AGENT_IDS[:4], start=1):
+        workpaper = _workpaper(agent_id)
+        nodes.append(
+            {
+                "node_id": f"{agent_id}::WORKPAPER_R1",
+                "agent_id": agent_id,
+                "validated_payload": workpaper,
+                "attempts": [
+                    {
+                        "attempt_id": f"R7-{index:02d}",
+                        "status": "contract_valid",
+                        "request_digest": f"{index:x}" * 64,
+                        "response_digest": f"{index + 6:x}" * 64,
+                        "validated_payload_digest": canonical_digest(workpaper),
+                    }
+                ],
+            }
+        )
+    supply = _workpaper("AGENT::SUPPLY_RELATIONSHIP")
+    supply.pop("workpaper_digest")
+    supply.pop("context_digest")
+    supply["sourced_claims"][0]["numeric_refs"] = ["__NO_VALID_REF__"]
+    supply["sourced_claims"][0]["numeric_relation_refs"] = [
+        "__NO_VALID_REF__"
+    ]
+    terminal_attempts = [
+        {
+            "phase": "analysis",
+            "attempt_id": "R7-SUPPLY-ANALYSIS",
+            "status": "analysis_draft_valid",
+            "finish_reason": "stop",
+            "request_digest": "a" * 64,
+            "response_digest": "b" * 64,
+        },
+        {
+            "phase": "submission",
+            "attempt_id": "R7-SUPPLY-SUBMISSION-01",
+            "status": "provider_completed_local_contract_failed",
+            "failure_code": "multi_agent_workpaper_text_invalid",
+            "request_digest": "c" * 64,
+            "response_digest": "d" * 64,
+        },
+        {
+            "phase": "submission",
+            "attempt_id": "R7-SUPPLY-SUBMISSION-02",
+            "status": "provider_completed_local_contract_failed",
+            "failure_code": "multi_agent_workpaper_ref_out_of_scope",
+            "request_digest": "e" * 64,
+            "response_digest": "f" * 64,
+            "tool_calls": [
+                {
+                    "function": {
+                        "name": "submit_specialist_workpaper",
+                        "arguments": json.dumps(supply),
+                    }
+                }
+            ],
+        },
+    ]
+    terminal_body = {
+        "status": "multi_agent_preview_terminal_failure_preserved",
+        "failure_code": "multi_agent_workpaper_ref_out_of_scope",
+        "node_executions": nodes,
+        "terminal_node_attempts": terminal_attempts,
+        "execution": {
+            "new_model_nodes_started": 5,
+            "analysis_calls_preserved": 5,
+            "submission_attempts_preserved": 6,
+            "provider_attempts_preserved": 11,
+            "external_source_network_calls": 0,
+            "candidate_promotions": 0,
+        },
+    }
+    terminal = {
+        **terminal_body,
+        "full_result_digest": canonical_digest(terminal_body),
+    }
+    checkpoint = compile_specialist_workpaper_checkpoint(
+        case_key="DELL",
+        source_run_id="R7",
+        source_authority_ref="authority.json",
+        source_authority_sha256="1" * 64,
+        source_public_result_ref="result.json",
+        source_public_result_sha256="2" * 64,
+        source_public_result_digest="3" * 64,
+        source_terminal_result_ref="terminal.json",
+        source_terminal_result_sha256="4" * 64,
+        terminal_failure=terminal,
+        contexts=contexts,
+    )
+    validated = validate_specialist_workpaper_checkpoint(
+        checkpoint,
+        terminal_failure=terminal,
+        contexts=contexts,
+    )
+    assert validated["reused_workpaper_count"] == 5
+    assert validated["pending_agent_ids"] == ["AGENT::COUNTEREVIDENCE"]
+    assert len(validated["revalidated_workpapers"]) == 5
+    assert validated["claims"]["new_model_calls"] == 0
+    supply_replay = validated["revalidated_workpapers"][-1]
+    assert supply_replay["sourced_claims"][0]["numeric_refs"] == []
+
+    mutated = json.loads(json.dumps(terminal))
+    mutated["node_executions"][0]["validated_payload"]["thesis"] += " drift"
+    body = dict(mutated)
+    body.pop("full_result_digest")
+    mutated["full_result_digest"] = canonical_digest(body)
+    with pytest.raises(MultiAgentPreviewError):
+        validate_specialist_workpaper_checkpoint(
+            checkpoint,
+            terminal_failure=mutated,
+            contexts=contexts,
+        )
 
 
 def test_research_lead_selects_bounded_cross_role_repairs() -> None:

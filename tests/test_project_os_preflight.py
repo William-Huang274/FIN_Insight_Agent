@@ -14,6 +14,7 @@ from sec_agent.project_os_preflight import (
     MULTI_AGENT_PREVIEW_ANALYSIS_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SUBMISSION_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE,
+    MULTI_AGENT_PREVIEW_WORKPAPER_CHECKPOINT_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
     _validate_dynamic_five_cell_claim_surface_successor_decision,
@@ -26,6 +27,7 @@ from sec_agent.project_os_preflight import (
     validate_multi_agent_preview_analysis_successor_scope_decision,
     validate_multi_agent_preview_submission_successor_scope_decision,
     validate_multi_agent_preview_lead_checkpoint_successor_scope_decision,
+    validate_multi_agent_preview_workpaper_checkpoint_successor_scope_decision,
     validate_multi_agent_preview_plan_successor_scope_decision,
     validate_multi_agent_preview_scope_decision,
 )
@@ -208,6 +210,11 @@ MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
     "scope_decision_v1_5.json"
+)
+MULTI_AGENT_PREVIEW_WORKPAPER_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
+    "scope_decision_v1_6.json"
 )
 
 
@@ -609,6 +616,57 @@ def test_multi_agent_preview_lead_checkpoint_successor_rejects_lead_rerun() -> N
         ),
     ):
         validate_multi_agent_preview_lead_checkpoint_successor_scope_decision(
+            root=ROOT, decision=decision
+        )
+
+
+def test_multi_agent_preview_workpaper_checkpoint_successor_starts_at_counter() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=(
+            MULTI_AGENT_PREVIEW_WORKPAPER_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF
+        ),
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    projection = result["decision_projection"]
+    assert result["run_scope_id"] == (
+        MULTI_AGENT_PREVIEW_WORKPAPER_CHECKPOINT_SUCCESSOR_SCOPE
+    )
+    assert (
+        projection[
+            "multi_agent_preview_workpaper_checkpoint_downstream_successor"
+        ]
+        is True
+    )
+    assert projection["reused_workpaper_count"] == 5
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 10
+    assert (
+        projection["execution_limits"]["maximum_new_initial_workpaper_nodes"]
+        == 1
+    )
+    assert "only the pending Counterevidence workpaper" in result[
+        "known_boundary"
+    ]
+
+
+def test_multi_agent_preview_workpaper_checkpoint_rejects_completed_rerun() -> None:
+    decision = json.loads(
+        (
+            ROOT
+            / MULTI_AGENT_PREVIEW_WORKPAPER_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    decision["successor_constraints"]["rerun_completed_workpapers"] = True
+    with pytest.raises(
+        ValueError,
+        match=(
+            "project_os_multi_agent_workpaper_checkpoint_successor_"
+            "constraints_invalid"
+        ),
+    ):
+        validate_multi_agent_preview_workpaper_checkpoint_successor_scope_decision(
             root=ROOT, decision=decision
         )
 

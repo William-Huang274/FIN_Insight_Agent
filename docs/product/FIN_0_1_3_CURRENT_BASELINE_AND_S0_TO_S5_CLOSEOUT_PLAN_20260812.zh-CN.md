@@ -241,6 +241,21 @@ R7 的交付单位不是另一份计划，而是自然生成的六份角色底�
 
 剩余最大模型节点为 15，并由真实拓扑而非成本目标派生。每个节点的 token 上限仍按输入规模、输出职责、合同负担、质量风险和历史运行证据分别决定；Writer 仅在全部 blocking finding 解除后运行。R7 成功只触发 L1／八维质量／人工内容检查，不自动关闭 S1、S3 或 FIN 0.1.3。
 
+### 4Q. R7 空引用合同失败与 R8 五底稿 checkpoint successor
+
+R7 已自然完成 Demand、Operating、Value、Cash、Supply 五个角色的分析和交卷。前四份当场通过；Supply 第二次交卷因角色没有合法 NumericFact／relation refs，而旧 Schema 同时显示空引用占位值并禁止数组元素，最终被同一个 Validator 以越权引用拒绝。保存输出经当前合同零调用重放后有效。该失败属于 RC-AR-008 Harness 合同编译与嵌套反馈问题，不得归因于 S1 数据、网络或 DeepSeek 研究能力；R7 仍保持 terminal failure。
+
+当前已形成绑定 R7 captures、attempts、request／response digest 和五份 workpaper digest 的不可变 checkpoint。R8 只允许：
+
+1. 复用六份 R3 Specialist plan、一个 R6 Lead plan 和五份 R7 workpaper，复用不计作新模型调用；
+2. 从唯一缺失的 Counterevidence workpaper 开始，不得重跑前五份；
+3. 六份底稿齐备后运行 Lead coordination、受限的 challenge repair、独立 Evaluator 和仅在 blocking finding 解除后的 Writer；
+4. 最大新模型节点为 10，且每个真实付费阶段单独记录任务级 TokenBudgetBasis；
+5. 保持研究输入不变，禁止外源网络、Candidate 晋升、产品发布和 acceptance；
+6. 结果形成后再独立做 L1、八维内容质量与人工内容验收，不能因报告成功渲染自动声明 S3 通过。
+
+零调用 successor proof 已重新物化 current S1/S2：12 个 EvidenceRequest、192 个候选、44 个 typed fact request（27 resolved／17 gap）、87 个 NumericFact，六个角色没有空视图。下一步只能在全仓复证和 clean/synced commit 后签发一次 R8 authority，执行上述 checkpoint-downstream live。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

@@ -17,6 +17,7 @@ from sec_agent.research.multi_agent_preview import (
 from sec_agent.research.multi_agent_preview_runtime import (
     compile_cross_role_feedback_receipt,
     compile_lead_checkpoint_successor_zero_call_projection,
+    compile_workpaper_checkpoint_successor_zero_call_projection,
     execute_analyzed_preview_node,
     execute_checkpointed_preview_submission,
     execute_validated_preview_node,
@@ -752,3 +753,47 @@ def test_lead_checkpoint_successor_projection_skips_completed_lead_node() -> Non
     assert result["claims"]["new_lead_analysis_calls"] == 0
     assert result["claims"]["new_lead_submission_calls"] == 0
     assert result["materialization_readiness"]["blocking_empty_role_ids"] == []
+
+
+def test_workpaper_checkpoint_successor_projection_runs_only_counter() -> None:
+    def load(ref: str) -> dict[str, Any]:
+        return json.loads((ROOT / ref).read_text(encoding="utf-8"))
+
+    checkpoint = load(
+        "configs/research/evals/"
+        "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "R8_five_workpaper_checkpoint_v1_0.json"
+    )
+    result = compile_workpaper_checkpoint_successor_zero_call_projection(
+        repo_root=ROOT,
+        topology=load(
+            "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json"
+        ),
+        objective_payload=load(
+            "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_objective_v1_0.json"
+        ),
+        specialist_plan_checkpoint=load(
+            "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "R3_specialist_plan_checkpoint_v1_0.json"
+        ),
+        lead_plan_checkpoint=load(
+            "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "R6_lead_plan_checkpoint_v1_0.json"
+        ),
+        workpaper_checkpoint=checkpoint,
+        source_terminal_failure=load(
+            checkpoint["source_terminal_result_ref"]
+        ),
+    )
+
+    assert result["status"].endswith("downstream_successor_zero_call_pass")
+    assert result["reused_workpaper_count"] == 5
+    assert result["pending_agent_ids"] == ["AGENT::COUNTEREVIDENCE"]
+    assert result["maximum_new_model_nodes"] == 10
+    assert result["downstream_node_budget_basis"][
+        "pending_specialist_workpaper_nodes"
+    ] == 1
+    assert result["claims"]["new_completed_workpaper_model_calls"] == 0

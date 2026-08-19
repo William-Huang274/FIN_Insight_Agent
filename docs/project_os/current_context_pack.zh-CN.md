@@ -9,6 +9,17 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
 
+## 2026-08-20 Multi-Agent Preview R7 底稿 checkpoint 与 R8 下游 successor
+
+- R7 保持不可变 terminal failure：共保存 5 次 Specialist 分析、6 次严格交卷和 11 次 Provider attempt，没有外源网络、Candidate 晋升或产品发布。
+- Demand、Operating、Value、Cash 四份底稿当场通过。Supply 第二次交卷的研究内容也有效，但其角色没有任何合法 NumericFact／relation 引用；旧 Tool Schema 同时暴露占位 enum `__NO_VALID_REF__` 又设置 `maxItems=0`，模型按可见合同选择占位符后被本地 Validator 以 `multi_agent_workpaper_ref_out_of_scope` 拒绝。该最早责任层登记为 RC-AR-008（Harness 合同编译），不归 S1 数据、网络或 DeepSeek 研究能力。
+- 空引用合同现由同一编译源生成 Schema、反馈与 Validator；仅在合法引用集合为空时，把 singleton 占位符规范化为空数组。嵌套 `sourced_claims[*].numeric_refs` 等错误会返回精确路径，不能再只给顶层错误码。
+- 使用 R7 原始 request／response capture 零调用重放后，Supply 输出可在当前合同下合法物化；连同前四份底稿形成内容寻址的五底稿 checkpoint。旧 R7 结果不被改写为成功。
+- R8 只能复用六份 Specialist plan、一个 Lead plan 和上述五份底稿；只从 `AGENT::COUNTEREVIDENCE` 开始新调用。完成第六份底稿后，才允许 Lead 跨角色协调、最多三次反方修正、最多两轮独立评估／两次评估后修正和一份条件式 Writer，最大新模型节点为 10。
+- R8 successor 的 current S1/S2 重物化仍为 12 个 EvidenceRequest、192 个候选、44 个 typed fact request（27 resolved／17 gap）和 87 个 NumericFact；六个角色视图均非空。该结果只证明恢复点和输入一致，不签发 S1、S3、泛化、qualified-human、Workbench 发布或 release。
+- 工程门为定向 `74 passed`、全仓 `865 passed`、compileall、active baseline `184 Python / 8 frontend / 27 Runtime / 0 forbidden`、`7,406 files / 0 secret finding`、8 份 Project OS JSONL 与 diff check 全部通过。
+- 当前下一动作：工程复证已经完成；提交干净实现后签发一次绑定该提交的 R8 authority，然后执行唯一的 checkpoint-downstream live。即使 Writer 形成报告，仍需另做 L1、八维内容质量和人工内容验收。
+
 ## 2026-08-20 Multi-Agent Preview R5 分析片段续跑工程门
 
 - R4 的 Research Lead 已形成 9,932 字可见分析，但在协调问题中途达到长度上限。该失败确认最早责任是 Agent Runtime 把分析当成 one-shot，不是 S1 数据、Provider 连通、strict schema 或模型完全没有研究能力。

@@ -33,6 +33,9 @@ TOKEN_BUDGET_BASIS_SCHEMA_VERSION = "fin_ia_token_budget_basis_v1_0"
 SPECIALIST_PLAN_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_specialist_plan_checkpoint_v1_0"
 )
+SPECIALIST_WORKPAPER_CHECKPOINT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_specialist_workpaper_checkpoint_v1_0"
+)
 ANALYSIS_FRAGMENT_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_analysis_fragment_checkpoint_v1_0"
 )
@@ -68,6 +71,7 @@ _ABSENCE_TERMS = (
     "not disclosed",
     "unavailable",
 )
+_EMPTY_REF_PLACEHOLDER = "__NO_VALID_REF__"
 
 
 class MultiAgentPreviewError(ValueError):
@@ -99,6 +103,33 @@ def _strings(
         and len(rows) == len(set(rows))
         and all(len(row) <= maximum_chars for row in rows),
         code,
+    )
+    return rows
+
+
+def _authorized_ref_strings(
+    value: object,
+    code: str,
+    *,
+    allowed: set[str],
+    maximum_chars: int = 120,
+    scope_code: str | None = None,
+) -> list[str]:
+    """Validate refs while treating the transport placeholder as an empty set."""
+
+    rows = _strings(
+        value,
+        code,
+        minimum=0,
+        maximum=max(len(allowed), 1),
+        maximum_chars=maximum_chars,
+    )
+    if rows == [_EMPTY_REF_PLACEHOLDER]:
+        _require(not allowed, scope_code or code)
+        return []
+    _require(
+        _EMPTY_REF_PLACEHOLDER not in rows and set(rows).issubset(allowed),
+        scope_code or code,
     )
     return rows
 
@@ -378,6 +409,86 @@ def compile_tool_contract_failure_feedback(
                         "allowed_maximum": int(constraints["maxLength"]),
                     }
                 )
+    nested_violations: list[dict[str, Any]] = []
+
+    def collect_nested(
+        schema: Mapping[str, Any], observed: object, path: str
+    ) -> None:
+        expected_type = schema.get("type")
+        if expected_type == "object":
+            if not isinstance(observed, Mapping):
+                return
+            properties = dict(schema.get("properties") or {})
+            for field in sorted(set(schema.get("required") or ()) - set(observed)):
+                nested_violations.append(
+                    {
+                        "field": f"{path}.{field}" if path else str(field),
+                        "rule": "required",
+                        "observed": "missing",
+                    }
+                )
+            if schema.get("additionalProperties") is False:
+                for field in sorted(set(observed) - set(properties)):
+                    nested_violations.append(
+                        {
+                            "field": f"{path}.{field}" if path else str(field),
+                            "rule": "additionalProperties",
+                            "observed": "present",
+                        }
+                    )
+            for field, child in properties.items():
+                if field in observed:
+                    collect_nested(
+                        dict(child or {}),
+                        observed[field],
+                        f"{path}.{field}" if path else str(field),
+                    )
+            return
+        if expected_type == "array":
+            if not isinstance(observed, list):
+                return
+            item_schema = dict(schema.get("items") or {})
+            for index, item in enumerate(observed):
+                collect_nested(item_schema, item, f"{path}[{index}]")
+            return
+        if expected_type == "string" and isinstance(observed, str):
+            if "enum" in schema and observed not in schema["enum"]:
+                nested_violations.append(
+                    {
+                        "field": path,
+                        "rule": "enum",
+                        "observed": observed,
+                        "allowed": deepcopy(schema["enum"]),
+                    }
+                )
+            length = len(observed)
+            if "minLength" in schema and length < int(schema["minLength"]):
+                nested_violations.append(
+                    {
+                        "field": path,
+                        "rule": "minLength",
+                        "observed": length,
+                        "allowed_minimum": int(schema["minLength"]),
+                    }
+                )
+            if "maxLength" in schema and length > int(schema["maxLength"]):
+                nested_violations.append(
+                    {
+                        "field": path,
+                        "rule": "maxLength",
+                        "observed": length,
+                        "allowed_maximum": int(schema["maxLength"]),
+                    }
+                )
+
+    collect_nested(
+        dict(tool.get("function", {}).get("parameters") or {}), value, ""
+    )
+    violations.extend(
+        row
+        for row in nested_violations
+        if "." in str(row["field"]) or "[" in str(row["field"])
+    )
     if not violations:
         violations.append(
             {
@@ -2477,14 +2588,26 @@ def specialist_workpaper_tool(
     )
 
     def ref_array(values: Sequence[str]) -> dict[str, Any]:
+        empty = not values
         return {
             "type": "array",
-            "maxItems": len(values),
+            "maxItems": max(len(values), 1),
             "uniqueItems": True,
             "items": {
                 "type": "string",
-                "enum": list(values) if values else ["__NO_VALID_REF__"],
+                "enum": list(values) if values else [_EMPTY_REF_PLACEHOLDER],
             },
+            **(
+                {
+                    "description": (
+                        "No business ref is authorized. Submit [] or the single "
+                        "transport placeholder; the local validator normalizes the "
+                        "placeholder to []."
+                    )
+                }
+                if empty
+                else {}
+            ),
         }
 
     return {
@@ -2689,46 +2812,39 @@ def validate_specialist_workpaper(
             and 12 <= len(str(raw.get("claim") or "").strip()) <= 900,
             "multi_agent_workpaper_claim_invalid",
         )
-        evidence = _strings(
+        evidence = _authorized_ref_strings(
             raw.get("evidence_refs"),
             "multi_agent_workpaper_evidence_refs_invalid",
-            minimum=0,
-            maximum=max(len(allowed_evidence), 1),
-            maximum_chars=120,
+            allowed=allowed_evidence,
+            scope_code="multi_agent_workpaper_ref_out_of_scope",
         )
-        numeric = _strings(
+        numeric = _authorized_ref_strings(
             raw.get("numeric_refs"),
             "multi_agent_workpaper_numeric_refs_invalid",
-            minimum=0,
-            maximum=max(len(allowed_numeric), 1),
-            maximum_chars=120,
+            allowed=allowed_numeric,
+            scope_code="multi_agent_workpaper_ref_out_of_scope",
         )
-        relations = _strings(
+        relations = _authorized_ref_strings(
             raw.get("numeric_relation_refs"),
             "multi_agent_workpaper_relation_refs_invalid",
-            minimum=0,
-            maximum=max(len(allowed_relations), 1),
-            maximum_chars=120,
+            allowed=allowed_relations,
+            scope_code="multi_agent_workpaper_ref_out_of_scope",
         )
-        _require(
-            set(evidence).issubset(allowed_evidence)
-            and set(numeric).issubset(allowed_numeric)
-            and set(relations).issubset(allowed_relations),
-            "multi_agent_workpaper_ref_out_of_scope",
-        )
+        raw["evidence_refs"] = evidence
+        raw["numeric_refs"] = numeric
+        raw["numeric_relation_refs"] = relations
         _require(
             raw["authority"] == "not_inferable"
             or bool(evidence or numeric or relations),
             "multi_agent_workpaper_claim_unbound",
         )
-    gaps = _strings(
+    gaps = _authorized_ref_strings(
         value.get("remaining_gap_refs"),
         "multi_agent_workpaper_gap_refs_invalid",
-        minimum=0,
-        maximum=max(len(allowed_gaps), 1),
-        maximum_chars=120,
+        allowed=allowed_gaps,
+        scope_code="multi_agent_workpaper_gap_out_of_scope",
     )
-    _require(set(gaps).issubset(allowed_gaps), "multi_agent_workpaper_gap_out_of_scope")
+    value["remaining_gap_refs"] = gaps
     for field, minimum in (
         ("alternative_explanations", 1),
         ("strongest_counterarguments", 1),
@@ -2798,6 +2914,297 @@ def validate_specialist_workpaper(
     value["context_digest"] = str(context["context_digest"])
     value["workpaper_digest"] = canonical_digest(value)
     return value
+
+
+def _revalidate_r7_workpaper_terminal(
+    *,
+    terminal_failure: Mapping[str, Any],
+    contexts: Mapping[str, Mapping[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str]:
+    terminal = deepcopy(dict(terminal_failure))
+    preserved_full_digest = str(terminal.pop("full_result_digest", ""))
+    _require(
+        preserved_full_digest == canonical_digest(terminal)
+        and terminal_failure.get("status")
+        == "multi_agent_preview_terminal_failure_preserved"
+        and terminal_failure.get("failure_code")
+        == "multi_agent_workpaper_ref_out_of_scope",
+        "multi_agent_workpaper_checkpoint_terminal_invalid",
+    )
+    execution = terminal_failure.get("execution") or {}
+    nodes = list(terminal_failure.get("node_executions") or ())
+    terminal_attempts = list(terminal_failure.get("terminal_node_attempts") or ())
+    _require(
+        execution.get("new_model_nodes_started") == 5
+        and execution.get("analysis_calls_preserved") == 5
+        and execution.get("submission_attempts_preserved") == 6
+        and execution.get("provider_attempts_preserved") == 11
+        and execution.get("external_source_network_calls") == 0
+        and execution.get("candidate_promotions") == 0
+        and len(nodes) == 4
+        and len(terminal_attempts) == 3,
+        "multi_agent_workpaper_checkpoint_terminal_shape_invalid",
+    )
+
+    workpapers: dict[str, dict[str, Any]] = {}
+    receipts: list[dict[str, Any]] = []
+    for node in nodes:
+        agent_id = str(node.get("agent_id") or "")
+        _require(
+            agent_id in SPECIALIST_AGENT_IDS[:4]
+            and agent_id not in workpapers
+            and str(node.get("node_id") or "")
+            == f"{agent_id}::WORKPAPER_R1"
+            and agent_id in contexts,
+            "multi_agent_workpaper_checkpoint_node_identity_invalid",
+        )
+        raw = deepcopy(dict(node.get("validated_payload") or {}))
+        stored_workpaper_digest = str(raw.pop("workpaper_digest", ""))
+        stored_context_digest = str(raw.pop("context_digest", ""))
+        validated = validate_specialist_workpaper(
+            raw,
+            context=contexts[agent_id],
+            expected_agent_id=agent_id,
+        )
+        attempts = list(node.get("attempts") or ())
+        _require(
+            stored_workpaper_digest == validated["workpaper_digest"]
+            and stored_context_digest == validated["context_digest"]
+            and bool(attempts)
+            and attempts[-1].get("status") == "contract_valid"
+            and attempts[-1].get("validated_payload_digest")
+            == canonical_digest(validated),
+            "multi_agent_workpaper_checkpoint_completed_node_invalid",
+        )
+        workpapers[agent_id] = validated
+        receipts.append(
+            {
+                "agent_id": agent_id,
+                "source": "R7_contract_valid_node",
+                "node_id": str(node["node_id"]),
+                "attempt_ids": [str(row["attempt_id"]) for row in attempts],
+                "request_digests": [
+                    str(row.get("request_digest") or "") for row in attempts
+                ],
+                "response_digests": [
+                    str(row.get("response_digest") or "") for row in attempts
+                ],
+                "workpaper_digest": validated["workpaper_digest"],
+            }
+        )
+
+    analysis_attempt, first_submission, final_submission = terminal_attempts
+    _require(
+        analysis_attempt.get("phase") == "analysis"
+        and analysis_attempt.get("status") == "analysis_draft_valid"
+        and analysis_attempt.get("finish_reason") == "stop"
+        and first_submission.get("failure_code")
+        == "multi_agent_workpaper_text_invalid"
+        and final_submission.get("failure_code")
+        == "multi_agent_workpaper_ref_out_of_scope"
+        and final_submission.get("status")
+        == "provider_completed_local_contract_failed",
+        "multi_agent_workpaper_checkpoint_terminal_attempts_invalid",
+    )
+    tool_calls = list(final_submission.get("tool_calls") or ())
+    _require(
+        len(tool_calls) == 1
+        and str((tool_calls[0].get("function") or {}).get("name") or "")
+        == "submit_specialist_workpaper",
+        "multi_agent_workpaper_checkpoint_terminal_tool_invalid",
+    )
+    try:
+        terminal_payload = json.loads(
+            str((tool_calls[0].get("function") or {}).get("arguments") or "")
+        )
+    except (json.JSONDecodeError, TypeError, ValueError) as exc:
+        raise MultiAgentPreviewError(
+            "multi_agent_workpaper_checkpoint_terminal_payload_invalid"
+        ) from exc
+    supply_agent_id = "AGENT::SUPPLY_RELATIONSHIP"
+    _require(
+        isinstance(terminal_payload, Mapping) and supply_agent_id in contexts,
+        "multi_agent_workpaper_checkpoint_terminal_payload_invalid",
+    )
+    supply = validate_specialist_workpaper(
+        terminal_payload,
+        context=contexts[supply_agent_id],
+        expected_agent_id=supply_agent_id,
+    )
+    workpapers[supply_agent_id] = supply
+    receipts.append(
+        {
+            "agent_id": supply_agent_id,
+            "source": "R7_provider_output_revalidated_after_empty_ref_contract_fix",
+            "node_id": f"{supply_agent_id}::WORKPAPER_R1",
+            "attempt_ids": [str(row["attempt_id"]) for row in terminal_attempts],
+            "request_digests": [
+                str(row.get("request_digest") or "") for row in terminal_attempts
+            ],
+            "response_digests": [
+                str(row.get("response_digest") or "") for row in terminal_attempts
+            ],
+            "workpaper_digest": supply["workpaper_digest"],
+        }
+    )
+    ordered_ids = list(SPECIALIST_AGENT_IDS[:5])
+    _require(
+        set(workpapers) == set(ordered_ids),
+        "multi_agent_workpaper_checkpoint_agent_set_invalid",
+    )
+    return [workpapers[agent_id] for agent_id in ordered_ids], receipts, preserved_full_digest
+
+
+def compile_specialist_workpaper_checkpoint(
+    *,
+    case_key: str,
+    source_run_id: str,
+    source_authority_ref: str,
+    source_authority_sha256: str,
+    source_public_result_ref: str,
+    source_public_result_sha256: str,
+    source_public_result_digest: str,
+    source_terminal_result_ref: str,
+    source_terminal_result_sha256: str,
+    terminal_failure: Mapping[str, Any],
+    contexts: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    workpapers, receipts, full_digest = _revalidate_r7_workpaper_terminal(
+        terminal_failure=terminal_failure,
+        contexts=contexts,
+    )
+    body = {
+        "schema_version": SPECIALIST_WORKPAPER_CHECKPOINT_SCHEMA_VERSION,
+        "status": "five_R7_specialist_workpapers_valid_for_downstream_resume",
+        "case_key": str(case_key),
+        "source_run_id": str(source_run_id),
+        "source_authority_ref": str(source_authority_ref),
+        "source_authority_sha256": str(source_authority_sha256),
+        "source_public_result_ref": str(source_public_result_ref),
+        "source_public_result_sha256": str(source_public_result_sha256),
+        "source_public_result_digest": str(source_public_result_digest),
+        "source_terminal_result_ref": str(source_terminal_result_ref),
+        "source_terminal_result_sha256": str(source_terminal_result_sha256),
+        "source_terminal_result_digest": full_digest,
+        "source_failure_code": "multi_agent_workpaper_ref_out_of_scope",
+        "completed_agent_ids": list(SPECIALIST_AGENT_IDS[:5]),
+        "pending_agent_ids": [SPECIALIST_AGENT_IDS[5]],
+        "reused_workpaper_count": 5,
+        "workpaper_digests": {
+            str(row["agent_id"]): str(row["workpaper_digest"])
+            for row in workpapers
+        },
+        "source_receipts": receipts,
+        "resume_policy": {
+            "completed_workpaper_rerun_forbidden": True,
+            "pending_counterevidence_workpaper_required": True,
+            "lead_coordination_must_wait_for_all_six_workpapers": True,
+            "research_inputs_unchanged": True,
+            "new_fact_or_authority_forbidden": True,
+        },
+        "claims": {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+    }
+    return {**body, "checkpoint_digest": canonical_digest(body)}
+
+
+def validate_specialist_workpaper_checkpoint(
+    checkpoint: Mapping[str, Any],
+    *,
+    terminal_failure: Mapping[str, Any],
+    contexts: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    value = deepcopy(dict(checkpoint))
+    checkpoint_digest = str(value.pop("checkpoint_digest", ""))
+    expected = {
+        "schema_version",
+        "status",
+        "case_key",
+        "source_run_id",
+        "source_authority_ref",
+        "source_authority_sha256",
+        "source_public_result_ref",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_terminal_result_ref",
+        "source_terminal_result_sha256",
+        "source_terminal_result_digest",
+        "source_failure_code",
+        "completed_agent_ids",
+        "pending_agent_ids",
+        "reused_workpaper_count",
+        "workpaper_digests",
+        "source_receipts",
+        "resume_policy",
+        "claims",
+    }
+    _require(
+        set(value) == expected
+        and checkpoint_digest == canonical_digest(value)
+        and value.get("schema_version")
+        == SPECIALIST_WORKPAPER_CHECKPOINT_SCHEMA_VERSION
+        and value.get("status")
+        == "five_R7_specialist_workpapers_valid_for_downstream_resume"
+        and value.get("case_key") == "DELL"
+        and value.get("source_failure_code")
+        == "multi_agent_workpaper_ref_out_of_scope"
+        and value.get("completed_agent_ids") == list(SPECIALIST_AGENT_IDS[:5])
+        and value.get("pending_agent_ids") == [SPECIALIST_AGENT_IDS[5]]
+        and value.get("reused_workpaper_count") == 5
+        and value.get("resume_policy")
+        == {
+            "completed_workpaper_rerun_forbidden": True,
+            "pending_counterevidence_workpaper_required": True,
+            "lead_coordination_must_wait_for_all_six_workpapers": True,
+            "research_inputs_unchanged": True,
+            "new_fact_or_authority_forbidden": True,
+        }
+        and value.get("claims")
+        == {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+        "multi_agent_workpaper_checkpoint_shape_invalid",
+    )
+    for field in (
+        "source_authority_sha256",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_terminal_result_sha256",
+        "source_terminal_result_digest",
+    ):
+        digest = str(value.get(field) or "")
+        _require(
+            len(digest) == 64 and all(ch in "0123456789abcdef" for ch in digest),
+            "multi_agent_workpaper_checkpoint_binding_invalid",
+        )
+    workpapers, receipts, full_digest = _revalidate_r7_workpaper_terminal(
+        terminal_failure=terminal_failure,
+        contexts=contexts,
+    )
+    _require(
+        value["source_terminal_result_digest"] == full_digest
+        and value["source_receipts"] == receipts
+        and value["workpaper_digests"]
+        == {
+            str(row["agent_id"]): str(row["workpaper_digest"])
+            for row in workpapers
+        },
+        "multi_agent_workpaper_checkpoint_replay_drift",
+    )
+    return {
+        **value,
+        "checkpoint_digest": checkpoint_digest,
+        "revalidated_workpapers": workpapers,
+    }
 
 
 def evaluation_tool() -> dict[str, Any]:
@@ -3163,14 +3570,26 @@ def report_draft_tool(
     )
 
     def ref_array(values: Sequence[str]) -> dict[str, Any]:
+        empty = not values
         return {
             "type": "array",
-            "maxItems": len(values),
+            "maxItems": max(len(values), 1),
             "uniqueItems": True,
             "items": {
                 "type": "string",
-                "enum": list(values) if values else ["__NO_VALID_REF__"],
+                "enum": list(values) if values else [_EMPTY_REF_PLACEHOLDER],
             },
+            **(
+                {
+                    "description": (
+                        "No business ref is authorized. Submit [] or the single "
+                        "transport placeholder; the local validator normalizes the "
+                        "placeholder to []."
+                    )
+                }
+                if empty
+                else {}
+            ),
         }
 
     return {
@@ -3303,26 +3722,24 @@ def validate_report_draft(
             maximum=len(agents),
             maximum_chars=80,
         )
-        evidence_refs = _strings(
+        evidence_refs = _authorized_ref_strings(
             section["evidence_refs"],
             "multi_agent_report_evidence_refs_invalid",
-            minimum=0,
-            maximum=max(len(evidence), 1),
-            maximum_chars=120,
+            allowed=evidence,
+            scope_code="multi_agent_report_ref_out_of_scope",
         )
-        numeric_refs = _strings(
+        numeric_refs = _authorized_ref_strings(
             section["numeric_refs"],
             "multi_agent_report_numeric_refs_invalid",
-            minimum=0,
-            maximum=max(len(numeric), 1),
-            maximum_chars=120,
+            allowed=numeric,
+            scope_code="multi_agent_report_ref_out_of_scope",
         )
         _require(
-            set(source_agents).issubset(agents)
-            and set(evidence_refs).issubset(evidence)
-            and set(numeric_refs).issubset(numeric),
+            set(source_agents).issubset(agents),
             "multi_agent_report_ref_out_of_scope",
         )
+        section["evidence_refs"] = evidence_refs
+        section["numeric_refs"] = numeric_refs
     for field, minimum in (("remaining_gaps", 1), ("what_would_change", 2)):
         value[field] = _strings(
             value[field],
@@ -3447,6 +3864,7 @@ __all__ = [
     "SPECIALIST_AGENT_IDS",
     "SPECIALIST_PLAN_OPINION_SCHEMA_VERSION",
     "SPECIALIST_PLAN_CHECKPOINT_SCHEMA_VERSION",
+    "SPECIALIST_WORKPAPER_CHECKPOINT_SCHEMA_VERSION",
     "SPECIALIST_WORKPAPER_SCHEMA_VERSION",
     "TOKEN_BUDGET_BASIS_SCHEMA_VERSION",
     "WRITER_AGENT_ID",
@@ -3464,6 +3882,7 @@ __all__ = [
     "compile_specialist_plan_messages",
     "compile_specialist_context",
     "compile_specialist_plan_checkpoint",
+    "compile_specialist_workpaper_checkpoint",
     "compile_specialist_workpaper_messages",
     "compile_token_budget_basis",
     "merge_analysis_draft_fragments",
@@ -3484,5 +3903,6 @@ __all__ = [
     "validate_report_draft",
     "validate_specialist_plan_opinion",
     "validate_specialist_plan_checkpoint",
+    "validate_specialist_workpaper_checkpoint",
     "validate_specialist_workpaper",
 ]

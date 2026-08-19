@@ -848,3 +848,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 三条超过 EvidenceRequest 120 字符的自然意图由确定性 compiler 无损拆分；Workbench 仅在当前调用注入 scoped policy，不修改全局 policy。中文 intent 归一化从 ASCII-only 改为 Unicode-aware，避免不同中文研究请求全部折叠为空 key。
 - 当前物化为 12 EvidenceRequest、192 个 BM25＋Qwen 候选、44 个 typed fact request（27 resolved／17 gap）、87 个 NumericFact、0 typed conflict；六角色输入均非空。0 网络、0 Candidate promotion、0 模型／付费调用。
 - 定向 75、全仓 844 tests 通过。该结果只授权在干净提交和 Project OS preflight 后执行唯一一次 R4 live；S1、S3、动态开放检索、跨公司泛化、qualified-human、Workbench 发布和 release 仍为 false。详细记录见 `docs/worklog/fin_0_1_3_s3/085_multi_agent_preview_R4_plan_successor_zero_call.md`。
+
+## 2026-08-20 S3 Multi-Agent Preview R4 可见分析截断
+
+- R4 在 clean／synced 提交 `1c3a26a6...` 和通过的 Project OS preflight 上执行；六份 R3 Specialist 计划全部复用，新增 Specialist 规划调用为 0。
+- Research Lead analysis 收到 6,848 prompt token，HTTP 200 完整响应；12,000 completion 中 reasoning 9,447，并产生 9,932 字符可见分析。六角色、13 facet、七 Evidence Slot、事实／假设边界和至少 10 个协调问题均已形成，但输出在第 11 个协调问题中截断，`finish_reason=length`。
+- R4 因 analysis 不完整 fail closed，strict submission、六份工作底稿、挑战／反馈、Evaluator 和 Writer 均未开始。0 外源网络、0 Candidate promotion、0 产品写入；S1／S3／泛化／release 均为 false。
+- 这与 R3 的“全部 completion 用于 reasoning、可见 content=0”不同：两阶段分工已让分析显现，但当前 Runtime 仍把长分析当作 one-shot，不能 checkpoint partial draft、反馈缺失章节并续写。RC-AR-005 打开。
+- 下一步不得只提高 token 上限或晋升 partial draft；应保存 R4 analysis checkpoint，本地生成章节完成度 FeedbackReceipt，只允许同一 Lead 续写一次缺失部分，合并后的完整草稿才进入 non-thinking submission。详细记录见 `docs/worklog/fin_0_1_3_s3/086_multi_agent_preview_R4_visible_analysis_length_failure.md`。

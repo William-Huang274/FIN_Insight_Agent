@@ -1,0 +1,24 @@
+{
+  "acceptance": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false,
+    "true_multi_agent_preview_completed": false
+  },
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_2.json",
+  "execution": {
+    "candidate_promotions": 0,
+    "external_source_network_calls": 0,
+    "model_nodes_started": 7,
+    "product_publication": false,
+    "provider_attempts_preserved": 11
+  },
+  "failure_code": "model_gateway_reasoning_budget_exhausted",
+  "full_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_r3_20260820/terminal_failure.json",
+  "implementation_commit": "e887418d1bb789f8bf19288f61cb8851e06bd332",
+  "recorded_at": "2026-08-19T16:15:00+00:00",
+  "result_digest": "25a840a083849694b0f22e8cfd3cffbfe7d443e0e3994ad5a1a49baa47e0917a",
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_live_result_v1_0",
+  "status": "multi_agent_preview_terminal_failure_preserved"
+}

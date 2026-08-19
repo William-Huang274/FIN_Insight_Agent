@@ -831,3 +831,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - DeepSeek 官方文档确认 thinking 工具调用必须省略 `tool_choice`，Provider 内续轮还需回传 `reasoning_content` 和 assistant content。当前 Preview 不做 Provider 内工具续轮，因此 v1.1 profile 只通过显式 capability 让 transport dispatch 省略不受支持字段；S3 Runtime 仍本地要求唯一 Tool Call。
 - R2 authority/result 保持不可变。scope decision v1.1 仅授权一个研究输入完全不变、只更换 transport capability profile 的 R3 successor；仍禁止外源网络、Candidate promotion、S1／S3／泛化／人工／发布／release。
 - transport profile v1.1、dispatch projection 与 scope successor 已通过定向 52、全仓 836 tests；compileall、活动基线 `183／8／5／27／0`、7,364 文件秘密扫描和 diff check 通过。下一步只允许干净提交、Project OS preflight 和 fresh R3 authority。
+
+## 2026-08-20 S3 Multi-Agent Preview R3 六角色规划与 Lead 容量边界
+
+- R3 已证明 v1.1 transport 修复有效：11 次 Provider attempt 均进入 HTTP 200 完整响应，R2 的 thinking＋`tool_choice` 400 未重现，RC-PROVIDER-001 关闭。
+- 六个独立 Specialist AgentSession 均形成通过合同的自然规划，覆盖订单／backlog、同口径经营、价值获取、现金转换、供应／关系和反方／WWC 共 12 个不同 facet。Operating、Value、Supply 首试在 3,500 token 截断，bounded successor 后完成。
+- Research Lead 收到六份规划后，两次 `4,500` completion 都全部用于 reasoning，零可见 content、零 Tool Call；R3 以 `model_gateway_reasoning_budget_exhausted` 终止。工作底稿、挑战反馈、Evaluator、Writer 和最终报告均未运行，不能宣称 Preview、S1、S3 或产品通过。
+- 最早责任层是 Agent node 把分析与严格交卷合并在一个 max-thinking completion，且 Lead TokenBudgetBasis 未匹配六份计划的输入和综合职责；不是数据基建、S1、网络或金融内容 L1。RC-AR-003 打开。
+- 下一步保留 R3 和六份 validated plans，零调用生成 digest-bound checkpoint；复用项目已经验证的“可见分析草稿 → non-thinking 严格交卷”，为两阶段分别记录 TokenBudgetBasis，从 Lead 恢复而不重跑六个成功角色。通过 fake／mutation、clean push 和 Project OS preflight 后，才允许一个 R4 successor。

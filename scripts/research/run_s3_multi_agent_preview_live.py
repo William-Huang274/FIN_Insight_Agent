@@ -2672,6 +2672,28 @@ def _load_bound_downstream_repair_progress(
     return completed
 
 
+def _validate_downstream_progress_runtime_alignment(
+    *,
+    active_progress_checkpoint: Mapping[str, Any],
+    coordination: Mapping[str, Any],
+    completed_repairs: Mapping[str, Mapping[str, Any]],
+) -> None:
+    """Bind runtime reuse to the active successor checkpoint, not its ancestor."""
+
+    expected_completed = {
+        str(row["challenge_id"])
+        for row in active_progress_checkpoint["completed_challenge_repairs"]
+    }
+    if not (
+        active_progress_checkpoint["accepted_challenge_ids"]
+        == coordination["accepted_challenge_ids"]
+        and set(completed_repairs) == expected_completed
+    ):
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_downstream_progress_runtime_drift"
+        )
+
+
 def _compile_evaluator_feedback_receipt(
     *,
     target_session_id: str,
@@ -4320,20 +4342,17 @@ def run(authority_path: Path) -> dict[str, Any]:
             challenge_by_id[challenge_id]
             for challenge_id in coordination["accepted_challenge_ids"]
         ]
-        if downstream_analysis_successor and (
-            downstream_progress_checkpoint is None
-            or downstream_progress_checkpoint["accepted_challenge_ids"]
-            != coordination["accepted_challenge_ids"]
-            or set(completed_downstream_repairs)
-            != {
-                row["challenge_id"]
-                for row in downstream_progress_checkpoint[
-                    "completed_challenge_repairs"
-                ]
-            }
-        ):
-            raise MultiAgentPreviewLiveError(
-                "multi_agent_preview_downstream_progress_runtime_drift"
+        if downstream_analysis_successor:
+            if active_downstream_progress_checkpoint is None:
+                raise MultiAgentPreviewLiveError(
+                    "multi_agent_preview_downstream_progress_runtime_missing"
+                )
+            _validate_downstream_progress_runtime_alignment(
+                active_progress_checkpoint=(
+                    active_downstream_progress_checkpoint
+                ),
+                coordination=coordination,
+                completed_repairs=completed_downstream_repairs,
             )
         for challenge in accepted_challenges:
             challenge_id = str(challenge["challenge_id"])
@@ -4393,7 +4412,8 @@ def run(authority_path: Path) -> dict[str, Any]:
                 context_scope="role_repair",
             )
             resume_active_fragment = (
-                downstream_analysis_successor
+                not repair_context_replacement
+                and downstream_analysis_successor
                 and downstream_analysis_checkpoint is not None
                 and downstream_progress_checkpoint is not None
                 and challenge_id
@@ -4618,7 +4638,18 @@ def run(authority_path: Path) -> dict[str, Any]:
                 evaluation=final_evaluation,
             )
 
-        if downstream_analysis_successor:
+        if repair_context_replacement:
+            known_boundary_prefix = (
+                "This is one DELL R15 role-scoped Supply-repair Multi-Agent "
+                "Preview successor over unchanged current local S1/S2 "
+                "authority. Six specialist workpapers, the valid R9 Lead "
+                "challenge partition and the completed Demand and Cash "
+                "repairs were revalidated from immutable captures. The new "
+                "attempt began only at a fresh Supply repair with no analysis "
+                "continuation and did not rerun planning, initial workpapers, "
+                "Lead coordination, Demand or Cash. "
+            )
+        elif downstream_analysis_successor:
             known_boundary_prefix = (
                 "This is one DELL R11-R10-downstream-repair-analysis-"
                 "checkpoint Multi-Agent Preview successor over unchanged "
@@ -4933,6 +4964,36 @@ def run(authority_path: Path) -> dict[str, Any]:
                 ),
                 **(
                     {
+                        "R15_completed_demand_and_cash_repairs_reused_without_"
+                        "rerun": (
+                            len(completed_downstream_repairs) == 2
+                            and all(
+                                row["node_id"]
+                                not in {
+                                    "AGENT::DEMAND_QUALITY::COUNTER_REPAIR",
+                                    "AGENT::CASH_CONVERSION::COUNTER_REPAIR",
+                                }
+                                for row in node_records
+                            )
+                        ),
+                        "R15_analysis_continuation_forbidden_and_absent": all(
+                            attempt.get("phase") != "analysis_continuation"
+                            for row in node_records
+                            for attempt in row["attempts"]
+                        ),
+                        "R15_fresh_supply_repair_started_once": sum(
+                            1
+                            for row in node_records
+                            if row["node_id"]
+                            == "AGENT::SUPPLY_RELATIONSHIP::COUNTER_REPAIR"
+                        )
+                        == 1,
+                    }
+                    if repair_context_replacement
+                    else {}
+                ),
+                **(
+                    {
                         "R10_completed_demand_repair_reused_without_rerun": (
                             len(completed_downstream_repairs) == 1
                             and all(
@@ -4963,6 +5024,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                         ),
                     }
                     if downstream_analysis_successor
+                    and not repair_context_replacement
                     else {}
                 ),
                 **(

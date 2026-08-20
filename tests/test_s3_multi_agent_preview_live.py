@@ -777,3 +777,50 @@ def test_r15_authority_reuses_two_repairs_and_starts_fresh_supply(
     assert validated["execution_limits"][
         "maximum_resumed_downstream_analysis_continuations"
     ] == 0
+
+
+def test_r15_runtime_alignment_uses_active_v2_progress_not_v1_ancestor() -> None:
+    progress_v2 = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_R15_"
+            "downstream_repair_progress_checkpoint_v1_1.json"
+        ).read_text(encoding="utf-8")
+    )
+    progress_v1 = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_R11_"
+            "downstream_repair_progress_checkpoint_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    coordination = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_R10_"
+            "lead_coordination_checkpoint_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    completed = {
+        row["challenge_id"]: {"workpaper_digest": row["workpaper_digest"]}
+        for row in progress_v2["completed_challenge_repairs"]
+    }
+
+    runner._validate_downstream_progress_runtime_alignment(
+        active_progress_checkpoint=progress_v2,
+        coordination=coordination,
+        completed_repairs=completed,
+    )
+
+    with pytest.raises(
+        runner.MultiAgentPreviewLiveError,
+        match="multi_agent_preview_downstream_progress_runtime_drift",
+    ):
+        runner._validate_downstream_progress_runtime_alignment(
+            active_progress_checkpoint=progress_v1,
+            coordination=coordination,
+            completed_repairs=completed,
+        )

@@ -191,3 +191,11 @@ repair-scoped context 不是简单截断。它必须保持角色授权事实、�
 同一个已完成 repair 的恢复器同时接受旧完整上下文和新 repair-scoped 上下文，并继续验证原 request／capture／attempt／context／workpaper lineage。这使上下文演进不会迫使已成功节点重跑，也不会把新 schema 当作新业务答案。
 
 R15 只从 pending Supply fresh analysis 开始，精确复用 Demand／Cash，禁止 continuation 和已完成节点重跑。task-specific high profile 隔离在 Provider adapter，核心金融合同不增加 DeepSeek 专用字段。若 R15 后再出现 successor 编排问题，必须用通用 authority compiler 取代多代 attempt-specific schema 分支，而不是继续增加 R16／R17 特例。
+
+## 十四、R15B：恢复链必须消费 active checkpoint，而不是它的 ancestor
+
+R15B 在 Provider 前暴露了一个独立的 S0 恢复集成错误。V2 checkpoint 已正确记录 Demand／Cash 两份完成 repair 和唯一 pending Supply，但 runtime drift 校验仍读取 V1 ancestor；V1 只含 Demand，于是把合法的两份恢复结果误判成漂移。该失败不属于数据缺失、Agent 角色无效或 DeepSeek 不遵循指令。
+
+当前恢复合同因此明确为：lineage 验证仍可逐级读取 ancestor，但“本轮完成／pending 集合、运行计数和恢复证明”只能由 active checkpoint 决定。R15 还必须显式证明 continuation 为 0、Demand／Cash 没有重跑且 Supply 只 fresh 一次。成功结果的 known boundary 必须描述当前 R15 Supply successor，不能沿用 R11 Cash continuation 叙述。
+
+该修复复用既有 v1.14 authority schema 和 v1.10 scope；R15B 保持不可变失败，下一次只换 attempt identity，不新增 R16／R17 schema 分支。若后续仍需要新的 successor 合同形态，必须先实现通用 authority compiler。

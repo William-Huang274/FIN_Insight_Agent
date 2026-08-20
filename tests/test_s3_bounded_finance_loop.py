@@ -3531,6 +3531,25 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
     assert replacement_standard.request_defaults["max_tokens"] == 16000
     validate_deepseek_ga_profile(replacement_standard, strict_tools=False)
 
+    role_repair = load_chat_completion_profile(
+        _json(
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_"
+            "role_repair_analysis_high_profile_v1_0.json"
+        )
+    )
+    validate_deepseek_ga_profile(
+        role_repair,
+        strict_tools=False,
+        expected_reasoning_effort="high",
+    )
+    with pytest.raises(
+        BoundedFinanceLoopError,
+        match="finance_loop_deepseek_ga_profile_defaults_invalid",
+    ):
+        validate_deepseek_ga_profile(role_repair, strict_tools=False)
+
     micro_read = load_chat_completion_profile(
         _json(
             ROOT

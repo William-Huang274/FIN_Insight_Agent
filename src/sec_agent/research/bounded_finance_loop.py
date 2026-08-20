@@ -913,6 +913,7 @@ def validate_deepseek_ga_profile(
     profile: object,
     *,
     strict_tools: bool,
+    expected_reasoning_effort: str = "max",
 ) -> None:
     """Qualify only the replaceable DeepSeek wire profile, not finance truth."""
 
@@ -937,7 +938,7 @@ def validate_deepseek_ga_profile(
         not set(defaults).intersection(_DISALLOWED_SAMPLING_FIELDS)
         and defaults.get("stream") is False
         and defaults.get("thinking") == {"type": "enabled"}
-        and defaults.get("reasoning_effort") == "max"
+        and defaults.get("reasoning_effort") == expected_reasoning_effort
         and isinstance(defaults.get("max_tokens"), int)
         and 1 <= int(defaults["max_tokens"]) <= 384_000
         and "response_format" not in defaults,

@@ -3192,7 +3192,9 @@ def run(authority_path: Path) -> dict[str, Any]:
     validate_deepseek_ga_profile(analysis_profile, strict_tools=False)
     if repair_analysis_profile is not None:
         validate_deepseek_ga_profile(
-            repair_analysis_profile, strict_tools=False
+            repair_analysis_profile,
+            strict_tools=False,
+            expected_reasoning_effort="high",
         )
     validate_deepseek_ga_node_profile(
         submission_profile,

@@ -1,0 +1,36 @@
+{
+  "schema_version": "fin_ia_s3_multi_agent_preview_preprovider_failure_v1_0",
+  "status": "multi_agent_preview_preprovider_failure_preserved",
+  "recorded_at": "2026-08-20T18:47:00+08:00",
+  "implementation_commit": "71c4b8403db4d4fcf96f7065be759cabd2809b87",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_14.json",
+  "failure_stage": "repair_analysis_profile_validation_before_provider",
+  "failure_code": "finance_loop_deepseek_ga_profile_defaults_invalid",
+  "execution": {
+    "model_nodes_started": 0,
+    "provider_attempts": 0,
+    "network_calls": 0,
+    "candidate_promotions": 0,
+    "completed_repair_reruns": 0
+  },
+  "disposition": {
+    "earliest_responsible_layer": "S0_provider_profile_validation_integration",
+    "business_inputs_changed": false,
+    "research_inputs_changed": false,
+    "model_failure": false,
+    "data_failure": false,
+    "root_cause": "The task-specific Supply repair profile was explicitly bound to reasoning_effort high, while the older generic DeepSeek GA profile validator still hard-coded max for every analysis profile.",
+    "fix": "Keep max as the default fail-closed expectation, allow callers to bind an explicit expected reasoning effort, and require R15 Supply repair to pass high explicitly.",
+    "paid_live_attempt_consumed": false,
+    "fresh_authority_required_after_new_clean_implementation_commit": true
+  },
+  "acceptance": {
+    "supply_repair_completed": false,
+    "true_multi_agent_preview_completed": false,
+    "S1_pass": false,
+    "S3_pass": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false
+  },
+  "result_digest": "90321fe3d3e1dc5992bba11b25c0de13f2e2397d48f610fd2599452786755b6c"
+}

@@ -1,7 +1,7 @@
 # FIN 0.1.3 S3 — R14 Supply 推理耗尽与 R15 角色上下文 successor
 
 日期：2026-08-20
-状态：`R14_terminal_failure_preserved / Demand_and_Cash_repairs_preserved / role_scoped_repair_context_full_engineering_gate_pass / R15_clean_commit_push_preflight_pending`
+状态：`R14_terminal_failure_preserved / Demand_and_Cash_repairs_preserved / role_scoped_repair_context_full_engineering_gate_pass / R15_preprovider_profile_validation_failure_preserved_and_repaired`
 
 ## 1. R14 实际完成了什么
 
@@ -75,3 +75,9 @@ Python 3.10 当前使用 isolated `_pth`，综合测试须显式把仓库根与 
 这两项属于 S0 authority/preflight 集成，不改变 R15 的 Evidence、上下文、模型 profile、调用预算或业务范围。
 
 即使 R15 最终形成报告，也仍须独立执行 L1、八维绝对内容质量、paired gain、qualified-human 和异质案例泛化；不能据此直接宣布 S3 或产品通过。
+
+## 7. R15 第一次启动的零调用 pre-provider 失败
+
+R15 v1.14 authority 在 clean／synced commit 和 fresh preflight 后签发，但 runner 在任何模型、Provider、网络或 Candidate 调用前，被旧通用 profile validator 拒绝：任务专用 profile 明确为 `reasoning_effort=high`，旧校验器仍硬编码所有 analysis profile 必须为 `max`。该 authority 和 `live_result_v1_14.json` 已作为不可变启动失败保存，付费 live 未消费。
+
+修复没有放宽默认规则：通用校验默认继续要求 `max`，只有调用方显式绑定任务级期望时才接受 `high`。全仓复跑 `897 passed`。下一次由新 clean commit、fresh preflight 和 R15B authority 发起，仍复用同一 scope/schema，不新增 attempt-specific R16／R17 分支。详细记录见工作记录 100。

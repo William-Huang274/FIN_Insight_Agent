@@ -16,6 +16,7 @@ from sec_agent.research.multi_agent_preview import (
 )
 from sec_agent.research.multi_agent_preview_runtime import (
     compile_cross_role_feedback_receipt,
+    compile_coordination_checkpoint_successor_zero_call_projection,
     compile_lead_checkpoint_successor_zero_call_projection,
     compile_specialist_analysis_checkpoint_successor_zero_call_projection,
     compile_workpaper_checkpoint_successor_zero_call_projection,
@@ -932,3 +933,65 @@ def test_specialist_analysis_checkpoint_successor_resumes_counter_once() -> None
     assert result["reused_workpaper_count"] == 5
     assert result["maximum_new_model_nodes"] == 10
     assert result["materialization_summary"]["blocking_empty_role_ids"] == []
+
+
+def test_coordination_checkpoint_successor_starts_at_three_repairs() -> None:
+    challenge_catalog = [
+        {
+            "challenge_id": f"CHALLENGE::{index:024d}",
+            "target_agent_id": target,
+        }
+        for index, target in enumerate(
+            (
+                "AGENT::DEMAND_QUALITY",
+                "AGENT::VALUE_CAPTURE",
+                "AGENT::CASH_CONVERSION",
+                "AGENT::SUPPLY_RELATIONSHIP",
+            ),
+            start=1,
+        )
+    ]
+    checkpoint = {
+        "schema_version": "fin_ia_multi_agent_lead_coordination_checkpoint_v1_0",
+        "status": (
+            "six_workpapers_and_R9_lead_coordination_valid_for_downstream_resume"
+        ),
+        "checkpoint_digest": "a" * 64,
+        "reused_workpaper_count": 6,
+        "revalidated_workpapers": [{"agent_id": index} for index in range(6)],
+        "challenge_catalog": challenge_catalog,
+        "accepted_challenge_ids": [
+            challenge_catalog[0]["challenge_id"],
+            challenge_catalog[2]["challenge_id"],
+            challenge_catalog[3]["challenge_id"],
+        ],
+        "deferred_challenge_ids": [challenge_catalog[1]["challenge_id"]],
+        "coordination_decision": {
+            "coordination_rationale": "x" * 1799,
+            "next_state": "continue_local_repairs",
+        },
+    }
+    result = compile_coordination_checkpoint_successor_zero_call_projection(
+        trusted_coordination_checkpoint=checkpoint,
+        materialization_readiness={
+            "blocking_empty_role_ids": [],
+            "role_readiness": [{} for _ in range(6)],
+        },
+    )
+    assert result["maximum_new_model_nodes"] == 8
+    assert result["reused_workpaper_count"] == 6
+    assert result["reused_lead_coordination_count"] == 1
+    assert result["downstream_node_budget_basis"] == {
+        "accepted_challenge_repair_nodes": 3,
+        "maximum_evaluation_rounds": 2,
+        "maximum_evaluator_repairs": 2,
+        "conditional_writer_nodes": 1,
+    }
+    assert result["coordination_contract_capacity_audit"] == {
+        "challenge_count": 4,
+        "rationale_character_count": 1799,
+        "compiled_rationale_maximum_characters": 2200,
+        "remaining_headroom_characters": 401,
+        "schema_and_validator_share_compiler": True,
+        "legacy_1200_character_limit_rejected_as_task_inadequate": True,
+    }

@@ -45,6 +45,9 @@ ANALYSIS_COMPLETION_CHECKPOINT_SCHEMA_VERSION = (
 LEAD_PLAN_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_lead_plan_checkpoint_v1_0"
 )
+LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_lead_coordination_checkpoint_v1_0"
+)
 LEAD_PLAN_CARDINALITY_POLICY_SCHEMA_VERSION = (
     "fin_ia_multi_agent_lead_plan_cardinality_policy_v1_0"
 )
@@ -3429,12 +3432,24 @@ def compile_challenge_catalog(
     return catalog
 
 
+def lead_coordination_rationale_max_chars(
+    *, challenge_catalog: Sequence[Mapping[str, Any]]
+) -> int:
+    """Compile a task-sized rationale surface from the routed challenge set."""
+
+    challenge_count = len(challenge_catalog)
+    return min(4000, max(1200, 600 + 400 * challenge_count))
+
+
 def lead_coordination_tool(
     *,
     challenge_catalog: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     challenge_ids = [str(row["challenge_id"]) for row in challenge_catalog]
     selectable = challenge_ids if challenge_ids else ["__NO_CHALLENGE__"]
+    rationale_max_chars = lead_coordination_rationale_max_chars(
+        challenge_catalog=challenge_catalog
+    )
     return {
         "type": "function",
         "function": {
@@ -3478,7 +3493,7 @@ def lead_coordination_tool(
                     "coordination_rationale": {
                         "type": "string",
                         "minLength": 20,
-                        "maxLength": 1200,
+                        "maxLength": rationale_max_chars,
                     },
                     "next_state": {
                         "type": "string",
@@ -3538,6 +3553,10 @@ def validate_lead_coordination_decision(
     challenge_catalog: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     value = deepcopy(dict(payload))
+    rationale = str(value.get("coordination_rationale") or "").strip()
+    rationale_max_chars = lead_coordination_rationale_max_chars(
+        challenge_catalog=challenge_catalog
+    )
     expected = {
         "schema_version",
         "lead_agent_id",
@@ -3556,11 +3575,13 @@ def validate_lead_coordination_decision(
             "continue_local_repairs",
             "proceed_to_evaluation",
             "pause_for_data_or_tool",
-        }
-        and 20
-        <= len(str(value.get("coordination_rationale") or "").strip())
-        <= 1200,
+        },
         "multi_agent_lead_coordination_identity_invalid",
+    )
+    _require(
+        20 <= len(rationale) <= rationale_max_chars,
+        "multi_agent_lead_coordination_rationale_length_invalid:"
+        f"actual={len(rationale)}:maximum={rationale_max_chars}",
     )
     allowed = {str(row["challenge_id"]) for row in challenge_catalog}
     accepted = _strings(
@@ -3588,7 +3609,392 @@ def validate_lead_coordination_decision(
     )
     value["accepted_challenge_ids"] = accepted
     value["deferred_challenge_ids"] = deferred
+    value["coordination_rationale"] = rationale
     value["coordination_digest"] = canonical_digest(value)
+    return value
+
+
+def compile_lead_coordination_checkpoint(
+    *,
+    case_key: str,
+    source_run_id: str,
+    source_authority_ref: str,
+    source_authority_sha256: str,
+    source_public_result_ref: str,
+    source_public_result_sha256: str,
+    source_public_result_digest: str,
+    source_terminal_result_ref: str,
+    source_terminal_result_sha256: str,
+    source_terminal_result_digest: str,
+    predecessor_workpaper_checkpoint_ref: str,
+    predecessor_workpaper_checkpoint_sha256: str,
+    predecessor_workpaper_checkpoint_digest: str,
+    workpapers: Sequence[Mapping[str, Any]],
+    challenge_catalog: Sequence[Mapping[str, Any]],
+    coordination_decision: Mapping[str, Any],
+    source_receipts: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Bind six workpapers and one natural Lead decision for downstream reuse."""
+
+    ordered_workpapers = [deepcopy(dict(row)) for row in workpapers]
+    _require(
+        [row.get("agent_id") for row in ordered_workpapers]
+        == list(SPECIALIST_AGENT_IDS),
+        "multi_agent_coordination_checkpoint_workpaper_order_invalid",
+    )
+    catalog = [deepcopy(dict(row)) for row in challenge_catalog]
+    decision_input = deepcopy(dict(coordination_decision))
+    supplied_decision_digest = str(
+        decision_input.pop("coordination_digest", "")
+    )
+    decision = validate_lead_coordination_decision(
+        decision_input, challenge_catalog=catalog
+    )
+    _require(
+        not supplied_decision_digest
+        or supplied_decision_digest == decision["coordination_digest"],
+        "multi_agent_coordination_checkpoint_decision_digest_invalid",
+    )
+    receipts = _validate_lead_coordination_checkpoint_source_receipts(
+        source_receipts,
+        source_run_id=str(source_run_id),
+        counter_workpaper_digest=str(
+            ordered_workpapers[-1]["workpaper_digest"]
+        ),
+        coordination_decision_digest=decision["coordination_digest"],
+    )
+    body = {
+        "schema_version": LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION,
+        "status": "six_workpapers_and_R9_lead_coordination_valid_for_downstream_resume",
+        "case_key": str(case_key),
+        "source_run_id": str(source_run_id),
+        "source_authority_ref": str(source_authority_ref),
+        "source_authority_sha256": str(source_authority_sha256),
+        "source_public_result_ref": str(source_public_result_ref),
+        "source_public_result_sha256": str(source_public_result_sha256),
+        "source_public_result_digest": str(source_public_result_digest),
+        "source_terminal_result_ref": str(source_terminal_result_ref),
+        "source_terminal_result_sha256": str(source_terminal_result_sha256),
+        "source_terminal_result_digest": str(source_terminal_result_digest),
+        "source_failure_code": "multi_agent_lead_coordination_identity_invalid",
+        "predecessor_workpaper_checkpoint_ref": str(
+            predecessor_workpaper_checkpoint_ref
+        ),
+        "predecessor_workpaper_checkpoint_sha256": str(
+            predecessor_workpaper_checkpoint_sha256
+        ),
+        "predecessor_workpaper_checkpoint_digest": str(
+            predecessor_workpaper_checkpoint_digest
+        ),
+        "completed_agent_ids": list(SPECIALIST_AGENT_IDS),
+        "reused_workpaper_count": 6,
+        "workpaper_digests": {
+            str(row["agent_id"]): str(row["workpaper_digest"])
+            for row in ordered_workpapers
+        },
+        "challenge_ids": [str(row["challenge_id"]) for row in catalog],
+        "challenge_catalog_digest": canonical_digest(catalog),
+        "coordination_decision_digest": decision["coordination_digest"],
+        "accepted_challenge_ids": list(decision["accepted_challenge_ids"]),
+        "deferred_challenge_ids": list(decision["deferred_challenge_ids"]),
+        "source_receipts": receipts,
+        "resume_policy": {
+            "completed_workpaper_rerun_forbidden": True,
+            "lead_coordination_rerun_forbidden": True,
+            "downstream_starts_at_accepted_challenge_repairs": True,
+            "research_inputs_unchanged": True,
+            "new_fact_or_authority_forbidden": True,
+        },
+        "claims": {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+    }
+    return {**body, "checkpoint_digest": canonical_digest(body)}
+
+
+def _validate_lead_coordination_checkpoint_source_receipts(
+    source_receipts: Mapping[str, Any],
+    *,
+    source_run_id: str,
+    counter_workpaper_digest: str,
+    coordination_decision_digest: str,
+) -> dict[str, Any]:
+    receipts = deepcopy(dict(source_receipts))
+    _require(
+        set(receipts) == {"counter_workpaper", "lead_coordination"},
+        "multi_agent_coordination_checkpoint_receipt_set_invalid",
+    )
+    counter = receipts["counter_workpaper"]
+    lead = receipts["lead_coordination"]
+    _require(
+        isinstance(counter, Mapping)
+        and set(counter)
+        == {
+            "source_run_id",
+            "node_id",
+            "attempt_ids",
+            "request_digests",
+            "response_digests",
+            "validated_payload_digest",
+        }
+        and counter.get("source_run_id") == source_run_id
+        and counter.get("node_id")
+        == "AGENT::COUNTEREVIDENCE::WORKPAPER_R1"
+        and counter.get("validated_payload_digest")
+        == counter_workpaper_digest,
+        "multi_agent_coordination_checkpoint_counter_receipt_invalid",
+    )
+    attempt_ids = _strings(
+        counter.get("attempt_ids"),
+        "multi_agent_coordination_checkpoint_counter_attempts_invalid",
+        minimum=2,
+        maximum=3,
+        maximum_chars=220,
+    )
+    request_digests = _strings(
+        counter.get("request_digests"),
+        "multi_agent_coordination_checkpoint_counter_requests_invalid",
+        minimum=len(attempt_ids),
+        maximum=len(attempt_ids),
+        maximum_chars=64,
+    )
+    response_digests = _strings(
+        counter.get("response_digests"),
+        "multi_agent_coordination_checkpoint_counter_responses_invalid",
+        minimum=len(attempt_ids),
+        maximum=len(attempt_ids),
+        maximum_chars=64,
+    )
+    _require(
+        all(
+            len(digest) == 64
+            and all(ch in "0123456789abcdef" for ch in digest)
+            for digest in (*request_digests, *response_digests)
+        ),
+        "multi_agent_coordination_checkpoint_counter_digest_invalid",
+    )
+    _require(
+        isinstance(lead, Mapping)
+        and set(lead)
+        == {
+            "source_run_id",
+            "node_id",
+            "accepted_attempt_id",
+            "request_capture_ref",
+            "request_capture_sha256",
+            "request_digest",
+            "response_capture_ref",
+            "response_capture_sha256",
+            "response_digest",
+            "tool_name",
+            "coordination_decision_digest",
+        }
+        and lead.get("source_run_id") == source_run_id
+        and lead.get("node_id")
+        == "AGENT::RESEARCH_LEAD::COORDINATION_R1"
+        and lead.get("tool_name")
+        == "submit_lead_coordination_decision"
+        and lead.get("coordination_decision_digest")
+        == coordination_decision_digest
+        and all(
+            isinstance(lead.get(field), str)
+            and bool(str(lead[field]).strip())
+            for field in (
+                "accepted_attempt_id",
+                "request_capture_ref",
+                "response_capture_ref",
+            )
+        ),
+        "multi_agent_coordination_checkpoint_lead_receipt_invalid",
+    )
+    for field in (
+        "request_capture_sha256",
+        "request_digest",
+        "response_capture_sha256",
+        "response_digest",
+    ):
+        digest = str(lead.get(field) or "")
+        _require(
+            len(digest) == 64
+            and all(ch in "0123456789abcdef" for ch in digest),
+            "multi_agent_coordination_checkpoint_lead_digest_invalid:" + field,
+        )
+    counter["attempt_ids"] = attempt_ids
+    counter["request_digests"] = request_digests
+    counter["response_digests"] = response_digests
+    return receipts
+
+
+def validate_lead_coordination_checkpoint(
+    checkpoint: Mapping[str, Any],
+    *,
+    workpapers: Sequence[Mapping[str, Any]],
+    contexts: Mapping[str, Mapping[str, Any]],
+    challenge_catalog: Sequence[Mapping[str, Any]],
+    coordination_decision: Mapping[str, Any],
+) -> dict[str, Any]:
+    value = deepcopy(dict(checkpoint))
+    checkpoint_digest = str(value.pop("checkpoint_digest", ""))
+    expected = {
+        "schema_version",
+        "status",
+        "case_key",
+        "source_run_id",
+        "source_authority_ref",
+        "source_authority_sha256",
+        "source_public_result_ref",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_terminal_result_ref",
+        "source_terminal_result_sha256",
+        "source_terminal_result_digest",
+        "source_failure_code",
+        "predecessor_workpaper_checkpoint_ref",
+        "predecessor_workpaper_checkpoint_sha256",
+        "predecessor_workpaper_checkpoint_digest",
+        "completed_agent_ids",
+        "reused_workpaper_count",
+        "workpaper_digests",
+        "challenge_ids",
+        "challenge_catalog_digest",
+        "coordination_decision_digest",
+        "accepted_challenge_ids",
+        "deferred_challenge_ids",
+        "source_receipts",
+        "resume_policy",
+        "claims",
+    }
+    _require(
+        set(value) == expected
+        and checkpoint_digest == canonical_digest(value)
+        and value.get("schema_version")
+        == LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION
+        and value.get("status")
+        == "six_workpapers_and_R9_lead_coordination_valid_for_downstream_resume"
+        and value.get("case_key") == "DELL"
+        and value.get("source_failure_code")
+        == "multi_agent_lead_coordination_identity_invalid"
+        and value.get("completed_agent_ids") == list(SPECIALIST_AGENT_IDS)
+        and value.get("reused_workpaper_count") == 6
+        and value.get("resume_policy")
+        == {
+            "completed_workpaper_rerun_forbidden": True,
+            "lead_coordination_rerun_forbidden": True,
+            "downstream_starts_at_accepted_challenge_repairs": True,
+            "research_inputs_unchanged": True,
+            "new_fact_or_authority_forbidden": True,
+        }
+        and value.get("claims")
+        == {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+        "multi_agent_coordination_checkpoint_shape_invalid",
+    )
+    for field in (
+        "source_authority_sha256",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_terminal_result_sha256",
+        "source_terminal_result_digest",
+        "predecessor_workpaper_checkpoint_sha256",
+        "predecessor_workpaper_checkpoint_digest",
+        "challenge_catalog_digest",
+        "coordination_decision_digest",
+    ):
+        digest = str(value.get(field) or "")
+        _require(
+            len(digest) == 64
+            and all(ch in "0123456789abcdef" for ch in digest),
+            "multi_agent_coordination_checkpoint_binding_invalid:" + field,
+        )
+    ordered_workpapers: list[dict[str, Any]] = []
+    for row in workpapers:
+        raw_workpaper = deepcopy(dict(row))
+        supplied_workpaper_digest = str(
+            raw_workpaper.pop("workpaper_digest", "")
+        )
+        supplied_context_digest = str(
+            raw_workpaper.pop("context_digest", "")
+        )
+        validated_workpaper = validate_specialist_workpaper(
+            raw_workpaper,
+            context=contexts[str(raw_workpaper["agent_id"])],
+            expected_agent_id=str(raw_workpaper["agent_id"]),
+        )
+        _require(
+            not supplied_workpaper_digest
+            or supplied_workpaper_digest
+            == validated_workpaper["workpaper_digest"],
+            "multi_agent_coordination_checkpoint_workpaper_digest_invalid",
+        )
+        _require(
+            not supplied_context_digest
+            or supplied_context_digest
+            == validated_workpaper["context_digest"],
+            "multi_agent_coordination_checkpoint_context_digest_invalid",
+        )
+        ordered_workpapers.append(validated_workpaper)
+    _require(
+        [row["agent_id"] for row in ordered_workpapers]
+        == list(SPECIALIST_AGENT_IDS)
+        and value.get("workpaper_digests")
+        == {
+            row["agent_id"]: row["workpaper_digest"]
+            for row in ordered_workpapers
+        },
+        "multi_agent_coordination_checkpoint_workpapers_invalid",
+    )
+    catalog = [deepcopy(dict(row)) for row in challenge_catalog]
+    _require(
+        catalog == compile_challenge_catalog(workpapers=ordered_workpapers)
+        and value.get("challenge_ids")
+        == [row["challenge_id"] for row in catalog]
+        and value.get("challenge_catalog_digest") == canonical_digest(catalog),
+        "multi_agent_coordination_checkpoint_catalog_invalid",
+    )
+    decision_input = deepcopy(dict(coordination_decision))
+    supplied_decision_digest = str(
+        decision_input.pop("coordination_digest", "")
+    )
+    decision = validate_lead_coordination_decision(
+        decision_input, challenge_catalog=catalog
+    )
+    _require(
+        not supplied_decision_digest
+        or supplied_decision_digest == decision["coordination_digest"],
+        "multi_agent_coordination_checkpoint_decision_digest_invalid",
+    )
+    receipts = _validate_lead_coordination_checkpoint_source_receipts(
+        value.get("source_receipts") or {},
+        source_run_id=str(value["source_run_id"]),
+        counter_workpaper_digest=ordered_workpapers[-1]["workpaper_digest"],
+        coordination_decision_digest=decision["coordination_digest"],
+    )
+    _require(
+        value.get("coordination_decision_digest")
+        == decision["coordination_digest"]
+        and value.get("accepted_challenge_ids")
+        == decision["accepted_challenge_ids"]
+        and value.get("deferred_challenge_ids")
+        == decision["deferred_challenge_ids"],
+        "multi_agent_coordination_checkpoint_decision_invalid",
+    )
+    _require(
+        value.get("source_receipts") == receipts,
+        "multi_agent_coordination_checkpoint_receipts_invalid",
+    )
+    value["checkpoint_digest"] = checkpoint_digest
+    value["revalidated_workpapers"] = ordered_workpapers
+    value["challenge_catalog"] = catalog
+    value["coordination_decision"] = decision
     return value
 
 
@@ -3901,6 +4307,7 @@ __all__ = [
     "ANALYSIS_FRAGMENT_CHECKPOINT_SCHEMA_VERSION",
     "LEAD_PLAN_SCHEMA_VERSION",
     "LEAD_COORDINATION_DECISION_SCHEMA_VERSION",
+    "LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION",
     "MULTI_AGENT_EVALUATION_SCHEMA_VERSION",
     "MULTI_AGENT_REPORT_DRAFT_SCHEMA_VERSION",
     "MULTI_AGENT_ROLE_TOPOLOGY_SCHEMA_VERSION",
@@ -3922,6 +4329,7 @@ __all__ = [
     "compile_analysis_completion_checkpoint",
     "compile_analysis_continuation_messages",
     "compile_lead_coordination_messages",
+    "compile_lead_coordination_checkpoint",
     "compile_lead_plan_messages",
     "compile_report_messages",
     "compile_specialist_plan_messages",
@@ -3934,6 +4342,7 @@ __all__ = [
     "evaluation_tool",
     "lead_plan_tool",
     "lead_coordination_tool",
+    "lead_coordination_rationale_max_chars",
     "load_multi_agent_role_topology",
     "local_case_absence_findings",
     "report_draft_tool",
@@ -3945,6 +4354,7 @@ __all__ = [
     "validate_analysis_continuation_completion",
     "validate_lead_plan",
     "validate_lead_coordination_decision",
+    "validate_lead_coordination_checkpoint",
     "validate_report_draft",
     "validate_specialist_plan_opinion",
     "validate_specialist_plan_checkpoint",

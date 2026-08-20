@@ -22,6 +22,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_lead_plan_cardinality_policy,
     compile_lead_plan_checkpoint,
     compile_lead_coordination_messages,
+    compile_lead_coordination_checkpoint,
     compile_planner_payload_from_role_opinions,
     compile_report_messages,
     compile_specialist_plan_checkpoint,
@@ -31,6 +32,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_token_budget_basis,
     compile_tool_contract_failure_feedback,
     evaluation_tool,
+    lead_coordination_rationale_max_chars,
     lead_plan_tool,
     lead_coordination_tool,
     load_multi_agent_role_topology,
@@ -46,6 +48,7 @@ from sec_agent.research.multi_agent_preview import (
     validate_lead_plan,
     validate_lead_plan_checkpoint,
     validate_lead_coordination_decision,
+    validate_lead_coordination_checkpoint,
     validate_report_draft,
     validate_specialist_plan_opinion,
     validate_specialist_plan_checkpoint,
@@ -1049,6 +1052,140 @@ def test_research_lead_selects_bounded_cross_role_repairs() -> None:
         challenge_catalog=catalog,
     )
     assert decision["accepted_challenge_ids"] == [catalog[0]["challenge_id"]]
+
+
+def test_lead_coordination_rationale_capacity_is_compiled_from_challenges() -> None:
+    catalog = [
+        {"challenge_id": f"CHALLENGE::{index:024d}"}
+        for index in range(4)
+    ]
+    maximum = lead_coordination_rationale_max_chars(
+        challenge_catalog=catalog
+    )
+    assert maximum == 2200
+    tool = lead_coordination_tool(challenge_catalog=catalog)
+    assert tool["function"]["parameters"]["properties"][
+        "coordination_rationale"
+    ]["maxLength"] == maximum
+
+    payload = {
+        "schema_version": "fin_ia_multi_agent_lead_coordination_decision_v1_0",
+        "lead_agent_id": RESEARCH_LEAD_AGENT_ID,
+        "accepted_challenge_ids": [row["challenge_id"] for row in catalog[:3]],
+        "deferred_challenge_ids": [catalog[3]["challenge_id"]],
+        "coordination_rationale": "x" * 2013,
+        "next_state": "continue_local_repairs",
+    }
+    validated = validate_lead_coordination_decision(
+        payload, challenge_catalog=catalog
+    )
+    assert len(validated["coordination_rationale"]) == 2013
+
+    payload["coordination_rationale"] = "x" * (maximum + 1)
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match=(
+            "multi_agent_lead_coordination_rationale_length_invalid:"
+            "actual=2201:maximum=2200"
+        ),
+    ):
+        validate_lead_coordination_decision(
+            payload, challenge_catalog=catalog
+        )
+
+
+def test_lead_coordination_checkpoint_binds_six_workpapers_and_decision() -> None:
+    contexts = {
+        agent_id: _context(agent_id) for agent_id in SPECIALIST_AGENT_IDS
+    }
+    workpapers = [_workpaper(agent_id) for agent_id in SPECIALIST_AGENT_IDS]
+    catalog = compile_challenge_catalog(workpapers=workpapers)
+    decision = validate_lead_coordination_decision(
+        {
+            "schema_version": (
+                "fin_ia_multi_agent_lead_coordination_decision_v1_0"
+            ),
+            "lead_agent_id": RESEARCH_LEAD_AGENT_ID,
+            "accepted_challenge_ids": [catalog[0]["challenge_id"]],
+            "deferred_challenge_ids": [],
+            "coordination_rationale": (
+                "该挑战直接影响产品到公司利润的归因强度，且可由原角色在现有证据内局部复核。"
+            ),
+            "next_state": "continue_local_repairs",
+        },
+        challenge_catalog=catalog,
+    )
+    receipts = {
+        "counter_workpaper": {
+            "source_run_id": "R9",
+            "node_id": "AGENT::COUNTEREVIDENCE::WORKPAPER_R1",
+            "attempt_ids": ["R9-analysis-continuation", "R9-submission"],
+            "request_digests": ["1" * 64, "2" * 64],
+            "response_digests": ["3" * 64, "4" * 64],
+            "validated_payload_digest": workpapers[-1]["workpaper_digest"],
+        },
+        "lead_coordination": {
+            "source_run_id": "R9",
+            "node_id": "AGENT::RESEARCH_LEAD::COORDINATION_R1",
+            "accepted_attempt_id": "R9-coordination-submission-02",
+            "request_capture_ref": "captures/R9/request.json",
+            "request_capture_sha256": "5" * 64,
+            "request_digest": "6" * 64,
+            "response_capture_ref": "captures/R9/response.json",
+            "response_capture_sha256": "7" * 64,
+            "response_digest": "8" * 64,
+            "tool_name": "submit_lead_coordination_decision",
+            "coordination_decision_digest": decision["coordination_digest"],
+        },
+    }
+    checkpoint = compile_lead_coordination_checkpoint(
+        case_key="DELL",
+        source_run_id="R9",
+        source_authority_ref="authority.json",
+        source_authority_sha256="9" * 64,
+        source_public_result_ref="result.json",
+        source_public_result_sha256="a" * 64,
+        source_public_result_digest="b" * 64,
+        source_terminal_result_ref="terminal.json",
+        source_terminal_result_sha256="c" * 64,
+        source_terminal_result_digest="d" * 64,
+        predecessor_workpaper_checkpoint_ref="R7-checkpoint.json",
+        predecessor_workpaper_checkpoint_sha256="e" * 64,
+        predecessor_workpaper_checkpoint_digest="f" * 64,
+        workpapers=workpapers,
+        challenge_catalog=catalog,
+        coordination_decision=decision,
+        source_receipts=receipts,
+    )
+    validated = validate_lead_coordination_checkpoint(
+        checkpoint,
+        workpapers=workpapers,
+        contexts=contexts,
+        challenge_catalog=catalog,
+        coordination_decision=decision,
+    )
+    assert validated["reused_workpaper_count"] == 6
+    assert validated["accepted_challenge_ids"] == [catalog[0]["challenge_id"]]
+
+    mutated = json.loads(json.dumps(checkpoint))
+    mutated["source_receipts"]["lead_coordination"][
+        "coordination_decision_digest"
+    ] = "0" * 64
+    mutated_body = {
+        key: value for key, value in mutated.items() if key != "checkpoint_digest"
+    }
+    mutated["checkpoint_digest"] = canonical_digest(mutated_body)
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_coordination_checkpoint_lead_receipt_invalid",
+    ):
+        validate_lead_coordination_checkpoint(
+            mutated,
+            workpapers=workpapers,
+            contexts=contexts,
+            challenge_catalog=catalog,
+            coordination_decision=decision,
+        )
 
 
 def test_failed_preview_can_checkpoint_only_valid_specialist_plans() -> None:

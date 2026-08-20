@@ -266,6 +266,16 @@ R9 的最大新节点仍为 10，但初始 Counter analysis 调用数降为 0、
 
 该 successor 只修 S0 Agent Runtime 的上下文连续性并继续 S3 Preview。即便产出完整报告，也必须再做事实／数字／身份／引用 L1、八维绝对内容质量、同输入 paired gain 和 qualified-human 内容验收；在此之前不得声明 S3、泛化、S4 产品闭环或 release 通过。
 
+### 4S. R9 六底稿／Lead 协调结果与 R10 最小下游续跑
+
+R9 已证明 R8 的上下文恢复路径有效：Counter Agent 在同一不可变对话上完成缺失分析并通过 strict submission，DELL 六个专业角色因此都形成了有效工作底稿。Research Lead 随后读取六份底稿，自然提出四条挑战，并连续两次作出相同的业务分流：接受需求、现金和供应三条局部修订；把需要新增 Evidence 的价值修订延期，不让模型在当前资料边界内硬写。
+
+R9 最终失败不属于数据、S1、DeepSeek 研究能力或多角色分工。两次 Lead 协调说明分别为 2,013／1,799 字，旧 Harness 把协调理由硬编码为最多 1,200 字，并把容量错误误标成 identity invalid。RC-AR-010 因此归 S0 provider-neutral 合同编译；R9 保持 immutable terminal failure，六份底稿和 Lead 决策则通过 capture、digest、attempt、Session checkpoint 和 terminal result 形成可复用证据。
+
+R10 不重跑 Specialist plan、Lead plan、六份 workpaper 或 Lead coordination。协调说明容量按实际 challenge 数从同一 compiler 生成；本案四条挑战对应 2,200 字，Schema、Validator、Prompt 约束和测试共享该值。R10 从三条已接受挑战的原责任 Agent 开始，最多执行 `3 repair + 2 evaluation + 2 evaluator repair + 1 conditional Writer = 8` 个新模型节点；延期价值挑战只有在获得新 Evidence authority 后才能重新激活。
+
+R10 当前只达到 engineering／zero-call gate。它通过后仍必须分别检查：局部修订是否真实改变工作底稿；Evaluator 是否把数据／工具／Harness failure 错归成内容问题；Writer 是否只使用经验证底稿；最终产物是否通过 L1、八维质量、paired gain 和 qualified-human 内容验收。任何成功渲染都不能自动签发 S1、S3、泛化、S4 或 release。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

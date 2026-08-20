@@ -1,0 +1,59 @@
+{
+  "accepted_challenge_ids": [
+    "CHALLENGE::B1FC30D87F6DB63FDB91003C",
+    "CHALLENGE::803238978B747FEED1CE12C9",
+    "CHALLENGE::71AAF31E7FBD5A99163BBE8D"
+  ],
+  "accepted_repair_target_agent_ids": [
+    "AGENT::DEMAND_QUALITY",
+    "AGENT::CASH_CONVERSION",
+    "AGENT::SUPPLY_RELATIONSHIP"
+  ],
+  "case_key": "DELL",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "network_calls": 0,
+    "new_model_calls": 0,
+    "paid_tool_calls": 0,
+    "true_multi_agent_preview_completed": false
+  },
+  "coordination_contract_capacity_audit": {
+    "challenge_count": 4,
+    "compiled_rationale_maximum_characters": 2200,
+    "legacy_1200_character_limit_rejected_as_task_inadequate": true,
+    "rationale_character_count": 1799,
+    "remaining_headroom_characters": 401,
+    "schema_and_validator_share_compiler": true
+  },
+  "deferred_challenge_ids": [
+    "CHALLENGE::82D71DECBB7899CD9505CFBB"
+  ],
+  "downstream_node_budget_basis": {
+    "accepted_challenge_repair_nodes": 3,
+    "conditional_writer_nodes": 1,
+    "maximum_evaluation_rounds": 2,
+    "maximum_evaluator_repairs": 2
+  },
+  "lead_coordination_checkpoint_digest": "a55fb5bdbffaff934536dc08c4bf08f3b184934e855387e093273ae280ad14a2",
+  "materialization_summary": {
+    "blocking_empty_role_ids": [],
+    "role_readiness_count": 6
+  },
+  "maximum_new_model_nodes": 8,
+  "result_digest": "77df391a81d672c04b0015f2c78168571b10685eac6615d5b9ab4e79e71b2645",
+  "resume_policy": {
+    "completed_workpaper_rerun_forbidden": true,
+    "first_new_node_is_accepted_challenge_repair": true,
+    "lead_coordination_rerun_forbidden": true,
+    "lead_plan_rerun_forbidden": true,
+    "specialist_plan_rerun_forbidden": true
+  },
+  "reused_lead_coordination_count": 1,
+  "reused_lead_plan_count": 1,
+  "reused_specialist_plan_count": 6,
+  "reused_workpaper_count": 6,
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_R10_lead_coordination_checkpoint_downstream_successor_zero_call_result_v1_0",
+  "status": "R9_six_workpapers_and_lead_coordination_checkpoint_downstream_successor_zero_call_pass"
+}

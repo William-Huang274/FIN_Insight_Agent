@@ -156,3 +156,24 @@ R6 两次 strict submission 均返回 13 个协调问题、11 条信息边界和
 Lead checkpoint successor 不再经过 Planning 或 Lead-plan Provider 节点。Harness 只验证 Specialist／Lead checkpoint、重新物化当前 S1/S2 视图，并在 Research Lead Session 写入可追溯 `plan_bound` 事件；随后才激活六个 Specialist workpaper。Lead 之后可作为真正协调 Agent 消费底稿并路由挑战，但这与已经完成的 Lead-plan 节点是两个不同职责。
 
 剩余容量严格为：六份 workpaper、一次协调、最多三次反方 repair、两轮 Evaluator、最多两次 evaluator repair 和条件式 Writer，共 15 个模型节点。每个模型节点继续使用可见分析＋严格交卷，局部失败通过 FeedbackReceipt 和 checkpoint/resume 回到原责任 Agent。数据／工具失败不得路由成模型修文，Harness 失败不得被 Evaluator 解释成研报质量问题。
+
+## 十二、R9 协调检查点与 R10 下游拓扑
+
+R9 补齐了此前缺失的第六份 Counter workpaper。该底稿和前五份底稿分别拥有独立 AgentSession、模型 request／response capture、validated payload digest 和工作底稿 digest；它们不是 Harness 拼出的观点。Research Lead 的协调调用也真实读取了六份底稿，并形成三条 accepted challenge 与一条 deferred challenge。
+
+Lead 两次作出同一分流，说明失败点不在协调语义：需求、现金、供应已有当前 Evidence 支持局部修订；价值挑战需要新的 Evidence，因而延期。失败发生在提交后的项目合同校验：旧 rationale 上限 1,200 字不足以表达四条 challenge 的目标、理由和修订边界，并被错误映射成 identity invalid。
+
+R10 将协调容量改为拓扑派生值 `min(4000, max(1200, 600 + 400 × challenge_count))`。当前四条 challenge 编译为 2,200 字；同一 compiler 同时驱动 Tool Schema 和本地 Validator。容量并非为 DeepSeek 单独放宽：它与 challenge 数相关、具有 4,000 字全局上界，并由 max+1 mutation 验证 fail closed。
+
+新的检查点层次为：
+
+1. R3 Specialist plan checkpoint；
+2. R6 Lead plan checkpoint；
+3. R8 five-workpaper checkpoint；
+4. R9 Counter workpaper capture binding；
+5. R9 Lead coordination capture binding；
+6. R10 从 accepted challenge repairs 开始。
+
+每层都绑定 authority、public／terminal result、capture sha256、模型 request／response digest、validated payload digest 和 Session checkpoint／resume receipt。任何内容或 lineage 漂移都拒绝恢复。R10 的最大新节点为八个，不再把已完成前缀算入模型预算，也不允许为了“完整运行”重放上游。
+
+这一结构仍是有界 Preview，不是通用 Agent 平台完成态。它尚未证明开放外源动态检索、跨案例泛化、长期上下文压缩后的计划连续性或最终产品报告质量；这些能力必须由后续真实结果和独立验收分别证明。

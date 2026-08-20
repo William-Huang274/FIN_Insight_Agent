@@ -907,3 +907,19 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 新 attempt 不再调用 Specialist plan、Lead plan analysis、continuation 或 submission，从六份 Specialist workpaper 开始。剩余最大 15 个模型节点由 `6 workpaper + 1 Lead coordination + 3 counter repairs + 2 evaluations + 2 evaluator repairs + 1 conditional Writer` 编译，不以省钱或速度为依据。
 - checkpoint reuse 作为本地 `plan_bound` SessionEvent 留痕，不计 Provider attempt；真正下游节点继续按 analysis／submission 两阶段分别记录 TokenBudgetBasis。
 - 当前是 engineering／zero-call pass，尚未执行 R7 live；报告内容、跨角色增益、Evaluator 判断、Writer 输出、S1／S3、泛化和人工验收均未证明。详见 `docs/worklog/fin_0_1_3_s3/091_multi_agent_preview_R7_lead_checkpoint_downstream_successor_gate.md`。
+
+## 2026-08-20 S3 Multi-Agent Preview R8／R9 自然执行结果
+
+- R8 复用五份工作底稿，只运行 Counter。其模型视图已有 6 条 reviewed Evidence、3 个 NumericFact、2 个 typed gap；16,000 completion 中 15,774 用于 reasoning，仅留下 918 字可见残稿并以 length 结束。该失败归 S0 Agent Runtime one-shot／上下文恢复，不能归 S1、网络或研究资料为空。
+- R9 使用 capture-bound 原始对话、残稿和 missing-output-only FeedbackReceipt 继续同一 Counter；续写与 strict submission 均成功，第六份工作底稿 digest=`963c0ab1bdae056f3051e99543c0a0a48a2c5005c70d415e3f0923ec9f069a56`。
+- Research Lead 真实读取六份底稿后形成四条 challenge，并两次稳定选择：接受需求、现金、供应三条修订；延期需要新 Evidence 的价值修订。这个分流是自然 Agent 输出，不是 Harness 代写。
+- R9 最终仍是 immutable terminal failure：Lead rationale 两次为 2,013／1,799 字，超过旧 1,200 字上限，失败码还误报为 identity invalid。RC-AR-010 归 S0 Harness 合同容量／错误分类，不归数据、S1、DeepSeek 内容或多角色编排。
+- R9 当前结果是六份自然工作底稿＋一个自然 Lead 协调决策，不是完整报告、S3 pass、泛化或产品验收。
+
+## 2026-08-20 S3 Multi-Agent Preview R10 协调检查点下游 gate
+
+- R10 已将协调 rationale 容量改为 challenge-count 派生：四条 challenge 对应 2,200 字，Schema 与 Validator 由同一 compiler 生成；1,799 字自然输出在新合同内合法，max+1 继续 fail closed。
+- 新 checkpoint 同时绑定 R8 五份底稿、R9 Counter workpaper、R9 Lead request／response capture、authority／public／terminal result、工作底稿和协调 payload digest。terminal digest 或任一 capture mutation 都会拒绝恢复。
+- R10 复用六份 Specialist plan、一个 Lead plan、六份 workpaper 和一次 Lead coordination；这些成功前缀的新模型调用均为 0。第一新节点必须是三条 accepted challenge 的原角色 repair。
+- 新节点上限为 `3 repair + 2 evaluation + 2 evaluator repair + 1 conditional Writer = 8`。延期的价值 challenge 不得在无新 Evidence authority 时偷偷执行。
+- 当前定向合同／Runtime／Project OS 复证为 88 passed，全仓 879 passed；compileall、active baseline `184 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、8 份 Project OS JSONL、7,419-file secret scan 和 diff check 均通过。clean commit／push、preflight 和 live 尚待执行。`S1_qualified_stable=false`、`S3_acceptance=false`、`generalization=false`、`qualified_human=false`、`release=false`。

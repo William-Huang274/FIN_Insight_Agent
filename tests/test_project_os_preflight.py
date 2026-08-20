@@ -16,6 +16,7 @@ from sec_agent.project_os_preflight import (
     MULTI_AGENT_PREVIEW_LEAD_CHECKPOINT_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_WORKPAPER_CHECKPOINT_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SPECIALIST_ANALYSIS_SUCCESSOR_SCOPE,
+    MULTI_AGENT_PREVIEW_COORDINATION_CHECKPOINT_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
     _validate_dynamic_five_cell_claim_surface_successor_decision,
@@ -30,6 +31,7 @@ from sec_agent.project_os_preflight import (
     validate_multi_agent_preview_lead_checkpoint_successor_scope_decision,
     validate_multi_agent_preview_workpaper_checkpoint_successor_scope_decision,
     validate_multi_agent_preview_specialist_analysis_successor_scope_decision,
+    validate_multi_agent_preview_coordination_checkpoint_successor_scope_decision,
     validate_multi_agent_preview_plan_successor_scope_decision,
     validate_multi_agent_preview_scope_decision,
 )
@@ -222,6 +224,11 @@ MULTI_AGENT_PREVIEW_SPECIALIST_ANALYSIS_SUCCESSOR_SCOPE_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
     "scope_decision_v1_7.json"
+)
+MULTI_AGENT_PREVIEW_COORDINATION_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
+    "scope_decision_v1_8.json"
 )
 
 
@@ -723,6 +730,53 @@ def test_multi_agent_preview_specialist_analysis_successor_rejects_initial_rerun
         ),
     ):
         validate_multi_agent_preview_specialist_analysis_successor_scope_decision(
+            root=ROOT, decision=decision
+        )
+
+
+def test_multi_agent_preview_coordination_checkpoint_starts_at_repairs() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=(
+            MULTI_AGENT_PREVIEW_COORDINATION_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF
+        ),
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    projection = result["decision_projection"]
+    assert result["run_scope_id"] == (
+        MULTI_AGENT_PREVIEW_COORDINATION_CHECKPOINT_SUCCESSOR_SCOPE
+    )
+    assert projection[
+        "multi_agent_preview_coordination_checkpoint_successor"
+    ] is True
+    assert projection["reused_workpaper_count"] == 6
+    assert projection["reused_lead_coordination_count"] == 1
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 8
+    assert projection["execution_limits"][
+        "maximum_new_lead_coordination_model_calls"
+    ] == 0
+    assert "only the three accepted role-local repairs" in result[
+        "known_boundary"
+    ]
+
+
+def test_multi_agent_preview_coordination_checkpoint_rejects_coordination_rerun() -> None:
+    decision = json.loads(
+        (
+            ROOT
+            / MULTI_AGENT_PREVIEW_COORDINATION_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    decision["successor_constraints"]["rerun_lead_coordination"] = True
+    with pytest.raises(
+        ValueError,
+        match=(
+            "project_os_multi_agent_coordination_checkpoint_successor_"
+            "constraints_invalid"
+        ),
+    ):
+        validate_multi_agent_preview_coordination_checkpoint_successor_scope_decision(
             root=ROOT, decision=decision
         )
 

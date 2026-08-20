@@ -58,11 +58,13 @@ from .multi_agent_preview import (
     compile_planner_payload_from_role_opinions,
     compile_specialist_context,
     compile_token_budget_basis,
+    lead_coordination_rationale_max_chars,
     load_multi_agent_role_topology,
     merge_analysis_draft_fragments,
     validate_analysis_completion_checkpoint,
     validate_analysis_fragment_checkpoint,
     validate_lead_plan_checkpoint,
+    LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION,
     validate_specialist_plan_checkpoint,
     validate_specialist_workpaper_checkpoint,
 )
@@ -1824,6 +1826,118 @@ def compile_specialist_analysis_checkpoint_successor_zero_call_projection(
     return {**body, "result_digest": canonical_digest(body)}
 
 
+def compile_coordination_checkpoint_successor_zero_call_projection(
+    *,
+    trusted_coordination_checkpoint: Mapping[str, Any],
+    materialization_readiness: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Project a downstream-only resume after six workpapers and Lead routing."""
+
+    checkpoint = deepcopy(dict(trusted_coordination_checkpoint))
+    workpapers = list(checkpoint.get("revalidated_workpapers") or ())
+    catalog = list(checkpoint.get("challenge_catalog") or ())
+    decision = dict(checkpoint.get("coordination_decision") or {})
+    accepted_ids = list(checkpoint.get("accepted_challenge_ids") or ())
+    accepted_by_id = {
+        str(row["challenge_id"]): row for row in catalog
+    }
+    accepted_targets = [
+        str(accepted_by_id[challenge_id]["target_agent_id"])
+        for challenge_id in accepted_ids
+        if challenge_id in accepted_by_id
+    ]
+    rationale_length = len(str(decision.get("coordination_rationale") or ""))
+    rationale_capacity = lead_coordination_rationale_max_chars(
+        challenge_catalog=catalog
+    )
+    if not (
+        checkpoint.get("schema_version")
+        == LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION
+        and checkpoint.get("status")
+        == "six_workpapers_and_R9_lead_coordination_valid_for_downstream_resume"
+        and checkpoint.get("reused_workpaper_count") == 6
+        and len(workpapers) == 6
+        and len(catalog) == 4
+        and len(accepted_ids) == 3
+        and len(accepted_targets) == 3
+        and len(set(accepted_targets)) == 3
+        and decision.get("next_state") == "continue_local_repairs"
+        and 20 <= rationale_length <= rationale_capacity
+        and not list(
+            materialization_readiness.get("blocking_empty_role_ids") or ()
+        )
+    ):
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_coordination_checkpoint_successor_invalid"
+        )
+    budget = {
+        "accepted_challenge_repair_nodes": len(accepted_ids),
+        "maximum_evaluation_rounds": 2,
+        "maximum_evaluator_repairs": 2,
+        "conditional_writer_nodes": 1,
+    }
+    body = {
+        "schema_version": (
+            "fin_ia_s3_dell_multi_agent_preview_R10_lead_coordination_"
+            "checkpoint_downstream_successor_zero_call_result_v1_0"
+        ),
+        "status": (
+            "R9_six_workpapers_and_lead_coordination_checkpoint_"
+            "downstream_successor_zero_call_pass"
+        ),
+        "case_key": "DELL",
+        "lead_coordination_checkpoint_digest": checkpoint[
+            "checkpoint_digest"
+        ],
+        "reused_specialist_plan_count": 6,
+        "reused_lead_plan_count": 1,
+        "reused_workpaper_count": 6,
+        "reused_lead_coordination_count": 1,
+        "accepted_challenge_ids": accepted_ids,
+        "accepted_repair_target_agent_ids": accepted_targets,
+        "deferred_challenge_ids": list(
+            checkpoint.get("deferred_challenge_ids") or ()
+        ),
+        "coordination_contract_capacity_audit": {
+            "challenge_count": len(catalog),
+            "rationale_character_count": rationale_length,
+            "compiled_rationale_maximum_characters": rationale_capacity,
+            "remaining_headroom_characters": (
+                rationale_capacity - rationale_length
+            ),
+            "schema_and_validator_share_compiler": True,
+            "legacy_1200_character_limit_rejected_as_task_inadequate": True,
+        },
+        "downstream_node_budget_basis": budget,
+        "maximum_new_model_nodes": sum(budget.values()),
+        "materialization_summary": {
+            "blocking_empty_role_ids": list(
+                materialization_readiness.get("blocking_empty_role_ids") or ()
+            ),
+            "role_readiness_count": len(
+                materialization_readiness.get("role_readiness") or ()
+            ),
+        },
+        "resume_policy": {
+            "specialist_plan_rerun_forbidden": True,
+            "lead_plan_rerun_forbidden": True,
+            "completed_workpaper_rerun_forbidden": True,
+            "lead_coordination_rerun_forbidden": True,
+            "first_new_node_is_accepted_challenge_repair": True,
+        },
+        "claims": {
+            "new_model_calls": 0,
+            "network_calls": 0,
+            "paid_tool_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+            "true_multi_agent_preview_completed": False,
+        },
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
 __all__ = [
     "CONSUMER_OVERLAY_REF",
     "PLANNING_OVERLAY_REF",
@@ -1836,6 +1950,7 @@ __all__ = [
     "compile_lead_checkpoint_successor_zero_call_projection",
     "compile_workpaper_checkpoint_successor_zero_call_projection",
     "compile_specialist_analysis_checkpoint_successor_zero_call_projection",
+    "compile_coordination_checkpoint_successor_zero_call_projection",
     "compile_multi_agent_preview_materialization",
     "execute_analyzed_preview_node",
     "execute_checkpointed_preview_submission",

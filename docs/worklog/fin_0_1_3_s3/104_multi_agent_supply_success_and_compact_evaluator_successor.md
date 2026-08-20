@@ -53,8 +53,10 @@
 - 全仓：`906 passed`（2 条 SWIG 类型弃用 warning，不影响本轮合同）；
 - active baseline：`185 Python / 8 frontend / 5 detectors / 27 Runtime / 0 forbidden`；
 - configs：`750` 份 JSON 全部可解析；
-- Project OS：最终 `8` 份 JSONL、`862` 行全部可解析；
+- Project OS：最终 `8` 份 JSONL、`863` 行全部可解析；
 - repository secret scan：`7,465 files / 0 findings`；
 - `git diff --check`：通过。
 
 测试过程中 Project OS 首次正确拒绝了两条历史 scope：我追加的新状态曾只保留未来 Evaluator scope，意外丢失历史 replay 白名单。修复采用追加更正，保留所有历史只读审计 scope，同时未来仍只有同一个 `one_clean_authorized_compiled_multi_agent_successor`；历史 allowance 不等于重新授权。
+
+第一次 clean／synced fresh preflight 随后又发现机器限制与人类说明不一致：projection 已是三条 repair 完成、0 fresh repair，但 `known_boundary` 仍硬编码 R15C 与 Supply pending。没有据此签发 authority。RC-AR-021 将该说明改为从当前 frontier 编译完成／pending 数，定向 `53 passed`、第二次全仓 `906 passed`；必须再作小提交、push 和 fresh preflight 后才进入 live。

@@ -839,6 +839,16 @@ def test_multi_agent_preview_generic_successor_binds_compiled_frontier() -> None
         "maximum_resumed_downstream_analysis_continuations"
     ] == 0
 
+    preflight = build_preflight(
+        root=ROOT,
+        decision_ref=MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    assert "3 capture-bound completed repairs" in preflight["known_boundary"]
+    assert "0 frontier-authorized fresh repair nodes" in preflight["known_boundary"]
+    assert "Supply remains pending fresh" not in preflight["known_boundary"]
+
 
 def test_multi_agent_preview_generic_successor_rejects_frontier_digest_drift() -> None:
     decision = json.loads(

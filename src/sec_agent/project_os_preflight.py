@@ -9710,13 +9710,25 @@ def build_preflight(
     }
     if decision_projection.get("multi_agent_preview") is True:
         if decision_projection.get("multi_agent_preview_generic_successor") is True:
+            completed_repair_count = int(
+                decision_projection["execution_limits"][
+                    "reused_completed_challenge_repair_count"
+                ]
+            )
+            pending_repair_count = int(
+                decision_projection["execution_limits"][
+                    "maximum_new_counter_challenge_repairs"
+                ]
+            )
             known_boundary = (
-                "This current-baseline preflight preserves R15C as a terminal "
-                "zero-provider lineage failure. It consumes one compiled "
-                "execution frontier: Demand is exact reuse, Cash is a "
-                "capture-bound derived-digest rebind with byte-equivalent "
-                "business fields, and Supply remains pending fresh. It permits "
-                "only the frontier-authorized fresh repair before bounded "
+                "This current-baseline preflight preserves the immediate "
+                "predecessor as a terminal failure. It consumes one compiled "
+                f"execution frontier with {completed_repair_count} capture-bound "
+                "completed repairs and "
+                f"{pending_repair_count} frontier-authorized fresh repair nodes. "
+                "Completed nodes remain exact reuse or receipted derived-digest "
+                "rebinds and cannot be rerun. It permits only those pending "
+                "frontier nodes, if any, before bounded "
                 "evaluation, at most two evaluator-directed local repairs and "
                 "a conditional Writer. It forbids analysis continuation, "
                 "research-input changes, external source network access, "

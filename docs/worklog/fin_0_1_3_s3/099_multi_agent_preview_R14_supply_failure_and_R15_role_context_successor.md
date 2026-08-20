@@ -62,8 +62,16 @@ R14 authority、公开结果、terminal、请求与响应 capture 永久保持�
 
 当前 authority／scope validator 已出现多代 attempt-specific schema 分支。它们保证历史精确性，但已接近维护上限。R15 关闭前不再扩写一条 R16／R17 特例；若 R15 暴露同类 successor 编排问题，下一项必须是 S0 通用 successor authority compiler，而不是继续复制 attempt-specific 分支。
 
-完整工程门已通过：综合定向 `105 passed`；全仓第一次运行因最新 RC-AR-002 行漏掉历史 scope allowance 而正确出现 7 个 Project OS fail-closed，追加累积许可更正后复跑为 `896 passed`；compileall、active baseline `184 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、738 份 configs JSON、8 份 Project OS JSONL／836 行、7,446-file secret scan 和 diff check 均通过。当前只剩 clean commit／push 与 fresh preflight；此前不得签发 R15 live。
+完整工程门已通过：综合定向 `105 passed`；全仓第一次运行因最新 RC-AR-002 行漏掉历史 scope allowance 而正确出现 7 个 Project OS fail-closed，追加累积许可更正后复跑为 `896 passed`。clean commit `46cf4e7a...` 推送后，fresh preflight 又暴露 R15 专用 validator 未接入通用入口以及 scope ID 大小写漂移；补齐正式入口测试和追加账本更正后，最终全仓为 `897 passed`。compileall、active baseline `184 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、738 份 configs JSON、8 份 Project OS JSONL／838 行、7,446-file secret scan 和 diff check 均通过。当前只剩第二个 clean commit／push 与 fresh preflight；此前不得签发 R15 live。
 
 Python 3.10 当前使用 isolated `_pth`，综合测试须显式把仓库根与 `src` 注入 `sys.path`；该入口隐式依赖记为 S0 工程债，不修改用户全局 Python 安装。全仓第一次失败同时证明 Project OS 历史许可必须累积保存，不能因最新 attempt 只写当前 scope 而遮掉历史 replay 权限。
+
+## 6. Fresh preflight 暴露的入口集成缺口
+
+第一次真正的 R15 fresh preflight 在任何模型、Provider 或网络调用前以 `project_os_decision_field_invalid:cell_id` 拒绝。专用 R15 validator 已存在且通过，但 `_validate_fixed_pack_decision` 没有把 v1.10 schema 路由到它，导致正式入口落回旧 `CELL::value_capture` 校验。接线后新增测试直接通过完整 `build_preflight`，不再只测局部 validator。
+
+第二个零调用失败是账本 allowed scope 将正式小写 `supply` 写成大写 `Supply`。精确匹配正确 fail closed；旧行保持不改，新 RC-AR-015／RC-AR-002 行追加正确 scope，同时保留 R3–R14 全部历史回放许可。
+
+这两项属于 S0 authority/preflight 集成，不改变 R15 的 Evidence、上下文、模型 profile、调用预算或业务范围。
 
 即使 R15 最终形成报告，也仍须独立执行 L1、八维绝对内容质量、paired gain、qualified-human 和异质案例泛化；不能据此直接宣布 S3 或产品通过。

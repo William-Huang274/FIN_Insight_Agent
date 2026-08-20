@@ -17,7 +17,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 - Supply repair 拥有 10 条 reviewed Evidence 和 4 个 typed gap。其 32,271 prompt token 请求得到 HTTP 200 完整响应，但 12,000 completion token 全部用于 reasoning、可见输出为 0，最终 `finish_reason=length`。资料存在，故这不是 S1 空数据或角色无效。
 - 最早责任层是 S0 Harness repair context selection：局部节点仍携带 91,182 字符完整 SpecialistContext，其中 whole-case truth 40,655 字符、Lead plan 7,119 字符；任务级 `thinking=max` 是贡献因素。
 - repair-scoped context 现保留角色全部 Evidence／gap、prior workpaper、challenge／feedback、角色计划与权限，只把无关 whole-case 和 Lead 长叙事压成 digest-bound projection。真实 R14 输入由 91,182 降至 53,041 字符，10 Evidence／4 gaps 不变；76 个省略 alias 留有 digest，省略不得解释为不存在。
-- R15 精确复用完成的 Demand／Cash，只 fresh 执行 Supply，0 continuation，最大新节点 6，profile 为 task-specific high thinking，token ceiling 不提高。完整工程门为综合定向 `105 passed`、全仓 `896 passed`、compileall、active baseline `184／8／5／27／0`、738 份 configs JSON、8 份 Project OS JSONL／836 行、7,446-file secret scan 和 diff check 通过；当前只剩 clean commit／push 与 fresh preflight。
+- R15 精确复用完成的 Demand／Cash，只 fresh 执行 Supply，0 continuation，最大新节点 6，profile 为 task-specific high thinking，token ceiling 不提高。第一次 fresh preflight 在零调用状态下发现 v1.10 专用 validator 未接通用入口和 scope ID 大小写漂移；已补完整入口测试并追加账本更正。最终工程门为全仓 `897 passed`、compileall、active baseline `184／8／5／27／0`、738 份 configs JSON、8 份 Project OS JSONL／838 行、7,446-file secret scan 和 diff check 通过；当前只剩第二个 clean commit／push 与 fresh preflight。
 - attempt-specific authority／scope 分支已接近维护上限。R15 后若仍需 successor，不得直接复制 R16／R17 特例；应先实现 S0 通用 successor authority compiler。详见 `docs/worklog/fin_0_1_3_s3/099_multi_agent_preview_R14_supply_failure_and_R15_role_context_successor.md`。
 
 ## 2026-08-20 Multi-Agent Preview R13 Provider 档位失败与 R14 唯一 replacement

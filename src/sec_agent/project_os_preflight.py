@@ -481,6 +481,13 @@ def _validate_fixed_pack_decision(
         return validate_multi_agent_preview_downstream_analysis_successor_scope_decision(
             root=root, decision=decision
         )
+    if (
+        decision.get("schema_version")
+        == MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_SCHEMA
+    ):
+        return validate_multi_agent_preview_repair_context_successor_scope_decision(
+            root=root, decision=decision
+        )
     if decision.get("schema_version") in {
         MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
         MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_SCHEMA,
@@ -9020,6 +9027,23 @@ def build_preflight(
             "project_os_multi_agent_downstream_analysis_scope_allowance_missing"
         )
     if (
+        decision_projection.get(
+            "multi_agent_preview_repair_context_successor"
+        )
+        is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-AR-015-local-repair-whole-case-context-and-max-thinking-"
+                "starved-visible-output"
+            ),
+            allowed_scope=MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_multi_agent_repair_context_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("natural_material_scope_canary") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -9290,6 +9314,23 @@ def build_preflight(
     }
     if decision_projection.get("multi_agent_preview") is True:
         if decision_projection.get(
+            "multi_agent_preview_repair_context_successor"
+        ) is True:
+            known_boundary = (
+                "This current-baseline preflight preserves R14 as a terminal "
+                "Supply-repair reasoning-only failure. It revalidates six "
+                "initial workpapers, the R9 Lead coordination decision, and "
+                "the completed Demand and Cash repairs under their exact "
+                "source contexts. It permits only one fresh role-scoped "
+                "Supply repair before bounded evaluation, at most two "
+                "evaluator-directed local repairs and a conditional Writer. "
+                "It forbids analysis continuation, completed-node reruns, "
+                "research-input changes, external source network access, "
+                "candidate promotion, S1 or S3 acceptance, heterogeneous "
+                "generalization, qualified-human self-acceptance, Workbench "
+                "publication or release."
+            )
+        elif decision_projection.get(
             "multi_agent_preview_downstream_analysis_checkpoint_successor"
         ) is True:
             known_boundary = (

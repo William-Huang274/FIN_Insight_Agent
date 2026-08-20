@@ -17,6 +17,7 @@ from sec_agent.project_os_preflight import (
     MULTI_AGENT_PREVIEW_WORKPAPER_CHECKPOINT_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SPECIALIST_ANALYSIS_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_COORDINATION_CHECKPOINT_SUCCESSOR_SCOPE,
+    MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
     _validate_dynamic_five_cell_claim_surface_successor_decision,
@@ -229,6 +230,11 @@ MULTI_AGENT_PREVIEW_COORDINATION_CHECKPOINT_SUCCESSOR_SCOPE_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
     "scope_decision_v1_8.json"
+)
+MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
+    "scope_decision_v1_10.json"
 )
 
 
@@ -779,6 +785,32 @@ def test_multi_agent_preview_coordination_checkpoint_rejects_coordination_rerun(
         validate_multi_agent_preview_coordination_checkpoint_successor_scope_decision(
             root=ROOT, decision=decision
         )
+
+
+def test_multi_agent_preview_repair_context_successor_enters_full_preflight() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=(
+            MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE_DECISION_REF
+        ),
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    projection = result["decision_projection"]
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["run_scope_id"] == (
+        MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE
+    )
+    assert projection["multi_agent_preview_repair_context_successor"] is True
+    assert projection["reused_completed_challenge_repair_count"] == 2
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 6
+    assert projection["execution_limits"][
+        "maximum_resumed_downstream_analysis_continuations"
+    ] == 0
+    assert "only one fresh role-scoped Supply repair" in result[
+        "known_boundary"
+    ]
 
 
 def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:

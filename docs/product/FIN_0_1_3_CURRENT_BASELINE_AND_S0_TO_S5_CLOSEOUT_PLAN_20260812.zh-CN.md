@@ -346,7 +346,7 @@ R15 只允许一个有界 successor：
 5. Supply 使用独立 task-specific high-thinking profile，保持 12,000 token ceiling，不用扩大上限掩盖上下文选择错误；
 6. 最大新模型节点为 6，外源网络、Candidate promotion、S1／S3／泛化、qualified-human 和发布仍无权执行。
 
-零调用实现的完整工程门已通过：综合定向 `105 passed`；Project OS 最新行遗漏历史 scope allowance 的七个 fail-closed 已用追加式累积许可更正；最终全仓 `896 passed`，compileall、active baseline、738 份 configs JSON、8 份 Project OS JSONL／836 行、7,446-file secret scan 和 diff check 均通过。当前仍须 clean commit／push 与 fresh preflight 后才能签发 R15。若 R15 后还出现 successor 编排缺陷，不再新增 attempt-specific authority schema；先回 S0 建立通用 successor authority compiler。R15 成功也只形成待验的 Preview 报告，仍须 L1、八维质量、paired gain、qualified-human 与跨案例泛化。
+零调用实现的完整工程门已通过。第一次全仓发现 Project OS 最新行遗漏历史 scope allowance；第一次 clean push 后的 fresh preflight 又发现 v1.10 专用 validator 未接通用入口和 scope ID 大小写漂移。以上均在 0 模型／Provider／网络状态下 fail closed，并以追加账本、更正主入口和完整 `build_preflight` 测试处理。最终全仓 `897 passed`，compileall、active baseline、738 份 configs JSON、8 份 Project OS JSONL／838 行、7,446-file secret scan 和 diff check 均通过。当前仍须第二个 clean commit／push 与 fresh preflight 后才能签发 R15。若 R15 后还出现 successor 编排缺陷，不再新增 attempt-specific authority schema；先回 S0 建立通用 successor authority compiler。R15 成功也只形成待验的 Preview 报告，仍须 L1、八维质量、paired gain、qualified-human 与跨案例泛化。
 
 ## 5. 防止再次膨胀的工程规则
 

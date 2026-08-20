@@ -226,3 +226,11 @@ authority、Project OS preflight 和 runner 必须消费同一份 execution fron
 Supply 已成为第三条完成 repair，旧 frontier 不能再把它当作 pending fresh。新的 v1.1 frontier 将 Demand、Cash、Supply 全部作为 capture-bound 完成节点，只允许从 Evaluator 继续，最大新模型节点为 `2 evaluation + 2 evaluator repair + 1 conditional Writer = 5`。
 
 通用 predecessor 合同不再把某一个历史 failure code 或 `0 Provider` 写死为入口条件。它接受任意非空、已保存的 terminal failure，但必须同时核对 authority、public result、private terminal、failure code、Provider attempt count、scope、digest、0 external network 和 0 Candidate promotion；任一漂移都 fail closed。这是对同一执行前缀的通用恢复，不是又一条 attempt-named R16／R17 分支。
+
+## 十八、claim-bound 仍失败后，Evaluator 必须分层而不是继续裁字段
+
+真实 successor 已把 Evaluator prompt 从 31,732 降到 24,591 tokens，仍然出现 16,000 completion 全部为 reasoning、0 可见输出、`finish_reason=length`。Provider 响应完整，六份底稿与三条修订均已 capture-bound 复用。RC-AR-020 因而从“上下文投影待证明”升级为“全案单节点 Evaluator 任务／profile 不合格”。
+
+新的 provider-neutral 评审拓扑固定为：完整权威上的本地 L1；六个单角色内容审查；一次只消费已审摘要的跨角色一致性审查；最多两处最早责任角色修订；只重审受影响角色并做一次跨角色复核；通过后才允许 Writer。角色级与跨角色分析使用 `high / 12,000`，交卷继续使用 non-thinking strict submission。最大 13 个新逻辑节点来自六个真实角色和两处有界修订的最坏路径，不以成本或延迟倒推。
+
+这不是把 Evaluator 变成六个新研究员。它们不能新增 Evidence、NumericFact、因果关系或观点，只能出 finding、责任归属和是否阻断。若单角色评审仍发生同型 reasoning-only exhaustion，下一项必须是模型／profile 责任选择，不得再缩金融权威或增加 attempt-specific runner。

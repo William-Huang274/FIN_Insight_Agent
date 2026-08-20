@@ -981,3 +981,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 当前待办：文档／账本 → 全仓门 → clean commit／push → fresh preflight → 唯一 Evaluator successor live。若 claim-bound 视图仍同型耗尽，不再逐字段修补，转 Evaluator profile／模型职责项目级决策。S1／S3／泛化／Workbench／release 仍为 false。
 - 完整工程门现已通过：compileall、定向 `102 passed`、全仓 `906 passed`、active baseline `185 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、750 份 configs JSON、最终 8 份 Project OS JSONL／862 行、7,465-file secret scan 与 diff check 全部有效。Project OS 在首次回归中发现最新 issue 状态误删历史 scope allowance，已用追加更正恢复历史只读 replay；未来 live 权限未扩大。当前只剩 clean commit／push、fresh preflight、新 authority 和唯一 Evaluator successor live。
 - 第一次 clean／synced preflight 的机器门全部通过，但其人类 `known_boundary` 仍硬编码 R15C／Supply pending，与 v1.1 的三条 repair 完成、0 fresh repair 矛盾，因此没有签发 authority。RC-AR-021 已让说明从当前 frontier 数字生成；定向 `53 passed`、第二次全仓 `906 passed`。最终 Project OS 为 8 份 JSONL／863 行；当前须小提交／push 后重新 fresh preflight。
+
+# 2026-08-21 claim-bound Evaluator 真实复验与分层处置
+
+- 唯一 Evaluator successor 已在 clean／synced commit `633ecc6d...` 和 fresh Project OS preflight 后执行；六份计划、六份底稿、Lead coordination 与 Demand／Cash／Supply 三条修订全部 capture-bound 复用，新增研究或修订节点为 0。
+- 只启动一个 Evaluator analysis。Provider HTTP 200 且完整返回；prompt `24,591`，completion `16,000` 全部为 reasoning，0 可见内容，`finish_reason=length`。submission、finding、局部修订和 Writer 均未开始，失败结果不可变保存。
+- 这证明 31,732→24,591 tokens 的 claim-bound 压缩不足以让“六底稿全案单节点评审”成为可靠任务。最早责任层是 S0 Evaluator 任务/profile 与 S3 评审编排，不是 S1/S2、网络、Supply 资料或三条角色修订。
+- 后续禁止继续逐字段削减权威、增加全局 ceiling 或同型重跑。评审改为本地完整 L1＋六个单角色内容审查＋一个跨角色一致性审查；最多两处 finding 回原角色，只重审受影响角色，再做一次跨角色复核。最坏路径 13 个新逻辑节点，来自实际职责而非省钱或速度。
+- 当前须先保存本次 authority/result 并实现分层评审、capture replay、fake/mutation、全仓门和通用 frontier 预算编译；之后才可判断是否签发一次新的 Evaluator successor。完整报告、八维质量、paired、qualified-human、S1/S3、泛化、Workbench 和 release 均未通过。

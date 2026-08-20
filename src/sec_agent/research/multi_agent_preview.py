@@ -1391,6 +1391,7 @@ def compile_analysis_continuation_messages(
     checkpoint: Mapping[str, Any],
     partial_draft: str,
     tool_name: str,
+    original_analysis_messages: Sequence[Mapping[str, Any]] | None = None,
 ) -> tuple[dict[str, str], ...]:
     trusted = validate_analysis_fragment_checkpoint(checkpoint)
     draft = str(partial_draft or "").strip()
@@ -1403,13 +1404,81 @@ def compile_analysis_continuation_messages(
         *trusted["partial_required_outputs"],
         *trusted["missing_required_outputs"],
     ]
+    continuation_instruction = json.dumps(
+        {
+            "phase": "analysis_continuation_only_not_business_authority",
+            "checkpoint_digest": trusted["checkpoint_digest"],
+            "completed_outputs_do_not_repeat": trusted[
+                "completed_required_outputs"
+            ],
+            "partial_outputs_finish_in_place": trusted[
+                "partial_required_outputs"
+            ],
+            "missing_outputs_add": trusted["missing_required_outputs"],
+            "remaining_output_order": remaining,
+            "required_output_headings": [
+                f"OUTPUT::{field}" for field in trusted["missing_required_outputs"]
+            ],
+            "required_completion_receipt": (
+                "COMPLETED_OUTPUTS::" + "|".join(remaining)
+            ),
+            "rules": [
+                (
+                    "start by finishing the exact truncated sentence"
+                    if trusted["partial_required_outputs"]
+                    else "start with the first required missing-output heading"
+                ),
+                (
+                    "continue the single partial output in place without repeating "
+                    "its OUTPUT heading"
+                    if trusted["partial_required_outputs"]
+                    else "there is no partial output to finish in place"
+                ),
+                "do not restate already completed analysis",
+                "use only authority visible in the preserved original conversation",
+                "do not call tools or emit JSON in this continuation",
+                "keep the continuation concise enough to finish in one call",
+                (
+                    "write one exact OUTPUT::<field> heading for each field in "
+                    "missing_outputs_add only, in the declared order"
+                ),
+                (
+                    "end with exact completion receipt COMPLETED_OUTPUTS::"
+                    + "|".join(remaining)
+                ),
+            ],
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    if original_analysis_messages is not None:
+        original = [deepcopy(dict(row)) for row in original_analysis_messages]
+        _require(
+            bool(original)
+            and all(
+                set(row) >= {"role", "content"}
+                and str(row["role"]) in {"system", "user"}
+                and bool(str(row["content"]).strip())
+                for row in original
+            )
+            and all(str(row["role"]) != "assistant" for row in original),
+            "multi_agent_analysis_continuation_original_messages_invalid",
+        )
+        return tuple(
+            [
+                *original,
+                {"role": "assistant", "content": draft},
+                {"role": "user", "content": continuation_instruction},
+            ]
+        )
     return (
         {
             "role": "system",
             "content": (
                 "ANALYSIS CONTINUATION PHASE. Continue the preserved visible "
                 "draft exactly where it stopped. Do not call tools or emit JSON. "
-                "Do not repeat completed sections, redo the six-role synthesis, "
+                "Do not repeat completed sections or redo the completed analysis, "
                 "add facts or broaden authority. Complete only the partial and "
                 "missing outputs, then end with a compact submission checklist. "
                 f"The later tool remains {tool_name}."
@@ -1437,31 +1506,7 @@ def compile_analysis_continuation_messages(
                     "required_completion_receipt": (
                         "COMPLETED_OUTPUTS::" + "|".join(remaining)
                     ),
-                    "rules": [
-                        (
-                            "start by finishing the exact truncated sentence"
-                            if trusted["partial_required_outputs"]
-                            else "start with the first required missing-output heading"
-                        ),
-                        (
-                            "continue the single partial output in place without "
-                            "repeating its OUTPUT heading"
-                            if trusted["partial_required_outputs"]
-                            else "there is no partial output to finish in place"
-                        ),
-                        "do not restate role ownership facets facts or hypotheses",
-                        "use only information already present in the preserved draft",
-                        "keep the continuation concise enough to finish in one call",
-                        (
-                            "write one exact OUTPUT::<field> heading for each field "
-                            "in missing_outputs_add only, in the declared order"
-                        ),
-                        (
-                            "end with exact completion receipt "
-                            "COMPLETED_OUTPUTS::"
-                            + "|".join(remaining)
-                        ),
-                    ],
+                    "rules": json.loads(continuation_instruction)["rules"],
                 },
                 ensure_ascii=False,
                 sort_keys=True,

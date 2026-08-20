@@ -1,0 +1,63 @@
+{
+  "analysis_fragment_character_count": 918,
+  "analysis_fragment_checkpoint_digest": "297cf8f46e01dda715bb441591719752a7fa35e688422553f9837878d11de0f8",
+  "analysis_fragment_missing_outputs": [
+    "confidence",
+    "sourced_claims",
+    "mechanism",
+    "alternative_explanations",
+    "strongest_counterarguments",
+    "remaining_gap_refs",
+    "what_would_change",
+    "cross_role_challenges",
+    "stop_reason"
+  ],
+  "analysis_fragment_partial_output": "thesis",
+  "case_key": "DELL",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "network_calls": 0,
+    "new_analysis_continuation_model_calls": 0,
+    "new_completed_workpaper_model_calls": 0,
+    "new_lead_plan_model_calls": 0,
+    "new_specialist_plan_model_calls": 0,
+    "paid_tool_calls": 0,
+    "true_multi_agent_preview_completed": false
+  },
+  "downstream_node_budget_basis": {
+    "conditional_writer_nodes": 1,
+    "lead_coordination_nodes": 1,
+    "maximum_counter_challenge_repairs": 3,
+    "maximum_evaluation_rounds": 2,
+    "maximum_evaluator_repairs": 2,
+    "pending_specialist_workpaper_nodes": 1
+  },
+  "lead_plan_checkpoint_digest": "b3cf04f593aa81f990b6ab644f8f59adcd92e97063ba235f5927dba76c6831ef",
+  "lead_plan_digest": "64bd1e2095a1289b0f97adcb07f86ea517689099c9c9d0e4b93f5184b62f49f6",
+  "materialization_summary": {
+    "blocking_empty_role_ids": [],
+    "compiled_evidence_request_count": 12,
+    "hybrid_selected_candidate_count": 192,
+    "numeric_fact_count": 87,
+    "role_readiness_count": 6,
+    "typed_fact_request_count": 44
+  },
+  "maximum_analysis_continuation_calls": 1,
+  "maximum_new_model_nodes": 10,
+  "new_initial_counterevidence_analysis_calls": 0,
+  "original_analysis_conversation_replay_required": true,
+  "pending_agent_ids": [
+    "AGENT::COUNTEREVIDENCE"
+  ],
+  "result_digest": "995182357b5afcd82d433ee83b1900fcc1b65a4d7f04e6b963719bb50b1b5f42",
+  "reused_lead_plan_count": 1,
+  "reused_specialist_plan_count": 6,
+  "reused_workpaper_count": 5,
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_R9_counterevidence_analysis_checkpoint_downstream_successor_zero_call_result_v1_0",
+  "specialist_plan_checkpoint_digest": "0ab73362d5ccd05d6096c86bc8a0d91f86b1674aac0df30eb5647d8b85e5fac8",
+  "status": "R8_counterevidence_analysis_checkpoint_downstream_successor_zero_call_pass",
+  "workpaper_checkpoint_digest": "a378d83e364911a79a7cc123df5f3977f489a367071565cca9f3050ee37b7b36",
+  "workpaper_checkpoint_successor_zero_call_result_digest": "31d51b5daade635d68649dbfb937fffe17979bcfeab9896ee0a5072727f9cc18"
+}

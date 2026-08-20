@@ -122,6 +122,54 @@ def test_analysis_fragment_checkpoint_binds_content_and_remaining_scope() -> Non
         )
 
 
+def test_analysis_continuation_can_preserve_original_specialist_conversation() -> None:
+    draft = "**Thesis**\nThe counterevidence weakens the default chain because"
+    checkpoint = compile_analysis_fragment_checkpoint(
+        case_key="DELL",
+        run_id="PREVIEW-R8",
+        node_id="AGENT::COUNTEREVIDENCE::WORKPAPER_R1",
+        source_authority_ref="authority-r8.json",
+        source_authority_sha256="a" * 64,
+        source_public_result_ref="result-r8.json",
+        source_public_result_sha256="b" * 64,
+        source_public_result_digest="c" * 64,
+        request_capture_ref="capture/r8/request.json",
+        request_capture_sha256="d" * 64,
+        request_digest="e" * 64,
+        response_capture_ref="capture/r8/response.json",
+        response_capture_sha256="f" * 64,
+        response_digest="1" * 64,
+        partial_draft=draft,
+        required_outputs=("thesis", "mechanism", "cross_role_challenges"),
+        completed_required_outputs=(),
+        partial_required_outputs=("thesis",),
+        missing_required_outputs=("mechanism", "cross_role_challenges"),
+        usage={"prompt_tokens": 26365, "completion_tokens": 16000},
+        recorded_at="2026-08-20T09:27:10+08:00",
+    )
+    original = (
+        {"role": "system", "content": "ORIGINAL_COUNTER_SYSTEM"},
+        {"role": "user", "content": "ORIGINAL_COUNTER_CONTEXT_WITH_EV::ONE"},
+    )
+    messages = compile_analysis_continuation_messages(
+        checkpoint=checkpoint,
+        partial_draft=draft,
+        tool_name="submit_specialist_workpaper",
+        original_analysis_messages=original,
+    )
+    assert messages[:2] == original
+    assert messages[2] == {"role": "assistant", "content": draft}
+    instruction = json.loads(messages[3]["content"])
+    assert instruction["partial_outputs_finish_in_place"] == ["thesis"]
+    assert instruction["required_output_headings"] == [
+        "OUTPUT::mechanism",
+        "OUTPUT::cross_role_challenges",
+    ]
+    assert instruction["required_completion_receipt"] == (
+        "COMPLETED_OUTPUTS::thesis|mechanism|cross_role_challenges"
+    )
+
+
 def test_analysis_continuation_distinguishes_partial_from_missing_outputs() -> None:
     draft = "Question 11 asks which demand-quality judgment can be supported"
     checkpoint = compile_analysis_fragment_checkpoint(

@@ -17,6 +17,7 @@ from sec_agent.research.multi_agent_preview import (
 from sec_agent.research.multi_agent_preview_runtime import (
     compile_cross_role_feedback_receipt,
     compile_lead_checkpoint_successor_zero_call_projection,
+    compile_specialist_analysis_checkpoint_successor_zero_call_projection,
     compile_workpaper_checkpoint_successor_zero_call_projection,
     execute_analyzed_preview_node,
     execute_checkpointed_preview_submission,
@@ -529,6 +530,85 @@ def test_analysis_checkpoint_continues_once_then_submits_merged_draft(
     }
 
 
+def test_analysis_checkpoint_can_resume_with_capture_bound_original_messages(
+    tmp_path: Path,
+) -> None:
+    partial = "Preserved partial specialist draft grounded in EV::ONE."
+    checkpoint = _analysis_checkpoint(partial)
+    state = start_preview_agent_session(
+        agent_id="AGENT::COUNTEREVIDENCE",
+        run_id="PREVIEW-R9-CONTINUE",
+        objective_ref="objective://dell",
+        active_plan_ref="plan://bound",
+    )
+    observed: list[Mapping[str, Any]] = []
+
+    def continue_analysis(**kwargs: Any) -> _FakeAnalysis:
+        observed.extend(kwargs["messages"])
+        return _FakeAnalysis("accepted\nCOMPLETED_OUTPUTS::value")
+
+    execution = execute_analyzed_preview_node(
+        analysis_profile=_chat_profile(thinking=True),
+        submission_profile=_chat_profile(thinking=False),
+        analysis_continuation_profile=ChatCompletionProfile(
+            **{
+                **_chat_profile(thinking=True).__dict__,
+                "request_defaults": {
+                    **_chat_profile(thinking=True).request_defaults,
+                    "reasoning_effort": "low",
+                },
+            }
+        ),
+        session_state=state,
+        messages=(),
+        analysis_checkpoint_original_messages=(
+            {"role": "system", "content": "ORIGINAL_COUNTER_SYSTEM"},
+            {"role": "user", "content": "ORIGINAL_COUNTER_CONTEXT EV::ONE"},
+        ),
+        tool=_tool(),
+        validator=dict,
+        capture_root=tmp_path,
+        run_id="PREVIEW-R9-CONTINUE",
+        node_id="RESEARCH-LEAD-PLAN",
+        purpose="继续 capture-bound specialist analysis。",
+        input_reference_count=1,
+        required_outputs=("value",),
+        schema_burden="one strict preview tool",
+        materiality_quality_risk="partial analysis cannot be promoted",
+        comparable_run_evidence=("R8 specialist length failure",),
+        analysis_output_token_ceiling=2000,
+        submission_output_token_ceiling=1000,
+        maximum_submission_successor_attempts=0,
+        analysis_checkpoint=checkpoint,
+        analysis_checkpoint_draft=partial,
+        analysis_transport=continue_analysis,
+        submission_transport=lambda **_: _FakeStep(
+            tool_calls=(
+                {
+                    "id": "call_1",
+                    "type": "function",
+                    "function": {
+                        "name": "submit_preview",
+                        "arguments": json.dumps({"value": "accepted"}),
+                    },
+                },
+            )
+        ),
+    )
+    assert [row["phase"] for row in execution.attempts] == [
+        "analysis_continuation",
+        "submission",
+    ]
+    assert [row["role"] for row in observed] == [
+        "system",
+        "user",
+        "assistant",
+        "user",
+    ]
+    assert observed[0]["content"] == "ORIGINAL_COUNTER_SYSTEM"
+    assert observed[2]["content"] == partial
+
+
 @pytest.mark.parametrize(
     ("content", "finish_reason", "expected_code"),
     [
@@ -797,3 +877,58 @@ def test_workpaper_checkpoint_successor_projection_runs_only_counter() -> None:
         "pending_specialist_workpaper_nodes"
     ] == 1
     assert result["claims"]["new_completed_workpaper_model_calls"] == 0
+
+
+def test_specialist_analysis_checkpoint_successor_resumes_counter_once() -> None:
+    def load(ref: str) -> dict[str, Any]:
+        return json.loads((ROOT / ref).read_text(encoding="utf-8"))
+
+    workpaper_checkpoint = load(
+        "configs/research/evals/"
+        "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "R8_five_workpaper_checkpoint_v1_0.json"
+    )
+    result = compile_specialist_analysis_checkpoint_successor_zero_call_projection(
+        repo_root=ROOT,
+        topology=load(
+            "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json"
+        ),
+        objective_payload=load(
+            "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_objective_v1_0.json"
+        ),
+        specialist_plan_checkpoint=load(
+            "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "R3_specialist_plan_checkpoint_v1_0.json"
+        ),
+        lead_plan_checkpoint=load(
+            "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "R6_lead_plan_checkpoint_v1_0.json"
+        ),
+        workpaper_checkpoint=workpaper_checkpoint,
+        workpaper_source_terminal_failure=load(
+            workpaper_checkpoint["source_terminal_result_ref"]
+        ),
+        analysis_fragment_checkpoint=load(
+            "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "R9_counterevidence_analysis_fragment_checkpoint_v1_0.json"
+        ),
+        analysis_source_public_result=load(
+            "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_7.json"
+        ),
+    )
+
+    assert result["status"] == (
+        "R8_counterevidence_analysis_checkpoint_downstream_successor_"
+        "zero_call_pass"
+    )
+    assert result["maximum_analysis_continuation_calls"] == 1
+    assert result["new_initial_counterevidence_analysis_calls"] == 0
+    assert result["analysis_fragment_partial_output"] == "thesis"
+    assert result["reused_workpaper_count"] == 5
+    assert result["maximum_new_model_nodes"] == 10
+    assert result["materialization_summary"]["blocking_empty_role_ids"] == []

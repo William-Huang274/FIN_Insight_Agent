@@ -9,16 +9,20 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
 
-## 2026-08-20 Multi-Agent Preview R7 底稿 checkpoint 与 R8 下游 successor
+## 2026-08-20 Multi-Agent Preview R8 Counter 分析截断与 R9 上下文续跑
 
 - R7 保持不可变 terminal failure：共保存 5 次 Specialist 分析、6 次严格交卷和 11 次 Provider attempt，没有外源网络、Candidate 晋升或产品发布。
 - Demand、Operating、Value、Cash 四份底稿当场通过。Supply 第二次交卷的研究内容也有效，但其角色没有任何合法 NumericFact／relation 引用；旧 Tool Schema 同时暴露占位 enum `__NO_VALID_REF__` 又设置 `maxItems=0`，模型按可见合同选择占位符后被本地 Validator 以 `multi_agent_workpaper_ref_out_of_scope` 拒绝。该最早责任层登记为 RC-AR-008（Harness 合同编译），不归 S1 数据、网络或 DeepSeek 研究能力。
 - 空引用合同现由同一编译源生成 Schema、反馈与 Validator；仅在合法引用集合为空时，把 singleton 占位符规范化为空数组。嵌套 `sourced_claims[*].numeric_refs` 等错误会返回精确路径，不能再只给顶层错误码。
 - 使用 R7 原始 request／response capture 零调用重放后，Supply 输出可在当前合同下合法物化；连同前四份底稿形成内容寻址的五底稿 checkpoint。旧 R7 结果不被改写为成功。
 - R8 只能复用六份 Specialist plan、一个 Lead plan 和上述五份底稿；只从 `AGENT::COUNTEREVIDENCE` 开始新调用。完成第六份底稿后，才允许 Lead 跨角色协调、最多三次反方修正、最多两轮独立评估／两次评估后修正和一份条件式 Writer，最大新模型节点为 10。
-- R8 successor 的 current S1/S2 重物化仍为 12 个 EvidenceRequest、192 个候选、44 个 typed fact request（27 resolved／17 gap）和 87 个 NumericFact；六个角色视图均非空。该结果只证明恢复点和输入一致，不签发 S1、S3、泛化、qualified-human、Workbench 发布或 release。
-- 工程门为定向 `74 passed`、全仓 `865 passed`、compileall、active baseline `184 Python / 8 frontend / 27 Runtime / 0 forbidden`、`7,406 files / 0 secret finding`、8 份 Project OS JSONL 与 diff check 全部通过。
-- 当前下一动作：工程复证已经完成；提交干净实现后签发一次绑定该提交的 R8 authority，然后执行唯一的 checkpoint-downstream live。即使 Writer 形成报告，仍需另做 L1、八维内容质量和人工内容验收。
+- R8 successor 的 current S1/S2 重物化仍为 12 个 EvidenceRequest、192 个候选、44 个 typed fact request（27 resolved／17 gap）和 87 个 NumericFact；六个角色视图均非空。R8 正确复用了前五份底稿，只新启动 Counterevidence 分析。
+- R8 的 Counter 输入包含 6 条 reviewed Evidence、3 个 NumericFact 和 2 个 typed gap，并非资料为空。真实调用在 `26,365` prompt token 后消耗 `16,000` completion token，其中 `15,774` 为 reasoning，只返回 `918` 个可见字符并以 `finish_reason=length` 结束；0 Tool Call、0 submission。传输完整且原始 request／response capture 均可追溯。
+- 因此最早责任层登记为 RC-AR-009：Agent Runtime 缺少角色分析的 capture-bound 上下文连续性和任务特定 reasoning／visible-output 分配；不归 S1 数据、网络或检索，也不能靠继续提高全局 token 上限处理。R8 保持不可变 terminal failure。
+- R9 已把 918 字符 Counter 草稿、完整原始 system／user 消息、缺失九项输出和 capture digest 绑定成通用 `AnalysisFragmentCheckpoint`。恢复时必须使用原始两轮上下文，只允许一次 low-reasoning continuation；禁止重新执行 Counter 初始分析、前五份底稿、Lead plan 或 Specialist plan。
+- R9 零调用 successor proof 复用六份 Specialist plan、一个 Lead plan、五份 workpaper，待执行节点总预算仍为 10；其中 Counter 只允许一次 continuation 和后续 strict submission，其余为既定 Lead coordination、局部 challenge repair、最多两轮独立评估和条件式 Writer。
+- R9 定向 79、全仓 870 tests、compileall、活动基线 `184 Python／8 frontend／27 Runtime／0 forbidden`、7,412 文件密钥扫描、8 份 Project OS JSONL 和 diff check 已通过；该复证为 0 模型／网络／Provider／付费调用。
+- 当前下一动作：形成干净提交并同步远端，运行 repository-aware Project OS preflight，签发绑定该提交的 R9 authority 并执行唯一 live。即使 Writer 形成报告，仍需另做 L1、八维内容质量和人工内容验收；S1、S3、泛化、Workbench 发布和 release 均未获授权。
 
 ## 2026-08-20 Multi-Agent Preview R5 分析片段续跑工程门
 

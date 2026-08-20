@@ -721,6 +721,7 @@ def execute_analyzed_preview_node(
     analysis_checkpoint: Mapping[str, Any] | None = None,
     analysis_checkpoint_draft: str | None = None,
     analysis_continuation_profile: ChatCompletionProfile | None = None,
+    analysis_checkpoint_original_messages: Sequence[Mapping[str, Any]] | None = None,
     analysis_transport: AnalysisTransport = execute_chat_completion_exact_once,
     submission_transport: SubmissionTransport = (
         execute_chat_completion_tool_step_exact_once
@@ -763,6 +764,7 @@ def execute_analyzed_preview_node(
             checkpoint=trusted_checkpoint,
             partial_draft=analysis_checkpoint_draft,
             tool_name=tool_name,
+            original_analysis_messages=analysis_checkpoint_original_messages,
         )
         active_analysis_profile = analysis_continuation_profile
         analysis_phase = "analysis_continuation"
@@ -783,12 +785,21 @@ def execute_analyzed_preview_node(
             "require one non-empty continuation and finish_reason=stop; merge "
             "with the immutable partial draft; no second continuation or restart"
         )
-        analysis_input_reference_count = 1 + sum(
-            str(analysis_checkpoint_draft).count(prefix)
-            for prefix in ("EV::", "NUM::", "REL::", "GAP::")
+        analysis_input_reference_count = (
+            input_reference_count
+            if analysis_checkpoint_original_messages is not None
+            else 1
+            + sum(
+                str(analysis_checkpoint_draft).count(prefix)
+                for prefix in ("EV::", "NUM::", "REL::", "GAP::")
+            )
         )
     else:
-        if analysis_checkpoint_draft is not None or analysis_continuation_profile is not None:
+        if (
+            analysis_checkpoint_draft is not None
+            or analysis_continuation_profile is not None
+            or analysis_checkpoint_original_messages is not None
+        ):
             raise MultiAgentPreviewRuntimeError(
                 "multi_agent_preview_analysis_checkpoint_inputs_unbound"
             )
@@ -877,8 +888,8 @@ def execute_analyzed_preview_node(
                 "完成后把合并草稿交给独立 non-thinking submission",
             ],
             "forbidden_interpretations": [
-                "不得把 partial draft 当作已验证 Lead plan",
-                "不得重跑六个 Specialist 或重做已完成章节",
+                "不得把 partial draft 当作已验证业务输出",
+                "不得重跑已完成 Agent 节点或重做已完成章节",
                 "不得添加 checkpoint 以外的新事实、来源或数字权限",
             ],
             "created_at": _now(),
@@ -1674,6 +1685,145 @@ def compile_workpaper_checkpoint_successor_zero_call_projection(
     return {**body, "result_digest": canonical_digest(body)}
 
 
+def compile_specialist_analysis_checkpoint_successor_zero_call_projection(
+    *,
+    repo_root: str | Path,
+    topology: Mapping[str, Any],
+    objective_payload: Mapping[str, Any],
+    specialist_plan_checkpoint: Mapping[str, Any],
+    lead_plan_checkpoint: Mapping[str, Any],
+    workpaper_checkpoint: Mapping[str, Any],
+    workpaper_source_terminal_failure: Mapping[str, Any],
+    analysis_fragment_checkpoint: Mapping[str, Any],
+    analysis_source_public_result: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Prove an R8 successor that resumes Counterevidence analysis once."""
+
+    base = compile_workpaper_checkpoint_successor_zero_call_projection(
+        repo_root=repo_root,
+        topology=topology,
+        objective_payload=objective_payload,
+        specialist_plan_checkpoint=specialist_plan_checkpoint,
+        lead_plan_checkpoint=lead_plan_checkpoint,
+        workpaper_checkpoint=workpaper_checkpoint,
+        source_terminal_failure=workpaper_source_terminal_failure,
+    )
+    checkpoint = validate_analysis_fragment_checkpoint(
+        analysis_fragment_checkpoint
+    )
+    if not (
+        checkpoint["case_key"] == "DELL"
+        and checkpoint["node_id"]
+        == "AGENT::COUNTEREVIDENCE::WORKPAPER_R1"
+        and checkpoint["run_id"]
+        == "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R8_20260820"
+        and checkpoint["finish_reason"] == "length"
+        and checkpoint["completed_required_outputs"] == []
+        and checkpoint["partial_required_outputs"] == ["thesis"]
+        and checkpoint["missing_required_outputs"]
+        == [
+            "confidence",
+            "sourced_claims",
+            "mechanism",
+            "alternative_explanations",
+            "strongest_counterarguments",
+            "remaining_gap_refs",
+            "what_would_change",
+            "cross_role_challenges",
+            "stop_reason",
+        ]
+        and checkpoint["continuation_policy"]["maximum_continuation_calls"]
+        == 1
+        and analysis_source_public_result.get("status")
+        == "multi_agent_preview_terminal_failure_preserved"
+        and analysis_source_public_result.get("failure_code")
+        == "multi_agent_preview_analysis_finish_reason_invalid:length"
+        and analysis_source_public_result.get("result_digest")
+        == checkpoint["source_public_result_digest"]
+        and (analysis_source_public_result.get("execution") or {}).get(
+            "reused_workpaper_count"
+        )
+        == 5
+    ):
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_specialist_analysis_checkpoint_invalid"
+        )
+    budget = deepcopy(dict(base["downstream_node_budget_basis"]))
+    budget["pending_specialist_workpaper_nodes"] = 1
+    body = {
+        "schema_version": (
+            "fin_ia_s3_dell_multi_agent_preview_R9_counterevidence_analysis_"
+            "checkpoint_downstream_successor_zero_call_result_v1_0"
+        ),
+        "status": (
+            "R8_counterevidence_analysis_checkpoint_downstream_successor_"
+            "zero_call_pass"
+        ),
+        "case_key": "DELL",
+        "specialist_plan_checkpoint_digest": base[
+            "specialist_plan_checkpoint_digest"
+        ],
+        "lead_plan_checkpoint_digest": base["lead_plan_checkpoint_digest"],
+        "lead_plan_digest": base["lead_plan_digest"],
+        "workpaper_checkpoint_digest": base["workpaper_checkpoint_digest"],
+        "analysis_fragment_checkpoint_digest": checkpoint[
+            "checkpoint_digest"
+        ],
+        "analysis_fragment_character_count": checkpoint[
+            "partial_draft_character_count"
+        ],
+        "analysis_fragment_partial_output": "thesis",
+        "analysis_fragment_missing_outputs": list(
+            checkpoint["missing_required_outputs"]
+        ),
+        "original_analysis_conversation_replay_required": True,
+        "maximum_analysis_continuation_calls": 1,
+        "new_initial_counterevidence_analysis_calls": 0,
+        "reused_specialist_plan_count": 6,
+        "reused_lead_plan_count": 1,
+        "reused_workpaper_count": 5,
+        "pending_agent_ids": list(base["pending_agent_ids"]),
+        "downstream_node_budget_basis": budget,
+        "maximum_new_model_nodes": sum(budget.values()),
+        "workpaper_checkpoint_successor_zero_call_result_digest": base[
+            "result_digest"
+        ],
+        "materialization_summary": {
+            "blocking_empty_role_ids": list(
+                base["materialization_readiness"]["blocking_empty_role_ids"]
+            ),
+            "compiled_evidence_request_count": base[
+                "materialization_readiness"
+            ]["compiled_evidence_request_count"],
+            "hybrid_selected_candidate_count": base[
+                "materialization_readiness"
+            ]["controlled_plan_summary"]["hybrid_selected_candidate_count"],
+            "typed_fact_request_count": base["materialization_readiness"][
+                "controlled_plan_summary"
+            ]["typed_fact_request_count"],
+            "numeric_fact_count": base["materialization_readiness"][
+                "controlled_plan_summary"
+            ]["numeric_fact_count"],
+            "role_readiness_count": len(
+                base["materialization_readiness"]["role_readiness"]
+            ),
+        },
+        "claims": {
+            "new_specialist_plan_model_calls": 0,
+            "new_lead_plan_model_calls": 0,
+            "new_completed_workpaper_model_calls": 0,
+            "new_analysis_continuation_model_calls": 0,
+            "network_calls": 0,
+            "paid_tool_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+            "true_multi_agent_preview_completed": False,
+        },
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
 __all__ = [
     "CONSUMER_OVERLAY_REF",
     "PLANNING_OVERLAY_REF",
@@ -1685,6 +1835,7 @@ __all__ = [
     "compile_cross_role_feedback_receipt",
     "compile_lead_checkpoint_successor_zero_call_projection",
     "compile_workpaper_checkpoint_successor_zero_call_projection",
+    "compile_specialist_analysis_checkpoint_successor_zero_call_projection",
     "compile_multi_agent_preview_materialization",
     "execute_analyzed_preview_node",
     "execute_checkpointed_preview_submission",

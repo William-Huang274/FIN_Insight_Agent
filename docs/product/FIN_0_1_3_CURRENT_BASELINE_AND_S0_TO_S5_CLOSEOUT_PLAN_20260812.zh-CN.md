@@ -256,6 +256,16 @@ R7 已自然完成 Demand、Operating、Value、Cash、Supply 五个角色的分
 
 零调用 successor proof 已重新物化 current S1/S2：12 个 EvidenceRequest、192 个候选、44 个 typed fact request（27 resolved／17 gap）、87 个 NumericFact，六个角色没有空视图。下一步只能在全仓复证和 clean/synced commit 后签发一次 R8 authority，执行上述 checkpoint-downstream live。
 
+### 4R. R8 Counter 分析推理耗尽与 R9 上下文连续性 successor
+
+R8 正确复用了前五份底稿，只启动 Counterevidence。该角色可见 6 条 reviewed Evidence、3 个 NumericFact、2 个 typed gap；但一次自然调用在 `16,000` completion token 中消耗 `15,774` reasoning token，只返回 918 个可见字符，未形成 Tool Call，并以 `length` 终止。HTTP 响应和 capture 完整，因此该失败不是 S1 资料、检索、网络、strict submission 或响应截断问题，而是 Agent Runtime 对长分析仍只有 one-shot、没有角色级上下文恢复路径。R8 保持 terminal failure，不能追认为成功。
+
+R9 不增加全局 token 上限，也不重跑初始分析。它把 R8 的原始 system／user 对话、918 字符 assistant 残稿、缺失输出清单、request／response digest 和 continuation policy 绑定成不可变 checkpoint，然后只允许一次 low-reasoning、missing-output-only continuation。续写完成后仍由独立 non-thinking submission 交卷，Harness 只校验和绑定，不补写观点。
+
+R9 的最大新节点仍为 10，但初始 Counter analysis 调用数降为 0、continuation 上限为 1；前五份底稿、六份 Specialist plan 和 Lead plan 均不再获得 token 预算。其余节点预算继续由实际任务输入规模、输出职责、合同负担、重要性、历史运行和终止策略决定，不能按省钱或速度统一压缩。
+
+该 successor 只修 S0 Agent Runtime 的上下文连续性并继续 S3 Preview。即便产出完整报告，也必须再做事实／数字／身份／引用 L1、八维绝对内容质量、同输入 paired gain 和 qualified-human 内容验收；在此之前不得声明 S3、泛化、S4 产品闭环或 release 通过。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

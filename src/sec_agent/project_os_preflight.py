@@ -30,6 +30,8 @@ from sec_agent.research.multi_agent_preview import (
     validate_specialist_plan_checkpoint,
 )
 from sec_agent.research.multi_agent_successor import (
+    HIERARCHICAL_EVALUATION_STRATEGY,
+    validate_hierarchical_evaluator_zero_call_proof,
     validate_successor_execution_frontier,
 )
 from sec_agent.providers import load_chat_completion_profile
@@ -5027,7 +5029,21 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         "token_budget_basis_policy",
         "authority_statement",
     }
-    if set(decision) != expected_fields:
+    hierarchical_proof_fields = {
+        "hierarchical_evaluator_zero_call_proof_ref",
+        "hierarchical_evaluator_zero_call_proof_sha256",
+        "hierarchical_evaluator_zero_call_proof_result_digest",
+    }
+    supplied_hierarchical_proof_fields = set(decision) & hierarchical_proof_fields
+    if supplied_hierarchical_proof_fields not in (set(), hierarchical_proof_fields):
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_hierarchical_proof_"
+            "binding_incomplete"
+        )
+    if set(decision) not in {
+        frozenset(expected_fields),
+        frozenset(expected_fields | hierarchical_proof_fields),
+    }:
         raise ValueError(
             "project_os_multi_agent_generic_successor_shape_invalid"
         )
@@ -5223,6 +5239,41 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         digest_field="successor_execution_frontier_result_digest",
     )
     frontier = validate_successor_execution_frontier(frontier_raw)
+    hierarchical_proof: dict[str, Any] | None = None
+    if frontier.get("evaluation_strategy") == HIERARCHICAL_EVALUATION_STRATEGY:
+        if supplied_hierarchical_proof_fields != hierarchical_proof_fields:
+            raise ValueError(
+                "project_os_multi_agent_generic_successor_hierarchical_proof_"
+                "required"
+            )
+        _, proof_raw = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="hierarchical_evaluator_zero_call_proof_ref",
+            sha_field="hierarchical_evaluator_zero_call_proof_sha256",
+            digest_field="hierarchical_evaluator_zero_call_proof_result_digest",
+        )
+        hierarchical_proof = validate_hierarchical_evaluator_zero_call_proof(
+            proof_raw,
+            frontier=frontier,
+        )
+        if not (
+            hierarchical_proof["frontier_ref"]
+            == decision["successor_execution_frontier_ref"]
+            and hierarchical_proof["frontier_sha256"]
+            == decision["successor_execution_frontier_sha256"]
+            and hierarchical_proof["frontier_result_digest"]
+            == decision["successor_execution_frontier_result_digest"]
+        ):
+            raise ValueError(
+                "project_os_multi_agent_generic_successor_hierarchical_proof_"
+                "frontier_drift"
+            )
+    elif supplied_hierarchical_proof_fields:
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_hierarchical_proof_"
+            "unexpected"
+        )
     predecessor_failure = frontier["predecessor_failure"]
     terminal_path = _repo_path(
         root, str(predecessor_failure["terminal_result_ref"])
@@ -5305,6 +5356,14 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
     return {
         "clean_proof_status": predecessor_projection["clean_proof_status"],
         "successor_zero_call_proof_status": frontier["status"],
+        "hierarchical_evaluator_zero_call_proof_status": (
+            hierarchical_proof["status"] if hierarchical_proof is not None else None
+        ),
+        "hierarchical_evaluator_zero_call_proof_result_digest": (
+            hierarchical_proof["result_digest"]
+            if hierarchical_proof is not None
+            else None
+        ),
         "provider_id": predecessor_projection["provider_id"],
         "provider_model": predecessor_projection["provider_model"],
         "api_key_env": predecessor_projection["api_key_env"],

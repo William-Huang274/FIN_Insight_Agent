@@ -33,6 +33,9 @@ MULTI_AGENT_EVALUATION_SCHEMA_VERSION = (
 MULTI_AGENT_EVALUATION_CONTENT_VIEW_SCHEMA_VERSION = (
     "fin_ia_multi_agent_evaluation_content_view_v1_0"
 )
+MULTI_AGENT_CROSS_ROLE_EVALUATION_VIEW_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_cross_role_evaluation_view_v1_0"
+)
 MULTI_AGENT_REPORT_DRAFT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_report_draft_v1_0"
 )
@@ -4357,7 +4360,16 @@ def validate_specialist_workpaper_checkpoint(
     }
 
 
-def evaluation_tool() -> dict[str, Any]:
+def evaluation_tool(
+    *, allowed_agent_ids: Sequence[str] | None = None
+) -> dict[str, Any]:
+    allowed_agents = tuple(allowed_agent_ids or SPECIALIST_AGENT_IDS)
+    _require(
+        bool(allowed_agents)
+        and len(allowed_agents) == len(set(allowed_agents))
+        and set(allowed_agents).issubset(SPECIALIST_AGENT_IDS),
+        "multi_agent_evaluation_tool_agent_scope_invalid",
+    )
     return {
         "type": "function",
         "function": {
@@ -4377,7 +4389,7 @@ def evaluation_tool() -> dict[str, Any]:
                             "properties": {
                                 "finding_code": {"type": "string", "minLength": 4, "maxLength": 100},
                                 "severity": {"type": "string", "enum": ["L1", "L2", "L3", "L4"]},
-                                "target_agent_id": {"type": "string", "enum": list(SPECIALIST_AGENT_IDS)},
+                                "target_agent_id": {"type": "string", "enum": list(allowed_agents)},
                                 "failure_owner": {"type": "string", "enum": ["data_infrastructure_or_tool", "harness_control", "agent_orchestration_and_role_design", "model_judgment"]},
                                 "explanation": {"type": "string", "minLength": 12, "maxLength": 1000},
                                 "evidence_refs": {"type": "array", "maxItems": 12, "uniqueItems": True, "items": {"type": "string"}},
@@ -4689,12 +4701,250 @@ def compile_evaluation_messages(
     )
 
 
+def compile_role_evaluation_messages(
+    *,
+    workpaper: Mapping[str, Any],
+    case_truth_model_view: Mapping[str, Any],
+    specialist_context: Mapping[str, Any],
+) -> tuple[dict[str, str], ...]:
+    """Compile one independent content audit over one role and its used authority."""
+
+    agent_id = str(workpaper.get("agent_id") or "")
+    _require(
+        agent_id in SPECIALIST_AGENT_IDS,
+        "multi_agent_role_evaluation_agent_invalid",
+    )
+    visible = compile_evaluation_content_view(
+        workpapers=[workpaper],
+        case_truth_model_view=case_truth_model_view,
+        specialist_contexts={agent_id: specialist_context},
+    )
+    visible["evaluation_scope"] = {
+        "scope_type": "single_role_content_audit",
+        "target_agent_id": agent_id,
+        "cross_role_conflicts_must_be_empty": True,
+    }
+    return (
+        {
+            "role": "system",
+            "content": (
+                "You are an independent financial research content evaluator. Audit "
+                "only the supplied specialist workpaper and the authority it actually "
+                "uses. Check judgment discipline, economic mechanism, alternative "
+                "explanations, strongest counterarguments and observable what-would-change "
+                "conditions. Deterministic identity, period, exact-number, reference and "
+                "unbound case-absence checks remain local. Audit whether gap-bound "
+                "absence language is narrower than the visible typed boundary and does "
+                "not erase coexisting evidence. Do not add research, rewrite the "
+                "workpaper, compare other roles or infer that omitted case authority is "
+                "absent. Every finding must target the supplied agent; cross_role_conflicts "
+                "must be empty. Submit exactly one evaluation tool call."
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                visible, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ),
+        },
+    )
+
+
+def validate_role_evaluation(
+    payload: Mapping[str, Any],
+    *,
+    workpaper: Mapping[str, Any],
+) -> dict[str, Any]:
+    agent_id = str(workpaper.get("agent_id") or "")
+    value = validate_evaluation(payload, workpapers=[workpaper])
+    _require(
+        not value["cross_role_conflicts"]
+        and all(
+            str(finding.get("target_agent_id") or "") == agent_id
+            for finding in value["findings"]
+        ),
+        "multi_agent_role_evaluation_scope_invalid",
+    )
+    return value
+
+
+def compile_cross_role_evaluation_content_view(
+    *,
+    workpapers: Sequence[Mapping[str, Any]],
+    role_evaluations: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Compile an authority-light cross-role audit after every role was reviewed."""
+
+    rows = [deepcopy(dict(row)) for row in workpapers]
+    by_agent = {str(row.get("agent_id") or ""): row for row in rows}
+    _require(
+        len(rows) == len(SPECIALIST_AGENT_IDS)
+        and set(by_agent) == set(SPECIALIST_AGENT_IDS)
+        and set(role_evaluations) == set(SPECIALIST_AGENT_IDS),
+        "multi_agent_cross_role_evaluation_coverage_invalid",
+    )
+    role_review_receipts: list[dict[str, Any]] = []
+    coordination_views: list[dict[str, Any]] = []
+    for agent_id in sorted(by_agent):
+        workpaper = by_agent[agent_id]
+        evaluation = validate_role_evaluation(
+            role_evaluations[agent_id], workpaper=workpaper
+        )
+        role_review_receipts.append(
+            {
+                "agent_id": agent_id,
+                "evaluation_digest": evaluation["evaluation_digest"],
+                "findings": deepcopy(evaluation["findings"]),
+                "role_content_may_proceed": evaluation["report_may_proceed"],
+            }
+        )
+        coordination_views.append(
+            {
+                "agent_id": agent_id,
+                "confidence": deepcopy(workpaper["confidence"]),
+                "thesis": deepcopy(workpaper["thesis"]),
+                "sourced_claims": deepcopy(workpaper["sourced_claims"]),
+                "mechanism": deepcopy(workpaper["mechanism"]),
+                "alternative_explanations": deepcopy(
+                    workpaper["alternative_explanations"]
+                ),
+                "strongest_counterarguments": deepcopy(
+                    workpaper["strongest_counterarguments"]
+                ),
+                "remaining_gap_refs": deepcopy(workpaper["remaining_gap_refs"]),
+                "what_would_change": deepcopy(workpaper["what_would_change"]),
+            }
+        )
+    unsigned = {
+        "schema_version": MULTI_AGENT_CROSS_ROLE_EVALUATION_VIEW_SCHEMA_VERSION,
+        "case_key": "DELL",
+        "role_review_receipts": role_review_receipts,
+        "coordination_views": coordination_views,
+        "evaluation_boundary": {
+            "all_role_content_audits_are_complete": True,
+            "full_financial_authority_remains_in_local_L1": True,
+            "cross_role_task_is_consistency_not_research": True,
+            "new_facts_numbers_sources_or_causal_claims_forbidden": True,
+            "role_workpaper_rewrite_forbidden": True,
+            "omitted_authority_is_not_absence": True,
+        },
+    }
+    return {
+        **unsigned,
+        "cross_role_evaluation_view_digest": canonical_digest(unsigned),
+    }
+
+
+def compile_cross_role_evaluation_messages(
+    *,
+    workpapers: Sequence[Mapping[str, Any]],
+    role_evaluations: Mapping[str, Mapping[str, Any]],
+) -> tuple[dict[str, str], ...]:
+    visible = compile_cross_role_evaluation_content_view(
+        workpapers=workpapers,
+        role_evaluations=role_evaluations,
+    )
+    return (
+        {
+            "role": "system",
+            "content": (
+                "You are the independent cross-role financial research evaluator. Every "
+                "specialist workpaper has already received its own content audit, while "
+                "deterministic financial L1 remains local. Check only contradictions, "
+                "double counting, incompatible periods or scopes expressed across claims, "
+                "mechanism inconsistency, unresolved challenge boundaries and whether the "
+                "six roles can be synthesized without overstating confidence. Do not "
+                "repeat role-level review, add facts, rewrite workpapers or treat omitted "
+                "authority as absence. Route each finding to the earliest owning role and "
+                "submit exactly one evaluation tool call."
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                visible, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ),
+        },
+    )
+
+
+def merge_hierarchical_evaluations(
+    *,
+    workpapers: Sequence[Mapping[str, Any]],
+    role_evaluations: Mapping[str, Mapping[str, Any]],
+    cross_role_evaluation: Mapping[str, Any],
+    local_findings: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Merge role, cross-role and local L1 findings without losing any defect."""
+
+    rows = [deepcopy(dict(row)) for row in workpapers]
+    by_agent = {str(row.get("agent_id") or ""): row for row in rows}
+    _require(
+        set(by_agent) == set(SPECIALIST_AGENT_IDS)
+        and set(role_evaluations) == set(SPECIALIST_AGENT_IDS),
+        "multi_agent_hierarchical_evaluation_coverage_invalid",
+    )
+    normalized_roles = {
+        agent_id: validate_role_evaluation(
+            role_evaluations[agent_id], workpaper=by_agent[agent_id]
+        )
+        for agent_id in sorted(by_agent)
+    }
+    cross = validate_evaluation(cross_role_evaluation, workpapers=rows)
+    findings: list[dict[str, Any]] = []
+    seen_findings: set[str] = set()
+    for raw in (
+        *(
+            finding
+            for agent_id in sorted(normalized_roles)
+            for finding in normalized_roles[agent_id]["findings"]
+        ),
+        *cross["findings"],
+        *local_findings,
+    ):
+        finding = deepcopy(dict(raw))
+        digest = canonical_digest(finding)
+        if digest not in seen_findings:
+            findings.append(finding)
+            seen_findings.add(digest)
+    _require(
+        len(findings) <= 20,
+        "multi_agent_hierarchical_evaluation_findings_overflow",
+    )
+    conflicts: list[str] = []
+    for value in (
+        *(
+            conflict
+            for agent_id in sorted(normalized_roles)
+            for conflict in normalized_roles[agent_id]["cross_role_conflicts"]
+        ),
+        *cross["cross_role_conflicts"],
+    ):
+        text = str(value)
+        if text not in conflicts:
+            conflicts.append(text)
+    _require(
+        len(conflicts) <= 12,
+        "multi_agent_hierarchical_evaluation_conflicts_overflow",
+    )
+    merged = {
+        "schema_version": MULTI_AGENT_EVALUATION_SCHEMA_VERSION,
+        "findings": findings,
+        "cross_role_conflicts": conflicts,
+        "report_may_proceed": not any(
+            bool(finding.get("blocks_report")) for finding in findings
+        ),
+    }
+    return validate_evaluation(merged, workpapers=rows)
+
+
 def validate_evaluation(
     payload: Mapping[str, Any],
     *,
     workpapers: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
     value = deepcopy(dict(payload))
+    supplied_digest = str(value.pop("evaluation_digest", ""))
     _require(
         set(value)
         == {"schema_version", "findings", "cross_role_conflicts", "report_may_proceed"}
@@ -4761,7 +5011,12 @@ def validate_evaluation(
         value["report_may_proceed"] is (not blocking),
         "multi_agent_evaluation_disposition_inconsistent",
     )
-    value["evaluation_digest"] = canonical_digest(value)
+    computed_digest = canonical_digest(value)
+    _require(
+        not supplied_digest or supplied_digest == computed_digest,
+        "multi_agent_evaluation_digest_invalid",
+    )
+    value["evaluation_digest"] = computed_digest
     return value
 
 
@@ -5620,34 +5875,55 @@ def local_case_absence_findings(
     workpapers: Sequence[Mapping[str, Any]],
     case_truth_model_view: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
-    """Flag risky absence language when case-level presence is non-empty.
+    """Fail closed when absence language has no structured gap boundary.
 
-    This deliberately does not decide whether a particular proposition is false.
-    It forces the model Evaluator to reconcile any case-level absence statement
-    with the complete presence catalog instead of treating cell-local visibility
-    as authoritative.
+    Natural-language matching cannot decide whether a statement such as "no
+    product-level amount is disclosed" correctly narrows a coexisting fact. The
+    local control therefore verifies the part it can prove deterministically:
+    absence language must be accompanied by a workpaper gap reference that is
+    present in the full CaseTruth gap or bridge catalogs. Semantic overreach
+    inside a bound statement remains visible to the role-scoped content audit.
     """
 
     presence_count = len(case_truth_model_view.get("presence_catalog") or ())
     if not presence_count:
         return []
+    known_gap_refs = {
+        str(ref)
+        for row in case_truth_model_view.get("typed_gap_catalog") or ()
+        for ref in row.get("gap_refs") or ()
+    }
+    known_gap_refs.update(
+        str(ref)
+        for row in case_truth_model_view.get("typed_bridge_boundary_catalog")
+        or ()
+        for ref in row.get("required_gap_refs") or ()
+    )
     findings: list[dict[str, Any]] = []
     for workpaper in workpapers:
         agent_id = str(workpaper["agent_id"])
+        workpaper_gap_refs = {
+            str(ref) for ref in workpaper.get("remaining_gap_refs") or ()
+        }
+        has_bound_gap = bool(workpaper_gap_refs & known_gap_refs)
         surfaces = [str(workpaper["thesis"]), str(workpaper["mechanism"])]
         surfaces.extend(str(row["claim"]) for row in workpaper["sourced_claims"])
         for surface in surfaces:
             folded = surface.casefold()
-            if any(term.casefold() in folded for term in _ABSENCE_TERMS):
+            if (
+                any(term.casefold() in folded for term in _ABSENCE_TERMS)
+                and not has_bound_gap
+            ):
                 findings.append(
                     {
-                        "finding_code": "case_absence_language_requires_presence_reconciliation",
+                        "finding_code": "case_absence_language_missing_typed_boundary",
                         "severity": "L1",
                         "target_agent_id": agent_id,
                         "failure_owner": "harness_control",
                         "explanation": (
-                            "当前工作底稿使用了缺失／未披露语言；全案存在目录并非空，"
-                            "必须先区分本单元未加载、S2 typed gap、来源路线未执行和真正未披露。"
+                            "当前工作底稿使用了缺失／未披露语言，但没有绑定任何全案 "
+                            "typed gap 或 bridge boundary；必须先区分本单元未加载、"
+                            "来源路线未执行和真正未披露。"
                         ),
                         "evidence_refs": [],
                         "permitted_repair": (
@@ -5668,6 +5944,7 @@ __all__ = [
     "LEAD_PLAN_SCHEMA_VERSION",
     "LEAD_COORDINATION_DECISION_SCHEMA_VERSION",
     "LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION",
+    "MULTI_AGENT_CROSS_ROLE_EVALUATION_VIEW_SCHEMA_VERSION",
     "MULTI_AGENT_EVALUATION_CONTENT_VIEW_SCHEMA_VERSION",
     "MULTI_AGENT_EVALUATION_SCHEMA_VERSION",
     "MULTI_AGENT_REPORT_DRAFT_SCHEMA_VERSION",
@@ -5684,6 +5961,9 @@ __all__ = [
     "compile_planner_payload_from_role_opinions",
     "compile_evaluation_content_view",
     "compile_evaluation_messages",
+    "compile_cross_role_evaluation_content_view",
+    "compile_cross_role_evaluation_messages",
+    "compile_role_evaluation_messages",
     "compile_challenge_catalog",
     "compile_analyzed_node_messages",
     "compile_analyzed_node_submission_messages",
@@ -5702,6 +5982,7 @@ __all__ = [
     "compile_specialist_workpaper_messages",
     "compile_token_budget_basis",
     "merge_analysis_draft_fragments",
+    "merge_hierarchical_evaluations",
     "evaluation_tool",
     "lead_plan_tool",
     "lead_coordination_tool",
@@ -5712,6 +5993,7 @@ __all__ = [
     "specialist_plan_tool",
     "specialist_workpaper_tool",
     "validate_evaluation",
+    "validate_role_evaluation",
     "validate_analysis_fragment_checkpoint",
     "validate_analysis_completion_checkpoint",
     "validate_downstream_repair_progress_checkpoint",

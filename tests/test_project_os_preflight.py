@@ -243,6 +243,11 @@ MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
     "successor_scope_decision_v1_1.json"
 )
+MULTI_AGENT_PREVIEW_HIERARCHICAL_EVALUATOR_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
+    "successor_scope_decision_v1_2.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -863,6 +868,46 @@ def test_multi_agent_preview_generic_successor_rejects_frontier_digest_drift() -
     ):
         validate_multi_agent_preview_generic_successor_scope_decision(
             root=ROOT, decision=decision
+        )
+
+
+def test_multi_agent_preview_hierarchical_evaluator_binds_zero_call_proof() -> None:
+    decision = json.loads(
+        (
+            ROOT / MULTI_AGENT_PREVIEW_HIERARCHICAL_EVALUATOR_SCOPE_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+
+    projection = validate_multi_agent_preview_generic_successor_scope_decision(
+        root=ROOT,
+        decision=decision,
+    )
+
+    assert projection["multi_agent_preview_generic_successor"] is True
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 13
+    assert projection["hierarchical_evaluator_zero_call_proof_status"] == (
+        "hierarchical_evaluator_capture_replay_fake_mutation_zero_call_pass"
+    )
+    assert projection[
+        "hierarchical_evaluator_zero_call_proof_result_digest"
+    ] == decision["hierarchical_evaluator_zero_call_proof_result_digest"]
+
+
+def test_multi_agent_preview_hierarchical_evaluator_rejects_proof_digest_drift() -> None:
+    decision = json.loads(
+        (
+            ROOT / MULTI_AGENT_PREVIEW_HIERARCHICAL_EVALUATOR_SCOPE_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    decision["hierarchical_evaluator_zero_call_proof_result_digest"] = "0" * 64
+
+    with pytest.raises(
+        ValueError,
+        match="project_os_artifact_result_digest_drift",
+    ):
+        validate_multi_agent_preview_generic_successor_scope_decision(
+            root=ROOT,
+            decision=decision,
         )
 
 

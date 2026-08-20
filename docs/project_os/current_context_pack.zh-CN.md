@@ -1,6 +1,6 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-20
+更新时间：2026-08-21
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-s1-retrieval-vertical-slice`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
@@ -9,7 +9,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
 
-当前获准的并行诊断仅限 DELL bounded Multi-Agent Preview。R15C 已越过 profile 和 active-checkpoint 集合校验，但在 Provider 前发现 R14 Cash 的业务 payload 绑定了本地 submission context，而模型 continuation 实际读取另一份 context；Demand 三元组一致，Cash lineage 不一致。R15C 为 0 模型／0 Provider／0 网络并已不可变保存。按 RC-AR-016，当前不得再增加 attempt-specific R15D／R16 分支；下一项是 S0 通用 successor compiler，逐节点编译 exact reuse、派生 digest 重绑、fresh rerun 或 pending fresh。它不改变 S1 状态、不新增 Evidence，也不授予产品验收。
+当前获准的并行诊断仅限 DELL bounded Multi-Agent Preview。六份 Specialist 底稿、Lead coordination 与 Demand／Cash／Supply 三条自然反馈修订均已完成并 capture-bound 保存；两次全案单节点 Evaluator 分别在 31,732 与 24,591 prompt token 后把 16,000 completion 全部耗于 reasoning，均未产生可见 finding，Writer 未启动。当前已完成 provider-neutral 分层评审实现与真实 capture 零调用复证：本地完整 L1、六个角色级审查、一次跨角色审查、最多两处原角色修订与受影响角色复审，最坏路径 13 个新逻辑节点。scope 必须显式绑定该复证；全仓 913 tests、compileall、active baseline、755 configs、8 份 Project OS JSONL／867 行、7,473-file secret scan 和 diff check 均通过。当前只剩 clean commit／push、fresh preflight 和唯一 live。若任一单角色审查仍发生同型 reasoning-only exhaustion，下一步是 Evaluator 模型／profile 责任选择，不再做字段级 DeepSeek 补丁。该 Preview 不改变 `S1_qualified_stable=false`，也不授予 S3、泛化、Workbench 发布或 release。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 
@@ -989,3 +989,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 这证明 31,732→24,591 tokens 的 claim-bound 压缩不足以让“六底稿全案单节点评审”成为可靠任务。最早责任层是 S0 Evaluator 任务/profile 与 S3 评审编排，不是 S1/S2、网络、Supply 资料或三条角色修订。
 - 后续禁止继续逐字段削减权威、增加全局 ceiling 或同型重跑。评审改为本地完整 L1＋六个单角色内容审查＋一个跨角色一致性审查；最多两处 finding 回原角色，只重审受影响角色，再做一次跨角色复核。最坏路径 13 个新逻辑节点，来自实际职责而非省钱或速度。
 - 当前须先保存本次 authority/result 并实现分层评审、capture replay、fake/mutation、全仓门和通用 frontier 预算编译；之后才可判断是否签发一次新的 Evaluator successor。完整报告、八维质量、paired、qualified-human、S1/S3、泛化、Workbench 和 release 均未通过。
+
+# 2026-08-21 分层 Evaluator 零调用实现与完整工程门
+
+- 已用当前不可变 capture 和 checkpoint 恢复六份最终底稿及其精确模型上下文。六个角色审查输入为 11,274—18,365 字符；跨角色输入 45,252 字符，只含底稿／审查摘要与 Lead lineage，不重复完整权威目录。
+- 本地完整 L1 的 absence blocking finding 为 0；缺角色、错角色、未解析 authority、排列漂移、frontier 预算篡改和无关角色复审六类 mutation 全部 fail closed。
+- fake 路径证明无修订为 8 个逻辑节点、最多两处修订为 13；第三处需要 15 个节点并被阻断。该预算来自实际角色职责，不是省钱或速度。
+- `successor_scope_decision_v1_2` 与 future authority 必须同时绑定 frontier 和零调用 proof 的 ref／sha256／result digest。历史 monolithic scope 保留只读审计兼容，不能绕过新门。
+- 完整工程门通过：定向 109、全仓 913、compileall、active baseline `185 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、755 份 configs、8 份 Project OS JSONL／867 行、7,473-file secret scan 和 diff check。
+- 当前只允许 clean commit／push → fresh preflight → 一次层级 Evaluator successor。自然 finding、Writer、报告质量、paired、qualified-human、S1／S3、泛化、Workbench 和 release 仍未证明。

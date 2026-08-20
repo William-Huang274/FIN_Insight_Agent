@@ -5,12 +5,18 @@ from copy import deepcopy
 import pytest
 
 from sec_agent.canonical_runtime import canonical_digest
-from sec_agent.research.multi_agent_preview import validate_specialist_workpaper
+from sec_agent.research.multi_agent_preview import (
+    SPECIALIST_AGENT_IDS,
+    validate_specialist_workpaper,
+)
 from sec_agent.research.multi_agent_successor import (
+    HIERARCHICAL_EVALUATION_STRATEGY,
     MultiAgentSuccessorError,
     compile_completed_workpaper_frontier_node,
     compile_fresh_frontier_node,
+    compile_hierarchical_evaluator_zero_call_proof,
     compile_successor_execution_frontier,
+    validate_hierarchical_evaluator_zero_call_proof,
     validate_successor_execution_frontier,
 )
 
@@ -224,3 +230,114 @@ def test_frontier_can_resume_after_downstream_reasoning_budget_failure() -> None
         "maximum_new_counter_challenge_repairs"
     ] == 0
     assert frontier["execution_limits"]["maximum_new_model_nodes"] == 5
+
+
+def test_frontier_compiles_hierarchical_evaluator_capacity_from_real_roles() -> None:
+    agents = (
+        "AGENT::DEMAND_QUALITY",
+        "AGENT::CASH_CONVERSION",
+        "AGENT::SUPPLY_RELATIONSHIP",
+    )
+    completed = []
+    for index, agent in enumerate(agents, start=1):
+        context = _context(agent, f"SESSION::H::{index}")
+        completed.append(
+            compile_completed_workpaper_frontier_node(
+                challenge_id=f"CHALLENGE::H::{index}",
+                node_id=agent + "::COUNTER_REPAIR",
+                target_agent_id=agent,
+                source_run_id=f"RUN::H::{index}",
+                source_workpaper=_workpaper(context, agent),
+                model_visible_context=context,
+                source_terminal_ref=f"terminal-h-{index}.json",
+                source_terminal_sha256=str(index) * 64,
+                source_terminal_digest=str(index + 3) * 64,
+                source_request_ref=f"capture-h-{index}.json",
+                source_request_sha256=str(index + 6) * 64,
+                source_request_digest=str(index + 3) * 64,
+            )
+        )
+    frontier = compile_successor_execution_frontier(
+        case_key="DELL",
+        cell_id="MULTI_AGENT_PREVIEW",
+        accepted_challenge_ids=[
+            f"CHALLENGE::H::{index}" for index in range(1, 4)
+        ],
+        lead_coordination_checkpoint_digest="f" * 64,
+        predecessor_failure=_reasoning_budget_failure(),
+        nodes=completed,
+        evaluation_strategy=HIERARCHICAL_EVALUATION_STRATEGY,
+    )
+
+    assert validate_successor_execution_frontier(frontier) == frontier
+    assert frontier["evaluation_strategy"] == HIERARCHICAL_EVALUATION_STRATEGY
+    assert frontier["execution_limits"]["maximum_new_model_nodes"] == 13
+    assert frontier["execution_limits"][
+        "maximum_initial_role_evaluation_nodes"
+    ] == 6
+    assert frontier["execution_limits"]["maximum_cross_role_evaluation_nodes"] == 2
+    assert frontier["execution_limits"][
+        "maximum_affected_role_reevaluation_nodes"
+    ] == 2
+    assert frontier["constraints"][
+        "cross_role_audit_consumes_reviewed_summaries_only"
+    ] is True
+
+    role_receipts = [
+        {
+            "agent_id": agent_id,
+            "workpaper_digest": str(index) * 64,
+            "context_digest": str(index + 1) * 64,
+            "content_view_digest": str(index + 2) * 64,
+            "input_characters": 10_000 + index,
+            "evidence_ref_count": 2,
+            "numeric_ref_count": 1,
+            "numeric_relation_ref_count": 1,
+            "typed_gap_ref_count": 1,
+        }
+        for index, agent_id in enumerate(SPECIALIST_AGENT_IDS, start=1)
+    ]
+    proof = compile_hierarchical_evaluator_zero_call_proof(
+        frontier_ref="frontier.json",
+        frontier_sha256="a" * 64,
+        frontier=frontier,
+        role_view_receipts=role_receipts,
+        cross_role_view_receipt={
+            "cross_role_view_digest": "b" * 64,
+            "input_characters": 30_000,
+            "role_count": 6,
+            "referenced_authority_included": False,
+        },
+        local_case_absence_blocking_finding_count=0,
+        mutation_checks={
+            "missing_role_fails_closed": True,
+            "wrong_role_target_fails_closed": True,
+            "unresolved_authority_ref_fails_closed": True,
+            "workpaper_permutation_is_stable": True,
+            "frontier_budget_mutation_fails_closed": True,
+            "unaffected_role_reevaluation_is_forbidden": True,
+        },
+        fake_execution_receipt={
+            "pass_without_repair_node_count": 8,
+            "maximum_two_repair_path_node_count": 13,
+            "third_repair_path_node_count": 15,
+            "maximum_authorized_model_nodes": 13,
+            "conditional_writer_count": 1,
+            "unaffected_role_reevaluation_count": 0,
+        },
+    )
+    assert validate_hierarchical_evaluator_zero_call_proof(
+        proof, frontier=frontier
+    ) == proof
+
+    mutated = deepcopy(proof)
+    mutated["mutation_checks"]["wrong_role_target_fails_closed"] = False
+    body = {key: value for key, value in mutated.items() if key != "result_digest"}
+    mutated["result_digest"] = canonical_digest(body)
+    with pytest.raises(
+        MultiAgentSuccessorError,
+        match="multi_agent_hierarchical_proof_mutation_invalid",
+    ):
+        validate_hierarchical_evaluator_zero_call_proof(
+            mutated, frontier=frontier
+        )

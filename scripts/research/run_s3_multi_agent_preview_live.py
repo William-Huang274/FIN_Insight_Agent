@@ -40,10 +40,12 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     SPECIALIST_AGENT_IDS,
     WRITER_AGENT_ID,
     compile_challenge_catalog,
+    compile_cross_role_evaluation_messages,
     compile_evaluation_messages,
     compile_lead_coordination_messages,
     compile_lead_plan_messages,
     compile_report_messages,
+    compile_role_evaluation_messages,
     compile_specialist_context,
     compile_specialist_repair_context,
     compile_specialist_workpaper_messages,
@@ -53,6 +55,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     load_multi_agent_role_topology,
     local_case_absence_findings,
     merge_analysis_draft_fragments,
+    merge_hierarchical_evaluations,
     report_draft_tool,
     revalidate_bound_specialist_workpaper,
     specialist_workpaper_tool,
@@ -67,6 +70,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     validate_lead_plan,
     validate_lead_plan_checkpoint,
     validate_report_draft,
+    validate_role_evaluation,
     validate_specialist_workpaper,
     validate_specialist_workpaper_checkpoint,
 )
@@ -82,6 +86,9 @@ from sec_agent.research.multi_agent_preview_runtime import (  # noqa: E402
 )
 from sec_agent.research.multi_agent_successor import (  # noqa: E402
     COMPLETED_DISPOSITIONS,
+    HIERARCHICAL_EVALUATION_STRATEGY,
+    MONOLITHIC_EVALUATION_STRATEGY,
+    validate_hierarchical_evaluator_zero_call_proof,
     validate_successor_execution_frontier,
 )
 from sec_agent.project_os_preflight import (  # noqa: E402
@@ -483,7 +490,17 @@ def _validate_authority(
             "predecessor_authority",
             "predecessor_result",
         }
-    if set(inputs) != required_inputs:
+    if generic_successor:
+        allowed_input_sets = {
+            frozenset(required_inputs),
+            frozenset(
+                required_inputs | {"hierarchical_evaluator_zero_call_proof"}
+            ),
+        }
+        inputs_valid = frozenset(inputs) in allowed_input_sets
+    else:
+        inputs_valid = set(inputs) == required_inputs
+    if not inputs_valid:
         raise MultiAgentPreviewLiveError(
             "multi_agent_preview_authority_inputs_invalid"
         )
@@ -892,6 +909,24 @@ def _validate_authority(
                 "repair_analysis_profile_sha256",
             ),
         }
+        scope_requires_hierarchical_proof = (
+            scope_projection.get(
+                "hierarchical_evaluator_zero_call_proof_status"
+            )
+            is not None
+        )
+        if (
+            "hierarchical_evaluator_zero_call_proof" in inputs
+        ) != scope_requires_hierarchical_proof:
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_hierarchical_evaluator_proof_"
+                "authority_shape_invalid"
+            )
+        if scope_requires_hierarchical_proof:
+            current_scope_bindings["hierarchical_evaluator_zero_call_proof"] = (
+                "hierarchical_evaluator_zero_call_proof_ref",
+                "hierarchical_evaluator_zero_call_proof_sha256",
+            )
     elif downstream_analysis_successor:
         current_scope_bindings = {
             "predecessor_scope_decision": (
@@ -1124,6 +1159,24 @@ def _validate_authority(
         frontier = validate_successor_execution_frontier(
             _json(inputs["successor_execution_frontier"])
         )
+        if frontier.get("evaluation_strategy") == HIERARCHICAL_EVALUATION_STRATEGY:
+            hierarchical_proof = validate_hierarchical_evaluator_zero_call_proof(
+                _json(inputs["hierarchical_evaluator_zero_call_proof"]),
+                frontier=frontier,
+            )
+            if not (
+                hierarchical_proof["status"]
+                == scope_projection.get(
+                    "hierarchical_evaluator_zero_call_proof_status"
+                )
+                and hierarchical_proof["result_digest"]
+                == scope_projection.get(
+                    "hierarchical_evaluator_zero_call_proof_result_digest"
+                )
+            ):
+                raise MultiAgentPreviewLiveError(
+                    "multi_agent_preview_hierarchical_evaluator_proof_invalid"
+                )
         failed_authority = _json(inputs["predecessor_authority"])
         failed_result = _json(inputs["predecessor_result"])
         predecessor_failure = frontier["predecessor_failure"]
@@ -1820,14 +1873,28 @@ def _validate_authority(
             "multi_agent_preview_successor_zero_call_proof_not_passed"
         )
     if generic_successor:
+        validated_frontier = validate_successor_execution_frontier(
+            _json(inputs["successor_execution_frontier"])
+        )
         if scope_projection.get("successor_zero_call_proof_status") != (
-            validate_successor_execution_frontier(
-                _json(inputs["successor_execution_frontier"])
-            )["status"]
+            validated_frontier["status"]
         ):
             raise MultiAgentPreviewLiveError(
                 "multi_agent_preview_generic_successor_frontier_not_passed"
             )
+        if validated_frontier.get("evaluation_strategy") == (
+            HIERARCHICAL_EVALUATION_STRATEGY
+        ):
+            hierarchical_proof = validate_hierarchical_evaluator_zero_call_proof(
+                _json(inputs["hierarchical_evaluator_zero_call_proof"]),
+                frontier=validated_frontier,
+            )
+            if hierarchical_proof["result_digest"] != scope_projection.get(
+                "hierarchical_evaluator_zero_call_proof_result_digest"
+            ):
+                raise MultiAgentPreviewLiveError(
+                    "multi_agent_preview_hierarchical_evaluator_proof_not_passed"
+                )
     elif downstream_analysis_successor:
         progress_checkpoint = validate_downstream_repair_progress_checkpoint(
             _json(inputs["downstream_repair_progress_checkpoint"])
@@ -2062,6 +2129,10 @@ def _validate_authority(
             for row in frontier["nodes"]
         )
         fresh_frontier_count = len(frontier["nodes"]) - completed_frontier_count
+        hierarchical_evaluator = (
+            frontier.get("evaluation_strategy")
+            == HIERARCHICAL_EVALUATION_STRATEGY
+        )
         mode_limits_valid = (
             limits.get("maximum_new_lead_plan_model_calls") == 0
             and limits.get("maximum_new_initial_workpaper_nodes") == 0
@@ -2078,8 +2149,26 @@ def _validate_authority(
             == completed_frontier_count
             and limits.get("maximum_new_counter_challenge_repairs")
             == fresh_frontier_count
+            and (
+                (
+                    limits.get("maximum_initial_role_evaluation_nodes") == 6
+                    and limits.get("maximum_cross_role_evaluation_nodes") == 2
+                    and limits.get(
+                        "maximum_affected_role_reevaluation_nodes"
+                    )
+                    == 2
+                )
+                if hierarchical_evaluator
+                else (
+                    "maximum_initial_role_evaluation_nodes" not in limits
+                    and "maximum_cross_role_evaluation_nodes" not in limits
+                    and "maximum_affected_role_reevaluation_nodes" not in limits
+                )
+            )
         )
-        expected_new_nodes = fresh_frontier_count + 5
+        expected_new_nodes = fresh_frontier_count + (
+            13 if hierarchical_evaluator else 5
+        )
     elif role_scoped_repair_successor:
         mode_limits_valid = (
             limits.get("maximum_new_lead_plan_model_calls") == 0
@@ -3782,13 +3871,23 @@ def run(authority_path: Path) -> dict[str, Any]:
         if downstream_analysis_successor and not generic_successor
         else None
     )
+    successor_frontier = (
+        _json(paths["successor_execution_frontier"])
+        if generic_successor
+        else None
+    )
+    hierarchical_evaluator = bool(
+        successor_frontier is not None
+        and successor_frontier.get("evaluation_strategy")
+        == HIERARCHICAL_EVALUATION_STRATEGY
+    )
     if generic_successor:
         (
             completed_downstream_repairs,
             completed_downstream_repair_contexts,
             active_downstream_progress_checkpoint,
         ) = _load_bound_generic_successor_frontier(
-            frontier=_json(paths["successor_execution_frontier"])
+            frontier=successor_frontier
         )
     else:
         (
@@ -4357,6 +4456,25 @@ def run(authority_path: Path) -> dict[str, Any]:
                     ]
                 ),
             },
+            **(
+                {
+                    "hierarchical_evaluator_zero_call_proof": {
+                        "ref": _relative(
+                            paths["hierarchical_evaluator_zero_call_proof"]
+                        ),
+                        "sha256": _sha(
+                            paths["hierarchical_evaluator_zero_call_proof"]
+                        ),
+                        "result_digest": scope_projection[
+                            "hierarchical_evaluator_zero_call_proof_result_digest"
+                        ],
+                        "provider_model_calls": 0,
+                        "local_retrieval_materialization_replayed": True,
+                    }
+                }
+                if hierarchical_evaluator
+                else {}
+            ),
         }
         if generic_successor
         and lead_plan_checkpoint is not None
@@ -4376,6 +4494,10 @@ def run(authority_path: Path) -> dict[str, Any]:
     node_index = 0
     counter_repairs = len(completed_downstream_repairs)
     new_counter_repairs = 0
+    evaluator_repairs = 0
+    evaluator_role_audits = 0
+    evaluator_role_reaudits = 0
+    evaluator_cross_role_audits = 0
 
     def state(agent_id: str) -> PreviewAgentSessionState:
         if agent_id not in sessions:
@@ -4620,6 +4742,10 @@ def run(authority_path: Path) -> dict[str, Any]:
                 "multi_agent_preview_role_authority_empty_after_materialization"
             )
         contexts = materialization.context_by_agent()
+        evaluation_contexts = {
+            agent_id: deepcopy(dict(context))
+            for agent_id, context in contexts.items()
+        }
 
         workpaper_checkpoint = (
             validate_specialist_workpaper_checkpoint(
@@ -4852,6 +4978,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                     expected_agent_id=target,
                 )
                 workpapers_by_agent[target] = completed_repair
+                evaluation_contexts[target] = deepcopy(dict(source_context))
                 _bind_reused_workpaper_checkpoint(
                     state=state(target),
                     context=source_context,
@@ -4944,6 +5071,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                     else None
                 ),
             )
+            evaluation_contexts[target] = deepcopy(dict(repaired_context))
             counter_repairs += 1
             new_counter_repairs += 1
             if new_counter_repairs > authority["execution_limits"].get(
@@ -4954,59 +5082,10 @@ def run(authority_path: Path) -> dict[str, Any]:
                 )
 
         evaluations: list[dict[str, Any]] = []
-        evaluator_state = state("EVAL::L1_AND_CONTENT")
-        rebind_preview_session_plan(evaluator_state, active_plan_ref=plan_ref)
-        evaluator_repairs = 0
-        for evaluation_round in (1, 2):
-            current_workpapers = [
-                workpapers_by_agent[agent_id]
-                for agent_id in lead["ordered_agent_ids"]
-            ]
-            model_evaluation = execute_node(
-                agent_id="EVAL::L1_AND_CONTENT",
-                node_suffix=f"EVALUATION_R{evaluation_round}",
-                messages=compile_evaluation_messages(
-                    workpapers=current_workpapers,
-                    case_truth_model_view=compile_case_truth_model_view(
-                        materialization.case_truth_packet
-                    ),
-                    specialist_contexts=contexts,
-                ),
-                tool=evaluation_tool(),
-                validator=lambda payload, current=current_workpapers: validate_evaluation(
-                    payload, workpapers=current
-                ),
-                purpose="独立检查事实、期间、引用、因果边界、角色冲突与最早责任层，不代写结论。",
-                required_outputs=(
-                    "findings",
-                    "cross_role_conflicts",
-                    "report_may_proceed",
-                ),
-                risk="a false pass would publish materially wrong financial research; a false block would hide agent capability",
-                analysis_tokens=16000,
-                submission_tokens=7000,
-            )
-            local_findings = local_case_absence_findings(
-                workpapers=current_workpapers,
-                case_truth_model_view=compile_case_truth_model_view(
-                    materialization.case_truth_packet
-                ),
-            )
-            evaluation = _merge_local_evaluation(
-                model_evaluation=model_evaluation,
-                local_findings=local_findings,
-                workpapers=current_workpapers,
-            )
-            evaluations.append(evaluation)
-            if evaluation["report_may_proceed"] or evaluation_round == 2:
-                break
-            repairable = [
-                row
-                for row in evaluation["findings"]
-                if row["blocks_report"]
-                and row["failure_owner"]
-                in {"agent_orchestration_and_role_design", "model_judgment"}
-            ][: authority["execution_limits"]["maximum_evaluator_repairs"]]
+        def apply_evaluator_repairs(
+            *, evaluation: Mapping[str, Any], evaluation_round: int
+        ) -> list[str]:
+            nonlocal evaluator_repairs
             unrepairable = [
                 row
                 for row in evaluation["findings"]
@@ -5014,11 +5093,25 @@ def run(authority_path: Path) -> dict[str, Any]:
                 and row["failure_owner"]
                 in {"data_infrastructure_or_tool", "harness_control"}
             ]
-            if unrepairable or not repairable:
-                break
+            if unrepairable:
+                return []
             by_target: dict[str, list[dict[str, Any]]] = {}
-            for finding in repairable:
+            maximum_targets = authority["execution_limits"][
+                "maximum_evaluator_repairs"
+            ]
+            for finding in evaluation["findings"]:
+                if not (
+                    finding["blocks_report"]
+                    and finding["failure_owner"]
+                    in {
+                        "agent_orchestration_and_role_design",
+                        "model_judgment",
+                    }
+                ):
+                    continue
                 target = str(finding["target_agent_id"])
+                if target not in by_target and len(by_target) >= maximum_targets:
+                    continue
                 by_target.setdefault(target, []).append(
                     _compile_evaluator_feedback_receipt(
                         target_session_id=state(target).session["session_id"],
@@ -5077,7 +5170,238 @@ def run(authority_path: Path) -> dict[str, Any]:
                         else None
                     ),
                 )
+                evaluation_contexts[target] = deepcopy(dict(repaired_context))
                 evaluator_repairs += 1
+            return list(by_target)
+
+        if hierarchical_evaluator:
+            case_truth_model_view = compile_case_truth_model_view(
+                materialization.case_truth_packet
+            )
+            current_workpapers = [
+                workpapers_by_agent[agent_id]
+                for agent_id in lead["ordered_agent_ids"]
+            ]
+            role_evaluations: dict[str, dict[str, Any]] = {}
+            for agent_id in lead["ordered_agent_ids"]:
+                workpaper = workpapers_by_agent[agent_id]
+                evaluator_agent_id = (
+                    "EVAL::ROLE::" + agent_id.split("::")[-1]
+                )
+                rebind_preview_session_plan(
+                    state(evaluator_agent_id), active_plan_ref=plan_ref
+                )
+                role_evaluations[agent_id] = execute_node(
+                    agent_id=evaluator_agent_id,
+                    node_suffix="CONTENT_AUDIT_R1",
+                    messages=compile_role_evaluation_messages(
+                        workpaper=workpaper,
+                        case_truth_model_view=case_truth_model_view,
+                        specialist_context=evaluation_contexts[agent_id],
+                    ),
+                    tool=evaluation_tool(allowed_agent_ids=[agent_id]),
+                    validator=lambda payload, current=workpaper: validate_role_evaluation(
+                        payload, workpaper=current
+                    ),
+                    purpose="独立审查单一专业底稿的判断、经济机制、替代解释、最强反方和可观察改变条件，不代写研究。",
+                    required_outputs=(
+                        "role_findings",
+                        "role_content_may_proceed",
+                    ),
+                    risk="a false role pass could preserve a material causal overreach; a false block could erase valid specialist gain",
+                    analysis_tokens=12000,
+                    submission_tokens=7000,
+                    analysis_profile_override=repair_analysis_profile,
+                )
+                evaluator_role_audits += 1
+            cross_evaluator_id = "EVAL::CROSS_ROLE"
+            rebind_preview_session_plan(
+                state(cross_evaluator_id), active_plan_ref=plan_ref
+            )
+            cross_role_evaluation = execute_node(
+                agent_id=cross_evaluator_id,
+                node_suffix="CONSISTENCY_AUDIT_R1",
+                messages=compile_cross_role_evaluation_messages(
+                    workpapers=current_workpapers,
+                    role_evaluations=role_evaluations,
+                ),
+                tool=evaluation_tool(
+                    allowed_agent_ids=lead["ordered_agent_ids"]
+                ),
+                validator=lambda payload, current=current_workpapers: validate_evaluation(
+                    payload, workpapers=current
+                ),
+                purpose="在六份已完成角色审查的基础上，只检查跨角色矛盾、重复计算、口径冲突和综合边界。",
+                required_outputs=(
+                    "cross_role_findings",
+                    "cross_role_conflicts",
+                    "report_may_proceed",
+                ),
+                risk="a missed cross-role conflict could make individually plausible workpapers form a materially inconsistent report",
+                analysis_tokens=12000,
+                submission_tokens=7000,
+                analysis_profile_override=repair_analysis_profile,
+            )
+            evaluator_cross_role_audits += 1
+            evaluation = merge_hierarchical_evaluations(
+                workpapers=current_workpapers,
+                role_evaluations=role_evaluations,
+                cross_role_evaluation=cross_role_evaluation,
+                local_findings=local_case_absence_findings(
+                    workpapers=current_workpapers,
+                    case_truth_model_view=case_truth_model_view,
+                ),
+            )
+            evaluations.append(evaluation)
+            if not evaluation["report_may_proceed"]:
+                repaired_targets = apply_evaluator_repairs(
+                    evaluation=evaluation, evaluation_round=1
+                )
+                if repaired_targets:
+                    current_workpapers = [
+                        workpapers_by_agent[agent_id]
+                        for agent_id in lead["ordered_agent_ids"]
+                    ]
+                    for agent_id in repaired_targets:
+                        workpaper = workpapers_by_agent[agent_id]
+                        evaluator_agent_id = (
+                            "EVAL::ROLE::" + agent_id.split("::")[-1]
+                        )
+                        role_evaluations[agent_id] = execute_node(
+                            agent_id=evaluator_agent_id,
+                            node_suffix="CONTENT_AUDIT_R2",
+                            messages=compile_role_evaluation_messages(
+                                workpaper=workpaper,
+                                case_truth_model_view=case_truth_model_view,
+                                specialist_context=evaluation_contexts[agent_id],
+                            ),
+                            tool=evaluation_tool(
+                                allowed_agent_ids=[agent_id]
+                            ),
+                            validator=lambda payload, current=workpaper: validate_role_evaluation(
+                                payload, workpaper=current
+                            ),
+                            purpose="只复审消费 Evaluator finding 后发生变化的专业底稿，确认问题已收窄且没有新增越权事实。",
+                            required_outputs=(
+                                "revised_role_findings",
+                                "revised_role_content_may_proceed",
+                            ),
+                            risk="an unaffected-role rerun or a permissive re-audit would hide whether targeted feedback actually improved the workpaper",
+                            analysis_tokens=12000,
+                            submission_tokens=7000,
+                            analysis_profile_override=repair_analysis_profile,
+                        )
+                        evaluator_role_reaudits += 1
+                    current_workpapers = [
+                        workpapers_by_agent[agent_id]
+                        for agent_id in lead["ordered_agent_ids"]
+                    ]
+                    cross_role_evaluation = execute_node(
+                        agent_id=cross_evaluator_id,
+                        node_suffix="CONSISTENCY_AUDIT_R2",
+                        messages=compile_cross_role_evaluation_messages(
+                            workpapers=current_workpapers,
+                            role_evaluations=role_evaluations,
+                        ),
+                        tool=evaluation_tool(
+                            allowed_agent_ids=lead["ordered_agent_ids"]
+                        ),
+                        validator=lambda payload, current=current_workpapers: validate_evaluation(
+                            payload, workpapers=current
+                        ),
+                        purpose="复核受影响角色修订后是否仍存在跨角色矛盾、重复计算、口径冲突或综合边界缺口。",
+                        required_outputs=(
+                            "rechecked_cross_role_findings",
+                            "rechecked_cross_role_conflicts",
+                            "report_may_proceed",
+                        ),
+                        risk="a false post-repair pass could publish an internally inconsistent synthesis",
+                        analysis_tokens=12000,
+                        submission_tokens=7000,
+                        analysis_profile_override=repair_analysis_profile,
+                    )
+                    evaluator_cross_role_audits += 1
+                    evaluations.append(
+                        merge_hierarchical_evaluations(
+                            workpapers=current_workpapers,
+                            role_evaluations=role_evaluations,
+                            cross_role_evaluation=cross_role_evaluation,
+                            local_findings=local_case_absence_findings(
+                                workpapers=current_workpapers,
+                                case_truth_model_view=case_truth_model_view,
+                            ),
+                        )
+                    )
+            if not (
+                evaluator_role_audits
+                <= authority["execution_limits"][
+                    "maximum_initial_role_evaluation_nodes"
+                ]
+                and evaluator_role_reaudits
+                <= authority["execution_limits"][
+                    "maximum_affected_role_reevaluation_nodes"
+                ]
+                and evaluator_cross_role_audits
+                <= authority["execution_limits"][
+                    "maximum_cross_role_evaluation_nodes"
+                ]
+            ):
+                raise MultiAgentPreviewLiveError(
+                    "multi_agent_preview_hierarchical_evaluator_budget_exceeded"
+                )
+        else:
+            evaluator_state = state("EVAL::L1_AND_CONTENT")
+            rebind_preview_session_plan(
+                evaluator_state, active_plan_ref=plan_ref
+            )
+            for evaluation_round in (1, 2):
+                current_workpapers = [
+                    workpapers_by_agent[agent_id]
+                    for agent_id in lead["ordered_agent_ids"]
+                ]
+                model_evaluation = execute_node(
+                    agent_id="EVAL::L1_AND_CONTENT",
+                    node_suffix=f"EVALUATION_R{evaluation_round}",
+                    messages=compile_evaluation_messages(
+                        workpapers=current_workpapers,
+                        case_truth_model_view=compile_case_truth_model_view(
+                            materialization.case_truth_packet
+                        ),
+                        specialist_contexts=evaluation_contexts,
+                    ),
+                    tool=evaluation_tool(),
+                    validator=lambda payload, current=current_workpapers: validate_evaluation(
+                        payload, workpapers=current
+                    ),
+                    purpose="独立检查事实、期间、引用、因果边界、角色冲突与最早责任层，不代写结论。",
+                    required_outputs=(
+                        "findings",
+                        "cross_role_conflicts",
+                        "report_may_proceed",
+                    ),
+                    risk="a false pass would publish materially wrong financial research; a false block would hide agent capability",
+                    analysis_tokens=16000,
+                    submission_tokens=7000,
+                )
+                local_findings = local_case_absence_findings(
+                    workpapers=current_workpapers,
+                    case_truth_model_view=compile_case_truth_model_view(
+                        materialization.case_truth_packet
+                    ),
+                )
+                evaluation = _merge_local_evaluation(
+                    model_evaluation=model_evaluation,
+                    local_findings=local_findings,
+                    workpapers=current_workpapers,
+                )
+                evaluations.append(evaluation)
+                if evaluation["report_may_proceed"] or evaluation_round == 2:
+                    break
+                if not apply_evaluator_repairs(
+                    evaluation=evaluation,
+                    evaluation_round=evaluation_round,
+                ):
+                    break
 
         final_evaluation = evaluations[-1]
         final_workpapers = [
@@ -5120,17 +5444,39 @@ def run(authority_path: Path) -> dict[str, Any]:
             )
 
         if generic_successor:
+            completed_frontier_nodes = [
+                row
+                for row in successor_frontier["nodes"]
+                if row["disposition"] in COMPLETED_DISPOSITIONS
+            ]
+            pending_frontier_nodes = [
+                row
+                for row in successor_frontier["nodes"]
+                if row["disposition"] not in COMPLETED_DISPOSITIONS
+            ]
+            evaluator_boundary = (
+                "Evaluation used deterministic full-case L1, six independent "
+                "role-scoped content audits and one authority-light cross-role "
+                "consistency audit; only affected roles could be repaired and "
+                "re-audited. "
+                if hierarchical_evaluator
+                else (
+                    "Evaluation used the historical claim-bound monolithic "
+                    "Evaluator contract. "
+                )
+            )
             known_boundary_prefix = (
                 "This is one provider-neutral compiled DELL Multi-Agent "
                 "Preview successor over unchanged current local S1/S2 "
                 "authority. Six specialist workpapers and the valid Lead "
                 "challenge partition were reused from immutable checkpoints. "
-                "The execution frontier proved the Demand repair as an exact "
-                "reuse, rebound only the locally derived Cash digests to its "
-                "capture-bound model-visible context, and authorized only a "
-                "fresh Supply repair before evaluation. It did not rerun "
-                "planning, initial workpapers, Lead coordination, Demand or "
-                "Cash, and it permitted no analysis continuation. "
+                f"The compiled frontier reused {len(completed_frontier_nodes)} "
+                "completed role repairs and authorized "
+                f"{len(pending_frontier_nodes)} pending role repairs before "
+                "evaluation. It did not rerun planning, initial workpapers, "
+                "Lead coordination or any completed repair, and it permitted "
+                "no analysis continuation. "
+                + evaluator_boundary
             )
         elif repair_context_replacement:
             known_boundary_prefix = (
@@ -5352,6 +5698,14 @@ def run(authority_path: Path) -> dict[str, Any]:
                     completed_downstream_repairs
                 ),
                 "new_counter_challenge_repairs": new_counter_repairs,
+                "evaluation_strategy": (
+                    successor_frontier.get("evaluation_strategy")
+                    if generic_successor
+                    else MONOLITHIC_EVALUATION_STRATEGY
+                ),
+                "evaluator_role_audits": evaluator_role_audits,
+                "evaluator_role_reaudits": evaluator_role_reaudits,
+                "evaluator_cross_role_audits": evaluator_cross_role_audits,
                 "evaluator_repairs": evaluator_repairs,
                 "evaluation_rounds": len(evaluations),
                 "external_source_network_calls": 0,
@@ -5460,12 +5814,13 @@ def run(authority_path: Path) -> dict[str, Any]:
                     {
                         "compiled_frontier_completed_repairs_reused_without_"
                         "rerun": (
-                            len(completed_downstream_repairs) == 2
+                            len(completed_downstream_repairs)
+                            == len(completed_frontier_nodes)
                             and all(
                                 row["node_id"]
                                 not in {
-                                    "AGENT::DEMAND_QUALITY::COUNTER_REPAIR",
-                                    "AGENT::CASH_CONVERSION::COUNTER_REPAIR",
+                                    frontier_row["node_id"]
+                                    for frontier_row in completed_frontier_nodes
                                 }
                                 for row in node_records
                             )
@@ -5476,13 +5831,23 @@ def run(authority_path: Path) -> dict[str, Any]:
                             for row in node_records
                             for attempt in row["attempts"]
                         ),
-                        "compiled_frontier_fresh_supply_repair_started_once": sum(
-                            1
-                            for row in node_records
-                            if row["node_id"]
-                            == "AGENT::SUPPLY_RELATIONSHIP::COUNTER_REPAIR"
-                        )
-                        == 1,
+                        "compiled_frontier_pending_repairs_executed_once": all(
+                            sum(
+                                1
+                                for row in node_records
+                                if row["node_id"] == frontier_row["node_id"]
+                            )
+                            == 1
+                            for frontier_row in pending_frontier_nodes
+                        ),
+                        "hierarchical_evaluation_topology_proven": (
+                            not hierarchical_evaluator
+                            or (
+                                evaluator_role_audits == 6
+                                and evaluator_role_reaudits <= 2
+                                and 1 <= evaluator_cross_role_audits <= 2
+                            )
+                        ),
                     }
                     if generic_successor
                     else (
@@ -5653,7 +6018,11 @@ def run(authority_path: Path) -> dict[str, Any]:
                     ]
                     if agent_id in sessions
                 ],
-                "evaluator_execution_ids": ["EVAL::L1_AND_CONTENT"],
+                "evaluator_execution_ids": sorted(
+                    agent_id
+                    for agent_id in sessions
+                    if agent_id.startswith("EVAL::")
+                ),
                 "tools_and_label_roles_remain_non_agents": True,
             },
             "materialization_readiness": readiness,
@@ -5854,6 +6223,17 @@ def run(authority_path: Path) -> dict[str, Any]:
                 "new_counter_challenge_repairs_preserved": (
                     new_counter_repairs
                 ),
+                "evaluation_strategy": (
+                    successor_frontier.get("evaluation_strategy")
+                    if generic_successor
+                    else MONOLITHIC_EVALUATION_STRATEGY
+                ),
+                "evaluator_role_audits_preserved": evaluator_role_audits,
+                "evaluator_role_reaudits_preserved": evaluator_role_reaudits,
+                "evaluator_cross_role_audits_preserved": (
+                    evaluator_cross_role_audits
+                ),
+                "evaluator_repairs_preserved": evaluator_repairs,
                 "external_source_network_calls": 0,
                 "candidate_promotions": 0,
                 "product_publication": False,

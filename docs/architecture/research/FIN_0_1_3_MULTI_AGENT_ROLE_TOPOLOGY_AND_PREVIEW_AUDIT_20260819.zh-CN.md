@@ -234,3 +234,17 @@ Supply 已成为第三条完成 repair，旧 frontier 不能再把它当作 pend
 新的 provider-neutral 评审拓扑固定为：完整权威上的本地 L1；六个单角色内容审查；一次只消费已审摘要的跨角色一致性审查；最多两处最早责任角色修订；只重审受影响角色并做一次跨角色复核；通过后才允许 Writer。角色级与跨角色分析使用 `high / 12,000`，交卷继续使用 non-thinking strict submission。最大 13 个新逻辑节点来自六个真实角色和两处有界修订的最坏路径，不以成本或延迟倒推。
 
 这不是把 Evaluator 变成六个新研究员。它们不能新增 Evidence、NumericFact、因果关系或观点，只能出 finding、责任归属和是否阻断。若单角色评审仍发生同型 reasoning-only exhaustion，下一项必须是模型／profile 责任选择，不得再缩金融权威或增加 attempt-specific runner。
+
+## 十九、分层 Evaluator 的工程实现与零调用资格
+
+分层评审现在不是一份架构草图。Runtime 已把六个角色的最终底稿分别绑定到各自最后一次合法模型上下文：Demand、Cash、Supply 使用修订后的 capture-bound context，Operating、Value、Counter 使用原始合法 context。角色审查只能读取这一份底稿及其实际引用的 Evidence、NumericFact、NumericRelation 和 typed gap；跨角色审查只读取六份底稿摘要、角色审查结论、Lead coordination lineage 和 finding 责任面，不携带未引用的全案权威目录。
+
+真实 capture replay 给出的角色输入规模为 11,274—18,365 字符；六个角色分别保留 2—10 条 Evidence、0—12 个 NumericFact、0—6 个 NumericRelation 和 0—4 个 typed gap。跨角色输入为 45,252 字符，但 `referenced_authority_included=false`，因为它只做一致性与责任检查。本地完整 L1 在同一六底稿上得到 0 条 absence blocking finding；缺角色、错角色、未解析 authority、排列漂移、frontier 超预算和无关角色复审六类 mutation 均 fail closed。
+
+确定性 fake 证明：无修订路径为六次角色审查＋一次跨角色审查＋条件式 Writer，共 8 个逻辑节点；最多两处修订路径为 13；第三处修订会要求 15 个节点并被 frontier 拒绝。修订后只允许受影响角色复审，不能为了“再确认一次”重跑其余角色。该预算来自六个实际研究职责、两处质量风险处置和 Writer，而不是从成本或速度倒推。
+
+`successor_scope_decision_v1_2` 必须同时绑定 frontier 与 `hierarchical_evaluator_zero_call_result_v1_0` 的 ref、sha256 和 result digest；authority 也必须逐字绑定同一复证。历史 monolithic scope 不需要该字段，保持可复放但不能借此执行层级路线。零调用复证使用本地 Qwen 检索物化，因此准确表述为 0 Provider 模型调用、0 网络、0付费调用，而不是“完全没有任何本地模型加载”。
+
+这一步只证明上下文选择、lineage、预算、故障注入和恢复路径可执行。它不证明 DeepSeek 能完成自然角色审查，不证明 Writer 或报告质量，也不关闭 S1、S3、泛化、qualified-human、Workbench 或 release。
+
+完整工程门结果为：定向 109、全仓 913、compileall、active baseline `185 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、755 份 configs、8 份 Project OS JSONL／867 行、7,473-file secret scan 与 diff check 全部通过。下一步只能在 clean commit／push 和 fresh Project OS preflight 后签发一次新 authority。

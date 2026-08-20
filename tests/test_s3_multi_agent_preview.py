@@ -19,6 +19,8 @@ from sec_agent.research.multi_agent_preview import (
     compile_downstream_repair_progress_checkpoint,
     compile_downstream_repair_progress_checkpoint_v2,
     compile_challenge_catalog,
+    compile_cross_role_evaluation_content_view,
+    compile_cross_role_evaluation_messages,
     compile_evaluation_content_view,
     compile_evaluation_messages,
     compile_lead_plan_messages,
@@ -28,6 +30,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_lead_coordination_checkpoint,
     compile_planner_payload_from_role_opinions,
     compile_report_messages,
+    compile_role_evaluation_messages,
     compile_specialist_plan_checkpoint,
     compile_specialist_repair_context,
     compile_specialist_workpaper_checkpoint,
@@ -42,6 +45,7 @@ from sec_agent.research.multi_agent_preview import (
     load_multi_agent_role_topology,
     local_case_absence_findings,
     merge_analysis_draft_fragments,
+    merge_hierarchical_evaluations,
     report_draft_tool,
     revalidate_bound_specialist_workpaper,
     specialist_plan_tool,
@@ -57,6 +61,7 @@ from sec_agent.research.multi_agent_preview import (
     validate_lead_coordination_decision,
     validate_lead_coordination_checkpoint,
     validate_report_draft,
+    validate_role_evaluation,
     validate_specialist_plan_opinion,
     validate_specialist_plan_checkpoint,
     validate_specialist_workpaper_checkpoint,
@@ -1383,6 +1388,28 @@ def test_absence_language_is_routed_to_harness_reconciliation() -> None:
     assert findings[0]["blocks_report"] is True
 
 
+def test_gap_bound_absence_language_is_left_for_role_content_audit() -> None:
+    workpaper = _workpaper("AGENT::DEMAND_QUALITY")
+    workpaper["thesis"] = (
+        "当前没有披露产品级转化金额；该断言只保留为已绑定的 typed gap。"
+    )
+    findings = local_case_absence_findings(
+        workpapers=[workpaper],
+        case_truth_model_view={
+            "presence_catalog": [{"truth_aliases": ["TRUTH::ONE"]}],
+            "typed_gap_catalog": [
+                {
+                    "gap_refs": ["GAP::ONE"],
+                    "coverage_state": "present_with_typed_gap",
+                    "case_absence_authorized": False,
+                }
+            ],
+            "typed_bridge_boundary_catalog": [],
+        },
+    )
+    assert findings == []
+
+
 def test_token_budget_basis_is_quality_driven() -> None:
     basis = compile_token_budget_basis(
         node_id="AGENT::DEMAND_QUALITY::WORKPAPER",
@@ -1483,6 +1510,123 @@ def test_model_message_compilers_keep_role_and_evaluator_boundaries() -> None:
             workpapers=[workpaper], evaluation=evaluation
         )
     ) == 2
+
+
+def test_hierarchical_evaluator_separates_role_authority_from_cross_role_review() -> None:
+    workpapers = [_workpaper(agent_id) for agent_id in SPECIALIST_AGENT_IDS]
+    role_evaluations = {
+        agent_id: validate_role_evaluation(
+            {
+                "schema_version": MULTI_AGENT_EVALUATION_SCHEMA_VERSION,
+                "findings": [],
+                "cross_role_conflicts": [],
+                "report_may_proceed": True,
+            },
+            workpaper=next(
+                row for row in workpapers if row["agent_id"] == agent_id
+            ),
+        )
+        for agent_id in SPECIALIST_AGENT_IDS
+    }
+    role_messages = compile_role_evaluation_messages(
+        workpaper=workpapers[0],
+        case_truth_model_view=_evaluation_truth_view(),
+        specialist_context=_context(workpapers[0]["agent_id"]),
+    )
+    assert len(role_messages) == 2
+    assert "single_role_content_audit" in role_messages[1]["content"]
+    role_tool = evaluation_tool(allowed_agent_ids=[workpapers[0]["agent_id"]])
+    target_enum = role_tool["function"]["parameters"]["properties"][
+        "findings"
+    ]["items"]["properties"]["target_agent_id"]["enum"]
+    assert target_enum == [workpapers[0]["agent_id"]]
+
+    cross_view = compile_cross_role_evaluation_content_view(
+        workpapers=workpapers,
+        role_evaluations=role_evaluations,
+    )
+    assert len(cross_view["role_review_receipts"]) == 6
+    assert len(cross_view["coordination_views"]) == 6
+    assert "referenced_authority" not in cross_view
+    cross_messages = compile_cross_role_evaluation_messages(
+        workpapers=workpapers,
+        role_evaluations=role_evaluations,
+    )
+    assert len(cross_messages) == 2
+    assert "cross_role_evaluation_view_digest" in cross_messages[1]["content"]
+
+    cross_evaluation = validate_evaluation(
+        {
+            "schema_version": MULTI_AGENT_EVALUATION_SCHEMA_VERSION,
+            "findings": [],
+            "cross_role_conflicts": [],
+            "report_may_proceed": True,
+        },
+        workpapers=workpapers,
+    )
+    merged = merge_hierarchical_evaluations(
+        workpapers=workpapers,
+        role_evaluations=role_evaluations,
+        cross_role_evaluation=cross_evaluation,
+        local_findings=[],
+    )
+    assert merged["report_may_proceed"] is True
+
+
+def test_hierarchical_evaluator_preserves_local_block_and_fails_closed_on_missing_role() -> None:
+    workpapers = [_workpaper(agent_id) for agent_id in SPECIALIST_AGENT_IDS]
+    role_evaluations = {
+        agent_id: validate_role_evaluation(
+            {
+                "schema_version": MULTI_AGENT_EVALUATION_SCHEMA_VERSION,
+                "findings": [],
+                "cross_role_conflicts": [],
+                "report_may_proceed": True,
+            },
+            workpaper=next(
+                row for row in workpapers if row["agent_id"] == agent_id
+            ),
+        )
+        for agent_id in SPECIALIST_AGENT_IDS
+    }
+    cross_evaluation = validate_evaluation(
+        {
+            "schema_version": MULTI_AGENT_EVALUATION_SCHEMA_VERSION,
+            "findings": [],
+            "cross_role_conflicts": [],
+            "report_may_proceed": True,
+        },
+        workpapers=workpapers,
+    )
+    local_finding = {
+        "finding_code": "case_absence_language_requires_presence_reconciliation",
+        "severity": "L1",
+        "target_agent_id": SPECIALIST_AGENT_IDS[0],
+        "failure_owner": "harness_control",
+        "explanation": "全案存在目录非空，当前缺失措辞需要先做可见性对账。",
+        "evidence_refs": [],
+        "permitted_repair": "读取全案存在目录并改为精确的信息边界描述。",
+        "blocks_report": True,
+    }
+    merged = merge_hierarchical_evaluations(
+        workpapers=workpapers,
+        role_evaluations=role_evaluations,
+        cross_role_evaluation=cross_evaluation,
+        local_findings=[local_finding],
+    )
+    assert merged["report_may_proceed"] is False
+    assert merged["findings"] == [local_finding]
+
+    missing = dict(role_evaluations)
+    missing.pop(SPECIALIST_AGENT_IDS[-1])
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_cross_role_evaluation_coverage_invalid",
+    ):
+        compile_cross_role_evaluation_content_view(
+            workpapers=workpapers,
+            role_evaluations=missing,
+        )
 
 
 def test_empty_reference_enums_remain_valid_but_unselectable() -> None:

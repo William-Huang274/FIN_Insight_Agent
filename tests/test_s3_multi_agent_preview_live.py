@@ -44,6 +44,16 @@ GENERIC_SUCCESSOR_SCOPE = (
     / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
     "compiled_successor_scope_decision_v1_1.json"
 )
+HIERARCHICAL_EVALUATOR_FRONTIER = (
+    ROOT
+    / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "compiled_successor_frontier_v1_2.json"
+)
+HIERARCHICAL_EVALUATOR_SCOPE = (
+    ROOT
+    / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "compiled_successor_scope_decision_v1_2.json"
+)
 
 
 def _checkpoint() -> dict[str, object]:
@@ -828,8 +838,18 @@ def test_r15_authority_reuses_two_repairs_and_starts_fresh_supply(
     ] == 0
 
 
+@pytest.mark.parametrize(
+    ("scope_path", "expected_maximum_nodes", "expects_hierarchical_proof"),
+    (
+        (GENERIC_SUCCESSOR_SCOPE, 5, False),
+        (HIERARCHICAL_EVALUATOR_SCOPE, 13, True),
+    ),
+)
 def test_generic_successor_authority_uses_one_compiled_frontier(
     tmp_path: Path,
+    scope_path: Path,
+    expected_maximum_nodes: int,
+    expects_hierarchical_proof: bool,
 ) -> None:
     source_authority = json.loads(
         (
@@ -838,7 +858,7 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
             "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_16.json"
         ).read_text(encoding="utf-8")
     )
-    scope = json.loads(GENERIC_SUCCESSOR_SCOPE.read_text(encoding="utf-8"))
+    scope = json.loads(scope_path.read_text(encoding="utf-8"))
 
     def binding(ref: str) -> dict[str, str]:
         path = ROOT / ref
@@ -862,7 +882,7 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
     bound_inputs.update(
         {
             "project_os_scope_decision": binding(
-                GENERIC_SUCCESSOR_SCOPE.relative_to(ROOT).as_posix()
+                scope_path.relative_to(ROOT).as_posix()
             ),
             "predecessor_scope_decision": binding(
                 scope["predecessor_scope_decision_ref"]
@@ -886,6 +906,10 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
             ),
         }
     )
+    if expects_hierarchical_proof:
+        bound_inputs["hierarchical_evaluator_zero_call_proof"] = binding(
+            scope["hierarchical_evaluator_zero_call_proof_ref"]
+        )
     authority = {
         "schema_version": runner.GENERIC_SUCCESSOR_AUTHORITY_SCHEMA,
         "status": (
@@ -915,6 +939,12 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
     assert validated["execution_limits"][
         "maximum_resumed_downstream_analysis_continuations"
     ] == 0
+    assert validated["execution_limits"]["maximum_new_model_nodes"] == (
+        expected_maximum_nodes
+    )
+    assert (
+        "hierarchical_evaluator_zero_call_proof" in inputs
+    ) is expects_hierarchical_proof
 
 
 def test_r15_runtime_alignment_uses_active_v2_progress_not_v1_ancestor() -> None:

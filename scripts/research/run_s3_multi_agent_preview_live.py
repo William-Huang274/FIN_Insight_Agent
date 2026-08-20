@@ -53,6 +53,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     local_case_absence_findings,
     merge_analysis_draft_fragments,
     report_draft_tool,
+    revalidate_bound_specialist_workpaper,
     specialist_workpaper_tool,
     validate_analysis_fragment_checkpoint,
     validate_analysis_completion_checkpoint,
@@ -136,6 +137,9 @@ COORDINATION_CHECKPOINT_SUCCESSOR_AUTHORITY_SCHEMA = (
 )
 DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA = (
     "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_10"
+)
+DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_11"
 )
 FULL_SCHEMA_V1 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_1"
 FULL_SCHEMA_V2 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_2"
@@ -235,9 +239,13 @@ def _validate_authority(
     coordination_checkpoint_successor = (
         schema == COORDINATION_CHECKPOINT_SUCCESSOR_AUTHORITY_SCHEMA
     )
-    downstream_analysis_successor = (
-        schema == DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA
+    preprovider_replacement = (
+        schema == DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA
     )
+    downstream_analysis_successor = schema in {
+        DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA,
+        DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
+    }
     expected_status_by_schema = {
         PLAN_SUCCESSOR_AUTHORITY_SCHEMA: (
             "approved_for_one_R3_plan_checkpoint_analysis_submission_"
@@ -270,6 +278,10 @@ def _validate_authority(
         DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA: (
             "approved_for_one_R10_downstream_repair_analysis_checkpoint_"
             "successor_after_project_os_preflight"
+        ),
+        DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA: (
+            "approved_for_one_R12_preprovider_replacement_after_"
+            "project_os_preflight"
         ),
     }
     expected_status = expected_status_by_schema.get(schema)
@@ -319,6 +331,12 @@ def _validate_authority(
             "downstream_analysis_successor_zero_call_proof",
             "analysis_continuation_profile",
         }
+        if preprovider_replacement:
+            required_inputs |= {
+                "failed_preprovider_authority",
+                "failed_preprovider_result",
+                "preprovider_failure_disposition_zero_call_proof",
+            }
     elif coordination_checkpoint_successor:
         required_inputs = base_inputs | {
             "predecessor_scope_decision",
@@ -912,6 +930,103 @@ def _validate_authority(
         ):
             raise MultiAgentPreviewLiveError(
                 f"multi_agent_preview_project_os_binding_drift:{input_name}"
+            )
+    if preprovider_replacement:
+        failed_authority = _json(inputs["failed_preprovider_authority"])
+        failed_result = _json(inputs["failed_preprovider_result"])
+        disposition = _json(
+            inputs["preprovider_failure_disposition_zero_call_proof"]
+        )
+        failed_execution = failed_result.get("execution") or {}
+        failed_public_body = {
+            key: value
+            for key, value in failed_result.items()
+            if key != "result_digest"
+        }
+        failed_terminal_path = _resolve(
+            str(disposition.get("failed_terminal_result_ref") or "")
+        )
+        failed_terminal = _json(failed_terminal_path)
+        failed_terminal_body = {
+            key: value
+            for key, value in failed_terminal.items()
+            if key != "full_result_digest"
+        }
+        disposition_body = {
+            key: value
+            for key, value in disposition.items()
+            if key != "result_digest"
+        }
+        replay = disposition.get("exact_completed_repair_replay") or {}
+        mutations = disposition.get("mutation_results") or {}
+        constraints = disposition.get("replacement_constraints") or {}
+        if not (
+            failed_authority.get("schema_version")
+            == DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA
+            and failed_authority.get("outputs", {}).get("run_id")
+            == "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R11_20260820"
+            and failed_authority.get("outputs", {}).get("public_result_ref")
+            == _relative(inputs["failed_preprovider_result"])
+            and failed_result.get("authority_ref")
+            == _relative(inputs["failed_preprovider_authority"])
+            and failed_result.get("status")
+            == "multi_agent_preview_terminal_failure_preserved"
+            and failed_result.get("failure_code")
+            == "multi_agent_workpaper_identity_invalid"
+            and failed_result.get("result_digest")
+            == canonical_digest(failed_public_body)
+            and failed_execution.get("new_model_nodes_started") == 0
+            and failed_execution.get("provider_attempts_preserved") == 0
+            and failed_execution.get("analysis_calls_preserved") == 0
+            and failed_execution.get("submission_attempts_preserved") == 0
+            and disposition.get("schema_version")
+            == (
+                "fin_ia_s3_multi_agent_preview_preprovider_failure_"
+                "disposition_zero_call_v1_0"
+            )
+            and disposition.get("status")
+            == "R11_preprovider_derived_workpaper_projection_replay_pass"
+            and disposition.get("failed_authority_ref")
+            == _relative(inputs["failed_preprovider_authority"])
+            and disposition.get("failed_authority_sha256")
+            == _sha(inputs["failed_preprovider_authority"])
+            and disposition.get("failed_public_result_ref")
+            == _relative(inputs["failed_preprovider_result"])
+            and disposition.get("failed_public_result_sha256")
+            == _sha(inputs["failed_preprovider_result"])
+            and disposition.get("failed_public_result_digest")
+            == failed_result.get("result_digest")
+            and disposition.get("failed_terminal_result_sha256")
+            == _sha(failed_terminal_path)
+            and disposition.get("failed_terminal_result_digest")
+            == failed_terminal.get("full_result_digest")
+            == canonical_digest(failed_terminal_body)
+            and disposition.get("failure_code")
+            == "multi_agent_workpaper_identity_invalid"
+            and disposition.get("failure_stage")
+            == "checkpoint_replay_before_provider"
+            and disposition.get("model_calls") == 0
+            and disposition.get("network_calls") == 0
+            and disposition.get("candidate_promotions") == 0
+            and replay.get("agent_id") == "AGENT::DEMAND_QUALITY"
+            and replay.get("workpaper_digest")
+            == "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0"
+            and replay.get("passed") is True
+            and mutations.get("workpaper_digest_mutation_rejected") is True
+            and mutations.get("context_digest_mutation_rejected") is True
+            and constraints
+            == {
+                "new_attempt_id_required": True,
+                "failed_authority_reuse_forbidden": True,
+                "research_inputs_unchanged": True,
+                "provider_budget_unchanged": True,
+                "completed_node_reruns_forbidden": True,
+            }
+            and disposition.get("result_digest")
+            == canonical_digest(disposition_body)
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_preprovider_replacement_invalid"
             )
     zero = _json(inputs["zero_call_proof"])
     if zero.get("status") != "zero_call_topology_and_current_tool_spine_pass":
@@ -2109,10 +2224,14 @@ def run(authority_path: Path) -> dict[str, Any]:
         authority["schema_version"]
         == COORDINATION_CHECKPOINT_SUCCESSOR_AUTHORITY_SCHEMA
     )
-    downstream_analysis_successor = (
+    preprovider_replacement = (
         authority["schema_version"]
-        == DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA
+        == DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA
     )
+    downstream_analysis_successor = authority["schema_version"] in {
+        DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA,
+        DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
+    }
     coordination_resume = (
         coordination_checkpoint_successor or downstream_analysis_successor
     )
@@ -2704,6 +2823,38 @@ def run(authority_path: Path) -> dict[str, Any]:
                     "result_digest"
                 ],
             },
+            **(
+                {
+                    "preprovider_replacement": {
+                        "failed_authority_ref": _relative(
+                            paths["failed_preprovider_authority"]
+                        ),
+                        "failed_authority_sha256": _sha(
+                            paths["failed_preprovider_authority"]
+                        ),
+                        "failed_public_result_ref": _relative(
+                            paths["failed_preprovider_result"]
+                        ),
+                        "failed_public_result_sha256": _sha(
+                            paths["failed_preprovider_result"]
+                        ),
+                        "disposition_ref": _relative(
+                            paths[
+                                "preprovider_failure_disposition_zero_call_proof"
+                            ]
+                        ),
+                        "disposition_sha256": _sha(
+                            paths[
+                                "preprovider_failure_disposition_zero_call_proof"
+                            ]
+                        ),
+                        "failed_provider_attempt_count": 0,
+                        "failed_authority_reused": False,
+                    }
+                }
+                if preprovider_replacement
+                else {}
+            ),
         }
         if downstream_analysis_successor
         and lead_plan_checkpoint is not None
@@ -3206,7 +3357,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                 prior_workpaper=prior,
             )
             if challenge_id in completed_downstream_repairs:
-                completed_repair = validate_specialist_workpaper(
+                completed_repair = revalidate_bound_specialist_workpaper(
                     completed_downstream_repairs[challenge_id],
                     context=repaired_context,
                     expected_agent_id=target,

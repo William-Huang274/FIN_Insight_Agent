@@ -40,6 +40,7 @@ from sec_agent.research.multi_agent_preview import (
     local_case_absence_findings,
     merge_analysis_draft_fragments,
     report_draft_tool,
+    revalidate_bound_specialist_workpaper,
     specialist_plan_tool,
     specialist_workpaper_tool,
     validate_evaluation,
@@ -590,6 +591,43 @@ def _workpaper(agent_id: str) -> dict:
         context=_context(agent_id),
         expected_agent_id=agent_id,
     )
+
+
+def test_digest_bound_workpaper_revalidation_separates_derived_fields() -> None:
+    agent_id = "AGENT::DEMAND_QUALITY"
+    bound = _workpaper(agent_id)
+
+    replayed = revalidate_bound_specialist_workpaper(
+        bound,
+        context=_context(agent_id),
+        expected_agent_id=agent_id,
+    )
+
+    assert replayed == bound
+
+    mutated = dict(bound)
+    mutated["thesis"] += " 该未绑定改写必须被拒绝。"
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_bound_workpaper_digest_invalid",
+    ):
+        revalidate_bound_specialist_workpaper(
+            mutated,
+            context=_context(agent_id),
+            expected_agent_id=agent_id,
+        )
+
+    context_mutated = dict(bound)
+    context_mutated["context_digest"] = "0" * 64
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_bound_workpaper_context_invalid",
+    ):
+        revalidate_bound_specialist_workpaper(
+            context_mutated,
+            context=_context(agent_id),
+            expected_agent_id=agent_id,
+        )
 
 
 def test_topology_distinguishes_agents_tools_evaluators_and_labels() -> None:

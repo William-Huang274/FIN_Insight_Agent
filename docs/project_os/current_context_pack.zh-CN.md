@@ -9,7 +9,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
 
-## 2026-08-20 Multi-Agent Preview R10 结果与 R11 通用下游续跑门
+## 2026-08-20 Multi-Agent Preview R11 Provider 前失败与 R12 replacement 门
 
 - R10 正确复用六份 Specialist plan、一个 Lead plan、六份初始工作底稿和 R9 Lead 协调决策；没有重跑成功前缀。协调容量修复已被自然执行证明，RC-AR-010 关闭。
 - 第一条 Demand challenge 已由原 Demand Agent 自然消费并通过 strict contract：订单和 backlog 不再被写成需求持久性的充分证据，`$16.1B` 只保留为当季转换信号，显式加入 buy-ahead、供给约束和客户集中边界，置信度从 high 降为 moderate。该结果说明反馈确实改变了业务判断，不是只有 SessionEvent 外壳。
@@ -17,7 +17,10 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 - 最早责任层为 RC-AR-011：通用 `AnalysisFragmentCheckpoint` 已存在，但旧 runner 只把它接到 Lead／初始 Counter，不支持任意 downstream repair。它属于 S0 Agent Runtime 上下文连续性接线，不属于 S1、网络、Lead 路由或 DeepSeek 业务判断失败。
 - R11 使用 provider-neutral `DownstreamRepairProgressCheckpoint`：绑定 accepted challenge 的顺序、已完成 Demand payload、待执行 Cash／Supply、Cash request／response capture、原始 system／user 消息和 815 字残稿。篡改完成底稿、捕获或 challenge 顺序均 fail closed。
 - R11 禁止重跑 Demand 和 Cash 初始分析，只允许一次 Cash low-reasoning continuation；随后才可执行 Supply、最多两轮 Evaluator、两次 evaluator 指定局部修订和条件式 Writer。最大新逻辑节点从 8 降为 7，依据是一个 repair 已完成，而不是成本压缩。
-- 当前已达到 full engineering gate：定向合同／Runtime／Project OS `80 passed`，全仓 `884 passed`；compileall、active baseline `184 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、8 份 Project OS JSONL、7,426-file secret scan 和 diff check 通过。账本累计保留 R3–R11 历史 successor scope，旧 preflight 仍可重放。clean commit／push、Project OS preflight、R11 authority 和 live 尚待完成；S1、S3、泛化、qualified-human、Workbench publication 和 release 仍为 false。
+- R11 authority 已在 clean commit `1f03c2f9...1c22` 和 Project OS preflight 后签发并消费，但运行在任何 Provider／网络／Candidate 晋升前终止：0 个新模型节点、0 Provider attempt、0 analysis／submission、0 外源网络、0 Candidate promotion。R11 必须保留为 immutable terminal failure，不能复用 authority 或追认为成功。
+- RC-AR-012 的真实最早责任层是 S0 Harness checkpoint replay／projection：持久化 Demand 底稿含本地派生的 `context_digest` 和 `workpaper_digest`，R11 却把整个绑定对象直接交给只接受模型原始字段的 exact submission validator，导致一份业务内容和 digest 均有效的底稿在 Provider 前被拒绝。它不是五份／六份底稿数量问题，也不是 DeepSeek、S1、Cash 内容或网络问题。
+- 当前修复先投影模型原始字段执行 exact schema 校验，再独立重算并核对两个 digest。R10 真实 Demand capture 可精确回放，`workpaper_digest=3914ddf8...47e0`、`context_digest=1ddcce79...0e6b`；篡改任一 digest 均 fail closed，定向测试 `33 passed`。
+- R12 只能作为 fresh attempt：绑定 R11 authority、公开失败、私有 terminal 和零调用处置，研究输入、Provider 预算与 pending Cash／Supply 顺序不变；禁止重跑任何完成节点。当前 full engineering gate 已通过：定向 `96 passed`、全仓 `887 passed`、compileall、active baseline `184 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、8 份 Project OS JSONL、7,430-file secret scan 与 diff check 均通过。clean commit／push 和新 Project OS preflight 仍待完成；S1、S3、泛化、qualified-human、Workbench publication 和 release 继续为 false。
 
 ## 2026-08-20 Multi-Agent Preview R8 Counter 分析截断与 R9 上下文续跑
 

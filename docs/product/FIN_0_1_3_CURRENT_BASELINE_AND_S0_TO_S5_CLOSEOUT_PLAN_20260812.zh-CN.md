@@ -286,6 +286,21 @@ R11 将既有通用分析片段合同扩展为 ordered downstream progress：已
 
 R11 成功也只说明当前 DELL／当前 S1-S2 权威下的 Preview 可以完整执行。它随后仍须做独立 L1、八维绝对内容质量、同输入 paired gain 和 qualified-human 内容验收；动态外源研究、MU／NVDA／异质留出泛化、S1/S3 正式通过、Workbench publication 和 S5 release 均不得由该结果自动推导。
 
+### 4U. R11 Provider 前 projection 失败与 R12 fresh replacement
+
+R11 authority 已在 clean／synced 提交和 Project OS preflight 后签发并消费，但没有启动任何模型或网络调用。恢复已完成 Demand repair 时，Runtime 把持久化对象连同本地派生的 `context_digest`、`workpaper_digest` 一并送入“模型提交字段”校验器；exact schema 正确拒绝了多出的派生字段，公开结果因此记录 `multi_agent_workpaper_identity_invalid`。这不是 DeepSeek 输出失败、底稿数量不对或研究资料不足，而是 S0 Harness 没有分开模型字段投影和持久化完整性校验。
+
+R11 的 authority、公开结果和私有 terminal 均保持不可变，且 0 Provider attempt 不等于 authority 未消费。R12 必须使用新的 run／attempt／output identity，并同时绑定 R11 三份失败证据和零调用处置。修复只允许：
+
+1. 去除本地派生字段后重跑原模型字段校验；
+2. 用同一 current context 重算 `context_digest` 和 `workpaper_digest`；
+3. 两个 digest 必须与 checkpoint 绑定完全一致；
+4. 任一字段或 digest mutation 均 fail closed；
+5. 不改变 research input、Provider budget、Cash／Supply 顺序或任何完成节点的复用状态；
+6. full repository gate、clean commit／push 和新的 Project OS preflight 通过后，才可签发一次 R12 replacement。
+
+R12 仍属于当前 DELL bounded Preview，不是新产品版本、S1/S3 acceptance 或 release。若它形成最终报告，仍须依次执行 L1、八维绝对内容质量、同输入 paired gain 和 qualified-human 内容验收。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

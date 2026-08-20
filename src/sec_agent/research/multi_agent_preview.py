@@ -3257,6 +3257,37 @@ def validate_specialist_workpaper(
     return value
 
 
+def revalidate_bound_specialist_workpaper(
+    payload: Mapping[str, Any],
+    *,
+    context: Mapping[str, Any],
+    expected_agent_id: str,
+) -> dict[str, Any]:
+    """Revalidate persisted content without treating derived digests as model fields."""
+
+    raw = deepcopy(dict(payload))
+    supplied_workpaper_digest = str(raw.pop("workpaper_digest", ""))
+    supplied_context_digest = str(raw.pop("context_digest", ""))
+    _require(
+        bool(supplied_workpaper_digest) and bool(supplied_context_digest),
+        "multi_agent_bound_workpaper_digest_missing",
+    )
+    validated = validate_specialist_workpaper(
+        raw,
+        context=context,
+        expected_agent_id=expected_agent_id,
+    )
+    _require(
+        supplied_workpaper_digest == validated["workpaper_digest"],
+        "multi_agent_bound_workpaper_digest_invalid",
+    )
+    _require(
+        supplied_context_digest == validated["context_digest"],
+        "multi_agent_bound_workpaper_context_invalid",
+    )
+    return validated
+
+
 def _revalidate_r7_workpaper_terminal(
     *,
     terminal_failure: Mapping[str, Any],
@@ -4656,4 +4687,5 @@ __all__ = [
     "validate_specialist_plan_checkpoint",
     "validate_specialist_workpaper_checkpoint",
     "validate_specialist_workpaper",
+    "revalidate_bound_specialist_workpaper",
 ]

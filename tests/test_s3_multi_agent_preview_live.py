@@ -946,6 +946,77 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
         "hierarchical_evaluator_zero_call_proof" in inputs
     ) is expects_hierarchical_proof
 
+    frontier = runner.validate_successor_execution_frontier(
+        runner._json(inputs["successor_execution_frontier"])
+    )
+    completed, _, active = runner._load_bound_generic_successor_frontier(
+        frontier=frontier
+    )
+    hierarchical_binding = (
+        runner._compile_hierarchical_evaluator_proof_binding(
+            proof_path=inputs["hierarchical_evaluator_zero_call_proof"],
+            frontier=frontier,
+        )
+        if expects_hierarchical_proof
+        else None
+    )
+    execution_bindings = runner._compile_generic_successor_bindings(
+        paths=inputs,
+        lead_plan_checkpoint=runner._json(inputs["lead_plan_checkpoint"]),
+        workpaper_checkpoint=runner._json(inputs["workpaper_checkpoint"]),
+        coordination_checkpoint=runner._json(
+            inputs["lead_coordination_checkpoint"]
+        ),
+        active_progress_checkpoint=active,
+        completed_repairs=completed,
+        hierarchical_proof_binding=hierarchical_binding,
+    )
+    assert (
+        "hierarchical_evaluator_zero_call_proof" in execution_bindings
+    ) is expects_hierarchical_proof
+    if hierarchical_binding is not None:
+        assert execution_bindings[
+            "hierarchical_evaluator_zero_call_proof"
+        ]["result_digest"] == scope[
+            "hierarchical_evaluator_zero_call_proof_result_digest"
+        ]
+
+
+def test_pre_execution_failure_preserves_zero_provider_terminal_result(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(runner, "ROOT", tmp_path)
+    authority_path = tmp_path / "authority.json"
+    capture_root = tmp_path / "captures" / "attempt"
+    capture_root.mkdir(parents=True)
+    authority = {
+        "schema_version": runner.GENERIC_SUCCESSOR_AUTHORITY_SCHEMA,
+        "implementation_commit": "a" * 40,
+        "bound_inputs": {"one": {}, "two": {}},
+        "outputs": {
+            "run_id": "PYTEST-PRE-EXECUTION-FAILURE",
+            "capture_root_ref": "captures/attempt",
+            "private_output_root_ref": "private/attempt",
+            "public_result_ref": "public/result.json",
+        },
+    }
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    def fail_before_execution(_: Path) -> dict[str, object]:
+        raise NameError("pytest missing projection")
+
+    monkeypatch.setattr(runner, "_run_authorized", fail_before_execution)
+    public = runner.run(authority_path)
+
+    assert public["status"] == "multi_agent_preview_terminal_failure_preserved"
+    assert public["failure_code"] == (
+        "multi_agent_preview_pre_execution_runtime_failure"
+    )
+    assert public["execution"]["new_model_nodes_started"] == 0
+    assert public["execution"]["provider_attempts_preserved"] == 0
+    assert (tmp_path / "private/attempt/terminal_failure.json").is_file()
+    assert (tmp_path / "public/result.json").is_file()
+
 
 def test_r15_runtime_alignment_uses_active_v2_progress_not_v1_ancestor() -> None:
     progress_v2 = json.loads(

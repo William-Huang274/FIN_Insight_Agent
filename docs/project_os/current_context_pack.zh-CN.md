@@ -998,3 +998,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - `successor_scope_decision_v1_2` 与 future authority 必须同时绑定 frontier 和零调用 proof 的 ref／sha256／result digest。历史 monolithic scope 保留只读审计兼容，不能绕过新门。
 - 完整工程门通过：定向 109、全仓 913、compileall、active baseline `185 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、755 份 configs、8 份 Project OS JSONL／867 行、7,473-file secret scan 和 diff check。
 - 当前只允许 clean commit／push → fresh preflight → 一次层级 Evaluator successor。自然 finding、Writer、报告质量、paired、qualified-human、S1／S3、泛化、Workbench 和 release 仍未证明。
+
+# 2026-08-21 分层 Evaluator 第一次 live 的启动绑定失败
+
+- 第一次真实分层 Evaluator successor 在 authority 校验通过、capture root 建立后，于任何模型节点前失败：generic successor execution binding 读取了只存在于 validator 内部的 `scope_projection`，触发 `NameError`。
+- 该 attempt 已不可变登记为 `pre_execution_binding` failure：0 新模型节点、0 Provider attempt、0 外部网络、0 Candidate promotion、0 发布。它不能被解释成 DeepSeek、Evaluator 内容、S1 数据或多角色编排失败，也不得复用。
+- Runtime 已改为从 bound hierarchical proof＋frontier 显式编译 execution binding；测试从“只验 authority”扩大为真实编译 checkpoint／frontier／proof lineage。pre-execution 非合同异常现在也会原子保存 public／private terminal result。
+- 复证通过：定向 110、全仓 914、compileall、active baseline `185／8／5／27／0`、757 configs、8 份 Project OS JSONL／871 行、7,476-file secret scan 和 diff check。
+- 下一步仍是同一 S3 Preview，不换版本、不重跑上游：clean commit／push → fresh Project OS preflight → 全新 replacement authority → 一次层级 Evaluator live。自然 finding、Writer、完整报告和所有产品验收仍未证明。

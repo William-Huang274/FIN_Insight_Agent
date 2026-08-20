@@ -1,0 +1,30 @@
+{
+  "acceptance": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false,
+    "true_multi_agent_preview_completed": false
+  },
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_hierarchical_evaluator_successor_live_authority_v1_0.json",
+  "authority_sha256": "9fdc0a11b128f495037b07f05c5e093c7f0f0600927b095e01a8e0b4f89141aa",
+  "execution": {
+    "authority_validation_completed": true,
+    "candidate_promotions": 0,
+    "capture_entries_preserved": 0,
+    "capture_root_created": true,
+    "external_source_network_calls": 0,
+    "failure_phase": "pre_execution_binding",
+    "new_model_nodes_started": 0,
+    "product_publication": false,
+    "provider_attempts_preserved": 0
+  },
+  "failure_code": "multi_agent_preview_hierarchical_evaluator_proof_binding_name_error",
+  "failure_phase": "pre_execution_binding",
+  "full_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_hierarchical_evaluator_successor_20260821/terminal_failure.json",
+  "implementation_commit": "9595d094191f270b043c4b1d4078018d3b2ae1fd",
+  "recorded_at": "2026-08-20T18:59:26+00:00",
+  "result_digest": "537cdb029fa407bb665fbf57f6f0a5d7ff568087cc796c8f57e16fac2243fca0",
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_live_result_v1_8",
+  "status": "multi_agent_preview_terminal_failure_preserved"
+}

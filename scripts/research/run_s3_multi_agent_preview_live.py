@@ -232,6 +232,100 @@ def _write_new(path: Path, value: Mapping[str, Any]) -> None:
         ) from exc
 
 
+def _result_schemas_for_authority(authority_schema: str) -> tuple[str, str]:
+    if authority_schema in {
+        DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA,
+        DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
+        DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
+        DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA,
+        DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA,
+        GENERIC_SUCCESSOR_AUTHORITY_SCHEMA,
+    }:
+        return FULL_SCHEMA_V8, PUBLIC_SCHEMA_V8
+    if authority_schema == COORDINATION_CHECKPOINT_SUCCESSOR_AUTHORITY_SCHEMA:
+        return FULL_SCHEMA_V7, PUBLIC_SCHEMA_V7
+    if authority_schema == SPECIALIST_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA:
+        return FULL_SCHEMA_V6, PUBLIC_SCHEMA_V6
+    if authority_schema == WORKPAPER_CHECKPOINT_SUCCESSOR_AUTHORITY_SCHEMA:
+        return FULL_SCHEMA_V5, PUBLIC_SCHEMA_V5
+    if authority_schema == LEAD_CHECKPOINT_SUCCESSOR_AUTHORITY_SCHEMA:
+        return FULL_SCHEMA_V4, PUBLIC_SCHEMA_V4
+    if authority_schema == SUBMISSION_SUCCESSOR_AUTHORITY_SCHEMA:
+        return FULL_SCHEMA_V3, PUBLIC_SCHEMA_V3
+    if authority_schema == ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA:
+        return FULL_SCHEMA_V2, PUBLIC_SCHEMA_V2
+    return FULL_SCHEMA_V1, PUBLIC_SCHEMA_V1
+
+
+def _compile_hierarchical_evaluator_proof_binding(
+    *,
+    proof_path: Path,
+    frontier: Mapping[str, Any],
+) -> dict[str, Any]:
+    proof = validate_hierarchical_evaluator_zero_call_proof(
+        _json(proof_path),
+        frontier=frontier,
+    )
+    return {
+        "ref": _relative(proof_path),
+        "sha256": _sha(proof_path),
+        "result_digest": proof["result_digest"],
+        "provider_model_calls": 0,
+        "local_retrieval_materialization_replayed": True,
+    }
+
+
+def _compile_generic_successor_bindings(
+    *,
+    paths: Mapping[str, Path],
+    lead_plan_checkpoint: Mapping[str, Any],
+    workpaper_checkpoint: Mapping[str, Any],
+    coordination_checkpoint: Mapping[str, Any],
+    active_progress_checkpoint: Mapping[str, Any],
+    completed_repairs: Mapping[str, Any],
+    hierarchical_proof_binding: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    bindings = {
+        "predecessor_lead_plan_checkpoint": {
+            "ref": _relative(paths["lead_plan_checkpoint"]),
+            "sha256": _sha(paths["lead_plan_checkpoint"]),
+            "checkpoint_digest": lead_plan_checkpoint["checkpoint_digest"],
+            "lead_plan_digest": lead_plan_checkpoint["lead_plan"][
+                "lead_plan_digest"
+            ],
+            "source_run_status_preserved_as_failure": True,
+        },
+        "predecessor_workpaper_checkpoint": {
+            "ref": _relative(paths["workpaper_checkpoint"]),
+            "sha256": _sha(paths["workpaper_checkpoint"]),
+            "checkpoint_digest": workpaper_checkpoint["checkpoint_digest"],
+            "source_run_status_preserved_as_failure": True,
+        },
+        "predecessor_lead_coordination_checkpoint": {
+            "ref": _relative(paths["lead_coordination_checkpoint"]),
+            "sha256": _sha(paths["lead_coordination_checkpoint"]),
+            "checkpoint_digest": coordination_checkpoint["checkpoint_digest"],
+            "reused_workpaper_count": 6,
+            "reused_lead_coordination_count": 1,
+            "source_run_status_preserved_as_failure": True,
+        },
+        "compiled_successor_frontier": {
+            "ref": _relative(paths["successor_execution_frontier"]),
+            "sha256": _sha(paths["successor_execution_frontier"]),
+            "result_digest": active_progress_checkpoint["checkpoint_digest"],
+            "completed_repair_count": len(completed_repairs),
+            "pending_repair_count": len(
+                active_progress_checkpoint["pending_challenge_repairs"]
+            ),
+        },
+    }
+    if hierarchical_proof_binding is not None:
+        bindings["hierarchical_evaluator_zero_call_proof"] = dict(
+            hierarchical_proof_binding
+        )
+    return bindings
+
+
 def _git_head() -> str:
     completed = subprocess.run(
         ["git", "rev-parse", "HEAD"],
@@ -3571,7 +3665,7 @@ def _stop_role(
     )
 
 
-def run(authority_path: Path) -> dict[str, Any]:
+def _run_authorized(authority_path: Path) -> dict[str, Any]:
     authority, paths, outputs = _validate_authority(authority_path)
     analysis_successor = (
         authority["schema_version"] == ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA
@@ -3624,63 +3718,8 @@ def run(authority_path: Path) -> dict[str, Any]:
     coordination_resume = (
         coordination_checkpoint_successor or downstream_analysis_successor
     )
-    full_schema = (
-        FULL_SCHEMA_V8
-        if downstream_analysis_successor
-        else (
-            FULL_SCHEMA_V7
-            if coordination_checkpoint_successor
-            else (
-                FULL_SCHEMA_V6
-                if specialist_analysis_successor
-                else (
-                    FULL_SCHEMA_V5
-                    if workpaper_checkpoint_successor
-                    else (
-                        FULL_SCHEMA_V4
-                        if lead_checkpoint_successor
-                        else (
-                            FULL_SCHEMA_V3
-                            if submission_successor
-                            else (
-                                FULL_SCHEMA_V2
-                                if analysis_successor
-                                else FULL_SCHEMA_V1
-                            )
-                        )
-                    )
-                )
-            )
-        )
-    )
-    public_schema = (
-        PUBLIC_SCHEMA_V8
-        if downstream_analysis_successor
-        else (
-            PUBLIC_SCHEMA_V7
-            if coordination_checkpoint_successor
-            else (
-                PUBLIC_SCHEMA_V6
-                if specialist_analysis_successor
-                else (
-                    PUBLIC_SCHEMA_V5
-                    if workpaper_checkpoint_successor
-                    else (
-                        PUBLIC_SCHEMA_V4
-                        if lead_checkpoint_successor
-                        else (
-                            PUBLIC_SCHEMA_V3
-                            if submission_successor
-                            else (
-                                PUBLIC_SCHEMA_V2
-                                if analysis_successor
-                                else PUBLIC_SCHEMA_V1
-                            )
-                        )
-                    )
-                )
-            )
-        )
+    full_schema, public_schema = _result_schemas_for_authority(
+        authority["schema_version"]
     )
     if not os.environ.get("DEEPSEEK_API_KEY"):
         raise MultiAgentPreviewLiveError("deepseek_api_key_missing")
@@ -3880,6 +3919,14 @@ def run(authority_path: Path) -> dict[str, Any]:
         successor_frontier is not None
         and successor_frontier.get("evaluation_strategy")
         == HIERARCHICAL_EVALUATION_STRATEGY
+    )
+    hierarchical_evaluator_proof_binding = (
+        _compile_hierarchical_evaluator_proof_binding(
+            proof_path=paths["hierarchical_evaluator_zero_call_proof"],
+            frontier=successor_frontier,
+        )
+        if hierarchical_evaluator and successor_frontier is not None
+        else None
     )
     if generic_successor:
         (
@@ -4411,71 +4458,15 @@ def run(authority_path: Path) -> dict[str, Any]:
         else {}
     )
     generic_successor_bindings = (
-        {
-            "predecessor_lead_plan_checkpoint": {
-                "ref": _relative(paths["lead_plan_checkpoint"]),
-                "sha256": _sha(paths["lead_plan_checkpoint"]),
-                "checkpoint_digest": lead_plan_checkpoint[
-                    "checkpoint_digest"
-                ],
-                "lead_plan_digest": lead_plan_checkpoint["lead_plan"][
-                    "lead_plan_digest"
-                ],
-                "source_run_status_preserved_as_failure": True,
-            },
-            "predecessor_workpaper_checkpoint": {
-                "ref": _relative(paths["workpaper_checkpoint"]),
-                "sha256": _sha(paths["workpaper_checkpoint"]),
-                "checkpoint_digest": workpaper_checkpoint_raw[
-                    "checkpoint_digest"
-                ],
-                "source_run_status_preserved_as_failure": True,
-            },
-            "predecessor_lead_coordination_checkpoint": {
-                "ref": _relative(paths["lead_coordination_checkpoint"]),
-                "sha256": _sha(paths["lead_coordination_checkpoint"]),
-                "checkpoint_digest": coordination_checkpoint_raw[
-                    "checkpoint_digest"
-                ],
-                "reused_workpaper_count": 6,
-                "reused_lead_coordination_count": 1,
-                "source_run_status_preserved_as_failure": True,
-            },
-            "compiled_successor_frontier": {
-                "ref": _relative(paths["successor_execution_frontier"]),
-                "sha256": _sha(paths["successor_execution_frontier"]),
-                "result_digest": active_downstream_progress_checkpoint[
-                    "checkpoint_digest"
-                ],
-                "completed_repair_count": len(
-                    completed_downstream_repairs
-                ),
-                "pending_repair_count": len(
-                    active_downstream_progress_checkpoint[
-                        "pending_challenge_repairs"
-                    ]
-                ),
-            },
-            **(
-                {
-                    "hierarchical_evaluator_zero_call_proof": {
-                        "ref": _relative(
-                            paths["hierarchical_evaluator_zero_call_proof"]
-                        ),
-                        "sha256": _sha(
-                            paths["hierarchical_evaluator_zero_call_proof"]
-                        ),
-                        "result_digest": scope_projection[
-                            "hierarchical_evaluator_zero_call_proof_result_digest"
-                        ],
-                        "provider_model_calls": 0,
-                        "local_retrieval_materialization_replayed": True,
-                    }
-                }
-                if hierarchical_evaluator
-                else {}
-            ),
-        }
+        _compile_generic_successor_bindings(
+            paths=paths,
+            lead_plan_checkpoint=lead_plan_checkpoint,
+            workpaper_checkpoint=workpaper_checkpoint_raw,
+            coordination_checkpoint=coordination_checkpoint_raw,
+            active_progress_checkpoint=active_downstream_progress_checkpoint,
+            completed_repairs=completed_downstream_repairs,
+            hierarchical_proof_binding=hierarchical_evaluator_proof_binding,
+        )
         if generic_successor
         and lead_plan_checkpoint is not None
         and workpaper_checkpoint_raw is not None
@@ -6279,6 +6270,113 @@ def run(authority_path: Path) -> dict[str, Any]:
         public = {**public_body, "result_digest": canonical_digest(public_body)}
         _write_new(public_result_path, public)
         return public
+
+
+def _materialize_pre_execution_failure(
+    authority_path: Path,
+    *,
+    failure_code: str,
+    failure_type: str,
+    failure_message: str,
+) -> dict[str, Any]:
+    authority = _json(authority_path)
+    outputs = authority.get("outputs") or {}
+    if set(outputs) != {
+        "run_id",
+        "capture_root_ref",
+        "private_output_root_ref",
+        "public_result_ref",
+    }:
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_pre_execution_failure_output_shape_invalid"
+        )
+    capture_root = _resolve(str(outputs["capture_root_ref"]))
+    private_root = _resolve(str(outputs["private_output_root_ref"]))
+    public_result_path = _resolve(str(outputs["public_result_ref"]))
+    capture_entries = list(capture_root.rglob("*")) if capture_root.is_dir() else []
+    if not (
+        capture_root.is_dir()
+        and not capture_entries
+        and not private_root.exists()
+        and not public_result_path.exists()
+    ):
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_pre_execution_failure_not_eligible"
+        )
+    full_schema, public_schema = _result_schemas_for_authority(
+        str(authority.get("schema_version") or "")
+    )
+    recorded_at = _now()
+    execution = {
+        "failure_phase": "pre_execution_binding",
+        "authority_validation_completed": True,
+        "capture_root_created": True,
+        "capture_entries_preserved": 0,
+        "new_model_nodes_started": 0,
+        "provider_attempts_preserved": 0,
+        "external_source_network_calls": 0,
+        "candidate_promotions": 0,
+        "product_publication": False,
+    }
+    failure_body = {
+        "schema_version": full_schema,
+        "status": "multi_agent_preview_terminal_failure_preserved",
+        "recorded_at": recorded_at,
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha(authority_path),
+        "implementation_commit": authority.get("implementation_commit"),
+        "failure_code": failure_code,
+        "failure_type": failure_type,
+        "failure_message": failure_message,
+        "run_id": outputs["run_id"],
+        "bound_input_count": len(authority.get("bound_inputs") or {}),
+        "terminal_node_attempts": [],
+        "node_executions": [],
+        "sessions": {},
+        "execution": execution,
+    }
+    failure = {
+        **failure_body,
+        "full_result_digest": canonical_digest(failure_body),
+    }
+    _write_new(private_root / "terminal_failure.json", failure)
+    public_body = {
+        "schema_version": public_schema,
+        "status": failure["status"],
+        "recorded_at": recorded_at,
+        "authority_ref": failure["authority_ref"],
+        "authority_sha256": failure["authority_sha256"],
+        "implementation_commit": failure["implementation_commit"],
+        "failure_code": failure_code,
+        "failure_phase": execution["failure_phase"],
+        "execution": execution,
+        "full_result_ref": _relative(private_root / "terminal_failure.json"),
+        "acceptance": {
+            "true_multi_agent_preview_completed": False,
+            "S1_pass": False,
+            "S3_pass": False,
+            "qualified_human_acceptance": False,
+            "release_ready": False,
+        },
+    }
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_new(public_result_path, public)
+    return public
+
+
+def run(authority_path: Path) -> dict[str, Any]:
+    try:
+        return _run_authorized(authority_path)
+    except Exception as exc:
+        try:
+            return _materialize_pre_execution_failure(
+                authority_path,
+                failure_code="multi_agent_preview_pre_execution_runtime_failure",
+                failure_type=type(exc).__name__,
+                failure_message=str(exc),
+            )
+        except MultiAgentPreviewLiveError:
+            raise exc
 
 
 def main(argv: Sequence[str] | None = None) -> int:

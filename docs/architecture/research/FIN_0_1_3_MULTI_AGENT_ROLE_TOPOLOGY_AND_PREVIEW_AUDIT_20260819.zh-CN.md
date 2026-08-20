@@ -248,3 +248,11 @@ Supply 已成为第三条完成 repair，旧 frontier 不能再把它当作 pend
 这一步只证明上下文选择、lineage、预算、故障注入和恢复路径可执行。它不证明 DeepSeek 能完成自然角色审查，不证明 Writer 或报告质量，也不关闭 S1、S3、泛化、qualified-human、Workbench 或 release。
 
 完整工程门结果为：定向 109、全仓 913、compileall、active baseline `185 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、755 份 configs、8 份 Project OS JSONL／867 行、7,473-file secret scan 与 diff check 全部通过。下一步只能在 clean commit／push 和 fresh Project OS preflight 后签发一次新 authority。
+
+## 二十、authority 校验通过不等于 execution binding 已被测试
+
+第一次分层 Evaluator successor 在任何模型节点前触发 `NameError`。proof 的 ref／sha256／digest 已在 Project OS 和 authority 校验中正确绑定，但执行阶段错误读取了 validator 函数的局部 `scope_projection`。因此根因是 S0 Runtime 集成边界，不是 DeepSeek、金融数据、角色设计或评审内容。
+
+该事件补出两条长期规则：第一，authority 测试必须继续编译实际 execution binding，不能只证明 JSON／scope 合法；第二，一旦 authority 已通过并创建 capture root，后续任何 pre-execution 异常也必须物化 terminal result，明确 provider boundary 是否到达。不能因为 0 Provider 就抹去失败，也不能复用已消费的 authority。
+
+层级 proof 现在由 bound proof＋frontier 在运行阶段显式重验并形成 execution binding。旧 attempt 已保存为 0 模型节点、0 Provider、0 网络的 `pre_execution_binding` failure；replacement 必须使用新实现提交、fresh preflight 和全新输出身份。

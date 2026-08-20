@@ -42,6 +42,9 @@ ANALYSIS_FRAGMENT_CHECKPOINT_SCHEMA_VERSION = (
 ANALYSIS_COMPLETION_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_analysis_completion_checkpoint_v1_0"
 )
+DOWNSTREAM_REPAIR_PROGRESS_CHECKPOINT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_downstream_repair_progress_checkpoint_v1_0"
+)
 LEAD_PLAN_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_lead_plan_checkpoint_v1_0"
 )
@@ -1385,6 +1388,296 @@ def validate_analysis_fragment_checkpoint(
     _require(
         checkpoint_digest == canonical_digest(value),
         "multi_agent_analysis_checkpoint_digest_invalid",
+    )
+    return {**value, "checkpoint_digest": checkpoint_digest}
+
+
+def compile_downstream_repair_progress_checkpoint(
+    *,
+    case_key: str,
+    source_run_id: str,
+    source_authority_ref: str,
+    source_authority_sha256: str,
+    source_public_result_ref: str,
+    source_public_result_sha256: str,
+    source_public_result_digest: str,
+    source_terminal_result_ref: str,
+    source_terminal_result_sha256: str,
+    source_terminal_result_digest: str,
+    lead_coordination_checkpoint_ref: str,
+    lead_coordination_checkpoint_sha256: str,
+    lead_coordination_checkpoint_digest: str,
+    accepted_challenge_ids: Sequence[str],
+    completed_challenge_repairs: Sequence[Mapping[str, Any]],
+    pending_challenge_ids: Sequence[str],
+    active_analysis_fragment_checkpoint_ref: str,
+    active_analysis_fragment_checkpoint_sha256: str,
+    active_analysis_fragment_checkpoint_digest: str,
+    recorded_at: str,
+) -> dict[str, Any]:
+    """Bind completed downstream work and one resumable analysis fragment.
+
+    This is deliberately provider-neutral. It records progress through an
+    ordered challenge list without promoting a truncated analysis draft or
+    granting permission to rerun already completed Agent nodes.
+    """
+
+    accepted = [str(item) for item in accepted_challenge_ids]
+    completed = [deepcopy(dict(item)) for item in completed_challenge_repairs]
+    pending = [str(item) for item in pending_challenge_ids]
+    required_completed_fields = {
+        "challenge_id",
+        "target_agent_id",
+        "node_id",
+        "workpaper_digest",
+    }
+    digest_values = (
+        source_authority_sha256,
+        source_public_result_sha256,
+        source_public_result_digest,
+        source_terminal_result_sha256,
+        source_terminal_result_digest,
+        lead_coordination_checkpoint_sha256,
+        lead_coordination_checkpoint_digest,
+        active_analysis_fragment_checkpoint_sha256,
+        active_analysis_fragment_checkpoint_digest,
+    )
+    _require(
+        bool(accepted)
+        and len(accepted) == len(set(accepted))
+        and bool(completed)
+        and all(set(row) == required_completed_fields for row in completed)
+        and all(
+            str(row[field]).strip()
+            for row in completed
+            for field in required_completed_fields
+        )
+        and all(
+            str(row["node_id"])
+            == f"{str(row['target_agent_id'])}::COUNTER_REPAIR"
+            and len(str(row["workpaper_digest"])) == 64
+            and all(
+                ch in "0123456789abcdef"
+                for ch in str(row["workpaper_digest"])
+            )
+            for row in completed
+        )
+        and len({str(row["challenge_id"]) for row in completed})
+        == len(completed)
+        and len({str(row["node_id"]) for row in completed}) == len(completed)
+        and [str(row["challenge_id"]) for row in completed]
+        == accepted[: len(completed)]
+        and pending == accepted[len(completed) :]
+        and bool(pending)
+        and all(
+            len(str(value)) == 64
+            and all(ch in "0123456789abcdef" for ch in str(value))
+            for value in digest_values
+        ),
+        "multi_agent_downstream_repair_checkpoint_inputs_invalid",
+    )
+    body = {
+        "schema_version": DOWNSTREAM_REPAIR_PROGRESS_CHECKPOINT_SCHEMA_VERSION,
+        "status": (
+            "completed_repairs_and_active_analysis_fragment_bound_for_"
+            "downstream_resume"
+        ),
+        "case_key": str(case_key).upper(),
+        "source_run_id": str(source_run_id),
+        "source_authority_ref": str(source_authority_ref),
+        "source_authority_sha256": str(source_authority_sha256),
+        "source_public_result_ref": str(source_public_result_ref),
+        "source_public_result_sha256": str(source_public_result_sha256),
+        "source_public_result_digest": str(source_public_result_digest),
+        "source_terminal_result_ref": str(source_terminal_result_ref),
+        "source_terminal_result_sha256": str(source_terminal_result_sha256),
+        "source_terminal_result_digest": str(source_terminal_result_digest),
+        "lead_coordination_checkpoint_ref": str(
+            lead_coordination_checkpoint_ref
+        ),
+        "lead_coordination_checkpoint_sha256": str(
+            lead_coordination_checkpoint_sha256
+        ),
+        "lead_coordination_checkpoint_digest": str(
+            lead_coordination_checkpoint_digest
+        ),
+        "accepted_challenge_ids": accepted,
+        "completed_challenge_repairs": completed,
+        "pending_challenge_ids": pending,
+        "active_analysis_fragment_checkpoint_ref": str(
+            active_analysis_fragment_checkpoint_ref
+        ),
+        "active_analysis_fragment_checkpoint_sha256": str(
+            active_analysis_fragment_checkpoint_sha256
+        ),
+        "active_analysis_fragment_checkpoint_digest": str(
+            active_analysis_fragment_checkpoint_digest
+        ),
+        "resume_policy": {
+            "maximum_analysis_continuation_calls": 1,
+            "completed_repair_reruns_forbidden": True,
+            "lead_coordination_rerun_forbidden": True,
+            "workpaper_reruns_forbidden": True,
+            "continue_from_active_fragment_only": True,
+            "new_fact_or_authority_forbidden": True,
+        },
+        "claims": {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+        "recorded_at": str(recorded_at),
+    }
+    _require(
+        bool(re.fullmatch(r"[A-Z0-9._-]+", body["case_key"]))
+        and all(
+            str(body[field]).strip()
+            for field in (
+                "source_run_id",
+                "source_authority_ref",
+                "source_public_result_ref",
+                "source_terminal_result_ref",
+                "lead_coordination_checkpoint_ref",
+                "active_analysis_fragment_checkpoint_ref",
+                "recorded_at",
+            )
+        ),
+        "multi_agent_downstream_repair_checkpoint_identity_invalid",
+    )
+    return {**body, "checkpoint_digest": canonical_digest(body)}
+
+
+def validate_downstream_repair_progress_checkpoint(
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    value = deepcopy(dict(payload))
+    expected = {
+        "schema_version",
+        "status",
+        "case_key",
+        "source_run_id",
+        "source_authority_ref",
+        "source_authority_sha256",
+        "source_public_result_ref",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_terminal_result_ref",
+        "source_terminal_result_sha256",
+        "source_terminal_result_digest",
+        "lead_coordination_checkpoint_ref",
+        "lead_coordination_checkpoint_sha256",
+        "lead_coordination_checkpoint_digest",
+        "accepted_challenge_ids",
+        "completed_challenge_repairs",
+        "pending_challenge_ids",
+        "active_analysis_fragment_checkpoint_ref",
+        "active_analysis_fragment_checkpoint_sha256",
+        "active_analysis_fragment_checkpoint_digest",
+        "resume_policy",
+        "claims",
+        "recorded_at",
+        "checkpoint_digest",
+    }
+    _require(
+        set(value) == expected
+        and value.get("schema_version")
+        == DOWNSTREAM_REPAIR_PROGRESS_CHECKPOINT_SCHEMA_VERSION
+        and value.get("status")
+        == (
+            "completed_repairs_and_active_analysis_fragment_bound_for_"
+            "downstream_resume"
+        )
+        and bool(
+            re.fullmatch(r"[A-Z0-9._-]+", str(value.get("case_key") or ""))
+        )
+        and value.get("resume_policy")
+        == {
+            "maximum_analysis_continuation_calls": 1,
+            "completed_repair_reruns_forbidden": True,
+            "lead_coordination_rerun_forbidden": True,
+            "workpaper_reruns_forbidden": True,
+            "continue_from_active_fragment_only": True,
+            "new_fact_or_authority_forbidden": True,
+        }
+        and value.get("claims")
+        == {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+        "multi_agent_downstream_repair_checkpoint_shape_invalid",
+    )
+    accepted = list(value.get("accepted_challenge_ids") or ())
+    completed = list(value.get("completed_challenge_repairs") or ())
+    pending = list(value.get("pending_challenge_ids") or ())
+    completed_fields = {
+        "challenge_id",
+        "target_agent_id",
+        "node_id",
+        "workpaper_digest",
+    }
+    digest_fields = (
+        "source_authority_sha256",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_terminal_result_sha256",
+        "source_terminal_result_digest",
+        "lead_coordination_checkpoint_sha256",
+        "lead_coordination_checkpoint_digest",
+        "active_analysis_fragment_checkpoint_sha256",
+        "active_analysis_fragment_checkpoint_digest",
+    )
+    _require(
+        bool(accepted)
+        and len(accepted) == len(set(accepted))
+        and bool(completed)
+        and all(isinstance(row, Mapping) for row in completed)
+        and all(set(row) == completed_fields for row in completed)
+        and [str(row["challenge_id"]) for row in completed]
+        == accepted[: len(completed)]
+        and pending == accepted[len(completed) :]
+        and bool(pending)
+        and len({str(row["node_id"]) for row in completed}) == len(completed)
+        and all(
+            str(row["node_id"])
+            == f"{str(row['target_agent_id'])}::COUNTER_REPAIR"
+            and len(str(row["workpaper_digest"])) == 64
+            and all(
+                ch in "0123456789abcdef"
+                for ch in str(row["workpaper_digest"])
+            )
+            for row in completed
+        )
+        and all(
+            len(str(value.get(field) or "")) == 64
+            and all(
+                ch in "0123456789abcdef"
+                for ch in str(value.get(field) or "")
+            )
+            for field in digest_fields
+        )
+        and all(
+            str(value.get(field) or "").strip()
+            for field in (
+                "source_run_id",
+                "source_authority_ref",
+                "source_public_result_ref",
+                "source_terminal_result_ref",
+                "lead_coordination_checkpoint_ref",
+                "active_analysis_fragment_checkpoint_ref",
+                "recorded_at",
+            )
+        ),
+        "multi_agent_downstream_repair_checkpoint_binding_invalid",
+    )
+    checkpoint_digest = str(value.pop("checkpoint_digest", ""))
+    _require(
+        checkpoint_digest == canonical_digest(value),
+        "multi_agent_downstream_repair_checkpoint_digest_invalid",
     )
     return {**value, "checkpoint_digest": checkpoint_digest}
 
@@ -4305,6 +4598,7 @@ def local_case_absence_findings(
 __all__ = [
     "ANALYSIS_COMPLETION_CHECKPOINT_SCHEMA_VERSION",
     "ANALYSIS_FRAGMENT_CHECKPOINT_SCHEMA_VERSION",
+    "DOWNSTREAM_REPAIR_PROGRESS_CHECKPOINT_SCHEMA_VERSION",
     "LEAD_PLAN_SCHEMA_VERSION",
     "LEAD_COORDINATION_DECISION_SCHEMA_VERSION",
     "LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION",
@@ -4327,6 +4621,7 @@ __all__ = [
     "compile_analyzed_node_submission_messages",
     "compile_analysis_fragment_checkpoint",
     "compile_analysis_completion_checkpoint",
+    "compile_downstream_repair_progress_checkpoint",
     "compile_analysis_continuation_messages",
     "compile_lead_coordination_messages",
     "compile_lead_coordination_checkpoint",
@@ -4351,6 +4646,7 @@ __all__ = [
     "validate_evaluation",
     "validate_analysis_fragment_checkpoint",
     "validate_analysis_completion_checkpoint",
+    "validate_downstream_repair_progress_checkpoint",
     "validate_analysis_continuation_completion",
     "validate_lead_plan",
     "validate_lead_coordination_decision",

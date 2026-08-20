@@ -1,0 +1,63 @@
+{
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_R11_downstream_repair_analysis_checkpoint_successor_zero_call_result_v1_0",
+  "status": "R10_downstream_repair_analysis_checkpoint_successor_zero_call_pass",
+  "case_key": "DELL",
+  "downstream_repair_progress_checkpoint_digest": "ec3c5c2cd87db834c33d5bd40a5be23f4b3f11b4651ef11806bc1a059bf75166",
+  "analysis_fragment_checkpoint_digest": "4de41c6334bea4c012234cd7dd55ecc2afad86696fc9d3427ebdbc7241f94b93",
+  "accepted_challenge_ids": [
+    "CHALLENGE::B1FC30D87F6DB63FDB91003C",
+    "CHALLENGE::803238978B747FEED1CE12C9",
+    "CHALLENGE::71AAF31E7FBD5A99163BBE8D"
+  ],
+  "reused_specialist_plan_count": 6,
+  "reused_lead_plan_count": 1,
+  "reused_workpaper_count": 6,
+  "reused_lead_coordination_count": 1,
+  "reused_completed_challenge_repair_count": 1,
+  "pending_challenge_repair_count": 2,
+  "pending_challenge_ids": [
+    "CHALLENGE::803238978B747FEED1CE12C9",
+    "CHALLENGE::71AAF31E7FBD5A99163BBE8D"
+  ],
+  "first_new_node_id": "AGENT::CASH_CONVERSION::COUNTER_REPAIR",
+  "maximum_analysis_continuation_calls": 1,
+  "new_initial_cash_repair_analysis_calls": 0,
+  "maximum_new_model_nodes": 7,
+  "logical_node_budget_basis": {
+    "cash_repair_continuation_and_submission_nodes": 1,
+    "supply_repair_analysis_and_submission_nodes": 1,
+    "maximum_evaluation_nodes": 2,
+    "maximum_evaluator_repair_nodes": 2,
+    "conditional_writer_nodes": 1
+  },
+  "replay_results": {
+    "completed_demand_repair_recovered_and_revalidated": true,
+    "cash_partial_draft_recovered_from_exact_response_capture": true,
+    "cash_original_model_visible_conversation_recovered": true,
+    "first_pending_challenge_matches_cash_fragment": true,
+    "planning_workpapers_and_coordination_reuse_only": true
+  },
+  "mutation_results": {
+    "completed_repair_digest_mutation_rejected": true,
+    "analysis_capture_mutation_rejected": true,
+    "challenge_order_mutation_rejected": true
+  },
+  "resume_policy": {
+    "completed_demand_repair_rerun_forbidden": true,
+    "cash_initial_analysis_rerun_forbidden": true,
+    "cash_analysis_continuation_exactly_once": true,
+    "supply_starts_only_after_cash_contract_valid": true,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0
+  },
+  "claims": {
+    "new_model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "candidate_promotions": 0,
+    "S1_pass": false,
+    "S3_pass": false,
+    "true_multi_agent_preview_completed": false
+  },
+  "result_digest": "aa7f9912ac3064528b4fbdc529a1c20159fd1ab639b43e2d463aca3ea353e88f"
+}

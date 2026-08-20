@@ -16,6 +16,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_analysis_continuation_messages,
     compile_analysis_completion_checkpoint,
     compile_analysis_fragment_checkpoint,
+    compile_downstream_repair_progress_checkpoint,
     compile_challenge_catalog,
     compile_evaluation_messages,
     compile_lead_plan_messages,
@@ -45,6 +46,7 @@ from sec_agent.research.multi_agent_preview import (
     validate_analysis_continuation_completion,
     validate_analysis_completion_checkpoint,
     validate_analysis_fragment_checkpoint,
+    validate_downstream_repair_progress_checkpoint,
     validate_lead_plan,
     validate_lead_plan_checkpoint,
     validate_lead_coordination_decision,
@@ -123,6 +125,77 @@ def test_analysis_fragment_checkpoint_binds_content_and_remaining_scope() -> Non
             partial_draft=draft + " changed",
             tool_name="submit_lead_plan",
         )
+
+
+def test_downstream_repair_checkpoint_binds_ordered_progress_and_fragment() -> None:
+    checkpoint = compile_downstream_repair_progress_checkpoint(
+        case_key="DELL",
+        source_run_id="PREVIEW-R10",
+        source_authority_ref="authority-r10.json",
+        source_authority_sha256="a" * 64,
+        source_public_result_ref="result-r10.json",
+        source_public_result_sha256="b" * 64,
+        source_public_result_digest="c" * 64,
+        source_terminal_result_ref="terminal-r10.json",
+        source_terminal_result_sha256="d" * 64,
+        source_terminal_result_digest="e" * 64,
+        lead_coordination_checkpoint_ref="coordination-r9.json",
+        lead_coordination_checkpoint_sha256="f" * 64,
+        lead_coordination_checkpoint_digest="1" * 64,
+        accepted_challenge_ids=("CHALLENGE::ONE", "CHALLENGE::TWO"),
+        completed_challenge_repairs=(
+            {
+                "challenge_id": "CHALLENGE::ONE",
+                "target_agent_id": "AGENT::DEMAND_QUALITY",
+                "node_id": "AGENT::DEMAND_QUALITY::COUNTER_REPAIR",
+                "workpaper_digest": "2" * 64,
+            },
+        ),
+        pending_challenge_ids=("CHALLENGE::TWO",),
+        active_analysis_fragment_checkpoint_ref="cash-fragment.json",
+        active_analysis_fragment_checkpoint_sha256="3" * 64,
+        active_analysis_fragment_checkpoint_digest="4" * 64,
+        recorded_at="2026-08-20T13:00:00+08:00",
+    )
+
+    trusted = validate_downstream_repair_progress_checkpoint(checkpoint)
+    assert trusted["pending_challenge_ids"] == ["CHALLENGE::TWO"]
+    assert trusted["completed_challenge_repairs"][0]["target_agent_id"] == (
+        "AGENT::DEMAND_QUALITY"
+    )
+    assert trusted["resume_policy"]["completed_repair_reruns_forbidden"] is True
+
+    reordered = dict(checkpoint)
+    reordered["accepted_challenge_ids"] = ["CHALLENGE::TWO", "CHALLENGE::ONE"]
+    reordered["checkpoint_digest"] = canonical_digest(
+        {
+            key: value
+            for key, value in reordered.items()
+            if key != "checkpoint_digest"
+        }
+    )
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="downstream_repair_checkpoint_binding_invalid",
+    ):
+        validate_downstream_repair_progress_checkpoint(reordered)
+
+    cross_role = json.loads(json.dumps(checkpoint))
+    cross_role["completed_challenge_repairs"][0]["node_id"] = (
+        "AGENT::CASH_CONVERSION::COUNTER_REPAIR"
+    )
+    cross_role["checkpoint_digest"] = canonical_digest(
+        {
+            key: value
+            for key, value in cross_role.items()
+            if key != "checkpoint_digest"
+        }
+    )
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="downstream_repair_checkpoint_binding_invalid",
+    ):
+        validate_downstream_repair_progress_checkpoint(cross_role)
 
 
 def test_analysis_continuation_can_preserve_original_specialist_conversation() -> None:

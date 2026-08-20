@@ -19,6 +19,16 @@ CHECKPOINT = (
     / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
     "R10_lead_coordination_checkpoint_v1_0.json"
 )
+DOWNSTREAM_PROGRESS_CHECKPOINT = (
+    ROOT
+    / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "R11_downstream_repair_progress_checkpoint_v1_0.json"
+)
+DOWNSTREAM_ANALYSIS_CHECKPOINT = (
+    ROOT
+    / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "R11_cash_repair_analysis_fragment_checkpoint_v1_0.json"
+)
 
 
 def _checkpoint() -> dict[str, object]:
@@ -67,6 +77,80 @@ def test_r10_checkpoint_rejects_lead_response_capture_mutation() -> None:
         match="multi_agent_preview_coordination_capture_drift",
     ):
         runner._load_bound_lead_coordination_decision(checkpoint)
+
+
+def test_r11_checkpoint_recovers_completed_demand_and_exact_cash_fragment() -> None:
+    progress = json.loads(
+        DOWNSTREAM_PROGRESS_CHECKPOINT.read_text(encoding="utf-8")
+    )
+    fragment = json.loads(
+        DOWNSTREAM_ANALYSIS_CHECKPOINT.read_text(encoding="utf-8")
+    )
+
+    completed = runner._load_bound_downstream_repair_progress(
+        checkpoint=progress,
+        fragment_checkpoint=fragment,
+    )
+    draft, original_messages = runner._load_bound_analysis_checkpoint_source(
+        fragment
+    )
+
+    assert list(completed) == ["CHALLENGE::B1FC30D87F6DB63FDB91003C"]
+    assert completed["CHALLENGE::B1FC30D87F6DB63FDB91003C"][
+        "workpaper_digest"
+    ] == "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0"
+    assert progress["pending_challenge_ids"][0] == (
+        "CHALLENGE::803238978B747FEED1CE12C9"
+    )
+    assert fragment["node_id"] == "AGENT::CASH_CONVERSION::COUNTER_REPAIR"
+    assert len(draft) == 815
+    assert [row["role"] for row in original_messages] == ["system", "user"]
+
+
+def test_r11_checkpoint_rejects_completed_repair_digest_mutation() -> None:
+    progress = json.loads(
+        DOWNSTREAM_PROGRESS_CHECKPOINT.read_text(encoding="utf-8")
+    )
+    fragment = json.loads(
+        DOWNSTREAM_ANALYSIS_CHECKPOINT.read_text(encoding="utf-8")
+    )
+    progress["completed_challenge_repairs"][0]["workpaper_digest"] = "0" * 64
+    progress["checkpoint_digest"] = runner.canonical_digest(
+        {
+            key: value
+            for key, value in progress.items()
+            if key != "checkpoint_digest"
+        }
+    )
+
+    with pytest.raises(
+        runner.MultiAgentPreviewLiveError,
+        match="multi_agent_preview_downstream_completed_repair_drift",
+    ):
+        runner._load_bound_downstream_repair_progress(
+            checkpoint=progress,
+            fragment_checkpoint=fragment,
+        )
+
+
+def test_r11_checkpoint_rejects_cash_capture_mutation() -> None:
+    fragment = json.loads(
+        DOWNSTREAM_ANALYSIS_CHECKPOINT.read_text(encoding="utf-8")
+    )
+    fragment["request_capture_sha256"] = "0" * 64
+    fragment["checkpoint_digest"] = runner.canonical_digest(
+        {
+            key: value
+            for key, value in fragment.items()
+            if key != "checkpoint_digest"
+        }
+    )
+
+    with pytest.raises(
+        runner.MultiAgentPreviewLiveError,
+        match="multi_agent_preview_analysis_checkpoint_capture_drift",
+    ):
+        runner._load_bound_analysis_checkpoint_source(fragment)
 
 
 def test_r10_authority_accepts_only_coordination_checkpoint_successor(
@@ -157,3 +241,100 @@ def test_r10_authority_accepts_only_coordination_checkpoint_successor(
     )
     assert set(inputs) == set(bound_inputs)
     assert outputs["run_id"] == "PYTEST-R10-UNUSED"
+
+
+def test_r11_authority_accepts_only_downstream_analysis_successor(
+    tmp_path: Path,
+) -> None:
+    prior_authority = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
+            "preview_live_authority_v1_9.json"
+        ).read_text(encoding="utf-8")
+    )
+    scope_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "live_scope_decision_v1_9.json"
+    )
+    scope = json.loads((ROOT / scope_ref).read_text(encoding="utf-8"))
+
+    def binding(ref: str) -> dict[str, str]:
+        path = ROOT / ref
+        return {"ref": ref, "sha256": runner._sha(path)}
+
+    base_names = {
+        "topology",
+        "objective",
+        "zero_call_proof",
+        "successor_zero_call_proof",
+        "planning_overlay",
+        "analysis_profile",
+        "submission_profile",
+        "historical_five_cell_assessment",
+        "predecessor_plan_checkpoint",
+    }
+    bound_inputs = {
+        name: deepcopy(prior_authority["bound_inputs"][name])
+        for name in base_names
+    }
+    bound_inputs.update(
+        {
+            "project_os_scope_decision": binding(scope_ref),
+            "predecessor_scope_decision": binding(
+                scope["predecessor_scope_decision_ref"]
+            ),
+            "predecessor_authority": binding(
+                scope["predecessor_live_authority_ref"]
+            ),
+            "predecessor_result": binding(
+                scope["predecessor_live_result_ref"]
+            ),
+            "lead_plan_checkpoint": binding(scope["lead_plan_checkpoint_ref"]),
+            "workpaper_checkpoint": binding(scope["workpaper_checkpoint_ref"]),
+            "lead_coordination_checkpoint": binding(
+                scope["lead_coordination_checkpoint_ref"]
+            ),
+            "downstream_repair_progress_checkpoint": binding(
+                scope["downstream_repair_progress_checkpoint_ref"]
+            ),
+            "downstream_analysis_fragment_checkpoint": binding(
+                scope["downstream_analysis_fragment_checkpoint_ref"]
+            ),
+            "downstream_analysis_successor_zero_call_proof": binding(
+                scope["downstream_analysis_successor_zero_call_proof_ref"]
+            ),
+            "analysis_continuation_profile": binding(
+                scope["analysis_continuation_profile_ref"]
+            ),
+        }
+    )
+    output_prefix = "data/pytest_multi_agent_preview_r11_authority_unused"
+    authority = {
+        "schema_version": runner.DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA,
+        "status": (
+            "approved_for_one_R10_downstream_repair_analysis_checkpoint_"
+            "successor_after_project_os_preflight"
+        ),
+        "authorized_at": "2026-08-20T14:00:00+08:00",
+        "implementation_commit": runner._git_head(),
+        "bound_inputs": bound_inputs,
+        "execution_limits": deepcopy(scope["execution_limits"]),
+        "outputs": {
+            "run_id": "PYTEST-R11-UNUSED",
+            "capture_root_ref": output_prefix + "_captures",
+            "private_output_root_ref": output_prefix + "_private",
+            "public_result_ref": output_prefix + "_public.json",
+        },
+        "authority_statement": "pytest-only authority validation",
+    }
+    authority_path = tmp_path / "authority.json"
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    validated, inputs, outputs = runner._validate_authority(authority_path)
+
+    assert validated["schema_version"] == (
+        runner.DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA
+    )
+    assert set(inputs) == set(bound_inputs)
+    assert outputs["run_id"] == "PYTEST-R11-UNUSED"

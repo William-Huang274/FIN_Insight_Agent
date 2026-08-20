@@ -276,6 +276,16 @@ R10 不重跑 Specialist plan、Lead plan、六份 workpaper 或 Lead coordinati
 
 R10 当前只达到 engineering／zero-call gate。它通过后仍必须分别检查：局部修订是否真实改变工作底稿；Evaluator 是否把数据／工具／Harness failure 错归成内容问题；Writer 是否只使用经验证底稿；最终产物是否通过 L1、八维质量、paired gain 和 qualified-human 内容验收。任何成功渲染都不能自动签发 S1、S3、泛化、S4 或 release。
 
+### 4T. R10 第一条反馈闭环与 R11 通用 downstream checkpoint
+
+R10 自然运行已证明协调合同修复有效，并证明多角色反馈不是伪事件：Demand Agent 消费 Lead 接受的反方挑战后，主动把订单／backlog 从“需求持久性证明”降为受限信号，把 `$16.1B` 约束为当季转换证据，加入 buy-ahead、供给与客户集中边界，并把置信度降为 moderate。该工作底稿已通过本地合同并作为 immutable completed repair 保存。
+
+R10 随后在 Cash repair 的分析阶段停止。它看到了当前 Cash 角色上下文和反馈，但 12,000 completion token 中 11,802 被 reasoning 使用，只形成 815 字可见草稿。失败既不是资料为空，也不是模型拒绝反思；直接问题是通用 checkpoint／resume 尚未接到任意 downstream repair。该缺陷归 S0 Agent Runtime 的上下文连续性，不回填为 S1 数据问题，也不为 Cash 单独增加字段或全局 token 上限。
+
+R11 将既有通用分析片段合同扩展为 ordered downstream progress：已完成 Demand、待处理 Cash／Supply、Cash 原始对话、残稿、捕获与所有 lineage 一起内容寻址。运行时必须从第一个 pending challenge 的 active fragment 续写一次，已完成 repair、初始 workpaper、Lead plan 和 Lead coordination 均不可重跑。节点预算为 `Cash 1 + Supply 1 + evaluation 2 + evaluator repair 2 + conditional Writer 1 = 7`；每个新节点继续单独生成 `TokenBudgetBasis`，复用节点不分配新 token。
+
+R11 成功也只说明当前 DELL／当前 S1-S2 权威下的 Preview 可以完整执行。它随后仍须做独立 L1、八维绝对内容质量、同输入 paired gain 和 qualified-human 内容验收；动态外源研究、MU／NVDA／异质留出泛化、S1/S3 正式通过、Workbench publication 和 S5 release 均不得由该结果自动推导。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

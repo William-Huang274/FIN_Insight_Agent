@@ -1,0 +1,66 @@
+{
+  "schema_version": "fin_ia_multi_agent_analysis_fragment_checkpoint_v1_0",
+  "status": "length_truncated_visible_analysis_bound_for_one_continuation",
+  "case_key": "DELL",
+  "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820",
+  "node_id": "AGENT::CASH_CONVERSION::COUNTER_REPAIR",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_9.json",
+  "source_authority_sha256": "522b845c2b9d41dca303e67bc51866b87730c66cf3e49f4abf6a80bc7608fbf1",
+  "source_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_9.json",
+  "source_public_result_sha256": "e6abe4fef86927f2abe0e9e6921302246ad9908ea4de4e8ea2263f1a4b1dc074",
+  "source_public_result_digest": "8f6df9504f56dde9e032c1cf447670827f08d8747b4cca96a9d2eea2deb4161c",
+  "request_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r10_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820-AGENT-CASH_CONVERSION-COUNTER_REPAIR-ANALYSIS-ATTEMPT-01/model_visible_request.json",
+  "request_capture_sha256": "3a1139943aee84925b4b6e1c5873b5a82fe85f45d762c9f70e95d0acda78c605",
+  "request_digest": "4b44123a3a22d97d02e0c2b328c9737239524c39231e98d471ca0122dc0711fa",
+  "response_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r10_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820-AGENT-CASH_CONVERSION-COUNTER_REPAIR-ANALYSIS-ATTEMPT-01/provider_response.json",
+  "response_capture_sha256": "f4c341f7177eefcff80270285daf91f8d96ee468662cc02a59377bd335f7a621",
+  "response_digest": "a977180cfe19ca79e78f8175221539b3059ef1164f5f7fc760ebffd16e750630",
+  "finish_reason": "length",
+  "partial_draft_digest": "6a6eae0d142b982a6d0ead5219ebd3677f48865a179072118fd4c13695dea8f6",
+  "partial_draft_character_count": 815,
+  "required_outputs": [
+    "revised_thesis",
+    "revised_sourced_claims",
+    "revised_counterarguments",
+    "revised_what_would_change"
+  ],
+  "completed_required_outputs": [],
+  "partial_required_outputs": [
+    "revised_thesis"
+  ],
+  "missing_required_outputs": [
+    "revised_sourced_claims",
+    "revised_counterarguments",
+    "revised_what_would_change"
+  ],
+  "usage": {
+    "completion_tokens": 12000,
+    "completion_tokens_details": {
+      "reasoning_tokens": 11802
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 30202,
+    "prompt_tokens": 30202,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 42202
+  },
+  "continuation_policy": {
+    "maximum_continuation_calls": 1,
+    "continue_missing_content_only": true,
+    "repeat_completed_sections_forbidden": true,
+    "new_fact_or_authority_forbidden": true,
+    "partial_draft_business_promotion": false,
+    "complete_merged_draft_required_before_submission": true
+  },
+  "claims": {
+    "new_model_calls": 0,
+    "new_network_calls": 0,
+    "candidate_promotions": 0,
+    "S1_pass": false,
+    "S3_pass": false
+  },
+  "recorded_at": "2026-08-20T13:00:20+08:00",
+  "checkpoint_digest": "4de41c6334bea4c012234cd7dd55ecc2afad86696fc9d3427ebdbc7241f94b93"
+}

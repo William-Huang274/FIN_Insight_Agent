@@ -1,0 +1,70 @@
+{
+  "schema_version": "fin_ia_s3_multi_agent_preview_source_context_replay_failure_disposition_zero_call_v1_0",
+  "status": "R12_preprovider_source_context_replay_pass",
+  "recorded_at": "2026-08-20T15:20:00+08:00",
+  "failed_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R12_20260820",
+  "failed_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_11.json",
+  "failed_authority_sha256": "db9f89c0e46e843a4e7afd0ee523124c27760d023e47e195d69c446a20b9d780",
+  "failed_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_11.json",
+  "failed_public_result_sha256": "99500e690062ab0cdcc7eb6d38ad128ad5fb26e52d8f98a188a1511a345a0005",
+  "failed_public_result_digest": "9e8e33f89e0e8628c00eb1babde72860758e77f728224c61432ca13cd7a01481",
+  "failed_terminal_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_r12_20260820/terminal_failure.json",
+  "failed_terminal_result_sha256": "37fa233291fecad38c6df966d2f6061f8bea1aff561488d834c2d0471c9378c9",
+  "failed_terminal_result_digest": "45466ff9596b2a89e82736b7e235f9e3dea75de66ed7abc1f83e2c013b282f6f",
+  "failure_code": "multi_agent_bound_workpaper_digest_invalid",
+  "failure_stage": "checkpoint_replay_before_provider",
+  "model_calls": 0,
+  "network_calls": 0,
+  "candidate_promotions": 0,
+  "root_cause": {
+    "owned_stage": "S0_Agent_Runtime_checkpoint_context_lineage",
+    "description": "R12 correctly projected Harness-derived workpaper fields, but recompiled a fresh Demand repair context with a new session-bound FeedbackReceipt. The completed R10 workpaper was therefore checked against a different context digest instead of the exact model-visible source context that originally bound it.",
+    "not_caused_by": [
+      "DeepSeek",
+      "S1 evidence coverage",
+      "Cash continuation content",
+      "network transport",
+      "Provider protocol"
+    ]
+  },
+  "exact_source_context_replay": {
+    "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820",
+    "agent_id": "AGENT::DEMAND_QUALITY",
+    "node_id": "AGENT::DEMAND_QUALITY::COUNTER_REPAIR",
+    "request_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r10_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820-AGENT-DEMAND_QUALITY-COUNTER_REPAIR-ANALYSIS-ATTEMPT-01/model_visible_request.json",
+    "request_capture_sha256": "c072d92b32eca3b9ec64d7718edb432daee12ed496d841426b27a296988cc9ed",
+    "request_digest": "73cf2a22df258f2e554ac7acb2b3c71e2d87f9c2e36eaf0947916a4d923e20fa",
+    "context_digest": "1ddcce797a2fac8566024a3c2dd1ea1eb31c837637a3352bb7dac6d37f1f0e6b",
+    "workpaper_digest": "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0",
+    "passed": true
+  },
+  "mutation_results": {
+    "request_digest_mutation_rejected": true,
+    "workpaper_digest_mutation_rejected": true,
+    "context_digest_mutation_rejected": true,
+    "fresh_feedback_context_rejected": true
+  },
+  "fix": {
+    "summary": "Recover and verify the exact original model-visible repair context for every completed repair. Never issue a new FeedbackReceipt or recompile a new context for a node that is already complete; only pending repairs receive fresh sessions and feedback.",
+    "completed_node_business_content_changed": false,
+    "research_inputs_changed": false,
+    "provider_budget_changed": false
+  },
+  "replacement_constraints": {
+    "new_attempt_id_required": true,
+    "failed_authority_reuse_forbidden": true,
+    "research_inputs_unchanged": true,
+    "provider_budget_unchanged": true,
+    "completed_node_reruns_forbidden": true,
+    "fresh_feedback_for_completed_node_forbidden": true
+  },
+  "acceptance": {
+    "engineering_replay_pass": true,
+    "R12_reclassified_as_success": false,
+    "R13_live_authorized_by_this_proof_alone": false,
+    "S1_pass": false,
+    "S3_pass": false,
+    "release_ready": false
+  },
+  "result_digest": "156dac79b91369a39739b6190bd281edf9bd7dda50e9746cd773c24c9d3bb795"
+}

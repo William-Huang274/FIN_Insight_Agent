@@ -301,6 +301,21 @@ R11 的 authority、公开结果和私有 terminal 均保持不可变，且 0 Pr
 
 R12 仍属于当前 DELL bounded Preview，不是新产品版本、S1/S3 acceptance 或 release。若它形成最终报告，仍须依次执行 L1、八维绝对内容质量、同输入 paired gain 和 qualified-human 内容验收。
 
+### 4V. R12 完成节点上下文重编失败与 R13 原上下文 replay
+
+R12 在任何 Provider 调用前再次停止，公开错误为 `multi_agent_bound_workpaper_digest_invalid`。这不否定 4U 的字段投影修复：R12 已成功越过旧的 exact-field identity 错误，随后才暴露第二层 checkpoint 语义缺陷。完成的 Demand repair 是在 R10 的 session、FeedbackReceipt、prior workpaper 和 challenge 上形成的；R12 却给这个已经完成的节点签发新 session／反馈并重编 SpecialistContext。由于反馈含 session identity 和时间，新的 context digest 与 R10 不同，原 workpaper digest 正确地拒绝了跨上下文复用。
+
+RC-AR-013 归 S0 Agent Runtime 的 checkpoint context lineage。通用恢复规范改为：
+
+1. 完成节点必须恢复原模型可见 request capture，不能从业务 payload 反向重建近似上下文；
+2. capture 类型、run／attempt、request digest、system／user 消息形态均须与原 terminal receipt 一致；
+3. SpecialistContext 的 Agent、FeedbackReceipt、challenge、prior workpaper 和 context digest 必须与原协调 checkpoint 一致；
+4. 完成节点禁止签发新 FeedbackReceipt、禁止重跑、禁止改写业务字段；
+5. 只有 pending repair 才进入当前 run 的新 session、接受反馈并获得 TokenBudgetBasis；
+6. R12 保持失败，R13 使用新 authority／run／attempt／outputs，并同时绑定 R12 authority、公开结果、私有 terminal 和 source-context replay disposition。
+
+零调用精确回放、mutation 与完整工程门已通过：综合定向 `112 passed`、全仓 `890 passed`、compileall、active baseline、Project OS JSONL、secret scan 和 diff check 均有效。它仍只证明 checkpoint 恢复工程语义；R13 只有在 clean commit／push 和 fresh Project OS preflight 后才可签发。即使 R13 形成报告，也仍须完成独立 L1、八维绝对内容质量、同输入 paired gain 和 qualified-human 内容验收；S1、S3、泛化、S4／S5 不自动通过。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

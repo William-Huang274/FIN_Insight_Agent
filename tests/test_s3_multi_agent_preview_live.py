@@ -114,9 +114,30 @@ def test_r11_completed_demand_replays_against_its_exact_model_context() -> None:
     fragment = json.loads(
         DOWNSTREAM_ANALYSIS_CHECKPOINT.read_text(encoding="utf-8")
     )
-    completed = runner._load_bound_downstream_repair_progress(
-        checkpoint=progress,
-        fragment_checkpoint=fragment,
+    completed, completed_contexts = (
+        runner._load_bound_downstream_repair_progress_bundle(
+            checkpoint=progress,
+            fragment_checkpoint=fragment,
+        )
+    )
+    context = completed_contexts["CHALLENGE::B1FC30D87F6DB63FDB91003C"]
+    replayed = runner.revalidate_bound_specialist_workpaper(
+        completed["CHALLENGE::B1FC30D87F6DB63FDB91003C"],
+        context=context,
+        expected_agent_id="AGENT::DEMAND_QUALITY",
+    )
+
+    assert context["context_digest"] == (
+        "1ddcce797a2fac8566024a3c2dd1ea1eb31c837637a3352bb7dac6d37f1f0e6b"
+    )
+    assert replayed["workpaper_digest"] == (
+        "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0"
+    )
+
+
+def test_r11_completed_demand_context_rejects_request_digest_mutation() -> None:
+    progress = json.loads(
+        DOWNSTREAM_PROGRESS_CHECKPOINT.read_text(encoding="utf-8")
     )
     terminal = json.loads(
         (
@@ -126,29 +147,60 @@ def test_r11_completed_demand_replays_against_its_exact_model_context() -> None:
             "terminal_failure.json"
         ).read_text(encoding="utf-8")
     )
-    demand_node = next(
-        row
-        for row in terminal["node_executions"]
-        if row["node_id"] == "AGENT::DEMAND_QUALITY::COUNTER_REPAIR"
+    demand_node = deepcopy(
+        next(
+            row
+            for row in terminal["node_executions"]
+            if row["node_id"] == "AGENT::DEMAND_QUALITY::COUNTER_REPAIR"
+        )
     )
-    request_ref = str(demand_node["attempts"][0]["request_capture_ref"])
-    relative_capture = request_ref.replace("\\", "/").split("/data/", 1)[1]
-    request_capture = json.loads(
-        (ROOT / "data" / relative_capture).read_text(encoding="utf-8")
-    )
-    analysis_envelope = json.loads(
-        request_capture["request_body"]["messages"][-1]["content"]
-    )
-    context = json.loads(analysis_envelope["task_context"][0]["content"])
-    replayed = runner.revalidate_bound_specialist_workpaper(
-        completed["CHALLENGE::B1FC30D87F6DB63FDB91003C"],
-        context=context,
-        expected_agent_id="AGENT::DEMAND_QUALITY",
-    )
+    demand_node["attempts"][0]["request_digest"] = "0" * 64
 
-    assert replayed["workpaper_digest"] == (
-        "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0"
+    with pytest.raises(
+        runner.MultiAgentPreviewLiveError,
+        match="multi_agent_preview_completed_repair_context_capture_drift",
+    ):
+        runner._load_bound_completed_repair_context(
+            row=demand_node,
+            receipt=progress["completed_challenge_repairs"][0],
+            source_run_id=progress["source_run_id"],
+            coordination_checkpoint=_checkpoint(),
+        )
+
+
+def test_r11_completed_demand_rejects_fresh_feedback_context_recompile() -> None:
+    progress = json.loads(
+        DOWNSTREAM_PROGRESS_CHECKPOINT.read_text(encoding="utf-8")
     )
+    fragment = json.loads(
+        DOWNSTREAM_ANALYSIS_CHECKPOINT.read_text(encoding="utf-8")
+    )
+    completed, completed_contexts = (
+        runner._load_bound_downstream_repair_progress_bundle(
+            checkpoint=progress,
+            fragment_checkpoint=fragment,
+        )
+    )
+    challenge_id = "CHALLENGE::B1FC30D87F6DB63FDB91003C"
+    context = deepcopy(completed_contexts[challenge_id])
+    context["feedback_receipts"][0]["session_id"] = (
+        "SESSION::DELL::FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R12_20260820::"
+        "AGENT-DEMAND_QUALITY"
+    )
+    context_body = {
+        key: value for key, value in context.items() if key != "context_digest"
+    }
+    context["context_digest"] = runner.canonical_digest(context_body)
+
+    with pytest.raises(
+        ValueError,
+        match="multi_agent_bound_workpaper_digest_invalid",
+    ):
+        runner.revalidate_bound_specialist_workpaper(
+            completed[challenge_id],
+            context=context,
+            expected_agent_id="AGENT::DEMAND_QUALITY",
+        )
 
 
 def test_r11_checkpoint_rejects_completed_repair_digest_mutation() -> None:
@@ -444,3 +496,65 @@ def test_r12_authority_requires_immutable_r11_preprovider_disposition(
     )
     assert set(inputs) == set(authority["bound_inputs"])
     assert outputs["run_id"] == "PYTEST-R12-UNUSED"
+
+
+def test_r13_authority_requires_exact_r10_source_context_replay(
+    tmp_path: Path,
+) -> None:
+    failed_authority_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "live_authority_v1_11.json"
+    )
+    failed_result_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "live_result_v1_11.json"
+    )
+    disposition_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "R13_source_context_replay_failure_disposition_zero_call_result_v1_0.json"
+    )
+    authority = json.loads(
+        (ROOT / failed_authority_ref).read_text(encoding="utf-8")
+    )
+
+    def binding(ref: str) -> dict[str, str]:
+        path = ROOT / ref
+        return {"ref": ref, "sha256": runner._sha(path)}
+
+    authority["schema_version"] = (
+        runner.DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA
+    )
+    authority["status"] = (
+        "approved_for_one_R13_source_context_replay_replacement_after_"
+        "project_os_preflight"
+    )
+    authority["implementation_commit"] = runner._git_head()
+    authority["bound_inputs"].update(
+        {
+            "failed_preprovider_authority": binding(failed_authority_ref),
+            "failed_preprovider_result": binding(failed_result_ref),
+            "preprovider_failure_disposition_zero_call_proof": binding(
+                disposition_ref
+            ),
+        }
+    )
+    output_prefix = "data/pytest_multi_agent_preview_r13_authority_unused"
+    authority["outputs"] = {
+        "run_id": "PYTEST-R13-UNUSED",
+        "capture_root_ref": output_prefix + "_captures",
+        "private_output_root_ref": output_prefix + "_private",
+        "public_result_ref": output_prefix + "_public.json",
+    }
+    authority["authority_statement"] = (
+        "pytest-only new attempt after immutable R12 context replay failure"
+    )
+    authority_path = tmp_path / "authority.json"
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    validated, inputs, outputs = runner._validate_authority(authority_path)
+
+    assert validated["schema_version"] == (
+        runner.DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA
+    )
+    assert set(inputs) == set(authority["bound_inputs"])
+    assert outputs["run_id"] == "PYTEST-R13-UNUSED"

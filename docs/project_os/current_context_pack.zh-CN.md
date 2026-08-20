@@ -9,6 +9,15 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
 
+## 2026-08-20 Multi-Agent Preview R12 原上下文漂移与 R13 replacement 门
+
+- R12 使用 clean／synced commit `73db3778...e0590` 和 fresh Project OS preflight 签发并消费。它没有进入 Provider：新模型节点、Provider attempt、analysis、submission、网络和 Candidate promotion 均为 0；公开结果为 `multi_agent_bound_workpaper_digest_invalid`，R12 必须保持 immutable terminal failure。
+- R11 的模型字段投影修复是有效的：R12 已不再触发多字段 identity failure。新暴露的 RC-AR-013 位于 S0 Agent Runtime checkpoint context lineage。已完成 Demand repair 原本绑定 R10 的模型可见上下文，但 R12 为它生成了新的 session-bound `FeedbackReceipt`；`session_id`、`created_at` 等变化使 context digest 合法变化，于是同一底稿不能再匹配原 workpaper digest。
+- 这不是 DeepSeek、S1 资料、Cash／Supply 内容、Provider 协议或网络问题。完成节点的正确恢复单位必须是“业务 payload＋当时完整模型可见上下文＋request／capture／attempt lineage”，不能只恢复 payload 后在新运行里重编上下文。
+- 当前修复从 R10 immutable request capture 恢复原 system／user 信封和 SpecialistContext，并逐项核对 capture 类型、无凭据标记、run／attempt、request digest、context digest、prior workpaper、challenge 和 Agent 身份。完成节点不再签发新 FeedbackReceipt；只有仍 pending 的 Cash／Supply 获得新 session 和反馈。
+- 零调用定向证明为 `36 passed`：R10 Demand 原上下文与底稿精确复现；request／context／workpaper digest mutation 均 fail closed；把完成节点改绑 R12 新 session 也被拒绝。完整工程门随后通过：综合定向 `112 passed`、全仓 `890 passed`、compileall、active baseline `184 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、728 份 configs JSON、8 份 Project OS JSONL／820 行、7,434-file secret scan 与 diff check。R13 仍须等待 clean commit／push 和 fresh preflight，且必须使用新的 authority／run／attempt／output identity并绑定 R12 三份失败证据。
+- 当前仍没有证明 Cash continuation、Supply repair、Evaluator、Writer、完整报告 L1／八维质量、泛化、qualified-human、S1／S3 acceptance、Workbench publication 或 release。
+
 ## 2026-08-20 Multi-Agent Preview R11 Provider 前失败与 R12 replacement 门
 
 - R10 正确复用六份 Specialist plan、一个 Lead plan、六份初始工作底稿和 R9 Lead 协调决策；没有重跑成功前缀。协调容量修复已被自然执行证明，RC-AR-010 关闭。

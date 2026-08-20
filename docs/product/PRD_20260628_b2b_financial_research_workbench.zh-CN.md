@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-20 | R12 证明“恢复已完成节点”不能只恢复业务 payload 后在新 run 中重编上下文。FeedbackReceipt 含 session／time／challenge 等身份，重编会产生另一份合法但不同的 context，并使原 workpaper digest 正确失配。产品恢复单位必须同时绑定已验证 payload、原模型可见 context 和 request／capture／attempt lineage；完成节点不得获得新 FeedbackReceipt 或重新执行，只有 pending 节点进入当前 run。R12 保持 immutable failure；该规范先做 exact capture replay 和 mutation，再以 fresh authority 复验。 |
 | 2026-08-20 | R5 自然 continuation 暴露 partial-field 与 missing-field 不能共用同一完成标记：模型要原地续完被截断半句时，不应被要求先插入该字段的新标题；真正缺失的后续字段仍必须有精确标题和终态回执。Harness 必须区分“续写当前字段”和“新增缺失字段”，否则会把业务上完整的多轮恢复误判为失败。R5 仍保持 failed；修复须先用 immutable capture 零调用回放，再从严格 submission 续跑，不允许重做已完成分析或追认历史结果。 |
 | 2026-08-20 | R4 Multi-Agent Preview 证明：即使分析／交卷已分离，长分析仍可能在形成大量有效内容后截断；把整个节点作废或简单扩大上限都不是合格 Agent 行为。产品 Runtime 必须能把可见分析片段保存为无业务权限的 digest-bound checkpoint，向同一 Agent 返回已完成／缺失章节的 FeedbackReceipt，并以一次有界 continuation 只补缺失内容；合并后仍须经过原严格提交合同。该能力当前只完成零调用工程门，不等于通用上下文压缩、自然反思、S1／S3 或完整 Multi-Agent 报告通过。 |
 | 2026-08-19 | 完成 FIN 0.1.3 Agent Runtime／反思／上下文连续性全链审计。当前真实能力更正为“固定研究 workflow＋片段级 typed repair＋节点 successor”，尚无通用 AgentSession、失败反馈驱动重规划、动态 Skill／Graph 消费、跨 Agent 反思或长上下文 checkpoint／resume。产品责任拆为基础设施／工具、Harness、Agent 工作模式和 Skill×Graph 交叉层；S1/S2 必须先通过无生成式 AI 的人工可操作基线，不能让模型弥补底层检索故障。冻结 AgentSession、FeedbackReceipt、PlanDelta、GraphDelta、ContextCheckpoint、StopDecision 六合同；该合同只记架构冻结，Runtime、S3 和 release 均未通过。 |
@@ -2897,3 +2898,11 @@ replacement blind qualification 是独立外部门：至少 6 个未披露案例
 Harness 必须保存原片段、续写、各自 capture／digest、完成字段集合、精确完成回执和合并后内容摘要。只有语义完整且通过原 submission 合同的结果才能成为正式 Agent 输出；checkpoint、分析草稿和 continuation 永远不能自动晋升为 Evidence、NumericFact、Judgment 或报告。已完成分析应通过内容寻址的 completion checkpoint 复用，禁止因下游结构化交卷失败而重新付费生成同一研究分析。
 
 该机制属于 S0 Agent Runtime 与 S3 工作模式的交叉能力，不是 DeepSeek 专用 Prompt 补丁。它只解决长节点的可恢复性与合同一致性，不证明资料充分、研究内容优质、跨 Agent 上下文压缩、S1／S3 资格或发布能力。
+
+### 16.49 完成节点必须恢复原模型上下文，不得在新运行中近似重编（2026-08-20）
+
+一个已完成 Agent 节点的正式状态不只是结构化业务 payload。它至少由三部分共同构成：已验证 payload、生成该 payload 时的完整模型可见 context、以及 request／capture／attempt／checkpoint lineage。FeedbackReceipt、RoleMethodPack／GraphContextPack 选择、prior workpaper、Case／as-of 和权限都可能改变 context digest；只要其中任一项变化，就不能把旧 payload 当作同一节点结果直接复用。
+
+恢复时必须从不可变 model-visible request capture 取得原 context，并验证 capture 类型、无凭据标记、run／attempt identity、request digest、消息角色、Agent、challenge、prior artifact 和 context digest。完成节点不得签发新 FeedbackReceipt、不得获得新 TokenBudgetBasis、不得重新调用模型；新 run 只能为仍 pending 的节点建立 session。若确需用新 context 重新判断，必须显式创建新的 repair／re-adjudication 节点，不能冒充 checkpoint replay。
+
+该要求同时防止两种错误：一是把新上下文下的旧答案误当成仍有效，二是因为 Harness 自己重编了上下文而错误否定原有效答案。它属于 provider-neutral Agent Runtime，不是 DeepSeek 适配特例；通过 capture replay 只证明恢复完整性，不证明研究内容、S1／S3 或发布质量。

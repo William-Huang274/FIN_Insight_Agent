@@ -306,3 +306,17 @@ R5 证明自然 checkpoint→feedback→resume 已经能够工作：同一 Lead 
 `AnalysisCompletionCheckpoint` 只在原 fragment、continuation、完成回执、usage、finish reason、TokenBudgetBasis 和合并内容 digest 全部校验后产生。下游 submission 读取该 checkpoint，只做合同映射；事件流明确记录本地 `analysis_checkpoint_reuse`，它不是 Provider call，也不能计入模型调用或 token 消耗。任何 digest 漂移、第二个 partial、漏 heading、错顺序、空续写或错误回执均 fail closed。
 
 这一设计减少重复分析与上下文浪费，但不等于通用 memory compaction。跨 Agent 摘要、长期 PlanDelta／GraphDelta、Skill 动态消费和多案例恢复仍需各自证明。
+
+## 19. R12 完成节点 source-context lineage 语义（2026-08-20）
+
+R12 将“checkpoint 恢复”的最小单位进一步校正为 `validated payload + exact model-visible context + request/attempt lineage`。旧实现只恢复 Demand repair payload，然后在 R12 新 session 中重新生成 FeedbackReceipt 和 SpecialistContext；新 context 虽然结构合法，但 FeedbackReceipt 的 session／time 已变化，context digest 因此不再等于 R10 原绑定，workpaper digest 正确 fail closed。
+
+完成节点恢复现在必须：
+
+1. 从原 `model_visible_request` capture 读取 system／user 消息和 task context；
+2. 验证 capture 无凭据、run／attempt、request digest 和消息形态；
+3. 验证 Agent、challenge、原 FeedbackReceipt、prior workpaper 和 context digest；
+4. 用该原 context 重验持久化 payload 的 model fields 与派生 digests；
+5. 不创建新 session feedback、不分配 token、不调用模型；只有 pending 节点进入当前 run。
+
+如果产品希望在更新后的 Skill、Graph、Evidence 或反馈下重新判断，必须创建显式的新 repair／re-adjudication 节点，并保留旧节点为历史权威；不得称为 checkpoint reuse。该语义是 provider-neutral 的 Agent Runtime 约束，避免 Harness 既错误接受跨上下文旧答案，也错误拒绝原上下文有效答案。

@@ -1131,6 +1131,14 @@ def _validate_authority(
             str(predecessor_failure["terminal_result_ref"])
         )
         terminal = _json(terminal_path)
+        failed_execution = failed_result.get("execution") or {}
+        terminal_execution = terminal.get("execution") or {}
+        failed_authority_scope = (
+            failed_authority.get("bound_inputs", {}).get(
+                "project_os_scope_decision"
+            )
+            or {}
+        )
         repair_profile = _json(inputs["repair_analysis_profile"])
         if not (
             authority["execution_limits"] == frontier["execution_limits"]
@@ -1150,12 +1158,30 @@ def _validate_authority(
             == terminal.get("full_result_digest")
             and predecessor_failure["failure_code"]
             == failed_result.get("failure_code")
-            == "multi_agent_bound_workpaper_digest_invalid"
-            and predecessor_failure["provider_attempt_count"] == 0
+            == terminal.get("failure_code")
+            and bool(str(predecessor_failure["failure_code"]).strip())
+            and predecessor_failure["provider_attempt_count"]
+            == failed_execution.get("provider_attempts_preserved")
+            == terminal_execution.get("provider_attempts_preserved")
+            and failed_result.get("status")
+            == terminal.get("status")
+            == "multi_agent_preview_terminal_failure_preserved"
+            and failed_execution.get("external_source_network_calls") == 0
+            and failed_execution.get("candidate_promotions") == 0
             and failed_authority.get("outputs", {}).get("public_result_ref")
             == _relative(inputs["predecessor_result"])
             and failed_result.get("authority_ref")
             == _relative(inputs["predecessor_authority"])
+            and failed_authority.get("schema_version")
+            in {
+                DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA,
+                GENERIC_SUCCESSOR_AUTHORITY_SCHEMA,
+            }
+            and failed_authority_scope
+            == {
+                "ref": _relative(inputs["predecessor_scope_decision"]),
+                "sha256": _sha(inputs["predecessor_scope_decision"]),
+            }
             and repair_profile.get("provider_id") == "deepseek"
             and repair_profile.get("model") == "deepseek-v4-pro"
             and repair_profile.get("request_defaults")
@@ -2030,7 +2056,31 @@ def _validate_authority(
         raise MultiAgentPreviewLiveError(
             "multi_agent_preview_project_os_limit_drift"
         )
-    if role_scoped_repair_successor:
+    if generic_successor:
+        completed_frontier_count = sum(
+            row["disposition"] in COMPLETED_DISPOSITIONS
+            for row in frontier["nodes"]
+        )
+        fresh_frontier_count = len(frontier["nodes"]) - completed_frontier_count
+        mode_limits_valid = (
+            limits.get("maximum_new_lead_plan_model_calls") == 0
+            and limits.get("maximum_new_initial_workpaper_nodes") == 0
+            and limits.get("maximum_new_lead_coordination_model_calls") == 0
+            and limits.get(
+                "maximum_resumed_downstream_analysis_continuations"
+            )
+            == 0
+            and limits.get("maximum_new_analysis_calls_per_other_node") == 1
+            and limits.get("reused_lead_plan_count") == 1
+            and limits.get("reused_workpaper_count") == 6
+            and limits.get("reused_lead_coordination_count") == 1
+            and limits.get("reused_completed_challenge_repair_count")
+            == completed_frontier_count
+            and limits.get("maximum_new_counter_challenge_repairs")
+            == fresh_frontier_count
+        )
+        expected_new_nodes = fresh_frontier_count + 5
+    elif role_scoped_repair_successor:
         mode_limits_valid = (
             limits.get("maximum_new_lead_plan_model_calls") == 0
             and limits.get("maximum_new_initial_workpaper_nodes") == 0
@@ -4920,6 +4970,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                     case_truth_model_view=compile_case_truth_model_view(
                         materialization.case_truth_packet
                     ),
+                    specialist_contexts=contexts,
                 ),
                 tool=evaluation_tool(),
                 validator=lambda payload, current=current_workpapers: validate_evaluation(

@@ -19,6 +19,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_downstream_repair_progress_checkpoint,
     compile_downstream_repair_progress_checkpoint_v2,
     compile_challenge_catalog,
+    compile_evaluation_content_view,
     compile_evaluation_messages,
     compile_lead_plan_messages,
     compile_lead_plan_cardinality_policy,
@@ -626,9 +627,59 @@ def _context(agent_id: str) -> dict:
     return {
         "context_digest": "context-digest",
         "cell_analysis_view": {
+            "evidence_fact_catalog": [
+                {
+                    "evidence_ref": "EV::ONE",
+                    "evidence_owner_ticker": "DELL",
+                    "publication_date": "2026-08-01",
+                    "source_reporting_period_end": "2026-07-31",
+                    "source_tier": "company_authored_sec_filing",
+                    "source_type": "10-Q",
+                    "source_visible_fact_excerpt": "Dell reported the company-level observation.",
+                    "relationship_directions": ["subject_self_disclosure"],
+                    "excerpt_truncated": False,
+                }
+            ],
+            "numeric_fact_catalog": [
+                {
+                    "numeric_ref": "NUM::ONE",
+                    "ticker": "DELL",
+                    "metric_id": "revenue",
+                    "value_decimal": "100",
+                    "unit": "USD",
+                    "period_end": "2026-07-31",
+                    "fiscal_year": 2027,
+                    "fiscal_period": "Q2",
+                    "authority_mode": "source_bound_company_reported_numeric_fact",
+                    "formula_trace": None,
+                }
+            ],
+            "numeric_relation_catalog": [
+                {
+                    "numeric_relation_ref": "REL::ONE",
+                    "ticker": "DELL",
+                    "metric_id": "revenue",
+                    "current_numeric_ref": "NUM::ONE",
+                    "comparison_numeric_ref": "NUM::PRIOR",
+                    "current_period_end": "2026-07-31",
+                    "comparison_period_end": "2025-08-01",
+                    "relation_type": "same_fiscal_quarter_year_over_year",
+                    "direction": "increase",
+                    "unit": "USD",
+                    "absolute_change_decimal": "10",
+                    "percent_change_decimal": "11.111111",
+                    "percentage_point_change_decimal": None,
+                    "authority_mode": "deterministically_compiled_same_basis_relation",
+                }
+            ],
             "cell": {
                 "cell_evidence_views": [
-                    {"evidence_ref": "EV::ONE"},
+                    {
+                        "evidence_ref": "EV::ONE",
+                        "business_meanings_zh": ["公司层收入事实。"],
+                        "claim_boundaries_zh": ["不构成产品因果归因。"],
+                        "numeric_use_boundary": "数字只能使用 NUM ref。",
+                    },
                     {"evidence_ref": "EV::TWO"},
                 ],
                 "allowed_numeric_refs": ["NUM::ONE"],
@@ -638,6 +689,84 @@ def _context(agent_id: str) -> dict:
         },
         "agent": {"agent_id": agent_id},
     }
+
+
+def _evaluation_truth_view() -> dict:
+    body = {
+        "schema_version": "fin_ia_case_truth_model_view_v1_0",
+        "case_truth_packet_digest": "a" * 64,
+        "case_identity": {
+            "case_key": "DELL",
+            "subject_ticker": "DELL",
+            "research_as_of": "2026-08-06",
+        },
+        "presence_catalog": [
+            {
+                "truth_kind": "reviewed_evidence_facet",
+                "truth_aliases": ["TRUTH::FACET::reported_results::revenue"],
+                "evidence_refs": ["EV::ONE"],
+                "owner_tickers": ["DELL"],
+                "publication_dates": ["2026-08-01"],
+                "reporting_period_ends": ["2026-07-31"],
+                "business_meanings_zh": ["公司层收入事实。"],
+                "claim_boundaries_zh": ["不构成产品因果归因。"],
+            },
+            {
+                "truth_kind": "numeric_fact",
+                "truth_aliases": ["TRUTH::NUMERIC::NUM::ONE"],
+                "owner_tickers": ["DELL"],
+                "metric_id": "revenue",
+                "period_end": "2026-07-31",
+                "fiscal_period": "Q2",
+                "fiscal_year": 2027,
+                "unit": "USD",
+            },
+            {
+                "truth_kind": "numeric_relation",
+                "truth_aliases": ["TRUTH::RELATION::REL::ONE"],
+                "owner_tickers": ["DELL"],
+                "metric_id": "revenue",
+                "relation_type": "same_fiscal_quarter_year_over_year",
+                "current_period_end": "2026-07-31",
+                "comparison_period_end": "2025-08-01",
+                "direction": "increase",
+                "unit": "USD",
+            },
+            {
+                "truth_kind": "reviewed_evidence_facet",
+                "truth_aliases": ["TRUTH::FACET::unrelated::noise"],
+                "evidence_refs": ["EV::UNRELATED"],
+                "owner_tickers": ["DELL"],
+                "publication_dates": ["2026-08-01"],
+                "reporting_period_ends": ["2026-07-31"],
+                "business_meanings_zh": ["与当前底稿无关。"],
+                "claim_boundaries_zh": ["不得进入当前评审视图。"],
+            },
+        ],
+        "typed_gap_catalog": [
+            {
+                "truth_kind": "typed_gap",
+                "truth_alias": "TRUTH::FACET::reported_results::product_bridge",
+                "gap_refs": ["GAP::ONE"],
+                "gap_codes": ["product_bridge_missing"],
+                "slot_id": "reported_results",
+                "facet_id": "product_bridge",
+                "coverage_state": "typed_gap_only",
+                "business_reasons_zh": ["缺少产品到公司层桥接。"],
+                "case_absence_authorized": True,
+            }
+        ],
+        "typed_bridge_boundary_catalog": [],
+        "cell_visibility_matrix": [],
+        "authority": {
+            "presence_rows_may_group_multiple_truth_aliases": True,
+            "cell_invisibility_is_not_case_absence": True,
+            "case_absence_requires_typed_gap_or_bridge_boundary": True,
+            "presence_and_residual_gap_may_coexist": True,
+            "semantic_reconciler_may_classify_but_not_create_truth": True,
+        },
+    }
+    return {**body, "case_truth_model_view_digest": canonical_digest(body)}
 
 
 def _repair_source_context() -> dict:
@@ -1306,9 +1435,40 @@ def test_model_message_compilers_keep_role_and_evaluator_boundaries() -> None:
     assert len(
         compile_evaluation_messages(
             workpapers=[workpaper],
-            case_truth_model_view={"presence_catalog": []},
+            case_truth_model_view=_evaluation_truth_view(),
+            specialist_contexts={"AGENT::DEMAND_QUALITY": context},
         )
     ) == 2
+    compact = compile_evaluation_content_view(
+        workpapers=[workpaper],
+        case_truth_model_view=_evaluation_truth_view(),
+        specialist_contexts={"AGENT::DEMAND_QUALITY": context},
+    )
+    assert compact["reference_coverage_receipt"] == {
+        "evidence_ref_count": 1,
+        "numeric_ref_count": 1,
+        "numeric_relation_ref_count": 1,
+        "typed_gap_ref_count": 1,
+        "all_workpaper_refs_resolved": True,
+        "unreferenced_case_authority_deliberately_omitted": True,
+    }
+    assert compact["referenced_authority"]["evidence_authority_catalog"] == [
+        {
+            "evidence_ref": "EV::ONE",
+            "evidence_owner_ticker": "DELL",
+            "source_type": "10-Q",
+            "source_tier": "company_authored_sec_filing",
+            "publication_date": "2026-08-01",
+            "source_reporting_period_end": "2026-07-31",
+            "relationship_directions": ["subject_self_disclosure"],
+            "business_meanings_zh": ["公司层收入事实。"],
+            "claim_boundaries_zh": ["不构成产品因果归因。"],
+            "numeric_use_boundaries": ["数字只能使用 NUM ref。"],
+        }
+    ]
+    assert compact["referenced_authority"]["numeric_fact_catalog"][0][
+        "value_decimal"
+    ] == "100"
     evaluation = validate_evaluation(
         {
             "schema_version": MULTI_AGENT_EVALUATION_SCHEMA_VERSION,

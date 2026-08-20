@@ -241,7 +241,7 @@ MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE_DECISION_REF = (
 MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
-    "successor_scope_decision_v1_0.json"
+    "successor_scope_decision_v1_1.json"
 )
 
 
@@ -833,8 +833,8 @@ def test_multi_agent_preview_generic_successor_binds_compiled_frontier() -> None
 
     assert projection["multi_agent_preview_generic_successor"] is True
     assert projection["run_scope_id"] == MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE
-    assert projection["reused_completed_challenge_repair_count"] == 2
-    assert projection["execution_limits"]["maximum_new_model_nodes"] == 6
+    assert projection["reused_completed_challenge_repair_count"] == 3
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 5
     assert projection["execution_limits"][
         "maximum_resumed_downstream_analysis_continuations"
     ] == 0

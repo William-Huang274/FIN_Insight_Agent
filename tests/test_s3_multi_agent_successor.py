@@ -87,6 +87,14 @@ def _failure() -> dict:
     }
 
 
+def _reasoning_budget_failure() -> dict:
+    return {
+        **_failure(),
+        "failure_code": "model_gateway_reasoning_budget_exhausted",
+        "provider_attempt_count": 3,
+    }
+
+
 def test_frontier_distinguishes_exact_reuse_and_derived_rebind() -> None:
     agent = "AGENT::DEMAND_QUALITY"
     original_context = _context(agent, "SESSION::OLD")
@@ -172,3 +180,47 @@ def test_frontier_compiles_limits_and_fails_closed_on_mutation() -> None:
         match="multi_agent_successor_frontier_digest_invalid",
     ):
         validate_successor_execution_frontier(mutated)
+
+
+def test_frontier_can_resume_after_downstream_reasoning_budget_failure() -> None:
+    agents = (
+        "AGENT::DEMAND_QUALITY",
+        "AGENT::CASH_CONVERSION",
+        "AGENT::SUPPLY_RELATIONSHIP",
+    )
+    completed = []
+    for index, agent in enumerate(agents, start=1):
+        context = _context(agent, f"SESSION::{index}")
+        completed.append(
+            compile_completed_workpaper_frontier_node(
+                challenge_id=f"CHALLENGE::{index}",
+                node_id=agent + "::COUNTER_REPAIR",
+                target_agent_id=agent,
+                source_run_id=f"RUN::{index}",
+                source_workpaper=_workpaper(context, agent),
+                model_visible_context=context,
+                source_terminal_ref=f"terminal-{index}.json",
+                source_terminal_sha256=str(index) * 64,
+                source_terminal_digest=str(index + 3) * 64,
+                source_request_ref=f"capture-{index}.json",
+                source_request_sha256=str(index + 6) * 64,
+                source_request_digest=str(index + 3) * 64,
+            )
+        )
+    frontier = compile_successor_execution_frontier(
+        case_key="DELL",
+        cell_id="MULTI_AGENT_PREVIEW",
+        accepted_challenge_ids=[f"CHALLENGE::{index}" for index in range(1, 4)],
+        lead_coordination_checkpoint_digest="f" * 64,
+        predecessor_failure=_reasoning_budget_failure(),
+        nodes=completed,
+    )
+
+    assert validate_successor_execution_frontier(frontier) == frontier
+    assert frontier["execution_limits"][
+        "reused_completed_challenge_repair_count"
+    ] == 3
+    assert frontier["execution_limits"][
+        "maximum_new_counter_challenge_repairs"
+    ] == 0
+    assert frontier["execution_limits"]["maximum_new_model_nodes"] == 5

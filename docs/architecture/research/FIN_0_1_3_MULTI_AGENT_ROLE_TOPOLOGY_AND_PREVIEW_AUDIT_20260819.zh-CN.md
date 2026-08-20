@@ -207,3 +207,22 @@ R15C 越过 active checkpoint 校验后，在复验完成 repair 时再次触发
 通用 successor 的恢复单元因此扩展为 `business payload + exact model-visible context + local validation context + capture/attempt/checkpoint lineage`。compiler 对每个节点只能给出四种状态：精确复用、仅派生 digest 的受据重绑、必须 fresh 重做、原生 pending。第二种状态必须证明移除本地派生 digest 后所有业务字段逐字不变，并对 capture-bound 原上下文走完整 validator；任何业务字段修补都升级为 fresh rerun。
 
 authority、Project OS preflight 和 runner 必须消费同一份 execution frontier。R15C 后禁止新增 attempt-specific schema 分支；下一次 live 只有在通用 compiler、mutation、全仓门、clean push 和 fresh preflight 通过后才可签发。
+
+## 十六、独立 Evaluator 不是第七个研究员
+
+通用 successor 的真实运行证明 Supply Agent 已能消费局部挑战并把上游披露收窄为 speaker-attributed bounded read-through。随后 Evaluator R1 却在 31,732 prompt token 与 16,000 reasoning token 后形成 0 可见输出。失败原因不是 Supply 资料为空，而是评审消息重复装入六份完整底稿、完整全案 truth catalog、来源目录与多套 visibility matrix。
+
+评审责任因此拆成两层：
+
+1. 本地 L1 使用完整权威包检查公司身份、期间、引用存在性、精确数字、关系端点、跨案污染和 case-level absence；
+2. 模型 Evaluator 只检查判断质量、经济机制、反方强度、WWC 和跨角色一致性，并把 finding 路由到最早责任角色；它不得重写底稿，也不必重复读取未被任何底稿使用的原始权威。
+
+`EvaluationContentView` 必须从六份工作底稿实际引用的 Evidence／NumericFact／NumericRelation／typed gap 反向投影权威。任何引用未能同时在 Case Truth 和角色上下文解析时 fail closed；未引用材料只在本地权威包保留，省略绝不等于不存在。真实 capture 回放将消息从 116,494 bytes 降为 86,109 bytes，同时完整保留 28 Evidence、19 NumericFact、9 NumericRelation 和 11 typed gap。第一次尝试因重复原文反而增至约 136KB，已由同一回放门拒绝，证明“紧凑”必须以真实消息体和引用完整性衡量，不能凭字段名判断。
+
+若 claim-bound 评审视图仍以同一方式耗尽推理，不再继续逐字段削减金融权威；应重新决定 Evaluator 的 reasoning profile、模型或职责边界。内容压缩不得成为掩盖评审模型不适配的永久拐杖。
+
+## 十七、通用 successor 必须能继续任意已保存终态失败
+
+Supply 已成为第三条完成 repair，旧 frontier 不能再把它当作 pending fresh。新的 v1.1 frontier 将 Demand、Cash、Supply 全部作为 capture-bound 完成节点，只允许从 Evaluator 继续，最大新模型节点为 `2 evaluation + 2 evaluator repair + 1 conditional Writer = 5`。
+
+通用 predecessor 合同不再把某一个历史 failure code 或 `0 Provider` 写死为入口条件。它接受任意非空、已保存的 terminal failure，但必须同时核对 authority、public result、private terminal、failure code、Provider attempt count、scope、digest、0 external network 和 0 Candidate promotion；任一漂移都 fail closed。这是对同一执行前缀的通用恢复，不是又一条 attempt-named R16／R17 分支。

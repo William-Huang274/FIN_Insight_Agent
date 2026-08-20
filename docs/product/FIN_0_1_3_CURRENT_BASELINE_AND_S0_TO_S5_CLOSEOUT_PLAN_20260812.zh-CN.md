@@ -354,6 +354,16 @@ R15C 在 0 模型／Provider／网络状态下发现：R14 Cash continuation 的
 
 后续不再增加 attempt-named schema。S0 必须先编译一份通用 execution frontier，对每个历史节点给出 `exact_reuse`、`derived_digest_rebind`、`fresh_rerun_required` 或 `pending_fresh`。只有业务字段逐字不变并通过原模型可见 context 的完整 validator，才允许重算本地派生 digest；否则必须 fresh 重做。authority、preflight、runner 和成功收据共享该 frontier 后，才允许一次新的 bounded Preview live。
 
+### 4Z. Supply 已完成，下一门只从独立 Evaluator 继续
+
+通用 successor 已自然完成 Supply repair：Dell 自身披露支持 AI 订单、已确认收入、backlog 与 memory 约束；NVIDIA、TSMC、Micron 和 Microsoft 资料只保留 speaker-attributed 行业／生态 read-through，不能再被写成 Dell 特定 allocation、yield、release timing、利润或现金事实。Demand、Cash、Supply 三条 accepted challenge 至此都形成 capture-bound 完成底稿。
+
+运行随后在独立 Evaluator 失败。旧 Evaluator 重复读取六份完整底稿、69 行全案 truth catalog 和多套目录／visibility，116,494-byte 消息配合 max thinking 将 16,000 completion token 全部消耗为 reasoning，0 可见评审。该失败归 S0 Harness 评审上下文选择和 Evaluator profile，不回填为 S1 缺资料或 Supply Agent 无效。
+
+下一项不重跑任何 Specialist、Lead 或 repair。先以真实 capture 证明 claim-bound `EvaluationContentView` 完整解析全部已使用的 28 Evidence、19 NumericFact、9 NumericRelation 和 11 typed gap，并把消息降为 86,109 bytes；再通过全仓门、clean commit／push 和 fresh preflight，签发一次新的 Evaluator successor。最大新节点为 `2 evaluation + 2 evaluator repair + 1 conditional Writer = 5`。若同一 failure 在紧凑视图下再次出现，不再逐字段删权威材料，转项目级 Evaluator profile／模型职责决策。
+
+该 live 即使成功也只会产出待验的 DELL Multi-Agent Preview。必须另做完整报告 L1、八维内容质量、同输入 paired gain 和 qualified-human 验收；S1、S3、泛化、Workbench publication 与 release 仍为 false。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

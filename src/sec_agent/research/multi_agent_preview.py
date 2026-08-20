@@ -30,6 +30,9 @@ SPECIALIST_REPAIR_CONTEXT_SCHEMA_VERSION = (
 MULTI_AGENT_EVALUATION_SCHEMA_VERSION = (
     "fin_ia_multi_agent_evaluation_v1_0"
 )
+MULTI_AGENT_EVALUATION_CONTENT_VIEW_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_evaluation_content_view_v1_0"
+)
 MULTI_AGENT_REPORT_DRAFT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_report_draft_v1_0"
 )
@@ -4394,14 +4397,251 @@ def evaluation_tool() -> dict[str, Any]:
     }
 
 
-def compile_evaluation_messages(
+def compile_evaluation_content_view(
     *,
     workpapers: Sequence[Mapping[str, Any]],
     case_truth_model_view: Mapping[str, Any],
-) -> tuple[dict[str, str], ...]:
-    visible = {
-        "workpapers": [deepcopy(dict(row)) for row in workpapers],
-        "case_fact_presence": deepcopy(dict(case_truth_model_view)),
+    specialist_contexts: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Project only claim-bound authority into the model content review.
+
+    Full CaseFactPresence remains available to deterministic Harness checks.  A
+    content evaluator does not need every unreferenced case alias or the five
+    visibility matrices repeated beside six complete workpapers.  It does need
+    every Evidence, NumericFact, relation and typed gap actually cited by those
+    workpapers, including exact numeric values from the role contexts.
+    """
+
+    rows = [deepcopy(dict(row)) for row in workpapers]
+    _require(bool(rows), "multi_agent_evaluation_workpapers_missing")
+    by_agent = {
+        str(row.get("agent_id") or ""): row for row in rows
+    }
+    _require(
+        len(by_agent) == len(rows)
+        and set(by_agent).issubset(SPECIALIST_AGENT_IDS)
+        and set(by_agent).issubset(specialist_contexts),
+        "multi_agent_evaluation_context_coverage_invalid",
+    )
+
+    evidence_refs: set[str] = set()
+    numeric_refs: set[str] = set()
+    relation_refs: set[str] = set()
+    gap_refs: set[str] = set()
+    role_views: list[dict[str, Any]] = []
+    for agent_id in sorted(by_agent):
+        workpaper = by_agent[agent_id]
+        for claim in workpaper.get("sourced_claims") or ():
+            evidence_refs.update(str(ref) for ref in claim.get("evidence_refs") or ())
+            numeric_refs.update(str(ref) for ref in claim.get("numeric_refs") or ())
+            relation_refs.update(
+                str(ref) for ref in claim.get("numeric_relation_refs") or ()
+            )
+        gap_refs.update(
+            str(ref) for ref in workpaper.get("remaining_gap_refs") or ()
+        )
+        role_views.append(
+            {
+                key: deepcopy(workpaper[key])
+                for key in (
+                    "agent_id",
+                    "confidence",
+                    "thesis",
+                    "sourced_claims",
+                    "mechanism",
+                    "strongest_counterarguments",
+                    "remaining_gap_refs",
+                    "what_would_change",
+                )
+            }
+        )
+
+    selected_presence = []
+    seen_evidence: set[str] = set()
+    seen_numeric: set[str] = set()
+    seen_relations: set[str] = set()
+    for raw in case_truth_model_view.get("presence_catalog") or ():
+        row = deepcopy(dict(raw))
+        row_evidence = {str(ref) for ref in row.get("evidence_refs") or ()}
+        aliases = {str(alias) for alias in row.get("truth_aliases") or ()}
+        matched_numeric = {
+            ref for ref in numeric_refs if any(alias.endswith(ref) for alias in aliases)
+        }
+        matched_relations = {
+            ref for ref in relation_refs if any(alias.endswith(ref) for alias in aliases)
+        }
+        matched_evidence = evidence_refs & row_evidence
+        if matched_evidence or matched_numeric or matched_relations:
+            selected_presence.append(row)
+            seen_evidence.update(matched_evidence)
+            seen_numeric.update(matched_numeric)
+            seen_relations.update(matched_relations)
+
+    selected_gaps = []
+    seen_gaps: set[str] = set()
+    for raw in case_truth_model_view.get("typed_gap_catalog") or ():
+        row = deepcopy(dict(raw))
+        matched = gap_refs & {
+            str(ref) for ref in row.get("gap_refs") or ()
+        }
+        if matched:
+            selected_gaps.append(row)
+            seen_gaps.update(matched)
+
+    numeric_catalog: dict[str, dict[str, Any]] = {}
+    relation_catalog: dict[str, dict[str, Any]] = {}
+    evidence_catalog: dict[str, dict[str, Any]] = {}
+    evidence_role_catalog: dict[str, dict[str, Any]] = {}
+    for agent_id in sorted(by_agent):
+        context = specialist_contexts[agent_id]
+        view = context.get("cell_analysis_view") or {}
+        cell = view.get("cell") or {}
+        for raw in cell.get("cell_evidence_views") or ():
+            ref = str(raw.get("evidence_ref") or "")
+            if ref not in evidence_refs:
+                continue
+            compiled = evidence_role_catalog.setdefault(
+                ref,
+                {
+                    "business_meanings_zh": [],
+                    "claim_boundaries_zh": [],
+                    "numeric_use_boundaries": [],
+                },
+            )
+            for field in ("business_meanings_zh", "claim_boundaries_zh"):
+                for value in raw.get(field) or ():
+                    text = str(value)
+                    if text and text not in compiled[field]:
+                        compiled[field].append(text)
+            numeric_boundary = str(raw.get("numeric_use_boundary") or "")
+            if (
+                numeric_boundary
+                and numeric_boundary not in compiled["numeric_use_boundaries"]
+            ):
+                compiled["numeric_use_boundaries"].append(numeric_boundary)
+        for raw in view.get("numeric_fact_catalog") or ():
+            ref = str(raw.get("numeric_ref") or "")
+            if ref in numeric_refs:
+                numeric_catalog.setdefault(ref, deepcopy(dict(raw)))
+        for raw in view.get("numeric_relation_catalog") or ():
+            ref = str(raw.get("numeric_relation_ref") or "")
+            if ref in relation_refs:
+                relation_catalog.setdefault(ref, deepcopy(dict(raw)))
+        for raw in view.get("evidence_fact_catalog") or ():
+            ref = str(raw.get("evidence_ref") or "")
+            if ref in evidence_refs:
+                evidence_catalog.setdefault(ref, deepcopy(dict(raw)))
+
+    _require(
+        seen_evidence == evidence_refs
+        and seen_numeric == numeric_refs
+        and seen_relations == relation_refs
+        and seen_gaps == gap_refs
+        and set(evidence_catalog) == evidence_refs
+        and set(evidence_role_catalog) == evidence_refs
+        and set(numeric_catalog) == numeric_refs
+        and set(relation_catalog) == relation_refs,
+        "multi_agent_evaluation_reference_projection_incomplete",
+    )
+    unsigned = {
+        "schema_version": MULTI_AGENT_EVALUATION_CONTENT_VIEW_SCHEMA_VERSION,
+        "source_case_truth_model_view_digest": str(
+            case_truth_model_view.get("case_truth_model_view_digest") or ""
+        ),
+        "case_identity": deepcopy(case_truth_model_view.get("case_identity") or {}),
+        "role_workpaper_views": role_views,
+        "referenced_authority": {
+            "evidence_authority_catalog": [
+                {
+                    "evidence_ref": ref,
+                    **{
+                        key: deepcopy(evidence_catalog[ref].get(key))
+                        for key in (
+                            "evidence_owner_ticker",
+                            "source_type",
+                            "source_tier",
+                            "publication_date",
+                            "source_reporting_period_end",
+                            "relationship_directions",
+                        )
+                    },
+                    **deepcopy(evidence_role_catalog[ref]),
+                }
+                for ref in sorted(evidence_catalog)
+            ],
+            "numeric_fact_catalog": [
+                {
+                    key: deepcopy(numeric_catalog[ref].get(key))
+                    for key in (
+                        "numeric_ref",
+                        "ticker",
+                        "metric_id",
+                        "value_decimal",
+                        "unit",
+                        "period_start",
+                        "period_end",
+                        "fiscal_year",
+                        "fiscal_period",
+                        "authority_mode",
+                        "formula_trace",
+                    )
+                }
+                for ref in sorted(numeric_catalog)
+            ],
+            "numeric_relation_catalog": [
+                {
+                    key: deepcopy(relation_catalog[ref].get(key))
+                    for key in (
+                        "numeric_relation_ref",
+                        "ticker",
+                        "metric_id",
+                        "current_numeric_ref",
+                        "comparison_numeric_ref",
+                        "current_period_end",
+                        "comparison_period_end",
+                        "relation_type",
+                        "direction",
+                        "unit",
+                        "absolute_change_decimal",
+                        "percent_change_decimal",
+                        "percentage_point_change_decimal",
+                        "authority_mode",
+                    )
+                }
+                for ref in sorted(relation_catalog)
+            ],
+            "typed_gap_catalog": [
+                {
+                    key: deepcopy(row.get(key))
+                    for key in (
+                        "gap_refs",
+                        "gap_codes",
+                        "slot_id",
+                        "facet_id",
+                        "coverage_state",
+                        "business_reasons_zh",
+                        "case_absence_authorized",
+                    )
+                }
+                for row in selected_gaps
+            ],
+        },
+        "reference_coverage_receipt": {
+            "evidence_ref_count": len(evidence_refs),
+            "numeric_ref_count": len(numeric_refs),
+            "numeric_relation_ref_count": len(relation_refs),
+            "typed_gap_ref_count": len(gap_refs),
+            "all_workpaper_refs_resolved": True,
+            "unreferenced_case_authority_deliberately_omitted": True,
+        },
+        "evaluation_boundary": {
+            "identity_period_reference_and_numeric_contracts_are_local_l1": True,
+            "case_absence_language_is_checked_against_full_case_truth_locally": True,
+            "model_evaluator_assesses_judgment_mechanism_counterargument_and_cross_role_consistency": True,
+            "alternative_explanations_challenges_and_stop_receipts_remain_local_and_are_not_repeated": True,
+            "omitted_unreferenced_authority_is_not_evidence_of_absence": True,
+            "model_may_not_rewrite_workpapers": True,
+        },
         "failure_owner_definitions": {
             "data_infrastructure_or_tool": "source, object, SQL, retrieval, ranking or executable route failure",
             "harness_control": "valid authority hidden, wrongly rejected, misbound or inconsistently projected",
@@ -4409,15 +4649,35 @@ def compile_evaluation_messages(
             "model_judgment": "visible authority is materially misread or overclaimed",
         },
     }
+    return {
+        **unsigned,
+        "evaluation_content_view_digest": canonical_digest(unsigned),
+    }
+
+
+def compile_evaluation_messages(
+    *,
+    workpapers: Sequence[Mapping[str, Any]],
+    case_truth_model_view: Mapping[str, Any],
+    specialist_contexts: Mapping[str, Mapping[str, Any]],
+) -> tuple[dict[str, str], ...]:
+    visible = compile_evaluation_content_view(
+        workpapers=workpapers,
+        case_truth_model_view=case_truth_model_view,
+        specialist_contexts=specialist_contexts,
+    )
     return (
         {
             "role": "system",
             "content": (
                 "You are an independent financial research evaluator. Evaluate facts, "
-                "scope, causal boundaries and cross-role consistency; never rewrite "
-                "the workpapers. Attribute each defect to the earliest owning layer. "
-                "Cell-local invisibility is not case-level absence. Submit exactly "
-                "one evaluation tool call."
+                "scope, causal boundaries, economic mechanism, counterarguments and "
+                "cross-role consistency; never rewrite the workpapers. Deterministic "
+                "L1 identity, period, reference, exact-number and full-case absence "
+                "checks remain local. The supplied authority view contains every ref "
+                "actually used by the workpapers and deliberately omits unrelated case "
+                "rows; omission is not absence. Attribute each defect to the earliest "
+                "owning layer and submit exactly one evaluation tool call."
             ),
         },
         {
@@ -5408,6 +5668,7 @@ __all__ = [
     "LEAD_PLAN_SCHEMA_VERSION",
     "LEAD_COORDINATION_DECISION_SCHEMA_VERSION",
     "LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION",
+    "MULTI_AGENT_EVALUATION_CONTENT_VIEW_SCHEMA_VERSION",
     "MULTI_AGENT_EVALUATION_SCHEMA_VERSION",
     "MULTI_AGENT_REPORT_DRAFT_SCHEMA_VERSION",
     "MULTI_AGENT_ROLE_TOPOLOGY_SCHEMA_VERSION",
@@ -5421,6 +5682,7 @@ __all__ = [
     "TOKEN_BUDGET_BASIS_SCHEMA_VERSION",
     "WRITER_AGENT_ID",
     "compile_planner_payload_from_role_opinions",
+    "compile_evaluation_content_view",
     "compile_evaluation_messages",
     "compile_challenge_catalog",
     "compile_analyzed_node_messages",

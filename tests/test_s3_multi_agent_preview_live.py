@@ -37,12 +37,12 @@ DOWNSTREAM_PROGRESS_CHECKPOINT_V2 = (
 GENERIC_SUCCESSOR_FRONTIER = (
     ROOT
     / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
-    "compiled_successor_frontier_v1_0.json"
+    "compiled_successor_frontier_v1_1.json"
 )
 GENERIC_SUCCESSOR_SCOPE = (
     ROOT
     / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
-    "compiled_successor_scope_decision_v1_0.json"
+    "compiled_successor_scope_decision_v1_1.json"
 )
 
 
@@ -181,7 +181,7 @@ def test_r15_progress_reuses_demand_and_cash_then_starts_fresh_supply() -> None:
     ] == 0
 
 
-def test_generic_successor_frontier_replays_exact_and_rebound_lineage() -> None:
+def test_generic_successor_frontier_replays_all_completed_lineage() -> None:
     frontier = json.loads(GENERIC_SUCCESSOR_FRONTIER.read_text(encoding="utf-8"))
 
     completed, contexts, active = runner._load_bound_generic_successor_frontier(
@@ -191,6 +191,7 @@ def test_generic_successor_frontier_replays_exact_and_rebound_lineage() -> None:
     assert list(completed) == [
         "CHALLENGE::B1FC30D87F6DB63FDB91003C",
         "CHALLENGE::803238978B747FEED1CE12C9",
+        "CHALLENGE::71AAF31E7FBD5A99163BBE8D",
     ]
     assert contexts["CHALLENGE::B1FC30D87F6DB63FDB91003C"][
         "context_digest"
@@ -201,10 +202,9 @@ def test_generic_successor_frontier_replays_exact_and_rebound_lineage() -> None:
     assert [row["disposition"] for row in active["completed_challenge_repairs"]] == [
         "exact_reuse",
         "derived_digest_rebind",
+        "exact_reuse",
     ]
-    assert [row["challenge_id"] for row in active["pending_challenge_repairs"]] == [
-        "CHALLENGE::71AAF31E7FBD5A99163BBE8D"
-    ]
+    assert active["pending_challenge_repairs"] == []
 
 
 def test_generic_successor_frontier_rejects_business_payload_mutation() -> None:

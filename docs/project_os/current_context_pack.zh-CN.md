@@ -971,3 +971,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - DELL 当前逐节点状态已由真实不可变 capture 证明：Demand 原样复用；Cash 业务字段逐字节不变，仅从错误的本地 validation context 摘要重绑到模型当时真正看到的 context 摘要；Supply 是唯一 pending fresh 节点。
 - frontier digest=`efc48ed2871391608df5aabdc47325b13a40cd5acd6bf0e9a907b8eddded3213`；0 模型／Provider／网络／Candidate promotion。定向 75、全仓 905 tests 与 compileall 通过。
 - 下一步只允许：干净提交并推送 → fresh Project OS preflight → 一次 generic successor live → 分开评价 Supply、Evaluator、Writer、L1 和内容质量。禁止新增 R16／R17 式 authority 分支，禁止把工程门写成 S1／S3／泛化／产品发布通过。
+
+# 2026-08-20 Supply 自然修订成功与 Evaluator successor
+
+- generic successor 已精确复用 Demand、等价重绑 Cash，并 fresh 完成 Supply。Supply 自然结论将 Dell 自身订单／收入／backlog／memory 约束与 NVIDIA／TSMC／Micron／Microsoft 的 speaker-attributed read-through 分开；无 Dell-specific allocation、yield、utilization 或 release date，不允许向 Dell 利润／现金升级。workpaper digest=`51ec20b1...1135`。
+- 随后的独立 Evaluator R1 读取 116,494-byte 消息，prompt `31,732`，16,000 completion 全部为 reasoning、0 可见输出，结果以 `model_gateway_reasoning_budget_exhausted` 不可变保存。这不是 S1 数据或 Supply 角色失败；最早责任层为 S0 Harness evaluation context selection 与 Evaluator profile。
+- 新 `EvaluationContentView` 用六底稿实际引用反向投影权威；真实 capture 回放完整解析 28 Evidence／19 NumericFact／9 NumericRelation／11 typed gap，并把消息降到 86,109 bytes（-26.08%）。任何 ref 缺失都 fail closed，未引用材料的省略不代表不存在。
+- v1.1 frontier 将 Demand／Cash／Supply 三条 repair 全部标为完成；下一次只允许 Evaluator、最多两次 evaluator-directed local repair 和条件式 Writer，最大新模型节点 5。禁止重跑上游、外源网络、Candidate promotion、qualified-human 自签和产品发布。
+- 当前待办：文档／账本 → 全仓门 → clean commit／push → fresh preflight → 唯一 Evaluator successor live。若 claim-bound 视图仍同型耗尽，不再逐字段修补，转 Evaluator profile／模型职责项目级决策。S1／S3／泛化／Workbench／release 仍为 false。
+- 完整工程门现已通过：compileall、定向 `102 passed`、全仓 `906 passed`、active baseline `185 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、750 份 configs JSON、最终 8 份 Project OS JSONL／862 行、7,465-file secret scan 与 diff check 全部有效。Project OS 在首次回归中发现最新 issue 状态误删历史 scope allowance，已用追加更正恢复历史只读 replay；未来 live 权限未扩大。当前只剩 clean commit／push、fresh preflight、新 authority 和唯一 Evaluator successor live。

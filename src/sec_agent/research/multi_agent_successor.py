@@ -211,9 +211,23 @@ def compile_successor_execution_frontier(
             "failure_code",
             "provider_attempt_count",
         }
-        and predecessor.get("failure_code")
-        == "multi_agent_bound_workpaper_digest_invalid"
-        and predecessor.get("provider_attempt_count") == 0,
+        and bool(str(predecessor.get("failure_code") or "").strip())
+        and isinstance(predecessor.get("provider_attempt_count"), int)
+        and predecessor["provider_attempt_count"] >= 0
+        and all(
+            len(str(predecessor[field])) == 64
+            and all(
+                ch in "0123456789abcdef"
+                for ch in str(predecessor[field])
+            )
+            for field in (
+                "authority_sha256",
+                "public_result_sha256",
+                "public_result_digest",
+                "terminal_result_sha256",
+                "terminal_result_digest",
+            )
+        ),
         "multi_agent_successor_predecessor_failure_invalid",
     )
     completed_count = sum(

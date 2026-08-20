@@ -4966,7 +4966,10 @@ def validate_multi_agent_preview_repair_context_successor_scope_decision(
 
 
 def validate_multi_agent_preview_generic_successor_scope_decision(
-    *, root: Path, decision: Mapping[str, Any]
+    *,
+    root: Path,
+    decision: Mapping[str, Any],
+    _seen_scope_refs: frozenset[str] | None = None,
 ) -> dict[str, Any]:
     """Validate one data-compiled successor without attempt-named branches."""
 
@@ -5091,15 +5094,31 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         ref_field="predecessor_scope_decision_ref",
         sha_field="predecessor_scope_decision_sha256",
     )
-    predecessor_projection = (
-        validate_multi_agent_preview_repair_context_successor_scope_decision(
-            root=root, decision=predecessor_scope
+    predecessor_scope_ref = predecessor_scope_path.relative_to(root).as_posix()
+    seen_scope_refs = _seen_scope_refs or frozenset()
+    if predecessor_scope_ref in seen_scope_refs:
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_predecessor_cycle"
         )
-    )
-    if predecessor_scope_path.relative_to(root).as_posix() != (
-        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
-        "live_scope_decision_v1_10.json"
+    if predecessor_scope.get("schema_version") == (
+        MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_DECISION_SCHEMA
     ):
+        predecessor_projection = (
+            validate_multi_agent_preview_generic_successor_scope_decision(
+                root=root,
+                decision=predecessor_scope,
+                _seen_scope_refs=seen_scope_refs | {predecessor_scope_ref},
+            )
+        )
+    elif predecessor_scope.get("schema_version") == (
+        MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_SCHEMA
+    ):
+        predecessor_projection = (
+            validate_multi_agent_preview_repair_context_successor_scope_decision(
+                root=root, decision=predecessor_scope
+            )
+        )
+    else:
         raise ValueError(
             "project_os_multi_agent_generic_successor_predecessor_invalid"
         )
@@ -5158,19 +5177,37 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         sha_field="predecessor_live_result_sha256",
     )
     failed_execution = failed_result.get("execution") or {}
+    failed_authority_scope = (
+        failed_authority.get("bound_inputs", {}).get(
+            "project_os_scope_decision"
+        )
+        or {}
+    )
+    failed_result_body = {
+        key: value for key, value in failed_result.items() if key != "result_digest"
+    }
     if not (
         failed_authority.get("schema_version")
-        == "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_14"
+        in {
+            "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_14",
+            "fin_ia_s3_multi_agent_compiled_successor_authority_v1_0",
+        }
+        and failed_authority_scope
+        == {
+            "ref": predecessor_scope_ref,
+            "sha256": decision["predecessor_scope_decision_sha256"],
+        }
         and failed_authority.get("outputs", {}).get("public_result_ref")
         == decision["predecessor_live_result_ref"]
         and failed_result.get("authority_ref")
         == decision["predecessor_live_authority_ref"]
         and failed_result.get("status")
         == "multi_agent_preview_terminal_failure_preserved"
-        and failed_result.get("failure_code")
-        == "multi_agent_bound_workpaper_digest_invalid"
-        and failed_execution.get("provider_attempts_preserved") == 0
-        and failed_execution.get("new_model_nodes_started") == 0
+        and bool(str(failed_result.get("failure_code") or "").strip())
+        and failed_result.get("result_digest")
+        == canonical_digest(failed_result_body)
+        and isinstance(failed_execution.get("provider_attempts_preserved"), int)
+        and failed_execution.get("provider_attempts_preserved") >= 0
         and failed_execution.get("external_source_network_calls") == 0
         and failed_execution.get("candidate_promotions") == 0
     ):
@@ -5191,6 +5228,10 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         root, str(predecessor_failure["terminal_result_ref"])
     )
     terminal = _load_json(terminal_path)
+    terminal_body = {
+        key: value for key, value in terminal.items() if key != "full_result_digest"
+    }
+    terminal_execution = terminal.get("execution") or {}
     if not (
         predecessor_failure["authority_ref"]
         == decision["predecessor_live_authority_ref"]
@@ -5206,24 +5247,23 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         == _sha256(terminal_path)
         and predecessor_failure["terminal_result_digest"]
         == terminal.get("full_result_digest")
+        == canonical_digest(terminal_body)
+        and predecessor_failure["failure_code"]
+        == failed_result.get("failure_code")
+        == terminal.get("failure_code")
+        and predecessor_failure["provider_attempt_count"]
+        == failed_execution.get("provider_attempts_preserved")
+        == terminal_execution.get("provider_attempts_preserved")
+        and terminal.get("status")
+        == "multi_agent_preview_terminal_failure_preserved"
+        and terminal.get("authority_ref")
+        == decision["predecessor_live_authority_ref"]
         and frontier["lead_coordination_checkpoint_digest"]
         == decision["lead_coordination_checkpoint_digest"]
     ):
         raise ValueError(
             "project_os_multi_agent_generic_successor_frontier_binding_invalid"
         )
-    expected_dispositions = [
-        "exact_reuse",
-        "derived_digest_rebind",
-        "pending_fresh",
-    ]
-    if [row["disposition"] for row in frontier["nodes"]] != (
-        expected_dispositions
-    ):
-        raise ValueError(
-            "project_os_multi_agent_generic_successor_frontier_state_invalid"
-        )
-
     expected_constraints = {
         "historical_failures_remain_immutable": True,
         "frontier_is_compiled_from_capture_bound_lineage": True,
@@ -5268,7 +5308,7 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         "provider_id": predecessor_projection["provider_id"],
         "provider_model": predecessor_projection["provider_model"],
         "api_key_env": predecessor_projection["api_key_env"],
-        "recent_provider_steps": 4,
+        "recent_provider_steps": failed_execution["provider_attempts_preserved"],
         "multi_agent_preview": True,
         "multi_agent_preview_downstream_analysis_checkpoint_successor": False,
         "multi_agent_preview_repair_context_successor": False,
@@ -5279,7 +5319,9 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         "reused_lead_plan_count": 1,
         "reused_workpaper_count": 6,
         "reused_lead_coordination_count": 1,
-        "reused_completed_challenge_repair_count": 2,
+        "reused_completed_challenge_repair_count": frontier[
+            "execution_limits"
+        ]["reused_completed_challenge_repair_count"],
         "maximum_new_lead_plan_model_calls": 0,
         "execution_limits": dict(frontier["execution_limits"]),
         "token_budget_basis_policy": dict(expected_budget_policy),

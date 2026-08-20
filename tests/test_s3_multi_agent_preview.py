@@ -17,6 +17,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_analysis_completion_checkpoint,
     compile_analysis_fragment_checkpoint,
     compile_downstream_repair_progress_checkpoint,
+    compile_downstream_repair_progress_checkpoint_v2,
     compile_challenge_catalog,
     compile_evaluation_messages,
     compile_lead_plan_messages,
@@ -27,6 +28,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_planner_payload_from_role_opinions,
     compile_report_messages,
     compile_specialist_plan_checkpoint,
+    compile_specialist_repair_context,
     compile_specialist_workpaper_checkpoint,
     compile_specialist_plan_messages,
     compile_specialist_workpaper_messages,
@@ -48,6 +50,7 @@ from sec_agent.research.multi_agent_preview import (
     validate_analysis_completion_checkpoint,
     validate_analysis_fragment_checkpoint,
     validate_downstream_repair_progress_checkpoint,
+    validate_downstream_repair_progress_checkpoint_v2,
     validate_lead_plan,
     validate_lead_plan_checkpoint,
     validate_lead_coordination_decision,
@@ -197,6 +200,91 @@ def test_downstream_repair_checkpoint_binds_ordered_progress_and_fragment() -> N
         match="downstream_repair_checkpoint_binding_invalid",
     ):
         validate_downstream_repair_progress_checkpoint(cross_role)
+
+
+def test_downstream_repair_checkpoint_v2_starts_at_fresh_pending_repair() -> None:
+    checkpoint = compile_downstream_repair_progress_checkpoint_v2(
+        case_key="DELL",
+        source_run_id="PREVIEW-R14",
+        source_authority_ref="authority-r14.json",
+        source_authority_sha256="a" * 64,
+        source_public_result_ref="result-r14.json",
+        source_public_result_sha256="b" * 64,
+        source_public_result_digest="c" * 64,
+        source_terminal_result_ref="terminal-r14.json",
+        source_terminal_result_sha256="d" * 64,
+        source_terminal_result_digest="e" * 64,
+        predecessor_progress_checkpoint_ref="progress-r11.json",
+        predecessor_progress_checkpoint_sha256="f" * 64,
+        predecessor_progress_checkpoint_digest="1" * 64,
+        predecessor_analysis_fragment_checkpoint_ref="cash-r11.json",
+        predecessor_analysis_fragment_checkpoint_sha256="2" * 64,
+        predecessor_analysis_fragment_checkpoint_digest="3" * 64,
+        lead_coordination_checkpoint_ref="coordination-r9.json",
+        lead_coordination_checkpoint_sha256="4" * 64,
+        lead_coordination_checkpoint_digest="5" * 64,
+        accepted_challenge_ids=(
+            "CHALLENGE::DEMAND",
+            "CHALLENGE::CASH",
+            "CHALLENGE::SUPPLY",
+        ),
+        completed_challenge_repairs=(
+            {
+                "challenge_id": "CHALLENGE::DEMAND",
+                "target_agent_id": "AGENT::DEMAND_QUALITY",
+                "node_id": "AGENT::DEMAND_QUALITY::COUNTER_REPAIR",
+                "workpaper_digest": "6" * 64,
+                "source_run_id": "PREVIEW-R10",
+                "context_session_run_id": "PREVIEW-R10",
+            },
+            {
+                "challenge_id": "CHALLENGE::CASH",
+                "target_agent_id": "AGENT::CASH_CONVERSION",
+                "node_id": "AGENT::CASH_CONVERSION::COUNTER_REPAIR",
+                "workpaper_digest": "7" * 64,
+                "source_run_id": "PREVIEW-R14",
+                "context_session_run_id": "PREVIEW-R10",
+            },
+        ),
+        inherited_completed_repair_count=1,
+        pending_challenge_repairs=(
+            {
+                "challenge_id": "CHALLENGE::SUPPLY",
+                "target_agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+                "node_id": "AGENT::SUPPLY_RELATIONSHIP::COUNTER_REPAIR",
+            },
+        ),
+        repair_context_policy_digest="8" * 64,
+        recorded_at="2026-08-20T17:00:00+08:00",
+    )
+
+    trusted = validate_downstream_repair_progress_checkpoint_v2(checkpoint)
+    assert trusted["inherited_completed_repair_count"] == 1
+    assert trusted["resume_policy"][
+        "maximum_analysis_continuation_calls"
+    ] == 0
+    assert trusted["pending_challenge_repairs"] == [
+        {
+            "challenge_id": "CHALLENGE::SUPPLY",
+            "target_agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+            "node_id": "AGENT::SUPPLY_RELATIONSHIP::COUNTER_REPAIR",
+        }
+    ]
+
+    reordered = json.loads(json.dumps(checkpoint))
+    reordered["completed_challenge_repairs"].reverse()
+    reordered["checkpoint_digest"] = canonical_digest(
+        {
+            key: value
+            for key, value in reordered.items()
+            if key != "checkpoint_digest"
+        }
+    )
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_downstream_repair_checkpoint_v2_binding_invalid",
+    ):
+        validate_downstream_repair_progress_checkpoint_v2(reordered)
 
 
 def test_analysis_continuation_can_preserve_original_specialist_conversation() -> None:
@@ -550,6 +638,287 @@ def _context(agent_id: str) -> dict:
         },
         "agent": {"agent_id": agent_id},
     }
+
+
+def _repair_source_context() -> dict:
+    lead_body = {
+        "schema_version": "fin_ia_multi_agent_lead_plan_v1_0",
+        "lead_agent_id": RESEARCH_LEAD_AGENT_ID,
+        "accepted_agent_ids": list(SPECIALIST_AGENT_IDS),
+        "ordered_agent_ids": list(SPECIALIST_AGENT_IDS),
+        "accepted_facets": [
+            "upstream_capacity_context",
+            "counterparty_direct_mention",
+            "subject_relationship_disclosure",
+        ],
+        "coordination_questions": [
+            "供应商披露是否被误写成 Dell 分配事实？",
+            "未加载的全案事实是否被误写成不存在？",
+        ],
+        "expected_information_boundaries": [
+            "供应商产能不等于 Dell 获得的分配。",
+        ],
+        "stop_conditions": [
+            "说话者归属和 Dell 特定缺口均已保留。",
+        ],
+    }
+    lead = {**lead_body, "lead_plan_digest": canonical_digest(lead_body)}
+    truth_body = {
+        "schema_version": "fin_ia_case_truth_model_view_v1_0",
+        "case_truth_packet_digest": "a" * 64,
+        "case_identity": {
+            "case_key": "DELL",
+            "subject_ticker": "DELL",
+            "research_as_of": "2026-08-06",
+        },
+        "presence_catalog": [
+            {
+                "truth_kind": "reviewed_evidence_facet",
+                "truth_aliases": [
+                    "TRUTH::FACET::capacity_inputs_execution::memory_primary_constraint"
+                ],
+                "evidence_refs": ["EV::DELL"],
+                "owner_tickers": ["DELL"],
+                "publication_dates": ["2026-05-28"],
+                "reporting_period_ends": ["2026-05-01"],
+                "business_meanings_zh": ["Dell 表示内存是主要约束。"],
+                "claim_boundaries_zh": ["不证明 Dell 获得具体分配。"],
+            },
+            {
+                "truth_kind": "reviewed_evidence_facet",
+                "truth_aliases": [
+                    "TRUTH::FACET::capacity_inputs_execution::advanced_packaging_capacity"
+                ],
+                "evidence_refs": ["EV::TSM"],
+                "owner_tickers": ["TSM"],
+                "publication_dates": ["2026-07-16"],
+                "reporting_period_ends": ["2026-06-30"],
+                "business_meanings_zh": ["TSMC 表示先进封装紧张。"],
+                "claim_boundaries_zh": ["这是行业背景，不是 Dell 分配。"],
+            },
+            {
+                "truth_kind": "reviewed_evidence_facet",
+                "truth_aliases": [
+                    "TRUTH::FACET::demand_volume_quality::ai_orders"
+                ],
+                "evidence_refs": ["EV::OTHER_ROLE"],
+                "owner_tickers": ["DELL"],
+                "publication_dates": ["2026-05-28"],
+                "reporting_period_ends": ["2026-05-01"],
+                "business_meanings_zh": ["其他角色使用的订单事实。"],
+                "claim_boundaries_zh": ["不属于本次供应修复权限。"],
+            },
+            {
+                "truth_kind": "numeric_fact",
+                "truth_aliases": ["TRUTH::NUMERIC::NUM::OTHER"],
+                "owner_tickers": ["DELL"],
+                "metric_id": "revenue",
+                "period_end": "2026-05-01",
+                "fiscal_period": "Q1",
+                "fiscal_year": 2027,
+                "unit": "USD",
+            },
+        ],
+        "typed_gap_catalog": [
+            {
+                "truth_alias": (
+                    "TRUTH::FACET::capacity_inputs_execution::"
+                    "capacity_release_timing"
+                ),
+                "truth_kind": "typed_gap",
+                "slot_id": "capacity_inputs_execution",
+                "facet_id": "capacity_release_timing",
+                "gap_refs": ["GAP::SUPPLY"],
+                "gap_codes": ["relationship_allocation_unproven"],
+                "coverage_state": "typed_gap_only",
+                "case_absence_authorized": True,
+                "business_reasons_zh": ["Dell 特定释放时间未获证明。"],
+            },
+            {
+                "truth_alias": (
+                    "TRUTH::FACET::demand_volume_quality::pull_forward"
+                ),
+                "truth_kind": "typed_gap",
+                "slot_id": "demand_volume_quality",
+                "facet_id": "pull_forward",
+                "gap_refs": ["GAP::OTHER_ROLE"],
+                "gap_codes": ["not_requested"],
+                "coverage_state": "typed_gap_only",
+                "case_absence_authorized": True,
+                "business_reasons_zh": ["其他角色缺口。"],
+            },
+        ],
+        "typed_bridge_boundary_catalog": [],
+        "cell_visibility_matrix": [
+            {
+                "cell_id": "CELL::counterevidence",
+                "visible_presence_aliases": [
+                    "TRUTH::FACET::capacity_inputs_execution::advanced_packaging_capacity",
+                    "TRUTH::FACET::capacity_inputs_execution::memory_primary_constraint",
+                    "TRUTH::FACET::demand_volume_quality::ai_orders",
+                    "TRUTH::NUMERIC::NUM::OTHER",
+                ],
+                "visible_gap_aliases": [
+                    "TRUTH::FACET::capacity_inputs_execution::capacity_release_timing",
+                    "TRUTH::FACET::demand_volume_quality::pull_forward",
+                ],
+                "visible_bridge_boundary_aliases": [],
+            },
+            {
+                "cell_id": "CELL::demand_quality",
+                "visible_presence_aliases": [
+                    "TRUTH::FACET::demand_volume_quality::ai_orders"
+                ],
+                "visible_gap_aliases": [
+                    "TRUTH::FACET::demand_volume_quality::pull_forward"
+                ],
+                "visible_bridge_boundary_aliases": [],
+            },
+        ],
+        "authority": {
+            "presence_rows_may_group_multiple_truth_aliases": True,
+            "cell_invisibility_is_not_case_absence": True,
+            "case_absence_requires_typed_gap_or_bridge_boundary": True,
+            "presence_and_residual_gap_may_coexist": True,
+            "semantic_reconciler_may_classify_but_not_create_truth": True,
+        },
+    }
+    truth = {
+        **truth_body,
+        "case_truth_model_view_digest": canonical_digest(truth_body),
+    }
+    body = {
+        "schema_version": "fin_ia_specialist_context_v1_0",
+        "agent": {
+            "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+            "name_zh": "供应链与关系研究员",
+            "cell_id": "CELL::counterevidence",
+            "responsibilities": ["区分谁在谈谁。"],
+            "allowed_facet_ids": [
+                "upstream_capacity_context",
+                "counterparty_direct_mention",
+                "subject_relationship_disclosure",
+            ],
+        },
+        "plan_opinion": {
+            "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+            "requested_atoms": [
+                {"facet_id": "upstream_capacity_context"},
+                {"facet_id": "counterparty_direct_mention"},
+                {"facet_id": "subject_relationship_disclosure"},
+            ],
+        },
+        "lead_plan": lead,
+        "cell_analysis_view": {
+            "projection_receipt": {
+                "role_slot_ids": [
+                    "capacity_inputs_execution",
+                    "relationship_attribution",
+                ]
+            },
+            "cell": {
+                "cell_evidence_views": [
+                    {"evidence_ref": "EV::DELL"},
+                    {"evidence_ref": "EV::TSM"},
+                ],
+                "allowed_numeric_refs": [],
+                "allowed_numeric_relation_refs": [],
+                "residual_gap_cards": [{"gap_ref": "GAP::SUPPLY"}],
+            },
+        },
+        "case_fact_presence": truth,
+        "tool_execution_receipts": [],
+        "feedback_receipts": [
+            {
+                "feedback_id": "FEEDBACK::SUPPLY",
+                "target_node_id": "AGENT::SUPPLY_RELATIONSHIP",
+                "model_visible_summary": (
+                    "Do not turn TSM supply commentary into Dell allocation."
+                ),
+            }
+        ],
+        "prior_workpaper": {
+            "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+            "thesis": "Prior bounded supply thesis.",
+        },
+        "rules": ["Use the full case catalog before asserting absence."],
+        "authority": {
+            "working_draft_not_business_truth": True,
+            "model_owns_judgment": True,
+            "harness_may_validate_but_not_invent": True,
+        },
+    }
+    return {**body, "context_digest": canonical_digest(body)}
+
+
+def test_role_repair_context_keeps_claimable_authority_without_whole_case_dump() -> None:
+    source = _repair_source_context()
+    repair = compile_specialist_repair_context(source)
+
+    assert repair["schema_version"] == (
+        "fin_ia_specialist_repair_context_v1_0"
+    )
+    assert repair["context_scope"] == "role_repair"
+    assert repair["cell_analysis_view"] == source["cell_analysis_view"]
+    assert repair["prior_workpaper"] == source["prior_workpaper"]
+    assert repair["feedback_receipts"] == source["feedback_receipts"]
+    assert {
+        alias
+        for row in repair["case_fact_presence"]["role_presence_catalog"]
+        for alias in row["truth_aliases"]
+    } == {
+        "TRUTH::FACET::capacity_inputs_execution::advanced_packaging_capacity",
+        "TRUTH::FACET::capacity_inputs_execution::memory_primary_constraint",
+    }
+    assert [
+        row["gap_refs"]
+        for row in repair["case_fact_presence"]["role_typed_gap_catalog"]
+    ] == [["GAP::SUPPLY"]]
+    assert repair["case_fact_presence"]["omitted_case_truth_receipt"][
+        "presence_alias_count"
+    ] == 2
+    assert repair["lead_plan"]["target_accepted_facet_ids"] == [
+        "counterparty_direct_mention",
+        "subject_relationship_disclosure",
+        "upstream_capacity_context",
+    ]
+    serialized = json.dumps(repair, ensure_ascii=False, sort_keys=True)
+    assert "其他角色使用的订单事实" not in serialized
+    assert "供应商披露是否被误写成 Dell 分配事实" not in serialized
+    assert "omission_never_proves_case_absence" in serialized
+    assert repair["repair_projection_receipt"][
+        "candidate_or_evidence_promotion_count"
+    ] == 0
+    assert compile_specialist_repair_context(source) == repair
+
+
+def test_role_repair_context_rejects_source_and_feedback_scope_drift() -> None:
+    source = _repair_source_context()
+    source["case_fact_presence"]["presence_catalog"][0][
+        "owner_tickers"
+    ] = ["NVDA"]
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_specialist_repair_source_context_invalid",
+    ):
+        compile_specialist_repair_context(source)
+
+    cross_role = _repair_source_context()
+    cross_role["feedback_receipts"][0]["target_node_id"] = (
+        "AGENT::DEMAND_QUALITY"
+    )
+    cross_role["context_digest"] = canonical_digest(
+        {
+            key: value
+            for key, value in cross_role.items()
+            if key != "context_digest"
+        }
+    )
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_specialist_repair_feedback_scope_invalid",
+    ):
+        compile_specialist_repair_context(cross_role)
 
 
 def _workpaper(agent_id: str) -> dict:

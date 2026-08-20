@@ -331,6 +331,23 @@ R13 已自然证明 4V 的修复：原 Demand repair 在其 R10 model-visible co
 
 零调用回放与全仓门已经通过：综合定向 `77 passed`、全仓 `891 passed`、compileall、active baseline、JSON／JSONL、secret scan 和 diff check 均有效。R14 仍须等待 clean commit／push 和 fresh preflight 后才可签发。它仍属于当前 DELL bounded Preview，不授予 S1、S3、泛化、qualified-human、Workbench publication 或 release 权威。
 
+### 4X. R14 完成 Cash 修订后在 Supply 局部上下文耗尽，R15 改为角色级最小完整上下文
+
+R14 自然证明 non-thinking checkpoint completion 有效：Cash continuation 补齐完成，首次 strict submission 的 claim binding 失败被可行动反馈修正，第二次 submission 通过。Demand 与 Cash 两份 repair 因此必须作为完成前缀精确复用。
+
+下一条 Supply repair 不缺本角色资料：模型视图中有 10 条 reviewed Evidence 和 4 个 typed gap。它仍失败，是因为局部修订收到 91,182 字符完整 SpecialistContext，并在 `thinking=max` 下把 12,000 completion token 全部消耗为 reasoning、产生 0 字可见输出。责任归 S0 Harness context selection 与任务级 Provider profile，不归 S1 空资料或 Agent 角色价值。
+
+R15 只允许一个有界 successor：
+
+1. repair context 必须保留本角色全部 Evidence／NumericFact／typed gap、prior workpaper、challenge、feedback、计划和权限；
+2. 无关 whole-case alias 与 Lead 长叙事只允许转为 digest-bound projection，省略不得解释为不存在；
+3. 真实上下文由 91,182 降至 53,041 字符，10 Evidence／4 gap 保持不变；
+4. 精确复用 Demand 与 Cash，Supply 从 fresh analysis 开始，禁止 Cash／Supply continuation；
+5. Supply 使用独立 task-specific high-thinking profile，保持 12,000 token ceiling，不用扩大上限掩盖上下文选择错误；
+6. 最大新模型节点为 6，外源网络、Candidate promotion、S1／S3／泛化、qualified-human 和发布仍无权执行。
+
+零调用实现的完整工程门已通过：综合定向 `105 passed`；Project OS 最新行遗漏历史 scope allowance 的七个 fail-closed 已用追加式累积许可更正；最终全仓 `896 passed`，compileall、active baseline、738 份 configs JSON、8 份 Project OS JSONL／836 行、7,446-file secret scan 和 diff check 均通过。当前仍须 clean commit／push 与 fresh preflight 后才能签发 R15。若 R15 后还出现 successor 编排缺陷，不再新增 attempt-specific authority schema；先回 S0 建立通用 successor authority compiler。R15 成功也只形成待验的 Preview 报告，仍须 L1、八维质量、paired gain、qualified-human 与跨案例泛化。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

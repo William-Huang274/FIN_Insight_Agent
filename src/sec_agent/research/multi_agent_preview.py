@@ -23,6 +23,10 @@ LEAD_COORDINATION_DECISION_SCHEMA_VERSION = (
 SPECIALIST_WORKPAPER_SCHEMA_VERSION = (
     "fin_ia_specialist_workpaper_v1_0"
 )
+SPECIALIST_CONTEXT_SCHEMA_VERSION = "fin_ia_specialist_context_v1_0"
+SPECIALIST_REPAIR_CONTEXT_SCHEMA_VERSION = (
+    "fin_ia_specialist_repair_context_v1_0"
+)
 MULTI_AGENT_EVALUATION_SCHEMA_VERSION = (
     "fin_ia_multi_agent_evaluation_v1_0"
 )
@@ -44,6 +48,9 @@ ANALYSIS_COMPLETION_CHECKPOINT_SCHEMA_VERSION = (
 )
 DOWNSTREAM_REPAIR_PROGRESS_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_downstream_repair_progress_checkpoint_v1_0"
+)
+DOWNSTREAM_REPAIR_PROGRESS_CHECKPOINT_V2_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_downstream_repair_progress_checkpoint_v1_1"
 )
 LEAD_PLAN_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_lead_plan_checkpoint_v1_0"
@@ -1682,6 +1689,338 @@ def validate_downstream_repair_progress_checkpoint(
     return {**value, "checkpoint_digest": checkpoint_digest}
 
 
+def compile_downstream_repair_progress_checkpoint_v2(
+    *,
+    case_key: str,
+    source_run_id: str,
+    source_authority_ref: str,
+    source_authority_sha256: str,
+    source_public_result_ref: str,
+    source_public_result_sha256: str,
+    source_public_result_digest: str,
+    source_terminal_result_ref: str,
+    source_terminal_result_sha256: str,
+    source_terminal_result_digest: str,
+    predecessor_progress_checkpoint_ref: str,
+    predecessor_progress_checkpoint_sha256: str,
+    predecessor_progress_checkpoint_digest: str,
+    predecessor_analysis_fragment_checkpoint_ref: str,
+    predecessor_analysis_fragment_checkpoint_sha256: str,
+    predecessor_analysis_fragment_checkpoint_digest: str,
+    lead_coordination_checkpoint_ref: str,
+    lead_coordination_checkpoint_sha256: str,
+    lead_coordination_checkpoint_digest: str,
+    accepted_challenge_ids: Sequence[str],
+    completed_challenge_repairs: Sequence[Mapping[str, Any]],
+    inherited_completed_repair_count: int,
+    pending_challenge_repairs: Sequence[Mapping[str, Any]],
+    repair_context_policy_digest: str,
+    recorded_at: str,
+) -> dict[str, Any]:
+    """Bind completed repair progress when the next node has no fragment.
+
+    V1.0 always required an active truncated fragment.  A reasoning-only
+    terminal failure has no visible fragment to continue, so the successor
+    must begin one fresh, role-scoped pending repair while reusing every
+    completed repair from its exact source context.
+    """
+
+    accepted = [str(value) for value in accepted_challenge_ids]
+    completed = [deepcopy(dict(row)) for row in completed_challenge_repairs]
+    pending = [deepcopy(dict(row)) for row in pending_challenge_repairs]
+    completed_fields = {
+        "challenge_id",
+        "target_agent_id",
+        "node_id",
+        "workpaper_digest",
+        "source_run_id",
+        "context_session_run_id",
+    }
+    pending_fields = {"challenge_id", "target_agent_id", "node_id"}
+    digest_values = (
+        source_authority_sha256,
+        source_public_result_sha256,
+        source_public_result_digest,
+        source_terminal_result_sha256,
+        source_terminal_result_digest,
+        predecessor_progress_checkpoint_sha256,
+        predecessor_progress_checkpoint_digest,
+        predecessor_analysis_fragment_checkpoint_sha256,
+        predecessor_analysis_fragment_checkpoint_digest,
+        lead_coordination_checkpoint_sha256,
+        lead_coordination_checkpoint_digest,
+        repair_context_policy_digest,
+    )
+    ordered_ids = [
+        *[str(row.get("challenge_id") or "") for row in completed],
+        *[str(row.get("challenge_id") or "") for row in pending],
+    ]
+    _require(
+        bool(accepted)
+        and len(accepted) == len(set(accepted))
+        and completed
+        and pending
+        and ordered_ids == accepted
+        and len(completed) == len(
+            {str(row.get("challenge_id") or "") for row in completed}
+        )
+        and len(pending) == len(
+            {str(row.get("challenge_id") or "") for row in pending}
+        )
+        and all(set(row) == completed_fields for row in completed)
+        and all(set(row) == pending_fields for row in pending)
+        and 0 < int(inherited_completed_repair_count) < len(completed)
+        and all(
+            str(row["node_id"])
+            == f"{str(row['target_agent_id'])}::COUNTER_REPAIR"
+            and len(str(row["workpaper_digest"])) == 64
+            and all(
+                ch in "0123456789abcdef"
+                for ch in str(row["workpaper_digest"])
+            )
+            and str(row["source_run_id"]).strip()
+            and str(row["context_session_run_id"]).strip()
+            for row in completed
+        )
+        and all(
+            str(row["node_id"])
+            == f"{str(row['target_agent_id'])}::COUNTER_REPAIR"
+            for row in pending
+        )
+        and all(
+            len(str(value)) == 64
+            and all(ch in "0123456789abcdef" for ch in str(value))
+            for value in digest_values
+        ),
+        "multi_agent_downstream_repair_checkpoint_v2_inputs_invalid",
+    )
+    body = {
+        "schema_version": (
+            DOWNSTREAM_REPAIR_PROGRESS_CHECKPOINT_V2_SCHEMA_VERSION
+        ),
+        "status": (
+            "completed_repairs_bound_for_one_fresh_role_scoped_pending_repair"
+        ),
+        "case_key": str(case_key).upper(),
+        "source_run_id": str(source_run_id),
+        "source_authority_ref": str(source_authority_ref),
+        "source_authority_sha256": str(source_authority_sha256),
+        "source_public_result_ref": str(source_public_result_ref),
+        "source_public_result_sha256": str(source_public_result_sha256),
+        "source_public_result_digest": str(source_public_result_digest),
+        "source_terminal_result_ref": str(source_terminal_result_ref),
+        "source_terminal_result_sha256": str(source_terminal_result_sha256),
+        "source_terminal_result_digest": str(source_terminal_result_digest),
+        "predecessor_progress_checkpoint_ref": str(
+            predecessor_progress_checkpoint_ref
+        ),
+        "predecessor_progress_checkpoint_sha256": str(
+            predecessor_progress_checkpoint_sha256
+        ),
+        "predecessor_progress_checkpoint_digest": str(
+            predecessor_progress_checkpoint_digest
+        ),
+        "predecessor_analysis_fragment_checkpoint_ref": str(
+            predecessor_analysis_fragment_checkpoint_ref
+        ),
+        "predecessor_analysis_fragment_checkpoint_sha256": str(
+            predecessor_analysis_fragment_checkpoint_sha256
+        ),
+        "predecessor_analysis_fragment_checkpoint_digest": str(
+            predecessor_analysis_fragment_checkpoint_digest
+        ),
+        "lead_coordination_checkpoint_ref": str(
+            lead_coordination_checkpoint_ref
+        ),
+        "lead_coordination_checkpoint_sha256": str(
+            lead_coordination_checkpoint_sha256
+        ),
+        "lead_coordination_checkpoint_digest": str(
+            lead_coordination_checkpoint_digest
+        ),
+        "accepted_challenge_ids": accepted,
+        "completed_challenge_repairs": completed,
+        "inherited_completed_repair_count": int(
+            inherited_completed_repair_count
+        ),
+        "pending_challenge_repairs": pending,
+        "repair_context_policy_digest": str(repair_context_policy_digest),
+        "resume_policy": {
+            "maximum_analysis_continuation_calls": 0,
+            "completed_repair_reruns_forbidden": True,
+            "lead_coordination_rerun_forbidden": True,
+            "workpaper_reruns_forbidden": True,
+            "begin_at_first_pending_repair_with_fresh_analysis": True,
+            "pending_repair_context_must_be_role_scoped": True,
+            "new_fact_or_authority_forbidden": True,
+        },
+        "claims": {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+        "recorded_at": str(recorded_at),
+    }
+    _require(
+        bool(re.fullmatch(r"[A-Z0-9._-]+", body["case_key"]))
+        and all(
+            str(body[field]).strip()
+            for field in (
+                "source_run_id",
+                "source_authority_ref",
+                "source_public_result_ref",
+                "source_terminal_result_ref",
+                "predecessor_progress_checkpoint_ref",
+                "predecessor_analysis_fragment_checkpoint_ref",
+                "lead_coordination_checkpoint_ref",
+                "recorded_at",
+            )
+        ),
+        "multi_agent_downstream_repair_checkpoint_v2_identity_invalid",
+    )
+    return {**body, "checkpoint_digest": canonical_digest(body)}
+
+
+def validate_downstream_repair_progress_checkpoint_v2(
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    value = deepcopy(dict(payload))
+    checkpoint_digest = str(value.pop("checkpoint_digest", ""))
+    expected = {
+        "schema_version",
+        "status",
+        "case_key",
+        "source_run_id",
+        "source_authority_ref",
+        "source_authority_sha256",
+        "source_public_result_ref",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_terminal_result_ref",
+        "source_terminal_result_sha256",
+        "source_terminal_result_digest",
+        "predecessor_progress_checkpoint_ref",
+        "predecessor_progress_checkpoint_sha256",
+        "predecessor_progress_checkpoint_digest",
+        "predecessor_analysis_fragment_checkpoint_ref",
+        "predecessor_analysis_fragment_checkpoint_sha256",
+        "predecessor_analysis_fragment_checkpoint_digest",
+        "lead_coordination_checkpoint_ref",
+        "lead_coordination_checkpoint_sha256",
+        "lead_coordination_checkpoint_digest",
+        "accepted_challenge_ids",
+        "completed_challenge_repairs",
+        "inherited_completed_repair_count",
+        "pending_challenge_repairs",
+        "repair_context_policy_digest",
+        "resume_policy",
+        "claims",
+        "recorded_at",
+    }
+    _require(
+        set(value) == expected
+        and checkpoint_digest == canonical_digest(value)
+        and value.get("schema_version")
+        == DOWNSTREAM_REPAIR_PROGRESS_CHECKPOINT_V2_SCHEMA_VERSION
+        and value.get("status")
+        == "completed_repairs_bound_for_one_fresh_role_scoped_pending_repair"
+        and bool(
+            re.fullmatch(r"[A-Z0-9._-]+", str(value.get("case_key") or ""))
+        )
+        and value.get("resume_policy")
+        == {
+            "maximum_analysis_continuation_calls": 0,
+            "completed_repair_reruns_forbidden": True,
+            "lead_coordination_rerun_forbidden": True,
+            "workpaper_reruns_forbidden": True,
+            "begin_at_first_pending_repair_with_fresh_analysis": True,
+            "pending_repair_context_must_be_role_scoped": True,
+            "new_fact_or_authority_forbidden": True,
+        }
+        and value.get("claims")
+        == {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+        "multi_agent_downstream_repair_checkpoint_v2_shape_invalid",
+    )
+    completed = list(value.get("completed_challenge_repairs") or ())
+    pending = list(value.get("pending_challenge_repairs") or ())
+    accepted = list(value.get("accepted_challenge_ids") or ())
+    completed_fields = {
+        "challenge_id",
+        "target_agent_id",
+        "node_id",
+        "workpaper_digest",
+        "source_run_id",
+        "context_session_run_id",
+    }
+    pending_fields = {"challenge_id", "target_agent_id", "node_id"}
+    ordered_ids = [
+        *[str(row.get("challenge_id") or "") for row in completed],
+        *[str(row.get("challenge_id") or "") for row in pending],
+    ]
+    digest_fields = (
+        "source_authority_sha256",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_terminal_result_sha256",
+        "source_terminal_result_digest",
+        "predecessor_progress_checkpoint_sha256",
+        "predecessor_progress_checkpoint_digest",
+        "predecessor_analysis_fragment_checkpoint_sha256",
+        "predecessor_analysis_fragment_checkpoint_digest",
+        "lead_coordination_checkpoint_sha256",
+        "lead_coordination_checkpoint_digest",
+        "repair_context_policy_digest",
+    )
+    _require(
+        accepted
+        and len(accepted) == len(set(accepted))
+        and completed
+        and pending
+        and ordered_ids == accepted
+        and all(isinstance(row, Mapping) for row in completed + pending)
+        and all(set(row) == completed_fields for row in completed)
+        and all(set(row) == pending_fields for row in pending)
+        and 0
+        < int(value.get("inherited_completed_repair_count") or 0)
+        < len(completed)
+        and all(
+            str(row["node_id"])
+            == f"{str(row['target_agent_id'])}::COUNTER_REPAIR"
+            and len(str(row["workpaper_digest"])) == 64
+            and all(
+                ch in "0123456789abcdef"
+                for ch in str(row["workpaper_digest"])
+            )
+            and str(row["source_run_id"]).strip()
+            and str(row["context_session_run_id"]).strip()
+            for row in completed
+        )
+        and all(
+            str(row["node_id"])
+            == f"{str(row['target_agent_id'])}::COUNTER_REPAIR"
+            for row in pending
+        )
+        and all(
+            len(str(value.get(field) or "")) == 64
+            and all(
+                ch in "0123456789abcdef"
+                for ch in str(value.get(field) or "")
+            )
+            for field in digest_fields
+        ),
+        "multi_agent_downstream_repair_checkpoint_v2_binding_invalid",
+    )
+    return {**value, "checkpoint_digest": checkpoint_digest}
+
+
 def compile_analysis_continuation_messages(
     *,
     checkpoint: Mapping[str, Any],
@@ -2792,7 +3131,12 @@ def compile_specialist_context(
     lead_plan: Mapping[str, Any],
     feedback_receipts: Sequence[Mapping[str, Any]] = (),
     prior_workpaper: Mapping[str, Any] | None = None,
+    context_scope: str = "initial_workpaper",
 ) -> dict[str, Any]:
+    _require(
+        context_scope in {"initial_workpaper", "role_repair"},
+        "multi_agent_specialist_context_scope_invalid",
+    )
     trusted = load_multi_agent_role_topology(topology)
     agent = _agent_index(trusted).get(agent_id)
     _require(
@@ -2871,7 +3215,7 @@ def compile_specialist_context(
             ):
                 tool_receipts.append(deepcopy(dict(raw)))
     body = {
-        "schema_version": "fin_ia_specialist_context_v1_0",
+        "schema_version": SPECIALIST_CONTEXT_SCHEMA_VERSION,
         "agent": {
             key: deepcopy(agent[key])
             for key in (
@@ -2905,6 +3249,437 @@ def compile_specialist_context(
             "harness_may_validate_but_not_invent": True,
         },
     }
+    body["context_digest"] = canonical_digest(body)
+    if context_scope == "role_repair":
+        return compile_specialist_repair_context(body)
+    return body
+
+
+def _truth_aliases(rows: Sequence[Mapping[str, Any]]) -> list[str]:
+    return sorted(
+        {
+            str(alias)
+            for row in rows
+            for alias in row.get("truth_aliases") or ()
+            if str(alias)
+        }
+    )
+
+
+def _project_repair_presence_catalog(
+    *,
+    full_presence: Sequence[Mapping[str, Any]],
+    current_cell_presence_aliases: set[str],
+    role_slot_ids: set[str],
+    allowed_evidence_refs: set[str],
+    allowed_numeric_refs: set[str],
+    allowed_relation_refs: set[str],
+) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    allowed_numeric_aliases = {
+        f"TRUTH::NUMERIC::{ref}" for ref in allowed_numeric_refs
+    }
+    allowed_relation_aliases = {
+        f"TRUTH::RELATION::{ref}" for ref in allowed_relation_refs
+    }
+    for raw in full_presence:
+        row = deepcopy(dict(raw))
+        kind = str(row.get("truth_kind") or "")
+        aliases = {
+            str(alias)
+            for alias in row.get("truth_aliases") or ()
+            if str(alias) in current_cell_presence_aliases
+        }
+        if kind == "reviewed_evidence_facet":
+            aliases = {
+                alias
+                for alias in aliases
+                if any(
+                    alias.startswith(f"TRUTH::FACET::{slot_id}::")
+                    for slot_id in role_slot_ids
+                )
+            }
+            if not allowed_evidence_refs.intersection(
+                str(ref) for ref in row.get("evidence_refs") or ()
+            ):
+                aliases = set()
+        elif kind == "numeric_fact":
+            aliases &= allowed_numeric_aliases
+        elif kind == "numeric_relation":
+            aliases &= allowed_relation_aliases
+        elif kind == "source_bound_qualitative_fact":
+            # Qualitative facts are already cell-scoped by the canonical truth
+            # packet.  No such facts are present in the current DELL Preview,
+            # but preserving the branch keeps the projection provider-neutral.
+            aliases = set(aliases)
+        else:
+            raise MultiAgentPreviewError(
+                "multi_agent_specialist_repair_truth_kind_invalid"
+            )
+        if not aliases:
+            continue
+        compact = {
+            key: deepcopy(value)
+            for key, value in row.items()
+            if key
+            not in {
+                "truth_aliases",
+                "business_meanings_zh",
+                "claim_boundaries_zh",
+            }
+        }
+        compact["truth_aliases"] = sorted(aliases)
+        selected.append(compact)
+    return sorted(
+        selected,
+        key=lambda row: (str(row["truth_kind"]), row["truth_aliases"]),
+    )
+
+
+def _project_specialist_repair_case_truth(
+    *,
+    context: Mapping[str, Any],
+) -> dict[str, Any]:
+    full = deepcopy(dict(context["case_fact_presence"]))
+    full_truth_digest = str(
+        full.get("case_truth_model_view_digest") or ""
+    )
+    _require(
+        full_truth_digest
+        and full_truth_digest
+        == canonical_digest(
+            {
+                key: value
+                for key, value in full.items()
+                if key != "case_truth_model_view_digest"
+            }
+        ),
+        "multi_agent_specialist_repair_case_truth_invalid",
+    )
+    cell_view = context["cell_analysis_view"]
+    cell = cell_view["cell"]
+    agent = context["agent"]
+    role_slot_ids = {
+        str(value)
+        for value in cell_view["projection_receipt"].get("role_slot_ids") or ()
+    }
+    allowed_evidence_refs = {
+        str(row["evidence_ref"])
+        for row in cell.get("cell_evidence_views") or ()
+    }
+    allowed_numeric_refs = {
+        str(value) for value in cell.get("allowed_numeric_refs") or ()
+    }
+    allowed_relation_refs = {
+        str(value)
+        for value in cell.get("allowed_numeric_relation_refs") or ()
+    }
+    allowed_gap_refs = {
+        str(row["gap_ref"])
+        for row in cell.get("residual_gap_cards") or ()
+    }
+    cell_id = str(agent["cell_id"])
+    visibility_rows = [
+        deepcopy(dict(row))
+        for row in full.get("cell_visibility_matrix") or ()
+        if str(row.get("cell_id") or "") == cell_id
+    ]
+    _require(
+        len(visibility_rows) == 1 and role_slot_ids,
+        "multi_agent_specialist_repair_visibility_invalid",
+    )
+    visibility = visibility_rows[0]
+    current_cell_presence_aliases = {
+        str(value) for value in visibility.get("visible_presence_aliases") or ()
+    }
+    selected_presence = _project_repair_presence_catalog(
+        full_presence=full.get("presence_catalog") or (),
+        current_cell_presence_aliases=current_cell_presence_aliases,
+        role_slot_ids=role_slot_ids,
+        allowed_evidence_refs=allowed_evidence_refs,
+        allowed_numeric_refs=allowed_numeric_refs,
+        allowed_relation_refs=allowed_relation_refs,
+    )
+    selected_presence_aliases = set(_truth_aliases(selected_presence))
+
+    selected_gaps = []
+    for raw in full.get("typed_gap_catalog") or ():
+        row = deepcopy(dict(raw))
+        matching_refs = sorted(
+            allowed_gap_refs.intersection(
+                str(ref) for ref in row.get("gap_refs") or ()
+            )
+        )
+        if not matching_refs:
+            continue
+        row["gap_refs"] = matching_refs
+        selected_gaps.append(row)
+    selected_gaps.sort(key=lambda row: str(row["truth_alias"]))
+    selected_gap_aliases = {
+        str(row["truth_alias"]) for row in selected_gaps
+    }
+
+    visible_bridge_aliases = {
+        str(value)
+        for value in visibility.get("visible_bridge_boundary_aliases") or ()
+    }
+    selected_bridges = [
+        deepcopy(dict(row))
+        for row in full.get("typed_bridge_boundary_catalog") or ()
+        if str(row.get("truth_alias") or "") in visible_bridge_aliases
+        and set(str(ref) for ref in row.get("required_gap_refs") or ()).issubset(
+            allowed_gap_refs
+        )
+    ]
+    selected_bridges.sort(key=lambda row: str(row["truth_alias"]))
+    selected_bridge_aliases = {
+        str(row["truth_alias"]) for row in selected_bridges
+    }
+
+    all_presence_aliases = set(
+        _truth_aliases(full.get("presence_catalog") or ())
+    )
+    all_gap_aliases = {
+        str(row["truth_alias"])
+        for row in full.get("typed_gap_catalog") or ()
+    }
+    all_bridge_aliases = {
+        str(row["truth_alias"])
+        for row in full.get("typed_bridge_boundary_catalog") or ()
+    }
+    omitted_presence_aliases = sorted(
+        all_presence_aliases - selected_presence_aliases
+    )
+    omitted_gap_aliases = sorted(all_gap_aliases - selected_gap_aliases)
+    omitted_bridge_aliases = sorted(
+        all_bridge_aliases - selected_bridge_aliases
+    )
+    omitted_receipt = {
+        "presence_alias_count": len(omitted_presence_aliases),
+        "presence_alias_digest": canonical_digest(omitted_presence_aliases),
+        "typed_gap_alias_count": len(omitted_gap_aliases),
+        "typed_gap_alias_digest": canonical_digest(omitted_gap_aliases),
+        "typed_bridge_alias_count": len(omitted_bridge_aliases),
+        "typed_bridge_alias_digest": canonical_digest(
+            omitted_bridge_aliases
+        ),
+        "omission_semantics": (
+            "not_role_authorized_or_not_needed_for_this_local_repair; "
+            "omission_never_proves_case_absence"
+        ),
+    }
+    unsigned = {
+        "schema_version": "fin_ia_specialist_repair_case_truth_view_v1_0",
+        "source_case_truth_packet_digest": str(
+            full["case_truth_packet_digest"]
+        ),
+        "source_case_truth_model_view_digest": str(
+            full_truth_digest
+        ),
+        "case_identity": deepcopy(full["case_identity"]),
+        "role_scope": {
+            "agent_id": str(agent["agent_id"]),
+            "cell_id": cell_id,
+            "role_slot_ids": sorted(role_slot_ids),
+            "allowed_evidence_refs": sorted(allowed_evidence_refs),
+            "allowed_numeric_refs": sorted(allowed_numeric_refs),
+            "allowed_numeric_relation_refs": sorted(
+                allowed_relation_refs
+            ),
+            "allowed_gap_refs": sorted(allowed_gap_refs),
+        },
+        "role_presence_catalog": selected_presence,
+        "role_typed_gap_catalog": selected_gaps,
+        "role_typed_bridge_boundary_catalog": selected_bridges,
+        "role_visibility": {
+            "cell_id": cell_id,
+            "visible_presence_aliases": sorted(selected_presence_aliases),
+            "visible_gap_aliases": sorted(selected_gap_aliases),
+            "visible_bridge_boundary_aliases": sorted(
+                selected_bridge_aliases
+            ),
+        },
+        "omitted_case_truth_receipt": omitted_receipt,
+        "authority": {
+            "full_case_truth_remains_harness_bound": True,
+            "role_prompt_omission_is_not_case_absence": True,
+            "case_absence_requires_visible_typed_gap_or_bridge_boundary": True,
+            "cell_local_invisibility_is_not_case_level_absence": True,
+        },
+    }
+    return {
+        **unsigned,
+        "repair_case_truth_view_digest": canonical_digest(unsigned),
+    }
+
+
+def _project_specialist_repair_lead_plan(
+    *,
+    context: Mapping[str, Any],
+) -> dict[str, Any]:
+    lead = deepcopy(dict(context["lead_plan"]))
+    lead_digest = str(lead.get("lead_plan_digest") or "")
+    _require(
+        lead_digest
+        and lead_digest
+        == canonical_digest(
+            {
+                key: value
+                for key, value in lead.items()
+                if key != "lead_plan_digest"
+            }
+        ),
+        "multi_agent_specialist_repair_lead_plan_invalid",
+    )
+    agent_id = str(context["agent"]["agent_id"])
+    requested_facets = [
+        str(row["facet_id"])
+        for row in context["plan_opinion"].get("requested_atoms") or ()
+    ]
+    accepted_facets = [
+        facet
+        for facet in lead.get("accepted_facets") or ()
+        if str(facet) in requested_facets
+    ]
+    accepted_agents = [
+        str(value) for value in lead.get("accepted_agent_ids") or ()
+    ]
+    ordered_agents = [
+        str(value) for value in lead.get("ordered_agent_ids") or ()
+    ]
+    _require(
+        agent_id in accepted_agents
+        and agent_id in ordered_agents
+        and set(accepted_facets) == set(requested_facets),
+        "multi_agent_specialist_repair_lead_scope_invalid",
+    )
+    feedback_ids = [
+        str(row.get("feedback_id") or "")
+        for row in context.get("feedback_receipts") or ()
+    ]
+    _require(
+        feedback_ids
+        and all(feedback_ids)
+        and all(
+            str(row.get("target_node_id") or "") == agent_id
+            for row in context.get("feedback_receipts") or ()
+        ),
+        "multi_agent_specialist_repair_feedback_scope_invalid",
+    )
+    global_fields = {
+        field: list(lead.get(field) or ())
+        for field in (
+            "coordination_questions",
+            "expected_information_boundaries",
+            "stop_conditions",
+        )
+    }
+    unsigned = {
+        "schema_version": "fin_ia_specialist_repair_lead_scope_v1_0",
+        "source_lead_plan_digest": lead_digest,
+        "lead_agent_id": str(lead["lead_agent_id"]),
+        "target_agent_id": agent_id,
+        "target_agent_order": ordered_agents.index(agent_id),
+        "target_accepted_facet_ids": sorted(accepted_facets),
+        "active_feedback_ids": feedback_ids,
+        "global_plan_receipt": {
+            field: {
+                "count": len(values),
+                "digest": canonical_digest(values),
+            }
+            for field, values in global_fields.items()
+        },
+        "authority": {
+            "feedback_receipt_is_the_only_active_repair_instruction": True,
+            "omitted_global_plan_text_is_not_new_research_authority": True,
+            "repair_may_not_expand_facets_or_agent_scope": True,
+        },
+    }
+    return {
+        **unsigned,
+        "repair_lead_scope_digest": canonical_digest(unsigned),
+    }
+
+
+def compile_specialist_repair_context(
+    full_context: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Project a complete initial context into one local repair view.
+
+    The role keeps every claimable Evidence/NumericFact/Gap object, its prior
+    workpaper and the actionable feedback.  Whole-case truth and Lead planning
+    remain digest-bound in the Harness but are not repeated as prose in every
+    local repair prompt.
+    """
+
+    source = deepcopy(dict(full_context))
+    source_digest = str(source.get("context_digest") or "")
+    _require(
+        source.get("schema_version") == SPECIALIST_CONTEXT_SCHEMA_VERSION
+        and source_digest
+        == canonical_digest(
+            {
+                key: value
+                for key, value in source.items()
+                if key != "context_digest"
+            }
+        )
+        and source.get("prior_workpaper") is not None
+        and bool(source.get("feedback_receipts")),
+        "multi_agent_specialist_repair_source_context_invalid",
+    )
+    repair_truth = _project_specialist_repair_case_truth(context=source)
+    repair_lead = _project_specialist_repair_lead_plan(context=source)
+    body = {
+        key: deepcopy(value)
+        for key, value in source.items()
+        if key
+        not in {
+            "schema_version",
+            "context_digest",
+            "case_fact_presence",
+            "lead_plan",
+            "rules",
+        }
+    }
+    body.update(
+        {
+            "schema_version": SPECIALIST_REPAIR_CONTEXT_SCHEMA_VERSION,
+            "context_scope": "role_repair",
+            "source_full_context_digest": source_digest,
+            "lead_plan": repair_lead,
+            "case_fact_presence": repair_truth,
+            "rules": [
+                "Revise only the judgments named by the active FeedbackReceipt.",
+                "All claimable role facts remain in cell_analysis_view; omitted whole-case rows remain Harness-bound and are not absent.",
+                "A typed gap proves only the visible named tool or authority boundary; it does not prove public non-disclosure.",
+                "Candidate, graph edge, Skill text and model memory are not Evidence.",
+                "Company-level financial movement does not prove AI product causality without a direct bridge.",
+                "Use only role_presence_catalog or visible typed boundaries for fact-presence claims; omission receipts are not business facts.",
+                "Return a bounded workpaper, not a publishable report.",
+            ],
+            "repair_projection_receipt": {
+                "source_full_context_digest": source_digest,
+                "repair_case_truth_view_digest": repair_truth[
+                    "repair_case_truth_view_digest"
+                ],
+                "repair_lead_scope_digest": repair_lead[
+                    "repair_lead_scope_digest"
+                ],
+                "claimable_cell_evidence_count": len(
+                    body["cell_analysis_view"]["cell"][
+                        "cell_evidence_views"
+                    ]
+                ),
+                "claimable_gap_count": len(
+                    body["cell_analysis_view"]["cell"][
+                        "residual_gap_cards"
+                    ]
+                ),
+                "candidate_or_evidence_promotion_count": 0,
+            },
+        }
+    )
     body["context_digest"] = canonical_digest(body)
     return body
 

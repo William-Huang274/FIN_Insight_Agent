@@ -177,3 +177,17 @@ R10 将协调容量改为拓扑派生值 `min(4000, max(1200, 600 + 400 × chall
 每层都绑定 authority、public／terminal result、capture sha256、模型 request／response digest、validated payload digest 和 Session checkpoint／resume receipt。任何内容或 lineage 漂移都拒绝恢复。R10 的最大新节点为八个，不再把已完成前缀算入模型预算，也不允许为了“完整运行”重放上游。
 
 这一结构仍是有界 Preview，不是通用 Agent 平台完成态。它尚未证明开放外源动态检索、跨案例泛化、长期上下文压缩后的计划连续性或最终产品报告质量；这些能力必须由后续真实结果和独立验收分别证明。
+
+## 十三、R14／R15：局部修订上下文不是完整全案上下文的复制品
+
+R14 把三个责任层进一步分开：
+
+- **数据／工具层**：Supply 角色可见 10 条 reviewed Evidence 和 4 个 typed gap；没有 NumericFact 是当前角色合同事实，不是检索空结果。数据层不是本次最早故障。
+- **Harness 层**：局部 Supply repair 仍收到 91,182 字符 SpecialistContext，其中 whole-case truth catalog 40,655 字符、完整 Lead plan 7,119 字符。大量无关目录占用输入并增加推理搜索空间，这是最早故障。
+- **Agent／模型执行层**：`thinking=max` 将 12,000 completion token 全部消耗为 reasoning、可见输出为 0。它说明该任务 profile 不合适，但不能据此说 Supply 角色无价值或 DeepSeek 不会做供应研究。
+
+repair-scoped context 不是简单截断。它必须保持角色授权事实、数字关系、typed gap、prior workpaper、当前 challenge／feedback、RoleMethodPack、GraphContextPack、计划、工具回执与权限；只把与本次修订无直接关系的 whole-case alias 和 Lead 长叙事压成内容寻址 projection。每次 omission 都保存数量和 digest，并明确 omission 不能证明 case absence。
+
+同一个已完成 repair 的恢复器同时接受旧完整上下文和新 repair-scoped 上下文，并继续验证原 request／capture／attempt／context／workpaper lineage。这使上下文演进不会迫使已成功节点重跑，也不会把新 schema 当作新业务答案。
+
+R15 只从 pending Supply fresh analysis 开始，精确复用 Demand／Cash，禁止 continuation 和已完成节点重跑。task-specific high profile 隔离在 Provider adapter，核心金融合同不增加 DeepSeek 专用字段。若 R15 后再出现 successor 编排问题，必须用通用 authority compiler 取代多代 attempt-specific schema 分支，而不是继续增加 R16／R17 特例。

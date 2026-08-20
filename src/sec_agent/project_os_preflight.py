@@ -25,6 +25,7 @@ from sec_agent.research.multi_agent_preview import (
     validate_analysis_completion_checkpoint,
     validate_analysis_fragment_checkpoint,
     validate_downstream_repair_progress_checkpoint,
+    validate_downstream_repair_progress_checkpoint_v2,
     validate_lead_plan_checkpoint,
     validate_specialist_plan_checkpoint,
 )
@@ -193,6 +194,16 @@ MULTI_AGENT_PREVIEW_DOWNSTREAM_ANALYSIS_SUCCESSOR_DECISION_STATUS = (
 )
 MULTI_AGENT_PREVIEW_DOWNSTREAM_ANALYSIS_SUCCESSOR_SCOPE = (
     "one_clean_authorized_R10_downstream_repair_analysis_checkpoint_successor"
+)
+MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_dell_multi_agent_preview_live_scope_decision_v1_10"
+)
+MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_STATUS = (
+    "R14_supply_reasoning_only_failure_preserved_two_repairs_and_role_scoped_"
+    "fresh_successor_authorized"
+)
+MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE = (
+    "one_clean_authorized_R15_role_scoped_supply_repair_successor"
 )
 DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_successor_live_scope_decision_v1_0"
@@ -4495,6 +4506,433 @@ def validate_multi_agent_preview_downstream_analysis_successor_scope_decision(
         "reused_workpaper_count": 6,
         "reused_lead_coordination_count": 1,
         "reused_completed_challenge_repair_count": 1,
+        "maximum_new_lead_plan_model_calls": 0,
+        "execution_limits": dict(expected_limits),
+        "token_budget_basis_policy": dict(expected_budget_policy),
+    }
+
+
+def validate_multi_agent_preview_repair_context_successor_scope_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Validate one fresh role-scoped successor after a reasoning-only failure.
+
+    The predecessor R10 scope remains immutable lineage.  This decision adds
+    only the R14 failure disposition, a V2 progress checkpoint with two
+    completed repairs, and a provider-specific task profile for one fresh
+    Supply repair.  It does not broaden research inputs or product authority.
+    """
+
+    expected_fields = {
+        "schema_version",
+        "status",
+        "case_key",
+        "cell_id",
+        "run_scope_id",
+        "evidence_mode",
+        "next_authorized_scope",
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "independent_specialist_sessions_required",
+        "checkpoint_resume_required",
+        "lead_coordination_checkpoint_required",
+        "lead_coordination_rerun_forbidden",
+        "all_initial_workpaper_reruns_forbidden",
+        "completed_repair_reruns_forbidden",
+        "active_fragment_continuation_required",
+        "fresh_role_scoped_pending_repair_required",
+        "task_specific_repair_profile_required",
+        "downstream_only_execution_required",
+        "conditional_writer_required",
+        "evaluation_rounds_required",
+        "historical_failure_promoted",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "qualified_human_acceptance_authorized",
+        "S1_acceptance_authorized",
+        "S3_acceptance_authorized",
+        "generalization_claim_authorized",
+        "predecessor_scope_decision_ref",
+        "predecessor_scope_decision_sha256",
+        "predecessor_live_authority_ref",
+        "predecessor_live_authority_sha256",
+        "predecessor_live_result_ref",
+        "predecessor_live_result_sha256",
+        "lead_plan_checkpoint_ref",
+        "lead_plan_checkpoint_sha256",
+        "workpaper_checkpoint_ref",
+        "workpaper_checkpoint_sha256",
+        "lead_coordination_checkpoint_ref",
+        "lead_coordination_checkpoint_sha256",
+        "lead_coordination_checkpoint_digest",
+        "downstream_repair_progress_checkpoint_ref",
+        "downstream_repair_progress_checkpoint_sha256",
+        "downstream_repair_progress_checkpoint_digest",
+        "downstream_analysis_fragment_checkpoint_ref",
+        "downstream_analysis_fragment_checkpoint_sha256",
+        "downstream_analysis_fragment_checkpoint_digest",
+        "downstream_analysis_successor_zero_call_proof_ref",
+        "downstream_analysis_successor_zero_call_proof_sha256",
+        "downstream_analysis_successor_zero_call_proof_result_digest",
+        "analysis_continuation_profile_ref",
+        "analysis_continuation_profile_sha256",
+        "failed_repair_authority_ref",
+        "failed_repair_authority_sha256",
+        "failed_repair_result_ref",
+        "failed_repair_result_sha256",
+        "repair_context_failure_disposition_ref",
+        "repair_context_failure_disposition_sha256",
+        "repair_context_failure_disposition_result_digest",
+        "downstream_repair_progress_checkpoint_v2_ref",
+        "downstream_repair_progress_checkpoint_v2_sha256",
+        "downstream_repair_progress_checkpoint_v2_digest",
+        "repair_analysis_profile_ref",
+        "repair_analysis_profile_sha256",
+        "successor_constraints",
+        "execution_limits",
+        "token_budget_basis_policy",
+        "authority_statement",
+    }
+    if set(decision) != expected_fields:
+        raise ValueError(
+            "project_os_multi_agent_repair_context_successor_shape_invalid"
+        )
+    required_equal = {
+        "schema_version": (
+            MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_SCHEMA
+        ),
+        "status": (
+            MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_STATUS
+        ),
+        "case_key": "DELL",
+        "cell_id": "MULTI_AGENT_PREVIEW",
+        "run_scope_id": MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE,
+        "evidence_mode": (
+            "current_reviewed_Evidence_plus_current_S2_no_candidate_promotion"
+        ),
+        "next_authorized_scope": (
+            "one_bounded_DELL_multi_agent_preview_R15_role_scoped_supply_"
+            "repair_successor_live_attempt"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                "project_os_multi_agent_repair_context_successor_field_invalid:"
+                + field
+            )
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "independent_specialist_sessions_required",
+        "checkpoint_resume_required",
+        "lead_coordination_checkpoint_required",
+        "lead_coordination_rerun_forbidden",
+        "all_initial_workpaper_reruns_forbidden",
+        "completed_repair_reruns_forbidden",
+        "fresh_role_scoped_pending_repair_required",
+        "task_specific_repair_profile_required",
+        "downstream_only_execution_required",
+        "conditional_writer_required",
+        "evaluation_rounds_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                "project_os_multi_agent_repair_context_successor_true_required:"
+                + field
+            )
+    for field in (
+        "active_fragment_continuation_required",
+        "historical_failure_promoted",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "qualified_human_acceptance_authorized",
+        "S1_acceptance_authorized",
+        "S3_acceptance_authorized",
+        "generalization_claim_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                "project_os_multi_agent_repair_context_successor_false_required:"
+                + field
+            )
+
+    predecessor_scope_path, predecessor_scope = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_scope_decision_ref",
+        sha_field="predecessor_scope_decision_sha256",
+    )
+    predecessor_projection = (
+        validate_multi_agent_preview_downstream_analysis_successor_scope_decision(
+            root=root, decision=predecessor_scope
+        )
+    )
+    if (
+        predecessor_scope_path.relative_to(root).as_posix()
+        != "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_scope_decision_v1_9.json"
+    ):
+        raise ValueError(
+            "project_os_multi_agent_repair_context_successor_predecessor_invalid"
+        )
+
+    for ref_field, sha_field, inherited_field in (
+        (
+            "predecessor_live_authority_ref",
+            "predecessor_live_authority_sha256",
+            "predecessor_live_authority_ref",
+        ),
+        (
+            "predecessor_live_result_ref",
+            "predecessor_live_result_sha256",
+            "predecessor_live_result_ref",
+        ),
+        (
+            "lead_plan_checkpoint_ref",
+            "lead_plan_checkpoint_sha256",
+            "lead_plan_checkpoint_ref",
+        ),
+        (
+            "workpaper_checkpoint_ref",
+            "workpaper_checkpoint_sha256",
+            "workpaper_checkpoint_ref",
+        ),
+        (
+            "lead_coordination_checkpoint_ref",
+            "lead_coordination_checkpoint_sha256",
+            "lead_coordination_checkpoint_ref",
+        ),
+        (
+            "downstream_repair_progress_checkpoint_ref",
+            "downstream_repair_progress_checkpoint_sha256",
+            "downstream_repair_progress_checkpoint_ref",
+        ),
+        (
+            "downstream_analysis_fragment_checkpoint_ref",
+            "downstream_analysis_fragment_checkpoint_sha256",
+            "downstream_analysis_fragment_checkpoint_ref",
+        ),
+        (
+            "downstream_analysis_successor_zero_call_proof_ref",
+            "downstream_analysis_successor_zero_call_proof_sha256",
+            "downstream_analysis_successor_zero_call_proof_ref",
+        ),
+        (
+            "analysis_continuation_profile_ref",
+            "analysis_continuation_profile_sha256",
+            "analysis_continuation_profile_ref",
+        ),
+    ):
+        bound_path, _ = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field=ref_field,
+            sha_field=sha_field,
+        )
+        if bound_path.relative_to(root).as_posix() != predecessor_scope.get(
+            inherited_field
+        ):
+            raise ValueError(
+                "project_os_multi_agent_repair_context_successor_lineage_drift:"
+                + ref_field
+            )
+    for digest_field in (
+        "lead_coordination_checkpoint_digest",
+        "downstream_repair_progress_checkpoint_digest",
+        "downstream_analysis_fragment_checkpoint_digest",
+        "downstream_analysis_successor_zero_call_proof_result_digest",
+    ):
+        if decision.get(digest_field) != predecessor_scope.get(digest_field):
+            raise ValueError(
+                "project_os_multi_agent_repair_context_successor_digest_drift:"
+                + digest_field
+            )
+
+    _, failed_authority = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_repair_authority_ref",
+        sha_field="failed_repair_authority_sha256",
+    )
+    _, failed_result = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_repair_result_ref",
+        sha_field="failed_repair_result_sha256",
+    )
+    execution = failed_result.get("execution") or {}
+    if not (
+        failed_authority.get("schema_version")
+        == "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_13"
+        and failed_authority.get("outputs", {}).get("run_id")
+        == "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R14_20260820"
+        and failed_authority.get("outputs", {}).get("public_result_ref")
+        == decision["failed_repair_result_ref"]
+        and failed_result.get("authority_ref")
+        == decision["failed_repair_authority_ref"]
+        and failed_result.get("status")
+        == "multi_agent_preview_terminal_failure_preserved"
+        and failed_result.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and execution.get("new_model_nodes_started") == 2
+        and execution.get("reused_completed_challenge_repair_count") == 1
+        and execution.get("new_counter_challenge_repairs_preserved") == 1
+        and execution.get("external_source_network_calls") == 0
+        and execution.get("candidate_promotions") == 0
+    ):
+        raise ValueError(
+            "project_os_multi_agent_repair_context_successor_failure_invalid"
+        )
+
+    _, disposition = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="repair_context_failure_disposition_ref",
+        sha_field="repair_context_failure_disposition_sha256",
+        digest_field="repair_context_failure_disposition_result_digest",
+    )
+    _, progress_raw = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="downstream_repair_progress_checkpoint_v2_ref",
+        sha_field="downstream_repair_progress_checkpoint_v2_sha256",
+    )
+    progress = validate_downstream_repair_progress_checkpoint_v2(progress_raw)
+    _, repair_profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="repair_analysis_profile_ref",
+        sha_field="repair_analysis_profile_sha256",
+    )
+    if not (
+        disposition.get("status")
+        == "R14_role_repair_context_and_task_profile_root_cause_replay_pass"
+        and disposition.get("failed_authority_ref")
+        == decision["failed_repair_authority_ref"]
+        and disposition.get("failed_public_result_ref")
+        == decision["failed_repair_result_ref"]
+        and progress["checkpoint_digest"]
+        == decision["downstream_repair_progress_checkpoint_v2_digest"]
+        and progress["source_authority_ref"]
+        == decision["failed_repair_authority_ref"]
+        and progress["source_public_result_ref"]
+        == decision["failed_repair_result_ref"]
+        and progress["source_public_result_digest"]
+        == failed_result.get("result_digest")
+        and progress["repair_context_policy_digest"]
+        == disposition.get("result_digest")
+        and len(progress["completed_challenge_repairs"]) == 2
+        and len(progress["pending_challenge_repairs"]) == 1
+        and progress["pending_challenge_repairs"][0]["target_agent_id"]
+        == "AGENT::SUPPLY_RELATIONSHIP"
+        and progress["resume_policy"]["maximum_analysis_continuation_calls"]
+        == 0
+        and repair_profile.get("provider_id") == "deepseek"
+        and repair_profile.get("model") == "deepseek-v4-pro"
+        and repair_profile.get("base_url") == "https://api.deepseek.com"
+        and repair_profile.get("endpoint") == "/chat/completions"
+        and repair_profile.get("request_defaults")
+        == {
+            "max_tokens": 12000,
+            "stream": False,
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "high",
+        }
+        and (repair_profile.get("authority") or {}).get("retry_count") == 0
+    ):
+        raise ValueError(
+            "project_os_multi_agent_repair_context_successor_artifact_invalid"
+        )
+
+    expected_constraints = {
+        "R14_terminal_failure_remains_immutable": True,
+        "reuse_exactly_six_R3_specialist_plans": True,
+        "reuse_exactly_one_validated_R6_lead_plan": True,
+        "reuse_exactly_six_initial_workpapers": True,
+        "reuse_exactly_one_R9_lead_coordination_decision": True,
+        "reuse_exactly_two_completed_challenge_repairs": True,
+        "begin_exactly_one_fresh_supply_repair": True,
+        "resume_analysis_fragment": False,
+        "rerun_completed_challenge_repair": False,
+        "rerun_lead_coordination": False,
+        "research_inputs_unchanged": True,
+    }
+    if decision.get("successor_constraints") != expected_constraints:
+        raise ValueError(
+            "project_os_multi_agent_repair_context_successor_constraints_invalid"
+        )
+    expected_limits = {
+        "maximum_new_model_nodes": 6,
+        "maximum_new_lead_plan_model_calls": 0,
+        "maximum_new_initial_workpaper_nodes": 0,
+        "maximum_new_lead_coordination_model_calls": 0,
+        "maximum_resumed_downstream_analysis_continuations": 0,
+        "maximum_new_analysis_calls_per_other_node": 1,
+        "maximum_submission_attempts_per_node": 2,
+        "reused_specialist_plan_count": 6,
+        "reused_lead_plan_count": 1,
+        "reused_workpaper_count": 6,
+        "reused_lead_coordination_count": 1,
+        "reused_completed_challenge_repair_count": 2,
+        "maximum_new_counter_challenge_repairs": 1,
+        "maximum_counter_challenge_repairs": 3,
+        "maximum_evaluator_repairs": 2,
+        "maximum_evaluation_rounds": 2,
+        "external_source_network_calls": 0,
+        "candidate_promotions": 0,
+        "product_publication": False,
+        "qualified_human_acceptance": False,
+    }
+    if decision.get("execution_limits") != expected_limits:
+        raise ValueError(
+            "project_os_multi_agent_repair_context_successor_limits_invalid"
+        )
+    expected_budget_policy = {
+        "task_specific_basis_required_per_paid_phase": True,
+        "reused_lead_has_no_new_token_budget": True,
+        "reused_workpapers_have_no_new_token_budget": True,
+        "reused_coordination_has_no_new_token_budget": True,
+        "reused_completed_repairs_have_no_new_token_budget": True,
+        "fresh_supply_analysis_basis_is_separate": True,
+        "analysis_basis_is_separate_per_downstream_node": True,
+        "submission_basis_is_separate_per_downstream_node": True,
+        "input_scale_and_reference_count_required": True,
+        "required_outputs_and_schema_burden_required": True,
+        "materiality_and_quality_risk_required": True,
+        "comparable_run_evidence_required": True,
+        "reasoning_profile_required": True,
+        "stop_and_truncation_behavior_required": True,
+        "cost_and_latency_are_secondary_constraints": True,
+    }
+    if decision.get("token_budget_basis_policy") != expected_budget_policy:
+        raise ValueError(
+            "project_os_multi_agent_repair_context_successor_budget_invalid"
+        )
+    return {
+        "clean_proof_status": predecessor_projection["clean_proof_status"],
+        "successor_zero_call_proof_status": disposition["status"],
+        "provider_id": predecessor_projection["provider_id"],
+        "provider_model": predecessor_projection["provider_model"],
+        "api_key_env": predecessor_projection["api_key_env"],
+        "recent_provider_steps": 4,
+        "multi_agent_preview": True,
+        "multi_agent_preview_downstream_analysis_checkpoint_successor": False,
+        "multi_agent_preview_repair_context_successor": True,
+        "run_scope_id": MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE,
+        "specialist_agent_count": 6,
+        "reused_specialist_plan_count": 6,
+        "reused_lead_plan_count": 1,
+        "reused_workpaper_count": 6,
+        "reused_lead_coordination_count": 1,
+        "reused_completed_challenge_repair_count": 2,
         "maximum_new_lead_plan_model_calls": 0,
         "execution_limits": dict(expected_limits),
         "token_budget_basis_policy": dict(expected_budget_policy),

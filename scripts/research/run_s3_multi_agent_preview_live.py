@@ -45,6 +45,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     compile_lead_plan_messages,
     compile_report_messages,
     compile_specialist_context,
+    compile_specialist_repair_context,
     compile_specialist_workpaper_messages,
     evaluation_tool,
     lead_coordination_tool,
@@ -58,6 +59,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     validate_analysis_fragment_checkpoint,
     validate_analysis_completion_checkpoint,
     validate_downstream_repair_progress_checkpoint,
+    validate_downstream_repair_progress_checkpoint_v2,
     validate_specialist_plan_checkpoint,
     validate_evaluation,
     validate_lead_coordination_decision,
@@ -100,6 +102,9 @@ from sec_agent.project_os_preflight import (  # noqa: E402
     MULTI_AGENT_PREVIEW_DOWNSTREAM_ANALYSIS_SUCCESSOR_DECISION_SCHEMA,
     MULTI_AGENT_PREVIEW_DOWNSTREAM_ANALYSIS_SUCCESSOR_DECISION_STATUS,
     MULTI_AGENT_PREVIEW_DOWNSTREAM_ANALYSIS_SUCCESSOR_SCOPE,
+    MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_SCHEMA,
+    MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_STATUS,
+    MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_DECISION_SCHEMA,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_DECISION_STATUS,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE,
@@ -110,6 +115,7 @@ from sec_agent.project_os_preflight import (  # noqa: E402
     validate_multi_agent_preview_specialist_analysis_successor_scope_decision,
     validate_multi_agent_preview_coordination_checkpoint_successor_scope_decision,
     validate_multi_agent_preview_downstream_analysis_successor_scope_decision,
+    validate_multi_agent_preview_repair_context_successor_scope_decision,
     validate_multi_agent_preview_plan_successor_scope_decision,
 )
 
@@ -146,6 +152,9 @@ DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA = (
 )
 DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA = (
     "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_13"
+)
+DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_14"
 )
 FULL_SCHEMA_V1 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_1"
 FULL_SCHEMA_V2 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_2"
@@ -251,6 +260,9 @@ def _validate_authority(
     continuation_profile_replacement = (
         schema == DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA
     )
+    repair_context_replacement = (
+        schema == DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA
+    )
     preprovider_replacement = schema in {
         DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
@@ -260,6 +272,7 @@ def _validate_authority(
         DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA,
+        DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA,
     }
     expected_status_by_schema = {
         PLAN_SUCCESSOR_AUTHORITY_SCHEMA: (
@@ -304,6 +317,10 @@ def _validate_authority(
         ),
         DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA: (
             "approved_for_one_R14_non_thinking_continuation_profile_"
+            "replacement_after_project_os_preflight"
+        ),
+        DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA: (
+            "approved_for_one_R15_role_scoped_repair_context_"
             "replacement_after_project_os_preflight"
         ),
     }
@@ -366,6 +383,14 @@ def _validate_authority(
                 "failed_continuation_result",
                 "continuation_profile_failure_disposition_zero_call_proof",
                 "analysis_completion_profile",
+            }
+        if repair_context_replacement:
+            required_inputs |= {
+                "failed_repair_authority",
+                "failed_repair_result",
+                "repair_context_failure_disposition_zero_call_proof",
+                "downstream_repair_progress_checkpoint_v2",
+                "repair_analysis_profile",
             }
     elif coordination_checkpoint_successor:
         required_inputs = base_inputs | {
@@ -432,7 +457,42 @@ def _validate_authority(
             "multi_agent_preview_authority_inputs_invalid"
         )
     scope_decision = _json(inputs["project_os_scope_decision"])
-    if downstream_analysis_successor:
+    if repair_context_replacement:
+        scope_projection = (
+            validate_multi_agent_preview_repair_context_successor_scope_decision(
+                root=ROOT, decision=scope_decision
+            )
+        )
+        predecessor_scope_decision = _json(
+            inputs["predecessor_scope_decision"]
+        )
+        cursor = predecessor_scope_decision
+        visited: set[str] = set()
+        while (
+            cursor.get("schema_version")
+            != MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_DECISION_SCHEMA
+        ):
+            ref = str(cursor.get("predecessor_scope_decision_ref") or "")
+            if not ref or ref in visited:
+                raise MultiAgentPreviewLiveError(
+                    "multi_agent_preview_scope_lineage_invalid"
+                )
+            visited.add(ref)
+            cursor = _json(_resolve(ref))
+        base_scope_decision = cursor
+        scope_valid = (
+            scope_decision.get("schema_version")
+            == MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_SCHEMA
+            and scope_decision.get("status")
+            == MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_STATUS
+            and scope_decision.get("run_scope_id")
+            == MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE
+            and scope_projection.get(
+                "multi_agent_preview_repair_context_successor"
+            )
+            is True
+        )
+    elif downstream_analysis_successor:
         scope_projection = (
             validate_multi_agent_preview_downstream_analysis_successor_scope_decision(
                 root=ROOT, decision=scope_decision
@@ -1281,6 +1341,283 @@ def _validate_authority(
             raise MultiAgentPreviewLiveError(
                 "multi_agent_preview_continuation_profile_replacement_invalid"
             )
+    if repair_context_replacement:
+        failed_authority = _json(inputs["failed_repair_authority"])
+        failed_result = _json(inputs["failed_repair_result"])
+        disposition = _json(
+            inputs[
+                "repair_context_failure_disposition_zero_call_proof"
+            ]
+        )
+        progress_v2 = validate_downstream_repair_progress_checkpoint_v2(
+            _json(inputs["downstream_repair_progress_checkpoint_v2"])
+        )
+        repair_profile = _json(inputs["repair_analysis_profile"])
+        failed_public_body = {
+            key: value
+            for key, value in failed_result.items()
+            if key != "result_digest"
+        }
+        failed_terminal_path = _resolve(
+            str(disposition.get("failed_terminal_result_ref") or "")
+        )
+        failed_terminal = _json(failed_terminal_path)
+        failed_terminal_body = {
+            key: value
+            for key, value in failed_terminal.items()
+            if key != "full_result_digest"
+        }
+        disposition_body = {
+            key: value
+            for key, value in disposition.items()
+            if key != "result_digest"
+        }
+        request_path = _resolve(
+            str(disposition.get("request_capture_ref") or "")
+        )
+        response_path = _resolve(
+            str(disposition.get("response_capture_ref") or "")
+        )
+        request_capture = _json(request_path)
+        response_capture = _json(response_path)
+        request_body = request_capture.get("request_body") or {}
+        messages = request_body.get("messages") or []
+        try:
+            analysis_envelope = json.loads(str(messages[1]["content"]))
+            source_context_text = str(
+                analysis_envelope["task_context"][0]["content"]
+            )
+            source_context = json.loads(source_context_text)
+            repair_context = compile_specialist_repair_context(
+                source_context
+            )
+        except (IndexError, KeyError, TypeError, json.JSONDecodeError):
+            repair_context = {}
+            source_context = {}
+            source_context_text = ""
+        compact = lambda value: json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        replay = disposition.get("source_context_replay") or {}
+        provider_observation = disposition.get("provider_observation") or {}
+        response_body = response_capture.get("response_body") or {}
+        choices = response_body.get("choices") or []
+        choice = choices[0] if len(choices) == 1 else {}
+        response_usage = response_body.get("usage") or {}
+        response_completion = (
+            response_usage.get("completion_tokens_details") or {}
+        )
+        completed_rows = progress_v2.get(
+            "completed_challenge_repairs"
+        ) or []
+        pending_rows = progress_v2.get("pending_challenge_repairs") or []
+        constraints = disposition.get("replacement_constraints") or {}
+        repair_scope_bindings_valid = all(
+            _relative(inputs[input_name])
+            == scope_decision.get(ref_field)
+            and _sha(inputs[input_name]) == scope_decision.get(sha_field)
+            for input_name, ref_field, sha_field in (
+                (
+                    "failed_repair_authority",
+                    "failed_repair_authority_ref",
+                    "failed_repair_authority_sha256",
+                ),
+                (
+                    "failed_repair_result",
+                    "failed_repair_result_ref",
+                    "failed_repair_result_sha256",
+                ),
+                (
+                    "repair_context_failure_disposition_zero_call_proof",
+                    "repair_context_failure_disposition_ref",
+                    "repair_context_failure_disposition_sha256",
+                ),
+                (
+                    "downstream_repair_progress_checkpoint_v2",
+                    "downstream_repair_progress_checkpoint_v2_ref",
+                    "downstream_repair_progress_checkpoint_v2_sha256",
+                ),
+                (
+                    "repair_analysis_profile",
+                    "repair_analysis_profile_ref",
+                    "repair_analysis_profile_sha256",
+                ),
+            )
+        )
+        if not (
+            repair_scope_bindings_valid
+            and failed_authority.get("schema_version")
+            == DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA
+            and failed_authority.get("outputs", {}).get("run_id")
+            == "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R14_20260820"
+            and failed_authority.get("outputs", {}).get("public_result_ref")
+            == _relative(inputs["failed_repair_result"])
+            and failed_result.get("authority_ref")
+            == _relative(inputs["failed_repair_authority"])
+            and failed_result.get("status")
+            == "multi_agent_preview_terminal_failure_preserved"
+            and failed_result.get("failure_code")
+            == "model_gateway_reasoning_budget_exhausted"
+            and failed_result.get("result_digest")
+            == canonical_digest(failed_public_body)
+            and (failed_result.get("execution") or {}).get(
+                "new_model_nodes_started"
+            )
+            == 2
+            and (failed_result.get("execution") or {}).get(
+                "reused_completed_challenge_repair_count"
+            )
+            == 1
+            and (failed_result.get("execution") or {}).get(
+                "new_counter_challenge_repairs_preserved"
+            )
+            == 1
+            and disposition.get("schema_version")
+            == (
+                "fin_ia_s3_multi_agent_preview_role_repair_context_"
+                "failure_disposition_zero_call_v1_0"
+            )
+            and disposition.get("status")
+            == "R14_role_repair_context_and_task_profile_root_cause_replay_pass"
+            and disposition.get("failed_authority_ref")
+            == _relative(inputs["failed_repair_authority"])
+            and disposition.get("failed_authority_sha256")
+            == _sha(inputs["failed_repair_authority"])
+            and disposition.get("failed_public_result_ref")
+            == _relative(inputs["failed_repair_result"])
+            and disposition.get("failed_public_result_sha256")
+            == _sha(inputs["failed_repair_result"])
+            and disposition.get("failed_public_result_digest")
+            == failed_result.get("result_digest")
+            and failed_terminal_path.is_file()
+            and disposition.get("failed_terminal_result_sha256")
+            == _sha(failed_terminal_path)
+            and disposition.get("failed_terminal_result_digest")
+            == failed_terminal.get("full_result_digest")
+            == canonical_digest(failed_terminal_body)
+            and disposition.get("failure_stage")
+            == "supply_repair_analysis_provider_completion"
+            and disposition.get("failure_code")
+            == failed_result.get("failure_code")
+            and request_path.is_file()
+            and response_path.is_file()
+            and disposition.get("request_capture_sha256")
+            == _sha(request_path)
+            and disposition.get("response_capture_sha256")
+            == _sha(response_path)
+            and disposition.get("request_digest")
+            == request_capture.get("request_digest")
+            and disposition.get("response_digest")
+            == response_capture.get("response_digest")
+            and response_capture.get("status_code") == 200
+            and response_capture.get("response_body_complete") is True
+            and choice.get("finish_reason") == "length"
+            and (choice.get("message") or {}).get("content") == ""
+            and response_usage.get("prompt_tokens") == 32271
+            and response_usage.get("completion_tokens") == 12000
+            and response_completion.get("reasoning_tokens") == 12000
+            and provider_observation
+            == {
+                "status_code": 200,
+                "response_body_complete": True,
+                "finish_reason": "length",
+                "prompt_tokens": 32271,
+                "completion_tokens": 12000,
+                "reasoning_tokens": 12000,
+                "visible_output_character_count": 0,
+                "request_max_tokens": 12000,
+                "request_reasoning_effort": "max",
+            }
+            and len(messages) == 2
+            and source_context.get("context_digest")
+            == replay.get("source_context_digest")
+            and len(source_context_text)
+            == replay.get("source_context_character_count")
+            and len(str(messages[1]["content"]))
+            == replay.get("source_user_message_character_count")
+            and sum(len(str(row.get("content") or "")) for row in messages)
+            == replay.get("source_total_message_character_count")
+            and repair_context.get("context_digest")
+            == replay.get("repair_context_digest")
+            and len(compact(repair_context))
+            == replay.get("repair_context_character_count")
+            and len(
+                compact(repair_context.get("case_fact_presence") or {})
+            )
+            == replay.get("repair_case_truth_character_count")
+            and len(compact(repair_context.get("lead_plan") or {}))
+            == replay.get("repair_lead_plan_character_count")
+            and len(
+                (repair_context.get("cell_analysis_view") or {})
+                .get("cell", {})
+                .get("cell_evidence_views", [])
+            )
+            == replay.get("role_evidence_count_preserved")
+            == 10
+            and len(
+                (repair_context.get("cell_analysis_view") or {})
+                .get("cell", {})
+                .get("residual_gap_cards", [])
+            )
+            == replay.get("role_typed_gap_count_preserved")
+            == 4
+            and disposition.get("result_digest")
+            == canonical_digest(disposition_body)
+            and progress_v2.get("source_run_id")
+            == "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R14_20260820"
+            and progress_v2.get("source_public_result_digest")
+            == failed_result.get("result_digest")
+            and progress_v2.get("source_terminal_result_digest")
+            == failed_terminal.get("full_result_digest")
+            and progress_v2.get("repair_context_policy_digest")
+            == disposition.get("result_digest")
+            and len(completed_rows) == 2
+            and [row.get("target_agent_id") for row in completed_rows]
+            == ["AGENT::DEMAND_QUALITY", "AGENT::CASH_CONVERSION"]
+            and pending_rows
+            == [
+                {
+                    "challenge_id": "CHALLENGE::71AAF31E7FBD5A99163BBE8D",
+                    "target_agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+                    "node_id": "AGENT::SUPPLY_RELATIONSHIP::COUNTER_REPAIR",
+                }
+            ]
+            and repair_profile.get("provider_id") == "deepseek"
+            and repair_profile.get("model") == "deepseek-v4-pro"
+            and repair_profile.get("base_url") == "https://api.deepseek.com"
+            and repair_profile.get("endpoint") == "/chat/completions"
+            and repair_profile.get("request_defaults")
+            == {
+                "max_tokens": 12000,
+                "stream": False,
+                "thinking": {"type": "enabled"},
+                "reasoning_effort": "high",
+            }
+            and (repair_profile.get("authority") or {}).get("retry_count")
+            == 0
+            and constraints
+            == {
+                "R14_terminal_failure_remains_immutable": True,
+                "new_attempt_id_required": True,
+                "failed_authority_reuse_forbidden": True,
+                "research_inputs_unchanged": True,
+                "completed_repair_reruns_forbidden": True,
+                "cash_continuation_forbidden": True,
+                "role_authorized_evidence_and_gaps_must_be_preserved": True,
+                "whole_case_truth_omission_must_be_digest_receipted": True,
+                "lead_plan_projection_must_remain_digest_bound": True,
+                "candidate_promotion_forbidden": True,
+            }
+            and disposition.get("model_calls") == 0
+            and disposition.get("network_calls") == 0
+            and disposition.get("candidate_promotions") == 0
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_repair_context_replacement_invalid"
+            )
     zero = _json(inputs["zero_call_proof"])
     if zero.get("status") != "zero_call_topology_and_current_tool_spine_pass":
         raise MultiAgentPreviewLiveError(
@@ -1534,7 +1871,24 @@ def _validate_authority(
         raise MultiAgentPreviewLiveError(
             "multi_agent_preview_project_os_limit_drift"
         )
-    if downstream_analysis_successor:
+    if repair_context_replacement:
+        mode_limits_valid = (
+            limits.get("maximum_new_lead_plan_model_calls") == 0
+            and limits.get("maximum_new_initial_workpaper_nodes") == 0
+            and limits.get("maximum_new_lead_coordination_model_calls") == 0
+            and limits.get(
+                "maximum_resumed_downstream_analysis_continuations"
+            )
+            == 0
+            and limits.get("maximum_new_analysis_calls_per_other_node") == 1
+            and limits.get("reused_lead_plan_count") == 1
+            and limits.get("reused_workpaper_count") == 6
+            and limits.get("reused_lead_coordination_count") == 1
+            and limits.get("reused_completed_challenge_repair_count") == 2
+            and limits.get("maximum_new_counter_challenge_repairs") == 1
+        )
+        expected_new_nodes = 6
+    elif downstream_analysis_successor:
         mode_limits_valid = (
             limits.get("maximum_new_lead_plan_model_calls") == 0
             and limits.get("maximum_new_initial_workpaper_nodes") == 0
@@ -1985,6 +2339,7 @@ def _load_bound_completed_repair_context(
     receipt: Mapping[str, Any],
     source_run_id: str,
     coordination_checkpoint: Mapping[str, Any],
+    context_session_run_id: str | None = None,
 ) -> dict[str, Any]:
     """Recover the exact source context instead of recompiling session-bound feedback."""
 
@@ -1996,8 +2351,14 @@ def _load_bound_completed_repair_context(
     analysis_attempts = [
         item
         for item in attempts
-        if item.get("phase") == "analysis"
-        and item.get("status") == "analysis_draft_valid"
+        if (
+            item.get("phase") == "analysis"
+            and item.get("status") == "analysis_draft_valid"
+        )
+        or (
+            item.get("phase") == "analysis_continuation"
+            and item.get("status") == "analysis_continuation_valid"
+        )
     ]
     if len(analysis_attempts) != 1:
         raise MultiAgentPreviewLiveError(
@@ -2021,9 +2382,11 @@ def _load_bound_completed_repair_context(
         and request.get("request_digest") == attempt.get("request_digest")
         == canonical_digest(request_body)
         and isinstance(raw_messages, list)
-        and len(raw_messages) == 2
+        and len(raw_messages) in {2, 4}
         and [
-            item.get("role") for item in raw_messages if isinstance(item, Mapping)
+            item.get("role")
+            for item in raw_messages[:2]
+            if isinstance(item, Mapping)
         ]
         == ["system", "user"]
     ):
@@ -2031,7 +2394,7 @@ def _load_bound_completed_repair_context(
             "multi_agent_preview_completed_repair_context_capture_drift"
         )
     try:
-        envelope = json.loads(str(raw_messages[-1]["content"]))
+        envelope = json.loads(str(raw_messages[1]["content"]))
         task_context = envelope["task_context"]
         context = json.loads(str(task_context[0]["content"]))
     except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
@@ -2050,12 +2413,19 @@ def _load_bound_completed_repair_context(
         and isinstance(task_context, list)
         and len(task_context) == 1
         and task_context[0].get("role") == "user"
-        and context.get("schema_version") == "fin_ia_specialist_context_v1_0"
+        and context.get("schema_version")
+        in {
+            "fin_ia_specialist_context_v1_0",
+            "fin_ia_specialist_repair_context_v1_0",
+        }
         and (context.get("agent") or {}).get("agent_id") == target
         and context.get("context_digest") == canonical_digest(context_body)
         and len(feedback) == 1
         and feedback[0].get("target_node_id") == target
-        and feedback[0].get("session_id", "").find(source_run_id) >= 0
+        and feedback[0].get("session_id", "").find(
+            str(context_session_run_id or source_run_id)
+        )
+        >= 0
         and "challenge://" + str(receipt["challenge_id"])
         in (feedback[0].get("artifact_refs") or ())
         and prior.get("workpaper_digest")
@@ -2065,6 +2435,130 @@ def _load_bound_completed_repair_context(
             "multi_agent_preview_completed_repair_context_invalid"
         )
     return deepcopy(dict(context))
+
+
+def _load_bound_downstream_repair_progress_bundle_v2(
+    *,
+    checkpoint: Mapping[str, Any],
+) -> tuple[
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
+    dict[str, Any],
+]:
+    """Recover inherited and newly completed repairs before a fresh pending node."""
+
+    progress = validate_downstream_repair_progress_checkpoint_v2(checkpoint)
+    bound_prefixes = (
+        "source_authority",
+        "source_public_result",
+        "source_terminal_result",
+        "predecessor_progress_checkpoint",
+        "predecessor_analysis_fragment_checkpoint",
+        "lead_coordination_checkpoint",
+    )
+    for prefix in bound_prefixes:
+        ref = str(progress.get(f"{prefix}_ref") or "")
+        expected_sha = str(progress.get(f"{prefix}_sha256") or "")
+        path = _resolve(ref)
+        if not ref or not path.is_file() or _sha(path) != expected_sha:
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_downstream_progress_v2_binding_drift:"
+                + prefix
+            )
+
+    predecessor_progress = _json(
+        _resolve(progress["predecessor_progress_checkpoint_ref"])
+    )
+    predecessor_fragment = _json(
+        _resolve(progress["predecessor_analysis_fragment_checkpoint_ref"])
+    )
+    inherited, inherited_contexts = (
+        _load_bound_downstream_repair_progress_bundle(
+            checkpoint=predecessor_progress,
+            fragment_checkpoint=predecessor_fragment,
+        )
+    )
+    inherited_count = int(progress["inherited_completed_repair_count"])
+    inherited_receipts = progress["completed_challenge_repairs"][
+        :inherited_count
+    ]
+    if not (
+        predecessor_progress.get("checkpoint_digest")
+        == progress["predecessor_progress_checkpoint_digest"]
+        and predecessor_fragment.get("checkpoint_digest")
+        == progress["predecessor_analysis_fragment_checkpoint_digest"]
+        and len(inherited) == inherited_count
+        and [str(row["challenge_id"]) for row in inherited_receipts]
+        == list(inherited)
+        and all(
+            inherited[str(row["challenge_id"])]["workpaper_digest"]
+            == row["workpaper_digest"]
+            for row in inherited_receipts
+        )
+    ):
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_downstream_progress_v2_predecessor_drift"
+        )
+
+    public_result = _json(_resolve(progress["source_public_result_ref"]))
+    terminal = _json(_resolve(progress["source_terminal_result_ref"]))
+    coordination = _json(
+        _resolve(progress["lead_coordination_checkpoint_ref"])
+    )
+    if not (
+        public_result.get("result_digest")
+        == progress["source_public_result_digest"]
+        and terminal.get("full_result_digest")
+        == progress["source_terminal_result_digest"]
+        and terminal.get("failure_code")
+        == "model_gateway_reasoning_budget_exhausted"
+        and coordination.get("checkpoint_digest")
+        == progress["lead_coordination_checkpoint_digest"]
+    ):
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_downstream_progress_v2_lineage_drift"
+        )
+
+    completed = dict(inherited)
+    completed_contexts = dict(inherited_contexts)
+    source_rows = {
+        str(row.get("node_id")): deepcopy(dict(row))
+        for row in terminal.get("node_executions") or ()
+        if isinstance(row, Mapping)
+    }
+    for receipt in progress["completed_challenge_repairs"][inherited_count:]:
+        row = source_rows.get(str(receipt["node_id"])) or {}
+        payload = deepcopy(dict(row.get("validated_payload") or {}))
+        if not (
+            row
+            and receipt["source_run_id"] == progress["source_run_id"]
+            and payload.get("agent_id") == receipt["target_agent_id"]
+            and payload.get("workpaper_digest") == receipt["workpaper_digest"]
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_downstream_progress_v2_completed_drift"
+            )
+        challenge_id = str(receipt["challenge_id"])
+        completed[challenge_id] = payload
+        completed_contexts[challenge_id] = _load_bound_completed_repair_context(
+            row=row,
+            receipt=receipt,
+            source_run_id=str(receipt["source_run_id"]),
+            context_session_run_id=str(receipt["context_session_run_id"]),
+            coordination_checkpoint=coordination,
+        )
+
+    expected_completed = {
+        str(row["challenge_id"])
+        for row in progress["completed_challenge_repairs"]
+    }
+    if set(completed) != expected_completed or set(completed_contexts) != set(
+        completed
+    ):
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_downstream_progress_v2_completed_set_invalid"
+        )
+    return completed, completed_contexts, progress
 
 
 def _load_bound_downstream_repair_progress_bundle(
@@ -2593,11 +3087,16 @@ def run(authority_path: Path) -> dict[str, Any]:
         authority["schema_version"]
         == DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA
     )
+    repair_context_replacement = (
+        authority["schema_version"]
+        == DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA
+    )
     downstream_analysis_successor = authority["schema_version"] in {
         DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA,
         DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA,
+        DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA,
     }
     coordination_resume = (
         coordination_checkpoint_successor or downstream_analysis_successor
@@ -2670,6 +3169,11 @@ def run(authority_path: Path) -> dict[str, Any]:
     submission_profile = load_chat_completion_profile(
         _json(paths["submission_profile"])
     )
+    repair_analysis_profile = (
+        load_chat_completion_profile(_json(paths["repair_analysis_profile"]))
+        if repair_context_replacement
+        else None
+    )
     continuation_profile = (
         load_chat_completion_profile(
             _json(
@@ -2686,6 +3190,10 @@ def run(authority_path: Path) -> dict[str, Any]:
         else None
     )
     validate_deepseek_ga_profile(analysis_profile, strict_tools=False)
+    if repair_analysis_profile is not None:
+        validate_deepseek_ga_profile(
+            repair_analysis_profile, strict_tools=False
+        )
     validate_deepseek_ga_node_profile(
         submission_profile,
         node_class="contract_submission_non_thinking",
@@ -2809,6 +3317,13 @@ def run(authority_path: Path) -> dict[str, Any]:
         if downstream_analysis_successor
         else None
     )
+    downstream_progress_checkpoint_v2 = (
+        validate_downstream_repair_progress_checkpoint_v2(
+            _json(paths["downstream_repair_progress_checkpoint_v2"])
+        )
+        if repair_context_replacement
+        else None
+    )
     downstream_analysis_checkpoint = (
         validate_analysis_fragment_checkpoint(
             _json(paths["downstream_analysis_fragment_checkpoint"])
@@ -2835,13 +3350,24 @@ def run(authority_path: Path) -> dict[str, Any]:
         completed_downstream_repairs,
         completed_downstream_repair_contexts,
     ) = (
-        _load_bound_downstream_repair_progress_bundle(
-            checkpoint=downstream_progress_checkpoint,
-            fragment_checkpoint=downstream_analysis_checkpoint,
+        _load_bound_downstream_repair_progress_bundle_v2(
+            checkpoint=downstream_progress_checkpoint_v2,
+        )[:2]
+        if downstream_progress_checkpoint_v2 is not None
+        else (
+            _load_bound_downstream_repair_progress_bundle(
+                checkpoint=downstream_progress_checkpoint,
+                fragment_checkpoint=downstream_analysis_checkpoint,
+            )
+            if downstream_progress_checkpoint is not None
+            and downstream_analysis_checkpoint is not None
+            else ({}, {})
         )
-        if downstream_progress_checkpoint is not None
-        and downstream_analysis_checkpoint is not None
-        else ({}, {})
+    )
+    active_downstream_progress_checkpoint = (
+        downstream_progress_checkpoint_v2
+        if downstream_progress_checkpoint_v2 is not None
+        else downstream_progress_checkpoint
     )
     specialist_analysis_successor_zero = (
         _json(paths["specialist_analysis_successor_zero_call_proof"])
@@ -3276,6 +3802,60 @@ def run(authority_path: Path) -> dict[str, Any]:
                 if continuation_profile_replacement
                 else {}
             ),
+            **(
+                {
+                    "repair_context_replacement": {
+                        "failed_authority_ref": _relative(
+                            paths["failed_repair_authority"]
+                        ),
+                        "failed_authority_sha256": _sha(
+                            paths["failed_repair_authority"]
+                        ),
+                        "failed_public_result_ref": _relative(
+                            paths["failed_repair_result"]
+                        ),
+                        "failed_public_result_sha256": _sha(
+                            paths["failed_repair_result"]
+                        ),
+                        "disposition_ref": _relative(
+                            paths[
+                                "repair_context_failure_disposition_zero_call_proof"
+                            ]
+                        ),
+                        "disposition_sha256": _sha(
+                            paths[
+                                "repair_context_failure_disposition_zero_call_proof"
+                            ]
+                        ),
+                        "active_progress_checkpoint_ref": _relative(
+                            paths["downstream_repair_progress_checkpoint_v2"]
+                        ),
+                        "active_progress_checkpoint_sha256": _sha(
+                            paths["downstream_repair_progress_checkpoint_v2"]
+                        ),
+                        "active_progress_checkpoint_digest": (
+                            downstream_progress_checkpoint_v2[
+                                "checkpoint_digest"
+                            ]
+                        ),
+                        "replacement_profile_ref": _relative(
+                            paths["repair_analysis_profile"]
+                        ),
+                        "replacement_profile_sha256": _sha(
+                            paths["repair_analysis_profile"]
+                        ),
+                        "reused_completed_repair_count": len(
+                            completed_downstream_repairs
+                        ),
+                        "maximum_analysis_continuation_calls": 0,
+                        "failed_provider_attempt_count": 1,
+                        "failed_authority_reused": False,
+                    }
+                }
+                if repair_context_replacement
+                and downstream_progress_checkpoint_v2 is not None
+                else {}
+            ),
         }
         if downstream_analysis_successor
         and lead_plan_checkpoint is not None
@@ -3322,6 +3902,7 @@ def run(authority_path: Path) -> dict[str, Any]:
         analysis_resume_original_messages: (
             Sequence[Mapping[str, Any]] | None
         ) = None,
+        analysis_profile_override: Any | None = None,
     ) -> dict[str, Any]:
         nonlocal node_index
         node_index += 1
@@ -3411,7 +3992,9 @@ def run(authority_path: Path) -> dict[str, Any]:
         else:
             execution = execute_analyzed_preview_node(
                 **common,
-                analysis_profile=analysis_profile,
+                analysis_profile=(
+                    analysis_profile_override or analysis_profile
+                ),
                 messages=messages,
                 input_reference_count=_input_ref_count(messages),
                 analysis_output_token_ceiling=analysis_tokens,
@@ -3773,7 +4356,9 @@ def run(authority_path: Path) -> dict[str, Any]:
                     context=source_context,
                     prior_workpaper=completed_repair,
                     source_checkpoint_digest=(
-                        downstream_progress_checkpoint["checkpoint_digest"]
+                        active_downstream_progress_checkpoint[
+                            "checkpoint_digest"
+                        ]
                     ),
                     objective_digest=canonical_digest(objective_payload),
                     plan_digest=lead["lead_plan_digest"],
@@ -3803,6 +4388,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                 lead_plan=lead,
                 feedback_receipts=[receipt],
                 prior_workpaper=prior,
+                context_scope="role_repair",
             )
             resume_active_fragment = (
                 downstream_analysis_successor
@@ -3848,6 +4434,11 @@ def run(authority_path: Path) -> dict[str, Any]:
                 analysis_resume_original_messages=(
                     downstream_analysis_checkpoint_original_messages
                     if resume_active_fragment
+                    else None
+                ),
+                analysis_profile_override=(
+                    repair_analysis_profile
+                    if repair_context_replacement
                     else None
                 ),
             )
@@ -3951,6 +4542,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                     lead_plan=lead,
                     feedback_receipts=receipts,
                     prior_workpaper=prior,
+                    context_scope="role_repair",
                 )
                 workpapers_by_agent[target] = execute_node(
                     agent_id=target,
@@ -3976,6 +4568,11 @@ def run(authority_path: Path) -> dict[str, Any]:
                     risk="evaluator repair must not hide an upstream data or Harness defect",
                     analysis_tokens=12000,
                     submission_tokens=8000,
+                    analysis_profile_override=(
+                        repair_analysis_profile
+                        if repair_context_replacement
+                        else None
+                    ),
                 )
                 evaluator_repairs += 1
 

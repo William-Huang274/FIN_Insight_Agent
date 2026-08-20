@@ -1,0 +1,73 @@
+{
+  "schema_version": "fin_ia_multi_agent_downstream_repair_progress_checkpoint_v1_1",
+  "status": "completed_repairs_bound_for_one_fresh_role_scoped_pending_repair",
+  "case_key": "DELL",
+  "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R14_20260820",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_13.json",
+  "source_authority_sha256": "d8731e401c454a58963ce72baf445e84ca7651ad0760ffe1503cbac601bf2ef7",
+  "source_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_13.json",
+  "source_public_result_sha256": "74b4bbf1c6401b01133cde152da5c9924c947212d832843a0562431eed1ceee4",
+  "source_public_result_digest": "ef8c31d02795f6e91a1df98149f335c1440564718793bbd3fece3dbf8f8de616",
+  "source_terminal_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_r14_20260820/terminal_failure.json",
+  "source_terminal_result_sha256": "a24ff57bf082258604358385bfcc128c283bb4217f9ba38d1a7f130fd2b93fc3",
+  "source_terminal_result_digest": "cc386824ac75a9e8a686eabe2eca7f15277f6fe2a85653f7657645bfd209458d",
+  "predecessor_progress_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R11_downstream_repair_progress_checkpoint_v1_0.json",
+  "predecessor_progress_checkpoint_sha256": "a344f5e36f2638fd280f34a69e8265f399aba8f40f938a6fdee176a641b151d6",
+  "predecessor_progress_checkpoint_digest": "ec3c5c2cd87db834c33d5bd40a5be23f4b3f11b4651ef11806bc1a059bf75166",
+  "predecessor_analysis_fragment_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R11_cash_repair_analysis_fragment_checkpoint_v1_0.json",
+  "predecessor_analysis_fragment_checkpoint_sha256": "31337bc1c3f88ce4eeceb98adb2c0ab849dd6914cf9c66b090871cd4f447e1fb",
+  "predecessor_analysis_fragment_checkpoint_digest": "4de41c6334bea4c012234cd7dd55ecc2afad86696fc9d3427ebdbc7241f94b93",
+  "lead_coordination_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R10_lead_coordination_checkpoint_v1_0.json",
+  "lead_coordination_checkpoint_sha256": "f0731ce0989628c3129055b04bc39fcbebfcb0d595caa1099150522bce4e805a",
+  "lead_coordination_checkpoint_digest": "a55fb5bdbffaff934536dc08c4bf08f3b184934e855387e093273ae280ad14a2",
+  "accepted_challenge_ids": [
+    "CHALLENGE::B1FC30D87F6DB63FDB91003C",
+    "CHALLENGE::803238978B747FEED1CE12C9",
+    "CHALLENGE::71AAF31E7FBD5A99163BBE8D"
+  ],
+  "completed_challenge_repairs": [
+    {
+      "challenge_id": "CHALLENGE::B1FC30D87F6DB63FDB91003C",
+      "target_agent_id": "AGENT::DEMAND_QUALITY",
+      "node_id": "AGENT::DEMAND_QUALITY::COUNTER_REPAIR",
+      "workpaper_digest": "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0",
+      "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820",
+      "context_session_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820"
+    },
+    {
+      "challenge_id": "CHALLENGE::803238978B747FEED1CE12C9",
+      "target_agent_id": "AGENT::CASH_CONVERSION",
+      "node_id": "AGENT::CASH_CONVERSION::COUNTER_REPAIR",
+      "workpaper_digest": "31c61429d51b035751dbe696f7fb66c7e49ac187def38de1475482ba1b312a45",
+      "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R14_20260820",
+      "context_session_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820"
+    }
+  ],
+  "inherited_completed_repair_count": 1,
+  "pending_challenge_repairs": [
+    {
+      "challenge_id": "CHALLENGE::71AAF31E7FBD5A99163BBE8D",
+      "target_agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "node_id": "AGENT::SUPPLY_RELATIONSHIP::COUNTER_REPAIR"
+    }
+  ],
+  "repair_context_policy_digest": "2c0e0092f0fd3a25c8f834191ba465e74dae2d6d3dced1d8d8a4cc72023f9756",
+  "resume_policy": {
+    "maximum_analysis_continuation_calls": 0,
+    "completed_repair_reruns_forbidden": true,
+    "lead_coordination_rerun_forbidden": true,
+    "workpaper_reruns_forbidden": true,
+    "begin_at_first_pending_repair_with_fresh_analysis": true,
+    "pending_repair_context_must_be_role_scoped": true,
+    "new_fact_or_authority_forbidden": true
+  },
+  "claims": {
+    "new_model_calls": 0,
+    "new_network_calls": 0,
+    "candidate_promotions": 0,
+    "S1_pass": false,
+    "S3_pass": false
+  },
+  "recorded_at": "2026-08-20T18:25:00+08:00",
+  "checkpoint_digest": "b657445f7cdb00594c359e32b37a93015e5d7f3c43752ec45d803bd5879793e7"
+}

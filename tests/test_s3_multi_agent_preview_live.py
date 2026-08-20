@@ -29,6 +29,11 @@ DOWNSTREAM_ANALYSIS_CHECKPOINT = (
     / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
     "R11_cash_repair_analysis_fragment_checkpoint_v1_0.json"
 )
+DOWNSTREAM_PROGRESS_CHECKPOINT_V2 = (
+    ROOT
+    / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "R15_downstream_repair_progress_checkpoint_v1_1.json"
+)
 
 
 def _checkpoint() -> dict[str, object]:
@@ -133,6 +138,37 @@ def test_r11_completed_demand_replays_against_its_exact_model_context() -> None:
     assert replayed["workpaper_digest"] == (
         "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0"
     )
+
+
+def test_r15_progress_reuses_demand_and_cash_then_starts_fresh_supply() -> None:
+    progress = json.loads(
+        DOWNSTREAM_PROGRESS_CHECKPOINT_V2.read_text(encoding="utf-8")
+    )
+
+    completed, contexts, validated = (
+        runner._load_bound_downstream_repair_progress_bundle_v2(
+            checkpoint=progress
+        )
+    )
+
+    assert list(completed) == [
+        "CHALLENGE::B1FC30D87F6DB63FDB91003C",
+        "CHALLENGE::803238978B747FEED1CE12C9",
+    ]
+    assert set(contexts) == set(completed)
+    assert completed["CHALLENGE::803238978B747FEED1CE12C9"][
+        "workpaper_digest"
+    ] == "31c61429d51b035751dbe696f7fb66c7e49ac187def38de1475482ba1b312a45"
+    assert validated["pending_challenge_repairs"] == [
+        {
+            "challenge_id": "CHALLENGE::71AAF31E7FBD5A99163BBE8D",
+            "target_agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+            "node_id": "AGENT::SUPPLY_RELATIONSHIP::COUNTER_REPAIR",
+        }
+    ]
+    assert validated["resume_policy"][
+        "maximum_analysis_continuation_calls"
+    ] == 0
 
 
 def test_r11_completed_demand_context_rejects_request_digest_mutation() -> None:
@@ -638,3 +674,106 @@ def test_r14_authority_replaces_only_the_failed_continuation_profile(
         "stream": False,
         "thinking": {"type": "disabled"},
     }
+
+
+def test_r15_authority_reuses_two_repairs_and_starts_fresh_supply(
+    tmp_path: Path,
+) -> None:
+    source_authority_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "live_authority_v1_13.json"
+    )
+    scope_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "live_scope_decision_v1_10.json"
+    )
+    failed_result_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "live_result_v1_13.json"
+    )
+    disposition_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "R15_role_repair_context_failure_disposition_zero_call_result_v1_0.json"
+    )
+    progress_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "R15_downstream_repair_progress_checkpoint_v1_1.json"
+    )
+    repair_profile_ref = (
+        "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_"
+        "role_repair_analysis_high_profile_v1_0.json"
+    )
+    authority = json.loads(
+        (ROOT / source_authority_ref).read_text(encoding="utf-8")
+    )
+    scope = json.loads((ROOT / scope_ref).read_text(encoding="utf-8"))
+
+    def binding(ref: str) -> dict[str, str]:
+        path = ROOT / ref
+        return {"ref": ref, "sha256": runner._sha(path)}
+
+    authority["schema_version"] = (
+        runner.DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA
+    )
+    authority["status"] = (
+        "approved_for_one_R15_role_scoped_repair_context_"
+        "replacement_after_project_os_preflight"
+    )
+    authority["implementation_commit"] = runner._git_head()
+    for name in (
+        "failed_continuation_authority",
+        "failed_continuation_result",
+        "continuation_profile_failure_disposition_zero_call_proof",
+        "analysis_completion_profile",
+    ):
+        authority["bound_inputs"].pop(name)
+    authority["bound_inputs"].update(
+        {
+            "project_os_scope_decision": binding(scope_ref),
+            "predecessor_scope_decision": binding(
+                scope["predecessor_scope_decision_ref"]
+            ),
+            "predecessor_authority": binding(
+                scope["predecessor_live_authority_ref"]
+            ),
+            "predecessor_result": binding(
+                scope["predecessor_live_result_ref"]
+            ),
+            "failed_repair_authority": binding(source_authority_ref),
+            "failed_repair_result": binding(failed_result_ref),
+            "repair_context_failure_disposition_zero_call_proof": binding(
+                disposition_ref
+            ),
+            "downstream_repair_progress_checkpoint_v2": binding(
+                progress_ref
+            ),
+            "repair_analysis_profile": binding(repair_profile_ref),
+        }
+    )
+    authority["execution_limits"] = deepcopy(scope["execution_limits"])
+    output_prefix = "data/pytest_multi_agent_preview_r15_authority_unused"
+    authority["outputs"] = {
+        "run_id": "PYTEST-R15-UNUSED",
+        "capture_root_ref": output_prefix + "_captures",
+        "private_output_root_ref": output_prefix + "_private",
+        "public_result_ref": output_prefix + "_public.json",
+    }
+    authority["authority_statement"] = (
+        "pytest-only fresh Supply repair after immutable R14 failure"
+    )
+    authority_path = tmp_path / "authority.json"
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    validated, inputs, outputs = runner._validate_authority(authority_path)
+
+    assert validated["schema_version"] == (
+        runner.DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA
+    )
+    assert set(inputs) == set(authority["bound_inputs"])
+    assert outputs["run_id"] == "PYTEST-R15-UNUSED"
+    assert validated["execution_limits"][
+        "reused_completed_challenge_repair_count"
+    ] == 2
+    assert validated["execution_limits"][
+        "maximum_resumed_downstream_analysis_continuations"
+    ] == 0

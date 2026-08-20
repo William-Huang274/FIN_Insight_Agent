@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-20 | R14 证明局部 Agent repair 不能机械继承完整全案目录与 Lead 长叙事。模型拥有 10 条本角色 Evidence 和 4 个 typed gap，却因 91,182 字符上下文与 max thinking 将 12,000 completion token 全部用于 reasoning、产生 0 可见输出。产品必须为 repair 编译“角色级最小完整上下文”：保留本角色事实、gap、prior workpaper、challenge／feedback、权限和必要跨角色 bridge；无关目录只作 digest-bound omission，省略绝不等于不存在。Provider 档位必须按任务隔离，不能通过提高全局 token 上限掩盖 context selection 缺陷。完成节点必须按原上下文精确复用，只有 pending 节点获得 fresh analysis。多代 attempt-specific authority 分支不是长期产品能力，后续须收敛为通用 successor authority compiler。 |
 | 2026-08-20 | R13 证明 Provider profile 的名字不能替代真实运行语义。DeepSeek V4 Pro 的 `reasoning_effort=low` 仍按高思考执行，Cash continuation 的 4,000 completion token 中 3,705 被 reasoning 消耗，只留下 1,249 字符可见续写并再次截断。产品必须把“形成研究分析”和“基于已完成分析补齐字段／交卷”分成不同档位；后者可显式禁用 thinking，但不得改证据、观点或由 Harness 代写。TokenBudgetBasis 必须记录实际 thinking 状态和 reasoning／visible-output 消耗，不能只抄 profile 名。 |
 | 2026-08-20 | R12 证明“恢复已完成节点”不能只恢复业务 payload 后在新 run 中重编上下文。FeedbackReceipt 含 session／time／challenge 等身份，重编会产生另一份合法但不同的 context，并使原 workpaper digest 正确失配。产品恢复单位必须同时绑定已验证 payload、原模型可见 context 和 request／capture／attempt lineage；完成节点不得获得新 FeedbackReceipt 或重新执行，只有 pending 节点进入当前 run。R12 保持 immutable failure；该规范先做 exact capture replay 和 mutation，再以 fresh authority 复验。 |
 | 2026-08-20 | R5 自然 continuation 暴露 partial-field 与 missing-field 不能共用同一完成标记：模型要原地续完被截断半句时，不应被要求先插入该字段的新标题；真正缺失的后续字段仍必须有精确标题和终态回执。Harness 必须区分“续写当前字段”和“新增缺失字段”，否则会把业务上完整的多轮恢复误判为失败。R5 仍保持 failed；修复须先用 immutable capture 零调用回放，再从严格 submission 续跑，不允许重做已完成分析或追认历史结果。 |

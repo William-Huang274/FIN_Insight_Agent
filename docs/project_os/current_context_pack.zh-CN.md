@@ -9,6 +9,15 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
 
+## 2026-08-20 Multi-Agent Preview R13 Provider 档位失败与 R14 唯一 replacement
+
+- R13 使用 clean／synced commit `1e9dfb11...` 和 fresh Project OS preflight 签发并消费。它精确复用了 R10 Demand 的原模型可见上下文，成功越过 R12 的 `bound_workpaper_digest` 失败；RC-AR-013 因此可按自然运行证据关闭。
+- R13 只启动 pending Cash continuation：1 个新模型节点、1 个 Provider attempt、1 次 analysis continuation、0 submission、0 外源网络、0 Candidate promotion。失败为 `multi_agent_preview_analysis_continuation_finish_reason_invalid:length`，完整失败、请求和响应均已 capture-first 保存。
+- R13 请求含 30,656 prompt token；4,000 completion token 中 3,705 为 reasoning，可见输出仅 1,249 字符。旧 continuation profile 虽写 `reasoning_effort=low`，DeepSeek V4 Pro 实际仍按高思考执行。最早责任层是 S0 Provider profile adapter／TokenBudgetBasis，不是 S1 资料、Cash 角色、上下文 replay、Tool Schema 或网络。
+- replacement profile 显式 `thinking=disabled`。它只用于已深度分析后的 checkpoint 字段补齐；原 Evidence、NumericFact、Role、Feedback、Cash fragment 与缺失字段不变，Harness 不写观点。R13 可见残稿不得晋升业务结果。
+- R14 零调用工程门已通过：综合定向 `77 passed`、全仓 `891 passed`、compileall、active baseline `184 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、732 份 configs JSON、8 份 Project OS JSONL／827 行、7,439-file secret scan 和 diff check 均有效。当前只剩 clean commit／push 与 fresh preflight，尚未发起 R14 live。
+- R14 是同一 Cash continuation 的唯一 profile replacement。若仍失败，禁止第三次 Cash profile／Prompt 修补，必须转模型职责或控制面处置。即使 R14 完成，仍须继续 Supply、Evaluator、Writer，再做独立 L1、八维质量、paired gain 和 qualified-human；S1／S3／泛化／S4／S5 均未通过。
+
 ## 2026-08-20 Multi-Agent Preview R12 原上下文漂移与 R13 replacement 门
 
 - R12 使用 clean／synced commit `73db3778...e0590` 和 fresh Project OS preflight 签发并消费。它没有进入 Provider：新模型节点、Provider attempt、analysis、submission、网络和 Candidate promotion 均为 0；公开结果为 `multi_agent_bound_workpaper_digest_invalid`，R12 必须保持 immutable terminal failure。

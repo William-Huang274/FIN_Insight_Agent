@@ -13,6 +13,7 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-20 | R13 证明 Provider profile 的名字不能替代真实运行语义。DeepSeek V4 Pro 的 `reasoning_effort=low` 仍按高思考执行，Cash continuation 的 4,000 completion token 中 3,705 被 reasoning 消耗，只留下 1,249 字符可见续写并再次截断。产品必须把“形成研究分析”和“基于已完成分析补齐字段／交卷”分成不同档位；后者可显式禁用 thinking，但不得改证据、观点或由 Harness 代写。TokenBudgetBasis 必须记录实际 thinking 状态和 reasoning／visible-output 消耗，不能只抄 profile 名。 |
 | 2026-08-20 | R12 证明“恢复已完成节点”不能只恢复业务 payload 后在新 run 中重编上下文。FeedbackReceipt 含 session／time／challenge 等身份，重编会产生另一份合法但不同的 context，并使原 workpaper digest 正确失配。产品恢复单位必须同时绑定已验证 payload、原模型可见 context 和 request／capture／attempt lineage；完成节点不得获得新 FeedbackReceipt 或重新执行，只有 pending 节点进入当前 run。R12 保持 immutable failure；该规范先做 exact capture replay 和 mutation，再以 fresh authority 复验。 |
 | 2026-08-20 | R5 自然 continuation 暴露 partial-field 与 missing-field 不能共用同一完成标记：模型要原地续完被截断半句时，不应被要求先插入该字段的新标题；真正缺失的后续字段仍必须有精确标题和终态回执。Harness 必须区分“续写当前字段”和“新增缺失字段”，否则会把业务上完整的多轮恢复误判为失败。R5 仍保持 failed；修复须先用 immutable capture 零调用回放，再从严格 submission 续跑，不允许重做已完成分析或追认历史结果。 |
 | 2026-08-20 | R4 Multi-Agent Preview 证明：即使分析／交卷已分离，长分析仍可能在形成大量有效内容后截断；把整个节点作废或简单扩大上限都不是合格 Agent 行为。产品 Runtime 必须能把可见分析片段保存为无业务权限的 digest-bound checkpoint，向同一 Agent 返回已完成／缺失章节的 FeedbackReceipt，并以一次有界 continuation 只补缺失内容；合并后仍须经过原严格提交合同。该能力当前只完成零调用工程门，不等于通用上下文压缩、自然反思、S1／S3 或完整 Multi-Agent 报告通过。 |
@@ -2906,3 +2907,14 @@ Harness 必须保存原片段、续写、各自 capture／digest、完成字段�
 恢复时必须从不可变 model-visible request capture 取得原 context，并验证 capture 类型、无凭据标记、run／attempt identity、request digest、消息角色、Agent、challenge、prior artifact 和 context digest。完成节点不得签发新 FeedbackReceipt、不得获得新 TokenBudgetBasis、不得重新调用模型；新 run 只能为仍 pending 的节点建立 session。若确需用新 context 重新判断，必须显式创建新的 repair／re-adjudication 节点，不能冒充 checkpoint replay。
 
 该要求同时防止两种错误：一是把新上下文下的旧答案误当成仍有效，二是因为 Harness 自己重编了上下文而错误否定原有效答案。它属于 provider-neutral Agent Runtime，不是 DeepSeek 适配特例；通过 capture replay 只证明恢复完整性，不证明研究内容、S1／S3 或发布质量。
+
+### 16.50 深度研究分析与 checkpoint 补齐必须使用不同 Provider 档位（2026-08-20）
+
+模型节点的 `TokenBudgetBasis` 不能把 `low`、`medium` 等配置标签当成供应商真实执行语义。Provider adapter 必须按当前官方语义和真实 usage 记录 thinking 是否启用、reasoning token、可见输出 token／字符、finish reason，以及两者是否共同占用 completion ceiling。若供应商把多个 effort label 映射到同一思考强度，产品必须如实记录，不能用标签制造虚假的预算差异。
+
+FIN 正式区分两类节点：
+
+1. **研究分析节点**负责阅读证据、形成机制、反方、信息边界与 What-Would-Change；应按任务重要性获得有依据的 thinking 档位和 token 上限。
+2. **checkpoint 补齐／合同映射节点**只在原分析已形成且内容寻址的前提下，完成 checkpoint 明确列出的缺失字段或把完整草稿映射为严格 Tool Call。它可以显式 `thinking=disabled`，但不得改变研究输入、重做已完成分析、引入新观点或获得 Evidence／NumericFact 权威。
+
+一次 continuation 因 profile 语义错误而截断时，必须保留失败 capture，先做零调用处置，再用新 attempt／authority 进行至多一次 profile replacement。若 replacement 仍不能完成同一 Cash continuation，不得继续为该节点增加第三种 DeepSeek 专用续写策略；应停止并升级为模型职责或控制面处置。Profile adapter 的失败不能冒充 S1 资料不足、Agent 角色无效或研究内容失败。

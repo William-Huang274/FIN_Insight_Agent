@@ -558,3 +558,83 @@ def test_r13_authority_requires_exact_r10_source_context_replay(
     )
     assert set(inputs) == set(authority["bound_inputs"])
     assert outputs["run_id"] == "PYTEST-R13-UNUSED"
+
+
+def test_r14_authority_replaces_only_the_failed_continuation_profile(
+    tmp_path: Path,
+) -> None:
+    failed_authority_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "live_authority_v1_12.json"
+    )
+    failed_result_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "live_result_v1_12.json"
+    )
+    disposition_ref = (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "R14_continuation_profile_failure_disposition_zero_call_result_v1_0.json"
+    )
+    completion_profile_ref = (
+        "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_"
+        "analysis_completion_non_thinking_profile_v1_0.json"
+    )
+    authority = json.loads(
+        (ROOT / failed_authority_ref).read_text(encoding="utf-8")
+    )
+
+    def binding(ref: str) -> dict[str, str]:
+        path = ROOT / ref
+        return {"ref": ref, "sha256": runner._sha(path)}
+
+    authority["schema_version"] = (
+        runner.DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA
+    )
+    authority["status"] = (
+        "approved_for_one_R14_non_thinking_continuation_profile_"
+        "replacement_after_project_os_preflight"
+    )
+    authority["implementation_commit"] = runner._git_head()
+    for name in (
+        "failed_preprovider_authority",
+        "failed_preprovider_result",
+        "preprovider_failure_disposition_zero_call_proof",
+    ):
+        authority["bound_inputs"].pop(name)
+    authority["bound_inputs"].update(
+        {
+            "failed_continuation_authority": binding(failed_authority_ref),
+            "failed_continuation_result": binding(failed_result_ref),
+            "continuation_profile_failure_disposition_zero_call_proof": binding(
+                disposition_ref
+            ),
+            "analysis_completion_profile": binding(completion_profile_ref),
+        }
+    )
+    output_prefix = "data/pytest_multi_agent_preview_r14_authority_unused"
+    authority["outputs"] = {
+        "run_id": "PYTEST-R14-UNUSED",
+        "capture_root_ref": output_prefix + "_captures",
+        "private_output_root_ref": output_prefix + "_private",
+        "public_result_ref": output_prefix + "_public.json",
+    }
+    authority["authority_statement"] = (
+        "pytest-only provider-profile replacement after immutable R13 failure"
+    )
+    authority_path = tmp_path / "authority.json"
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    validated, inputs, outputs = runner._validate_authority(authority_path)
+
+    assert validated["schema_version"] == (
+        runner.DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA
+    )
+    assert set(inputs) == set(authority["bound_inputs"])
+    assert outputs["run_id"] == "PYTEST-R14-UNUSED"
+    assert json.loads(
+        inputs["analysis_completion_profile"].read_text(encoding="utf-8")
+    )["request_defaults"] == {
+        "max_tokens": 2000,
+        "stream": False,
+        "thinking": {"type": "disabled"},
+    }

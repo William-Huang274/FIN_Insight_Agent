@@ -551,15 +551,7 @@ def test_analysis_checkpoint_can_resume_with_capture_bound_original_messages(
     execution = execute_analyzed_preview_node(
         analysis_profile=_chat_profile(thinking=True),
         submission_profile=_chat_profile(thinking=False),
-        analysis_continuation_profile=ChatCompletionProfile(
-            **{
-                **_chat_profile(thinking=True).__dict__,
-                "request_defaults": {
-                    **_chat_profile(thinking=True).request_defaults,
-                    "reasoning_effort": "low",
-                },
-            }
-        ),
+        analysis_continuation_profile=_chat_profile(thinking=False),
         session_state=state,
         messages=(),
         analysis_checkpoint_original_messages=(
@@ -608,6 +600,9 @@ def test_analysis_checkpoint_can_resume_with_capture_bound_original_messages(
     ]
     assert observed[0]["content"] == "ORIGINAL_COUNTER_SYSTEM"
     assert observed[2]["content"] == partial
+    assert execution.token_budget_basis["analysis"]["reasoning_profile"] == (
+        "deepseek-v4-pro thinking=disabled visible analysis_continuation"
+    )
 
 
 @pytest.mark.parametrize(

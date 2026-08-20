@@ -316,6 +316,21 @@ RC-AR-013 归 S0 Agent Runtime 的 checkpoint context lineage。通用恢复规�
 
 零调用精确回放、mutation 与完整工程门已通过：综合定向 `112 passed`、全仓 `890 passed`、compileall、active baseline、Project OS JSONL、secret scan 和 diff check 均有效。它仍只证明 checkpoint 恢复工程语义；R13 只有在 clean commit／push 和 fresh Project OS preflight 后才可签发。即使 R13 形成报告，也仍须完成独立 L1、八维绝对内容质量、同输入 paired gain 和 qualified-human 内容验收；S1、S3、泛化、S4／S5 不自动通过。
 
+### 4W. R13 已越过原上下文 replay，R14 只修 completion profile
+
+R13 已自然证明 4V 的修复：原 Demand repair 在其 R10 model-visible context 下通过复用校验，运行只启动 Cash continuation。R13 随后以 `multi_agent_preview_analysis_continuation_finish_reason_invalid:length` 终止；4,000 completion token 中 3,705 为 reasoning，可见续写只有 1,249 字符。DeepSeek V4 Pro 的 low／medium effort 映射到高思考，因此旧 profile 的“low”并没有为补齐任务释放可见输出预算。
+
+下一步只允许一个 R14 profile replacement：
+
+1. R13 authority、公开结果、terminal 和两份 capture 保持不可变；
+2. R14 使用新 run／attempt／outputs，并绑定 R13 失败处置；
+3. 原研究输入、Cash fragment、原对话、缺失字段、完成 Demand 和其他 checkpoint 全部不变；
+4. continuation 显式禁用 thinking，仍只补 checkpoint 所列字段；
+5. submission、Supply、Evaluator 和 Writer 继续使用既有独立节点职责；
+6. 若同一 Cash continuation 再失败，禁止 R15 式第三次 profile／Prompt 修补，转项目级模型职责处置。
+
+零调用回放与全仓门已经通过：综合定向 `77 passed`、全仓 `891 passed`、compileall、active baseline、JSON／JSONL、secret scan 和 diff check 均有效。R14 仍须等待 clean commit／push 和 fresh preflight 后才可签发。它仍属于当前 DELL bounded Preview，不授予 S1、S3、泛化、qualified-human、Workbench publication 或 release 权威。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

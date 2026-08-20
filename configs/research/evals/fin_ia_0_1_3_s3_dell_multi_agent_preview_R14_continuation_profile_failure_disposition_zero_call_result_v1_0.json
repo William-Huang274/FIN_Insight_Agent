@@ -1,0 +1,62 @@
+{
+  "schema_version": "fin_ia_s3_multi_agent_preview_continuation_profile_failure_disposition_zero_call_v1_0",
+  "status": "R13_thinking_budget_starvation_replay_pass",
+  "case_key": "DELL",
+  "failed_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R13_20260820",
+  "failed_node_id": "AGENT::CASH_CONVERSION::COUNTER_REPAIR",
+  "failure_stage": "cash_repair_analysis_continuation_provider_completion",
+  "failure_code": "multi_agent_preview_analysis_continuation_finish_reason_invalid:length",
+  "failed_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_12.json",
+  "failed_authority_sha256": "dbbd658db601a194a6d61c367673cca03eda51fb9a1e734a6278422af8b22f6b",
+  "failed_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_12.json",
+  "failed_public_result_sha256": "b7032a5c048909c1f5aec6ca742bb4c4c13e3d8f7599786306b61532ba117fe7",
+  "failed_public_result_digest": "3ae0b792d82ac969f8d5bb4a01dc37a97641706632e0da01982f7d7c8ebc8e54",
+  "failed_terminal_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_r13_20260820/terminal_failure.json",
+  "failed_terminal_result_sha256": "80c494a3240d71accee61c29916ecfb1f1129b39573067b86d543cf3641f2a49",
+  "failed_terminal_result_digest": "5990f3633e48dd4f5546540649aa95147e0edc5de6c77660864e259351d521fb",
+  "request_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r13_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R13_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R13_20260820-AGENT-CASH_CONVERSION-COUNTER_REPAIR-ANALYSIS-CONTINUATION-ATTEMPT-01/model_visible_request.json",
+  "request_capture_sha256": "d9daa186c8b13447c35cdb307690605d5898b870c2de9e60db2d4f8fea11fc70",
+  "request_digest": "b086b9de0b4fc05222f9b2c5113a07f662e138e34399f74133bf8c632f1988f3",
+  "response_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r13_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R13_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R13_20260820-AGENT-CASH_CONVERSION-COUNTER_REPAIR-ANALYSIS-CONTINUATION-ATTEMPT-01/provider_response.json",
+  "response_capture_sha256": "8e99e1c18fa513858ce4cec8f48d3ab887dd95ad8283e31f3843d9b6a62dbfe2",
+  "response_digest": "81f08873c2a3de7d31ed13ef91525bd9e1da17f6dedbe20762c81a3caa222026",
+  "failed_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_analysis_continuation_low_profile_v1_0.json",
+  "failed_profile_sha256": "75f93b642f005d43896ebdefe19cc29b069a019d1933a57df6961672ecb7fe96",
+  "replacement_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_analysis_completion_non_thinking_profile_v1_0.json",
+  "replacement_profile_sha256": "2c4a67a985e9f8773f56df0a232de49cab0810504eca816e100c2cc4e9622468",
+  "reasoning_budget_observation": {
+    "completion_tokens": 4000,
+    "reasoning_tokens": 3705,
+    "visible_output_character_count": 1249,
+    "provider_low_effort_was_not_low_thinking": true
+  },
+  "root_cause": "The continuation profile enabled thinking and labeled reasoning_effort=low, but DeepSeek V4 Pro maps low and medium thinking effort to high. The provider consumed 3705 of the 4000 completion tokens as reasoning, leaving only a short visible continuation. The immutable research context, Evidence, NumericFact, role, challenge and original fragment were not the failure owner.",
+  "provider_semantics_refs": [
+    "https://api-docs.deepseek.com/guides/thinking_mode"
+  ],
+  "replacement_rationale": "This node already completed a high-reasoning analysis and is only filling the checkpoint-declared missing fields. One explicit non-thinking completion is therefore a provider-profile correction, not a downgrade of the original research analysis or a new research decision.",
+  "replacement_constraints": {
+    "R13_terminal_failure_remains_immutable": true,
+    "new_attempt_id_required": true,
+    "failed_authority_reuse_forbidden": true,
+    "research_inputs_unchanged": true,
+    "analysis_fragment_unchanged": true,
+    "completed_node_reruns_forbidden": true,
+    "one_non_thinking_replacement_only": true,
+    "further_cash_continuation_replacement_forbidden": true
+  },
+  "model_calls": 1,
+  "network_calls": 0,
+  "candidate_promotions": 0,
+  "claims": {
+    "R13_failure_preserved": true,
+    "R13_visible_output_business_promoted": false,
+    "R10_cash_fragment_business_promoted": false,
+    "S1_pass": false,
+    "S3_pass": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false
+  },
+  "recorded_at": "2026-08-20T16:10:00+08:00",
+  "result_digest": "6a51062157af3b4bd604e44d86a87ac840b640bfd9f11acae76c4b5ff2325764"
+}

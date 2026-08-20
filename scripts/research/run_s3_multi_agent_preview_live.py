@@ -144,6 +144,9 @@ DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA = (
 DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA = (
     "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_12"
 )
+DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_13"
+)
 FULL_SCHEMA_V1 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_1"
 FULL_SCHEMA_V2 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_2"
 PUBLIC_SCHEMA_V1 = "fin_ia_s3_dell_multi_agent_preview_live_result_v1_1"
@@ -245,6 +248,9 @@ def _validate_authority(
     context_replay_replacement = (
         schema == DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA
     )
+    continuation_profile_replacement = (
+        schema == DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA
+    )
     preprovider_replacement = schema in {
         DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
@@ -253,6 +259,7 @@ def _validate_authority(
         DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA,
         DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
+        DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA,
     }
     expected_status_by_schema = {
         PLAN_SUCCESSOR_AUTHORITY_SCHEMA: (
@@ -294,6 +301,10 @@ def _validate_authority(
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA: (
             "approved_for_one_R13_source_context_replay_replacement_after_"
             "project_os_preflight"
+        ),
+        DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA: (
+            "approved_for_one_R14_non_thinking_continuation_profile_"
+            "replacement_after_project_os_preflight"
         ),
     }
     expected_status = expected_status_by_schema.get(schema)
@@ -348,6 +359,13 @@ def _validate_authority(
                 "failed_preprovider_authority",
                 "failed_preprovider_result",
                 "preprovider_failure_disposition_zero_call_proof",
+            }
+        if continuation_profile_replacement:
+            required_inputs |= {
+                "failed_continuation_authority",
+                "failed_continuation_result",
+                "continuation_profile_failure_disposition_zero_call_proof",
+                "analysis_completion_profile",
             }
     elif coordination_checkpoint_successor:
         required_inputs = base_inputs | {
@@ -1102,6 +1120,166 @@ def _validate_authority(
         if not (legacy_replacement_valid or context_replay_valid):
             raise MultiAgentPreviewLiveError(
                 "multi_agent_preview_preprovider_replacement_invalid"
+            )
+    if continuation_profile_replacement:
+        failed_authority = _json(inputs["failed_continuation_authority"])
+        failed_result = _json(inputs["failed_continuation_result"])
+        disposition = _json(
+            inputs["continuation_profile_failure_disposition_zero_call_proof"]
+        )
+        failed_public_body = {
+            key: value
+            for key, value in failed_result.items()
+            if key != "result_digest"
+        }
+        failed_terminal_path = _resolve(
+            str(disposition.get("failed_terminal_result_ref") or "")
+        )
+        failed_terminal = _json(failed_terminal_path)
+        failed_terminal_body = {
+            key: value
+            for key, value in failed_terminal.items()
+            if key != "full_result_digest"
+        }
+        disposition_body = {
+            key: value
+            for key, value in disposition.items()
+            if key != "result_digest"
+        }
+        terminal_attempts = failed_terminal.get("terminal_node_attempts") or []
+        terminal_attempt = terminal_attempts[0] if len(terminal_attempts) == 1 else {}
+        usage = terminal_attempt.get("usage") or {}
+        completion_details = usage.get("completion_tokens_details") or {}
+        completion_profile = _json(inputs["analysis_completion_profile"])
+        request_ref = str(disposition.get("request_capture_ref") or "")
+        response_ref = str(disposition.get("response_capture_ref") or "")
+        request_path = _resolve(request_ref) if request_ref else ROOT
+        response_path = _resolve(response_ref) if response_ref else ROOT
+        request_capture = _json(request_path) if request_path.is_file() else {}
+        response_capture = _json(response_path) if response_path.is_file() else {}
+        constraints = disposition.get("replacement_constraints") or {}
+        if not (
+            failed_authority.get("schema_version")
+            == DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA
+            and failed_authority.get("outputs", {}).get("run_id")
+            == "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R13_20260820"
+            and failed_authority.get("outputs", {}).get("public_result_ref")
+            == _relative(inputs["failed_continuation_result"])
+            and failed_result.get("authority_ref")
+            == _relative(inputs["failed_continuation_authority"])
+            and failed_result.get("status")
+            == "multi_agent_preview_terminal_failure_preserved"
+            and failed_result.get("failure_code")
+            == "multi_agent_preview_analysis_continuation_finish_reason_invalid:length"
+            and failed_result.get("result_digest")
+            == canonical_digest(failed_public_body)
+            and (failed_result.get("execution") or {}).get(
+                "new_model_nodes_started"
+            )
+            == 1
+            and (failed_result.get("execution") or {}).get(
+                "analysis_continuation_calls_preserved"
+            )
+            == 1
+            and (failed_result.get("execution") or {}).get(
+                "provider_attempts_preserved"
+            )
+            == 1
+            and (failed_result.get("execution") or {}).get(
+                "submission_attempts_preserved"
+            )
+            == 0
+            and disposition.get("schema_version")
+            == (
+                "fin_ia_s3_multi_agent_preview_continuation_profile_"
+                "failure_disposition_zero_call_v1_0"
+            )
+            and disposition.get("status")
+            == "R13_thinking_budget_starvation_replay_pass"
+            and disposition.get("failed_authority_ref")
+            == _relative(inputs["failed_continuation_authority"])
+            and disposition.get("failed_authority_sha256")
+            == _sha(inputs["failed_continuation_authority"])
+            and disposition.get("failed_public_result_ref")
+            == _relative(inputs["failed_continuation_result"])
+            and disposition.get("failed_public_result_sha256")
+            == _sha(inputs["failed_continuation_result"])
+            and disposition.get("failed_public_result_digest")
+            == failed_result.get("result_digest")
+            and disposition.get("failed_terminal_result_sha256")
+            == _sha(failed_terminal_path)
+            and disposition.get("failed_terminal_result_digest")
+            == failed_terminal.get("full_result_digest")
+            == canonical_digest(failed_terminal_body)
+            and disposition.get("failure_stage")
+            == "cash_repair_analysis_continuation_provider_completion"
+            and disposition.get("failure_code")
+            == failed_result.get("failure_code")
+            and disposition.get("model_calls") == 1
+            and disposition.get("network_calls") == 0
+            and disposition.get("candidate_promotions") == 0
+            and terminal_attempt.get("phase") == "analysis_continuation"
+            and terminal_attempt.get("finish_reason") == "length"
+            and usage.get("completion_tokens") == 4000
+            and completion_details.get("reasoning_tokens") == 3705
+            and usage.get("prompt_tokens") == 30656
+            and disposition.get("reasoning_budget_observation")
+            == {
+                "completion_tokens": 4000,
+                "reasoning_tokens": 3705,
+                "visible_output_character_count": 1249,
+                "provider_low_effort_was_not_low_thinking": True,
+            }
+            and disposition.get("failed_profile_ref")
+            == _relative(inputs["analysis_continuation_profile"])
+            and disposition.get("failed_profile_sha256")
+            == _sha(inputs["analysis_continuation_profile"])
+            and disposition.get("replacement_profile_ref")
+            == _relative(inputs["analysis_completion_profile"])
+            and disposition.get("replacement_profile_sha256")
+            == _sha(inputs["analysis_completion_profile"])
+            and request_path.is_file()
+            and response_path.is_file()
+            and disposition.get("request_capture_sha256") == _sha(request_path)
+            and disposition.get("response_capture_sha256") == _sha(response_path)
+            and disposition.get("request_digest")
+            == request_capture.get("request_digest")
+            == terminal_attempt.get("request_digest")
+            and disposition.get("response_digest")
+            == response_capture.get("response_digest")
+            == terminal_attempt.get("response_digest")
+            and Path(str(terminal_attempt.get("request_capture_ref") or "")).resolve()
+            == request_path
+            and Path(str(terminal_attempt.get("response_capture_ref") or "")).resolve()
+            == response_path
+            and disposition.get("result_digest")
+            == canonical_digest(disposition_body)
+            and completion_profile.get("provider_id") == "deepseek"
+            and completion_profile.get("model") == "deepseek-v4-pro"
+            and completion_profile.get("base_url") == "https://api.deepseek.com"
+            and completion_profile.get("endpoint") == "/chat/completions"
+            and completion_profile.get("request_defaults")
+            == {
+                "max_tokens": 2000,
+                "stream": False,
+                "thinking": {"type": "disabled"},
+            }
+            and (completion_profile.get("authority") or {}).get("retry_count")
+            == 0
+            and constraints
+            == {
+                "R13_terminal_failure_remains_immutable": True,
+                "new_attempt_id_required": True,
+                "failed_authority_reuse_forbidden": True,
+                "research_inputs_unchanged": True,
+                "analysis_fragment_unchanged": True,
+                "completed_node_reruns_forbidden": True,
+                "one_non_thinking_replacement_only": True,
+                "further_cash_continuation_replacement_forbidden": True,
+            }
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_continuation_profile_replacement_invalid"
             )
     zero = _json(inputs["zero_call_proof"])
     if zero.get("status") != "zero_call_topology_and_current_tool_spine_pass":
@@ -2411,10 +2589,15 @@ def run(authority_path: Path) -> dict[str, Any]:
         DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
     }
+    continuation_profile_replacement = (
+        authority["schema_version"]
+        == DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA
+    )
     downstream_analysis_successor = authority["schema_version"] in {
         DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA,
         DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
+        DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA,
     }
     coordination_resume = (
         coordination_checkpoint_successor or downstream_analysis_successor
@@ -2488,7 +2671,15 @@ def run(authority_path: Path) -> dict[str, Any]:
         _json(paths["submission_profile"])
     )
     continuation_profile = (
-        load_chat_completion_profile(_json(paths["analysis_continuation_profile"]))
+        load_chat_completion_profile(
+            _json(
+                paths[
+                    "analysis_completion_profile"
+                    if continuation_profile_replacement
+                    else "analysis_continuation_profile"
+                ]
+            )
+        )
         if analysis_successor
         or specialist_analysis_successor
         or downstream_analysis_successor
@@ -2499,7 +2690,12 @@ def run(authority_path: Path) -> dict[str, Any]:
         submission_profile,
         node_class="contract_submission_non_thinking",
     )
-    if (
+    if continuation_profile_replacement:
+        validate_deepseek_ga_node_profile(
+            continuation_profile,
+            node_class="contract_submission_non_thinking",
+        )
+    elif (
         analysis_successor
         or specialist_analysis_successor
         or downstream_analysis_successor
@@ -3040,6 +3236,44 @@ def run(authority_path: Path) -> dict[str, Any]:
                     }
                 }
                 if preprovider_replacement
+                else {}
+            ),
+            **(
+                {
+                    "continuation_profile_replacement": {
+                        "failed_authority_ref": _relative(
+                            paths["failed_continuation_authority"]
+                        ),
+                        "failed_authority_sha256": _sha(
+                            paths["failed_continuation_authority"]
+                        ),
+                        "failed_public_result_ref": _relative(
+                            paths["failed_continuation_result"]
+                        ),
+                        "failed_public_result_sha256": _sha(
+                            paths["failed_continuation_result"]
+                        ),
+                        "disposition_ref": _relative(
+                            paths[
+                                "continuation_profile_failure_disposition_zero_call_proof"
+                            ]
+                        ),
+                        "disposition_sha256": _sha(
+                            paths[
+                                "continuation_profile_failure_disposition_zero_call_proof"
+                            ]
+                        ),
+                        "replacement_profile_ref": _relative(
+                            paths["analysis_completion_profile"]
+                        ),
+                        "replacement_profile_sha256": _sha(
+                            paths["analysis_completion_profile"]
+                        ),
+                        "failed_provider_attempt_count": 1,
+                        "failed_authority_reused": False,
+                    }
+                }
+                if continuation_profile_replacement
                 else {}
             ),
         }

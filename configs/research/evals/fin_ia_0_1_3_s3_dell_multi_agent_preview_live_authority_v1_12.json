@@ -1,0 +1,129 @@
+{
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_12",
+  "status": "approved_for_one_R13_source_context_replay_replacement_after_project_os_preflight",
+  "authorized_at": "2026-08-20T15:30:00+08:00",
+  "implementation_commit": "1e9dfb11637240063557031491c00c16f1068a8a",
+  "bound_inputs": {
+    "project_os_scope_decision": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_scope_decision_v1_9.json",
+      "sha256": "2a862210f3529ddc5c0d596560366beeb27ea80f1fefde7e18d538d00e1e7227"
+    },
+    "topology": {
+      "ref": "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json",
+      "sha256": "1c2065c2e585984b8b4ef485c587a1d20425122d0fe625cb7c7d6f0c290d4c85"
+    },
+    "objective": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_objective_v1_0.json",
+      "sha256": "3772ead9ccbb7861013825d9d1e96e30588af33879725173f3791c140ea981d9"
+    },
+    "zero_call_proof": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_multi_agent_preview_zero_call_result_v1_2.json",
+      "sha256": "aae7214b118e12f4c438b4fa0234140042c3736d301c32faace0d35fe69bf7ac"
+    },
+    "successor_zero_call_proof": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R4_plan_successor_zero_call_result_v1_0.json",
+      "sha256": "39e9fdd815dd9df3982edf7c9efbcbdc94f872c2ff3d65d4d562c7caece408bf"
+    },
+    "planning_overlay": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_multi_agent_preview_planning_overlay_v1_0.json",
+      "sha256": "1d2fb589c1623e2650f55cd53dcdddf9d3a8df442c6fcb792f06b1f69d7e5757"
+    },
+    "analysis_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+      "sha256": "dbc14dbcc186b81f24a5b048056e663649614cd62bef1aceb98b9873189603a1"
+    },
+    "submission_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_contract_submission_non_thinking_profile_v1_0.json",
+      "sha256": "2c4a67a985e9f8773f56df0a232de49cab0810504eca816e100c2cc4e9622468"
+    },
+    "historical_five_cell_assessment": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_R7_content_assessment_v1_0.json",
+      "sha256": "63f02be58c23706454ed7db3e59c45ed8a0633d1ac498a42ffe55224f37cc676"
+    },
+    "predecessor_plan_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R3_specialist_plan_checkpoint_v1_0.json",
+      "sha256": "b8857eabe863ff7b259bf883ef4b6c79f8fcbc61a295940610b0a6d85aedd7e9"
+    },
+    "predecessor_scope_decision": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_scope_decision_v1_8.json",
+      "sha256": "01f65569633a1aac2751a9129ee8e2d9ca859ec5ef9c99ab103f67acfbb31dcd"
+    },
+    "predecessor_authority": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_9.json",
+      "sha256": "522b845c2b9d41dca303e67bc51866b87730c66cf3e49f4abf6a80bc7608fbf1"
+    },
+    "predecessor_result": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_9.json",
+      "sha256": "e6abe4fef86927f2abe0e9e6921302246ad9908ea4de4e8ea2263f1a4b1dc074"
+    },
+    "lead_plan_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R6_lead_plan_checkpoint_v1_0.json",
+      "sha256": "05b8de7ba9089e79ece49181435191813025203bffd9e67bddf057e5214b8167"
+    },
+    "workpaper_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R8_five_workpaper_checkpoint_v1_0.json",
+      "sha256": "5e745e1fb02af74bf732157368e05d9f2735fa053aabac29ba716c8118fe739f"
+    },
+    "lead_coordination_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R10_lead_coordination_checkpoint_v1_0.json",
+      "sha256": "f0731ce0989628c3129055b04bc39fcbebfcb0d595caa1099150522bce4e805a"
+    },
+    "downstream_repair_progress_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R11_downstream_repair_progress_checkpoint_v1_0.json",
+      "sha256": "a344f5e36f2638fd280f34a69e8265f399aba8f40f938a6fdee176a641b151d6"
+    },
+    "downstream_analysis_fragment_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R11_cash_repair_analysis_fragment_checkpoint_v1_0.json",
+      "sha256": "31337bc1c3f88ce4eeceb98adb2c0ab849dd6914cf9c66b090871cd4f447e1fb"
+    },
+    "downstream_analysis_successor_zero_call_proof": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R11_downstream_repair_analysis_checkpoint_successor_zero_call_result_v1_0.json",
+      "sha256": "2b9cc88ee4868de5a6eb9ada4e41a26a26c07713900e8830b74650e7a16de961"
+    },
+    "analysis_continuation_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_analysis_continuation_low_profile_v1_0.json",
+      "sha256": "75f93b642f005d43896ebdefe19cc29b069a019d1933a57df6961672ecb7fe96"
+    },
+    "failed_preprovider_authority": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_11.json",
+      "sha256": "db9f89c0e46e843a4e7afd0ee523124c27760d023e47e195d69c446a20b9d780"
+    },
+    "failed_preprovider_result": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_11.json",
+      "sha256": "99500e690062ab0cdcc7eb6d38ad128ad5fb26e52d8f98a188a1511a345a0005"
+    },
+    "preprovider_failure_disposition_zero_call_proof": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R13_source_context_replay_failure_disposition_zero_call_result_v1_0.json",
+      "sha256": "7435b61d47d69d69998ae136096068a5ba26f49b8328165eed891f8153194d48"
+    }
+  },
+  "execution_limits": {
+    "maximum_new_model_nodes": 7,
+    "maximum_new_lead_plan_model_calls": 0,
+    "maximum_new_initial_workpaper_nodes": 0,
+    "maximum_new_lead_coordination_model_calls": 0,
+    "maximum_resumed_downstream_analysis_continuations": 1,
+    "maximum_new_analysis_calls_per_other_node": 1,
+    "maximum_submission_attempts_per_node": 2,
+    "reused_specialist_plan_count": 6,
+    "reused_lead_plan_count": 1,
+    "reused_workpaper_count": 6,
+    "reused_lead_coordination_count": 1,
+    "reused_completed_challenge_repair_count": 1,
+    "maximum_new_counter_challenge_repairs": 2,
+    "maximum_counter_challenge_repairs": 3,
+    "maximum_evaluator_repairs": 2,
+    "maximum_evaluation_rounds": 2,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0,
+    "product_publication": false,
+    "qualified_human_acceptance": false
+  },
+  "outputs": {
+    "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R13_20260820",
+    "capture_root_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r13_20260820",
+    "private_output_root_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_r13_20260820",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_12.json"
+  },
+  "authority_statement": "Execute one fresh R13 DELL Multi-Agent Preview attempt after immutable R12 failed before any Provider call. Recover the completed Demand repair only with its exact R10 model-visible request context and immutable request/attempt/checkpoint lineage; do not issue fresh feedback or rerun that completed node. Reuse the same six Specialist plans, one Lead plan, six initial workpapers and Lead coordination; resume the exact Cash analysis fragment once before Supply, bounded evaluation, evaluator-directed local repairs and conditional Writer. R12 authority reuse and every completed-node rerun are forbidden. Research inputs, Provider budget, external source network access, candidate promotion, product acceptance and publication remain unchanged and false."
+}

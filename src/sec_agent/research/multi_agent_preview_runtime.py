@@ -110,6 +110,16 @@ def _safe_id(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_-]+", "-", value).strip("-")
 
 
+def _reasoning_mode(profile: ChatCompletionProfile) -> str:
+    """Describe the provider mode that actually consumes the output budget."""
+
+    defaults = dict(profile.request_defaults)
+    thinking = defaults.get("thinking")
+    if isinstance(thinking, Mapping) and thinking.get("type") == "disabled":
+        return "disabled"
+    return str(defaults.get("reasoning_effort") or "provider_default")
+
+
 @dataclass
 class PreviewAgentSessionState:
     agent_id: str
@@ -779,10 +789,7 @@ def execute_analyzed_preview_node(
             *trusted_checkpoint["partial_required_outputs"],
             *trusted_checkpoint["missing_required_outputs"],
         )
-        reasoning_effort = str(
-            active_analysis_profile.request_defaults.get("reasoning_effort")
-            or "provider_default"
-        )
+        reasoning_effort = _reasoning_mode(active_analysis_profile)
         analysis_stop_behavior = (
             "require one non-empty continuation and finish_reason=stop; merge "
             "with the immutable partial draft; no second continuation or restart"
@@ -817,10 +824,7 @@ def execute_analyzed_preview_node(
             f"{purpose} 本阶段只形成可见分析草稿，不提交合同、不晋升业务事实。"
         )
         analysis_required_outputs = ("visible_analysis_draft", *required_outputs)
-        reasoning_effort = str(
-            active_analysis_profile.request_defaults.get("reasoning_effort")
-            or "provider_default"
-        )
+        reasoning_effort = _reasoning_mode(active_analysis_profile)
         analysis_stop_behavior = (
             "require non-empty visible draft and finish_reason=stop; fail closed "
             "on empty reasoning-only completion or truncation; no analysis retry"

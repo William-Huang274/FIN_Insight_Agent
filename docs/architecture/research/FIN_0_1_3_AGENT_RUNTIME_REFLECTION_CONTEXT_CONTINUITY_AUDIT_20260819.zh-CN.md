@@ -320,3 +320,18 @@ R12 将“checkpoint 恢复”的最小单位进一步校正为 `validated paylo
 5. 不创建新 session feedback、不分配 token、不调用模型；只有 pending 节点进入当前 run。
 
 如果产品希望在更新后的 Skill、Graph、Evidence 或反馈下重新判断，必须创建显式的新 repair／re-adjudication 节点，并保留旧节点为历史权威；不得称为 checkpoint reuse。该语义是 provider-neutral 的 Agent Runtime 约束，避免 Harness 既错误接受跨上下文旧答案，也错误拒绝原上下文有效答案。
+
+## 20. R13 Provider 思考预算饥饿与 completion 档位（2026-08-20）
+
+R13 证明了上一节的 source-context replay 已经生效：完成的 Demand repair 在原上下文下被精确复用，Runtime 随后只启动 pending Cash continuation。该调用收到原 Cash 对话、815 字残稿和缺失字段清单，没有重跑 Demand、Cash 初始分析或其他完成节点。
+
+R13 的终止点是新的 Provider adapter 问题。continuation profile 名为 low reasoning，但 DeepSeek V4 Pro 对 low／medium thinking effort 仍采用高思考；实际 4,000 completion token 中 3,705 为 reasoning，只留下 1,249 字符可见续写，最终 `finish_reason=length`。因此：
+
+- RC-AR-013 的上下文 replay 已自然越过，不能再归责给 source-context lineage；
+- Cash 输入非空、角色反馈已送达，不能归责给 S1 数据或 Agent 拒绝反思；
+- 失败发生在 submission 前，不能归责给 strict Tool Contract；
+- 直接责任是 provider profile 对“低思考”的错误语义假设，以及 TokenBudgetBasis 没有显式区分 thinking-disabled completion。
+
+Runtime 现增加 provider-neutral 的实际模式记录：若 `thinking.type=disabled`，TokenBudgetBasis 必须写 `thinking=disabled`；否则记录真实 effort 或 provider default。R14 只允许用一个显式 non-thinking completion profile补齐同一 checkpoint，研究资料、原片段、缺失字段和完成节点全部不变。该 replacement 是 Provider 档位修正，不是降低原研究分析质量，因为高思考的原分析已经保存在 checkpoint 中。
+
+若这一次 replacement 仍失败，Cash continuation 不再获得第三次 profile／Prompt 修补；项目必须在“更稳定的结构提交模型”“缩小该模型的合同动作面”或“停止当前 Preview”之间做项目级处置。这样可防止恢复能力退化成 DeepSeek 专用无限续写迷宫。

@@ -9,7 +9,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
 
-当前获准的并行诊断仅限 DELL bounded Multi-Agent Preview。R14 已完成 Demand／Cash 两份自然反馈修订，随后在 Supply repair 因局部节点收到过大的全案上下文且 max thinking 消耗全部 12,000 completion token 而失败。R15 零调用门改为角色级最小完整上下文，精确复用 Demand／Cash，只 fresh 执行 Supply。v1.14 启动前 profile 校验失败和 R15B V2／V1 checkpoint 恢复漂移均发生在 Provider 前、0 模型／0 网络，失败已保存；当前 activity-checkpoint 修复全仓 `898 passed`。它不改变 S1 状态、不新增 Evidence，也不授予产品验收。
+当前获准的并行诊断仅限 DELL bounded Multi-Agent Preview。R15C 已越过 profile 和 active-checkpoint 集合校验，但在 Provider 前发现 R14 Cash 的业务 payload 绑定了本地 submission context，而模型 continuation 实际读取另一份 context；Demand 三元组一致，Cash lineage 不一致。R15C 为 0 模型／0 Provider／0 网络并已不可变保存。按 RC-AR-016，当前不得再增加 attempt-specific R15D／R16 分支；下一项是 S0 通用 successor compiler，逐节点编译 exact reuse、派生 digest 重绑、fresh rerun 或 pending fresh。它不改变 S1 状态、不新增 Evidence，也不授予产品验收。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 
@@ -17,8 +17,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 - Supply repair 拥有 10 条 reviewed Evidence 和 4 个 typed gap。其 32,271 prompt token 请求得到 HTTP 200 完整响应，但 12,000 completion token 全部用于 reasoning、可见输出为 0，最终 `finish_reason=length`。资料存在，故这不是 S1 空数据或角色无效。
 - 最早责任层是 S0 Harness repair context selection：局部节点仍携带 91,182 字符完整 SpecialistContext，其中 whole-case truth 40,655 字符、Lead plan 7,119 字符；任务级 `thinking=max` 是贡献因素。
 - repair-scoped context 现保留角色全部 Evidence／gap、prior workpaper、challenge／feedback、角色计划与权限，只把无关 whole-case 和 Lead 长叙事压成 digest-bound projection。真实 R14 输入由 91,182 降至 53,041 字符，10 Evidence／4 gaps 不变；76 个省略 alias 留有 digest，省略不得解释为不存在。
-- R15 精确复用完成的 Demand／Cash，只 fresh 执行 Supply，0 continuation，最大新节点 6，profile 为 task-specific high thinking，token ceiling 不提高。v1.14 authority 在 Provider 前暴露 task-specific `high` 被旧通用 `max` 校验器拒绝；显式期望修复后 R15B 又在 Provider 前发现 runner 用旧 V1 ancestor 校验已恢复的两份 repair，而 active V2 正确登记 Demand＋Cash。R15B 仍是 0 模型／0 Provider／0 网络。当前已统一使用 active checkpoint、禁止 R15 continuation，并补齐 R15 专属成功收据和 boundary；全仓 `898 passed`，下一步为 clean commit／push、fresh preflight 与 R15C authority。
-- attempt-specific authority／scope 分支已接近维护上限。R15 后若仍需 successor，不得直接复制 R16／R17 特例；应先实现 S0 通用 successor authority compiler。详见 `docs/worklog/fin_0_1_3_s3/099_multi_agent_preview_R14_supply_failure_and_R15_role_context_successor.md`。
+- R15C 在 clean commit `aaa4c3a7...27edf` 和 fresh preflight 后执行，仍是 0 模型／0 Provider／0 网络。Demand 原 payload／原模型可见 context／digest 一致；Cash payload 的持久化 context digest 为 `18d5f6ab...24063`，而 continuation request 中模型所见 context digest 为 `51944726...37d5f`，相同业务字段对后者重验得到另一 workpaper digest。它属于 S0 analysis／submission lineage 错配，不是 DeepSeek、S1 或 Cash 观点失败。
+- attempt-specific authority／scope 分支已达到维护止损线。当前必须实现通用 successor authority/frontier compiler；只有业务字段逐字不变且对 capture-bound 原上下文完整重验时，才允许带 receipt 重算派生 digest，否则节点必须 fresh 重做。详见 `docs/worklog/fin_0_1_3_s3/102_multi_agent_preview_R15C_cash_context_lineage_and_generic_successor_boundary.md`。
 
 ## 2026-08-20 Multi-Agent Preview R13 Provider 档位失败与 R14 唯一 replacement
 

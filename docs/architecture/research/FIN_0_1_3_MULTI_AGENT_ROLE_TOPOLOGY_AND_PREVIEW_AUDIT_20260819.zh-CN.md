@@ -199,3 +199,11 @@ R15B 在 Provider 前暴露了一个独立的 S0 恢复集成错误。V2 checkpo
 当前恢复合同因此明确为：lineage 验证仍可逐级读取 ancestor，但“本轮完成／pending 集合、运行计数和恢复证明”只能由 active checkpoint 决定。R15 还必须显式证明 continuation 为 0、Demand／Cash 没有重跑且 Supply 只 fresh 一次。成功结果的 known boundary 必须描述当前 R15 Supply successor，不能沿用 R11 Cash continuation 叙述。
 
 该修复复用既有 v1.14 authority schema 和 v1.10 scope；R15B 保持不可变失败，下一次只换 attempt identity，不新增 R16／R17 schema 分支。若后续仍需要新的 successor 合同形态，必须先实现通用 authority compiler。
+
+## 十五、R15C：分析上下文与提交校验上下文必须是同一条 lineage
+
+R15C 越过 active checkpoint 校验后，在复验完成 repair 时再次触发 `multi_agent_bound_workpaper_digest_invalid`。逐节点回放表明 Demand 可精确复用；Cash 的模型 continuation 读取 context `51944726...37d5f`，而最终 payload 在 R14 被本地绑定到另一份 context `18d5f6ab...24063`。相同业务字段对原模型可见 context 重验可以通过，但会产生不同的派生 workpaper digest。这说明观点内容与 lineage 问题必须分开：不能把 digest 冲突说成模型观点错误，也不能因为业务字段看起来合理就关闭 fail-closed。
+
+通用 successor 的恢复单元因此扩展为 `business payload + exact model-visible context + local validation context + capture/attempt/checkpoint lineage`。compiler 对每个节点只能给出四种状态：精确复用、仅派生 digest 的受据重绑、必须 fresh 重做、原生 pending。第二种状态必须证明移除本地派生 digest 后所有业务字段逐字不变，并对 capture-bound 原上下文走完整 validator；任何业务字段修补都升级为 fresh rerun。
+
+authority、Project OS preflight 和 runner 必须消费同一份 execution frontier。R15C 后禁止新增 attempt-specific schema 分支；下一次 live 只有在通用 compiler、mutation、全仓门、clean push 和 fresh preflight 通过后才可签发。

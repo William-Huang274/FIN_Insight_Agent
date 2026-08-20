@@ -348,6 +348,12 @@ R15 只允许一个有界 successor：
 
 零调用实现的完整工程门已通过。第一次全仓发现 Project OS 最新行遗漏历史 scope allowance；第一次 clean push 后的 fresh preflight 又发现 v1.10 专用 validator 未接通用入口和 scope ID 大小写漂移。以上均在 0 模型／Provider／网络状态下 fail closed，并以追加账本、更正主入口和完整 `build_preflight` 测试处理。最终全仓 `897 passed`，compileall、active baseline、738 份 configs JSON、8 份 Project OS JSONL／838 行、7,446-file secret scan 和 diff check 均通过。当前仍须第二个 clean commit／push 与 fresh preflight 后才能签发 R15。若 R15 后还出现 successor 编排缺陷，不再新增 attempt-specific authority schema；先回 S0 建立通用 successor authority compiler。R15 成功也只形成待验的 Preview 报告，仍须 L1、八维质量、paired gain、qualified-human 与跨案例泛化。
 
+### 4Y. R15C 触发通用 successor compiler 止损线
+
+R15C 在 0 模型／Provider／网络状态下发现：R14 Cash continuation 的业务 payload 绑定了本地 submission context，但模型真实读取的是另一个 capture-bound analysis context。Demand 可精确复用，Cash 不能按旧 checkpoint 直接宣称完成。该问题归 S0 session／context lineage，不归 S1 数据或 Agent 内容。
+
+后续不再增加 attempt-named schema。S0 必须先编译一份通用 execution frontier，对每个历史节点给出 `exact_reuse`、`derived_digest_rebind`、`fresh_rerun_required` 或 `pending_fresh`。只有业务字段逐字不变并通过原模型可见 context 的完整 validator，才允许重算本地派生 digest；否则必须 fresh 重做。authority、preflight、runner 和成功收据共享该 frontier 后，才允许一次新的 bounded Preview live。
+
 ## 5. 防止再次膨胀的工程规则
 
 1. 新能力必须先说明归属 S 阶段、真实用户消费者和替换对象；没有消费者的 runner/config/test 不进入活动树。

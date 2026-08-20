@@ -29,6 +29,9 @@ from sec_agent.research.multi_agent_preview import (
     validate_lead_plan_checkpoint,
     validate_specialist_plan_checkpoint,
 )
+from sec_agent.research.multi_agent_successor import (
+    validate_successor_execution_frontier,
+)
 from sec_agent.providers import load_chat_completion_profile
 
 
@@ -204,6 +207,15 @@ MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_STATUS = (
 )
 MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE = (
     "one_clean_authorized_R15_role_scoped_supply_repair_successor"
+)
+MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_multi_agent_generic_successor_scope_decision_v1_0"
+)
+MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_DECISION_STATUS = (
+    "immutable_lineage_compiled_to_one_generic_successor_frontier"
+)
+MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE = (
+    "one_clean_authorized_compiled_multi_agent_successor"
 )
 DYNAMIC_FIVE_CELL_SUCCESSOR_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_successor_live_scope_decision_v1_0"
@@ -486,6 +498,13 @@ def _validate_fixed_pack_decision(
         == MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_SCHEMA
     ):
         return validate_multi_agent_preview_repair_context_successor_scope_decision(
+            root=root, decision=decision
+        )
+    if (
+        decision.get("schema_version")
+        == MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_DECISION_SCHEMA
+    ):
+        return validate_multi_agent_preview_generic_successor_scope_decision(
             root=root, decision=decision
         )
     if decision.get("schema_version") in {
@@ -4946,6 +4965,327 @@ def validate_multi_agent_preview_repair_context_successor_scope_decision(
     }
 
 
+def validate_multi_agent_preview_generic_successor_scope_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Validate one data-compiled successor without attempt-named branches."""
+
+    expected_fields = {
+        "schema_version",
+        "status",
+        "case_key",
+        "cell_id",
+        "run_scope_id",
+        "evidence_mode",
+        "next_authorized_scope",
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "independent_specialist_sessions_required",
+        "checkpoint_resume_required",
+        "lead_coordination_checkpoint_required",
+        "lead_coordination_rerun_forbidden",
+        "all_initial_workpaper_reruns_forbidden",
+        "execution_frontier_required",
+        "derived_digest_rebind_requires_business_equivalence",
+        "downstream_only_execution_required",
+        "conditional_writer_required",
+        "evaluation_rounds_required",
+        "historical_failure_promoted",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "qualified_human_acceptance_authorized",
+        "S1_acceptance_authorized",
+        "S3_acceptance_authorized",
+        "generalization_claim_authorized",
+        "predecessor_scope_decision_ref",
+        "predecessor_scope_decision_sha256",
+        "predecessor_live_authority_ref",
+        "predecessor_live_authority_sha256",
+        "predecessor_live_result_ref",
+        "predecessor_live_result_sha256",
+        "lead_plan_checkpoint_ref",
+        "lead_plan_checkpoint_sha256",
+        "workpaper_checkpoint_ref",
+        "workpaper_checkpoint_sha256",
+        "lead_coordination_checkpoint_ref",
+        "lead_coordination_checkpoint_sha256",
+        "lead_coordination_checkpoint_digest",
+        "successor_execution_frontier_ref",
+        "successor_execution_frontier_sha256",
+        "successor_execution_frontier_result_digest",
+        "repair_analysis_profile_ref",
+        "repair_analysis_profile_sha256",
+        "successor_constraints",
+        "execution_limits",
+        "token_budget_basis_policy",
+        "authority_statement",
+    }
+    if set(decision) != expected_fields:
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_shape_invalid"
+        )
+    required_equal = {
+        "schema_version": MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_DECISION_SCHEMA,
+        "status": MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "MULTI_AGENT_PREVIEW",
+        "run_scope_id": MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE,
+        "evidence_mode": (
+            "current_reviewed_Evidence_plus_current_S2_no_candidate_promotion"
+        ),
+        "next_authorized_scope": (
+            "one_bounded_DELL_multi_agent_preview_compiled_successor_live_attempt"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                "project_os_multi_agent_generic_successor_field_invalid:"
+                + field
+            )
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "chat_live_authorized",
+        "credential_presence_required",
+        "independent_specialist_sessions_required",
+        "checkpoint_resume_required",
+        "lead_coordination_checkpoint_required",
+        "lead_coordination_rerun_forbidden",
+        "all_initial_workpaper_reruns_forbidden",
+        "execution_frontier_required",
+        "derived_digest_rebind_requires_business_equivalence",
+        "downstream_only_execution_required",
+        "conditional_writer_required",
+        "evaluation_rounds_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                "project_os_multi_agent_generic_successor_true_required:"
+                + field
+            )
+    for field in (
+        "historical_failure_promoted",
+        "responses_live_authorized",
+        "anthropic_live_authorized",
+        "external_source_network_authorized",
+        "candidate_promotion_authorized",
+        "product_publication_authorized",
+        "qualified_human_acceptance_authorized",
+        "S1_acceptance_authorized",
+        "S3_acceptance_authorized",
+        "generalization_claim_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                "project_os_multi_agent_generic_successor_false_required:"
+                + field
+            )
+
+    predecessor_scope_path, predecessor_scope = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_scope_decision_ref",
+        sha_field="predecessor_scope_decision_sha256",
+    )
+    predecessor_projection = (
+        validate_multi_agent_preview_repair_context_successor_scope_decision(
+            root=root, decision=predecessor_scope
+        )
+    )
+    if predecessor_scope_path.relative_to(root).as_posix() != (
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+        "live_scope_decision_v1_10.json"
+    ):
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_predecessor_invalid"
+        )
+    for ref_field, sha_field, inherited_field in (
+        (
+            "lead_plan_checkpoint_ref",
+            "lead_plan_checkpoint_sha256",
+            "lead_plan_checkpoint_ref",
+        ),
+        (
+            "workpaper_checkpoint_ref",
+            "workpaper_checkpoint_sha256",
+            "workpaper_checkpoint_ref",
+        ),
+        (
+            "lead_coordination_checkpoint_ref",
+            "lead_coordination_checkpoint_sha256",
+            "lead_coordination_checkpoint_ref",
+        ),
+        (
+            "repair_analysis_profile_ref",
+            "repair_analysis_profile_sha256",
+            "repair_analysis_profile_ref",
+        ),
+    ):
+        bound_path, _ = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field=ref_field,
+            sha_field=sha_field,
+        )
+        if bound_path.relative_to(root).as_posix() != predecessor_scope.get(
+            inherited_field
+        ):
+            raise ValueError(
+                "project_os_multi_agent_generic_successor_lineage_drift:"
+                + ref_field
+            )
+    if decision.get("lead_coordination_checkpoint_digest") != (
+        predecessor_scope.get("lead_coordination_checkpoint_digest")
+    ):
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_coordination_drift"
+        )
+
+    _, failed_authority = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_live_authority_ref",
+        sha_field="predecessor_live_authority_sha256",
+    )
+    _, failed_result = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_live_result_ref",
+        sha_field="predecessor_live_result_sha256",
+    )
+    failed_execution = failed_result.get("execution") or {}
+    if not (
+        failed_authority.get("schema_version")
+        == "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_14"
+        and failed_authority.get("outputs", {}).get("public_result_ref")
+        == decision["predecessor_live_result_ref"]
+        and failed_result.get("authority_ref")
+        == decision["predecessor_live_authority_ref"]
+        and failed_result.get("status")
+        == "multi_agent_preview_terminal_failure_preserved"
+        and failed_result.get("failure_code")
+        == "multi_agent_bound_workpaper_digest_invalid"
+        and failed_execution.get("provider_attempts_preserved") == 0
+        and failed_execution.get("new_model_nodes_started") == 0
+        and failed_execution.get("external_source_network_calls") == 0
+        and failed_execution.get("candidate_promotions") == 0
+    ):
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_failure_invalid"
+        )
+
+    _, frontier_raw = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="successor_execution_frontier_ref",
+        sha_field="successor_execution_frontier_sha256",
+        digest_field="successor_execution_frontier_result_digest",
+    )
+    frontier = validate_successor_execution_frontier(frontier_raw)
+    predecessor_failure = frontier["predecessor_failure"]
+    terminal_path = _repo_path(
+        root, str(predecessor_failure["terminal_result_ref"])
+    )
+    terminal = _load_json(terminal_path)
+    if not (
+        predecessor_failure["authority_ref"]
+        == decision["predecessor_live_authority_ref"]
+        and predecessor_failure["authority_sha256"]
+        == decision["predecessor_live_authority_sha256"]
+        and predecessor_failure["public_result_ref"]
+        == decision["predecessor_live_result_ref"]
+        and predecessor_failure["public_result_sha256"]
+        == decision["predecessor_live_result_sha256"]
+        and predecessor_failure["public_result_digest"]
+        == failed_result.get("result_digest")
+        and predecessor_failure["terminal_result_sha256"]
+        == _sha256(terminal_path)
+        and predecessor_failure["terminal_result_digest"]
+        == terminal.get("full_result_digest")
+        and frontier["lead_coordination_checkpoint_digest"]
+        == decision["lead_coordination_checkpoint_digest"]
+    ):
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_frontier_binding_invalid"
+        )
+    expected_dispositions = [
+        "exact_reuse",
+        "derived_digest_rebind",
+        "pending_fresh",
+    ]
+    if [row["disposition"] for row in frontier["nodes"]] != (
+        expected_dispositions
+    ):
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_frontier_state_invalid"
+        )
+
+    expected_constraints = {
+        "historical_failures_remain_immutable": True,
+        "frontier_is_compiled_from_capture_bound_lineage": True,
+        "exact_reuse_requires_digest_identity": True,
+        "derived_rebind_changes_only_local_digests": True,
+        "business_payload_changes_require_fresh_rerun": True,
+        "completed_node_model_reruns_forbidden": True,
+        "research_inputs_unchanged": True,
+    }
+    if decision.get("successor_constraints") != expected_constraints:
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_constraints_invalid"
+        )
+    if decision.get("execution_limits") != frontier["execution_limits"]:
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_limits_invalid"
+        )
+    expected_budget_policy = {
+        "task_specific_basis_required_per_paid_phase": True,
+        "reused_lead_has_no_new_token_budget": True,
+        "reused_workpapers_have_no_new_token_budget": True,
+        "reused_coordination_has_no_new_token_budget": True,
+        "exact_or_rebound_repairs_have_no_new_token_budget": True,
+        "fresh_repair_analysis_basis_is_separate": True,
+        "analysis_basis_is_separate_per_downstream_node": True,
+        "submission_basis_is_separate_per_downstream_node": True,
+        "input_scale_and_reference_count_required": True,
+        "required_outputs_and_schema_burden_required": True,
+        "materiality_and_quality_risk_required": True,
+        "comparable_run_evidence_required": True,
+        "reasoning_profile_required": True,
+        "stop_and_truncation_behavior_required": True,
+        "cost_and_latency_are_secondary_constraints": True,
+    }
+    if decision.get("token_budget_basis_policy") != expected_budget_policy:
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_budget_invalid"
+        )
+    return {
+        "clean_proof_status": predecessor_projection["clean_proof_status"],
+        "successor_zero_call_proof_status": frontier["status"],
+        "provider_id": predecessor_projection["provider_id"],
+        "provider_model": predecessor_projection["provider_model"],
+        "api_key_env": predecessor_projection["api_key_env"],
+        "recent_provider_steps": 4,
+        "multi_agent_preview": True,
+        "multi_agent_preview_downstream_analysis_checkpoint_successor": False,
+        "multi_agent_preview_repair_context_successor": False,
+        "multi_agent_preview_generic_successor": True,
+        "run_scope_id": MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE,
+        "specialist_agent_count": 6,
+        "reused_specialist_plan_count": 6,
+        "reused_lead_plan_count": 1,
+        "reused_workpaper_count": 6,
+        "reused_lead_coordination_count": 1,
+        "reused_completed_challenge_repair_count": 2,
+        "maximum_new_lead_plan_model_calls": 0,
+        "execution_limits": dict(frontier["execution_limits"]),
+        "token_budget_basis_policy": dict(expected_budget_policy),
+    }
+
+
 def _validate_material_scope_canary_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -9043,6 +9383,20 @@ def build_preflight(
         raise ValueError(
             "project_os_multi_agent_repair_context_scope_allowance_missing"
         )
+    if decision_projection.get("multi_agent_preview_generic_successor") is True:
+        for issue_id in (
+            "RC-AR-016-attempt-specific-authority-schema-branch-proliferation",
+            "RC-AR-019-cash-analysis-context-and-submission-validation-context-diverged",
+        ):
+            if not _issue_explicitly_allows(
+                root=root,
+                issue_id=issue_id,
+                allowed_scope=MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE,
+            ):
+                raise ValueError(
+                    "project_os_multi_agent_generic_successor_scope_allowance_missing:"
+                    + issue_id
+                )
     if (
         decision_projection.get("natural_material_scope_canary") is True
         and not _issue_explicitly_allows(
@@ -9313,7 +9667,22 @@ def build_preflight(
         "synced": "not_checked",
     }
     if decision_projection.get("multi_agent_preview") is True:
-        if decision_projection.get(
+        if decision_projection.get("multi_agent_preview_generic_successor") is True:
+            known_boundary = (
+                "This current-baseline preflight preserves R15C as a terminal "
+                "zero-provider lineage failure. It consumes one compiled "
+                "execution frontier: Demand is exact reuse, Cash is a "
+                "capture-bound derived-digest rebind with byte-equivalent "
+                "business fields, and Supply remains pending fresh. It permits "
+                "only the frontier-authorized fresh repair before bounded "
+                "evaluation, at most two evaluator-directed local repairs and "
+                "a conditional Writer. It forbids analysis continuation, "
+                "research-input changes, external source network access, "
+                "candidate promotion, S1 or S3 acceptance, heterogeneous "
+                "generalization, qualified-human self-acceptance, Workbench "
+                "publication or release."
+            )
+        elif decision_projection.get(
             "multi_agent_preview_repair_context_successor"
         ) is True:
             known_boundary = (

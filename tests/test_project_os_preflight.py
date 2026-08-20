@@ -18,6 +18,7 @@ from sec_agent.project_os_preflight import (
     MULTI_AGENT_PREVIEW_SPECIALIST_ANALYSIS_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_COORDINATION_CHECKPOINT_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE,
+    MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
     _validate_dynamic_five_cell_claim_surface_successor_decision,
@@ -33,6 +34,7 @@ from sec_agent.project_os_preflight import (
     validate_multi_agent_preview_workpaper_checkpoint_successor_scope_decision,
     validate_multi_agent_preview_specialist_analysis_successor_scope_decision,
     validate_multi_agent_preview_coordination_checkpoint_successor_scope_decision,
+    validate_multi_agent_preview_generic_successor_scope_decision,
     validate_multi_agent_preview_plan_successor_scope_decision,
     validate_multi_agent_preview_scope_decision,
 )
@@ -235,6 +237,11 @@ MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_"
     "scope_decision_v1_10.json"
+)
+MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
+    "successor_scope_decision_v1_0.json"
 )
 
 
@@ -811,6 +818,42 @@ def test_multi_agent_preview_repair_context_successor_enters_full_preflight() ->
     assert "only one fresh role-scoped Supply repair" in result[
         "known_boundary"
     ]
+
+
+def test_multi_agent_preview_generic_successor_binds_compiled_frontier() -> None:
+    decision = json.loads(
+        (ROOT / MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+
+    projection = validate_multi_agent_preview_generic_successor_scope_decision(
+        root=ROOT, decision=decision
+    )
+
+    assert projection["multi_agent_preview_generic_successor"] is True
+    assert projection["run_scope_id"] == MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE
+    assert projection["reused_completed_challenge_repair_count"] == 2
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 6
+    assert projection["execution_limits"][
+        "maximum_resumed_downstream_analysis_continuations"
+    ] == 0
+
+
+def test_multi_agent_preview_generic_successor_rejects_frontier_digest_drift() -> None:
+    decision = json.loads(
+        (ROOT / MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    decision["successor_execution_frontier_result_digest"] = "0" * 64
+
+    with pytest.raises(
+        ValueError, match="project_os_artifact_result_digest_drift"
+    ):
+        validate_multi_agent_preview_generic_successor_scope_decision(
+            root=ROOT, decision=decision
+        )
 
 
 def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:

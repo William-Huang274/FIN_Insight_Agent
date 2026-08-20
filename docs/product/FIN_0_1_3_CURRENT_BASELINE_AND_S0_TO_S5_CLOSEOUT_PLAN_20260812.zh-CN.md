@@ -374,3 +374,10 @@ R15C 在 0 模型／Provider／网络状态下发现：R14 Cash continuation 的
 - 数据构建脚本存在，只说明有受维护入口；不说明网络、授权、索引或数据已经就绪。
 - S1/S2/S3 的历史 proof 仍可用于诊断，但只有当前 Runtime、当前数据和当前产品消费者的复证才能成为新能力证据。
 - 固定 case 的 9 Slot／17 facet 查询包只证明下游检索部件；在 S3 自然语言规划与 S4 用户入口接通前，不得称为真实用户查询链。
+# 2026-08-20 顺序修订：通用 successor 后的唯一 DELL Preview
+
+1. 保留 R15C 为不可变 zero-provider lineage failure；不得生成 R15D／R16／R17 专用 authority Schema。
+2. 以通用 frontier 完成 exact Demand、业务等价 Cash rebind、pending Supply 的 replay／mutation／全仓工程门。
+3. clean commit、push 与 fresh Project OS preflight 通过后，签发唯一一次 generic successor live。
+4. live 只从 Supply fresh repair 开始；随后运行独立 Evaluator、受限局部 repair 和条件式 Writer。任何 completed 节点重跑或 analysis continuation 都是权限违规。
+5. 成功后分别验收完整 Judgment、六角色协作、L1、内容质量和报告；失败则归到数据基建、Harness 或 Agent 工作模式的最早责任层。工程通过不等于 S1／S3／泛化／Workbench／release 通过。

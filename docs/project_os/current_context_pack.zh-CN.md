@@ -965,3 +965,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R10 复用六份 Specialist plan、一个 Lead plan、六份 workpaper 和一次 Lead coordination；这些成功前缀的新模型调用均为 0。第一新节点必须是三条 accepted challenge 的原角色 repair。
 - 新节点上限为 `3 repair + 2 evaluation + 2 evaluator repair + 1 conditional Writer = 8`。延期的价值 challenge 不得在无新 Evidence authority 时偷偷执行。
 - 当前定向合同／Runtime／Project OS 复证为 88 passed，全仓 879 passed；compileall、active baseline `184 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、8 份 Project OS JSONL、7,419-file secret scan 和 diff check 均通过。clean commit／push、preflight 和 live 尚待执行。`S1_qualified_stable=false`、`S3_acceptance=false`、`generalization=false`、`qualified_human=false`、`release=false`。
+# 2026-08-20 S3 通用 Multi-Agent successor frontier
+
+- R15C 的 Cash 失败已经从“再补一个 attempt 分支”升级为统一 execution frontier：每个历史节点只能是 `exact_reuse`、`derived_digest_rebind`、`fresh_rerun_required` 或 `pending_fresh`，Project OS、authority 与 runner 使用同一份数据合同。
+- DELL 当前逐节点状态已由真实不可变 capture 证明：Demand 原样复用；Cash 业务字段逐字节不变，仅从错误的本地 validation context 摘要重绑到模型当时真正看到的 context 摘要；Supply 是唯一 pending fresh 节点。
+- frontier digest=`efc48ed2871391608df5aabdc47325b13a40cd5acd6bf0e9a907b8eddded3213`；0 模型／Provider／网络／Candidate promotion。定向 75、全仓 905 tests 与 compileall 通过。
+- 下一步只允许：干净提交并推送 → fresh Project OS preflight → 一次 generic successor live → 分开评价 Supply、Evaluator、Writer、L1 和内容质量。禁止新增 R16／R17 式 authority 分支，禁止把工程门写成 S1／S3／泛化／产品发布通过。

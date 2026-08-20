@@ -34,6 +34,16 @@ DOWNSTREAM_PROGRESS_CHECKPOINT_V2 = (
     / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
     "R15_downstream_repair_progress_checkpoint_v1_1.json"
 )
+GENERIC_SUCCESSOR_FRONTIER = (
+    ROOT
+    / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "compiled_successor_frontier_v1_0.json"
+)
+GENERIC_SUCCESSOR_SCOPE = (
+    ROOT
+    / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "compiled_successor_scope_decision_v1_0.json"
+)
 
 
 def _checkpoint() -> dict[str, object]:
@@ -169,6 +179,45 @@ def test_r15_progress_reuses_demand_and_cash_then_starts_fresh_supply() -> None:
     assert validated["resume_policy"][
         "maximum_analysis_continuation_calls"
     ] == 0
+
+
+def test_generic_successor_frontier_replays_exact_and_rebound_lineage() -> None:
+    frontier = json.loads(GENERIC_SUCCESSOR_FRONTIER.read_text(encoding="utf-8"))
+
+    completed, contexts, active = runner._load_bound_generic_successor_frontier(
+        frontier=frontier
+    )
+
+    assert list(completed) == [
+        "CHALLENGE::B1FC30D87F6DB63FDB91003C",
+        "CHALLENGE::803238978B747FEED1CE12C9",
+    ]
+    assert contexts["CHALLENGE::B1FC30D87F6DB63FDB91003C"][
+        "context_digest"
+    ] == "1ddcce797a2fac8566024a3c2dd1ea1eb31c837637a3352bb7dac6d37f1f0e6b"
+    assert contexts["CHALLENGE::803238978B747FEED1CE12C9"][
+        "context_digest"
+    ] == "5194472682d12d58a66533cb0d0fc6f3206d2acc185d280692f56578b2d37d5f"
+    assert [row["disposition"] for row in active["completed_challenge_repairs"]] == [
+        "exact_reuse",
+        "derived_digest_rebind",
+    ]
+    assert [row["challenge_id"] for row in active["pending_challenge_repairs"]] == [
+        "CHALLENGE::71AAF31E7FBD5A99163BBE8D"
+    ]
+
+
+def test_generic_successor_frontier_rejects_business_payload_mutation() -> None:
+    frontier = json.loads(GENERIC_SUCCESSOR_FRONTIER.read_text(encoding="utf-8"))
+    frontier["nodes"][1]["normalized_workpaper"]["thesis"] += " unauthorized"
+    body = {key: value for key, value in frontier.items() if key != "result_digest"}
+    frontier["result_digest"] = runner.canonical_digest(body)
+
+    with pytest.raises(
+        ValueError,
+        match="multi_agent_successor_node_receipt_invalid",
+    ):
+        runner._load_bound_generic_successor_frontier(frontier=frontier)
 
 
 def test_r11_completed_demand_context_rejects_request_digest_mutation() -> None:
@@ -774,6 +823,95 @@ def test_r15_authority_reuses_two_repairs_and_starts_fresh_supply(
     assert validated["execution_limits"][
         "reused_completed_challenge_repair_count"
     ] == 2
+    assert validated["execution_limits"][
+        "maximum_resumed_downstream_analysis_continuations"
+    ] == 0
+
+
+def test_generic_successor_authority_uses_one_compiled_frontier(
+    tmp_path: Path,
+) -> None:
+    source_authority = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_16.json"
+        ).read_text(encoding="utf-8")
+    )
+    scope = json.loads(GENERIC_SUCCESSOR_SCOPE.read_text(encoding="utf-8"))
+
+    def binding(ref: str) -> dict[str, str]:
+        path = ROOT / ref
+        return {"ref": ref, "sha256": runner._sha(path)}
+
+    base_names = {
+        "topology",
+        "objective",
+        "zero_call_proof",
+        "successor_zero_call_proof",
+        "planning_overlay",
+        "analysis_profile",
+        "submission_profile",
+        "historical_five_cell_assessment",
+        "predecessor_plan_checkpoint",
+    }
+    bound_inputs = {
+        name: deepcopy(source_authority["bound_inputs"][name])
+        for name in base_names
+    }
+    bound_inputs.update(
+        {
+            "project_os_scope_decision": binding(
+                GENERIC_SUCCESSOR_SCOPE.relative_to(ROOT).as_posix()
+            ),
+            "predecessor_scope_decision": binding(
+                scope["predecessor_scope_decision_ref"]
+            ),
+            "predecessor_authority": binding(
+                scope["predecessor_live_authority_ref"]
+            ),
+            "predecessor_result": binding(
+                scope["predecessor_live_result_ref"]
+            ),
+            "lead_plan_checkpoint": binding(scope["lead_plan_checkpoint_ref"]),
+            "workpaper_checkpoint": binding(scope["workpaper_checkpoint_ref"]),
+            "lead_coordination_checkpoint": binding(
+                scope["lead_coordination_checkpoint_ref"]
+            ),
+            "successor_execution_frontier": binding(
+                scope["successor_execution_frontier_ref"]
+            ),
+            "repair_analysis_profile": binding(
+                scope["repair_analysis_profile_ref"]
+            ),
+        }
+    )
+    authority = {
+        "schema_version": runner.GENERIC_SUCCESSOR_AUTHORITY_SCHEMA,
+        "status": (
+            "approved_for_one_compiled_multi_agent_successor_after_"
+            "project_os_preflight"
+        ),
+        "authorized_at": "pytest",
+        "implementation_commit": runner._git_head(),
+        "bound_inputs": bound_inputs,
+        "execution_limits": deepcopy(scope["execution_limits"]),
+        "outputs": {
+            "run_id": "PYTEST-GENERIC-SUCCESSOR-UNUSED",
+            "capture_root_ref": "data/pytest_generic_successor_captures_unused",
+            "private_output_root_ref": "data/pytest_generic_successor_private_unused",
+            "public_result_ref": "data/pytest_generic_successor_public_unused.json",
+        },
+        "authority_statement": "pytest-only generic successor authority",
+    }
+    authority_path = tmp_path / "authority.json"
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    validated, inputs, outputs = runner._validate_authority(authority_path)
+
+    assert validated["schema_version"] == runner.GENERIC_SUCCESSOR_AUTHORITY_SCHEMA
+    assert set(inputs) == set(bound_inputs)
+    assert outputs["run_id"] == "PYTEST-GENERIC-SUCCESSOR-UNUSED"
     assert validated["execution_limits"][
         "maximum_resumed_downstream_analysis_continuations"
     ] == 0

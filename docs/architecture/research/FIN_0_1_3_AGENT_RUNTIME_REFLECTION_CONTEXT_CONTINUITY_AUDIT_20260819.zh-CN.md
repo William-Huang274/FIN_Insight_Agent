@@ -335,3 +335,10 @@ R13 的终止点是新的 Provider adapter 问题。continuation profile 名为 
 Runtime 现增加 provider-neutral 的实际模式记录：若 `thinking.type=disabled`，TokenBudgetBasis 必须写 `thinking=disabled`；否则记录真实 effort 或 provider default。R14 只允许用一个显式 non-thinking completion profile补齐同一 checkpoint，研究资料、原片段、缺失字段和完成节点全部不变。该 replacement 是 Provider 档位修正，不是降低原研究分析质量，因为高思考的原分析已经保存在 checkpoint 中。
 
 若这一次 replacement 仍失败，Cash continuation 不再获得第三次 profile／Prompt 修补；项目必须在“更稳定的结构提交模型”“缩小该模型的合同动作面”或“停止当前 Preview”之间做项目级处置。这样可防止恢复能力退化成 DeepSeek 专用无限续写迷宫。
+# 2026-08-20 补充：Successor 不再按 attempt 编码
+
+历史 successor 的核心缺陷不是 checkpoint 数量不足，而是把每次运行差异写成一套新 Schema 和控制分支。当前 Runtime 增加 provider-neutral `SuccessorExecutionFrontier`：它从 immutable terminal、model-visible request 和正式 Validator 编译节点处置，不信任 attempt 名称。
+
+其中 `derived_digest_rebind` 不是“本地帮模型改答案”。它要求去掉的只能是本地派生 digest，剩余业务 payload 必须逐字节相同，并且必须对模型真实读取的 capture-bound context 重新通过同一个业务 Validator；否则只能 fresh rerun。frontier 同时绑定 source terminal、request、SHA、digest、节点、角色、challenge 顺序和执行上限。
+
+这一层属于 S0 Harness／AgentSession lineage，而非数据基建或模型能力。它解决的是恢复和权限编译的一致性，不会增加 Evidence、修复检索、提升模型观点或代替内容验收。

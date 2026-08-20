@@ -80,6 +80,10 @@ from sec_agent.research.multi_agent_preview_runtime import (  # noqa: E402
     rebind_preview_session_plan,
     start_preview_agent_session,
 )
+from sec_agent.research.multi_agent_successor import (  # noqa: E402
+    COMPLETED_DISPOSITIONS,
+    validate_successor_execution_frontier,
+)
 from sec_agent.project_os_preflight import (  # noqa: E402
     MULTI_AGENT_PREVIEW_ANALYSIS_SUCCESSOR_DECISION_SCHEMA,
     MULTI_AGENT_PREVIEW_ANALYSIS_SUCCESSOR_DECISION_STATUS,
@@ -105,6 +109,9 @@ from sec_agent.project_os_preflight import (  # noqa: E402
     MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_SCHEMA,
     MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_DECISION_STATUS,
     MULTI_AGENT_PREVIEW_REPAIR_CONTEXT_SUCCESSOR_SCOPE,
+    MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_DECISION_SCHEMA,
+    MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_DECISION_STATUS,
+    MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_DECISION_SCHEMA,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_DECISION_STATUS,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE,
@@ -116,6 +123,7 @@ from sec_agent.project_os_preflight import (  # noqa: E402
     validate_multi_agent_preview_coordination_checkpoint_successor_scope_decision,
     validate_multi_agent_preview_downstream_analysis_successor_scope_decision,
     validate_multi_agent_preview_repair_context_successor_scope_decision,
+    validate_multi_agent_preview_generic_successor_scope_decision,
     validate_multi_agent_preview_plan_successor_scope_decision,
 )
 
@@ -155,6 +163,9 @@ DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA = (
 )
 DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA = (
     "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_14"
+)
+GENERIC_SUCCESSOR_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_multi_agent_compiled_successor_authority_v1_0"
 )
 FULL_SCHEMA_V1 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_1"
 FULL_SCHEMA_V2 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_2"
@@ -263,6 +274,10 @@ def _validate_authority(
     repair_context_replacement = (
         schema == DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA
     )
+    generic_successor = schema == GENERIC_SUCCESSOR_AUTHORITY_SCHEMA
+    role_scoped_repair_successor = (
+        repair_context_replacement or generic_successor
+    )
     preprovider_replacement = schema in {
         DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
@@ -273,6 +288,7 @@ def _validate_authority(
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA,
+        GENERIC_SUCCESSOR_AUTHORITY_SCHEMA,
     }
     expected_status_by_schema = {
         PLAN_SUCCESSOR_AUTHORITY_SCHEMA: (
@@ -323,6 +339,10 @@ def _validate_authority(
             "approved_for_one_R15_role_scoped_repair_context_"
             "replacement_after_project_os_preflight"
         ),
+        GENERIC_SUCCESSOR_AUTHORITY_SCHEMA: (
+            "approved_for_one_compiled_multi_agent_successor_after_"
+            "project_os_preflight"
+        ),
     }
     expected_status = expected_status_by_schema.get(schema)
     if not (
@@ -358,7 +378,18 @@ def _validate_authority(
         "historical_five_cell_assessment",
         "predecessor_plan_checkpoint",
     }
-    if downstream_analysis_successor:
+    if generic_successor:
+        required_inputs = base_inputs | {
+            "predecessor_scope_decision",
+            "predecessor_authority",
+            "predecessor_result",
+            "lead_plan_checkpoint",
+            "workpaper_checkpoint",
+            "lead_coordination_checkpoint",
+            "successor_execution_frontier",
+            "repair_analysis_profile",
+        }
+    elif downstream_analysis_successor:
         required_inputs = base_inputs | {
             "predecessor_scope_decision",
             "predecessor_authority",
@@ -457,7 +488,40 @@ def _validate_authority(
             "multi_agent_preview_authority_inputs_invalid"
         )
     scope_decision = _json(inputs["project_os_scope_decision"])
-    if repair_context_replacement:
+    if generic_successor:
+        scope_projection = (
+            validate_multi_agent_preview_generic_successor_scope_decision(
+                root=ROOT, decision=scope_decision
+            )
+        )
+        predecessor_scope_decision = _json(
+            inputs["predecessor_scope_decision"]
+        )
+        cursor = predecessor_scope_decision
+        visited: set[str] = set()
+        while (
+            cursor.get("schema_version")
+            != MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_DECISION_SCHEMA
+        ):
+            ref = str(cursor.get("predecessor_scope_decision_ref") or "")
+            if not ref or ref in visited:
+                raise MultiAgentPreviewLiveError(
+                    "multi_agent_preview_scope_lineage_invalid"
+                )
+            visited.add(ref)
+            cursor = _json(_resolve(ref))
+        base_scope_decision = cursor
+        scope_valid = (
+            scope_decision.get("schema_version")
+            == MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_DECISION_SCHEMA
+            and scope_decision.get("status")
+            == MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_DECISION_STATUS
+            and scope_decision.get("run_scope_id")
+            == MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE
+            and scope_projection.get("multi_agent_preview_generic_successor")
+            is True
+        )
+    elif repair_context_replacement:
         scope_projection = (
             validate_multi_agent_preview_repair_context_successor_scope_decision(
                 root=ROOT, decision=scope_decision
@@ -793,7 +857,42 @@ def _validate_authority(
             raise MultiAgentPreviewLiveError(
                 f"multi_agent_preview_project_os_binding_drift:{input_name}"
             )
-    if downstream_analysis_successor:
+    if generic_successor:
+        current_scope_bindings = {
+            "predecessor_scope_decision": (
+                "predecessor_scope_decision_ref",
+                "predecessor_scope_decision_sha256",
+            ),
+            "predecessor_authority": (
+                "predecessor_live_authority_ref",
+                "predecessor_live_authority_sha256",
+            ),
+            "predecessor_result": (
+                "predecessor_live_result_ref",
+                "predecessor_live_result_sha256",
+            ),
+            "lead_plan_checkpoint": (
+                "lead_plan_checkpoint_ref",
+                "lead_plan_checkpoint_sha256",
+            ),
+            "workpaper_checkpoint": (
+                "workpaper_checkpoint_ref",
+                "workpaper_checkpoint_sha256",
+            ),
+            "lead_coordination_checkpoint": (
+                "lead_coordination_checkpoint_ref",
+                "lead_coordination_checkpoint_sha256",
+            ),
+            "successor_execution_frontier": (
+                "successor_execution_frontier_ref",
+                "successor_execution_frontier_sha256",
+            ),
+            "repair_analysis_profile": (
+                "repair_analysis_profile_ref",
+                "repair_analysis_profile_sha256",
+            ),
+        }
+    elif downstream_analysis_successor:
         current_scope_bindings = {
             "predecessor_scope_decision": (
                 "predecessor_scope_decision_ref",
@@ -1020,6 +1119,57 @@ def _validate_authority(
         ):
             raise MultiAgentPreviewLiveError(
                 f"multi_agent_preview_project_os_binding_drift:{input_name}"
+            )
+    if generic_successor:
+        frontier = validate_successor_execution_frontier(
+            _json(inputs["successor_execution_frontier"])
+        )
+        failed_authority = _json(inputs["predecessor_authority"])
+        failed_result = _json(inputs["predecessor_result"])
+        predecessor_failure = frontier["predecessor_failure"]
+        terminal_path = _resolve(
+            str(predecessor_failure["terminal_result_ref"])
+        )
+        terminal = _json(terminal_path)
+        repair_profile = _json(inputs["repair_analysis_profile"])
+        if not (
+            authority["execution_limits"] == frontier["execution_limits"]
+            and predecessor_failure["authority_ref"]
+            == _relative(inputs["predecessor_authority"])
+            and predecessor_failure["authority_sha256"]
+            == _sha(inputs["predecessor_authority"])
+            and predecessor_failure["public_result_ref"]
+            == _relative(inputs["predecessor_result"])
+            and predecessor_failure["public_result_sha256"]
+            == _sha(inputs["predecessor_result"])
+            and predecessor_failure["public_result_digest"]
+            == failed_result.get("result_digest")
+            and predecessor_failure["terminal_result_sha256"]
+            == _sha(terminal_path)
+            and predecessor_failure["terminal_result_digest"]
+            == terminal.get("full_result_digest")
+            and predecessor_failure["failure_code"]
+            == failed_result.get("failure_code")
+            == "multi_agent_bound_workpaper_digest_invalid"
+            and predecessor_failure["provider_attempt_count"] == 0
+            and failed_authority.get("outputs", {}).get("public_result_ref")
+            == _relative(inputs["predecessor_result"])
+            and failed_result.get("authority_ref")
+            == _relative(inputs["predecessor_authority"])
+            and repair_profile.get("provider_id") == "deepseek"
+            and repair_profile.get("model") == "deepseek-v4-pro"
+            and repair_profile.get("request_defaults")
+            == {
+                "max_tokens": 12000,
+                "stream": False,
+                "thinking": {"type": "enabled"},
+                "reasoning_effort": "high",
+            }
+            and (repair_profile.get("authority") or {}).get("retry_count")
+            == 0
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_generic_successor_binding_invalid"
             )
     if preprovider_replacement:
         failed_authority = _json(inputs["failed_preprovider_authority"])
@@ -1643,7 +1793,16 @@ def _validate_authority(
         raise MultiAgentPreviewLiveError(
             "multi_agent_preview_successor_zero_call_proof_not_passed"
         )
-    if downstream_analysis_successor:
+    if generic_successor:
+        if scope_projection.get("successor_zero_call_proof_status") != (
+            validate_successor_execution_frontier(
+                _json(inputs["successor_execution_frontier"])
+            )["status"]
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_generic_successor_frontier_not_passed"
+            )
+    elif downstream_analysis_successor:
         progress_checkpoint = validate_downstream_repair_progress_checkpoint(
             _json(inputs["downstream_repair_progress_checkpoint"])
         )
@@ -1871,7 +2030,7 @@ def _validate_authority(
         raise MultiAgentPreviewLiveError(
             "multi_agent_preview_project_os_limit_drift"
         )
-    if repair_context_replacement:
+    if role_scoped_repair_successor:
         mode_limits_valid = (
             limits.get("maximum_new_lead_plan_model_calls") == 0
             and limits.get("maximum_new_initial_workpaper_nodes") == 0
@@ -2561,6 +2720,202 @@ def _load_bound_downstream_repair_progress_bundle_v2(
     return completed, completed_contexts, progress
 
 
+def _load_bound_generic_successor_frontier(
+    *,
+    frontier: Mapping[str, Any],
+) -> tuple[
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
+    dict[str, Any],
+]:
+    """Load completed nodes from one data-compiled execution frontier."""
+
+    trusted = validate_successor_execution_frontier(frontier)
+    completed: dict[str, dict[str, Any]] = {}
+    contexts: dict[str, dict[str, Any]] = {}
+    completed_rows: list[dict[str, Any]] = []
+    for frontier_row in trusted["nodes"]:
+        if frontier_row["disposition"] not in COMPLETED_DISPOSITIONS:
+            continue
+        terminal_path = _resolve(str(frontier_row["source_terminal_ref"]))
+        request_path = _resolve(str(frontier_row["source_request_ref"]))
+        if not (
+            terminal_path.is_file()
+            and request_path.is_file()
+            and _sha(terminal_path)
+            == frontier_row["source_terminal_sha256"]
+            and _sha(request_path) == frontier_row["source_request_sha256"]
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_generic_frontier_source_binding_drift"
+            )
+        terminal = _json(terminal_path)
+        terminal_body = {
+            key: value
+            for key, value in terminal.items()
+            if key != "full_result_digest"
+        }
+        source_node = next(
+            (
+                deepcopy(dict(row))
+                for row in terminal.get("node_executions") or ()
+                if row.get("node_id") == frontier_row["node_id"]
+            ),
+            None,
+        )
+        if not (
+            terminal.get("full_result_digest")
+            == frontier_row["source_terminal_digest"]
+            == canonical_digest(terminal_body)
+            and source_node is not None
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_generic_frontier_terminal_invalid"
+            )
+        source_payload = deepcopy(
+            dict(source_node.get("validated_payload") or {})
+        )
+        source_business = {
+            key: value
+            for key, value in source_payload.items()
+            if key not in {"context_digest", "workpaper_digest"}
+        }
+        normalized = deepcopy(dict(frontier_row["normalized_workpaper"]))
+        normalized_business = {
+            key: value
+            for key, value in normalized.items()
+            if key not in {"context_digest", "workpaper_digest"}
+        }
+        attempts = [
+            deepcopy(dict(row))
+            for row in source_node.get("attempts") or ()
+            if (
+                row.get("phase") == "analysis"
+                and row.get("status") == "analysis_draft_valid"
+            )
+            or (
+                row.get("phase") == "analysis_continuation"
+                and row.get("status") == "analysis_continuation_valid"
+            )
+        ]
+        if not (
+            len(attempts) == 1
+            and source_payload.get("agent_id")
+            == frontier_row["target_agent_id"]
+            and source_payload.get("workpaper_digest")
+            == frontier_row["source_workpaper_digest"]
+            and source_business == normalized_business
+            and canonical_digest(source_business)
+            == frontier_row["business_payload_digest"]
+            and attempts[0].get("request_capture_ref")
+            and _relative(_resolve(attempts[0]["request_capture_ref"]))
+            == frontier_row["source_request_ref"]
+            and attempts[0].get("request_digest")
+            == frontier_row["source_request_digest"]
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_generic_frontier_business_lineage_invalid"
+            )
+        request = _json(request_path)
+        request_body = request.get("request_body") or {}
+        messages = request_body.get("messages") or []
+        if not (
+            request.get("capture_type")
+            == "model_visible_request_without_credentials"
+            and request.get("credential_or_authorization_captured") is False
+            and request.get("run_id") == frontier_row["source_run_id"]
+            and request.get("attempt_id") == attempts[0].get("attempt_id")
+            and request.get("request_digest")
+            == frontier_row["source_request_digest"]
+            == canonical_digest(request_body)
+            and isinstance(messages, list)
+            and len(messages) in {2, 4}
+            and [row.get("role") for row in messages[:2]]
+            == ["system", "user"]
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_generic_frontier_request_invalid"
+            )
+        try:
+            envelope = json.loads(str(messages[1]["content"]))
+            context = json.loads(
+                str(envelope["task_context"][0]["content"])
+            )
+        except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_generic_frontier_context_missing"
+            ) from exc
+        context_body = {
+            key: value for key, value in context.items() if key != "context_digest"
+        }
+        if not (
+            context.get("context_digest")
+            == frontier_row["model_visible_context_digest"]
+            == canonical_digest(context_body)
+            and normalized.get("context_digest")
+            == frontier_row["model_visible_context_digest"]
+            and normalized.get("workpaper_digest")
+            == frontier_row["normalized_workpaper_digest"]
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_generic_frontier_context_invalid"
+            )
+        revalidated = revalidate_bound_specialist_workpaper(
+            normalized,
+            context=context,
+            expected_agent_id=str(frontier_row["target_agent_id"]),
+        )
+        if frontier_row["disposition"] == "exact_reuse":
+            if not (
+                frontier_row["source_workpaper_digest"]
+                == frontier_row["normalized_workpaper_digest"]
+                and frontier_row["source_validation_context_digest"]
+                == frontier_row["model_visible_context_digest"]
+            ):
+                raise MultiAgentPreviewLiveError(
+                    "multi_agent_preview_generic_frontier_exact_reuse_invalid"
+                )
+        elif not (
+            frontier_row["source_workpaper_digest"]
+            != frontier_row["normalized_workpaper_digest"]
+            and frontier_row["source_validation_context_digest"]
+            != frontier_row["model_visible_context_digest"]
+            and frontier_row["business_payload_byte_equivalent"] is True
+        ):
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_generic_frontier_rebind_invalid"
+            )
+        challenge_id = str(frontier_row["challenge_id"])
+        completed[challenge_id] = revalidated
+        contexts[challenge_id] = deepcopy(dict(context))
+        completed_rows.append(
+            {
+                "challenge_id": challenge_id,
+                "target_agent_id": frontier_row["target_agent_id"],
+                "node_id": frontier_row["node_id"],
+                "workpaper_digest": revalidated["workpaper_digest"],
+                "disposition": frontier_row["disposition"],
+            }
+        )
+    active = {
+        "accepted_challenge_ids": list(trusted["accepted_challenge_ids"]),
+        "completed_challenge_repairs": completed_rows,
+        "pending_challenge_repairs": [
+            deepcopy(dict(row))
+            for row in trusted["nodes"]
+            if row["disposition"] not in COMPLETED_DISPOSITIONS
+        ],
+        "checkpoint_digest": trusted["result_digest"],
+    }
+    if set(completed) != {
+        str(row["challenge_id"]) for row in completed_rows
+    } or set(contexts) != set(completed):
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_generic_frontier_completed_set_invalid"
+        )
+    return completed, contexts, active
+
+
 def _load_bound_downstream_repair_progress_bundle(
     *,
     checkpoint: Mapping[str, Any],
@@ -3113,12 +3468,19 @@ def run(authority_path: Path) -> dict[str, Any]:
         authority["schema_version"]
         == DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA
     )
+    generic_successor = (
+        authority["schema_version"] == GENERIC_SUCCESSOR_AUTHORITY_SCHEMA
+    )
+    role_scoped_repair_successor = (
+        repair_context_replacement or generic_successor
+    )
     downstream_analysis_successor = authority["schema_version"] in {
         DOWNSTREAM_ANALYSIS_SUCCESSOR_AUTHORITY_SCHEMA,
         DOWNSTREAM_ANALYSIS_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTEXT_REPLAY_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_CONTINUATION_PROFILE_REPLACEMENT_AUTHORITY_SCHEMA,
         DOWNSTREAM_REPAIR_CONTEXT_REPLACEMENT_AUTHORITY_SCHEMA,
+        GENERIC_SUCCESSOR_AUTHORITY_SCHEMA,
     }
     coordination_resume = (
         coordination_checkpoint_successor or downstream_analysis_successor
@@ -3193,7 +3555,7 @@ def run(authority_path: Path) -> dict[str, Any]:
     )
     repair_analysis_profile = (
         load_chat_completion_profile(_json(paths["repair_analysis_profile"]))
-        if repair_context_replacement
+        if role_scoped_repair_successor
         else None
     )
     continuation_profile = (
@@ -3208,7 +3570,7 @@ def run(authority_path: Path) -> dict[str, Any]:
         )
         if analysis_successor
         or specialist_analysis_successor
-        or downstream_analysis_successor
+        or (downstream_analysis_successor and not generic_successor)
         else None
     )
     validate_deepseek_ga_profile(analysis_profile, strict_tools=False)
@@ -3230,7 +3592,7 @@ def run(authority_path: Path) -> dict[str, Any]:
     elif (
         analysis_successor
         or specialist_analysis_successor
-        or downstream_analysis_successor
+        or (downstream_analysis_successor and not generic_successor)
     ) and not (
         continuation_profile is not None
         and continuation_profile.provider_id == "deepseek"
@@ -3338,7 +3700,7 @@ def run(authority_path: Path) -> dict[str, Any]:
         validate_downstream_repair_progress_checkpoint(
             _json(paths["downstream_repair_progress_checkpoint"])
         )
-        if downstream_analysis_successor
+        if downstream_analysis_successor and not generic_successor
         else None
     )
     downstream_progress_checkpoint_v2 = (
@@ -3352,7 +3714,7 @@ def run(authority_path: Path) -> dict[str, Any]:
         validate_analysis_fragment_checkpoint(
             _json(paths["downstream_analysis_fragment_checkpoint"])
         )
-        if downstream_analysis_successor
+        if downstream_analysis_successor and not generic_successor
         else None
     )
     if downstream_analysis_checkpoint is not None:
@@ -3367,32 +3729,41 @@ def run(authority_path: Path) -> dict[str, Any]:
         downstream_analysis_checkpoint_original_messages = None
     downstream_analysis_successor_zero = (
         _json(paths["downstream_analysis_successor_zero_call_proof"])
-        if downstream_analysis_successor
+        if downstream_analysis_successor and not generic_successor
         else None
     )
-    (
-        completed_downstream_repairs,
-        completed_downstream_repair_contexts,
-    ) = (
-        _load_bound_downstream_repair_progress_bundle_v2(
-            checkpoint=downstream_progress_checkpoint_v2,
-        )[:2]
-        if downstream_progress_checkpoint_v2 is not None
-        else (
-            _load_bound_downstream_repair_progress_bundle(
-                checkpoint=downstream_progress_checkpoint,
-                fragment_checkpoint=downstream_analysis_checkpoint,
-            )
-            if downstream_progress_checkpoint is not None
-            and downstream_analysis_checkpoint is not None
-            else ({}, {})
+    if generic_successor:
+        (
+            completed_downstream_repairs,
+            completed_downstream_repair_contexts,
+            active_downstream_progress_checkpoint,
+        ) = _load_bound_generic_successor_frontier(
+            frontier=_json(paths["successor_execution_frontier"])
         )
-    )
-    active_downstream_progress_checkpoint = (
-        downstream_progress_checkpoint_v2
-        if downstream_progress_checkpoint_v2 is not None
-        else downstream_progress_checkpoint
-    )
+    else:
+        (
+            completed_downstream_repairs,
+            completed_downstream_repair_contexts,
+        ) = (
+            _load_bound_downstream_repair_progress_bundle_v2(
+                checkpoint=downstream_progress_checkpoint_v2,
+            )[:2]
+            if downstream_progress_checkpoint_v2 is not None
+            else (
+                _load_bound_downstream_repair_progress_bundle(
+                    checkpoint=downstream_progress_checkpoint,
+                    fragment_checkpoint=downstream_analysis_checkpoint,
+                )
+                if downstream_progress_checkpoint is not None
+                and downstream_analysis_checkpoint is not None
+                else ({}, {})
+            )
+        )
+        active_downstream_progress_checkpoint = (
+            downstream_progress_checkpoint_v2
+            if downstream_progress_checkpoint_v2 is not None
+            else downstream_progress_checkpoint
+        )
     specialist_analysis_successor_zero = (
         _json(paths["specialist_analysis_successor_zero_call_proof"])
         if specialist_analysis_successor
@@ -3666,7 +4037,7 @@ def run(authority_path: Path) -> dict[str, Any]:
         and coordination_checkpoint_successor_zero is not None
         else {}
     )
-    downstream_analysis_successor_bindings = (
+    legacy_downstream_analysis_successor_bindings = (
         {
             "predecessor_lead_plan_checkpoint": {
                 "ref": _relative(paths["lead_plan_checkpoint"]),
@@ -3889,6 +4260,65 @@ def run(authority_path: Path) -> dict[str, Any]:
         and downstream_analysis_checkpoint is not None
         and downstream_analysis_successor_zero is not None
         else {}
+    )
+    generic_successor_bindings = (
+        {
+            "predecessor_lead_plan_checkpoint": {
+                "ref": _relative(paths["lead_plan_checkpoint"]),
+                "sha256": _sha(paths["lead_plan_checkpoint"]),
+                "checkpoint_digest": lead_plan_checkpoint[
+                    "checkpoint_digest"
+                ],
+                "lead_plan_digest": lead_plan_checkpoint["lead_plan"][
+                    "lead_plan_digest"
+                ],
+                "source_run_status_preserved_as_failure": True,
+            },
+            "predecessor_workpaper_checkpoint": {
+                "ref": _relative(paths["workpaper_checkpoint"]),
+                "sha256": _sha(paths["workpaper_checkpoint"]),
+                "checkpoint_digest": workpaper_checkpoint_raw[
+                    "checkpoint_digest"
+                ],
+                "source_run_status_preserved_as_failure": True,
+            },
+            "predecessor_lead_coordination_checkpoint": {
+                "ref": _relative(paths["lead_coordination_checkpoint"]),
+                "sha256": _sha(paths["lead_coordination_checkpoint"]),
+                "checkpoint_digest": coordination_checkpoint_raw[
+                    "checkpoint_digest"
+                ],
+                "reused_workpaper_count": 6,
+                "reused_lead_coordination_count": 1,
+                "source_run_status_preserved_as_failure": True,
+            },
+            "compiled_successor_frontier": {
+                "ref": _relative(paths["successor_execution_frontier"]),
+                "sha256": _sha(paths["successor_execution_frontier"]),
+                "result_digest": active_downstream_progress_checkpoint[
+                    "checkpoint_digest"
+                ],
+                "completed_repair_count": len(
+                    completed_downstream_repairs
+                ),
+                "pending_repair_count": len(
+                    active_downstream_progress_checkpoint[
+                        "pending_challenge_repairs"
+                    ]
+                ),
+            },
+        }
+        if generic_successor
+        and lead_plan_checkpoint is not None
+        and workpaper_checkpoint_raw is not None
+        and coordination_checkpoint_raw is not None
+        and active_downstream_progress_checkpoint is not None
+        else {}
+    )
+    downstream_analysis_successor_bindings = (
+        generic_successor_bindings
+        if generic_successor
+        else legacy_downstream_analysis_successor_bindings
     )
 
     sessions: dict[str, PreviewAgentSessionState] = {}
@@ -4412,7 +4842,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                 context_scope="role_repair",
             )
             resume_active_fragment = (
-                not repair_context_replacement
+                not role_scoped_repair_successor
                 and downstream_analysis_successor
                 and downstream_analysis_checkpoint is not None
                 and downstream_progress_checkpoint is not None
@@ -4460,7 +4890,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                 ),
                 analysis_profile_override=(
                     repair_analysis_profile
-                    if repair_context_replacement
+                    if role_scoped_repair_successor
                     else None
                 ),
             )
@@ -4592,7 +5022,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                     submission_tokens=8000,
                     analysis_profile_override=(
                         repair_analysis_profile
-                        if repair_context_replacement
+                        if role_scoped_repair_successor
                         else None
                     ),
                 )
@@ -4638,7 +5068,20 @@ def run(authority_path: Path) -> dict[str, Any]:
                 evaluation=final_evaluation,
             )
 
-        if repair_context_replacement:
+        if generic_successor:
+            known_boundary_prefix = (
+                "This is one provider-neutral compiled DELL Multi-Agent "
+                "Preview successor over unchanged current local S1/S2 "
+                "authority. Six specialist workpapers and the valid Lead "
+                "challenge partition were reused from immutable checkpoints. "
+                "The execution frontier proved the Demand repair as an exact "
+                "reuse, rebound only the locally derived Cash digests to its "
+                "capture-bound model-visible context, and authorized only a "
+                "fresh Supply repair before evaluation. It did not rerun "
+                "planning, initial workpapers, Lead coordination, Demand or "
+                "Cash, and it permitted no analysis continuation. "
+            )
+        elif repair_context_replacement:
             known_boundary_prefix = (
                 "This is one DELL R15 role-scoped Supply-repair Multi-Agent "
                 "Preview successor over unchanged current local S1/S2 "
@@ -4964,7 +5407,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                 ),
                 **(
                     {
-                        "R15_completed_demand_and_cash_repairs_reused_without_"
+                        "compiled_frontier_completed_repairs_reused_without_"
                         "rerun": (
                             len(completed_downstream_repairs) == 2
                             and all(
@@ -4976,12 +5419,13 @@ def run(authority_path: Path) -> dict[str, Any]:
                                 for row in node_records
                             )
                         ),
-                        "R15_analysis_continuation_forbidden_and_absent": all(
+                        "compiled_frontier_analysis_continuation_forbidden_"
+                        "and_absent": all(
                             attempt.get("phase") != "analysis_continuation"
                             for row in node_records
                             for attempt in row["attempts"]
                         ),
-                        "R15_fresh_supply_repair_started_once": sum(
+                        "compiled_frontier_fresh_supply_repair_started_once": sum(
                             1
                             for row in node_records
                             if row["node_id"]
@@ -4989,8 +5433,41 @@ def run(authority_path: Path) -> dict[str, Any]:
                         )
                         == 1,
                     }
-                    if repair_context_replacement
-                    else {}
+                    if generic_successor
+                    else (
+                        {
+                            "R15_completed_demand_and_cash_repairs_reused_"
+                            "without_rerun": (
+                                len(completed_downstream_repairs) == 2
+                                and all(
+                                    row["node_id"]
+                                    not in {
+                                        "AGENT::DEMAND_QUALITY::COUNTER_REPAIR",
+                                        "AGENT::CASH_CONVERSION::COUNTER_REPAIR",
+                                    }
+                                    for row in node_records
+                                )
+                            ),
+                            "R15_analysis_continuation_forbidden_and_absent": all(
+                                attempt.get("phase")
+                                != "analysis_continuation"
+                                for row in node_records
+                                for attempt in row["attempts"]
+                            ),
+                            "R15_fresh_supply_repair_started_once": sum(
+                                1
+                                for row in node_records
+                                if row["node_id"]
+                                == (
+                                    "AGENT::SUPPLY_RELATIONSHIP::"
+                                    "COUNTER_REPAIR"
+                                )
+                            )
+                            == 1,
+                        }
+                        if repair_context_replacement
+                        else {}
+                    )
                 ),
                 **(
                     {
@@ -5024,7 +5501,7 @@ def run(authority_path: Path) -> dict[str, Any]:
                         ),
                     }
                     if downstream_analysis_successor
-                    and not repair_context_replacement
+                    and not role_scoped_repair_successor
                     else {}
                 ),
                 **(

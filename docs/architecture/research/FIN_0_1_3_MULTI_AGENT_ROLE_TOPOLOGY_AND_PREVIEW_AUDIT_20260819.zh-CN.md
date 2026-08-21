@@ -256,3 +256,17 @@ Supply 已成为第三条完成 repair，旧 frontier 不能再把它当作 pend
 该事件补出两条长期规则：第一，authority 测试必须继续编译实际 execution binding，不能只证明 JSON／scope 合法；第二，一旦 authority 已通过并创建 capture root，后续任何 pre-execution 异常也必须物化 terminal result，明确 provider boundary 是否到达。不能因为 0 Provider 就抹去失败，也不能复用已消费的 authority。
 
 层级 proof 现在由 bound proof＋frontier 在运行阶段显式重验并形成 execution binding。旧 attempt 已保存为 0 模型节点、0 Provider、0 网络的 `pre_execution_binding` failure；replacement 必须使用新实现提交、fresh preflight 和全新输出身份。
+
+## 二十一、Evaluator 与 repair 不能共享同一推理档位
+
+replacement live 已真正启动第一个 Demand 单角色审查。输入只有约 5,458 token，且模型可见内容已经完成判断纪律、机制、反方、WWC 和 gap 边界检查，最终给出 `Role Content May Proceed=true`；但旧实现继续使用角色 repair 的 `high / 12,000` profile，11,289 completion token 被 reasoning 消耗，可见审查在最后一条 LOW advisory 中截断。
+
+这修正了第十八节“所有角色级与跨角色分析使用 high / 12,000”的临时假设。评审和修订的认知任务不同：
+
+- Evaluator 是只读审计，只能检查已有底稿并输出 finding、责任角色和是否阻断；
+- repair Agent 要根据 finding 重新形成判断、机制、反方与边界；
+- submission 只负责把完成内容投影成严格 Tool Call。
+
+因此 Provider profile 映射改为：角色评审 `low / 8,000`，跨角色评审 `low / 10,000`，角色修订继续 `high / 12,000`，strict submission 继续 non-thinking。三者都必须有独立 TokenBudgetBasis；ceiling 由输入规模、输出责任、schema burden、金融风险、可比运行和停止策略编译，而不是由成本或速度决定。
+
+该映射只存在于 DeepSeek GA profile 与 authority 中。核心的 role audit、cross-role finding、repair routing、Evidence／NumericFact 权威和 L1 仍保持 provider-neutral。`low` 不是永久产品常数：fresh canary 必须同时证明完整可见输出和评审质量；若它仍 reasoning-only exhaustion 或明显降低内容质量，下一步是更换 Evaluator profile／模型或进一步收窄其职责，而不是继续压缩金融材料、提高全局 ceiling 或增加 attempt-specific runner。

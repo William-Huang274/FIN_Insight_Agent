@@ -391,3 +391,18 @@ R15C 在 0 模型／Provider／网络状态下发现：R14 Cash continuation 的
 3. clean commit、push 与 fresh Project OS preflight 通过后，签发唯一一次 generic successor live。
 4. live 只从 Supply fresh repair 开始；随后运行独立 Evaluator、受限局部 repair 和条件式 Writer。任何 completed 节点重跑或 analysis continuation 都是权限违规。
 5. 成功后分别验收完整 Judgment、六角色协作、L1、内容质量和报告；失败则归到数据基建、Harness 或 Agent 工作模式的最早责任层。工程通过不等于 S1／S3／泛化／Workbench／release 通过。
+
+## 4AA. Demand 审查证明分层正确，但 Evaluator 与 repair 仍需 profile 分责（2026-08-21）
+
+第一次真正进入分层评审后，Demand 单角色节点已经完成判断纪律、机制、反方、WWC 和 gap 边界检查，并给出 `Role Content May Proceed=true`，只留下一个 LOW advisory；但 Runtime 继续使用 `high / 12,000` repair profile，11,289 token 被 reasoning 消耗，输出在最后一句截断。该 attempt 保持 terminal failure。
+
+当前顺序不改变产品版本、S 阶段或完整 Preview 拓扑，只纠正节点职责：
+
+1. 角色／跨角色 Evaluator 使用独立低 reasoning 候选 profile，分别以 8,000／10,000 task-derived ceiling 执行只读评审；
+2. 只有形成 material finding 后，原责任角色 repair 才继续使用 high reasoning／12,000；
+3. strict submission 继续独立 non-thinking；
+4. Demand 仍是完整 Preview 的第一节点 canary，通过即继续其余五角色、跨角色检查、最多两处局部修订和 Writer，不创建 Demand-only runner；
+5. 旧上游计划、底稿、Lead 协调和三条修订全部复用，研究输入、Evidence、NumericFact、typed gap、网络与 Candidate 权限不变；
+6. 若单角色低 profile 仍失败，不再删材料、抬全局上限或增加 DeepSeek 专用分支，转为 Evaluator 模型／profile／职责选择。
+
+完成工程门后只签发一次 fresh profile-separated successor。它即使生成报告，也仍需独立 L1、八维质量、paired gain 和 qualified-human；S1／S3、泛化、Workbench publication 和 release 不自动通过。

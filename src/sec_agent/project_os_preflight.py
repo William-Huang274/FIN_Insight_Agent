@@ -5034,15 +5034,30 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         "hierarchical_evaluator_zero_call_proof_sha256",
         "hierarchical_evaluator_zero_call_proof_result_digest",
     }
+    evaluator_profile_fields = {
+        "evaluator_analysis_profile_ref",
+        "evaluator_analysis_profile_sha256",
+    }
     supplied_hierarchical_proof_fields = set(decision) & hierarchical_proof_fields
+    supplied_evaluator_profile_fields = set(decision) & evaluator_profile_fields
     if supplied_hierarchical_proof_fields not in (set(), hierarchical_proof_fields):
         raise ValueError(
             "project_os_multi_agent_generic_successor_hierarchical_proof_"
             "binding_incomplete"
         )
+    if supplied_evaluator_profile_fields not in (set(), evaluator_profile_fields):
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_evaluator_profile_"
+            "binding_incomplete"
+        )
     if set(decision) not in {
         frozenset(expected_fields),
         frozenset(expected_fields | hierarchical_proof_fields),
+        frozenset(
+            expected_fields
+            | hierarchical_proof_fields
+            | evaluator_profile_fields
+        ),
     }:
         raise ValueError(
             "project_os_multi_agent_generic_successor_shape_invalid"
@@ -5240,6 +5255,7 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
     )
     frontier = validate_successor_execution_frontier(frontier_raw)
     hierarchical_proof: dict[str, Any] | None = None
+    evaluator_profile: dict[str, Any] | None = None
     if frontier.get("evaluation_strategy") == HIERARCHICAL_EVALUATION_STRATEGY:
         if supplied_hierarchical_proof_fields != hierarchical_proof_fields:
             raise ValueError(
@@ -5269,6 +5285,38 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
                 "project_os_multi_agent_generic_successor_hierarchical_proof_"
                 "frontier_drift"
             )
+        if supplied_evaluator_profile_fields:
+            evaluator_profile_path, evaluator_profile = _validate_artifact_binding(
+                root=root,
+                decision=decision,
+                ref_field="evaluator_analysis_profile_ref",
+                sha_field="evaluator_analysis_profile_sha256",
+            )
+            evaluator_defaults = evaluator_profile.get("request_defaults") or {}
+            if not (
+                evaluator_profile.get("provider_id") == "deepseek"
+                and evaluator_profile.get("model") == "deepseek-v4-pro"
+                and evaluator_profile.get("base_url")
+                == "https://api.deepseek.com"
+                and evaluator_profile.get("endpoint") == "/chat/completions"
+                and evaluator_defaults
+                == {
+                    "max_tokens": 10000,
+                    "stream": False,
+                    "thinking": {"type": "enabled"},
+                    "reasoning_effort": "low",
+                }
+                and (evaluator_profile.get("authority") or {}).get(
+                    "retry_count"
+                )
+                == 0
+                and evaluator_profile_path.relative_to(root).as_posix()
+                != decision["repair_analysis_profile_ref"]
+            ):
+                raise ValueError(
+                    "project_os_multi_agent_generic_successor_evaluator_"
+                    "profile_invalid"
+                )
     elif supplied_hierarchical_proof_fields:
         raise ValueError(
             "project_os_multi_agent_generic_successor_hierarchical_proof_"
@@ -5315,6 +5363,26 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         raise ValueError(
             "project_os_multi_agent_generic_successor_frontier_binding_invalid"
         )
+    if evaluator_profile is not None:
+        predecessor_evaluator_ref = predecessor_scope.get(
+            "evaluator_analysis_profile_ref"
+        )
+        if predecessor_evaluator_ref:
+            if (
+                decision["evaluator_analysis_profile_ref"]
+                != predecessor_evaluator_ref
+            ):
+                raise ValueError(
+                    "project_os_multi_agent_generic_successor_evaluator_"
+                    "profile_lineage_drift"
+                )
+        elif failed_result.get("failure_code") != (
+            "multi_agent_preview_analysis_finish_reason_invalid:length"
+        ):
+            raise ValueError(
+                "project_os_multi_agent_generic_successor_evaluator_profile_"
+                "introduction_not_justified"
+            )
     expected_constraints = {
         "historical_failures_remain_immutable": True,
         "frontier_is_compiled_from_capture_bound_lineage": True,
@@ -5349,6 +5417,10 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         "stop_and_truncation_behavior_required": True,
         "cost_and_latency_are_secondary_constraints": True,
     }
+    if evaluator_profile is not None:
+        expected_budget_policy[
+            "evaluator_analysis_basis_is_separate_from_repair_basis"
+        ] = True
     if decision.get("token_budget_basis_policy") != expected_budget_policy:
         raise ValueError(
             "project_os_multi_agent_generic_successor_budget_invalid"
@@ -5363,6 +5435,17 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
             hierarchical_proof["result_digest"]
             if hierarchical_proof is not None
             else None
+        ),
+        "evaluator_analysis_profile_ref": (
+            decision.get("evaluator_analysis_profile_ref")
+            if evaluator_profile is not None
+            else None
+        ),
+        "evaluator_analysis_reasoning_effort": (
+            "low" if evaluator_profile is not None else None
+        ),
+        "evaluator_analysis_maximum_token_ceiling": (
+            10000 if evaluator_profile is not None else None
         ),
         "provider_id": predecessor_projection["provider_id"],
         "provider_model": predecessor_projection["provider_model"],

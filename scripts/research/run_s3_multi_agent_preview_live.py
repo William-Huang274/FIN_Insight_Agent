@@ -190,6 +190,8 @@ FULL_SCHEMA_V7 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_7"
 PUBLIC_SCHEMA_V7 = "fin_ia_s3_dell_multi_agent_preview_live_result_v1_7"
 FULL_SCHEMA_V8 = "fin_ia_s3_dell_multi_agent_preview_live_full_result_v1_8"
 PUBLIC_SCHEMA_V8 = "fin_ia_s3_dell_multi_agent_preview_live_result_v1_8"
+ROLE_EVALUATION_ANALYSIS_TOKEN_CEILING = 8000
+CROSS_ROLE_EVALUATION_ANALYSIS_TOKEN_CEILING = 10000
 
 
 class MultiAgentPreviewLiveError(RuntimeError):
@@ -589,6 +591,13 @@ def _validate_authority(
             frozenset(required_inputs),
             frozenset(
                 required_inputs | {"hierarchical_evaluator_zero_call_proof"}
+            ),
+            frozenset(
+                required_inputs
+                | {
+                    "hierarchical_evaluator_zero_call_proof",
+                    "evaluator_analysis_profile",
+                }
             ),
         }
         inputs_valid = frozenset(inputs) in allowed_input_sets
@@ -1021,6 +1030,20 @@ def _validate_authority(
                 "hierarchical_evaluator_zero_call_proof_ref",
                 "hierarchical_evaluator_zero_call_proof_sha256",
             )
+        scope_requires_evaluator_profile = (
+            scope_projection.get("evaluator_analysis_profile_ref") is not None
+        )
+        if (
+            "evaluator_analysis_profile" in inputs
+        ) != scope_requires_evaluator_profile:
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_evaluator_profile_authority_shape_invalid"
+            )
+        if scope_requires_evaluator_profile:
+            current_scope_bindings["evaluator_analysis_profile"] = (
+                "evaluator_analysis_profile_ref",
+                "evaluator_analysis_profile_sha256",
+            )
     elif downstream_analysis_successor:
         current_scope_bindings = {
             "predecessor_scope_decision": (
@@ -1287,6 +1310,11 @@ def _validate_authority(
             or {}
         )
         repair_profile = _json(inputs["repair_analysis_profile"])
+        evaluator_profile = (
+            _json(inputs["evaluator_analysis_profile"])
+            if "evaluator_analysis_profile" in inputs
+            else None
+        )
         if not (
             authority["execution_limits"] == frontier["execution_limits"]
             and predecessor_failure["authority_ref"]
@@ -1340,6 +1368,28 @@ def _validate_authority(
             }
             and (repair_profile.get("authority") or {}).get("retry_count")
             == 0
+            and (
+                evaluator_profile is None
+                or (
+                    evaluator_profile.get("provider_id") == "deepseek"
+                    and evaluator_profile.get("model") == "deepseek-v4-pro"
+                    and evaluator_profile.get("base_url")
+                    == "https://api.deepseek.com"
+                    and evaluator_profile.get("endpoint")
+                    == "/chat/completions"
+                    and evaluator_profile.get("request_defaults")
+                    == {
+                        "max_tokens": 10000,
+                        "stream": False,
+                        "thinking": {"type": "enabled"},
+                        "reasoning_effort": "low",
+                    }
+                    and (evaluator_profile.get("authority") or {}).get(
+                        "retry_count"
+                    )
+                    == 0
+                )
+            )
         ):
             raise MultiAgentPreviewLiveError(
                 "multi_agent_preview_generic_successor_binding_invalid"
@@ -3736,6 +3786,11 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
         if role_scoped_repair_successor
         else None
     )
+    evaluator_analysis_profile = (
+        load_chat_completion_profile(_json(paths["evaluator_analysis_profile"]))
+        if generic_successor and "evaluator_analysis_profile" in paths
+        else None
+    )
     continuation_profile = (
         load_chat_completion_profile(
             _json(
@@ -3757,6 +3812,12 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
             repair_analysis_profile,
             strict_tools=False,
             expected_reasoning_effort="high",
+        )
+    if evaluator_analysis_profile is not None:
+        validate_deepseek_ga_profile(
+            evaluator_analysis_profile,
+            strict_tools=False,
+            expected_reasoning_effort="low",
         )
     validate_deepseek_ga_node_profile(
         submission_profile,
@@ -4584,6 +4645,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
             "comparable_run_evidence": (
                 "DELL dynamic five-cell R7 content assessment",
                 "DELL multi-agent zero-call preview v1.2",
+                "DELL hierarchical Demand audit high-reasoning length failure 2026-08-21",
             ),
             "submission_output_token_ceiling": submission_tokens,
             "maximum_submission_successor_attempts": (
@@ -5200,9 +5262,15 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                         "role_content_may_proceed",
                     ),
                     risk="a false role pass could preserve a material causal overreach; a false block could erase valid specialist gain",
-                    analysis_tokens=12000,
+                    analysis_tokens=(
+                        ROLE_EVALUATION_ANALYSIS_TOKEN_CEILING
+                        if evaluator_analysis_profile is not None
+                        else 12000
+                    ),
                     submission_tokens=7000,
-                    analysis_profile_override=repair_analysis_profile,
+                    analysis_profile_override=(
+                        evaluator_analysis_profile or repair_analysis_profile
+                    ),
                 )
                 evaluator_role_audits += 1
             cross_evaluator_id = "EVAL::CROSS_ROLE"
@@ -5229,9 +5297,15 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                     "report_may_proceed",
                 ),
                 risk="a missed cross-role conflict could make individually plausible workpapers form a materially inconsistent report",
-                analysis_tokens=12000,
+                analysis_tokens=(
+                    CROSS_ROLE_EVALUATION_ANALYSIS_TOKEN_CEILING
+                    if evaluator_analysis_profile is not None
+                    else 12000
+                ),
                 submission_tokens=7000,
-                analysis_profile_override=repair_analysis_profile,
+                analysis_profile_override=(
+                    evaluator_analysis_profile or repair_analysis_profile
+                ),
             )
             evaluator_cross_role_audits += 1
             evaluation = merge_hierarchical_evaluations(
@@ -5278,9 +5352,16 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                                 "revised_role_content_may_proceed",
                             ),
                             risk="an unaffected-role rerun or a permissive re-audit would hide whether targeted feedback actually improved the workpaper",
-                            analysis_tokens=12000,
+                            analysis_tokens=(
+                                ROLE_EVALUATION_ANALYSIS_TOKEN_CEILING
+                                if evaluator_analysis_profile is not None
+                                else 12000
+                            ),
                             submission_tokens=7000,
-                            analysis_profile_override=repair_analysis_profile,
+                            analysis_profile_override=(
+                                evaluator_analysis_profile
+                                or repair_analysis_profile
+                            ),
                         )
                         evaluator_role_reaudits += 1
                     current_workpapers = [
@@ -5307,9 +5388,16 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                             "report_may_proceed",
                         ),
                         risk="a false post-repair pass could publish an internally inconsistent synthesis",
-                        analysis_tokens=12000,
+                        analysis_tokens=(
+                            CROSS_ROLE_EVALUATION_ANALYSIS_TOKEN_CEILING
+                            if evaluator_analysis_profile is not None
+                            else 12000
+                        ),
                         submission_tokens=7000,
-                        analysis_profile_override=repair_analysis_profile,
+                        analysis_profile_override=(
+                            evaluator_analysis_profile
+                            or repair_analysis_profile
+                        ),
                     )
                     evaluator_cross_role_audits += 1
                     evaluations.append(

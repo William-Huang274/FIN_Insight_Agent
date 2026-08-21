@@ -54,6 +54,11 @@ HIERARCHICAL_EVALUATOR_SCOPE = (
     / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
     "compiled_successor_scope_decision_v1_2.json"
 )
+HIERARCHICAL_EVALUATOR_PROFILE_SCOPE = (
+    ROOT
+    / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "compiled_successor_scope_decision_v1_3.json"
+)
 
 
 def _checkpoint() -> dict[str, object]:
@@ -839,10 +844,16 @@ def test_r15_authority_reuses_two_repairs_and_starts_fresh_supply(
 
 
 @pytest.mark.parametrize(
-    ("scope_path", "expected_maximum_nodes", "expects_hierarchical_proof"),
     (
-        (GENERIC_SUCCESSOR_SCOPE, 5, False),
-        (HIERARCHICAL_EVALUATOR_SCOPE, 13, True),
+        "scope_path",
+        "expected_maximum_nodes",
+        "expects_hierarchical_proof",
+        "expects_evaluator_profile",
+    ),
+    (
+        (GENERIC_SUCCESSOR_SCOPE, 5, False, False),
+        (HIERARCHICAL_EVALUATOR_SCOPE, 13, True, False),
+        (HIERARCHICAL_EVALUATOR_PROFILE_SCOPE, 13, True, True),
     ),
 )
 def test_generic_successor_authority_uses_one_compiled_frontier(
@@ -850,6 +861,7 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
     scope_path: Path,
     expected_maximum_nodes: int,
     expects_hierarchical_proof: bool,
+    expects_evaluator_profile: bool,
 ) -> None:
     source_authority = json.loads(
         (
@@ -910,6 +922,10 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
         bound_inputs["hierarchical_evaluator_zero_call_proof"] = binding(
             scope["hierarchical_evaluator_zero_call_proof_ref"]
         )
+    if expects_evaluator_profile:
+        bound_inputs["evaluator_analysis_profile"] = binding(
+            scope["evaluator_analysis_profile_ref"]
+        )
     authority = {
         "schema_version": runner.GENERIC_SUCCESSOR_AUTHORITY_SCHEMA,
         "status": (
@@ -945,6 +961,16 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
     assert (
         "hierarchical_evaluator_zero_call_proof" in inputs
     ) is expects_hierarchical_proof
+    assert (
+        "evaluator_analysis_profile" in inputs
+    ) is expects_evaluator_profile
+    if expects_evaluator_profile:
+        profile = runner.load_chat_completion_profile(
+            runner._json(inputs["evaluator_analysis_profile"])
+        )
+        assert profile.request_defaults["reasoning_effort"] == "low"
+        assert runner.ROLE_EVALUATION_ANALYSIS_TOKEN_CEILING == 8000
+        assert runner.CROSS_ROLE_EVALUATION_ANALYSIS_TOKEN_CEILING == 10000
 
     frontier = runner.validate_successor_execution_frontier(
         runner._json(inputs["successor_execution_frontier"])

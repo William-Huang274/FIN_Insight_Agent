@@ -248,6 +248,11 @@ MULTI_AGENT_PREVIEW_HIERARCHICAL_EVALUATOR_SCOPE_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
     "successor_scope_decision_v1_2.json"
 )
+MULTI_AGENT_PREVIEW_HIERARCHICAL_EVALUATOR_PROFILE_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
+    "successor_scope_decision_v1_3.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -909,6 +914,33 @@ def test_multi_agent_preview_hierarchical_evaluator_rejects_proof_digest_drift()
             root=ROOT,
             decision=decision,
         )
+
+
+def test_multi_agent_preview_hierarchical_evaluator_separates_audit_profile() -> None:
+    decision = json.loads(
+        (
+            ROOT
+            / MULTI_AGENT_PREVIEW_HIERARCHICAL_EVALUATOR_PROFILE_SCOPE_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+
+    projection = validate_multi_agent_preview_generic_successor_scope_decision(
+        root=ROOT,
+        decision=decision,
+    )
+
+    assert projection["recent_provider_steps"] == 1
+    assert projection["evaluator_analysis_profile_ref"] == decision[
+        "evaluator_analysis_profile_ref"
+    ]
+    assert projection["evaluator_analysis_reasoning_effort"] == "low"
+    assert projection["evaluator_analysis_maximum_token_ceiling"] == 10000
+    assert decision["evaluator_analysis_profile_ref"] != decision[
+        "repair_analysis_profile_ref"
+    ]
+    assert projection["token_budget_basis_policy"][
+        "evaluator_analysis_basis_is_separate_from_repair_basis"
+    ] is True
 
 
 def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:

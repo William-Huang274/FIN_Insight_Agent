@@ -1006,3 +1006,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Runtime 已改为从 bound hierarchical proof＋frontier 显式编译 execution binding；测试从“只验 authority”扩大为真实编译 checkpoint／frontier／proof lineage。pre-execution 非合同异常现在也会原子保存 public／private terminal result。
 - 复证通过：定向 110、全仓 914、compileall、active baseline `185／8／5／27／0`、757 configs、8 份 Project OS JSONL／871 行、7,476-file secret scan 和 diff check。
 - 下一步仍是同一 S3 Preview，不换版本、不重跑上游：clean commit／push → fresh Project OS preflight → 全新 replacement authority → 一次层级 Evaluator live。自然 finding、Writer、完整报告和所有产品验收仍未证明。
+
+# 2026-08-21 Demand 单角色审查截断与 profile 分责
+
+- replacement live 已越过 execution binding，只启动 Demand 单角色审查：prompt 约 `5,458`，completion `12,000`，其中 reasoning `11,289`，可见审查 `2,976` 字符，最终 `finish_reason=length`；其余角色、跨角色检查、submission 和 Writer 均未开始。
+- 可见内容已把 judgment discipline、mechanism、counterarguments、WWC、bounded gap language 判为 PASS，并给出 `Role Content May Proceed=true`；唯一 LOW advisory 是 `$16.1B` 只能支持同季订单向收入转化，不能升级为持续性／因果证明。失败归评审 profile，不归 S1、研究底稿或模型全面无能。
+- Runtime 现分离三种职责：角色审查 `low / 8,000`、跨角色审查 `low / 10,000`、实际 role repair `high / 12,000`，strict submission 保持 non-thinking。每个节点单独记录 TokenBudgetBasis，成本和速度不是压缩依据。
+- Demand 仍是同一个完整 Preview 的首节点 canary；通过后自动继续其余五角色、跨角色检查、最多两处定向 repair／复审和条件式 Writer，不新建 Demand-only runner。
+- 当前须完成文档／账本、全仓门、clean commit／push、fresh preflight 和唯一一次 profile-separated successor。若单角色低 profile 仍同型失败，转模型／profile／职责决策，不再删金融权威、抬全局上限或扩写 DeepSeek 专用分支。S1／S3、泛化、qualified-human、Workbench 和 release 仍为 false。
+- 完整工程门现已通过：定向 125、全仓 916、compileall、active baseline `185／8／5／27／0`、763 configs、8 份 Project OS JSONL／875 行、7,483-file secret scan 和 diff check。当前只剩 clean commit／push、fresh preflight、新 authority 和一次完整 successor live。

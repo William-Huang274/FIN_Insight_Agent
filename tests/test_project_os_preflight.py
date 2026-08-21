@@ -942,6 +942,20 @@ def test_multi_agent_preview_hierarchical_evaluator_separates_audit_profile() ->
         "evaluator_analysis_basis_is_separate_from_repair_basis"
     ] is True
 
+    preflight = build_preflight(
+        root=ROOT,
+        decision_ref=(
+            MULTI_AGENT_PREVIEW_HIERARCHICAL_EVALUATOR_PROFILE_SCOPE_DECISION_REF
+        ),
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    assert preflight["status"] == "pass_current_decision_bound_preflight"
+    assert (
+        "RC-AR-023-hierarchical-role-audit-reused-high-reasoning-repair-profile"
+        in preflight["scope_projection"]["explicit_allow_issue_ids"]
+    )
+
 
 def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:
     result = build_preflight(

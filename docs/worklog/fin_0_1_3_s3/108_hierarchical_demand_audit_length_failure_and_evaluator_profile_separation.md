@@ -77,3 +77,7 @@ Demand 仍是完整多角色 Preview 的第一个节点，不存在单独产品�
 - `git diff --check`：通过。
 
 该结果只证明实现、历史 replay、scope、profile binding、预算和仓库主线稳定。下一步仍须 clean commit／push、fresh Project OS preflight 和全新 authority，才能执行一次 profile-separated 完整 Preview successor。
+
+第一次 clean／synced preflight 的总状态虽为 pass，但 `explicit_allow_issue_ids` 只列出旧的 RC-AR-002／020，没有列出本轮 RC-AR-023。原因是账本只写了描述性 successor 名，没有同时登记机器实际使用的 `run_scope_id=one_clean_authorized_compiled_multi_agent_successor`。这不会被当作“总状态已经绿所以可以忽略”：Project OS 现要求只要 scope 绑定新的 Evaluator profile，就必须显式取得 RC-AR-023 对同一 run scope 的 allowance；缺失时 preflight fail closed。该更正需要第二个小提交／push 和 fresh preflight，第一次 preflight 不用于签发 authority。
+
+治理更正后的复证再次通过：generic successor／Project OS 定向 `83 passed`、全仓 `916 passed`、compileall、active baseline `185／8／5／27／0`、763 configs、8 份 Project OS JSONL／876 行、7,483-file secret scan 和 diff check 均有效。该小修只让当前根因成为机器必验前置项，不改变任何模型输入或执行预算。

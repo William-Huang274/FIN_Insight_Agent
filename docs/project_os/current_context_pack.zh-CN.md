@@ -1015,3 +1015,5 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Demand 仍是同一个完整 Preview 的首节点 canary；通过后自动继续其余五角色、跨角色检查、最多两处定向 repair／复审和条件式 Writer，不新建 Demand-only runner。
 - 当前须完成文档／账本、全仓门、clean commit／push、fresh preflight 和唯一一次 profile-separated successor。若单角色低 profile 仍同型失败，转模型／profile／职责决策，不再删金融权威、抬全局上限或扩写 DeepSeek 专用分支。S1／S3、泛化、qualified-human、Workbench 和 release 仍为 false。
 - 完整工程门现已通过：定向 125、全仓 916、compileall、active baseline `185／8／5／27／0`、763 configs、8 份 Project OS JSONL／875 行、7,483-file secret scan 和 diff check。当前只剩 clean commit／push、fresh preflight、新 authority 和一次完整 successor live。
+- 第一次 clean preflight 总状态为 pass，但 human projection 未显式列出当前 RC-AR-023；根因是账本缺少实际 generic successor `run_scope_id`。当前正补机器门与 append-only allowance，随后须小提交／push 并重新 fresh preflight；不得用第一次结果签发 authority。
+- 治理更正后的第二轮工程门通过：定向 83、全仓 916、compileall、active baseline `185／8／5／27／0`、763 configs、8 份 Project OS JSONL／876 行、7,483-file secret scan 和 diff check。下一步是精确小提交／push 和第二次 fresh preflight。

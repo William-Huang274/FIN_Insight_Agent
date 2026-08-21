@@ -9581,6 +9581,20 @@ def build_preflight(
                     "project_os_multi_agent_generic_successor_scope_allowance_missing:"
                     + issue_id
                 )
+        if (
+            decision_projection.get("evaluator_analysis_profile_ref") is not None
+            and not _issue_explicitly_allows(
+                root=root,
+                issue_id=(
+                    "RC-AR-023-hierarchical-role-audit-reused-high-"
+                    "reasoning-repair-profile"
+                ),
+                allowed_scope=MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE,
+            )
+        ):
+            raise ValueError(
+                "project_os_multi_agent_evaluator_profile_scope_allowance_missing"
+            )
     if (
         decision_projection.get("natural_material_scope_canary") is True
         and not _issue_explicitly_allows(

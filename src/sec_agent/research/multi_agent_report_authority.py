@@ -1005,6 +1005,119 @@ def compile_protected_report_messages(
     )
 
 
+def compile_protected_report_remap_messages(
+    *,
+    source_report: Mapping[str, Any],
+    evaluation: Mapping[str, Any],
+    authority_catalog: Mapping[str, Any],
+) -> tuple[dict[str, str], ...]:
+    """Compile a terminal-only remap view from one immutable source report.
+
+    Unlike ``compile_protected_report_messages``, this view does not expose the
+    workpapers for fresh synthesis.  It asks the Writer to preserve the already
+    completed report while replacing protected prose surfaces with typed refs.
+    """
+
+    _require(
+        evaluation.get("report_may_proceed") is True,
+        "multi_agent_protected_report_blocked_by_evaluation",
+    )
+    _require(
+        _valid_authority_catalog_schema(authority_catalog.get("schema_version")),
+        "multi_agent_report_authority_catalog_invalid",
+    )
+    source = deepcopy(
+        dict(_mapping(source_report, "multi_agent_report_remap_source_invalid"))
+    )
+    audit = audit_legacy_report_protected_surfaces(source)
+    _require(
+        audit.get("status") == "hard_fail"
+        and audit.get("local_surface_gate_pass") is False,
+        "multi_agent_report_remap_source_not_legacy_negative",
+    )
+    source_sections = source.get("sections")
+    source_gaps = source.get("remaining_gaps")
+    source_wwc = source.get("what_would_change")
+    _require(
+        isinstance(source_sections, list)
+        and 4 <= len(source_sections) <= 10
+        and isinstance(source_gaps, list)
+        and 1 <= len(source_gaps) <= 12
+        and isinstance(source_wwc, list)
+        and 2 <= len(source_wwc) <= 12,
+        "multi_agent_report_remap_source_shape_invalid",
+    )
+    source_workpaper_digests = sorted(
+        str(value) for value in source.get("workpaper_digests") or ()
+    )
+    _require(
+        source_workpaper_digests
+        == sorted(str(value) for value in authority_catalog["workpaper_digests"]),
+        "multi_agent_report_remap_workpaper_lineage_drift",
+    )
+    visible = {
+        "immutable_source_report": source,
+        "independent_evaluation": deepcopy(dict(evaluation)),
+        "report_authority": {
+            "case_identity": deepcopy(authority_catalog["case_identity"]),
+            "claims": deepcopy(authority_catalog["claims"]),
+            "presentation_authority": deepcopy(
+                authority_catalog["presentation_authority"]
+            ),
+            "gap_authority": deepcopy(authority_catalog["gap_authority"]),
+            "authority_boundary": deepcopy(
+                authority_catalog["authority_boundary"]
+            ),
+            "authority_catalog_digest": authority_catalog[
+                "authority_catalog_digest"
+            ],
+        },
+        "remap_contract": {
+            "source_report_digest": str(source.get("report_digest") or ""),
+            "required_section_count": len(source_sections),
+            "required_section_agent_order": [
+                [str(value) for value in row.get("source_workpaper_agent_ids") or ()]
+                for row in source_sections
+            ],
+            "required_remaining_gap_count": len(source_gaps),
+            "required_what_would_change_count": len(source_wwc),
+            "new_research_or_changed_judgment_forbidden": True,
+            "model_owned_protected_surface_forbidden": True,
+            "source_visible_number_is_not_output_authority": True,
+        },
+        "writer_rules": [
+            "Preserve the source report's substantive thesis, mechanisms, counterarguments, gaps, confidence and ordering.",
+            "Do not add a new fact, causal claim, source, research conclusion or research section.",
+            "Rewrite model_text without any digit, date, unit, URL, alias, citation or exact financial surface.",
+            "Replace every retained amount, date or comparison with the matching typed authority_ref; omit it if no authority exists.",
+            "Keep the source section count, source-agent order, gap count and what-would-change count exactly unchanged.",
+            "The Harness alone renders company identity, dates, numbers, comparisons and citations.",
+        ],
+    }
+    return (
+        {
+            "role": "system",
+            "content": (
+                "You are performing a terminal contract remap, not new research. "
+                "Preserve the immutable report's meaning and boundaries. Remove "
+                "every protected surface from model-owned prose and select only "
+                "typed refs that are authorized for the relevant claim. The "
+                "Harness renders protected facts. Submit one protected report "
+                "tool call."
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                visible,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        },
+    )
+
+
 def _normalize_refs(
     value: object,
     *,
@@ -1272,6 +1385,69 @@ def validate_protected_report_draft(
     return {**trusted, "draft_digest": canonical_digest(trusted)}
 
 
+def validate_protected_report_remap_draft(
+    payload: Mapping[str, Any],
+    *,
+    authority_catalog: Mapping[str, Any],
+    source_report: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate the protected contract plus immutable report topology."""
+
+    trusted = validate_protected_report_draft(
+        payload,
+        authority_catalog=authority_catalog,
+    )
+    source = _mapping(source_report, "multi_agent_report_remap_source_invalid")
+    source_sections = source.get("sections")
+    source_gaps = source.get("remaining_gaps")
+    source_wwc = source.get("what_would_change")
+    _require(
+        isinstance(source_sections, list)
+        and isinstance(source_gaps, list)
+        and isinstance(source_wwc, list)
+        and len(trusted["sections"]) == len(source_sections)
+        and len(trusted["remaining_gaps"]) == len(source_gaps)
+        and len(trusted["what_would_change"]) == len(source_wwc),
+        "multi_agent_report_remap_topology_drift",
+    )
+    expected_agent_order = [
+        [str(value) for value in row.get("source_workpaper_agent_ids") or ()]
+        for row in source_sections
+    ]
+    actual_agent_order = [
+        list(row["clauses"][0]["source_workpaper_agent_ids"])
+        for row in trusted["sections"]
+    ]
+    _require(
+        all(row for row in expected_agent_order)
+        and actual_agent_order == expected_agent_order
+        and all(
+            all(
+                clause["source_workpaper_agent_ids"] == expected_agent_order[index]
+                for clause in section["clauses"]
+            )
+            for index, section in enumerate(trusted["sections"])
+        ),
+        "multi_agent_report_remap_section_agent_order_drift",
+    )
+    receipt = {
+        "source_report_digest": str(source.get("report_digest") or ""),
+        "section_count_preserved": True,
+        "section_agent_order_preserved": True,
+        "remaining_gap_count_preserved": True,
+        "what_would_change_count_preserved": True,
+        "new_research_authority_granted": False,
+    }
+    trusted_without_digest = {
+        key: value for key, value in trusted.items() if key != "draft_digest"
+    }
+    body = {
+        **trusted_without_digest,
+        "remap_receipt": receipt,
+    }
+    return {**body, "draft_digest": canonical_digest(body)}
+
+
 def _render_clause(
     clause: Mapping[str, Any],
     *,
@@ -1437,10 +1613,12 @@ __all__ = [
     "MULTI_AGENT_REPORT_AUTHORITY_CATALOG_EXTENDED_SCHEMA_VERSION",
     "MultiAgentReportAuthorityError",
     "audit_legacy_report_protected_surfaces",
+    "compile_protected_report_remap_messages",
     "compile_multi_agent_report_authority_catalog",
     "compile_protected_report_messages",
     "extend_multi_agent_report_authority_catalog",
     "protected_report_draft_tool",
     "render_protected_report",
     "validate_protected_report_draft",
+    "validate_protected_report_remap_draft",
 ]

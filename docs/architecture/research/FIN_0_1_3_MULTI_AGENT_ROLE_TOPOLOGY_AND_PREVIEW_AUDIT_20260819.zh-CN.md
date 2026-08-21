@@ -305,3 +305,18 @@ DELL 实际 review 共 18 条决策：13 条 exact／existing NumericFact、4 �
 DELL／MU／NVDA／ORCL 用同一 compiler、validator 和 renderer 通过 18 项定向测试；错 source normalization、跨 claim 借用、跨 case 污染、原始数字自由文本、自动日期晋升和输入排列 mutation 均按预期处理。完整工程门为全仓 `946 passed`、compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、archive redirect `6,059`、798 份 configs／Project OS JSON、8 份 JSONL、7,525-file secret scan／0 和 diff check。
 
 下一次只允许一个 fresh Writer terminal remapping logical node，在 authority 单独声明的 contract-attempt 上限内，把已完成的研究内容映射到 protected contract。不得重新运行检索、六 Specialist、Lead、repair 或 Evaluator。新产物仍须重新经过 L1、内容质量与人工验收；S1、S3、泛化、Workbench 和 release 不因本轮工程通过而关闭。
+
+## 二十四、terminal remap 是一个逻辑节点，不是第二轮研究
+
+最终重映射现已从概念边界落实为独立的 provider-neutral 运行合同。模型只读取 immutable source report、最后一次 cross-role evaluation 和扩展后的 typed report authority；它不再读取六份原始上下文来重新综合，不获得 EvidenceRequest、检索、NumericFact 写入、repair 或评价权限。报告的六节顺序、每节来源角色顺序、六个 remaining gap 和八个 what-would-change 条目均与旧报告拓扑绑定，数量或角色顺序变化会 fail closed。
+
+这次执行明确拆开两个容易混淆的计数：
+
+- `logical_model_node_count=1`：只有一个 fresh Writer terminal remapping 节点；
+- `maximum_contract_attempts=2`：若第一次 Tool Call 只因合同不合法被拒绝，可在同一消息链收到精确失败码并修正一次；
+- `analysis_call_count=0`、`writer_continuation_call_count=0`：两次合同尝试都不是重新分析或两个 Writer；
+- Provider transport failure 不自动冒充合同修正，也不静默 retry；任何失败先保存 capture 与 terminal result。
+
+TokenBudgetBasis 由真实输入和输出责任编译：immutable report 为 14,469 个 canonical 字符，typed authority catalog 为 70,310 个字符，必须提交六节、六 gap、八 WWC 的嵌套工具结构；金融 L1 风险为 high，旧同类交卷实际需要过两次有界 contract attempt，因此使用 `thinking=disabled / max_tokens=7,000 / retry=0`。成本和延迟不是削减内容的依据。
+
+Project OS 的人类边界和机器权限现在共同要求“一个逻辑节点、最多两次合同尝试、零分析／续写／上游／网络”。public result 也将分别记录 node count、attempt count 和 scope compliance，关闭 `RC-AR-030` 所指的语义歧义。该工程门仍不预判自然输出成功，也不把旧报告追认为 L1 通过。

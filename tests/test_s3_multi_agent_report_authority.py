@@ -8,10 +8,12 @@ from sec_agent.research.multi_agent_report_authority import (
     MULTI_AGENT_PROTECTED_REPORT_DRAFT_SCHEMA_VERSION,
     MultiAgentReportAuthorityError,
     audit_legacy_report_protected_surfaces,
+    compile_protected_report_remap_messages,
     compile_multi_agent_report_authority_catalog,
     protected_report_draft_tool,
     render_protected_report,
     validate_protected_report_draft,
+    validate_protected_report_remap_draft,
 )
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 
@@ -340,3 +342,81 @@ def test_tool_contract_exposes_refs_but_not_raw_evidence_numeric_surface() -> No
     assert "submit_protected_report_draft" in serialized
     assert "NUM::" in serialized
     assert "$99B" not in serialized
+
+
+def test_terminal_remap_preserves_source_topology_and_agent_order() -> None:
+    workpapers, contexts = _fixtures()
+    evaluation = {"report_may_proceed": True}
+    catalog = compile_multi_agent_report_authority_catalog(
+        workpapers=workpapers,
+        specialist_contexts=contexts,
+    )
+    payload = _payload(catalog)
+    source = {
+        "report_digest": "legacy-report-digest",
+        "report_title": "DELL Q1 FY27 report",
+        "executive_thesis": "Revenue was $1B.",
+        "sections": [
+            {
+                "heading": f"Section {index + 1}",
+                "body": "Revenue was $1B.",
+                "source_workpaper_agent_ids": [row["agent_id"]],
+                "evidence_refs": [],
+                "numeric_refs": [],
+            }
+            for index, row in enumerate(workpapers[:4])
+        ],
+        "remaining_gaps": ["Gap is $1B."],
+        "what_would_change": ["Change $1B.", "Change $2B."],
+        "confidence_statement": "Medium confidence.",
+        "workpaper_digests": catalog["workpaper_digests"],
+    }
+    payload["sections"] = [
+        {
+            "heading": "Research section " + chr(65 + index),
+            "clauses": [
+                {
+                    **payload["sections"][0]["clauses"][0],
+                    "source_workpaper_agent_ids": [row["agent_id"]],
+                    "source_claim_refs": [
+                        next(
+                            claim["claim_ref"]
+                            for claim in catalog["claims"]
+                            if claim["agent_id"] == row["agent_id"]
+                        )
+                    ],
+                    "evidence_refs": [],
+                    "authority_refs": [],
+                }
+            ],
+        }
+        for index, row in enumerate(workpapers[:4])
+    ]
+    payload["remaining_gaps"] = payload["remaining_gaps"][:1]
+    payload["what_would_change"] = payload["what_would_change"][:2]
+    messages = compile_protected_report_remap_messages(
+        source_report=source,
+        evaluation=evaluation,
+        authority_catalog=catalog,
+    )
+    assert "terminal contract remap" in messages[0]["content"]
+    trusted = validate_protected_report_remap_draft(
+        payload,
+        authority_catalog=catalog,
+        source_report=source,
+    )
+    assert trusted["remap_receipt"]["section_agent_order_preserved"] is True
+
+    drift = deepcopy(payload)
+    drift["sections"][0]["clauses"][0]["source_workpaper_agent_ids"] = [
+        workpapers[1]["agent_id"]
+    ]
+    with pytest.raises(
+        MultiAgentReportAuthorityError,
+        match="multi_agent_report_clause_claim_agent_scope_invalid|multi_agent_report_remap_section_agent_order_drift",
+    ):
+        validate_protected_report_remap_draft(
+            drift,
+            authority_catalog=catalog,
+            source_report=source,
+        )

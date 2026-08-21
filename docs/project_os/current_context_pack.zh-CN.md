@@ -1096,3 +1096,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 真实回放拒绝了“自动晋升 source metadata 日期”的捷径；部分来源字段混有发布日／报告期语义，日期必须和金额一样经过明确 review decision。
 - DELL／MU／NVDA／ORCL 共用同一 compiler／validator／renderer；定向 `18 passed`，全仓 `946 passed`，compileall、Workbench typecheck/build、active baseline、archive redirect、798 JSON／8 JSONL、7,525-file secret scan／0 和 diff check通过。
 - 下一步严格限定为 clean commit／push、fresh Project OS preflight 和一个 Writer-only terminal remapping logical node。不得重跑 S1、S2 检索、六 Specialist、Lead、repair 或 Evaluator；新报告仍须独立 L1、内容质量与 qualified-human 验收，S1／S3／泛化／Workbench／release 继续为 false。
+
+### 2026-08-21 Writer-only protected report remap 执行门
+
+- remap-only 模型视图与运行器已经完成：只绑定 immutable report、最后一次 cross-role evaluation、typed report authority 和非思考 submission profile，不重新暴露上游运行权限。
+- 报告拓扑被锁定为六节、六个 remaining gap、八个 what-would-change，并逐节绑定旧报告的来源角色顺序；改节数、改角色或在 model text 写自由数字／日期均 fail closed。
+- `RC-AR-030` 的修复已经进入机器与人类合同：恰好一个 fresh Writer logical node，最多两个 bounded contract attempts，零 analysis、零 continuation、零 upstream Agent／repair／Evaluator、零网络和零 Candidate promotion。public result 必须分别记录 node count、attempt count 与 scope compliance。
+- TokenBudgetBasis：source report 14,469 canonical chars、authority catalog 70,310 chars、六节／六 gap／八 WWC、high materiality risk；使用 `thinking=disabled / max_tokens=7,000 / retry=0`。成本和速度不是压缩研究内容的依据。
+- fake Provider 路径证明一次精确合同反馈可修正；第二次仍不合法或 transport failure 会保存 terminal evidence 并终止。相关 Project OS／report／runner 定向测试为 83 passed。
+- 完整工程门已复证：全仓 951 passed（仅 2 条既有 SWIG deprecation warnings）、compileall、Workbench typecheck／production build；remap CLI 已注册进 active baseline，当前为 `189／8／5／27／0`；archive redirect 6,059、801 JSON／8 JSONL／912 records、7,533-file secret scan／0 和 diff check均通过。
+- 下一步仍是 clean commit／push、fresh preflight、authority 和唯一 live。旧报告继续 L1 fail；自然 remap、新 L1、八维内容质量、qualified-human、S1／S3／泛化／Workbench／release 尚未证明。

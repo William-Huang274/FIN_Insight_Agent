@@ -425,6 +425,19 @@ S2／S3 共享修复已经完成零调用资格，而不是把字符上限调大
 
 完整门禁通过：定向 `18 passed`、全仓 `946 passed`、compileall、Workbench typecheck／production build、active baseline、archive redirect、JSON／JSONL、7,525-file secret scan 和 diff check均通过。下一步只允许：同步账本 → clean commit／push → fresh Project OS preflight → 一次 Writer-only remapping。该运行不获得新研究、检索、网络、Candidate 或上游 Agent 权限；成功后重新做 L1 与内容质量审计，人工验收仍由 Owner 决定。
 
+## 4AE. Writer-only terminal remap 执行门已编译（2026-08-21）
+
+本轮没有再次修改研究结论，也没有把 report remap 包装成新的 Multi-Agent 运行。执行门只做四件事：
+
+1. 把旧报告、最后一次 cross-role evaluation 和 46 条 typed presentation authority 编译成 remap-only 模型视图；
+2. 冻结六节顺序、来源角色顺序、六个 gap 和八个 WWC，禁止模型借重映射新增或删除研究议题；
+3. 将一个 Writer logical node 与最多两个 contract attempts 分开计数，第一次合同拒绝只允许按失败码修正一次，网络失败不自动重试；
+4. 用本地 renderer 独占最终公司身份、日期、金额、比例、比较和引用写入权，模型 prose 继续禁止自由受保护表面。
+
+执行 profile 为 DeepSeek V4 Pro GA Chat Completions、`thinking=disabled`、`max_tokens=7,000`、`retry=0`。其依据是 14,469 字符旧报告、70,310 字符 authority catalog、六节／六 gap／八 WWC 的结构负担和 high 金融风险，不是为了追求更省或更快。fake Provider 已证明第一次非法自由数字可被拒绝、第二次只修合同后通过；两次拒绝或 transport failure 均会保存 terminal evidence 并停止。
+
+当前是 execution-ready engineering gate，不是 live 结果。下一步仍须 clean commit／push → fresh preflight → authority → 唯一 Writer logical node；成功后依次做独立 L1、八维绝对质量、同输入内容保真／paired 和 qualified-human。S1、S3、MU／NVDA／留出泛化、Workbench publication 与 release 均不因本节通过而改变。
+
 ## 4AA. Demand 审查证明分层正确，但 Evaluator 与 repair 仍需 profile 分责（2026-08-21）
 
 第一次真正进入分层评审后，Demand 单角色节点已经完成判断纪律、机制、反方、WWC 和 gap 边界检查，并给出 `Role Content May Proceed=true`，只留下一个 LOW advisory；但 Runtime 继续使用 `high / 12,000` repair profile，11,289 token 被 reasoning 消耗，输出在最后一句截断。该 attempt 保持 terminal failure。

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import argparse
 from datetime import datetime, timezone
 from decimal import Decimal
 import hashlib
@@ -29,6 +30,11 @@ from sec_agent.research.source_bound_numeric_authority import (  # noqa: E402
     compile_source_bound_numeric_authority_program,
 )
 from sec_agent.research.reviewed_evidence_pack import canonical_digest  # noqa: E402
+from sec_agent.research.multi_agent_report_remap import (  # noqa: E402
+    REPORT_REMAP_RUN_SCOPE,
+    REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION,
+    REPORT_REMAP_SCOPE_DECISION_STATUS,
+)
 
 
 PRIVATE_RESULT_REF = (
@@ -51,6 +57,26 @@ SOURCE_BOUND_REVIEW_REF = (
 RESULT_SCHEMA_VERSION = (
     "fin_ia_s3_multi_agent_report_surface_authority_zero_call_result_v1_1"
 )
+AUTHORITY_CATALOG_REF = (
+    "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_"
+    "authority_catalog_v1_1.json"
+)
+PREDECESSOR_AUTHORITY_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "writer_terminal_submission_successor_live_authority_v1_0.json"
+)
+ZERO_CALL_RESULT_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_multi_agent_report_"
+    "surface_authority_zero_call_result_v1_1.json"
+)
+WRITER_REMAP_PROFILE_REF = (
+    "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_report_"
+    "protected_remap_non_thinking_profile_v1_0.json"
+)
+REPORT_REMAP_SCOPE_DECISION_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
+    "protected_report_remap_scope_decision_v1_0.json"
+)
 
 
 def _load(ref: str | Path) -> dict[str, Any]:
@@ -69,6 +95,139 @@ def _sha(ref: str | Path) -> str:
 
 def _now() -> str:
     return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
+
+
+def _binding(ref: str, *, digest_field: str = "") -> dict[str, Any]:
+    row: dict[str, Any] = {"ref": ref, "sha256": _sha(ref)}
+    if digest_field:
+        payload = _load(ref)
+        digest = payload.get(digest_field)
+        if not isinstance(digest, str) or not digest:
+            raise RuntimeError("report_remap_scope_binding_digest_missing:" + ref)
+        row.update({"digest_field": digest_field, "digest": digest})
+    return row
+
+
+def build_report_remap_scope_decision() -> dict[str, Any]:
+    full = _load(PRIVATE_RESULT_REF)
+    source_report_chars = len(
+        json.dumps(
+            full["report"],
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    authority_catalog = _load(AUTHORITY_CATALOG_REF)
+    authority_catalog_chars = len(
+        json.dumps(
+            authority_catalog,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
+    body = {
+        "schema_version": REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION,
+        "status": REPORT_REMAP_SCOPE_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "ALL",
+        "run_scope_id": REPORT_REMAP_RUN_SCOPE,
+        "evidence_mode": (
+            "immutable_completed_report_plus_typed_authority_no_new_research"
+        ),
+        "next_authorized_scope": "one_writer_terminal_protected_contract_remap",
+        "replacement_is_new_logical_node_not_retry": True,
+        "chat_live_authorized": True,
+        "credential_presence_required": True,
+        "immutable_source_report_required": True,
+        "protected_surface_contract_required": True,
+        "deterministic_renderer_required": True,
+        "separate_logical_node_and_contract_attempt_counts_required": True,
+        "upstream_agent_rerun_authorized": False,
+        "writer_research_analysis_authorized": False,
+        "new_evidence_or_numeric_fact_authorized": False,
+        "external_source_network_authorized": False,
+        "candidate_promotion_authorized": False,
+        "responses_live_authorized": False,
+        "anthropic_live_authorized": False,
+        "S1_acceptance_authorized": False,
+        "S3_acceptance_authorized": False,
+        "generalization_claim_authorized": False,
+        "qualified_human_acceptance_authorized": False,
+        "product_publication_authorized": False,
+        "release_authorized": False,
+        "bound_inputs": {
+            "predecessor_live_authority": _binding(PREDECESSOR_AUTHORITY_REF),
+            "predecessor_public_result": _binding(
+                PUBLIC_RESULT_REF, digest_field="result_digest"
+            ),
+            "predecessor_content_assessment": _binding(ASSESSMENT_REF),
+            "predecessor_private_full_result": _binding(
+                PRIVATE_RESULT_REF, digest_field="full_result_digest"
+            ),
+            "report_surface_zero_call_proof": _binding(
+                ZERO_CALL_RESULT_REF, digest_field="result_digest"
+            ),
+            "report_authority_catalog": _binding(
+                AUTHORITY_CATALOG_REF, digest_field="authority_catalog_digest"
+            ),
+            "source_bound_numeric_review": _binding(SOURCE_BOUND_REVIEW_REF),
+            "writer_submission_profile": _binding(WRITER_REMAP_PROFILE_REF),
+        },
+        "implementation_bindings": [
+            _binding("src/sec_agent/research/multi_agent_report_authority.py"),
+            _binding("src/sec_agent/research/multi_agent_report_remap.py"),
+            _binding("src/sec_agent/project_os_preflight.py"),
+            _binding("scripts/research/run_s3_multi_agent_report_remap_live.py"),
+        ],
+        "execution_limits": {
+            "reused_specialist_plan_count": 6,
+            "reused_lead_plan_count": 1,
+            "reused_workpaper_count": 6,
+            "reused_lead_coordination_count": 1,
+            "reused_completed_challenge_repair_count": 3,
+            "reused_role_evaluation_count": 6,
+            "reused_cross_role_evaluation_count": 1,
+            "reused_legacy_report_count": 1,
+            "maximum_new_logical_model_nodes": 1,
+            "maximum_contract_attempts": 2,
+            "maximum_new_analysis_calls": 0,
+            "maximum_new_writer_continuations": 0,
+            "external_source_network_calls": 0,
+            "candidate_promotions": 0,
+        },
+        "token_budget_basis": {
+            "node_id": "AGENT::WRITER::PROTECTED_REPORT_REMAP",
+            "purpose": "terminal_contract_remap_without_new_research",
+            "source_report_characters": source_report_chars,
+            "authority_catalog_characters": authority_catalog_chars,
+            "required_section_count": len(full["report"]["sections"]),
+            "required_gap_count": len(full["report"]["remaining_gaps"]),
+            "required_wwc_count": len(full["report"]["what_would_change"]),
+            "schema_burden": (
+                "nested_six_section_protected_tool_with_claim_scoped_refs"
+            ),
+            "materiality_quality_risk": "high",
+            "comparable_run_evidence": (
+                "prior_writer_report_required_two_bounded_contract_attempts"
+            ),
+            "reasoning_profile": "thinking_disabled",
+            "maximum_output_tokens": 7000,
+            "maximum_contract_attempts": 2,
+            "cost_and_latency_are_secondary_constraints": True,
+            "stop_behavior": (
+                "stop_after_first_valid_contract_or_terminal_after_second_rejection"
+            ),
+        },
+        "authority_statement": (
+            "Authorize one fresh Writer-only terminal remapping logical node and "
+            "at most two bounded contract attempts. Preserve all upstream research "
+            "and the immutable failed report. Permit no new analysis, continuation, "
+            "Evidence, NumericFact, network, Candidate promotion or product acceptance."
+        ),
+    }
+    return {**body, "decision_digest": canonical_digest(body)}
 
 
 def _nested_contexts_from_request(path: Path) -> list[dict[str, Any]]:
@@ -312,7 +471,7 @@ def _material_untyped_surface_status(
     }
 
 
-def build_result() -> dict[str, Any]:
+def build_authority_catalog() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     full = _load(PRIVATE_RESULT_REF)
     contexts = _load_final_contexts(full)
     workpapers = [deepcopy(dict(row)) for row in full["final_workpapers"]]
@@ -330,6 +489,11 @@ def build_result() -> dict[str, Any]:
         authority_catalog=base_catalog,
         source_bound_program=source_bound_program,
     )
+    return full, source_bound_program, catalog
+
+
+def build_result() -> dict[str, Any]:
+    full, source_bound_program, catalog = build_authority_catalog()
     legacy_audit = audit_legacy_report_protected_surfaces(full["report"])
     payload = _positive_payload(catalog)
     trusted = validate_protected_report_draft(
@@ -564,4 +728,46 @@ def build_result() -> dict[str, Any]:
 
 
 if __name__ == "__main__":
-    print(json.dumps(build_result(), ensure_ascii=False, indent=2))
+    parser = argparse.ArgumentParser()
+    actions = parser.add_mutually_exclusive_group()
+    actions.add_argument("--write-authority-catalog", action="store_true")
+    actions.add_argument("--write-remap-scope-decision", action="store_true")
+    args = parser.parse_args()
+    if args.write_remap_scope_decision:
+        decision = build_report_remap_scope_decision()
+        path = ROOT / REPORT_REMAP_SCOPE_DECISION_REF
+        path.write_text(
+            json.dumps(decision, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(
+            json.dumps(
+                {
+                    "status": "report_remap_scope_decision_materialized",
+                    "ref": REPORT_REMAP_SCOPE_DECISION_REF,
+                    "decision_digest": decision["decision_digest"],
+                },
+                ensure_ascii=False,
+            )
+        )
+    elif args.write_authority_catalog:
+        _, _, catalog = build_authority_catalog()
+        path = ROOT / AUTHORITY_CATALOG_REF
+        path.write_text(
+            json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(
+            json.dumps(
+                {
+                    "status": "authority_catalog_materialized",
+                    "ref": AUTHORITY_CATALOG_REF,
+                    "authority_catalog_digest": catalog[
+                        "authority_catalog_digest"
+                    ],
+                },
+                ensure_ascii=False,
+            )
+        )
+    else:
+        print(json.dumps(build_result(), ensure_ascii=False, indent=2))

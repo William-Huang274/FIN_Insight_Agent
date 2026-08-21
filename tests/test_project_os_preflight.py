@@ -38,9 +38,17 @@ from sec_agent.project_os_preflight import (
     validate_multi_agent_preview_plan_successor_scope_decision,
     validate_multi_agent_preview_scope_decision,
 )
+from sec_agent.research.multi_agent_report_remap import (
+    REPORT_REMAP_RUN_SCOPE,
+    validate_report_remap_scope_decision,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
+REPORT_REMAP_DECISION_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
+    "protected_report_remap_scope_decision_v1_0.json"
+)
 DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_"
@@ -2015,3 +2023,32 @@ def test_new_scope_specific_blocker_fails_closed(tmp_path: Path) -> None:
             environment={"DEEPSEEK_API_KEY": "present"},
             check_repository=False,
         )
+
+
+def test_report_remap_scope_separates_one_node_from_two_contract_attempts() -> None:
+    decision = json.loads(
+        (ROOT / REPORT_REMAP_DECISION_REF).read_text(encoding="utf-8")
+    )
+    projection = validate_report_remap_scope_decision(
+        root=ROOT, decision=decision
+    )
+    assert projection["run_scope_id"] == REPORT_REMAP_RUN_SCOPE
+    assert projection["multi_agent_preview"] is False
+    assert projection["multi_agent_report_protected_remap"] is True
+    assert projection["execution_limits"]["maximum_new_logical_model_nodes"] == 1
+    assert projection["execution_limits"]["maximum_contract_attempts"] == 2
+    assert projection["execution_limits"]["maximum_new_analysis_calls"] == 0
+
+    preflight = build_preflight(
+        root=ROOT,
+        decision_ref=REPORT_REMAP_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    boundary = preflight["known_boundary"]
+    assert preflight["status"] == "pass_current_decision_bound_preflight"
+    assert "exactly 1 fresh Writer-only terminal remapping logical node" in boundary
+    assert "at most 2 bounded contract attempts" in boundary
+    assert "0 new analysis calls" in boundary
+    assert "0 Writer continuation calls" in boundary
+    assert "forbids every upstream Agent, repair or Evaluator rerun" in boundary

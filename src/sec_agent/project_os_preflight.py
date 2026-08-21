@@ -39,6 +39,11 @@ from sec_agent.research.multi_agent_successor import (
     validate_terminal_submission_successor_zero_call_proof,
     validate_terminal_successor_zero_call_proof,
 )
+from sec_agent.research.multi_agent_report_remap import (
+    REPORT_REMAP_RUN_SCOPE,
+    REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION,
+    validate_report_remap_scope_decision,
+)
 from sec_agent.providers import load_chat_completion_profile
 
 
@@ -437,6 +442,13 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if (
+        decision.get("schema_version")
+        == REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION
+    ):
+        return validate_report_remap_scope_decision(
+            root=root, decision=decision
+        )
     if decision.get("schema_version") in {
         MULTI_AGENT_PREVIEW_DECISION_SCHEMA,
         MULTI_AGENT_PREVIEW_SUCCESSOR_DECISION_SCHEMA,
@@ -10190,6 +10202,20 @@ def build_preflight(
         root=root, run_scope_id=str(decision["run_scope_id"])
     )
     if (
+        decision_projection.get("multi_agent_report_protected_remap") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S2-007-multi-agent-writer-bypassed-protected-numeric-"
+                "surface-contract"
+            ),
+            allowed_scope=REPORT_REMAP_RUN_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_report_remap_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("multi_agent_preview") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -10705,7 +10731,59 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("multi_agent_preview") is True:
+    if decision_projection.get("multi_agent_report_protected_remap") is True:
+        execution_limits = decision_projection["execution_limits"]
+        logical_nodes = int(
+            execution_limits["maximum_new_logical_model_nodes"]
+        )
+        contract_attempts = int(
+            execution_limits["maximum_contract_attempts"]
+        )
+        new_analysis_calls = int(
+            execution_limits["maximum_new_analysis_calls"]
+        )
+        writer_continuations = int(
+            execution_limits["maximum_new_writer_continuations"]
+        )
+        known_boundary = (
+            "This current-baseline preflight preserves the immutable legacy "
+            "report as financial-truth L1 failed and reuses all completed "
+            "research, six Specialist workpapers, one Lead coordination, three "
+            "completed repairs, six role evaluations and one cross-role "
+            "evaluation. It authorizes exactly "
+            f"{logical_nodes} fresh Writer-only terminal remapping logical node "
+            f"with at most {contract_attempts} bounded contract attempts, "
+            f"{new_analysis_calls} new analysis calls and "
+            f"{writer_continuations} Writer continuation calls. The model may "
+            "only map the immutable report into the protected report contract; "
+            "deterministic local rendering owns authorized numbers, dates, "
+            "identities and aliases. It forbids every upstream Agent, repair or "
+            "Evaluator rerun, new research, Evidence or NumericFact changes, "
+            "external source network access, candidate promotion, S1 or S3 "
+            "acceptance, heterogeneous generalization, qualified-human "
+            "self-acceptance, Workbench publication or release."
+        )
+        required_terms = (
+            "exactly 1 fresh Writer-only terminal remapping logical node",
+            "at most 2 bounded contract attempts",
+            "0 new analysis calls",
+            "0 Writer continuation calls",
+            "forbids every upstream Agent, repair or Evaluator rerun",
+            "deterministic local rendering owns authorized numbers",
+        )
+        forbidden_terms = (
+            "exactly 2 logical",
+            "two Writer nodes",
+            "new research is authorized",
+            "S3 acceptance is authorized",
+        )
+        if not all(term in known_boundary for term in required_terms) or any(
+            term in known_boundary for term in forbidden_terms
+        ):
+            raise ValueError(
+                "project_os_report_remap_human_boundary_invalid"
+            )
+    elif decision_projection.get("multi_agent_preview") is True:
         if decision_projection.get("multi_agent_preview_generic_successor") is True:
             if decision_projection.get(
                 "multi_agent_preview_terminal_writer_submission_successor"

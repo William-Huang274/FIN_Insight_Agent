@@ -10708,6 +10708,52 @@ def build_preflight(
     if decision_projection.get("multi_agent_preview") is True:
         if decision_projection.get("multi_agent_preview_generic_successor") is True:
             if decision_projection.get(
+                "multi_agent_preview_terminal_writer_submission_successor"
+            ) is True:
+                reused_role_count = int(
+                    decision_projection["execution_limits"][
+                        "reused_role_evaluation_count"
+                    ]
+                )
+                reused_cross_role_count = int(
+                    decision_projection["execution_limits"][
+                        "reused_cross_role_evaluation_count"
+                    ]
+                )
+                new_analysis_calls = int(
+                    decision_projection["execution_limits"][
+                        "maximum_new_analysis_calls_per_other_node"
+                    ]
+                )
+                writer_continuations = int(
+                    decision_projection["execution_limits"][
+                        "maximum_resumed_writer_analysis_continuations"
+                    ]
+                )
+                strict_submissions = int(
+                    decision_projection["execution_limits"][
+                        "maximum_new_model_nodes"
+                    ]
+                )
+                known_boundary = (
+                    "This current-baseline preflight preserves the immediate "
+                    "predecessor as a terminal failure. It reuses all upstream "
+                    "research, repairs, six specialist workpapers, "
+                    f"{reused_role_count} completed role evaluations, "
+                    f"{reused_cross_role_count} completed cross-role evaluation "
+                    "and one content-complete Writer analysis checkpoint. It "
+                    f"authorizes exactly {strict_submissions} non-thinking Writer "
+                    f"strict submission, {new_analysis_calls} new analysis calls "
+                    f"and {writer_continuations} analysis continuation calls. It "
+                    "forbids every upstream Agent, repair or Evaluator rerun, "
+                    "Writer analysis or continuation reruns, research-input "
+                    "changes, external source network access, candidate promotion, "
+                    "completed-analysis business promotion before strict contract, "
+                    "S1 or S3 acceptance, heterogeneous generalization, "
+                    "qualified-human self-acceptance, Workbench publication or "
+                    "release."
+                )
+            elif decision_projection.get(
                 "multi_agent_preview_terminal_writer_successor"
             ) is True:
                 reused_role_count = int(
@@ -10768,6 +10814,31 @@ def build_preflight(
                     "generalization, qualified-human self-acceptance, Workbench "
                     "publication or release."
                 )
+            if decision_projection.get(
+                "multi_agent_preview_terminal_writer_submission_successor"
+            ) is True:
+                required_submission_boundary_terms = (
+                    "one content-complete Writer analysis checkpoint",
+                    "non-thinking Writer strict submission",
+                    "0 new analysis calls",
+                    "0 analysis continuation calls",
+                    "forbids every upstream Agent, repair or Evaluator rerun",
+                )
+                forbidden_submission_boundary_terms = (
+                    "permits only those pending frontier nodes",
+                    "at most two evaluator-directed local repairs",
+                    "a conditional Writer",
+                )
+                if not all(
+                    term in known_boundary
+                    for term in required_submission_boundary_terms
+                ) or any(
+                    term in known_boundary
+                    for term in forbidden_submission_boundary_terms
+                ):
+                    raise ValueError(
+                        "project_os_terminal_writer_submission_human_boundary_invalid"
+                    )
         elif decision_projection.get(
             "multi_agent_preview_repair_context_successor"
         ) is True:

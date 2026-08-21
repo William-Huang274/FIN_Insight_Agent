@@ -136,3 +136,15 @@ RC-AR-027 的修复不是放宽权限，而是让 human projection 从 terminal 
 - `git diff --check`：通过。
 
 该结果只把下一步收敛为 clean commit／push、fresh Project OS preflight、全新 authority 和一次 strict Writer submission。工程门没有追认上一失败为成功，也没有把 completion checkpoint 晋升成正式报告。
+
+## 10. submission-only 第一次 fresh preflight 未用于签发
+
+commit `aa279fd8...` 上的第一次 v1.7 fresh preflight 通过所有机器检查，且正确投影：六份角色审查、一次跨角色审查、完整 Writer analysis checkpoint 复用；最大新模型节点为 1；新 analysis 与 analysis continuation 均为 0。
+
+但人类可读的 `known_boundary` 仍落入普通 generic successor 模板，声称可以继续 evaluation、最多两次 evaluator repair 和 conditional Writer。该文字与机器权限不一致，因此该 preflight 没有用于签发 authority，也没有发生模型、Provider、网络或 Candidate promotion。
+
+RC-AR-029 的处置不扩大权限：Project OS 现在先识别 terminal Writer submission successor，再从实际 frontier 计数编译说明，明确只允许一次 non-thinking strict submission、复用 content-complete Writer analysis，并禁止 analysis、continuation、上游 Agent、repair 和 Evaluator 重跑。代码同时对必备语义和旧 generic 模板短语做 fail-closed 断言；定向 Project OS 测试为 `60 passed`。
+
+下一步必须重新完成全仓门、提交／推送和第二次 clean／synced fresh preflight。只有第二次输出的机器投影与人类边界同时正确，才可签发唯一一次 strict Writer submission。
+
+完整工程复证现已通过：Project OS 定向 `60 passed`；全仓 `928 passed`，仅两条既有 SWIG warning；Python compileall、Workbench TypeScript typecheck／Vite build、active baseline `185／8／5／27／0`、archive redirect `6,059`、791 configs、8 份 Project OS JSONL／898 行（追加最终状态前）、7,513-file secret scan／0 和 diff check 均通过。该门仍不授权 live；必须先提交／推送，再由 clean／synced commit 生成第二次 fresh preflight。

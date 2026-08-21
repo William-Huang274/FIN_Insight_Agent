@@ -1069,3 +1069,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - capture-bound Writer completion checkpoint、terminal submission frontier v1.4、scope v1.7 和零调用 fake/mutation proof 已形成。后继最大新模型节点为 1，analysis=0、continuation=0、strict submission=1；六角色审查和一次跨角色审查继续精确复用。
 - 当前正式报告仍不存在。下一步只允许完整工程门 → clean commit／push → fresh Project OS preflight → 全新 authority → 一次 strict Writer submission。成功后才做 L1、八维内容质量和 paired；qualified-human、S1/S3、泛化、Workbench publication 和 release 继续为 false。
 - submission-only successor 完整工程门已通过：定向 `124`、全仓 `928`、compileall、Workbench typecheck/build、active baseline `185／8／5／27／0`、archive redirect `6,059`、791 configs、8 份 Project OS JSONL／894 行、7,513-file secret scan／0 和 diff check。当前只剩 clean commit／push、fresh preflight、新 authority 和一次 strict Writer submission。
+
+# 2026-08-21 submission-only preflight 人类说明漂移
+
+- commit `aa279fd8...` 上的第一次 v1.7 fresh preflight 机器投影正确：六份角色审查、一次跨角色审查和完整 Writer analysis checkpoint 均复用，最大新模型节点为 1，analysis／continuation 为 0。
+- 但 `known_boundary` 仍落入普通 generic successor 分支，错误声称可以继续 evaluation、最多两次 repair 和 conditional Writer。该 preflight 未用于签发 authority，0 模型、0 Provider、0 网络、0 Candidate promotion。
+- RC-AR-029 归 S0 Project OS 人类权限投影，不归 DeepSeek、S1、S2、Writer 内容或多角色编排。修复从 terminal-submission frontier 的实际计数生成专属说明，并以 required／forbidden 语义断言阻止旧模板回归。
+- 当前必须完成全仓门、clean commit／push 和第二次 fresh preflight；只有机器投影与人类说明同时一致，才可签发一次无思考 strict Writer submission。不得重跑 analysis、continuation 或任何上游节点。
+- 修复后完整工程门通过：Project OS 定向 `60`、全仓 `928`、compileall、Workbench typecheck/build、active baseline `185／8／5／27／0`、archive redirect `6,059`、791 configs、8 份 Project OS JSONL／898 行（追加最终两条状态前）、7,513-file secret scan／0 和 diff check。下一步只剩精确提交／推送与第二次 fresh preflight。

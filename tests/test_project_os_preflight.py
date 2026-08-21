@@ -1134,6 +1134,17 @@ def test_multi_agent_preview_terminal_writer_submission_reuses_completed_analysi
     assert preflight["decision_projection"][
         "multi_agent_preview_terminal_writer_submission_successor"
     ] is True
+    boundary = preflight["known_boundary"]
+    assert "one content-complete Writer analysis checkpoint" in boundary
+    assert "exactly 1 non-thinking Writer strict submission" in boundary
+    assert "0 new analysis calls" in boundary
+    assert "0 analysis continuation calls" in boundary
+    assert "6 completed role evaluations" in boundary
+    assert "1 completed cross-role evaluation" in boundary
+    assert "forbids every upstream Agent, repair or Evaluator rerun" in boundary
+    assert "permits only those pending frontier nodes" not in boundary
+    assert "at most two evaluator-directed local repairs" not in boundary
+    assert "a conditional Writer" not in boundary
 
 
 def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:

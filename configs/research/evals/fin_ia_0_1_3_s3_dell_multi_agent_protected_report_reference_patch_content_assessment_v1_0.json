@@ -1,0 +1,172 @@
+{
+  "schema_version": "fin_ia_s3_multi_agent_protected_report_reference_patch_content_assessment_v1_0",
+  "status": "protected_report_L1_pass_absolute_content_quality_pass_reference_fidelity_pass_qualified_human_pending",
+  "recorded_at": "2026-08-21T22:04:35+08:00",
+  "assessment_kind": "independent_codex_pre_human_protected_multi_agent_report_assessment",
+  "case_key": "DELL",
+  "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_20260821",
+  "source_preflight_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_project_os_preflight_v1_0.json",
+  "source_preflight_sha256": "c1aacbc29a9303e80a84797e1c1561ede4623f935d770623ec167aed2e59ff1c",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_live_authority_v1_0.json",
+  "source_authority_sha256": "ef15d5a61d0dcc6961bab272360ffdeaaab53735a3add306265632ea5fdda7e5",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_live_result_v1_0.json",
+  "source_result_sha256": "769c432a7801916fd9c1f1615c18e51d99a2e82abe7628b10d29c70b23dd729a",
+  "private_full_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_20260821/full_result.json",
+  "private_full_result_sha256": "0158043e32bb71cca3f5a72c346abb913ba4df87ebc92866b2b584cc6a78a2c1",
+  "implementation_commit": "b2d8b6670f0966eb5491712900262695e3db70cb",
+  "source_report_digest": "3ee44edad28f432a82c7047b118b4cb5be6626bb7417df75828df21f592ac43b",
+  "base_v1_1_payload_digest": "e9e0716941d7640b6e22b853d982e25f1e4a4b2c2af9e408f1dcc8cecf9e6f2b",
+  "protected_draft_digest": "855641bb43fe6e7eb5bfb066572eb2706f7bb4375c295c02535348f6ba88aadb",
+  "rendered_report_digest": "7f62db9c29112e26801c39fdb54ec954acd4c2a0b794e1924a31ba34a02eca18",
+  "public_result_digest": "302adcd48ee24852e8e5a53b48f0da6c23f9cd247f9985147ac887cde150e92d",
+  "full_result_digest": "3d04b49e08e4738016378e0c4996e23540269a70fc003d24eaa0facd6a3bd45d",
+  "execution": {
+    "new_logical_model_nodes": 1,
+    "contract_attempts": 2,
+    "provider_attempts": 2,
+    "new_analysis_calls": 0,
+    "writer_continuation_calls": 0,
+    "upstream_agent_calls": 0,
+    "repair_calls": 0,
+    "evaluator_calls": 0,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0,
+    "first_attempt": {
+      "status": "contract_rejected",
+      "failure_code": "multi_agent_report_reference_patch_identity_invalid",
+      "business_explanation": "The model transposed two characters in the immutable base payload digest. The Harness rejected the patch before any report mutation.",
+      "prompt_tokens": 8023,
+      "completion_tokens": 913,
+      "finish_reason": "tool_calls"
+    },
+    "second_attempt": {
+      "status": "reference_patch_validated_and_rendered",
+      "business_explanation": "The model corrected the digest and submitted the five allowed reference bindings. The complete report was revalidated and deterministically rendered.",
+      "prompt_tokens": 9019,
+      "prompt_cache_hit_tokens": 8832,
+      "completion_tokens": 914,
+      "finish_reason": "tool_calls"
+    },
+    "scope_compliant": true,
+    "credential_value_persisted": false,
+    "provider_private_reasoning_persisted": false
+  },
+  "hard_gate_assessment": {
+    "identity": "pass_DELL_case_identity_only",
+    "period_scope": "pass_current_same_quarter_relations_and_historical_mechanisms_remain_explicitly_period_bound",
+    "citation_reference_existence": "pass_all_claim_Evidence_authority_and_gap_refs_resolve",
+    "reference_scope": "pass_all_refs_are_claim_or_workpaper_scoped_and_the_five_predecessor_failures_are_closed",
+    "cross_case_contamination": "pass_NVDA_TSM_MU_material_is_speaker_attributed_ecosystem_readthrough_not_DELL_fact",
+    "causal_boundary": "pass_AI_product_profit_cash_and_supplier_allocation_remain_unsized_unbridged_or_typed_gap",
+    "model_authored_numeric_surface": "pass_model_text_is_numeric_free_under_the_shared_protected_surface_validator",
+    "material_numeric_authority": "pass_every_rendered_amount_percentage_date_guidance_and_comparison_is_compiled_from_NUM_REL_PRES_or_TEMP_authority",
+    "raw_evidence_numeric_promotion": "pass_false_no_raw_source_span_is_used_as_final_numeric_authority",
+    "deterministic_rendering": "pass_every_protected_surface_has_a_content_addressed_rendering_receipt",
+    "overall_L1": "pass"
+  },
+  "content_assessment": {
+    "executive_thesis": "pass_specific_bounded_and_decision_relevant_but_overdense",
+    "demand_quality": "pass_recognized_revenue_is_separated_from_orders_backlog_pipeline_and_durability_gaps",
+    "operating_performance": "pass_company_scope_growth_and_gross_margin_compression_are_same_basis_and_not_falsely_attributed_to_AI",
+    "value_capture": "pass_AI_attributable_profit_is_bounded_but_unsized_and_historical_mix_language_is_period_bound",
+    "cash_conversion": "pass_company_cash_improvement_is_separated_from_the_missing_AI_order_to_cash_bridge",
+    "supply_relationship": "pass_issuer_supply_statement_and_upstream_readthrough_are_not_conflated",
+    "counterevidence": "pass_conditional_mechanisms_are_not_promoted_to_realized_loss_or_demand_collapse",
+    "cross_role_synthesis": "pass_no_false_absence_false_conflict_or_cross_role_causal_promotion",
+    "overall_research_content": "pass_for_the_current_bounded_internal_DELL_report"
+  },
+  "formal_eight_dimension_quality": {
+    "formal_score": 28,
+    "formal_maximum": 32,
+    "assessment_disposition": "pass_absolute_quality_for_current_bounded_internal_report",
+    "dimensions": [
+      {
+        "dimension": "Q1_problem_definition_and_company_specificity",
+        "score": 4,
+        "reason": "The report is Dell-specific and frames the actual decision surfaces: demand quality, aggregate performance, AI value capture, cash conversion, supply and counterevidence."
+      },
+      {
+        "dimension": "Q2_evidence_use_and_traceability",
+        "score": 4,
+        "reason": "Every substantive clause is tied to scoped claims, reviewed Evidence, typed authority or an explicit gap; the five invalid reference bundles are closed."
+      },
+      {
+        "dimension": "Q3_causal_mechanism_and_industry_logic",
+        "score": 4,
+        "reason": "The report separates realized issuer facts, historical issuer-attributed mechanisms, current alternatives and ecosystem read-through instead of turning correlation into AI causality."
+      },
+      {
+        "dimension": "Q4_numeric_and_financial_bridge",
+        "score": 4,
+        "reason": "Company-scope comparisons are same-basis, material numeric surfaces are deterministically rendered, and unavailable AI product profit and cash bridges remain explicitly unavailable."
+      },
+      {
+        "dimension": "Q5_counterargument_and_what_would_change",
+        "score": 3,
+        "reason": "The report provides material observable counterconditions across demand, margin, cash and supply, but it correctly acknowledges that formal invalidation thresholds are not yet frozen."
+      },
+      {
+        "dimension": "Q6_decision_density",
+        "score": 3,
+        "reason": "The synthesis contains real judgments and boundaries, but the executive and several sections repeat qualifications and evidence detail beyond the recommended density."
+      },
+      {
+        "dimension": "Q7_expression_and_boundary_discipline",
+        "score": 3,
+        "reason": "Boundary language is strong and accurate, but phrases such as a bare source reporting-period alias and repeated internal control wording reduce fluency."
+      },
+      {
+        "dimension": "Q8_user_and_senior_reviewer_usability",
+        "score": 3,
+        "reason": "The report is usable for an internal reviewer, but EV/GAP IDs are not human-facing citations and the dense single-paragraph sections are not yet a finished Workbench deliverable."
+      }
+    ]
+  },
+  "nonblocking_quality_findings": {
+    "recommended_density_finding_count": 5,
+    "paths": [
+      "executive_thesis[0].model_text",
+      "sections[0].clauses[0].model_text",
+      "sections[2].clauses[0].model_text",
+      "sections[3].clauses[0].model_text",
+      "sections[5].clauses[0].model_text"
+    ],
+    "all_below_safety_capacity": true,
+    "human_citation_surface_pending": true,
+    "formal_invalidation_thresholds_pending": true,
+    "disposition": "record_for_S3_editing_and_S4_presentation_do_not_reopen_reference_patch_or_block_current_bounded_content_assessment"
+  },
+  "paired_assessment": {
+    "comparison_kind": "same_case_same_immutable_v1_1_payload_reference_only_patch_and_same_source_report_fidelity",
+    "base_payload_digest": "e9e0716941d7640b6e22b853d982e25f1e4a4b2c2af9e408f1dcc8cecf9e6f2b",
+    "model_text_unchanged": true,
+    "source_workpaper_agent_ids_unchanged": true,
+    "unlisted_paths_modified": false,
+    "patched_path_count": 5,
+    "research_content_delta": "none_expected_the_patch_did_not_authorize_research_or_prose_changes",
+    "financial_truth_delta": "material_gain_the_same_research_content_now_has_complete_protected_numeric_temporal_identity_and_reference_authority",
+    "content_fidelity": "pass",
+    "protected_surface_winner": "reference_patch_candidate",
+    "historical_R7_comparison": "The previously observed 28/32 versus 21/32 multi-agent research gain remains a changed-input diagnostic, not a strict same-input model-content win.",
+    "strict_same_input_research_gain_claimed": false
+  },
+  "root_cause_disposition": {
+    "RC_S2_007": "closed_for_the_current_protected_report_path_the_model_can_analyze_exact_numbers_but_final_numeric_surfaces_are_selected_as_authority_refs_and_rendered_locally",
+    "RC_AR_032": "closed_the_live_feedback_loop_corrected_a_digest_copy_error_then_validated_exactly_five_reference_paths_without_report_rewrite",
+    "model_observation": "DeepSeek successfully used actionable path-scoped feedback. Its first error was a two-character digest transposition, not a research or financial reasoning error.",
+    "project_observation": "The Harness now distinguishes quality density from hard truth failures and can reject a malformed patch before mutating the report."
+  },
+  "financial_truth_L1_pass": true,
+  "formal_eight_dimension_assessment_complete": true,
+  "absolute_content_quality_pass": true,
+  "paired_reference_and_content_fidelity_pass": true,
+  "qualified_human_acceptance": false,
+  "dell_bounded_multi_agent_preview_acceptance": false,
+  "S1_pass": false,
+  "S3_pass": false,
+  "heterogeneous_generalization": false,
+  "workbench_publication": false,
+  "release_ready": false,
+  "next_scope": "qualified_human_review_of_the_current_report_then_resume_the_earliest_S1_and_dynamic_research_preconditions_before_cross_case_generalization",
+  "known_boundary": "This assessment passes financial-truth L1 and absolute content quality for the current bounded Dell report. It does not prove open-ended dynamic retrieval, S1 stability, MU/NVDA or held-out generalization, qualified-human acceptance, S3 completion, Workbench publication or release readiness."
+}

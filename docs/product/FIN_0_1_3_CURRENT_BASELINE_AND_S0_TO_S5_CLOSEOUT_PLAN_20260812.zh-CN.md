@@ -452,6 +452,12 @@ v1.1 已证明完整输出容量不再是主阻断：两次 Tool Call 都完整�
 
 工程资格已由真实 capture replay 和 mutation 证明；机械成功样例只证明 Runtime 可执行，不是产品观点或引用选择。完成全仓门并提交推送后，须重新签发 preflight 与 authority，最多执行一个新 logical node、两个 contract attempts。自然 patch 成功后才能进入 L1、八维质量、paired 保真和 qualified-human；不得用结构成功关闭 S1、S3、泛化、Workbench 或 release。
 
+### 4AH. Reference-patch live 与 DELL bounded report 结果
+
+clean／synced `b2d8b667...` 上的 fresh patch live 已完成。第一份 patch 的 base digest 两字符转置被 Harness 正确拒绝；第二份只修五个引用路径并通过完整合同与确定性渲染。正文、来源 Agent、Evidence、NumericFact 和上游研究均未变化。独立 L1 通过，PRD 当前八维绝对内容质量为 `28/32`，paired 内容保真通过；本轮研究内容增量诚实记为 0，增益来自原有研究内容现在拥有完整财务真值控制面。
+
+剩余五处叙事密度、内部引用 ID 与 WWC 阈值问题进入 S3 编辑／S4 呈现，不重开 reference-patch。qualified-human 尚未接受，因此当前只达到 DELL bounded internal report pre-human pass；S1、开放动态 Research、跨案例泛化、S3、Workbench 与 release 继续为 false。人工审阅后先恢复最早 S1／动态 Research 前置条件，再按预注册异质评测进入 MU、NVDA 和留出案例。
+
 ## 4AA. Demand 审查证明分层正确，但 Evaluator 与 repair 仍需 profile 分责（2026-08-21）
 
 第一次真正进入分层评审后，Demand 单角色节点已经完成判断纪律、机制、反方、WWC 和 gap 边界检查，并给出 `Role Content May Proceed=true`，只留下一个 LOW advisory；但 Runtime 继续使用 `high / 12,000` repair profile，11,289 token 被 reasoning 消耗，输出在最后一句截断。该 attempt 保持 terminal failure。

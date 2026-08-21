@@ -2879,6 +2879,8 @@ FIN 0.1.3 冻结以下运行对象：
 
 当 Writer 已提交完整报告合同但只在少数引用绑定上失败时，产品不得默认重跑完整报告，也不得让 Harness 代替模型选择真实引用。Verifier 必须输出路径级 finding（失败字段、越界引用、允许引用、不可变来源角色和 digest）；只有全部 hard finding 都属于引用集合时，才可由新的有界 Agent 节点提交一次 reference-only patch。该节点不能改正文、角色、拓扑、Evidence 或 NumericFact，且修补后必须重新经过完整 L1 与内容质量验收。建议字数／叙事密度属于质量层，只有超过安全容量或损害可执行合同时才成为 hard failure。
 
+DELL natural reference-patch 已验证该产品语义：第一份 patch 把 immutable digest 的两个字符抄反，Harness 在任何报告 mutation 前拒绝；第二份只修改五个已授权引用集合并通过完整重验。最终模型正文保持 numeric-free，所有金额、百分比、期间、指导、关系与引用由内容寻址 authority 确定性渲染，独立 L1 通过。八维内容为 `28/32`，叙事密度、内部 ID 引用面和未冻结 WWC 阈值保留为质量／产品呈现问题，未重新否定整条研究链。该结果证明的是当前 DELL 有界报告，不得外推为动态检索、跨案例泛化、qualified-human、S3 或发布通过。
+
 Exact-once 以一个 Provider attempt 或工具执行请求为单位。失败 attempt 永久保留；Agent 收到新的 typed feedback 后发起的新步骤拥有新输入和新 attempt ID，不属于覆盖旧失败的 retry。每个模型／付费节点继续强制 `TokenBudgetBasis`，成本与速度不能单独决定研究范围。
 
 长任务不能依赖无限聊天历史。产品必须把任务状态、证据记忆、append-only 事件、节点工作视图、原始 capture 和 checkpoint 分开；压缩／恢复测试必须证明 Case、期间、反方、material gap、未解决 feedback 和 Evidence refs 不会丢失或跨案污染。

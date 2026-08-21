@@ -1129,4 +1129,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - v1.1 第二份完整 Tool Call 已做不可变回放：恰好 5 个 hard reference finding，路径为 executive、Counter section、Demand gap、Value gap 和 Value WWC；另有 5 个非阻断 density finding。错误现在带 field path、offending refs、allowed refs 和不可变来源角色。
 - 通用 Runner 已支持一个独立 reference-patch 节点：只可修改上述五个路径的 claim／Evidence／authority／gap refs；报告正文、来源 Agent、其他字段和研究拓扑均不可修改。错误路径、未知 ref、跨角色 ref、漏 gap 和正文改写 mutation 均 fail closed。
 - 零调用机械 patch 已证明实现可行，但它明确不是产品引用选择，也没有生成候选报告。正式 v1.2 权限只允许一个新 Writer logical node、最多两个 contract attempts、0 analysis／continuation／upstream／network；`thinking=disabled / max_tokens=4,000 / retry=0` 依据 19,442 字符 base payload、15,475 字符模型消息、4,995 字符 Tool Schema 和 5 个必交 patch，不以成本或速度倒推。
-- 完整工程门已通过：定向 `81 passed`、全仓 `958 passed`（仅两条既有 SWIG warning）、compileall、Workbench TypeScript／production build、active baseline `189 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、archive redirect `6,059`、811 份 configs JSON、8 份 Project OS JSONL／919 行、7,547-file secret scan／0 与 diff check 均有效。当前下一步只剩 clean commit／push → fresh Project OS preflight → fresh authority → 唯一一次 reference-patch exact-live。成功只产生待验收候选报告，随后必须独立完成 L1、八维内容质量、paired 保真与 qualified-human；S1、S3、泛化、Workbench 和 release 继续为 false。
+- 完整工程门已通过：定向 `81 passed`、全仓 `958 passed`（仅两条既有 SWIG warning）、compileall、Workbench TypeScript／production build、active baseline `189 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、archive redirect `6,059`、811 份 configs JSON、8 份 Project OS JSONL／919 行、7,547-file secret scan／0 与 diff check 均有效。clean commit／push、fresh Project OS preflight、fresh authority 和唯一 reference-patch exact-live 均已完成；结果见下一节。
+
+### 2026-08-21 reference-patch live 与报告审查
+
+- fresh preflight 和 authority 均绑定 clean／synced `b2d8b667...`。唯一 live 使用 1 个 Writer reference-patch logical node、2 个合同 attempts；第一份因把 base digest 两个字符抄反而在 mutation 前被拒绝，第二份成功。总计 0 analysis／continuation／upstream／repair／Evaluator／network／Candidate promotion。
+- 五个引用路径修复后，报告正文、来源 Agent 和其他字段逐字不变；protected contract 与 deterministic renderer 通过，正式候选报告 digest=`7f62db9c...eca18`。
+- 独立财务 L1 通过：最终金额、百分比、日期、指导、关系与引用全部由 NUM／REL／PRES／TEMP authority 和 rendering receipt 绑定；raw Evidence 数字未成为最终权威；跨公司材料保持 speaker-attributed read-through；AI 产品利润、现金与供应分配 gap 未被填造。
+- PRD 当前八维绝对内容质量为 `28/32` 并通过当前有界内部报告门。5 处叙事密度、内部 ID 引用面和未冻结 WWC 阈值属于非阻断改进；paired 证明内容保真与财务控制面增益，但研究正文增量为 0。
+- `qualified_human_acceptance=false`，因此 DELL bounded Preview、S1、S3、MU／NVDA／留出泛化、Workbench publication 和 release 均未签发。下一步先由用户审阅当前报告，再回到最早 S1／动态 Research 前置条件。
+- 最终复证通过：定向 `81 passed`、全仓 `958 passed`（仅 2 条既有 SWIG warning）、active baseline `189／8／5／27／0`、archive redirect `6,059`、815 份 configs JSON、8 份 Project OS JSONL／926 条记录、7,552-file secret scan／0 和 diff check。该复证不替代 qualified-human 内容验收。

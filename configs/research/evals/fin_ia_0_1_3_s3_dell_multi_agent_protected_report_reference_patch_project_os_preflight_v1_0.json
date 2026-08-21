@@ -1,0 +1,102 @@
+{
+  "case_key": "DELL",
+  "cell_id": "ALL",
+  "checks": {
+    "immutable_clean_proof_and_failure_bindings_valid": true,
+    "project_os_documents_available_and_parseable": true,
+    "provider_credential_present_value_unread": true,
+    "provider_profile_and_recent_complete_capture_valid": true,
+    "real_evidence_mode": "immutable_complete_failed_payload_plus_path_scoped_reference_findings_no_new_research",
+    "repository_clean_and_synced": true,
+    "root_cause_scope_allowed": true,
+    "token_and_call_budget_bounded": true
+  },
+  "credential_value_persisted": false,
+  "decision_projection": {
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "authority_catalog_ref": "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_authority_catalog_v1_1.json",
+    "clean_proof_status": "zero_call_structure_pass_terminal_remap_eligible",
+    "execution_limits": {
+      "candidate_promotions": 0,
+      "external_source_network_calls": 0,
+      "maximum_contract_attempts": 2,
+      "maximum_new_analysis_calls": 0,
+      "maximum_new_logical_model_nodes": 1,
+      "maximum_new_writer_continuations": 0,
+      "maximum_reference_patch_targets": 5,
+      "reused_completed_challenge_repair_count": 3,
+      "reused_cross_role_evaluation_count": 1,
+      "reused_lead_coordination_count": 1,
+      "reused_lead_plan_count": 1,
+      "reused_legacy_report_count": 1,
+      "reused_role_evaluation_count": 6,
+      "reused_specialist_plan_count": 6,
+      "reused_workpaper_count": 6
+    },
+    "multi_agent_preview": false,
+    "multi_agent_report_protected_remap": true,
+    "multi_agent_report_protected_remap_replacement": false,
+    "multi_agent_report_reference_patch": true,
+    "provider_id": "deepseek",
+    "provider_model": "deepseek-v4-pro",
+    "recent_provider_steps": 0,
+    "reference_patch_base_attempt_index": 2,
+    "reference_patch_base_payload_digest": "e9e0716941d7640b6e22b853d982e25f1e4a4b2c2af9e408f1dcc8cecf9e6f2b",
+    "reference_patch_receipt_digest": "400eb4c7485b7b83970c5f06e6010c3399e53223cfd9b62af8eb8e42bd40e485",
+    "reference_patch_zero_call_proof_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_report_reference_patch_zero_call_result_v1_0.json",
+    "report_surface_zero_call_proof_ref": "configs/research/evals/fin_ia_0_1_3_s3_multi_agent_report_surface_authority_zero_call_result_v1_1.json",
+    "run_scope_id": "one_fresh_Writer_only_reference_patch_logical_node_after_preserved_complete_contract_failure",
+    "source_report_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json",
+    "token_budget_basis": {
+      "base_payload_characters": 19442,
+      "comparable_run_evidence": "v1_1_two_complete_contracts_repeated_five_reference_failures_after_generic_feedback",
+      "cost_and_latency_are_secondary_constraints": true,
+      "materiality_quality_risk": "high",
+      "maximum_contract_attempts": 2,
+      "maximum_output_tokens": 4000,
+      "model_visible_message_characters": 15475,
+      "node_id": "AGENT::WRITER::PROTECTED_REPORT_REFERENCE_PATCH",
+      "purpose": "path_scoped_reference_binding_correction_without_report_rewrite",
+      "reasoning_profile": "thinking_disabled",
+      "required_patch_target_count": 5,
+      "schema_burden": "five_path_reference_only_tool_with_immutable_model_text_and_agents",
+      "stop_behavior": "stop_after_first_valid_patch_or_terminal_after_second_rejection",
+      "tool_schema_characters": 4995,
+      "user_message_characters": 15261
+    }
+  },
+  "decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_scope_decision_v1_2.json",
+  "decision_sha256": "a49e96cac14ecb22859e1f3dcd3fc2b29154ec003ee39a8e9278155ec31ce7f9",
+  "known_boundary": "The complete two-attempt v1.1 remap failure is preserved as immutable evidence. This authority is for a new reference-patch logical node, not a retry or a report rewrite. It authorizes exactly 1 fresh Writer-only reference patch logical node with at most 2 bounded contract attempts, 0 new analysis calls and 0 Writer continuation calls. The model may select claim, Evidence, authority and gap refs only for the five path-scoped failures; model text and source-agent identity are immutable. Deterministic local validation and rendering own authorized numbers, dates, identities and aliases. It forbids every upstream Agent, repair or Evaluator rerun, new research, Evidence or NumericFact changes, external source network access, candidate promotion, S1 or S3 acceptance, heterogeneous generalization, qualified-human self-acceptance, Workbench publication or release.",
+  "model_calls": 0,
+  "network_calls": 0,
+  "project_os_document_digests": {
+    "docs/project_os/capability_status_ledger.jsonl": "eb7ce4910d602ca845316ed7dbfaa0942c26dc64a80857326e591b54cba73795",
+    "docs/project_os/current_context_pack.zh-CN.md": "25d3ad254349a7ee7fd583da18a8e4364f9c5979be662ae1133601306728d38a",
+    "docs/project_os/full_chain_preflight_checklist.json": "361aca870094aaa80c3a1f7873be7c0c514e9bb9c1982dca951532bb20e62f0f",
+    "docs/project_os/full_chain_run_policy.zh-CN.md": "efed0a4e5ee542c96db8ac359793340d5cb9e05cd7bbbb0415ababce6dfb5f3d",
+    "docs/project_os/root_cause_issue_ledger.jsonl": "c3998c16974bc0709c5473b46fc7cbbf3fbb2374e0d8de7cf68f1cee4878bc7f",
+    "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md": "f772faf528f0015a7d06d8117bb6a555629efb076045b9b82041a67cdeeb8ccf"
+  },
+  "provider_calls": 0,
+  "recorded_at": "2026-08-21T13:58:11.183838+00:00",
+  "repository": {
+    "clean": true,
+    "head": "b2d8b6670f0966eb5491712900262695e3db70cb",
+    "synced": true,
+    "upstream": "b2d8b6670f0966eb5491712900262695e3db70cb"
+  },
+  "run_scope_id": "one_fresh_Writer_only_reference_patch_logical_node_after_preserved_complete_contract_failure",
+  "schema_version": "fin_ia_current_decision_bound_project_os_preflight_v1_0",
+  "scope_projection": {
+    "blocking_issue_ids": [],
+    "closed_precondition_issue_ids": [
+      "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use"
+    ],
+    "explicit_allow_issue_ids": [
+      "RC-AR-032-protected-report-contract-feedback-conflated-density-and-reference-failures"
+    ],
+    "out_of_scope_full_chain_blocker_count": 45
+  },
+  "status": "pass_current_decision_bound_preflight"
+}

@@ -1,0 +1,652 @@
+{
+  "acceptance": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "deterministic_surface_render_pass": true,
+    "formal_eight_dimension_assessment_pending": true,
+    "heterogeneous_generalization": false,
+    "independent_financial_truth_L1_assessment_pending": true,
+    "legacy_report_relabelled_pass": false,
+    "protected_report_contract_valid": true,
+    "qualified_human_acceptance": false,
+    "reference_patch_contract_valid": true,
+    "release_ready": false,
+    "workbench_publication": false
+  },
+  "authority_digest": "f08c659d76817379e184b2104f53ef5e7976ba487e27e0fb6d9b38a88134291c",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_live_authority_v1_0.json",
+  "authority_sha256": "ef15d5a61d0dcc6961bab272360ffdeaaab53735a3add306265632ea5fdda7e5",
+  "execution": {
+    "analysis_call_count": 0,
+    "candidate_promotions": 0,
+    "contract_attempt_count": 2,
+    "credential_value_persisted": false,
+    "evaluator_call_count": 0,
+    "external_source_network_calls": 0,
+    "logical_model_node_count": 1,
+    "maximum_contract_attempts": 2,
+    "maximum_logical_model_nodes": 1,
+    "provider_private_reasoning_persisted": false,
+    "repair_call_count": 0,
+    "scope_compliant": true,
+    "terminal_contract_valid": true,
+    "upstream_agent_call_count": 0,
+    "writer_continuation_call_count": 0
+  },
+  "failure": null,
+  "full_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_20260821/full_result.json",
+  "full_result_sha256": "0158043e32bb71cca3f5a72c346abb913ba4df87ebc92866b2b584cc6a78a2c1",
+  "implementation_commit": "b2d8b6670f0966eb5491712900262695e3db70cb",
+  "known_boundary": "This result covers one Writer-only reference patch over the immutable second complete v1.1 contract payload. It may change only five path-scoped reference bindings; report prose and source-agent identities remain immutable. It does not rerun research and does not by itself prove financial-truth L1, content quality, S1, S3, generalization, qualified-human acceptance, Workbench publication or release.",
+  "recorded_at": "2026-08-21T13:58:45.816806+00:00",
+  "reference_patch": {
+    "base_contract_attempt_index": 2,
+    "base_contract_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_protected_report_remap_replacement_20260821/terminal_failure.json",
+    "base_payload_digest": "e9e0716941d7640b6e22b853d982e25f1e4a4b2c2af9e408f1dcc8cecf9e6f2b",
+    "model_text_mutation_authorized": false,
+    "patch_receipt_digest": "400eb4c7485b7b83970c5f06e6010c3399e53223cfd9b62af8eb8e42bd40e485",
+    "reference_binding_mutation_authorized": true,
+    "source_agent_mutation_authorized": false,
+    "target_paths": [
+      "executive_thesis[0]",
+      "sections[5].clauses[0]",
+      "remaining_gaps[1]",
+      "remaining_gaps[3]",
+      "what_would_change[2]"
+    ]
+  },
+  "rendered_report": {
+    "authority_catalog_digest": "db4cd0930c29e78f21d10df4b09ddc4bb69004665e3aca929608d66d6c9242df",
+    "case_identity": {
+      "case_key": "DELL",
+      "research_as_of": "2026-08-06",
+      "subject_legal_name": "Dell Technologies Inc.",
+      "subject_ticker": "DELL"
+    },
+    "confidence_statement": "The report can be written with medium confidence from the validated workpapers. Company-scope financial facts are well-sourced, while AI-attributable demand durability, margin capture, cash conversion, and supply-chain pass-through are bounded inferences or typed gaps rather than demonstrated facts. Material counterarguments, source-type cautions, and what-would-change conditions are preserved; the report does not assert demand collapse, realized adverse losses, or issuer-specific supplier economics. [Sources: EV::734A9C177164E08E, EV::32A6B092D3316769] [Gaps: GAP::04EDD7700A1409F8, GAP::B070D38D076F342B]",
+    "draft_digest": "855641bb43fe6e7eb5bfb066572eb2706f7bb4375c295c02535348f6ba88aadb",
+    "executive_thesis": "The realized AI demand anchor is recognized AI-server revenue, sitting inside a larger self-reported stack of booked AI orders, a record AI backlog as defined by the issuer's non-cancelable filter, and a growing AI customer count. Those orders, backlog, and pipeline are management-disclosed and unaudited, and a same-quarter revenue print does not establish a cross-period order-to-backlog-to-revenue sequence. Company-scope results grew sharply on revenue, operating income, and operating margin while blended gross margin compressed; AI-attributable profit capture is contained within the infrastructure segment and remains unsized at the AI-attributable level. The issuer-attributed AI-mix dilution mechanism is period-specific to an earlier quarter and must not be restated as a causal fact for the current quarter. Consolidated operating cash flow and free cash flow improved at company scope, but AI-specific order-to-cash conversion and the incremental AI-driven working-capital burden remain unquantified. Upstream supplier statements are speaker-attributed read-throughs consistent with, but not proof of, issuer-specific delivery relief, profit conversion, or cash conversion. Counterevidence breaks the default inference from strong orders and backlog to durable high-quality revenue, profit, and cash without showing demand collapse. Overall confidence is medium; monitoring metrics are named, but no invalidation thresholds are frozen. Facts: DELL FY2027 Q1 ended 2026-05-01 ai server revenue: $16.1B; DELL FY2027 Q1 ended 2026-05-01 ai orders: $24.4B; DELL FY2027 Q1 ended 2026-05-01 ai backlog: $51.3B; DELL FY2027 Q1 ended 2026-05-01 ai customer count: more than 5,000 (management_threshold); source reporting period ended 2025-10-31; DELL FY2026 Q1 ended 2025-05-02 operating cash flow: $2.796B; DELL FY2027 Q1 ended 2026-05-01 operating cash flow: $4.081B; DELL operating cash flow: +45.96% (2026-05-01 versus 2025-05-02). [Sources: EV::9006E2D4E0F61CCF, EV::5388E016C17032C1, EV::C5DB890B773C6892, EV::32A6B092D3316769] [Gaps: GAP::00730082A5C08C4C, GAP::EF4839B4BF55ADD0, GAP::04EDD7700A1409F8, GAP::B070D38D076F342B]",
+    "remaining_gaps": [
+      "No cross-period order-to-backlog-to-revenue conversion rate, order aging, cancellation rate, or fulfillment sequence exists; only the same-quarter realized revenue anchor is visible. [Sources: EV::9006E2D4E0F61CCF] [Gaps: GAP::00730082A5C08C4C]",
+      "No issuer-specific disclosure of cancellable backlog, prior-period buy-ahead or consumption size, or realized channel-order-reduction occurrence is visible; non-designated orders are excluded from backlog and no cancellable balance is disclosed. [Sources: EV::2A7103750D79EEDC] [Gaps: GAP::00730082A5C08C4C]",
+      "No AI-specific cash, working-capital amount, turnover-day, or order-to-cash flow bridge is visible; the balance-sheet values carry source-visible but non-covered numeric status, and net income and adjusted free cash flow are similarly unresolved. [Sources: EV::CAD2B8E9B11D864E, EV::07899638B93E4E3A] [Gaps: GAP::EF4839B4BF55ADD0]",
+      "No AI-server standalone profit or margin or infrastructure-segment operating-expense allocation to AI is visible; price, volume, and price-volume-mix bridge inputs are typed gaps. [Gaps: GAP::14D67654F535F105, GAP::34844D3F9935C0F5, GAP::52DCB2B65532C103]",
+      "No issuer-specific supplier allocation, yield, high-bandwidth-memory capacity, utilization, or release-date evidence is visible; upstream statements are speaker-attributed read-throughs. [Sources: EV::FAC441CFB03C8260] [Gaps: GAP::0DF1791C33619F02, GAP::AD8E45538482CAB2, GAP::C2EC64A79D8F5481, GAP::FF2E3CECAE969E84]",
+      "No invalidation thresholds for the shared monitoring metrics have been frozen. [Sources: EV::734A9C177164E08E] [Gaps: GAP::04EDD7700A1409F8, GAP::B070D38D076F342B]"
+    ],
+    "rendered_report_digest": "7f62db9c29112e26801c39fdb54ec954acd4c2a0b794e1924a31ba34a02eca18",
+    "rendering_authority": {
+      "all_rendered_protected_surfaces_content_addressed": true,
+      "case_identity_period_numeric_and_citations_harness_rendered": true,
+      "model_authored_research_judgment_and_prose": true,
+      "product_publication": false,
+      "qualified_human_review_required": true,
+      "raw_evidence_numeric_surface_promoted": false
+    },
+    "rendering_receipts": [
+      {
+        "field_path": "executive_thesis[0]",
+        "model_text_digest": "55b9ee3ffa5680c1ae921f717ce457ea13ddee26104f5fd68911ff153da45b2a",
+        "rendered_authority_refs": [
+          "NUM::00D69747B4DDA649",
+          "NUM::437B42CE857F1F0E",
+          "NUM::4ED76683F363AE66",
+          "PRES::ADCD1ABD8032868F",
+          "TEMP::D255757DD75AC219",
+          "NUM::48BC29582646E193",
+          "NUM::D2AED1236BCDEE6B",
+          "REL::07D0A84AC42F34A1"
+        ],
+        "rendered_evidence_refs": [
+          "EV::9006E2D4E0F61CCF",
+          "EV::5388E016C17032C1",
+          "EV::C5DB890B773C6892",
+          "EV::32A6B092D3316769"
+        ],
+        "rendered_gap_refs": [
+          "GAP::00730082A5C08C4C",
+          "GAP::EF4839B4BF55ADD0",
+          "GAP::04EDD7700A1409F8",
+          "GAP::B070D38D076F342B"
+        ],
+        "rendered_text_digest": "a9dceb120cd6ac38951bc25428cb97e10b2d014054fc02cecdbd5bff1be066ba",
+        "source_claim_refs": [
+          "WPCLAIM::85483A3BF6E7290C8D92",
+          "WPCLAIM::97D029E054446050D128",
+          "WPCLAIM::8678D7FA33588B4D3DFC",
+          "WPCLAIM::F39151332918627F465B",
+          "WPCLAIM::2F796E4F60AFD3F7D94D"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::DEMAND_QUALITY",
+          "AGENT::OPERATING_PERFORMANCE",
+          "AGENT::VALUE_CAPTURE",
+          "AGENT::CASH_CONVERSION",
+          "AGENT::SUPPLY_RELATIONSHIP",
+          "AGENT::COUNTEREVIDENCE"
+        ]
+      },
+      {
+        "field_path": "sections[0].clauses[0]",
+        "model_text_digest": "73660322fdb3dbb4f6e3f34f908252c471fcb255814cb1c1ce1f550a7934d62f",
+        "rendered_authority_refs": [
+          "NUM::00D69747B4DDA649",
+          "NUM::437B42CE857F1F0E",
+          "NUM::4ED76683F363AE66",
+          "PRES::ADCD1ABD8032868F"
+        ],
+        "rendered_evidence_refs": [
+          "EV::9006E2D4E0F61CCF",
+          "EV::2A7103750D79EEDC",
+          "EV::38BBF02CB241E81D",
+          "EV::468CA2DB8E860671",
+          "EV::ADBB7A86C8E7D99D",
+          "EV::041AEF89A154F4FC",
+          "EV::D4B096474D6E9422",
+          "EV::ABAB2A6B49DD71A9"
+        ],
+        "rendered_gap_refs": [
+          "GAP::00730082A5C08C4C"
+        ],
+        "rendered_text_digest": "2ca8fd4bd0b6a492ec3ca48c30c43ff30b603a30ecf3279fd03c930e258b7a36",
+        "source_claim_refs": [
+          "WPCLAIM::85483A3BF6E7290C8D92",
+          "WPCLAIM::B84F33A3E188E576A654",
+          "WPCLAIM::9F9AAE1B7C33B4ED10ED",
+          "WPCLAIM::A0983D67A1F7A960F0A9",
+          "WPCLAIM::4AF830040D6490D5C97F",
+          "WPCLAIM::354DA2EF38775DD14219",
+          "WPCLAIM::BB96CBC0E1270CD49A0F"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::DEMAND_QUALITY"
+        ]
+      },
+      {
+        "field_path": "sections[1].clauses[0]",
+        "model_text_digest": "a3e14976cc2230e42789e50c5a1bb43c6851b9acdc29191483860349fb97447b",
+        "rendered_authority_refs": [
+          "NUM::ADC81E7A547FAB94",
+          "NUM::F8C8EB238E997BA2",
+          "NUM::BA153FB9939D66DF",
+          "NUM::D0EA6489B2C138EE",
+          "NUM::1BB4D30C6329CD27",
+          "NUM::55D71667B5DA8AF0",
+          "NUM::62D92399E571BF05",
+          "NUM::D3FE6492EE9F1082",
+          "NUM::33642A79CE277E0B",
+          "NUM::AB89B02ADCCB77E0",
+          "REL::E07667E373A33286",
+          "REL::E3A67501DFA73ACF",
+          "REL::E773B8CD872C906A",
+          "REL::A4862061DE7A96C8",
+          "REL::B60164179DFFDF5A",
+          "REL::936D10F2B7160DDD"
+        ],
+        "rendered_evidence_refs": [
+          "EV::734A9C177164E08E",
+          "EV::7F4D7E6762C21D83"
+        ],
+        "rendered_gap_refs": [],
+        "rendered_text_digest": "d0c0426b84a41c572980619a15b4e0a8ea245428f9df15f0d401836ada0883d0",
+        "source_claim_refs": [
+          "WPCLAIM::7B12612D4D6FE7E1A9F3",
+          "WPCLAIM::A82410FACC0843B970BB",
+          "WPCLAIM::F73A4AB0A481F0FB35BA",
+          "WPCLAIM::08B4C6166EDB5DC815F5",
+          "WPCLAIM::59C8CB20F90153A4359C",
+          "WPCLAIM::DD9167BE60D4EE29E7BF"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::OPERATING_PERFORMANCE"
+        ]
+      },
+      {
+        "field_path": "sections[2].clauses[0]",
+        "model_text_digest": "32349b24f83679b01206a44714e80c0562f0783bd71d45ea9818896dbfb10e35",
+        "rendered_authority_refs": [
+          "TEMP::D255757DD75AC219",
+          "PRES::1BF25CBC9F2BBB72"
+        ],
+        "rendered_evidence_refs": [
+          "EV::7F4D7E6762C21D83",
+          "EV::5388E016C17032C1",
+          "EV::0063F22F643B94ED",
+          "EV::38BBF02CB241E81D"
+        ],
+        "rendered_gap_refs": [
+          "GAP::34844D3F9935C0F5",
+          "GAP::14D67654F535F105",
+          "GAP::52DCB2B65532C103"
+        ],
+        "rendered_text_digest": "d2549b09f2268e355b57036add76a564560a00c3ba0915bcaabe38ddd7583827",
+        "source_claim_refs": [
+          "WPCLAIM::C9ABFB9176456AB25DDC",
+          "WPCLAIM::97D029E054446050D128",
+          "WPCLAIM::0877558BAA7E91C29ED5",
+          "WPCLAIM::552AB1F5E91A529655F7"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::VALUE_CAPTURE"
+        ]
+      },
+      {
+        "field_path": "sections[3].clauses[0]",
+        "model_text_digest": "47003558e370d61c79b11473f42e3331af1947898a6237d803c726d7ab926562",
+        "rendered_authority_refs": [
+          "NUM::D2AED1236BCDEE6B",
+          "NUM::48BC29582646E193",
+          "NUM::465E4DEF9C78ECA6",
+          "NUM::9F0CC9FBFC741998",
+          "NUM::16A411DA0FC0209E",
+          "NUM::F0945BCA2DE9CE3B",
+          "NUM::9DDEDDD584B02E09",
+          "REL::07D0A84AC42F34A1",
+          "REL::9A1FC36EBF79DDDC",
+          "REL::2A7F4BE26BAB956E"
+        ],
+        "rendered_evidence_refs": [
+          "EV::C5DB890B773C6892",
+          "EV::07899638B93E4E3A",
+          "EV::CAD2B8E9B11D864E",
+          "EV::A7BD099BA46F320B",
+          "EV::ADBB7A86C8E7D99D"
+        ],
+        "rendered_gap_refs": [
+          "GAP::EF4839B4BF55ADD0"
+        ],
+        "rendered_text_digest": "78d7624ced5f78927bc3f5ffe97618aab1e88e5aa9c7c9d079e0ba975e51eafe",
+        "source_claim_refs": [
+          "WPCLAIM::8678D7FA33588B4D3DFC",
+          "WPCLAIM::58D645CC646C5AB4DD72",
+          "WPCLAIM::7BDD0C3947520020042D",
+          "WPCLAIM::E6BF4BA3210FFC734C43",
+          "WPCLAIM::E7726D8833A8D230D9C2",
+          "WPCLAIM::04FB91A7A27CA9E988FB",
+          "WPCLAIM::6989AE691B45DD961377"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::CASH_CONVERSION"
+        ]
+      },
+      {
+        "field_path": "sections[4].clauses[0]",
+        "model_text_digest": "f3024bda6aab5588773ec4f03d66aa8a8a4e9888b4ef8e16b6c53026d6929a20",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::9006E2D4E0F61CCF",
+          "EV::FAC441CFB03C8260",
+          "EV::E9C1A0A4C2A9A15F",
+          "EV::4E05729492683532",
+          "EV::E24995DEF478A0E5",
+          "EV::6AE6D515A5C648FA",
+          "EV::CECB981DD118D1D8"
+        ],
+        "rendered_gap_refs": [
+          "GAP::0DF1791C33619F02",
+          "GAP::AD8E45538482CAB2",
+          "GAP::C2EC64A79D8F5481",
+          "GAP::FF2E3CECAE969E84"
+        ],
+        "rendered_text_digest": "ab697caf2794df9cbc084b5215a440ec5dea214ee542002ab963ab684e76c7e7",
+        "source_claim_refs": [
+          "WPCLAIM::9453883047DF9695804E",
+          "WPCLAIM::206069A24091FD8176BC",
+          "WPCLAIM::0F642FDBE973BD0BF5AC",
+          "WPCLAIM::B82C3793E187E5281F1C",
+          "WPCLAIM::3F3E6873E2DCEE4929BB",
+          "WPCLAIM::7857425CCBF70C0B62B1",
+          "WPCLAIM::729FF98AD31A9A09EAC8"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::SUPPLY_RELATIONSHIP"
+        ]
+      },
+      {
+        "field_path": "sections[5].clauses[0]",
+        "model_text_digest": "7e7e191371960f27f7c4e711121f8be1f94f0d93c26ae5363b6b5d18ca0838b3",
+        "rendered_authority_refs": [
+          "PRES::265181C995279FAE"
+        ],
+        "rendered_evidence_refs": [
+          "EV::32A6B092D3316769",
+          "EV::ADBB7A86C8E7D99D",
+          "EV::A74F01276941482E",
+          "EV::BA594865DB45F850",
+          "EV::D86534E903882A43"
+        ],
+        "rendered_gap_refs": [],
+        "rendered_text_digest": "3ef9b71a673a336d7451d3ec892486c62ba2bce25915e999f94f9debf9291584",
+        "source_claim_refs": [
+          "WPCLAIM::F39151332918627F465B",
+          "WPCLAIM::CDC6BC734EC990933D49",
+          "WPCLAIM::584734E6E56147AEFC42",
+          "WPCLAIM::6F48BC846EAA84AD56A5"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::COUNTEREVIDENCE"
+        ]
+      },
+      {
+        "field_path": "remaining_gaps[0]",
+        "model_text_digest": "37f468f49f859414aa6cb2b3753f85a181b884ab50b66d297dfecdbbb8d2e932",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::9006E2D4E0F61CCF"
+        ],
+        "rendered_gap_refs": [
+          "GAP::00730082A5C08C4C"
+        ],
+        "rendered_text_digest": "ab0295b32e210efb675d9cf92f0abb7f6d1c30720f7bb4298fcb9a2ddd53b680",
+        "source_claim_refs": [
+          "WPCLAIM::85483A3BF6E7290C8D92"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::DEMAND_QUALITY"
+        ]
+      },
+      {
+        "field_path": "remaining_gaps[1]",
+        "model_text_digest": "5c89945d75f3dad15fa1f71b5b53216dc4994cb7c4aa2babe18cdbf91eca213b",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::2A7103750D79EEDC"
+        ],
+        "rendered_gap_refs": [
+          "GAP::00730082A5C08C4C"
+        ],
+        "rendered_text_digest": "26f5b3f7c85833ec93e78d63c07443474163eebdd8d56b950bf365e51eca322c",
+        "source_claim_refs": [
+          "WPCLAIM::B84F33A3E188E576A654"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::DEMAND_QUALITY"
+        ]
+      },
+      {
+        "field_path": "remaining_gaps[2]",
+        "model_text_digest": "2f409b64012b6473e822b8db84547db51062577a65bc83f0411d8c63f19a7c37",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::CAD2B8E9B11D864E",
+          "EV::07899638B93E4E3A"
+        ],
+        "rendered_gap_refs": [
+          "GAP::EF4839B4BF55ADD0"
+        ],
+        "rendered_text_digest": "d637f48191851ba5956817dd2294150d259465b3e13961e66d02c351d5544a29",
+        "source_claim_refs": [
+          "WPCLAIM::E6BF4BA3210FFC734C43",
+          "WPCLAIM::6989AE691B45DD961377"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::CASH_CONVERSION"
+        ]
+      },
+      {
+        "field_path": "remaining_gaps[3]",
+        "model_text_digest": "dd8b0f3c0548211a016b8c20b117e1cd1a0fc67f913b0687c28e752cb435e34e",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [],
+        "rendered_gap_refs": [
+          "GAP::14D67654F535F105",
+          "GAP::34844D3F9935C0F5",
+          "GAP::52DCB2B65532C103"
+        ],
+        "rendered_text_digest": "2336fe7cb3db60f6d85031d609dbc3b5fbe4f36bd53c75f6cd970996d609a782",
+        "source_claim_refs": [],
+        "source_workpaper_agent_ids": [
+          "AGENT::VALUE_CAPTURE"
+        ]
+      },
+      {
+        "field_path": "remaining_gaps[4]",
+        "model_text_digest": "dd133dbf5fd94fc39c43face021a9bc0ba757c964413ecfe0a846edc08559518",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::FAC441CFB03C8260"
+        ],
+        "rendered_gap_refs": [
+          "GAP::0DF1791C33619F02",
+          "GAP::AD8E45538482CAB2",
+          "GAP::C2EC64A79D8F5481",
+          "GAP::FF2E3CECAE969E84"
+        ],
+        "rendered_text_digest": "7026259c0b0de12849c2362ec1946dcf1734d9341a4b0cdb2fd3e8b2bcd6a528",
+        "source_claim_refs": [
+          "WPCLAIM::206069A24091FD8176BC"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::SUPPLY_RELATIONSHIP"
+        ]
+      },
+      {
+        "field_path": "remaining_gaps[5]",
+        "model_text_digest": "720830e27d6523577e56713d6d23bd19b6693ea749e1c51de7b5012632d1115f",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::734A9C177164E08E"
+        ],
+        "rendered_gap_refs": [
+          "GAP::04EDD7700A1409F8",
+          "GAP::B070D38D076F342B"
+        ],
+        "rendered_text_digest": "d38b90a9886be7ae6990073e548cd579e6b5b53748f71fb05de302669815c26c",
+        "source_claim_refs": [
+          "WPCLAIM::2F796E4F60AFD3F7D94D"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::COUNTEREVIDENCE"
+        ]
+      },
+      {
+        "field_path": "what_would_change[0]",
+        "model_text_digest": "c3a5f554be02bc614ab2390f428a7f48bb466a22fa8d3af2a2f59df41541afe9",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::9006E2D4E0F61CCF"
+        ],
+        "rendered_gap_refs": [
+          "GAP::00730082A5C08C4C"
+        ],
+        "rendered_text_digest": "b6576088dd655329e76b609a9fca98713e9de8b97ba81a1b1caf4dc66d6784ab",
+        "source_claim_refs": [
+          "WPCLAIM::85483A3BF6E7290C8D92"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::DEMAND_QUALITY"
+        ]
+      },
+      {
+        "field_path": "what_would_change[1]",
+        "model_text_digest": "64020a57c5ae7bab2794a62163e7b9250df21542bc0fcad0b48cc5c28df23738",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::2A7103750D79EEDC",
+          "EV::ADBB7A86C8E7D99D"
+        ],
+        "rendered_gap_refs": [],
+        "rendered_text_digest": "2816b459e8cb77b79acdc8d959b90eb334bc0351a7784504f20e54abf9e2a7b2",
+        "source_claim_refs": [
+          "WPCLAIM::B84F33A3E188E576A654",
+          "WPCLAIM::4AF830040D6490D5C97F"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::DEMAND_QUALITY"
+        ]
+      },
+      {
+        "field_path": "what_would_change[2]",
+        "model_text_digest": "f5879e9ad506a0294bdec3eb176bfe428f6e0480519d1898473be2743e1abda8",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [],
+        "rendered_gap_refs": [
+          "GAP::14D67654F535F105",
+          "GAP::34844D3F9935C0F5",
+          "GAP::52DCB2B65532C103"
+        ],
+        "rendered_text_digest": "0c8fac1c2a1322e33b5b127c098988a30720923455eafce017e6618f48720c9c",
+        "source_claim_refs": [],
+        "source_workpaper_agent_ids": [
+          "AGENT::VALUE_CAPTURE"
+        ]
+      },
+      {
+        "field_path": "what_would_change[3]",
+        "model_text_digest": "747dac749be90bf517b0eff50e6ab38981afceff5c67a3dc651e87eec2b60b80",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::CAD2B8E9B11D864E"
+        ],
+        "rendered_gap_refs": [
+          "GAP::EF4839B4BF55ADD0"
+        ],
+        "rendered_text_digest": "0e647a41c283d751dc3644673bdaa2fe081c9abb40dd8e5c6f6de6ad84fc35a9",
+        "source_claim_refs": [
+          "WPCLAIM::E6BF4BA3210FFC734C43"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::CASH_CONVERSION"
+        ]
+      },
+      {
+        "field_path": "what_would_change[4]",
+        "model_text_digest": "1e50a2aafd3cc14c56dda97745aca9a6af396f112a70af853135ecffe4d30e45",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::ADBB7A86C8E7D99D"
+        ],
+        "rendered_gap_refs": [],
+        "rendered_text_digest": "de21b42036471c50025c67312dd2cae67d48795513fc472017d7e2d4d6f81029",
+        "source_claim_refs": [
+          "WPCLAIM::04FB91A7A27CA9E988FB"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::CASH_CONVERSION"
+        ]
+      },
+      {
+        "field_path": "what_would_change[5]",
+        "model_text_digest": "6e78b4fe1970a0ebccd3df0045d0783ef9d321f85df478b0a53250185f75d2b4",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::FAC441CFB03C8260"
+        ],
+        "rendered_gap_refs": [
+          "GAP::0DF1791C33619F02",
+          "GAP::AD8E45538482CAB2"
+        ],
+        "rendered_text_digest": "1094855d09d9a95a965c699c833fdf0da8acdc5623ef7b961461aca2d7c02cc6",
+        "source_claim_refs": [
+          "WPCLAIM::206069A24091FD8176BC"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::SUPPLY_RELATIONSHIP"
+        ]
+      },
+      {
+        "field_path": "what_would_change[6]",
+        "model_text_digest": "f3780a32a410bd5ce8821a3d5852a7bedaeab82cbcc0d0f3f55d9722fc6a41dd",
+        "rendered_authority_refs": [
+          "PRES::5342E5064E92AFD4"
+        ],
+        "rendered_evidence_refs": [
+          "EV::7F4D7E6762C21D83"
+        ],
+        "rendered_gap_refs": [],
+        "rendered_text_digest": "d9464d0d6ac297d391f8871353f5c7170e8187c2051f5aee2e7487da612d58ae",
+        "source_claim_refs": [
+          "WPCLAIM::09BA5E64AC3C0DB8DDD5"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::OPERATING_PERFORMANCE"
+        ]
+      },
+      {
+        "field_path": "what_would_change[7]",
+        "model_text_digest": "e931985ef942e45e81eb28967f617afb1f8d8f627fd9b41ca9e4d1045f072dd2",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::734A9C177164E08E"
+        ],
+        "rendered_gap_refs": [
+          "GAP::04EDD7700A1409F8",
+          "GAP::B070D38D076F342B"
+        ],
+        "rendered_text_digest": "c4641f8865bda4aeaf9b09b0f38afd4f6d7b60e25d51b76b4521957b52088e99",
+        "source_claim_refs": [
+          "WPCLAIM::2F796E4F60AFD3F7D94D"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::COUNTEREVIDENCE"
+        ]
+      },
+      {
+        "field_path": "confidence",
+        "model_text_digest": "3c2438f65d9f31fb8b5c624b827e1692cbe0b455405e44e6a0af7d4f27c9842f",
+        "rendered_authority_refs": [],
+        "rendered_evidence_refs": [
+          "EV::734A9C177164E08E",
+          "EV::32A6B092D3316769"
+        ],
+        "rendered_gap_refs": [
+          "GAP::04EDD7700A1409F8",
+          "GAP::B070D38D076F342B"
+        ],
+        "rendered_text_digest": "29722fc5654b5630a7cc37d3c9c436f4d5bbe94596f99be2f8a184306628e669",
+        "source_claim_refs": [
+          "WPCLAIM::2F796E4F60AFD3F7D94D",
+          "WPCLAIM::F39151332918627F465B"
+        ],
+        "source_workpaper_agent_ids": [
+          "AGENT::COUNTEREVIDENCE"
+        ]
+      }
+    ],
+    "report_title": "Dell Technologies Inc. research as of 2026-08-06: AI demand stack, margin capture, and cash conversion synthesis from validated workpapers for a technology hardware issuer",
+    "schema_version": "fin_ia_multi_agent_protected_rendered_report_v1_1",
+    "sections": [
+      {
+        "body": "Sourced facts show AI orders, AI-server revenue, record AI backlog, a demand-exceeds-supply condition with memory as the primary constraint, an AI customer count threshold, and a pipeline described qualitatively as a multiple of backlog. Only recognized revenue is realized; orders, backlog, and pipeline are unaudited with no order aging, cancellation rate, or fulfillment cadence disclosed. The backlog definition excludes items the issuer has not designated non-cancelable, so the stated number is a filtered management-defined subset and no cancellable balance is disclosed. Counterhypotheses remain bounded alternatives: memory-driven buy-ahead may have pulled order timing forward without adding durable demand; traditional-server demand exceeding supply shows supply-queueing can inflate backlog; large-customer concentration and delay or cancellation risk weaken sustainability; channel-order-reduction is a conditional risk rather than an active mechanism; and demand-to-shipment non-linearity limits linear extrapolation. Facts: DELL FY2027 Q1 ended 2026-05-01 ai server revenue: $16.1B; DELL FY2027 Q1 ended 2026-05-01 ai orders: $24.4B; DELL FY2027 Q1 ended 2026-05-01 ai backlog: $51.3B; DELL FY2027 Q1 ended 2026-05-01 ai customer count: more than 5,000 (management_threshold). [Sources: EV::9006E2D4E0F61CCF, EV::2A7103750D79EEDC, EV::38BBF02CB241E81D, EV::468CA2DB8E860671, EV::ADBB7A86C8E7D99D, EV::041AEF89A154F4FC, EV::D4B096474D6E9422, EV::ABAB2A6B49DD71A9] [Gaps: GAP::00730082A5C08C4C]",
+        "heading": "Demand-quality bridge: orders are commitments; recognized revenue is the realized anchor"
+      },
+      {
+        "body": "Sourced facts show revenue, operating income, operating margin, gross profit, gross margin, and net income all moving directionally as reported, with revenue and operating income growing sharply while blended gross margin compresses. The growth in revenue and operating income is arithmetically consistent with operating-expense leverage or mix at company level; the current-quarter gross-margin decline is not issuer-attributed to AI mix in the visible evidence and is equally consistent with pricing pressure, input costs, or other mix effects. AI-server revenue is visible alongside infrastructure-segment revenue and operating profit, but that segment operating profit is not AI-server profit; AI-server standalone margin is not isolable and is not reverse-engineered. Facts: DELL FY2027 Q1 ended 2026-05-01 revenue: $43.842B; DELL FY2026 Q1 ended 2025-05-02 revenue: $23.378B; DELL FY2026 Q1 ended 2025-05-02 operating income: $1.165B; DELL FY2027 Q1 ended 2026-05-01 operating income: $3.656B; DELL FY2026 Q1 ended 2025-05-02 operating margin: 4.98%; DELL FY2027 Q1 ended 2026-05-01 operating margin: 8.34%; DELL FY2027 Q1 ended 2026-05-01 gross profit: $7.782B; DELL FY2026 Q1 ended 2025-05-02 gross profit: $4.937B; DELL FY2026 Q1 ended 2025-05-02 gross margin: 21.12%; DELL FY2027 Q1 ended 2026-05-01 gross margin: 17.75%; DELL revenue: +87.54% (2026-05-01 versus 2025-05-02); DELL operating income: +213.82% (2026-05-01 versus 2025-05-02); DELL operating margin: +3.36pp (2026-05-01 versus 2025-05-02); DELL gross profit: +57.63% (2026-05-01 versus 2025-05-02); DELL gross margin: -3.37pp (2026-05-01 versus 2025-05-02); DELL net income: +256.27% (2026-05-01 versus 2025-05-02). [Sources: EV::734A9C177164E08E, EV::7F4D7E6762C21D83]",
+        "heading": "Company-scope operating performance: strong aggregate growth paired with gross-margin compression"
+      },
+      {
+        "body": "AI-server revenue is contained within infrastructure-segment revenue and operating profit; a gross-margin decline primarily driven by a shift toward AI-optimized server offerings is directional and period-specific to an earlier reported quarter; AI-server profitability was described by unaudited management commentary as in line with a mid-single-digit operating-income target; and pricing and margin discipline is qualitative intention language. Price, volume, and price-volume-mix bridge inputs are typed gaps, so no AI-specific price, volume, or mix or supplier-versus-issuer value split can be computed. AI-attributable profit is therefore unsized at the AI-attributable level, not unbounded in both directions; segment revenue and operating profit remain a containment boundary. Any full-year AI-server revenue guide is forward-looking management guidance and must not be used as realized product profit. Facts: source reporting period ended 2025-10-31; DELL FY2027 FY ai server revenue guidance: approximately $60B (company_guidance). [Sources: EV::7F4D7E6762C21D83, EV::5388E016C17032C1, EV::0063F22F643B94ED, EV::38BBF02CB241E81D] [Gaps: GAP::34844D3F9935C0F5, GAP::14D67654F535F105, GAP::52DCB2B65532C103]",
+        "heading": "Value capture: AI-specific profit is bounded but unsized"
+      },
+      {
+        "body": "Sourced facts show operating cash flow, free cash flow, and capital expenditures each improving year over year at company scope; these are company-scope facts, not AI-attributable cash. The balance-sheet build shows increases in net accounts receivable and inventory alongside roughly flat cash and slightly declining financing receivables; only the accounts-payable balance carries covered numeric status, with the remaining balance items source-visible but non-covered. Issuer mechanism and risk language indicates a prior fiscal year working-capital impact from AI dynamics leading to higher inventory, receivables, and payables, and notes larger orders may require greater working-capital commitments that can adversely affect cash flow and expose the issuer to excess and obsolete inventory risk. An order must progress from order to shipped revenue to collections; the visible facts do not separate shipped revenue from pre-release inventory build, and no AI-product-level cash, turnover-day, or order-to-cash conversion metric is visible. Non-GAAP adjusted free cash flow values are company-authored with non-covered numeric status and are not used to overwrite the GAAP-anchored operating cash flow and free cash flow. Facts: DELL FY2027 Q1 ended 2026-05-01 operating cash flow: $4.081B; DELL FY2026 Q1 ended 2025-05-02 operating cash flow: $2.796B; DELL FY2027 Q1 ended 2026-05-01 free cash flow: $3.118B; DELL FY2026 Q1 ended 2025-05-02 free cash flow: $2.228B; DELL FY2027 Q1 ended 2026-05-01 capital expenditures: $963M; DELL FY2026 Q1 ended 2025-05-02 capital expenditures: $568M; DELL FY2027 Q1 ended 2026-05-01 accounts payable: $45.261B; DELL operating cash flow: +45.96% (2026-05-01 versus 2025-05-02); DELL free cash flow: +39.95% (2026-05-01 versus 2025-05-02); DELL capital expenditures: +69.54% (2026-05-01 versus 2025-05-02). [Sources: EV::C5DB890B773C6892, EV::07899638B93E4E3A, EV::CAD2B8E9B11D864E, EV::A7BD099BA46F320B, EV::ADBB7A86C8E7D99D] [Gaps: GAP::EF4839B4BF55ADD0]",
+        "heading": "Cash conversion: consolidated cash generation is stronger; AI order-to-cash remains unbridged"
+      },
+      {
+        "body": "The issuer's transcript states a demand-supply imbalance with memory as the primary constraint, and its filing discloses limited-source dependence and the backlog definition but no allocation magnitudes. Upstream statements include a graphics vendor's reliance on third-party manufacturing and assembly, a foundry's packaging tightness, tester shortage, and bottleneck-tool capex, and a memory vendor's product ramps; none names the issuer or discloses issuer-specific allocation, yield, utilization, or release date. Upstream tightness is directionally consistent with the issuer's stated imbalance but cannot by itself establish issuer-specific delivery relief, profit conversion, or cash conversion. [Sources: EV::9006E2D4E0F61CCF, EV::FAC441CFB03C8260, EV::E9C1A0A4C2A9A15F, EV::4E05729492683532, EV::E24995DEF478A0E5, EV::6AE6D515A5C648FA, EV::CECB981DD118D1D8] [Gaps: GAP::0DF1791C33619F02, GAP::AD8E45538482CAB2, GAP::C2EC64A79D8F5481, GAP::FF2E3CECAE969E84]",
+        "heading": "Supply relationship: the supply constraint is self-stated; upstream statements remain speaker-attributed"
+      },
+      {
+        "body": "The issuer's own filing states the nature of AI solution demand may adversely affect operating performance; larger orders can require greater working-capital commitments and create excess and obsolete inventory risk; upstream export-control restrictions may also harm networking-content demand in servers with certain accelerators; and an upstream vendor's data-center revenue shows roughly half from hyperscalers with the remainder described as diversified. Counterarguments to the adverse read include a quarter with record revenue, earnings per share, and operating cash flow that is company-authored and unaudited, and upstream diversification disclosure that weakens the simplest single-customer-collapse reading without proving the issuer's own demand base is broad. The adverse mechanisms have not been shown to have produced realized losses in the visible financial snapshot, and demand collapse is not asserted. Facts: NVDA FY2027 Q1 ended 2026-04-26 hyperscaler share of data center revenue: approximately 50% (reported_approximation). [Sources: EV::32A6B092D3316769, EV::ADBB7A86C8E7D99D, EV::A74F01276941482E, EV::BA594865DB45F850, EV::D86534E903882A43]",
+        "heading": "Counterevidence: mechanisms are conditional, not realized losses"
+      }
+    ],
+    "status": "multi_agent_protected_report_rendered",
+    "what_would_change": [
+      "Issuer disclosure of backlog-to-revenue conversion amounts or rates, order aging, or a decline in backlog after shipment would close or reduce the demand-quality bridge gap. [Sources: EV::9006E2D4E0F61CCF] [Gaps: GAP::00730082A5C08C4C]",
+      "Issuer disclosure of cancellation rates, cancellable balances, or customer-concentration detail would materially alter the durability judgment. [Sources: EV::2A7103750D79EEDC, EV::ADBB7A86C8E7D99D]",
+      "Issuer disclosure of AI-server price, units, configuration mix, segment carve-out, or infrastructure-segment operating-expense allocation would allow separation of price, volume, mix, and pass-through and would directly confirm or refute the dilution-plus-leverage pattern. [Gaps: GAP::14D67654F535F105, GAP::34844D3F9935C0F5, GAP::52DCB2B65532C103]",
+      "Issuer disclosure of AI-specific working-capital amounts, a turnover-day or flow bridge, or shipment-versus-inventory decomposition would close or reduce the cash-conversion gap. [Sources: EV::CAD2B8E9B11D864E] [Gaps: GAP::EF4839B4BF55ADD0]",
+      "Substantial realized cancellation, delay, write-down, or operating-cash-flow or free-cash-flow deterioration would confirm the disclosed adverse-to-cash channel and weaken the consolidated cash-generation thesis. [Sources: EV::ADBB7A86C8E7D99D]",
+      "A supplier or customer filing that names the issuer, or issuer disclosure with issuer-allocated supplier quantities and dates, would upgrade supply-chain corroboration toward issuer-specific allocation and timing. [Sources: EV::FAC441CFB03C8260] [Gaps: GAP::0DF1791C33619F02, GAP::AD8E45538482CAB2]",
+      "Realized next-quarter revenue below the guide, full-year tracking below the midpoint, or further gross-margin deterioration would downgrade growth-quality expectations. Facts: DELL FY2027 Q2 revenue guidance: $44B–$45B (company_guidance). [Sources: EV::7F4D7E6762C21D83]",
+      "Frozen invalidation thresholds on the shared monitoring metrics would make the counterevidence mechanically testable; no such threshold is currently set. [Sources: EV::734A9C177164E08E] [Gaps: GAP::04EDD7700A1409F8, GAP::B070D38D076F342B]"
+    ]
+  },
+  "result_digest": "302adcd48ee24852e8e5a53b48f0da6c23f9cd247f9985147ac887cde150e92d",
+  "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_20260821",
+  "schema_version": "fin_ia_s3_multi_agent_report_protected_remap_live_result_v1_1",
+  "source_report_digest": "3ee44edad28f432a82c7047b118b4cb5be6626bb7417df75828df21f592ac43b",
+  "source_report_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json",
+  "status": "protected_report_reference_patch_completed"
+}

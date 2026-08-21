@@ -2,7 +2,7 @@
 
 日期：2026-08-21
 
-状态：`immutable natural failure preserved / evaluator profile separation implemented / full repository gate pass / clean commit push preflight and fresh live pending`
+状态：`profile-separated live consumed / Demand audit valid / Operating reasoning-only exhaustion preserved / evaluator checkpoint and non-thinking responsibility disposition pending`
 
 ## 1. 这一轮真实发生了什么
 
@@ -81,3 +81,27 @@ Demand 仍是完整多角色 Preview 的第一个节点，不存在单独产品�
 第一次 clean／synced preflight 的总状态虽为 pass，但 `explicit_allow_issue_ids` 只列出旧的 RC-AR-002／020，没有列出本轮 RC-AR-023。原因是账本只写了描述性 successor 名，没有同时登记机器实际使用的 `run_scope_id=one_clean_authorized_compiled_multi_agent_successor`。这不会被当作“总状态已经绿所以可以忽略”：Project OS 现要求只要 scope 绑定新的 Evaluator profile，就必须显式取得 RC-AR-023 对同一 run scope 的 allowance；缺失时 preflight fail closed。该更正需要第二个小提交／push 和 fresh preflight，第一次 preflight 不用于签发 authority。
 
 治理更正后的复证再次通过：generic successor／Project OS 定向 `83 passed`、全仓 `916 passed`、compileall、active baseline `185／8／5／27／0`、763 configs、8 份 Project OS JSONL／876 行、7,483-file secret scan 和 diff check 均有效。该小修只让当前根因成为机器必验前置项，不改变任何模型输入或执行预算。
+
+## 7. Profile-separated live 的真实结果
+
+全新 authority 在 clean／synced implementation commit `08f1d3b6...` 和第二次 fresh Project OS preflight 后执行。旧研究计划、六份底稿、Lead coordination 和三条既有 repair 全部复用；没有网络、Candidate promotion 或上游研究重跑。
+
+Demand 单角色审查首次完整通过：
+
+- analysis prompt `5,379` tokens；completion `7,141`，其中 reasoning `6,434`；`finish_reason=stop`；
+- strict submission prompt `1,781`、completion `561`，形成唯一合法 Tool Call；
+- 三条 finding 均为非阻断：把“未纳入 non-cancelable backlog”误写成“存在可取消垫层”、把条件式渠道减单风险写成主动机制、增加了一句 authority 未支持的 graph 描述；
+- `report_may_proceed=true`。这是一份有效、可复用的独立角色审查，不得在后继 attempt 中当作未完成重跑。
+
+随后 Operating Performance 审查在同一 `thinking=enabled / reasoning_effort=low / max_tokens=8,000` profile 下失败：prompt `6,061`，completion 与 reasoning 均为 `8,000`，可见内容为空，`finish_reason=length`。Provider HTTP 200、响应完整，失败码为 `model_gateway_reasoning_budget_exhausted`。这不是资料缺失、对象化、S1 检索、NumericFact、Operating 底稿、网络或 strict submission 失败；最早责任层是 Evaluator 的模型职责与 Runtime 预算语义。
+
+DeepSeek 官方 Harness 当前把 `low` 作为合法 thinking effort，但它仍是推理偏好，不是“为可见答案预留 token”的硬合同。本轮同一 profile 在两个相近规模角色上分别正常结束与 reasoning-only exhaustion，说明不能继续靠 `low`、增加 ceiling 或删金融 authority 获得运行可靠性。
+
+## 8. 下一结构处置
+
+后继不得直接重跑整个分层 Evaluator。需要同时完成两项：
+
+1. 把 Demand 的 validated evaluation、analysis／submission capture、usage、工作底稿 digest 和上下文 digest 编译成不可变 Evaluator checkpoint；后继从 Operating 开始。
+2. 把自动内容 Evaluator 明确降为“受限清单式裁判”：本地 L1 继续负责身份、期间、引用、精确数字和 absence；研究／repair Agent 保留 thinking；Evaluator 使用 non-thinking 可见审查和 strict submission，不能新增事实或重写底稿。先用 Demand 已验证三条 finding 做离线语义基准，再做一次自然 continuation。
+
+若 non-thinking Evaluator 无法保留 Demand 已证明的材料边界判断，或在 Operating 上形成明显浅薄／误判 finding，停止继续调 DeepSeek profile，进入独立 Evaluator 模型选择或 qualified-human-first 决策。完整六角色评审、跨角色检查、Writer、报告、八维质量、paired、qualified-human、S1／S3、泛化、Workbench 和 release 仍未通过。

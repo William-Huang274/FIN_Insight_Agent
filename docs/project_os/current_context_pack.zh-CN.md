@@ -1017,3 +1017,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 完整工程门现已通过：定向 125、全仓 916、compileall、active baseline `185／8／5／27／0`、763 configs、8 份 Project OS JSONL／875 行、7,483-file secret scan 和 diff check。当前只剩 clean commit／push、fresh preflight、新 authority 和一次完整 successor live。
 - 第一次 clean preflight 总状态为 pass，但 human projection 未显式列出当前 RC-AR-023；根因是账本缺少实际 generic successor `run_scope_id`。当前正补机器门与 append-only allowance，随后须小提交／push 并重新 fresh preflight；不得用第一次结果签发 authority。
 - 治理更正后的第二轮工程门通过：定向 83、全仓 916、compileall、active baseline `185／8／5／27／0`、763 configs、8 份 Project OS JSONL／876 行、7,483-file secret scan 和 diff check。下一步是精确小提交／push 和第二次 fresh preflight。
+
+# 2026-08-21 Profile-separated Evaluator live：Demand 完成、Operating 耗尽
+
+- clean／synced commit `08f1d3b6...` 的 fresh authority 已执行。Demand 角色审查 analysis `5,379 prompt / 7,141 completion / 6,434 reasoning / stop`，strict submission `1,781 / 561 / tool_calls`，形成三条非阻断 finding 并允许报告继续；这是第一个完整有效的自然角色 Evaluator 结果。
+- 同一 low-reasoning profile 随后审查 Operating：`6,061 prompt / 8,000 completion / 8,000 reasoning / 0 visible / length`，以 `model_gateway_reasoning_budget_exhausted` 不可变保存。没有网络、Candidate promotion、上游重跑、Writer 或产品发布。
+- 责任边界：Demand finding 证明 Evaluator 有内容价值；Operating 证明 `reasoning_effort=low` 不构成 visible-output reserve。最早责任层为 S0 Provider/Evaluator 任务职责＋S3 评审编排，不是 S1 数据、S2 NumericFact 或 Operating 研究底稿。
+- 新增 Runtime 要求：任何已完成角色审查必须编译为 capture-bound Evaluator checkpoint，后继不得重跑 Demand。自动 Evaluator 改为 non-thinking 受限清单式裁判；研究和真实 role repair 仍保留 thinking。不得删 authority、抬 ceiling 或把同型失败继续归为 token 不够。
+- 下一步只允许 evaluator checkpoint／capture replay／mutation、non-thinking 职责零调用证明、全仓门、fresh Project OS preflight 和从 Operating 起点的一次 continuation。若内容质量退化，进入独立 Evaluator 模型或 qualified-human-first 决策。六角色、跨角色、Writer、完整报告、S1／S3、泛化、Workbench 和 release 仍为 false。

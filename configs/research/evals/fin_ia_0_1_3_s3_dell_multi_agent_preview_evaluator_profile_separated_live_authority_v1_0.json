@@ -1,0 +1,120 @@
+{
+  "schema_version": "fin_ia_s3_multi_agent_compiled_successor_authority_v1_0",
+  "status": "approved_for_one_compiled_multi_agent_successor_after_project_os_preflight",
+  "authorized_at": "2026-08-21T09:44:37+08:00",
+  "implementation_commit": "08f1d3b60ee2a998e2573a30e0f119977d65c7c5",
+  "bound_inputs": {
+    "project_os_scope_decision": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_successor_scope_decision_v1_3.json",
+      "sha256": "18b10986d1aaaa14caeacee2f2b7ad9a98b81553944e266b3628e7adc6cec77a"
+    },
+    "topology": {
+      "ref": "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json",
+      "sha256": "1c2065c2e585984b8b4ef485c587a1d20425122d0fe625cb7c7d6f0c290d4c85"
+    },
+    "objective": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_objective_v1_0.json",
+      "sha256": "3772ead9ccbb7861013825d9d1e96e30588af33879725173f3791c140ea981d9"
+    },
+    "zero_call_proof": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_multi_agent_preview_zero_call_result_v1_2.json",
+      "sha256": "aae7214b118e12f4c438b4fa0234140042c3736d301c32faace0d35fe69bf7ac"
+    },
+    "successor_zero_call_proof": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R4_plan_successor_zero_call_result_v1_0.json",
+      "sha256": "39e9fdd815dd9df3982edf7c9efbcbdc94f872c2ff3d65d4d562c7caece408bf"
+    },
+    "planning_overlay": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_multi_agent_preview_planning_overlay_v1_0.json",
+      "sha256": "1d2fb589c1623e2650f55cd53dcdddf9d3a8df442c6fcb792f06b1f69d7e5757"
+    },
+    "analysis_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+      "sha256": "dbc14dbcc186b81f24a5b048056e663649614cd62bef1aceb98b9873189603a1"
+    },
+    "submission_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_contract_submission_non_thinking_profile_v1_0.json",
+      "sha256": "2c4a67a985e9f8773f56df0a232de49cab0810504eca816e100c2cc4e9622468"
+    },
+    "historical_five_cell_assessment": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_R7_content_assessment_v1_0.json",
+      "sha256": "63f02be58c23706454ed7db3e59c45ed8a0633d1ac498a42ffe55224f37cc676"
+    },
+    "predecessor_plan_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R3_specialist_plan_checkpoint_v1_0.json",
+      "sha256": "b8857eabe863ff7b259bf883ef4b6c79f8fcbc61a295940610b0a6d85aedd7e9"
+    },
+    "predecessor_scope_decision": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_successor_scope_decision_v1_2.json",
+      "sha256": "e6f010e288bccf603cf8781ffe8a7ad6019e9a09fe6d6bc03d69f533fcc24690"
+    },
+    "predecessor_authority": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_hierarchical_evaluator_replacement_live_authority_v1_0.json",
+      "sha256": "f4f0222982ffe7d283c074b0c862e9dbccfca4e9910e258723efbc3c26cc58a0"
+    },
+    "predecessor_result": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_hierarchical_evaluator_replacement_live_result_v1_0.json",
+      "sha256": "34c68f0dc7d91be056764d7363258d55c959f8ff3f32f5f131c7fdeebafcef56"
+    },
+    "lead_plan_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R6_lead_plan_checkpoint_v1_0.json",
+      "sha256": "05b8de7ba9089e79ece49181435191813025203bffd9e67bddf057e5214b8167"
+    },
+    "workpaper_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R8_five_workpaper_checkpoint_v1_0.json",
+      "sha256": "5e745e1fb02af74bf732157368e05d9f2735fa053aabac29ba716c8118fe739f"
+    },
+    "lead_coordination_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R10_lead_coordination_checkpoint_v1_0.json",
+      "sha256": "f0731ce0989628c3129055b04bc39fcbebfcb0d595caa1099150522bce4e805a"
+    },
+    "successor_execution_frontier": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_successor_frontier_v1_3.json",
+      "sha256": "fc950d9207d20239f6e59c9a147995b28b875b4d7925c29ec147e49b72e058c5"
+    },
+    "hierarchical_evaluator_zero_call_proof": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_hierarchical_evaluator_zero_call_result_v1_1.json",
+      "sha256": "1dc7a5208a66ca8ce016ce2c2cd1c67b1b7073f131ef0247953c32f9b59b9d24"
+    },
+    "repair_analysis_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_role_repair_analysis_high_profile_v1_0.json",
+      "sha256": "34f3d7810f880abd0e58c249a289ffcbaa09b7147573e6b153386c203182b818"
+    },
+    "evaluator_analysis_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_role_evaluation_low_profile_v1_0.json",
+      "sha256": "32aadb1985110e66c00ef571999008a040c380fc31cd3365f41049b82cbf73fe"
+    }
+  },
+  "execution_limits": {
+    "candidate_promotions": 0,
+    "external_source_network_calls": 0,
+    "maximum_affected_role_reevaluation_nodes": 2,
+    "maximum_counter_challenge_repairs": 3,
+    "maximum_cross_role_evaluation_nodes": 2,
+    "maximum_evaluation_rounds": 2,
+    "maximum_evaluator_repairs": 2,
+    "maximum_initial_role_evaluation_nodes": 6,
+    "maximum_new_analysis_calls_per_other_node": 1,
+    "maximum_new_counter_challenge_repairs": 0,
+    "maximum_new_initial_workpaper_nodes": 0,
+    "maximum_new_lead_coordination_model_calls": 0,
+    "maximum_new_lead_plan_model_calls": 0,
+    "maximum_new_model_nodes": 13,
+    "maximum_resumed_downstream_analysis_continuations": 0,
+    "maximum_submission_attempts_per_node": 2,
+    "product_publication": false,
+    "qualified_human_acceptance": false,
+    "reused_completed_challenge_repair_count": 3,
+    "reused_lead_coordination_count": 1,
+    "reused_lead_plan_count": 1,
+    "reused_specialist_plan_count": 6,
+    "reused_workpaper_count": 6
+  },
+  "outputs": {
+    "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821",
+    "capture_root_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821",
+    "private_output_root_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_live_result_v1_0.json"
+  },
+  "authority_statement": "Preserve the Demand role-audit length failure and every earlier attempt as immutable evidence. The first natural role audit showed useful and nearly complete judgment, but the high-reasoning repair profile consumed 11,289 of 12,000 completion tokens before finishing one advisory sentence. Separate evaluation from repair: role and cross-role audits use a dedicated low-reasoning evaluation profile with task-derived 8,000 and 10,000 ceilings, while actual role repairs retain the high-reasoning repair profile. Demand remains the first natural canary; if it fails, stop without starting the other roles. If it completes, continue through the remaining five role audits, one authority-light cross-role audit, at most two targeted repairs, affected-role re-audits, one cross-role recheck and a conditional Writer. Research inputs, Evidence, NumericFact and typed gaps remain unchanged; network, candidate promotion, S1/S3 acceptance, generalization, qualified-human acceptance, publication and release remain false."
+}

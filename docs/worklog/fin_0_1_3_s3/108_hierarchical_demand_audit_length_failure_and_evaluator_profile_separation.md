@@ -123,3 +123,15 @@ DeepSeek 官方 Harness 当前把 `low` 作为合法 thinking effort，但它仍
 完整工程门：全仓 `918 passed`（仅既有 SWIG deprecation warnings）、compileall、Workbench TypeScript 与 Vite production build、active baseline `185 Python / 8 frontend / 5 detectors / 27 Runtime / 0 forbidden`、`770` 份 configs JSON、`8` 份 Project OS JSONL／`878` 行（写入本节前）、`7,490` 文件 secret scan／0 findings 和 diff check 均通过。0 模型、0 Provider、0 网络、0 Candidate promotion。
 
 下一步只允许 clean commit／push、fresh Project OS preflight、全新 authority 和一次从 Operating Performance 开始的 continuation。若 non-thinking Evaluator 只是机械复述、遗漏实质边界或形成明显误判，不再调 ceiling／Prompt／DeepSeek profile；转独立 Evaluator 模型或 qualified-human-first 项目级决策。当前仍不能宣称六角色、跨角色、Writer、完整报告、S1／S3、泛化、Workbench 或 release 通过。
+
+## 10. Operating-onward live 与新的最早责任层
+
+clean／synced implementation commit `b1a7e0ff...`、fresh Project OS preflight 和全新 authority 后，successor 确实从 `AGENT::OPERATING_PERFORMANCE` 开始；已完成的 Demand 没有重跑。non-thinking Evaluator 完成了 Operating、Value、Cash、Supply 四个新角色的 analysis＋strict submission，随后完成 Counterevidence analysis。此前 `low` reasoning 的 8,000-token reasoning-only starvation 没有复现，因此 RC-AR-024 的直接 profile／可见输出阻断已被解除。
+
+Counterevidence 的两次 strict submission 均以 `multi_agent_finding_ref_out_of_scope` 终止。模型提交的两个 `GAP::` ref 均来自当前 workpaper 的 `remaining_gap_refs`，且分析任务明确要求审计 gap-bound absence；但 `validate_evaluation()` 的 `allowed_refs` 只包含 sourced claim 的 Evidence、NumericFact 和 NumericRelation，漏掉 remaining gap。第二次反馈只返回通用 failure code，没有指出 offending refs 或 allowed refs，因此模型在不改变分析的前提下无法完成可行动修正。这是 Harness 合同不对称，不是 DeepSeek 研究判断、S1 检索、S2 数值、网络或公开资料 gap。
+
+本轮已不可变保存：4 个新 validated role evaluation、Counter analysis draft、两次 Counter tool-call submission、11 次 Provider attempt、5 次 analysis、6 次 submission、0 网络、0 Candidate promotion。authority SHA=`ee06706d...`，public result digest=`195d4344...`，terminal digest=`75d90c69...`。旧 Demand checkpoint 仍有效。
+
+同时暴露第二个 Harness 问题：现有 role-evaluation checkpoint 只能从单个 terminal 提取从 Demand 开始的完整前缀，不能把旧 Demand checkpoint 与本轮 Operating→Supply 完成段链式合并。下一零调用结构包必须：把 workpaper 的 typed gap refs 纳入 finding ref authority；把 offending／allowed ref 差异编译成可行动 feedback；支持 predecessor checkpoint＋incremental terminal 的链式合并；用已保存 Counter submission 原样重放并本地重验证。成功后应得到六角色完成 checkpoint，下一次从 cross-role audit 开始，禁止重跑 Demand、Operating、Value、Cash、Supply 或 Counter analysis。
+
+当前仍未完成 cross-role audit、任何本轮 repair／reaudit、Writer、完整报告、八维质量、paired、qualified-human、S1／S3、泛化、Workbench 或 release。

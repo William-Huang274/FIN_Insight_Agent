@@ -1033,3 +1033,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 自动 Evaluator 使用 provider-specific non-thinking profile 做可见、受限的清单判断；本地 L1 继续负责身份／期间／引用／精确数字／absence；研究角色与真正 role repair 继续 high-thinking。没有把所有模型权限收回 Harness，也没有让 Harness 代写研究观点。
 - 全仓 `918 passed`，compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、770 configs、7,490-file secret scan 和 diff check 通过；0 模型／Provider／网络／Candidate promotion。
 - 下一步：clean commit／push → fresh preflight → fresh authority → 从 Operating 开始的一次 continuation。若 non-thinking Evaluator 内容退化，停止 DS profile 微调，转独立 Evaluator 模型或 qualified-human-first 决策；S1／S3／泛化／Workbench／release 仍为 false。
+
+# 2026-08-21 Operating-onward Evaluator live 新边界
+
+- checkpoint successor 已证明从 Operating 开始，Demand 未重跑；Operating、Value、Cash、Supply 四份自然审计已完成，Counter analysis 已保存，non-thinking profile 未再出现 reasoning-only exhaustion。
+- Counter 两次 strict submission 因 `multi_agent_finding_ref_out_of_scope` 终止。模型引用的是 workpaper 可见且任务要求审计的 `GAP::`，validator 却只允许 claim 的 Evidence／Numeric／Relation refs；责任归 Harness 合同，不归模型、S1、S2 或网络。
+- 现有 generic checkpoint 还不能组合“旧 Demand checkpoint＋新 terminal 完成段”，因此不得直接新签一次从 Counter 或 cross-role 开始的 authority。
+- 下一项只允许零调用结构处置：typed gap ref authority、可行动 ref-diff feedback、checkpoint 链式合并、Counter 原响应重放与 mutation。完成后六角色均应成为不可变 checkpoint，下一付费节点只能是 cross-role audit。
+- 当前 public result=`configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_live_result_v1_0.json`；failure=`multi_agent_finding_ref_out_of_scope`；0 外源网络、0 Candidate promotion。S1／S3、Writer、报告、泛化、人工验收、Workbench 和 release 仍为 false。

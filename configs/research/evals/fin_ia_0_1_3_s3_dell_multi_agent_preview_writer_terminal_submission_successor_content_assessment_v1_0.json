@@ -1,0 +1,177 @@
+{
+  "schema_version": "fin_ia_s3_multi_agent_preview_report_content_assessment_v1_0",
+  "status": "report_contract_pass_material_research_gain_numeric_authority_L1_fail_not_accepted",
+  "recorded_at": "2026-08-21T15:56:09+08:00",
+  "assessment_kind": "independent_codex_pre_human_multi_agent_report_assessment",
+  "case_key": "DELL",
+  "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_WRITER_TERMINAL_SUBMISSION_SUCCESSOR_20260821",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_live_authority_v1_0.json",
+  "source_authority_sha256": "1e040e097c73307e05b3ce062229c3521720896d344559de3194ee896d23cd09",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_live_result_v1_0.json",
+  "source_result_sha256": "2d753b19e169ef20c14a78e6651aa198f3638f152255154f543bdfbae7e0dac2",
+  "private_full_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json",
+  "private_full_result_sha256": "6f31245ab52cf34cc45cfd5ffd82bd359a769ea9dd2f2eedf746c67d115e514a",
+  "implementation_commit": "fde1d61d614ac1a1be70f0a2781daa570ca40a07",
+  "report_digest": "3ee44edad28f432a82c7047b118b4cb5be6626bb7417df75828df21f592ac43b",
+  "public_result_digest": "785b7591bc5afb8b18d7fef8b3145ee733e1699627ae73fd85a7002103a4f27a",
+  "execution": {
+    "new_model_nodes": 1,
+    "new_analysis_calls": 0,
+    "new_analysis_continuation_calls": 0,
+    "strict_submission_logical_nodes": 1,
+    "strict_submission_contract_attempts": 2,
+    "provider_attempts": 2,
+    "upstream_specialist_plan_reused": 6,
+    "lead_plan_reused": 1,
+    "workpapers_reused": 6,
+    "lead_coordination_reused": 1,
+    "completed_role_repairs_reused": 3,
+    "role_evaluations_reused": 6,
+    "cross_role_evaluations_reused": 1,
+    "writer_analysis_checkpoints_reused": 1,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0,
+    "product_publication": false,
+    "first_contract_attempt_failure": "sections[4].heading exceeded the shared 120-character maximum by one character",
+    "second_contract_attempt": "passed without new analysis or upstream rerun"
+  },
+  "hard_gate_assessment": {
+    "identity": "pass_DELL_only",
+    "period_scope": "pass_no_cross_case_or_cross_period_causal_promotion_observed",
+    "citation_reference_existence": "pass_all_declared_EV_NUM_GAP_and_workpaper_refs_resolve",
+    "cross_case_contamination": "pass_upstream_NVIDIA_TSMC_Micron_material_remains_speaker_attributed_read_through",
+    "causal_boundary": "pass_AI_product_profit_and_cash_remain_unsized_or_unbridged",
+    "case_level_absence": "pass_prior_R7_false_absence_and_false_conflict_not_repeated",
+    "material_numeric_authority": "fail_unbound_material_numeric_date_and_comparison_surfaces_entered_formal_report_prose",
+    "deterministic_render_promotion": "fail_multi_agent_report_validator_checks_ref_membership_but_not_text_span_to_NUM_REL_QF_PresentationAlias_binding",
+    "overall_L1": "fail"
+  },
+  "material_findings": [
+    {
+      "issue_id": "RC-S2-007-multi-agent-writer-bypassed-protected-numeric-surface-contract",
+      "severity": "L1_material",
+      "failure_owner": "S2_numeric_authority_and_S3_Writer_report_contract_integration",
+      "location": "report_preview.executive_thesis_sections_remaining_gaps_and_what_would_change",
+      "finding": "The final report contains material amounts, percentages, dates and comparisons in model-authored prose. Examples include the AI demand stack, company revenue and margin comparisons, balance-sheet values, supplier concentration percentages and the Q2 FY27 revenue guide. The report contract validates only that declared refs belong to a workpaper; it does not bind each final material span to NUM, REL, QF, PresentationAlias or a deterministic renderer receipt.",
+      "business_impact": "The observed values are mostly source-consistent, but the formal artifact cannot prove that a future Writer did not mistype, round, transpose or invent a material number. This violates the frozen financial truth contract even when the current text happens to be correct."
+    },
+    {
+      "issue_id": "RC-S2-007-multi-agent-writer-bypassed-protected-numeric-surface-contract",
+      "severity": "L1_material",
+      "failure_owner": "S2_MaterialNumericCandidateInventory_coverage",
+      "location": "report_preview.sections[3].body",
+      "finding": "The cash-conversion section repeats exact AR, inventory, cash and financing-receivable balances while explicitly admitting that only accounts payable is present in the supplied NumericFact catalog. Source visibility changes the root-cause classification but does not grant final-output authority under PRD 7.9 and 16.20.",
+      "business_impact": "A source excerpt and a governed final numeric fact become two competing truth paths, recreating the dual-ledger problem the product previously rejected."
+    },
+    {
+      "issue_id": "RC-AR-030-strict-submission-node-and-contract-attempt-count-conflated",
+      "severity": "L3_governance",
+      "failure_owner": "S0_Project_OS_and_public_acceptance_semantics",
+      "location": "authority_statement_and_acceptance.writer_strict_submission_executed_once",
+      "finding": "The authority correctly allowed one logical Writer node and at most two contract attempts, but its human wording said exactly one strict submission. The runtime used two attempts after the first exceeded one heading limit by one character, so the public boolean reads false even though machine scope was respected.",
+      "business_impact": "A reviewer can incorrectly read a compliant bounded correction as an authority violation. Future authority and result fields must distinguish logical node count from contract-attempt count."
+    },
+    {
+      "issue_id": "S3-report-human-citation-surface-pending",
+      "severity": "L3_product_usability",
+      "failure_owner": "S3_Writer_and_S4_Workbench_presentation",
+      "location": "all_report_sections",
+      "finding": "The report is auditable internally through EV, NUM and GAP IDs, but it does not yet render human-facing source titles, dates, links or footnotes. Internal identifiers are useful for lineage but are not a finished research citation surface.",
+      "business_impact": "A senior reviewer can inspect the logic but cannot efficiently verify the report as a normal deliverable without opening internal evidence views."
+    }
+  ],
+  "content_assessment": {
+    "executive_thesis": "materially_improved_specific_bounded_and_decision_relevant",
+    "demand_quality": "pass_distinguishes_recognized_revenue_from_orders_backlog_pipeline_and_preserves_durability_gaps",
+    "operating_performance": "pass_company_scope_relations_are_clear_and_Q1_gross_margin_is_not_falsely_attributed_to_AI",
+    "value_capture": "pass_AI_attributable_profit_is_bounded_but_unsized_and_historical_mix_language_remains_period_bound",
+    "cash_conversion": "research_reasoning_pass_but_final_numeric_authority_fail",
+    "supply_relationship": "pass_Dell_specific_statement_and_upstream_read_through_are_not_conflated",
+    "counterevidence": "pass_conditional_mechanisms_are_not_promoted_to_realized_losses_or_demand_collapse",
+    "cross_role_synthesis": "pass_no_false_conflict_and_material_boundaries_are_reconciled",
+    "overall_research_content": "material_gain_observed_but_not_promotable_until_L1_numeric_surface_is_closed"
+  },
+  "eight_dimension_quality": {
+    "formal_score": null,
+    "formal_score_reason": "The frozen rubric forbids formal Q1-Q8 acceptance when a material L1 numeric-authority gate fails.",
+    "diagnostic_only_score": 28,
+    "diagnostic_only_maximum": 32,
+    "dimensions": [
+      {
+        "dimension": "Q1_company_and_question_specificity",
+        "score": 4,
+        "reason": "The report is specific to Dell Q1 FY27 and directly addresses demand quality, operating performance, value capture, cash conversion, supply and counterevidence."
+      },
+      {
+        "dimension": "Q2_evidence_to_conclusion_reasoning",
+        "score": 4,
+        "reason": "Each major inference is tied to source-visible authority or an explicit typed gap; prior false-absence and false-conflict errors are removed."
+      },
+      {
+        "dimension": "Q3_financial_and_numeric_interpretation",
+        "score": 2,
+        "reason": "Scope and comparison logic are materially better, but final material numeric surfaces are not protected by deterministic span-level authority and some exact balances are only source-visible, not NumericFact-authorized."
+      },
+      {
+        "dimension": "Q4_causal_mechanism_and_industry_logic",
+        "score": 4,
+        "reason": "The report separates realized company facts, issuer-attributed historical mechanisms, current alternatives and unavailable product-level bridges."
+      },
+      {
+        "dimension": "Q5_cross_role_synthesis_and_conflict_adjudication",
+        "score": 4,
+        "reason": "Six specialist views are coherently reconciled and upstream read-through, company scope and AI-product scope remain distinct."
+      },
+      {
+        "dimension": "Q6_counterargument_risk_and_gap_discipline",
+        "score": 4,
+        "reason": "Pull-forward, cancellation, concentration, working-capital and policy risks are material and conditional; public-information boundaries remain explicit."
+      },
+      {
+        "dimension": "Q7_what_would_change_and_action_value",
+        "score": 3,
+        "reason": "The conditions identify observable disclosures and future results, but formal invalidation thresholds are not frozen and one guide surface remains unbound."
+      },
+      {
+        "dimension": "Q8_writing_and_senior_decision_usability",
+        "score": 3,
+        "reason": "The report is coherent and decision-useful, but internal IDs, missing human citation rendering and the numeric-authority failure prevent senior-ready delivery."
+      }
+    ]
+  },
+  "paired_assessment": {
+    "historical_comparator": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_R7_content_assessment_v1_0.json",
+    "comparison_kind": "historical_changed_input_and_changed_workflow_diagnostic_not_strict_same_input_pair",
+    "historical_diagnostic_score": 21,
+    "current_diagnostic_score": 28,
+    "material_gain": "established_current_report_removes_false_AI_revenue_orders_backlog_absence_and_false_cross_cell_conflict_adds_supply_role_and_stronger_cash_counterevidence_synthesis",
+    "formal_content_winner": "not_declarable_without_same_input_pair_and_L1_pass",
+    "agent_gain_accepted": false
+  },
+  "root_cause_disposition": {
+    "classification": "shared_project_integration_regression_not_DeepSeek_research_failure",
+    "model_observation": "DeepSeek produced a substantially stronger and better-bounded synthesis. It also copied exact source-visible surfaces because the Writer contract exposed them and did not require protected aliases.",
+    "project_failure": "The Multi-Agent Preview introduced a new report_draft_tool and validate_report_draft path that checks ref membership and text length but does not reuse the existing provider-neutral protected narrative, MaterialNumericCandidateInventory, PresentationAlias, NumericRelation and deterministic render contracts.",
+    "required_structural_fix": [
+      "Compile one final-report numeric and citation authority view from the exact six validated workpapers and current S2 catalogs before Writer submission.",
+      "Represent every material numeric, date, comparison and citation surface as a protected alias or structured segment; keep model-owned prose separate from authoritative surfaces.",
+      "Render only authorized NUM, REL, QF, FORM or PresentationAlias surfaces and reject context-only or ambiguous values even when they appear in reviewed source text.",
+      "Run the current immutable report through a zero-call span audit and DELL, MU, NVDA plus held-out mutation before any new paid submission.",
+      "After the structural gate passes, authorize at most one terminal Writer remapping successor; do not rerun research, retrieval, specialists, Lead or Evaluators."
+    ]
+  },
+  "next_scope": "zero_call_multi_agent_final_report_protected_narrative_numeric_authority_and_submission_attempt_semantics_alignment",
+  "report_contract_valid_under_current_schema": true,
+  "material_research_quality_gain_observed": true,
+  "financial_truth_L1_pass": false,
+  "formal_eight_dimension_acceptance": false,
+  "strict_same_input_paired_gain": false,
+  "qualified_human_acceptance": false,
+  "dell_multi_agent_preview_acceptance": false,
+  "heterogeneous_generalization_authorized": false,
+  "S1_pass": false,
+  "S3_pass": false,
+  "workbench_publication": false,
+  "release_ready": false,
+  "known_boundary": "This run proves that six specialist sessions, Lead coordination, role and cross-role evaluation, checkpoint reuse and a final Writer can produce a coherent Dell report with material research-quality gain. It does not prove final numeric authority, formal eight-dimensional acceptance, strict same-input paired gain, qualified-human acceptance, S1 or S3 completion, heterogeneous generalization, Workbench publication or release readiness."
+}

@@ -1,0 +1,280 @@
+{
+  "schema_version": "fin_ia_s3_multi_agent_report_surface_authority_zero_call_result_v1_1",
+  "status": "zero_call_structure_pass_terminal_remap_eligible",
+  "recorded_at": "2026-08-21T17:06:49+08:00",
+  "bound_inputs": {
+    "private_full_result": {
+      "ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json",
+      "sha256": "6f31245ab52cf34cc45cfd5ffd82bd359a769ea9dd2f2eedf746c67d115e514a",
+      "full_result_digest": "bd1c658adeeb3171506ab004605ec48a1ba7431b58ab380fabad625db98537dd"
+    },
+    "public_result": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_live_result_v1_0.json",
+      "sha256": "2d753b19e169ef20c14a78e6651aa198f3638f152255154f543bdfbae7e0dac2",
+      "result_digest": "785b7591bc5afb8b18d7fef8b3145ee733e1699627ae73fd85a7002103a4f27a"
+    },
+    "content_assessment": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_content_assessment_v1_0.json",
+      "sha256": "217e45076a27ea1b0b91e2e51a3886a34532d53d291baefb9288e28669e18b81"
+    },
+    "source_bound_numeric_review": {
+      "ref": "configs/research/fin_ia_0_1_3_s2_dell_multi_agent_source_bound_numeric_review_v1_0.json",
+      "sha256": "32da9dc428d1d507b3852f5b116fe4341ea971d5f6439d2daa0e3b4930f303d2"
+    }
+  },
+  "actual_dell_replay": {
+    "base_authority_catalog_digest": "97cb4b53d37f350cbca7ef7a0a8dc26292c9c8b561210f5c8c92fce41a40727d",
+    "source_bound_program_digest": "dbdb60a2ad0cc23e36f2eb4a15bfc542b25b9ac4e1e22324812cafd0563c3621",
+    "authority_catalog_digest": "db4cd0930c29e78f21d10df4b09ddc4bb69004665e3aca929608d66d6c9242df",
+    "coverage_receipt": {
+      "workpaper_count": 6,
+      "claim_count": 51,
+      "evidence_ref_count": 28,
+      "numeric_ref_count": 19,
+      "relation_operand_numeric_ref_count": 18,
+      "numeric_relation_ref_count": 9,
+      "gap_ref_count": 11,
+      "all_selected_refs_resolved": true,
+      "source_bound_numeric_fact_addition_count": 13,
+      "source_bound_bounded_presentation_addition_count": 4,
+      "source_temporal_authority_addition_count": 1,
+      "claim_with_source_bound_authority_count": 7,
+      "all_source_bound_authority_refs_resolved": true
+    },
+    "source_bound_coverage_receipt": {
+      "decision_count": 18,
+      "numeric_or_bounded_decision_count": 17,
+      "temporal_decision_count": 1,
+      "admitted_exact_or_existing_numeric_count": 13,
+      "admitted_bounded_presentation_count": 4,
+      "temporal_authority_count": 1,
+      "nonadmitted_decision_count": 0,
+      "claim_with_added_authority_count": 7
+    },
+    "source_visible_numeric_excerpt_count": 21,
+    "typed_presentation_count": 46,
+    "legacy_report_audit": {
+      "status": "hard_fail",
+      "local_surface_gate_pass": false,
+      "finding_count": 11,
+      "findings": [
+        {
+          "field_path": "report_title",
+          "unbound_surface_count": 1,
+          "sample_surfaces": [
+            "Q1 FY27"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        },
+        {
+          "field_path": "executive_thesis",
+          "unbound_surface_count": 12,
+          "sample_surfaces": [
+            "Q1 FY27",
+            "2026-05-01",
+            "$16.1B",
+            "$24.4B",
+            "$51.3B",
+            "5,000",
+            "87.5",
+            "213.8",
+            "+3.36pp",
+            "3.37pp",
+            "2025-10-31",
+            "Q1 FY27"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        },
+        {
+          "field_path": "sections[0].heading",
+          "unbound_surface_count": 1,
+          "sample_surfaces": [
+            "$16.1B"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        },
+        {
+          "field_path": "sections[0].body",
+          "unbound_surface_count": 7,
+          "sample_surfaces": [
+            "Q1 FY27",
+            "$24.4B",
+            "$16.1B",
+            "$51.3B",
+            "5,000",
+            "$16.1B",
+            "$51.3B"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        },
+        {
+          "field_path": "sections[1].body",
+          "unbound_surface_count": 16,
+          "sample_surfaces": [
+            "$43.842B",
+            "$23.378B",
+            "87.5",
+            "$3.656B",
+            "$1.165B",
+            "213.8",
+            "8.34",
+            "4.98",
+            "+3.36pp",
+            "57.6",
+            "17.75",
+            "21.12"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        },
+        {
+          "field_path": "sections[2].body",
+          "unbound_surface_count": 3,
+          "sample_surfaces": [
+            "2025-10-31",
+            "$60B",
+            "FY27"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        },
+        {
+          "field_path": "sections[3].body",
+          "unbound_surface_count": 20,
+          "sample_surfaces": [
+            "$4,081M",
+            "$2,796M",
+            "$1,285M",
+            "$3,118M",
+            "$2,228M",
+            "$890M",
+            "$963M",
+            "$568M",
+            "$395M",
+            "$25,854M",
+            "$17,585M",
+            "$15,052M"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        },
+        {
+          "field_path": "sections[4].body",
+          "unbound_surface_count": 2,
+          "sample_surfaces": [
+            "10",
+            "1"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        },
+        {
+          "field_path": "sections[5].body",
+          "unbound_surface_count": 4,
+          "sample_surfaces": [
+            "10",
+            "50",
+            "50",
+            "Q1 FY27"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        },
+        {
+          "field_path": "remaining_gaps[0]",
+          "unbound_surface_count": 1,
+          "sample_surfaces": [
+            "$16.1B"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        },
+        {
+          "field_path": "what_would_change[6]",
+          "unbound_surface_count": 3,
+          "sample_surfaces": [
+            "Q2 FY27",
+            "$44.0B",
+            "FY27"
+          ],
+          "finding_code": "legacy_free_prose_protected_surface_unbound"
+        }
+      ],
+      "boundary": "Matching a source value by inspection is not a binding receipt. Legacy prose must be remapped into model text plus typed authority refs.",
+      "audit_digest": "05165832daad9f5d62b54d7e1444afdfa3bb368d0fa35a4dc373ad5c2be1b114"
+    },
+    "material_surface_disposition": {
+      "audited_material_surface_count": 16,
+      "already_exactly_renderable_surface_count": 16,
+      "already_exactly_renderable_surfaces": [
+        "$16.1B",
+        "$24.4B",
+        "$51.3B",
+        "5,000",
+        "$60B",
+        "$25,854M",
+        "$17,585M",
+        "$15,052M",
+        "$10,437M",
+        "$11,578M",
+        "$11,528M",
+        "$8,237M",
+        "$8,458M",
+        "$5,713M",
+        "$5,822M",
+        "$44.0B"
+      ],
+      "requires_typed_compilation_or_omission_count": 0,
+      "requires_typed_compilation_or_omission_surfaces": [],
+      "source_visibility_treated_as_output_authority": false
+    },
+    "positive_protected_contract_replay": {
+      "draft_digest": "22ad917365d4e13e0bef5866881036c6909b3a3200e7663a62b5d712b0ae4418",
+      "rendered_report_digest": "0f8ab48dccec4759511a7593bd0957857e5aa30799904d213c4e4ba0e1a39710",
+      "rendered_section_count": 6,
+      "model_owned_prose_numeric_free": true,
+      "protected_surfaces_harness_rendered": true
+    }
+  },
+  "mutation_results": {
+    "raw_numeric_surface_in_model_prose_fail_closed": true,
+    "cross_claim_authority_borrowing_fail_closed": true,
+    "cross_case_identity_drift_fail_closed": true,
+    "input_permutation_is_digest_stable": true,
+    "raw_evidence_numeric_excerpt_absent_from_tool_contract": true,
+    "source_surface_normalization_mismatch_fails_closed": true,
+    "source_metadata_date_not_automatically_promoted": true
+  },
+  "case_neutral_test_matrix": {
+    "test_refs": [
+      "tests/test_s2_source_bound_numeric_authority.py",
+      "tests/test_s3_multi_agent_report_authority.py"
+    ],
+    "cases": [
+      "DELL",
+      "MU",
+      "NVDA",
+      "ORCL"
+    ],
+    "required_command": "pytest -q tests/test_s2_source_bound_numeric_authority.py tests/test_s3_multi_agent_report_authority.py",
+    "purpose": "Prove that the compiler, validator and renderer do not contain DELL-specific business branches."
+  },
+  "execution": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "candidate_promotions": 0,
+    "upstream_agent_reruns": 0,
+    "legacy_result_mutated": false
+  },
+  "decision": {
+    "report_surface_contract_engineering_pass": true,
+    "current_legacy_report_financial_truth_L1_pass": false,
+    "terminal_writer_remapping_live_ready": true,
+    "earliest_remaining_owner": "S3_writer_terminal_remapping",
+    "required_next_action": "If the full repository gate remains green, issue a fresh exact-once Writer-only authority and remap the immutable report analysis into the protected contract. Do not rerun Specialists or retrieval.",
+    "forbidden_next_actions": [
+      "rerun_six_specialists",
+      "rerun_retrieval_without_a_new_evidence_need",
+      "raise_free_prose_character_or_numeric_tolerance",
+      "treat_source_visibility_as_output_authority",
+      "declare_S3_or_release_pass"
+    ]
+  },
+  "boundary": "This zero-call result proves a provider-neutral protected report surface contract and a qualified S2 source-bound authority extension. It does not accept the legacy DELL report, prove the remapped report's content quality, qualify generalization, authorize a paid call, or pass S1, S3, S4 or S5.",
+  "result_digest": "09c4d60bc3ee8c5b34518485567ce54092e4122f6bbd46f505168f0dc8cb0958"
+}

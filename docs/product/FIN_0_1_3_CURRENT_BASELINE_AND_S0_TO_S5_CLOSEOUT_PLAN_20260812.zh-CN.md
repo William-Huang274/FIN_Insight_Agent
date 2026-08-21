@@ -392,6 +392,39 @@ R15C 在 0 模型／Provider／网络状态下发现：R14 Cash continuation 的
 4. live 只从 Supply fresh repair 开始；随后运行独立 Evaluator、受限局部 repair 和条件式 Writer。任何 completed 节点重跑或 analysis continuation 都是权限违规。
 5. 成功后分别验收完整 Judgment、六角色协作、L1、内容质量和报告；失败则归到数据基建、Harness 或 Agent 工作模式的最早责任层。工程通过不等于 S1／S3／泛化／Workbench／release 通过。
 
+## 4AC. 首份当前 Multi-Agent 报告完成，但 final numeric surface 集成回归阻断 L1（2026-08-21）
+
+submission-only successor 已形成首份当前 DELL 六角色 Multi-Agent 报告。研究内容相较旧 R7 有明确进步：AI revenue／orders／backlog 不再被错误写成缺失，跨单元 false conflict 消失；订单、已确认收入、公司利润／现金、AI product bridge 与上游 read-through 的边界得到保留。独立八维诊断为 `28/32`，但因 L1 未过不得形成正式分数或产品验收。
+
+阻断不属于 DeepSeek 研究判断，而属于 S2/S3 共享集成：Multi-Agent report contract 只检查 workpaper ref membership，没有接入 PRD 7.9／16.20 已冻结的 material numeric candidate、protected narrative、typed relation／alias 与 deterministic renderer。当前报告中的金额、百分比、日期和比较存在未绑定 model-authored surface；source-visible 不等于 final-output-authorized。
+
+后续顺序据此改为：
+
+1. 保留本次 report、全部 capture、diagnostic content gain 和两次 contract attempt，不重跑上游；
+2. 零调用从六份最终 workpaper 与当前 S2 catalog 编译 report-level authority view；
+3. 将 Writer prose 与 `NUM／REL／QF／FORM／PresentationAlias` protected surface 分离，context-only／ambiguous 数值禁止写入；
+4. 回放当前 report，完成错值、错期、错单位、错公司、未绑定 span、rounding 和 citation mutation；
+5. 同步把 authority／result 中“一 logical node、最多两 contract attempts”投影清楚；
+6. 完整工程门与 fresh preflight 后，最多运行一次 terminal Writer remapping successor；
+7. 新 artifact 依次通过 L1、正式八维、严格同输入 paired（如存在合格 comparator）和 qualified-human 后，才判断 DELL Preview 与 S3；MU／NVDA／留出泛化仍在其后。
+
+这个 successor 只允许终端结构映射和确定性渲染，不能新增研究观点、Evidence、NumericFact、网络、Candidate，也不能重跑 Specialist、Lead、repair 或 Evaluator。
+
+## 4AD. report protected-surface 工程通过，旧报告仍维持 L1 fail（2026-08-21）
+
+S2／S3 共享修复已经完成零调用资格，而不是把字符上限调大或逐个允许数字：
+
+- 从六份最终 workpaper 和当前 S2 catalog 编译统一 report authority；
+- 对漏报但既有的 NUM ref 做重新绑定；
+- 对 reviewed Evidence 中真正需要输出的表面，通过 18 条人工复核决策编译 13 条 exact／existing NumericFact、4 条 bounded presentation 和 1 条 temporal authority；
+- model-owned terminal prose 禁止直接携带 material number／date／comparison，renderer 只从 typed authority 写入；
+- source quote、value normalization、claim、agent、case、period 或 unit 漂移均 fail closed；
+- 日期不从来源 metadata 自动晋升，避免把发布日、报告期和修改日混为一谈。
+
+当前 immutable DELL report 仍为 `financial_truth_L1_pass=false`；其 11 个字段路径中的自由数字／日期是保留的负向证据。与此同时，审计列出的 16 个 material amount surface 已全部具备安全重映射路径，因此下一责任层已从 S2 authority compilation 移到 S3 Writer terminal remapping。
+
+完整门禁通过：定向 `18 passed`、全仓 `946 passed`、compileall、Workbench typecheck／production build、active baseline、archive redirect、JSON／JSONL、7,525-file secret scan 和 diff check均通过。下一步只允许：同步账本 → clean commit／push → fresh Project OS preflight → 一次 Writer-only remapping。该运行不获得新研究、检索、网络、Candidate 或上游 Agent 权限；成功后重新做 L1 与内容质量审计，人工验收仍由 Owner 决定。
+
 ## 4AA. Demand 审查证明分层正确，但 Evaluator 与 repair 仍需 profile 分责（2026-08-21）
 
 第一次真正进入分层评审后，Demand 单角色节点已经完成判断纪律、机制、反方、WWC 和 gap 边界检查，并给出 `Role Content May Proceed=true`，只留下一个 LOW advisory；但 Runtime 继续使用 `high / 12,000` repair profile，11,289 token 被 reasoning 消耗，输出在最后一句截断。该 attempt 保持 terminal failure。

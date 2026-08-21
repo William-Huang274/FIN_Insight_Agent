@@ -270,3 +270,38 @@ replacement live 已真正启动第一个 Demand 单角色审查。输入只有�
 因此 Provider profile 映射改为：角色评审 `low / 8,000`，跨角色评审 `low / 10,000`，角色修订继续 `high / 12,000`，strict submission 继续 non-thinking。三者都必须有独立 TokenBudgetBasis；ceiling 由输入规模、输出责任、schema burden、金融风险、可比运行和停止策略编译，而不是由成本或速度决定。
 
 该映射只存在于 DeepSeek GA profile 与 authority 中。核心的 role audit、cross-role finding、repair routing、Evidence／NumericFact 权威和 L1 仍保持 provider-neutral。`low` 不是永久产品常数：fresh canary 必须同时证明完整可见输出和评审质量；若它仍 reasoning-only exhaustion 或明显降低内容质量，下一步是更换 Evaluator profile／模型或进一步收窄其职责，而不是继续压缩金融材料、提高全局 ceiling 或增加 attempt-specific runner。
+
+## 二十二、Multi-Agent Writer 不能成为第二条数字真值路径
+
+当前终端 successor 已生成一份结构完整、内容明显改善的 DELL 报告，但它暴露了架构集成回归：`report_draft_tool` 的 `numeric_refs` 只是 section-level ref 列表，`validate_report_draft` 只检查 ref 是否来自六份工作底稿，并未验证 prose 中的每一个 material amount／percentage／date／comparison 是否与 ref、期间、单位、展示精度和 lineage 一一绑定。执行摘要、gap 和 WWC 甚至没有对应的 protected surface 结构。
+
+这违反现有 provider-neutral 分工，而不是要求模型少看数字：
+
+- Research Agent 与 Writer analysis 继续看见、比较和讨论完整 source-visible facts；
+- terminal submission 必须把 model-owned prose 与 authority-owned surface 拆开；
+- final renderer 只从当前 S2 catalog 与 source-bound QF／PresentationAlias／Formula／Relation 写入 material surface；
+- reviewed Evidence 中存在但未裁决的数字只能标为 `context_only_do_not_output`，不能用 Evidence ref 代替 Numeric authority；
+- span-level validator 必须覆盖 title、executive thesis、sections、remaining gaps、WWC 和 confidence，而不只是 section ref 数组；
+- Verifier／Evaluator 的“事实大致正确”不能覆盖 deterministic L1。
+
+实施不得再新造一套 Multi-Agent 数字抽取器。应复用 S2 `MaterialNumericCandidateInventory`、当前 consumer 的 protected-narrative invariant、same-cadence NumericRelation、source-bound QF、PresentationAlias 与 deterministic render 语义，在 report boundary 增加统一编译 adapter。当前 immutable report 先作为负向 replay：它应准确列出未绑定 surface，而不是被事后追认为通过。
+
+本次自然运行还区分出一个治理概念：一个 Writer logical node 可以在 authority 明确上限内包含多次 strict contract attempt。Project OS 与 public result 必须分别记录 node count、attempt count 和 scope compliance；人类说明不得再用“exactly one submission”混淆两者。
+
+## 二十三、最终数字表面不再依赖 Writer 自由文本
+
+本轮没有把旧报告事后追认为合格。对 immutable DELL report 的逐字段回放仍得到 `hard_fail`：标题、执行摘要、六节正文、remaining gap 和 WWC 共 11 个字段路径含未绑定的金额、百分比、日期、季度或比较表面。这个负例被永久保留，证明“官方原文里确实有这个数字”不等于“最终报告已经获得写入权”。
+
+修复分成两层，并保持 provider-neutral：
+
+1. S2 `source-bound numeric authority` 只接受人工复核的 `claim + Evidence + exact source quote + value surface + metric + period + unit + qualifier + boundary` 决策；它不会扫描原文后自动把任意数字晋升为 NumericFact；
+2. S3 Writer terminal contract 要求 model-owned prose 不含受保护数字／日期／比较，模型只能选择已授权的 typed presentation，最终显示值由本地 renderer 写入；
+3. 已存在于 S2 catalog 但 Specialist 漏报的 NUM ref 重新绑定，不重复生成事实；仅存在于 reviewed Evidence 的表面按 exact、bounded 或 temporal 三类编译；guidance 与 approximately 等限定永不升级为无条件精确事实；
+4. source metadata 中的日期不得自动获得权威。真实回放发现部分 8-K 行把发布日样字段放进 reporting-period 字段，因此日期也必须有明确 review decision；
+5. claim、agent、case、source excerpt、normalized value 任一不一致均 fail closed，不能跨角色或跨案例借用数字。
+
+DELL 实际 review 共 18 条决策：13 条 exact／existing NumericFact、4 条 bounded presentation、1 条明确 temporal authority，覆盖 7 个 claim。审计列出的 16 个 material amount surface 均已具备确定性渲染路径；这只是说明“现在可以安全重映射”，不改变旧报告的 L1 失败状态。
+
+DELL／MU／NVDA／ORCL 用同一 compiler、validator 和 renderer 通过 18 项定向测试；错 source normalization、跨 claim 借用、跨 case 污染、原始数字自由文本、自动日期晋升和输入排列 mutation 均按预期处理。完整工程门为全仓 `946 passed`、compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、archive redirect `6,059`、798 份 configs／Project OS JSON、8 份 JSONL、7,525-file secret scan／0 和 diff check。
+
+下一次只允许一个 fresh Writer terminal remapping logical node，在 authority 单独声明的 contract-attempt 上限内，把已完成的研究内容映射到 protected contract。不得重新运行检索、六 Specialist、Lead、repair 或 Evaluator。新产物仍须重新经过 L1、内容质量与人工验收；S1、S3、泛化、Workbench 和 release 不因本轮工程通过而关闭。

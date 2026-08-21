@@ -1,0 +1,551 @@
+{
+  "schema_version": "fin_ia_source_bound_numeric_authority_review_v1_0",
+  "status": "qualified_engineering_source_bound_numeric_review",
+  "base_authority_catalog_digest": "97cb4b53d37f350cbca7ef7a0a8dc26292c9c8b561210f5c8c92fce41a40727d",
+  "case_identity": {
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "subject_legal_name": "Dell Technologies Inc.",
+    "subject_ticker": "DELL"
+  },
+  "decisions": [
+    {
+      "decision_id": "dell_cash_bind_existing_accounts_receivable_current",
+      "decision": "bind_existing_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::CASH_CONVERSION",
+          "claim_ref": "WPCLAIM::E6BF4BA3210FFC734C43"
+        }
+      ],
+      "numeric_ref": "NUM::BFE46716CAB4A99E",
+      "claim_value_surface": "$25,854M",
+      "reason_code": "typed_current_period_fact_visible_to_specialist_but_ref_omitted"
+    },
+    {
+      "decision_id": "dell_cash_bind_existing_inventory_current",
+      "decision": "bind_existing_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::CASH_CONVERSION",
+          "claim_ref": "WPCLAIM::E6BF4BA3210FFC734C43"
+        }
+      ],
+      "numeric_ref": "NUM::0E289449BE9085EE",
+      "claim_value_surface": "$15,052M",
+      "reason_code": "typed_current_period_fact_visible_to_specialist_but_ref_omitted"
+    },
+    {
+      "decision_id": "dell_cash_bind_existing_cash_current",
+      "decision": "bind_existing_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::CASH_CONVERSION",
+          "claim_ref": "WPCLAIM::E6BF4BA3210FFC734C43"
+        }
+      ],
+      "numeric_ref": "NUM::E50422C6AABE25A8",
+      "claim_value_surface": "$11,578M",
+      "reason_code": "typed_current_period_fact_visible_to_specialist_but_ref_omitted"
+    },
+    {
+      "decision_id": "dell_demand_ai_orders_actual",
+      "decision": "admit_exact_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::85483A3BF6E7290C8D92"
+        },
+        {
+          "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+          "claim_ref": "WPCLAIM::9453883047DF9695804E"
+        }
+      ],
+      "evidence_ref": "EV::9006E2D4E0F61CCF",
+      "source_quote": "booked $24.4 billion in AI orders",
+      "source_value_surfaces": [
+        "$24.4 billion"
+      ],
+      "semantic_metric_key": "ai_orders",
+      "fact_status": "management_reported_actual",
+      "value_kind": "exact_scalar",
+      "unit": "USD",
+      "source_scale": "",
+      "period": {
+        "period_start": "2026-01-31",
+        "period_end": "2026-05-01",
+        "fiscal_year": 2027,
+        "fiscal_period": "Q1",
+        "period_role": "quarter_discrete"
+      },
+      "claim_boundary": "Management-reported orders are not recognized revenue, cash collection, audited backlog conversion, or cancellation evidence.",
+      "qualifier": "management-reported booked orders",
+      "point_estimate_forbidden": false,
+      "normalized_values": [
+        "24400000000"
+      ]
+    },
+    {
+      "decision_id": "dell_demand_ai_server_revenue_actual",
+      "decision": "admit_exact_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::85483A3BF6E7290C8D92"
+        },
+        {
+          "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+          "claim_ref": "WPCLAIM::9453883047DF9695804E"
+        }
+      ],
+      "evidence_ref": "EV::9006E2D4E0F61CCF",
+      "source_quote": "recognized $16.1 billion of AI server revenue",
+      "source_value_surfaces": [
+        "$16.1 billion"
+      ],
+      "semantic_metric_key": "ai_server_revenue",
+      "fact_status": "management_reported_actual",
+      "value_kind": "exact_scalar",
+      "unit": "USD",
+      "source_scale": "",
+      "period": {
+        "period_start": "2026-01-31",
+        "period_end": "2026-05-01",
+        "fiscal_year": 2027,
+        "fiscal_period": "Q1",
+        "period_role": "quarter_discrete"
+      },
+      "claim_boundary": "Recognized product revenue does not establish standalone product profit, cash conversion, or a cross-period order conversion rate.",
+      "qualifier": "management-reported recognized revenue",
+      "point_estimate_forbidden": false,
+      "normalized_values": [
+        "16100000000"
+      ]
+    },
+    {
+      "decision_id": "dell_demand_ai_backlog_actual",
+      "decision": "admit_exact_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::85483A3BF6E7290C8D92"
+        },
+        {
+          "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+          "claim_ref": "WPCLAIM::9453883047DF9695804E"
+        }
+      ],
+      "evidence_ref": "EV::9006E2D4E0F61CCF",
+      "source_quote": "record $51.3 billion of AI backlog",
+      "source_value_surfaces": [
+        "$51.3 billion"
+      ],
+      "semantic_metric_key": "ai_backlog",
+      "fact_status": "management_reported_actual",
+      "value_kind": "exact_scalar",
+      "unit": "USD",
+      "source_scale": "",
+      "period": {
+        "period_start": null,
+        "period_end": "2026-05-01",
+        "fiscal_year": 2027,
+        "fiscal_period": "Q1",
+        "period_role": "instant"
+      },
+      "claim_boundary": "The management-defined backlog is not recognized revenue, cash, total cancellable demand, or proof of conversion cadence.",
+      "qualifier": "management-reported record backlog",
+      "point_estimate_forbidden": false,
+      "normalized_values": [
+        "51300000000"
+      ]
+    },
+    {
+      "decision_id": "dell_demand_customer_count_threshold",
+      "decision": "admit_bounded_presentation",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::85483A3BF6E7290C8D92"
+        },
+        {
+          "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+          "claim_ref": "WPCLAIM::9453883047DF9695804E"
+        }
+      ],
+      "evidence_ref": "EV::9006E2D4E0F61CCF",
+      "source_quote": "Our customer count surpassed 5,000",
+      "source_value_surfaces": [
+        "5,000"
+      ],
+      "semantic_metric_key": "ai_customer_count",
+      "fact_status": "management_threshold",
+      "value_kind": "greater_than",
+      "unit": "count",
+      "source_scale": "",
+      "period": {
+        "period_start": null,
+        "period_end": "2026-05-01",
+        "fiscal_year": 2027,
+        "fiscal_period": "Q1",
+        "period_role": "instant"
+      },
+      "claim_boundary": "The threshold does not reveal concentration, revenue mix, order size, retention, or cancellation behavior.",
+      "qualifier": "management threshold",
+      "point_estimate_forbidden": true,
+      "normalized_values": [
+        "5000"
+      ]
+    },
+    {
+      "decision_id": "dell_cash_accounts_receivable_prior",
+      "decision": "admit_exact_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::CASH_CONVERSION",
+          "claim_ref": "WPCLAIM::E6BF4BA3210FFC734C43"
+        }
+      ],
+      "evidence_ref": "EV::CAD2B8E9B11D864E",
+      "source_quote": "Accounts receivable, net of allowance of $77 and $77 | 25,854 | 17,585",
+      "source_value_surfaces": [
+        "17,585"
+      ],
+      "semantic_metric_key": "accounts_receivable",
+      "fact_status": "company_reported_actual",
+      "value_kind": "exact_scalar",
+      "unit": "USD",
+      "source_scale": "million",
+      "period": {
+        "period_start": null,
+        "period_end": "2026-01-30",
+        "fiscal_year": 2026,
+        "fiscal_period": "FY",
+        "period_role": "instant"
+      },
+      "claim_boundary": "Consolidated accounts receivable is not an AI-specific working-capital bridge.",
+      "qualifier": "company-authored unaudited statement row",
+      "point_estimate_forbidden": false,
+      "normalized_values": [
+        "17585000000"
+      ]
+    },
+    {
+      "decision_id": "dell_cash_inventory_prior",
+      "decision": "admit_exact_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::CASH_CONVERSION",
+          "claim_ref": "WPCLAIM::E6BF4BA3210FFC734C43"
+        }
+      ],
+      "evidence_ref": "EV::CAD2B8E9B11D864E",
+      "source_quote": "Inventories | 15,052 | 10,437",
+      "source_value_surfaces": [
+        "10,437"
+      ],
+      "semantic_metric_key": "inventory",
+      "fact_status": "company_reported_actual",
+      "value_kind": "exact_scalar",
+      "unit": "USD",
+      "source_scale": "million",
+      "period": {
+        "period_start": null,
+        "period_end": "2026-01-30",
+        "fiscal_year": 2026,
+        "fiscal_period": "FY",
+        "period_role": "instant"
+      },
+      "claim_boundary": "Consolidated inventory is not an AI-specific inventory or order-to-cash bridge.",
+      "qualifier": "company-authored unaudited statement row",
+      "point_estimate_forbidden": false,
+      "normalized_values": [
+        "10437000000"
+      ]
+    },
+    {
+      "decision_id": "dell_cash_cash_equivalents_prior",
+      "decision": "admit_exact_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::CASH_CONVERSION",
+          "claim_ref": "WPCLAIM::E6BF4BA3210FFC734C43"
+        }
+      ],
+      "evidence_ref": "EV::CAD2B8E9B11D864E",
+      "source_quote": "Cash and cash equivalents | $ | 11,578 | $ | 11,528",
+      "source_value_surfaces": [
+        "11,528"
+      ],
+      "semantic_metric_key": "cash_and_equivalents",
+      "fact_status": "company_reported_actual",
+      "value_kind": "exact_scalar",
+      "unit": "USD",
+      "source_scale": "million",
+      "period": {
+        "period_start": null,
+        "period_end": "2026-01-30",
+        "fiscal_year": 2026,
+        "fiscal_period": "FY",
+        "period_role": "instant"
+      },
+      "claim_boundary": "Consolidated cash is not AI-attributable cash generation.",
+      "qualifier": "company-authored unaudited statement row",
+      "point_estimate_forbidden": false,
+      "normalized_values": [
+        "11528000000"
+      ]
+    },
+    {
+      "decision_id": "dell_cash_short_term_financing_receivables_current",
+      "decision": "admit_exact_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::CASH_CONVERSION",
+          "claim_ref": "WPCLAIM::E6BF4BA3210FFC734C43"
+        }
+      ],
+      "evidence_ref": "EV::CAD2B8E9B11D864E",
+      "source_quote": "Short-term financing receivables, net of allowance of $124 and $121 | 8,237 | 8,458",
+      "source_value_surfaces": [
+        "8,237"
+      ],
+      "semantic_metric_key": "short_term_financing_receivables",
+      "fact_status": "company_reported_actual",
+      "value_kind": "exact_scalar",
+      "unit": "USD",
+      "source_scale": "million",
+      "period": {
+        "period_start": null,
+        "period_end": "2026-05-01",
+        "fiscal_year": 2027,
+        "fiscal_period": "Q1",
+        "period_role": "instant"
+      },
+      "claim_boundary": "Consolidated financing receivables are not an AI-specific cash-conversion measure.",
+      "qualifier": "company-authored unaudited statement row",
+      "point_estimate_forbidden": false,
+      "normalized_values": [
+        "8237000000"
+      ]
+    },
+    {
+      "decision_id": "dell_cash_short_term_financing_receivables_prior",
+      "decision": "admit_exact_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::CASH_CONVERSION",
+          "claim_ref": "WPCLAIM::E6BF4BA3210FFC734C43"
+        }
+      ],
+      "evidence_ref": "EV::CAD2B8E9B11D864E",
+      "source_quote": "Short-term financing receivables, net of allowance of $124 and $121 | 8,237 | 8,458",
+      "source_value_surfaces": [
+        "8,458"
+      ],
+      "semantic_metric_key": "short_term_financing_receivables",
+      "fact_status": "company_reported_actual",
+      "value_kind": "exact_scalar",
+      "unit": "USD",
+      "source_scale": "million",
+      "period": {
+        "period_start": null,
+        "period_end": "2026-01-30",
+        "fiscal_year": 2026,
+        "fiscal_period": "FY",
+        "period_role": "instant"
+      },
+      "claim_boundary": "Consolidated financing receivables are not an AI-specific cash-conversion measure.",
+      "qualifier": "company-authored unaudited statement row",
+      "point_estimate_forbidden": false,
+      "normalized_values": [
+        "8458000000"
+      ]
+    },
+    {
+      "decision_id": "dell_cash_long_term_financing_receivables_current",
+      "decision": "admit_exact_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::CASH_CONVERSION",
+          "claim_ref": "WPCLAIM::E6BF4BA3210FFC734C43"
+        }
+      ],
+      "evidence_ref": "EV::CAD2B8E9B11D864E",
+      "source_quote": "Long-term financing receivables, net of allowance of $88 and $92 | 5,713 | 5,822",
+      "source_value_surfaces": [
+        "5,713"
+      ],
+      "semantic_metric_key": "long_term_financing_receivables",
+      "fact_status": "company_reported_actual",
+      "value_kind": "exact_scalar",
+      "unit": "USD",
+      "source_scale": "million",
+      "period": {
+        "period_start": null,
+        "period_end": "2026-05-01",
+        "fiscal_year": 2027,
+        "fiscal_period": "Q1",
+        "period_role": "instant"
+      },
+      "claim_boundary": "Consolidated financing receivables are not an AI-specific cash-conversion measure.",
+      "qualifier": "company-authored unaudited statement row",
+      "point_estimate_forbidden": false,
+      "normalized_values": [
+        "5713000000"
+      ]
+    },
+    {
+      "decision_id": "dell_cash_long_term_financing_receivables_prior",
+      "decision": "admit_exact_numeric_fact",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::CASH_CONVERSION",
+          "claim_ref": "WPCLAIM::E6BF4BA3210FFC734C43"
+        }
+      ],
+      "evidence_ref": "EV::CAD2B8E9B11D864E",
+      "source_quote": "Long-term financing receivables, net of allowance of $88 and $92 | 5,713 | 5,822",
+      "source_value_surfaces": [
+        "5,822"
+      ],
+      "semantic_metric_key": "long_term_financing_receivables",
+      "fact_status": "company_reported_actual",
+      "value_kind": "exact_scalar",
+      "unit": "USD",
+      "source_scale": "million",
+      "period": {
+        "period_start": null,
+        "period_end": "2026-01-30",
+        "fiscal_year": 2026,
+        "fiscal_period": "FY",
+        "period_role": "instant"
+      },
+      "claim_boundary": "Consolidated financing receivables are not an AI-specific cash-conversion measure.",
+      "qualifier": "company-authored unaudited statement row",
+      "point_estimate_forbidden": false,
+      "normalized_values": [
+        "5822000000"
+      ]
+    },
+    {
+      "decision_id": "dell_guidance_ai_server_revenue_approximation",
+      "decision": "admit_bounded_presentation",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::OPERATING_PERFORMANCE",
+          "claim_ref": "WPCLAIM::09BA5E64AC3C0DB8DDD5"
+        },
+        {
+          "agent_id": "AGENT::VALUE_CAPTURE",
+          "claim_ref": "WPCLAIM::C9ABFB9176456AB25DDC"
+        }
+      ],
+      "evidence_ref": "EV::7F4D7E6762C21D83",
+      "source_quote": "Full-year AI-Optimized Servers revenue expected to be roughly $60 billion",
+      "source_value_surfaces": [
+        "$60 billion"
+      ],
+      "semantic_metric_key": "ai_server_revenue_guidance",
+      "fact_status": "company_guidance",
+      "value_kind": "approximate",
+      "unit": "USD",
+      "source_scale": "",
+      "period": {
+        "period_start": null,
+        "period_end": "",
+        "fiscal_year": 2027,
+        "fiscal_period": "FY",
+        "period_role": "forward_guidance"
+      },
+      "claim_boundary": "Forward guidance is not a realized result, product profit, cash conversion, or standalone margin.",
+      "qualifier": "company guidance stated as roughly",
+      "point_estimate_forbidden": true,
+      "normalized_values": [
+        "60000000000"
+      ]
+    },
+    {
+      "decision_id": "dell_guidance_q2_revenue_range",
+      "decision": "admit_bounded_presentation",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::OPERATING_PERFORMANCE",
+          "claim_ref": "WPCLAIM::09BA5E64AC3C0DB8DDD5"
+        }
+      ],
+      "evidence_ref": "EV::7F4D7E6762C21D83",
+      "source_quote": "Second-quarter FY27 revenue expected between $44.0 billion and $45.0 billion",
+      "source_value_surfaces": [
+        "$44.0 billion",
+        "$45.0 billion"
+      ],
+      "semantic_metric_key": "revenue_guidance",
+      "fact_status": "company_guidance",
+      "value_kind": "closed_range",
+      "unit": "USD",
+      "source_scale": "",
+      "period": {
+        "period_start": null,
+        "period_end": "",
+        "fiscal_year": 2027,
+        "fiscal_period": "Q2",
+        "period_role": "forward_guidance"
+      },
+      "claim_boundary": "Forward guidance is not a realized result and the range midpoint is not an actual fact.",
+      "qualifier": "company guidance range",
+      "point_estimate_forbidden": true,
+      "normalized_values": [
+        "44000000000",
+        "45000000000"
+      ]
+    },
+    {
+      "decision_id": "nvda_counterevidence_hyperscaler_share_approximation",
+      "decision": "admit_bounded_presentation",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::COUNTEREVIDENCE",
+          "claim_ref": "WPCLAIM::6F48BC846EAA84AD56A5"
+        }
+      ],
+      "evidence_ref": "EV::D86534E903882A43",
+      "source_quote": "Hyperscaler revenue increased sequentially and remained at approximately 50% of Data Center revenue",
+      "source_value_surfaces": [
+        "50%"
+      ],
+      "semantic_metric_key": "hyperscaler_share_of_data_center_revenue",
+      "fact_status": "reported_approximation",
+      "value_kind": "approximate",
+      "unit": "percent",
+      "source_scale": "",
+      "period": {
+        "period_start": "2026-01-26",
+        "period_end": "2026-04-26",
+        "fiscal_year": 2027,
+        "fiscal_period": "Q1",
+        "period_role": "quarter_discrete"
+      },
+      "claim_boundary": "This is an NVIDIA upstream concentration read-through and does not establish Dell customer concentration or demand allocation.",
+      "qualifier": "issuer-reported approximation",
+      "point_estimate_forbidden": true,
+      "normalized_values": [
+        "50"
+      ]
+    }
+  ],
+  "temporal_decisions": [
+    {
+      "decision_id": "dell_value_capture_mix_period_end",
+      "decision": "admit_source_reporting_period_end",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::VALUE_CAPTURE",
+          "claim_ref": "WPCLAIM::97D029E054446050D128"
+        }
+      ],
+      "evidence_ref": "EV::5388E016C17032C1",
+      "date": "2025-10-31",
+      "reason_code": "period_specific_margin_mix_statement_must_not_be_restated_as_current_quarter_causality"
+    }
+  ]
+}

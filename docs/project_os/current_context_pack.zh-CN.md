@@ -1077,3 +1077,22 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - RC-AR-029 归 S0 Project OS 人类权限投影，不归 DeepSeek、S1、S2、Writer 内容或多角色编排。修复从 terminal-submission frontier 的实际计数生成专属说明，并以 required／forbidden 语义断言阻止旧模板回归。
 - 当前必须完成全仓门、clean commit／push 和第二次 fresh preflight；只有机器投影与人类说明同时一致，才可签发一次无思考 strict Writer submission。不得重跑 analysis、continuation 或任何上游节点。
 - 修复后完整工程门通过：Project OS 定向 `60`、全仓 `928`、compileall、Workbench typecheck/build、active baseline `185／8／5／27／0`、archive redirect `6,059`、791 configs、8 份 Project OS JSONL／898 行（追加最终两条状态前）、7,513-file secret scan／0 和 diff check。下一步只剩精确提交／推送与第二次 fresh preflight。
+
+# 2026-08-21 DELL Multi-Agent 正式报告完成但数字权威 L1 未过
+
+- 第二次 clean／synced preflight 与 submission-only authority 已成功消费；六份 Specialist plan／workpaper、Lead plan／coordination、三条 repair、六份角色审查、一次跨角色审查和完整 Writer analysis checkpoint 均精确复用。新增 1 个 Writer logical node、0 analysis、0 continuation、0 网络、0 Candidate promotion。
+- Writer 第一次交卷只因 Supply heading 为 121 字、超过 120 字合同；在 machine authority 已允许的第二个 contract attempt 中缩短标题后通过。正式 report digest=`3ee44eda...ac43b`，六节报告、六条 gap、八条 WWC 和置信度均完整。
+- 内容审计显示 material gain：旧 R7 的 AI revenue／orders／backlog false absence 与 false conflict 均未重现；公司、产品、现金与上游 speaker attribution 边界清楚。八维诊断 `28/32`，旧 R7 为 `21/32`。两者输入／流程不同且当前 L1 未过，不能宣称 strict paired winner。
+- 当前最早阻断为 `RC-S2-007`：Multi-Agent `report_draft_tool／validate_report_draft` 只验证引用成员关系和结构，没有复用 PRD 已冻结的 protected narrative、MaterialNumericCandidateInventory、PresentationAlias、NumericRelation 和确定性 renderer。正式报告中的金额、百分比、日期和比较仍由模型 prose 写入；即便数值在官方 Evidence 中真实可见，也不获得 final artifact authority。
+- Cash section 对 AR、inventory、cash 和 financing receivable 甚至明确标注 source-visible／non-covered；这不是模型伪造，但仍是 L1。报告当前状态为 `artifact_complete_under_current_schema／material_research_gain／financial_truth_L1_fail`，formal 八维、qualified-human、S1／S3、泛化、Workbench 与 release 均为 false。
+- `RC-AR-030` 另记录一项非内容治理歧义：machine scope 是一个 strict-submission node、最多两个 contract attempts，人类说明写成 exactly one submission；未来须分别投影 logical node 与 attempt count，不追认也不否定当前受控运行。
+- 下一项只允许零调用 final-report protected-surface 集成与 current report span replay；通过 DELL／MU／NVDA／留出 mutation 和完整工程门后，最多签发一次 terminal Writer remapping successor。禁止重跑检索、六 Specialist、Lead、repair 或 Evaluator。
+
+# 2026-08-21 report protected surface 与 source-bound numeric authority 工程收口
+
+- `RC-S2-007` 的结构修复已完成零调用资格：新增 provider-neutral source-bound authority compiler 与 report protected-surface contract，没有增加 DeepSeek 专用字段，也没有放宽自由数字容忍度。
+- DELL 实际 review 共 18 条：13 条 exact／existing NumericFact、4 条 bounded presentation、1 条明确 temporal authority；覆盖 7 个 claim。审计中的 16 个 material amount surface 全部已可由 Harness 确定性渲染。
+- 旧正式报告保持 immutable negative evidence：11 个字段路径仍有未绑定 surface，`financial_truth_L1_pass=false`。零调用通过只表示 terminal remap 具备前置条件，不能把旧报告改判为合格。
+- 真实回放拒绝了“自动晋升 source metadata 日期”的捷径；部分来源字段混有发布日／报告期语义，日期必须和金额一样经过明确 review decision。
+- DELL／MU／NVDA／ORCL 共用同一 compiler／validator／renderer；定向 `18 passed`，全仓 `946 passed`，compileall、Workbench typecheck/build、active baseline、archive redirect、798 JSON／8 JSONL、7,525-file secret scan／0 和 diff check通过。
+- 下一步严格限定为 clean commit／push、fresh Project OS preflight 和一个 Writer-only terminal remapping logical node。不得重跑 S1、S2 检索、六 Specialist、Lead、repair 或 Evaluator；新报告仍须独立 L1、内容质量与 qualified-human 验收，S1／S3／泛化／Workbench／release 继续为 false。

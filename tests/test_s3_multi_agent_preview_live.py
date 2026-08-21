@@ -69,6 +69,11 @@ TERMINAL_WRITER_SCOPE = (
     / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
     "compiled_successor_scope_decision_v1_6.json"
 )
+TERMINAL_WRITER_SUBMISSION_SCOPE = (
+    ROOT
+    / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "compiled_successor_scope_decision_v1_7.json"
+)
 
 
 def _checkpoint() -> dict[str, object]:
@@ -1145,6 +1150,117 @@ def test_terminal_writer_authority_binds_only_one_writer_node(
     assert "cross_role_evaluation_checkpoint" in inputs
     assert "writer_analysis_fragment_checkpoint" in inputs
     assert "writer_continuation_profile" in inputs
+
+
+def test_terminal_writer_submission_authority_binds_no_new_analysis(
+    tmp_path: Path,
+) -> None:
+    source_authority = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "cross_role_onward_live_authority_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    scope = json.loads(
+        TERMINAL_WRITER_SUBMISSION_SCOPE.read_text(encoding="utf-8")
+    )
+
+    def binding(ref: str) -> dict[str, str]:
+        path = ROOT / ref
+        return {"ref": ref, "sha256": runner._sha(path)}
+
+    base_names = {
+        "topology",
+        "objective",
+        "zero_call_proof",
+        "successor_zero_call_proof",
+        "planning_overlay",
+        "analysis_profile",
+        "submission_profile",
+        "historical_five_cell_assessment",
+        "predecessor_plan_checkpoint",
+    }
+    bound_inputs = {
+        name: deepcopy(source_authority["bound_inputs"][name])
+        for name in base_names
+    }
+    bound_inputs.update(
+        {
+            "project_os_scope_decision": binding(
+                TERMINAL_WRITER_SUBMISSION_SCOPE.relative_to(ROOT).as_posix()
+            ),
+            "predecessor_scope_decision": binding(
+                scope["predecessor_scope_decision_ref"]
+            ),
+            "predecessor_authority": binding(
+                scope["predecessor_live_authority_ref"]
+            ),
+            "predecessor_result": binding(
+                scope["predecessor_live_result_ref"]
+            ),
+            "lead_plan_checkpoint": binding(scope["lead_plan_checkpoint_ref"]),
+            "workpaper_checkpoint": binding(scope["workpaper_checkpoint_ref"]),
+            "lead_coordination_checkpoint": binding(
+                scope["lead_coordination_checkpoint_ref"]
+            ),
+            "successor_execution_frontier": binding(
+                scope["successor_execution_frontier_ref"]
+            ),
+            "repair_analysis_profile": binding(
+                scope["repair_analysis_profile_ref"]
+            ),
+            "evaluator_analysis_profile": binding(
+                scope["evaluator_analysis_profile_ref"]
+            ),
+            "role_evaluation_progress_checkpoint": binding(
+                scope["role_evaluation_progress_checkpoint_ref"]
+            ),
+            "cross_role_evaluation_checkpoint": binding(
+                scope["cross_role_evaluation_checkpoint_ref"]
+            ),
+            "writer_analysis_completion_checkpoint": binding(
+                scope["writer_analysis_completion_checkpoint_ref"]
+            ),
+            "writer_terminal_submission_successor_zero_call_proof": binding(
+                scope[
+                    "writer_terminal_submission_successor_zero_call_proof_ref"
+                ]
+            ),
+        }
+    )
+    authority = {
+        "schema_version": runner.GENERIC_SUCCESSOR_AUTHORITY_SCHEMA,
+        "status": (
+            "approved_for_one_compiled_multi_agent_successor_after_"
+            "project_os_preflight"
+        ),
+        "authorized_at": "pytest",
+        "implementation_commit": runner._git_head(),
+        "bound_inputs": bound_inputs,
+        "execution_limits": deepcopy(scope["execution_limits"]),
+        "outputs": {
+            "run_id": "PYTEST-TERMINAL-WRITER-SUBMISSION-UNUSED",
+            "capture_root_ref": "data/pytest_writer_submission_captures_unused",
+            "private_output_root_ref": "data/pytest_writer_submission_private_unused",
+            "public_result_ref": "data/pytest_writer_submission_public_unused.json",
+        },
+        "authority_statement": "pytest-only terminal Writer submission authority",
+    }
+    authority_path = tmp_path / "authority.json"
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    validated, inputs, _ = runner._validate_authority(authority_path)
+
+    assert validated["execution_limits"]["maximum_new_model_nodes"] == 1
+    assert validated["execution_limits"][
+        "maximum_resumed_writer_analysis_continuations"
+    ] == 0
+    assert "hierarchical_evaluator_zero_call_proof" not in inputs
+    assert "writer_analysis_completion_checkpoint" in inputs
+    assert "writer_analysis_fragment_checkpoint" not in inputs
+    assert "writer_continuation_profile" not in inputs
 
 
 def test_pre_execution_failure_preserves_zero_provider_terminal_result(

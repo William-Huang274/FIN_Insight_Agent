@@ -404,6 +404,46 @@ def test_analysis_continuation_distinguishes_partial_from_missing_outputs() -> N
         continuation_draft=continuation,
     ).endswith(continuation)
 
+    markdown_heading_continuation = continuation.replace(
+        "OUTPUT::expected_information_boundaries",
+        "**expected_information_boundaries:**  ",
+    ).replace(
+        "OUTPUT::stop_conditions",
+        "## stop_conditions",
+    )
+    normalized = validate_analysis_continuation_completion(
+        checkpoint=checkpoint,
+        continuation_draft=markdown_heading_continuation,
+    )
+    assert normalized == continuation
+    assert "Only reviewed and source-bound facts may be promoted." in normalized
+    assert "Stop after every required slot is answered or bounded." in normalized
+
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="analysis_continuation_semantically_incomplete",
+    ):
+        validate_analysis_continuation_completion(
+            checkpoint=checkpoint,
+            continuation_draft=markdown_heading_continuation.replace(
+                "**expected_information_boundaries:**  ",
+                "**expected_information_boundaries:**  \n"
+                "OUTPUT::expected_information_boundaries",
+            ),
+        )
+
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="analysis_continuation_semantically_incomplete",
+    ):
+        validate_analysis_continuation_completion(
+            checkpoint=checkpoint,
+            continuation_draft=markdown_heading_continuation.replace(
+                "**expected_information_boundaries:**  ",
+                "**information_boundaries:**  ",
+            ),
+        )
+
     with pytest.raises(
         MultiAgentPreviewError,
         match="analysis_continuation_semantically_incomplete",

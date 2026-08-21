@@ -268,6 +268,11 @@ MULTI_AGENT_PREVIEW_TERMINAL_WRITER_SCOPE_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
     "successor_scope_decision_v1_6.json"
 )
+MULTI_AGENT_PREVIEW_TERMINAL_WRITER_SUBMISSION_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
+    "successor_scope_decision_v1_7.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -1088,6 +1093,47 @@ def test_multi_agent_preview_terminal_writer_reuses_all_upstream_nodes() -> None
     assert "partial-draft business promotion" in boundary
     assert "permits only those pending frontier nodes" not in boundary
     assert "forbids analysis continuation" not in boundary
+
+
+def test_multi_agent_preview_terminal_writer_submission_reuses_completed_analysis() -> None:
+    decision = json.loads(
+        (
+            ROOT
+            / MULTI_AGENT_PREVIEW_TERMINAL_WRITER_SUBMISSION_SCOPE_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+
+    projection = validate_multi_agent_preview_generic_successor_scope_decision(
+        root=ROOT,
+        decision=decision,
+    )
+
+    assert projection[
+        "multi_agent_preview_terminal_writer_submission_successor"
+    ] is True
+    assert projection["multi_agent_preview_terminal_writer_successor"] is False
+    assert projection["reused_role_evaluation_count"] == 6
+    assert projection["reused_cross_role_evaluation_count"] == 1
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 1
+    assert projection["execution_limits"][
+        "maximum_resumed_writer_analysis_continuations"
+    ] == 0
+    assert projection[
+        "writer_terminal_submission_successor_zero_call_proof_status"
+    ] == "writer_completed_analysis_strict_submission_fake_mutation_zero_call_pass"
+
+    preflight = build_preflight(
+        root=ROOT,
+        decision_ref=(
+            MULTI_AGENT_PREVIEW_TERMINAL_WRITER_SUBMISSION_SCOPE_DECISION_REF
+        ),
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    assert preflight["status"] == "pass_current_decision_bound_preflight"
+    assert preflight["decision_projection"][
+        "multi_agent_preview_terminal_writer_submission_successor"
+    ] is True
 
 
 def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:

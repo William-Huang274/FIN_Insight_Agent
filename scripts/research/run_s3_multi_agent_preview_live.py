@@ -94,9 +94,11 @@ from sec_agent.research.multi_agent_successor import (  # noqa: E402
     HIERARCHICAL_EVALUATION_STRATEGY,
     MONOLITHIC_EVALUATION_STRATEGY,
     SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION,
+    SUCCESSOR_FRONTIER_TERMINAL_SUBMISSION_SCHEMA_VERSION,
     validate_hierarchical_evaluator_zero_call_proof,
     validate_successor_execution_frontier,
     validate_terminal_successor_zero_call_proof,
+    validate_terminal_submission_successor_zero_call_proof,
 )
 from sec_agent.project_os_preflight import (  # noqa: E402
     MULTI_AGENT_PREVIEW_ANALYSIS_SUCCESSOR_DECISION_SCHEMA,
@@ -530,6 +532,17 @@ def _validate_authority(
         generic_successor
         and "writer_analysis_fragment_checkpoint" in inputs
     )
+    terminal_writer_submission_successor = (
+        generic_successor
+        and "writer_analysis_completion_checkpoint" in inputs
+    )
+    if terminal_writer_successor and terminal_writer_submission_successor:
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_two_terminal_writer_modes_forbidden"
+        )
+    terminal_writer_any_successor = (
+        terminal_writer_successor or terminal_writer_submission_successor
+    )
     base_inputs = {
         "project_os_scope_decision",
         "topology",
@@ -677,6 +690,16 @@ def _validate_authority(
                     "writer_analysis_fragment_checkpoint",
                     "writer_continuation_profile",
                     "writer_terminal_successor_zero_call_proof",
+                }
+            ),
+            frozenset(
+                required_inputs
+                | {
+                    "evaluator_analysis_profile",
+                    "role_evaluation_progress_checkpoint",
+                    "cross_role_evaluation_checkpoint",
+                    "writer_analysis_completion_checkpoint",
+                    "writer_terminal_submission_successor_zero_call_proof",
                 }
             ),
         }
@@ -1161,6 +1184,23 @@ def _validate_authority(
                     ),
                 }
             )
+        elif terminal_writer_submission_successor:
+            current_scope_bindings.update(
+                {
+                    "cross_role_evaluation_checkpoint": (
+                        "cross_role_evaluation_checkpoint_ref",
+                        "cross_role_evaluation_checkpoint_sha256",
+                    ),
+                    "writer_analysis_completion_checkpoint": (
+                        "writer_analysis_completion_checkpoint_ref",
+                        "writer_analysis_completion_checkpoint_sha256",
+                    ),
+                    "writer_terminal_submission_successor_zero_call_proof": (
+                        "writer_terminal_submission_successor_zero_call_proof_ref",
+                        "writer_terminal_submission_successor_zero_call_proof_sha256",
+                    ),
+                }
+            )
     elif downstream_analysis_successor:
         current_scope_bindings = {
             "predecessor_scope_decision": (
@@ -1396,7 +1436,7 @@ def _validate_authority(
         if (
             frontier.get("evaluation_strategy")
             == HIERARCHICAL_EVALUATION_STRATEGY
-            and not terminal_writer_successor
+            and not terminal_writer_any_successor
         ):
             hierarchical_proof = validate_hierarchical_evaluator_zero_call_proof(
                 _json(inputs["hierarchical_evaluator_zero_call_proof"]),
@@ -1417,7 +1457,11 @@ def _validate_authority(
                 )
         failed_authority = _json(inputs["predecessor_authority"])
         failed_result = _json(inputs["predecessor_result"])
-        predecessor_failure = frontier["predecessor_failure"]
+        predecessor_failure = (
+            frontier["writer_continuation_failure"]
+            if terminal_writer_submission_successor
+            else frontier["predecessor_failure"]
+        )
         terminal_path = _resolve(
             str(predecessor_failure["terminal_result_ref"])
         )
@@ -1553,7 +1597,7 @@ def _validate_authority(
                 == frontier.get("completed_role_evaluation_agent_ids")
                 and (
                     (
-                        terminal_writer_successor
+                        terminal_writer_any_successor
                         and current_role_checkpoint_binding
                         == {
                             "ref": _relative(
@@ -1565,7 +1609,7 @@ def _validate_authority(
                         }
                     )
                     or (
-                        not terminal_writer_successor
+                        not terminal_writer_any_successor
                         and role_evaluation_checkpoint.get(
                             "source_authority_ref"
                         )
@@ -1644,6 +1688,56 @@ def _validate_authority(
             ):
                 raise MultiAgentPreviewLiveError(
                     "multi_agent_preview_terminal_writer_binding_invalid"
+                )
+        elif terminal_writer_submission_successor:
+            cross_checkpoint = _json(
+                inputs["cross_role_evaluation_checkpoint"]
+            )
+            completion_checkpoint = validate_analysis_completion_checkpoint(
+                _json(inputs["writer_analysis_completion_checkpoint"])
+            )
+            predecessor_frontier_path = _resolve(
+                str(
+                    predecessor_scope_decision[
+                        "successor_execution_frontier_ref"
+                    ]
+                )
+            )
+            predecessor_frontier = validate_successor_execution_frontier(
+                _json(predecessor_frontier_path)
+            )
+            submission_profile_raw = _json(inputs["submission_profile"])
+            submission_proof = (
+                validate_terminal_submission_successor_zero_call_proof(
+                    _json(
+                        inputs[
+                            "writer_terminal_submission_successor_zero_call_proof"
+                        ]
+                    ),
+                    predecessor_frontier=predecessor_frontier,
+                    submission_frontier=frontier,
+                    writer_completion_checkpoint=completion_checkpoint,
+                    writer_submission_profile=submission_profile_raw,
+                )
+            )
+            if not (
+                frontier.get("schema_version")
+                == SUCCESSOR_FRONTIER_TERMINAL_SUBMISSION_SCHEMA_VERSION
+                and cross_checkpoint.get("checkpoint_digest")
+                == frontier.get("cross_role_evaluation_checkpoint_digest")
+                and completion_checkpoint.get("checkpoint_digest")
+                == frontier.get(
+                    "writer_analysis_completion_checkpoint_digest"
+                )
+                and completion_checkpoint.get("node_id")
+                == "AGENT::WRITER::REPORT_DRAFT"
+                and submission_proof.get("status")
+                == scope_projection.get(
+                    "writer_terminal_submission_successor_zero_call_proof_status"
+                )
+            ):
+                raise MultiAgentPreviewLiveError(
+                    "multi_agent_preview_terminal_writer_submission_binding_invalid"
                 )
     if preprovider_replacement:
         failed_authority = _json(inputs["failed_preprovider_authority"])
@@ -2280,7 +2374,7 @@ def _validate_authority(
         if (
             validated_frontier.get("evaluation_strategy")
             == HIERARCHICAL_EVALUATION_STRATEGY
-            and not terminal_writer_successor
+            and not terminal_writer_any_successor
         ):
             hierarchical_proof = validate_hierarchical_evaluator_zero_call_proof(
                 _json(inputs["hierarchical_evaluator_zero_call_proof"]),
@@ -2562,6 +2656,44 @@ def _validate_authority(
                 == completed_frontier_count
             )
             expected_new_nodes = 1
+        elif terminal_writer_submission_successor:
+            mode_limits_valid = (
+                limits.get("maximum_new_lead_plan_model_calls") == 0
+                and limits.get("maximum_new_initial_workpaper_nodes") == 0
+                and limits.get(
+                    "maximum_new_lead_coordination_model_calls"
+                )
+                == 0
+                and limits.get(
+                    "maximum_resumed_downstream_analysis_continuations"
+                )
+                == 0
+                and limits.get(
+                    "maximum_resumed_writer_analysis_continuations"
+                )
+                == 0
+                and limits.get(
+                    "reused_writer_analysis_continuation_count"
+                )
+                == 1
+                and limits.get("maximum_new_analysis_calls_per_other_node")
+                == 0
+                and limits.get("maximum_new_counter_challenge_repairs") == 0
+                and limits.get("maximum_evaluator_repairs") == 0
+                and limits.get("maximum_evaluation_rounds") == 0
+                and limits.get("maximum_initial_role_evaluation_nodes") == 0
+                and limits.get("maximum_cross_role_evaluation_nodes") == 0
+                and limits.get("maximum_affected_role_reevaluation_nodes")
+                == 0
+                and limits.get("reused_role_evaluation_count") == 6
+                and limits.get("reused_cross_role_evaluation_count") == 1
+                and limits.get("reused_lead_plan_count") == 1
+                and limits.get("reused_workpaper_count") == 6
+                and limits.get("reused_lead_coordination_count") == 1
+                and limits.get("reused_completed_challenge_repair_count")
+                == completed_frontier_count
+            )
+            expected_new_nodes = 1
         else:
             mode_limits_valid = (
             limits.get("maximum_new_lead_plan_model_calls") == 0
@@ -2701,9 +2833,9 @@ def _validate_authority(
         and limits.get("reused_specialist_plan_count") == 6
         and limits.get("maximum_counter_challenge_repairs") == 3
         and limits.get("maximum_evaluator_repairs")
-        == (0 if terminal_writer_successor else 2)
+        == (0 if terminal_writer_any_successor else 2)
         and limits.get("maximum_evaluation_rounds")
-        == (0 if terminal_writer_successor else 2)
+        == (0 if terminal_writer_any_successor else 2)
         and limits.get("external_source_network_calls") == 0
         and limits.get("candidate_promotions") == 0
         and limits.get("product_publication") is False
@@ -4052,6 +4184,17 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
         generic_successor
         and "writer_analysis_fragment_checkpoint" in paths
     )
+    terminal_writer_submission_successor = (
+        generic_successor
+        and "writer_analysis_completion_checkpoint" in paths
+    )
+    if terminal_writer_successor and terminal_writer_submission_successor:
+        raise MultiAgentPreviewLiveError(
+            "multi_agent_preview_two_terminal_writer_modes_forbidden"
+        )
+    terminal_writer_any_successor = (
+        terminal_writer_successor or terminal_writer_submission_successor
+    )
     role_scoped_repair_successor = (
         repair_context_replacement or generic_successor
     )
@@ -4332,7 +4475,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
         writer_analysis_checkpoint_original_messages = None
     cross_role_evaluation_checkpoint_raw = (
         _json(paths["cross_role_evaluation_checkpoint"])
-        if terminal_writer_successor
+        if terminal_writer_any_successor
         else None
     )
     hierarchical_evaluator = bool(
@@ -4348,7 +4491,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
         if (
             hierarchical_evaluator
             and successor_frontier is not None
-            and not terminal_writer_successor
+            and not terminal_writer_any_successor
         )
         else None
     )
@@ -4396,9 +4539,15 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
     )
     analysis_completion_checkpoint = (
         validate_analysis_completion_checkpoint(
-            _json(paths["analysis_completion_checkpoint"])
+            _json(
+                paths[
+                    "writer_analysis_completion_checkpoint"
+                    if terminal_writer_submission_successor
+                    else "analysis_completion_checkpoint"
+                ]
+            )
         )
-        if submission_successor
+        if submission_successor or terminal_writer_submission_successor
         else None
     )
     completed_analysis_draft = (
@@ -4469,6 +4618,53 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
         if submission_successor
         and analysis_completion_checkpoint is not None
         and submission_successor_zero is not None
+        else {}
+    )
+    terminal_writer_submission_successor_bindings = (
+        {
+            "writer_analysis_completion_checkpoint": {
+                "ref": _relative(
+                    paths["writer_analysis_completion_checkpoint"]
+                ),
+                "sha256": _sha(
+                    paths["writer_analysis_completion_checkpoint"]
+                ),
+                "checkpoint_digest": analysis_completion_checkpoint[
+                    "checkpoint_digest"
+                ],
+                "source_fragment_run_id": analysis_completion_checkpoint[
+                    "source_fragment_run_id"
+                ],
+                "source_continuation_run_id": analysis_completion_checkpoint[
+                    "source_continuation_run_id"
+                ],
+                "merged_analysis_draft_character_count": (
+                    analysis_completion_checkpoint[
+                        "merged_analysis_draft_character_count"
+                    ]
+                ),
+                "analysis_draft_business_promoted": False,
+            },
+            "writer_terminal_submission_successor_zero_call_proof": {
+                "ref": _relative(
+                    paths[
+                        "writer_terminal_submission_successor_zero_call_proof"
+                    ]
+                ),
+                "sha256": _sha(
+                    paths[
+                        "writer_terminal_submission_successor_zero_call_proof"
+                    ]
+                ),
+                "result_digest": _json(
+                    paths[
+                        "writer_terminal_submission_successor_zero_call_proof"
+                    ]
+                )["result_digest"],
+            },
+        }
+        if terminal_writer_submission_successor
+        and analysis_completion_checkpoint is not None
         else {}
     )
     lead_checkpoint_successor_bindings = (
@@ -5597,7 +5793,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                 evaluator_repairs += 1
             return list(by_target)
 
-        if terminal_writer_successor:
+        if terminal_writer_any_successor:
             current_workpapers = [
                 workpapers_by_agent[agent_id]
                 for agent_id in lead["ordered_agent_ids"]
@@ -6053,7 +6249,11 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                     "confidence_statement",
                 ),
                 risk="writer synthesis can reintroduce a false fact or erase material counterevidence",
-                analysis_tokens=(12000 if terminal_writer_successor else 16000),
+                analysis_tokens=(
+                    0
+                    if terminal_writer_submission_successor
+                    else (12000 if terminal_writer_successor else 16000)
+                ),
                 submission_tokens=9000,
                 analysis_resume_checkpoint=writer_analysis_checkpoint,
                 analysis_resume_draft=writer_analysis_checkpoint_draft,
@@ -6062,6 +6262,9 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                 ),
                 analysis_profile_override=(
                     continuation_profile if terminal_writer_successor else None
+                ),
+                resume_completed_analysis=(
+                    terminal_writer_submission_successor
                 ),
             )
 
@@ -6104,6 +6307,16 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                 "contract. No upstream Agent or Evaluator was rerun. "
                 if terminal_writer_successor
                 else (
+                    "This is one DELL Writer-terminal strict-submission "
+                    "successor over unchanged current local S1/S2 authority. "
+                    "All six specialist workpapers, three completed role "
+                    "repairs, six role audits, the cross-role audit and the "
+                    "content-complete Writer analysis were reused from "
+                    "immutable checkpoints. Only one non-thinking strict "
+                    "report submission was authorized; no analysis, "
+                    "continuation, upstream Agent or Evaluator was rerun. "
+                    if terminal_writer_submission_successor
+                else (
                 "This is one provider-neutral compiled DELL Multi-Agent "
                 "Preview successor over unchanged current local S1/S2 "
                 "authority. Six specialist workpapers and the valid Lead "
@@ -6115,6 +6328,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                 "Lead coordination or any completed repair, and it permitted "
                 "no analysis continuation. "
                 + evaluator_boundary
+                )
                 )
             )
         elif repair_context_replacement:
@@ -6225,6 +6439,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
             },
             **analysis_successor_bindings,
             **submission_successor_bindings,
+            **terminal_writer_submission_successor_bindings,
             **lead_checkpoint_successor_bindings,
             **workpaper_checkpoint_successor_bindings,
             **specialist_analysis_successor_bindings,
@@ -6514,7 +6729,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                                 and (
                                     evaluator_cross_role_audit_reuses == 1
                                     and evaluator_cross_role_audits == 0
-                                    if terminal_writer_successor
+                                    if terminal_writer_any_successor
                                     else 1 <= evaluator_cross_role_audits <= 2
                                 )
                             )
@@ -6665,6 +6880,28 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                     if submission_successor
                     else {}
                 ),
+                **(
+                    {
+                        "writer_completed_analysis_checkpoint_reused_without_"
+                        "analysis_or_continuation_rerun": sum(
+                            1
+                            for row in node_records
+                            for attempt in row["attempts"]
+                            if attempt.get("phase")
+                            == "analysis_checkpoint_reuse"
+                        )
+                        == 1,
+                        "writer_strict_submission_executed_once": sum(
+                            1
+                            for row in node_records
+                            for attempt in row["attempts"]
+                            if attempt.get("phase") == "submission"
+                        )
+                        == 1,
+                    }
+                    if terminal_writer_submission_successor
+                    else {}
+                ),
                 "report_contract_valid": report is not None,
                 "formal_eight_dimension_assessment_pending": report is not None,
                 "S1_pass": False,
@@ -6691,6 +6928,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
             "successor_zero_call_proof": full["successor_zero_call_proof"],
             **analysis_successor_bindings,
             **submission_successor_bindings,
+            **terminal_writer_submission_successor_bindings,
             **lead_checkpoint_successor_bindings,
             **workpaper_checkpoint_successor_bindings,
             **specialist_analysis_successor_bindings,
@@ -6788,6 +7026,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
             },
             **analysis_successor_bindings,
             **submission_successor_bindings,
+            **terminal_writer_submission_successor_bindings,
             **lead_checkpoint_successor_bindings,
             **workpaper_checkpoint_successor_bindings,
             **specialist_analysis_successor_bindings,
@@ -6957,6 +7196,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
             ],
             **analysis_successor_bindings,
             **submission_successor_bindings,
+            **terminal_writer_submission_successor_bindings,
             **lead_checkpoint_successor_bindings,
             **workpaper_checkpoint_successor_bindings,
             **specialist_analysis_successor_bindings,

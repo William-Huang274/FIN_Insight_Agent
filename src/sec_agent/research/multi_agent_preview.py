@@ -2184,6 +2184,40 @@ def validate_analysis_continuation_completion(
     partial = list(trusted["partial_required_outputs"])
     missing = list(trusted["missing_required_outputs"])
     completed = list(trusted["completed_required_outputs"])
+    # The continuation is analysis text, not the business contract.  Some
+    # providers preserve every requested section and the exact completion
+    # receipt but render a requested OUTPUT marker as a Markdown heading.  A
+    # whole-line, field-name-identical heading is safe to canonicalize because
+    # it changes no research content and remains subject to the same ordering,
+    # uniqueness, non-empty-section and receipt checks below.  Free-form or
+    # translated aliases are intentionally not accepted.
+    lines = continuation.splitlines(keepends=True)
+    for field in missing:
+        marker = f"OUTPUT::{field}"
+        aliases = {
+            f"**{field}:**",
+            f"**{field}**",
+            f"**{field}**:",
+            f"__{field}:__",
+            f"__{field}__",
+            f"__{field}__:",
+            f"{field}:",
+            *(f"{'#' * level} {field}" for level in range(1, 7)),
+            *(f"{'#' * level} {field}:" for level in range(1, 7)),
+        }
+        normalized_lines: list[str] = []
+        for line in lines:
+            ending = ""
+            body = line
+            if line.endswith("\r\n"):
+                body, ending = line[:-2], "\r\n"
+            elif line.endswith(("\n", "\r")):
+                body, ending = line[:-1], line[-1]
+            normalized_lines.append(
+                marker + ending if body.strip() in aliases else line
+            )
+        lines = normalized_lines
+    continuation = "".join(lines).strip()
     expected_receipt = "COMPLETED_OUTPUTS::" + "|".join(remaining)
     receipt_index = continuation.rfind(expected_receipt)
     missing_markers = [f"OUTPUT::{field}" for field in missing]
@@ -2293,9 +2327,10 @@ def compile_analysis_completion_checkpoint(
 
     fragment = validate_analysis_fragment_checkpoint(fragment_checkpoint)
     partial = str(partial_draft or "").strip()
+    raw_continuation = str(continuation_draft or "").strip()
     continuation = validate_analysis_continuation_completion(
         checkpoint=fragment,
-        continuation_draft=continuation_draft,
+        continuation_draft=raw_continuation,
     )
     merged = merge_analysis_draft_fragments(
         checkpoint=fragment,
@@ -2368,8 +2403,11 @@ def compile_analysis_completion_checkpoint(
         "continuation_response_digest": str(continuation_response_digest),
         "continuation_messages_digest": str(continuation_messages_digest),
         "finish_reason": "stop",
-        "continuation_draft_digest": canonical_digest(continuation),
-        "continuation_draft_character_count": len(continuation),
+        # Bind the immutable provider output here.  The merged draft digest
+        # below binds the deterministic marker-canonicalized projection used
+        # for strict submission.  For exact OUTPUT markers both are identical.
+        "continuation_draft_digest": canonical_digest(raw_continuation),
+        "continuation_draft_character_count": len(raw_continuation),
         "merged_analysis_draft_digest": canonical_digest(merged),
         "merged_analysis_draft_character_count": len(merged),
         "required_outputs": list(fragment["required_outputs"]),

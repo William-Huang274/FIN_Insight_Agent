@@ -1,0 +1,56 @@
+{
+  "fake_execution_receipt": {
+    "analysis_calls": 0,
+    "analysis_continuation_calls": 0,
+    "analysis_draft_business_promoted": false,
+    "candidate_promotions": 0,
+    "cross_role_evaluation_calls": 0,
+    "external_source_network_calls": 0,
+    "new_model_nodes": 1,
+    "role_evaluation_calls": 0,
+    "role_repair_calls": 0,
+    "strict_submission_calls": 1,
+    "validated_report_contract": true
+  },
+  "heading_normalization_receipt": {
+    "completion_receipt_preserved": true,
+    "normalized_continuation_digest": "3689b59aa869d529b070fab7c3759e213c92be4057e531622cedc6f8f4ce04d5",
+    "normalized_continuation_valid": true,
+    "normalized_heading_fields": [
+      "remaining_gaps",
+      "what_would_change",
+      "confidence_statement"
+    ],
+    "raw_continuation_digest": "dec79b0c94865845d3ce7f1e66c5afa23e59332c0fb7b29b826ba3f0b3890dc2",
+    "research_content_changed": false,
+    "source_failure_code": "multi_agent_analysis_continuation_semantically_incomplete"
+  },
+  "known_boundary": "This proof validates content-preserving Writer heading normalization, completed-analysis checkpoint reuse and one strict report submission with deterministic fakes. It does not prove natural report quality, S1, S3, generalization, human acceptance or release.",
+  "mutation_checks": {
+    "analysis_continuation_budget_mutation_rejected": true,
+    "completion_checkpoint_digest_mutation_rejected": true,
+    "completion_receipt_mutation_rejected": true,
+    "duplicate_heading_alias_rejected": true,
+    "thinking_enabled_submission_profile_rejected": true,
+    "wrong_heading_alias_rejected": true
+  },
+  "network_calls": 0,
+  "paid_tool_calls": 0,
+  "predecessor_frontier_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_successor_frontier_v1_6.json",
+  "predecessor_frontier_result_digest": "cb407fd79a2e7d68a89b0ce532c826ef2462366c44583a4abc70b2eb2a3f2805",
+  "predecessor_frontier_sha256": "e2c84e4c285d2e0c11b9602464d0655dac6c0ae0f3d20d758114470a6d4eac78",
+  "provider_model_calls": 0,
+  "result_digest": "c5d19cfa30a31101e5a3feb60dada7bb838a838d271fd4cb8c8f96bd1f06368f",
+  "schema_version": "fin_ia_s3_multi_agent_terminal_submission_successor_zero_call_proof_v1_0",
+  "status": "writer_completed_analysis_strict_submission_fake_mutation_zero_call_pass",
+  "submission_frontier_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_successor_frontier_v1_7.json",
+  "submission_frontier_result_digest": "baa3fc86ce42f7b35ad3e053d8c2060b6eccb7720ca08e9354fa1dfd23184247",
+  "submission_frontier_sha256": "06113e69a0beaeabc6f1210b12416adcca2095c619a922e18477935db665000f",
+  "writer_completion_checkpoint_digest": "bcbfef2f5b6ba5c70fb11141dacdaf38ff9f3b8de451b792209d520cdcd53e42",
+  "writer_completion_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_analysis_completion_checkpoint_v1_0.json",
+  "writer_completion_checkpoint_sha256": "ab52d3996f6006cb7baad35caad98013ae9886780a40bcfdbfc6256124c0a4fd",
+  "writer_submission_max_tokens": 9000,
+  "writer_submission_profile_mode": "thinking_disabled",
+  "writer_submission_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_contract_submission_non_thinking_profile_v1_0.json",
+  "writer_submission_profile_sha256": "2c4a67a985e9f8773f56df0a232de49cab0810504eca816e100c2cc4e9622468"
+}

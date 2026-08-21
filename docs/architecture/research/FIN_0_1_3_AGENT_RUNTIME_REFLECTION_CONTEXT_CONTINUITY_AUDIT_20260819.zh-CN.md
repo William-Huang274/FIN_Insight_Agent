@@ -357,3 +357,18 @@ Runtime 现增加 provider-neutral 的实际模式记录：若 `thinking.type=di
 6. 这是一条 provider-neutral 的任务分责规则。未来更强模型可以通过统一 canary 获得更大 Writer 自主权，但不能取消 Evidence、NumericFact、lineage 和发布边界。
 
 因此，Context Continuity 不只意味着“截断后继续”，还意味着恢复时必须知道哪些认知工作已经完成、哪些只是表达未完成。只有后者才适合 non-thinking completion；前者若缺失仍必须回到原研究 Agent，而不能由 Writer 或 Harness 补写。
+
+## 22. 研究语义与续写传输标记分离（2026-08-21）
+
+terminal Writer continuation 自然输出已完成全部缺失研究内容并以精确完成回执结束，但三个字段标题使用 Markdown `**field:**`，没有使用 Runtime 内部 `OUTPUT::field`。旧 validator 因而把一份内容完整的输出登记为语义不完整。
+
+该实例冻结以下 provider-neutral 原则：
+
+1. 内部 marker 是 continuation transport protocol，不是金融研究事实或判断本身；
+2. Runtime 可以规范化的别名必须是整行、字段名完全一致、唯一、顺序正确，且只发生在 checkpoint 已声明的 missing 字段上；
+3. 规范化不得改变任一研究正文、数字、引用、结论、字段顺序或最终完成回执；raw capture 和 normalized projection 必须分别保存 digest；
+4. duplicate、近义但不同字段名、错序、缺失、错误完成回执或任何正文修改继续 fail closed；
+5. 通过后生成 `AnalysisCompletionCheckpoint`，后继只能执行 strict submission，不得重新分析或再次 continuation；
+6. strict submission 通过前，内容完整的分析仍是私有审计材料，不是正式报告或产品 Artifact。
+
+这不是放宽模型合同，而是把“研究是否完成”和“内部格式如何表示”分层。更强模型可以直接产生精确 marker；不精确但满足上述安全同义条件的输出由确定性 canonicalizer 处理，不值得重复消耗一次研究调用。任何需要解释语义、改写观点或猜测字段归属的情况仍必须拒绝。

@@ -7,6 +7,7 @@ from sec_agent.canonical_runtime import canonical_digest
 from sec_agent.research.multi_agent_preview import (
     SPECIALIST_AGENT_IDS,
     revalidate_bound_specialist_workpaper,
+    validate_analysis_completion_checkpoint,
     validate_specialist_workpaper,
 )
 
@@ -22,6 +23,9 @@ SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION = (
 )
 SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_successor_execution_frontier_v1_3"
+)
+SUCCESSOR_FRONTIER_TERMINAL_SUBMISSION_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_successor_execution_frontier_v1_4"
 )
 SUCCESSOR_FRONTIER_STATUS = (
     "completed_and_pending_nodes_compiled_from_immutable_lineage"
@@ -41,6 +45,12 @@ TERMINAL_SUCCESSOR_ZERO_CALL_PROOF_SCHEMA_VERSION = (
 )
 TERMINAL_SUCCESSOR_ZERO_CALL_PROOF_STATUS = (
     "writer_checkpoint_continuation_submission_fake_mutation_zero_call_pass"
+)
+TERMINAL_SUBMISSION_SUCCESSOR_ZERO_CALL_PROOF_SCHEMA_VERSION = (
+    "fin_ia_s3_multi_agent_terminal_submission_successor_zero_call_proof_v1_0"
+)
+TERMINAL_SUBMISSION_SUCCESSOR_ZERO_CALL_PROOF_STATUS = (
+    "writer_completed_analysis_strict_submission_fake_mutation_zero_call_pass"
 )
 COMPLETED_DISPOSITIONS = {"exact_reuse", "derived_digest_rebind"}
 FRESH_DISPOSITIONS = {"fresh_rerun_required", "pending_fresh"}
@@ -507,6 +517,111 @@ def compile_terminal_successor_execution_frontier(
     return {**body, "result_digest": canonical_digest(body)}
 
 
+def compile_terminal_submission_successor_execution_frontier(
+    *,
+    predecessor_frontier: Mapping[str, Any],
+    writer_continuation_failure: Mapping[str, Any],
+    writer_analysis_completion_checkpoint_digest: str,
+) -> dict[str, Any]:
+    """Freeze the same terminal Writer after analysis is content-complete.
+
+    The predecessor continuation failure remains immutable.  This frontier
+    authorizes no analysis or continuation call: the only remaining paid action
+    is strict report-contract submission from a capture-bound completed-analysis
+    checkpoint.  Markdown-to-OUTPUT heading normalization is deterministic and
+    may not alter research prose, facts, refs or conclusions.
+    """
+
+    prior = validate_successor_execution_frontier(predecessor_frontier)
+    _require(
+        prior.get("schema_version")
+        == SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION
+        and prior.get("evaluation_strategy") == HIERARCHICAL_EVALUATION_STRATEGY
+        and prior.get("completed_role_evaluation_agent_ids")
+        == list(SPECIALIST_AGENT_IDS)
+        and all(
+            row["disposition"] in COMPLETED_DISPOSITIONS
+            for row in prior["nodes"]
+        )
+        and len(str(writer_analysis_completion_checkpoint_digest)) == 64,
+        "multi_agent_terminal_submission_predecessor_invalid",
+    )
+    failure = deepcopy(dict(writer_continuation_failure))
+    _require(
+        set(failure)
+        == {
+            "authority_ref",
+            "authority_sha256",
+            "public_result_ref",
+            "public_result_sha256",
+            "public_result_digest",
+            "terminal_result_ref",
+            "terminal_result_sha256",
+            "terminal_result_digest",
+            "failure_code",
+            "provider_attempt_count",
+        }
+        and failure.get("failure_code")
+        == "multi_agent_analysis_continuation_semantically_incomplete"
+        and failure.get("provider_attempt_count") == 1,
+        "multi_agent_terminal_submission_failure_invalid",
+    )
+    execution_limits = {
+        **deepcopy(dict(prior["execution_limits"])),
+        "maximum_new_model_nodes": 1,
+        "maximum_resumed_writer_analysis_continuations": 0,
+        "reused_writer_analysis_continuation_count": 1,
+    }
+    constraints = {
+        "business_payload_changes_during_rebind_forbidden": True,
+        "capture_bound_model_visible_context_required": True,
+        "completed_node_model_rerun_forbidden": True,
+        "research_inputs_unchanged": True,
+        "external_source_network_forbidden": True,
+        "candidate_promotion_forbidden": True,
+        "local_full_L1_precedes_model_evaluation": True,
+        "completed_role_evaluation_rerun_forbidden": True,
+        "cross_role_evaluation_rerun_forbidden": True,
+        "writer_analysis_rerun_forbidden": True,
+        "writer_analysis_continuation_rerun_forbidden": True,
+        "only_writer_strict_submission_authorized": True,
+        "writer_completed_analysis_business_promotion_forbidden": True,
+        "deterministic_heading_normalization_only": True,
+    }
+    body = {
+        "schema_version": SUCCESSOR_FRONTIER_TERMINAL_SUBMISSION_SCHEMA_VERSION,
+        "status": SUCCESSOR_FRONTIER_STATUS,
+        "case_key": prior["case_key"],
+        "cell_id": prior["cell_id"],
+        "accepted_challenge_ids": list(prior["accepted_challenge_ids"]),
+        "lead_coordination_checkpoint_digest": prior[
+            "lead_coordination_checkpoint_digest"
+        ],
+        # Keep the v1.3 predecessor failure so this frontier can be
+        # deterministically reconstructed without rewriting history.
+        "predecessor_failure": deepcopy(dict(prior["predecessor_failure"])),
+        "writer_continuation_failure": failure,
+        "nodes": [deepcopy(dict(row)) for row in prior["nodes"]],
+        "evaluation_strategy": HIERARCHICAL_EVALUATION_STRATEGY,
+        "completed_role_evaluation_agent_ids": list(SPECIALIST_AGENT_IDS),
+        "evaluation_progress_checkpoint_digest": prior[
+            "evaluation_progress_checkpoint_digest"
+        ],
+        "cross_role_evaluation_checkpoint_digest": prior[
+            "cross_role_evaluation_checkpoint_digest"
+        ],
+        "writer_analysis_fragment_checkpoint_digest": prior[
+            "writer_analysis_fragment_checkpoint_digest"
+        ],
+        "writer_analysis_completion_checkpoint_digest": str(
+            writer_analysis_completion_checkpoint_digest
+        ),
+        "execution_limits": execution_limits,
+        "constraints": constraints,
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
 def validate_successor_execution_frontier(
     frontier: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -522,6 +637,10 @@ def validate_successor_execution_frontier(
     terminal_checkpointed = (
         schema == SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION
     )
+    terminal_submission = (
+        schema == SUCCESSOR_FRONTIER_TERMINAL_SUBMISSION_SCHEMA_VERSION
+    )
+    terminal_any = terminal_checkpointed or terminal_submission
     expected_fields = {
         "schema_version",
         "status",
@@ -535,20 +654,27 @@ def validate_successor_execution_frontier(
         "constraints",
         "result_digest",
     }
-    if hierarchical or terminal_checkpointed:
+    if hierarchical or terminal_any:
         expected_fields.add("evaluation_strategy")
-    if checkpointed_hierarchical or terminal_checkpointed:
+    if checkpointed_hierarchical or terminal_any:
         expected_fields.update(
             {
                 "completed_role_evaluation_agent_ids",
                 "evaluation_progress_checkpoint_digest",
             }
         )
-    if terminal_checkpointed:
+    if terminal_any:
         expected_fields.update(
             {
                 "cross_role_evaluation_checkpoint_digest",
                 "writer_analysis_fragment_checkpoint_digest",
+            }
+        )
+    if terminal_submission:
+        expected_fields.update(
+            {
+                "writer_continuation_failure",
+                "writer_analysis_completion_checkpoint_digest",
             }
         )
     supplied_digest = str(value.pop("result_digest", ""))
@@ -560,12 +686,52 @@ def validate_successor_execution_frontier(
             SUCCESSOR_FRONTIER_HIERARCHICAL_SCHEMA_VERSION,
             SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION,
             SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION,
+            SUCCESSOR_FRONTIER_TERMINAL_SUBMISSION_SCHEMA_VERSION,
         }
         and value.get("status") == SUCCESSOR_FRONTIER_STATUS
         and supplied_digest == canonical_digest(value),
         "multi_agent_successor_frontier_digest_invalid",
     )
-    if terminal_checkpointed:
+    if terminal_submission:
+        predecessor_copy = deepcopy(dict(value))
+        predecessor_copy["schema_version"] = (
+            SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION
+        )
+        predecessor_copy.pop("writer_continuation_failure")
+        predecessor_copy.pop("writer_analysis_completion_checkpoint_digest")
+        predecessor_copy["execution_limits"] = {
+            **dict(value["execution_limits"]),
+            "maximum_new_model_nodes": 1,
+            "maximum_resumed_writer_analysis_continuations": 1,
+        }
+        predecessor_copy["execution_limits"].pop(
+            "reused_writer_analysis_continuation_count"
+        )
+        predecessor_copy["constraints"] = {
+            "business_payload_changes_during_rebind_forbidden": True,
+            "capture_bound_model_visible_context_required": True,
+            "completed_node_model_rerun_forbidden": True,
+            "research_inputs_unchanged": True,
+            "external_source_network_forbidden": True,
+            "candidate_promotion_forbidden": True,
+            "local_full_L1_precedes_model_evaluation": True,
+            "completed_role_evaluation_rerun_forbidden": True,
+            "cross_role_evaluation_rerun_forbidden": True,
+            "only_writer_analysis_continuation_authorized": True,
+            "writer_partial_draft_business_promotion_forbidden": True,
+        }
+        predecessor_copy.pop("result_digest", None)
+        predecessor_copy["result_digest"] = canonical_digest(
+            {k: v for k, v in predecessor_copy.items() if k != "result_digest"}
+        )
+        rebuilt = compile_terminal_submission_successor_execution_frontier(
+            predecessor_frontier=predecessor_copy,
+            writer_continuation_failure=value["writer_continuation_failure"],
+            writer_analysis_completion_checkpoint_digest=str(
+                value["writer_analysis_completion_checkpoint_digest"]
+            ),
+        )
+    elif terminal_checkpointed:
         predecessor_copy = deepcopy(dict(value))
         predecessor_copy["schema_version"] = (
             SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION
@@ -841,6 +1007,224 @@ def validate_terminal_successor_zero_call_proof(
     _require(
         rebuilt == dict(proof),
         "multi_agent_terminal_successor_zero_call_recompile_drift",
+    )
+    return rebuilt
+
+
+def compile_terminal_submission_successor_zero_call_proof(
+    *,
+    predecessor_frontier_ref: str,
+    predecessor_frontier_sha256: str,
+    predecessor_frontier: Mapping[str, Any],
+    submission_frontier_ref: str,
+    submission_frontier_sha256: str,
+    submission_frontier: Mapping[str, Any],
+    writer_completion_checkpoint_ref: str,
+    writer_completion_checkpoint_sha256: str,
+    writer_completion_checkpoint: Mapping[str, Any],
+    writer_submission_profile_ref: str,
+    writer_submission_profile_sha256: str,
+    writer_submission_profile: Mapping[str, Any],
+    heading_normalization_receipt: Mapping[str, Any],
+    fake_execution_receipt: Mapping[str, Any],
+    mutation_checks: Mapping[str, bool],
+) -> dict[str, Any]:
+    predecessor = validate_successor_execution_frontier(predecessor_frontier)
+    frontier = validate_successor_execution_frontier(submission_frontier)
+    checkpoint = validate_analysis_completion_checkpoint(
+        writer_completion_checkpoint
+    )
+    profile = deepcopy(dict(writer_submission_profile))
+    defaults = deepcopy(dict(profile.get("request_defaults") or {}))
+    normalization = deepcopy(dict(heading_normalization_receipt))
+    fake = deepcopy(dict(fake_execution_receipt))
+    checks = {str(key): bool(value) for key, value in mutation_checks.items()}
+    expected_checks = {
+        "completion_checkpoint_digest_mutation_rejected",
+        "duplicate_heading_alias_rejected",
+        "wrong_heading_alias_rejected",
+        "completion_receipt_mutation_rejected",
+        "analysis_continuation_budget_mutation_rejected",
+        "thinking_enabled_submission_profile_rejected",
+    }
+    expected_fake = {
+        "new_model_nodes": 1,
+        "analysis_calls": 0,
+        "analysis_continuation_calls": 0,
+        "strict_submission_calls": 1,
+        "role_evaluation_calls": 0,
+        "cross_role_evaluation_calls": 0,
+        "role_repair_calls": 0,
+        "validated_report_contract": True,
+        "analysis_draft_business_promoted": False,
+        "external_source_network_calls": 0,
+        "candidate_promotions": 0,
+    }
+    expected_normalization_fields = {
+        "source_failure_code",
+        "raw_continuation_digest",
+        "normalized_continuation_digest",
+        "normalized_heading_fields",
+        "research_content_changed",
+        "completion_receipt_preserved",
+        "normalized_continuation_valid",
+    }
+    _require(
+        predecessor.get("schema_version")
+        == SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION
+        and frontier.get("schema_version")
+        == SUCCESSOR_FRONTIER_TERMINAL_SUBMISSION_SCHEMA_VERSION
+        and checkpoint.get("checkpoint_digest")
+        == frontier["writer_analysis_completion_checkpoint_digest"]
+        and checkpoint.get("node_id") == "AGENT::WRITER::REPORT_DRAFT"
+        and checkpoint.get("source_continuation_result_digest")
+        == frontier["writer_continuation_failure"]["public_result_digest"]
+        and profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and defaults
+        == {
+            "max_tokens": 2000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+        and (profile.get("authority") or {}).get("retry_count") == 0
+        and set(normalization) == expected_normalization_fields
+        and normalization.get("source_failure_code")
+        == "multi_agent_analysis_continuation_semantically_incomplete"
+        and len(str(normalization.get("raw_continuation_digest") or "")) == 64
+        and len(
+            str(normalization.get("normalized_continuation_digest") or "")
+        )
+        == 64
+        and normalization.get("normalized_heading_fields")
+        == ["remaining_gaps", "what_would_change", "confidence_statement"]
+        and normalization.get("research_content_changed") is False
+        and normalization.get("completion_receipt_preserved") is True
+        and normalization.get("normalized_continuation_valid") is True
+        and set(checks) == expected_checks
+        and all(checks.values())
+        and fake == expected_fake,
+        "multi_agent_terminal_submission_zero_call_inputs_invalid",
+    )
+    body = {
+        "schema_version": (
+            TERMINAL_SUBMISSION_SUCCESSOR_ZERO_CALL_PROOF_SCHEMA_VERSION
+        ),
+        "status": TERMINAL_SUBMISSION_SUCCESSOR_ZERO_CALL_PROOF_STATUS,
+        "predecessor_frontier_ref": str(predecessor_frontier_ref),
+        "predecessor_frontier_sha256": str(predecessor_frontier_sha256),
+        "predecessor_frontier_result_digest": predecessor["result_digest"],
+        "submission_frontier_ref": str(submission_frontier_ref),
+        "submission_frontier_sha256": str(submission_frontier_sha256),
+        "submission_frontier_result_digest": frontier["result_digest"],
+        "writer_completion_checkpoint_ref": str(
+            writer_completion_checkpoint_ref
+        ),
+        "writer_completion_checkpoint_sha256": str(
+            writer_completion_checkpoint_sha256
+        ),
+        "writer_completion_checkpoint_digest": checkpoint[
+            "checkpoint_digest"
+        ],
+        "writer_submission_profile_ref": str(writer_submission_profile_ref),
+        "writer_submission_profile_sha256": str(
+            writer_submission_profile_sha256
+        ),
+        "writer_submission_profile_mode": "thinking_disabled",
+        "writer_submission_max_tokens": 9000,
+        "heading_normalization_receipt": normalization,
+        "fake_execution_receipt": fake,
+        "mutation_checks": checks,
+        "provider_model_calls": 0,
+        "network_calls": 0,
+        "paid_tool_calls": 0,
+        "known_boundary": (
+            "This proof validates content-preserving Writer heading normalization, "
+            "completed-analysis checkpoint reuse and one strict report submission "
+            "with deterministic fakes. It does not prove natural report quality, "
+            "S1, S3, generalization, human acceptance or release."
+        ),
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
+def validate_terminal_submission_successor_zero_call_proof(
+    proof: Mapping[str, Any],
+    *,
+    predecessor_frontier: Mapping[str, Any],
+    submission_frontier: Mapping[str, Any],
+    writer_completion_checkpoint: Mapping[str, Any],
+    writer_submission_profile: Mapping[str, Any],
+) -> dict[str, Any]:
+    value = deepcopy(dict(proof))
+    supplied = str(value.pop("result_digest", ""))
+    expected = {
+        "schema_version",
+        "status",
+        "predecessor_frontier_ref",
+        "predecessor_frontier_sha256",
+        "predecessor_frontier_result_digest",
+        "submission_frontier_ref",
+        "submission_frontier_sha256",
+        "submission_frontier_result_digest",
+        "writer_completion_checkpoint_ref",
+        "writer_completion_checkpoint_sha256",
+        "writer_completion_checkpoint_digest",
+        "writer_submission_profile_ref",
+        "writer_submission_profile_sha256",
+        "writer_submission_profile_mode",
+        "writer_submission_max_tokens",
+        "heading_normalization_receipt",
+        "fake_execution_receipt",
+        "mutation_checks",
+        "provider_model_calls",
+        "network_calls",
+        "paid_tool_calls",
+        "known_boundary",
+        "result_digest",
+    }
+    _require(
+        set(proof) == expected
+        and value.get("schema_version")
+        == TERMINAL_SUBMISSION_SUCCESSOR_ZERO_CALL_PROOF_SCHEMA_VERSION
+        and value.get("status")
+        == TERMINAL_SUBMISSION_SUCCESSOR_ZERO_CALL_PROOF_STATUS
+        and value.get("provider_model_calls") == 0
+        and value.get("network_calls") == 0
+        and value.get("paid_tool_calls") == 0
+        and supplied == canonical_digest(value),
+        "multi_agent_terminal_submission_zero_call_digest_invalid",
+    )
+    rebuilt = compile_terminal_submission_successor_zero_call_proof(
+        predecessor_frontier_ref=str(value["predecessor_frontier_ref"]),
+        predecessor_frontier_sha256=str(
+            value["predecessor_frontier_sha256"]
+        ),
+        predecessor_frontier=predecessor_frontier,
+        submission_frontier_ref=str(value["submission_frontier_ref"]),
+        submission_frontier_sha256=str(value["submission_frontier_sha256"]),
+        submission_frontier=submission_frontier,
+        writer_completion_checkpoint_ref=str(
+            value["writer_completion_checkpoint_ref"]
+        ),
+        writer_completion_checkpoint_sha256=str(
+            value["writer_completion_checkpoint_sha256"]
+        ),
+        writer_completion_checkpoint=writer_completion_checkpoint,
+        writer_submission_profile_ref=str(
+            value["writer_submission_profile_ref"]
+        ),
+        writer_submission_profile_sha256=str(
+            value["writer_submission_profile_sha256"]
+        ),
+        writer_submission_profile=writer_submission_profile,
+        heading_normalization_receipt=value["heading_normalization_receipt"],
+        fake_execution_receipt=value["fake_execution_receipt"],
+        mutation_checks=value["mutation_checks"],
+    )
+    _require(
+        rebuilt == dict(proof),
+        "multi_agent_terminal_submission_zero_call_recompile_drift",
     )
     return rebuilt
 

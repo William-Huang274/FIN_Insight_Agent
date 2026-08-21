@@ -102,3 +102,37 @@ clean／synced commit `01a302ca...` 上第一次 fresh preflight 的全部机器
 RC-AR-027 的修复不是放宽权限，而是让 human projection 从 terminal frontier 的实际数字生成：明确只允许一次 non-thinking Writer continuation＋strict submission，并禁止所有上游 Agent、repair、Evaluator、第二次 continuation 和半稿晋升。新增测试同时拒绝旧模板文字。第一次 preflight 保持只读诊断，不追认为有效签发依据。
 
 修正后的定向 Project OS 测试为 `59 passed`，随后全仓再次为 `925 passed`；compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、archive redirect `6,059` 和 7,507-file secret scan／0 均通过。追加 RC-AR-027 与 capability 状态后 Project OS 为 8 份 JSONL／892 行。下一步必须先形成并推送第二个干净提交，再运行第二次 fresh preflight。
+
+## 8. terminal live 的真实结果与 RC-AR-028 更正
+
+第二次 clean／synced preflight 后签发的 terminal Writer successor 已真实执行。它精确复用了六份角色底稿、六份角色审查、跨角色审查和原 Writer fragment；唯一新增 Provider 调用是一次 non-thinking Writer continuation：
+
+- prompt：`20,261` tokens；
+- completion：`2,822` tokens；
+- finish reason：`stop`；
+- 可见 continuation：`10,693` 字符；
+- strict submission：`0`，因为 continuation validator 先终止了运行。
+
+原 public result 将其登记为 `multi_agent_analysis_continuation_semantically_incomplete`。逐字段回放证明这个分类不准确：自然输出已经完成余下六个 sections、`remaining_gaps`、`what_would_change`、`confidence_statement`，并以精确完成回执 `COMPLETED_OUTPUTS::sections|remaining_gaps|what_would_change|confidence_statement` 结束。唯一差异是三个字段标题写成 Markdown 的 `**field:**`，而 validator 只接受内部 `OUTPUT::field` 标记。
+
+这不是新的研究内容失败、DeepSeek 不遵循结论边界或 S1/S2 资料不足，而是 S0 Harness 把传输标记别名误判为语义缺失。修复严格限定为：只允许整行、字段名完全相同、顺序正确且唯一的三个 Markdown 标题映射为内部 marker；正文、数字、引用、因果判断和完成回执不得改变。duplicate、wrong-field、wrong-receipt 与 checkpoint／预算／profile mutation 继续 fail closed。
+
+新的 completion checkpoint 同时绑定原 fragment、原 continuation 请求／响应 capture、raw continuation digest、规范化投影 digest、usage、TokenBudgetBasis 和合并稿 digest。新的 terminal submission frontier 禁止任何新分析或 continuation，只允许一次 non-thinking strict report submission；零调用 fake 已通过并验证报告合同。
+
+当前仍然没有正式报告：零调用成功只证明“内容完整分析可以安全进入交卷”，不能证明真实 strict submission、最终 L1、八维内容质量、paired gain、qualified-human、S1/S3、泛化、Workbench 或 release。下一步必须完成全仓门、clean commit／push、fresh preflight 和唯一一次 strict Writer submission；不得重做分析或上游多 Agent 链。
+
+## 9. submission-only successor 完整工程门
+
+完整工程门已通过：
+
+- 定向 Runtime／successor／Project OS：`124 passed`；
+- 全仓：`928 passed`，仅两条既有 SWIG deprecation warning；
+- Python `compileall`、Workbench TypeScript typecheck 和 Vite production build：通过；
+- active baseline：`185 Python / 8 frontend / 5 detectors / 27 Runtime / 0 forbidden`；
+- archive redirect：`6,059` 条，check 通过；
+- configs：`791` 份 JSON 可解析；
+- Project OS：`8` 份 JSONL／`894` 行可解析（追加最终状态前）；
+- secret scan：`7,513` files／`0` findings；
+- `git diff --check`：通过。
+
+该结果只把下一步收敛为 clean commit／push、fresh Project OS preflight、全新 authority 和一次 strict Writer submission。工程门没有追认上一失败为成功，也没有把 completion checkpoint 晋升成正式报告。

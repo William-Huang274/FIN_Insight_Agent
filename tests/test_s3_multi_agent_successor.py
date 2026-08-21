@@ -16,6 +16,7 @@ from sec_agent.research.multi_agent_preview import (
     validate_role_evaluation,
     validate_role_evaluation_progress_checkpoint,
     validate_role_evaluation_submission_replay,
+    validate_analysis_completion_checkpoint,
     validate_specialist_workpaper,
 )
 from sec_agent.research.multi_agent_successor import (
@@ -26,12 +27,70 @@ from sec_agent.research.multi_agent_successor import (
     compile_hierarchical_evaluator_zero_call_proof,
     compile_successor_execution_frontier,
     validate_terminal_successor_zero_call_proof,
+    validate_terminal_submission_successor_zero_call_proof,
     validate_hierarchical_evaluator_zero_call_proof,
     validate_successor_execution_frontier,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_terminal_writer_completed_analysis_only_authorizes_strict_submission() -> None:
+    eval_root = ROOT / "configs/research/evals"
+    predecessor = json.loads(
+        (
+            eval_root
+            / "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "compiled_successor_frontier_v1_6.json"
+        ).read_text(encoding="utf-8")
+    )
+    frontier = json.loads(
+        (
+            eval_root
+            / "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "compiled_successor_frontier_v1_7.json"
+        ).read_text(encoding="utf-8")
+    )
+    checkpoint = json.loads(
+        (
+            eval_root
+            / "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "writer_analysis_completion_checkpoint_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    proof = json.loads(
+        (
+            eval_root
+            / "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "writer_terminal_submission_successor_zero_call_result_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    profile = json.loads(
+        (
+            ROOT
+            / "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_"
+            "contract_submission_non_thinking_profile_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert validate_analysis_completion_checkpoint(checkpoint) == checkpoint
+    assert validate_successor_execution_frontier(frontier) == frontier
+    assert validate_terminal_submission_successor_zero_call_proof(
+        proof,
+        predecessor_frontier=predecessor,
+        submission_frontier=frontier,
+        writer_completion_checkpoint=checkpoint,
+        writer_submission_profile=profile,
+    ) == proof
+    assert frontier["execution_limits"]["maximum_new_model_nodes"] == 1
+    assert (
+        frontier["execution_limits"][
+            "maximum_resumed_writer_analysis_continuations"
+        ]
+        == 0
+    )
+    assert proof["heading_normalization_receipt"]["research_content_changed"] is False
 
 
 def _context(agent_id: str, session_id: str) -> dict:

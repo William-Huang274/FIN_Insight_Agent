@@ -1060,3 +1060,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 自然 Writer、最终报告 L1、八维质量、paired、qualified-human、S1／S3、泛化、Workbench publication 和 release 仍未证明。
 - 完整工程门已通过：全仓 `925 passed`、compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、archive redirect `6,059`、785 configs、8 份 Project OS JSONL／892 行、7,507-file secret scan／0 和 diff check。下一步只剩 clean commit／push、fresh preflight 和一次 terminal Writer live。
 - clean／synced commit `01a302ca...` 的第一次 fresh preflight 机器门通过，但人类 `known_boundary` 错误沿用普通 generic successor 文案，既声称允许 evaluation／repair，又声称禁止 analysis continuation，与 terminal scope 相反；该 preflight 未用于签发。RC-AR-027 已改为从 terminal frontier 生成精确说明，须重新通过全仓门、提交／推送和第二次 fresh preflight。
+
+# 2026-08-21 Writer continuation 内容完成、格式别名误判与 submission-only successor
+
+- terminal Writer successor 已真实运行且只新增一次 non-thinking continuation：`20,261 prompt / 2,822 completion / stop`，可见输出 10,693 字符；上游 Agent、repair、Evaluator、网络和 Candidate promotion 均未重跑。
+- public failure `multi_agent_analysis_continuation_semantically_incomplete` 经原始 capture 回放被更正为格式标记误判：六个余下 sections、remaining gaps、WWC、confidence 和精确完成回执均已完成，只是三个字段标题使用 `**field:**` 而非 `OUTPUT::field`。
+- RC-AR-028 归 S0 Harness analysis-transport marker canonicalization，不归 DeepSeek 研究质量、S1 数据、S2 数字或多角色编排。只允许整行、字段同名、唯一且顺序正确的安全别名映射；研究正文、数字、引用、结论和完成回执均不得修改。
+- capture-bound Writer completion checkpoint、terminal submission frontier v1.4、scope v1.7 和零调用 fake/mutation proof 已形成。后继最大新模型节点为 1，analysis=0、continuation=0、strict submission=1；六角色审查和一次跨角色审查继续精确复用。
+- 当前正式报告仍不存在。下一步只允许完整工程门 → clean commit／push → fresh Project OS preflight → 全新 authority → 一次 strict Writer submission。成功后才做 L1、八维内容质量和 paired；qualified-human、S1/S3、泛化、Workbench publication 和 release 继续为 false。
+- submission-only successor 完整工程门已通过：定向 `124`、全仓 `928`、compileall、Workbench typecheck/build、active baseline `185／8／5／27／0`、archive redirect `6,059`、791 configs、8 份 Project OS JSONL／894 行、7,513-file secret scan／0 和 diff check。当前只剩 clean commit／push、fresh preflight、新 authority 和一次 strict Writer submission。

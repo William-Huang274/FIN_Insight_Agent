@@ -1041,3 +1041,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 现有 generic checkpoint 还不能组合“旧 Demand checkpoint＋新 terminal 完成段”，因此不得直接新签一次从 Counter 或 cross-role 开始的 authority。
 - 下一项只允许零调用结构处置：typed gap ref authority、可行动 ref-diff feedback、checkpoint 链式合并、Counter 原响应重放与 mutation。完成后六角色均应成为不可变 checkpoint，下一付费节点只能是 cross-role audit。
 - 当前 public result=`configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_live_result_v1_0.json`；failure=`multi_agent_finding_ref_out_of_scope`；0 外源网络、0 Candidate promotion。S1／S3、Writer、报告、泛化、人工验收、Workbench 和 release 仍为 false。
+
+# 2026-08-21 六角色 Evaluator 检查点与 cross-role-only successor
+
+- RC-AR-025 已完成零调用结构修复：typed gap 加入单角色 finding 合法引用面，Tool Schema／Validator 共享同一 ref 编译源，越界反馈返回 offending／allowed ref 差异；不是为特定 gap ID 写补丁。
+- 两次已保存 Counter strict Tool Call 原样重放均通过；引用的是当时可见的两条 typed gap。0 新模型、0 网络、0 Candidate promotion，研究 payload 未改。
+- checkpoint v1.1 已把旧 Demand checkpoint、Operating／Value／Cash／Supply 完成段和 Counter submission replay 合并。六角色完成、pending=0；任何完成角色不得重跑。
+- frontier v1.5 正常路径只剩 cross-role audit＋conditional Writer 两个逻辑节点；若发现 material conflict，最多允许两处定向 repair、受影响角色复审和一次 cross-role recheck，最大 7 个新模型节点。
+- 定向回归 `118 passed`；完整工程门为全仓 `922 passed`、compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、777 configs、8 份 Project OS JSONL／886 行、7,497-file secret scan／0 和 diff check。下一步仅允许 clean commit／push、fresh preflight、新 authority 和一次 cross-role-onward successor。S1／S3、完整报告、内容质量、泛化、人工验收、Workbench 和 release 仍为 false。

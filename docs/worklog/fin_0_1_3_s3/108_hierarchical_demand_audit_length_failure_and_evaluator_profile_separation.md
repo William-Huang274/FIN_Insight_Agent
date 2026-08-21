@@ -2,7 +2,7 @@
 
 日期：2026-08-21
 
-状态：`profile-separated live consumed / Demand audit valid / Operating reasoning-only exhaustion preserved / evaluator checkpoint and non-thinking responsibility full engineering gate pass / clean push preflight and continuation pending`
+状态：`six natural role audits preserved / typed-gap authority and checkpoint-chain engineering pass / cross-role-only clean push, preflight and successor pending`
 
 ## 1. 这一轮真实发生了什么
 
@@ -135,3 +135,19 @@ Counterevidence 的两次 strict submission 均以 `multi_agent_finding_ref_out_
 同时暴露第二个 Harness 问题：现有 role-evaluation checkpoint 只能从单个 terminal 提取从 Demand 开始的完整前缀，不能把旧 Demand checkpoint 与本轮 Operating→Supply 完成段链式合并。下一零调用结构包必须：把 workpaper 的 typed gap refs 纳入 finding ref authority；把 offending／allowed ref 差异编译成可行动 feedback；支持 predecessor checkpoint＋incremental terminal 的链式合并；用已保存 Counter submission 原样重放并本地重验证。成功后应得到六角色完成 checkpoint，下一次从 cross-role audit 开始，禁止重跑 Demand、Operating、Value、Cash、Supply 或 Counter analysis。
 
 当前仍未完成 cross-role audit、任何本轮 repair／reaudit、Writer、完整报告、八维质量、paired、qualified-human、S1／S3、泛化、Workbench 或 release。
+
+## 11. Typed-gap authority 修复与六角色检查点
+
+本次没有要求 DeepSeek 重写 Counterevidence，也没有重跑任何已完成角色。Runtime 先把模型可见合同与本地校验合同对齐：单角色 finding 可以引用该底稿的 sourced Evidence、NumericFact、NumericRelation，以及 `remaining_gap_refs` 中的 typed gap；Tool Schema 与 Validator 都由同一个 `evaluation_allowed_refs()` 编译。真正越界时，FeedbackReceipt 现在同时返回 offending refs 与完整 allowed refs，不再只给一个无法行动的通用 failure code。
+
+随后直接读取不可变 Provider captures，原样重放两次 Counterevidence Tool Call。两份原始 payload 均在更正后的合同下通过，且共同引用当时可见的 `GAP::04EDD7700A1409F8` 与 `GAP::B070D38D076F342B`；未修改研究内容、未调用模型、未访问网络、未晋升 Candidate。选择 source-order 第一份合法提交形成 Counter validated evaluation，四条 finding 均为 L4、非阻断，`report_may_proceed=true`。
+
+checkpoint schema v1.1 现可组合：
+
+- 旧 Demand capture-bound checkpoint；
+- 本轮 Operating、Value、Cash、Supply 四份 validated evaluation；
+- Counter analysis 与原始 strict submission 的零调用重验证结果。
+
+六个专业角色因此全部成为不可变完成前缀，pending role 为 0。frontier v1.5 将 `maximum_initial_role_evaluation_nodes` 从 5 降为 0、`reused_role_evaluation_count` 提高到 6、正常无修订路径只剩 cross-role audit 与 conditional Writer 两个逻辑节点；最多两处真实 finding 的有界路径为 7 个新模型节点。第三处修订、已完成角色重跑、无关角色复审、错误角色目标、未解析 authority、frontier 预算篡改和顺序漂移继续 fail closed。
+
+定向 Runtime／successor／Project OS 回归为 `118 passed`。完整工程门为：全仓 `922 passed`（仅既有 SWIG deprecation warnings）、compileall、Workbench TypeScript 与 Vite production build、active baseline `185 Python / 8 frontend / 5 detectors / 27 Runtime / 0 forbidden`、`777` 份 configs JSON、`8` 份 Project OS JSONL／`886` 行（写入最终状态后）、`7,497` 文件 secret scan／0 findings 和 diff check 全部通过。当前工程结果只授权干净提交、fresh preflight 与一次从 cross-role audit 开始的 successor；不证明 cross-role 内容、实际 repair、Writer、完整研报、八维质量、paired、qualified-human、S1／S3、跨案例泛化、Workbench publication 或 release。

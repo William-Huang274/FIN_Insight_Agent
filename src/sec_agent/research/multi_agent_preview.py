@@ -67,6 +67,12 @@ LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION = (
 ROLE_EVALUATION_PROGRESS_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_role_evaluation_progress_checkpoint_v1_0"
 )
+ROLE_EVALUATION_PROGRESS_CHECKPOINT_CHAIN_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_role_evaluation_progress_checkpoint_v1_1"
+)
+ROLE_EVALUATION_SUBMISSION_REPLAY_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_role_evaluation_submission_replay_v1_0"
+)
 LEAD_PLAN_CARDINALITY_POLICY_SCHEMA_VERSION = (
     "fin_ia_multi_agent_lead_plan_cardinality_policy_v1_0"
 )
@@ -383,6 +389,7 @@ def compile_tool_contract_failure_feedback(
                             "index": index,
                             "rule": "item.enum",
                             "observed": item,
+                            "allowed": deepcopy(item_constraints["enum"]),
                         }
                     )
                 if isinstance(item, str):
@@ -4363,8 +4370,40 @@ def validate_specialist_workpaper_checkpoint(
     }
 
 
+def evaluation_allowed_refs(
+    workpapers: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    """Compile the exact ref authority shared by views, tools and validators."""
+
+    rows = [deepcopy(dict(row)) for row in workpapers]
+    _require(bool(rows), "multi_agent_evaluation_workpapers_missing")
+    refs: set[str] = set()
+    for workpaper in rows:
+        for claim in workpaper.get("sourced_claims") or ():
+            refs.update(str(ref) for ref in claim.get("evidence_refs") or ())
+            refs.update(str(ref) for ref in claim.get("numeric_refs") or ())
+            refs.update(
+                str(ref) for ref in claim.get("numeric_relation_refs") or ()
+            )
+        refs.update(
+            str(ref) for ref in workpaper.get("remaining_gap_refs") or ()
+        )
+    normalized = sorted(ref for ref in refs if ref)
+    _require(
+        len(normalized) == len(refs)
+        and all(
+            ref.startswith(("EV::", "NUM::", "REL::", "GAP::"))
+            for ref in normalized
+        ),
+        "multi_agent_evaluation_allowed_ref_invalid",
+    )
+    return normalized
+
+
 def evaluation_tool(
-    *, allowed_agent_ids: Sequence[str] | None = None
+    *,
+    allowed_agent_ids: Sequence[str] | None = None,
+    allowed_refs: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     allowed_agents = tuple(allowed_agent_ids or SPECIALIST_AGENT_IDS)
     _require(
@@ -4373,6 +4412,18 @@ def evaluation_tool(
         and set(allowed_agents).issubset(SPECIALIST_AGENT_IDS),
         "multi_agent_evaluation_tool_agent_scope_invalid",
     )
+    scoped_refs = tuple(str(ref) for ref in (allowed_refs or ()))
+    _require(
+        len(scoped_refs) == len(set(scoped_refs))
+        and all(
+            ref.startswith(("EV::", "NUM::", "REL::", "GAP::"))
+            for ref in scoped_refs
+        ),
+        "multi_agent_evaluation_tool_ref_scope_invalid",
+    )
+    evidence_ref_item_schema: dict[str, Any] = {"type": "string"}
+    if scoped_refs:
+        evidence_ref_item_schema["enum"] = list(scoped_refs)
     return {
         "type": "function",
         "function": {
@@ -4395,7 +4446,7 @@ def evaluation_tool(
                                 "target_agent_id": {"type": "string", "enum": list(allowed_agents)},
                                 "failure_owner": {"type": "string", "enum": ["data_infrastructure_or_tool", "harness_control", "agent_orchestration_and_role_design", "model_judgment"]},
                                 "explanation": {"type": "string", "minLength": 12, "maxLength": 1000},
-                                "evidence_refs": {"type": "array", "maxItems": 12, "uniqueItems": True, "items": {"type": "string"}},
+                                "evidence_refs": {"type": "array", "maxItems": 12, "uniqueItems": True, "items": evidence_ref_item_schema},
                                 "permitted_repair": {"type": "string", "minLength": 12, "maxLength": 800},
                                 "blocks_report": {"type": "boolean"},
                             },
@@ -4771,6 +4822,105 @@ def validate_role_evaluation(
     return value
 
 
+def _role_evaluation_attempt_receipt(
+    attempt: Mapping[str, Any],
+) -> dict[str, Any]:
+    usage = deepcopy(dict(attempt.get("usage") or {}))
+    receipt = {
+        "attempt_id": str(attempt.get("attempt_id") or ""),
+        "phase": str(attempt.get("phase") or ""),
+        "request_capture_ref": str(attempt.get("request_capture_ref") or ""),
+        "request_digest": str(attempt.get("request_digest") or ""),
+        "response_capture_ref": str(attempt.get("response_capture_ref") or ""),
+        "response_digest": str(attempt.get("response_digest") or ""),
+        "finish_reason": str(attempt.get("finish_reason") or ""),
+        "usage": usage,
+    }
+    _require(
+        all(
+            bool(str(receipt[field]).strip())
+            for field in (
+                "attempt_id",
+                "phase",
+                "request_capture_ref",
+                "response_capture_ref",
+                "finish_reason",
+            )
+        )
+        and all(
+            len(str(receipt[field])) == 64
+            for field in ("request_digest", "response_digest")
+        )
+        and isinstance(usage.get("prompt_tokens"), int)
+        and isinstance(usage.get("completion_tokens"), int),
+        "multi_agent_role_evaluation_checkpoint_receipt_invalid",
+    )
+    return receipt
+
+
+def _extract_terminal_role_evaluation_segment(
+    *,
+    executions: Sequence[Mapping[str, Any]],
+    workpaper_by_agent: Mapping[str, Mapping[str, Any]],
+    contexts: Mapping[str, Mapping[str, Any]],
+) -> tuple[
+    list[str],
+    dict[str, dict[str, Any]],
+    dict[str, dict[str, Any]],
+]:
+    completed_agent_ids: list[str] = []
+    evaluations: dict[str, dict[str, Any]] = {}
+    receipts: dict[str, dict[str, Any]] = {}
+    for raw_execution in executions:
+        execution = deepcopy(dict(raw_execution))
+        node_id = str(execution.get("node_id") or "")
+        prefix = "EVAL::ROLE::"
+        suffix = "::CONTENT_AUDIT_R1"
+        if not (node_id.startswith(prefix) and node_id.endswith(suffix)):
+            continue
+        target_agent_id = "AGENT::" + node_id[len(prefix) : -len(suffix)]
+        _require(
+            target_agent_id in workpaper_by_agent
+            and execution.get("agent_id")
+            == "EVAL::ROLE::" + target_agent_id.split("::")[-1],
+            "multi_agent_role_evaluation_checkpoint_target_invalid",
+        )
+        attempts = execution.get("attempts")
+        _require(
+            isinstance(attempts, list)
+            and len(attempts) == 2
+            and attempts[0].get("phase") == "analysis"
+            and attempts[0].get("status") == "analysis_draft_valid"
+            and attempts[0].get("finish_reason") == "stop"
+            and attempts[1].get("phase") == "submission"
+            and attempts[1].get("status") == "contract_valid"
+            and attempts[1].get("finish_reason") == "tool_calls",
+            "multi_agent_role_evaluation_checkpoint_attempt_invalid",
+        )
+        source_payload = deepcopy(dict(execution.get("validated_payload") or {}))
+        evaluation = validate_role_evaluation(
+            source_payload,
+            workpaper=workpaper_by_agent[target_agent_id],
+        )
+        _require(
+            source_payload == evaluation,
+            "multi_agent_role_evaluation_checkpoint_payload_digest_invalid",
+        )
+        completed_agent_ids.append(target_agent_id)
+        evaluations[target_agent_id] = evaluation
+        receipts[target_agent_id] = {
+            "node_id": node_id,
+            "workpaper_digest": str(
+                workpaper_by_agent[target_agent_id]["workpaper_digest"]
+            ),
+            "context_digest": str(contexts[target_agent_id]["context_digest"]),
+            "analysis": _role_evaluation_attempt_receipt(attempts[0]),
+            "submission": _role_evaluation_attempt_receipt(attempts[1]),
+            "validated_payload_digest": canonical_digest(evaluation),
+        }
+    return completed_agent_ids, evaluations, receipts
+
+
 def compile_role_evaluation_progress_checkpoint(
     *,
     case_key: str,
@@ -4814,96 +4964,13 @@ def compile_role_evaluation_progress_checkpoint(
     workpaper_by_agent = {
         str(row["agent_id"]): row for row in ordered_workpapers
     }
-    completed_agent_ids: list[str] = []
-    evaluations: dict[str, dict[str, Any]] = {}
-    receipts: dict[str, dict[str, Any]] = {}
-    for raw_execution in executions:
-        execution = deepcopy(dict(raw_execution))
-        node_id = str(execution.get("node_id") or "")
-        prefix = "EVAL::ROLE::"
-        suffix = "::CONTENT_AUDIT_R1"
-        if not (node_id.startswith(prefix) and node_id.endswith(suffix)):
-            continue
-        target_agent_id = "AGENT::" + node_id[len(prefix) : -len(suffix)]
-        _require(
-            target_agent_id in workpaper_by_agent
-            and execution.get("agent_id")
-            == "EVAL::ROLE::" + target_agent_id.split("::")[-1],
-            "multi_agent_role_evaluation_checkpoint_target_invalid",
+    completed_agent_ids, evaluations, receipts = (
+        _extract_terminal_role_evaluation_segment(
+            executions=executions,
+            workpaper_by_agent=workpaper_by_agent,
+            contexts=contexts,
         )
-        attempts = execution.get("attempts")
-        _require(
-            isinstance(attempts, list)
-            and len(attempts) == 2
-            and attempts[0].get("phase") == "analysis"
-            and attempts[0].get("status") == "analysis_draft_valid"
-            and attempts[0].get("finish_reason") == "stop"
-            and attempts[1].get("phase") == "submission"
-            and attempts[1].get("status") == "contract_valid"
-            and attempts[1].get("finish_reason") == "tool_calls",
-            "multi_agent_role_evaluation_checkpoint_attempt_invalid",
-        )
-        source_payload = deepcopy(
-            dict(execution.get("validated_payload") or {})
-        )
-        evaluation = validate_role_evaluation(
-            source_payload,
-            workpaper=workpaper_by_agent[target_agent_id],
-        )
-        _require(
-            source_payload == evaluation,
-            "multi_agent_role_evaluation_checkpoint_payload_digest_invalid",
-        )
-
-        def attempt_receipt(attempt: Mapping[str, Any]) -> dict[str, Any]:
-            usage = deepcopy(dict(attempt.get("usage") or {}))
-            receipt = {
-                "attempt_id": str(attempt.get("attempt_id") or ""),
-                "phase": str(attempt.get("phase") or ""),
-                "request_capture_ref": str(
-                    attempt.get("request_capture_ref") or ""
-                ),
-                "request_digest": str(attempt.get("request_digest") or ""),
-                "response_capture_ref": str(
-                    attempt.get("response_capture_ref") or ""
-                ),
-                "response_digest": str(attempt.get("response_digest") or ""),
-                "finish_reason": str(attempt.get("finish_reason") or ""),
-                "usage": usage,
-            }
-            _require(
-                all(
-                    bool(str(receipt[field]).strip())
-                    for field in (
-                        "attempt_id",
-                        "phase",
-                        "request_capture_ref",
-                        "response_capture_ref",
-                        "finish_reason",
-                    )
-                )
-                and all(
-                    len(str(receipt[field])) == 64
-                    for field in ("request_digest", "response_digest")
-                )
-                and isinstance(usage.get("prompt_tokens"), int)
-                and isinstance(usage.get("completion_tokens"), int),
-                "multi_agent_role_evaluation_checkpoint_receipt_invalid",
-            )
-            return receipt
-
-        completed_agent_ids.append(target_agent_id)
-        evaluations[target_agent_id] = evaluation
-        receipts[target_agent_id] = {
-            "node_id": node_id,
-            "workpaper_digest": str(
-                workpaper_by_agent[target_agent_id]["workpaper_digest"]
-            ),
-            "context_digest": str(contexts[target_agent_id]["context_digest"]),
-            "analysis": attempt_receipt(attempts[0]),
-            "submission": attempt_receipt(attempts[1]),
-            "validated_payload_digest": canonical_digest(evaluation),
-        }
+    )
     _require(
         1 <= len(completed_agent_ids) < len(SPECIALIST_AGENT_IDS)
         and completed_agent_ids
@@ -4982,9 +5049,25 @@ def validate_role_evaluation_progress_checkpoint(
     terminal_failure: Mapping[str, Any],
     workpapers: Sequence[Mapping[str, Any]],
     contexts: Mapping[str, Mapping[str, Any]],
+    predecessor_checkpoint: Mapping[str, Any] | None = None,
+    predecessor_terminal_failure: Mapping[str, Any] | None = None,
+    submission_replay: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Recompile a role-evaluation checkpoint from its immutable terminal."""
 
+    if (
+        checkpoint.get("schema_version")
+        == ROLE_EVALUATION_PROGRESS_CHECKPOINT_CHAIN_SCHEMA_VERSION
+    ):
+        return validate_role_evaluation_progress_checkpoint_chain(
+            checkpoint,
+            terminal_failure=terminal_failure,
+            predecessor_checkpoint=predecessor_checkpoint,
+            predecessor_terminal_failure=predecessor_terminal_failure,
+            submission_replay=submission_replay,
+            workpapers=workpapers,
+            contexts=contexts,
+        )
     value = deepcopy(dict(checkpoint))
     supplied = str(value.pop("checkpoint_digest", ""))
     expected = {
@@ -5045,6 +5128,420 @@ def validate_role_evaluation_progress_checkpoint(
     _require(
         rebuilt == dict(checkpoint),
         "multi_agent_role_evaluation_checkpoint_recompile_drift",
+    )
+    return rebuilt
+
+
+def _evaluation_payload_from_response_capture(
+    response_capture: Mapping[str, Any],
+) -> tuple[str, dict[str, Any]]:
+    capture = deepcopy(dict(response_capture))
+    body = deepcopy(dict(capture.get("response_body") or {}))
+    _require(
+        capture.get("response_body_complete") is True
+        and capture.get("eligible_for_contract_parse") is True
+        and capture.get("response_digest") == canonical_digest(body),
+        "multi_agent_role_evaluation_replay_response_invalid",
+    )
+    choices = body.get("choices")
+    _require(
+        isinstance(choices, list) and len(choices) == 1,
+        "multi_agent_role_evaluation_replay_choice_invalid",
+    )
+    message = deepcopy(dict((choices[0] or {}).get("message") or {}))
+    calls = message.get("tool_calls")
+    _require(
+        choices[0].get("finish_reason") == "tool_calls"
+        and isinstance(calls, list)
+        and len(calls) == 1,
+        "multi_agent_role_evaluation_replay_tool_call_invalid",
+    )
+    function = deepcopy(dict((calls[0] or {}).get("function") or {}))
+    _require(
+        function.get("name") == "submit_multi_agent_evaluation",
+        "multi_agent_role_evaluation_replay_tool_name_invalid",
+    )
+    try:
+        payload = json.loads(str(function.get("arguments") or ""))
+    except json.JSONDecodeError as exc:
+        raise MultiAgentPreviewError(
+            "multi_agent_role_evaluation_replay_arguments_invalid"
+        ) from exc
+    _require(
+        isinstance(payload, Mapping),
+        "multi_agent_role_evaluation_replay_arguments_invalid",
+    )
+    return str(capture["attempt_id"]), deepcopy(dict(payload))
+
+
+def compile_role_evaluation_submission_replay(
+    *,
+    source_terminal_result_ref: str,
+    source_terminal_result_sha256: str,
+    terminal_failure: Mapping[str, Any],
+    target_agent_id: str,
+    workpaper: Mapping[str, Any],
+    context: Mapping[str, Any],
+    response_captures: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Revalidate preserved Tool Calls after a local authority-contract fix."""
+
+    terminal = deepcopy(dict(terminal_failure))
+    terminal_body = {
+        key: value
+        for key, value in terminal.items()
+        if key != "full_result_digest"
+    }
+    attempts = [deepcopy(dict(row)) for row in terminal.get("terminal_node_attempts") or ()]
+    _require(
+        terminal.get("status") == "multi_agent_preview_terminal_failure_preserved"
+        and terminal.get("failure_code") == "multi_agent_finding_ref_out_of_scope"
+        and terminal.get("full_result_digest") == canonical_digest(terminal_body)
+        and len(source_terminal_result_sha256) == 64
+        and target_agent_id == "AGENT::COUNTEREVIDENCE"
+        and workpaper.get("agent_id") == target_agent_id
+        and (context.get("agent") or {}).get("agent_id") == target_agent_id
+        and len(attempts) == 3
+        and attempts[0].get("phase") == "analysis"
+        and attempts[0].get("finish_reason") == "stop"
+        and attempts[1].get("phase") == attempts[2].get("phase") == "submission"
+        and attempts[1].get("failure_code")
+        == attempts[2].get("failure_code")
+        == "multi_agent_finding_ref_out_of_scope",
+        "multi_agent_role_evaluation_replay_terminal_invalid",
+    )
+    by_attempt: dict[str, Mapping[str, Any]] = {}
+    for raw_capture in response_captures:
+        capture = deepcopy(dict(raw_capture))
+        attempt_id = str(capture.get("attempt_id") or "")
+        _require(
+            attempt_id and attempt_id not in by_attempt,
+            "multi_agent_role_evaluation_replay_capture_identity_invalid",
+        )
+        by_attempt[attempt_id] = capture
+    replayed: list[dict[str, Any]] = []
+    for attempt in attempts[1:]:
+        attempt_id = str(attempt.get("attempt_id") or "")
+        _require(
+            attempt_id in by_attempt
+            and by_attempt[attempt_id].get("response_digest")
+            == attempt.get("response_digest"),
+            "multi_agent_role_evaluation_replay_capture_binding_invalid",
+        )
+        captured_attempt_id, payload = _evaluation_payload_from_response_capture(
+            by_attempt[attempt_id]
+        )
+        _require(
+            captured_attempt_id == attempt_id,
+            "multi_agent_role_evaluation_replay_capture_binding_invalid",
+        )
+        evaluation = validate_role_evaluation(payload, workpaper=workpaper)
+        replayed.append(
+            {
+                "attempt_id": attempt_id,
+                "response_digest": str(attempt["response_digest"]),
+                "validated_payload_digest": canonical_digest(evaluation),
+                "validated_evaluation": evaluation,
+            }
+        )
+    selected = replayed[0]
+    body = {
+        "schema_version": ROLE_EVALUATION_SUBMISSION_REPLAY_SCHEMA_VERSION,
+        "status": "preserved_counter_submission_valid_under_corrected_ref_authority",
+        "source_terminal_result_ref": str(source_terminal_result_ref),
+        "source_terminal_result_sha256": str(source_terminal_result_sha256),
+        "source_terminal_result_digest": str(terminal["full_result_digest"]),
+        "source_failure_code": str(terminal["failure_code"]),
+        "target_agent_id": target_agent_id,
+        "workpaper_digest": str(workpaper["workpaper_digest"]),
+        "context_digest": str(context["context_digest"]),
+        "allowed_refs": evaluation_allowed_refs([workpaper]),
+        "analysis_attempt": _role_evaluation_attempt_receipt(attempts[0]),
+        "submission_attempts": [
+            _role_evaluation_attempt_receipt(attempt) for attempt in attempts[1:]
+        ],
+        "replayed_submissions": replayed,
+        "selection_policy": "first_source_order_submission_valid_under_corrected_contract",
+        "selected_attempt_id": str(selected["attempt_id"]),
+        "validated_evaluation": deepcopy(dict(selected["validated_evaluation"])),
+        "validated_payload_digest": str(selected["validated_payload_digest"]),
+        "contract_correction": {
+            "model_visible_typed_gap_refs_are_locally_authorized": True,
+            "research_payload_changed": False,
+            "provider_response_changed": False,
+        },
+        "claims": {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
+def validate_role_evaluation_submission_replay(
+    replay: Mapping[str, Any],
+    *,
+    terminal_failure: Mapping[str, Any],
+    workpaper: Mapping[str, Any],
+    context: Mapping[str, Any],
+    response_captures: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    value = deepcopy(dict(replay))
+    supplied = str(value.pop("result_digest", ""))
+    _require(
+        supplied == canonical_digest(value)
+        and value.get("schema_version")
+        == ROLE_EVALUATION_SUBMISSION_REPLAY_SCHEMA_VERSION,
+        "multi_agent_role_evaluation_replay_shape_invalid",
+    )
+    rebuilt = compile_role_evaluation_submission_replay(
+        source_terminal_result_ref=str(value["source_terminal_result_ref"]),
+        source_terminal_result_sha256=str(value["source_terminal_result_sha256"]),
+        terminal_failure=terminal_failure,
+        target_agent_id=str(value["target_agent_id"]),
+        workpaper=workpaper,
+        context=context,
+        response_captures=response_captures,
+    )
+    _require(
+        rebuilt == dict(replay),
+        "multi_agent_role_evaluation_replay_recompile_drift",
+    )
+    return rebuilt
+
+
+def compile_role_evaluation_progress_checkpoint_chain(
+    *,
+    case_key: str,
+    source_run_id: str,
+    source_authority_ref: str,
+    source_authority_sha256: str,
+    source_public_result_ref: str,
+    source_public_result_sha256: str,
+    source_public_result_digest: str,
+    source_terminal_result_ref: str,
+    source_terminal_result_sha256: str,
+    terminal_failure: Mapping[str, Any],
+    evaluator_analysis_profile_ref: str,
+    evaluator_analysis_profile_sha256: str,
+    predecessor_checkpoint_ref: str,
+    predecessor_checkpoint_sha256: str,
+    predecessor_checkpoint: Mapping[str, Any],
+    submission_replay_ref: str,
+    submission_replay_sha256: str,
+    submission_replay: Mapping[str, Any],
+    workpapers: Sequence[Mapping[str, Any]],
+    contexts: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Merge an immutable checkpoint, a later terminal and a local replay."""
+
+    rows = [deepcopy(dict(row)) for row in workpapers]
+    workpaper_by_agent = {str(row["agent_id"]): row for row in rows}
+    _require(
+        [str(row["agent_id"]) for row in rows] == list(SPECIALIST_AGENT_IDS)
+        and set(contexts) == set(SPECIALIST_AGENT_IDS),
+        "multi_agent_role_evaluation_checkpoint_chain_research_state_invalid",
+    )
+    prior = deepcopy(dict(predecessor_checkpoint))
+    prior_digest = str(prior.get("checkpoint_digest") or "")
+    _require(
+        prior.get("schema_version")
+        in {
+            ROLE_EVALUATION_PROGRESS_CHECKPOINT_SCHEMA_VERSION,
+            ROLE_EVALUATION_PROGRESS_CHECKPOINT_CHAIN_SCHEMA_VERSION,
+        }
+        and prior_digest
+        and len(predecessor_checkpoint_sha256) == 64,
+        "multi_agent_role_evaluation_checkpoint_chain_predecessor_invalid",
+    )
+    terminal = deepcopy(dict(terminal_failure))
+    terminal_body = {
+        key: value
+        for key, value in terminal.items()
+        if key != "full_result_digest"
+    }
+    _require(
+        terminal.get("status") == "multi_agent_preview_terminal_failure_preserved"
+        and terminal.get("full_result_digest") == canonical_digest(terminal_body),
+        "multi_agent_role_evaluation_checkpoint_chain_terminal_invalid",
+    )
+    segment_ids, segment_evaluations, segment_receipts = (
+        _extract_terminal_role_evaluation_segment(
+            executions=terminal.get("node_executions") or (),
+            workpaper_by_agent=workpaper_by_agent,
+            contexts=contexts,
+        )
+    )
+    prior_ids = [str(agent_id) for agent_id in prior.get("completed_agent_ids") or ()]
+    expected_segment = list(
+        SPECIALIST_AGENT_IDS[len(prior_ids) : len(prior_ids) + len(segment_ids)]
+    )
+    replay = deepcopy(dict(submission_replay))
+    replay_target = str(replay.get("target_agent_id") or "")
+    _require(
+        prior_ids == list(SPECIALIST_AGENT_IDS[: len(prior_ids)])
+        and segment_ids == expected_segment
+        and replay.get("schema_version")
+        == ROLE_EVALUATION_SUBMISSION_REPLAY_SCHEMA_VERSION
+        and replay.get("source_terminal_result_digest")
+        == terminal.get("full_result_digest")
+        and replay_target
+        == SPECIALIST_AGENT_IDS[len(prior_ids) + len(segment_ids)]
+        and len(submission_replay_sha256) == 64,
+        "multi_agent_role_evaluation_checkpoint_chain_segment_invalid",
+    )
+    completed_agent_ids = [*prior_ids, *segment_ids, replay_target]
+    _require(
+        completed_agent_ids == list(SPECIALIST_AGENT_IDS),
+        "multi_agent_role_evaluation_checkpoint_chain_prefix_invalid",
+    )
+    evaluations = {
+        **deepcopy(dict(prior["validated_role_evaluations"])),
+        **segment_evaluations,
+        replay_target: deepcopy(dict(replay["validated_evaluation"])),
+    }
+    replay_receipt = {
+        "node_id": "EVAL::ROLE::COUNTEREVIDENCE::CONTENT_AUDIT_R1",
+        "workpaper_digest": str(workpaper_by_agent[replay_target]["workpaper_digest"]),
+        "context_digest": str(contexts[replay_target]["context_digest"]),
+        "analysis": deepcopy(dict(replay["analysis_attempt"])),
+        "submission": deepcopy(dict(replay["submission_attempts"][0])),
+        "validated_payload_digest": str(replay["validated_payload_digest"]),
+        "submission_replay_result_digest": str(replay["result_digest"]),
+    }
+    receipts = {
+        **deepcopy(dict(prior["source_receipts"])),
+        **segment_receipts,
+        replay_target: replay_receipt,
+    }
+    profile_lineage = {
+        agent_id: {
+            "ref": str(prior["evaluator_analysis_profile_ref"]),
+            "sha256": str(prior["evaluator_analysis_profile_sha256"]),
+        }
+        for agent_id in prior_ids
+    }
+    profile_lineage.update(
+        {
+            agent_id: {
+                "ref": str(evaluator_analysis_profile_ref),
+                "sha256": str(evaluator_analysis_profile_sha256),
+            }
+            for agent_id in [*segment_ids, replay_target]
+        }
+    )
+    body = {
+        "schema_version": ROLE_EVALUATION_PROGRESS_CHECKPOINT_CHAIN_SCHEMA_VERSION,
+        "status": "all_role_evaluations_valid_for_cross_role_resume",
+        "case_key": str(case_key),
+        "source_run_id": str(source_run_id),
+        "source_authority_ref": str(source_authority_ref),
+        "source_authority_sha256": str(source_authority_sha256),
+        "source_public_result_ref": str(source_public_result_ref),
+        "source_public_result_sha256": str(source_public_result_sha256),
+        "source_public_result_digest": str(source_public_result_digest),
+        "source_terminal_result_ref": str(source_terminal_result_ref),
+        "source_terminal_result_sha256": str(source_terminal_result_sha256),
+        "source_terminal_result_digest": str(terminal["full_result_digest"]),
+        "source_failure_code": str(terminal.get("failure_code") or ""),
+        "evaluator_analysis_profile_ref": str(evaluator_analysis_profile_ref),
+        "evaluator_analysis_profile_sha256": str(evaluator_analysis_profile_sha256),
+        "evaluator_profile_lineage": profile_lineage,
+        "predecessor_checkpoint_ref": str(predecessor_checkpoint_ref),
+        "predecessor_checkpoint_sha256": str(predecessor_checkpoint_sha256),
+        "predecessor_checkpoint_digest": prior_digest,
+        "submission_replay_ref": str(submission_replay_ref),
+        "submission_replay_sha256": str(submission_replay_sha256),
+        "submission_replay_result_digest": str(replay["result_digest"]),
+        "incremental_terminal_agent_ids": segment_ids,
+        "completed_agent_ids": completed_agent_ids,
+        "pending_agent_ids": [],
+        "reused_role_evaluation_count": len(completed_agent_ids),
+        "workpaper_digests": {
+            agent_id: str(workpaper_by_agent[agent_id]["workpaper_digest"])
+            for agent_id in completed_agent_ids
+        },
+        "context_digests": {
+            agent_id: str(contexts[agent_id]["context_digest"])
+            for agent_id in completed_agent_ids
+        },
+        "validated_role_evaluations": evaluations,
+        "source_receipts": receipts,
+        "resume_policy": {
+            "completed_role_evaluation_rerun_forbidden": True,
+            "resume_starts_at_cross_role_evaluation": True,
+            "research_inputs_unchanged": True,
+            "new_fact_or_authority_forbidden": True,
+        },
+        "claims": {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+    }
+    return {**body, "checkpoint_digest": canonical_digest(body)}
+
+
+def validate_role_evaluation_progress_checkpoint_chain(
+    checkpoint: Mapping[str, Any],
+    *,
+    terminal_failure: Mapping[str, Any],
+    predecessor_checkpoint: Mapping[str, Any] | None,
+    predecessor_terminal_failure: Mapping[str, Any] | None,
+    submission_replay: Mapping[str, Any] | None,
+    workpapers: Sequence[Mapping[str, Any]],
+    contexts: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    _require(
+        predecessor_checkpoint is not None
+        and predecessor_terminal_failure is not None
+        and submission_replay is not None,
+        "multi_agent_role_evaluation_checkpoint_chain_inputs_missing",
+    )
+    value = deepcopy(dict(checkpoint))
+    supplied = str(value.pop("checkpoint_digest", ""))
+    _require(
+        supplied == canonical_digest(value)
+        and value.get("schema_version")
+        == ROLE_EVALUATION_PROGRESS_CHECKPOINT_CHAIN_SCHEMA_VERSION,
+        "multi_agent_role_evaluation_checkpoint_chain_shape_invalid",
+    )
+    validated_predecessor = validate_role_evaluation_progress_checkpoint(
+        predecessor_checkpoint,
+        terminal_failure=predecessor_terminal_failure,
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+    rebuilt = compile_role_evaluation_progress_checkpoint_chain(
+        case_key=str(value["case_key"]),
+        source_run_id=str(value["source_run_id"]),
+        source_authority_ref=str(value["source_authority_ref"]),
+        source_authority_sha256=str(value["source_authority_sha256"]),
+        source_public_result_ref=str(value["source_public_result_ref"]),
+        source_public_result_sha256=str(value["source_public_result_sha256"]),
+        source_public_result_digest=str(value["source_public_result_digest"]),
+        source_terminal_result_ref=str(value["source_terminal_result_ref"]),
+        source_terminal_result_sha256=str(value["source_terminal_result_sha256"]),
+        terminal_failure=terminal_failure,
+        evaluator_analysis_profile_ref=str(value["evaluator_analysis_profile_ref"]),
+        evaluator_analysis_profile_sha256=str(value["evaluator_analysis_profile_sha256"]),
+        predecessor_checkpoint_ref=str(value["predecessor_checkpoint_ref"]),
+        predecessor_checkpoint_sha256=str(value["predecessor_checkpoint_sha256"]),
+        predecessor_checkpoint=validated_predecessor,
+        submission_replay_ref=str(value["submission_replay_ref"]),
+        submission_replay_sha256=str(value["submission_replay_sha256"]),
+        submission_replay=submission_replay,
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+    _require(
+        rebuilt == dict(checkpoint),
+        "multi_agent_role_evaluation_checkpoint_chain_recompile_drift",
     )
     return rebuilt
 
@@ -5234,16 +5731,7 @@ def validate_evaluation(
         "multi_agent_evaluation_identity_invalid",
     )
     workpaper_agents = {str(row["agent_id"]) for row in workpapers}
-    allowed_refs = {
-        str(ref)
-        for workpaper in workpapers
-        for claim in workpaper["sourced_claims"]
-        for ref in (
-            list(claim["evidence_refs"])
-            + list(claim["numeric_refs"])
-            + list(claim["numeric_relation_refs"])
-        )
-    }
+    allowed_refs = set(evaluation_allowed_refs(workpapers))
     findings = value.get("findings")
     _require(isinstance(findings, list) and len(findings) <= 20, "multi_agent_findings_invalid")
     for finding in findings:
@@ -6231,6 +6719,8 @@ __all__ = [
     "MULTI_AGENT_REPORT_DRAFT_SCHEMA_VERSION",
     "MULTI_AGENT_ROLE_TOPOLOGY_SCHEMA_VERSION",
     "ROLE_EVALUATION_PROGRESS_CHECKPOINT_SCHEMA_VERSION",
+    "ROLE_EVALUATION_PROGRESS_CHECKPOINT_CHAIN_SCHEMA_VERSION",
+    "ROLE_EVALUATION_SUBMISSION_REPLAY_SCHEMA_VERSION",
     "MultiAgentPreviewError",
     "RESEARCH_LEAD_AGENT_ID",
     "SPECIALIST_AGENT_IDS",
@@ -6247,6 +6737,8 @@ __all__ = [
     "compile_cross_role_evaluation_messages",
     "compile_role_evaluation_messages",
     "compile_role_evaluation_progress_checkpoint",
+    "compile_role_evaluation_progress_checkpoint_chain",
+    "compile_role_evaluation_submission_replay",
     "compile_challenge_catalog",
     "compile_analyzed_node_messages",
     "compile_analyzed_node_submission_messages",
@@ -6267,6 +6759,7 @@ __all__ = [
     "merge_analysis_draft_fragments",
     "merge_hierarchical_evaluations",
     "evaluation_tool",
+    "evaluation_allowed_refs",
     "lead_plan_tool",
     "lead_coordination_tool",
     "lead_coordination_rationale_max_chars",
@@ -6278,6 +6771,8 @@ __all__ = [
     "validate_evaluation",
     "validate_role_evaluation",
     "validate_role_evaluation_progress_checkpoint",
+    "validate_role_evaluation_progress_checkpoint_chain",
+    "validate_role_evaluation_submission_replay",
     "validate_analysis_fragment_checkpoint",
     "validate_analysis_completion_checkpoint",
     "validate_downstream_repair_progress_checkpoint",

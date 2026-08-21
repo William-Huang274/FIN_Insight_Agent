@@ -22,6 +22,8 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     compile_cross_role_evaluation_content_view,
     compile_cross_role_evaluation_messages,
     compile_role_evaluation_progress_checkpoint,
+    compile_role_evaluation_progress_checkpoint_chain,
+    compile_role_evaluation_submission_replay,
     compile_role_evaluation_messages,
     local_case_absence_findings,
     validate_evaluation,
@@ -29,6 +31,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     validate_lead_plan_checkpoint,
     validate_role_evaluation,
     validate_role_evaluation_progress_checkpoint,
+    validate_role_evaluation_submission_replay,
     validate_specialist_plan_checkpoint,
     validate_specialist_workpaper_checkpoint,
 )
@@ -213,6 +216,183 @@ def build_role_evaluation_checkpoint(
     )
 
 
+def _validate_evaluation_checkpoint_from_path(
+    *,
+    checkpoint_path: Path,
+    workpapers: Sequence[Mapping[str, Any]],
+    contexts: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    checkpoint = _load(checkpoint_path)
+    terminal = _load(str(checkpoint["source_terminal_result_ref"]))
+    if checkpoint.get("schema_version") != (
+        "fin_ia_multi_agent_role_evaluation_progress_checkpoint_v1_1"
+    ):
+        return validate_role_evaluation_progress_checkpoint(
+            checkpoint,
+            terminal_failure=terminal,
+            workpapers=workpapers,
+            contexts=contexts,
+        )
+    predecessor = _load(str(checkpoint["predecessor_checkpoint_ref"]))
+    predecessor_terminal = _load(
+        str(predecessor["source_terminal_result_ref"])
+    )
+    replay = _load(str(checkpoint["submission_replay_ref"]))
+    replay_agent_id = str(replay["target_agent_id"])
+    replay_responses = [
+        _load(str(row["response_capture_ref"]))
+        for row in replay["submission_attempts"]
+    ]
+    validated_replay = validate_role_evaluation_submission_replay(
+        replay,
+        terminal_failure=terminal,
+        workpaper=next(
+            row for row in workpapers if row["agent_id"] == replay_agent_id
+        ),
+        context=contexts[replay_agent_id],
+        response_captures=replay_responses,
+    )
+    return validate_role_evaluation_progress_checkpoint(
+        checkpoint,
+        terminal_failure=terminal,
+        workpapers=workpapers,
+        contexts=contexts,
+        predecessor_checkpoint=predecessor,
+        predecessor_terminal_failure=predecessor_terminal,
+        submission_replay=validated_replay,
+    )
+
+
+def build_role_evaluation_submission_replay(
+    *,
+    frontier_path: Path,
+    source_terminal_path: Path,
+) -> dict[str, Any]:
+    frontier = validate_successor_execution_frontier(_load(frontier_path))
+    workpapers, contexts, _ = _load_current_research_state(frontier=frontier)
+    terminal = _load(source_terminal_path)
+    target_agent_id = "AGENT::COUNTEREVIDENCE"
+    response_captures = [
+        _load(str(row["response_capture_ref"]))
+        for row in terminal["terminal_node_attempts"]
+        if row.get("phase") == "submission"
+    ]
+    replay = compile_role_evaluation_submission_replay(
+        source_terminal_result_ref=source_terminal_path.relative_to(ROOT).as_posix(),
+        source_terminal_result_sha256=_sha(source_terminal_path),
+        terminal_failure=terminal,
+        target_agent_id=target_agent_id,
+        workpaper=next(
+            row for row in workpapers if row["agent_id"] == target_agent_id
+        ),
+        context=contexts[target_agent_id],
+        response_captures=response_captures,
+    )
+    return validate_role_evaluation_submission_replay(
+        replay,
+        terminal_failure=terminal,
+        workpaper=next(
+            row for row in workpapers if row["agent_id"] == target_agent_id
+        ),
+        context=contexts[target_agent_id],
+        response_captures=response_captures,
+    )
+
+
+def build_chained_role_evaluation_checkpoint(
+    *,
+    frontier_path: Path,
+    source_authority_path: Path,
+    source_result_path: Path,
+    source_terminal_path: Path,
+    source_evaluator_profile_path: Path,
+    predecessor_checkpoint_path: Path,
+    submission_replay_path: Path,
+) -> dict[str, Any]:
+    frontier = validate_successor_execution_frontier(_load(frontier_path))
+    workpapers, contexts, _ = _load_current_research_state(frontier=frontier)
+    predecessor = _validate_evaluation_checkpoint_from_path(
+        checkpoint_path=predecessor_checkpoint_path,
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+    source_authority = _load(source_authority_path)
+    source_result = _load(source_result_path)
+    source_terminal = _load(source_terminal_path)
+    replay_raw = _load(submission_replay_path)
+    replay_responses = [
+        _load(str(row["response_capture_ref"]))
+        for row in replay_raw["submission_attempts"]
+    ]
+    replay_agent_id = str(replay_raw["target_agent_id"])
+    replay = validate_role_evaluation_submission_replay(
+        replay_raw,
+        terminal_failure=source_terminal,
+        workpaper=next(
+            row for row in workpapers if row["agent_id"] == replay_agent_id
+        ),
+        context=contexts[replay_agent_id],
+        response_captures=replay_responses,
+    )
+    checkpoint = compile_role_evaluation_progress_checkpoint_chain(
+        case_key="DELL",
+        source_run_id=str(source_authority["outputs"]["run_id"]),
+        source_authority_ref=source_authority_path.relative_to(ROOT).as_posix(),
+        source_authority_sha256=_sha(source_authority_path),
+        source_public_result_ref=source_result_path.relative_to(ROOT).as_posix(),
+        source_public_result_sha256=_sha(source_result_path),
+        source_public_result_digest=str(source_result["result_digest"]),
+        source_terminal_result_ref=source_terminal_path.relative_to(ROOT).as_posix(),
+        source_terminal_result_sha256=_sha(source_terminal_path),
+        terminal_failure=source_terminal,
+        evaluator_analysis_profile_ref=(
+            source_evaluator_profile_path.relative_to(ROOT).as_posix()
+        ),
+        evaluator_analysis_profile_sha256=_sha(source_evaluator_profile_path),
+        predecessor_checkpoint_ref=(
+            predecessor_checkpoint_path.relative_to(ROOT).as_posix()
+        ),
+        predecessor_checkpoint_sha256=_sha(predecessor_checkpoint_path),
+        predecessor_checkpoint=predecessor,
+        submission_replay_ref=submission_replay_path.relative_to(ROOT).as_posix(),
+        submission_replay_sha256=_sha(submission_replay_path),
+        submission_replay=replay,
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+    return _validate_evaluation_checkpoint_from_path_payload(
+        checkpoint=checkpoint,
+        terminal=source_terminal,
+        predecessor=predecessor,
+        replay=replay,
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+
+
+def _validate_evaluation_checkpoint_from_path_payload(
+    *,
+    checkpoint: Mapping[str, Any],
+    terminal: Mapping[str, Any],
+    predecessor: Mapping[str, Any],
+    replay: Mapping[str, Any],
+    workpapers: Sequence[Mapping[str, Any]],
+    contexts: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    predecessor_terminal = _load(
+        str(predecessor["source_terminal_result_ref"])
+    )
+    return validate_role_evaluation_progress_checkpoint(
+        checkpoint,
+        terminal_failure=terminal,
+        workpapers=workpapers,
+        contexts=contexts,
+        predecessor_checkpoint=predecessor,
+        predecessor_terminal_failure=predecessor_terminal,
+        submission_replay=replay,
+    )
+
+
 def build_proof(
     *,
     frontier_path: Path,
@@ -231,14 +411,9 @@ def build_proof(
             raise MultiAgentSuccessorError(
                 "multi_agent_hierarchical_proof_evaluation_checkpoint_missing"
             )
-        checkpoint_raw = _load(evaluation_progress_checkpoint_path)
-        checkpoint_terminal = _load(
-            str(checkpoint_raw["source_terminal_result_ref"])
-        )
         evaluation_progress_checkpoint = (
-            validate_role_evaluation_progress_checkpoint(
-                checkpoint_raw,
-                terminal_failure=checkpoint_terminal,
+            _validate_evaluation_checkpoint_from_path(
+                checkpoint_path=evaluation_progress_checkpoint_path,
                 workpapers=workpapers,
                 contexts=contexts,
             )
@@ -442,14 +617,25 @@ def build_checkpointed_frontier(
     base_frontier = validate_successor_execution_frontier(
         _load(base_frontier_path)
     )
-    checkpoint = build_role_evaluation_checkpoint(
-        frontier_path=base_frontier_path,
-        source_authority_path=source_authority_path,
-        source_result_path=source_result_path,
-        source_terminal_path=source_terminal_path,
-        source_evaluator_profile_path=source_evaluator_profile_path,
+    workpapers, contexts, _ = _load_current_research_state(
+        frontier=base_frontier
     )
-    if checkpoint != _load(evaluation_progress_checkpoint_path):
+    checkpoint = _validate_evaluation_checkpoint_from_path(
+        checkpoint_path=evaluation_progress_checkpoint_path,
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+    if not (
+        checkpoint == _load(evaluation_progress_checkpoint_path)
+        and checkpoint["source_authority_ref"]
+        == source_authority_path.relative_to(ROOT).as_posix()
+        and checkpoint["source_public_result_ref"]
+        == source_result_path.relative_to(ROOT).as_posix()
+        and checkpoint["source_terminal_result_ref"]
+        == source_terminal_path.relative_to(ROOT).as_posix()
+        and checkpoint["evaluator_analysis_profile_ref"]
+        == source_evaluator_profile_path.relative_to(ROOT).as_posix()
+    ):
         raise MultiAgentSuccessorError(
             "multi_agent_checkpointed_frontier_evaluation_checkpoint_drift"
         )
@@ -489,10 +675,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--frontier", required=True)
     parser.add_argument(
         "--output-kind",
-        choices=("proof", "evaluation-checkpoint", "checkpointed-frontier"),
+        choices=(
+            "proof",
+            "evaluation-checkpoint",
+            "submission-replay",
+            "checkpoint-chain",
+            "checkpointed-frontier",
+        ),
         default="proof",
     )
     parser.add_argument("--evaluation-progress-checkpoint")
+    parser.add_argument("--predecessor-evaluation-checkpoint")
+    parser.add_argument("--submission-replay")
     parser.add_argument("--source-authority")
     parser.add_argument("--source-result")
     parser.add_argument("--source-terminal")
@@ -500,8 +694,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--output")
     args = parser.parse_args(argv)
     frontier_path = Path(args.frontier).resolve()
-    if args.output_kind in {
+    if args.output_kind == "submission-replay":
+        if not args.source_terminal:
+            parser.error("submission-replay requires --source-terminal")
+        output = build_role_evaluation_submission_replay(
+            frontier_path=frontier_path,
+            source_terminal_path=Path(args.source_terminal).resolve(),
+        )
+    elif args.output_kind in {
         "evaluation-checkpoint",
+        "checkpoint-chain",
         "checkpointed-frontier",
     }:
         required = (
@@ -521,7 +723,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         source_evaluator_profile_path = Path(
             args.source_evaluator_profile
         ).resolve()
-        if args.output_kind == "checkpointed-frontier":
+        if args.output_kind == "checkpoint-chain":
+            if not (
+                args.predecessor_evaluation_checkpoint
+                and args.submission_replay
+            ):
+                parser.error(
+                    "checkpoint-chain requires --predecessor-evaluation-"
+                    "checkpoint and --submission-replay"
+                )
+            output = build_chained_role_evaluation_checkpoint(
+                frontier_path=frontier_path,
+                source_authority_path=source_authority_path,
+                source_result_path=source_result_path,
+                source_terminal_path=source_terminal_path,
+                source_evaluator_profile_path=source_evaluator_profile_path,
+                predecessor_checkpoint_path=Path(
+                    args.predecessor_evaluation_checkpoint
+                ).resolve(),
+                submission_replay_path=Path(args.submission_replay).resolve(),
+            )
+        elif args.output_kind == "checkpointed-frontier":
             if not args.evaluation_progress_checkpoint:
                 parser.error(
                     "checkpointed-frontier requires "

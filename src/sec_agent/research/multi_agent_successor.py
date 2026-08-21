@@ -269,7 +269,7 @@ def compile_successor_execution_frontier(
             hierarchical
             and completed_role_evaluations
             == list(SPECIALIST_AGENT_IDS[: len(completed_role_evaluations)])
-            and len(completed_role_evaluations) < len(SPECIALIST_AGENT_IDS)
+            and len(completed_role_evaluations) <= len(SPECIALIST_AGENT_IDS)
             and (
                 (not completed_role_evaluations and not evaluation_progress_checkpoint_digest)
                 or (

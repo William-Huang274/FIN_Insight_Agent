@@ -258,6 +258,11 @@ MULTI_AGENT_PREVIEW_HIERARCHICAL_EVALUATOR_CHECKPOINT_SCOPE_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
     "successor_scope_decision_v1_4.json"
 )
+MULTI_AGENT_PREVIEW_ALL_ROLE_EVALUATIONS_CHECKPOINT_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
+    "successor_scope_decision_v1_5.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -995,11 +1000,49 @@ def test_multi_agent_preview_role_evaluation_checkpoint_resumes_at_operating() -
         check_repository=False,
     )
     assert preflight["status"] == "pass_current_decision_bound_preflight"
-    assert {
-        "RC-AR-023-hierarchical-role-audit-reused-high-reasoning-repair-profile",
-        "RC-AR-024-low-reasoning-evaluator-has-no-visible-output-reserve-or-node-checkpoint",
-    }.issubset(
-        set(preflight["scope_projection"]["explicit_allow_issue_ids"])
+    assert (
+        "RC-AR-023-hierarchical-role-audit-reused-high-reasoning-repair-profile"
+        in preflight["scope_projection"]["explicit_allow_issue_ids"]
+    )
+    assert (
+        "RC-AR-024-low-reasoning-evaluator-has-no-visible-output-reserve-or-node-checkpoint"
+        not in preflight["scope_projection"]["explicit_allow_issue_ids"]
+    )
+
+
+def test_multi_agent_preview_all_role_evaluations_resume_at_cross_role() -> None:
+    decision = json.loads(
+        (
+            ROOT
+            / MULTI_AGENT_PREVIEW_ALL_ROLE_EVALUATIONS_CHECKPOINT_SCOPE_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+
+    projection = validate_multi_agent_preview_generic_successor_scope_decision(
+        root=ROOT,
+        decision=decision,
+    )
+
+    assert projection["evaluator_analysis_reasoning_effort"] is None
+    assert projection["evaluator_analysis_thinking_mode"] == "disabled"
+    assert projection["reused_role_evaluation_count"] == 6
+    assert projection["execution_limits"][
+        "maximum_initial_role_evaluation_nodes"
+    ] == 0
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 7
+
+    preflight = build_preflight(
+        root=ROOT,
+        decision_ref=(
+            MULTI_AGENT_PREVIEW_ALL_ROLE_EVALUATIONS_CHECKPOINT_SCOPE_DECISION_REF
+        ),
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    assert preflight["status"] == "pass_current_decision_bound_preflight"
+    assert (
+        "RC-AR-025-evaluator-gap-ref-authority-and-checkpoint-chain-asymmetry"
+        in preflight["scope_projection"]["explicit_allow_issue_ids"]
     )
 
 

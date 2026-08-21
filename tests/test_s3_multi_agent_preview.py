@@ -38,6 +38,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_specialist_workpaper_messages,
     compile_token_budget_basis,
     compile_tool_contract_failure_feedback,
+    evaluation_allowed_refs,
     evaluation_tool,
     lead_coordination_rationale_max_chars,
     lead_plan_tool,
@@ -1571,6 +1572,65 @@ def test_hierarchical_evaluator_separates_role_authority_from_cross_role_review(
         local_findings=[],
     )
     assert merged["report_may_proceed"] is True
+
+
+def test_evaluation_ref_authority_includes_typed_gaps_and_feedback_lists_scope() -> None:
+    workpaper = _workpaper(SPECIALIST_AGENT_IDS[0])
+    refs = evaluation_allowed_refs([workpaper])
+    gap_ref = str(workpaper["remaining_gap_refs"][0])
+    assert gap_ref in refs
+    tool = evaluation_tool(
+        allowed_agent_ids=[workpaper["agent_id"]],
+        allowed_refs=refs,
+    )
+    item_schema = tool["function"]["parameters"]["properties"][
+        "findings"
+    ]["items"]["properties"]["evidence_refs"]["items"]
+    assert item_schema["enum"] == refs
+    valid = validate_role_evaluation(
+        {
+            "schema_version": MULTI_AGENT_EVALUATION_SCHEMA_VERSION,
+            "findings": [
+                {
+                    "finding_code": "TYPED_GAP_BOUNDARY",
+                    "severity": "L4",
+                    "target_agent_id": workpaper["agent_id"],
+                    "failure_owner": "harness_control",
+                    "explanation": "The absence statement is bounded by the visible typed gap.",
+                    "evidence_refs": [gap_ref],
+                    "permitted_repair": "No repair is required while the typed gap remains exact.",
+                    "blocks_report": False,
+                }
+            ],
+            "cross_role_conflicts": [],
+            "report_may_proceed": True,
+        },
+        workpaper=workpaper,
+    )
+    assert valid["findings"][0]["evidence_refs"] == [gap_ref]
+
+    invalid_payload = {
+        **valid,
+        "findings": [
+            {
+                **valid["findings"][0],
+                "evidence_refs": ["GAP::OUT_OF_SCOPE"],
+            }
+        ],
+    }
+    invalid_payload.pop("evaluation_digest")
+    feedback = compile_tool_contract_failure_feedback(
+        tool=tool,
+        payload=invalid_payload,
+        failure_code="multi_agent_finding_ref_out_of_scope",
+    )
+    violation = next(
+        row
+        for row in feedback["violations"]
+        if row.get("rule") == "enum"
+        and row.get("observed") == "GAP::OUT_OF_SCOPE"
+    )
+    assert gap_ref in violation["allowed"]
 
 
 def test_hierarchical_evaluator_preserves_local_block_and_fails_closed_on_missing_role() -> None:

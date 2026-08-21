@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
 
 import pytest
 
@@ -9,8 +10,11 @@ from sec_agent.research.multi_agent_preview import (
     MultiAgentPreviewError,
     SPECIALIST_AGENT_IDS,
     compile_role_evaluation_progress_checkpoint,
+    compile_role_evaluation_progress_checkpoint_chain,
+    compile_role_evaluation_submission_replay,
     validate_role_evaluation,
     validate_role_evaluation_progress_checkpoint,
+    validate_role_evaluation_submission_replay,
     validate_specialist_workpaper,
 )
 from sec_agent.research.multi_agent_successor import (
@@ -484,3 +488,252 @@ def test_role_evaluation_progress_checkpoint_reuses_completed_prefix() -> None:
             workpapers=workpapers,
             contexts=contexts,
         )
+
+
+def test_role_evaluation_checkpoint_chain_replays_gap_refs_and_resumes_cross_role() -> None:
+    contexts = {
+        agent_id: _context(agent_id, f"SESSION::CHAIN::{index}")
+        for index, agent_id in enumerate(SPECIALIST_AGENT_IDS, start=1)
+    }
+    workpapers = [
+        _workpaper(contexts[agent_id], agent_id)
+        for agent_id in SPECIALIST_AGENT_IDS
+    ]
+
+    def evaluation(agent_id: str, *, with_gap: bool = False) -> dict:
+        payload = {
+            "schema_version": "fin_ia_multi_agent_evaluation_v1_0",
+            "findings": (
+                [
+                    {
+                        "finding_code": "GAP_BOUNDARY_VALID",
+                        "severity": "L4",
+                        "target_agent_id": agent_id,
+                        "failure_owner": "harness_control",
+                        "explanation": "The absence statement is bounded by the visible typed gap.",
+                        "evidence_refs": ["GAP::ONE"],
+                        "permitted_repair": "No repair is required while the typed gap remains exact.",
+                        "blocks_report": False,
+                    }
+                ]
+                if with_gap
+                else []
+            ),
+            "cross_role_conflicts": [],
+            "report_may_proceed": True,
+        }
+        return validate_role_evaluation(
+            payload,
+            workpaper=next(
+                row for row in workpapers if row["agent_id"] == agent_id
+            ),
+        )
+
+    def attempt(
+        name: str,
+        phase: str,
+        status: str,
+        finish_reason: str,
+        *,
+        failure_code: str | None = None,
+    ) -> dict:
+        row = {
+            "attempt_id": f"ATTEMPT::{name}",
+            "phase": phase,
+            "status": status,
+            "finish_reason": finish_reason,
+            "request_capture_ref": f"captures/{name}-request.json",
+            "request_digest": (name[0].lower() if name else "a") * 64,
+            "response_capture_ref": f"captures/{name}-response.json",
+            "response_digest": "0" * 64,
+            "usage": {"prompt_tokens": 100, "completion_tokens": 50},
+        }
+        if failure_code:
+            row["failure_code"] = failure_code
+        return row
+
+    demand_evaluation = evaluation("AGENT::DEMAND_QUALITY")
+    demand_analysis = attempt("A-demand", "analysis", "analysis_draft_valid", "stop")
+    demand_submission = attempt("B-demand", "submission", "contract_valid", "tool_calls")
+    demand_terminal_body = {
+        "status": "multi_agent_preview_terminal_failure_preserved",
+        "failure_code": "model_gateway_reasoning_budget_exhausted",
+        "node_executions": [
+            {
+                "agent_id": "EVAL::ROLE::DEMAND_QUALITY",
+                "node_id": "EVAL::ROLE::DEMAND_QUALITY::CONTENT_AUDIT_R1",
+                "attempts": [demand_analysis, demand_submission],
+                "validated_payload": demand_evaluation,
+            }
+        ],
+    }
+    demand_terminal = {
+        **demand_terminal_body,
+        "full_result_digest": canonical_digest(demand_terminal_body),
+    }
+    predecessor = compile_role_evaluation_progress_checkpoint(
+        case_key="DELL",
+        source_run_id="RUN::DEMAND",
+        source_authority_ref="demand-authority.json",
+        source_authority_sha256="1" * 64,
+        source_public_result_ref="demand-result.json",
+        source_public_result_sha256="2" * 64,
+        source_public_result_digest="3" * 64,
+        source_terminal_result_ref="demand-terminal.json",
+        source_terminal_result_sha256="4" * 64,
+        terminal_failure=demand_terminal,
+        evaluator_analysis_profile_ref="low-profile.json",
+        evaluator_analysis_profile_sha256="5" * 64,
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+
+    node_executions = []
+    for index, agent_id in enumerate(SPECIALIST_AGENT_IDS[1:5], start=1):
+        analysis = attempt(
+            f"C{index}-analysis", "analysis", "analysis_draft_valid", "stop"
+        )
+        submission = attempt(
+            f"D{index}-submission", "submission", "contract_valid", "tool_calls"
+        )
+        node_executions.append(
+            {
+                "agent_id": "EVAL::ROLE::" + agent_id.split("::")[-1],
+                "node_id": (
+                    "EVAL::ROLE::"
+                    + agent_id.split("::")[-1]
+                    + "::CONTENT_AUDIT_R1"
+                ),
+                "attempts": [analysis, submission],
+                "validated_payload": evaluation(agent_id),
+            }
+        )
+
+    counter_analysis = attempt(
+        "E-counter-analysis", "analysis", "analysis_draft_valid", "stop"
+    )
+    counter_submissions = [
+        attempt(
+            f"F-counter-submission-{index}",
+            "submission",
+            "provider_completed_local_contract_failed",
+            "tool_calls",
+            failure_code="multi_agent_finding_ref_out_of_scope",
+        )
+        for index in (1, 2)
+    ]
+    counter_payload = evaluation("AGENT::COUNTEREVIDENCE", with_gap=True)
+    counter_payload.pop("evaluation_digest")
+    response_captures = []
+    for submission in counter_submissions:
+        response_body = {
+            "choices": [
+                {
+                    "finish_reason": "tool_calls",
+                    "message": {
+                        "tool_calls": [
+                            {
+                                "function": {
+                                    "name": "submit_multi_agent_evaluation",
+                                    "arguments": json.dumps(counter_payload),
+                                }
+                            }
+                        ]
+                    },
+                }
+            ]
+        }
+        response_digest = canonical_digest(response_body)
+        submission["response_digest"] = response_digest
+        response_captures.append(
+            {
+                "attempt_id": submission["attempt_id"],
+                "response_body_complete": True,
+                "eligible_for_contract_parse": True,
+                "response_body": response_body,
+                "response_digest": response_digest,
+            }
+        )
+    current_terminal_body = {
+        "status": "multi_agent_preview_terminal_failure_preserved",
+        "failure_code": "multi_agent_finding_ref_out_of_scope",
+        "node_executions": node_executions,
+        "terminal_node_attempts": [counter_analysis, *counter_submissions],
+    }
+    current_terminal = {
+        **current_terminal_body,
+        "full_result_digest": canonical_digest(current_terminal_body),
+    }
+    replay = compile_role_evaluation_submission_replay(
+        source_terminal_result_ref="current-terminal.json",
+        source_terminal_result_sha256="6" * 64,
+        terminal_failure=current_terminal,
+        target_agent_id="AGENT::COUNTEREVIDENCE",
+        workpaper=workpapers[-1],
+        context=contexts["AGENT::COUNTEREVIDENCE"],
+        response_captures=response_captures,
+    )
+    assert validate_role_evaluation_submission_replay(
+        replay,
+        terminal_failure=current_terminal,
+        workpaper=workpapers[-1],
+        context=contexts["AGENT::COUNTEREVIDENCE"],
+        response_captures=response_captures,
+    ) == replay
+    assert replay["validated_evaluation"]["findings"][0][
+        "evidence_refs"
+    ] == ["GAP::ONE"]
+
+    checkpoint = compile_role_evaluation_progress_checkpoint_chain(
+        case_key="DELL",
+        source_run_id="RUN::CURRENT",
+        source_authority_ref="current-authority.json",
+        source_authority_sha256="7" * 64,
+        source_public_result_ref="current-result.json",
+        source_public_result_sha256="8" * 64,
+        source_public_result_digest="9" * 64,
+        source_terminal_result_ref="current-terminal.json",
+        source_terminal_result_sha256="a" * 64,
+        terminal_failure=current_terminal,
+        evaluator_analysis_profile_ref="nonthinking-profile.json",
+        evaluator_analysis_profile_sha256="b" * 64,
+        predecessor_checkpoint_ref="demand-checkpoint.json",
+        predecessor_checkpoint_sha256="c" * 64,
+        predecessor_checkpoint=predecessor,
+        submission_replay_ref="counter-replay.json",
+        submission_replay_sha256="d" * 64,
+        submission_replay=replay,
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+    assert validate_role_evaluation_progress_checkpoint(
+        checkpoint,
+        terminal_failure=current_terminal,
+        predecessor_checkpoint=predecessor,
+        predecessor_terminal_failure=demand_terminal,
+        submission_replay=replay,
+        workpapers=workpapers,
+        contexts=contexts,
+    ) == checkpoint
+    assert checkpoint["completed_agent_ids"] == list(SPECIALIST_AGENT_IDS)
+    assert checkpoint["pending_agent_ids"] == []
+
+    frontier = compile_successor_execution_frontier(
+        case_key="DELL",
+        cell_id="MULTI_AGENT_PREVIEW",
+        accepted_challenge_ids=[],
+        lead_coordination_checkpoint_digest="e" * 64,
+        predecessor_failure={
+            **_failure(),
+            "failure_code": "multi_agent_finding_ref_out_of_scope",
+            "provider_attempt_count": 11,
+        },
+        nodes=[],
+        evaluation_strategy=HIERARCHICAL_EVALUATION_STRATEGY,
+        completed_role_evaluation_agent_ids=checkpoint["completed_agent_ids"],
+        evaluation_progress_checkpoint_digest=checkpoint["checkpoint_digest"],
+    )
+    assert validate_successor_execution_frontier(frontier) == frontier
+    assert frontier["execution_limits"]["maximum_initial_role_evaluation_nodes"] == 0
+    assert frontier["execution_limits"]["reused_role_evaluation_count"] == 6
+    assert frontier["execution_limits"]["maximum_new_model_nodes"] == 7

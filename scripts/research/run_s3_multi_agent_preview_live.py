@@ -37,6 +37,7 @@ from sec_agent.research.case_truth_reconciliation import (  # noqa: E402
 )
 from sec_agent.research.multi_agent_preview import (  # noqa: E402
     RESEARCH_LEAD_AGENT_ID,
+    ROLE_EVALUATION_PROGRESS_CHECKPOINT_CHAIN_SCHEMA_VERSION,
     SPECIALIST_AGENT_IDS,
     WRITER_AGENT_ID,
     compile_challenge_catalog,
@@ -49,6 +50,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     compile_specialist_context,
     compile_specialist_repair_context,
     compile_specialist_workpaper_messages,
+    evaluation_allowed_refs,
     evaluation_tool,
     lead_coordination_tool,
     lead_plan_tool,
@@ -72,6 +74,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     validate_report_draft,
     validate_role_evaluation,
     validate_role_evaluation_progress_checkpoint,
+    validate_role_evaluation_submission_replay,
     validate_specialist_workpaper,
     validate_specialist_workpaper_checkpoint,
 )
@@ -2402,7 +2405,7 @@ def _validate_authority(
                     == 6 - reused_role_evaluation_count
                     and 0
                     <= reused_role_evaluation_count
-                    < len(SPECIALIST_AGENT_IDS)
+                    <= len(SPECIALIST_AGENT_IDS)
                     and limits.get("maximum_cross_role_evaluation_nodes") == 2
                     and limits.get(
                         "maximum_affected_role_reevaluation_nodes"
@@ -5381,6 +5384,60 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                         "multi_agent_preview_role_evaluation_checkpoint_"
                         "terminal_missing"
                     )
+                predecessor_evaluation_checkpoint = None
+                predecessor_evaluation_terminal = None
+                validated_submission_replay = None
+                if (
+                    role_evaluation_checkpoint_raw.get("schema_version")
+                    == ROLE_EVALUATION_PROGRESS_CHECKPOINT_CHAIN_SCHEMA_VERSION
+                ):
+                    predecessor_evaluation_checkpoint = _json(
+                        _resolve(
+                            str(
+                                role_evaluation_checkpoint_raw[
+                                    "predecessor_checkpoint_ref"
+                                ]
+                            )
+                        )
+                    )
+                    predecessor_evaluation_terminal = _json(
+                        _resolve(
+                            str(
+                                predecessor_evaluation_checkpoint[
+                                    "source_terminal_result_ref"
+                                ]
+                            )
+                        )
+                    )
+                    submission_replay_raw = _json(
+                        _resolve(
+                            str(
+                                role_evaluation_checkpoint_raw[
+                                    "submission_replay_ref"
+                                ]
+                            )
+                        )
+                    )
+                    replay_agent_id = str(
+                        submission_replay_raw["target_agent_id"]
+                    )
+                    replay_response_captures = [
+                        _json(_resolve(str(row["response_capture_ref"])))
+                        for row in submission_replay_raw[
+                            "submission_attempts"
+                        ]
+                    ]
+                    validated_submission_replay = (
+                        validate_role_evaluation_submission_replay(
+                            submission_replay_raw,
+                            terminal_failure=(
+                                role_evaluation_checkpoint_terminal
+                            ),
+                            workpaper=workpapers_by_agent[replay_agent_id],
+                            context=evaluation_contexts[replay_agent_id],
+                            response_captures=replay_response_captures,
+                        )
+                    )
                 validated_role_evaluation_checkpoint = (
                     validate_role_evaluation_progress_checkpoint(
                         role_evaluation_checkpoint_raw,
@@ -5390,6 +5447,13 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                             for agent_id in SPECIALIST_AGENT_IDS
                         ],
                         contexts=evaluation_contexts,
+                        predecessor_checkpoint=(
+                            predecessor_evaluation_checkpoint
+                        ),
+                        predecessor_terminal_failure=(
+                            predecessor_evaluation_terminal
+                        ),
+                        submission_replay=validated_submission_replay,
                     )
                 )
                 if not (
@@ -5445,7 +5509,10 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                         case_truth_model_view=case_truth_model_view,
                         specialist_context=evaluation_contexts[agent_id],
                     ),
-                    tool=evaluation_tool(allowed_agent_ids=[agent_id]),
+                    tool=evaluation_tool(
+                        allowed_agent_ids=[agent_id],
+                        allowed_refs=evaluation_allowed_refs([workpaper]),
+                    ),
                     validator=lambda payload, current=workpaper: validate_role_evaluation(
                         payload, workpaper=current
                     ),
@@ -5478,7 +5545,10 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                     role_evaluations=role_evaluations,
                 ),
                 tool=evaluation_tool(
-                    allowed_agent_ids=lead["ordered_agent_ids"]
+                    allowed_agent_ids=lead["ordered_agent_ids"],
+                    allowed_refs=evaluation_allowed_refs(
+                        current_workpapers
+                    ),
                 ),
                 validator=lambda payload, current=current_workpapers: validate_evaluation(
                     payload, workpapers=current
@@ -5534,7 +5604,10 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                                 specialist_context=evaluation_contexts[agent_id],
                             ),
                             tool=evaluation_tool(
-                                allowed_agent_ids=[agent_id]
+                                allowed_agent_ids=[agent_id],
+                                allowed_refs=evaluation_allowed_refs(
+                                    [workpaper]
+                                ),
                             ),
                             validator=lambda payload, current=workpaper: validate_role_evaluation(
                                 payload, workpaper=current
@@ -5569,7 +5642,10 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                             role_evaluations=role_evaluations,
                         ),
                         tool=evaluation_tool(
-                            allowed_agent_ids=lead["ordered_agent_ids"]
+                            allowed_agent_ids=lead["ordered_agent_ids"],
+                            allowed_refs=evaluation_allowed_refs(
+                                current_workpapers
+                            ),
                         ),
                         validator=lambda payload, current=current_workpapers: validate_evaluation(
                             payload, workpapers=current
@@ -5647,7 +5723,11 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                         ),
                         specialist_contexts=evaluation_contexts,
                     ),
-                    tool=evaluation_tool(),
+                    tool=evaluation_tool(
+                        allowed_refs=evaluation_allowed_refs(
+                            current_workpapers
+                        )
+                    ),
                     validator=lambda payload, current=current_workpapers: validate_evaluation(
                         payload, workpapers=current
                     ),

@@ -10449,32 +10449,67 @@ def build_preflight(
     }
     if decision_projection.get("multi_agent_preview") is True:
         if decision_projection.get("multi_agent_preview_generic_successor") is True:
-            completed_repair_count = int(
-                decision_projection["execution_limits"][
-                    "reused_completed_challenge_repair_count"
-                ]
-            )
-            pending_repair_count = int(
-                decision_projection["execution_limits"][
-                    "maximum_new_counter_challenge_repairs"
-                ]
-            )
-            known_boundary = (
-                "This current-baseline preflight preserves the immediate "
-                "predecessor as a terminal failure. It consumes one compiled "
-                f"execution frontier with {completed_repair_count} capture-bound "
-                "completed repairs and "
-                f"{pending_repair_count} frontier-authorized fresh repair nodes. "
-                "Completed nodes remain exact reuse or receipted derived-digest "
-                "rebinds and cannot be rerun. It permits only those pending "
-                "frontier nodes, if any, before bounded "
-                "evaluation, at most two evaluator-directed local repairs and "
-                "a conditional Writer. It forbids analysis continuation, "
-                "research-input changes, external source network access, "
-                "candidate promotion, S1 or S3 acceptance, heterogeneous "
-                "generalization, qualified-human self-acceptance, Workbench "
-                "publication or release."
-            )
+            if decision_projection.get(
+                "multi_agent_preview_terminal_writer_successor"
+            ) is True:
+                reused_role_count = int(
+                    decision_projection["execution_limits"][
+                        "reused_role_evaluation_count"
+                    ]
+                )
+                reused_cross_role_count = int(
+                    decision_projection["execution_limits"][
+                        "reused_cross_role_evaluation_count"
+                    ]
+                )
+                writer_continuations = int(
+                    decision_projection["execution_limits"][
+                        "maximum_resumed_writer_analysis_continuations"
+                    ]
+                )
+                known_boundary = (
+                    "This current-baseline preflight preserves the immediate "
+                    "Writer length failure and its partial draft as private, "
+                    "non-promoted evidence. It reuses all six specialist "
+                    f"workpapers, {reused_role_count} completed role evaluations "
+                    f"and {reused_cross_role_count} completed cross-role "
+                    "evaluation from immutable checkpoints. It permits exactly "
+                    f"{writer_continuations} non-thinking Writer continuation "
+                    "and the same node's strict report submission. It forbids "
+                    "every upstream Agent, repair or Evaluator rerun, a second "
+                    "continuation, research-input changes, external source "
+                    "network access, candidate promotion, partial-draft business "
+                    "promotion, S1 or S3 acceptance, heterogeneous "
+                    "generalization, qualified-human self-acceptance, Workbench "
+                    "publication or release."
+                )
+            else:
+                completed_repair_count = int(
+                    decision_projection["execution_limits"][
+                        "reused_completed_challenge_repair_count"
+                    ]
+                )
+                pending_repair_count = int(
+                    decision_projection["execution_limits"][
+                        "maximum_new_counter_challenge_repairs"
+                    ]
+                )
+                known_boundary = (
+                    "This current-baseline preflight preserves the immediate "
+                    "predecessor as a terminal failure. It consumes one compiled "
+                    f"execution frontier with {completed_repair_count} capture-bound "
+                    "completed repairs and "
+                    f"{pending_repair_count} frontier-authorized fresh repair nodes. "
+                    "Completed nodes remain exact reuse or receipted derived-digest "
+                    "rebinds and cannot be rerun. It permits only those pending "
+                    "frontier nodes, if any, before bounded "
+                    "evaluation, at most two evaluator-directed local repairs and "
+                    "a conditional Writer. It forbids analysis continuation, "
+                    "research-input changes, external source network access, "
+                    "candidate promotion, S1 or S3 acceptance, heterogeneous "
+                    "generalization, qualified-human self-acceptance, Workbench "
+                    "publication or release."
+                )
         elif decision_projection.get(
             "multi_agent_preview_repair_context_successor"
         ) is True:

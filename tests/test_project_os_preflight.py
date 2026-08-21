@@ -1074,6 +1074,21 @@ def test_multi_agent_preview_terminal_writer_reuses_all_upstream_nodes() -> None
         "writer_checkpoint_continuation_submission_fake_mutation_zero_call_pass"
     )
 
+    preflight = build_preflight(
+        root=ROOT,
+        decision_ref=MULTI_AGENT_PREVIEW_TERMINAL_WRITER_SCOPE_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    boundary = preflight["known_boundary"]
+    assert "exactly 1 non-thinking Writer continuation" in boundary
+    assert "6 completed role evaluations" in boundary
+    assert "1 completed cross-role evaluation" in boundary
+    assert "forbids every upstream Agent, repair or Evaluator rerun" in boundary
+    assert "partial-draft business promotion" in boundary
+    assert "permits only those pending frontier nodes" not in boundary
+    assert "forbids analysis continuation" not in boundary
+
 
 def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() -> None:
     result = build_preflight(

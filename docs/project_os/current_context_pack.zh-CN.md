@@ -1058,4 +1058,5 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - terminal successor 已零调用实现：绑定 cross-role checkpoint 与 Writer fragment checkpoint，只允许一次 non-thinking continuation＋strict submission；上游重跑、网络、Candidate promotion、半稿晋升和第二次 continuation均被禁止。
 - fake 路径 1 个新 Writer logical node、1 continuation、1 strict submission；六类 lineage／scope／profile／语义 mutation 全部 fail closed。当前须完成文档、全仓门、clean commit／push、fresh preflight 后才可签发一次 Writer successor live。
 - 自然 Writer、最终报告 L1、八维质量、paired、qualified-human、S1／S3、泛化、Workbench publication 和 release 仍未证明。
-- 完整工程门已通过：全仓 `925 passed`、compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、archive redirect `6,059`、785 configs、8 份 Project OS JSONL／890 行、7,507-file secret scan／0 和 diff check。下一步只剩 clean commit／push、fresh preflight 和一次 terminal Writer live。
+- 完整工程门已通过：全仓 `925 passed`、compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、archive redirect `6,059`、785 configs、8 份 Project OS JSONL／892 行、7,507-file secret scan／0 和 diff check。下一步只剩 clean commit／push、fresh preflight 和一次 terminal Writer live。
+- clean／synced commit `01a302ca...` 的第一次 fresh preflight 机器门通过，但人类 `known_boundary` 错误沿用普通 generic successor 文案，既声称允许 evaluation／repair，又声称禁止 analysis continuation，与 terminal scope 相反；该 preflight 未用于签发。RC-AR-027 已改为从 terminal frontier 生成精确说明，须重新通过全仓门、提交／推送和第二次 fresh preflight。

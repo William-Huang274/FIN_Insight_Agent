@@ -94,3 +94,11 @@ Writer continuation 只能读取：已验证的跨角色审查、已保存的 Wr
 pnpm 包装器曾因工作区安全策略拒绝未批准的 `esbuild` 安装脚本；这不是前端代码失败。未修改依赖或供应链策略，改用仓库已经安装并锁定的 Node／TypeScript／Vite 文件执行同一 typecheck 和 build，二者均通过；包装器临时生成的 lock/workspace 文件已清理。
 
 当前工程状态只允许 clean commit／push、fresh preflight 和一次 terminal Writer successor，不构成自然 Writer 或产品内容验收。
+
+## 7. 第一次 fresh preflight 的人类边界漂移
+
+clean／synced commit `01a302ca...` 上第一次 fresh preflight 的全部机器检查均通过，并正确投影 `maximum_new_model_nodes=1`、六份角色审查复用、一次跨角色审查复用和一次 Writer continuation。但 `known_boundary` 仍沿用普通 generic successor 文案，写成“允许后续 evaluation／repair／conditional Writer，同时禁止 analysis continuation”。它与机器 scope 相反，因此没有用于签发 authority。
+
+RC-AR-027 的修复不是放宽权限，而是让 human projection 从 terminal frontier 的实际数字生成：明确只允许一次 non-thinking Writer continuation＋strict submission，并禁止所有上游 Agent、repair、Evaluator、第二次 continuation 和半稿晋升。新增测试同时拒绝旧模板文字。第一次 preflight 保持只读诊断，不追认为有效签发依据。
+
+修正后的定向 Project OS 测试为 `59 passed`，随后全仓再次为 `925 passed`；compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、archive redirect `6,059` 和 7,507-file secret scan／0 均通过。追加 RC-AR-027 与 capability 状态后 Project OS 为 8 份 JSONL／892 行。下一步必须先形成并推送第二个干净提交，再运行第二次 fresh preflight。

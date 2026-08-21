@@ -71,6 +71,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     validate_lead_plan_checkpoint,
     validate_report_draft,
     validate_role_evaluation,
+    validate_role_evaluation_progress_checkpoint,
     validate_specialist_workpaper,
     validate_specialist_workpaper_checkpoint,
 )
@@ -286,6 +287,7 @@ def _compile_generic_successor_bindings(
     active_progress_checkpoint: Mapping[str, Any],
     completed_repairs: Mapping[str, Any],
     hierarchical_proof_binding: Mapping[str, Any] | None,
+    role_evaluation_checkpoint: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     bindings = {
         "predecessor_lead_plan_checkpoint": {
@@ -325,6 +327,20 @@ def _compile_generic_successor_bindings(
         bindings["hierarchical_evaluator_zero_call_proof"] = dict(
             hierarchical_proof_binding
         )
+    if role_evaluation_checkpoint is not None:
+        bindings["role_evaluation_progress_checkpoint"] = {
+            "ref": _relative(paths["role_evaluation_progress_checkpoint"]),
+            "sha256": _sha(paths["role_evaluation_progress_checkpoint"]),
+            "checkpoint_digest": role_evaluation_checkpoint[
+                "checkpoint_digest"
+            ],
+            "reused_role_evaluation_count": role_evaluation_checkpoint[
+                "reused_role_evaluation_count"
+            ],
+            "completed_agent_ids": list(
+                role_evaluation_checkpoint["completed_agent_ids"]
+            ),
+        }
     return bindings
 
 
@@ -597,6 +613,14 @@ def _validate_authority(
                 | {
                     "hierarchical_evaluator_zero_call_proof",
                     "evaluator_analysis_profile",
+                }
+            ),
+            frozenset(
+                required_inputs
+                | {
+                    "hierarchical_evaluator_zero_call_proof",
+                    "evaluator_analysis_profile",
+                    "role_evaluation_progress_checkpoint",
                 }
             ),
         }
@@ -1044,6 +1068,22 @@ def _validate_authority(
                 "evaluator_analysis_profile_ref",
                 "evaluator_analysis_profile_sha256",
             )
+        scope_requires_role_evaluation_checkpoint = (
+            scope_projection.get("role_evaluation_progress_checkpoint_ref")
+            is not None
+        )
+        if (
+            "role_evaluation_progress_checkpoint" in inputs
+        ) != scope_requires_role_evaluation_checkpoint:
+            raise MultiAgentPreviewLiveError(
+                "multi_agent_preview_role_evaluation_checkpoint_"
+                "authority_shape_invalid"
+            )
+        if scope_requires_role_evaluation_checkpoint:
+            current_scope_bindings["role_evaluation_progress_checkpoint"] = (
+                "role_evaluation_progress_checkpoint_ref",
+                "role_evaluation_progress_checkpoint_sha256",
+            )
     elif downstream_analysis_successor:
         current_scope_bindings = {
             "predecessor_scope_decision": (
@@ -1315,6 +1355,16 @@ def _validate_authority(
             if "evaluator_analysis_profile" in inputs
             else None
         )
+        role_evaluation_checkpoint = (
+            _json(inputs["role_evaluation_progress_checkpoint"])
+            if "role_evaluation_progress_checkpoint" in inputs
+            else None
+        )
+        evaluator_defaults = (
+            evaluator_profile.get("request_defaults")
+            if evaluator_profile is not None
+            else None
+        )
         if not (
             authority["execution_limits"] == frontier["execution_limits"]
             and predecessor_failure["authority_ref"]
@@ -1377,13 +1427,27 @@ def _validate_authority(
                     == "https://api.deepseek.com"
                     and evaluator_profile.get("endpoint")
                     == "/chat/completions"
-                    and evaluator_profile.get("request_defaults")
-                    == {
-                        "max_tokens": 10000,
-                        "stream": False,
-                        "thinking": {"type": "enabled"},
-                        "reasoning_effort": "low",
-                    }
+                    and (
+                        (
+                            role_evaluation_checkpoint is None
+                            and evaluator_defaults
+                            == {
+                                "max_tokens": 10000,
+                                "stream": False,
+                                "thinking": {"type": "enabled"},
+                                "reasoning_effort": "low",
+                            }
+                        )
+                        or (
+                            role_evaluation_checkpoint is not None
+                            and evaluator_defaults
+                            == {
+                                "max_tokens": 10000,
+                                "stream": False,
+                                "thinking": {"type": "disabled"},
+                            }
+                        )
+                    )
                     and (evaluator_profile.get("authority") or {}).get(
                         "retry_count"
                     )
@@ -1394,6 +1458,42 @@ def _validate_authority(
             raise MultiAgentPreviewLiveError(
                 "multi_agent_preview_generic_successor_binding_invalid"
             )
+        if role_evaluation_checkpoint is not None:
+            if not (
+                role_evaluation_checkpoint.get("checkpoint_digest")
+                == frontier.get("evaluation_progress_checkpoint_digest")
+                and role_evaluation_checkpoint.get("completed_agent_ids")
+                == frontier.get("completed_role_evaluation_agent_ids")
+                and role_evaluation_checkpoint.get("source_authority_ref")
+                == _relative(inputs["predecessor_authority"])
+                and role_evaluation_checkpoint.get("source_authority_sha256")
+                == _sha(inputs["predecessor_authority"])
+                and role_evaluation_checkpoint.get("source_public_result_ref")
+                == _relative(inputs["predecessor_result"])
+                and role_evaluation_checkpoint.get(
+                    "source_public_result_sha256"
+                )
+                == _sha(inputs["predecessor_result"])
+                and role_evaluation_checkpoint.get(
+                    "source_public_result_digest"
+                )
+                == failed_result.get("result_digest")
+                and role_evaluation_checkpoint.get(
+                    "source_terminal_result_ref"
+                )
+                == predecessor_failure["terminal_result_ref"]
+                and role_evaluation_checkpoint.get(
+                    "source_terminal_result_sha256"
+                )
+                == predecessor_failure["terminal_result_sha256"]
+                and role_evaluation_checkpoint.get(
+                    "source_terminal_result_digest"
+                )
+                == predecessor_failure["terminal_result_digest"]
+            ):
+                raise MultiAgentPreviewLiveError(
+                    "multi_agent_preview_role_evaluation_checkpoint_binding_invalid"
+                )
     if preprovider_replacement:
         failed_authority = _json(inputs["failed_preprovider_authority"])
         failed_result = _json(inputs["failed_preprovider_result"])
@@ -2277,6 +2377,9 @@ def _validate_authority(
             frontier.get("evaluation_strategy")
             == HIERARCHICAL_EVALUATION_STRATEGY
         )
+        reused_role_evaluation_count = int(
+            limits.get("reused_role_evaluation_count", 0)
+        )
         mode_limits_valid = (
             limits.get("maximum_new_lead_plan_model_calls") == 0
             and limits.get("maximum_new_initial_workpaper_nodes") == 0
@@ -2295,7 +2398,11 @@ def _validate_authority(
             == fresh_frontier_count
             and (
                 (
-                    limits.get("maximum_initial_role_evaluation_nodes") == 6
+                    limits.get("maximum_initial_role_evaluation_nodes")
+                    == 6 - reused_role_evaluation_count
+                    and 0
+                    <= reused_role_evaluation_count
+                    < len(SPECIALIST_AGENT_IDS)
                     and limits.get("maximum_cross_role_evaluation_nodes") == 2
                     and limits.get(
                         "maximum_affected_role_reevaluation_nodes"
@@ -2311,7 +2418,9 @@ def _validate_authority(
             )
         )
         expected_new_nodes = fresh_frontier_count + (
-            13 if hierarchical_evaluator else 5
+            13 - reused_role_evaluation_count
+            if hierarchical_evaluator
+            else 5
         )
     elif role_scoped_repair_successor:
         mode_limits_valid = (
@@ -3814,11 +3923,20 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
             expected_reasoning_effort="high",
         )
     if evaluator_analysis_profile is not None:
-        validate_deepseek_ga_profile(
-            evaluator_analysis_profile,
-            strict_tools=False,
-            expected_reasoning_effort="low",
+        evaluator_profile_defaults = dict(
+            evaluator_analysis_profile.request_defaults
         )
+        if evaluator_profile_defaults.get("thinking") == {"type": "disabled"}:
+            validate_deepseek_ga_node_profile(
+                evaluator_analysis_profile,
+                node_class="content_evaluation_non_thinking",
+            )
+        else:
+            validate_deepseek_ga_profile(
+                evaluator_analysis_profile,
+                strict_tools=False,
+                expected_reasoning_effort="low",
+            )
     validate_deepseek_ga_node_profile(
         submission_profile,
         node_class="contract_submission_non_thinking",
@@ -3974,6 +4092,25 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
     successor_frontier = (
         _json(paths["successor_execution_frontier"])
         if generic_successor
+        else None
+    )
+    role_evaluation_checkpoint_raw = (
+        _json(paths["role_evaluation_progress_checkpoint"])
+        if generic_successor
+        and "role_evaluation_progress_checkpoint" in paths
+        else None
+    )
+    role_evaluation_checkpoint_terminal = (
+        _json(
+            _resolve(
+                str(
+                    role_evaluation_checkpoint_raw[
+                        "source_terminal_result_ref"
+                    ]
+                )
+            )
+        )
+        if role_evaluation_checkpoint_raw is not None
         else None
     )
     hierarchical_evaluator = bool(
@@ -4527,6 +4664,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
             active_progress_checkpoint=active_downstream_progress_checkpoint,
             completed_repairs=completed_downstream_repairs,
             hierarchical_proof_binding=hierarchical_evaluator_proof_binding,
+            role_evaluation_checkpoint=role_evaluation_checkpoint_raw,
         )
         if generic_successor
         and lead_plan_checkpoint is not None
@@ -4548,6 +4686,7 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
     new_counter_repairs = 0
     evaluator_repairs = 0
     evaluator_role_audits = 0
+    evaluator_role_audit_reuses = 0
     evaluator_role_reaudits = 0
     evaluator_cross_role_audits = 0
 
@@ -5235,8 +5374,62 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                 workpapers_by_agent[agent_id]
                 for agent_id in lead["ordered_agent_ids"]
             ]
-            role_evaluations: dict[str, dict[str, Any]] = {}
+            validated_role_evaluation_checkpoint = None
+            if role_evaluation_checkpoint_raw is not None:
+                if role_evaluation_checkpoint_terminal is None:
+                    raise MultiAgentPreviewLiveError(
+                        "multi_agent_preview_role_evaluation_checkpoint_"
+                        "terminal_missing"
+                    )
+                validated_role_evaluation_checkpoint = (
+                    validate_role_evaluation_progress_checkpoint(
+                        role_evaluation_checkpoint_raw,
+                        terminal_failure=role_evaluation_checkpoint_terminal,
+                        workpapers=[
+                            workpapers_by_agent[agent_id]
+                            for agent_id in SPECIALIST_AGENT_IDS
+                        ],
+                        contexts=evaluation_contexts,
+                    )
+                )
+                if not (
+                    validated_role_evaluation_checkpoint[
+                        "completed_agent_ids"
+                    ]
+                    == successor_frontier.get(
+                        "completed_role_evaluation_agent_ids"
+                    )
+                    and validated_role_evaluation_checkpoint[
+                        "checkpoint_digest"
+                    ]
+                    == successor_frontier.get(
+                        "evaluation_progress_checkpoint_digest"
+                    )
+                ):
+                    raise MultiAgentPreviewLiveError(
+                        "multi_agent_preview_role_evaluation_checkpoint_"
+                        "frontier_drift"
+                    )
+                evaluator_role_audit_reuses = int(
+                    validated_role_evaluation_checkpoint[
+                        "reused_role_evaluation_count"
+                    ]
+                )
+            role_evaluations: dict[str, dict[str, Any]] = (
+                {
+                    str(agent_id): deepcopy(dict(evaluation))
+                    for agent_id, evaluation in (
+                        validated_role_evaluation_checkpoint[
+                            "validated_role_evaluations"
+                        ].items()
+                    )
+                }
+                if validated_role_evaluation_checkpoint is not None
+                else {}
+            )
             for agent_id in lead["ordered_agent_ids"]:
+                if agent_id in role_evaluations:
+                    continue
                 workpaper = workpapers_by_agent[agent_id]
                 evaluator_agent_id = (
                     "EVAL::ROLE::" + agent_id.split("::")[-1]
@@ -5416,6 +5609,12 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                 <= authority["execution_limits"][
                     "maximum_initial_role_evaluation_nodes"
                 ]
+                and evaluator_role_audit_reuses
+                == authority["execution_limits"].get(
+                    "reused_role_evaluation_count", 0
+                )
+                and evaluator_role_audits + evaluator_role_audit_reuses
+                == len(SPECIALIST_AGENT_IDS)
                 and evaluator_role_reaudits
                 <= authority["execution_limits"][
                     "maximum_affected_role_reevaluation_nodes"
@@ -5783,6 +5982,9 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                     else MONOLITHIC_EVALUATION_STRATEGY
                 ),
                 "evaluator_role_audits": evaluator_role_audits,
+                "evaluator_role_audit_reuses": (
+                    evaluator_role_audit_reuses
+                ),
                 "evaluator_role_reaudits": evaluator_role_reaudits,
                 "evaluator_cross_role_audits": evaluator_cross_role_audits,
                 "evaluator_repairs": evaluator_repairs,
@@ -5922,9 +6124,34 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                         "hierarchical_evaluation_topology_proven": (
                             not hierarchical_evaluator
                             or (
-                                evaluator_role_audits == 6
+                                evaluator_role_audits
+                                + evaluator_role_audit_reuses
+                                == 6
                                 and evaluator_role_reaudits <= 2
                                 and 1 <= evaluator_cross_role_audits <= 2
+                            )
+                        ),
+                        "completed_role_evaluations_reused_without_rerun": (
+                            evaluator_role_audit_reuses
+                            == authority["execution_limits"].get(
+                                "reused_role_evaluation_count", 0
+                            )
+                            and all(
+                                row["agent_id"]
+                                not in {
+                                    "EVAL::ROLE::"
+                                    + agent_id.split("::")[-1]
+                                    for agent_id in (
+                                        successor_frontier.get(
+                                            "completed_role_evaluation_agent_ids"
+                                        )
+                                        or []
+                                    )
+                                }
+                                or not row["node_id"].endswith(
+                                    "::CONTENT_AUDIT_R1"
+                                )
+                                for row in node_records
                             )
                         ),
                     }
@@ -6308,6 +6535,9 @@ def _run_authorized(authority_path: Path) -> dict[str, Any]:
                     else MONOLITHIC_EVALUATION_STRATEGY
                 ),
                 "evaluator_role_audits_preserved": evaluator_role_audits,
+                "evaluator_role_audit_reuses_preserved": (
+                    evaluator_role_audit_reuses
+                ),
                 "evaluator_role_reaudits_preserved": evaluator_role_reaudits,
                 "evaluator_cross_role_audits_preserved": (
                     evaluator_cross_role_audits

@@ -21,12 +21,14 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     compile_challenge_catalog,
     compile_cross_role_evaluation_content_view,
     compile_cross_role_evaluation_messages,
+    compile_role_evaluation_progress_checkpoint,
     compile_role_evaluation_messages,
     local_case_absence_findings,
     validate_evaluation,
     validate_lead_coordination_checkpoint,
     validate_lead_plan_checkpoint,
     validate_role_evaluation,
+    validate_role_evaluation_progress_checkpoint,
     validate_specialist_plan_checkpoint,
     validate_specialist_workpaper_checkpoint,
 )
@@ -34,8 +36,10 @@ from sec_agent.research.multi_agent_preview_runtime import (  # noqa: E402
     compile_multi_agent_preview_materialization,
 )
 from sec_agent.research.multi_agent_successor import (  # noqa: E402
+    HIERARCHICAL_EVALUATION_STRATEGY,
     MultiAgentSuccessorError,
     compile_hierarchical_evaluator_zero_call_proof,
+    compile_successor_execution_frontier,
     validate_successor_execution_frontier,
 )
 
@@ -170,11 +174,88 @@ def _load_current_research_state(
     )
 
 
-def build_proof(*, frontier_path: Path) -> dict[str, Any]:
+def build_role_evaluation_checkpoint(
+    *,
+    frontier_path: Path,
+    source_authority_path: Path,
+    source_result_path: Path,
+    source_terminal_path: Path,
+    source_evaluator_profile_path: Path,
+) -> dict[str, Any]:
+    frontier = validate_successor_execution_frontier(_load(frontier_path))
+    workpapers, contexts, _ = _load_current_research_state(frontier=frontier)
+    source_authority = _load(source_authority_path)
+    source_result = _load(source_result_path)
+    source_terminal = _load(source_terminal_path)
+    checkpoint = compile_role_evaluation_progress_checkpoint(
+        case_key="DELL",
+        source_run_id=str(source_authority["outputs"]["run_id"]),
+        source_authority_ref=source_authority_path.relative_to(ROOT).as_posix(),
+        source_authority_sha256=_sha(source_authority_path),
+        source_public_result_ref=source_result_path.relative_to(ROOT).as_posix(),
+        source_public_result_sha256=_sha(source_result_path),
+        source_public_result_digest=str(source_result["result_digest"]),
+        source_terminal_result_ref=source_terminal_path.relative_to(ROOT).as_posix(),
+        source_terminal_result_sha256=_sha(source_terminal_path),
+        terminal_failure=source_terminal,
+        evaluator_analysis_profile_ref=(
+            source_evaluator_profile_path.relative_to(ROOT).as_posix()
+        ),
+        evaluator_analysis_profile_sha256=_sha(source_evaluator_profile_path),
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+    return validate_role_evaluation_progress_checkpoint(
+        checkpoint,
+        terminal_failure=source_terminal,
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+
+
+def build_proof(
+    *,
+    frontier_path: Path,
+    evaluation_progress_checkpoint_path: Path | None = None,
+) -> dict[str, Any]:
     frontier = validate_successor_execution_frontier(_load(frontier_path))
     workpapers, contexts, case_truth = _load_current_research_state(
         frontier=frontier
     )
+    completed_role_evaluation_ids = list(
+        frontier.get("completed_role_evaluation_agent_ids") or []
+    )
+    evaluation_progress_checkpoint = None
+    if completed_role_evaluation_ids:
+        if evaluation_progress_checkpoint_path is None:
+            raise MultiAgentSuccessorError(
+                "multi_agent_hierarchical_proof_evaluation_checkpoint_missing"
+            )
+        checkpoint_raw = _load(evaluation_progress_checkpoint_path)
+        checkpoint_terminal = _load(
+            str(checkpoint_raw["source_terminal_result_ref"])
+        )
+        evaluation_progress_checkpoint = (
+            validate_role_evaluation_progress_checkpoint(
+                checkpoint_raw,
+                terminal_failure=checkpoint_terminal,
+                workpapers=workpapers,
+                contexts=contexts,
+            )
+        )
+        if not (
+            evaluation_progress_checkpoint["completed_agent_ids"]
+            == completed_role_evaluation_ids
+            and evaluation_progress_checkpoint["checkpoint_digest"]
+            == frontier["evaluation_progress_checkpoint_digest"]
+        ):
+            raise MultiAgentSuccessorError(
+                "multi_agent_hierarchical_proof_evaluation_checkpoint_drift"
+            )
+    elif evaluation_progress_checkpoint_path is not None:
+        raise MultiAgentSuccessorError(
+            "multi_agent_hierarchical_proof_evaluation_checkpoint_unexpected"
+        )
     role_evaluations: dict[str, dict[str, Any]] = {}
     role_receipts: list[dict[str, Any]] = []
     for workpaper in workpapers:
@@ -291,6 +372,23 @@ def build_proof(*, frontier_path: Path) -> dict[str, Any]:
             ]
             == 2
         ),
+        **(
+            {
+                "completed_role_evaluation_rerun_is_forbidden": (
+                    evaluation_progress_checkpoint is not None
+                    and frontier["constraints"][
+                        "completed_role_evaluation_rerun_forbidden"
+                    ]
+                    is True
+                    and evaluation_progress_checkpoint["resume_policy"][
+                        "completed_role_evaluation_rerun_forbidden"
+                    ]
+                    is True
+                )
+            }
+            if completed_role_evaluation_ids
+            else {}
+        ),
     }
     local_findings = local_case_absence_findings(
         workpapers=workpapers,
@@ -314,23 +412,154 @@ def build_proof(*, frontier_path: Path) -> dict[str, Any]:
         local_case_absence_blocking_finding_count=len(local_findings),
         mutation_checks=mutation_checks,
         fake_execution_receipt={
-            "pass_without_repair_node_count": 8,
-            "maximum_two_repair_path_node_count": 13,
-            "third_repair_path_node_count": 15,
-            "maximum_authorized_model_nodes": 13,
+            "pass_without_repair_node_count": (
+                8 - len(completed_role_evaluation_ids)
+            ),
+            "maximum_two_repair_path_node_count": (
+                13 - len(completed_role_evaluation_ids)
+            ),
+            "third_repair_path_node_count": (
+                15 - len(completed_role_evaluation_ids)
+            ),
+            "maximum_authorized_model_nodes": (
+                13 - len(completed_role_evaluation_ids)
+            ),
             "conditional_writer_count": 1,
             "unaffected_role_reevaluation_count": 0,
         },
     )
 
 
+def build_checkpointed_frontier(
+    *,
+    base_frontier_path: Path,
+    evaluation_progress_checkpoint_path: Path,
+    source_authority_path: Path,
+    source_result_path: Path,
+    source_terminal_path: Path,
+    source_evaluator_profile_path: Path,
+) -> dict[str, Any]:
+    base_frontier = validate_successor_execution_frontier(
+        _load(base_frontier_path)
+    )
+    checkpoint = build_role_evaluation_checkpoint(
+        frontier_path=base_frontier_path,
+        source_authority_path=source_authority_path,
+        source_result_path=source_result_path,
+        source_terminal_path=source_terminal_path,
+        source_evaluator_profile_path=source_evaluator_profile_path,
+    )
+    if checkpoint != _load(evaluation_progress_checkpoint_path):
+        raise MultiAgentSuccessorError(
+            "multi_agent_checkpointed_frontier_evaluation_checkpoint_drift"
+        )
+    source_result = _load(source_result_path)
+    source_terminal = _load(source_terminal_path)
+    predecessor_failure = {
+        "authority_ref": source_authority_path.relative_to(ROOT).as_posix(),
+        "authority_sha256": _sha(source_authority_path),
+        "public_result_ref": source_result_path.relative_to(ROOT).as_posix(),
+        "public_result_sha256": _sha(source_result_path),
+        "public_result_digest": str(source_result["result_digest"]),
+        "terminal_result_ref": source_terminal_path.relative_to(ROOT).as_posix(),
+        "terminal_result_sha256": _sha(source_terminal_path),
+        "terminal_result_digest": str(source_terminal["full_result_digest"]),
+        "failure_code": str(source_result["failure_code"]),
+        "provider_attempt_count": int(
+            source_result["execution"]["provider_attempts_preserved"]
+        ),
+    }
+    return compile_successor_execution_frontier(
+        case_key=str(base_frontier["case_key"]),
+        cell_id=str(base_frontier["cell_id"]),
+        accepted_challenge_ids=base_frontier["accepted_challenge_ids"],
+        lead_coordination_checkpoint_digest=str(
+            base_frontier["lead_coordination_checkpoint_digest"]
+        ),
+        predecessor_failure=predecessor_failure,
+        nodes=base_frontier["nodes"],
+        evaluation_strategy=HIERARCHICAL_EVALUATION_STRATEGY,
+        completed_role_evaluation_agent_ids=checkpoint["completed_agent_ids"],
+        evaluation_progress_checkpoint_digest=checkpoint["checkpoint_digest"],
+    )
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--frontier", required=True)
+    parser.add_argument(
+        "--output-kind",
+        choices=("proof", "evaluation-checkpoint", "checkpointed-frontier"),
+        default="proof",
+    )
+    parser.add_argument("--evaluation-progress-checkpoint")
+    parser.add_argument("--source-authority")
+    parser.add_argument("--source-result")
+    parser.add_argument("--source-terminal")
+    parser.add_argument("--source-evaluator-profile")
+    parser.add_argument("--output")
     args = parser.parse_args(argv)
     frontier_path = Path(args.frontier).resolve()
-    proof = build_proof(frontier_path=frontier_path)
-    print(json.dumps(proof, ensure_ascii=True, indent=2, sort_keys=True))
+    if args.output_kind in {
+        "evaluation-checkpoint",
+        "checkpointed-frontier",
+    }:
+        required = (
+            args.source_authority,
+            args.source_result,
+            args.source_terminal,
+            args.source_evaluator_profile,
+        )
+        if any(value is None for value in required):
+            parser.error(
+                "evaluation-checkpoint requires source authority, result, "
+                "terminal, and evaluator profile"
+            )
+        source_authority_path = Path(args.source_authority).resolve()
+        source_result_path = Path(args.source_result).resolve()
+        source_terminal_path = Path(args.source_terminal).resolve()
+        source_evaluator_profile_path = Path(
+            args.source_evaluator_profile
+        ).resolve()
+        if args.output_kind == "checkpointed-frontier":
+            if not args.evaluation_progress_checkpoint:
+                parser.error(
+                    "checkpointed-frontier requires "
+                    "--evaluation-progress-checkpoint"
+                )
+            output = build_checkpointed_frontier(
+                base_frontier_path=frontier_path,
+                evaluation_progress_checkpoint_path=Path(
+                    args.evaluation_progress_checkpoint
+                ).resolve(),
+                source_authority_path=source_authority_path,
+                source_result_path=source_result_path,
+                source_terminal_path=source_terminal_path,
+                source_evaluator_profile_path=source_evaluator_profile_path,
+            )
+        else:
+            output = build_role_evaluation_checkpoint(
+                frontier_path=frontier_path,
+                source_authority_path=source_authority_path,
+                source_result_path=source_result_path,
+                source_terminal_path=source_terminal_path,
+                source_evaluator_profile_path=source_evaluator_profile_path,
+            )
+    else:
+        output = build_proof(
+            frontier_path=frontier_path,
+            evaluation_progress_checkpoint_path=(
+                Path(args.evaluation_progress_checkpoint).resolve()
+                if args.evaluation_progress_checkpoint
+                else None
+            ),
+        )
+    rendered = json.dumps(output, ensure_ascii=True, indent=2, sort_keys=True)
+    if args.output:
+        output_path = Path(args.output).resolve()
+        output_path.write_text(rendered + "\n", encoding="utf-8")
+    else:
+        print(rendered)
     return 0
 
 

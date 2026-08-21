@@ -17,6 +17,9 @@ SUCCESSOR_FRONTIER_SCHEMA_VERSION = (
 SUCCESSOR_FRONTIER_HIERARCHICAL_SCHEMA_VERSION = (
     "fin_ia_multi_agent_successor_execution_frontier_v1_1"
 )
+SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_successor_execution_frontier_v1_2"
+)
 SUCCESSOR_FRONTIER_STATUS = (
     "completed_and_pending_nodes_compiled_from_immutable_lineage"
 )
@@ -173,6 +176,8 @@ def compile_successor_execution_frontier(
     predecessor_failure: Mapping[str, Any],
     nodes: Sequence[Mapping[str, Any]],
     evaluation_strategy: str = MONOLITHIC_EVALUATION_STRATEGY,
+    completed_role_evaluation_agent_ids: Sequence[str] = (),
+    evaluation_progress_checkpoint_digest: str = "",
 ) -> dict[str, Any]:
     normalized_nodes = [deepcopy(dict(row)) for row in nodes]
     accepted = [str(value) for value in accepted_challenge_ids]
@@ -256,8 +261,38 @@ def compile_successor_execution_frontier(
         "multi_agent_successor_evaluation_strategy_invalid",
     )
     hierarchical = evaluation_strategy == HIERARCHICAL_EVALUATION_STRATEGY
+    completed_role_evaluations = [
+        str(agent_id) for agent_id in completed_role_evaluation_agent_ids
+    ]
+    _require(
+        (
+            hierarchical
+            and completed_role_evaluations
+            == list(SPECIALIST_AGENT_IDS[: len(completed_role_evaluations)])
+            and len(completed_role_evaluations) < len(SPECIALIST_AGENT_IDS)
+            and (
+                (not completed_role_evaluations and not evaluation_progress_checkpoint_digest)
+                or (
+                    bool(completed_role_evaluations)
+                    and len(evaluation_progress_checkpoint_digest) == 64
+                )
+            )
+        )
+        or (
+            not hierarchical
+            and not completed_role_evaluations
+            and not evaluation_progress_checkpoint_digest
+        ),
+        "multi_agent_successor_evaluation_checkpoint_invalid",
+    )
+    reused_role_evaluation_count = len(completed_role_evaluations)
     execution_limits = {
-        "maximum_new_model_nodes": fresh_count + (13 if hierarchical else 5),
+        "maximum_new_model_nodes": fresh_count
+        + (
+            13 - reused_role_evaluation_count
+            if hierarchical
+            else 5
+        ),
         "maximum_new_lead_plan_model_calls": 0,
         "maximum_new_initial_workpaper_nodes": 0,
         "maximum_new_lead_coordination_model_calls": 0,
@@ -286,9 +321,17 @@ def compile_successor_execution_frontier(
                 "maximum_affected_role_reevaluation_nodes": 2,
             }
         )
+        if completed_role_evaluations:
+            execution_limits["reused_role_evaluation_count"] = (
+                reused_role_evaluation_count
+            )
     body = {
         "schema_version": (
-            SUCCESSOR_FRONTIER_HIERARCHICAL_SCHEMA_VERSION
+            (
+                SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION
+                if completed_role_evaluations
+                else SUCCESSOR_FRONTIER_HIERARCHICAL_SCHEMA_VERSION
+            )
             if hierarchical
             else SUCCESSOR_FRONTIER_SCHEMA_VERSION
         ),
@@ -324,6 +367,19 @@ def compile_successor_execution_frontier(
     }
     if hierarchical:
         body["evaluation_strategy"] = evaluation_strategy
+        if completed_role_evaluations:
+            body["completed_role_evaluation_agent_ids"] = (
+                completed_role_evaluations
+            )
+            body["evaluation_progress_checkpoint_digest"] = str(
+                evaluation_progress_checkpoint_digest
+            )
+            body["execution_limits"][
+                "maximum_initial_role_evaluation_nodes"
+            ] = len(SPECIALIST_AGENT_IDS) - reused_role_evaluation_count
+            body["constraints"][
+                "completed_role_evaluation_rerun_forbidden"
+            ] = True
     return {**body, "result_digest": canonical_digest(body)}
 
 
@@ -332,7 +388,13 @@ def validate_successor_execution_frontier(
 ) -> dict[str, Any]:
     value = deepcopy(dict(frontier))
     schema = str(value.get("schema_version") or "")
-    hierarchical = schema == SUCCESSOR_FRONTIER_HIERARCHICAL_SCHEMA_VERSION
+    hierarchical = schema in {
+        SUCCESSOR_FRONTIER_HIERARCHICAL_SCHEMA_VERSION,
+        SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION,
+    }
+    checkpointed_hierarchical = (
+        schema == SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION
+    )
     expected_fields = {
         "schema_version",
         "status",
@@ -348,6 +410,13 @@ def validate_successor_execution_frontier(
     }
     if hierarchical:
         expected_fields.add("evaluation_strategy")
+    if checkpointed_hierarchical:
+        expected_fields.update(
+            {
+                "completed_role_evaluation_agent_ids",
+                "evaluation_progress_checkpoint_digest",
+            }
+        )
     supplied_digest = str(value.pop("result_digest", ""))
     _require(
         set(frontier) == expected_fields
@@ -355,6 +424,7 @@ def validate_successor_execution_frontier(
         in {
             SUCCESSOR_FRONTIER_SCHEMA_VERSION,
             SUCCESSOR_FRONTIER_HIERARCHICAL_SCHEMA_VERSION,
+            SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION,
         }
         and value.get("status") == SUCCESSOR_FRONTIER_STATUS
         and supplied_digest == canonical_digest(value),
@@ -373,6 +443,16 @@ def validate_successor_execution_frontier(
             str(value["evaluation_strategy"])
             if hierarchical
             else MONOLITHIC_EVALUATION_STRATEGY
+        ),
+        completed_role_evaluation_agent_ids=(
+            value["completed_role_evaluation_agent_ids"]
+            if checkpointed_hierarchical
+            else ()
+        ),
+        evaluation_progress_checkpoint_digest=(
+            str(value["evaluation_progress_checkpoint_digest"])
+            if checkpointed_hierarchical
+            else ""
         ),
     )
     _require(
@@ -458,6 +538,11 @@ def compile_hierarchical_evaluator_zero_call_proof(
         and cross["referenced_authority_included"] is False,
         "multi_agent_hierarchical_proof_cross_receipt_invalid",
     )
+    reused_role_evaluation_count = int(
+        trusted_frontier["execution_limits"].get(
+            "reused_role_evaluation_count", 0
+        )
+    )
     expected_mutations = {
         "missing_role_fails_closed",
         "wrong_role_target_fails_closed",
@@ -465,6 +550,11 @@ def compile_hierarchical_evaluator_zero_call_proof(
         "workpaper_permutation_is_stable",
         "frontier_budget_mutation_fails_closed",
         "unaffected_role_reevaluation_is_forbidden",
+        *(
+            {"completed_role_evaluation_rerun_is_forbidden"}
+            if reused_role_evaluation_count
+            else set()
+        ),
     }
     checks = {str(key): value for key, value in mutation_checks.items()}
     _require(
@@ -474,10 +564,10 @@ def compile_hierarchical_evaluator_zero_call_proof(
     )
     fake = deepcopy(dict(fake_execution_receipt))
     expected_fake = {
-        "pass_without_repair_node_count": 8,
-        "maximum_two_repair_path_node_count": 13,
-        "third_repair_path_node_count": 15,
-        "maximum_authorized_model_nodes": 13,
+        "pass_without_repair_node_count": 8 - reused_role_evaluation_count,
+        "maximum_two_repair_path_node_count": 13 - reused_role_evaluation_count,
+        "third_repair_path_node_count": 15 - reused_role_evaluation_count,
+        "maximum_authorized_model_nodes": 13 - reused_role_evaluation_count,
         "conditional_writer_count": 1,
         "unaffected_role_reevaluation_count": 0,
     }

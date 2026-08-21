@@ -2,7 +2,7 @@
 
 日期：2026-08-21
 
-状态：`profile-separated live consumed / Demand audit valid / Operating reasoning-only exhaustion preserved / evaluator checkpoint and non-thinking responsibility disposition pending`
+状态：`profile-separated live consumed / Demand audit valid / Operating reasoning-only exhaustion preserved / evaluator checkpoint and non-thinking responsibility full engineering gate pass / clean push preflight and continuation pending`
 
 ## 1. 这一轮真实发生了什么
 
@@ -105,3 +105,21 @@ DeepSeek 官方 Harness 当前把 `low` 作为合法 thinking effort，但它仍
 2. 把自动内容 Evaluator 明确降为“受限清单式裁判”：本地 L1 继续负责身份、期间、引用、精确数字和 absence；研究／repair Agent 保留 thinking；Evaluator 使用 non-thinking 可见审查和 strict submission，不能新增事实或重写底稿。先用 Demand 已验证三条 finding 做离线语义基准，再做一次自然 continuation。
 
 若 non-thinking Evaluator 无法保留 Demand 已证明的材料边界判断，或在 Operating 上形成明显浅薄／误判 finding，停止继续调 DeepSeek profile，进入独立 Evaluator 模型选择或 qualified-human-first 决策。完整六角色评审、跨角色检查、Writer、报告、八维质量、paired、qualified-human、S1／S3、泛化、Workbench 和 release 仍未通过。
+
+## 9. Demand 检查点与 Operating-onward 工程门
+
+已完成通用 Evaluator 进度检查点，而不是再建一个 Demand 特例 runner：
+
+- checkpoint digest=`569c641b395adf29375abf59b2302ed2f733f4788f850edfdc0dbaa5ecb202ae`；
+- 精确绑定 Demand 的 analysis／submission 请求响应 capture、usage、finish reason、三条 validated finding、workpaper digest 与 context digest；
+- 完成前缀只能是六角色规范顺序的连续前缀，缺节点、乱序、payload／terminal／context mutation 均 fail closed；
+- 新 frontier schema v1.2 明确 `completed_role_evaluation_agent_ids=[AGENT::DEMAND_QUALITY]`，首轮新审查从 6 降为 5，最大新模型节点从 13 降为 12；Demand R1 重跑被合同禁止；
+- 零调用 proof digest=`74ba9fda3fc613bb788cbcce1cd16b5218099a6d477956206f9e32a8c825e313`，同时证明缺角色、错目标、未解析 authority、排列／预算篡改、无关角色复审与已完成角色重跑均 fail closed。
+
+自动内容 Evaluator 的职责被进一步收窄为“对既有底稿做可见的受限清单式判断”，使用 `thinking=disabled / max_tokens=10,000 / retry=0`；这不是把研究 Agent 改成 non-thinking。六个研究角色和收到 material finding 后的真实 role repair 继续保留 high-thinking，strict submission 继续只做合同映射。本地 L1 仍独立负责公司身份、期间、引用、精确数字和 absence，不把这些责任丢给模型。
+
+真实 terminal 还暴露并修正了一个测试夹具漂移：运行时 node record 保存规范化 `validated_payload`，没有测试曾伪造的顶层 `validated_payload_digest`。检查点现按真实 payload 及其内建 evaluation digest 复证，避免“fake 能恢复、真实 capture 不能恢复”。
+
+完整工程门：全仓 `918 passed`（仅既有 SWIG deprecation warnings）、compileall、Workbench TypeScript 与 Vite production build、active baseline `185 Python / 8 frontend / 5 detectors / 27 Runtime / 0 forbidden`、`770` 份 configs JSON、`8` 份 Project OS JSONL／`878` 行（写入本节前）、`7,490` 文件 secret scan／0 findings 和 diff check 均通过。0 模型、0 Provider、0 网络、0 Candidate promotion。
+
+下一步只允许 clean commit／push、fresh Project OS preflight、全新 authority 和一次从 Operating Performance 开始的 continuation。若 non-thinking Evaluator 只是机械复述、遗漏实质边界或形成明显误判，不再调 ceiling／Prompt／DeepSeek profile；转独立 Evaluator 模型或 qualified-human-first 项目级决策。当前仍不能宣称六角色、跨角色、Writer、完整报告、S1／S3、泛化、Workbench 或 release 通过。

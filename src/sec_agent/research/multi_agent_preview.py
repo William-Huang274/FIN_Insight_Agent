@@ -64,6 +64,9 @@ LEAD_PLAN_CHECKPOINT_SCHEMA_VERSION = (
 LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_lead_coordination_checkpoint_v1_0"
 )
+ROLE_EVALUATION_PROGRESS_CHECKPOINT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_role_evaluation_progress_checkpoint_v1_0"
+)
 LEAD_PLAN_CARDINALITY_POLICY_SCHEMA_VERSION = (
     "fin_ia_multi_agent_lead_plan_cardinality_policy_v1_0"
 )
@@ -4768,6 +4771,284 @@ def validate_role_evaluation(
     return value
 
 
+def compile_role_evaluation_progress_checkpoint(
+    *,
+    case_key: str,
+    source_run_id: str,
+    source_authority_ref: str,
+    source_authority_sha256: str,
+    source_public_result_ref: str,
+    source_public_result_sha256: str,
+    source_public_result_digest: str,
+    source_terminal_result_ref: str,
+    source_terminal_result_sha256: str,
+    terminal_failure: Mapping[str, Any],
+    evaluator_analysis_profile_ref: str,
+    evaluator_analysis_profile_sha256: str,
+    workpapers: Sequence[Mapping[str, Any]],
+    contexts: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Bind a completed prefix of role evaluations for exact downstream reuse."""
+
+    ordered_workpapers = [deepcopy(dict(row)) for row in workpapers]
+    ordered_agent_ids = [str(row.get("agent_id") or "") for row in ordered_workpapers]
+    _require(
+        ordered_agent_ids == list(SPECIALIST_AGENT_IDS)
+        and set(contexts) == set(SPECIALIST_AGENT_IDS),
+        "multi_agent_role_evaluation_checkpoint_research_state_invalid",
+    )
+    terminal = deepcopy(dict(terminal_failure))
+    terminal_digest = str(terminal.get("full_result_digest") or "")
+    executions = terminal.get("node_executions")
+    terminal_body = {
+        key: value
+        for key, value in terminal.items()
+        if key != "full_result_digest"
+    }
+    _require(
+        terminal.get("status") == "multi_agent_preview_terminal_failure_preserved"
+        and isinstance(executions, list)
+        and terminal_digest == canonical_digest(terminal_body),
+        "multi_agent_role_evaluation_checkpoint_terminal_invalid",
+    )
+    workpaper_by_agent = {
+        str(row["agent_id"]): row for row in ordered_workpapers
+    }
+    completed_agent_ids: list[str] = []
+    evaluations: dict[str, dict[str, Any]] = {}
+    receipts: dict[str, dict[str, Any]] = {}
+    for raw_execution in executions:
+        execution = deepcopy(dict(raw_execution))
+        node_id = str(execution.get("node_id") or "")
+        prefix = "EVAL::ROLE::"
+        suffix = "::CONTENT_AUDIT_R1"
+        if not (node_id.startswith(prefix) and node_id.endswith(suffix)):
+            continue
+        target_agent_id = "AGENT::" + node_id[len(prefix) : -len(suffix)]
+        _require(
+            target_agent_id in workpaper_by_agent
+            and execution.get("agent_id")
+            == "EVAL::ROLE::" + target_agent_id.split("::")[-1],
+            "multi_agent_role_evaluation_checkpoint_target_invalid",
+        )
+        attempts = execution.get("attempts")
+        _require(
+            isinstance(attempts, list)
+            and len(attempts) == 2
+            and attempts[0].get("phase") == "analysis"
+            and attempts[0].get("status") == "analysis_draft_valid"
+            and attempts[0].get("finish_reason") == "stop"
+            and attempts[1].get("phase") == "submission"
+            and attempts[1].get("status") == "contract_valid"
+            and attempts[1].get("finish_reason") == "tool_calls",
+            "multi_agent_role_evaluation_checkpoint_attempt_invalid",
+        )
+        source_payload = deepcopy(
+            dict(execution.get("validated_payload") or {})
+        )
+        evaluation = validate_role_evaluation(
+            source_payload,
+            workpaper=workpaper_by_agent[target_agent_id],
+        )
+        _require(
+            source_payload == evaluation,
+            "multi_agent_role_evaluation_checkpoint_payload_digest_invalid",
+        )
+
+        def attempt_receipt(attempt: Mapping[str, Any]) -> dict[str, Any]:
+            usage = deepcopy(dict(attempt.get("usage") or {}))
+            receipt = {
+                "attempt_id": str(attempt.get("attempt_id") or ""),
+                "phase": str(attempt.get("phase") or ""),
+                "request_capture_ref": str(
+                    attempt.get("request_capture_ref") or ""
+                ),
+                "request_digest": str(attempt.get("request_digest") or ""),
+                "response_capture_ref": str(
+                    attempt.get("response_capture_ref") or ""
+                ),
+                "response_digest": str(attempt.get("response_digest") or ""),
+                "finish_reason": str(attempt.get("finish_reason") or ""),
+                "usage": usage,
+            }
+            _require(
+                all(
+                    bool(str(receipt[field]).strip())
+                    for field in (
+                        "attempt_id",
+                        "phase",
+                        "request_capture_ref",
+                        "response_capture_ref",
+                        "finish_reason",
+                    )
+                )
+                and all(
+                    len(str(receipt[field])) == 64
+                    for field in ("request_digest", "response_digest")
+                )
+                and isinstance(usage.get("prompt_tokens"), int)
+                and isinstance(usage.get("completion_tokens"), int),
+                "multi_agent_role_evaluation_checkpoint_receipt_invalid",
+            )
+            return receipt
+
+        completed_agent_ids.append(target_agent_id)
+        evaluations[target_agent_id] = evaluation
+        receipts[target_agent_id] = {
+            "node_id": node_id,
+            "workpaper_digest": str(
+                workpaper_by_agent[target_agent_id]["workpaper_digest"]
+            ),
+            "context_digest": str(contexts[target_agent_id]["context_digest"]),
+            "analysis": attempt_receipt(attempts[0]),
+            "submission": attempt_receipt(attempts[1]),
+            "validated_payload_digest": canonical_digest(evaluation),
+        }
+    _require(
+        1 <= len(completed_agent_ids) < len(SPECIALIST_AGENT_IDS)
+        and completed_agent_ids
+        == list(SPECIALIST_AGENT_IDS[: len(completed_agent_ids)]),
+        "multi_agent_role_evaluation_checkpoint_prefix_invalid",
+    )
+    pending_agent_ids = list(SPECIALIST_AGENT_IDS[len(completed_agent_ids) :])
+    body = {
+        "schema_version": ROLE_EVALUATION_PROGRESS_CHECKPOINT_SCHEMA_VERSION,
+        "status": "completed_role_evaluation_prefix_valid_for_exact_resume",
+        "case_key": str(case_key),
+        "source_run_id": str(source_run_id),
+        "source_authority_ref": str(source_authority_ref),
+        "source_authority_sha256": str(source_authority_sha256),
+        "source_public_result_ref": str(source_public_result_ref),
+        "source_public_result_sha256": str(source_public_result_sha256),
+        "source_public_result_digest": str(source_public_result_digest),
+        "source_terminal_result_ref": str(source_terminal_result_ref),
+        "source_terminal_result_sha256": str(source_terminal_result_sha256),
+        "source_terminal_result_digest": terminal_digest,
+        "source_failure_code": str(terminal.get("failure_code") or ""),
+        "evaluator_analysis_profile_ref": str(evaluator_analysis_profile_ref),
+        "evaluator_analysis_profile_sha256": str(
+            evaluator_analysis_profile_sha256
+        ),
+        "completed_agent_ids": completed_agent_ids,
+        "pending_agent_ids": pending_agent_ids,
+        "reused_role_evaluation_count": len(completed_agent_ids),
+        "workpaper_digests": {
+            agent_id: str(workpaper_by_agent[agent_id]["workpaper_digest"])
+            for agent_id in completed_agent_ids
+        },
+        "context_digests": {
+            agent_id: str(contexts[agent_id]["context_digest"])
+            for agent_id in completed_agent_ids
+        },
+        "validated_role_evaluations": evaluations,
+        "source_receipts": receipts,
+        "resume_policy": {
+            "completed_role_evaluation_rerun_forbidden": True,
+            "resume_starts_at_first_pending_role": True,
+            "research_inputs_unchanged": True,
+            "new_fact_or_authority_forbidden": True,
+        },
+        "claims": {
+            "new_model_calls": 0,
+            "new_network_calls": 0,
+            "candidate_promotions": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+        },
+    }
+    _require(
+        body["case_key"] == "DELL"
+        and bool(body["source_run_id"])
+        and bool(body["source_failure_code"])
+        and all(
+            len(str(body[field])) == 64
+            for field in (
+                "source_authority_sha256",
+                "source_public_result_sha256",
+                "source_public_result_digest",
+                "source_terminal_result_sha256",
+                "source_terminal_result_digest",
+                "evaluator_analysis_profile_sha256",
+            )
+        ),
+        "multi_agent_role_evaluation_checkpoint_identity_invalid",
+    )
+    return {**body, "checkpoint_digest": canonical_digest(body)}
+
+
+def validate_role_evaluation_progress_checkpoint(
+    checkpoint: Mapping[str, Any],
+    *,
+    terminal_failure: Mapping[str, Any],
+    workpapers: Sequence[Mapping[str, Any]],
+    contexts: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Recompile a role-evaluation checkpoint from its immutable terminal."""
+
+    value = deepcopy(dict(checkpoint))
+    supplied = str(value.pop("checkpoint_digest", ""))
+    expected = {
+        "schema_version",
+        "status",
+        "case_key",
+        "source_run_id",
+        "source_authority_ref",
+        "source_authority_sha256",
+        "source_public_result_ref",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_terminal_result_ref",
+        "source_terminal_result_sha256",
+        "source_terminal_result_digest",
+        "source_failure_code",
+        "evaluator_analysis_profile_ref",
+        "evaluator_analysis_profile_sha256",
+        "completed_agent_ids",
+        "pending_agent_ids",
+        "reused_role_evaluation_count",
+        "workpaper_digests",
+        "context_digests",
+        "validated_role_evaluations",
+        "source_receipts",
+        "resume_policy",
+        "claims",
+    }
+    _require(
+        set(value) == expected
+        and supplied == canonical_digest(value)
+        and value.get("schema_version")
+        == ROLE_EVALUATION_PROGRESS_CHECKPOINT_SCHEMA_VERSION
+        and value.get("status")
+        == "completed_role_evaluation_prefix_valid_for_exact_resume",
+        "multi_agent_role_evaluation_checkpoint_shape_invalid",
+    )
+    rebuilt = compile_role_evaluation_progress_checkpoint(
+        case_key=str(value["case_key"]),
+        source_run_id=str(value["source_run_id"]),
+        source_authority_ref=str(value["source_authority_ref"]),
+        source_authority_sha256=str(value["source_authority_sha256"]),
+        source_public_result_ref=str(value["source_public_result_ref"]),
+        source_public_result_sha256=str(value["source_public_result_sha256"]),
+        source_public_result_digest=str(value["source_public_result_digest"]),
+        source_terminal_result_ref=str(value["source_terminal_result_ref"]),
+        source_terminal_result_sha256=str(value["source_terminal_result_sha256"]),
+        terminal_failure=terminal_failure,
+        evaluator_analysis_profile_ref=str(
+            value["evaluator_analysis_profile_ref"]
+        ),
+        evaluator_analysis_profile_sha256=str(
+            value["evaluator_analysis_profile_sha256"]
+        ),
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+    _require(
+        rebuilt == dict(checkpoint),
+        "multi_agent_role_evaluation_checkpoint_recompile_drift",
+    )
+    return rebuilt
+
+
 def compile_cross_role_evaluation_content_view(
     *,
     workpapers: Sequence[Mapping[str, Any]],
@@ -5949,6 +6230,7 @@ __all__ = [
     "MULTI_AGENT_EVALUATION_SCHEMA_VERSION",
     "MULTI_AGENT_REPORT_DRAFT_SCHEMA_VERSION",
     "MULTI_AGENT_ROLE_TOPOLOGY_SCHEMA_VERSION",
+    "ROLE_EVALUATION_PROGRESS_CHECKPOINT_SCHEMA_VERSION",
     "MultiAgentPreviewError",
     "RESEARCH_LEAD_AGENT_ID",
     "SPECIALIST_AGENT_IDS",
@@ -5964,6 +6246,7 @@ __all__ = [
     "compile_cross_role_evaluation_content_view",
     "compile_cross_role_evaluation_messages",
     "compile_role_evaluation_messages",
+    "compile_role_evaluation_progress_checkpoint",
     "compile_challenge_catalog",
     "compile_analyzed_node_messages",
     "compile_analyzed_node_submission_messages",
@@ -5994,6 +6277,7 @@ __all__ = [
     "specialist_workpaper_tool",
     "validate_evaluation",
     "validate_role_evaluation",
+    "validate_role_evaluation_progress_checkpoint",
     "validate_analysis_fragment_checkpoint",
     "validate_analysis_completion_checkpoint",
     "validate_downstream_repair_progress_checkpoint",

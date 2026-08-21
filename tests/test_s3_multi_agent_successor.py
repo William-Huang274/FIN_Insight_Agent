@@ -6,7 +6,11 @@ import pytest
 
 from sec_agent.canonical_runtime import canonical_digest
 from sec_agent.research.multi_agent_preview import (
+    MultiAgentPreviewError,
     SPECIALIST_AGENT_IDS,
+    compile_role_evaluation_progress_checkpoint,
+    validate_role_evaluation,
+    validate_role_evaluation_progress_checkpoint,
     validate_specialist_workpaper,
 )
 from sec_agent.research.multi_agent_successor import (
@@ -70,7 +74,18 @@ def _workpaper(context: dict, agent_id: str) -> dict:
             "strongest_counterarguments": ["目前仍缺少产品表现到公司财务结果的直接桥接证据。"],
             "remaining_gap_refs": ["GAP::ONE"],
             "what_would_change": ["获得同期间产品利润桥后重裁决。"],
-            "cross_role_challenges": [],
+            "cross_role_challenges": (
+                [
+                    {
+                        "target_agent_id": "AGENT::DEMAND_QUALITY",
+                        "challenge": "需求证据可能仍混合了真实部署与短期提前采购。",
+                        "material_reason": "若无法区分两者，需求持续性的置信度会被高估。",
+                        "requested_action": "request_new_evidence",
+                    }
+                ]
+                if agent_id == "AGENT::COUNTEREVIDENCE"
+                else []
+            ),
             "stop_reason": "当前材料足以形成有限结论。",
         },
         context=context,
@@ -340,4 +355,132 @@ def test_frontier_compiles_hierarchical_evaluator_capacity_from_real_roles() -> 
     ):
         validate_hierarchical_evaluator_zero_call_proof(
             mutated, frontier=frontier
+        )
+
+
+def test_role_evaluation_progress_checkpoint_reuses_completed_prefix() -> None:
+    contexts = {
+        agent_id: _context(agent_id, f"SESSION::EVAL::{index}")
+        for index, agent_id in enumerate(SPECIALIST_AGENT_IDS, start=1)
+    }
+    workpapers = [
+        _workpaper(contexts[agent_id], agent_id)
+        for agent_id in SPECIALIST_AGENT_IDS
+    ]
+    demand = workpapers[0]
+    evaluation = validate_role_evaluation(
+        {
+            "schema_version": "fin_ia_multi_agent_evaluation_v1_0",
+            "findings": [],
+            "cross_role_conflicts": [],
+            "report_may_proceed": True,
+        },
+        workpaper=demand,
+    )
+
+    def attempt(phase: str, status: str, finish_reason: str) -> dict:
+        return {
+            "attempt_id": f"ATTEMPT::{phase}",
+            "phase": phase,
+            "status": status,
+            "finish_reason": finish_reason,
+            "request_capture_ref": f"captures/{phase}-request.json",
+            "request_digest": "a" * 64,
+            "response_capture_ref": f"captures/{phase}-response.json",
+            "response_digest": "b" * 64,
+            "usage": {"prompt_tokens": 100, "completion_tokens": 50},
+        }
+
+    terminal_body = {
+        "status": "multi_agent_preview_terminal_failure_preserved",
+        "failure_code": "model_gateway_reasoning_budget_exhausted",
+        "node_executions": [
+            {
+                "agent_id": "EVAL::ROLE::DEMAND_QUALITY",
+                "node_id": "EVAL::ROLE::DEMAND_QUALITY::CONTENT_AUDIT_R1",
+                "attempts": [
+                    attempt("analysis", "analysis_draft_valid", "stop"),
+                    attempt("submission", "contract_valid", "tool_calls"),
+                ],
+                "validated_payload": evaluation,
+                "validated_payload_digest": canonical_digest(evaluation),
+            }
+        ],
+    }
+    terminal = {
+        **terminal_body,
+        "full_result_digest": canonical_digest(terminal_body),
+    }
+    checkpoint = compile_role_evaluation_progress_checkpoint(
+        case_key="DELL",
+        source_run_id="RUN::EVALUATOR",
+        source_authority_ref="authority.json",
+        source_authority_sha256="1" * 64,
+        source_public_result_ref="result.json",
+        source_public_result_sha256="2" * 64,
+        source_public_result_digest="3" * 64,
+        source_terminal_result_ref="terminal.json",
+        source_terminal_result_sha256="4" * 64,
+        terminal_failure=terminal,
+        evaluator_analysis_profile_ref="profile.json",
+        evaluator_analysis_profile_sha256="5" * 64,
+        workpapers=workpapers,
+        contexts=contexts,
+    )
+
+    assert validate_role_evaluation_progress_checkpoint(
+        checkpoint,
+        terminal_failure=terminal,
+        workpapers=workpapers,
+        contexts=contexts,
+    ) == checkpoint
+    assert checkpoint["completed_agent_ids"] == [
+        "AGENT::DEMAND_QUALITY"
+    ]
+    assert checkpoint["pending_agent_ids"][0] == (
+        "AGENT::OPERATING_PERFORMANCE"
+    )
+    frontier = compile_successor_execution_frontier(
+        case_key="DELL",
+        cell_id="MULTI_AGENT_PREVIEW",
+        accepted_challenge_ids=[],
+        lead_coordination_checkpoint_digest="f" * 64,
+        predecessor_failure=_reasoning_budget_failure(),
+        nodes=[],
+        evaluation_strategy=HIERARCHICAL_EVALUATION_STRATEGY,
+        completed_role_evaluation_agent_ids=checkpoint[
+            "completed_agent_ids"
+        ],
+        evaluation_progress_checkpoint_digest=checkpoint[
+            "checkpoint_digest"
+        ],
+    )
+    assert validate_successor_execution_frontier(frontier) == frontier
+    assert frontier["schema_version"].endswith("v1_2")
+    assert frontier["execution_limits"]["maximum_new_model_nodes"] == 12
+    assert frontier["execution_limits"][
+        "maximum_initial_role_evaluation_nodes"
+    ] == 5
+    assert frontier["execution_limits"]["reused_role_evaluation_count"] == 1
+    assert frontier["constraints"][
+        "completed_role_evaluation_rerun_forbidden"
+    ] is True
+
+    mutated = deepcopy(checkpoint)
+    mutated["validated_role_evaluations"]["AGENT::DEMAND_QUALITY"][
+        "report_may_proceed"
+    ] = False
+    mutated_body = {
+        key: value for key, value in mutated.items() if key != "checkpoint_digest"
+    }
+    mutated["checkpoint_digest"] = canonical_digest(mutated_body)
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_role_evaluation_checkpoint_recompile_drift",
+    ):
+        validate_role_evaluation_progress_checkpoint(
+            mutated,
+            terminal_failure=terminal,
+            workpapers=workpapers,
+            contexts=contexts,
         )

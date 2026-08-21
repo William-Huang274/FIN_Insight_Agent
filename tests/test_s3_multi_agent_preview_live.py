@@ -59,6 +59,11 @@ HIERARCHICAL_EVALUATOR_PROFILE_SCOPE = (
     / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
     "compiled_successor_scope_decision_v1_3.json"
 )
+HIERARCHICAL_EVALUATOR_CHECKPOINT_SCOPE = (
+    ROOT
+    / "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+    "compiled_successor_scope_decision_v1_4.json"
+)
 
 
 def _checkpoint() -> dict[str, object]:
@@ -849,11 +854,13 @@ def test_r15_authority_reuses_two_repairs_and_starts_fresh_supply(
         "expected_maximum_nodes",
         "expects_hierarchical_proof",
         "expects_evaluator_profile",
+        "expects_evaluation_checkpoint",
     ),
     (
-        (GENERIC_SUCCESSOR_SCOPE, 5, False, False),
-        (HIERARCHICAL_EVALUATOR_SCOPE, 13, True, False),
-        (HIERARCHICAL_EVALUATOR_PROFILE_SCOPE, 13, True, True),
+        (GENERIC_SUCCESSOR_SCOPE, 5, False, False, False),
+        (HIERARCHICAL_EVALUATOR_SCOPE, 13, True, False, False),
+        (HIERARCHICAL_EVALUATOR_PROFILE_SCOPE, 13, True, True, False),
+        (HIERARCHICAL_EVALUATOR_CHECKPOINT_SCOPE, 12, True, True, True),
     ),
 )
 def test_generic_successor_authority_uses_one_compiled_frontier(
@@ -862,6 +869,7 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
     expected_maximum_nodes: int,
     expects_hierarchical_proof: bool,
     expects_evaluator_profile: bool,
+    expects_evaluation_checkpoint: bool,
 ) -> None:
     source_authority = json.loads(
         (
@@ -926,6 +934,10 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
         bound_inputs["evaluator_analysis_profile"] = binding(
             scope["evaluator_analysis_profile_ref"]
         )
+    if expects_evaluation_checkpoint:
+        bound_inputs["role_evaluation_progress_checkpoint"] = binding(
+            scope["role_evaluation_progress_checkpoint_ref"]
+        )
     authority = {
         "schema_version": runner.GENERIC_SUCCESSOR_AUTHORITY_SCHEMA,
         "status": (
@@ -968,7 +980,14 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
         profile = runner.load_chat_completion_profile(
             runner._json(inputs["evaluator_analysis_profile"])
         )
-        assert profile.request_defaults["reasoning_effort"] == "low"
+        if expects_evaluation_checkpoint:
+            assert profile.request_defaults == {
+                "max_tokens": 10000,
+                "stream": False,
+                "thinking": {"type": "disabled"},
+            }
+        else:
+            assert profile.request_defaults["reasoning_effort"] == "low"
         assert runner.ROLE_EVALUATION_ANALYSIS_TOKEN_CEILING == 8000
         assert runner.CROSS_ROLE_EVALUATION_ANALYSIS_TOKEN_CEILING == 10000
 
@@ -996,6 +1015,11 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
         active_progress_checkpoint=active,
         completed_repairs=completed,
         hierarchical_proof_binding=hierarchical_binding,
+        role_evaluation_checkpoint=(
+            runner._json(inputs["role_evaluation_progress_checkpoint"])
+            if expects_evaluation_checkpoint
+            else None
+        ),
     )
     assert (
         "hierarchical_evaluator_zero_call_proof" in execution_bindings
@@ -1006,6 +1030,9 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
         ]["result_digest"] == scope[
             "hierarchical_evaluator_zero_call_proof_result_digest"
         ]
+    assert (
+        "role_evaluation_progress_checkpoint" in execution_bindings
+    ) is expects_evaluation_checkpoint
 
 
 def test_pre_execution_failure_preserves_zero_provider_terminal_result(

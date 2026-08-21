@@ -5038,8 +5038,16 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         "evaluator_analysis_profile_ref",
         "evaluator_analysis_profile_sha256",
     }
+    role_evaluation_checkpoint_fields = {
+        "role_evaluation_progress_checkpoint_ref",
+        "role_evaluation_progress_checkpoint_sha256",
+        "role_evaluation_progress_checkpoint_digest",
+    }
     supplied_hierarchical_proof_fields = set(decision) & hierarchical_proof_fields
     supplied_evaluator_profile_fields = set(decision) & evaluator_profile_fields
+    supplied_role_evaluation_checkpoint_fields = (
+        set(decision) & role_evaluation_checkpoint_fields
+    )
     if supplied_hierarchical_proof_fields not in (set(), hierarchical_proof_fields):
         raise ValueError(
             "project_os_multi_agent_generic_successor_hierarchical_proof_"
@@ -5050,6 +5058,14 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
             "project_os_multi_agent_generic_successor_evaluator_profile_"
             "binding_incomplete"
         )
+    if supplied_role_evaluation_checkpoint_fields not in (
+        set(),
+        role_evaluation_checkpoint_fields,
+    ):
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_role_evaluation_"
+            "checkpoint_binding_incomplete"
+        )
     if set(decision) not in {
         frozenset(expected_fields),
         frozenset(expected_fields | hierarchical_proof_fields),
@@ -5057,6 +5073,12 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
             expected_fields
             | hierarchical_proof_fields
             | evaluator_profile_fields
+        ),
+        frozenset(
+            expected_fields
+            | hierarchical_proof_fields
+            | evaluator_profile_fields
+            | role_evaluation_checkpoint_fields
         ),
     }:
         raise ValueError(
@@ -5256,6 +5278,7 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
     frontier = validate_successor_execution_frontier(frontier_raw)
     hierarchical_proof: dict[str, Any] | None = None
     evaluator_profile: dict[str, Any] | None = None
+    role_evaluation_checkpoint: dict[str, Any] | None = None
     if frontier.get("evaluation_strategy") == HIERARCHICAL_EVALUATION_STRATEGY:
         if supplied_hierarchical_proof_fields != hierarchical_proof_fields:
             raise ValueError(
@@ -5293,19 +5316,27 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
                 sha_field="evaluator_analysis_profile_sha256",
             )
             evaluator_defaults = evaluator_profile.get("request_defaults") or {}
+            expected_evaluator_defaults = (
+                {
+                    "max_tokens": 10000,
+                    "stream": False,
+                    "thinking": {"type": "disabled"},
+                }
+                if supplied_role_evaluation_checkpoint_fields
+                else {
+                    "max_tokens": 10000,
+                    "stream": False,
+                    "thinking": {"type": "enabled"},
+                    "reasoning_effort": "low",
+                }
+            )
             if not (
                 evaluator_profile.get("provider_id") == "deepseek"
                 and evaluator_profile.get("model") == "deepseek-v4-pro"
                 and evaluator_profile.get("base_url")
                 == "https://api.deepseek.com"
                 and evaluator_profile.get("endpoint") == "/chat/completions"
-                and evaluator_defaults
-                == {
-                    "max_tokens": 10000,
-                    "stream": False,
-                    "thinking": {"type": "enabled"},
-                    "reasoning_effort": "low",
-                }
+                and evaluator_defaults == expected_evaluator_defaults
                 and (evaluator_profile.get("authority") or {}).get(
                     "retry_count"
                 )
@@ -5317,6 +5348,56 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
                     "project_os_multi_agent_generic_successor_evaluator_"
                     "profile_invalid"
                 )
+        if supplied_role_evaluation_checkpoint_fields:
+            if supplied_evaluator_profile_fields != evaluator_profile_fields:
+                raise ValueError(
+                    "project_os_multi_agent_generic_successor_role_"
+                    "evaluation_checkpoint_profile_required"
+                )
+            checkpoint_path, role_evaluation_checkpoint = (
+                _validate_artifact_binding(
+                    root=root,
+                    decision=decision,
+                    ref_field="role_evaluation_progress_checkpoint_ref",
+                    sha_field="role_evaluation_progress_checkpoint_sha256",
+                )
+            )
+            checkpoint_body = {
+                key: value
+                for key, value in role_evaluation_checkpoint.items()
+                if key != "checkpoint_digest"
+            }
+            if not (
+                checkpoint_path.relative_to(root).as_posix()
+                == decision["role_evaluation_progress_checkpoint_ref"]
+                and role_evaluation_checkpoint.get("checkpoint_digest")
+                == decision["role_evaluation_progress_checkpoint_digest"]
+                == canonical_digest(checkpoint_body)
+                and role_evaluation_checkpoint.get("schema_version")
+                == "fin_ia_multi_agent_role_evaluation_progress_checkpoint_v1_0"
+                and role_evaluation_checkpoint.get("status")
+                == "completed_role_evaluation_prefix_valid_for_exact_resume"
+                and role_evaluation_checkpoint.get("case_key") == "DELL"
+                and role_evaluation_checkpoint.get("completed_agent_ids")
+                == frontier.get("completed_role_evaluation_agent_ids")
+                and role_evaluation_checkpoint.get("checkpoint_digest")
+                == frontier.get("evaluation_progress_checkpoint_digest")
+                and role_evaluation_checkpoint.get(
+                    "reused_role_evaluation_count"
+                )
+                == frontier["execution_limits"].get(
+                    "reused_role_evaluation_count"
+                )
+            ):
+                raise ValueError(
+                    "project_os_multi_agent_generic_successor_role_"
+                    "evaluation_checkpoint_invalid"
+                )
+        elif frontier.get("completed_role_evaluation_agent_ids"):
+            raise ValueError(
+                "project_os_multi_agent_generic_successor_role_evaluation_"
+                "checkpoint_required"
+            )
     elif supplied_hierarchical_proof_fields:
         raise ValueError(
             "project_os_multi_agent_generic_successor_hierarchical_proof_"
@@ -5363,18 +5444,80 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         raise ValueError(
             "project_os_multi_agent_generic_successor_frontier_binding_invalid"
         )
+    if role_evaluation_checkpoint is not None:
+        source_evaluator_binding = failed_authority.get("bound_inputs", {}).get(
+            "evaluator_analysis_profile"
+        ) or {}
+        if not (
+            role_evaluation_checkpoint.get("source_run_id")
+            == failed_authority.get("outputs", {}).get("run_id")
+            and role_evaluation_checkpoint.get("source_authority_ref")
+            == decision["predecessor_live_authority_ref"]
+            and role_evaluation_checkpoint.get("source_authority_sha256")
+            == decision["predecessor_live_authority_sha256"]
+            and role_evaluation_checkpoint.get("source_public_result_ref")
+            == decision["predecessor_live_result_ref"]
+            and role_evaluation_checkpoint.get("source_public_result_sha256")
+            == decision["predecessor_live_result_sha256"]
+            and role_evaluation_checkpoint.get("source_public_result_digest")
+            == failed_result.get("result_digest")
+            and role_evaluation_checkpoint.get("source_terminal_result_ref")
+            == predecessor_failure["terminal_result_ref"]
+            and role_evaluation_checkpoint.get("source_terminal_result_sha256")
+            == predecessor_failure["terminal_result_sha256"]
+            and role_evaluation_checkpoint.get("source_terminal_result_digest")
+            == predecessor_failure["terminal_result_digest"]
+            and role_evaluation_checkpoint.get("source_failure_code")
+            == failed_result.get("failure_code")
+            and role_evaluation_checkpoint.get(
+                "evaluator_analysis_profile_ref"
+            )
+            == source_evaluator_binding.get("ref")
+            and role_evaluation_checkpoint.get(
+                "evaluator_analysis_profile_sha256"
+            )
+            == source_evaluator_binding.get("sha256")
+            and (role_evaluation_checkpoint.get("resume_policy") or {}).get(
+                "completed_role_evaluation_rerun_forbidden"
+            )
+            is True
+        ):
+            raise ValueError(
+                "project_os_multi_agent_generic_successor_role_evaluation_"
+                "checkpoint_lineage_invalid"
+            )
     if evaluator_profile is not None:
         predecessor_evaluator_ref = predecessor_scope.get(
             "evaluator_analysis_profile_ref"
         )
         if predecessor_evaluator_ref:
-            if (
+            if role_evaluation_checkpoint is None and (
                 decision["evaluator_analysis_profile_ref"]
                 != predecessor_evaluator_ref
             ):
                 raise ValueError(
                     "project_os_multi_agent_generic_successor_evaluator_"
                     "profile_lineage_drift"
+                )
+            if role_evaluation_checkpoint is not None and not (
+                decision["evaluator_analysis_profile_ref"]
+                != predecessor_evaluator_ref
+                and role_evaluation_checkpoint.get(
+                    "evaluator_analysis_profile_ref"
+                )
+                == predecessor_evaluator_ref
+                and role_evaluation_checkpoint.get(
+                    "evaluator_analysis_profile_sha256"
+                )
+                == predecessor_scope.get(
+                    "evaluator_analysis_profile_sha256"
+                )
+                and failed_result.get("failure_code")
+                == "model_gateway_reasoning_budget_exhausted"
+            ):
+                raise ValueError(
+                    "project_os_multi_agent_generic_successor_evaluator_"
+                    "profile_checkpoint_replacement_invalid"
                 )
         elif failed_result.get("failure_code") != (
             "multi_agent_preview_analysis_finish_reason_invalid:length"
@@ -5421,6 +5564,10 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         expected_budget_policy[
             "evaluator_analysis_basis_is_separate_from_repair_basis"
         ] = True
+    if role_evaluation_checkpoint is not None:
+        expected_budget_policy[
+            "reused_role_evaluations_have_no_new_token_budget"
+        ] = True
     if decision.get("token_budget_basis_policy") != expected_budget_policy:
         raise ValueError(
             "project_os_multi_agent_generic_successor_budget_invalid"
@@ -5442,7 +5589,20 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
             else None
         ),
         "evaluator_analysis_reasoning_effort": (
-            "low" if evaluator_profile is not None else None
+            (
+                evaluator_profile.get("request_defaults", {}).get(
+                    "reasoning_effort"
+                )
+                if evaluator_profile is not None
+                else None
+            )
+        ),
+        "evaluator_analysis_thinking_mode": (
+            evaluator_profile.get("request_defaults", {})
+            .get("thinking", {})
+            .get("type")
+            if evaluator_profile is not None
+            else None
         ),
         "evaluator_analysis_maximum_token_ceiling": (
             10000 if evaluator_profile is not None else None
@@ -5464,6 +5624,24 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         "reused_completed_challenge_repair_count": frontier[
             "execution_limits"
         ]["reused_completed_challenge_repair_count"],
+        "role_evaluation_progress_checkpoint_ref": (
+            decision.get("role_evaluation_progress_checkpoint_ref")
+            if role_evaluation_checkpoint is not None
+            else None
+        ),
+        "role_evaluation_progress_checkpoint_sha256": (
+            decision.get("role_evaluation_progress_checkpoint_sha256")
+            if role_evaluation_checkpoint is not None
+            else None
+        ),
+        "role_evaluation_progress_checkpoint_digest": (
+            decision.get("role_evaluation_progress_checkpoint_digest")
+            if role_evaluation_checkpoint is not None
+            else None
+        ),
+        "reused_role_evaluation_count": frontier["execution_limits"].get(
+            "reused_role_evaluation_count", 0
+        ),
         "maximum_new_lead_plan_model_calls": 0,
         "execution_limits": dict(frontier["execution_limits"]),
         "token_budget_basis_policy": dict(expected_budget_policy),
@@ -9594,6 +9772,24 @@ def build_preflight(
         ):
             raise ValueError(
                 "project_os_multi_agent_evaluator_profile_scope_allowance_missing"
+            )
+        if (
+            decision_projection.get(
+                "role_evaluation_progress_checkpoint_ref"
+            )
+            is not None
+            and not _issue_explicitly_allows(
+                root=root,
+                issue_id=(
+                    "RC-AR-024-low-reasoning-evaluator-has-no-visible-"
+                    "output-reserve-or-node-checkpoint"
+                ),
+                allowed_scope=MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE,
+            )
+        ):
+            raise ValueError(
+                "project_os_multi_agent_role_evaluation_checkpoint_scope_"
+                "allowance_missing"
             )
     if (
         decision_projection.get("natural_material_scope_canary") is True

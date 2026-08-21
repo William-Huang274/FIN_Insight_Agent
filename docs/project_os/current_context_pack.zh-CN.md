@@ -1025,3 +1025,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 责任边界：Demand finding 证明 Evaluator 有内容价值；Operating 证明 `reasoning_effort=low` 不构成 visible-output reserve。最早责任层为 S0 Provider/Evaluator 任务职责＋S3 评审编排，不是 S1 数据、S2 NumericFact 或 Operating 研究底稿。
 - 新增 Runtime 要求：任何已完成角色审查必须编译为 capture-bound Evaluator checkpoint，后继不得重跑 Demand。自动 Evaluator 改为 non-thinking 受限清单式裁判；研究和真实 role repair 仍保留 thinking。不得删 authority、抬 ceiling 或把同型失败继续归为 token 不够。
 - 下一步只允许 evaluator checkpoint／capture replay／mutation、non-thinking 职责零调用证明、全仓门、fresh Project OS preflight 和从 Operating 起点的一次 continuation。若内容质量退化，进入独立 Evaluator 模型或 qualified-human-first 决策。六角色、跨角色、Writer、完整报告、S1／S3、泛化、Workbench 和 release 仍为 false。
+
+# 2026-08-21 Demand Evaluator 检查点与 Operating-onward 工程门
+
+- Demand 的完整自然审查已编译成 capture-bound 通用进度检查点：绑定两次 Provider capture、usage、三条 validated finding、底稿和上下文 digest；checkpoint digest=`569c641b...202ae`。后继不得重跑 Demand，第一新节点必须是 Operating Performance。
+- checkpointed frontier schema v1.2 将首轮新角色审查限定为 5、最大新模型节点限定为 12；零调用 proof digest=`74ba9fda...25e313`，缺角色、错目标、authority 缺失、排列／预算 mutation、无关角色复审和 Demand 重跑均 fail closed。
+- 自动 Evaluator 使用 provider-specific non-thinking profile 做可见、受限的清单判断；本地 L1 继续负责身份／期间／引用／精确数字／absence；研究角色与真正 role repair 继续 high-thinking。没有把所有模型权限收回 Harness，也没有让 Harness 代写研究观点。
+- 全仓 `918 passed`，compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、770 configs、7,490-file secret scan 和 diff check 通过；0 模型／Provider／网络／Candidate promotion。
+- 下一步：clean commit／push → fresh preflight → fresh authority → 从 Operating 开始的一次 continuation。若 non-thinking Evaluator 内容退化，停止 DS profile 微调，转独立 Evaluator 模型或 qualified-human-first 决策；S1／S3／泛化／Workbench／release 仍为 false。

@@ -36,7 +36,6 @@ from sec_agent.research.multi_agent_report_remap import (  # noqa: E402
     REPORT_REMAP_FULL_RESULT_SCHEMA_VERSION,
     REPORT_REMAP_LIVE_AUTHORITY_SCHEMA_VERSION,
     REPORT_REMAP_PUBLIC_RESULT_SCHEMA_VERSION,
-    REPORT_REMAP_RUN_SCOPE,
     validate_report_remap_scope_decision,
 )
 
@@ -196,6 +195,10 @@ def issue_authority(
     decision_ref: str = DEFAULT_DECISION_REF,
     preflight_ref: str = DEFAULT_PREFLIGHT_REF,
     authority_ref: str = DEFAULT_AUTHORITY_REF,
+    run_id: str = DEFAULT_RUN_ID,
+    capture_root_ref: str = DEFAULT_CAPTURE_ROOT_REF,
+    private_root_ref: str = DEFAULT_PRIVATE_ROOT_REF,
+    public_result_ref: str = DEFAULT_PUBLIC_RESULT_REF,
 ) -> dict[str, Any]:
     """Issue one fresh authority only from a clean, synced repository."""
 
@@ -217,7 +220,7 @@ def issue_authority(
         "status": "approved_for_one_writer_only_protected_report_terminal_remap",
         "authorized_at": _now(),
         "implementation_commit": preflight["repository"]["head"],
-        "run_scope_id": REPORT_REMAP_RUN_SCOPE,
+        "run_scope_id": projection["run_scope_id"],
         "project_os_preflight": {
             "ref": _relative(preflight_path),
             "sha256": _sha(preflight_path),
@@ -240,10 +243,10 @@ def issue_authority(
         "execution_limits": deepcopy(projection["execution_limits"]),
         "token_budget_basis": deepcopy(projection["token_budget_basis"]),
         "outputs": {
-            "run_id": DEFAULT_RUN_ID,
-            "capture_root_ref": DEFAULT_CAPTURE_ROOT_REF,
-            "private_output_root_ref": DEFAULT_PRIVATE_ROOT_REF,
-            "public_result_ref": DEFAULT_PUBLIC_RESULT_REF,
+            "run_id": run_id,
+            "capture_root_ref": _relative(_resolve(capture_root_ref)),
+            "private_output_root_ref": _relative(_resolve(private_root_ref)),
+            "public_result_ref": _relative(_resolve(public_result_ref)),
         },
         "authority_statement": (
             "Authorize exactly one fresh Writer-only terminal remapping logical "
@@ -285,7 +288,6 @@ def validate_authority(
         authority["schema_version"] == REPORT_REMAP_LIVE_AUTHORITY_SCHEMA_VERSION
         and authority["status"]
         == "approved_for_one_writer_only_protected_report_terminal_remap"
-        and authority["run_scope_id"] == REPORT_REMAP_RUN_SCOPE
         and authority["authority_digest"]
         == canonical_digest(_authority_unsigned(authority))
         and authority["implementation_commit"] == _git_head()
@@ -302,7 +304,8 @@ def validate_authority(
         )
     projection = validate_report_remap_scope_decision(root=ROOT, decision=decision)
     if not (
-        authority["execution_limits"] == projection["execution_limits"]
+        authority["run_scope_id"] == projection["run_scope_id"]
+        and authority["execution_limits"] == projection["execution_limits"]
         and authority["token_budget_basis"] == projection["token_budget_basis"]
     ):
         raise ReportRemapLiveError(
@@ -313,7 +316,7 @@ def validate_authority(
         preflight.get("status") == "pass_current_decision_bound_preflight"
         and preflight.get("decision_ref") == authority["scope_decision"]["ref"]
         and preflight.get("decision_sha256") == authority["scope_decision"]["sha256"]
-        and preflight.get("run_scope_id") == REPORT_REMAP_RUN_SCOPE
+        and preflight.get("run_scope_id") == authority["run_scope_id"]
         and (preflight.get("repository") or {}).get("head")
         == authority["implementation_commit"]
         and (preflight.get("repository") or {}).get("clean") is True
@@ -377,7 +380,9 @@ def validate_authority(
     return authority, loaded
 
 
-def _parse_submission(result: ChatCompletionToolStepResult) -> tuple[str, dict[str, Any]]:
+def _submission_envelope(
+    result: ChatCompletionToolStepResult,
+) -> tuple[str, str]:
     if len(result.tool_calls) != 1:
         raise ReportRemapLiveError(
             "report_remap_live_tool_call_count_invalid", phase="contract"
@@ -388,17 +393,32 @@ def _parse_submission(result: ChatCompletionToolStepResult) -> tuple[str, dict[s
         raise ReportRemapLiveError(
             "report_remap_live_tool_name_invalid", phase="contract"
         )
-    try:
-        payload = json.loads(str(function.get("arguments") or ""))
-    except json.JSONDecodeError as exc:
+    call_id = str(call.get("id") or "")
+    if not call_id:
         raise ReportRemapLiveError(
-            "report_remap_live_tool_arguments_json_invalid", phase="contract"
+            "report_remap_live_tool_call_id_missing", phase="contract"
+        )
+    return call_id, str(function.get("arguments") or "")
+
+
+def _parse_submission(result: ChatCompletionToolStepResult) -> tuple[str, dict[str, Any]]:
+    call_id, arguments = _submission_envelope(result)
+    try:
+        payload = json.loads(arguments)
+    except json.JSONDecodeError as exc:
+        code = (
+            "report_remap_live_tool_arguments_truncated_at_output_budget"
+            if result.finish_reason == "length"
+            else "report_remap_live_tool_arguments_json_invalid"
+        )
+        raise ReportRemapLiveError(
+            code, phase="contract"
         ) from exc
     if not isinstance(payload, dict):
         raise ReportRemapLiveError(
             "report_remap_live_tool_arguments_object_required", phase="contract"
         )
-    return str(call.get("id") or ""), payload
+    return call_id, payload
 
 
 def _capture_ref(value: object) -> str:
@@ -500,7 +520,7 @@ def execute_contract_attempts(
                 break
             call_id = ""
             try:
-                call_id, _ = _parse_submission(result)
+                call_id, _ = _submission_envelope(result)
             except ReportRemapLiveError:
                 pass
             if not call_id:
@@ -521,7 +541,10 @@ def execute_contract_attempts(
                                 "failure_code": last_error,
                                 "instruction": (
                                     "Correct only the protected report contract. "
-                                    "Do not change research meaning or topology."
+                                    "Do not change research meaning or topology. "
+                                    "Return the complete contract from the beginning, "
+                                    "use one concise clause per source section, and "
+                                    "select only the minimum refs needed for each clause."
                                 ),
                                 "remaining_contract_attempts": 1,
                             },
@@ -580,6 +603,7 @@ def _materialize(
     draft: Mapping[str, Any] | None,
     rendered: Mapping[str, Any] | None,
     failure: BaseException | None,
+    source_report_digest: str,
 ) -> dict[str, Any]:
     outputs = authority["outputs"]
     private_root = _resolve(str(outputs["private_output_root_ref"]))
@@ -602,11 +626,7 @@ def _materialize(
         "source_report_ref": authority["bound_inputs"][
             "predecessor_private_full_result"
         ]["ref"],
-        "source_report_digest": (
-            draft.get("remap_receipt", {}).get("source_report_digest", "")
-            if draft
-            else ""
-        ),
+        "source_report_digest": source_report_digest,
         "contract_attempts": [deepcopy(dict(row)) for row in attempts],
         "draft": deepcopy(dict(draft)) if draft else None,
         "rendered_report": deepcopy(dict(rendered)) if rendered else None,
@@ -675,11 +695,15 @@ def _materialize(
 def run(authority_path: Path) -> dict[str, Any]:
     authority: dict[str, Any] | None = None
     attempts: list[dict[str, Any]] = []
+    source_report_digest = ""
     try:
         authority, loaded = validate_authority(authority_path)
         outputs = authority["outputs"]
         profile = load_chat_completion_profile(loaded["writer_submission_profile"])
         source_full = loaded["predecessor_private_full_result"]
+        source_report_digest = str(
+            source_full["report"].get("report_digest") or ""
+        )
         draft, rendered, attempts = execute_contract_attempts(
             profile=profile,
             source_report=source_full["report"],
@@ -695,6 +719,7 @@ def run(authority_path: Path) -> dict[str, Any]:
             draft=draft,
             rendered=rendered,
             failure=None,
+            source_report_digest=source_report_digest,
         )
     except Exception as exc:
         if authority is None:
@@ -710,6 +735,7 @@ def run(authority_path: Path) -> dict[str, Any]:
             draft=None,
             rendered=None,
             failure=exc,
+            source_report_digest=source_report_digest,
         )
 
 
@@ -719,12 +745,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--decision", default=DEFAULT_DECISION_REF)
     parser.add_argument("--preflight", default=DEFAULT_PREFLIGHT_REF)
     parser.add_argument("--authority", default=DEFAULT_AUTHORITY_REF)
+    parser.add_argument("--run-id", default=DEFAULT_RUN_ID)
+    parser.add_argument("--capture-root", default=DEFAULT_CAPTURE_ROOT_REF)
+    parser.add_argument("--private-root", default=DEFAULT_PRIVATE_ROOT_REF)
+    parser.add_argument("--public-result", default=DEFAULT_PUBLIC_RESULT_REF)
     args = parser.parse_args(argv)
     result = (
         issue_authority(
             decision_ref=args.decision,
             preflight_ref=args.preflight,
             authority_ref=args.authority,
+            run_id=args.run_id,
+            capture_root_ref=args.capture_root,
+            private_root_ref=args.private_root,
+            public_result_ref=args.public_result,
         )
         if args.issue_authority
         else run(_resolve(args.authority))

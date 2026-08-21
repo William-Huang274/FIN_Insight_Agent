@@ -1106,3 +1106,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - fake Provider 路径证明一次精确合同反馈可修正；第二次仍不合法或 transport failure 会保存 terminal evidence 并终止。相关 Project OS／report／runner 定向测试为 83 passed。
 - 完整工程门已复证：全仓 951 passed（仅 2 条既有 SWIG deprecation warnings）、compileall、Workbench typecheck／production build；remap CLI 已注册进 active baseline，当前为 `189／8／5／27／0`；archive redirect 6,059、801 JSON／8 JSONL／912 records、7,533-file secret scan／0 和 diff check均通过。
 - 下一步仍是 clean commit／push、fresh preflight、authority 和唯一 live。旧报告继续 L1 fail；自然 remap、新 L1、八维内容质量、qualified-human、S1／S3／泛化／Workbench／release 尚未证明。
+
+### 2026-08-21 首次自然 remap 长度失败与 replacement 门
+
+- v1.0 live 已真实执行并不可变保存：DeepSeek 返回正确命名且带 ID 的 Tool Call，但 41,219 prompt tokens 加 7,000 completion tokens 后以 `finish_reason=length` 截断；完成六 sections、六 gaps，并在第二条 WWC 中断。没有形成合法 JSON 或报告。
+- 运行边界合规：一个 logical node、一个 contract attempt、零 analysis／continuation／upstream／network。失败不是检索、研究内容或连接问题。
+- `RC-AR-031` 已确认：runner 错把 tool-call ID 提取与 arguments JSON 解析绑定，因而浪费了本可使用的合同反馈机会；零调用修复已将二者拆开，并为 length truncation 编译专门反馈。
+- TokenBudgetBasis 改为基于真实截断：replacement profile 使用 12,000 max output，并强制一个 executive clause、每 section 一个 clause、最小必要 refs。该调整用于完成必需产物，不以省钱／速度降低研究要求。
+- v1.1 replacement 决策绑定首次 authority、public／private failure、原报告、typed authority、profile 与实现 SHA。首次 run 不恢复、不续跑；下一步只能在完整门、clean commit／push 和 fresh preflight 后新建一个 Writer-only replacement logical node。

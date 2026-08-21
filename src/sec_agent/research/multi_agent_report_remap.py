@@ -24,6 +24,16 @@ REPORT_REMAP_RUN_SCOPE = (
     "one_fresh_Writer_only_terminal_remapping_logical_node_with_separate_"
     "attempt_budget"
 )
+REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION = (
+    "fin_ia_s3_multi_agent_report_protected_remap_scope_decision_v1_1"
+)
+REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_STATUS = (
+    "protected_report_length_failure_preserved_one_replacement_writer_remap_node_authorized"
+)
+REPORT_REMAP_REPLACEMENT_RUN_SCOPE = (
+    "one_fresh_Writer_only_terminal_remapping_replacement_logical_node_after_"
+    "preserved_length_failure"
+)
 REPORT_REMAP_LIVE_AUTHORITY_SCHEMA_VERSION = (
     "fin_ia_s3_multi_agent_report_protected_remap_live_authority_v1_0"
 )
@@ -83,6 +93,12 @@ _EXPECTED_BOUND_INPUTS = {
     "report_authority_catalog",
     "source_bound_numeric_review",
     "writer_submission_profile",
+}
+_EXPECTED_REPLACEMENT_BOUND_INPUTS = {
+    *_EXPECTED_BOUND_INPUTS,
+    "failed_remap_live_authority",
+    "failed_remap_public_result",
+    "failed_remap_private_terminal_result",
 }
 
 
@@ -160,6 +176,10 @@ def validate_report_remap_scope_decision(
 
     root = root.resolve()
     value = deepcopy(dict(decision))
+    replacement = (
+        value.get("schema_version")
+        == REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION
+    )
     expected_fields = {
         "schema_version",
         "status",
@@ -177,16 +197,35 @@ def validate_report_remap_scope_decision(
         "decision_digest",
     }
     _require(set(value) == expected_fields, "report_remap_decision_shape_invalid")
+    expected_schema = (
+        REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION
+        if replacement
+        else REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION
+    )
+    expected_status = (
+        REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_STATUS
+        if replacement
+        else REPORT_REMAP_SCOPE_DECISION_STATUS
+    )
+    expected_run_scope = (
+        REPORT_REMAP_REPLACEMENT_RUN_SCOPE
+        if replacement
+        else REPORT_REMAP_RUN_SCOPE
+    )
+    expected_next_scope = (
+        "one_writer_terminal_protected_contract_remap_replacement"
+        if replacement
+        else "one_writer_terminal_protected_contract_remap"
+    )
     _require(
-        value["schema_version"] == REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION
-        and value["status"] == REPORT_REMAP_SCOPE_DECISION_STATUS
+        value["schema_version"] == expected_schema
+        and value["status"] == expected_status
         and value["case_key"] == "DELL"
         and value["cell_id"] == "ALL"
-        and value["run_scope_id"] == REPORT_REMAP_RUN_SCOPE
+        and value["run_scope_id"] == expected_run_scope
         and value["evidence_mode"]
         == "immutable_completed_report_plus_typed_authority_no_new_research"
-        and value["next_authorized_scope"]
-        == "one_writer_terminal_protected_contract_remap",
+        and value["next_authorized_scope"] == expected_next_scope,
         "report_remap_decision_identity_invalid",
     )
     _require(
@@ -207,7 +246,12 @@ def validate_report_remap_scope_decision(
         value["bound_inputs"], "report_remap_bound_inputs_invalid"
     )
     _require(
-        set(bound_inputs) == _EXPECTED_BOUND_INPUTS,
+        set(bound_inputs)
+        == (
+            _EXPECTED_REPLACEMENT_BOUND_INPUTS
+            if replacement
+            else _EXPECTED_BOUND_INPUTS
+        ),
         "report_remap_bound_inputs_invalid",
     )
     loaded: dict[str, dict[str, Any]] = {}
@@ -277,7 +321,48 @@ def validate_report_remap_scope_decision(
         .get("sha256"),
         "report_remap_source_review_lineage_invalid",
     )
+    if replacement:
+        failed_authority = loaded["failed_remap_live_authority"]
+        failed_public = loaded["failed_remap_public_result"]
+        failed_private = loaded["failed_remap_private_terminal_result"]
+        failed_attempts = failed_private.get("contract_attempts") or []
+        _require(
+            failed_authority.get("authority_digest")
+            == failed_public.get("authority_digest")
+            and failed_public.get("status")
+            == "protected_report_terminal_remap_failure_preserved"
+            and (failed_public.get("failure") or {}).get("failure_code")
+            == "report_remap_live_unrepairable_tool_envelope"
+            and (failed_public.get("execution") or {}).get(
+                "logical_model_node_count"
+            )
+            == 1
+            and (failed_public.get("execution") or {}).get(
+                "contract_attempt_count"
+            )
+            == 1
+            and (failed_public.get("execution") or {}).get("scope_compliant")
+            is True
+            and failed_public.get("full_result_ref")
+            == refs["failed_remap_private_terminal_result"]
+            and failed_public.get("full_result_sha256")
+            == bound_inputs["failed_remap_private_terminal_result"].get("sha256")
+            and failed_private.get("full_result_digest")
+            == bound_inputs["failed_remap_private_terminal_result"].get("digest")
+            and len(failed_attempts) == 1
+            and failed_attempts[0].get("finish_reason") == "length"
+            and failed_attempts[0].get("failure_code")
+            == "report_remap_live_tool_arguments_json_invalid"
+            and len(failed_attempts[0].get("tool_calls") or []) == 1
+            and bool(
+                ((failed_attempts[0].get("tool_calls") or [])[0]).get("id")
+            )
+            and failed_private.get("draft") is None
+            and failed_private.get("rendered_report") is None,
+            "report_remap_replacement_failure_lineage_invalid",
+        )
     profile = load_chat_completion_profile(loaded["writer_submission_profile"])
+    expected_max_tokens = 12000 if replacement else 7000
     _require(
         profile.provider_id == "deepseek"
         and profile.model == "deepseek-v4-pro"
@@ -285,7 +370,7 @@ def validate_report_remap_scope_decision(
         and profile.endpoint == "/chat/completions"
         and dict(profile.request_defaults)
         == {
-            "max_tokens": 7000,
+            "max_tokens": expected_max_tokens,
             "stream": False,
             "thinking": {"type": "disabled"},
         }
@@ -322,6 +407,12 @@ def validate_report_remap_scope_decision(
     token_basis = _mapping(
         value["token_budget_basis"], "report_remap_token_budget_basis_invalid"
     )
+    expected_comparable = (
+        "first_natural_remap_truncated_at_7000_after_six_sections_six_gaps_"
+        "and_partial_second_wwc"
+        if replacement
+        else "prior_writer_report_required_two_bounded_contract_attempts"
+    )
     _require(
         token_basis.get("node_id") == "AGENT::WRITER::PROTECTED_REPORT_REMAP"
         and token_basis.get("purpose")
@@ -334,10 +425,9 @@ def validate_report_remap_scope_decision(
         and token_basis.get("schema_burden")
         == "nested_six_section_protected_tool_with_claim_scoped_refs"
         and token_basis.get("materiality_quality_risk") == "high"
-        and token_basis.get("comparable_run_evidence")
-        == "prior_writer_report_required_two_bounded_contract_attempts"
+        and token_basis.get("comparable_run_evidence") == expected_comparable
         and token_basis.get("reasoning_profile") == "thinking_disabled"
-        and token_basis.get("maximum_output_tokens") == 7000
+        and token_basis.get("maximum_output_tokens") == expected_max_tokens
         and token_basis.get("maximum_contract_attempts") == 2
         and token_basis.get("cost_and_latency_are_secondary_constraints") is True
         and token_basis.get("stop_behavior")
@@ -352,7 +442,8 @@ def validate_report_remap_scope_decision(
         "recent_provider_steps": 0,
         "multi_agent_preview": False,
         "multi_agent_report_protected_remap": True,
-        "run_scope_id": REPORT_REMAP_RUN_SCOPE,
+        "multi_agent_report_protected_remap_replacement": replacement,
+        "run_scope_id": expected_run_scope,
         "execution_limits": deepcopy(_EXPECTED_EXECUTION_LIMITS),
         "token_budget_basis": deepcopy(dict(token_basis)),
         "authority_catalog_ref": refs["report_authority_catalog"],
@@ -367,6 +458,9 @@ __all__ = [
     "REPORT_REMAP_FULL_RESULT_SCHEMA_VERSION",
     "REPORT_REMAP_LIVE_AUTHORITY_SCHEMA_VERSION",
     "REPORT_REMAP_PUBLIC_RESULT_SCHEMA_VERSION",
+    "REPORT_REMAP_REPLACEMENT_RUN_SCOPE",
+    "REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION",
+    "REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_STATUS",
     "REPORT_REMAP_RUN_SCOPE",
     "REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION",
     "REPORT_REMAP_SCOPE_DECISION_STATUS",

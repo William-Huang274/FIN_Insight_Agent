@@ -304,6 +304,12 @@ DELL 实际 review 共 18 条决策：13 条 exact／existing NumericFact、4 �
 
 DELL／MU／NVDA／ORCL 用同一 compiler、validator 和 renderer 通过 18 项定向测试；错 source normalization、跨 claim 借用、跨 case 污染、原始数字自由文本、自动日期晋升和输入排列 mutation 均按预期处理。完整工程门为全仓 `946 passed`、compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、archive redirect `6,059`、798 份 configs／Project OS JSON、8 份 JSONL、7,525-file secret scan／0 和 diff check。
 
+### 24.4 Tool envelope、arguments 与输出预算必须分层
+
+首次自然 protected remap 证明 Provider 可以返回正确命名且带 ID 的 Tool Call，同时仍可能因输出预算不足留下不完整 arguments。Runtime 必须先独立保存并验证 envelope，再解析 arguments；只要 call ID 有效，合同错误可以在同一 logical node 的有界 attempt 内反馈。缺 ID、错 tool 或 transport failure 才是不可继续的 envelope failure。
+
+TokenBudgetBasis 必须以完整产物形状和实际 comparable run 为依据。DELL 首次 remap 在 7,000 completion tokens 时已完成六 sections、六 gaps，但仅写到第二条 WWC 中途，因此 replacement 调整为 12,000，并把 remap 限定为一个 executive clause、每源 section 一个 clause、每段最小必要 lineage。该调整不增加研究权限，也不能把失败产物改标为报告。
+
 下一次只允许一个 fresh Writer terminal remapping logical node，在 authority 单独声明的 contract-attempt 上限内，把已完成的研究内容映射到 protected contract。不得重新运行检索、六 Specialist、Lead、repair 或 Evaluator。新产物仍须重新经过 L1、内容质量与人工验收；S1、S3、泛化、Workbench 和 release 不因本轮工程通过而关闭。
 
 ## 二十四、terminal remap 是一个逻辑节点，不是第二轮研究

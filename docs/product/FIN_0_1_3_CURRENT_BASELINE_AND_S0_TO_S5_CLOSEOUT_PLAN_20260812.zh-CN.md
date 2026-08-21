@@ -425,6 +425,12 @@ S2／S3 共享修复已经完成零调用资格，而不是把字符上限调大
 
 完整门禁通过：定向 `18 passed`、全仓 `946 passed`、compileall、Workbench typecheck／production build、active baseline、archive redirect、JSON／JSONL、7,525-file secret scan 和 diff check均通过。下一步只允许：同步账本 → clean commit／push → fresh Project OS preflight → 一次 Writer-only remapping。该运行不获得新研究、检索、网络、Candidate 或上游 Agent 权限；成功后重新做 L1 与内容质量审计，人工验收仍由 Owner 决定。
 
+#### 4AF｜首次 remap 失败不回滚研究，按 Harness 最早责任层 replacement
+
+首次自然 remap 已不可变失败：模型返回了 Tool Call，但 7,000-token 输出上限使 arguments 在 WWC 中途截断；runner 又因解析耦合未能利用已有 call ID 发起合同修正。该结果不归因于 S1、S2 或 Specialist，也不允许重跑它们。
+
+FIN 0.1.3 只接受一次有依据的 replacement：修复 envelope／arguments 分层、保留失败 source digest、收敛一节一 clause 和最小 lineage，并把输出预算提高至 12,000。v1.1 必须绑定 v1.0 authority、public／private failure 和新实现；clean commit／push、fresh preflight 后才能执行一个新 Writer-only logical node。成功后仍只进入 L1、八维质量和人工验收，不自动宣布 S3 或产品通过。
+
 ## 4AE. Writer-only terminal remap 执行门已编译（2026-08-21）
 
 本轮没有再次修改研究结论，也没有把 report remap 包装成新的 Multi-Agent 运行。执行门只做四件事：

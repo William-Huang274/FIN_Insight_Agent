@@ -1,0 +1,95 @@
+{
+  "case_key": "DELL",
+  "cell_id": "ALL",
+  "checks": {
+    "immutable_clean_proof_and_failure_bindings_valid": true,
+    "project_os_documents_available_and_parseable": true,
+    "provider_credential_present_value_unread": true,
+    "provider_profile_and_recent_complete_capture_valid": true,
+    "real_evidence_mode": "immutable_completed_report_plus_typed_authority_no_new_research",
+    "repository_clean_and_synced": true,
+    "root_cause_scope_allowed": true,
+    "token_and_call_budget_bounded": true
+  },
+  "credential_value_persisted": false,
+  "decision_projection": {
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "authority_catalog_ref": "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_authority_catalog_v1_1.json",
+    "clean_proof_status": "zero_call_structure_pass_terminal_remap_eligible",
+    "execution_limits": {
+      "candidate_promotions": 0,
+      "external_source_network_calls": 0,
+      "maximum_contract_attempts": 2,
+      "maximum_new_analysis_calls": 0,
+      "maximum_new_logical_model_nodes": 1,
+      "maximum_new_writer_continuations": 0,
+      "reused_completed_challenge_repair_count": 3,
+      "reused_cross_role_evaluation_count": 1,
+      "reused_lead_coordination_count": 1,
+      "reused_lead_plan_count": 1,
+      "reused_legacy_report_count": 1,
+      "reused_role_evaluation_count": 6,
+      "reused_specialist_plan_count": 6,
+      "reused_workpaper_count": 6
+    },
+    "multi_agent_preview": false,
+    "multi_agent_report_protected_remap": true,
+    "provider_id": "deepseek",
+    "provider_model": "deepseek-v4-pro",
+    "recent_provider_steps": 0,
+    "report_surface_zero_call_proof_ref": "configs/research/evals/fin_ia_0_1_3_s3_multi_agent_report_surface_authority_zero_call_result_v1_1.json",
+    "run_scope_id": "one_fresh_Writer_only_terminal_remapping_logical_node_with_separate_attempt_budget",
+    "source_report_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json",
+    "token_budget_basis": {
+      "authority_catalog_characters": 70310,
+      "comparable_run_evidence": "prior_writer_report_required_two_bounded_contract_attempts",
+      "cost_and_latency_are_secondary_constraints": true,
+      "materiality_quality_risk": "high",
+      "maximum_contract_attempts": 2,
+      "maximum_output_tokens": 7000,
+      "node_id": "AGENT::WRITER::PROTECTED_REPORT_REMAP",
+      "purpose": "terminal_contract_remap_without_new_research",
+      "reasoning_profile": "thinking_disabled",
+      "required_gap_count": 6,
+      "required_section_count": 6,
+      "required_wwc_count": 8,
+      "schema_burden": "nested_six_section_protected_tool_with_claim_scoped_refs",
+      "source_report_characters": 14469,
+      "stop_behavior": "stop_after_first_valid_contract_or_terminal_after_second_rejection"
+    }
+  },
+  "decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_scope_decision_v1_0.json",
+  "decision_sha256": "5c623ffc6f57d5d44877735483efd9dd74b7e49307dea234554891b666062fc1",
+  "known_boundary": "This current-baseline preflight preserves the immutable legacy report as financial-truth L1 failed and reuses all completed research, six Specialist workpapers, one Lead coordination, three completed repairs, six role evaluations and one cross-role evaluation. It authorizes exactly 1 fresh Writer-only terminal remapping logical node with at most 2 bounded contract attempts, 0 new analysis calls and 0 Writer continuation calls. The model may only map the immutable report into the protected report contract; deterministic local rendering owns authorized numbers, dates, identities and aliases. It forbids every upstream Agent, repair or Evaluator rerun, new research, Evidence or NumericFact changes, external source network access, candidate promotion, S1 or S3 acceptance, heterogeneous generalization, qualified-human self-acceptance, Workbench publication or release.",
+  "model_calls": 0,
+  "network_calls": 0,
+  "project_os_document_digests": {
+    "docs/project_os/capability_status_ledger.jsonl": "6c689032e95d7058684f9b1fe36d7b4cff3122cef84dcf46a34eda8085833b23",
+    "docs/project_os/current_context_pack.zh-CN.md": "551849055808dbb0aaab4c1367f4e5fbb457f50bdc0864b19a24e3d580a234ce",
+    "docs/project_os/full_chain_preflight_checklist.json": "361aca870094aaa80c3a1f7873be7c0c514e9bb9c1982dca951532bb20e62f0f",
+    "docs/project_os/full_chain_run_policy.zh-CN.md": "efed0a4e5ee542c96db8ac359793340d5cb9e05cd7bbbb0415ababce6dfb5f3d",
+    "docs/project_os/root_cause_issue_ledger.jsonl": "b25044463f8df1955e9adf4c813fef5495942ebdf236426d71f53ea9a6f965bf",
+    "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md": "f772faf528f0015a7d06d8117bb6a555629efb076045b9b82041a67cdeeb8ccf"
+  },
+  "provider_calls": 0,
+  "recorded_at": "2026-08-21T10:31:17.054087+00:00",
+  "repository": {
+    "clean": true,
+    "head": "a7be53cc90ff7f1d1084ff0b4d8887ee284b9b17",
+    "synced": true,
+    "upstream": "a7be53cc90ff7f1d1084ff0b4d8887ee284b9b17"
+  },
+  "run_scope_id": "one_fresh_Writer_only_terminal_remapping_logical_node_with_separate_attempt_budget",
+  "schema_version": "fin_ia_current_decision_bound_project_os_preflight_v1_0",
+  "scope_projection": {
+    "blocking_issue_ids": [],
+    "closed_precondition_issue_ids": [
+      "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use"
+    ],
+    "explicit_allow_issue_ids": [
+      "RC-S2-007-multi-agent-writer-bypassed-protected-numeric-surface-contract"
+    ],
+    "out_of_scope_full_chain_blocker_count": 43
+  },
+  "status": "pass_current_decision_bound_preflight"
+}

@@ -39,6 +39,7 @@ from sec_agent.project_os_preflight import (
     validate_multi_agent_preview_scope_decision,
 )
 from sec_agent.research.multi_agent_report_remap import (
+    REPORT_REMAP_REPLACEMENT_RUN_SCOPE,
     REPORT_REMAP_RUN_SCOPE,
     validate_report_remap_scope_decision,
 )
@@ -48,6 +49,10 @@ ROOT = Path(__file__).resolve().parents[1]
 REPORT_REMAP_DECISION_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
     "protected_report_remap_scope_decision_v1_0.json"
+)
+REPORT_REMAP_REPLACEMENT_DECISION_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
+    "protected_report_remap_scope_decision_v1_1.json"
 )
 DECISION_REF = (
     "configs/research/evals/"
@@ -2025,30 +2030,37 @@ def test_new_scope_specific_blocker_fails_closed(tmp_path: Path) -> None:
         )
 
 
-def test_report_remap_scope_separates_one_node_from_two_contract_attempts() -> None:
+def test_consumed_report_remap_scope_preserves_one_node_two_attempt_semantics() -> None:
     decision = json.loads(
         (ROOT / REPORT_REMAP_DECISION_REF).read_text(encoding="utf-8")
+    )
+    assert decision["run_scope_id"] == REPORT_REMAP_RUN_SCOPE
+    assert decision["execution_limits"]["maximum_new_logical_model_nodes"] == 1
+    assert decision["execution_limits"]["maximum_contract_attempts"] == 2
+    assert decision["execution_limits"]["maximum_new_analysis_calls"] == 0
+    assert decision["execution_limits"]["maximum_new_writer_continuations"] == 0
+
+
+def test_report_remap_replacement_binds_length_failure_and_budget_basis() -> None:
+    decision = json.loads(
+        (ROOT / REPORT_REMAP_REPLACEMENT_DECISION_REF).read_text(encoding="utf-8")
     )
     projection = validate_report_remap_scope_decision(
         root=ROOT, decision=decision
     )
-    assert projection["run_scope_id"] == REPORT_REMAP_RUN_SCOPE
-    assert projection["multi_agent_preview"] is False
-    assert projection["multi_agent_report_protected_remap"] is True
+    assert projection["run_scope_id"] == REPORT_REMAP_REPLACEMENT_RUN_SCOPE
+    assert projection["multi_agent_report_protected_remap_replacement"] is True
     assert projection["execution_limits"]["maximum_new_logical_model_nodes"] == 1
-    assert projection["execution_limits"]["maximum_contract_attempts"] == 2
-    assert projection["execution_limits"]["maximum_new_analysis_calls"] == 0
+    assert projection["token_budget_basis"]["maximum_output_tokens"] == 12000
 
     preflight = build_preflight(
         root=ROOT,
-        decision_ref=REPORT_REMAP_DECISION_REF,
+        decision_ref=REPORT_REMAP_REPLACEMENT_DECISION_REF,
         environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
         check_repository=False,
     )
     boundary = preflight["known_boundary"]
     assert preflight["status"] == "pass_current_decision_bound_preflight"
+    assert "first natural remap is preserved" in boundary
+    assert "new replacement logical node, not a retry" in boundary
     assert "exactly 1 fresh Writer-only terminal remapping logical node" in boundary
-    assert "at most 2 bounded contract attempts" in boundary
-    assert "0 new analysis calls" in boundary
-    assert "0 Writer continuation calls" in boundary
-    assert "forbids every upstream Agent, repair or Evaluator rerun" in boundary

@@ -153,6 +153,33 @@ def _result(payload, number):
     )
 
 
+def _truncated_result(number):
+    return ChatCompletionToolStepResult(
+        status="completed_exact_once_tool_step",
+        provider_id="fake",
+        model="fake-model",
+        content="",
+        reasoning_content="",
+        tool_calls=(
+            {
+                "id": f"call-{number}",
+                "type": "function",
+                "function": {
+                    "name": "submit_protected_report_draft",
+                    "arguments": '{"schema_version":"incomplete',
+                },
+            },
+        ),
+        finish_reason="length",
+        usage={"completion_tokens": 7000},
+        request_capture_ref=f"request-{number}.json",
+        response_capture_ref=f"response-{number}.json",
+        request_digest=f"request-digest-{number}",
+        response_digest=f"response-digest-{number}",
+        private_reasoning_fields_redacted=0,
+    )
+
+
 def test_one_logical_writer_node_allows_one_feedback_bound_contract_correction(
     tmp_path: Path,
 ) -> None:
@@ -217,6 +244,37 @@ def test_second_contract_rejection_is_terminal_and_preserves_both_attempts(
     assert len(calls) == 2
     assert len(caught.value.attempts) == 2
     assert all(row["status"] == "contract_rejected" for row in caught.value.attempts)
+
+
+def test_truncated_tool_arguments_keep_call_id_and_receive_contract_feedback(
+    tmp_path: Path,
+) -> None:
+    source, evaluation, catalog, valid = _actual_fixture()
+    calls = []
+
+    def fake_executor(**kwargs):
+        calls.append(kwargs)
+        return _truncated_result(1) if len(calls) == 1 else _result(valid, 2)
+
+    _, _, attempts = execute_contract_attempts(
+        profile=object(),
+        source_report=source,
+        evaluation=evaluation,
+        authority_catalog=catalog,
+        capture_root=tmp_path,
+        run_id="TEST-REPORT-REMAP-TRUNCATED",
+        executor=fake_executor,
+    )
+
+    assert len(calls) == 2
+    assert attempts[0]["failure_code"] == (
+        "report_remap_live_tool_arguments_truncated_at_output_budget"
+    )
+    assert calls[1]["messages"][-1]["tool_call_id"] == "call-1"
+    assert "complete contract from the beginning" in (
+        calls[1]["messages"][-1]["content"]
+    )
+    assert attempts[1]["status"] == "contract_validated_and_rendered"
 
 
 def test_transport_failure_is_not_silently_retried(tmp_path: Path) -> None:

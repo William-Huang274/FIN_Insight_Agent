@@ -1091,6 +1091,8 @@ def compile_protected_report_remap_messages(
             "Rewrite model_text without any digit, date, unit, URL, alias, citation or exact financial surface.",
             "Replace every retained amount, date or comparison with the matching typed authority_ref; omit it if no authority exists.",
             "Keep the source section count, source-agent order, gap count and what-would-change count exactly unchanged.",
+            "Map each source section to one concise clause and keep the executive thesis to one concise clause.",
+            "Select only the minimum claim, Evidence, authority and gap refs needed for each clause; never copy the full catalog into a clause.",
             "The Harness alone renders company identity, dates, numbers, comparisons and citations.",
         ],
     }
@@ -1405,7 +1407,9 @@ def validate_protected_report_remap_draft(
         isinstance(source_sections, list)
         and isinstance(source_gaps, list)
         and isinstance(source_wwc, list)
+        and len(trusted["executive_thesis"]) == 1
         and len(trusted["sections"]) == len(source_sections)
+        and all(len(section["clauses"]) == 1 for section in trusted["sections"])
         and len(trusted["remaining_gaps"]) == len(source_gaps)
         and len(trusted["what_would_change"]) == len(source_wwc),
         "multi_agent_report_remap_topology_drift",
@@ -1432,7 +1436,9 @@ def validate_protected_report_remap_draft(
     )
     receipt = {
         "source_report_digest": str(source.get("report_digest") or ""),
+        "executive_thesis_clause_count_preserved": True,
         "section_count_preserved": True,
+        "one_clause_per_source_section_preserved": True,
         "section_agent_order_preserved": True,
         "remaining_gap_count_preserved": True,
         "what_would_change_count_preserved": True,

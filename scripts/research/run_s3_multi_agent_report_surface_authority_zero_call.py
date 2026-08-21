@@ -31,6 +31,9 @@ from sec_agent.research.source_bound_numeric_authority import (  # noqa: E402
 )
 from sec_agent.research.reviewed_evidence_pack import canonical_digest  # noqa: E402
 from sec_agent.research.multi_agent_report_remap import (  # noqa: E402
+    REPORT_REMAP_REPLACEMENT_RUN_SCOPE,
+    REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION,
+    REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_STATUS,
     REPORT_REMAP_RUN_SCOPE,
     REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION,
     REPORT_REMAP_SCOPE_DECISION_STATUS,
@@ -76,6 +79,26 @@ WRITER_REMAP_PROFILE_REF = (
 REPORT_REMAP_SCOPE_DECISION_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
     "protected_report_remap_scope_decision_v1_0.json"
+)
+FAILED_REMAP_AUTHORITY_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
+    "protected_report_remap_live_authority_v1_0.json"
+)
+FAILED_REMAP_PUBLIC_RESULT_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
+    "protected_report_remap_live_result_v1_0.json"
+)
+FAILED_REMAP_PRIVATE_RESULT_REF = (
+    "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_"
+    "protected_report_remap_20260821/terminal_failure.json"
+)
+WRITER_REMAP_REPLACEMENT_PROFILE_REF = (
+    "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_report_"
+    "protected_remap_non_thinking_profile_v1_1.json"
+)
+REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
+    "protected_report_remap_scope_decision_v1_1.json"
 )
 
 
@@ -227,6 +250,54 @@ def build_report_remap_scope_decision() -> dict[str, Any]:
             "Evidence, NumericFact, network, Candidate promotion or product acceptance."
         ),
     }
+    return {**body, "decision_digest": canonical_digest(body)}
+
+
+def build_report_remap_replacement_scope_decision() -> dict[str, Any]:
+    initial = build_report_remap_scope_decision()
+    body = {key: deepcopy(value) for key, value in initial.items() if key != "decision_digest"}
+    body.update(
+        {
+            "schema_version": REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION,
+            "status": REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_STATUS,
+            "run_scope_id": REPORT_REMAP_REPLACEMENT_RUN_SCOPE,
+            "next_authorized_scope": (
+                "one_writer_terminal_protected_contract_remap_replacement"
+            ),
+            "authority_statement": (
+                "Preserve the first natural remap as a one-attempt output-length "
+                "failure. Authorize one new Writer-only replacement logical node "
+                "with at most two bounded contract attempts, twelve thousand "
+                "output tokens per attempt, and zero analysis, continuation, "
+                "upstream Agent, Evidence, network or Candidate-promotion calls."
+            ),
+        }
+    )
+    body["bound_inputs"]["writer_submission_profile"] = _binding(
+        WRITER_REMAP_REPLACEMENT_PROFILE_REF
+    )
+    body["bound_inputs"].update(
+        {
+            "failed_remap_live_authority": _binding(
+                FAILED_REMAP_AUTHORITY_REF, digest_field="authority_digest"
+            ),
+            "failed_remap_public_result": _binding(
+                FAILED_REMAP_PUBLIC_RESULT_REF, digest_field="result_digest"
+            ),
+            "failed_remap_private_terminal_result": _binding(
+                FAILED_REMAP_PRIVATE_RESULT_REF, digest_field="full_result_digest"
+            ),
+        }
+    )
+    body["token_budget_basis"].update(
+        {
+            "comparable_run_evidence": (
+                "first_natural_remap_truncated_at_7000_after_six_sections_six_"
+                "gaps_and_partial_second_wwc"
+            ),
+            "maximum_output_tokens": 12000,
+        }
+    )
     return {**body, "decision_digest": canonical_digest(body)}
 
 
@@ -732,8 +803,28 @@ if __name__ == "__main__":
     actions = parser.add_mutually_exclusive_group()
     actions.add_argument("--write-authority-catalog", action="store_true")
     actions.add_argument("--write-remap-scope-decision", action="store_true")
+    actions.add_argument(
+        "--write-remap-replacement-scope-decision", action="store_true"
+    )
     args = parser.parse_args()
-    if args.write_remap_scope_decision:
+    if args.write_remap_replacement_scope_decision:
+        decision = build_report_remap_replacement_scope_decision()
+        path = ROOT / REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_REF
+        path.write_text(
+            json.dumps(decision, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(
+            json.dumps(
+                {
+                    "status": "report_remap_replacement_scope_decision_materialized",
+                    "ref": REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_REF,
+                    "decision_digest": decision["decision_digest"],
+                },
+                ensure_ascii=False,
+            )
+        )
+    elif args.write_remap_scope_decision:
         decision = build_report_remap_scope_decision()
         path = ROOT / REPORT_REMAP_SCOPE_DECISION_REF
         path.write_text(

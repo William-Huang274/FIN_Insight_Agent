@@ -40,7 +40,7 @@ from sec_agent.research.multi_agent_successor import (
     validate_terminal_successor_zero_call_proof,
 )
 from sec_agent.research.multi_agent_report_remap import (
-    REPORT_REMAP_RUN_SCOPE,
+    REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION,
     REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION,
     validate_report_remap_scope_decision,
 )
@@ -442,10 +442,10 @@ def _validate_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
-    if (
-        decision.get("schema_version")
-        == REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION
-    ):
+    if decision.get("schema_version") in {
+        REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION,
+        REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION,
+    }:
         return validate_report_remap_scope_decision(
             root=root, decision=decision
         )
@@ -10209,7 +10209,7 @@ def build_preflight(
                 "RC-S2-007-multi-agent-writer-bypassed-protected-numeric-"
                 "surface-contract"
             ),
-            allowed_scope=REPORT_REMAP_RUN_SCOPE,
+            allowed_scope=str(decision_projection["run_scope_id"]),
         )
     ):
         raise ValueError(
@@ -10745,7 +10745,17 @@ def build_preflight(
         writer_continuations = int(
             execution_limits["maximum_new_writer_continuations"]
         )
-        known_boundary = (
+        replacement_context = (
+            "The first natural remap is preserved as a one-attempt length "
+            "failure with an incomplete Tool Call argument; this authority is "
+            "for a new replacement logical node, not a retry. "
+            if decision_projection.get(
+                "multi_agent_report_protected_remap_replacement"
+            )
+            is True
+            else ""
+        )
+        known_boundary = replacement_context + (
             "This current-baseline preflight preserves the immutable legacy "
             "report as financial-truth L1 failed and reuses all completed "
             "research, six Specialist workpapers, one Lead coordination, three "

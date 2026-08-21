@@ -1114,3 +1114,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - `RC-AR-031` 已确认：runner 错把 tool-call ID 提取与 arguments JSON 解析绑定，因而浪费了本可使用的合同反馈机会；零调用修复已将二者拆开，并为 length truncation 编译专门反馈。
 - TokenBudgetBasis 改为基于真实截断：replacement profile 使用 12,000 max output，并强制一个 executive clause、每 section 一个 clause、最小必要 refs。该调整用于完成必需产物，不以省钱／速度降低研究要求。
 - v1.1 replacement 决策绑定首次 authority、public／private failure、原报告、typed authority、profile 与实现 SHA。首次 run 不恢复、不续跑；下一步只能在完整门、clean commit／push 和 fresh preflight 后新建一个 Writer-only replacement logical node。
+
+### 2026-08-21 replacement 完整交卷拒绝与定向 patch 决策
+
+- v1.1 replacement 已按权限执行并终止：一个 Writer-only logical node、两个 bounded contract attempts、零 analysis／continuation／upstream／repair／Evaluator／network／Candidate promotion。两次响应均为完整 Tool Call，12,000-token profile 已解除截断，但没有形成 draft 或 rendered report。
+- `multi_agent_report_model_text_unprotected_surface` 的逐字段回放证明错误码把两类问题混在一起。本轮 model prose 没有数字、URL、alias 或单位泄漏；第一个失败实际是 executive thesis `1,460 / 1,449` 超过旧 `900` 字符硬上限，另有四个 section 超过同一上限。
+- 诊断性放宽旧长度门后仍有五处引用绑定错误：executive relation 未被所选 claim 授权、Counter section 使用 Supply claim、一条 Demand gap 未绑定 gap、Value gap 与 WWC 使用 Operating claim；第二次 attempt 另生成一个不存在的近似 gap ID。笼统 feedback 没有 path、actual/max、offending 或 allowed refs，模型无法执行定向修正。
+- 下一项不是第三次全报告重写。先把推荐叙事密度与安全容量硬门分离，编译 path-scoped ContractFindingReceipt，并用两份 immutable capture 回放；随后只允许一个 reference-patch successor 修改失败字段的引用集合，model text 和已通过字段保持不可变。
+- legacy report 继续 L1 fail；自然 protected report、独立 L1、八维内容质量、qualified-human、S1／S3／泛化／Workbench／release 均未通过。

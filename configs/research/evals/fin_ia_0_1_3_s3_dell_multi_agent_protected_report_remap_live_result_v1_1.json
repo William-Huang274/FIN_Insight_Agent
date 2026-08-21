@@ -1,0 +1,52 @@
+{
+  "acceptance": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "deterministic_surface_render_pass": false,
+    "formal_eight_dimension_assessment_pending": false,
+    "heterogeneous_generalization": false,
+    "independent_financial_truth_L1_assessment_pending": false,
+    "legacy_report_relabelled_pass": false,
+    "protected_report_contract_valid": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false,
+    "workbench_publication": false
+  },
+  "authority_digest": "639d745c559918166052af6c9c2ac3e6f3dcd61174caf066a42d890ec9abce00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_live_authority_v1_1.json",
+  "authority_sha256": "fd66863be6f7d59a9ef2fdfe5b5c9a774ab82348996b6c0813be3eb85cd728a3",
+  "execution": {
+    "analysis_call_count": 0,
+    "candidate_promotions": 0,
+    "contract_attempt_count": 2,
+    "credential_value_persisted": false,
+    "evaluator_call_count": 0,
+    "external_source_network_calls": 0,
+    "logical_model_node_count": 1,
+    "maximum_contract_attempts": 2,
+    "maximum_logical_model_nodes": 1,
+    "provider_private_reasoning_persisted": false,
+    "repair_call_count": 0,
+    "scope_compliant": true,
+    "terminal_contract_valid": false,
+    "upstream_agent_call_count": 0,
+    "writer_continuation_call_count": 0
+  },
+  "failure": {
+    "failure_code": "multi_agent_report_model_text_unprotected_surface",
+    "failure_type": "ReportRemapLiveError",
+    "phase": "contract"
+  },
+  "full_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_protected_report_remap_replacement_20260821/terminal_failure.json",
+  "full_result_sha256": "a36292ebbb8e033c6c30f59dec37716b07ac160fcb982c461290bc09dd106e0d",
+  "implementation_commit": "f3a54f1e90230a35812a33989564edc1e0fc912c",
+  "known_boundary": "This result covers one Writer-only terminal contract remap over an immutable completed DELL report. It does not rerun research and does not by itself prove content gain, S1, S3, generalization, qualified-human acceptance, Workbench publication or release.",
+  "recorded_at": "2026-08-21T10:56:25.407465+00:00",
+  "rendered_report": null,
+  "result_digest": "0ec3996b09e3e8aafb8d6847dd02c1041e97c65334000c5d08a14013a7766694",
+  "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PROTECTED_REPORT_REMAP_REPLACEMENT_20260821",
+  "schema_version": "fin_ia_s3_multi_agent_report_protected_remap_live_result_v1_0",
+  "source_report_digest": "3ee44edad28f432a82c7047b118b4cb5be6626bb7417df75828df21f592ac43b",
+  "source_report_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json",
+  "status": "protected_report_terminal_remap_failure_preserved"
+}

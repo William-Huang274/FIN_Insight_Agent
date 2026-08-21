@@ -1,0 +1,97 @@
+{
+  "schema_version": "fin_ia_s3_multi_agent_report_reference_patch_zero_call_result_v1_0",
+  "status": "zero_call_reference_patch_structure_pass_fresh_live_eligible",
+  "case_key": "DELL",
+  "failed_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PROTECTED_REPORT_REMAP_REPLACEMENT_20260821",
+  "bound_inputs": {
+    "failed_replacement_remap_live_authority": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_live_authority_v1_1.json",
+      "sha256": "fd66863be6f7d59a9ef2fdfe5b5c9a774ab82348996b6c0813be3eb85cd728a3",
+      "digest_field": "authority_digest",
+      "digest": "639d745c559918166052af6c9c2ac3e6f3dcd61174caf066a42d890ec9abce00"
+    },
+    "failed_replacement_remap_public_result": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_live_result_v1_1.json",
+      "sha256": "36fb8792974b55fd045229c11a80fa6c24b6bbe9a61b9eb463d175bd0fbd53b0",
+      "digest_field": "result_digest",
+      "digest": "0ec3996b09e3e8aafb8d6847dd02c1041e97c65334000c5d08a14013a7766694"
+    },
+    "failed_replacement_remap_private_terminal_result": {
+      "ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_protected_report_remap_replacement_20260821/terminal_failure.json",
+      "sha256": "a36292ebbb8e033c6c30f59dec37716b07ac160fcb982c461290bc09dd106e0d",
+      "digest_field": "full_result_digest",
+      "digest": "6896062b0d9616f83fd65749a22f9a92587e3b62aabff981d74fe620e1808609"
+    },
+    "report_authority_catalog": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_authority_catalog_v1_1.json",
+      "sha256": "853a2271a58126c9dd1e9b72ad8cef862e9cb15e75f22d0d42bc936fa6c71285",
+      "digest_field": "authority_catalog_digest",
+      "digest": "db4cd0930c29e78f21d10df4b09ddc4bb69004665e3aca929608d66d6c9242df"
+    }
+  },
+  "actual_replay": {
+    "base_attempt_index": 2,
+    "finish_reason": "tool_calls",
+    "tool_name": "submit_protected_report_draft",
+    "response_digest": "7f8fa915913ac674e2859f3afb23b32c66c20e8a0fd73b3b1fe382b84168efc6",
+    "base_payload_schema_version": "fin_ia_multi_agent_protected_report_draft_v1_0",
+    "base_payload_digest": "e9e0716941d7640b6e22b853d982e25f1e4a4b2c2af9e408f1dcc8cecf9e6f2b",
+    "contract_finding_receipt_digest": "36e50ec192b956cf1bc0beda6e34174804b24cb3a88fca698bbf2eaf2a64b7f1",
+    "patch_receipt_digest": "400eb4c7485b7b83970c5f06e6010c3399e53223cfd9b62af8eb8e42bd40e485",
+    "hard_finding_count": 5,
+    "target_paths": [
+      "executive_thesis[0]",
+      "sections[5].clauses[0]",
+      "remaining_gaps[1]",
+      "remaining_gaps[3]",
+      "what_would_change[2]"
+    ],
+    "quality_finding_count": 5,
+    "quality_paths": [
+      "executive_thesis[0].model_text",
+      "sections[0].clauses[0].model_text",
+      "sections[2].clauses[0].model_text",
+      "sections[3].clauses[0].model_text",
+      "sections[5].clauses[0].model_text"
+    ],
+    "base_payload_characters": 19442,
+    "model_visible_message_characters": 15475,
+    "user_message_characters": 15261,
+    "tool_schema_characters": 4995
+  },
+  "synthetic_valid_patch_replay": {
+    "purpose": "mechanical_contract_proof_not_product_reference_selection",
+    "draft_digest": "e0775b600e08784b45ce08516b33ef7a44328914fc0a0120d399571706a0a7b6",
+    "final_contract_finding_receipt_digest": "7bcd28da00a21da1e2040dadc712687365271a1f5b9ceab99418244d04098a8b",
+    "model_text_unchanged": true,
+    "source_agent_ids_unchanged": true,
+    "unlisted_paths_unchanged": true,
+    "product_report_generated": false
+  },
+  "mutation_proofs": {
+    "valid_reference_only_patch_passed": true,
+    "model_text_patch_rejected": true,
+    "wrong_target_path_rejected": true,
+    "unknown_reference_rejected": true,
+    "cross_agent_reference_rejected": true,
+    "missing_gap_reference_rejected": true,
+    "model_text_unchanged": true,
+    "source_agent_ids_unchanged": true,
+    "unlisted_paths_unchanged": true
+  },
+  "decision": {
+    "fresh_reference_patch_live_eligible": true,
+    "full_report_rewrite_authorized": false,
+    "upstream_research_rerun_authorized": false,
+    "product_report_generated": false,
+    "quality_findings_non_blocking_below_safety_capacity": true,
+    "independent_L1_and_content_assessment_required_after_live": true,
+    "S1_pass": false,
+    "S3_pass": false,
+    "generalization_proven": false,
+    "qualified_human_acceptance": false,
+    "workbench_publication": false,
+    "release_ready": false
+  },
+  "result_digest": "11a0f5bbf227328dda6d31687d9b691145bec4eb90419ccf31bfeab2e7a6f09f"
+}

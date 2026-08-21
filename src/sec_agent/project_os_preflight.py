@@ -40,6 +40,7 @@ from sec_agent.research.multi_agent_successor import (
     validate_terminal_successor_zero_call_proof,
 )
 from sec_agent.research.multi_agent_report_remap import (
+    REPORT_REMAP_REFERENCE_PATCH_SCOPE_DECISION_SCHEMA_VERSION,
     REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION,
     REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION,
     validate_report_remap_scope_decision,
@@ -445,6 +446,7 @@ def _validate_fixed_pack_decision(
     if decision.get("schema_version") in {
         REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION,
         REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION,
+        REPORT_REMAP_REFERENCE_PATCH_SCOPE_DECISION_SCHEMA_VERSION,
     }:
         return validate_report_remap_scope_decision(
             root=root, decision=decision
@@ -10201,17 +10203,25 @@ def build_preflight(
     scope_projection = _scope_blocker_projection(
         root=root, run_scope_id=str(decision["run_scope_id"])
     )
-    if (
-        decision_projection.get("multi_agent_report_protected_remap") is True
-        and not _issue_explicitly_allows(
-            root=root,
-            issue_id=(
+    if decision_projection.get("multi_agent_report_protected_remap") is True:
+        report_remap_issue_id = (
+            "RC-AR-032-protected-report-contract-feedback-conflated-density-"
+            "and-reference-failures"
+            if decision_projection.get("multi_agent_report_reference_patch")
+            is True
+            else (
                 "RC-S2-007-multi-agent-writer-bypassed-protected-numeric-"
                 "surface-contract"
-            ),
+            )
+        )
+        report_remap_scope_allowed = _issue_explicitly_allows(
+            root=root,
+            issue_id=report_remap_issue_id,
             allowed_scope=str(decision_projection["run_scope_id"]),
         )
-    ):
+    else:
+        report_remap_scope_allowed = True
+    if not report_remap_scope_allowed:
         raise ValueError(
             "project_os_report_remap_scope_allowance_missing"
         )
@@ -10745,42 +10755,72 @@ def build_preflight(
         writer_continuations = int(
             execution_limits["maximum_new_writer_continuations"]
         )
-        replacement_context = (
-            "The first natural remap is preserved as a one-attempt length "
-            "failure with an incomplete Tool Call argument; this authority is "
-            "for a new replacement logical node, not a retry. "
-            if decision_projection.get(
-                "multi_agent_report_protected_remap_replacement"
+        if decision_projection.get("multi_agent_report_reference_patch") is True:
+            known_boundary = (
+                "The complete two-attempt v1.1 remap failure is preserved as "
+                "immutable evidence. This authority is for a new reference-"
+                "patch logical node, not a retry or a report rewrite. It "
+                f"authorizes exactly {logical_nodes} fresh Writer-only reference "
+                f"patch logical node with at most {contract_attempts} bounded "
+                f"contract attempts, {new_analysis_calls} new analysis calls and "
+                f"{writer_continuations} Writer continuation calls. The model "
+                "may select claim, Evidence, authority and gap refs only for the "
+                "five path-scoped failures; model text and source-agent identity "
+                "are immutable. Deterministic local validation and rendering own "
+                "authorized numbers, dates, identities and aliases. It forbids "
+                "every upstream Agent, repair or Evaluator rerun, new research, "
+                "Evidence or NumericFact changes, external source network access, "
+                "candidate promotion, S1 or S3 acceptance, heterogeneous "
+                "generalization, qualified-human self-acceptance, Workbench "
+                "publication or release."
             )
-            is True
-            else ""
-        )
-        known_boundary = replacement_context + (
-            "This current-baseline preflight preserves the immutable legacy "
-            "report as financial-truth L1 failed and reuses all completed "
-            "research, six Specialist workpapers, one Lead coordination, three "
-            "completed repairs, six role evaluations and one cross-role "
-            "evaluation. It authorizes exactly "
-            f"{logical_nodes} fresh Writer-only terminal remapping logical node "
-            f"with at most {contract_attempts} bounded contract attempts, "
-            f"{new_analysis_calls} new analysis calls and "
-            f"{writer_continuations} Writer continuation calls. The model may "
-            "only map the immutable report into the protected report contract; "
-            "deterministic local rendering owns authorized numbers, dates, "
-            "identities and aliases. It forbids every upstream Agent, repair or "
-            "Evaluator rerun, new research, Evidence or NumericFact changes, "
-            "external source network access, candidate promotion, S1 or S3 "
-            "acceptance, heterogeneous generalization, qualified-human "
-            "self-acceptance, Workbench publication or release."
-        )
-        required_terms = (
-            "exactly 1 fresh Writer-only terminal remapping logical node",
-            "at most 2 bounded contract attempts",
-            "0 new analysis calls",
-            "0 Writer continuation calls",
-            "forbids every upstream Agent, repair or Evaluator rerun",
-            "deterministic local rendering owns authorized numbers",
-        )
+            required_terms = (
+                "exactly 1 fresh Writer-only reference patch logical node",
+                "at most 2 bounded contract attempts",
+                "0 new analysis calls",
+                "0 Writer continuation calls",
+                "five path-scoped failures",
+                "model text and source-agent identity are immutable",
+                "forbids every upstream Agent, repair or Evaluator rerun",
+                "Deterministic local validation and rendering own authorized numbers",
+            )
+        else:
+            replacement_context = (
+                "The first natural remap is preserved as a one-attempt length "
+                "failure with an incomplete Tool Call argument; this authority is "
+                "for a new replacement logical node, not a retry. "
+                if decision_projection.get(
+                    "multi_agent_report_protected_remap_replacement"
+                )
+                is True
+                else ""
+            )
+            known_boundary = replacement_context + (
+                "This current-baseline preflight preserves the immutable legacy "
+                "report as financial-truth L1 failed and reuses all completed "
+                "research, six Specialist workpapers, one Lead coordination, three "
+                "completed repairs, six role evaluations and one cross-role "
+                "evaluation. It authorizes exactly "
+                f"{logical_nodes} fresh Writer-only terminal remapping logical node "
+                f"with at most {contract_attempts} bounded contract attempts, "
+                f"{new_analysis_calls} new analysis calls and "
+                f"{writer_continuations} Writer continuation calls. The model may "
+                "only map the immutable report into the protected report contract; "
+                "deterministic local rendering owns authorized numbers, dates, "
+                "identities and aliases. It forbids every upstream Agent, repair or "
+                "Evaluator rerun, new research, Evidence or NumericFact changes, "
+                "external source network access, candidate promotion, S1 or S3 "
+                "acceptance, heterogeneous generalization, qualified-human "
+                "self-acceptance, Workbench publication or release."
+            )
+            required_terms = (
+                "exactly 1 fresh Writer-only terminal remapping logical node",
+                "at most 2 bounded contract attempts",
+                "0 new analysis calls",
+                "0 Writer continuation calls",
+                "forbids every upstream Agent, repair or Evaluator rerun",
+                "deterministic local rendering owns authorized numbers",
+            )
         forbidden_terms = (
             "exactly 2 logical",
             "two Writer nodes",

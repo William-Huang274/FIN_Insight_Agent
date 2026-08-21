@@ -326,3 +326,18 @@ TokenBudgetBasis 必须以完整产物形状和实际 comparable run 为依据�
 TokenBudgetBasis 由真实输入和输出责任编译：immutable report 为 14,469 个 canonical 字符，typed authority catalog 为 70,310 个字符，必须提交六节、六 gap、八 WWC 的嵌套工具结构；金融 L1 风险为 high，旧同类交卷实际需要过两次有界 contract attempt，因此使用 `thinking=disabled / max_tokens=7,000 / retry=0`。成本和延迟不是削减内容的依据。
 
 Project OS 的人类边界和机器权限现在共同要求“一个逻辑节点、最多两次合同尝试、零分析／续写／上游／网络”。public result 也将分别记录 node count、attempt count 和 scope compliance，关闭 `RC-AR-030` 所指的语义歧义。该工程门仍不预判自然输出成功，也不把旧报告追认为 L1 通过。
+
+## 二十五、合同修复必须按失败表面定向，不得再次生成完整报告
+
+v1.1 的两份完整 payload 说明 Provider 已能提交全套六节、六 gap、八 WWC；真正失败的是 Harness 只返回一个笼统错误。结构审计因此引入 `ContractFindingReceipt`：每条 hard finding 必须包含字段路径、失败类型、offending refs、当前路径允许的 refs、不可变来源角色和 finding digest。建议叙事密度属于质量层，只有超过安全容量才进入合同硬门。
+
+如果完整 payload 的所有 hard finding 都只涉及引用集合，Runtime 可以授权一次 reference-only patch；若存在正文、身份、拓扑、受保护数字或其他结构失败，则不得走该路线。patch 必须绑定 base payload digest 和目标路径全集，且满足：
+
+1. 只能修改 `source_claim_refs／evidence_refs／authority_refs／gap_refs`；
+2. 每个目标路径恰好出现一次，不能增加或遗漏；
+3. model text 与 `source_workpaper_agent_ids` 逐字保持；
+4. 未列出的路径不能变化；
+5. patch 后完整报告重新经过同一 Validator 与 deterministic renderer；
+6. 机械 fixture 只用于证明合同，不可作为产品引用选择或人工修报捷径。
+
+这是一条 provider-neutral 的局部纠错模式，不是 DeepSeek 专用分支。更强模型可以降低触发频率，但路径级 feedback、不可变 base、最小权限与最终 L1 复验仍是金融报告运行时的长期控制面。

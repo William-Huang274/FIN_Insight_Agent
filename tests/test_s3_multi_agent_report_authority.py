@@ -5,12 +5,19 @@ from copy import deepcopy
 import pytest
 
 from sec_agent.research.multi_agent_report_authority import (
+    MULTI_AGENT_PROTECTED_REPORT_DRAFT_LEGACY_SCHEMA_VERSION,
     MULTI_AGENT_PROTECTED_REPORT_DRAFT_SCHEMA_VERSION,
+    MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_SCHEMA_VERSION,
     MultiAgentReportAuthorityError,
+    apply_protected_report_reference_patch,
     audit_legacy_report_protected_surfaces,
+    audit_protected_report_draft,
     compile_protected_report_remap_messages,
+    compile_protected_report_reference_patch_messages,
+    compile_protected_report_reference_patch_receipt,
     compile_multi_agent_report_authority_catalog,
     protected_report_draft_tool,
+    protected_report_reference_patch_tool,
     render_protected_report,
     validate_protected_report_draft,
     validate_protected_report_remap_draft,
@@ -417,6 +424,158 @@ def test_terminal_remap_preserves_source_topology_and_agent_order() -> None:
     ):
         validate_protected_report_remap_draft(
             drift,
+            authority_catalog=catalog,
+            source_report=source,
+        )
+
+
+def test_narrative_density_is_a_quality_finding_below_safety_capacity() -> None:
+    workpapers, contexts = _fixtures()
+    catalog = compile_multi_agent_report_authority_catalog(
+        workpapers=workpapers,
+        specialist_contexts=contexts,
+    )
+    payload = _payload(catalog)
+    payload["executive_thesis"][0]["model_text"] = "A" * 1200
+
+    audit = audit_protected_report_draft(payload, authority_catalog=catalog)
+    trusted = validate_protected_report_draft(
+        payload, authority_catalog=catalog
+    )
+
+    assert audit["hard_finding_count"] == 0
+    assert audit["quality_finding_count"] == 1
+    assert audit["quality_findings"][0]["field_path"] == (
+        "executive_thesis[0].model_text"
+    )
+    assert trusted["surface_contract_receipt"][
+        "recommended_narrative_density_pass"
+    ] is False
+
+    overflow = deepcopy(payload)
+    overflow["executive_thesis"][0]["model_text"] = "A" * 2401
+    with pytest.raises(
+        MultiAgentReportAuthorityError,
+        match="multi_agent_report_model_text_safety_capacity_exceeded",
+    ) as caught:
+        validate_protected_report_draft(overflow, authority_catalog=catalog)
+    finding = caught.value.details["contract_finding_receipt"]["hard_findings"][0]
+    assert finding["field_path"] == "executive_thesis[0].model_text"
+    assert finding["details"]["safety_maximum_characters"] == 2400
+
+
+def test_reference_patch_preserves_model_text_and_only_repairs_failed_paths() -> None:
+    workpapers, contexts = _fixtures()
+    catalog = compile_multi_agent_report_authority_catalog(
+        workpapers=workpapers,
+        specialist_contexts=contexts,
+    )
+    valid = _payload(catalog)
+    base = deepcopy(valid)
+    base["schema_version"] = (
+        MULTI_AGENT_PROTECTED_REPORT_DRAFT_LEGACY_SCHEMA_VERSION
+    )
+    base["executive_thesis"][0]["model_text"] = "A" * 1200
+    claims = {row["agent_id"]: row for row in catalog["claims"]}
+    second_agent = sorted(claims)[1]
+    second_claim = claims[second_agent]
+    base["executive_thesis"][0].update(
+        {
+            "source_workpaper_agent_ids": [second_agent],
+            "source_claim_refs": [second_claim["claim_ref"]],
+            "evidence_refs": [second_claim["evidence_refs"][0]],
+            "authority_refs": [
+                catalog["presentation_authority"][0]["authority_ref"]
+            ],
+        }
+    )
+    base["remaining_gaps"][0]["gap_refs"] = []
+    source = {
+        "report_digest": "legacy-report-digest",
+        "sections": [
+            {
+                "source_workpaper_agent_ids": list(
+                    section["clauses"][0]["source_workpaper_agent_ids"]
+                )
+            }
+            for section in valid["sections"]
+        ],
+        "remaining_gaps": ["legacy gap"] * len(valid["remaining_gaps"]),
+        "what_would_change": ["legacy route"]
+        * len(valid["what_would_change"]),
+    }
+    receipt = compile_protected_report_reference_patch_receipt(
+        base, authority_catalog=catalog
+    )
+    assert receipt["target_paths"] == [
+        "executive_thesis[0]",
+        "remaining_gaps[0]",
+    ]
+    assert len(receipt["quality_findings_preserved_for_later_assessment"]) == 1
+    messages = compile_protected_report_reference_patch_messages(
+        base_payload=base,
+        patch_receipt=receipt,
+        authority_catalog=catalog,
+    )
+    tool = protected_report_reference_patch_tool(
+        patch_receipt=receipt,
+        authority_catalog=catalog,
+    )
+    assert "Preserve every word" in messages[0]["content"]
+    assert tool["function"]["name"] == "submit_protected_report_reference_patch"
+
+    patch = {
+        "schema_version": MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_SCHEMA_VERSION,
+        "base_payload_digest": receipt["base_payload_digest"],
+        "patches": [
+            {
+                "field_path": "executive_thesis[0]",
+                "source_claim_refs": [second_claim["claim_ref"]],
+                "evidence_refs": [second_claim["evidence_refs"][0]],
+                "authority_refs": [],
+                "gap_refs": [],
+            },
+            {
+                "field_path": "remaining_gaps[0]",
+                "source_claim_refs": list(
+                    base["remaining_gaps"][0]["source_claim_refs"]
+                ),
+                "evidence_refs": list(
+                    base["remaining_gaps"][0]["evidence_refs"]
+                ),
+                "authority_refs": [],
+                "gap_refs": list(valid["remaining_gaps"][0]["gap_refs"]),
+            },
+        ],
+    }
+    trusted = apply_protected_report_reference_patch(
+        patch,
+        base_payload=base,
+        patch_receipt=receipt,
+        authority_catalog=catalog,
+        source_report=source,
+    )
+    assert trusted["reference_patch_receipt"]["model_text_unchanged"] is True
+    assert trusted["reference_patch_receipt"][
+        "source_workpaper_agent_ids_unchanged"
+    ] is True
+    assert trusted["reference_patch_receipt"]["patched_paths"] == receipt[
+        "target_paths"
+    ]
+    assert trusted["surface_contract_receipt"][
+        "recommended_narrative_density_pass"
+    ] is False
+
+    prose_patch = deepcopy(patch)
+    prose_patch["patches"][0]["model_text"] = "Harness-authored replacement"
+    with pytest.raises(
+        MultiAgentReportAuthorityError,
+        match="multi_agent_report_reference_patch_fields_invalid",
+    ):
+        apply_protected_report_reference_patch(
+            prose_patch,
+            base_payload=base,
+            patch_receipt=receipt,
             authority_catalog=catalog,
             source_report=source,
         )

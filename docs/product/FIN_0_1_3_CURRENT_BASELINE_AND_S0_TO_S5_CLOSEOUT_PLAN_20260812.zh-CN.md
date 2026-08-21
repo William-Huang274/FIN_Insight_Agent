@@ -444,6 +444,14 @@ FIN 0.1.3 只接受一次有依据的 replacement：修复 envelope／arguments 
 
 当前是 execution-ready engineering gate，不是 live 结果。下一步仍须 clean commit／push → fresh preflight → authority → 唯一 Writer logical node；成功后依次做独立 L1、八维绝对质量、同输入内容保真／paired 和 qualified-human。S1、S3、MU／NVDA／留出泛化、Workbench publication 与 release 均不因本节通过而改变。
 
+## 4AG. 完整 remap 失败后只允许引用级 successor（2026-08-21）
+
+v1.1 已证明完整输出容量不再是主阻断：两次 Tool Call 都完整结束，但通用错误码把叙事密度与五处引用绑定错误混为一体。当前计划不再运行第三次全报告 remap，也不允许 Harness 人工改报告。
+
+下一项固定为一个 digest-bound reference-patch 节点：它读取 v1.1 第二份完整 payload 和 path-scoped finding，只能为五个失败路径选择 claim、Evidence、authority 与 gap refs。model prose、来源 Agent、六节／六 gap／八 WWC 拓扑、Evidence、NumericFact 和上游研究全部不可修改。推荐长度越界降为内容质量 finding，安全容量、自由受保护表面、错公司／错期／错引用仍为硬失败。
+
+工程资格已由真实 capture replay 和 mutation 证明；机械成功样例只证明 Runtime 可执行，不是产品观点或引用选择。完成全仓门并提交推送后，须重新签发 preflight 与 authority，最多执行一个新 logical node、两个 contract attempts。自然 patch 成功后才能进入 L1、八维质量、paired 保真和 qualified-human；不得用结构成功关闭 S1、S3、泛化、Workbench 或 release。
+
 ## 4AA. Demand 审查证明分层正确，但 Evaluator 与 repair 仍需 profile 分责（2026-08-21）
 
 第一次真正进入分层评审后，Demand 单角色节点已经完成判断纪律、机制、反方、WWC 和 gap 边界检查，并给出 `Role Content May Proceed=true`，只留下一个 LOW advisory；但 Runtime 继续使用 `high / 12,000` repair profile，11,289 token 被 reasoning 消耗，输出在最后一句截断。该 attempt 保持 terminal failure。

@@ -7,6 +7,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 from .current_consumer import (
+    CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN,
     CurrentResearchConsumerError,
     bind_current_research_model_text_schema_definition,
     compile_current_research_model_text_schema,
@@ -22,10 +23,16 @@ MULTI_AGENT_REPORT_AUTHORITY_CATALOG_EXTENDED_SCHEMA_VERSION = (
     "fin_ia_multi_agent_report_authority_catalog_v1_1"
 )
 MULTI_AGENT_PROTECTED_REPORT_DRAFT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_protected_report_draft_v1_1"
+)
+MULTI_AGENT_PROTECTED_REPORT_DRAFT_LEGACY_SCHEMA_VERSION = (
     "fin_ia_multi_agent_protected_report_draft_v1_0"
 )
 MULTI_AGENT_PROTECTED_RENDERED_REPORT_SCHEMA_VERSION = (
-    "fin_ia_multi_agent_protected_rendered_report_v1_0"
+    "fin_ia_multi_agent_protected_rendered_report_v1_1"
+)
+MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_protected_report_reference_patch_v1_0"
 )
 
 _EMPTY_REF_PLACEHOLDER = "__NO_AUTHORIZED_REF__"
@@ -54,16 +61,50 @@ _PROTECTED_SURFACE = re.compile(
     re.IGNORECASE,
 )
 
+# Recommended narrative density is a product-quality signal, not a financial
+# truth boundary.  The larger safety capacities protect transport and artifact
+# materialization while allowing a complete, well-supported paragraph to
+# survive for later content-quality assessment.
+_REPORT_TEXT_LIMITS = {
+    "topic": {"minimum": 8, "recommended_maximum": 180, "safety_maximum": 720},
+    "heading": {"minimum": 4, "recommended_maximum": 140, "safety_maximum": 560},
+    "executive": {
+        "minimum": 24,
+        "recommended_maximum": 900,
+        "safety_maximum": 2400,
+    },
+    "section": {
+        "minimum": 12,
+        "recommended_maximum": 900,
+        "safety_maximum": 2400,
+    },
+    "gap": {"minimum": 12, "recommended_maximum": 700, "safety_maximum": 1800},
+    "wwc": {"minimum": 12, "recommended_maximum": 700, "safety_maximum": 1800},
+    "confidence": {
+        "minimum": 20,
+        "recommended_maximum": 700,
+        "safety_maximum": 1800,
+    },
+}
+
 
 class MultiAgentReportAuthorityError(ValueError):
-    def __init__(self, code: str) -> None:
+    def __init__(
+        self, code: str, *, details: Mapping[str, Any] | None = None
+    ) -> None:
         self.code = code
+        self.details = deepcopy(dict(details or {}))
         super().__init__(code)
 
 
-def _require(condition: bool, code: str) -> None:
+def _require(
+    condition: bool,
+    code: str,
+    *,
+    details: Mapping[str, Any] | None = None,
+) -> None:
     if not condition:
-        raise MultiAgentReportAuthorityError(code)
+        raise MultiAgentReportAuthorityError(code, details=details)
 
 
 def _mapping(value: object, code: str) -> Mapping[str, Any]:
@@ -850,7 +891,10 @@ def protected_report_draft_tool(
             "model_text": compile_current_research_model_text_schema(
                 description=(
                     "Research prose only: no digits, dates, units, URLs, aliases, "
-                    "citations or exact financial surfaces."
+                    "citations or exact financial surfaces. Keep a normal clause "
+                    "within the recommended narrative density; a longer supported "
+                    "clause is assessed as a quality finding rather than silently "
+                    "discarded, up to the documented safety capacity."
                 )
             ),
             "source_workpaper_agent_ids": {
@@ -884,7 +928,10 @@ def protected_report_draft_tool(
                 "enum": [MULTI_AGENT_PROTECTED_REPORT_DRAFT_SCHEMA_VERSION],
             },
             "report_topic": compile_current_research_model_text_schema(
-                description="Flexible report topic without company identity, dates or numbers."
+                description=(
+                    "Flexible concise report topic without company identity, dates "
+                    "or numbers."
+                )
             ),
             "executive_thesis": {
                 "type": "array",
@@ -1137,6 +1184,898 @@ def _normalize_refs(
     return refs
 
 
+def _contract_finding(
+    *,
+    field_path: str,
+    finding_code: str,
+    blocking: bool,
+    repair_fields: Sequence[str] = (),
+    details: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    body = {
+        "field_path": field_path,
+        "finding_code": finding_code,
+        "severity": "hard_contract" if blocking else "quality",
+        "blocking": blocking,
+        "repair_fields": sorted({str(value) for value in repair_fields}),
+        "details": deepcopy(dict(details or {})),
+    }
+    return {**body, "finding_digest": canonical_digest(body)}
+
+
+def _audit_model_text(
+    *, field_path: str, value: object, limit_kind: str
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    limits = _REPORT_TEXT_LIMITS[limit_kind]
+    text = str(value or "").strip()
+    length = len(text)
+    hard: list[dict[str, Any]] = []
+    quality: list[dict[str, Any]] = []
+    if length < limits["minimum"]:
+        hard.append(
+            _contract_finding(
+                field_path=field_path,
+                finding_code="multi_agent_report_model_text_minimum_not_met",
+                blocking=True,
+                repair_fields=("model_text",),
+                details={
+                    "actual_characters": length,
+                    "minimum_characters": limits["minimum"],
+                },
+            )
+        )
+    elif length > limits["safety_maximum"]:
+        hard.append(
+            _contract_finding(
+                field_path=field_path,
+                finding_code="multi_agent_report_model_text_safety_capacity_exceeded",
+                blocking=True,
+                repair_fields=("model_text",),
+                details={
+                    "actual_characters": length,
+                    "safety_maximum_characters": limits["safety_maximum"],
+                },
+            )
+        )
+    elif (
+        re.fullmatch(CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN, text) is None
+    ):
+        hard.append(
+            _contract_finding(
+                field_path=field_path,
+                finding_code="multi_agent_report_model_text_unprotected_surface",
+                blocking=True,
+                repair_fields=("model_text",),
+                details={
+                    "protected_surface_present": True,
+                    "surface_value_returned_to_model": False,
+                },
+            )
+        )
+    if (
+        not hard
+        and length > limits["recommended_maximum"]
+        and length <= limits["safety_maximum"]
+    ):
+        quality.append(
+            _contract_finding(
+                field_path=field_path,
+                finding_code="multi_agent_report_narrative_density_above_recommended",
+                blocking=False,
+                details={
+                    "actual_characters": length,
+                    "recommended_maximum_characters": limits[
+                        "recommended_maximum"
+                    ],
+                    "safety_maximum_characters": limits["safety_maximum"],
+                },
+            )
+        )
+    return hard, quality
+
+
+def _audit_clause_contract(
+    raw: object,
+    *,
+    catalog: Mapping[str, Any],
+    kind: str,
+    field_path: str,
+    limit_kind: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    hard: list[dict[str, Any]] = []
+    quality: list[dict[str, Any]] = []
+    if not isinstance(raw, Mapping) or set(raw) != _CLAUSE_FIELDS:
+        hard.append(
+            _contract_finding(
+                field_path=field_path,
+                finding_code="multi_agent_report_clause_fields_invalid",
+                blocking=True,
+                repair_fields=tuple(sorted(_CLAUSE_FIELDS)),
+            )
+        )
+        return hard, quality
+    clause = dict(raw)
+    text_hard, text_quality = _audit_model_text(
+        field_path=f"{field_path}.model_text",
+        value=clause.get("model_text"),
+        limit_kind=limit_kind,
+    )
+    hard.extend(text_hard)
+    quality.extend(text_quality)
+
+    claims = {str(row["claim_ref"]): row for row in catalog["claims"]}
+    all_agents = set(catalog["claim_refs_by_agent"])
+    all_evidence = {
+        str(row["evidence_ref"]) for row in catalog["evidence_authority"]
+    }
+    all_authority = {
+        str(row["authority_ref"])
+        for row in catalog["presentation_authority"]
+    }
+    all_gaps = {str(row["gap_ref"]) for row in catalog["gap_authority"]}
+    issues: list[str] = []
+    offending: dict[str, list[str]] = {}
+
+    normalized: dict[str, list[str]] = {}
+    global_allowed = {
+        "source_workpaper_agent_ids": all_agents,
+        "source_claim_refs": set(claims),
+        "evidence_refs": all_evidence,
+        "authority_refs": all_authority,
+        "gap_refs": all_gaps,
+    }
+    for name, allowed in global_allowed.items():
+        raw_refs = clause.get(name)
+        if not isinstance(raw_refs, list) or any(
+            not isinstance(item, str) for item in raw_refs
+        ):
+            issues.append(f"{name}_shape_invalid")
+            normalized[name] = []
+            continue
+        refs = [str(item) for item in raw_refs]
+        normalized[name] = refs
+        invalid = sorted(set(refs) - allowed)
+        if len(refs) != len(set(refs)):
+            issues.append(f"{name}_duplicate")
+        if invalid:
+            issues.append(f"{name}_unknown")
+            offending[name] = invalid
+
+    source_agents = [
+        value
+        for value in normalized.get("source_workpaper_agent_ids", [])
+        if value in all_agents
+    ]
+    if not source_agents:
+        issues.append("source_workpaper_agent_ids_empty")
+    claim_refs = [
+        value
+        for value in normalized.get("source_claim_refs", [])
+        if value in claims
+    ]
+    allowed_claim_refs = sorted(
+        ref
+        for ref, row in claims.items()
+        if str(row["agent_id"]) in source_agents
+    )
+    cross_agent_claims = sorted(
+        ref
+        for ref in claim_refs
+        if str(claims[ref]["agent_id"]) not in source_agents
+    )
+    if cross_agent_claims:
+        issues.append("source_claim_refs_cross_agent")
+        offending["source_claim_refs"] = sorted(
+            set(offending.get("source_claim_refs", []))
+            | set(cross_agent_claims)
+        )
+
+    selected_scoped_claims = [
+        claims[ref] for ref in claim_refs if ref not in cross_agent_claims
+    ]
+    selected_evidence = {
+        str(ref)
+        for row in selected_scoped_claims
+        for ref in row["evidence_refs"]
+    }
+    selected_authority = {
+        str(ref)
+        for row in selected_scoped_claims
+        for ref in row["authority_refs"]
+    }
+    allowed_claim_rows = [claims[ref] for ref in allowed_claim_refs]
+    allowed_evidence = sorted(
+        {
+            str(ref)
+            for row in allowed_claim_rows
+            for ref in row["evidence_refs"]
+        }
+    )
+    allowed_authority = sorted(
+        {
+            str(ref)
+            for row in allowed_claim_rows
+            for ref in row["authority_refs"]
+        }
+    )
+    for name, selected, scoped in (
+        ("evidence_refs", normalized.get("evidence_refs", []), selected_evidence),
+        (
+            "authority_refs",
+            normalized.get("authority_refs", []),
+            selected_authority,
+        ),
+    ):
+        out_of_scope = sorted(
+            value for value in selected if value in global_allowed[name] and value not in scoped
+        )
+        if out_of_scope:
+            issues.append(f"{name}_outside_selected_claims")
+            offending[name] = sorted(
+                set(offending.get(name, [])) | set(out_of_scope)
+            )
+
+    allowed_gaps = sorted(
+        {
+            str(ref)
+            for binding in catalog.get("workpaper_gap_bindings", [])
+            if binding.get("agent_id") in source_agents
+            for ref in binding.get("gap_refs") or ()
+        }
+    )
+    if not catalog.get("workpaper_gap_bindings"):
+        allowed_gaps = sorted(all_gaps)
+    out_of_scope_gaps = sorted(
+        value
+        for value in normalized.get("gap_refs", [])
+        if value in all_gaps and value not in set(allowed_gaps)
+    )
+    if out_of_scope_gaps:
+        issues.append("gap_refs_outside_source_agents")
+        offending["gap_refs"] = sorted(
+            set(offending.get("gap_refs", [])) | set(out_of_scope_gaps)
+        )
+    if kind == "content" and not claim_refs:
+        issues.append("source_claim_refs_required")
+    if kind == "gap" and not normalized.get("gap_refs"):
+        issues.append("gap_refs_required")
+    if kind == "wwc" and not any(
+        normalized.get(name)
+        for name in (
+            "source_claim_refs",
+            "evidence_refs",
+            "authority_refs",
+            "gap_refs",
+        )
+    ):
+        issues.append("what_would_change_reference_required")
+
+    if issues:
+        issue_set = set(issues)
+        primary_code = "multi_agent_report_clause_reference_scope_invalid"
+        for field_name, field_code in (
+            (
+                "source_workpaper_agent_ids",
+                "multi_agent_report_clause_agent_refs_invalid",
+            ),
+            ("source_claim_refs", "multi_agent_report_clause_claim_refs_invalid"),
+            ("evidence_refs", "multi_agent_report_clause_evidence_refs_invalid"),
+            (
+                "authority_refs",
+                "multi_agent_report_clause_authority_refs_invalid",
+            ),
+            ("gap_refs", "multi_agent_report_clause_gap_refs_invalid"),
+        ):
+            if {
+                f"{field_name}_shape_invalid",
+                f"{field_name}_duplicate",
+                f"{field_name}_unknown",
+            } & issue_set:
+                primary_code = field_code
+                break
+        else:
+            if "source_workpaper_agent_ids_empty" in issue_set:
+                primary_code = "multi_agent_report_clause_agent_refs_invalid"
+            elif "source_claim_refs_cross_agent" in issue_set:
+                primary_code = "multi_agent_report_clause_claim_agent_scope_invalid"
+            elif "source_claim_refs_required" in issue_set:
+                primary_code = "multi_agent_report_content_clause_claim_missing"
+            elif "gap_refs_required" in issue_set:
+                primary_code = "multi_agent_report_gap_clause_gap_missing"
+            elif "what_would_change_reference_required" in issue_set:
+                primary_code = "multi_agent_report_wwc_clause_unbound"
+        hard.append(
+            _contract_finding(
+                field_path=field_path,
+                finding_code=primary_code,
+                blocking=True,
+                repair_fields=(
+                    "source_claim_refs",
+                    "evidence_refs",
+                    "authority_refs",
+                    "gap_refs",
+                ),
+                details={
+                    "issues": sorted(set(issues)),
+                    "offending_refs": offending,
+                    "allowed_refs": {
+                        "source_claim_refs": allowed_claim_refs,
+                        "evidence_refs": allowed_evidence,
+                        "authority_refs": allowed_authority,
+                        "gap_refs": allowed_gaps,
+                    },
+                    "source_workpaper_agent_ids_immutable": source_agents,
+                },
+            )
+        )
+    return hard, quality
+
+
+def audit_protected_report_draft(
+    payload: Mapping[str, Any], *, authority_catalog: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Collect every actionable contract failure before a correction attempt."""
+
+    value = deepcopy(dict(payload))
+    hard: list[dict[str, Any]] = []
+    quality: list[dict[str, Any]] = []
+    expected = {
+        "schema_version",
+        "report_topic",
+        "executive_thesis",
+        "sections",
+        "remaining_gaps",
+        "what_would_change",
+        "confidence",
+    }
+    if set(value) != expected or value.get("schema_version") not in {
+        MULTI_AGENT_PROTECTED_REPORT_DRAFT_SCHEMA_VERSION,
+        MULTI_AGENT_PROTECTED_REPORT_DRAFT_LEGACY_SCHEMA_VERSION,
+    }:
+        hard.append(
+            _contract_finding(
+                field_path="$",
+                finding_code="multi_agent_protected_report_identity_invalid",
+                blocking=True,
+            )
+        )
+    else:
+        topic_hard, topic_quality = _audit_model_text(
+            field_path="report_topic",
+            value=value.get("report_topic"),
+            limit_kind="topic",
+        )
+        hard.extend(topic_hard)
+        quality.extend(topic_quality)
+        rows: list[tuple[str, object, str, str]] = []
+        executive = value.get("executive_thesis")
+        sections = value.get("sections")
+        gaps = value.get("remaining_gaps")
+        wwc = value.get("what_would_change")
+        if not isinstance(executive, list) or not 1 <= len(executive) <= 6:
+            hard.append(
+                _contract_finding(
+                    field_path="executive_thesis",
+                    finding_code="multi_agent_report_executive_thesis_invalid",
+                    blocking=True,
+                )
+            )
+        else:
+            rows.extend(
+                (f"executive_thesis[{index}]", row, "content", "executive")
+                for index, row in enumerate(executive)
+            )
+        if not isinstance(sections, list) or not 4 <= len(sections) <= 10:
+            hard.append(
+                _contract_finding(
+                    field_path="sections",
+                    finding_code="multi_agent_report_sections_invalid",
+                    blocking=True,
+                )
+            )
+        else:
+            for section_index, section in enumerate(sections):
+                if not isinstance(section, Mapping) or set(section) != {
+                    "heading",
+                    "clauses",
+                }:
+                    hard.append(
+                        _contract_finding(
+                            field_path=f"sections[{section_index}]",
+                            finding_code="multi_agent_report_section_fields_invalid",
+                            blocking=True,
+                        )
+                    )
+                    continue
+                heading_hard, heading_quality = _audit_model_text(
+                    field_path=f"sections[{section_index}].heading",
+                    value=section.get("heading"),
+                    limit_kind="heading",
+                )
+                hard.extend(heading_hard)
+                quality.extend(heading_quality)
+                clauses = section.get("clauses")
+                if not isinstance(clauses, list) or not 1 <= len(clauses) <= 10:
+                    hard.append(
+                        _contract_finding(
+                            field_path=f"sections[{section_index}].clauses",
+                            finding_code="multi_agent_report_section_clauses_invalid",
+                            blocking=True,
+                        )
+                    )
+                    continue
+                rows.extend(
+                    (
+                        f"sections[{section_index}].clauses[{clause_index}]",
+                        row,
+                        "content",
+                        "section",
+                    )
+                    for clause_index, row in enumerate(clauses)
+                )
+        for name, values, kind in (
+            ("remaining_gaps", gaps, "gap"),
+            ("what_would_change", wwc, "wwc"),
+        ):
+            minimum = 1 if kind == "gap" else 2
+            if not isinstance(values, list) or not minimum <= len(values) <= 12:
+                hard.append(
+                    _contract_finding(
+                        field_path=name,
+                        finding_code=(
+                            "multi_agent_report_remaining_gaps_invalid"
+                            if kind == "gap"
+                            else "multi_agent_report_what_would_change_invalid"
+                        ),
+                        blocking=True,
+                    )
+                )
+            else:
+                rows.extend(
+                    (f"{name}[{index}]", row, kind, kind)
+                    for index, row in enumerate(values)
+                )
+        rows.append(("confidence", value.get("confidence"), "content", "confidence"))
+        for field_path, row, kind, limit_kind in rows:
+            row_hard, row_quality = _audit_clause_contract(
+                row,
+                catalog=authority_catalog,
+                kind=kind,
+                field_path=field_path,
+                limit_kind=limit_kind,
+            )
+            hard.extend(row_hard)
+            quality.extend(row_quality)
+    body = {
+        "schema_version": "fin_ia_multi_agent_report_contract_finding_receipt_v1_0",
+        "payload_digest": canonical_digest(value),
+        "hard_finding_count": len(hard),
+        "quality_finding_count": len(quality),
+        "hard_findings": hard,
+        "quality_findings": quality,
+        "contract_valid": not hard,
+    }
+    return {**body, "receipt_digest": canonical_digest(body)}
+
+
+_EXECUTIVE_PATH = re.compile(r"^executive_thesis\[(\d+)\]$")
+_SECTION_CLAUSE_PATH = re.compile(
+    r"^sections\[(\d+)\]\.clauses\[(\d+)\]$"
+)
+_LIST_CLAUSE_PATH = re.compile(
+    r"^(remaining_gaps|what_would_change)\[(\d+)\]$"
+)
+
+
+def _clause_at_path(payload: Mapping[str, Any], field_path: str) -> dict[str, Any]:
+    if field_path == "confidence":
+        clause = payload.get("confidence")
+    elif match := _EXECUTIVE_PATH.fullmatch(field_path):
+        rows = payload.get("executive_thesis")
+        index = int(match.group(1))
+        _require(
+            isinstance(rows, list) and 0 <= index < len(rows),
+            "multi_agent_report_patch_field_path_invalid",
+        )
+        clause = rows[index]
+    elif match := _SECTION_CLAUSE_PATH.fullmatch(field_path):
+        sections = payload.get("sections")
+        section_index = int(match.group(1))
+        clause_index = int(match.group(2))
+        _require(
+            isinstance(sections, list)
+            and 0 <= section_index < len(sections)
+            and isinstance(sections[section_index], Mapping)
+            and isinstance(sections[section_index].get("clauses"), list)
+            and 0
+            <= clause_index
+            < len(sections[section_index]["clauses"]),
+            "multi_agent_report_patch_field_path_invalid",
+        )
+        clause = sections[section_index]["clauses"][clause_index]
+    elif match := _LIST_CLAUSE_PATH.fullmatch(field_path):
+        rows = payload.get(match.group(1))
+        index = int(match.group(2))
+        _require(
+            isinstance(rows, list) and 0 <= index < len(rows),
+            "multi_agent_report_patch_field_path_invalid",
+        )
+        clause = rows[index]
+    else:
+        raise MultiAgentReportAuthorityError(
+            "multi_agent_report_patch_field_path_invalid"
+        )
+    _require(
+        isinstance(clause, dict) and set(clause) == _CLAUSE_FIELDS,
+        "multi_agent_report_patch_clause_invalid",
+    )
+    return clause
+
+
+def compile_protected_report_reference_patch_receipt(
+    base_payload: Mapping[str, Any], *, authority_catalog: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Freeze a complete failed draft into reference-only correction targets."""
+
+    audit = audit_protected_report_draft(
+        base_payload, authority_catalog=authority_catalog
+    )
+    _require(
+        audit["hard_finding_count"] > 0,
+        "multi_agent_report_patch_base_already_valid",
+    )
+    allowed_patch_fields = {
+        "source_claim_refs",
+        "evidence_refs",
+        "authority_refs",
+        "gap_refs",
+    }
+    _require(
+        all(
+            set(finding["repair_fields"]).issubset(allowed_patch_fields)
+            and finding["field_path"] != "$"
+            for finding in audit["hard_findings"]
+        ),
+        "multi_agent_report_patch_non_reference_failure_present",
+        details={"contract_finding_receipt": audit},
+    )
+    target_paths: list[str] = []
+    for finding in audit["hard_findings"]:
+        path = str(finding["field_path"])
+        if path not in target_paths:
+            target_paths.append(path)
+    body = {
+        "schema_version": "fin_ia_multi_agent_report_reference_patch_receipt_v1_0",
+        "base_payload_schema_version": str(base_payload.get("schema_version") or ""),
+        "base_payload_digest": canonical_digest(dict(base_payload)),
+        "contract_finding_receipt_digest": audit["receipt_digest"],
+        "target_paths": target_paths,
+        "hard_findings": deepcopy(audit["hard_findings"]),
+        "quality_findings_preserved_for_later_assessment": deepcopy(
+            audit["quality_findings"]
+        ),
+        "model_text_patch_authorized": False,
+        "source_agent_patch_authorized": False,
+        "reference_patch_authorized": True,
+    }
+    return {**body, "patch_receipt_digest": canonical_digest(body)}
+
+
+def protected_report_reference_patch_tool(
+    *,
+    patch_receipt: Mapping[str, Any],
+    authority_catalog: Mapping[str, Any],
+) -> dict[str, Any]:
+    paths = [str(value) for value in patch_receipt.get("target_paths") or ()]
+    _require(paths, "multi_agent_report_patch_target_paths_invalid")
+    claims = sorted(
+        str(row["claim_ref"]) for row in authority_catalog.get("claims") or ()
+    )
+    evidence = sorted(
+        str(row["evidence_ref"])
+        for row in authority_catalog.get("evidence_authority") or ()
+    )
+    authority = sorted(
+        str(row["authority_ref"])
+        for row in authority_catalog.get("presentation_authority") or ()
+    )
+    gaps = sorted(
+        str(row["gap_ref"])
+        for row in authority_catalog.get("gap_authority") or ()
+    )
+    patch = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": [
+            "field_path",
+            "source_claim_refs",
+            "evidence_refs",
+            "authority_refs",
+            "gap_refs",
+        ],
+        "properties": {
+            "field_path": {"type": "string", "enum": paths},
+            "source_claim_refs": _ref_array(claims),
+            "evidence_refs": _ref_array(evidence),
+            "authority_refs": _ref_array(authority),
+            "gap_refs": _ref_array(gaps),
+        },
+    }
+    return {
+        "type": "function",
+        "function": {
+            "name": "submit_protected_report_reference_patch",
+            "description": (
+                "Correct only the reference arrays at every listed failed field. "
+                "The Harness preserves all model prose and all passing fields."
+            ),
+            "parameters": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": [
+                    "schema_version",
+                    "base_payload_digest",
+                    "patches",
+                ],
+                "properties": {
+                    "schema_version": {
+                        "type": "string",
+                        "enum": [
+                            MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_SCHEMA_VERSION
+                        ],
+                    },
+                    "base_payload_digest": {
+                        "type": "string",
+                        "enum": [str(patch_receipt["base_payload_digest"])],
+                    },
+                    "patches": {
+                        "type": "array",
+                        "minItems": len(paths),
+                        "maxItems": len(paths),
+                        "items": patch,
+                    },
+                },
+            },
+        },
+    }
+
+
+def compile_protected_report_reference_patch_messages(
+    *,
+    base_payload: Mapping[str, Any],
+    patch_receipt: Mapping[str, Any],
+    authority_catalog: Mapping[str, Any],
+) -> tuple[dict[str, str], ...]:
+    claims = {
+        str(row["claim_ref"]): row
+        for row in authority_catalog.get("claims") or ()
+    }
+    gaps = {
+        str(row["gap_ref"]): row
+        for row in authority_catalog.get("gap_authority") or ()
+    }
+    presentations = {
+        str(row["authority_ref"]): row
+        for row in authority_catalog.get("presentation_authority") or ()
+    }
+    finding_by_path = {
+        str(row["field_path"]): row
+        for row in patch_receipt.get("hard_findings") or ()
+    }
+    targets: list[dict[str, Any]] = []
+    for path in patch_receipt["target_paths"]:
+        finding = finding_by_path[str(path)]
+        allowed = finding["details"]["allowed_refs"]
+        clause = _clause_at_path(base_payload, str(path))
+        current_allowed_claims = [
+            ref
+            for ref in clause["source_claim_refs"]
+            if ref in set(allowed["source_claim_refs"])
+        ]
+        content_path = str(path).startswith(("executive_thesis", "sections")) or str(
+            path
+        ) == "confidence"
+        visible_claim_refs = (
+            current_allowed_claims
+            if current_allowed_claims or not content_path
+            else list(allowed["source_claim_refs"])
+        )
+        visible_authority_refs = {
+            str(ref)
+            for claim_ref in visible_claim_refs
+            for ref in claims[claim_ref]["authority_refs"]
+        }
+        targets.append(
+            {
+                "field_path": str(path),
+                "immutable_model_text": str(clause["model_text"]),
+                "immutable_source_workpaper_agent_ids": list(
+                    clause["source_workpaper_agent_ids"]
+                ),
+                "current_refs": {
+                    name: list(clause[name])
+                    for name in (
+                        "source_claim_refs",
+                        "evidence_refs",
+                        "authority_refs",
+                        "gap_refs",
+                    )
+                },
+                "issues": list(finding["details"].get("issues") or ()),
+                "offending_refs": deepcopy(
+                    finding["details"].get("offending_refs") or {}
+                ),
+                "allowed_claims": [
+                    {
+                        "claim_ref": ref,
+                        "claim": str(claims[ref]["claim"]),
+                        "evidence_refs": list(claims[ref]["evidence_refs"]),
+                        "authority_refs": list(claims[ref]["authority_refs"]),
+                    }
+                    for ref in visible_claim_refs
+                ],
+                "allowed_presentations": [
+                    {
+                        "authority_ref": ref,
+                        "display_surface": str(presentations[ref]["display_surface"]),
+                    }
+                    for ref in allowed["authority_refs"]
+                    if ref in visible_authority_refs
+                ],
+                "allowed_gaps": [
+                    {
+                        "gap_ref": ref,
+                        "business_reason_zh": str(gaps[ref]["business_reason_zh"]),
+                        "supplement_direction_zh": str(
+                            gaps[ref]["supplement_direction_zh"]
+                        ),
+                    }
+                    for ref in allowed["gap_refs"]
+                ],
+            }
+        )
+    visible = {
+        "base_payload_digest": patch_receipt["base_payload_digest"],
+        "patch_receipt_digest": patch_receipt["patch_receipt_digest"],
+        "targets": targets,
+        "rules": [
+            "Return one patch for every target path and no other path.",
+            "Do not rewrite model text, headings, topology or source-agent identity.",
+            "Choose only refs allowed for the target's immutable source agents.",
+            "Every selected Evidence or authority ref must be exposed by a selected claim.",
+            "A remaining-gap target must select the matching allowed typed gap.",
+            "Do not add new research, facts, judgment or source material.",
+        ],
+    }
+    return (
+        {
+            "role": "system",
+            "content": (
+                "You are correcting reference bindings in an already completed "
+                "financial report contract. Preserve every word of model prose. "
+                "Select only claim-scoped and role-scoped refs, then submit the "
+                "reference patch tool once."
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                visible,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        },
+    )
+
+
+def apply_protected_report_reference_patch(
+    patch_payload: Mapping[str, Any],
+    *,
+    base_payload: Mapping[str, Any],
+    patch_receipt: Mapping[str, Any],
+    authority_catalog: Mapping[str, Any],
+    source_report: Mapping[str, Any],
+) -> dict[str, Any]:
+    value = deepcopy(dict(patch_payload))
+    _require(
+        set(value) == {"schema_version", "base_payload_digest", "patches"}
+        and value.get("schema_version")
+        == MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_SCHEMA_VERSION
+        and value.get("base_payload_digest")
+        == patch_receipt.get("base_payload_digest")
+        == canonical_digest(dict(base_payload)),
+        "multi_agent_report_reference_patch_identity_invalid",
+    )
+    patches = value.get("patches")
+    target_paths = [str(path) for path in patch_receipt["target_paths"]]
+    _require(
+        isinstance(patches, list)
+        and len(patches) == len(target_paths)
+        and {
+            str(row.get("field_path") or "")
+            for row in patches
+            if isinstance(row, Mapping)
+        }
+        == set(target_paths),
+        "multi_agent_report_reference_patch_paths_invalid",
+    )
+    finding_by_path = {
+        str(row["field_path"]): row
+        for row in patch_receipt.get("hard_findings") or ()
+    }
+    corrected = deepcopy(dict(base_payload))
+    corrected["schema_version"] = MULTI_AGENT_PROTECTED_REPORT_DRAFT_SCHEMA_VERSION
+    for raw_patch in patches:
+        patch = dict(_mapping(raw_patch, "multi_agent_report_reference_patch_invalid"))
+        _require(
+            set(patch)
+            == {
+                "field_path",
+                "source_claim_refs",
+                "evidence_refs",
+                "authority_refs",
+                "gap_refs",
+            },
+            "multi_agent_report_reference_patch_fields_invalid",
+        )
+        path = str(patch["field_path"])
+        finding = finding_by_path[path]
+        allowed = finding["details"]["allowed_refs"]
+        clause = deepcopy(_clause_at_path(corrected, path))
+        for name in (
+            "source_claim_refs",
+            "evidence_refs",
+            "authority_refs",
+            "gap_refs",
+        ):
+            clause[name] = _normalize_refs(
+                patch.get(name),
+                allowed=set(str(ref) for ref in allowed[name]),
+                code="multi_agent_report_reference_patch_ref_invalid",
+            )
+        target = _clause_at_path(corrected, path)
+        target.clear()
+        target.update(clause)
+    final_audit = audit_protected_report_draft(
+        corrected, authority_catalog=authority_catalog
+    )
+    _require(
+        final_audit["contract_valid"] is True,
+        "multi_agent_report_reference_patch_still_invalid",
+        details={"contract_finding_receipt": final_audit},
+    )
+    trusted = validate_protected_report_remap_draft(
+        corrected,
+        authority_catalog=authority_catalog,
+        source_report=source_report,
+    )
+    receipt = {
+        "base_payload_digest": patch_receipt["base_payload_digest"],
+        "patch_receipt_digest": patch_receipt["patch_receipt_digest"],
+        "patched_paths": target_paths,
+        "model_text_unchanged": all(
+            _clause_at_path(corrected, path)["model_text"]
+            == _clause_at_path(base_payload, path)["model_text"]
+            for path in target_paths
+        ),
+        "source_workpaper_agent_ids_unchanged": all(
+            _clause_at_path(corrected, path)["source_workpaper_agent_ids"]
+            == _clause_at_path(base_payload, path)["source_workpaper_agent_ids"]
+            for path in target_paths
+        ),
+        "unlisted_paths_modified": False,
+        "final_contract_finding_receipt_digest": final_audit["receipt_digest"],
+    }
+    trusted_body = {
+        key: deepcopy(item)
+        for key, item in trusted.items()
+        if key != "draft_digest"
+    }
+    trusted_body["reference_patch_receipt"] = receipt
+    return {**trusted_body, "draft_digest": canonical_digest(trusted_body)}
+
+
 def _validate_clause(
     raw: object,
     *,
@@ -1263,11 +2202,23 @@ def validate_protected_report_draft(
         == MULTI_AGENT_PROTECTED_REPORT_DRAFT_SCHEMA_VERSION,
         "multi_agent_protected_report_identity_invalid",
     )
+    contract_audit = audit_protected_report_draft(
+        value, authority_catalog=authority_catalog
+    )
+    _require(
+        contract_audit["contract_valid"] is True,
+        (
+            contract_audit["hard_findings"][0]["finding_code"]
+            if contract_audit["hard_findings"]
+            else "multi_agent_protected_report_contract_invalid"
+        ),
+        details={"contract_finding_receipt": contract_audit},
+    )
     try:
         topic = validate_current_research_model_text(
             value.get("report_topic"),
-            minimum=8,
-            maximum=180,
+            minimum=_REPORT_TEXT_LIMITS["topic"]["minimum"],
+            maximum=_REPORT_TEXT_LIMITS["topic"]["safety_maximum"],
             code="multi_agent_report_topic_unprotected_surface",
         )
     except CurrentResearchConsumerError as exc:
@@ -1282,8 +2233,8 @@ def validate_protected_report_draft(
             row,
             catalog=authority_catalog,
             kind="content",
-            minimum_chars=24,
-            maximum_chars=900,
+            minimum_chars=_REPORT_TEXT_LIMITS["executive"]["minimum"],
+            maximum_chars=_REPORT_TEXT_LIMITS["executive"]["safety_maximum"],
         )
         for row in raw_executive
     ]
@@ -1303,8 +2254,8 @@ def validate_protected_report_draft(
         try:
             heading = validate_current_research_model_text(
                 section.get("heading"),
-                minimum=4,
-                maximum=140,
+                minimum=_REPORT_TEXT_LIMITS["heading"]["minimum"],
+                maximum=_REPORT_TEXT_LIMITS["heading"]["safety_maximum"],
                 code="multi_agent_report_heading_unprotected_surface",
             )
         except CurrentResearchConsumerError as exc:
@@ -1324,8 +2275,10 @@ def validate_protected_report_draft(
                         row,
                         catalog=authority_catalog,
                         kind="content",
-                        minimum_chars=12,
-                        maximum_chars=900,
+                        minimum_chars=_REPORT_TEXT_LIMITS["section"]["minimum"],
+                        maximum_chars=_REPORT_TEXT_LIMITS["section"][
+                            "safety_maximum"
+                        ],
                     )
                     for row in raw_clauses
                 ],
@@ -1346,8 +2299,8 @@ def validate_protected_report_draft(
             row,
             catalog=authority_catalog,
             kind="gap",
-            minimum_chars=12,
-            maximum_chars=700,
+            minimum_chars=_REPORT_TEXT_LIMITS["gap"]["minimum"],
+            maximum_chars=_REPORT_TEXT_LIMITS["gap"]["safety_maximum"],
         )
         for row in raw_gaps
     ]
@@ -1356,8 +2309,8 @@ def validate_protected_report_draft(
             row,
             catalog=authority_catalog,
             kind="wwc",
-            minimum_chars=12,
-            maximum_chars=700,
+            minimum_chars=_REPORT_TEXT_LIMITS["wwc"]["minimum"],
+            maximum_chars=_REPORT_TEXT_LIMITS["wwc"]["safety_maximum"],
         )
         for row in raw_wwc
     ]
@@ -1365,8 +2318,8 @@ def validate_protected_report_draft(
         value.get("confidence"),
         catalog=authority_catalog,
         kind="content",
-        minimum_chars=20,
-        maximum_chars=700,
+        minimum_chars=_REPORT_TEXT_LIMITS["confidence"]["minimum"],
+        maximum_chars=_REPORT_TEXT_LIMITS["confidence"]["safety_maximum"],
     )
     trusted = {
         "schema_version": MULTI_AGENT_PROTECTED_REPORT_DRAFT_SCHEMA_VERSION,
@@ -1382,6 +2335,15 @@ def validate_protected_report_draft(
             "all_evidence_authority_and_gap_refs_are_claim_or_workpaper_scoped": True,
             "raw_evidence_numeric_surface_used_as_output_authority": False,
             "deterministic_rendering_required": True,
+            "recommended_narrative_density_pass": not bool(
+                contract_audit["quality_findings"]
+            ),
+            "quality_findings": deepcopy(
+                contract_audit["quality_findings"]
+            ),
+            "contract_finding_receipt_digest": contract_audit[
+                "receipt_digest"
+            ],
         },
     }
     return {**trusted, "draft_digest": canonical_digest(trusted)}
@@ -1615,15 +2577,22 @@ def audit_legacy_report_protected_surfaces(report: Mapping[str, Any]) -> dict[st
 __all__ = [
     "MULTI_AGENT_PROTECTED_RENDERED_REPORT_SCHEMA_VERSION",
     "MULTI_AGENT_PROTECTED_REPORT_DRAFT_SCHEMA_VERSION",
+    "MULTI_AGENT_PROTECTED_REPORT_DRAFT_LEGACY_SCHEMA_VERSION",
+    "MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_SCHEMA_VERSION",
     "MULTI_AGENT_REPORT_AUTHORITY_CATALOG_SCHEMA_VERSION",
     "MULTI_AGENT_REPORT_AUTHORITY_CATALOG_EXTENDED_SCHEMA_VERSION",
     "MultiAgentReportAuthorityError",
     "audit_legacy_report_protected_surfaces",
+    "audit_protected_report_draft",
+    "apply_protected_report_reference_patch",
+    "compile_protected_report_reference_patch_messages",
+    "compile_protected_report_reference_patch_receipt",
     "compile_protected_report_remap_messages",
     "compile_multi_agent_report_authority_catalog",
     "compile_protected_report_messages",
     "extend_multi_agent_report_authority_catalog",
     "protected_report_draft_tool",
+    "protected_report_reference_patch_tool",
     "render_protected_report",
     "validate_protected_report_draft",
     "validate_protected_report_remap_draft",

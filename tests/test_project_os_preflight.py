@@ -39,6 +39,7 @@ from sec_agent.project_os_preflight import (
     validate_multi_agent_preview_scope_decision,
 )
 from sec_agent.research.multi_agent_report_remap import (
+    REPORT_REMAP_REFERENCE_PATCH_RUN_SCOPE,
     REPORT_REMAP_REPLACEMENT_RUN_SCOPE,
     REPORT_REMAP_RUN_SCOPE,
     validate_report_remap_scope_decision,
@@ -53,6 +54,10 @@ REPORT_REMAP_DECISION_REF = (
 REPORT_REMAP_REPLACEMENT_DECISION_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
     "protected_report_remap_scope_decision_v1_1.json"
+)
+REPORT_REMAP_REFERENCE_PATCH_DECISION_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
+    "protected_report_remap_scope_decision_v1_2.json"
 )
 DECISION_REF = (
     "configs/research/evals/"
@@ -2045,22 +2050,38 @@ def test_report_remap_replacement_binds_length_failure_and_budget_basis() -> Non
     decision = json.loads(
         (ROOT / REPORT_REMAP_REPLACEMENT_DECISION_REF).read_text(encoding="utf-8")
     )
+    assert decision["run_scope_id"] == REPORT_REMAP_REPLACEMENT_RUN_SCOPE
+    assert decision["execution_limits"]["maximum_new_logical_model_nodes"] == 1
+    assert decision["token_budget_basis"]["maximum_output_tokens"] == 12000
+    assert decision["bound_inputs"]["failed_remap_public_result"][
+        "digest"
+    ] == "72d5fe7f3d1c16e9f6014bece396ef00a45f5212d971ce7480038d86a36af648"
+
+
+def test_report_reference_patch_binds_complete_failure_and_human_boundary() -> None:
+    decision = json.loads(
+        (ROOT / REPORT_REMAP_REFERENCE_PATCH_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
     projection = validate_report_remap_scope_decision(
         root=ROOT, decision=decision
     )
-    assert projection["run_scope_id"] == REPORT_REMAP_REPLACEMENT_RUN_SCOPE
-    assert projection["multi_agent_report_protected_remap_replacement"] is True
-    assert projection["execution_limits"]["maximum_new_logical_model_nodes"] == 1
-    assert projection["token_budget_basis"]["maximum_output_tokens"] == 12000
+    assert projection["run_scope_id"] == REPORT_REMAP_REFERENCE_PATCH_RUN_SCOPE
+    assert projection["multi_agent_report_reference_patch"] is True
+    assert projection["reference_patch_base_attempt_index"] == 2
+    assert projection["execution_limits"]["maximum_reference_patch_targets"] == 5
+    assert projection["token_budget_basis"]["maximum_output_tokens"] == 4000
 
     preflight = build_preflight(
         root=ROOT,
-        decision_ref=REPORT_REMAP_REPLACEMENT_DECISION_REF,
+        decision_ref=REPORT_REMAP_REFERENCE_PATCH_DECISION_REF,
         environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
         check_repository=False,
     )
     boundary = preflight["known_boundary"]
     assert preflight["status"] == "pass_current_decision_bound_preflight"
-    assert "first natural remap is preserved" in boundary
-    assert "new replacement logical node, not a retry" in boundary
-    assert "exactly 1 fresh Writer-only terminal remapping logical node" in boundary
+    assert "new reference-patch logical node, not a retry" in boundary
+    assert "exactly 1 fresh Writer-only reference patch logical node" in boundary
+    assert "five path-scoped failures" in boundary
+    assert "model text and source-agent identity are immutable" in boundary

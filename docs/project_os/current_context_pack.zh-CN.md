@@ -1122,3 +1122,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 诊断性放宽旧长度门后仍有五处引用绑定错误：executive relation 未被所选 claim 授权、Counter section 使用 Supply claim、一条 Demand gap 未绑定 gap、Value gap 与 WWC 使用 Operating claim；第二次 attempt 另生成一个不存在的近似 gap ID。笼统 feedback 没有 path、actual/max、offending 或 allowed refs，模型无法执行定向修正。
 - 下一项不是第三次全报告重写。先把推荐叙事密度与安全容量硬门分离，编译 path-scoped ContractFindingReceipt，并用两份 immutable capture 回放；随后只允许一个 reference-patch successor 修改失败字段的引用集合，model text 和已通过字段保持不可变。
 - legacy report 继续 L1 fail；自然 protected report、独立 L1、八维内容质量、qualified-human、S1／S3／泛化／Workbench／release 均未通过。
+
+### 2026-08-21 reference-patch 结构门与 fresh-live 前置状态
+
+- 当前 Validator 已将“建议叙事密度”和“安全容量”拆开。`900` 字符是后续内容质量 finding，不再否定真实且低于 `2,400` 字符安全容量的段落；自由数字、身份、引用越权和安全容量越界继续 hard fail。
+- v1.1 第二份完整 Tool Call 已做不可变回放：恰好 5 个 hard reference finding，路径为 executive、Counter section、Demand gap、Value gap 和 Value WWC；另有 5 个非阻断 density finding。错误现在带 field path、offending refs、allowed refs 和不可变来源角色。
+- 通用 Runner 已支持一个独立 reference-patch 节点：只可修改上述五个路径的 claim／Evidence／authority／gap refs；报告正文、来源 Agent、其他字段和研究拓扑均不可修改。错误路径、未知 ref、跨角色 ref、漏 gap 和正文改写 mutation 均 fail closed。
+- 零调用机械 patch 已证明实现可行，但它明确不是产品引用选择，也没有生成候选报告。正式 v1.2 权限只允许一个新 Writer logical node、最多两个 contract attempts、0 analysis／continuation／upstream／network；`thinking=disabled / max_tokens=4,000 / retry=0` 依据 19,442 字符 base payload、15,475 字符模型消息、4,995 字符 Tool Schema 和 5 个必交 patch，不以成本或速度倒推。
+- 完整工程门已通过：定向 `81 passed`、全仓 `958 passed`（仅两条既有 SWIG warning）、compileall、Workbench TypeScript／production build、active baseline `189 Python／8 frontend／5 detectors／27 Runtime／0 forbidden`、archive redirect `6,059`、811 份 configs JSON、8 份 Project OS JSONL／919 行、7,547-file secret scan／0 与 diff check 均有效。当前下一步只剩 clean commit／push → fresh Project OS preflight → fresh authority → 唯一一次 reference-patch exact-live。成功只产生待验收候选报告，随后必须独立完成 L1、八维内容质量、paired 保真与 qualified-human；S1、S3、泛化、Workbench 和 release 继续为 false。

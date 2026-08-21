@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import json
+from pathlib import Path
 
 import pytest
 
@@ -24,9 +25,13 @@ from sec_agent.research.multi_agent_successor import (
     compile_fresh_frontier_node,
     compile_hierarchical_evaluator_zero_call_proof,
     compile_successor_execution_frontier,
+    validate_terminal_successor_zero_call_proof,
     validate_hierarchical_evaluator_zero_call_proof,
     validate_successor_execution_frontier,
 )
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _context(agent_id: str, session_id: str) -> dict:
@@ -118,6 +123,57 @@ def _reasoning_budget_failure() -> dict:
         "failure_code": "model_gateway_reasoning_budget_exhausted",
         "provider_attempt_count": 3,
     }
+
+
+def test_terminal_writer_frontier_and_zero_call_proof_bind_one_node() -> None:
+    frontier = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "compiled_successor_frontier_v1_6.json"
+        ).read_text(encoding="utf-8")
+    )
+    predecessor = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "compiled_successor_frontier_v1_5.json"
+        ).read_text(encoding="utf-8")
+    )
+    proof = json.loads(
+        (
+            ROOT
+            / "configs/research/evals/"
+            "fin_ia_0_1_3_s3_dell_multi_agent_preview_"
+            "writer_terminal_successor_zero_call_result_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    profile = json.loads(
+        (
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_"
+            "writer_continuation_nonthinking_profile_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    trusted_frontier = validate_successor_execution_frontier(frontier)
+    trusted_proof = validate_terminal_successor_zero_call_proof(
+        proof,
+        predecessor_frontier=predecessor,
+        terminal_frontier=frontier,
+        writer_continuation_profile=profile,
+    )
+
+    assert trusted_frontier["execution_limits"]["maximum_new_model_nodes"] == 1
+    assert trusted_frontier["execution_limits"][
+        "maximum_cross_role_evaluation_nodes"
+    ] == 0
+    assert trusted_proof["fake_execution_receipt"][
+        "analysis_continuation_calls"
+    ] == 1
 
 
 def test_frontier_distinguishes_exact_reuse_and_derived_rebind() -> None:

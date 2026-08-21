@@ -342,3 +342,18 @@ Runtime 现增加 provider-neutral 的实际模式记录：若 `thinking.type=di
 其中 `derived_digest_rebind` 不是“本地帮模型改答案”。它要求去掉的只能是本地派生 digest，剩余业务 payload 必须逐字节相同，并且必须对模型真实读取的 capture-bound context 重新通过同一个业务 Validator；否则只能 fresh rerun。frontier 同时绑定 source terminal、request、SHA、digest、节点、角色、challenge 顺序和执行上限。
 
 这一层属于 S0 Harness／AgentSession lineage，而非数据基建或模型能力。它解决的是恢复和权限编译的一致性，不会增加 Evidence、修复检索、提升模型观点或代替内容验收。
+
+## 21. 研究判断与终端编纂必须分责（2026-08-21）
+
+六个 Specialist workpaper、六份角色审查和跨角色一致性审查已经自然完成。跨角色审查允许报告继续，只保留非阻断 finding 和明确写作边界；随后 Writer 在 `19,482` prompt、`16,000` completion 中使用 `15,436` reasoning token，只输出 2,328 字符并以 `length` 终止。
+
+这把 Agent Runtime 的职责边界进一步冻结为：
+
+1. 研究、机制、反方、WWC 和 material conflict 判断可以使用高推理；
+2. 当这些判断已经由 capture-bound checkpoint 固定后，Writer 的终端任务是忠实选择、压缩和编纂，不应再次进行全案开放式高推理；
+3. non-thinking Writer continuation 只能补齐原 checkpoint 中的 missing／partial 输出，不能新增事实、引用、因果机制或研究结论；
+4. 半份草稿只属于私有审计证据，在 strict report contract 通过前不得进入 Artifact 或 Workbench；
+5. terminal successor 必须精确复用六角色、六审查和跨角色审查，任何上游重跑都属于 authority violation；
+6. 这是一条 provider-neutral 的任务分责规则。未来更强模型可以通过统一 canary 获得更大 Writer 自主权，但不能取消 Evidence、NumericFact、lineage 和发布边界。
+
+因此，Context Continuity 不只意味着“截断后继续”，还意味着恢复时必须知道哪些认知工作已经完成、哪些只是表达未完成。只有后者才适合 non-thinking completion；前者若缺失仍必须回到原研究 Agent，而不能由 Writer 或 Harness 补写。

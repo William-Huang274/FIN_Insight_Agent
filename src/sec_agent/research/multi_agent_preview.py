@@ -73,6 +73,9 @@ ROLE_EVALUATION_PROGRESS_CHECKPOINT_CHAIN_SCHEMA_VERSION = (
 ROLE_EVALUATION_SUBMISSION_REPLAY_SCHEMA_VERSION = (
     "fin_ia_multi_agent_role_evaluation_submission_replay_v1_0"
 )
+CROSS_ROLE_EVALUATION_CHECKPOINT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_cross_role_evaluation_checkpoint_v1_0"
+)
 LEAD_PLAN_CARDINALITY_POLICY_SCHEMA_VERSION = (
     "fin_ia_multi_agent_lead_plan_cardinality_policy_v1_0"
 )
@@ -6595,6 +6598,232 @@ def validate_report_draft(
     return value
 
 
+def compile_cross_role_evaluation_checkpoint(
+    *,
+    case_key: str,
+    source_run_id: str,
+    source_authority_ref: str,
+    source_authority_sha256: str,
+    source_public_result_ref: str,
+    source_public_result_sha256: str,
+    source_public_result_digest: str,
+    source_terminal_result_ref: str,
+    source_terminal_result_sha256: str,
+    source_terminal_result_digest: str,
+    role_evaluation_checkpoint_ref: str,
+    role_evaluation_checkpoint_sha256: str,
+    role_evaluation_checkpoint_digest: str,
+    request_capture_ref: str,
+    request_capture_sha256: str,
+    request_digest: str,
+    response_capture_ref: str,
+    response_capture_sha256: str,
+    response_digest: str,
+    workpapers: Sequence[Mapping[str, Any]],
+    model_evaluation: Mapping[str, Any],
+    final_evaluation: Mapping[str, Any],
+    usage: Mapping[str, Any],
+    recorded_at: str,
+) -> dict[str, Any]:
+    """Bind a completed cross-role audit for a downstream Writer resume.
+
+    The checkpoint is deliberately downstream-only.  It does not promote the
+    Writer's partial draft, authorize another role audit, or change any
+    workpaper.  Both the model audit and the locally merged final evaluation
+    remain bound so replay can prove that no local L1 finding was dropped.
+    """
+
+    ordered_workpapers = [deepcopy(dict(row)) for row in workpapers]
+    _require(
+        [str(row.get("agent_id") or "") for row in ordered_workpapers]
+        == list(SPECIALIST_AGENT_IDS),
+        "multi_agent_cross_role_checkpoint_workpaper_order_invalid",
+    )
+    validated_model = validate_evaluation(
+        model_evaluation, workpapers=ordered_workpapers
+    )
+    validated_final = validate_evaluation(
+        final_evaluation, workpapers=ordered_workpapers
+    )
+    _require(
+        validated_model.get("report_may_proceed") is True
+        and validated_final.get("report_may_proceed") is True,
+        "multi_agent_cross_role_checkpoint_report_blocked",
+    )
+    digest_values = (
+        source_authority_sha256,
+        source_public_result_sha256,
+        source_public_result_digest,
+        source_terminal_result_sha256,
+        source_terminal_result_digest,
+        role_evaluation_checkpoint_sha256,
+        role_evaluation_checkpoint_digest,
+        request_capture_sha256,
+        request_digest,
+        response_capture_sha256,
+        response_digest,
+    )
+    _require(
+        all(
+            len(str(value)) == 64
+            and all(ch in "0123456789abcdef" for ch in str(value))
+            for value in digest_values
+        ),
+        "multi_agent_cross_role_checkpoint_digest_binding_invalid",
+    )
+    body = {
+        "schema_version": CROSS_ROLE_EVALUATION_CHECKPOINT_SCHEMA_VERSION,
+        "status": "cross_role_evaluation_valid_for_writer_resume",
+        "case_key": str(case_key).upper(),
+        "source_run_id": str(source_run_id),
+        "node_id": "EVAL::CROSS_ROLE::CONSISTENCY_AUDIT_R1",
+        "source_authority_ref": str(source_authority_ref),
+        "source_authority_sha256": str(source_authority_sha256),
+        "source_public_result_ref": str(source_public_result_ref),
+        "source_public_result_sha256": str(source_public_result_sha256),
+        "source_public_result_digest": str(source_public_result_digest),
+        "source_terminal_result_ref": str(source_terminal_result_ref),
+        "source_terminal_result_sha256": str(source_terminal_result_sha256),
+        "source_terminal_result_digest": str(source_terminal_result_digest),
+        "role_evaluation_checkpoint_ref": str(role_evaluation_checkpoint_ref),
+        "role_evaluation_checkpoint_sha256": str(
+            role_evaluation_checkpoint_sha256
+        ),
+        "role_evaluation_checkpoint_digest": str(
+            role_evaluation_checkpoint_digest
+        ),
+        "request_capture_ref": str(request_capture_ref),
+        "request_capture_sha256": str(request_capture_sha256),
+        "request_digest": str(request_digest),
+        "response_capture_ref": str(response_capture_ref),
+        "response_capture_sha256": str(response_capture_sha256),
+        "response_digest": str(response_digest),
+        "workpaper_digests": {
+            str(row["agent_id"]): str(row["workpaper_digest"])
+            for row in ordered_workpapers
+        },
+        "model_evaluation": validated_model,
+        "model_evaluation_digest": validated_model["evaluation_digest"],
+        "final_evaluation": validated_final,
+        "final_evaluation_digest": validated_final["evaluation_digest"],
+        "usage": deepcopy(dict(usage)),
+        "resume_policy": {
+            "role_evaluation_rerun_forbidden": True,
+            "cross_role_evaluation_rerun_forbidden": True,
+            "writer_checkpoint_resume_only": True,
+            "new_fact_or_authority_forbidden": True,
+            "product_publication_authorized": False,
+        },
+        "recorded_at": str(recorded_at),
+    }
+    _require(
+        all(
+            str(body[field]).strip()
+            for field in (
+                "source_run_id",
+                "source_authority_ref",
+                "source_public_result_ref",
+                "source_terminal_result_ref",
+                "role_evaluation_checkpoint_ref",
+                "request_capture_ref",
+                "response_capture_ref",
+                "recorded_at",
+            )
+        ),
+        "multi_agent_cross_role_checkpoint_identity_invalid",
+    )
+    return {**body, "checkpoint_digest": canonical_digest(body)}
+
+
+def validate_cross_role_evaluation_checkpoint(
+    payload: Mapping[str, Any],
+    *,
+    workpapers: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    value = deepcopy(dict(payload))
+    expected = {
+        "schema_version",
+        "status",
+        "case_key",
+        "source_run_id",
+        "node_id",
+        "source_authority_ref",
+        "source_authority_sha256",
+        "source_public_result_ref",
+        "source_public_result_sha256",
+        "source_public_result_digest",
+        "source_terminal_result_ref",
+        "source_terminal_result_sha256",
+        "source_terminal_result_digest",
+        "role_evaluation_checkpoint_ref",
+        "role_evaluation_checkpoint_sha256",
+        "role_evaluation_checkpoint_digest",
+        "request_capture_ref",
+        "request_capture_sha256",
+        "request_digest",
+        "response_capture_ref",
+        "response_capture_sha256",
+        "response_digest",
+        "workpaper_digests",
+        "model_evaluation",
+        "model_evaluation_digest",
+        "final_evaluation",
+        "final_evaluation_digest",
+        "usage",
+        "resume_policy",
+        "recorded_at",
+        "checkpoint_digest",
+    }
+    supplied_digest = str(value.pop("checkpoint_digest", ""))
+    _require(
+        set(payload) == expected
+        and value.get("schema_version")
+        == CROSS_ROLE_EVALUATION_CHECKPOINT_SCHEMA_VERSION
+        and value.get("status")
+        == "cross_role_evaluation_valid_for_writer_resume"
+        and value.get("case_key") == "DELL"
+        and value.get("node_id")
+        == "EVAL::CROSS_ROLE::CONSISTENCY_AUDIT_R1"
+        and supplied_digest == canonical_digest(value),
+        "multi_agent_cross_role_checkpoint_shape_invalid",
+    )
+    rebuilt = compile_cross_role_evaluation_checkpoint(
+        case_key=str(value["case_key"]),
+        source_run_id=str(value["source_run_id"]),
+        source_authority_ref=str(value["source_authority_ref"]),
+        source_authority_sha256=str(value["source_authority_sha256"]),
+        source_public_result_ref=str(value["source_public_result_ref"]),
+        source_public_result_sha256=str(value["source_public_result_sha256"]),
+        source_public_result_digest=str(value["source_public_result_digest"]),
+        source_terminal_result_ref=str(value["source_terminal_result_ref"]),
+        source_terminal_result_sha256=str(value["source_terminal_result_sha256"]),
+        source_terminal_result_digest=str(value["source_terminal_result_digest"]),
+        role_evaluation_checkpoint_ref=str(value["role_evaluation_checkpoint_ref"]),
+        role_evaluation_checkpoint_sha256=str(
+            value["role_evaluation_checkpoint_sha256"]
+        ),
+        role_evaluation_checkpoint_digest=str(
+            value["role_evaluation_checkpoint_digest"]
+        ),
+        request_capture_ref=str(value["request_capture_ref"]),
+        request_capture_sha256=str(value["request_capture_sha256"]),
+        request_digest=str(value["request_digest"]),
+        response_capture_ref=str(value["response_capture_ref"]),
+        response_capture_sha256=str(value["response_capture_sha256"]),
+        response_digest=str(value["response_digest"]),
+        workpapers=workpapers,
+        model_evaluation=value["model_evaluation"],
+        final_evaluation=value["final_evaluation"],
+        usage=value["usage"],
+        recorded_at=str(value["recorded_at"]),
+    )
+    _require(
+        rebuilt == dict(payload),
+        "multi_agent_cross_role_checkpoint_recompile_drift",
+    )
+    return rebuilt
+
+
 def compile_token_budget_basis(
     *,
     node_id: str,
@@ -6709,6 +6938,7 @@ def local_case_absence_findings(
 __all__ = [
     "ANALYSIS_COMPLETION_CHECKPOINT_SCHEMA_VERSION",
     "ANALYSIS_FRAGMENT_CHECKPOINT_SCHEMA_VERSION",
+    "CROSS_ROLE_EVALUATION_CHECKPOINT_SCHEMA_VERSION",
     "DOWNSTREAM_REPAIR_PROGRESS_CHECKPOINT_SCHEMA_VERSION",
     "LEAD_PLAN_SCHEMA_VERSION",
     "LEAD_COORDINATION_DECISION_SCHEMA_VERSION",
@@ -6744,6 +6974,7 @@ __all__ = [
     "compile_analyzed_node_submission_messages",
     "compile_analysis_fragment_checkpoint",
     "compile_analysis_completion_checkpoint",
+    "compile_cross_role_evaluation_checkpoint",
     "compile_downstream_repair_progress_checkpoint",
     "compile_analysis_continuation_messages",
     "compile_lead_coordination_messages",
@@ -6775,6 +7006,7 @@ __all__ = [
     "validate_role_evaluation_submission_replay",
     "validate_analysis_fragment_checkpoint",
     "validate_analysis_completion_checkpoint",
+    "validate_cross_role_evaluation_checkpoint",
     "validate_downstream_repair_progress_checkpoint",
     "validate_analysis_continuation_completion",
     "validate_lead_plan",

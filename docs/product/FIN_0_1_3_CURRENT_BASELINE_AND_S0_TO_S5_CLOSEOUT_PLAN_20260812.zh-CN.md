@@ -406,3 +406,20 @@ R15C 在 0 模型／Provider／网络状态下发现：R14 Cash continuation 的
 6. 若单角色低 profile 仍失败，不再删材料、抬全局上限或增加 DeepSeek 专用分支，转为 Evaluator 模型／profile／职责选择。
 
 完成工程门后只签发一次 fresh profile-separated successor。它即使生成报告，也仍需独立 L1、八维质量、paired gain 和 qualified-human；S1／S3、泛化、Workbench publication 和 release 不自动通过。
+
+## 4AB. 六角色与跨角色审查已完成，下一项只续写 Writer（2026-08-21）
+
+cross-role-onward live 已精确复用六份角色审查，新增跨角色一致性审查并形成有效提交：`report_may_proceed=true`，无 material conflict、无 role repair。该结果证明本轮多角色研究与相互校验已经走到终端编纂门，不能再把后续 Writer 失败回填成 S1、S2、六角色或跨角色失败。
+
+Writer 随后在 `thinking=max` 下把 16,000 completion 中 15,436 token 用于 reasoning，只留下 2,328 字符可见草稿并以 `length` 终止。标题和执行摘要已完成，主体 sections 只部分完成，remaining gaps、what would change 与 confidence statement 缺失；半稿未晋升为产品结果。
+
+下一次 authority 严格限定为一个 terminal Writer successor：
+
+1. 绑定完成的 cross-role checkpoint 与 Writer fragment checkpoint；
+2. 只允许一次 `thinking=disabled / max_tokens=12,000` missing-content continuation 和独立 strict submission；
+3. 禁止重跑 Specialist、Lead、repair、角色审查和跨角色审查；
+4. 禁止新 Evidence、NumericFact、网络、Candidate promotion、事实或因果机制；
+5. 只有完整 report contract 通过后才能进入 L1 与八维内容质量评估；
+6. 即使报告成功，也不自动签发 S1、S3、泛化、qualified-human、Workbench publication 或 release。
+
+该安排不是为了省 token，而是按节点职责设置 TokenBudgetBasis：研究判断已经完成并由不可变 checkpoint 保存，终端节点只负责完整、忠实、可见的报告编纂。若这一次 continuation 仍失败，不再重跑全案或继续扩写 DeepSeek 专用分支，转 Writer profile／模型或报告编纂职责的项目级选择。

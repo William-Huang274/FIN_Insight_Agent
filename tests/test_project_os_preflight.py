@@ -263,6 +263,11 @@ MULTI_AGENT_PREVIEW_ALL_ROLE_EVALUATIONS_CHECKPOINT_SCOPE_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
     "successor_scope_decision_v1_5.json"
 )
+MULTI_AGENT_PREVIEW_TERMINAL_WRITER_SCOPE_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_"
+    "successor_scope_decision_v1_6.json"
+)
 
 
 def _sha(path: Path) -> str:
@@ -1043,6 +1048,30 @@ def test_multi_agent_preview_all_role_evaluations_resume_at_cross_role() -> None
     assert (
         "RC-AR-025-evaluator-gap-ref-authority-and-checkpoint-chain-asymmetry"
         in preflight["scope_projection"]["explicit_allow_issue_ids"]
+    )
+
+
+def test_multi_agent_preview_terminal_writer_reuses_all_upstream_nodes() -> None:
+    decision = json.loads(
+        (ROOT / MULTI_AGENT_PREVIEW_TERMINAL_WRITER_SCOPE_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+
+    projection = validate_multi_agent_preview_generic_successor_scope_decision(
+        root=ROOT,
+        decision=decision,
+    )
+
+    assert projection["multi_agent_preview_terminal_writer_successor"] is True
+    assert projection["reused_role_evaluation_count"] == 6
+    assert projection["reused_cross_role_evaluation_count"] == 1
+    assert projection["execution_limits"]["maximum_new_model_nodes"] == 1
+    assert projection["execution_limits"][
+        "maximum_resumed_writer_analysis_continuations"
+    ] == 1
+    assert projection["writer_terminal_successor_zero_call_proof_status"] == (
+        "writer_checkpoint_continuation_submission_fake_mutation_zero_call_pass"
     )
 
 

@@ -20,6 +20,9 @@ SUCCESSOR_FRONTIER_HIERARCHICAL_SCHEMA_VERSION = (
 SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION = (
     "fin_ia_multi_agent_successor_execution_frontier_v1_2"
 )
+SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION = (
+    "fin_ia_multi_agent_successor_execution_frontier_v1_3"
+)
 SUCCESSOR_FRONTIER_STATUS = (
     "completed_and_pending_nodes_compiled_from_immutable_lineage"
 )
@@ -32,6 +35,12 @@ HIERARCHICAL_EVALUATOR_ZERO_CALL_PROOF_SCHEMA_VERSION = (
 )
 HIERARCHICAL_EVALUATOR_ZERO_CALL_PROOF_STATUS = (
     "hierarchical_evaluator_capture_replay_fake_mutation_zero_call_pass"
+)
+TERMINAL_SUCCESSOR_ZERO_CALL_PROOF_SCHEMA_VERSION = (
+    "fin_ia_s3_multi_agent_terminal_successor_zero_call_proof_v1_0"
+)
+TERMINAL_SUCCESSOR_ZERO_CALL_PROOF_STATUS = (
+    "writer_checkpoint_continuation_submission_fake_mutation_zero_call_pass"
 )
 COMPLETED_DISPOSITIONS = {"exact_reuse", "derived_digest_rebind"}
 FRESH_DISPOSITIONS = {"fresh_rerun_required", "pending_fresh"}
@@ -383,6 +392,121 @@ def compile_successor_execution_frontier(
     return {**body, "result_digest": canonical_digest(body)}
 
 
+def compile_terminal_successor_execution_frontier(
+    *,
+    predecessor_frontier: Mapping[str, Any],
+    predecessor_failure: Mapping[str, Any],
+    cross_role_evaluation_checkpoint_digest: str,
+    writer_analysis_fragment_checkpoint_digest: str,
+) -> dict[str, Any]:
+    """Freeze a cross-role-complete frontier at the Writer continuation.
+
+    This is not another attempt-named branch.  It is the reusable terminal
+    state of the same generic successor: all plans, workpapers, repairs, role
+    audits and the cross-role audit are immutable; the only paid logical node
+    left is one Writer analysis continuation followed by its strict submission.
+    """
+
+    prior = validate_successor_execution_frontier(predecessor_frontier)
+    nodes = [deepcopy(dict(row)) for row in prior["nodes"]]
+    _require(
+        prior.get("evaluation_strategy") == HIERARCHICAL_EVALUATION_STRATEGY
+        and prior.get("completed_role_evaluation_agent_ids")
+        == list(SPECIALIST_AGENT_IDS)
+        and all(row["disposition"] in COMPLETED_DISPOSITIONS for row in nodes)
+        and len(str(cross_role_evaluation_checkpoint_digest)) == 64
+        and len(str(writer_analysis_fragment_checkpoint_digest)) == 64,
+        "multi_agent_terminal_successor_predecessor_invalid",
+    )
+    predecessor = deepcopy(dict(predecessor_failure))
+    _require(
+        set(predecessor)
+        == {
+            "authority_ref",
+            "authority_sha256",
+            "public_result_ref",
+            "public_result_sha256",
+            "public_result_digest",
+            "terminal_result_ref",
+            "terminal_result_sha256",
+            "terminal_result_digest",
+            "failure_code",
+            "provider_attempt_count",
+        }
+        and predecessor.get("failure_code")
+        == "multi_agent_preview_analysis_finish_reason_invalid:length"
+        and isinstance(predecessor.get("provider_attempt_count"), int)
+        and predecessor["provider_attempt_count"] >= 1,
+        "multi_agent_terminal_successor_failure_invalid",
+    )
+    execution_limits = {
+        "maximum_new_model_nodes": 1,
+        "maximum_new_lead_plan_model_calls": 0,
+        "maximum_new_initial_workpaper_nodes": 0,
+        "maximum_new_lead_coordination_model_calls": 0,
+        "maximum_resumed_downstream_analysis_continuations": 0,
+        "maximum_resumed_writer_analysis_continuations": 1,
+        "maximum_new_analysis_calls_per_other_node": 0,
+        "maximum_submission_attempts_per_node": 2,
+        "reused_specialist_plan_count": 6,
+        "reused_lead_plan_count": 1,
+        "reused_workpaper_count": 6,
+        "reused_lead_coordination_count": 1,
+        "reused_completed_challenge_repair_count": len(nodes),
+        "maximum_new_counter_challenge_repairs": 0,
+        "maximum_counter_challenge_repairs": len(nodes),
+        "maximum_evaluator_repairs": 0,
+        "maximum_evaluation_rounds": 0,
+        "maximum_initial_role_evaluation_nodes": 0,
+        "maximum_cross_role_evaluation_nodes": 0,
+        "maximum_affected_role_reevaluation_nodes": 0,
+        "reused_role_evaluation_count": len(SPECIALIST_AGENT_IDS),
+        "reused_cross_role_evaluation_count": 1,
+        "external_source_network_calls": 0,
+        "candidate_promotions": 0,
+        "product_publication": False,
+        "qualified_human_acceptance": False,
+    }
+    body = {
+        "schema_version": SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION,
+        "status": SUCCESSOR_FRONTIER_STATUS,
+        "case_key": prior["case_key"],
+        "cell_id": prior["cell_id"],
+        "accepted_challenge_ids": list(prior["accepted_challenge_ids"]),
+        "lead_coordination_checkpoint_digest": prior[
+            "lead_coordination_checkpoint_digest"
+        ],
+        "predecessor_failure": predecessor,
+        "nodes": nodes,
+        "evaluation_strategy": HIERARCHICAL_EVALUATION_STRATEGY,
+        "completed_role_evaluation_agent_ids": list(SPECIALIST_AGENT_IDS),
+        "evaluation_progress_checkpoint_digest": prior[
+            "evaluation_progress_checkpoint_digest"
+        ],
+        "cross_role_evaluation_checkpoint_digest": str(
+            cross_role_evaluation_checkpoint_digest
+        ),
+        "writer_analysis_fragment_checkpoint_digest": str(
+            writer_analysis_fragment_checkpoint_digest
+        ),
+        "execution_limits": execution_limits,
+        "constraints": {
+            "business_payload_changes_during_rebind_forbidden": True,
+            "capture_bound_model_visible_context_required": True,
+            "completed_node_model_rerun_forbidden": True,
+            "research_inputs_unchanged": True,
+            "external_source_network_forbidden": True,
+            "candidate_promotion_forbidden": True,
+            "local_full_L1_precedes_model_evaluation": True,
+            "completed_role_evaluation_rerun_forbidden": True,
+            "cross_role_evaluation_rerun_forbidden": True,
+            "only_writer_analysis_continuation_authorized": True,
+            "writer_partial_draft_business_promotion_forbidden": True,
+        },
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
 def validate_successor_execution_frontier(
     frontier: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -394,6 +518,9 @@ def validate_successor_execution_frontier(
     }
     checkpointed_hierarchical = (
         schema == SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION
+    )
+    terminal_checkpointed = (
+        schema == SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION
     )
     expected_fields = {
         "schema_version",
@@ -408,13 +535,20 @@ def validate_successor_execution_frontier(
         "constraints",
         "result_digest",
     }
-    if hierarchical:
+    if hierarchical or terminal_checkpointed:
         expected_fields.add("evaluation_strategy")
-    if checkpointed_hierarchical:
+    if checkpointed_hierarchical or terminal_checkpointed:
         expected_fields.update(
             {
                 "completed_role_evaluation_agent_ids",
                 "evaluation_progress_checkpoint_digest",
+            }
+        )
+    if terminal_checkpointed:
+        expected_fields.update(
+            {
+                "cross_role_evaluation_checkpoint_digest",
+                "writer_analysis_fragment_checkpoint_digest",
             }
         )
     supplied_digest = str(value.pop("result_digest", ""))
@@ -425,39 +559,288 @@ def validate_successor_execution_frontier(
             SUCCESSOR_FRONTIER_SCHEMA_VERSION,
             SUCCESSOR_FRONTIER_HIERARCHICAL_SCHEMA_VERSION,
             SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION,
+            SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION,
         }
         and value.get("status") == SUCCESSOR_FRONTIER_STATUS
         and supplied_digest == canonical_digest(value),
         "multi_agent_successor_frontier_digest_invalid",
     )
-    rebuilt = compile_successor_execution_frontier(
-        case_key=str(value["case_key"]),
-        cell_id=str(value["cell_id"]),
-        accepted_challenge_ids=value["accepted_challenge_ids"],
-        lead_coordination_checkpoint_digest=str(
-            value["lead_coordination_checkpoint_digest"]
-        ),
-        predecessor_failure=value["predecessor_failure"],
-        nodes=value["nodes"],
-        evaluation_strategy=(
-            str(value["evaluation_strategy"])
-            if hierarchical
-            else MONOLITHIC_EVALUATION_STRATEGY
-        ),
-        completed_role_evaluation_agent_ids=(
-            value["completed_role_evaluation_agent_ids"]
-            if checkpointed_hierarchical
-            else ()
-        ),
-        evaluation_progress_checkpoint_digest=(
-            str(value["evaluation_progress_checkpoint_digest"])
-            if checkpointed_hierarchical
-            else ""
-        ),
-    )
+    if terminal_checkpointed:
+        predecessor_copy = deepcopy(dict(value))
+        predecessor_copy["schema_version"] = (
+            SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION
+        )
+        predecessor_copy.pop("cross_role_evaluation_checkpoint_digest")
+        predecessor_copy.pop("writer_analysis_fragment_checkpoint_digest")
+        predecessor_copy["predecessor_failure"] = deepcopy(
+            dict(value["predecessor_failure"])
+        )
+        predecessor_copy["execution_limits"] = {
+            **dict(value["execution_limits"]),
+            "maximum_new_model_nodes": 7,
+            "maximum_resumed_downstream_analysis_continuations": 0,
+            "maximum_new_analysis_calls_per_other_node": 1,
+            "maximum_evaluator_repairs": 2,
+            "maximum_evaluation_rounds": 2,
+            "maximum_cross_role_evaluation_nodes": 2,
+            "maximum_affected_role_reevaluation_nodes": 2,
+        }
+        predecessor_copy["execution_limits"].pop(
+            "maximum_resumed_writer_analysis_continuations"
+        )
+        predecessor_copy["execution_limits"].pop(
+            "reused_cross_role_evaluation_count"
+        )
+        predecessor_copy["constraints"] = {
+            "business_payload_changes_during_rebind_forbidden": True,
+            "capture_bound_model_visible_context_required": True,
+            "completed_node_model_rerun_forbidden": True,
+            "analysis_continuation_forbidden": True,
+            "research_inputs_unchanged": True,
+            "external_source_network_forbidden": True,
+            "candidate_promotion_forbidden": True,
+            "local_full_L1_precedes_model_evaluation": True,
+            "role_scoped_content_audits_required": True,
+            "cross_role_audit_consumes_reviewed_summaries_only": True,
+            "unaffected_role_reevaluation_forbidden": True,
+            "completed_role_evaluation_rerun_forbidden": True,
+        }
+        predecessor_copy.pop("result_digest", None)
+        predecessor_copy["result_digest"] = canonical_digest(
+            {k: v for k, v in predecessor_copy.items() if k != "result_digest"}
+        )
+        rebuilt = compile_terminal_successor_execution_frontier(
+            predecessor_frontier=predecessor_copy,
+            predecessor_failure=value["predecessor_failure"],
+            cross_role_evaluation_checkpoint_digest=str(
+                value["cross_role_evaluation_checkpoint_digest"]
+            ),
+            writer_analysis_fragment_checkpoint_digest=str(
+                value["writer_analysis_fragment_checkpoint_digest"]
+            ),
+        )
+    else:
+        rebuilt = compile_successor_execution_frontier(
+            case_key=str(value["case_key"]),
+            cell_id=str(value["cell_id"]),
+            accepted_challenge_ids=value["accepted_challenge_ids"],
+            lead_coordination_checkpoint_digest=str(
+                value["lead_coordination_checkpoint_digest"]
+            ),
+            predecessor_failure=value["predecessor_failure"],
+            nodes=value["nodes"],
+            evaluation_strategy=(
+                str(value["evaluation_strategy"])
+                if hierarchical
+                else MONOLITHIC_EVALUATION_STRATEGY
+            ),
+            completed_role_evaluation_agent_ids=(
+                value["completed_role_evaluation_agent_ids"]
+                if checkpointed_hierarchical
+                else ()
+            ),
+            evaluation_progress_checkpoint_digest=(
+                str(value["evaluation_progress_checkpoint_digest"])
+                if checkpointed_hierarchical
+                else ""
+            ),
+        )
     _require(
         rebuilt == dict(frontier),
         "multi_agent_successor_frontier_recompile_drift",
+    )
+    return rebuilt
+
+
+def compile_terminal_successor_zero_call_proof(
+    *,
+    predecessor_frontier_ref: str,
+    predecessor_frontier_sha256: str,
+    predecessor_frontier: Mapping[str, Any],
+    terminal_frontier_ref: str,
+    terminal_frontier_sha256: str,
+    terminal_frontier: Mapping[str, Any],
+    cross_role_checkpoint_ref: str,
+    cross_role_checkpoint_sha256: str,
+    cross_role_checkpoint_digest: str,
+    writer_fragment_checkpoint_ref: str,
+    writer_fragment_checkpoint_sha256: str,
+    writer_fragment_checkpoint_digest: str,
+    writer_continuation_profile_ref: str,
+    writer_continuation_profile_sha256: str,
+    writer_continuation_profile: Mapping[str, Any],
+    fake_execution_receipt: Mapping[str, Any],
+    mutation_checks: Mapping[str, bool],
+) -> dict[str, Any]:
+    predecessor = validate_successor_execution_frontier(predecessor_frontier)
+    terminal = validate_successor_execution_frontier(terminal_frontier)
+    profile = deepcopy(dict(writer_continuation_profile))
+    defaults = deepcopy(dict(profile.get("request_defaults") or {}))
+    fake = deepcopy(dict(fake_execution_receipt))
+    checks = {str(key): bool(value) for key, value in mutation_checks.items()}
+    required_checks = {
+        "cross_role_checkpoint_digest_mutation_rejected",
+        "writer_fragment_digest_mutation_rejected",
+        "writer_partial_business_promotion_rejected",
+        "upstream_rerun_budget_mutation_rejected",
+        "thinking_enabled_writer_profile_rejected",
+        "semantic_incompletion_rejected",
+    }
+    expected_fake = {
+        "new_model_nodes": 1,
+        "analysis_continuation_calls": 1,
+        "strict_submission_calls": 1,
+        "role_evaluation_calls": 0,
+        "cross_role_evaluation_calls": 0,
+        "role_repair_calls": 0,
+        "validated_report_contract": True,
+        "analysis_draft_business_promoted": False,
+        "external_source_network_calls": 0,
+        "candidate_promotions": 0,
+    }
+    _require(
+        predecessor.get("schema_version")
+        == SUCCESSOR_FRONTIER_HIERARCHICAL_CHECKPOINT_SCHEMA_VERSION
+        and terminal.get("schema_version")
+        == SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION
+        and terminal["cross_role_evaluation_checkpoint_digest"]
+        == str(cross_role_checkpoint_digest)
+        and terminal["writer_analysis_fragment_checkpoint_digest"]
+        == str(writer_fragment_checkpoint_digest)
+        and profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and defaults
+        == {
+            "max_tokens": 12000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+        and (profile.get("authority") or {}).get("retry_count") == 0
+        and set(checks) == required_checks
+        and all(checks.values())
+        and fake == expected_fake,
+        "multi_agent_terminal_successor_zero_call_inputs_invalid",
+    )
+    body = {
+        "schema_version": TERMINAL_SUCCESSOR_ZERO_CALL_PROOF_SCHEMA_VERSION,
+        "status": TERMINAL_SUCCESSOR_ZERO_CALL_PROOF_STATUS,
+        "predecessor_frontier_ref": str(predecessor_frontier_ref),
+        "predecessor_frontier_sha256": str(predecessor_frontier_sha256),
+        "predecessor_frontier_result_digest": predecessor["result_digest"],
+        "terminal_frontier_ref": str(terminal_frontier_ref),
+        "terminal_frontier_sha256": str(terminal_frontier_sha256),
+        "terminal_frontier_result_digest": terminal["result_digest"],
+        "cross_role_checkpoint_ref": str(cross_role_checkpoint_ref),
+        "cross_role_checkpoint_sha256": str(cross_role_checkpoint_sha256),
+        "cross_role_checkpoint_digest": str(cross_role_checkpoint_digest),
+        "writer_fragment_checkpoint_ref": str(writer_fragment_checkpoint_ref),
+        "writer_fragment_checkpoint_sha256": str(
+            writer_fragment_checkpoint_sha256
+        ),
+        "writer_fragment_checkpoint_digest": str(
+            writer_fragment_checkpoint_digest
+        ),
+        "writer_continuation_profile_ref": str(writer_continuation_profile_ref),
+        "writer_continuation_profile_sha256": str(
+            writer_continuation_profile_sha256
+        ),
+        "writer_continuation_profile_mode": "thinking_disabled",
+        "writer_continuation_max_tokens": 12000,
+        "fake_execution_receipt": fake,
+        "mutation_checks": checks,
+        "provider_model_calls": 0,
+        "network_calls": 0,
+        "paid_tool_calls": 0,
+        "known_boundary": (
+            "This proof validates Writer checkpoint continuation, strict report "
+            "mapping and terminal budgets with deterministic fakes. It does not "
+            "prove natural Writer quality, S1, S3, generalization or release."
+        ),
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
+def validate_terminal_successor_zero_call_proof(
+    proof: Mapping[str, Any],
+    *,
+    predecessor_frontier: Mapping[str, Any],
+    terminal_frontier: Mapping[str, Any],
+    writer_continuation_profile: Mapping[str, Any],
+) -> dict[str, Any]:
+    value = deepcopy(dict(proof))
+    supplied = str(value.pop("result_digest", ""))
+    expected_fields = {
+        "schema_version",
+        "status",
+        "predecessor_frontier_ref",
+        "predecessor_frontier_sha256",
+        "predecessor_frontier_result_digest",
+        "terminal_frontier_ref",
+        "terminal_frontier_sha256",
+        "terminal_frontier_result_digest",
+        "cross_role_checkpoint_ref",
+        "cross_role_checkpoint_sha256",
+        "cross_role_checkpoint_digest",
+        "writer_fragment_checkpoint_ref",
+        "writer_fragment_checkpoint_sha256",
+        "writer_fragment_checkpoint_digest",
+        "writer_continuation_profile_ref",
+        "writer_continuation_profile_sha256",
+        "writer_continuation_profile_mode",
+        "writer_continuation_max_tokens",
+        "fake_execution_receipt",
+        "mutation_checks",
+        "provider_model_calls",
+        "network_calls",
+        "paid_tool_calls",
+        "known_boundary",
+        "result_digest",
+    }
+    _require(
+        set(proof) == expected_fields
+        and value.get("schema_version")
+        == TERMINAL_SUCCESSOR_ZERO_CALL_PROOF_SCHEMA_VERSION
+        and value.get("status") == TERMINAL_SUCCESSOR_ZERO_CALL_PROOF_STATUS
+        and value.get("provider_model_calls") == 0
+        and value.get("network_calls") == 0
+        and value.get("paid_tool_calls") == 0
+        and supplied == canonical_digest(value),
+        "multi_agent_terminal_successor_zero_call_digest_invalid",
+    )
+    rebuilt = compile_terminal_successor_zero_call_proof(
+        predecessor_frontier_ref=str(value["predecessor_frontier_ref"]),
+        predecessor_frontier_sha256=str(value["predecessor_frontier_sha256"]),
+        predecessor_frontier=predecessor_frontier,
+        terminal_frontier_ref=str(value["terminal_frontier_ref"]),
+        terminal_frontier_sha256=str(value["terminal_frontier_sha256"]),
+        terminal_frontier=terminal_frontier,
+        cross_role_checkpoint_ref=str(value["cross_role_checkpoint_ref"]),
+        cross_role_checkpoint_sha256=str(
+            value["cross_role_checkpoint_sha256"]
+        ),
+        cross_role_checkpoint_digest=str(value["cross_role_checkpoint_digest"]),
+        writer_fragment_checkpoint_ref=str(
+            value["writer_fragment_checkpoint_ref"]
+        ),
+        writer_fragment_checkpoint_sha256=str(
+            value["writer_fragment_checkpoint_sha256"]
+        ),
+        writer_fragment_checkpoint_digest=str(
+            value["writer_fragment_checkpoint_digest"]
+        ),
+        writer_continuation_profile_ref=str(
+            value["writer_continuation_profile_ref"]
+        ),
+        writer_continuation_profile_sha256=str(
+            value["writer_continuation_profile_sha256"]
+        ),
+        writer_continuation_profile=writer_continuation_profile,
+        fake_execution_receipt=value["fake_execution_receipt"],
+        mutation_checks=value["mutation_checks"],
+    )
+    _require(
+        rebuilt == dict(proof),
+        "multi_agent_terminal_successor_zero_call_recompile_drift",
     )
     return rebuilt
 

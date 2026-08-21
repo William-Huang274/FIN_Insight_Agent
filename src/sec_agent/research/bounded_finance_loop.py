@@ -984,6 +984,11 @@ def validate_deepseek_ga_node_profile(
             "reasoning_effort": None,
             "max_tokens": 10000,
         },
+        "writer_continuation_non_thinking": {
+            "thinking": {"type": "disabled"},
+            "reasoning_effort": None,
+            "max_tokens": 12000,
+        },
     }
     _require(
         node_class in expected,

@@ -1049,3 +1049,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - checkpoint v1.1 已把旧 Demand checkpoint、Operating／Value／Cash／Supply 完成段和 Counter submission replay 合并。六角色完成、pending=0；任何完成角色不得重跑。
 - frontier v1.5 正常路径只剩 cross-role audit＋conditional Writer 两个逻辑节点；若发现 material conflict，最多允许两处定向 repair、受影响角色复审和一次 cross-role recheck，最大 7 个新模型节点。
 - 定向回归 `118 passed`；完整工程门为全仓 `922 passed`、compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、777 configs、8 份 Project OS JSONL／886 行、7,497-file secret scan／0 和 diff check。下一步仅允许 clean commit／push、fresh preflight、新 authority 和一次 cross-role-onward successor。S1／S3、完整报告、内容质量、泛化、人工验收、Workbench 和 release 仍为 false。
+
+# 2026-08-21 跨角色审查成功与 Writer 终端恢复
+
+- cross-role-onward live 精确复用六份角色审查，只新增一次跨角色一致性审查和 Writer 分析。跨角色提交有效，`report_may_proceed=true`，无 material conflict、无 role repair；五条 finding 与三条边界说明均为非阻断。
+- Writer 获得 HTTP 200 完整响应，但 `19,482 prompt / 16,000 completion / 15,436 reasoning`，可见草稿仅 2,328 字符并以 `length` 终止。标题与执行摘要完成，sections 部分完成，remaining gaps／WWC／confidence 缺失；半稿未晋升。
+- 最早责任层为 S0/S3 Writer task profile：已完成研究仍被要求以 `thinking=max` 重新全案推理。不是 S1 数据、S2 数值、六角色、跨角色审查、网络或 DeepSeek 全面能力失败。
+- terminal successor 已零调用实现：绑定 cross-role checkpoint 与 Writer fragment checkpoint，只允许一次 non-thinking continuation＋strict submission；上游重跑、网络、Candidate promotion、半稿晋升和第二次 continuation均被禁止。
+- fake 路径 1 个新 Writer logical node、1 continuation、1 strict submission；六类 lineage／scope／profile／语义 mutation 全部 fail closed。当前须完成文档、全仓门、clean commit／push、fresh preflight 后才可签发一次 Writer successor live。
+- 自然 Writer、最终报告 L1、八维质量、paired、qualified-human、S1／S3、泛化、Workbench publication 和 release 仍未证明。
+- 完整工程门已通过：全仓 `925 passed`、compileall、Workbench typecheck／production build、active baseline `185／8／5／27／0`、archive redirect `6,059`、785 configs、8 份 Project OS JSONL／890 行、7,507-file secret scan／0 和 diff check。下一步只剩 clean commit／push、fresh preflight 和一次 terminal Writer live。

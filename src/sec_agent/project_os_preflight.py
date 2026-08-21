@@ -20,6 +20,7 @@ from sec_agent.research.material_scope_canary import (
     validate_material_scope_canary_authority,
 )
 from sec_agent.research.multi_agent_preview import (
+    CROSS_ROLE_EVALUATION_CHECKPOINT_SCHEMA_VERSION,
     SPECIALIST_AGENT_IDS,
     load_multi_agent_role_topology,
     validate_analysis_completion_checkpoint,
@@ -31,8 +32,10 @@ from sec_agent.research.multi_agent_preview import (
 )
 from sec_agent.research.multi_agent_successor import (
     HIERARCHICAL_EVALUATION_STRATEGY,
+    SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION,
     validate_hierarchical_evaluator_zero_call_proof,
     validate_successor_execution_frontier,
+    validate_terminal_successor_zero_call_proof,
 )
 from sec_agent.providers import load_chat_completion_profile
 
@@ -5043,11 +5046,25 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         "role_evaluation_progress_checkpoint_sha256",
         "role_evaluation_progress_checkpoint_digest",
     }
+    terminal_writer_fields = {
+        "cross_role_evaluation_checkpoint_ref",
+        "cross_role_evaluation_checkpoint_sha256",
+        "cross_role_evaluation_checkpoint_digest",
+        "writer_analysis_fragment_checkpoint_ref",
+        "writer_analysis_fragment_checkpoint_sha256",
+        "writer_analysis_fragment_checkpoint_digest",
+        "writer_continuation_profile_ref",
+        "writer_continuation_profile_sha256",
+        "writer_terminal_successor_zero_call_proof_ref",
+        "writer_terminal_successor_zero_call_proof_sha256",
+        "writer_terminal_successor_zero_call_proof_result_digest",
+    }
     supplied_hierarchical_proof_fields = set(decision) & hierarchical_proof_fields
     supplied_evaluator_profile_fields = set(decision) & evaluator_profile_fields
     supplied_role_evaluation_checkpoint_fields = (
         set(decision) & role_evaluation_checkpoint_fields
     )
+    supplied_terminal_writer_fields = set(decision) & terminal_writer_fields
     if supplied_hierarchical_proof_fields not in (set(), hierarchical_proof_fields):
         raise ValueError(
             "project_os_multi_agent_generic_successor_hierarchical_proof_"
@@ -5066,6 +5083,14 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
             "project_os_multi_agent_generic_successor_role_evaluation_"
             "checkpoint_binding_incomplete"
         )
+    if supplied_terminal_writer_fields not in (set(), terminal_writer_fields):
+        raise ValueError(
+            "project_os_multi_agent_generic_successor_terminal_writer_"
+            "binding_incomplete"
+        )
+    terminal_writer_successor = (
+        supplied_terminal_writer_fields == terminal_writer_fields
+    )
     if set(decision) not in {
         frozenset(expected_fields),
         frozenset(expected_fields | hierarchical_proof_fields),
@@ -5079,6 +5104,12 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
             | hierarchical_proof_fields
             | evaluator_profile_fields
             | role_evaluation_checkpoint_fields
+        ),
+        frozenset(
+            expected_fields
+            | evaluator_profile_fields
+            | role_evaluation_checkpoint_fields
+            | terminal_writer_fields
         ),
     }:
         raise ValueError(
@@ -5094,7 +5125,9 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
             "current_reviewed_Evidence_plus_current_S2_no_candidate_promotion"
         ),
         "next_authorized_scope": (
-            "one_bounded_DELL_multi_agent_preview_compiled_successor_live_attempt"
+            "one_bounded_DELL_multi_agent_preview_writer_checkpoint_successor"
+            if terminal_writer_successor
+            else "one_bounded_DELL_multi_agent_preview_compiled_successor_live_attempt"
         ),
     }
     for field, expected in required_equal.items():
@@ -5280,34 +5313,38 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
     evaluator_profile: dict[str, Any] | None = None
     role_evaluation_checkpoint: dict[str, Any] | None = None
     if frontier.get("evaluation_strategy") == HIERARCHICAL_EVALUATION_STRATEGY:
-        if supplied_hierarchical_proof_fields != hierarchical_proof_fields:
+        if (
+            not terminal_writer_successor
+            and supplied_hierarchical_proof_fields != hierarchical_proof_fields
+        ):
             raise ValueError(
                 "project_os_multi_agent_generic_successor_hierarchical_proof_"
                 "required"
             )
-        _, proof_raw = _validate_artifact_binding(
-            root=root,
-            decision=decision,
-            ref_field="hierarchical_evaluator_zero_call_proof_ref",
-            sha_field="hierarchical_evaluator_zero_call_proof_sha256",
-            digest_field="hierarchical_evaluator_zero_call_proof_result_digest",
-        )
-        hierarchical_proof = validate_hierarchical_evaluator_zero_call_proof(
-            proof_raw,
-            frontier=frontier,
-        )
-        if not (
-            hierarchical_proof["frontier_ref"]
-            == decision["successor_execution_frontier_ref"]
-            and hierarchical_proof["frontier_sha256"]
-            == decision["successor_execution_frontier_sha256"]
-            and hierarchical_proof["frontier_result_digest"]
-            == decision["successor_execution_frontier_result_digest"]
-        ):
-            raise ValueError(
-                "project_os_multi_agent_generic_successor_hierarchical_proof_"
-                "frontier_drift"
+        if supplied_hierarchical_proof_fields:
+            _, proof_raw = _validate_artifact_binding(
+                root=root,
+                decision=decision,
+                ref_field="hierarchical_evaluator_zero_call_proof_ref",
+                sha_field="hierarchical_evaluator_zero_call_proof_sha256",
+                digest_field="hierarchical_evaluator_zero_call_proof_result_digest",
             )
+            hierarchical_proof = validate_hierarchical_evaluator_zero_call_proof(
+                proof_raw,
+                frontier=frontier,
+            )
+            if not (
+                hierarchical_proof["frontier_ref"]
+                == decision["successor_execution_frontier_ref"]
+                and hierarchical_proof["frontier_sha256"]
+                == decision["successor_execution_frontier_sha256"]
+                and hierarchical_proof["frontier_result_digest"]
+                == decision["successor_execution_frontier_result_digest"]
+            ):
+                raise ValueError(
+                    "project_os_multi_agent_generic_successor_hierarchical_proof_"
+                    "frontier_drift"
+                )
         if supplied_evaluator_profile_fields:
             evaluator_profile_path, evaluator_profile = _validate_artifact_binding(
                 root=root,
@@ -5510,30 +5547,58 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
             "project_os_multi_agent_generic_successor_frontier_binding_invalid"
         )
     if role_evaluation_checkpoint is not None:
-        source_evaluator_binding = failed_authority.get("bound_inputs", {}).get(
-            "evaluator_analysis_profile"
-        ) or {}
+        role_source_authority = (
+            _load_json(
+                _repo_path(
+                    root,
+                    str(role_evaluation_checkpoint["source_authority_ref"]),
+                )
+            )
+            if terminal_writer_successor
+            else failed_authority
+        )
+        source_evaluator_binding = role_source_authority.get(
+            "bound_inputs", {}
+        ).get("evaluator_analysis_profile") or {}
+        current_checkpoint_binding = failed_authority.get(
+            "bound_inputs", {}
+        ).get("role_evaluation_progress_checkpoint") or {}
         if not (
             role_evaluation_checkpoint.get("source_run_id")
-            == failed_authority.get("outputs", {}).get("run_id")
-            and role_evaluation_checkpoint.get("source_authority_ref")
-            == decision["predecessor_live_authority_ref"]
-            and role_evaluation_checkpoint.get("source_authority_sha256")
-            == decision["predecessor_live_authority_sha256"]
-            and role_evaluation_checkpoint.get("source_public_result_ref")
-            == decision["predecessor_live_result_ref"]
-            and role_evaluation_checkpoint.get("source_public_result_sha256")
-            == decision["predecessor_live_result_sha256"]
-            and role_evaluation_checkpoint.get("source_public_result_digest")
-            == failed_result.get("result_digest")
-            and role_evaluation_checkpoint.get("source_terminal_result_ref")
-            == predecessor_failure["terminal_result_ref"]
-            and role_evaluation_checkpoint.get("source_terminal_result_sha256")
-            == predecessor_failure["terminal_result_sha256"]
-            and role_evaluation_checkpoint.get("source_terminal_result_digest")
-            == predecessor_failure["terminal_result_digest"]
-            and role_evaluation_checkpoint.get("source_failure_code")
-            == failed_result.get("failure_code")
+            == role_source_authority.get("outputs", {}).get("run_id")
+            and (
+                terminal_writer_successor
+                or (
+                    role_evaluation_checkpoint.get("source_authority_ref")
+                    == decision["predecessor_live_authority_ref"]
+                    and role_evaluation_checkpoint.get("source_authority_sha256")
+                    == decision["predecessor_live_authority_sha256"]
+                    and role_evaluation_checkpoint.get("source_public_result_ref")
+                    == decision["predecessor_live_result_ref"]
+                    and role_evaluation_checkpoint.get(
+                        "source_public_result_sha256"
+                    )
+                    == decision["predecessor_live_result_sha256"]
+                    and role_evaluation_checkpoint.get(
+                        "source_public_result_digest"
+                    )
+                    == failed_result.get("result_digest")
+                    and role_evaluation_checkpoint.get(
+                        "source_terminal_result_ref"
+                    )
+                    == predecessor_failure["terminal_result_ref"]
+                    and role_evaluation_checkpoint.get(
+                        "source_terminal_result_sha256"
+                    )
+                    == predecessor_failure["terminal_result_sha256"]
+                    and role_evaluation_checkpoint.get(
+                        "source_terminal_result_digest"
+                    )
+                    == predecessor_failure["terminal_result_digest"]
+                    and role_evaluation_checkpoint.get("source_failure_code")
+                    == failed_result.get("failure_code")
+                )
+            )
             and role_evaluation_checkpoint.get(
                 "evaluator_analysis_profile_ref"
             )
@@ -5542,6 +5607,18 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
                 "evaluator_analysis_profile_sha256"
             )
             == source_evaluator_binding.get("sha256")
+            and (
+                not terminal_writer_successor
+                or current_checkpoint_binding
+                == {
+                    "ref": decision[
+                        "role_evaluation_progress_checkpoint_ref"
+                    ],
+                    "sha256": decision[
+                        "role_evaluation_progress_checkpoint_sha256"
+                    ],
+                }
+            )
             and (role_evaluation_checkpoint.get("resume_policy") or {}).get(
                 "completed_role_evaluation_rerun_forbidden"
             )
@@ -5565,6 +5642,17 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
                     "profile_lineage_drift"
                 )
             if role_evaluation_checkpoint is not None:
+                terminal_writer_profile_reuse_valid = (
+                    terminal_writer_successor
+                    and decision["evaluator_analysis_profile_ref"]
+                    == predecessor_evaluator_ref
+                    and role_evaluation_checkpoint.get(
+                        "evaluator_analysis_profile_ref"
+                    )
+                    == predecessor_evaluator_ref
+                    and failed_result.get("failure_code")
+                    == "multi_agent_preview_analysis_finish_reason_invalid:length"
+                )
                 reasoning_profile_replacement_valid = (
                     decision["evaluator_analysis_profile_ref"]
                     != predecessor_evaluator_ref
@@ -5601,7 +5689,8 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
                     == "multi_agent_finding_ref_out_of_scope"
                 )
                 if not (
-                    reasoning_profile_replacement_valid
+                    terminal_writer_profile_reuse_valid
+                    or reasoning_profile_replacement_valid
                     or corrected_contract_checkpoint_chain_valid
                 ):
                     raise ValueError(
@@ -5615,6 +5704,149 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
                 "project_os_multi_agent_generic_successor_evaluator_profile_"
                 "introduction_not_justified"
             )
+    if terminal_writer_successor:
+        if frontier.get("schema_version") != (
+            SUCCESSOR_FRONTIER_TERMINAL_CHECKPOINT_SCHEMA_VERSION
+        ):
+            raise ValueError(
+                "project_os_multi_agent_terminal_writer_frontier_invalid"
+            )
+        _, cross_role_checkpoint = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="cross_role_evaluation_checkpoint_ref",
+            sha_field="cross_role_evaluation_checkpoint_sha256",
+        )
+        cross_role_body = {
+            key: value
+            for key, value in cross_role_checkpoint.items()
+            if key != "checkpoint_digest"
+        }
+        if not (
+            cross_role_checkpoint.get("schema_version")
+            == CROSS_ROLE_EVALUATION_CHECKPOINT_SCHEMA_VERSION
+            and cross_role_checkpoint.get("status")
+            == "cross_role_evaluation_valid_for_writer_resume"
+            and cross_role_checkpoint.get("checkpoint_digest")
+            == decision["cross_role_evaluation_checkpoint_digest"]
+            == frontier["cross_role_evaluation_checkpoint_digest"]
+            == canonical_digest(cross_role_body)
+            and cross_role_checkpoint.get("source_authority_ref")
+            == decision["predecessor_live_authority_ref"]
+            and cross_role_checkpoint.get("source_authority_sha256")
+            == decision["predecessor_live_authority_sha256"]
+            and cross_role_checkpoint.get("source_public_result_ref")
+            == decision["predecessor_live_result_ref"]
+            and cross_role_checkpoint.get("source_public_result_sha256")
+            == decision["predecessor_live_result_sha256"]
+            and cross_role_checkpoint.get("source_public_result_digest")
+            == failed_result.get("result_digest")
+            and cross_role_checkpoint.get("source_terminal_result_ref")
+            == predecessor_failure["terminal_result_ref"]
+            and cross_role_checkpoint.get("source_terminal_result_sha256")
+            == predecessor_failure["terminal_result_sha256"]
+            and cross_role_checkpoint.get("source_terminal_result_digest")
+            == predecessor_failure["terminal_result_digest"]
+            and cross_role_checkpoint.get("role_evaluation_checkpoint_digest")
+            == decision["role_evaluation_progress_checkpoint_digest"]
+            and (cross_role_checkpoint.get("final_evaluation") or {}).get(
+                "report_may_proceed"
+            )
+            is True
+        ):
+            raise ValueError(
+                "project_os_multi_agent_terminal_writer_cross_role_checkpoint_invalid"
+            )
+        _, writer_fragment = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="writer_analysis_fragment_checkpoint_ref",
+            sha_field="writer_analysis_fragment_checkpoint_sha256",
+        )
+        writer_fragment = validate_analysis_fragment_checkpoint(writer_fragment)
+        if not (
+            writer_fragment.get("checkpoint_digest")
+            == decision["writer_analysis_fragment_checkpoint_digest"]
+            == frontier["writer_analysis_fragment_checkpoint_digest"]
+            and writer_fragment.get("node_id")
+            == "AGENT::WRITER::REPORT_DRAFT"
+            and writer_fragment.get("source_authority_ref")
+            == decision["predecessor_live_authority_ref"]
+            and writer_fragment.get("source_authority_sha256")
+            == decision["predecessor_live_authority_sha256"]
+            and writer_fragment.get("source_public_result_ref")
+            == decision["predecessor_live_result_ref"]
+            and writer_fragment.get("source_public_result_sha256")
+            == decision["predecessor_live_result_sha256"]
+            and writer_fragment.get("source_public_result_digest")
+            == failed_result.get("result_digest")
+            and writer_fragment.get("completed_required_outputs")
+            == ["report_title", "executive_thesis"]
+            and writer_fragment.get("partial_required_outputs") == ["sections"]
+            and writer_fragment.get("missing_required_outputs")
+            == ["remaining_gaps", "what_would_change", "confidence_statement"]
+        ):
+            raise ValueError(
+                "project_os_multi_agent_terminal_writer_fragment_invalid"
+            )
+        writer_profile_path, writer_profile_raw = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="writer_continuation_profile_ref",
+            sha_field="writer_continuation_profile_sha256",
+        )
+        writer_profile = load_chat_completion_profile(writer_profile_raw)
+        writer_defaults = dict(writer_profile.request_defaults)
+        if not (
+            writer_profile.provider_id == "deepseek"
+            and writer_profile.model == "deepseek-v4-pro"
+            and writer_profile.base_url == "https://api.deepseek.com"
+            and writer_profile.endpoint == "/chat/completions"
+            and writer_defaults
+            == {
+                "max_tokens": 12000,
+                "stream": False,
+                "thinking": {"type": "disabled"},
+            }
+            and writer_profile.authority.get("retry_count") == 0
+        ):
+            raise ValueError(
+                "project_os_multi_agent_terminal_writer_profile_invalid"
+            )
+        predecessor_frontier_path = _repo_path(
+            root, str(predecessor_scope["successor_execution_frontier_ref"])
+        )
+        predecessor_frontier = _load_json(predecessor_frontier_path)
+        _, terminal_proof_raw = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="writer_terminal_successor_zero_call_proof_ref",
+            sha_field="writer_terminal_successor_zero_call_proof_sha256",
+            digest_field="writer_terminal_successor_zero_call_proof_result_digest",
+        )
+        terminal_proof = validate_terminal_successor_zero_call_proof(
+            terminal_proof_raw,
+            predecessor_frontier=predecessor_frontier,
+            terminal_frontier=frontier,
+            writer_continuation_profile=writer_profile_raw,
+        )
+        if not (
+            terminal_proof["terminal_frontier_ref"]
+            == decision["successor_execution_frontier_ref"]
+            and terminal_proof["terminal_frontier_sha256"]
+            == decision["successor_execution_frontier_sha256"]
+            and terminal_proof["cross_role_checkpoint_ref"]
+            == decision["cross_role_evaluation_checkpoint_ref"]
+            and terminal_proof["writer_fragment_checkpoint_ref"]
+            == decision["writer_analysis_fragment_checkpoint_ref"]
+            and terminal_proof["writer_continuation_profile_ref"]
+            == writer_profile_path.relative_to(root).as_posix()
+            and failed_result.get("failure_code")
+            == "multi_agent_preview_analysis_finish_reason_invalid:length"
+        ):
+            raise ValueError(
+                "project_os_multi_agent_terminal_writer_proof_lineage_invalid"
+            )
     expected_constraints = {
         "historical_failures_remain_immutable": True,
         "frontier_is_compiled_from_capture_bound_lineage": True,
@@ -5624,6 +5856,14 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         "completed_node_model_reruns_forbidden": True,
         "research_inputs_unchanged": True,
     }
+    if terminal_writer_successor:
+        expected_constraints.update(
+            {
+                "cross_role_evaluation_rerun_forbidden": True,
+                "writer_partial_draft_business_promotion_forbidden": True,
+                "only_writer_checkpoint_continuation_authorized": True,
+            }
+        )
     if decision.get("successor_constraints") != expected_constraints:
         raise ValueError(
             "project_os_multi_agent_generic_successor_constraints_invalid"
@@ -5657,6 +5897,14 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         expected_budget_policy[
             "reused_role_evaluations_have_no_new_token_budget"
         ] = True
+    if terminal_writer_successor:
+        expected_budget_policy.update(
+            {
+                "reused_cross_role_evaluation_has_no_new_token_budget": True,
+                "writer_continuation_basis_is_separate_from_submission_basis": True,
+                "writer_continuation_uses_checkpoint_not_research_restart": True,
+            }
+        )
     if decision.get("token_budget_basis_policy") != expected_budget_policy:
         raise ValueError(
             "project_os_multi_agent_generic_successor_budget_invalid"
@@ -5704,6 +5952,9 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         "multi_agent_preview_downstream_analysis_checkpoint_successor": False,
         "multi_agent_preview_repair_context_successor": False,
         "multi_agent_preview_generic_successor": True,
+        "multi_agent_preview_terminal_writer_successor": (
+            terminal_writer_successor
+        ),
         "run_scope_id": MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE,
         "specialist_agent_count": 6,
         "reused_specialist_plan_count": 6,
@@ -5730,6 +5981,27 @@ def validate_multi_agent_preview_generic_successor_scope_decision(
         ),
         "reused_role_evaluation_count": frontier["execution_limits"].get(
             "reused_role_evaluation_count", 0
+        ),
+        "reused_cross_role_evaluation_count": frontier["execution_limits"].get(
+            "reused_cross_role_evaluation_count", 0
+        ),
+        "cross_role_evaluation_checkpoint_ref": (
+            decision.get("cross_role_evaluation_checkpoint_ref")
+            if terminal_writer_successor
+            else None
+        ),
+        "writer_analysis_fragment_checkpoint_ref": (
+            decision.get("writer_analysis_fragment_checkpoint_ref")
+            if terminal_writer_successor
+            else None
+        ),
+        "writer_continuation_profile_ref": (
+            decision.get("writer_continuation_profile_ref")
+            if terminal_writer_successor
+            else None
+        ),
+        "writer_terminal_successor_zero_call_proof_status": (
+            terminal_proof["status"] if terminal_writer_successor else None
         ),
         "maximum_new_lead_plan_model_calls": 0,
         "execution_limits": dict(frontier["execution_limits"]),

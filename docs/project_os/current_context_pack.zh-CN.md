@@ -1260,5 +1260,6 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 零调用审阅结果为 20 条 requirement 中 13 条 research-consumable、7 条 not-ready；12 个请求中 8 个 research-consumable、4 个 not-ready。残余轴明确为 Dell 可观察价格区间、Dell 台数／shipment-share proxy、GPU 释放时点和 Dell—供应商双边点名／交付／allocation 关系。
 - Micron 当前 segment 不含 HBM，TSMC results segment 不含 CoWoS；两者没有被用来伪关闭上游缺口。PVM、发行人需求、下游部署、公司侧供应执行、价值池和正反方已可在边界内消费。
 - integrated compiler 原先要求每个 `retrieval_context_only` metric 都有一条 S2 typed result，导致 PVM `shipments` 和 Supply `inventory` 在没有正式 typed route 时触发 cardinality failure。现显式记录 `not_routed_retrieval_context`；该状态无 NumericFact 权威、也不是 typed gap，typed conflict 继续阻断。
-- 当前变更仍为 dirty engineering state：0 模型／网络／Provider／promotion。下一步 clean gate／push 后物化 formal readiness，再只针对四类残余轴执行 external ladder；dynamic single-unit authority 继续为 false。
+- formal readiness 已绑定 clean／synced `def34f06...ed1`，public result digest 为 `767b15a0...d15e`，状态为 `completed_development_readiness_with_residual_requests`。本次 0 模型／网络／Provider／promotion。
+- 下一步只针对四类残余轴执行 external ladder，dynamic single-unit authority 继续为 false。
 - 详细记录见 `docs/worklog/fin_0_1_3_s1/065_dell_reviewed_evidence_mapping_and_integrated_readiness_residual.md`。

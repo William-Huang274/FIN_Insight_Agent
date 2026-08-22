@@ -2,7 +2,7 @@
 
 日期：2026-08-23
 阶段：FIN 0.1.3 / S1
-状态：零调用合同与业务审阅完成；formal clean-bound materialization 待提交后执行
+状态：零调用合同、业务审阅与 formal clean-bound materialization 完成；residual external ladder 待执行
 
 ## 本轮做了什么
 
@@ -32,4 +32,11 @@
 
 ## 下一步
 
-先 clean commit／push，再 materialize immutable integrated-readiness result。随后只针对价格、量/份额、GPU 释放与双边供应关系执行 residual external ladder，完成新的 CandidateDecision／Evidence Gate。若外源仍无法关闭，不立即用免责声明填门；先审查 S1 是否需要支持“可替代输入充分集”（例如直接销量，或收入＋价格区间＋行业量，由 S2 形成 unit/share range），再决定 task-level EvidencePackReadiness。
+正式结果已绑定 clean／synced commit `def34f067d6d71ae339cb38505675ab04d5afed1`：
+
+- public：`configs/retrieval/fin_ia_0_1_3_s1_dell_integrated_pack_readiness_result_v1_2.json`；
+- private：`data/workbench_private/fin_0_1_3_s1_integrated_pack_readiness/dell-proposition-r3-v1/full_result.json`；
+- public result digest：`767b15a086a7982ca650caa28b97a70fb641fef1c083e5e7375f465a92b9d15e`；
+- private SHA256：`77323567a1048bb9799eddc017ded0feba36a0b012704e814e1d3ebaa6547736`。
+
+随后只针对价格、量/份额、GPU 释放与双边供应关系执行 residual external ladder，完成新的 CandidateDecision／Evidence Gate。若外源仍无法关闭，不立即用免责声明填门；先审查 S1 是否需要支持“可替代输入充分集”（例如直接销量，或收入＋价格区间＋行业量，由 S2 形成 unit/share range），再决定 task-level EvidencePackReadiness。

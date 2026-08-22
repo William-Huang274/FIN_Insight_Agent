@@ -1,0 +1,1336 @@
+{
+  "schema_version": "fin_ia_s1_s2_integrated_pack_readiness_public_v1_1",
+  "status": "completed_development_readiness_with_residual_requests",
+  "recorded_at": "2026-08-23T01:19:31+08:00",
+  "prepared_from_commit": "def34f067d6d71ae339cb38505675ab04d5afed1",
+  "case_key": "DELL",
+  "research_plan_digest": "92563b281438079cc039bff593eab84524e468ba409c22ffd15e92b87edd72be",
+  "scope_compilation_digest": "df5451b07023540b4df8b230174629d7362cbb0eaa3e36e3b20728f273edba66",
+  "evidence_pack_payload_digest": "82ea1defba982308afb8af94cce85ce4e00167ded17602199e90f01215d06129",
+  "review_plan_digest": "9a1acfb3145806f41e4637b423a773652978b023fb8105765bd52b833886e14c",
+  "polarity_plan_digest": "bf10dbe0e4b2b39b7609bd229d874e179250e907bf07879352deafec12dc62a1",
+  "summary": {
+    "requirement_count": 20,
+    "fully_satisfied_requirement_count": 5,
+    "research_consumable_requirement_count": 13,
+    "request_count": 12,
+    "ready_request_count": 1,
+    "research_consumable_request_count": 8,
+    "integrated_state_counts": {
+      "not_ready_s1_evidence": 7,
+      "ready": 1,
+      "ready_s1_numeric_context_only": 4,
+      "ready_with_claim_boundary": 8
+    }
+  },
+  "requests": [
+    {
+      "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "state": "not_ready",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 0,
+      "not_ready_requirement_ids": [
+        "MER::6fa3c163925322baf3cf",
+        "MER::9cd50ca8d91504f3269e"
+      ]
+    },
+    {
+      "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+      "state": "not_ready",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 0,
+      "not_ready_requirement_ids": [
+        "MER::b7b216504cfbbd943afc",
+        "MER::f43c3f3856fdcdf0daca"
+      ]
+    },
+    {
+      "request_id": "REQ::DELL::PVM_BRIDGE::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 1,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 1,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 1,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 1,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "state": "not_ready",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 0,
+      "not_ready_requirement_ids": [
+        "MER::b11707a6ac5f12db3f5f",
+        "MER::ca8dca19d882f7dc9789"
+      ]
+    },
+    {
+      "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+      "state": "not_ready",
+      "requirement_count": 1,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 0,
+      "not_ready_requirement_ids": [
+        "MER::ec78906c154821fb49f7"
+      ]
+    },
+    {
+      "request_id": "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "state": "ready",
+      "requirement_count": 1,
+      "fully_satisfied_requirement_count": 1,
+      "research_consumable_requirement_count": 1,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 1,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 1,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::COUNTER_ISSUER::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 1,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 1,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    }
+  ],
+  "requirements": [
+    {
+      "requirement_id": "MER::6fa3c163925322baf3cf",
+      "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "facet_id": "pricing_and_mix",
+      "role": "direct",
+      "evidence_decision_state": "partial",
+      "addressed_product_ids": [
+        "AI server configuration tiers",
+        "GPU HBM networking and storage configuration mix"
+      ],
+      "unaddressed_product_ids": [
+        "AI server observable price range"
+      ],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI server configuration tiers",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "Dell 官方产品形态和一个渠道固定配置显示了可销售配置层级。",
+          "claim_boundary_zh": "没有完整产品目录快照、销量权重或成交分布。",
+          "scope_boundary_codes": [
+            "configuration_observed_not_distribution"
+          ]
+        },
+        {
+          "product_id": "AI server observable price range",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "当前 Pack 没有 Dell 官方报价、公共采购成交价或可验证的多渠道当期报价区间。",
+          "claim_boundary_zh": "单一配置页没有价格，不能从收入或行业 ASP 反推。",
+          "scope_boundary_codes": [
+            "target_price_range_not_observed"
+          ]
+        },
+        {
+          "product_id": "GPU HBM networking and storage configuration mix",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "配置样本与行业 GPU/ASIC 组合提供了组件组合观察面。",
+          "claim_boundary_zh": "不是 Dell 全部销售组合或权重。",
+          "scope_boundary_codes": [
+            "configuration_mix_proxy_only"
+          ]
+        }
+      ],
+      "numeric_state": "retrieval_context_only",
+      "resolved_metric_count": 1,
+      "typed_gap_metric_count": 1,
+      "numeric_gap_owning_stages": [
+        "S2"
+      ],
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "decision_reason_zh": "Dell 官方产品页、一个可追溯渠道配置样本和行业平台组合资料能够描述配置层级与 GPU/内存/网络/存储组合，但没有可验证的 Dell 当前成交或报价区间。",
+      "claim_boundary_zh": "不得把单一翻新机配置、行业平台占比或产品目录推断为 Dell 平均售价或正式价格区间。"
+    },
+    {
+      "requirement_id": "MER::9cd50ca8d91504f3269e",
+      "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "facet_id": "pricing_and_mix",
+      "role": "context",
+      "evidence_decision_state": "partial",
+      "addressed_product_ids": [
+        "AI server configuration tiers",
+        "GPU HBM networking and storage configuration mix"
+      ],
+      "unaddressed_product_ids": [
+        "AI server observable price range"
+      ],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI server configuration tiers",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "产品与渠道资料给出配置层级背景。",
+          "claim_boundary_zh": "不代表完整 SKU 或成交分布。",
+          "scope_boundary_codes": [
+            "configuration_observed_not_distribution"
+          ]
+        },
+        {
+          "product_id": "AI server observable price range",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "背景检索仍未得到可复核的 Dell 当前价格区间。",
+          "claim_boundary_zh": "配置复杂度不是价格。",
+          "scope_boundary_codes": [
+            "target_price_range_not_observed"
+          ]
+        },
+        {
+          "product_id": "GPU HBM networking and storage configuration mix",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "行业与样本配置支持组件组合背景。",
+          "claim_boundary_zh": "不得当成 Dell 实际销售组合。",
+          "scope_boundary_codes": [
+            "configuration_mix_proxy_only"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "decision_reason_zh": "公开资料足以形成配置和平台组合背景，但仍没有稳定、可复核的价格观察面。",
+      "claim_boundary_zh": "配置复杂度可以解释潜在价格差异，不能替代价格证据。"
+    },
+    {
+      "requirement_id": "MER::b7b216504cfbbd943afc",
+      "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+      "facet_id": "orders_and_backlog",
+      "role": "direct",
+      "evidence_decision_state": "partial",
+      "addressed_product_ids": [
+        "industry AI server shipment volume"
+      ],
+      "unaddressed_product_ids": [
+        "AI server units shipped",
+        "Dell shipment share proxy"
+      ],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI server units shipped",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "Dell 未披露可复核的 AI 服务器台数，Pack 也没有足够输入进行非伪精确换算。",
+          "claim_boundary_zh": "订单、收入和 backlog 不等于台数。",
+          "scope_boundary_codes": [
+            "target_unit_volume_not_observed"
+          ]
+        },
+        {
+          "product_id": "Dell shipment share proxy",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "没有同口径 Dell 台数/行业台数或可信厂商份额表。",
+          "claim_boundary_zh": "行业出货增长不能反推 Dell 份额。",
+          "scope_boundary_codes": [
+            "target_shipment_share_proxy_not_observed"
+          ]
+        },
+        {
+          "product_id": "industry AI server shipment volume",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "TrendForce 给出行业 AI 服务器出货增长与预测。",
+          "claim_boundary_zh": "行业数值只可用于市场背景。",
+          "scope_boundary_codes": [
+            "industry_volume_not_target_volume"
+          ]
+        }
+      ],
+      "numeric_state": "retrieval_context_only",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 3,
+      "numeric_gap_owning_stages": [
+        "S2"
+      ],
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "decision_reason_zh": "TrendForce 给出行业 AI 服务器出货增长，但 Dell 未披露销量，当前资料也没有能可靠换算 Dell 份额的同口径代理。",
+      "claim_boundary_zh": "订单额、收入额和 backlog 均不能被本地除以假设 ASP 后冒充已观察到的 Dell 销量。"
+    },
+    {
+      "requirement_id": "MER::f43c3f3856fdcdf0daca",
+      "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+      "facet_id": "orders_and_backlog",
+      "role": "counter",
+      "evidence_decision_state": "partial",
+      "addressed_product_ids": [
+        "industry AI server shipment volume"
+      ],
+      "unaddressed_product_ids": [
+        "AI server units shipped",
+        "Dell shipment share proxy"
+      ],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI server units shipped",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "反方检索仍没有 Dell 台数。",
+          "claim_boundary_zh": "缺少直接或可复算的 Dell unit base。",
+          "scope_boundary_codes": [
+            "target_unit_volume_not_observed"
+          ]
+        },
+        {
+          "product_id": "Dell shipment share proxy",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "反方资料没有形成 Dell 份额代理。",
+          "claim_boundary_zh": "不得用公司收入份额替代 unit share。",
+          "scope_boundary_codes": [
+            "target_shipment_share_proxy_not_observed"
+          ]
+        },
+        {
+          "product_id": "industry AI server shipment volume",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "行业 AI 出货增长，同时训练到推理和通用服务器组合变化改变数量口径。",
+          "claim_boundary_zh": "只能说明行业量与组合可能共同变化。",
+          "scope_boundary_codes": [
+            "industry_volume_mix_caveat"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "decision_reason_zh": "行业出货增长与训练、推理、通用服务器组合变化提供了行业量的反方和口径背景，但仍不能回答 Dell 自身台数或份额。",
+      "claim_boundary_zh": "行业增长不能证明 Dell 同步增长，组合迁移也不能反推出 Dell 台数。"
+    },
+    {
+      "requirement_id": "MER::6262229be06b84b274fd",
+      "request_id": "REQ::DELL::PVM_BRIDGE::V1",
+      "facet_id": "pricing_and_mix",
+      "role": "direct",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "configuration intensity inputs",
+        "industry AI server shipment and ASP",
+        "reported AI server revenue and mix"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "configuration intensity inputs",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "产品形态、固定配置和 GPU/ASIC 迁移提供配置强度输入。",
+          "claim_boundary_zh": "输入不是 Dell 加权销售组合。",
+          "scope_boundary_codes": [
+            "scenario_input_only"
+          ]
+        },
+        {
+          "product_id": "industry AI server shipment and ASP",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "行业资料同时披露出货增长和更高 ASP 驱动价值增长。",
+          "claim_boundary_zh": "不是 Dell ASP 或出货。",
+          "scope_boundary_codes": [
+            "industry_not_issuer"
+          ]
+        },
+        {
+          "product_id": "reported AI server revenue and mix",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "Dell 披露 AI 服务器收入，并描述 AI mix 与毛利变化。",
+          "claim_boundary_zh": "收入与 mix 不能单独识别 price/volume。",
+          "scope_boundary_codes": [
+            "reported_input_not_decomposition"
+          ]
+        }
+      ],
+      "numeric_state": "retrieval_context_only",
+      "resolved_metric_count": 1,
+      "typed_gap_metric_count": 1,
+      "numeric_gap_owning_stages": [
+        "S2"
+      ],
+      "integrated_state": "ready_s1_numeric_context_only",
+      "research_consumable": true,
+      "fully_satisfied": true,
+      "decision_reason_zh": "现有资料同时覆盖 Dell 报告的 AI 服务器收入/组合、行业出货与 ASP 方向以及配置强度输入，可供 S2 构造有界 PVM 情景。",
+      "claim_boundary_zh": "这些是 PVM 输入，不是已披露的 Dell 价格、销量或完整 PVM 分解；最终区间必须由 S2 确定性计算并展示假设。"
+    },
+    {
+      "requirement_id": "MER::343a2a9d537121cf476d",
+      "request_id": "REQ::DELL::PVM_BRIDGE::V1",
+      "facet_id": "pricing_and_mix",
+      "role": "context",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "configuration intensity inputs",
+        "industry AI server shipment and ASP",
+        "reported AI server revenue and mix"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "configuration intensity inputs",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "多类配置资料提供情景输入。",
+          "claim_boundary_zh": "无成交权重。",
+          "scope_boundary_codes": [
+            "scenario_input_only"
+          ]
+        },
+        {
+          "product_id": "industry AI server shipment and ASP",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "行业量价资料形成外部基准。",
+          "claim_boundary_zh": "不能转写为 Dell 量价。",
+          "scope_boundary_codes": [
+            "industry_not_issuer"
+          ]
+        },
+        {
+          "product_id": "reported AI server revenue and mix",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "Dell 直接披露 AI 服务器收入。",
+          "claim_boundary_zh": "公司披露未给出单位量价桥。",
+          "scope_boundary_codes": [
+            "reported_input_not_decomposition"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "decision_reason_zh": "公司收入、行业 ASP/出货以及训练到推理的配置迁移共同构成 PVM 背景。",
+      "claim_boundary_zh": "背景资料只允许产生区间和敏感性，不允许产生伪精确 Dell ASP 或销量。"
+    },
+    {
+      "requirement_id": "MER::fe8198d1f35660b52fc6",
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "facet_id": "conversion_and_durability",
+      "role": "direct",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "AI order conversion",
+        "backlog durability",
+        "customer concentration",
+        "pull-forward risk"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI order conversion",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "同季订单与收入显示转换活动，但发行人同时说明需求到出货具有非线性。",
+          "claim_boundary_zh": "不能把两个总额相除当作 cohort conversion。",
+          "scope_boundary_codes": [
+            "same_period_not_same_cohort"
+          ]
+        },
+        {
+          "product_id": "backlog durability",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "高 backlog、需求大于供给与非取消定义提供支持，非线性和客户阶段差异限制耐久性结论。",
+          "claim_boundary_zh": "未披露完整账龄、取消率和转化曲线。",
+          "scope_boundary_codes": [
+            "backlog_quality_partial"
+          ]
+        },
+        {
+          "product_id": "customer concentration",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "客户数和广度增加，但大型客户集中风险仍存在。",
+          "claim_boundary_zh": "没有客户级订单和收入占比。",
+          "scope_boundary_codes": [
+            "customer_mix_not_quantified"
+          ]
+        },
+        {
+          "product_id": "pull-forward risk",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "客户因内存不确定性提前锁定基础设施，大单亦有延迟/取消风险。",
+          "claim_boundary_zh": "是风险信号，不证明已发生广泛透支。",
+          "scope_boundary_codes": [
+            "pull_forward_signal_not_event"
+          ]
+        }
+      ],
+      "numeric_state": "retrieval_context_only",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 4,
+      "numeric_gap_owning_stages": [
+        "S2"
+      ],
+      "integrated_state": "ready_s1_numeric_context_only",
+      "research_consumable": true,
+      "fully_satisfied": true,
+      "decision_reason_zh": "发行人资料同时给出订单、收入、backlog、客户广度、非线性转换和提前锁定供给信号，能够判断需求强度与耐久性的正反两面。",
+      "claim_boundary_zh": "订单额与当季收入不是同一批次的 cohort conversion；backlog 定义也不等于全部可取消性、账龄和客户构成已知。"
+    },
+    {
+      "requirement_id": "MER::c1ca1d3778bf29a6f3e0",
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "facet_id": "conversion_and_durability",
+      "role": "counter",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "AI order conversion",
+        "backlog durability",
+        "customer concentration",
+        "pull-forward risk"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI order conversion",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "decision_reason_zh": "取消、延迟与非线性限制订单到收入的直接解释。",
+          "claim_boundary_zh": "风险披露不提供实际转换率。",
+          "scope_boundary_codes": [
+            "conversion_boundary_only"
+          ]
+        },
+        {
+          "product_id": "backlog durability",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "非取消定义支持部分质量，大单延迟/取消和跨期构成反方。",
+          "claim_boundary_zh": "不能推断全部 backlog 均不可取消。",
+          "scope_boundary_codes": [
+            "backlog_quality_partial"
+          ]
+        },
+        {
+          "product_id": "customer concentration",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "发行人直接披露大型客户集中风险。",
+          "claim_boundary_zh": "未披露客户级占比。",
+          "scope_boundary_codes": [
+            "concentration_unquantified"
+          ]
+        },
+        {
+          "product_id": "pull-forward risk",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "提前锁定供给是明确的 pull-forward/digestion 信号。",
+          "claim_boundary_zh": "不能量化透支幅度或时间。",
+          "scope_boundary_codes": [
+            "pull_forward_signal_not_event"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "decision_reason_zh": "提前采购、订单跨期、取消/延迟、客户集中与渠道缩单风险均已进入反方资料。",
+      "claim_boundary_zh": "风险披露是机制与停止条件，不证明风险已经发生，也不能抹去当前订单和收入事实。"
+    },
+    {
+      "requirement_id": "MER::d6f443b55a298805bd58",
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "facet_id": "downstream_demand_context",
+      "role": "context",
+      "evidence_decision_state": "accepted",
+      "addressed_product_ids": [
+        "customer AI infrastructure deployment",
+        "customer budget durability",
+        "named Dell customer or deployment relationship"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "customer AI infrastructure deployment",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "客户侧云/AI 部署活动与 Dell 官方客户案例证明部署存在。",
+          "claim_boundary_zh": "行业客户活动不能全归因到 Dell。",
+          "scope_boundary_codes": [
+            "customer_context_plus_named_case"
+          ]
+        },
+        {
+          "product_id": "customer budget durability",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "IDC 对多年度投资与市场支出的资料支持预算持续性。",
+          "claim_boundary_zh": "行业预算不代表 Dell 客户留存率。",
+          "scope_boundary_codes": [
+            "industry_budget_context"
+          ]
+        },
+        {
+          "product_id": "named Dell customer or deployment relationship",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "Dell 官方资料点名 Northwestern Medicine 并描述部署用途。",
+          "claim_boundary_zh": "单一案例不代表客户组合。",
+          "scope_boundary_codes": [
+            "single_named_case"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "ready",
+      "research_consumable": true,
+      "fully_satisfied": true,
+      "decision_reason_zh": "行业买方投资、部署活动及 Dell 官方 Northwestern 客户案例共同证明客户侧部署确实存在，并给出预算持续性的行业背景。",
+      "claim_boundary_zh": "一个命名客户案例和行业支出不能代表 Dell 全部客户，也不能量化 Dell 客户预算留存率。"
+    },
+    {
+      "requirement_id": "MER::d618dc668cc85a91d6b7",
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "facet_id": "downstream_demand_context",
+      "role": "counter",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "customer AI infrastructure deployment",
+        "customer budget durability",
+        "named Dell customer or deployment relationship"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "customer AI infrastructure deployment",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "decision_reason_zh": "存在部署与命名案例，但样本范围有限。",
+          "claim_boundary_zh": "不能从少量案例推断总体采用率。",
+          "scope_boundary_codes": [
+            "case_sample_boundary"
+          ]
+        },
+        {
+          "product_id": "customer budget durability",
+          "coverage_state": "addressed",
+          "evidence_polarity": "contradicts",
+          "decision_reason_zh": "渠道参与者可能因需求不确定而削减订单，构成预算耐久性反方。",
+          "claim_boundary_zh": "风险未证明当前 AI 预算已下降。",
+          "scope_boundary_codes": [
+            "risk_not_realized_event"
+          ]
+        },
+        {
+          "product_id": "named Dell customer or deployment relationship",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "decision_reason_zh": "命名关系可验证，但只有一个公开案例。",
+          "claim_boundary_zh": "不支持大范围客户归因。",
+          "scope_boundary_codes": [
+            "single_named_case"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "decision_reason_zh": "客户部署与命名关系有实例，同时渠道缩单和需求不确定性构成预算耐久性的反方。",
+      "claim_boundary_zh": "单一成功案例不能推演总体采用率；渠道风险也不证明 Dell AI 客户预算已经下滑。"
+    },
+    {
+      "requirement_id": "MER::7ab378f99df9e6271146",
+      "request_id": "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "facet_id": "subject_execution",
+      "role": "direct",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "AI server delivery cadence",
+        "component constraint",
+        "inventory and fulfillment execution"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI server delivery cadence",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "Dell 披露 backlog、需求大于供给与需求到出货非线性。",
+          "claim_boundary_zh": "没有逐期交付曲线或释放日期。",
+          "scope_boundary_codes": [
+            "delivery_cadence_unquantified"
+          ]
+        },
+        {
+          "product_id": "component constraint",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "Dell 披露有限来源依赖并点明内存是主要约束。",
+          "claim_boundary_zh": "没有供应商分配或良率。",
+          "scope_boundary_codes": [
+            "component_constraint_without_allocation"
+          ]
+        },
+        {
+          "product_id": "inventory and fulfillment execution",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "资产负债表与 10-K 显示库存及 AI 对营运资金的吸收。",
+          "claim_boundary_zh": "公司总库存不等于 AI 专属库存。",
+          "scope_boundary_codes": [
+            "company_level_working_capital"
+          ]
+        }
+      ],
+      "numeric_state": "retrieval_context_only",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 2,
+      "numeric_gap_owning_stages": [
+        "S2"
+      ],
+      "integrated_state": "ready_s1_numeric_context_only",
+      "research_consumable": true,
+      "fully_satisfied": true,
+      "decision_reason_zh": "Dell 自身披露涵盖交付非线性、内存约束、有限来源依赖、库存和营运资金吸收，足以描述公司侧执行链。",
+      "claim_boundary_zh": "这些资料不能量化逐周交付节奏、良率、供应商分配或具体释放日期。"
+    },
+    {
+      "requirement_id": "MER::1a7032562101f8a69c12",
+      "request_id": "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "facet_id": "subject_execution",
+      "role": "counter",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "AI server delivery cadence",
+        "component constraint",
+        "inventory and fulfillment execution"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI server delivery cadence",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "交付非线性和 backlog 增长同时存在。",
+          "claim_boundary_zh": "不能判定具体延迟或兑现率。",
+          "scope_boundary_codes": [
+            "delivery_cadence_unquantified"
+          ]
+        },
+        {
+          "product_id": "component constraint",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "有限来源与内存约束提供直接反方。",
+          "claim_boundary_zh": "未披露 Dell 配额。",
+          "scope_boundary_codes": [
+            "component_constraint_without_allocation"
+          ]
+        },
+        {
+          "product_id": "inventory and fulfillment execution",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "大单需要更多营运资金并带来过时库存风险。",
+          "claim_boundary_zh": "风险不等于实际库存损失。",
+          "scope_boundary_codes": [
+            "risk_not_realized_event"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "decision_reason_zh": "交付跨期、关键部件约束和大单占用营运资金/过时库存风险均已覆盖。",
+      "claim_boundary_zh": "风险机制不等于当前交付失败；仍缺少按产品和供应商拆分的执行数据。"
+    },
+    {
+      "requirement_id": "MER::b11707a6ac5f12db3f5f",
+      "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "facet_id": "upstream_capacity_context",
+      "role": "context",
+      "evidence_decision_state": "partial",
+      "addressed_product_ids": [
+        "Dell supplier dependency or allocation disclosure",
+        "HBM availability",
+        "advanced packaging capacity"
+      ],
+      "unaddressed_product_ids": [
+        "GPU supply release"
+      ],
+      "product_axis_decisions": [
+        {
+          "product_id": "Dell supplier dependency or allocation disclosure",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "Dell 直接披露单一/有限来源供应商依赖。",
+          "claim_boundary_zh": "没有点名供应商或配额。",
+          "scope_boundary_codes": [
+            "dependency_without_named_allocation"
+          ]
+        },
+        {
+          "product_id": "GPU supply release",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "现有资料只说明行业产能紧张、扩建和供应控制，没有可绑定的 GPU 释放时点。",
+          "claim_boundary_zh": "不得把扩产计划换算为 Dell 到货。",
+          "scope_boundary_codes": [
+            "gpu_supply_release_not_observed"
+          ]
+        },
+        {
+          "product_id": "HBM availability",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "行业资料显示 HBM 被提前锁定且仍是稀缺资源。",
+          "claim_boundary_zh": "没有 Dell 特定 HBM 可得量。",
+          "scope_boundary_codes": [
+            "industry_hbm_context_only"
+          ]
+        },
+        {
+          "product_id": "advanced packaging capacity",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "TSMC 与 TrendForce 直接描述封装/测试能力紧张。",
+          "claim_boundary_zh": "没有 Dell 配额和释放日期。",
+          "scope_boundary_codes": [
+            "industry_packaging_context_only"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "decision_reason_zh": "Dell 的有限来源依赖、行业 HBM 紧张和 TSMC/行业先进封装约束已有资料，但没有可绑定的 GPU 供给释放时间或 Dell 配额。",
+      "claim_boundary_zh": "上游公司自身产能和行业短缺只能作为生态链旁证，不能转写为 Dell 已获得的 GPU 数量或释放日期。"
+    },
+    {
+      "requirement_id": "MER::ca8dca19d882f7dc9789",
+      "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "facet_id": "upstream_capacity_context",
+      "role": "counter",
+      "evidence_decision_state": "partial",
+      "addressed_product_ids": [
+        "Dell supplier dependency or allocation disclosure",
+        "HBM availability",
+        "advanced packaging capacity"
+      ],
+      "unaddressed_product_ids": [
+        "GPU supply release"
+      ],
+      "product_axis_decisions": [
+        {
+          "product_id": "Dell supplier dependency or allocation disclosure",
+          "coverage_state": "addressed",
+          "evidence_polarity": "boundary_only",
+          "decision_reason_zh": "有限来源依赖说明潜在脆弱性。",
+          "claim_boundary_zh": "不证明当前 allocation 受损。",
+          "scope_boundary_codes": [
+            "dependency_without_named_allocation"
+          ]
+        },
+        {
+          "product_id": "GPU supply release",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "反方资料仍没有 GPU 释放时间。",
+          "claim_boundary_zh": "扩产和短缺共存，不能下 Dell 到货结论。",
+          "scope_boundary_codes": [
+            "gpu_supply_release_not_observed"
+          ]
+        },
+        {
+          "product_id": "HBM availability",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "HBM 紧张构成供应反方。",
+          "claim_boundary_zh": "行业约束不能证明 Dell 获配。",
+          "scope_boundary_codes": [
+            "industry_hbm_context_only"
+          ]
+        },
+        {
+          "product_id": "advanced packaging capacity",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "封装和测试瓶颈构成强反方。",
+          "claim_boundary_zh": "不提供 Dell 具体影响量。",
+          "scope_boundary_codes": [
+            "industry_packaging_context_only"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "decision_reason_zh": "有限来源依赖、HBM 与先进封装短缺构成强反方，但 GPU 供应释放是否改善仍没有直接可验证资料。",
+      "claim_boundary_zh": "产能扩建或供应链控制表述不等于 Dell 的实际 allocation、良率或到货时点。"
+    },
+    {
+      "requirement_id": "MER::ec78906c154821fb49f7",
+      "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+      "facet_id": "counterparty_direct_mention",
+      "role": "context",
+      "evidence_decision_state": "needs_review",
+      "addressed_product_ids": [],
+      "unaddressed_product_ids": [
+        "Dell names supplier",
+        "delivery or allocation relationship",
+        "supplier names Dell"
+      ],
+      "product_axis_decisions": [
+        {
+          "product_id": "Dell names supplier",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "没有 Dell 官方点名供应商的当前证据。",
+          "claim_boundary_zh": "第三方配置和媒体引述不等于 Dell 自身披露。",
+          "scope_boundary_codes": [
+            "issuer_named_supplier_not_observed"
+          ]
+        },
+        {
+          "product_id": "delivery or allocation relationship",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "没有可验证的双边交付、配额或 allocation 关系。",
+          "claim_boundary_zh": "行业约束不能替代双边关系。",
+          "scope_boundary_codes": [
+            "bilateral_delivery_allocation_not_observed"
+          ]
+        },
+        {
+          "product_id": "supplier names Dell",
+          "coverage_state": "unaddressed",
+          "evidence_polarity": "not_assessed",
+          "decision_reason_zh": "没有供应商官方点名 Dell 的当前证据。",
+          "claim_boundary_zh": "不得从产业链位置推断客户关系。",
+          "scope_boundary_codes": [
+            "supplier_named_dell_not_observed"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "decision_reason_zh": "当前 Pack 没有 Dell 官方点名供应商、供应商官方点名 Dell，或可验证的交付/分配关系证据。第三方配置样本和产业链旁证不足以晋升这些关系。",
+      "claim_boundary_zh": "不得把 NVIDIA 配置、行业 HBM/CoWoS 约束或媒体叙事冒充双方官方关系和分配事实。"
+    },
+    {
+      "requirement_id": "MER::b704cc5d21d70d06af1a",
+      "request_id": "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "facet_id": "margin_and_incremental_profit",
+      "role": "bridge",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "AI server OEM gross profit and margin",
+        "AI server incremental margin inputs",
+        "supplier component value proxy"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI server OEM gross profit and margin",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "Dell 给出 AI 服务器中个位数营业利润率目标，外部资料同时指出毛利率压力。",
+          "claim_boundary_zh": "营业利润率与毛利率不可混用。",
+          "scope_boundary_codes": [
+            "margin_metric_scope_separated"
+          ]
+        },
+        {
+          "product_id": "AI server incremental margin inputs",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "发行人 mix/利润披露和 OEM 利润美元机制提供增量情景输入。",
+          "claim_boundary_zh": "不能把 ISG 或公司利润增长全部归因于 AI。",
+          "scope_boundary_codes": [
+            "causal_attribution_not_authorized"
+          ]
+        },
+        {
+          "product_id": "supplier component value proxy",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "固定配置、OEM 价值池分析和 HBM/封装约束提供组件价值代理。",
+          "claim_boundary_zh": "不是 Dell BOM 或合同价格。",
+          "scope_boundary_codes": [
+            "supplier_value_proxy_only"
+          ]
+        }
+      ],
+      "numeric_state": "retrieval_context_only",
+      "resolved_metric_count": 5,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "ready_s1_numeric_context_only",
+      "research_consumable": true,
+      "fully_satisfied": true,
+      "decision_reason_zh": "Dell 发行人披露和可信外部背景共同覆盖 AI 服务器利润率、公司组合/毛利变化以及供应商组件价值代理，可供 S2 建立价值池情景。",
+      "claim_boundary_zh": "不能把公司或 ISG 利润改善全部归因于 AI，也不能把媒体机制判断写成供应商精确价值分配。"
+    },
+    {
+      "requirement_id": "MER::b6eb0f0deae6c6fe721c",
+      "request_id": "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+      "facet_id": "counterparty_direct_mention",
+      "role": "context",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "Dell supplier attribution or relationship",
+        "GPU HBM packaging and OEM value pool inputs",
+        "supplier economics"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "Dell supplier attribution or relationship",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "可信媒体的管理层引述描述 Dell 与 NVIDIA 技术栈关系。",
+          "claim_boundary_zh": "不是双方合同或 allocation 权威。",
+          "scope_boundary_codes": [
+            "third_party_relationship_context"
+          ]
+        },
+        {
+          "product_id": "GPU HBM packaging and OEM value pool inputs",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "配置、HBM/封装与 OEM 利润机制共同提供价值池输入。",
+          "claim_boundary_zh": "只允许情景与敏感性。",
+          "scope_boundary_codes": [
+            "value_pool_inputs_only"
+          ]
+        },
+        {
+          "product_id": "supplier economics",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "产业分析讨论供应商价值捕获与 OEM 利润压力。",
+          "claim_boundary_zh": "不是供应商或 Dell 精确经济性。",
+          "scope_boundary_codes": [
+            "third_party_mechanism_only"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "decision_reason_zh": "配置样本、管理层媒体引述和产业分析能够建立 NVIDIA/GPU/HBM/封装/OEM 价值池的机制背景，并提供有限的 Dell 供应商归属线索。",
+      "claim_boundary_zh": "这里的关系与供应商经济性主要是第三方背景，不构成 Dell 精确 BOM、合同条款或供应商利润分配事实。"
+    },
+    {
+      "requirement_id": "MER::4e416ae88fc7670873e2",
+      "request_id": "REQ::DELL::COUNTER_ISSUER::V1",
+      "facet_id": "issuer_counterevidence",
+      "role": "counter",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "AI demand digestion signals",
+        "AI margin dilution signals",
+        "AI working-capital pressure"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "AI demand digestion signals",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "提前锁定、出货非线性与发行人风险披露构成 digestion 观察面。",
+          "claim_boundary_zh": "信号不证明需求已崩塌。",
+          "scope_boundary_codes": [
+            "signal_not_realized_event"
+          ]
+        },
+        {
+          "product_id": "AI margin dilution signals",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "发行人承认 AI 需求可能影响经营表现，外部资料指出毛利压力。",
+          "claim_boundary_zh": "外部归因必须与发行人事实分层。",
+          "scope_boundary_codes": [
+            "causal_attribution_not_authorized"
+          ]
+        },
+        {
+          "product_id": "AI working-capital pressure",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "Dell 直接披露 AI 动态增加库存、应收应付与大单营运资金需求。",
+          "claim_boundary_zh": "没有 AI 专属现金转换周期。",
+          "scope_boundary_codes": [
+            "working_capital_scope_partial"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "decision_reason_zh": "提前锁货/消化、毛利稀释和 AI 大单营运资金压力均已有发行人或可信反方资料。",
+      "claim_boundary_zh": "风险信号不能写成已经发生的需求崩塌；媒体毛利判断必须与 Dell 披露分开呈现。"
+    },
+    {
+      "requirement_id": "MER::d0c577cba6d9f5f9b872",
+      "request_id": "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "facet_id": "upstream_or_demand_counterevidence",
+      "role": "counter",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "GPU HBM packaging constraint",
+        "architecture transition",
+        "customer capex slowdown",
+        "supply release or easing evidence"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "GPU HBM packaging constraint",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "TSMC 和行业资料确认封装、测试、HBM 约束。",
+          "claim_boundary_zh": "只作生态链反方。",
+          "scope_boundary_codes": [
+            "industry_constraint_context"
+          ]
+        },
+        {
+          "product_id": "architecture transition",
+          "coverage_state": "addressed",
+          "evidence_polarity": "supports",
+          "decision_reason_zh": "GPU/ASIC、ARM/rack-scale、训练/推理迁移均有资料。",
+          "claim_boundary_zh": "迁移速度不能直接归因 Dell。",
+          "scope_boundary_codes": [
+            "architecture_context_only"
+          ]
+        },
+        {
+          "product_id": "customer capex slowdown",
+          "coverage_state": "addressed",
+          "evidence_polarity": "contradicts",
+          "decision_reason_zh": "现有行业资料显示多年度投入和高增长支出，反驳普遍已放缓的命题。",
+          "claim_boundary_zh": "不排除个别 Dell 客户缩减。",
+          "scope_boundary_codes": [
+            "industry_aggregate_not_customer_specific"
+          ]
+        },
+        {
+          "product_id": "supply release or easing evidence",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "HBM 供应扩张和 TSMC 扩产与持续短缺同时存在。",
+          "claim_boundary_zh": "不能给出 Dell 释放时间。",
+          "scope_boundary_codes": [
+            "easing_without_target_allocation"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "decision_reason_zh": "GPU/HBM/封装约束、GPU 到 ASIC 与训练到推理迁移、客户支出趋势以及 HBM/封装扩产与仍然短缺的混合状态均有可引用资料。",
+      "claim_boundary_zh": "持续行业支出反驳了“已普遍放缓”，但不能证明 Dell 客户不会调整预算；扩产也不能换算为 Dell 获配时间。"
+    },
+    {
+      "requirement_id": "MER::5757bbe2f95de3a98774",
+      "request_id": "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "facet_id": "upstream_or_demand_counterevidence",
+      "role": "context",
+      "evidence_decision_state": "accepted_bounded",
+      "addressed_product_ids": [
+        "GPU HBM packaging constraint",
+        "architecture transition",
+        "customer capex slowdown",
+        "supply release or easing evidence"
+      ],
+      "unaddressed_product_ids": [],
+      "product_axis_decisions": [
+        {
+          "product_id": "GPU HBM packaging constraint",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "生态链资料建立 HBM/封装约束背景。",
+          "claim_boundary_zh": "不代表 Dell 专属约束。",
+          "scope_boundary_codes": [
+            "industry_constraint_context"
+          ]
+        },
+        {
+          "product_id": "architecture transition",
+          "coverage_state": "addressed",
+          "evidence_polarity": "context_only",
+          "decision_reason_zh": "多来源描述架构与工作负载迁移。",
+          "claim_boundary_zh": "不量化 Dell 产品组合。",
+          "scope_boundary_codes": [
+            "architecture_context_only"
+          ]
+        },
+        {
+          "product_id": "customer capex slowdown",
+          "coverage_state": "addressed",
+          "evidence_polarity": "contradicts",
+          "decision_reason_zh": "行业支出资料不支持普遍放缓。",
+          "claim_boundary_zh": "不替代客户级验证。",
+          "scope_boundary_codes": [
+            "industry_aggregate_not_customer_specific"
+          ]
+        },
+        {
+          "product_id": "supply release or easing evidence",
+          "coverage_state": "addressed",
+          "evidence_polarity": "mixed",
+          "decision_reason_zh": "扩产和短缺共存，形成平衡背景。",
+          "claim_boundary_zh": "无 Dell 配额与日期。",
+          "scope_boundary_codes": [
+            "easing_without_target_allocation"
+          ]
+        }
+      ],
+      "numeric_state": "not_requested",
+      "resolved_metric_count": 0,
+      "typed_gap_metric_count": 0,
+      "numeric_gap_owning_stages": [],
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "decision_reason_zh": "生态链资料为供应约束、架构迁移、客户支出和供给缓解提供了完整的背景面。",
+      "claim_boundary_zh": "生态链背景不能自动归因到 Dell，也不能替代 Dell/供应商双边关系证据。"
+    }
+  ],
+  "authority": {
+    "candidate_review_is_not_evidence": true,
+    "only_current_reviewed_pack_items_may_be_reused": true,
+    "numeric_facts_remain_independent_S2_authority": true,
+    "candidate_text_promoted": false,
+    "runtime_evidence_promoted": false,
+    "numeric_authority_merged_into_evidence": false,
+    "public_information_gap_claimed": false,
+    "s1_qualification_claimed": false,
+    "product_publication": false
+  },
+  "source_bindings": {
+    "product_replay": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_proposition_coverage/dell-proposition-internal-r3/internal_runtime_result.json",
+      "sha256": "70a152426bec39fc34f76418ec4b26b3ec1468025d47537daa11d9a176f00319"
+    },
+    "evidence_pack": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r2/successor/pack.json",
+      "sha256": "cc82c6094d442c31e0fe6403059b77d5e943a496cadf5018d4969ecf66e6a9b1"
+    },
+    "review_plan": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_natural_requirement_evidence_review_v1_1.json",
+      "sha256": "425c89dc2df5b9b9f89bb2b478069cbc415ff7f0c590a4c14556f9e2086a12e4"
+    },
+    "polarity_plan": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_natural_requirement_polarity_review_v1_2.json",
+      "sha256": "ccd8bd1744c7fa47d72cf7b6dcbf50c80ee48aaa4f498a588da5ba02f4860024"
+    },
+    "anchor_catalog": {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_4.json",
+      "sha256": "f2d51fcedaf3c9552996b9309fcc118d26ab4cc7d999b7aab1e663a5ed66de1a"
+    }
+  },
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1_integrated_pack_readiness/dell-proposition-r3-v1/full_result.json",
+  "full_result_sha256": "77323567a1048bb9799eddc017ded0feba36a0b012704e814e1d3ebaa6547736",
+  "known_boundary": "This compiler validates an explicit requirement-to-reviewed-Evidence mapping and independently consumes same-request S2 NumericFact or typed gap receipts. It does not judge new candidate text, promote Evidence, merge numeric authority, prove a public-information gap, or qualify S1.",
+  "result_digest": "767b15a086a7982ca650caa28b97a70fb641fef1c083e5e7375f465a92b9d15e"
+}

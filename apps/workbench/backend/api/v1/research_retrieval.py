@@ -92,6 +92,26 @@ class EvidenceRequestExecutionResponse(BaseModel):
     projection_digest: str
 
 
+class CurrentRuntimeEvidenceRequestBatchBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    requests: list[EvidenceRequestBody]
+
+
+class CurrentRuntimeEvidenceRequestBatchResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str
+    status: Literal["current_runtime_request_batch_zero_call_executed"]
+    product_mode: Literal["current"]
+    case_key: str
+    summary: dict[str, Any]
+    material_compilation_receipts: list[dict[str, Any]]
+    request_results: list[dict[str, Any]]
+    known_boundary: str
+    projection_digest: str
+
+
 class ResearchObjectivePeriodBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -287,6 +307,44 @@ def build_research_retrieval_router(
         return projection
 
     @router.post(
+        "/research-cases/{case_key}/current-runtime-requests",
+        operation_id="executeCurrentRuntimeEvidenceRequests",
+        response_model=CurrentRuntimeEvidenceRequestBatchResponse,
+    )
+    def execute_current_runtime_evidence_requests(
+        case_key: str,
+        request: CurrentRuntimeEvidenceRequestBatchBody,
+        response: Response,
+        product_mode: Annotated[
+            str | None, Header(alias="X-Fin-Product-Mode")
+        ] = None,
+        permissions: Annotated[
+            str | None, Header(alias="X-Fin-Case-Permissions")
+        ] = None,
+    ) -> dict[str, Any]:
+        try:
+            projection = service.execute_current_runtime_requests(
+                case_key,
+                [row.model_dump(mode="json") for row in request.requests],
+                ResearchRetrievalPrincipal(
+                    mode=(product_mode or "").strip(),
+                    permissions=frozenset(
+                        item.strip()
+                        for item in (permissions or "").split(",")
+                        if item.strip()
+                    ),
+                ),
+            )
+        except ResearchRetrievalServiceError as exc:
+            raise HTTPException(
+                status_code=exc.status_code, detail=exc.detail
+            ) from exc
+        response.headers["ETag"] = (
+            f'"current-runtime-requests={projection["projection_digest"]}"'
+        )
+        return projection
+
+    @router.post(
         "/research-cases/{case_key}/controlled-research-plans",
         operation_id="executeControlledResearchPlan",
         response_model=ControlledResearchPlanExecutionResponse,
@@ -334,6 +392,8 @@ def build_research_retrieval_router(
 
 
 __all__ = [
+    "CurrentRuntimeEvidenceRequestBatchBody",
+    "CurrentRuntimeEvidenceRequestBatchResponse",
     "ControlledResearchPlanBody",
     "ControlledResearchPlanExecutionResponse",
     "EvidenceRequestBody",

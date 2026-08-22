@@ -146,20 +146,24 @@ def _current_inputs() -> tuple[dict[str, object], dict[str, object], dict[str, o
         "DELL", ResearchEvidencePackPrincipal("current", READ)
     )
     retrieval = ResearchRetrievalService(
-        snapshot=read_registered_runtime_json(
-            ROOT, "application.result.current_research_retrieval_snapshot"
+        snapshot=_json(
+            ROOT
+            / "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
         ),
         ranking_comparison=read_registered_runtime_json(
             ROOT, "application.result.current_s1c_ranking_comparison_projection"
         ),
-        kernel=read_registered_runtime_json(
-            ROOT, "application.config.current_financial_research_kernel"
+        kernel=_json(
+            ROOT
+            / "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json"
         ),
-        route_policy=read_registered_runtime_json(
-            ROOT, "application.config.current_query_object_fact_route_policy"
+        route_policy=_json(
+            ROOT
+            / "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_2.json"
         ),
-        planning_policy=read_registered_runtime_json(
-            ROOT, "application.config.current_research_planning_policy"
+        planning_policy=_json(
+            ROOT
+            / "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_1.json"
         ),
         hybrid_candidate_runtime=None,
         company_financial_fact_mart_path=(

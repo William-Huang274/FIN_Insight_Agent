@@ -27,6 +27,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/data_retrieval/capture_s1b_official_sources.py",
     "scripts/data_retrieval/run_s1d_source_intake.py",
     "scripts/data_retrieval/run_s1d_official_pdf_successor.py",
+    "scripts/data_retrieval/run_dell_proposition_coverage_internal.py",
     "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
     "scripts/data_retrieval/materialize_s1_current_product_readiness.py",
     "scripts/data_retrieval/materialize_s1_source_route_truth_successor.py",

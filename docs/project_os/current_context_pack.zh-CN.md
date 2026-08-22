@@ -11,6 +11,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 四个 exact capture-bound 公共来源（IDC／Microsoft／TrendForce／HPE）已形成 36 Evidence 的独立 DELL successor，但没有关闭 14 个 residual gaps，也没有晋升 current Runtime mainline。它们只证明 capture／解析／来源用途／Evidence admission 链可用，不证明通用外源发现已覆盖价格、销量、配置、客户部署、公共采购、渠道报价、BOM、供应释放、可信媒体／公开 analyst 和反方资料。历史 zero-call 结果中的“下一门直接做 DELL dynamic multi-agent”不再是当前 authority。当前最早产品门改为：命题 CoverageState → AI-free 内源执行 → 外源来源阶梯 → Evidence Gate → current Pack／S2 重编译 → EvidencePackReadiness；之后才允许一个 DELL 动态单单元真实调用 S1／S2，再扩展多单元、Writer 和泛化。
 
+2026-08-22 当前实现增量：七命题已拆成 12 条原子 EvidenceRequest；Workbench 新增同一产品入口执行 snapshot／S2 SQL／BM25／Qwen CUDA-FP16／route truth，但 Candidate 仍不自动晋升 Evidence。current S1 kernel／route 已迁移 v1.3、snapshot v1.1、binding R30；S3 planner 暂留 v1.1，允许作为新增 S1 route surface 的已批准子集，v1.2 只保留为未来显式 successor。历史 fixed-Pack canary 已改为读取其原 snapshot／kernel／route／planner，不再从 mutable current alias 重编旧输入。全仓 `1001 passed`、active baseline `198 Python／8 frontend／5 detectors／28 Runtime／0 forbidden`、7,593-file secret scan 与 diff check 已通过；正式 clean-bound 内源物化、完整外源阶梯、CandidateDecision／Evidence Gate、S2 successor 和动态模型调用尚未执行。
+
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 
 - R14 的 Cash continuation 使用 non-thinking profile 成功补齐分析，并在第一次 claim binding 失败后通过第二次 strict submission；Demand 和 Cash 两份反馈修订均有自然模型结果与不可变 lineage。

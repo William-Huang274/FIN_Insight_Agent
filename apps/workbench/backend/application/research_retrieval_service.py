@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 from financial_facts import execute_typed_fact_request
 from retrieval.contracts import (
@@ -138,6 +138,9 @@ EXPECTED_RANKING_SCHEMA = "fin_ia_s1c_ranking_workbench_projection_v1_0"
 RETRIEVAL_PROJECTION_SCHEMA = "fin_ia_research_retrieval_projection_v1_0"
 REQUEST_RETRIEVAL_PROJECTION_SCHEMA = (
     "fin_ia_request_scoped_retrieval_projection_v1_2"
+)
+CURRENT_RUNTIME_REQUEST_BATCH_PROJECTION_SCHEMA = (
+    "fin_ia_current_runtime_request_batch_projection_v1_0"
 )
 RESEARCH_PLAN_EXECUTION_PROJECTION_SCHEMA = (
     "fin_ia_controlled_research_plan_execution_projection_v1_0"
@@ -1188,6 +1191,226 @@ class ResearchRetrievalService:
                 hybrid_result=None,
             )
         )
+        return {**body, "projection_digest": canonical_digest(body)}
+
+    def execute_current_runtime_requests(
+        self,
+        case_key: str,
+        payloads: Sequence[Mapping[str, Any]],
+        principal: ResearchRetrievalPrincipal,
+    ) -> dict[str, Any]:
+        """Execute typed requests through the mounted S1/S2 product runtime.
+
+        ``execute_request`` intentionally preserves the immutable snapshot-only
+        product surface.  This successor is the direct EvidenceRequest entry for
+        AI-free audits and dynamic research agents: it keeps the same S2 exact
+        fact execution, then runs the currently bound BM25 + local Qwen candidate
+        runtime and projects route truth.  Ranked rows remain candidates; this
+        method never promotes Evidence or grants numeric authority.
+        """
+
+        self._require_read(principal)
+        if self._kernel is None or self._route_policy is None:
+            raise ResearchRetrievalServiceError(
+                "current_runtime_request_contract_unavailable", 503
+            )
+        if self._hybrid_candidate_runtime is None:
+            raise ResearchRetrievalServiceError(
+                "current_runtime_hybrid_candidate_runtime_unavailable", 503
+            )
+        if not payloads:
+            raise ResearchRetrievalServiceError(
+                "current_runtime_requests_missing", 422
+            )
+        if len(payloads) > 64:
+            raise ResearchRetrievalServiceError(
+                "current_runtime_request_batch_too_large", 422,
+                request_count=len(payloads),
+            )
+
+        key = str(case_key).strip().upper()
+        requests = []
+        request_results = []
+        seen_request_ids: set[str] = set()
+        try:
+            for payload in payloads:
+                request = load_evidence_request(payload, self._kernel)
+                if request.case_key != key:
+                    raise ResearchRetrievalServiceError(
+                        "evidence_request_route_case_mismatch",
+                        422,
+                        route_case_key=key,
+                        request_case_key=request.case_key,
+                    )
+                if request.request_id in seen_request_ids:
+                    raise ResearchRetrievalServiceError(
+                        "current_runtime_request_id_duplicate",
+                        422,
+                        request_id=request.request_id,
+                    )
+                seen_request_ids.add(request.request_id)
+                requests.append(request)
+                request_results.append(
+                    self.execute_request(key, request.as_dict(), principal)
+                )
+        except RetrievalContractError as exc:
+            raise ResearchRetrievalServiceError(str(exc), 422) from exc
+
+        material_runtime_inputs: dict[str, dict[str, Any]] = {}
+        material_receipts: list[dict[str, Any]] = []
+        if self._material_runtime_policy is not None:
+            try:
+                for request, result in zip(requests, request_results):
+                    runtime_input = {
+                        "evidence_request": request.as_dict(),
+                        "retrieval_execution_plan": deepcopy(
+                            result["execution_plan"]
+                        ),
+                    }
+                    _, receipt = compile_material_requirement_plan_from_runtime_input(
+                        runtime_input=runtime_input,
+                        policy=self._material_runtime_policy,
+                        ontology=self._financial_intent_ontology,
+                    )
+                    material_runtime_inputs[request.request_id] = runtime_input
+                    material_receipts.append(receipt)
+            except (MaterialEvidenceRuntimeError, EvidenceSetCoverageError) as exc:
+                raise ResearchRetrievalServiceError(
+                    "current_runtime_material_compilation_failed",
+                    503,
+                    typed_reason=str(exc),
+                ) from exc
+
+        try:
+            hybrid_kwargs: dict[str, Any] = {}
+            if material_runtime_inputs:
+                hybrid_kwargs = {
+                    "material_runtime_inputs": material_runtime_inputs,
+                    "material_runtime_policy": self._material_runtime_policy,
+                    "intent_ontology": self._financial_intent_ontology,
+                    "retrieval_need_policy": self._retrieval_need_policy,
+                }
+            hybrid_results = self._hybrid_candidate_runtime.retrieve_many(
+                requests,
+                kernel=self._kernel,
+                route_policy=self._route_policy,
+                **hybrid_kwargs,
+            )
+        except HybridCandidateRuntimeError as exc:
+            raise ResearchRetrievalServiceError(
+                "hybrid_candidate_runtime_unavailable",
+                503,
+                typed_reason=str(exc),
+            ) from exc
+        if len(hybrid_results) != len(request_results):
+            raise ResearchRetrievalServiceError(
+                "hybrid_candidate_result_count_invalid", 503
+            )
+
+        enriched_results: list[dict[str, Any]] = []
+        for result, hybrid in zip(request_results, hybrid_results):
+            route_truth = (
+                project_request_route_execution_truth(
+                    execution_plan=result.get("execution_plan"),
+                    binding_receipt=self._runtime_binding_receipt,
+                    hybrid_result=hybrid,
+                )
+                if self._runtime_binding_receipt is not None
+                else None
+            )
+            enriched = {
+                **result,
+                "execution_mode": "current_s2_snapshot_bm25_qwen_runtime",
+                "hybrid_object_retrieval": hybrid,
+                "route_execution_truth": route_truth,
+            }
+            enriched["source_route_execution_truth"] = (
+                self._source_route_projection(enriched, hybrid_result=hybrid)
+            )
+            enriched["candidate_ceiling_provenance"] = (
+                self._candidate_ceiling_projection(
+                    result=enriched,
+                    route_execution_truth=route_truth,
+                    hybrid_result=hybrid,
+                )
+            )
+            enriched_results.append(enriched)
+
+        candidate_ids = {
+            str(row.get("compiled_object_id") or "")
+            for hybrid in hybrid_results
+            for row in hybrid.get("candidate_decision_seed") or ()
+            if str(row.get("compiled_object_id") or "")
+        }
+        fact_count = sum(
+            len(result.get("facts") or ())
+            for request_result in request_results
+            for result in request_result.get("typed_fact_results") or ()
+        )
+        body = {
+            "schema_version": CURRENT_RUNTIME_REQUEST_BATCH_PROJECTION_SCHEMA,
+            "status": "current_runtime_request_batch_zero_call_executed",
+            "product_mode": "current",
+            "case_key": key,
+            "summary": {
+                "request_count": len(enriched_results),
+                "compiled_lane_count": sum(
+                    row["summary"]["compiled_lane_count"]
+                    for row in request_results
+                ),
+                "snapshot_nonempty_lane_count": sum(
+                    row["summary"]["nonempty_lane_count"]
+                    for row in request_results
+                ),
+                "hybrid_selected_candidate_count": sum(
+                    int(hybrid["summary"].get("selected_count") or 0)
+                    for hybrid in hybrid_results
+                ),
+                "hybrid_union_candidate_count": len(candidate_ids),
+                "typed_fact_resolved_count": sum(
+                    row["summary"]["typed_fact_resolved_count"]
+                    for row in request_results
+                ),
+                "typed_fact_gap_count": sum(
+                    row["summary"]["typed_fact_gap_count"]
+                    for row in request_results
+                ),
+                "typed_fact_conflict_count": sum(
+                    row["summary"]["typed_fact_conflict_count"]
+                    for row in request_results
+                ),
+                "numeric_fact_count": fact_count,
+                "material_scope_required_request_count": sum(
+                    receipt.get(
+                        "explicit_blueprint_required_for_full_product_scope"
+                    )
+                    is True
+                    for receipt in material_receipts
+                ),
+                "material_scope_ready_request_count": sum(
+                    hybrid["summary"].get("material_scope_ready") is True
+                    for hybrid in hybrid_results
+                ),
+                "material_set_complete_request_count": sum(
+                    hybrid["summary"].get("material_set_complete") is True
+                    for hybrid in hybrid_results
+                ),
+                "local_embedding_inference_batches": 1,
+                "network_calls": 0,
+                "model_calls": 0,
+                "generation_model_calls": 0,
+            },
+            "material_compilation_receipts": material_receipts,
+            "request_results": enriched_results,
+            "known_boundary": (
+                "This is the canonical direct EvidenceRequest execution surface for "
+                "the mounted current S1/S2 runtime. It executes source-bound S2 "
+                "facts, the immutable snapshot lane and the bound BM25 plus local "
+                "Qwen candidate runtime. Candidate rank never grants Evidence or "
+                "numeric authority. External source acquisition, CandidateDecision, "
+                "Evidence admission and S1/S3 acceptance remain separate gates."
+            ),
+        }
         return {**body, "projection_digest": canonical_digest(body)}
 
     def _source_route_projection(

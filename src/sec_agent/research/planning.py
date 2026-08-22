@@ -305,11 +305,25 @@ def load_research_planning_policy(
         "research_planning_atom_selection_invalid",
     )
     known_facets = set(route_policy.family_by_facet())
+    planned_facets = set(facet_execution_priority)
+    # A provider-neutral S1 route policy may add a new explicit-request facet
+    # before the S3 planner is authorized to propose it.  The v1.1 planner is
+    # therefore backward-compatible with a strict subset of a successor route
+    # policy.  A v1.2 planner is the migration contract and must cover the
+    # entire mounted route surface.  Unknown planner facets always fail closed.
+    facet_contract_valid = (
+        planned_facets.issubset(known_facets)
+        and (
+            payload.get("schema_version")
+            == RESEARCH_PLANNING_POLICY_SCHEMA_VERSION
+            or planned_facets == known_facets
+        )
+    )
     _require(
         max_budget["max_evidence_requests"] <= max_proposed_atoms <= 20
         and selection_strategy
         == "required_slot_first_then_provider_neutral_facet_priority"
-        and set(facet_execution_priority) == known_facets,
+        and facet_contract_valid,
         "research_planning_atom_selection_invalid",
     )
     defaults = payload.get("defaults")

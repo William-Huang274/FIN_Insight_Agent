@@ -32,6 +32,10 @@ _SOURCE_OBJECT_SCHEMAS = {
     PUBLIC_HTML_SOURCE_OBJECT_SCHEMA_VERSION,
     PUBLIC_PDF_SOURCE_OBJECT_SCHEMA_VERSION,
 }
+_REVIEWABLE_LADDER_TERMINAL_STATUSES = {
+    "dell_external_source_ladder_exact_once_complete",
+    "dell_external_capture_replay_complete",
+}
 _PROPOSAL_ACTIONS = {
     "accept_as_reviewed_candidate",
     "replace_with_capture_bound_reviewed_candidate",
@@ -110,8 +114,7 @@ def compile_external_source_candidate_review(
     _require(
         plan.get("schema_version") == EXTERNAL_SOURCE_REVIEW_PLAN_SCHEMA_VERSION
         and plan.get("status") == "approved_internal_engineering_candidate_review"
-        and ladder_terminal.get("status")
-        == "dell_external_source_ladder_exact_once_complete"
+        and ladder_terminal.get("status") in _REVIEWABLE_LADDER_TERMINAL_STATUSES
         and str(plan.get("case_key") or "").upper() == "DELL"
         and str(plan.get("ladder_terminal_result_digest") or "")
         == str(ladder_terminal.get("result_digest") or ""),

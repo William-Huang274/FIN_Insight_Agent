@@ -300,6 +300,30 @@ def test_external_review_requires_every_original_proposal_disposition() -> None:
         )
 
 
+def test_external_review_accepts_digest_bound_capture_replay_terminal() -> None:
+    terminal, plan = _review_fixture()
+    replay_body = dict(terminal)
+    replay_body.pop("result_digest")
+    replay_body["schema_version"] = (
+        "fin_ia_s1_dell_external_capture_replay_private_result_v1_0"
+    )
+    replay_body["status"] = "dell_external_capture_replay_complete"
+    replay = {**replay_body, "result_digest": canonical_digest(replay_body)}
+    rebound = deepcopy(plan)
+    rebound.pop("plan_digest")
+    rebound["ladder_terminal_result_digest"] = replay["result_digest"]
+    rebound["plan_digest"] = canonical_digest(rebound)
+
+    compiled = compile_external_source_candidate_review(
+        ladder_terminal=replay,
+        plan=rebound,
+        source_use_policy=_policy(),
+    )
+
+    assert compiled["summary"]["original_proposal_count"] == 2
+    assert compiled["ladder_terminal_result_digest"] == replay["result_digest"]
+
+
 def test_external_evidence_cannot_close_gap_without_separate_receipt() -> None:
     terminal, review_plan = _review_fixture()
     compiled = compile_external_source_candidate_review(

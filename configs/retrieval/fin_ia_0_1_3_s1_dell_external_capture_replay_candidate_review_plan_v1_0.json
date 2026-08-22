@@ -1,0 +1,216 @@
+{
+  "schema_version": "fin_ia_s1_external_source_candidate_review_plan_v1_0",
+  "status": "approved_internal_engineering_candidate_review",
+  "recorded_at": "2026-08-23",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "plan_id": "FIN-0.1.3-S1-DELL-EXTERNAL-CAPTURE-REPLAY-CANDIDATE-REVIEW-V1.0",
+  "ladder_terminal_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_ladder/dell-external-residual-r3-capture-replay-r1/terminal_result.json",
+  "ladder_terminal_sha256": "bdbde35c0edc1ca7f4b651b8fa17c998d78642776b7d3877c89493e7218985b7",
+  "ladder_terminal_result_digest": "50a28de6356b64d7c5b24ca207320e386f3c84d6ef031e6c20039662dbe1584f",
+  "source_use_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_source_strength_and_claim_use_policy_v1_0.json",
+  "source_use_policy_sha256": "d55b813321210a2de33312a900912bf925649ece003d70608066c26d05bb8283",
+  "original_proposal_dispositions": [
+    {
+      "candidate_proposal_digest": "04552231bf48e684a565ab7fb11fcf85e27760674cf3ad86598e7fa0738db47b",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与 current Pack 已接受的同一 IDC Q1 2026 结构性需求材料重复。"
+    },
+    {
+      "candidate_proposal_digest": "22e28eed81a8becb386126872bd2924373d3bbecc485c359e4d9f50be03cb5c9",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "同一 IDC 来源的存储追赶段已由 current Pack 的计算与存储构成 Evidence 覆盖，重复加入会虚高来源密度。"
+    },
+    {
+      "candidate_proposal_digest": "41a1dc650b2aec9a38635e37029ef4f710db9337ee5fed582b68ce1440dd86f9",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与 current Pack 已接受的 IDC 2025 AI 基础设施市场材料重复。"
+    },
+    {
+      "candidate_proposal_digest": "0dfae4a49dc6e9eae25d9a77dfe28b85365378e1ca3546a3ac46bbbaf23c434a",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "同一 Dell 官方页面已有更具体的 IRSS 集成、测试和部署片段进入 current Pack；本段主要是营销背景且没有价格。"
+    },
+    {
+      "candidate_proposal_digest": "eef1b74106ca55f211a1a6b63a522f596f97b3720d9852171368a410f927b33d",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与 current Pack 已接受的 TrendForce 2024—2025 行业价值、ASP 和出货材料重复。"
+    },
+    {
+      "candidate_proposal_digest": "383295830165ecc2dcf83b66b05611490e1a9b63aa2e27446671b3b790568822",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "前半段与 current Pack 重复，后半段是 2025 年初的预测时点；本轮采用 NVIDIA 后续实际 ramp 与 sold-out 表述作为更近的上游证据。"
+    },
+    {
+      "candidate_proposal_digest": "84168952e8d34fa3a5a8312e2e66cdb893f15afa44434e62fadbda6a82d963db",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与 current Pack 已接受的 2026 推理需求和行业出货材料重复。"
+    },
+    {
+      "candidate_proposal_digest": "a28dda0391aebac1b91ee5a02eaefe92ffb305eb9c65bbd21537ecc592476c21",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与 current Pack 已接受的 GPU／ASIC 平台组合预测重复。"
+    },
+    {
+      "candidate_proposal_digest": "e6070a8e078f5990210056816ab0b83f84326ec89382ee3472982b7f8bf4730f",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "trendforce-2025-ai-server-high-base-slowdown",
+      "reason_zh": "保留 AI 服务器经历高增长和高基数后增速可能放缓的行业反方；不能外推为 Dell 订单下滑。"
+    },
+    {
+      "candidate_proposal_digest": "e61bbbd2dddf209232bee4b4877befc6b499ef962e78923d801eada26b487824",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "自动候选选中了 NVIDIA safe-harbor 风险清单，没有提供本轮所需的 GPU 释放或 Dell 关系事实。"
+    },
+    {
+      "candidate_proposal_digest": "fe92842c41180178e62b765c5e95c70897fc69c3b8c00a9f5d673daa29b2fb64",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "nvidia-q3-fy26-blackwell-sold-out",
+      "reason_zh": "自动候选选中 safe-harbor；改用同一 NVIDIA 官方 capture 中明确的 Blackwell 销售和云端 GPU 售罄表述。"
+    },
+    {
+      "candidate_proposal_digest": "5894bb371099691ce913ca65aeb8f557b6792a064e735d4a6ba369f5f3f2e5e2",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "nvidia-q2-fy26-blackwell-ultra-ramp",
+      "reason_zh": "自动候选选中 safe-harbor；改用同一 NVIDIA 官方 capture 中 Blackwell Ultra 全速爬坡和需求强劲的原文。"
+    },
+    {
+      "candidate_proposal_digest": "be6f04f749a70d464b4af6fa4eaee39a87ce47b4632609d385de381b18a3531d",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "自动摘录主要讨论渠道创新，没有证明供应执行；同页供应可预测性属于二手采访且当前 replay 中没有独立同命题来源支撑。"
+    },
+    {
+      "candidate_proposal_digest": "b91be4d1e4d53a36a1b410dae8e773fc872bd43557af1613bc3b4b7f6b76a97f",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "二手报道复述 Dell 销售和 AI server shipment 金额，current Pack 已有公司原始财务资料；金额也不是单位销量或供应分配。"
+    },
+    {
+      "candidate_proposal_digest": "ecbcc2823e633454f7079bdb3b83881f65cca2e0bebbe5f8327d8ae35388893e",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "nvidia-2023-dell-l40s-availability",
+      "reason_zh": "自动摘录漏掉 Dell；改用同一 NVIDIA 官方 capture 中点名 Dell 并给出服务器可用时点的关系原文。"
+    },
+    {
+      "candidate_proposal_digest": "d893661fb981a771400bbdcc1f4279e7f34a03a6ff8721002dad5c4b9e1af425",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "片段只描述通用 AI-ready server 和 VMware 关系，没有直接点名 Dell；关系证据由同页更精确片段承担。"
+    },
+    {
+      "candidate_proposal_digest": "a4fc31ebd9bc020a6d799d710b395e58d8dc6cb9e36149ae4f44c416831c8d52",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "2022 年 Dell—NVIDIA 合作虽真实，但较 2023 年点名产品与可用时点材料更旧，避免同一供应商来源重复抬高关系强度。"
+    },
+    {
+      "candidate_proposal_digest": "bd6428c915cf6706aef241ca80b8c42d3ed5c9094e9b4d6b676a101676aaeb61",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "通用 NVIDIA AI Enterprise 与实验室可用性描述不证明 Dell 供应、分配或交付。"
+    },
+    {
+      "candidate_proposal_digest": "491c1e1505a086f525a68ece3f98729396a129b46cadade834fced5c5dfd42ad",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "A100 技术和多厂商背景没有形成 Dell 当前供应关系或释放时点。"
+    },
+    {
+      "candidate_proposal_digest": "68395665075829294af3d0b7b10e55d2797a5540eb5790f367d94c3222a93396",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "2020 年 Dell 支持 A100 的关系真实但过旧，且被更新的 2023 年产品可用材料覆盖。"
+    },
+    {
+      "candidate_proposal_digest": "511fb4ce8fac39f5190c6e0d3c3d84e70f6c7d77277b3d2c0ca70e0dc61c8720",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "trendforce-2025-ai-server-volume-scenarios",
+      "reason_zh": "保留全球 AI server 出货的基准、下行情景和关键触发因素，交给 S2 构造行业区间；不能换算成 Dell 台数。"
+    },
+    {
+      "candidate_proposal_digest": "79d03d66faaf0d720c869be990968e914304583248b34434cedf158887976a0e",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "九家云厂商总 CapEx 与平台描述没有同口径 Dell 单位量或份额关系，且聚合口径容易被误用为 AI server 采购额。"
+    },
+    {
+      "candidate_proposal_digest": "e27349590403fbef3fbc39c76ffaa4e5afadaad7576e2c9a9fec9560b2c9106c",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与 current Pack 已接受的 The Next Platform OEM 价值池机制材料重复。"
+    },
+    {
+      "candidate_proposal_digest": "712f79704e99f3539b8c3db9124be97037af234bcd6d1f1542f937faa03674e8",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与同一来源、同一 current Evidence 高度重复，不重复计作价值池和供应证据。"
+    }
+  ],
+  "reviewed_candidate_specs": [
+    {
+      "review_candidate_key": "trendforce-2025-ai-server-high-base-slowdown",
+      "source_id": "PUBLIC::DELL-EXT::6D523C85E214E7A4E90B",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "e6070a8e078f5990210056816ab0b83f84326ec89382ee3472982b7f8bf4730f"
+      ],
+      "claim_use": "counterevidence",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于提示 AI server 在连续高增长和高基数后可能降速，作为 PVM 与需求耐久性的行业反方。"
+    },
+    {
+      "review_candidate_key": "nvidia-q3-fy26-blackwell-sold-out",
+      "source_id": "PUBLIC::DELL-EXT::406EF0361C607E4A632D",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "“Blackwell sales are off the charts, and cloud GPUs are sold out,” said Jensen Huang, founder and CEO of NVIDIA.",
+      "origin_candidate_proposal_digests": [
+        "fe92842c41180178e62b765c5e95c70897fc69c3b8c00a9f5d673daa29b2fb64"
+      ],
+      "claim_use": "speaker_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于证明 NVIDIA 在 Q3 FY26 对 Blackwell 销售与云端 GPU 供需紧张的公开表述；不证明 Dell 获得的数量。"
+    },
+    {
+      "review_candidate_key": "nvidia-q2-fy26-blackwell-ultra-ramp",
+      "source_id": "PUBLIC::DELL-EXT::61CDF35DB7513A49372A",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "“Blackwell is the AI platform the world has been waiting for, delivering an exceptional generational leap — production of Blackwell Ultra is ramping at full speed, and demand is extraordinary,” said Jensen Huang, founder and CEO of NVIDIA.",
+      "origin_candidate_proposal_digests": [
+        "5894bb371099691ce913ca65aeb8f557b6792a064e735d4a6ba369f5f3f2e5e2"
+      ],
+      "claim_use": "speaker_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于建立 Blackwell Ultra 在 Q2 FY26 已全速爬坡、同时需求仍强的供应释放时点；不映射为 Dell allocation。"
+    },
+    {
+      "review_candidate_key": "nvidia-2023-dell-l40s-availability",
+      "source_id": "PUBLIC::DELL-EXT::C52D1C2DAE6F4F5A8D09",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "NVIDIA L40S-powered servers from leading global system manufacturers — Dell Technologies, Hewlett Packard Enterprise and Lenovo — will be available by year-end to accelerate enterprise AI.",
+      "origin_candidate_proposal_digests": [
+        "ecbcc2823e633454f7079bdb3b83881f65cca2e0bebbe5f8327d8ae35388893e"
+      ],
+      "claim_use": "speaker_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于建立供应商官方点名 Dell 与可观察产品可用时点的关系边；历史关系不证明当前专属分配。"
+    },
+    {
+      "review_candidate_key": "trendforce-2025-ai-server-volume-scenarios",
+      "source_id": "PUBLIC::DELL-EXT::5119B3A844B5141C6BC0",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "511fb4ce8fac39f5190c6e0d3c3d84e70f6c7d77277b3d2c0ca70e0dc61c8720"
+      ],
+      "claim_use": "industry_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于向 S2 提供全球 AI server 出货基准、下行情景和触发条件；不提供 Dell 单位量权威。"
+    }
+  ],
+  "plan_digest": "31aed94c5cc11d0066eb9b3db83c9066e656a7d68ef63480cb22b83e44d4685c"
+}

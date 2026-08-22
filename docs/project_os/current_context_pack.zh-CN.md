@@ -1245,3 +1245,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - v1.1 程序将 S1 限定为可观察来源输入，并新增 S2 销量／PVM／价值池及 S3 失效阈值 handoff；non-temporal metric 在 S1 只作检索上下文，S2 typed conflict 仍阻断，typed gap 不再冒充 S1 缺源。
 - 定向 `41 passed`、全仓 `1033 passed`（仅两条既有 SWIG warning），0 模型／网络／Provider／promotion。下一步为 clean gate／push 后唯一一次 AI-free R3，再做 43 Evidence reviewed mapping 与 integrated readiness。
 - 详细记录见 `docs/worklog/fin_0_1_3_s1/063_dell_s1_observable_input_and_s2_s3_handoff_correction.md`。
+
+### 2026-08-23 DELL 12 请求 AI-free 内源 R3
+
+- R3 绑定 clean／synced `fc89dffa...`，按 v1.1 observable-input-only 程序执行 SQL／NumericFact、对象／全文、BM25、Qwen CUDA／FP16 与当前关系路线；0 模型、网络、Provider 和 promotion。
+- 12/12 请求达到 candidate material scope ready／set complete，保留 192 条候选、705 条 union；旧 R2 唯一不完整的价值池对手方现已形成待审候选组。
+- S2 sibling 为 13 resolved、28 typed gaps、0 conflict、38 NumericFact。候选与生态主体材料没有获得 Dell exact fact、NumericFact 或关系权威。
+- 下一门仍是把 43 Evidence 逐条绑定 R3 的 20 个 MaterialRequirement 和 polarity，编译 integrated readiness。12/12 candidate complete 不能用来签发 current Pack、S2 successor 或动态模型。
+- 详细记录见 `docs/worklog/fin_0_1_3_s1/064_dell_twelve_request_ai_free_internal_r3_result.md`。

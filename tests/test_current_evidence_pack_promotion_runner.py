@@ -690,6 +690,48 @@ def test_current_pack_set_composes_three_cases_and_exact_anchors(
     assert execution["remaining_boundaries"]["S1_product_acceptance"] is False
 
 
+def test_current_pack_set_can_replace_one_case_without_replaying_others(
+    tmp_path: Path,
+) -> None:
+    repo, authority_path, authority = _pack_set_fixture(tmp_path)
+    predecessor = json.loads(
+        (
+            repo
+            / authority["predecessor_contract"]["current_result_ref"]
+        ).read_text(encoding="utf-8")
+    )
+    prior_mu = predecessor["pack_payload_digests"]["MU"]
+    prior_nvda = predecessor["pack_payload_digests"]["NVDA"]
+    authority["replacement_chains"] = [authority["replacement_chains"][0]]
+    authority["retained_case_keys"] = ["MU", "NVDA", "ORCL", "ASML", "ANET"]
+
+    validated = validate_pack_set_authority(authority, repository_root=repo)
+    result, workspace, _anchors, policy, execution = compose_current_pack_set(
+        validated,
+        authority_path=authority_path,
+        repository_root=repo,
+    )
+
+    assert result["pack_payload_digests"]["MU"] == prior_mu
+    assert result["pack_payload_digests"]["NVDA"] == prior_nvda
+    assert result["current_composition_lineage"]["replacement_case_keys"] == [
+        "DELL"
+    ]
+    assert result["current_composition_lineage"]["promotion_kind"] == (
+        "subset_proposition_bound_evidence_successor"
+    )
+    assert execution["status"] == "current_pack_subset_promoted"
+    assert policy["assets"]["dell_product_readiness"]["ref"].endswith(
+        "dell-readiness.json"
+    )
+    assert policy["assets"]["mu_product_readiness"]["ref"] == "old-mu.json"
+    assert [row["case_key"] for row in workspace["cases"]] == [
+        "DELL",
+        "MU",
+        "NVDA",
+    ]
+
+
 def test_current_pack_set_rejects_broken_successor_chain(tmp_path: Path) -> None:
     repo, _authority_path, authority = _pack_set_fixture(tmp_path)
     mutated = deepcopy(authority)

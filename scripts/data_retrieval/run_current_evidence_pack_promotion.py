@@ -589,8 +589,11 @@ def validate_pack_set_authority(
         for row in current_result.get("case_summaries") or ()
     ]
     retained = [str(value) for value in value.get("retained_case_keys") or ()]
+    ordered_supported_replacements = [
+        key for key in ("DELL", "MU", "NVDA") if key in replacement_keys
+    ]
     if (
-        replacement_keys != ["DELL", "MU", "NVDA"]
+        replacement_keys != ordered_supported_replacements
         or retained != [key for key in all_case_keys if key not in replacement_keys]
     ):
         raise CurrentEvidencePackPromotionError(
@@ -754,6 +757,7 @@ def compose_current_pack_set(
     body["observed_counts"] = _recompute_observed_counts(
         dict(body["observed_counts"]), list(body["case_summaries"])
     )
+    full_three_case_replacement = list(replacements) == ["DELL", "MU", "NVDA"]
     body["current_composition_lineage"] = {
         "schema_version": "fin_ia_current_pack_composition_lineage_v1_3",
         "predecessor_result_digest": predecessor_result_digest,
@@ -764,21 +768,28 @@ def compose_current_pack_set(
         },
         "retained_case_keys": list(authority["retained_case_keys"]),
         "private_object_copy_performed": False,
-        "promotion_kind": "three_case_proposition_bound_evidence_successor",
+        "promotion_kind": (
+            "three_case_proposition_bound_evidence_successor"
+            if full_three_case_replacement
+            else "subset_proposition_bound_evidence_successor"
+        ),
     }
     stage = deepcopy(dict(body.get("stage_acceptance") or {}))
     stage.update(
         {
-            "three_case_proposition_bound_evidence_successors_promoted": True,
+            "current_pack_successors_promoted": True,
             "s1_product_acceptance": False,
             "complete_investment_report_claimed": False,
         }
     )
+    if full_three_case_replacement:
+        stage["three_case_proposition_bound_evidence_successors_promoted"] = True
     body["stage_acceptance"] = stage
     body["known_boundary"] = (
         "Current composition exposes the latest internally adjudicated, "
-        "capture-bound DELL, MU and NVDA Evidence successors while retaining "
-        "development holdout packs by digest. It does not make internal "
+        "capture-bound Evidence successors for the explicitly replaced cases "
+        "while retaining all other current and development packs by digest. "
+        "It does not make internal "
         "adjudication qualified-human review, prove external-source completeness, "
         "grant NumericFact authority, qualify S1 or authorize research publication."
     )
@@ -834,7 +845,11 @@ def compose_current_pack_set(
             repository_root.resolve()
         ).as_posix(),
         "recorded_at": str(authority["recorded_at"]),
-        "status": "three_case_current_pack_set_promoted",
+        "status": (
+            "three_case_current_pack_set_promoted"
+            if full_three_case_replacement
+            else "current_pack_subset_promoted"
+        ),
         "replacement_case_keys": list(replacements),
         "before_after": {
             case_key: {

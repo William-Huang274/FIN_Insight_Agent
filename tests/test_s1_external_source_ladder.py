@@ -143,6 +143,60 @@ def test_provider_normalization_retains_locator_only_boundary() -> None:
     assert result["evidence_promotion_allowed"] is False
 
 
+def test_provider_normalization_treats_explicit_null_pages_as_zero_results() -> None:
+    plan = _plan()
+    unit = plan["query_units"][0]
+    request = compile_safe_provider_request(unit)
+
+    result = normalize_tencent_search_response(
+        raw_payload={
+            "Response": {
+                "Pages": None,
+                "Msg": None,
+                "Version": "standard",
+                "RequestId": "REQ-ZERO-1",
+            }
+        },
+        query_unit=unit,
+        safe_request=request,
+    )
+
+    assert result["locators"] == []
+    assert result["rejections"] == []
+    assert result["evidence_promotion_allowed"] is False
+
+
+def test_provider_normalization_rejects_missing_or_error_null_pages() -> None:
+    plan = _plan()
+    unit = plan["query_units"][0]
+    request = compile_safe_provider_request(unit)
+
+    with pytest.raises(
+        ExternalSourceLadderError,
+        match="external_ladder_provider_pages_missing",
+    ):
+        normalize_tencent_search_response(
+            raw_payload={"Response": {"RequestId": "REQ-MISSING"}},
+            query_unit=unit,
+            safe_request=request,
+        )
+    with pytest.raises(
+        ExternalSourceLadderError,
+        match="external_ladder_provider_zero_result_envelope_invalid",
+    ):
+        normalize_tencent_search_response(
+            raw_payload={
+                "Response": {
+                    "Pages": None,
+                    "RequestId": "REQ-ERROR",
+                    "Error": {"Code": "InternalError"},
+                }
+            },
+            query_unit=unit,
+            safe_request=request,
+        )
+
+
 def test_shortlist_is_fair_and_rejects_unreviewed_domain() -> None:
     plan = _plan()
     bundles = []

@@ -471,6 +471,17 @@ def normalize_tencent_search_response(
     )
     _require(isinstance(response, Mapping), "external_ladder_provider_response_invalid")
     pages = response.get("Pages")
+    # Tencent WSA Standard represents a successful zero-result response as
+    # `Pages: null` (with a normal RequestId/Version envelope).  Preserve the
+    # distinction between that state and a malformed response where `Pages`
+    # is absent, or an explicit provider error is present.
+    if "Pages" in response and pages is None:
+        _require(
+            not response.get("Error")
+            and bool(str(response.get("RequestId") or "").strip()),
+            "external_ladder_provider_zero_result_envelope_invalid",
+        )
+        pages = []
     _require(isinstance(pages, list), "external_ladder_provider_pages_missing")
     locators_by_url: dict[str, dict[str, Any]] = {}
     rejections: list[dict[str, Any]] = []

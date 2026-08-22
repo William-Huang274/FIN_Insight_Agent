@@ -1,0 +1,172 @@
+{
+  "authority": {
+    "candidate_decision_complete": false,
+    "dynamic_single_unit_authorized": false,
+    "evidence_pack_readiness_authorized": false,
+    "evidence_promotion_authorized": false,
+    "public_information_gap_authorized": false
+  },
+  "case_key": "DELL",
+  "known_boundary": "The paid provider supplied locators only. Original captures and compiled source objects remain candidate material. CandidateDecision, Evidence Gate, current Pack promotion, S2 recompilation and dynamic research are not yet authorized.",
+  "original_summary": {
+    "candidate_proposal_count": 19,
+    "captured_count": 35,
+    "original_route_count": 39,
+    "parse_rejected_count": 3,
+    "publication_date_unresolved_count": 14,
+    "source_object_count": 18
+  },
+  "plan_digest": "d4191bedceea6e86666225b7222dc3c88dbd66f7a02faeeef4767f3503892378",
+  "plan_id": "FIN-0.1.3-S1-DELL-EXTERNAL-SOURCE-LADDER-R2",
+  "prepared_from_commit": "d2290f30f88a7fb687badbb76c1954531ecf9c64",
+  "private_execution_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_ladder/dell-external-ladder-r2/terminal_result.json",
+  "private_execution_sha256": "f55e4b2b4809915def180a2491180f39a6e7a140b3c915ee45d32dbb17b0a252",
+  "propositions": [
+    {
+      "candidate_proposal_count": 0,
+      "captured_original_count": 3,
+      "compiled_source_object_count": 1,
+      "external_route_exhausted": false,
+      "locator_count": 34,
+      "proposition_id": "DELL-PROP-COUNTEREVIDENCE-WWC",
+      "public_information_gap_eligible": false,
+      "query_count": 4,
+      "query_success_count": 4,
+      "replayed_query_count": 4,
+      "selected_original_count": 3,
+      "tier_ids_with_selected_original": [
+        "official_subject_regulator_customer_supplier",
+        "trusted_context_analyst_counterevidence"
+      ]
+    },
+    {
+      "candidate_proposal_count": 5,
+      "captured_original_count": 6,
+      "compiled_source_object_count": 4,
+      "external_route_exhausted": false,
+      "locator_count": 38,
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "public_information_gap_eligible": false,
+      "query_count": 4,
+      "query_success_count": 4,
+      "replayed_query_count": 4,
+      "selected_original_count": 6,
+      "tier_ids_with_selected_original": [
+        "industry_association_market_tracking",
+        "official_subject_regulator_customer_supplier",
+        "product_procurement_channel_deployment"
+      ]
+    },
+    {
+      "candidate_proposal_count": 1,
+      "captured_original_count": 3,
+      "compiled_source_object_count": 1,
+      "external_route_exhausted": false,
+      "locator_count": 43,
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "public_information_gap_eligible": false,
+      "query_count": 8,
+      "query_success_count": 6,
+      "replayed_query_count": 4,
+      "selected_original_count": 4,
+      "tier_ids_with_selected_original": [
+        "official_subject_regulator_customer_supplier",
+        "product_procurement_channel_deployment"
+      ]
+    },
+    {
+      "candidate_proposal_count": 4,
+      "captured_original_count": 2,
+      "compiled_source_object_count": 2,
+      "external_route_exhausted": false,
+      "locator_count": 37,
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "public_information_gap_eligible": false,
+      "query_count": 4,
+      "query_success_count": 4,
+      "replayed_query_count": 4,
+      "selected_original_count": 2,
+      "tier_ids_with_selected_original": [
+        "industry_association_market_tracking"
+      ]
+    },
+    {
+      "candidate_proposal_count": 2,
+      "captured_original_count": 9,
+      "compiled_source_object_count": 1,
+      "external_route_exhausted": false,
+      "locator_count": 72,
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "public_information_gap_eligible": false,
+      "query_count": 8,
+      "query_success_count": 8,
+      "replayed_query_count": 4,
+      "selected_original_count": 10,
+      "tier_ids_with_selected_original": [
+        "industry_association_market_tracking",
+        "official_subject_regulator_customer_supplier",
+        "trusted_context_analyst_counterevidence"
+      ]
+    },
+    {
+      "candidate_proposal_count": 2,
+      "captured_original_count": 1,
+      "compiled_source_object_count": 1,
+      "external_route_exhausted": false,
+      "locator_count": 51,
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "public_information_gap_eligible": false,
+      "query_count": 6,
+      "query_success_count": 6,
+      "replayed_query_count": 4,
+      "selected_original_count": 3,
+      "tier_ids_with_selected_original": [
+        "industry_association_market_tracking"
+      ]
+    },
+    {
+      "candidate_proposal_count": 5,
+      "captured_original_count": 11,
+      "compiled_source_object_count": 8,
+      "external_route_exhausted": false,
+      "locator_count": 64,
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "public_information_gap_eligible": false,
+      "query_count": 9,
+      "query_success_count": 8,
+      "replayed_query_count": 4,
+      "selected_original_count": 11,
+      "tier_ids_with_selected_original": [
+        "product_procurement_channel_deployment",
+        "trusted_context_analyst_counterevidence"
+      ]
+    }
+  ],
+  "provider": {
+    "failed_query_count": 3,
+    "fresh_provider_query_count": 15,
+    "locator_count": 339,
+    "model_call_count": 0,
+    "provider_call_count": 15,
+    "provider_id": "tencent_wsa_searchpro_standard_locator_v1",
+    "provider_result_is_locator_only": true,
+    "query_count": 43,
+    "replayed_query_count": 28,
+    "retry_count": 0,
+    "successful_query_count": 40
+  },
+  "recorded_at": "2026-08-22T14:27:40+00:00",
+  "research_as_of": "2026-08-06",
+  "result_digest": "32a995ddae5f7360aae492e6e6d1caf69f8c6ab5810696320260673f02ed471e",
+  "schema_version": "fin_ia_s1_dell_external_source_ladder_result_v1_1",
+  "shortlist_summary": {
+    "locator_count": 339,
+    "rejected_locator_count": 300,
+    "selected_domain_count": 16,
+    "selected_original_fetch_count": 39,
+    "selected_proposition_count": 7,
+    "selected_source_family_count": 16,
+    "selected_tier_count": 4
+  },
+  "status": "dell_external_ladder_successor_executed_candidate_decision_pending"
+}

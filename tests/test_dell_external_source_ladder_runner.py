@@ -262,6 +262,33 @@ def test_actual_r1_locator_replay_calls_provider_only_for_15_residual_queries(
     assert all(row["model_call_count"] == 0 for row in receipts)
 
 
+def test_provider_parse_failure_keeps_raw_response_and_failure_captures(
+    tmp_path: Path,
+) -> None:
+    plan = _plan()
+    plan["query_units"] = [plan["query_units"][0]]
+    plan["execution_budget"]["provider_call_ceiling"] = 1
+
+    def malformed_provider(_request_body, _timeout):
+        return {"Response": {"RequestId": "REQ-MALFORMED", "Version": "standard"}}
+
+    _bundles, receipts = execute_locator_queries(
+        plan=plan,
+        attempt_root=tmp_path / "parse-failure",
+        provider_call=malformed_provider,
+    )
+
+    receipt = receipts[0]
+    assert receipt["status"] == "provider_locator_call_failed"
+    assert receipt["raw_capture_kind"] == "provider_response"
+    assert receipt["raw_capture_ref"] == receipt["provider_response_capture_ref"]
+    assert receipt["provider_response_capture_sha256"]
+    assert receipt["provider_failure_capture_ref"]
+    assert receipt["provider_failure_capture_sha256"]
+    assert Path(receipt["provider_response_capture_ref"]).name == "raw_response.json"
+    assert Path(receipt["provider_failure_capture_ref"]).name == "provider_failure.json"
+
+
 def test_actual_r1_same_family_redirect_capture_is_reused_without_network(
     tmp_path: Path,
     monkeypatch,

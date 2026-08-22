@@ -326,6 +326,8 @@ def execute_locator_queries(
         request_path = unit_root / "safe_request.json"
         _write_new(request_path, safe_request)
         started = time.monotonic()
+        response_capture_path: Path | None = None
+        failure_capture_path: Path | None = None
         try:
             payload = provider_call(safe_request["request_body"], timeout)
             raw_body = {
@@ -337,8 +339,8 @@ def execute_locator_queries(
                 "raw_response": _redact(payload, secret_values),
             }
             raw_capture = {**raw_body, "capture_digest": canonical_digest(raw_body)}
-            raw_path = unit_root / "raw_response.json"
-            _write_new(raw_path, raw_capture)
+            response_capture_path = unit_root / "raw_response.json"
+            _write_new(response_capture_path, raw_capture)
             bundle = normalize_tencent_search_response(
                 raw_payload=payload,
                 query_unit=unit,
@@ -363,8 +365,8 @@ def execute_locator_queries(
                 **failure_body,
                 "capture_digest": canonical_digest(failure_body),
             }
-            raw_path = unit_root / "provider_failure.json"
-            _write_new(raw_path, failure_capture)
+            failure_capture_path = unit_root / "provider_failure.json"
+            _write_new(failure_capture_path, failure_capture)
             bundle = _empty_bundle(
                 query_unit_id=unit_id,
                 safe_request_digest=str(safe_request["request_digest"]),
@@ -373,6 +375,9 @@ def execute_locator_queries(
             bundle_path = unit_root / "locator_bundle.json"
             _write_new(bundle_path, bundle)
             status = "provider_locator_call_failed"
+        raw_path = response_capture_path or failure_capture_path
+        if raw_path is None:
+            raise RuntimeError("external_ladder_provider_capture_missing")
         locator_bundles.append(bundle)
         provider_calls += 1
         receipts.append(
@@ -387,6 +392,31 @@ def execute_locator_queries(
                 "safe_request_sha256": _sha256(request_path),
                 "raw_capture_ref": _relative(raw_path),
                 "raw_capture_sha256": _sha256(raw_path),
+                "raw_capture_kind": (
+                    "provider_response"
+                    if response_capture_path is not None
+                    else "provider_failure"
+                ),
+                "provider_response_capture_ref": (
+                    _relative(response_capture_path)
+                    if response_capture_path is not None
+                    else None
+                ),
+                "provider_response_capture_sha256": (
+                    _sha256(response_capture_path)
+                    if response_capture_path is not None
+                    else None
+                ),
+                "provider_failure_capture_ref": (
+                    _relative(failure_capture_path)
+                    if failure_capture_path is not None
+                    else None
+                ),
+                "provider_failure_capture_sha256": (
+                    _sha256(failure_capture_path)
+                    if failure_capture_path is not None
+                    else None
+                ),
                 "locator_bundle_ref": _relative(bundle_path),
                 "locator_bundle_sha256": _sha256(bundle_path),
                 "locator_count": len(bundle.get("locators") or ()),

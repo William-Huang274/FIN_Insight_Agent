@@ -1228,3 +1228,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 工程门通过：定向 `34 passed`、全仓 `1030 passed`（仅 2 条既有 SWIG warning）、compileall、active baseline `200／8／5／28／0`、7,613-file secret scan／0 和 diff check。0 模型、0 网络、0 Provider、0 Candidate promotion。
 - 下一步必须先 clean commit／push，再执行 12 请求 AI-free R2；随后把 43 Evidence 按新 MaterialRequirement 做 reviewed mapping／polarity／integrated EvidencePackReadiness。只有新 readiness 通过，才晋升 current Pack、重编 S2，并考虑动态 DELL 单单元。S1／S2／S3／qualified-human／Workbench publication／release 继续为 false。
 - 详细记录见 `docs/worklog/fin_0_1_3_s1/061_dell_twelve_request_material_scope_and_readiness_seam.md`。
+
+### 2026-08-23 DELL 12 请求 AI-free 内源 R2
+
+- 正式 R2 绑定 clean／synced `67270106...`，真实执行 SQL／NumericFact、对象／全文、BM25、Qwen CUDA／FP16 dense 与当前可用关系路线；0 模型、0 外网、0 Provider、0 Candidate promotion。
+- 12/12 请求均由 explicit blueprint 编译并达到 candidate-level material scope ready；11/12 material set complete。唯一不完整的是 Dell 与 GPU／HBM／网络等对手方价值分配。
+- 共保留 192 条候选、739 条 union；10/12 snapshot lanes 非空。S2 当前路线返回 12 resolved、24 typed gaps、0 conflict，但文本候选没有获得 NumericFact authority。
+- 该结果只证明七命题真正传到检索层。候选角色／轴完整不等于 reviewed Evidence 充分，尤其不能据此宣称价格、销量、PVM、客户部署或供应链事实已经证明。
+- 下一门是将 43 Evidence Pack 按 R2 MaterialRequirement 做 reviewed mapping／polarity 并编译 integrated EvidencePackReadiness；通过后才可 current promotion 与 S2 recompile。动态单单元仍无 authority。
+- 详细记录见 `docs/worklog/fin_0_1_3_s1/062_dell_twelve_request_ai_free_internal_r2_result.md`。

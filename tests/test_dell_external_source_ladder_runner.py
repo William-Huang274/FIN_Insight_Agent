@@ -23,6 +23,7 @@ from scripts.data_retrieval.run_dell_external_source_ladder import (
     compile_captured_originals,
     execute_locator_queries,
     execute_original_capture_successor,
+    run_capture_replay,
 )
 
 
@@ -194,6 +195,54 @@ def test_candidate_window_rejects_navigation_tail_and_keeps_material_block() -> 
     )
 
 
+def test_relationship_output_compiles_relationship_candidate_facets() -> None:
+    unit = {
+        "query_unit_id": "Q::SUPPLIER-RELATIONSHIP",
+        "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+        "tier_id": "official_subject_regulator_customer_supplier",
+        "query": "NVIDIA Dell PowerEdge platform availability",
+        "expected_output_ids": [
+            "supplier_names_dell",
+            "observable_platform_delivery_relationship",
+        ],
+    }
+    source_object = {
+        "source_id": "PUBLIC::NVDA::RELATIONSHIP",
+        "source_object_digest": "2" * 64,
+        "segments": [
+            {
+                "segment_id": "SEG::RELATIONSHIP",
+                "text": (
+                    "NVIDIA announced Dell PowerEdge AI-ready servers will be "
+                    "available by year-end."
+                ),
+            }
+        ],
+    }
+    policies = {
+        "DELL-PROP-SUPPLY-CHAIN": {
+            "scope_anchor_terms": ["gpu", "blackwell", "server", "poweredge"],
+            "material_signal_terms": ["capacity", "supply", "allocation"],
+            "minimum_scope_anchor_hits": 1,
+            "minimum_material_signal_hits": 2,
+            "context_blocks_before": 0,
+            "context_blocks_after": 0,
+        }
+    }
+
+    proposals = _candidate_proposals(
+        source_object=source_object,
+        query_unit=unit,
+        candidate_selection_policy=policies,
+    )
+
+    assert len(proposals) == 1
+    assert proposals[0]["material_signal_hits"] == ["available"]
+    assert proposals[0]["selection_method"] == (
+        "capture_bound_relationship_facets_and_material_signal_v1"
+    )
+
+
 def test_public_projection_never_claims_route_exhaustion() -> None:
     plan = _plan()
     locator = _locator(plan)
@@ -357,3 +406,118 @@ def test_actual_r1_same_family_redirect_capture_is_reused_without_network(
         "rejected_final_url"
     )
     assert receipt["summary"]["predecessor_capture_reused_count"] == 1
+
+
+def test_capture_replay_reuses_immutable_originals_without_network(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    plan = _plan()
+    plan_path = tmp_path / "effective_plan.json"
+    plan_path.write_text(
+        json.dumps(plan, ensure_ascii=False, sort_keys=True),
+        encoding="utf-8",
+    )
+    locator = _locator(plan)
+    shortlist = {"selected": [locator]}
+    source_plan = _compile_original_capture_plan(plan=plan, shortlist=shortlist)
+    route_id = source_plan["sources"][0]["route_id"]
+    html = """
+    <html><head><meta property="article:published_time" content="2026-04-15"></head>
+    <body><form><div class="module_body">
+    <div>Dell PowerEdge XE9680 AI server configuration includes GPU accelerators.</div>
+    <div>Public product configuration supports memory networking and storage choices.</div>
+    <div>{}</div>
+    </div></form></body></html>
+    """.format("Captured product context remains candidate-only. " * 30)
+    body = html.encode("utf-8")
+    response = {
+        "schema_version": CAPTURE_SCHEMA_VERSION,
+        "capture_kind": "source_response",
+        "case_key": "DELL",
+        "route_id": route_id,
+        "request_capture_ref": "sha256://request",
+        "request_capture_digest": "a" * 64,
+        "status_code": 200,
+        "final_url": locator["canonical_url"],
+        "headers": {"content-type": "text/html; charset=utf-8"},
+        "redirect_chain": [],
+        "body_base64": base64.b64encode(body).decode("ascii"),
+        "body_sha256": hashlib.sha256(body).hexdigest(),
+        "body_bytes": len(body),
+        "capture_before_parse": True,
+        "credential_cookie_authorization_present": False,
+        "preflight_response_refs": [],
+    }
+    response_path = tmp_path / "response.json"
+    response_path.write_text(
+        json.dumps(response, ensure_ascii=False, sort_keys=True),
+        encoding="utf-8",
+    )
+    response_sha = hashlib.sha256(response_path.read_bytes()).hexdigest()
+    capture_result = {
+        "sources": [
+            {
+                "route_id": route_id,
+                "status": "captured",
+                "failure_code": None,
+                "content_type": "text/html",
+                "response_capture": {
+                    "object_ref": str(response_path),
+                    "sha256": response_sha,
+                },
+            }
+        ]
+    }
+    prior_compilation = compile_captured_originals(
+        plan=plan,
+        shortlist=shortlist,
+        capture_result=capture_result,
+    )
+    predecessor_body = {
+        "schema_version": "test_predecessor",
+        "plan_binding": {
+            "ref": str(plan_path),
+            "sha256": hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+            "plan_digest": plan["plan_digest"],
+        },
+        "fetch_shortlist": shortlist,
+        "original_capture_result": capture_result,
+        "original_compilation_result": prior_compilation,
+    }
+    predecessor = {
+        **predecessor_body,
+        "result_digest": canonical_digest(predecessor_body),
+    }
+    predecessor_path = tmp_path / "predecessor.json"
+    predecessor_path.write_text(
+        json.dumps(predecessor, ensure_ascii=False, sort_keys=True),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "scripts.data_retrieval.run_dell_external_source_ladder._require_clean",
+        lambda: None,
+    )
+    monkeypatch.setattr(
+        "scripts.data_retrieval.run_dell_external_source_ladder._head",
+        lambda: "3" * 40,
+    )
+
+    public_output = tmp_path / "public.json"
+    result = run_capture_replay(
+        attempt_id="replay-r1",
+        private_root=tmp_path / "private",
+        public_output=public_output,
+        predecessor_private_result_path=predecessor_path,
+    )
+
+    assert result["observed_counts"] == {
+        "network_calls": 0,
+        "provider_calls": 0,
+        "model_calls": 0,
+        "retry_count": 0,
+        "candidate_evidence_promotions": 0,
+    }
+    assert result["original_summary"]["source_object_count"] == 1
+    assert result["authority"]["candidate_decision_complete"] is False
+    assert public_output.exists()

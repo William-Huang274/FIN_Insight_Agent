@@ -226,11 +226,128 @@ def test_publication_date_recovers_visible_month_name_date_marker() -> None:
     assert receipt["original_source_candidates"] == [
         {
             "date": "2026-06-22",
+            "source": "original_html_article_scoped_visible_date",
+            "priority": 1,
+            "after_research_as_of": False,
+        },
+        {
+            "date": "2026-06-22",
             "source": "original_html_visible_date_marker",
-            "priority": 2,
+            "priority": 3,
             "after_research_as_of": False,
         }
     ]
+
+
+def test_article_scoped_date_wins_over_related_story_dates() -> None:
+    html = """
+    <html><body>
+      <div class="article">
+        <h1>Dell and NVIDIA product availability</h1>
+        <div class="article-date">August 22, 2023</div>
+        <div class="article-body">
+          <div>Dell PowerEdge systems will support the announced NVIDIA platform.</div>
+          <div>Availability is described by the named supplier and system maker.</div>
+          <div>Additional bounded article text keeps the body independently useful.</div>
+          <div>Relationship context remains speaker bound and does not imply allocation.</div>
+          <div>{}</div>
+        </div>
+      </div>
+      <aside class="more-news">
+        <span class="index-item-text-info-date">August 17, 2026</span>
+        <span class="index-item-text-info-date">August 10, 2026</span>
+      </aside>
+    </body></html>
+    """.format("Supplier relationship context. " * 20)
+    receipt = adjudicate_publication_date_from_capture(
+        response_capture=_capture(html, url="https://example.com/article"),
+        research_as_of="2026-08-06",
+    )
+
+    assert receipt["status"] == "resolved_from_original_source"
+    assert receipt["selected_publication_date"] == "2023-08-22"
+    assert any(
+        row["source"] == "original_html_article_scoped_visible_date"
+        and row["date"] == "2023-08-22"
+        for row in receipt["original_source_candidates"]
+    )
+
+
+def test_publication_date_recovers_publisheddate_meta_variant() -> None:
+    html = """
+    <html><head><meta name="publishedDate" content="May 26, 2026, 5:35 PM EDT"></head>
+    <body><main><p>Captured article body.</p></main></body></html>
+    """
+    receipt = adjudicate_publication_date_from_capture(
+        response_capture=_capture(html, url="https://example.com/article"),
+        research_as_of="2026-08-06",
+    )
+
+    assert receipt["status"] == "resolved_from_original_source"
+    assert receipt["selected_publication_date"] == "2026-05-26"
+
+
+def test_public_article_compiler_uses_scoped_div_text_without_related_noise() -> None:
+    html = """
+    <html><body>
+      <div class="global-navigation">{}</div>
+      <div class="module module-news-details">
+        <div class="module-date">April 15, 2026</div>
+        <div class="module_body">
+          <div>Blackwell product shipments increased sequentially in the reported quarter.</div>
+          <div>Supplier commentary described product availability and demand conditions.</div>
+          <div>Dell was named as a platform builder, which proves a relationship but not allocation.</div>
+          <div>Capacity and shipment timing remain bound to the supplier disclosure.</div>
+          <div>{}</div>
+        </div>
+      </div>
+      <div class="related-news">{}</div>
+    </body></html>
+    """.format(
+        "Navigation link " * 100,
+        "Captured supplier context remains bounded. " * 30,
+        "Unrelated future story " * 100,
+    )
+    source = compile_public_html_source_object(
+        response_capture=_capture(html, url="https://example.com/research"),
+        source_spec=_source_spec(),
+        capture_ref="capture://div-article",
+        capture_sha256="f" * 64,
+    )
+
+    rendered = json.dumps(source)
+    assert source["parse_quality_receipt"]["text_node_fallback_used"] is True
+    assert source["parse_quality_receipt"]["visible_text_characters"] >= 500
+    assert "Captured supplier context" in rendered
+    assert "Navigation link" not in rendered
+    assert "Unrelated future story" not in rendered
+
+
+def test_public_article_compiler_preserves_article_wrapped_by_page_form() -> None:
+    html = """
+    <html><body><form id="aspnetForm">
+      <header>Investor navigation</header>
+      <div class="module module-news-details">
+        <div class="module_body">
+          <div>Blackwell sales increased while supply timing remained constrained.</div>
+          <div>Dell was named as a system platform builder by the supplier.</div>
+          <div>{}</div>
+        </div>
+      </div>
+      <footer>Subscription controls</footer>
+    </form></body></html>
+    """.format("Captured investor relations disclosure. " * 30)
+    source = compile_public_html_source_object(
+        response_capture=_capture(html, url="https://example.com/research"),
+        source_spec=_source_spec(),
+        capture_ref="capture://aspnet-article",
+        capture_sha256="1" * 64,
+    )
+
+    rendered = json.dumps(source)
+    assert "Blackwell sales increased" in rendered
+    assert "Investor navigation" not in rendered
+    assert "Subscription controls" not in rendered
 
 
 def test_public_pdf_compiler_emits_candidate_only_segments(monkeypatch) -> None:

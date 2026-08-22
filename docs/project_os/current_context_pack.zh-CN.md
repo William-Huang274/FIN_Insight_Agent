@@ -1280,3 +1280,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 真正仍未获得的材料与工具故障分开保留：Dell IR 路线 read timeout，IDC 为 403；CDW／Insight／SAM.gov 未形成 Dell AI 服务器可观察成交价；TrendForce 只提供行业销量／供给上下文。价格和 Dell 台数／份额不得被 parser 修复伪关闭。
 - R3 public result digest=`9aeb7a80...fb9ce`，private terminal SHA-256=`09c07053...70fc`。CandidateDecision、Evidence Gate、current Pack、S2 successor、EvidencePackReadiness 和动态 Agent 均仍为 false。
 - 下一项是保留 R3 不可变，使用本轮 capture 做零网络 parser／date adjudicator replay；修复后必须重新生成 source object／candidate receipt，不能重跑 Provider 或改写原始运行。
+
+### 2026-08-23 DELL external capture replay compiler 工程门
+
+- 公共网页 compiler 已改为 article-scoped root＋受限 div text fallback；全页 ASP.NET form／异常 header 包裹不会再删除正文，普通导航和页尾仍被排除。
+- publication date 现在以发布 meta 为最高优先级；无 meta 时只让正文容器附近的日期优先，页尾推荐文章日期不能再制造同级冲突。
+- relationship EvidenceRequest 会从 expected output 编译关系动作 facet，不再把“供应商点名 Dell／平台交付”错误要求为两个产能词；Candidate 仍不自动成为 Evidence。
+- 同一 R3 capture 的零网络诊断由 `15 objects／15 proposals／supply 0` 改善为 `26／24／11`，date unresolved `26→22`、parse rejected `8→1`。这只是未物化诊断，不能用于 current promotion。
+- runner 已新增 predecessor／plan／capture digest-bound replay 模式，下一步只执行一次 clean-bound formal replay。工程门为定向 20、全仓 1040 passed，active baseline `200／8／5／28／0`，7,628-file secret scan／0；0 网络／Provider／模型／promotion。
+- 详细记录见 `docs/worklog/fin_0_1_3_s1/067_dell_external_capture_replay_compiler_repair_gate.md`。

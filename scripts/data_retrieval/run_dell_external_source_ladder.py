@@ -73,6 +73,12 @@ DEFAULT_PUBLIC_SUCCESSOR = (
     / "retrieval"
     / "fin_ia_0_1_3_s1_dell_external_source_ladder_result_v1_1.json"
 )
+DEFAULT_PUBLIC_CAPTURE_REPLAY = (
+    ROOT
+    / "configs"
+    / "retrieval"
+    / "fin_ia_0_1_3_s1_dell_external_capture_replay_result_v1_0.json"
+)
 _STOPWORDS = {
     "and",
     "for",
@@ -569,7 +575,10 @@ def _block_candidate_proposals(
             "material_signal_hits": material_hits,
             "query_term_overlap": query_hits,
             "deterministic_locator_relevance": round(score, 6),
-            "selection_method": "capture_bound_central_block_identity_and_material_signal_v1",
+            "selection_method": str(
+                policy.get("selection_method")
+                or "capture_bound_central_block_identity_and_material_signal_v1"
+            ),
             "candidate_not_evidence": True,
             "candidate_decision_required": True,
         }
@@ -591,10 +600,54 @@ def _candidate_proposals(
         raw_policy = candidate_selection_policy.get(str(query_unit["proposition_id"]))
         if not isinstance(raw_policy, Mapping):
             raise RuntimeError("external_ladder_candidate_policy_missing")
+        effective_policy = deepcopy(dict(raw_policy))
+        expected_output_text = " ".join(
+            str(value).casefold()
+            for value in query_unit.get("expected_output_ids") or ()
+        )
+        relationship_request = any(
+            cue in expected_output_text
+            for cue in (
+                "relationship",
+                "supplier_names",
+                "dell_names",
+                "platform_delivery",
+            )
+        )
+        if relationship_request:
+            effective_policy["material_signal_terms"] = sorted(
+                {
+                    *(
+                        str(value).casefold()
+                        for value in effective_policy["material_signal_terms"]
+                    ),
+                    "available",
+                    "availability",
+                    "building",
+                    "builders",
+                    "collaboration",
+                    "collaborating",
+                    "combines",
+                    "deliver",
+                    "delivered",
+                    "delivers",
+                    "delivery",
+                    "partner",
+                    "partners",
+                    "partnership",
+                    "support",
+                    "supported",
+                    "supports",
+                }
+            )
+            effective_policy["minimum_material_signal_hits"] = 1
+            effective_policy["selection_method"] = (
+                "capture_bound_relationship_facets_and_material_signal_v1"
+            )
         return _block_candidate_proposals(
             source_object=source_object,
             query_unit=query_unit,
-            policy=raw_policy,
+            policy=effective_policy,
             limit=limit,
         )
     terms = _proposal_terms(query_unit)
@@ -1105,6 +1158,197 @@ def build_public_projection(
     return {**body, "result_digest": canonical_digest(body)}
 
 
+def build_capture_replay_public_projection(
+    *,
+    predecessor_ref: str,
+    predecessor_sha256: str,
+    predecessor_result_digest: str,
+    original_result: Mapping[str, Any],
+    status_changes: Sequence[Mapping[str, Any]],
+    private_result_ref: str,
+    private_result_sha256: str,
+    prepared_from_commit: str,
+    recorded_at: str,
+) -> dict[str, Any]:
+    proposal_counts: dict[str, int] = {}
+    for row in original_result.get("candidate_proposals") or ():
+        proposition_id = str(row.get("proposition_id") or "")
+        proposal_counts[proposition_id] = proposal_counts.get(proposition_id, 0) + 1
+    body = {
+        "schema_version": "fin_ia_s1_dell_external_capture_replay_result_v1_0",
+        "status": "dell_external_capture_replay_complete_candidate_decision_pending",
+        "case_key": "DELL",
+        "recorded_at": recorded_at,
+        "prepared_from_commit": prepared_from_commit,
+        "predecessor_binding": {
+            "private_result_ref": predecessor_ref,
+            "private_result_sha256": predecessor_sha256,
+            "private_result_digest": predecessor_result_digest,
+        },
+        "original_summary": deepcopy(dict(original_result.get("summary") or {})),
+        "candidate_proposal_count_by_proposition": dict(
+            sorted(proposal_counts.items())
+        ),
+        "changed_route_count": len(status_changes),
+        "private_execution_ref": private_result_ref,
+        "private_execution_sha256": private_result_sha256,
+        "observed_counts": {
+            "network_calls": 0,
+            "provider_calls": 0,
+            "model_calls": 0,
+            "retry_count": 0,
+            "candidate_evidence_promotions": 0,
+        },
+        "authority": {
+            "capture_replay_only": True,
+            "candidate_decision_complete": False,
+            "evidence_promotion_authorized": False,
+            "public_information_gap_authorized": False,
+            "evidence_pack_readiness_authorized": False,
+            "dynamic_single_unit_authorized": False,
+        },
+        "known_boundary": (
+            "The replay recompiled immutable captured originals under the current "
+            "date, article-body and query-facet implementation. Recovered source "
+            "objects and proposals remain candidates until CandidateDecision and "
+            "Evidence Gate; unresolved routes are not public-information gaps."
+        ),
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
+def run_capture_replay(
+    *,
+    attempt_id: str,
+    private_root: Path,
+    public_output: Path,
+    predecessor_private_result_path: Path,
+) -> dict[str, Any]:
+    _require_clean()
+    attempt_root = private_root / attempt_id
+    if attempt_root.exists() or public_output.exists():
+        raise RuntimeError("dell_external_capture_replay_attempt_or_output_exists")
+
+    predecessor_sha256 = _sha256(predecessor_private_result_path)
+    predecessor = _read_json(predecessor_private_result_path)
+    _validate_content_digest(
+        predecessor,
+        "result_digest",
+        "dell_external_capture_replay_predecessor_digest_invalid",
+    )
+    plan_binding = predecessor.get("plan_binding")
+    shortlist = predecessor.get("fetch_shortlist")
+    capture_result = predecessor.get("original_capture_result")
+    prior_compilation = predecessor.get("original_compilation_result")
+    if not all(
+        isinstance(value, Mapping)
+        for value in (plan_binding, shortlist, capture_result, prior_compilation)
+    ):
+        raise RuntimeError("dell_external_capture_replay_predecessor_shape_invalid")
+    plan_path = _bound_path(str(plan_binding.get("ref") or ""))
+    if _sha256(plan_path) != str(plan_binding.get("sha256") or ""):
+        raise RuntimeError("dell_external_capture_replay_plan_sha_mismatch")
+    plan = validate_external_source_ladder_plan(_read_json(plan_path))
+    if plan.get("plan_digest") != plan_binding.get("plan_digest"):
+        raise RuntimeError("dell_external_capture_replay_plan_digest_mismatch")
+
+    for row in capture_result.get("sources") or ():
+        response = row.get("response_capture")
+        if not isinstance(response, Mapping):
+            continue
+        response_path = _bound_path(str(response.get("object_ref") or ""))
+        if _sha256(response_path) != str(response.get("sha256") or ""):
+            raise RuntimeError("dell_external_capture_replay_capture_sha_mismatch")
+
+    prepared_from_commit = _head()
+    recorded_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    original_result = compile_captured_originals(
+        plan=plan,
+        shortlist=shortlist,
+        capture_result=capture_result,
+    )
+    old_receipts = {
+        str(row.get("route_id") or ""): row
+        for row in prior_compilation.get("route_receipts") or ()
+    }
+    status_changes: list[dict[str, Any]] = []
+    for row in original_result.get("route_receipts") or ():
+        route_id = str(row.get("route_id") or "")
+        old = old_receipts.get(route_id, {})
+        old_status = str(old.get("source_object_status") or "")
+        new_status = str(row.get("source_object_status") or "")
+        old_count = int(old.get("candidate_proposal_count") or 0)
+        new_count = int(row.get("candidate_proposal_count") or 0)
+        if old_status == new_status and old_count == new_count:
+            continue
+        status_changes.append(
+            {
+                "route_id": route_id,
+                "proposition_id": row.get("proposition_id"),
+                "canonical_url": row.get("canonical_url"),
+                "prior_source_object_status": old_status,
+                "replay_source_object_status": new_status,
+                "prior_candidate_proposal_count": old_count,
+                "replay_candidate_proposal_count": new_count,
+            }
+        )
+
+    attempt_root.mkdir(parents=True, exist_ok=False)
+    original_path = attempt_root / "original_compilation_result.json"
+    _write_new(original_path, original_result)
+    change_path = attempt_root / "route_change_receipts.json"
+    _write_new(
+        change_path,
+        {
+            "schema_version": "fin_ia_s1_external_capture_replay_change_receipts_v1_0",
+            "status": "capture_replay_route_changes_recorded",
+            "changes": status_changes,
+        },
+    )
+    private_body = {
+        "schema_version": "fin_ia_s1_dell_external_capture_replay_private_result_v1_0",
+        "status": "dell_external_capture_replay_complete",
+        "attempt_id": attempt_id,
+        "recorded_at": recorded_at,
+        "prepared_from_commit": prepared_from_commit,
+        "predecessor_binding": {
+            "private_result_ref": _relative(predecessor_private_result_path),
+            "private_result_sha256": predecessor_sha256,
+            "private_result_digest": predecessor["result_digest"],
+        },
+        "plan_binding": deepcopy(dict(plan_binding)),
+        "original_compilation_result": original_result,
+        "route_change_receipts": status_changes,
+        "observed_counts": {
+            "network_calls": 0,
+            "provider_calls": 0,
+            "model_calls": 0,
+            "retry_count": 0,
+            "immutable_capture_rows_replayed": sum(
+                isinstance(row.get("response_capture"), Mapping)
+                for row in capture_result.get("sources") or ()
+            ),
+            "candidate_evidence_promotions": 0,
+        },
+    }
+    private_result = {**private_body, "result_digest": canonical_digest(private_body)}
+    private_path = attempt_root / "terminal_result.json"
+    _write_new(private_path, private_result)
+    public_result = build_capture_replay_public_projection(
+        predecessor_ref=_relative(predecessor_private_result_path),
+        predecessor_sha256=predecessor_sha256,
+        predecessor_result_digest=str(predecessor["result_digest"]),
+        original_result=original_result,
+        status_changes=status_changes,
+        private_result_ref=_relative(private_path),
+        private_result_sha256=_sha256(private_path),
+        prepared_from_commit=prepared_from_commit,
+        recorded_at=recorded_at,
+    )
+    _write_new(public_output, public_result)
+    return public_result
+
+
 def run(
     *,
     attempt_id: str,
@@ -1272,23 +1516,38 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--private-root", default=str(DEFAULT_PRIVATE_ROOT))
     parser.add_argument("--plan", default=str(PLAN))
     parser.add_argument("--successor-spec")
+    parser.add_argument("--capture-replay-predecessor")
     parser.add_argument("--public-output")
     args = parser.parse_args(argv)
+    if args.successor_spec and args.capture_replay_predecessor:
+        raise RuntimeError("external_ladder_live_and_capture_replay_are_mutually_exclusive")
     successor_spec_path = _resolve(args.successor_spec) if args.successor_spec else None
     public_output = (
         _resolve(args.public_output)
         if args.public_output
+        else DEFAULT_PUBLIC_CAPTURE_REPLAY.resolve()
+        if args.capture_replay_predecessor
         else DEFAULT_PUBLIC_SUCCESSOR.resolve()
         if successor_spec_path is not None
         else DEFAULT_PUBLIC.resolve()
     )
-    result = run(
-        attempt_id=args.attempt_id,
-        private_root=_resolve(args.private_root),
-        public_output=public_output,
-        plan_path=_resolve(args.plan),
-        successor_spec_path=successor_spec_path,
-    )
+    if args.capture_replay_predecessor:
+        result = run_capture_replay(
+            attempt_id=args.attempt_id,
+            private_root=_resolve(args.private_root),
+            public_output=public_output,
+            predecessor_private_result_path=_resolve(
+                args.capture_replay_predecessor
+            ),
+        )
+    else:
+        result = run(
+            attempt_id=args.attempt_id,
+            private_root=_resolve(args.private_root),
+            public_output=public_output,
+            plan_path=_resolve(args.plan),
+            successor_spec_path=successor_spec_path,
+        )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 

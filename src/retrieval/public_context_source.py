@@ -35,6 +35,54 @@ PUBLICATION_DATE_RECEIPT_SCHEMA_VERSION = (
 )
 _PARSER_PROFILES = {"article_main_html", "sec_filing_html"}
 _GENERIC_BLOCK_TAGS = ("h1", "h2", "h3", "h4", "p", "li", "tr")
+_ARTICLE_BODY_HINTS = (
+    "article body",
+    "articlebody",
+    "story body",
+    "storybody",
+    "entry content",
+    "entrycontent",
+    "post content",
+    "postcontent",
+    "module body",
+    "modulebody",
+    "press release body",
+    "pressreleasebody",
+    "news body",
+    "newsbody",
+)
+_ARTICLE_CONTENT_HINTS = (
+    "article content",
+    "articlecontent",
+    "story content",
+    "storycontent",
+    "press release content",
+    "pressreleasecontent",
+    "news details",
+    "newsdetails",
+    "module news details",
+    "modulenewsdetails",
+    "main content",
+    "maincontent",
+)
+_NON_ARTICLE_HINTS = (
+    "article bottom",
+    "articlebottom",
+    "archive",
+    "aside",
+    "contact",
+    "footer",
+    "header",
+    "index item",
+    "indexitem",
+    "listing",
+    "more news",
+    "morenews",
+    "navigation",
+    "recommended",
+    "related",
+    "sidebar",
+)
 
 
 class PublicContextSourceError(ValueError):
@@ -141,6 +189,127 @@ def _normalized_date_candidate(value: object) -> str | None:
     return None
 
 
+def _node_marker(node: Any) -> str:
+    raw = " ".join(
+        [
+            str(node.get("id") or ""),
+            " ".join(str(value) for value in node.get("class") or ()),
+            str(node.get("role") or ""),
+            str(node.get("itemprop") or ""),
+        ]
+    ).casefold()
+    return _normalized(re.sub(r"[^a-z0-9]+", " ", raw))
+
+
+def _content_root_score(node: Any) -> int:
+    marker = _node_marker(node)
+    if any(value in marker for value in _NON_ARTICLE_HINTS):
+        return -1000
+    score = 0
+    if any(value in marker for value in _ARTICLE_BODY_HINTS):
+        score += 140
+    elif any(value in marker for value in _ARTICLE_CONTENT_HINTS):
+        score += 120
+    marker_tokens = set(marker.split())
+    if "article" in marker_tokens:
+        score += 100
+    if node.name == "article":
+        score += 90
+    elif node.name == "main":
+        score += 70
+    if str(node.get("role") or "").casefold() == "main":
+        score += 60
+    return score
+
+
+def _select_content_root(
+    soup: BeautifulSoup,
+    *,
+    minimum_visible_size: int = 500,
+) -> tuple[Any, str, int]:
+    candidates: list[Any] = [
+        *(soup.find_all("article")),
+        *(soup.find_all("main")),
+        *(soup.find_all(attrs={"role": "main"})),
+    ]
+    for node in soup.find_all(("div", "section")):
+        marker = _node_marker(node)
+        if (
+            any(value in marker for value in _ARTICLE_BODY_HINTS)
+            or any(value in marker for value in _ARTICLE_CONTENT_HINTS)
+            or "article" in set(marker.split())
+        ):
+            candidates.append(node)
+    if soup.body is not None:
+        candidates.append(soup.body)
+
+    unique: list[Any] = []
+    seen_nodes: set[int] = set()
+    for node in candidates:
+        identity = id(node)
+        if identity in seen_nodes:
+            continue
+        visible_size = len(_normalized(node.get_text(" ", strip=True)))
+        if visible_size < minimum_visible_size:
+            continue
+        unique.append(node)
+        seen_nodes.add(identity)
+    _require(bool(unique), "public_context_content_root_missing")
+
+    root = max(
+        unique,
+        key=lambda node: (
+            _content_root_score(node),
+            -len(_normalized(node.get_text(" ", strip=True))),
+        ),
+    )
+    marker = _node_marker(root)
+    root_kind = (
+        f"article_scoped_visible_root:{marker[:80]}"
+        if _content_root_score(root) > 0
+        else "largest_visible_body_root"
+    )
+    return root, root_kind, _content_root_score(root)
+
+
+def _article_scoped_visible_date_candidates(soup: BeautifulSoup) -> list[str]:
+    try:
+        root, _, root_score = _select_content_root(
+            soup,
+            minimum_visible_size=10,
+        )
+    except PublicContextSourceError:
+        return []
+    if root_score <= 0:
+        return []
+
+    scopes: list[Any] = []
+    current = root
+    for _ in range(5):
+        if current is None or getattr(current, "name", None) in {"body", "html"}:
+            break
+        scopes.append(current)
+        current = current.parent
+
+    for scope in scopes:
+        values: set[str] = set()
+        for node in scope.find_all(True):
+            marker = _node_marker(node)
+            if not any(token in marker for token in ("date", "publish", "news time")):
+                continue
+            if any(value in marker for value in _NON_ARTICLE_HINTS):
+                continue
+            visible = _normalized(node.get_text(" ", strip=True))
+            if not 0 < len(visible) <= 160:
+                continue
+            normalized = _normalized_date_candidate(visible)
+            if normalized is not None:
+                values.add(normalized)
+        if values:
+            return sorted(values)
+    return []
+
+
 def adjudicate_publication_date_from_capture(
     *,
     response_capture: Mapping[str, Any],
@@ -156,11 +325,16 @@ def adjudicate_publication_date_from_capture(
     ).split(";", 1)[0].lower()
     final_url = str(response_capture.get("final_url") or "")
     candidates: list[dict[str, Any]] = []
+    seen_candidates: set[tuple[str, str, int]] = set()
 
     def add(value: object, source: str, priority: int) -> None:
         normalized = _normalized_date_candidate(value)
         if normalized is None:
             return
+        identity = (normalized, source, priority)
+        if identity in seen_candidates:
+            return
+        seen_candidates.add(identity)
         candidates.append(
             {
                 "date": normalized,
@@ -175,8 +349,6 @@ def adjudicate_publication_date_from_capture(
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
             soup = BeautifulSoup(html, "lxml")
-        for value in _json_ld_publication_dates(soup):
-            add(value, "original_html_json_ld", 1)
         for node in soup.find_all("meta"):
             key = str(
                 node.get("property") or node.get("name") or node.get("itemprop") or ""
@@ -187,9 +359,14 @@ def adjudicate_publication_date_from_capture(
                 "datecreated",
                 "publication_date",
                 "publishdate",
+                "publisheddate",
                 "pubdate",
             }:
-                add(node.get("content"), f"original_html_meta:{key}", 1)
+                add(node.get("content"), f"original_html_meta:{key}", 0)
+        for value in _article_scoped_visible_date_candidates(soup):
+            add(value, "original_html_article_scoped_visible_date", 1)
+        for value in _json_ld_publication_dates(soup):
+            add(value, "original_html_json_ld", 2)
         for node in soup.find_all("time"):
             if node.get("datetime"):
                 add(node.get("datetime"), "original_html_time_datetime", 2)
@@ -205,7 +382,7 @@ def adjudicate_publication_date_from_capture(
                 continue
             visible = _normalized(node.get_text(" ", strip=True))
             if 0 < len(visible) <= 160:
-                add(visible, "original_html_visible_date_marker", 2)
+                add(visible, "original_html_visible_date_marker", 3)
     elif content_type == "application/pdf" or body[:1024].find(b"%PDF-") >= 0:
         try:
             reader = PdfReader(BytesIO(body))
@@ -275,34 +452,89 @@ def _clean_soup(html: str) -> BeautifulSoup:
             "noscript",
             "svg",
             "template",
-            "nav",
-            "header",
-            "footer",
-            "form",
+            "input",
+            "button",
+            "select",
+            "textarea",
         ]
     ):
         tag.decompose()
+    for container in soup.find_all(("nav", "header", "footer")):
+        contains_article = bool(
+            container.find(("article", "main"))
+            or container.find(
+                lambda node: getattr(node, "name", None) in {"div", "section"}
+                and (
+                    any(value in _node_marker(node) for value in _ARTICLE_BODY_HINTS)
+                    or any(
+                        value in _node_marker(node)
+                        for value in _ARTICLE_CONTENT_HINTS
+                    )
+                )
+            )
+        )
+        if contains_article:
+            container.unwrap()
+        else:
+            container.decompose()
+    # ASP.NET investor-relations sites commonly wrap the entire document in one
+    # form. Removing the form would delete the article; unwrap it and let the
+    # scoped content-root selector exclude controls and unrelated regions.
+    for form in soup.find_all("form"):
+        form.unwrap()
     return soup
 
 
-def _generic_blocks(soup: BeautifulSoup) -> tuple[str, list[str], dict[str, Any]]:
-    candidates = [
-        *(soup.find_all("article")),
-        *(soup.find_all("main")),
-        *(soup.find_all(attrs={"role": "main"})),
-    ]
-    if soup.body is not None:
-        candidates.append(soup.body)
-    unique: list[Any] = []
-    seen_nodes: set[int] = set()
-    for node in candidates:
-        identity = id(node)
-        if identity not in seen_nodes:
-            unique.append(node)
-            seen_nodes.add(identity)
-    _require(bool(unique), "public_context_content_root_missing")
-    root = max(unique, key=lambda node: len(_normalized(node.get_text(" "))))
+def _fallback_text_node_blocks(root: Any) -> tuple[list[str], int]:
+    fragments: list[str] = []
+    seen_fragments: set[str] = set()
+    rejected_non_article = 0
+    for raw in root.stripped_strings:
+        text = _normalized(raw)
+        if len(text) < 3 or text in seen_fragments:
+            continue
+        parent = getattr(raw, "parent", None)
+        current = parent
+        rejected = False
+        while current is not None and current is not root:
+            if any(value in _node_marker(current) for value in _NON_ARTICLE_HINTS):
+                rejected = True
+                break
+            current = current.parent
+        if rejected:
+            rejected_non_article += 1
+            continue
+        fragments.append(text)
+        seen_fragments.add(text)
 
+    blocks: list[str] = []
+    current_parts: list[str] = []
+    current_size = 0
+    for fragment in fragments:
+        if current_parts and current_size + len(fragment) + 1 > 900:
+            blocks.append(_normalized(" ".join(current_parts)))
+            current_parts = []
+            current_size = 0
+        current_parts.append(fragment)
+        current_size += len(fragment) + 1
+        if current_size >= 500 and re.search(r"[.!?][\"')\]]?$", fragment):
+            blocks.append(_normalized(" ".join(current_parts)))
+            current_parts = []
+            current_size = 0
+    if current_parts:
+        blocks.append(_normalized(" ".join(current_parts)))
+    blocks = [value for value in blocks if len(value) >= 40]
+    if len(blocks) == 1 and len(blocks[0]) >= 1000:
+        value = blocks[0]
+        midpoint = len(value) // 2
+        split_at = value.find(" ", midpoint)
+        if split_at > 0:
+            blocks = [value[:split_at].strip(), value[split_at:].strip()]
+    return blocks, rejected_non_article
+
+
+def _generic_blocks(soup: BeautifulSoup) -> tuple[str, list[str], dict[str, Any]]:
+    root, root_kind, root_score = _select_content_root(soup)
     blocks: list[str] = []
     seen_text: set[str] = set()
     rejected_link_heavy = 0
@@ -316,14 +548,25 @@ def _generic_blocks(soup: BeautifulSoup) -> tuple[str, list[str], dict[str, Any]
             continue
         blocks.append(text)
         seen_text.add(text)
+    fallback_used = False
+    rejected_non_article = 0
+    if len(blocks) < 2 or sum(len(value) for value in blocks) < 500:
+        _require(root_score > 0, "public_context_article_body_too_thin")
+        blocks, rejected_non_article = _fallback_text_node_blocks(root)
+        fallback_used = True
     _require(
         len(blocks) >= 2 and sum(len(value) for value in blocks) >= 500,
         "public_context_article_body_too_thin",
     )
     return (
-        "article_or_main_largest_visible_root",
+        root_kind,
         blocks,
-        {"link_heavy_blocks_rejected": rejected_link_heavy},
+        {
+            "article_parser_profile": "article_scoped_blocks_v1_1",
+            "text_node_fallback_used": fallback_used,
+            "link_heavy_blocks_rejected": rejected_link_heavy,
+            "non_article_fragments_rejected": rejected_non_article,
+        },
     )
 
 

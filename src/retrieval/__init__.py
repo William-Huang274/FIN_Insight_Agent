@@ -48,6 +48,13 @@ from .source_use_policy import (
     SourceUsePolicyError,
     evaluate_source_claim_use,
 )
+from .task_pack_readiness import (
+    REVIEW_SUCCESSOR_PROGRAM_SCHEMA_VERSION,
+    TASK_PACK_READINESS_SCHEMA_VERSION,
+    TaskPackReadinessError,
+    compile_requirement_review_successor,
+    compile_task_pack_readiness,
+)
 from .text import tokenize
 
 __all__ = [
@@ -81,6 +88,11 @@ __all__ = [
     "evaluate_source_claim_use",
     "tokenize",
     "validate_source_object_manifest",
+    "REVIEW_SUCCESSOR_PROGRAM_SCHEMA_VERSION",
+    "TASK_PACK_READINESS_SCHEMA_VERSION",
+    "TaskPackReadinessError",
+    "compile_requirement_review_successor",
+    "compile_task_pack_readiness",
     "EXTERNAL_FETCH_SHORTLIST_SCHEMA_VERSION",
     "EXTERNAL_LOCATOR_BUNDLE_SCHEMA_VERSION",
     "EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION",

@@ -236,6 +236,12 @@ from .quantitative_authority import (
     compile_research_estimate,
     compile_research_scenario,
 )
+from .task_quantitative_program import (
+    TASK_QUANTITATIVE_PROGRAM_SCHEMA_VERSION,
+    TASK_QUANTITATIVE_PROJECTION_SCHEMA_VERSION,
+    TaskQuantitativeProgramError,
+    compile_task_quantitative_program,
+)
 from .actionable_research_evaluation import (
     ACTIONABLE_RESEARCH_EVALUATION_SCHEMA_VERSION,
     ActionableResearchEvaluationError,
@@ -388,6 +394,10 @@ __all__ = [
     "compile_report_boundary_disposition_register",
     "compile_actionable_research_state",
     "compile_quantitative_authority_state",
+    "TASK_QUANTITATIVE_PROGRAM_SCHEMA_VERSION",
+    "TASK_QUANTITATIVE_PROJECTION_SCHEMA_VERSION",
+    "TaskQuantitativeProgramError",
+    "compile_task_quantitative_program",
     "compile_research_estimate",
     "compile_research_scenario",
     "evaluate_actionable_research_state",

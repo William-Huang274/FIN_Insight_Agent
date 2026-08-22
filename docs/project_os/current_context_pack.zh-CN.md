@@ -1297,3 +1297,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - public result digest=`20968c76...c57c`，private terminal SHA-256=`bdbde35c...85b7`。供应链候选恢复不等于供应分配事实；价格、Dell 台数／份额和精确 allocation 仍未关闭。
 - 下一门是逐条 CandidateDecision＋Evidence Gate；current Pack、S2 successor、EvidencePackReadiness 和动态单单元权限仍为 false。
 - 详细记录见 `docs/worklog/fin_0_1_3_s1/068_dell_external_capture_replay_r1_result.md`。
+
+### 2026-08-23 DELL 任务级 S2 数值、情景与缺口归属
+
+- current DELL Pack 与 source-route replay 已在 clean commit `af33deab...fd90` 上重新编译为任务级数值投影：38 条 source-bound fact、27 条 deterministic derived metric、2 条行业研究区间、2 个情景、9 个底层 typed fact gap、0 conflict。
+- TrendForce 的 2025 全球 AI server 出货基准 `27%–28%` 与下行 `20%–25%` 只具有 research estimate／scenario 权限；它们不是 Dell 台数、份额、收入、ASP、PVM 或供应分配事实。原资料没有 bullish 数值，因此没有编造 bullish 数值情景。
+- current Pack 的 14 个 residual gap 已全部绑定最早责任层并保持 open：来源／商业边界归 S1，市场时点与数字输入归 S1/S2，情景归 S2，失效／监控阈值归 S3。public-information-gap authority 仍为 0。
+- materialized result 状态为 `ready_for_bounded_dynamic_single_unit_with_typed_gaps`，只授权继续编译 DELL `value_capture` 的任务级 Readiness 和零调用 proof；不代表 S1、S2 全阶段、S3、完整 DELL、多 Agent、Writer、Workbench publication 或 release 通过。
+- 定向 `9 passed`、全仓 `1046 passed`（2 条既有 SWIG warning）；public result digest=`8031335f...a9f6`。详细记录见 `docs/worklog/fin_0_1_3_s2/003_dell_task_quantitative_scenarios_and_gap_ownership.md`。

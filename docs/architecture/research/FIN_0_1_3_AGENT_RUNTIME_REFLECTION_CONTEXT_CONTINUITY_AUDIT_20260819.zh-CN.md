@@ -372,3 +372,17 @@ terminal Writer continuation 自然输出已完成全部缺失研究内容并以
 6. strict submission 通过前，内容完整的分析仍是私有审计材料，不是正式报告或产品 Artifact。
 
 这不是放宽模型合同，而是把“研究是否完成”和“内部格式如何表示”分层。更强模型可以直接产生精确 marker；不精确但满足上述安全同义条件的输出由确定性 canonicalizer 处理，不值得重复消耗一次研究调用。任何需要解释语义、改写观点或猜测字段归属的情况仍必须拒绝。
+
+## 23. 当前数据上的 Actionable Research 控制闭环（2026-08-22）
+
+原有 `SessionEvent / FeedbackReceipt / PlanDelta / GraphDelta / ContextCheckpoint / StopDecision` 已从孤立合同接到当前研究数据。新的控制 producer 读取三案 current reviewed Evidence、ProductReadiness、S1 source policy 和 S2 quantitative authority，将每个未解决事项编译为可执行 action，再生成 session 事件、已接受计划、明确的 Graph no-mutation、checkpoint 和 resume receipt。
+
+这里有三条必须保持的责任边界：
+
+1. **数据／工具事实不由模型补写。** reviewed Evidence、reported fact、derived metric、候选准入状态和 source rights 由本地 producer 给出；Agent 可以选择下一步，不能把 action 或候选说成事实。
+2. **反思必须改变计划。** FeedbackReceipt 必须出现在 accepted PlanDelta 的 reason refs 中，active plan 必须真正变化；若模型只复述失败而不修改 action 顺序、facet、route 或停止判断，不算反思。
+3. **图变化必须有新证据。** 没有新 reviewed relationship Evidence 时，GraphDelta 的正确结果是明确 no-mutation。反思不等于每轮都扩图；未经审核的假设只能进入 research action，不能进入事实图。
+
+DELL／MU／NVDA 的 current-data zero-call 结果分别保存 `21／22／19` 个 action 和 `7／7／6` 个 FeedbackReceipt，checkpoint／resume 均保留全部开放状态，StopDecision 均为 `continue`。DELL 五个研究单元已通过真实 `current_consumer` 取得各自最小 action／feedback／quantitative／rights 视图；全部五单元不能合并成一个超大消息，Runtime 必须继续按 cell／role 分开执行。这是多 Agent 上下文隔离的正向约束，不应通过抬高单消息上限绕过。
+
+当前评测含 12 个硬门：action coverage、身份唯一性、无假 public gap、权利分离、零 Candidate 自动晋升、数值类型分离、feedback 改计划、checkpoint／resume 保真、诚实停止、完整 TokenBudgetBasis、事件链有效和不虚报自然 Agent。三案均通过；但 natural model calls、network calls 和 paid calls 均为 0，因此不能宣称自然 Agent reflection、第二轮补证、S3 内容质量或 release 已证明。下一项只能是另行授权的 DELL 动态多 Agent 纵切。

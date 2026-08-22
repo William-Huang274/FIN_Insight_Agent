@@ -4,7 +4,11 @@ from copy import deepcopy
 import hashlib
 from typing import Any, Mapping, Sequence
 
-from sec_agent.research.reviewed_evidence_pack import canonical_digest
+from sec_agent.research.reviewed_evidence_pack import (
+    ReviewedEvidencePackError,
+    build_reviewed_evidence_pack_successor,
+    canonical_digest,
+)
 
 
 OFFICIAL_PDF_EVIDENCE_POLICY_SCHEMA = (
@@ -359,87 +363,34 @@ def build_reviewed_pack_successor(
     gap_ids_satisfied: Sequence[str],
     successor_lineage: Mapping[str, Any],
 ) -> dict[str, Any]:
-    if not (
-        predecessor.get("case_key") == evidence_result.get("consumer_case_key")
-        and evidence_result.get("status")
-        in {
-            "official_pdf_evidence_gate_passed",
-            "official_pdf_evidence_gate_bundle_passed",
-        }
-        and (
-            evidence_result.get("evidence_qualified") is True
-            or evidence_result.get("gap_satisfied") is True
+    normalized = deepcopy(dict(evidence_result))
+    normalized.setdefault("candidate_is_not_evidence", False)
+    normalized.setdefault("causal_attribution_authorized", False)
+    if not normalized.get("result_digest"):
+        normalized["result_digest"] = canonical_digest(normalized)
+    try:
+        return build_reviewed_evidence_pack_successor(
+            predecessor=predecessor,
+            evidence_result=normalized,
+            accepted_result_statuses=(
+                "official_pdf_evidence_gate_passed",
+                "official_pdf_evidence_gate_bundle_passed",
+            ),
+            gap_ids_satisfied=gap_ids_satisfied,
+            successor_lineage=successor_lineage,
+            content_gate_basis=(
+                "reviewed_local_predecessor_plus_digest_bound_official_pdf_evidence_gate"
+            ),
+            known_boundary_suffix=(
+                "It does not establish undeclared attribution, complete research, "
+                "NumericFact authority, S3 model readiness or product release."
+            ),
         )
-        and evidence_result.get("accepted_evidence_items")
-    ):
-        raise OfficialPdfEvidenceError("reviewed_pack_successor_input_invalid")
-    gaps = [dict(row) for row in predecessor.get("residual_gaps") or ()]
-    existing_gap_ids = {str(row.get("gap_id") or "") for row in gaps}
-    requested = {str(value) for value in gap_ids_satisfied}
-    if not requested <= existing_gap_ids:
-        raise OfficialPdfEvidenceError("reviewed_pack_successor_gap_unknown")
-    qualified_gap_ids = {
-        str(value) for value in evidence_result.get("gap_ids_satisfied") or ()
-    }
-    if not requested <= qualified_gap_ids:
-        raise OfficialPdfEvidenceError(
-            "reviewed_pack_successor_gap_not_qualified"
+    except ReviewedEvidencePackError as exc:
+        code = exc.code.replace(
+            "reviewed_evidence_pack_successor_", "reviewed_pack_successor_"
         )
-
-    body = deepcopy(dict(predecessor))
-    body.pop("pack_payload_digest", None)
-    existing_targets = {
-        str(row.get("target_id") or "") for row in body.get("evidence_items") or ()
-    }
-    additions = [dict(row) for row in evidence_result["accepted_evidence_items"]]
-    if any(str(row.get("target_id") or "") in existing_targets for row in additions):
-        raise OfficialPdfEvidenceError("reviewed_pack_successor_target_collision")
-    existing_materials = {
-        str(row.get("material_ref") or "") for row in body.get("source_materials") or ()
-    }
-    materials = [dict(row) for row in evidence_result["source_materials"]]
-    if any(str(row.get("material_ref") or "") in existing_materials for row in materials):
-        raise OfficialPdfEvidenceError("reviewed_pack_successor_material_collision")
-
-    body["evidence_items"] = list(body["evidence_items"]) + additions
-    body["source_materials"] = list(body["source_materials"]) + materials
-    body["residual_gaps"] = [
-        row for row in gaps if str(row.get("gap_id") or "") not in requested
-    ]
-    counts = dict(body.get("observed_counts") or {})
-    counts["accepted_evidence_items"] = len(body["evidence_items"])
-    counts["bounded_context_items"] = sum(
-        row.get("disposition") == "accepted_bounded_context_evidence"
-        for row in body["evidence_items"]
-    )
-    counts["direct_evidence_items"] = sum(
-        row.get("disposition") == "accepted_direct_source_evidence"
-        for row in body["evidence_items"]
-    )
-    counts["residual_gaps"] = len(body["residual_gaps"])
-    counts["source_materials"] = len(body["source_materials"])
-    body["observed_counts"] = counts
-    body["content_gate_basis"] = (
-        "reviewed_local_predecessor_plus_digest_bound_official_pdf_evidence_gate"
-    )
-    body["successor_lineage"] = deepcopy(dict(successor_lineage))
-    if requested:
-        gap_statement = (
-            "This successor closes only the explicitly declared gap IDs: "
-            + ", ".join(sorted(requested))
-            + ". "
-        )
-    else:
-        gap_statement = (
-            "This successor adds qualified official-PDF Evidence without closing "
-            "any residual gap. "
-        )
-    body["known_boundary"] = (
-        gap_statement
-        + "It does not establish undeclared attribution, complete research, "
-        "NumericFact authority, S3 model readiness or product release."
-    )
-    return {**body, "pack_payload_digest": canonical_digest(body)}
+        raise OfficialPdfEvidenceError(code) from exc
 
 
 def _valid_anchor_group(value: Any) -> bool:

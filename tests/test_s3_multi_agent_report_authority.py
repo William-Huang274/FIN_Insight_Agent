@@ -5,6 +5,7 @@ from copy import deepcopy
 import pytest
 
 from sec_agent.research.multi_agent_report_authority import (
+    MULTI_AGENT_REPORT_QUALITY_POLICY_LEGACY_VERSION,
     MULTI_AGENT_PROTECTED_REPORT_DRAFT_LEGACY_SCHEMA_VERSION,
     MULTI_AGENT_PROTECTED_REPORT_DRAFT_SCHEMA_VERSION,
     MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_SCHEMA_VERSION,
@@ -23,6 +24,9 @@ from sec_agent.research.multi_agent_report_authority import (
     validate_protected_report_remap_draft,
 )
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
+from sec_agent.research.report_boundary import (
+    compile_report_boundary_disposition_register,
+)
 
 
 def _fixtures(ticker: str = "DELL"):
@@ -462,6 +466,107 @@ def test_narrative_density_is_a_quality_finding_below_safety_capacity() -> None:
     finding = caught.value.details["contract_finding_receipt"]["hard_findings"][0]
     assert finding["field_path"] == "executive_thesis[0].model_text"
     assert finding["details"]["safety_maximum_characters"] == 2400
+
+
+def test_boundary_inventory_repetition_is_quality_not_truth_failure() -> None:
+    workpapers, contexts = _fixtures()
+    catalog = compile_multi_agent_report_authority_catalog(
+        workpapers=workpapers,
+        specialist_contexts=contexts,
+    )
+    payload = _payload(catalog)
+    gap_ref = payload["remaining_gaps"][0]["gap_refs"][0]
+    payload["executive_thesis"][0]["gap_refs"] = [gap_ref]
+    payload["sections"][0]["clauses"][0]["gap_refs"] = [gap_ref]
+    payload["confidence"]["gap_refs"] = [gap_ref]
+
+    audit = audit_protected_report_draft(payload, authority_catalog=catalog)
+    trusted = validate_protected_report_draft(payload, authority_catalog=catalog)
+    codes = {row["finding_code"] for row in audit["quality_findings"]}
+
+    assert audit["hard_finding_count"] == 0
+    assert "multi_agent_report_confidence_repeats_gap_inventory" in codes
+    assert "multi_agent_report_gap_repeated_across_surface_groups" in codes
+    assert trusted["surface_contract_receipt"][
+        "recommended_narrative_density_pass"
+    ] is False
+
+
+def test_legacy_quality_policy_preserves_immutable_reference_patch_proof() -> None:
+    workpapers, contexts = _fixtures()
+    catalog = compile_multi_agent_report_authority_catalog(
+        workpapers=workpapers,
+        specialist_contexts=contexts,
+    )
+    payload = _payload(catalog)
+    gap_ref = payload["remaining_gaps"][0]["gap_refs"][0]
+    payload["executive_thesis"][0]["gap_refs"] = [gap_ref]
+    payload["sections"][0]["clauses"][0]["gap_refs"] = [gap_ref]
+    payload["confidence"]["gap_refs"] = [gap_ref]
+
+    current = audit_protected_report_draft(payload, authority_catalog=catalog)
+    legacy = audit_protected_report_draft(
+        payload,
+        authority_catalog=catalog,
+        quality_policy_version=MULTI_AGENT_REPORT_QUALITY_POLICY_LEGACY_VERSION,
+    )
+
+    assert len(current["quality_findings"]) > len(legacy["quality_findings"])
+    assert all(
+        finding["finding_code"]
+        != "multi_agent_report_gap_repeated_across_surface_groups"
+        for finding in legacy["quality_findings"]
+    )
+
+
+def test_pre_report_operational_boundary_blocks_customer_report() -> None:
+    workpapers, contexts = _fixtures()
+    catalog = compile_multi_agent_report_authority_catalog(
+        workpapers=workpapers,
+        specialist_contexts=contexts,
+    )
+    payload = _payload(catalog)
+    register = compile_report_boundary_disposition_register(
+        case_key="DELL",
+        source_report_ref="config://candidate-report",
+        source_report_digest="a" * 64,
+        rows=[
+            {
+                "boundary_id": "BOUNDARY::STALE-EVALUATION",
+                "claim_area": "cash_conversion",
+                "surface_paths": ["sections[0]"],
+                "owner_plane": "harness_control",
+                "owner_stage": "S2_to_S3",
+                "information_state": "source_visible_numeric_authority_stale_downstream",
+                "root_cause_zh": "旧评审没有被新权威废止。",
+                "artifact_refs": ["config://authority"],
+                "customer_surface_disposition": "resolve_before_customer_report",
+                "next_action_zh": "刷新 Writer 视图。",
+                "true_information_boundary": False,
+            }
+        ],
+        recorded_at="2026-08-22T00:00:00+08:00",
+    )
+
+    audit = audit_protected_report_draft(
+        payload,
+        authority_catalog=catalog,
+        boundary_disposition_register=register,
+    )
+
+    assert audit["contract_valid"] is False
+    assert audit["hard_findings"][-1]["finding_code"] == (
+        "multi_agent_report_pre_report_boundary_unresolved"
+    )
+    with pytest.raises(
+        MultiAgentReportAuthorityError,
+        match="multi_agent_report_pre_report_boundary_unresolved",
+    ):
+        validate_protected_report_draft(
+            payload,
+            authority_catalog=catalog,
+            boundary_disposition_register=register,
+        )
 
 
 def test_reference_patch_preserves_model_text_and_only_repairs_failed_paths() -> None:

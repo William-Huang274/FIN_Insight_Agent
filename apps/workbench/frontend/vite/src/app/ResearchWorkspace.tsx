@@ -24,6 +24,8 @@ import {
   S1CanonicalSpineView,
   S1ProductReadinessView,
   ResearchWorkspaceApiClient,
+  ActionableResearchStateView,
+  QuantitativeAuthorityView,
 } from "../api/researchWorkspace";
 import "./research-workspace.css";
 
@@ -400,6 +402,10 @@ function EvidenceSurface({ evidence }: { evidence: ResearchEvidenceView }) {
   return (
     <>
       <ProductReadinessPanel readiness={evidence.product_readiness ?? null} />
+      <ActionableResearchPanel
+        state={evidence.actionable_research_state ?? null}
+        quantitative={evidence.quantitative_authority ?? null}
+      />
       <CanonicalSpinePanel spine={evidence.canonical_spine ?? null} />
       <section className="research-workspace__evidence-columns">
         <div className="research-workspace__panel">
@@ -414,6 +420,56 @@ function EvidenceSurface({ evidence }: { evidence: ResearchEvidenceView }) {
         </aside>
       </section>
     </>
+  );
+}
+
+function ActionableResearchPanel({
+  state,
+  quantitative,
+}: {
+  state: ActionableResearchStateView | null;
+  quantitative: QuantitativeAuthorityView | null;
+}) {
+  if (!state || !quantitative) return null;
+  const stageCounts = state.research_actions.reduce<Record<string, number>>((counts, action) => {
+    counts[action.owner_stage] = (counts[action.owner_stage] ?? 0) + 1;
+    return counts;
+  }, {});
+  return (
+    <section className="research-workspace__panel research-workspace__actionable-research">
+      <div className="research-workspace__section-title">
+        <h2>可执行研究状态</h2>
+        <span>{state.stop_decision.decision === "continue" ? "仍需继续研究" : state.stop_decision.decision}</span>
+      </div>
+      <div className="research-workspace__metrics is-large">
+        <Metric value={quantitative.summary.reported_fact_count} label="披露事实" />
+        <Metric value={quantitative.summary.deterministic_derived_metric_count} label="公式派生" />
+        <Metric value={state.summary.research_action_count} label="待执行动作" warn />
+        <Metric value={state.summary.feedback_receipt_count} label="反馈回执" warn />
+      </div>
+      <p className="research-workspace__actionable-note">
+        当前缺口不会直接变成免责声明：系统已把它们分配到 S1 数据/检索、S2 数值或 S3 研究方法。公开信息真空授权为 {state.summary.public_information_gap_authorized_count}；在免费可达路线耗尽前，不能把“没找到”写成“资料不存在”。
+      </p>
+      <div className="research-workspace__actionable-meta">
+        <span>动作归属：{Object.entries(stageCounts).map(([stage, count]) => `${stage} ${count}`).join(" · ")}</span>
+        <span>当前来源 {state.source_portfolio_snapshot.current_source_count} · 权利维度 {state.source_portfolio_snapshot.rights_axes.join(" / ")}</span>
+        <span>下一自然节点容量依据 ≥ {state.next_natural_node_token_budget_basis.capacity_basis.minimum_visible_output_tokens.toLocaleString("zh-CN")} tokens；尚未签发调用权限</span>
+      </div>
+      <div className="research-workspace__actionable-list">
+        {state.research_actions.slice(0, 8).map((action) => (
+          <article key={action.action_id}>
+            <header><strong>{action.owner_stage} · {action.tool_or_gate}</strong><span>{action.action_type}</span></header>
+            <p>{action.objective_zh}</p>
+            <small>{action.execution_state}</small>
+          </article>
+        ))}
+      </div>
+      <div className="research-workspace__canonical-bindings">
+        <DigestRow label="Action state" value={state.actionable_state_digest} />
+        <DigestRow label="Quantitative authority" value={quantitative.quantitative_authority_digest} />
+        <DigestRow label="Token budget basis" value={state.next_natural_node_token_budget_basis.basis_id} />
+      </div>
+    </section>
   );
 }
 

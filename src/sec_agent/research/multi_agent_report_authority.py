@@ -14,6 +14,7 @@ from .current_consumer import (
     validate_current_research_model_text,
 )
 from .reviewed_evidence_pack import canonical_digest
+from .report_boundary import validate_report_boundary_disposition_register
 
 
 MULTI_AGENT_REPORT_AUTHORITY_CATALOG_SCHEMA_VERSION = (
@@ -33,6 +34,12 @@ MULTI_AGENT_PROTECTED_RENDERED_REPORT_SCHEMA_VERSION = (
 )
 MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_SCHEMA_VERSION = (
     "fin_ia_multi_agent_protected_report_reference_patch_v1_0"
+)
+MULTI_AGENT_REPORT_QUALITY_POLICY_LEGACY_VERSION = (
+    "fin_ia_multi_agent_report_quality_policy_v1_0"
+)
+MULTI_AGENT_REPORT_QUALITY_POLICY_VERSION = (
+    "fin_ia_multi_agent_report_quality_policy_v1_1"
 )
 
 _EMPTY_REF_PLACEHOLDER = "__NO_AUTHORIZED_REF__"
@@ -1027,6 +1034,10 @@ def compile_protected_report_messages(
             "Raw Evidence text being visible does not authorize copying its numbers into the report.",
             "If a material numeric claim has no presentation authority, omit the number and preserve the limitation or typed gap.",
             "Preserve material counterarguments and what-would-change conditions.",
+            "Do not turn the executive thesis into a gap inventory: state the judgment, the main driver, and at most one synthesized material uncertainty.",
+            "Describe each material boundary once in remaining_gaps; sections may analyze its consequence but must not repeat the same boundary wording.",
+            "Confidence must explain the confidence level and evidence mix, not repeat the remaining-gap register.",
+            "Operational failures, pending Evidence admission, unexecuted source routes, stale NumericFact projection, and researcher-defined thresholds are not customer-facing information gaps.",
         ],
     }
     return (
@@ -1512,9 +1523,22 @@ def _audit_clause_contract(
 
 
 def audit_protected_report_draft(
-    payload: Mapping[str, Any], *, authority_catalog: Mapping[str, Any]
+    payload: Mapping[str, Any],
+    *,
+    authority_catalog: Mapping[str, Any],
+    boundary_disposition_register: Mapping[str, Any] | None = None,
+    quality_policy_version: str = MULTI_AGENT_REPORT_QUALITY_POLICY_VERSION,
 ) -> dict[str, Any]:
     """Collect every actionable contract failure before a correction attempt."""
+
+    _require(
+        quality_policy_version
+        in {
+            MULTI_AGENT_REPORT_QUALITY_POLICY_LEGACY_VERSION,
+            MULTI_AGENT_REPORT_QUALITY_POLICY_VERSION,
+        },
+        "multi_agent_report_quality_policy_version_invalid",
+    )
 
     value = deepcopy(dict(payload))
     hard: list[dict[str, Any]] = []
@@ -1646,6 +1670,27 @@ def audit_protected_report_draft(
             )
             hard.extend(row_hard)
             quality.extend(row_quality)
+        if quality_policy_version == MULTI_AGENT_REPORT_QUALITY_POLICY_VERSION:
+            quality.extend(_audit_boundary_surface_density(value))
+        if boundary_disposition_register is not None:
+            boundary_register = validate_report_boundary_disposition_register(
+                boundary_disposition_register
+            )
+            for blocker in boundary_register["pre_report_blockers"]:
+                hard.append(
+                    _contract_finding(
+                        field_path="$",
+                        finding_code=(
+                            "multi_agent_report_pre_report_boundary_unresolved"
+                        ),
+                        blocking=True,
+                        details={
+                            "boundary_id": blocker["boundary_id"],
+                            "owner_stage": blocker["owner_stage"],
+                            "information_state": blocker["information_state"],
+                        },
+                    )
+                )
     body = {
         "schema_version": "fin_ia_multi_agent_report_contract_finding_receipt_v1_0",
         "payload_digest": canonical_digest(value),
@@ -1656,6 +1701,100 @@ def audit_protected_report_draft(
         "contract_valid": not hard,
     }
     return {**body, "receipt_digest": canonical_digest(body)}
+
+
+def _clause_gap_refs(value: object) -> set[str]:
+    if not isinstance(value, Mapping):
+        return set()
+    refs = value.get("gap_refs")
+    if not isinstance(refs, list):
+        return set()
+    return {str(ref) for ref in refs if str(ref).startswith("GAP::")}
+
+
+def _audit_boundary_surface_density(
+    payload: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Flag repeated boundary inventory without turning prose style into L1.
+
+    A truthful material uncertainty may constrain a section and also appear in
+    the boundary register.  Repeating the same gap through the executive,
+    sections, gap register, what-would-change list and confidence statement is
+    different: it makes an operationally safe report read like a refusal.  The
+    finding remains non-blocking so the Harness never deletes or rewrites the
+    model's research judgment.
+    """
+
+    grouped: dict[str, set[str]] = {
+        "executive_thesis": set(),
+        "sections": set(),
+        "remaining_gaps": set(),
+        "what_would_change": set(),
+        "confidence": set(),
+    }
+    for row in payload.get("executive_thesis") or ():
+        grouped["executive_thesis"].update(_clause_gap_refs(row))
+    for section in payload.get("sections") or ():
+        if not isinstance(section, Mapping):
+            continue
+        for row in section.get("clauses") or ():
+            grouped["sections"].update(_clause_gap_refs(row))
+    for row in payload.get("remaining_gaps") or ():
+        grouped["remaining_gaps"].update(_clause_gap_refs(row))
+    for row in payload.get("what_would_change") or ():
+        grouped["what_would_change"].update(_clause_gap_refs(row))
+    grouped["confidence"].update(_clause_gap_refs(payload.get("confidence")))
+
+    findings: list[dict[str, Any]] = []
+    if len(grouped["executive_thesis"]) > 1:
+        findings.append(
+            _contract_finding(
+                field_path="executive_thesis",
+                finding_code="multi_agent_report_executive_boundary_inventory_dense",
+                blocking=False,
+                details={
+                    "unique_gap_ref_count": len(grouped["executive_thesis"]),
+                    "recommended_maximum": 1,
+                    "gap_refs": sorted(grouped["executive_thesis"]),
+                },
+            )
+        )
+    if grouped["confidence"]:
+        findings.append(
+            _contract_finding(
+                field_path="confidence",
+                finding_code="multi_agent_report_confidence_repeats_gap_inventory",
+                blocking=False,
+                details={"gap_refs": sorted(grouped["confidence"])},
+            )
+        )
+    gap_rows = payload.get("remaining_gaps")
+    if isinstance(gap_rows, list) and len(gap_rows) > 4:
+        findings.append(
+            _contract_finding(
+                field_path="remaining_gaps",
+                finding_code="multi_agent_report_customer_gap_register_too_dense",
+                blocking=False,
+                details={
+                    "gap_clause_count": len(gap_rows),
+                    "recommended_maximum": 4,
+                },
+            )
+        )
+    all_refs = sorted(set().union(*grouped.values()))
+    for ref in all_refs:
+        groups = sorted(name for name, refs in grouped.items() if ref in refs)
+        if len(groups) <= 2:
+            continue
+        findings.append(
+            _contract_finding(
+                field_path="$",
+                finding_code="multi_agent_report_gap_repeated_across_surface_groups",
+                blocking=False,
+                details={"gap_ref": ref, "surface_groups": groups},
+            )
+        )
+    return findings
 
 
 _EXECUTIVE_PATH = re.compile(r"^executive_thesis\[(\d+)\]$")
@@ -1713,12 +1852,17 @@ def _clause_at_path(payload: Mapping[str, Any], field_path: str) -> dict[str, An
 
 
 def compile_protected_report_reference_patch_receipt(
-    base_payload: Mapping[str, Any], *, authority_catalog: Mapping[str, Any]
+    base_payload: Mapping[str, Any],
+    *,
+    authority_catalog: Mapping[str, Any],
+    quality_policy_version: str = MULTI_AGENT_REPORT_QUALITY_POLICY_VERSION,
 ) -> dict[str, Any]:
     """Freeze a complete failed draft into reference-only correction targets."""
 
     audit = audit_protected_report_draft(
-        base_payload, authority_catalog=authority_catalog
+        base_payload,
+        authority_catalog=authority_catalog,
+        quality_policy_version=quality_policy_version,
     )
     _require(
         audit["hard_finding_count"] > 0,
@@ -2181,6 +2325,7 @@ def validate_protected_report_draft(
     payload: Mapping[str, Any],
     *,
     authority_catalog: Mapping[str, Any],
+    boundary_disposition_register: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     _require(
         _valid_authority_catalog_schema(authority_catalog.get("schema_version")),
@@ -2203,7 +2348,9 @@ def validate_protected_report_draft(
         "multi_agent_protected_report_identity_invalid",
     )
     contract_audit = audit_protected_report_draft(
-        value, authority_catalog=authority_catalog
+        value,
+        authority_catalog=authority_catalog,
+        boundary_disposition_register=boundary_disposition_register,
     )
     _require(
         contract_audit["contract_valid"] is True,

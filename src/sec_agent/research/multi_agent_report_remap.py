@@ -10,6 +10,7 @@ from sec_agent.providers.chat_completions import load_chat_completion_profile
 
 from .multi_agent_report_authority import (
     MULTI_AGENT_REPORT_AUTHORITY_CATALOG_EXTENDED_SCHEMA_VERSION,
+    MULTI_AGENT_REPORT_QUALITY_POLICY_LEGACY_VERSION,
     MULTI_AGENT_PROTECTED_REPORT_DRAFT_LEGACY_SCHEMA_VERSION,
     compile_protected_report_reference_patch_messages,
     compile_protected_report_reference_patch_receipt,
@@ -504,7 +505,11 @@ def validate_report_remap_scope_decision(
         )
         reference_patch_receipt = (
             compile_protected_report_reference_patch_receipt(
-                base_payload, authority_catalog=catalog
+                base_payload,
+                authority_catalog=catalog,
+                quality_policy_version=(
+                    MULTI_AGENT_REPORT_QUALITY_POLICY_LEGACY_VERSION
+                ),
             )
         )
         patch_messages = compile_protected_report_reference_patch_messages(

@@ -100,6 +100,10 @@ _QUALIFIED_EVIDENCE_ROUTE_DOCUMENT_IDENTIFIERS = (
     "40-F",
     "6-K",
 )
+_BOUNDED_CONTEXT_SOURCE_TIERS = {
+    "named_counterparty_or_standards_primary",
+    "official_market_or_industry_primary",
+}
 
 
 class CurrentResearchConsumerError(ValueError):
@@ -498,9 +502,19 @@ def load_current_research_consumer_policy(
     }
 
 
-def _evidence_card(item: Mapping[str, Any], *, case_key: str) -> dict[str, Any]:
+def _evidence_card(
+    item: Mapping[str, Any],
+    *,
+    case_key: str,
+    source_materials_by_ref: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    source_value = item.get("source")
+    if not isinstance(source_value, Mapping):
+        source_value = source_materials_by_ref.get(
+            str(item.get("source_material_ref") or "")
+        )
     source = _mapping(
-        item.get("source"), "research_consumer_evidence_source_missing"
+        source_value, "research_consumer_evidence_source_missing"
     )
     bindings = item.get("slot_bindings")
     _require(
@@ -571,12 +585,27 @@ def _evidence_card(item: Mapping[str, Any], *, case_key: str) -> dict[str, Any]:
         "slot_bindings": slot_rows,
         "numeric_use_boundary": str(item.get("numeric_use_boundary") or ""),
         "source_visible_fact_excerpt": str(
-            source.get("reviewed_source_excerpt") or ""
+            source.get("reviewed_source_excerpt")
+            or source.get("source_text")
+            or ""
         ).strip(),
         "excerpt_truncated": bool(source.get("excerpt_truncated")),
         "evidence_item_digest": str(item.get("evidence_item_digest") or ""),
         "source_text_digest": str(source.get("source_text_digest") or ""),
     }
+    if card["source_tier"] in _BOUNDED_CONTEXT_SOURCE_TIERS:
+        card["bounded_context_source_receipt"] = {
+            "disposition": str(item.get("disposition") or ""),
+            "claim_use": str(item.get("claim_use") or ""),
+            "speaker_entity": str(
+                item.get("speaker_entity")
+                or source.get("speaker_entity")
+                or ""
+            ),
+            "causal_attribution_authorized": bool(
+                item.get("causal_attribution_authorized")
+            ),
+        }
     if source.get("reviewed_anchor_bound") is True:
         card["reviewed_anchor_receipt"] = {
             "projection_kind": str(
@@ -599,6 +628,7 @@ def _validate_evidence_source(
     *,
     policy: Mapping[str, Any],
     research_as_of: str,
+    case_key: str,
 ) -> None:
     source_policy = policy["reviewed_source_policy"]
     _require(
@@ -617,6 +647,19 @@ def _validate_evidence_source(
         and card.get("source_url"),
         "research_consumer_evidence_source_incomplete",
     )
+    if card.get("source_tier") in _BOUNDED_CONTEXT_SOURCE_TIERS:
+        context_receipt = card.get("bounded_context_source_receipt")
+        _require(
+            isinstance(context_receipt, Mapping)
+            and context_receipt.get("disposition")
+            == "accepted_bounded_context_evidence"
+            and card.get("evidence_role")
+            == "counterparty_or_ecosystem_readthrough"
+            and context_receipt.get("causal_attribution_authorized") is False
+            and bool(context_receipt.get("speaker_entity"))
+            and bool(card.get("relationship_directions")),
+            "research_consumer_bounded_context_source_boundary_invalid",
+        )
     anchor_receipt = card.get("reviewed_anchor_receipt")
     if anchor_receipt is not None:
         _require(
@@ -636,8 +679,26 @@ def _validate_evidence_source(
         )
     if card.get("source_type") == "EARNINGS_CALL_TRANSCRIPT":
         transcript = source_policy["earnings_call_transcript_constraints"]
-        _require(
+        direct_issuer_transcript = (
             card.get("source_tier") == transcript["required_source_tier"]
+        )
+        bounded_counterparty_transcript = (
+            isinstance(card.get("bounded_context_source_receipt"), Mapping)
+            and card["bounded_context_source_receipt"].get("disposition")
+            == "accepted_bounded_context_evidence"
+            and card.get("evidence_role")
+            == "counterparty_or_ecosystem_readthrough"
+            and card.get("source_tier")
+            == "named_counterparty_or_standards_primary"
+            and card.get("evidence_owner_ticker") != case_key
+            and bool(
+                card["bounded_context_source_receipt"].get(
+                    "speaker_entity"
+                )
+            )
+        )
+        _require(
+            (direct_issuer_transcript or bounded_counterparty_transcript)
             and str(card.get("source_url") or "").startswith("https://"),
             "research_consumer_transcript_source_invalid",
         )
@@ -1230,8 +1291,23 @@ def compile_current_research_input(
         is True,
         "research_consumer_pack_contract_invalid",
     )
+    source_materials_by_ref = {
+        str(material.get("material_ref") or ""): material
+        for raw_material in evidence_pack.get("source_materials") or ()
+        for material in (
+            _mapping(
+                raw_material,
+                "research_consumer_source_material_invalid",
+            ),
+        )
+        if str(material.get("material_ref") or "")
+    }
     evidence_cards = [
-        _evidence_card(row, case_key=case_key)
+        _evidence_card(
+            row,
+            case_key=case_key,
+            source_materials_by_ref=source_materials_by_ref,
+        )
         for row in evidence_pack.get("evidence_items") or ()
     ]
     _require(evidence_cards, "research_consumer_evidence_missing")
@@ -1240,6 +1316,7 @@ def compile_current_research_input(
             card,
             policy=policy,
             research_as_of=research_as_of,
+            case_key=case_key,
         )
     evidence_refs = [row["evidence_ref"] for row in evidence_cards]
     _require(
@@ -1576,7 +1653,7 @@ def compile_current_research_messages(
                 for key in ("formula", "operation", "input_metrics")
                 if key in formula
             }
-        return {
+        visible = {
             key: deepcopy(row[key])
             for key in (
                 "numeric_ref",
@@ -1591,6 +1668,12 @@ def compile_current_research_messages(
                 "authority_mode",
             )
         } | {"formula_trace": visible_formula}
+        if "quantitative_kinds" in row:
+            visible["quantitative_kinds"] = deepcopy(row["quantitative_kinds"])
+            visible["reported_fact_authority"] = row.get(
+                "reported_fact_authority"
+            ) is True
+        return visible
 
     all_cell_ids = [str(cell["cell_id"]) for cell in research_input["cells"]]
     selected_cell_ids = (
@@ -1633,6 +1716,7 @@ def compile_current_research_messages(
     selected_numeric_refs: set[str] = set()
     selected_numeric_relation_refs: set[str] = set()
     selected_qualitative_fact_refs: set[str] = set()
+    selected_research_action_refs: set[str] = set()
     route_decisions = {
         row["gap_ref"]: row
         for row in research_input["evidence_request_route_catalog"][
@@ -1651,6 +1735,9 @@ def compile_current_research_messages(
         )
         selected_qualitative_fact_refs.update(
             cell.get("allowed_qualitative_fact_refs", ())
+        )
+        selected_research_action_refs.update(
+            str(value) for value in cell.get("allowed_research_action_refs", ())
         )
         allowed_response_refs = list(
             cell.get("allowed_evidence_response_refs", ())
@@ -1904,6 +1991,169 @@ def compile_current_research_messages(
             "Do not infer an undisclosed threshold or claim a supply constraint is easing without directly bound allocation and timing evidence.",
         ],
     }
+    control_context = research_input.get("research_control_context")
+    if isinstance(control_context, Mapping):
+        all_actions = {
+            str(row.get("action_id") or ""): row
+            for row in control_context.get("research_actions") or ()
+            if isinstance(row, Mapping)
+        }
+        _require(
+            selected_research_action_refs.issubset(all_actions),
+            "research_consumer_actionable_control_ref_invalid",
+        )
+        selected_actions = [
+            all_actions[ref] for ref in sorted(selected_research_action_refs)
+        ]
+        selected_uncertainty_refs = {
+            str(row.get("uncertainty_ref") or "") for row in selected_actions
+        }
+        selected_request_refs = {
+            "request://" + str(row.get("request_id") or "")
+            for row in selected_actions
+            if row.get("request_id")
+        }
+        selected_uncertainties = [
+            row
+            for row in control_context.get("actionable_uncertainties") or ()
+            if isinstance(row, Mapping)
+            and str(row.get("uncertainty_id") or "")
+            in selected_uncertainty_refs
+        ]
+        selected_feedback = [
+            row
+            for row in control_context.get("feedback_receipts") or ()
+            if isinstance(row, Mapping)
+            and selected_request_refs.intersection(
+                str(value) for value in row.get("artifact_refs") or ()
+            )
+        ]
+        feedback_ids = {
+            str(row.get("feedback_id") or "") for row in selected_feedback
+        }
+        stop = dict(control_context.get("stop_decision") or {})
+        plan = dict(control_context.get("accepted_plan") or {})
+        checkpoint = dict(control_context.get("checkpoint_resume") or {})
+        token_basis = dict(
+            control_context.get("next_natural_node_token_budget_basis") or {}
+        )
+        visible["research_control_context"] = {
+            "status": control_context.get("status"),
+            "actionable_uncertainties": [
+                {
+                    key: deepcopy(row.get(key))
+                    for key in (
+                        "uncertainty_id",
+                        "request_id",
+                        "slot_id",
+                        "facet_id",
+                        "business_question_zh",
+                        "uncertainty_category",
+                        "earliest_responsible_stage",
+                        "owning_plane",
+                        "reason_codes",
+                        "information_boundary_state",
+                        "public_information_gap_authority",
+                    )
+                }
+                for row in selected_uncertainties
+            ],
+            "research_actions": [
+                {
+                    key: deepcopy(row.get(key))
+                    for key in (
+                        "action_id",
+                        "uncertainty_ref",
+                        "request_id",
+                        "slot_id",
+                        "facet_id",
+                        "action_type",
+                        "owner_stage",
+                        "owning_plane",
+                        "tool_or_gate",
+                        "objective_zh",
+                        "success_criteria",
+                        "stop_conditions",
+                        "preferred_source_portfolio",
+                        "execution_state",
+                    )
+                }
+                for row in selected_actions
+            ],
+            "feedback_receipts": [
+                {
+                    key: deepcopy(row.get(key))
+                    for key in (
+                        "feedback_id",
+                        "source_node_id",
+                        "target_node_id",
+                        "failure_class",
+                        "failure_code",
+                        "owning_plane",
+                        "owning_stage",
+                        "model_visible_summary",
+                        "permitted_next_actions",
+                        "forbidden_interpretations",
+                    )
+                }
+                for row in selected_feedback
+            ],
+            "accepted_plan": {
+                "plan_ref": plan.get("plan_ref"),
+                "plan_digest": plan.get("plan_digest"),
+                "pending_action_refs_for_current_scope": sorted(
+                    selected_research_action_refs
+                ),
+            },
+            "stop_decision": {
+                "decision": stop.get("decision"),
+                "reason_codes": deepcopy(stop.get("reason_codes") or []),
+                "quality_risk": stop.get("quality_risk"),
+            },
+            "checkpoint_resume": {
+                "checkpoint_id": checkpoint.get("checkpoint_id"),
+                "checkpoint_digest": checkpoint.get("checkpoint_digest"),
+                "unresolved_feedback_refs_for_current_scope": sorted(
+                    feedback_ids
+                ),
+                "resume_status": (
+                    checkpoint.get("resume_receipt") or {}
+                ).get("status"),
+            },
+            "source_portfolio": deepcopy(
+                control_context.get("source_portfolio") or {}
+            ),
+            "quantitative_authority": deepcopy(
+                control_context.get("quantitative_authority") or {}
+            ),
+            "token_budget_basis": {
+                key: deepcopy(token_basis.get(key))
+                for key in (
+                    "basis_id",
+                    "node_purpose",
+                    "input_scale",
+                    "required_outputs",
+                    "schema_burden",
+                    "materiality_and_quality_risk",
+                    "reasoning_profile",
+                    "capacity_basis",
+                    "stop_or_truncation_behavior",
+                    "cost_and_latency_are_secondary_constraints",
+                    "execution_authority",
+                )
+            },
+            "authority": deepcopy(control_context.get("authority") or {}),
+        }
+        visible["rules"].extend(
+            [
+                "A pending ResearchAction is work still to be executed, not evidence and not a completed finding; do not close it in prose.",
+                "Treat FeedbackReceipt as an actionable correction from its owning layer. Preserve its forbidden interpretations and change only the affected plan or judgment surface.",
+                "If StopDecision is continue, this judgment may remain bounded or not inferable; it must not manufacture a confident conclusion merely to finish the report.",
+                "The quantitative_kinds field distinguishes a source-reported fact from a deterministic formula result. Neither an estimate nor a scenario may be cited as a reported fact.",
+                "Discovery, internal analysis, citation and redistribution are separate rights. A locator or internally usable source does not automatically become customer-citable Evidence.",
+                "This context binding proves that the current S1/S2 feedback reaches S3; it does not by itself prove that a natural Agent reflected correctly.",
+            ]
+        )
     if selected_has_claim_authority:
         visible["claim_authority_contract"] = deepcopy(
             research_input["claim_authority_contract"]

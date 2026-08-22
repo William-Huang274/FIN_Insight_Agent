@@ -621,3 +621,17 @@ S1 最终资格还有两种不可由当前实现上下文自签的权限：
 2. Git 外 replacement blind qualification，至少 6 个新案例，必须跨公司／行业／披露制度／证据形态／时间与 hard negative／失败责任，且在 candidate freeze 前对执行方不可见。
 
 因此当前只允许 `AI_free_human_operability=engineering_pass`。原来被分类为 source pending 的状态更正后，不得反向追认为 candidate coverage、Evidence admission、external blind 或 `S1_qualified_stable` 已通过。
+
+## 32. 来源用途、权利分离与可行动不确定性 producer（2026-08-22）
+
+S1 当前主线新增 provider-neutral `SourceUsePolicy`。它不是一个来源总分，而是把来源类别、允许支持的 claim use 和四项权利分别编译：`discovery / internal_analysis / citation / redistribution`。发行人／监管 primary 可支持目标公司 exact fact；明名对手方、供应商、客户或标准组织只能在 speaker／关系方向明确时支持关系与行业事实；可信媒体、协会和公开 analyst context 只支持机制、竞争、反方与交叉验证；Search／RSS／转载 snippet 只能定位原始材料。任何来源可读、可引用与可再分发的权限不得互相推导。
+
+当前 producer 直接消费 R29 注册的 current source policy、三案 current ProductReadiness、reviewed Evidence Pack 和 digest-bound private candidate replay。它不把候选文本或私有 capture 暴露到 Workbench，也不自动晋升 Candidate。每个未完成命题被编译为 `ActionableUncertainty + ResearchAction`，并明确归到：
+
+- S1：candidate→Evidence 人工准入、可达 route 未执行、定向免费源补证；
+- S2：reported fact、确定性派生、conflict 或 numeric bridge；
+- S3：研究方法参数、thesis／monitoring threshold 和下一轮研究选择。
+
+三案当前数据结果为：DELL `29 Evidence / 21 actions`，MU `14 / 22`，NVDA `25 / 19`。所有 action 都有成功标准与停止条件，三案 `public_information_gap_authorized_count=0`。这项结果证明 S1 状态可以被 Agent 和人工消费者采取行动，不证明自然补证已经执行，也不改变 qualified-human admission、外部 blind qualification 或 `S1_qualified_stable=false`。
+
+Workbench 的当前研究页读取同一 producer，显示来源权利、责任层、pending actions 和 Feedback，而不是另做一套仪表盘计算。S3 的 cell-scoped consumer 也从同一状态取得 action；因此后续自然纵切若没有执行 S1 action，失败可以回到明确的 request／route／admission，而不会只留下 Writer 的“资料不足”。

@@ -322,6 +322,61 @@ export type S1ProductReadinessView = {
   result_digest: string;
 };
 
+export type QuantitativeAuthorityView = {
+  status: "current_s2_authority_compiled";
+  summary: {
+    reported_fact_count: number;
+    deterministic_derived_metric_count: number;
+    research_estimate_count: number;
+    scenario_count: number;
+    typed_gap_count: number;
+    typed_conflict_count: number;
+  };
+  authority_boundary: Record<string, boolean>;
+  quantitative_authority_digest: string;
+};
+
+export type ActionableResearchStateView = {
+  status: "runtime_injected_current_data_replay";
+  actionable_uncertainties: Array<{
+    uncertainty_id: string;
+    business_question_zh: string;
+    uncertainty_category: string;
+    earliest_responsible_stage: string;
+    information_boundary_state: "not_proved";
+  }>;
+  research_actions: Array<{
+    action_id: string;
+    owner_stage: string;
+    action_type: string;
+    tool_or_gate: string;
+    objective_zh: string;
+    execution_state: string;
+  }>;
+  feedback_receipts: Array<{ feedback_id: string }>;
+  stop_decision: {
+    decision: string;
+    quality_risk: string;
+  };
+  source_portfolio_snapshot: {
+    current_source_count: number;
+    source_class_counts: Record<string, number>;
+    rights_axes: string[];
+  };
+  next_natural_node_token_budget_basis: {
+    basis_id: string;
+    capacity_basis: { minimum_visible_output_tokens: number };
+    execution_authority: boolean;
+  };
+  summary: {
+    actionable_uncertainty_count: number;
+    research_action_count: number;
+    feedback_receipt_count: number;
+    public_information_gap_authorized_count: number;
+  };
+  actionable_state_digest: string;
+};
+
 export type ResearchEvidenceView = {
   status: "identity_bound_reviewed_evidence_ready";
   case_id: string;
@@ -338,6 +393,8 @@ export type ResearchEvidenceView = {
   hard_boundaries: Record<string, unknown>;
   canonical_spine?: S1CanonicalSpineView | null;
   product_readiness?: S1ProductReadinessView | null;
+  quantitative_authority?: QuantitativeAuthorityView | null;
+  actionable_research_state?: ActionableResearchStateView | null;
   known_boundary: string;
   projection_digest: string;
 };

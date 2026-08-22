@@ -256,6 +256,29 @@ def test_exact_reviewed_request_match_is_reselected_without_promotion() -> None:
         "model_decision_used": False,
     }
 
+
+def test_capture_bound_source_material_is_resolved_for_bounded_context() -> None:
+    item = _item(period_end="")
+    source_material = item.pop("source")
+    source_material["period_end"] = None
+    item["source_reporting_period_end"] = None
+    item["source_material_ref"] = source_material["material_ref"]
+    item["claim_use"] = "bounded_market_context"
+    pack = _pack([item])
+    pack["source_materials"] = [source_material]
+
+    result = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=_controlled([_candidate("SOURCE::DELL::1")]),
+        evidence_pack=pack,
+    )
+
+    assert result["summary"]["accepted_reviewed_evidence_count"] == 1
+    assert result["summary"]["new_evidence_promotions"] == 0
+    assert result["responses"][0]["accepted"][0]["source_record_id"] == (
+        "SOURCE::DELL::1"
+    )
+
     view = compile_dynamic_reviewed_pack_view(
         evidence_pack=pack,
         evidence_responses=result,

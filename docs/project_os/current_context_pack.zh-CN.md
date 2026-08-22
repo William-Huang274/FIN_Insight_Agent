@@ -1139,3 +1139,32 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - PRD 当前八维绝对内容质量为 `28/32` 并通过当前有界内部报告门。5 处叙事密度、内部 ID 引用面和未冻结 WWC 阈值属于非阻断改进；paired 证明内容保真与财务控制面增益，但研究正文增量为 0。
 - `qualified_human_acceptance=false`，因此 DELL bounded Preview、S1、S3、MU／NVDA／留出泛化、Workbench publication 和 release 均未签发。下一步先由用户审阅当前报告，再回到最早 S1／动态 Research 前置条件。
 - 最终复证通过：定向 `81 passed`、全仓 `958 passed`（仅 2 条既有 SWIG warning）、active baseline `189／8／5／27／0`、archive redirect `6,059`、815 份 configs JSON、8 份 Project OS JSONL／926 条记录、7,552-file secret scan／0 和 diff check。该复证不替代 qualified-human 内容验收。
+
+### 2026-08-22 DELL 报告边界密度与来源充分性审计
+
+- 用户审阅确认报告骨架和事实边界已有进步，但“无法推断／资料不足／仍待披露”过密。对最终 draft、rendered report、六份 workpaper、S2 numeric review、authority catalog、S1 readiness、Evidence Pack 和 route truth 完成零模型、零网络逐项对账。
+- 当前 8 组边界中，4 组是运行／状态同步／研究方法，必须退出客户报告；4 组是外部免费公开源尚未穷尽的 current-run uncertainty；0 组取得 proved public-information boundary 权威。
+- 最明确的内部漂移是 Cash：应收、库存、现金和融资应收已获得 source-bound NumericFact／presentation authority。复核后确认 Cash workpaper 已见并分析这些值，真正过期的是更早的 `NUM_REF_UNRESOLVED_BALANCES` evaluator finding；Writer 同时看到新目录和旧 finding。后续对纯绑定补齐应确定性废止旧 finding，不重跑 Agent；只有事实语义改变才使受影响 workpaper 失效。
+- `GAP::04EDD...`／`GAP::B070...` 是研究者应设置的 thesis／监控阈值，不是公司披露缺口，已重新归属 S3 Research Method。
+- Source route 合同开始区分 candidate coverage 与 research sufficiency；本地候选完整但研究仍有 material gap 时仍需调度外部补源。Writer 新增 boundary-density 质量 finding，当前历史 draft 回放为 `0 hard / 17 quality`，其中 12 条属于边界重复；Harness 不自动改写模型观点。
+- 来源政策从近似 official-only 改为 source-strength × claim-use：issuer／regulator 保持目标公司 exact fact 权威；对手方／行业 primary 支持 speaker 与行业事实；可信媒体／协会／公开 analyst context 可补机制、竞争和反方但不得创造目标公司 exact fact；Search／RSS／GDELT／Common Crawl 只作 locator；licensed 源绑定 entitlement。
+- 当前结构修复和逐项审计已形成，但尚未运行免费源 capture live、语义受影响单元重裁决或新报告。下一步严格按：S2→S3 evaluator supersession＋threshold ontology → DELL 四类免费源定向补证 → Evidence Gate／S2 → 仅语义变化的 Demand／Value／Cash／Supply 动态重裁决 → 新报告 → MU／NVDA／异质留出复证。S1、S3、qualified-human、Workbench 和 release 继续为 false。
+- 最终工程复证：定向 `48 passed`、全仓 `977 passed`（仅 2 条既有 SWIG warning）、compileall、Workbench typecheck／production build、active baseline `191／8／5／27／0`、archive redirect `6,059`、7,560-file secret scan／0 和 diff check 通过。报告质量策略已显式版本化：旧 reference-patch proof 可按 legacy policy 读取，但因 implementation SHA 漂移不可作为当前执行权限；新报告默认走 boundary-density policy。
+
+### 2026-08-22 Actionable Uncertainty、当前数据 Runtime 与 S3 消费接线
+
+- 用户批准的 1–7 已按当前数据接通，不是只建立 Schema：current Runtime registry、三案 ProductReadiness、reviewed Evidence Pack、digest-bound private candidate replay、S1 source policy、S2 quantitative authority、AgentSession、S3 current consumer 和 Workbench 使用同一条 producer 链。
+- 来源不再使用一个总分控制全部用途，而是分别裁决 source class、claim use 和 `discovery / internal analysis / citation / redistribution` 四项权利。Search／RSS 只能定位；Candidate 不能自动晋升；licensed／user-entitled 来源必须保留 entitlement。
+- S2 当前数据已分为 source-reported fact 与 deterministic derived metric：DELL `38／27`、MU `16／13`、NVDA `19／15`；estimate／scenario 当前均为 0。派生公式保留输入 refs 和公式，但 `numeric_fact_authority=false`，避免公式结果冒充公司披露。
+- 当前 ResearchAction 为 DELL `21`、MU `22`、NVDA `19`，分别归入 S1／S2／S3 和基础设施／Harness／Agent 工作模式。三案 public-information gap authority 均为 0；StopDecision 均为 `continue`，没有把未执行路线或当前故障包装成信息不存在。
+- FeedbackReceipt 已真实改变 accepted PlanDelta；无新 reviewed relationship Evidence 时 GraphDelta 明确 no-mutation；checkpoint／resume 保存全部 open uncertainty、pending action 和 unresolved feedback。下一自然节点的 TokenBudgetBasis 按输入、action、feedback 和必交付项计算，execution authority 仍为 false。
+- DELL 五个研究单元分别从 current consumer 取得 cell-scoped action／feedback／quantitative／rights／stop／checkpoint context，单 cell 均在容量内；五单元合并会超限，因此保持真正角色隔离，不抬高单消息上限。Workbench Evidence 页面读取同一 producer 并展示这些状态。
+- 三案 materialized result digest=`abb316d80b3447b962c23d034089034eba6a990b1ae4373ab7cf3e945c60a35a`，12/12 零调用门均通过；当前定向回归 `59 passed`。natural model、network 和 paid calls 均为 0，所以只能记 `current_data_runtime_and_s3_consumption_pass`，不能记自然反思、第二轮补证、S1／S3、qualified-human、Workbench publication 或 release 通过。
+- 下一门仍是独立权限下的 DELL 动态 multi-agent 纵切。它必须真实消费上述 action、执行受控 S1／S2 第二轮并比较 Evidence／判断增量；本节结果不得追认为 Agentic Research。
+
+### 2026-08-22 历史 checkpoint capture-bound 回放收口
+
+- 全仓回归曾发现两条旧 R7／R8 successor 失败：旧 workpaper 本身未损坏，错误在于复证路径使用当前 consumer overlay 重新编译历史上下文，导致 current context digest 漂移后误拒绝不可变历史产物。
+- 历史 checkpoint 现改为读取当次保存的 `model_visible_request_without_credentials` capture，并验证受控路径、无凭据、Run／Attempt、request digest、agent、schema 与 context digest；当前新运行继续使用 current policy，不冻结产品演进。
+- 该修复不放宽 digest、不重写历史结果，也不恢复任何已消费权限。全仓最终 `997 passed`（仅 2 条既有 SWIG warning），compileall、Workbench typecheck／production build、active baseline `197／8／5／28／0`、archive redirect `6,059` 和 7,584-file secret scan／0 均通过。
+- 1–7 至此达到 current-data engineering closure；natural model reflection、第二轮补证、动态五单元报告、S1／S3／qualified-human／Workbench publication／release 仍未证明。

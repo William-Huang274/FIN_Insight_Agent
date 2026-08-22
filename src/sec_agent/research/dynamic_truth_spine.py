@@ -287,6 +287,18 @@ def _item_matches_period(
         )
         or ""
     )
+    if not period_end and str(item.get("claim_use") or "") in {
+        "bounded_market_context",
+        "counterevidence",
+        "industry_exact_fact",
+        "speaker_attributed_mechanism",
+        "speaker_exact_fact",
+    }:
+        # Point-in-time market and ecosystem read-throughs may not describe a
+        # target-company reporting period.  Their publication date is the
+        # appropriate temporal boundary; it does not turn them into target
+        # company facts or NumericFacts.
+        period_end = str(item.get("publication_date") or "")
     start = str(period.get("start_date") or "")
     end = str(period.get("end_date") or "")
     if start and (not period_end or period_end < start):
@@ -382,8 +394,27 @@ def compile_dynamic_evidence_responses(
     )
     reviewed_by_source: dict[str, list[Mapping[str, Any]]] = {}
     reviewed_by_digest: dict[str, Mapping[str, Any]] = {}
+    source_materials_by_ref = {
+        str(material.get("material_ref") or ""): material
+        for raw_material in evidence_pack.get("source_materials") or ()
+        for material in (
+            _mapping(
+                raw_material,
+                "dynamic_truth_spine_source_material_invalid",
+            ),
+        )
+        if str(material.get("material_ref") or "")
+    }
     for raw_item in evidence_pack.get("evidence_items") or ():
         item = _mapping(raw_item, "dynamic_truth_spine_reviewed_item_invalid")
+        if not isinstance(item.get("source"), Mapping):
+            source_material_ref = str(item.get("source_material_ref") or "")
+            source_material = source_materials_by_ref.get(source_material_ref)
+            _require(
+                source_material is not None,
+                "dynamic_truth_spine_item_source_material_missing",
+            )
+            item = {**dict(item), "source": deepcopy(dict(source_material))}
         source_id = str(item.get("source_record_id") or "")
         digest = str(item.get("evidence_item_digest") or "")
         _require(source_id and digest and digest not in reviewed_by_digest, "dynamic_truth_spine_reviewed_item_identity_invalid")

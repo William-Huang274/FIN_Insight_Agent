@@ -22,6 +22,18 @@ from sec_agent.research.reviewed_evidence_anchor import (
     project_reviewed_claim_anchor,
     validate_anchor_catalog_pack_binding,
 )
+from sec_agent.research.actionable_research_state import (
+    ActionableResearchStateError,
+    compile_actionable_research_state,
+)
+from sec_agent.research.quantitative_authority import (
+    QuantitativeAuthorityError,
+    compile_quantitative_authority_state,
+)
+from retrieval.source_use_policy import (
+    SourceUsePolicy,
+    SourceUsePolicyError,
+)
 from retrieval.artifact_spine import ArtifactSpinePolicy
 from retrieval.vertical_slice import (
     load_s1_vs1_vertical_slice_result,
@@ -53,6 +65,9 @@ CURRENT_S1_VS4_SUPPLEMENT_VERTICAL_RESOURCE_ID = (
 )
 CURRENT_S1_PRODUCT_READINESS_CATALOG_RESOURCE_ID = (
     "application.config.current_s1_product_readiness_catalog"
+)
+CURRENT_S1_SOURCE_USE_POLICY_RESOURCE_ID = (
+    "application.config.current_s1_source_use_policy"
 )
 EXPECTED_CONFIG_SCHEMA = (
     "fin_ia_current_research_evidence_pack_projection_config_v1_0"
@@ -155,6 +170,7 @@ class ResearchEvidencePackService:
             str, Mapping[str, Any]
         ] | None = None,
         product_readiness_private_root: str | Path | None = None,
+        source_use_policy: Mapping[str, Any] | None = None,
     ) -> None:
         self._config = self._validate_config(config)
         self._result = self._validate_result(result, self._config)
@@ -230,6 +246,16 @@ class ResearchEvidencePackService:
             raise ResearchEvidencePackServiceError(
                 "current_research_evidence_supplement_without_base_vertical", 503
             )
+        try:
+            self._source_use_policy = (
+                SourceUsePolicy.from_mapping(source_use_policy)
+                if source_use_policy is not None
+                else None
+            )
+        except SourceUsePolicyError as exc:
+            raise ResearchEvidencePackServiceError(
+                "current_s1_source_use_policy_invalid", 503
+            ) from exc
         self._product_readiness = self._validate_product_readiness_surface(
             product_readiness_catalog,
             product_readiness_results,
@@ -280,6 +306,10 @@ class ResearchEvidencePackService:
                 product_readiness_catalog.get("case_resource_ids") or {}
             ).items()
         }
+        source_use_policy = read_registered_runtime_json(
+            repository_root,
+            CURRENT_S1_SOURCE_USE_POLICY_RESOURCE_ID,
+        )
         default_object_root = (
             runtime_paths.reviewed_evidence_root
             / str(config.get("private_object_root_relative") or "")
@@ -317,6 +347,7 @@ class ResearchEvidencePackService:
             product_readiness_catalog=product_readiness_catalog,
             product_readiness_results=product_readiness_results,
             product_readiness_private_root=runtime_paths.workbench_private_root,
+            source_use_policy=source_use_policy,
         )
 
     @property
@@ -453,7 +484,43 @@ class ResearchEvidencePackService:
             body["canonical_spine"] = canonical_spine
         product_readiness = self._product_readiness.get(normalized)
         if product_readiness is not None:
-            body["product_readiness"] = deepcopy(product_readiness)
+            readiness_projection = deepcopy(product_readiness)
+            quantitative_authority = readiness_projection.pop(
+                "_quantitative_authority", None
+            )
+            body["product_readiness"] = readiness_projection
+            if quantitative_authority is not None:
+                body["quantitative_authority"] = deepcopy(
+                    quantitative_authority
+                )
+            if (
+                quantitative_authority is not None
+                and self._source_use_policy is not None
+            ):
+                try:
+                    body["actionable_research_state"] = (
+                        compile_actionable_research_state(
+                            case_key=normalized,
+                            product_readiness=readiness_projection,
+                            residual_gaps=body["residual_gaps"],
+                            evidence_items=evidence,
+                            quantitative_authority=quantitative_authority,
+                            source_use_policy=self._source_use_policy,
+                            recorded_at=str(
+                                readiness_projection.get("recorded_at") or ""
+                            ),
+                        )
+                    )
+                except (
+                    ActionableResearchStateError,
+                    QuantitativeAuthorityError,
+                ) as exc:
+                    raise ResearchEvidencePackServiceError(
+                        "current_actionable_research_state_invalid",
+                        503,
+                        case_key=normalized,
+                        typed_reason=str(exc),
+                    ) from exc
         return _projection(body)
 
     def _validate_product_readiness_surface(
@@ -530,6 +597,54 @@ class ResearchEvidencePackService:
                 expected_sha256=private_sha256,
                 case_key=case_key,
             )
+            private_readiness = deepcopy(
+                dict(private_result.get("pack_readiness") or {})
+            )
+            _require(
+                private_readiness.get("schema_version")
+                == "fin_ia_s1_product_pack_readiness_v1_2"
+                and private_readiness.get("case_key") == case_key
+                and isinstance(private_readiness.get("requests"), list)
+                and isinstance(
+                    private_readiness.get("gap_eligibility_receipts"), list
+                ),
+                "current_s1_product_readiness_private_pack_invalid",
+                503,
+                case_key=case_key,
+            )
+            private_requests = {
+                str(row.get("request_id") or ""): deepcopy(dict(row))
+                for row in private_readiness["requests"]
+            }
+            private_gap_receipts: dict[str, list[dict[str, Any]]] = {}
+            for raw_receipt in private_readiness["gap_eligibility_receipts"]:
+                receipt = deepcopy(dict(raw_receipt))
+                private_gap_receipts.setdefault(
+                    str(receipt.get("request_id") or ""), []
+                ).append(receipt)
+            candidate_replay = self._load_candidate_replay(
+                private_base=private_base,
+                private_result=private_result,
+                case_key=case_key,
+            )
+            try:
+                quantitative_authority = compile_quantitative_authority_state(
+                    case_key=case_key,
+                    request_results=(
+                        candidate_replay.get("product_projection", {}).get(
+                            "request_results"
+                        )
+                        or ()
+                    ),
+                    recorded_at=str(value.get("recorded_at") or ""),
+                )
+            except QuantitativeAuthorityError as exc:
+                raise ResearchEvidencePackServiceError(
+                    "current_s2_quantitative_authority_invalid",
+                    503,
+                    case_key=case_key,
+                    typed_reason=str(exc),
+                ) from exc
             review_packet = self._validate_candidate_review_packet(
                 private_result=private_result,
                 public_summary=review_summary,
@@ -549,9 +664,11 @@ class ResearchEvidencePackService:
                     case_key=case_key,
                 )
                 request_id = str(request.get("request_id") or "")
+                private_request = private_requests.get(request_id)
                 private_review = review_requests.get(request_id)
                 _require(
-                    isinstance(private_review, Mapping)
+                    isinstance(private_request, Mapping)
+                    and isinstance(private_review, Mapping)
                     and request.get("candidate_review_summary")
                     == {
                         "review_item_count": private_review.get(
@@ -596,6 +713,61 @@ class ResearchEvidencePackService:
                     )
                     for item in private_review.get("review_items") or ()
                 ]
+                safe_request["route_execution_state"] = deepcopy(
+                    dict(private_request.get("route_execution_state") or {})
+                )
+                safe_request["requirements"] = [
+                    {
+                        "requirement_id": str(
+                            requirement.get("requirement_id") or ""
+                        ),
+                        "facet_id": str(requirement.get("facet_id") or ""),
+                        "role": str(requirement.get("role") or ""),
+                        "readiness_state": str(
+                            requirement.get("readiness_state") or ""
+                        ),
+                        "candidate_set_complete_in_bounded_union": (
+                            requirement.get(
+                                "candidate_set_complete_in_bounded_union"
+                            )
+                            is True
+                        ),
+                        "accepted_reviewed_evidence_count": len(
+                            requirement.get(
+                                "accepted_reviewed_evidence_digests"
+                            )
+                            or ()
+                        ),
+                        "candidate_text_promoted": False,
+                        "numeric_authority": False,
+                    }
+                    for requirement in private_request.get("requirements") or ()
+                ]
+                safe_request["gap_eligibility_receipts"] = [
+                    {
+                        key: deepcopy(receipt[key])
+                        for key in (
+                            "schema_version",
+                            "request_id",
+                            "slot_id",
+                            "facet_id",
+                            "requirement_id",
+                            "requirement_role",
+                            "readiness_state",
+                            "candidate_set_complete_in_bounded_union",
+                            "candidate_decision_counts",
+                            "checks",
+                            "blockers",
+                            "earliest_responsible_layer",
+                            "next_legal_action",
+                            "eligible_as_true_public_information_gap",
+                            "public_information_gap_authority",
+                            "receipt_digest",
+                        )
+                        if key in receipt
+                    }
+                    for receipt in private_gap_receipts.get(request_id, ())
+                ]
                 safe_requests.append(safe_request)
             validated[case_key] = {
                 key: deepcopy(value[key])
@@ -619,6 +791,12 @@ class ResearchEvidencePackService:
                 if key in value
             }
             validated[case_key]["requests"] = safe_requests
+            validated[case_key]["research_as_of"] = str(
+                private_readiness.get("research_as_of") or ""
+            )
+            validated[case_key]["_quantitative_authority"] = (
+                quantitative_authority
+            )
             validated[case_key]["result_digest"] = digest
         return validated
 
@@ -677,6 +855,69 @@ class ResearchEvidencePackService:
         _require(
             result_digest == canonical_digest(body),
             "current_s1_product_readiness_private_result_digest_invalid",
+            503,
+            case_key=case_key,
+        )
+        return value
+
+    @staticmethod
+    def _load_candidate_replay(
+        *,
+        private_base: Path,
+        private_result: Mapping[str, Any],
+        case_key: str,
+    ) -> dict[str, Any]:
+        source_bindings = dict(private_result.get("source_bindings") or {})
+        binding = dict(source_bindings.get("candidate_replay") or {})
+        ref = PurePosixPath(str(binding.get("ref") or ""))
+        expected_sha256 = str(binding.get("sha256") or "")
+        expected_digest = str(binding.get("result_digest") or "")
+        _require(
+            ref.parts[:2] == ("data", "workbench_private")
+            and len(ref.parts) > 2
+            and ".." not in ref.parts
+            and len(expected_sha256) == 64
+            and len(expected_digest) == 64,
+            "current_s1_candidate_replay_ref_invalid",
+            503,
+            case_key=case_key,
+        )
+        target = (private_base / Path(*ref.parts[2:])).resolve()
+        try:
+            target.relative_to(private_base)
+        except ValueError as exc:
+            raise ResearchEvidencePackServiceError(
+                "current_s1_candidate_replay_ref_escape",
+                503,
+                case_key=case_key,
+            ) from exc
+        _require(
+            target.is_file() and file_sha256(target) == expected_sha256,
+            "current_s1_candidate_replay_unavailable",
+            503,
+            case_key=case_key,
+        )
+        try:
+            value = json.loads(target.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ResearchEvidencePackServiceError(
+                "current_s1_candidate_replay_invalid",
+                503,
+                case_key=case_key,
+            ) from exc
+        body = dict(value)
+        digest = str(body.pop("result_digest", ""))
+        _require(
+            value.get("schema_version")
+            == "fin_ia_s1_source_route_truth_replay_successor_full_v1_0"
+            and value.get("case_key") == case_key
+            and digest == expected_digest
+            and digest == canonical_digest(body)
+            and isinstance(
+                value.get("product_projection", {}).get("request_results"),
+                list,
+            ),
+            "current_s1_candidate_replay_invalid",
             503,
             case_key=case_key,
         )

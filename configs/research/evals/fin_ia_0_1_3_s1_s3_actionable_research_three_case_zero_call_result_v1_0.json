@@ -1,0 +1,465 @@
+{
+  "schema_version": "fin_ia_s1_s3_actionable_research_three_case_zero_call_result_v1_0",
+  "status": "current_data_runtime_and_s3_consumption_pass",
+  "recorded_at": "2026-08-22",
+  "scope": {
+    "completed_steps": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "case_keys": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "uses_current_runtime_registry": true,
+    "uses_current_private_candidate_replay_for_s2_compilation": true,
+    "uses_current_reviewed_evidence_packs": true,
+    "natural_model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0
+  },
+  "case_results": [
+    {
+      "case_key": "DELL",
+      "current_pack": {
+        "reviewed_evidence_count": 29,
+        "residual_gap_count": 14,
+        "product_readiness_state": "blocked_by_evidence_admission"
+      },
+      "source_portfolio": {
+        "current_source_count": 29,
+        "source_class_counts": {
+          "issuer_regulator_or_government_primary": 15,
+          "licensed_structured_or_user_entitled": 6,
+          "named_counterparty_or_standards_primary": 8
+        },
+        "source_type_counts": {
+          "10-K": 8,
+          "10-Q": 7,
+          "6-K": 1,
+          "8-K": 7,
+          "EARNINGS_CALL_TRANSCRIPT": 6
+        },
+        "rights_axes": [
+          "discovery",
+          "internal_analysis",
+          "citation",
+          "redistribution"
+        ]
+      },
+      "quantitative_authority": {
+        "reported_fact_count": 38,
+        "deterministic_derived_metric_count": 27,
+        "research_estimate_count": 0,
+        "scenario_count": 0,
+        "typed_gap_count": 9,
+        "typed_conflict_count": 0
+      },
+      "actionable_research": {
+        "uncertainty_count": 21,
+        "research_action_count": 21,
+        "uncertainty_category_counts": {
+          "candidate_present_evidence_authority_pending": 4,
+          "declared_gap_free_source_exhaustion_not_proved": 12,
+          "partial_answer_numeric_or_material_support_open": 3,
+          "research_method_parameter_missing": 2
+        },
+        "action_type_counts": {
+          "adjudicate_candidate_to_evidence": 4,
+          "resolve_numeric_fact_or_bridge": 3,
+          "set_research_method_threshold": 2,
+          "targeted_source_supplement": 12
+        },
+        "owner_stage_counts": {
+          "S1": 16,
+          "S2": 3,
+          "S3": 2
+        },
+        "owning_plane_counts": {
+          "agent_work_mode_plane": 2,
+          "harness_control_plane": 4,
+          "infrastructure_and_tool_plane": 15
+        },
+        "public_information_gap_authorized_count": 0
+      },
+      "reflection_continuity": {
+        "feedback_receipt_count": 7,
+        "plan_delta_status": "accepted",
+        "active_plan_changed": true,
+        "graph_delta_disposition": "no_graph_mutation_without_reviewed_relationship_evidence",
+        "stop_decision": "continue",
+        "checkpoint_open_gap_count": 21,
+        "checkpoint_unresolved_feedback_count": 7,
+        "resume_status": "resume_replay_verified"
+      },
+      "token_budget_basis": {
+        "basis_id": "TOKENBASIS::9FF9019F64314585BAF9667E",
+        "input_scale": {
+          "reviewed_evidence_item_count": 29,
+          "reviewed_evidence_visible_char_count": 14123,
+          "actionable_uncertainty_count": 21,
+          "research_action_count": 21,
+          "feedback_receipt_count": 7
+        },
+        "required_outputs": {
+          "coverage_reflections": 21,
+          "action_dispositions": 21,
+          "feedback_responses": 7,
+          "plan_delta": 1,
+          "stop_decision": 1
+        },
+        "capacity_basis": {
+          "minimum_visible_output_tokens": 7980,
+          "formula": "max(1800,700+180*uncertainties+140*actions+80*feedback)",
+          "headroom_must_be_recalibrated_from_actual_usage": true
+        },
+        "execution_authority": false
+      },
+      "evaluation": {
+        "status": "pass",
+        "gates": {
+          "uncertainty_has_action": true,
+          "identity_unique": true,
+          "no_false_public_gap": true,
+          "source_rights_separated": true,
+          "candidate_not_promoted": true,
+          "quantitative_kinds_separated": true,
+          "feedback_changes_plan": true,
+          "checkpoint_resume_preserves_open_state": true,
+          "stop_semantics_honest": true,
+          "token_budget_basis_complete": true,
+          "event_log_valid": true,
+          "natural_agent_not_falsely_claimed": true
+        },
+        "summary": {
+          "gate_count": 12,
+          "passed_gate_count": 12,
+          "failed_gate_count": 0,
+          "actionable_uncertainty_count": 21,
+          "research_action_count": 21,
+          "reported_fact_count": 38,
+          "derived_metric_count": 27
+        },
+        "evaluation_digest": "85108db2532dbad23c2aa113ddd92136186dd481b906fe7b400171f4db5fd037"
+      }
+    },
+    {
+      "case_key": "MU",
+      "current_pack": {
+        "reviewed_evidence_count": 14,
+        "residual_gap_count": 15,
+        "product_readiness_state": "blocked_by_candidate_coverage"
+      },
+      "source_portfolio": {
+        "current_source_count": 14,
+        "source_class_counts": {
+          "issuer_regulator_or_government_primary": 11,
+          "named_counterparty_or_standards_primary": 3
+        },
+        "source_type_counts": {
+          "10-Q": 13,
+          "8-K": 1
+        },
+        "rights_axes": [
+          "discovery",
+          "internal_analysis",
+          "citation",
+          "redistribution"
+        ]
+      },
+      "quantitative_authority": {
+        "reported_fact_count": 16,
+        "deterministic_derived_metric_count": 13,
+        "research_estimate_count": 0,
+        "scenario_count": 0,
+        "typed_gap_count": 10,
+        "typed_conflict_count": 1
+      },
+      "actionable_research": {
+        "uncertainty_count": 22,
+        "research_action_count": 22,
+        "uncertainty_category_counts": {
+          "candidate_present_evidence_authority_pending": 3,
+          "declared_gap_free_source_exhaustion_not_proved": 13,
+          "reachable_source_route_not_terminal": 4,
+          "research_method_parameter_missing": 2
+        },
+        "action_type_counts": {
+          "adjudicate_candidate_to_evidence": 3,
+          "set_research_method_threshold": 2,
+          "targeted_source_supplement": 17
+        },
+        "owner_stage_counts": {
+          "S1": 20,
+          "S3": 2
+        },
+        "owning_plane_counts": {
+          "agent_work_mode_plane": 2,
+          "harness_control_plane": 3,
+          "infrastructure_and_tool_plane": 17
+        },
+        "public_information_gap_authorized_count": 0
+      },
+      "reflection_continuity": {
+        "feedback_receipt_count": 7,
+        "plan_delta_status": "accepted",
+        "active_plan_changed": true,
+        "graph_delta_disposition": "no_graph_mutation_without_reviewed_relationship_evidence",
+        "stop_decision": "continue",
+        "checkpoint_open_gap_count": 22,
+        "checkpoint_unresolved_feedback_count": 7,
+        "resume_status": "resume_replay_verified"
+      },
+      "token_budget_basis": {
+        "basis_id": "TOKENBASIS::339063D92B4740AFEF8CB3DD",
+        "input_scale": {
+          "reviewed_evidence_item_count": 14,
+          "reviewed_evidence_visible_char_count": 3274,
+          "actionable_uncertainty_count": 22,
+          "research_action_count": 22,
+          "feedback_receipt_count": 7
+        },
+        "required_outputs": {
+          "coverage_reflections": 22,
+          "action_dispositions": 22,
+          "feedback_responses": 7,
+          "plan_delta": 1,
+          "stop_decision": 1
+        },
+        "capacity_basis": {
+          "minimum_visible_output_tokens": 8300,
+          "formula": "max(1800,700+180*uncertainties+140*actions+80*feedback)",
+          "headroom_must_be_recalibrated_from_actual_usage": true
+        },
+        "execution_authority": false
+      },
+      "evaluation": {
+        "status": "pass",
+        "gates": {
+          "uncertainty_has_action": true,
+          "identity_unique": true,
+          "no_false_public_gap": true,
+          "source_rights_separated": true,
+          "candidate_not_promoted": true,
+          "quantitative_kinds_separated": true,
+          "feedback_changes_plan": true,
+          "checkpoint_resume_preserves_open_state": true,
+          "stop_semantics_honest": true,
+          "token_budget_basis_complete": true,
+          "event_log_valid": true,
+          "natural_agent_not_falsely_claimed": true
+        },
+        "summary": {
+          "gate_count": 12,
+          "passed_gate_count": 12,
+          "failed_gate_count": 0,
+          "actionable_uncertainty_count": 22,
+          "research_action_count": 22,
+          "reported_fact_count": 16,
+          "derived_metric_count": 13
+        },
+        "evaluation_digest": "0c4cfd892d914f93882073126d80935126be495df61fda22b5c75c0b1f2ab06e"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "current_pack": {
+        "reviewed_evidence_count": 25,
+        "residual_gap_count": 13,
+        "product_readiness_state": "blocked_by_candidate_coverage"
+      },
+      "source_portfolio": {
+        "current_source_count": 25,
+        "source_class_counts": {
+          "issuer_regulator_or_government_primary": 16,
+          "licensed_structured_or_user_entitled": 2,
+          "named_counterparty_or_standards_primary": 7
+        },
+        "source_type_counts": {
+          "10-Q": 22,
+          "8-K": 1,
+          "EARNINGS_CALL_TRANSCRIPT": 2
+        },
+        "rights_axes": [
+          "discovery",
+          "internal_analysis",
+          "citation",
+          "redistribution"
+        ]
+      },
+      "quantitative_authority": {
+        "reported_fact_count": 19,
+        "deterministic_derived_metric_count": 15,
+        "research_estimate_count": 0,
+        "scenario_count": 0,
+        "typed_gap_count": 10,
+        "typed_conflict_count": 0
+      },
+      "actionable_research": {
+        "uncertainty_count": 19,
+        "research_action_count": 19,
+        "uncertainty_category_counts": {
+          "candidate_present_evidence_authority_pending": 3,
+          "declared_gap_free_source_exhaustion_not_proved": 11,
+          "reachable_source_route_not_terminal": 3,
+          "research_method_parameter_missing": 2
+        },
+        "action_type_counts": {
+          "adjudicate_candidate_to_evidence": 3,
+          "set_research_method_threshold": 2,
+          "targeted_source_supplement": 14
+        },
+        "owner_stage_counts": {
+          "S1": 17,
+          "S3": 2
+        },
+        "owning_plane_counts": {
+          "agent_work_mode_plane": 2,
+          "harness_control_plane": 3,
+          "infrastructure_and_tool_plane": 14
+        },
+        "public_information_gap_authorized_count": 0
+      },
+      "reflection_continuity": {
+        "feedback_receipt_count": 6,
+        "plan_delta_status": "accepted",
+        "active_plan_changed": true,
+        "graph_delta_disposition": "no_graph_mutation_without_reviewed_relationship_evidence",
+        "stop_decision": "continue",
+        "checkpoint_open_gap_count": 19,
+        "checkpoint_unresolved_feedback_count": 6,
+        "resume_status": "resume_replay_verified"
+      },
+      "token_budget_basis": {
+        "basis_id": "TOKENBASIS::CCF1D40D316D11802A47A2F3",
+        "input_scale": {
+          "reviewed_evidence_item_count": 25,
+          "reviewed_evidence_visible_char_count": 6949,
+          "actionable_uncertainty_count": 19,
+          "research_action_count": 19,
+          "feedback_receipt_count": 6
+        },
+        "required_outputs": {
+          "coverage_reflections": 19,
+          "action_dispositions": 19,
+          "feedback_responses": 6,
+          "plan_delta": 1,
+          "stop_decision": 1
+        },
+        "capacity_basis": {
+          "minimum_visible_output_tokens": 7260,
+          "formula": "max(1800,700+180*uncertainties+140*actions+80*feedback)",
+          "headroom_must_be_recalibrated_from_actual_usage": true
+        },
+        "execution_authority": false
+      },
+      "evaluation": {
+        "status": "pass",
+        "gates": {
+          "uncertainty_has_action": true,
+          "identity_unique": true,
+          "no_false_public_gap": true,
+          "source_rights_separated": true,
+          "candidate_not_promoted": true,
+          "quantitative_kinds_separated": true,
+          "feedback_changes_plan": true,
+          "checkpoint_resume_preserves_open_state": true,
+          "stop_semantics_honest": true,
+          "token_budget_basis_complete": true,
+          "event_log_valid": true,
+          "natural_agent_not_falsely_claimed": true
+        },
+        "summary": {
+          "gate_count": 12,
+          "passed_gate_count": 12,
+          "failed_gate_count": 0,
+          "actionable_uncertainty_count": 19,
+          "research_action_count": 19,
+          "reported_fact_count": 19,
+          "derived_metric_count": 15
+        },
+        "evaluation_digest": "413b62adaf0b019d322376adb7a243a3c3b2437af2e23fcd3eb3b39f210e343c"
+      }
+    }
+  ],
+  "dell_dynamic_s3_consumption": {
+    "dynamic_research_input_digest": "ef738d743654b6ce83a21076cb6c3ff2b70c2abbd57e88f8f91735d7978248c3",
+    "control_context_status": "current_action_feedback_checkpoint_bound_to_dynamic_input",
+    "cell_consumption": [
+      {
+        "cell_id": "CELL::demand_quality",
+        "user_message_chars": 26746,
+        "visible_research_action_count": 3,
+        "visible_feedback_receipt_count": 2,
+        "stop_decision": "continue",
+        "checkpoint_resume_status": "resume_replay_verified",
+        "quantitative_kinds": []
+      },
+      {
+        "cell_id": "CELL::operating_performance",
+        "user_message_chars": 23986,
+        "visible_research_action_count": 1,
+        "visible_feedback_receipt_count": 1,
+        "stop_decision": "continue",
+        "checkpoint_resume_status": "resume_replay_verified",
+        "quantitative_kinds": [
+          "deterministic_derived_metric",
+          "reported_fact"
+        ]
+      },
+      {
+        "cell_id": "CELL::value_capture",
+        "user_message_chars": 34972,
+        "visible_research_action_count": 4,
+        "visible_feedback_receipt_count": 1,
+        "stop_decision": "continue",
+        "checkpoint_resume_status": "resume_replay_verified",
+        "quantitative_kinds": [
+          "deterministic_derived_metric",
+          "reported_fact"
+        ]
+      },
+      {
+        "cell_id": "CELL::cash_conversion",
+        "user_message_chars": 29406,
+        "visible_research_action_count": 3,
+        "visible_feedback_receipt_count": 2,
+        "stop_decision": "continue",
+        "checkpoint_resume_status": "resume_replay_verified",
+        "quantitative_kinds": [
+          "deterministic_derived_metric",
+          "reported_fact"
+        ]
+      },
+      {
+        "cell_id": "CELL::counterevidence",
+        "user_message_chars": 31634,
+        "visible_research_action_count": 6,
+        "visible_feedback_receipt_count": 1,
+        "stop_decision": "continue",
+        "checkpoint_resume_status": "resume_replay_verified",
+        "quantitative_kinds": [
+          "reported_fact"
+        ]
+      }
+    ],
+    "all_five_cells_receive_current_typed_control_context": true
+  },
+  "quality_and_authority": {
+    "all_three_case_evaluations_pass": true,
+    "candidate_auto_promotion": 0,
+    "public_information_gap_authorized_count": 0,
+    "natural_agent_reflection_quality_proven": false,
+    "S1_qualified_claimed": false,
+    "S3_accepted_claimed": false,
+    "release_claimed": false,
+    "next_scope": "step_8_bounded_natural_multi_agent_vertical_slice_after_separate_authority"
+  },
+  "result_digest": "abb316d80b3447b962c23d034089034eba6a990b1ae4373ab7cf3e945c60a35a"
+}

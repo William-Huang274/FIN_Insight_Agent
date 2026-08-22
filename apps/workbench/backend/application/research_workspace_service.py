@@ -186,6 +186,12 @@ class ResearchWorkspaceService:
                 "product_readiness": deepcopy(
                     pack.get("product_readiness")
                 ),
+                "quantitative_authority": deepcopy(
+                    pack.get("quantitative_authority")
+                ),
+                "actionable_research_state": deepcopy(
+                    pack.get("actionable_research_state")
+                ),
                 "known_boundary": str(self._config["known_boundary"]),
             }
         )

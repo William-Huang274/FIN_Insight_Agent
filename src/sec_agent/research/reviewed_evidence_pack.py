@@ -4,7 +4,7 @@ from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 
 REVIEWED_EVIDENCE_PACK_SCHEMA = "fin_ia_0_1_3_s1_local_evidence_pack_v1_0"
@@ -121,12 +121,121 @@ def validate_reviewed_evidence_pack(pack: Mapping[str, Any]) -> None:
     )
 
 
+def build_reviewed_evidence_pack_successor(
+    *,
+    predecessor: Mapping[str, Any],
+    evidence_result: Mapping[str, Any],
+    accepted_result_statuses: Sequence[str],
+    gap_ids_satisfied: Sequence[str],
+    successor_lineage: Mapping[str, Any],
+    content_gate_basis: str,
+    known_boundary_suffix: str,
+) -> dict[str, Any]:
+    """Append source-specific, already-gated Evidence to one reviewed Pack.
+
+    Source adapters remain responsible for capture, identity, date, claim-use and
+    proposition checks.  This shared step only performs immutable Pack composition
+    and therefore prevents every new source family from inventing another Pack
+    successor implementation.
+    """
+
+    validate_reviewed_evidence_pack(predecessor)
+    normalized_result = deepcopy(dict(evidence_result))
+    result_digest = str(normalized_result.pop("result_digest", ""))
+    allowed_statuses = {str(value) for value in accepted_result_statuses if str(value)}
+    _require(
+        allowed_statuses
+        and result_digest == canonical_digest(normalized_result)
+        and predecessor.get("case_key") == evidence_result.get("consumer_case_key")
+        and evidence_result.get("status") in allowed_statuses
+        and evidence_result.get("evidence_qualified") is True
+        and evidence_result.get("accepted_evidence_items")
+        and evidence_result.get("candidate_is_not_evidence") is False
+        and evidence_result.get("causal_attribution_authorized") is False,
+        "reviewed_evidence_pack_successor_input_invalid",
+    )
+    gaps = [dict(row) for row in predecessor.get("residual_gaps") or ()]
+    existing_gap_ids = {str(row.get("gap_id") or "") for row in gaps}
+    requested = {str(value) for value in gap_ids_satisfied if str(value)}
+    _require(
+        requested <= existing_gap_ids,
+        "reviewed_evidence_pack_successor_gap_unknown",
+    )
+    qualified_gap_ids = {
+        str(value) for value in evidence_result.get("gap_ids_satisfied") or ()
+    }
+    _require(
+        requested <= qualified_gap_ids,
+        "reviewed_evidence_pack_successor_gap_not_qualified",
+    )
+
+    body = deepcopy(dict(predecessor))
+    body.pop("pack_payload_digest", None)
+    existing_targets = {
+        str(row.get("target_id") or "") for row in body.get("evidence_items") or ()
+    }
+    additions = [dict(row) for row in evidence_result["accepted_evidence_items"]]
+    _require(
+        not any(str(row.get("target_id") or "") in existing_targets for row in additions),
+        "reviewed_evidence_pack_successor_target_collision",
+    )
+    existing_materials = {
+        str(row.get("material_ref") or "")
+        for row in body.get("source_materials") or ()
+    }
+    materials = [dict(row) for row in evidence_result.get("source_materials") or ()]
+    _require(
+        len(materials) == len(additions)
+        and not any(
+            str(row.get("material_ref") or "") in existing_materials
+            for row in materials
+        ),
+        "reviewed_evidence_pack_successor_material_collision",
+    )
+
+    body["evidence_items"] = list(body["evidence_items"]) + additions
+    body["source_materials"] = list(body["source_materials"]) + materials
+    body["residual_gaps"] = [
+        row for row in gaps if str(row.get("gap_id") or "") not in requested
+    ]
+    counts = dict(body.get("observed_counts") or {})
+    counts["accepted_evidence_items"] = len(body["evidence_items"])
+    counts["bounded_context_items"] = sum(
+        row.get("disposition") == "accepted_bounded_context_evidence"
+        for row in body["evidence_items"]
+    )
+    counts["direct_evidence_items"] = sum(
+        row.get("disposition") == "accepted_direct_source_evidence"
+        for row in body["evidence_items"]
+    )
+    counts["residual_gaps"] = len(body["residual_gaps"])
+    counts["source_materials"] = len(body["source_materials"])
+    body["observed_counts"] = counts
+    body["content_gate_basis"] = str(content_gate_basis)
+    body["successor_lineage"] = deepcopy(dict(successor_lineage))
+    gap_statement = (
+        "This successor closes only the explicitly declared gap IDs: "
+        + ", ".join(sorted(requested))
+        + ". "
+        if requested
+        else (
+            "This successor adds qualified Evidence without closing any residual "
+            "gap. "
+        )
+    )
+    body["known_boundary"] = gap_statement + str(known_boundary_suffix)
+    successor = {**body, "pack_payload_digest": canonical_digest(body)}
+    validate_reviewed_evidence_pack(successor)
+    return successor
+
+
 __all__ = [
     "REVIEWED_EVIDENCE_PACK_CONTRACT",
     "REVIEWED_EVIDENCE_PACK_SCHEMA",
     "ReviewedEvidencePackError",
     "canonical_bytes",
     "canonical_digest",
+    "build_reviewed_evidence_pack_successor",
     "file_sha256",
     "validate_reviewed_evidence_pack",
 ]

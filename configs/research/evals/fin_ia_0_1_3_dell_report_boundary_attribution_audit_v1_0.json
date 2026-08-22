@@ -1,0 +1,224 @@
+{
+  "schema_version": "fin_ia_report_boundary_attribution_audit_v1_0",
+  "status": "read_only_report_boundary_attribution_complete",
+  "recorded_at": "2026-08-22T00:00:00+08:00",
+  "case_key": "DELL",
+  "source_report_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_live_result_v1_0.json",
+  "source_report_digest": "7f62db9c29112e26801c39fdb54ec954acd4c2a0b794e1924a31ba34a02eca18",
+  "observed_surface": {
+    "executive_gap_ref_count": 4,
+    "remaining_gap_clause_count": 6,
+    "what_would_change_clause_count": 8,
+    "confidence_gap_ref_count": 2,
+    "authority_catalog_unique_gap_ref_count": 11,
+    "proved_public_information_gap_count": 0,
+    "successor_contract_hard_finding_count": 0,
+    "successor_contract_quality_finding_count": 17,
+    "successor_boundary_density_finding_count": 12
+  },
+  "rows": [
+    {
+      "boundary_id": "BOUNDARY::DELL-DEMAND-CONVERSION-AND-CANCELLATION",
+      "claim_area": "demand_quality",
+      "surface_paths": [
+        "executive_thesis",
+        "sections[0]",
+        "remaining_gaps[0]",
+        "remaining_gaps[1]",
+        "what_would_change[0]",
+        "what_would_change[1]"
+      ],
+      "gap_refs": ["GAP::00730082A5C08C4C"],
+      "owner_plane": "data_infrastructure_and_tool",
+      "owner_stage": "S1_external_supplement_and_gap_eligibility",
+      "information_state": "official_or_external_route_not_executed_or_not_terminal",
+      "root_cause_zh": "当前官方材料只给出同季订单、backlog 与已确认收入，没有跨期转化、账龄和取消数据；但当前 source-route truth 明确显示外部/官方补源没有穷尽，不能把本轮未闭合写成公开信息不存在。",
+      "artifact_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_5.json",
+        "data/workbench_private/fin_0_1_3_s1_product_evidence_successor/dell-r2/pack.json"
+      ],
+      "customer_surface_disposition": "concise_current_run_uncertainty",
+      "next_action_zh": "把 Dell 后续季度披露、客户/渠道库存与需求追踪、行业出货和订单节奏作为定向 EvidenceRequest；只在原始来源捕获并通过 Evidence Gate 后更新判断。",
+      "true_information_boundary": false
+    },
+    {
+      "boundary_id": "BOUNDARY::DELL-CASH-BALANCE-NUMERIC-STATE-STALE",
+      "claim_area": "cash_conversion",
+      "surface_paths": [
+        "executive_thesis",
+        "sections[3]",
+        "remaining_gaps[2]",
+        "confidence_statement"
+      ],
+      "gap_refs": ["GAP::EF4839B4BF55ADD0"],
+      "owner_plane": "data_infrastructure_and_tool",
+      "owner_stage": "S2_to_S3_evaluation_and_writer_view_sync",
+      "information_state": "source_visible_numeric_authority_stale_downstream",
+      "root_cause_zh": "应收、库存、现金和融资应收已经在 source-bound numeric review 与最终 authority catalog 中获得 NumericFact/展示权威；Cash workpaper 已列出并分析这些值，但更早的 NUM_REF_UNRESOLVED_BALANCES evaluator finding 没有被新权威废止，Writer 同时看到新目录和旧状态。",
+      "artifact_refs": [
+        "configs/research/fin_ia_0_1_3_s2_dell_multi_agent_source_bound_numeric_review_v1_0.json",
+        "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_authority_catalog_v1_1.json",
+        "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json"
+      ],
+      "customer_surface_disposition": "resolve_before_customer_report",
+      "next_action_zh": "用 proposition-bound claim 精确废止已被 source-bound authority 解决的 evaluator finding，并刷新 Writer 视图；纯绑定补齐不重跑 Cash Agent，只有语义变化才重裁决。不得重新搜索同一张已在库财务表。",
+      "true_information_boundary": false
+    },
+    {
+      "boundary_id": "BOUNDARY::DELL-AI-SPECIFIC-CASH-ATTRIBUTION",
+      "claim_area": "cash_conversion",
+      "surface_paths": [
+        "executive_thesis",
+        "sections[3]",
+        "remaining_gaps[2]",
+        "what_would_change[3]",
+        "confidence_statement"
+      ],
+      "gap_refs": ["GAP::EF4839B4BF55ADD0"],
+      "owner_plane": "data_infrastructure_and_tool",
+      "owner_stage": "S1_external_context_then_S3_bounded_attribution",
+      "information_state": "open_public_proxy_or_context_not_yet_exhausted",
+      "root_cause_zh": "Dell 没披露 AI 产品级营运资金和订单到现金桥；公司级数值已具备，但公开行业、渠道、客户部署和供应链资料尚未按同一命题完成受控补源，当前只能限制归因，不能宣布永久信息缺口。",
+      "artifact_refs": [
+        "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_authority_catalog_v1_1.json",
+        "configs/retrieval/fin_ia_0_1_3_s1_source_route_portfolio_policy_v1_0.json"
+      ],
+      "customer_surface_disposition": "concise_current_run_uncertainty",
+      "next_action_zh": "保留公司级现金事实；定向补充客户部署节奏、渠道库存、交付周期和供应链周转代理，只允许形成明确标注的 proxy/estimate，不伪造 Dell 产品级精确值。",
+      "true_information_boundary": false
+    },
+    {
+      "boundary_id": "BOUNDARY::DELL-AI-PRODUCT-ECONOMICS",
+      "claim_area": "value_capture",
+      "surface_paths": [
+        "executive_thesis",
+        "sections[2]",
+        "remaining_gaps[3]",
+        "what_would_change[2]",
+        "confidence_statement"
+      ],
+      "gap_refs": [
+        "GAP::14D67654F535F105",
+        "GAP::34844D3F9935C0F5",
+        "GAP::52DCB2B65532C103"
+      ],
+      "owner_plane": "data_infrastructure_and_tool",
+      "owner_stage": "S1_external_industry_and_product_context_then_S3_estimation",
+      "information_state": "open_public_proxy_or_context_not_yet_exhausted",
+      "root_cause_zh": "官方披露没有 AI 服务器单独利润、ASP、台数和完整 PVM 桥；但产品配置价格、行业出货、第三方市场规模和供应商产品组合等免费公开代理尚未系统补入，因此现在只能说精确归属未证，不能把所有产品经济研究都判死。",
+      "artifact_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_source_route_portfolio_policy_v1_0.json",
+        "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_authority_catalog_v1_1.json"
+      ],
+      "customer_surface_disposition": "concise_current_run_uncertainty",
+      "next_action_zh": "引入经过来源强度分级的产品配置、行业出货和市场数据；S2 负责可复算估值/桥，S3 只在区间、假设和敏感性明确时形成估算。",
+      "true_information_boundary": false
+    },
+    {
+      "boundary_id": "BOUNDARY::DELL-SUPPLIER-RELATIONSHIP-EDGE",
+      "claim_area": "supply_relationship",
+      "surface_paths": [
+        "executive_thesis",
+        "sections[4]",
+        "remaining_gaps[4]",
+        "what_would_change[5]",
+        "confidence_statement"
+      ],
+      "gap_refs": [
+        "GAP::0DF1791C33619F02",
+        "GAP::AD8E45538482CAB2",
+        "GAP::C2EC64A79D8F5481",
+        "GAP::FF2E3CECAE969E84"
+      ],
+      "owner_plane": "data_infrastructure_and_tool",
+      "owner_stage": "S1_relationship_query_external_supplement_and_evidence_role",
+      "information_state": "official_or_external_route_not_executed_or_not_terminal",
+      "root_cause_zh": "现有上游检索混入泛供应风险和未指向 Dell 的供应商材料；缺的首先是 Dell—供应商/产品配置的关系边、对手方官方资料和命题级重排，不是让模型把行业景气自动归因给 Dell。",
+      "artifact_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_5.json",
+        "data/workbench_private/fin_0_1_3_s1_current_product_readiness/dell-r6/full_result.json"
+      ],
+      "customer_surface_disposition": "concise_current_run_uncertainty",
+      "next_action_zh": "按 Dell 配置、供应商、部件、关系方向和期间编译查询；优先摄取供应商/合作方官方材料，再用可信行业资料作交叉验证，精确分配仍须目标公司或对手方明确披露。",
+      "true_information_boundary": false
+    },
+    {
+      "boundary_id": "BOUNDARY::DELL-RESEARCHER-DEFINED-THRESHOLDS",
+      "claim_area": "counterevidence_and_what_would_change",
+      "surface_paths": [
+        "executive_thesis",
+        "remaining_gaps[5]",
+        "what_would_change[7]",
+        "confidence_statement"
+      ],
+      "gap_refs": ["GAP::04EDD7700A1409F8", "GAP::B070D38D076F342B"],
+      "owner_plane": "agent_research_method_and_work_mode",
+      "owner_stage": "S3_research_method",
+      "information_state": "researcher_parameter_unset",
+      "root_cause_zh": "公司没有义务替研究者定义 thesis 失效阈值；当前 gap 自己也写明阈值应由研究方法或用户假设冻结，却仍被当作来源缺口进入报告。",
+      "artifact_refs": [
+        "data/workbench_private/fin_0_1_3_s1_product_evidence_successor/dell-r2/pack.json",
+        "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_authority_catalog_v1_1.json"
+      ],
+      "customer_surface_disposition": "resolve_before_customer_report",
+      "next_action_zh": "由 S3 根据基准值、投资期限和风险偏好提出阈值，经用户或研究负责人确认；它应进入监控规则，不再进入来源 gap。",
+      "true_information_boundary": false
+    },
+    {
+      "boundary_id": "BOUNDARY::DELL-WRITER-BOUNDARY-DUPLICATION",
+      "claim_area": "report_surface",
+      "surface_paths": [
+        "executive_thesis",
+        "sections[*]",
+        "remaining_gaps[*]",
+        "what_would_change[*]",
+        "confidence_statement"
+      ],
+      "gap_refs": [],
+      "owner_plane": "harness_control",
+      "owner_stage": "S3_Writer_contract_and_S4_presentation",
+      "information_state": "report_surface_duplicate_boundary_inventory",
+      "root_cause_zh": "Writer 同时被要求在执行摘要、正文、remaining gaps、WWC 和 confidence 保留全部边界，且完整 evaluator finding 也被注入，导致同一不确定性被重复呈现。",
+      "artifact_refs": [
+        "src/sec_agent/research/multi_agent_report_authority.py",
+        "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json"
+      ],
+      "customer_surface_disposition": "operations_only_omit_from_customer_report",
+      "next_action_zh": "执行摘要只保留一个综合不确定性；每个边界只在统一 Boundary Register 描述一次，正文讨论影响，confidence 只说明置信度依据；去重作为质量 finding，不让 Harness 改写观点。",
+      "true_information_boundary": false
+    },
+    {
+      "boundary_id": "BOUNDARY::DELL-AGENT-STOPPED-AT-CURRENT-CELL",
+      "claim_area": "dynamic_research_loop",
+      "surface_paths": ["specialist_stop_decisions", "lead_coordination", "writer_input"],
+      "gap_refs": [],
+      "owner_plane": "agent_research_method_and_work_mode",
+      "owner_stage": "S3_dynamic_research_loop",
+      "information_state": "agent_stopped_before_material_follow_up",
+      "root_cause_zh": "本轮是固定 Pack Preview；多个 Specialist 在 current cell 不可见或 numeric catalog 为空时停止，没有真正提交第二轮 EvidenceRequest 并消费来源/工具反馈，因此 cell-local 不可见被带到成稿。",
+      "artifact_refs": [
+        "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json",
+        "src/sec_agent/canonical_runtime/feedback.py"
+      ],
+      "customer_surface_disposition": "operations_only_omit_from_customer_report",
+      "next_action_zh": "将 unresolved material gap 转成带 owner 的 FeedbackReceipt；只有研究充分、真实边界、有界无进展或预算终止时才允许 stop，不能用 current-cell exhausted 代替。",
+      "true_information_boundary": false
+    }
+  ],
+  "audit_summary": {
+    "boundary_statement_groups": 8,
+    "customer_current_run_uncertainty_groups": 4,
+    "operations_or_method_groups_to_remove_from_customer_report": 4,
+    "proved_information_boundary_groups": 0,
+    "primary_conclusion_zh": "当前报告的边界密度不是单一模型问题。内部数字状态陈旧、研究阈值误分类、Writer 重复表面和固定 Pack 提前停止需要先修；其余四组是尚未完成免费公开源定向补证的本轮不确定性，而非已证明的信息不存在。"
+  },
+  "authority": {
+    "source_report_rewritten": false,
+    "historical_live_relabelled": false,
+    "new_model_calls": 0,
+    "new_network_calls": 0,
+    "S1_pass": false,
+    "S3_pass": false,
+    "release_ready": false
+  }
+}

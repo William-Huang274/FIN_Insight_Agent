@@ -1,0 +1,157 @@
+{
+  "schema_version": "fin_ia_s1_public_context_admission_plan_v1_0",
+  "status": "bounded_free_public_context_admission_plan",
+  "recorded_at": "2026-08-22",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "source_use_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_source_strength_and_claim_use_policy_v1_0.json",
+  "sources": [
+    {
+      "capture_result_ref": "data/workbench_private/fin_0_1_3_s1_free_public_context_capture/FIN_0_1_3_S1_DELL_FREE_PUBLIC_CONTEXT_R1_20260822/result.json",
+      "route_id": "DELL_CONTEXT_IDC_SERVER_MARKET",
+      "source_id": "PUBLIC::IDC::SERVERS::2026Q1",
+      "case_key": "DELL",
+      "speaker_entity": "International Data Corporation",
+      "speaker_ticker": null,
+      "source_class": "official_market_or_industry_primary",
+      "source_role": "industry_primary_context",
+      "source_type": "INDUSTRY_DATA",
+      "relationship_directions": ["industry_to_target_context"],
+      "publication_date": "2026-07-28",
+      "research_as_of": "2026-08-06",
+      "source_url": "https://www.idc.com/promo/servers/",
+      "parser_profile": "article_main_html",
+      "segment_character_target": 2400
+    },
+    {
+      "capture_result_ref": "data/workbench_private/fin_0_1_3_s1_free_public_context_capture/FIN_0_1_3_S1_DELL_FREE_PUBLIC_CONTEXT_R1_20260822/result.json",
+      "route_id": "DELL_CONTEXT_MICROSOFT_FY26_Q3",
+      "source_id": "PUBLIC::MSFT::FY26Q3::EARNINGS_CALL",
+      "case_key": "DELL",
+      "speaker_entity": "Microsoft Corporation",
+      "speaker_ticker": "MSFT",
+      "source_class": "named_counterparty_or_standards_primary",
+      "source_role": "hyperscaler_demand_primary_context",
+      "source_type": "EARNINGS_CALL_TRANSCRIPT",
+      "relationship_directions": ["hyperscaler_demand_to_target_context"],
+      "publication_date": "2026-04-29",
+      "research_as_of": "2026-08-06",
+      "source_url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3",
+      "parser_profile": "article_main_html",
+      "segment_character_target": 2400
+    },
+    {
+      "capture_result_ref": "data/workbench_private/fin_0_1_3_s1_free_public_context_capture/FIN_0_1_3_S1_DELL_FREE_PUBLIC_CONTEXT_R1_20260822/result.json",
+      "route_id": "DELL_CONTEXT_TRENDFORCE_SERVER_SUPPLY",
+      "source_id": "PUBLIC::TRENDFORCE::SERVER_SUPPLY::20260415",
+      "case_key": "DELL",
+      "speaker_entity": "TrendForce",
+      "speaker_ticker": null,
+      "source_class": "official_market_or_industry_primary",
+      "source_role": "industry_supply_primary_context",
+      "source_type": "INDUSTRY_DATA",
+      "relationship_directions": ["industry_supply_to_target_context"],
+      "publication_date": "2026-04-15",
+      "research_as_of": "2026-08-06",
+      "source_url": "https://www.trendforce.com/presscenter/news/20260415-13013.html",
+      "parser_profile": "article_main_html",
+      "segment_character_target": 2400
+    },
+    {
+      "capture_result_ref": "data/workbench_private/fin_0_1_3_s1_free_public_context_capture/FIN_0_1_3_S1_DELL_FREE_PUBLIC_CONTEXT_R3_20260822/result.json",
+      "route_id": "DELL_CONTEXT_HPE_Q2_FY26_SEC_10Q",
+      "source_id": "PUBLIC::HPE::FY26Q2::10Q",
+      "case_key": "DELL",
+      "speaker_entity": "Hewlett Packard Enterprise Company",
+      "speaker_ticker": "HPE",
+      "source_class": "named_counterparty_or_standards_primary",
+      "source_role": "competitor_primary_context",
+      "source_type": "10-Q",
+      "relationship_directions": ["competitor_to_target_context"],
+      "publication_date": "2026-06-02",
+      "research_as_of": "2026-08-06",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1645590/000164559026000055/hpe-20260430.htm",
+      "parser_profile": "sec_filing_html",
+      "segment_character_target": 2800
+    }
+  ],
+  "excluded_captured_routes": [
+    {
+      "route_id": "DELL_CONTEXT_TSMC_Q2_2026",
+      "disposition": "results_index_not_evidence_content",
+      "reason_zh": "页面只负责列出季度材料入口，正文不足以形成新证据；当前 TSMC 正文证据继续复用已有官方材料，不把索引页冒充内容。"
+    }
+  ],
+  "candidate_specs": [
+    {
+      "source_id": "PUBLIC::IDC::SERVERS::2026Q1",
+      "proposition_id": "PROP::DELL::MARKET_DEMAND_AND_UNIT_DIVERGENCE",
+      "excerpt": "The worldwide server market delivered 30.7% spending growth in the first quarter of 2026 while unit growth was modest at 3.3% year over year.",
+      "claim_use": "industry_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "independent_source_count": 1,
+      "license_entitled": false
+    },
+    {
+      "source_id": "PUBLIC::IDC::SERVERS::2026Q1",
+      "proposition_id": "PROP::DELL::INDUSTRY_SUPPLY_CONSTRAINT",
+      "excerpt": "The server market continues to be shaped by two distinct but interrelated dynamics: relentless AI infrastructure investment from hyperscalers and large cloud service providers, and an emerging supply-constrained environment in the non-accelerated segment where demand remains robust but component availability, particularly for memory (DRAM) and NAND flash, is limiting near-term shipment volumes.",
+      "claim_use": "bounded_market_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "independent_source_count": 1,
+      "license_entitled": false
+    },
+    {
+      "source_id": "PUBLIC::MSFT::FY26Q3::EARNINGS_CALL",
+      "proposition_id": "PROP::DELL::HYPERSCALER_CAPACITY_DEMAND",
+      "excerpt": "We are moving aggressively to add capacity aligned to our demand signals we see.",
+      "claim_use": "speaker_attributed_mechanism",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "independent_source_count": 1,
+      "license_entitled": false
+    },
+    {
+      "source_id": "PUBLIC::MSFT::FY26Q3::EARNINGS_CALL",
+      "proposition_id": "PROP::DELL::AI_INFRASTRUCTURE_MARGIN_TENSION",
+      "excerpt": "Company gross margin percentage was 68%, down year-over-year, driven by continued investment in AI infrastructure and growing AI product usage.",
+      "claim_use": "counterevidence",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "independent_source_count": 1,
+      "license_entitled": false
+    },
+    {
+      "source_id": "PUBLIC::TRENDFORCE::SERVER_SUPPLY::20260415",
+      "proposition_id": "PROP::DELL::AI_VS_GENERAL_SERVER_ALLOCATION",
+      "excerpt": "Although AI demand will continue to drive both general-purpose servers and AI servers in 2026, suppliers are prioritizing capacity allocation to higher-market AI server products, according to TrendForce’s latest server industry findings.",
+      "claim_use": "bounded_market_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "independent_source_count": 1,
+      "license_entitled": false
+    },
+    {
+      "source_id": "PUBLIC::TRENDFORCE::SERVER_SUPPLY::20260415",
+      "proposition_id": "PROP::DELL::AI_SERVER_SHIPMENT_GROWTH_CONTEXT",
+      "excerpt": "On the AI server side, strong demand from CSPs (cloud service providers) is expected to drive shipment growth of approximately 28% YoY in 2026, with ASIC-based AI servers likely to outpace GPU-based systems.",
+      "claim_use": "bounded_market_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "independent_source_count": 1,
+      "license_entitled": false
+    },
+    {
+      "source_id": "PUBLIC::HPE::FY26Q2::10Q",
+      "proposition_id": "PROP::DELL::COMPETITOR_CLOUD_AI_REVENUE_AND_ASP",
+      "excerpt": "Cloud & AI net revenue increased $1.4 billion, or 22.9%, primarily due to an increase in the average selling price",
+      "claim_use": "speaker_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "independent_source_count": 1,
+      "license_entitled": false
+    }
+  ]
+}

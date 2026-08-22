@@ -125,6 +125,34 @@ def test_local_material_complete_does_not_trigger_external_supplement() -> None:
     )
 
 
+def test_local_candidate_complete_still_schedules_material_research_gap() -> None:
+    result = _compile(
+        candidate_coverage_state="complete",
+        research_sufficiency_state="material_gap",
+        local_candidate_rows=[
+            {"ticker": "DELL", "source_type": "10-Q", "compiled_object_id": "OBJ-1"}
+        ],
+    )
+
+    assert result["supplement_route_required"] is True
+    assert result["supplement_trigger_reasons"] == ["material_research_gap"]
+    assert result["research_sufficiency_state"] == "material_gap"
+    assert _route(result, "sec_edgar_official_primary")["execution_state"] == (
+        "available_not_executed"
+    )
+
+
+def test_research_sufficiency_cannot_be_an_untyped_boolean() -> None:
+    with pytest.raises(
+        SourceRouteDispatchError,
+        match="source_route_research_sufficiency_state_invalid",
+    ):
+        _compile(
+            candidate_coverage_state="complete",
+            research_sufficiency_state="true",
+        )
+
+
 def test_direct_snapshot_does_not_mislabel_unevaluated_coverage_as_complete() -> None:
     result = _compile(
         local_candidate_rows=[

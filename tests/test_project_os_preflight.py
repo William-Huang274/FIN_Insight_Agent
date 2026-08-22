@@ -42,6 +42,7 @@ from sec_agent.research.multi_agent_report_remap import (
     REPORT_REMAP_REFERENCE_PATCH_RUN_SCOPE,
     REPORT_REMAP_REPLACEMENT_RUN_SCOPE,
     REPORT_REMAP_RUN_SCOPE,
+    ReportRemapAuthorityError,
     validate_report_remap_scope_decision,
 )
 
@@ -2058,30 +2059,20 @@ def test_report_remap_replacement_binds_length_failure_and_budget_basis() -> Non
     ] == "72d5fe7f3d1c16e9f6014bece396ef00a45f5212d971ce7480038d86a36af648"
 
 
-def test_report_reference_patch_binds_complete_failure_and_human_boundary() -> None:
+def test_historical_report_reference_patch_rejects_current_runtime_drift() -> None:
     decision = json.loads(
         (ROOT / REPORT_REMAP_REFERENCE_PATCH_DECISION_REF).read_text(
             encoding="utf-8"
         )
     )
-    projection = validate_report_remap_scope_decision(
-        root=ROOT, decision=decision
-    )
-    assert projection["run_scope_id"] == REPORT_REMAP_REFERENCE_PATCH_RUN_SCOPE
-    assert projection["multi_agent_report_reference_patch"] is True
-    assert projection["reference_patch_base_attempt_index"] == 2
-    assert projection["execution_limits"]["maximum_reference_patch_targets"] == 5
-    assert projection["token_budget_basis"]["maximum_output_tokens"] == 4000
+    assert decision["run_scope_id"] == REPORT_REMAP_REFERENCE_PATCH_RUN_SCOPE
+    assert decision["execution_limits"]["maximum_reference_patch_targets"] == 5
+    assert decision["token_budget_basis"]["maximum_output_tokens"] == 4000
 
-    preflight = build_preflight(
-        root=ROOT,
-        decision_ref=REPORT_REMAP_REFERENCE_PATCH_DECISION_REF,
-        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
-        check_repository=False,
-    )
-    boundary = preflight["known_boundary"]
-    assert preflight["status"] == "pass_current_decision_bound_preflight"
-    assert "new reference-patch logical node, not a retry" in boundary
-    assert "exactly 1 fresh Writer-only reference patch logical node" in boundary
-    assert "five path-scoped failures" in boundary
-    assert "model text and source-agent identity are immutable" in boundary
+    # The immutable proof and its legacy quality policy remain readable, but
+    # the authority must not be reusable after the report runtime changes.
+    with pytest.raises(
+        ReportRemapAuthorityError,
+        match="report_remap_implementation_sha_drift",
+    ):
+        validate_report_remap_scope_decision(root=ROOT, decision=decision)

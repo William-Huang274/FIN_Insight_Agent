@@ -73,6 +73,8 @@ class ResearchWorkspaceEvidenceResponse(BaseModel):
     hard_boundaries: dict[str, Any]
     canonical_spine: dict[str, Any] | None = None
     product_readiness: dict[str, Any] | None = None
+    quantitative_authority: dict[str, Any] | None = None
+    actionable_research_state: dict[str, Any] | None = None
     known_boundary: str
     projection_digest: str
 

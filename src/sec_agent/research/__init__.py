@@ -58,6 +58,8 @@ from .dynamic_truth_spine import (
     load_dynamic_truth_spine_policy,
 )
 from .dynamic_research_runtime import (
+    DYNAMIC_RESEARCH_CONTROL_CONTEXT_SCHEMA_VERSION,
+    bind_actionable_research_control_context,
     compile_dynamic_claim_surface_projection,
     compile_dynamic_research_input_projection,
 )
@@ -205,6 +207,40 @@ from .source_bound_numeric_authority import (
     SourceBoundNumericAuthorityError,
     compile_source_bound_numeric_authority_program,
 )
+from .report_boundary import (
+    EVALUATION_AUTHORITY_SUPERSESSION_SCHEMA_VERSION,
+    REPORT_BOUNDARY_DISPOSITION_SCHEMA_VERSION,
+    RESEARCH_METHOD_PARAMETER_REGISTER_SCHEMA_VERSION,
+    WRITER_SUCCESSOR_INPUT_PROJECTION_SCHEMA_VERSION,
+    ReportBoundaryDispositionError,
+    compile_evaluation_authority_supersession_view,
+    compile_research_method_parameter_register,
+    compile_report_boundary_disposition_register,
+    compile_writer_successor_input_projection,
+    validate_report_boundary_disposition_register,
+)
+from .actionable_research_state import (
+    ACTIONABLE_RESEARCH_STATE_SCHEMA_VERSION,
+    ACTIONABLE_UNCERTAINTY_SCHEMA_VERSION,
+    RESEARCH_ACTION_SCHEMA_VERSION,
+    TOKEN_BUDGET_BASIS_SCHEMA_VERSION,
+    ActionableResearchStateError,
+    compile_actionable_research_state,
+)
+from .quantitative_authority import (
+    QUANTITATIVE_AUTHORITY_SCHEMA_VERSION,
+    RESEARCH_ESTIMATE_SCHEMA_VERSION,
+    RESEARCH_SCENARIO_SCHEMA_VERSION,
+    QuantitativeAuthorityError,
+    compile_quantitative_authority_state,
+    compile_research_estimate,
+    compile_research_scenario,
+)
+from .actionable_research_evaluation import (
+    ACTIONABLE_RESEARCH_EVALUATION_SCHEMA_VERSION,
+    ActionableResearchEvaluationError,
+    evaluate_actionable_research_state,
+)
 
 __all__ = [
     "CURRENT_RESEARCH_MODEL_TEXT_SERVER_PATTERN",
@@ -287,6 +323,22 @@ __all__ = [
     "SOURCE_BOUND_NUMERIC_PROGRAM_SCHEMA_VERSION",
     "SOURCE_BOUND_NUMERIC_REVIEW_SCHEMA_VERSION",
     "SourceBoundNumericAuthorityError",
+    "REPORT_BOUNDARY_DISPOSITION_SCHEMA_VERSION",
+    "EVALUATION_AUTHORITY_SUPERSESSION_SCHEMA_VERSION",
+    "RESEARCH_METHOD_PARAMETER_REGISTER_SCHEMA_VERSION",
+    "WRITER_SUCCESSOR_INPUT_PROJECTION_SCHEMA_VERSION",
+    "ReportBoundaryDispositionError",
+    "ACTIONABLE_RESEARCH_STATE_SCHEMA_VERSION",
+    "ACTIONABLE_UNCERTAINTY_SCHEMA_VERSION",
+    "RESEARCH_ACTION_SCHEMA_VERSION",
+    "TOKEN_BUDGET_BASIS_SCHEMA_VERSION",
+    "ActionableResearchStateError",
+    "QUANTITATIVE_AUTHORITY_SCHEMA_VERSION",
+    "RESEARCH_ESTIMATE_SCHEMA_VERSION",
+    "RESEARCH_SCENARIO_SCHEMA_VERSION",
+    "QuantitativeAuthorityError",
+    "ACTIONABLE_RESEARCH_EVALUATION_SCHEMA_VERSION",
+    "ActionableResearchEvaluationError",
     "build_reviewed_pack_successor",
     "canonical_digest",
     "compile_research_objective",
@@ -302,6 +354,8 @@ __all__ = [
     "compile_dynamic_claim_authority_policy",
     "compile_dynamic_claim_surface_policy",
     "compile_dynamic_claim_surface_projection",
+    "DYNAMIC_RESEARCH_CONTROL_CONTEXT_SCHEMA_VERSION",
+    "bind_actionable_research_control_context",
     "compile_dynamic_evidence_responses",
     "compile_dynamic_research_input_projection",
     "compile_dynamic_reviewed_pack_view",
@@ -331,6 +385,16 @@ __all__ = [
     "compile_multi_agent_report_authority_catalog",
     "compile_protected_report_messages",
     "compile_source_bound_numeric_authority_program",
+    "compile_report_boundary_disposition_register",
+    "compile_actionable_research_state",
+    "compile_quantitative_authority_state",
+    "compile_research_estimate",
+    "compile_research_scenario",
+    "evaluate_actionable_research_state",
+    "compile_evaluation_authority_supersession_view",
+    "compile_research_method_parameter_register",
+    "compile_writer_successor_input_projection",
+    "validate_report_boundary_disposition_register",
     "extend_multi_agent_report_authority_catalog",
     "file_sha256",
     "evaluate_official_pdf_evidence",

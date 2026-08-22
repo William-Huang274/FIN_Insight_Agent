@@ -1,0 +1,186 @@
+{
+  "schema_version": "fin_ia_s1_public_context_evidence_adjudication_plan_v1_0",
+  "status": "approved_internal_engineering_adjudication",
+  "plan_id": "FIN-0.1.3-S1-DELL-PUBLIC-CONTEXT-EVIDENCE-R1",
+  "recorded_at": "2026-08-22",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "compiled_result_ref": "data/workbench_private/fin_0_1_3_s1_public_context_admission/FIN_0_1_3_S1_DELL_FREE_PUBLIC_CONTEXT_ADMISSION_R1_20260822/result.json",
+  "compiled_result_digest": "815de9220a68730311ef7fd7bfc6eb2763cd194105c6339e2acb22a4d54ebab0",
+  "predecessor_pack_ref": "data/workbench_private/fin_0_1_3_s1_product_evidence_successor/dell-r2/pack.json",
+  "predecessor_pack_payload_digest": "c2fd2bba785e13f0fa9545a6a4668b80a1432c65d4dfd42d17a73b4e3eb91472",
+  "qualified_human_review": false,
+  "S1_qualification_authorized": false,
+  "product_publication_authorized": false,
+  "decisions": [
+    {
+      "candidate_id": "PUBCAND::7BEA207AFD959AAFFFCD",
+      "candidate_digest": "b61532e224c79aa94132b9ae39a1ae19ba763661ee1c26344f61d3b2c690bb98",
+      "source_object_digest": "c192793b48282c304f83f87bf3e80f43f9f873421f5cf2ce5969bc2436308637",
+      "proposition_id": "PROP::DELL::MARKET_DEMAND_AND_UNIT_DIVERGENCE",
+      "action": "accept_as_bounded_context",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": ["industry_server_spending_vs_units"],
+          "requirement_ids": [],
+          "business_meaning_zh": "IDC 的同期服务器市场支出增速显著高于出货量增速，可用于提醒研究者区分需求金额、单位量与价格/配置变化。",
+          "claim_boundary_zh": "这是全球服务器市场数据，不代表 Dell 份额、Dell 出货量，也不能单独把支出增量归因为提价或 AI 产品组合。"
+        },
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": ["market_spending_unit_divergence"],
+          "requirement_ids": [],
+          "business_meaning_zh": "市场支出与单位量背离，为价格、配置和产品组合研究提供行业基准。",
+          "claim_boundary_zh": "该背离不构成 Dell 自身 ASP、单位量或 price-volume-mix bridge。"
+        }
+      ],
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": [],
+      "numeric_use_boundary_zh": "30.7% 和 3.3% 仅是 IDC 披露的全球服务器市场口径；不得渲染为 Dell 数字。",
+      "causal_attribution_authorized": false
+    },
+    {
+      "candidate_id": "PUBCAND::F81742B4F59ACD1EFFB6",
+      "candidate_digest": "7225a06e34ab034a2d79831507353a78233fc44799a37ba25ae1443cca573fc8",
+      "source_object_digest": "c192793b48282c304f83f87bf3e80f43f9f873421f5cf2ce5969bc2436308637",
+      "proposition_id": "PROP::DELL::INDUSTRY_SUPPLY_CONSTRAINT",
+      "action": "accept_as_bounded_context",
+      "slot_bindings": [
+        {
+          "slot_id": "capacity_inputs_execution",
+          "facet_ids": ["industry_component_supply_constraint"],
+          "requirement_ids": [],
+          "business_meaning_zh": "IDC 观察到服务器市场同时受到 AI 基建投入和非加速服务器内存/NAND 供给约束影响，可用于构建供给传导机制。",
+          "claim_boundary_zh": "该观察主要指非加速服务器，不证明 Dell 的 GPU、HBM、先进封装配额、交付时点或供应商份额。"
+        }
+      ],
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": [],
+      "numeric_use_boundary_zh": "该候选不授予任何 Dell 数值或供应分配权威。",
+      "causal_attribution_authorized": false
+    },
+    {
+      "candidate_id": "PUBCAND::1229F4DD3F17B7D673F7",
+      "candidate_digest": "c46cf4800c40a77c733394377bde8f4f759f016481c220c90284222128cefc3a",
+      "source_object_digest": "37e019f2a9e4e7016a198b408aea5a6270c8cc3d245d0a46c542e82127b2ddb0",
+      "proposition_id": "PROP::DELL::HYPERSCALER_CAPACITY_DEMAND",
+      "action": "accept_as_bounded_context",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": ["hyperscaler_capacity_demand_signal"],
+          "requirement_ids": [],
+          "business_meaning_zh": "Microsoft 表示其扩充容量与自身观察到的需求信号相匹配，为 hyperscaler AI 基建需求提供客户侧语境。",
+          "claim_boundary_zh": "这是 Microsoft 自身的容量规划陈述，不证明 Microsoft 向 Dell 下单，也不证明 Dell 订单、收入或客户集中度。"
+        }
+      ],
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": [],
+      "numeric_use_boundary_zh": "该陈述不包含可晋升为 Dell NumericFact 的数字。",
+      "causal_attribution_authorized": false
+    },
+    {
+      "candidate_id": "PUBCAND::0490AE80F7802FD54123",
+      "candidate_digest": "f7e5296777aa1bd352b8ce8d28322b3f67ac0bd18a70a18ddf28ff07d343e10a",
+      "source_object_digest": "37e019f2a9e4e7016a198b408aea5a6270c8cc3d245d0a46c542e82127b2ddb0",
+      "proposition_id": "PROP::DELL::AI_INFRASTRUCTURE_MARGIN_TENSION",
+      "action": "accept_as_bounded_context",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": ["ecosystem_ai_margin_counterevidence"],
+          "requirement_ids": [],
+          "business_meaning_zh": "Microsoft 披露 AI 基础设施投资和 AI 产品使用增长对其公司毛利率形成压力，可作为‘AI 需求增长不必然同步改善利润率’的生态反例。",
+          "claim_boundary_zh": "这是 Microsoft 公司层毛利率及其管理层解释，不能转写为 Dell AI 服务器毛利率、利润额或单一因果桥。"
+        },
+        {
+          "slot_id": "counterevidence_and_what_would_change",
+          "facet_ids": ["ai_infrastructure_margin_pressure"],
+          "requirement_ids": [],
+          "business_meaning_zh": "生态链上真实存在需求扩张与利润率承压并存的案例，可用于约束‘需求强=利润强’的叙事。",
+          "claim_boundary_zh": "该反例只建立机制可能性，不能证明 Dell 当前已经发生同样结果。"
+        }
+      ],
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": [],
+      "numeric_use_boundary_zh": "68% 仅是 Microsoft 公司毛利率；不得当作 Dell 或 AI 业务独立毛利率。",
+      "causal_attribution_authorized": false
+    },
+    {
+      "candidate_id": "PUBCAND::2876125D88EB517FADAC",
+      "candidate_digest": "d3fd4aaf92c9cf32eac4ba646c15abfad177ac8f5d3fc6fe966adc30a3bd2a9f",
+      "source_object_digest": "124ff913bac2b0febcd37082b500b4c0c2819cab69ef92806724e8448b1e3a87",
+      "proposition_id": "PROP::DELL::AI_VS_GENERAL_SERVER_ALLOCATION",
+      "action": "accept_as_bounded_context",
+      "slot_bindings": [
+        {
+          "slot_id": "capacity_inputs_execution",
+          "facet_ids": ["industry_capacity_allocation"],
+          "requirement_ids": [],
+          "business_meaning_zh": "TrendForce 认为供应商正优先向价值更高的 AI 服务器产品配置产能，为供给优先级和产品组合提供行业判断。",
+          "claim_boundary_zh": "这是行业研究机构的当前判断，不是具体供应商对 Dell 的配额、良率、交期或合同证明。"
+        },
+        {
+          "slot_id": "relationship_attribution",
+          "facet_ids": ["supplier_allocation_context"],
+          "requirement_ids": [],
+          "business_meaning_zh": "行业产能优先级可用于决定下一轮应追问哪些供应商关系和分配证据。",
+          "claim_boundary_zh": "它不能建立供应商→Dell 的直接关系边，也不能关闭 Dell-specific allocation gap。"
+        }
+      ],
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": [],
+      "numeric_use_boundary_zh": "该行业判断不授予 Dell 供应份额或产能数字。",
+      "causal_attribution_authorized": false
+    },
+    {
+      "candidate_id": "PUBCAND::35EF8FE8E730304EC5B0",
+      "candidate_digest": "97500f6fe1cedd75f4470e28722a9095a144d1c4243e8e25f2c10a81eee45fd9",
+      "source_object_digest": "124ff913bac2b0febcd37082b500b4c0c2819cab69ef92806724e8448b1e3a87",
+      "proposition_id": "PROP::DELL::AI_SERVER_SHIPMENT_GROWTH_CONTEXT",
+      "action": "accept_as_bounded_context",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": ["industry_ai_server_shipment_outlook"],
+          "requirement_ids": [],
+          "business_meaning_zh": "TrendForce 预计 2026 年 AI 服务器出货增长，并区分 ASIC 与 GPU 路线，可用于行业需求情景和竞争结构。",
+          "claim_boundary_zh": "约 28% 是行业预测而非已实现结果，也不代表 Dell 出货增速、市场份额或订单转化。"
+        }
+      ],
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": [],
+      "numeric_use_boundary_zh": "约 28% 只能标注为 TrendForce 的 2026 年行业预测。",
+      "causal_attribution_authorized": false
+    },
+    {
+      "candidate_id": "PUBCAND::73BFB8EF77A224D39773",
+      "candidate_digest": "aaab87b7ae840a4a902142168d6114780d8b87d1da0024c9d0f2fb8c0b96a85e",
+      "source_object_digest": "7692efbf06f7ca19938978069238a6d7f3c5520fa8064ed024405e6b639bf1d6",
+      "proposition_id": "PROP::DELL::COMPETITOR_CLOUD_AI_REVENUE_AND_ASP",
+      "action": "accept_as_bounded_context",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": ["competitor_asp_readthrough"],
+          "requirement_ids": [],
+          "business_meaning_zh": "HPE 披露 Cloud & AI 收入增长主要来自平均售价上升，为同业价格/配置驱动提供竞争对手证据。",
+          "claim_boundary_zh": "HPE 分类和 Dell ISG/AI 服务器口径不可直接比较；该披露不提供 Dell ASP、单位量或利润桥。"
+        },
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": ["competitor_cloud_ai_growth"],
+          "requirement_ids": [],
+          "business_meaning_zh": "HPE 同期 Cloud & AI 收入增长可作为行业需求的竞争对手侧观察。",
+          "claim_boundary_zh": "竞争对手收入增长不能证明 Dell 订单质量、份额变化或收入持续性。"
+        }
+      ],
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": [],
+      "numeric_use_boundary_zh": "$1.4bn 和 22.9% 仅属于 HPE Cloud & AI 披露，不得渲染为 Dell 数字。",
+      "causal_attribution_authorized": false
+    }
+  ],
+  "plan_digest": "3fa4cd9fe6cc7a301e1d6462028e631ab052e957efbabdaf87613022d3bcca12"
+}

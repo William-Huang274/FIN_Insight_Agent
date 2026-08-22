@@ -7,6 +7,7 @@ from .feedback import (
 )
 from .session import (
     CanonicalRuntimeError,
+    apply_accepted_plan_delta,
     append_session_event,
     canonical_digest,
     create_agent_session,
@@ -19,6 +20,7 @@ from .session import (
 
 __all__ = [
     "CanonicalRuntimeError",
+    "apply_accepted_plan_delta",
     "append_session_event",
     "canonical_digest",
     "compile_s1_feedback_receipts",

@@ -1,0 +1,152 @@
+{
+  "schema_version": "fin_ia_s1_source_use_policy_v1_0",
+  "policy_id": "FIN-0.1.3-S1-SOURCE-STRENGTH-AND-CLAIM-USE-V1.0",
+  "status": "active_source_strength_and_claim_use_policy",
+  "recorded_at": "2026-08-22",
+  "policy": {
+    "official_only_is_not_required_for_all_research_context": true,
+    "source_strength_is_not_claim_truth": true,
+    "discovery_is_not_evidence": true,
+    "speaker_and_subject_must_remain_distinct": true,
+    "target_company_exact_numeric_facts_remain_narrow": true,
+    "recurring_free_sources_may_be_internalized_after_capture_and_parser_qualification": true
+  },
+  "source_classes": [
+    {
+      "source_class": "issuer_regulator_or_government_primary",
+      "allowed_claim_uses": [
+        "target_company_exact_fact",
+        "target_company_exact_numeric_fact",
+        "speaker_attributed_mechanism",
+        "counterevidence",
+        "bounded_market_context"
+      ],
+      "customer_use_mode": "exact_fact_and_citation",
+      "target_company_exact_numeric_fact_allowed": true,
+      "requires_original_capture": true,
+      "requires_speaker_binding": true,
+      "requires_subject_binding": true,
+      "requires_license_entitlement": false,
+      "minimum_independent_sources": 1,
+      "internalization_mode": "versioned_source_object",
+      "discovery_right": "allowed",
+      "internal_analysis_right": "allowed",
+      "citation_right": "allowed",
+      "redistribution_right": "bounded_excerpt_only"
+    },
+    {
+      "source_class": "named_counterparty_or_standards_primary",
+      "allowed_claim_uses": [
+        "speaker_exact_fact",
+        "speaker_attributed_mechanism",
+        "bounded_target_context",
+        "counterevidence"
+      ],
+      "customer_use_mode": "exact_fact_and_citation",
+      "target_company_exact_numeric_fact_allowed": false,
+      "requires_original_capture": true,
+      "requires_speaker_binding": true,
+      "requires_subject_binding": true,
+      "requires_license_entitlement": false,
+      "minimum_independent_sources": 1,
+      "internalization_mode": "versioned_source_object",
+      "discovery_right": "allowed",
+      "internal_analysis_right": "allowed",
+      "citation_right": "allowed",
+      "redistribution_right": "bounded_excerpt_only"
+    },
+    {
+      "source_class": "official_market_or_industry_primary",
+      "allowed_claim_uses": [
+        "market_exact_fact",
+        "industry_exact_fact",
+        "bounded_target_context",
+        "bounded_market_context",
+        "speaker_attributed_mechanism",
+        "counterevidence"
+      ],
+      "customer_use_mode": "exact_fact_and_citation",
+      "target_company_exact_numeric_fact_allowed": false,
+      "requires_original_capture": true,
+      "requires_speaker_binding": true,
+      "requires_subject_binding": true,
+      "requires_license_entitlement": false,
+      "minimum_independent_sources": 1,
+      "internalization_mode": "versioned_source_object",
+      "discovery_right": "allowed",
+      "internal_analysis_right": "allowed",
+      "citation_right": "allowed",
+      "redistribution_right": "bounded_excerpt_only"
+    },
+    {
+      "source_class": "trusted_media_industry_association_or_public_analyst_context",
+      "allowed_claim_uses": [
+        "bounded_target_context",
+        "mechanism_hypothesis",
+        "counterevidence"
+      ],
+      "customer_use_mode": "bounded_context_and_citation",
+      "target_company_exact_numeric_fact_allowed": false,
+      "requires_original_capture": true,
+      "requires_speaker_binding": true,
+      "requires_subject_binding": true,
+      "requires_license_entitlement": false,
+      "minimum_independent_sources": 2,
+      "internalization_mode": "versioned_context_object",
+      "discovery_right": "allowed",
+      "internal_analysis_right": "allowed",
+      "citation_right": "allowed",
+      "redistribution_right": "bounded_excerpt_only"
+    },
+    {
+      "source_class": "search_rss_gdelt_or_common_crawl_discovery",
+      "allowed_claim_uses": [
+        "discovery_locator"
+      ],
+      "customer_use_mode": "discovery_only_not_customer_citable",
+      "target_company_exact_numeric_fact_allowed": false,
+      "requires_original_capture": false,
+      "requires_speaker_binding": false,
+      "requires_subject_binding": false,
+      "requires_license_entitlement": false,
+      "minimum_independent_sources": 1,
+      "internalization_mode": "locator_then_fetch_original",
+      "discovery_right": "allowed",
+      "internal_analysis_right": "metadata_and_locator_only",
+      "citation_right": "forbidden",
+      "redistribution_right": "forbidden"
+    },
+    {
+      "source_class": "licensed_structured_or_user_entitled",
+      "allowed_claim_uses": [
+        "target_company_exact_fact",
+        "target_company_exact_numeric_fact",
+        "market_exact_fact",
+        "industry_exact_fact",
+        "bounded_target_context",
+        "counterevidence"
+      ],
+      "customer_use_mode": "entitlement_bound_fact_or_context",
+      "target_company_exact_numeric_fact_allowed": true,
+      "requires_original_capture": true,
+      "requires_speaker_binding": true,
+      "requires_subject_binding": true,
+      "requires_license_entitlement": true,
+      "minimum_independent_sources": 1,
+      "internalization_mode": "license_and_retention_bound_object",
+      "discovery_right": "allowed_with_entitlement",
+      "internal_analysis_right": "allowed_with_entitlement",
+      "citation_right": "allowed_with_entitlement",
+      "redistribution_right": "allowed_with_entitlement"
+    }
+  ],
+  "claim_use_rules": {
+    "named_counterparty_primary_can_prove_what_the_counterparty_said_or_shipped": true,
+    "named_counterparty_primary_cannot_prove_target_allocation_without_target_edge": true,
+    "trusted_secondary_context_can_improve_mechanism_competition_and_counterevidence": true,
+    "trusted_secondary_context_cannot_create_target_exact_financial_fact": true,
+    "discovery_result_must_fetch_and_capture_original_before_evidence_gate": true,
+    "discovery_internal_analysis_citation_and_redistribution_are_separate_rights": true,
+    "source_class_never_overrides_entity_period_unit_or_lineage_checks": true
+  }
+}

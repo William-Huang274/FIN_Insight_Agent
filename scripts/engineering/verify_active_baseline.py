@@ -78,6 +78,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/research/run_s3_tool_contract_transport_zero_call.py",
     "scripts/research/run_s3_transport_paired_canary.py",
     "scripts/research/run_agent_runtime_feedback_zero_call_proof.py",
+    "scripts/research/materialize_s1_s3_actionable_research_three_case.py",
     "scripts/research/run_s3_multi_agent_report_remap_live.py",
 )
 

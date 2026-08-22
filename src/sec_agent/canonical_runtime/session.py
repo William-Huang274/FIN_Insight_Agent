@@ -237,6 +237,61 @@ def create_agent_session(
     return {**validated, "session_digest": canonical_digest(validated)}
 
 
+def apply_accepted_plan_delta(
+    *,
+    session: Mapping[str, Any],
+    plan_delta: Mapping[str, Any],
+    expected_base_plan_digest: str,
+    accepted_plan_digest: str,
+    accepted_plan_ref: str,
+    updated_at: str,
+) -> dict[str, Any]:
+    """Advance one session only after a validated PlanDelta is accepted.
+
+    The function deliberately changes no case, period, objective or authority
+    state.  It closes the previously missing seam between a durable feedback
+    receipt and the plan reference saved in the next checkpoint.
+    """
+
+    current = validate_runtime_artifact("AgentSession", session)
+    delta = validate_runtime_artifact("PlanDelta", plan_delta)
+    _require(
+        delta["session_id"] == current["session_id"],
+        "runtime_plan_delta_session_mismatch",
+    )
+    _require(
+        delta["validation_status"] == "accepted",
+        "runtime_plan_delta_not_accepted",
+    )
+    _require(
+        delta["base_plan_digest"]
+        == _digest(
+            expected_base_plan_digest,
+            "runtime_plan_delta_expected_base_digest_invalid",
+        ),
+        "runtime_plan_delta_base_plan_mismatch",
+    )
+    new_digest = _digest(
+        accepted_plan_digest, "runtime_accepted_plan_digest_invalid"
+    )
+    new_ref = _nonempty(accepted_plan_ref, "runtime_accepted_plan_ref_invalid")
+    _require(
+        new_digest != delta["base_plan_digest"],
+        "runtime_accepted_plan_did_not_change",
+    )
+    value = {
+        key: deepcopy(item)
+        for key, item in current.items()
+        if key != "session_digest"
+    }
+    value["active_plan_ref"] = new_ref
+    value["updated_at"] = _iso_datetime(
+        updated_at, "runtime_session_updated_at_invalid"
+    )
+    validated = validate_runtime_artifact("AgentSession", value)
+    return {**validated, "session_digest": canonical_digest(validated)}
+
+
 def append_session_event(
     events: Sequence[Mapping[str, Any]],
     *,
@@ -489,6 +544,7 @@ __all__ = [
     "BASE_CONTRACT_REF",
     "SUCCESSOR_CONTRACT_REF",
     "CanonicalRuntimeError",
+    "apply_accepted_plan_delta",
     "append_session_event",
     "canonical_digest",
     "create_agent_session",

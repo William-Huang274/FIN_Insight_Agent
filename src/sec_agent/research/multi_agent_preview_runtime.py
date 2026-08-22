@@ -73,6 +73,7 @@ from .planning import (
     compile_research_plan,
     load_research_planning_policy,
 )
+from .reviewed_evidence_pack import validate_reviewed_evidence_pack
 
 
 TRUTH_SPINE_REF = (
@@ -80,6 +81,10 @@ TRUTH_SPINE_REF = (
     "fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_1.json"
 )
 CONSUMER_OVERLAY_REF = (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_multi_agent_preview_consumer_overlay_v1_1.json"
+)
+LEGACY_CONSUMER_OVERLAY_REF = (
     "configs/research/"
     "fin_ia_0_1_3_s3_multi_agent_preview_consumer_overlay_v1_0.json"
 )
@@ -1205,23 +1210,66 @@ def compile_cross_role_feedback_receipt(
     return {**validated, "feedback_digest": canonical_digest(validated)}
 
 
-def load_preview_consumer_policy(repo_root: str | Path) -> dict[str, Any]:
+def load_preview_consumer_policy(
+    repo_root: str | Path,
+    *,
+    overlay_ref: str = CONSUMER_OVERLAY_REF,
+) -> dict[str, Any]:
     root = Path(repo_root).resolve()
-    overlay = _json(root / CONSUMER_OVERLAY_REF)
-    if set(overlay) != {
+    if overlay_ref not in {CONSUMER_OVERLAY_REF, LEGACY_CONSUMER_OVERLAY_REF}:
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_overlay_ref_not_approved"
+        )
+    overlay_path = (root / overlay_ref).resolve()
+    overlay_path.relative_to(root)
+    overlay = _json(overlay_path)
+    common_fields = {
         "schema_version",
         "status",
         "base_policy_ref",
         "cell_overrides",
         "reason",
         "authority",
-    }:
+    }
+    is_current = overlay_ref == CONSUMER_OVERLAY_REF
+    expected_fields = common_fields | (
+        {"reviewed_source_policy_append"} if is_current else set()
+    )
+    expected_schema = (
+        "fin_ia_multi_agent_preview_consumer_overlay_v1_1"
+        if is_current
+        else "fin_ia_multi_agent_preview_consumer_overlay_v1_0"
+    )
+    if set(overlay) != expected_fields or overlay.get("schema_version") != expected_schema:
         raise MultiAgentPreviewRuntimeError(
             "multi_agent_preview_overlay_fields_invalid"
         )
     base_path = (root / str(overlay["base_policy_ref"])).resolve()
     base_path.relative_to(root)
     policy = _json(base_path)
+    if is_current:
+        source_append = overlay["reviewed_source_policy_append"]
+        if not (
+            set(source_append)
+            == {
+                "allowed_source_types",
+                "allowed_source_tiers",
+                "bounded_context_only",
+                "target_company_numeric_authority",
+                "target_company_causal_authority",
+            }
+            and source_append.get("bounded_context_only") is True
+            and source_append.get("target_company_numeric_authority") is False
+            and source_append.get("target_company_causal_authority") is False
+        ):
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_preview_source_policy_overlay_invalid"
+            )
+        source_policy = policy["reviewed_source_policy"]
+        for field in ("allowed_source_types", "allowed_source_tiers"):
+            for value in source_append[field]:
+                if value not in source_policy[field]:
+                    source_policy[field].append(value)
     by_cell = {str(row["cell_id"]): row for row in policy["cell_contracts"]}
     for raw in overlay["cell_overrides"]:
         row = by_cell[str(raw["cell_id"])]
@@ -1374,6 +1422,8 @@ def compile_multi_agent_preview_materialization(
     objective_payload: Mapping[str, Any],
     opinions: Sequence[Mapping[str, Any]],
     lead_plan: Mapping[str, Any],
+    evidence_pack_override: Mapping[str, Any] | None = None,
+    consumer_overlay_ref: str = CONSUMER_OVERLAY_REF,
 ) -> MultiAgentPreviewMaterialization:
     """Execute the canonical local S1/S2 preview spine once.
 
@@ -1420,9 +1470,26 @@ def compile_multi_agent_preview_materialization(
         ResearchRetrievalPrincipal("current", permissions),
         planning_policy=planning,
     )
-    pack = evidence_service.get_case(
-        "DELL", ResearchEvidencePackPrincipal("current", permissions)
-    )
+    if evidence_pack_override is None:
+        pack = evidence_service.get_case(
+            "DELL", ResearchEvidencePackPrincipal("current", permissions)
+        )
+    else:
+        pack = deepcopy(dict(evidence_pack_override))
+        try:
+            validate_reviewed_evidence_pack(pack)
+        except (TypeError, ValueError) as exc:
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_preview_evidence_pack_override_invalid"
+            ) from exc
+        if not (
+            str(pack.get("case_key") or "") == "DELL"
+            and str(pack.get("research_as_of") or "")
+            == objective.research_as_of.isoformat()
+        ):
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_preview_evidence_pack_override_case_or_date_invalid"
+            )
     responses = compile_dynamic_evidence_responses(
         policy=_json(root / TRUTH_SPINE_REF),
         controlled_plan=controlled,
@@ -1432,7 +1499,10 @@ def compile_multi_agent_preview_materialization(
         evidence_pack=pack,
         evidence_responses=responses,
     )
-    policy = load_preview_consumer_policy(root)
+    policy = load_preview_consumer_policy(
+        root,
+        overlay_ref=consumer_overlay_ref,
+    )
     response_input = compile_current_research_input(
         policy=policy,
         evidence_pack=reviewed_view,
@@ -1493,6 +1563,186 @@ def compile_multi_agent_preview_materialization(
     )
 
 
+def _compile_role_visible_research_authority(
+    context: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Return only the research authority a specialist may actually consume.
+
+    Whole-case presence catalogs are useful for preventing false-absence claims,
+    but a change elsewhere in the case must not automatically invalidate every
+    specialist workpaper.  Re-adjudication ownership is therefore based on the
+    proposition-bound cell view, typed gaps, numeric authorities and tool
+    receipts visible to the role.
+    """
+
+    view = context["cell_analysis_view"]
+    cell = view["cell"]
+    body = {
+        "agent_id": str(context["agent"]["agent_id"]),
+        "cell_id": str(cell["cell_id"]),
+        "selected_planner_facets": sorted(
+            str(row) for row in cell.get("selected_planner_facets") or ()
+        ),
+        "cell_evidence_views": deepcopy(
+            list(cell.get("cell_evidence_views") or ())
+        ),
+        "evidence_fact_catalog": deepcopy(
+            view.get("evidence_fact_catalog") or []
+        ),
+        "allowed_numeric_refs": sorted(
+            str(row) for row in cell.get("allowed_numeric_refs") or ()
+        ),
+        "numeric_fact_catalog": deepcopy(
+            view.get("numeric_fact_catalog") or []
+        ),
+        "allowed_numeric_relation_refs": sorted(
+            str(row)
+            for row in cell.get("allowed_numeric_relation_refs") or ()
+        ),
+        "numeric_relation_catalog": deepcopy(
+            view.get("numeric_relation_catalog") or []
+        ),
+        "residual_gap_cards": deepcopy(
+            list(cell.get("residual_gap_cards") or ())
+        ),
+        "tool_execution_receipts": deepcopy(
+            list(context.get("tool_execution_receipts") or ())
+        ),
+    }
+    return {**body, "role_visible_authority_digest": canonical_digest(body)}
+
+
+def compile_evidence_pack_role_impact_zero_call_projection(
+    *,
+    repo_root: str | Path,
+    topology: Mapping[str, Any],
+    objective_payload: Mapping[str, Any],
+    opinions: Sequence[Mapping[str, Any]],
+    lead_plan: Mapping[str, Any],
+    predecessor_evidence_pack: Mapping[str, Any],
+    successor_evidence_pack: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Prove which specialist workpapers a reviewed-pack successor invalidates.
+
+    This is a local materialization comparison.  It performs no provider or
+    network call and grants no Evidence, S1, S3 or publication authority.
+    """
+
+    predecessor = compile_multi_agent_preview_materialization(
+        repo_root=repo_root,
+        topology=topology,
+        objective_payload=objective_payload,
+        opinions=opinions,
+        lead_plan=lead_plan,
+        evidence_pack_override=predecessor_evidence_pack,
+    )
+    successor = compile_multi_agent_preview_materialization(
+        repo_root=repo_root,
+        topology=topology,
+        objective_payload=objective_payload,
+        opinions=opinions,
+        lead_plan=lead_plan,
+        evidence_pack_override=successor_evidence_pack,
+    )
+    predecessor_views = {
+        agent_id: _compile_role_visible_research_authority(context)
+        for agent_id, context in predecessor.context_by_agent().items()
+    }
+    successor_views = {
+        agent_id: _compile_role_visible_research_authority(context)
+        for agent_id, context in successor.context_by_agent().items()
+    }
+    if set(predecessor_views) != set(successor_views):
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_preview_role_impact_topology_drift"
+        )
+    component_names = (
+        "cell_evidence_views",
+        "evidence_fact_catalog",
+        "allowed_numeric_refs",
+        "numeric_fact_catalog",
+        "allowed_numeric_relation_refs",
+        "numeric_relation_catalog",
+        "residual_gap_cards",
+        "tool_execution_receipts",
+    )
+    roles = []
+    for agent_id in lead_plan["ordered_agent_ids"]:
+        before = predecessor_views[str(agent_id)]
+        after = successor_views[str(agent_id)]
+        changed_components = [
+            name
+            for name in component_names
+            if canonical_digest(before[name]) != canonical_digest(after[name])
+        ]
+        roles.append(
+            {
+                "agent_id": str(agent_id),
+                "predecessor_role_visible_authority_digest": before[
+                    "role_visible_authority_digest"
+                ],
+                "successor_role_visible_authority_digest": after[
+                    "role_visible_authority_digest"
+                ],
+                "changed_components": changed_components,
+                "disposition": (
+                    "fresh_re_adjudication_required"
+                    if changed_components
+                    else "prior_workpaper_reusable_no_new_role_authority"
+                ),
+                "predecessor_evidence_count": len(
+                    before["cell_evidence_views"]
+                ),
+                "successor_evidence_count": len(
+                    after["cell_evidence_views"]
+                ),
+                "predecessor_gap_count": len(before["residual_gap_cards"]),
+                "successor_gap_count": len(after["residual_gap_cards"]),
+            }
+        )
+    affected = [
+        row["agent_id"]
+        for row in roles
+        if row["disposition"] == "fresh_re_adjudication_required"
+    ]
+    reusable = [
+        row["agent_id"]
+        for row in roles
+        if row["disposition"]
+        == "prior_workpaper_reusable_no_new_role_authority"
+    ]
+    body = {
+        "schema_version": (
+            "fin_ia_s3_evidence_pack_role_impact_zero_call_result_v1_0"
+        ),
+        "status": "evidence_pack_role_impact_zero_call_completed",
+        "case_key": str(successor_evidence_pack.get("case_key") or ""),
+        "research_as_of": str(
+            successor_evidence_pack.get("research_as_of") or ""
+        ),
+        "predecessor_pack_payload_digest": str(
+            predecessor_evidence_pack.get("pack_payload_digest") or ""
+        ),
+        "successor_pack_payload_digest": str(
+            successor_evidence_pack.get("pack_payload_digest") or ""
+        ),
+        "affected_agent_ids": affected,
+        "reusable_agent_ids": reusable,
+        "role_impacts": roles,
+        "authority": {
+            "model_calls": 0,
+            "network_calls": 0,
+            "candidate_promotions": 0,
+            "gap_closures": 0,
+            "S1_pass": False,
+            "S3_pass": False,
+            "product_publication": False,
+            "reuse_requires_exact_prior_workpaper_and_plan_lineage": True,
+        },
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
 def compile_lead_checkpoint_successor_zero_call_projection(
     *,
     repo_root: str | Path,
@@ -1539,6 +1789,10 @@ def compile_lead_checkpoint_successor_zero_call_projection(
         objective_payload=objective_payload,
         opinions=opinions,
         lead_plan=lead_checkpoint["lead_plan"],
+        # R7/R8 checkpoints predate the v1.1 public-context source overlay.
+        # Revalidation must reproduce their historical model-visible context;
+        # current runs continue to use the v1.1 default above.
+        consumer_overlay_ref=LEGACY_CONSUMER_OVERLAY_REF,
     )
     readiness = materialization.readiness_summary()
     if readiness["blocking_empty_role_ids"]:
@@ -1622,16 +1876,21 @@ def compile_workpaper_checkpoint_successor_zero_call_projection(
         objective_payload=objective_payload,
         opinions=opinions,
         lead_plan=lead_checkpoint["lead_plan"],
+        consumer_overlay_ref=LEGACY_CONSUMER_OVERLAY_REF,
     )
     readiness = materialization.readiness_summary()
     if readiness["blocking_empty_role_ids"]:
         raise MultiAgentPreviewRuntimeError(
             "multi_agent_preview_workpaper_checkpoint_role_authority_empty"
         )
+    capture_bound_contexts = _load_capture_bound_specialist_contexts(
+        repo_root=repo_root,
+        terminal_failure=source_terminal_failure,
+    )
     trusted_workpapers = validate_specialist_workpaper_checkpoint(
         workpaper_checkpoint,
         terminal_failure=source_terminal_failure,
-        contexts=materialization.context_by_agent(),
+        contexts=capture_bound_contexts,
     )
     if not (
         trusted_workpapers["completed_agent_ids"]
@@ -1689,6 +1948,130 @@ def compile_workpaper_checkpoint_successor_zero_call_projection(
         },
     }
     return {**body, "result_digest": canonical_digest(body)}
+
+
+def _load_capture_bound_specialist_contexts(
+    *,
+    repo_root: str | Path,
+    terminal_failure: Mapping[str, Any],
+) -> dict[str, dict[str, Any]]:
+    """Recover the exact historical context seen by completed workpaper nodes.
+
+    A successor may not recompile an old workpaper against today's Evidence Pack
+    or consumer overlay.  The credential-free model-visible request capture is
+    the immutable context authority; its request digest and node identity are
+    revalidated before the embedded specialist context is returned.
+    """
+
+    root = Path(repo_root).resolve()
+    capture_root = (root / "data" / "captures").resolve()
+    contexts: dict[str, dict[str, Any]] = {}
+    context_attempts: list[tuple[str, dict[str, Any]]] = []
+    for node in terminal_failure.get("node_executions") or ():
+        expected_agent_id = str(node.get("agent_id") or "")
+        analysis_attempts = [
+            dict(row)
+            for row in node.get("attempts") or ()
+            if row.get("phase") == "analysis"
+        ]
+        if len(analysis_attempts) != 1 or not expected_agent_id:
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_historical_context_attempt_invalid"
+            )
+        context_attempts.append((expected_agent_id, analysis_attempts[0]))
+    terminal_analysis_attempts = [
+        dict(row)
+        for row in terminal_failure.get("terminal_node_attempts") or ()
+        if row.get("phase") == "analysis"
+    ]
+    if len(terminal_analysis_attempts) != 1:
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_historical_terminal_context_attempt_invalid"
+        )
+    context_attempts.append(("", terminal_analysis_attempts[0]))
+
+    for expected_agent_id, attempt in context_attempts:
+        ref = str(attempt.get("request_capture_ref") or "")
+        path = Path(ref)
+        if not path.is_absolute():
+            path = root / path
+        path = path.resolve()
+        try:
+            path.relative_to(capture_root)
+        except ValueError as exc:
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_historical_context_capture_escape"
+            ) from exc
+        if not path.is_file():
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_historical_context_capture_missing"
+            )
+        capture = _json(path)
+        request_body = capture.get("request_body") or {}
+        request_digest = str(attempt.get("request_digest") or "")
+        if not (
+            capture.get("capture_type")
+            == "model_visible_request_without_credentials"
+            and capture.get("credential_or_authorization_captured") is False
+            and capture.get("attempt_id") == attempt.get("attempt_id")
+            and isinstance(capture.get("run_id"), str)
+            and str(attempt.get("attempt_id") or "").startswith(
+                f"{capture['run_id']}-"
+            )
+            and capture.get("request_digest") == request_digest
+            and canonical_digest(request_body) == request_digest
+        ):
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_historical_context_capture_invalid"
+            )
+        task_contexts: list[dict[str, Any]] = []
+        for message in request_body.get("messages") or ():
+            if message.get("role") != "user" or not isinstance(
+                message.get("content"), str
+            ):
+                continue
+            try:
+                envelope = json.loads(message["content"])
+            except json.JSONDecodeError:
+                continue
+            rows = envelope.get("task_context") if isinstance(envelope, Mapping) else None
+            if (
+                isinstance(envelope, Mapping)
+                and envelope.get("phase") == "analysis_only_not_business_authority"
+                and isinstance(rows, list)
+                and len(rows) == 1
+                and rows[0].get("role") == "user"
+                and isinstance(rows[0].get("content"), str)
+            ):
+                try:
+                    task_contexts.append(json.loads(rows[0]["content"]))
+                except json.JSONDecodeError as exc:
+                    raise MultiAgentPreviewRuntimeError(
+                        "multi_agent_historical_context_payload_invalid"
+                    ) from exc
+        if len(task_contexts) != 1:
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_historical_context_payload_missing"
+            )
+        context = task_contexts[0]
+        agent_id = str(context.get("agent", {}).get("agent_id") or "")
+        if not (
+            context.get("schema_version") == "fin_ia_specialist_context_v1_0"
+            and agent_id
+            and (not expected_agent_id or agent_id == expected_agent_id)
+            and agent_id not in contexts
+            and isinstance(context.get("context_digest"), str)
+            and len(context["context_digest"]) == 64
+        ):
+            raise MultiAgentPreviewRuntimeError(
+                "multi_agent_historical_context_identity_invalid"
+            )
+        contexts[agent_id] = context
+    if not contexts:
+        raise MultiAgentPreviewRuntimeError(
+            "multi_agent_historical_contexts_empty"
+        )
+    return contexts
 
 
 def compile_specialist_analysis_checkpoint_successor_zero_call_projection(
@@ -1949,8 +2332,10 @@ __all__ = [
     "PreviewNodeExecution",
     "MultiAgentPreviewMaterialization",
     "MultiAgentPreviewRuntimeError",
+    "LEGACY_CONSUMER_OVERLAY_REF",
     "TRUTH_SPINE_REF",
     "compile_cross_role_feedback_receipt",
+    "compile_evidence_pack_role_impact_zero_call_projection",
     "compile_lead_checkpoint_successor_zero_call_projection",
     "compile_workpaper_checkpoint_successor_zero_call_projection",
     "compile_specialist_analysis_checkpoint_successor_zero_call_projection",

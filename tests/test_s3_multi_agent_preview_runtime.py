@@ -15,6 +15,7 @@ from sec_agent.research.multi_agent_preview import (
     merge_analysis_draft_fragments,
 )
 from sec_agent.research.multi_agent_preview_runtime import (
+    _compile_role_visible_research_authority,
     compile_cross_role_feedback_receipt,
     compile_coordination_checkpoint_successor_zero_call_projection,
     compile_lead_checkpoint_successor_zero_call_projection,
@@ -129,6 +130,43 @@ def _tool() -> dict[str, Any]:
             },
         },
     }
+
+
+def test_role_visible_impact_ignores_unrelated_case_presence() -> None:
+    context = {
+        "agent": {"agent_id": "AGENT::DEMAND_QUALITY"},
+        "cell_analysis_view": {
+            "cell": {
+                "cell_id": "CELL::demand_quality",
+                "selected_planner_facets": ["orders_and_backlog"],
+                "cell_evidence_views": [{"evidence_ref": "EVID::1"}],
+                "allowed_numeric_refs": [],
+                "allowed_numeric_relation_refs": [],
+                "residual_gap_cards": [],
+            },
+            "evidence_fact_catalog": [{"evidence_ref": "EVID::1"}],
+            "numeric_fact_catalog": [],
+            "numeric_relation_catalog": [],
+        },
+        "tool_execution_receipts": [],
+        "case_fact_presence": [{"evidence_ref": "EVID::UNRELATED::1"}],
+    }
+    before = _compile_role_visible_research_authority(context)
+    context["case_fact_presence"].append(
+        {"evidence_ref": "EVID::UNRELATED::2"}
+    )
+    after_unrelated = _compile_role_visible_research_authority(context)
+    context["cell_analysis_view"]["cell"]["cell_evidence_views"].append(
+        {"evidence_ref": "EVID::DEMAND::2"}
+    )
+    after_local = _compile_role_visible_research_authority(context)
+
+    assert before["role_visible_authority_digest"] == after_unrelated[
+        "role_visible_authority_digest"
+    ]
+    assert before["role_visible_authority_digest"] != after_local[
+        "role_visible_authority_digest"
+    ]
 
 
 def _analysis_checkpoint(partial_draft: str) -> dict[str, Any]:

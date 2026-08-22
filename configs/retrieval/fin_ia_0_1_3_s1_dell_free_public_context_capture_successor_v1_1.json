@@ -1,0 +1,32 @@
+{
+  "schema_version": "fin_ia_official_source_capture_plan_v1_0",
+  "status": "official_source_capture_plan",
+  "recorded_at": "2026-08-22",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "predecessor_attempt_id": "FIN_0_1_3_S1_DELL_FREE_PUBLIC_CONTEXT_R1_20260822",
+  "purpose": "Retry only the HPE competitor-primary route after the preserved requests read-timeout, using the existing curl transport adapter.",
+  "policy": {
+    "capture_before_parse": true,
+    "https_only": true,
+    "credentials_forbidden": true,
+    "post_as_of_rejected": true,
+    "source_strength_and_claim_use_required": true,
+    "discovery_result_is_not_evidence": true
+  },
+  "sources": [
+    {
+      "route_id": "DELL_CONTEXT_HPE_Q2_FY26_RESULTS",
+      "case_key": "DELL",
+      "url": "https://www.hpe.com/us/en/newsroom/press-release/2026/06/hpe-reports-fiscal-2026-second-quarter-results.html",
+      "allowed_hosts": ["www.hpe.com"],
+      "expected_content_types": ["text/html"],
+      "byte_ceiling": 5000000,
+      "timeout_seconds": 45,
+      "transport": "curl",
+      "max_transport_retries": 0,
+      "source_role": "competitor_primary_context",
+      "expected_publication_date": "2026-06-01"
+    }
+  ]
+}

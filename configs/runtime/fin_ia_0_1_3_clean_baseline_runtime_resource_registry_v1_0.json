@@ -15,10 +15,10 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R28",
-  "resource_bytes": 2585539,
-  "resource_canonical_digest": "b313728e564d926edfef8a574580c611a8aae3d72e93b7f5397560f6513016a7",
-  "resource_count": 27,
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R29",
+  "resource_bytes": 2591706,
+  "resource_canonical_digest": "a9119a122d7fa8f8615a90eba227b341724eddc0b6d41c7fd7981facca702543",
+  "resource_count": 28,
   "resources": [
     {
       "bytes": 6903,
@@ -206,6 +206,19 @@
       "source_owner": "retrieval.source_route_dispatch.load_source_route_portfolio_policy"
     },
     {
+      "bytes": 6167,
+      "classification": "provider_neutral_source_strength_claim_use_and_rights_policy",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_source_strength_and_claim_use_policy_v1_0.json",
+      "required": true,
+      "resource_id": "application.config.current_s1_source_use_policy",
+      "sha256": "d55b813321210a2de33312a900912bf925649ece003d70608066c26d05bb8283",
+      "source_owner": "retrieval.source_use_policy.SourceUsePolicy.from_mapping"
+    },
+    {
       "bytes": 2449,
       "classification": "application_runtime_config",
       "consumer_ids": [
@@ -306,7 +319,7 @@
       "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_5.json",
       "required": true,
       "resource_id": "application.result.current_s1_runtime_binding_receipt",
-      "sha256": "2c82fa6b0a4685e5c24644092fffd81e199ae945a7899d22c00b5030dc5e2280",
+      "sha256": "15a4e43aa866aef7e54878c13213952c4d09f45355fd60c4cb0d5d1a13d48031",
       "source_owner": "retrieval.current_runtime_binding.validate_current_s1_runtime_binding_receipt"
     },
     {

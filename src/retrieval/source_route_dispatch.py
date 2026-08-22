@@ -125,6 +125,7 @@ def compile_product_projection_source_route_successor(
     *,
     product_projection: Mapping[str, Any],
     policy: SourceRoutePortfolioPolicy | Mapping[str, Any],
+    research_sufficiency_by_request: Mapping[str, str] | None = None,
     registered_intake_routes: Sequence[Mapping[str, Any]] = (),
     intake_attempts: Sequence[Mapping[str, Any]] = (),
     route_attempt_receipts: Sequence[Mapping[str, Any]] = (),
@@ -143,6 +144,14 @@ def compile_product_projection_source_route_successor(
     for raw in raw_requests:
         _require(isinstance(raw, Mapping), "source_route_product_request_invalid")
         request_result = deepcopy(dict(raw))
+        request_id = str(
+            (request_result.get("request") or {}).get("request_id") or ""
+        )
+        research_sufficiency_state = str(
+            (research_sufficiency_by_request or {}).get(
+                request_id, "not_evaluated"
+            )
+        )
         hybrid = request_result.get("hybrid_object_retrieval")
         active_hybrid = hybrid if isinstance(hybrid, Mapping) else None
         truth = compile_source_route_execution_truth(
@@ -155,6 +164,7 @@ def compile_product_projection_source_route_successor(
             candidate_coverage_state=(
                 candidate_coverage_state_from_hybrid_result(active_hybrid)
             ),
+            research_sufficiency_state=research_sufficiency_state,
             registered_intake_routes=registered_intake_routes,
             intake_attempts=intake_attempts,
             route_attempt_receipts=route_attempt_receipts,
@@ -401,6 +411,7 @@ def compile_source_route_execution_truth(
     policy: SourceRoutePortfolioPolicy | Mapping[str, Any],
     local_candidate_rows: Sequence[Mapping[str, Any]] = (),
     candidate_coverage_state: str = "not_evaluated",
+    research_sufficiency_state: str = "not_evaluated",
     registered_intake_routes: Sequence[Mapping[str, Any]] = (),
     intake_attempts: Sequence[Mapping[str, Any]] = (),
     route_attempt_receipts: Sequence[Mapping[str, Any]] = (),
@@ -421,6 +432,11 @@ def compile_source_route_execution_truth(
     _require(
         candidate_coverage_state in {"complete", "incomplete", "not_evaluated"},
         "source_route_candidate_coverage_state_invalid",
+    )
+    _require(
+        research_sufficiency_state
+        in {"sufficient", "material_gap", "not_evaluated"},
+        "source_route_research_sufficiency_state_invalid",
     )
     request_id = str(request.get("request_id") or "")
     case_key = str(request.get("case_key") or "").upper()
@@ -448,6 +464,12 @@ def compile_source_route_execution_truth(
     registered = [_normalize_registered_route(row) for row in registered_intake_routes]
     intake = [_normalize_intake_attempt(row) for row in intake_attempts]
     candidates = [dict(row) for row in local_candidate_rows]
+    supplement_trigger_reasons = []
+    if candidate_coverage_state == "incomplete":
+        supplement_trigger_reasons.append("candidate_coverage_incomplete")
+    if research_sufficiency_state == "material_gap":
+        supplement_trigger_reasons.append("material_research_gap")
+    supplement_required = bool(supplement_trigger_reasons)
     requirements: list[dict[str, Any]] = []
     for raw_lane in query_plan.get("lanes") or ():
         _require(isinstance(raw_lane, Mapping), "source_route_query_lane_invalid")
@@ -492,6 +514,7 @@ def compile_source_route_execution_truth(
                     intake_attempts=intake,
                     route_attempts=attempts,
                     candidate_coverage_state=candidate_coverage_state,
+                    supplement_required=supplement_required,
                 )
                 for route in loaded.routes
                 if _route_applies(route, case_key, source_types, role)
@@ -517,6 +540,10 @@ def compile_source_route_execution_truth(
                     "requirement_id": requirement_id,
                     **identity,
                     "candidate_coverage_state": candidate_coverage_state,
+                    "research_sufficiency_state": research_sufficiency_state,
+                    "supplement_trigger_reasons": list(
+                        supplement_trigger_reasons
+                    ),
                     "local_candidate_count": len(local_matches),
                     "local_candidate_source_types": sorted(
                         {_candidate_source_type(row) for row in local_matches}
@@ -532,7 +559,6 @@ def compile_source_route_execution_truth(
                 }
             )
     _require(bool(requirements), "source_route_requirements_empty")
-    supplement_required = candidate_coverage_state == "incomplete"
     state_counts = Counter(
         row["execution_state"]
         for requirement in requirements
@@ -550,7 +576,9 @@ def compile_source_route_execution_truth(
         "case_key": case_key,
         "research_as_of": request.get("research_as_of"),
         "candidate_coverage_state": candidate_coverage_state,
+        "research_sufficiency_state": research_sufficiency_state,
         "supplement_route_required": supplement_required,
+        "supplement_trigger_reasons": supplement_trigger_reasons,
         "requirements": requirements,
         "summary": {
             "requirement_count": len(requirements),
@@ -621,8 +649,8 @@ def _project_route(
     intake_attempts: Sequence[Mapping[str, Any]],
     route_attempts: Sequence[Mapping[str, Any]],
     candidate_coverage_state: str,
+    supplement_required: bool,
 ) -> dict[str, Any]:
-    supplement_required = candidate_coverage_state == "incomplete"
     matched_types = sorted(set(route.source_types).intersection(source_types))
     base = {
         **route.as_dict(),
@@ -643,13 +671,13 @@ def _project_route(
             "eligible_source_count": len(local_matches),
             "terminal_for_gap_evaluation": True,
         }
-    if candidate_coverage_state == "complete":
+    if not supplement_required and candidate_coverage_state == "complete":
         return {
             **base,
             "execution_state": "not_required_local_candidate_set_complete",
             "eligible_source_count": 0,
         }
-    if candidate_coverage_state == "not_evaluated":
+    if not supplement_required and candidate_coverage_state == "not_evaluated":
         return {
             **base,
             "execution_state": "not_scheduled_candidate_coverage_not_evaluated",

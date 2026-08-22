@@ -82,7 +82,7 @@
     "runtime_registry": {
       "binding_scope": "selected_registered_resources_only_no_self_hash",
       "ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
-      "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R28"
+      "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R29"
     },
     "s2_fact_mart_result": {
       "bytes": 14824,
@@ -165,7 +165,7 @@
     "s1_qualification_claimed": false
   },
   "registry_binding": {
-    "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R28",
+    "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R29",
     "selected_resource_digest": "166fedb84587b541c9f77a9ee5589b7d68f0b52e1cf2a96a0f3a2c4522d2fb69",
     "selected_resource_ids": [
       "application.config.current_hybrid_candidate_runtime_policy",
@@ -179,7 +179,7 @@
       "application.result.current_s1_nvda_product_readiness"
     ]
   },
-  "result_digest": "3a5113c3bc7862502df8ddb1fd6f3dfc79ea566ee73189becee9bcd0fba203b5",
+  "result_digest": "01de30d38da63f2ca042934541b4504be8c838cf9cd8e0c04e45b1915a18f3ac",
   "reviewed_evidence": {
     "anchor_result_digest": "",
     "anchor_status": "reviewed_claim_surfaces_bound_to_current_evidence_items",

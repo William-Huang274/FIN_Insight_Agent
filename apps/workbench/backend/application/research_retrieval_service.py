@@ -1201,15 +1201,30 @@ class ResearchRetrievalService:
         candidate_rows = collect_source_route_candidate_rows(
             result, hybrid_result
         )
+        request = dict(result.get("request") or {})
+        case_key = str(request.get("case_key") or "").upper()
+        request_id = str(request.get("request_id") or "")
+        research_sufficiency_state = "not_evaluated"
+        readiness = self._product_readiness_results.get(case_key) or {}
+        for current in readiness.get("requests") or ():
+            if str(current.get("request_id") or "") != request_id:
+                continue
+            current_state = str(current.get("readiness_state") or "")
+            if current_state == "ready_for_current_scope":
+                research_sufficiency_state = "sufficient"
+            elif current_state == "partial_with_material_gaps":
+                research_sufficiency_state = "material_gap"
+            break
         try:
             return compile_source_route_execution_truth(
-                request=result["request"],
+                request=request,
                 query_plan=result["query_plan"],
                 policy=self._source_route_policy,
                 local_candidate_rows=candidate_rows,
                 candidate_coverage_state=(
                     candidate_coverage_state_from_hybrid_result(hybrid_result)
                 ),
+                research_sufficiency_state=research_sufficiency_state,
                 registered_intake_routes=[
                     route.public_projection()
                     for route in self._source_intake_policy.routes.values()

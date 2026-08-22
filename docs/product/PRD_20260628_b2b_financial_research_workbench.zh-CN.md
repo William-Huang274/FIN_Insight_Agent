@@ -2925,3 +2925,46 @@ FIN 正式区分两类节点：
 2. **checkpoint 补齐／合同映射节点**只在原分析已形成且内容寻址的前提下，完成 checkpoint 明确列出的缺失字段或把完整草稿映射为严格 Tool Call。它可以显式 `thinking=disabled`，但不得改变研究输入、重做已完成分析、引入新观点或获得 Evidence／NumericFact 权威。
 
 一次 continuation 因 profile 语义错误而截断时，必须保留失败 capture，先做零调用处置，再用新 attempt／authority 进行至多一次 profile replacement。若 replacement 仍不能完成同一 Cash continuation，不得继续为该节点增加第三种 DeepSeek 专用续写策略；应停止并升级为模型职责或控制面处置。Profile adapter 的失败不能冒充 S1 资料不足、Agent 角色无效或研究内容失败。
+
+### 16.51 报告边界必须按最早责任层处置，来源质量按“来源强度 × 主张用途”管理（2026-08-22）
+
+研报中的“无法推断”“资料不足”和“仍待披露”不是同一种状态。产品必须先形成 `ReportBoundaryDisposition`，再允许 Writer 生成客户可见的边界说明：
+
+1. `operations_only_omit_from_customer_report`：本地对象、索引、SQL、Evidence admission、状态同步、工具执行或 Agent 停止错误，只进入运行视图；
+2. `resolve_before_customer_report`：权威已更新但 workpaper 过期、研究者阈值未设置等可在当前项目内解决的事项，必须退回责任节点；
+3. `concise_current_run_uncertainty`：当前运行尚未完成补证或只能使用公开代理时，可以保留一句对判断真正重要的限制，但不得冒充永久不披露；
+4. `concise_proved_information_boundary`：只有公开来源路线终结、失败与未执行路线均已排除，并取得 non-disclosure 或 licensed/private boundary 回执后，才可称为真实信息边界。
+
+任何 Evidence、NumericFact、NumericRelation、Graph edge 或 RoleMethodPack 的**语义变化**都必须使受影响 workpaper 的 context digest 失效，系统只重裁决受影响研究单元。若后续变化只是为 workpaper 已见、已分析的同一事实补齐正式引用或数值权威，则不得机械重跑 Agent；应确定性刷新 claim support，并使旧 evaluator finding 失效。两种情况都不能把过期边界交给 Writer，也不能用最终 renderer 掩盖上游状态漂移。研究者自己应设定的 thesis 失效阈值、监控阈值和风险容忍度属于 S3 Research Method，不属于 S1 source gap。
+
+同一材料边界只在统一 Boundary Register 中完整说明一次。执行摘要应给出结论、主要驱动和至多一个综合不确定性；正文分析不确定性对判断的影响；WWC 给出可观察的改变条件；confidence 解释来源组合与置信度，不重复 gap 清单。边界密度属于内容质量 finding，除非出现事实矛盾或超过安全容量，否则 Harness 不得自动删改模型观点。
+
+S1 不再采用“official-only”作为所有研究内容的统一准入规则。来源控制改为“来源强度 × 允许主张用途”：
+
+- 发行人、监管和政府 primary 可支持目标公司精确事实与 NumericFact；
+- 明名客户、供应商、标准组织及官方行业来源可支持其自身事实、关系背景、行业事实和 speaker-attributed mechanism，但没有明确关系边时不能生成目标公司精确分配或财务事实；
+- 可信媒体、行业协会和公开 analyst context 可用于机制、竞争、反方和交叉验证，重要材料推断至少需要独立来源 corroboration，且不得单源晋升目标公司 exact fact；
+- Search、RSS、GDELT、Common Crawl 等 discovery 结果只能定位原始资料，snippet、排序和转载本身不能成为 Evidence；
+- licensed／user-entitled 数据必须绑定许可、PIT、保留与再分发权限。
+
+重复使用且已通过 capture、parser、日期、主体、speaker、关系方向和许可审查的免费公开源，可以内化为版本化 source/context object；外部补源调度同时读取 `candidate_coverage_state` 与 `research_sufficiency_state`。本地候选数量完整不等于研究材料充分，material research gap 仍应触发有界外部补源。
+
+当前 DELL 候选报告的 8 组边界经逐项审计后，4 组属于运行／状态同步／研究方法，4 组属于尚未穷尽补源的 current-run uncertainty，0 组具备真实公开信息边界权威。历史报告保持不可变；下一轮必须先修内部状态和 gap ontology，再运行免费公开源定向补证，最后只让受影响研究单元动态重裁决。完整审计见 `docs/architecture/retrieval/FIN_0_1_3_DELL_REPORT_BOUNDARY_DENSITY_AND_SOURCE_SUFFICIENCY_AUDIT_20260822.zh-CN.md`。
+
+### 16.52 不确定性必须转化为研究动作，并贯穿数据、反思与预算控制（2026-08-22）
+
+产品不能再把每个未解决事项直接写成一段“无法推断”。每个 material uncertainty 必须先编译为 `ActionableUncertainty`，再绑定至少一个 `ResearchAction`。两者必须说明：当前已知什么、缺少什么、最早责任层、责任平面、可执行动作、允许使用的工具或人工入口、成功标准、停止条件以及当前是否具备真实公开信息边界权威。基础设施／工具、Harness 控制面和 Agent 工作模式必须分账；候选待准入、路线未执行、数值桥未闭合和研究者阈值未设定，不能混称为来源不存在。
+
+当前运行链采用以下统一语义：
+
+1. S1 将 `candidate coverage`、`Evidence admission`、`source supplement` 与真正 `public-information boundary` 分开；Search／RSS 仅作 discovery locator，不能静默晋升 Evidence。
+2. 来源资产同时记录 `discovery / internal analysis / citation / redistribution` 四项权利。能读取或能引用不代表可以全文再分发；licensed／user-entitled 来源必须绑定 entitlement。
+3. S2 将 `reported_fact / deterministic_derived_metric / research_estimate / scenario` 分开。只有 source-bound reported fact 获得 NumericFact authority；确定性公式保留输入 refs 与公式但不冒充披露事实；estimate／scenario 必须保留假设和独立身份。
+4. S1／S2／S3／Verifier 的 typed failure 先形成 `FeedbackReceipt`。Agent 只有在 feedback 真实改变 `PlanDelta` 后才可继续；没有新增已审关系证据时，GraphDelta 必须明确保持 no-mutation，而不是为了表现“反思”擅自扩图。
+5. `AgentSession / SessionEvent / ContextCheckpoint / resume / StopDecision` 共同保存开放不确定性、未解决 feedback 和待执行 action。存在 material action 时只能诚实 `continue`；工具失败、预算不足或当前回合未执行不能被改写成研究充分或公开信息 gap。
+6. S3 的每个研究单元只接收与本单元相关的 Evidence、数值类型、Action、Feedback、计划、停止和来源权利视图。Action 是下一步工作，不是 Evidence，也不能由 Writer 描述成已经完成的补证。
+7. 每个自然模型节点或付费节点继续强制 `TokenBudgetBasis`，但预算依据改为当前输入规模、必须覆盖的 uncertainty／action／feedback、schema 负担、materiality 风险、可比运行和停止／截断语义。成本与延迟仅为二级约束；若预算不足，必须分批或 typed defer，不得静默删除必需研究工作。
+
+当前 DELL／MU／NVDA 三案例已经使用**当前 Runtime registry、当前 reviewed Evidence Pack 和当前私有 candidate replay**完成零模型真实数据接线。分别得到 `29／14／25` 条 reviewed Evidence、`38／16／19` 条 reported facts、`27／13／15` 条 deterministic derived metrics，以及 `21／22／19` 个逐项 ResearchAction；三案共 `0` 个 public-information gap 获得授权。DELL 五个研究单元已分别编译出模型可见的 current control context，Workbench 也读取同一 producer，而不是使用演示 fixture。
+
+上述结果只证明 1–7 的数据、合同、Runtime、S3 消费缝和产品可见面已经连通，并通过零调用评测；它**不**证明自然 Agent 会正确反思、执行第二轮补证或产出更好报告。`S1_qualified_stable=false`、`S3 accepted=false`、release=false 继续保持。下一门是单独签发的 DELL 动态多 Agent 纵切，不能把本节的零调用结果追认为 Agentic Research 或产品验收。

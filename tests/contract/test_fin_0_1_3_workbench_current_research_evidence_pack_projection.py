@@ -349,7 +349,7 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R28"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R29"
     )
     assert set(registry.by_id()) == {
         "application.config.current_financial_intent_ontology",
@@ -366,6 +366,7 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
         "application.config.current_s1_product_readiness_catalog",
         "application.config.current_s1_runtime_binding_policy",
         "application.config.current_s1_source_route_portfolio",
+        "application.config.current_s1_source_use_policy",
         "application.config.current_source_intake_policy",
         "application.result.current_research_local_evidence_packs",
         "application.result.current_reviewed_claim_anchors",
@@ -516,8 +517,28 @@ def test_current_runtime_loads_three_product_evidence_successors() -> None:
         assert pack["canonical_spine"]["hard_boundaries"][
             "historical_vs4_summary_not_relabelled_as_successor"
         ] is True
+        quantitative = pack["quantitative_authority"]
+        actionable = pack["actionable_research_state"]
+        assert quantitative["status"] == "current_s2_authority_compiled"
+        assert quantitative["summary"]["reported_fact_count"] > 0
+        assert all(
+            row["quantitative_kind"] == "deterministic_derived_metric"
+            and row["numeric_fact_authority"] is False
+            for row in quantitative["deterministic_derived_metrics"]
+        )
+        assert actionable["status"] == "runtime_injected_current_data_replay"
+        assert actionable["research_actions"]
+        assert actionable["stop_decision"]["decision"] == "continue"
+        assert actionable["resume_receipt"]["status"] == (
+            "resume_replay_verified"
+        )
+        assert actionable["next_natural_node_token_budget_basis"][
+            "execution_authority"
+        ] is False
         assert len(workspace_evidence["evidence_items"]) == expected_count
         assert workspace_evidence["product_readiness"] == product_readiness
+        assert workspace_evidence["quantitative_authority"] == quantitative
+        assert workspace_evidence["actionable_research_state"] == actionable
         assert retrieval_case["candidate_state"] == "candidate_not_evidence"
         assert retrieval_case["canonical_spine"] == pack["canonical_spine"]
 

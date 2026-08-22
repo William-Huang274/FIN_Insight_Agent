@@ -1195,3 +1195,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 只有受审来源注册表中的 HTTPS locator 可进入公平 shortlist；敏感参数、credential URL、localhost、私网地址和未知域名 fail closed。原文通过 capture-first 下载，0 retry；每个失败保留 typed receipt，不能被解释为 no result。
 - HTML 与 PDF 均可编译为 speaker／case／date／relationship-bound source object；原始来源日期才有 temporal authority，provider 日期只能佐证。两种对象经过同一 Evidence Gate；deterministic candidate proposal 仍然不是 Evidence。
 - 提交前工程门为定向 `16 passed`、全仓 `1012 passed`、compileall、active baseline、7,599-file secret scan／0；0 Provider、0 网络、0 模型。下一项仅允许 clean commit／push 和一个 `dell-external-ladder-r1` formal attempt；其后才做 CandidateDecision、Evidence Gate、current Pack、S2 successor 与 EvidencePackReadiness。动态单单元 authority 继续为 false。
+
+### 2026-08-22 DELL 完整外源阶梯 R1 与有界 successor
+
+- R1 绑定 clean commit `9362640b...`，28/28 Tencent locator 查询成功，得到 250 个 locator；22 条原文路线中 10 captured，最终只编译 5 个 source object 与 9 条待审 proposal。0 模型、0 retry、0 Evidence promotion。
+- 客户需求与行业 PVM 获得部分可审材料；价格／配置、销量、供应链和价值池仍未形成足以支撑研究的材料组。7/7 命题均不得宣布 external route exhausted 或 public-information gap。
+- 最早责任层不是 DeepSeek，也不能简单归咎搜索供应商：exact-host allowlist 把 `root → www` 同源跳转误拒，domain budget 又把两者重复计额；query tier 与实际来源 tier 混淆；整段弱关键词重合产生网页尾部噪声；供应链只锁 NVIDIA，价值池缺少经过用途审查的技术／渠道来源。
+- R1 保持不可变。R2 不重跑 28 个成功查询，只实现 source-family／tier／block-level candidate 合同，重放 R1 locator 与同源误拒原文，并对供应链、价值池等残余覆盖做少量定向 successor 查询。无日期来源仍不得获得 PIT authority。
+- CandidateDecision、Evidence Gate、current Pack、S2 successor、EvidencePackReadiness 和动态单单元继续为 false。详细结果见 `docs/worklog/fin_0_1_3_s1/058_dell_external_ladder_r1_result_and_bounded_successor.md`。

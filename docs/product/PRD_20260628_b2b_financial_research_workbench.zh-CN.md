@@ -3015,3 +3015,9 @@ Writer 的正式输入必须包含 `DeliverableBrief`：受众、语言、交付
 图表使用 `VisualRequest`：Writer 选择需要解释的视觉意图，例如趋势、价格—数量—组合瀑布、业务组合、情景／敏感性、产业关系、时间线或命题—证据矩阵；S2／Graph 提供已验证的数值和关系 refs，确定性 renderer 生成 SVG／PNG／HTML／Word／PDF／PPT 可用对象，Verifier 检查数据、单位、期间、来源、图例和正文一致性。Writer 不自行发明数字，也不自由检索；研究材料不足时必须把 blocker／ResearchAction 退回 Lead，而不是用模板化免责声明填满版面。
 
 当前 Writer 已证明 protected report 的 L1 财务控制面和一次 reference patch，但尚未实现上述 `DeliverableBrief / BilingualStylePack / VisualRequest / DocumentModel` 产品能力。它们属于批准规划的后续第 9–10 项，必须在 S1 资料充分性和动态研究循环得到真实证明后实施；不能用现有 1–7 工程闭环追认。
+
+### 16.56 S1 Readiness 只验收可观察输入，派生结论必须显式交接 S2／S3（2026-08-23）
+
+`EvidencePackReadiness` 不得要求来源直接提供本应由研究系统生成的产物。S1 的 hard material axes 只能是可观察、可捕获、可审阅的来源输入，例如公司／行业销量、价格和配置、客户部署、供应关系、产能、利润与成本代理以及当前反方信号。销量区间、PVM、价值池敏感性等可复算产物属于 S2；结论失效阈值与 What-Would-Change 属于 S3。所有跨阶段产物必须通过版本化 handoff 声明其输入、输出和 typed-gap 行为。
+
+以 `boundary` 命名的产品意图不能替代材料覆盖。关系边界应改写为可观察的“谁披露谁、谁向谁供应或部署、何时、何种来源”；真正没有被证明的关系在 Evidence Gate 后保持 typed gap。非时间型 NumericFact request 可以为 S1 提供检索上下文，但 S2 typed gap 不自动判定 S1 缺源；typed conflict 仍硬阻断。该边界防止系统以免责声明填满 Evidence Pack，也防止 S1 为了通过而伪造 S2／S3 研究产物。

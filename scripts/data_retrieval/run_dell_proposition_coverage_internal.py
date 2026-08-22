@@ -37,7 +37,7 @@ PROGRAM = (
     ROOT
     / "configs"
     / "retrieval"
-    / "fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_0.json"
+    / "fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_1.json"
 )
 DEFAULT_PRIVATE_ROOT = (
     ROOT

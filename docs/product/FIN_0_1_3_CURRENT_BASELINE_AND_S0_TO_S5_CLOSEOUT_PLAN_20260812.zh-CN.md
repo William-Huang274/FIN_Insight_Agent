@@ -506,3 +506,9 @@ Writer 随后在 `thinking=max` 下把 16,000 completion 中 15,436 token 用于
 8. 实现 Writer `DeliverableBrief / BilingualStylePack / VisualRequest / DocumentModel`，随后做 MU、NVDA、异质留出和人工内容验收。
 
 四来源 successor 的 `36 Evidence / 14 gaps` 尚未进入 current `29 / 14` mainline；DELL 的 16 个 S1、3 个 S2、2 个 S3 Action 仍未自然执行。因此历史 materialized result 中的 `step_8_bounded_natural_multi_agent_vertical_slice` 不构成当前 authority。`S1_qualified_stable=false`、`S3 accepted=false`、Writer product-ready=false、release=false 保持不变。
+
+### 7A. 七命题 Readiness 的阶段归属纠正（2026-08-23）
+
+R2 证明 12 条请求能够进入当前检索 Runtime，但其材料门仍错误混入下游产物：销量敏感性、PVM 情景和供应商成本敏感性属于 S2；可观察的结论失效阈值属于 S3。它们不得被要求由 S1 来源直接“找到”，也不得用 `boundary_only` 文案填充。
+
+当前程序升级为 v1.1：S1 只对公司、期间、来源、关系和命题绑定的可观察输入负责；S2 通过显式 handoff 生成区间、桥和情景；S3 根据判断与反方设定 WWC。R2 保持不可变诊断，v1.1 只允许一次 AI-free R3。R3 后仍须对 43 条 Evidence 完成 reviewed mapping／polarity 和 integrated readiness，方可晋升 current Pack；不得因结构修复提前调用模型。

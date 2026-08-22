@@ -1237,3 +1237,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 该结果只证明七命题真正传到检索层。候选角色／轴完整不等于 reviewed Evidence 充分，尤其不能据此宣称价格、销量、PVM、客户部署或供应链事实已经证明。
 - 下一门是将 43 Evidence Pack 按 R2 MaterialRequirement 做 reviewed mapping／polarity 并编译 integrated EvidencePackReadiness；通过后才可 current promotion 与 S2 recompile。动态单单元仍无 authority。
 - 详细记录见 `docs/worklog/fin_0_1_3_s1/062_dell_twelve_request_ai_free_internal_r2_result.md`。
+
+### 2026-08-23 S1 可观察输入与 S2／S3 派生输出归属纠正
+
+- 在把 43 条 Evidence 映射到 R2 MaterialRequirement 前，逐命题审阅发现 S1 hard scope 错含销量敏感性、PVM 情景、供应商成本敏感性和结论失效阈值。这些不是可从来源直接发现的 Evidence，分别归 S2 deterministic estimate／scenario 和 S3 What-Would-Change。
+- 三个 `boundary` 产品意图同时会诱导审阅者以 `boundary_only` 填门，继续制造免责声明密集报告。R2 保持不可变诊断，不用于 current promotion。
+- v1.1 程序将 S1 限定为可观察来源输入，并新增 S2 销量／PVM／价值池及 S3 失效阈值 handoff；non-temporal metric 在 S1 只作检索上下文，S2 typed conflict 仍阻断，typed gap 不再冒充 S1 缺源。
+- 定向 `41 passed`、全仓 `1033 passed`（仅两条既有 SWIG warning），0 模型／网络／Provider／promotion。下一步为 clean gate／push 后唯一一次 AI-free R3，再做 43 Evidence reviewed mapping 与 integrated readiness。
+- 详细记录见 `docs/worklog/fin_0_1_3_s1/063_dell_s1_observable_input_and_s2_s3_handoff_correction.md`。

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from scripts.data_retrieval.run_dell_proposition_coverage_internal import (
+    PROGRAM,
     _program_material_blueprints,
     build_public_projection,
 )
@@ -127,14 +128,7 @@ def test_public_projection_keeps_candidate_and_evidence_authority_separate() -> 
 
 
 def test_program_material_blueprints_preserve_all_twelve_business_requests() -> None:
-    program = json.loads(
-        (
-            ROOT
-            / "configs"
-            / "retrieval"
-            / "fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_0.json"
-        ).read_text(encoding="utf-8")
-    )
+    program = json.loads(PROGRAM.read_text(encoding="utf-8"))
 
     blueprints = _program_material_blueprints(program)
 
@@ -155,3 +149,33 @@ def test_program_material_blueprints_preserve_all_twelve_business_requests() -> 
     )
     assert price["material_requirements"][0]["metric_ids"]
     assert price["material_requirements"][1]["metric_ids"] == []
+
+
+def test_program_keeps_derived_s2_and_s3_outputs_out_of_s1_material_axes() -> None:
+    program = json.loads(PROGRAM.read_text(encoding="utf-8"))
+    requests = {
+        row["request_id"]: row for row in program["evidence_requests"]
+    }
+    visible_products = {
+        product
+        for request in requests.values()
+        for product in request["product_intents"]
+    }
+
+    assert "unit-volume sensitivity range" not in visible_products
+    assert "bounded PVM scenario" not in visible_products
+    assert "supplier cost share sensitivity" not in visible_products
+    assert "observable invalidation threshold" not in visible_products
+    assert program["material_scope_blueprint"]["stage_scope"] == (
+        "observable_source_inputs_only"
+    )
+
+    handoffs = program["stage_output_handoffs"]
+    assert {row["handoff_id"] for row in handoffs["S2"]} == {
+        "DELL-S2-UNIT-VOLUME-RANGE",
+        "DELL-S2-PVM-BRIDGE",
+        "DELL-S2-VALUE-POOL-SENSITIVITY",
+    }
+    assert [row["handoff_id"] for row in handoffs["S3"]] == [
+        "DELL-S3-WHAT-WOULD-CHANGE"
+    ]

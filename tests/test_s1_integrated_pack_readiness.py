@@ -11,13 +11,19 @@ from retrieval.integrated_pack_readiness import (
 from retrieval.query_plan import canonical_digest
 
 
-def _inputs(*, typed_state: str = "resolved", review_state: str = "accepted"):
+def _inputs(
+    *,
+    typed_state: str = "resolved",
+    review_state: str = "accepted",
+    metric_coverage_mode: str = "all_of",
+):
     requirement = {
         "requirement_id": "MER::ONE",
         "facet_id": "reported_results",
         "role": "direct",
         "target_entities": ["DELL"],
         "metric_ids": ["revenue"],
+        "metric_coverage_mode": metric_coverage_mode,
         "product_ids": ["AI server revenue contribution"],
     }
     fact_result = {
@@ -196,9 +202,16 @@ def _inputs(*, typed_state: str = "resolved", review_state: str = "accepted"):
     return product, evidence_pack, review_plan, polarity_plan, anchors
 
 
-def _compile(*, typed_state: str = "resolved", review_state: str = "accepted"):
+def _compile(
+    *,
+    typed_state: str = "resolved",
+    review_state: str = "accepted",
+    metric_coverage_mode: str = "all_of",
+):
     product, pack, review, polarity, anchors = _inputs(
-        typed_state=typed_state, review_state=review_state
+        typed_state=typed_state,
+        review_state=review_state,
+        metric_coverage_mode=metric_coverage_mode,
     )
     return compile_integrated_requirement_readiness(
         product_projection=product,
@@ -227,6 +240,39 @@ def test_s2_typed_gap_keeps_qualitative_research_consumable_but_not_complete() -
     assert row["research_consumable"] is True
     assert row["fully_satisfied"] is False
     assert row["numeric_coverage"]["metrics"][0]["owning_stage"] == "S2"
+
+
+def test_retrieval_context_metric_keeps_observed_s2_gap_without_blocking_s1() -> None:
+    result = _compile(
+        typed_state="typed_gap",
+        metric_coverage_mode="retrieval_context_only",
+    )
+    row = result["requirements"][0]
+    assert row["numeric_coverage"]["state"] == "retrieval_context_only"
+    assert row["numeric_coverage"]["observed_state"] == "typed_gap"
+    assert row["numeric_coverage"]["numeric_fact_authority"] is False
+    assert row["integrated_state"] == "ready_s1_numeric_context_only"
+    assert row["research_consumable"] is True
+    assert row["fully_satisfied"] is True
+
+
+def test_retrieval_context_metric_does_not_hide_numeric_conflict() -> None:
+    product, pack, review, polarity, anchors = _inputs(
+        typed_state="typed_conflict",
+        metric_coverage_mode="retrieval_context_only",
+    )
+    result = compile_integrated_requirement_readiness(
+        product_projection=product,
+        evidence_pack=pack,
+        review_plan=review,
+        polarity_plan=polarity,
+        anchor_catalog=anchors,
+        recorded_at="2026-08-18T16:30:00+08:00",
+    )
+    row = result["requirements"][0]
+    assert row["numeric_coverage"]["observed_state"] == "typed_conflict"
+    assert row["integrated_state"] == "not_ready_s2_numeric_conflict"
+    assert row["research_consumable"] is False
 
 
 def test_bounded_evidence_is_consumable_with_claim_boundary() -> None:

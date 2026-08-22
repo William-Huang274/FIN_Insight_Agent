@@ -157,10 +157,17 @@ def _binding_gate(
 def _numeric_coverage(
     *, requirement: Mapping[str, Any], request_result: Mapping[str, Any]
 ) -> dict[str, Any]:
+    coverage_mode = str(requirement.get("metric_coverage_mode") or "all_of")
+    _require(
+        coverage_mode in {"all_of", "any_of", "retrieval_context_only"},
+        "integrated_readiness_metric_coverage_mode_invalid",
+    )
     metric_ids = tuple(str(value) for value in requirement.get("metric_ids") or ())
     if not metric_ids:
         return {
             "state": "not_requested",
+            "metric_coverage_mode": coverage_mode,
+            "observed_state": "not_requested",
             "metric_count": 0,
             "resolved_metric_count": 0,
             "typed_gap_metric_count": 0,
@@ -237,20 +244,28 @@ def _numeric_coverage(
     gaps = states.count("typed_gap")
     conflicts = states.count("typed_conflict")
     if resolved == len(states):
-        overall = "resolved"
+        observed_state = "resolved"
     elif conflicts:
-        overall = "typed_conflict"
+        observed_state = "typed_conflict"
     elif gaps == len(states):
-        overall = "typed_gap"
+        observed_state = "typed_gap"
     else:
-        overall = "partial"
+        observed_state = "partial"
+    if coverage_mode == "retrieval_context_only":
+        overall = "retrieval_context_only"
+    elif coverage_mode == "any_of" and resolved:
+        overall = "resolved_any_of"
+    else:
+        overall = observed_state
     return {
         "state": overall,
+        "metric_coverage_mode": coverage_mode,
+        "observed_state": observed_state,
         "metric_count": len(metric_ids),
         "resolved_metric_count": resolved,
         "typed_gap_metric_count": gaps,
         "metrics": metrics,
-        "numeric_fact_authority": overall == "resolved",
+        "numeric_fact_authority": overall in {"resolved", "resolved_any_of"},
     }
 
 
@@ -632,11 +647,20 @@ def compile_integrated_requirement_readiness(
         if not natural_ready:
             integrated_state = "not_ready_s1_evidence"
             research_consumable = False
-        elif numeric_state in {"typed_conflict", "partial"}:
+        elif (
+            numeric_state == "typed_conflict"
+            or numeric.get("observed_state") == "typed_conflict"
+        ):
+            integrated_state = "not_ready_s2_numeric_conflict"
+            research_consumable = False
+        elif numeric_state == "partial":
             integrated_state = "not_ready_s2_numeric_conflict_or_partial"
             research_consumable = False
         elif numeric_state == "typed_gap":
             integrated_state = "qualitative_ready_s2_numeric_gap"
+            research_consumable = True
+        elif numeric_state == "retrieval_context_only":
+            integrated_state = "ready_s1_numeric_context_only"
             research_consumable = True
         elif derived_state == "accepted_bounded":
             integrated_state = "ready_with_claim_boundary"
@@ -644,7 +668,7 @@ def compile_integrated_requirement_readiness(
         else:
             integrated_state = "ready"
             research_consumable = True
-        fully_satisfied = integrated_state == "ready"
+        fully_satisfied = integrated_state in {"ready", "ready_s1_numeric_context_only"}
         body = {
             "requirement_id": requirement_id,
             "request_id": request_id,

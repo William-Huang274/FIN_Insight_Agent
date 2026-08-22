@@ -1263,3 +1263,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - formal readiness 已绑定 clean／synced `def34f06...ed1`，public result digest 为 `767b15a0...d15e`，状态为 `completed_development_readiness_with_residual_requests`。本次 0 模型／网络／Provider／promotion。
 - 下一步只针对四类残余轴执行 external ladder，dynamic single-unit authority 继续为 false。
 - 详细记录见 `docs/worklog/fin_0_1_3_s1/065_dell_reviewed_evidence_mapping_and_integrated_readiness_residual.md`。
+
+### 2026-08-23 DELL residual external ladder R3 零调用门
+
+- R3 只处理 formal readiness 剩余的四类可观察轴：价格、Dell 台数／份额、GPU 释放时点、Dell—供应商双边关系。
+- 计划编译为 28 个 R1 digest replay＋22 个 fresh provider query，覆盖官方、行业跟踪、公共采购、渠道和可信上下文；spec digest `b941e5c8...ebe0`，compiled plan digest `4f9b44ec...6ad1`。
+- 定向测试 17 通过，当前 0 网络／Provider／模型／promotion。下一步必须 clean commit／push 后才能执行唯一一次 R3 live。
+- R3 结果仍需新 CandidateDecision／Evidence Gate；付费墙、搜索未命中、抓取失败、解析失败和真实未披露不得混为一个 gap。
+- 详细记录见 `docs/worklog/fin_0_1_3_s1/066_dell_residual_external_ladder_r3_plan_and_zero_call_gate.md`。

@@ -1,0 +1,182 @@
+{
+  "schema_version": "fin_ia_s1_external_source_evidence_adjudication_plan_v1_0",
+  "status": "approved_internal_engineering_evidence_gate",
+  "recorded_at": "2026-08-23",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "plan_id": "FIN-0.1.3-S1-DELL-EXTERNAL-CAPTURE-REPLAY-EVIDENCE-ADJUDICATION-V1.0",
+  "compiled_result_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r3-capture-replay/candidate_review_result.json",
+  "compiled_result_sha256": "36c9dec77f886d2ad01ea1fbb483e817297f873a5ba737d1af3a575b0c174d68",
+  "compiled_result_digest": "8bbf3ce62fcaf338aa4c97513f5f4609a077ce27f8abb151b1dd6992bebc086a",
+  "predecessor_pack_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r2/successor/pack.json",
+  "predecessor_pack_sha256": "cc82c6094d442c31e0fe6403059b77d5e943a496cadf5018d4969ecf66e6a9b1",
+  "predecessor_pack_payload_digest": "82ea1defba982308afb8af94cce85ce4e00167ded17602199e90f01215d06129",
+  "qualified_human_review": false,
+  "S1_qualification_authorized": false,
+  "product_publication_authorized": false,
+  "gap_ids_satisfied": [],
+  "decisions": [
+    {
+      "candidate_id": "PUBCAND::1710B853BEAD4B266F97",
+      "candidate_digest": "8471f1f521457a7a1c193411dcee2610eca928b4e4aa9bee9f2a3f6a74b7425f",
+      "source_object_digest": "24cc0b30bf9f5a101e4e96d9748558ec91fb947a12e593defa125ecabfa80490",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "capacity_inputs_execution",
+          "facet_ids": [
+            "gpu_demand_supply_tightness",
+            "upstream_capacity_context"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-SUPPLY-CHAIN"
+          ],
+          "business_meaning_zh": "NVIDIA 官方称 Blackwell 销售强劲且云端 GPU 已售罄，为研究当期 GPU 供给紧张与需求强度提供上游旁证。",
+          "claim_boundary_zh": "只能证明 NVIDIA 对自身 Blackwell 与云端 GPU 供需的表述；不证明 Dell 获得的配额、交付日期、销量或利润。"
+        },
+        {
+          "slot_id": "counterevidence_and_what_would_change",
+          "facet_ids": [
+            "upstream_supply_constraint_counterevidence"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-COUNTEREVIDENCE"
+          ],
+          "business_meaning_zh": "用于反驳上游供给已经全面宽松、Dell 可以无约束转化全部需求的叙事。",
+          "claim_boundary_zh": "售罄是供应商层面的状态，不能自动推导 Dell 当前缺货或订单延迟。"
+        }
+      ],
+      "numeric_use_boundary_zh": "没有可晋升为 Dell NumericFact 的价格、数量、产能或配额数字。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::8473A6E258960B2E6805",
+      "candidate_digest": "2e7baca604338bebfb1c6db14fed346193b6d5ac08ec8371cf6c5a683a1833e2",
+      "source_object_digest": "c26946be84d302006be9aac072acf4575434164d32b7f4668c123792878e3719",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "counterevidence_and_what_would_change",
+          "facet_ids": [
+            "industry_high_base_slowdown",
+            "demand_digestion_counterevidence"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PVM-BRIDGE",
+            "DELL-PROP-COUNTEREVIDENCE"
+          ],
+          "business_meaning_zh": "TrendForce 指出 AI server 经历高增后面临较高比较基数，可作为增长率自然回落和需求消化的行业反方。",
+          "claim_boundary_zh": "行业高基数不证明 Dell 订单、收入或 backlog 已经下滑，也不能替代公司当期披露。"
+        }
+      ],
+      "numeric_use_boundary_zh": "行业增速表述只可作为情景与反方背景，不得写成 Dell 的同比增长或销量预测。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-demand-pull-forward-digestion"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::CBE17FDBC89C190261FE",
+      "candidate_digest": "9503386f8b741291c59042ff916d316be197941dde81efd4072a01474e6786a0",
+      "source_object_digest": "8d1590cd8e033ba740a66f684ad4a825744123f54adbd2674a8eac7cf9c22a3b",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "capacity_inputs_execution",
+          "facet_ids": [
+            "gpu_production_ramp",
+            "upstream_capacity_context"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-SUPPLY-CHAIN"
+          ],
+          "business_meaning_zh": "NVIDIA 官方称 Blackwell Ultra 正在全速爬坡且需求强劲，说明上游产品代际的量产状态和需求背景。",
+          "claim_boundary_zh": "产品爬坡不是 Dell 获配量、到货节奏、良率或收入转化证明。"
+        }
+      ],
+      "numeric_use_boundary_zh": "该定性表述不生成产能、良率、供货量或 Dell NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-capacity-release-timing",
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::D8AD485D18B7706CDE69",
+      "candidate_digest": "af9c7dcfc9f872dd3c1065afa6e9bbb9f644c5bcfc415e1b40fd3610853b1168",
+      "source_object_digest": "5850f1d651b220e48f5ad86cf4ca5a6bf60161d456b2bbb7b39f63ea2541b43f",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "relationship_attribution",
+          "facet_ids": [
+            "supplier_names_dell",
+            "public_product_availability_timing"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-SUPPLY-RELATIONSHIP"
+          ],
+          "business_meaning_zh": "NVIDIA 官方点名 Dell 为 L40S 服务器制造商，并给出当时的公开可用时点，建立一条可验证的历史产品关系。",
+          "claim_boundary_zh": "这是 2023 年 L40S 产品关系，不证明当前 Blackwell/HBM 的 Dell 专属配额、合同条款或交付状态。"
+        }
+      ],
+      "numeric_use_boundary_zh": "产品可用时点不是供货数量或分配比例，不生成 NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::FCD05653731E078696B7",
+      "candidate_digest": "a1abef7c6325285570528f5fe4e0380fdfa6cb2cb50182db334f5ceff26eb8d2",
+      "source_object_digest": "9b0f90dfae6a5f295baf41ae8e09c412c63190ccc8b9429a4334c72c7d0ad572",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "industry_ai_server_volume_scenario",
+            "bear_base_bull_triggers"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-UNIT-VOLUME"
+          ],
+          "business_meaning_zh": "TrendForce 给出 2025 年全球 AI server 出货的基准、下行和上行情景及对应触发因素，可供 S2 构造行业量的区间。",
+          "claim_boundary_zh": "行业情景不能换算成 Dell 台数、份额、收入或已实现增长。"
+        },
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "industry_volume_sensitivity_input"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PVM-BRIDGE"
+          ],
+          "business_meaning_zh": "行业量情景可作为 PVM 敏感性中的 volume 外部边界。",
+          "claim_boundary_zh": "必须与 Dell reported revenue 分离，且不得与假设 ASP 相乘后冒充 Dell 实际销量或收入。"
+        }
+      ],
+      "numeric_use_boundary_zh": "百分比只能标注为 TrendForce 的行业预测情景；S2 可将其登记为可复算 scenario input，但不得授予 Dell exact authority。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-price-volume-mix-bridge",
+        "dell-gap-pricing-units",
+        "dell-gap-demand-pull-forward-digestion"
+      ],
+      "gap_ids_satisfied": []
+    }
+  ],
+  "plan_digest": "aa12c7c6451453b66f526fa66f9258764295fcd9b11d7d77dbd8c5448d5478d9"
+}

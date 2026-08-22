@@ -187,6 +187,16 @@ def _numeric_coverage(
     states: list[str] = []
     for metric_id in metric_ids:
         rows = typed_results.get(metric_id) or []
+        if not rows and coverage_mode == "retrieval_context_only":
+            metric_row = {
+                "metric_id": metric_id,
+                "state": "not_routed_retrieval_context",
+                "fact_count": 0,
+                "numeric_fact_authority": False,
+            }
+            states.append(metric_row["state"])
+            metrics.append(metric_row)
+            continue
         _require(
             len(rows) == 1,
             f"integrated_readiness_typed_result_cardinality:{metric_id}",
@@ -243,12 +253,15 @@ def _numeric_coverage(
     resolved = states.count("resolved")
     gaps = states.count("typed_gap")
     conflicts = states.count("typed_conflict")
+    not_routed = states.count("not_routed_retrieval_context")
     if resolved == len(states):
         observed_state = "resolved"
     elif conflicts:
         observed_state = "typed_conflict"
     elif gaps == len(states):
         observed_state = "typed_gap"
+    elif not_routed == len(states):
+        observed_state = "not_routed_retrieval_context"
     else:
         observed_state = "partial"
     if coverage_mode == "retrieval_context_only":
@@ -264,6 +277,7 @@ def _numeric_coverage(
         "metric_count": len(metric_ids),
         "resolved_metric_count": resolved,
         "typed_gap_metric_count": gaps,
+        "not_routed_retrieval_context_metric_count": not_routed,
         "metrics": metrics,
         "numeric_fact_authority": overall in {"resolved", "resolved_any_of"},
     }

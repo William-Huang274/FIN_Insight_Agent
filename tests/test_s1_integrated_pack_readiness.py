@@ -256,6 +256,30 @@ def test_retrieval_context_metric_keeps_observed_s2_gap_without_blocking_s1() ->
     assert row["fully_satisfied"] is True
 
 
+def test_retrieval_context_metric_may_remain_unrouted_without_becoming_s2_gap() -> None:
+    product, pack, review, polarity, anchors = _inputs(
+        metric_coverage_mode="retrieval_context_only",
+    )
+    product["request_results"][0]["typed_fact_results"] = []
+    result = compile_integrated_requirement_readiness(
+        product_projection=product,
+        evidence_pack=pack,
+        review_plan=review,
+        polarity_plan=polarity,
+        anchor_catalog=anchors,
+        recorded_at="2026-08-18T16:30:00+08:00",
+    )
+    row = result["requirements"][0]
+    assert row["numeric_coverage"]["state"] == "retrieval_context_only"
+    assert (
+        row["numeric_coverage"]["observed_state"]
+        == "not_routed_retrieval_context"
+    )
+    assert row["numeric_coverage"]["not_routed_retrieval_context_metric_count"] == 1
+    assert row["integrated_state"] == "ready_s1_numeric_context_only"
+    assert row["research_consumable"] is True
+
+
 def test_retrieval_context_metric_does_not_hide_numeric_conflict() -> None:
     product, pack, review, polarity, anchors = _inputs(
         typed_state="typed_conflict",

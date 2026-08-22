@@ -512,3 +512,11 @@ Writer 随后在 `thinking=max` 下把 16,000 completion 中 15,436 token 用于
 R2 证明 12 条请求能够进入当前检索 Runtime，但其材料门仍错误混入下游产物：销量敏感性、PVM 情景和供应商成本敏感性属于 S2；可观察的结论失效阈值属于 S3。它们不得被要求由 S1 来源直接“找到”，也不得用 `boundary_only` 文案填充。
 
 当前程序升级为 v1.1：S1 只对公司、期间、来源、关系和命题绑定的可观察输入负责；S2 通过显式 handoff 生成区间、桥和情景；S3 根据判断与反方设定 WWC。R2 保持不可变诊断，v1.1 只允许一次 AI-free R3。R3 后仍须对 43 条 Evidence 完成 reviewed mapping／polarity 和 integrated readiness，方可晋升 current Pack；不得因结构修复提前调用模型。
+
+### 7B. Reviewed Evidence mapping 与 residual readiness（2026-08-23）
+
+43 条 Evidence 已按 R3 的 20 个 MaterialRequirement 做逐轴 provisional review。20 条中 13 条 research-consumable，12 个请求中 8 个 research-consumable；价格、Dell 台数／份额代理、GPU 释放时间和 Dell—供应商双边关系仍未就绪。该结果说明 S1 的剩余工作已经从“继续增加网页数量”收敛为四类业务信息面。
+
+`retrieval_context_only` 指标允许在 S1 没有对应的 S2 typed route，但必须显式记录 `not_routed_retrieval_context`；它既不是 NumericFact，也不是 S2 typed gap。typed conflict 仍阻断。下一门是 formal clean-bound readiness materialization 和上述四类 residual external ladder；未获得 Evidence 前不得 current promotion 或调用动态 Agent。
+
+若免费公开源仍无法形成直接销量／份额，必须先审查可替代输入充分集，而不是永久要求所有路径同时满足：直接销量、第三方份额＋行业量、或收入＋可观察价格区间＋配置输入均可能成为 S2 unit-range 的不同合法输入路径。该合同调整必须由 residual live 证据触发，不得预先降低门槛。

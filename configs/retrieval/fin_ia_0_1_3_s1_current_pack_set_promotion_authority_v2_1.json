@@ -1,0 +1,75 @@
+{
+  "schema_version": "fin_ia_current_evidence_pack_set_promotion_authority_v2_0",
+  "authority_id": "FIN-0.1.3-S1-CURRENT-PACK-SET-PROMOTION-DELL-R2",
+  "recorded_at": "2026-08-23",
+  "status": "fresh_zero_call_current_pack_set_promotion_authorized",
+  "clean_implementation": {
+    "branch": "codex/fin013-s1-retrieval-vertical-slice",
+    "git_commit": "83bd1d4cb8a7407994c381cb3e772c2d898b4388",
+    "working_tree_required_clean_before_execution": true,
+    "pushed_head_required": true
+  },
+  "predecessor_contract": {
+    "current_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_4.json",
+    "current_result_sha256": "75c1de22764001648d2e816425064357f9a686983bd65c8e963d1a09dbbdc5f6",
+    "current_workspace_ref": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_4.json",
+    "current_workspace_sha256": "9508fa526d6ce7167eab8286d289982034b7082a1fbf05ba7f8897d0f88e15e6",
+    "current_anchor_catalog_ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_3.json",
+    "current_anchor_catalog_sha256": "96db85f61e1f11b6c52686be70882163de329068470d91445f5665cdaa0751ce",
+    "current_binding_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_5.json",
+    "current_binding_policy_sha256": "c8693434d37607bd4caeb1e7a0f0c1d92b63119d429935c1203259729880b0a2",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "c9e71c17736568defc201772b8ac8c7dda825efb484b28d5096bc23b5b8fd622",
+    "zero_call_proof_ref": "configs/retrieval/fin_ia_0_1_3_s1_current_pack_set_promotion_zero_call_proof_v2_2.json",
+    "zero_call_proof_sha256": "3a95b911f3553a52882a4730a1b2a0a2d801a76d3b14299c485781eb1b727549",
+    "runner_ref": "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
+    "runner_sha256": "79fe3b0540bceac50698826424505d28c4bd53d8e6c770091c1e9a6b4d6c040e"
+  },
+  "replacement_chains": [
+    {
+      "case_key": "DELL",
+      "successor_result_chain": [
+        {
+          "result_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_external_source_product_evidence_successor_result_v1_0.json",
+          "result_sha256": "49ced9015323fc295ae330fc2641ea16e4bd7917314d5e5fb5264dbb9784c5b1"
+        },
+        {
+          "result_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_external_capture_replay_product_evidence_successor_result_v1_0.json",
+          "result_sha256": "e7fc078c55885bd9362445cb008c4b33944c097825b651a29d83280500d67a58"
+        }
+      ],
+      "readiness_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_6.json",
+      "readiness_result_sha256": "2a563e7ba12b9bcdb58447054cf1152d7247916168053f7d6701bb04daa84e9e"
+    }
+  ],
+  "retained_case_keys": [
+    "MU",
+    "NVDA",
+    "ORCL",
+    "ASML",
+    "ANET"
+  ],
+  "execution_budget": {
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "retries": 0,
+    "current_pointer_mutation": "replace_registered_pack_anchor_workspace_readiness_and_binding_once",
+    "private_object_copy": "forbidden",
+    "raw_source_publication": "forbidden"
+  },
+  "output_contract": {
+    "result_id": "FIN-0.1.3-S1-CURRENT-PACK-SET-PROMOTION-DELL-R2-RESULT",
+    "composed_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_5.json",
+    "composed_workspace_ref": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_5.json",
+    "composed_anchor_catalog_ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_5.json",
+    "binding_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_6.json",
+    "binding_receipt_ref": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_7.json",
+    "public_execution_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_current_pack_set_promotion_result_v2_1.json",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R31",
+    "binding_policy_id": "FIN-0.1.3-S1-CURRENT-PRODUCT-RUNTIME-BINDING-V1.6"
+  },
+  "known_boundary": "This authority permits exactly one zero-model, zero-network atomic promotion of the complete DELL 29-to-43-to-48 Evidence successor chain while retaining MU, NVDA and all holdouts by digest. It does not grant qualified-human review, close any residual gap, create NumericFact authority, qualify S1, authorize S3 research, publication or release.",
+  "result_digest": "cd5af9e59c3f481d193df6d126d000d37f89c5090928307e3ee0314964aa3a60"
+}

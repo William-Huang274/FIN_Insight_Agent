@@ -1289,3 +1289,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 同一 R3 capture 的零网络诊断由 `15 objects／15 proposals／supply 0` 改善为 `26／24／11`，date unresolved `26→22`、parse rejected `8→1`。这只是未物化诊断，不能用于 current promotion。
 - runner 已新增 predecessor／plan／capture digest-bound replay 模式，下一步只执行一次 clean-bound formal replay。工程门为定向 20、全仓 1040 passed，active baseline `200／8／5／28／0`，7,628-file secret scan／0；0 网络／Provider／模型／promotion。
 - 详细记录见 `docs/worklog/fin_0_1_3_s1/067_dell_external_capture_replay_compiler_repair_gate.md`。
+
+### 2026-08-23 DELL external capture replay R1 正式结果
+
+- clean／synced `999798ef...d678` 上完成 `dell-external-residual-r3-capture-replay-r1`，绑定 R3 predecessor terminal、plan digest 与 49 份 response capture SHA；0 网络／Provider／模型／retry／promotion。
+- 60 条原文路线重新编译为 26 个 source object／24 条 Candidate；15 条路线状态或 proposal 数发生变化。按命题为 demand 3、price 1、PVM 5、supply 11、unit 2、value 2。
+- public result digest=`20968c76...c57c`，private terminal SHA-256=`bdbde35c...85b7`。供应链候选恢复不等于供应分配事实；价格、Dell 台数／份额和精确 allocation 仍未关闭。
+- 下一门是逐条 CandidateDecision＋Evidence Gate；current Pack、S2 successor、EvidencePackReadiness 和动态单单元权限仍为 false。
+- 详细记录见 `docs/worklog/fin_0_1_3_s1/068_dell_external_capture_replay_r1_result.md`。

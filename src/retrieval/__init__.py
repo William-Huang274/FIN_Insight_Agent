@@ -2,6 +2,18 @@
 
 from .candidate_retriever import load_candidate_corpus, retrieve_query_plan
 from .contracts import load_financial_research_kernel
+from .external_source_ladder import (
+    EXTERNAL_FETCH_SHORTLIST_SCHEMA_VERSION,
+    EXTERNAL_LOCATOR_BUNDLE_SCHEMA_VERSION,
+    EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION,
+    SAFE_PROVIDER_REQUEST_SCHEMA_VERSION,
+    ExternalSourceLadderError,
+    build_external_fetch_shortlist,
+    canonicalize_external_url,
+    compile_safe_provider_request,
+    normalize_tencent_search_response,
+    validate_external_source_ladder_plan,
+)
 from .financial_objects import (
     attach_legacy_aliases,
     compile_parsed_sec_capture,
@@ -15,9 +27,13 @@ from .official_pdf_objects import compile_official_pdf_document
 from .public_context_source import (
     PUBLIC_CONTEXT_CANDIDATE_SCHEMA_VERSION,
     PUBLIC_HTML_SOURCE_OBJECT_SCHEMA_VERSION,
+    PUBLIC_PDF_SOURCE_OBJECT_SCHEMA_VERSION,
+    PUBLICATION_DATE_RECEIPT_SCHEMA_VERSION,
     PublicContextSourceError,
+    adjudicate_publication_date_from_capture,
     compile_public_context_candidate,
     compile_public_html_source_object,
+    compile_public_pdf_source_object,
 )
 from .public_context_evidence import (
     PUBLIC_CONTEXT_EVIDENCE_PLAN_SCHEMA_VERSION,
@@ -46,9 +62,13 @@ __all__ = [
     "project_market_snapshot",
     "PUBLIC_CONTEXT_CANDIDATE_SCHEMA_VERSION",
     "PUBLIC_HTML_SOURCE_OBJECT_SCHEMA_VERSION",
+    "PUBLIC_PDF_SOURCE_OBJECT_SCHEMA_VERSION",
+    "PUBLICATION_DATE_RECEIPT_SCHEMA_VERSION",
     "PublicContextSourceError",
+    "adjudicate_publication_date_from_capture",
     "compile_public_context_candidate",
     "compile_public_html_source_object",
+    "compile_public_pdf_source_object",
     "PUBLIC_CONTEXT_EVIDENCE_PLAN_SCHEMA_VERSION",
     "PUBLIC_CONTEXT_EVIDENCE_RESULT_SCHEMA_VERSION",
     "PublicContextEvidenceError",
@@ -61,4 +81,14 @@ __all__ = [
     "evaluate_source_claim_use",
     "tokenize",
     "validate_source_object_manifest",
+    "EXTERNAL_FETCH_SHORTLIST_SCHEMA_VERSION",
+    "EXTERNAL_LOCATOR_BUNDLE_SCHEMA_VERSION",
+    "EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION",
+    "SAFE_PROVIDER_REQUEST_SCHEMA_VERSION",
+    "ExternalSourceLadderError",
+    "build_external_fetch_shortlist",
+    "canonicalize_external_url",
+    "compile_safe_provider_request",
+    "normalize_tencent_search_response",
+    "validate_external_source_ladder_plan",
 ]

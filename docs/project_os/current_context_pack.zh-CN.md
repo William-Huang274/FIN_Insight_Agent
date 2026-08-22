@@ -1187,3 +1187,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 运行保留 192 条 Candidate，但 12/12 请求均未达到 `material_scope_ready` 或 `material_set_complete`；CandidateDecision、Evidence promotion、EvidencePackReadiness、public-information gap 与动态单单元 authority 继续为 false。候选数量不得冒充研究材料充分性。
 - 内源已经找到 Dell AI orders／revenue／backlog、传统服务器 ASP 与 richer mix、Dell parts-supply 约束、Micron HBM 扩产、ISG margin、营运资金与渠道反方等可审材料；仍缺 AI 服务器可观察价格／配置、销量区间、PVM 桥、具体客户部署、Dell 专属供应分配／释放时点和跨供应商价值池。
 - `candidate_coverage_state=complete` 仅表示本地候选路线完成，不能关闭命题缺口。下一项必须执行完整外源来源阶梯，再做逐候选裁决、Evidence Gate、current Pack 和 S2 successor；不能提前调用 DeepSeek。
+
+### 2026-08-22 DELL 完整外源阶梯 clean execution gate
+
+- 七命题现各自具有官方主体／客户／供应商、行业跟踪、产品／采购／渠道／部署、可信媒体／公开分析与反方四类查询，共 28 个 relation-aware query units。每条查询显式绑定 expected business output、speaker/source target 和 relationship direction。
+- Tencent WSA Standard 只作为 paid locator；安全请求先于传输保存，原始响应先于解析保存，provider snippet／score／date 没有 Evidence、引用或 NumericFact 权威。Task-specific TokenBudgetBasis 依据 28 查询、最多 48 原文抓取、七命题 materiality 与 no-progress stop 冻结；成本／延迟不是删题依据。
+- 只有受审来源注册表中的 HTTPS locator 可进入公平 shortlist；敏感参数、credential URL、localhost、私网地址和未知域名 fail closed。原文通过 capture-first 下载，0 retry；每个失败保留 typed receipt，不能被解释为 no result。
+- HTML 与 PDF 均可编译为 speaker／case／date／relationship-bound source object；原始来源日期才有 temporal authority，provider 日期只能佐证。两种对象经过同一 Evidence Gate；deterministic candidate proposal 仍然不是 Evidence。
+- 提交前工程门为定向 `16 passed`、全仓 `1012 passed`、compileall、active baseline、7,599-file secret scan／0；0 Provider、0 网络、0 模型。下一项仅允许 clean commit／push 和一个 `dell-external-ladder-r1` formal attempt；其后才做 CandidateDecision、Evidence Gate、current Pack、S2 successor 与 EvidencePackReadiness。动态单单元 authority 继续为 false。

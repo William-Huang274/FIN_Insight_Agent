@@ -1,0 +1,362 @@
+{
+  "schema_version": "fin_ia_s1_external_source_ladder_plan_v1_0",
+  "plan_id": "FIN-0.1.3-S1-DELL-EXTERNAL-SOURCE-LADDER-R1",
+  "status": "approved_exact_once_external_locator_and_original_capture_plan",
+  "recorded_at": "2026-08-22",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "program_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_0.json",
+  "internal_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_internal_execution_result_v1_0.json",
+  "source_use_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_source_strength_and_claim_use_policy_v1_0.json",
+  "purpose": "Execute all four reviewed public-source tiers for every DELL proposition family, fetch selected originals, and preserve candidate-only material for independent CandidateDecision and Evidence Gate.",
+  "execution_budget": {
+    "provider_call_ceiling": 28,
+    "original_fetch_ceiling": 48,
+    "original_fetch_ceiling_per_query": 2,
+    "original_fetch_ceiling_per_domain": 5,
+    "result_ceiling_per_call": 10,
+    "provider_timeout_seconds": 30,
+    "original_fetch_timeout_seconds": 45,
+    "original_fetch_byte_ceiling": 12582912,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0
+  },
+  "token_budget_basis": {
+    "model_tokens": 0,
+    "node_purpose": "Use a paid locator and public original-source captures to test the seven DELL proposition families against the complete approved external-source ladder.",
+    "input_scale_basis": "Seven proposition families, four source tiers per family, 28 relationship-aware queries, at most ten locators per query and at most 48 original captures.",
+    "required_outputs": [
+      "safe request capture for every provider call",
+      "raw provider response capture and normalized locator bundle",
+      "fair original-fetch shortlist covering propositions and tiers",
+      "capture-first original responses or typed transport failures",
+      "original-source publication-date receipts",
+      "candidate-only source objects and proposition bindings"
+    ],
+    "schema_burden": "Every locator remains discovery-only; every original is bound to case, proposition, source class, speaker, relationship direction, date and immutable capture before review.",
+    "materiality_and_quality_risk": "Wrong-company, post-as-of, provider-snippet, weak-source or wrong-relationship material could otherwise become false financial evidence or a false public-information gap.",
+    "comparable_run_evidence": "Historical Tencent standard testing returned zero of six target documents with weak queries, while relationship-aware Firecrawl testing reached five of six targets but lacked date authority. The current plan therefore upgrades the query intent and original-source controls before judging provider coverage.",
+    "reasoning_profile": "Deterministic, AI-free query and adjudication controls; no generation model.",
+    "stop_and_truncation_behavior": "Execute each query once with no retry; preserve partial results and failures; stop original fetching at fair per-query, per-domain and global ceilings; never convert an unexecuted or failed route into a public-information gap.",
+    "cost_and_latency_are_secondary_constraints": true
+  },
+  "query_units": [
+    {
+      "query_unit_id": "DELL-EXT-PRICE-OFFICIAL",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "tier_id": "official_subject_regulator_customer_supplier",
+      "query": "Dell PowerEdge XE9680 XE9685 AI server official configuration GPU HBM storage networking price quote 2025 2026",
+      "site": "dell.com",
+      "expected_output_ids": ["configuration_taxonomy", "official_configuration_components"],
+      "relationship_directions": ["issuer_product_to_research_subject"],
+      "speaker_or_source_targets": ["Dell Technologies"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-PRICE-INDUSTRY",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "tier_id": "industry_association_market_tracking",
+      "query": "Dell AI server PowerEdge configuration mix average selling price market tracker 2025 2026 IDC TrendForce Omdia",
+      "site": "",
+      "expected_output_ids": ["observable_price_proxy", "period_bound_mix_evidence"],
+      "relationship_directions": ["industry_tracker_to_research_subject"],
+      "speaker_or_source_targets": ["IDC", "TrendForce", "Omdia"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-PRICE-PRODUCT",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge XE9680 XE9685 public procurement channel quote price configuration GPU 2025 2026",
+      "site": "",
+      "expected_output_ids": ["observable_price_range", "saleable_configuration_examples"],
+      "relationship_directions": ["channel_or_procurement_to_research_subject"],
+      "speaker_or_source_targets": ["CDW", "SHI", "Insight", "public procurement"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-PRICE-COUNTER",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "Dell AI server pricing configuration mix ASP analysis PowerEdge XE9680 counterevidence 2025 2026",
+      "site": "",
+      "expected_output_ids": ["price_proxy_limitations", "configuration_substitution_counterevidence"],
+      "relationship_directions": ["trusted_context_to_research_subject"],
+      "speaker_or_source_targets": ["Reuters", "ServeTheHome", "Blocks and Files", "The Register"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-VOLUME-OFFICIAL",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "tier_id": "official_subject_regulator_customer_supplier",
+      "query": "Dell Technologies AI server shipments units orders backlog official earnings 2025 2026",
+      "site": "dell.com",
+      "expected_output_ids": ["reported_unit_or_shipment_evidence", "issuer_volume_boundary"],
+      "relationship_directions": ["issuer_disclosure_to_research_subject"],
+      "speaker_or_source_targets": ["Dell Technologies"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-VOLUME-INDUSTRY",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "tier_id": "industry_association_market_tracking",
+      "query": "2025 2026 AI server shipments units Dell market share IDC TrendForce Omdia server tracker",
+      "site": "",
+      "expected_output_ids": ["industry_volume", "market_share_bridge"],
+      "relationship_directions": ["industry_volume_to_research_subject_proxy"],
+      "speaker_or_source_targets": ["IDC", "TrendForce", "Omdia"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-VOLUME-DEPLOYMENT",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell AI server deployment quantity PowerEdge XE9680 procurement contract units cluster 2025 2026",
+      "site": "",
+      "expected_output_ids": ["customer_deployment_units", "bounded_shipment_proxy"],
+      "relationship_directions": ["customer_deployment_to_research_subject_proxy"],
+      "speaker_or_source_targets": ["public procurement", "government", "research institutions", "customers"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-VOLUME-COUNTER",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "Dell AI server shipment volume market share unit estimate 2025 2026 counterevidence backlog conversion",
+      "site": "",
+      "expected_output_ids": ["volume_sensitivity_bounds", "backlog_conversion_counterevidence"],
+      "relationship_directions": ["trusted_context_to_volume_proxy"],
+      "speaker_or_source_targets": ["Reuters", "CRN", "ServeTheHome", "Blocks and Files"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-PVM-OFFICIAL",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "tier_id": "official_subject_regulator_customer_supplier",
+      "query": "Dell Infrastructure Solutions Group revenue growth average selling price richer configuration mix AI servers official 2025 2026",
+      "site": "dell.com",
+      "expected_output_ids": ["revenue_anchor", "issuer_mix_commentary"],
+      "relationship_directions": ["issuer_financial_to_research_subject"],
+      "speaker_or_source_targets": ["Dell Technologies"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-PVM-INDUSTRY",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "tier_id": "industry_association_market_tracking",
+      "query": "AI server market revenue growth versus unit shipment growth ASP configuration mix 2025 2026 IDC TrendForce",
+      "site": "",
+      "expected_output_ids": ["industry_price_volume_divergence", "mix_proxy"],
+      "relationship_directions": ["industry_bridge_to_research_subject_proxy"],
+      "speaker_or_source_targets": ["IDC", "TrendForce", "Omdia"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-PVM-PRODUCT",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge AI server public price configuration quantity contract value XE9680 2025 2026",
+      "site": "",
+      "expected_output_ids": ["price_proxy", "unit_proxy", "replicable_pvm_inputs"],
+      "relationship_directions": ["transaction_proxy_to_research_subject"],
+      "speaker_or_source_targets": ["public procurement", "CDW", "SHI", "Insight"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-PVM-COUNTER",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "Dell AI server revenue growth price volume mix analysis configuration ASP units counterevidence",
+      "site": "",
+      "expected_output_ids": ["pvm_alternative_explanations", "incomparable_period_warning"],
+      "relationship_directions": ["trusted_analysis_to_pvm_hypothesis"],
+      "speaker_or_source_targets": ["Reuters", "ServeTheHome", "CRN", "The Register"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-DEMAND-OFFICIAL",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "tier_id": "official_subject_regulator_customer_supplier",
+      "query": "Microsoft Oracle Meta customer AI infrastructure deployment Dell PowerEdge official partnership orders 2025 2026",
+      "site": "microsoft.com",
+      "expected_output_ids": ["customer_deployment_evidence", "budget_durability"],
+      "relationship_directions": ["customer_demand_to_research_subject_context"],
+      "speaker_or_source_targets": ["Microsoft", "Oracle", "Meta", "Dell customers"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-DEMAND-INDUSTRY",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "tier_id": "industry_association_market_tracking",
+      "query": "enterprise AI server demand deployments budgets backlog durability pull forward 2025 2026 IDC Omdia",
+      "site": "",
+      "expected_output_ids": ["demand_durability_context", "pull_forward_risk"],
+      "relationship_directions": ["industry_demand_to_research_subject_context"],
+      "speaker_or_source_targets": ["IDC", "Omdia", "TrendForce"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-DEMAND-DEPLOYMENT",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "customer deployed Dell PowerEdge XE9680 AI cluster case study procurement 2025 2026",
+      "site": "",
+      "expected_output_ids": ["named_customer_deployment", "deployment_scale_or_timeline"],
+      "relationship_directions": ["customer_deployment_to_research_subject"],
+      "speaker_or_source_targets": ["customers", "government procurement", "research institutions"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-DEMAND-COUNTER",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "Dell AI server backlog orders cancellation conversion demand slowdown pull forward customer concentration 2025 2026",
+      "site": "",
+      "expected_output_ids": ["demand_counterevidence", "conversion_and_concentration_risk"],
+      "relationship_directions": ["trusted_counterevidence_to_research_subject"],
+      "speaker_or_source_targets": ["Reuters", "CRN", "Blocks and Files", "The Register"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-SUPPLY-OFFICIAL",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "tier_id": "official_subject_regulator_customer_supplier",
+      "query": "NVIDIA Micron TSMC official GPU HBM advanced packaging capacity supply release Dell AI server 2025 2026",
+      "site": "nvidia.com",
+      "expected_output_ids": ["upstream_capacity", "supply_release_timing"],
+      "relationship_directions": ["upstream_supplier_to_research_subject_context"],
+      "speaker_or_source_targets": ["NVIDIA", "Micron", "TSMC"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-SUPPLY-INDUSTRY",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "tier_id": "industry_association_market_tracking",
+      "query": "2025 2026 GPU HBM CoWoS advanced packaging capacity yield supply allocation AI server TrendForce SEMI",
+      "site": "",
+      "expected_output_ids": ["industry_capacity_timeline", "yield_and_bottleneck_context"],
+      "relationship_directions": ["industry_supply_to_research_subject_context"],
+      "speaker_or_source_targets": ["TrendForce", "SEMI", "Omdia"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-SUPPLY-DEPLOYMENT",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge AI server delivery lead time GPU HBM networking storage availability channel 2025 2026",
+      "site": "",
+      "expected_output_ids": ["delivery_lead_time", "component_availability_proxy"],
+      "relationship_directions": ["channel_availability_to_research_subject_proxy"],
+      "speaker_or_source_targets": ["CDW", "SHI", "Insight", "Dell channel"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-SUPPLY-COUNTER",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "Dell AI server supply constraints GPU HBM CoWoS networking storage allocation delay counterevidence 2025 2026",
+      "site": "",
+      "expected_output_ids": ["supply_counterevidence", "dell_allocation_boundary"],
+      "relationship_directions": ["trusted_supply_context_to_research_subject"],
+      "speaker_or_source_targets": ["Reuters", "Blocks and Files", "ServeTheHome", "The Register"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-VALUE-OFFICIAL",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "tier_id": "official_subject_regulator_customer_supplier",
+      "query": "Dell Infrastructure Solutions Group operating income gross margin AI server NVIDIA Micron supplier margins official 2025 2026",
+      "site": "dell.com",
+      "expected_output_ids": ["issuer_margin_anchor", "issuer_value_capture_commentary"],
+      "relationship_directions": ["issuer_financial_to_value_pool"],
+      "speaker_or_source_targets": ["Dell Technologies"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-VALUE-INDUSTRY",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "tier_id": "industry_association_market_tracking",
+      "query": "AI server bill of materials GPU HBM networking storage cost share OEM margin value pool 2025 2026",
+      "site": "",
+      "expected_output_ids": ["component_cost_proxy", "oem_value_pool_range_inputs"],
+      "relationship_directions": ["industry_cost_structure_to_research_subject_proxy"],
+      "speaker_or_source_targets": ["TrendForce", "Omdia", "industry analysts"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-VALUE-PRODUCT",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge XE9680 bill of materials GPU HBM networking storage price channel quote 2025 2026",
+      "site": "",
+      "expected_output_ids": ["configuration_cost_proxy", "transaction_price_proxy"],
+      "relationship_directions": ["product_configuration_to_value_pool_proxy"],
+      "speaker_or_source_targets": ["Dell", "NVIDIA", "Micron", "channel partners"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-VALUE-COUNTER",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "Dell AI server profitability margin value captured by NVIDIA HBM suppliers OEM analysis counterevidence 2025 2026",
+      "site": "",
+      "expected_output_ids": ["supplier_oem_value_split", "causal_attribution_boundary"],
+      "relationship_directions": ["trusted_analysis_to_value_pool_hypothesis"],
+      "speaker_or_source_targets": ["Reuters", "ServeTheHome", "Blocks and Files", "public analysts"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-COUNTER-OFFICIAL",
+      "proposition_id": "DELL-PROP-COUNTEREVIDENCE-WWC",
+      "tier_id": "official_subject_regulator_customer_supplier",
+      "query": "Dell Technologies AI servers risk backlog cancellation supply constraint working capital gross margin export controls official 2025 2026",
+      "site": "dell.com",
+      "expected_output_ids": ["issuer_counterevidence", "observable_risk_indicators"],
+      "relationship_directions": ["issuer_risk_to_research_subject"],
+      "speaker_or_source_targets": ["Dell Technologies"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-COUNTER-INDUSTRY",
+      "proposition_id": "DELL-PROP-COUNTEREVIDENCE-WWC",
+      "tier_id": "industry_association_market_tracking",
+      "query": "AI server demand downside oversupply HBM GPU packaging constraint enterprise spending risk 2025 2026 IDC TrendForce",
+      "site": "",
+      "expected_output_ids": ["industry_counterevidence", "time_bound_invalidation_indicator"],
+      "relationship_directions": ["industry_counterevidence_to_research_subject"],
+      "speaker_or_source_targets": ["IDC", "TrendForce", "Omdia"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-COUNTER-DEPLOYMENT",
+      "proposition_id": "DELL-PROP-COUNTEREVIDENCE-WWC",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell AI server deployment delayed cancelled procurement PowerEdge lead time inventory discount 2025 2026",
+      "site": "",
+      "expected_output_ids": ["deployment_counterevidence", "channel_inventory_or_discount_signal"],
+      "relationship_directions": ["deployment_or_channel_counterevidence_to_research_subject"],
+      "speaker_or_source_targets": ["customers", "public procurement", "channel partners"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-COUNTER-TRUSTED",
+      "proposition_id": "DELL-PROP-COUNTEREVIDENCE-WWC",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "Dell AI server thesis risks orders backlog margins cash flow supply demand competition counterevidence what would change 2025 2026",
+      "site": "",
+      "expected_output_ids": ["cross_source_counterevidence", "what_would_change_conditions"],
+      "relationship_directions": ["trusted_counterevidence_to_research_subject"],
+      "speaker_or_source_targets": ["Reuters", "CRN", "ServeTheHome", "Blocks and Files", "The Register"]
+    }
+  ],
+  "source_domain_registry": [
+    {"host": "dell.com", "speaker_entity": "Dell Technologies Inc.", "speaker_ticker": "DELL", "source_class": "issuer_regulator_or_government_primary", "source_role": "issuer_product_or_ir_primary", "relationship_directions": ["issuer_to_research_subject"]},
+    {"host": "delltechnologies.com", "speaker_entity": "Dell Technologies Inc.", "speaker_ticker": "DELL", "source_class": "issuer_regulator_or_government_primary", "source_role": "issuer_ir_primary", "relationship_directions": ["issuer_to_research_subject"]},
+    {"host": "microsoft.com", "speaker_entity": "Microsoft Corporation", "speaker_ticker": "MSFT", "source_class": "named_counterparty_or_standards_primary", "source_role": "customer_or_hyperscaler_primary", "relationship_directions": ["customer_demand_to_research_subject_context"]},
+    {"host": "oracle.com", "speaker_entity": "Oracle Corporation", "speaker_ticker": "ORCL", "source_class": "named_counterparty_or_standards_primary", "source_role": "customer_or_hyperscaler_primary", "relationship_directions": ["customer_demand_to_research_subject_context"]},
+    {"host": "about.fb.com", "speaker_entity": "Meta Platforms, Inc.", "speaker_ticker": "META", "source_class": "named_counterparty_or_standards_primary", "source_role": "hyperscaler_primary", "relationship_directions": ["hyperscaler_demand_to_research_subject_context"]},
+    {"host": "nvidia.com", "speaker_entity": "NVIDIA Corporation", "speaker_ticker": "NVDA", "source_class": "named_counterparty_or_standards_primary", "source_role": "upstream_gpu_primary", "relationship_directions": ["upstream_supplier_to_research_subject_context"]},
+    {"host": "micron.com", "speaker_entity": "Micron Technology, Inc.", "speaker_ticker": "MU", "source_class": "named_counterparty_or_standards_primary", "source_role": "upstream_hbm_primary", "relationship_directions": ["upstream_supplier_to_research_subject_context"]},
+    {"host": "tsmc.com", "speaker_entity": "Taiwan Semiconductor Manufacturing Company Limited", "speaker_ticker": "TSM", "source_class": "named_counterparty_or_standards_primary", "source_role": "upstream_foundry_packaging_primary", "relationship_directions": ["upstream_supplier_to_research_subject_context"]},
+    {"host": "hpe.com", "speaker_entity": "Hewlett Packard Enterprise Company", "speaker_ticker": "HPE", "source_class": "named_counterparty_or_standards_primary", "source_role": "competitor_primary", "relationship_directions": ["competitor_to_research_subject_context"]},
+    {"host": "supermicro.com", "speaker_entity": "Super Micro Computer, Inc.", "speaker_ticker": "SMCI", "source_class": "named_counterparty_or_standards_primary", "source_role": "competitor_primary", "relationship_directions": ["competitor_to_research_subject_context"]},
+    {"host": "idc.com", "speaker_entity": "International Data Corporation", "speaker_ticker": null, "source_class": "official_market_or_industry_primary", "source_role": "industry_market_tracker", "relationship_directions": ["industry_to_research_subject_context"]},
+    {"host": "trendforce.com", "speaker_entity": "TrendForce", "speaker_ticker": null, "source_class": "official_market_or_industry_primary", "source_role": "industry_market_tracker", "relationship_directions": ["industry_to_research_subject_context"]},
+    {"host": "omdia.tech.informa.com", "speaker_entity": "Omdia", "speaker_ticker": null, "source_class": "official_market_or_industry_primary", "source_role": "industry_market_tracker", "relationship_directions": ["industry_to_research_subject_context"]},
+    {"host": "semi.org", "speaker_entity": "SEMI", "speaker_ticker": null, "source_class": "official_market_or_industry_primary", "source_role": "industry_association", "relationship_directions": ["industry_supply_to_research_subject_context"]},
+    {"host": "sam.gov", "speaker_entity": "U.S. General Services Administration", "speaker_ticker": null, "source_class": "issuer_regulator_or_government_primary", "source_role": "public_procurement_primary", "relationship_directions": ["public_procurement_to_research_subject"]},
+    {"host": "usaspending.gov", "speaker_entity": "U.S. Department of the Treasury", "speaker_ticker": null, "source_class": "issuer_regulator_or_government_primary", "source_role": "public_procurement_primary", "relationship_directions": ["public_procurement_to_research_subject"]},
+    {"host": "cdw.com", "speaker_entity": "CDW Corporation", "speaker_ticker": "CDW", "source_class": "named_counterparty_or_standards_primary", "source_role": "channel_product_primary", "relationship_directions": ["channel_to_research_subject_context"]},
+    {"host": "shi.com", "speaker_entity": "SHI International Corp.", "speaker_ticker": null, "source_class": "named_counterparty_or_standards_primary", "source_role": "channel_product_primary", "relationship_directions": ["channel_to_research_subject_context"]},
+    {"host": "insight.com", "speaker_entity": "Insight Enterprises, Inc.", "speaker_ticker": "NSIT", "source_class": "named_counterparty_or_standards_primary", "source_role": "channel_product_primary", "relationship_directions": ["channel_to_research_subject_context"]},
+    {"host": "reuters.com", "speaker_entity": "Reuters", "speaker_ticker": null, "source_class": "trusted_media_industry_association_or_public_analyst_context", "source_role": "trusted_media_context", "relationship_directions": ["trusted_context_to_research_subject"]},
+    {"host": "crn.com", "speaker_entity": "CRN", "speaker_ticker": null, "source_class": "trusted_media_industry_association_or_public_analyst_context", "source_role": "channel_media_context", "relationship_directions": ["trusted_context_to_research_subject"]},
+    {"host": "servethehome.com", "speaker_entity": "ServeTheHome", "speaker_ticker": null, "source_class": "trusted_media_industry_association_or_public_analyst_context", "source_role": "technical_product_context", "relationship_directions": ["trusted_context_to_research_subject"]},
+    {"host": "blocksandfiles.com", "speaker_entity": "Blocks & Files", "speaker_ticker": null, "source_class": "trusted_media_industry_association_or_public_analyst_context", "source_role": "industry_media_context", "relationship_directions": ["trusted_context_to_research_subject"]},
+    {"host": "theregister.com", "speaker_entity": "The Register", "speaker_ticker": null, "source_class": "trusted_media_industry_association_or_public_analyst_context", "source_role": "technology_media_context", "relationship_directions": ["trusted_context_to_research_subject"]}
+  ],
+  "authority": {
+    "provider_result_is_locator_only": true,
+    "provider_date_is_not_authority": true,
+    "original_capture_required": true,
+    "candidate_is_not_evidence": true,
+    "candidate_decision_and_evidence_gate_required": true,
+    "public_information_gap_authorized": false,
+    "S1_qualification_authorized": false,
+    "dynamic_single_unit_authorized": false
+  },
+  "plan_digest": "782e810a8f097c5f265c03633fa404db8a492ea490024121bb34823fb202284a"
+}

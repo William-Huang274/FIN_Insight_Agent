@@ -12,6 +12,7 @@ from retrieval.public_context_evidence import (
 from retrieval.public_context_source import (
     PUBLIC_CONTEXT_CANDIDATE_SCHEMA_VERSION,
     PUBLIC_HTML_SOURCE_OBJECT_SCHEMA_VERSION,
+    PUBLIC_PDF_SOURCE_OBJECT_SCHEMA_VERSION,
 )
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 
@@ -165,3 +166,49 @@ def test_public_context_cannot_close_dell_gap() -> None:
             compiled_result=compiled,
             plan=mutated,
         )
+
+
+def test_public_pdf_source_can_reach_same_bounded_evidence_gate() -> None:
+    compiled, plan = _fixture()
+    source = compiled["source_objects"][0]
+    source_body = dict(source)
+    source_body.pop("source_object_digest")
+    source_body["schema_version"] = PUBLIC_PDF_SOURCE_OBJECT_SCHEMA_VERSION
+    pdf_source = {
+        **source_body,
+        "source_object_digest": canonical_digest(source_body),
+    }
+    candidate = compiled["candidates"][0]
+    candidate_body = dict(candidate)
+    candidate_body.pop("candidate_digest")
+    candidate_body["source_object_digest"] = pdf_source["source_object_digest"]
+    pdf_candidate = {
+        **candidate_body,
+        "candidate_digest": canonical_digest(candidate_body),
+    }
+    compiled_body = dict(compiled)
+    compiled_body.pop("result_digest")
+    compiled_body["source_objects"] = [pdf_source]
+    compiled_body["candidates"] = [pdf_candidate]
+    pdf_compiled = {
+        **compiled_body,
+        "result_digest": canonical_digest(compiled_body),
+    }
+    plan_body = deepcopy(plan)
+    plan_body.pop("plan_digest")
+    plan_body["compiled_result_digest"] = pdf_compiled["result_digest"]
+    plan_body["decisions"][0]["candidate_digest"] = pdf_candidate["candidate_digest"]
+    plan_body["decisions"][0]["source_object_digest"] = pdf_source[
+        "source_object_digest"
+    ]
+    pdf_plan = {**plan_body, "plan_digest": canonical_digest(plan_body)}
+
+    result = adjudicate_public_context_evidence(
+        compiled_result=pdf_compiled,
+        plan=pdf_plan,
+    )
+
+    assert result["evidence_qualified"] is True
+    assert result["accepted_evidence_items"][0]["source_record_id"] == source[
+        "source_id"
+    ]

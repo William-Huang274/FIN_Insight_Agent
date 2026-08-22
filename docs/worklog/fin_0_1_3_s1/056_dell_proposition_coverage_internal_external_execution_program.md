@@ -88,3 +88,9 @@
 这轮同时纠正一个汇总口径：`candidate_coverage_state=complete` 只表示当前本地候选路线完成，不表示研究命题材料完整。外源阶梯必须由 proposition／material requirement 和 CandidateDecision 后的真实残余缺口触发，不能因为候选数达到上限而跳过。
 
 当前 authority 仍全部为 false：CandidateDecision、Evidence promotion、EvidencePackReadiness、public-information gap 与动态单单元均未签发。下一项保持原顺序，先执行完整外源阶梯，再做 CandidateDecision／Evidence Gate 和 S2 successor。
+
+## 完整外源阶梯 clean gate
+
+外源阶梯已按七命题各四类来源编译为 28 个关系感知查询，不再复用历史“弱关键词＋provider 摘要”方案。Tencent SearchPro 仅定位原始 URL；受审域名、公平预算、capture-first、原文日期、网页／PDF source object、candidate proposal 与 Evidence Gate 已接成同一条链。搜索摘要、排序分数和 provider 日期均不具 Evidence 权限。
+
+提交前已通过定向 16、全仓 1012、compileall、active baseline 和 7,599-file secret scan。此处仍是 engineering gate，0 网络、0 Provider、0 模型；正式 R1 必须绑定接下来的 clean／pushed commit。详细实现和边界见 057。

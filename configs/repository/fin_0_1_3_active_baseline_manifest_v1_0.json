@@ -15,6 +15,7 @@
       "scripts/data_retrieval/run_s1d_source_intake.py",
       "scripts/data_retrieval/run_s1d_official_pdf_successor.py",
       "scripts/data_retrieval/run_dell_proposition_coverage_internal.py",
+      "scripts/data_retrieval/run_dell_external_source_ladder.py",
       "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
       "scripts/data_retrieval/materialize_s1_current_product_readiness.py",
       "scripts/data_retrieval/materialize_s1_source_route_truth_successor.py",
@@ -92,7 +93,7 @@
   ],
   "observed": {
     "frontend_files": 8,
-    "python_files": 198,
+    "python_files": 200,
     "runtime_detector_files": 5,
     "runtime_resources": 28
   },
@@ -124,6 +125,7 @@
     "scripts/data_retrieval/materialize_s1c_requalified_qrels.py",
     "scripts/data_retrieval/materialize_s1c_runtime_query_atoms.py",
     "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
+    "scripts/data_retrieval/run_dell_external_source_ladder.py",
     "scripts/data_retrieval/run_dell_proposition_coverage_internal.py",
     "scripts/data_retrieval/run_s1_candidate_ranking.py",
     "scripts/data_retrieval/run_s1_human_operability_preflight.py",

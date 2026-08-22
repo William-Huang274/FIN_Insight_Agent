@@ -7,6 +7,7 @@ from typing import Any, Mapping, Sequence
 from .public_context_source import (
     PUBLIC_CONTEXT_CANDIDATE_SCHEMA_VERSION,
     PUBLIC_HTML_SOURCE_OBJECT_SCHEMA_VERSION,
+    PUBLIC_PDF_SOURCE_OBJECT_SCHEMA_VERSION,
 )
 from .query_plan import canonical_digest
 
@@ -132,7 +133,10 @@ def adjudicate_public_context_evidence(
             and candidate.get("schema_version")
             == PUBLIC_CONTEXT_CANDIDATE_SCHEMA_VERSION
             and source.get("schema_version")
-            == PUBLIC_HTML_SOURCE_OBJECT_SCHEMA_VERSION
+            in {
+                PUBLIC_HTML_SOURCE_OBJECT_SCHEMA_VERSION,
+                PUBLIC_PDF_SOURCE_OBJECT_SCHEMA_VERSION,
+            }
             and str(candidate.get("candidate_digest") or "")
             == str(decision.get("candidate_digest") or "")
             and str(candidate.get("source_object_digest") or "")

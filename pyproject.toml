@@ -27,6 +27,9 @@ complex-pdf = [
   "pypdfium2>=5.7.1",
   "rapidocr-onnxruntime>=1.4.4",
 ]
+external-search = [
+  "tencentcloud-sdk-python>=3.1.162",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

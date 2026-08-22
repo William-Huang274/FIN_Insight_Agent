@@ -10,8 +10,10 @@ import pytest
 from ingestion.official_source_capture import CAPTURE_SCHEMA_VERSION
 from retrieval.public_context_source import (
     PublicContextSourceError,
+    adjudicate_publication_date_from_capture,
     compile_public_context_candidate,
     compile_public_html_source_object,
+    compile_public_pdf_source_object,
 )
 from retrieval.source_use_policy import SourceUsePolicy
 
@@ -172,3 +174,80 @@ def test_public_context_rejects_post_as_of_source() -> None:
             capture_ref="capture://late",
             capture_sha256="d" * 64,
         )
+
+
+def test_publication_date_uses_original_page_not_provider_telemetry() -> None:
+    html = """
+    <html><head>
+      <meta property="article:published_time" content="2026-04-15T09:00:00Z">
+    </head><body><article><p>Original source body.</p></article></body></html>
+    """
+    receipt = adjudicate_publication_date_from_capture(
+        response_capture=_capture(html, url="https://example.com/research"),
+        research_as_of="2026-08-06",
+        provider_date_telemetry="2026-06-30",
+    )
+
+    assert receipt["status"] == "resolved_from_original_source"
+    assert receipt["selected_publication_date"] == "2026-04-15"
+    assert receipt["provider_date_is_authority"] is False
+    assert receipt["provider_date_corroborates_selected"] is False
+
+
+def test_publication_date_does_not_promote_provider_date_without_original() -> None:
+    receipt = adjudicate_publication_date_from_capture(
+        response_capture=_capture(
+            "<html><body><article><p>No original date.</p></article></body></html>",
+            url="https://example.com/research",
+        ),
+        research_as_of="2026-08-06",
+        provider_date_telemetry="2026-04-15",
+    )
+
+    assert receipt["status"] == "unresolved_original_publication_date"
+    assert receipt["selected_publication_date"] is None
+
+
+def test_public_pdf_compiler_emits_candidate_only_segments(monkeypatch) -> None:
+    class _FakePage:
+        def extract_text(self) -> str:
+            return (
+                "Dell AI server configuration and supply context remain speaker bound. "
+                * 16
+            )
+
+    class _FakeReader:
+        def __init__(self, _stream) -> None:
+            self.pages = [_FakePage(), _FakePage()]
+            self.metadata = {"/Title": "Captured public PDF"}
+
+    monkeypatch.setattr(
+        "retrieval.public_context_source.PdfReader",
+        _FakeReader,
+    )
+    body = b"%PDF-1.7\nsynthetic bounded fixture"
+    response_capture = {
+        **_capture("unused", url="https://example.com/research.pdf"),
+        "headers": {"content-type": "application/pdf"},
+        "body_base64": base64.b64encode(body).decode("ascii"),
+        "body_sha256": hashlib.sha256(body).hexdigest(),
+        "body_bytes": len(body),
+    }
+    source_spec = {
+        **_source_spec(),
+        "source_url": "https://example.com/research.pdf",
+        "source_type": "PUBLIC_ANALYST_PDF",
+        "segment_character_target": 800,
+    }
+
+    source = compile_public_pdf_source_object(
+        response_capture=response_capture,
+        source_spec=source_spec,
+        capture_ref="capture://pdf",
+        capture_sha256="e" * 64,
+    )
+
+    assert source["status"] == "captured_public_source_compiled_not_evidence"
+    assert source["parse_quality_receipt"]["ocr_executed"] is False
+    assert source["segments"]
+    assert all(row["candidate_not_evidence"] for row in source["segments"])

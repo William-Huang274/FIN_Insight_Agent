@@ -70,3 +70,21 @@
 - current Evidence Pack successor 和受影响 S2 派生／区间／情景；
 - EvidencePackReadiness 与动态单单元 authority；
 - 任意自然模型、网络、付费调用、Writer 或产品发布。
+
+## DELL AI-free 内源正式 R1 结果
+
+正式 attempt `dell-proposition-internal-r1` 已绑定 clean commit `b73c6ce2...`、R30 Runtime registry 与程序 digest，并分别保存完整私有 projection 和公开汇总。运行实际执行 12 条原子请求、12 条查询 lane、SQL／NumericFact、BM25 与一次 Qwen CUDA／FP16 batch；0 模型、0 网络、0 付费调用。公开结果见 `configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_internal_execution_result_v1_0.json`。
+
+结果不能读成“192 条资料已经就绪”。192 是 12 个请求各保留 16 条、合计 192 条待审 Candidate；12/12 的 `material_scope_ready=false`、`material_set_complete=false`，且没有任何 Candidate 获得 Evidence 或数值权威。具体业务表现为：
+
+- 价格／配置命中了 Dell 对传统服务器 ASP 上升和 richer configuration 的披露，但没有形成 AI 服务器配置价格区间；
+- 销量命中了 AI orders／revenue／backlog，仍没有可复算的销量或行业出货基数；
+- PVM 命中 richer mix 和公司财务表，却没有把 AI 价格、数量和组合拆成可复算桥；
+- 客户需求命中 Dell backlog／pipeline 与 Microsoft AI 基建投入，但缺少具体客户部署和 Dell 订单归属；
+- 供应链命中 Dell “capacity 不是问题、parts supply 才是问题”、Micron HBM 扩产及上游风险，但没有 Dell 专属 GPU／HBM／封装分配和释放时点；
+- 价值池命中 Dell ISG margin 与上下游毛利信息，但没有 Dell 与具体供应商之间的价值分配；
+- 反方命中大单营运资金、渠道压力、HBM 需求转弱和出口管制，已比通用风险更具体，但仍需与主命题逐项对证。
+
+这轮同时纠正一个汇总口径：`candidate_coverage_state=complete` 只表示当前本地候选路线完成，不表示研究命题材料完整。外源阶梯必须由 proposition／material requirement 和 CandidateDecision 后的真实残余缺口触发，不能因为候选数达到上限而跳过。
+
+当前 authority 仍全部为 false：CandidateDecision、Evidence promotion、EvidencePackReadiness、public-information gap 与动态单单元均未签发。下一项保持原顺序，先执行完整外源阶梯，再做 CandidateDecision／Evidence Gate 和 S2 successor。

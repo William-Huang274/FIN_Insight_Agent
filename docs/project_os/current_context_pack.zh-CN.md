@@ -1180,3 +1180,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Writer 后续合同恢复为 `DeliverableBrief + BilingualStylePack + VisualRequest + DocumentModel`：中英文分别写作、报告结构随任务伸缩、图表由 verified S2／Graph 数据确定性渲染、材料不足退回 Lead。现有 protected report 只证明历史 L1／引用控制，不证明该产品能力。
 - 当前顺序已更正为 S1 命题级内外源就绪与 S2 重编译在前，DELL 动态单元在后；动态单元必须只从用户问题、身份、as-of 和 typed tools 出发并真实产生 EvidenceRequest／PlanDelta。随后才是动态多单元、Writer、MU／NVDA／异质留出和产品验收。
 - 本次仅做历史与权威文档再对齐，0 模型、0 网络、0 付费调用、0 runtime 代码变更。详细记录见 `docs/worklog/fin_0_1_3_s1/055_product_retrieval_agent_writer_history_alignment_and_gate_correction.md`。
+
+### 2026-08-22 DELL 七命题 AI-free 内源正式 R1
+
+- current Runtime 产品入口已按 12 条原子 EvidenceRequest 正式执行价格／配置、销量、PVM、客户需求、供应链、价值池和反方七类命题。运行绑定 clean commit `b73c6ce2...`，实际调用 SQL／NumericFact、BM25 与 Qwen CUDA／FP16；0 模型、0 网络、0 付费。
+- 运行保留 192 条 Candidate，但 12/12 请求均未达到 `material_scope_ready` 或 `material_set_complete`；CandidateDecision、Evidence promotion、EvidencePackReadiness、public-information gap 与动态单单元 authority 继续为 false。候选数量不得冒充研究材料充分性。
+- 内源已经找到 Dell AI orders／revenue／backlog、传统服务器 ASP 与 richer mix、Dell parts-supply 约束、Micron HBM 扩产、ISG margin、营运资金与渠道反方等可审材料；仍缺 AI 服务器可观察价格／配置、销量区间、PVM 桥、具体客户部署、Dell 专属供应分配／释放时点和跨供应商价值池。
+- `candidate_coverage_state=complete` 仅表示本地候选路线完成，不能关闭命题缺口。下一项必须执行完整外源来源阶梯，再做逐候选裁决、Evidence Gate、current Pack 和 S2 successor；不能提前调用 DeepSeek。

@@ -1,0 +1,63 @@
+{
+  "authority": {
+    "S1_qualification_claimed": false,
+    "accepted_claims_capture_bound": true,
+    "accepted_evidence_proposition_bound": true,
+    "candidate_is_not_evidence": true,
+    "generation_model_calls": 0,
+    "metric_row_promoted_as_narrative_evidence": false,
+    "network_calls": 0,
+    "numeric_fact_authority": false,
+    "product_publication": false,
+    "qualified_human_review": false
+  },
+  "capture_receipt_count": 14,
+  "case_key": "DELL",
+  "coverage_delta": {
+    "added_or_rebound_evidence_count": 14,
+    "candidate_text_promoted_count": 0,
+    "numeric_authority_granted_count": 0,
+    "numeric_rows_delegated_to_S2": 0,
+    "predecessor_evidence_count": 29,
+    "retired_evidence_count": 0,
+    "successor_evidence_count": 43
+  },
+  "decision_counts": {
+    "accept_for_request_context": 12,
+    "accept_for_requirements": 2,
+    "delegate_to_s2_numeric_authority": 0,
+    "reject_for_current_scope": 0
+  },
+  "external_ladder_binding": {
+    "compiled_result_digest": "8541710db4ac2fbdc37dfb6dca038b2546a24599f426a3e2e8950d64f44685d5",
+    "evidence_result_digest": "7c47890a3d965b66cbc4b2108e37f4598e7e976f89471814fbdd42ef134ba40a",
+    "gap_ids_narrowed": [
+      "dell-gap-demand-pull-forward-digestion",
+      "dell-gap-hbm-supply",
+      "dell-gap-price-volume-mix-bridge",
+      "dell-gap-pricing-asp",
+      "dell-gap-pricing-units",
+      "dell-gap-supplier-capacity-readthrough"
+    ],
+    "gap_ids_satisfied": []
+  },
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r2/successor/result.json",
+  "full_result_sha256": "51a117c1c84a15c1f7547be5c94d310b48d73523a475a0c85778c5e44e612010",
+  "known_boundary": "This tracked projection promotes only capture-bound, source-use-gated external claims into the DELL internal Evidence successor. Industry, channel and media material remains bounded context; no candidate or secondary-source number becomes NumericFact, no residual gap is closed without a separate receipt, and this result does not qualify S1, grant qualified-human review or authorize publication.",
+  "plan_digest": "363d3e8a435412835ecd11498e6fdaf539e4f59c9153ae8ea55ad2fba1c9f53c",
+  "plan_id": "FIN-0.1.3-S1-DELL-EXTERNAL-EVIDENCE-ADJUDICATION-V1.0",
+  "predecessor_pack_payload_digest": "c2fd2bba785e13f0fa9545a6a4668b80a1432c65d4dfd42d17a73b4e3eb91472",
+  "prepared_from_commit": "9d243861061dccd1882808b2cfb84508dec88e09",
+  "private_pack_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r2/successor/pack.json",
+  "private_pack_sha256": "cc82c6094d442c31e0fe6403059b77d5e943a496cadf5018d4969ecf66e6a9b1",
+  "recorded_at": "2026-08-22",
+  "result_digest": "036d8a542c6d27f9dbc13b0c213fe494b7393f19ffc6b2151bedee994701f13e",
+  "review_scope_counts": {
+    "actionable_review_items": 14,
+    "informational_review_items_preserved": 0,
+    "review_items": 14
+  },
+  "schema_version": "fin_ia_s1_product_evidence_successor_public_result_v1_2",
+  "status": "proposition_bound_evidence_successor_materialized",
+  "successor_pack_payload_digest": "82ea1defba982308afb8af94cce85ce4e00167ded17602199e90f01215d06129"
+}

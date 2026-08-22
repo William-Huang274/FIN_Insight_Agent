@@ -2423,9 +2423,14 @@ def test_three_case_current_context_full_fake_has_no_identity_or_graph_pollution
             "ROLE_METHOD::VALUE_CAPTURE::V1"
         )
         assert value_cell["graph_context_pack"]["case_key"] == case_key
-        assert {row["entity_id"] for row in value_cell["graph_context_pack"]["nodes"]} == {
-            subject
+        graph_entity_ids = {
+            row["entity_id"]
+            for row in value_cell["graph_context_pack"]["nodes"]
         }
+        assert subject in graph_entity_ids
+        assert not (
+            ({"DELL", "MU", "NVDA"} - {subject}) & graph_entity_ids
+        )
         assert value_cell["graph_context_pack"]["authority"][
             "archived_graph_rows_used"
         ] is False

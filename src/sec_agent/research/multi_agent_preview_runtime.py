@@ -82,7 +82,7 @@ TRUTH_SPINE_REF = (
 )
 CONSUMER_OVERLAY_REF = (
     "configs/research/"
-    "fin_ia_0_1_3_s3_multi_agent_preview_consumer_overlay_v1_1.json"
+    "fin_ia_0_1_3_s3_multi_agent_preview_consumer_overlay_v1_2.json"
 )
 LEGACY_CONSUMER_OVERLAY_REF = (
     "configs/research/"
@@ -1789,9 +1789,10 @@ def compile_lead_checkpoint_successor_zero_call_projection(
         objective_payload=objective_payload,
         opinions=opinions,
         lead_plan=lead_checkpoint["lead_plan"],
-        # R7/R8 checkpoints predate the v1.1 public-context source overlay.
-        # Revalidation must reproduce their historical model-visible context;
-        # current runs continue to use the v1.1 default above.
+        # R7/R8 checkpoints predate the current public-context source overlay.
+        # Their policy filters later source classes at the consumer boundary,
+        # preserving the historical model-visible context while the Pack keeps
+        # the additional reviewed Evidence for successor consumers.
         consumer_overlay_ref=LEGACY_CONSUMER_OVERLAY_REF,
     )
     readiness = materialization.readiness_summary()

@@ -349,7 +349,7 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R30"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R31"
     )
     assert set(registry.by_id()) == {
         "application.config.current_financial_intent_ontology",
@@ -418,7 +418,7 @@ def test_current_runtime_loads_three_product_evidence_successors() -> None:
     retrieval_principal = ResearchRetrievalPrincipal(
         "current", frozenset({"current_product:read"})
     )
-    expected_counts = {"DELL": 29, "MU": 14, "NVDA": 25}
+    expected_counts = {"DELL": 48, "MU": 14, "NVDA": 25}
     expected_readiness = {
         "DELL": (
             "blocked_by_evidence_admission",

@@ -65,7 +65,10 @@ def project_current_product_evidence_successor_lineage(
         lineage.get("schema_version")
         == CURRENT_COMPOSITION_LINEAGE_SCHEMA_VERSION
         and lineage.get("promotion_kind")
-        == "three_case_proposition_bound_evidence_successor"
+        in {
+            "three_case_proposition_bound_evidence_successor",
+            "subset_proposition_bound_evidence_successor",
+        }
     ):
         return None
 
@@ -74,7 +77,11 @@ def project_current_product_evidence_successor_lineage(
         str(value or "").strip().upper()
         for value in lineage.get("replacement_case_keys") or ()
     }
-    if normalized_case not in replacements:
+    retained = {
+        str(value or "").strip().upper()
+        for value in lineage.get("retained_case_keys") or ()
+    }
+    if normalized_case not in replacements and normalized_case not in retained:
         return None
 
     result_body = deepcopy(result)
@@ -93,6 +100,16 @@ def project_current_product_evidence_successor_lineage(
     )
     successor_result_digest = str(
         replacement_digests.get(normalized_case) or ""
+    )
+    retained_from_predecessor_result_digest = (
+        str(lineage.get("predecessor_result_digest") or "")
+        if normalized_case in retained
+        else ""
+    )
+    lineage_kind = (
+        "replacement_in_current_composition"
+        if normalized_case in replacements
+        else "retained_from_predecessor_composition"
     )
     artifacts = _mapping(
         result.get("pack_artifacts"),
@@ -130,7 +147,7 @@ def project_current_product_evidence_successor_lineage(
         "current_product_successor_authority_invalid",
     )
     _require(
-        successor_result_digest
+        (successor_result_digest or retained_from_predecessor_result_digest)
         and artifact_digest
         and pack_payload_digest
         and readiness.get("schema_version")
@@ -231,6 +248,16 @@ def project_current_product_evidence_successor_lineage(
             "numeric_fact_authorized": False,
             "complete_s1_qualified": False,
             "qualified_human_review_complete": False,
+            **(
+                {
+                    "retained_from_predecessor_result_digest": (
+                        retained_from_predecessor_result_digest
+                    ),
+                    "lineage_kind": lineage_kind,
+                }
+                if normalized_case in retained
+                else {}
+            ),
         },
         "historical_vertical_lineage": historical_lineage,
         "hard_boundaries": {

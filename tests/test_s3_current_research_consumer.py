@@ -56,6 +56,10 @@ FIVE_CELL_POLICY_SUCCESSOR = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_4.json"
 )
+CURRENT_PUBLIC_WEB_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_5.json"
+)
 OBJECTIVE = ROOT / (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json"
@@ -182,6 +186,56 @@ def _current_inputs() -> tuple[dict[str, object], dict[str, object], dict[str, o
         controlled_plan=controlled,
     )
     return evidence_pack, controlled, research_input
+
+
+def test_current_policy_consumes_reviewed_public_web_without_promoting_authority(
+) -> None:
+    paths = resolve_runtime_paths(ROOT)
+    evidence_service = ResearchEvidencePackService.from_runtime_paths(
+        ROOT,
+        paths,
+        load_s1_vertical_slice=False,
+    )
+    evidence_pack = evidence_service.get_case(
+        "DELL", ResearchEvidencePackPrincipal("current", READ)
+    )
+    _, controlled, _ = _current_inputs()
+
+    research_input = compile_current_research_input(
+        policy=_json(CURRENT_PUBLIC_WEB_POLICY),
+        evidence_pack=evidence_pack,
+        controlled_plan=controlled,
+    )
+
+    assert research_input["input_selection_summary"][
+        "reviewed_pack_evidence_count"
+    ] == 48
+    public_web_cards = [
+        row
+        for row in research_input["evidence_cards"]
+        if row["source_type"] == "PUBLIC_WEB"
+    ]
+    assert public_web_cards
+    assert all(
+        (
+            row["evidence_role"] == "issuer_direct_source"
+            and row["source_tier"]
+            == "issuer_regulator_or_government_primary"
+        )
+        or (
+            row["evidence_role"]
+            == "counterparty_or_ecosystem_readthrough"
+            and row["bounded_context_source_receipt"][
+                "causal_attribution_authorized"
+            ]
+            is False
+        )
+        for row in public_web_cards
+    )
+    assert any(
+        row["evidence_role"] == "counterparty_or_ecosystem_readthrough"
+        for row in public_web_cards
+    )
 
 
 @pytest.fixture(scope="module")

@@ -103,6 +103,24 @@ _QUALIFIED_EVIDENCE_ROUTE_DOCUMENT_IDENTIFIERS = (
 _BOUNDED_CONTEXT_SOURCE_TIERS = {
     "named_counterparty_or_standards_primary",
     "official_market_or_industry_primary",
+    "trusted_media_industry_association_or_public_analyst_context",
+}
+_KNOWN_REVIEWED_SOURCE_TYPES = {
+    "10-K",
+    "10-Q",
+    "8-K",
+    "20-F",
+    "40-F",
+    "6-K",
+    "EARNINGS_CALL_TRANSCRIPT",
+    "PUBLIC_WEB",
+}
+_KNOWN_REVIEWED_SOURCE_TIERS = {
+    "primary_sec_filing",
+    "company_authored_unaudited_sec_filing",
+    "official_hosted_management_call_transcript",
+    "issuer_regulator_or_government_primary",
+    *_BOUNDED_CONTEXT_SOURCE_TIERS,
 }
 
 
@@ -179,12 +197,15 @@ def load_current_research_consumer_policy(
         payload.get("reviewed_source_policy"),
         "research_consumer_source_policy_invalid",
     )
+    base_source_policy_fields = {
+        "allowed_source_types",
+        "allowed_source_tiers",
+        "earnings_call_transcript_constraints",
+    }
     _require(
-        set(source_policy)
-        == {
-            "allowed_source_types",
-            "allowed_source_tiers",
-            "earnings_call_transcript_constraints",
+        frozenset(source_policy) in {
+            frozenset(base_source_policy_fields),
+            frozenset(base_source_policy_fields | {"public_web_constraints"}),
         },
         "research_consumer_source_policy_invalid",
     )
@@ -220,6 +241,31 @@ def load_current_research_consumer_policy(
         and "official_hosted_management_call_transcript" in source_tiers,
         "research_consumer_transcript_policy_invalid",
     )
+    public_web = source_policy.get("public_web_constraints")
+    if "PUBLIC_WEB" in source_types:
+        _require(
+            isinstance(public_web, Mapping)
+            and dict(public_web)
+            == {
+                "reviewed_pack_only": True,
+                "direct_evidence_requires_issuer_regulator_or_government_primary": True,
+                "non_issuer_sources_are_bounded_context_only": True,
+                "automatic_numeric_fact_promotion": False,
+                "target_company_causal_authority": False,
+            }
+            and {
+                "issuer_regulator_or_government_primary",
+                "named_counterparty_or_standards_primary",
+                "official_market_or_industry_primary",
+                "trusted_media_industry_association_or_public_analyst_context",
+            }.issubset(set(source_tiers)),
+            "research_consumer_public_web_policy_invalid",
+        )
+    else:
+        _require(
+            public_web is None,
+            "research_consumer_public_web_policy_without_route",
+        )
     raw_cells = payload.get("cell_contracts")
     _require(
         isinstance(raw_cells, list) and len(raw_cells) == 5,
@@ -647,6 +693,31 @@ def _validate_evidence_source(
         and card.get("source_url"),
         "research_consumer_evidence_source_incomplete",
     )
+    if card.get("source_type") == "PUBLIC_WEB":
+        public_web = _mapping(
+            source_policy.get("public_web_constraints"),
+            "research_consumer_public_web_policy_missing",
+        )
+        issuer_direct = card.get("evidence_role") == "issuer_direct_source"
+        _require(
+            card.get("reviewed_anchor_receipt") is not None
+            and public_web.get("reviewed_pack_only") is True
+            and (
+                (
+                    issuer_direct
+                    and card.get("source_tier")
+                    == "issuer_regulator_or_government_primary"
+                )
+                or (
+                    not issuer_direct
+                    and card.get("source_tier")
+                    in _BOUNDED_CONTEXT_SOURCE_TIERS
+                    and card.get("evidence_role")
+                    == "counterparty_or_ecosystem_readthrough"
+                )
+            ),
+            "research_consumer_public_web_boundary_invalid",
+        )
     if card.get("source_tier") in _BOUNDED_CONTEXT_SOURCE_TIERS:
         context_receipt = card.get("bounded_context_source_receipt")
         _require(
@@ -1302,13 +1373,33 @@ def compile_current_research_input(
         )
         if str(material.get("material_ref") or "")
     }
-    evidence_cards = [
+    all_evidence_cards = [
         _evidence_card(
             row,
             case_key=case_key,
             source_materials_by_ref=source_materials_by_ref,
         )
         for row in evidence_pack.get("evidence_items") or ()
+    ]
+    source_policy = policy["reviewed_source_policy"]
+    allowed_source_types = set(source_policy["allowed_source_types"])
+    allowed_source_tiers = set(source_policy["allowed_source_tiers"])
+    for card in all_evidence_cards:
+        if (
+            card["source_type"] not in allowed_source_types
+            or card["source_tier"] not in allowed_source_tiers
+        ):
+            _require(
+                card["source_type"] in _KNOWN_REVIEWED_SOURCE_TYPES
+                and card["source_tier"] in _KNOWN_REVIEWED_SOURCE_TIERS
+                and card.get("reviewed_anchor_receipt") is not None,
+                "research_consumer_reviewed_source_not_allowed",
+            )
+    evidence_cards = [
+        card
+        for card in all_evidence_cards
+        if card["source_type"] in allowed_source_types
+        and card["source_tier"] in allowed_source_tiers
     ]
     _require(evidence_cards, "research_consumer_evidence_missing")
     for card in evidence_cards:

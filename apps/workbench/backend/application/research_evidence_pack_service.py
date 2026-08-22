@@ -1341,6 +1341,19 @@ class ResearchEvidencePackService:
                 "source_text_digest",
             )
         }
+        if str(source.get("source_type") or "") == "PUBLIC_WEB":
+            for key in (
+                "claim_use",
+                "speaker_entity",
+                "proposition_id",
+                "target_company_exact_numeric_authority",
+            ):
+                if key in item:
+                    projected[key] = deepcopy(item[key])
+            if "speaker_entity" in source:
+                projected["source"]["speaker_entity"] = deepcopy(
+                    source["speaker_entity"]
+                )
         projected["source"].update(
             {
                 **excerpt_projection,

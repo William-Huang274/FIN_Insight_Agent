@@ -1,0 +1,49 @@
+{
+  "authority_ref": "configs/retrieval/fin_ia_0_1_3_s1_current_pack_set_promotion_authority_v2_1.json",
+  "before_after": {
+    "DELL": {
+      "evidence_items": [
+        29,
+        48
+      ],
+      "readiness_state": "blocked_by_evidence_admission",
+      "residual_gaps": [
+        14,
+        14
+      ]
+    }
+  },
+  "composed_anchor_catalog_digest": "d99cbc44dc24eced44aae127b3c111eea58796f8f2299ef8b1f5ae7a55748958",
+  "composed_result_digest": "4365dc769b47e56bd6fec2926d95490dfcd62217742449a9c0d1cdaa0dfe8f9f",
+  "composed_workspace_payload_digest": "90600ab5cfdd4a7d98807d984da01ab1a52494c6fd566e730264736efdcbc832",
+  "execution": {
+    "model_calls": 0,
+    "network_calls": 0,
+    "private_object_copy_performed": false,
+    "provider_calls": 0,
+    "raw_source_published": false,
+    "retries": 0
+  },
+  "recorded_at": "2026-08-23",
+  "remaining_boundaries": {
+    "S1_product_acceptance": false,
+    "S3_execution_authorized": false,
+    "complete_research_or_release_claimed": false,
+    "external_blind_qualification_complete": false,
+    "qualified_human_review_complete": false
+  },
+  "replacement_case_keys": [
+    "DELL"
+  ],
+  "result_digest": "3c818c9e18135f8d89e5e47a9e6e314d7339301244d7103be0db67ab27ada529",
+  "result_id": "FIN-0.1.3-S1-CURRENT-PACK-SET-PROMOTION-DELL-R2-RESULT",
+  "retained_case_keys": [
+    "MU",
+    "NVDA",
+    "ORCL",
+    "ASML",
+    "ANET"
+  ],
+  "schema_version": "fin_ia_current_evidence_pack_set_promotion_result_v2_0",
+  "status": "current_pack_subset_promoted"
+}

@@ -702,15 +702,16 @@ def _three_case_context_matrix(
             for row in research_input["cells"]
             if row["cell_id"] == "CELL::value_capture"
         )
+        graph_entity_ids = {
+            row["entity_id"]
+            for row in value_cell["graph_context_pack"]["nodes"]
+        }
         if (
             value_cell["role_method_pack"]["pack_id"]
             != "ROLE_METHOD::VALUE_CAPTURE::V1"
             or value_cell["graph_context_pack"]["case_key"] != case_key
-            or {
-                row["entity_id"]
-                for row in value_cell["graph_context_pack"]["nodes"]
-            }
-            != {subject}
+            or subject not in graph_entity_ids
+            or bool(({"DELL", "MU", "NVDA"} - {subject}) & graph_entity_ids)
             or value_cell["graph_context_pack"]["authority"][
                 "archived_graph_rows_used"
             ]

@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_ia_multi_agent_preview_consumer_overlay_v1_1",
+  "status": "diagnostic_preview_only_not_current_product_pointer",
+  "base_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_5.json",
+  "reviewed_source_policy_append": {
+    "allowed_source_types": [
+      "INDUSTRY_DATA"
+    ],
+    "allowed_source_tiers": [
+      "named_counterparty_or_standards_primary",
+      "official_market_or_industry_primary"
+    ],
+    "bounded_context_only": true,
+    "target_company_numeric_authority": false,
+    "target_company_causal_authority": false
+  },
+  "cell_overrides": [
+    {
+      "cell_id": "CELL::demand_quality",
+      "maximum_evidence_items_override": 20,
+      "append_supplemental_context_slot_ids": []
+    },
+    {
+      "cell_id": "CELL::operating_performance",
+      "maximum_evidence_items_override": 20,
+      "append_supplemental_context_slot_ids": []
+    },
+    {
+      "cell_id": "CELL::value_capture",
+      "maximum_evidence_items_override": 20,
+      "append_supplemental_context_slot_ids": []
+    },
+    {
+      "cell_id": "CELL::cash_conversion",
+      "maximum_evidence_items_override": 20,
+      "append_supplemental_context_slot_ids": []
+    },
+    {
+      "cell_id": "CELL::counterevidence",
+      "maximum_evidence_items_override": 20,
+      "append_supplemental_context_slot_ids": [
+        "relationship_attribution"
+      ]
+    }
+  ],
+  "reason": "The current reviewed Pack contains proposition-bound SEC, transcript and reviewed PUBLIC_WEB evidence. The preview consumer preserves issuer-direct official pages and bounded industry, counterparty, standards, media and analyst context without granting target-company numeric, causal or gap-closure authority. Historical captures remain immutable; current-lineage checkpoint revalidation uses this successor policy.",
+  "authority": {
+    "diagnostic_preview_only": true,
+    "does_not_promote_candidates": true,
+    "does_not_change_numeric_authority": true,
+    "does_not_mutate_current_product_pointer": true
+  }
+}

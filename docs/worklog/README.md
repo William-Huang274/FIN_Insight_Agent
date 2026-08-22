@@ -13,6 +13,12 @@
   - VS5 COST request／reference 一致性人工复核包：`fin_0_1_3_s1/037_s1_vs5_cost_reference_consistency_qualified_human_review_packet.md`
   - VS5 Material Evidence Runtime v1.1 与四案真实回放：`fin_0_1_3_s1/038_s1_vs5_material_evidence_runtime_v11_four_case_replay.md`
   - S1 retrieval-context 容量一致性根因修复：`fin_0_1_3_s1/049_s1_retrieval_context_capacity_consistency_repair.md`
+  - 命题绑定 Evidence successor 与三案晋升：`fin_0_1_3_s1/050_s1_proposition_bound_evidence_successor_and_three_case_promotion.md`
+  - current Pack consumer lineage 统一：`fin_0_1_3_s1/051_s1_current_pack_consumer_lineage_unification.md`
+  - source-route truth 与 gap eligibility Runtime：`fin_0_1_3_s1/052_s1_source_route_truth_and_gap_eligibility_runtime.md`
+  - 三案 source-route truth successor：`fin_0_1_3_s1/053_s1_source_route_truth_three_case_current_successor.md`
+  - 人工可操作、来源对账、Evidence admission 与 blind gate：`fin_0_1_3_s1/054_s1_human_operability_source_asset_reconciliation_admission_and_blind_gate.md`
+  - 产品／内外源／Agent／Writer 历史再对齐与执行门更正：`fin_0_1_3_s1/055_product_retrieval_agent_writer_history_alignment_and_gate_correction.md`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`
@@ -23,3 +29,6 @@
   - 当前五单元 R3 node successor 正式门：`fin_0_1_3_s3/064_dynamic_five_cell_R3_node_successor_formal_gate.md`
   - 当前五单元 R4 strict 非遵循与金融权威失败：`fin_0_1_3_s3/065_dynamic_five_cell_R4_strict_nonconformance_and_financial_authority_failure.md`
   - Agent Runtime／反思／上下文连续性全链审计：`fin_0_1_3_s3/079_agent_runtime_reflection_context_continuity_full_chain_audit.md`
+  - 报告边界密度与来源充分性审计：`fin_0_1_3_s3/117_report_boundary_density_and_source_sufficiency_audit.md`
+  - Actionable Uncertainty、当前数据 Runtime 与 S3 消费：`fin_0_1_3_s3/118_actionable_uncertainty_current_data_runtime_and_s3_consumption.md`
+  - 历史 checkpoint capture-bound 上下文回放：`fin_0_1_3_s3/119_historical_checkpoint_capture_bound_context_replay.md`

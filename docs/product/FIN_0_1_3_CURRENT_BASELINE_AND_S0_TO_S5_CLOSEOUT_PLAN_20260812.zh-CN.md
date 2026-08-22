@@ -489,3 +489,20 @@ Writer 随后在 `thinking=max` 下把 16,000 completion 中 15,436 token 用于
 6. 即使报告成功，也不自动签发 S1、S3、泛化、qualified-human、Workbench publication 或 release。
 
 该安排不是为了省 token，而是按节点职责设置 TokenBudgetBasis：研究判断已经完成并由不可变 checkpoint 保存，终端节点只负责完整、忠实、可见的报告编纂。若这一次 continuation 仍失败，不再重跑全案或继续扩写 DeepSeek 专用分支，转 Writer profile／模型或报告编纂职责的项目级选择。
+
+## 7. 1–7 工程闭环后的当前执行顺序更正（2026-08-22）
+
+历史 4A–4AH 保留为当时各 attempt 的不可变事实，但不再控制当前执行顺序。最新跨对账确认：Actionable Uncertainty 1–7 只完成 current-data 控制面和消费缝；四个公共来源只完成 exact capture-bound context 纵切。两者均不证明完整内外源检索、S2 estimate／scenario、自然反思或 Writer 产品能力。
+
+当前顺序改为：
+
+1. 冻结 DELL 重要命题 CoverageState，并用通用实体／关系／期间／source role／Evidence Slot 表达；
+2. AI-free 执行内部 SQL、对象、原文、BM25、dense 与已配置 graph，逐项记录本地失败；
+3. 执行官方、行业、产品目录、公共采购、渠道报价、客户部署、可信媒体／公开 analyst 与反方来源阶梯；
+4. 完成 CandidateDecision／Evidence Gate，把 accepted Evidence 晋升 current Pack；
+5. 重编译受影响 S2 derived／estimate／scenario／typed gap，并重算 Proposition Coverage／EvidencePackReadiness；
+6. 只运行一个工具驱动的 DELL 动态单单元，证明二轮 EvidenceRequest、Feedback、PlanDelta 和 StopDecision；
+7. 再运行动态多单元／多 Agent；
+8. 实现 Writer `DeliverableBrief / BilingualStylePack / VisualRequest / DocumentModel`，随后做 MU、NVDA、异质留出和人工内容验收。
+
+四来源 successor 的 `36 Evidence / 14 gaps` 尚未进入 current `29 / 14` mainline；DELL 的 16 个 S1、3 个 S2、2 个 S3 Action 仍未自然执行。因此历史 materialized result 中的 `step_8_bounded_natural_multi_agent_vertical_slice` 不构成当前 authority。`S1_qualified_stable=false`、`S3 accepted=false`、Writer product-ready=false、release=false 保持不变。

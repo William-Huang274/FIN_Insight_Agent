@@ -2968,3 +2968,50 @@ S1 不再采用“official-only”作为所有研究内容的统一准入规则�
 当前 DELL／MU／NVDA 三案例已经使用**当前 Runtime registry、当前 reviewed Evidence Pack 和当前私有 candidate replay**完成零模型真实数据接线。分别得到 `29／14／25` 条 reviewed Evidence、`38／16／19` 条 reported facts、`27／13／15` 条 deterministic derived metrics，以及 `21／22／19` 个逐项 ResearchAction；三案共 `0` 个 public-information gap 获得授权。DELL 五个研究单元已分别编译出模型可见的 current control context，Workbench 也读取同一 producer，而不是使用演示 fixture。
 
 上述结果只证明 1–7 的数据、合同、Runtime、S3 消费缝和产品可见面已经连通，并通过零调用评测；它**不**证明自然 Agent 会正确反思、执行第二轮补证或产出更好报告。`S1_qualified_stable=false`、`S3 accepted=false`、release=false 继续保持。下一门是单独签发的 DELL 动态多 Agent 纵切，不能把本节的零调用结果追认为 Agentic Research 或产品验收。
+
+### 16.53 产品目标是可验证边界内的主动研究协助，不是合规免责声明生成器（2026-08-22）
+
+FIN 的客户价值不再定义为“找到权威事实；找不到就声明无法推断；最后输出一份不出错的报告”。正式产品循环必须是：理解用户真正要做的决策，主动搜索和筛选，形成初步判断，识别薄弱环节，改写查询、切换来源、深入原文、寻找反方或调用 S2 建立可复算区间；直到形成可用结论，或证明当前权限和可访问信息确实触及边界。剩余边界必须转成下一步建议、监控指标、所需授权或人类行动，而不是在核心结论、正文、gap 和 confidence 中重复免责。
+
+“用尽信息”不等于无限搜索互联网。每个重要命题至少按以下路线留下执行或不适用回执：
+
+1. 内部 SQL、NumericFact、金融对象、原始文件；
+2. 内部全文、BM25／dense、关系图和对象上下文；
+3. 公司、监管、客户、供应商的官方材料；
+4. 行业机构、协会、市场跟踪与标准组织；
+5. 可信媒体、公开 analyst context、公共采购、渠道报价、客户部署和产品目录；
+6. 对冲突命题主动搜索反方证据；
+7. 没有精确数字时，判断能否用已审输入建立可复算区间、情景和敏感性；
+8. 只有在本地故障、未执行路线、预算不足、准入待决和替代路线均被排除后，才登记真实公开信息边界或 licensed／private boundary。
+
+来源结果不再只有“能引用／不能用”两种状态。同一材料可以分别是：目标公司或信息披露方的权威事实、支持产业机制和反方的可信上下文、S2 区间估算输入、指向原始材料的 locator，或受许可限制只能内部分析的来源。来源强度、允许主张用途和 `discovery / internal analysis / citation / redistribution` 四项权利继续分离；这既允许产品合理利用免费公开信息，也不让弱来源冒充目标公司精确事实。
+
+DELL 的价格、销量、配置、价格—数量—组合桥、客户部署、供应释放、OEM／芯片厂价值分配和反方材料只是当前验收样例，不是核心代码里的 ticker 特例。产品应以通用命题、实体、关系方向、期间、来源角色、估算方法和 Evidence Slot 编译这些研究任务。精确良率、专属配额和合同条款若免费公开资料确实不存在，可以成为 true typed gap；但必须只完整说明一次，并明确什么资料或授权能改变判断。
+
+### 16.54 动态 ResearchBlueprint 与反思循环必须真实调用 S1／S2（2026-08-22）
+
+正式 Agentic Research 的最小闭环为：
+
+1. Research Lead 将用户问题拆成命题、假设、决策面和动态 `ResearchBlueprint`；
+2. 各研究 Agent 通过 typed tools 调用 S1 内源／外源路线，而不是只消费预装 fixed Pack；
+3. S1 返回 Evidence、CandidateDecision、路线执行真相、拒绝原因和可行动 Feedback；
+4. Agent 形成初步判断后反思缺口、冲突、可估算性和反方充分性，并产生受验证的 `PlanDelta`；
+5. Agent 可以改写查询、换来源、深入原文、请求其他 Agent、调用 S2 建立公式／区间／情景，或申请人类材料和权限；
+6. 只有在取得信息增量、收窄判断或形成合格 StopDecision 后才回到 Lead 综合；Lead 可以再次派工；
+7. 最终产物同时给出结论、依据、估算、风险、What-Would-Change 和行动建议。
+
+基础设施／工具、Harness 与 Agent 工作模式必须继续分账。查询、抓取、解析、对象化、SQL、召回、排序和 Evidence Gate 在合格人工请求下也必须工作；Harness 负责身份、期间、单位、来源权利、事实权限、预算、事件、反馈和停止，不替模型写观点；Agent 负责研究目标、假设、工具选择、反思、修订和综合。Skill／Graph 由 Harness 根据角色、Objective、gap 和当前计划动态选择最小 Pack；它们指导研究但没有事实权威，Agent 提出的 GraphDelta 只有在 source-bound 关系通过审查后才能晋升稳定图。
+
+当前 1–7 已完成的是上述循环的控制面与 current-data 消费缝，不是循环本身。DELL current mainline 仍是 29 条 Evidence／14 个 residual gaps；16 个 S1 Action、3 个 S2 Action 和 2 个 S3 Action 尚未由自然 Agent 完成。四个 capture-bound 公共来源形成了 36 条 Evidence 的独立 successor，但只补充行业背景和反方机制，既未关闭 14 个 gap，也未晋升当前 Runtime mainline。由此，`step_8_bounded_natural_multi_agent_vertical_slice` 只能作为历史结果中当时的建议，不再是当前直接执行权限。
+
+更正后的执行门为：先以重要命题冻结 CoverageState；执行 AI-free 内源路线和定向外源来源阶梯；完成 CandidateDecision／Evidence Gate 并把 accepted Evidence 物化到 current mainline；重新编译受影响 S2 数值兄弟；达到相对于当前任务的 `EvidencePackReadiness` 后，才运行一个只给用户问题、身份、截至日期和工具权限的 DELL 动态单元。该单元证明真实二轮查询、反馈消费和停止后，再扩展为动态多单元／多 Agent 案例。S1 不需要在 Agent 启动前关闭所有未来问题，但工具资格、seed Evidence 和失败可行动性必须先成立。
+
+### 16.55 Writer 是双语研究表达与可视化 Agent，不是固定模板填充器（2026-08-22）
+
+Writer 的正式输入必须包含 `DeliverableBrief`：受众、语言、交付形态、深度、决策目标、篇幅依据和已批准 Research Kernel。它应支持短问答、Quick Take、公司更新、IC memo、内部深度底稿和正式研报；同一事实底座可以伸缩，但不得把 DELL 五单元或任何固定目录冒充通用结构。正式报告采用稳定外壳与动态正文：执行视图、关键数字、动态研究章节、图表／表格、反方与风险、行动／WWC、来源附录按任务选择和排序。
+
+双语写作不得由机械翻译替代。`BilingualStylePack` 至少分别规定中文自然投研行文与英文 thesis-led 行文的术语、句法、段落节奏、例子和反例，并通过跨语言事实一致性校验。边界说明应优先转成“当前可支持的判断＋影响＋下一动作”；核心结论至多保留一个综合不确定性，不重复 gap inventory。
+
+图表使用 `VisualRequest`：Writer 选择需要解释的视觉意图，例如趋势、价格—数量—组合瀑布、业务组合、情景／敏感性、产业关系、时间线或命题—证据矩阵；S2／Graph 提供已验证的数值和关系 refs，确定性 renderer 生成 SVG／PNG／HTML／Word／PDF／PPT 可用对象，Verifier 检查数据、单位、期间、来源、图例和正文一致性。Writer 不自行发明数字，也不自由检索；研究材料不足时必须把 blocker／ResearchAction 退回 Lead，而不是用模板化免责声明填满版面。
+
+当前 Writer 已证明 protected report 的 L1 财务控制面和一次 reference patch，但尚未实现上述 `DeliverableBrief / BilingualStylePack / VisualRequest / DocumentModel` 产品能力。它们属于批准规划的后续第 9–10 项，必须在 S1 资料充分性和动态研究循环得到真实证明后实施；不能用现有 1–7 工程闭环追认。

@@ -1,15 +1,15 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-21
+更新时间：2026-08-22
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-s1-retrieval-vertical-slice`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-当前优先级仍是 S1 全栈标准化。Pack v1.4、Workspace v1.4、anchor v1.3、三案 source-route truth successor 与共享 current lineage 已进入 Runtime Registry R28／27 个活动资源；DELL／MU／NVDA 当前 Pack 分别为 29／14／25 条 reviewed Evidence，精确 claim anchor 共 60。请求级 Source Route Portfolio 已由 Workbench 和 ProductReadiness 正式消费，能把本地对象不足、来源路线未执行、传输失败和真实不披露分开。DELL 8／8 请求候选材料完整、仍由 Evidence admission 阻断；MU 4／8、NVDA 3／8 请求需要执行受控补源，三案 public-gap eligible 均为 0。RC-S1-046 已关闭为 current-product successor；Candidate 自动晋升、NumericFact 新授权和 public-gap 权威仍为 0，`S1_qualified_stable` 仍为 false，不能恢复完整动态 S3 或发布链。
+当前 clean／synced 工程基线为 `c341713b`。用户批准的 Actionable Uncertainty 1–7 已把 current 数据、来源权利、定量类型、Feedback／Plan／checkpoint／StopDecision、S3 cell consumer 和 Workbench 接到同一 producer；三案零调用与全仓 997 tests 已通过。但这只是 current-data engineering closure：自然模型、网络和付费调用均为 0。DELL／MU／NVDA current Pack 仍为 29／14／25 条 Evidence；DELL 的 16 个 S1、3 个 S2、2 个 S3 Action 尚未由自然 Agent 执行，estimate／scenario 为 0，`S1_qualified_stable=false`、`S3 accepted=false`、Writer product-ready=false、release=false。
 
-当前获准的并行诊断仅限 DELL bounded Multi-Agent Preview。六份 Specialist 底稿、Lead coordination 与 Demand／Cash／Supply 三条自然反馈修订均已完成并 capture-bound 保存；两次全案单节点 Evaluator 分别在 31,732 与 24,591 prompt token 后把 16,000 completion 全部耗于 reasoning，均未产生可见 finding，Writer 未启动。当前已完成 provider-neutral 分层评审实现与真实 capture 零调用复证：本地完整 L1、六个角色级审查、一次跨角色审查、最多两处原角色修订与受影响角色复审，最坏路径 13 个新逻辑节点。scope 必须显式绑定该复证；全仓 913 tests、compileall、active baseline、755 configs、8 份 Project OS JSONL／867 行、7,473-file secret scan 和 diff check 均通过。当前只剩 clean commit／push、fresh preflight 和唯一 live。若任一单角色审查仍发生同型 reasoning-only exhaustion，下一步是 Evaluator 模型／profile 责任选择，不再做字段级 DeepSeek 补丁。该 Preview 不改变 `S1_qualified_stable=false`，也不授予 S3、泛化、Workbench 发布或 release。
+四个 exact capture-bound 公共来源（IDC／Microsoft／TrendForce／HPE）已形成 36 Evidence 的独立 DELL successor，但没有关闭 14 个 residual gaps，也没有晋升 current Runtime mainline。它们只证明 capture／解析／来源用途／Evidence admission 链可用，不证明通用外源发现已覆盖价格、销量、配置、客户部署、公共采购、渠道报价、BOM、供应释放、可信媒体／公开 analyst 和反方资料。历史 zero-call 结果中的“下一门直接做 DELL dynamic multi-agent”不再是当前 authority。当前最早产品门改为：命题 CoverageState → AI-free 内源执行 → 外源来源阶梯 → Evidence Gate → current Pack／S2 重编译 → EvidencePackReadiness；之后才允许一个 DELL 动态单单元真实调用 S1／S2，再扩展多单元、Writer 和泛化。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 
@@ -1168,3 +1168,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 历史 checkpoint 现改为读取当次保存的 `model_visible_request_without_credentials` capture，并验证受控路径、无凭据、Run／Attempt、request digest、agent、schema 与 context digest；当前新运行继续使用 current policy，不冻结产品演进。
 - 该修复不放宽 digest、不重写历史结果，也不恢复任何已消费权限。全仓最终 `997 passed`（仅 2 条既有 SWIG warning），compileall、Workbench typecheck／production build、active baseline `197／8／5／28／0`、archive redirect `6,059` 和 7,584-file secret scan／0 均通过。
 - 1–7 至此达到 current-data engineering closure；natural model reflection、第二轮补证、动态五单元报告、S1／S3／qualified-human／Workbench publication／release 仍未证明。
+
+### 2026-08-22 聊天历史、产品定义、S1 内外源与 Writer 再对齐
+
+- 对当前 thread、2026-07-19 长任务与相邻历史 thread 的对话要点，以及 PRD、S1 范式、current Pack、四来源 successor、1–7 结果和 Workbench consumer 完成交叉对账。Owner 纠正有效：先前状态把“控制面已接通”过早等同于“检索与产品循环已经可以 live”。
+- 产品目标恢复为可验证边界内的主动研究协助：理解决策、主动搜索／筛选、初判、反思、改查询／换来源／找反方／调用 S2 估算，直到形成可用结论或证明边界；边界主要转成建议和 What-Would-Change，而不是重复免责。
+- S1 来源阶梯正式包含内部 SQL／对象／全文／向量／图、官方发行人／监管／客户／供应商、行业机构／协会／市场跟踪、产品目录／公共采购／渠道报价／客户部署、可信媒体／公开 analyst、反方查询和 S2 可复算估算输入。来源强度、claim use 与四项权利继续分离。
+- 四来源 public-context successor 只增加行业背景和机制材料；DELL Evidence `29→36`、residual gaps `14→14`。其结果不能证明 SourceHunter、query rewrite、来源多样性或 Evidence Pack Readiness，也不能替代 current mainline promotion。
+- Writer 后续合同恢复为 `DeliverableBrief + BilingualStylePack + VisualRequest + DocumentModel`：中英文分别写作、报告结构随任务伸缩、图表由 verified S2／Graph 数据确定性渲染、材料不足退回 Lead。现有 protected report 只证明历史 L1／引用控制，不证明该产品能力。
+- 当前顺序已更正为 S1 命题级内外源就绪与 S2 重编译在前，DELL 动态单元在后；动态单元必须只从用户问题、身份、as-of 和 typed tools 出发并真实产生 EvidenceRequest／PlanDelta。随后才是动态多单元、Writer、MU／NVDA／异质留出和产品验收。
+- 本次仅做历史与权威文档再对齐，0 模型、0 网络、0 付费调用、0 runtime 代码变更。详细记录见 `docs/worklog/fin_0_1_3_s1/055_product_retrieval_agent_writer_history_alignment_and_gate_correction.md`。

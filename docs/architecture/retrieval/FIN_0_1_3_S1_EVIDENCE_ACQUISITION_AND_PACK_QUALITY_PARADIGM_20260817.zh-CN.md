@@ -635,3 +635,41 @@ S1 当前主线新增 provider-neutral `SourceUsePolicy`。它不是一个来源
 三案当前数据结果为：DELL `29 Evidence / 21 actions`，MU `14 / 22`，NVDA `25 / 19`。所有 action 都有成功标准与停止条件，三案 `public_information_gap_authorized_count=0`。这项结果证明 S1 状态可以被 Agent 和人工消费者采取行动，不证明自然补证已经执行，也不改变 qualified-human admission、外部 blind qualification 或 `S1_qualified_stable=false`。
 
 Workbench 的当前研究页读取同一 producer，显示来源权利、责任层、pending actions 和 Feedback，而不是另做一套仪表盘计算。S3 的 cell-scoped consumer 也从同一状态取得 action；因此后续自然纵切若没有执行 S1 action，失败可以回到明确的 request／route／admission，而不会只留下 Writer 的“资料不足”。
+
+## 33. 1–7 工程闭环后的 S1 内外源就绪更正（2026-08-22）
+
+聊天历史、current Runtime、DELL current Pack、四来源 public-context successor 和本轮 1–7 结果交叉对账后，必须更正“下一门直接进入动态 multi-agent live”的状态漂移。1–7 真实接通了来源用途、定量类型、Action、Feedback、Plan、checkpoint、StopDecision、S3 consumer 与 Workbench；它没有执行这些 Action，也没有使外源发现、内源检索、Evidence admission 或 S2 估算自动完成。
+
+| 面 | 已经证明 | 尚未证明 |
+|---|---|---|
+| 内源 | current object／BM25／Qwen dense／SQL sibling 和 lineage 可被统一 producer 识别 | DELL 16 个 S1 Action 已逐命题运行；当前候选均完成 admission；graph／learned sparse／multi-vector 已配置 |
+| 外源 | IDC、Microsoft、TrendForce、HPE 四个 exact capture-bound 来源可 capture、解析、分级和准入 | 通用 SourceHunter／query rewrite 能覆盖产品配置、渠道报价、公共采购、客户部署、BOM、产能爬坡、可信媒体／公开 analyst 与反方搜索 |
+| Pack | current DELL 为 29 Evidence／14 gaps；四来源 successor 为 36 Evidence／14 gaps | successor 已晋升 current mainline；新增资料关闭或收窄关键命题；Pack 足以支持动态研究 |
+| S2 | 38 reported facts 与 27 deterministic derived metrics 类型分离 | 价格／销量／配置、PVM、供应时间和价值池的 estimate／scenario；当前 estimate／scenario 均为 0 |
+| Agent | current control context 和 cell-scoped consumer 已接通 | 模型自然选择 Action、发起第二轮检索、消费 Feedback、调用 S2、改变计划并合理停止 |
+| Writer | 历史 protected report L1 与引用修复能力存在 | 双语 StylePack、DeliverableBrief、动态图表、动态 DocumentModel 和更强内容质量 |
+
+四个 public-context 来源没有“失败”，但它们回答的是行业需求、供应机制、同业 ASP 方向和反方背景，不能替代 DELL 价格、销量、配置、客户部署、专属供应关系或价值分配。Evidence 从 29 增至 36 而 14 个 residual gaps 不变，说明当前来源计划仍以易管理官方页为主，没有按命题价值主动覆盖来源阶梯。这是 S1 retrieval planning／source discovery 的未完成工作，不能归给 Dell 披露或 DeepSeek。
+
+### 33.1 当前必须先跑的命题级纵切
+
+DELL 作为开发纵切，至少冻结以下可泛化命题类型：产品价格与配置、销量与市场份额代理、价格—数量—组合桥、客户部署与需求真实性、供应链产能与释放时点、OEM／部件供应商价值池、反方与 What-Would-Change。它们通过实体、关系方向、期间、source role、claim use 和 Evidence Slot 表达，不进入 ticker 分支。MU、NVDA 和异质留出随后只替换 Case／Industry Pack，核心路线不得改写。
+
+每个命题依次执行：
+
+1. 内部 SQL／NumericFact／对象／原文；
+2. 内部 BM25／dense／typed graph（未配置必须 receipt）；
+3. 发行人、监管、客户、供应商和合作方官方材料；
+4. 行业机构、协会、市场跟踪与标准材料；
+5. 产品目录、公共采购、渠道报价、客户部署、可信媒体和公开 analyst context；
+6. 冲突和反方定向查询；
+7. S2 区间、情景和敏感性可行性判断；
+8. 只有路线终结、失败排除和权限边界完整时才登记 true gap。
+
+Search API、RSS 或搜索结果页只负责 discovery。原始材料必须 capture-first，并通过主体、speaker、关系、期间、许可和 claim-use 判断；CandidateDecision／Evidence Gate 之后才能进入 current Pack。内部存在但没召回、可达路线没执行、排序挤出、parser／object 失败、准入待决和免费公开信息确实不存在必须分别出账。
+
+### 33.2 更正后的当前阶段门
+
+正式顺序冻结为：命题 CoverageState → AI-free 内源执行 → 外源来源阶梯 → CandidateDecision／Evidence Gate → current Pack 物化 → S2 受影响重编译 → Proposition Coverage／EvidencePackReadiness → DELL 动态单单元 → 动态多单元／多 Agent → Writer 产品能力。动态单单元只获得用户问题、Case 身份、截至日期和 typed tools；它必须自己发出 EvidenceRequest、处理 S1／S2 Feedback 并产生 PlanDelta，不能再次伪装为 fixed-Pack 测试。
+
+这不是要求 S1 在 Agent 前穷尽整个互联网。S1 的 AI-free 工具资格、seed Evidence、来源阶梯和错误分型先成立；Agent 再对真实 residual gaps 循环调用它们。未达到这一门前不得消费付费多 Agent live 权限；四来源 successor、1–7 zero-call 和历史结果中的 `next_scope` 都不构成当前 authority。`S1_qualified_stable=false`、`S3 accepted=false`、Writer product-ready=false、release=false 保持不变。

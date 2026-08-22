@@ -86,3 +86,22 @@
 - [ ] MU／NVDA 同核心迁移与三案例 S1–S3 内容质量验收
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision
+
+## 2026-08-22 产品／检索／Writer 再对齐后的当前门
+
+- [x] Actionable Uncertainty 1–7 current-data 工程闭环（来源权利、定量类型、Feedback／Plan／checkpoint／stop、S3 consumer、Workbench；0 natural model／network／paid）
+- [x] 四来源 exact capture-bound public-context 纵切（IDC／Microsoft／TrendForce／HPE；独立 successor `36 Evidence / 14 gaps`，不等于 current mainline 或外源资格）
+- [ ] DELL 命题级 `CoverageState` 与 AI-free 内源执行
+  - [ ] 价格／配置、销量／份额代理、PVM、客户部署、供应释放、价值池、反方与 WWC
+  - [ ] SQL／NumericFact／对象／原文／BM25／dense／graph 路线逐项 receipt
+  - [ ] 内部存在但漏召回、排序挤出、对象／parser、admission 与真正信息边界分账
+- [ ] DELL 外源来源阶梯与 Evidence 晋升
+  - [ ] 发行人／监管／客户／供应商官方材料
+  - [ ] 行业机构／协会／市场跟踪／标准材料
+  - [ ] 产品目录／公共采购／渠道报价／客户部署／可信媒体／公开 analyst／反方查询
+  - [ ] CandidateDecision／Evidence Gate／current Pack mainline promotion
+- [ ] S2 受影响重编译：derived／estimate／scenario／typed gap 与 Proposition Coverage／EvidencePackReadiness
+- [ ] 单独权限下的 DELL 动态单单元：只给用户问题、Case、as-of 与 typed tools；真实二轮 EvidenceRequest／Feedback／PlanDelta／StopDecision
+- [ ] DELL 动态多单元／多 Agent 研究与完整报告
+- [ ] Writer 产品能力：DeliverableBrief、BilingualStylePack、VisualRequest、DocumentModel
+- [ ] MU／NVDA／异质留出、qualified-human、S3／S4／S5 验收

@@ -208,6 +208,31 @@ def test_publication_date_does_not_promote_provider_date_without_original() -> N
     assert receipt["selected_publication_date"] is None
 
 
+def test_publication_date_recovers_visible_month_name_date_marker() -> None:
+    html = """
+    <html><body><article>
+      <div class="published-date">June 22, 2026</div>
+      <p>Original source body.</p>
+    </article></body></html>
+    """
+    receipt = adjudicate_publication_date_from_capture(
+        response_capture=_capture(html, url="https://example.com/research"),
+        research_as_of="2026-08-06",
+        provider_date_telemetry="2026-06-30",
+    )
+
+    assert receipt["status"] == "resolved_from_original_source"
+    assert receipt["selected_publication_date"] == "2026-06-22"
+    assert receipt["original_source_candidates"] == [
+        {
+            "date": "2026-06-22",
+            "source": "original_html_visible_date_marker",
+            "priority": 2,
+            "after_research_as_of": False,
+        }
+    ]
+
+
 def test_public_pdf_compiler_emits_candidate_only_segments(monkeypatch) -> None:
     class _FakePage:
         def extract_text(self) -> str:

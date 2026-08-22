@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 from copy import deepcopy
-from datetime import date
+from datetime import date, datetime
 import hashlib
 from io import BytesIO
 import json
@@ -126,6 +126,18 @@ def _normalized_date_candidate(value: object) -> str | None:
             ).isoformat()
         except ValueError:
             return None
+    month_date = re.search(
+        r"(?i)\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:st|nd|rd|th)?[,]?\s+(20\d{2})\b",
+        text,
+    )
+    if month_date:
+        try:
+            return datetime.strptime(
+                f"{month_date.group(1)} {month_date.group(2)} {month_date.group(3)}",
+                "%B %d %Y",
+            ).date().isoformat()
+        except ValueError:
+            return None
     return None
 
 
@@ -181,6 +193,19 @@ def adjudicate_publication_date_from_capture(
         for node in soup.find_all("time"):
             if node.get("datetime"):
                 add(node.get("datetime"), "original_html_time_datetime", 2)
+        for node in soup.find_all(True):
+            marker = " ".join(
+                [
+                    str(node.get("id") or ""),
+                    " ".join(str(value) for value in node.get("class") or ()),
+                    str(node.get("itemprop") or ""),
+                ]
+            ).casefold()
+            if not any(token in marker for token in ("date", "publish", "news-time")):
+                continue
+            visible = _normalized(node.get_text(" ", strip=True))
+            if 0 < len(visible) <= 160:
+                add(visible, "original_html_visible_date_marker", 2)
     elif content_type == "application/pdf" or body[:1024].find(b"%PDF-") >= 0:
         try:
             reader = PdfReader(BytesIO(body))

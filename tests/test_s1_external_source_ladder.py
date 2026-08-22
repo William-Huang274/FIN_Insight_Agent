@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import json
+from pathlib import Path
 
 import pytest
 
@@ -10,9 +11,11 @@ from retrieval.external_source_ladder import (
     ExternalSourceLadderError,
     build_external_fetch_shortlist,
     canonicalize_external_url,
+    compile_external_source_ladder_successor_plan,
     compile_safe_provider_request,
     normalize_tencent_search_response,
     validate_external_source_ladder_plan,
+    validate_external_source_ladder_successor_spec,
 )
 from retrieval.query_plan import canonical_digest
 
@@ -26,6 +29,7 @@ PROPOSITIONS = [
     "DELL-PROP-VALUE-POOL",
     "DELL-PROP-COUNTEREVIDENCE-WWC",
 ]
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _plan() -> dict:
@@ -186,3 +190,120 @@ def test_plan_digest_detects_mutation() -> None:
         match="external_ladder_plan_digest_invalid",
     ):
         validate_external_source_ladder_plan(mutated)
+
+
+def _successor_plan() -> dict:
+    base = json.loads(
+        (
+            ROOT
+            / "configs"
+            / "retrieval"
+            / "fin_ia_0_1_3_s1_dell_external_source_ladder_plan_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+    successor = validate_external_source_ladder_successor_spec(
+        json.loads(
+            (
+                ROOT
+                / "configs"
+                / "retrieval"
+                / "fin_ia_0_1_3_s1_dell_external_source_ladder_successor_spec_v1_0.json"
+            ).read_text(encoding="utf-8")
+        )
+    )
+    return compile_external_source_ladder_successor_plan(
+        base_plan=base,
+        successor_spec=successor,
+    )
+
+
+def _empty_or_locator_bundle(unit: dict, url: str | None = None) -> dict:
+    pages = []
+    if url is not None:
+        pages.append(
+            {
+                "url": url,
+                "title": "Bounded source candidate",
+                "passage": "Dell AI server source candidate",
+            }
+        )
+    return normalize_tencent_search_response(
+        raw_payload={"Pages": pages},
+        query_unit=unit,
+        safe_request=compile_safe_provider_request(unit),
+    )
+
+
+def test_real_successor_replays_28_queries_and_only_adds_15_provider_calls() -> None:
+    plan = _successor_plan()
+
+    replay = [row for row in plan["query_units"] if row["execution_mode"] == "replay"]
+    provider = [
+        row for row in plan["query_units"] if row["execution_mode"] == "provider"
+    ]
+
+    assert len(replay) == 28
+    assert len(provider) == 15
+    assert plan["execution_budget"]["provider_call_ceiling"] == 15
+
+
+def test_root_and_www_share_one_source_family_quota() -> None:
+    plan = _successor_plan()
+    mutable = deepcopy(plan)
+    mutable["execution_budget"]["original_fetch_ceiling_per_domain"] = 1
+    mutable["execution_budget"]["original_fetch_ceiling"] = 10
+    mutable.pop("plan_digest")
+    mutable["plan_digest"] = canonical_digest(mutable)
+    plan = validate_external_source_ladder_plan(mutable)
+    eligible = [
+        row
+        for row in plan["query_units"]
+        if row["tier_id"]
+        in {
+            "official_subject_regulator_customer_supplier",
+            "product_procurement_channel_deployment",
+        }
+    ][:2]
+    urls = {
+        eligible[0]["query_unit_id"]: "https://dell.com/one",
+        eligible[1]["query_unit_id"]: "https://www.dell.com/two",
+    }
+    bundles = [
+        _empty_or_locator_bundle(row, urls.get(row["query_unit_id"]))
+        for row in plan["query_units"]
+    ]
+
+    shortlist = build_external_fetch_shortlist(plan=plan, locator_bundles=bundles)
+
+    assert shortlist["summary"]["selected_original_fetch_count"] == 1
+    assert any(
+        row["reason"] == "per_domain_fetch_ceiling_reached"
+        for row in shortlist["rejected"]
+    )
+
+
+def test_source_tier_mismatch_is_rejected_before_capture() -> None:
+    plan = _successor_plan()
+    industry = next(
+        row
+        for row in plan["query_units"]
+        if row["tier_id"] == "industry_association_market_tracking"
+    )
+    bundles = [
+        _empty_or_locator_bundle(
+            row,
+            "https://www.dell.com/industry-result"
+            if row["query_unit_id"] == industry["query_unit_id"]
+            else None,
+        )
+        for row in plan["query_units"]
+    ]
+
+    shortlist = build_external_fetch_shortlist(plan=plan, locator_bundles=bundles)
+
+    assert shortlist["summary"]["selected_original_fetch_count"] == 0
+    assert any(
+        row["reason"] == "source_tier_not_allowed_for_query_tier"
+        and row["canonical_url"] == "https://www.dell.com/industry-result"
+        for row in shortlist["rejected"]
+    )

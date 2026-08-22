@@ -4,15 +4,25 @@ import base64
 import hashlib
 import json
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from ingestion.official_source_capture import CAPTURE_SCHEMA_VERSION
-from retrieval.external_source_ladder import validate_external_source_ladder_plan
+from retrieval.external_source_ladder import (
+    source_family_allowed_hosts,
+    validate_external_source_ladder_plan,
+)
 from retrieval.query_plan import canonical_digest
 from scripts.data_retrieval.run_dell_external_source_ladder import (
     PLAN,
+    SUCCESSOR_SPEC,
+    _candidate_proposals,
     _compile_original_capture_plan,
+    _load_successor_context,
+    _predecessor_original_capture_index,
     build_public_projection,
     compile_captured_originals,
+    execute_locator_queries,
+    execute_original_capture_successor,
 )
 
 
@@ -119,6 +129,71 @@ def test_compile_captured_originals_keeps_material_candidate_only(tmp_path: Path
     assert result["authority"]["evidence_promotion_allowed"] is False
 
 
+def test_original_capture_plan_accepts_reviewed_www_alias() -> None:
+    plan = _plan()
+    locator = _locator(plan)
+
+    source_plan = _compile_original_capture_plan(
+        plan=plan,
+        shortlist={"selected": [locator]},
+    )
+
+    assert source_plan["sources"][0]["allowed_hosts"] == [
+        "dell.com",
+        "www.dell.com",
+    ]
+
+
+def test_candidate_window_rejects_navigation_tail_and_keeps_material_block() -> None:
+    unit = {
+        "query_unit_id": "Q::PRICE",
+        "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+        "tier_id": "product_procurement_channel_deployment",
+        "query": "Dell PowerEdge AI server configuration price",
+        "expected_output_ids": ["OUT::PRICE"],
+    }
+    relevant = (
+        "Dell PowerEdge XE9680 AI server configuration lists eight GPU accelerators "
+        "and a channel asking price."
+    )
+    navigation = (
+        "Dell investor relations navigation news support servers privacy careers."
+    )
+    source_object = {
+        "source_id": "PUBLIC::DELL::TEST",
+        "source_object_digest": "a" * 64,
+        "segments": [
+            {
+                "segment_id": "SEG::1",
+                "text": relevant + "\n\n" + navigation,
+            }
+        ],
+    }
+    policies = {
+        "DELL-PROP-PRICE-CONFIGURATION": {
+            "scope_anchor_terms": ["dell", "poweredge"],
+            "material_signal_terms": ["configuration", "gpu", "price"],
+            "minimum_scope_anchor_hits": 1,
+            "minimum_material_signal_hits": 2,
+            "context_blocks_before": 0,
+            "context_blocks_after": 0,
+        }
+    }
+
+    proposals = _candidate_proposals(
+        source_object=source_object,
+        query_unit=unit,
+        candidate_selection_policy=policies,
+    )
+
+    assert len(proposals) == 1
+    assert proposals[0]["excerpt"] == relevant
+    assert "investor relations navigation" not in proposals[0]["excerpt"]
+    assert proposals[0]["selection_method"] == (
+        "capture_bound_central_block_identity_and_material_signal_v1"
+    )
+
+
 def test_public_projection_never_claims_route_exhaustion() -> None:
     plan = _plan()
     locator = _locator(plan)
@@ -153,3 +228,105 @@ def test_public_projection_never_claims_route_exhaustion() -> None:
         for row in result["propositions"]
     )
     assert result["authority"]["dynamic_single_unit_authorized"] is False
+
+
+def test_actual_r1_locator_replay_calls_provider_only_for_15_residual_queries(
+    tmp_path: Path,
+) -> None:
+    plan, predecessor, _spec = _load_successor_context(SUCCESSOR_SPEC)
+    calls: list[dict] = []
+
+    def fake_provider(request_body, _timeout):
+        calls.append(dict(request_body))
+        return {
+            "Response": {
+                "Pages": [],
+                "Version": "zero-call-fixture",
+                "RequestId": f"FAKE-{len(calls):02d}",
+            }
+        }
+
+    bundles, receipts = execute_locator_queries(
+        plan=plan,
+        attempt_root=tmp_path / "actual-r1-replay",
+        provider_call=fake_provider,
+        predecessor_private_result=predecessor,
+    )
+
+    assert len(bundles) == 43
+    assert len(calls) == 15
+    assert sum(
+        row["status"] == "predecessor_locator_bundle_replayed" for row in receipts
+    ) == 28
+    assert sum(row["provider_call_count"] for row in receipts) == 15
+    assert all(row["model_call_count"] == 0 for row in receipts)
+
+
+def test_actual_r1_same_family_redirect_capture_is_reused_without_network(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    plan, predecessor, spec = _load_successor_context(SUCCESSOR_SPEC)
+    predecessor_plan = validate_external_source_ladder_plan(
+        json.loads(
+            Path(spec["predecessor_binding"]["plan_ref"]).read_text(encoding="utf-8")
+        )
+    )
+    predecessor_index = _predecessor_original_capture_index(
+        predecessor_plan=predecessor_plan,
+        predecessor_private_result=predecessor,
+    )
+    selected = None
+    for old in predecessor_index.values():
+        capture_row = old["capture_row"]
+        if capture_row.get("status") != "rejected_final_url":
+            continue
+        locator = dict(old["locator"])
+        observed_host = str(locator["source_domain"])
+        registry = next(
+            row
+            for row in plan["source_domain_registry"]
+            if observed_host == row["host"]
+            or observed_host.endswith("." + str(row["host"]))
+        )
+        response = json.loads(
+            Path(capture_row["response_capture"]["object_ref"]).read_text(
+                encoding="utf-8"
+            )
+        )
+        final_host = str(urlsplit(response["final_url"]).hostname or "").lower()
+        if final_host not in source_family_allowed_hosts(
+            registry,
+            observed_host=observed_host,
+        ):
+            continue
+        selected = {
+            **locator,
+            "source_registry": dict(registry),
+            "source_family_id": registry["source_family_id"],
+        }
+        break
+    assert selected is not None
+
+    def forbidden_network(*_args, **_kwargs):
+        raise AssertionError("same-family immutable capture must not use network")
+
+    monkeypatch.setattr(
+        "scripts.data_retrieval.run_dell_external_source_ladder.capture_plan",
+        forbidden_network,
+    )
+    result, receipt = execute_original_capture_successor(
+        plan=plan,
+        shortlist={"selected": [selected]},
+        attempt_root=tmp_path / "same-family-reuse",
+        predecessor_plan=predecessor_plan,
+        predecessor_private_result=predecessor,
+    )
+
+    assert result["predecessor_captures_reused"] == 1
+    assert result["fresh_network_routes"] == 0
+    assert result["sources"][0]["status"] == "captured"
+    assert result["sources"][0]["predecessor_capture_status"] == (
+        "rejected_final_url"
+    )
+    assert receipt["summary"]["predecessor_capture_reused_count"] == 1

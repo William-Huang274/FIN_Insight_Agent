@@ -14,6 +14,12 @@ from .query_plan import canonical_digest
 EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION = (
     "fin_ia_s1_external_source_ladder_plan_v1_0"
 )
+EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION_V1_1 = (
+    "fin_ia_s1_external_source_ladder_plan_v1_1"
+)
+EXTERNAL_SOURCE_LADDER_SUCCESSOR_SPEC_SCHEMA_VERSION = (
+    "fin_ia_s1_external_source_ladder_successor_spec_v1_0"
+)
 EXTERNAL_LOCATOR_BUNDLE_SCHEMA_VERSION = (
     "fin_ia_s1_external_locator_bundle_v1_0"
 )
@@ -57,6 +63,15 @@ _SENSITIVE_KEYS = {
     "token",
 }
 _SAFE_SITE = re.compile(r"^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$")
+_PROPOSITIONS = {
+    "DELL-PROP-PRICE-CONFIGURATION",
+    "DELL-PROP-UNIT-VOLUME",
+    "DELL-PROP-PVM-BRIDGE",
+    "DELL-PROP-CUSTOMER-DEMAND",
+    "DELL-PROP-SUPPLY-CHAIN",
+    "DELL-PROP-VALUE-POOL",
+    "DELL-PROP-COUNTEREVIDENCE-WWC",
+}
 
 
 class ExternalSourceLadderError(ValueError):
@@ -89,9 +104,23 @@ def validate_external_source_ladder_plan(payload: Mapping[str, Any]) -> dict[str
     units = value.get("query_units")
     source_registry = value.get("source_domain_registry")
     token_basis = value.get("token_budget_basis")
+    schema_version = str(value.get("schema_version") or "")
+    expected_status = {
+        EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION: (
+            "approved_exact_once_external_locator_and_original_capture_plan"
+        ),
+        EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION_V1_1: (
+            "approved_bounded_external_locator_replay_and_residual_successor_plan"
+        ),
+    }.get(schema_version)
+    provider_units = [
+        row
+        for row in units or ()
+        if str(row.get("execution_mode") or "provider") == "provider"
+    ]
     _require(
-        value.get("schema_version") == EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION
-        and value.get("status") == "approved_exact_once_external_locator_and_original_capture_plan"
+        expected_status is not None
+        and value.get("status") == expected_status
         and str(value.get("plan_id") or "")
         and str(value.get("case_key") or "").upper() == "DELL"
         and _valid_date(value.get("research_as_of"))
@@ -115,7 +144,7 @@ def validate_external_source_ladder_plan(payload: Mapping[str, Any]) -> dict[str
         and str(token_basis.get("stop_and_truncation_behavior") or "")
         and isinstance(units, list)
         and units
-        and len(units) <= int(budget["provider_call_ceiling"])
+        and len(provider_units) <= int(budget["provider_call_ceiling"])
         and isinstance(source_registry, list)
         and source_registry,
         "external_ladder_plan_shape_invalid",
@@ -141,28 +170,25 @@ def validate_external_source_ladder_plan(payload: Mapping[str, Any]) -> dict[str
             and unit["relationship_directions"]
             and isinstance(unit.get("speaker_or_source_targets"), list)
             and unit["speaker_or_source_targets"]
-            and (not site or _SAFE_SITE.fullmatch(site) is not None),
+            and (not site or _SAFE_SITE.fullmatch(site) is not None)
+            and (
+                schema_version == EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION
+                or str(unit.get("execution_mode") or "") in {"replay", "provider"}
+            ),
             "external_ladder_query_unit_invalid",
         )
         unit_ids.add(unit_id)
         propositions.add(proposition_id)
     _require(
-        propositions
-        == {
-            "DELL-PROP-PRICE-CONFIGURATION",
-            "DELL-PROP-UNIT-VOLUME",
-            "DELL-PROP-PVM-BRIDGE",
-            "DELL-PROP-CUSTOMER-DEMAND",
-            "DELL-PROP-SUPPLY-CHAIN",
-            "DELL-PROP-VALUE-POOL",
-            "DELL-PROP-COUNTEREVIDENCE-WWC",
-        },
+        propositions == _PROPOSITIONS,
         "external_ladder_proposition_coverage_invalid",
     )
     registry_hosts: set[str] = set()
     for row in source_registry:
         _require(isinstance(row, Mapping), "external_ladder_source_registry_invalid")
         host = str(row.get("host") or "").strip().lower()
+        allowed_tiers = row.get("allowed_ladder_tiers")
+        safe_aliases = row.get("safe_host_aliases")
         _require(
             _SAFE_SITE.fullmatch(host) is not None
             and host not in registry_hosts
@@ -170,11 +196,189 @@ def validate_external_source_ladder_plan(payload: Mapping[str, Any]) -> dict[str
             and str(row.get("source_class") or "")
             and str(row.get("source_role") or "")
             and isinstance(row.get("relationship_directions"), list)
-            and row["relationship_directions"],
+            and row["relationship_directions"]
+            and (
+                schema_version == EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION
+                or (
+                    str(row.get("source_family_id") or "") == host
+                    and isinstance(allowed_tiers, list)
+                    and bool(allowed_tiers)
+                    and set(str(item) for item in allowed_tiers).issubset(_TIERS)
+                    and isinstance(safe_aliases, list)
+                    and all(
+                        _SAFE_SITE.fullmatch(str(alias).lower()) is not None
+                        for alias in safe_aliases
+                    )
+                )
+            ),
             "external_ladder_source_registry_invalid",
         )
         registry_hosts.add(host)
+    if schema_version == EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION_V1_1:
+        policies = value.get("candidate_selection_policy")
+        _require(
+            isinstance(policies, Mapping)
+            and set(str(key) for key in policies) == _PROPOSITIONS,
+            "external_ladder_candidate_policy_invalid",
+        )
+        for proposition_id, raw in policies.items():
+            _require(
+                proposition_id in _PROPOSITIONS
+                and isinstance(raw, Mapping)
+                and isinstance(raw.get("scope_anchor_terms"), list)
+                and bool(raw["scope_anchor_terms"])
+                and isinstance(raw.get("material_signal_terms"), list)
+                and bool(raw["material_signal_terms"])
+                and int(raw.get("minimum_scope_anchor_hits") or 0) >= 1
+                and int(raw.get("minimum_material_signal_hits") or 0) >= 1
+                and 0 <= int(raw.get("context_blocks_before") or 0) <= 2
+                and 0 <= int(raw.get("context_blocks_after") or 0) <= 2,
+                "external_ladder_candidate_policy_invalid",
+            )
     return value
+
+
+def validate_external_source_ladder_successor_spec(
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    value = deepcopy(dict(payload))
+    _validated_digest(value, "spec_digest", "external_ladder_successor_spec_digest_invalid")
+    predecessor = value.get("predecessor_binding")
+    budget = value.get("execution_budget")
+    new_units = value.get("new_query_units")
+    role_tiers = value.get("source_role_tier_policy")
+    additions = value.get("source_registry_additions")
+    candidate_policy = value.get("candidate_selection_policy")
+    _require(
+        value.get("schema_version")
+        == EXTERNAL_SOURCE_LADDER_SUCCESSOR_SPEC_SCHEMA_VERSION
+        and value.get("status")
+        == "approved_bounded_replay_and_residual_external_successor"
+        and str(value.get("successor_id") or "")
+        and str(value.get("case_key") or "").upper() == "DELL"
+        and _valid_date(value.get("research_as_of"))
+        and isinstance(predecessor, Mapping)
+        and str(predecessor.get("plan_ref") or "")
+        and len(str(predecessor.get("plan_sha256") or "")) == 64
+        and len(str(predecessor.get("plan_digest") or "")) == 64
+        and str(predecessor.get("public_result_ref") or "")
+        and len(str(predecessor.get("public_result_sha256") or "")) == 64
+        and len(str(predecessor.get("public_result_digest") or "")) == 64
+        and str(predecessor.get("private_result_ref") or "")
+        and len(str(predecessor.get("private_result_sha256") or "")) == 64
+        and isinstance(value.get("replay_query_unit_ids"), list)
+        and bool(value["replay_query_unit_ids"])
+        and len(value["replay_query_unit_ids"])
+        == len(set(str(item) for item in value["replay_query_unit_ids"]))
+        and isinstance(budget, Mapping)
+        and int(budget.get("provider_call_ceiling") or 0) >= len(new_units or ())
+        and int(budget.get("original_fetch_ceiling") or 0) > 0
+        and int(budget.get("original_fetch_ceiling_per_query") or 0) > 0
+        and int(budget.get("original_fetch_ceiling_per_domain") or 0) > 0
+        and int(budget.get("result_ceiling_per_call") or 0) == 10
+        and budget.get("retry_ceiling") == 0
+        and budget.get("model_call_ceiling") == 0
+        and isinstance(new_units, list)
+        and bool(new_units)
+        and isinstance(role_tiers, Mapping)
+        and bool(role_tiers)
+        and all(
+            isinstance(tiers, list)
+            and bool(tiers)
+            and set(str(tier) for tier in tiers).issubset(_TIERS)
+            for tiers in role_tiers.values()
+        )
+        and isinstance(additions, list)
+        and isinstance(candidate_policy, Mapping)
+        and set(str(key) for key in candidate_policy) == _PROPOSITIONS,
+        "external_ladder_successor_spec_shape_invalid",
+    )
+    return value
+
+
+def compile_external_source_ladder_successor_plan(
+    *,
+    base_plan: Mapping[str, Any],
+    successor_spec: Mapping[str, Any],
+) -> dict[str, Any]:
+    base = validate_external_source_ladder_plan(base_plan)
+    spec = validate_external_source_ladder_successor_spec(successor_spec)
+    predecessor = spec["predecessor_binding"]
+    base_units = {str(row["query_unit_id"]): deepcopy(dict(row)) for row in base["query_units"]}
+    _require(
+        base.get("schema_version") == EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION
+        and str(base.get("case_key") or "").upper() == "DELL"
+        and base.get("research_as_of") == spec.get("research_as_of")
+        and base.get("plan_digest") == predecessor.get("plan_digest")
+        and set(str(item) for item in spec["replay_query_unit_ids"]) == set(base_units),
+        "external_ladder_successor_predecessor_mismatch",
+    )
+    combined_units: list[dict[str, Any]] = []
+    for unit_id in spec["replay_query_unit_ids"]:
+        combined_units.append({**base_units[str(unit_id)], "execution_mode": "replay"})
+    seen_units = set(base_units)
+    for raw in spec["new_query_units"]:
+        _require(isinstance(raw, Mapping), "external_ladder_successor_query_unit_invalid")
+        unit = deepcopy(dict(raw))
+        unit_id = str(unit.get("query_unit_id") or "")
+        _require(
+            unit_id and unit_id not in seen_units,
+            "external_ladder_successor_query_unit_invalid",
+        )
+        unit["execution_mode"] = "provider"
+        combined_units.append(unit)
+        seen_units.add(unit_id)
+
+    registry: list[dict[str, Any]] = []
+    registry_hosts: set[str] = set()
+    role_tiers = spec["source_role_tier_policy"]
+    for raw in [*base["source_domain_registry"], *spec["source_registry_additions"]]:
+        row = deepcopy(dict(raw))
+        host = str(row.get("host") or "").lower()
+        role = str(row.get("source_role") or "")
+        _require(
+            host not in registry_hosts and role in role_tiers,
+            "external_ladder_successor_source_registry_invalid",
+        )
+        aliases = {str(value).lower() for value in row.get("safe_host_aliases") or ()}
+        if host.count(".") == 1:
+            aliases.add("www." + host)
+        aliases.discard(host)
+        row.update(
+            {
+                "host": host,
+                "source_family_id": host,
+                "safe_host_aliases": sorted(aliases),
+                "allowed_ladder_tiers": sorted(
+                    {str(value) for value in role_tiers[role]}
+                ),
+            }
+        )
+        registry.append(row)
+        registry_hosts.add(host)
+
+    body = {
+        "schema_version": EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION_V1_1,
+        "plan_id": str(spec["successor_id"]),
+        "status": "approved_bounded_external_locator_replay_and_residual_successor_plan",
+        "recorded_at": str(spec.get("recorded_at") or ""),
+        "case_key": "DELL",
+        "research_as_of": str(spec["research_as_of"]),
+        "program_ref": base.get("program_ref"),
+        "internal_result_ref": base.get("internal_result_ref"),
+        "source_use_policy_ref": base.get("source_use_policy_ref"),
+        "predecessor_binding": deepcopy(dict(predecessor)),
+        "purpose": str(spec.get("purpose") or ""),
+        "execution_budget": deepcopy(dict(spec["execution_budget"])),
+        "token_budget_basis": deepcopy(dict(spec["token_budget_basis"])),
+        "query_units": combined_units,
+        "source_domain_registry": registry,
+        "candidate_selection_policy": deepcopy(dict(spec["candidate_selection_policy"])),
+        "authority": deepcopy(dict(spec.get("authority") or {})),
+    }
+    return validate_external_source_ladder_plan(
+        {**body, "plan_digest": canonical_digest(body)}
+    )
 
 
 def compile_safe_provider_request(query_unit: Mapping[str, Any]) -> dict[str, Any]:
@@ -346,6 +550,31 @@ def _registry_match(host: str, registry: Sequence[Mapping[str, Any]]) -> Mapping
     return max(suffix, key=lambda row: len(str(row.get("host") or "")))
 
 
+def source_family_allowed_hosts(
+    registry_row: Mapping[str, Any],
+    *,
+    observed_host: str | None = None,
+) -> list[str]:
+    host = str(registry_row.get("host") or "").strip().lower()
+    _require(_SAFE_SITE.fullmatch(host) is not None, "external_ladder_source_family_invalid")
+    allowed = {host}
+    for alias in registry_row.get("safe_host_aliases") or ():
+        normalized = str(alias).strip().lower()
+        _require(
+            _SAFE_SITE.fullmatch(normalized) is not None,
+            "external_ladder_source_family_invalid",
+        )
+        allowed.add(normalized)
+    if observed_host:
+        normalized = str(observed_host).strip().lower()
+        _require(
+            normalized == host or normalized.endswith("." + host),
+            "external_ladder_source_family_observed_host_invalid",
+        )
+        allowed.add(normalized)
+    return sorted(allowed)
+
+
 def build_external_fetch_shortlist(
     *,
     plan: Mapping[str, Any],
@@ -370,6 +599,7 @@ def build_external_fetch_shortlist(
     for bundle in sorted(locator_bundles, key=lambda row: str(row["query_unit_id"])):
         _validated_digest(bundle, "bundle_digest", "external_ladder_locator_digest_invalid")
         unit_id = str(bundle["query_unit_id"])
+        unit = by_unit[unit_id]
         unit_selected = 0
         for locator in bundle.get("locators") or ():
             url = str(locator["canonical_url"])
@@ -384,6 +614,25 @@ def build_external_fetch_shortlist(
                     }
                 )
                 continue
+            allowed_tiers = {
+                str(value) for value in registry_row.get("allowed_ladder_tiers") or ()
+            }
+            if allowed_tiers and str(unit["tier_id"]) not in allowed_tiers:
+                rejected.append(
+                    {
+                        "query_unit_id": unit_id,
+                        "canonical_url": url,
+                        "reason": "source_tier_not_allowed_for_query_tier",
+                        "query_tier_id": str(unit["tier_id"]),
+                        "source_allowed_tiers": sorted(allowed_tiers),
+                        "source_family_id": str(
+                            registry_row.get("source_family_id")
+                            or registry_row.get("host")
+                            or ""
+                        ),
+                    }
+                )
+                continue
             if url in seen_urls:
                 rejected.append(
                     {
@@ -393,7 +642,12 @@ def build_external_fetch_shortlist(
                     }
                 )
                 continue
-            if domain_counts.get(host, 0) >= per_domain:
+            source_family_id = str(
+                registry_row.get("source_family_id")
+                or registry_row.get("host")
+                or host
+            ).lower()
+            if domain_counts.get(source_family_id, 0) >= per_domain:
                 rejected.append(
                     {
                         "query_unit_id": unit_id,
@@ -415,11 +669,12 @@ def build_external_fetch_shortlist(
                 {
                     **dict(locator),
                     "source_registry": deepcopy(dict(registry_row)),
+                    "source_family_id": source_family_id,
                     "fetch_status": "approved_for_original_capture",
                 }
             )
             seen_urls.add(url)
-            domain_counts[host] = domain_counts.get(host, 0) + 1
+            domain_counts[source_family_id] = domain_counts.get(source_family_id, 0) + 1
             unit_selected += 1
     body = {
         "schema_version": EXTERNAL_FETCH_SHORTLIST_SCHEMA_VERSION,
@@ -439,6 +694,7 @@ def build_external_fetch_shortlist(
             ),
             "selected_tier_count": len({str(row["tier_id"]) for row in selected}),
             "selected_domain_count": len(domain_counts),
+            "selected_source_family_count": len(domain_counts),
         },
         "authority": {
             "provider_result_is_locator_only": True,
@@ -454,11 +710,16 @@ __all__ = [
     "EXTERNAL_FETCH_SHORTLIST_SCHEMA_VERSION",
     "EXTERNAL_LOCATOR_BUNDLE_SCHEMA_VERSION",
     "EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION",
+    "EXTERNAL_SOURCE_LADDER_PLAN_SCHEMA_VERSION_V1_1",
+    "EXTERNAL_SOURCE_LADDER_SUCCESSOR_SPEC_SCHEMA_VERSION",
     "SAFE_PROVIDER_REQUEST_SCHEMA_VERSION",
     "ExternalSourceLadderError",
     "build_external_fetch_shortlist",
     "canonicalize_external_url",
     "compile_safe_provider_request",
+    "compile_external_source_ladder_successor_plan",
     "normalize_tencent_search_response",
+    "source_family_allowed_hosts",
     "validate_external_source_ladder_plan",
+    "validate_external_source_ladder_successor_spec",
 ]

@@ -1203,3 +1203,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 最早责任层不是 DeepSeek，也不能简单归咎搜索供应商：exact-host allowlist 把 `root → www` 同源跳转误拒，domain budget 又把两者重复计额；query tier 与实际来源 tier 混淆；整段弱关键词重合产生网页尾部噪声；供应链只锁 NVIDIA，价值池缺少经过用途审查的技术／渠道来源。
 - R1 保持不可变。R2 不重跑 28 个成功查询，只实现 source-family／tier／block-level candidate 合同，重放 R1 locator 与同源误拒原文，并对供应链、价值池等残余覆盖做少量定向 successor 查询。无日期来源仍不得获得 PIT authority。
 - CandidateDecision、Evidence Gate、current Pack、S2 successor、EvidencePackReadiness 和动态单单元继续为 false。详细结果见 `docs/worklog/fin_0_1_3_s1/058_dell_external_ladder_r1_result_and_bounded_successor.md`。
+
+### 2026-08-22 DELL 外源阶梯 R2 结构 successor 工程门
+
+- R2 不重跑 R1 的 28 次成功查询：真实 R1 locator／capture 按 digest 与 SHA 复用，只新增 15 条逐来源 residual query，覆盖配置／渠道报价、公共采购、销量、Micron／TSMC 供应链和可信媒体／技术／渠道价值池材料。
+- `source_family_id` 统一 root、`www` 与安全别名的跳转和抓取预算；来源 role／class 来自受审注册表，query tier 不再被冒充为原文权威。R1 的真实同源误拒 capture 已在 0 网络下成功重新资格化。
+- candidate 改为中心块同时满足 identity／product anchor 与 proposition-specific material signal 后才有限扩展上下文；导航和页尾不能借整段弱词重合入选。原网页的可见英文月份日期可恢复，Provider 日期仍无独立 PIT 权威。
+- 零调用与 mutation 门为定向 `21 passed`、全仓 `1020 passed`；compileall、diff check、active baseline `200／8／5／28／0`、7,603-file secret scan／0。结构包尚待 clean commit／push 与 fresh preflight；真实 R2、CandidateDecision、Evidence Gate、S2、EvidencePackReadiness 和动态模型调用均未发生。
+- 详细记录见 `docs/worklog/fin_0_1_3_s1/059_dell_external_ladder_r2_structural_successor_gate.md`。

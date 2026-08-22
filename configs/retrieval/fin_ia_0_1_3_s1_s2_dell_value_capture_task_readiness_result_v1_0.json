@@ -1,0 +1,520 @@
+{
+  "schema_version": "fin_ia_s1_s2_task_pack_readiness_public_result_v1_0",
+  "status": "ready_for_bounded_dynamic_single_unit_with_actionable_gaps",
+  "recorded_at": "2026-08-23T04:41:41+08:00",
+  "prepared_from_commit": "e7da7332466fb896839bbe4008e81e8bb192c1c4",
+  "case_key": "DELL",
+  "cell_id": "value_capture",
+  "evidence_pack_payload_digest": "46f3704656ee15d960d3f39d8a45169a326604e871b7c01dd495b7bbac693864",
+  "review_plan_digest": "b1c20850a6a03c12c7582b69edbb046d9662785622d4553d1e0ae993c3f3d8d1",
+  "polarity_plan_digest": "1138307ff788d9eceeb45ef86f6c61f8ebb619732d22cc43d956d9658038310d",
+  "integrated_readiness_digest": "0a78373a406d855447a8ffc1e662b5b695cc835ffed3bd8e216e54a6159baa3e",
+  "integrated_summary": {
+    "requirement_count": 20,
+    "fully_satisfied_requirement_count": 5,
+    "research_consumable_requirement_count": 15,
+    "request_count": 12,
+    "ready_request_count": 1,
+    "research_consumable_request_count": 9,
+    "integrated_state_counts": {
+      "not_ready_s1_evidence": 5,
+      "ready": 1,
+      "ready_s1_numeric_context_only": 4,
+      "ready_with_claim_boundary": 10
+    }
+  },
+  "request_states": [
+    {
+      "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "state": "not_ready",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 0,
+      "not_ready_requirement_ids": [
+        "MER::6fa3c163925322baf3cf",
+        "MER::9cd50ca8d91504f3269e"
+      ]
+    },
+    {
+      "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+      "state": "not_ready",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 0,
+      "not_ready_requirement_ids": [
+        "MER::b7b216504cfbbd943afc",
+        "MER::f43c3f3856fdcdf0daca"
+      ]
+    },
+    {
+      "request_id": "REQ::DELL::PVM_BRIDGE::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 1,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 1,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 1,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 1,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+      "state": "not_ready",
+      "requirement_count": 1,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 0,
+      "not_ready_requirement_ids": [
+        "MER::ec78906c154821fb49f7"
+      ]
+    },
+    {
+      "request_id": "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "state": "ready",
+      "requirement_count": 1,
+      "fully_satisfied_requirement_count": 1,
+      "research_consumable_requirement_count": 1,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 1,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 1,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::COUNTER_ISSUER::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 1,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 1,
+      "not_ready_requirement_ids": []
+    },
+    {
+      "request_id": "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "state": "research_consumable_with_boundaries_or_s2_gaps",
+      "requirement_count": 2,
+      "fully_satisfied_requirement_count": 0,
+      "research_consumable_requirement_count": 2,
+      "not_ready_requirement_ids": []
+    }
+  ],
+  "requirement_states": {
+    "MER::6fa3c163925322baf3cf": {
+      "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "AI server configuration tiers",
+        "GPU HBM networking and storage configuration mix"
+      ],
+      "unaddressed_product_ids": [
+        "AI server observable price range"
+      ],
+      "claim_boundary_zh": "不得把单一翻新机配置、行业平台占比或产品目录推断为 Dell 平均售价或正式价格区间。"
+    },
+    "MER::9cd50ca8d91504f3269e": {
+      "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "AI server configuration tiers",
+        "GPU HBM networking and storage configuration mix"
+      ],
+      "unaddressed_product_ids": [
+        "AI server observable price range"
+      ],
+      "claim_boundary_zh": "配置复杂度可以解释潜在价格差异，不能替代价格证据。"
+    },
+    "MER::b7b216504cfbbd943afc": {
+      "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "industry AI server shipment volume"
+      ],
+      "unaddressed_product_ids": [
+        "AI server units shipped",
+        "Dell shipment share proxy"
+      ],
+      "claim_boundary_zh": "订单额、收入额和 backlog 均不能被本地除以假设 ASP 后冒充已观察到的 Dell 销量。"
+    },
+    "MER::f43c3f3856fdcdf0daca": {
+      "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "industry AI server shipment volume"
+      ],
+      "unaddressed_product_ids": [
+        "AI server units shipped",
+        "Dell shipment share proxy"
+      ],
+      "claim_boundary_zh": "行业增长不能证明 Dell 同步增长，组合迁移也不能反推出 Dell 台数。"
+    },
+    "MER::6262229be06b84b274fd": {
+      "request_id": "REQ::DELL::PVM_BRIDGE::V1",
+      "integrated_state": "ready_s1_numeric_context_only",
+      "research_consumable": true,
+      "fully_satisfied": true,
+      "addressed_product_ids": [
+        "configuration intensity inputs",
+        "industry AI server shipment and ASP",
+        "reported AI server revenue and mix"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "这些是 PVM 输入，不是已披露的 Dell 价格、销量或完整 PVM 分解；最终区间必须由 S2 确定性计算并展示假设。"
+    },
+    "MER::343a2a9d537121cf476d": {
+      "request_id": "REQ::DELL::PVM_BRIDGE::V1",
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "configuration intensity inputs",
+        "industry AI server shipment and ASP",
+        "reported AI server revenue and mix"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "背景资料只允许产生区间和敏感性，不允许产生伪精确 Dell ASP 或销量。"
+    },
+    "MER::fe8198d1f35660b52fc6": {
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "integrated_state": "ready_s1_numeric_context_only",
+      "research_consumable": true,
+      "fully_satisfied": true,
+      "addressed_product_ids": [
+        "AI order conversion",
+        "backlog durability",
+        "customer concentration",
+        "pull-forward risk"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "订单额与当季收入不是同一批次的 cohort conversion；backlog 定义也不等于全部可取消性、账龄和客户构成已知。"
+    },
+    "MER::c1ca1d3778bf29a6f3e0": {
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "AI order conversion",
+        "backlog durability",
+        "customer concentration",
+        "pull-forward risk"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "风险披露是机制与停止条件，不证明风险已经发生，也不能抹去当前订单和收入事实。"
+    },
+    "MER::d6f443b55a298805bd58": {
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "integrated_state": "ready",
+      "research_consumable": true,
+      "fully_satisfied": true,
+      "addressed_product_ids": [
+        "customer AI infrastructure deployment",
+        "customer budget durability",
+        "named Dell customer or deployment relationship"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "一个命名客户案例和行业支出不能代表 Dell 全部客户，也不能量化 Dell 客户预算留存率。"
+    },
+    "MER::d618dc668cc85a91d6b7": {
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "customer AI infrastructure deployment",
+        "customer budget durability",
+        "named Dell customer or deployment relationship"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "单一成功案例不能推演总体采用率；渠道风险也不证明 Dell AI 客户预算已经下滑。"
+    },
+    "MER::7ab378f99df9e6271146": {
+      "request_id": "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "integrated_state": "ready_s1_numeric_context_only",
+      "research_consumable": true,
+      "fully_satisfied": true,
+      "addressed_product_ids": [
+        "AI server delivery cadence",
+        "component constraint",
+        "inventory and fulfillment execution"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "这些资料不能量化逐周交付节奏、良率、供应商分配或具体释放日期。"
+    },
+    "MER::1a7032562101f8a69c12": {
+      "request_id": "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "AI server delivery cadence",
+        "component constraint",
+        "inventory and fulfillment execution"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "风险机制不等于当前交付失败；仍缺少按产品和供应商拆分的执行数据。"
+    },
+    "MER::b11707a6ac5f12db3f5f": {
+      "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "Dell supplier dependency or allocation disclosure",
+        "GPU supply release",
+        "HBM availability",
+        "advanced packaging capacity"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "该视图只能说明供应商层面的紧张与爬坡并存，不提供 Dell 专属配额、到货日期、良率或可用数量。"
+    },
+    "MER::ca8dca19d882f7dc9789": {
+      "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "Dell supplier dependency or allocation disclosure",
+        "GPU supply release",
+        "HBM availability",
+        "advanced packaging capacity"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "供应商层面的 sold-out 与 ramp 不能证明 Dell 已得到更多 allocation，也不能给出 Dell 到货时点。"
+    },
+    "MER::ec78906c154821fb49f7": {
+      "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+      "integrated_state": "not_ready_s1_evidence",
+      "research_consumable": false,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "supplier names Dell"
+      ],
+      "unaddressed_product_ids": [
+        "Dell names supplier",
+        "delivery or allocation relationship"
+      ],
+      "claim_boundary_zh": "历史 L40S 关系不证明当前 Blackwell/HBM 配额、合同条款、交付状态，也不替代 Dell 自身点名供应商。"
+    },
+    "MER::b704cc5d21d70d06af1a": {
+      "request_id": "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "integrated_state": "ready_s1_numeric_context_only",
+      "research_consumable": true,
+      "fully_satisfied": true,
+      "addressed_product_ids": [
+        "AI server OEM gross profit and margin",
+        "AI server incremental margin inputs",
+        "supplier component value proxy"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "不能把公司或 ISG 利润改善全部归因于 AI，也不能把媒体机制判断写成供应商精确价值分配。"
+    },
+    "MER::b6eb0f0deae6c6fe721c": {
+      "request_id": "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "Dell supplier attribution or relationship",
+        "GPU HBM packaging and OEM value pool inputs",
+        "supplier economics"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "这里的关系与供应商经济性主要是第三方背景，不构成 Dell 精确 BOM、合同条款或供应商利润分配事实。"
+    },
+    "MER::4e416ae88fc7670873e2": {
+      "request_id": "REQ::DELL::COUNTER_ISSUER::V1",
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "AI demand digestion signals",
+        "AI margin dilution signals",
+        "AI working-capital pressure"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "风险信号不能写成已经发生的需求崩塌；媒体毛利判断必须与 Dell 披露分开呈现。"
+    },
+    "MER::d0c577cba6d9f5f9b872": {
+      "request_id": "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "GPU HBM packaging constraint",
+        "architecture transition",
+        "customer capex slowdown",
+        "supply release or easing evidence"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "持续行业支出反驳了“已普遍放缓”，但不能证明 Dell 客户不会调整预算；扩产也不能换算为 Dell 获配时间。"
+    },
+    "MER::5757bbe2f95de3a98774": {
+      "request_id": "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "integrated_state": "ready_with_claim_boundary",
+      "research_consumable": true,
+      "fully_satisfied": false,
+      "addressed_product_ids": [
+        "GPU HBM packaging constraint",
+        "architecture transition",
+        "customer capex slowdown",
+        "supply release or easing evidence"
+      ],
+      "unaddressed_product_ids": [],
+      "claim_boundary_zh": "生态链背景不能自动归因到 Dell，也不能替代 Dell/供应商双边关系证据。"
+    }
+  },
+  "task_pack_readiness": {
+    "schema_version": "fin_ia_s1_s2_task_pack_readiness_v1_0",
+    "status": "ready_for_bounded_dynamic_single_unit_with_actionable_gaps",
+    "case_key": "DELL",
+    "cell_id": "value_capture",
+    "recorded_at": "2026-08-23T04:41:41+08:00",
+    "evidence_pack_payload_digest": "46f3704656ee15d960d3f39d8a45169a326604e871b7c01dd495b7bbac693864",
+    "integrated_readiness_digest": "0a78373a406d855447a8ffc1e662b5b695cc835ffed3bd8e216e54a6159baa3e",
+    "task_quantitative_projection_digest": "395e33f0a3747195e508f68c00eb6c1cf066814afe863e6403a8ec1ca82d88d6",
+    "required_research_consumable_request_ids": [
+      "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "REQ::DELL::COUNTER_ISSUER::V1",
+      "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "REQ::DELL::PVM_BRIDGE::V1",
+      "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+      "REQ::DELL::VALUE_POOL_MARGIN::V1"
+    ],
+    "actionable_gap_requests": [
+      {
+        "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+        "required_open_gap_ids": [
+          "dell-gap-pricing-asp"
+        ],
+        "next_action": "search_public_configuration_price_and_procurement_ranges_or_retain_typed_gap",
+        "public_information_gap_authority": false
+      },
+      {
+        "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+        "required_open_gap_ids": [
+          "dell-gap-pricing-units"
+        ],
+        "next_action": "seek_Dell_unit_or_share_proxy_then_use_industry_scenario_only_as_external_bound",
+        "public_information_gap_authority": false
+      },
+      {
+        "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+        "required_open_gap_ids": [
+          "dell-gap-supplier-capacity-readthrough"
+        ],
+        "next_action": "seek_current_bilateral_delivery_or_allocation_evidence_without_upgrading_historical_relationship",
+        "public_information_gap_authority": false
+      }
+    ],
+    "checks": {
+      "required_requests_research_consumable": true,
+      "only_declared_requests_remain_not_ready": true,
+      "all_not_ready_requests_have_open_actionable_gaps": true,
+      "task_quantitative_projection_ready": true,
+      "typed_conflicts_absent": true,
+      "all_pack_gaps_remain_explicit": true,
+      "current_pack_evidence_count": true,
+      "no_public_information_gap_authority": true
+    },
+    "authority": {
+      "task_relative_readiness_only": true,
+      "all_S1_requests_ready": false,
+      "S1_qualified": false,
+      "S2_stage_qualified": false,
+      "dynamic_agent_executed": false,
+      "public_information_gap_claimed": false
+    },
+    "known_boundary": "This is task-relative readiness for one DELL value_capture dynamic unit. Three requests intentionally remain actionable rather than ready; the agent must use tools, reflect on receipts and preserve typed gaps. This does not qualify S1, S2, S3, the full DELL case, multi-agent research or release.",
+    "task_pack_readiness_digest": "b4bfbb410441add4a22a69799ff47376da956b4cf9c31387672aec841d231066"
+  },
+  "authority": {
+    "task_relative_readiness_only": true,
+    "all_S1_requests_ready": false,
+    "S1_qualified": false,
+    "S2_stage_qualified": false,
+    "dynamic_agent_executed": false,
+    "public_information_gap_claimed": false,
+    "new_evidence_promoted_in_this_run": false,
+    "model_or_network_calls": 0
+  },
+  "source_bindings": {
+    "program": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_s2_dell_value_capture_task_readiness_program_v1_0.json",
+      "sha256": "d2085299e4c4a5bd84407467fa44e6e8e4fa95fbbee4203c85581773e5303fa4"
+    },
+    "product_replay": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_proposition_coverage/dell-proposition-internal-r3/internal_runtime_result.json",
+      "sha256": "70a152426bec39fc34f76418ec4b26b3ec1468025d47537daa11d9a176f00319"
+    },
+    "evidence_pack": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r3-capture-replay/successor/pack.json",
+      "sha256": "80c19b7fba1363558483d7ad8af31297c9c94156645f34c594540d477d249177"
+    },
+    "predecessor_review_plan": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_natural_requirement_evidence_review_v1_1.json",
+      "sha256": "425c89dc2df5b9b9f89bb2b478069cbc415ff7f0c590a4c14556f9e2086a12e4"
+    },
+    "predecessor_polarity_plan": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_natural_requirement_polarity_review_v1_2.json",
+      "sha256": "ccd8bd1744c7fa47d72cf7b6dcbf50c80ee48aaa4f498a588da5ba02f4860024"
+    },
+    "anchor_catalog": {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_5.json",
+      "sha256": "93928924566185eb8ec0ef3e362177e2cfb85f9c5449402711dddb79911252bb"
+    },
+    "task_quantitative_public_result": {
+      "ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_task_quantitative_program_result_v1_0.json",
+      "sha256": "0135977ea645ee548109043775f94c7058c7d9b16cb9502212ec0b9f7ecfa2d1"
+    },
+    "task_quantitative_private_result": {
+      "ref": "data/workbench_private/fin_0_1_3_s2_task_quantitative_program/dell-r1/full_result.json",
+      "sha256": "bae7df450e3062b2650c0d6cd48242935cad0a1d9c7c0e25ed07757fded567e6"
+    }
+  },
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1_s2_task_pack_readiness/dell-value-capture-r1/full_result.json",
+  "full_result_sha256": "4917bb1eac3d7d7cb99ccc8040f4190c54e9d10012f83f990d7a078bbcf91bd0",
+  "known_boundary": "This is task-relative readiness for one DELL value_capture dynamic unit. Three requests intentionally remain actionable rather than ready; the agent must use tools, reflect on receipts and preserve typed gaps. This does not qualify S1, S2, S3, the full DELL case, multi-agent research or release.",
+  "result_digest": "224937d91f08259e5180d15dedf1f59ae04eaf6a32ba3d9439b431f35cd789ce"
+}

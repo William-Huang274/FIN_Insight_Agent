@@ -1271,3 +1271,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 定向测试 17 通过，当前 0 网络／Provider／模型／promotion。下一步必须 clean commit／push 后才能执行唯一一次 R3 live。
 - R3 结果仍需新 CandidateDecision／Evidence Gate；付费墙、搜索未命中、抓取失败、解析失败和真实未披露不得混为一个 gap。
 - 详细记录见 `docs/worklog/fin_0_1_3_s1/066_dell_residual_external_ladder_r3_plan_and_zero_call_gate.md`。
+
+### 2026-08-23 DELL residual external ladder R3 live 与 capture compiler 最早责任层
+
+- R3 绑定 clean／synced `483f60d4...16bb`，28 条旧 locator digest replay＋22 条 Tencent WSA Standard fresh query 全部成功，形成 355 个 locator；公平 shortlist 选择 60 条原文路线，49 条 capture 成功。运行 0 retry、0 模型、0 Evidence promotion。
+- 49 条 capture 最终只编译 15 个 source object／15 条 proposal。供应链命题虽有 21 条 capture，却为 0 proposal；这不能表述为“没有公开资料”。
+- NVIDIA Investor 三篇结果页已有约 25k–28k 可见正文，却因正文主要使用 `div`、当前 parser 只消费 `p/li/tr` 等标签而误报 `article_body_too_thin`。NVIDIA Newsroom 三篇明确点名 Dell 的历史官方材料，又因正文日期和页尾 2026 推荐文章日期混入同一优先级而被判 date conflict。CRN 供应连续性页也停在日期恢复层。
+- 真正仍未获得的材料与工具故障分开保留：Dell IR 路线 read timeout，IDC 为 403；CDW／Insight／SAM.gov 未形成 Dell AI 服务器可观察成交价；TrendForce 只提供行业销量／供给上下文。价格和 Dell 台数／份额不得被 parser 修复伪关闭。
+- R3 public result digest=`9aeb7a80...fb9ce`，private terminal SHA-256=`09c07053...70fc`。CandidateDecision、Evidence Gate、current Pack、S2 successor、EvidencePackReadiness 和动态 Agent 均仍为 false。
+- 下一项是保留 R3 不可变，使用本轮 capture 做零网络 parser／date adjudicator replay；修复后必须重新生成 source object／candidate receipt，不能重跑 Provider 或改写原始运行。

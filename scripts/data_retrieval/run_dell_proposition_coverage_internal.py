@@ -117,6 +117,74 @@ def _route_states(request_result: Mapping[str, Any]) -> Counter[str]:
     return states
 
 
+def _program_material_blueprints(
+    program: Mapping[str, Any],
+) -> dict[str, dict[str, Any]]:
+    """Expand the Owner-reviewed program scope into explicit AI-free blueprints.
+
+    The generic fallback must keep unfamiliar natural product intents unclassified.
+    This program is different: every listed intent was deliberately frozen as a
+    material axis for the seven DELL propositions.  The expansion stays local to
+    this execution program and uses the same public MaterialRequirement contract
+    that a later ResearchBlueprint or PlanDelta must submit.
+    """
+
+    contract = program.get("material_scope_blueprint")
+    if not isinstance(contract, Mapping) or contract.get("mode") != (
+        "explicit_all_visible_product_intents_hard_material_axes"
+    ):
+        raise ValueError("dell_proposition_material_scope_blueprint_missing")
+    roles_by_request = contract.get("required_roles_by_request")
+    if not isinstance(roles_by_request, Mapping):
+        raise ValueError("dell_proposition_material_scope_roles_missing")
+    metric_binding_roles = {
+        str(value) for value in contract.get("metric_binding_roles") or ()
+    }
+    requests = {
+        str(row.get("request_id") or ""): dict(row)
+        for row in program.get("evidence_requests") or ()
+        if isinstance(row, Mapping)
+    }
+    if not requests or set(roles_by_request) != set(requests):
+        raise ValueError("dell_proposition_material_scope_request_set_invalid")
+    result: dict[str, dict[str, Any]] = {}
+    for request_id, request in requests.items():
+        facets = [str(value) for value in request.get("requested_facet_ids") or ()]
+        products = [str(value) for value in request.get("product_intents") or ()]
+        metrics = [str(value) for value in request.get("metric_intents") or ()]
+        entities = [str(value) for value in request.get("target_entities") or ()]
+        roles = [str(value) for value in roles_by_request.get(request_id) or ()]
+        if (
+            len(facets) != 1
+            or not products
+            or not entities
+            or not roles
+            or len(roles) != len(set(roles))
+        ):
+            raise ValueError(
+                f"dell_proposition_material_scope_request_invalid:{request_id}"
+            )
+        result[request_id] = {
+            "material_requirements": [
+                {
+                    "facet_id": facets[0],
+                    "role": role,
+                    "metric_ids": metrics if role in metric_binding_roles else [],
+                    "product_ids": products,
+                    "target_entities": entities,
+                    "period_mode": "any",
+                    "fiscal_years": [],
+                    "minimum_candidates": 1,
+                    "coverage_mode": "collective_axes",
+                    "metric_coverage_mode": "retrieval_context_only",
+                    "product_coverage_mode": "all_of",
+                }
+                for role in roles
+            ]
+        }
+    return result
+
+
 def _request_public_row(request_result: Mapping[str, Any]) -> dict[str, Any]:
     request = dict(request_result.get("request") or {})
     hybrid = dict(request_result.get("hybrid_object_retrieval") or {})
@@ -313,7 +381,10 @@ def run(
         mode="current", permissions=frozenset({"current_product:read"})
     )
     execution = service.execute_current_runtime_requests(
-        "DELL", program["evidence_requests"], principal
+        "DELL",
+        program["evidence_requests"],
+        principal,
+        material_requirement_blueprints=_program_material_blueprints(program),
     )
     recorded_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     prepared_from_commit = _head()

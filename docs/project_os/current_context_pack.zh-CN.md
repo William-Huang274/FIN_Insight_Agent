@@ -1211,3 +1211,20 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - candidate 改为中心块同时满足 identity／product anchor 与 proposition-specific material signal 后才有限扩展上下文；导航和页尾不能借整段弱词重合入选。原网页的可见英文月份日期可恢复，Provider 日期仍无独立 PIT 权威。
 - 零调用与 mutation 门为定向 `21 passed`、全仓 `1020 passed`；compileall、diff check、active baseline `200／8／5／28／0`、7,603-file secret scan／0。结构包尚待 clean commit／push 与 fresh preflight；真实 R2、CandidateDecision、Evidence Gate、S2、EvidencePackReadiness 和动态模型调用均未发生。
 - 详细记录见 `docs/worklog/fin_0_1_3_s1/059_dell_external_ladder_r2_structural_successor_gate.md`。
+
+### 2026-08-22 DELL 外源 R2、候选裁决与 Evidence Gate
+
+- R2 精确复用 28 条 R1 locator 查询，只新增 15 条 residual provider calls；最终形成 35 份原文 capture、18 个 source object 和 19 条 proposal。`Pages: null` 且无 Error 的三个响应被更正为成功零结果，解析失败同时保留原始响应与 typed failure。
+- 19 条 proposal 经逐条业务裁决后，12 条接受／替换、7 条拒绝；另从已保存 capture 补回 Dell 官方 Northwestern Medicine 客户案例和明确标为翻新渠道样本的 XE9680 H200 配置。最终 14 条 capture-bound candidate 进入 Evidence Gate。
+- private successor 从 29 增至 43 Evidence：新增 2 条 Dell issuer-direct fact 与 12 条 bounded industry／channel／media context。14 个 residual gap 中 6 个被收窄、0 个关闭；Dell exact ASP、公司销量、专属供应分配、良率、释放时点和估值仍无关闭权威。
+- 新增来源不得创造 Dell exact NumericFact、AI 利润因果或成交价权威。successor 仍为 private，尚未晋升 current；S2、EvidencePackReadiness 和动态单单元均未执行。
+- 详细记录见 `docs/worklog/fin_0_1_3_s1/060_dell_external_candidate_evidence_gate_and_incremental_current_pack.md`。
+
+### 2026-08-22 DELL 12 请求材料范围与 Readiness 接缝
+
+- 外源 R2／CandidateDecision／Evidence Gate 已将 DELL private successor 从 29 增至 43 Evidence，但旧 8 问题 ProductReadiness 重放仍只识别旧链 7 条 reviewed Evidence。旧结果已保留为负向证据，不能用于 current promotion。
+- 最早责任层是 S1 研究计划到检索／readiness 的合同接缝：当前七命题已拆成 12 个 EvidenceRequest，但自然 product intent 在通用 fallback 中保持 unclassified，导致 12/12 hard material scope 为空；新增外源 Evidence 也不属于旧内部 candidate seed union。
+- 结构修复在七命题执行程序中显式编译 Owner-reviewed material blueprint，逐请求绑定 direct／bridge／context／counter 角色；通用 fallback 对陌生意图继续 fail closed。Workbench service 与 API 同步保存并公开 material-scope digest，未知 blueprint request 会被拒绝。
+- 工程门通过：定向 `34 passed`、全仓 `1030 passed`（仅 2 条既有 SWIG warning）、compileall、active baseline `200／8／5／28／0`、7,613-file secret scan／0 和 diff check。0 模型、0 网络、0 Provider、0 Candidate promotion。
+- 下一步必须先 clean commit／push，再执行 12 请求 AI-free R2；随后把 43 Evidence 按新 MaterialRequirement 做 reviewed mapping／polarity／integrated EvidencePackReadiness。只有新 readiness 通过，才晋升 current Pack、重编 S2，并考虑动态 DELL 单单元。S1／S2／S3／qualified-human／Workbench publication／release 继续为 false。
+- 详细记录见 `docs/worklog/fin_0_1_3_s1/061_dell_twelve_request_material_scope_and_readiness_seam.md`。

@@ -70,6 +70,22 @@ def _service(tmp_path: Path, hybrid: _HybridRuntime) -> ResearchRetrievalService
             "fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json"
         ),
         hybrid_candidate_runtime=hybrid,
+        material_scope_policy=_read(
+            "configs/research/"
+            "fin_ia_0_1_3_s3_material_scope_policy_v1_0.json"
+        ),
+        material_runtime_policy=_read(
+            "configs/retrieval/"
+            "fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_1.json"
+        ),
+        financial_intent_ontology=_read(
+            "configs/retrieval/"
+            "fin_ia_0_1_3_s1_financial_intent_ontology_v1_3.json"
+        ),
+        retrieval_need_policy=_read(
+            "configs/retrieval/"
+            "fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_2.json"
+        ),
         company_financial_fact_mart_path=tmp_path / "missing.sqlite",
     )
 
@@ -123,6 +139,70 @@ def test_direct_current_runtime_request_rejects_duplicate_identity(
         )
 
 
+def test_direct_current_runtime_request_consumes_explicit_material_blueprint(
+    tmp_path: Path,
+) -> None:
+    hybrid = _HybridRuntime()
+    service = _service(tmp_path, hybrid)
+    request = _request()
+    request_id = request["request_id"]
+    blueprint = {
+        "material_requirements": [
+            {
+                "facet_id": request["requested_facet_ids"][0],
+                "role": "direct",
+                "metric_ids": list(request["metric_intents"]),
+                "product_ids": list(request["product_intents"]),
+                "target_entities": list(request["target_entities"]),
+                "period_mode": "any",
+                "fiscal_years": [],
+                "minimum_candidates": 1,
+                "coverage_mode": "collective_axes",
+                "metric_coverage_mode": "retrieval_context_only",
+                "product_coverage_mode": "all_of",
+            }
+        ]
+    }
+
+    result = service.execute_current_runtime_requests(
+        "DELL",
+        [request],
+        _principal(),
+        material_requirement_blueprints={request_id: blueprint},
+    )
+
+    assert result["material_scope"]["mode"] == (
+        "explicit_program_blueprint_compiled"
+    )
+    assert result["material_scope"]["scope_compilation"]["request_ids"] == [
+        request_id
+    ]
+    assert result["material_compilation_receipts"][0]["compiler_mode"] == (
+        "explicit_research_blueprint"
+    )
+    runtime_inputs = hybrid.calls[0][1]["material_runtime_inputs"]
+    assert runtime_inputs[request_id]["material_requirement_blueprint"] == blueprint
+
+
+def test_direct_current_runtime_request_rejects_unknown_blueprint_request(
+    tmp_path: Path,
+) -> None:
+    service = _service(tmp_path, _HybridRuntime())
+
+    with pytest.raises(
+        ResearchRetrievalServiceError,
+        match="current_runtime_material_blueprint_request_unknown",
+    ):
+        service.execute_current_runtime_requests(
+            "DELL",
+            [_request()],
+            _principal(),
+            material_requirement_blueprints={
+                "REQ::UNKNOWN": {"material_requirements": []}
+            },
+        )
+
+
 def test_current_runtime_request_endpoint_uses_same_product_surface(
     tmp_path: Path,
 ) -> None:
@@ -142,3 +222,6 @@ def test_current_runtime_request_endpoint_uses_same_product_surface(
     assert response.status_code == 200
     assert response.headers["etag"].startswith('"current-runtime-requests=')
     assert response.json()["summary"]["hybrid_selected_candidate_count"] == 1
+    assert response.json()["material_scope"]["mode"] == (
+        "deterministic_runtime_fallback"
+    )

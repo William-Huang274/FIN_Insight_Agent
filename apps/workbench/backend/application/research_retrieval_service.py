@@ -1198,6 +1198,8 @@ class ResearchRetrievalService:
         case_key: str,
         payloads: Sequence[Mapping[str, Any]],
         principal: ResearchRetrievalPrincipal,
+        *,
+        material_requirement_blueprints: Mapping[str, Mapping[str, Any]] | None = None,
     ) -> dict[str, Any]:
         """Execute typed requests through the mounted S1/S2 product runtime.
 
@@ -1258,6 +1260,19 @@ class ResearchRetrievalService:
 
         material_runtime_inputs: dict[str, dict[str, Any]] = {}
         material_receipts: list[dict[str, Any]] = []
+        blueprint_by_request = {
+            str(request_id): deepcopy(dict(blueprint))
+            for request_id, blueprint in (
+                material_requirement_blueprints or {}
+            ).items()
+        }
+        unknown_blueprint_ids = set(blueprint_by_request) - seen_request_ids
+        if unknown_blueprint_ids:
+            raise ResearchRetrievalServiceError(
+                "current_runtime_material_blueprint_request_unknown",
+                422,
+                request_ids=sorted(unknown_blueprint_ids),
+            )
         if self._material_runtime_policy is not None:
             try:
                 for request, result in zip(requests, request_results):
@@ -1267,6 +1282,9 @@ class ResearchRetrievalService:
                             result["execution_plan"]
                         ),
                     }
+                    blueprint = blueprint_by_request.get(request.request_id)
+                    if blueprint is not None:
+                        runtime_input["material_requirement_blueprint"] = blueprint
                     _, receipt = compile_material_requirement_plan_from_runtime_input(
                         runtime_input=runtime_input,
                         policy=self._material_runtime_policy,
@@ -1401,6 +1419,31 @@ class ResearchRetrievalService:
                 "generation_model_calls": 0,
             },
             "material_compilation_receipts": material_receipts,
+            "material_scope": {
+                "mode": (
+                    "explicit_program_blueprint_compiled"
+                    if blueprint_by_request
+                    else "deterministic_runtime_fallback"
+                ),
+                "research_plan_digest": canonical_digest(
+                    {
+                        "case_key": key,
+                        "requests": [request.as_dict() for request in requests],
+                        "material_requirement_blueprints": blueprint_by_request,
+                    }
+                ),
+                "scope_compilation": {
+                    "request_ids": sorted(blueprint_by_request),
+                    "compilation_digest": canonical_digest(
+                        {
+                            "case_key": key,
+                            "material_requirement_blueprints": blueprint_by_request,
+                        }
+                    ),
+                    "candidate_or_reference_inputs_read": False,
+                    "generation_model_calls": 0,
+                },
+            },
             "request_results": enriched_results,
             "known_boundary": (
                 "This is the canonical direct EvidenceRequest execution surface for "

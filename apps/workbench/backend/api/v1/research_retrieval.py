@@ -106,6 +106,7 @@ class CurrentRuntimeEvidenceRequestBatchResponse(BaseModel):
     product_mode: Literal["current"]
     case_key: str
     summary: dict[str, Any]
+    material_scope: dict[str, Any]
     material_compilation_receipts: list[dict[str, Any]]
     request_results: list[dict[str, Any]]
     known_boundary: str

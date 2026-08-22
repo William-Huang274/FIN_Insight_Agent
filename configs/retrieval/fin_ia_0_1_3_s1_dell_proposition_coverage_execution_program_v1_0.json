@@ -79,6 +79,27 @@
     "typed_gap_requires_gap_eligibility_receipt": true,
     "dynamic_single_unit_authorized_only_after_task_relative_readiness": true
   },
+  "material_scope_blueprint": {
+    "mode": "explicit_all_visible_product_intents_hard_material_axes",
+    "metric_binding_roles": ["direct", "bridge"],
+    "required_roles_by_request": {
+      "REQ::DELL::PRICE_CONFIGURATION::V1": ["direct", "context"],
+      "REQ::DELL::UNIT_VOLUME::V1": ["direct", "counter"],
+      "REQ::DELL::PVM_BRIDGE::V1": ["direct", "context"],
+      "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1": ["direct", "counter"],
+      "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1": ["context", "counter"],
+      "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1": ["direct", "counter"],
+      "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1": ["context", "counter"],
+      "REQ::DELL::SUPPLY_RELATIONSHIP::V1": ["context"],
+      "REQ::DELL::VALUE_POOL_MARGIN::V1": ["bridge"],
+      "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1": ["context"],
+      "REQ::DELL::COUNTER_ISSUER::V1": ["counter"],
+      "REQ::DELL::COUNTER_ECOSYSTEM::V1": ["counter", "context"]
+    },
+    "candidate_or_reference_inputs_read": false,
+    "generation_model_calls": 0,
+    "scope_authority": "owner_reviewed_dell_proposition_execution_program"
+  },
   "propositions": [
     {
       "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",

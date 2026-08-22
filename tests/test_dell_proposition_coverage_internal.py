@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from scripts.data_retrieval.run_dell_proposition_coverage_internal import (
+    _program_material_blueprints,
     build_public_projection,
 )
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _request_result(request_id: str, *, complete: bool) -> dict:
@@ -117,3 +124,34 @@ def test_public_projection_keeps_candidate_and_evidence_authority_separate() -> 
         "executed": 1,
         "not_executed_route_unavailable": 1,
     }
+
+
+def test_program_material_blueprints_preserve_all_twelve_business_requests() -> None:
+    program = json.loads(
+        (
+            ROOT
+            / "configs"
+            / "retrieval"
+            / "fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_0.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    blueprints = _program_material_blueprints(program)
+
+    assert len(blueprints) == 12
+    price = blueprints["REQ::DELL::PRICE_CONFIGURATION::V1"]
+    assert [row["role"] for row in price["material_requirements"]] == [
+        "direct",
+        "context",
+    ]
+    assert all(
+        row["product_ids"]
+        == [
+            "AI server observable price range",
+            "AI server configuration tiers",
+            "GPU HBM networking and storage configuration mix",
+        ]
+        for row in price["material_requirements"]
+    )
+    assert price["material_requirements"][0]["metric_ids"]
+    assert price["material_requirements"][1]["metric_ids"] == []

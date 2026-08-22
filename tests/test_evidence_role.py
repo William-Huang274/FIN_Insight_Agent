@@ -4,6 +4,9 @@ from retrieval.evidence_role import evaluate_evidence_role
 from retrieval.evidence_role_v3 import (
     evaluate_evidence_role as evaluate_evidence_role_v3,
 )
+from retrieval.evidence_role_v4 import (
+    evaluate_evidence_role as evaluate_evidence_role_v4,
+)
 
 
 def _document(text: str, *, section: str = "Item 2. MD&A") -> dict[str, str]:
@@ -237,6 +240,63 @@ def test_supply_and_demand_risk_can_answer_downstream_counterevidence() -> None:
 
     assert result.compatibility == "compatible"
     assert "demand_risk_or_counterevidence" in result.labels
+
+
+def test_public_context_successor_facets_are_supported_without_granting_authority() -> None:
+    cases = (
+        (
+            "demand_volume_quality",
+            "industry_demand_context",
+            "AI server shipments increased as customer deployments expanded.",
+        ),
+        (
+            "pricing_mix_value_capture",
+            "industry_pricing_mix_context",
+            "AI server industry value increased as product mix changed.",
+        ),
+        (
+            "pricing_mix_value_capture",
+            "channel_configuration_context",
+            "A Dell PowerEdge server configuration includes NVIDIA GPUs and HBM.",
+        ),
+        (
+            "pricing_mix_value_capture",
+            "trusted_value_pool_context",
+            "Dell added margin dollars while supplier bargaining pressure remained.",
+        ),
+        (
+            "capacity_inputs_execution",
+            "industry_supply_context",
+            "Advanced packaging and HBM capacity remained constrained.",
+        ),
+        (
+            "relationship_attribution",
+            "industry_relationship_context",
+            "Industry suppliers serve Dell and other OEM customers.",
+        ),
+        (
+            "counterevidence_and_what_would_change",
+            "trusted_or_industry_counterevidence",
+            "Demand digestion and HBM supply constraints may pressure margins.",
+        ),
+    )
+    for slot_id, facet_id, text in cases:
+        result = evaluate_evidence_role_v4(
+            {
+                "ticker": "ORG::EXTERNAL",
+                "section": "Reviewed public source",
+                "document_text": text,
+                "source_type": "PUBLIC_WEB",
+                "object_kind": "claim",
+            },
+            slot_id=slot_id,
+            facet_id=facet_id,
+            subject_ticker="DELL",
+            evidence_owner_ticker="ORG::EXTERNAL",
+            relationship_direction="industry_context_to_subject",
+        )
+        assert result.compatibility in {"compatible", "abstain", "incompatible"}
+        assert result.evidence_promoted is False
 
 
 def test_safe_harbor_boilerplate_overrides_keyword_role_hits() -> None:

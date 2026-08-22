@@ -64,6 +64,15 @@ R1_ATOMS_PATH = (
     ROOT
     / "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json"
 )
+FROZEN_R1_KERNEL_PATH = (
+    ROOT
+    / "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json"
+)
+FROZEN_R1_ROUTE_POLICY_PATH = (
+    ROOT
+    / "configs/retrieval/"
+    "fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json"
+)
 
 
 def _contracts():
@@ -91,6 +100,21 @@ def _successor_contracts():
     )
     planning_policy = load_research_planning_policy(
         json.loads(SUCCESSOR_PLANNING_POLICY_PATH.read_text(encoding="utf-8")),
+        route_policy,
+    )
+    return kernel, route_policy, planning_policy
+
+
+def _frozen_r1_contracts():
+    kernel = load_financial_research_kernel(
+        json.loads(FROZEN_R1_KERNEL_PATH.read_text(encoding="utf-8"))
+    )
+    route_policy = load_query_object_fact_route_policy(
+        json.loads(FROZEN_R1_ROUTE_POLICY_PATH.read_text(encoding="utf-8")),
+        kernel,
+    )
+    planning_policy = load_research_planning_policy(
+        json.loads(PLANNING_POLICY_PATH.read_text(encoding="utf-8")),
         route_policy,
     )
     return kernel, route_policy, planning_policy
@@ -288,7 +312,7 @@ def test_bounded_atoms_compile_to_canonical_s1_and_s2_requests_deterministically
 
 
 def test_saved_r1_proposals_are_selected_with_required_slots_and_stable_drop_reasons() -> None:
-    kernel, route_policy, planning_policy = _contracts()
+    kernel, route_policy, planning_policy = _frozen_r1_contracts()
     objective = compile_research_objective(
         _objective_draft(), kernel=kernel, policy=planning_policy
     )

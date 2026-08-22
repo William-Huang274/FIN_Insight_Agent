@@ -18,7 +18,7 @@ from .embedding_runtime import (
     sha256_file,
 )
 from .financial_candidate_ranking import rank_financial_candidate_union
-from .evidence_role_v3 import evaluate_evidence_role
+from .evidence_role_v4 import evaluate_evidence_role
 from .evidence_set_coverage import select_request_bound_review
 from .financial_evidence_shortlist_v2 import candidate_shortlist_features
 from .material_evidence_runtime import (
@@ -532,6 +532,7 @@ def retrieve_hybrid_candidates(
                 }
                 for object_id in union_ids
             },
+            role_evaluator=evaluate_evidence_role,
         )
         ordered_ids = [str(row["compiled_object_id"]) for row in ranked]
         financial_features_by_id = {
@@ -721,6 +722,12 @@ def retrieve_hybrid_candidates(
             {
                 "compiled_object_id": object_id,
                 "source_record_id": source_id,
+                "source_content_digest": str(
+                    (base.get("source_lineage") or {}).get(
+                        "source_content_digest"
+                    )
+                    or ""
+                ),
                 "lineage_source_record_ids": list(
                     row.get("lineage_source_record_ids") or (source_id,)
                 ),
@@ -806,6 +813,12 @@ def retrieve_hybrid_candidates(
                 "rank": len(selected) + 1,
                 "compiled_object_id": object_id,
                 "source_record_id": source_id,
+                "source_content_digest": str(
+                    (base.get("source_lineage") or {}).get(
+                        "source_content_digest"
+                    )
+                    or ""
+                ),
                 "lineage_source_record_ids": list(
                     row.get("lineage_source_record_ids") or (source_id,)
                 ),

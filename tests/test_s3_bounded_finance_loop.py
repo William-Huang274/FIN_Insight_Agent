@@ -256,14 +256,20 @@ def _zero_call_runner():
 @pytest.fixture(scope="module")
 def contracts():
     paths = resolve_runtime_paths(ROOT)
-    kernel_payload = read_registered_runtime_json(
-        ROOT, "application.config.current_financial_research_kernel"
+    kernel_payload = _json(
+        ROOT
+        / "configs/retrieval/"
+        "fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json"
     )
-    route_payload = read_registered_runtime_json(
-        ROOT, "application.config.current_query_object_fact_route_policy"
+    route_payload = _json(
+        ROOT
+        / "configs/retrieval/"
+        "fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json"
     )
-    planning_payload = read_registered_runtime_json(
-        ROOT, "application.config.current_research_planning_policy"
+    planning_payload = _json(
+        ROOT
+        / "configs/research/"
+        "fin_ia_0_1_3_s3_research_planning_policy_v1_1.json"
     )
     kernel = load_financial_research_kernel(kernel_payload)
     route = load_query_object_fact_route_policy(route_payload, kernel)
@@ -290,8 +296,10 @@ def contracts():
         "DELL", ResearchEvidencePackPrincipal("current", READ)
     )
     retrieval = ResearchRetrievalService(
-        snapshot=read_registered_runtime_json(
-            ROOT, "application.result.current_research_retrieval_snapshot"
+        snapshot=_json(
+            ROOT
+            / "configs/runtime/"
+            "fin_ia_0_1_3_current_retrieval_snapshot_v1_1.json"
         ),
         ranking_comparison=read_registered_runtime_json(
             ROOT, "application.result.current_s1c_ranking_comparison_projection"

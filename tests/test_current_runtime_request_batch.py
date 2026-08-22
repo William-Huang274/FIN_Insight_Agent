@@ -90,6 +90,57 @@ def _service(tmp_path: Path, hybrid: _HybridRuntime) -> ResearchRetrievalService
     )
 
 
+def _successor_service(
+    tmp_path: Path,
+    hybrid: _HybridRuntime,
+) -> ResearchRetrievalService:
+    return ResearchRetrievalService(
+        snapshot=_read(
+            "configs/runtime/"
+            "fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json"
+        ),
+        kernel=_read(
+            "configs/retrieval/"
+            "fin_ia_0_1_3_s1_financial_research_kernel_v1_4.json"
+        ),
+        route_policy=_read(
+            "configs/retrieval/"
+            "fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_4.json"
+        ),
+        hybrid_candidate_runtime=hybrid,
+        company_financial_fact_mart_path=tmp_path / "missing.sqlite",
+    )
+
+
+def _public_successor_request() -> dict:
+    return {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::DELL::INDUSTRY-PVM::CURRENT-RUNTIME",
+        "cell_id": "CELL::value_capture",
+        "requester_role": "fundamental_value_capture_analyst",
+        "evidence_domain": "financial_research",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": ["ORG::13AAFF874F67F30C"],
+        "requested_facet_ids": ["industry_pricing_mix_context"],
+        "metric_intents": ["shipments", "average_selling_price"],
+        "product_intents": ["AI server mix"],
+        "period": {
+            "start_date": "2025-01-01",
+            "end_date": "2026-08-06",
+            "fiscal_years": [],
+        },
+        "granularity": "source_bound_claim",
+        "unit": "issuer_or_industry_reported",
+        "acceptable_sources": ["PUBLIC_WEB"],
+        "acceptable_proxy": True,
+        "forbidden_proxy": ["industry fact treated as Dell fact"],
+        "stop_condition": "reviewed evidence or typed gap",
+        "clarification_policy": "return_typed_gap",
+    }
+
+
 def _principal() -> ResearchRetrievalPrincipal:
     return ResearchRetrievalPrincipal(
         mode="current",
@@ -122,6 +173,45 @@ def test_direct_current_runtime_request_executes_hybrid_without_promotion(
         _request()["request_id"]
     )
     assert "Evidence or numeric authority" in result["known_boundary"]
+
+
+def test_current_runtime_successor_lane_does_not_require_legacy_snapshot_lane(
+    tmp_path: Path,
+) -> None:
+    hybrid = _HybridRuntime()
+    service = _successor_service(tmp_path, hybrid)
+
+    result = service.execute_current_runtime_requests(
+        "DELL", [_public_successor_request()], _principal()
+    )
+
+    request_result = result["request_results"][0]
+    assert request_result["lanes"][0]["snapshot_state"] in {
+        "not_applicable_current_hybrid_successor_lane",
+        "legacy_contract_not_applicable_to_current_hybrid_successor_lane",
+    }
+    assert not {
+        "request_scoped_candidate_gap",
+        "request_scoped_source_role_gap",
+    }.intersection(
+        str(row.get("gap_code") or "")
+        for row in request_result["typed_gaps"]
+    )
+    assert result["summary"]["hybrid_selected_candidate_count"] == 1
+
+
+def test_legacy_snapshot_endpoint_still_fails_closed_for_successor_lane(
+    tmp_path: Path,
+) -> None:
+    service = _successor_service(tmp_path, _HybridRuntime())
+
+    with pytest.raises(
+        ResearchRetrievalServiceError,
+        match="research_request_snapshot_lane_missing",
+    ):
+        service.execute_request(
+            "DELL", _public_successor_request(), _principal()
+        )
 
 
 def test_direct_current_runtime_request_rejects_duplicate_identity(

@@ -268,6 +268,10 @@ def _candidate_lineage(candidate: Mapping[str, Any]) -> set[str]:
     return output
 
 
+def _candidate_source_content_digest(candidate: Mapping[str, Any]) -> str:
+    return str(candidate.get("source_content_digest") or "").strip()
+
+
 def _candidate_owner(candidate: Mapping[str, Any]) -> str:
     return str(
         candidate.get("evidence_owner_ticker")
@@ -280,24 +284,31 @@ def _item_matches_period(
     item: Mapping[str, Any],
     period: Mapping[str, Any],
 ) -> bool:
+    source = _mapping(
+        item.get("source"), "dynamic_truth_spine_item_source_invalid"
+    )
     period_end = str(
         item.get("source_reporting_period_end")
-        or _mapping(item.get("source"), "dynamic_truth_spine_item_source_invalid").get(
-            "period_end"
-        )
+        or source.get("period_end")
         or ""
     )
-    if not period_end and str(item.get("claim_use") or "") in {
-        "bounded_market_context",
-        "counterevidence",
-        "industry_exact_fact",
-        "speaker_attributed_mechanism",
-        "speaker_exact_fact",
-    }:
+    if not period_end and (
+        str(source.get("source_type") or "") == "PUBLIC_WEB"
+        or str(item.get("claim_use") or "")
+        in {
+            "bounded_market_context",
+            "counterevidence",
+            "industry_exact_fact",
+            "speaker_attributed_mechanism",
+            "speaker_exact_fact",
+        }
+    ):
         # Point-in-time market and ecosystem read-throughs may not describe a
-        # target-company reporting period.  Their publication date is the
-        # appropriate temporal boundary; it does not turn them into target
-        # company facts or NumericFacts.
+        # target-company reporting period.  A reviewed PUBLIC_WEB item likewise
+        # carries publication-time context even when its role vocabulary evolves
+        # (for example channel configuration or trusted analysis).  Its
+        # publication date is the appropriate temporal boundary; this never
+        # turns it into a target-company fact or NumericFact.
         period_end = str(item.get("publication_date") or "")
     start = str(period.get("start_date") or "")
     end = str(period.get("end_date") or "")
@@ -459,18 +470,32 @@ def compile_dynamic_evidence_responses(
         for candidate in candidates:
             source_id = str(candidate.get("source_record_id") or "")
             owner = _candidate_owner(candidate)
-            candidate_ref = canonical_digest(
-                {
-                    "request_id": request_id,
-                    "source_record_id": source_id,
-                    "compiled_object_id": candidate.get("compiled_object_id"),
-                }
-            )
+            source_type = str(candidate.get("source_type") or "")
+            source_content_digest = _candidate_source_content_digest(candidate)
+            candidate_identity = {
+                "request_id": request_id,
+                "source_record_id": source_id,
+                "compiled_object_id": candidate.get("compiled_object_id"),
+            }
+            # Preserve every historical SEC candidate receipt byte-for-byte.
+            # Exact content-slice identity is an additive requirement only for
+            # PUBLIC_WEB successors; an empty field must not rewrite old runs.
+            if source_type == "PUBLIC_WEB" or source_content_digest:
+                candidate_identity["source_content_digest"] = (
+                    source_content_digest
+                )
+            candidate_ref = canonical_digest(candidate_identity)
             lineage = _candidate_lineage(candidate)
             matched_items = [
                 item
                 for lineage_id in lineage
                 for item in reviewed_by_source.get(lineage_id, ())
+                if source_type != "PUBLIC_WEB"
+                or (
+                    bool(source_content_digest)
+                    and str(item.get("source_content_digest") or "")
+                    == source_content_digest
+                )
             ]
             if not matched_items:
                 needs_review.setdefault(
@@ -482,10 +507,15 @@ def compile_dynamic_evidence_responses(
                             {"source_record_id": source_id}
                         ),
                         "candidate_owner_ticker": owner,
-                        "candidate_source_type": str(
-                            candidate.get("source_type") or ""
+                        "candidate_source_type": source_type,
+                        "reason": (
+                            "public_candidate_source_content_digest_missing"
+                            if source_type == "PUBLIC_WEB"
+                            and not source_content_digest
+                            else "candidate_content_slice_not_present_in_reviewed_pack"
+                            if source_type == "PUBLIC_WEB"
+                            else "candidate_not_present_in_reviewed_pack"
                         ),
-                        "reason": "candidate_not_present_in_reviewed_pack",
                     },
                 )
                 continue

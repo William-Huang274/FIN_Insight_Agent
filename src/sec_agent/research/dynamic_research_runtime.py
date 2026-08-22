@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from decimal import Decimal, InvalidOperation
 from typing import Any, Mapping
 
 from sec_agent.canonical_runtime.session import canonical_digest
@@ -29,6 +30,43 @@ from sec_agent.research.dynamic_truth_spine import (
 DYNAMIC_RESEARCH_CONTROL_CONTEXT_SCHEMA_VERSION = (
     "fin_ia_dynamic_research_control_context_v1_0"
 )
+
+
+def _normalized_decimal_text(value: object) -> str:
+    try:
+        parsed = Decimal(str(value))
+    except (InvalidOperation, ValueError) as exc:
+        raise ValueError(
+            "dynamic_research_control_context_numeric_value_invalid"
+        ) from exc
+    if not parsed.is_finite():
+        raise ValueError(
+            "dynamic_research_control_context_numeric_value_invalid"
+        )
+    text = format(parsed.normalize(), "f")
+    return "0" if text in {"", "-0"} else text
+
+
+def _economic_numeric_signature(row: Mapping[str, Any]) -> tuple[str, ...]:
+    """Return the authority-neutral identity of one economic observation.
+
+    NumericFact IDs include the request/compilation lineage that produced them.
+    The same reviewed observation can therefore have a different ID when it is
+    reached through a related-company request.  The control plane may bind that
+    alias only when the economic identity is exact; it must never fall back to
+    metric name or value alone.
+    """
+
+    return (
+        str(row.get("ticker") or "").upper(),
+        str(row.get("metric_id") or ""),
+        _normalized_decimal_text(row.get("value_decimal")),
+        str(row.get("unit") or ""),
+        str(row.get("fiscal_year") or ""),
+        str(row.get("fiscal_period") or ""),
+        str(row.get("period_start") or ""),
+        str(row.get("period_end") or ""),
+    )
 
 
 def bind_actionable_research_control_context(
@@ -65,10 +103,8 @@ def bind_actionable_research_control_context(
     if evaluation.get("status") != "pass":
         raise ValueError("dynamic_research_control_context_evaluation_failed")
 
-    quantitative_kind_by_ref = {
-        str(row.get("authority_ref") or ""): str(
-            row.get("quantitative_kind") or ""
-        )
+    quantitative_rows = [
+        deepcopy(dict(row))
         for lane in (
             "reported_facts",
             "deterministic_derived_metrics",
@@ -77,25 +113,53 @@ def bind_actionable_research_control_context(
         )
         for row in quantitative.get(lane) or ()
         if row.get("authority_ref")
+    ]
+    quantitative_kind_by_ref = {
+        str(row["authority_ref"]): str(row.get("quantitative_kind") or "")
+        for row in quantitative_rows
     }
+    quantitative_by_signature: dict[tuple[str, ...], list[dict[str, Any]]] = {}
+    for row in quantitative_rows:
+        # Estimate/scenario rows do not represent one observed NumericFact card.
+        if row.get("quantitative_kind") not in {
+            "reported_fact",
+            "deterministic_derived_metric",
+        }:
+            continue
+        quantitative_by_signature.setdefault(
+            _economic_numeric_signature(row), []
+        ).append(row)
     current.pop("research_input_digest", None)
+    numeric_binding_mode_counts = {
+        "exact_authority_ref": 0,
+        "economic_fact_signature_alias": 0,
+    }
     for card in current.get("numeric_fact_cards") or ():
         source_refs = [
             str(value) for value in card.get("source_numeric_fact_ids") or ()
         ]
-        kinds = sorted(
-            {
-                quantitative_kind_by_ref[ref]
-                for ref in source_refs
-                if ref in quantitative_kind_by_ref
-            }
+        matched_refs = sorted(
+            ref for ref in source_refs if ref in quantitative_kind_by_ref
         )
-        if not kinds:
+        binding_mode = "exact_authority_ref"
+        if not matched_refs:
+            signature_matches = quantitative_by_signature.get(
+                _economic_numeric_signature(card), []
+            )
+            matched_refs = sorted(
+                str(row["authority_ref"]) for row in signature_matches
+            )
+            binding_mode = "economic_fact_signature_alias"
+        kinds = sorted({quantitative_kind_by_ref[ref] for ref in matched_refs})
+        if not matched_refs or len(kinds) != 1:
             raise ValueError(
                 "dynamic_research_control_context_numeric_kind_binding_missing"
             )
         card["quantitative_kinds"] = kinds
         card["reported_fact_authority"] = kinds == ["reported_fact"]
+        card["quantitative_authority_refs"] = matched_refs
+        card["quantitative_binding_mode"] = binding_mode
+        numeric_binding_mode_counts[binding_mode] += 1
 
     actions = [deepcopy(dict(row)) for row in state.get("research_actions") or ()]
     action_ids = {str(row.get("action_id") or "") for row in actions}
@@ -161,6 +225,7 @@ def bind_actionable_research_control_context(
             "authority_boundary": deepcopy(
                 quantitative.get("authority_boundary") or {}
             ),
+            "numeric_card_binding_mode_counts": numeric_binding_mode_counts,
         },
         "next_natural_node_token_budget_basis": token_basis,
         "authority": {

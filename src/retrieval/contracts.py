@@ -32,7 +32,13 @@ _FORBIDDEN_INTENT_FRAGMENTS = (
     "source_record_id",
 )
 _RELATED_ECONOMIC_ROLES = frozenset(
-    {"customer_demand_context", "supplier_capacity_context"}
+    {
+        "customer_demand_context",
+        "supplier_capacity_context",
+        "industry_market_context",
+        "trusted_analysis_context",
+        "channel_configuration_context",
+    }
 )
 
 

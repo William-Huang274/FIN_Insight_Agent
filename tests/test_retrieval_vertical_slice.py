@@ -115,7 +115,7 @@ def test_three_cases_compile_through_one_core_without_answer_urls() -> None:
         for case_key in ("DELL", "MU", "NVDA")
     }
 
-    assert {len(plan.lanes) for plan in plans.values()} == {18}
+    assert {len(plan.lanes) for plan in plans.values()} == {25}
     assert all(
         "downstream_demand_context"
         in {lane.facet_id for lane in plan.lanes}

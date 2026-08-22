@@ -60,6 +60,7 @@ def _item(
     publication_date: str = "2026-05-30",
     period_end: str = "2026-05-01",
     writer_citable: bool = True,
+    source_content_digest: str = "source-text-digest",
 ) -> dict[str, object]:
     return {
         "case_key": case_key,
@@ -85,6 +86,7 @@ def _item(
         "causal_attribution_authorized": False,
         "writer_citable": writer_citable,
         "evidence_item_digest": digest,
+        "source_content_digest": source_content_digest,
         "source": {
             "material_ref": "MAT::1",
             "source_record_id": source_id,
@@ -96,12 +98,48 @@ def _item(
             "period_end": period_end,
             "license_scope": "public",
             "redistributable": False,
-            "source_text_digest": "source-text-digest",
+            "source_text_digest": source_content_digest,
             "reviewed_source_excerpt": "reviewed evidence text",
             "excerpt_truncated": False,
             "excerpt_use_boundary": "internal review",
         },
     }
+
+
+def test_public_web_item_without_reporting_period_uses_publication_date() -> None:
+    item = _item(
+        source_type="PUBLIC_WEB",
+        publication_date="2026-03-09",
+        period_end="",
+    )
+    item["claim_use"] = "bounded_channel_configuration_context"
+    controlled = _controlled(
+        [
+            _candidate(
+                str(item["source_record_id"]),
+                owner="DELL",
+                source_type="PUBLIC_WEB",
+                source_content_digest=str(item["source_content_digest"]),
+            )
+        ]
+    )
+    controlled["request_results"][0]["request"]["acceptable_sources"] = [
+        "PUBLIC_WEB"
+    ]
+    controlled["request_results"][0]["request"]["period"] = {
+        "start_date": "2026-01-01",
+        "end_date": "2026-08-06",
+        "fiscal_years": [],
+    }
+    pack = _pack([item])
+
+    result = compile_dynamic_evidence_responses(
+        policy=_json(SUCCESSOR_POLICY),
+        controlled_plan=controlled,
+        evidence_pack=pack,
+    )
+
+    assert result["summary"]["accepted_reviewed_evidence_count"] == 1
 
 
 def _pack(items: list[dict[str, object]]) -> dict[str, object]:
@@ -214,11 +252,13 @@ def _candidate(
     owner: str = "DELL",
     source_type: str = "10-Q",
     rank: int = 1,
+    source_content_digest: str = "",
 ) -> dict[str, object]:
     return {
         "rank": rank,
         "compiled_object_id": f"COBJ::{rank}",
         "source_record_id": source_id,
+        "source_content_digest": source_content_digest,
         "lineage_source_record_ids": [source_id],
         "ticker": owner,
         "source_type": source_type,
@@ -229,6 +269,68 @@ def _candidate(
             "advisory_only": True,
         },
     }
+
+
+def test_public_source_reselection_is_bound_to_exact_content_slice() -> None:
+    first = _item(
+        digest="evidence-public-1",
+        source_id="PUBLIC::DELL::SHARED-PAGE",
+        source_type="PUBLIC_WEB",
+        source_content_digest="content-slice-1",
+    )
+    second = _item(
+        digest="evidence-public-2",
+        source_id="PUBLIC::DELL::SHARED-PAGE",
+        source_type="PUBLIC_WEB",
+        source_content_digest="content-slice-2",
+    )
+    controlled = _controlled(
+        [
+            _candidate(
+                "PUBLIC::DELL::SHARED-PAGE",
+                source_type="PUBLIC_WEB",
+                source_content_digest="content-slice-1",
+            )
+        ]
+    )
+    controlled["request_results"][0]["request"]["acceptable_sources"] = [
+        "PUBLIC_WEB"
+    ]
+    result = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=controlled,
+        evidence_pack=_pack([first, second]),
+    )
+
+    assert [
+        row["evidence_item_digest"] for row in result["responses"][0]["accepted"]
+    ] == ["evidence-public-1"]
+
+
+def test_public_source_without_content_digest_cannot_unlock_page_level_review() -> None:
+    item = _item(
+        digest="evidence-public-1",
+        source_id="PUBLIC::DELL::SHARED-PAGE",
+        source_type="PUBLIC_WEB",
+        source_content_digest="content-slice-1",
+    )
+    controlled = _controlled(
+        [_candidate("PUBLIC::DELL::SHARED-PAGE", source_type="PUBLIC_WEB")]
+    )
+    controlled["request_results"][0]["request"]["acceptable_sources"] = [
+        "PUBLIC_WEB"
+    ]
+    result = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=controlled,
+        evidence_pack=_pack([item]),
+    )
+
+    response = result["responses"][0]
+    assert response["accepted"] == []
+    assert response["needs_human_review"][0]["reason"] == (
+        "public_candidate_source_content_digest_missing"
+    )
 
 
 def test_exact_reviewed_request_match_is_reselected_without_promotion() -> None:

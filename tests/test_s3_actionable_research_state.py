@@ -16,6 +16,7 @@ from apps.workbench.backend.application.research_evidence_pack_service import (
 )
 from apps.workbench.backend.application.research_retrieval_service import (
     ResearchRetrievalPrincipal,
+    ResearchRetrievalService,
 )
 from scripts.research.run_s3_current_research_consumer_zero_call import _services
 from sec_agent.research.current_consumer import compile_current_research_messages
@@ -91,7 +92,9 @@ def test_current_dell_data_is_consumed_by_each_dynamic_s3_research_cell(
     def load(relative: str) -> dict:
         return json.loads((ROOT / relative).read_text(encoding="utf-8"))
 
-    _historical_evidence, retrieval = _services()
+    retrieval = ResearchRetrievalService.from_runtime_paths(
+        ROOT, resolve_runtime_paths(ROOT)
+    )
     permissions = frozenset({"current_product:read"})
     pack = service.get_case(
         "DELL", ResearchEvidencePackPrincipal("current", permissions)
@@ -129,6 +132,22 @@ def test_current_dell_data_is_consumed_by_each_dynamic_s3_research_cell(
         ("reported_fact",),
         ("deterministic_derived_metric",),
     }
+    binding_counts = dynamic["research_control_context"][
+        "quantitative_authority"
+    ]["numeric_card_binding_mode_counts"]
+    assert binding_counts["exact_authority_ref"] == 23
+    assert binding_counts["economic_fact_signature_alias"] == 2
+    alias_bound = [
+        row
+        for row in dynamic["numeric_fact_cards"]
+        if row["quantitative_binding_mode"]
+        == "economic_fact_signature_alias"
+    ]
+    assert {(row["ticker"], row["metric_id"]) for row in alias_bound} == {
+        ("MU", "inventory"),
+        ("NVDA", "inventory"),
+    }
+    assert all(row["quantitative_authority_refs"] for row in alias_bound)
     for cell in dynamic["cells"]:
         messages = compile_current_research_messages(
             dynamic,

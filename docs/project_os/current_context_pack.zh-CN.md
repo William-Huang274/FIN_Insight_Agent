@@ -1,17 +1,17 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-22
+更新时间：2026-08-23
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-s1-retrieval-vertical-slice`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-当前 clean／synced 工程基线为 `c341713b`。用户批准的 Actionable Uncertainty 1–7 已把 current 数据、来源权利、定量类型、Feedback／Plan／checkpoint／StopDecision、S3 cell consumer 和 Workbench 接到同一 producer；三案零调用与全仓 997 tests 已通过。但这只是 current-data engineering closure：自然模型、网络和付费调用均为 0。DELL／MU／NVDA current Pack 仍为 29／14／25 条 Evidence；DELL 的 16 个 S1、3 个 S2、2 个 S3 Action 尚未由自然 Agent 执行，estimate／scenario 为 0，`S1_qualified_stable=false`、`S3 accepted=false`、Writer product-ready=false、release=false。
+DELL 七命题已形成 12 条任务级 EvidenceRequest；current Pack 已由 29 条晋升为 48 条 Evidence，S2 已重编译为 38 个 reported、27 个 derived、2 个 estimate、2 个 scenario 和 9 个 fact gap。任务级门为 `ready_for_bounded_dynamic_single_unit_with_actionable_gaps`：20 个 requirement 中 15 个可研究，价格／配置、Dell 台数和当前双边供应关系仍是必须由 Agent 主动追问的三类薄弱面。
 
-四个 exact capture-bound 公共来源（IDC／Microsoft／TrendForce／HPE）已形成 36 Evidence 的独立 DELL successor，但没有关闭 14 个 residual gaps，也没有晋升 current Runtime mainline。它们只证明 capture／解析／来源用途／Evidence admission 链可用，不证明通用外源发现已覆盖价格、销量、配置、客户部署、公共采购、渠道报价、BOM、供应释放、可信媒体／公开 analyst 和反方资料。历史 zero-call 结果中的“下一门直接做 DELL dynamic multi-agent”不再是当前 authority。当前最早产品门改为：命题 CoverageState → AI-free 内源执行 → 外源来源阶梯 → Evidence Gate → current Pack／S2 重编译 → EvidencePackReadiness；之后才允许一个 DELL 动态单单元真实调用 S1／S2，再扩展多单元、Writer 和泛化。
+公开补源不再停留在独立 Pack。17 个已捕获页面和 19 个精确内容片段已写入 canonical source store；current Runtime Registry 已提升为 R32，绑定 1,877 条源记录、34,166 个金融对象和 CUDA／FP16 dense cache。无模型产品复证用 8 条跨价格、配置、客户、行业需求、PVM、供给、价值池和反方请求实际执行 current BM25＋dense 路线，得到 66 个候选并通过 exact page-lineage＋content-digest 重新选择 15 条 reviewed Evidence；Candidate 仍不自动获得 Evidence 或 NumericFact 权限。
 
-2026-08-22 当前实现增量：七命题已拆成 12 条原子 EvidenceRequest；Workbench 新增同一产品入口执行 snapshot／S2 SQL／BM25／Qwen CUDA-FP16／route truth，但 Candidate 仍不自动晋升 Evidence。current S1 kernel／route 已迁移 v1.3、snapshot v1.1、binding R30；S3 planner 暂留 v1.1，允许作为新增 S1 route surface 的已批准子集，v1.2 只保留为未来显式 successor。历史 fixed-Pack canary 已改为读取其原 snapshot／kernel／route／planner，不再从 mutable current alias 重编旧输入。全仓 `1001 passed`、active baseline `198 Python／8 frontend／5 detectors／28 Runtime／0 forbidden`、7,593-file secret scan 与 diff check 已通过；正式 clean-bound 内源物化、完整外源阶梯、CandidateDecision／Evidence Gate、S2 successor 和动态模型调用尚未执行。
+当前仍未执行自然动态 Agent。下一门不是再喂 fixed Pack，而是建立并复证一个真实 `value_capture` 动态单元：初始只给用户问题、DELL 身份、截至日期和工具；模型自行提出 EvidenceRequest，S1/S2 返回 EvidenceResponse／typed fact 或可行动失败，模型必须消费 FeedbackReceipt 并形成 PlanDelta／GraphDelta／StopDecision。通过后才签发一次 DeepSeek live；多 Agent、Writer 双语／图表／排版、MU／NVDA 与异质留出继续在后门，不能因本轮工程通过而追认 S1／S3／release。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 
@@ -120,7 +120,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 - 运维入口：`/operations`
 - 当前 API：`/api/v1/research-cases`、`/api/v1/research-cases/{case_id}`、`/api/v1/research-cases/{case_id}/evidence`、`/api/v1/research-cases/{case_id}/retrieval`、`POST /api/v1/research-cases/{case_id}/retrieval-requests`、`POST /api/v1/research-cases/{case_id}/controlled-research-plans`；Operations 另有 `/api/operations/s1/complex-document-quality`、`/api/operations/s1/retrieval-quality`、`/api/operations/s1/supplement-quality`、`/api/operations/source-intake/routes`、`/attempts`、`/uploads/{route_id}` 和 `/automatic/{route_id}`
 - 当前案例：DELL、MU、NVDA
-- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL、MU、NVDA 三案当前均已从旧宽片段继任到精确 capture-bound claim，并共享一个多案例 supplement summary、current Pack、anchor catalog、Workspace catalog 与 canonical lineage。当前对象库也已把 Dell／TSMC 法说等官方资料纳入受控查询路线；跨公司资料只能在绑定关系方向时作为供应链背景，不能冒充本案公司自述或分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。S3 fixed-Pack 第一层与 DELL `value_capture` 动态单单元均已通过合同、独立 L1 和适用内容门；DELL 五单元也已自然执行并首次形成完整内部报告，但该报告因三条 material false absence 和由此产生的 false conflict 未过 L1/L2，未进入产品面。当前 Case Truth 完整权威、按 cell 分片、分析／交卷分离和本地聚合工程门已关闭；模型自然语义映射、修复后的完整报告、八维质量、MU/NVDA／留出案例泛化和 S3 产品验收仍未证明；reviewed Evidence 页面本身的结构化数值项仍为 0。
+- 当前能力：展示经复核且与公司身份、研究截至日、case version、artifact digest 和 payload digest 绑定的 Evidence Pack；DELL、MU、NVDA 三案当前均已从旧宽片段继任到精确 capture-bound claim，并共享一个多案例 supplement summary、current Pack、anchor catalog、Workspace catalog 与 canonical lineage。当前对象库也已把 Dell／TSMC 法说和 17 个 reviewed public page／19 个 exact slice 纳入受控查询路线；跨公司资料只能在绑定关系方向时作为供应链背景，不能冒充本案公司自述或分配证明。另可展示 9 个 Evidence Slot / 17 个 facet 的当前候选，以及四条排名路线在同一对象上的只读对照。历史 S3 fixed-Pack 第一层与旧 S1 快照下的 DELL `value_capture` 动态单单元曾通过合同、独立 L1 和适用内容门；DELL 五单元也曾自然执行并形成完整内部报告，但该报告因三条 material false absence 和由此产生的 false conflict 未过 L1/L2，未进入产品面。这些历史结果不自动证明 R32 current Runtime。当前 Case Truth 完整权威、按 cell 分片、分析／交卷分离和本地聚合工程门已关闭；R32 下的模型自然检索／反思、修复后的完整报告、八维质量、MU/NVDA／留出案例泛化和 S3 产品验收仍未证明；reviewed Evidence 页面本身的结构化数值项仍为 0。
 - 当前不声称：动态 Agentic Research、开放式联网检索、完整投资报告、实时行情、自动事实晋升、交易建议或 release-ready 产品。
 - 数据边界：reviewed Evidence 对象、普通数据构建根和可写 Operations state 已分离；容器可把 Evidence 只读挂载。无对象时 `/api/readiness=503`，挂载正确对象时为 200。
 
@@ -134,7 +134,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 - 活动图检查：`scripts/engineering/verify_active_baseline.py`
 - 精确历史重定向：`archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
 
-当前活动图新增 provider-neutral Research Objective／planner atom 编译、候选盲自然材料范围编译、pre-topK request-bound material reservation、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、Coverage-driven capture-bound supplement、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影。fixed-Pack 微判断仍复用该循环和最终金融 Validator：模型依次提交 thesis、mechanism、counterargument＋WWC，Harness 只校验、展开预编译 relation alias、合并引用并生成一个终态 Judgment，不得补写缺失观点；DeepSeek 的 low/high reasoning 配置只存在于可替换 Provider profile。consumer policy v1.3 已为五个研究单元各编译一份 case-neutral RoleMethodPack，并只从当前 Case／Evidence／NumericFact／typed relation 即时编译 cell-local GraphContextPack；这些包不注册为独立产品资源，也不授予事实或因果权威。Runtime Registry 当前为 R20／20 个资源；模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册。Embedding 与 Cross-Encoder显式要求 CUDA／FP16且禁止 CPU fallback；CPU 只承担 sparse recall、硬过滤与确定性编排。当前 route policy 声明 `typed_relationship_graph`，但 hybrid candidate Runtime 只执行 BM25＋Qwen，完整图查询 handler 仍未实现；S3 当前 GraphContextPack 不得被误称为关闭该 S1 缺口。
+当前活动图新增 provider-neutral Research Objective／planner atom 编译、候选盲自然材料范围编译、pre-topK request-bound material reservation、hybrid candidate Runtime、capture-first Agent transport、Source Intake、共用 official-PDF Evidence successor、Coverage-driven capture-bound supplement、registry-atomic current-Pack promotion和 `reviewed Evidence + NumericFact → judgment/workpaper/report` consumer。金融循环只消费一份 canonical Tool Contract；Chat Completions、Responses 与 Anthropic Messages 是可替换的外层投影。fixed-Pack 微判断仍复用该循环和最终金融 Validator：模型依次提交 thesis、mechanism、counterargument＋WWC，Harness 只校验、展开预编译 relation alias、合并引用并生成一个终态 Judgment，不得补写缺失观点；DeepSeek 的 low/high reasoning 配置只存在于可替换 Provider profile。consumer policy v1.3 已为五个研究单元各编译一份 case-neutral RoleMethodPack，并只从当前 Case／Evidence／NumericFact／typed relation 即时编译 cell-local GraphContextPack；这些包不注册为独立产品资源，也不授予事实或因果权威。Runtime Registry 当前为 R32；模型权重、人工标签、private mart、raw source capture、attempt 和 shadow 结果仍不注册。Embedding 与 Cross-Encoder 显式要求 CUDA／FP16 且禁止 CPU fallback；CPU 只承担 sparse recall、硬过滤与确定性编排。当前 route policy 声明 `typed_relationship_graph`，但 hybrid candidate Runtime 只执行 BM25＋Qwen，完整图查询 handler 仍未实现；S3 当前 GraphContextPack 不得被误称为关闭该 S1 缺口。
 
 ## 已完成的重定基事实
 

@@ -97,6 +97,19 @@ PRE_VS4_EVIDENCE_PACK_RESULT = ROOT / (
 PRE_VS4_REVIEWED_ANCHOR_CATALOG = ROOT / (
     "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json"
 )
+FROZEN_S3_RETRIEVAL_SNAPSHOT = ROOT / (
+    "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_1.json"
+)
+FROZEN_S3_KERNEL = ROOT / (
+    "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json"
+)
+FROZEN_S3_ROUTE_POLICY = ROOT / (
+    "configs/retrieval/"
+    "fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json"
+)
+FROZEN_S3_PLANNING_POLICY = ROOT / (
+    "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_1.json"
+)
 
 
 class CurrentResearchConsumerRunnerError(RuntimeError):
@@ -452,21 +465,13 @@ def _services(
         reviewed_anchor_catalog=_json(PRE_VS4_REVIEWED_ANCHOR_CATALOG),
     )
     retrieval = ResearchRetrievalService(
-        snapshot=read_registered_runtime_json(
-            ROOT, "application.result.current_research_retrieval_snapshot"
-        ),
+        snapshot=_json(FROZEN_S3_RETRIEVAL_SNAPSHOT),
         ranking_comparison=read_registered_runtime_json(
             ROOT, "application.result.current_s1c_ranking_comparison_projection"
         ),
-        kernel=read_registered_runtime_json(
-            ROOT, "application.config.current_financial_research_kernel"
-        ),
-        route_policy=read_registered_runtime_json(
-            ROOT, "application.config.current_query_object_fact_route_policy"
-        ),
-        planning_policy=read_registered_runtime_json(
-            ROOT, "application.config.current_research_planning_policy"
-        ),
+        kernel=_json(FROZEN_S3_KERNEL),
+        route_policy=_json(FROZEN_S3_ROUTE_POLICY),
+        planning_policy=_json(FROZEN_S3_PLANNING_POLICY),
         hybrid_candidate_runtime=None,
         company_financial_fact_mart_path=(
             runtime_paths.company_financial_fact_mart_path

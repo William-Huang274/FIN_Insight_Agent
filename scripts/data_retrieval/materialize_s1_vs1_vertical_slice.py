@@ -66,6 +66,16 @@ DEFAULT_OUTPUT_REF = (
     "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json"
 )
 RECORDED_AT = "2026-08-17"
+HISTORICAL_KERNEL_REF = (
+    "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json"
+)
+HISTORICAL_ROUTE_POLICY_REF = (
+    "configs/retrieval/"
+    "fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json"
+)
+HISTORICAL_SNAPSHOT_REF = (
+    "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_1.json"
+)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -251,11 +261,29 @@ def compile_result(
     runtime_paths = resolve_runtime_paths(ROOT)
     # Bootstrap from the predecessor Runtime without trying to read the VS1
     # result that this command is currently materializing.
-    retrieval = ResearchRetrievalService.from_runtime_paths(
-        ROOT,
-        runtime_paths,
-        load_s1_vertical_slice=False,
-    )
+    if evidence_pack_result_ref is None:
+        retrieval = ResearchRetrievalService.from_runtime_paths(
+            ROOT,
+            runtime_paths,
+            load_s1_vertical_slice=False,
+        )
+    else:
+        retrieval = ResearchRetrievalService(
+            snapshot=_read_json(_resolve(HISTORICAL_SNAPSHOT_REF)),
+            ranking_comparison=read_registered_runtime_json(
+                ROOT,
+                "application.result.current_s1c_ranking_comparison_projection",
+            ),
+            kernel=_read_json(_resolve(HISTORICAL_KERNEL_REF)),
+            route_policy=_read_json(_resolve(HISTORICAL_ROUTE_POLICY_REF)),
+            planning_policy=read_registered_runtime_json(
+                ROOT, "application.config.current_research_planning_policy"
+            ),
+            hybrid_candidate_runtime=None,
+            company_financial_fact_mart_path=(
+                runtime_paths.company_financial_fact_mart_path
+            ),
+        )
     if evidence_pack_result_ref is None:
         evidence_packs = ResearchEvidencePackService.from_runtime_paths(
             ROOT,

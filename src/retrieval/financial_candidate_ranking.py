@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 import re
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 from .evidence_role import evaluate_evidence_role
 from .query_plan import QueryLane
@@ -102,6 +102,7 @@ def candidate_financial_features(
     *,
     lane: QueryLane,
     route_ranks: Mapping[str, int | None],
+    role_evaluator: Callable[..., Any] = evaluate_evidence_role,
 ) -> dict[str, Any]:
     base = row["base_object_view"]
     object_id = str(row["compiled_object_id"])
@@ -111,7 +112,7 @@ def candidate_financial_features(
     anchor_hits, anchor_total, matched_groups = _anchor_projection(lane, text)
     owner = lane.evidence_owner_tickers[0]
     relationship = lane.relationship_constraints[0]
-    role = evaluate_evidence_role(
+    role = role_evaluator(
         {
             "ticker": base.get("ticker"),
             "section": base.get("section"),
@@ -208,6 +209,7 @@ def rank_financial_candidate_union(
     objects_by_id: Mapping[str, Mapping[str, Any]],
     lane: QueryLane,
     route_ranks_by_id: Mapping[str, Mapping[str, int | None]],
+    role_evaluator: Callable[..., Any] = evaluate_evidence_role,
 ) -> tuple[dict[str, Any], ...]:
     seen: set[str] = set()
     rows: list[dict[str, Any]] = []
@@ -227,6 +229,7 @@ def rank_financial_candidate_union(
                 row,
                 lane=lane,
                 route_ranks=route_ranks_by_id.get(object_id, {}),
+                role_evaluator=role_evaluator,
             )
         )
     return tuple(sorted(rows, key=_ranking_key))

@@ -932,6 +932,8 @@ class ResearchRetrievalService:
         case_key: str,
         payload: Mapping[str, Any],
         principal: ResearchRetrievalPrincipal,
+        *,
+        allow_current_hybrid_only_lanes: bool = False,
     ) -> dict[str, Any]:
         """Execute a typed request against the immutable current candidate snapshot."""
 
@@ -1024,6 +1026,21 @@ class ResearchRetrievalService:
         for lane in plan.lanes:
             snapshot_lane = snapshot_lanes.get(lane.lane_id)
             if snapshot_lane is None:
+                if allow_current_hybrid_only_lanes:
+                    lanes.append(
+                        {
+                            "lane": lane.as_dict(),
+                            "candidate_state": "candidate_not_evidence",
+                            "candidates": [],
+                            "missing_required_source_roles": [],
+                            "snapshot_exclusion_counts": {},
+                            "request_exclusion_counts": {},
+                            "snapshot_state": (
+                                "not_applicable_current_hybrid_successor_lane"
+                            ),
+                        }
+                    )
+                    continue
                 raise ResearchRetrievalServiceError(
                     "research_request_snapshot_lane_missing",
                     503,
@@ -1043,6 +1060,22 @@ class ResearchRetrievalService:
                     contract.get("source_types") or ()
                 )
             ):
+                if allow_current_hybrid_only_lanes:
+                    lanes.append(
+                        {
+                            "lane": lane.as_dict(),
+                            "candidate_state": "candidate_not_evidence",
+                            "candidates": [],
+                            "missing_required_source_roles": [],
+                            "snapshot_exclusion_counts": {},
+                            "request_exclusion_counts": {},
+                            "snapshot_state": (
+                                "legacy_contract_not_applicable_to_current_"
+                                "hybrid_successor_lane"
+                            ),
+                        }
+                    )
+                    continue
                 raise ResearchRetrievalServiceError(
                     "research_request_snapshot_contract_drift",
                     503,
@@ -1253,7 +1286,12 @@ class ResearchRetrievalService:
                 seen_request_ids.add(request.request_id)
                 requests.append(request)
                 request_results.append(
-                    self.execute_request(key, request.as_dict(), principal)
+                    self.execute_request(
+                        key,
+                        request.as_dict(),
+                        principal,
+                        allow_current_hybrid_only_lanes=True,
+                    )
                 )
         except RetrievalContractError as exc:
             raise ResearchRetrievalServiceError(str(exc), 422) from exc

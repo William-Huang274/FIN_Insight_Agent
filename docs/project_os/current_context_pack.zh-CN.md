@@ -1523,3 +1523,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 剩余自然拓扑严格为 8 次：三份 repair 各 draft＋strict submit，Lead R2 draft＋strict submit；另允许确定性重放 R4 已批准的同一条 Supply S1/S2 request，不新增研究方向、不访问外网或晋升 Candidate。0 retry／新 S1/S2 路线／外源／promotion／fallback，已完成 Provider 节点禁止重跑。
 - 当前只恢复 R5 live admission 的工程资格。下一门是完整工程门、clean commit／push、current decision-bound preflight 和 fresh R5 authority；完成后先做独立 L1／内容质量，不能直接进入 Writer、泛化或 S3 验收。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/144_submission_successor_R4_local_repair_context_failure_and_R5_exact_frontier.md`。
+
+### 2026-08-23 submission successor R5 role-repair resume authority
+
+- 修复／proof commit `2c99b445...8f683` 已 clean／synced；current decision-bound preflight 全部通过，0 模型／Provider／网络，凭据只检查存在性。
+- R5 authority SHA=`3cffbce1...049d6`，12 组输入绑定与本地 validator 通过。它复用 17 份 capture，只执行 Cash／Operating／Value 三份 repair 的 draft＋strict submission，以及 Lead R2 draft＋strict submission，共最多 8 次模型／传输。
+- 允许确定性重放 R4 已批准的同一条 Supply S1/S2 request 以恢复当前 Runtime 权威；禁止新增检索方向、外源网络、Candidate promotion、retry、fallback 和产品指针变更。
+- 当前仅为 signed／not executed；Writer、S3、MU／NVDA、异质留出、publication 和 release 均未授权。R5 完成后必须先过独立 L1 与内容质量门。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/145_submission_successor_R5_role_repair_resume_live_authority.md`。

@@ -28,9 +28,17 @@ from sec_agent.research.multi_agent_preview import (
 from sec_agent.research.multi_agent_preview_runtime import (
     load_preview_planning_policy,
 )
+from sec_agent.research.multi_agent_content_repair import (
+    MultiAgentContentRepairError,
+    compile_independent_content_challenges,
+    rebind_workpaper_context_semantic_rules,
+    semantic_relation_rules,
+)
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from scripts.research.run_s3_current_dynamic_multi_agent import (
+    CONTENT_REPAIR_AUTHORITY_SCHEMA,
+    CONTENT_REPAIR_AUTHORITY_STATUS,
     LIVE_AUTHORITY_SCHEMA,
     LIVE_AUTHORITY_STATUS,
     SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
@@ -40,10 +48,12 @@ from scripts.research.run_s3_current_dynamic_multi_agent import (
     _provider_attempt_count,
     _tool_draft,
     _tool_arguments,
+    expected_content_repair_budget,
     expected_live_execution_budget,
     expected_submission_repair_resume_budget,
     expected_submission_resume_budget,
     expected_submission_successor_budget,
+    validate_content_repair_authority,
     validate_live_authority,
 )
 from sec_agent.providers.chat_completions import (
@@ -159,6 +169,105 @@ def test_role_partition_recovers_all_thirteen_facets_before_execution() -> None:
             "material_requirements"
         ]
     } == {"direct", "context"}
+
+
+def test_role_programs_include_provider_neutral_semantic_relation_rules() -> None:
+    topology, kernel, route, planning, compiled = _inputs()
+    result = compile_dynamic_multi_agent_role_programs(
+        policy=_load(
+            "configs/research/fin_ia_0_1_3_s3_current_dynamic_multi_agent_loop_policy_v1_0.json"
+        ),
+        topology=topology,
+        objective_payload=_load(
+            "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_objective_v1_0.json"
+        ),
+        planner_compilation=compiled,
+        kernel=kernel,
+        route_policy=route,
+        planning_policy=planning,
+    )
+    by_agent = {row["agent_id"]: row for row in result["role_programs"]}
+    for agent_id, program in by_agent.items():
+        assert set(semantic_relation_rules(agent_id)).issubset(
+            set(program["loop_policy"]["role_contract"]["workpaper_rules"])
+        )
+
+
+def test_independent_assessment_compiles_seven_findings_into_five_role_challenges() -> None:
+    assessment = _load(
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R5_content_assessment_v1_0.json"
+    )
+    source = _load(
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_submission_successor_live_result_v1_4.json"
+    )
+    workpapers = [row["workpaper"] for row in source["role_summaries"]]
+    challenges = compile_independent_content_challenges(
+        assessment=assessment,
+        workpapers=workpapers,
+    )
+    assert len(challenges) == 7
+    assert len({row["challenge_id"] for row in challenges}) == 7
+    assert {row["target_agent_id"] for row in challenges} == {
+        "AGENT::DEMAND_QUALITY",
+        "AGENT::OPERATING_PERFORMANCE",
+        "AGENT::VALUE_CAPTURE",
+        "AGENT::CASH_CONVERSION",
+        "AGENT::COUNTEREVIDENCE",
+    }
+    assert all(
+        row["source_agent_id"] == "S3.INDEPENDENT_CONTENT_VERIFIER"
+        for row in challenges
+    )
+
+
+def test_independent_assessment_rejects_unknown_target() -> None:
+    assessment = _load(
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R5_content_assessment_v1_0.json"
+    )
+    source = _load(
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_submission_successor_live_result_v1_4.json"
+    )
+    mutated = deepcopy(assessment)
+    mutated["material_findings"][0]["target_agent_id"] = "AGENT::UNKNOWN"
+    with pytest.raises(
+        MultiAgentContentRepairError,
+        match="multi_agent_content_repair_target_invalid",
+    ):
+        compile_independent_content_challenges(
+            assessment=mutated,
+            workpapers=[row["workpaper"] for row in source["role_summaries"]],
+        )
+
+
+def test_semantic_rule_rebind_changes_only_rules_and_digest() -> None:
+    body = {
+        "schema_version": "fin_ia_dynamic_single_unit_workpaper_context_v1_0",
+        "agent": {"agent_id": "AGENT::CASH_CONVERSION"},
+        "rules": ["preserve company scope"],
+        "cell_analysis_view": {"cell": {"cell_id": "CELL::cash_conversion"}},
+        "case_identity": {"case_key": "DELL"},
+        "graph_context_packs": [],
+        "reflection_history": [],
+        "task_scenarios": [],
+    }
+    context = {**body, "context_digest": canonical_digest(body)}
+    rebound, receipt = rebind_workpaper_context_semantic_rules(
+        context,
+        expected_agent_id="AGENT::CASH_CONVERSION",
+    )
+    assert rebound["context_digest"] != context["context_digest"]
+    assert receipt[
+        "evidence_numeric_relation_gap_graph_and_case_authority_changed"
+    ] is False
+    assert any("资产负债表营运资金代理" in row for row in rebound["rules"])
+    for field in (
+        "cell_analysis_view",
+        "case_identity",
+        "graph_context_packs",
+        "reflection_history",
+        "task_scenarios",
+    ):
+        assert rebound[field] == context[field]
 
 
 def test_role_partition_fails_closed_when_one_facet_is_missing() -> None:
@@ -427,6 +536,49 @@ def test_submission_repair_resume_budget_counts_only_repairs_and_lead_R2() -> No
     assert budget["maximum_new_s1_s2_requests"] == 1
     assert budget["maximum_new_retrieval_rounds"] == 1
     assert budget["retries"] == 0
+
+
+def test_content_repair_budget_counts_exactly_five_repairs_and_one_lead() -> None:
+    budget = expected_content_repair_budget()
+    assert budget["maximum_new_model_calls"] == 12
+    assert sum(
+        budget[key]
+        for key in (
+            "role_repair_drafts",
+            "role_repair_submissions",
+            "lead_coordination_drafts",
+            "lead_coordination_submissions",
+        )
+    ) == budget["maximum_new_model_calls"]
+    assert budget["maximum_role_repairs"] == 5
+    assert budget["maximum_lead_rounds"] == 1
+    assert budget["maximum_new_s1_s2_requests"] == 0
+    assert budget["maximum_external_source_network_calls"] == 0
+    assert budget["retries"] == 0
+
+
+def test_content_repair_authority_rejects_budget_drift_before_execution(
+    tmp_path: Path,
+) -> None:
+    authority = {
+        "schema_version": CONTENT_REPAIR_AUTHORITY_SCHEMA,
+        "status": CONTENT_REPAIR_AUTHORITY_STATUS,
+        "signed_at": "2026-08-23T00:00:00Z",
+        "implementation_commit": "0" * 40,
+        "case_key": "DELL",
+        "execution_budget": {"maximum_new_model_calls": 13},
+        "token_budget_basis": {},
+        "bound_inputs": {},
+        "output_contract": {},
+        "known_boundary": "x" * 160,
+    }
+    path = tmp_path / "authority.json"
+    path.write_text(json.dumps(authority), encoding="utf-8")
+    with pytest.raises(
+        DynamicMultiAgentLoopError,
+        match="dynamic_multi_agent_content_repair_authority_invalid",
+    ):
+        validate_content_repair_authority(authority, authority_path=path.resolve())
 
 
 def test_live_authority_rejects_budget_drift_before_execution(tmp_path: Path) -> None:

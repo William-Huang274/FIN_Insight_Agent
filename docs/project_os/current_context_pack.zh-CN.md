@@ -1531,3 +1531,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 允许确定性重放 R4 已批准的同一条 Supply S1/S2 request 以恢复当前 Runtime 权威；禁止新增检索方向、外源网络、Candidate promotion、retry、fallback 和产品指针变更。
 - 当前仅为 signed／not executed；Writer、S3、MU／NVDA、异质留出、publication 和 release 均未授权。R5 完成后必须先过独立 L1 与内容质量门。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/145_submission_successor_R5_role_repair_resume_live_authority.md`。
+
+### 2026-08-23 R5 多 Agent 完成、独立语义失败与 R6 返修门
+
+- R5 精确复用 17 份 capture，只新增 Cash／Operating／Value 三份返修与 Lead R2，共 8 次 DeepSeek 调用；六份 Specialist workpaper、两轮 Lead 和结构合同均完成，0 retry／fallback／外源／promotion。
+- 独立审查确认身份、引用存在性和 lineage 通过，但 L1／L2 因七项金融语义错误失败：费用桥接贡献、同季度与同 cohort、存量代理与现金流、NVDA 客户结构到 Dell 的跨公司推断、NVDA 政策风险到 Dell 暴露、公司毛利与产品定价权、供应锁定与确定性 pull-forward。
+- 这些七项不是 S1 信源或 S2 数字缺失的直接结果；最早责任层是 S3 自由叙事未绑定可复用的金融关系语义，且 Lead 对同一叙事未能独立拒绝过度推断。Writer 继续冻结。
+- provider-neutral 内容返修合同已经实现：七条 finding 编译成五个责任角色的 FeedbackReceipt，Supply 不返修，Evidence／NumericFact／Relation／gap 权限不扩大；新 Lead 只复核修订后的六角色集合。
+- R6 zero-call 全部检查通过，0 模型／Provider／网络／S1/S2／promotion；新自然上限精确为 12 次（五角色各 draft＋submit，Lead draft＋submit），0 retry／fallback。
+- 工程回归：定向 `21 passed`、全仓 `1133 passed`、compileall／pyflakes、Workbench typecheck／production build、active baseline `211／8／5／28／0`、7,774-file secret scan／0。当前下一门为 clean commit／push、fresh Project OS preflight 与唯一 R6 authority；R6 后仍须独立 L1／L2 和内容质量审查，未授权 Writer、S3、泛化、publication 或 release。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/146_R5_multi_agent_completion_semantic_assessment_and_R6_content_repair_zero_call.md`。

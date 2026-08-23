@@ -14,6 +14,7 @@ from .multi_agent_preview import (
     SPECIALIST_AGENT_IDS,
     validate_specialist_workpaper,
 )
+from .multi_agent_content_repair import semantic_relation_rules
 from .planning import (
     ResearchPlanningPolicy,
     compile_research_objective,
@@ -233,7 +234,7 @@ def _role_workpaper_rules(*, agent_id: str) -> list[str]:
         "AGENT::SUPPLY_RELATIONSHIP": "Preserve speaker, relationship direction and supply-chain layer; capacity expansion is not DELL allocation or delivery proof.",
         "AGENT::COUNTEREVIDENCE": "Actively test the strongest issuer and ecosystem alternative explanation and route material challenges to the owning role.",
     }[agent_id]
-    return [*common, role_rule]
+    return [*common, role_rule, *semantic_relation_rules(agent_id)]
 
 
 def _token_bases(*, agent_id: str, responsibility: str) -> dict[str, Any]:

@@ -1487,7 +1487,7 @@ def test_current_dynamic_multi_agent_authority_ceiling_resume_rejects_budget_dri
         )
 
 
-def test_current_dynamic_multi_agent_content_reassessment_resume_binds_four_calls() -> None:
+def test_historical_current_dynamic_multi_agent_content_reassessment_resume_binds_four_calls_but_cannot_rerun() -> None:
     decision = json.loads(
         (
             ROOT
@@ -1520,21 +1520,25 @@ def test_current_dynamic_multi_agent_content_reassessment_resume_binds_four_call
         "lead_recheck_submission",
     }
 
-    result = build_preflight(
-        root=ROOT,
-        decision_ref=(
-            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_REF
+    # The immutable decision still proves the exact R9-bound four-call contract.
+    # R10 has since completed and independent reassessment closed its two owning
+    # blockers, so current Project OS must refuse to use that consumed scope to
+    # mint another authority.
+    with pytest.raises(
+        ValueError,
+        match=(
+            "project_os_current_dynamic_multi_agent_content_repair_"
+            "scope_allowance_missing"
         ),
-        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
-        check_repository=False,
-    )
-    assert result["run_scope_id"] == (
-        CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_SCOPE
-    )
-    assert "preserves immutable R9" in result["known_boundary"]
-    assert "prior Demand feedback history forward" in result["known_boundary"]
-    assert "at most 4 new Provider calls" in result["known_boundary"]
-    assert "does not authorize Writer" in result["known_boundary"]
+    ):
+        build_preflight(
+            root=ROOT,
+            decision_ref=(
+                CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_REF
+            ),
+            environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+            check_repository=False,
+        )
 
 
 def test_current_dynamic_multi_agent_content_reassessment_resume_rejects_budget_drift() -> None:

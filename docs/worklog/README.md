@@ -43,3 +43,4 @@
   - R9 合同成功与跨角色 L1 失败：`fin_0_1_3_s3/155_R9_contract_success_and_cross_role_L1_failure.md`
   - R10 R9-bound Demand＋Lead 零调用 successor 门：`fin_0_1_3_s3/156_R10_R9_bound_Demand_Lead_zero_call_gate.md`
   - R10 Demand＋Lead exact-once live authority：`fin_0_1_3_s3/157_R10_Demand_Lead_exact_once_live_authority.md`
+  - R10 四节点成功、独立 L1／L2 通过与 protected Writer 边界：`fin_0_1_3_s3/158_R10_contract_success_independent_pass_and_protected_writer_boundary.md`

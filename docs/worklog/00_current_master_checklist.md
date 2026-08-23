@@ -96,8 +96,10 @@
   - [x] R9-bound Demand＋Lead 四节点 successor：feedback-history roll-forward、零调用证明、fake seam 与 Project OS decision
   - [x] R10 全仓工程门：定向 115、全仓 1155、compileall／pyflakes／active baseline／JSON／JSONL／secret scan／diff check
   - [x] R10 clean／synced engineering commit、repository-aware preflight 与 fresh 四调用 authority
-  - [ ] R10 authority 提交／推送后的 clean 复验与唯一 live
-  - [ ] 七项 finding 的独立 L1／L2、内容质量复评与 Writer 入口决策
+  - [x] R10 authority 提交／推送后的 clean 复验与唯一 live：4/4 HTTP-200、0 retry，Writer 未调用
+  - [x] 七项 finding 的独立 L1／L2 与 workpaper 内容复评：7/7 关闭，26/28，Writer 零调用工程门 eligible
+  - [ ] capture-bound protected Writer 零调用 successor、完整工程门、fresh authority 与唯一 live
+  - [ ] 最终报告独立 L1／L2、八维质量与 S3 内容验收
 - [ ] MU／NVDA 同核心迁移与三案例 S1–S3 内容质量验收
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision

@@ -1012,7 +1012,8 @@ def reflection_tool(
                     },
                     "feedback_refs": {
                         "type": "array",
-                        "maxItems": max(len(feedback_refs), 1),
+                        "minItems": 1 if feedback_refs else 0,
+                        "maxItems": len(feedback_refs),
                         "uniqueItems": True,
                         "items": {
                             "type": "string",
@@ -1021,7 +1022,7 @@ def reflection_tool(
                     },
                     "next_request_ids": {
                         "type": "array",
-                        "maxItems": max(next_maximum, 1),
+                        "maxItems": next_maximum,
                         "uniqueItems": True,
                         "items": {
                             "type": "string",
@@ -1047,7 +1048,7 @@ def reflection_tool(
                                 "target_entity": {"type": "string", "minLength": 2, "maxLength": 80},
                                 "evidence_refs": {
                                     "type": "array",
-                                    "maxItems": max(len(evidence_refs), 1),
+                                    "maxItems": len(evidence_refs),
                                     "uniqueItems": True,
                                     "items": {
                                         "type": "string",
@@ -1131,6 +1132,7 @@ def validate_reflection_payload(
     value["feedback_refs"] = _strings(
         value.get("feedback_refs"),
         "dynamic_single_unit_reflection_feedback_invalid",
+        minimum=1 if allowed_feedback else 0,
         maximum=len(allowed_feedback),
     )
     _require(

@@ -1335,3 +1335,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R2 只允许切回既有 v1.1 transport profile／dispatch：thinking wire 省略不支持字段，本地仍要求恰好一个预期 Tool Call。研究问题、current Pack、S1/S2 loop、模型和 4-call budget 均不得变化。
 - 新 `RC-S3-058`、v1.1 scope decision 与 transport regression 已建立；定向 10 项、全仓 `1079 passed`，active baseline `205／8／5／28／0`，882 份 config JSON 与 7,695-file secret scan／0 均通过。仍需 clean commit／push、formal preflight 和 fresh R2 authority，不能直接重试 R1。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/123_current_dynamic_R1_transport_failure_and_R2_successor_gate.md`。
+
+### 2026-08-23 DELL current dynamic R2 feedback 合同失败
+
+- R2 已越过 R1 的传输错误。DeepSeek 自主选择 6 条首轮请求，current S1/S2 返回 12 条 reviewed Evidence、11 个 NumericFact、5 条数值关系和 9 个 residual gap；0 初始 Evidence 预喂、0 Candidate 晋升、0 外源网络。
+- 模型随后自然提出剩余 6 条价格／配置、台数、上游产能、双边供应关系、生态反方和下游需求请求，证明它能从第一轮结果识别第二轮研究方向；但该反思在第二轮执行前被 Harness 拒绝，因此不能记为动态单元完成。
+- 根因是 runner 按 canonical `FeedbackReceipt` 中不存在的 `round_id` 字段筛选，导致 Tool Schema 只允许 `FEEDBACK::NONE`，Validator 又禁止该占位符。模型遵循了可见 Schema；问题属于项目内按轮反馈绑定和 Schema／Validator 编译漂移，不是 DeepSeek、不属于检索空数据。
+- 统一修复现按真实运行轮绑定 receipt batch；有 receipt 时至少引用一条，无 receipt／无剩余请求／无 Evidence 时只允许空数组；公开 result 恢复为 capture ref／digest／usage 索引，完整请求和响应仍只保存在受限 capture。
+- 修复后的两轮 zero-model 回放完成 12/12 请求、20 条 FeedbackReceipt、2 个 PlanDelta／GraphDelta、显式 stop 与底稿合同，CUDA/FP16 及 mutation 继续成立。下一门是完整工程门、clean commit／push、Project OS preflight 和唯一 R3；成功后仍需独立 L1 与内容质量验收，不能直接进入多 Agent。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/124_current_dynamic_R2_feedback_contract_failure_and_R3_gate.md`。

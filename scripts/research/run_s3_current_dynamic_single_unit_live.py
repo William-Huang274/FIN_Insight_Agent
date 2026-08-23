@@ -79,6 +79,12 @@ AUTHORITY_SCHEMA_V1_1 = (
 AUTHORITY_STATUS_V1_1 = (
     "signed_exact_once_DELL_current_dynamic_value_capture_transport_successor"
 )
+AUTHORITY_SCHEMA_V1_2 = (
+    "fin_ia_s3_current_dynamic_single_unit_live_authority_v1_2"
+)
+AUTHORITY_STATUS_V1_2 = (
+    "signed_exact_once_DELL_current_dynamic_value_capture_feedback_successor"
+)
 FULL_RESULT_SCHEMA = "fin_ia_s3_current_dynamic_single_unit_live_full_v1_0"
 PUBLIC_RESULT_SCHEMA = "fin_ia_s3_current_dynamic_single_unit_live_result_v1_0"
 
@@ -260,6 +266,33 @@ def _event(
     )
 
 
+def _bind_round_feedback(
+    feedback_by_round: dict[int, list[dict[str, Any]]],
+    *,
+    round_index: int,
+    feedback_receipts: Sequence[Mapping[str, Any]],
+) -> None:
+    _require(
+        round_index >= 1 and round_index not in feedback_by_round,
+        "current_dynamic_live_feedback_round_binding_invalid",
+    )
+    feedback_by_round[round_index] = [
+        deepcopy(dict(row)) for row in feedback_receipts
+    ]
+
+
+def _feedback_for_round(
+    feedback_by_round: Mapping[int, Sequence[Mapping[str, Any]]],
+    *,
+    round_index: int,
+) -> list[dict[str, Any]]:
+    _require(
+        round_index in feedback_by_round,
+        "current_dynamic_live_feedback_round_missing",
+    )
+    return [deepcopy(dict(row)) for row in feedback_by_round[round_index]]
+
+
 def validate_authority(
     authority: Mapping[str, Any], *, authority_path: Path
 ) -> dict[str, Path]:
@@ -277,12 +310,17 @@ def validate_authority(
     }
     schema_version = str(authority.get("schema_version") or "")
     transport_successor = schema_version == AUTHORITY_SCHEMA_V1_1
-    expected_status = (
-        AUTHORITY_STATUS_V1_1 if transport_successor else AUTHORITY_STATUS
-    )
+    feedback_successor = schema_version == AUTHORITY_SCHEMA_V1_2
+    successor = transport_successor or feedback_successor
+    expected_status = {
+        AUTHORITY_SCHEMA: AUTHORITY_STATUS,
+        AUTHORITY_SCHEMA_V1_1: AUTHORITY_STATUS_V1_1,
+        AUTHORITY_SCHEMA_V1_2: AUTHORITY_STATUS_V1_2,
+    }.get(schema_version)
     _require(
         set(authority) == expected
-        and schema_version in {AUTHORITY_SCHEMA, AUTHORITY_SCHEMA_V1_1}
+        and schema_version
+        in {AUTHORITY_SCHEMA, AUTHORITY_SCHEMA_V1_1, AUTHORITY_SCHEMA_V1_2}
         and authority.get("status") == expected_status
         and authority.get("case_key") == "DELL"
         and authority.get("cell_id") == "CELL::value_capture",
@@ -319,7 +357,7 @@ def validate_authority(
         "loop_runtime",
         "provider_transport",
     )
-    if transport_successor:
+    if successor:
         ref_names = (
             *ref_names,
             "provider_dispatch",
@@ -331,7 +369,7 @@ def validate_authority(
         "current_evidence_pack_payload_digest",
         "task_readiness_result_digest",
     }
-    if transport_successor:
+    if successor:
         digest_fields.add("failed_predecessor_result_digest")
     _require(
         set(bound)
@@ -356,7 +394,7 @@ def validate_authority(
         )
         paths[f"{name}_ref"] = path
     implementation_names = ["runner", "loop_runtime", "provider_transport"]
-    if transport_successor:
+    if successor:
         implementation_names.append("provider_dispatch")
     for name in implementation_names:
         _require(
@@ -395,7 +433,7 @@ def validate_authority(
         == bound["current_evidence_pack_payload_digest"],
         "current_dynamic_live_task_readiness_drift",
     )
-    if transport_successor:
+    if successor:
         profile = load_agent_transport_profile(
             _json(paths["provider_profile_ref"])
         )
@@ -410,29 +448,65 @@ def validate_authority(
             "current_dynamic_live_transport_profile_invalid",
         )
         failed = _json(paths["failed_predecessor_ref"])
-        _require(
+        predecessor_valid = (
             failed.get("status") == "terminal_failed_no_retry"
             and failed.get("result_digest")
             == bound["failed_predecessor_result_digest"]
-            and (failed.get("failure") or {}).get("phase")
-            == "provider_transport_or_response"
-            and (failed.get("failure") or {}).get("code")
-            == "model_gateway_http_error:400"
-            and (failed.get("execution") or {}).get("provider_calls_attempted")
-            == 1
-            and (failed.get("execution") or {}).get("retrieval_rounds_executed")
-            == 0,
+        )
+        if transport_successor:
+            predecessor_valid = predecessor_valid and (
+                (failed.get("failure") or {}).get("phase")
+                == "provider_transport_or_response"
+                and (failed.get("failure") or {}).get("code")
+                == "model_gateway_http_error:400"
+                and (failed.get("execution") or {}).get(
+                    "provider_calls_attempted"
+                )
+                == 1
+                and (failed.get("execution") or {}).get(
+                    "retrieval_rounds_executed"
+                )
+                == 0
+            )
+        else:
+            predecessor_valid = predecessor_valid and (
+                (failed.get("failure") or {}).get("phase")
+                == "dynamic_research_loop_contract"
+                and (failed.get("failure") or {}).get("code")
+                == "dynamic_single_unit_reflection_feedback_invalid"
+                and (failed.get("execution") or {}).get(
+                    "provider_calls_attempted"
+                )
+                == 2
+                and (failed.get("execution") or {}).get(
+                    "retrieval_rounds_executed"
+                )
+                == 1
+            )
+        _require(
+            predecessor_valid,
             "current_dynamic_live_failed_predecessor_invalid",
         )
         decision = _json(paths["scope_decision_ref"])
-        _require(
-            decision.get("schema_version")
-            == "fin_ia_s3_current_dynamic_single_unit_live_scope_decision_v1_1"
-            and decision.get("status")
-            == (
+        expected_decision = (
+            (
+                "fin_ia_s3_current_dynamic_single_unit_live_scope_decision_v1_1",
                 "R1_thinking_tool_choice_failure_preserved_one_transport_"
-                "successor_authorized"
-            ),
+                "successor_authorized",
+            )
+            if transport_successor
+            else (
+                "fin_ia_s3_current_dynamic_single_unit_live_scope_decision_v1_2",
+                "R2_feedback_schema_contradiction_preserved_one_contract_"
+                "successor_authorized",
+            )
+        )
+        _require(
+            (
+                decision.get("schema_version"),
+                decision.get("status"),
+            )
+            == expected_decision,
             "current_dynamic_live_scope_decision_invalid",
         )
     output = authority.get("output_contract")
@@ -610,6 +684,7 @@ def run(
     batches: list[dict[str, Any]] = []
     round_responses: list[dict[str, Any]] = []
     feedback_receipts: list[dict[str, Any]] = []
+    feedback_by_round: dict[int, list[dict[str, Any]]] = {}
     reflections: list[dict[str, Any]] = []
     reflection_artifacts: list[dict[str, Any]] = []
     executed_ids: list[str] = []
@@ -676,6 +751,11 @@ def run(
             created_at=recorded_at,
         )
         feedback_receipts.extend(feedback)
+        _bind_round_feedback(
+            feedback_by_round,
+            round_index=1,
+            feedback_receipts=feedback,
+        )
         messages.extend(
             [
                 request_step.continuation_assistant_message(),
@@ -697,11 +777,10 @@ def run(
 
         maximum_rounds = int(policy["loop_limits"]["maximum_retrieval_rounds"])
         for round_index in range(1, maximum_rounds + 1):
-            current_feedback = [
-                row
-                for row in feedback_receipts
-                if str(row.get("round_id") or "") == f"ROUND::{round_index}"
-            ]
+            current_feedback = _feedback_for_round(
+                feedback_by_round,
+                round_index=round_index,
+            )
             reflect_tool = reflection_tool(
                 policy=policy,
                 request_catalog=catalog,
@@ -822,6 +901,11 @@ def run(
                 created_at=recorded_at,
             )
             feedback_receipts.extend(feedback)
+            _bind_round_feedback(
+                feedback_by_round,
+                round_index=round_index + 1,
+                feedback_receipts=feedback,
+            )
             messages.extend(
                 [
                     reflection_step.continuation_assistant_message(),
@@ -982,7 +1066,7 @@ def run(
         "cell_id": "CELL::value_capture",
         "model": profile.model,
         "execution": full["execution"],
-        "provider_steps": provider_steps,
+        "provider_steps": full["provider_steps"],
         "selections": selections,
         "round_summaries": [
             {

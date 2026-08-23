@@ -9,6 +9,7 @@ import pytest
 
 from sec_agent.project_os_preflight import (
     CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE,
+    CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE,
     FIXED_PACK_SCOPE,
     FRAGMENT_VALIDATION_REPAIR_SCOPE,
@@ -170,6 +171,11 @@ CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
     "live_scope_decision_v1_1.json"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "live_scope_decision_v1_2.json"
 )
 DYNAMIC_FIVE_CELL_DECISION_REF = (
     "configs/research/evals/"
@@ -1241,19 +1247,17 @@ def test_current_dynamic_single_unit_decision_binds_current_loop_and_budget() ->
         "current_product_pointer_mutations": 0,
     }
 
-    with pytest.raises(
-        ValueError,
-        match=(
-            "project_os_scope_blocked:RC-S3-058-current-dynamic-runner-"
-            "bypassed-qualified-thinking-tool-transport"
-        ),
-    ):
-        build_preflight(
-            root=ROOT,
-            decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_REF,
-            environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
-            check_repository=False,
-        )
+    # RC-S3-058 was closed by the immutable R2 transport proof.  The historical
+    # v1.0 decision must remain parseable, while execution remains protected by
+    # its exact-once authority/result rather than by keeping a closed issue open.
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    assert result["run_scope_id"] == CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE
+    assert result["decision_projection"]["current_dynamic_single_unit"] is True
 
 
 def test_current_dynamic_single_unit_decision_rejects_budget_drift() -> None:
@@ -1314,6 +1318,26 @@ def test_current_dynamic_transport_successor_rejects_legacy_profile() -> None:
             root=ROOT,
             decision=decision,
         )
+
+
+def test_current_dynamic_feedback_successor_binds_R2_and_round_contract() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    projection = result["decision_projection"]
+
+    assert projection["run_scope_id"] == CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_SCOPE
+    assert projection["current_dynamic_single_unit"] is True
+    assert projection["current_dynamic_transport_successor"] is False
+    assert projection["current_dynamic_feedback_successor"] is True
+    assert projection["failed_predecessor_status"] == "terminal_failed_no_retry"
+    assert (
+        "RC-S3-059-current-dynamic-reflection-schema-disconnected-from-round-feedback"
+        in result["scope_projection"]["explicit_allow_issue_ids"]
+    )
 
 
 def test_historical_dynamic_five_cell_decision_fails_closed_after_consumer_successor(

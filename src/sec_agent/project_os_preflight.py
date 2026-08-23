@@ -129,6 +129,17 @@ CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE = (
     "one_DELL_current_dynamic_value_capture_single_unit_"
     "transport_successor_exact_once"
 )
+CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_single_unit_live_scope_decision_v1_2"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_STATUS = (
+    "R2_feedback_schema_contradiction_preserved_one_contract_"
+    "successor_authorized"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_SCOPE = (
+    "one_DELL_current_dynamic_value_capture_single_unit_"
+    "feedback_contract_successor_exact_once"
+)
 DYNAMIC_FIVE_CELL_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
 )
@@ -623,6 +634,7 @@ def _validate_fixed_pack_decision(
         in {
             CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_SCHEMA,
             CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_SCHEMA,
+            CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_SCHEMA,
         }
     ):
         return _validate_current_dynamic_single_unit_decision(
@@ -6547,22 +6559,34 @@ def _validate_dynamic_single_cell_decision(
 def _validate_current_dynamic_single_unit_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    schema_version = decision.get("schema_version")
     transport_successor = (
-        decision.get("schema_version")
-        == CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_SCHEMA
+        schema_version == CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_SCHEMA
     )
+    feedback_successor = (
+        schema_version == CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_SCHEMA
+    )
+    successor = transport_successor or feedback_successor
     required_equal = {
         "status": (
-            CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_STATUS
-            if transport_successor
-            else CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS
+            CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_STATUS
+            if feedback_successor
+            else (
+                CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_STATUS
+                if transport_successor
+                else CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS
+            )
         ),
         "case_key": "DELL",
         "cell_id": "CELL::value_capture",
         "run_scope_id": (
-            CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE
-            if transport_successor
-            else CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE
+            CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_SCOPE
+            if feedback_successor
+            else (
+                CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE
+                if transport_successor
+                else CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE
+            )
         ),
         "evidence_mode": "current_reviewed_pack_dynamic_S1_S2_feedback_loop",
         "next_authorized_scope": (
@@ -6592,7 +6616,7 @@ def _validate_current_dynamic_single_unit_decision(
             raise ValueError(
                 f"project_os_current_dynamic_decision_true_required:{field}"
             )
-    if transport_successor:
+    if successor:
         for field in (
             "failed_R1_preserved",
             "provider_neutral_transport_required",
@@ -6601,6 +6625,17 @@ def _validate_current_dynamic_single_unit_decision(
             if decision.get(field) is not True:
                 raise ValueError(
                     "project_os_current_dynamic_transport_true_required:"
+                    + field
+                )
+    if feedback_successor:
+        for field in (
+            "failed_R2_preserved",
+            "runtime_round_feedback_binding_required",
+            "tool_schema_validator_equivalence_required",
+        ):
+            if decision.get(field) is not True:
+                raise ValueError(
+                    "project_os_current_dynamic_feedback_true_required:"
                     + field
                 )
     for field in (
@@ -6730,7 +6765,7 @@ def _validate_current_dynamic_single_unit_decision(
         common_profile_valid
         and (
             transport_profile_valid
-            if transport_successor
+            if successor
             else legacy_profile_valid
         )
     ):
@@ -6739,7 +6774,7 @@ def _validate_current_dynamic_single_unit_decision(
         )
 
     failed_predecessor_status = None
-    if transport_successor:
+    if successor:
         _, failed = _validate_artifact_binding(
             root=root,
             decision=decision,
@@ -6748,17 +6783,38 @@ def _validate_current_dynamic_single_unit_decision(
             digest_field="failed_predecessor_result_digest",
         )
         failed_predecessor_status = failed.get("status")
-        if not (
-            failed_predecessor_status == "terminal_failed_no_retry"
-            and (failed.get("failure") or {}).get("phase")
-            == "provider_transport_or_response"
-            and (failed.get("failure") or {}).get("code")
-            == "model_gateway_http_error:400"
-            and (failed.get("execution") or {}).get("provider_calls_attempted")
-            == 1
-            and (failed.get("execution") or {}).get("retrieval_rounds_executed")
-            == 0
-        ):
+        predecessor_valid = failed_predecessor_status == "terminal_failed_no_retry"
+        if transport_successor:
+            predecessor_valid = predecessor_valid and (
+                (failed.get("failure") or {}).get("phase")
+                == "provider_transport_or_response"
+                and (failed.get("failure") or {}).get("code")
+                == "model_gateway_http_error:400"
+                and (failed.get("execution") or {}).get(
+                    "provider_calls_attempted"
+                )
+                == 1
+                and (failed.get("execution") or {}).get(
+                    "retrieval_rounds_executed"
+                )
+                == 0
+            )
+        else:
+            predecessor_valid = predecessor_valid and (
+                (failed.get("failure") or {}).get("phase")
+                == "dynamic_research_loop_contract"
+                and (failed.get("failure") or {}).get("code")
+                == "dynamic_single_unit_reflection_feedback_invalid"
+                and (failed.get("execution") or {}).get(
+                    "provider_calls_attempted"
+                )
+                == 2
+                and (failed.get("execution") or {}).get(
+                    "retrieval_rounds_executed"
+                )
+                == 1
+            )
+        if not predecessor_valid:
             raise ValueError(
                 "project_os_current_dynamic_failed_predecessor_invalid"
             )
@@ -6771,6 +6827,7 @@ def _validate_current_dynamic_single_unit_decision(
         "recent_provider_steps": 0,
         "current_dynamic_single_unit": True,
         "current_dynamic_transport_successor": transport_successor,
+        "current_dynamic_feedback_successor": feedback_successor,
         "failed_predecessor_status": failed_predecessor_status,
         "dynamic_single_cell_successor": False,
         "micro_judgment_successor": False,

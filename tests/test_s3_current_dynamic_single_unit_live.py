@@ -15,6 +15,8 @@ from scripts.research.run_s3_current_dynamic_single_unit_live import (
     AUTHORITY_SCHEMA,
     AUTHORITY_STATUS,
     CurrentDynamicSingleUnitLiveError,
+    _bind_round_feedback,
+    _feedback_for_round,
     _force_tool,
     _public_provider_step,
     _tool_arguments,
@@ -127,3 +129,21 @@ def test_current_dynamic_runner_replaces_legacy_single_cell_active_entry() -> No
 
 def test_current_dynamic_live_uses_provider_neutral_transport_dispatch() -> None:
     assert run.__kwdefaults__["executor"] is execute_agent_tool_step_exact_once
+
+
+def test_current_dynamic_live_binds_feedback_by_runtime_round_not_receipt_field() -> None:
+    feedback_by_round: dict[int, list[dict]] = {}
+    receipt = {
+        "feedback_id": "FEEDBACK::REAL",
+        "model_visible_summary": "The runtime contract intentionally has no round_id field.",
+    }
+    _bind_round_feedback(
+        feedback_by_round,
+        round_index=1,
+        feedback_receipts=[receipt],
+    )
+    assert _feedback_for_round(feedback_by_round, round_index=1) == [receipt]
+
+    with pytest.raises(CurrentDynamicSingleUnitLiveError) as exc:
+        _feedback_for_round(feedback_by_round, round_index=2)
+    assert exc.value.code == "current_dynamic_live_feedback_round_missing"

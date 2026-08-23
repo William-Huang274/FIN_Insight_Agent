@@ -203,7 +203,7 @@ def test_reflection_compiles_plan_delta_and_hypothesis_only_graph(
         "REQ::DELL::PVM_BRIDGE::V1",
     ]
     next_ids = ["REQ::DELL::SUPPLY_RELATIONSHIP::V1"]
-    reflection_tool(
+    tool = reflection_tool(
         policy=policy,
         request_catalog=catalog,
         feedback_receipts=feedback,
@@ -211,6 +211,12 @@ def test_reflection_compiles_plan_delta_and_hypothesis_only_graph(
         executed_request_ids=executed,
         round_index=1,
     )
+    feedback_schema = tool["function"]["parameters"]["properties"][
+        "feedback_refs"
+    ]
+    assert feedback_schema["minItems"] == 1
+    assert feedback_schema["maxItems"] == 1
+    assert feedback_schema["items"]["enum"] == ["FEEDBACK::ONE"]
     validated = validate_reflection_payload(
         _reflection(
             round_index=1,
@@ -243,6 +249,44 @@ def test_reflection_compiles_plan_delta_and_hypothesis_only_graph(
     assert artifacts["graph_delta"]["hypothesis_only_edges"]
     assert artifacts["graph_delta"]["fact_authority_granted"] is False
     assert artifacts["stop_decision"]["decision"] == "continue"
+
+
+def test_reflection_empty_enums_compile_to_empty_arrays_not_fake_refs(
+    policy: dict, catalog: dict
+) -> None:
+    all_request_ids = [row["request_id"] for row in catalog["requests"]]
+    tool = reflection_tool(
+        policy=policy,
+        request_catalog=catalog,
+        feedback_receipts=[],
+        accepted_evidence_refs=[],
+        executed_request_ids=all_request_ids,
+        round_index=2,
+    )
+    properties = tool["function"]["parameters"]["properties"]
+    assert properties["feedback_refs"]["minItems"] == 0
+    assert properties["feedback_refs"]["maxItems"] == 0
+    assert properties["next_request_ids"]["maxItems"] == 0
+    assert properties["graph_hypotheses"]["items"]["properties"][
+        "evidence_refs"
+    ]["maxItems"] == 0
+
+    validated = validate_reflection_payload(
+        _reflection(
+            round_index=2,
+            feedback_refs=[],
+            next_request_ids=[],
+            decision="stop_no_progress",
+        ),
+        policy=policy,
+        request_catalog=catalog,
+        feedback_receipts=[],
+        accepted_evidence_refs=[],
+        executed_request_ids=all_request_ids,
+        round_index=2,
+    )
+    assert validated["feedback_refs"] == []
+    assert validated["next_request_ids"] == []
 
 
 def test_stop_sufficient_rejected_before_all_proposition_groups_covered(

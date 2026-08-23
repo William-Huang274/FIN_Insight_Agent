@@ -40,3 +40,5 @@
   - R8 submission-resume live authority：`fin_0_1_3_s3/152_R8_submission_resume_live_authority.md`
   - R8 重复 mapper 失败与 R9 authority-ceiling 工程门：`fin_0_1_3_s3/153_R8_repeat_mapper_failure_and_R9_authority_ceiling_gate.md`
   - R9 authority-ceiling resume live authority：`fin_0_1_3_s3/154_R9_authority_ceiling_resume_live_authority.md`
+  - R9 合同成功与跨角色 L1 失败：`fin_0_1_3_s3/155_R9_contract_success_and_cross_role_L1_failure.md`
+  - R10 R9-bound Demand＋Lead 零调用 successor 门：`fin_0_1_3_s3/156_R10_R9_bound_Demand_Lead_zero_call_gate.md`

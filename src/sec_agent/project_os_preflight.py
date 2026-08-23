@@ -54,6 +54,7 @@ from sec_agent.research.multi_agent_content_repair import (
     expected_content_repair_authority_ceiling_resume_budget,
     expected_content_repair_budget,
     expected_content_repair_submission_resume_budget,
+    expected_content_reassessment_resume_budget,
 )
 
 
@@ -212,6 +213,14 @@ CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_DECISION_SCH
 CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_DECISION_STATUS = (
     "R8_repeat_mapper_failure_preserved_R9_authority_ceiling_resume_authorized"
 )
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_reassessment_resume_"
+    "scope_decision_v1_0"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_STATUS = (
+    "R9_contract_content_failure_preserved_R10_Demand_Lead_"
+    "reassessment_resume_authorized"
+)
 CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SCOPE = (
     "one_clean_authorized_five_role_content_repair_and_Lead_recheck"
 )
@@ -220,6 +229,9 @@ CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUBMISSION_RESUME_SCOPE = (
 )
 CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_SCOPE = (
     "one_R8_bound_authority_ceiling_resume_then_Operating_Value_and_Lead"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_SCOPE = (
+    "one_R9_bound_Demand_cross_role_cohort_repair_then_Lead_recheck"
 )
 DYNAMIC_FIVE_CELL_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
@@ -589,6 +601,7 @@ def _validate_fixed_pack_decision(
         CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUCCESSOR_DECISION_SCHEMA,
         CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUBMISSION_RESUME_DECISION_SCHEMA,
         CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_DECISION_SCHEMA,
+        CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_SCHEMA,
     }:
         return _validate_current_dynamic_multi_agent_content_repair_decision(
             root=root,
@@ -7504,9 +7517,319 @@ def _validate_current_dynamic_multi_agent_content_repair_authority_ceiling_resum
     }
 
 
+def _validate_current_dynamic_multi_agent_content_reassessment_resume_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    expected_equal = {
+        "schema_version": (
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_SCHEMA
+        ),
+        "status": (
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_STATUS
+        ),
+        "case_key": "DELL",
+        "cell_id": "MULTI_AGENT::DELL::CONTENT_REPAIR",
+        "run_scope_id": (
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_SCOPE
+        ),
+        "evidence_mode": (
+            "immutable_R9_six_workpapers_one_cross_role_Demand_residual_"
+            "zero_new_evidence"
+        ),
+        "next_authorized_scope": (
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_SCOPE
+        ),
+        "replacement_is_new_attempt_not_retry": True,
+        "content_reassessment_resume_live_authorized": True,
+        "credential_presence_required": True,
+        "immutable_R9_required": True,
+        "R9_six_provider_zero_retry_required": True,
+        "R9_independent_content_failure_required": True,
+        "one_Demand_cross_role_repair_required": True,
+        "prior_Demand_feedback_rollforward_required": True,
+        "five_other_workpapers_reuse_required": True,
+        "zero_call_successor_proof_required": True,
+        "fresh_R10_authority_required": True,
+        "authority_sets_unchanged_required": True,
+        "one_natural_lead_recheck_required": True,
+        "independent_reassessment_required": True,
+        "provider_neutral_semantic_contract_required": True,
+        "new_S1_S2_authorized": False,
+        "external_source_network_authorized": False,
+        "candidate_promotion_authorized": False,
+        "writer_authorized": False,
+        "S3_acceptance_authorized": False,
+        "heterogeneous_generalization_authorized": False,
+        "product_publication_authorized": False,
+        "release_authorized": False,
+    }
+    if any(decision.get(key) != value for key, value in expected_equal.items()):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_reassessment_"
+            "resume_identity_invalid"
+        )
+    expected_budget = expected_content_reassessment_resume_budget()
+    if dict(decision.get("execution_budget") or {}) != expected_budget:
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_reassessment_"
+            "resume_budget_invalid"
+        )
+    if tuple(decision.get("new_repair_agent_ids") or ()) != (
+        "AGENT::DEMAND_QUALITY",
+    ) or set(decision.get("reused_unchanged_agent_ids") or ()) != {
+        "AGENT::CASH_CONVERSION",
+        "AGENT::COUNTEREVIDENCE",
+        "AGENT::OPERATING_PERFORMANCE",
+        "AGENT::SUPPLY_RELATIONSHIP",
+        "AGENT::VALUE_CAPTURE",
+    }:
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_reassessment_"
+            "resume_target_invalid"
+        )
+    if tuple(decision.get("material_residual_issue_ids") or ()) != (
+        "RC-S3-075-same-quarter-orders-and-revenue-promoted-to-cohort-conversion",
+        "RC-S3-087-R9-Demand-counterargument-retained-same-quarter-order-to-revenue-conversion",
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_reassessment_"
+            "resume_issue_set_invalid"
+        )
+
+    _, zero = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="zero_call_result_ref",
+        sha_field="zero_call_result_sha256",
+        digest_field="zero_call_result_digest",
+    )
+    r9_authority_path, r9_authority = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="r9_authority_ref",
+        sha_field="r9_authority_sha256",
+    )
+    r9_public_path, r9_public = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="r9_public_result_ref",
+        sha_field="r9_public_result_sha256",
+        digest_field="r9_public_result_digest",
+    )
+    r9_private_path, r9_private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="r9_private_result_ref",
+        sha_field="r9_private_result_sha256",
+        digest_field="r9_private_full_result_digest",
+        artifact_digest_field="full_result_digest",
+    )
+    _, r9_assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="r9_assessment_ref",
+        sha_field="r9_assessment_sha256",
+    )
+    base_private_path, base_private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="base_predecessor_private_result_ref",
+        sha_field="base_predecessor_private_result_sha256",
+        digest_field="base_predecessor_private_full_result_digest",
+        artifact_digest_field="full_result_digest",
+    )
+    residuals = r9_assessment.get("material_residual_findings") or []
+    if not (
+        r9_authority.get("schema_version")
+        == "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_v1_2"
+        and r9_authority.get("status")
+        == (
+            "signed_exact_once_DELL_current_dynamic_multi_agent_content_"
+            "repair_authority_ceiling_resume"
+        )
+        and r9_public.get("status")
+        == "completed_contract_valid_reassessment_pending"
+        and r9_private.get("status")
+        == "completed_contract_valid_reassessment_pending"
+        and r9_public.get("private_full_result_sha256")
+        == _sha256(r9_private_path)
+        and r9_private.get("authority_sha256") == _sha256(r9_authority_path)
+        and (r9_private.get("execution") or {}).get(
+            "new_provider_calls_attempted"
+        )
+        == 6
+        and (r9_private.get("execution") or {}).get("new_provider_http_200")
+        == 6
+        and (r9_private.get("execution") or {}).get("retries") == 0
+        and len(r9_private.get("capture_manifest") or ()) == 6
+        and r9_private.get("predecessor_private_ref")
+        == str(decision["base_predecessor_private_result_ref"])
+        and base_private.get("status")
+        == "completed_contract_valid_assessment_pending"
+        and r9_assessment.get("schema_version")
+        == "fin_ia_s3_current_dynamic_multi_agent_content_reassessment_v1_0"
+        and r9_assessment.get("status")
+        == (
+            "R9_contract_pass_six_of_seven_original_findings_closed_"
+            "cross_role_cohort_conversion_L1_fail_writer_not_eligible"
+        )
+        and r9_assessment.get("source_result_sha256")
+        == _sha256(r9_public_path)
+        and r9_assessment.get("source_result_digest")
+        == r9_public.get("result_digest")
+        and r9_assessment.get("private_full_result_sha256")
+        == _sha256(r9_private_path)
+        and r9_assessment.get("private_full_result_digest")
+        == r9_private.get("full_result_digest")
+        and len(residuals) == 1
+        and residuals[0].get("residual_issue_id")
+        == (
+            "RC-S3-087-R9-Demand-counterargument-retained-same-quarter-"
+            "order-to-revenue-conversion"
+        )
+        and residuals[0].get("target_agent_id") == "AGENT::DEMAND_QUALITY"
+        and residuals[0].get("locations")
+        == ["thesis", "strongest_counterarguments[1]"]
+        and zero.get("status")
+        == "content_reassessment_resume_zero_call_proven"
+        and zero.get("R9_public_result_digest") == r9_public.get("result_digest")
+        and zero.get("R9_private_full_result_digest")
+        == r9_private.get("full_result_digest")
+        and zero.get("R9_assessment_sha256")
+        == str(decision["r9_assessment_sha256"])
+        and zero.get("base_predecessor_private_full_result_digest")
+        == base_private.get("full_result_digest")
+        and str(zero.get("first_fresh_provider_frontier") or "").endswith(
+            "demand-quality-repair-r6-draft"
+        )
+        and dict(zero.get("execution_budget") or {}) == expected_budget
+        and all((zero.get("checks") or {}).values())
+        and (zero.get("execution") or {}).get("model_calls") == 0
+        and (zero.get("execution") or {}).get("provider_calls") == 0
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_reassessment_"
+            "resume_chain_invalid"
+        )
+    for ref_field, sha_field in (
+        ("runner_ref", "runner_sha256"),
+        ("content_repair_runtime_ref", "content_repair_runtime_sha256"),
+        ("role_loop_runtime_ref", "role_loop_runtime_sha256"),
+        ("multi_agent_runtime_ref", "multi_agent_runtime_sha256"),
+    ):
+        bound_path = _repo_path(root, str(decision.get(ref_field) or ""))
+        if _sha256(bound_path) != str(decision.get(sha_field) or ""):
+            raise ValueError(
+                "project_os_current_dynamic_multi_agent_content_reassessment_"
+                f"resume_runtime_sha_drift:{ref_field}"
+            )
+    _, profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="provider_profile_ref",
+        sha_field="provider_profile_sha256",
+    )
+    _, submission = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="submission_profile_ref",
+        sha_field="submission_profile_sha256",
+    )
+    if not (
+        profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and profile.get("base_url") == "https://api.deepseek.com"
+        and profile.get("endpoint") == "/chat/completions"
+        and profile.get("request_defaults")
+        == {
+            "max_tokens": 32000,
+            "stream": False,
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+        }
+        and (profile.get("authority") or {}).get("retry_count") == 0
+        and submission.get("provider_id") == "deepseek"
+        and submission.get("model") == "deepseek-v4-pro"
+        and submission.get("base_url") == "https://api.deepseek.com"
+        and submission.get("endpoint") == "/chat/completions"
+        and submission.get("request_defaults")
+        == {
+            "max_tokens": 8000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+        and (submission.get("authority") or {}).get("retry_count") == 0
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_reassessment_"
+            "resume_profile_invalid"
+        )
+    token_basis = decision.get("token_budget_basis")
+    required_nodes = {
+        "demand_repair_analysis": 1,
+        "demand_repair_submission": 1,
+        "lead_recheck_analysis": 1,
+        "lead_recheck_submission": 1,
+    }
+    required_fields = {
+        "node_purpose",
+        "input_scale",
+        "required_outputs",
+        "schema_burden",
+        "materiality_quality_risk",
+        "comparable_run_evidence",
+        "reasoning_profile",
+        "stop_and_truncation_behavior",
+        "maximum_calls",
+    }
+    if not (
+        isinstance(token_basis, Mapping)
+        and set(token_basis) == set(required_nodes)
+        and all(
+            isinstance(token_basis[node], Mapping)
+            and set(token_basis[node]) == required_fields
+            and token_basis[node].get("maximum_calls") == maximum_calls
+            and all(
+                len(str(token_basis[node].get(field) or "").strip()) >= 12
+                for field in required_fields - {"maximum_calls"}
+            )
+            for node, maximum_calls in required_nodes.items()
+        )
+        and sum(required_nodes.values())
+        == expected_budget["maximum_new_model_calls"]
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_reassessment_"
+            "resume_token_basis_invalid"
+        )
+    return {
+        "clean_proof_status": zero["status"],
+        "provider_id": profile["provider_id"],
+        "provider_model": profile["model"],
+        "api_key_env": profile["api_key_env"],
+        "recent_provider_steps": 6,
+        "current_dynamic_multi_agent_content_repair": True,
+        "current_dynamic_multi_agent_content_reassessment_resume": True,
+        "run_scope_id": decision["run_scope_id"],
+        "execution_limits": expected_budget,
+        "node_profiles": token_basis,
+        "R9_contract_status": r9_public["status"],
+        "R9_content_status": r9_assessment["status"],
+        "content_reassessment_resume_zero_call_status": zero["status"],
+    }
+
+
 def _validate_current_dynamic_multi_agent_content_repair_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if (
+        decision.get("schema_version")
+        == CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_SCHEMA
+    ):
+        return _validate_current_dynamic_multi_agent_content_reassessment_resume_decision(
+            root=root,
+            decision=decision,
+        )
     if (
         decision.get("schema_version")
         == CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_DECISION_SCHEMA
@@ -12707,24 +13030,32 @@ def build_preflight(
         decision_projection.get("current_dynamic_multi_agent_content_repair")
         is True
     ):
-        required_allowances = {
-            "RC-S3-074-expense-bridge-contribution-share-misstated",
-            "RC-S3-075-same-quarter-orders-and-revenue-promoted-to-cohort-conversion",
-            "RC-S3-076-balance-sheet-stock-delta-promoted-to-cash-absorption",
-            "RC-S3-077-cross-company-customer-structure-inferred-from-NVDA",
-            "RC-S3-078-NVDA-export-control-risk-promoted-to-DELL-exposure",
-            "RC-S3-079-company-gross-margin-used-as-necessary-test-of-product-pricing-power",
-            "RC-S3-080-demand-context-promoted-to-definite-pull-forward-and-digestion",
-        }
         if decision_projection.get(
-            "current_dynamic_multi_agent_content_repair_authority_ceiling_resume"
+            "current_dynamic_multi_agent_content_reassessment_resume"
         ) is True:
-            required_allowances.update(
-                {
-                    "RC-S3-083-demand-strict-mapper-emitted-unbound-bounded-inference",
-                    "RC-S3-085-r8-mapper-repeated-unbound-claim-and-runtime-lacked-digest-bound-authority-ceiling",
-                }
-            )
+            required_allowances = {
+                "RC-S3-075-same-quarter-orders-and-revenue-promoted-to-cohort-conversion",
+                "RC-S3-087-R9-Demand-counterargument-retained-same-quarter-order-to-revenue-conversion",
+            }
+        else:
+            required_allowances = {
+                "RC-S3-074-expense-bridge-contribution-share-misstated",
+                "RC-S3-075-same-quarter-orders-and-revenue-promoted-to-cohort-conversion",
+                "RC-S3-076-balance-sheet-stock-delta-promoted-to-cash-absorption",
+                "RC-S3-077-cross-company-customer-structure-inferred-from-NVDA",
+                "RC-S3-078-NVDA-export-control-risk-promoted-to-DELL-exposure",
+                "RC-S3-079-company-gross-margin-used-as-necessary-test-of-product-pricing-power",
+                "RC-S3-080-demand-context-promoted-to-definite-pull-forward-and-digestion",
+            }
+            if decision_projection.get(
+                "current_dynamic_multi_agent_content_repair_authority_ceiling_resume"
+            ) is True:
+                required_allowances.update(
+                    {
+                        "RC-S3-083-demand-strict-mapper-emitted-unbound-bounded-inference",
+                        "RC-S3-085-r8-mapper-repeated-unbound-claim-and-runtime-lacked-digest-bound-authority-ceiling",
+                    }
+                )
         if not required_allowances.issubset(
             set(scope_projection["explicit_allow_issue_ids"])
         ):
@@ -12882,6 +13213,34 @@ def build_preflight(
         is True
     ):
         if decision_projection.get(
+            "current_dynamic_multi_agent_content_reassessment_resume"
+        ) is True:
+            known_boundary = (
+                "This current-baseline preflight preserves immutable R9 with "
+                "six HTTP-200 Provider calls, six validated workpapers and one "
+                "Lead decision. Independent reassessment closes six original "
+                "findings but proves one remaining L1 cross-role cohort error "
+                "in the reused Demand thesis and strongest counterargument. A "
+                "zero-call successor rolls the prior Demand feedback history "
+                "forward without changing Evidence, NumericFact, Relation, gap, "
+                "graph, case or authority inputs. It authorizes only one Demand "
+                "analysis plus strict submission pair and one Lead recheck pair: "
+                "at most 4 new Provider calls. The other five workpapers remain "
+                "byte-identical to R9. It permits zero new S1/S2 request, "
+                "retrieval round, external source call, retry, fallback, "
+                "Candidate promotion or product-pointer mutation. Success still "
+                "requires independent L1/L2 and content reassessment and does "
+                "not authorize Writer, S3 acceptance, heterogeneous "
+                "generalization, Workbench publication or release."
+            )
+            required_terms = (
+                "preserves immutable R9",
+                "prior Demand feedback history forward",
+                "at most 4 new Provider calls",
+                "other five workpapers remain byte-identical",
+                "does not authorize Writer",
+            )
+        elif decision_projection.get(
             "current_dynamic_multi_agent_content_repair_authority_ceiling_resume"
         ) is True:
             known_boundary = (

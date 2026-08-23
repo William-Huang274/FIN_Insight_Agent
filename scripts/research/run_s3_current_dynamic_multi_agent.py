@@ -117,10 +117,13 @@ from sec_agent.research.multi_agent_preview_runtime import (  # noqa: E402
 )
 from sec_agent.research.multi_agent_content_repair import (  # noqa: E402
     compile_independent_content_challenges,
+    compile_independent_reassessment_challenges,
     expected_content_repair_authority_ceiling_resume_budget,
     expected_content_repair_budget,
     expected_content_repair_submission_resume_budget,
+    expected_content_reassessment_resume_budget,
     rebind_workpaper_context_semantic_rules,
+    roll_forward_repair_feedback_history,
 )
 from sec_agent.runtime_bridge.paths import resolve_runtime_paths  # noqa: E402
 from sec_agent.runtime_resource_registry import (  # noqa: E402
@@ -180,6 +183,9 @@ CONTENT_REPAIR_SUBMISSION_RESUME_ZERO_SCHEMA = (
 CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_ZERO_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_zero_call_v1_0"
 )
+CONTENT_REASSESSMENT_RESUME_ZERO_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_reassessment_resume_zero_call_v1_0"
+)
 CONTENT_REPAIR_AUTHORITY_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_v1_0"
 )
@@ -197,6 +203,12 @@ CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_SCHEMA = (
 )
 CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_STATUS = (
     "signed_exact_once_DELL_current_dynamic_multi_agent_content_repair_authority_ceiling_resume"
+)
+CONTENT_REASSESSMENT_RESUME_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_v1_3"
+)
+CONTENT_REASSESSMENT_RESUME_AUTHORITY_STATUS = (
+    "signed_exact_once_DELL_current_dynamic_multi_agent_content_reassessment_resume"
 )
 CONTENT_REPAIR_LIVE_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_content_repair_live_v1_0"
@@ -216,6 +228,12 @@ CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_LIVE_SCHEMA = (
 CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_FULL_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_full_v1_0"
 )
+CONTENT_REASSESSMENT_RESUME_LIVE_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_reassessment_resume_live_v1_0"
+)
+CONTENT_REASSESSMENT_RESUME_FULL_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_reassessment_resume_full_v1_0"
+)
 DEFAULT_CONTENT_REPAIR_ZERO_PUBLIC = Path(
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_zero_call_result_v1_0.json"
 )
@@ -227,6 +245,9 @@ DEFAULT_CONTENT_REPAIR_SUBMISSION_RESUME_ZERO_PUBLIC = Path(
 )
 DEFAULT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_ZERO_PUBLIC = Path(
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_zero_call_result_v1_0.json"
+)
+DEFAULT_CONTENT_REASSESSMENT_RESUME_ZERO_PUBLIC = Path(
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_reassessment_resume_zero_call_result_v1_0.json"
 )
 DEFAULT_CONTENT_REPAIR_LIVE_PUBLIC = Path(
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_result_v1_0.json"
@@ -2842,12 +2863,228 @@ def validate_submission_successor_authority(
     return paths
 
 
+def validate_content_reassessment_resume_authority(
+    authority: Mapping[str, Any], *, authority_path: Path
+) -> dict[str, Path]:
+    """Validate one fresh R9-bound Demand-plus-Lead successor authority."""
+
+    expected_keys = {
+        "schema_version",
+        "status",
+        "signed_at",
+        "implementation_commit",
+        "case_key",
+        "execution_budget",
+        "token_budget_basis",
+        "bound_inputs",
+        "output_contract",
+        "known_boundary",
+    }
+    expected_budget = expected_content_reassessment_resume_budget()
+    if not (
+        set(authority) == expected_keys
+        and authority.get("schema_version")
+        == CONTENT_REASSESSMENT_RESUME_AUTHORITY_SCHEMA
+        and authority.get("status")
+        == CONTENT_REASSESSMENT_RESUME_AUTHORITY_STATUS
+        and authority.get("case_key") == "DELL"
+        and dict(authority.get("execution_budget") or {}) == expected_budget
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_authority_invalid"
+        )
+    _validate_token_budget_basis(authority.get("token_budget_basis"))
+    token_basis = authority.get("token_budget_basis") or {}
+    if not (
+        set(token_basis)
+        == {
+            "demand_repair_analysis",
+            "demand_repair_submission",
+            "lead_recheck_analysis",
+            "lead_recheck_submission",
+        }
+        and sum(int(row["maximum_calls"]) for row in token_basis.values())
+        == expected_budget["maximum_new_model_calls"]
+        and all(int(row["maximum_calls"]) == 1 for row in token_basis.values())
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_token_basis_invalid"
+        )
+    bound = authority.get("bound_inputs")
+    if not isinstance(bound, Mapping):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_inputs_invalid"
+        )
+    ref_names = (
+        "provider_profile",
+        "submission_profile",
+        "runner",
+        "loop_runtime",
+        "multi_agent_runtime",
+        "content_repair_runtime",
+        "scope_decision",
+        "zero_call_result",
+        "r9_authority",
+        "r9_public",
+        "r9_private",
+        "r9_assessment",
+        "base_predecessor_private",
+    )
+    paths: dict[str, Path] = {}
+    for name in ref_names:
+        ref = str(bound.get(f"{name}_ref") or "")
+        path = _resolve_repo_ref(ref)
+        if not (
+            path.is_file()
+            and _sha256(path) == str(bound.get(f"{name}_sha256") or "")
+        ):
+            raise DynamicMultiAgentLoopError(
+                f"dynamic_multi_agent_content_reassessment_input_drift:{name}"
+            )
+        paths[f"{name}_ref"] = path
+    implementation_names = {
+        "runner",
+        "loop_runtime",
+        "multi_agent_runtime",
+        "content_repair_runtime",
+    }
+    commit = str(authority.get("implementation_commit") or "").lower()
+    for name in implementation_names:
+        if _git_blob_sha256(
+            commit=commit, ref=str(bound[f"{name}_ref"])
+        ) != str(bound[f"{name}_sha256"]):
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_content_reassessment_git_binding_invalid:"
+                + name
+            )
+
+    (
+        r9_authority,
+        r9_public,
+        r9_private,
+        r9_assessment,
+        base_private,
+    ) = _load_content_reassessment_resume_inputs(
+        r9_authority_path=paths["r9_authority_ref"],
+        r9_public_path=paths["r9_public_ref"],
+        r9_private_path=paths["r9_private_ref"],
+        r9_assessment_path=paths["r9_assessment_ref"],
+        base_predecessor_private_path=paths["base_predecessor_private_ref"],
+    )
+    zero = _read_json(paths["zero_call_result_ref"])
+    scope = _read_json(paths["scope_decision_ref"])
+    zero_body = {
+        key: deepcopy(value)
+        for key, value in zero.items()
+        if key != "result_digest"
+    }
+    chain_valid = (
+        r9_public.get("result_digest") == bound.get("r9_public_result_digest")
+        and r9_private.get("full_result_digest")
+        == bound.get("r9_private_full_result_digest")
+        and base_private.get("full_result_digest")
+        == bound.get("base_predecessor_private_full_result_digest")
+        and r9_assessment.get("source_result_digest")
+        == r9_public.get("result_digest")
+        and r9_authority.get("implementation_commit")
+        == r9_private.get("implementation_commit")
+        and zero.get("schema_version") == CONTENT_REASSESSMENT_RESUME_ZERO_SCHEMA
+        and zero.get("status")
+        == "content_reassessment_resume_zero_call_proven"
+        and zero.get("result_digest") == canonical_digest(zero_body)
+        and zero.get("result_digest") == bound.get("zero_call_result_digest")
+        and zero.get("R9_public_result_digest")
+        == r9_public.get("result_digest")
+        and zero.get("R9_private_full_result_digest")
+        == r9_private.get("full_result_digest")
+        and zero.get("R9_assessment_sha256")
+        == _sha256(paths["r9_assessment_ref"])
+        and zero.get("Demand_source_workpaper_digest")
+        == next(
+            row["workpaper_digest"]
+            for row in r9_private["final_workpapers"]
+            if row["agent_id"] == "AGENT::DEMAND_QUALITY"
+        )
+        and str(zero.get("first_fresh_provider_frontier") or "").endswith(
+            "demand-quality-repair-r6-draft"
+        )
+        and dict(zero.get("execution_budget") or {}) == expected_budget
+        and all((zero.get("checks") or {}).values())
+        and (zero.get("execution") or {}).get("model_calls") == 0
+        and (zero.get("execution") or {}).get("provider_calls") == 0
+        and scope.get("schema_version")
+        == (
+            "fin_ia_s3_current_dynamic_multi_agent_content_reassessment_"
+            "resume_scope_decision_v1_0"
+        )
+        and scope.get("status")
+        == (
+            "R9_contract_content_failure_preserved_R10_Demand_Lead_"
+            "reassessment_resume_authorized"
+        )
+        and scope.get("run_scope_id")
+        == "one_R9_bound_Demand_cross_role_cohort_repair_then_Lead_recheck"
+        and scope.get("next_authorized_scope")
+        == scope.get("run_scope_id")
+        and dict(scope.get("execution_budget") or {}) == expected_budget
+        and scope.get("content_reassessment_resume_live_authorized") is True
+        and scope.get("fresh_R10_authority_required") is True
+        and scope.get("new_S1_S2_authorized") is False
+        and scope.get("writer_authorized") is False
+    )
+    if not chain_valid:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_chain_invalid"
+        )
+    output = authority.get("output_contract")
+    if not (
+        isinstance(output, Mapping)
+        and set(output)
+        == {
+            "capture_root_ref",
+            "private_output_root_ref",
+            "public_result_ref",
+            "run_id",
+            "attempt_prefix",
+            "product_publication",
+        }
+        and output.get("product_publication") == "forbidden"
+        and str(output.get("run_id") or "").strip()
+        and str(output.get("attempt_prefix") or "").strip()
+        and not _resolve_repo_ref(str(output["private_output_root_ref"])).exists()
+        and not _resolve_repo_ref(str(output["public_result_ref"])).exists()
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_output_invalid"
+        )
+    if not (
+        authority_path.is_file()
+        and str(authority.get("signed_at") or "").strip()
+        and len(str(authority.get("known_boundary") or "").strip()) >= 120
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_metadata_invalid"
+        )
+    return paths
+
+
 def validate_content_repair_authority(
     authority: Mapping[str, Any],
     *,
     authority_path: Path,
     allow_terminal_materialization: bool = False,
 ) -> dict[str, Path]:
+    if (
+        authority.get("schema_version")
+        == CONTENT_REASSESSMENT_RESUME_AUTHORITY_SCHEMA
+    ):
+        if allow_terminal_materialization:
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_content_reassessment_materialization_forbidden"
+            )
+        return validate_content_reassessment_resume_authority(
+            authority, authority_path=authority_path
+        )
     expected = {
         "schema_version",
         "status",
@@ -5290,6 +5527,7 @@ def _execute_submission_successor_role_repair(
     attempt_prefix: str,
     repair_index: int,
     recorded_at: str,
+    feedback_recorded_at: str | None = None,
     research_executor: Callable[..., AgentToolStepResult],
     submission_executor: Callable[..., AgentToolStepResult],
     resume_capture_manifest: Sequence[Mapping[str, Any]] = (),
@@ -5301,7 +5539,7 @@ def _execute_submission_successor_role_repair(
         compile_cross_role_feedback_receipt(
             target_session_id=str(role_bundle["session"]["session_id"]),
             challenge=challenge,
-            created_at=recorded_at,
+            created_at=feedback_recorded_at or recorded_at,
         )
         for challenge in challenges
     ]
@@ -7289,6 +7527,184 @@ def _load_content_repair_inputs(
     return public, private, assessment
 
 
+def _load_content_reassessment_resume_inputs(
+    *,
+    r9_authority_path: Path,
+    r9_public_path: Path,
+    r9_private_path: Path,
+    r9_assessment_path: Path,
+    base_predecessor_private_path: Path,
+) -> tuple[
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+]:
+    """Bind immutable R9, its independent failure and the base role context."""
+
+    r9_authority = _read_json(r9_authority_path)
+    r9_public = _read_json(r9_public_path)
+    r9_private = _read_json(r9_private_path)
+    r9_assessment = _read_json(r9_assessment_path)
+    base_private = _read_json(base_predecessor_private_path)
+    public_body = {
+        key: deepcopy(value)
+        for key, value in r9_public.items()
+        if key != "result_digest"
+    }
+    private_body = {
+        key: deepcopy(value)
+        for key, value in r9_private.items()
+        if key != "full_result_digest"
+    }
+    base_body = {
+        key: deepcopy(value)
+        for key, value in base_private.items()
+        if key != "full_result_digest"
+    }
+    r9_bound = dict(r9_authority.get("bound_inputs") or {})
+    if not (
+        r9_authority.get("schema_version")
+        == CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_SCHEMA
+        and r9_authority.get("status")
+        == CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_STATUS
+        and dict(r9_authority.get("execution_budget") or {})
+        == expected_content_repair_authority_ceiling_resume_budget()
+        and r9_public.get("schema_version")
+        == CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_LIVE_SCHEMA
+        and r9_private.get("schema_version")
+        == CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_FULL_SCHEMA
+        and r9_public.get("status")
+        == "completed_contract_valid_reassessment_pending"
+        and r9_private.get("status")
+        == "completed_contract_valid_reassessment_pending"
+        and r9_public.get("result_digest") == canonical_digest(public_body)
+        and r9_private.get("full_result_digest")
+        == canonical_digest(private_body)
+        and r9_public.get("private_full_result_sha256")
+        == _sha256(r9_private_path)
+        and _resolve_repo_ref(str(r9_public.get("authority_ref") or "")).resolve()
+        == r9_authority_path.resolve()
+        and _resolve_repo_ref(str(r9_private.get("authority_ref") or "")).resolve()
+        == r9_authority_path.resolve()
+        and r9_private.get("authority_sha256") == _sha256(r9_authority_path)
+        and (r9_private.get("execution") or {}).get(
+            "new_provider_calls_attempted"
+        )
+        == 6
+        and (r9_private.get("execution") or {}).get("new_provider_http_200")
+        == 6
+        and (r9_private.get("execution") or {}).get("retries") == 0
+        and len(r9_private.get("capture_manifest") or ()) == 6
+        and r9_assessment.get("schema_version")
+        == "fin_ia_s3_current_dynamic_multi_agent_content_reassessment_v1_0"
+        and r9_assessment.get("status")
+        == (
+            "R9_contract_pass_six_of_seven_original_findings_closed_"
+            "cross_role_cohort_conversion_L1_fail_writer_not_eligible"
+        )
+        and r9_assessment.get("source_result_sha256")
+        == _sha256(r9_public_path)
+        and r9_assessment.get("source_result_digest")
+        == r9_public.get("result_digest")
+        and r9_assessment.get("private_full_result_sha256")
+        == _sha256(r9_private_path)
+        and r9_assessment.get("private_full_result_digest")
+        == r9_private.get("full_result_digest")
+        and r9_assessment.get("authority_sha256")
+        == _sha256(r9_authority_path)
+        and base_private.get("status")
+        == "completed_contract_valid_assessment_pending"
+        and base_private.get("full_result_digest") == canonical_digest(base_body)
+        and _resolve_repo_ref(
+            str(r9_private.get("predecessor_private_ref") or "")
+        ).resolve()
+        == base_predecessor_private_path.resolve()
+        and _resolve_repo_ref(
+            str(r9_bound.get("predecessor_private_ref") or "")
+        ).resolve()
+        == base_predecessor_private_path.resolve()
+        and r9_bound.get("predecessor_private_sha256")
+        == _sha256(base_predecessor_private_path)
+        and r9_bound.get("predecessor_private_full_result_digest")
+        == base_private.get("full_result_digest")
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_R9_binding_invalid"
+        )
+
+    private_workpapers = {
+        str(row.get("agent_id") or ""): deepcopy(dict(row))
+        for row in r9_private.get("final_workpapers") or ()
+    }
+    public_workpapers = {
+        str(row.get("agent_id") or ""): deepcopy(dict(row.get("workpaper") or {}))
+        for row in r9_public.get("role_summaries") or ()
+    }
+    base_bundles = {
+        str(row.get("agent_id") or ""): deepcopy(dict(row))
+        for row in base_private.get("role_bundles") or ()
+    }
+    if not (
+        set(private_workpapers) == set(SPECIALIST_AGENT_IDS)
+        and set(public_workpapers) == set(SPECIALIST_AGENT_IDS)
+        and set(base_bundles) == set(SPECIALIST_AGENT_IDS)
+        and all(
+            private_workpapers[agent_id] == public_workpapers[agent_id]
+            and str(private_workpapers[agent_id].get("workpaper_digest") or "")
+            == canonical_digest(
+                {
+                    key: deepcopy(value)
+                    for key, value in private_workpapers[agent_id].items()
+                    if key != "workpaper_digest"
+                }
+            )
+            for agent_id in SPECIALIST_AGENT_IDS
+        )
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_workpaper_binding_invalid"
+        )
+    demand_repairs = [
+        deepcopy(dict(row))
+        for row in r9_private.get("repairs") or ()
+        if row.get("agent_id") == "AGENT::DEMAND_QUALITY"
+    ]
+    demand_migrations = [
+        deepcopy(dict(row))
+        for row in r9_private.get("semantic_rule_migration_receipts") or ()
+        if row.get("agent_id") == "AGENT::DEMAND_QUALITY"
+    ]
+    if not (
+        len(demand_repairs) == 1
+        and len(demand_migrations) == 1
+        and demand_repairs[0].get("repaired_workpaper")
+        == private_workpapers["AGENT::DEMAND_QUALITY"]
+        and demand_repairs[0].get("authority_refs_unchanged") is True
+        and demand_migrations[0].get("rebound_context_digest")
+        == (demand_repairs[0].get("repair_context") or {}).get(
+            "source_context_digest"
+        )
+        and str((base_bundles["AGENT::DEMAND_QUALITY"].get("session") or {}).get(
+            "session_id"
+        ) or "")
+        == str((demand_repairs[0].get("continued_events") or [{}])[0].get(
+            "session_id"
+        ) or "")
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_Demand_lineage_invalid"
+        )
+    return (
+        r9_authority,
+        r9_public,
+        r9_private,
+        r9_assessment,
+        base_private,
+    )
+
+
 def run_zero_call_content_repair(
     *,
     attempt_id: str,
@@ -7662,6 +8078,454 @@ def run_zero_call_content_repair_successor(
     return public
 
 
+def _prepare_content_reassessment_demand_bundle(
+    *,
+    r9_private: Mapping[str, Any],
+    r9_assessment: Mapping[str, Any],
+    base_private: Mapping[str, Any],
+) -> tuple[
+    dict[str, Any],
+    dict[str, dict[str, Any]],
+    list[dict[str, Any]],
+    dict[str, Any],
+    dict[str, Any],
+]:
+    final_by_agent = {
+        str(row["agent_id"]): deepcopy(dict(row))
+        for row in r9_private["final_workpapers"]
+    }
+    challenges = compile_independent_reassessment_challenges(
+        assessment=r9_assessment,
+        workpapers=[final_by_agent[agent_id] for agent_id in SPECIALIST_AGENT_IDS],
+    )
+    base_bundles = {
+        str(row["agent_id"]): deepcopy(dict(row))
+        for row in base_private["role_bundles"]
+    }
+    demand_id = "AGENT::DEMAND_QUALITY"
+    demand_repairs = [
+        deepcopy(dict(row))
+        for row in r9_private["repairs"]
+        if row["agent_id"] == demand_id
+    ]
+    demand_migrations = [
+        deepcopy(dict(row))
+        for row in r9_private["semantic_rule_migration_receipts"]
+        if row["agent_id"] == demand_id
+    ]
+    if len(demand_repairs) != 1 or len(demand_migrations) != 1:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_Demand_lineage_invalid"
+        )
+    bundle = base_bundles[demand_id]
+    rebound, migration_receipt = rebind_workpaper_context_semantic_rules(
+        bundle["workpaper_context"], expected_agent_id=demand_id
+    )
+    if not (
+        migration_receipt == demand_migrations[0]
+        and rebound["context_digest"]
+        == demand_repairs[0]["repair_context"]["source_context_digest"]
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_semantic_context_invalid"
+        )
+    rolled, rollforward_receipt = roll_forward_repair_feedback_history(
+        context=rebound,
+        prior_repair_context=demand_repairs[0]["repair_context"],
+        expected_agent_id=demand_id,
+    )
+    bundle["workpaper_context"] = rolled
+    bundle["workpaper"] = deepcopy(final_by_agent[demand_id])
+    bundle["events"] = deepcopy(demand_repairs[0]["continued_events"])
+    return (
+        bundle,
+        final_by_agent,
+        challenges,
+        migration_receipt,
+        rollforward_receipt,
+    )
+
+
+def run_content_reassessment_resume_live(
+    *,
+    authority_path: Path,
+    research_executor: Callable[..., AgentToolStepResult] = (
+        execute_agent_tool_step_exact_once
+    ),
+    submission_executor: Callable[..., AgentToolStepResult] = (
+        execute_chat_completion_tool_step_exact_once
+    ),
+) -> dict[str, Any]:
+    """Run only one R9-bound Demand repair and one fresh Lead recheck."""
+
+    authority_path = authority_path.resolve()
+    authority = _read_json(authority_path)
+    paths = validate_content_reassessment_resume_authority(
+        authority, authority_path=authority_path
+    )
+    (
+        _,
+        r9_public,
+        r9_private,
+        r9_assessment,
+        base_private,
+    ) = _load_content_reassessment_resume_inputs(
+        r9_authority_path=paths["r9_authority_ref"],
+        r9_public_path=paths["r9_public_ref"],
+        r9_private_path=paths["r9_private_ref"],
+        r9_assessment_path=paths["r9_assessment_ref"],
+        base_predecessor_private_path=paths["base_predecessor_private_ref"],
+    )
+    output = dict(authority["output_contract"])
+    run_id = str(output["run_id"])
+    attempt_prefix = str(output["attempt_prefix"])
+    capture_root = _resolve_repo_ref(str(output["capture_root_ref"]))
+    private_root = _resolve_repo_ref(str(output["private_output_root_ref"]))
+    public_path = _resolve_repo_ref(str(output["public_result_ref"]))
+    recorded_at = _now()
+    research_profile = load_agent_transport_profile(
+        _read_json(paths["provider_profile_ref"])
+    )
+    submission_profile = load_chat_completion_profile(
+        _read_json(paths["submission_profile_ref"])
+    )
+    validate_deepseek_ga_node_profile(
+        submission_profile, node_class="workpaper_submission_non_thinking"
+    )
+    zero_proof = _read_json(paths["zero_call_result_ref"])
+    (
+        demand_bundle,
+        final_by_agent,
+        challenges,
+        migration_receipt,
+        rollforward_receipt,
+    ) = _prepare_content_reassessment_demand_bundle(
+        r9_private=r9_private,
+        r9_assessment=r9_assessment,
+        base_private=base_private,
+    )
+    private_root.mkdir(parents=True, exist_ok=False)
+    checkpoint_path = private_root / "progress_checkpoint.json"
+    repair: dict[str, Any] = {}
+    lead_bundle: dict[str, Any] = {}
+    lead_events: list[dict[str, Any]] = []
+    frontier = "demand_cross_role_repair_pending"
+    failure = {"phase": "", "code": "", "capture_ref": ""}
+
+    def _checkpoint() -> None:
+        body = {
+            "schema_version": (
+                "fin_ia_s3_content_reassessment_resume_progress_checkpoint_v1_0"
+            ),
+            "recorded_at": recorded_at,
+            "run_id": run_id,
+            "frontier": frontier,
+            "Demand_repaired_workpaper_digest": str(
+                (repair.get("repaired_workpaper") or {}).get(
+                    "workpaper_digest"
+                )
+                or ""
+            ),
+            "failure": failure,
+        }
+        _write_json(
+            checkpoint_path,
+            {**body, "checkpoint_digest": canonical_digest(body)},
+            exclusive=False,
+        )
+
+    _checkpoint()
+    try:
+        repair = _execute_submission_successor_role_repair(
+            role_bundle=demand_bundle,
+            challenges=challenges,
+            research_profile=research_profile,
+            submission_profile=submission_profile,
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_prefix=attempt_prefix,
+            repair_index=6,
+            recorded_at=recorded_at,
+            feedback_recorded_at=str(r9_assessment["recorded_at"]),
+            research_executor=research_executor,
+            submission_executor=submission_executor,
+        )
+        if repair["repair_context"]["context_digest"] != zero_proof.get(
+            "next_repair_context_digest"
+        ):
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_content_reassessment_zero_call_context_drift"
+            )
+        final_by_agent["AGENT::DEMAND_QUALITY"] = deepcopy(
+            repair["repaired_workpaper"]
+        )
+        demand_bundle["workpaper"] = deepcopy(repair["repaired_workpaper"])
+        demand_bundle["events"] = repair["continued_events"]
+        frontier = "demand_cross_role_repair_completed"
+        _checkpoint()
+        final_workpapers = [
+            deepcopy(final_by_agent[agent_id])
+            for agent_id in SPECIALIST_AGENT_IDS
+        ]
+        lead_session, lead_events = _create_lead_session(
+            run_id=run_id,
+            workpapers=final_workpapers,
+            recorded_at=recorded_at,
+        )
+        lead_bundle = {
+            "session": lead_session,
+            "events": lead_events,
+            "rounds": [],
+            "failure": failure,
+        }
+        lead_round = _execute_submission_successor_lead_round(
+            workpapers=final_workpapers,
+            local_failure_receipts=(),
+            session=lead_session,
+            events=lead_events,
+            research_profile=research_profile,
+            submission_profile=submission_profile,
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_prefix=attempt_prefix,
+            round_index=1,
+            recorded_at=recorded_at,
+            research_executor=research_executor,
+            submission_executor=submission_executor,
+        )
+        lead_bundle["rounds"] = [lead_round]
+        decision = lead_round["decision"]
+        frontier = (
+            "proceed_to_independent_reassessment"
+            if not decision["accepted_challenge_ids"]
+            and decision["next_state"] == "proceed_to_evaluation"
+            else (
+                "lead_paused_for_data_or_tool"
+                if decision["next_state"] == "pause_for_data_or_tool"
+                else "bounded_lead_frontier_requires_successor"
+            )
+        )
+        status = (
+            "completed_contract_valid_reassessment_pending"
+            if frontier == "proceed_to_independent_reassessment"
+            else "completed_bounded_frontier_preserved"
+        )
+        _checkpoint()
+    except (
+        ModelGatewayError,
+        DynamicMultiAgentLoopError,
+        DynamicSingleUnitLoopError,
+        MultiAgentPreviewError,
+    ) as exc:
+        capture_ref = str(getattr(exc, "capture_ref", "") or "")
+        if not capture_ref and capture_root.is_dir():
+            current_manifest = _capture_manifest_from_root(capture_root)
+            if current_manifest:
+                capture_ref = str(current_manifest[-1]["response_ref"])
+        failure = {
+            "phase": (
+                "provider_transport_or_response"
+                if isinstance(exc, ModelGatewayError)
+                else "local_contract_or_validation"
+            ),
+            "code": str(getattr(exc, "code", str(exc))),
+            "capture_ref": capture_ref,
+        }
+        frontier = "terminal_content_reassessment_failure_preserved"
+        status = "terminal_partial_content_reassessment_failure_preserved"
+        if lead_bundle:
+            lead_bundle["failure"] = failure
+        _checkpoint()
+
+    final_workpapers = [
+        deepcopy(final_by_agent[agent_id]) for agent_id in SPECIALIST_AGENT_IDS
+    ]
+    provider_calls = _provider_attempt_count_for_prefix(
+        demand_bundle["events"], attempt_prefix=attempt_prefix
+    ) + _provider_attempt_count_for_prefix(
+        lead_events, attempt_prefix=attempt_prefix
+    )
+    budget = expected_content_reassessment_resume_budget()
+    if provider_calls > budget["maximum_new_model_calls"]:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_budget_exceeded"
+        )
+    capture_manifest = (
+        _capture_manifest_from_root(capture_root) if capture_root.is_dir() else []
+    )
+    demand_repaired = bool(repair)
+    if status in {
+        "completed_contract_valid_reassessment_pending",
+        "completed_bounded_frontier_preserved",
+    }:
+        expected_attempt_suffixes = (
+            "demand-quality-repair-r6-draft",
+            "demand-quality-repair-r6-submit",
+            "lead-r1-draft",
+            "lead-r1-submit",
+        )
+        r9_workpapers = {
+            str(row["agent_id"]): row
+            for row in r9_private["final_workpapers"]
+        }
+        if not (
+            provider_calls == 4
+            and len(capture_manifest) == 4
+            and tuple(
+                str(row["attempt_id"]).removeprefix(attempt_prefix + "-")
+                for row in capture_manifest
+            )
+            == expected_attempt_suffixes
+            and all(row.get("status_code") == 200 for row in capture_manifest)
+            and demand_repaired
+            and all(
+                final_by_agent[agent_id] == r9_workpapers[agent_id]
+                for agent_id in SPECIALIST_AGENT_IDS
+                if agent_id != "AGENT::DEMAND_QUALITY"
+            )
+        ):
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_content_reassessment_topology_invalid"
+            )
+
+    full_body = {
+        "schema_version": CONTENT_REASSESSMENT_RESUME_FULL_SCHEMA,
+        "status": status,
+        "recorded_at": recorded_at,
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha256(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "run_id": run_id,
+        "attempt_prefix": attempt_prefix,
+        "R9_public_ref": authority["bound_inputs"]["r9_public_ref"],
+        "R9_public_result_digest": r9_public["result_digest"],
+        "R9_private_ref": authority["bound_inputs"]["r9_private_ref"],
+        "R9_private_full_result_digest": r9_private["full_result_digest"],
+        "R9_assessment_ref": authority["bound_inputs"]["r9_assessment_ref"],
+        "capture_root_ref": _relative(capture_root),
+        "capture_manifest": capture_manifest,
+        "semantic_rule_migration_receipt": migration_receipt,
+        "feedback_rollforward_receipt": rollforward_receipt,
+        "compiled_challenges": challenges,
+        "repair": repair,
+        "lead_bundle": lead_bundle,
+        "final_workpapers": final_workpapers,
+        "frontier": frontier,
+        "failure": failure,
+        "execution": {
+            "new_provider_calls_attempted": provider_calls,
+            "new_provider_http_200": sum(
+                1 for row in capture_manifest if row.get("status_code") == 200
+            ),
+            "maximum_new_provider_calls": budget["maximum_new_model_calls"],
+            "role_repairs_executed": int(demand_repaired),
+            "role_workpapers_reused_unchanged": 5,
+            "lead_rounds_executed": len(lead_bundle.get("rounds") or ()),
+            "new_s1_s2_requests": 0,
+            "new_retrieval_rounds": 0,
+            "external_source_network_calls": 0,
+            "candidate_promotions": 0,
+            "retries": 0,
+            "fallbacks": 0,
+        },
+        "claims": {
+            "R9_preserved_immutable": True,
+            "exact_R9_bound_Demand_then_Lead_scope": True,
+            "prior_Demand_feedback_history_preserved": (
+                rollforward_receipt["rolled_feedback_count"]
+                > rollforward_receipt["base_feedback_count"]
+            ),
+            "zero_call_repair_context_reproduced_exactly": bool(repair)
+            and repair["repair_context"]["context_digest"]
+            == zero_proof.get("next_repair_context_digest"),
+            "authority_sets_unchanged": bool(
+                repair.get("authority_refs_unchanged")
+            ),
+            "five_non_Demand_workpapers_reused_unchanged": True,
+            "writer_called": False,
+            "S3_pass": False,
+            "product_acceptance": False,
+            "release_ready": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    full = {**full_body, "full_result_digest": canonical_digest(full_body)}
+    _write_json(private_root / "full_result.json", full, exclusive=True)
+    public_body = {
+        "schema_version": CONTENT_REASSESSMENT_RESUME_LIVE_SCHEMA,
+        "status": status,
+        "recorded_at": recorded_at,
+        "authority_ref": _relative(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "model": research_profile.model,
+        "frontier": frontier,
+        "failure": failure,
+        "execution": full["execution"],
+        "R9_source": {
+            "public_ref": full["R9_public_ref"],
+            "public_result_digest": full["R9_public_result_digest"],
+            "private_ref": full["R9_private_ref"],
+            "private_full_result_digest": full[
+                "R9_private_full_result_digest"
+            ],
+            "assessment_ref": full["R9_assessment_ref"],
+        },
+        "role_summaries": [
+            {
+                "agent_id": agent_id,
+                "workpaper": deepcopy(final_by_agent[agent_id]),
+                "repaired_in_this_attempt": (
+                    agent_id == "AGENT::DEMAND_QUALITY" and demand_repaired
+                ),
+                "reused_from_R9_unchanged": agent_id
+                != "AGENT::DEMAND_QUALITY",
+            }
+            for agent_id in SPECIALIST_AGENT_IDS
+        ],
+        "lead_summary": {
+            "round_count": len(lead_bundle.get("rounds") or ()),
+            "decisions": [
+                deepcopy(row["decision"])
+                for row in lead_bundle.get("rounds") or ()
+            ],
+        },
+        "repair_summary": (
+            {
+                "agent_id": repair["agent_id"],
+                "challenge_ids": repair["challenge_ids"],
+                "prior_workpaper_digest": repair["prior_workpaper_digest"],
+                "repaired_workpaper_digest": repair["repaired_workpaper"][
+                    "workpaper_digest"
+                ],
+                "authority_refs_unchanged": repair[
+                    "authority_refs_unchanged"
+                ],
+            }
+            if repair
+            else {}
+        ),
+        "claims": full["claims"],
+        "acceptance": {
+            "content_reassessment_resume_contract_pass": status
+            == "completed_contract_valid_reassessment_pending",
+            "independent_L1_L2_reassessment_pending": status
+            == "completed_contract_valid_reassessment_pending",
+            "writer_entry_eligible": False,
+            "S3_pass": False,
+            "product_acceptance": False,
+            "release_ready": False,
+        },
+        "private_full_result_ref": _relative(private_root / "full_result.json"),
+        "private_full_result_sha256": _sha256(private_root / "full_result.json"),
+        "known_boundary": authority["known_boundary"],
+    }
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_json(public_path, public, exclusive=True)
+    return public
+
+
 def run_content_repair_live(
     *,
     authority_path: Path,
@@ -7676,6 +8540,15 @@ def run_content_repair_live(
 
     authority_path = authority_path.resolve()
     authority = _read_json(authority_path)
+    if (
+        authority.get("schema_version")
+        == CONTENT_REASSESSMENT_RESUME_AUTHORITY_SCHEMA
+    ):
+        return run_content_reassessment_resume_live(
+            authority_path=authority_path,
+            research_executor=research_executor,
+            submission_executor=submission_executor,
+        )
     paths = validate_content_repair_authority(
         authority, authority_path=authority_path
     )
@@ -9148,6 +10021,237 @@ def run_zero_call_content_repair_authority_ceiling_resume(
     return public
 
 
+def run_zero_call_content_reassessment_resume(
+    *,
+    attempt_id: str,
+    r9_authority_path: Path,
+    r9_public_path: Path,
+    r9_private_path: Path,
+    r9_assessment_path: Path,
+    base_predecessor_private_path: Path,
+    private_output: Path,
+    public_output: Path,
+) -> dict[str, Any]:
+    """Prove R10 starts at one R9-bound Demand analysis with zero calls."""
+
+    (
+        _,
+        r9_public,
+        r9_private,
+        r9_assessment,
+        base_private,
+    ) = _load_content_reassessment_resume_inputs(
+        r9_authority_path=r9_authority_path,
+        r9_public_path=r9_public_path,
+        r9_private_path=r9_private_path,
+        r9_assessment_path=r9_assessment_path,
+        base_predecessor_private_path=base_predecessor_private_path,
+    )
+    (
+        demand_bundle,
+        final_by_agent,
+        challenges,
+        migration_receipt,
+        rollforward_receipt,
+    ) = _prepare_content_reassessment_demand_bundle(
+        r9_private=r9_private,
+        r9_assessment=r9_assessment,
+        base_private=base_private,
+    )
+    r9_authority = _read_json(r9_authority_path)
+    r9_bound = dict(r9_authority["bound_inputs"])
+    research_profile = load_agent_transport_profile(
+        _read_json(_resolve_repo_ref(str(r9_bound["provider_profile_ref"])))
+    )
+    submission_profile = load_chat_completion_profile(
+        _read_json(_resolve_repo_ref(str(r9_bound["submission_profile_ref"])))
+    )
+    validate_deepseek_ga_node_profile(
+        submission_profile, node_class="workpaper_submission_non_thinking"
+    )
+    recorded_at = str(r9_assessment["recorded_at"])
+    feedback_receipts = [
+        compile_cross_role_feedback_receipt(
+            target_session_id=str(demand_bundle["session"]["session_id"]),
+            challenge=challenge,
+            created_at=recorded_at,
+        )
+        for challenge in challenges
+    ]
+    next_repair_context = compile_workpaper_repair_context(
+        context=demand_bundle["workpaper_context"],
+        prior_workpaper=demand_bundle["workpaper"],
+        feedback_receipts=feedback_receipts,
+    )
+    next_submission_view = compile_workpaper_submission_view(
+        next_repair_context
+    )
+
+    class _FreshDemandAnalysisFrontier(RuntimeError):
+        pass
+
+    frontiers: list[str] = []
+    model_visible_messages: list[Mapping[str, Any]] = []
+
+    def _analysis_frontier(**kwargs: Any) -> AgentToolStepResult:
+        frontiers.append(str(kwargs.get("attempt_id") or ""))
+        model_visible_messages.extend(
+            deepcopy(list(kwargs.get("messages") or ()))
+        )
+        raise _FreshDemandAnalysisFrontier(frontiers[-1])
+
+    def _forbidden(**_: Any) -> AgentToolStepResult:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_zero_call_provider_forbidden"
+        )
+
+    forbidden_capture_root = private_output.parent / "forbidden-captures"
+    try:
+        _execute_submission_successor_role_repair(
+            role_bundle=demand_bundle,
+            challenges=challenges,
+            research_profile=research_profile,
+            submission_profile=submission_profile,
+            capture_root=forbidden_capture_root,
+            run_id=f"{attempt_id}-FRONTIER",
+            attempt_prefix=f"{attempt_id}-FRONTIER",
+            repair_index=6,
+            recorded_at=recorded_at,
+            feedback_recorded_at=recorded_at,
+            research_executor=_analysis_frontier,
+            submission_executor=_forbidden,
+        )
+    except _FreshDemandAnalysisFrontier:
+        pass
+    model_visible = json.dumps(
+        model_visible_messages, ensure_ascii=False, sort_keys=True
+    )
+    r9_digests = {
+        agent_id: str(workpaper["workpaper_digest"])
+        for agent_id, workpaper in final_by_agent.items()
+    }
+    checks = {
+        "R9_authority_public_private_assessment_and_digests_bound": True,
+        "R9_six_HTTP200_zero_retry_terminal_preserved": (
+            len(r9_private["capture_manifest"]) == 6
+            and r9_private["execution"]["retries"] == 0
+        ),
+        "one_Demand_residual_challenge_compiled": (
+            len(challenges) == 1
+            and challenges[0]["target_agent_id"]
+            == "AGENT::DEMAND_QUALITY"
+            and challenges[0]["source_workpaper_digest"]
+            == r9_digests["AGENT::DEMAND_QUALITY"]
+            and challenges[0]["affected_surfaces"]
+            == ["thesis", "strongest_counterarguments[1]"]
+        ),
+        "prior_Demand_feedback_history_rolled_forward": (
+            rollforward_receipt["base_feedback_count"] == 2
+            and rollforward_receipt["rolled_feedback_count"] == 3
+            and len(rollforward_receipt["appended_feedback_ids"]) == 1
+            and len(next_repair_context["feedback_receipts"]) == 4
+        ),
+        "new_feedback_is_model_visible": (
+            feedback_receipts[0]["feedback_id"] in model_visible
+            and "same-quarter" in model_visible
+            and "cohort" in model_visible
+            and next_submission_view["submission_view_digest"] in model_visible
+        ),
+        "first_fresh_frontier_is_Demand_analysis": (
+            len(frontiers) == 1
+            and frontiers[0].endswith("demand-quality-repair-r6-draft")
+        ),
+        "other_five_workpapers_reused_without_mutation": (
+            len(r9_digests) == 6
+            and all(
+                final_by_agent[agent_id]
+                == next(
+                    row
+                    for row in r9_private["final_workpapers"]
+                    if row["agent_id"] == agent_id
+                )
+                for agent_id in SPECIALIST_AGENT_IDS
+                if agent_id != "AGENT::DEMAND_QUALITY"
+            )
+        ),
+        "remaining_topology_exactly_four_calls": (
+            expected_content_reassessment_resume_budget()[
+                "maximum_new_model_calls"
+            ]
+            == 4
+        ),
+        "zero_model_provider_network_retrieval_calls": (
+            not forbidden_capture_root.exists()
+        ),
+    }
+    if not all(checks.values()):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_reassessment_zero_call_not_proven:"
+            + ",".join(key for key, passed in checks.items() if not passed)
+        )
+    result_body = {
+        "schema_version": CONTENT_REASSESSMENT_RESUME_ZERO_SCHEMA,
+        "status": "content_reassessment_resume_zero_call_proven",
+        "recorded_at": _now(),
+        "attempt_id": attempt_id,
+        "R9_authority_ref": _relative(r9_authority_path),
+        "R9_authority_sha256": _sha256(r9_authority_path),
+        "R9_public_ref": _relative(r9_public_path),
+        "R9_public_sha256": _sha256(r9_public_path),
+        "R9_public_result_digest": r9_public["result_digest"],
+        "R9_private_ref": _relative(r9_private_path),
+        "R9_private_sha256": _sha256(r9_private_path),
+        "R9_private_full_result_digest": r9_private["full_result_digest"],
+        "R9_assessment_ref": _relative(r9_assessment_path),
+        "R9_assessment_sha256": _sha256(r9_assessment_path),
+        "base_predecessor_private_ref": _relative(
+            base_predecessor_private_path
+        ),
+        "base_predecessor_private_sha256": _sha256(
+            base_predecessor_private_path
+        ),
+        "base_predecessor_private_full_result_digest": base_private[
+            "full_result_digest"
+        ],
+        "Demand_source_workpaper_digest": r9_digests[
+            "AGENT::DEMAND_QUALITY"
+        ],
+        "R9_workpaper_digests": r9_digests,
+        "compiled_challenges": challenges,
+        "semantic_rule_migration_receipt": migration_receipt,
+        "feedback_rollforward_receipt": rollforward_receipt,
+        "new_feedback_receipts": feedback_receipts,
+        "next_repair_context_digest": next_repair_context["context_digest"],
+        "next_submission_view_digest": next_submission_view[
+            "submission_view_digest"
+        ],
+        "first_fresh_provider_frontier": frontiers[0],
+        "execution_budget": expected_content_reassessment_resume_budget(),
+        "checks": checks,
+        "execution": {
+            "model_calls": 0,
+            "provider_calls": 0,
+            "network_calls": 0,
+            "retrieval_calls": 0,
+            "candidate_promotions": 0,
+        },
+        "next_exact_frontier": "Demand_analysis_submission_then_Lead_recheck_pair",
+    }
+    private = {
+        **result_body,
+        "full_result_digest": canonical_digest(result_body),
+    }
+    _write_json(private_output, private, exclusive=True)
+    public_body = {
+        **result_body,
+        "private_result_ref": _relative(private_output),
+        "private_result_sha256": _sha256(private_output),
+    }
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_json(public_output, public, exclusive=True)
+    return public
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -9161,6 +10265,7 @@ def main() -> int:
             "zero-call-content-repair-successor",
             "zero-call-content-repair-submission-resume",
             "zero-call-content-repair-authority-ceiling-resume",
+            "zero-call-content-reassessment-resume",
             "live",
             "live-submission-successor",
             "live-content-repair",
@@ -9214,7 +10319,12 @@ def main() -> int:
                                         "zero_call_content_repair_authority_ceiling_resume_full_result.json"
                                         if args.mode
                                         == "zero-call-content-repair-authority-ceiling-resume"
-                                        else "full_result.json"
+                                        else (
+                                            "zero_call_content_reassessment_resume_full_result.json"
+                                            if args.mode
+                                            == "zero-call-content-reassessment-resume"
+                                            else "full_result.json"
+                                        )
                                     )
                                 )
                             )
@@ -9252,13 +10362,18 @@ def main() -> int:
                                 if args.mode
                                 == "zero-call-content-repair-authority-ceiling-resume"
                                 else (
-                                    DEFAULT_CONTENT_REPAIR_LIVE_PUBLIC
-                                    if args.mode == "live-content-repair"
+                                    DEFAULT_CONTENT_REASSESSMENT_RESUME_ZERO_PUBLIC
+                                    if args.mode
+                                    == "zero-call-content-reassessment-resume"
                                     else (
-                                        DEFAULT_SUBMISSION_SUCCESSOR_LIVE_PUBLIC
-                                        if args.mode
-                                        == "live-submission-successor"
-                                        else DEFAULT_LIVE_PUBLIC
+                                        DEFAULT_CONTENT_REPAIR_LIVE_PUBLIC
+                                        if args.mode == "live-content-repair"
+                                        else (
+                                            DEFAULT_SUBMISSION_SUCCESSOR_LIVE_PUBLIC
+                                            if args.mode
+                                            == "live-submission-successor"
+                                            else DEFAULT_LIVE_PUBLIC
+                                        )
                                     )
                                 )
                             )
@@ -9399,6 +10514,31 @@ def main() -> int:
             ).resolve(),
             failed_r8_private_path=_resolve_repo_ref(
                 args.resume_private
+            ).resolve(),
+            private_output=private_output,
+            public_output=public_output,
+        )
+    elif args.mode == "zero-call-content-reassessment-resume":
+        if not (
+            args.authority
+            and args.resume_private
+            and args.resume_public
+            and args.assessment
+            and args.predecessor_private
+        ):
+            parser.error(
+                "R9 --authority/--resume-public/--resume-private, "
+                "--assessment and base --predecessor-private are required "
+                "for content reassessment resume"
+            )
+        result = run_zero_call_content_reassessment_resume(
+            attempt_id=args.attempt_id,
+            r9_authority_path=_resolve_repo_ref(args.authority).resolve(),
+            r9_public_path=_resolve_repo_ref(args.resume_public).resolve(),
+            r9_private_path=_resolve_repo_ref(args.resume_private).resolve(),
+            r9_assessment_path=_resolve_repo_ref(args.assessment).resolve(),
+            base_predecessor_private_path=_resolve_repo_ref(
+                args.predecessor_private
             ).resolve(),
             private_output=private_output,
             public_output=public_output,

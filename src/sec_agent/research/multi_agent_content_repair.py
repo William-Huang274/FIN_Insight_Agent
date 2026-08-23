@@ -4,10 +4,16 @@ from copy import deepcopy
 from typing import Any, Mapping, Sequence
 
 from sec_agent.canonical_runtime import canonical_digest
+from sec_agent.research.dynamic_single_unit_loop import (
+    compile_workpaper_repair_context,
+)
 
 
 CONTENT_ASSESSMENT_SCHEMA_VERSION = (
     "fin_ia_s3_current_dynamic_multi_agent_content_assessment_v1_0"
+)
+CONTENT_REASSESSMENT_SCHEMA_VERSION = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_reassessment_v1_0"
 )
 
 
@@ -72,6 +78,28 @@ def expected_content_repair_authority_ceiling_resume_budget() -> dict[str, int]:
         "lead_coordination_drafts": 1,
         "lead_coordination_submissions": 1,
         "maximum_new_role_repairs": 2,
+        "maximum_lead_rounds": 1,
+        "maximum_new_s1_s2_requests": 0,
+        "maximum_new_retrieval_rounds": 0,
+        "maximum_external_source_network_calls": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+
+
+def expected_content_reassessment_resume_budget() -> dict[str, int]:
+    """Exact R10 ceiling for one Demand repair and one Lead recheck."""
+
+    return {
+        "maximum_new_model_calls": 4,
+        "maximum_new_transport_attempts": 4,
+        "demand_repair_drafts": 1,
+        "demand_repair_submissions": 1,
+        "lead_coordination_drafts": 1,
+        "lead_coordination_submissions": 1,
+        "maximum_new_role_repairs": 1,
         "maximum_lead_rounds": 1,
         "maximum_new_s1_s2_requests": 0,
         "maximum_new_retrieval_rounds": 0,
@@ -174,6 +202,99 @@ def rebind_workpaper_context_semantic_rules(
     }
 
 
+def roll_forward_repair_feedback_history(
+    *,
+    context: Mapping[str, Any],
+    prior_repair_context: Mapping[str, Any],
+    expected_agent_id: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Recover prior repair feedback into a fresh base-context lineage.
+
+    A repair context cannot itself be nested in another repair context. This
+    helper proves the prior repair was compiled from ``context`` and then rolls
+    only its validated feedback history forward. Evidence, numeric, relation,
+    gap, graph, case and authority inputs remain identical to the base context.
+    """
+
+    source = deepcopy(dict(context))
+    source_digest = str(source.get("context_digest") or "")
+    _require(
+        bool(source_digest)
+        and str(source.get("schema_version") or "")
+        == "fin_ia_dynamic_single_unit_workpaper_context_v1_0"
+        and str(source.get("agent", {}).get("agent_id") or "")
+        == expected_agent_id,
+        "multi_agent_content_repair_feedback_rollforward_source_invalid",
+    )
+    source_body = {
+        key: deepcopy(value)
+        for key, value in source.items()
+        if key != "context_digest"
+    }
+    _require(
+        source_digest == canonical_digest(source_body),
+        "multi_agent_content_repair_feedback_rollforward_source_invalid",
+    )
+
+    prior = deepcopy(dict(prior_repair_context))
+    prior_digest = str(prior.get("context_digest") or "")
+    base_feedback = [
+        deepcopy(dict(row)) for row in source.get("feedback_receipts") or ()
+    ]
+    prior_feedback = [
+        deepcopy(dict(row)) for row in prior.get("feedback_receipts") or ()
+    ]
+    appended_feedback = prior_feedback[len(base_feedback) :]
+    repair_state = prior.get("repair_state") or {}
+    _require(
+        bool(prior_digest)
+        and str(prior.get("schema_version") or "")
+        == "fin_ia_dynamic_specialist_workpaper_repair_context_v1_0"
+        and str(prior.get("source_context_digest") or "") == source_digest
+        and prior_feedback[: len(base_feedback)] == base_feedback
+        and bool(appended_feedback)
+        and isinstance(repair_state, Mapping)
+        and isinstance(repair_state.get("prior_workpaper"), Mapping),
+        "multi_agent_content_repair_feedback_rollforward_lineage_invalid",
+    )
+    expected_prior = compile_workpaper_repair_context(
+        context=source,
+        prior_workpaper=repair_state["prior_workpaper"],
+        feedback_receipts=appended_feedback,
+    )
+    _require(
+        expected_prior == prior,
+        "multi_agent_content_repair_feedback_rollforward_lineage_invalid",
+    )
+
+    rolled_body = deepcopy(source_body)
+    rolled_body["feedback_receipts"] = prior_feedback
+    rolled = {
+        **rolled_body,
+        "context_digest": canonical_digest(rolled_body),
+    }
+    receipt_body = {
+        "schema_version": (
+            "fin_ia_workpaper_repair_feedback_rollforward_receipt_v1_0"
+        ),
+        "agent_id": expected_agent_id,
+        "source_context_digest": source_digest,
+        "prior_repair_context_digest": prior_digest,
+        "rolled_context_digest": rolled["context_digest"],
+        "base_feedback_count": len(base_feedback),
+        "rolled_feedback_count": len(prior_feedback),
+        "appended_feedback_ids": [
+            str(row.get("feedback_id") or "") for row in appended_feedback
+        ],
+        "evidence_numeric_relation_gap_graph_case_and_authority_changed": False,
+        "model_judgment_changed": False,
+    }
+    return rolled, {
+        **receipt_body,
+        "receipt_digest": canonical_digest(receipt_body),
+    }
+
+
 def compile_independent_content_challenges(
     *,
     assessment: Mapping[str, Any],
@@ -246,15 +367,90 @@ def compile_independent_content_challenges(
     return challenges
 
 
+def compile_independent_reassessment_challenges(
+    *,
+    assessment: Mapping[str, Any],
+    workpapers: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    """Compile the single R9 cross-role cohort residual for Demand."""
+
+    _require(
+        assessment.get("schema_version") == CONTENT_REASSESSMENT_SCHEMA_VERSION
+        and assessment.get("case_key") == "DELL"
+        and assessment.get("status")
+        == (
+            "R9_contract_pass_six_of_seven_original_findings_closed_"
+            "cross_role_cohort_conversion_L1_fail_writer_not_eligible"
+        ),
+        "multi_agent_content_reassessment_invalid",
+    )
+    by_agent = {
+        str(row.get("agent_id") or ""): deepcopy(dict(row))
+        for row in workpapers
+    }
+    residuals = [
+        deepcopy(dict(row))
+        for row in assessment.get("material_residual_findings") or ()
+    ]
+    _require(
+        len(by_agent) == 6
+        and set(by_agent) == set(ROLE_SEMANTIC_RELATION_RULES)
+        and len(residuals) == 1,
+        "multi_agent_content_reassessment_target_set_invalid",
+    )
+    finding = residuals[0]
+    target = "AGENT::DEMAND_QUALITY"
+    demand = by_agent[target]
+    expected_locations = ["thesis", "strongest_counterarguments[1]"]
+    _require(
+        finding.get("issue_id")
+        == "RC-S3-075-same-quarter-orders-and-revenue-promoted-to-cohort-conversion"
+        and finding.get("residual_issue_id")
+        == (
+            "RC-S3-087-R9-Demand-counterargument-retained-same-quarter-"
+            "order-to-revenue-conversion"
+        )
+        and finding.get("severity") == "L1_material"
+        and finding.get("target_agent_id") == target
+        and list(finding.get("locations") or ()) == expected_locations
+        and bool(str(demand.get("workpaper_digest") or "")),
+        "multi_agent_content_reassessment_residual_invalid",
+    )
+    body = {
+        "source_agent_id": "S3.INDEPENDENT_CONTENT_VERIFIER",
+        "target_agent_id": target,
+        "source_workpaper_digest": str(demand["workpaper_digest"]),
+        "challenge": (
+            "独立 R9 内容复核拒绝 Demand 当前跨字段判断。问题："
+            + str(finding.get("finding") or "")
+            + " 必须恢复的边界："
+            + str(finding.get("required_boundary") or "")
+        ),
+        "material_reason": str(finding.get("business_impact") or ""),
+        "requested_action": (
+            "repair_cross_role_same_period_cohort_conversion"
+        ),
+        "assessment_issue_id": str(finding["residual_issue_id"]),
+        "parent_issue_id": str(finding["issue_id"]),
+        "affected_surfaces": expected_locations,
+    }
+    challenge_id = "CHALLENGE::" + canonical_digest(body)[:24].upper()
+    return [{"challenge_id": challenge_id, **body}]
+
+
 __all__ = [
     "COMMON_SEMANTIC_RELATION_RULES",
     "CONTENT_ASSESSMENT_SCHEMA_VERSION",
+    "CONTENT_REASSESSMENT_SCHEMA_VERSION",
     "MultiAgentContentRepairError",
     "ROLE_SEMANTIC_RELATION_RULES",
     "compile_independent_content_challenges",
+    "compile_independent_reassessment_challenges",
     "expected_content_repair_authority_ceiling_resume_budget",
     "expected_content_repair_budget",
     "expected_content_repair_submission_resume_budget",
+    "expected_content_reassessment_resume_budget",
     "rebind_workpaper_context_semantic_rules",
+    "roll_forward_repair_feedback_history",
     "semantic_relation_rules",
 ]

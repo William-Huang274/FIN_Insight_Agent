@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
@@ -9,6 +10,7 @@ import pytest
 
 from sec_agent.project_os_preflight import (
     CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_SCOPE,
+    CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_SCOPE,
     CURRENT_DYNAMIC_MULTI_AGENT_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_SCOPE,
@@ -188,6 +190,11 @@ CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
     "content_repair_authority_ceiling_resume_scope_decision_v1_0.json"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
+    "content_reassessment_resume_scope_decision_v1_0.json"
 )
 CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_REF = (
     "configs/research/evals/"
@@ -1404,16 +1411,35 @@ def test_current_dynamic_multi_agent_content_repair_rejects_target_drift() -> No
         )
 
 
-def test_current_dynamic_multi_agent_authority_ceiling_resume_binds_six_calls() -> None:
+def test_historical_authority_ceiling_decision_expires_but_branch_still_binds_six_calls() -> None:
     decision = json.loads(
         (
             ROOT
             / CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_DECISION_REF
         ).read_text(encoding="utf-8")
     )
+    with pytest.raises(
+        ValueError,
+        match=(
+            "project_os_current_dynamic_multi_agent_content_repair_"
+            "authority_ceiling_resume_runtime_sha_drift:runner_ref"
+        ),
+    ):
+        _validate_current_dynamic_multi_agent_content_repair_decision(
+            root=ROOT,
+            decision=decision,
+        )
+
+    rebound = deepcopy(decision)
+    rebound["runner_sha256"] = hashlib.sha256(
+        (ROOT / rebound["runner_ref"]).read_bytes()
+    ).hexdigest()
+    rebound["content_repair_runtime_sha256"] = hashlib.sha256(
+        (ROOT / rebound["content_repair_runtime_ref"]).read_bytes()
+    ).hexdigest()
     projection = _validate_current_dynamic_multi_agent_content_repair_decision(
         root=ROOT,
-        decision=decision,
+        decision=rebound,
     )
 
     assert projection["run_scope_id"] == (
@@ -1438,22 +1464,6 @@ def test_current_dynamic_multi_agent_authority_ceiling_resume_binds_six_calls() 
         "lead_recheck_submission",
     }
 
-    result = build_preflight(
-        root=ROOT,
-        decision_ref=(
-            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_DECISION_REF
-        ),
-        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
-        check_repository=False,
-    )
-    assert result["run_scope_id"] == (
-        CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_SCOPE
-    )
-    assert "consumed R8 one-call terminal" in result["known_boundary"]
-    assert "lowers only effective authority" in result["known_boundary"]
-    assert "at most 6 new Provider calls" in result["known_boundary"]
-    assert "does not authorize Writer" in result["known_boundary"]
-
 
 def test_current_dynamic_multi_agent_authority_ceiling_resume_rejects_budget_drift() -> None:
     decision = json.loads(
@@ -1469,6 +1479,78 @@ def test_current_dynamic_multi_agent_authority_ceiling_resume_rejects_budget_dri
         match=(
             "project_os_current_dynamic_multi_agent_content_repair_"
             "authority_ceiling_resume_budget_invalid"
+        ),
+    ):
+        _validate_current_dynamic_multi_agent_content_repair_decision(
+            root=ROOT,
+            decision=decision,
+        )
+
+
+def test_current_dynamic_multi_agent_content_reassessment_resume_binds_four_calls() -> None:
+    decision = json.loads(
+        (
+            ROOT
+            / CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    projection = _validate_current_dynamic_multi_agent_content_repair_decision(
+        root=ROOT,
+        decision=decision,
+    )
+
+    assert projection["run_scope_id"] == (
+        CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_SCOPE
+    )
+    assert projection[
+        "current_dynamic_multi_agent_content_reassessment_resume"
+    ] is True
+    assert projection["R9_contract_status"] == (
+        "completed_contract_valid_reassessment_pending"
+    )
+    assert projection["content_reassessment_resume_zero_call_status"] == (
+        "content_reassessment_resume_zero_call_proven"
+    )
+    assert projection["execution_limits"]["maximum_new_model_calls"] == 4
+    assert projection["execution_limits"]["maximum_new_s1_s2_requests"] == 0
+    assert set(projection["node_profiles"]) == {
+        "demand_repair_analysis",
+        "demand_repair_submission",
+        "lead_recheck_analysis",
+        "lead_recheck_submission",
+    }
+
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=(
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_REF
+        ),
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    assert result["run_scope_id"] == (
+        CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_SCOPE
+    )
+    assert "preserves immutable R9" in result["known_boundary"]
+    assert "prior Demand feedback history forward" in result["known_boundary"]
+    assert "at most 4 new Provider calls" in result["known_boundary"]
+    assert "does not authorize Writer" in result["known_boundary"]
+
+
+def test_current_dynamic_multi_agent_content_reassessment_resume_rejects_budget_drift() -> None:
+    decision = json.loads(
+        (
+            ROOT
+            / CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REASSESSMENT_RESUME_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+    decision["execution_budget"]["maximum_new_model_calls"] = 5
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "project_os_current_dynamic_multi_agent_content_reassessment_"
+            "resume_budget_invalid"
         ),
     ):
         _validate_current_dynamic_multi_agent_content_repair_decision(

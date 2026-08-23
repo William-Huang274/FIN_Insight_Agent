@@ -13,7 +13,9 @@ R8 使用 fresh 7-call authority，只执行了首个 Demand strict submission�
 
 接管后的零调用审计已证明该 claim digest `84033e8d...120d` 恰为唯一 zero-ref `bounded_inference`，原文明确保留既有 `GAP::00730082A5C08C4C`。provider-neutral successor 只在精确 feedback／digest／gap 三重绑定下把有效 authority 降为 `not_inferable`；claim 文本、Evidence／NumericFact／Relation 引用和 gap 集合均不变，并记录 submitted/effective authority receipt。Cash、Counterevidence、Demand 复用，Supply 不变，首个 fresh frontier 移到 Operating；R9 剩余拓扑精确为 Operating／Value 两对和 Lead 一对，共 6 次，0 S1/S2、retrieval、外源、promotion、retry、fallback 和 Writer。
 
-R9 本地工程门已通过：定向 `140 passed`、全仓 `1147 passed`（2 条既有 SWIG warning）、compileall／pyflakes、active baseline `211／8／5／28／0`。签权前 pyflakes 还发现 authority validator 分支早于 bound-input 解析的未定义名缺陷；已登记 `RC-S3-086`、修复顺序、绑定 R8 failure assessment，并用真实 validator 全链测试覆盖。工程提交 `8d6247ad...e9000` 已 clean／synced，repository-aware preflight 通过；fresh R9 authority `f6ec91d8...7790` 已签发但尚未执行，Provider 调用仍为 0。下一门仅为 authority／签权记录提交推送和 clean 复验，再执行唯一六调用 R9；R9 成功后仍必须独立复评七项 finding 的 L1／L2 与内容质量。Writer、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。
+R9 已在 clean／synced commit 上唯一执行：Operating、Value、Lead 共 6/6 次 DeepSeek HTTP 200／`tool_calls`，0 retry／fallback；authority ceiling 生效，结构合同通过，Writer 未调用。独立零模型复评确认原七项 finding 中六项在当前六底稿集合关闭，但复用 Demand 的 `strongest_counterarguments[1]` 仍把同季 `$24.4B` 订单与 `$16.1B` 已确认收入写成“订单向收入的部分转化当期已实际发生”，同时又承认没有 cohort 绑定；R9 Lead 也误判相关 recheck 已满足。该残余登记为 `RC-S3-087`，所以 R9 为合同 pass／L1 fail／Writer ineligible。
+
+R10 零调用 successor 已把该残余绑定到 Demand digest `147e1aca...f912` 的 `thesis` 与 `strongest_counterarguments[1]`，把 R9 的三条反馈历史无损滚回 base context 后加入唯一新反馈，Evidence／NumericFact／Relation／gap／graph／case／authority 均不变。零调用证明 `edc80958...80c2` 确认首个 fresh frontier 为 Demand analysis，五份其他底稿逐字节复用，完整拓扑最多为 Demand 与 Lead 两对、共 4 次。综合定向 `115 passed`、全仓 `1155 passed`，compileall、pyflakes、活动基线 `211 Python／8 frontend／5 detectors／28 Runtime／0 forbidden`、948 份 configs JSON、8 份 Project OS JSONL／1,058 行、7,803-file secret scan 和 diff check 全部通过；working-tree preflight 只因 repository dirty fail closed。当前仍不存在 R10 authority 或 live，必须先完成 clean commit／push 和 fresh repository-aware preflight。Writer、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 
@@ -1604,3 +1606,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R9 authority SHA=`f6ec91d8...7790`，绑定 18 组输入和全新的 capture／private／public／run／attempt identity，本地 validator 通过。
 - 当前仅为 signed／not executed。它只允许 Operating／Value 两个 analysis＋submission pair 和一个 Lead pair；禁止 retry、S1/S2、retrieval、外源、promotion、Writer、S3、泛化、publication 和 release。
 - 下一步是 authority／记录精确提交推送后做 clean preflight 与 validator 复验，再执行唯一 R9。详见 `docs/worklog/fin_0_1_3_s3/154_R9_authority_ceiling_resume_live_authority.md`。
+
+### 2026-08-24 R9 合同成功与跨角色 L1 失败
+
+- R9 精确执行 Operating／Value／Lead 六个节点：6 次 HTTP 200／`tool_calls`，0 retry／fallback／S1/S2／retrieval／外源／promotion／Writer。结构合同通过，public digest=`0eb687af...dcf3`。
+- Demand authority ceiling、Operating 费用桥与 cohort 边界、Value 产品定价边界、Cash proxy、Counterevidence 跨公司关系均按目标工作；原七项在目标表面大幅修复。
+- 独立复评发现 `RC-S3-075` 跨角色残留：Demand `strongest_counterarguments[1]` 仍用同季收入证明同季订单已部分转化，违反无 cohort 关系时只能写共现的通用规则。Lead 仍宣称 recheck 全部满足，故 L1 与 Lead semantic adjudication 均失败。
+- 评估为原七项全集合 `6/7` 关闭、诊断 `23/28`、Q8 N/A；Writer、S3、产品与 release 继续 false。新根因 `RC-S3-087` 属跨角色 repair coverage，不是数据或 Provider。
+- 当前只允许零调用编译一份 Demand 精确 feedback、复用其余底稿并证明 Demand＋Lead 最多四节点 successor；R10 authority／live 均不存在。详见 `docs/worklog/fin_0_1_3_s3/155_R9_contract_success_and_cross_role_L1_failure.md`。

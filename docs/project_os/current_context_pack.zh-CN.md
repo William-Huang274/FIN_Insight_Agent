@@ -1506,3 +1506,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - fresh R4 zero-call proof result digest=`7f55d22b...30161`。下一步是全仓验证、干净提交／推送、repository-aware preflight 和唯一 R4 authority；仍未授权 Writer、S3 acceptance、泛化、publication 或 release。
 - 工程门为定向 `14 passed`、全仓 `1126 passed`、compileall／pyflakes、active baseline `210／8／5／28／0`、922 configs、8 JSONL／1,002 行、7,762-file secret scan／0 和 diff check。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/142_submission_successor_R3_partial_success_and_R4_resume_zero_call.md`。
+
+### 2026-08-23 submission successor R4 精确续跑 authority
+
+- clean／synced `4f1a6e89...04801` 已通过 current decision-bound preflight；凭据只检查存在性，0 模型／Provider／网络。
+- R4 authority SHA=`f6c7a644...07308`，绑定原 R1、R3 partial terminal、fresh resume proof、32k research profile 和 17-call 剩余拓扑，本地 validator pass。
+- R4 只从 Cash workpaper 继续，再运行 Supply／Lead／必要的原角色 repair；Demand／Operating／Value 和 Cash reflection 禁止重跑。Writer、S3、泛化、publication 与 release 仍为 false。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/143_submission_successor_R4_resume_live_authority.md`。

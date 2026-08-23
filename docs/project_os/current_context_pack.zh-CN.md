@@ -1361,3 +1361,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 新 `RC-S3-061` 属于 S0 canonical Runtime 集成，不是 DeepSeek、S1/S2 或信源问题。R3 已完成的两轮动态研究继续不可变。
 - 下一门仅允许 clean commit／push／repository-aware preflight 后签发全新 R5；仍为 1 次 non-thinking workpaper、0 检索／S1/S2／retry。R5 成功后必须做独立 L1 与八维内容质量验收，不能直接进入五单元或多 Agent。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/126_current_dynamic_R4_pre_provider_event_failure_and_R5_gate.md`。
+
+### 2026-08-23 DELL current dynamic R5 合同成功与语义 L1 失败
+
+- R5 复用 R3 已完成的三次研究调用、两轮 current S1/S2、12 条请求、两份反思与停止决定，只新增一次 non-thinking workpaper submission。该调用以 `tool_calls` 完成，prompt `22,504`、completion `3,778`、0 retry／外源网络／Candidate promotion，严格 Workpaper 合同通过。
+- RC-S3-060 的 submission capacity 与 RC-S3-061 的 canonical Runtime event／terminal materialization 已关闭。当前动态单元已证明模型会选请求、消费 FeedbackReceipt、改变计划、停止并交卷。
+- 独立内容审查仍判 L1／L2 失败：管理层中个位数目标被升级成可靠实际转化率；FY26 Q3 的历史 mix 解释被用于 FY27 Q1 当期数字；未证价值池假设被晋升；经营利润增长叙事内部矛盾；关键部件风险被扩成 HBM/GPU 和交付后回款的具体机制。
+- 这不是 S1 信源或 S2 NumericFact 缺陷。输入已保留期间、管理层表述、历史上下文与 typed gap；最早责任层是 S3 free-narrative claim authority 和 L1 failure→FeedbackReceipt 闭环。正式八维分因 L1/L2 失败而不签发，单元适用诊断为 `16/24`。
+- 新 RC-S3-062 阻断多 Agent。下一步只能零调用实现五项 semantic FeedbackReceipt＋PlanDelta repair 合同，并在 clean proof 后最多执行一次零检索 workpaper-only repair；通过 L1/L2 后才可进入动态多 Agent。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/127_current_dynamic_R5_contract_success_and_semantic_L1_failure.md`。

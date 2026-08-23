@@ -1391,10 +1391,22 @@ def test_current_dynamic_workpaper_replacement_preserves_zero_call_R4() -> None:
     assert projection["current_dynamic_workpaper_replacement"] is True
     assert projection["execution_limits"]["maximum_model_calls"] == 1
     assert projection["execution_limits"]["maximum_retrieval_rounds"] == 0
-    assert {
-        "RC-S3-060-current-dynamic-workpaper-thinking-budget-starved-visible-submission",
-        "RC-S3-061-current-dynamic-workpaper-successor-used-unregistered-runtime-events",
-    }.issubset(result["scope_projection"]["explicit_allow_issue_ids"])
+    assert result["scope_projection"]["blocking_issue_ids"] == []
+    latest_issue_rows: dict[str, dict[str, object]] = {}
+    for line in (ROOT / "docs/project_os/root_cause_issue_ledger.jsonl").read_text(
+        encoding="utf-8"
+    ).splitlines():
+        if line.strip():
+            row = json.loads(line)
+            latest_issue_rows[str(row["issue_id"])] = row
+    assert latest_issue_rows[
+        "RC-S3-060-current-dynamic-workpaper-thinking-budget-starved-visible-submission"
+    ]["status"] == "closed_by_R5_compact_non_thinking_contract_valid_submission"
+    assert latest_issue_rows[
+        "RC-S3-061-current-dynamic-workpaper-successor-used-unregistered-runtime-events"
+    ]["status"] == (
+        "closed_by_R5_canonical_provider_attempt_events_and_terminal_materialization"
+    )
 
 
 def test_historical_dynamic_five_cell_decision_fails_closed_after_consumer_successor(

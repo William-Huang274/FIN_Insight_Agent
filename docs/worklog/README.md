@@ -37,3 +37,4 @@
   - R7 内容返修 live authority：`fin_0_1_3_s3/149_R7_multi_agent_content_repair_live_authority.md`
   - R7 部分返修与 R8 精确 submission-resume 门：`fin_0_1_3_s3/150_R7_partial_content_repair_and_R8_submission_resume_gate.md`
   - R8 接管审计与完整执行接缝门：`fin_0_1_3_s3/151_R8_takeover_audit_and_full_seam_gate.md`
+  - R8 submission-resume live authority：`fin_0_1_3_s3/152_R8_submission_resume_live_authority.md`

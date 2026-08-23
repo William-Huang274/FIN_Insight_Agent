@@ -13,7 +13,7 @@ R7 terminal 已由 6 份 immutable capture 零调用物化，保留 2 个完成 
 
 2026-08-24 接管审计已冻结原长任务：不存在 R8 authority 或 R8 live，也没有接管后的 Provider／网络调用、commit 或 push。原工作区为 10 个 tracked 修改和 4 个 untracked 结果；全仓 pytest 主体完成，但组合工程门的 pyflakes 因 `tests/test_s3_multi_agent_preview.py:1607` 未使用局部变量失败，且 R8 scope／Project OS 新记录使用了未来时间戳。两项均由当前接管任务修正；另补一条零网络假 Provider 回归，把 7 个剩余节点完整跑穿，避免再用付费 live 发现确定性接缝错误。
 
-接管后的本地工程门已通过：定向 `134 passed`、全仓 `1141 passed`（2 条既有 SWIG warning）、compileall／pyflakes、active baseline `211／8／5／28／0`、7,788-file secret scan／0 和 diff check 均有效。当前下一门不是直接调用模型，而是形成 clean commit／push 并运行 repository-aware preflight。只有这些门全部通过，才允许签发一次全新 R8 authority；R8 后仍必须独立复评七项 finding 的 L1／L2 与内容质量。Writer、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。
+接管后的本地工程门已通过：定向 `134 passed`、全仓 `1141 passed`（2 条既有 SWIG warning）、compileall／pyflakes、active baseline `211／8／5／28／0`、7,788-file secret scan／0 和 diff check 均有效。工程门提交 `08e6dfa6...b5816` 已 clean／synced，repository-aware preflight 全部通过；R8 authority `4bd8b4eb...db483` 已签发但未执行。下一门是在 authority 提交／推送并再次验证 clean 绑定后执行唯一 R8；随后仍必须独立复评七项 finding 的 L1／L2 与内容质量。Writer、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 
@@ -1583,3 +1583,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 原 proof 只到 Demand 首个 fresh frontier；现用真实 R8 runner 分支和假 executor 把 Demand submit、Operating／Value draft＋submit、Lead draft＋submit 共 7 个新节点完整跑穿。它验证 5 个节点复用、失败 Demand submit 排除、typed feedback 禁止扩权、3 个新 repair／2 个复用 repair 和精确调用顺序，0 模型／Provider／网络。
 - R8 scope 与 Project OS 的未来时间戳已改为实际审计时间 `2026-08-24T01:25:47+08:00`；root-cause ledger 恢复 append order，并登记 `RC-S3-084`。定向三组回归 `134 passed`。
 - 接管后全仓 `1141 passed`、compileall／pyflakes、active baseline `211／8／5／28／0`、7,788-file secret scan／0 和 diff check 已通过。当前仍没有 R8 authority 或 live；下一门为 clean commit／push、repository-aware preflight，再签发一次 fresh R8。自然返修后仍须独立 L1/L2 与内容质量复评。详见 `docs/worklog/fin_0_1_3_s3/151_R8_takeover_audit_and_full_seam_gate.md`。
+
+### 2026-08-24 R8 submission-resume live authority
+
+- 工程门提交 `08e6dfa6...b5816` 已 clean／synced；repository-aware Project OS preflight 的仓库、Project OS、R5／R7／zero-call 摘要链、根因范围、profile、凭据存在性和 TokenBudgetBasis 检查全 true，0 模型／Provider／网络。
+- R8 authority SHA=`4bd8b4eb...db483`，绑定 14 组输入与 implementation commit，输出 identity 全新，本地 validator 通过。最多 7 次：Demand submit 1、Operating／Value 两对 4、Lead 一对 2；0 retry／S1/S2／retrieval／外源／promotion／pointer mutation。
+- 当前仅为 signed／not executed。authority 提交／推送并复验 clean 绑定后才可执行唯一 R8；成功后仍须独立 L1/L2 与内容质量复评。详见 `docs/worklog/fin_0_1_3_s3/152_R8_submission_resume_live_authority.md`。

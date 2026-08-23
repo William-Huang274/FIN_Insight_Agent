@@ -87,7 +87,8 @@
   - [x] 独立 L1／L2 识别并冻结 7 项金融语义错误，Writer 未解冻
   - [x] R7 保存 6 次 HTTP-200 调用、2 份完整返修与 1 份 Demand 自然草稿；失败 strict submission 未晋升
   - [x] R8 五节点复用、七节点剩余拓扑、typed feedback 与完整零网络假 Provider seam 工程门
-  - [ ] clean／synced commit、repository-aware preflight、fresh R8 authority 与唯一 live
+  - [x] clean／synced commit、repository-aware preflight 与 fresh R8 authority
+  - [ ] 唯一 R8 live
   - [ ] 七项 finding 的独立 L1／L2、内容质量复评与 Writer 入口决策
 - [ ] MU／NVDA 同核心迁移与三案例 S1–S3 内容质量验收
 - [ ] S4 审阅修复产品闭环

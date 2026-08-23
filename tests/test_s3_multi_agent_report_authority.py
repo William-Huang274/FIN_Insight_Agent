@@ -284,6 +284,66 @@ def test_catalog_and_rendering_are_stable_under_input_permutation() -> None:
     )["rendered_report_digest"]
 
 
+def test_current_dynamic_catalog_projects_identity_estimates_and_operand_relations() -> None:
+    workpapers, contexts = _fixtures()
+    first_agent, second_agent = sorted(contexts)[:2]
+    for context in contexts.values():
+        view = context["cell_analysis_view"]
+        context["case_identity"] = view.pop("case_identity")
+
+    first_view = contexts[first_agent]["cell_analysis_view"]
+    current = first_view["numeric_fact_catalog"][0]
+    current["formula_trace"] = {
+        "expression": "issuer_value",
+        "input_numeric_fact_ids": ["NF::ROLE_A"],
+    }
+    duplicate = deepcopy(current)
+    duplicate["formula_trace"]["input_numeric_fact_ids"] = ["NF::ROLE_B"]
+    contexts[second_agent]["cell_analysis_view"]["numeric_fact_catalog"].append(
+        duplicate
+    )
+    estimate_ref = "ESTIMATE::RESEARCH_ONLY_01"
+    first_view["numeric_fact_catalog"].append(
+        {
+            "estimate_id": estimate_ref,
+            "metric_id": "non_issuer_research_estimate",
+            "value_decimal": "27.5",
+            "unit": "percent",
+            "numeric_fact_authority": False,
+        }
+    )
+    workpapers[0]["sourced_claims"][0]["numeric_refs"].append(estimate_ref)
+    workpapers[0].pop("workpaper_digest")
+    workpapers[0]["workpaper_digest"] = canonical_digest(workpapers[0])
+    relation = first_view["numeric_relation_catalog"][0]
+    relation["absolute_change_decimal"] = None
+    relation["percent_change_decimal"] = None
+    relation["percentage_point_change_decimal"] = None
+
+    catalog = compile_multi_agent_report_authority_catalog(
+        workpapers=workpapers,
+        specialist_contexts=contexts,
+    )
+
+    presentations = {
+        row["authority_ref"]: row for row in catalog["presentation_authority"]
+    }
+    numeric = presentations[current["numeric_ref"]]
+    relation_presentation = presentations[relation["numeric_relation_ref"]]
+    assert numeric["presentation_receipt"]["formula_trace"][
+        "input_numeric_fact_ids"
+    ] == ["NF::ROLE_A", "NF::ROLE_B"]
+    assert "+87.54%" in relation_presentation["display_surface"]
+    assert relation_presentation["presentation_receipt"]["authority_mode"] == (
+        "deterministically_hydrated_numeric_relation"
+    )
+    assert estimate_ref in catalog["claims"][0]["research_estimate_refs"]
+    assert estimate_ref not in presentations
+    assert catalog["coverage_receipt"][
+        "research_estimates_granted_output_authority"
+    ] is False
+
+
 def test_model_owned_numeric_surface_fails_closed() -> None:
     workpapers, contexts = _fixtures()
     catalog = compile_multi_agent_report_authority_catalog(

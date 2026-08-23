@@ -98,7 +98,10 @@
   - [x] R10 clean／synced engineering commit、repository-aware preflight 与 fresh 四调用 authority
   - [x] R10 authority 提交／推送后的 clean 复验与唯一 live：4/4 HTTP-200、0 retry，Writer 未调用
   - [x] 七项 finding 的独立 L1／L2 与 workpaper 内容复评：7/7 关闭，26/28，Writer 零调用工程门 eligible
-  - [ ] capture-bound protected Writer 零调用 successor、完整工程门、fresh authority 与唯一 live
+  - [x] capture-bound protected Writer 零调用 successor：R10 lineage、typed authority、material／L3 protections、完整 fake seam 与 Project OS decision
+  - [x] protected Writer 完整工程门：全仓 1169、active baseline、变更集 pyflakes、JSON／JSONL、secret scan 与 diff check
+  - [ ] protected Writer clean engineering commit／push 与 repository-aware preflight
+  - [ ] protected Writer fresh authority、authority-only commit／push 与唯一 live
   - [ ] 最终报告独立 L1／L2、八维质量与 S3 内容验收
 - [ ] MU／NVDA 同核心迁移与三案例 S1–S3 内容质量验收
 - [ ] S4 审阅修复产品闭环

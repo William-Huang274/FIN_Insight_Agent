@@ -324,6 +324,75 @@ def _relation_presentation(row: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _hydrate_relation_presentation_row(
+    row: Mapping[str, Any],
+    *,
+    numeric_rows: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Derive the display change for current-runtime operand-only relations."""
+
+    compiled = deepcopy(dict(row))
+    if any(
+        compiled.get(field) not in (None, "")
+        for field in (
+            "absolute_change_decimal",
+            "percentage_point_change_decimal",
+            "percent_change_decimal",
+        )
+    ):
+        return compiled
+    current_ref = str(compiled.get("current_numeric_ref") or "")
+    comparison_ref = str(compiled.get("comparison_numeric_ref") or "")
+    _require(
+        current_ref in numeric_rows and comparison_ref in numeric_rows,
+        "multi_agent_report_relation_operand_unresolved",
+    )
+    current = numeric_rows[current_ref]
+    comparison = numeric_rows[comparison_ref]
+    _require(
+        str(current.get("ticker") or "")
+        == str(comparison.get("ticker") or "")
+        and str(current.get("metric_id") or "")
+        == str(comparison.get("metric_id") or "")
+        == str(compiled.get("metric_id") or "")
+        and str(current.get("unit") or "")
+        == str(comparison.get("unit") or ""),
+        "multi_agent_report_relation_operand_semantics_invalid",
+    )
+    current_value = _decimal(
+        current.get("value_decimal"),
+        "multi_agent_report_relation_operand_value_invalid",
+    )
+    comparison_value = _decimal(
+        comparison.get("value_decimal"),
+        "multi_agent_report_relation_operand_value_invalid",
+    )
+    delta = current_value - comparison_value
+    unit = str(current.get("unit") or "")
+    if unit == "percent":
+        compiled["percentage_point_change_decimal"] = _plain_decimal(delta)
+    else:
+        _require(
+            comparison_value != 0,
+            "multi_agent_report_relation_comparison_zero",
+        )
+        percent_change = delta / comparison_value * Decimal("100")
+        compiled["percent_change_decimal"] = _plain_decimal(percent_change)
+    compiled.update(
+        {
+            "ticker": str(current.get("ticker") or ""),
+            "unit": unit,
+            "current_period_end": current.get("period_end"),
+            "comparison_period_end": comparison.get("period_end"),
+            "authority_mode": "deterministically_hydrated_numeric_relation",
+            "direction": (
+                "positive" if delta > 0 else "negative" if delta < 0 else "flat"
+            ),
+        }
+    )
+    return compiled
+
+
 def _bounded_presentation(row: Mapping[str, Any]) -> dict[str, Any]:
     ref = str(row.get("authority_ref") or "")
     _require(ref.startswith("PRES::"), "multi_agent_report_bounded_ref_invalid")
@@ -465,6 +534,61 @@ def _merge_catalog_row(
         target[ref] = compiled
 
 
+def _merge_numeric_catalog_row(
+    target: dict[str, dict[str, Any]],
+    *,
+    ref: str,
+    row: Mapping[str, Any],
+) -> None:
+    """Merge one semantic NUM authority across role-local projections.
+
+    Current dynamic role contexts may assign different internal NumericFact ids
+    to the same deterministic operands.  The public ``NUM`` ref and every
+    financial semantic field remain identical.  Preserve the union of those
+    internal lineage ids rather than treating role-local ids as a financial
+    authority conflict.
+    """
+
+    compiled = deepcopy(dict(row))
+    if ref not in target:
+        target[ref] = compiled
+        return
+    existing = deepcopy(target[ref])
+    if existing == compiled:
+        return
+    existing_trace = existing.get("formula_trace")
+    compiled_trace = compiled.get("formula_trace")
+    _require(
+        isinstance(existing_trace, Mapping)
+        and isinstance(compiled_trace, Mapping),
+        "multi_agent_report_numeric_authority_conflict",
+    )
+    existing_trace_body = deepcopy(dict(existing_trace))
+    compiled_trace_body = deepcopy(dict(compiled_trace))
+    existing_ids = {
+        str(value)
+        for value in existing_trace_body.pop("input_numeric_fact_ids", ())
+    }
+    compiled_ids = {
+        str(value)
+        for value in compiled_trace_body.pop("input_numeric_fact_ids", ())
+    }
+    existing_without_trace = deepcopy(existing)
+    compiled_without_trace = deepcopy(compiled)
+    existing_without_trace["formula_trace"] = existing_trace_body
+    compiled_without_trace["formula_trace"] = compiled_trace_body
+    _require(
+        existing_without_trace == compiled_without_trace
+        and existing_ids
+        and compiled_ids,
+        "multi_agent_report_numeric_authority_conflict",
+    )
+    merged_trace = deepcopy(existing_trace_body)
+    merged_trace["input_numeric_fact_ids"] = sorted(existing_ids | compiled_ids)
+    existing["formula_trace"] = merged_trace
+    target[ref] = existing
+
+
 def compile_multi_agent_report_authority_catalog(
     *,
     workpapers: Sequence[Mapping[str, Any]],
@@ -504,6 +628,7 @@ def compile_multi_agent_report_authority_catalog(
     identities = []
     evidence_rows: dict[str, dict[str, Any]] = {}
     numeric_rows: dict[str, dict[str, Any]] = {}
+    estimate_rows: dict[str, dict[str, Any]] = {}
     relation_rows: dict[str, dict[str, Any]] = {}
     gap_rows: dict[str, dict[str, Any]] = {}
     for agent_id in sorted(contexts):
@@ -512,10 +637,14 @@ def compile_multi_agent_report_authority_catalog(
             context.get("cell_analysis_view"),
             "multi_agent_report_cell_view_missing",
         )
+        # Legacy preview contexts nested identity inside ``cell_analysis_view``;
+        # the current dynamic runtime keeps the same identity at context top
+        # level.  Both are immutable model-context surfaces, so accept either
+        # location while still requiring all six contexts to agree below.
         identity = deepcopy(
             dict(
                 _mapping(
-                    view.get("case_identity"),
+                    view.get("case_identity") or context.get("case_identity"),
                     "multi_agent_report_case_identity_missing",
                 )
             )
@@ -532,11 +661,32 @@ def compile_multi_agent_report_authority_catalog(
             )
         for raw in view.get("numeric_fact_catalog") or ():
             ref = str(raw.get("numeric_ref") or "")
+            if ref:
+                _require(
+                    ref.startswith("NUM::"),
+                    "multi_agent_report_numeric_authority_ref_invalid",
+                )
+                _merge_numeric_catalog_row(
+                    numeric_rows,
+                    ref=ref,
+                    row=raw,
+                )
+                continue
+            # Research estimates share the model-visible numeric catalog in the
+            # current runtime, but they explicitly carry no NumericFact output
+            # authority.  Preserve their ids for lineage below and never admit
+            # them to the deterministic report renderer.
+            estimate_ref = str(raw.get("estimate_id") or "")
+            _require(
+                estimate_ref.startswith("ESTIMATE::")
+                and raw.get("numeric_fact_authority") is False,
+                "multi_agent_report_numeric_authority_ref_invalid",
+            )
             _merge_catalog_row(
-                numeric_rows,
-                ref=ref,
+                estimate_rows,
+                ref=estimate_ref,
                 row=raw,
-                code="multi_agent_report_numeric_authority_conflict",
+                code="multi_agent_report_estimate_authority_conflict",
             )
         for raw in view.get("numeric_relation_catalog") or ():
             ref = str(raw.get("numeric_relation_ref") or "")
@@ -564,6 +714,7 @@ def compile_multi_agent_report_authority_catalog(
     selected_evidence: set[str] = set()
     selected_numeric: set[str] = set()
     selected_relations: set[str] = set()
+    selected_estimates: set[str] = set()
     selected_gaps: set[str] = set()
     claims: list[dict[str, Any]] = []
     claim_refs_by_agent: dict[str, list[str]] = {}
@@ -573,7 +724,19 @@ def compile_multi_agent_report_authority_catalog(
         for index, raw_claim in enumerate(workpaper.get("sourced_claims") or ()):
             claim = _mapping(raw_claim, "multi_agent_report_claim_invalid")
             evidence_refs = sorted(str(ref) for ref in claim.get("evidence_refs") or ())
-            numeric_refs = sorted(str(ref) for ref in claim.get("numeric_refs") or ())
+            raw_numeric_refs = sorted(
+                str(ref) for ref in claim.get("numeric_refs") or ()
+            )
+            numeric_refs = [
+                ref for ref in raw_numeric_refs if ref.startswith("NUM::")
+            ]
+            estimate_refs = [
+                ref for ref in raw_numeric_refs if ref.startswith("ESTIMATE::")
+            ]
+            _require(
+                len(numeric_refs) + len(estimate_refs) == len(raw_numeric_refs),
+                "multi_agent_report_claim_numeric_ref_kind_invalid",
+            )
             relation_refs = sorted(
                 str(ref) for ref in claim.get("numeric_relation_refs") or ()
             )
@@ -583,26 +746,34 @@ def compile_multi_agent_report_authority_catalog(
                 "claim": str(claim.get("claim") or ""),
                 "authority": str(claim.get("authority") or ""),
                 "evidence_refs": evidence_refs,
-                "numeric_refs": numeric_refs,
+                # Keep the historical claim-ref seed stable: it has always been
+                # based on the workpaper's raw numeric-ref list.  The emitted
+                # catalog separates typed output authority from non-authoritative
+                # research estimates below.
+                "numeric_refs": raw_numeric_refs,
                 "numeric_relation_refs": relation_refs,
             }
             claim_ref = "WPCLAIM::" + canonical_digest(seed)[:20].upper()
-            claims.append(
-                {
-                    "claim_ref": claim_ref,
-                    **seed,
-                    "authority_refs": sorted({*numeric_refs, *relation_refs}),
-                }
-            )
+            compiled_claim = {
+                "claim_ref": claim_ref,
+                **seed,
+                "numeric_refs": numeric_refs,
+                "authority_refs": sorted({*numeric_refs, *relation_refs}),
+            }
+            if estimate_refs:
+                compiled_claim["research_estimate_refs"] = estimate_refs
+            claims.append(compiled_claim)
             claim_refs_by_agent.setdefault(agent_id, []).append(claim_ref)
             selected_evidence.update(evidence_refs)
             selected_numeric.update(numeric_refs)
             selected_relations.update(relation_refs)
+            selected_estimates.update(estimate_refs)
 
     _require(
         selected_evidence.issubset(evidence_rows)
         and selected_numeric.issubset(numeric_rows)
         and selected_relations.issubset(relation_rows)
+        and selected_estimates.issubset(estimate_rows)
         and selected_gaps.issubset(gap_rows),
         "multi_agent_report_selected_authority_unresolved",
     )
@@ -615,10 +786,17 @@ def compile_multi_agent_report_authority_catalog(
         relation_operand_numeric_refs.issubset(numeric_rows),
         "multi_agent_report_relation_operand_unresolved",
     )
+    hydrated_relation_rows = {
+        ref: _hydrate_relation_presentation_row(
+            relation_rows[ref],
+            numeric_rows=numeric_rows,
+        )
+        for ref in selected_relations
+    }
     presentations = [
         *(_numeric_presentation(numeric_rows[ref]) for ref in sorted(selected_numeric)),
         *(
-            _relation_presentation(relation_rows[ref])
+            _relation_presentation(hydrated_relation_rows[ref])
             for ref in sorted(selected_relations)
         ),
     ]
@@ -698,6 +876,8 @@ def compile_multi_agent_report_authority_catalog(
                 relation_operand_numeric_refs
             ),
             "numeric_relation_ref_count": len(selected_relations),
+            "research_estimate_ref_count": len(selected_estimates),
+            "research_estimates_granted_output_authority": False,
             "gap_ref_count": len(selected_gaps),
             "all_selected_refs_resolved": True,
         },

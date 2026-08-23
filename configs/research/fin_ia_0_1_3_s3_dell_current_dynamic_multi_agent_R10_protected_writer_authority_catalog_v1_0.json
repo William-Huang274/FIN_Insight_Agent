@@ -1,0 +1,2468 @@
+{
+  "authority_boundary": {
+    "R10_writer_protection_projection_required": true,
+    "case_identity_and_research_as_of_are_harness_rendered": true,
+    "citations_are_rendered_from_selected_evidence_refs": true,
+    "forbidden_claim_or_authority_may_render": false,
+    "historical_workpaper_claim_text_mutated": false,
+    "model_owned_prose_must_be_numeric_date_alias_and_citation_free": true,
+    "only_typed_presentation_refs_may_render_material_numbers": true,
+    "raw_evidence_numeric_surface_is_output_authority": false,
+    "research_estimates_granted_output_authority": false,
+    "semantic_evaluator_may_override_local_surface_gate": false,
+    "source_bound_exact_and_bounded_surfaces_are_distinct": true,
+    "source_presence_bypasses_typed_admission": false
+  },
+  "authority_catalog_digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765",
+  "base_authority_catalog_digest": "80b16b0b142aa84e88ca4a8ad9f99c68a3155e3ff6c2f8ebc81ce333ebca1e60",
+  "case_identity": {
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "subject_legal_name": "Dell Technologies Inc.",
+    "subject_ticker": "DELL"
+  },
+  "claim_refs_by_agent": {
+    "AGENT::CASH_CONVERSION": [
+      "WPCLAIM::05DBE34A9E501DA6588A",
+      "WPCLAIM::1075BD357D0BD279E58F",
+      "WPCLAIM::164FE988FF32F9FBB5D8",
+      "WPCLAIM::2B4F6A85A1B574D20ED2",
+      "WPCLAIM::86BBF5595F64AAC5A325",
+      "WPCLAIM::B9FB00649A060D443976",
+      "WPCLAIM::C5C02F85B5A48AC661D0",
+      "WPCLAIM::E3BFD59CC60F05B1BD7C",
+      "WPCLAIM::E4FC61636C07C7CFA7D7",
+      "WPCLAIM::FBCC1D435E8AEBCDAB77"
+    ],
+    "AGENT::COUNTEREVIDENCE": [
+      "WPCLAIM::375C5BCE78D89B22A295",
+      "WPCLAIM::443D62141183488B3579",
+      "WPCLAIM::5864F7D43013BB795486",
+      "WPCLAIM::62D1CEB2B807786057DB",
+      "WPCLAIM::72BFBAD47FC79A3722E7",
+      "WPCLAIM::7A84BEB46A4E45FE3DBD",
+      "WPCLAIM::8B09D8AAC24EE52BD74B",
+      "WPCLAIM::B1BDD811CE1DF55EE55E",
+      "WPCLAIM::F2E9BB4B2AF8901A7146"
+    ],
+    "AGENT::DEMAND_QUALITY": [
+      "WPCLAIM::1E194C4E31A5EA709A3D",
+      "WPCLAIM::3C798E23BDF463BDE4DA",
+      "WPCLAIM::4D8A62B38C73E721A42F",
+      "WPCLAIM::4FBE46C6B43A9B42AA17",
+      "WPCLAIM::653D7E95ECA46E262391",
+      "WPCLAIM::93D5596661AC47F9A6F8",
+      "WPCLAIM::BD2D18FD0931E6E3E68E",
+      "WPCLAIM::DFDFF241544B90012DA1",
+      "WPCLAIM::FC2C8B1EA97D7EF82311",
+      "WPCLAIM::FE154A0C1821845B5254"
+    ],
+    "AGENT::OPERATING_PERFORMANCE": [
+      "WPCLAIM::0CFBA10E3167F4F6D32B",
+      "WPCLAIM::0E1B77AE079F812F2C65",
+      "WPCLAIM::2BD4DB1D896112CAFE64",
+      "WPCLAIM::32A530B75A1BF63D4CDC",
+      "WPCLAIM::486A528C3931F97EDC7B",
+      "WPCLAIM::50502C689295B3E41769",
+      "WPCLAIM::60F22817951A6505B52D",
+      "WPCLAIM::75D965BE6E71E9B90737",
+      "WPCLAIM::DA7641CC311F3BA0C1B3"
+    ],
+    "AGENT::SUPPLY_RELATIONSHIP": [
+      "WPCLAIM::4ECE51B8ED7AF5530323",
+      "WPCLAIM::55EAD3673DAC8FBF3C38",
+      "WPCLAIM::8E4494CB22C0A7AB5A6C",
+      "WPCLAIM::A5909C93E2B4E782F69C",
+      "WPCLAIM::C9D95120F03275EC7DD5",
+      "WPCLAIM::D2DF69B179FE1C96CDCE",
+      "WPCLAIM::EB188F87BD92BD4A6BF7",
+      "WPCLAIM::FD2A12974E662B15FF20"
+    ],
+    "AGENT::VALUE_CAPTURE": [
+      "WPCLAIM::0A35927E884F4DCD8A66",
+      "WPCLAIM::2339C903BA4B36F0C033",
+      "WPCLAIM::239CDDE1A2810F28FCBD",
+      "WPCLAIM::2ED97A04C2264BA689D4",
+      "WPCLAIM::371A4BE3C0DA1E69045C",
+      "WPCLAIM::5D9F46AE15F105A4B50D",
+      "WPCLAIM::85955DBC5D858C00D366",
+      "WPCLAIM::A3326287D929BC21E958",
+      "WPCLAIM::D804D4251D16896F29D7",
+      "WPCLAIM::F4BDA53367BF22848102"
+    ]
+  },
+  "claims": [
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority": "bounded_inference",
+      "authority_refs": [
+        "NUM::0E289449BE9085EE",
+        "NUM::9DDEDDD584B02E09",
+        "NUM::BFE46716CAB4A99E"
+      ],
+      "claim": "派生算术（输入为摘录可见余额，非确定性 NumericFact 程序产出）：AR +8,269、库存 +4,615、AP +11,631；三行资产负债表代理 (AR+库存−AP) 由 −5,608 升至 −4,355，代理变动约 +1,253M。该 1,253M 只是三行资产负债表营运资金代理的变动，不是现金流量口径的现金吸收：非现金、重分类、并购与汇率效应可能介入；确切现金吸收需现金流量表调节，而已审摘录仅给总调节 643 vs 1,831，未列营运资金细项。不得归因于 AI。",
+      "claim_index": 5,
+      "claim_ref": "WPCLAIM::05DBE34A9E501DA6588A",
+      "evidence_refs": [
+        "EV::C5DB890B773C6892",
+        "EV::CAD2B8E9B11D864E"
+      ],
+      "numeric_refs": [
+        "NUM::0E289449BE9085EE",
+        "NUM::9DDEDDD584B02E09",
+        "NUM::BFE46716CAB4A99E"
+      ],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority": "bounded_inference",
+      "authority_refs": [],
+      "claim": "CY2025 全球 AI 服务器出货增长情景估计（基准 27-28%、下行 20-25%）由情景编译器产出，numeric_fact_authority=false，属研究估计与情景输入而非 DELL 报告事实，不能替代 DELL 的 ASP/台数缺口，也不能据此推导 DELL 增长中的量价拆分。",
+      "claim_index": 8,
+      "claim_ref": "WPCLAIM::0A35927E884F4DCD8A66",
+      "evidence_refs": [],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "research_estimate_refs": [
+        "ESTIMATE::4710FBA5427AE5A962A96837",
+        "ESTIMATE::4A8854875AF5888768FAD506"
+      ]
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "authority": "bounded_inference",
+      "authority_refs": [
+        "NUM::ADC81E7A547FAB94"
+      ],
+      "claim": "派生算术：Q1 FY27 AI 服务器确认收入 $16.1B 约占公司净收入 $43,842M 的 37%；按 FY27 指引约 $60B 减已确认 $16.1B，隐含剩余三季度均值约 $14.6B/季，低于 Q1 实际确认值——指引本身隐含后续季度 AI 收入回落，需以实际实现检验。",
+      "claim_index": 4,
+      "claim_ref": "WPCLAIM::0CFBA10E3167F4F6D32B",
+      "evidence_refs": [
+        "EV::734A9C177164E08E",
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [
+        "NUM::ADC81E7A547FAB94"
+      ],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "NUM::6D6AEED09E8FA996",
+        "NUM::ADC81E7A547FAB94",
+        "NUM::BA153FB9939D66DF",
+        "NUM::C0D63370A8F4EE85",
+        "NUM::D0EA6489B2C138EE",
+        "NUM::F8C8EB238E997BA2",
+        "REL::936D10F2B7160DDD",
+        "REL::E07667E373A33286",
+        "REL::E3A67501DFA73ACF"
+      ],
+      "claim": "公司口径 Q1 FY27（截至 2026-05-01）对 Q1 FY26（截至 2025-05-02）同季度比较：净收入 $43,842M 对 $23,378M（+88%），经营利润 $3,656M 对 $1,165M（+214%），净利 $3,438M 对 $965M（+256%）；利润增速显著快于收入，报表层面收入→利润转化在当季真实发生，且为纯公司口径。",
+      "claim_index": 0,
+      "claim_ref": "WPCLAIM::0E1B77AE079F812F2C65",
+      "evidence_refs": [
+        "EV::734A9C177164E08E",
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [
+        "NUM::6D6AEED09E8FA996",
+        "NUM::ADC81E7A547FAB94",
+        "NUM::BA153FB9939D66DF",
+        "NUM::C0D63370A8F4EE85",
+        "NUM::D0EA6489B2C138EE",
+        "NUM::F8C8EB238E997BA2"
+      ],
+      "numeric_relation_refs": [
+        "REL::936D10F2B7160DDD",
+        "REL::E07667E373A33286",
+        "REL::E3A67501DFA73ACF"
+      ]
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "NUM::48BC29582646E193",
+        "NUM::D2AED1236BCDEE6B",
+        "REL::07D0A84AC42F34A1"
+      ],
+      "claim": "Q1 FY2027 经营现金流 4,081M vs 上年同季 2,796M，同比 +46%；此为合并现金流量表口径（公司级）事实，未绑定任何 AI 产品级现金贡献。",
+      "claim_index": 0,
+      "claim_ref": "WPCLAIM::1075BD357D0BD279E58F",
+      "evidence_refs": [
+        "EV::07899638B93E4E3A",
+        "EV::C5DB890B773C6892"
+      ],
+      "numeric_refs": [
+        "NUM::48BC29582646E193",
+        "NUM::D2AED1236BCDEE6B"
+      ],
+      "numeric_relation_refs": [
+        "REL::07D0A84AC42F34A1"
+      ]
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority": "bounded_inference",
+      "authority_refs": [
+        "NUM::0E289449BE9085EE",
+        "NUM::16A411DA0FC0209E",
+        "NUM::F0945BCA2DE9CE3B",
+        "REL::2A7F4BE26BAB956E"
+      ],
+      "claim": "合并口径下扩张以营运资金承载：capex 及资本化软件 963M vs 568M，净 PP&E 6,945 vs 6,676，而库存 15,052；AI 归因仅来自 10-K 方向性披露，不能把库存增量直接记为 AI 备货金额。",
+      "claim_index": 8,
+      "claim_ref": "WPCLAIM::164FE988FF32F9FBB5D8",
+      "evidence_refs": [
+        "EV::C5DB890B773C6892",
+        "EV::CAD2B8E9B11D864E"
+      ],
+      "numeric_refs": [
+        "NUM::0E289449BE9085EE",
+        "NUM::16A411DA0FC0209E",
+        "NUM::F0945BCA2DE9CE3B"
+      ],
+      "numeric_relation_refs": [
+        "REL::2A7F4BE26BAB956E"
+      ]
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "渠道参与者经营恶化或对需求不确定会减少订单并压低公司收入与毛利（10-K），属条件性风险披露，非当期已发生减单事件。",
+      "claim_index": 6,
+      "claim_ref": "WPCLAIM::1E194C4E31A5EA709A3D",
+      "evidence_refs": [
+        "EV::041AEF89A154F4FC"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority": "not_inferable",
+      "authority_refs": [
+        "NUM::33642A79CE277E0B",
+        "NUM::AB89B02ADCCB77E0",
+        "REL::B60164179DFFDF5A"
+      ],
+      "claim": "定价能力不得由公司毛利率运动在任一方向推断（修复后边界）：公司毛利率是全部产品价格、数量、组合与投入成本的净结果，Q1 FY27 毛利率同比收缩约 3.4pp 不能证伪 AI 服务器存在产品级定价能力（成本涨得比转嫁快或高单价低加成配置可与之并存），未来公司毛利率扩张同样不能证明它存在；本角色不采用任何基于公司毛利率方向的 AI 定价能力结论，产品级价格、成本、单位与组合证据仍是必要输入。",
+      "claim_index": 9,
+      "claim_ref": "WPCLAIM::2339C903BA4B36F0C033",
+      "evidence_refs": [
+        "EV::5388E016C17032C1",
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [
+        "NUM::33642A79CE277E0B",
+        "NUM::AB89B02ADCCB77E0"
+      ],
+      "numeric_relation_refs": [
+        "REL::B60164179DFFDF5A"
+      ]
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "NUM::ADC81E7A547FAB94",
+        "NUM::BA153FB9939D66DF",
+        "NUM::D0EA6489B2C138EE",
+        "NUM::F8C8EB238E997BA2",
+        "REL::E07667E373A33286",
+        "REL::E3A67501DFA73ACF"
+      ],
+      "claim": "Q1 FY27 合并收入 43,842M 美元、经营利润 3,656M 美元，同比 Q1 FY26（23,378M、1,165M）收入 +88%、经营利润 +214%，均为 8-K 表内源可见值。",
+      "claim_index": 0,
+      "claim_ref": "WPCLAIM::239CDDE1A2810F28FCBD",
+      "evidence_refs": [
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [
+        "NUM::ADC81E7A547FAB94",
+        "NUM::BA153FB9939D66DF",
+        "NUM::D0EA6489B2C138EE",
+        "NUM::F8C8EB238E997BA2"
+      ],
+      "numeric_relation_refs": [
+        "REL::E07667E373A33286",
+        "REL::E3A67501DFA73ACF"
+      ]
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "NUM::0E289449BE9085EE",
+        "NUM::9DDEDDD584B02E09",
+        "NUM::BFE46716CAB4A99E"
+      ],
+      "claim": "May 1, 2026 vs Jan 30, 2026：应收账款 25,854 vs 17,585（备抵两期均 77）、库存 15,052 vs 10,437、应付账款 45,261 vs 33,630——均为公司口径时点余额，未按 AI/非 AI 拆分。",
+      "claim_index": 4,
+      "claim_ref": "WPCLAIM::2B4F6A85A1B574D20ED2",
+      "evidence_refs": [
+        "EV::CAD2B8E9B11D864E"
+      ],
+      "numeric_refs": [
+        "NUM::0E289449BE9085EE",
+        "NUM::9DDEDDD584B02E09",
+        "NUM::BFE46716CAB4A99E"
+      ],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "authority": "not_inferable",
+      "authority_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::55D71667B5DA8AF0",
+        "REL::E773B8CD872C906A"
+      ],
+      "claim": "分部/产品利润边界（重申为禁令）：本轮已审证据未绑定 ISG 分部经营利润、AI 服务器产品级利润率或 AI 与非 AI 利润分配；EV::7F4D7E6762C21D83 的绑定边界明确不能把 ISG 经营利润直接等同于 AI 服务器利润。因此本工作稿不得把分部利润增长、公司经营利润率改善（+3.4pp）或经营利润 +214% 表述为 AI 服务器利润，产品→分部桥止于该边界，且不构成对公开资料存在性的判断。",
+      "claim_index": 7,
+      "claim_ref": "WPCLAIM::2BD4DB1D896112CAFE64",
+      "evidence_refs": [
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::55D71667B5DA8AF0"
+      ],
+      "numeric_relation_refs": [
+        "REL::E773B8CD872C906A"
+      ]
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority": "not_inferable",
+      "authority_refs": [],
+      "claim": "AI 服务器独立毛利率、经营利润率及 ISG 经营利润中的 AI 份额不可推断：8-K 绑定禁止把 ISG 经营利润等同于 AI 服务器利润，管理层中个位数目标区间不可升级为审计分部利润，产品→分部利润桥止于边界。",
+      "claim_index": 6,
+      "claim_ref": "WPCLAIM::2ED97A04C2264BA689D4",
+      "evidence_refs": [
+        "EV::0063F22F643B94ED",
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "PRES::1BF25CBC9F2BBB72"
+      ],
+      "claim": "产品口径（公司业绩稿自述，AI 订单为公司自定义指标）：Q1 FY27 AI 订单 $24.4B、AI 服务器确认收入 $16.1B；FY27 AI 服务器收入指引上调至约 $60B（+144%）。订单额高于同季确认收入，但两者仅为同一季度的需求信号与已实现收入信号；无 cohort、交付或转化率关系卡，不写成订单向收入的转化，队列积累、交付周期与取消情况未披露并保持未解决。",
+      "claim_index": 3,
+      "claim_ref": "WPCLAIM::32A530B75A1BF63D4CDC",
+      "evidence_refs": [
+        "EV::734A9C177164E08E",
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "source_bound_authority_refs": [
+        "PRES::1BF25CBC9F2BBB72"
+      ]
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "PRES::1BF25CBC9F2BBB72",
+        "PRES::5342E5064E92AFD4"
+      ],
+      "claim": "FY27 前瞻指引（源可见）：AI-optimized server 收入约 600 亿美元、同比 +144%；全年收入 1,650-1,690 亿美元（中点 1,670 亿、+47%）；Q2 FY27 收入 440-450 亿美元（中点 445 亿、+49%）。这些是管理层目标，未审计，不构成已实现的价值捕获。",
+      "claim_index": 5,
+      "claim_ref": "WPCLAIM::371A4BE3C0DA1E69045C",
+      "evidence_refs": [
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "source_bound_authority_refs": [
+        "PRES::1BF25CBC9F2BBB72",
+        "PRES::5342E5064E92AFD4"
+      ]
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "authority": "not_inferable",
+      "authority_refs": [],
+      "claim": "已审证据中不存在已发生的订单取消、库存减值或收益损失量化事实；研究估算（基础约 27.5%、下行约 22.5%）不具数字事实权威，不能用于证伪 Dell 的实际订单或收入；反证停留在风险披露与结构性暴露层面，不能升级为损失已实现的事实断言。",
+      "claim_index": 9,
+      "claim_ref": "WPCLAIM::375C5BCE78D89B22A295",
+      "evidence_refs": [
+        "EV::32A6B092D3316769",
+        "EV::A74F01276941482E",
+        "EV::ADBB7A86C8E7D99D",
+        "EV::BA594865DB45F850"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "research_estimate_refs": [
+        "ESTIMATE::4710FBA5427AE5A962A96837",
+        "ESTIMATE::4A8854875AF5888768FAD506"
+      ]
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "AI 服务器需求与出货时点存在内在非线性：客户就绪度与部件切换导致需求与出货错位并驱动收入波动（10-Q），反驳 backlog 向未来收入线性外推。",
+      "claim_index": 4,
+      "claim_ref": "WPCLAIM::3C798E23BDF463BDE4DA",
+      "evidence_refs": [
+        "EV::ABAB2A6B49DD71A9"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "Dell 10-K 披露其 AI 解决方案需求的性质可能对经营表现产生不利影响，是管理层对 AI 需求与经营风险的直接自述反证。",
+      "claim_index": 1,
+      "claim_ref": "WPCLAIM::443D62141183488B3579",
+      "evidence_refs": [
+        "EV::32A6B092D3316769"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "PRES::5342E5064E92AFD4"
+      ],
+      "claim": "指引口径（管理层前瞻陈述，非已实现结果）：Q2 FY27 收入 $44.0-45.0B（中值 $44.5B、+49%），FY27 收入 $165-169B（中值 $167B、+47%）；FY27 中值增速较 Q1 实际 +88% 显著回落，是经营杠杆可持续性的关键参照。",
+      "claim_index": 5,
+      "claim_ref": "WPCLAIM::486A528C3931F97EDC7B",
+      "evidence_refs": [
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "source_bound_authority_refs": [
+        "PRES::5342E5064E92AFD4"
+      ]
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "产品 backlog 仅包含公司判定为不可取消的未履行制造订单并计入剩余履约义务；该口径在取消风险维度是审慎正向信号，账龄、取消率与兑现速度未披露构成独立的可见度限制，不与不可取消口径混为同一弱点。",
+      "claim_index": 1,
+      "claim_ref": "WPCLAIM::4D8A62B38C73E721A42F",
+      "evidence_refs": [
+        "EV::2A7103750D79EEDC"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "authority": "not_inferable",
+      "authority_refs": [],
+      "claim": "MU 与 NVDA 披露在本会话中未获准入为已审证据，因此既不能断言也不能否认其与 Dell 存在分配、联合开发或交付承诺关系；检索失败不等于公开资料不存在。",
+      "claim_index": 5,
+      "claim_ref": "WPCLAIM::4ECE51B8ED7AF5530323",
+      "evidence_refs": [],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority": "bounded_inference",
+      "authority_refs": [],
+      "claim": "FY27 AI 服务器收入预期上调至 $60B 是管理层前瞻展望而非已确认转化；Q1 创纪录经营现金流 $4.1B 与订单、收入信号同季共现，但 AI 备货对应的营运资金分解未披露，不能确认现金转化完整。",
+      "claim_index": 7,
+      "claim_ref": "WPCLAIM::4FBE46C6B43A9B42AA17",
+      "evidence_refs": [
+        "EV::734A9C177164E08E"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "authority": "bounded_inference",
+      "authority_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::33642A79CE277E0B",
+        "NUM::55D71667B5DA8AF0",
+        "NUM::AB89B02ADCCB77E0",
+        "REL::B60164179DFFDF5A",
+        "REL::E773B8CD872C906A"
+      ],
+      "claim": "同季度同口径利润率：毛利率 21.118%→17.750%（约 -3.4pp），经营利润率 4.983%→8.339%（约 +3.4pp）；两者并存表明当季利润率改善并非来自毛利端，收入增长与利润率改善仅为共现，不可自动归因于单一产品或分部。",
+      "claim_index": 1,
+      "claim_ref": "WPCLAIM::50502C689295B3E41769",
+      "evidence_refs": [
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::33642A79CE277E0B",
+        "NUM::55D71667B5DA8AF0",
+        "NUM::AB89B02ADCCB77E0"
+      ],
+      "numeric_relation_refs": [
+        "REL::B60164179DFFDF5A",
+        "REL::E773B8CD872C906A"
+      ]
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "authority": "bounded_inference",
+      "authority_refs": [],
+      "claim": "该陈述的已审关系方向是供方自述自身产能约束；对 DELL 本案仅为下游生态读出，不构成 Dell 特定分配、产品对应关系或释放时点的证据。",
+      "claim_index": 1,
+      "claim_ref": "WPCLAIM::55EAD3673DAC8FBF3C38",
+      "evidence_refs": [
+        "EV::4E05729492683532"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "NUM::0E289449BE9085EE"
+      ],
+      "claim": "Dell 存货 15,052,000,000 美元（2026-05-01）与 Dell 自述的大单备货风险方向一致，仅作结构性暴露的方向性印证，不推导同比、周转比率或损失规模。",
+      "claim_index": 7,
+      "claim_ref": "WPCLAIM::5864F7D43013BB795486",
+      "evidence_refs": [
+        "EV::ADBB7A86C8E7D99D"
+      ],
+      "numeric_refs": [
+        "NUM::0E289449BE9085EE"
+      ],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority": "bounded_inference",
+      "authority_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::33642A79CE277E0B",
+        "NUM::55D71667B5DA8AF0",
+        "NUM::62D92399E571BF05",
+        "NUM::AB89B02ADCCB77E0",
+        "NUM::BA153FB9939D66DF",
+        "NUM::D0EA6489B2C138EE",
+        "NUM::D3FE6492EE9F1082",
+        "REL::A4862061DE7A96C8",
+        "REL::B60164179DFFDF5A",
+        "REL::E3A67501DFA73ACF",
+        "REL::E773B8CD872C906A"
+      ],
+      "claim": "同口径恒等复算（经营利润率变动 = 毛利率变动 − 费用率变动）：Q1 FY27 经营费用约 4,126M（=7,782−3,656，占收入约 9.4%）vs Q1 FY26 约 3,772M（=4,937−1,165，占收入约 16.1%），费用率约 −6.7pp 与毛利率约 −3.4pp 相加约 +3.4pp，与经营利润率变动在四舍五入精度内闭合；公司层面经营利润率改善被费用率下降完全解释，不构成 AI 定价能力或产品级价值捕获增强的证据。",
+      "claim_index": 2,
+      "claim_ref": "WPCLAIM::5D9F46AE15F105A4B50D",
+      "evidence_refs": [
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::33642A79CE277E0B",
+        "NUM::55D71667B5DA8AF0",
+        "NUM::62D92399E571BF05",
+        "NUM::AB89B02ADCCB77E0",
+        "NUM::BA153FB9939D66DF",
+        "NUM::D0EA6489B2C138EE",
+        "NUM::D3FE6492EE9F1082"
+      ],
+      "numeric_relation_refs": [
+        "REL::A4862061DE7A96C8",
+        "REL::B60164179DFFDF5A",
+        "REL::E3A67501DFA73ACF",
+        "REL::E773B8CD872C906A"
+      ]
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "authority": "bounded_inference",
+      "authority_refs": [],
+      "claim": "行业情景估计仅作背景：ESTIMATE::4710FBA5427AE5A962A96837（2025 自然年全球 AI 服务器出货量基准情景 +27.5%）与 ESTIMATE::4A8854875AF5888768FAD506（下行情景 +22.5%）为研究估计、非 DELL 报告事实，期间为 2025 自然年，与 DELL 财季/财年口径不同；不得用于改写 DELL 已实现增速或作为其需求证据。",
+      "claim_index": 8,
+      "claim_ref": "WPCLAIM::60F22817951A6505B52D",
+      "evidence_refs": [],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "research_estimate_refs": [
+        "ESTIMATE::4710FBA5427AE5A962A96837",
+        "ESTIMATE::4A8854875AF5888768FAD506"
+      ]
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "authority": "bounded_inference",
+      "authority_refs": [],
+      "claim": "在无 Dell 地区收入、产品组合与订单暴露映射的情况下，该出口管制披露只能为 Dell 界定一个有界上游政策情景，材料传导幅度未确立，不得宣称为 Dell 已证实暴露。",
+      "claim_index": 4,
+      "claim_ref": "WPCLAIM::62D1CEB2B807786057DB",
+      "evidence_refs": [
+        "EV::A74F01276941482E",
+        "EV::BA594865DB45F850"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority": "not_inferable",
+      "authority_refs": [],
+      "claim": "在已审 Evidence 范围内，pull-forward 的规模、供给正常化后是否出现消化期及其对订单/收入的影响路径均未被量化或确认；保供锁量动机仅支持'可能'解释，该量化缺口以 GAP::00730082A5C08C4C 保留并指向后续定向查找。",
+      "claim_index": 9,
+      "claim_ref": "WPCLAIM::653D7E95ECA46E262391",
+      "evidence_refs": [],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "Dell 10-K 披露 AI 销售集中于少数大客户，大单跨期波动、延迟与取消会削弱需求可持续性；前五大占比与取消率未披露。",
+      "claim_index": 2,
+      "claim_ref": "WPCLAIM::72BFBAD47FC79A3722E7",
+      "evidence_refs": [
+        "EV::ADBB7A86C8E7D99D"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "authority": "bounded_inference",
+      "authority_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::33642A79CE277E0B",
+        "NUM::55D71667B5DA8AF0",
+        "NUM::AB89B02ADCCB77E0",
+        "REL::B60164179DFFDF5A",
+        "REL::E773B8CD872C906A"
+      ],
+      "claim": "经营利润率桥按有符号百分点表达（同一公司口径）：毛利率贡献约 -3.4pp（21.118%→17.750%），费用率压缩贡献约 +6.7pp（按恒等式 经营利润率=毛利率−费用/收入 派生的费用率下降约 6.7pp），净经营利润率变化约 +3.4pp（4.983%→8.339%）。费用率压缩是唯一正贡献，其 +6.7pp 幅度约为净改善 +3.4pp 的两倍；本工作稿不使用任何'占净改善约 100%/约 0%'的份额式表述。",
+      "claim_index": 2,
+      "claim_ref": "WPCLAIM::75D965BE6E71E9B90737",
+      "evidence_refs": [
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::33642A79CE277E0B",
+        "NUM::55D71667B5DA8AF0",
+        "NUM::AB89B02ADCCB77E0"
+      ],
+      "numeric_relation_refs": [
+        "REL::B60164179DFFDF5A",
+        "REL::E773B8CD872C906A"
+      ]
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "authority": "bounded_inference",
+      "authority_refs": [],
+      "claim": "NVIDIA 的 hyperscaler 集中度与 Dell 自述的少数大客户集中是两个独立披露；在无交易对手重合关系映射时，二者不能合并为 Dell 层双层承压命题，只能分别保留为上游集中情景与发行人集中风险。",
+      "claim_index": 6,
+      "claim_ref": "WPCLAIM::7A84BEB46A4E45FE3DBD",
+      "evidence_refs": [
+        "EV::ADBB7A86C8E7D99D",
+        "EV::D86534E903882A43"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "管理层在 2026-05-28 电话会称当季 AI 服务器盈利水平符合其中个位数经营利润率目标；这是管理层对产品盈利水平的表述而非独立审计的产品分部利润，仅可引用区间表述，不得转换为单点利润率或利润金额。",
+      "claim_index": 4,
+      "claim_ref": "WPCLAIM::85955DBC5D858C00D366",
+      "evidence_refs": [
+        "EV::0063F22F643B94ED"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority": "not_inferable",
+      "authority_refs": [
+        "NUM::BFE46716CAB4A99E",
+        "NUM::D2AED1236BCDEE6B"
+      ],
+      "claim": "AI 产品级现金贡献、AI 营运资金归属、GPU 预付款与周转天数，以及 Q1 FY2027 营运资金的确切现金吸收，均不可从已审证据推算：无分部 AR/库存/AP、无 DSO/DPO 桥、无预付款金额，现金流量表摘录未列营运资金逐行；故公司级 OCF/FCF 不得表述为 AI 现金转化，代理变动 1,253M 不得表述为实测现金吸收。",
+      "claim_index": 9,
+      "claim_ref": "WPCLAIM::86BBF5595F64AAC5A325",
+      "evidence_refs": [
+        "EV::A7BD099BA46F320B",
+        "EV::C5DB890B773C6892",
+        "EV::CAD2B8E9B11D864E"
+      ],
+      "numeric_refs": [
+        "NUM::BFE46716CAB4A99E",
+        "NUM::D2AED1236BCDEE6B"
+      ],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "NVIDIA 10-Q 披露出口管制限制其销售数据中心 GPU 的能力并可能联动压制服务器中配套网络产品需求；这是 NVIDIA 自身政策风险事实，不是 Dell 的已证实暴露。",
+      "claim_index": 3,
+      "claim_ref": "WPCLAIM::8B09D8AAC24EE52BD74B",
+      "evidence_refs": [
+        "EV::A74F01276941482E",
+        "EV::BA594865DB45F850"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "authority": "not_inferable",
+      "authority_refs": [],
+      "claim": "TSMC 先进封装产能中是否向 Dell 分配、分配多少、新增产能何时向 Dell 释放，无法从已审证据推断。",
+      "claim_index": 3,
+      "claim_ref": "WPCLAIM::8E4494CB22C0A7AB5A6C",
+      "evidence_refs": [
+        "EV::4E05729492683532"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority": "bounded_inference",
+      "authority_refs": [],
+      "claim": "2025 全球 AI 服务器出货量增长的 harness 编译估计（base case 约 27.5%、downside case 约 22.5%）仅为行业需求环境背景，非公司披露或已转化事实，不用于衡量 Dell 的 pull-forward 或消化规模。",
+      "claim_index": 8,
+      "claim_ref": "WPCLAIM::93D5596661AC47F9A6F8",
+      "evidence_refs": [],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "research_estimate_refs": [
+        "ESTIMATE::4710FBA5427AE5A962A96837",
+        "ESTIMATE::4A8854875AF5888768FAD506"
+      ]
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority": "not_inferable",
+      "authority_refs": [],
+      "claim": "AI 服务器价格-量-组合分解不可重建：已审证据仅有收入、mix 方向与 ISG 边界，无 AI 服务器 ASP、无台数或算力当量，PVM 三项输入缺失，价格、台数、配置组合无法拆分。",
+      "claim_index": 7,
+      "claim_ref": "WPCLAIM::A3326287D929BC21E958",
+      "evidence_refs": [
+        "EV::5388E016C17032C1",
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "authority": "bounded_inference",
+      "authority_refs": [],
+      "claim": "外部情景输入把 2025 年全球 AI 服务器出货增速定在基准 27.5%（27–28）与下行 22.5%（20–25）；它们是 harness 研究估计、明确禁止作为报告事实引用，且不含 Dell 特定内容。",
+      "claim_index": 7,
+      "claim_ref": "WPCLAIM::A5909C93E2B4E782F69C",
+      "evidence_refs": [],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "research_estimate_refs": [
+        "ESTIMATE::4710FBA5427AE5A962A96837",
+        "ESTIMATE::4A8854875AF5888768FAD506"
+      ]
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "NUM::0E289449BE9085EE"
+      ],
+      "claim": "Dell 10-K 自认 AI 大额订单要求更多关键部件备货与营运资金承诺，取消或延迟可能损害现金流并带来过剩、过时库存风险。",
+      "claim_index": 0,
+      "claim_ref": "WPCLAIM::B1BDD811CE1DF55EE55E",
+      "evidence_refs": [
+        "EV::ADBB7A86C8E7D99D"
+      ],
+      "numeric_refs": [
+        "NUM::0E289449BE9085EE"
+      ],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "NUM::465E4DEF9C78ECA6",
+        "NUM::9F0CC9FBFC741998",
+        "REL::9A1FC36EBF79DDDC"
+      ],
+      "claim": "Q1 FY2027 自由现金流 3,118M vs 2,228M（+40%），adjusted FCF 3,165M vs 2,232M（+42%），取自同一非 GAAP 调节表，属公司口径。",
+      "claim_index": 1,
+      "claim_ref": "WPCLAIM::B9FB00649A060D443976",
+      "evidence_refs": [
+        "EV::07899638B93E4E3A"
+      ],
+      "numeric_refs": [
+        "NUM::465E4DEF9C78ECA6",
+        "NUM::9F0CC9FBFC741998"
+      ],
+      "numeric_relation_refs": [
+        "REL::9A1FC36EBF79DDDC"
+      ]
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "NUM::00D69747B4DDA649",
+        "NUM::437B42CE857F1F0E",
+        "NUM::4ED76683F363AE66",
+        "PRES::ADCD1ABD8032868F"
+      ],
+      "claim": "Q1 FY27 单一季度 AI 订单 $24.4B、同期确认 AI 服务器收入 $16.1B、期末 AI backlog $51.3B、客户数超 5,000 且跨 neocloud/主权/企业增长，均为公司自述口径；订单、backlog 与收入属不同信号层级，不能互换或相互替代；同季订单与收入共现仅证明两信号并存，无 cohort、交付时点或取消披露，$16.1B 已确认收入不能归因于 $24.4B 当期订单的季内转化，转化率保持未解决。",
+      "claim_index": 0,
+      "claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E",
+      "evidence_refs": [
+        "EV::734A9C177164E08E",
+        "EV::9006E2D4E0F61CCF"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "source_bound_authority_refs": [
+        "NUM::00D69747B4DDA649",
+        "NUM::437B42CE857F1F0E",
+        "NUM::4ED76683F363AE66",
+        "PRES::ADCD1ABD8032868F"
+      ]
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority": "bounded_inference",
+      "authority_refs": [
+        "NUM::465E4DEF9C78ECA6"
+      ],
+      "claim": "DFS 融资应收对 OCF 影响 (263)M vs (23)M，设备经营租赁调整 310M vs 27M，adjusted FCF 3,165 与 FCF 3,118 相差约 47M，表明合并 FCF 未被 DFS 应收动态显著抬高；该判断限合并口径。",
+      "claim_index": 2,
+      "claim_ref": "WPCLAIM::C5C02F85B5A48AC661D0",
+      "evidence_refs": [
+        "EV::07899638B93E4E3A"
+      ],
+      "numeric_refs": [
+        "NUM::465E4DEF9C78ECA6"
+      ],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "authority": "not_inferable",
+      "authority_refs": [],
+      "claim": "Dell 自述的供应商分配、客户准备度与交付承诺一侧在本会话返回 0 条已审证据，该侧命题保持开放，不向任一方向定论。",
+      "claim_index": 6,
+      "claim_ref": "WPCLAIM::C9D95120F03275EC7DD5",
+      "evidence_refs": [],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "authority": "bounded_inference",
+      "authority_refs": [],
+      "claim": "该陈述支持\"报告期内上游先进封装产能确实紧张\"这一行业级判断：与行业 AI 需求真实（需求超过供给）相容，同时为依赖封装的系统的订单转化为近期交付设了上限。",
+      "claim_index": 2,
+      "claim_ref": "WPCLAIM::D2DF69B179FE1C96CDCE",
+      "evidence_refs": [
+        "EV::4E05729492683532"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "TEMP::D255757DD75AC219"
+      ],
+      "claim": "Q3 FY26 10-Q 将毛利率及非 GAAP 毛利率下降主要归因于向 AI-optimized server 组合迁移：这是产品→公司毛利桥的方向性归因，无幅度、无 AI 独立毛利率，期间限于截至 2025-10-31 的财季。",
+      "claim_index": 3,
+      "claim_ref": "WPCLAIM::D804D4251D16896F29D7",
+      "evidence_refs": [
+        "EV::5388E016C17032C1"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "source_bound_authority_refs": [
+        "TEMP::D255757DD75AC219"
+      ]
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "authority": "bounded_inference",
+      "authority_refs": [
+        "NUM::C0D63370A8F4EE85"
+      ],
+      "claim": "公司口径现金：Q1 FY27 经营现金流 $4.1B（业绩稿记录值）高于同期净利 $3,438M，公司层面利润向现金转化方向为正；但该口径无法分离 AI 业务的回款、库存与预付款，产品级现金转化不可验证。",
+      "claim_index": 6,
+      "claim_ref": "WPCLAIM::DA7641CC311F3BA0C1B3",
+      "evidence_refs": [
+        "EV::734A9C177164E08E"
+      ],
+      "numeric_refs": [
+        "NUM::C0D63370A8F4EE85"
+      ],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "公司自述内存不确定性驱动客户跨更长周期锁定传统与 AI 基础设施，构成保供锁量动机（possible pull-forward 的来源），但来源未量化锁量规模、未确认未来需求已被提前兑现。",
+      "claim_index": 2,
+      "claim_ref": "WPCLAIM::DFDFF241544B90012DA1",
+      "evidence_refs": [
+        "EV::38BBF02CB241E81D"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "10-K 风险披露：大单可能需要更多关键部件营运资金承诺，可能不利影响现金流，并在延迟/取消时形成过时库存风险；未量化概率或金额，也未绑定 GPU 预付款。",
+      "claim_index": 7,
+      "claim_ref": "WPCLAIM::E3BFD59CC60F05B1BD7C",
+      "evidence_refs": [
+        "EV::ADBB7A86C8E7D99D"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "NUM::D2AED1236BCDEE6B"
+      ],
+      "claim": "现金流量表摘录显示净利润 3,438M vs 965M、净利润到 OCF 的总调节 643M vs 1,831M、OCF 4,081M；OCF 高于净利润，公司级覆盖为正；摘录未列示应收/库存/应付逐行调节，营运资金现金占用无法从该表单独读出。",
+      "claim_index": 3,
+      "claim_ref": "WPCLAIM::E4FC61636C07C7CFA7D7",
+      "evidence_refs": [
+        "EV::C5DB890B773C6892"
+      ],
+      "numeric_refs": [
+        "NUM::D2AED1236BCDEE6B"
+      ],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "TSMC 董事长 C.C. Wei 在 2Q26 业绩电话会（发布 2026-07-16，报告期止 2026-06-30）中表示，封装产能紧张到如今已限制其客户的增长。",
+      "claim_index": 0,
+      "claim_ref": "WPCLAIM::EB188F87BD92BD4A6BF7",
+      "evidence_refs": [
+        "EV::4E05729492683532"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "PRES::265181C995279FAE"
+      ],
+      "claim": "NVIDIA 10-Q 披露 hyperscaler 收入环比增长且仍约占数据中心收入 50%，其余 50% 来自 AI Cloud、工业、企业与主权客户；这是 NVIDIA 自身客户结构事实，不证明 Dell 客户结构、订单或收入同构。",
+      "claim_index": 5,
+      "claim_ref": "WPCLAIM::F2E9BB4B2AF8901A7146",
+      "evidence_refs": [
+        "EV::D86534E903882A43"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "source_bound_authority_refs": [
+        "PRES::265181C995279FAE"
+      ]
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority": "sourced_fact",
+      "authority_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::33642A79CE277E0B",
+        "NUM::55D71667B5DA8AF0",
+        "NUM::AB89B02ADCCB77E0",
+        "REL::B60164179DFFDF5A",
+        "REL::E773B8CD872C906A"
+      ],
+      "claim": "毛利率与经营利润率反向运动：Q1 FY27 毛利率 17.75% vs Q1 FY26 21.12%（约 −3.4pp），经营利润率 8.34% vs 4.98%（约 +3.4pp），均为授权确定性派生数值。",
+      "claim_index": 1,
+      "claim_ref": "WPCLAIM::F4BDA53367BF22848102",
+      "evidence_refs": [
+        "EV::7F4D7E6762C21D83"
+      ],
+      "numeric_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::33642A79CE277E0B",
+        "NUM::55D71667B5DA8AF0",
+        "NUM::AB89B02ADCCB77E0"
+      ],
+      "numeric_relation_refs": [
+        "REL::B60164179DFFDF5A",
+        "REL::E773B8CD872C906A"
+      ]
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "10-K 披露：FY2025 营运资金主要受 AI 动态影响，导致库存、应收账款与应付账款水平上升——仅方向/机制，无产品级金额，也不能逐项外推至 Q1 FY2027 各科目增量。",
+      "claim_index": 6,
+      "claim_ref": "WPCLAIM::FBCC1D435E8AEBCDAB77",
+      "evidence_refs": [
+        "EV::A7BD099BA46F320B"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "大额 AI 订单需更多关键部件备货与营运资金，取消或延迟可导致现金流压力与过量/过时库存（10-K，风险披露非已发生损失）；AI 销售集中于少数大客户，大单波动、延迟与取消削弱需求可持续性，但前五大客户占比与取消率未披露。",
+      "claim_index": 5,
+      "claim_ref": "WPCLAIM::FC2C8B1EA97D7EF82311",
+      "evidence_refs": [
+        "EV::9006E2D4E0F61CCF",
+        "EV::ADBB7A86C8E7D99D"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "authority": "not_inferable",
+      "authority_refs": [],
+      "claim": "已审文字稿不含产能利用率、良率或 HBM 产能/分配数字，故无法判断上游紧张是在缓解还是加剧。",
+      "claim_index": 4,
+      "claim_ref": "WPCLAIM::FD2A12974E662B15FF20",
+      "evidence_refs": [
+        "EV::4E05729492683532"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority": "sourced_fact",
+      "authority_refs": [],
+      "claim": "FY26 传统服务器需求超过供给带来年末增量 backlog（10-K），说明 backlog 增长可能部分来自供给排队而非纯新增需求；该先例针对传统服务器，不直接证明 AI backlog 的组成或占比。",
+      "claim_index": 3,
+      "claim_ref": "WPCLAIM::FE154A0C1821845B5254",
+      "evidence_refs": [
+        "EV::468CA2DB8E860671"
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": []
+    }
+  ],
+  "coverage_receipt": {
+    "all_selected_refs_resolved": true,
+    "all_source_bound_authority_refs_resolved": true,
+    "claim_count": 57,
+    "claim_with_source_bound_authority_count": 6,
+    "evidence_ref_count": 20,
+    "gap_ref_count": 10,
+    "numeric_ref_count": 23,
+    "numeric_relation_ref_count": 9,
+    "relation_operand_numeric_ref_count": 18,
+    "research_estimate_ref_count": 2,
+    "research_estimates_granted_output_authority": false,
+    "source_bound_bounded_presentation_addition_count": 4,
+    "source_bound_numeric_fact_addition_count": 3,
+    "source_temporal_authority_addition_count": 1,
+    "workpaper_count": 6,
+    "writer_admitted_claim_count": 56,
+    "writer_forbidden_authority_count": 2,
+    "writer_forbidden_claim_count": 1
+  },
+  "evidence_authority": [
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::0063F22F643B94ED",
+      "publication_date": "2026-05-28",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-05-01",
+      "source_tier": "official_hosted_management_call_transcript",
+      "source_type": "EARNINGS_CALL_TRANSCRIPT"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::041AEF89A154F4FC",
+      "publication_date": "2026-03-16",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-01-30",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-K"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::07899638B93E4E3A",
+      "publication_date": "2026-05-28",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-05-28",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "source_type": "8-K"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::2A7103750D79EEDC",
+      "publication_date": "2026-03-16",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-01-30",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-K"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::32A6B092D3316769",
+      "publication_date": "2026-03-16",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-01-30",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-K"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::38BBF02CB241E81D",
+      "publication_date": "2026-05-28",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-05-01",
+      "source_tier": "official_hosted_management_call_transcript",
+      "source_type": "EARNINGS_CALL_TRANSCRIPT"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::468CA2DB8E860671",
+      "publication_date": "2026-03-16",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-01-30",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-K"
+    },
+    {
+      "evidence_owner_ticker": "TSM",
+      "evidence_ref": "EV::4E05729492683532",
+      "publication_date": "2026-07-16",
+      "relationship_directions": [
+        "evidence_owner_own_supply_capacity_or_constraint",
+        "consumer_case_ecosystem_readthrough_only"
+      ],
+      "source_reporting_period_end": "2026-06-30",
+      "source_tier": "official_hosted_management_call_transcript",
+      "source_type": "EARNINGS_CALL_TRANSCRIPT"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::5388E016C17032C1",
+      "publication_date": "2025-12-09",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2025-10-31",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-Q"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::734A9C177164E08E",
+      "publication_date": "2026-05-28",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-05-28",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "source_type": "8-K"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::7F4D7E6762C21D83",
+      "publication_date": "2026-05-28",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-05-28",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "source_type": "8-K"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::9006E2D4E0F61CCF",
+      "publication_date": "2026-05-28",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-05-01",
+      "source_tier": "official_hosted_management_call_transcript",
+      "source_type": "EARNINGS_CALL_TRANSCRIPT"
+    },
+    {
+      "evidence_owner_ticker": "NVDA",
+      "evidence_ref": "EV::A74F01276941482E",
+      "publication_date": "2026-05-20",
+      "relationship_directions": [
+        "supplier_to_subject"
+      ],
+      "source_reporting_period_end": "2026-04-26",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-Q"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::A7BD099BA46F320B",
+      "publication_date": "2026-03-16",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-01-30",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-K"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::ABAB2A6B49DD71A9",
+      "publication_date": "2025-12-09",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2025-10-31",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-Q"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::ADBB7A86C8E7D99D",
+      "publication_date": "2026-03-16",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-01-30",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-K"
+    },
+    {
+      "evidence_owner_ticker": "NVDA",
+      "evidence_ref": "EV::BA594865DB45F850",
+      "publication_date": "2025-11-19",
+      "relationship_directions": [
+        "evidence_owner_own_supply_capacity_or_constraint"
+      ],
+      "source_reporting_period_end": "2025-10-26",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-Q"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::C5DB890B773C6892",
+      "publication_date": "2026-05-28",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-05-28",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "source_type": "8-K"
+    },
+    {
+      "evidence_owner_ticker": "DELL",
+      "evidence_ref": "EV::CAD2B8E9B11D864E",
+      "publication_date": "2026-05-28",
+      "relationship_directions": [
+        "subject_self_disclosure"
+      ],
+      "source_reporting_period_end": "2026-05-28",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "source_type": "8-K"
+    },
+    {
+      "evidence_owner_ticker": "NVDA",
+      "evidence_ref": "EV::D86534E903882A43",
+      "publication_date": "2026-05-20",
+      "relationship_directions": [
+        "supplier_to_subject"
+      ],
+      "source_reporting_period_end": "2026-04-26",
+      "source_tier": "primary_sec_filing",
+      "source_type": "10-Q"
+    }
+  ],
+  "gap_authority": [
+    {
+      "business_reason_zh": "现有材料说明订单到交付可能非线性，也披露客户集中和取消风险，但没有量化本季是否存在提前采购或后续消化。",
+      "facet_id": "pull_forward_or_digestion",
+      "gap_code": "commercial_data_gap",
+      "gap_ref": "GAP::00730082A5C08C4C",
+      "slot_id": "demand_volume_quality",
+      "supplement_direction_zh": "后续定向查找订单取消、交付节奏、客户库存和管理层关于 pull-forward 或 digestion 的明确表述。"
+    },
+    {
+      "business_reason_zh": "来源给出了风险和监控指标，但没有替研究者定义 thesis 失效阈值。",
+      "facet_id": "observable_invalidation_threshold",
+      "gap_code": "threshold_not_observable",
+      "gap_ref": "GAP::04EDD7700A1409F8",
+      "slot_id": "counterevidence_and_what_would_change",
+      "supplement_direction_zh": "阈值应由研究方法或用户假设冻结，不能伪装成公司披露。"
+    },
+    {
+      "business_reason_zh": "AI 服务器收入没有配套出货台数或等价算力单位。",
+      "facet_id": "volume_or_units",
+      "gap_code": "metric_not_disclosed",
+      "gap_ref": "GAP::14D67654F535F105",
+      "slot_id": "pricing_mix_value_capture",
+      "supplement_direction_zh": "查找公司演示、产业出货数据或保留商业数据缺口。"
+    },
+    {
+      "business_reason_zh": "现有材料披露收入和 mix，但未披露 AI 服务器 ASP。",
+      "facet_id": "price_or_asp",
+      "gap_code": "metric_not_disclosed",
+      "gap_ref": "GAP::34844D3F9935C0F5",
+      "slot_id": "pricing_mix_value_capture",
+      "supplement_direction_zh": "优先寻找管理层 prepared remarks、产品价格数据或明确的价格/配置桥。"
+    },
+    {
+      "business_reason_zh": "公司披露 AI 服务器 mix 压低毛利率，但没有把收入变化拆成价格、台数和配置组合三部分。",
+      "facet_id": "price_volume_mix_bridge",
+      "gap_code": "formula_input_missing",
+      "gap_ref": "GAP::52DCB2B65532C103",
+      "slot_id": "pricing_mix_value_capture",
+      "supplement_direction_zh": "需要产品 ASP、出货量或可复算的配置桥；否则保持不可推断。"
+    },
+    {
+      "business_reason_zh": "供应链资料能证明产品或制程在爬坡，但没有说明新增容量何时释放、其中多少分配给 Dell。",
+      "facet_id": "capacity_release_timing",
+      "gap_code": "relationship_allocation_unproven",
+      "gap_ref": "GAP::AD8E45538482CAB2",
+      "slot_id": "capacity_inputs_execution",
+      "supplement_direction_zh": "后续只接受供应商官方产能时间表、Dell 自述或可验证的分配证据。"
+    },
+    {
+      "business_reason_zh": "资料给出可持续跟踪的订单、收入、利润、现金和监管风险，但没有替研究者定义可操作的季度失效阈值。",
+      "facet_id": "observable_quarterly_threshold",
+      "gap_code": "threshold_not_observable",
+      "gap_ref": "GAP::B070D38D076F342B",
+      "slot_id": "counterevidence_and_what_would_change",
+      "supplement_direction_zh": "由后续研究方法层基于基准值和用户风险偏好冻结阈值，并保持与公司披露分离。"
+    },
+    {
+      "business_reason_zh": "产品爬坡和先进制程收入占比不等于产能利用率或良率。",
+      "facet_id": "utilization_or_yield",
+      "gap_code": "commercial_data_gap",
+      "gap_ref": "GAP::C2EC64A79D8F5481",
+      "slot_id": "capacity_inputs_execution",
+      "supplement_direction_zh": "寻找供应商 prepared remarks、产能/良率披露或保留商业数据缺口。"
+    },
+    {
+      "business_reason_zh": "Dell 已披露 AI 动态提高库存、应收和应付，并说明大单会占用营运资金；但未披露 AI 产品级金额、周转天数桥或各科目由 AI 导致的具体增量。",
+      "facet_id": "ai_working_capital_absorption",
+      "gap_code": "magnitude_and_product_attribution_not_disclosed",
+      "gap_ref": "GAP::EF4839B4BF55ADD0",
+      "slot_id": "cash_conversion_balance_sheet",
+      "supplement_direction_zh": "正式研究可使用方向和机制；如需量化归属，只接受 Dell 后续披露或独立受控估算，并明确标注为估算。"
+    },
+    {
+      "business_reason_zh": "美光候选讲 DDR5、SOCAMM2 和 SSD，没有 HBM 产能、良率或 Dell 分配。",
+      "facet_id": "high_bandwidth_memory_supply",
+      "gap_code": "commercial_data_gap",
+      "gap_ref": "GAP::FF2E3CECAE969E84",
+      "slot_id": "capacity_inputs_execution",
+      "supplement_direction_zh": "外源补充应定向 HBM 产能、供应紧张度和分配，而非泛内存新闻。"
+    }
+  ],
+  "presentation_authority": [
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::00D69747B4DDA649",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 ai server revenue: $16.1B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_management_reported_actual_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "16.1",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "16100000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::00D69747B4DDA649"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::0E289449BE9085EE",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 inventory: $15.052B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": null,
+        "rendered_value": "15.052",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "15052000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::0E289449BE9085EE"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::16A411DA0FC0209E",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 capital expenditures: $963M",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "963",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "963000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::16A411DA0FC0209E"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::1BB4D30C6329CD27",
+      "display_surface": "DELL FY2026 Q1 ended 2025-05-02 operating margin: 4.98%",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_derived_numeric_fact",
+        "formula_trace": {
+          "formula": "operating_income / revenue * 100",
+          "input_metrics": [
+            "operating_income",
+            "revenue"
+          ],
+          "input_numeric_fact_ids": [
+            "NUMFACT::416a05649a4388893a329251eaeb8fd2",
+            "NUMFACT::d20cb5401eb4900c5bb901433da74094",
+            "NUMFACT::e1dee2e8177e4083c8e0c329aefdb847",
+            "NUMFACT::e883177575d94345e0d1b33ad70a2fc9"
+          ],
+          "operation": "divide_percent"
+        },
+        "lossless": false,
+        "period_end": "2025-05-02",
+        "period_start": "2025-02-01",
+        "rendered_value": "4.98",
+        "rule": "round_half_up_two_decimal_percent",
+        "source_value": "4.983317649071776884250149713405766",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::1BB4D30C6329CD27"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::33642A79CE277E0B",
+      "display_surface": "DELL FY2026 Q1 ended 2025-05-02 gross margin: 21.12%",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_derived_numeric_fact",
+        "formula_trace": {
+          "formula": "gross_profit / revenue * 100",
+          "input_metrics": [
+            "gross_profit",
+            "revenue"
+          ],
+          "input_numeric_fact_ids": [
+            "NUMFACT::386b77e0d62ecb33d811b1131fd6d129",
+            "NUMFACT::7b7a5618355f6c09e34bd10e7c28129c",
+            "NUMFACT::ce3ef34a06f3c3f1c2dd8e1d2fcc9f6b",
+            "NUMFACT::f7809c2b3add89eacab40add4811cb6a"
+          ],
+          "operation": "divide_percent"
+        },
+        "lossless": false,
+        "period_end": "2025-05-02",
+        "period_start": "2025-02-01",
+        "rendered_value": "21.12",
+        "rule": "round_half_up_two_decimal_percent",
+        "source_value": "21.11814526477885191205406792711096",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::33642A79CE277E0B"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::437B42CE857F1F0E",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 ai orders: $24.4B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_management_reported_actual_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "24.4",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "24400000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::437B42CE857F1F0E"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::465E4DEF9C78ECA6",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 free cash flow: $3.118B",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_derived_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": {
+          "formula": "operating_cash_flow - capital_expenditures",
+          "input_metrics": [
+            "operating_cash_flow",
+            "capital_expenditures"
+          ],
+          "input_numeric_fact_ids": [
+            "NUMFACT::e1a9c253c84d469c7deb2c0771d4e5e8",
+            "NUMFACT::c6f486587ea996e7db6f477f74a5bf8b"
+          ],
+          "operation": "subtract"
+        },
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "3.118",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "3118000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::465E4DEF9C78ECA6"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::48BC29582646E193",
+      "display_surface": "DELL FY2026 Q1 ended 2025-05-02 operating cash flow: $2.796B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2025-05-02",
+        "period_start": "2025-02-01",
+        "rendered_value": "2.796",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "2796000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::48BC29582646E193"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::4ED76683F363AE66",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 ai backlog: $51.3B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_management_reported_actual_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": null,
+        "rendered_value": "51.3",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "51300000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::4ED76683F363AE66"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::55D71667B5DA8AF0",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 operating margin: 8.34%",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_derived_numeric_fact",
+        "formula_trace": {
+          "formula": "operating_income / revenue * 100",
+          "input_metrics": [
+            "operating_income",
+            "revenue"
+          ],
+          "input_numeric_fact_ids": [
+            "NUMFACT::3238ac3e115b9098eab89ac6f5daeab1",
+            "NUMFACT::509abcfa06755996c4bee05ae9edc657",
+            "NUMFACT::c963c672b0371f5902a578e66973ab1f",
+            "NUMFACT::f4148be988c65981c740af16a12b8867"
+          ],
+          "operation": "divide_percent"
+        },
+        "lossless": false,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "8.34",
+        "rule": "round_half_up_two_decimal_percent",
+        "source_value": "8.339035627936681720724419506409379",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::55D71667B5DA8AF0"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::62D92399E571BF05",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 gross profit: $7.782B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "7.782",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "7782000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::62D92399E571BF05"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::6D6AEED09E8FA996",
+      "display_surface": "DELL FY2026 Q1 ended 2025-05-02 net income: $965M",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2025-05-02",
+        "period_start": "2025-02-01",
+        "rendered_value": "965",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "965000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::6D6AEED09E8FA996"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::9DDEDDD584B02E09",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 accounts payable: $45.261B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": null,
+        "rendered_value": "45.261",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "45261000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::9DDEDDD584B02E09"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::9F0CC9FBFC741998",
+      "display_surface": "DELL FY2026 Q1 ended 2025-05-02 free cash flow: $2.228B",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_derived_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": {
+          "formula": "operating_cash_flow - capital_expenditures",
+          "input_metrics": [
+            "operating_cash_flow",
+            "capital_expenditures"
+          ],
+          "input_numeric_fact_ids": [
+            "NUMFACT::0489777aa6d1b261378f553ecc97e323",
+            "NUMFACT::8e11a156773e4bdada0daf4f9af97e68"
+          ],
+          "operation": "subtract"
+        },
+        "lossless": true,
+        "period_end": "2025-05-02",
+        "period_start": "2025-02-01",
+        "rendered_value": "2.228",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "2228000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::9F0CC9FBFC741998"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::AB89B02ADCCB77E0",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 gross margin: 17.75%",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_derived_numeric_fact",
+        "formula_trace": {
+          "formula": "gross_profit / revenue * 100",
+          "input_metrics": [
+            "gross_profit",
+            "revenue"
+          ],
+          "input_numeric_fact_ids": [
+            "NUMFACT::1116955263399c160676914a5a19cceb",
+            "NUMFACT::7bb919b28f3c6ea8ded0d4a5a7fe5f0d",
+            "NUMFACT::97a35dd9f5d98091d53c0f9a38d09a5b",
+            "NUMFACT::da47c233e0d813927150acf14678fec3"
+          ],
+          "operation": "divide_percent"
+        },
+        "lossless": false,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "17.75",
+        "rule": "round_half_up_two_decimal_percent",
+        "source_value": "17.75010264130286027097303955111537",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::AB89B02ADCCB77E0"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::ADC81E7A547FAB94",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 revenue: $43.842B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "43.842",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "43842000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::ADC81E7A547FAB94"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::BA153FB9939D66DF",
+      "display_surface": "DELL FY2026 Q1 ended 2025-05-02 operating income: $1.165B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2025-05-02",
+        "period_start": "2025-02-01",
+        "rendered_value": "1.165",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "1165000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::BA153FB9939D66DF"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::BFE46716CAB4A99E",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 accounts receivable: $25.854B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": null,
+        "rendered_value": "25.854",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "25854000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::BFE46716CAB4A99E"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::C0D63370A8F4EE85",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 net income: $3.438B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "3.438",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "3438000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::C0D63370A8F4EE85"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::D0EA6489B2C138EE",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 operating income: $3.656B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "3.656",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "3656000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::D0EA6489B2C138EE"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::D2AED1236BCDEE6B",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 operating cash flow: $4.081B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2026-05-01",
+        "period_start": "2026-01-31",
+        "rendered_value": "4.081",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "4081000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::D2AED1236BCDEE6B"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::D3FE6492EE9F1082",
+      "display_surface": "DELL FY2026 Q1 ended 2025-05-02 gross profit: $4.937B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2025-05-02",
+        "period_start": "2025-02-01",
+        "rendered_value": "4.937",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "4937000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::D3FE6492EE9F1082"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::F0945BCA2DE9CE3B",
+      "display_surface": "DELL FY2026 Q1 ended 2025-05-02 capital expenditures: $568M",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2025-05-02",
+        "period_start": "2025-02-01",
+        "rendered_value": "568",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "568000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::F0945BCA2DE9CE3B"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_fact",
+      "authority_ref": "NUM::F8C8EB238E997BA2",
+      "display_surface": "DELL FY2026 Q1 ended 2025-05-02 revenue: $23.378B",
+      "presentation_receipt": {
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "divisor": "1000000000",
+        "formula_trace": null,
+        "lossless": true,
+        "period_end": "2025-05-02",
+        "period_start": "2025-02-01",
+        "rendered_value": "23.378",
+        "rule": "exact_power_of_thousand_compaction",
+        "source_value": "23378000000",
+        "unit": "USD"
+      },
+      "source_numeric_refs": [
+        "NUM::F8C8EB238E997BA2"
+      ],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "bounded_source_presentation",
+      "authority_ref": "PRES::1BF25CBC9F2BBB72",
+      "display_surface": "DELL FY2027 FY ai server revenue guidance: approximately $60B (company_guidance)",
+      "presentation_receipt": {
+        "claim_boundary": "Forward guidance is not a realized result, product profit, cash conversion, or standalone margin.",
+        "fact_status": "company_guidance",
+        "normalized_values": [
+          "60000000000"
+        ],
+        "period_end": null,
+        "period_start": null,
+        "point_estimate_forbidden": true,
+        "qualifier": "company guidance stated as roughly",
+        "rule": "deterministic_bounded_source_presentation",
+        "source_receipt": {
+          "evidence_owner_ticker": "DELL",
+          "evidence_ref": "EV::7F4D7E6762C21D83",
+          "publication_date": "2026-05-28",
+          "source_quote": "Full-year AI-Optimized Servers revenue expected to be roughly $60 billion",
+          "source_quote_digest": "e269ac17155b7f079c27172a9284ae78710d70840d8199626258986acb4d0d7f",
+          "source_quote_end": 658,
+          "source_quote_start": 585,
+          "source_reporting_period_end": "2026-05-28",
+          "source_tier": "company_authored_unaudited_sec_filing",
+          "source_type": "8-K",
+          "value_spans": [
+            {
+              "excerpt_end": 658,
+              "excerpt_start": 647,
+              "source_value_surface": "$60 billion"
+            }
+          ]
+        },
+        "unit": "USD",
+        "value_kind": "approximate"
+      },
+      "source_evidence_refs": [
+        "EV::7F4D7E6762C21D83"
+      ],
+      "source_numeric_refs": [],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "bounded_source_presentation",
+      "authority_ref": "PRES::265181C995279FAE",
+      "display_surface": "NVDA FY2027 Q1 ended 2026-04-26 hyperscaler share of data center revenue: approximately 50% (reported_approximation)",
+      "presentation_receipt": {
+        "claim_boundary": "This is an NVIDIA upstream concentration read-through and does not establish Dell customer concentration or demand allocation.",
+        "fact_status": "reported_approximation",
+        "normalized_values": [
+          "50"
+        ],
+        "period_end": "2026-04-26",
+        "period_start": "2026-01-26",
+        "point_estimate_forbidden": true,
+        "qualifier": "issuer-reported approximation",
+        "rule": "deterministic_bounded_source_presentation",
+        "source_receipt": {
+          "evidence_owner_ticker": "NVDA",
+          "evidence_ref": "EV::D86534E903882A43",
+          "publication_date": "2026-05-20",
+          "source_quote": "Hyperscaler revenue increased sequentially and remained at approximately 50% of Data Center revenue",
+          "source_quote_digest": "67c0bc7ea92912c588ea5af85be6afda43802a0284dcc78633024ca36cd99d2c",
+          "source_quote_end": 99,
+          "source_quote_start": 0,
+          "source_reporting_period_end": "2026-04-26",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "value_spans": [
+            {
+              "excerpt_end": 76,
+              "excerpt_start": 73,
+              "source_value_surface": "50%"
+            }
+          ]
+        },
+        "unit": "percent",
+        "value_kind": "approximate"
+      },
+      "source_evidence_refs": [
+        "EV::D86534E903882A43"
+      ],
+      "source_numeric_refs": [],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "bounded_source_presentation",
+      "authority_ref": "PRES::5342E5064E92AFD4",
+      "display_surface": "DELL FY2027 Q2 revenue guidance: $44B–$45B (company_guidance)",
+      "presentation_receipt": {
+        "claim_boundary": "Forward guidance is not a realized result and the range midpoint is not an actual fact.",
+        "fact_status": "company_guidance",
+        "normalized_values": [
+          "44000000000",
+          "45000000000"
+        ],
+        "period_end": null,
+        "period_start": null,
+        "point_estimate_forbidden": true,
+        "qualifier": "company guidance range",
+        "rule": "deterministic_bounded_source_presentation",
+        "source_receipt": {
+          "evidence_owner_ticker": "DELL",
+          "evidence_ref": "EV::7F4D7E6762C21D83",
+          "publication_date": "2026-05-28",
+          "source_quote": "Second-quarter FY27 revenue expected between $44.0 billion and $45.0 billion",
+          "source_quote_digest": "037b77d9785604ccd8606656359745ab3b100777ad84004e0406d87c41132241",
+          "source_quote_end": 230,
+          "source_quote_start": 154,
+          "source_reporting_period_end": "2026-05-28",
+          "source_tier": "company_authored_unaudited_sec_filing",
+          "source_type": "8-K",
+          "value_spans": [
+            {
+              "excerpt_end": 212,
+              "excerpt_start": 199,
+              "source_value_surface": "$44.0 billion"
+            },
+            {
+              "excerpt_end": 230,
+              "excerpt_start": 217,
+              "source_value_surface": "$45.0 billion"
+            }
+          ]
+        },
+        "unit": "USD",
+        "value_kind": "closed_range"
+      },
+      "source_evidence_refs": [
+        "EV::7F4D7E6762C21D83"
+      ],
+      "source_numeric_refs": [],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "bounded_source_presentation",
+      "authority_ref": "PRES::ADCD1ABD8032868F",
+      "display_surface": "DELL FY2027 Q1 ended 2026-05-01 ai customer count: more than 5,000 (management_threshold)",
+      "presentation_receipt": {
+        "claim_boundary": "The threshold does not reveal concentration, revenue mix, order size, retention, or cancellation behavior.",
+        "fact_status": "management_threshold",
+        "normalized_values": [
+          "5000"
+        ],
+        "period_end": "2026-05-01",
+        "period_start": null,
+        "point_estimate_forbidden": true,
+        "qualifier": "management threshold",
+        "rule": "deterministic_bounded_source_presentation",
+        "source_receipt": {
+          "evidence_owner_ticker": "DELL",
+          "evidence_ref": "EV::9006E2D4E0F61CCF",
+          "publication_date": "2026-05-28",
+          "source_quote": "Our customer count surpassed 5,000",
+          "source_quote_digest": "98f2e874a1340666a83e4f66b7817869ecdf42aaf788e26abf75db97ee8fdec5",
+          "source_quote_end": 457,
+          "source_quote_start": 423,
+          "source_reporting_period_end": "2026-05-01",
+          "source_tier": "official_hosted_management_call_transcript",
+          "source_type": "EARNINGS_CALL_TRANSCRIPT",
+          "value_spans": [
+            {
+              "excerpt_end": 457,
+              "excerpt_start": 452,
+              "source_value_surface": "5,000"
+            }
+          ]
+        },
+        "unit": "count",
+        "value_kind": "greater_than"
+      },
+      "source_evidence_refs": [
+        "EV::9006E2D4E0F61CCF"
+      ],
+      "source_numeric_refs": [],
+      "source_numeric_relation_refs": []
+    },
+    {
+      "authority_kind": "numeric_relation",
+      "authority_ref": "REL::07D0A84AC42F34A1",
+      "display_surface": "DELL operating cash flow: +45.96% (2026-05-01 versus 2025-05-02)",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_hydrated_numeric_relation",
+        "change_kind": "percent_change",
+        "comparison_period_end": "2025-05-02",
+        "current_period_end": "2026-05-01",
+        "direction": "positive",
+        "lossless": false,
+        "relation_type": "same_fiscal_quarter_year_over_year",
+        "rendered_value": "45.96",
+        "rule": "round_half_up_two_decimal_relation",
+        "source_value": "45.95851216022889842632331903",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::48BC29582646E193",
+        "NUM::D2AED1236BCDEE6B"
+      ],
+      "source_numeric_relation_refs": [
+        "REL::07D0A84AC42F34A1"
+      ]
+    },
+    {
+      "authority_kind": "numeric_relation",
+      "authority_ref": "REL::2A7F4BE26BAB956E",
+      "display_surface": "DELL capital expenditures: +69.54% (2026-05-01 versus 2025-05-02)",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_hydrated_numeric_relation",
+        "change_kind": "percent_change",
+        "comparison_period_end": "2025-05-02",
+        "current_period_end": "2026-05-01",
+        "direction": "positive",
+        "lossless": false,
+        "relation_type": "same_fiscal_quarter_year_over_year",
+        "rendered_value": "69.54",
+        "rule": "round_half_up_two_decimal_relation",
+        "source_value": "69.54225352112676056338028169",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::16A411DA0FC0209E",
+        "NUM::F0945BCA2DE9CE3B"
+      ],
+      "source_numeric_relation_refs": [
+        "REL::2A7F4BE26BAB956E"
+      ]
+    },
+    {
+      "authority_kind": "numeric_relation",
+      "authority_ref": "REL::936D10F2B7160DDD",
+      "display_surface": "DELL net income: +256.27% (2026-05-01 versus 2025-05-02)",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_hydrated_numeric_relation",
+        "change_kind": "percent_change",
+        "comparison_period_end": "2025-05-02",
+        "current_period_end": "2026-05-01",
+        "direction": "positive",
+        "lossless": false,
+        "relation_type": "same_fiscal_quarter_year_over_year",
+        "rendered_value": "256.27",
+        "rule": "round_half_up_two_decimal_relation",
+        "source_value": "256.2694300518134715025906736",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::6D6AEED09E8FA996",
+        "NUM::C0D63370A8F4EE85"
+      ],
+      "source_numeric_relation_refs": [
+        "REL::936D10F2B7160DDD"
+      ]
+    },
+    {
+      "authority_kind": "numeric_relation",
+      "authority_ref": "REL::9A1FC36EBF79DDDC",
+      "display_surface": "DELL free cash flow: +39.95% (2026-05-01 versus 2025-05-02)",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_hydrated_numeric_relation",
+        "change_kind": "percent_change",
+        "comparison_period_end": "2025-05-02",
+        "current_period_end": "2026-05-01",
+        "direction": "positive",
+        "lossless": false,
+        "relation_type": "same_fiscal_quarter_year_over_year",
+        "rendered_value": "39.95",
+        "rule": "round_half_up_two_decimal_relation",
+        "source_value": "39.9461400359066427289048474",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::465E4DEF9C78ECA6",
+        "NUM::9F0CC9FBFC741998"
+      ],
+      "source_numeric_relation_refs": [
+        "REL::9A1FC36EBF79DDDC"
+      ]
+    },
+    {
+      "authority_kind": "numeric_relation",
+      "authority_ref": "REL::A4862061DE7A96C8",
+      "display_surface": "DELL gross profit: +57.63% (2026-05-01 versus 2025-05-02)",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_hydrated_numeric_relation",
+        "change_kind": "percent_change",
+        "comparison_period_end": "2025-05-02",
+        "current_period_end": "2026-05-01",
+        "direction": "positive",
+        "lossless": false,
+        "relation_type": "same_fiscal_quarter_year_over_year",
+        "rendered_value": "57.63",
+        "rule": "round_half_up_two_decimal_relation",
+        "source_value": "57.62608871784484504759975694",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::62D92399E571BF05",
+        "NUM::D3FE6492EE9F1082"
+      ],
+      "source_numeric_relation_refs": [
+        "REL::A4862061DE7A96C8"
+      ]
+    },
+    {
+      "authority_kind": "numeric_relation",
+      "authority_ref": "REL::B60164179DFFDF5A",
+      "display_surface": "DELL gross margin: -3.37pp (2026-05-01 versus 2025-05-02)",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_hydrated_numeric_relation",
+        "change_kind": "percentage_point_change",
+        "comparison_period_end": "2025-05-02",
+        "current_period_end": "2026-05-01",
+        "direction": "negative",
+        "lossless": false,
+        "relation_type": "same_fiscal_quarter_year_over_year",
+        "rendered_value": "-3.37",
+        "rule": "round_half_up_two_decimal_relation",
+        "source_value": "-3.368042623475991641081028376",
+        "unit": "percentage_points"
+      },
+      "source_numeric_refs": [
+        "NUM::33642A79CE277E0B",
+        "NUM::AB89B02ADCCB77E0"
+      ],
+      "source_numeric_relation_refs": [
+        "REL::B60164179DFFDF5A"
+      ]
+    },
+    {
+      "authority_kind": "numeric_relation",
+      "authority_ref": "REL::E07667E373A33286",
+      "display_surface": "DELL revenue: +87.54% (2026-05-01 versus 2025-05-02)",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_hydrated_numeric_relation",
+        "change_kind": "percent_change",
+        "comparison_period_end": "2025-05-02",
+        "current_period_end": "2026-05-01",
+        "direction": "positive",
+        "lossless": false,
+        "relation_type": "same_fiscal_quarter_year_over_year",
+        "rendered_value": "87.54",
+        "rule": "round_half_up_two_decimal_relation",
+        "source_value": "87.53528958850201043716314484",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::ADC81E7A547FAB94",
+        "NUM::F8C8EB238E997BA2"
+      ],
+      "source_numeric_relation_refs": [
+        "REL::E07667E373A33286"
+      ]
+    },
+    {
+      "authority_kind": "numeric_relation",
+      "authority_ref": "REL::E3A67501DFA73ACF",
+      "display_surface": "DELL operating income: +213.82% (2026-05-01 versus 2025-05-02)",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_hydrated_numeric_relation",
+        "change_kind": "percent_change",
+        "comparison_period_end": "2025-05-02",
+        "current_period_end": "2026-05-01",
+        "direction": "positive",
+        "lossless": false,
+        "relation_type": "same_fiscal_quarter_year_over_year",
+        "rendered_value": "213.82",
+        "rule": "round_half_up_two_decimal_relation",
+        "source_value": "213.8197424892703862660944206",
+        "unit": "percent"
+      },
+      "source_numeric_refs": [
+        "NUM::BA153FB9939D66DF",
+        "NUM::D0EA6489B2C138EE"
+      ],
+      "source_numeric_relation_refs": [
+        "REL::E3A67501DFA73ACF"
+      ]
+    },
+    {
+      "authority_kind": "numeric_relation",
+      "authority_ref": "REL::E773B8CD872C906A",
+      "display_surface": "DELL operating margin: +3.36pp (2026-05-01 versus 2025-05-02)",
+      "presentation_receipt": {
+        "authority_mode": "deterministically_hydrated_numeric_relation",
+        "change_kind": "percentage_point_change",
+        "comparison_period_end": "2025-05-02",
+        "current_period_end": "2026-05-01",
+        "direction": "positive",
+        "lossless": false,
+        "relation_type": "same_fiscal_quarter_year_over_year",
+        "rendered_value": "3.36",
+        "rule": "round_half_up_two_decimal_relation",
+        "source_value": "3.355717978864904836474269793",
+        "unit": "percentage_points"
+      },
+      "source_numeric_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::55D71667B5DA8AF0"
+      ],
+      "source_numeric_relation_refs": [
+        "REL::E773B8CD872C906A"
+      ]
+    },
+    {
+      "authority_kind": "source_temporal_authority",
+      "authority_ref": "TEMP::D255757DD75AC219",
+      "display_surface": "source reporting period ended 2025-10-31",
+      "presentation_receipt": {
+        "date": "2025-10-31",
+        "rule": "typed_source_temporal_rendering",
+        "temporal_kind": "source_reporting_period_end"
+      },
+      "source_evidence_refs": [
+        "EV::5388E016C17032C1"
+      ],
+      "source_numeric_refs": [],
+      "source_numeric_relation_refs": []
+    }
+  ],
+  "schema_version": "fin_ia_multi_agent_report_authority_catalog_v1_1",
+  "source_bound_program_digest": "b0a653cdb03da83a5741922e48b4634ddc54ba94aa81a69d498881dd28ed53f3",
+  "workpaper_digests": [
+    "20eb8138bdba305e66b32653420a16f510dd755700744eef0e64ff87f947b0e1",
+    "2907a8681676ecf076e26f8a6e3a5948ba6a268ef55bc2de0e7eacbf9040ce2b",
+    "55b868e4054edb1ed4897d0593995b249a914b8022ad76531eb2b16f1cd8383e",
+    "926c08875d164962a36c675a73f35143bc04014692f394bc979b3cf43769f9e1",
+    "adfa980ed3248b8cc30e6a04cae2f2b5aea1523345f386607c9f93685275aa37",
+    "b37abd9a4fb107beaa9a0fc3240cffa59abdeec6c14b95e57d4a904854fc9436"
+  ],
+  "workpaper_gap_bindings": [
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "gap_refs": [
+        "GAP::EF4839B4BF55ADD0"
+      ]
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "gap_refs": [
+        "GAP::04EDD7700A1409F8",
+        "GAP::B070D38D076F342B"
+      ]
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "gap_refs": [
+        "GAP::00730082A5C08C4C"
+      ]
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "gap_refs": []
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "gap_refs": [
+        "GAP::AD8E45538482CAB2",
+        "GAP::C2EC64A79D8F5481",
+        "GAP::FF2E3CECAE969E84"
+      ]
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "gap_refs": [
+        "GAP::14D67654F535F105",
+        "GAP::34844D3F9935C0F5",
+        "GAP::52DCB2B65532C103"
+      ]
+    }
+  ],
+  "writer_protection_projection": {
+    "forbidden_authority_refs": [
+      "NUM::5EF59EBA7D876FB8",
+      "NUM::8E720DA4B13E2279"
+    ],
+    "forbidden_claim_refs": [
+      "WPCLAIM::0CB4E0D7B8247BBC94E6"
+    ],
+    "protection_digest": "e81473c78211b163bbe87e3eaf0fae4e53e36f8d1d2a82fcc0bb1be7080a7b62"
+  }
+}

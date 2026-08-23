@@ -1,0 +1,288 @@
+{
+  "base_authority_catalog_digest": "80b16b0b142aa84e88ca4a8ad9f99c68a3155e3ff6c2f8ebc81ce333ebca1e60",
+  "case_identity": {
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "subject_legal_name": "Dell Technologies Inc.",
+    "subject_ticker": "DELL"
+  },
+  "decisions": [
+    {
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E"
+        }
+      ],
+      "claim_boundary": "Management-reported orders are not recognized revenue, cash collection, audited backlog conversion, or cancellation evidence.",
+      "decision": "admit_exact_numeric_fact",
+      "decision_id": "dell_demand_ai_orders_actual",
+      "evidence_ref": "EV::9006E2D4E0F61CCF",
+      "fact_status": "management_reported_actual",
+      "normalized_values": [
+        "24400000000"
+      ],
+      "period": {
+        "fiscal_period": "Q1",
+        "fiscal_year": 2027,
+        "period_end": "2026-05-01",
+        "period_role": "quarter_discrete",
+        "period_start": "2026-01-31"
+      },
+      "point_estimate_forbidden": false,
+      "qualifier": "management-reported booked orders",
+      "semantic_metric_key": "ai_orders",
+      "source_quote": "booked $24.4 billion in AI orders",
+      "source_scale": "",
+      "source_value_surfaces": [
+        "$24.4 billion"
+      ],
+      "unit": "USD",
+      "value_kind": "exact_scalar"
+    },
+    {
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E"
+        }
+      ],
+      "claim_boundary": "Recognized product revenue does not establish standalone product profit, cash conversion, or a cross-period order conversion rate.",
+      "decision": "admit_exact_numeric_fact",
+      "decision_id": "dell_demand_ai_server_revenue_actual",
+      "evidence_ref": "EV::9006E2D4E0F61CCF",
+      "fact_status": "management_reported_actual",
+      "normalized_values": [
+        "16100000000"
+      ],
+      "period": {
+        "fiscal_period": "Q1",
+        "fiscal_year": 2027,
+        "period_end": "2026-05-01",
+        "period_role": "quarter_discrete",
+        "period_start": "2026-01-31"
+      },
+      "point_estimate_forbidden": false,
+      "qualifier": "management-reported recognized revenue",
+      "semantic_metric_key": "ai_server_revenue",
+      "source_quote": "recognized $16.1 billion of AI server revenue",
+      "source_scale": "",
+      "source_value_surfaces": [
+        "$16.1 billion"
+      ],
+      "unit": "USD",
+      "value_kind": "exact_scalar"
+    },
+    {
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E"
+        }
+      ],
+      "claim_boundary": "The management-defined backlog is not recognized revenue, cash, total cancellable demand, or proof of conversion cadence.",
+      "decision": "admit_exact_numeric_fact",
+      "decision_id": "dell_demand_ai_backlog_actual",
+      "evidence_ref": "EV::9006E2D4E0F61CCF",
+      "fact_status": "management_reported_actual",
+      "normalized_values": [
+        "51300000000"
+      ],
+      "period": {
+        "fiscal_period": "Q1",
+        "fiscal_year": 2027,
+        "period_end": "2026-05-01",
+        "period_role": "instant",
+        "period_start": null
+      },
+      "point_estimate_forbidden": false,
+      "qualifier": "management-reported record backlog",
+      "semantic_metric_key": "ai_backlog",
+      "source_quote": "record $51.3 billion of AI backlog",
+      "source_scale": "",
+      "source_value_surfaces": [
+        "$51.3 billion"
+      ],
+      "unit": "USD",
+      "value_kind": "exact_scalar"
+    },
+    {
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E"
+        }
+      ],
+      "claim_boundary": "The threshold does not reveal concentration, revenue mix, order size, retention, or cancellation behavior.",
+      "decision": "admit_bounded_presentation",
+      "decision_id": "dell_demand_customer_count_threshold",
+      "evidence_ref": "EV::9006E2D4E0F61CCF",
+      "fact_status": "management_threshold",
+      "normalized_values": [
+        "5000"
+      ],
+      "period": {
+        "fiscal_period": "Q1",
+        "fiscal_year": 2027,
+        "period_end": "2026-05-01",
+        "period_role": "instant",
+        "period_start": null
+      },
+      "point_estimate_forbidden": true,
+      "qualifier": "management threshold",
+      "semantic_metric_key": "ai_customer_count",
+      "source_quote": "Our customer count surpassed 5,000",
+      "source_scale": "",
+      "source_value_surfaces": [
+        "5,000"
+      ],
+      "unit": "count",
+      "value_kind": "greater_than"
+    },
+    {
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::OPERATING_PERFORMANCE",
+          "claim_ref": "WPCLAIM::32A530B75A1BF63D4CDC"
+        },
+        {
+          "agent_id": "AGENT::VALUE_CAPTURE",
+          "claim_ref": "WPCLAIM::371A4BE3C0DA1E69045C"
+        }
+      ],
+      "claim_boundary": "Forward guidance is not a realized result, product profit, cash conversion, or standalone margin.",
+      "decision": "admit_bounded_presentation",
+      "decision_id": "dell_guidance_ai_server_revenue_approximation",
+      "evidence_ref": "EV::7F4D7E6762C21D83",
+      "fact_status": "company_guidance",
+      "normalized_values": [
+        "60000000000"
+      ],
+      "period": {
+        "fiscal_period": "FY",
+        "fiscal_year": 2027,
+        "period_end": "",
+        "period_role": "forward_guidance",
+        "period_start": null
+      },
+      "point_estimate_forbidden": true,
+      "qualifier": "company guidance stated as roughly",
+      "semantic_metric_key": "ai_server_revenue_guidance",
+      "source_quote": "Full-year AI-Optimized Servers revenue expected to be roughly $60 billion",
+      "source_scale": "",
+      "source_value_surfaces": [
+        "$60 billion"
+      ],
+      "unit": "USD",
+      "value_kind": "approximate"
+    },
+    {
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::OPERATING_PERFORMANCE",
+          "claim_ref": "WPCLAIM::486A528C3931F97EDC7B"
+        },
+        {
+          "agent_id": "AGENT::VALUE_CAPTURE",
+          "claim_ref": "WPCLAIM::371A4BE3C0DA1E69045C"
+        }
+      ],
+      "claim_boundary": "Forward guidance is not a realized result and the range midpoint is not an actual fact.",
+      "decision": "admit_bounded_presentation",
+      "decision_id": "dell_guidance_q2_revenue_range",
+      "evidence_ref": "EV::7F4D7E6762C21D83",
+      "fact_status": "company_guidance",
+      "normalized_values": [
+        "44000000000",
+        "45000000000"
+      ],
+      "period": {
+        "fiscal_period": "Q2",
+        "fiscal_year": 2027,
+        "period_end": "",
+        "period_role": "forward_guidance",
+        "period_start": null
+      },
+      "point_estimate_forbidden": true,
+      "qualifier": "company guidance range",
+      "semantic_metric_key": "revenue_guidance",
+      "source_quote": "Second-quarter FY27 revenue expected between $44.0 billion and $45.0 billion",
+      "source_scale": "",
+      "source_value_surfaces": [
+        "$44.0 billion",
+        "$45.0 billion"
+      ],
+      "unit": "USD",
+      "value_kind": "closed_range"
+    },
+    {
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::COUNTEREVIDENCE",
+          "claim_ref": "WPCLAIM::F2E9BB4B2AF8901A7146"
+        }
+      ],
+      "claim_boundary": "This is an NVIDIA upstream concentration read-through and does not establish Dell customer concentration or demand allocation.",
+      "decision": "admit_bounded_presentation",
+      "decision_id": "nvda_counterevidence_hyperscaler_share_approximation",
+      "evidence_ref": "EV::D86534E903882A43",
+      "fact_status": "reported_approximation",
+      "normalized_values": [
+        "50"
+      ],
+      "period": {
+        "fiscal_period": "Q1",
+        "fiscal_year": 2027,
+        "period_end": "2026-04-26",
+        "period_role": "quarter_discrete",
+        "period_start": "2026-01-26"
+      },
+      "point_estimate_forbidden": true,
+      "qualifier": "issuer-reported approximation",
+      "semantic_metric_key": "hyperscaler_share_of_data_center_revenue",
+      "source_quote": "Hyperscaler revenue increased sequentially and remained at approximately 50% of Data Center revenue",
+      "source_scale": "",
+      "source_value_surfaces": [
+        "50%"
+      ],
+      "unit": "percent",
+      "value_kind": "approximate"
+    }
+  ],
+  "review_digest": "2b6a5608411ecd9a766480164f325eccddd3b90eddb571e91ab77179df9c50ff",
+  "schema_version": "fin_ia_source_bound_numeric_authority_review_v1_0",
+  "status": "qualified_engineering_source_bound_numeric_review",
+  "successor_lineage": {
+    "claim_bindings_rebased_to_R10": true,
+    "dropped_stale_or_unneeded_decision_ids": [
+      "dell_cash_accounts_receivable_prior",
+      "dell_cash_bind_existing_accounts_receivable_current",
+      "dell_cash_bind_existing_cash_current",
+      "dell_cash_bind_existing_inventory_current",
+      "dell_cash_cash_equivalents_prior",
+      "dell_cash_inventory_prior",
+      "dell_cash_long_term_financing_receivables_current",
+      "dell_cash_long_term_financing_receivables_prior",
+      "dell_cash_short_term_financing_receivables_current",
+      "dell_cash_short_term_financing_receivables_prior"
+    ],
+    "new_evidence_or_source_span_admitted": false,
+    "predecessor_review_base_authority_catalog_digest": "97cb4b53d37f350cbca7ef7a0a8dc26292c9c8b561210f5c8c92fce41a40727d",
+    "review_semantics_changed": false
+  },
+  "temporal_decisions": [
+    {
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::VALUE_CAPTURE",
+          "claim_ref": "WPCLAIM::D804D4251D16896F29D7"
+        }
+      ],
+      "date": "2025-10-31",
+      "decision": "admit_source_reporting_period_end",
+      "decision_id": "dell_value_capture_mix_period_end",
+      "evidence_ref": "EV::5388E016C17032C1",
+      "reason_code": "period_specific_margin_mix_statement_must_not_be_restated_as_current_quarter_causality"
+    }
+  ]
+}

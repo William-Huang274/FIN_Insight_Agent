@@ -56,6 +56,14 @@ from sec_agent.research.multi_agent_content_repair import (
     expected_content_repair_submission_resume_budget,
     expected_content_reassessment_resume_budget,
 )
+from sec_agent.research.current_dynamic_writer import (
+    CURRENT_DYNAMIC_WRITER_RUN_SCOPE,
+    CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_SCHEMA_VERSION,
+    CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_STATUS,
+    CURRENT_DYNAMIC_WRITER_ZERO_CALL_SCHEMA_VERSION,
+    R10_ASSESSMENT_STATUS,
+    expected_current_dynamic_writer_budget,
+)
 
 
 CURRENT_PREFLIGHT_SCHEMA = "fin_ia_current_decision_bound_project_os_preflight_v1_0"
@@ -565,6 +573,37 @@ def _validate_artifact_binding(
     return path, payload
 
 
+def _validate_nested_artifact_binding(
+    *,
+    root: Path,
+    binding: Mapping[str, Any],
+    label: str,
+    require_json: bool = True,
+) -> tuple[Path, dict[str, Any]]:
+    expected_keys = {"ref", "sha256"}
+    digest_field = str(binding.get("digest_field") or "")
+    if digest_field:
+        expected_keys.update({"digest_field", "digest"})
+    if set(binding) != expected_keys:
+        raise ValueError(f"project_os_nested_binding_shape_invalid:{label}")
+    ref = str(binding.get("ref") or "")
+    path = _repo_path(root, ref)
+    if _sha256(path) != str(binding.get("sha256") or ""):
+        raise ValueError(f"project_os_nested_binding_sha_drift:{label}:{ref}")
+    if not require_json:
+        if digest_field:
+            raise ValueError(
+                f"project_os_nested_non_json_digest_forbidden:{label}:{ref}"
+            )
+        return path, {}
+    payload = _load_json(path)
+    if digest_field and payload.get(digest_field) != binding.get("digest"):
+        raise ValueError(
+            f"project_os_nested_binding_digest_drift:{label}:{ref}"
+        )
+    return path, payload
+
+
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -593,6 +632,14 @@ def _validate_fixed_pack_decision(
         )
     if decision.get("schema_version") == CURRENT_DYNAMIC_MULTI_AGENT_DECISION_SCHEMA:
         return _validate_current_dynamic_multi_agent_decision(
+            root=root,
+            decision=decision,
+        )
+    if (
+        decision.get("schema_version")
+        == CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_SCHEMA_VERSION
+    ):
+        return _validate_current_dynamic_writer_decision(
             root=root,
             decision=decision,
         )
@@ -6673,6 +6720,375 @@ def _validate_dynamic_single_cell_decision(
         "dynamic_single_cell_successor": True,
         "micro_judgment_successor": False,
         "node_profiles": profiles,
+    }
+
+
+def _validate_current_dynamic_writer_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    expected_equal = {
+        "schema_version": CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_SCHEMA_VERSION,
+        "status": CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "MULTI_AGENT::DELL::R10_PROTECTED_WRITER",
+        "run_scope_id": CURRENT_DYNAMIC_WRITER_RUN_SCOPE,
+        "evidence_mode": (
+            "immutable_R10_workpapers_typed_authority_zero_new_evidence"
+        ),
+        "next_authorized_scope": CURRENT_DYNAMIC_WRITER_RUN_SCOPE,
+        "replacement_is_new_logical_node_not_retry": True,
+        "credential_presence_required": True,
+        "R10_authority_public_private_assessment_required": True,
+        "R10_workpapers_and_Lead_reuse_required": True,
+        "protected_report_contract_required": True,
+        "source_bound_numeric_authority_required": True,
+        "material_and_L3_writer_protections_required": True,
+        "deterministic_renderer_required": True,
+        "writer_live_authorized_after_full_gate_clean_preflight_and_fresh_authority": True,
+        "new_S1_S2_authorized": False,
+        "new_retrieval_authorized": False,
+        "external_source_network_authorized": False,
+        "upstream_agent_rerun_authorized": False,
+        "candidate_promotion_authorized": False,
+        "S3_acceptance_authorized": False,
+        "heterogeneous_generalization_authorized": False,
+        "product_publication_authorized": False,
+        "release_authorized": False,
+    }
+    expected_keys = set(expected_equal) | {
+        "bound_inputs",
+        "implementation_bindings",
+        "execution_budget",
+        "token_budget_basis",
+        "authority_statement",
+        "decision_digest",
+    }
+    unsigned = dict(decision)
+    supplied_digest = str(unsigned.pop("decision_digest", ""))
+    if not (
+        set(decision) == expected_keys
+        and all(decision.get(key) == value for key, value in expected_equal.items())
+        and supplied_digest == canonical_digest(unsigned)
+        and len(str(decision.get("authority_statement") or "")) >= 160
+    ):
+        raise ValueError("project_os_current_dynamic_writer_identity_invalid")
+
+    expected_budget = expected_current_dynamic_writer_budget()
+    if dict(decision.get("execution_budget") or {}) != expected_budget:
+        raise ValueError("project_os_current_dynamic_writer_budget_invalid")
+
+    bound = decision.get("bound_inputs")
+    expected_bound_names = {
+        "R10_authority",
+        "R10_public_result",
+        "R10_private_full_result",
+        "R10_assessment",
+        "R9_private_full_result",
+        "R5_private_full_result",
+        "source_bound_review",
+        "source_bound_program",
+        "writer_authority_catalog",
+        "writer_protection_contract",
+        "zero_call_result",
+        "analysis_profile",
+        "submission_profile",
+    }
+    if not isinstance(bound, Mapping) or set(bound) != expected_bound_names:
+        raise ValueError("project_os_current_dynamic_writer_bound_inputs_invalid")
+    payloads: dict[str, dict[str, Any]] = {}
+    paths: dict[str, Path] = {}
+    for name in sorted(expected_bound_names):
+        binding = bound[name]
+        if not isinstance(binding, Mapping):
+            raise ValueError(
+                f"project_os_current_dynamic_writer_binding_invalid:{name}"
+            )
+        path, payload = _validate_nested_artifact_binding(
+            root=root,
+            binding=binding,
+            label="current_dynamic_writer:" + name,
+        )
+        paths[name] = path
+        payloads[name] = payload
+
+    expected_implementation_refs = (
+        "src/sec_agent/research/current_dynamic_writer.py",
+        "src/sec_agent/research/multi_agent_report_authority.py",
+        "src/sec_agent/research/source_bound_numeric_authority.py",
+        "src/sec_agent/project_os_preflight.py",
+        "scripts/research/run_s3_current_dynamic_writer_zero_call.py",
+        "scripts/research/run_s3_current_dynamic_writer_live.py",
+    )
+    implementation = decision.get("implementation_bindings")
+    if not (
+        isinstance(implementation, list)
+        and tuple(str(row.get("ref") or "") for row in implementation)
+        == expected_implementation_refs
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_implementation_set_invalid"
+        )
+    for index, binding in enumerate(implementation):
+        if not isinstance(binding, Mapping):
+            raise ValueError(
+                "project_os_current_dynamic_writer_implementation_binding_invalid"
+            )
+        _validate_nested_artifact_binding(
+            root=root,
+            binding=binding,
+            label=f"current_dynamic_writer:implementation:{index}",
+            require_json=False,
+        )
+
+    r10_authority = payloads["R10_authority"]
+    r10_public = payloads["R10_public_result"]
+    r10_private = payloads["R10_private_full_result"]
+    assessment = payloads["R10_assessment"]
+    r9_private = payloads["R9_private_full_result"]
+    r5_private = payloads["R5_private_full_result"]
+    r10_public_body = dict(r10_public)
+    r10_public_digest = str(r10_public_body.pop("result_digest", ""))
+    r10_private_body = dict(r10_private)
+    r10_private_digest = str(r10_private_body.pop("full_result_digest", ""))
+    r9_private_body = dict(r9_private)
+    r9_private_digest = str(r9_private_body.pop("full_result_digest", ""))
+    r5_private_body = dict(r5_private)
+    r5_private_digest = str(r5_private_body.pop("full_result_digest", ""))
+    workpapers = r10_private.get("final_workpapers") or []
+    lead_rounds = (r10_private.get("lead_bundle") or {}).get("rounds") or []
+    lead = (
+        lead_rounds[0].get("decision")
+        if len(lead_rounds) == 1 and isinstance(lead_rounds[0], Mapping)
+        else {}
+    )
+    acceptance = assessment.get("acceptance") or {}
+    if not (
+        r10_authority.get("status")
+        == "signed_exact_once_DELL_current_dynamic_multi_agent_content_reassessment_resume"
+        and r10_public.get("status")
+        == "completed_contract_valid_reassessment_pending"
+        and r10_private.get("status")
+        == "completed_contract_valid_reassessment_pending"
+        and r10_public_digest == canonical_digest(r10_public_body)
+        and r10_private_digest == canonical_digest(r10_private_body)
+        and r9_private_digest == canonical_digest(r9_private_body)
+        and r5_private_digest == canonical_digest(r5_private_body)
+        and r10_public.get("private_full_result_ref")
+        == str(bound["R10_private_full_result"]["ref"])
+        and r10_public.get("private_full_result_sha256")
+        == _sha256(paths["R10_private_full_result"])
+        and assessment.get("status") == R10_ASSESSMENT_STATUS
+        and assessment.get("source_result_sha256")
+        == _sha256(paths["R10_public_result"])
+        and assessment.get("source_result_digest") == r10_public_digest
+        and assessment.get("private_full_result_sha256")
+        == _sha256(paths["R10_private_full_result"])
+        and assessment.get("private_full_result_digest") == r10_private_digest
+        and assessment.get("authority_sha256") == _sha256(paths["R10_authority"])
+        and assessment.get("material_residual_findings") == []
+        and len(assessment.get("original_finding_dispositions") or []) == 7
+        and len(assessment.get("protected_writer_requirements") or []) == 5
+        and acceptance.get("all_seven_original_material_findings_closed") is True
+        and acceptance.get("independent_L1_pass") is True
+        and acceptance.get("independent_L2_pass") is True
+        and acceptance.get("writer_zero_call_engineering_eligible") is True
+        and acceptance.get("writer_live_authorized") is False
+        and len(workpapers) == 6
+        and tuple(str(row.get("agent_id") or "") for row in workpapers)
+        == SPECIALIST_AGENT_IDS
+        and lead.get("lead_agent_id") == "AGENT::RESEARCH_LEAD"
+        and lead.get("next_state") == "proceed_to_evaluation"
+        and (r10_private.get("execution") or {}).get("new_provider_calls_attempted")
+        == 4
+        and (r10_private.get("execution") or {}).get("new_provider_http_200") == 4
+        and (r10_private.get("execution") or {}).get("retries") == 0
+        and (r10_private.get("claims") or {}).get("writer_called") is False
+        and r10_private.get("R9_private_ref")
+        == str(bound["R9_private_full_result"]["ref"])
+        and r10_private.get("R9_private_full_result_digest") == r9_private_digest
+        and r9_private.get("status")
+        == "completed_contract_valid_reassessment_pending"
+        and r5_private.get("status")
+        == "completed_contract_valid_assessment_pending"
+    ):
+        raise ValueError("project_os_current_dynamic_writer_R10_chain_invalid")
+
+    review = payloads["source_bound_review"]
+    program = payloads["source_bound_program"]
+    catalog = payloads["writer_authority_catalog"]
+    protection = payloads["writer_protection_contract"]
+    zero = payloads["zero_call_result"]
+    for payload, digest_field, label in (
+        (review, "review_digest", "review"),
+        (program, "program_digest", "program"),
+        (catalog, "authority_catalog_digest", "catalog"),
+        (protection, "protection_digest", "protection"),
+        (zero, "result_digest", "zero_call"),
+    ):
+        body = dict(payload)
+        supplied = str(body.pop(digest_field, ""))
+        if supplied != canonical_digest(body):
+            raise ValueError(
+                f"project_os_current_dynamic_writer_artifact_digest_invalid:{label}"
+            )
+    zero_source = zero.get("source_bindings")
+    expected_zero_source_names = {
+        "R10_authority",
+        "R10_public_result",
+        "R10_private_full_result",
+        "R10_assessment",
+        "R9_public_result",
+        "R9_private_full_result",
+        "R5_public_result",
+        "R5_private_full_result",
+        "predecessor_source_bound_review",
+    }
+    if not isinstance(zero_source, Mapping) or set(zero_source) != expected_zero_source_names:
+        raise ValueError(
+            "project_os_current_dynamic_writer_zero_source_bindings_invalid"
+        )
+    for name, binding in zero_source.items():
+        if not isinstance(binding, Mapping):
+            raise ValueError(
+                "project_os_current_dynamic_writer_zero_source_binding_invalid"
+            )
+        _validate_nested_artifact_binding(
+            root=root,
+            binding=binding,
+            label="current_dynamic_writer:zero_source:" + str(name),
+        )
+    digests = zero.get("compiled_artifact_digests") or {}
+    catalog_projection = catalog.get("writer_protection_projection") or {}
+    if not (
+        zero.get("schema_version") == CURRENT_DYNAMIC_WRITER_ZERO_CALL_SCHEMA_VERSION
+        and zero.get("status") == "R10_bound_protected_writer_zero_call_proven"
+        and zero.get("case_key") == "DELL"
+        and zero.get("run_scope_id") == CURRENT_DYNAMIC_WRITER_RUN_SCOPE
+        and all((zero.get("checks") or {}).values())
+        and len(zero.get("checks") or {}) >= 16
+        and dict(zero.get("execution_budget") or {}) == expected_budget
+        and (zero.get("execution") or {}).get("model_calls") == 0
+        and (zero.get("execution") or {}).get("provider_calls") == 0
+        and (zero.get("execution") or {}).get("network_calls") == 0
+        and (zero.get("execution") or {}).get("writer_called") is False
+        and digests.get("source_bound_review_digest") == review.get("review_digest")
+        and digests.get("source_bound_program_digest") == program.get("program_digest")
+        and digests.get("writer_authority_catalog_digest")
+        == catalog.get("authority_catalog_digest")
+        and digests.get("writer_protection_digest")
+        == protection.get("protection_digest")
+        and review.get("status")
+        == "qualified_engineering_source_bound_numeric_review"
+        and (review.get("successor_lineage") or {}).get(
+            "new_evidence_or_source_span_admitted"
+        )
+        is False
+        and len(program.get("decision_receipts") or []) == 8
+        and catalog_projection.get("protection_digest")
+        == protection.get("protection_digest")
+        and len(catalog_projection.get("forbidden_claim_refs") or []) == 1
+        and len(catalog_projection.get("forbidden_authority_refs") or []) == 2
+        and protection.get("assessment_status") == R10_ASSESSMENT_STATUS
+        and protection.get(
+            "independent_post_writer_L1_L2_and_eight_dimension_review_required"
+        )
+        is True
+        and protection.get(
+            "spelled_out_numeric_or_ordinal_model_surface_forbidden"
+        )
+        is True
+        and protection.get("harness_authored_business_conclusion") is False
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_zero_call_or_contract_invalid"
+        )
+
+    analysis_profile = payloads["analysis_profile"]
+    submission_profile = payloads["submission_profile"]
+    if not (
+        analysis_profile.get("provider_id") == "deepseek"
+        and analysis_profile.get("model") == "deepseek-v4-pro"
+        and analysis_profile.get("base_url") == "https://api.deepseek.com"
+        and analysis_profile.get("endpoint") == "/chat/completions"
+        and analysis_profile.get("api_key_env") == "DEEPSEEK_API_KEY"
+        and analysis_profile.get("request_defaults")
+        == {
+            "max_tokens": 16000,
+            "stream": False,
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+        }
+        and (analysis_profile.get("authority") or {}).get("retry_count") == 0
+        and submission_profile.get("provider_id") == "deepseek"
+        and submission_profile.get("model") == "deepseek-v4-pro"
+        and submission_profile.get("base_url") == "https://api.deepseek.com"
+        and submission_profile.get("endpoint") == "/chat/completions"
+        and submission_profile.get("api_key_env") == "DEEPSEEK_API_KEY"
+        and submission_profile.get("request_defaults")
+        == {
+            "max_tokens": 12000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+        and (submission_profile.get("authority") or {}).get("retry_count") == 0
+    ):
+        raise ValueError("project_os_current_dynamic_writer_profile_invalid")
+
+    token_basis = decision.get("token_budget_basis")
+    required_fields = {
+        "node_purpose",
+        "input_scale",
+        "required_outputs",
+        "schema_burden",
+        "materiality_quality_risk",
+        "comparable_run_evidence",
+        "reasoning_profile",
+        "maximum_completion_tokens",
+        "maximum_calls",
+        "stop_and_truncation_behavior",
+    }
+    expected_nodes = {
+        "writer_analysis": (1, 16000),
+        "writer_submission": (2, 12000),
+    }
+    if not (
+        isinstance(token_basis, Mapping)
+        and set(token_basis) == set(expected_nodes)
+        and all(
+            isinstance(token_basis[node], Mapping)
+            and set(token_basis[node]) == required_fields
+            and token_basis[node].get("maximum_calls") == limits[0]
+            and token_basis[node].get("maximum_completion_tokens") == limits[1]
+            and isinstance(token_basis[node].get("required_outputs"), list)
+            and len(token_basis[node]["required_outputs"]) >= 4
+            and all(
+                len(str(token_basis[node].get(field) or "").strip()) >= 12
+                for field in required_fields
+                - {
+                    "required_outputs",
+                    "maximum_completion_tokens",
+                    "maximum_calls",
+                }
+            )
+            for node, limits in expected_nodes.items()
+        )
+        and sum(row[0] for row in expected_nodes.values())
+        == expected_budget["maximum_new_model_calls"]
+    ):
+        raise ValueError("project_os_current_dynamic_writer_token_basis_invalid")
+    return {
+        "clean_proof_status": zero["status"],
+        "provider_id": analysis_profile["provider_id"],
+        "provider_model": analysis_profile["model"],
+        "api_key_env": analysis_profile["api_key_env"],
+        "recent_provider_steps": 4,
+        "current_dynamic_multi_agent_protected_writer": True,
+        "run_scope_id": decision["run_scope_id"],
+        "execution_limits": expected_budget,
+        "node_profiles": token_basis,
+        "R10_assessment_status": assessment["status"],
+        "writer_authority_catalog_digest": catalog["authority_catalog_digest"],
+        "writer_protection_digest": protection["protection_digest"],
     }
 
 
@@ -13064,6 +13480,23 @@ def build_preflight(
                 "scope_allowance_missing"
             )
     if (
+        decision_projection.get(
+            "current_dynamic_multi_agent_protected_writer"
+        )
+        is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-088-R10-workpapers-pass-but-protected-Writer-report-"
+                "not-yet-generated"
+            ),
+            allowed_scope=CURRENT_DYNAMIC_WRITER_RUN_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("dynamic_temporal_repair_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -13209,6 +13642,40 @@ def build_preflight(
         "synced": "not_checked",
     }
     if (
+        decision_projection.get(
+            "current_dynamic_multi_agent_protected_writer"
+        )
+        is True
+    ):
+        known_boundary = (
+            "This current-baseline preflight preserves immutable R10 with six "
+            "independently accepted workpapers, one accepted Lead recheck and "
+            "all seven original material findings closed. It authorizes one "
+            "fresh protected Writer logical node: exactly one thinking analysis "
+            "call and at most two non-thinking strict submission attempts, with "
+            "the second submission allowed only after precise local contract "
+            "feedback. It reuses only R10 workpapers and typed report authority, "
+            "omits unnormalized upstream inventory values, and enforces the "
+            "same-quarter cohort, three-line cash proxy and conditional expense-"
+            "leverage protections. It permits zero upstream Agent, S1/S2, "
+            "retrieval, external source, retry, fallback, Candidate promotion or "
+            "product-pointer action. A locally valid rendered candidate still "
+            "requires an independent post-Writer L1/L2 and eight-dimension "
+            "assessment and does not authorize S3 acceptance, product acceptance, "
+            "heterogeneous generalization, publication or release."
+        )
+        required_terms = (
+            "exactly one thinking analysis call",
+            "at most two non-thinking strict submission attempts",
+            "zero upstream Agent, S1/S2, retrieval",
+            "independent post-Writer L1/L2 and eight-dimension assessment",
+            "does not authorize S3 acceptance",
+        )
+        if not all(term in known_boundary for term in required_terms):
+            raise ValueError(
+                "project_os_current_dynamic_writer_human_boundary_invalid"
+            )
+    elif (
         decision_projection.get("current_dynamic_multi_agent_content_repair")
         is True
     ):

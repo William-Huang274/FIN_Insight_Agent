@@ -31,6 +31,7 @@ from sec_agent.project_os_preflight import (
     MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
     _validate_current_dynamic_single_unit_decision,
+    _validate_current_dynamic_writer_decision,
     _validate_current_dynamic_multi_agent_content_repair_decision,
     _validate_current_dynamic_multi_agent_decision,
     _validate_current_dynamic_single_unit_semantic_repair_decision,
@@ -72,6 +73,10 @@ REPORT_REMAP_REPLACEMENT_DECISION_REF = (
 REPORT_REMAP_REFERENCE_PATCH_DECISION_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_"
     "protected_report_remap_scope_decision_v1_2.json"
+)
+CURRENT_DYNAMIC_WRITER_DECISION_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
+    "R10_protected_writer_scope_decision_v1_0.json"
 )
 DECISION_REF = (
     "configs/research/evals/"
@@ -2631,3 +2636,22 @@ def test_historical_report_reference_patch_rejects_current_runtime_drift() -> No
         match="report_remap_implementation_sha_drift",
     ):
         validate_report_remap_scope_decision(root=ROOT, decision=decision)
+
+
+def test_current_dynamic_writer_decision_binds_R10_and_three_call_ceiling() -> None:
+    decision = json.loads(
+        (ROOT / CURRENT_DYNAMIC_WRITER_DECISION_REF).read_text(encoding="utf-8")
+    )
+    projection = _validate_current_dynamic_writer_decision(
+        root=ROOT,
+        decision=decision,
+    )
+    assert projection["current_dynamic_multi_agent_protected_writer"] is True
+    assert projection["execution_limits"]["maximum_new_model_calls"] == 3
+    assert projection["execution_limits"]["writer_analysis_calls"] == 1
+    assert projection["execution_limits"][
+        "maximum_writer_submission_attempts"
+    ] == 2
+    assert projection["R10_assessment_status"].startswith(
+        "R10_contract_pass_all_seven_material_findings_closed"
+    )

@@ -7,15 +7,11 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-DELL current 动态多 Agent 已完成 R5 的六份 Specialist workpaper 与两轮 Lead 结构闭环，但独立审查在 L1／L2 发现 7 项金融语义错误，Writer 因此继续冻结。R7 发生 6 次 DeepSeek HTTP 200，Cash 与 Counterevidence 两份返修完整通过，Demand 自然草稿完成，但其 strict mapper 生成无 Evidence／NumericFact／Relation 绑定的 `bounded_inference` claim，被本地合同拒绝。
+DELL current 动态多 Agent 的 R10 六份 workpaper 已通过独立 L1／L2，原七项 material finding 全部关闭；R10 public digest=`83dc3d60...6112`、private full digest=`cab0b654...e900`，Writer 当时未调用。R10 scope 已消费，旧 decision 不能再次签权。
 
-R8 使用 fresh 7-call authority，只执行了首个 Demand strict submission：HTTP 200、完整 Tool Call、0 retry。模型可见请求包含 typed feedback 和禁止扩权约束，但返回 payload 与 R7 逐字节一致，因此同一 claim 再次以 `multi_agent_workpaper_claim_unbound` 被拒。R8 authority／output identity 已消费，Operating、Value、Lead 均未调用；R7 与 R8 terminal 及 capture 保持不可变。
+R10-bound protected Writer 零调用门现已落盘：56 条 Writer claim、38 条 typed presentation、10 个 gap；研究 estimate 不获输出权，NVDA／MU 未归一化库存 claim／NUM 从 Tool catalog 移除，同季/cohort、Cash proxy、费用杠杆和数字拼写绕过均有 model-visible＋本地 fail-closed 保护。zero-call digest=`30be0605...e569`，scope decision digest=`61bcaeef...7ecd`；本阶段 0 模型／Provider／网络／付费调用。
 
-接管后的零调用审计已证明该 claim digest `84033e8d...120d` 恰为唯一 zero-ref `bounded_inference`，原文明确保留既有 `GAP::00730082A5C08C4C`。provider-neutral successor 只在精确 feedback／digest／gap 三重绑定下把有效 authority 降为 `not_inferable`；claim 文本、Evidence／NumericFact／Relation 引用和 gap 集合均不变，并记录 submitted/effective authority receipt。Cash、Counterevidence、Demand 复用，Supply 不变，首个 fresh frontier 移到 Operating；R9 剩余拓扑精确为 Operating／Value 两对和 Lead 一对，共 6 次，0 S1/S2、retrieval、外源、promotion、retry、fallback 和 Writer。
-
-R9 已在 clean／synced commit 上唯一执行：Operating、Value、Lead 共 6/6 次 DeepSeek HTTP 200／`tool_calls`，0 retry／fallback；authority ceiling 生效，结构合同通过，Writer 未调用。独立零模型复评确认原七项 finding 中六项在当前六底稿集合关闭，但复用 Demand 的 `strongest_counterarguments[1]` 仍把同季 `$24.4B` 订单与 `$16.1B` 已确认收入写成“订单向收入的部分转化当期已实际发生”，同时又承认没有 cohort 绑定；R9 Lead 也误判相关 recheck 已满足。该残余登记为 `RC-S3-087`，所以 R9 为合同 pass／L1 fail／Writer ineligible。
-
-R10 已在 clean／synced authority 提交上唯一执行：Demand analysis／submission 与 Lead analysis／submission 共 4/4 次 DeepSeek HTTP 200／`tool_calls`，0 retry／fallback；五份其他底稿逐字节复用，feedback history 与零调用 context digest 精确复现，Writer 未调用。公开结果 digest 为 `83dc3d60...6112`，私有 full digest 为 `cab0b654...e900`。独立零模型复评逐字段确认 Demand 的 thesis、mechanism、首条 sourced claim、`strongest_counterarguments[1]` 和 stop reason 均只把 `$24.4B` 订单与 `$16.1B` 已确认收入写成同季并列信号，明确拒绝同 cohort 转化；原七项 material finding 全部关闭，Lead 的 `proceed_to_evaluation` 与当前底稿一致，独立 L1／L2 通过。工作底稿诊断为 26/28，仍有 Operating、Cash、Counterevidence 三条非阻断 L3 保护要求。R10 scope 已消费，旧 decision 的当前 preflight 会因 owning blockers 关闭而 fail-closed，不能再次签 authority；因此只开放 capture-bound protected Writer 的零调用工程门，Writer live、最终报告八维质量、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。
+完整工程门已通过：全仓 `1169 passed`、active baseline `212／8／5／28／0`、变更集 pyflakes、compileall、957 JSON、8 JSONL／1,079 行、7,820-file secret scan／0 和 diff check。`RC-S3-088` 可显式开放唯一 scope `one_capture_bound_R10_protected_writer_analysis_and_submission`，但当前尚未签发或执行 Writer authority。下一门仍是 exact commit／push、clean repository-aware Project OS preflight，再签发最多 `1 analysis + 2 strict submissions` 的 fresh authority；authority-only 提交／推送并复验后才可 live。任何 Writer 失败必须留 terminal 证据；即使成功生成报告，独立 post-Writer L1／L2、八维质量、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 仍未通过。详见 `docs/worklog/fin_0_1_3_s3/159_R10_bound_protected_writer_zero_call_gate.md`。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 

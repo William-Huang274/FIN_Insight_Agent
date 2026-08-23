@@ -200,14 +200,57 @@ def _context_catalogs(
         for raw in view.get("numeric_fact_catalog") or ():
             row = deepcopy(dict(_mapping(raw, "source_bound_numeric_fact_invalid")))
             ref = str(row.get("numeric_ref") or "")
-            _require(ref.startswith("NUM::"), "source_bound_numeric_ref_invalid")
-            if ref in numeric:
+            if not ref:
                 _require(
-                    numeric[ref] == row,
+                    str(row.get("estimate_id") or "").startswith("ESTIMATE::")
+                    and row.get("numeric_fact_authority") is False,
+                    "source_bound_numeric_ref_invalid",
+                )
+                # Research estimates are visible to the specialist but are not
+                # eligible for source-bound NumericFact admission or rendering.
+                continue
+            _require(ref.startswith("NUM::"), "source_bound_numeric_ref_invalid")
+            if ref not in numeric:
+                numeric[ref] = row
+            elif numeric[ref] != row:
+                existing = deepcopy(numeric[ref])
+                existing_trace = existing.get("formula_trace")
+                incoming_trace = row.get("formula_trace")
+                _require(
+                    isinstance(existing_trace, Mapping)
+                    and isinstance(incoming_trace, Mapping),
                     "source_bound_numeric_fact_conflict",
                 )
-            else:
-                numeric[ref] = row
+                existing_trace_body = deepcopy(dict(existing_trace))
+                incoming_trace_body = deepcopy(dict(incoming_trace))
+                existing_ids = {
+                    str(value)
+                    for value in existing_trace_body.pop(
+                        "input_numeric_fact_ids", ()
+                    )
+                }
+                incoming_ids = {
+                    str(value)
+                    for value in incoming_trace_body.pop(
+                        "input_numeric_fact_ids", ()
+                    )
+                }
+                existing_without_trace = deepcopy(existing)
+                incoming_without_trace = deepcopy(row)
+                existing_without_trace["formula_trace"] = existing_trace_body
+                incoming_without_trace["formula_trace"] = incoming_trace_body
+                _require(
+                    existing_without_trace == incoming_without_trace
+                    and existing_ids
+                    and incoming_ids,
+                    "source_bound_numeric_fact_conflict",
+                )
+                merged_trace = deepcopy(existing_trace_body)
+                merged_trace["input_numeric_fact_ids"] = sorted(
+                    existing_ids | incoming_ids
+                )
+                existing["formula_trace"] = merged_trace
+                numeric[ref] = existing
             numeric_agents.setdefault(ref, set()).add(agent_id)
     return evidence, numeric, evidence_agents, numeric_agents
 

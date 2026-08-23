@@ -800,17 +800,49 @@ def bind_dynamic_evidence_responses_to_research_input(
         "" not in evidence_ref_by_digest,
         "dynamic_truth_spine_research_evidence_identity_invalid",
     )
+    response_accepted_digests = {
+        str(decision.get("evidence_item_digest") or "")
+        for raw in evidence_responses.get("responses") or ()
+        for response in (
+            _mapping(raw, "dynamic_truth_spine_response_invalid"),
+        )
+        for decision in response.get("accepted") or ()
+    }
+    _require(
+        "" not in response_accepted_digests,
+        "dynamic_truth_spine_response_evidence_identity_invalid",
+    )
+    omitted_reviewed_digests = (
+        response_accepted_digests - set(evidence_ref_by_digest)
+    )
+    if omitted_reviewed_digests:
+        selection = _mapping(
+            research_input.get("input_selection_summary"),
+            "dynamic_truth_spine_response_evidence_not_in_dynamic_input",
+        )
+        reviewed_count = int(selection.get("reviewed_pack_evidence_count") or 0)
+        visible_count = int(selection.get("model_visible_evidence_count") or 0)
+        _require(
+            reviewed_count == len(response_accepted_digests)
+            and visible_count == len(evidence_ref_by_digest)
+            and reviewed_count - visible_count == len(omitted_reviewed_digests),
+            "dynamic_truth_spine_response_evidence_not_in_dynamic_input",
+        )
     cards: list[dict[str, Any]] = []
     for raw in evidence_responses.get("responses") or ():
         response = _mapping(raw, "dynamic_truth_spine_response_invalid")
         accepted_refs = []
+        reviewed_but_not_model_visible_count = 0
         for decision in response.get("accepted") or ():
             digest = str(decision.get("evidence_item_digest") or "")
-            _require(
-                digest in evidence_ref_by_digest,
-                "dynamic_truth_spine_response_evidence_not_in_dynamic_input",
-            )
-            accepted_refs.append(evidence_ref_by_digest[digest])
+            if digest in evidence_ref_by_digest:
+                accepted_refs.append(evidence_ref_by_digest[digest])
+            else:
+                _require(
+                    digest in omitted_reviewed_digests,
+                    "dynamic_truth_spine_response_evidence_not_in_dynamic_input",
+                )
+                reviewed_but_not_model_visible_count += 1
         typed_gap_cards = []
         for typed in response.get("typed_gaps") or ():
             gap = _mapping(
@@ -832,6 +864,18 @@ def bind_dynamic_evidence_responses_to_research_input(
             "candidate_route": str(response.get("candidate_route") or ""),
             "candidate_count": int(response.get("candidate_count") or 0),
             "accepted_evidence_refs": sorted(set(accepted_refs)),
+            **(
+                {
+                    "accepted_reviewed_evidence_count": len(
+                        response.get("accepted") or ()
+                    ),
+                    "reviewed_but_not_model_visible_count": (
+                        reviewed_but_not_model_visible_count
+                    ),
+                }
+                if omitted_reviewed_digests
+                else {}
+            ),
             "rejected_reviewed_binding_count": len(response.get("rejected") or ()),
             "unreviewed_candidate_count": len(
                 response.get("needs_human_review") or ()
@@ -918,6 +962,16 @@ def bind_dynamic_evidence_responses_to_research_input(
         "candidate_text_exposed_to_model": False,
         "candidate_promotions": 0,
         "accepted_rows_are_previously_reviewed_evidence": True,
+        **(
+            {
+                "reviewed_evidence_may_be_deterministically_omitted_from_compact_model_view": True,
+                "reviewed_but_not_model_visible_count": len(
+                    omitted_reviewed_digests
+                ),
+            }
+            if omitted_reviewed_digests
+            else {}
+        ),
         "typed_response_gaps_preserved_separately_from_reviewed_pack_gaps": True,
         "model_may_request_but_not_promote_evidence": True,
         "cell_evidence_is_request_scoped": True,

@@ -17,9 +17,7 @@ from apps.workbench.backend.application.research_evidence_pack_service import ( 
 )
 from apps.workbench.backend.application.research_retrieval_service import (  # noqa: E402
     ResearchRetrievalPrincipal,
-)
-from scripts.research.run_s3_current_research_consumer_zero_call import (  # noqa: E402
-    _services,
+    ResearchRetrievalService,
 )
 from sec_agent.research.actionable_research_evaluation import (  # noqa: E402
     evaluate_actionable_research_state,
@@ -164,7 +162,11 @@ def materialize() -> dict[str, Any]:
     }
     case_results = [_case_summary(packs[case_key]) for case_key in packs]
 
-    _historical_evidence, retrieval = _services()
+    # Construct the retrieval surface from the current Runtime registry.  The
+    # historical consumer proof intentionally freezes its own service inputs;
+    # importing that helper here made this current-state materializer combine a
+    # new Evidence Pack with an old candidate/index binding.
+    retrieval = ResearchRetrievalService.from_runtime_paths(ROOT, runtime_paths)
     controlled = retrieval.execute_controlled_plan(
         "DELL",
         _json(
@@ -180,11 +182,11 @@ def materialize() -> dict[str, Any]:
     dynamic = compile_dynamic_research_input_projection(
         truth_spine_policy=_json(
             "configs/research/"
-            "fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_0.json"
+            "fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_1.json"
         ),
         consumer_policy=_json(
             "configs/research/"
-            "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_4.json"
+            "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_5.json"
         ),
         controlled_plan=controlled,
         evidence_pack=packs["DELL"],

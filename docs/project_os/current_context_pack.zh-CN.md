@@ -11,7 +11,11 @@ DELL 七命题已形成 12 条任务级 EvidenceRequest；current Pack 已由 29
 
 公开补源不再停留在独立 Pack。17 个已捕获页面和 19 个精确内容片段已写入 canonical source store；current Runtime Registry 已提升为 R32，绑定 1,877 条源记录、34,166 个金融对象和 CUDA／FP16 dense cache。无模型产品复证用 8 条跨价格、配置、客户、行业需求、PVM、供给、价值池和反方请求实际执行 current BM25＋dense 路线，得到 66 个候选并通过 exact page-lineage＋content-digest 重新选择 15 条 reviewed Evidence；Candidate 仍不自动获得 Evidence 或 NumericFact 权限。
 
-当前仍未执行自然动态 Agent。下一门不是再喂 fixed Pack，而是建立并复证一个真实 `value_capture` 动态单元：初始只给用户问题、DELL 身份、截至日期和工具；模型自行提出 EvidenceRequest，S1/S2 返回 EvidenceResponse／typed fact 或可行动失败，模型必须消费 FeedbackReceipt 并形成 PlanDelta／GraphDelta／StopDecision。通过后才签发一次 DeepSeek live；多 Agent、Writer 双语／图表／排版、MU／NVDA 与异质留出继续在后门，不能因本轮工程通过而追认 S1／S3／release。
+`value_capture` 动态单元的当前 Runtime 零调用复证已经完成：初始消息只含问题、DELL 身份、截至日期和工具能力；两轮真实执行 12 条 current S1/S2 请求，形成 15 条去重 reviewed Evidence、17 个 typed NumericFact、20 条可行动 FeedbackReceipt、2 个 PlanDelta／GraphDelta／StopDecision，并完成 checkpoint/resume。未审 Candidate 仍为 0 晋升；图增量只有研究假设；跨案、错日、重复请求、过早停止和排列变化 mutation 均 fail closed；learned retrieval 使用 RTX 4060 CUDA/FP16。复证同时修复了“完整 reviewed Pack 与紧凑模型视图混同”、手写旧 workpaper schema、checkpoint 重复反方引用以及错误读取 CUDA/resume receipt 四个 Harness 漂移点。
+
+当前动态入口已正式切换：旧 `run_s3_dynamic_single_cell_live.py` 保留为历史复现文件但退出活动入口；新 zero-call、natural-live runner 与共享 `dynamic_single_unit_loop` 已进入 active baseline。新 live 最多 4 个 Provider 节点，依次完成初始请求选择、第一轮反思、条件式第二轮反思和最终底稿；第二轮必须由模型消费真实 FeedbackReceipt 后提出，Harness 不替模型写研究计划或观点。定向 33 tests 与全仓 1,074 tests 已通过，活动图为 205 Python／8 frontend／5 detector／28 Runtime／0 forbidden。
+
+当前仍未执行自然动态 Agent。下一门是 compileall／secret／diff 工程门、clean commit／push、fresh preflight、单独签发一次 DELL `value_capture` DeepSeek exact-live。该 live 只能证明一个动态研究单元，不能追认 S1／S3。通过后才进入五研究单元动态 multi-agent、Writer 双语／图表／排版、MU／NVDA 和异质留出。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 

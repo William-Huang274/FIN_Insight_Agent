@@ -28,15 +28,15 @@
     {
       "case_key": "DELL",
       "current_pack": {
-        "reviewed_evidence_count": 29,
+        "reviewed_evidence_count": 48,
         "residual_gap_count": 14,
         "product_readiness_state": "blocked_by_evidence_admission"
       },
       "source_portfolio": {
-        "current_source_count": 29,
+        "current_source_count": 48,
         "source_class_counts": {
           "issuer_regulator_or_government_primary": 15,
-          "licensed_structured_or_user_entitled": 6,
+          "licensed_structured_or_user_entitled": 25,
           "named_counterparty_or_standards_primary": 8
         },
         "source_type_counts": {
@@ -44,7 +44,8 @@
           "10-Q": 7,
           "6-K": 1,
           "8-K": 7,
-          "EARNINGS_CALL_TRANSCRIPT": 6
+          "EARNINGS_CALL_TRANSCRIPT": 6,
+          "PUBLIC_WEB": 19
         },
         "rights_axes": [
           "discovery",
@@ -99,10 +100,10 @@
         "resume_status": "resume_replay_verified"
       },
       "token_budget_basis": {
-        "basis_id": "TOKENBASIS::9FF9019F64314585BAF9667E",
+        "basis_id": "TOKENBASIS::503AD8267B6463FDCB5255D4",
         "input_scale": {
-          "reviewed_evidence_item_count": 29,
-          "reviewed_evidence_visible_char_count": 14123,
+          "reviewed_evidence_item_count": 48,
+          "reviewed_evidence_visible_char_count": 28741,
           "actionable_uncertainty_count": 21,
           "research_action_count": 21,
           "feedback_receipt_count": 7
@@ -146,7 +147,7 @@
           "reported_fact_count": 38,
           "derived_metric_count": 27
         },
-        "evaluation_digest": "85108db2532dbad23c2aa113ddd92136186dd481b906fe7b400171f4db5fd037"
+        "evaluation_digest": "5f8e89c0c408fefbe7b3608fde0d4cf28b040aaaea5f72798dfec27ae739a42d"
       }
     },
     {
@@ -389,12 +390,12 @@
     }
   ],
   "dell_dynamic_s3_consumption": {
-    "dynamic_research_input_digest": "ef738d743654b6ce83a21076cb6c3ff2b70c2abbd57e88f8f91735d7978248c3",
+    "dynamic_research_input_digest": "fcf3b497d826191ac4ead89b0417788c8ccabaf1b76801935b4afb2735da5116",
     "control_context_status": "current_action_feedback_checkpoint_bound_to_dynamic_input",
     "cell_consumption": [
       {
         "cell_id": "CELL::demand_quality",
-        "user_message_chars": 26746,
+        "user_message_chars": 31840,
         "visible_research_action_count": 3,
         "visible_feedback_receipt_count": 2,
         "stop_decision": "continue",
@@ -403,7 +404,7 @@
       },
       {
         "cell_id": "CELL::operating_performance",
-        "user_message_chars": 23986,
+        "user_message_chars": 24175,
         "visible_research_action_count": 1,
         "visible_feedback_receipt_count": 1,
         "stop_decision": "continue",
@@ -415,7 +416,7 @@
       },
       {
         "cell_id": "CELL::value_capture",
-        "user_message_chars": 34972,
+        "user_message_chars": 35161,
         "visible_research_action_count": 4,
         "visible_feedback_receipt_count": 1,
         "stop_decision": "continue",
@@ -427,7 +428,7 @@
       },
       {
         "cell_id": "CELL::cash_conversion",
-        "user_message_chars": 29406,
+        "user_message_chars": 33425,
         "visible_research_action_count": 3,
         "visible_feedback_receipt_count": 2,
         "stop_decision": "continue",
@@ -439,7 +440,7 @@
       },
       {
         "cell_id": "CELL::counterevidence",
-        "user_message_chars": 31634,
+        "user_message_chars": 36496,
         "visible_research_action_count": 6,
         "visible_feedback_receipt_count": 1,
         "stop_decision": "continue",
@@ -461,5 +462,5 @@
     "release_claimed": false,
     "next_scope": "step_8_bounded_natural_multi_agent_vertical_slice_after_separate_authority"
   },
-  "result_digest": "abb316d80b3447b962c23d034089034eba6a990b1ae4373ab7cf3e945c60a35a"
+  "result_digest": "d6e2fcde1af85bf010b92808d8b02b1a4bdec4addb989ee7ceac71aad3a6455d"
 }

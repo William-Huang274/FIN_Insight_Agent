@@ -598,6 +598,75 @@ def test_compact_response_receipt_binds_to_cell_without_candidate_text() -> None
     assert dynamic["cells"][0]["context_consumption_contract"][
         "minimum_graph_edge_refs"
     ] == 0
+
+
+def test_reviewed_item_may_be_omitted_only_by_receipted_compact_view() -> None:
+    second = _item(
+        digest="evidence-digest-2",
+        source_id="SOURCE::DELL::2",
+        source_content_digest="source-text-digest-2",
+    )
+    responses = compile_dynamic_evidence_responses(
+        policy=_json(POLICY),
+        controlled_plan=_controlled(
+            [
+                _candidate("SOURCE::DELL::1"),
+                _candidate(
+                    "SOURCE::DELL::2",
+                    source_content_digest="source-text-digest-2",
+                ),
+            ]
+        ),
+        evidence_pack=_pack([_item(), second]),
+    )
+    base = {
+        "schema_version": "fin_ia_current_research_input_v1_1",
+        "case_identity": {"case_key": "DELL"},
+        "evidence_cards": [
+            {
+                "evidence_item_digest": "evidence-digest-1",
+                "evidence_ref": "EV::REVIEWED1",
+            }
+        ],
+        "cells": [
+            {
+                "cell_id": "CELL::value_capture",
+                "primary_slot_id": "pricing_mix_value_capture",
+                "supplemental_context_slot_ids": [],
+                "allowed_evidence_refs": ["EV::REVIEWED1"],
+            }
+        ],
+        "input_selection_summary": {
+            "reviewed_pack_evidence_count": 2,
+            "model_visible_evidence_count": 1,
+            "cell_view_evidence_omission_count": 1,
+        },
+        "known_boundary": "base",
+        "research_input_digest": "base-digest",
+    }
+
+    dynamic = bind_dynamic_evidence_responses_to_research_input(
+        research_input=base,
+        evidence_responses=responses,
+    )
+    card = dynamic["dynamic_evidence_response_cards"][0]
+    assert card["accepted_reviewed_evidence_count"] == 2
+    assert card["accepted_evidence_refs"] == ["EV::REVIEWED1"]
+    assert card["reviewed_but_not_model_visible_count"] == 1
+    assert dynamic["dynamic_truth_spine_contract"][
+        "reviewed_but_not_model_visible_count"
+    ] == 1
+
+    invalid = deepcopy(base)
+    invalid["input_selection_summary"]["reviewed_pack_evidence_count"] = 3
+    with pytest.raises(DynamicTruthSpineError) as exc:
+        bind_dynamic_evidence_responses_to_research_input(
+            research_input=invalid,
+            evidence_responses=responses,
+        )
+    assert str(exc.value) == (
+        "dynamic_truth_spine_response_evidence_not_in_dynamic_input"
+    )
     assert dynamic["dynamic_truth_spine_contract"]["candidate_promotions"] == 0
     assert dynamic["dynamic_truth_spine_contract"][
         "cell_evidence_is_request_scoped"

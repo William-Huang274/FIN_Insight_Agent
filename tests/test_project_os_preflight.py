@@ -183,6 +183,11 @@ CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_REF = (
     "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
     "workpaper_submission_scope_decision_v1_0.json"
 )
+CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_REPLACEMENT_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "workpaper_submission_scope_decision_v1_1.json"
+)
 DYNAMIC_FIVE_CELL_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_dynamic_five_cell_live_scope_decision_v1_0.json"
@@ -1370,6 +1375,26 @@ def test_current_dynamic_workpaper_successor_reuses_R3_without_retrieval() -> No
     assert projection["node_profiles"]["workpaper_submission"][
         "maximum_completion_tokens"
     ] == 8000
+
+
+def test_current_dynamic_workpaper_replacement_preserves_zero_call_R4() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_REPLACEMENT_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    projection = result["decision_projection"]
+
+    assert projection["run_scope_id"] == CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_SCOPE
+    assert projection["current_dynamic_workpaper_successor"] is True
+    assert projection["current_dynamic_workpaper_replacement"] is True
+    assert projection["execution_limits"]["maximum_model_calls"] == 1
+    assert projection["execution_limits"]["maximum_retrieval_rounds"] == 0
+    assert {
+        "RC-S3-060-current-dynamic-workpaper-thinking-budget-starved-visible-submission",
+        "RC-S3-061-current-dynamic-workpaper-successor-used-unregistered-runtime-events",
+    }.issubset(result["scope_projection"]["explicit_allow_issue_ids"])
 
 
 def test_historical_dynamic_five_cell_decision_fails_closed_after_consumer_successor(

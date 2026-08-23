@@ -32,6 +32,7 @@ from apps.workbench.backend.application.research_retrieval_service import (  # n
 )
 from retrieval.cuda_execution import required_cuda_fp16_receipt  # noqa: E402
 from sec_agent.canonical_runtime.session import (  # noqa: E402
+    CanonicalRuntimeError,
     append_session_event,
     apply_accepted_plan_delta,
     canonical_digest,
@@ -96,6 +97,12 @@ AUTHORITY_SCHEMA_V1_3 = (
 )
 AUTHORITY_STATUS_V1_3 = (
     "signed_exact_once_DELL_current_dynamic_value_capture_workpaper_successor"
+)
+AUTHORITY_SCHEMA_V1_4 = (
+    "fin_ia_s3_current_dynamic_single_unit_workpaper_submission_authority_v1_1"
+)
+AUTHORITY_STATUS_V1_4 = (
+    "signed_exact_once_DELL_current_dynamic_value_capture_workpaper_replacement"
 )
 FULL_RESULT_SCHEMA = "fin_ia_s3_current_dynamic_single_unit_live_full_v1_0"
 PUBLIC_RESULT_SCHEMA = "fin_ia_s3_current_dynamic_single_unit_live_result_v1_0"
@@ -327,13 +334,18 @@ def validate_authority(
     schema_version = str(authority.get("schema_version") or "")
     transport_successor = schema_version == AUTHORITY_SCHEMA_V1_1
     feedback_successor = schema_version == AUTHORITY_SCHEMA_V1_2
-    workpaper_successor = schema_version == AUTHORITY_SCHEMA_V1_3
+    workpaper_replacement = schema_version == AUTHORITY_SCHEMA_V1_4
+    workpaper_successor = schema_version in {
+        AUTHORITY_SCHEMA_V1_3,
+        AUTHORITY_SCHEMA_V1_4,
+    }
     successor = transport_successor or feedback_successor or workpaper_successor
     expected_status = {
         AUTHORITY_SCHEMA: AUTHORITY_STATUS,
         AUTHORITY_SCHEMA_V1_1: AUTHORITY_STATUS_V1_1,
         AUTHORITY_SCHEMA_V1_2: AUTHORITY_STATUS_V1_2,
         AUTHORITY_SCHEMA_V1_3: AUTHORITY_STATUS_V1_3,
+        AUTHORITY_SCHEMA_V1_4: AUTHORITY_STATUS_V1_4,
     }.get(schema_version)
     _require(
         set(authority) == expected
@@ -343,6 +355,7 @@ def validate_authority(
             AUTHORITY_SCHEMA_V1_1,
             AUTHORITY_SCHEMA_V1_2,
             AUTHORITY_SCHEMA_V1_3,
+            AUTHORITY_SCHEMA_V1_4,
         }
         and authority.get("status") == expected_status
         and authority.get("case_key") == "DELL"
@@ -407,6 +420,12 @@ def validate_authority(
             "submission_profile",
             "failed_predecessor_private",
         )
+    if workpaper_replacement:
+        ref_names = (
+            *ref_names,
+            "failed_execution_predecessor",
+            "failed_execution_predecessor_private",
+        )
     digest_fields = {
         "zero_call_result_digest",
         "current_evidence_pack_payload_digest",
@@ -420,6 +439,13 @@ def validate_authority(
                 "failed_predecessor_full_result_digest",
                 "workpaper_context_digest",
                 "workpaper_submission_view_digest",
+            }
+        )
+    if workpaper_replacement:
+        digest_fields.update(
+            {
+                "failed_execution_predecessor_result_digest",
+                "failed_execution_predecessor_full_result_digest",
             }
         )
     _require(
@@ -559,6 +585,50 @@ def validate_authority(
                 submission_profile,
                 node_class="workpaper_submission_non_thinking",
             )
+            if workpaper_replacement:
+                failed_execution = _json(
+                    paths["failed_execution_predecessor_ref"]
+                )
+                failed_execution_private = _json(
+                    paths["failed_execution_predecessor_private_ref"]
+                )
+                _require(
+                    failed_execution.get("schema_version")
+                    == (
+                        "fin_ia_s3_current_dynamic_single_unit_"
+                        "pre_provider_failure_result_v1_0"
+                    )
+                    and failed_execution.get("status")
+                    == "terminal_failed_no_retry"
+                    and failed_execution.get("result_digest")
+                    == bound[
+                        "failed_execution_predecessor_result_digest"
+                    ]
+                    and (failed_execution.get("failure") or {}).get("phase")
+                    == "canonical_runtime_pre_provider"
+                    and (failed_execution.get("failure") or {}).get("code")
+                    == "runtime_event_type_invalid"
+                    and (failed_execution.get("execution") or {}).get(
+                        "provider_calls_attempted"
+                    )
+                    == 0
+                    and (failed_execution.get("execution") or {}).get(
+                        "output_identity_consumed"
+                    )
+                    is True
+                    and failed_execution_private.get("full_result_digest")
+                    == bound[
+                        "failed_execution_predecessor_full_result_digest"
+                    ]
+                    and failed_execution.get("private_full_result_sha256")
+                    == str(
+                        bound.get(
+                            "failed_execution_predecessor_private_sha256"
+                        )
+                        or ""
+                    ),
+                    "current_dynamic_live_failed_execution_predecessor_invalid",
+                )
         elif transport_successor:
             predecessor_valid = predecessor_valid and (
                 (failed.get("failure") or {}).get("phase")
@@ -596,6 +666,13 @@ def validate_authority(
         decision = _json(paths["scope_decision_ref"])
         expected_decision = (
             (
+                "fin_ia_s3_current_dynamic_single_unit_workpaper_submission_"
+                "scope_decision_v1_1",
+                "R4_pre_provider_event_failure_preserved_one_R5_workpaper_"
+                "replacement_authorized",
+            )
+            if workpaper_replacement
+            else (
                 "fin_ia_s3_current_dynamic_single_unit_workpaper_submission_"
                 "scope_decision_v1_0",
                 "R3_dynamic_research_preserved_one_non_thinking_workpaper_"
@@ -699,6 +776,84 @@ def _execute_round(
         round_index=round_index,
     )
     return batch, response
+
+
+def _execute_workpaper_submission_attempt(
+    *,
+    events: list[dict[str, Any]],
+    session_id: str,
+    checkpoint_digest: str,
+    workpaper_context: Mapping[str, Any],
+    submission_view: Mapping[str, Any],
+    profile: Any,
+    capture_root: Path,
+    run_id: str,
+    attempt_id: str,
+    occurred_at: str,
+    submission_executor: Callable[..., Any],
+    provider_steps: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Execute one canonical provider attempt and validate its workpaper.
+
+    Keeping this as one seam lets fake execution exercise the same event,
+    transport and contract path used by the paid successor.
+    """
+
+    messages = compile_specialist_workpaper_messages(context=submission_view)
+    tool = specialist_workpaper_tool(
+        agent_id="AGENT::VALUE_CAPTURE",
+        context=workpaper_context,
+    )
+    _event(
+        events,
+        session_id=session_id,
+        event_type="provider_attempt_requested",
+        actor_id="S3.DynamicSingleUnitHarness",
+        occurred_at=occurred_at,
+        attempt_id=attempt_id,
+        input_refs=(
+            checkpoint_digest,
+            f"messages://{canonical_digest(messages)}",
+            f"tool://{canonical_digest(tool)}",
+        ),
+    )
+    step = submission_executor(
+        profile=profile,
+        messages=messages,
+        tools=[tool],
+        capture_root=capture_root,
+        run_id=run_id,
+        attempt_id=attempt_id,
+        tool_choice=None,
+    )
+    provider_steps.append(step.as_dict())
+    _event(
+        events,
+        session_id=session_id,
+        event_type="provider_attempt_completed",
+        actor_id="PROVIDER::" + profile.provider_id.upper(),
+        occurred_at=occurred_at,
+        attempt_id=attempt_id,
+        input_refs=(checkpoint_digest,),
+        output_refs=tuple(
+            str(value)
+            for value in (
+                step.request_capture_ref,
+                step.response_capture_ref,
+            )
+            if str(value or "")
+        ),
+    )
+    payload, _ = _tool_arguments(
+        step,
+        expected_name="submit_specialist_workpaper",
+    )
+    workpaper = validate_specialist_workpaper(
+        payload,
+        context=workpaper_context,
+        expected_agent_id="AGENT::VALUE_CAPTURE",
+    )
+    return {**workpaper, "workpaper_digest": canonical_digest(workpaper)}
 
 
 def _run_workpaper_submission_successor(
@@ -809,58 +964,25 @@ def _run_workpaper_submission_successor(
         deepcopy(dict(row))
         for row in predecessor_private.get("session_events") or ()
     ]
-    _event(
-        events,
-        session_id=str(session.get("session_id") or ""),
-        event_type="workpaper_submission_successor_started",
-        actor_id="S3.DynamicSingleUnitHarness",
-        occurred_at=recorded_at,
-        attempt_id=attempt_id,
-        input_refs=(checkpoint["checkpoint_digest"],),
-    )
-
     provider_steps: list[dict[str, Any]] = []
     workpaper: dict[str, Any] = {}
     failure_phase = ""
     failure_code = ""
     failure_capture_ref = ""
     try:
-        step = submission_executor(
+        workpaper = _execute_workpaper_submission_attempt(
+            events=events,
+            session_id=str(session.get("session_id") or ""),
+            checkpoint_digest=checkpoint["checkpoint_digest"],
+            workpaper_context=workpaper_context,
+            submission_view=submission_view,
             profile=profile,
-            messages=compile_specialist_workpaper_messages(
-                context=submission_view
-            ),
-            tools=[
-                specialist_workpaper_tool(
-                    agent_id="AGENT::VALUE_CAPTURE",
-                    context=workpaper_context,
-                )
-            ],
             capture_root=capture_root,
             run_id=str(output["run_id"]),
             attempt_id=attempt_id,
-            tool_choice=None,
-        )
-        provider_steps.append(step.as_dict())
-        payload, _ = _tool_arguments(
-            step,
-            expected_name="submit_specialist_workpaper",
-        )
-        workpaper = validate_specialist_workpaper(
-            payload,
-            context=workpaper_context,
-            expected_agent_id="AGENT::VALUE_CAPTURE",
-        )
-        workpaper["workpaper_digest"] = canonical_digest(workpaper)
-        _event(
-            events,
-            session_id=str(session.get("session_id") or ""),
-            event_type="workpaper_submission_succeeded",
-            actor_id="AGENT::VALUE_CAPTURE",
             occurred_at=recorded_at,
-            attempt_id=attempt_id,
-            input_refs=(checkpoint["checkpoint_digest"],),
-            output_refs=(workpaper["workpaper_digest"],),
+            submission_executor=submission_executor,
+            provider_steps=provider_steps,
         )
     except ModelGatewayError as exc:
         failure_phase = "provider_transport_or_response"
@@ -872,6 +994,44 @@ def _run_workpaper_submission_successor(
     except CurrentDynamicSingleUnitLiveError as exc:
         failure_phase = "current_dynamic_live_orchestration"
         failure_code = exc.code
+    except CanonicalRuntimeError as exc:
+        failure_phase = "canonical_runtime"
+        failure_code = str(exc)
+    except Exception as exc:  # pragma: no cover - defensive terminal materialization
+        failure_phase = "local_runtime_unhandled"
+        failure_code = (
+            "current_dynamic_live_local_exception:" + type(exc).__name__
+        )
+
+    requested = any(
+        row.get("attempt_id") == attempt_id
+        and row.get("event_type") == "provider_attempt_requested"
+        for row in events
+    )
+    terminal = any(
+        row.get("attempt_id") == attempt_id
+        and row.get("event_type")
+        in {"provider_attempt_completed", "provider_attempt_failed"}
+        for row in events
+    )
+    if failure_code and requested and not terminal:
+        try:
+            _event(
+                events,
+                session_id=str(session.get("session_id") or ""),
+                event_type="provider_attempt_failed",
+                actor_id="PROVIDER::" + profile.provider_id.upper(),
+                occurred_at=recorded_at,
+                attempt_id=attempt_id,
+                input_refs=(checkpoint["checkpoint_digest"],),
+                output_refs=(
+                    (failure_capture_ref,) if failure_capture_ref else ()
+                ),
+            )
+        except CanonicalRuntimeError:
+            # The typed terminal result below remains authoritative even when
+            # the event log itself is the failing subsystem.
+            pass
 
     succeeded = bool(workpaper)
     status = (
@@ -1032,7 +1192,10 @@ def run(
     authority_path = authority_path.resolve()
     authority = _json(authority_path)
     paths = validate_authority(authority, authority_path=authority_path)
-    if authority.get("schema_version") == AUTHORITY_SCHEMA_V1_3:
+    if authority.get("schema_version") in {
+        AUTHORITY_SCHEMA_V1_3,
+        AUTHORITY_SCHEMA_V1_4,
+    }:
         return _run_workpaper_submission_successor(
             authority_path=authority_path,
             authority=authority,

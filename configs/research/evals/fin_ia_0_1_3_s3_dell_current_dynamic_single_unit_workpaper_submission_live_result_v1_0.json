@@ -1,0 +1,59 @@
+{
+  "schema_version": "fin_ia_s3_current_dynamic_single_unit_pre_provider_failure_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "recorded_at": "2026-08-23T11:05:32+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_workpaper_submission_live_authority_v1_0.json",
+  "implementation_commit": "75d92ecc78bc846d5c5dc1af7f3db66ae080a024",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "model": "deepseek-v4-pro",
+  "execution": {
+    "provider_calls_attempted": 0,
+    "maximum_provider_calls": 1,
+    "retrieval_rounds_executed": 0,
+    "s1_s2_requests_executed": 0,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "output_identity_consumed": true
+  },
+  "provider_steps": [],
+  "workpaper": {},
+  "failure": {
+    "phase": "canonical_runtime_pre_provider",
+    "code": "runtime_event_type_invalid",
+    "provider_request_created": false,
+    "provider_response_created": false,
+    "capture_ref": ""
+  },
+  "claims": {
+    "R3_dynamic_research_preserved": true,
+    "workpaper_submission_executed": false,
+    "model_output_created": false,
+    "S1_pass": false,
+    "S3_pass": false,
+    "multi_agent_execution": false,
+    "product_acceptance": false,
+    "release_ready": false
+  },
+  "acceptance": {
+    "dynamic_single_unit_contract_pass": false,
+    "L1_assessment_pending": false,
+    "eight_dimension_content_assessment_pending": false,
+    "multi_agent_execution": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "release_ready": false
+  },
+  "source_research_predecessor": {
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_live_result_v1_2.json",
+    "public_result_digest": "91a78a65968c0c6cbfd2786ce93026b9b58cb09bfa7bf618659fe22a92775855",
+    "private_result_digest": "e9f0c3999430218d4753130d2dd8b575069f8d53b7fa8439cd5987fa63bb5a0b",
+    "research_checkpoint_preserved": true
+  },
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r4-workpaper-20260823t0251z/full_result.json",
+  "private_full_result_sha256": "2354f8b2add183b2b0f24e7878c40adac2b43ab437dcb20c778532210993a879",
+  "known_boundary": "R4 failed inside the project-owned canonical event integration before any DeepSeek request was sent. It contributes no model-quality evidence and does not invalidate the completed R3 dynamic research. The authority and output identity are consumed; only a newly signed attempt after structural repair may submit the preserved workpaper.",
+  "result_digest": "b7db1986bb1f4994cc6d1f5232def05d18279be68ca9a23b87d8c0ae46f912b9"
+}

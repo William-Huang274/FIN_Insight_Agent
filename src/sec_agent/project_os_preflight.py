@@ -151,6 +151,14 @@ CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_STATUS = (
     "R3_dynamic_research_preserved_one_non_thinking_workpaper_"
     "successor_authorized"
 )
+CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_REPLACEMENT_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_single_unit_workpaper_submission_"
+    "scope_decision_v1_1"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_REPLACEMENT_DECISION_STATUS = (
+    "R4_pre_provider_event_failure_preserved_one_R5_workpaper_"
+    "replacement_authorized"
+)
 CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_SCOPE = (
     "one_DELL_current_dynamic_value_capture_workpaper_submission_"
     "successor_exact_once"
@@ -652,6 +660,7 @@ def _validate_fixed_pack_decision(
             CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_SCHEMA,
             CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_SCHEMA,
             CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_SCHEMA,
+            CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_REPLACEMENT_DECISION_SCHEMA,
         }
     ):
         return _validate_current_dynamic_single_unit_decision(
@@ -6583,21 +6592,30 @@ def _validate_current_dynamic_single_unit_decision(
     feedback_successor = (
         schema_version == CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_SCHEMA
     )
-    workpaper_successor = (
-        schema_version == CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_SCHEMA
+    workpaper_replacement = (
+        schema_version
+        == CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_REPLACEMENT_DECISION_SCHEMA
     )
+    workpaper_successor = schema_version in {
+        CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_SCHEMA,
+        CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_REPLACEMENT_DECISION_SCHEMA,
+    }
     successor = transport_successor or feedback_successor or workpaper_successor
     required_equal = {
         "status": (
-            CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_STATUS
-            if workpaper_successor
+            CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_REPLACEMENT_DECISION_STATUS
+            if workpaper_replacement
             else (
-                CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_STATUS
-                if feedback_successor
+                CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_STATUS
+                if workpaper_successor
                 else (
-                    CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_STATUS
-                    if transport_successor
-                    else CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS
+                    CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_STATUS
+                    if feedback_successor
+                    else (
+                        CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_STATUS
+                        if transport_successor
+                        else CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS
+                    )
                 )
             )
         ),
@@ -6681,6 +6699,18 @@ def _validate_current_dynamic_single_unit_decision(
                     "project_os_current_dynamic_workpaper_true_required:"
                     + field
                 )
+        if workpaper_replacement:
+            for field in (
+                "failed_R4_preserved",
+                "pre_provider_failure_zero_model_calls_required",
+                "canonical_provider_attempt_events_required",
+                "pre_provider_terminal_materialization_required",
+            ):
+                if decision.get(field) is not True:
+                    raise ValueError(
+                        "project_os_current_dynamic_workpaper_replacement_"
+                        "true_required:" + field
+                    )
     for field in (
         "external_source_network_authorized",
         "multi_agent_authorized",
@@ -6941,6 +6971,56 @@ def _validate_current_dynamic_single_unit_decision(
                 raise ValueError(
                     "project_os_current_dynamic_workpaper_checkpoint_invalid"
                 )
+            if workpaper_replacement:
+                _, failed_execution = _validate_artifact_binding(
+                    root=root,
+                    decision=decision,
+                    ref_field="failed_execution_predecessor_ref",
+                    sha_field="failed_execution_predecessor_sha256",
+                    digest_field="failed_execution_predecessor_result_digest",
+                )
+                _, failed_execution_private = _validate_artifact_binding(
+                    root=root,
+                    decision=decision,
+                    ref_field="failed_execution_predecessor_private_ref",
+                    sha_field="failed_execution_predecessor_private_sha256",
+                    digest_field=(
+                        "failed_execution_predecessor_full_result_digest"
+                    ),
+                    artifact_digest_field="full_result_digest",
+                )
+                if not (
+                    failed_execution.get("schema_version")
+                    == (
+                        "fin_ia_s3_current_dynamic_single_unit_"
+                        "pre_provider_failure_result_v1_0"
+                    )
+                    and failed_execution.get("status")
+                    == "terminal_failed_no_retry"
+                    and (failed_execution.get("failure") or {}).get("phase")
+                    == "canonical_runtime_pre_provider"
+                    and (failed_execution.get("failure") or {}).get("code")
+                    == "runtime_event_type_invalid"
+                    and (failed_execution.get("execution") or {}).get(
+                        "provider_calls_attempted"
+                    )
+                    == 0
+                    and (failed_execution.get("execution") or {}).get(
+                        "output_identity_consumed"
+                    )
+                    is True
+                    and failed_execution.get("private_full_result_sha256")
+                    == decision.get(
+                        "failed_execution_predecessor_private_sha256"
+                    )
+                    and failed_execution_private.get("failure", {}).get(
+                        "provider_request_created"
+                    )
+                    is False
+                ):
+                    raise ValueError(
+                        "project_os_current_dynamic_workpaper_R4_failure_invalid"
+                    )
         elif transport_successor:
             predecessor_valid = predecessor_valid and (
                 (failed.get("failure") or {}).get("phase")
@@ -6986,6 +7066,7 @@ def _validate_current_dynamic_single_unit_decision(
         "current_dynamic_transport_successor": transport_successor,
         "current_dynamic_feedback_successor": feedback_successor,
         "current_dynamic_workpaper_successor": workpaper_successor,
+        "current_dynamic_workpaper_replacement": workpaper_replacement,
         "failed_predecessor_status": failed_predecessor_status,
         "dynamic_single_cell_successor": False,
         "micro_judgment_successor": False,
@@ -11107,6 +11188,21 @@ def build_preflight(
             "project_os_current_dynamic_workpaper_scope_allowance_missing"
         )
     if (
+        decision_projection.get("current_dynamic_workpaper_replacement") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-061-current-dynamic-workpaper-successor-used-"
+                "unregistered-runtime-events"
+            ),
+            allowed_scope=CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_workpaper_replacement_scope_"
+            "allowance_missing"
+        )
+    if (
         decision_projection.get("dynamic_temporal_repair_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -11785,16 +11881,28 @@ def build_preflight(
         is True
     ):
         known_boundary = (
-            "This current-baseline preflight preserves the complete R3 dynamic "
-            "research checkpoint and its failed max-thinking workpaper call. It "
-            "permits one exact-once non-thinking DELL value-capture workpaper "
-            "submission from the lossless compact model view while the complete "
-            "context remains the local validation authority. It permits zero "
-            "retrieval rounds, S1/S2 requests, new evidence, retries, external "
-            "network calls, candidate promotions or product-pointer changes. "
-            "Success still requires L1 and content-quality assessment and does "
-            "not authorize S1/S3 acceptance, multi-agent execution, publication, "
-            "generalization or release."
+            (
+                "This current-baseline preflight preserves both the complete R3 "
+                "dynamic research checkpoint and the R4 project-owned pre-provider "
+                "event-integration failure. It permits one newly identified R5 "
+                "non-thinking workpaper submission using canonical provider-attempt "
+                "events and terminal materialization. "
+            )
+            if decision_projection.get("current_dynamic_workpaper_replacement")
+            is True
+            else (
+                "This current-baseline preflight preserves the complete R3 dynamic "
+                "research checkpoint and its failed max-thinking workpaper call. It "
+                "permits one exact-once non-thinking DELL value-capture workpaper "
+                "submission from the lossless compact model view while the complete "
+                "context remains the local validation authority. "
+            )
+        ) + (
+            "It permits zero retrieval rounds, S1/S2 requests, new evidence, "
+            "retries, external network calls, candidate promotions or product-"
+            "pointer changes. Success still requires L1 and content-quality "
+            "assessment and does not authorize S1/S3 acceptance, multi-agent "
+            "execution, publication, generalization or release."
         )
     elif (
         decision_projection.get("current_dynamic_transport_successor")

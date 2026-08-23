@@ -1352,3 +1352,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 新 RC-S3-060 属于 S3 最终上下文投影与认知 profile，不属于 S1/S2 信源、检索或 DeepSeek 连通性。完整 context 为 92,055 JSON 字符；去重但不删权威的 submission view 为 59,241 字符，仍保留 15 Evidence、19 数值权威、6 数值关系、9 gaps、2 轮模型反思、method 与 graph context。
 - 下一门只允许一个 R4 workpaper successor：复用 R3 前 3 个成功调用与不可变研究 checkpoint，0 检索／0 S1/S2 请求／0 retry；使用 thinking-disabled、8,000 completion-token 的纯交卷 profile，完整 context 继续作为本地 Validator 权威。R4 通过后仍需独立 L1 与内容质量验收，不能直接宣告 S3 或进入多 Agent。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/125_current_dynamic_R3_research_success_and_workpaper_submission_capacity_gate.md`。
+
+### 2026-08-23 DELL current dynamic R4 调用前 Runtime 事件失败
+
+- R4 没有调用 DeepSeek。runner 在 Provider dispatch 前写入未注册的 `workpaper_submission_successor_started`，被 canonical Runtime 以 `runtime_event_type_invalid` 拦截；0 Provider、0 模型输出、0 检索、0 S1/S2、0 网络、0 Candidate 晋升。
+- 原 runner 又把事件追加放在异常物化之外，导致现场只有 traceback、没有终态文件。现已补建绑定原 authority 的 public／private zero-call failure receipt，R4 output identity 保持 consumed，禁止复用。
+- 修复不扩张事件字典：workpaper submission 复用 `provider_attempt_requested/completed/failed`；消息、Tool Schema、事件、fake Provider 与 Validator 通过同一个执行 seam，并为本地异常保留 typed terminal materialization。
+- 新 `RC-S3-061` 属于 S0 canonical Runtime 集成，不是 DeepSeek、S1/S2 或信源问题。R3 已完成的两轮动态研究继续不可变。
+- 下一门仅允许 clean commit／push／repository-aware preflight 后签发全新 R5；仍为 1 次 non-thinking workpaper、0 检索／S1/S2／retry。R5 成功后必须做独立 L1 与八维内容质量验收，不能直接进入五单元或多 Agent。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/126_current_dynamic_R4_pre_provider_event_failure_and_R5_gate.md`。

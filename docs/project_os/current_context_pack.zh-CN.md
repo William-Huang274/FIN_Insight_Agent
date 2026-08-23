@@ -1434,3 +1434,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 新上界为 29 Provider attempt，来源是 `6×4 specialist + 2 Lead + 3 repairs`；13 个 S1/S2 request、12 个 retrieval round、0 retry、0 外源网络、0 Candidate promotion。每类节点均有任务级 TokenBudgetBasis，不以省钱或提速删研究任务。
 - provider profile 变更后 R3 zero-call 重新跑通 6 sessions／13 requests／12 CUDA batches。新 canonical workpaper 使旧 successor 的“必须 legacy”断言误报；`RC-S3-068` 已用 canonical-or-reproducible migration 门关闭，R4 repair successor 通过且 legacy normalization=0。
 - 当前仍是 natural live pending：S3、Writer、Workbench、MU/NVDA/留出、人工验收和 release 均为 false。下一门只允许 clean commit/push 后 Project OS preflight 与一次正式 DELL dynamic multi-agent live。
+
+### 2026-08-23 DELL current 动态多 Agent R1 提交合同失败
+
+- R1 已真实创建六个 Specialist session，并由模型自主选择 12 个不重复 request；current S1/S2 在 6 个 CUDA/FP16 round 中执行，14 次 DeepSeek attempt 均为 HTTP 200／`tool_calls`，0 retry、0 外源网络、0 Candidate promotion。
+- 六角色都在 reflection 或 workpaper 的严格提交边界失败，Lead 未启动。Demand／Operating／Supply 出现 Tool arguments JSON 语法问题；Value／Cash 把经济机制叙事写入 compact graph predicate；Counterevidence 漏写本地应拥有的 `schema_version`，其余研究 payload 在本地注入 envelope 后可完整通过。
+- zero-call 的停止语义与 live Validator 还有漂移：有 gap／feedback 时模型仍可建议 `stop_sufficient`。正式 StopDecision 必须由 Harness 按 coverage、剩余请求、gap 和 feedback 编译，不能把模型建议直接当运行时结论。
+- 最早责任层登记为 `RC-S3-069`：thinking research draft 与 strict submission 尚未分离，且本地 envelope／Graph predicate／StopDecision 没有从同一合同编译。它不是 S1/S2、信源、DeepSeek 连通性或可评价的研究内容失败。
+- R1 public digest=`a9f97d93...10d240`，14 份原始请求／响应和六角色状态全部保留。下一门只允许 capture-bound successor：复用已完成 selection、S1/S2、FeedbackReceipt 和有效草稿，从失败节点续跑；禁止重跑整链。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/134_current_dynamic_multi_agent_R1_submission_contract_failure.md`。

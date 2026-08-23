@@ -1452,3 +1452,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - successor 新调用上界为 25，由 4 reflection mapping＋2 Supply follow-up＋4 workpaper draft＋5 workpaper submit＋4 Lead＋6 repair 节点相加；新 S1/S2 request／round 均最多 1，0 retry／外源网络／promotion／fallback。
 - 全仓 `1123 passed`。当前只达到 capture-bound successor engineering gate；自然 successor、Lead、L1、内容质量、Writer、S3 和 release 均未通过。下一门是 clean commit／push、fresh authority 和唯一 successor live。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/135_current_dynamic_multi_agent_submission_successor_zero_call_gate.md`。
+
+### 2026-08-23 submission successor R1 调用前事件失败
+
+- successor R1 在第一个模型调用前因未注册事件名 `predecessor_bound` 被 canonical Runtime 拒绝；0 Provider、0 新 S1/S2、0 网络／promotion／retry，旧 R1 全部状态不变。
+- 本次 authority 和 output identity 已消耗，public digest=`3f3b0461...eb158`。失败属于 S0 SessionEvent 组合接缝漏测，不属于模型或资料。
+- 修复复用已注册的 `plan_bound` 并在 input refs 绑定 predecessor lineage；新增真实 AgentSession 事件链测试，定向 `53 passed`。
+- 下一门是 clean commit／push、fresh zero-call proof 和 fresh authority；禁止复用本次 authority。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/136_submission_successor_R1_pre_provider_event_failure.md`。

@@ -2525,6 +2525,33 @@ def _role_base_state(
     return plan, graph_digest
 
 
+def _bind_predecessor_session_event(
+    events: list[dict[str, Any]],
+    *,
+    session_id: str,
+    predecessor_session_id: str,
+    role_program_digest: str,
+    round_response_digests: Sequence[str],
+    active_plan_ref: str,
+    recorded_at: str,
+) -> None:
+    """Bind a successor predecessor using the canonical ``plan_bound`` event."""
+
+    _event(
+        events,
+        session_id=session_id,
+        event_type="plan_bound",
+        actor_id="S3.DynamicMultiAgentHarness",
+        occurred_at=recorded_at,
+        input_refs=(
+            predecessor_session_id,
+            role_program_digest,
+            *[str(value) for value in round_response_digests],
+        ),
+        output_refs=(active_plan_ref,),
+    )
+
+
 def _open_gap_refs(
     round_responses: Sequence[Mapping[str, Any]],
 ) -> list[str]:
@@ -3174,21 +3201,18 @@ def _execute_submission_successor_role(
         occurred_at=recorded_at,
         output_refs=(session_id,),
     )
-    _event(
+    _bind_predecessor_session_event(
         events,
         session_id=session_id,
-        event_type="predecessor_bound",
-        actor_id="S3.DynamicMultiAgentHarness",
-        occurred_at=recorded_at,
-        input_refs=(
-            str(predecessor_bundle["session"]["session_id"]),
-            str(predecessor_bundle["role_program_digest"]),
-            *[
-                str(row["round_response_digest"])
-                for row in round_responses
-            ],
+        predecessor_session_id=str(
+            predecessor_bundle["session"]["session_id"]
         ),
-        output_refs=(session["active_plan_ref"],),
+        role_program_digest=str(predecessor_bundle["role_program_digest"]),
+        round_response_digests=[
+            str(row["round_response_digest"]) for row in round_responses
+        ],
+        active_plan_ref=str(session["active_plan_ref"]),
+        recorded_at=recorded_at,
     )
     provider_steps: list[dict[str, Any]] = []
     source_capture_receipts: list[dict[str, Any]] = []

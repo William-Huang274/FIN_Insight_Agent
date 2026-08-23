@@ -33,6 +33,7 @@ from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from scripts.research.run_s3_current_dynamic_multi_agent import (
     LIVE_AUTHORITY_SCHEMA,
     LIVE_AUTHORITY_STATUS,
+    _bind_predecessor_session_event,
     _call_live_tool,
     _call_live_tool_draft,
     _provider_attempt_count,
@@ -443,6 +444,50 @@ def test_live_provider_seam_records_exact_once_attempt_and_parses_tool(
     parsed, _ = _tool_arguments(step, expected_name="submit_fixture")
     assert parsed == {"ok": True}
     assert _provider_attempt_count(events) == 1
+
+
+def test_submission_successor_predecessor_binding_uses_registered_runtime_event() -> None:
+    from sec_agent.canonical_runtime.session import create_agent_session
+
+    session = create_agent_session(
+        session_id="SESSION::SUBMISSION-SUCCESSOR-SEAM",
+        run_id="RUN::SUBMISSION-SUCCESSOR-SEAM",
+        case_id="case_dell_current",
+        case_version="FIN_0_1_3",
+        as_of_date="2026-08-06",
+        objective_ref="objective://test",
+        active_plan_ref="PLAN::SUCCESSOR",
+        created_at="2026-08-23T00:00:00Z",
+    )
+    events: list[dict] = []
+    from scripts.research.run_s3_current_dynamic_multi_agent import _event
+
+    _event(
+        events,
+        session_id=session["session_id"],
+        event_type="session_created",
+        actor_id="S0.CanonicalRuntime",
+        occurred_at="2026-08-23T00:00:00Z",
+        output_refs=(session["session_id"],),
+    )
+    _bind_predecessor_session_event(
+        events,
+        session_id=session["session_id"],
+        predecessor_session_id="SESSION::R1-PREDECESSOR",
+        role_program_digest="a" * 64,
+        round_response_digests=("b" * 64,),
+        active_plan_ref=session["active_plan_ref"],
+        recorded_at="2026-08-23T00:00:01Z",
+    )
+    assert [row["event_type"] for row in events] == [
+        "session_created",
+        "plan_bound",
+    ]
+    assert events[-1]["input_refs"] == [
+        "SESSION::R1-PREDECESSOR",
+        "a" * 64,
+        "b" * 64,
+    ]
 
 
 def test_live_draft_seam_preserves_invalid_json_for_separate_submission(

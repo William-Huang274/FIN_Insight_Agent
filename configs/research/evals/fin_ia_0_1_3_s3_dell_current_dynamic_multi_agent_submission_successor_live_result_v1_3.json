@@ -1,0 +1,51 @@
+{
+  "acceptance": {
+    "L1_assessment_pending": false,
+    "S3_pass": false,
+    "dynamic_multi_agent_contract_pass": false,
+    "eight_dimension_content_assessment_pending": false,
+    "product_acceptance": false,
+    "release_ready": false
+  },
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_submission_successor_live_authority_v1_3.json",
+  "case_key": "DELL",
+  "claims": {
+    "S3_pass": false,
+    "failed_role_repair_provider_call_attempted": false,
+    "lead_R1_decision_reconstructable": true,
+    "prior_attempts_preserved_immutable": true,
+    "product_acceptance": false,
+    "release_ready": false,
+    "six_specialist_workpapers_reconstructable": true
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "external_source_network_calls": 0,
+    "fallbacks": 0,
+    "inherited_reusable_captures": 8,
+    "lead_rounds_reconstructable": 1,
+    "new_provider_calls_attempted": 9,
+    "new_provider_http_200": 9,
+    "retries": 0,
+    "reusable_completed_captures": 17,
+    "role_repairs_executed": 0,
+    "specialist_sessions_reconstructable": 6
+  },
+  "failure": {
+    "capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_current_dynamic_multi_agent_submission_successor_live_r4/FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-SUBMISSION-SUCCESSOR-LIVE-R4/FIN013-S3-DELL-MULTI-SUBMISSION-S4-lead-r1-submit/provider_response.json",
+    "code": "dynamic_single_unit_workpaper_submission_context_invalid",
+    "failure_occurred_before_next_provider_attempt": true,
+    "phase": "role_repair_context_projection",
+    "provider_failure": false
+  },
+  "frontier": "first_accepted_role_repair_draft",
+  "implementation_commit": "4f1a6e89d6dad7f229dd7854c888597363104801",
+  "known_boundary": "The six specialist workpapers and the first Lead decision are reconstructable from immutable captures. The attempt stopped in the local repair-context projection before any repair Provider call. A later successor must first prove exact zero-call replay, reuse every completed capture, preserve authority sets, and begin only at the first accepted role-repair draft.",
+  "model": "deepseek-v4-pro",
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-submission-successor-live-r4-20260823T205000Z/full_result.json",
+  "private_full_result_sha256": "61d6df6258b3b807d16808788b6ca98b49ff623bdc05976af6b0f8ba52156d4d",
+  "recorded_at": "2026-08-23T13:25:45+00:00",
+  "result_digest": "af5fb33c752b378a0dd366ff0bb874314175c281ce7181dd679fb67db5c39d16",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_submission_successor_live_v1_0",
+  "status": "terminal_partial_local_contract_failure_preserved"
+}

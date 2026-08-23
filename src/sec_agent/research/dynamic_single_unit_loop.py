@@ -1846,8 +1846,13 @@ def compile_workpaper_submission_view(
 
     trusted_context = deepcopy(dict(context))
     context_digest = str(trusted_context.pop("context_digest", ""))
+    context_schema_version = str(trusted_context.get("schema_version") or "")
     _require(
-        trusted_context.get("schema_version") == WORKPAPER_CONTEXT_SCHEMA_VERSION
+        context_schema_version
+        in {
+            WORKPAPER_CONTEXT_SCHEMA_VERSION,
+            WORKPAPER_REPAIR_CONTEXT_SCHEMA_VERSION,
+        }
         and context_digest == canonical_digest(trusted_context),
         "dynamic_single_unit_workpaper_submission_context_invalid",
     )
@@ -1956,6 +1961,15 @@ def compile_workpaper_submission_view(
         "rules": deepcopy(context.get("rules") or []),
         "authority": deepcopy(context.get("authority") or {}),
     }
+    if context_schema_version == WORKPAPER_REPAIR_CONTEXT_SCHEMA_VERSION:
+        repair_state = context.get("repair_state")
+        _require(
+            isinstance(repair_state, Mapping)
+            and isinstance(repair_state.get("prior_workpaper"), Mapping)
+            and bool(repair_state.get("accepted_feedback_refs")),
+            "dynamic_single_unit_workpaper_submission_repair_state_invalid",
+        )
+        body["repair_state"] = deepcopy(dict(repair_state))
     return {**body, "submission_view_digest": canonical_digest(body)}
 
 

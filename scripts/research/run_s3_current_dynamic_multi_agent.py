@@ -150,6 +150,9 @@ SUBMISSION_SUCCESSOR_AUTHORITY_SCHEMA = (
 SUBMISSION_RESUME_AUTHORITY_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_submission_successor_authority_v1_1"
 )
+SUBMISSION_REPAIR_RESUME_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_submission_successor_authority_v1_2"
+)
 DEFAULT_SUBMISSION_SUCCESSOR_ZERO_PUBLIC = Path(
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_submission_successor_zero_call_result_v1_0.json"
 )
@@ -1921,7 +1924,7 @@ def _validate_resume_capture_manifest(
 ) -> list[dict[str, Any]]:
     """Validate an immutable partial-live capture manifest without promotion."""
 
-    if len(rows) != 9:
+    if not rows or len(rows) > 64:
         raise DynamicMultiAgentLoopError(
             "dynamic_multi_agent_submission_resume_manifest_size_invalid"
         )
@@ -1994,6 +1997,7 @@ def _resume_capture_for_attempt(
         row
         for row in validated
         if attempt_fragment in str(row["attempt_id"])
+        and bool(row["reusable"])
     ]
     if not matches:
         return None
@@ -2001,8 +2005,6 @@ def _resume_capture_for_attempt(
         raise DynamicMultiAgentLoopError(
             "dynamic_multi_agent_submission_resume_capture_ambiguous"
         )
-    if not bool(matches[0]["reusable"]):
-        return None
     return _resolve_repo_ref(str(matches[0]["response_ref"])).resolve()
 
 
@@ -2028,6 +2030,417 @@ def _resume_capture_draft(
             "capture_origin": "partial_submission_successor",
         },
     )
+
+
+def _resume_replay_recorded_at(
+    rows: Sequence[Mapping[str, Any]],
+) -> str:
+    """Recover the timestamp that binds R4 deterministic feedback identities."""
+
+    validated = _validate_resume_capture_manifest(rows)
+    match = next(
+        (
+            row
+            for row in validated
+            if str(row["attempt_id"]).endswith(
+                "supply-relationship-reflection-r2-draft"
+            )
+        ),
+        None,
+    )
+    if match is None:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_resume_recorded_at_missing"
+        )
+    request = _read_json(_resolve_repo_ref(str(match["request_ref"])))
+    body = request.get("request_body")
+    messages = body.get("messages") if isinstance(body, Mapping) else None
+    if not isinstance(messages, list):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_resume_recorded_at_invalid"
+        )
+    user_content = next(
+        (
+            str(row.get("content") or "")
+            for row in reversed(messages)
+            if isinstance(row, Mapping) and row.get("role") == "user"
+        ),
+        "",
+    )
+    try:
+        visible = json.loads(user_content)
+    except json.JSONDecodeError as exc:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_resume_recorded_at_invalid"
+        ) from exc
+    feedback = visible.get("feedback_receipts") if isinstance(visible, Mapping) else None
+    value = (
+        str(feedback[0].get("created_at") or "")
+        if isinstance(feedback, list)
+        and feedback
+        and isinstance(feedback[0], Mapping)
+        else ""
+    )
+    if not value:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_resume_recorded_at_invalid"
+        )
+    return value
+
+
+def _resume_lead_input_workpapers(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    round_index: int,
+) -> list[dict[str, Any]]:
+    """Recover the exact locally validated workpapers visible to a Lead round."""
+
+    validated = _validate_resume_capture_manifest(rows)
+    match = next(
+        (
+            row
+            for row in validated
+            if str(row["attempt_id"]).endswith(
+                f"lead-r{round_index}-draft"
+            )
+        ),
+        None,
+    )
+    if match is None:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_resume_lead_input_missing"
+        )
+    request = _read_json(_resolve_repo_ref(str(match["request_ref"])))
+    body = request.get("request_body")
+    messages = body.get("messages") if isinstance(body, Mapping) else None
+    user_content = next(
+        (
+            str(row.get("content") or "")
+            for row in reversed(messages or [])
+            if isinstance(row, Mapping) and row.get("role") == "user"
+        ),
+        "",
+    )
+    try:
+        visible = json.loads(user_content)
+    except json.JSONDecodeError as exc:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_resume_lead_input_invalid"
+        ) from exc
+    workpapers = (
+        visible.get("validated_workpapers")
+        if isinstance(visible, Mapping)
+        else None
+    )
+    if not (
+        isinstance(workpapers, list)
+        and len(workpapers) == len(SPECIALIST_AGENT_IDS)
+        and {
+            str(row.get("agent_id") or "")
+            for row in workpapers
+            if isinstance(row, Mapping)
+        }
+        == set(SPECIALIST_AGENT_IDS)
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_resume_lead_input_invalid"
+        )
+    return [deepcopy(dict(row)) for row in workpapers]
+
+
+def _validate_resume_workpaper_authority(
+    payload: Mapping[str, Any],
+    *,
+    context: Mapping[str, Any],
+    expected_agent_id: str,
+) -> dict[str, Any]:
+    """Recheck captured content/refs while retaining its original Lead identity."""
+
+    captured = deepcopy(dict(payload))
+    raw = deepcopy(captured)
+    if not (
+        str(raw.pop("workpaper_digest", ""))
+        and str(raw.pop("context_digest", ""))
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_resume_workpaper_identity_missing"
+        )
+    rebound = validate_specialist_workpaper(
+        raw,
+        context=context,
+        expected_agent_id=expected_agent_id,
+    )
+    if _workpaper_authority_sets(captured) != _workpaper_authority_sets(rebound):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_resume_workpaper_authority_drift"
+        )
+    return captured
+
+
+def _capture_manifest_from_root(capture_root: Path) -> list[dict[str, Any]]:
+    """Index every complete request/response pair in one immutable attempt root."""
+
+    rows: list[dict[str, Any]] = []
+    if not capture_root.is_dir():
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_capture_root_missing"
+        )
+    for request_path in sorted(capture_root.rglob("model_visible_request.json")):
+        response_path = request_path.with_name("provider_response.json")
+        if not response_path.is_file():
+            continue
+        request = _read_json(request_path)
+        response = _read_json(response_path)
+        body = response.get("response_body")
+        choices = body.get("choices") if isinstance(body, Mapping) else None
+        if not (
+            response.get("status_code") == 200
+            and isinstance(choices, list)
+            and len(choices) == 1
+        ):
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_submission_capture_response_invalid"
+            )
+        choice = choices[0]
+        message = choice.get("message")
+        calls = message.get("tool_calls") if isinstance(message, Mapping) else None
+        tool_name = ""
+        if isinstance(calls, list) and len(calls) == 1:
+            function = calls[0].get("function")
+            if isinstance(function, Mapping):
+                tool_name = str(function.get("name") or "")
+        usage = body.get("usage") if isinstance(body, Mapping) else {}
+        usage = usage if isinstance(usage, Mapping) else {}
+        details = usage.get("completion_tokens_details")
+        details = details if isinstance(details, Mapping) else {}
+        finish_reason = str(choice.get("finish_reason") or "")
+        row = {
+            "attempt_id": str(request.get("attempt_id") or request_path.parent.name),
+            "request_ref": _relative(request_path),
+            "request_sha256": _sha256(request_path),
+            "request_digest": str(request.get("request_digest") or ""),
+            "response_ref": _relative(response_path),
+            "response_sha256": _sha256(response_path),
+            "response_digest": str(response.get("response_digest") or ""),
+            "status_code": int(response["status_code"]),
+            "finish_reason": finish_reason,
+            "tool_name": tool_name,
+            "prompt_tokens": int(usage.get("prompt_tokens") or 0),
+            "completion_tokens": int(usage.get("completion_tokens") or 0),
+            "reasoning_tokens": int(details.get("reasoning_tokens") or 0),
+            "reusable": bool(finish_reason != "length" and tool_name),
+        }
+        rows.append(row)
+    return _validate_resume_capture_manifest(rows)
+
+
+def materialize_submission_successor_local_failure(
+    *,
+    authority_path: Path,
+    phase: str,
+    code: str,
+) -> dict[str, Any]:
+    """Persist a post-Provider local failure before any successor is authorized."""
+
+    authority_path = authority_path.resolve()
+    authority = _read_json(authority_path)
+    try:
+        paths = validate_submission_successor_authority(
+            authority, authority_path=authority_path
+        )
+    except DynamicMultiAgentLoopError as exc:
+        # A root-cause patch may already have changed the working-tree copy of
+        # the runner/runtime.  The failed attempt remains bound to the signed
+        # commit, so verify implementation refs against that commit while all
+        # data/config/result refs must still match on disk.
+        if not str(exc).startswith(
+            "dynamic_multi_agent_submission_successor_input_drift:"
+        ):
+            raise
+        if not (
+            authority.get("status")
+            == "signed_exact_once_submission_successor_live"
+            and authority.get("schema_version")
+            in {
+                SUBMISSION_RESUME_AUTHORITY_SCHEMA,
+                SUBMISSION_REPAIR_RESUME_AUTHORITY_SCHEMA,
+            }
+            and authority.get("case_key") == "DELL"
+        ):
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_submission_failure_authority_invalid"
+            ) from exc
+        bound = authority.get("bound_inputs")
+        if not isinstance(bound, Mapping):
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_submission_failure_inputs_invalid"
+            ) from exc
+        commit = str(authority.get("implementation_commit") or "").lower()
+        ref_names = (
+            "runtime_registry",
+            "loop_policy",
+            "provider_profile",
+            "submission_profile",
+            "runner",
+            "loop_runtime",
+            "multi_agent_runtime",
+            "zero_call_result",
+            "predecessor_public",
+            "predecessor_private",
+            "resume_public",
+            "resume_private",
+        )
+        implementation_names = {
+            "loop_policy",
+            "runner",
+            "loop_runtime",
+            "multi_agent_runtime",
+        }
+        paths = {}
+        for name in ref_names:
+            ref = str(bound.get(f"{name}_ref") or "")
+            path = _resolve_repo_ref(ref)
+            expected_sha = str(bound.get(f"{name}_sha256") or "")
+            valid = (
+                _git_blob_sha256(commit=commit, ref=ref) == expected_sha
+                if name in implementation_names
+                else path.is_file() and _sha256(path) == expected_sha
+            )
+            if not valid:
+                raise DynamicMultiAgentLoopError(
+                    "dynamic_multi_agent_submission_failure_input_drift:"
+                    + name
+                ) from exc
+            paths[f"{name}_ref"] = path
+    output = dict(authority["output_contract"])
+    capture_root = _resolve_repo_ref(str(output["capture_root_ref"]))
+    private_root = _resolve_repo_ref(str(output["private_output_root_ref"]))
+    public_path = _resolve_repo_ref(str(output["public_result_ref"]))
+    new_manifest = _capture_manifest_from_root(capture_root)
+    inherited_manifest: list[dict[str, Any]] = []
+    if authority.get("schema_version") in {
+        SUBMISSION_RESUME_AUTHORITY_SCHEMA,
+        SUBMISSION_REPAIR_RESUME_AUTHORITY_SCHEMA,
+    }:
+        inherited = _read_json(paths["resume_private_ref"])
+        inherited_manifest = [
+            deepcopy(dict(row))
+            for row in inherited.get("capture_manifest") or ()
+            if bool(row.get("reusable"))
+        ]
+    combined_manifest = _validate_resume_capture_manifest(
+        [*inherited_manifest, *new_manifest]
+    )
+    if not (
+        phase.strip()
+        and code.strip()
+        and new_manifest
+        and all(row["reusable"] for row in new_manifest)
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_local_failure_materialization_invalid"
+        )
+    last_capture = next(
+        (
+            row
+            for row in new_manifest
+            if str(row["attempt_id"]).endswith("lead-r1-submit")
+        ),
+        new_manifest[-1],
+    )
+    recorded_at = _now()
+    full_body = {
+        "schema_version": SUBMISSION_SUCCESSOR_FULL_SCHEMA,
+        "status": "terminal_partial_local_contract_failure_preserved",
+        "recorded_at": recorded_at,
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha256(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "run_id": str(output["run_id"]),
+        "attempt_prefix": str(output["attempt_prefix"]),
+        "predecessor_public_ref": authority["bound_inputs"][
+            "predecessor_public_ref"
+        ],
+        "predecessor_private_ref": authority["bound_inputs"][
+            "predecessor_private_ref"
+        ],
+        "resume_public_ref": authority["bound_inputs"].get(
+            "resume_public_ref", ""
+        ),
+        "resume_private_ref": authority["bound_inputs"].get(
+            "resume_private_ref", ""
+        ),
+        "capture_root_ref": _relative(capture_root),
+        "capture_manifest": combined_manifest,
+        "new_capture_manifest": new_manifest,
+        "failure": {
+            "phase": phase,
+            "code": code,
+            "capture_ref": last_capture["response_ref"],
+            "provider_failure": False,
+            "failure_occurred_before_next_provider_attempt": True,
+        },
+        "execution": {
+            "new_provider_calls_attempted": len(new_manifest),
+            "new_provider_http_200": len(new_manifest),
+            "reusable_completed_captures": len(combined_manifest),
+            "inherited_reusable_captures": len(inherited_manifest),
+            "specialist_sessions_reconstructable": 6,
+            "lead_rounds_reconstructable": 1,
+            "role_repairs_executed": 0,
+            "external_source_network_calls": 0,
+            "candidate_promotions": 0,
+            "retries": 0,
+            "fallbacks": 0,
+        },
+        "claims": {
+            "prior_attempts_preserved_immutable": True,
+            "six_specialist_workpapers_reconstructable": True,
+            "lead_R1_decision_reconstructable": True,
+            "failed_role_repair_provider_call_attempted": False,
+            "S3_pass": False,
+            "product_acceptance": False,
+            "release_ready": False,
+        },
+        "known_boundary": (
+            "The six specialist workpapers and the first Lead decision are "
+            "reconstructable from immutable captures. The attempt stopped in "
+            "the local repair-context projection before any repair Provider "
+            "call. A later successor must first prove exact zero-call replay, "
+            "reuse every completed capture, preserve authority sets, and begin "
+            "only at the first accepted role-repair draft."
+        ),
+    }
+    full = {**full_body, "full_result_digest": canonical_digest(full_body)}
+    _write_json(private_root / "full_result.json", full, exclusive=True)
+    public_body = {
+        "schema_version": SUBMISSION_SUCCESSOR_LIVE_SCHEMA,
+        "status": full["status"],
+        "recorded_at": recorded_at,
+        "authority_ref": full["authority_ref"],
+        "implementation_commit": full["implementation_commit"],
+        "case_key": "DELL",
+        "model": "deepseek-v4-pro",
+        "frontier": "first_accepted_role_repair_draft",
+        "failure": deepcopy(full["failure"]),
+        "execution": deepcopy(full["execution"]),
+        "claims": deepcopy(full["claims"]),
+        "acceptance": {
+            "dynamic_multi_agent_contract_pass": False,
+            "L1_assessment_pending": False,
+            "eight_dimension_content_assessment_pending": False,
+            "S3_pass": False,
+            "product_acceptance": False,
+            "release_ready": False,
+        },
+        "private_full_result_ref": _relative(private_root / "full_result.json"),
+        "private_full_result_sha256": _sha256(private_root / "full_result.json"),
+        "known_boundary": full["known_boundary"],
+    }
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_json(public_path, public, exclusive=True)
+    return public
 
 
 def _public_provider_step(step: Mapping[str, Any]) -> dict[str, Any]:
@@ -2118,6 +2531,33 @@ def expected_submission_resume_budget() -> dict[str, int]:
     }
 
 
+def expected_submission_repair_resume_budget() -> dict[str, int]:
+    """Ceiling after reusing the complete six-role and Lead-R1 frontier."""
+
+    return {
+        "maximum_new_model_calls": 8,
+        "maximum_new_transport_attempts": 8,
+        "reflection_submissions_from_R1_captures": 0,
+        "supply_followup_reflection_drafts": 0,
+        "supply_followup_reflection_submissions": 0,
+        "new_specialist_workpaper_drafts": 0,
+        "specialist_workpaper_submissions": 0,
+        "lead_coordination_drafts": 1,
+        "lead_coordination_submissions": 1,
+        "role_repair_drafts": 3,
+        "role_repair_submissions": 3,
+        "maximum_new_s1_s2_requests": 1,
+        "maximum_new_retrieval_rounds": 1,
+        "maximum_lead_rounds": 2,
+        "maximum_role_repairs": 3,
+        "maximum_external_source_network_calls": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+
+
 def _validate_token_budget_basis(value: Any) -> None:
     required = {
         "node_purpose",
@@ -2167,11 +2607,21 @@ def validate_submission_successor_authority(
         "known_boundary",
     }
     schema_version = str(authority.get("schema_version") or "")
-    resume_enabled = schema_version == SUBMISSION_RESUME_AUTHORITY_SCHEMA
+    resume_enabled = schema_version in {
+        SUBMISSION_RESUME_AUTHORITY_SCHEMA,
+        SUBMISSION_REPAIR_RESUME_AUTHORITY_SCHEMA,
+    }
+    repair_resume_enabled = (
+        schema_version == SUBMISSION_REPAIR_RESUME_AUTHORITY_SCHEMA
+    )
     expected_budget = (
-        expected_submission_resume_budget()
-        if resume_enabled
-        else expected_submission_successor_budget()
+        expected_submission_repair_resume_budget()
+        if repair_resume_enabled
+        else (
+            expected_submission_resume_budget()
+            if resume_enabled
+            else expected_submission_successor_budget()
+        )
     )
     if not (
         set(authority) == expected
@@ -2179,6 +2629,7 @@ def validate_submission_successor_authority(
         in {
             SUBMISSION_SUCCESSOR_AUTHORITY_SCHEMA,
             SUBMISSION_RESUME_AUTHORITY_SCHEMA,
+            SUBMISSION_REPAIR_RESUME_AUTHORITY_SCHEMA,
         }
         and authority.get("status")
         == "signed_exact_once_submission_successor_live"
@@ -2233,9 +2684,13 @@ def validate_submission_successor_authority(
     predecessor_public = _read_json(paths["predecessor_public_ref"])
     predecessor_private = _read_json(paths["predecessor_private_ref"])
     expected_zero_status = (
-        "submission_successor_resume_zero_call_proven"
-        if resume_enabled
-        else "submission_successor_zero_call_proven"
+        "submission_successor_repair_resume_zero_call_proven"
+        if repair_resume_enabled
+        else (
+            "submission_successor_resume_zero_call_proven"
+            if resume_enabled
+            else "submission_successor_zero_call_proven"
+        )
     )
     if not (
         zero.get("status") == expected_zero_status
@@ -2254,11 +2709,16 @@ def validate_submission_successor_authority(
     if resume_enabled:
         resume_public = _read_json(paths["resume_public_ref"])
         resume_private = _read_json(paths["resume_private_ref"])
+        expected_resume_status = (
+            "terminal_partial_local_contract_failure_preserved"
+            if repair_resume_enabled
+            else "terminal_partial_provider_reasoning_budget_exhausted_preserved"
+        )
         if not (
             resume_public.get("status")
-            == "terminal_partial_provider_reasoning_budget_exhausted_preserved"
+            == expected_resume_status
             and resume_private.get("status")
-            == "terminal_partial_provider_reasoning_budget_exhausted_preserved"
+            == expected_resume_status
             and resume_public.get("result_digest")
             == bound.get("resume_public_result_digest")
             and resume_private.get("full_result_digest")
@@ -3349,6 +3809,7 @@ def _execute_submission_successor_role(
     research_executor: Callable[..., AgentToolStepResult],
     submission_executor: Callable[..., AgentToolStepResult],
     resume_capture_manifest: Sequence[Mapping[str, Any]] = (),
+    session_seed_run_id: str | None = None,
 ) -> dict[str, Any]:
     """Resume one R1 specialist from immutable captures and exact S1/S2 state."""
 
@@ -3378,8 +3839,9 @@ def _execute_submission_successor_role(
     accepted_refs = _accepted_evidence_refs(round_responses)
     gaps = _open_gap_refs(round_responses)
     base_plan, base_graph = _role_base_state(role_program=role_program)
+    effective_session_run_id = session_seed_run_id or run_id
     session_seed = {
-        "run_id": run_id,
+        "run_id": effective_session_run_id,
         "agent_id": agent_id,
         "predecessor_session_id": predecessor_bundle["session"]["session_id"],
         "role_program_digest": role_program["role_program_digest"],
@@ -3387,7 +3849,7 @@ def _execute_submission_successor_role(
     session_id = "SESSION::" + canonical_digest(session_seed)[:24].upper()
     session = create_agent_session(
         session_id=session_id,
-        run_id=run_id,
+        run_id=effective_session_run_id,
         case_id="case_dell_current",
         case_version="FIN_0_1_3",
         as_of_date="2026-08-06",
@@ -3631,26 +4093,37 @@ def _execute_submission_successor_role(
             executed_request_ids=executed_ids,
             round_index=2,
         )
-        draft_step, followup_draft, _ = _call_live_tool_draft(
-            events=events,
-            session_id=session_id,
-            actor_id=agent_id,
-            profile=research_profile,
-            messages=_compile_successor_reflection_draft_messages(
-                role_program=role_program,
-                round_responses=[response],
-                feedback_receipts=new_feedback,
-                prior_reflections=reflections,
-            ),
-            tool=draft_tool,
+        resumed_draft = _resume_capture_draft(
+            resume_capture_manifest,
+            attempt_fragment=f"{slug}-reflection-r2-draft",
             expected_name=REFLECTION_TOOL_NAME,
-            capture_root=capture_root,
-            run_id=run_id,
-            attempt_id=f"{attempt_prefix}-{slug}-reflection-r2-draft",
-            occurred_at=recorded_at,
-            executor=research_executor,
         )
-        provider_steps.append(_public_provider_step(draft_step.as_dict()))
+        if resumed_draft is not None:
+            followup_draft, _, draft_receipt = resumed_draft
+            source_capture_receipts.append(draft_receipt)
+            draft_response_digest = str(draft_receipt["response_digest"])
+        else:
+            draft_step, followup_draft, _ = _call_live_tool_draft(
+                events=events,
+                session_id=session_id,
+                actor_id=agent_id,
+                profile=research_profile,
+                messages=_compile_successor_reflection_draft_messages(
+                    role_program=role_program,
+                    round_responses=[response],
+                    feedback_receipts=new_feedback,
+                    prior_reflections=reflections,
+                ),
+                tool=draft_tool,
+                expected_name=REFLECTION_TOOL_NAME,
+                capture_root=capture_root,
+                run_id=run_id,
+                attempt_id=f"{attempt_prefix}-{slug}-reflection-r2-draft",
+                occurred_at=recorded_at,
+                executor=research_executor,
+            )
+            provider_steps.append(_public_provider_step(draft_step.as_dict()))
+            draft_response_digest = str(draft_step.response_digest)
         submission_tool = reflection_submission_tool(
             policy=policy,
             request_catalog=catalog,
@@ -3660,25 +4133,39 @@ def _execute_submission_successor_role(
             open_gap_refs=gaps,
             round_index=2,
         )
-        step, payload, _ = _call_live_tool(
-            events=events,
-            session_id=session_id,
-            actor_id="HARNESS::STRICT-SUBMISSION-MAPPER",
-            profile=submission_profile,
-            messages=compile_reflection_submission_messages(
-                source_draft=followup_draft,
-                source_capture_digest=str(draft_step.response_digest),
-                tool=submission_tool,
-            ),
-            tool=submission_tool,
+        resumed_submission = _resume_capture_draft(
+            resume_capture_manifest,
+            attempt_fragment=f"{slug}-reflection-r2-submit",
             expected_name=REFLECTION_SUBMISSION_TOOL_NAME,
-            capture_root=capture_root,
-            run_id=run_id,
-            attempt_id=f"{attempt_prefix}-{slug}-reflection-r2-submit",
-            occurred_at=recorded_at,
-            executor=submission_executor,
         )
-        provider_steps.append(_public_provider_step(step.as_dict()))
+        if resumed_submission is not None:
+            resumed_payload, _, submit_receipt = resumed_submission
+            payload = json.loads(resumed_payload)
+            if not isinstance(payload, dict):
+                raise DynamicMultiAgentLoopError(
+                    "dynamic_multi_agent_submission_resume_reflection_invalid"
+                )
+            source_capture_receipts.append(submit_receipt)
+        else:
+            step, payload, _ = _call_live_tool(
+                events=events,
+                session_id=session_id,
+                actor_id="HARNESS::STRICT-SUBMISSION-MAPPER",
+                profile=submission_profile,
+                messages=compile_reflection_submission_messages(
+                    source_draft=followup_draft,
+                    source_capture_digest=draft_response_digest,
+                    tool=submission_tool,
+                ),
+                tool=submission_tool,
+                expected_name=REFLECTION_SUBMISSION_TOOL_NAME,
+                capture_root=capture_root,
+                run_id=run_id,
+                attempt_id=f"{attempt_prefix}-{slug}-reflection-r2-submit",
+                occurred_at=recorded_at,
+                executor=submission_executor,
+            )
+            provider_steps.append(_public_provider_step(step.as_dict()))
         followup, receipt = validate_reflection_submission(
             payload,
             policy=policy,
@@ -3761,7 +4248,7 @@ def _execute_submission_successor_role(
             workpaper_draft_digest = str(
                 workpaper_capture_receipt["response_digest"]
             )
-            workpaper_source = "R3_capture_draft"
+            workpaper_source = "resume_capture_draft"
         else:
             draft_step, workpaper_draft, _ = _call_live_tool_draft(
                 events=events,
@@ -4137,48 +4624,78 @@ def _execute_submission_successor_lead_round(
     recorded_at: str,
     research_executor: Callable[..., AgentToolStepResult],
     submission_executor: Callable[..., AgentToolStepResult],
+    resume_capture_manifest: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     catalog = compile_challenge_catalog(workpapers=workpapers)
     draft_tool = lead_coordination_tool(challenge_catalog=catalog)
-    draft_step, source_draft, _ = _call_live_tool_draft(
-        events=events,
-        session_id=str(session["session_id"]),
-        actor_id=RESEARCH_LEAD_AGENT_ID,
-        profile=research_profile,
-        messages=compile_lead_coordination_messages(
-            workpapers=workpapers,
-            challenge_catalog=catalog,
-            local_failure_receipts=local_failure_receipts,
-        ),
-        tool=draft_tool,
+    source_capture_receipts: list[dict[str, Any]] = []
+    provider_steps: list[dict[str, Any]] = []
+    resumed_draft = _resume_capture_draft(
+        resume_capture_manifest,
+        attempt_fragment=f"lead-r{round_index}-draft",
         expected_name="submit_lead_coordination_decision",
-        capture_root=capture_root,
-        run_id=run_id,
-        attempt_id=f"{attempt_prefix}-lead-r{round_index}-draft",
-        occurred_at=recorded_at,
-        executor=research_executor,
     )
+    if resumed_draft is not None:
+        source_draft, _, draft_receipt = resumed_draft
+        source_capture_receipts.append(draft_receipt)
+        draft_response_digest = str(draft_receipt["response_digest"])
+    else:
+        draft_step, source_draft, _ = _call_live_tool_draft(
+            events=events,
+            session_id=str(session["session_id"]),
+            actor_id=RESEARCH_LEAD_AGENT_ID,
+            profile=research_profile,
+            messages=compile_lead_coordination_messages(
+                workpapers=workpapers,
+                challenge_catalog=catalog,
+                local_failure_receipts=local_failure_receipts,
+            ),
+            tool=draft_tool,
+            expected_name="submit_lead_coordination_decision",
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_id=f"{attempt_prefix}-lead-r{round_index}-draft",
+            occurred_at=recorded_at,
+            executor=research_executor,
+        )
+        provider_steps.append(_public_provider_step(draft_step.as_dict()))
+        draft_response_digest = str(draft_step.response_digest)
     submission_tool = lead_coordination_submission_tool(
         challenge_catalog=catalog
     )
-    submission_step, payload, _ = _call_live_tool(
-        events=events,
-        session_id=str(session["session_id"]),
-        actor_id="HARNESS::STRICT-SUBMISSION-MAPPER",
-        profile=submission_profile,
-        messages=compile_lead_coordination_submission_messages(
-            source_draft=source_draft,
-            source_capture_digest=str(draft_step.response_digest),
-            tool=submission_tool,
-        ),
-        tool=submission_tool,
+    resumed_submission = _resume_capture_draft(
+        resume_capture_manifest,
+        attempt_fragment=f"lead-r{round_index}-submit",
         expected_name=LEAD_COORDINATION_SUBMISSION_TOOL_NAME,
-        capture_root=capture_root,
-        run_id=run_id,
-        attempt_id=f"{attempt_prefix}-lead-r{round_index}-submit",
-        occurred_at=recorded_at,
-        executor=submission_executor,
     )
+    if resumed_submission is not None:
+        resumed_payload, _, submit_receipt = resumed_submission
+        payload = json.loads(resumed_payload)
+        if not isinstance(payload, dict):
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_submission_resume_lead_invalid"
+            )
+        source_capture_receipts.append(submit_receipt)
+    else:
+        submission_step, payload, _ = _call_live_tool(
+            events=events,
+            session_id=str(session["session_id"]),
+            actor_id="HARNESS::STRICT-SUBMISSION-MAPPER",
+            profile=submission_profile,
+            messages=compile_lead_coordination_submission_messages(
+                source_draft=source_draft,
+                source_capture_digest=draft_response_digest,
+                tool=submission_tool,
+            ),
+            tool=submission_tool,
+            expected_name=LEAD_COORDINATION_SUBMISSION_TOOL_NAME,
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_id=f"{attempt_prefix}-lead-r{round_index}-submit",
+            occurred_at=recorded_at,
+            executor=submission_executor,
+        )
+        provider_steps.append(_public_provider_step(submission_step.as_dict()))
     decision, receipt = validate_lead_coordination_submission(
         payload, challenge_catalog=catalog
     )
@@ -4195,10 +4712,8 @@ def _execute_submission_successor_lead_round(
         "challenge_catalog": catalog,
         "decision": decision,
         "submission_receipt": receipt,
-        "provider_steps": [
-            _public_provider_step(draft_step.as_dict()),
-            _public_provider_step(submission_step.as_dict()),
-        ],
+        "provider_steps": provider_steps,
+        "source_capture_receipts": source_capture_receipts,
     }
 
 
@@ -4215,6 +4730,7 @@ def _execute_submission_successor_role_repair(
     recorded_at: str,
     research_executor: Callable[..., AgentToolStepResult],
     submission_executor: Callable[..., AgentToolStepResult],
+    resume_capture_manifest: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     agent_id = str(role_bundle["agent_id"])
     slug = agent_id.split("::")[-1].lower().replace("_", "-")
@@ -4233,48 +4749,78 @@ def _execute_submission_successor_role_repair(
     )
     submission_view = compile_workpaper_submission_view(repair_context)
     events = role_bundle["events"]
-    draft_step, source_draft, _ = _call_live_tool_draft(
-        events=events,
-        session_id=str(role_bundle["session"]["session_id"]),
-        actor_id=agent_id,
-        profile=research_profile,
-        messages=compile_specialist_workpaper_messages(context=submission_view),
-        tool=specialist_workpaper_tool(
-            agent_id=agent_id, context=repair_context
-        ),
+    provider_steps: list[dict[str, Any]] = []
+    source_capture_receipts: list[dict[str, Any]] = []
+    repair_fragment = f"{slug}-repair-r{repair_index}"
+    resumed_draft = _resume_capture_draft(
+        resume_capture_manifest,
+        attempt_fragment=f"{repair_fragment}-draft",
         expected_name="submit_specialist_workpaper",
-        capture_root=capture_root,
-        run_id=run_id,
-        attempt_id=(
-            f"{attempt_prefix}-{slug}-repair-r{repair_index}-draft"
-        ),
-        occurred_at=recorded_at,
-        executor=research_executor,
     )
+    if resumed_draft is not None:
+        source_draft, _, draft_receipt = resumed_draft
+        source_capture_receipts.append(draft_receipt)
+        draft_response_digest = str(draft_receipt["response_digest"])
+    else:
+        draft_step, source_draft, _ = _call_live_tool_draft(
+            events=events,
+            session_id=str(role_bundle["session"]["session_id"]),
+            actor_id=agent_id,
+            profile=research_profile,
+            messages=compile_specialist_workpaper_messages(context=submission_view),
+            tool=specialist_workpaper_tool(
+                agent_id=agent_id, context=repair_context
+            ),
+            expected_name="submit_specialist_workpaper",
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_id=(
+                f"{attempt_prefix}-{repair_fragment}-draft"
+            ),
+            occurred_at=recorded_at,
+            executor=research_executor,
+        )
+        provider_steps.append(_public_provider_step(draft_step.as_dict()))
+        draft_response_digest = str(draft_step.response_digest)
     submission_tool = specialist_workpaper_submission_tool(
         agent_id=agent_id, context=repair_context
     )
-    submission_step, payload, _ = _call_live_tool(
-        events=events,
-        session_id=str(role_bundle["session"]["session_id"]),
-        actor_id="HARNESS::STRICT-SUBMISSION-MAPPER",
-        profile=submission_profile,
-        messages=compile_specialist_workpaper_submission_messages(
-            context=submission_view,
-            source_draft=source_draft,
-            source_capture_digest=str(draft_step.response_digest),
-            tool=submission_tool,
-        ),
-        tool=submission_tool,
+    resumed_submission = _resume_capture_draft(
+        resume_capture_manifest,
+        attempt_fragment=f"{repair_fragment}-submit",
         expected_name=SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
-        capture_root=capture_root,
-        run_id=run_id,
-        attempt_id=(
-            f"{attempt_prefix}-{slug}-repair-r{repair_index}-submit"
-        ),
-        occurred_at=recorded_at,
-        executor=submission_executor,
     )
+    if resumed_submission is not None:
+        resumed_payload, _, submit_receipt = resumed_submission
+        payload = json.loads(resumed_payload)
+        if not isinstance(payload, dict):
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_submission_resume_repair_invalid"
+            )
+        source_capture_receipts.append(submit_receipt)
+    else:
+        submission_step, payload, _ = _call_live_tool(
+            events=events,
+            session_id=str(role_bundle["session"]["session_id"]),
+            actor_id="HARNESS::STRICT-SUBMISSION-MAPPER",
+            profile=submission_profile,
+            messages=compile_specialist_workpaper_submission_messages(
+                context=submission_view,
+                source_draft=source_draft,
+                source_capture_digest=draft_response_digest,
+                tool=submission_tool,
+            ),
+            tool=submission_tool,
+            expected_name=SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_id=(
+                f"{attempt_prefix}-{repair_fragment}-submit"
+            ),
+            occurred_at=recorded_at,
+            executor=submission_executor,
+        )
+        provider_steps.append(_public_provider_step(submission_step.as_dict()))
     repaired, receipt = validate_specialist_workpaper_submission(
         payload,
         context=repair_context,
@@ -4295,10 +4841,8 @@ def _execute_submission_successor_role_repair(
         "repaired_workpaper": repaired,
         "continued_events": events,
         "submission_receipt": receipt,
-        "provider_steps": [
-            _public_provider_step(draft_step.as_dict()),
-            _public_provider_step(submission_step.as_dict()),
-        ],
+        "provider_steps": provider_steps,
+        "source_capture_receipts": source_capture_receipts,
         "authority_refs_unchanged": True,
     }
 
@@ -5325,6 +5869,362 @@ def run_zero_call_submission_successor(
     return public
 
 
+def run_zero_call_submission_repair_resume(
+    *,
+    attempt_id: str,
+    predecessor_public_path: Path,
+    predecessor_private_path: Path,
+    resume_public_path: Path,
+    resume_private_path: Path,
+    private_output: Path,
+    public_output: Path,
+) -> dict[str, Any]:
+    """Prove the exact first repair frontier after the R4 local failure."""
+
+    predecessor_public = _read_json(predecessor_public_path)
+    predecessor = _read_json(predecessor_private_path)
+    resume_public = _read_json(resume_public_path)
+    resume_private = _read_json(resume_private_path)
+    resume_authority_path = _resolve_repo_ref(
+        str(resume_public.get("authority_ref") or "")
+    )
+    resume_authority = _read_json(resume_authority_path)
+    if not (
+        predecessor_public.get("result_digest")
+        == canonical_digest(
+            {
+                key: deepcopy(value)
+                for key, value in predecessor_public.items()
+                if key != "result_digest"
+            }
+        )
+        and predecessor.get("full_result_digest")
+        == canonical_digest(
+            {
+                key: deepcopy(value)
+                for key, value in predecessor.items()
+                if key != "full_result_digest"
+            }
+        )
+        and predecessor_public.get("private_full_result_sha256")
+        == _sha256(predecessor_private_path)
+        and resume_public.get("result_digest")
+        == canonical_digest(
+            {
+                key: deepcopy(value)
+                for key, value in resume_public.items()
+                if key != "result_digest"
+            }
+        )
+        and resume_private.get("full_result_digest")
+        == canonical_digest(
+            {
+                key: deepcopy(value)
+                for key, value in resume_private.items()
+                if key != "full_result_digest"
+            }
+        )
+        and resume_public.get("private_full_result_sha256")
+        == _sha256(resume_private_path)
+        and resume_public.get("status")
+        == "terminal_partial_local_contract_failure_preserved"
+        and resume_private.get("status")
+        == "terminal_partial_local_contract_failure_preserved"
+        and resume_private.get("authority_sha256")
+        == _sha256(resume_authority_path)
+        and resume_private.get("failure", {}).get("code")
+        == "dynamic_single_unit_workpaper_submission_context_invalid"
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_repair_resume_predecessor_invalid"
+        )
+    manifest = _validate_resume_capture_manifest(
+        resume_private.get("capture_manifest") or ()
+    )
+    if not (
+        len(manifest) == 17
+        and all(row["reusable"] for row in manifest)
+        and len({str(row["attempt_id"]) for row in manifest}) == 17
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_repair_resume_manifest_invalid"
+        )
+
+    policy, programs = _compile_role_programs()
+    by_agent = role_program_by_agent(programs)
+    source_refs = policy["source_refs"]
+    runtime_paths = resolve_runtime_paths(ROOT)
+    permissions = frozenset({"current_product:read"})
+    retrieval_principal = ResearchRetrievalPrincipal("current", permissions)
+    retrieval = ResearchRetrievalService.from_runtime_paths(ROOT, runtime_paths)
+    evidence_pack = ResearchEvidencePackService.from_runtime_paths(
+        ROOT, runtime_paths
+    ).get_case(
+        "DELL", ResearchEvidencePackPrincipal("current", permissions)
+    )
+    truth_policy = _read_json(source_refs["truth_spine_policy_ref"])
+    consumer_policy = _read_json(source_refs["consumer_policy_ref"])
+    task_quantitative = _read_json(source_refs["task_quantitative_result_ref"])
+    authority_bound = resume_authority["bound_inputs"]
+    research_profile = load_agent_transport_profile(
+        _read_json(authority_bound["provider_profile_ref"])
+    )
+    submission_profile = load_chat_completion_profile(
+        _read_json(authority_bound["submission_profile_ref"])
+    )
+    predecessor_by_agent = {
+        str(row["agent_id"]): row for row in predecessor["role_bundles"]
+    }
+
+    def _forbid_provider(**kwargs: Any) -> AgentToolStepResult:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_repair_resume_unexpected_provider:"
+            + str(kwargs.get("attempt_id") or "")
+        )
+
+    replay_recorded_at = _resume_replay_recorded_at(manifest)
+    role_bundles: dict[str, dict[str, Any]] = {}
+    for agent_id in SPECIALIST_AGENT_IDS:
+        role_bundles[agent_id] = _execute_submission_successor_role(
+            role_program=by_agent[agent_id],
+            predecessor_bundle=predecessor_by_agent[agent_id],
+            predecessor_recorded_at=str(predecessor["recorded_at"]),
+            run_id=f"{attempt_id}-REQUAL",
+            attempt_prefix=f"{attempt_id}-REQUAL",
+            recorded_at=replay_recorded_at,
+            capture_root=private_output.parent / "forbidden-captures",
+            research_profile=research_profile,
+            submission_profile=submission_profile,
+            retrieval=retrieval,
+            retrieval_principal=retrieval_principal,
+            evidence_pack=evidence_pack,
+            truth_policy=truth_policy,
+            consumer_policy=consumer_policy,
+            task_quantitative=task_quantitative,
+            research_executor=_forbid_provider,
+            submission_executor=_forbid_provider,
+            resume_capture_manifest=manifest,
+            session_seed_run_id=str(resume_private["run_id"]),
+        )
+    captured_workpapers = {
+        str(row["agent_id"]): row
+        for row in _resume_lead_input_workpapers(manifest, round_index=1)
+    }
+    for agent_id in SPECIALIST_AGENT_IDS:
+        exact_workpaper = _validate_resume_workpaper_authority(
+            captured_workpapers[agent_id],
+            context=role_bundles[agent_id]["workpaper_context"],
+            expected_agent_id=agent_id,
+        )
+        role_bundles[agent_id]["workpaper"] = exact_workpaper
+    final_workpapers = [
+        deepcopy(role_bundles[agent_id]["workpaper"])
+        for agent_id in SPECIALIST_AGENT_IDS
+    ]
+    lead_session, lead_events = _create_lead_session(
+        run_id=str(resume_private["run_id"]),
+        workpapers=final_workpapers,
+        recorded_at=replay_recorded_at,
+    )
+    first = _execute_submission_successor_lead_round(
+        workpapers=final_workpapers,
+        local_failure_receipts=(),
+        session=lead_session,
+        events=lead_events,
+        research_profile=research_profile,
+        submission_profile=submission_profile,
+        capture_root=private_output.parent / "forbidden-captures",
+        run_id=f"{attempt_id}-REQUAL",
+        attempt_prefix=f"{attempt_id}-REQUAL",
+        round_index=1,
+        recorded_at=replay_recorded_at,
+        research_executor=_forbid_provider,
+        submission_executor=_forbid_provider,
+        resume_capture_manifest=manifest,
+    )
+    accepted = set(first["decision"]["accepted_challenge_ids"])
+    challenge_by_id = {
+        str(row["challenge_id"]): row for row in first["challenge_catalog"]
+    }
+    by_target: dict[str, list[dict[str, Any]]] = {}
+    for challenge_id in sorted(accepted):
+        challenge = challenge_by_id[challenge_id]
+        by_target.setdefault(str(challenge["target_agent_id"]), []).append(
+            challenge
+        )
+    ordered_targets = sorted(by_target)
+    if len(ordered_targets) != 3:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_repair_resume_targets_invalid"
+        )
+    first_target = ordered_targets[0]
+    receipts = [
+        compile_cross_role_feedback_receipt(
+            target_session_id=str(
+                role_bundles[first_target]["session"]["session_id"]
+            ),
+            challenge=challenge,
+            created_at=replay_recorded_at,
+        )
+        for challenge in by_target[first_target]
+    ]
+    repair_context = compile_workpaper_repair_context(
+        context=role_bundles[first_target]["workpaper_context"],
+        prior_workpaper=role_bundles[first_target]["workpaper"],
+        feedback_receipts=receipts,
+    )
+    repair_view = compile_workpaper_submission_view(repair_context)
+
+    class _RepairFrontierReached(RuntimeError):
+        pass
+
+    frontier_attempts: list[str] = []
+
+    def _repair_frontier(**kwargs: Any) -> AgentToolStepResult:
+        frontier_attempts.append(str(kwargs.get("attempt_id") or ""))
+        raise _RepairFrontierReached(frontier_attempts[-1])
+
+    try:
+        _execute_submission_successor_role_repair(
+            role_bundle=role_bundles[first_target],
+            challenges=by_target[first_target],
+            research_profile=research_profile,
+            submission_profile=submission_profile,
+            capture_root=private_output.parent / "forbidden-captures",
+            run_id=f"{attempt_id}-FRONTIER",
+            attempt_prefix=f"{attempt_id}-FRONTIER",
+            repair_index=1,
+            recorded_at=replay_recorded_at,
+            research_executor=_repair_frontier,
+            submission_executor=_forbid_provider,
+            resume_capture_manifest=manifest,
+        )
+    except _RepairFrontierReached:
+        pass
+    expected_suffix = (
+        first_target.split("::")[-1].lower().replace("_", "-")
+        + "-repair-r1-draft"
+    )
+    checks = {
+        "R1_and_R4_public_private_digests_bound": True,
+        "seventeen_completed_captures_reusable": len(manifest) == 17,
+        "six_specialist_workpapers_reconstructed_without_provider": (
+            len(role_bundles) == 6
+            and all(
+                bundle["status"] == "completed_contract_valid"
+                and bundle["execution"]["provider_calls_attempted"] == 0
+                for bundle in role_bundles.values()
+            )
+        ),
+        "lead_R1_decision_reconstructed_without_provider": (
+            _provider_attempt_count(lead_events) == 0
+            and len(first["decision"]["accepted_challenge_ids"]) == 3
+        ),
+        "three_material_role_repairs_selected": len(ordered_targets) == 3,
+        "repair_context_carries_prior_workpaper_and_feedback": (
+            repair_view.get("repair_state", {}).get("prior_workpaper", {}).get(
+                "workpaper_digest"
+            )
+            == role_bundles[first_target]["workpaper"]["workpaper_digest"]
+            and repair_view.get("repair_state", {}).get(
+                "accepted_feedback_refs"
+            )
+            == [str(row["feedback_id"]) for row in receipts]
+        ),
+        "first_new_provider_frontier_is_exact": (
+            len(frontier_attempts) == 1
+            and frontier_attempts[0].endswith(expected_suffix)
+        ),
+        "repair_resume_budget_compiles_to_eight_calls": (
+            expected_submission_repair_resume_budget()[
+                "maximum_new_model_calls"
+            ]
+            == 8
+        ),
+        "zero_model_network_paid_calls": True,
+    }
+    if not all(checks.values()):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_submission_repair_resume_zero_call_not_proven"
+        )
+    private_body = {
+        "schema_version": SUBMISSION_SUCCESSOR_ZERO_SCHEMA,
+        "status": "submission_successor_repair_resume_zero_call_proven",
+        "recorded_at": _now(),
+        "attempt_id": attempt_id,
+        "predecessor_public_ref": _relative(predecessor_public_path),
+        "predecessor_public_sha256": _sha256(predecessor_public_path),
+        "predecessor_private_ref": _relative(predecessor_private_path),
+        "predecessor_private_sha256": _sha256(predecessor_private_path),
+        "resume_public_ref": _relative(resume_public_path),
+        "resume_public_sha256": _sha256(resume_public_path),
+        "resume_public_result_digest": resume_public["result_digest"],
+        "resume_private_ref": _relative(resume_private_path),
+        "resume_private_sha256": _sha256(resume_private_path),
+        "resume_private_full_result_digest": resume_private[
+            "full_result_digest"
+        ],
+        "role_proofs": [
+            {
+                "agent_id": agent_id,
+                "workpaper_digest": role_bundles[agent_id]["workpaper"][
+                    "workpaper_digest"
+                ],
+                "provider_calls": role_bundles[agent_id]["execution"][
+                    "provider_calls_attempted"
+                ],
+                "resume_provider_captures_reused": role_bundles[agent_id][
+                    "execution"
+                ]["resume_provider_captures_reused"],
+            }
+            for agent_id in SPECIALIST_AGENT_IDS
+        ],
+        "lead_R1_decision": deepcopy(first["decision"]),
+        "repair_targets": ordered_targets,
+        "first_repair_target": first_target,
+        "first_repair_submission_view_digest": repair_view[
+            "submission_view_digest"
+        ],
+        "frontier": {
+            "next_attempt_suffix": expected_suffix,
+            "completed_capture_reuse_count": 17,
+            "prior_provider_call_repeat_count": 0,
+        },
+        "checks": checks,
+        "execution": {
+            "model_calls": 0,
+            "network_calls": 0,
+            "paid_tool_calls": 0,
+            "retrieval_calls": 0,
+            "deterministic_S1_S2_replays": 1,
+        },
+        "claims": {
+            "R1_or_R4_relabelled_as_success": False,
+            "S3_pass": False,
+            "product_acceptance": False,
+            "release_ready": False,
+        },
+    }
+    private_result = {
+        **private_body,
+        "full_result_digest": canonical_digest(private_body),
+    }
+    _write_json(private_output, private_result, exclusive=True)
+    public_body = {
+        **{
+            key: deepcopy(value)
+            for key, value in private_result.items()
+            if key != "full_result_digest"
+        },
+        "private_result_ref": _relative(private_output),
+        "private_result_sha256": _sha256(private_output),
+    }
+    public_body.pop("role_proofs", None)
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_json(public_output, public, exclusive=True)
+    return public
+
+
 def run_submission_successor_live(
     *,
     authority_path: Path,
@@ -5349,14 +6249,31 @@ def run_submission_successor_live(
     recorded_at = _now()
     predecessor = _read_json(paths["predecessor_private_ref"])
     resume_enabled = (
-        authority.get("schema_version") == SUBMISSION_RESUME_AUTHORITY_SCHEMA
+        authority.get("schema_version")
+        in {
+            SUBMISSION_RESUME_AUTHORITY_SCHEMA,
+            SUBMISSION_REPAIR_RESUME_AUTHORITY_SCHEMA,
+        }
     )
     resume_capture_manifest: list[dict[str, Any]] = []
+    resume_private: dict[str, Any] = {}
     if resume_enabled:
         resume_private = _read_json(paths["resume_private_ref"])
         resume_capture_manifest = _validate_resume_capture_manifest(
             resume_private.get("capture_manifest") or ()
         )
+    role_replay_recorded_at = (
+        _resume_replay_recorded_at(resume_capture_manifest)
+        if authority.get("schema_version")
+        == SUBMISSION_REPAIR_RESUME_AUTHORITY_SCHEMA
+        else recorded_at
+    )
+    role_session_seed_run_id = (
+        str(resume_private["run_id"])
+        if authority.get("schema_version")
+        == SUBMISSION_REPAIR_RESUME_AUTHORITY_SCHEMA
+        else run_id
+    )
 
     policy, programs = _compile_role_programs()
     by_agent = role_program_by_agent(programs)
@@ -5409,7 +6326,7 @@ def run_submission_successor_live(
             predecessor_recorded_at=str(predecessor["recorded_at"]),
             run_id=run_id,
             attempt_prefix=attempt_prefix,
-            recorded_at=recorded_at,
+            recorded_at=role_replay_recorded_at,
             capture_root=capture_root,
             research_profile=research_profile,
             submission_profile=submission_profile,
@@ -5422,16 +6339,34 @@ def run_submission_successor_live(
             research_executor=research_executor,
             submission_executor=submission_executor,
             resume_capture_manifest=resume_capture_manifest,
+            session_seed_run_id=role_session_seed_run_id,
         )
+    if repair_resume_enabled := (
+        authority.get("schema_version")
+        == SUBMISSION_REPAIR_RESUME_AUTHORITY_SCHEMA
+    ):
+        captured_workpapers = {
+            str(row["agent_id"]): row
+            for row in _resume_lead_input_workpapers(
+                resume_capture_manifest, round_index=1
+            )
+        }
+        for agent_id in SPECIALIST_AGENT_IDS:
+            exact_workpaper = _validate_resume_workpaper_authority(
+                captured_workpapers[agent_id],
+                context=role_bundles[agent_id]["workpaper_context"],
+                expected_agent_id=agent_id,
+            )
+            role_bundles[agent_id]["workpaper"] = exact_workpaper
 
     final_workpapers = [
         deepcopy(role_bundles[agent_id]["workpaper"])
         for agent_id in SPECIALIST_AGENT_IDS
     ]
     lead_session, lead_events = _create_lead_session(
-        run_id=run_id,
+        run_id=role_session_seed_run_id,
         workpapers=final_workpapers,
-        recorded_at=recorded_at,
+        recorded_at=role_replay_recorded_at,
     )
     repairs: list[dict[str, Any]] = []
     first = _execute_submission_successor_lead_round(
@@ -5445,9 +6380,10 @@ def run_submission_successor_live(
         run_id=run_id,
         attempt_prefix=attempt_prefix,
         round_index=1,
-        recorded_at=recorded_at,
+        recorded_at=role_replay_recorded_at,
         research_executor=research_executor,
         submission_executor=submission_executor,
+        resume_capture_manifest=resume_capture_manifest,
     )
     lead_rounds = [first]
     accepted = set(first["decision"]["accepted_challenge_ids"])
@@ -5461,9 +6397,13 @@ def run_submission_successor_live(
             challenge
         )
     budget = (
-        expected_submission_resume_budget()
-        if resume_enabled
-        else expected_submission_successor_budget()
+        expected_submission_repair_resume_budget()
+        if repair_resume_enabled
+        else (
+            expected_submission_resume_budget()
+            if resume_enabled
+            else expected_submission_successor_budget()
+        )
     )
     if len(by_target) > budget["maximum_role_repairs"]:
         raise DynamicMultiAgentLoopError(
@@ -5484,6 +6424,7 @@ def run_submission_successor_live(
             recorded_at=recorded_at,
             research_executor=research_executor,
             submission_executor=submission_executor,
+            resume_capture_manifest=resume_capture_manifest,
         )
         repairs.append(repair)
         role_bundles[target]["workpaper"] = repair["repaired_workpaper"]
@@ -5508,6 +6449,7 @@ def run_submission_successor_live(
                 recorded_at=recorded_at,
                 research_executor=research_executor,
                 submission_executor=submission_executor,
+                resume_capture_manifest=resume_capture_manifest,
             )
         )
     last_decision = lead_rounds[-1]["decision"]
@@ -5614,6 +6556,14 @@ def run_submission_successor_live(
                     )
                 )
                 for agent_id in SPECIALIST_AGENT_IDS
+            )
+            + sum(
+                len(row.get("source_capture_receipts") or ())
+                for row in lead_rounds
+            )
+            + sum(
+                len(row.get("source_capture_receipts") or ())
+                for row in repairs
             ),
             "specialist_sessions_completed": 6,
             "new_retrieval_rounds": new_rounds,
@@ -5722,6 +6672,7 @@ def main() -> int:
             "zero-call",
             "zero-call-repair-successor",
             "zero-call-submission-successor",
+            "zero-call-submission-repair-resume",
             "live",
             "live-submission-successor",
         ),
@@ -5752,9 +6703,13 @@ def main() -> int:
                 "zero_call_repair_successor_full_result.json"
                 if args.mode == "zero-call-repair-successor"
                 else (
-                    "zero_call_submission_successor_full_result.json"
+                "zero_call_submission_successor_full_result.json"
                     if args.mode == "zero-call-submission-successor"
-                    else "full_result.json"
+                    else (
+                        "zero_call_submission_repair_resume_full_result.json"
+                        if args.mode == "zero-call-submission-repair-resume"
+                        else "full_result.json"
+                    )
                 )
             )
         )
@@ -5767,7 +6722,11 @@ def main() -> int:
             if args.mode == "zero-call-repair-successor"
             else (
                 DEFAULT_SUBMISSION_SUCCESSOR_ZERO_PUBLIC
-                if args.mode == "zero-call-submission-successor"
+                if args.mode
+                in {
+                    "zero-call-submission-successor",
+                    "zero-call-submission-repair-resume",
+                }
                 else (
                     DEFAULT_SUBMISSION_SUCCESSOR_LIVE_PUBLIC
                     if args.mode == "live-submission-successor"
@@ -5805,6 +6764,30 @@ def main() -> int:
         result = run_zero_call_repair_successor(
             attempt_id=args.attempt_id,
             predecessor_path=predecessor,
+            private_output=private_output,
+            public_output=public_output,
+        )
+    elif args.mode == "zero-call-submission-repair-resume":
+        if not (
+            args.predecessor_private
+            and args.predecessor_public
+            and args.resume_private
+            and args.resume_public
+        ):
+            parser.error(
+                "predecessor and resume public/private refs are required "
+                "for submission repair resume"
+            )
+        predecessor_private = _resolve_repo_ref(args.predecessor_private)
+        predecessor_public = _resolve_repo_ref(args.predecessor_public)
+        resume_private = _resolve_repo_ref(args.resume_private)
+        resume_public = _resolve_repo_ref(args.resume_public)
+        result = run_zero_call_submission_repair_resume(
+            attempt_id=args.attempt_id,
+            predecessor_public_path=predecessor_public.resolve(),
+            predecessor_private_path=predecessor_private.resolve(),
+            resume_public_path=resume_public.resolve(),
+            resume_private_path=resume_private.resolve(),
             private_output=private_output,
             public_output=public_output,
         )

@@ -563,6 +563,23 @@ def test_workpaper_context_merges_rounds_without_candidate_promotion(
     assert repaired["repair_state"]["accepted_feedback_refs"] == [
         "FEEDBACK::ROLE-REPAIR"
     ]
+    repair_submission = compile_workpaper_submission_view(repaired)
+    assert repair_submission["source_context_digest"] == repaired[
+        "context_digest"
+    ]
+    assert repair_submission["repair_state"]["prior_workpaper"] == prior
+    assert repair_submission["repair_state"]["accepted_feedback_refs"] == [
+        "FEEDBACK::ROLE-REPAIR"
+    ]
+    assert repair_submission["authority"]["role_local_repair_only"] is True
+
+    repair_tampered = deepcopy(repaired)
+    repair_tampered["repair_state"]["prior_workpaper"]["thesis"] = "tampered"
+    with pytest.raises(
+        DynamicSingleUnitLoopError,
+        match="workpaper_submission_context_invalid",
+    ):
+        compile_workpaper_submission_view(repair_tampered)
     assert repaired["source_context_digest"] == context["context_digest"]
 
     foreign = deepcopy(feedback)

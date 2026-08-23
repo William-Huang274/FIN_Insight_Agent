@@ -13,12 +13,18 @@ from sec_agent.research.dynamic_research_runtime import (
 
 
 POLICY_SCHEMA_VERSION = "fin_ia_s3_dynamic_single_unit_loop_policy_v1_0"
+GENERIC_SPECIALIST_POLICY_SCHEMA_VERSION = (
+    "fin_ia_s3_dynamic_specialist_loop_policy_v1_1"
+)
 REQUEST_TOOL_NAME = "request_research_evidence"
 REFLECTION_TOOL_NAME = "submit_research_reflection"
 REQUEST_PAYLOAD_SCHEMA_VERSION = "fin_ia_dynamic_research_request_selection_v1_0"
 REFLECTION_PAYLOAD_SCHEMA_VERSION = "fin_ia_dynamic_research_reflection_v1_0"
 ROUND_RESPONSE_SCHEMA_VERSION = "fin_ia_dynamic_research_round_response_v1_0"
 WORKPAPER_CONTEXT_SCHEMA_VERSION = "fin_ia_dynamic_single_unit_workpaper_context_v1_0"
+WORKPAPER_REPAIR_CONTEXT_SCHEMA_VERSION = (
+    "fin_ia_dynamic_specialist_workpaper_repair_context_v1_0"
+)
 
 
 class DynamicSingleUnitLoopError(ValueError):
@@ -58,10 +64,19 @@ def _strings(
 
 def load_dynamic_single_unit_policy(payload: Mapping[str, Any]) -> dict[str, Any]:
     value = deepcopy(dict(payload))
+    schema_version = str(value.get("schema_version") or "")
+    generic_specialist = schema_version == GENERIC_SPECIALIST_POLICY_SCHEMA_VERSION
     _require(
-        value.get("schema_version") == POLICY_SCHEMA_VERSION
-        and value.get("status")
-        == "bounded_current_runtime_dynamic_single_unit_candidate",
+        (
+            schema_version == POLICY_SCHEMA_VERSION
+            and value.get("status")
+            == "bounded_current_runtime_dynamic_single_unit_candidate"
+        )
+        or (
+            generic_specialist
+            and value.get("status")
+            == "current_runtime_dynamic_specialist_candidate"
+        ),
         "dynamic_single_unit_policy_identity_invalid",
     )
     identity = _mapping(
@@ -80,14 +95,43 @@ def load_dynamic_single_unit_policy(payload: Mapping[str, Any]) -> dict[str, Any
     authority = _mapping(
         value.get("authority"), "dynamic_single_unit_policy_authority_invalid"
     )
-    _require(
-        identity.get("case_key") == "DELL"
-        and identity.get("subject_ticker") == "DELL"
-        and identity.get("research_as_of") == "2026-08-06"
-        and objective.get("cell_id") == "value_capture"
-        and objective.get("agent_id") == "AGENT::VALUE_CAPTURE",
-        "dynamic_single_unit_policy_scope_invalid",
-    )
+    if generic_specialist:
+        role_contract = _mapping(
+            value.get("role_contract"),
+            "dynamic_single_unit_policy_role_contract_invalid",
+        )
+        rules = _strings(
+            role_contract.get("workpaper_rules"),
+            "dynamic_single_unit_policy_role_contract_invalid",
+            minimum=1,
+            maximum=12,
+        )
+        _require(
+            bool(str(identity.get("case_key") or "").strip())
+            and bool(str(identity.get("subject_ticker") or "").strip())
+            and bool(str(identity.get("subject_legal_name") or "").strip())
+            and bool(str(identity.get("research_as_of") or "").strip())
+            and bool(str(objective.get("objective_id") or "").strip())
+            and str(objective.get("cell_id") or "").startswith("CELL::")
+            and str(objective.get("agent_id") or "").startswith("AGENT::")
+            and bool(str(objective.get("question_zh") or "").strip())
+            and str(role_contract.get("agent_id") or "")
+            == str(objective.get("agent_id") or "")
+            and str(role_contract.get("cell_id") or "")
+            == str(objective.get("cell_id") or "")
+            and len(str(role_contract.get("responsibility") or "").strip()) >= 30
+            and bool(rules),
+            "dynamic_single_unit_policy_scope_invalid",
+        )
+    else:
+        _require(
+            identity.get("case_key") == "DELL"
+            and identity.get("subject_ticker") == "DELL"
+            and identity.get("research_as_of") == "2026-08-06"
+            and objective.get("cell_id") == "value_capture"
+            and objective.get("agent_id") == "AGENT::VALUE_CAPTURE",
+            "dynamic_single_unit_policy_scope_invalid",
+        )
     _require(
         isinstance(limits.get("maximum_retrieval_rounds"), int)
         and 1 <= limits["maximum_retrieval_rounds"] <= 3
@@ -99,25 +143,47 @@ def load_dynamic_single_unit_policy(payload: Mapping[str, Any]) -> dict[str, Any
         and limits.get("candidate_text_model_visibility") is False,
         "dynamic_single_unit_policy_limits_invalid",
     )
-    _require(
-        set(coverage)
-        == {
-            "price_and_configuration",
-            "unit_volume",
-            "pvm",
-            "customer_demand",
-            "supply_chain",
-            "value_pool",
-            "counterevidence",
-        }
-        and all(
-            isinstance(request_ids, list)
-            and bool(request_ids)
-            and len(request_ids) == len(set(request_ids))
+    if generic_specialist:
+        covered_ids = [
+            str(request_id)
             for request_ids in coverage.values()
-        ),
-        "dynamic_single_unit_policy_coverage_invalid",
-    )
+            if isinstance(request_ids, list)
+            for request_id in request_ids
+        ]
+        _require(
+            1 <= len(coverage) <= 8
+            and all(
+                bool(str(group_id).strip())
+                and isinstance(request_ids, list)
+                and bool(request_ids)
+                and len(request_ids) == len(set(str(row) for row in request_ids))
+                and all(str(row).strip() for row in request_ids)
+                for group_id, request_ids in coverage.items()
+            )
+            and len(set(covered_ids))
+            <= int(limits["maximum_total_request_ids"]),
+            "dynamic_single_unit_policy_coverage_invalid",
+        )
+    else:
+        _require(
+            set(coverage)
+            == {
+                "price_and_configuration",
+                "unit_volume",
+                "pvm",
+                "customer_demand",
+                "supply_chain",
+                "value_pool",
+                "counterevidence",
+            }
+            and all(
+                isinstance(request_ids, list)
+                and bool(request_ids)
+                and len(request_ids) == len(set(request_ids))
+                for request_ids in coverage.values()
+            ),
+            "dynamic_single_unit_policy_coverage_invalid",
+        )
     _require(
         authority.get("initial_message_may_contain_evidence_or_numeric_facts")
         is False
@@ -380,20 +446,36 @@ def compile_initial_messages(
             "submit one source-bound specialist workpaper after stopping research",
         ],
     }
+    system_content = (
+        "You are the DELL value-capture research specialist in a bounded "
+        "financial research session. Start from the user question, identity, "
+        "as-of date and available tools only. Select research actions, inspect "
+        "reviewed Evidence and typed facts returned by tools, then explicitly "
+        "reflect on missing bridges, contradictions, counterevidence and "
+        "whether another search round is useful. Candidate rank is not "
+        "Evidence. A failed route or empty result is not public non-disclosure. "
+        "Graph hypotheses are query guidance only. Do not rely on memory for "
+        "facts, numbers, dates, sources or citations."
+    )
+    if trusted["schema_version"] == GENERIC_SPECIALIST_POLICY_SCHEMA_VERSION:
+        role_contract = trusted["role_contract"]
+        system_content = (
+            "You are an independent financial research specialist in a bounded "
+            "multi-agent session. Your assigned role is "
+            f"{objective['agent_id']} and your responsibility is: "
+            f"{role_contract['responsibility']} Start only from the user question, "
+            "company identity, as-of date and authorized tool catalog. Select "
+            "research actions, inspect reviewed Evidence and typed NumericFacts "
+            "returned by tools, then explicitly reflect on missing bridges, "
+            "contradictions, counterevidence and whether another round is useful. "
+            "Candidate rank is not Evidence; a failed or empty route is not public "
+            "non-disclosure; graph hypotheses are query guidance only. Do not use "
+            "model memory as fact, number, date, source or citation authority."
+        )
     return (
         {
             "role": "system",
-            "content": (
-                "You are the DELL value-capture research specialist in a bounded "
-                "financial research session. Start from the user question, identity, "
-                "as-of date and available tools only. Select research actions, inspect "
-                "reviewed Evidence and typed facts returned by tools, then explicitly "
-                "reflect on missing bridges, contradictions, counterevidence and "
-                "whether another search round is useful. Candidate rank is not "
-                "Evidence. A failed route or empty result is not public non-disclosure. "
-                "Graph hypotheses are query guidance only. Do not rely on memory for "
-                "facts, numbers, dates, sources or citations."
-            ),
+            "content": system_content,
         },
         {
             "role": "user",
@@ -1012,7 +1094,7 @@ def reflection_tool(
                     },
                     "feedback_refs": {
                         "type": "array",
-                        "minItems": 1 if feedback_refs else 0,
+                        "minItems": len(feedback_refs),
                         "maxItems": len(feedback_refs),
                         "uniqueItems": True,
                         "items": {
@@ -1132,11 +1214,11 @@ def validate_reflection_payload(
     value["feedback_refs"] = _strings(
         value.get("feedback_refs"),
         "dynamic_single_unit_reflection_feedback_invalid",
-        minimum=1 if allowed_feedback else 0,
+        minimum=len(allowed_feedback),
         maximum=len(allowed_feedback),
     )
     _require(
-        set(value["feedback_refs"]).issubset(allowed_feedback),
+        set(value["feedback_refs"]) == allowed_feedback,
         "dynamic_single_unit_reflection_feedback_out_of_scope",
     )
     catalog_ids = {
@@ -1425,6 +1507,9 @@ def compile_workpaper_context(
     scenarios: dict[str, dict[str, Any]] = {}
     method_pack: dict[str, Any] | None = None
     graph_packs: list[dict[str, Any]] = []
+    objective_cell_id = str(trusted["objective"]["cell_id"])
+    if not objective_cell_id.startswith("CELL::"):
+        objective_cell_id = "CELL::" + objective_cell_id
     for response in round_responses:
         for row in response.get("reviewed_evidence") or ():
             evidence[str(row["evidence_ref"])] = deepcopy(dict(row))
@@ -1441,16 +1526,38 @@ def compile_workpaper_context(
             scenarios[str(row["scenario_id"])] = deepcopy(dict(row))
         dynamic = response.get("_dynamic_research_input") or {}
         for cell in dynamic.get("cells") or ():
-            if str(cell.get("cell_id") or "") == "CELL::value_capture":
+            if str(cell.get("cell_id") or "") == objective_cell_id:
                 method_pack = deepcopy(dict(cell.get("role_method_pack") or {}))
                 graph = cell.get("graph_context_pack")
                 if isinstance(graph, Mapping):
                     graph_packs.append(deepcopy(dict(graph)))
     _require(method_pack is not None, "dynamic_single_unit_workpaper_method_pack_missing")
     numeric_authorities = {**numeric, **estimates}
+    role_contract = trusted.get("role_contract") or {}
+    responsibility = (
+        str(role_contract.get("responsibility") or "")
+        if role_contract
+        else (
+            "Evaluate how DELL AI-server demand, price/configuration, volume, "
+            "mix, supply constraints and counterparty economics translate into "
+            "gross profit, operating profit and cash, without inventing a "
+            "product-level causal bridge."
+        )
+    )
+    workpaper_rules = (
+        list(role_contract.get("workpaper_rules") or ())
+        if role_contract
+        else [
+            "Lead with the useful judgment; consolidate limitations under the exact affected proposition instead of repeating generic disclaimers.",
+            "Distinguish issuer facts, counterparty context, deterministic derived values, research estimates and scenarios.",
+            "Do not turn industry shipment growth into DELL units or channel price into DELL ASP.",
+            "Do not equate ISG profit with AI-server profit without a direct bridge.",
+            "Translate every material remaining gap into its decision impact and an observable what-would-change condition.",
+        ]
+    )
     cell_view = {
         "cell": {
-            "cell_id": "CELL::value_capture",
+            "cell_id": objective_cell_id,
             "cell_evidence_views": [evidence[key] for key in sorted(evidence)],
             "allowed_numeric_refs": sorted(numeric_authorities),
             "allowed_numeric_relation_refs": sorted(relations),
@@ -1469,13 +1576,8 @@ def compile_workpaper_context(
         "schema_version": WORKPAPER_CONTEXT_SCHEMA_VERSION,
         "agent": {
             "agent_id": trusted["objective"]["agent_id"],
-            "cell_id": "CELL::value_capture",
-            "responsibility": (
-                "Evaluate how DELL AI-server demand, price/configuration, volume, "
-                "mix, supply constraints and counterparty economics translate into "
-                "gross profit, operating profit and cash, without inventing a "
-                "product-level causal bridge."
-            ),
+            "cell_id": objective_cell_id,
+            "responsibility": responsibility,
         },
         "objective": deepcopy(trusted["objective"]),
         "case_identity": deepcopy(trusted["case_identity"]),
@@ -1485,13 +1587,7 @@ def compile_workpaper_context(
         "feedback_receipts": [deepcopy(dict(row)) for row in feedback_receipts],
         "reflection_history": [deepcopy(dict(row)) for row in reflections],
         "stop_decision": deepcopy(dict(stop_decision)),
-        "rules": [
-            "Lead with the useful judgment; consolidate limitations under the exact affected proposition instead of repeating generic disclaimers.",
-            "Distinguish issuer facts, counterparty context, deterministic derived values, research estimates and scenarios.",
-            "Do not turn industry shipment growth into DELL units or channel price into DELL ASP.",
-            "Do not equate ISG profit with AI-server profit without a direct bridge.",
-            "Translate every material remaining gap into its decision impact and an observable what-would-change condition.",
-        ],
+        "rules": workpaper_rules,
         "authority": {
             "model_owns_judgment": True,
             "harness_owns_refs_identity_dates_and_numeric_rendering": True,
@@ -1641,8 +1737,66 @@ def public_round_response(round_response: Mapping[str, Any]) -> dict[str, Any]:
     return value
 
 
+def compile_workpaper_repair_context(
+    *,
+    context: Mapping[str, Any],
+    prior_workpaper: Mapping[str, Any],
+    feedback_receipts: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Bind role-local repair feedback without widening evidence authority."""
+
+    current = deepcopy(dict(context))
+    source_digest = str(current.pop("context_digest", ""))
+    _require(
+        current.get("schema_version") == WORKPAPER_CONTEXT_SCHEMA_VERSION
+        and source_digest == canonical_digest(current),
+        "dynamic_single_unit_repair_context_invalid",
+    )
+    agent_id = str(current.get("agent", {}).get("agent_id") or "")
+    prior = deepcopy(dict(prior_workpaper))
+    prior_digest = str(prior.pop("workpaper_digest", ""))
+    _require(
+        bool(agent_id)
+        and str(prior.get("agent_id") or "") == agent_id
+        and prior_digest == canonical_digest(prior),
+        "dynamic_single_unit_repair_prior_workpaper_invalid",
+    )
+    receipts = [
+        validate_runtime_artifact("FeedbackReceipt", row)
+        for row in feedback_receipts
+    ]
+    feedback_ids = [str(row["feedback_id"]) for row in receipts]
+    _require(
+        bool(receipts)
+        and len(feedback_ids) == len(set(feedback_ids))
+        and all(str(row.get("target_node_id") or "") == agent_id for row in receipts),
+        "dynamic_single_unit_repair_feedback_invalid",
+    )
+    current["schema_version"] = WORKPAPER_REPAIR_CONTEXT_SCHEMA_VERSION
+    current["feedback_receipts"] = [
+        *[deepcopy(dict(row)) for row in current.get("feedback_receipts") or ()],
+        *receipts,
+    ]
+    current["repair_state"] = {
+        "prior_workpaper": {**prior, "workpaper_digest": prior_digest},
+        "accepted_feedback_refs": feedback_ids,
+        "repair_scope": "revise_only_feedback_affected_judgment_surfaces",
+        "new_evidence_authority_granted": False,
+        "new_numeric_authority_granted": False,
+        "case_date_source_and_tool_authority_expansion_forbidden": True,
+    }
+    current["authority"] = {
+        **deepcopy(dict(current.get("authority") or {})),
+        "role_local_repair_only": True,
+        "prior_authority_refs_preserved": True,
+    }
+    body = {**current, "source_context_digest": source_digest}
+    return {**body, "context_digest": canonical_digest(body)}
+
+
 __all__ = [
     "DynamicSingleUnitLoopError",
+    "GENERIC_SPECIALIST_POLICY_SCHEMA_VERSION",
     "POLICY_SCHEMA_VERSION",
     "REFLECTION_PAYLOAD_SCHEMA_VERSION",
     "REFLECTION_TOOL_NAME",
@@ -1656,6 +1810,7 @@ __all__ = [
     "compile_round_feedback_receipts",
     "compile_round_response",
     "compile_workpaper_context",
+    "compile_workpaper_repair_context",
     "compile_workpaper_submission_view",
     "coverage_state",
     "load_dynamic_single_unit_policy",

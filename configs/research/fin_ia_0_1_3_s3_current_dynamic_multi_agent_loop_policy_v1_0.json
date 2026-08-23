@@ -1,0 +1,85 @@
+{
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_loop_policy_v1_0",
+  "status": "zero_call_contract_candidate_live_not_authorized",
+  "case_identity": {
+    "case_key": "DELL",
+    "subject_ticker": "DELL",
+    "subject_legal_name": "Dell Technologies Inc.",
+    "research_as_of": "2026-08-06"
+  },
+  "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_objective_v1_0.json",
+  "source_refs": {
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_5.json",
+    "current_evidence_pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_5.json",
+    "lead_plan_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R6_lead_plan_checkpoint_v1_0.json",
+    "planner_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R3_specialist_plan_checkpoint_v1_0.json",
+    "provider_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+    "role_topology_ref": "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json",
+    "task_quantitative_result_ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_task_quantitative_program_result_v1_0.json",
+    "truth_spine_policy_ref": "configs/research/fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_1.json"
+  },
+  "specialist_roles": [
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "cell_id": "CELL::demand_quality",
+      "facet_ids": ["orders_and_backlog", "conversion_and_durability"],
+      "quantitative_slot_ids": ["demand_volume_quality"]
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "cell_id": "CELL::operating_performance",
+      "facet_ids": ["reported_results", "guidance_and_outlook"],
+      "quantitative_slot_ids": ["operating_performance"]
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "cell_id": "CELL::value_capture",
+      "facet_ids": ["margin_and_incremental_profit", "pricing_and_mix"],
+      "quantitative_slot_ids": ["pricing_mix_value_capture"]
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "cell_id": "CELL::cash_conversion",
+      "facet_ids": ["cash_generation", "working_capital_risk"],
+      "quantitative_slot_ids": ["cash_conversion_balance_sheet"]
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "cell_id": "CELL::counterevidence",
+      "facet_ids": ["upstream_capacity_context", "counterparty_direct_mention", "subject_relationship_disclosure"],
+      "quantitative_slot_ids": ["capacity_inputs_execution", "relationship_attribution"]
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "cell_id": "CELL::counterevidence",
+      "facet_ids": ["issuer_counterevidence", "upstream_or_demand_counterevidence"],
+      "quantitative_slot_ids": ["counterevidence_and_what_would_change"]
+    }
+  ],
+  "loop_limits": {
+    "maximum_retrieval_rounds_per_specialist": 2,
+    "maximum_request_ids_per_round": 2,
+    "maximum_total_request_ids_per_specialist": 3,
+    "maximum_provider_steps_per_specialist": 4,
+    "maximum_lead_coordination_rounds": 2,
+    "maximum_role_repairs_per_lead_round": 3,
+    "reviewed_evidence_excerpt_maximum_chars": 2400,
+    "repeated_request_forbidden": true,
+    "candidate_text_model_visibility": false
+  },
+  "token_budget_policy": {
+    "task_specific_basis_required_per_attempt": true,
+    "cost_or_latency_may_silently_drop_work": false,
+    "comparable_run_evidence_required": true,
+    "truncation_is_terminal": true
+  },
+  "authority": {
+    "specialists_have_independent_sessions": true,
+    "model_selects_research_actions": true,
+    "lead_may_route_feedback_but_not_author_research_facts": true,
+    "candidate_rank_grants_evidence": false,
+    "graph_hypothesis_grants_fact_authority": false,
+    "public_information_gap_requires_GapEligibilityReceipt": true,
+    "live_execution_requires_separate_signed_authority": true
+  }
+}

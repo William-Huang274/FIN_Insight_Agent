@@ -19,6 +19,7 @@ from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     compile_material_requirement_blueprints,
     compile_request_catalog,
     compile_workpaper_context,
+    compile_workpaper_repair_context,
     compile_workpaper_submission_view,
     load_dynamic_single_unit_policy,
     reflection_tool,
@@ -252,6 +253,42 @@ def test_reflection_compiles_plan_delta_and_hypothesis_only_graph(
     assert artifacts["stop_decision"]["decision"] == "continue"
 
 
+def test_reflection_cannot_silently_ignore_one_current_feedback_receipt(
+    policy: dict, catalog: dict
+) -> None:
+    feedback = [
+        {"feedback_id": "FEEDBACK::ONE"},
+        {"feedback_id": "FEEDBACK::TWO"},
+    ]
+    tool = reflection_tool(
+        policy=policy,
+        request_catalog=catalog,
+        feedback_receipts=feedback,
+        accepted_evidence_refs=[],
+        executed_request_ids=["REQ::DELL::PVM_BRIDGE::V1"],
+        round_index=1,
+    )
+    schema = tool["function"]["parameters"]["properties"]["feedback_refs"]
+    assert schema["minItems"] == 2
+    assert schema["maxItems"] == 2
+    with pytest.raises(DynamicSingleUnitLoopError) as exc:
+        validate_reflection_payload(
+            _reflection(
+                round_index=1,
+                feedback_refs=["FEEDBACK::ONE"],
+                next_request_ids=["REQ::DELL::SUPPLY_RELATIONSHIP::V1"],
+                decision="continue",
+            ),
+            policy=policy,
+            request_catalog=catalog,
+            feedback_receipts=feedback,
+            accepted_evidence_refs=[],
+            executed_request_ids=["REQ::DELL::PVM_BRIDGE::V1"],
+            round_index=1,
+        )
+    assert exc.value.code == "dynamic_single_unit_reflection_feedback_invalid"
+
+
 def test_reflection_empty_enums_compile_to_empty_arrays_not_fake_refs(
     policy: dict, catalog: dict
 ) -> None:
@@ -409,3 +446,49 @@ def test_workpaper_context_merges_rounds_without_candidate_promotion(
         match="workpaper_submission_context_invalid",
     ):
         compile_workpaper_submission_view(tampered)
+
+    prior_body = {
+        "schema_version": "fin_ia_multi_agent_specialist_workpaper_v1_0",
+        "agent_id": "AGENT::VALUE_CAPTURE",
+        "thesis": "prior",
+    }
+    from sec_agent.canonical_runtime.session import canonical_digest
+
+    prior = {**prior_body, "workpaper_digest": canonical_digest(prior_body)}
+    feedback = {
+        "feedback_id": "FEEDBACK::ROLE-REPAIR",
+        "session_id": "SESSION::VALUE",
+        "source_node_id": "AGENT::COUNTEREVIDENCE",
+        "target_node_id": "AGENT::VALUE_CAPTURE",
+        "failure_class": "material_cross_role_judgment_challenge",
+        "failure_code": "recheck_judgment",
+        "owning_plane": "agent_work_mode_plane",
+        "owning_stage": "S3",
+        "artifact_refs": ["challenge://one"],
+        "model_visible_summary": "Recheck the causal bridge.",
+        "permitted_next_actions": ["Revise the affected judgment."],
+        "forbidden_interpretations": ["Do not invent evidence."],
+        "created_at": "2026-08-23T12:00:00+00:00",
+    }
+    repaired = compile_workpaper_repair_context(
+        context=context,
+        prior_workpaper=prior,
+        feedback_receipts=[feedback],
+    )
+    assert repaired["repair_state"]["new_evidence_authority_granted"] is False
+    assert repaired["repair_state"]["accepted_feedback_refs"] == [
+        "FEEDBACK::ROLE-REPAIR"
+    ]
+    assert repaired["source_context_digest"] == context["context_digest"]
+
+    foreign = deepcopy(feedback)
+    foreign["target_node_id"] = "AGENT::DEMAND_QUALITY"
+    with pytest.raises(
+        DynamicSingleUnitLoopError,
+        match="dynamic_single_unit_repair_feedback_invalid",
+    ):
+        compile_workpaper_repair_context(
+            context=context,
+            prior_workpaper=prior,
+            feedback_receipts=[foreign],
+        )

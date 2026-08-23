@@ -1416,3 +1416,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 这只证明六角色 current authority 与图隔离，不证明动态多 Agent。下一项必须建立每角色独立 Session、S1/S2 请求、FeedbackReceipt／PlanDelta／StopDecision 和 Lead 回派闭环；旧 fixed five-cell runner 不能冒充多 Agent live。
 - 工程门为定向 `124 passed`、全仓 `1107 passed`（仅两条既有 SWIG warning）、compileall、active baseline `207／8／5／28／0`、7,732-file secret scan／0 和 diff check 通过。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/132_current_dynamic_multi_agent_entry_graph_capacity_and_role_isolation.md`。
+
+### 2026-08-23 DELL current 动态多 Agent 会话与定向修订零调用复证
+
+- 全案 13 个 material facet 现在先按六个 Specialist 编译为 `2／2／2／2／3／2`，再应用各角色请求预算；旧全案 12 ceiling 不再静默丢弃 `counterparty_direct_mention`。`RC-S3-066` 已在 S3 Planner→角色执行边界关闭。
+- R2 使用 current S1/S2 Runtime 建立 6 个独立 Specialist Session 和 1 个 Lead Session，执行 13 条角色请求／12 个 retrieval batch；合计消费 21 个唯一 reviewed Evidence、22 个唯一 NumericFact、10 个 gap 和 16 条 FeedbackReceipt，0 Candidate 晋升。所有角色因 gap／feedback 正确停为 `stop_no_progress`，没有把请求目录耗尽冒充研究充分。
+- Lead 接受一条 `Counterevidence → ValueCapture` 挑战。repair successor 复用六会话和全部 12 个 retrieval batch，只修改 ValueCapture 底稿，修订前后 Evidence／NumericFact／NumericRelation／gap ref 集合完全相同，checkpoint/resume 与 Lead recheck 均通过。
+- 首次 repair 暴露 runner 对 Validator 已生成 workpaper digest 再摘要一次的问题。R2 保持不可变；六份 legacy double hash 只有在内容、上下文和双摘要形式全部精确重现时才通过 normalization receipt，challenge digest 同步做语义不变迁移。`RC-S3-067` 已关闭。
+- 工程门为全仓 `1113 passed`、compileall、Workbench typecheck/build、active baseline `210／8／5／28／0`、908 份 config JSON、8 份 Project OS JSONL／986 行、7,739-file secret scan／0 和 diff check 通过。
+- 当前仍是 zero-model 编排证明，不是自然 multi-agent 或 S3 pass。下一项只能在 clean commit／push 和 fresh preflight 后，用同一个 canonical runner 签发 DELL 动态多 Agent live；随后独立验收 L1 与内容质量，再决定 Writer、MU／NVDA 和异质留出。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/133_current_dynamic_multi_agent_sessions_lead_and_repair_zero_call.md`。

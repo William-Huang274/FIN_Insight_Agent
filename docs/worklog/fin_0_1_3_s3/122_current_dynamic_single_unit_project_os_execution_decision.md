@@ -45,7 +45,13 @@ PlanDelta, hypothesis-only GraphDelta and StopDecision before one final
 
 ## Next exact step
 
-Commit and push this decision implementation, then run one formal Project OS
-preflight with the real repository and credential-presence checks. Only a passing
-fresh preflight may be converted into the exact-once live authority for the DELL
-current dynamic `value_capture` single unit.
+The decision implementation was committed and pushed at clean/synced commit
+`925b2cfa356fe20eca15a54395fbc91d9af65a1e`. The formal Project OS preflight
+then passed with credential-presence-only checking, no blocked root-cause scope
+and no credential persistence.
+
+The unique authority `dell-current-dynamic-single-unit-r1-20260823t0046z` is now
+signed against that implementation commit, current Pack digest, task-readiness
+digest, zero-call result, loop policy and provider profile. The authority must be
+committed and pushed before execution; after that, the next exact step is the one
+authorized DeepSeek live run followed by independent L1 and content assessment.

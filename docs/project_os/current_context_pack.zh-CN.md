@@ -1325,3 +1325,5 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 新权限最多 4 次模型／传输、2 轮检索、12 条 S1/S2 请求；0 retry、0 external source network、0 candidate promotion、0 fallback、0 current pointer mutation。任务级 TokenBudgetBasis 直接绑定 current loop policy，不以省钱或速度删减研究工作。
 - 当前完成决策 Schema、不可变 zero-call／policy／provider binding、预算漂移负测与全仓 `1076 passed`；active baseline 为 `205／8／5／28／0`，879 份 config JSON 和 7,691-file secret scan／0 均通过。正式 clean／synced Project OS preflight 要等本次变更提交并推送后执行。此时尚未发生任何自然模型调用，也未授权多 Agent、S1／S3 验收、publication 或 release。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/122_current_dynamic_single_unit_project_os_execution_decision.md`。
+
+- repository-aware formal preflight 已在 clean／synced `925b2cfa...a1e` 通过：凭据只检查存在性且未保存，root-cause scope 无 blocker，zero-call／policy／profile／TokenBudgetBasis 均有效。随后签发唯一 `dell-current-dynamic-single-unit-r1-20260823t0046z` authority；authority 仍需提交并推送后才可执行。

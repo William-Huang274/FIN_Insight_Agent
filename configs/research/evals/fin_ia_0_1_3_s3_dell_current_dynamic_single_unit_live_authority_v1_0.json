@@ -1,0 +1,52 @@
+{
+  "schema_version": "fin_ia_s3_current_dynamic_single_unit_live_authority_v1_0",
+  "status": "signed_exact_once_DELL_current_dynamic_value_capture_live",
+  "signed_at": "2026-08-23T00:50:00+00:00",
+  "implementation_commit": "925b2cfa356fe20eca15a54395fbc91d9af65a1e",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "execution_budget": {
+    "maximum_model_calls": 4,
+    "maximum_transport_attempts": 4,
+    "maximum_retrieval_rounds": 2,
+    "maximum_s1_s2_requests": 12,
+    "maximum_external_source_network_calls": 0,
+    "retries_per_model_node": 0,
+    "fallbacks": 0,
+    "candidate_promotions": 0,
+    "current_product_pointer_mutations": 0
+  },
+  "bound_inputs": {
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "764a6e2563ec250a3f1a32e6faec119ad50fbf953fd19310625f98921372bfa4",
+    "loop_policy_ref": "configs/research/fin_ia_0_1_3_s3_dell_dynamic_single_unit_loop_policy_v1_0.json",
+    "loop_policy_sha256": "71cad6a5f158960c0970b6e1864c7bcc6cd94f2d627b1aff59922e9de92884b7",
+    "zero_call_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_single_unit_zero_call_result_v1_0.json",
+    "zero_call_result_sha256": "132c1fd2abbaeb687b186dec273ad72007194e47b710f2a286e16229d231b3ac",
+    "provider_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+    "provider_profile_sha256": "dbc14dbcc186b81f24a5b048056e663649614cd62bef1aceb98b9873189603a1",
+    "runner_ref": "scripts/research/run_s3_current_dynamic_single_unit_live.py",
+    "runner_sha256": "b377c8401095195bad5963bdeb8b3e65d3234714ab32469cd8cfbad8731fe5c3",
+    "loop_runtime_ref": "src/sec_agent/research/dynamic_single_unit_loop.py",
+    "loop_runtime_sha256": "baedbdc00544df6cbd13f62730eae8454a9e0e6563cc50504539652a93296716",
+    "provider_transport_ref": "src/sec_agent/providers/chat_completions.py",
+    "provider_transport_sha256": "4e75b910b18ead890dff15d1125be87ed180163b7a215fd4c12d1421d51314f1",
+    "zero_call_result_digest": "522d5bf183db4d5de77f58b09307b07b369b4feeb6353563ac221123893914ad",
+    "current_evidence_pack_payload_digest": "46f3704656ee15d960d3f39d8a45169a326604e871b7c01dd495b7bbac693864",
+    "task_readiness_result_digest": "224937d91f08259e5180d15dedf1f59ae04eaf6a32ba3d9439b431f35cd789ce"
+  },
+  "output_contract": {
+    "capture_root_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r1-20260823t0046z/captures",
+    "private_output_root_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r1-20260823t0046z",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_live_result_v1_0.json",
+    "run_id": "dell-current-dynamic-single-unit-r1-20260823t0046z",
+    "attempt_ids": [
+      "dell-current-dynamic-single-unit-r1-request-planning",
+      "dell-current-dynamic-single-unit-r1-reflection-round-1",
+      "dell-current-dynamic-single-unit-r1-reflection-round-2",
+      "dell-current-dynamic-single-unit-r1-workpaper"
+    ],
+    "product_publication": "forbidden"
+  },
+  "known_boundary": "This authority permits exactly one DELL current dynamic value-capture single-unit run after a clean decision-bound Project OS preflight. It permits the model to select at most twelve current S1/S2 requests across two rounds, consume only reviewed Evidence and typed quantitative or gap results, reflect on actionable feedback, and submit one specialist workpaper. It forbids retries, external-source network acquisition, candidate promotion, public-gap self-authorization, multi-agent execution, S1 or S3 acceptance, Workbench publication and release."
+}

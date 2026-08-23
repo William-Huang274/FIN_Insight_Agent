@@ -1505,6 +1505,133 @@ def compile_workpaper_context(
     }
 
 
+def compile_workpaper_submission_view(
+    context: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Project a complete workpaper context into one non-duplicative model view.
+
+    The complete context remains the local validation authority.  The model view
+    carries every reviewed Evidence, numeric authority, relation, gap, scenario,
+    method and reflection once, rather than repeating the same Evidence inside
+    both ``cell_evidence_views`` and ``evidence_fact_catalog``.  This is transport
+    compaction, not evidence selection or deterministic research writing.
+    """
+
+    trusted_context = deepcopy(dict(context))
+    context_digest = str(trusted_context.pop("context_digest", ""))
+    _require(
+        trusted_context.get("schema_version") == WORKPAPER_CONTEXT_SCHEMA_VERSION
+        and context_digest == canonical_digest(trusted_context),
+        "dynamic_single_unit_workpaper_submission_context_invalid",
+    )
+    analysis_view = context.get("cell_analysis_view")
+    _require(
+        isinstance(analysis_view, Mapping)
+        and isinstance(analysis_view.get("cell"), Mapping),
+        "dynamic_single_unit_workpaper_submission_context_invalid",
+    )
+    cell = analysis_view["cell"]
+    evidence = [
+        deepcopy(dict(row))
+        for row in analysis_view.get("evidence_fact_catalog") or ()
+    ]
+    numeric = [
+        deepcopy(dict(row))
+        for row in analysis_view.get("numeric_fact_catalog") or ()
+    ]
+    relations = [
+        deepcopy(dict(row))
+        for row in analysis_view.get("numeric_relation_catalog") or ()
+    ]
+    gaps = [
+        deepcopy(dict(row)) for row in cell.get("residual_gap_cards") or ()
+    ]
+    evidence_refs = [str(row.get("evidence_ref") or "") for row in evidence]
+    numeric_refs = [
+        str(row.get("numeric_ref") or row.get("estimate_id") or "")
+        for row in numeric
+    ]
+    relation_refs = [
+        str(row.get("numeric_relation_ref") or "") for row in relations
+    ]
+    gap_refs = [str(row.get("gap_ref") or "") for row in gaps]
+    _require(
+        evidence_refs
+        and all(evidence_refs)
+        and len(evidence_refs) == len(set(evidence_refs))
+        and all(numeric_refs)
+        and len(numeric_refs) == len(set(numeric_refs))
+        and all(relation_refs)
+        and len(relation_refs) == len(set(relation_refs))
+        and all(gap_refs)
+        and len(gap_refs) == len(set(gap_refs))
+        and set(evidence_refs)
+        == {
+            str(row.get("evidence_ref") or "")
+            for row in cell.get("cell_evidence_views") or ()
+        }
+        and set(numeric_refs) == set(cell.get("allowed_numeric_refs") or ())
+        and set(relation_refs)
+        == set(cell.get("allowed_numeric_relation_refs") or ()),
+        "dynamic_single_unit_workpaper_submission_authority_drift",
+    )
+    unique_graphs: dict[str, dict[str, Any]] = {}
+    for raw in context.get("graph_context_packs") or ():
+        row = deepcopy(dict(raw))
+        digest = str(row.get("graph_context_digest") or canonical_digest(row))
+        unique_graphs.setdefault(digest, row)
+    feedback_index = [
+        {
+            key: deepcopy(row.get(key))
+            for key in (
+                "feedback_id",
+                "failure_class",
+                "failure_code",
+                "model_visible_summary",
+                "forbidden_interpretations",
+                "permitted_next_actions",
+            )
+        }
+        for row in context.get("feedback_receipts") or ()
+    ]
+    reflection_analysis = [
+        {
+            key: deepcopy(row.get(key))
+            for key in (
+                "round_id",
+                "reflection_summary",
+                "answered_questions",
+                "unresolved_questions",
+                "graph_hypotheses",
+                "reason_codes",
+                "proposed_stop_decision",
+                "reflection_digest",
+            )
+        }
+        for row in context.get("reflection_history") or ()
+    ]
+    body = {
+        "schema_version": "fin_ia_dynamic_single_unit_workpaper_submission_view_v1_0",
+        "source_context_digest": context_digest,
+        "agent": deepcopy(context.get("agent") or {}),
+        "objective": deepcopy(context.get("objective") or {}),
+        "case_identity": deepcopy(context.get("case_identity") or {}),
+        "reviewed_evidence": evidence,
+        "numeric_authorities": numeric,
+        "numeric_relations": relations,
+        "residual_gaps": gaps,
+        "task_scenarios": deepcopy(context.get("task_scenarios") or []),
+        "role_method_pack": deepcopy(cell.get("role_method_pack") or {}),
+        "graph_context_packs": [unique_graphs[key] for key in sorted(unique_graphs)],
+        "feedback_index": feedback_index,
+        "model_authored_reflection_analysis": reflection_analysis,
+        "stop_decision": deepcopy(context.get("stop_decision") or {}),
+        "rules": deepcopy(context.get("rules") or []),
+        "authority": deepcopy(context.get("authority") or {}),
+    }
+    return {**body, "submission_view_digest": canonical_digest(body)}
+
+
 def public_round_response(round_response: Mapping[str, Any]) -> dict[str, Any]:
     value = {
         key: deepcopy(item)
@@ -1529,6 +1656,7 @@ __all__ = [
     "compile_round_feedback_receipts",
     "compile_round_response",
     "compile_workpaper_context",
+    "compile_workpaper_submission_view",
     "coverage_state",
     "load_dynamic_single_unit_policy",
     "public_round_response",

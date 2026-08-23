@@ -19,6 +19,7 @@ from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     compile_material_requirement_blueprints,
     compile_request_catalog,
     compile_workpaper_context,
+    compile_workpaper_submission_view,
     load_dynamic_single_unit_policy,
     reflection_tool,
     request_evidence_tool,
@@ -382,3 +383,29 @@ def test_workpaper_context_merges_rounds_without_candidate_promotion(
     }
     assert cell["allowed_numeric_relation_refs"] == ["REL::ONE"]
     assert context["authority"]["candidate_or_graph_hypothesis_is_not_evidence"]
+
+    submission = compile_workpaper_submission_view(context)
+    assert submission["source_context_digest"] == context["context_digest"]
+    assert [row["evidence_ref"] for row in submission["reviewed_evidence"]] == [
+        "EV::ONE"
+    ]
+    assert {
+        row.get("numeric_ref") or row.get("estimate_id")
+        for row in submission["numeric_authorities"]
+    } == {"NUM::ONE", "ESTIMATE::ONE"}
+    assert [
+        row["numeric_relation_ref"] for row in submission["numeric_relations"]
+    ] == ["REL::ONE"]
+    assert [row["gap_ref"] for row in submission["residual_gaps"]] == [
+        "GAP::ONE"
+    ]
+    assert "cell_analysis_view" not in submission
+    assert "evidence_fact_catalog" not in submission
+
+    tampered = deepcopy(context)
+    tampered["objective"]["research_question"] = "tampered"
+    with pytest.raises(
+        DynamicSingleUnitLoopError,
+        match="workpaper_submission_context_invalid",
+    ):
+        compile_workpaper_submission_view(tampered)

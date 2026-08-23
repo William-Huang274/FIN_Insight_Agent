@@ -41,7 +41,12 @@ from sec_agent.providers import (  # noqa: E402
     AgentToolStepResult,
     ModelGatewayError,
     execute_agent_tool_step_exact_once,
+    execute_chat_completion_tool_step_exact_once,
     load_agent_transport_profile,
+    load_chat_completion_profile,
+)
+from sec_agent.research.bounded_finance_loop import (  # noqa: E402
+    validate_deepseek_ga_node_profile,
 )
 from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     DynamicSingleUnitLoopError,
@@ -55,6 +60,7 @@ from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     compile_round_feedback_receipts,
     compile_round_response,
     compile_workpaper_context,
+    compile_workpaper_submission_view,
     load_dynamic_single_unit_policy,
     public_round_response,
     reflection_tool,
@@ -84,6 +90,12 @@ AUTHORITY_SCHEMA_V1_2 = (
 )
 AUTHORITY_STATUS_V1_2 = (
     "signed_exact_once_DELL_current_dynamic_value_capture_feedback_successor"
+)
+AUTHORITY_SCHEMA_V1_3 = (
+    "fin_ia_s3_current_dynamic_single_unit_workpaper_submission_authority_v1_0"
+)
+AUTHORITY_STATUS_V1_3 = (
+    "signed_exact_once_DELL_current_dynamic_value_capture_workpaper_successor"
 )
 FULL_RESULT_SCHEMA = "fin_ia_s3_current_dynamic_single_unit_live_full_v1_0"
 PUBLIC_RESULT_SCHEMA = "fin_ia_s3_current_dynamic_single_unit_live_result_v1_0"
@@ -201,6 +213,10 @@ def _tool_arguments(
     step: AgentToolStepResult, *, expected_name: str
 ) -> tuple[dict[str, Any], str]:
     _require(
+        str(getattr(step, "finish_reason", "") or "") != "length",
+        "current_dynamic_live_tool_arguments_truncated",
+    )
+    _require(
         len(step.tool_calls) == 1,
         "current_dynamic_live_exactly_one_tool_call_required",
     )
@@ -311,26 +327,43 @@ def validate_authority(
     schema_version = str(authority.get("schema_version") or "")
     transport_successor = schema_version == AUTHORITY_SCHEMA_V1_1
     feedback_successor = schema_version == AUTHORITY_SCHEMA_V1_2
-    successor = transport_successor or feedback_successor
+    workpaper_successor = schema_version == AUTHORITY_SCHEMA_V1_3
+    successor = transport_successor or feedback_successor or workpaper_successor
     expected_status = {
         AUTHORITY_SCHEMA: AUTHORITY_STATUS,
         AUTHORITY_SCHEMA_V1_1: AUTHORITY_STATUS_V1_1,
         AUTHORITY_SCHEMA_V1_2: AUTHORITY_STATUS_V1_2,
+        AUTHORITY_SCHEMA_V1_3: AUTHORITY_STATUS_V1_3,
     }.get(schema_version)
     _require(
         set(authority) == expected
         and schema_version
-        in {AUTHORITY_SCHEMA, AUTHORITY_SCHEMA_V1_1, AUTHORITY_SCHEMA_V1_2}
+        in {
+            AUTHORITY_SCHEMA,
+            AUTHORITY_SCHEMA_V1_1,
+            AUTHORITY_SCHEMA_V1_2,
+            AUTHORITY_SCHEMA_V1_3,
+        }
         and authority.get("status") == expected_status
         and authority.get("case_key") == "DELL"
         and authority.get("cell_id") == "CELL::value_capture",
         "current_dynamic_live_authority_identity_invalid",
     )
     budget = authority.get("execution_budget")
-    _require(
-        isinstance(budget, Mapping)
-        and dict(budget)
-        == {
+    expected_budget = (
+        {
+            "maximum_model_calls": 1,
+            "maximum_transport_attempts": 1,
+            "maximum_retrieval_rounds": 0,
+            "maximum_s1_s2_requests": 0,
+            "maximum_external_source_network_calls": 0,
+            "retries_per_model_node": 0,
+            "fallbacks": 0,
+            "candidate_promotions": 0,
+            "current_product_pointer_mutations": 0,
+        }
+        if workpaper_successor
+        else {
             "maximum_model_calls": 4,
             "maximum_transport_attempts": 4,
             "maximum_retrieval_rounds": 2,
@@ -340,7 +373,11 @@ def validate_authority(
             "fallbacks": 0,
             "candidate_promotions": 0,
             "current_product_pointer_mutations": 0,
-        },
+        }
+    )
+    _require(
+        isinstance(budget, Mapping)
+        and dict(budget) == expected_budget,
         "current_dynamic_live_authority_budget_invalid",
     )
     bound = authority.get("bound_inputs")
@@ -364,6 +401,12 @@ def validate_authority(
             "failed_predecessor",
             "scope_decision",
         )
+    if workpaper_successor:
+        ref_names = (
+            *ref_names,
+            "submission_profile",
+            "failed_predecessor_private",
+        )
     digest_fields = {
         "zero_call_result_digest",
         "current_evidence_pack_payload_digest",
@@ -371,6 +414,14 @@ def validate_authority(
     }
     if successor:
         digest_fields.add("failed_predecessor_result_digest")
+    if workpaper_successor:
+        digest_fields.update(
+            {
+                "failed_predecessor_full_result_digest",
+                "workpaper_context_digest",
+                "workpaper_submission_view_digest",
+            }
+        )
     _require(
         set(bound)
         == {
@@ -453,7 +504,62 @@ def validate_authority(
             and failed.get("result_digest")
             == bound["failed_predecessor_result_digest"]
         )
-        if transport_successor:
+        if workpaper_successor:
+            private = _json(paths["failed_predecessor_private_ref"])
+            submission_view = compile_workpaper_submission_view(
+                private.get("workpaper_context") or {}
+            )
+            provider_steps = list(failed.get("provider_steps") or ())
+            private_steps = list(private.get("provider_steps") or ())
+            predecessor_valid = predecessor_valid and (
+                (failed.get("failure") or {}).get("phase")
+                == "current_dynamic_live_orchestration"
+                and (failed.get("failure") or {}).get("code")
+                == "current_dynamic_live_tool_arguments_json_invalid"
+                and (failed.get("execution") or {}).get(
+                    "provider_calls_attempted"
+                )
+                == 4
+                and (failed.get("execution") or {}).get(
+                    "retrieval_rounds_executed"
+                )
+                == 2
+                and (failed.get("execution") or {}).get(
+                    "unique_request_ids_executed"
+                )
+                == 12
+                and len(provider_steps) == 4
+                and len(private_steps) == 4
+                and all(
+                    str(row.get("finish_reason") or "") == "tool_calls"
+                    for row in provider_steps[:3]
+                )
+                and str(provider_steps[3].get("finish_reason") or "")
+                == "length"
+                and failed.get("workpaper") == {}
+                and private.get("workpaper") == {}
+                and private.get("full_result_digest")
+                == bound["failed_predecessor_full_result_digest"]
+                and str(
+                    (private.get("workpaper_context") or {}).get(
+                        "context_digest"
+                    )
+                    or ""
+                )
+                == bound["workpaper_context_digest"]
+                and submission_view.get("submission_view_digest")
+                == bound["workpaper_submission_view_digest"]
+                and failed.get("private_full_result_sha256")
+                == str(bound.get("failed_predecessor_private_sha256") or "")
+            )
+            submission_profile = load_chat_completion_profile(
+                _json(paths["submission_profile_ref"])
+            )
+            validate_deepseek_ga_node_profile(
+                submission_profile,
+                node_class="workpaper_submission_non_thinking",
+            )
+        elif transport_successor:
             predecessor_valid = predecessor_valid and (
                 (failed.get("failure") or {}).get("phase")
                 == "provider_transport_or_response"
@@ -490,6 +596,13 @@ def validate_authority(
         decision = _json(paths["scope_decision_ref"])
         expected_decision = (
             (
+                "fin_ia_s3_current_dynamic_single_unit_workpaper_submission_"
+                "scope_decision_v1_0",
+                "R3_dynamic_research_preserved_one_non_thinking_workpaper_"
+                "successor_authorized",
+            )
+            if workpaper_successor
+            else (
                 "fin_ia_s3_current_dynamic_single_unit_live_scope_decision_v1_1",
                 "R1_thinking_tool_choice_failure_preserved_one_transport_"
                 "successor_authorized",
@@ -525,9 +638,12 @@ def validate_authority(
         "current_dynamic_live_output_contract_invalid",
     )
     attempts = output.get("attempt_ids")
+    expected_attempt_count = 1 if workpaper_successor else 4
     _require(
         isinstance(attempts, list)
-        and 4 == len(attempts) == len(set(str(value) for value in attempts))
+        and expected_attempt_count
+        == len(attempts)
+        == len(set(str(value) for value in attempts))
         and all(str(value).strip() for value in attempts),
         "current_dynamic_live_attempt_ids_invalid",
     )
@@ -585,16 +701,344 @@ def _execute_round(
     return batch, response
 
 
+def _run_workpaper_submission_successor(
+    *,
+    authority_path: Path,
+    authority: Mapping[str, Any],
+    paths: Mapping[str, Path],
+    submission_executor: Callable[..., Any],
+) -> dict[str, Any]:
+    """Resume only the failed R3 workpaper submission from immutable research.
+
+    The two retrieval/reflection rounds remain owned by the predecessor.  This
+    successor performs no retrieval and gives the model a non-duplicative view,
+    while the complete predecessor context remains the local schema and
+    reference-validation authority.
+    """
+
+    output = dict(authority["output_contract"])
+    private_root = _resolve(str(output["private_output_root_ref"]))
+    public_path = _resolve(str(output["public_result_ref"]))
+    capture_root = _resolve(str(output["capture_root_ref"]))
+    attempt_id = str(output["attempt_ids"][0])
+    recorded_at = _now()
+    predecessor_public = _json(paths["failed_predecessor_ref"])
+    predecessor_private = _json(paths["failed_predecessor_private_ref"])
+    workpaper_context = deepcopy(
+        dict(predecessor_private.get("workpaper_context") or {})
+    )
+    submission_view = compile_workpaper_submission_view(workpaper_context)
+    _require(
+        str(workpaper_context.get("context_digest") or "")
+        == authority["bound_inputs"]["workpaper_context_digest"]
+        and submission_view["submission_view_digest"]
+        == authority["bound_inputs"]["workpaper_submission_view_digest"],
+        "current_dynamic_live_workpaper_successor_context_drift",
+    )
+    profile = load_chat_completion_profile(
+        _json(paths["submission_profile_ref"])
+    )
+    validate_deepseek_ga_node_profile(
+        profile,
+        node_class="workpaper_submission_non_thinking",
+    )
+
+    reused_steps = [
+        deepcopy(dict(row))
+        for row in (predecessor_private.get("provider_steps") or ())[:3]
+    ]
+    _require(
+        len(reused_steps) == 3
+        and all(row.get("finish_reason") == "tool_calls" for row in reused_steps),
+        "current_dynamic_live_workpaper_successor_checkpoint_invalid",
+    )
+    checkpoint_body = {
+        "schema_version": (
+            "fin_ia_s3_current_dynamic_single_unit_workpaper_submission_"
+            "checkpoint_v1_0"
+        ),
+        "status": "R3_dynamic_research_complete_workpaper_submission_pending",
+        "source_run_id": str(
+            (predecessor_private.get("session") or {}).get("run_id") or ""
+        ),
+        "source_session_id": str(
+            (predecessor_private.get("session") or {}).get("session_id") or ""
+        ),
+        "source_public_result_ref": _relative(paths["failed_predecessor_ref"]),
+        "source_public_result_digest": predecessor_public["result_digest"],
+        "source_private_result_ref": _relative(
+            paths["failed_predecessor_private_ref"]
+        ),
+        "source_private_result_digest": predecessor_private[
+            "full_result_digest"
+        ],
+        "workpaper_context_digest": str(
+            workpaper_context.get("context_digest") or ""
+        ),
+        "submission_view_digest": submission_view["submission_view_digest"],
+        "reused_provider_step_digests": [
+            str(row.get("response_digest") or "") for row in reused_steps
+        ],
+        "reused_retrieval_rounds": int(
+            (predecessor_private.get("execution") or {}).get(
+                "retrieval_rounds_executed"
+            )
+            or 0
+        ),
+        "reused_unique_request_ids": int(
+            (predecessor_private.get("execution") or {}).get(
+                "unique_request_ids_executed"
+            )
+            or 0
+        ),
+        "authority": {
+            "predecessor_research_immutable": True,
+            "retrieval_rerun_forbidden": True,
+            "reflection_rerun_forbidden": True,
+            "new_fact_or_reference_forbidden": True,
+            "complete_context_remains_local_validation_authority": True,
+            "submission_view_is_transport_compaction_only": True,
+        },
+    }
+    checkpoint = {
+        **checkpoint_body,
+        "checkpoint_digest": canonical_digest(checkpoint_body),
+    }
+    session = deepcopy(dict(predecessor_private.get("session") or {}))
+    events = [
+        deepcopy(dict(row))
+        for row in predecessor_private.get("session_events") or ()
+    ]
+    _event(
+        events,
+        session_id=str(session.get("session_id") or ""),
+        event_type="workpaper_submission_successor_started",
+        actor_id="S3.DynamicSingleUnitHarness",
+        occurred_at=recorded_at,
+        attempt_id=attempt_id,
+        input_refs=(checkpoint["checkpoint_digest"],),
+    )
+
+    provider_steps: list[dict[str, Any]] = []
+    workpaper: dict[str, Any] = {}
+    failure_phase = ""
+    failure_code = ""
+    failure_capture_ref = ""
+    try:
+        step = submission_executor(
+            profile=profile,
+            messages=compile_specialist_workpaper_messages(
+                context=submission_view
+            ),
+            tools=[
+                specialist_workpaper_tool(
+                    agent_id="AGENT::VALUE_CAPTURE",
+                    context=workpaper_context,
+                )
+            ],
+            capture_root=capture_root,
+            run_id=str(output["run_id"]),
+            attempt_id=attempt_id,
+            tool_choice=None,
+        )
+        provider_steps.append(step.as_dict())
+        payload, _ = _tool_arguments(
+            step,
+            expected_name="submit_specialist_workpaper",
+        )
+        workpaper = validate_specialist_workpaper(
+            payload,
+            context=workpaper_context,
+            expected_agent_id="AGENT::VALUE_CAPTURE",
+        )
+        workpaper["workpaper_digest"] = canonical_digest(workpaper)
+        _event(
+            events,
+            session_id=str(session.get("session_id") or ""),
+            event_type="workpaper_submission_succeeded",
+            actor_id="AGENT::VALUE_CAPTURE",
+            occurred_at=recorded_at,
+            attempt_id=attempt_id,
+            input_refs=(checkpoint["checkpoint_digest"],),
+            output_refs=(workpaper["workpaper_digest"],),
+        )
+    except ModelGatewayError as exc:
+        failure_phase = "provider_transport_or_response"
+        failure_code = exc.code
+        failure_capture_ref = exc.capture_ref
+    except MultiAgentPreviewError as exc:
+        failure_phase = "specialist_workpaper_contract"
+        failure_code = str(exc)
+    except CurrentDynamicSingleUnitLiveError as exc:
+        failure_phase = "current_dynamic_live_orchestration"
+        failure_code = exc.code
+
+    succeeded = bool(workpaper)
+    status = (
+        "completed_current_dynamic_single_unit_contract_valid_assessment_pending"
+        if succeeded
+        else "terminal_failed_no_retry"
+    )
+    predecessor_execution = dict(predecessor_private.get("execution") or {})
+    execution = {
+        "provider_calls_attempted": len(provider_steps),
+        "maximum_provider_calls": 1,
+        "reused_predecessor_provider_calls": 3,
+        "effective_dynamic_chain_provider_calls": 3 + len(provider_steps),
+        "retrieval_rounds_executed": 0,
+        "reused_predecessor_retrieval_rounds": int(
+            predecessor_execution.get("retrieval_rounds_executed") or 0
+        ),
+        "request_ids_executed": [],
+        "unique_request_ids_executed": 0,
+        "reused_predecessor_request_ids": deepcopy(
+            predecessor_execution.get("request_ids_executed") or []
+        ),
+        "reused_predecessor_unique_request_ids": int(
+            predecessor_execution.get("unique_request_ids_executed") or 0
+        ),
+        "candidate_promotions": 0,
+        "external_source_network_calls": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "cuda_execution_in_successor": False,
+        "reused_predecessor_cuda_receipt": deepcopy(
+            predecessor_execution.get("cuda_receipt") or {}
+        ),
+    }
+    failure = {
+        "phase": failure_phase,
+        "code": failure_code,
+        "capture_ref": (
+            _relative(failure_capture_ref) if failure_capture_ref else ""
+        ),
+    }
+    predecessor_claims = dict(predecessor_private.get("claims") or {})
+    claims = {
+        "natural_dynamic_research_executed": True,
+        "natural_dynamic_research_executed_in_this_successor": False,
+        "natural_dynamic_research_reused_from_immutable_predecessor": True,
+        "initial_evidence_prefeed": False,
+        "model_selected_initial_research_actions": bool(
+            predecessor_claims.get("model_selected_initial_research_actions")
+        ),
+        "model_consumed_feedback_and_submitted_reflection": bool(
+            predecessor_claims.get(
+                "model_consumed_feedback_and_submitted_reflection"
+            )
+        ),
+        "model_changed_plan": bool(predecessor_claims.get("model_changed_plan")),
+        "current_S1_S2_executed": True,
+        "current_S1_S2_executed_in_this_successor": False,
+        "model_generated_specialist_judgment": succeeded,
+        "single_unit_only": True,
+        "multi_agent_execution": False,
+        "S1_pass": False,
+        "S3_pass": False,
+        "product_acceptance": False,
+        "release_ready": False,
+    }
+    full_body: dict[str, Any] = {
+        "schema_version": FULL_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": recorded_at,
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "session": session,
+        "session_events": events,
+        "submission_checkpoint": checkpoint,
+        "submission_view": submission_view,
+        "provider_steps": [_public_provider_step(row) for row in provider_steps],
+        "reused_predecessor_provider_steps": reused_steps,
+        "selections": deepcopy(predecessor_private.get("selections") or []),
+        "round_batches": [],
+        "round_responses": deepcopy(
+            predecessor_private.get("round_responses") or []
+        ),
+        "feedback_receipts": deepcopy(
+            predecessor_private.get("feedback_receipts") or []
+        ),
+        "reflections": deepcopy(predecessor_private.get("reflections") or []),
+        "reflection_artifacts": deepcopy(
+            predecessor_private.get("reflection_artifacts") or []
+        ),
+        "workpaper_context": workpaper_context,
+        "workpaper": workpaper,
+        "execution": execution,
+        "failure": failure,
+        "claims": claims,
+        "known_boundary": authority["known_boundary"],
+    }
+    full = {**full_body, "full_result_digest": canonical_digest(full_body)}
+    _write_new(private_root / "full_result.json", full)
+    public_body = {
+        "schema_version": PUBLIC_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": recorded_at,
+        "authority_ref": _relative(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "model": profile.model,
+        "execution": execution,
+        "provider_steps": full["provider_steps"],
+        "reused_predecessor_provider_steps": reused_steps,
+        "submission_checkpoint": checkpoint,
+        "selections": deepcopy(predecessor_public.get("selections") or []),
+        "round_summaries": deepcopy(
+            predecessor_public.get("round_summaries") or []
+        ),
+        "reflections": deepcopy(predecessor_public.get("reflections") or []),
+        "coverage_state": deepcopy(
+            predecessor_public.get("coverage_state") or {}
+        ),
+        "stop_decision": deepcopy(
+            predecessor_public.get("stop_decision") or {}
+        ),
+        "workpaper": workpaper,
+        "failure": failure,
+        "claims": claims,
+        "private_full_result_ref": _relative(private_root / "full_result.json"),
+        "private_full_result_sha256": _sha(private_root / "full_result.json"),
+        "acceptance": {
+            "dynamic_single_unit_contract_pass": succeeded,
+            "L1_assessment_pending": succeeded,
+            "eight_dimension_content_assessment_pending": succeeded,
+            "multi_agent_execution": False,
+            "S3_pass": False,
+            "product_acceptance": False,
+            "release_ready": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_new(public_path, public)
+    return public
+
+
 def run(
     authority_path: Path,
     *,
     executor: Callable[..., AgentToolStepResult] = (
         execute_agent_tool_step_exact_once
     ),
+    submission_executor: Callable[..., Any] = (
+        execute_chat_completion_tool_step_exact_once
+    ),
 ) -> dict[str, Any]:
     authority_path = authority_path.resolve()
     authority = _json(authority_path)
     paths = validate_authority(authority, authority_path=authority_path)
+    if authority.get("schema_version") == AUTHORITY_SCHEMA_V1_3:
+        return _run_workpaper_submission_successor(
+            authority_path=authority_path,
+            authority=authority,
+            paths=paths,
+            submission_executor=submission_executor,
+        )
     output = dict(authority["output_contract"])
     private_root = _resolve(str(output["private_output_root_ref"]))
     public_path = _resolve(str(output["public_result_ref"]))

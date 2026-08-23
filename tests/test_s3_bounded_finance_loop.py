@@ -3593,6 +3593,14 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
             "role_evaluation_nonthinking_profile_v1_0.json"
         )
     )
+    workpaper_submission = load_chat_completion_profile(
+        _json(
+            ROOT
+            / "configs/providers/"
+            "fin_ia_0_1_3_deepseek_v4_pro_ga_"
+            "workpaper_submission_non_thinking_profile_v1_0.json"
+        )
+    )
     validate_deepseek_ga_node_profile(
         micro_read,
         node_class="tool_routing",
@@ -3617,6 +3625,10 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
         non_thinking_evaluator,
         node_class="content_evaluation_non_thinking",
     )
+    validate_deepseek_ga_node_profile(
+        workpaper_submission,
+        node_class="workpaper_submission_non_thinking",
+    )
     assert non_thinking_submission.request_defaults == {
         "max_tokens": 2000,
         "stream": False,
@@ -3624,6 +3636,11 @@ def test_deepseek_ga_profiles_keep_provider_details_outside_core() -> None:
     }
     assert non_thinking_evaluator.request_defaults == {
         "max_tokens": 10000,
+        "stream": False,
+        "thinking": {"type": "disabled"},
+    }
+    assert workpaper_submission.request_defaults == {
+        "max_tokens": 8000,
         "stream": False,
         "thinking": {"type": "disabled"},
     }

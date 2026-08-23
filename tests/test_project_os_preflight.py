@@ -11,6 +11,7 @@ from sec_agent.project_os_preflight import (
     CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE,
+    CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_SCOPE,
     FIXED_PACK_SCOPE,
     FRAGMENT_VALIDATION_REPAIR_SCOPE,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE,
@@ -176,6 +177,11 @@ CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
     "live_scope_decision_v1_2.json"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "workpaper_submission_scope_decision_v1_0.json"
 )
 DYNAMIC_FIVE_CELL_DECISION_REF = (
     "configs/research/evals/"
@@ -1334,10 +1340,36 @@ def test_current_dynamic_feedback_successor_binds_R2_and_round_contract() -> Non
     assert projection["current_dynamic_transport_successor"] is False
     assert projection["current_dynamic_feedback_successor"] is True
     assert projection["failed_predecessor_status"] == "terminal_failed_no_retry"
+    # R3 consumed this exact-once authority and proved both feedback rounds.
+    # The historical v1.2 decision remains parseable, while the now-closed
+    # RC-S3-059 must not remain a permanent live-scope blocker.
     assert (
         "RC-S3-059-current-dynamic-reflection-schema-disconnected-from-round-feedback"
-        in result["scope_projection"]["explicit_allow_issue_ids"]
+        not in result["scope_projection"]["explicit_allow_issue_ids"]
     )
+
+
+def test_current_dynamic_workpaper_successor_reuses_R3_without_retrieval() -> None:
+    decision = json.loads(
+        (ROOT / CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    projection = _validate_current_dynamic_single_unit_decision(
+        root=ROOT,
+        decision=decision,
+    )
+
+    assert projection["run_scope_id"] == CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_SCOPE
+    assert projection["current_dynamic_workpaper_successor"] is True
+    assert projection["current_dynamic_feedback_successor"] is False
+    assert projection["failed_predecessor_status"] == "terminal_failed_no_retry"
+    assert projection["execution_limits"]["maximum_model_calls"] == 1
+    assert projection["execution_limits"]["maximum_retrieval_rounds"] == 0
+    assert projection["execution_limits"]["maximum_s1_s2_requests"] == 0
+    assert projection["node_profiles"]["workpaper_submission"][
+        "maximum_completion_tokens"
+    ] == 8000
 
 
 def test_historical_dynamic_five_cell_decision_fails_closed_after_consumer_successor(

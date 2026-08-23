@@ -27,7 +27,9 @@ from sec_agent.providers import execute_agent_tool_step_exact_once
 from sec_agent.providers.chat_completions import ChatCompletionToolStepResult
 
 
-def _step(*, name: str, arguments: object) -> ChatCompletionToolStepResult:
+def _step(
+    *, name: str, arguments: object, finish_reason: str = "tool_calls"
+) -> ChatCompletionToolStepResult:
     return ChatCompletionToolStepResult(
         status="completed_exact_once_tool_step",
         provider_id="fixture",
@@ -44,7 +46,7 @@ def _step(*, name: str, arguments: object) -> ChatCompletionToolStepResult:
                 },
             },
         ),
-        finish_reason="tool_calls",
+        finish_reason=finish_reason,
         usage={"prompt_tokens": 10, "completion_tokens": 5},
         request_capture_ref=str(ROOT / "data/captures/request.json"),
         response_capture_ref=str(ROOT / "data/captures/response.json"),
@@ -68,6 +70,18 @@ def test_current_dynamic_live_parses_exact_expected_tool_only() -> None:
     with pytest.raises(CurrentDynamicSingleUnitLiveError) as exc:
         _tool_arguments(step, expected_name="submit_research_reflection")
     assert exc.value.code == "current_dynamic_live_unexpected_tool_call"
+
+    truncated = _step(
+        name="submit_specialist_workpaper",
+        arguments={"partial": True},
+        finish_reason="length",
+    )
+    with pytest.raises(CurrentDynamicSingleUnitLiveError) as exc:
+        _tool_arguments(
+            truncated,
+            expected_name="submit_specialist_workpaper",
+        )
+    assert exc.value.code == "current_dynamic_live_tool_arguments_truncated"
 
 
 def test_current_dynamic_live_forces_one_named_function() -> None:

@@ -46,6 +46,9 @@ from sec_agent.research.multi_agent_report_remap import (
     validate_report_remap_scope_decision,
 )
 from sec_agent.providers import load_chat_completion_profile
+from sec_agent.research.dynamic_single_unit_loop import (
+    compile_workpaper_submission_view,
+)
 
 
 CURRENT_PREFLIGHT_SCHEMA = "fin_ia_current_decision_bound_project_os_preflight_v1_0"
@@ -139,6 +142,18 @@ CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_STATUS = (
 CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_SCOPE = (
     "one_DELL_current_dynamic_value_capture_single_unit_"
     "feedback_contract_successor_exact_once"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_single_unit_workpaper_submission_"
+    "scope_decision_v1_0"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_STATUS = (
+    "R3_dynamic_research_preserved_one_non_thinking_workpaper_"
+    "successor_authorized"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_SCOPE = (
+    "one_DELL_current_dynamic_value_capture_workpaper_submission_"
+    "successor_exact_once"
 )
 DYNAMIC_FIVE_CELL_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
@@ -456,6 +471,7 @@ def _validate_artifact_binding(
     ref_field: str,
     sha_field: str,
     digest_field: str | None = None,
+    artifact_digest_field: str = "result_digest",
 ) -> tuple[Path, dict[str, Any]]:
     ref = str(decision.get(ref_field) or "")
     path = _repo_path(root, ref)
@@ -466,7 +482,7 @@ def _validate_artifact_binding(
     payload = _load_json(path)
     if digest_field is not None:
         expected_digest = str(decision.get(digest_field) or "")
-        if str(payload.get("result_digest") or "") != expected_digest:
+        if str(payload.get(artifact_digest_field) or "") != expected_digest:
             raise ValueError(f"project_os_artifact_result_digest_drift:{ref_field}:{ref}")
     return path, payload
 
@@ -635,6 +651,7 @@ def _validate_fixed_pack_decision(
             CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_SCHEMA,
             CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_SCHEMA,
             CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_SCHEMA,
+            CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_SCHEMA,
         }
     ):
         return _validate_current_dynamic_single_unit_decision(
@@ -6566,26 +6583,37 @@ def _validate_current_dynamic_single_unit_decision(
     feedback_successor = (
         schema_version == CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_SCHEMA
     )
-    successor = transport_successor or feedback_successor
+    workpaper_successor = (
+        schema_version == CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_SCHEMA
+    )
+    successor = transport_successor or feedback_successor or workpaper_successor
     required_equal = {
         "status": (
-            CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_STATUS
-            if feedback_successor
+            CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_STATUS
+            if workpaper_successor
             else (
-                CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_STATUS
-                if transport_successor
-                else CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS
+                CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_DECISION_STATUS
+                if feedback_successor
+                else (
+                    CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_STATUS
+                    if transport_successor
+                    else CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS
+                )
             )
         ),
         "case_key": "DELL",
         "cell_id": "CELL::value_capture",
         "run_scope_id": (
-            CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_SCOPE
-            if feedback_successor
+            CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_SCOPE
+            if workpaper_successor
             else (
-                CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE
-                if transport_successor
-                else CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE
+                CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_SCOPE
+                if feedback_successor
+                else (
+                    CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE
+                    if transport_successor
+                    else CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE
+                )
             )
         ),
         "evidence_mode": "current_reviewed_pack_dynamic_S1_S2_feedback_loop",
@@ -6616,7 +6644,7 @@ def _validate_current_dynamic_single_unit_decision(
             raise ValueError(
                 f"project_os_current_dynamic_decision_true_required:{field}"
             )
-    if successor:
+    if successor and not workpaper_successor:
         for field in (
             "failed_R1_preserved",
             "provider_neutral_transport_required",
@@ -6638,6 +6666,21 @@ def _validate_current_dynamic_single_unit_decision(
                     "project_os_current_dynamic_feedback_true_required:"
                     + field
                 )
+    if workpaper_successor:
+        for field in (
+            "failed_R3_preserved",
+            "completed_research_checkpoint_reuse_required",
+            "retrieval_rerun_forbidden",
+            "reflection_rerun_forbidden",
+            "compact_submission_view_required",
+            "complete_context_local_validation_required",
+            "non_thinking_submission_profile_required",
+        ):
+            if decision.get(field) is not True:
+                raise ValueError(
+                    "project_os_current_dynamic_workpaper_true_required:"
+                    + field
+                )
     for field in (
         "external_source_network_authorized",
         "multi_agent_authorized",
@@ -6650,17 +6693,31 @@ def _validate_current_dynamic_single_unit_decision(
                 f"project_os_current_dynamic_decision_false_required:{field}"
             )
 
-    expected_budget = {
-        "maximum_model_calls": 4,
-        "maximum_transport_attempts": 4,
-        "maximum_retrieval_rounds": 2,
-        "maximum_s1_s2_requests": 12,
-        "maximum_external_source_network_calls": 0,
-        "retries_per_model_node": 0,
-        "fallbacks": 0,
-        "candidate_promotions": 0,
-        "current_product_pointer_mutations": 0,
-    }
+    expected_budget = (
+        {
+            "maximum_model_calls": 1,
+            "maximum_transport_attempts": 1,
+            "maximum_retrieval_rounds": 0,
+            "maximum_s1_s2_requests": 0,
+            "maximum_external_source_network_calls": 0,
+            "retries_per_model_node": 0,
+            "fallbacks": 0,
+            "candidate_promotions": 0,
+            "current_product_pointer_mutations": 0,
+        }
+        if workpaper_successor
+        else {
+            "maximum_model_calls": 4,
+            "maximum_transport_attempts": 4,
+            "maximum_retrieval_rounds": 2,
+            "maximum_s1_s2_requests": 12,
+            "maximum_external_source_network_calls": 0,
+            "retries_per_model_node": 0,
+            "fallbacks": 0,
+            "candidate_promotions": 0,
+            "current_product_pointer_mutations": 0,
+        }
+    )
     if decision.get("execution_budget") != expected_budget:
         raise ValueError("project_os_current_dynamic_decision_budget_invalid")
 
@@ -6716,7 +6773,38 @@ def _validate_current_dynamic_single_unit_decision(
         is False
     ):
         raise ValueError("project_os_current_dynamic_loop_policy_invalid")
-    if decision.get("token_budget_basis") != policy.get("token_budget_bases"):
+    token_budget_basis = decision.get("token_budget_basis")
+    if workpaper_successor:
+        required_basis_fields = {
+            "node_purpose",
+            "input_scale",
+            "required_outputs",
+            "schema_burden",
+            "materiality_and_quality_risk",
+            "comparable_run_evidence",
+            "reasoning_profile",
+            "maximum_completion_tokens",
+            "stop_or_truncation_behavior",
+        }
+        if not (
+            isinstance(token_budget_basis, Mapping)
+            and set(token_budget_basis) == {"workpaper_submission"}
+            and isinstance(token_budget_basis.get("workpaper_submission"), Mapping)
+            and set(token_budget_basis["workpaper_submission"])
+            == required_basis_fields
+            and token_budget_basis["workpaper_submission"].get(
+                "reasoning_profile"
+            )
+            == "DeepSeek GA thinking disabled for contract submission only"
+            and token_budget_basis["workpaper_submission"].get(
+                "maximum_completion_tokens"
+            )
+            == 8000
+        ):
+            raise ValueError(
+                "project_os_current_dynamic_token_budget_basis_invalid"
+            )
+    elif token_budget_basis != policy.get("token_budget_bases"):
         raise ValueError(
             "project_os_current_dynamic_token_budget_basis_invalid"
         )
@@ -6784,7 +6872,76 @@ def _validate_current_dynamic_single_unit_decision(
         )
         failed_predecessor_status = failed.get("status")
         predecessor_valid = failed_predecessor_status == "terminal_failed_no_retry"
-        if transport_successor:
+        if workpaper_successor:
+            predecessor_valid = predecessor_valid and (
+                (failed.get("failure") or {}).get("phase")
+                == "current_dynamic_live_orchestration"
+                and (failed.get("failure") or {}).get("code")
+                == "current_dynamic_live_tool_arguments_json_invalid"
+                and (failed.get("execution") or {}).get(
+                    "provider_calls_attempted"
+                )
+                == 4
+                and (failed.get("execution") or {}).get(
+                    "retrieval_rounds_executed"
+                )
+                == 2
+                and (failed.get("execution") or {}).get(
+                    "unique_request_ids_executed"
+                )
+                == 12
+                and len(failed.get("provider_steps") or ()) == 4
+                and (failed.get("provider_steps") or ())[-1].get(
+                    "finish_reason"
+                )
+                == "length"
+                and failed.get("workpaper") == {}
+            )
+            _, submission_profile = _validate_artifact_binding(
+                root=root,
+                decision=decision,
+                ref_field="submission_profile_ref",
+                sha_field="submission_profile_sha256",
+            )
+            submission_defaults = submission_profile.get("request_defaults") or {}
+            if not (
+                submission_profile.get("provider_id") == "deepseek"
+                and submission_profile.get("model") == "deepseek-v4-pro"
+                and submission_profile.get("base_url")
+                == "https://api.deepseek.com"
+                and submission_profile.get("endpoint") == "/chat/completions"
+                and submission_defaults
+                == {
+                    "max_tokens": 8000,
+                    "stream": False,
+                    "thinking": {"type": "disabled"},
+                }
+            ):
+                raise ValueError(
+                    "project_os_current_dynamic_submission_profile_invalid"
+                )
+            _, private = _validate_artifact_binding(
+                root=root,
+                decision=decision,
+                ref_field="failed_predecessor_private_ref",
+                sha_field="failed_predecessor_private_sha256",
+                digest_field="failed_predecessor_full_result_digest",
+                artifact_digest_field="full_result_digest",
+            )
+            workpaper_context = private.get("workpaper_context") or {}
+            submission_view = compile_workpaper_submission_view(
+                workpaper_context
+            )
+            if not (
+                str(workpaper_context.get("context_digest") or "")
+                == decision.get("workpaper_context_digest")
+                and submission_view.get("submission_view_digest")
+                == decision.get("workpaper_submission_view_digest")
+            ):
+                raise ValueError(
+                    "project_os_current_dynamic_workpaper_checkpoint_invalid"
+                )
+        elif transport_successor:
             predecessor_valid = predecessor_valid and (
                 (failed.get("failure") or {}).get("phase")
                 == "provider_transport_or_response"
@@ -6828,22 +6985,27 @@ def _validate_current_dynamic_single_unit_decision(
         "current_dynamic_single_unit": True,
         "current_dynamic_transport_successor": transport_successor,
         "current_dynamic_feedback_successor": feedback_successor,
+        "current_dynamic_workpaper_successor": workpaper_successor,
         "failed_predecessor_status": failed_predecessor_status,
         "dynamic_single_cell_successor": False,
         "micro_judgment_successor": False,
         "run_scope_id": decision["run_scope_id"],
         "execution_limits": expected_budget,
-        "node_profiles": {
-            "request_planning": policy["token_budget_bases"][
-                "request_planning"
-            ],
-            "reflection_and_plan_delta": policy["token_budget_bases"][
-                "reflection_and_plan_delta"
-            ],
-            "specialist_workpaper": policy["token_budget_bases"][
-                "specialist_workpaper"
-            ],
-        },
+        "node_profiles": (
+            token_budget_basis
+            if workpaper_successor
+            else {
+                "request_planning": policy["token_budget_bases"][
+                    "request_planning"
+                ],
+                "reflection_and_plan_delta": policy["token_budget_bases"][
+                    "reflection_and_plan_delta"
+                ],
+                "specialist_workpaper": policy["token_budget_bases"][
+                    "specialist_workpaper"
+                ],
+            }
+        ),
     }
 
 
@@ -10931,6 +11093,20 @@ def build_preflight(
             "project_os_dynamic_counter_scope_allowance_missing"
         )
     if (
+        decision_projection.get("current_dynamic_workpaper_successor") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-060-current-dynamic-workpaper-thinking-budget-starved-"
+                "visible-submission"
+            ),
+            allowed_scope=CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_workpaper_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("dynamic_temporal_repair_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -11603,6 +11779,22 @@ def build_preflight(
             "max-thinking analysis plus one non-thinking strict submission. "
             "It does not authorize new evidence, another analysis retry, "
             "five-cell execution, publication, S3 acceptance, or release."
+        )
+    elif (
+        decision_projection.get("current_dynamic_workpaper_successor")
+        is True
+    ):
+        known_boundary = (
+            "This current-baseline preflight preserves the complete R3 dynamic "
+            "research checkpoint and its failed max-thinking workpaper call. It "
+            "permits one exact-once non-thinking DELL value-capture workpaper "
+            "submission from the lossless compact model view while the complete "
+            "context remains the local validation authority. It permits zero "
+            "retrieval rounds, S1/S2 requests, new evidence, retries, external "
+            "network calls, candidate promotions or product-pointer changes. "
+            "Success still requires L1 and content-quality assessment and does "
+            "not authorize S1/S3 acceptance, multi-agent execution, publication, "
+            "generalization or release."
         )
     elif (
         decision_projection.get("current_dynamic_transport_successor")

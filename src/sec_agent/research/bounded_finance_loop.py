@@ -979,6 +979,11 @@ def validate_deepseek_ga_node_profile(
             "reasoning_effort": None,
             "max_tokens": 2000,
         },
+        "workpaper_submission_non_thinking": {
+            "thinking": {"type": "disabled"},
+            "reasoning_effort": None,
+            "max_tokens": 8000,
+        },
         "content_evaluation_non_thinking": {
             "thinking": {"type": "disabled"},
             "reasoning_effort": None,

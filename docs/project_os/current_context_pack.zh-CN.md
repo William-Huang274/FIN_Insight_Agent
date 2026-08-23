@@ -1344,3 +1344,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 统一修复现按真实运行轮绑定 receipt batch；有 receipt 时至少引用一条，无 receipt／无剩余请求／无 Evidence 时只允许空数组；公开 result 恢复为 capture ref／digest／usage 索引，完整请求和响应仍只保存在受限 capture。
 - 修复后的两轮 zero-model 回放完成 12/12 请求、20 条 FeedbackReceipt、2 个 PlanDelta／GraphDelta、显式 stop 与底稿合同，CUDA/FP16 及 mutation 继续成立。下一门是完整工程门、clean commit／push、Project OS preflight 和唯一 R3；成功后仍需独立 L1 与内容质量验收，不能直接进入多 Agent。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/124_current_dynamic_R2_feedback_contract_failure_and_R3_gate.md`。
+
+### 2026-08-23 DELL current dynamic R3 研究完成与 workpaper 容量失败
+
+- R3 已真实完成动态研究：DeepSeek 未预喂 Evidence Pack，自主选择首轮 6 条请求，消费 current S1/S2 与 FeedbackReceipt 后再选择剩余 6 条；两轮共执行 12/12 条路线，覆盖全部 7 个命题组，形成两份反思、PlanDelta／GraphDelta 并接受 `stop_sufficient`。0 retry、0 外源网络、0 Candidate 晋升。
+- 因此 RC-S3-059 已关闭；模型确实收到本地 Harness 的反馈并据此改变计划。R3 只在第四次 workpaper 交卷失败：33,933 prompt token、16,000 completion token 中 13,922 被 max-thinking 推理占用，最终 `finish_reason=length`，可见 Tool arguments 已有 7,257 字符但 JSON 被截断。
+- 新 RC-S3-060 属于 S3 最终上下文投影与认知 profile，不属于 S1/S2 信源、检索或 DeepSeek 连通性。完整 context 为 92,055 JSON 字符；去重但不删权威的 submission view 为 59,241 字符，仍保留 15 Evidence、19 数值权威、6 数值关系、9 gaps、2 轮模型反思、method 与 graph context。
+- 下一门只允许一个 R4 workpaper successor：复用 R3 前 3 个成功调用与不可变研究 checkpoint，0 检索／0 S1/S2 请求／0 retry；使用 thinking-disabled、8,000 completion-token 的纯交卷 profile，完整 context 继续作为本地 Validator 权威。R4 通过后仍需独立 L1 与内容质量验收，不能直接宣告 S3 或进入多 Agent。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/125_current_dynamic_R3_research_success_and_workpaper_submission_capacity_gate.md`。

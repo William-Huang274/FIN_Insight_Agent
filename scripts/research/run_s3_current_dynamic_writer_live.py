@@ -44,27 +44,27 @@ from sec_agent.research.multi_agent_report_authority import (  # noqa: E402
 
 DEFAULT_DECISION_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "R10_protected_writer_scope_decision_v1_1.json"
+    "R10_protected_writer_scope_decision_v1_2.json"
 )
 DEFAULT_PREFLIGHT_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "R10_protected_writer_project_os_preflight_v1_1.json"
+    "R10_protected_writer_project_os_preflight_v1_2.json"
 )
 DEFAULT_AUTHORITY_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "R10_protected_writer_live_authority_v1_1.json"
+    "R10_protected_writer_live_authority_v1_2.json"
 )
 DEFAULT_PUBLIC_RESULT_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "R10_protected_writer_live_result_v1_1.json"
+    "R10_protected_writer_live_result_v1_2.json"
 )
-DEFAULT_RUN_ID = "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R12"
+DEFAULT_RUN_ID = "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R13"
 DEFAULT_CAPTURE_ROOT_REF = (
-    ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_live_r12"
+    ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_live_r13"
 )
 DEFAULT_PRIVATE_ROOT_REF = (
     "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/"
-    "dell-R10-protected-writer-live-r12"
+    "dell-R10-protected-writer-live-r13"
 )
 AUTHORITY_SCHEMA_VERSION = (
     "fin_ia_s3_current_dynamic_multi_agent_protected_writer_live_authority_v1_0"

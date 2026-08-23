@@ -76,7 +76,7 @@ REPORT_REMAP_REFERENCE_PATCH_DECISION_REF = (
 )
 CURRENT_DYNAMIC_WRITER_DECISION_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "R10_protected_writer_scope_decision_v1_1.json"
+    "R10_protected_writer_scope_decision_v1_2.json"
 )
 DECISION_REF = (
     "configs/research/evals/"
@@ -2655,3 +2655,6 @@ def test_current_dynamic_writer_decision_binds_R10_and_three_call_ceiling() -> N
     assert projection["R10_assessment_status"].startswith(
         "R10_contract_pass_all_seven_material_findings_closed"
     )
+    assert projection["node_profiles"]["writer_analysis"][
+        "reasoning_profile"
+    ] == "deepseek-v4-pro thinking disabled visible planning"

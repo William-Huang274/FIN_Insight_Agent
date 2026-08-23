@@ -7005,19 +7005,63 @@ def _validate_current_dynamic_writer_decision(
 
     analysis_profile = payloads["analysis_profile"]
     submission_profile = payloads["submission_profile"]
+    profile_successor = zero.get("successor_profile_replacement_receipt")
+    legacy_analysis_defaults = {
+        "max_tokens": 16000,
+        "stream": False,
+        "thinking": {"type": "enabled"},
+        "reasoning_effort": "max",
+    }
+    successor_analysis_defaults = {
+        "max_tokens": 16000,
+        "stream": False,
+        "thinking": {"type": "disabled"},
+    }
+    expected_analysis_defaults = legacy_analysis_defaults
+    profile_successor_valid = profile_successor is None
+    if isinstance(profile_successor, Mapping):
+        failed = profile_successor.get("failed_attempt") or {}
+        replacement = profile_successor.get("replacement") or {}
+        expected_analysis_defaults = successor_analysis_defaults
+        profile_successor_valid = (
+            (failed.get("failure") or {}).get("code")
+            == "model_gateway_reasoning_budget_exhausted"
+            and (failed.get("execution") or {}).get(
+                "new_provider_calls_attempted"
+            )
+            == 1
+            and (failed.get("execution") or {}).get(
+                "writer_submission_attempts"
+            )
+            == 0
+            and (failed.get("execution") or {}).get("retries") == 0
+            and failed.get("usage")
+            == {
+                "prompt_tokens": 46369,
+                "completion_tokens": 16000,
+                "reasoning_tokens": 16000,
+            }
+            and replacement.get("analysis_profile_ref")
+            == str(bound["analysis_profile"]["ref"])
+            and replacement.get("analysis_profile_sha256")
+            == str(bound["analysis_profile"]["sha256"])
+            and replacement.get("request_defaults")
+            == successor_analysis_defaults
+            and replacement.get("analysis_messages_replay_byte_equal") is True
+            and replacement.get("writer_contract_changed") is False
+            and replacement.get("R10_input_or_authority_changed") is False
+            and replacement.get("model_calls") == 0
+            and replacement.get("provider_calls") == 0
+        )
     if not (
-        analysis_profile.get("provider_id") == "deepseek"
+        profile_successor_valid
+        and analysis_profile.get("provider_id") == "deepseek"
         and analysis_profile.get("model") == "deepseek-v4-pro"
         and analysis_profile.get("base_url") == "https://api.deepseek.com"
         and analysis_profile.get("endpoint") == "/chat/completions"
         and analysis_profile.get("api_key_env") == "DEEPSEEK_API_KEY"
         and analysis_profile.get("request_defaults")
-        == {
-            "max_tokens": 16000,
-            "stream": False,
-            "thinking": {"type": "enabled"},
-            "reasoning_effort": "max",
-        }
+        == expected_analysis_defaults
         and (analysis_profile.get("authority") or {}).get("retry_count") == 0
         and submission_profile.get("provider_id") == "deepseek"
         and submission_profile.get("model") == "deepseek-v4-pro"

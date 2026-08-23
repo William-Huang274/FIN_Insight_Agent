@@ -1491,3 +1491,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 修复 commit=`4e6a1d54...232d6`；R3 再次逐摘要重放六角色 R1 S1/S2 和八份原始草稿，全部检查通过，0 模型／网络／retrieval／付费调用。
 - public digest=`f56e57d9...ceda9`，public SHA=`27341b20...dd567`，private SHA=`c97e8204...93aa2`；Supply 仍只允许 `REQ::21dc7bfb04d38fa5cc8749f8`。
 - 当前只恢复 fresh live admission 资格；下一门是新签 R3 authority，不得复用 R2 identity。详见 `docs/worklog/fin_0_1_3_s3/140_submission_successor_R3_fresh_zero_call_proof.md`。
+
+### 2026-08-23 submission successor R3 live authority
+
+- 已基于 commit `d49b4711...d9c11` 和 fresh proof `f56e57d9...ceda9` 签发 R3；authority SHA=`5d471db3...71306`，validator pass。
+- 仍为最多 25 次拓扑派生调用、1 个 Supply S1/S2 request、0 retry／fallback／外源／promotion／pointer mutation；全新 R3 identities。
+- 当前只到 signed、未执行。详见 `docs/worklog/fin_0_1_3_s3/141_submission_successor_R3_live_authority.md`。

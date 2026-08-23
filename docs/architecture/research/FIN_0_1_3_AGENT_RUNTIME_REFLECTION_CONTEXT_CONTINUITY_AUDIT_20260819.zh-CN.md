@@ -401,3 +401,18 @@ DELL 动态 value-capture R5 证明了研究 Agent 能自然取证、反思、�
 6. Provider 请求和原始响应先进入受限 capture，公开结果只保存模型、usage、finish reason、tool 名称、digest 与 capture ref；任何已请求但未完成的 attempt 都获得 `provider_attempt_failed` 终态。
 
 零调用 proof 已覆盖完整五条反馈、同 Agent PlanDelta、三表面 patch、锁定字段不变，以及漏反馈、错动作和新增引用 mutation。它只证明 Runtime 能执行这条闭环，不证明模型自然修复正确。下一权限最多包含一个 planning call 和一个 non-thinking patch call；若同一语义错误类仍未通过，不再继续按字段扩建 DeepSeek 专用分支，而转为模型职责／研究合同架构处置。
+
+## 25. 研究 Session 与修复 Session 的 lineage 边界（2026-08-23）
+
+R6 的自然 planning 节点完整消费五份 FeedbackReceipt 并提交了合格 PlanDelta，但 Runtime 在接受计划时以 `runtime_plan_delta_session_mismatch` 终止。原因不是模型或资料：FeedbackReceipt 与 PlanDelta 属于新 repair session，runner 却把它们应用到 R3/R5 的旧 research session。原零调用 proof 只分别验证了 PlanDelta 和 patch，没有真实执行 `AgentSession → apply_accepted_plan_delta` 接缝，因此漏掉该集成错误。
+
+修订后的 provider-neutral 规则是：
+
+1. 已完成研究 session 保持不可变；内容审计修复建立新的 repair session，并沿用 Case、version、as-of 和 objective；
+2. FeedbackReceipt、PlanDelta、事件日志和 active plan 必须全部绑定 repair session；前序 workpaper、assessment 和 active plan 通过显式 lineage receipt 引入；
+3. 若自然 planning Provider call 已成功、严格计划已验证，而后续本地 Runtime 才失败，可在 capture／digest／事件全部一致时复用该计划，不得再次调用模型生成同一计划；
+4. successor 的事件从 `session_created / plan_bound / feedback_issued / plan_delta_submitted / plan_delta_accepted` 开始，再执行唯一剩余 patch 节点；
+5. 累计权限仍是原两节点预算：R6 已消费 planning call，successor 最多消费一项 patch call，0 retry、0 retrieval、0 new Evidence；
+6. 零调用 proof 必须覆盖真实跨组件接缝，不能再以“各 Validator 单独通过”冒充 Runtime 组合通过。
+
+R6 失败保持不可变；新的零调用 seam proof 已复用 R6 的自然计划并成功建立／推进 repair session。它仍不证明自然 patch 或 L1／L2 通过。

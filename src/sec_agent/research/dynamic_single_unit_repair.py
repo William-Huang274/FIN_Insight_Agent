@@ -7,6 +7,7 @@ from typing import Any, Mapping
 from sec_agent.canonical_runtime import (
     canonical_digest,
     compile_verifier_feedback_receipts,
+    create_agent_session,
     validate_runtime_artifact,
 )
 
@@ -387,6 +388,144 @@ def compile_semantic_plan_delta(
     return {**validated, "plan_delta_digest": canonical_digest(validated)}
 
 
+def create_semantic_repair_session(
+    *,
+    context: Mapping[str, Any],
+    predecessor_session: Mapping[str, Any],
+    run_id: str,
+    created_at: str,
+) -> dict[str, Any]:
+    """Create a distinct repair session while preserving case lineage.
+
+    The content verifier issues receipts for the repair session, not for the
+    completed research session.  A PlanDelta compiled from those receipts must
+    therefore be applied to this successor session.  The predecessor remains
+    immutable and is carried through the repair context and base-plan receipt.
+    """
+
+    predecessor = validate_runtime_artifact("AgentSession", predecessor_session)
+    identity = context.get("case_identity") or {}
+    _require(
+        predecessor.get("as_of_date") == identity.get("research_as_of")
+        and str(context.get("session_id") or "")
+        == str((context.get("feedback_receipts") or [{}])[0].get("session_id") or "")
+        and all(
+            str(row.get("session_id") or "") == str(context.get("session_id") or "")
+            for row in context.get("feedback_receipts") or ()
+        ),
+        "dynamic_semantic_repair_session_lineage_invalid",
+    )
+    return create_agent_session(
+        session_id=str(context["session_id"]),
+        run_id=run_id,
+        case_id=str(predecessor["case_id"]),
+        case_version=str(predecessor["case_version"]),
+        as_of_date=str(predecessor["as_of_date"]),
+        objective_ref=str(predecessor["objective_ref"]),
+        active_plan_ref=(
+            "PLAN::SEMANTIC-REPAIR-BASE::"
+            + str(context["repair_base_plan_digest"])[:24].upper()
+        ),
+        created_at=created_at,
+    )
+
+
+def compile_reused_semantic_repair_plan(
+    *,
+    failed_full_result: Mapping[str, Any],
+    context: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Requalify a completed plan node from a later local Runtime failure."""
+
+    failed = deepcopy(dict(failed_full_result))
+    _require(
+        failed.get("status") == "terminal_failed_no_retry"
+        and (failed.get("failure") or {}).get("phase") == "canonical_runtime"
+        and (failed.get("failure") or {}).get("code")
+        == "runtime_plan_delta_session_mismatch"
+        and (failed.get("execution") or {}).get("provider_calls_attempted") == 1
+        and (failed.get("execution") or {}).get("retrieval_rounds_executed") == 0
+        and (failed.get("execution") or {}).get("new_evidence_count") == 0
+        and not failed.get("workpaper")
+        and not failed.get("repair_receipt"),
+        "dynamic_semantic_repair_reuse_predecessor_invalid",
+    )
+    persisted_context = failed.get("semantic_repair_context") or {}
+    _require(
+        persisted_context.get("context_digest") == context.get("context_digest"),
+        "dynamic_semantic_repair_reuse_context_drift",
+    )
+    persisted_plan = deepcopy(dict(failed.get("repair_plan") or {}))
+    persisted_plan_digest = str(persisted_plan.pop("plan_digest", ""))
+    plan = validate_semantic_repair_plan(persisted_plan, context=context)
+    _require(
+        plan["plan_digest"] == persisted_plan_digest,
+        "dynamic_semantic_repair_reuse_plan_digest_drift",
+    )
+    plan_delta = compile_semantic_plan_delta(plan, context=context)
+    _require(
+        failed.get("plan_delta") == plan_delta,
+        "dynamic_semantic_repair_reuse_plan_delta_drift",
+    )
+    provider_steps = list(failed.get("provider_steps") or ())
+    _require(
+        len(provider_steps) == 1
+        and provider_steps[0].get("finish_reason") == "tool_calls"
+        and provider_steps[0].get("tool_call_count") == 1
+        and provider_steps[0].get("tool_names")
+        == ["submit_semantic_repair_plan"]
+        and bool(provider_steps[0].get("request_capture_ref"))
+        and bool(provider_steps[0].get("response_capture_ref")),
+        "dynamic_semantic_repair_reuse_provider_step_invalid",
+    )
+    submitted_attempts = [
+        str(row.get("attempt_id") or "")
+        for row in failed.get("session_events") or ()
+        if row.get("event_type") == "plan_delta_submitted"
+        and row.get("attempt_id")
+    ]
+    _require(
+        bool(submitted_attempts),
+        "dynamic_semantic_repair_reuse_event_lineage_invalid",
+    )
+    source_attempt_id = submitted_attempts[-1]
+    event_types = [
+        str(row.get("event_type") or "")
+        for row in failed.get("session_events") or ()
+        if row.get("attempt_id") == source_attempt_id
+    ]
+    _require(
+        event_types
+        == [
+            "provider_attempt_requested",
+            "provider_attempt_completed",
+            "plan_delta_submitted",
+        ],
+        "dynamic_semantic_repair_reuse_event_lineage_invalid",
+    )
+    receipt = {
+        "schema_version": "fin_ia_semantic_repair_plan_reuse_receipt_v1_0",
+        "failed_result_digest": failed["full_result_digest"],
+        "semantic_repair_context_digest": context["context_digest"],
+        "repair_plan_digest": plan["plan_digest"],
+        "plan_delta_digest": plan_delta["plan_delta_digest"],
+        "source_request_capture_ref": provider_steps[0]["request_capture_ref"],
+        "source_response_capture_ref": provider_steps[0]["response_capture_ref"],
+        "source_attempt_id": source_attempt_id,
+        "provider_calls_reused": 1,
+        "provider_calls_added": 0,
+        "reuse_reason": "provider_plan_completed_before_local_session_lineage_failure",
+    }
+    return {
+        "repair_plan": plan,
+        "plan_delta": plan_delta,
+        "reuse_receipt": {
+            **receipt,
+            "reuse_receipt_digest": canonical_digest(receipt),
+        },
+    }
+
+
 def semantic_repair_patch_tool(
     context: Mapping[str, Any], plan_delta: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -543,9 +682,11 @@ __all__ = [
     "SEMANTIC_REPAIR_PATCH_SCHEMA_VERSION",
     "SEMANTIC_REPAIR_PLAN_SCHEMA_VERSION",
     "compile_semantic_plan_delta",
+    "compile_reused_semantic_repair_plan",
     "compile_semantic_repair_context",
     "compile_semantic_repair_patch_messages",
     "compile_semantic_repair_plan_messages",
+    "create_semantic_repair_session",
     "semantic_repair_patch_tool",
     "semantic_repair_plan_tool",
     "validate_and_merge_semantic_repair_patch",

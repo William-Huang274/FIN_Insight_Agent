@@ -6,17 +6,30 @@ from pathlib import Path
 
 import pytest
 
-from sec_agent.canonical_runtime import append_session_event, create_agent_session
+from sec_agent.canonical_runtime import (
+    append_session_event,
+    apply_accepted_plan_delta,
+    canonical_digest,
+    create_agent_session,
+)
 from sec_agent.providers.chat_completions import ChatCompletionToolStepResult
 from scripts.research.run_s3_feedback_driven_workpaper_repair import (
+    PATCH_SUCCESSOR_AUTHORITY_SCHEMA,
+    PATCH_SUCCESSOR_AUTHORITY_STATUS,
+    SemanticRepairRunnerError,
     _append_unterminated_provider_failures,
     _public_step,
+    build_patch_successor_zero_call_result,
+    run_patch_successor,
+    validate_patch_successor_authority,
 )
 from sec_agent.research.dynamic_single_unit_repair import (
     DynamicSingleUnitRepairError,
     LOCKED_WORKPAPER_FIELDS,
+    compile_reused_semantic_repair_plan,
     compile_semantic_plan_delta,
     compile_semantic_repair_context,
+    create_semantic_repair_session,
     semantic_repair_patch_tool,
     semantic_repair_plan_tool,
     validate_and_merge_semantic_repair_patch,
@@ -33,6 +46,11 @@ PRIVATE_RESULT = ROOT / (
 ASSESSMENT = ROOT / (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
     "workpaper_submission_content_assessment_v1_0.json"
+)
+FAILED_R6_RESULT = ROOT / (
+    "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/"
+    "dell-current-dynamic-single-unit-r6-semantic-repair-20260823t0433z/"
+    "full_result.json"
 )
 
 
@@ -73,7 +91,7 @@ def _context() -> dict:
         assessment=_json(ASSESSMENT),
         assessment_ref=ASSESSMENT.relative_to(ROOT).as_posix(),
         prior_result_ref=PRIVATE_RESULT.relative_to(ROOT).as_posix(),
-        created_at="2026-08-23T04:30:00Z",
+        created_at="2026-08-23T04:10:53.556772+00:00",
     )
 
 
@@ -295,3 +313,109 @@ def test_semantic_repair_appends_failed_terminal_for_requested_attempt() -> None
         "provider_attempt_failed",
     ]
     assert events[-1]["output_refs"] == ["capture://failure"]
+
+
+def test_semantic_repair_uses_successor_session_and_reuses_completed_plan() -> None:
+    context = _context()
+    predecessor = _json(PRIVATE_RESULT)
+    session = create_semantic_repair_session(
+        context=context,
+        predecessor_session=predecessor["session"],
+        run_id="dell-semantic-repair-successor-test",
+        created_at="2026-08-23T04:40:00Z",
+    )
+    assert session["session_id"] == context["session_id"]
+    assert session["session_id"] != predecessor["session"]["session_id"]
+    assert session["case_id"] == predecessor["session"]["case_id"]
+    assert session["as_of_date"] == predecessor["session"]["as_of_date"]
+
+    reused = compile_reused_semantic_repair_plan(
+        failed_full_result=_json(FAILED_R6_RESULT),
+        context=context,
+    )
+    assert reused["reuse_receipt"]["provider_calls_reused"] == 1
+    assert reused["reuse_receipt"]["provider_calls_added"] == 0
+    accepted_body = {
+        "predecessor_active_plan_ref": session["active_plan_ref"],
+        "repair_plan": reused["repair_plan"],
+        "plan_delta_digest": reused["plan_delta"]["plan_delta_digest"],
+    }
+    accepted_digest = canonical_digest(accepted_body)
+    advanced = apply_accepted_plan_delta(
+        session=session,
+        plan_delta=reused["plan_delta"],
+        expected_base_plan_digest=context["repair_base_plan_digest"],
+        accepted_plan_digest=accepted_digest,
+        accepted_plan_ref="PLAN::" + accepted_digest[:24].upper(),
+        updated_at="2026-08-23T04:40:01Z",
+    )
+    assert advanced["active_plan_ref"] != session["active_plan_ref"]
+
+
+def test_semantic_repair_rejects_reuse_when_plan_or_failure_drifts() -> None:
+    context = _context()
+    failed = _json(FAILED_R6_RESULT)
+    failed["failure"]["code"] = "some_other_failure"
+    with pytest.raises(
+        DynamicSingleUnitRepairError,
+        match="dynamic_semantic_repair_reuse_predecessor_invalid",
+    ):
+        compile_reused_semantic_repair_plan(
+            failed_full_result=failed,
+            context=context,
+        )
+
+    failed = _json(FAILED_R6_RESULT)
+    failed["repair_plan"]["feedback_resolutions"].pop()
+    with pytest.raises(
+        DynamicSingleUnitRepairError,
+        match="dynamic_semantic_repair_plan_feedback_coverage_invalid",
+    ):
+        compile_reused_semantic_repair_plan(
+            failed_full_result=failed,
+            context=context,
+        )
+
+
+def test_semantic_patch_successor_zero_call_proves_remaining_seam() -> None:
+    result = build_patch_successor_zero_call_result(
+        recorded_at="2026-08-23T04:44:37.270569+00:00",
+    )
+    assert result["status"] == (
+        "R6_plan_reused_successor_session_and_patch_seam_zero_call_proven"
+    )
+    assert all(result["checks"].values())
+    assert result["execution"] == {
+        "historical_provider_calls_reused": 1,
+        "new_provider_calls": 0,
+        "remaining_provider_calls_authorizable": 1,
+        "retrieval_rounds": 0,
+        "new_evidence": 0,
+        "candidate_promotions": 0,
+    }
+
+
+def test_semantic_patch_successor_authority_rejects_budget_drift_first(
+    tmp_path: Path,
+) -> None:
+    authority = {
+        "schema_version": PATCH_SUCCESSOR_AUTHORITY_SCHEMA,
+        "status": PATCH_SUCCESSOR_AUTHORITY_STATUS,
+        "signed_at": "2026-08-23T04:50:00Z",
+        "implementation_commit": "0" * 40,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "execution_budget": {"maximum_model_calls": 2},
+        "bound_inputs": {},
+        "output_contract": {},
+        "known_boundary": "x" * 100,
+    }
+    path = tmp_path / "authority.json"
+    path.write_text(json.dumps(authority), encoding="utf-8")
+    with pytest.raises(
+        SemanticRepairRunnerError,
+        match="semantic_patch_successor_budget_invalid",
+    ):
+        validate_patch_successor_authority(authority, authority_path=path)
+
+    assert run_patch_successor.__kwdefaults__["patch_executor"] is not None

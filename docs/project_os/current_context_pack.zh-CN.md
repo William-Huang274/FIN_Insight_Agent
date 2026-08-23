@@ -1380,3 +1380,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 当前只达到 semantic repair engineering proof，RC-S3-062 仍为 critical blocker。下一权限最多一次 planning call＋一次 non-thinking patch call；独立 L1／L2 通过前，动态多 Agent、S3 acceptance、Workbench publication 与 release 均为 false。
 - 完整工程门为定向 `91 passed`、全仓 `1094 passed`（仅 2 条既有 SWIG warning）、compileall、active baseline `207／8／5／28／0`、7,718-file secret scan／0 和 diff check 通过。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/128_current_dynamic_semantic_feedback_repair_zero_call_gate.md`。
+
+### 2026-08-23 DELL semantic repair R6 Session mismatch
+
+- R6 的第一项 DeepSeek planning call 自然完成：prompt `5,902`、completion `3,129`（reasoning `2,021`），五项 FeedbackReceipt 全部获得正确且逐条对应的修复方案，Plan／PlanDelta 合同通过。
+- 本地 Runtime 在接受 PlanDelta 时以 `runtime_plan_delta_session_mismatch` fail closed；第二项 patch call 未发生。R6 为 1 Provider call、0 retrieval／S1/S2／new Evidence／promotion／retry，public／private terminal 与 capture 已保留。
+- 根因是 runner 把 repair-session Feedback／PlanDelta 应用到旧 research session。原零调用 proof 只单测 Plan／Patch，没有真实跨过 `AgentSession → apply_accepted_plan_delta`，属于 S0 Runtime 组合接缝漏测，不是模型或资料问题。
+- 修复后 research session 保持不可变，新 repair session 继承 Case／version／as-of／objective；R6 已验证 Plan 按 capture、event 和 digest 复用，不重复调用模型。新 zero-call seam proof 已通过 session created／plan bound／feedback／PlanDelta accepted／controlled patch。
+- 原两节点预算只剩一次 non-thinking patch call。L1／L2 复核前，多 Agent、S3 acceptance、publication 和 release 仍为 false。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/129_R6_plan_success_session_mismatch_and_patch_successor_gate.md`。

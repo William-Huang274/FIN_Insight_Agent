@@ -1446,7 +1446,8 @@ def test_current_dynamic_semantic_repair_binds_R5_feedback_and_two_nodes() -> No
     )
     assert result["scope_projection"]["blocking_issue_ids"] == []
     assert result["scope_projection"]["explicit_allow_issue_ids"] == [
-        "RC-S3-062-current-dynamic-workpaper-free-narrative-promoted_bounded_authority"
+        "RC-S3-062-current-dynamic-workpaper-free-narrative-promoted_bounded_authority",
+        "RC-S3-063-semantic-repair-plan-applied-to-predecessor-session",
     ]
     assert "all five semantic FeedbackReceipts" in result["known_boundary"]
 

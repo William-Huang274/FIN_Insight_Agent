@@ -1,0 +1,173 @@
+{
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "checks": {
+    "accepted_plan_changed_in_successor_session": true,
+    "controlled_patch_still_valid": true,
+    "event_log_starts_with_successor_session_and_plan": true,
+    "failed_R6_preserved_and_plan_node_requalified": true,
+    "only_one_remaining_provider_call": true,
+    "predecessor_research_session_immutable": true,
+    "repair_session_matches_feedback_and_plan_delta": true
+  },
+  "controlled_repaired_workpaper_digest": "88fc575d0d73c034010928da40f2d8af4c964fa68bf70355a6b1358dd38205ef",
+  "execution": {
+    "candidate_promotions": 0,
+    "historical_provider_calls_reused": 1,
+    "new_evidence": 0,
+    "new_provider_calls": 0,
+    "remaining_provider_calls_authorizable": 1,
+    "retrieval_rounds": 0
+  },
+  "known_boundary": "This zero-call proof only repairs the local AgentSession lineage seam and requalifies the already validated natural R6 repair plan. It does not produce a natural patch or pass L1/L2; at most one patch call remains.",
+  "recorded_at": "2026-08-23T04:44:37.270569+00:00",
+  "repair_plan_reuse_receipt": {
+    "failed_result_digest": "4d5e5bd7b4a8726169d18c8a6a3cd88a8afd7f35523b600f7c9f0507b991ab93",
+    "plan_delta_digest": "a3249fd75751fcaeea0450d23674d266f43e39a1d7eef0a985314e9919d23682",
+    "provider_calls_added": 0,
+    "provider_calls_reused": 1,
+    "repair_plan_digest": "96021049e05f0b5edef57ed0b96bfceb4d40e2c7599b0a07389f5a9df43feaa5",
+    "reuse_reason": "provider_plan_completed_before_local_session_lineage_failure",
+    "reuse_receipt_digest": "6d07d84aae5da72f247112904024ab28a689b48c5f60c5c7cdd25ba26f50bde6",
+    "schema_version": "fin_ia_semantic_repair_plan_reuse_receipt_v1_0",
+    "semantic_repair_context_digest": "73d216f5feac6f1575f08d2ff694a8bacac24d140bf60a33ee5a6e67b3add3bb",
+    "source_attempt_id": "dell-current-dynamic-single-unit-r6-semantic-repair-plan",
+    "source_request_capture_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r6-semantic-repair-20260823t0433z/captures/dell-current-dynamic-single-unit-r6-semantic-repair-20260823t0433z/dell-current-dynamic-single-unit-r6-semantic-repair-plan/model_visible_request.json",
+    "source_response_capture_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r6-semantic-repair-20260823t0433z/captures/dell-current-dynamic-single-unit-r6-semantic-repair-20260823t0433z/dell-current-dynamic-single-unit-r6-semantic-repair-plan/provider_response.json"
+  },
+  "result_digest": "c4d6f227fc047847846476fe9cf978201681fe069cb9f5e83357cb9b2316648c",
+  "schema_version": "fin_ia_s3_dynamic_single_unit_semantic_patch_successor_zero_call_result_v1_0",
+  "semantic_repair_context_digest": "73d216f5feac6f1575f08d2ff694a8bacac24d140bf60a33ee5a6e67b3add3bb",
+  "source_failed_full_result_digest": "4d5e5bd7b4a8726169d18c8a6a3cd88a8afd7f35523b600f7c9f0507b991ab93",
+  "source_failed_private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r6-semantic-repair-20260823t0433z/full_result.json",
+  "source_failed_private_result_sha256": "13f9cd47394b0568316dfc54af9c30e8c13767bdea5ca89d2d7b5384a10e2279",
+  "status": "R6_plan_reused_successor_session_and_patch_seam_zero_call_proven",
+  "successor_session": {
+    "active_plan_ref": "PLAN::A613F6C0E05461988D8C1023",
+    "as_of_date": "2026-08-06",
+    "case_id": "case_dell_current",
+    "case_version": "FIN_0_1_3",
+    "created_at": "2026-08-23T04:44:37.270569+00:00",
+    "current_checkpoint_ref": null,
+    "event_log_ref": "runtime://sessions/SESSION::DELL::VALUE_CAPTURE::SEMANTIC_REPAIR::F5B501888319069BA0C1/events",
+    "objective_ref": "objective://OBJ::DELL::DYNAMIC-VALUE-CAPTURE-R32",
+    "run_id": "zero-call-semantic-patch-successor",
+    "session_digest": "8fc4ba74ed6aa2b65c730975bba40e9c720409585e9d659f7a30ab05de3b1f49",
+    "session_id": "SESSION::DELL::VALUE_CAPTURE::SEMANTIC_REPAIR::F5B501888319069BA0C1",
+    "status": "active",
+    "updated_at": "2026-08-23T04:44:37.270569+00:00"
+  },
+  "successor_session_events": [
+    {
+      "actor_id": "S3.DynamicSingleUnitSemanticRepairHarness",
+      "attempt_id": null,
+      "event_digest": "6b53c2810cc231a556729b80f1aa0b31784573c2736c41c5bee25e689b337e4d",
+      "event_id": "EVENT::A6DC2F2EE5E15725CE4FAB23",
+      "event_type": "session_created",
+      "feedback_refs": [],
+      "input_refs": [],
+      "occurred_at": "2026-08-23T04:44:37.270569+00:00",
+      "output_refs": [
+        "4cbf8fec71e270064f455b966e8650bac2610675772b7d38714dc6ac1e0e8af5"
+      ],
+      "prior_event_digest": null,
+      "schema_version": "fin_ia_agent_session_event_v1_0",
+      "sequence": 1,
+      "session_id": "SESSION::DELL::VALUE_CAPTURE::SEMANTIC_REPAIR::F5B501888319069BA0C1"
+    },
+    {
+      "actor_id": "S3.DynamicSingleUnitSemanticRepairHarness",
+      "attempt_id": null,
+      "event_digest": "aec128862a6696af0b956cc9db7ee31e425a819a49cbe8866cf08d0f09213671",
+      "event_id": "EVENT::B848401530B64361BB787BE1",
+      "event_type": "plan_bound",
+      "feedback_refs": [],
+      "input_refs": [
+        "a4b4a9b40a18f0dd9a3fbdf00f47fcd769018d8d90e18be0964390f00b869ef9"
+      ],
+      "occurred_at": "2026-08-23T04:44:37.270569+00:00",
+      "output_refs": [
+        "PLAN::SEMANTIC-REPAIR-BASE::A4B4A9B40A18F0DD9A3FBDF0"
+      ],
+      "prior_event_digest": "6b53c2810cc231a556729b80f1aa0b31784573c2736c41c5bee25e689b337e4d",
+      "schema_version": "fin_ia_agent_session_event_v1_0",
+      "sequence": 2,
+      "session_id": "SESSION::DELL::VALUE_CAPTURE::SEMANTIC_REPAIR::F5B501888319069BA0C1"
+    },
+    {
+      "actor_id": "S3.IndependentContentVerifier",
+      "attempt_id": null,
+      "event_digest": "78f3797a6a02fdb476fd529265db30b4f682d943865119a7d5de55ea817623f5",
+      "event_id": "EVENT::64DB8EFD78240F88F96C81F4",
+      "event_type": "feedback_issued",
+      "feedback_refs": [
+        "FEEDBACK::ACCDBC02C28250159527B6F3",
+        "FEEDBACK::59ADF38C9A5320F32BAB5EF3",
+        "FEEDBACK::1058236DDE1DB619CE2AB6FA",
+        "FEEDBACK::08131A77A236999AF7FD3FA6",
+        "FEEDBACK::E29C2888E7D0B13D3D7C017A"
+      ],
+      "input_refs": [
+        "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_workpaper_submission_content_assessment_v1_0.json"
+      ],
+      "occurred_at": "2026-08-23T04:44:37.270569+00:00",
+      "output_refs": [
+        "feedback-bundle://d13ade4d97b495d997c88d743b23a5b644d24400f351e481d39e324c826b7ad4"
+      ],
+      "prior_event_digest": "aec128862a6696af0b956cc9db7ee31e425a819a49cbe8866cf08d0f09213671",
+      "schema_version": "fin_ia_agent_session_event_v1_0",
+      "sequence": 3,
+      "session_id": "SESSION::DELL::VALUE_CAPTURE::SEMANTIC_REPAIR::F5B501888319069BA0C1"
+    },
+    {
+      "actor_id": "AGENT::VALUE_CAPTURE",
+      "attempt_id": null,
+      "event_digest": "b1a0e8fa5ff1876d4b4c4b6c5bd004b9ae9f65dd3f6f58ad24cbef3e0ed3a973",
+      "event_id": "EVENT::3D5F15B1CB054360A0518240",
+      "event_type": "plan_delta_submitted",
+      "feedback_refs": [
+        "FEEDBACK::ACCDBC02C28250159527B6F3",
+        "FEEDBACK::59ADF38C9A5320F32BAB5EF3",
+        "FEEDBACK::1058236DDE1DB619CE2AB6FA",
+        "FEEDBACK::08131A77A236999AF7FD3FA6",
+        "FEEDBACK::E29C2888E7D0B13D3D7C017A"
+      ],
+      "input_refs": [
+        "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r6-semantic-repair-20260823t0433z/captures/dell-current-dynamic-single-unit-r6-semantic-repair-20260823t0433z/dell-current-dynamic-single-unit-r6-semantic-repair-plan/provider_response.json"
+      ],
+      "occurred_at": "2026-08-23T04:44:37.270569+00:00",
+      "output_refs": [
+        "PLANDELTA::83EC784232A4E41A77BFE4CF"
+      ],
+      "prior_event_digest": "78f3797a6a02fdb476fd529265db30b4f682d943865119a7d5de55ea817623f5",
+      "schema_version": "fin_ia_agent_session_event_v1_0",
+      "sequence": 4,
+      "session_id": "SESSION::DELL::VALUE_CAPTURE::SEMANTIC_REPAIR::F5B501888319069BA0C1"
+    },
+    {
+      "actor_id": "S3.DynamicSingleUnitSemanticRepairHarness",
+      "attempt_id": null,
+      "event_digest": "fa8d682f9e8be42f3b410e2ee95af713b64ac5664765a99455c8a168b39aa784",
+      "event_id": "EVENT::D61B26465682E6389405262A",
+      "event_type": "plan_delta_accepted",
+      "feedback_refs": [
+        "FEEDBACK::ACCDBC02C28250159527B6F3",
+        "FEEDBACK::59ADF38C9A5320F32BAB5EF3",
+        "FEEDBACK::1058236DDE1DB619CE2AB6FA",
+        "FEEDBACK::08131A77A236999AF7FD3FA6",
+        "FEEDBACK::E29C2888E7D0B13D3D7C017A"
+      ],
+      "input_refs": [
+        "PLANDELTA::83EC784232A4E41A77BFE4CF"
+      ],
+      "occurred_at": "2026-08-23T04:44:37.270569+00:00",
+      "output_refs": [
+        "PLAN::A613F6C0E05461988D8C1023"
+      ],
+      "prior_event_digest": "b1a0e8fa5ff1876d4b4c4b6c5bd004b9ae9f65dd3f6f58ad24cbef3e0ed3a973",
+      "schema_version": "fin_ia_agent_session_event_v1_0",
+      "sequence": 5,
+      "session_id": "SESSION::DELL::VALUE_CAPTURE::SEMANTIC_REPAIR::F5B501888319069BA0C1"
+    }
+  ]
+}

@@ -1549,3 +1549,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 新门显式禁止 S1/S2、检索、外源、Candidate promotion、retry、fallback、Writer、S3 acceptance、泛化、publication 和 release。预算改为 13、责任角色漂移或 artifact 摘要漂移均 fail closed。
 - R6 authority 必须直接绑定这份 scope decision 的文件摘要与语义；仅手写相同的 12-call budget 不能绕过 Project OS 获得执行资格。
 - 定向 Project OS／multi-agent 测试 `97 passed`；全仓 `1136 passed`，仅两条既有 SWIG warning。下一门是 clean commit／push 后 repository-aware preflight，再签发唯一 R6 authority；只有独立 L1／L2 与内容质量复评通过才可解冻 Writer。
+
+### 2026-08-23 R6 内容返修 live authority
+
+- clean／synced commit `2bda05b8...306bd` 的 repository-aware Project OS preflight 已通过，精确投影 12 次 Provider、0 S1/S2／检索／外源／retry／promotion，凭据只检查存在性。
+- R6 authority SHA=`2c605338...077bc`，绑定 11 组输入并通过本地 validator；scope decision 本身是受摘要保护输入，不能以手写同预算 authority 绕过。
+- 当前仅为 signed／not executed。五角色返修与 Lead 复核尚未发生；Writer、S3、泛化、publication 和 release 仍为 false。详见 `docs/worklog/fin_0_1_3_s3/147_R6_multi_agent_content_repair_live_authority.md`。

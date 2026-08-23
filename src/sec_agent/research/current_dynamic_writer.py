@@ -32,6 +32,21 @@ CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_STATUS = (
 CURRENT_DYNAMIC_WRITER_RUN_SCOPE = (
     "one_capture_bound_R10_protected_writer_analysis_and_submission"
 )
+CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_ZERO_CALL_SCHEMA_VERSION = (
+    "fin_ia_s3_current_dynamic_multi_agent_protected_writer_"
+    "submission_successor_zero_call_v1_0"
+)
+CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_SCHEMA_VERSION = (
+    "fin_ia_s3_current_dynamic_multi_agent_protected_writer_"
+    "submission_successor_scope_decision_v1_0"
+)
+CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_STATUS = (
+    "zero_call_R13_bound_protected_writer_submission_successor_"
+    "engineering_complete"
+)
+CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_RUN_SCOPE = (
+    "one_R13_bound_protected_writer_JSON_and_surface_feedback_submission"
+)
 
 R10_ASSESSMENT_STATUS = (
     "R10_contract_pass_all_seven_material_findings_closed_independent_"
@@ -124,6 +139,25 @@ def expected_current_dynamic_writer_budget() -> dict[str, int]:
         "writer_analysis_calls": 1,
         "maximum_writer_submission_attempts": 2,
         "maximum_new_writer_logical_nodes": 1,
+        "maximum_new_s1_s2_requests": 0,
+        "maximum_new_retrieval_rounds": 0,
+        "maximum_external_source_network_calls": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+
+
+def expected_current_dynamic_writer_submission_successor_budget() -> dict[str, int]:
+    """Maximum authority for the one remaining R13-bound strict submission."""
+
+    return {
+        "maximum_new_model_calls": 1,
+        "maximum_new_transport_attempts": 1,
+        "writer_analysis_calls": 0,
+        "maximum_writer_submission_attempts": 1,
+        "maximum_new_writer_logical_nodes": 0,
         "maximum_new_s1_s2_requests": 0,
         "maximum_new_retrieval_rounds": 0,
         "maximum_external_source_network_calls": 0,
@@ -645,18 +679,89 @@ def _model_owned_texts(draft: Mapping[str, Any]) -> list[str]:
     return texts
 
 
+def find_r10_protected_writer_surface_findings(
+    draft: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Return every model-owned spelled numeric/ordinal surface with its path.
+
+    This is a diagnostic projection of the same fail-closed lexical guard used by
+    ``validate_r10_protected_writer_draft``.  It does not repair, normalize, or
+    promote a rejected draft.
+    """
+
+    texts: list[tuple[str, str]] = [
+        ("report_topic", str(draft.get("report_topic") or ""))
+    ]
+    for index, clause in enumerate(draft.get("executive_thesis") or ()):
+        if isinstance(clause, Mapping):
+            texts.append(
+                (
+                    f"executive_thesis[{index}].model_text",
+                    str(clause.get("model_text") or ""),
+                )
+            )
+    for section_index, section in enumerate(draft.get("sections") or ()):
+        if not isinstance(section, Mapping):
+            continue
+        texts.append(
+            (
+                f"sections[{section_index}].heading",
+                str(section.get("heading") or ""),
+            )
+        )
+        for clause_index, clause in enumerate(section.get("clauses") or ()):
+            if isinstance(clause, Mapping):
+                texts.append(
+                    (
+                        (
+                            f"sections[{section_index}].clauses"
+                            f"[{clause_index}].model_text"
+                        ),
+                        str(clause.get("model_text") or ""),
+                    )
+                )
+    for field in ("remaining_gaps", "what_would_change"):
+        for index, clause in enumerate(draft.get(field) or ()):
+            if isinstance(clause, Mapping):
+                texts.append(
+                    (
+                        f"{field}[{index}].model_text",
+                        str(clause.get("model_text") or ""),
+                    )
+                )
+    confidence = draft.get("confidence")
+    if isinstance(confidence, Mapping):
+        texts.append(
+            ("confidence.model_text", str(confidence.get("model_text") or ""))
+        )
+
+    findings: list[dict[str, Any]] = []
+    for path, text in texts:
+        matches = [
+            match.group(0).casefold()
+            for match in _ENGLISH_SPELLED_NUMERIC_SURFACE.finditer(text)
+        ]
+        matches.extend(
+            match.group(0)
+            for match in _CHINESE_SPELLED_NUMERIC_SURFACE.finditer(text)
+        )
+        if matches:
+            findings.append(
+                {"path": path, "matches": sorted(set(matches))}
+            )
+    return findings
+
+
 def validate_r10_protected_writer_draft(
     payload: Mapping[str, Any],
     *,
     authority_catalog: Mapping[str, Any],
     protection: Mapping[str, Any],
 ) -> dict[str, Any]:
-    for raw_text in _model_owned_texts(payload):
-        _require(
-            _ENGLISH_SPELLED_NUMERIC_SURFACE.search(raw_text) is None
-            and _CHINESE_SPELLED_NUMERIC_SURFACE.search(raw_text) is None,
-            "current_dynamic_writer_protected_surface_forbidden",
-        )
+    _require(
+        not find_r10_protected_writer_surface_findings(payload),
+        "current_dynamic_writer_protected_surface_forbidden",
+    )
     trusted = validate_protected_report_draft(
         payload, authority_catalog=authority_catalog
     )
@@ -734,6 +839,10 @@ def validate_r10_protected_writer_draft(
 __all__ = [
     "CURRENT_DYNAMIC_WRITER_PROTECTION_SCHEMA_VERSION",
     "CURRENT_DYNAMIC_WRITER_RUN_SCOPE",
+    "CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_SCHEMA_VERSION",
+    "CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_STATUS",
+    "CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_RUN_SCOPE",
+    "CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_ZERO_CALL_SCHEMA_VERSION",
     "CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_SCHEMA_VERSION",
     "CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_STATUS",
     "CURRENT_DYNAMIC_WRITER_ZERO_CALL_SCHEMA_VERSION",
@@ -745,6 +854,8 @@ __all__ = [
     "compile_r10_writer_evaluation",
     "compile_r10_writer_protection_contract",
     "expected_current_dynamic_writer_budget",
+    "expected_current_dynamic_writer_submission_successor_budget",
+    "find_r10_protected_writer_surface_findings",
     "project_r10_writer_authority_catalog",
     "validate_r10_protected_writer_draft",
 ]

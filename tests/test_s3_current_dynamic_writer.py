@@ -11,6 +11,7 @@ from sec_agent.research.current_dynamic_writer import (
     CURRENT_DYNAMIC_WRITER_RUN_SCOPE,
     CurrentDynamicWriterError,
     expected_current_dynamic_writer_budget,
+    find_r10_protected_writer_surface_findings,
     validate_r10_protected_writer_draft,
 )
 from sec_agent.research.multi_agent_report_authority import (
@@ -154,6 +155,34 @@ def test_R10_writer_rejects_spelled_numeric_surface_in_heading(bundle) -> None:
             authority_catalog=catalog,
             protection=protection,
         )
+
+
+def test_R10_writer_surface_diagnostic_returns_all_paths_without_repair(bundle) -> None:
+    payload = deepcopy(
+        ZERO._positive_payload(bundle["catalog"], bundle["protection"])
+    )
+    payload["sections"][1]["clauses"][0]["model_text"] = (
+        "The first bridge has two percentage point components."
+    )
+    payload["remaining_gaps"][0]["model_text"] = (
+        "Three unresolved mappings remain."
+    )
+
+    findings = find_r10_protected_writer_surface_findings(payload)
+
+    assert findings == [
+        {
+            "path": "sections[1].clauses[0].model_text",
+            "matches": ["first", "point", "two"],
+        },
+        {
+            "path": "remaining_gaps[0].model_text",
+            "matches": ["three"],
+        },
+    ]
+    assert payload["sections"][1]["clauses"][0]["model_text"].startswith(
+        "The first"
+    )
 
 
 def test_R10_writer_scope_decision_passes_project_os_validator_without_live_calls(

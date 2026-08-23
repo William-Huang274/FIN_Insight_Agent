@@ -60,9 +60,15 @@ from sec_agent.research.current_dynamic_writer import (
     CURRENT_DYNAMIC_WRITER_RUN_SCOPE,
     CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_SCHEMA_VERSION,
     CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_STATUS,
+    CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_SCHEMA_VERSION,
+    CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_STATUS,
+    CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_RUN_SCOPE,
+    CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_ZERO_CALL_SCHEMA_VERSION,
     CURRENT_DYNAMIC_WRITER_ZERO_CALL_SCHEMA_VERSION,
     R10_ASSESSMENT_STATUS,
     expected_current_dynamic_writer_budget,
+    expected_current_dynamic_writer_submission_successor_budget,
+    find_r10_protected_writer_surface_findings,
 )
 
 
@@ -640,6 +646,14 @@ def _validate_fixed_pack_decision(
         == CURRENT_DYNAMIC_WRITER_SCOPE_DECISION_SCHEMA_VERSION
     ):
         return _validate_current_dynamic_writer_decision(
+            root=root,
+            decision=decision,
+        )
+    if (
+        decision.get("schema_version")
+        == CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_SCHEMA_VERSION
+    ):
+        return _validate_current_dynamic_writer_submission_successor_decision(
             root=root,
             decision=decision,
         )
@@ -7136,6 +7150,549 @@ def _validate_current_dynamic_writer_decision(
     }
 
 
+def _validate_current_dynamic_writer_submission_successor_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    expected_equal = {
+        "schema_version": (
+            CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_SCHEMA_VERSION
+        ),
+        "status": CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": (
+            "MULTI_AGENT::DELL::R10_PROTECTED_WRITER_SUBMISSION_SUCCESSOR"
+        ),
+        "run_scope_id": CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_RUN_SCOPE,
+        "evidence_mode": (
+            "immutable_R13_analysis_rejected_submission_exact_feedback_"
+            "zero_new_evidence"
+        ),
+        "next_authorized_scope": (
+            CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_RUN_SCOPE
+        ),
+        "replacement_is_capture_bound_remaining_submission_not_retry": True,
+        "credential_presence_required": True,
+        "R13_terminal_public_private_and_capture_chain_required": True,
+        "reuse_R13_visible_analysis_required": True,
+        "reuse_R13_rejected_submission_as_feedback_required": True,
+        "exact_JSON_and_protected_surface_feedback_required": True,
+        "same_R10_authority_catalog_and_protection_required": True,
+        "protected_report_contract_required": True,
+        "deterministic_renderer_required": True,
+        "writer_live_authorized_after_full_gate_clean_preflight_and_fresh_authority": True,
+        "new_writer_analysis_authorized": False,
+        "writer_analysis_continuation_authorized": False,
+        "additional_writer_submission_after_successor_authorized": False,
+        "new_S1_S2_authorized": False,
+        "new_retrieval_authorized": False,
+        "external_source_network_authorized": False,
+        "upstream_agent_rerun_authorized": False,
+        "candidate_promotion_authorized": False,
+        "independent_post_writer_assessment_required": True,
+        "S3_acceptance_authorized": False,
+        "heterogeneous_generalization_authorized": False,
+        "product_publication_authorized": False,
+        "release_authorized": False,
+    }
+    expected_keys = set(expected_equal) | {
+        "bound_inputs",
+        "implementation_bindings",
+        "execution_budget",
+        "token_budget_basis",
+        "authority_statement",
+        "decision_digest",
+    }
+    unsigned = dict(decision)
+    supplied_digest = str(unsigned.pop("decision_digest", ""))
+    if not (
+        set(decision) == expected_keys
+        and all(decision.get(key) == value for key, value in expected_equal.items())
+        and supplied_digest == canonical_digest(unsigned)
+        and len(str(decision.get("authority_statement") or "")) >= 220
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_identity_invalid"
+        )
+
+    expected_budget = expected_current_dynamic_writer_submission_successor_budget()
+    if dict(decision.get("execution_budget") or {}) != expected_budget:
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_budget_invalid"
+        )
+
+    expected_bound_names = {
+        "R13_authority",
+        "R13_public_result",
+        "R13_private_full_result",
+        "R13_analysis_request",
+        "R13_analysis_response",
+        "R13_submission_request",
+        "R13_submission_response",
+        "R10_private_full_result",
+        "R10_assessment",
+        "writer_authority_catalog",
+        "writer_protection_contract",
+        "submission_profile",
+        "submission_successor_zero_call_result",
+    }
+    bound = decision.get("bound_inputs")
+    if not isinstance(bound, Mapping) or set(bound) != expected_bound_names:
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_bound_invalid"
+        )
+    payloads: dict[str, dict[str, Any]] = {}
+    paths: dict[str, Path] = {}
+    for name in sorted(expected_bound_names):
+        binding = bound[name]
+        if not isinstance(binding, Mapping):
+            raise ValueError(
+                "project_os_current_dynamic_writer_submission_successor_binding_"
+                "invalid:"
+                + name
+            )
+        path, payload = _validate_nested_artifact_binding(
+            root=root,
+            binding=binding,
+            label="current_dynamic_writer_submission_successor:" + name,
+        )
+        paths[name] = path
+        payloads[name] = payload
+
+    expected_implementation_refs = (
+        "src/sec_agent/research/current_dynamic_writer.py",
+        "src/sec_agent/research/multi_agent_report_authority.py",
+        "src/sec_agent/research/source_bound_numeric_authority.py",
+        "src/sec_agent/project_os_preflight.py",
+        "scripts/research/run_s3_current_dynamic_writer_zero_call.py",
+        "scripts/research/run_s3_current_dynamic_writer_live.py",
+    )
+    implementation = decision.get("implementation_bindings")
+    if not (
+        isinstance(implementation, list)
+        and tuple(str(row.get("ref") or "") for row in implementation)
+        == expected_implementation_refs
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_"
+            "implementation_set_invalid"
+        )
+    for index, binding in enumerate(implementation):
+        if not isinstance(binding, Mapping):
+            raise ValueError(
+                "project_os_current_dynamic_writer_submission_successor_"
+                "implementation_binding_invalid"
+            )
+        _validate_nested_artifact_binding(
+            root=root,
+            binding=binding,
+            label=(
+                "current_dynamic_writer_submission_successor:implementation:"
+                + str(index)
+            ),
+            require_json=False,
+        )
+
+    authority = payloads["R13_authority"]
+    public = payloads["R13_public_result"]
+    private = payloads["R13_private_full_result"]
+    zero = payloads["submission_successor_zero_call_result"]
+    authority_body = dict(authority)
+    authority_digest = str(authority_body.pop("authority_digest", ""))
+    public_body = dict(public)
+    public_digest = str(public_body.pop("result_digest", ""))
+    private_body = dict(private)
+    private_digest = str(private_body.pop("full_result_digest", ""))
+    zero_body = dict(zero)
+    zero_digest = str(zero_body.pop("result_digest", ""))
+    expected_r13_execution = {
+        "candidate_promotions": 0,
+        "external_source_network_calls": 0,
+        "fallbacks": 0,
+        "maximum_new_provider_calls": 3,
+        "new_S1_S2_requests": 0,
+        "new_provider_calls_attempted": 2,
+        "new_provider_http_200": 2,
+        "new_retrieval_rounds": 0,
+        "retries": 0,
+        "upstream_agent_calls": 0,
+        "writer_analysis_calls": 1,
+        "writer_submission_attempts": 1,
+    }
+    expected_r13_usage = {
+        "prompt_tokens": 109769,
+        "completion_tokens": 14282,
+        "reasoning_tokens": 0,
+    }
+    authority_output = authority.get("output_contract") or {}
+    if not (
+        authority.get("status") == "signed_exact_run_DELL_R10_protected_writer"
+        and authority.get("run_id")
+        == "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R13"
+        and authority_digest == canonical_digest(authority_body)
+        and public.get("status") == "terminal_protected_writer_failure_preserved"
+        and private.get("status")
+        == "terminal_protected_writer_failure_preserved"
+        and public_digest == canonical_digest(public_body)
+        and private_digest == canonical_digest(private_body)
+        and (public.get("failure") or {}).get("code")
+        == "current_dynamic_writer_live_tool_arguments_json_invalid"
+        and public.get("execution") == expected_r13_execution
+        and private.get("execution") == expected_r13_execution
+        and public.get("usage") == expected_r13_usage
+        and private.get("usage") == expected_r13_usage
+        and public.get("authority_ref") == bound["R13_authority"]["ref"]
+        and public.get("authority_sha256") == bound["R13_authority"]["sha256"]
+        and public.get("authority_digest") == authority_digest
+        and private.get("authority_ref") == bound["R13_authority"]["ref"]
+        and private.get("authority_sha256") == bound["R13_authority"]["sha256"]
+        and private.get("authority_digest") == authority_digest
+        and public.get("private_full_result_ref")
+        == bound["R13_private_full_result"]["ref"]
+        and public.get("private_full_result_sha256")
+        == bound["R13_private_full_result"]["sha256"]
+        and public.get("private_full_result_digest") == private_digest
+        and authority_output.get("public_result_ref")
+        == bound["R13_public_result"]["ref"]
+        and authority_output.get("private_full_result_ref")
+        == bound["R13_private_full_result"]["ref"]
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_R13_chain_invalid"
+        )
+
+    for label in ("decision", "project_os_preflight"):
+        binding = authority.get(label)
+        if not isinstance(binding, Mapping):
+            raise ValueError(
+                "project_os_current_dynamic_writer_submission_successor_R13_"
+                "authority_binding_invalid:"
+                + label
+            )
+        _validate_nested_artifact_binding(
+            root=root,
+            binding=binding,
+            label="current_dynamic_writer_submission_successor:R13_" + label,
+        )
+    implementation_commit = str(authority.get("implementation_commit") or "")
+    if not re.fullmatch(r"[0-9a-f]{40}", implementation_commit):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_R13_commit_invalid"
+        )
+    for binding in authority.get("implementation_bindings") or ():
+        if not isinstance(binding, Mapping):
+            raise ValueError(
+                "project_os_current_dynamic_writer_submission_successor_R13_"
+                "implementation_invalid"
+            )
+        ref = str(binding.get("ref") or "")
+        if _git_blob_sha256(
+            root=root, commit=implementation_commit, ref=ref
+        ) != str(binding.get("sha256") or ""):
+            raise ValueError(
+                "project_os_current_dynamic_writer_submission_successor_R13_"
+                "implementation_blob_drift"
+            )
+
+    inherited_names = (
+        "R10_private_full_result",
+        "R10_assessment",
+        "writer_authority_catalog",
+        "writer_protection_contract",
+        "submission_profile",
+    )
+    if not all(authority["bound_inputs"].get(name) == bound[name] for name in inherited_names):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_R10_binding_drift"
+        )
+    prior_zero_binding = (authority.get("bound_inputs") or {}).get("zero_call_result")
+    if not isinstance(prior_zero_binding, Mapping):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_prior_zero_missing"
+        )
+    _, prior_zero = _validate_nested_artifact_binding(
+        root=root,
+        binding=prior_zero_binding,
+        label="current_dynamic_writer_submission_successor:R13_prior_zero",
+    )
+    prior_zero_body = dict(prior_zero)
+    prior_zero_digest = str(prior_zero_body.pop("result_digest", ""))
+    if not (
+        prior_zero.get("schema_version") == CURRENT_DYNAMIC_WRITER_ZERO_CALL_SCHEMA_VERSION
+        and prior_zero_digest == canonical_digest(prior_zero_body)
+        and all((prior_zero.get("checks") or {}).values())
+        and (prior_zero.get("checks") or {}).get(
+            "positive_fake_tool_call_validates"
+        )
+        is True
+        and (prior_zero.get("checks") or {}).get(
+            "positive_fake_report_renders_deterministically"
+        )
+        is True
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_prior_zero_invalid"
+        )
+
+    source_bindings = zero.get("source_bindings")
+    expected_zero_source = {
+        name: binding
+        for name, binding in bound.items()
+        if name != "submission_successor_zero_call_result"
+    }
+    zero_execution = zero.get("execution") or {}
+    if not (
+        zero.get("schema_version")
+        == CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_ZERO_CALL_SCHEMA_VERSION
+        and zero.get("status")
+        == "R13_bound_protected_writer_submission_successor_zero_call_proven"
+        and zero.get("case_key") == "DELL"
+        and zero.get("run_scope_id")
+        == CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_RUN_SCOPE
+        and zero_digest == canonical_digest(zero_body)
+        and source_bindings == expected_zero_source
+        and all((zero.get("checks") or {}).values())
+        and len(zero.get("checks") or {}) >= 20
+        and zero.get("execution_budget") == expected_budget
+        and zero_execution.get("model_calls") == 0
+        and zero_execution.get("provider_calls") == 0
+        and zero_execution.get("network_calls") == 0
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_zero_invalid"
+        )
+    lineage = zero.get("R13_lineage_receipt") or {}
+    if not (
+        lineage.get("authority_digest") == authority_digest
+        and lineage.get("public_result_digest") == public_digest
+        and lineage.get("private_full_result_digest") == private_digest
+        and lineage.get("prior_zero_call_ref") == prior_zero_binding.get("ref")
+        and lineage.get("prior_zero_call_sha256")
+        == prior_zero_binding.get("sha256")
+        and lineage.get("prior_zero_call_result_digest") == prior_zero_digest
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_lineage_invalid"
+        )
+
+    public_manifest = public.get("capture_manifest") or []
+    private_manifest = private.get("capture_manifest") or []
+    capture_names = (
+        (0, "R13_analysis_request", "R13_analysis_response", "writer-analysis"),
+        (1, "R13_submission_request", "R13_submission_response", "writer-submission-1"),
+    )
+    if not (public_manifest == private_manifest and len(public_manifest) == 2):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_manifest_invalid"
+        )
+    for index, request_name, response_name, attempt_id in capture_names:
+        row = public_manifest[index]
+        if not (
+            row.get("attempt_id") == attempt_id
+            and row.get("request_ref") == bound[request_name]["ref"]
+            and row.get("request_sha256") == bound[request_name]["sha256"]
+            and row.get("request_digest") == bound[request_name]["digest"]
+            and row.get("response_ref") == bound[response_name]["ref"]
+            and row.get("response_sha256") == bound[response_name]["sha256"]
+            and row.get("response_digest") == bound[response_name]["digest"]
+            and row.get("response_present") is True
+            and row.get("status_code") == 200
+        ):
+            raise ValueError(
+                "project_os_current_dynamic_writer_submission_successor_capture_"
+                "binding_invalid:"
+                + attempt_id
+            )
+
+    analysis_request = payloads["R13_analysis_request"]
+    analysis_response = payloads["R13_analysis_response"]
+    submission_request = payloads["R13_submission_request"]
+    submission_response = payloads["R13_submission_response"]
+    analysis_choices = (analysis_response.get("response_body") or {}).get("choices") or []
+    submission_choices = (submission_response.get("response_body") or {}).get("choices") or []
+    if not (
+        analysis_request.get("attempt_id") == "writer-analysis"
+        and submission_request.get("attempt_id") == "writer-submission-1"
+        and analysis_response.get("status_code") == 200
+        and submission_response.get("status_code") == 200
+        and analysis_response.get("response_body_complete") is True
+        and submission_response.get("response_body_complete") is True
+        and analysis_response.get("truncated") is False
+        and submission_response.get("truncated") is False
+        and len(analysis_choices) == 1
+        and len(submission_choices) == 1
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_capture_invalid"
+        )
+    analysis_message = analysis_choices[0].get("message") or {}
+    analysis_content = str(analysis_message.get("content") or "")
+    submission_message = submission_choices[0].get("message") or {}
+    tool_calls = submission_message.get("tool_calls") or []
+    submission_body = submission_request.get("request_body") or {}
+    if not (
+        analysis_choices[0].get("finish_reason") == "stop"
+        and len(analysis_content) == 19637
+        and not analysis_message.get("tool_calls")
+        and submission_choices[0].get("finish_reason") == "tool_calls"
+        and len(tool_calls) == 1
+        and (tool_calls[0].get("function") or {}).get("name")
+        == "submit_protected_report_draft"
+        and isinstance((tool_calls[0].get("function") or {}).get("arguments"), str)
+        and submission_body.get("tool_choice")
+        == {
+            "type": "function",
+            "function": {"name": "submit_protected_report_draft"},
+        }
+        and (submission_body.get("thinking") or {}).get("type") == "disabled"
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_frontier_invalid"
+        )
+    raw_arguments = str(tool_calls[0]["function"]["arguments"])
+    try:
+        json.loads(raw_arguments)
+    except json.JSONDecodeError as exc:
+        json_error = exc
+    else:
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_rejected_JSON_valid"
+        )
+    if not (
+        json_error.pos == 31343
+        and len(raw_arguments) == 31345
+        and raw_arguments[json_error.pos] == "]"
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_JSON_error_drift"
+        )
+    diagnostic_payload = json.loads(
+        raw_arguments[: json_error.pos] + raw_arguments[json_error.pos + 1 :]
+    )
+    expected_findings = [
+        {
+            "path": "sections[1].clauses[1].model_text",
+            "matches": ["point", "two"],
+        },
+        {"path": "sections[2].clauses[2].model_text", "matches": ["point"]},
+        {"path": "sections[3].clauses[1].model_text", "matches": ["three"]},
+        {"path": "sections[4].clauses[3].model_text", "matches": ["two"]},
+        {"path": "remaining_gaps[0].model_text", "matches": ["three"]},
+    ]
+    findings = find_r10_protected_writer_surface_findings(diagnostic_payload)
+    diagnostic = zero.get("diagnostic_receipt") or {}
+    feedback = zero.get("submission_feedback") or {}
+    feedback_details = feedback.get("details") or {}
+    if not (
+        findings == expected_findings
+        and diagnostic.get("json_error_position") == json_error.pos
+        and diagnostic.get("argument_characters") == len(raw_arguments)
+        and diagnostic.get("removed_character") == "]"
+        and diagnostic.get("single_character_removal_parses") is True
+        and diagnostic.get("diagnostic_payload_promotable") is False
+        and diagnostic.get("validator_rejection_code")
+        == "current_dynamic_writer_protected_surface_forbidden"
+        and diagnostic.get("protected_surface_findings") == expected_findings
+        and feedback.get("status") == "rejected"
+        and feedback.get("error_code")
+        == "current_dynamic_writer_live_tool_arguments_json_invalid_and_"
+        "protected_surface_forbidden"
+        and feedback_details.get("json_error_position") == json_error.pos
+        and feedback_details.get("argument_characters") == len(raw_arguments)
+        and feedback_details.get("extra_closing_bracket_at_error") is True
+        and feedback_details.get("diagnostic_removed_character") == "]"
+        and feedback_details.get("diagnostic_payload_promotable") is False
+        and feedback_details.get("protected_surface_findings") == expected_findings
+        and feedback_details.get("protected_surface_paths")
+        == [row["path"] for row in expected_findings]
+        and feedback_details.get("authority_expansion_allowed") is False
+        and feedback_details.get("business_conclusion_feedback_added") is False
+        and feedback.get("required_action")
+        == (
+            "Return the complete tool arguments as one valid JSON object. Remove "
+            "the extra closing bracket and rewrite every listed model_text so it "
+            "contains no spelled numeric or ordinal token. Preserve all existing "
+            "R10 evidence, claim, authority, gap, and protection scopes; add no "
+            "evidence, numeric fact, authority, or business conclusion."
+        )
+        and feedback.get("resubmit_complete_report_once") is True
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_feedback_invalid"
+        )
+
+    profile = payloads["submission_profile"]
+    if not (
+        profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and profile.get("base_url") == "https://api.deepseek.com"
+        and profile.get("endpoint") == "/chat/completions"
+        and profile.get("api_key_env") == "DEEPSEEK_API_KEY"
+        and profile.get("request_defaults")
+        == {
+            "max_tokens": 12000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+        and (profile.get("authority") or {}).get("retry_count") == 0
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_profile_invalid"
+        )
+
+    token_basis = decision.get("token_budget_basis")
+    required_fields = {
+        "node_purpose",
+        "input_scale",
+        "required_outputs",
+        "schema_burden",
+        "materiality_quality_risk",
+        "comparable_run_evidence",
+        "reasoning_profile",
+        "maximum_completion_tokens",
+        "maximum_calls",
+        "stop_and_truncation_behavior",
+    }
+    node_name = "writer_submission_json_and_surface_feedback"
+    node = token_basis.get(node_name) if isinstance(token_basis, Mapping) else None
+    if not (
+        isinstance(token_basis, Mapping)
+        and set(token_basis) == {node_name}
+        and isinstance(node, Mapping)
+        and set(node) == required_fields
+        and node.get("maximum_completion_tokens") == 12000
+        and node.get("maximum_calls") == 1
+        and isinstance(node.get("required_outputs"), list)
+        and len(node["required_outputs"]) >= 5
+        and all(
+            len(str(node.get(field) or "").strip()) >= 20
+            for field in required_fields
+            - {"required_outputs", "maximum_completion_tokens", "maximum_calls"}
+        )
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_token_basis_invalid"
+        )
+    return {
+        "clean_proof_status": zero["status"],
+        "provider_id": profile["provider_id"],
+        "provider_model": profile["model"],
+        "api_key_env": profile["api_key_env"],
+        "recent_provider_steps": 2,
+        "current_dynamic_multi_agent_protected_writer_submission_successor": True,
+        "run_scope_id": decision["run_scope_id"],
+        "execution_limits": expected_budget,
+        "node_profiles": token_basis,
+        "R13_public_result_digest": public_digest,
+        "R13_private_full_result_digest": private_digest,
+        "writer_authority_catalog_digest": payloads[
+            "writer_authority_catalog"
+        ]["authority_catalog_digest"],
+        "writer_protection_digest": payloads["writer_protection_contract"][
+            "protection_digest"
+        ],
+    }
+
+
 def _validate_current_dynamic_multi_agent_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -13525,6 +14082,24 @@ def build_preflight(
             )
     if (
         decision_projection.get(
+            "current_dynamic_multi_agent_protected_writer_submission_successor"
+        )
+        is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-091-R13-protected-writer-submission-JSON-and-surface-"
+                "feedback-unreachable"
+            ),
+            allowed_scope=CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_RUN_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_writer_submission_successor_scope_"
+            "allowance_missing"
+        )
+    if (
+        decision_projection.get(
             "current_dynamic_multi_agent_protected_writer"
         )
         is True
@@ -13687,6 +14262,39 @@ def build_preflight(
     }
     if (
         decision_projection.get(
+            "current_dynamic_multi_agent_protected_writer_submission_successor"
+        )
+        is True
+    ):
+        known_boundary = (
+            "This current-baseline preflight preserves immutable R13: one complete "
+            "non-thinking visible Writer analysis and one rejected strict tool call "
+            "whose JSON error and five initial protected-surface findings are "
+            "capture-bound. It authorizes exactly one non-thinking strict submission "
+            "that reuses both R13 artifacts with only precise local feedback. It "
+            "permits zero new analysis, continuation, upstream Agent, S1/S2, "
+            "retrieval, external source, authority expansion, retry, fallback, "
+            "profile tuning, Candidate promotion, or product-pointer action. Any "
+            "failure is terminal with no automated Writer successor. A locally "
+            "valid rendered candidate still requires independent post-Writer L1/L2 "
+            "and eight-dimension assessment and does not authorize S3 acceptance, "
+            "product acceptance, heterogeneous generalization, publication, or "
+            "release."
+        )
+        required_terms = (
+            "exactly one non-thinking strict submission",
+            "zero new analysis, continuation, upstream Agent, S1/S2",
+            "Any failure is terminal with no automated Writer successor",
+            "independent post-Writer L1/L2 and eight-dimension assessment",
+            "does not authorize S3 acceptance",
+        )
+        if not all(term in known_boundary for term in required_terms):
+            raise ValueError(
+                "project_os_current_dynamic_writer_submission_successor_"
+                "human_boundary_invalid"
+            )
+    elif (
+        decision_projection.get(
             "current_dynamic_multi_agent_protected_writer"
         )
         is True
@@ -13695,7 +14303,7 @@ def build_preflight(
             "This current-baseline preflight preserves immutable R10 with six "
             "independently accepted workpapers, one accepted Lead recheck and "
             "all seven original material findings closed. It authorizes one "
-            "fresh protected Writer logical node: exactly one thinking analysis "
+            "fresh protected Writer logical node: exactly one decision-bound analysis "
             "call and at most two non-thinking strict submission attempts, with "
             "the second submission allowed only after precise local contract "
             "feedback. It reuses only R10 workpapers and typed report authority, "
@@ -13709,7 +14317,7 @@ def build_preflight(
             "heterogeneous generalization, publication or release."
         )
         required_terms = (
-            "exactly one thinking analysis call",
+            "exactly one decision-bound analysis call",
             "at most two non-thinking strict submission attempts",
             "zero upstream Agent, S1/S2, retrieval",
             "independent post-Writer L1/L2 and eight-dimension assessment",

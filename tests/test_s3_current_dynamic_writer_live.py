@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import hashlib
 import importlib.util
 import json
@@ -16,6 +17,14 @@ SPEC = importlib.util.spec_from_file_location("current_dynamic_writer_live", SCR
 assert SPEC is not None and SPEC.loader is not None
 RUNNER = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(RUNNER)
+
+ZERO_SCRIPT = ROOT / "scripts/research/run_s3_current_dynamic_writer_zero_call.py"
+ZERO_SPEC = importlib.util.spec_from_file_location(
+    "current_dynamic_writer_zero_for_live", ZERO_SCRIPT
+)
+assert ZERO_SPEC is not None and ZERO_SPEC.loader is not None
+ZERO = importlib.util.module_from_spec(ZERO_SPEC)
+ZERO_SPEC.loader.exec_module(ZERO)
 
 
 def _write(path: Path, value: dict) -> None:
@@ -256,3 +265,135 @@ def test_live_authority_requires_one_exact_authority_commit(
         match="current_dynamic_writer_live_authority_commit_chain_invalid",
     ):
         RUNNER._validate_authority(authority, authority_ref=authority_ref)
+
+
+def test_submission_successor_zero_call_binds_exact_R13_frontier(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    zero = RUNNER.build_submission_successor_zero_call()
+    bound = deepcopy(zero["source_bindings"])
+    bound["submission_successor_zero_call_result"] = {
+        "ref": "__in_memory_R14_zero__.json",
+        "sha256": "memory",
+        "digest_field": "result_digest",
+        "digest": zero["result_digest"],
+    }
+    original_validate = RUNNER._validate_binding
+
+    def validate(binding):
+        if binding.get("ref") == "__in_memory_R14_zero__.json":
+            return zero
+        return original_validate(binding)
+
+    monkeypatch.setattr(RUNNER, "_validate_binding", validate)
+    context = RUNNER._validated_submission_successor_context(bound)
+
+    assert len(zero["checks"]) == 21
+    assert all(zero["checks"].values())
+    assert zero["execution"]["model_calls"] == 0
+    assert zero["execution"]["provider_calls"] == 0
+    assert zero["diagnostic_receipt"]["json_error_position"] == 31343
+    assert zero["diagnostic_receipt"]["protected_surface_findings"] == (
+        RUNNER._R13_EXPECTED_SURFACE_FINDINGS
+    )
+    assert len(context["analysis_content"]) == 19637
+    assert context["messages"][-1]["role"] == "tool"
+    assert context["feedback"]["resubmit_complete_report_once"] is True
+
+
+def test_submission_successor_runs_exactly_one_submission_without_analysis(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    zero = RUNNER.build_submission_successor_zero_call()
+    bound = deepcopy(zero["source_bindings"])
+    bound["submission_successor_zero_call_result"] = {
+        "ref": "__in_memory_R14_zero__.json",
+        "sha256": "memory",
+        "digest_field": "result_digest",
+        "digest": zero["result_digest"],
+    }
+    original_validate = RUNNER._validate_binding
+
+    def validate(binding):
+        if binding.get("ref") == "__in_memory_R14_zero__.json":
+            return zero
+        return original_validate(binding)
+
+    monkeypatch.setattr(RUNNER, "_validate_binding", validate)
+    context = RUNNER._validated_submission_successor_context(bound)
+    positive = ZERO._positive_payload(
+        context["catalog"], context["protection"]
+    )
+    monkeypatch.setattr(RUNNER, "ROOT", tmp_path)
+    monkeypatch.setattr(
+        RUNNER, "_validated_submission_successor_context", lambda _bound: context
+    )
+    authority_ref = "authority.json"
+    _write(tmp_path / authority_ref, {"authority": "test"})
+    calls: list[dict] = []
+
+    def executor(**kwargs):
+        calls.append(kwargs)
+        request_ref = "captures/request.json"
+        response_ref = "captures/response.json"
+        _write(tmp_path / request_ref, {"request": "captured"})
+        _write(tmp_path / response_ref, {"response": "captured"})
+        return RUNNER.ChatCompletionToolStepResult(
+            status="completed_exact_once",
+            provider_id="deepseek",
+            model="deepseek-v4-pro",
+            content="",
+            reasoning_content="",
+            tool_calls=(
+                {
+                    "id": "call_R14_test",
+                    "type": "function",
+                    "function": {
+                        "name": RUNNER._TOOL_NAME,
+                        "arguments": json.dumps(
+                            positive,
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        ),
+                    },
+                },
+            ),
+            finish_reason="tool_calls",
+            usage={"prompt_tokens": 1, "completion_tokens": 1},
+            request_capture_ref=(tmp_path / request_ref).as_posix(),
+            response_capture_ref=(tmp_path / response_ref).as_posix(),
+            request_digest="request-digest",
+            response_digest="response-digest",
+            private_reasoning_fields_redacted=0,
+        )
+
+    authority = {
+        "run_id": "R14_TEST",
+        "implementation_commit": "a" * 40,
+        "authority_digest": "authority-digest",
+        "bound_inputs": bound,
+        "output_contract": {
+            "capture_root_ref": "captures",
+            "private_full_result_ref": "private/full_result.json",
+            "public_result_ref": "public.json",
+        },
+    }
+    decision = {"decision_digest": "decision-digest"}
+
+    public = RUNNER._run_submission_successor_once(
+        authority_ref=authority_ref,
+        authority=authority,
+        decision=decision,
+        submission_executor=executor,
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["attempt_id"] == (
+        "writer-submission-json-and-surface-feedback-successor"
+    )
+    assert calls[0]["messages"][-1]["role"] == "tool"
+    assert public["status"] == "completed_protected_writer_report_assessment_pending"
+    assert public["execution"]["writer_analysis_calls"] == 0
+    assert public["execution"]["writer_submission_attempts"] == 1
+    assert public["acceptance"]["S3_pass"] is False

@@ -1,0 +1,245 @@
+{
+  "R13_lineage_receipt": {
+    "authority_digest": "c3fd89ea8790d8430bb2f022b20e6c1aaa645c2916e5f82056f46110226a17f2",
+    "prior_zero_call_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_zero_call_result_v1_2.json",
+    "prior_zero_call_result_digest": "f8104031b43788b20c0270898533e5d72319bad9055fa5800f628577a86e099f",
+    "prior_zero_call_sha256": "a7a124e1a96473820cd54561495bbe31aebd3950bc331a078bd3ea0ad38dfc35",
+    "private_full_result_digest": "bfe1443939ff66c24801c59087cb1bd2608e20ba01d6a8bdea64099630d9db78",
+    "public_result_digest": "1e88056b5790daf838dd01ac351dc025237dc04613aec5bc7b41f092b4b815b3"
+  },
+  "case_key": "DELL",
+  "checks": {
+    "R10_authority_catalog_and_protection_unchanged": true,
+    "R13_analysis_capture_bound": true,
+    "R13_analysis_request_rebuild_byte_equal": true,
+    "R13_authority_canonical_and_exact_run_bound": true,
+    "R13_capture_manifests_equal_and_complete": true,
+    "R13_capture_objects_complete_HTTP200": true,
+    "R13_failure_and_usage_exact": true,
+    "R13_output_and_authority_lineage_exact": true,
+    "R13_public_private_terminal_results_canonical": true,
+    "R13_rejected_arguments_error_exact": true,
+    "R13_rejected_tool_identity_exact": true,
+    "R13_submission_capture_bound": true,
+    "R13_submission_profile_unchanged_non_thinking": true,
+    "R13_submission_request_rebuild_byte_equal": true,
+    "R13_visible_analysis_complete_and_reusable": true,
+    "all_five_initial_surface_findings_enumerated": true,
+    "feedback_adds_no_authority_or_business_conclusion": true,
+    "prior_R13_zero_call_positive_seam_preserved": true,
+    "single_bracket_removal_is_diagnostic_only": true,
+    "successor_messages_reuse_analysis_and_rejected_call": true,
+    "zero_model_provider_network_calls": true
+  },
+  "diagnostic_receipt": {
+    "argument_characters": 31345,
+    "diagnostic_payload_promotable": false,
+    "json_error_message": "Expecting ',' delimiter",
+    "json_error_position": 31343,
+    "protected_surface_findings": [
+      {
+        "matches": [
+          "point",
+          "two"
+        ],
+        "path": "sections[1].clauses[1].model_text"
+      },
+      {
+        "matches": [
+          "point"
+        ],
+        "path": "sections[2].clauses[2].model_text"
+      },
+      {
+        "matches": [
+          "three"
+        ],
+        "path": "sections[3].clauses[1].model_text"
+      },
+      {
+        "matches": [
+          "two"
+        ],
+        "path": "sections[4].clauses[3].model_text"
+      },
+      {
+        "matches": [
+          "three"
+        ],
+        "path": "remaining_gaps[0].model_text"
+      }
+    ],
+    "rejected_arguments_sha256": "31cfdfa1dda3280e8af55f24e08a11c7902e5fe0c2b2a2bcf85924354730cfe1",
+    "removed_character": "]",
+    "single_character_removal_parses": true,
+    "validator_rejection_code": "current_dynamic_writer_protected_surface_forbidden"
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_S1_S2_requests": 0,
+    "new_retrieval_rounds": 0,
+    "provider_calls": 0,
+    "upstream_agent_calls": 0,
+    "writer_analysis_calls": 0,
+    "writer_submission_attempts": 0
+  },
+  "execution_budget": {
+    "candidate_promotions": 0,
+    "current_product_pointer_mutations": 0,
+    "fallbacks": 0,
+    "maximum_external_source_network_calls": 0,
+    "maximum_new_model_calls": 1,
+    "maximum_new_retrieval_rounds": 0,
+    "maximum_new_s1_s2_requests": 0,
+    "maximum_new_transport_attempts": 1,
+    "maximum_new_writer_logical_nodes": 0,
+    "maximum_writer_submission_attempts": 1,
+    "retries": 0,
+    "writer_analysis_calls": 0
+  },
+  "known_boundary": "This zero-call proof binds the immutable R13 analysis, rejected submission, exact JSON error, and five initial protected-surface findings. It authorizes no call by itself, adds no evidence or business conclusion, and permits at most one separately authorized non-thinking strict submission. Any failure is terminal with no automated Writer successor; independent post-Writer assessment, S3, product, publication, and release remain unauthorized.",
+  "model_visible_scale": {
+    "R13_analysis_completion_tokens": 4798,
+    "R13_analysis_prompt_tokens": 46277,
+    "R13_submission_completion_tokens": 9484,
+    "R13_submission_prompt_tokens": 63492,
+    "feedback_characters": 1374,
+    "rejected_arguments_characters": 31345,
+    "reused_analysis_characters": 19637,
+    "successor_message_count": 6,
+    "tool_schema_characters": 25714
+  },
+  "recorded_at": "2026-08-24T06:20:53+08:00",
+  "result_digest": "42403efb0393752c68bc23b7c7d13649aa4af47f4c06e1353314fe9b0f5f1176",
+  "run_scope_id": "one_R13_bound_protected_writer_JSON_and_surface_feedback_submission",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_submission_successor_zero_call_v1_0",
+  "source_bindings": {
+    "R10_assessment": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_R10_content_assessment_v1_0.json",
+      "sha256": "a5186450f3eaf743825f22f116a5558e5f74c573e86d10ac0572cb0e8448026d"
+    },
+    "R10_private_full_result": {
+      "digest": "cab0b654f3ff2f99193d299e7c6cc345049d36a087a0e95557120dff1036e900",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-content-reassessment-resume-live-r10-20260823T194751Z/full_result.json",
+      "sha256": "0b2545f4f688193132dbfa24abb3f0d020499a606503340a36ac9ed28f9e37a8"
+    },
+    "R13_analysis_request": {
+      "digest": "8ebfa439132942c96246c851c0fa9c74b170757a7475bb79b66706bcd5c8c0ae",
+      "digest_field": "request_digest",
+      "ref": ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_live_r13/FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R13/writer-analysis/model_visible_request.json",
+      "sha256": "3c708e34fec4a6d3786cc29cd894c4319791c3f47080063922056a4cb6ae074e"
+    },
+    "R13_analysis_response": {
+      "digest": "0ef22c57d2ad5b19f0a55df99331cc8292123cc5bbb0e05cb6b8587bfaf722fb",
+      "digest_field": "response_digest",
+      "ref": ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_live_r13/FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R13/writer-analysis/provider_response.json",
+      "sha256": "099360a4f686c8bed46731eeafbd182ec9cfca42ada938166da8ea5610ecf354"
+    },
+    "R13_authority": {
+      "digest": "c3fd89ea8790d8430bb2f022b20e6c1aaa645c2916e5f82056f46110226a17f2",
+      "digest_field": "authority_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_live_authority_v1_2.json",
+      "sha256": "9b2a2a5504c6d213313838b7e12018a2abe0f03a6f1687a93953318388d52f31"
+    },
+    "R13_private_full_result": {
+      "digest": "bfe1443939ff66c24801c59087cb1bd2608e20ba01d6a8bdea64099630d9db78",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-live-r13/full_result.json",
+      "sha256": "1d5f4346d6281d11271e35cfec25b0f0d995a94b9327e437d556e1c98cf4c7e2"
+    },
+    "R13_public_result": {
+      "digest": "1e88056b5790daf838dd01ac351dc025237dc04613aec5bc7b41f092b4b815b3",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_live_result_v1_2.json",
+      "sha256": "d91d19ad48af6e48c6942afed099b45041cda9b1fb4a3fc6682d09f437177827"
+    },
+    "R13_submission_request": {
+      "digest": "5bb9421e49b894532bff3dfa3753c54a3553ee977e4a6e9d59d4ea1f15386103",
+      "digest_field": "request_digest",
+      "ref": ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_live_r13/FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R13/writer-submission-1/model_visible_request.json",
+      "sha256": "9ba27dc944b480c3debb1a68356c0f9de530d0925d1bdc67040abefa4a10c282"
+    },
+    "R13_submission_response": {
+      "digest": "fc73b8e790fa3e3d94327bae3e1680be0a52373dd9193cf6c41631347949f69d",
+      "digest_field": "response_digest",
+      "ref": ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_live_r13/FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R13/writer-submission-1/provider_response.json",
+      "sha256": "93c365944ce5ed37516a1bbd8ddefeca0e053bbea5e0ff809ff9e2625db73d54"
+    },
+    "submission_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_report_protected_remap_non_thinking_profile_v1_1.json",
+      "sha256": "24ab4579badd7520469aaa37d1b5530f611c9e53526d2d296d27ee4402bc9b80"
+    },
+    "writer_authority_catalog": {
+      "digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765",
+      "digest_field": "authority_catalog_digest",
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_authority_catalog_v1_0.json",
+      "sha256": "fe33215f8d46a5fa9db422d8192ba3c18daf29563a7941ba6fe16808ce07a84b"
+    },
+    "writer_protection_contract": {
+      "digest": "e81473c78211b163bbe87e3eaf0fae4e53e36f8d1d2a82fcc0bb1be7080a7b62",
+      "digest_field": "protection_digest",
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_writer_protection_contract_v1_0.json",
+      "sha256": "e17b9526aa97951eb1b3ff2c026e3d38b51d4d78de447087e8907a06e46d247c"
+    }
+  },
+  "status": "R13_bound_protected_writer_submission_successor_zero_call_proven",
+  "submission_feedback": {
+    "details": {
+      "argument_characters": 31345,
+      "authority_expansion_allowed": false,
+      "business_conclusion_feedback_added": false,
+      "diagnostic_payload_promotable": false,
+      "diagnostic_removed_character": "]",
+      "extra_closing_bracket_at_error": true,
+      "json_error_message": "Expecting ',' delimiter",
+      "json_error_position": 31343,
+      "protected_surface_findings": [
+        {
+          "matches": [
+            "point",
+            "two"
+          ],
+          "path": "sections[1].clauses[1].model_text"
+        },
+        {
+          "matches": [
+            "point"
+          ],
+          "path": "sections[2].clauses[2].model_text"
+        },
+        {
+          "matches": [
+            "three"
+          ],
+          "path": "sections[3].clauses[1].model_text"
+        },
+        {
+          "matches": [
+            "two"
+          ],
+          "path": "sections[4].clauses[3].model_text"
+        },
+        {
+          "matches": [
+            "three"
+          ],
+          "path": "remaining_gaps[0].model_text"
+        }
+      ],
+      "protected_surface_paths": [
+        "sections[1].clauses[1].model_text",
+        "sections[2].clauses[2].model_text",
+        "sections[3].clauses[1].model_text",
+        "sections[4].clauses[3].model_text",
+        "remaining_gaps[0].model_text"
+      ]
+    },
+    "error_code": "current_dynamic_writer_live_tool_arguments_json_invalid_and_protected_surface_forbidden",
+    "required_action": "Return the complete tool arguments as one valid JSON object. Remove the extra closing bracket and rewrite every listed model_text so it contains no spelled numeric or ordinal token. Preserve all existing R10 evidence, claim, authority, gap, and protection scopes; add no evidence, numeric fact, authority, or business conclusion.",
+    "resubmit_complete_report_once": true,
+    "status": "rejected"
+  }
+}

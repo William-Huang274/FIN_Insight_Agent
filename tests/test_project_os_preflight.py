@@ -32,6 +32,7 @@ from sec_agent.project_os_preflight import (
     REQUIRED_PROJECT_OS_REFS,
     _validate_current_dynamic_single_unit_decision,
     _validate_current_dynamic_writer_decision,
+    _validate_current_dynamic_writer_submission_successor_decision,
     _validate_current_dynamic_multi_agent_content_repair_decision,
     _validate_current_dynamic_multi_agent_decision,
     _validate_current_dynamic_single_unit_semantic_repair_decision,
@@ -77,6 +78,10 @@ REPORT_REMAP_REFERENCE_PATCH_DECISION_REF = (
 CURRENT_DYNAMIC_WRITER_DECISION_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
     "R10_protected_writer_scope_decision_v1_2.json"
+)
+CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_REF = (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
+    "R10_protected_writer_submission_successor_scope_decision_v1_0.json"
 )
 DECISION_REF = (
     "configs/research/evals/"
@@ -2642,19 +2647,48 @@ def test_current_dynamic_writer_decision_binds_R10_and_three_call_ceiling() -> N
     decision = json.loads(
         (ROOT / CURRENT_DYNAMIC_WRITER_DECISION_REF).read_text(encoding="utf-8")
     )
-    projection = _validate_current_dynamic_writer_decision(
+    assert decision["execution_budget"]["maximum_new_model_calls"] == 3
+    assert decision["execution_budget"]["writer_analysis_calls"] == 1
+    assert decision["execution_budget"][
+        "maximum_writer_submission_attempts"
+    ] == 2
+    assert decision["token_budget_basis"]["writer_analysis"][
+        "reasoning_profile"
+    ] == "deepseek-v4-pro thinking disabled visible planning"
+    # R13 consumed this implementation binding.  The R14 capture-bound
+    # successor must use a new decision instead of silently reusing it.
+    with pytest.raises(ValueError, match="nested_binding_sha_drift"):
+        _validate_current_dynamic_writer_decision(
+            root=ROOT,
+            decision=decision,
+        )
+
+
+def test_current_dynamic_writer_submission_successor_binds_one_remaining_call() -> None:
+    decision = json.loads(
+        (
+            ROOT / CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_REF
+        ).read_text(encoding="utf-8")
+    )
+
+    projection = _validate_current_dynamic_writer_submission_successor_decision(
         root=ROOT,
         decision=decision,
     )
-    assert projection["current_dynamic_multi_agent_protected_writer"] is True
-    assert projection["execution_limits"]["maximum_new_model_calls"] == 3
-    assert projection["execution_limits"]["writer_analysis_calls"] == 1
+
+    assert projection[
+        "current_dynamic_multi_agent_protected_writer_submission_successor"
+    ] is True
+    assert projection["execution_limits"]["maximum_new_model_calls"] == 1
+    assert projection["execution_limits"]["writer_analysis_calls"] == 0
     assert projection["execution_limits"][
         "maximum_writer_submission_attempts"
-    ] == 2
-    assert projection["R10_assessment_status"].startswith(
-        "R10_contract_pass_all_seven_material_findings_closed"
+    ] == 1
+    assert projection["clean_proof_status"] == (
+        "R13_bound_protected_writer_submission_successor_zero_call_proven"
     )
-    assert projection["node_profiles"]["writer_analysis"][
-        "reasoning_profile"
-    ] == "deepseek-v4-pro thinking disabled visible planning"
+    assert projection["node_profiles"][
+        "writer_submission_json_and_surface_feedback"
+    ]["reasoning_profile"] == (
+        "deepseek-v4-pro thinking disabled strict tool submission"
+    )

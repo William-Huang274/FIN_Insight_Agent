@@ -1469,3 +1469,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - public result digest=`80977102...9fe15`，public SHA=`80410ebb...c7cb4`，private SHA=`d3d87e43...770f6`。
 - 当前仅恢复 fresh live admission 资格；自然六角色、Lead、L1、内容质量、Writer、S3 和 release 仍未通过。下一门是新签 R2 authority，禁止复用 R1 authority／identity。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/137_submission_successor_R2_fresh_zero_call_proof.md`。
+
+### 2026-08-23 submission successor R2 live authority
+
+- 已基于 clean commit `f3f4c73d...f824fd`、fresh proof `80977102...9fe15` 签发 exact-once R2 authority；authority SHA=`ce62f7e0...c093ad`。
+- 上限 25 次由 9 类真实节点拓扑相加，每类均有 task-specific `TokenBudgetBasis`；只允许 Supply 的 1 个新 request／retrieval round，0 retry／外源／promotion／pointer mutation。
+- R2 使用全新 capture、private output、public result、run 和 attempt identity；R1 authority／output 不复用。
+- 当前状态仅为 signed、未执行；自然六角色、Lead、L1、内容质量、Writer、S3 和 release 仍未通过。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/138_submission_successor_R2_live_authority.md`。

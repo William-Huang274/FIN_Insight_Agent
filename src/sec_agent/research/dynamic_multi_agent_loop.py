@@ -635,12 +635,13 @@ def compile_role_stop_decision(
     next_request_ids: Sequence[str],
     open_gap_refs: Sequence[str],
     feedback_refs: Sequence[str],
+    all_required_groups_covered: bool = True,
 ) -> str:
     """Separate catalog exhaustion from actual evidence sufficiency."""
 
     if next_request_ids:
         return "continue"
-    if open_gap_refs or feedback_refs:
+    if open_gap_refs or feedback_refs or not all_required_groups_covered:
         return "stop_no_progress"
     return "stop_sufficient"
 

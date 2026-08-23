@@ -1,0 +1,137 @@
+{
+  "attempt_id": "dell-current-dynamic-multi-agent-submission-successor-zero-r1",
+  "checks": {
+    "counterevidence_workpaper_requalified_locally": true,
+    "eight_relevant_capture_drafts_complete": true,
+    "four_failed_reflections_require_strict_mapping": true,
+    "graph_predicate_compacted_separately_from_research_narrative": true,
+    "lead_submission_contract_provider_neutral": true,
+    "predecessor_public_and_private_digest_bound": true,
+    "runtime_owned_identity_removed_from_model_submission": true,
+    "six_role_S1_S2_rounds_replayed_exactly": true,
+    "supply_missing_coverage_forces_exact_continuation": true,
+    "valid_reflections_migrated_without_model_research_change": true,
+    "zero_model_network_paid_calls": true
+  },
+  "claims": {
+    "R1_relabelled_as_success": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "release_ready": false
+  },
+  "counterevidence_workpaper_digest": "1c3b7bd4784f3de8371094e282fd1635de2260b1b5fc160b24b40baf19c2ae96",
+  "execution": {
+    "model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "predecessor_rounds_replayed": 6,
+    "retrieval_calls": 0
+  },
+  "predecessor_private_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-live-r1-20260823T171000Z/full_result.json",
+  "predecessor_private_sha256": "71ac85a6e494fafaae34fdf6a5abb6e0d24012d1ef182ee8a67d7c50fb35014a",
+  "predecessor_public_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_live_result_v1_0.json",
+  "predecessor_public_sha256": "28fc993e6c8ab53f43499fd999f4cf6d23a6b765e6369fbd1da679efd21b3bbd",
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-submission-successor-zero-r1/zero_call_submission_successor_full_result.json",
+  "private_result_sha256": "dc94a011d2297632178f548f22359451f18bde00a4142a7222b1d4d075520f96",
+  "recorded_at": "2026-08-23T10:14:42+00:00",
+  "result_digest": "7ad7966f9d63c3dd3a05d6225f4a4459ec40866be9cc5f9cb47b01c0fd32390b",
+  "role_proofs": [
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "current_coverage_complete": true,
+      "effective_stop_after_local_compilation": "stop_no_progress",
+      "feedback_refs": [
+        "FEEDBACK::1168919E19D85A523F36415D",
+        "FEEDBACK::44AFAA07AF6FFB766D03D6FE"
+      ],
+      "reflection_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_current_dynamic_multi_agent_live_r1/FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-LIVE-R1/FIN013-S3-DELL-MULTI-R1-demand-quality-reflection-r1/provider_response.json",
+      "reflection_capture_reusable_as_draft": true,
+      "reflection_requires_strict_mapping": false,
+      "round_response_digests": [
+        "012736eda33c95a1d254c2720f4d77ca357046f36fbc961e49afa808c170c5eb"
+      ]
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "current_coverage_complete": true,
+      "effective_stop_after_local_compilation": "pending_strict_mapping",
+      "feedback_refs": [
+        "FEEDBACK::1C9AB592CDC447C2ECA6E6D7",
+        "FEEDBACK::3089680257501E4299D8381D",
+        "FEEDBACK::D6C10814569103A354FC46B6"
+      ],
+      "reflection_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_current_dynamic_multi_agent_live_r1/FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-LIVE-R1/FIN013-S3-DELL-MULTI-R1-operating-performance-reflection-r1/provider_response.json",
+      "reflection_capture_reusable_as_draft": true,
+      "reflection_requires_strict_mapping": true,
+      "round_response_digests": [
+        "69d01270d317f49f8766f6f34e58f5fd8750d5cf18f9cdfbbd59e9f0bab585e0"
+      ]
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "current_coverage_complete": true,
+      "effective_stop_after_local_compilation": "pending_strict_mapping",
+      "feedback_refs": [
+        "FEEDBACK::0140305EC6F58660ADFD9B8C",
+        "FEEDBACK::420B707172C43E08B8389317"
+      ],
+      "reflection_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_current_dynamic_multi_agent_live_r1/FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-LIVE-R1/FIN013-S3-DELL-MULTI-R1-value-capture-reflection-r1/provider_response.json",
+      "reflection_capture_reusable_as_draft": true,
+      "reflection_requires_strict_mapping": true,
+      "round_response_digests": [
+        "9415425ae425a3e7361afd8237e8d69a0ee57ed0f629582aa8c9d27c73be4be0"
+      ]
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "current_coverage_complete": true,
+      "effective_stop_after_local_compilation": "pending_strict_mapping",
+      "feedback_refs": [
+        "FEEDBACK::E1360C8699934C6D3CA31CA6",
+        "FEEDBACK::F81FA2EBB910CFB4CC8EE9AC"
+      ],
+      "reflection_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_current_dynamic_multi_agent_live_r1/FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-LIVE-R1/FIN013-S3-DELL-MULTI-R1-cash-conversion-reflection-r1/provider_response.json",
+      "reflection_capture_reusable_as_draft": true,
+      "reflection_requires_strict_mapping": true,
+      "round_response_digests": [
+        "0e2b4d2b4ddde682b503f6c013ab10f38be39341814a380a803a6e3ecd979ba8"
+      ]
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "current_coverage_complete": false,
+      "effective_stop_after_local_compilation": "pending_strict_mapping",
+      "feedback_refs": [
+        "FEEDBACK::0F7AC2A769F18D9EF056C511",
+        "FEEDBACK::425D25770F32DA3B7777E6C7",
+        "FEEDBACK::BB5A3103D70F9172AE3A6601"
+      ],
+      "reflection_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_current_dynamic_multi_agent_live_r1/FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-LIVE-R1/FIN013-S3-DELL-MULTI-R1-supply-relationship-reflection-r1/provider_response.json",
+      "reflection_capture_reusable_as_draft": true,
+      "reflection_requires_strict_mapping": true,
+      "round_response_digests": [
+        "c1292457712192af9b6036d86da399e78f19fef952006e053b39d3acfcc56c43"
+      ]
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "current_coverage_complete": true,
+      "effective_stop_after_local_compilation": "stop_no_progress",
+      "feedback_refs": [
+        "FEEDBACK::84A85812CF9B7FE72B706981",
+        "FEEDBACK::A4C900CBB78774FD20E252FA"
+      ],
+      "reflection_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_current_dynamic_multi_agent_live_r1/FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-LIVE-R1/FIN013-S3-DELL-MULTI-R1-counterevidence-reflection-r1/provider_response.json",
+      "reflection_capture_reusable_as_draft": true,
+      "reflection_requires_strict_mapping": false,
+      "round_response_digests": [
+        "8222ff135a8866b72ce040a82d80945122a58d4e2440a3a1d682a0682817e35b"
+      ]
+    }
+  ],
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_submission_successor_zero_call_v1_0",
+  "status": "submission_successor_zero_call_proven",
+  "supply_required_request_ids": [
+    "REQ::21dc7bfb04d38fa5cc8749f8"
+  ]
+}

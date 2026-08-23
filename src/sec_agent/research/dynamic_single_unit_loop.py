@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
 from typing import Any, Mapping, Sequence
 
 from sec_agent.canonical_runtime.session import (
@@ -18,8 +19,15 @@ GENERIC_SPECIALIST_POLICY_SCHEMA_VERSION = (
 )
 REQUEST_TOOL_NAME = "request_research_evidence"
 REFLECTION_TOOL_NAME = "submit_research_reflection"
+REFLECTION_SUBMISSION_TOOL_NAME = "submit_research_reflection_judgment"
 REQUEST_PAYLOAD_SCHEMA_VERSION = "fin_ia_dynamic_research_request_selection_v1_0"
 REFLECTION_PAYLOAD_SCHEMA_VERSION = "fin_ia_dynamic_research_reflection_v1_0"
+REFLECTION_SUBMISSION_RECEIPT_SCHEMA_VERSION = (
+    "fin_ia_dynamic_research_reflection_submission_receipt_v1_0"
+)
+STOP_COMPILATION_RECEIPT_SCHEMA_VERSION = (
+    "fin_ia_dynamic_research_stop_compilation_receipt_v1_0"
+)
 ROUND_RESPONSE_SCHEMA_VERSION = "fin_ia_dynamic_research_round_response_v1_0"
 WORKPAPER_CONTEXT_SCHEMA_VERSION = "fin_ia_dynamic_single_unit_workpaper_context_v1_0"
 WORKPAPER_REPAIR_CONTEXT_SCHEMA_VERSION = (
@@ -1158,6 +1166,203 @@ def reflection_tool(
     }
 
 
+def reflection_submission_tool(
+    *,
+    policy: Mapping[str, Any],
+    request_catalog: Mapping[str, Any],
+    feedback_receipts: Sequence[Mapping[str, Any]],
+    accepted_evidence_refs: Sequence[str],
+    executed_request_ids: Sequence[str],
+    open_gap_refs: Sequence[str],
+    round_index: int,
+) -> dict[str, Any]:
+    """Compile the model-owned reflection submission surface.
+
+    The research call may emit a visible draft with imperfect JSON.  A separate
+    low-thinking submission node maps that draft onto this tool.  Runtime-owned
+    schema and round identity never need to be reproduced by the model.
+    """
+
+    base = reflection_tool(
+        policy=policy,
+        request_catalog=request_catalog,
+        feedback_receipts=feedback_receipts,
+        accepted_evidence_refs=accepted_evidence_refs,
+        executed_request_ids=executed_request_ids,
+        round_index=round_index,
+    )
+    parameters = deepcopy(base["function"]["parameters"])
+    for field in ("schema_version", "round_id"):
+        parameters["required"].remove(field)
+        parameters["properties"].pop(field)
+
+    state = coverage_state(
+        policy=policy, executed_request_ids=executed_request_ids
+    )
+    catalog_ids = {
+        str(row.get("request_id") or "")
+        for row in request_catalog.get("requests") or ()
+    }
+    available = sorted(catalog_ids - set(str(value) for value in executed_request_ids))
+    if not state["all_required_groups_covered"] and available:
+        allowed_decisions = ["continue"]
+        parameters["properties"]["next_request_ids"]["minItems"] = 1
+    elif open_gap_refs or feedback_receipts or not state["all_required_groups_covered"]:
+        allowed_decisions = (
+            ["continue", "stop_no_progress"] if available else ["stop_no_progress"]
+        )
+    elif available:
+        allowed_decisions = ["continue", "stop_sufficient", "stop_no_progress"]
+    else:
+        allowed_decisions = ["stop_sufficient"]
+    parameters["properties"]["proposed_stop_decision"]["enum"] = allowed_decisions
+    relation = parameters["properties"]["graph_hypotheses"]["items"]["properties"][
+        "relationship_direction"
+    ]
+    relation["maxLength"] = 80
+    relation["pattern"] = "^[A-Za-z][A-Za-z0-9_]{2,79}$"
+    relation["description"] = (
+        "Compact edge predicate only, for example supplier_capacity_context_for; "
+        "put economic explanation, period and numbers in research_use."
+    )
+    return {
+        "type": "function",
+        "function": {
+            "name": REFLECTION_SUBMISSION_TOOL_NAME,
+            "description": (
+                "Map the preserved research draft into one strict model-owned "
+                "reflection judgment. Do not add facts, refs or research conclusions."
+            ),
+            "parameters": parameters,
+        },
+    }
+
+
+def compile_reflection_submission_messages(
+    *,
+    source_draft: str,
+    source_capture_digest: str,
+    tool: Mapping[str, Any],
+) -> tuple[dict[str, str], ...]:
+    _require(bool(str(source_draft).strip()), "dynamic_single_unit_reflection_draft_missing")
+    _require(
+        len(str(source_capture_digest).strip()) == 64,
+        "dynamic_single_unit_reflection_draft_digest_invalid",
+    )
+    visible = {
+        "source_capture_digest": str(source_capture_digest),
+        "source_draft": str(source_draft),
+        "submission_contract": deepcopy(tool["function"]["parameters"]),
+        "rules": [
+            "Preserve the draft's research judgment; repair only transport shape and contract mapping.",
+            "Do not add Evidence, NumericFact, relation, gap, request or feedback references.",
+            "Use relationship_direction only as a compact edge predicate; keep explanation in research_use.",
+            "Submit exactly one tool call and omit runtime-owned schema_version and round_id.",
+        ],
+    }
+    return (
+        {
+            "role": "system",
+            "content": (
+                "You are a strict contract mapper, not a new research agent. Map the "
+                "preserved visible draft into the supplied reflection judgment tool. "
+                "Keep its substantive conclusions and references; only correct syntax, "
+                "field placement, compact graph predicates and allowed control state."
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                visible, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ),
+        },
+    )
+
+
+def bind_reflection_submission(
+    payload: Mapping[str, Any], *, round_index: int
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    value = deepcopy(dict(payload))
+    forbidden = {"schema_version", "round_id"}.intersection(value)
+    _require(not forbidden, "dynamic_single_unit_reflection_local_envelope_overridden")
+    bound = {
+        "schema_version": REFLECTION_PAYLOAD_SCHEMA_VERSION,
+        "round_id": f"ROUND::{round_index}",
+        **value,
+    }
+    receipt_body = {
+        "schema_version": REFLECTION_SUBMISSION_RECEIPT_SCHEMA_VERSION,
+        "round_id": f"ROUND::{round_index}",
+        "model_owned_fields": sorted(value),
+        "locally_bound_fields": ["round_id", "schema_version"],
+        "model_judgment_changed": False,
+    }
+    return bound, {
+        **receipt_body,
+        "submission_receipt_digest": canonical_digest(receipt_body),
+    }
+
+
+def validate_reflection_submission(
+    payload: Mapping[str, Any],
+    *,
+    policy: Mapping[str, Any],
+    request_catalog: Mapping[str, Any],
+    feedback_receipts: Sequence[Mapping[str, Any]],
+    accepted_evidence_refs: Sequence[str],
+    executed_request_ids: Sequence[str],
+    open_gap_refs: Sequence[str],
+    round_index: int,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    bound, receipt = bind_reflection_submission(payload, round_index=round_index)
+    validated = validate_reflection_payload(
+        bound,
+        policy=policy,
+        request_catalog=request_catalog,
+        feedback_receipts=feedback_receipts,
+        accepted_evidence_refs=accepted_evidence_refs,
+        executed_request_ids=executed_request_ids,
+        round_index=round_index,
+    )
+    state = coverage_state(
+        policy=policy, executed_request_ids=executed_request_ids
+    )
+    catalog_ids = {
+        str(row.get("request_id") or "")
+        for row in request_catalog.get("requests") or ()
+    }
+    available = catalog_ids - set(str(value) for value in executed_request_ids)
+    decision = str(validated["proposed_stop_decision"])
+    if not state["all_required_groups_covered"] and available:
+        uncovered_request_ids = {
+            request_id
+            for group_id, request_ids in load_dynamic_single_unit_policy(policy)[
+                "coverage_groups"
+            ].items()
+            if not state["groups"][group_id]["covered"]
+            for request_id in request_ids
+        }
+        _require(
+            decision == "continue"
+            and bool(set(validated["next_request_ids"]).intersection(uncovered_request_ids)),
+            "dynamic_single_unit_reflection_required_coverage_deferred",
+        )
+    if decision == "stop_sufficient":
+        _require(
+            state["all_required_groups_covered"]
+            and not open_gap_refs
+            and not feedback_receipts,
+            "dynamic_single_unit_reflection_sufficiency_not_eligible",
+        )
+    if decision == "stop_no_progress":
+        _require(
+            bool(open_gap_refs or feedback_receipts)
+            or not state["all_required_groups_covered"],
+            "dynamic_single_unit_reflection_no_progress_not_eligible",
+        )
+    return validated, receipt
+
+
 def validate_reflection_payload(
     payload: Mapping[str, Any],
     *,
@@ -1431,12 +1636,37 @@ def compile_reflection_artifacts(
     state = coverage_state(
         policy=trusted, executed_request_ids=executed_request_ids
     )
-    decision = str(value["proposed_stop_decision"])
-    if decision == "stop_sufficient":
+    proposed_decision = str(value["proposed_stop_decision"])
+    if value["next_request_ids"]:
+        decision = "continue"
+    elif (
+        not state["all_required_groups_covered"]
+        or open_gap_refs
+        or feedback_refs
+    ):
+        decision = "stop_no_progress"
+    else:
+        decision = "stop_sufficient"
+    if proposed_decision == "continue":
         _require(
-            state["all_required_groups_covered"],
-            "dynamic_single_unit_stop_sufficient_coverage_incomplete",
+            decision == "continue",
+            "dynamic_single_unit_reflection_continue_invalid",
         )
+    stop_receipt_body = {
+        "schema_version": STOP_COMPILATION_RECEIPT_SCHEMA_VERSION,
+        "proposed_stop_decision": proposed_decision,
+        "effective_stop_decision": decision,
+        "all_required_groups_covered": state["all_required_groups_covered"],
+        "next_request_ids": list(value["next_request_ids"]),
+        "open_gap_refs": sorted(set(str(ref) for ref in open_gap_refs)),
+        "feedback_refs": feedback_refs,
+        "local_control_compilation_only": True,
+        "model_research_judgment_changed": False,
+    }
+    stop_compilation_receipt = {
+        **stop_receipt_body,
+        "stop_compilation_receipt_digest": canonical_digest(stop_receipt_body),
+    }
     stop_body = {
         "stop_decision_id": "STOP::"
         + canonical_digest(
@@ -1447,7 +1677,7 @@ def compile_reflection_artifacts(
             }
         )[:24].upper(),
         "session_id": session_id,
-        "decided_by_agent_id": agent_id,
+        "decided_by_agent_id": "HARNESS::DYNAMIC-RESEARCH-STOP-COMPILER",
         "decision": decision,
         "reason_codes": list(value["reason_codes"]),
         "coverage_state_refs": [
@@ -1485,6 +1715,7 @@ def compile_reflection_artifacts(
         "accepted_plan_ref": "PLAN::" + accepted_plan_digest[:24].upper(),
         "graph_delta": graph_delta,
         "stop_decision": stop_decision,
+        "stop_compilation_receipt": stop_compilation_receipt,
         "coverage_state": state,
     }
 
@@ -1799,13 +2030,17 @@ __all__ = [
     "GENERIC_SPECIALIST_POLICY_SCHEMA_VERSION",
     "POLICY_SCHEMA_VERSION",
     "REFLECTION_PAYLOAD_SCHEMA_VERSION",
+    "REFLECTION_SUBMISSION_RECEIPT_SCHEMA_VERSION",
+    "REFLECTION_SUBMISSION_TOOL_NAME",
     "REFLECTION_TOOL_NAME",
     "REQUEST_PAYLOAD_SCHEMA_VERSION",
     "REQUEST_TOOL_NAME",
+    "bind_reflection_submission",
     "compile_controlled_batch_projection",
     "compile_initial_messages",
     "compile_material_requirement_blueprints",
     "compile_reflection_artifacts",
+    "compile_reflection_submission_messages",
     "compile_request_catalog",
     "compile_round_feedback_receipts",
     "compile_round_response",
@@ -1816,7 +2051,9 @@ __all__ = [
     "load_dynamic_single_unit_policy",
     "public_round_response",
     "reflection_tool",
+    "reflection_submission_tool",
     "request_evidence_tool",
     "validate_reflection_payload",
+    "validate_reflection_submission",
     "validate_request_selection",
 ]

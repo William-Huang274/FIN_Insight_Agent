@@ -23,6 +23,18 @@ LEAD_COORDINATION_DECISION_SCHEMA_VERSION = (
 SPECIALIST_WORKPAPER_SCHEMA_VERSION = (
     "fin_ia_specialist_workpaper_v1_0"
 )
+SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME = (
+    "submit_specialist_workpaper_judgment"
+)
+SPECIALIST_WORKPAPER_SUBMISSION_RECEIPT_SCHEMA_VERSION = (
+    "fin_ia_specialist_workpaper_submission_receipt_v1_0"
+)
+LEAD_COORDINATION_SUBMISSION_TOOL_NAME = (
+    "submit_lead_coordination_judgment"
+)
+LEAD_COORDINATION_SUBMISSION_RECEIPT_SCHEMA_VERSION = (
+    "fin_ia_lead_coordination_submission_receipt_v1_0"
+)
 SPECIALIST_CONTEXT_SCHEMA_VERSION = "fin_ia_specialist_context_v1_0"
 SPECIALIST_REPAIR_CONTEXT_SCHEMA_VERSION = (
     "fin_ia_specialist_repair_context_v1_0"
@@ -4015,6 +4027,116 @@ def specialist_workpaper_tool(
     }
 
 
+def specialist_workpaper_submission_tool(
+    *,
+    agent_id: str,
+    context: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Expose only the model-owned fields of a specialist workpaper."""
+
+    base = specialist_workpaper_tool(agent_id=agent_id, context=context)
+    parameters = deepcopy(base["function"]["parameters"])
+    for field in ("schema_version", "agent_id"):
+        parameters["required"].remove(field)
+        parameters["properties"].pop(field)
+    return {
+        "type": "function",
+        "function": {
+            "name": SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
+            "description": (
+                "Map one preserved specialist draft into the strict model-owned "
+                "judgment fields. Runtime identity and schema are bound locally."
+            ),
+            "parameters": parameters,
+        },
+    }
+
+
+def bind_specialist_workpaper_submission(
+    payload: Mapping[str, Any], *, agent_id: str
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    value = deepcopy(dict(payload))
+    _require(
+        not {"schema_version", "agent_id"}.intersection(value),
+        "multi_agent_workpaper_local_envelope_overridden",
+    )
+    bound = {
+        "schema_version": SPECIALIST_WORKPAPER_SCHEMA_VERSION,
+        "agent_id": agent_id,
+        **value,
+    }
+    receipt_body = {
+        "schema_version": SPECIALIST_WORKPAPER_SUBMISSION_RECEIPT_SCHEMA_VERSION,
+        "agent_id": agent_id,
+        "model_owned_fields": sorted(value),
+        "locally_bound_fields": ["agent_id", "schema_version"],
+        "model_judgment_changed": False,
+    }
+    return bound, {
+        **receipt_body,
+        "submission_receipt_digest": canonical_digest(receipt_body),
+    }
+
+
+def compile_specialist_workpaper_submission_messages(
+    *,
+    context: Mapping[str, Any],
+    source_draft: str,
+    source_capture_digest: str,
+    tool: Mapping[str, Any],
+) -> tuple[dict[str, str], ...]:
+    _require(bool(str(source_draft).strip()), "multi_agent_workpaper_draft_missing")
+    _require(
+        len(str(source_capture_digest).strip()) == 64,
+        "multi_agent_workpaper_draft_digest_invalid",
+    )
+    visible = {
+        "source_capture_digest": str(source_capture_digest),
+        "source_draft": str(source_draft),
+        "validated_context": deepcopy(dict(context)),
+        "submission_contract": deepcopy(tool["function"]["parameters"]),
+        "rules": [
+            "Preserve the source draft's research judgment and authorized references.",
+            "Do not introduce new facts, numbers, references, causal claims or role scope.",
+            "Correct only JSON syntax, contract mapping and field placement.",
+            "Omit runtime-owned schema_version and agent_id.",
+        ],
+    }
+    return (
+        {
+            "role": "system",
+            "content": (
+                "You are a strict workpaper contract mapper, not a new research agent. "
+                "Map the preserved visible draft into exactly one submission tool call. "
+                "Keep the draft's judgment and only use authority in the validated context."
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                visible, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ),
+        },
+    )
+
+
+def validate_specialist_workpaper_submission(
+    payload: Mapping[str, Any],
+    *,
+    context: Mapping[str, Any],
+    expected_agent_id: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    bound, receipt = bind_specialist_workpaper_submission(
+        payload, agent_id=expected_agent_id
+    )
+    return (
+        validate_specialist_workpaper(
+            bound, context=context, expected_agent_id=expected_agent_id
+        ),
+        receipt,
+    )
+
+
 def compile_specialist_workpaper_messages(
     *,
     context: Mapping[str, Any],
@@ -6057,6 +6179,106 @@ def lead_coordination_tool(
     }
 
 
+def lead_coordination_submission_tool(
+    *, challenge_catalog: Sequence[Mapping[str, Any]]
+) -> dict[str, Any]:
+    base = lead_coordination_tool(challenge_catalog=challenge_catalog)
+    parameters = deepcopy(base["function"]["parameters"])
+    for field in ("schema_version", "lead_agent_id"):
+        parameters["required"].remove(field)
+        parameters["properties"].pop(field)
+    return {
+        "type": "function",
+        "function": {
+            "name": LEAD_COORDINATION_SUBMISSION_TOOL_NAME,
+            "description": (
+                "Map a preserved Lead coordination draft into strict model-owned "
+                "routing fields. Runtime identity and schema are bound locally."
+            ),
+            "parameters": parameters,
+        },
+    }
+
+
+def bind_lead_coordination_submission(
+    payload: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    value = deepcopy(dict(payload))
+    _require(
+        not {"schema_version", "lead_agent_id"}.intersection(value),
+        "multi_agent_lead_local_envelope_overridden",
+    )
+    bound = {
+        "schema_version": LEAD_COORDINATION_DECISION_SCHEMA_VERSION,
+        "lead_agent_id": RESEARCH_LEAD_AGENT_ID,
+        **value,
+    }
+    receipt_body = {
+        "schema_version": LEAD_COORDINATION_SUBMISSION_RECEIPT_SCHEMA_VERSION,
+        "lead_agent_id": RESEARCH_LEAD_AGENT_ID,
+        "model_owned_fields": sorted(value),
+        "locally_bound_fields": ["lead_agent_id", "schema_version"],
+        "model_judgment_changed": False,
+    }
+    return bound, {
+        **receipt_body,
+        "submission_receipt_digest": canonical_digest(receipt_body),
+    }
+
+
+def compile_lead_coordination_submission_messages(
+    *,
+    source_draft: str,
+    source_capture_digest: str,
+    tool: Mapping[str, Any],
+) -> tuple[dict[str, str], ...]:
+    _require(bool(str(source_draft).strip()), "multi_agent_lead_draft_missing")
+    _require(
+        len(str(source_capture_digest).strip()) == 64,
+        "multi_agent_lead_draft_digest_invalid",
+    )
+    visible = {
+        "source_capture_digest": str(source_capture_digest),
+        "source_draft": str(source_draft),
+        "submission_contract": deepcopy(tool["function"]["parameters"]),
+        "rules": [
+            "Preserve the Lead draft's routing judgment.",
+            "Do not add challenges, facts, references or research conclusions.",
+            "Correct only JSON syntax, contract mapping and field placement.",
+            "Omit runtime-owned schema_version and lead_agent_id.",
+        ],
+    }
+    return (
+        {
+            "role": "system",
+            "content": (
+                "You are a strict Lead coordination contract mapper, not a new Lead. "
+                "Map the preserved visible draft into exactly one submission tool call."
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps(
+                visible, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            ),
+        },
+    )
+
+
+def validate_lead_coordination_submission(
+    payload: Mapping[str, Any],
+    *,
+    challenge_catalog: Sequence[Mapping[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    bound, receipt = bind_lead_coordination_submission(payload)
+    return (
+        validate_lead_coordination_decision(
+            bound, challenge_catalog=challenge_catalog
+        ),
+        receipt,
+    )
+
+
 def compile_lead_coordination_messages(
     *,
     workpapers: Sequence[Mapping[str, Any]],
@@ -7104,6 +7326,8 @@ __all__ = [
     "DOWNSTREAM_REPAIR_PROGRESS_CHECKPOINT_SCHEMA_VERSION",
     "LEAD_PLAN_SCHEMA_VERSION",
     "LEAD_COORDINATION_DECISION_SCHEMA_VERSION",
+    "LEAD_COORDINATION_SUBMISSION_RECEIPT_SCHEMA_VERSION",
+    "LEAD_COORDINATION_SUBMISSION_TOOL_NAME",
     "LEAD_COORDINATION_CHECKPOINT_SCHEMA_VERSION",
     "MULTI_AGENT_CROSS_ROLE_EVALUATION_VIEW_SCHEMA_VERSION",
     "MULTI_AGENT_EVALUATION_CONTENT_VIEW_SCHEMA_VERSION",
@@ -7120,8 +7344,12 @@ __all__ = [
     "SPECIALIST_PLAN_CHECKPOINT_SCHEMA_VERSION",
     "SPECIALIST_WORKPAPER_CHECKPOINT_SCHEMA_VERSION",
     "SPECIALIST_WORKPAPER_SCHEMA_VERSION",
+    "SPECIALIST_WORKPAPER_SUBMISSION_RECEIPT_SCHEMA_VERSION",
+    "SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME",
     "TOKEN_BUDGET_BASIS_SCHEMA_VERSION",
     "WRITER_AGENT_ID",
+    "bind_lead_coordination_submission",
+    "bind_specialist_workpaper_submission",
     "compile_planner_payload_from_role_opinions",
     "compile_evaluation_content_view",
     "compile_evaluation_messages",
@@ -7140,6 +7368,7 @@ __all__ = [
     "compile_downstream_repair_progress_checkpoint",
     "compile_analysis_continuation_messages",
     "compile_lead_coordination_messages",
+    "compile_lead_coordination_submission_messages",
     "compile_lead_coordination_checkpoint",
     "compile_lead_plan_messages",
     "compile_report_messages",
@@ -7148,6 +7377,7 @@ __all__ = [
     "compile_specialist_plan_checkpoint",
     "compile_specialist_workpaper_checkpoint",
     "compile_specialist_workpaper_messages",
+    "compile_specialist_workpaper_submission_messages",
     "compile_token_budget_basis",
     "merge_analysis_draft_fragments",
     "merge_hierarchical_evaluations",
@@ -7155,12 +7385,14 @@ __all__ = [
     "evaluation_allowed_refs",
     "lead_plan_tool",
     "lead_coordination_tool",
+    "lead_coordination_submission_tool",
     "lead_coordination_rationale_max_chars",
     "load_multi_agent_role_topology",
     "local_case_absence_findings",
     "report_draft_tool",
     "specialist_plan_tool",
     "specialist_workpaper_tool",
+    "specialist_workpaper_submission_tool",
     "validate_evaluation",
     "validate_role_evaluation",
     "validate_role_evaluation_progress_checkpoint",
@@ -7173,11 +7405,13 @@ __all__ = [
     "validate_analysis_continuation_completion",
     "validate_lead_plan",
     "validate_lead_coordination_decision",
+    "validate_lead_coordination_submission",
     "validate_lead_coordination_checkpoint",
     "validate_report_draft",
     "validate_specialist_plan_opinion",
     "validate_specialist_plan_checkpoint",
     "validate_specialist_workpaper_checkpoint",
     "validate_specialist_workpaper",
+    "validate_specialist_workpaper_submission",
     "revalidate_bound_specialist_workpaper",
 ]

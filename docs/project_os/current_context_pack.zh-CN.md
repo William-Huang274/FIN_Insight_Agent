@@ -1443,3 +1443,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 最早责任层登记为 `RC-S3-069`：thinking research draft 与 strict submission 尚未分离，且本地 envelope／Graph predicate／StopDecision 没有从同一合同编译。它不是 S1/S2、信源、DeepSeek 连通性或可评价的研究内容失败。
 - R1 public digest=`a9f97d93...10d240`，14 份原始请求／响应和六角色状态全部保留。下一门只允许 capture-bound successor：复用已完成 selection、S1/S2、FeedbackReceipt 和有效草稿，从失败节点续跑；禁止重跑整链。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/134_current_dynamic_multi_agent_R1_submission_contract_failure.md`。
+
+### 2026-08-23 DELL current 动态多 Agent提交 successor 零调用门
+
+- Reflection、Specialist Workpaper 和 Lead 现在共享 provider-neutral 的“自然研究／写作草稿 → strict submission → 本地 envelope”合同；模型继续拥有观点，本地只绑定 schema／身份／轮次／lineage，并编译正式 StopDecision。
+- R1 的六个 S1/S2 batch 已在 0 模型／0 网络下重新编译，六个 `round_response_digest` 全部一致；6 份 Reflection 和 Demand／Counterevidence 2 份 Workpaper capture 完整绑定。
+- Demand／Counterevidence Reflection 可零调用迁移；Counterevidence Workpaper 可只补本地 envelope 后通过。Operating／Value／Cash／Supply 需 strict mapper；Supply 仍必须执行唯一未覆盖的 `REQ::21dc7bfb04d38fa5cc8749f8`。
+- successor 新调用上界为 25，由 4 reflection mapping＋2 Supply follow-up＋4 workpaper draft＋5 workpaper submit＋4 Lead＋6 repair 节点相加；新 S1/S2 request／round 均最多 1，0 retry／外源网络／promotion／fallback。
+- 全仓 `1123 passed`。当前只达到 capture-bound successor engineering gate；自然 successor、Lead、L1、内容质量、Writer、S3 和 release 均未通过。下一门是 clean commit／push、fresh authority 和唯一 successor live。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/135_current_dynamic_multi_agent_submission_successor_zero_call_gate.md`。

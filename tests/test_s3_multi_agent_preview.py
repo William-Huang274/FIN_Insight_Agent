@@ -13,6 +13,8 @@ from sec_agent.research.multi_agent_preview import (
     SPECIALIST_PLAN_OPINION_SCHEMA_VERSION,
     SPECIALIST_WORKPAPER_SCHEMA_VERSION,
     MultiAgentPreviewError,
+    bind_lead_coordination_submission,
+    bind_specialist_workpaper_submission,
     compile_analysis_continuation_messages,
     compile_analysis_completion_checkpoint,
     compile_analysis_fragment_checkpoint,
@@ -27,6 +29,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_lead_plan_cardinality_policy,
     compile_lead_plan_checkpoint,
     compile_lead_coordination_messages,
+    compile_lead_coordination_submission_messages,
     compile_lead_coordination_checkpoint,
     compile_planner_payload_from_role_opinions,
     compile_report_messages,
@@ -36,6 +39,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_specialist_workpaper_checkpoint,
     compile_specialist_plan_messages,
     compile_specialist_workpaper_messages,
+    compile_specialist_workpaper_submission_messages,
     compile_token_budget_basis,
     compile_tool_contract_failure_feedback,
     evaluation_allowed_refs,
@@ -43,6 +47,7 @@ from sec_agent.research.multi_agent_preview import (
     lead_coordination_rationale_max_chars,
     lead_plan_tool,
     lead_coordination_tool,
+    lead_coordination_submission_tool,
     load_multi_agent_role_topology,
     local_case_absence_findings,
     merge_analysis_draft_fragments,
@@ -51,6 +56,7 @@ from sec_agent.research.multi_agent_preview import (
     revalidate_bound_specialist_workpaper,
     specialist_plan_tool,
     specialist_workpaper_tool,
+    specialist_workpaper_submission_tool,
     validate_evaluation,
     validate_analysis_continuation_completion,
     validate_analysis_completion_checkpoint,
@@ -60,6 +66,7 @@ from sec_agent.research.multi_agent_preview import (
     validate_lead_plan,
     validate_lead_plan_checkpoint,
     validate_lead_coordination_decision,
+    validate_lead_coordination_submission,
     validate_lead_coordination_checkpoint,
     validate_report_draft,
     validate_role_evaluation,
@@ -67,6 +74,7 @@ from sec_agent.research.multi_agent_preview import (
     validate_specialist_plan_checkpoint,
     validate_specialist_workpaper_checkpoint,
     validate_specialist_workpaper,
+    validate_specialist_workpaper_submission,
 )
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 
@@ -1173,6 +1181,78 @@ def test_digest_bound_workpaper_revalidation_separates_derived_fields() -> None:
             expected_agent_id=agent_id,
         )
 
+
+def test_specialist_submission_binds_local_envelope_without_changing_judgment() -> None:
+    agent_id = "AGENT::DEMAND_QUALITY"
+    context = _context(agent_id)
+    tool = specialist_workpaper_submission_tool(
+        agent_id=agent_id, context=context
+    )
+    parameters = tool["function"]["parameters"]
+    assert "schema_version" not in parameters["properties"]
+    assert "agent_id" not in parameters["properties"]
+
+    payload = _workpaper(agent_id)
+    for field in ("schema_version", "agent_id", "context_digest", "workpaper_digest"):
+        payload.pop(field)
+    bound, receipt = bind_specialist_workpaper_submission(
+        payload, agent_id=agent_id
+    )
+    assert bound["schema_version"] == SPECIALIST_WORKPAPER_SCHEMA_VERSION
+    assert bound["agent_id"] == agent_id
+    assert receipt["model_judgment_changed"] is False
+    validated, validated_receipt = validate_specialist_workpaper_submission(
+        payload, context=context, expected_agent_id=agent_id
+    )
+    assert validated["workpaper_digest"]
+    assert validated_receipt == receipt
+    messages = compile_specialist_workpaper_submission_messages(
+        context=context,
+        source_draft="{visible workpaper draft with one missing comma}",
+        source_capture_digest="a" * 64,
+        tool=tool,
+    )
+    rendered = json.dumps(messages, ensure_ascii=False)
+    assert "strict workpaper contract mapper" in rendered
+    assert "visible workpaper draft" in rendered
+
+    overridden = dict(payload)
+    overridden["agent_id"] = "AGENT::VALUE_CAPTURE"
+    with pytest.raises(
+        MultiAgentPreviewError, match="multi_agent_workpaper_local_envelope_overridden"
+    ):
+        bind_specialist_workpaper_submission(overridden, agent_id=agent_id)
+
+
+def test_lead_submission_binds_local_envelope_and_preserves_partition() -> None:
+    workpapers = [_workpaper(agent_id) for agent_id in SPECIALIST_AGENT_IDS]
+    catalog = compile_challenge_catalog(workpapers=workpapers)
+    assert catalog
+    tool = lead_coordination_submission_tool(challenge_catalog=catalog)
+    parameters = tool["function"]["parameters"]
+    assert "schema_version" not in parameters["properties"]
+    assert "lead_agent_id" not in parameters["properties"]
+    accepted = [catalog[0]["challenge_id"]]
+    deferred = [row["challenge_id"] for row in catalog[1:]]
+    payload = {
+        "accepted_challenge_ids": accepted,
+        "deferred_challenge_ids": deferred,
+        "coordination_rationale": "该挑战直接影响因果强度，应回到唯一责任角色做有界修订。",
+        "next_state": "continue_local_repairs",
+    }
+    bound, receipt = bind_lead_coordination_submission(payload)
+    assert bound["lead_agent_id"] == RESEARCH_LEAD_AGENT_ID
+    validated, validated_receipt = validate_lead_coordination_submission(
+        payload, challenge_catalog=catalog
+    )
+    assert validated["accepted_challenge_ids"] == accepted
+    assert validated_receipt == receipt
+    messages = compile_lead_coordination_submission_messages(
+        source_draft="{visible Lead draft}",
+        source_capture_digest="b" * 64,
+        tool=tool,
+    )
+    assert "strict Lead coordination" in json.dumps(messages, ensure_ascii=False)
 
 def test_topology_distinguishes_agents_tools_evaluators_and_labels() -> None:
     topology = _topology()

@@ -34,9 +34,12 @@ from scripts.research.run_s3_current_dynamic_multi_agent import (
     LIVE_AUTHORITY_SCHEMA,
     LIVE_AUTHORITY_STATUS,
     _call_live_tool,
+    _call_live_tool_draft,
     _provider_attempt_count,
+    _tool_draft,
     _tool_arguments,
     expected_live_execution_budget,
+    expected_submission_successor_budget,
     validate_live_authority,
 )
 from sec_agent.providers.chat_completions import (
@@ -345,6 +348,27 @@ def test_live_budget_is_derived_from_six_bounded_role_loops() -> None:
     }
 
 
+def test_submission_successor_budget_is_derived_from_capture_bound_topology() -> None:
+    budget = expected_submission_successor_budget()
+    assert budget["maximum_new_model_calls"] == 25
+    assert sum(
+        budget[key]
+        for key in (
+            "reflection_submissions_from_R1_captures",
+            "supply_followup_reflection_drafts",
+            "supply_followup_reflection_submissions",
+            "new_specialist_workpaper_drafts",
+            "specialist_workpaper_submissions",
+            "lead_coordination_drafts",
+            "lead_coordination_submissions",
+            "role_repair_drafts",
+            "role_repair_submissions",
+        )
+    ) == budget["maximum_new_model_calls"]
+    assert budget["maximum_new_s1_s2_requests"] == 1
+    assert budget["maximum_external_source_network_calls"] == 0
+
+
 def test_live_authority_rejects_budget_drift_before_execution(tmp_path: Path) -> None:
     authority = {
         "schema_version": LIVE_AUTHORITY_SCHEMA,
@@ -419,6 +443,66 @@ def test_live_provider_seam_records_exact_once_attempt_and_parses_tool(
     parsed, _ = _tool_arguments(step, expected_name="submit_fixture")
     assert parsed == {"ok": True}
     assert _provider_attempt_count(events) == 1
+
+
+def test_live_draft_seam_preserves_invalid_json_for_separate_submission(
+    tmp_path: Path,
+) -> None:
+    def executor(**_: object) -> ChatCompletionToolStepResult:
+        step = _provider_step(name="submit_fixture", arguments={"ok": True})
+        broken = dict(step.tool_calls[0])
+        broken["function"] = {
+            "name": "submit_fixture",
+            "arguments": '{"useful_judgment":"preserved","broken":"quote " here"}',
+        }
+        return ChatCompletionToolStepResult(
+            status=step.status,
+            provider_id=step.provider_id,
+            model=step.model,
+            content=step.content,
+            reasoning_content="private reasoning must not be persisted",
+            tool_calls=(broken,),
+            finish_reason=step.finish_reason,
+            usage=step.usage,
+            request_capture_ref=step.request_capture_ref,
+            response_capture_ref=step.response_capture_ref,
+            request_digest=step.request_digest,
+            response_digest=step.response_digest,
+            private_reasoning_fields_redacted=(
+                step.private_reasoning_fields_redacted
+            ),
+        )
+
+    events: list[dict] = []
+    step, draft, call_id = _call_live_tool_draft(
+        events=events,
+        session_id="SESSION::MULTI-LIVE-DRAFT-SEAM",
+        actor_id="AGENT::TEST",
+        profile=SimpleNamespace(provider_id="fixture"),
+        messages=({"role": "user", "content": "test"},),
+        tool={
+            "type": "function",
+            "function": {
+                "name": "submit_fixture",
+                "parameters": {"type": "object"},
+            },
+        },
+        expected_name="submit_fixture",
+        capture_root=tmp_path,
+        run_id="RUN::MULTI-LIVE-DRAFT-SEAM",
+        attempt_id="ATTEMPT::MULTI-LIVE-DRAFT-SEAM",
+        occurred_at="2026-08-23T00:00:01Z",
+        executor=executor,
+    )
+    assert "useful_judgment" in draft
+    assert call_id == "call-fixture"
+    with pytest.raises(json.JSONDecodeError):
+        json.loads(draft)
+    assert _tool_draft(step, expected_name="submit_fixture")[0] == draft
+    assert [row["event_type"] for row in events] == [
+        "provider_attempt_requested",
+        "provider_attempt_completed",
+    ]
 
 
 def test_live_provider_seam_counts_failed_attempt_from_requested_event(

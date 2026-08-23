@@ -14,7 +14,9 @@ from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     DynamicSingleUnitLoopError,
     REFLECTION_PAYLOAD_SCHEMA_VERSION,
     REQUEST_PAYLOAD_SCHEMA_VERSION,
+    bind_reflection_submission,
     compile_reflection_artifacts,
+    compile_reflection_submission_messages,
     compile_initial_messages,
     compile_material_requirement_blueprints,
     compile_request_catalog,
@@ -23,8 +25,10 @@ from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     compile_workpaper_submission_view,
     load_dynamic_single_unit_policy,
     reflection_tool,
+    reflection_submission_tool,
     request_evidence_tool,
     validate_reflection_payload,
+    validate_reflection_submission,
     validate_request_selection,
 )
 
@@ -327,7 +331,7 @@ def test_reflection_empty_enums_compile_to_empty_arrays_not_fake_refs(
     assert validated["next_request_ids"] == []
 
 
-def test_stop_sufficient_rejected_before_all_proposition_groups_covered(
+def test_stop_sufficient_is_compiled_to_no_progress_before_coverage_complete(
     policy: dict, catalog: dict
 ) -> None:
     payload = _reflection(
@@ -345,19 +349,99 @@ def test_stop_sufficient_rejected_before_all_proposition_groups_covered(
         executed_request_ids=["REQ::DELL::PVM_BRIDGE::V1"],
         round_index=1,
     )
+    artifacts = compile_reflection_artifacts(
+        policy=policy,
+        reflection=validated,
+        session_id="SESSION::TEST",
+        agent_id="AGENT::VALUE_CAPTURE",
+        base_plan={"executed_request_ids": []},
+        base_graph_digest="a" * 64,
+        executed_request_ids=["REQ::DELL::PVM_BRIDGE::V1"],
+        open_gap_refs=["GAP::ONE"],
+        model_calls_used=2,
+    )
+    assert artifacts["stop_decision"]["decision"] == "stop_no_progress"
+    assert artifacts["stop_decision"]["decided_by_agent_id"] == (
+        "HARNESS::DYNAMIC-RESEARCH-STOP-COMPILER"
+    )
+    receipt = artifacts["stop_compilation_receipt"]
+    assert receipt["proposed_stop_decision"] == "stop_sufficient"
+    assert receipt["effective_stop_decision"] == "stop_no_progress"
+    assert receipt["model_research_judgment_changed"] is False
+
+
+def test_strict_reflection_submission_binds_local_identity_and_requires_missing_coverage(
+    policy: dict, catalog: dict
+) -> None:
+    executed = ["REQ::DELL::PVM_BRIDGE::V1"]
+    tool = reflection_submission_tool(
+        policy=policy,
+        request_catalog=catalog,
+        feedback_receipts=[{"feedback_id": "FEEDBACK::ONE"}],
+        accepted_evidence_refs=["EV::ONE"],
+        executed_request_ids=executed,
+        open_gap_refs=["GAP::ONE"],
+        round_index=1,
+    )
+    parameters = tool["function"]["parameters"]
+    assert "schema_version" not in parameters["properties"]
+    assert "round_id" not in parameters["properties"]
+    assert parameters["properties"]["proposed_stop_decision"]["enum"] == [
+        "continue"
+    ]
+    relation = parameters["properties"]["graph_hypotheses"]["items"][
+        "properties"
+    ]["relationship_direction"]
+    assert relation["maxLength"] == 80
+    assert relation["pattern"].startswith("^")
+
+    model_owned = _reflection(
+        round_index=1,
+        feedback_refs=["FEEDBACK::ONE"],
+        next_request_ids=["REQ::DELL::SUPPLY_RELATIONSHIP::V1"],
+        decision="continue",
+        evidence_refs=["EV::ONE"],
+    )
+    model_owned.pop("schema_version")
+    model_owned.pop("round_id")
+    bound, receipt = bind_reflection_submission(model_owned, round_index=1)
+    assert bound["schema_version"] == REFLECTION_PAYLOAD_SCHEMA_VERSION
+    assert receipt["locally_bound_fields"] == ["round_id", "schema_version"]
+    validated, validated_receipt = validate_reflection_submission(
+        model_owned,
+        policy=policy,
+        request_catalog=catalog,
+        feedback_receipts=[{"feedback_id": "FEEDBACK::ONE"}],
+        accepted_evidence_refs=["EV::ONE"],
+        executed_request_ids=executed,
+        open_gap_refs=["GAP::ONE"],
+        round_index=1,
+    )
+    assert validated["proposed_stop_decision"] == "continue"
+    assert validated_receipt == receipt
+    messages = compile_reflection_submission_messages(
+        source_draft="{invalid but preserved research draft}",
+        source_capture_digest="a" * 64,
+        tool=tool,
+    )
+    rendered = json.dumps(messages, ensure_ascii=False)
+    assert "strict contract mapper" in rendered
+    assert "invalid but preserved" in rendered
+
+    model_owned["proposed_stop_decision"] = "stop_sufficient"
+    model_owned["next_request_ids"] = []
     with pytest.raises(DynamicSingleUnitLoopError) as exc:
-        compile_reflection_artifacts(
+        validate_reflection_submission(
+            model_owned,
             policy=policy,
-            reflection=validated,
-            session_id="SESSION::TEST",
-            agent_id="AGENT::VALUE_CAPTURE",
-            base_plan={"executed_request_ids": []},
-            base_graph_digest="a" * 64,
-            executed_request_ids=["REQ::DELL::PVM_BRIDGE::V1"],
+            request_catalog=catalog,
+            feedback_receipts=[{"feedback_id": "FEEDBACK::ONE"}],
+            accepted_evidence_refs=["EV::ONE"],
+            executed_request_ids=executed,
             open_gap_refs=["GAP::ONE"],
-            model_calls_used=2,
+            round_index=1,
         )
-    assert exc.value.code == "dynamic_single_unit_stop_sufficient_coverage_incomplete"
+    assert exc.value.code == "dynamic_single_unit_reflection_required_coverage_deferred"
 
 
 def test_workpaper_context_merges_rounds_without_candidate_promotion(

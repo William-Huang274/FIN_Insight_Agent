@@ -1477,3 +1477,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R2 使用全新 capture、private output、public result、run 和 attempt identity；R1 authority／output 不复用。
 - 当前状态仅为 signed、未执行；自然六角色、Lead、L1、内容质量、Writer、S3 和 release 仍未通过。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/138_submission_successor_R2_live_authority.md`。
+
+### 2026-08-23 submission successor R2 调用前 symbol failure
+
+- R2 跨过 SessionEvent 后，在第一个 Demand workpaper submission dispatch 前因未导入 `SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME` 触发 `NameError`。
+- capture root 未创建；0 Provider／DeepSeek、0 新 S1/S2／retrieval／网络／promotion／retry。R1 状态不变，R2 authority 和全部输出 identity consumed。
+- 最早责任层是 S3 runner 静态名称绑定；compileall 不检查未定义名，原定向测试未走到此 live 分支。不是模型、检索、资料或研究质量问题。
+- 已把常量移入正式 import，删除 main guard 后死代码，增加模块 import 回归，并用 `pyflakes` 检查当前 runner／test；module targeted `13 passed`、全仓 `1125 passed`、active baseline pass、秘密扫描 `7,753/0`。
+- public failure digest=`225029ab...c5127`。详细记录见 `docs/worklog/fin_0_1_3_s3/139_submission_successor_R2_pre_provider_symbol_failure.md`。

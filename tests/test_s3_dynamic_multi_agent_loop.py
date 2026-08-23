@@ -33,6 +33,7 @@ from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from scripts.research.run_s3_current_dynamic_multi_agent import (
     LIVE_AUTHORITY_SCHEMA,
     LIVE_AUTHORITY_STATUS,
+    SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
     _bind_predecessor_session_event,
     _call_live_tool,
     _call_live_tool_draft,
@@ -50,6 +51,13 @@ from sec_agent.providers.chat_completions import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_submission_successor_workpaper_tool_name_is_bound_at_module_import() -> None:
+    assert (
+        SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME
+        == "submit_specialist_workpaper_judgment"
+    )
 
 
 def _load(ref: str) -> dict:

@@ -1,0 +1,49 @@
+{
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_submission_successor_live_v1_0",
+  "status": "terminal_pre_provider_local_runner_failure_preserved",
+  "recorded_at": "2026-08-23T11:27:53+00:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_submission_successor_live_authority_v1_1.json",
+  "implementation_commit": "f3f4c73d2d975cb32730dc74187c0692f8f824fd",
+  "case_key": "DELL",
+  "frontier": "demand_workpaper_submission_symbol_import_failure",
+  "failure": {
+    "phase": "demand_workpaper_submission_before_provider_dispatch",
+    "code": "local_runner_name_resolution_failure",
+    "trigger_symbol": "SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME",
+    "exception_type": "NameError",
+    "capture_ref": ""
+  },
+  "execution": {
+    "new_provider_calls_attempted": 0,
+    "new_retrieval_rounds": 0,
+    "new_request_ids": [],
+    "specialist_sessions_completed": 0,
+    "lead_rounds_executed": 0,
+    "role_repairs_executed": 0,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "claims": {
+    "R1_predecessor_changed": false,
+    "model_called": false,
+    "S1_S2_called": false,
+    "authority_consumed": true,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "release_ready": false
+  },
+  "acceptance": {
+    "dynamic_multi_agent_contract_pass": false,
+    "L1_assessment_pending": false,
+    "eight_dimension_content_assessment_pending": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "release_ready": false
+  },
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-submission-successor-live-r2-20260823T192500Z/full_result.json",
+  "private_full_result_sha256": "d7dead9db6aa025ee133a35310c3916837781284107387f36f370c4f6ab23022",
+  "known_boundary": "This result preserves a local runner symbol-import failure before any new Provider or S1/S2 execution. The authority and all R2 output identities are consumed. R1 remains immutable; a new successor may resume only after the missing import and executable-path test are fixed and independently reproven.",
+  "result_digest": "225029ab807ca1071ba38d0177f4d2d1aa87986354f348edc8671e7c16dc5127"
+}

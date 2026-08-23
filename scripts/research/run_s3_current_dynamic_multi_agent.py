@@ -89,6 +89,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     LEAD_COORDINATION_DECISION_SCHEMA_VERSION,
     RESEARCH_LEAD_AGENT_ID,
     SPECIALIST_AGENT_IDS,
+    SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
     SPECIALIST_WORKPAPER_SCHEMA_VERSION,
     compile_challenge_catalog,
     compile_lead_coordination_messages,
@@ -4144,16 +4145,6 @@ def run_live(
     failed_agents = [
         agent_id for agent_id in SPECIALIST_AGENT_IDS if agent_id not in successful_agents
     ]
-    local_failure_receipts = [
-        {
-            "agent_id": agent_id,
-            "failure": deepcopy(role_bundles[agent_id]["failure"]),
-            "owning_plane": (
-                "infrastructure_or_harness_pending_classification"
-            ),
-        }
-        for agent_id in failed_agents
-    ]
     lead_bundle: dict[str, Any] = {}
     repairs: list[dict[str, Any]] = []
     final_workpapers = [
@@ -5264,14 +5255,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-    compile_reflection_submission_messages,
-    coverage_state,
-    reflection_submission_tool,
-    validate_reflection_submission,
-    SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
-    compile_lead_coordination_submission_messages,
-    compile_specialist_workpaper_submission_messages,
-    lead_coordination_submission_tool,
-    specialist_workpaper_submission_tool,
-    validate_lead_coordination_submission,
-    validate_specialist_workpaper_submission,

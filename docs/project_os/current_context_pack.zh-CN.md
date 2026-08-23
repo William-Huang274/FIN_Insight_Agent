@@ -1485,3 +1485,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 最早责任层是 S3 runner 静态名称绑定；compileall 不检查未定义名，原定向测试未走到此 live 分支。不是模型、检索、资料或研究质量问题。
 - 已把常量移入正式 import，删除 main guard 后死代码，增加模块 import 回归，并用 `pyflakes` 检查当前 runner／test；module targeted `13 passed`、全仓 `1125 passed`、active baseline pass、秘密扫描 `7,753/0`。
 - public failure digest=`225029ab...c5127`。详细记录见 `docs/worklog/fin_0_1_3_s3/139_submission_successor_R2_pre_provider_symbol_failure.md`。
+
+### 2026-08-23 submission successor R3 fresh zero-call proof
+
+- 修复 commit=`4e6a1d54...232d6`；R3 再次逐摘要重放六角色 R1 S1/S2 和八份原始草稿，全部检查通过，0 模型／网络／retrieval／付费调用。
+- public digest=`f56e57d9...ceda9`，public SHA=`27341b20...dd567`，private SHA=`c97e8204...93aa2`；Supply 仍只允许 `REQ::21dc7bfb04d38fa5cc8749f8`。
+- 当前只恢复 fresh live admission 资格；下一门是新签 R3 authority，不得复用 R2 identity。详见 `docs/worklog/fin_0_1_3_s3/140_submission_successor_R3_fresh_zero_call_proof.md`。

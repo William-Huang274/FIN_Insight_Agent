@@ -39,6 +39,7 @@ from sec_agent.research.dynamic_single_unit_repair import (  # noqa: E402
     compile_semantic_repair_context,
     compile_semantic_repair_patch_messages,
     compile_semantic_repair_plan_messages,
+    compile_semantic_repair_reference_envelope,
     create_semantic_repair_session,
     semantic_repair_patch_tool,
     semantic_repair_plan_tool,
@@ -77,6 +78,10 @@ PATCH_SUCCESSOR_PUBLIC_RESULT_SCHEMA = (
 PATCH_SUCCESSOR_PRIVATE_RESULT_SCHEMA = (
     "fin_ia_s3_dynamic_single_unit_semantic_patch_successor_live_full_v1_0"
 )
+PATCH_CAPTURE_REQUALIFICATION_RESULT_SCHEMA = (
+    "fin_ia_s3_dynamic_single_unit_semantic_patch_capture_requalification_"
+    "zero_call_result_v1_0"
+)
 
 DEFAULT_PRIOR_PRIVATE = ROOT / (
     "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/"
@@ -99,6 +104,19 @@ DEFAULT_FAILED_REPAIR_PRIVATE = ROOT / (
 DEFAULT_PATCH_SUCCESSOR_ZERO_OUTPUT = ROOT / (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
     "semantic_patch_successor_zero_call_result_v1_0.json"
+)
+DEFAULT_FAILED_PATCH_PRIVATE = ROOT / (
+    "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/"
+    "dell-current-dynamic-single-unit-r7-semantic-patch-20260823t0504z/"
+    "full_result.json"
+)
+DEFAULT_FAILED_PATCH_PUBLIC = ROOT / (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "semantic_patch_successor_live_result_v1_0.json"
+)
+DEFAULT_PATCH_CAPTURE_REQUALIFICATION_OUTPUT = ROOT / (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "semantic_patch_capture_requalification_zero_call_result_v1_0.json"
 )
 
 
@@ -166,6 +184,48 @@ def _tool_arguments(step: Any, *, expected_name: str) -> dict[str, Any]:
             "semantic_repair_tool_arguments_json_invalid"
         ) from exc
     _require(isinstance(payload, Mapping), "semantic_repair_tool_arguments_invalid")
+    return dict(payload)
+
+
+def _captured_tool_arguments(
+    response_capture_path: Path, *, expected_name: str
+) -> dict[str, Any]:
+    capture = _json(response_capture_path)
+    _require(
+        capture.get("schema_version")
+        == "fin_ia_capture_first_chat_completion_v1_0"
+        and capture.get("capture_type")
+        == "provider_response_private_reasoning_redacted"
+        and capture.get("response_body_complete") is True
+        and capture.get("response_body_parse_status") == "json"
+        and capture.get("eligible_for_contract_parse") is True
+        and capture.get("credential_or_authorization_captured") is False
+        and capture.get("truncated") is False,
+        "semantic_repair_capture_not_requalifiable",
+    )
+    choices = list((capture.get("response_body") or {}).get("choices") or ())
+    _require(
+        len(choices) == 1 and choices[0].get("finish_reason") == "tool_calls",
+        "semantic_repair_capture_expected_single_choice",
+    )
+    calls = list((choices[0].get("message") or {}).get("tool_calls") or ())
+    _require(
+        len(calls) == 1
+        and (calls[0].get("function") or {}).get("name") == expected_name,
+        "semantic_repair_capture_tool_call_invalid",
+    )
+    try:
+        payload = json.loads(
+            str((calls[0].get("function") or {}).get("arguments") or "")
+        )
+    except (TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise SemanticRepairRunnerError(
+            "semantic_repair_capture_arguments_json_invalid"
+        ) from exc
+    _require(
+        isinstance(payload, Mapping),
+        "semantic_repair_capture_arguments_invalid",
+    )
     return dict(payload)
 
 
@@ -471,6 +531,193 @@ def build_patch_successor_zero_call_result(
             "This zero-call proof only repairs the local AgentSession lineage seam "
             "and requalifies the already validated natural R6 repair plan. It does "
             "not produce a natural patch or pass L1/L2; at most one patch call remains."
+        ),
+    }
+    return {**body, "result_digest": canonical_digest(body)}
+
+
+def build_patch_capture_requalification_zero_call_result(
+    *,
+    prior_private: Path = DEFAULT_PRIOR_PRIVATE,
+    assessment_path: Path = DEFAULT_ASSESSMENT,
+    failed_plan_private: Path = DEFAULT_FAILED_REPAIR_PRIVATE,
+    failed_patch_public: Path = DEFAULT_FAILED_PATCH_PUBLIC,
+    failed_patch_private: Path = DEFAULT_FAILED_PATCH_PRIVATE,
+    recorded_at: str | None = None,
+) -> dict[str, Any]:
+    """Revalidate the immutable R7 Tool Call after fixing ref-envelope drift."""
+
+    when = recorded_at or _now()
+    predecessor = _json(prior_private)
+    assessment = _json(assessment_path)
+    failed_plan = _json(failed_plan_private)
+    failed_public = _json(failed_patch_public)
+    failed = _json(failed_patch_private)
+    feedback_created_at = str(
+        failed["semantic_repair_context"]["feedback_receipts"][0]["created_at"]
+    )
+    context = compile_semantic_repair_context(
+        prior_full_result=predecessor,
+        assessment=assessment,
+        assessment_ref=_relative(assessment_path),
+        prior_result_ref=_relative(prior_private),
+        created_at=feedback_created_at,
+    )
+    reused = compile_reused_semantic_repair_plan(
+        failed_full_result=failed_plan,
+        context=context,
+    )
+    _require(
+        failed.get("status") == "terminal_failed_no_retry"
+        and (failed.get("failure") or {}).get("phase")
+        == "semantic_repair_contract"
+        and (failed.get("failure") or {}).get("code")
+        == "dynamic_semantic_repair_patch_new_reference_forbidden"
+        and (failed.get("execution") or {}).get("provider_calls_attempted") == 1
+        and (failed.get("execution") or {}).get("retrieval_rounds_executed") == 0
+        and (failed.get("execution") or {}).get("new_evidence_count") == 0
+        and not failed.get("workpaper")
+        and not failed.get("repair_receipt")
+        and (failed.get("semantic_repair_context") or {}).get("context_digest")
+        == context["context_digest"]
+        and failed.get("repair_plan") == reused["repair_plan"]
+        and failed.get("plan_delta") == reused["plan_delta"]
+        and failed.get("repair_plan_reuse_receipt") == reused["reuse_receipt"]
+        and failed_public.get("status") == "terminal_failed_no_retry"
+        and failed_public.get("failure") == failed.get("failure")
+        and failed_public.get("private_full_result_ref")
+        == _relative(failed_patch_private)
+        and failed_public.get("private_full_result_sha256")
+        == _sha(failed_patch_private),
+        "semantic_patch_capture_requalification_predecessor_invalid",
+    )
+    steps = list(failed.get("provider_steps") or ())
+    _require(
+        len(steps) == 1
+        and steps[0].get("finish_reason") == "tool_calls"
+        and steps[0].get("tool_names") == ["submit_semantic_repair_patch"],
+        "semantic_patch_capture_requalification_provider_step_invalid",
+    )
+    request_path = _resolve(str(steps[0]["request_capture_ref"]))
+    response_path = _resolve(str(steps[0]["response_capture_ref"]))
+    request_capture = _json(request_path)
+    _require(
+        request_capture.get("schema_version")
+        == "fin_ia_capture_first_chat_completion_tool_step_v1_0"
+        and request_capture.get("request_digest") == steps[0]["request_digest"]
+        and request_capture.get("credential_or_authorization_captured") is False,
+        "semantic_patch_capture_requalification_request_invalid",
+    )
+    payload = _captured_tool_arguments(
+        response_path,
+        expected_name="submit_semantic_repair_patch",
+    )
+    response_capture = _json(response_path)
+    _require(
+        response_capture.get("response_digest") == steps[0]["response_digest"],
+        "semantic_patch_capture_requalification_response_drift",
+    )
+    envelope = compile_semantic_repair_reference_envelope(
+        context,
+        reused["plan_delta"],
+    )
+    original_claim_schema = (
+        request_capture["request_body"]["tools"][0]["function"]["parameters"]
+        ["properties"]["sourced_claims"]["items"]["properties"]
+    )
+    original_enums = {
+        field: set(original_claim_schema[field]["items"]["enum"])
+        for field in (
+            "evidence_refs",
+            "numeric_refs",
+            "numeric_relation_refs",
+        )
+    }
+    _require(
+        all(
+            set(envelope["allowed_refs"][field]).issubset(original_enums[field])
+            for field in original_enums
+        ),
+        "semantic_patch_capture_requalification_original_schema_conflict",
+    )
+    merged = validate_and_merge_semantic_repair_patch(
+        payload,
+        context=context,
+        plan_delta=reused["plan_delta"],
+    )
+    receipt = merged["repair_receipt"]
+    additions = receipt["context_bound_reference_additions"]
+    checks = {
+        "R7_failed_result_preserved": True,
+        "R7_provider_call_complete_and_capture_bound": True,
+        "original_tool_schema_authorized_submitted_refs": True,
+        "corrected_tool_and_validator_share_one_reference_envelope": True,
+        "only_plan_required_context_refs_added": (
+            additions
+            == envelope["permitted_context_bound_additions"]
+        ),
+        "no_new_evidence_or_authority": (
+            receipt["new_evidence_or_authority_reference_count"] == 0
+        ),
+        "semantic_patch_contract_valid": True,
+        "independent_L1_L2_still_required": True,
+    }
+    _require(
+        all(checks.values()),
+        "semantic_patch_capture_requalification_zero_call_failed",
+    )
+    body = {
+        "schema_version": PATCH_CAPTURE_REQUALIFICATION_RESULT_SCHEMA,
+        "status": (
+            "R7_capture_requalified_under_compiled_reference_envelope_"
+            "assessment_pending"
+        ),
+        "recorded_at": when,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "source_failed_public_result_ref": _relative(failed_patch_public),
+        "source_failed_public_result_sha256": _sha(failed_patch_public),
+        "source_failed_public_result_digest": failed_public["result_digest"],
+        "source_failed_private_result_ref": _relative(failed_patch_private),
+        "source_failed_private_result_sha256": _sha(failed_patch_private),
+        "source_failed_private_result_digest": failed["full_result_digest"],
+        "source_request_capture_ref": _relative(request_path),
+        "source_request_capture_sha256": _sha(request_path),
+        "source_response_capture_ref": _relative(response_path),
+        "source_response_capture_sha256": _sha(response_path),
+        "semantic_repair_context_digest": context["context_digest"],
+        "repair_plan_reuse_receipt": reused["reuse_receipt"],
+        "repair_plan": reused["repair_plan"],
+        "plan_delta": reused["plan_delta"],
+        "reference_envelope": envelope,
+        "repair_receipt": receipt,
+        "workpaper": merged["workpaper"],
+        "checks": checks,
+        "execution": {
+            "historical_plan_provider_calls_reused": 1,
+            "historical_patch_provider_calls_reused": 1,
+            "new_provider_calls": 0,
+            "retrieval_rounds": 0,
+            "s1_s2_requests": 0,
+            "new_evidence": 0,
+            "candidate_promotions": 0,
+        },
+        "acceptance": {
+            "semantic_patch_contract_pass": True,
+            "all_five_feedback_consumed": True,
+            "L1_L2_reassessment_pending": True,
+            "multi_agent_execution": False,
+            "S3_pass": False,
+            "product_acceptance": False,
+            "release_ready": False,
+        },
+        "known_boundary": (
+            "R7 remains an immutable terminal failure under its original "
+            "inconsistent Validator. This zero-call result only requalifies the "
+            "captured Tool Call under one compiled reference envelope: prior refs "
+            "plus three already reviewed S2 refs required to separate operating "
+            "income from gross profit. It adds no Evidence or model call and still "
+            "requires independent L1/L2 and content-quality assessment."
         ),
     }
     return {**body, "result_digest": canonical_digest(body)}
@@ -1581,6 +1828,7 @@ def main() -> int:
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--zero-call-output", type=Path)
     group.add_argument("--patch-successor-zero-call-output", type=Path)
+    group.add_argument("--patch-capture-requalification-output", type=Path)
     group.add_argument("--authority", type=Path)
     args = parser.parse_args()
     if args.zero_call_output is not None:
@@ -1590,6 +1838,10 @@ def main() -> int:
     elif args.patch_successor_zero_call_output is not None:
         output = args.patch_successor_zero_call_output.resolve()
         result = build_patch_successor_zero_call_result()
+        _write_new(output, result)
+    elif args.patch_capture_requalification_output is not None:
+        output = args.patch_capture_requalification_output.resolve()
+        result = build_patch_capture_requalification_zero_call_result()
         _write_new(output, result)
     else:
         authority = _json(args.authority.resolve())

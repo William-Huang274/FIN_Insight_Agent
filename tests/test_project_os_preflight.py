@@ -1416,7 +1416,7 @@ def test_current_dynamic_workpaper_replacement_preserves_zero_call_R4() -> None:
     )
 
 
-def test_current_dynamic_semantic_repair_binds_R5_feedback_and_two_nodes() -> None:
+def test_historical_current_dynamic_semantic_repair_binds_contract_but_cannot_rerun() -> None:
     decision = json.loads(
         (ROOT / CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_REF).read_text(
             encoding="utf-8"
@@ -1438,18 +1438,19 @@ def test_current_dynamic_semantic_repair_binds_R5_feedback_and_two_nodes() -> No
         "maximum_completion_tokens"
     ] == 8000
 
-    result = build_preflight(
-        root=ROOT,
-        decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_REF,
-        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
-        check_repository=False,
-    )
-    assert result["scope_projection"]["blocking_issue_ids"] == []
-    assert result["scope_projection"]["explicit_allow_issue_ids"] == [
-        "RC-S3-062-current-dynamic-workpaper-free-narrative-promoted_bounded_authority",
-        "RC-S3-063-semantic-repair-plan-applied-to-predecessor-session",
-    ]
-    assert "all five semantic FeedbackReceipts" in result["known_boundary"]
+    # The immutable historical decision still proves the intended R5 feedback
+    # and two-node budget.  Its paid scope has since been consumed by R6/R7,
+    # so Project OS must fail closed instead of silently authorizing a rerun.
+    with pytest.raises(
+        ValueError,
+        match="project_os_current_dynamic_semantic_repair_scope_allowance_missing",
+    ):
+        build_preflight(
+            root=ROOT,
+            decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_REF,
+            environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+            check_repository=False,
+        )
 
 
 def test_current_dynamic_semantic_repair_rejects_budget_drift() -> None:

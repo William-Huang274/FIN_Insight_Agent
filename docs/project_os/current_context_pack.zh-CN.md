@@ -1389,3 +1389,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 修复后 research session 保持不可变，新 repair session 继承 Case／version／as-of／objective；R6 已验证 Plan 按 capture、event 和 digest 复用，不重复调用模型。新 zero-call seam proof 已通过 session created／plan bound／feedback／PlanDelta accepted／controlled patch。
 - 原两节点预算只剩一次 non-thinking patch call。L1／L2 复核前，多 Agent、S3 acceptance、publication 和 release 仍为 false。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/129_R6_plan_success_session_mismatch_and_patch_successor_gate.md`。
+
+### 2026-08-23 DELL semantic patch R7 reference-envelope 漂移与零调用重放
+
+- R7 唯一 patch 调用完整返回，`finish_reason=tool_calls`，prompt `19,107`、completion `2,767`，0 retry／检索／S1/S2／外网／新 Evidence；五项 feedback 和 R6 PlanDelta 均被消费。
+- 旧 Validator 因三条“旧稿未结构化引用”的 ID 拒绝输出。审计确认三条均来自 immutable current S2：FY26 Q1／FY27 Q1 operating income NumericFact 与同季度同比 Relation；Tool Schema 原本允许，且 accepted plan 明确要求分开毛利与经营利润。
+- 新 reference envelope 只允许旧稿全部结构化／内联引用，加上 accepted action 确定性要求的三条已审上下文引用。Tool Schema、模型可见 catalog、Validator 和 receipt 现共享一个 digest；无关 current-context 引用 mutation 仍 fail closed。
+- R7 terminal failure 保持不可变；其 capture-bound Tool Call 已在 0 新模型／0 新检索下重放并通过结构合同，形成待独立 L1／L2 审查的 workpaper。多 Agent、S3 acceptance、publication 和 release 仍为 false。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/130_R7_reference_envelope_drift_and_capture_requalification.md`。

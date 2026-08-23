@@ -19,6 +19,7 @@ from scripts.research.run_s3_feedback_driven_workpaper_repair import (
     SemanticRepairRunnerError,
     _append_unterminated_provider_failures,
     _public_step,
+    build_patch_capture_requalification_zero_call_result,
     build_patch_successor_zero_call_result,
     run_patch_successor,
     validate_patch_successor_authority,
@@ -29,6 +30,7 @@ from sec_agent.research.dynamic_single_unit_repair import (
     compile_reused_semantic_repair_plan,
     compile_semantic_plan_delta,
     compile_semantic_repair_context,
+    compile_semantic_repair_reference_envelope,
     create_semantic_repair_session,
     semantic_repair_patch_tool,
     semantic_repair_plan_tool,
@@ -50,6 +52,11 @@ ASSESSMENT = ROOT / (
 FAILED_R6_RESULT = ROOT / (
     "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/"
     "dell-current-dynamic-single-unit-r6-semantic-repair-20260823t0433z/"
+    "full_result.json"
+)
+FAILED_R7_RESULT = ROOT / (
+    "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/"
+    "dell-current-dynamic-single-unit-r7-semantic-patch-20260823t0504z/"
     "full_result.json"
 )
 
@@ -194,7 +201,35 @@ def test_semantic_repair_context_plan_and_merge_preserve_authority() -> None:
     for field in LOCKED_WORKPAPER_FIELDS:
         assert repaired[field] == context["prior_workpaper"][field]
     assert result["repair_receipt"]["new_reference_count"] == 0
+    assert result["repair_receipt"][
+        "new_evidence_or_authority_reference_count"
+    ] == 0
+    assert result["repair_receipt"][
+        "context_bound_reference_addition_count"
+    ] == 0
     assert result["repair_receipt"]["retrieval_round_count"] == 0
+
+
+def test_semantic_repair_reference_envelope_is_plan_scoped_and_schema_aligned() -> None:
+    context = _context()
+    plan = validate_semantic_repair_plan(_plan_payload(context), context=context)
+    delta = compile_semantic_plan_delta(plan, context=context)
+    envelope = compile_semantic_repair_reference_envelope(context, delta)
+    assert envelope["permitted_context_bound_additions"] == {
+        "evidence_refs": [],
+        "numeric_refs": [
+            "NUM::BA153FB9939D66DF",
+            "NUM::D0EA6489B2C138EE",
+        ],
+        "numeric_relation_refs": ["REL::E3A67501DFA73ACF"],
+    }
+    claim_schema = semantic_repair_patch_tool(context, delta)["function"][
+        "parameters"
+    ]["properties"]["sourced_claims"]["items"]["properties"]
+    for field in ("evidence_refs", "numeric_refs", "numeric_relation_refs"):
+        assert set(claim_schema[field]["items"]["enum"]) == set(
+            envelope["allowed_refs"][field]
+        )
 
 
 def test_semantic_repair_rejects_missing_feedback_wrong_action_and_new_ref() -> None:
@@ -393,6 +428,84 @@ def test_semantic_patch_successor_zero_call_proves_remaining_seam() -> None:
         "new_evidence": 0,
         "candidate_promotions": 0,
     }
+
+
+def test_R7_capture_requalification_uses_no_new_call_or_evidence() -> None:
+    result = build_patch_capture_requalification_zero_call_result(
+        recorded_at="2026-08-23T05:20:00+00:00"
+    )
+    assert result["status"] == (
+        "R7_capture_requalified_under_compiled_reference_envelope_"
+        "assessment_pending"
+    )
+    assert all(result["checks"].values())
+    assert result["execution"] == {
+        "historical_plan_provider_calls_reused": 1,
+        "historical_patch_provider_calls_reused": 1,
+        "new_provider_calls": 0,
+        "retrieval_rounds": 0,
+        "s1_s2_requests": 0,
+        "new_evidence": 0,
+        "candidate_promotions": 0,
+    }
+    assert result["repair_receipt"][
+        "context_bound_reference_additions"
+    ] == {
+        "evidence_refs": [],
+        "numeric_refs": [
+            "NUM::BA153FB9939D66DF",
+            "NUM::D0EA6489B2C138EE",
+        ],
+        "numeric_relation_refs": ["REL::E3A67501DFA73ACF"],
+    }
+    assert result["acceptance"]["L1_L2_reassessment_pending"] is True
+
+
+def test_semantic_repair_envelope_still_rejects_unrelated_context_ref() -> None:
+    context = _context()
+    reused = compile_reused_semantic_repair_plan(
+        failed_full_result=_json(FAILED_R6_RESULT),
+        context=context,
+    )
+    result = build_patch_capture_requalification_zero_call_result(
+        recorded_at="2026-08-23T05:20:00+00:00"
+    )
+    patch = {
+        key: deepcopy(result["workpaper"][key])
+        for key in ("thesis", "sourced_claims", "mechanism")
+    }
+    payload = {
+        "schema_version": "fin_ia_dynamic_single_unit_semantic_repair_patch_v1_0",
+        "agent_id": "AGENT::VALUE_CAPTURE",
+        "plan_delta_digest": reused["plan_delta"]["plan_delta_digest"],
+        "resolved_feedback_ids": [
+            row["feedback_id"] for row in context["feedback_receipts"]
+        ],
+        "semantic_commitments": [
+            row["semantic_commitment"] for row in context["resolution_policy"]
+        ],
+        **patch,
+    }
+    envelope = compile_semantic_repair_reference_envelope(
+        context, reused["plan_delta"]
+    )
+    unrelated = sorted(
+        set(
+            context["full_workpaper_context"]["cell_analysis_view"]["cell"]
+            ["allowed_numeric_refs"]
+        )
+        - set(envelope["allowed_refs"]["numeric_refs"])
+    )[0]
+    payload["sourced_claims"][0]["numeric_refs"].append(unrelated)
+    with pytest.raises(
+        DynamicSingleUnitRepairError,
+        match="dynamic_semantic_repair_patch_new_reference_forbidden",
+    ):
+        validate_and_merge_semantic_repair_patch(
+            payload,
+            context=context,
+            plan_delta=reused["plan_delta"],
+        )
 
 
 def test_semantic_patch_successor_authority_rejects_budget_drift_first(

@@ -416,3 +416,20 @@ R6 的自然 planning 节点完整消费五份 FeedbackReceipt 并提交了合�
 6. 零调用 proof 必须覆盖真实跨组件接缝，不能再以“各 Validator 单独通过”冒充 Runtime 组合通过。
 
 R6 失败保持不可变；新的零调用 seam proof 已复用 R6 的自然计划并成功建立／推进 repair session。它仍不证明自然 patch 或 L1／L2 通过。
+
+## 26. 修复引用必须由同一 Envelope 编译 Tool Schema 与 Validator（2026-08-23）
+
+R7 的 non-thinking patch 调用完整返回并消费五项反馈，但旧 Validator 以 `dynamic_semantic_repair_patch_new_reference_forbidden` 拒绝。逐项审计发现，新增的并不是外部资料或未经审查的 Evidence，而是当前 S2 权威目录内的两条 DELL operating income NumericFact 及其同季度同比 Relation。它们正是 accepted PlanDelta 要求“把毛利与经营利润分开陈述”所需的来源绑定。
+
+旧合同存在内部冲突：Tool Schema 从整个 cell current authority 编译，因此允许这些 ID；后置 Validator 却只接受旧稿 `sourced_claims` 曾经使用过的 ID。模型遵循可见 Schema 后仍必然失败，属于合同编译漂移，不属于模型、检索或付费信息缺口。
+
+统一规则现为：
+
+1. repair reference envelope 从旧稿全部结构化引用及 thesis／mechanism 内联引用开始；
+2. 只有 accepted repair action 确定性要求的、且已在 immutable current context 中 reviewed 的引用可以加入；本轮仅为 operating income 的 2 个 NumericFact＋1 个 Relation；
+3. Tool Schema、模型可见 catalog、Validator 和 repair receipt 必须共享同一 envelope digest；
+4. 任何不在 envelope 内的 current-context 引用仍拒绝，不能因为“模型看过”就扩大研究范围；
+5. context-bound reference addition 不等于新 Evidence。receipt 必须分别记录新增权威为 0、已审上下文引用增量及其用途；
+6. R7 原失败保持不可变。已保存的完整 Tool Call 可在 0 新模型／0 新检索下重放资格判断，但重放结果仍须独立 L1／L2 与内容质量审查。
+
+这把“是否获得了新资料”和“是否在修复稿中首次结构化引用已有资料”分开，也防止用更宽的 Tool Schema 诱导模型后再由更窄 Validator 拒绝。

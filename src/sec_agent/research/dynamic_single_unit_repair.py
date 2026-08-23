@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import json
+import re
 from typing import Any, Mapping
 
 from sec_agent.canonical_runtime import (
@@ -66,6 +67,10 @@ _RESOLUTION_POLICY: dict[str, dict[str, Any]] = {
     },
 }
 
+_INLINE_AUTHORITY_REF_RE = re.compile(
+    r"(?:(?:EV|NUM|REL|ESTIMATE|SCENARIO)::[A-Z0-9-]+)"
+)
+
 
 class DynamicSingleUnitRepairError(ValueError):
     """Fail-closed semantic repair contract error."""
@@ -82,6 +87,150 @@ def _all_prior_refs(workpaper: Mapping[str, Any], field: str) -> set[str]:
         for row in workpaper.get("sourced_claims") or ()
         for ref in row.get(field) or ()
     }
+
+
+def compile_semantic_repair_reference_envelope(
+    context: Mapping[str, Any], plan_delta: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Compile the exact reviewed refs a bounded semantic repair may submit.
+
+    A ref already present in the immutable analysis context is not new Evidence,
+    but an unrestricted context-wide enum would let a repair broaden the study.
+    The envelope therefore starts with refs already used by the prior workpaper
+    and adds only refs deterministically required by an accepted repair action.
+    """
+
+    prior = context["prior_workpaper"]
+    view = context["full_workpaper_context"]["cell_analysis_view"]
+    allowed_by_context = {
+        "evidence_refs": {
+            str(row["evidence_ref"])
+            for row in view["cell"]["cell_evidence_views"]
+        },
+        "numeric_refs": {
+            str(ref) for ref in view["cell"]["allowed_numeric_refs"]
+        },
+        "numeric_relation_refs": {
+            str(ref)
+            for ref in view["cell"]["allowed_numeric_relation_refs"]
+        },
+    }
+    prior_refs = {
+        field: _all_prior_refs(prior, field)
+        for field in (
+            "evidence_refs",
+            "numeric_refs",
+            "numeric_relation_refs",
+        )
+    }
+    prior_inline_refs = {
+        ref
+        for field in REPAIRABLE_SURFACES
+        if field != "sourced_claims"
+        for ref in _INLINE_AUTHORITY_REF_RE.findall(str(prior[field]))
+    }
+    prior_refs["evidence_refs"].update(
+        ref for ref in prior_inline_refs if ref.startswith("EV::")
+    )
+    prior_refs["numeric_relation_refs"].update(
+        ref for ref in prior_inline_refs if ref.startswith("REL::")
+    )
+    prior_refs["numeric_refs"].update(
+        ref
+        for ref in prior_inline_refs
+        if ref.startswith(("NUM::", "ESTIMATE::", "SCENARIO::"))
+    )
+    additions = {field: set() for field in prior_refs}
+    commitments = {
+        str(row.get("semantic_commitment") or "")
+        for row in plan_delta.get("modify_actions") or ()
+    }
+    if "gross_profit_and_operating_income_separated" in commitments:
+        for relation in view.get("numeric_relation_catalog") or ():
+            if (
+                relation.get("metric_id") == "operating_income"
+                and relation.get("relation_type")
+                == "same_fiscal_quarter_year_over_year"
+            ):
+                additions["numeric_relation_refs"].add(
+                    str(relation["numeric_relation_ref"])
+                )
+                additions["numeric_refs"].update(
+                    {
+                        str(relation["current_numeric_ref"]),
+                        str(relation["comparison_numeric_ref"]),
+                    }
+                )
+    for field in prior_refs:
+        _require(
+            prior_refs[field].issubset(allowed_by_context[field])
+            and additions[field].issubset(allowed_by_context[field]),
+            "dynamic_semantic_repair_reference_envelope_context_drift",
+        )
+    body = {
+        "schema_version": "fin_ia_semantic_repair_reference_envelope_v1_0",
+        "prior_refs": {
+            field: sorted(values) for field, values in prior_refs.items()
+        },
+        "permitted_context_bound_additions": {
+            field: sorted(values) for field, values in additions.items()
+        },
+        "allowed_refs": {
+            field: sorted(prior_refs[field] | additions[field])
+            for field in prior_refs
+        },
+        "new_evidence_or_authority_refs_allowed": False,
+    }
+    return {**body, "reference_envelope_digest": canonical_digest(body)}
+
+
+def _reference_envelope_context(
+    context: Mapping[str, Any], envelope: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Project Tool Schema and model-visible catalogs from one ref envelope."""
+
+    projected = deepcopy(dict(context["full_workpaper_context"]))
+    view = projected["cell_analysis_view"]
+    allowed = {
+        field: set(str(ref) for ref in envelope["allowed_refs"][field])
+        for field in (
+            "evidence_refs",
+            "numeric_refs",
+            "numeric_relation_refs",
+        )
+    }
+    view["cell"]["cell_evidence_views"] = [
+        row
+        for row in view["cell"]["cell_evidence_views"]
+        if str(row["evidence_ref"]) in allowed["evidence_refs"]
+    ]
+    view["cell"]["allowed_numeric_refs"] = sorted(allowed["numeric_refs"])
+    view["cell"]["allowed_numeric_relation_refs"] = sorted(
+        allowed["numeric_relation_refs"]
+    )
+    view["evidence_fact_catalog"] = [
+        row
+        for row in view.get("evidence_fact_catalog") or ()
+        if str(row.get("evidence_ref") or "") in allowed["evidence_refs"]
+    ]
+    view["numeric_fact_catalog"] = [
+        row
+        for row in view.get("numeric_fact_catalog") or ()
+        if str(
+            row.get("numeric_ref")
+            or row.get("estimate_id")
+            or row.get("scenario_id")
+            or ""
+        )
+        in allowed["numeric_refs"]
+    ]
+    view["numeric_relation_catalog"] = [
+        row
+        for row in view.get("numeric_relation_catalog") or ()
+        if str(row.get("numeric_relation_ref") or "")
+        in allowed["numeric_relation_refs"]
+    ]
+    return projected
 
 
 def compile_semantic_repair_context(
@@ -529,9 +678,12 @@ def compile_reused_semantic_repair_plan(
 def semantic_repair_patch_tool(
     context: Mapping[str, Any], plan_delta: Mapping[str, Any]
 ) -> dict[str, Any]:
+    reference_envelope = compile_semantic_repair_reference_envelope(
+        context, plan_delta
+    )
     base = specialist_workpaper_tool(
         agent_id="AGENT::VALUE_CAPTURE",
-        context=context["full_workpaper_context"],
+        context=_reference_envelope_context(context, reference_envelope),
     )["function"]["parameters"]["properties"]
     feedback_ids = [str(row["feedback_id"]) for row in context["feedback_receipts"]]
     commitments = [str(row["semantic_commitment"]) for row in context["resolution_policy"]]
@@ -568,7 +720,10 @@ def semantic_repair_patch_tool(
 def compile_semantic_repair_patch_messages(
     context: Mapping[str, Any], plan: Mapping[str, Any], plan_delta: Mapping[str, Any]
 ) -> tuple[dict[str, str], ...]:
-    full = context["full_workpaper_context"]
+    reference_envelope = compile_semantic_repair_reference_envelope(
+        context, plan_delta
+    )
+    full = _reference_envelope_context(context, reference_envelope)
     analysis = full["cell_analysis_view"]
     compact_authority = {
         "case_identity": context["case_identity"],
@@ -583,6 +738,7 @@ def compile_semantic_repair_patch_messages(
         "feedback_receipts": deepcopy(context["feedback_receipts"]),
         "accepted_repair_plan": deepcopy(plan),
         "plan_delta": deepcopy(plan_delta),
+        "repair_reference_envelope": reference_envelope,
         "locked_surfaces_receipt": {
             "fields": list(LOCKED_WORKPAPER_FIELDS),
             "digest": context["locked_surfaces_digest"],
@@ -639,13 +795,34 @@ def validate_and_merge_semantic_repair_patch(
         context=context["full_workpaper_context"],
         expected_agent_id="AGENT::VALUE_CAPTURE",
     )
+    reference_envelope = compile_semantic_repair_reference_envelope(
+        context, plan_delta
+    )
+    additions: dict[str, list[str]] = {}
     for ref_field in ("evidence_refs", "numeric_refs", "numeric_relation_refs"):
         prior_refs = _all_prior_refs(prior, ref_field)
         repaired_refs = _all_prior_refs(validated, ref_field)
         _require(
-            repaired_refs.issubset(prior_refs),
+            repaired_refs.issubset(
+                set(reference_envelope["allowed_refs"][ref_field])
+            ),
             "dynamic_semantic_repair_patch_new_reference_forbidden",
         )
+        additions[ref_field] = sorted(repaired_refs - prior_refs)
+    inline_allowed = (
+        set(reference_envelope["allowed_refs"]["evidence_refs"])
+        | set(reference_envelope["allowed_refs"]["numeric_refs"])
+        | set(reference_envelope["allowed_refs"]["numeric_relation_refs"])
+    )
+    inline_submitted = {
+        ref
+        for field in ("thesis", "mechanism")
+        for ref in _INLINE_AUTHORITY_REF_RE.findall(str(validated[field]))
+    }
+    _require(
+        inline_submitted.issubset(inline_allowed),
+        "dynamic_semantic_repair_patch_new_reference_forbidden",
+    )
     locked_after = {field: deepcopy(validated[field]) for field in LOCKED_WORKPAPER_FIELDS}
     _require(
         canonical_digest(locked_after) == context["locked_surfaces_digest"],
@@ -661,6 +838,14 @@ def validate_and_merge_semantic_repair_patch(
         "modified_surfaces": list(REPAIRABLE_SURFACES),
         "locked_surfaces_digest": context["locked_surfaces_digest"],
         "new_reference_count": 0,
+        "new_evidence_or_authority_reference_count": 0,
+        "context_bound_reference_additions": additions,
+        "context_bound_reference_addition_count": sum(
+            len(values) for values in additions.values()
+        ),
+        "reference_envelope_digest": reference_envelope[
+            "reference_envelope_digest"
+        ],
         "retrieval_round_count": 0,
         "candidate_promotion_count": 0,
         "independent_L1_L2_reassessment_required": True,
@@ -683,6 +868,7 @@ __all__ = [
     "SEMANTIC_REPAIR_PLAN_SCHEMA_VERSION",
     "compile_semantic_plan_delta",
     "compile_reused_semantic_repair_plan",
+    "compile_semantic_repair_reference_envelope",
     "compile_semantic_repair_context",
     "compile_semantic_repair_patch_messages",
     "compile_semantic_repair_plan_messages",

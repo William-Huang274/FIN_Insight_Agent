@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -29,6 +30,19 @@ from sec_agent.research.multi_agent_preview_runtime import (
 )
 from sec_agent.runtime_resource_registry import read_registered_runtime_json
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
+from scripts.research.run_s3_current_dynamic_multi_agent import (
+    LIVE_AUTHORITY_SCHEMA,
+    LIVE_AUTHORITY_STATUS,
+    _call_live_tool,
+    _provider_attempt_count,
+    _tool_arguments,
+    expected_live_execution_budget,
+    validate_live_authority,
+)
+from sec_agent.providers.chat_completions import (
+    ChatCompletionToolStepResult,
+    ModelGatewayError,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -285,3 +299,161 @@ def test_workpaper_digest_normalization_accepts_only_reproducible_legacy_bug() -
             expected_agent_id=agent_id,
             allow_legacy_double_hash=True,
         )
+
+
+def _provider_step(*, name: str, arguments: dict) -> ChatCompletionToolStepResult:
+    return ChatCompletionToolStepResult(
+        status="completed_exact_once_tool_step",
+        provider_id="fixture",
+        model="fixture-model",
+        content="",
+        reasoning_content="private reasoning must not be persisted",
+        tool_calls=(
+            {
+                "id": "call-fixture",
+                "type": "function",
+                "function": {
+                    "name": name,
+                    "arguments": json.dumps(arguments, ensure_ascii=False),
+                },
+            },
+        ),
+        finish_reason="tool_calls",
+        usage={"prompt_tokens": 20, "completion_tokens": 10},
+        request_capture_ref=str(ROOT / "data/captures/request.json"),
+        response_capture_ref=str(ROOT / "data/captures/response.json"),
+        request_digest="a" * 64,
+        response_digest="b" * 64,
+        private_reasoning_fields_redacted=1,
+    )
+
+
+def test_live_budget_is_derived_from_six_bounded_role_loops() -> None:
+    assert expected_live_execution_budget() == {
+        "maximum_model_calls": 29,
+        "maximum_transport_attempts": 29,
+        "maximum_specialist_sessions": 6,
+        "maximum_retrieval_rounds": 12,
+        "maximum_s1_s2_requests": 13,
+        "maximum_lead_coordination_rounds": 2,
+        "maximum_role_repairs": 3,
+        "maximum_external_source_network_calls": 0,
+        "retries_per_model_node": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+
+
+def test_live_authority_rejects_budget_drift_before_execution(tmp_path: Path) -> None:
+    authority = {
+        "schema_version": LIVE_AUTHORITY_SCHEMA,
+        "status": LIVE_AUTHORITY_STATUS,
+        "signed_at": "2026-08-23T00:00:00Z",
+        "implementation_commit": "0" * 40,
+        "case_key": "DELL",
+        "execution_budget": {"maximum_model_calls": 30},
+        "bound_inputs": {},
+        "output_contract": {},
+        "known_boundary": "x" * 160,
+    }
+    path = tmp_path / "authority.json"
+    path.write_text(json.dumps(authority), encoding="utf-8")
+    with pytest.raises(
+        DynamicMultiAgentLoopError,
+        match="dynamic_multi_agent_live_authority_identity_or_budget_invalid",
+    ):
+        validate_live_authority(authority, authority_path=path.resolve())
+
+
+def test_live_provider_seam_records_exact_once_attempt_and_parses_tool(
+    tmp_path: Path,
+) -> None:
+    calls: list[dict] = []
+
+    def executor(**kwargs: object) -> ChatCompletionToolStepResult:
+        calls.append(dict(kwargs))
+        return _provider_step(name="submit_fixture", arguments={"ok": True})
+
+    from sec_agent.canonical_runtime.session import create_agent_session
+
+    session = create_agent_session(
+        session_id="SESSION::MULTI-LIVE-SEAM",
+        run_id="RUN::MULTI-LIVE-SEAM",
+        case_id="case_dell_current",
+        case_version="FIN_0_1_3",
+        as_of_date="2026-08-06",
+        objective_ref="objective://test",
+        active_plan_ref="PLAN::TEST",
+        created_at="2026-08-23T00:00:00Z",
+    )
+    events: list[dict] = []
+    step, payload, call_id = _call_live_tool(
+        events=events,
+        session_id=session["session_id"],
+        actor_id="AGENT::TEST",
+        profile=SimpleNamespace(provider_id="fixture"),
+        messages=({"role": "user", "content": "test"},),
+        tool={
+            "type": "function",
+            "function": {
+                "name": "submit_fixture",
+                "parameters": {"type": "object"},
+            },
+        },
+        expected_name="submit_fixture",
+        capture_root=tmp_path,
+        run_id=session["run_id"],
+        attempt_id="ATTEMPT::MULTI-LIVE-SEAM",
+        occurred_at="2026-08-23T00:00:01Z",
+        executor=executor,
+    )
+    assert payload == {"ok": True}
+    assert call_id == "call-fixture"
+    assert step.model == "fixture-model"
+    assert len(calls) == 1 and calls[0]["tool_choice"] is None
+    assert [row["event_type"] for row in events] == [
+        "provider_attempt_requested",
+        "provider_attempt_completed",
+    ]
+    parsed, _ = _tool_arguments(step, expected_name="submit_fixture")
+    assert parsed == {"ok": True}
+    assert _provider_attempt_count(events) == 1
+
+
+def test_live_provider_seam_counts_failed_attempt_from_requested_event(
+    tmp_path: Path,
+) -> None:
+    def executor(**_: object) -> ChatCompletionToolStepResult:
+        raise ModelGatewayError(
+            "fixture_transport_failed",
+            capture_ref=str(tmp_path / "failed-response.json"),
+        )
+
+    events: list[dict] = []
+    with pytest.raises(ModelGatewayError, match="fixture_transport_failed"):
+        _call_live_tool(
+            events=events,
+            session_id="SESSION::MULTI-LIVE-FAILURE-SEAM",
+            actor_id="AGENT::TEST",
+            profile=SimpleNamespace(provider_id="fixture"),
+            messages=({"role": "user", "content": "test"},),
+            tool={
+                "type": "function",
+                "function": {
+                    "name": "submit_fixture",
+                    "parameters": {"type": "object"},
+                },
+            },
+            expected_name="submit_fixture",
+            capture_root=tmp_path,
+            run_id="RUN::MULTI-LIVE-FAILURE-SEAM",
+            attempt_id="ATTEMPT::MULTI-LIVE-FAILURE-SEAM",
+            occurred_at="2026-08-23T00:00:02Z",
+            executor=executor,
+        )
+    assert [row["event_type"] for row in events] == [
+        "provider_attempt_requested",
+        "provider_attempt_failed",
+    ]
+    assert _provider_attempt_count(events) == 1

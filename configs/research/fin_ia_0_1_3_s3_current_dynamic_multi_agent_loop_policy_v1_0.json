@@ -13,7 +13,8 @@
     "current_evidence_pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_5.json",
     "lead_plan_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R6_lead_plan_checkpoint_v1_0.json",
     "planner_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R3_specialist_plan_checkpoint_v1_0.json",
-    "provider_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+    "provider_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_chat_control_transport_profile_v1_1.json",
+    "submission_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_workpaper_submission_non_thinking_profile_v1_0.json",
     "role_topology_ref": "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json",
     "task_quantitative_result_ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_task_quantitative_program_result_v1_0.json",
     "truth_spine_policy_ref": "configs/research/fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_1.json"

@@ -1426,3 +1426,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 工程门为全仓 `1113 passed`、compileall、Workbench typecheck/build、active baseline `210／8／5／28／0`、908 份 config JSON、8 份 Project OS JSONL／986 行、7,739-file secret scan／0 和 diff check 通过。
 - 当前仍是 zero-model 编排证明，不是自然 multi-agent 或 S3 pass。下一项只能在 clean commit／push 和 fresh preflight 后，用同一个 canonical runner 签发 DELL 动态多 Agent live；随后独立验收 L1 与内容质量，再决定 Writer、MU／NVDA 和异质留出。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/133_current_dynamic_multi_agent_sessions_lead_and_repair_zero_call.md`。
+
+### 2026-08-23 current 动态多 Agent live 接入门
+
+- 同一 canonical multi-agent runner 已增加 authority-bound live mode；六个 Specialist 独立执行 request→current S1/S2→FeedbackReceipt→reflection/PlanDelta→workpaper，Lead 最多两轮并只可把挑战回派给原责任角色。
+- thinking=max 只用于请求选择、反思和 Lead；严格 workpaper／repair 改用已验证的 non-thinking submission profile。核心合同保持 provider-neutral，未为 DeepSeek 增加金融 Runtime 分支。
+- 新上界为 29 Provider attempt，来源是 `6×4 specialist + 2 Lead + 3 repairs`；13 个 S1/S2 request、12 个 retrieval round、0 retry、0 外源网络、0 Candidate promotion。每类节点均有任务级 TokenBudgetBasis，不以省钱或提速删研究任务。
+- provider profile 变更后 R3 zero-call 重新跑通 6 sessions／13 requests／12 CUDA batches。新 canonical workpaper 使旧 successor 的“必须 legacy”断言误报；`RC-S3-068` 已用 canonical-or-reproducible migration 门关闭，R4 repair successor 通过且 legacy normalization=0。
+- 当前仍是 natural live pending：S3、Writer、Workbench、MU/NVDA/留出、人工验收和 release 均为 false。下一门只允许 clean commit/push 后 Project OS preflight 与一次正式 DELL dynamic multi-agent live。

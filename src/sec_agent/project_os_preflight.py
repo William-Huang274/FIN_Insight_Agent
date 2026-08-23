@@ -173,6 +173,15 @@ CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_STATUS = (
 CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_SCOPE = (
     "one_DELL_value_capture_workpaper_only_repair_successor_after_clean_authority"
 )
+CURRENT_DYNAMIC_MULTI_AGENT_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_live_scope_decision_v1_0"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_DECISION_STATUS = (
+    "current_dynamic_multi_agent_zero_call_pass_one_natural_live_authorized"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_SCOPE = (
+    "one_DELL_current_dynamic_six_specialist_multi_agent_exact_once"
+)
 DYNAMIC_FIVE_CELL_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
 )
@@ -528,6 +537,11 @@ def _validate_fixed_pack_decision(
         == CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_SCHEMA
     ):
         return _validate_current_dynamic_single_unit_semantic_repair_decision(
+            root=root,
+            decision=decision,
+        )
+    if decision.get("schema_version") == CURRENT_DYNAMIC_MULTI_AGENT_DECISION_SCHEMA:
+        return _validate_current_dynamic_multi_agent_decision(
             root=root,
             decision=decision,
         )
@@ -6600,6 +6614,217 @@ def _validate_dynamic_single_cell_decision(
     }
 
 
+def _validate_current_dynamic_multi_agent_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    expected_equal = {
+        "schema_version": CURRENT_DYNAMIC_MULTI_AGENT_DECISION_SCHEMA,
+        "status": CURRENT_DYNAMIC_MULTI_AGENT_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "MULTI_AGENT::DELL",
+        "run_scope_id": CURRENT_DYNAMIC_MULTI_AGENT_SCOPE,
+        "evidence_mode": "current_reviewed_pack_dynamic_S1_S2_multi_agent_loop",
+        "next_authorized_scope": CURRENT_DYNAMIC_MULTI_AGENT_SCOPE,
+        "replacement_is_new_attempt_not_retry": True,
+        "current_dynamic_multi_agent_live_authorized": True,
+        "credential_presence_required": True,
+        "initial_evidence_prefeed_forbidden": True,
+        "model_request_selection_required": True,
+        "current_S1_S2_execution_required": True,
+        "feedback_reflection_plan_delta_required": True,
+        "six_independent_specialist_sessions_required": True,
+        "natural_lead_coordination_required": True,
+        "role_local_repair_only": True,
+        "candidate_promotion_forbidden": True,
+        "public_gap_self_authorization_forbidden": True,
+        "same_current_product_pointer_required": True,
+        "immutable_zero_call_predecessor_required": True,
+        "provider_neutral_transport_required": True,
+        "thinking_tool_choice_omission_required": True,
+        "external_source_network_authorized": False,
+        "multi_agent_authorized": True,
+        "product_publication_authorized": False,
+        "S1_acceptance_authorized": False,
+        "S3_acceptance_authorized": False,
+    }
+    if any(decision.get(key) != value for key, value in expected_equal.items()):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_decision_identity_invalid"
+        )
+    expected_budget = {
+        "maximum_model_calls": 29,
+        "maximum_transport_attempts": 29,
+        "maximum_specialist_sessions": 6,
+        "maximum_retrieval_rounds": 12,
+        "maximum_s1_s2_requests": 13,
+        "maximum_lead_coordination_rounds": 2,
+        "maximum_role_repairs": 3,
+        "maximum_external_source_network_calls": 0,
+        "retries_per_model_node": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if dict(decision.get("execution_budget") or {}) != expected_budget:
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_budget_invalid"
+        )
+    _, zero = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="zero_call_result_ref",
+        sha_field="zero_call_result_sha256",
+        digest_field="zero_call_result_digest",
+    )
+    _, repair = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="repair_successor_result_ref",
+        sha_field="repair_successor_result_sha256",
+        digest_field="repair_successor_result_digest",
+    )
+    if not (
+        zero.get("status") == "current_dynamic_multi_agent_zero_call_proven"
+        and all((zero.get("checks") or {}).values())
+        and (zero.get("execution_summary") or {}).get(
+            "specialist_session_count"
+        )
+        == 6
+        and (zero.get("execution_summary") or {}).get(
+            "executed_request_count"
+        )
+        == 13
+        and repair.get("status")
+        == "current_dynamic_multi_agent_zero_call_repair_successor_proven"
+        and all((repair.get("checks") or {}).values())
+        and (repair.get("repair_summary") or {}).get(
+            "lead_recheck_next_state"
+        )
+        == "proceed_to_evaluation"
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_predecessor_invalid"
+        )
+    _, policy = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="loop_policy_ref",
+        sha_field="loop_policy_sha256",
+    )
+    if not (
+        policy.get("schema_version")
+        == "fin_ia_s3_current_dynamic_multi_agent_loop_policy_v1_0"
+        and (policy.get("authority") or {}).get(
+            "specialists_have_independent_sessions"
+        )
+        is True
+        and (policy.get("authority") or {}).get("model_selects_research_actions")
+        is True
+        and (policy.get("authority") or {}).get(
+            "lead_may_route_feedback_but_not_author_research_facts"
+        )
+        is True
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_policy_invalid"
+        )
+    _, profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="provider_profile_ref",
+        sha_field="provider_profile_sha256",
+    )
+    defaults = profile.get("request_defaults") or {}
+    profile_authority = profile.get("authority") or {}
+    if not (
+        profile.get("schema_version") == "fin_ia_agent_transport_profile_v1_1"
+        and profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and profile.get("base_url") == "https://api.deepseek.com"
+        and profile.get("endpoint") == "/chat/completions"
+        and defaults
+        == {
+            "max_tokens": 16000,
+            "stream": False,
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+        }
+        and profile_authority.get("retry_count") == 0
+        and profile_authority.get("thinking_tool_choice_supported") is False
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_provider_profile_invalid"
+        )
+    _, submission = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="submission_profile_ref",
+        sha_field="submission_profile_sha256",
+    )
+    if not (
+        submission.get("provider_id") == "deepseek"
+        and submission.get("model") == "deepseek-v4-pro"
+        and submission.get("base_url") == "https://api.deepseek.com"
+        and submission.get("endpoint") == "/chat/completions"
+        and submission.get("request_defaults")
+        == {
+            "max_tokens": 8000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_submission_profile_invalid"
+        )
+    token_basis = decision.get("token_budget_basis")
+    required_node_keys = {
+        "specialist_request_planning",
+        "specialist_reflection_and_plan_delta",
+        "specialist_workpaper_submission",
+        "research_lead_coordination",
+        "role_local_repair_submission",
+    }
+    required_fields = {
+        "node_purpose",
+        "input_scale",
+        "required_outputs",
+        "schema_burden",
+        "materiality_and_quality_risk",
+        "comparable_run_evidence",
+        "reasoning_profile",
+        "maximum_completion_tokens",
+        "stop_or_truncation_behavior",
+    }
+    if not (
+        isinstance(token_basis, Mapping)
+        and set(token_basis) == required_node_keys
+        and all(
+            isinstance(row, Mapping)
+            and required_fields.issubset(row)
+            and str(row.get("node_purpose") or "").strip()
+            and str(row.get("input_scale") or "").strip()
+            and isinstance(row.get("required_outputs"), list)
+            and bool(row.get("required_outputs"))
+            and int(row.get("maximum_completion_tokens") or 0) > 0
+            for row in token_basis.values()
+        )
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_token_budget_basis_invalid"
+        )
+    return {
+        "clean_proof_status": zero["status"],
+        "provider_id": profile["provider_id"],
+        "provider_model": profile["model"],
+        "api_key_env": profile["api_key_env"],
+        "recent_provider_steps": 0,
+        "current_dynamic_multi_agent": True,
+        "run_scope_id": decision["run_scope_id"],
+        "execution_limits": expected_budget,
+        "node_profiles": token_basis,
+    }
+
+
 def _validate_current_dynamic_single_unit_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -11013,7 +11238,9 @@ def build_preflight(
     scope_projection = _scope_blocker_projection(
         root=root, run_scope_id=str(decision["run_scope_id"])
     )
-    if decision_projection.get("multi_agent_report_protected_remap") is True:
+    if decision_projection.get("current_dynamic_multi_agent") is True:
+        report_remap_scope_allowed = True
+    elif decision_projection.get("multi_agent_report_protected_remap") is True:
         report_remap_issue_id = (
             "RC-AR-032-protected-report-contract-feedback-conflated-density-"
             "and-reference-failures"
@@ -11594,7 +11821,21 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("multi_agent_report_protected_remap") is True:
+    if decision_projection.get("current_dynamic_multi_agent") is True:
+        known_boundary = (
+            "This current-baseline preflight permits one exact-once DELL "
+            "natural dynamic multi-agent run with six independent specialist "
+            "sessions, current S1/S2 tool execution, FeedbackReceipt-driven "
+            "reflection, up to two Research Lead coordination rounds and at "
+            "most three role-local authority-preserving repairs. The initial "
+            "specialist messages contain no prefed Evidence. The run permits "
+            "at most 29 provider attempts derived from the bounded topology, "
+            "13 unique S1/S2 requests and 12 retrieval rounds, with zero retry, "
+            "external source network call, candidate promotion or product-"
+            "pointer mutation. It does not authorize S1/S3 acceptance, Writer, "
+            "Workbench publication, heterogeneous generalization or release."
+        )
+    elif decision_projection.get("multi_agent_report_protected_remap") is True:
         execution_limits = decision_projection["execution_limits"]
         logical_nodes = int(
             execution_limits["maximum_new_logical_model_nodes"]

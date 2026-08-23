@@ -1,5 +1,5 @@
 {
-  "attempt_id": "dell-current-dynamic-multi-agent-zero-call-r2-20260823T071415Z",
+  "attempt_id": "dell-current-dynamic-multi-agent-zero-call-r3-20260823T120000Z",
   "authority": {
     "S1_pass": false,
     "S2_pass": false,
@@ -52,12 +52,12 @@
   "known_boundary": "This executes all thirteen role-owned DELL EvidenceRequests through the mounted current S1/S2 runtime in six independent specialist sessions, binds complete feedback, compiles role-local workpapers and routes one Lead challenge. Request choices, reflections, workpapers and Lead decisions are zero-model fixtures. Natural DeepSeek multi-agent research quality requires a separately signed exact-once live.",
   "lead_summary": {
     "accepted_challenge_ids": [
-      "CHALLENGE::65534DB9A9EE2812CE1E1FEC"
+      "CHALLENGE::3C1F63B3EEC538AE5CD2800C"
     ],
     "challenge_ids": [
-      "CHALLENGE::65534DB9A9EE2812CE1E1FEC"
+      "CHALLENGE::3C1F63B3EEC538AE5CD2800C"
     ],
-    "coordination_digest": "31cfe68ded00bbf01011a0a72188047bb23f1f338994cab2f92fecaab13e6a1b",
+    "coordination_digest": "b0277184eaf13e386a3a12c50b423dd4b71dbdb49971c5baab68d76a8a58666c",
     "deferred_challenge_ids": [],
     "next_state": "continue_local_repairs"
   },
@@ -70,14 +70,14 @@
     "premature_stop_fails_closed": true
   },
   "policy_binding": {
-    "policy_digest": "2c7ce6ee6733cea3e8d0dc4ee4c2393ce8ae945d1b1abb1c70cd17585de9e161",
+    "policy_digest": "7f0bab5b7250ad7e5c4bfcc74bcfc1f2bfc926f1ba85c41e3cf6a547a3b1e8f7",
     "ref": "configs/research/fin_ia_0_1_3_s3_current_dynamic_multi_agent_loop_policy_v1_0.json",
-    "sha256": "d8dfc7018fb8dd8a0f8b33f2134e8c6e06bd4f0a4df879f313efea0ed4512f01"
+    "sha256": "0a983acdbccc3fca61c42db562d7235414c6879d639d321165cea4497f71fcaf"
   },
-  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-zero-call-r2-20260823T071415Z/zero_call_full_result.json",
-  "private_result_sha256": "a2cd7f673073dc271d230de2e4bdd8bdd916e921bf52a16c71498f48b50ccddf",
-  "recorded_at": "2026-08-23T07:14:16+00:00",
-  "result_digest": "c80ae767b0d79cbe2d6659f568ab847eb88ce71e4ba7c2054803ed31f658d3a3",
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-zero-call-r3-20260823T120000Z/zero_call_full_result.json",
+  "private_result_sha256": "5447a6b5235039d89a1005e4b03fbccb058fc54e2a1a51939fac71a5ffba5be7",
+  "recorded_at": "2026-08-23T08:15:05+00:00",
+  "result_digest": "11f26b4d83777100b474389768c28f021389016383d649e23d2e1d6b9221b0ac",
   "role_summaries": [
     {
       "agent_id": "AGENT::DEMAND_QUALITY",
@@ -104,8 +104,8 @@
         "EV::ADBB7A86C8E7D99D",
         "EV::D4B096474D6E9422"
       ],
-      "session_id": "SESSION::47C966F98AF01AC00096CF39",
-      "workpaper_digest": "0b3f50df40e8d1679db95b03c7fea5d1fbb1bd4936f8e4f6587ab590e6216e0b"
+      "session_id": "SESSION::38F71314B17A5DC52C7C2EB6",
+      "workpaper_digest": "d7c8eee6c10be6ddfb817d65f70e228944a39c6ba074004d28a7a756da27dfad"
     },
     {
       "agent_id": "AGENT::OPERATING_PERFORMANCE",
@@ -128,8 +128,8 @@
         "EV::734A9C177164E08E",
         "EV::7F4D7E6762C21D83"
       ],
-      "session_id": "SESSION::9AA0388BCA77263396E3F3C3",
-      "workpaper_digest": "169086f547eb641ed492779b6bde51c900534881c0f577bc13aa7ada92bdeea2"
+      "session_id": "SESSION::32702091EA3F16F840A3EB83",
+      "workpaper_digest": "0eba8a2d234d1a7b2b8c0ac62dc2a35d97e7bed745f2bc71f8ebe05d5ae99e4d"
     },
     {
       "agent_id": "AGENT::VALUE_CAPTURE",
@@ -163,8 +163,8 @@
         "EV::5388E016C17032C1",
         "EV::7F4D7E6762C21D83"
       ],
-      "session_id": "SESSION::3AFB5AF201D5BD7523A760A6",
-      "workpaper_digest": "f8c4a374002dbe101507785ea0cb1e12d92f0ef17a4e90e2272ead6eda5e6f38"
+      "session_id": "SESSION::75505615B150F6C49ECDA149",
+      "workpaper_digest": "f168f5c652fc65162f1c05e8935ecee6d258f0c408b315d9a08644037d189ffe"
     },
     {
       "agent_id": "AGENT::CASH_CONVERSION",
@@ -198,8 +198,8 @@
         "EV::C5DB890B773C6892",
         "EV::CAD2B8E9B11D864E"
       ],
-      "session_id": "SESSION::C2C54D63B0B66AA174D479A5",
-      "workpaper_digest": "83b415308318926dde3d38a8fe7a4b09927aaa15945653b9dbbf5fe18a158f3f"
+      "session_id": "SESSION::DC9730128CABBCD272CB2286",
+      "workpaper_digest": "6985824730a5ab79029c8bb5247b2a3f372caaf08e0991977add2287232a85b4"
     },
     {
       "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
@@ -221,8 +221,8 @@
       "reviewed_evidence_refs": [
         "EV::4E05729492683532"
       ],
-      "session_id": "SESSION::9BE2DEB644F96E90E12D1F5C",
-      "workpaper_digest": "527f44bc50cd6984d2987d66ab8b2e4bd985492038f9fda3f92c9072443b52d4"
+      "session_id": "SESSION::316AADE116DB9935C7AE1F02",
+      "workpaper_digest": "04e309d3a2741086ff26a2a97beea73ccd44e291c285895092a271a4aa801762"
     },
     {
       "agent_id": "AGENT::COUNTEREVIDENCE",
@@ -250,8 +250,8 @@
         "EV::BA594865DB45F850",
         "EV::D86534E903882A43"
       ],
-      "session_id": "SESSION::23900D2C83FAF944FB87DAA6",
-      "workpaper_digest": "400d68583637a0987fe85d68e10de71367cc0abcc9ddc29ab4acd40b40b203a2"
+      "session_id": "SESSION::D3D2FE8BB6365526CE415643",
+      "workpaper_digest": "0de0612d9333c4f7f88dd2053863e70349cb2a462f86d7dcbf07854e27ca8000"
     }
   ],
   "schema_version": "fin_ia_s3_current_dynamic_multi_agent_zero_call_result_v1_0",

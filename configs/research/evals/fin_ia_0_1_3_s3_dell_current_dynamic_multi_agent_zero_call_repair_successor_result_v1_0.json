@@ -1,12 +1,12 @@
 {
-  "attempt_id": "dell-current-dynamic-multi-agent-zero-call-repair-r2-20260823T073500Z",
+  "attempt_id": "dell-current-dynamic-multi-agent-zero-call-repair-r4-20260823T122200Z",
   "authority": {
     "S3_pass": false,
     "model_calls": 0,
     "network_calls": 0,
     "new_evidence_authority": false,
     "new_role_repairs": 1,
-    "normalized_legacy_workpaper_digests": 6,
+    "normalized_legacy_workpaper_digests": 0,
     "publication": false,
     "release": false,
     "reused_retrieval_rounds": 12,
@@ -15,7 +15,7 @@
   },
   "checks": {
     "accepted_challenge_semantics_preserved_during_normalization": true,
-    "all_legacy_workpaper_digests_reproduced_and_normalized": true,
+    "all_workpaper_digests_canonical_or_reproducibly_normalized": true,
     "exactly_one_accepted_challenge_routed": true,
     "feedback_checkpoint_resume_preserves_session": true,
     "lead_recheck_proceeds_without_more_repairs": true,
@@ -27,26 +27,26 @@
   },
   "known_boundary": "This successor reuses all six specialist sessions and all successful S1/S2 retrieval from the immutable predecessor. It proves one accepted cross-role challenge can return to only the target role, produce an authority-preserving workpaper repair and return to Lead. The repair text is a zero-model fixture; natural multi-agent quality remains unproven.",
   "predecessor_binding": {
-    "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-zero-call-r2-20260823T071415Z/zero_call_full_result.json",
-    "result_digest": "c53c98c9f6fb61e3ffcd16a1c45b40d574002034ea7749f764c9cd464de0384d",
-    "sha256": "a2cd7f673073dc271d230de2e4bdd8bdd916e921bf52a16c71498f48b50ccddf"
+    "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-zero-call-r3-20260823T120000Z/zero_call_full_result.json",
+    "result_digest": "b8d163c5c20a75674c5fdc709834bf61909f91fc9023452279e157744432d0e1",
+    "sha256": "5447a6b5235039d89a1005e4b03fbccb058fc54e2a1a51939fac71a5ffba5be7"
   },
-  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-zero-call-repair-r2-20260823T073500Z/zero_call_repair_successor_full_result.json",
-  "private_result_sha256": "48d7db3cb8d00600996679e91d9fb8ac6ab38e6147851f17fe9e191a32645b05",
-  "recorded_at": "2026-08-23T07:30:05+00:00",
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-zero-call-repair-r4-20260823T122200Z/zero_call_repair_successor_full_result.json",
+  "private_result_sha256": "ce6f11e74df0890b07df0d471410300640beb82ff321c19bcea79bbd5dcbd24c",
+  "recorded_at": "2026-08-23T08:21:01+00:00",
   "repair_summary": {
-    "challenge_id": "CHALLENGE::9245FFE696284A3F3466DBF0",
+    "challenge_id": "CHALLENGE::3C1F63B3EEC538AE5CD2800C",
     "changed_agent_ids": [
       "AGENT::VALUE_CAPTURE"
     ],
-    "feedback_id": "FEEDBACK::2458A30B7F7F354E5BDFA1F7",
+    "feedback_id": "FEEDBACK::7FBD1B5C37536C29F11722EE",
     "lead_recheck_next_state": "proceed_to_evaluation",
-    "prior_workpaper_digest": "050abb4737b5938363746df5e7bd82c6254a6dfa5c6c4ddca1a243c1045b12cb",
-    "repaired_workpaper_digest": "7434ffd0faf8303872767c76ddd221edb012e73b12b92e87d9065dda84762a2b",
+    "prior_workpaper_digest": "f168f5c652fc65162f1c05e8935ecee6d258f0c408b315d9a08644037d189ffe",
+    "repaired_workpaper_digest": "d0cc84cd22692b3c3662357011ae29a7b35fe90a538fece4a0665ce0003d34c8",
     "source_agent_id": "AGENT::COUNTEREVIDENCE",
     "target_agent_id": "AGENT::VALUE_CAPTURE"
   },
-  "result_digest": "baa761b6c69e5288ffe6658a7c86c76d65c2c7362737760d1697a2a2e78ca03d",
+  "result_digest": "0c8062a202732cde924357ea8d19c6d878839f8cb195c9372030302d6cb6fd82",
   "schema_version": "fin_ia_s3_current_dynamic_multi_agent_zero_call_repair_successor_result_v1_0",
   "status": "current_dynamic_multi_agent_zero_call_repair_successor_proven"
 }

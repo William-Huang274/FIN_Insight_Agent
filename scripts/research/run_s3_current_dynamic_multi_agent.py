@@ -5,9 +5,11 @@ from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+import re
+import subprocess
 import sys
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -18,10 +20,12 @@ if hasattr(sys.stdout, "reconfigure"):
 from apps.workbench.backend.application.research_evidence_pack_service import (  # noqa: E402
     ResearchEvidencePackPrincipal,
     ResearchEvidencePackService,
+    ResearchEvidencePackServiceError,
 )
 from apps.workbench.backend.application.research_retrieval_service import (  # noqa: E402
     ResearchRetrievalPrincipal,
     ResearchRetrievalService,
+    ResearchRetrievalServiceError,
 )
 from retrieval.contracts import load_financial_research_kernel  # noqa: E402
 from retrieval.cuda_execution import required_cuda_fp16_receipt  # noqa: E402
@@ -35,6 +39,17 @@ from sec_agent.canonical_runtime.session import (  # noqa: E402
     create_context_checkpoint,
     resume_agent_session,
 )
+from sec_agent.providers import (  # noqa: E402
+    AgentToolStepResult,
+    ModelGatewayError,
+    execute_agent_tool_step_exact_once,
+    execute_chat_completion_tool_step_exact_once,
+    load_agent_transport_profile,
+    load_chat_completion_profile,
+)
+from sec_agent.research.bounded_finance_loop import (  # noqa: E402
+    validate_deepseek_ga_node_profile,
+)
 from sec_agent.research.dynamic_multi_agent_loop import (  # noqa: E402
     DynamicMultiAgentLoopError,
     compile_dynamic_multi_agent_role_programs,
@@ -47,7 +62,9 @@ from sec_agent.research.dynamic_multi_agent_loop import (  # noqa: E402
 from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     DynamicSingleUnitLoopError,
     REFLECTION_PAYLOAD_SCHEMA_VERSION,
+    REFLECTION_TOOL_NAME,
     REQUEST_PAYLOAD_SCHEMA_VERSION,
+    REQUEST_TOOL_NAME,
     compile_controlled_batch_projection,
     compile_initial_messages,
     compile_reflection_artifacts,
@@ -55,6 +72,7 @@ from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     compile_round_response,
     compile_workpaper_context,
     compile_workpaper_repair_context,
+    compile_workpaper_submission_view,
     public_round_response,
     reflection_tool,
     request_evidence_tool,
@@ -67,6 +85,8 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     SPECIALIST_AGENT_IDS,
     SPECIALIST_WORKPAPER_SCHEMA_VERSION,
     compile_challenge_catalog,
+    compile_lead_coordination_messages,
+    compile_specialist_workpaper_messages,
     compile_planner_payload_from_role_opinions,
     lead_coordination_tool,
     load_multi_agent_role_topology,
@@ -94,6 +114,13 @@ DEFAULT_PUBLIC = Path(
 )
 DEFAULT_REPAIR_PUBLIC = Path(
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_zero_call_repair_successor_result_v1_0.json"
+)
+LIVE_AUTHORITY_SCHEMA = "fin_ia_s3_current_dynamic_multi_agent_live_authority_v1_0"
+LIVE_AUTHORITY_STATUS = "signed_exact_once_DELL_current_dynamic_multi_agent_live"
+LIVE_RESULT_SCHEMA = "fin_ia_s3_current_dynamic_multi_agent_live_result_v1_0"
+LIVE_FULL_RESULT_SCHEMA = "fin_ia_s3_current_dynamic_multi_agent_live_full_v1_0"
+DEFAULT_LIVE_PUBLIC = Path(
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_live_result_v1_0.json"
 )
 
 
@@ -1557,8 +1584,8 @@ def run_zero_call_repair_successor(
     checks = {
         "predecessor_immutable_and_digest_bound": predecessor["result_digest"]
         == _read_json(predecessor_path)["result_digest"],
-        "all_legacy_workpaper_digests_reproduced_and_normalized": all(
-            row["status"] == "legacy_double_hash_normalized"
+        "all_workpaper_digests_canonical_or_reproducibly_normalized": all(
+            row["status"] in {"canonical", "legacy_double_hash_normalized"}
             and row["content_revalidated"] is True
             and row["content_changed"] is False
             for row in normalization_receipts
@@ -1628,7 +1655,10 @@ def run_zero_call_repair_successor(
                 for row in predecessor["role_bundles"]
             ),
             "new_role_repairs": 1,
-            "normalized_legacy_workpaper_digests": len(normalization_receipts),
+            "normalized_legacy_workpaper_digests": sum(
+                row["status"] == "legacy_double_hash_normalized"
+                for row in normalization_receipts
+            ),
             "new_evidence_authority": False,
             "S3_pass": False,
             "publication": False,
@@ -1673,40 +1703,1482 @@ def run_zero_call_repair_successor(
     return public_result
 
 
+def _resolve_repo_ref(ref: str | Path) -> Path:
+    raw = str(ref)
+    value = PurePosixPath(raw)
+    if value.is_absolute() or "\\" in raw or ".." in value.parts:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_path_invalid"
+        )
+    path = (ROOT / Path(*value.parts)).resolve()
+    try:
+        path.relative_to(ROOT)
+    except ValueError as exc:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_path_outside_repository"
+        ) from exc
+    return path
+
+
+def _git_blob_sha256(*, commit: str, ref: str) -> str:
+    if not re.fullmatch(r"[0-9a-f]{40}", str(commit or "").lower()):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_implementation_commit_invalid"
+        )
+    completed = subprocess.run(
+        ["git", "show", f"{commit}:{ref}"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        raise DynamicMultiAgentLoopError(
+            f"dynamic_multi_agent_live_bound_git_blob_missing:{ref}"
+        )
+    return hashlib.sha256(completed.stdout).hexdigest()
+
+
+def _tool_arguments(
+    step: AgentToolStepResult, *, expected_name: str
+) -> tuple[dict[str, Any], str]:
+    if str(getattr(step, "finish_reason", "") or "") == "length":
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_tool_arguments_truncated"
+        )
+    if len(step.tool_calls) != 1:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_exactly_one_tool_call_required"
+        )
+    call = dict(step.tool_calls[0])
+    function = call.get("function")
+    if not (
+        isinstance(function, Mapping)
+        and str(function.get("name") or "") == expected_name
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_unexpected_tool_call"
+        )
+    try:
+        payload = json.loads(str(function.get("arguments") or ""))
+    except json.JSONDecodeError as exc:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_tool_arguments_json_invalid"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_tool_arguments_object_required"
+        )
+    return payload, str(call.get("id") or "")
+
+
+def _public_provider_step(step: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "finish_reason": str(step.get("finish_reason") or ""),
+        "usage": deepcopy(dict(step.get("usage") or {})),
+        "request_digest": str(step.get("request_digest") or ""),
+        "response_digest": str(step.get("response_digest") or ""),
+        "request_capture_ref": _relative(Path(str(step["request_capture_ref"]))),
+        "response_capture_ref": _relative(Path(str(step["response_capture_ref"]))),
+        "private_reasoning_fields_redacted": int(
+            step.get("private_reasoning_fields_redacted") or 0
+        ),
+        "reasoning_content_persisted": False,
+    }
+
+
+def expected_live_execution_budget() -> dict[str, int]:
+    """Derive the exact ceiling from the six-role bounded loop topology."""
+
+    return {
+        "maximum_model_calls": 29,
+        "maximum_transport_attempts": 29,
+        "maximum_specialist_sessions": 6,
+        "maximum_retrieval_rounds": 12,
+        "maximum_s1_s2_requests": 13,
+        "maximum_lead_coordination_rounds": 2,
+        "maximum_role_repairs": 3,
+        "maximum_external_source_network_calls": 0,
+        "retries_per_model_node": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+
+
+def validate_live_authority(
+    authority: Mapping[str, Any], *, authority_path: Path
+) -> dict[str, Path]:
+    expected = {
+        "schema_version",
+        "status",
+        "signed_at",
+        "implementation_commit",
+        "case_key",
+        "execution_budget",
+        "bound_inputs",
+        "output_contract",
+        "known_boundary",
+    }
+    if not (
+        set(authority) == expected
+        and authority.get("schema_version") == LIVE_AUTHORITY_SCHEMA
+        and authority.get("status") == LIVE_AUTHORITY_STATUS
+        and authority.get("case_key") == "DELL"
+        and dict(authority.get("execution_budget") or {})
+        == expected_live_execution_budget()
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_authority_identity_or_budget_invalid"
+        )
+    bound = authority.get("bound_inputs")
+    if not isinstance(bound, Mapping):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_bound_inputs_invalid"
+        )
+    ref_names = (
+        "runtime_registry",
+        "loop_policy",
+        "zero_call_result",
+        "repair_successor_result",
+        "provider_profile",
+        "submission_profile",
+        "runner",
+        "loop_runtime",
+        "provider_transport",
+        "scope_decision",
+    )
+    paths: dict[str, Path] = {}
+    for name in ref_names:
+        ref = str(bound.get(f"{name}_ref") or "")
+        path = _resolve_repo_ref(ref)
+        if not path.is_file() or _sha256(path) != str(
+            bound.get(f"{name}_sha256") or ""
+        ):
+            raise DynamicMultiAgentLoopError(
+                f"dynamic_multi_agent_live_bound_input_drift:{name}"
+            )
+        paths[f"{name}_ref"] = path
+    commit = str(authority.get("implementation_commit") or "").lower()
+    for name in (
+        "loop_policy",
+        "runner",
+        "loop_runtime",
+        "provider_transport",
+    ):
+        ref = str(bound[f"{name}_ref"])
+        if _git_blob_sha256(commit=commit, ref=ref) != str(
+            bound[f"{name}_sha256"]
+        ):
+            raise DynamicMultiAgentLoopError(
+                f"dynamic_multi_agent_live_implementation_binding_invalid:{name}"
+            )
+    zero = _read_json(paths["zero_call_result_ref"])
+    repair = _read_json(paths["repair_successor_result_ref"])
+    decision = _read_json(paths["scope_decision_ref"])
+    if not (
+        zero.get("status") == "current_dynamic_multi_agent_zero_call_proven"
+        and zero.get("result_digest") == bound.get("zero_call_result_digest")
+        and all((zero.get("checks") or {}).values())
+        and repair.get("status")
+        == "current_dynamic_multi_agent_zero_call_repair_successor_proven"
+        and repair.get("result_digest")
+        == bound.get("repair_successor_result_digest")
+        and all((repair.get("checks") or {}).values())
+        and decision.get("schema_version")
+        == "fin_ia_s3_current_dynamic_multi_agent_live_scope_decision_v1_0"
+        and decision.get("status")
+        == "current_dynamic_multi_agent_zero_call_pass_one_natural_live_authorized"
+        and decision.get("multi_agent_authorized") is True
+        and decision.get("product_publication_authorized") is False
+        and decision.get("S3_acceptance_authorized") is False
+        and dict(decision.get("execution_budget") or {})
+        == expected_live_execution_budget()
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_predecessor_or_decision_invalid"
+        )
+    output = authority.get("output_contract")
+    if not (
+        isinstance(output, Mapping)
+        and set(output)
+        == {
+            "capture_root_ref",
+            "private_output_root_ref",
+            "public_result_ref",
+            "run_id",
+            "attempt_prefix",
+            "product_publication",
+        }
+        and output.get("product_publication") == "forbidden"
+        and str(output.get("run_id") or "").strip()
+        and str(output.get("attempt_prefix") or "").strip()
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_output_contract_invalid"
+        )
+    for key in ("private_output_root_ref", "public_result_ref"):
+        if _resolve_repo_ref(str(output[key])).exists():
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_live_output_identity_consumed"
+            )
+    if not (
+        authority_path.resolve() == authority_path
+        and authority_path.is_file()
+        and str(authority.get("signed_at") or "").strip()
+        and len(str(authority.get("known_boundary") or "").strip()) >= 120
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_authority_metadata_invalid"
+        )
+    return paths
+
+
+def _call_live_tool(
+    *,
+    events: list[dict[str, Any]],
+    session_id: str,
+    actor_id: str,
+    profile: Any,
+    messages: Sequence[Mapping[str, Any]],
+    tool: Mapping[str, Any],
+    expected_name: str,
+    capture_root: Path,
+    run_id: str,
+    attempt_id: str,
+    occurred_at: str,
+    executor: Callable[..., AgentToolStepResult],
+) -> tuple[AgentToolStepResult, dict[str, Any], str]:
+    _event(
+        events,
+        session_id=session_id,
+        event_type="provider_attempt_requested",
+        actor_id=actor_id,
+        occurred_at=occurred_at,
+        attempt_id=attempt_id,
+        input_refs=(
+            f"messages://{canonical_digest(list(messages))}",
+            f"tool://{canonical_digest(tool)}",
+        ),
+    )
+    try:
+        step = executor(
+            profile=profile,
+            messages=messages,
+            tools=[tool],
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_id=attempt_id,
+            tool_choice=None,
+        )
+    except ModelGatewayError as exc:
+        _event(
+            events,
+            session_id=session_id,
+            event_type="provider_attempt_failed",
+            actor_id="PROVIDER::" + str(profile.provider_id).upper(),
+            occurred_at=occurred_at,
+            attempt_id=attempt_id,
+            output_refs=((str(exc.capture_ref),) if exc.capture_ref else ()),
+        )
+        raise
+    _event(
+        events,
+        session_id=session_id,
+        event_type="provider_attempt_completed",
+        actor_id="PROVIDER::" + str(profile.provider_id).upper(),
+        occurred_at=occurred_at,
+        attempt_id=attempt_id,
+        output_refs=tuple(
+            str(value)
+            for value in (step.request_capture_ref, step.response_capture_ref)
+            if str(value or "")
+        ),
+    )
+    payload, call_id = _tool_arguments(step, expected_name=expected_name)
+    return step, payload, call_id
+
+
+def _provider_attempt_count(events: Sequence[Mapping[str, Any]]) -> int:
+    return sum(
+        1
+        for event in events
+        if str(event.get("event_type") or "") == "provider_attempt_requested"
+    )
+
+
+def _execute_live_round(
+    *,
+    role_program: Mapping[str, Any],
+    request_ids: Sequence[str],
+    round_index: int,
+    retrieval: ResearchRetrievalService,
+    retrieval_principal: ResearchRetrievalPrincipal,
+    evidence_pack: Mapping[str, Any],
+    truth_policy: Mapping[str, Any],
+    consumer_policy: Mapping[str, Any],
+    task_quantitative: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    requests = _request_rows(role_program, request_ids)
+    all_blueprints = compile_role_material_requirement_blueprints(role_program)
+    batch = retrieval.execute_current_runtime_requests(
+        "DELL",
+        requests,
+        retrieval_principal,
+        material_requirement_blueprints={
+            request_id: all_blueprints[request_id] for request_id in request_ids
+        },
+    )
+    controlled = compile_controlled_batch_projection(
+        policy=role_program["loop_policy"],
+        selected_requests=requests,
+        batch_result=batch,
+    )
+    response = compile_round_response(
+        policy=role_program["loop_policy"],
+        controlled_plan=controlled,
+        evidence_pack=evidence_pack,
+        truth_spine_policy=truth_policy,
+        consumer_policy=consumer_policy,
+        task_quantitative_result=task_quantitative,
+        round_index=round_index,
+    )
+    return batch, response
+
+
+def _execute_live_role(
+    *,
+    role_program: Mapping[str, Any],
+    run_id: str,
+    attempt_prefix: str,
+    recorded_at: str,
+    capture_root: Path,
+    research_profile: Any,
+    submission_profile: Any,
+    retrieval: ResearchRetrievalService,
+    retrieval_principal: ResearchRetrievalPrincipal,
+    evidence_pack: Mapping[str, Any],
+    truth_policy: Mapping[str, Any],
+    consumer_policy: Mapping[str, Any],
+    task_quantitative: Mapping[str, Any],
+    research_executor: Callable[..., AgentToolStepResult],
+    submission_executor: Callable[..., AgentToolStepResult],
+) -> dict[str, Any]:
+    agent_id = str(role_program["agent_id"])
+    slug = agent_id.split("::")[-1].lower().replace("_", "-")
+    policy = deepcopy(dict(role_program["loop_policy"]))
+    catalog = deepcopy(dict(role_program["request_catalog"]))
+    messages: list[dict[str, Any]] = list(
+        compile_initial_messages(policy=policy, request_catalog=catalog)
+    )
+    initial_messages_digest = canonical_digest(messages)
+    seed = {
+        "run_id": run_id,
+        "agent_id": agent_id,
+        "role_program_digest": role_program["role_program_digest"],
+        "pack_payload_digest": evidence_pack["pack_payload_digest"],
+    }
+    session_id = "SESSION::" + canonical_digest(seed)[:24].upper()
+    base_plan_body = {
+        "case_key": "DELL",
+        "objective_id": policy["objective"]["objective_id"],
+        "agent_id": agent_id,
+        "executed_request_ids": [],
+        "next_request_ids": [],
+        "latest_reflection_digest": None,
+        "latest_feedback_refs": [],
+    }
+    base_plan = {**base_plan_body, "plan_digest": canonical_digest(base_plan_body)}
+    base_graph_digest = canonical_digest(
+        {
+            "case_key": "DELL",
+            "agent_id": agent_id,
+            "state": "current_reviewed_graph_plus_role_local_hypotheses",
+        }
+    )
+    session = create_agent_session(
+        session_id=session_id,
+        run_id=run_id,
+        case_id="case_dell_current",
+        case_version="FIN_0_1_3",
+        as_of_date="2026-08-06",
+        objective_ref=f"objective://{policy['objective']['objective_id']}",
+        active_plan_ref="PLAN::" + base_plan["plan_digest"][:24].upper(),
+        created_at=recorded_at,
+    )
+    events: list[dict[str, Any]] = []
+    _event(
+        events,
+        session_id=session_id,
+        event_type="session_created",
+        actor_id="S0.CanonicalRuntime",
+        occurred_at=recorded_at,
+        output_refs=(session_id,),
+    )
+    _event(
+        events,
+        session_id=session_id,
+        event_type="plan_bound",
+        actor_id="S3.DynamicMultiAgentHarness",
+        occurred_at=recorded_at,
+        input_refs=(catalog["catalog_digest"],),
+        output_refs=(session["active_plan_ref"],),
+    )
+    provider_steps: list[dict[str, Any]] = []
+    selections: list[dict[str, Any]] = []
+    batches: list[dict[str, Any]] = []
+    round_responses: list[dict[str, Any]] = []
+    feedback_receipts: list[dict[str, Any]] = []
+    reflections: list[dict[str, Any]] = []
+    reflection_artifacts: list[dict[str, Any]] = []
+    executed_ids: list[str] = []
+    accepted_evidence_refs: set[str] = set()
+    workpaper_context: dict[str, Any] = {}
+    submission_view: dict[str, Any] = {}
+    workpaper: dict[str, Any] = {}
+    failure = {"phase": "", "code": "", "capture_ref": ""}
+    checkpoint: dict[str, Any] = {}
+    resume: dict[str, Any] = {}
+    provider_calls = 0
+    current_attempt_id = ""
+    pending_plan_delta: dict[str, Any] | None = None
+    try:
+        request_tool = request_evidence_tool(
+            policy=policy,
+            request_catalog=catalog,
+            executed_request_ids=executed_ids,
+            round_index=1,
+        )
+        current_attempt_id = f"{attempt_prefix}-{slug}-request-r1"
+        request_step, request_payload, request_call_id = _call_live_tool(
+            events=events,
+            session_id=session_id,
+            actor_id=agent_id,
+            profile=research_profile,
+            messages=messages,
+            tool=request_tool,
+            expected_name=REQUEST_TOOL_NAME,
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_id=current_attempt_id,
+            occurred_at=recorded_at,
+            executor=research_executor,
+        )
+        provider_calls += 1
+        provider_steps.append(request_step.as_dict())
+        selection = validate_request_selection(
+            request_payload,
+            policy=policy,
+            request_catalog=catalog,
+            executed_request_ids=executed_ids,
+            round_index=1,
+        )
+        selections.append(selection)
+
+        maximum_rounds = int(policy["loop_limits"]["maximum_retrieval_rounds"])
+        round_index = 1
+        while True:
+            tool_attempt_id = f"{attempt_prefix}-{slug}-s1s2-r{round_index}"
+            _event(
+                events,
+                session_id=session_id,
+                event_type="tool_execution_requested",
+                actor_id=agent_id,
+                occurred_at=recorded_at,
+                attempt_id=tool_attempt_id,
+                input_refs=(selection["selection_digest"],),
+            )
+            batch, response = _execute_live_round(
+                role_program=role_program,
+                request_ids=selection["request_ids"],
+                round_index=round_index,
+                retrieval=retrieval,
+                retrieval_principal=retrieval_principal,
+                evidence_pack=evidence_pack,
+                truth_policy=truth_policy,
+                consumer_policy=consumer_policy,
+                task_quantitative=task_quantitative,
+            )
+            batches.append(batch)
+            round_responses.append(response)
+            _event(
+                events,
+                session_id=session_id,
+                event_type="tool_execution_completed",
+                actor_id="S1S2.CurrentRuntime",
+                occurred_at=recorded_at,
+                attempt_id=tool_attempt_id,
+                input_refs=(selection["selection_digest"],),
+                output_refs=(response["round_response_digest"],),
+            )
+            executed_ids.extend(selection["request_ids"])
+            accepted_evidence_refs.update(
+                str(row["evidence_ref"])
+                for row in response.get("reviewed_evidence") or ()
+            )
+            feedback = compile_round_feedback_receipts(
+                session_id=session_id,
+                round_response=response,
+                request_catalog=catalog,
+                created_at=recorded_at,
+            )
+            feedback_receipts.extend(feedback)
+            feedback_refs = [str(row["feedback_id"]) for row in feedback]
+            if feedback_refs:
+                _event(
+                    events,
+                    session_id=session_id,
+                    event_type="feedback_issued",
+                    actor_id="S1S2.DynamicEvidenceTool",
+                    occurred_at=recorded_at,
+                    input_refs=(response["round_response_digest"],),
+                    output_refs=feedback_refs,
+                    feedback_refs=feedback_refs,
+                )
+            tool_result_payload: dict[str, Any] = {
+                "round_response": public_round_response(response),
+                "feedback_receipts": feedback,
+            }
+            if pending_plan_delta is not None:
+                tool_result_payload["accepted_plan_delta"] = pending_plan_delta
+            messages.extend(
+                [
+                    request_step.continuation_assistant_message(),
+                    {
+                        "role": "tool",
+                        "tool_call_id": request_call_id,
+                        "content": json.dumps(
+                            tool_result_payload,
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":"),
+                        ),
+                    },
+                ]
+            )
+            reflect_tool = reflection_tool(
+                policy=policy,
+                request_catalog=catalog,
+                feedback_receipts=feedback,
+                accepted_evidence_refs=sorted(accepted_evidence_refs),
+                executed_request_ids=executed_ids,
+                round_index=round_index,
+            )
+            current_attempt_id = f"{attempt_prefix}-{slug}-reflection-r{round_index}"
+            reflection_step, reflection_payload, reflection_call_id = (
+                _call_live_tool(
+                    events=events,
+                    session_id=session_id,
+                    actor_id=agent_id,
+                    profile=research_profile,
+                    messages=messages,
+                    tool=reflect_tool,
+                    expected_name=REFLECTION_TOOL_NAME,
+                    capture_root=capture_root,
+                    run_id=run_id,
+                    attempt_id=current_attempt_id,
+                    occurred_at=recorded_at,
+                    executor=research_executor,
+                )
+            )
+            provider_calls += 1
+            provider_steps.append(reflection_step.as_dict())
+            reflection = validate_reflection_payload(
+                reflection_payload,
+                policy=policy,
+                request_catalog=catalog,
+                feedback_receipts=feedback,
+                accepted_evidence_refs=sorted(accepted_evidence_refs),
+                executed_request_ids=executed_ids,
+                round_index=round_index,
+            )
+            reflections.append(reflection)
+            open_gap_refs = sorted(
+                {
+                    str(row["gap_ref"])
+                    for current in round_responses
+                    for row in current.get("residual_gaps") or ()
+                }
+            )
+            artifacts = compile_reflection_artifacts(
+                policy=policy,
+                reflection=reflection,
+                session_id=session_id,
+                agent_id=agent_id,
+                base_plan=base_plan,
+                base_graph_digest=base_graph_digest,
+                executed_request_ids=executed_ids,
+                open_gap_refs=open_gap_refs,
+                model_calls_used=provider_calls,
+            )
+            reflection_artifacts.append(artifacts)
+            session = apply_accepted_plan_delta(
+                session=session,
+                plan_delta=artifacts["plan_delta"],
+                expected_base_plan_digest=base_plan["plan_digest"],
+                accepted_plan_digest=artifacts["accepted_plan"]["plan_digest"],
+                accepted_plan_ref=artifacts["accepted_plan_ref"],
+                updated_at=recorded_at,
+            )
+            base_plan = artifacts["accepted_plan"]
+            base_graph_digest = artifacts["graph_delta"]["graph_delta_digest"]
+            _event(
+                events,
+                session_id=session_id,
+                event_type="plan_delta_accepted",
+                actor_id="S3.DynamicMultiAgentHarness",
+                occurred_at=recorded_at,
+                attempt_id=current_attempt_id,
+                output_refs=(artifacts["accepted_plan_ref"],),
+                feedback_refs=reflection["feedback_refs"],
+            )
+            decision = str(reflection["proposed_stop_decision"])
+            if decision != "continue":
+                break
+            if round_index >= maximum_rounds:
+                raise DynamicMultiAgentLoopError(
+                    "dynamic_multi_agent_live_round_budget_exhausted_without_stop"
+                )
+            next_ids = list(reflection["next_request_ids"])
+            round_index += 1
+            selection = validate_request_selection(
+                {
+                    "schema_version": REQUEST_PAYLOAD_SCHEMA_VERSION,
+                    "round_id": f"ROUND::{round_index}",
+                    "request_ids": next_ids,
+                    "research_rationale": reflection["reflection_summary"],
+                    "expected_information_gain": (
+                        "执行模型在上一轮 FeedbackReceipt 后选择的下一组命题。"
+                    ),
+                },
+                policy=policy,
+                request_catalog=catalog,
+                executed_request_ids=executed_ids,
+                round_index=round_index,
+            )
+            selections.append(selection)
+            request_step = reflection_step
+            request_call_id = reflection_call_id
+            pending_plan_delta = deepcopy(dict(artifacts["plan_delta"]))
+
+        if not (
+            reflection_artifacts
+            and reflection_artifacts[-1]["stop_decision"]["decision"]
+            in {"stop_sufficient", "stop_no_progress"}
+        ):
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_live_terminal_stop_missing"
+            )
+        workpaper_context = compile_workpaper_context(
+            policy=policy,
+            round_responses=round_responses,
+            feedback_receipts=feedback_receipts,
+            reflections=reflections,
+            stop_decision=reflection_artifacts[-1]["stop_decision"],
+        )
+        submission_view = compile_workpaper_submission_view(workpaper_context)
+        workpaper_tool = specialist_workpaper_tool(
+            agent_id=agent_id, context=workpaper_context
+        )
+        current_attempt_id = f"{attempt_prefix}-{slug}-workpaper"
+        workpaper_step, workpaper_payload, _ = _call_live_tool(
+            events=events,
+            session_id=session_id,
+            actor_id=agent_id,
+            profile=submission_profile,
+            messages=compile_specialist_workpaper_messages(
+                context=submission_view
+            ),
+            tool=workpaper_tool,
+            expected_name="submit_specialist_workpaper",
+            capture_root=capture_root,
+            run_id=run_id,
+            attempt_id=current_attempt_id,
+            occurred_at=recorded_at,
+            executor=submission_executor,
+        )
+        provider_calls += 1
+        provider_steps.append(workpaper_step.as_dict())
+        workpaper = validate_specialist_workpaper(
+            workpaper_payload,
+            context=workpaper_context,
+            expected_agent_id=agent_id,
+        )
+        numeric_refs = sorted(
+            {
+                str(row["numeric_ref"])
+                for current in round_responses
+                for row in current.get("numeric_facts") or ()
+            }
+        )
+        gap_refs = sorted(
+            {
+                str(row["gap_ref"])
+                for current in round_responses
+                for row in current.get("residual_gaps") or ()
+            }
+        )
+        checkpoint_id = "CHECKPOINT::" + canonical_digest(
+            {
+                "session_id": session_id,
+                "plan_digest": base_plan["plan_digest"],
+                "workpaper_digest": workpaper["workpaper_digest"],
+            }
+        )[:24].upper()
+        checkpoint = create_context_checkpoint(
+            session=session,
+            events=events,
+            checkpoint_id=checkpoint_id,
+            objective_digest=canonical_digest(policy["objective"]),
+            plan_digest=base_plan["plan_digest"],
+            research_graph_digest=base_graph_digest,
+            accepted_evidence_refs=sorted(accepted_evidence_refs),
+            numeric_fact_refs=numeric_refs,
+            open_gap_refs=gap_refs,
+            unresolved_feedback_refs=sorted(
+                str(row["feedback_id"]) for row in feedback_receipts
+            ),
+            agent_local_state_refs=[
+                str(row["reflection_digest"]) for row in reflections
+            ],
+            authority_refs=[
+                str(evidence_pack["pack_payload_digest"]),
+                str(role_program["role_program_digest"]),
+                str(workpaper["workpaper_digest"]),
+            ],
+            counterevidence_refs=(
+                sorted(accepted_evidence_refs)
+                if agent_id == "AGENT::COUNTEREVIDENCE"
+                else []
+            ),
+            open_question_refs=[
+                f"QUESTION::DELL::{slug.upper()}::{index}"
+                for index, _ in enumerate(gap_refs, start=1)
+            ],
+        )
+        resume = resume_agent_session(
+            session=session,
+            events=events,
+            checkpoint=checkpoint,
+            expected_case_id="case_dell_current",
+            expected_case_version="FIN_0_1_3",
+            expected_as_of_date="2026-08-06",
+            expected_active_plan_ref=session["active_plan_ref"],
+            resumed_at=recorded_at,
+            required_authority_refs=checkpoint["authority_refs"],
+            required_open_gap_refs=gap_refs,
+            required_unresolved_feedback_refs=checkpoint[
+                "unresolved_feedback_refs"
+            ],
+            required_counterevidence_refs=checkpoint[
+                "counterevidence_refs"
+            ],
+            required_open_question_refs=checkpoint["open_question_refs"],
+        )
+    except ModelGatewayError as exc:
+        failure = {
+            "phase": "provider_transport_or_response",
+            "code": exc.code,
+            "capture_ref": (
+                _relative(Path(exc.capture_ref)) if exc.capture_ref else ""
+            ),
+        }
+    except ResearchRetrievalServiceError as exc:
+        failure = {
+            "phase": "current_S1_S2_retrieval",
+            "code": exc.error_code,
+            "capture_ref": "",
+        }
+    except ResearchEvidencePackServiceError as exc:
+        failure = {
+            "phase": "current_reviewed_evidence_pack",
+            "code": exc.error_code,
+            "capture_ref": "",
+        }
+    except DynamicSingleUnitLoopError as exc:
+        failure = {
+            "phase": "dynamic_research_loop_contract",
+            "code": exc.code,
+            "capture_ref": "",
+        }
+    except DynamicMultiAgentLoopError as exc:
+        failure = {
+            "phase": "dynamic_multi_agent_orchestration",
+            "code": exc.code,
+            "capture_ref": "",
+        }
+    except ValueError as exc:
+        failure = {
+            "phase": "specialist_workpaper_or_runtime_contract",
+            "code": str(exc),
+            "capture_ref": "",
+        }
+    return {
+        "agent_id": agent_id,
+        "status": (
+            "completed_contract_valid" if workpaper else "terminal_failed_no_retry"
+        ),
+        "role_program_digest": role_program["role_program_digest"],
+        "session": session,
+        "events": events,
+        "initial_messages_digest": initial_messages_digest,
+        "provider_steps": [_public_provider_step(row) for row in provider_steps],
+        "selections": selections,
+        "round_batches": batches,
+        "round_responses": [public_round_response(row) for row in round_responses],
+        "feedback_receipts": feedback_receipts,
+        "reflections": reflections,
+        "reflection_artifacts": reflection_artifacts,
+        "workpaper_context": workpaper_context,
+        "submission_view": submission_view,
+        "workpaper": workpaper,
+        "checkpoint": checkpoint,
+        "resume_receipt": resume,
+        "execution": {
+            "provider_calls_attempted": _provider_attempt_count(events),
+            "maximum_provider_calls": int(
+                role_program["loop_policy"]["loop_limits"][
+                    "maximum_provider_steps"
+                ]
+            ),
+            "retrieval_rounds_executed": len(round_responses),
+            "request_ids_executed": executed_ids,
+            "unique_request_ids_executed": len(set(executed_ids)),
+            "candidate_promotions": 0,
+            "external_source_network_calls": 0,
+            "retries": 0,
+        },
+        "failure": failure,
+    }
+
+
+def _create_lead_session(
+    *, run_id: str, workpapers: Sequence[Mapping[str, Any]], recorded_at: str
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    seed = {
+        "run_id": run_id,
+        "lead_agent_id": RESEARCH_LEAD_AGENT_ID,
+        "workpaper_digests": [str(row["workpaper_digest"]) for row in workpapers],
+    }
+    session_id = "SESSION::" + canonical_digest(seed)[:24].upper()
+    plan_digest = canonical_digest(
+        {
+            "case_key": "DELL",
+            "role": RESEARCH_LEAD_AGENT_ID,
+            "workpaper_digests": seed["workpaper_digests"],
+        }
+    )
+    session = create_agent_session(
+        session_id=session_id,
+        run_id=run_id,
+        case_id="case_dell_current",
+        case_version="FIN_0_1_3",
+        as_of_date="2026-08-06",
+        objective_ref="objective://DELL/current-dynamic-multi-agent/lead",
+        active_plan_ref="PLAN::" + plan_digest[:24].upper(),
+        created_at=recorded_at,
+    )
+    events: list[dict[str, Any]] = []
+    _event(
+        events,
+        session_id=session_id,
+        event_type="session_created",
+        actor_id="S0.CanonicalRuntime",
+        occurred_at=recorded_at,
+        output_refs=(session_id,),
+    )
+    _event(
+        events,
+        session_id=session_id,
+        event_type="plan_bound",
+        actor_id="S3.DynamicMultiAgentHarness",
+        occurred_at=recorded_at,
+        input_refs=tuple(seed["workpaper_digests"]),
+        output_refs=(session["active_plan_ref"],),
+    )
+    return session, events
+
+
+def _execute_live_lead_round(
+    *,
+    workpapers: Sequence[Mapping[str, Any]],
+    local_failure_receipts: Sequence[Mapping[str, Any]],
+    session: Mapping[str, Any],
+    events: list[dict[str, Any]],
+    profile: Any,
+    capture_root: Path,
+    run_id: str,
+    attempt_id: str,
+    recorded_at: str,
+    executor: Callable[..., AgentToolStepResult],
+) -> dict[str, Any]:
+    catalog = compile_challenge_catalog(workpapers=workpapers)
+    tool = lead_coordination_tool(challenge_catalog=catalog)
+    step, payload, _ = _call_live_tool(
+        events=events,
+        session_id=str(session["session_id"]),
+        actor_id=RESEARCH_LEAD_AGENT_ID,
+        profile=profile,
+        messages=compile_lead_coordination_messages(
+            workpapers=workpapers,
+            challenge_catalog=catalog,
+            local_failure_receipts=local_failure_receipts,
+        ),
+        tool=tool,
+        expected_name="submit_lead_coordination_decision",
+        capture_root=capture_root,
+        run_id=run_id,
+        attempt_id=attempt_id,
+        occurred_at=recorded_at,
+        executor=executor,
+    )
+    decision = validate_lead_coordination_decision(
+        payload, challenge_catalog=catalog
+    )
+    _event(
+        events,
+        session_id=str(session["session_id"]),
+        event_type="stop_decided",
+        actor_id=RESEARCH_LEAD_AGENT_ID,
+        occurred_at=recorded_at,
+        input_refs=tuple(str(row["challenge_id"]) for row in catalog),
+        output_refs=(decision["coordination_digest"],),
+    )
+    return {
+        "challenge_catalog": catalog,
+        "decision": decision,
+        "provider_step": _public_provider_step(step.as_dict()),
+    }
+
+
+def _execute_live_role_repair(
+    *,
+    role_bundle: Mapping[str, Any],
+    challenges: Sequence[Mapping[str, Any]],
+    profile: Any,
+    capture_root: Path,
+    run_id: str,
+    attempt_id: str,
+    recorded_at: str,
+    executor: Callable[..., AgentToolStepResult],
+) -> dict[str, Any]:
+    agent_id = str(role_bundle["agent_id"])
+    receipts = [
+        compile_cross_role_feedback_receipt(
+            target_session_id=str(role_bundle["session"]["session_id"]),
+            challenge=challenge,
+            created_at=recorded_at,
+        )
+        for challenge in challenges
+    ]
+    repair_context = compile_workpaper_repair_context(
+        context=role_bundle["workpaper_context"],
+        prior_workpaper=role_bundle["workpaper"],
+        feedback_receipts=receipts,
+    )
+    submission_view = compile_workpaper_submission_view(repair_context)
+    # Append to the live role event stream itself so a failed repair attempt is
+    # still materialized and counted. The full prior role result is only an
+    # in-memory predecessor here; persisted predecessor attempts remain immutable.
+    continued_events = role_bundle["events"]
+    step, payload, _ = _call_live_tool(
+        events=continued_events,
+        session_id=str(role_bundle["session"]["session_id"]),
+        actor_id=agent_id,
+        profile=profile,
+        messages=compile_specialist_workpaper_messages(context=submission_view),
+        tool=specialist_workpaper_tool(
+            agent_id=agent_id, context=repair_context
+        ),
+        expected_name="submit_specialist_workpaper",
+        capture_root=capture_root,
+        run_id=run_id,
+        attempt_id=attempt_id,
+        occurred_at=recorded_at,
+        executor=executor,
+    )
+    repaired = validate_specialist_workpaper(
+        payload,
+        context=repair_context,
+        expected_agent_id=agent_id,
+    )
+    before = _workpaper_authority_sets(role_bundle["workpaper"])
+    after = _workpaper_authority_sets(repaired)
+    if before != after:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_role_repair_authority_changed"
+        )
+    return {
+        "agent_id": agent_id,
+        "challenge_ids": [str(row["challenge_id"]) for row in challenges],
+        "feedback_receipts": receipts,
+        "repair_context": repair_context,
+        "prior_workpaper_digest": role_bundle["workpaper"]["workpaper_digest"],
+        "repaired_workpaper": repaired,
+        "continued_events": continued_events,
+        "provider_step": _public_provider_step(step.as_dict()),
+        "authority_refs_unchanged": True,
+    }
+
+
+def run_live(
+    *,
+    authority_path: Path,
+    research_executor: Callable[..., AgentToolStepResult] = (
+        execute_agent_tool_step_exact_once
+    ),
+    submission_executor: Callable[..., AgentToolStepResult] = (
+        execute_chat_completion_tool_step_exact_once
+    ),
+) -> dict[str, Any]:
+    authority_path = authority_path.resolve()
+    authority = _read_json(authority_path)
+    paths = validate_live_authority(authority, authority_path=authority_path)
+    output = dict(authority["output_contract"])
+    run_id = str(output["run_id"])
+    attempt_prefix = str(output["attempt_prefix"])
+    capture_root = _resolve_repo_ref(str(output["capture_root_ref"]))
+    private_root = _resolve_repo_ref(str(output["private_output_root_ref"]))
+    public_path = _resolve_repo_ref(str(output["public_result_ref"]))
+    recorded_at = _now()
+
+    policy, programs = _compile_role_programs()
+    by_agent = role_program_by_agent(programs)
+    source_refs = policy["source_refs"]
+    research_profile = load_agent_transport_profile(
+        _read_json(paths["provider_profile_ref"])
+    )
+    submission_profile = load_chat_completion_profile(
+        _read_json(paths["submission_profile_ref"])
+    )
+    validate_deepseek_ga_node_profile(
+        submission_profile, node_class="workpaper_submission_non_thinking"
+    )
+    runtime_paths = resolve_runtime_paths(ROOT)
+    permissions = frozenset({"current_product:read"})
+    retrieval_principal = ResearchRetrievalPrincipal("current", permissions)
+    evidence_principal = ResearchEvidencePackPrincipal("current", permissions)
+    retrieval = ResearchRetrievalService.from_runtime_paths(ROOT, runtime_paths)
+    evidence_service = ResearchEvidencePackService.from_runtime_paths(
+        ROOT, runtime_paths
+    )
+    evidence_pack = evidence_service.get_case("DELL", evidence_principal)
+    if evidence_pack.get("pack_payload_digest") != authority["bound_inputs"].get(
+        "current_evidence_pack_payload_digest"
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_evidence_pack_drift"
+        )
+    truth_policy = _read_json(source_refs["truth_spine_policy_ref"])
+    consumer_policy = _read_json(source_refs["consumer_policy_ref"])
+    task_quantitative = _read_json(
+        source_refs["task_quantitative_result_ref"]
+    )
+    if task_quantitative.get("result_digest") != authority["bound_inputs"].get(
+        "task_quantitative_result_digest"
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_quantitative_input_drift"
+        )
+    cuda = required_cuda_fp16_receipt(
+        purpose="DELL current dynamic natural six-specialist multi-agent live"
+    )
+
+    role_bundles: dict[str, dict[str, Any]] = {}
+    for agent_id in SPECIALIST_AGENT_IDS:
+        role_bundles[agent_id] = _execute_live_role(
+            role_program=by_agent[agent_id],
+            run_id=run_id,
+            attempt_prefix=attempt_prefix,
+            recorded_at=recorded_at,
+            capture_root=capture_root,
+            research_profile=research_profile,
+            submission_profile=submission_profile,
+            retrieval=retrieval,
+            retrieval_principal=retrieval_principal,
+            evidence_pack=evidence_pack,
+            truth_policy=truth_policy,
+            consumer_policy=consumer_policy,
+            task_quantitative=task_quantitative,
+            research_executor=research_executor,
+            submission_executor=submission_executor,
+        )
+
+    successful_agents = [
+        agent_id
+        for agent_id in SPECIALIST_AGENT_IDS
+        if role_bundles[agent_id]["status"] == "completed_contract_valid"
+    ]
+    failed_agents = [
+        agent_id for agent_id in SPECIALIST_AGENT_IDS if agent_id not in successful_agents
+    ]
+    local_failure_receipts = [
+        {
+            "agent_id": agent_id,
+            "failure": deepcopy(role_bundles[agent_id]["failure"]),
+            "owning_plane": (
+                "infrastructure_or_harness_pending_classification"
+            ),
+        }
+        for agent_id in failed_agents
+    ]
+    lead_bundle: dict[str, Any] = {}
+    repairs: list[dict[str, Any]] = []
+    final_workpapers = [
+        deepcopy(role_bundles[agent_id]["workpaper"])
+        for agent_id in successful_agents
+    ]
+    frontier = "specialist_failures_preserved"
+    if len(successful_agents) == len(SPECIALIST_AGENT_IDS):
+        lead_session, lead_events = _create_lead_session(
+            run_id=run_id,
+            workpapers=final_workpapers,
+            recorded_at=recorded_at,
+        )
+        try:
+            first = _execute_live_lead_round(
+                workpapers=final_workpapers,
+                local_failure_receipts=(),
+                session=lead_session,
+                events=lead_events,
+                profile=research_profile,
+                capture_root=capture_root,
+                run_id=run_id,
+                attempt_id=f"{attempt_prefix}-lead-r1",
+                recorded_at=recorded_at,
+                executor=research_executor,
+            )
+            lead_bundle = {
+                "session": lead_session,
+                "events": lead_events,
+                "rounds": [first],
+                "failure": {"phase": "", "code": "", "capture_ref": ""},
+            }
+            accepted = set(first["decision"]["accepted_challenge_ids"])
+            challenge_by_id = {
+                str(row["challenge_id"]): row
+                for row in first["challenge_catalog"]
+            }
+            accepted_rows = [challenge_by_id[value] for value in sorted(accepted)]
+            by_target: dict[str, list[dict[str, Any]]] = {}
+            for challenge in accepted_rows:
+                by_target.setdefault(
+                    str(challenge["target_agent_id"]), []
+                ).append(challenge)
+            if len(by_target) > int(
+                policy["loop_limits"]["maximum_role_repairs_per_lead_round"]
+            ):
+                raise DynamicMultiAgentLoopError(
+                    "dynamic_multi_agent_live_role_repair_budget_exceeded"
+                )
+            for target, challenges in by_target.items():
+                repair = _execute_live_role_repair(
+                    role_bundle=role_bundles[target],
+                    challenges=challenges,
+                    profile=submission_profile,
+                    capture_root=capture_root,
+                    run_id=run_id,
+                    attempt_id=(
+                        f"{attempt_prefix}-{target.split('::')[-1].lower()}-repair-r1"
+                    ),
+                    recorded_at=recorded_at,
+                    executor=submission_executor,
+                )
+                repairs.append(repair)
+                role_bundles[target]["workpaper"] = repair[
+                    "repaired_workpaper"
+                ]
+                role_bundles[target]["events"] = repair["continued_events"]
+            final_workpapers = [
+                deepcopy(role_bundles[agent_id]["workpaper"])
+                for agent_id in SPECIALIST_AGENT_IDS
+            ]
+            if repairs:
+                second = _execute_live_lead_round(
+                    workpapers=final_workpapers,
+                    local_failure_receipts=(),
+                    session=lead_session,
+                    events=lead_events,
+                    profile=research_profile,
+                    capture_root=capture_root,
+                    run_id=run_id,
+                    attempt_id=f"{attempt_prefix}-lead-r2",
+                    recorded_at=recorded_at,
+                    executor=research_executor,
+                )
+                lead_bundle["rounds"].append(second)
+                frontier = (
+                    "proceed_to_independent_evaluation"
+                    if not second["decision"]["accepted_challenge_ids"]
+                    and second["decision"]["next_state"]
+                    == "proceed_to_evaluation"
+                    else "bounded_lead_frontier_requires_successor_or_data"
+                )
+            else:
+                frontier = (
+                    "proceed_to_independent_evaluation"
+                    if first["decision"]["next_state"]
+                    == "proceed_to_evaluation"
+                    else "lead_paused_for_data_or_tool"
+                )
+        except ModelGatewayError as exc:
+            lead_bundle = {
+                "session": lead_session,
+                "events": lead_events,
+                "rounds": lead_bundle.get("rounds", []),
+                "failure": {
+                    "phase": "provider_transport_or_response",
+                    "code": exc.code,
+                    "capture_ref": (
+                        _relative(Path(exc.capture_ref))
+                        if exc.capture_ref
+                        else ""
+                    ),
+                },
+            }
+            frontier = "lead_terminal_failure_preserved"
+        except (DynamicMultiAgentLoopError, ValueError) as exc:
+            lead_bundle = {
+                "session": lead_session,
+                "events": lead_events,
+                "rounds": lead_bundle.get("rounds", []),
+                "failure": {
+                    "phase": "lead_or_repair_contract",
+                    "code": (
+                        exc.code
+                        if isinstance(exc, DynamicMultiAgentLoopError)
+                        else str(exc)
+                    ),
+                    "capture_ref": "",
+                },
+            }
+            frontier = "lead_or_repair_terminal_failure_preserved"
+
+    provider_calls = sum(
+        _provider_attempt_count(bundle["events"])
+        for bundle in role_bundles.values()
+    ) + _provider_attempt_count(lead_bundle.get("events") or ())
+    all_requests = [
+        request_id
+        for bundle in role_bundles.values()
+        for request_id in bundle["execution"]["request_ids_executed"]
+    ]
+    all_rounds = sum(
+        int(bundle["execution"]["retrieval_rounds_executed"])
+        for bundle in role_bundles.values()
+    )
+    if not (
+        provider_calls <= expected_live_execution_budget()["maximum_model_calls"]
+        and len(set(all_requests)) == len(all_requests)
+        and len(all_requests)
+        <= expected_live_execution_budget()["maximum_s1_s2_requests"]
+        and all_rounds
+        <= expected_live_execution_budget()["maximum_retrieval_rounds"]
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_live_aggregate_budget_invalid"
+        )
+    succeeded = frontier == "proceed_to_independent_evaluation"
+    status = (
+        "completed_contract_valid_assessment_pending"
+        if succeeded
+        else "terminal_frontier_preserved_no_automatic_rerun"
+    )
+    full_body = {
+        "schema_version": LIVE_FULL_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": recorded_at,
+        "authority_ref": _relative(authority_path),
+        "authority_sha256": _sha256(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "policy": policy,
+        "role_programs_digest": programs["role_programs_digest"],
+        "role_bundles": [role_bundles[agent_id] for agent_id in SPECIALIST_AGENT_IDS],
+        "lead_bundle": lead_bundle,
+        "repairs": repairs,
+        "final_workpapers": final_workpapers,
+        "frontier": frontier,
+        "cuda_receipt": cuda,
+        "execution": {
+            "provider_calls_attempted": provider_calls,
+            "maximum_provider_calls": expected_live_execution_budget()[
+                "maximum_model_calls"
+            ],
+            "specialist_sessions_started": 6,
+            "specialist_sessions_completed": len(successful_agents),
+            "specialist_sessions_failed": len(failed_agents),
+            "retrieval_rounds_executed": all_rounds,
+            "request_ids_executed": all_requests,
+            "unique_request_ids_executed": len(set(all_requests)),
+            "lead_rounds_executed": len(lead_bundle.get("rounds") or ()),
+            "role_repairs_executed": len(repairs),
+            "external_source_network_calls": 0,
+            "candidate_promotions": 0,
+            "retries": 0,
+            "fallbacks": 0,
+        },
+        "claims": {
+            "natural_dynamic_multi_agent_executed": True,
+            "six_independent_specialists_completed": len(successful_agents) == 6,
+            "natural_lead_coordination_completed": bool(
+                lead_bundle.get("rounds")
+            ),
+            "role_local_feedback_repairs_completed": len(repairs),
+            "current_S1_S2_executed": all_rounds > 0,
+            "initial_evidence_prefeed": False,
+            "S3_pass": False,
+            "product_acceptance": False,
+            "release_ready": False,
+        },
+        "known_boundary": authority["known_boundary"],
+    }
+    full = {**full_body, "full_result_digest": canonical_digest(full_body)}
+    _write_json(private_root / "full_result.json", full, exclusive=True)
+
+    role_summaries = []
+    for agent_id in SPECIALIST_AGENT_IDS:
+        bundle = role_bundles[agent_id]
+        role_summaries.append(
+            {
+                "agent_id": agent_id,
+                "status": bundle["status"],
+                "provider_calls_attempted": bundle["execution"][
+                    "provider_calls_attempted"
+                ],
+                "retrieval_rounds_executed": bundle["execution"][
+                    "retrieval_rounds_executed"
+                ],
+                "request_ids_executed": bundle["execution"][
+                    "request_ids_executed"
+                ],
+                "reviewed_evidence_count": len(
+                    {
+                        str(row["evidence_ref"])
+                        for response in bundle["round_responses"]
+                        for row in response.get("reviewed_evidence") or ()
+                    }
+                ),
+                "numeric_fact_count": len(
+                    {
+                        str(row["numeric_ref"])
+                        for response in bundle["round_responses"]
+                        for row in response.get("numeric_facts") or ()
+                    }
+                ),
+                "remaining_gap_count": len(
+                    {
+                        str(row["gap_ref"])
+                        for response in bundle["round_responses"]
+                        for row in response.get("residual_gaps") or ()
+                    }
+                ),
+                "workpaper": deepcopy(bundle["workpaper"]),
+                "failure": deepcopy(bundle["failure"]),
+            }
+        )
+    public_body = {
+        "schema_version": LIVE_RESULT_SCHEMA,
+        "status": status,
+        "recorded_at": recorded_at,
+        "authority_ref": _relative(authority_path),
+        "implementation_commit": authority["implementation_commit"],
+        "case_key": "DELL",
+        "model": research_profile.model,
+        "frontier": frontier,
+        "execution": full["execution"],
+        "role_summaries": role_summaries,
+        "lead_summary": {
+            "round_count": len(lead_bundle.get("rounds") or ()),
+            "decisions": [
+                deepcopy(row["decision"])
+                for row in lead_bundle.get("rounds") or ()
+            ],
+            "failure": deepcopy(lead_bundle.get("failure") or {}),
+        },
+        "repair_summaries": [
+            {
+                "agent_id": row["agent_id"],
+                "challenge_ids": row["challenge_ids"],
+                "prior_workpaper_digest": row["prior_workpaper_digest"],
+                "repaired_workpaper_digest": row["repaired_workpaper"][
+                    "workpaper_digest"
+                ],
+                "authority_refs_unchanged": row[
+                    "authority_refs_unchanged"
+                ],
+            }
+            for row in repairs
+        ],
+        "claims": full["claims"],
+        "acceptance": {
+            "dynamic_multi_agent_contract_pass": succeeded,
+            "L1_assessment_pending": succeeded,
+            "eight_dimension_content_assessment_pending": succeeded,
+            "S3_pass": False,
+            "product_acceptance": False,
+            "release_ready": False,
+        },
+        "private_full_result_ref": _relative(private_root / "full_result.json"),
+        "private_full_result_sha256": _sha256(private_root / "full_result.json"),
+        "known_boundary": authority["known_boundary"],
+    }
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_json(public_path, public, exclusive=True)
+    return public
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode",
-        choices=("zero-call", "zero-call-repair-successor"),
+        choices=("zero-call", "zero-call-repair-successor", "live"),
         default="zero-call",
     )
-    parser.add_argument("--attempt-id", required=True)
+    parser.add_argument("--attempt-id")
+    parser.add_argument("--authority")
     parser.add_argument("--predecessor-private")
     parser.add_argument("--private-output")
     parser.add_argument("--public-output")
     args = parser.parse_args()
+    if args.mode != "live" and not args.attempt_id:
+        parser.error("--attempt-id is required for zero-call modes")
     runtime_paths = resolve_runtime_paths(ROOT)
     private_output = (
         Path(args.private_output).resolve()
         if args.private_output
         else runtime_paths.workbench_private_root
         / "fin_0_1_3_s3_current_dynamic_multi_agent"
-        / args.attempt_id
+        / str(args.attempt_id or "live-authority-bound")
         / (
             "zero_call_full_result.json"
             if args.mode == "zero-call"
-            else "zero_call_repair_successor_full_result.json"
+            else (
+                "zero_call_repair_successor_full_result.json"
+                if args.mode == "zero-call-repair-successor"
+                else "full_result.json"
+            )
         )
     )
     public_default = (
         DEFAULT_PUBLIC
         if args.mode == "zero-call"
-        else DEFAULT_REPAIR_PUBLIC
+        else (
+            DEFAULT_REPAIR_PUBLIC
+            if args.mode == "zero-call-repair-successor"
+            else DEFAULT_LIVE_PUBLIC
+        )
     )
     public_output = Path(args.public_output or public_default)
     if not public_output.is_absolute():
         public_output = ROOT / public_output
-    if args.mode == "zero-call":
+    if args.mode == "live":
+        if not args.authority:
+            parser.error("--authority is required for live")
+        authority_path = Path(args.authority)
+        if not authority_path.is_absolute():
+            authority_path = ROOT / authority_path
+        result = run_live(authority_path=authority_path)
+    elif args.mode == "zero-call":
         result = run_zero_call(
             attempt_id=args.attempt_id,
             private_output=private_output,

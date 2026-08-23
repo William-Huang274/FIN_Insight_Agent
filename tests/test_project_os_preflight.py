@@ -8,6 +8,7 @@ import shutil
 import pytest
 
 from sec_agent.project_os_preflight import (
+    CURRENT_DYNAMIC_MULTI_AGENT_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_SCOPE,
@@ -27,6 +28,7 @@ from sec_agent.project_os_preflight import (
     MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
     _validate_current_dynamic_single_unit_decision,
+    _validate_current_dynamic_multi_agent_decision,
     _validate_current_dynamic_single_unit_semantic_repair_decision,
     _validate_dynamic_five_cell_claim_surface_successor_decision,
     _validate_dynamic_five_cell_node_successor_decision,
@@ -168,6 +170,11 @@ DYNAMIC_SINGLE_CELL_DECISION_REF = (
 CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "live_scope_decision_v1_0.json"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
     "live_scope_decision_v1_0.json"
 )
 CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_REF = (
@@ -1276,6 +1283,38 @@ def test_current_dynamic_single_unit_decision_binds_current_loop_and_budget() ->
     )
     assert result["run_scope_id"] == CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE
     assert result["decision_projection"]["current_dynamic_single_unit"] is True
+
+
+def test_current_dynamic_multi_agent_decision_binds_six_role_live_scope() -> None:
+    decision = json.loads(
+        (ROOT / CURRENT_DYNAMIC_MULTI_AGENT_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    projection = _validate_current_dynamic_multi_agent_decision(
+        root=ROOT,
+        decision=decision,
+    )
+    assert projection["run_scope_id"] == CURRENT_DYNAMIC_MULTI_AGENT_SCOPE
+    assert projection["current_dynamic_multi_agent"] is True
+    assert projection["execution_limits"]["maximum_model_calls"] == 29
+    assert projection["execution_limits"]["maximum_s1_s2_requests"] == 13
+    assert set(projection["node_profiles"]) == {
+        "specialist_request_planning",
+        "specialist_reflection_and_plan_delta",
+        "specialist_workpaper_submission",
+        "research_lead_coordination",
+        "role_local_repair_submission",
+    }
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=CURRENT_DYNAMIC_MULTI_AGENT_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    assert result["run_scope_id"] == CURRENT_DYNAMIC_MULTI_AGENT_SCOPE
+    assert result["decision_projection"]["current_dynamic_multi_agent"] is True
+    assert "six independent specialist sessions" in result["known_boundary"]
 
 
 def test_current_dynamic_single_unit_decision_rejects_budget_drift() -> None:

@@ -1,0 +1,149 @@
+{
+  "schema_version": "fin_ia_s3_current_dynamic_single_unit_semantic_patch_content_assessment_v1_0",
+  "status": "dynamic_single_unit_L1_L2_and_applicable_content_pass_multi_agent_entry_eligible",
+  "recorded_at": "2026-08-23T14:48:00+08:00",
+  "assessment_kind": "independent_codex_capture_bound_semantic_patch_assessment",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "source_requalification_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_semantic_patch_capture_requalification_zero_call_result_v1_0.json",
+  "source_requalification_sha256": "06a198503add4b68b0dde7e0f3c3e817eee19390e06c48753cf63fe76541a1fa",
+  "source_requalification_result_digest": "ba814058a1b27d27323b7bad4dd12a333f37c6f464015f9c5f29102616962d4a",
+  "source_workpaper_digest": "ae3b4a03b6d5422c7601070e04edde9c59c4889dcf9dfe83a0abdb1333718a8d",
+  "source_repair_receipt_digest": "5bac37f1f8fd126f5ad98d1fb34684043dc71bbc7b792f800f22522266288eb9",
+  "implementation_commit": "a4823014fa0fd407f79d6bd59c888458377ed1a7",
+  "paired_predecessor_assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_workpaper_submission_content_assessment_v1_0.json",
+  "paired_predecessor_assessment_sha256": "c8fd16101d2df0b852772494e427e5a8582c8f43d4581463d77ec37ffac19b41",
+  "execution_observation": {
+    "natural_dynamic_research_provider_calls_reused": 3,
+    "natural_dynamic_research_rounds_reused": 2,
+    "natural_repair_plan_provider_calls_reused": 1,
+    "natural_semantic_patch_provider_calls_reused": 1,
+    "new_provider_calls_for_requalification_or_assessment": 0,
+    "new_retrieval_rounds": 0,
+    "new_s1_or_s2_requests": 0,
+    "new_evidence": 0,
+    "candidate_promotions": 0,
+    "all_five_feedback_receipts_consumed": true,
+    "tool_and_validator_reference_envelope_aligned": true
+  },
+  "l1_financial_truth": {
+    "status": "pass_for_current_dynamic_single_unit",
+    "checks": {
+      "case_and_cell_identity_correct": true,
+      "company_metrics_not_attributed_to_AI_product_profit": true,
+      "gross_profit_and_operating_income_separated": true,
+      "historical_mix_context_not_used_as_current_period_cause": true,
+      "management_target_remains_unaudited_issuer_assertion": true,
+      "value_pool_allocation_remains_unresolved": true,
+      "component_identity_and_cash_timing_remain_unresolved": true,
+      "gap_closed_without_new_evidence": 0,
+      "unsupported_numeric_surface_count": 0,
+      "harness_generated_research_judgment": false
+    },
+    "finding": "The repaired workpaper resolves all five material R5 findings. It reports company revenue, gross profit, gross margin, operating income and operating margin on their own bases; refuses to infer AI-product profit from those company totals; keeps the older mix explanation historical; downgrades the mid-single-digit statement to an unaudited issuer assertion; and leaves value-pool allocation, component identity and cash timing unresolved where direct evidence is absent."
+  },
+  "l2_evidence_authority": {
+    "status": "pass_for_current_dynamic_single_unit",
+    "reference_inventory": {
+      "unique_evidence_refs": 12,
+      "unique_numeric_refs": 10,
+      "unique_numeric_relation_refs": 5,
+      "unique_estimate_refs": 2,
+      "unique_gap_refs": 9,
+      "total_unique_authority_refs": 38,
+      "missing_or_unknown_refs": 0
+    },
+    "checks": {
+      "all_references_exist_in_current_case_authority": true,
+      "candidate_or_rejected_item_used": false,
+      "gap_promoted_to_fact": false,
+      "period_and_use_role_respected": true,
+      "new_evidence_or_authority_added": false,
+      "plan_required_current_S2_refs_added": 3,
+      "unrelated_current_context_ref_admitted": false
+    },
+    "finding": "The only references newly used by the repaired surfaces are two already reviewed operating-income NumericFacts and their same-quarter relation, exactly as required by the accepted repair plan. They are not new Evidence and do not widen the study."
+  },
+  "content_quality": {
+    "formal_eight_dimension_score": null,
+    "formal_score_reason": "Q5 cross-unit synthesis and Q8 final-report usability are outside a pre-registered single-unit workpaper. A formal eight-dimension product score would therefore overstate the result.",
+    "diagnostic_applicable_score": 21,
+    "diagnostic_applicable_maximum": 24,
+    "dimensions": {
+      "Q1_company_and_question_specificity": {
+        "score": 4,
+        "reason": "The workpaper stays specific to DELL value capture across revenue, gross profit, operating income, cash conversion, demand visibility and supply/value-allocation constraints."
+      },
+      "Q2_evidence_to_conclusion_argument": {
+        "score": 4,
+        "reason": "Each material conclusion now preserves source role, period and authority; management statements and industry-chain context are no longer promoted into verified DELL economics."
+      },
+      "Q3_financial_and_numeric_interpretation": {
+        "score": 4,
+        "reason": "Revenue, gross profit, gross margin, operating income and operating margin are separated and bound to same-quarter NumericFacts and relations without inferring product-level profit."
+      },
+      "Q4_causal_mechanism_and_industry_logic": {
+        "score": 3,
+        "reason": "The revenue-to-profit-to-cash chain is coherent and distinguishes directional upstream context from DELL execution, but direct product economics, value allocation and cash-timing evidence remain unavailable."
+      },
+      "Q5_cross_cell_synthesis_and_conflict": {
+        "score": null,
+        "reason": "Not applicable until the other four research units execute and Lead performs cross-unit synthesis."
+      },
+      "Q6_counterthesis_risk_and_gap_discipline": {
+        "score": 4,
+        "reason": "Counterarguments remain company-specific and material, while unsupported value-pool, component and timing explanations are explicitly retained as unresolved rather than converted into facts."
+      },
+      "Q7_what_would_change_and_action_value": {
+        "score": 2,
+        "reason": "The observables and source directions are useful, but the locked WWC surface still lacks enough bounded thresholds and time horizons for senior monitoring."
+      },
+      "Q8_senior_delivery_usability": {
+        "score": null,
+        "reason": "Not applicable until a verifier-bound multi-unit report is rendered."
+      }
+    }
+  },
+  "paired_comparison": {
+    "predecessor_status": "dynamic_research_and_contract_pass_financial_truth_and_evidence_authority_fail",
+    "same_dynamic_research_state": true,
+    "same_case_and_cell": true,
+    "same_reviewed_evidence_and_numeric_authority": true,
+    "same_locked_counterargument_gap_and_WWC_surfaces": true,
+    "predecessor_applicable_score": 16,
+    "current_applicable_score": 21,
+    "applicable_score_gain": 5,
+    "material_gain": "The model consumed five actionable FeedbackReceipts, proposed a bounded PlanDelta and repaired only thesis, mechanism and sourced claims. All five L1/L2 failures were removed without new Evidence, local prose rewriting or relaxed financial authority.",
+    "formal_model_A_B": false,
+    "formal_pair_reason": "This is a same-state feedback-driven successor comparison, not two independent model profiles or two fresh end-to-end runs."
+  },
+  "remaining_non_blocking_findings": [
+    {
+      "level": "L3_what_would_change_specificity",
+      "finding": "The locked WWC items still need measurable thresholds or decision horizons; this should be tested during cross-unit Lead coordination rather than reopening the accepted single-unit patch."
+    },
+    {
+      "level": "L3_source_density",
+      "finding": "Direct DELL product-level margin, unit, ASP, PVM, supplier allocation and cash-timing evidence remains absent. The workpaper handles that boundary correctly, but the later full report will still depend on the other research units and qualified external-source use."
+    },
+    {
+      "level": "L3_delivery_scope",
+      "finding": "This artifact is a research workpaper, not bilingual senior-facing prose, charts or final report layout. Those remain Writer and S4 concerns after multi-unit research is proven."
+    }
+  ],
+  "acceptance": {
+    "natural_dynamic_research_loop_executed": true,
+    "natural_feedback_plan_and_patch_executed": true,
+    "current_dynamic_single_unit_L1_pass": true,
+    "current_dynamic_single_unit_L2_pass": true,
+    "current_dynamic_single_unit_applicable_content_pass": true,
+    "dynamic_single_unit_accepted": true,
+    "dynamic_multi_agent_entry_eligible": true,
+    "dynamic_multi_agent_live_authority_signed": false,
+    "S3_acceptance": false,
+    "qualified_human_acceptance": false,
+    "workbench_publication": false,
+    "release_ready": false
+  },
+  "next_decision_boundary": "Close RC-S3-062 for the DELL value_capture single-unit scope. Next build a zero-call, current-baseline dynamic multi-agent authority that reuses this accepted unit only where its immutable state is valid, makes the other four research roles independently consume S1/S2 and feedback, and preserves separate Lead, Verifier and Writer gates. No full-report, MU/NVDA, heterogeneous generalization, Workbench publication or release claim is implied by this assessment."
+}

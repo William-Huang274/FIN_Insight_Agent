@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import hashlib
 import json
 from pathlib import Path
 
@@ -58,6 +59,14 @@ FAILED_R7_RESULT = ROOT / (
     "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/"
     "dell-current-dynamic-single-unit-r7-semantic-patch-20260823t0504z/"
     "full_result.json"
+)
+REQUALIFIED_R7_RESULT = ROOT / (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "semantic_patch_capture_requalification_zero_call_result_v1_0.json"
+)
+R7_CONTENT_ASSESSMENT = ROOT / (
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "semantic_patch_content_assessment_v1_0.json"
 )
 
 
@@ -459,6 +468,36 @@ def test_R7_capture_requalification_uses_no_new_call_or_evidence() -> None:
         "numeric_relation_refs": ["REL::E3A67501DFA73ACF"],
     }
     assert result["acceptance"]["L1_L2_reassessment_pending"] is True
+
+
+def test_R7_independent_assessment_is_bound_and_does_not_over_accept() -> None:
+    result = _json(REQUALIFIED_R7_RESULT)
+    assessment = _json(R7_CONTENT_ASSESSMENT)
+
+    assert assessment["source_requalification_sha256"] == hashlib.sha256(
+        REQUALIFIED_R7_RESULT.read_bytes()
+    ).hexdigest()
+    assert assessment["source_requalification_result_digest"] == result[
+        "result_digest"
+    ]
+    assert assessment["source_workpaper_digest"] == canonical_digest(
+        result["workpaper"]
+    )
+    assert assessment["source_repair_receipt_digest"] == canonical_digest(
+        result["repair_receipt"]
+    )
+    assert assessment["l1_financial_truth"]["status"].startswith("pass_")
+    assert assessment["l2_evidence_authority"]["status"].startswith("pass_")
+    assert assessment["content_quality"]["diagnostic_applicable_score"] == 21
+    assert assessment["content_quality"]["formal_eight_dimension_score"] is None
+    assert assessment["acceptance"]["dynamic_single_unit_accepted"] is True
+    assert assessment["acceptance"]["dynamic_multi_agent_entry_eligible"] is True
+    assert assessment["acceptance"]["dynamic_multi_agent_live_authority_signed"] is False
+    assert assessment["acceptance"]["S3_acceptance"] is False
+    assert assessment["acceptance"]["qualified_human_acceptance"] is False
+    assert assessment["execution_observation"][
+        "new_provider_calls_for_requalification_or_assessment"
+    ] == 0
 
 
 def test_semantic_repair_envelope_still_rejects_unrelated_context_ref() -> None:

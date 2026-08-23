@@ -2,7 +2,7 @@
 
 时间：2026-08-23
 
-状态：`R5_contract_complete / independent_L1_L2_fail / R6_content_repair_zero_call_proven / live_authority_pending`
+状态：`R5_contract_complete / independent_L1_L2_fail / R6_content_repair_zero_call_proven / exact_Project_OS_scope_ready / clean_preflight_pending`
 
 ## R5 自然运行实际完成了什么
 
@@ -59,5 +59,19 @@ R6 zero-call 使用 R5 public／private digests 与独立评估逐项绑定，�
 - Python compileall、pyflakes：通过；
 - Workbench TypeScript typecheck 与 Vite production build：通过；
 - active baseline：`211 Python / 8 frontend / 5 detectors / 28 Runtime / 0 forbidden`。
+
+## R6 Project OS 精确范围门
+
+旧的 current multi-agent scope decision 仍描述最初六角色全链上界：29 次 Provider attempt、13 个 S1/S2 request 和 12 轮检索。它是历史 R1 全链决策，不能拿来为当前只修七项语义错误的 R6 签权。一次只读预检因此只用于发现范围漂移，没有据此签发 authority，也没有调用模型。
+
+当前新增独立的 `content_repair_scope_decision_v1_0`，并把预算编译器从 runner 移到 provider-neutral repair Runtime 供 Project OS 与执行器共同引用。该门只允许：
+
+- Demand、Operating、Value、Cash、Counterevidence 五个责任角色各一次分析和一次严格提交；
+- Supply 原底稿与全部 Evidence／NumericFact／Relation／gap 权限保持不变；
+- 一次 Lead 分析和一次严格提交；
+- 总计最多 12 次 Provider attempt，0 新 S1/S2、0 检索、0 外源、0 retry、0 fallback、0 Candidate promotion；
+- Writer、S3 acceptance、泛化、产品发布与 release 继续禁止。
+
+反向测试证明把调用数改为 13、替换任一责任角色或漂移绑定摘要都会 fail closed。全仓回归随该门更新为 `1136 passed`，仍只有两条既有 SWIG deprecation warning。正式 repository-aware preflight 必须等这份决策与验证代码形成 clean／synced commit 后再执行。
 
 下一门是完成账本与工程检查、clean commit／push、current decision-bound Project OS preflight，再签发唯一一次 R6 content-repair authority。自然 R6 完成后仍必须独立复核七项问题和全角色新输出；只有 L1／L2 与内容质量通过，Writer 才能解冻。R5 不会被追认为内容通过，R6 也不授权新资料、MU／NVDA、异质留出、Workbench publication 或 release。

@@ -15,6 +15,28 @@ class MultiAgentContentRepairError(ValueError):
     """Fail-closed error for independent multi-agent content repair inputs."""
 
 
+def expected_content_repair_budget() -> dict[str, int]:
+    """Exact shared budget for five role repairs and one Lead review."""
+
+    return {
+        "maximum_new_model_calls": 12,
+        "maximum_new_transport_attempts": 12,
+        "role_repair_drafts": 5,
+        "role_repair_submissions": 5,
+        "lead_coordination_drafts": 1,
+        "lead_coordination_submissions": 1,
+        "maximum_role_repairs": 5,
+        "maximum_lead_rounds": 1,
+        "maximum_new_s1_s2_requests": 0,
+        "maximum_new_retrieval_rounds": 0,
+        "maximum_external_source_network_calls": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+
+
 def _require(condition: bool, code: str) -> None:
     if not condition:
         raise MultiAgentContentRepairError(code)
@@ -184,6 +206,7 @@ __all__ = [
     "MultiAgentContentRepairError",
     "ROLE_SEMANTIC_RELATION_RULES",
     "compile_independent_content_challenges",
+    "expected_content_repair_budget",
     "rebind_workpaper_context_semantic_rules",
     "semantic_relation_rules",
 ]

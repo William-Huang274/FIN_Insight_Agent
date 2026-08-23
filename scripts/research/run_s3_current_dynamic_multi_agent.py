@@ -115,6 +115,7 @@ from sec_agent.research.multi_agent_preview_runtime import (  # noqa: E402
 )
 from sec_agent.research.multi_agent_content_repair import (  # noqa: E402
     compile_independent_content_challenges,
+    expected_content_repair_budget,
     rebind_workpaper_context_semantic_rules,
 )
 from sec_agent.runtime_bridge.paths import resolve_runtime_paths  # noqa: E402
@@ -2575,28 +2576,6 @@ def expected_submission_repair_resume_budget() -> dict[str, int]:
         "maximum_new_retrieval_rounds": 1,
         "maximum_lead_rounds": 2,
         "maximum_role_repairs": 3,
-        "maximum_external_source_network_calls": 0,
-        "retries": 0,
-        "fallbacks": 0,
-        "candidate_promotions": 0,
-        "current_product_pointer_mutations": 0,
-    }
-
-
-def expected_content_repair_budget() -> dict[str, int]:
-    """Exact budget for five assessment-owned repairs and one Lead review."""
-
-    return {
-        "maximum_new_model_calls": 12,
-        "maximum_new_transport_attempts": 12,
-        "role_repair_drafts": 5,
-        "role_repair_submissions": 5,
-        "lead_coordination_drafts": 1,
-        "lead_coordination_submissions": 1,
-        "maximum_role_repairs": 5,
-        "maximum_lead_rounds": 1,
-        "maximum_new_s1_s2_requests": 0,
-        "maximum_new_retrieval_rounds": 0,
         "maximum_external_source_network_calls": 0,
         "retries": 0,
         "fallbacks": 0,

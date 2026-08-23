@@ -49,6 +49,10 @@ from sec_agent.providers import load_chat_completion_profile
 from sec_agent.research.dynamic_single_unit_loop import (
     compile_workpaper_submission_view,
 )
+from sec_agent.research.multi_agent_content_repair import (
+    CONTENT_ASSESSMENT_SCHEMA_VERSION,
+    expected_content_repair_budget,
+)
 
 
 CURRENT_PREFLIGHT_SCHEMA = "fin_ia_current_decision_bound_project_os_preflight_v1_0"
@@ -181,6 +185,15 @@ CURRENT_DYNAMIC_MULTI_AGENT_DECISION_STATUS = (
 )
 CURRENT_DYNAMIC_MULTI_AGENT_SCOPE = (
     "one_DELL_current_dynamic_six_specialist_multi_agent_exact_once"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_repair_scope_decision_v1_0"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_STATUS = (
+    "R5_independent_L1_L2_failure_preserved_one_five_role_repair_authorized"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SCOPE = (
+    "one_clean_authorized_five_role_content_repair_and_Lead_recheck"
 )
 DYNAMIC_FIVE_CELL_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
@@ -542,6 +555,14 @@ def _validate_fixed_pack_decision(
         )
     if decision.get("schema_version") == CURRENT_DYNAMIC_MULTI_AGENT_DECISION_SCHEMA:
         return _validate_current_dynamic_multi_agent_decision(
+            root=root,
+            decision=decision,
+        )
+    if (
+        decision.get("schema_version")
+        == CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_SCHEMA
+    ):
+        return _validate_current_dynamic_multi_agent_content_repair_decision(
             root=root,
             decision=decision,
         )
@@ -6825,6 +6846,230 @@ def _validate_current_dynamic_multi_agent_decision(
     }
 
 
+def _validate_current_dynamic_multi_agent_content_repair_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    expected_equal = {
+        "schema_version": CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_SCHEMA,
+        "status": CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "MULTI_AGENT::DELL::CONTENT_REPAIR",
+        "run_scope_id": CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SCOPE,
+        "evidence_mode": (
+            "immutable_R5_workpapers_independent_feedback_zero_new_evidence"
+        ),
+        "next_authorized_scope": CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SCOPE,
+        "replacement_is_new_attempt_not_retry": True,
+        "content_repair_live_authorized": True,
+        "credential_presence_required": True,
+        "immutable_R5_predecessor_required": True,
+        "exact_five_role_repairs_required": True,
+        "supply_workpaper_reuse_required": True,
+        "authority_sets_unchanged_required": True,
+        "one_natural_lead_recheck_required": True,
+        "independent_reassessment_required": True,
+        "provider_neutral_semantic_contract_required": True,
+        "new_S1_S2_authorized": False,
+        "external_source_network_authorized": False,
+        "candidate_promotion_authorized": False,
+        "writer_authorized": False,
+        "S3_acceptance_authorized": False,
+        "heterogeneous_generalization_authorized": False,
+        "product_publication_authorized": False,
+        "release_authorized": False,
+    }
+    if any(decision.get(key) != value for key, value in expected_equal.items()):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_identity_invalid"
+        )
+    expected_budget = expected_content_repair_budget()
+    if dict(decision.get("execution_budget") or {}) != expected_budget:
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_budget_invalid"
+        )
+    if tuple(decision.get("repair_agent_ids") or ()) != (
+        "AGENT::DEMAND_QUALITY",
+        "AGENT::OPERATING_PERFORMANCE",
+        "AGENT::VALUE_CAPTURE",
+        "AGENT::CASH_CONVERSION",
+        "AGENT::COUNTEREVIDENCE",
+    ) or tuple(decision.get("material_finding_issue_ids") or ()) != (
+        "RC-S3-074-expense-bridge-contribution-share-misstated",
+        "RC-S3-075-same-quarter-orders-and-revenue-promoted-to-cohort-conversion",
+        "RC-S3-076-balance-sheet-stock-delta-promoted-to-cash-absorption",
+        "RC-S3-077-cross-company-customer-structure-inferred-from-NVDA",
+        "RC-S3-078-NVDA-export-control-risk-promoted-to-DELL-exposure",
+        "RC-S3-079-company-gross-margin-used-as-necessary-test-of-product-pricing-power",
+        "RC-S3-080-demand-context-promoted-to-definite-pull-forward-and-digestion",
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_target_invalid"
+        )
+    _, zero = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="zero_call_result_ref",
+        sha_field="zero_call_result_sha256",
+        digest_field="zero_call_result_digest",
+    )
+    _, predecessor_public = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_public_result_ref",
+        sha_field="predecessor_public_result_sha256",
+        digest_field="predecessor_public_result_digest",
+    )
+    _, predecessor_private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_private_result_ref",
+        sha_field="predecessor_private_result_sha256",
+        digest_field="predecessor_private_full_result_digest",
+        artifact_digest_field="full_result_digest",
+    )
+    _, assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="assessment_ref",
+        sha_field="assessment_sha256",
+    )
+    if not (
+        zero.get("status") == "content_repair_zero_call_proven"
+        and all((zero.get("checks") or {}).values())
+        and (zero.get("execution") or {}).get("model_calls") == 0
+        and predecessor_public.get("status")
+        == "completed_contract_valid_assessment_pending"
+        and predecessor_private.get("status")
+        == "completed_contract_valid_assessment_pending"
+        and predecessor_public.get("private_full_result_sha256")
+        == _sha256(_repo_path(root, str(decision["predecessor_private_result_ref"])))
+        and assessment.get("schema_version") == CONTENT_ASSESSMENT_SCHEMA_VERSION
+        and assessment.get("status")
+        == "dynamic_multi_agent_contract_pass_financial_truth_and_evidence_authority_fail_writer_not_eligible"
+        and assessment.get("source_result_digest")
+        == predecessor_public.get("result_digest")
+        and assessment.get("private_full_result_digest")
+        == predecessor_private.get("full_result_digest")
+        and len(assessment.get("material_findings") or ()) == 7
+        and zero.get("predecessor_public_result_digest")
+        == predecessor_public.get("result_digest")
+        and zero.get("assessment_sha256")
+        == str(decision["assessment_sha256"])
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_chain_invalid"
+        )
+    for ref_field, sha_field in (
+        ("runner_ref", "runner_sha256"),
+        ("content_repair_runtime_ref", "content_repair_runtime_sha256"),
+        ("role_loop_runtime_ref", "role_loop_runtime_sha256"),
+    ):
+        bound_path = _repo_path(root, str(decision.get(ref_field) or ""))
+        if _sha256(bound_path) != str(decision.get(sha_field) or ""):
+            raise ValueError(
+                "project_os_current_dynamic_multi_agent_content_repair_"
+                f"runtime_sha_drift:{ref_field}"
+            )
+    _, profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="provider_profile_ref",
+        sha_field="provider_profile_sha256",
+    )
+    defaults = profile.get("request_defaults") or {}
+    if not (
+        profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and profile.get("base_url") == "https://api.deepseek.com"
+        and profile.get("endpoint") == "/chat/completions"
+        and defaults
+        == {
+            "max_tokens": 32000,
+            "stream": False,
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+        }
+        and (profile.get("authority") or {}).get("retry_count") == 0
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_profile_invalid"
+        )
+    _, submission = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="submission_profile_ref",
+        sha_field="submission_profile_sha256",
+    )
+    if not (
+        submission.get("provider_id") == "deepseek"
+        and submission.get("model") == "deepseek-v4-pro"
+        and submission.get("base_url") == "https://api.deepseek.com"
+        and submission.get("endpoint") == "/chat/completions"
+        and submission.get("request_defaults")
+        == {
+            "max_tokens": 8000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+        and (submission.get("authority") or {}).get("retry_count") == 0
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_submission_profile_invalid"
+        )
+    token_basis = decision.get("token_budget_basis")
+    required_nodes = {
+        "role_repair_analysis": 5,
+        "role_repair_submission": 5,
+        "lead_recheck_analysis": 1,
+        "lead_recheck_submission": 1,
+    }
+    required_fields = {
+        "node_purpose",
+        "input_scale",
+        "required_outputs",
+        "schema_burden",
+        "materiality_quality_risk",
+        "comparable_run_evidence",
+        "reasoning_profile",
+        "stop_and_truncation_behavior",
+        "maximum_calls",
+    }
+    if not (
+        isinstance(token_basis, Mapping)
+        and set(token_basis) == set(required_nodes)
+        and all(
+            isinstance(token_basis[node], Mapping)
+            and set(token_basis[node]) == required_fields
+            and token_basis[node].get("maximum_calls") == maximum_calls
+            and all(
+                len(str(token_basis[node].get(field) or "").strip()) >= 12
+                for field in required_fields - {"maximum_calls"}
+            )
+            for node, maximum_calls in required_nodes.items()
+        )
+        and sum(required_nodes.values())
+        == expected_budget["maximum_new_model_calls"]
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_token_basis_invalid"
+        )
+    return {
+        "clean_proof_status": zero["status"],
+        "provider_id": profile["provider_id"],
+        "provider_model": profile["model"],
+        "api_key_env": profile["api_key_env"],
+        "recent_provider_steps": int(
+            (assessment.get("execution_observation") or {}).get(
+                "new_provider_calls", 0
+            )
+        ),
+        "current_dynamic_multi_agent_content_repair": True,
+        "run_scope_id": decision["run_scope_id"],
+        "execution_limits": expected_budget,
+        "node_profiles": token_basis,
+    }
+
+
 def _validate_current_dynamic_single_unit_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -11677,6 +11922,26 @@ def build_preflight(
             "project_os_current_dynamic_semantic_repair_scope_allowance_missing"
         )
     if (
+        decision_projection.get("current_dynamic_multi_agent_content_repair")
+        is True
+    ):
+        required_allowances = {
+            "RC-S3-074-expense-bridge-contribution-share-misstated",
+            "RC-S3-075-same-quarter-orders-and-revenue-promoted-to-cohort-conversion",
+            "RC-S3-076-balance-sheet-stock-delta-promoted-to-cash-absorption",
+            "RC-S3-077-cross-company-customer-structure-inferred-from-NVDA",
+            "RC-S3-078-NVDA-export-control-risk-promoted-to-DELL-exposure",
+            "RC-S3-079-company-gross-margin-used-as-necessary-test-of-product-pricing-power",
+            "RC-S3-080-demand-context-promoted-to-definite-pull-forward-and-digestion",
+        }
+        if not required_allowances.issubset(
+            set(scope_projection["explicit_allow_issue_ids"])
+        ):
+            raise ValueError(
+                "project_os_current_dynamic_multi_agent_content_repair_"
+                "scope_allowance_missing"
+            )
+    if (
         decision_projection.get("dynamic_temporal_repair_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -11821,7 +12086,39 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if decision_projection.get("current_dynamic_multi_agent") is True:
+    if (
+        decision_projection.get("current_dynamic_multi_agent_content_repair")
+        is True
+    ):
+        known_boundary = (
+            "This current-baseline preflight preserves the immutable R5 DELL "
+            "six-specialist workpaper set, two Lead rounds and independent "
+            "L1/L2 failure. It authorizes exactly five role-local financial-"
+            "truth repairs for Demand, Operating, Value, Cash and "
+            "Counterevidence, each with one analysis draft and one strict "
+            "submission, followed by exactly one Lead recheck analysis and "
+            "one strict submission: at most 12 Provider calls. Supply and all "
+            "Evidence, NumericFact, Relation and gap authority sets remain "
+            "immutable. It permits zero new S1/S2 request, retrieval round, "
+            "external source call, retry, fallback, Candidate promotion or "
+            "product-pointer mutation. Success still requires independent "
+            "L1/L2 and content reassessment and does not authorize Writer, S3 "
+            "acceptance, heterogeneous generalization, Workbench publication "
+            "or release."
+        )
+        required_terms = (
+            "exactly five role-local financial-truth repairs",
+            "followed by exactly one Lead recheck",
+            "at most 12 Provider calls",
+            "zero new S1/S2 request",
+            "does not authorize Writer",
+        )
+        if not all(term in known_boundary for term in required_terms):
+            raise ValueError(
+                "project_os_current_dynamic_multi_agent_content_repair_"
+                "human_boundary_invalid"
+            )
+    elif decision_projection.get("current_dynamic_multi_agent") is True:
         known_boundary = (
             "This current-baseline preflight permits one exact-once DELL "
             "natural dynamic multi-agent run with six independent specialist "

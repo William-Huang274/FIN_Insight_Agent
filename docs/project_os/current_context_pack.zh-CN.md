@@ -1541,3 +1541,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R6 zero-call 全部检查通过，0 模型／Provider／网络／S1/S2／promotion；新自然上限精确为 12 次（五角色各 draft＋submit，Lead draft＋submit），0 retry／fallback。
 - 工程回归：定向 `21 passed`、全仓 `1133 passed`、compileall／pyflakes、Workbench typecheck／production build、active baseline `211／8／5／28／0`、7,774-file secret scan／0。当前下一门为 clean commit／push、fresh Project OS preflight 与唯一 R6 authority；R6 后仍须独立 L1／L2 和内容质量审查，未授权 Writer、S3、泛化、publication 或 release。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/146_R5_multi_agent_completion_semantic_assessment_and_R6_content_repair_zero_call.md`。
+
+### 2026-08-23 R6 精确 Project OS 范围收敛
+
+- 历史 current multi-agent 决策仍投影 29 次全链 Provider attempt、13 个 S1/S2 request 和 12 轮检索；它只适用于最初六角色全链，不能为当前五角色内容返修签权。本轮在签 authority 前发现并阻止了这一范围漂移，0 模型／Provider／网络。
+- 新 `content_repair_scope_decision_v1_0` 与 runner 共用同一 provider-neutral 预算编译器：五个责任角色各 `analysis＋strict submission`，再做一次 Lead `analysis＋strict submission`，精确上限 12 次；Supply 与全部研究权限不变。
+- 新门显式禁止 S1/S2、检索、外源、Candidate promotion、retry、fallback、Writer、S3 acceptance、泛化、publication 和 release。预算改为 13、责任角色漂移或 artifact 摘要漂移均 fail closed。
+- 定向 Project OS／multi-agent 测试 `97 passed`；全仓 `1136 passed`，仅两条既有 SWIG warning。下一门是 clean commit／push 后 repository-aware preflight，再签发唯一 R6 authority；只有独立 L1／L2 与内容质量复评通过才可解冻 Writer。

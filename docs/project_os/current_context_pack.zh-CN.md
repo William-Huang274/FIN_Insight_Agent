@@ -1317,3 +1317,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 价格／配置、Dell 台数、当前供应关系三个请求保留为动态 Agent 的行动性缺口，并分别绑定 `dell-gap-pricing-asp`、`dell-gap-pricing-units`、`dell-gap-supplier-capacity-readthrough`。它们没有 public-information-gap authority。
 - formal 状态为 `ready_for_bounded_dynamic_single_unit_with_actionable_gaps`，只允许下一步建立 DELL `value_capture` 零调用动态 proof 与任务级 TokenBudgetBasis；S1、S2、S3、完整 DELL、多 Agent、Writer 和 release 均仍为 false。
 - clean commit=`e7da7332...c1c4`，全仓 `1049 passed`，public result digest=`224937d9...89ce`。详细记录见 `docs/worklog/fin_0_1_3_s1/072_dell_value_capture_task_pack_readiness.md`。
+
+### 2026-08-23 DELL current dynamic 单单元执行资格决策
+
+- 当前 R32 的两轮零调用动态 proof 和 live runner 已进入 active baseline；旧 `dynamic_single_cell` Project OS 决策仍描述 SEC-only、7 个固定节点的历史伪动态链，不能用于当前运行。
+- 新增独立 `current_dynamic_single_unit` 决策：初始消息只含问题、公司身份、as-of 和受控工具目录；模型选择真实 S1/S2 请求，消费 reviewed Evidence／NumericFact／FeedbackReceipt，再提交 PlanDelta／hypothesis-only GraphDelta／StopDecision 和最终 `value_capture` workpaper。
+- 新权限最多 4 次模型／传输、2 轮检索、12 条 S1/S2 请求；0 retry、0 external source network、0 candidate promotion、0 fallback、0 current pointer mutation。任务级 TokenBudgetBasis 直接绑定 current loop policy，不以省钱或速度删减研究工作。
+- 当前完成决策 Schema、不可变 zero-call／policy／provider binding、预算漂移负测与全仓 `1076 passed`；active baseline 为 `205／8／5／28／0`，879 份 config JSON 和 7,691-file secret scan／0 均通过。正式 clean／synced Project OS preflight 要等本次变更提交并推送后执行。此时尚未发生任何自然模型调用，也未授权多 Agent、S1／S3 验收、publication 或 release。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/122_current_dynamic_single_unit_project_os_execution_decision.md`。

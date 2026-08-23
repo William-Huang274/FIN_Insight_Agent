@@ -8,6 +8,7 @@ import shutil
 import pytest
 
 from sec_agent.project_os_preflight import (
+    CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE,
     FIXED_PACK_SCOPE,
     FRAGMENT_VALIDATION_REPAIR_SCOPE,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE,
@@ -21,6 +22,7 @@ from sec_agent.project_os_preflight import (
     MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE,
     MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
+    _validate_current_dynamic_single_unit_decision,
     _validate_dynamic_five_cell_claim_surface_successor_decision,
     _validate_dynamic_five_cell_node_successor_decision,
     _validate_dynamic_five_cell_partial_successor_decision,
@@ -157,6 +159,11 @@ CAPACITY_PREDECESSOR_REF = (
 DYNAMIC_SINGLE_CELL_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_dynamic_value_capture_live_scope_decision_v1_0.json"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "live_scope_decision_v1_0.json"
 )
 DYNAMIC_FIVE_CELL_DECISION_REF = (
     "configs/research/evals/"
@@ -1199,6 +1206,55 @@ def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() 
     assert result["network_calls"] == 0
     assert result["provider_calls"] == 0
     assert result["credential_value_persisted"] is False
+
+
+def test_current_dynamic_single_unit_decision_binds_current_loop_and_budget() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["status"] == "pass_current_decision_bound_preflight"
+    assert result["run_scope_id"] == CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE
+    projection = result["decision_projection"]
+    assert projection["current_dynamic_single_unit"] is True
+    assert projection["dynamic_single_cell_successor"] is False
+    assert projection["execution_limits"] == {
+        "maximum_model_calls": 4,
+        "maximum_transport_attempts": 4,
+        "maximum_retrieval_rounds": 2,
+        "maximum_s1_s2_requests": 12,
+        "maximum_external_source_network_calls": 0,
+        "retries_per_model_node": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    assert "initial model message contains only" in result["known_boundary"]
+    assert "multi-agent execution" in result["known_boundary"]
+    assert result["network_calls"] == 0
+    assert result["provider_calls"] == 0
+    assert result["credential_value_persisted"] is False
+
+
+def test_current_dynamic_single_unit_decision_rejects_budget_drift() -> None:
+    decision = json.loads(
+        (ROOT / CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    decision["execution_budget"]["maximum_model_calls"] = 5
+
+    with pytest.raises(
+        ValueError,
+        match="project_os_current_dynamic_decision_budget_invalid",
+    ):
+        _validate_current_dynamic_single_unit_decision(
+            root=ROOT,
+            decision=decision,
+        )
 
 
 def test_historical_dynamic_five_cell_decision_fails_closed_after_consumer_successor(

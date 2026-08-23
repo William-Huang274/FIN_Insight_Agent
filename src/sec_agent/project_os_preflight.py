@@ -109,6 +109,15 @@ DYNAMIC_SINGLE_CELL_DECISION_STATUS = (
 DYNAMIC_SINGLE_CELL_SCOPE = (
     "one_honest_DELL_SEC_only_dynamic_single_cell"
 )
+CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_single_unit_live_scope_decision_v1_0"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS = (
+    "current_dynamic_single_unit_zero_call_pass_one_natural_live_authorized"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE = (
+    "one_DELL_current_dynamic_value_capture_single_unit_exact_once"
+)
 DYNAMIC_FIVE_CELL_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
 )
@@ -595,6 +604,14 @@ def _validate_fixed_pack_decision(
         }
     ):
         return _validate_dynamic_counter_successor_decision(
+            root=root,
+            decision=decision,
+        )
+    if (
+        decision.get("schema_version")
+        == CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_SCHEMA
+    ):
+        return _validate_current_dynamic_single_unit_decision(
             root=root,
             decision=decision,
         )
@@ -6513,6 +6530,177 @@ def _validate_dynamic_single_cell_decision(
     }
 
 
+def _validate_current_dynamic_single_unit_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_equal = {
+        "status": CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "run_scope_id": CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE,
+        "evidence_mode": "current_reviewed_pack_dynamic_S1_S2_feedback_loop",
+        "next_authorized_scope": (
+            "one_DELL_current_dynamic_value_capture_live"
+        ),
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_current_dynamic_decision_field_invalid:{field}"
+            )
+
+    for field in (
+        "replacement_is_new_attempt_not_retry",
+        "current_dynamic_single_unit_live_authorized",
+        "credential_presence_required",
+        "initial_evidence_prefeed_forbidden",
+        "model_request_selection_required",
+        "current_S1_S2_execution_required",
+        "feedback_reflection_plan_delta_required",
+        "candidate_promotion_forbidden",
+        "public_gap_self_authorization_forbidden",
+        "same_current_product_pointer_required",
+        "immutable_zero_call_predecessor_required",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                f"project_os_current_dynamic_decision_true_required:{field}"
+            )
+    for field in (
+        "external_source_network_authorized",
+        "multi_agent_authorized",
+        "product_publication_authorized",
+        "S1_acceptance_authorized",
+        "S3_acceptance_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                f"project_os_current_dynamic_decision_false_required:{field}"
+            )
+
+    expected_budget = {
+        "maximum_model_calls": 4,
+        "maximum_transport_attempts": 4,
+        "maximum_retrieval_rounds": 2,
+        "maximum_s1_s2_requests": 12,
+        "maximum_external_source_network_calls": 0,
+        "retries_per_model_node": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if decision.get("execution_budget") != expected_budget:
+        raise ValueError("project_os_current_dynamic_decision_budget_invalid")
+
+    _, zero = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="zero_call_result_ref",
+        sha_field="zero_call_result_sha256",
+        digest_field="zero_call_result_digest",
+    )
+    zero_checks = zero.get("checks") or {}
+    zero_summary = zero.get("execution_summary") or {}
+    if not (
+        zero.get("schema_version")
+        == "fin_ia_s3_dynamic_single_unit_zero_call_result_v1_0"
+        and zero.get("status")
+        == "current_dynamic_single_unit_zero_call_proven"
+        and zero_checks.get("two_real_current_runtime_rounds_executed") is True
+        and zero_checks.get("all_seven_proposition_groups_covered") is True
+        and zero_checks.get("initial_message_contains_only_question_identity_as_of_and_capabilities")
+        is True
+        and zero_checks.get("candidate_never_promoted") is True
+        and zero_summary.get("retrieval_round_count") == 2
+        and zero_summary.get("executed_request_count") == 12
+        and (zero.get("authority") or {}).get("model_calls") == 0
+        and (zero.get("authority") or {}).get("network_calls") == 0
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_zero_call_predecessor_invalid"
+        )
+
+    _, policy = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="loop_policy_ref",
+        sha_field="loop_policy_sha256",
+    )
+    policy_limits = policy.get("loop_limits") or {}
+    policy_authority = policy.get("authority") or {}
+    if not (
+        policy.get("schema_version")
+        == "fin_ia_s3_dynamic_single_unit_loop_policy_v1_0"
+        and policy.get("status")
+        == "bounded_current_runtime_dynamic_single_unit_candidate"
+        and (policy.get("case_identity") or {}).get("case_key") == "DELL"
+        and (policy.get("objective") or {}).get("cell_id") == "value_capture"
+        and policy_limits.get("maximum_retrieval_rounds") == 2
+        and policy_limits.get("maximum_total_request_ids") == 12
+        and policy_limits.get("maximum_provider_steps") >= 4
+        and policy_authority.get("model_selects_research_actions") is True
+        and policy_authority.get("candidate_rank_grants_evidence") is False
+        and policy_authority.get("model_may_self_authorize_public_information_gap")
+        is False
+    ):
+        raise ValueError("project_os_current_dynamic_loop_policy_invalid")
+    if decision.get("token_budget_basis") != policy.get("token_budget_bases"):
+        raise ValueError(
+            "project_os_current_dynamic_token_budget_basis_invalid"
+        )
+
+    _, profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="provider_profile_ref",
+        sha_field="provider_profile_sha256",
+    )
+    defaults = profile.get("request_defaults") or {}
+    if not (
+        profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and profile.get("wire_api")
+        == "openai_compatible_chat_completions"
+        and profile.get("base_url") == "https://api.deepseek.com"
+        and profile.get("endpoint") == "/chat/completions"
+        and profile.get("api_key_env") == "DEEPSEEK_API_KEY"
+        and (profile.get("authority") or {}).get("retry_count") == 0
+        and defaults.get("stream") is False
+        and defaults.get("thinking") == {"type": "enabled"}
+        and defaults.get("reasoning_effort") == "max"
+        and defaults.get("max_tokens") == 16000
+        and "temperature" not in defaults
+        and "top_p" not in defaults
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_provider_profile_invalid"
+        )
+
+    return {
+        "clean_proof_status": zero["status"],
+        "provider_id": profile["provider_id"],
+        "provider_model": profile["model"],
+        "api_key_env": profile["api_key_env"],
+        "recent_provider_steps": 0,
+        "current_dynamic_single_unit": True,
+        "dynamic_single_cell_successor": False,
+        "micro_judgment_successor": False,
+        "run_scope_id": decision["run_scope_id"],
+        "execution_limits": expected_budget,
+        "node_profiles": {
+            "request_planning": policy["token_budget_bases"][
+                "request_planning"
+            ],
+            "reflection_and_plan_delta": policy["token_budget_bases"][
+                "reflection_and_plan_delta"
+            ],
+            "specialist_workpaper": policy["token_budget_bases"][
+                "specialist_workpaper"
+            ],
+        },
+    }
+
+
 def _validate_dynamic_five_cell_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -11269,6 +11457,20 @@ def build_preflight(
             "max-thinking analysis plus one non-thinking strict submission. "
             "It does not authorize new evidence, another analysis retry, "
             "five-cell execution, publication, S3 acceptance, or release."
+        )
+    elif decision_projection.get("current_dynamic_single_unit") is True:
+        known_boundary = (
+            "This current-baseline preflight permits only one exact-once "
+            "DELL current dynamic value-capture single-unit run. The initial "
+            "model message contains only the research question, company "
+            "identity, as-of date and bounded tool catalog. The model must "
+            "select S1/S2 requests, consume reviewed Evidence and typed "
+            "FeedbackReceipts, and submit PlanDelta/GraphDelta/StopDecision "
+            "before one final workpaper. It permits at most two retrieval "
+            "rounds and four model calls, with zero retries, external source "
+            "network calls, candidate promotions or product-pointer changes. "
+            "It does not authorize S1 or S3 acceptance, multi-agent execution, "
+            "publication, heterogeneous generalization or release."
         )
     elif decision_projection.get("dynamic_single_cell_successor") is True:
         known_boundary = (

@@ -90,7 +90,8 @@
   - [x] clean／synced commit、repository-aware preflight 与 fresh R8 authority
   - [x] 唯一 R8 live：1 次 HTTP-200 Demand submission 后重复 R7 mapper 失败，0 retry，Operating／Value／Lead 未调用
   - [x] R8 immutable failure assessment、digest-bound authority ceiling、零调用 replay、六节点假 Provider seam 与全仓工程门
-  - [ ] clean／synced R9 preflight、fresh 六调用 authority 与唯一 R9 live
+  - [x] clean／synced R9 preflight 与 fresh 六调用 authority
+  - [ ] 唯一 R9 live
   - [ ] 七项 finding 的独立 L1／L2、内容质量复评与 Writer 入口决策
 - [ ] MU／NVDA 同核心迁移与三案例 S1–S3 内容质量验收
 - [ ] S4 审阅修复产品闭环

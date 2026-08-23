@@ -39,3 +39,4 @@
   - R8 接管审计与完整执行接缝门：`fin_0_1_3_s3/151_R8_takeover_audit_and_full_seam_gate.md`
   - R8 submission-resume live authority：`fin_0_1_3_s3/152_R8_submission_resume_live_authority.md`
   - R8 重复 mapper 失败与 R9 authority-ceiling 工程门：`fin_0_1_3_s3/153_R8_repeat_mapper_failure_and_R9_authority_ceiling_gate.md`
+  - R9 authority-ceiling resume live authority：`fin_0_1_3_s3/154_R9_authority_ceiling_resume_live_authority.md`

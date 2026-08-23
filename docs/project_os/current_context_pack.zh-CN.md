@@ -1327,3 +1327,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/122_current_dynamic_single_unit_project_os_execution_decision.md`。
 
 - repository-aware formal preflight 已在 clean／synced `925b2cfa...a1e` 通过：凭据只检查存在性且未保存，root-cause scope 无 blocker，zero-call／policy／profile／TokenBudgetBasis 均有效。随后签发唯一 `dell-current-dynamic-single-unit-r1-20260823t0046z` authority；authority 仍需提交并推送后才可执行。
+
+### 2026-08-23 DELL current dynamic R1 transport failure
+
+- R1 在第一个 request-planning provider attempt 即收到 HTTP 400：`Thinking mode does not support this tool_choice`。0 模型输出、0 S1/S2 请求、0 检索轮、0 反思、0 workpaper；失败 capture 与 terminal result 已按 exact-once 保留。
+- 根因属于项目集成回归，不是 DeepSeek 研究能力：新 current runner 绕过仓库已验证的 provider-neutral transport dispatch，直接使用 legacy Chat executor 并发送 forced `tool_choice`，使已由 `RC-PROVIDER-001` 解决的问题重新进入主链。
+- R2 只允许切回既有 v1.1 transport profile／dispatch：thinking wire 省略不支持字段，本地仍要求恰好一个预期 Tool Call。研究问题、current Pack、S1/S2 loop、模型和 4-call budget 均不得变化。
+- 新 `RC-S3-058`、v1.1 scope decision 与 transport regression 已建立；定向 10 项、全仓 `1079 passed`，active baseline `205／8／5／28／0`，882 份 config JSON 与 7,695-file secret scan／0 均通过。仍需 clean commit／push、formal preflight 和 fresh R2 authority，不能直接重试 R1。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/123_current_dynamic_R1_transport_failure_and_R2_successor_gate.md`。

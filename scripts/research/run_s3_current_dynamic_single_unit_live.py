@@ -37,11 +37,11 @@ from sec_agent.canonical_runtime.session import (  # noqa: E402
     canonical_digest,
     create_agent_session,
 )
-from sec_agent.providers.chat_completions import (  # noqa: E402
-    ChatCompletionToolStepResult,
+from sec_agent.providers import (  # noqa: E402
+    AgentToolStepResult,
     ModelGatewayError,
-    execute_chat_completion_tool_step_exact_once,
-    load_chat_completion_profile,
+    execute_agent_tool_step_exact_once,
+    load_agent_transport_profile,
 )
 from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     DynamicSingleUnitLoopError,
@@ -73,6 +73,12 @@ from sec_agent.runtime_bridge.paths import resolve_runtime_paths  # noqa: E402
 
 AUTHORITY_SCHEMA = "fin_ia_s3_current_dynamic_single_unit_live_authority_v1_0"
 AUTHORITY_STATUS = "signed_exact_once_DELL_current_dynamic_value_capture_live"
+AUTHORITY_SCHEMA_V1_1 = (
+    "fin_ia_s3_current_dynamic_single_unit_live_authority_v1_1"
+)
+AUTHORITY_STATUS_V1_1 = (
+    "signed_exact_once_DELL_current_dynamic_value_capture_transport_successor"
+)
 FULL_RESULT_SCHEMA = "fin_ia_s3_current_dynamic_single_unit_live_full_v1_0"
 PUBLIC_RESULT_SCHEMA = "fin_ia_s3_current_dynamic_single_unit_live_result_v1_0"
 
@@ -186,7 +192,7 @@ def _public_provider_step(step: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _tool_arguments(
-    step: ChatCompletionToolStepResult, *, expected_name: str
+    step: AgentToolStepResult, *, expected_name: str
 ) -> tuple[dict[str, Any], str]:
     _require(
         len(step.tool_calls) == 1,
@@ -269,10 +275,15 @@ def validate_authority(
         "output_contract",
         "known_boundary",
     }
+    schema_version = str(authority.get("schema_version") or "")
+    transport_successor = schema_version == AUTHORITY_SCHEMA_V1_1
+    expected_status = (
+        AUTHORITY_STATUS_V1_1 if transport_successor else AUTHORITY_STATUS
+    )
     _require(
         set(authority) == expected
-        and authority.get("schema_version") == AUTHORITY_SCHEMA
-        and authority.get("status") == AUTHORITY_STATUS
+        and schema_version in {AUTHORITY_SCHEMA, AUTHORITY_SCHEMA_V1_1}
+        and authority.get("status") == expected_status
         and authority.get("case_key") == "DELL"
         and authority.get("cell_id") == "CELL::value_capture",
         "current_dynamic_live_authority_identity_invalid",
@@ -308,14 +319,26 @@ def validate_authority(
         "loop_runtime",
         "provider_transport",
     )
+    if transport_successor:
+        ref_names = (
+            *ref_names,
+            "provider_dispatch",
+            "failed_predecessor",
+            "scope_decision",
+        )
+    digest_fields = {
+        "zero_call_result_digest",
+        "current_evidence_pack_payload_digest",
+        "task_readiness_result_digest",
+    }
+    if transport_successor:
+        digest_fields.add("failed_predecessor_result_digest")
     _require(
         set(bound)
         == {
             *(f"{name}_ref" for name in ref_names),
             *(f"{name}_sha256" for name in ref_names),
-            "zero_call_result_digest",
-            "current_evidence_pack_payload_digest",
-            "task_readiness_result_digest",
+            *digest_fields,
         },
         "current_dynamic_live_authority_bound_inputs_invalid",
     )
@@ -332,7 +355,10 @@ def validate_authority(
             f"current_dynamic_live_bound_input_drift:{name}",
         )
         paths[f"{name}_ref"] = path
-    for name in ("runner", "loop_runtime", "provider_transport"):
+    implementation_names = ["runner", "loop_runtime", "provider_transport"]
+    if transport_successor:
+        implementation_names.append("provider_dispatch")
+    for name in implementation_names:
         _require(
             _git_blob_sha256(
                 commit=commit, ref=str(bound[f"{name}_ref"])
@@ -369,6 +395,46 @@ def validate_authority(
         == bound["current_evidence_pack_payload_digest"],
         "current_dynamic_live_task_readiness_drift",
     )
+    if transport_successor:
+        profile = load_agent_transport_profile(
+            _json(paths["provider_profile_ref"])
+        )
+        _require(
+            profile.provider_id == "deepseek"
+            and profile.model == "deepseek-v4-pro"
+            and profile.authority.get("thinking_tool_choice_supported") is False
+            and profile.authority.get(
+                "thinking_tool_continuation_requires_reasoning_content"
+            )
+            is True,
+            "current_dynamic_live_transport_profile_invalid",
+        )
+        failed = _json(paths["failed_predecessor_ref"])
+        _require(
+            failed.get("status") == "terminal_failed_no_retry"
+            and failed.get("result_digest")
+            == bound["failed_predecessor_result_digest"]
+            and (failed.get("failure") or {}).get("phase")
+            == "provider_transport_or_response"
+            and (failed.get("failure") or {}).get("code")
+            == "model_gateway_http_error:400"
+            and (failed.get("execution") or {}).get("provider_calls_attempted")
+            == 1
+            and (failed.get("execution") or {}).get("retrieval_rounds_executed")
+            == 0,
+            "current_dynamic_live_failed_predecessor_invalid",
+        )
+        decision = _json(paths["scope_decision_ref"])
+        _require(
+            decision.get("schema_version")
+            == "fin_ia_s3_current_dynamic_single_unit_live_scope_decision_v1_1"
+            and decision.get("status")
+            == (
+                "R1_thinking_tool_choice_failure_preserved_one_transport_"
+                "successor_authorized"
+            ),
+            "current_dynamic_live_scope_decision_invalid",
+        )
     output = authority.get("output_contract")
     _require(
         isinstance(output, Mapping)
@@ -448,8 +514,8 @@ def _execute_round(
 def run(
     authority_path: Path,
     *,
-    executor: Callable[..., ChatCompletionToolStepResult] = (
-        execute_chat_completion_tool_step_exact_once
+    executor: Callable[..., AgentToolStepResult] = (
+        execute_agent_tool_step_exact_once
     ),
 ) -> dict[str, Any]:
     authority_path = authority_path.resolve()
@@ -493,7 +559,7 @@ def run(
     cuda = required_cuda_fp16_receipt(
         purpose="DELL current dynamic single-unit natural live"
     )
-    profile = load_chat_completion_profile(_json(paths["provider_profile_ref"]))
+    profile = load_agent_transport_profile(_json(paths["provider_profile_ref"]))
 
     session_seed = {
         "run_id": output["run_id"],

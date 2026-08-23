@@ -9,6 +9,7 @@ import pytest
 
 from sec_agent.project_os_preflight import (
     CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE,
+    CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE,
     FIXED_PACK_SCOPE,
     FRAGMENT_VALIDATION_REPAIR_SCOPE,
     MULTI_AGENT_PREVIEW_PLAN_SUCCESSOR_SCOPE,
@@ -164,6 +165,11 @@ CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
     "live_scope_decision_v1_0.json"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "live_scope_decision_v1_1.json"
 )
 DYNAMIC_FIVE_CELL_DECISION_REF = (
     "configs/research/evals/"
@@ -1209,17 +1215,19 @@ def test_dynamic_single_cell_decision_binds_current_proof_profiles_and_health() 
 
 
 def test_current_dynamic_single_unit_decision_binds_current_loop_and_budget() -> None:
-    result = build_preflight(
+    decision = json.loads(
+        (ROOT / CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    projection = _validate_current_dynamic_single_unit_decision(
         root=ROOT,
-        decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_REF,
-        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
-        check_repository=False,
+        decision=decision,
     )
 
-    assert result["status"] == "pass_current_decision_bound_preflight"
-    assert result["run_scope_id"] == CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE
-    projection = result["decision_projection"]
+    assert projection["run_scope_id"] == CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE
     assert projection["current_dynamic_single_unit"] is True
+    assert projection["current_dynamic_transport_successor"] is False
     assert projection["dynamic_single_cell_successor"] is False
     assert projection["execution_limits"] == {
         "maximum_model_calls": 4,
@@ -1232,11 +1240,20 @@ def test_current_dynamic_single_unit_decision_binds_current_loop_and_budget() ->
         "candidate_promotions": 0,
         "current_product_pointer_mutations": 0,
     }
-    assert "initial model message contains only" in result["known_boundary"]
-    assert "multi-agent execution" in result["known_boundary"]
-    assert result["network_calls"] == 0
-    assert result["provider_calls"] == 0
-    assert result["credential_value_persisted"] is False
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "project_os_scope_blocked:RC-S3-058-current-dynamic-runner-"
+            "bypassed-qualified-thinking-tool-transport"
+        ),
+    ):
+        build_preflight(
+            root=ROOT,
+            decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_REF,
+            environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+            check_repository=False,
+        )
 
 
 def test_current_dynamic_single_unit_decision_rejects_budget_drift() -> None:
@@ -1250,6 +1267,48 @@ def test_current_dynamic_single_unit_decision_rejects_budget_drift() -> None:
     with pytest.raises(
         ValueError,
         match="project_os_current_dynamic_decision_budget_invalid",
+    ):
+        _validate_current_dynamic_single_unit_decision(
+            root=ROOT,
+            decision=decision,
+        )
+
+
+def test_current_dynamic_transport_successor_preserves_R1_and_uses_capability_profile() -> None:
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+
+    assert result["run_scope_id"] == CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE
+    projection = result["decision_projection"]
+    assert projection["current_dynamic_single_unit"] is True
+    assert projection["current_dynamic_transport_successor"] is True
+    assert projection["failed_predecessor_status"] == "terminal_failed_no_retry"
+    assert "preserves the R1 HTTP 400" in result["known_boundary"]
+    assert "omits unsupported thinking-mode tool_choice" in result["known_boundary"]
+
+
+def test_current_dynamic_transport_successor_rejects_legacy_profile() -> None:
+    decision = json.loads(
+        (ROOT / CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    legacy_ref = (
+        "configs/providers/"
+        "fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json"
+    )
+    decision["provider_profile_ref"] = legacy_ref
+    decision["provider_profile_sha256"] = hashlib.sha256(
+        (ROOT / legacy_ref).read_bytes()
+    ).hexdigest()
+
+    with pytest.raises(
+        ValueError,
+        match="project_os_current_dynamic_provider_profile_invalid",
     ):
         _validate_current_dynamic_single_unit_decision(
             root=ROOT,

@@ -118,6 +118,17 @@ CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS = (
 CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE = (
     "one_DELL_current_dynamic_value_capture_single_unit_exact_once"
 )
+CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_single_unit_live_scope_decision_v1_1"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_STATUS = (
+    "R1_thinking_tool_choice_failure_preserved_one_transport_"
+    "successor_authorized"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE = (
+    "one_DELL_current_dynamic_value_capture_single_unit_"
+    "transport_successor_exact_once"
+)
 DYNAMIC_FIVE_CELL_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
 )
@@ -609,7 +620,10 @@ def _validate_fixed_pack_decision(
         )
     if (
         decision.get("schema_version")
-        == CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_SCHEMA
+        in {
+            CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_SCHEMA,
+            CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_SCHEMA,
+        }
     ):
         return _validate_current_dynamic_single_unit_decision(
             root=root,
@@ -6533,11 +6547,23 @@ def _validate_dynamic_single_cell_decision(
 def _validate_current_dynamic_single_unit_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    transport_successor = (
+        decision.get("schema_version")
+        == CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_SCHEMA
+    )
     required_equal = {
-        "status": CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS,
+        "status": (
+            CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_STATUS
+            if transport_successor
+            else CURRENT_DYNAMIC_SINGLE_UNIT_DECISION_STATUS
+        ),
         "case_key": "DELL",
         "cell_id": "CELL::value_capture",
-        "run_scope_id": CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE,
+        "run_scope_id": (
+            CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE
+            if transport_successor
+            else CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE
+        ),
         "evidence_mode": "current_reviewed_pack_dynamic_S1_S2_feedback_loop",
         "next_authorized_scope": (
             "one_DELL_current_dynamic_value_capture_live"
@@ -6566,6 +6592,17 @@ def _validate_current_dynamic_single_unit_decision(
             raise ValueError(
                 f"project_os_current_dynamic_decision_true_required:{field}"
             )
+    if transport_successor:
+        for field in (
+            "failed_R1_preserved",
+            "provider_neutral_transport_required",
+            "thinking_tool_choice_omission_required",
+        ):
+            if decision.get(field) is not True:
+                raise ValueError(
+                    "project_os_current_dynamic_transport_true_required:"
+                    + field
+                )
     for field in (
         "external_source_network_authorized",
         "multi_agent_authorized",
@@ -6656,7 +6693,8 @@ def _validate_current_dynamic_single_unit_decision(
         sha_field="provider_profile_sha256",
     )
     defaults = profile.get("request_defaults") or {}
-    if not (
+    profile_authority = profile.get("authority") or {}
+    common_profile_valid = (
         profile.get("provider_id") == "deepseek"
         and profile.get("model") == "deepseek-v4-pro"
         and profile.get("wire_api")
@@ -6664,17 +6702,66 @@ def _validate_current_dynamic_single_unit_decision(
         and profile.get("base_url") == "https://api.deepseek.com"
         and profile.get("endpoint") == "/chat/completions"
         and profile.get("api_key_env") == "DEEPSEEK_API_KEY"
-        and (profile.get("authority") or {}).get("retry_count") == 0
+        and profile_authority.get("retry_count") == 0
         and defaults.get("stream") is False
         and defaults.get("thinking") == {"type": "enabled"}
         and defaults.get("reasoning_effort") == "max"
         and defaults.get("max_tokens") == 16000
         and "temperature" not in defaults
         and "top_p" not in defaults
+    )
+    transport_profile_valid = (
+        profile.get("schema_version") == "fin_ia_agent_transport_profile_v1_1"
+        and profile_authority.get("thinking_tool_choice_supported") is False
+        and profile_authority.get(
+            "thinking_tool_continuation_requires_reasoning_content"
+        )
+        is True
+        and profile_authority.get(
+            "thinking_tool_continuation_requires_assistant_content"
+        )
+        is True
+    )
+    legacy_profile_valid = (
+        profile.get("schema_version")
+        == "fin_ia_chat_completion_provider_profile_v1_0"
+    )
+    if not (
+        common_profile_valid
+        and (
+            transport_profile_valid
+            if transport_successor
+            else legacy_profile_valid
+        )
     ):
         raise ValueError(
             "project_os_current_dynamic_provider_profile_invalid"
         )
+
+    failed_predecessor_status = None
+    if transport_successor:
+        _, failed = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="failed_predecessor_ref",
+            sha_field="failed_predecessor_sha256",
+            digest_field="failed_predecessor_result_digest",
+        )
+        failed_predecessor_status = failed.get("status")
+        if not (
+            failed_predecessor_status == "terminal_failed_no_retry"
+            and (failed.get("failure") or {}).get("phase")
+            == "provider_transport_or_response"
+            and (failed.get("failure") or {}).get("code")
+            == "model_gateway_http_error:400"
+            and (failed.get("execution") or {}).get("provider_calls_attempted")
+            == 1
+            and (failed.get("execution") or {}).get("retrieval_rounds_executed")
+            == 0
+        ):
+            raise ValueError(
+                "project_os_current_dynamic_failed_predecessor_invalid"
+            )
 
     return {
         "clean_proof_status": zero["status"],
@@ -6683,6 +6770,8 @@ def _validate_current_dynamic_single_unit_decision(
         "api_key_env": profile["api_key_env"],
         "recent_provider_steps": 0,
         "current_dynamic_single_unit": True,
+        "current_dynamic_transport_successor": transport_successor,
+        "failed_predecessor_status": failed_predecessor_status,
         "dynamic_single_cell_successor": False,
         "micro_judgment_successor": False,
         "run_scope_id": decision["run_scope_id"],
@@ -11457,6 +11546,22 @@ def build_preflight(
             "max-thinking analysis plus one non-thinking strict submission. "
             "It does not authorize new evidence, another analysis retry, "
             "five-cell execution, publication, S3 acceptance, or release."
+        )
+    elif (
+        decision_projection.get("current_dynamic_transport_successor")
+        is True
+    ):
+        known_boundary = (
+            "This current-baseline preflight preserves the R1 HTTP 400 as an "
+            "immutable project integration failure. It permits one exact-once "
+            "DELL current dynamic value-capture transport successor with the "
+            "same question, current S1/S2 inputs, loop and four-call ceiling. "
+            "The only execution change is use of the already-qualified "
+            "provider-neutral transport profile, which omits unsupported "
+            "thinking-mode tool_choice while local validation still requires "
+            "the one expected tool. It permits no retries, external source "
+            "network calls, candidate promotions, multi-agent execution, S1 "
+            "or S3 acceptance, publication, generalization or release."
         )
     elif decision_projection.get("current_dynamic_single_unit") is True:
         known_boundary = (

@@ -18,8 +18,10 @@ from scripts.research.run_s3_current_dynamic_single_unit_live import (
     _force_tool,
     _public_provider_step,
     _tool_arguments,
+    run,
     validate_authority,
 )
+from sec_agent.providers import execute_agent_tool_step_exact_once
 from sec_agent.providers.chat_completions import ChatCompletionToolStepResult
 
 
@@ -121,3 +123,7 @@ def test_current_dynamic_runner_replaces_legacy_single_cell_active_entry() -> No
         "scripts/research/run_s3_dynamic_single_cell_live.py"
         not in active_baseline.PYTHON_ENTRYPOINTS
     )
+
+
+def test_current_dynamic_live_uses_provider_neutral_transport_dispatch() -> None:
+    assert run.__kwdefaults__["executor"] is execute_agent_tool_step_exact_once

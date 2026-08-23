@@ -2833,6 +2833,7 @@ def validate_content_repair_authority(
         "loop_runtime",
         "multi_agent_runtime",
         "content_repair_runtime",
+        "scope_decision",
         "zero_call_result",
         "predecessor_public",
         "predecessor_private",
@@ -2863,11 +2864,23 @@ def validate_content_repair_authority(
                 f"dynamic_multi_agent_content_repair_git_binding_invalid:{name}"
             )
     zero = _read_json(paths["zero_call_result_ref"])
+    scope_decision = _read_json(paths["scope_decision_ref"])
     predecessor_public = _read_json(paths["predecessor_public_ref"])
     predecessor_private = _read_json(paths["predecessor_private_ref"])
     assessment = _read_json(paths["assessment_ref"])
     if not (
-        zero.get("status") == "content_repair_zero_call_proven"
+        scope_decision.get("schema_version")
+        == "fin_ia_s3_current_dynamic_multi_agent_content_repair_scope_decision_v1_0"
+        and scope_decision.get("status")
+        == "R5_independent_L1_L2_failure_preserved_one_five_role_repair_authorized"
+        and scope_decision.get("next_authorized_scope")
+        == "one_clean_authorized_five_role_content_repair_and_Lead_recheck"
+        and dict(scope_decision.get("execution_budget") or {})
+        == expected_content_repair_budget()
+        and scope_decision.get("content_repair_live_authorized") is True
+        and scope_decision.get("new_S1_S2_authorized") is False
+        and scope_decision.get("writer_authorized") is False
+        and zero.get("status") == "content_repair_zero_call_proven"
         and zero.get("result_digest") == bound.get("zero_call_result_digest")
         and all((zero.get("checks") or {}).values())
         and predecessor_public.get("status")

@@ -118,7 +118,7 @@
   "assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R5_content_assessment_v1_0.json",
   "assessment_sha256": "cfe267cc6f40801dfee103bfb8551dad7dbd1dfb1e6c368d1e49d44b0204df1f",
   "runner_ref": "scripts/research/run_s3_current_dynamic_multi_agent.py",
-  "runner_sha256": "66465e6b6136fd98e25429da3846b0129d0d54e1ee481692e7614918d2f73d90",
+  "runner_sha256": "1f0ccd4a8649b13b8727d15889302320e0d257b3a27cc52ca5d6a819f366fa17",
   "content_repair_runtime_ref": "src/sec_agent/research/multi_agent_content_repair.py",
   "content_repair_runtime_sha256": "1c93a3f43593b5d7805e48ff6d5e966366d30e3f5b23585bc85e3864a073f2d6",
   "role_loop_runtime_ref": "src/sec_agent/research/dynamic_multi_agent_loop.py",

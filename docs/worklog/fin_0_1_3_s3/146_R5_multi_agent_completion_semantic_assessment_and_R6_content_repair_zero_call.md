@@ -74,4 +74,6 @@ R6 zero-call 使用 R5 public／private digests 与独立评估逐项绑定，�
 
 反向测试证明把调用数改为 13、替换任一责任角色或漂移绑定摘要都会 fail closed。全仓回归随该门更新为 `1136 passed`，仍只有两条既有 SWIG deprecation warning。正式 repository-aware preflight 必须等这份决策与验证代码形成 clean／synced commit 后再执行。
 
+签发器还必须把该精确 scope decision 作为 authority 的受摘要保护输入；只复制同一组 12 次预算而没有这份 Project OS 决策，不能获得执行资格。
+
 下一门是完成账本与工程检查、clean commit／push、current decision-bound Project OS preflight，再签发唯一一次 R6 content-repair authority。自然 R6 完成后仍必须独立复核七项问题和全角色新输出；只有 L1／L2 与内容质量通过，Writer 才能解冻。R5 不会被追认为内容通过，R6 也不授权新资料、MU／NVDA、异质留出、Workbench publication 或 release。

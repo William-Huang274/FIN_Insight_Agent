@@ -1547,4 +1547,5 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 历史 current multi-agent 决策仍投影 29 次全链 Provider attempt、13 个 S1/S2 request 和 12 轮检索；它只适用于最初六角色全链，不能为当前五角色内容返修签权。本轮在签 authority 前发现并阻止了这一范围漂移，0 模型／Provider／网络。
 - 新 `content_repair_scope_decision_v1_0` 与 runner 共用同一 provider-neutral 预算编译器：五个责任角色各 `analysis＋strict submission`，再做一次 Lead `analysis＋strict submission`，精确上限 12 次；Supply 与全部研究权限不变。
 - 新门显式禁止 S1/S2、检索、外源、Candidate promotion、retry、fallback、Writer、S3 acceptance、泛化、publication 和 release。预算改为 13、责任角色漂移或 artifact 摘要漂移均 fail closed。
+- R6 authority 必须直接绑定这份 scope decision 的文件摘要与语义；仅手写相同的 12-call budget 不能绕过 Project OS 获得执行资格。
 - 定向 Project OS／multi-agent 测试 `97 passed`；全仓 `1136 passed`，仅两条既有 SWIG warning。下一门是 clean commit／push 后 repository-aware preflight，再签发唯一 R6 authority；只有独立 L1／L2 与内容质量复评通过才可解冻 Writer。

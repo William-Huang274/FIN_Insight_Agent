@@ -1,0 +1,191 @@
+{
+  "acceptance_boundary": {
+    "S3_pass": false,
+    "independent_post_writer_review_pass": false,
+    "local_contract_pass_may_create_candidate": true,
+    "product_acceptance": false,
+    "product_publication": false,
+    "qualified_human_review_pass": false,
+    "release_ready": false
+  },
+  "attempt_identity": {
+    "R14_rewritten_as_success": false,
+    "execution_attempt": "R15",
+    "product_version": "FIN_0_1_3",
+    "product_version_changed": false,
+    "stage": "S3"
+  },
+  "case_key": "DELL",
+  "change_boundary": {
+    "R14_source_promotion_authorized": false,
+    "allowed_catalog_claim_refs_added": [
+      "WPCLAIM::A3326287D929BC21E958",
+      "WPCLAIM::E4FC61636C07C7CFA7D7"
+    ],
+    "allowed_changed_model_text_paths": [
+      "confidence.model_text",
+      "executive_thesis[0].model_text",
+      "sections[0].clauses[0].model_text",
+      "sections[0].clauses[2].model_text",
+      "sections[1].clauses[1].model_text",
+      "sections[2].clauses[2].model_text",
+      "sections[4].clauses[3].model_text"
+    ],
+    "candidate_semantic_authority_expansion_authorized": false,
+    "expected_reference_after": {
+      "confidence.gap_refs": [],
+      "executive_thesis[0].gap_refs": [],
+      "sections[3].clauses[0].authority_refs": [
+        "NUM::D2AED1236BCDEE6B",
+        "NUM::48BC29582646E193",
+        "NUM::465E4DEF9C78ECA6",
+        "NUM::9F0CC9FBFC741998",
+        "REL::07D0A84AC42F34A1",
+        "REL::9A1FC36EBF79DDDC"
+      ],
+      "sections[3].clauses[0].evidence_refs": [
+        "EV::07899638B93E4E3A",
+        "EV::C5DB890B773C6892"
+      ],
+      "sections[3].clauses[0].source_claim_refs": [
+        "WPCLAIM::1075BD357D0BD279E58F",
+        "WPCLAIM::B9FB00649A060D443976",
+        "WPCLAIM::E4FC61636C07C7CFA7D7"
+      ],
+      "sections[3].clauses[1].authority_refs": [
+        "NUM::BFE46716CAB4A99E",
+        "NUM::0E289449BE9085EE",
+        "NUM::9DDEDDD584B02E09"
+      ],
+      "sections[5].clauses[2].gap_refs": [],
+      "what_would_change[0].source_claim_refs": [
+        "WPCLAIM::BD2D18FD0931E6E3E68E"
+      ],
+      "what_would_change[1].gap_refs": [],
+      "what_would_change[2].gap_refs": [],
+      "what_would_change[2].source_claim_refs": [
+        "WPCLAIM::A3326287D929BC21E958",
+        "WPCLAIM::2339C903BA4B36F0C033"
+      ]
+    },
+    "new_evidence_authority_or_gap_ids_allowed": false,
+    "remaining_gap_ref_union_must_be_preserved": true,
+    "target_gap_rows": 4
+  },
+  "decision_digest": "66d71ebf861630b570c00e3f4c255b9bb72e26a34f2cb0a07568099479bca803",
+  "execution_budget": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 0,
+    "provider_calls": 0
+  },
+  "expected_R14_failure_frontier": {
+    "hard_finding_count": 4,
+    "quality_finding_count": 9,
+    "surface_finding_count": 3,
+    "surface_findings": [
+      {
+        "matches": [
+          "point",
+          "two"
+        ],
+        "path": "sections[1].clauses[1].model_text"
+      },
+      {
+        "matches": [
+          "point"
+        ],
+        "path": "sections[2].clauses[2].model_text"
+      },
+      {
+        "matches": [
+          "two"
+        ],
+        "path": "sections[4].clauses[3].model_text"
+      }
+    ]
+  },
+  "implementation_bindings": [
+    {
+      "ref": "scripts/research/run_s3_current_dynamic_writer_independent_takeover.py",
+      "sha256": "57c42e4b7ab00ede2ed98c5d8f0daebd35a10055f84f6ab6ba90f1f564e5c8b8"
+    },
+    {
+      "ref": "tests/test_s3_current_dynamic_writer_independent_takeover.py",
+      "sha256": "ead6bd240a3e51ad2bf55ddeb2c7af8a5c4a23e3feae5d6f02296feb89c61d74"
+    }
+  ],
+  "implementation_commit": "d93e4c8ff85129d4efefe665ac309754a671f11d",
+  "known_boundary": "This decision authorizes only a zero-provider Codex-authored local Writer candidate. It does not authorize a DeepSeek successor, new evidence, R14 reinterpretation, independent-review claim, S3 acceptance, publication, or release.",
+  "output_contract": {
+    "overwrite_existing_output_allowed": false,
+    "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-independent-takeover-r15/full_result.json",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_independent_takeover_candidate_result_v1_0.json"
+  },
+  "recorded_at": "2026-08-24T07:05:45+08:00",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_INDEPENDENT_TAKEOVER_R15",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_independent_takeover_scope_decision_v1_0",
+  "source_bindings": {
+    "R10_writer_authority_catalog": {
+      "digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765",
+      "digest_field": "authority_catalog_digest",
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_authority_catalog_v1_0.json",
+      "sha256": "fe33215f8d46a5fa9db422d8192ba3c18daf29563a7941ba6fe16808ce07a84b"
+    },
+    "R10_writer_protection_contract": {
+      "digest": "e81473c78211b163bbe87e3eaf0fae4e53e36f8d1d2a82fcc0bb1be7080a7b62",
+      "digest_field": "protection_digest",
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_writer_protection_contract_v1_0.json",
+      "sha256": "e17b9526aa97951eb1b3ff2c026e3d38b51d4d78de447087e8907a06e46d247c"
+    },
+    "R14_authority": {
+      "digest": "25c3bafebb9685ec73a7d3d296ff57c6a6d64adb0d8322e6bc05bb85bbf483b7",
+      "digest_field": "authority_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_submission_successor_live_authority_v1_0.json",
+      "sha256": "a1176319f82d48e6cd43aa3241dc82407eb8c2c5996b99bce9cf6801cd45f732"
+    },
+    "R14_failure_assessment": {
+      "digest": "3e9a6c4f7cb0c0f271577e3e1ed3057ae22c3eec323ad5fe6292b8c38d834ed8",
+      "digest_field": "assessment_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_submission_successor_R14_failure_assessment_v1_0.json",
+      "sha256": "5225e45ebecf2c6ce7357a8c2ab7eb38cd969edbde0005b1b5f149b33cf81610"
+    },
+    "R14_public_result": {
+      "digest": "bd4a9602ed732d2e482bd1d9517bdb8dbff0975ed6ae979b6cdef2922d0c016a",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_submission_successor_live_result_v1_0.json",
+      "sha256": "d9c6682689f7e255660c50c90cf8d37b3969c843b4e9afb405f719187706fb4b"
+    },
+    "R14_response_capture": {
+      "digest": "f3b94de37dcab9e453d39cde85c194c2109af3321de6d3baaeaa77bc826890ac",
+      "digest_field": "response_digest",
+      "ref": ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_submission_successor_live_r14/FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_SUBMISSION_SUCCESSOR_LIVE_R14/writer-submission-json-and-surface-feedback-successor/provider_response.json",
+      "sha256": "cfb4b75ed64dcc29e0f7357bf7193aabf90c5488e990c1fd5236666e8de11dfa"
+    },
+    "private_edit_manifest": {
+      "digest": "9bdebd278b13a1e2a12d079afe23116e4930ed2ed4f7580edd23396d5b453d12",
+      "digest_field": "manifest_digest",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-independent-takeover-r15/edit_manifest.json",
+      "sha256": "74fe48b3e66388e4ac8594801980dc76be69ea981cda0c2ce2c2a769eb2b8fa1"
+    }
+  },
+  "status": "approved_user_authorized_zero_provider_writer_takeover",
+  "token_budget_basis": {
+    "input_scale": "one_R14_nested_report_plus_R10_catalog_and_protection",
+    "materiality_and_quality_risk": "high_financial_research_report_not_independently_reviewed",
+    "model_node_created": false,
+    "paid_call_authority_created": false,
+    "provider_token_budget": 0,
+    "purpose": "local_user_authorized_Writer_edit_manifest_application_and_strict_validation",
+    "required_outputs": "private_candidate_public_receipt_and_local_contract_audit",
+    "schema_burden": "strict_protected_report_and_R10_conditional_protection",
+    "stop_behavior": "any_binding_scope_contract_or_quality_failure_stops_without_output_or_retry"
+  },
+  "user_authorization": {
+    "DeepSeek_retry_or_profile_tuning_authorized": false,
+    "authorization_source": "current_Codex_task_user_message",
+    "authorization_text": "可以，你可以实时监督它了，如果觉得需要停止和审计的你就给它发消息，然后迁移到你这里继续做",
+    "independent_writer_takeover_authorized": true
+  }
+}

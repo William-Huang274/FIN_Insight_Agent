@@ -23,6 +23,8 @@ R14 Tool arguments 的最外层只有 `arguments`，其值是再次字符串化�
 
 当前唯一允许的后续是用户已授权的、绑定 R10／R14 的独立 Writer 接管：0 Provider、0 新证据，显式修复语义和引用，生成后仍必须做分离的 post-Writer L1／L2 与八维评估。本 Codex 的接管不能冒充 qualified-human 或独立验收。最终报告、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。详见 `docs/worklog/fin_0_1_3_s3/163_R14_terminal_and_independent_writer_takeover.md`。
 
+R15 零 Provider 接管器已在工程提交 `d93e4c8f...f11d` 完成并推送。private edit manifest 绑定 R14 nested payload，只允许 7 个 model-text 路径、11 个 ref 路径和 remaining-gap register 的显式重组；0 新 Evidence／authority／gap ID，10 个 gap ref 及其语义权威集合保持。dry validation 得到 candidate draft digest=`dcb6e6d0...a49d`、surface／hard／quality=`0／0／0`，R10 conditional protection 通过。全仓 `1177 passed`，active baseline=`212／8／5／28／0`，secret scan=`7,846／0`。零调用 decision SHA=`07647bdb...d08c`、digest=`66d71ebf...a803`；当前仅待 decision clean commit／push 后一次物化，尚无 Candidate 结果文件。物化成功也不等于独立 post-Writer、qualified-human、S3、产品、publication 或 release。详见 `docs/worklog/fin_0_1_3_s3/164_R15_independent_writer_takeover_engineering_and_decision.md`。
+
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 
 - R14 的 Cash continuation 使用 non-thinking profile 成功补齐分析，并在第一次 claim binding 失败后通过第二次 strict submission；Demand 和 Cash 两份反馈修订均有自然模型结果与不可变 lineage。

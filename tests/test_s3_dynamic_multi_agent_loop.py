@@ -41,6 +41,7 @@ from scripts.research.run_s3_current_dynamic_multi_agent import (
     _tool_draft,
     _tool_arguments,
     expected_live_execution_budget,
+    expected_submission_resume_budget,
     expected_submission_successor_budget,
     validate_live_authority,
 )
@@ -376,6 +377,29 @@ def test_submission_successor_budget_is_derived_from_capture_bound_topology() ->
     ) == budget["maximum_new_model_calls"]
     assert budget["maximum_new_s1_s2_requests"] == 1
     assert budget["maximum_external_source_network_calls"] == 0
+
+
+def test_submission_resume_budget_counts_only_unfinished_R3_frontier() -> None:
+    budget = expected_submission_resume_budget()
+    assert budget["maximum_new_model_calls"] == 17
+    assert sum(
+        budget[key]
+        for key in (
+            "reflection_submissions_from_R1_captures",
+            "supply_followup_reflection_drafts",
+            "supply_followup_reflection_submissions",
+            "new_specialist_workpaper_drafts",
+            "specialist_workpaper_submissions",
+            "lead_coordination_drafts",
+            "lead_coordination_submissions",
+            "role_repair_drafts",
+            "role_repair_submissions",
+        )
+    ) == budget["maximum_new_model_calls"]
+    assert budget["new_specialist_workpaper_drafts"] == 2
+    assert budget["specialist_workpaper_submissions"] == 2
+    assert budget["maximum_new_s1_s2_requests"] == 1
+    assert budget["retries"] == 0
 
 
 def test_live_authority_rejects_budget_drift_before_execution(tmp_path: Path) -> None:

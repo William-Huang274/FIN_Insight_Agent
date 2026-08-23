@@ -1497,3 +1497,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 已基于 commit `d49b4711...d9c11` 和 fresh proof `f56e57d9...ceda9` 签发 R3；authority SHA=`5d471db3...71306`，validator pass。
 - 仍为最多 25 次拓扑派生调用、1 个 Supply S1/S2 request、0 retry／fallback／外源／promotion／pointer mutation；全新 R3 identities。
 - 当前只到 signed、未执行。详见 `docs/worklog/fin_0_1_3_s3/141_submission_successor_R3_live_authority.md`。
+### 2026-08-23 DELL current 动态多 Agent R3 部分成功与 R4 精确续跑门
+
+- R3 发生 9 次 DeepSeek HTTP 200、0 retry；Demand／Operating／Value 三份工作底稿和 Cash reflection 均可从八份成功 capture 重建。Cash 自然底稿节点以 prompt `11,027`、completion/reasoning `16,000/16,000`、`finish_reason=length` 终止，未形成 Tool draft。
+- 根因登记为 `RC-S3-072`：thinking=max 节点的 16k 生成预算与实际研究负荷不匹配，不是模型指令不遵循、S1/S2、信源、网络或 strict schema 失败。R3 terminal 与九份 capture manifest 保持不可变。
+- partial-successor overlay 已接入真实角色 Runtime：八份成功 capture 逐 SHA／digest／Tool／finish reason 验证；三个完成角色 0 Provider 重建通过；Cash 下一 Provider 前沿精确为 `cash-conversion-workpaper-draft`，失败 draft 不晋升。
+- 新研究 profile 使用 `max_tokens=32000`、thinking=max、0 retry。依据为本轮 16k 全部消耗及 Operating／Value 成功节点实测，而不是以成本或速度任意放宽。剩余最坏拓扑由 25 降为 17 次调用，已完成节点禁止重跑。
+- fresh R4 zero-call proof result digest=`7f55d22b...30161`。下一步是全仓验证、干净提交／推送、repository-aware preflight 和唯一 R4 authority；仍未授权 Writer、S3 acceptance、泛化、publication 或 release。
+- 工程门为定向 `14 passed`、全仓 `1126 passed`、compileall／pyflakes、active baseline `210／8／5／28／0`、922 configs、8 JSONL／1,002 行、7,762-file secret scan／0 和 diff check。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/142_submission_successor_R3_partial_success_and_R4_resume_zero_call.md`。

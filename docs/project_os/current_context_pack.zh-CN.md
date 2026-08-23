@@ -17,7 +17,11 @@ R11 的 `.py` binding／JSON loader 缺陷已由 R12 修复并被自然 Provider
 
 非晋升诊断仅删除该多余字符后可解析，并发现五个首层 spelled-numeric／ordinal 阻断路径：`sections[1].clauses[1]`、`sections[2].clauses[2]`、`sections[3].clauses[1]`、`sections[4].clauses[3]`、`remaining_gaps[0]`。最早责任层为 `RC-S3-091` Harness feedback control flow：原 authority 已为精确本地合同反馈预留第二次 submission，但 JSON parse 位于 feedback 捕获块之外，剩余前沿不可达；不是 Provider、S1 空数据或 R10 authority 缺失。`RC-S3-092` 另关闭了预检人类边界仍误写 thinking analysis 的审计文案漂移。
 
-R14 只允许复用 R13 的可见计划与 rejected Tool call，追加精确 JSON 位点和五路径反馈后执行一个非思考 strict submission；analysis／continuation／新 Writer node／上游／检索／外源／Prompt／profile／ceiling 变化均为 0。zero-call digest=`42403efb...f1176`、21／21 checks，decision digest=`3db6ddd5...9f3a7`；定向 `98 passed`、Project OS `82 passed`、全仓 `1174 passed`，active baseline=`212／8／5／28／0`，973 JSON、8 JSONL／1,099 行、7,839-file secret scan／0、compileall、精确 pyflakes 和 diff check 均通过。当前只剩 clean commit／push、repository-aware preflight 和 fresh authority。若 R14 失败，禁止自动 Writer successor，转 qualified-human-first 或独立 Writer 模型职责决策。即使成功生成报告，独立 post-Writer L1／L2、八维质量、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 仍未通过。详见 `docs/worklog/fin_0_1_3_s3/162_R13_writer_JSON_failure_and_R14_single_submission_gate.md`。
+R14 已在 clean／synced 工程提交 `490b4dbd...2956`、fresh preflight、fresh authority 和 authority-only 提交 `5ef12af7...ed66` 下执行并终局失败。它只复用 R13 可见计划与 rejected Tool call，追加精确 JSON 位点和五路径反馈；实际只有 1 个 submission Provider call，HTTP 200／`tool_calls`，prompt=`73,305`、completion=`9,402`、reasoning=`0`，analysis／retry／上游／检索／外源／晋升均为 0。public digest=`bd4a9602...016a`、private digest=`3030e108...d5f5`，R14 authority 已消费且禁止复用。
+
+R14 Tool arguments 的最外层只有 `arguments`，其值是再次字符串化的完整报告；内层虽是合法 JSON 且具有 7 个报告键，但仍有 3 个 protected-surface finding。仅在内存中消除这 3 个词面问题后，又暴露 4 个 hard reference／claim-scope finding 和 9 个质量 finding。因此不能机械 unwrap、补三个词或直接晋升。`RC-S3-091` 只因 R14 自然到达 feedback submission 而关闭；新的阻断责任记为 `RC-S3-093`。DeepSeek Writer successor、Prompt／profile／ceiling 调参均已停止。
+
+当前唯一允许的后续是用户已授权的、绑定 R10／R14 的独立 Writer 接管：0 Provider、0 新证据，显式修复语义和引用，生成后仍必须做分离的 post-Writer L1／L2 与八维评估。本 Codex 的接管不能冒充 qualified-human 或独立验收。最终报告、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。详见 `docs/worklog/fin_0_1_3_s3/163_R14_terminal_and_independent_writer_takeover.md`。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 

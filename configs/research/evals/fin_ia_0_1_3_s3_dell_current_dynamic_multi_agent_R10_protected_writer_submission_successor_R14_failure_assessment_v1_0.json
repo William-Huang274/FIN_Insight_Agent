@@ -1,0 +1,292 @@
+{
+  "assessment_digest": "3e9a6c4f7cb0c0f271577e3e1ed3057ae22c3eec323ad5fe6292b8c38d834ed8",
+  "case_key": "DELL",
+  "disposition": {
+    "DeepSeek_Writer_successor_authorized": false,
+    "S3_product_publication_and_release_authorized": false,
+    "deterministic_unwrap_or_surface_only_promotion_authorized": false,
+    "independent_post_Writer_L1_L2_and_eight_dimension_review_still_required": true,
+    "new_provider_call_authorized": false,
+    "user_authorized_independent_Writer_takeover_required": true
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0
+  },
+  "inner_nonpromotable_diagnostic": {
+    "JSON_parse_pass": true,
+    "contract_audit_receipt_digest": "705d5bd3630f78add3d7b2dd764e61cbed80396615b140b2250c32b5e619c82f",
+    "contract_valid": false,
+    "hard_finding_count": 4,
+    "hard_findings": [
+      {
+        "field_path": "sections[3].clauses[0]",
+        "finding_code": "multi_agent_report_clause_claim_agent_scope_invalid",
+        "finding_digest": "32807d7450a478627692490827fd433cd2587cfcab231e5aca34e31511759111",
+        "issues": [
+          "authority_refs_outside_selected_claims",
+          "evidence_refs_outside_selected_claims",
+          "source_claim_refs_cross_agent"
+        ],
+        "offending_refs": {
+          "authority_refs": [
+            "NUM::C0D63370A8F4EE85"
+          ],
+          "evidence_refs": [
+            "EV::734A9C177164E08E"
+          ],
+          "source_claim_refs": [
+            "WPCLAIM::DA7641CC311F3BA0C1B3"
+          ]
+        }
+      },
+      {
+        "field_path": "sections[3].clauses[1]",
+        "finding_code": "multi_agent_report_clause_reference_scope_invalid",
+        "finding_digest": "2634e78892d97525f96682eb7176a429619009908b995899eb575671c0d3b900",
+        "issues": [
+          "authority_refs_outside_selected_claims"
+        ],
+        "offending_refs": {
+          "authority_refs": [
+            "NUM::D2AED1236BCDEE6B"
+          ]
+        }
+      },
+      {
+        "field_path": "what_would_change[0]",
+        "finding_code": "multi_agent_report_clause_claim_agent_scope_invalid",
+        "finding_digest": "81b36f73ae19cc56f72450817778cced86560ed13628c23adb539845762ade05",
+        "issues": [
+          "source_claim_refs_cross_agent"
+        ],
+        "offending_refs": {
+          "source_claim_refs": [
+            "WPCLAIM::32A530B75A1BF63D4CDC"
+          ]
+        }
+      },
+      {
+        "field_path": "what_would_change[2]",
+        "finding_code": "multi_agent_report_clause_claim_refs_invalid",
+        "finding_digest": "cd990f65a795c4e89d3b0af51475d4a8a4582eb43d996ce7b5402107df4ae158",
+        "issues": [
+          "source_claim_refs_unknown"
+        ],
+        "offending_refs": {
+          "source_claim_refs": [
+            "WPCLAIM::0A3326287D929BC21E958"
+          ]
+        }
+      }
+    ],
+    "nested_characters": 31213,
+    "nested_sha256": "2f6c80290f60db3deec97503c77222cf43747399bada6d5c4c02a43799d764a1",
+    "promoted": false,
+    "quality_finding_count": 9,
+    "quality_findings": [
+      {
+        "details": {
+          "actual_characters": 1304,
+          "recommended_maximum_characters": 900
+        },
+        "field_path": "executive_thesis[0].model_text",
+        "finding_code": "multi_agent_report_narrative_density_above_recommended",
+        "finding_digest": "889f840e1670163142a62208b45e9bc11468e75d6c60659026a7e442f8968c50"
+      },
+      {
+        "details": {
+          "actual_characters": 1055,
+          "recommended_maximum_characters": 700
+        },
+        "field_path": "confidence.model_text",
+        "finding_code": "multi_agent_report_narrative_density_above_recommended",
+        "finding_digest": "50122ffaae9326d62deee97033740e9311aeb0ad181cbf381059d46f238c33cf"
+      },
+      {
+        "details": {},
+        "field_path": "confidence",
+        "finding_code": "multi_agent_report_confidence_repeats_gap_inventory",
+        "finding_digest": "175e582928588ea757c0375538cd03bea5339613c40218948253a427ada01465"
+      },
+      {
+        "details": {},
+        "field_path": "remaining_gaps",
+        "finding_code": "multi_agent_report_customer_gap_register_too_dense",
+        "finding_digest": "489220014146c2002a39bdcd7d9bd8e00aa0d73f8bedceace66b957277cb26fd"
+      },
+      {
+        "details": {
+          "gap_ref": "GAP::00730082A5C08C4C",
+          "surface_groups": [
+            "confidence",
+            "executive_thesis",
+            "remaining_gaps",
+            "sections",
+            "what_would_change"
+          ]
+        },
+        "field_path": "$",
+        "finding_code": "multi_agent_report_gap_repeated_across_surface_groups",
+        "finding_digest": "f6b827464745062edb14509a6d6449204c131267a7dc084227273580d222f140"
+      },
+      {
+        "details": {
+          "gap_ref": "GAP::14D67654F535F105",
+          "surface_groups": [
+            "remaining_gaps",
+            "sections",
+            "what_would_change"
+          ]
+        },
+        "field_path": "$",
+        "finding_code": "multi_agent_report_gap_repeated_across_surface_groups",
+        "finding_digest": "8c0153e5bd340151541e4fcaa959a322f2337fc6a1f6e3b4250ed347620b9221"
+      },
+      {
+        "details": {
+          "gap_ref": "GAP::34844D3F9935C0F5",
+          "surface_groups": [
+            "remaining_gaps",
+            "sections",
+            "what_would_change"
+          ]
+        },
+        "field_path": "$",
+        "finding_code": "multi_agent_report_gap_repeated_across_surface_groups",
+        "finding_digest": "1dd76b47f36c3cd8a14a301c48d18ce29b732753c57edd328b588b20fdfc6d56"
+      },
+      {
+        "details": {
+          "gap_ref": "GAP::52DCB2B65532C103",
+          "surface_groups": [
+            "remaining_gaps",
+            "sections",
+            "what_would_change"
+          ]
+        },
+        "field_path": "$",
+        "finding_code": "multi_agent_report_gap_repeated_across_surface_groups",
+        "finding_digest": "496508479612b36687677fea54b348ef800ffb158582256fcaabc78bc79b5aa2"
+      },
+      {
+        "details": {
+          "gap_ref": "GAP::EF4839B4BF55ADD0",
+          "surface_groups": [
+            "confidence",
+            "remaining_gaps",
+            "sections"
+          ]
+        },
+        "field_path": "$",
+        "finding_code": "multi_agent_report_gap_repeated_across_surface_groups",
+        "finding_digest": "f6b34ed91442a4567ddbabed8f891994f944f4e94f5f2fffba04317abc2de6a7"
+      }
+    ],
+    "surface_findings": [
+      {
+        "matches": [
+          "point",
+          "two"
+        ],
+        "path": "sections[1].clauses[1].model_text"
+      },
+      {
+        "matches": [
+          "point"
+        ],
+        "path": "sections[2].clauses[2].model_text"
+      },
+      {
+        "matches": [
+          "two"
+        ],
+        "path": "sections[4].clauses[3].model_text"
+      }
+    ],
+    "top_level_identity_fields": [
+      "confidence",
+      "executive_thesis",
+      "remaining_gaps",
+      "report_topic",
+      "schema_version",
+      "sections",
+      "what_would_change"
+    ]
+  },
+  "known_boundary": "R14 is an immutable terminal failure. The outer wrapper, three remaining protected surfaces, four hard reference findings, and nine quality findings are diagnostic only. No DeepSeek retry, automated Writer successor, deterministic promotion, S3 acceptance, publication, or release is authorized. A separately governed independent Writer repair must bind these findings and still undergo independent post-Writer review.",
+  "outer_tool_arguments_diagnostic": {
+    "argument_characters": 32556,
+    "argument_sha256": "c87dcd965b749ff0b1613569e3a6c40c58a5640efccafe2c86ab89da123a952c",
+    "diagnostic_unwrap_promotable": false,
+    "expected_report_fields_missing": [
+      "confidence",
+      "executive_thesis",
+      "remaining_gaps",
+      "report_topic",
+      "schema_version",
+      "sections",
+      "what_would_change"
+    ],
+    "extra_top_level_keys": [
+      "arguments"
+    ],
+    "nested_value_type": "str",
+    "top_level_keys": [
+      "arguments"
+    ]
+  },
+  "recorded_at": "2026-08-24T06:41:03+08:00",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_SUBMISSION_SUCCESSOR_LIVE_R14",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_R14_failure_assessment_v1_0",
+  "source_bindings": {
+    "R14_authority": {
+      "digest": "25c3bafebb9685ec73a7d3d296ff57c6a6d64adb0d8322e6bc05bb85bbf483b7",
+      "digest_field": "authority_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_submission_successor_live_authority_v1_0.json",
+      "sha256": "a1176319f82d48e6cd43aa3241dc82407eb8c2c5996b99bce9cf6801cd45f732"
+    },
+    "R14_private_full_result": {
+      "digest": "3030e1081bf2da22d072c28374b9e07e23017c9e0b9c801e4b9b1a651b67d5f5",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-submission-successor-live-r14/full_result.json",
+      "sha256": "007fb464be6253c54114daa3fe399d49886aa8cc21d420bea5b67cb190e94c4b"
+    },
+    "R14_public_result": {
+      "digest": "bd4a9602ed732d2e482bd1d9517bdb8dbff0975ed6ae979b6cdef2922d0c016a",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_submission_successor_live_result_v1_0.json",
+      "sha256": "d9c6682689f7e255660c50c90cf8d37b3969c843b4e9afb405f719187706fb4b"
+    },
+    "R14_request_capture": {
+      "digest": "8a4fd4491eb5bc2b8c47c132092a595a8f09310dea99354a82d0673d448af157",
+      "digest_field": "request_digest",
+      "ref": ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_submission_successor_live_r14/FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_SUBMISSION_SUCCESSOR_LIVE_R14/writer-submission-json-and-surface-feedback-successor/model_visible_request.json",
+      "sha256": "2ce80a2e837a8a8e4ac4ba0e5f9e8a7853e420b8eae1b692141b2a51fc1f101c"
+    },
+    "R14_response_capture": {
+      "digest": "f3b94de37dcab9e453d39cde85c194c2109af3321de6d3baaeaa77bc826890ac",
+      "digest_field": "response_digest",
+      "ref": ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_submission_successor_live_r14/FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_SUBMISSION_SUCCESSOR_LIVE_R14/writer-submission-json-and-surface-feedback-successor/provider_response.json",
+      "sha256": "cfb4b75ed64dcc29e0f7357bf7193aabf90c5488e990c1fd5236666e8de11dfa"
+    }
+  },
+  "status": "R14_terminal_failure_audited_independent_writer_takeover_required",
+  "terminal_receipt": {
+    "failure_code": "multi_agent_protected_report_identity_invalid",
+    "new_provider_calls_attempted": 1,
+    "new_provider_http_200": 1,
+    "private_full_result_digest": "3030e1081bf2da22d072c28374b9e07e23017c9e0b9c801e4b9b1a651b67d5f5",
+    "public_result_digest": "bd4a9602ed732d2e482bd1d9517bdb8dbff0975ed6ae979b6cdef2922d0c016a",
+    "retries": 0,
+    "usage": {
+      "completion_tokens": 9402,
+      "prompt_tokens": 73305,
+      "reasoning_tokens": 0
+    },
+    "writer_analysis_calls": 0,
+    "writer_submission_attempts": 1
+  }
+}

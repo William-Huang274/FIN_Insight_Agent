@@ -1,0 +1,70 @@
+{
+  "acceptance": {
+    "S3_pass": false,
+    "eight_dimension_quality_pass": false,
+    "independent_post_writer_L1_L2_pass": false,
+    "product_acceptance": false,
+    "protected_contract_pass": false,
+    "publication": false,
+    "release_ready": false,
+    "writer_protection_contract_pass": false
+  },
+  "authority_digest": "25c3bafebb9685ec73a7d3d296ff57c6a6d64adb0d8322e6bc05bb85bbf483b7",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_submission_successor_live_authority_v1_0.json",
+  "authority_sha256": "a1176319f82d48e6cd43aa3241dc82407eb8c2c5996b99bce9cf6801cd45f732",
+  "capture_manifest": [
+    {
+      "attempt_id": "writer-submission-json-and-surface-feedback-successor",
+      "completion_tokens": 9402,
+      "finish_reason": "tool_calls",
+      "prompt_tokens": 73305,
+      "reasoning_tokens": 0,
+      "request_digest": "8a4fd4491eb5bc2b8c47c132092a595a8f09310dea99354a82d0673d448af157",
+      "request_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_submission_successor_live_r14/FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_SUBMISSION_SUCCESSOR_LIVE_R14/writer-submission-json-and-surface-feedback-successor/model_visible_request.json",
+      "request_sha256": "2ce80a2e837a8a8e4ac4ba0e5f9e8a7853e420b8eae1b692141b2a51fc1f101c",
+      "response_digest": "f3b94de37dcab9e453d39cde85c194c2109af3321de6d3baaeaa77bc826890ac",
+      "response_present": true,
+      "response_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_submission_successor_live_r14/FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_SUBMISSION_SUCCESSOR_LIVE_R14/writer-submission-json-and-surface-feedback-successor/provider_response.json",
+      "response_sha256": "cfb4b75ed64dcc29e0f7357bf7193aabf90c5488e990c1fd5236666e8de11dfa",
+      "status_code": 200
+    }
+  ],
+  "case_key": "DELL",
+  "execution": {
+    "candidate_promotions": 0,
+    "external_source_network_calls": 0,
+    "fallbacks": 0,
+    "maximum_new_provider_calls": 1,
+    "new_S1_S2_requests": 0,
+    "new_provider_calls_attempted": 1,
+    "new_provider_http_200": 1,
+    "new_retrieval_rounds": 0,
+    "retries": 0,
+    "reused_R13_writer_analysis": true,
+    "upstream_agent_calls": 0,
+    "writer_analysis_calls": 0,
+    "writer_submission_attempts": 1
+  },
+  "failure": {
+    "code": "multi_agent_protected_report_identity_invalid",
+    "exception_capture_ref": "",
+    "failure_preserved_without_retry": true,
+    "phase": "local_contract_or_semantic_validation",
+    "provider_failure": false
+  },
+  "implementation_commit": "490b4dbd56ce1fbedc6914304b64dc8f4e172956",
+  "known_boundary": "The single R13-bound JSON and protected-surface feedback submission successor ended in a preserved terminal failure. No automated Writer successor, retry, profile tuning, upstream Agent, retrieval, publication or release action is authorized after this result.",
+  "private_full_result_digest": "3030e1081bf2da22d072c28374b9e07e23017c9e0b9c801e4b9b1a651b67d5f5",
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-submission-successor-live-r14/full_result.json",
+  "private_full_result_sha256": "007fb464be6253c54114daa3fe399d49886aa8cc21d420bea5b67cb190e94c4b",
+  "recorded_at": "2026-08-24T06:38:05+08:00",
+  "result_digest": "bd4a9602ed732d2e482bd1d9517bdb8dbff0975ed6ae979b6cdef2922d0c016a",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_SUBMISSION_SUCCESSOR_LIVE_R14",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_public_result_v1_0",
+  "status": "terminal_protected_writer_submission_successor_failure_preserved",
+  "usage": {
+    "completion_tokens": 9402,
+    "prompt_tokens": 73305,
+    "reasoning_tokens": 0
+  }
+}

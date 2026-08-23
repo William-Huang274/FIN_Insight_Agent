@@ -192,6 +192,12 @@ CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_SCHEMA = (
 CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_STATUS = (
     "R5_independent_L1_L2_failure_preserved_one_five_role_repair_authorized"
 )
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUCCESSOR_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_repair_successor_scope_decision_v1_0"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUCCESSOR_DECISION_STATUS = (
+    "R6_zero_provider_local_optional_resume_failure_preserved_R7_authorized"
+)
 CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SCOPE = (
     "one_clean_authorized_five_role_content_repair_and_Lead_recheck"
 )
@@ -558,10 +564,10 @@ def _validate_fixed_pack_decision(
             root=root,
             decision=decision,
         )
-    if (
-        decision.get("schema_version")
-        == CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_SCHEMA
-    ):
+    if decision.get("schema_version") in {
+        CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_SCHEMA,
+        CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUCCESSOR_DECISION_SCHEMA,
+    }:
         return _validate_current_dynamic_multi_agent_content_repair_decision(
             root=root,
             decision=decision,
@@ -6849,9 +6855,21 @@ def _validate_current_dynamic_multi_agent_decision(
 def _validate_current_dynamic_multi_agent_content_repair_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    successor = (
+        decision.get("schema_version")
+        == CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUCCESSOR_DECISION_SCHEMA
+    )
     expected_equal = {
-        "schema_version": CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_SCHEMA,
-        "status": CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_STATUS,
+        "schema_version": (
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUCCESSOR_DECISION_SCHEMA
+            if successor
+            else CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_SCHEMA
+        ),
+        "status": (
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUCCESSOR_DECISION_STATUS
+            if successor
+            else CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_STATUS
+        ),
         "case_key": "DELL",
         "cell_id": "MULTI_AGENT::DELL::CONTENT_REPAIR",
         "run_scope_id": CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SCOPE,
@@ -6933,6 +6951,101 @@ def _validate_current_dynamic_multi_agent_content_repair_decision(
         ref_field="assessment_ref",
         sha_field="assessment_sha256",
     )
+    successor_projection: dict[str, Any] = {}
+    if successor:
+        expected_successor = {
+            "failed_R6_required": True,
+            "failed_R6_zero_provider_required": True,
+            "successor_zero_call_required": True,
+            "fresh_R7_authority_required": True,
+        }
+        if any(
+            decision.get(key) != value
+            for key, value in expected_successor.items()
+        ):
+            raise ValueError(
+                "project_os_current_dynamic_multi_agent_content_repair_"
+                "successor_identity_invalid"
+            )
+        _, failed_authority = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="failed_R6_authority_ref",
+            sha_field="failed_R6_authority_sha256",
+        )
+        _, failed_public = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="failed_R6_public_ref",
+            sha_field="failed_R6_public_sha256",
+            digest_field="failed_R6_public_result_digest",
+        )
+        _, failed_private = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="failed_R6_private_ref",
+            sha_field="failed_R6_private_sha256",
+            digest_field="failed_R6_private_full_result_digest",
+            artifact_digest_field="full_result_digest",
+        )
+        _, successor_zero = _validate_artifact_binding(
+            root=root,
+            decision=decision,
+            ref_field="successor_zero_call_result_ref",
+            sha_field="successor_zero_call_result_sha256",
+            digest_field="successor_zero_call_result_digest",
+        )
+        failure = {
+            "phase": "local_contract_or_validation",
+            "code": "dynamic_multi_agent_submission_resume_manifest_size_invalid",
+            "capture_ref": "",
+        }
+        if not (
+            failed_authority.get("schema_version")
+            == "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_v1_0"
+            and failed_authority.get("status")
+            == "signed_exact_once_DELL_current_dynamic_multi_agent_content_repair"
+            and dict(failed_authority.get("execution_budget") or {})
+            == expected_budget
+            and failed_public.get("status")
+            == "terminal_partial_content_repair_failure_preserved"
+            and failed_private.get("status")
+            == "terminal_partial_content_repair_failure_preserved"
+            and failed_public.get("failure") == failure
+            and failed_private.get("failure") == failure
+            and (failed_public.get("execution") or {}).get(
+                "new_provider_calls_attempted"
+            )
+            == 0
+            and (failed_private.get("execution") or {}).get(
+                "new_provider_calls_attempted"
+            )
+            == 0
+            and failed_public.get("private_full_result_sha256")
+            == _sha256(_repo_path(root, str(decision["failed_R6_private_ref"])))
+            and failed_private.get("authority_sha256")
+            == str(decision["failed_R6_authority_sha256"])
+            and successor_zero.get("status")
+            == "content_repair_successor_zero_call_proven"
+            and all((successor_zero.get("checks") or {}).values())
+            and (successor_zero.get("execution") or {}).get("model_calls") == 0
+            and (successor_zero.get("execution") or {}).get("provider_calls")
+            == 0
+            and successor_zero.get("failed_public_result_digest")
+            == failed_public.get("result_digest")
+            and successor_zero.get("failed_private_full_result_digest")
+            == failed_private.get("full_result_digest")
+        ):
+            raise ValueError(
+                "project_os_current_dynamic_multi_agent_content_repair_"
+                "successor_chain_invalid"
+            )
+        successor_projection = {
+            "current_dynamic_multi_agent_content_repair_successor": True,
+            "failed_R6_code": failure["code"],
+            "failed_R6_provider_calls": 0,
+            "successor_zero_call_status": successor_zero["status"],
+        }
     if not (
         zero.get("status") == "content_repair_zero_call_proven"
         and all((zero.get("checks") or {}).values())
@@ -7067,6 +7180,7 @@ def _validate_current_dynamic_multi_agent_content_repair_decision(
         "run_scope_id": decision["run_scope_id"],
         "execution_limits": expected_budget,
         "node_profiles": token_basis,
+        **successor_projection,
     }
 
 
@@ -12090,21 +12204,33 @@ def build_preflight(
         decision_projection.get("current_dynamic_multi_agent_content_repair")
         is True
     ):
+        successor_prefix = (
+            "It also preserves the consumed R6 terminal failure at the empty "
+            "optional-resume-manifest seam with zero Provider calls, and the "
+            "successor proof shows a fresh R7 reaches the first role and Lead "
+            "Provider frontiers without reusing R6 output identities. "
+            if decision_projection.get(
+                "current_dynamic_multi_agent_content_repair_successor"
+            )
+            is True
+            else ""
+        )
         known_boundary = (
             "This current-baseline preflight preserves the immutable R5 DELL "
             "six-specialist workpaper set, two Lead rounds and independent "
-            "L1/L2 failure. It authorizes exactly five role-local financial-"
-            "truth repairs for Demand, Operating, Value, Cash and "
-            "Counterevidence, each with one analysis draft and one strict "
-            "submission, followed by exactly one Lead recheck analysis and "
-            "one strict submission: at most 12 Provider calls. Supply and all "
-            "Evidence, NumericFact, Relation and gap authority sets remain "
-            "immutable. It permits zero new S1/S2 request, retrieval round, "
-            "external source call, retry, fallback, Candidate promotion or "
-            "product-pointer mutation. Success still requires independent "
-            "L1/L2 and content reassessment and does not authorize Writer, S3 "
-            "acceptance, heterogeneous generalization, Workbench publication "
-            "or release."
+            "L1/L2 failure. "
+            + successor_prefix
+            + "It authorizes exactly five role-local financial-truth repairs "
+            "for Demand, Operating, Value, Cash and Counterevidence, each with "
+            "one analysis draft and one strict submission, followed by exactly "
+            "one Lead recheck analysis and one strict submission: at most 12 "
+            "Provider calls. Supply and all Evidence, NumericFact, Relation "
+            "and gap authority sets remain immutable. It permits zero new "
+            "S1/S2 request, retrieval round, external source call, retry, "
+            "fallback, Candidate promotion or product-pointer mutation. "
+            "Success still requires independent L1/L2 and content reassessment "
+            "and does not authorize Writer, S3 acceptance, heterogeneous "
+            "generalization, Workbench publication or release."
         )
         required_terms = (
             "exactly five role-local financial-truth repairs",

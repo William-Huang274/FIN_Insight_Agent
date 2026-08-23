@@ -1555,3 +1555,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - clean／synced commit `2bda05b8...306bd` 的 repository-aware Project OS preflight 已通过，精确投影 12 次 Provider、0 S1/S2／检索／外源／retry／promotion，凭据只检查存在性。
 - R6 authority SHA=`2c605338...077bc`，绑定 11 组输入并通过本地 validator；scope decision 本身是受摘要保护输入，不能以手写同预算 authority 绕过。
 - 当前仅为 signed／not executed。五角色返修与 Lead 复核尚未发生；Writer、S3、泛化、publication 和 release 仍为 false。详见 `docs/worklog/fin_0_1_3_s3/147_R6_multi_agent_content_repair_live_authority.md`。
+
+### 2026-08-24 R6 零调用终止与 R7 successor 门
+
+- R6 在第一个角色 Provider dispatch 前终止：fresh repair 合法的空 optional resume manifest 被非空 resume validator 拒绝。0 DeepSeek／Provider、0 S1/S2、0 网络／retrieval／promotion；R6 authority 和输出 identity 已消耗并保持不可变。
+- 已区分 fresh 与 resume：空 manifest 进入 fresh Provider frontier，非空 manifest 仍逐 capture fail closed。Terminal 调用数同时改为按当前 attempt prefix 的 `provider_attempt_requested` SessionEvent 统计，避免中途失败漏记调用。
+- R7 successor 零调用证明分别到达首个角色与 Lead Provider seam，绑定 R6 authority／public／private digest，0 模型／网络／retrieval；范围仍是五角色＋一次 Lead、最多 12 次，0 retry／外源／promotion。
+- 当前下一门是全仓验证、clean commit／push、repository-aware successor preflight 和 fresh R7 authority。Writer 仍冻结，R7 成功后必须独立复评 L1/L2 和内容质量。
+- 详见 `docs/worklog/fin_0_1_3_s3/148_R6_optional_resume_manifest_failure_and_R7_successor_zero_call.md`。

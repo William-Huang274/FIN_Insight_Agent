@@ -182,7 +182,7 @@ CURRENT_DYNAMIC_MULTI_AGENT_DECISION_REF = (
 CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "content_repair_scope_decision_v1_0.json"
+    "content_repair_successor_scope_decision_v1_0.json"
 )
 CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_DECISION_REF = (
     "configs/research/evals/"
@@ -1337,6 +1337,13 @@ def test_current_dynamic_multi_agent_content_repair_binds_exact_scope() -> None:
 
     assert projection["run_scope_id"] == CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SCOPE
     assert projection["current_dynamic_multi_agent_content_repair"] is True
+    assert projection[
+        "current_dynamic_multi_agent_content_repair_successor"
+    ] is True
+    assert projection["failed_R6_provider_calls"] == 0
+    assert projection["successor_zero_call_status"] == (
+        "content_repair_successor_zero_call_proven"
+    )
     assert projection["execution_limits"]["maximum_new_model_calls"] == 12
     assert projection["execution_limits"]["maximum_new_s1_s2_requests"] == 0
     assert projection["execution_limits"]["maximum_external_source_network_calls"] == 0
@@ -1359,6 +1366,8 @@ def test_current_dynamic_multi_agent_content_repair_binds_exact_scope() -> None:
     ] is True
     assert "exactly five role-local financial-truth repairs" in result["known_boundary"]
     assert "at most 12 Provider calls" in result["known_boundary"]
+    assert "consumed R6 terminal failure" in result["known_boundary"]
+    assert "fresh R7" in result["known_boundary"]
     assert "does not authorize Writer" in result["known_boundary"]
 
 

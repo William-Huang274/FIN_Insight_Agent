@@ -46,6 +46,8 @@ from scripts.research.run_s3_current_dynamic_multi_agent import (
     _call_live_tool,
     _call_live_tool_draft,
     _provider_attempt_count,
+    _provider_attempt_count_for_prefix,
+    _resume_capture_for_attempt,
     _tool_draft,
     _tool_arguments,
     expected_content_repair_budget,
@@ -557,6 +559,15 @@ def test_content_repair_budget_counts_exactly_five_repairs_and_one_lead() -> Non
     assert budget["retries"] == 0
 
 
+def test_optional_resume_manifest_allows_fresh_provider_frontier() -> None:
+    assert (
+        _resume_capture_for_attempt(
+            (), attempt_fragment="demand-quality-repair-r1-draft"
+        )
+        is None
+    )
+
+
 def test_content_repair_authority_rejects_budget_drift_before_execution(
     tmp_path: Path,
 ) -> None:
@@ -797,3 +808,22 @@ def test_live_provider_seam_counts_failed_attempt_from_requested_event(
         "provider_attempt_failed",
     ]
     assert _provider_attempt_count(events) == 1
+
+
+def test_provider_attempt_count_for_prefix_excludes_predecessor_events() -> None:
+    events = [
+        {
+            "event_type": "provider_attempt_requested",
+            "attempt_id": "R5-demand-workpaper",
+        },
+        {
+            "event_type": "provider_attempt_requested",
+            "attempt_id": "R7-demand-repair-draft",
+        },
+        {
+            "event_type": "provider_attempt_failed",
+            "attempt_id": "R7-demand-repair-draft",
+        },
+    ]
+
+    assert _provider_attempt_count_for_prefix(events, attempt_prefix="R7-") == 1

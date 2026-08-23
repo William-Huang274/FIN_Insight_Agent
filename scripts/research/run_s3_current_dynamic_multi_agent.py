@@ -167,6 +167,9 @@ DEFAULT_SUBMISSION_SUCCESSOR_LIVE_PUBLIC = Path(
 CONTENT_REPAIR_ZERO_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_content_repair_zero_call_v1_0"
 )
+CONTENT_REPAIR_SUCCESSOR_ZERO_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_repair_successor_zero_call_v1_0"
+)
 CONTENT_REPAIR_AUTHORITY_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_v1_0"
 )
@@ -181,6 +184,9 @@ CONTENT_REPAIR_FULL_SCHEMA = (
 )
 DEFAULT_CONTENT_REPAIR_ZERO_PUBLIC = Path(
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_zero_call_result_v1_0.json"
+)
+DEFAULT_CONTENT_REPAIR_SUCCESSOR_ZERO_PUBLIC = Path(
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_successor_zero_call_result_v1_0.json"
 )
 DEFAULT_CONTENT_REPAIR_LIVE_PUBLIC = Path(
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_result_v1_0.json"
@@ -2018,6 +2024,8 @@ def _validate_resume_capture_manifest(
 def _resume_capture_for_attempt(
     rows: Sequence[Mapping[str, Any]], *, attempt_fragment: str
 ) -> Path | None:
+    if not rows:
+        return None
     validated = _validate_resume_capture_manifest(rows)
     matches = [
         row
@@ -2868,11 +2876,25 @@ def validate_content_repair_authority(
     predecessor_public = _read_json(paths["predecessor_public_ref"])
     predecessor_private = _read_json(paths["predecessor_private_ref"])
     assessment = _read_json(paths["assessment_ref"])
-    if not (
-        scope_decision.get("schema_version")
+    scope_schema = str(scope_decision.get("schema_version") or "")
+    scope_status = str(scope_decision.get("status") or "")
+    scope_identity_valid = (
+        scope_schema
         == "fin_ia_s3_current_dynamic_multi_agent_content_repair_scope_decision_v1_0"
-        and scope_decision.get("status")
+        and scope_status
         == "R5_independent_L1_L2_failure_preserved_one_five_role_repair_authorized"
+    ) or (
+        scope_schema
+        == "fin_ia_s3_current_dynamic_multi_agent_content_repair_successor_scope_decision_v1_0"
+        and scope_status
+        == "R6_zero_provider_local_optional_resume_failure_preserved_R7_authorized"
+        and scope_decision.get("failed_R6_required") is True
+        and scope_decision.get("failed_R6_zero_provider_required") is True
+        and scope_decision.get("successor_zero_call_required") is True
+        and scope_decision.get("fresh_R7_authority_required") is True
+    )
+    if not (
+        scope_identity_valid
         and scope_decision.get("next_authorized_scope")
         == "one_clean_authorized_five_role_content_repair_and_Lead_recheck"
         and dict(scope_decision.get("execution_budget") or {})
@@ -3203,6 +3225,19 @@ def _provider_attempt_count(events: Sequence[Mapping[str, Any]]) -> int:
         1
         for event in events
         if str(event.get("event_type") or "") == "provider_attempt_requested"
+    )
+
+
+def _provider_attempt_count_for_prefix(
+    events: Sequence[Mapping[str, Any]], *, attempt_prefix: str
+) -> int:
+    """Count this execution's requested Provider attempts, including failures."""
+
+    return sum(
+        1
+        for event in events
+        if str(event.get("event_type") or "") == "provider_attempt_requested"
+        and str(event.get("attempt_id") or "").startswith(attempt_prefix)
     )
 
 
@@ -7043,6 +7078,230 @@ def run_zero_call_content_repair(
     return public
 
 
+def run_zero_call_content_repair_successor(
+    *,
+    attempt_id: str,
+    authority_path: Path,
+    failed_public_path: Path,
+    failed_private_path: Path,
+    private_output: Path,
+    public_output: Path,
+) -> dict[str, Any]:
+    """Prove the fresh R7 Provider frontier after the R6 zero-call failure."""
+
+    authority = _read_json(authority_path)
+    failed_public = _read_json(failed_public_path)
+    failed_private = _read_json(failed_private_path)
+    public_body = {
+        key: deepcopy(value)
+        for key, value in failed_public.items()
+        if key != "result_digest"
+    }
+    private_body = {
+        key: deepcopy(value)
+        for key, value in failed_private.items()
+        if key != "full_result_digest"
+    }
+    expected_failure = {
+        "phase": "local_contract_or_validation",
+        "code": "dynamic_multi_agent_submission_resume_manifest_size_invalid",
+        "capture_ref": "",
+    }
+    if not (
+        authority.get("schema_version") == CONTENT_REPAIR_AUTHORITY_SCHEMA
+        and authority.get("status") == CONTENT_REPAIR_AUTHORITY_STATUS
+        and dict(authority.get("execution_budget") or {})
+        == expected_content_repair_budget()
+        and failed_public.get("status")
+        == "terminal_partial_content_repair_failure_preserved"
+        and failed_public.get("result_digest") == canonical_digest(public_body)
+        and failed_private.get("status")
+        == "terminal_partial_content_repair_failure_preserved"
+        and failed_private.get("full_result_digest")
+        == canonical_digest(private_body)
+        and failed_public.get("private_full_result_sha256")
+        == _sha256(failed_private_path)
+        and failed_private.get("authority_ref") == _relative(authority_path)
+        and failed_private.get("authority_sha256") == _sha256(authority_path)
+        and failed_public.get("failure") == expected_failure
+        and failed_private.get("failure") == expected_failure
+        and (failed_public.get("execution") or {}).get(
+            "new_provider_calls_attempted"
+        )
+        == 0
+        and (failed_private.get("execution") or {}).get(
+            "new_provider_calls_attempted"
+        )
+        == 0
+        and (failed_private.get("execution") or {}).get(
+            "role_repairs_executed"
+        )
+        == 0
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_repair_successor_failure_binding_invalid"
+        )
+    bound = dict(authority["bound_inputs"])
+    _, predecessor, assessment = _load_content_repair_inputs(
+        predecessor_public_path=_resolve_repo_ref(bound["predecessor_public_ref"]),
+        predecessor_private_path=_resolve_repo_ref(bound["predecessor_private_ref"]),
+        assessment_path=_resolve_repo_ref(bound["assessment_ref"]),
+    )
+    role_bundles = {
+        str(row["agent_id"]): deepcopy(dict(row))
+        for row in predecessor["role_bundles"]
+    }
+    challenges = compile_independent_content_challenges(
+        assessment=assessment,
+        workpapers=[role_bundles[key]["workpaper"] for key in SPECIALIST_AGENT_IDS],
+    )
+    by_target: dict[str, list[dict[str, Any]]] = {}
+    for row in challenges:
+        by_target.setdefault(str(row["target_agent_id"]), []).append(row)
+    for agent_id in sorted(by_target):
+        rebound, _ = rebind_workpaper_context_semantic_rules(
+            role_bundles[agent_id]["workpaper_context"],
+            expected_agent_id=agent_id,
+        )
+        role_bundles[agent_id]["workpaper_context"] = rebound
+
+    class _FreshProviderFrontierReached(RuntimeError):
+        pass
+
+    provider_frontiers: list[str] = []
+
+    def _frontier(**kwargs: Any) -> AgentToolStepResult:
+        provider_frontiers.append(str(kwargs.get("attempt_id") or ""))
+        raise _FreshProviderFrontierReached(provider_frontiers[-1])
+
+    research_profile = load_agent_transport_profile(
+        _read_json(_resolve_repo_ref(bound["provider_profile_ref"]))
+    )
+    submission_profile = load_chat_completion_profile(
+        _read_json(_resolve_repo_ref(bound["submission_profile_ref"]))
+    )
+    first_agent = sorted(by_target)[0]
+    try:
+        _execute_submission_successor_role_repair(
+            role_bundle=role_bundles[first_agent],
+            challenges=by_target[first_agent],
+            research_profile=research_profile,
+            submission_profile=submission_profile,
+            capture_root=private_output.parent / "forbidden-captures",
+            run_id=f"{attempt_id}-ROLE-FRONTIER",
+            attempt_prefix=f"{attempt_id}-ROLE-FRONTIER",
+            repair_index=1,
+            recorded_at=str(failed_private["recorded_at"]),
+            research_executor=_frontier,
+            submission_executor=_frontier,
+            resume_capture_manifest=(),
+        )
+    except _FreshProviderFrontierReached:
+        pass
+    role_frontier = list(provider_frontiers)
+    provider_frontiers.clear()
+    workpapers = [
+        deepcopy(role_bundles[agent_id]["workpaper"])
+        for agent_id in SPECIALIST_AGENT_IDS
+    ]
+    lead_session, lead_events = _create_lead_session(
+        run_id=f"{attempt_id}-LEAD-FRONTIER",
+        workpapers=workpapers,
+        recorded_at=str(failed_private["recorded_at"]),
+    )
+    try:
+        _execute_submission_successor_lead_round(
+            workpapers=workpapers,
+            local_failure_receipts=(),
+            session=lead_session,
+            events=lead_events,
+            research_profile=research_profile,
+            submission_profile=submission_profile,
+            capture_root=private_output.parent / "forbidden-captures",
+            run_id=f"{attempt_id}-LEAD-FRONTIER",
+            attempt_prefix=f"{attempt_id}-LEAD-FRONTIER",
+            round_index=1,
+            recorded_at=str(failed_private["recorded_at"]),
+            research_executor=_frontier,
+            submission_executor=_frontier,
+            resume_capture_manifest=(),
+        )
+    except _FreshProviderFrontierReached:
+        pass
+    lead_frontier = list(provider_frontiers)
+    expected_role_suffix = (
+        first_agent.split("::")[-1].lower().replace("_", "-")
+        + "-repair-r1-draft"
+    )
+    checks = {
+        "R6_public_private_failure_and_authority_bound": True,
+        "R6_zero_provider_attempts_preserved": True,
+        "empty_optional_manifest_routes_to_fresh_provider": (
+            _resume_capture_for_attempt(
+                (), attempt_fragment=expected_role_suffix
+            )
+            is None
+        ),
+        "first_role_provider_frontier_exact": (
+            len(role_frontier) == 1
+            and role_frontier[0].endswith(expected_role_suffix)
+        ),
+        "lead_provider_frontier_accepts_empty_manifest": (
+            len(lead_frontier) == 1
+            and lead_frontier[0].endswith("lead-r1-draft")
+        ),
+        "exact_five_repair_targets_preserved": len(by_target) == 5,
+        "twelve_call_budget_unchanged": expected_content_repair_budget()[
+            "maximum_new_model_calls"
+        ]
+        == 12,
+        "zero_model_provider_network_retrieval_calls": True,
+    }
+    if not all(checks.values()):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_repair_successor_zero_call_not_proven"
+        )
+    result_body = {
+        "schema_version": CONTENT_REPAIR_SUCCESSOR_ZERO_SCHEMA,
+        "status": "content_repair_successor_zero_call_proven",
+        "recorded_at": _now(),
+        "attempt_id": attempt_id,
+        "failed_authority_ref": _relative(authority_path),
+        "failed_authority_sha256": _sha256(authority_path),
+        "failed_public_ref": _relative(failed_public_path),
+        "failed_public_sha256": _sha256(failed_public_path),
+        "failed_public_result_digest": failed_public["result_digest"],
+        "failed_private_ref": _relative(failed_private_path),
+        "failed_private_sha256": _sha256(failed_private_path),
+        "failed_private_full_result_digest": failed_private["full_result_digest"],
+        "repair_targets": sorted(by_target),
+        "first_role_provider_frontier": role_frontier[0],
+        "lead_provider_frontier": lead_frontier[0],
+        "checks": checks,
+        "execution": {
+            "model_calls": 0,
+            "provider_calls": 0,
+            "network_calls": 0,
+            "retrieval_calls": 0,
+            "candidate_promotions": 0,
+        },
+        "next_exact_frontier": "fresh_five_role_repair_then_one_lead_round",
+    }
+    private = {
+        **result_body,
+        "full_result_digest": canonical_digest(result_body),
+    }
+    _write_json(private_output, private, exclusive=True)
+    public_body = {
+        **result_body,
+        "private_result_ref": _relative(private_output),
+        "private_result_sha256": _sha256(private_output),
+    }
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_json(public_output, public, exclusive=True)
+    return public
+
+
 def run_content_repair_live(
     *,
     authority_path: Path,
@@ -7106,6 +7365,7 @@ def run_content_repair_live(
         migrations.append(receipt)
     repairs: list[dict[str, Any]] = []
     lead_bundle: dict[str, Any] = {}
+    current_lead_events: list[dict[str, Any]] = []
     frontier = "content_repairs_in_progress"
     failure = {"phase": "", "code": "", "capture_ref": ""}
     private_root.mkdir(parents=True, exist_ok=False)
@@ -7160,6 +7420,7 @@ def run_content_repair_live(
             workpapers=final_workpapers,
             recorded_at=recorded_at,
         )
+        current_lead_events = lead_events
         lead_round = _execute_submission_successor_lead_round(
             workpapers=final_workpapers,
             local_failure_receipts=(),
@@ -7215,10 +7476,12 @@ def run_content_repair_live(
         ]
         _checkpoint()
     provider_calls = sum(
-        len(row.get("provider_steps") or ()) for row in repairs
-    ) + sum(
-        len(row.get("provider_steps") or ())
-        for row in lead_bundle.get("rounds") or ()
+        _provider_attempt_count_for_prefix(
+            role_bundles[agent_id]["events"], attempt_prefix=attempt_prefix
+        )
+        for agent_id in SPECIALIST_AGENT_IDS
+    ) + _provider_attempt_count_for_prefix(
+        current_lead_events, attempt_prefix=attempt_prefix
     )
     budget = expected_content_repair_budget()
     if provider_calls > budget["maximum_new_model_calls"]:
@@ -7349,6 +7612,7 @@ def main() -> int:
             "zero-call-submission-successor",
             "zero-call-submission-repair-resume",
             "zero-call-content-repair",
+            "zero-call-content-repair-successor",
             "live",
             "live-submission-successor",
             "live-content-repair",
@@ -7390,7 +7654,12 @@ def main() -> int:
                         else (
                             "zero_call_content_repair_full_result.json"
                             if args.mode == "zero-call-content-repair"
-                            else "full_result.json"
+                            else (
+                                "zero_call_content_repair_successor_full_result.json"
+                                if args.mode
+                                == "zero-call-content-repair-successor"
+                                else "full_result.json"
+                            )
                         )
                     )
                 )
@@ -7414,12 +7683,16 @@ def main() -> int:
                     DEFAULT_CONTENT_REPAIR_ZERO_PUBLIC
                     if args.mode == "zero-call-content-repair"
                     else (
-                        DEFAULT_CONTENT_REPAIR_LIVE_PUBLIC
-                        if args.mode == "live-content-repair"
+                        DEFAULT_CONTENT_REPAIR_SUCCESSOR_ZERO_PUBLIC
+                        if args.mode == "zero-call-content-repair-successor"
                         else (
-                            DEFAULT_SUBMISSION_SUCCESSOR_LIVE_PUBLIC
-                            if args.mode == "live-submission-successor"
-                            else DEFAULT_LIVE_PUBLIC
+                            DEFAULT_CONTENT_REPAIR_LIVE_PUBLIC
+                            if args.mode == "live-content-repair"
+                            else (
+                                DEFAULT_SUBMISSION_SUCCESSOR_LIVE_PUBLIC
+                                if args.mode == "live-submission-successor"
+                                else DEFAULT_LIVE_PUBLIC
+                            )
                         )
                     )
                 )
@@ -7502,6 +7775,24 @@ def main() -> int:
                 args.predecessor_private
             ).resolve(),
             assessment_path=_resolve_repo_ref(args.assessment).resolve(),
+            private_output=private_output,
+            public_output=public_output,
+        )
+    elif args.mode == "zero-call-content-repair-successor":
+        if not (
+            args.authority
+            and args.resume_private
+            and args.resume_public
+        ):
+            parser.error(
+                "--authority and failed --resume-public/--resume-private "
+                "are required for content repair successor"
+            )
+        result = run_zero_call_content_repair_successor(
+            attempt_id=args.attempt_id,
+            authority_path=_resolve_repo_ref(args.authority).resolve(),
+            failed_public_path=_resolve_repo_ref(args.resume_public).resolve(),
+            failed_private_path=_resolve_repo_ref(args.resume_private).resolve(),
             private_output=private_output,
             public_output=public_output,
         )

@@ -1370,3 +1370,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 这不是 S1 信源或 S2 NumericFact 缺陷。输入已保留期间、管理层表述、历史上下文与 typed gap；最早责任层是 S3 free-narrative claim authority 和 L1 failure→FeedbackReceipt 闭环。正式八维分因 L1/L2 失败而不签发，单元适用诊断为 `16/24`。
 - 新 RC-S3-062 阻断多 Agent。下一步只能零调用实现五项 semantic FeedbackReceipt＋PlanDelta repair 合同，并在 clean proof 后最多执行一次零检索 workpaper-only repair；通过 L1/L2 后才可进入动态多 Agent。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/127_current_dynamic_R5_contract_success_and_semantic_L1_failure.md`。
+
+### 2026-08-23 DELL current dynamic 语义反馈修复零调用门
+
+- R5 五项 material L1 finding 已编译成保留完整原因、允许动作和禁止解释的 immutable FeedbackReceipt；同一 `AGENT::VALUE_CAPTURE` 必须先提交覆盖全部反馈的 PlanDelta，随后才可提交有界 patch。
+- Patch 只允许修改 `thesis / sourced_claims / mechanism`；置信度、反方、缺口、WWC、跨角色挑战和停止理由按 digest 锁定。禁止重新检索、新 Evidence／NumericFact／Relation ref、Candidate promotion、retry 和产品指针修改。
+- 零调用 proof 已通过五项反馈覆盖、同 Agent 计划、锁定字段、漏反馈／错动作／新增引用 mutation；0 模型、0 网络、0 检索。公开结果只保留 capture 索引与调用元数据，完整模型请求／响应留在受限 capture；已请求但失败的 attempt 必须有 typed terminal。
+- 历史 R5 runner 存在一次 Validator digest 后再次摘要的 double-digest；R5 保持不可变且被显式识别，未来 runner 已恢复单一 canonical workpaper digest。
+- 当前只达到 semantic repair engineering proof，RC-S3-062 仍为 critical blocker。下一权限最多一次 planning call＋一次 non-thinking patch call；独立 L1／L2 通过前，动态多 Agent、S3 acceptance、Workbench publication 与 release 均为 false。
+- 完整工程门为定向 `91 passed`、全仓 `1094 passed`（仅 2 条既有 SWIG warning）、compileall、active baseline `207／8／5／28／0`、7,718-file secret scan／0 和 diff check 通过。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/128_current_dynamic_semantic_feedback_repair_zero_call_gate.md`。

@@ -853,7 +853,7 @@ def _execute_workpaper_submission_attempt(
         context=workpaper_context,
         expected_agent_id="AGENT::VALUE_CAPTURE",
     )
-    return {**workpaper, "workpaper_digest": canonical_digest(workpaper)}
+    return workpaper
 
 
 def _run_workpaper_submission_successor(
@@ -1571,7 +1571,6 @@ def run(
             context=workpaper_context,
             expected_agent_id="AGENT::VALUE_CAPTURE",
         )
-        workpaper["workpaper_digest"] = canonical_digest(workpaper)
     except ModelGatewayError as exc:
         failure_phase = "provider_transport_or_response"
         failure_code = exc.code

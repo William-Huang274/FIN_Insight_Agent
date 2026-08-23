@@ -1,0 +1,55 @@
+{
+  "assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_workpaper_submission_content_assessment_v1_0.json",
+  "assessment_sha256": "c8fd16101d2df0b852772494e427e5a8582c8f43d4581463d77ec37ffac19b41",
+  "authority": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "product_pointer_mutations": 0,
+    "retrieval_calls": 0
+  },
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "checks": {
+    "all_five_findings_became_actionable_feedback": true,
+    "locked_surfaces_byte_equivalent": true,
+    "missing_feedback_mutation_rejected": true,
+    "new_reference_mutation_rejected": true,
+    "only_three_repairable_surfaces_changed": true,
+    "plan_and_patch_messages_compile": true,
+    "plan_and_patch_tools_compile": true,
+    "same_agent_plan_delta_covers_every_feedback": true,
+    "wrong_resolution_mutation_rejected": true
+  },
+  "controlled_repaired_workpaper_digest": "88fc575d0d73c034010928da40f2d8af4c964fa68bf70355a6b1358dd38205ef",
+  "execution_summary": {
+    "feedback_count": 5,
+    "locked_surface_count": 7,
+    "new_reference_count": 0,
+    "repairable_surface_count": 3,
+    "retrieval_round_count": 0
+  },
+  "feedback_ids": [
+    "FEEDBACK::ACCDBC02C28250159527B6F3",
+    "FEEDBACK::59ADF38C9A5320F32BAB5EF3",
+    "FEEDBACK::1058236DDE1DB619CE2AB6FA",
+    "FEEDBACK::08131A77A236999AF7FD3FA6",
+    "FEEDBACK::E29C2888E7D0B13D3D7C017A"
+  ],
+  "known_boundary": "This proves contract and mutation behavior only. The controlled patch is not a model judgment or accepted research output; a separately authorized natural repair and independent L1/L2 reassessment remain required.",
+  "mutation_results": {
+    "missing_feedback": "dynamic_semantic_repair_plan_feedback_coverage_invalid",
+    "new_reference": "dynamic_semantic_repair_patch_new_reference_forbidden",
+    "wrong_resolution": "dynamic_semantic_repair_plan_resolution_invalid"
+  },
+  "plan_delta_digest": "bee8250efb50edb9f62f2a289d9a136cead339d08d6069d890932458dfc370cb",
+  "prior_workpaper_digest_style": "legacy_runner_double_digest",
+  "recorded_at": "2026-08-23T04:10:53.556772+00:00",
+  "repair_receipt_digest": "793b9de7fc168dbad59aec45c078a24be957a5580fec5ada8ab0da8a1a345ece",
+  "result_digest": "b11c234971efefe1c384b597ecaed23abfec897a93c5b20aa4a735980bd18d33",
+  "schema_version": "fin_ia_s3_dynamic_single_unit_semantic_repair_zero_call_result_v1_0",
+  "semantic_repair_context_digest": "73d216f5feac6f1575f08d2ff694a8bacac24d140bf60a33ee5a6e67b3add3bb",
+  "source_private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r5-workpaper-20260823t0326z/full_result.json",
+  "source_private_result_sha256": "97183dfae96437f8da46998d00f74982d68b787c3a766dc8924c1b17d0831bd3",
+  "status": "semantic_feedback_plan_patch_loop_zero_call_proven"
+}

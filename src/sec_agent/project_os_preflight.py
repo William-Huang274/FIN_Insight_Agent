@@ -163,6 +163,16 @@ CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_SCOPE = (
     "one_DELL_current_dynamic_value_capture_workpaper_submission_"
     "successor_exact_once"
 )
+CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_single_unit_semantic_repair_"
+    "scope_decision_v1_0"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_STATUS = (
+    "R5_semantic_L1_failure_preserved_one_feedback_plan_and_patch_authorized"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_SCOPE = (
+    "one_DELL_value_capture_workpaper_only_repair_successor_after_clean_authority"
+)
 DYNAMIC_FIVE_CELL_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
 )
@@ -512,6 +522,14 @@ def _validate_fixed_pack_decision(
     }:
         return validate_multi_agent_preview_scope_decision(
             root=root, decision=decision
+        )
+    if (
+        decision.get("schema_version")
+        == CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_SCHEMA
+    ):
+        return _validate_current_dynamic_single_unit_semantic_repair_decision(
+            root=root,
+            decision=decision,
         )
     if (
         decision.get("schema_version")
@@ -7090,6 +7108,221 @@ def _validate_current_dynamic_single_unit_decision(
     }
 
 
+def _validate_current_dynamic_single_unit_semantic_repair_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    required_equal = {
+        "schema_version": CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_SCHEMA,
+        "status": CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_STATUS,
+        "case_key": "DELL",
+        "cell_id": "CELL::value_capture",
+        "run_scope_id": CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_SCOPE,
+        "evidence_mode": "immutable_R5_workpaper_and_current_reviewed_authority",
+        "next_authorized_scope": CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_SCOPE,
+    }
+    for field, expected in required_equal.items():
+        if decision.get(field) != expected:
+            raise ValueError(
+                f"project_os_current_dynamic_semantic_repair_field_invalid:{field}"
+            )
+    for field in (
+        "R5_preserved_immutable",
+        "independent_L1_L2_failure_preserved",
+        "all_five_feedback_receipts_required",
+        "same_agent_plan_delta_required",
+        "repair_patch_limited_to_three_surfaces",
+        "locked_surfaces_digest_required",
+        "independent_post_repair_assessment_required",
+        "credential_presence_required",
+        "replacement_is_new_attempt_not_retry",
+    ):
+        if decision.get(field) is not True:
+            raise ValueError(
+                "project_os_current_dynamic_semantic_repair_true_required:"
+                + field
+            )
+    for field in (
+        "retrieval_authorized",
+        "new_evidence_authorized",
+        "candidate_promotion_authorized",
+        "multi_agent_authorized",
+        "product_publication_authorized",
+        "S1_acceptance_authorized",
+        "S3_acceptance_authorized",
+    ):
+        if decision.get(field) is not False:
+            raise ValueError(
+                "project_os_current_dynamic_semantic_repair_false_required:"
+                + field
+            )
+    expected_budget = {
+        "maximum_model_calls": 2,
+        "maximum_transport_attempts": 2,
+        "maximum_retrieval_rounds": 0,
+        "maximum_s1_s2_requests": 0,
+        "maximum_external_source_network_calls": 0,
+        "retries_per_model_node": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+    if decision.get("execution_budget") != expected_budget:
+        raise ValueError(
+            "project_os_current_dynamic_semantic_repair_budget_invalid"
+        )
+
+    _, zero = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="zero_call_result_ref",
+        sha_field="zero_call_result_sha256",
+        digest_field="zero_call_result_digest",
+    )
+    checks = zero.get("checks") or {}
+    if not (
+        zero.get("schema_version")
+        == "fin_ia_s3_dynamic_single_unit_semantic_repair_zero_call_result_v1_0"
+        and zero.get("status")
+        == "semantic_feedback_plan_patch_loop_zero_call_proven"
+        and checks.get("all_five_findings_became_actionable_feedback") is True
+        and checks.get("same_agent_plan_delta_covers_every_feedback") is True
+        and checks.get("only_three_repairable_surfaces_changed") is True
+        and checks.get("locked_surfaces_byte_equivalent") is True
+        and checks.get("new_reference_mutation_rejected") is True
+        and checks.get("missing_feedback_mutation_rejected") is True
+        and checks.get("wrong_resolution_mutation_rejected") is True
+        and (zero.get("authority") or {}).get("model_calls") == 0
+        and (zero.get("authority") or {}).get("network_calls") == 0
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_semantic_repair_zero_call_invalid"
+        )
+
+    _, public = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="prior_public_result_ref",
+        sha_field="prior_public_result_sha256",
+        digest_field="prior_public_result_digest",
+    )
+    _, private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="prior_private_result_ref",
+        sha_field="prior_private_result_sha256",
+        digest_field="prior_private_result_digest",
+        artifact_digest_field="full_result_digest",
+    )
+    _, assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="assessment_ref",
+        sha_field="assessment_sha256",
+    )
+    from sec_agent.research.dynamic_single_unit_repair import (
+        compile_semantic_repair_context,
+    )
+
+    repair_context = compile_semantic_repair_context(
+        prior_full_result=private,
+        assessment=assessment,
+        assessment_ref=str(decision["assessment_ref"]),
+        prior_result_ref=str(decision["prior_private_result_ref"]),
+        created_at=str(zero["recorded_at"]),
+    )
+    if not (
+        public.get("status")
+        == "completed_current_dynamic_single_unit_contract_valid_assessment_pending"
+        and private.get("status") == public.get("status")
+        and public.get("private_full_result_sha256")
+        == decision["prior_private_result_sha256"]
+        and assessment.get("status")
+        == "dynamic_research_and_contract_pass_financial_truth_and_evidence_authority_fail"
+        and (assessment.get("l1_financial_truth") or {}).get("status") == "fail"
+        and (assessment.get("l2_evidence_authority") or {}).get("status") == "fail"
+        and canonical_digest(assessment) == decision.get("assessment_digest")
+        and repair_context.get("context_digest")
+        == decision.get("semantic_repair_context_digest")
+        and repair_context.get("prior_workpaper_digest_style")
+        == "legacy_runner_double_digest"
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_semantic_repair_predecessor_invalid"
+        )
+
+    _, plan_profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="plan_profile_ref",
+        sha_field="plan_profile_sha256",
+    )
+    _, submission_profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="submission_profile_ref",
+        sha_field="submission_profile_sha256",
+    )
+    plan_defaults = plan_profile.get("request_defaults") or {}
+    submission_defaults = submission_profile.get("request_defaults") or {}
+    if not (
+        plan_profile.get("provider_id") == "deepseek"
+        and plan_profile.get("model") == "deepseek-v4-pro"
+        and plan_profile.get("base_url") == "https://api.deepseek.com"
+        and plan_profile.get("endpoint") == "/chat/completions"
+        and plan_defaults.get("thinking") == {"type": "enabled"}
+        and plan_defaults.get("reasoning_effort") == "max"
+        and plan_defaults.get("max_tokens") == 16000
+        and submission_profile.get("provider_id") == "deepseek"
+        and submission_profile.get("model") == "deepseek-v4-pro"
+        and submission_profile.get("base_url") == "https://api.deepseek.com"
+        and submission_profile.get("endpoint") == "/chat/completions"
+        and submission_defaults
+        == {"max_tokens": 8000, "stream": False, "thinking": {"type": "disabled"}}
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_semantic_repair_profiles_invalid"
+        )
+
+    required_basis_fields = {
+        "node_purpose",
+        "input_scale",
+        "required_outputs",
+        "schema_burden",
+        "materiality_and_quality_risk",
+        "comparable_run_evidence",
+        "reasoning_profile",
+        "maximum_completion_tokens",
+        "stop_or_truncation_behavior",
+    }
+    bases = decision.get("token_budget_basis") or {}
+    if not (
+        set(bases) == {"feedback_plan_delta", "semantic_patch_submission"}
+        and all(
+            isinstance(bases.get(node), Mapping)
+            and set(bases[node]) == required_basis_fields
+            for node in bases
+        )
+        and bases["feedback_plan_delta"]["maximum_completion_tokens"] == 16000
+        and bases["semantic_patch_submission"]["maximum_completion_tokens"] == 8000
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_semantic_repair_token_basis_invalid"
+        )
+    return {
+        "clean_proof_status": zero["status"],
+        "provider_id": "deepseek",
+        "provider_model": "deepseek-v4-pro",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "recent_provider_steps": 0,
+        "current_dynamic_semantic_repair": True,
+        "dynamic_single_cell_successor": False,
+        "micro_judgment_successor": False,
+        "run_scope_id": decision["run_scope_id"],
+        "execution_limits": expected_budget,
+        "node_profiles": bases,
+    }
+
+
 def _validate_dynamic_five_cell_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -11203,6 +11436,20 @@ def build_preflight(
             "allowance_missing"
         )
     if (
+        decision_projection.get("current_dynamic_semantic_repair") is True
+        and not _issue_explicitly_allows(
+            root=root,
+            issue_id=(
+                "RC-S3-062-current-dynamic-workpaper-free-narrative-"
+                "promoted_bounded_authority"
+            ),
+            allowed_scope=CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_SCOPE,
+        )
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_semantic_repair_scope_allowance_missing"
+        )
+    if (
         decision_projection.get("dynamic_temporal_repair_successor") is True
         and not _issue_explicitly_allows(
             root=root,
@@ -11875,6 +12122,19 @@ def build_preflight(
             "max-thinking analysis plus one non-thinking strict submission. "
             "It does not authorize new evidence, another analysis retry, "
             "five-cell execution, publication, S3 acceptance, or release."
+        )
+    elif decision_projection.get("current_dynamic_semantic_repair") is True:
+        known_boundary = (
+            "This current-baseline preflight preserves the immutable R5 DELL "
+            "dynamic value-capture workpaper and its independent L1/L2 failure. "
+            "It permits exactly one feedback-driven repair attempt: the same "
+            "agent must first resolve all five semantic FeedbackReceipts in an "
+            "accepted PlanDelta, then submit only thesis, sourced claims and "
+            "mechanism while all other surfaces remain digest-locked. It permits "
+            "two provider calls, zero retrieval, new Evidence, candidate promotion, "
+            "retry, external network or product-pointer mutation. Success still "
+            "requires independent L1/L2 and content assessment and does not "
+            "authorize multi-agent execution, publication, S3 acceptance or release."
         )
     elif (
         decision_projection.get("current_dynamic_workpaper_successor")

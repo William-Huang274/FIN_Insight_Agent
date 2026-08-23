@@ -407,13 +407,42 @@ def compile_verifier_feedback_receipts(
                 "修正受影响判断；若证据确实不足，再提交有界 EvidenceRequest 或 PlanDelta",
                 "只重裁决受影响单元，不重跑无关节点",
             )
+        explicit_actions = finding.get("permitted_next_actions")
+        if explicit_actions is not None:
+            actions = tuple(
+                str(value).strip()
+                for value in explicit_actions
+                if str(value).strip()
+            )
+            if not actions:
+                raise ValueError("verifier_feedback_actions_empty")
         alias = str(finding.get("truth_alias") or "")
         surface = str(finding.get("claim_surface_id") or finding.get("location") or "")
         location = " / ".join(part for part in (surface, alias) if part)
-        summary = f"Verifier 拒绝当前判断：{code}"
-        if location:
-            summary += f"（{location}）"
-        summary += "。该失败必须回到最早责任节点，Verifier 不会代写结论。"
+        explicit_summary = str(finding.get("model_visible_summary") or "").strip()
+        if explicit_summary:
+            summary = explicit_summary
+        else:
+            summary = f"Verifier 拒绝当前判断：{code}"
+            if location:
+                summary += f"（{location}）"
+            summary += "。该失败必须回到最早责任节点，Verifier 不会代写结论。"
+        explicit_forbidden = finding.get("forbidden_interpretations")
+        forbidden = (
+            tuple(
+                str(value).strip()
+                for value in explicit_forbidden
+                if str(value).strip()
+            )
+            if explicit_forbidden is not None
+            else (
+                "不得忽略已审 Evidence 或把 cell-local 不可见升级为 case-level 不存在",
+                "不得让 Verifier 或 Harness 补写研究观点",
+                "不得把失败 attempt 重新标注为成功",
+            )
+        )
+        if not forbidden:
+            raise ValueError("verifier_feedback_forbidden_empty")
         receipts.append(
             _receipt(
                 session_id=session_id,
@@ -426,11 +455,7 @@ def compile_verifier_feedback_receipts(
                 artifact_refs=(artifact_ref,),
                 model_visible_summary=summary,
                 permitted_next_actions=actions,
-                forbidden_interpretations=(
-                    "不得忽略已审 Evidence 或把 cell-local 不可见升级为 case-level 不存在",
-                    "不得让 Verifier 或 Harness 补写研究观点",
-                    "不得把失败 attempt 重新标注为成功",
-                ),
+                forbidden_interpretations=forbidden,
                 created_at=created_at,
                 identity_suffix=f"{index}:{code}:{location}",
             )

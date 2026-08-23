@@ -386,3 +386,18 @@ terminal Writer continuation 自然输出已完成全部缺失研究内容并以
 DELL／MU／NVDA 的 current-data zero-call 结果分别保存 `21／22／19` 个 action 和 `7／7／6` 个 FeedbackReceipt，checkpoint／resume 均保留全部开放状态，StopDecision 均为 `continue`。DELL 五个研究单元已通过真实 `current_consumer` 取得各自最小 action／feedback／quantitative／rights 视图；全部五单元不能合并成一个超大消息，Runtime 必须继续按 cell／role 分开执行。这是多 Agent 上下文隔离的正向约束，不应通过抬高单消息上限绕过。
 
 当前评测含 12 个硬门：action coverage、身份唯一性、无假 public gap、权利分离、零 Candidate 自动晋升、数值类型分离、feedback 改计划、checkpoint／resume 保真、诚实停止、完整 TokenBudgetBasis、事件链有效和不虚报自然 Agent。三案均通过；但 natural model calls、network calls 和 paid calls 均为 0，因此不能宣称自然 Agent reflection、第二轮补证、S3 内容质量或 release 已证明。下一项只能是另行授权的 DELL 动态多 Agent 纵切。
+
+## 24. 内容审计失败后的同 Agent 语义修复闭环（2026-08-23）
+
+DELL 动态 value-capture R5 证明了研究 Agent 能自然取证、反思、改计划并提交严格底稿，但独立 L1／L2 审计仍发现五项语义越权：管理层目标被当成已实现转化率、历史期间解释被投射到当前季度、图假设被晋升为价值池结论、毛利与经营利润口径混淆，以及一般关键部件风险被扩写为具体 GPU／HBM 与回款机制。
+
+本轮把“Verifier 失败”从终端标签改成同一 Agent 可执行的受控闭环：
+
+1. 独立审计的每一项 material finding 保留完整可见原因、允许动作和禁止解释，编译成 immutable `FeedbackReceipt`；
+2. 原 Agent 必须先提交覆盖全部反馈的 `PlanDelta`，不能直接重写答案；
+3. 接受计划后只允许修订 `thesis / sourced_claims / mechanism`，置信度、反方、缺口、WWC、跨角色挑战和停止理由按 digest 锁定；
+4. 不允许重新检索、增加 Evidence／NumericFact／Relation ref、晋升 Candidate 或修改 current product pointer；
+5. Harness 只负责校验、锁定字段合并和 lineage，不替模型写观点；修复结果仍必须重新经过独立 L1／L2 与内容质量审查；
+6. Provider 请求和原始响应先进入受限 capture，公开结果只保存模型、usage、finish reason、tool 名称、digest 与 capture ref；任何已请求但未完成的 attempt 都获得 `provider_attempt_failed` 终态。
+
+零调用 proof 已覆盖完整五条反馈、同 Agent PlanDelta、三表面 patch、锁定字段不变，以及漏反馈、错动作和新增引用 mutation。它只证明 Runtime 能执行这条闭环，不证明模型自然修复正确。下一权限最多包含一个 planning call 和一个 non-thinking patch call；若同一语义错误类仍未通过，不再继续按字段扩建 DeepSeek 专用分支，而转为模型职责／研究合同架构处置。

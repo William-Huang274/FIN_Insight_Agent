@@ -9,6 +9,7 @@ import pytest
 
 from sec_agent.project_os_preflight import (
     CURRENT_DYNAMIC_SINGLE_UNIT_SCOPE,
+    CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_FEEDBACK_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_TRANSPORT_SCOPE,
     CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_SCOPE,
@@ -26,6 +27,7 @@ from sec_agent.project_os_preflight import (
     MULTI_AGENT_PREVIEW_SCOPE,
     REQUIRED_PROJECT_OS_REFS,
     _validate_current_dynamic_single_unit_decision,
+    _validate_current_dynamic_single_unit_semantic_repair_decision,
     _validate_dynamic_five_cell_claim_surface_successor_decision,
     _validate_dynamic_five_cell_node_successor_decision,
     _validate_dynamic_five_cell_partial_successor_decision,
@@ -187,6 +189,11 @@ CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_REPLACEMENT_DECISION_REF = (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
     "workpaper_submission_scope_decision_v1_1.json"
+)
+CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_REF = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_"
+    "semantic_repair_scope_decision_v1_0.json"
 )
 DYNAMIC_FIVE_CELL_DECISION_REF = (
     "configs/research/evals/"
@@ -1407,6 +1414,59 @@ def test_current_dynamic_workpaper_replacement_preserves_zero_call_R4() -> None:
     ]["status"] == (
         "closed_by_R5_canonical_provider_attempt_events_and_terminal_materialization"
     )
+
+
+def test_current_dynamic_semantic_repair_binds_R5_feedback_and_two_nodes() -> None:
+    decision = json.loads(
+        (ROOT / CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    projection = _validate_current_dynamic_single_unit_semantic_repair_decision(
+        root=ROOT,
+        decision=decision,
+    )
+
+    assert projection["run_scope_id"] == CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_SCOPE
+    assert projection["current_dynamic_semantic_repair"] is True
+    assert projection["execution_limits"]["maximum_model_calls"] == 2
+    assert projection["execution_limits"]["maximum_retrieval_rounds"] == 0
+    assert projection["node_profiles"]["feedback_plan_delta"][
+        "maximum_completion_tokens"
+    ] == 16000
+    assert projection["node_profiles"]["semantic_patch_submission"][
+        "maximum_completion_tokens"
+    ] == 8000
+
+    result = build_preflight(
+        root=ROOT,
+        decision_ref=CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_REF,
+        environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+        check_repository=False,
+    )
+    assert result["scope_projection"]["blocking_issue_ids"] == []
+    assert result["scope_projection"]["explicit_allow_issue_ids"] == [
+        "RC-S3-062-current-dynamic-workpaper-free-narrative-promoted_bounded_authority"
+    ]
+    assert "all five semantic FeedbackReceipts" in result["known_boundary"]
+
+
+def test_current_dynamic_semantic_repair_rejects_budget_drift() -> None:
+    decision = json.loads(
+        (ROOT / CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_REF).read_text(
+            encoding="utf-8"
+        )
+    )
+    decision["execution_budget"]["maximum_model_calls"] = 3
+
+    with pytest.raises(
+        ValueError,
+        match="project_os_current_dynamic_semantic_repair_budget_invalid",
+    ):
+        _validate_current_dynamic_single_unit_semantic_repair_decision(
+            root=ROOT,
+            decision=decision,
+        )
 
 
 def test_historical_dynamic_five_cell_decision_fails_closed_after_consumer_successor(

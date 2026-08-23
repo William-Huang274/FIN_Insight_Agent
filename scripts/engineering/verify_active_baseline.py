@@ -75,6 +75,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     "scripts/research/run_s3_dynamic_truth_spine_zero_call.py",
     "scripts/research/run_s3_current_dynamic_single_unit_zero_call.py",
     "scripts/research/run_s3_current_dynamic_single_unit_live.py",
+    "scripts/research/run_s3_feedback_driven_workpaper_repair.py",
     "scripts/research/run_s3_dynamic_five_cell_live.py",
     "scripts/research/run_s3_case_truth_reconciliation_zero_call.py",
     "scripts/research/run_s3_case_truth_reconciliation_live.py",

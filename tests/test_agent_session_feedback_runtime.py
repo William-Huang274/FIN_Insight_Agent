@@ -369,3 +369,30 @@ def test_verifier_feedback_returns_false_absence_to_research_node() -> None:
     assert receipts[0]["target_node_id"] == "S3.originating_research_node"
     assert "不得让 Verifier" in "".join(receipts[0]["forbidden_interpretations"])
     assert receipts[1]["owning_plane"] == "harness_control_plane"
+
+
+def test_verifier_feedback_preserves_detailed_semantic_repair_instruction() -> None:
+    receipts = compile_verifier_feedback_receipts(
+        findings=(
+            {
+                "finding_code": "historical_context_promoted_to_current_cause",
+                "target_node_id": "AGENT::VALUE_CAPTURE",
+                "model_visible_summary": (
+                    "2025-10-31 的历史 mix 说明不能证明 2026-05-01 当季原因。"
+                ),
+                "permitted_next_actions": ["恢复来源时期并降级为历史背景"],
+                "forbidden_interpretations": ["不得写成当季原因"],
+            },
+        ),
+        session_id="SESSION::DELL::S3::REPAIR",
+        source_node_id="S3.IndependentContentVerifier",
+        artifact_ref="artifact://s3/content-assessment",
+        created_at=NOW,
+    )
+
+    assert receipts[0]["target_node_id"] == "AGENT::VALUE_CAPTURE"
+    assert receipts[0]["model_visible_summary"].startswith("2025-10-31")
+    assert receipts[0]["permitted_next_actions"] == [
+        "恢复来源时期并降级为历史背景"
+    ]
+    assert receipts[0]["forbidden_interpretations"] == ["不得写成当季原因"]

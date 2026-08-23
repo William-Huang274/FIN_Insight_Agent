@@ -44,27 +44,27 @@ from sec_agent.research.multi_agent_report_authority import (  # noqa: E402
 
 DEFAULT_DECISION_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "R10_protected_writer_scope_decision_v1_0.json"
+    "R10_protected_writer_scope_decision_v1_1.json"
 )
 DEFAULT_PREFLIGHT_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "R10_protected_writer_project_os_preflight_v1_0.json"
+    "R10_protected_writer_project_os_preflight_v1_1.json"
 )
 DEFAULT_AUTHORITY_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "R10_protected_writer_live_authority_v1_0.json"
+    "R10_protected_writer_live_authority_v1_1.json"
 )
 DEFAULT_PUBLIC_RESULT_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "R10_protected_writer_live_result_v1_0.json"
+    "R10_protected_writer_live_result_v1_1.json"
 )
-DEFAULT_RUN_ID = "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R11"
+DEFAULT_RUN_ID = "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R12"
 DEFAULT_CAPTURE_ROOT_REF = (
-    ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_live_r11"
+    ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_live_r12"
 )
 DEFAULT_PRIVATE_ROOT_REF = (
     "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/"
-    "dell-R10-protected-writer-live-r11"
+    "dell-R10-protected-writer-live-r12"
 )
 AUTHORITY_SCHEMA_VERSION = (
     "fin_ia_s3_current_dynamic_multi_agent_protected_writer_live_authority_v1_0"
@@ -190,11 +190,8 @@ def _binding(ref: str, *, digest_field: str = "") -> dict[str, Any]:
 
 
 def _validate_binding(binding: Mapping[str, Any]) -> dict[str, Any]:
+    _validate_file_binding(binding)
     ref = str(binding.get("ref") or "")
-    if not ref or _sha(ref) != str(binding.get("sha256") or ""):
-        raise CurrentDynamicWriterLiveError(
-            "current_dynamic_writer_live_binding_sha_drift", phase="binding"
-        )
     value = _load(ref)
     field = str(binding.get("digest_field") or "")
     if field and value.get(field) != binding.get("digest"):
@@ -202,6 +199,15 @@ def _validate_binding(binding: Mapping[str, Any]) -> dict[str, Any]:
             "current_dynamic_writer_live_binding_digest_drift", phase="binding"
         )
     return value
+
+
+def _validate_file_binding(binding: Mapping[str, Any]) -> None:
+    """Validate an opaque file binding without assuming a JSON payload."""
+    ref = str(binding.get("ref") or "")
+    if not ref or _sha(ref) != str(binding.get("sha256") or ""):
+        raise CurrentDynamicWriterLiveError(
+            "current_dynamic_writer_live_binding_sha_drift", phase="binding"
+        )
 
 
 def _authority_body(authority: Mapping[str, Any]) -> dict[str, Any]:
@@ -388,7 +394,7 @@ def _validate_authority(
     for binding in (authority.get("bound_inputs") or {}).values():
         _validate_binding(binding)
     for binding in authority.get("implementation_bindings") or ():
-        _validate_binding(binding)
+        _validate_file_binding(binding)
         ref = str(binding.get("ref") or "")
         if _git_blob_sha256(commit=implementation_commit, ref=ref) != str(
             binding.get("sha256") or ""
@@ -677,7 +683,8 @@ def _materialize_terminal_failure(
         "release_ready": False,
     }
     known_boundary = (
-        "This exact R11 Writer authority ended in a preserved terminal failure. "
+        f"This exact {authority['run_id']} Writer authority ended in a preserved "
+        "terminal failure. "
         "No retry, fallback, upstream Agent, S1/S2, retrieval, source-network, "
         "promotion, product acceptance, publication or release action followed. "
         "Any successor requires a root-cause audit, a new zero-call proof and a "

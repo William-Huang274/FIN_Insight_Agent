@@ -76,7 +76,7 @@ REPORT_REMAP_REFERENCE_PATCH_DECISION_REF = (
 )
 CURRENT_DYNAMIC_WRITER_DECISION_REF = (
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
-    "R10_protected_writer_scope_decision_v1_0.json"
+    "R10_protected_writer_scope_decision_v1_1.json"
 )
 DECISION_REF = (
     "configs/research/evals/"

@@ -1,0 +1,186 @@
+{
+  "case_key": "DELL",
+  "checks": {
+    "R10_protection_contract_model_visible": true,
+    "R10_public_private_authority_assessment_chain_bound": true,
+    "R11_preprovider_failure_receipt_preserved": true,
+    "R11_provider_calls_zero": true,
+    "R12_non_json_implementation_binding_regression_passed": true,
+    "R9_and_R5_context_lineage_bound": true,
+    "arithmetic_necessity_mutation_rejected": true,
+    "cash_proxy_boundary_mutation_rejected": true,
+    "fake_response_exactly_one_expected_tool_call": true,
+    "implementation_binding_validated_as_opaque_file": true,
+    "model_owned_protected_number_mutation_rejected": true,
+    "positive_fake_report_renders_deterministically": true,
+    "positive_fake_tool_call_validates": true,
+    "research_estimates_retained_without_output_authority": true,
+    "same_quarter_cohort_boundary_mutation_rejected": true,
+    "six_R10_workpapers_reused_byte_immutable": true,
+    "source_bound_review_reuses_only_previously_qualified_spans": true,
+    "spelled_out_protected_number_mutation_rejected": true,
+    "supply_report_context_projection_no_authority_change": true,
+    "unnormalized_upstream_inventory_authority_removed": true,
+    "unnormalized_upstream_inventory_claim_removed": true
+  },
+  "compiled_artifact_digests": {
+    "rendered_fake_report_digest": "1f757c823f5a9c8af79ae91a3ffef4bbd76eebb21fa759e56cb6b9b14f0954b1",
+    "source_bound_program_digest": "b0a653cdb03da83a5741922e48b4634ddc54ba94aa81a69d498881dd28ed53f3",
+    "source_bound_review_digest": "2b6a5608411ecd9a766480164f325eccddd3b90eddb571e91ab77179df9c50ff",
+    "validated_fake_draft_digest": "d249a8cfded436d305cf24dfc197b1a6b03432d6ff0608c7b491cfb1b3ca18e9",
+    "writer_authority_catalog_digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765",
+    "writer_gate_digest": "8dbd0712f936f3eb2039f28280c8e1180507b44d6b3397a4ac5679d2b1906e42",
+    "writer_protection_digest": "e81473c78211b163bbe87e3eaf0fae4e53e36f8d1d2a82fcc0bb1be7080a7b62"
+  },
+  "context_projection_receipt": {
+    "case_identity_digest": "093ef77048771938784c70ae14a7cd778a5094f5908fcd75566e41db25f87bc0",
+    "cell_analysis_view_digest": "8e01e77f73a64d912e65b94979f321bf1b7ba10802795d2df9f0d883856dcafe",
+    "evidence_numeric_relation_gap_and_case_authority_changed": false,
+    "model_judgment_changed": false,
+    "projected_R10_supply_context_digest": "6faab583dc78af336db8a5948bde37ed2bb63f8c06c2e20682082c94534fdda5",
+    "projection_is_report_compiler_only": true,
+    "projection_receipt_digest": "c1e7a55cc27b0de1a42047ee63dce7580e38b9b27f674026d080c11afd3b2b32",
+    "schema_version": "fin_ia_s3_current_dynamic_multi_agent_report_context_projection_v1_0",
+    "source_R5_supply_context_digest": "4f0731c6f913e795489a7e462b31c90fb50f52e4b6bff93b1e8c1f57c3da0125",
+    "source_workpaper_and_R10_workpaper_byte_equal": true,
+    "supply_workpaper_digest": "b37abd9a4fb107beaa9a0fc3240cffa59abdeec6c14b95e57d4a904854fc9436"
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_S1_S2_requests": 0,
+    "new_retrieval_rounds": 0,
+    "provider_calls": 0,
+    "writer_called": false
+  },
+  "execution_budget": {
+    "candidate_promotions": 0,
+    "current_product_pointer_mutations": 0,
+    "fallbacks": 0,
+    "maximum_external_source_network_calls": 0,
+    "maximum_new_model_calls": 3,
+    "maximum_new_retrieval_rounds": 0,
+    "maximum_new_s1_s2_requests": 0,
+    "maximum_new_transport_attempts": 3,
+    "maximum_new_writer_logical_nodes": 1,
+    "maximum_writer_submission_attempts": 2,
+    "retries": 0,
+    "writer_analysis_calls": 1
+  },
+  "first_fresh_provider_frontier": "AGENT::WRITER::R10_PROTECTED_REPORT_ANALYSIS",
+  "known_boundary": "This successor zero-call proof preserves the R11 pre-provider binding failure, verifies that implementation files are SHA-bound without JSON parsing, and reuses the original R10 lineage and fake seam. It does not itself authorize or execute Writer live, accept the final report, pass S3, generalize, publish, or release.",
+  "model_visible_scale": {
+    "gap_authority_count": 10,
+    "message_characters": 110230,
+    "presentation_authority_count": 38,
+    "tool_schema_characters": 25714,
+    "workpaper_count": 6,
+    "writer_claim_count": 56
+  },
+  "provider_topology": [
+    "AGENT::WRITER::R10_PROTECTED_REPORT_ANALYSIS",
+    "AGENT::WRITER::R10_PROTECTED_REPORT_SUBMISSION",
+    "AGENT::WRITER::R10_PROTECTED_REPORT_SUBMISSION_CONTRACT_FEEDBACK_IF_REQUIRED"
+  ],
+  "recorded_at": "2026-08-24T05:18:21+08:00",
+  "result_digest": "dc065d280bc9b935e120f44acff23d373babd300fb4fa0b026471396fd1486a5",
+  "run_scope_id": "one_capture_bound_R10_protected_writer_analysis_and_submission",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_zero_call_v1_0",
+  "source_bindings": {
+    "R10_assessment": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_R10_content_assessment_v1_0.json",
+      "sha256": "a5186450f3eaf743825f22f116a5558e5f74c573e86d10ac0572cb0e8448026d"
+    },
+    "R10_authority": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_authority_v1_4.json",
+      "sha256": "614f4ed7cb52e713bae59a64ad41747ed98ddc6a8f0f41a691e4923df0cb1ea0"
+    },
+    "R10_private_full_result": {
+      "digest": "cab0b654f3ff2f99193d299e7c6cc345049d36a087a0e95557120dff1036e900",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-content-reassessment-resume-live-r10-20260823T194751Z/full_result.json",
+      "sha256": "0b2545f4f688193132dbfa24abb3f0d020499a606503340a36ac9ed28f9e37a8"
+    },
+    "R10_public_result": {
+      "digest": "83dc3d600ce9d123a073af30fe8646b7bd740b24869c9218d04113557d186112",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_result_v1_4.json",
+      "sha256": "8b09565fa3db768a6e93df2416b84b9873e16cbb5717d6d747cf1d33f9a6ef0a"
+    },
+    "R5_private_full_result": {
+      "digest": "78bc144bf6af67e8b5daf3f930cca090ad7d4271e2c4ac55a5c7df17ec9822da",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-submission-repair-resume-live-r5-20260823T220000Z/full_result.json",
+      "sha256": "e0fa6de910aa1645ea221127ce32be0d09b22713078105645c87d148957300ea"
+    },
+    "R5_public_result": {
+      "digest": "35709b3b40fb7ff8d35ac18bf9640a2266d108d746f0eedce0fbd79329b63f7d",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_submission_successor_live_result_v1_4.json",
+      "sha256": "b0e745f4156c416f6464199c1f5fa5ddfa4e4152045b6f1d11f97ab409f20b86"
+    },
+    "R9_private_full_result": {
+      "digest": "497865ee3d387e81101beedbdd931d9dab68812b2595a1c7e3f36add8bc13084",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-content-repair-live-r9-20260823T185102Z/full_result.json",
+      "sha256": "fc294c2d48f8e04728e203b2ab6faa0084b382d6cee9049cbde9969e3b5ab070"
+    },
+    "R9_public_result": {
+      "digest": "0eb687af46ca6785e592c0a1f40efcca18e3e6c1ab5192205621435b5771dcf3",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_result_v1_3.json",
+      "sha256": "09f670a3f5dc00f7f96407c828ae4382d94ca77ee632ec498726dcc6753522ea"
+    },
+    "predecessor_source_bound_review": {
+      "ref": "configs/research/fin_ia_0_1_3_s2_dell_multi_agent_source_bound_numeric_review_v1_0.json",
+      "sha256": "32da9dc428d1d507b3852f5b116fe4341ea971d5f6439d2daa0e3b4930f303d2"
+    }
+  },
+  "status": "R10_bound_protected_writer_zero_call_proven",
+  "successor_repair_receipt": {
+    "failed_attempt": {
+      "authority_digest": "20b6be993ed21160c9169351a2f7eebf27c89a2d8ddbba012149cb99f56c9c16",
+      "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_live_authority_v1_0.json",
+      "authority_sha256": "3b0fd694202fece9be4c045488aa706effa5345d30a6fe5e05f32dafbb6999a3",
+      "execution": {
+        "candidate_promotions": 0,
+        "external_source_network_calls": 0,
+        "fallbacks": 0,
+        "maximum_new_provider_calls": 3,
+        "new_S1_S2_requests": 0,
+        "new_provider_calls_attempted": 0,
+        "new_provider_http_200": 0,
+        "new_retrieval_rounds": 0,
+        "retries": 0,
+        "upstream_agent_calls": 0,
+        "writer_analysis_calls": 0,
+        "writer_submission_attempts": 0
+      },
+      "failure": {
+        "code": "current_dynamic_writer_live_implementation_binding_json_misparse",
+        "exception_capture_ref": "",
+        "failure_preserved_without_retry": true,
+        "phase": "binding",
+        "provider_failure": false
+      },
+      "private_full_result_digest": "faab9cbae04723be9801c199ab143f2ccba72659674bcf84e1a3897b9cf510f4",
+      "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-live-r11/full_result.json",
+      "private_full_result_sha256": "f9b6d247ac5411dfdb06eadaf441de800c5848b527149232699d756012609673",
+      "public_result_digest": "ef9974590df7475b9a98c33158f1db7ef8a88602005be849ff341ec35818c39a",
+      "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_live_result_v1_0.json",
+      "public_result_sha256": "f0b953f8ebe647b29df735fcbe8a3377cb76f3bb092cc3c6150917b49673a4c6",
+      "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R11"
+    },
+    "repair": {
+      "implementation_ref": "scripts/research/run_s3_current_dynamic_writer_live.py",
+      "implementation_sha256": "63d3a5af536df8a5feea0765665529255e560d157fd2d1df14ffaba24a1ab7d2",
+      "json_artifact_digest_validation_preserved": true,
+      "model_calls": 0,
+      "opaque_file_sha_validation": true,
+      "provider_calls": 0,
+      "targeted_live_runner_tests_passed": 4
+    },
+    "root_cause": "The live authority validator routed opaque Python implementation bindings through the JSON artifact loader before Git-blob verification."
+  }
+}

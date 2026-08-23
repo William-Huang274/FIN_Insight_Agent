@@ -9,9 +9,11 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 DELL current 动态多 Agent 的 R10 六份 workpaper 已通过独立 L1／L2，原七项 material finding 全部关闭；R10 public digest=`83dc3d60...6112`、private full digest=`cab0b654...e900`，Writer 当时未调用。R10 scope 已消费，旧 decision 不能再次签权。
 
-R10-bound protected Writer 零调用门现已落盘：56 条 Writer claim、38 条 typed presentation、10 个 gap；研究 estimate 不获输出权，NVDA／MU 未归一化库存 claim／NUM 从 Tool catalog 移除，同季/cohort、Cash proxy、费用杠杆和数字拼写绕过均有 model-visible＋本地 fail-closed 保护。zero-call digest=`30be0605...e569`，scope decision digest=`61bcaeef...7ecd`；本阶段 0 模型／Provider／网络／付费调用。
+R10-bound protected Writer 原零调用门仍有效：56 条 Writer claim、38 条 typed presentation、10 个 gap；研究 estimate 不获输出权，NVDA／MU 未归一化库存 claim／NUM 从 Tool catalog 移除，同季/cohort、Cash proxy、费用杠杆和数字拼写绕过均有 model-visible＋本地 fail-closed 保护。
 
-完整工程门已通过：全仓 `1169 passed`、active baseline `212／8／5／28／0`、变更集 pyflakes、compileall、957 JSON、8 JSONL／1,079 行、7,820-file secret scan／0 和 diff check。`RC-S3-088` 可显式开放唯一 scope `one_capture_bound_R10_protected_writer_analysis_and_submission`，但当前尚未签发或执行 Writer authority。下一门仍是 exact commit／push、clean repository-aware Project OS preflight，再签发最多 `1 analysis + 2 strict submissions` 的 fresh authority；authority-only 提交／推送并复验后才可 live。任何 Writer 失败必须留 terminal 证据；即使成功生成报告，独立 post-Writer L1／L2、八维质量、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 仍未通过。详见 `docs/worklog/fin_0_1_3_s3/159_R10_bound_protected_writer_zero_call_gate.md`。
+R11 authority 已在 clean engineering commit `06813c3b...1327` 后以唯一 authority commit `1438f804...623c` 签发，但启动前复验发现 implementation `.py` binding 被误送入 JSON loader。R11 在 binding 阶段封存为 immutable terminal failure：模型／Provider／网络／付费调用 `0`，public digest=`ef997459...c39a`，private digest=`faab9cba...10f4`。最早责任层为 `RC-S3-089` Writer live Harness binding type，不是 R10 输入、DeepSeek、凭据或报告内容。
+
+R12 successor 已把 JSON artifact validation 与 opaque implementation SHA validation 分开；新 zero-call proof digest=`dc065d28...86a5`、21／21 checks，新 decision digest=`268d33e3...5341`，Project OS 语义预检、相关 `85 passed` 与全仓 `1170 passed` 均通过。active baseline=`212／8／5／28／0`，962 JSON、8 JSONL／1,084 行、7,826-file secret scan／0、compileall、变更集 pyflakes 和 diff check 也通过。当前只剩 clean commit／push、repository-aware preflight 和新的 authority-only 提交后才可 live；预算仍严格为最多 `1 analysis + 2 strict submissions`、0 retry。任何后续失败必须留 terminal 证据；即使成功生成报告，独立 post-Writer L1／L2、八维质量、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 仍未通过。详见 `docs/worklog/fin_0_1_3_s3/160_R11_writer_preprovider_binding_failure_and_R12_successor_gate.md`。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 

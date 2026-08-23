@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -119,6 +120,25 @@ def test_live_tool_payload_requires_exact_expected_call() -> None:
         RUNNER._tool_payload(step)
 
 
+def test_live_file_binding_accepts_non_json_implementation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(RUNNER, "ROOT", tmp_path)
+    implementation = tmp_path / "implementation.py"
+    implementation.write_text("VALUE = 1\n", encoding="utf-8")
+    binding = {
+        "ref": "implementation.py",
+        "sha256": hashlib.sha256(implementation.read_bytes()).hexdigest(),
+    }
+
+    assert RUNNER._validate_file_binding(binding) is None
+    with pytest.raises(
+        RUNNER.CurrentDynamicWriterLiveError,
+        match="current_dynamic_writer_live_binding_sha_drift",
+    ):
+        RUNNER._validate_file_binding({**binding, "sha256": "0" * 64})
+
+
 def test_live_authority_requires_one_exact_authority_commit(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -212,6 +232,7 @@ def test_live_authority_requires_one_exact_authority_commit(
     monkeypatch.setattr(RUNNER, "_git", fake_git)
     monkeypatch.setattr(RUNNER, "_sha", lambda _ref: "authority-sha")
     monkeypatch.setattr(RUNNER, "_validate_binding", fake_binding)
+    monkeypatch.setattr(RUNNER, "_validate_file_binding", lambda _binding: None)
     monkeypatch.setattr(
         RUNNER,
         "_git_blob_sha256",

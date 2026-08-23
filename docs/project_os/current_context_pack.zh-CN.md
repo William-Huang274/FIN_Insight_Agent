@@ -23,7 +23,9 @@ R14 Tool arguments 的最外层只有 `arguments`，其值是再次字符串化�
 
 当前唯一允许的后续是用户已授权的、绑定 R10／R14 的独立 Writer 接管：0 Provider、0 新证据，显式修复语义和引用，生成后仍必须做分离的 post-Writer L1／L2 与八维评估。本 Codex 的接管不能冒充 qualified-human 或独立验收。最终报告、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。详见 `docs/worklog/fin_0_1_3_s3/163_R14_terminal_and_independent_writer_takeover.md`。
 
-R15 零 Provider 接管器已在工程提交 `d93e4c8f...f11d` 完成并推送。private edit manifest 绑定 R14 nested payload，只允许 7 个 model-text 路径、11 个 ref 路径和 remaining-gap register 的显式重组；0 新 Evidence／authority／gap ID，10 个 gap ref 及其语义权威集合保持。dry validation 得到 candidate draft digest=`dcb6e6d0...a49d`、surface／hard／quality=`0／0／0`，R10 conditional protection 通过。全仓 `1177 passed`，active baseline=`212／8／5／28／0`，secret scan=`7,846／0`。零调用 decision SHA=`07647bdb...d08c`、digest=`66d71ebf...a803`；当前仅待 decision clean commit／push 后一次物化，尚无 Candidate 结果文件。物化成功也不等于独立 post-Writer、qualified-human、S3、产品、publication 或 release。详见 `docs/worklog/fin_0_1_3_s3/164_R15_independent_writer_takeover_engineering_and_decision.md`。
+R15 零 Provider 接管器已在工程提交 `d93e4c8f...f11d` 完成，decision commit=`2fbc42e0...b5ae9`。private manifest 只允许 7 个 model-text 路径、11 个 ref 路径和 remaining-gap register 的显式重组；0 新 Evidence／authority／gap ID，10 个 gap ref 及其语义权威集合保持。R15 已物化：public digest=`e0f76545...f4f8`、private digest=`50ebe3db...fe23`、candidate draft=`dcb6e6d0...a49d`、surface／hard／quality=`0／0／0`，R10 conditional protection 通过；model／Provider／network／new Evidence／promotion 全为 0。
+
+同一 Codex 作者随后完成零调用 self-audit，assessment digest=`cdde944b...ebd0`：原 7 个 material finding、R14 四个 hard ref finding 和三个 Writer L3 要求在作者自审中均通过，无 material residual；diagnostic Q1-Q8=`27／32`。但 self-audit 发现 4 个非阻断交付问题：What-would-change 双重呈现、开头 Facts 偏密、`resolves` 语气偏强、EV／GAP 仍为内部引用。由于作者与 assessor 相同，formal／independent score 不得签发，也不自动开 R16 追分。`RC-S3-093` 的本地 shape／reference／surface／quality 层可关闭；`RC-S3-088` 继续阻断，下一步必须由分离的 Agent 或 qualified human 评审 immutable R15。final report、S3、产品、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。详见 `docs/worklog/fin_0_1_3_s3/165_R15_candidate_materialization_and_author_self_audit.md`。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 

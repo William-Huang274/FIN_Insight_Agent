@@ -1,0 +1,91 @@
+{
+  "acceptance": {
+    "S3_pass": false,
+    "independent_post_writer_review_pass": false,
+    "local_R10_protection_pass": true,
+    "local_protected_contract_pass": true,
+    "product_acceptance": false,
+    "publication": false,
+    "qualified_human_review_pass": false,
+    "recommended_narrative_density_pass": true,
+    "release_ready": false
+  },
+  "candidate_draft_digest": "dcb6e6d052c8349468c40bde534ea64bd8d82f93847bb2493eafe7036969a49d",
+  "case_key": "DELL",
+  "contract_finding_receipt_digest": "57971ee70eede0c721534f7493f933dabeab7c7e0d81ffbaf2ab02511137dc2b",
+  "decision_digest": "66d71ebf861630b570c00e3f4c255b9bb72e26a34f2cb0a07568099479bca803",
+  "decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_independent_takeover_scope_decision_v1_0.json",
+  "decision_sha256": "07647bdb9ded6290e7b882632cbc051a3673031bb5e2d79bc797d9b86499d08c",
+  "edit_manifest_digest": "9bdebd278b13a1e2a12d079afe23116e4930ed2ed4f7580edd23396d5b453d12",
+  "edit_manifest_sha256": "74fe48b3e66388e4ac8594801980dc76be69ea981cda0c2ce2c2a769eb2b8fa1",
+  "edit_receipt": {
+    "candidate_inventory_digest": "2e8d4b2cfb54705e1efb8a38d221529cad4d4d1bea79af1b7efcd2a497525631",
+    "candidate_remaining_gap_inventory_digest": "144fb26f7ddb4ca39bc5f5a5617c3410cfc0a10c0db4ab56bd41fd0bc519719d",
+    "changed_model_text_paths": [
+      "confidence.model_text",
+      "executive_thesis[0].model_text",
+      "sections[0].clauses[0].model_text",
+      "sections[0].clauses[2].model_text",
+      "sections[1].clauses[1].model_text",
+      "sections[2].clauses[2].model_text",
+      "sections[4].clauses[3].model_text"
+    ],
+    "changed_reference_paths": [
+      "confidence.gap_refs",
+      "executive_thesis[0].gap_refs",
+      "sections[3].clauses[0].authority_refs",
+      "sections[3].clauses[0].evidence_refs",
+      "sections[3].clauses[0].source_claim_refs",
+      "sections[3].clauses[1].authority_refs",
+      "sections[5].clauses[2].gap_refs",
+      "what_would_change[0].source_claim_refs",
+      "what_would_change[1].gap_refs",
+      "what_would_change[2].gap_refs",
+      "what_would_change[2].source_claim_refs"
+    ],
+    "edit_receipt_digest": "bb63be8c25cd8383e42a91066e4cc6080c567a68fc11060d3da8a98353dd4e10",
+    "new_evidence_authority_or_gap_ids_added": false,
+    "remaining_gap_ref_union_preserved": true,
+    "remaining_gap_semantic_authority_inventory_preserved": true,
+    "source_inventory_digest": "fcb02de38fd247a70687c7425d9a0d126e14d9bac92b2e1296321f5e38464ffe",
+    "source_remaining_gap_inventory_digest": "144fb26f7ddb4ca39bc5f5a5617c3410cfc0a10c0db4ab56bd41fd0bc519719d"
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 0,
+    "provider_calls": 0
+  },
+  "implementation_commit": "d93e4c8ff85129d4efefe665ac309754a671f11d",
+  "known_boundary": "This is a user-authorized Codex-authored local Writer candidate, not an independent or qualified-human review. It is not promoted, published, product-accepted, S3-accepted, or release-ready.",
+  "local_validation": {
+    "R10_conditional_protection_pass": true,
+    "hard_finding_count": 0,
+    "protected_contract_pass": true,
+    "quality_finding_count": 0,
+    "surface_finding_count": 0
+  },
+  "private_full_result_digest": "50ebe3dbb7cedcbc6e466c8fd264bafc558ab9ed24190782b6ed06a469bdfe23",
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-independent-takeover-r15/full_result.json",
+  "private_full_result_sha256": "7c1597e23914c47b460347ea4bb505e7e69575b1e392afb37cc215af57008082",
+  "recorded_at": "2026-08-24T07:07:58+08:00",
+  "rendered_report_digest": "6d15b3d244593e718560ce4e3a0078f320caa7d1c7121fb0c556745408ef1a10",
+  "result_digest": "e0f76545375b477bc035869c25b87193fd831d63e9a73c9de95071a58680f4f8",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_INDEPENDENT_TAKEOVER_R15",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_independent_takeover_public_result_v1_0",
+  "source_R14_failure_assessment_digest": "3e9a6c4f7cb0c0f271577e3e1ed3057ae22c3eec323ad5fe6292b8c38d834ed8",
+  "source_R14_public_result_digest": "bd4a9602ed732d2e482bd1d9517bdb8dbff0975ed6ae979b6cdef2922d0c016a",
+  "source_nested_sha256": "2f6c80290f60db3deec97503c77222cf43747399bada6d5c4c02a43799d764a1",
+  "status": "locally_valid_candidate_post_writer_review_pending",
+  "topology_receipt": {
+    "executive_clause_count_unchanged": true,
+    "remaining_gap_rows_target_met": true,
+    "report_topic_unchanged": true,
+    "schema_version_unchanged": true,
+    "section_clause_counts_unchanged": true,
+    "section_count_unchanged": true,
+    "section_headings_unchanged": true,
+    "what_would_change_count_unchanged": true
+  }
+}

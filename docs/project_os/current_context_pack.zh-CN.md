@@ -1460,3 +1460,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 修复复用已注册的 `plan_bound` 并在 input refs 绑定 predecessor lineage；新增真实 AgentSession 事件链测试，定向 `53 passed`。
 - 下一门是 clean commit／push、fresh zero-call proof 和 fresh authority；禁止复用本次 authority。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/136_submission_successor_R1_pre_provider_event_failure.md`。
+
+### 2026-08-23 submission successor R2 fresh zero-call proof
+
+- 修复 commit=`50c9b4a3f3d73d3f38340389513efef886c62219` 已推送；全仓 `1124 passed`、active baseline pass、秘密扫描 `7,748/0`。
+- fresh proof 逐项重放六角色 R1 S1/S2 round digests，并绑定八份原始模型草稿；0 模型／网络／retrieval／付费调用。
+- Demand／Counterevidence reflection 与 Counterevidence workpaper 可本地重验；其余只做 strict submission；Supply 只允许补 `REQ::21dc7bfb04d38fa5cc8749f8`。
+- public result digest=`80977102...9fe15`，public SHA=`80410ebb...c7cb4`，private SHA=`d3d87e43...770f6`。
+- 当前仅恢复 fresh live admission 资格；自然六角色、Lead、L1、内容质量、Writer、S3 和 release 仍未通过。下一门是新签 R2 authority，禁止复用 R1 authority／identity。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/137_submission_successor_R2_fresh_zero_call_proof.md`。

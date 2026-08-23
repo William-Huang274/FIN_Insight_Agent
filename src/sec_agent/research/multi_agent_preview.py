@@ -4084,6 +4084,7 @@ def compile_specialist_workpaper_submission_messages(
     source_draft: str,
     source_capture_digest: str,
     tool: Mapping[str, Any],
+    validation_feedback: Sequence[Mapping[str, Any]] = (),
 ) -> tuple[dict[str, str], ...]:
     _require(bool(str(source_draft).strip()), "multi_agent_workpaper_draft_missing")
     _require(
@@ -4102,6 +4103,29 @@ def compile_specialist_workpaper_submission_messages(
             "Omit runtime-owned schema_version and agent_id.",
         ],
     }
+    if validation_feedback:
+        normalized_feedback: list[dict[str, Any]] = []
+        for row in validation_feedback:
+            _require(
+                isinstance(row, Mapping)
+                and set(row)
+                == {
+                    "error_code",
+                    "rejected_surface",
+                    "corrective_action",
+                    "authority_expansion_allowed",
+                }
+                and len(str(row.get("error_code") or "").strip()) >= 8
+                and len(str(row.get("rejected_surface") or "").strip()) >= 12
+                and len(str(row.get("corrective_action") or "").strip()) >= 20
+                and row.get("authority_expansion_allowed") is False,
+                "multi_agent_workpaper_submission_feedback_invalid",
+            )
+            normalized_feedback.append(deepcopy(dict(row)))
+        visible["prior_submission_feedback"] = normalized_feedback
+        visible["rules"].append(
+            "Apply the prior local validation feedback without adding authority or changing the source draft's financial judgment."
+        )
     return (
         {
             "role": "system",

@@ -7,6 +7,8 @@ from types import SimpleNamespace
 
 import pytest
 
+import scripts.research.run_s3_current_dynamic_multi_agent as multi_agent_runner
+
 from retrieval.contracts import load_financial_research_kernel
 from retrieval.route_compiler import load_query_object_fact_route_policy
 from sec_agent.research.dynamic_multi_agent_loop import (
@@ -39,6 +41,8 @@ from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from scripts.research.run_s3_current_dynamic_multi_agent import (
     CONTENT_REPAIR_AUTHORITY_SCHEMA,
     CONTENT_REPAIR_AUTHORITY_STATUS,
+    CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_SCHEMA,
+    CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_STATUS,
     LIVE_AUTHORITY_SCHEMA,
     LIVE_AUTHORITY_STATUS,
     SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
@@ -51,6 +55,7 @@ from scripts.research.run_s3_current_dynamic_multi_agent import (
     _tool_draft,
     _tool_arguments,
     expected_content_repair_budget,
+    expected_content_repair_submission_resume_budget,
     expected_live_execution_budget,
     expected_submission_repair_resume_budget,
     expected_submission_resume_budget,
@@ -559,6 +564,25 @@ def test_content_repair_budget_counts_exactly_five_repairs_and_one_lead() -> Non
     assert budget["retries"] == 0
 
 
+def test_content_repair_submission_resume_budget_counts_only_unfinished_nodes() -> None:
+    budget = expected_content_repair_submission_resume_budget()
+    assert budget["maximum_new_model_calls"] == 7
+    assert sum(
+        budget[key]
+        for key in (
+            "demand_repair_submissions",
+            "remaining_role_repair_drafts",
+            "remaining_role_repair_submissions",
+            "lead_coordination_drafts",
+            "lead_coordination_submissions",
+        )
+    ) == budget["maximum_new_model_calls"]
+    assert budget["maximum_new_role_repairs"] == 3
+    assert budget["maximum_new_s1_s2_requests"] == 0
+    assert budget["maximum_external_source_network_calls"] == 0
+    assert budget["retries"] == 0
+
+
 def test_optional_resume_manifest_allows_fresh_provider_frontier() -> None:
     assert (
         _resume_capture_for_attempt(
@@ -566,6 +590,177 @@ def test_optional_resume_manifest_allows_fresh_provider_frontier() -> None:
         )
         is None
     )
+
+
+def test_content_repair_submission_resume_fake_runs_all_seven_fresh_nodes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Exercise the exact R8 resume topology without network or model calls."""
+
+    scope_ref = (
+        "configs/research/evals/"
+        "fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
+        "content_repair_submission_resume_scope_decision_v1_0.json"
+    )
+    scope = _load(scope_ref)
+    authority_path = tmp_path / "authority.json"
+    capture_root = tmp_path / "captures"
+    private_root = tmp_path / "private"
+    public_path = tmp_path / "public.json"
+    attempt_prefix = "ATTEMPT::R8-FAKE"
+    authority = {
+        "schema_version": CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_SCHEMA,
+        "status": CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_STATUS,
+        "signed_at": "2026-08-24T00:00:00Z",
+        "implementation_commit": "0" * 40,
+        "case_key": "DELL",
+        "execution_budget": expected_content_repair_submission_resume_budget(),
+        "token_budget_basis": {},
+        "bound_inputs": {
+            "predecessor_public_ref": scope["predecessor_public_result_ref"],
+            "predecessor_private_ref": scope["predecessor_private_result_ref"],
+            "assessment_ref": scope["assessment_ref"],
+            "failed_authority_ref": scope["failed_R7_authority_ref"],
+            "failed_public_ref": scope["failed_R7_public_ref"],
+            "failed_private_ref": scope["failed_R7_private_ref"],
+        },
+        "output_contract": {
+            "capture_root_ref": "__pytest_r8__/captures",
+            "private_output_root_ref": "__pytest_r8__/private",
+            "public_result_ref": "__pytest_r8__/public.json",
+            "run_id": "RUN::R8-FAKE",
+            "attempt_prefix": attempt_prefix,
+            "product_publication": "forbidden",
+        },
+        "known_boundary": (
+            "This fixture exercises only the exact seven-node local execution seam. "
+            "It performs no network, Provider, retrieval, publication or product "
+            "acceptance action and does not assess financial content quality."
+        ),
+    }
+    authority_path.write_text(
+        json.dumps(authority, ensure_ascii=False), encoding="utf-8"
+    )
+    paths = {
+        "predecessor_public_ref": ROOT / scope["predecessor_public_result_ref"],
+        "predecessor_private_ref": ROOT / scope["predecessor_private_result_ref"],
+        "assessment_ref": ROOT / scope["assessment_ref"],
+        "failed_private_ref": ROOT / scope["failed_R7_private_ref"],
+        "provider_profile_ref": ROOT / scope["provider_profile_ref"],
+        "submission_profile_ref": ROOT / scope["submission_profile_ref"],
+    }
+    monkeypatch.setattr(
+        multi_agent_runner,
+        "validate_content_repair_authority",
+        lambda *_args, **_kwargs: paths,
+    )
+    original_resolve = multi_agent_runner._resolve_repo_ref
+    test_output_refs = {
+        "__pytest_r8__/captures": capture_root,
+        "__pytest_r8__/private": private_root,
+        "__pytest_r8__/public.json": public_path,
+    }
+
+    def resolve_test_ref(ref: str | Path) -> Path:
+        raw = str(ref)
+        if raw in test_output_refs:
+            return test_output_refs[raw]
+        return original_resolve(ref)
+
+    monkeypatch.setattr(multi_agent_runner, "_resolve_repo_ref", resolve_test_ref)
+    monkeypatch.setattr(
+        multi_agent_runner,
+        "_relative",
+        lambda path: Path(path).resolve().as_posix(),
+    )
+
+    attempts: list[str] = []
+    demand_feedback_seen = False
+
+    def research_executor(**kwargs: object) -> ChatCompletionToolStepResult:
+        attempt_id = str(kwargs["attempt_id"])
+        attempts.append(attempt_id)
+        tool = dict(list(kwargs["tools"])[0])
+        name = str(dict(tool["function"])["name"])
+        return _provider_step(
+            name=name,
+            arguments={"fixture_draft": f"local draft for {attempt_id}"},
+        )
+
+    def submission_executor(**kwargs: object) -> ChatCompletionToolStepResult:
+        nonlocal demand_feedback_seen
+        attempt_id = str(kwargs["attempt_id"])
+        attempts.append(attempt_id)
+        tool = dict(list(kwargs["tools"])[0])
+        function = dict(tool["function"])
+        name = str(function["name"])
+        messages = list(kwargs["messages"])
+        visible = json.loads(str(dict(messages[-1])["content"]))
+        if name == SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME:
+            if attempt_id.endswith("demand-quality-repair-r3-submit"):
+                feedback = visible.get("prior_submission_feedback") or []
+                demand_feedback_seen = (
+                    len(feedback) == 1
+                    and feedback[0]["error_code"]
+                    == "multi_agent_workpaper_claim_unbound"
+                    and feedback[0]["authority_expansion_allowed"] is False
+                )
+            prior = deepcopy(
+                visible["validated_context"]["repair_state"]["prior_workpaper"]
+            )
+            for field in (
+                "schema_version",
+                "agent_id",
+                "context_digest",
+                "workpaper_digest",
+            ):
+                prior.pop(field, None)
+            prior["confidence"] = (
+                "low" if prior["confidence"] != "low" else "medium"
+            )
+            payload = prior
+        else:
+            assert name == "submit_lead_coordination_judgment"
+            properties = dict(function["parameters"])["properties"]
+            deferred_schema = dict(properties["deferred_challenge_ids"])
+            selectable = list(dict(deferred_schema["items"]).get("enum") or ())
+            payload = {
+                "accepted_challenge_ids": [],
+                "deferred_challenge_ids": [
+                    value
+                    for value in selectable
+                    if str(value).startswith("CHALLENGE::")
+                ],
+                "coordination_rationale": (
+                    "The fixture defers the catalog to independent reassessment "
+                    "without adding facts or changing research authority."
+                ),
+                "next_state": "proceed_to_evaluation",
+            }
+        return _provider_step(name=name, arguments=payload)
+
+    result = multi_agent_runner.run_content_repair_live(
+        authority_path=authority_path,
+        research_executor=research_executor,
+        submission_executor=submission_executor,
+    )
+
+    assert attempts == [
+        f"{attempt_prefix}-demand-quality-repair-r3-submit",
+        f"{attempt_prefix}-operating-performance-repair-r4-draft",
+        f"{attempt_prefix}-operating-performance-repair-r4-submit",
+        f"{attempt_prefix}-value-capture-repair-r5-draft",
+        f"{attempt_prefix}-value-capture-repair-r5-submit",
+        f"{attempt_prefix}-lead-r1-draft",
+        f"{attempt_prefix}-lead-r1-submit",
+    ]
+    assert demand_feedback_seen is True
+    assert result["status"] == "completed_contract_valid_reassessment_pending"
+    assert result["execution"]["new_provider_calls_attempted"] == 7
+    assert result["execution"]["role_repairs_executed"] == 3
+    assert result["execution"]["role_repairs_reused"] == 2
+    assert public_path.is_file()
+    assert (private_root / "full_result.json").is_file()
 
 
 def test_content_repair_authority_rejects_budget_drift_before_execution(
@@ -578,6 +773,30 @@ def test_content_repair_authority_rejects_budget_drift_before_execution(
         "implementation_commit": "0" * 40,
         "case_key": "DELL",
         "execution_budget": {"maximum_new_model_calls": 13},
+        "token_budget_basis": {},
+        "bound_inputs": {},
+        "output_contract": {},
+        "known_boundary": "x" * 160,
+    }
+    path = tmp_path / "authority.json"
+    path.write_text(json.dumps(authority), encoding="utf-8")
+    with pytest.raises(
+        DynamicMultiAgentLoopError,
+        match="dynamic_multi_agent_content_repair_authority_invalid",
+    ):
+        validate_content_repair_authority(authority, authority_path=path.resolve())
+
+
+def test_content_repair_submission_resume_authority_rejects_old_budget(
+    tmp_path: Path,
+) -> None:
+    authority = {
+        "schema_version": CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_SCHEMA,
+        "status": CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_STATUS,
+        "signed_at": "2026-08-24T00:00:00Z",
+        "implementation_commit": "0" * 40,
+        "case_key": "DELL",
+        "execution_budget": expected_content_repair_budget(),
         "token_budget_basis": {},
         "bound_inputs": {},
         "output_contract": {},

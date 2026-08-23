@@ -1,21 +1,19 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-23
+更新时间：2026-08-24
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-s1-retrieval-vertical-slice`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-DELL 七命题已形成 12 条任务级 EvidenceRequest；current Pack 已由 29 条晋升为 48 条 Evidence，S2 已重编译为 38 个 reported、27 个 derived、2 个 estimate、2 个 scenario 和 9 个 fact gap。任务级门为 `ready_for_bounded_dynamic_single_unit_with_actionable_gaps`：20 个 requirement 中 15 个可研究，价格／配置、Dell 台数和当前双边供应关系仍是必须由 Agent 主动追问的三类薄弱面。
+DELL current 动态多 Agent 已完成 R5 的六份 Specialist workpaper 与两轮 Lead 结构闭环，但独立审查在 L1／L2 发现 7 项金融语义错误，Writer 因此继续冻结。R6 在首次 Provider 调用前因空 optional resume manifest 的 Harness 缺陷以 0 调用终止；R7 修复后发生 6 次 DeepSeek HTTP 200，Cash 与 Counterevidence 两份返修完整通过，Demand 自然草稿完成，但其 strict mapper 生成无 Evidence／NumericFact／Relation 绑定的 claim，被本地合同拒绝。Operating、Value、Lead 尚未调用。
 
-公开补源不再停留在独立 Pack。17 个已捕获页面和 19 个精确内容片段已写入 canonical source store；current Runtime Registry 已提升为 R32，绑定 1,877 条源记录、34,166 个金融对象和 CUDA／FP16 dense cache。无模型产品复证用 8 条跨价格、配置、客户、行业需求、PVM、供给、价值池和反方请求实际执行 current BM25＋dense 路线，得到 66 个候选并通过 exact page-lineage＋content-digest 重新选择 15 条 reviewed Evidence；Candidate 仍不自动获得 Evidence 或 NumericFact 权限。
+R7 terminal 已由 6 份 immutable capture 零调用物化，保留 2 个完成 repair、5 个可复用语义节点和 1 个被拒绝节点。R8 submission-resume proof 只复用 Cash／Counterevidence 的 draft＋submit 和 Demand draft，排除失败的 Demand submit；首个 fresh frontier 为 Demand strict submission，剩余拓扑精确为 7 个 Provider 节点：Demand submit 1、Operating／Value draft＋submit 4、Lead draft＋submit 2。0 S1/S2、retrieval、外源、promotion、retry、fallback 和 Writer。
 
-`value_capture` 动态单元的当前 Runtime 零调用复证已经完成：初始消息只含问题、DELL 身份、截至日期和工具能力；两轮真实执行 12 条 current S1/S2 请求，形成 15 条去重 reviewed Evidence、17 个 typed NumericFact、20 条可行动 FeedbackReceipt、2 个 PlanDelta／GraphDelta／StopDecision，并完成 checkpoint/resume。未审 Candidate 仍为 0 晋升；图增量只有研究假设；跨案、错日、重复请求、过早停止和排列变化 mutation 均 fail closed；learned retrieval 使用 RTX 4060 CUDA/FP16。复证同时修复了“完整 reviewed Pack 与紧凑模型视图混同”、手写旧 workpaper schema、checkpoint 重复反方引用以及错误读取 CUDA/resume receipt 四个 Harness 漂移点。
+2026-08-24 接管审计已冻结原长任务：不存在 R8 authority 或 R8 live，也没有接管后的 Provider／网络调用、commit 或 push。原工作区为 10 个 tracked 修改和 4 个 untracked 结果；全仓 pytest 主体完成，但组合工程门的 pyflakes 因 `tests/test_s3_multi_agent_preview.py:1607` 未使用局部变量失败，且 R8 scope／Project OS 新记录使用了未来时间戳。两项均由当前接管任务修正；另补一条零网络假 Provider 回归，把 7 个剩余节点完整跑穿，避免再用付费 live 发现确定性接缝错误。
 
-当前动态入口已正式切换：旧 `run_s3_dynamic_single_cell_live.py` 保留为历史复现文件但退出活动入口；新 zero-call、natural-live runner 与共享 `dynamic_single_unit_loop` 已进入 active baseline。新 live 最多 4 个 Provider 节点，依次完成初始请求选择、第一轮反思、条件式第二轮反思和最终底稿；第二轮必须由模型消费真实 FeedbackReceipt 后提出，Harness 不替模型写研究计划或观点。定向 33 tests 与全仓 1,074 tests 已通过，活动图为 205 Python／8 frontend／5 detector／28 Runtime／0 forbidden。
-
-当前仍未执行自然动态 Agent。下一门是 compileall／secret／diff 工程门、clean commit／push、fresh preflight、单独签发一次 DELL `value_capture` DeepSeek exact-live。该 live 只能证明一个动态研究单元，不能追认 S1／S3。通过后才进入五研究单元动态 multi-agent、Writer 双语／图表／排版、MU／NVDA 和异质留出。
+接管后的本地工程门已通过：定向 `134 passed`、全仓 `1141 passed`（2 条既有 SWIG warning）、compileall／pyflakes、active baseline `211／8／5／28／0`、7,788-file secret scan／0 和 diff check 均有效。当前下一门不是直接调用模型，而是形成 clean commit／push 并运行 repository-aware preflight。只有这些门全部通过，才允许签发一次全新 R8 authority；R8 后仍必须独立复评七项 finding 的 L1／L2 与内容质量。Writer、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 
@@ -1570,3 +1568,18 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R7 authority 绑定 11 组输入、当前 runner Git blob、successor scope 和 immutable R5／R6 证据；本地 validator 通过，输出 identity 全新。
 - 当前仅为 signed／not executed。下一步是执行唯一 R7，随后独立复评 L1/L2 和内容质量；Writer 仍冻结。
 - 详见 `docs/worklog/fin_0_1_3_s3/149_R7_multi_agent_content_repair_live_authority.md`。
+
+### 2026-08-24 R7 部分返修与 R8 精确 submission-resume 门
+
+- R7 共 6 次 DeepSeek HTTP 200／`tool_calls`：Cash、Counterevidence 两份返修完整通过，Demand 自然草稿完成；Operating、Value、Lead 未调用。
+- Demand strict mapper 把无 Evidence／NumericFact／Relation 绑定的边界陈述写成 `bounded_inference` claim，被本地合同正确拒绝；失败 payload 未晋升。另有独立 Harness 缺陷：本地 `MultiAgentPreviewError` 未自动物化 terminal。
+- 已以 6 份 capture 和 checkpoint 零调用物化 R7 terminal，并把 normal runner 补成 capture-first terminal；`RC-S3-082` 工程关闭。`RC-S3-083` 通过 typed feedback＋无 authority expansion 的精确重交路径处理。
+- R8 proof 只复用 Cash／Counterevidence 的 draft＋submit 和 Demand draft，排除失败 Demand submit；首个 fresh frontier 为 Demand strict submission。剩余最多 7 次：Demand submit 1、Operating／Value draft＋submit 4、Lead draft＋submit 2；0 S1/S2／retrieval／外源／promotion／retry／fallback。
+- 当前仅是 clean authority 前的工程门。R8 尚未执行；独立 L1/L2、内容质量、Writer、S3、泛化、publication 和 release 均未通过。详见 `docs/worklog/fin_0_1_3_s3/150_R7_partial_content_repair_and_R8_submission_resume_gate.md`。
+
+### 2026-08-24 R8 接管审计与完整执行接缝门
+
+- 原长任务已冻结并保持只读；最终 checkpoint 确认 `1140 passed`、active baseline／secret scan 通过，但 pyflakes 的未使用变量失败曾被组合命令最后的成功码掩盖。接管后已修复，目标 pyflakes 通过。
+- 原 proof 只到 Demand 首个 fresh frontier；现用真实 R8 runner 分支和假 executor 把 Demand submit、Operating／Value draft＋submit、Lead draft＋submit 共 7 个新节点完整跑穿。它验证 5 个节点复用、失败 Demand submit 排除、typed feedback 禁止扩权、3 个新 repair／2 个复用 repair 和精确调用顺序，0 模型／Provider／网络。
+- R8 scope 与 Project OS 的未来时间戳已改为实际审计时间 `2026-08-24T01:25:47+08:00`；root-cause ledger 恢复 append order，并登记 `RC-S3-084`。定向三组回归 `134 passed`。
+- 接管后全仓 `1141 passed`、compileall／pyflakes、active baseline `211／8／5／28／0`、7,788-file secret scan／0 和 diff check 已通过。当前仍没有 R8 authority 或 live；下一门为 clean commit／push、repository-aware preflight，再签发一次 fresh R8。自然返修后仍须独立 L1/L2 与内容质量复评。详见 `docs/worklog/fin_0_1_3_s3/151_R8_takeover_audit_and_full_seam_gate.md`。

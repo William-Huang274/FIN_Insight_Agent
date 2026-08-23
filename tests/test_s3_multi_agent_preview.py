@@ -1216,6 +1216,50 @@ def test_specialist_submission_binds_local_envelope_without_changing_judgment() 
     assert "strict workpaper contract mapper" in rendered
     assert "visible workpaper draft" in rendered
 
+    feedback_messages = compile_specialist_workpaper_submission_messages(
+        context=context,
+        source_draft="{preserved natural workpaper draft}",
+        source_capture_digest="b" * 64,
+        tool=tool,
+        validation_feedback=(
+            {
+                "error_code": "multi_agent_workpaper_claim_unbound",
+                "rejected_surface": "bounded_inference claim with no authority reference",
+                "corrective_action": (
+                    "Map the unresolved boundary to not_inferable or the existing "
+                    "remaining gap without adding any reference or new judgment."
+                ),
+                "authority_expansion_allowed": False,
+            },
+        ),
+    )
+    feedback_visible = json.loads(feedback_messages[1]["content"])
+    assert feedback_visible["prior_submission_feedback"][0]["error_code"] == (
+        "multi_agent_workpaper_claim_unbound"
+    )
+    assert feedback_visible["prior_submission_feedback"][0][
+        "authority_expansion_allowed"
+    ] is False
+
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_workpaper_submission_feedback_invalid",
+    ):
+        compile_specialist_workpaper_submission_messages(
+            context=context,
+            source_draft="{preserved natural workpaper draft}",
+            source_capture_digest="c" * 64,
+            tool=tool,
+            validation_feedback=(
+                {
+                    "error_code": "multi_agent_workpaper_claim_unbound",
+                    "rejected_surface": "bounded inference without authority",
+                    "corrective_action": "Add a convenient new source reference.",
+                    "authority_expansion_allowed": True,
+                },
+            ),
+        )
+
     overridden = dict(payload)
     overridden["agent_id"] = "AGENT::VALUE_CAPTURE"
     with pytest.raises(
@@ -1560,7 +1604,6 @@ def test_model_message_compilers_keep_role_and_evaluator_boundaries() -> None:
         ),
     }
     opinions = _opinions()
-    lead = _lead(opinions)
     plan_messages = compile_specialist_plan_messages(
         topology=topology,
         agent_id="AGENT::DEMAND_QUALITY",

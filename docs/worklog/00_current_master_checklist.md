@@ -82,7 +82,13 @@
     - [x] RC-S3-028 唯一 live 关闭：一次 counter 同片段非思考交卷完成，独立 L1 与适用内容质量通过
   - [x] S1 reviewed Pack↔当前检索对象库／来源路由同步（Dell／TSMC transcript 已进入 current object store；MU／NVDA 等价自然动态链与 S1 总产品门仍开）
 - [x] DELL `value_capture` 单单元动态 Agentic Research（自然 planner→当前 S1/S2→三片段→一次有界 repair；L1 与适用内容质量 21/24）
-- [ ] DELL 五单元动态案例、底稿与报告验收
+- [ ] DELL 六 Specialist 动态多 Agent、底稿与报告验收
+  - [x] R5 六份 Specialist workpaper 与两轮 Lead 结构合同完成
+  - [x] 独立 L1／L2 识别并冻结 7 项金融语义错误，Writer 未解冻
+  - [x] R7 保存 6 次 HTTP-200 调用、2 份完整返修与 1 份 Demand 自然草稿；失败 strict submission 未晋升
+  - [x] R8 五节点复用、七节点剩余拓扑、typed feedback 与完整零网络假 Provider seam 工程门
+  - [ ] clean／synced commit、repository-aware preflight、fresh R8 authority 与唯一 live
+  - [ ] 七项 finding 的独立 L1／L2、内容质量复评与 Writer 入口决策
 - [ ] MU／NVDA 同核心迁移与三案例 S1–S3 内容质量验收
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision

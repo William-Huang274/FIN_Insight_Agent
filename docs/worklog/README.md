@@ -32,3 +32,8 @@
   - 报告边界密度与来源充分性审计：`fin_0_1_3_s3/117_report_boundary_density_and_source_sufficiency_audit.md`
   - Actionable Uncertainty、当前数据 Runtime 与 S3 消费：`fin_0_1_3_s3/118_actionable_uncertainty_current_data_runtime_and_s3_consumption.md`
   - 历史 checkpoint capture-bound 上下文回放：`fin_0_1_3_s3/119_historical_checkpoint_capture_bound_context_replay.md`
+  - R5 多 Agent 完成、独立语义失败与 R6 内容返修门：`fin_0_1_3_s3/146_R5_multi_agent_completion_semantic_assessment_and_R6_content_repair_zero_call.md`
+  - R6 零调用终止与 R7 successor 门：`fin_0_1_3_s3/148_R6_optional_resume_manifest_failure_and_R7_successor_zero_call.md`
+  - R7 内容返修 live authority：`fin_0_1_3_s3/149_R7_multi_agent_content_repair_live_authority.md`
+  - R7 部分返修与 R8 精确 submission-resume 门：`fin_0_1_3_s3/150_R7_partial_content_repair_and_R8_submission_resume_gate.md`
+  - R8 接管审计与完整执行接缝门：`fin_0_1_3_s3/151_R8_takeover_audit_and_full_seam_gate.md`

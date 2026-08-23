@@ -3254,6 +3254,18 @@ def compile_specialist_context(
         cell_view["cell"]["role_method_pack"] = deepcopy(
             agent["preview_method_pack"]
         )
+    cell_view["cell"]["graph_context_pack"] = _project_specialist_graph_context(
+        graph_pack=cell_view["cell"]["graph_context_pack"],
+        allowed_evidence_refs=allowed_role_evidence,
+        role_slot_ids=role_slots,
+        subject_ticker=str(
+            research_input.get("case_identity", {}).get("subject_ticker") or ""
+        ),
+        allowed_numeric_refs=set(
+            cell_view["cell"].get("allowed_numeric_refs") or ()
+        ),
+        numeric_cards=research_input.get("numeric_fact_cards") or (),
+    )
     cell_view["projection_receipt"]["role_slot_ids"] = sorted(role_slots)
     cell_view["projection_receipt"]["role_evidence_ref_count"] = len(
         cell_view["cell"]["cell_evidence_views"]
@@ -3310,6 +3322,118 @@ def compile_specialist_context(
     if context_scope == "role_repair":
         return compile_specialist_repair_context(body)
     return body
+
+
+def _project_specialist_graph_context(
+    *,
+    graph_pack: Mapping[str, Any],
+    allowed_evidence_refs: set[str],
+    role_slot_ids: set[str],
+    subject_ticker: str,
+    allowed_numeric_refs: set[str],
+    numeric_cards: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Narrow a shared cell graph to one specialist's actual authority view.
+
+    Supply and counterevidence intentionally share a canonical cell, but they
+    must not receive one another's unrelated graph hypotheses.  The projection
+    may remove edges and trim their evidence refs; it can never add an edge,
+    entity, Evidence ref or NumericFact beyond the canonical input.
+    """
+
+    base_digest = str(graph_pack.get("graph_context_digest") or "")
+    base_nodes = {
+        str(row.get("entity_id") or ""): deepcopy(dict(row))
+        for row in graph_pack.get("nodes") or ()
+        if isinstance(row, Mapping) and str(row.get("entity_id") or "")
+    }
+    selected_edges: list[dict[str, Any]] = []
+    for raw in graph_pack.get("edges") or ():
+        _require(
+            isinstance(raw, Mapping),
+            "multi_agent_specialist_graph_edge_invalid",
+        )
+        refs = sorted(
+            allowed_evidence_refs.intersection(
+                str(ref) for ref in raw.get("evidence_refs") or ()
+            )
+        )
+        if not refs:
+            continue
+        identity = {
+            "cell_id": str(raw.get("cell_id") or graph_pack.get("cell_id") or ""),
+            "source_entity": str(raw.get("source_entity") or ""),
+            "target_entity": str(raw.get("target_entity") or ""),
+            "relationship_direction": str(
+                raw.get("relationship_direction") or ""
+            ),
+            "evidence_refs": refs,
+        }
+        _require(
+            identity["cell_id"]
+            and identity["source_entity"]
+            and identity["target_entity"]
+            and identity["relationship_direction"],
+            "multi_agent_specialist_graph_edge_invalid",
+        )
+        selected_edges.append(
+            {
+                "graph_edge_ref": "GRAPH::"
+                + canonical_digest(identity)[:16].upper(),
+                **identity,
+                "authority": str(
+                    raw.get("authority")
+                    or "reviewed_evidence_bound_context"
+                ),
+                "grants_company_fact_or_causality": False,
+            }
+        )
+    selected_edges.sort(
+        key=lambda row: (
+            row["source_entity"],
+            row["target_entity"],
+            row["relationship_direction"],
+            row["graph_edge_ref"],
+        )
+    )
+
+    allowed_entities = {subject_ticker.upper()}
+    for edge in selected_edges:
+        allowed_entities.update(
+            {str(edge["source_entity"]), str(edge["target_entity"])}
+        )
+    allowed_entities.update(
+        str(row.get("ticker") or "").upper()
+        for row in numeric_cards
+        if str(row.get("numeric_ref") or "") in allowed_numeric_refs
+    )
+    selected_nodes = [
+        deepcopy(base_nodes[entity_id])
+        for entity_id in sorted(allowed_entities)
+        if entity_id in base_nodes
+    ]
+    _require(
+        subject_ticker.upper() in {row["entity_id"] for row in selected_nodes},
+        "multi_agent_specialist_graph_subject_missing",
+    )
+    body = {
+        "schema_version": "fin_ia_role_graph_context_view_v1_0",
+        "cell_id": str(graph_pack.get("cell_id") or ""),
+        "case_key": str(graph_pack.get("case_key") or ""),
+        "nodes": selected_nodes,
+        "edges": selected_edges,
+        "base_graph_context_digest": base_digest,
+        "role_slot_ids": sorted(role_slot_ids),
+        "projection": {
+            "base_edge_count": len(graph_pack.get("edges") or ()),
+            "role_edge_count": len(selected_edges),
+            "base_node_count": len(graph_pack.get("nodes") or ()),
+            "role_node_count": len(selected_nodes),
+            "authority_expanded": False,
+        },
+        "authority": deepcopy(dict(graph_pack.get("authority") or {})),
+    }
+    return {**body, "graph_context_digest": canonical_digest(body)}
 
 
 def _truth_aliases(rows: Sequence[Mapping[str, Any]]) -> list[str]:

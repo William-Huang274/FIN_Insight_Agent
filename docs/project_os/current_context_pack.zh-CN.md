@@ -1406,3 +1406,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 单元适用内容质量从 R5 的 `16/24` 提升到 `21/24`；Q5 跨单元综合和 Q8 最终报告仍不适用，因此未签发形式上的八维产品分。
 - `RC-S3-062` 只在 DELL `value_capture` 单元范围关闭；当前可进入动态多 Agent 的零调用设计与资格证明，但尚未签发多 Agent live。S3、qualified-human、Workbench publication 和 release 继续为 false。
 - 详细记录见 `docs/worklog/fin_0_1_3_s3/131_R7_independent_content_assessment_and_multi_agent_entry.md`。
+
+### 2026-08-23 DELL current 动态多 Agent 入口材料化
+
+- current 48-Evidence Pack 接入旧 Preview 时在模型调用前触发 graph capacity：`counterevidence` 形成 17 条关系边，超过历史模型视图上限 16。根因是近义关系边全部进入同一上下文，属于 S0/S3 Harness 选择缺口，不是 DeepSeek、S1 检索或信源缺失。
+- 完整 Pack／NumericFact 权威保持不变；图作为导航视图，按命题槽位、facet、来源权威和主体覆盖做确定性有界选择，被省略边进入 audit receipt。未超限旧输入继续保持 v1.0 输出和 digest。
+- Supply 与 Counterevidence 虽共享 canonical cell，现按各自真实 Evidence refs 和 role slots 再投影；六个角色 outside Evidence refs 均为 0，禁止跨职责图假设污染。
+- 0 模型／0 网络 current 材料化真实运行 12 条角色对齐请求：12 lane／11 nonempty、29 个唯一叙事候选、192 个 hybrid selection、85 NumericFact、25 resolved typed fact／25 typed gap；Qwen dense 为 CUDA/FP16。
+- 这只证明六角色 current authority 与图隔离，不证明动态多 Agent。下一项必须建立每角色独立 Session、S1/S2 请求、FeedbackReceipt／PlanDelta／StopDecision 和 Lead 回派闭环；旧 fixed five-cell runner 不能冒充多 Agent live。
+- 工程门为定向 `124 passed`、全仓 `1107 passed`（仅两条既有 SWIG warning）、compileall、active baseline `207／8／5／28／0`、7,732-file secret scan／0 和 diff check 通过。
+- 详细记录见 `docs/worklog/fin_0_1_3_s3/132_current_dynamic_multi_agent_entry_graph_capacity_and_role_isolation.md`。

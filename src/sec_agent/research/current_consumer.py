@@ -1839,6 +1839,10 @@ def compile_current_research_messages(
         )
         method_pack = deepcopy(cell.get("role_method_pack"))
         graph_pack = deepcopy(cell["graph_context_pack"])
+        # Capacity-selection details are audit receipts, not research facts.
+        # Keep them in the immutable input while exposing only the selected
+        # nodes/edges and their binding digest to the model.
+        graph_pack.pop("selection_receipt", None)
         visible_cells.append(
             {
                 "cell_id": cell["cell_id"],

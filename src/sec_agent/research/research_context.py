@@ -405,8 +405,166 @@ def compile_graph_context_packs(
     numeric_by_ref = {str(row["numeric_ref"]): row for row in numeric_cards}
     subject = str(case_identity.get("subject_ticker") or "").upper()
     graph_policy = context_contract["graph_context"]
+    maximum_nodes = int(graph_policy["maximum_nodes_per_cell"])
+    maximum_edges = int(graph_policy["maximum_edges_per_cell"])
     output: list[dict[str, Any]] = []
     for cell in cells:
+        evidence_metadata: dict[str, Mapping[str, Any]] = {}
+        edge_evidence: dict[tuple[str, str, str], set[str]] = {}
+        for ref in cell["allowed_evidence_refs"]:
+            row = evidence_by_ref[str(ref)]
+            evidence_metadata[str(ref)] = row
+            owner = str(row["evidence_owner_ticker"]).upper()
+            directions = row.get("relationship_directions") or [
+                "subject_self_disclosure" if owner == subject else "bounded_context"
+            ]
+            for direction in directions:
+                edge_evidence.setdefault(
+                    (owner, subject, str(direction)), set()
+                ).add(str(ref))
+        primary_slot = str(cell.get("primary_slot_id") or "")
+        supplemental_slots = {
+            str(value)
+            for value in cell.get("supplemental_context_slot_ids") or ()
+        }
+        edge_candidates: list[dict[str, Any]] = []
+        for (source, target, direction), refs in sorted(edge_evidence.items()):
+            identity = {
+                "cell_id": cell["cell_id"],
+                "source_entity": source,
+                "target_entity": target,
+                "relationship_direction": direction,
+                "evidence_refs": sorted(refs),
+            }
+            binding_keys = {
+                (str(binding.get("slot_id") or ""), str(facet))
+                for ref in refs
+                for binding in evidence_metadata[ref].get("slot_bindings") or ()
+                if isinstance(binding, Mapping)
+                for facet in binding.get("facet_ids") or ("__slot__",)
+            }
+            source_authority_rank = max(
+                (
+                    4
+                    if (
+                        str(evidence_metadata[ref].get("evidence_owner_ticker") or "").upper()
+                        == subject
+                        and evidence_metadata[ref].get("evidence_role")
+                        == "issuer_direct_source"
+                    )
+                    else 3
+                    if evidence_metadata[ref].get("source_tier")
+                    in {
+                        "primary_sec_filing",
+                        "issuer_regulator_or_government_primary",
+                        "company_authored_unaudited_sec_filing",
+                        "official_hosted_management_call_transcript",
+                        "named_counterparty_or_standards_primary",
+                    }
+                    else 2
+                    if evidence_metadata[ref].get("source_tier")
+                    == "official_market_or_industry_primary"
+                    else 1
+                )
+                for ref in refs
+            )
+            edge_candidates.append(
+                {
+                    "graph_edge_ref": "GRAPH::" + canonical_digest(identity)[:16].upper(),
+                    **identity,
+                    "authority": "reviewed_evidence_bound_context",
+                    "grants_company_fact_or_causality": False,
+                    "_primary_facets": {
+                        facet for slot, facet in binding_keys if slot == primary_slot
+                    },
+                    "_supplemental_facets": {
+                        facet
+                        for slot, facet in binding_keys
+                        if slot in supplemental_slots
+                    },
+                    "_source_authority_rank": source_authority_rank,
+                }
+            )
+
+        # The full reviewed Evidence Pack remains authoritative.  A role-local
+        # graph is only a bounded navigation/context view, so select diverse,
+        # proposition-relevant edges rather than failing when a richer Pack
+        # contains one more relationship alias than a model node can consume.
+        selected_candidates: list[dict[str, Any]] = []
+        remaining = list(edge_candidates)
+        selected_entities = {subject}
+        covered_primary_facets: set[str] = set()
+        covered_supplemental_facets: set[str] = set()
+        covered_evidence_refs: set[str] = set()
+        while remaining and len(selected_candidates) < maximum_edges:
+            feasible = [
+                row
+                for row in remaining
+                if row["source_entity"] in selected_entities
+                or len(selected_entities) < maximum_nodes
+            ]
+            if not feasible:
+                break
+
+            def _selection_key(value: Mapping[str, Any]) -> tuple[Any, ...]:
+                new_primary = len(
+                    set(value["_primary_facets"]) - covered_primary_facets
+                )
+                new_supplemental = len(
+                    set(value["_supplemental_facets"])
+                    - covered_supplemental_facets
+                )
+                new_evidence = len(
+                    set(value["evidence_refs"]) - covered_evidence_refs
+                )
+                return (
+                    -new_primary,
+                    -new_supplemental,
+                    -(1 if value["_primary_facets"] else 0),
+                    -(1 if value["source_entity"] not in selected_entities else 0),
+                    -int(value["_source_authority_rank"]),
+                    -(1 if value["source_entity"] == subject else 0),
+                    -new_evidence,
+                    -len(value["evidence_refs"]),
+                    str(value["source_entity"]),
+                    str(value["target_entity"]),
+                    str(value["relationship_direction"]),
+                    str(value["graph_edge_ref"]),
+                )
+
+            chosen = min(feasible, key=_selection_key)
+            selected_candidates.append(chosen)
+            remaining.remove(chosen)
+            selected_entities.add(str(chosen["source_entity"]))
+            covered_primary_facets.update(chosen["_primary_facets"])
+            covered_supplemental_facets.update(chosen["_supplemental_facets"])
+            covered_evidence_refs.update(chosen["evidence_refs"])
+
+        selected_edge_refs = {
+            str(row["graph_edge_ref"]) for row in selected_candidates
+        }
+        omitted_candidates = [
+            row
+            for row in edge_candidates
+            if str(row["graph_edge_ref"]) not in selected_edge_refs
+        ]
+        edges = [
+            {
+                key: deepcopy(value)
+                for key, value in row.items()
+                if not key.startswith("_")
+            }
+            for row in sorted(
+                selected_candidates,
+                key=lambda value: (
+                    str(value["source_entity"]),
+                    str(value["target_entity"]),
+                    str(value["relationship_direction"]),
+                    str(value["graph_edge_ref"]),
+                ),
+            )
+        ]
+
         nodes: dict[str, dict[str, Any]] = {
             subject: {
                 "entity_id": subject,
@@ -414,10 +572,8 @@ def compile_graph_context_packs(
                 "authority": "current_case_identity",
             }
         }
-        edge_evidence: dict[tuple[str, str, str], set[str]] = {}
-        for ref in cell["allowed_evidence_refs"]:
-            row = evidence_by_ref[str(ref)]
-            owner = str(row["evidence_owner_ticker"]).upper()
+        for edge in edges:
+            owner = str(edge["source_entity"])
             nodes.setdefault(
                 owner,
                 {
@@ -428,54 +584,90 @@ def compile_graph_context_packs(
                     "authority": "current_reviewed_evidence",
                 },
             )
-            directions = row.get("relationship_directions") or [
-                "subject_self_disclosure" if owner == subject else "bounded_context"
-            ]
-            for direction in directions:
-                edge_evidence.setdefault(
-                    (owner, subject, str(direction)), set()
-                ).add(str(ref))
-        for ref in cell["allowed_numeric_refs"]:
-            row = numeric_by_ref[str(ref)]
-            ticker = str(row["ticker"]).upper()
-            nodes.setdefault(
-                ticker,
-                {
-                    "entity_id": ticker,
-                    "entity_role": (
-                        "research_subject" if ticker == subject else "numeric_fact_owner"
-                    ),
-                    "authority": "current_numeric_fact",
-                },
-            )
-        edges: list[dict[str, Any]] = []
-        for (source, target, direction), refs in sorted(edge_evidence.items()):
-            identity = {
-                "cell_id": cell["cell_id"],
-                "source_entity": source,
-                "target_entity": target,
-                "relationship_direction": direction,
-                "evidence_refs": sorted(refs),
+        numeric_entities = sorted(
+            {
+                str(numeric_by_ref[str(ref)]["ticker"]).upper()
+                for ref in cell["allowed_numeric_refs"]
             }
-            edges.append(
-                {
-                    "graph_edge_ref": "GRAPH::" + canonical_digest(identity)[:16].upper(),
-                    **identity,
-                    "authority": "reviewed_evidence_bound_context",
-                    "grants_company_fact_or_causality": False,
-                }
+        )
+        for ticker in numeric_entities:
+            if ticker in nodes:
+                continue
+            if len(nodes) >= maximum_nodes:
+                break
+            nodes[ticker] = {
+                "entity_id": ticker,
+                "entity_role": "numeric_fact_owner",
+                "authority": "current_numeric_fact",
+            }
+
+        candidate_entities = {
+            subject,
+            *numeric_entities,
+            *(str(row["source_entity"]) for row in edge_candidates),
+        }
+        selected_entity_ids = set(nodes)
+        omitted_edges = [
+            {
+                "graph_edge_ref": str(row["graph_edge_ref"]),
+                "source_entity": str(row["source_entity"]),
+                "target_entity": str(row["target_entity"]),
+                "relationship_direction": str(row["relationship_direction"]),
+                "evidence_refs": list(row["evidence_refs"]),
+                "omission_reason": "bounded_role_graph_context_capacity",
+            }
+            for row in sorted(
+                omitted_candidates,
+                key=lambda value: str(value["graph_edge_ref"]),
             )
+        ]
+        selection_receipt_body = {
+            "schema_version": "fin_ia_graph_context_selection_receipt_v1_0",
+            "strategy": "deterministic_role_slot_facet_owner_coverage_v1",
+            "primary_slot_id": primary_slot,
+            "supplemental_context_slot_ids": sorted(supplemental_slots),
+            "candidate_edge_count": len(edge_candidates),
+            "selected_edge_count": len(edges),
+            "omitted_edge_count": len(omitted_edges),
+            "maximum_edges_per_cell": maximum_edges,
+            "candidate_node_count": len(candidate_entities),
+            "selected_node_count": len(nodes),
+            "omitted_node_count": len(candidate_entities - selected_entity_ids),
+            "maximum_nodes_per_cell": maximum_nodes,
+            "selected_graph_edge_refs": [
+                str(row["graph_edge_ref"]) for row in edges
+            ],
+            "omitted_edges": omitted_edges,
+            "omitted_entity_ids": sorted(candidate_entities - selected_entity_ids),
+            "pack_evidence_or_numeric_authority_changed": False,
+            "model_calls": 0,
+        }
+        selection_receipt = {
+            **selection_receipt_body,
+            "selection_receipt_digest": canonical_digest(selection_receipt_body),
+        }
         _require(
-            len(nodes) <= int(graph_policy["maximum_nodes_per_cell"])
-            and len(edges) <= int(graph_policy["maximum_edges_per_cell"]),
+            len(nodes) <= maximum_nodes and len(edges) <= maximum_edges,
             "research_context_graph_capacity_exceeded",
         )
+        selection_applied = bool(
+            omitted_edges or candidate_entities - selected_entity_ids
+        )
         body = {
-            "schema_version": "fin_ia_graph_context_pack_v1_0",
+            "schema_version": (
+                "fin_ia_graph_context_pack_v1_1"
+                if selection_applied
+                else "fin_ia_graph_context_pack_v1_0"
+            ),
             "cell_id": str(cell["cell_id"]),
             "case_key": str(case_identity.get("case_key") or ""),
             "nodes": [nodes[key] for key in sorted(nodes)],
             "edges": edges,
+            **(
+                {"selection_receipt": selection_receipt}
+                if selection_applied
+                else {}
+            ),
             "authority": {
                 "compiled_from_current_case_reviewed_evidence_and_numeric_facts": True,
                 "archived_graph_rows_used": False,

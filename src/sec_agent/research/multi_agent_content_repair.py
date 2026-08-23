@@ -60,6 +60,29 @@ def expected_content_repair_submission_resume_budget() -> dict[str, int]:
     }
 
 
+def expected_content_repair_authority_ceiling_resume_budget() -> dict[str, int]:
+    """Exact successor ceiling after Demand is revalidated without a new call."""
+
+    return {
+        "maximum_new_model_calls": 6,
+        "maximum_new_transport_attempts": 6,
+        "locally_revalidated_demand_submissions": 1,
+        "remaining_role_repair_drafts": 2,
+        "remaining_role_repair_submissions": 2,
+        "lead_coordination_drafts": 1,
+        "lead_coordination_submissions": 1,
+        "maximum_new_role_repairs": 2,
+        "maximum_lead_rounds": 1,
+        "maximum_new_s1_s2_requests": 0,
+        "maximum_new_retrieval_rounds": 0,
+        "maximum_external_source_network_calls": 0,
+        "retries": 0,
+        "fallbacks": 0,
+        "candidate_promotions": 0,
+        "current_product_pointer_mutations": 0,
+    }
+
+
 def _require(condition: bool, code: str) -> None:
     if not condition:
         raise MultiAgentContentRepairError(code)
@@ -229,7 +252,9 @@ __all__ = [
     "MultiAgentContentRepairError",
     "ROLE_SEMANTIC_RELATION_RULES",
     "compile_independent_content_challenges",
+    "expected_content_repair_authority_ceiling_resume_budget",
     "expected_content_repair_budget",
+    "expected_content_repair_submission_resume_budget",
     "rebind_workpaper_context_semantic_rules",
     "semantic_relation_rules",
 ]

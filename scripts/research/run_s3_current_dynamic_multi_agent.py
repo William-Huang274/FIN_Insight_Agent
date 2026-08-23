@@ -95,6 +95,7 @@ from sec_agent.research.multi_agent_preview import (  # noqa: E402
     compile_challenge_catalog,
     compile_lead_coordination_messages,
     compile_lead_coordination_submission_messages,
+    compile_specialist_claim_authority_ceiling_feedback,
     compile_specialist_workpaper_messages,
     compile_specialist_workpaper_submission_messages,
     compile_planner_payload_from_role_opinions,
@@ -116,6 +117,7 @@ from sec_agent.research.multi_agent_preview_runtime import (  # noqa: E402
 )
 from sec_agent.research.multi_agent_content_repair import (  # noqa: E402
     compile_independent_content_challenges,
+    expected_content_repair_authority_ceiling_resume_budget,
     expected_content_repair_budget,
     expected_content_repair_submission_resume_budget,
     rebind_workpaper_context_semantic_rules,
@@ -175,6 +177,9 @@ CONTENT_REPAIR_SUCCESSOR_ZERO_SCHEMA = (
 CONTENT_REPAIR_SUBMISSION_RESUME_ZERO_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_content_repair_submission_resume_zero_call_v1_0"
 )
+CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_ZERO_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_zero_call_v1_0"
+)
 CONTENT_REPAIR_AUTHORITY_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_v1_0"
 )
@@ -186,6 +191,12 @@ CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_SCHEMA = (
 )
 CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_STATUS = (
     "signed_exact_once_DELL_current_dynamic_multi_agent_content_repair_submission_resume"
+)
+CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_v1_2"
+)
+CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_STATUS = (
+    "signed_exact_once_DELL_current_dynamic_multi_agent_content_repair_authority_ceiling_resume"
 )
 CONTENT_REPAIR_LIVE_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_content_repair_live_v1_0"
@@ -199,6 +210,12 @@ CONTENT_REPAIR_SUBMISSION_RESUME_LIVE_SCHEMA = (
 CONTENT_REPAIR_SUBMISSION_RESUME_FULL_SCHEMA = (
     "fin_ia_s3_current_dynamic_multi_agent_content_repair_submission_resume_full_v1_0"
 )
+CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_LIVE_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_live_v1_0"
+)
+CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_FULL_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_full_v1_0"
+)
 DEFAULT_CONTENT_REPAIR_ZERO_PUBLIC = Path(
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_zero_call_result_v1_0.json"
 )
@@ -207,6 +224,9 @@ DEFAULT_CONTENT_REPAIR_SUCCESSOR_ZERO_PUBLIC = Path(
 )
 DEFAULT_CONTENT_REPAIR_SUBMISSION_RESUME_ZERO_PUBLIC = Path(
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_submission_resume_zero_call_result_v1_0.json"
+)
+DEFAULT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_ZERO_PUBLIC = Path(
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_zero_call_result_v1_0.json"
 )
 DEFAULT_CONTENT_REPAIR_LIVE_PUBLIC = Path(
     "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_result_v1_0.json"
@@ -2844,15 +2864,27 @@ def validate_content_repair_authority(
     submission_resume = (
         schema_version == CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_SCHEMA
     )
+    authority_ceiling_resume = (
+        schema_version
+        == CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_SCHEMA
+    )
     expected_status = (
-        CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_STATUS
-        if submission_resume
-        else CONTENT_REPAIR_AUTHORITY_STATUS
+        CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_STATUS
+        if authority_ceiling_resume
+        else (
+            CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_STATUS
+            if submission_resume
+            else CONTENT_REPAIR_AUTHORITY_STATUS
+        )
     )
     expected_budget = (
-        expected_content_repair_submission_resume_budget()
-        if submission_resume
-        else expected_content_repair_budget()
+        expected_content_repair_authority_ceiling_resume_budget()
+        if authority_ceiling_resume
+        else (
+            expected_content_repair_submission_resume_budget()
+            if submission_resume
+            else expected_content_repair_budget()
+        )
     )
     if not (
         set(authority) == expected
@@ -2860,6 +2892,7 @@ def validate_content_repair_authority(
         in {
             CONTENT_REPAIR_AUTHORITY_SCHEMA,
             CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_SCHEMA,
+            CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_SCHEMA,
         }
         and authority.get("status") == expected_status
         and authority.get("case_key") == "DELL"
@@ -2890,6 +2923,16 @@ def validate_content_repair_authority(
     )
     if submission_resume:
         ref_names += ("failed_authority", "failed_public", "failed_private")
+    elif authority_ceiling_resume:
+        ref_names += (
+            "failed_r7_authority",
+            "failed_r7_public",
+            "failed_r7_private",
+            "failed_r8_authority",
+            "failed_r8_public",
+            "failed_r8_private",
+            "failed_r8_assessment",
+        )
     paths: dict[str, Path] = {}
     implementation_names = {
         "runner",
@@ -2944,7 +2987,181 @@ def validate_content_repair_authority(
         and assessment.get("private_full_result_digest")
         == predecessor_private.get("full_result_digest")
     )
-    if submission_resume:
+    if authority_ceiling_resume:
+        failed_r7_authority = _read_json(paths["failed_r7_authority_ref"])
+        failed_r7_public = _read_json(paths["failed_r7_public_ref"])
+        failed_r7_private = _read_json(paths["failed_r7_private_ref"])
+        failed_r8_authority = _read_json(paths["failed_r8_authority_ref"])
+        failed_r8_public = _read_json(paths["failed_r8_public_ref"])
+        failed_r8_private = _read_json(paths["failed_r8_private_ref"])
+        failed_r8_assessment = _read_json(paths["failed_r8_assessment_ref"])
+        scope_identity_valid = (
+            scope_schema
+            == "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_scope_decision_v1_0"
+            and scope_status
+            == "R8_repeat_mapper_failure_preserved_R9_authority_ceiling_resume_authorized"
+            and scope_decision.get("failed_R7_required") is True
+            and scope_decision.get("failed_R8_required") is True
+            and scope_decision.get("digest_bound_authority_ceiling_required")
+            is True
+            and scope_decision.get("fresh_R9_authority_required") is True
+        )
+        failure_code = "multi_agent_workpaper_claim_unbound"
+        r7_chain_valid = (
+            failed_r7_authority.get("schema_version")
+            == CONTENT_REPAIR_AUTHORITY_SCHEMA
+            and failed_r7_authority.get("status")
+            == CONTENT_REPAIR_AUTHORITY_STATUS
+            and failed_r7_public.get("status")
+            == "terminal_partial_local_contract_failure_preserved"
+            and failed_r7_private.get("status")
+            == "terminal_partial_local_contract_failure_preserved"
+            and failed_r7_public.get("result_digest")
+            == bound.get("failed_r7_public_result_digest")
+            and failed_r7_private.get("full_result_digest")
+            == bound.get("failed_r7_private_full_result_digest")
+            and failed_r7_public.get("private_full_result_sha256")
+            == _sha256(paths["failed_r7_private_ref"])
+            and failed_r7_private.get("authority_sha256")
+            == _sha256(paths["failed_r7_authority_ref"])
+            and (failed_r7_public.get("failure") or {}).get("code")
+            == failure_code
+            and (failed_r7_private.get("failure") or {}).get("code")
+            == failure_code
+            and (failed_r7_private.get("execution") or {}).get(
+                "new_provider_calls_attempted"
+            )
+            == 6
+            and (failed_r7_private.get("execution") or {}).get(
+                "reusable_semantic_nodes"
+            )
+            == 5
+        )
+        r8_manifest = failed_r8_private.get("capture_manifest") or []
+        r8_chain_valid = (
+            failed_r8_authority.get("schema_version")
+            == CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_SCHEMA
+            and failed_r8_authority.get("status")
+            == CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_STATUS
+            and dict(failed_r8_authority.get("execution_budget") or {})
+            == expected_content_repair_submission_resume_budget()
+            and failed_r8_public.get("status")
+            == "terminal_partial_content_repair_failure_preserved"
+            and failed_r8_private.get("status")
+            == "terminal_partial_content_repair_failure_preserved"
+            and failed_r8_public.get("result_digest")
+            == bound.get("failed_r8_public_result_digest")
+            and failed_r8_private.get("full_result_digest")
+            == bound.get("failed_r8_private_full_result_digest")
+            and failed_r8_public.get("private_full_result_sha256")
+            == _sha256(paths["failed_r8_private_ref"])
+            and failed_r8_private.get("authority_sha256")
+            == _sha256(paths["failed_r8_authority_ref"])
+            and (failed_r8_public.get("failure") or {}).get("code")
+            == failure_code
+            and (failed_r8_private.get("failure") or {}).get("code")
+            == failure_code
+            and (failed_r8_private.get("execution") or {}).get(
+                "new_provider_calls_attempted"
+            )
+            == 1
+            and (failed_r8_private.get("execution") or {}).get(
+                "new_provider_http_200"
+            )
+            == 1
+            and (failed_r8_private.get("execution") or {}).get(
+                "role_repairs_executed"
+            )
+            == 0
+            and (failed_r8_private.get("execution") or {}).get(
+                "role_repairs_reused"
+            )
+            == 2
+            and isinstance(r8_manifest, list)
+            and len(r8_manifest) == 1
+            and str((r8_manifest[0] or {}).get("attempt_id") or "").endswith(
+                "demand-quality-repair-r3-submit"
+            )
+            and (failed_r8_authority.get("bound_inputs") or {}).get(
+                "failed_authority_sha256"
+            )
+            == _sha256(paths["failed_r7_authority_ref"])
+            and (failed_r8_authority.get("bound_inputs") or {}).get(
+                "failed_public_result_digest"
+            )
+            == failed_r7_public.get("result_digest")
+            and (failed_r8_authority.get("bound_inputs") or {}).get(
+                "failed_private_full_result_digest"
+            )
+            == failed_r7_private.get("full_result_digest")
+        )
+        authority_ceiling_chain_valid = (
+            zero.get("status")
+            == "content_repair_authority_ceiling_resume_zero_call_proven"
+            and zero.get("result_digest")
+            == bound.get("zero_call_result_digest")
+            and zero.get("failed_R7_public_result_digest")
+            == failed_r7_public.get("result_digest")
+            and zero.get("failed_R7_private_full_result_digest")
+            == failed_r7_private.get("full_result_digest")
+            and zero.get("failed_R8_public_result_digest")
+            == failed_r8_public.get("result_digest")
+            and zero.get("failed_R8_private_full_result_digest")
+            == failed_r8_private.get("full_result_digest")
+            and len(zero.get("accepted_capture_manifest") or ()) == 6
+            and str(
+                (zero.get("accepted_capture_manifest") or ())[-1].get(
+                    "attempt_id"
+                )
+                or ""
+            ).endswith("demand-quality-repair-r3-submit")
+            and dict(zero.get("execution_budget") or {}) == expected_budget
+            and all((zero.get("checks") or {}).values())
+        )
+        failure_assessment_valid = (
+            failed_r8_assessment.get("schema_version")
+            == "fin_ia_s3_current_dynamic_multi_agent_content_repair_R8_failure_assessment_v1_0"
+            and failed_r8_assessment.get("status")
+            == "R8_one_call_repeat_mapper_noncompliance_preserved_digest_bound_authority_ceiling_successor_proven"
+            and failed_r8_assessment.get("authority_sha256")
+            == _sha256(paths["failed_r8_authority_ref"])
+            and failed_r8_assessment.get("result_digest")
+            == failed_r8_public.get("result_digest")
+            and failed_r8_assessment.get("private_full_result_digest")
+            == failed_r8_private.get("full_result_digest")
+            and failed_r8_assessment.get("failure_code") == failure_code
+            and (failed_r8_assessment.get("rejected_claim") or {}).get(
+                "claim_digest"
+            )
+            == "84033e8de0ea1ff92cfe42b15427e75e1eadb847d37944767734c0da3a56120d"
+            and (failed_r8_assessment.get("zero_call_successor") or {}).get(
+                "result_digest"
+            )
+            == zero.get("result_digest")
+            and (failed_r8_assessment.get("zero_call_successor") or {}).get(
+                "model_provider_network_calls"
+            )
+            == 0
+        )
+        scope_contract_valid = (
+            scope_decision.get("next_authorized_scope")
+            == "one_R8_bound_authority_ceiling_resume_then_Operating_Value_and_Lead"
+            and dict(scope_decision.get("execution_budget") or {})
+            == expected_budget
+            and scope_decision.get("content_repair_live_authorized") is True
+            and scope_decision.get("new_S1_S2_authorized") is False
+            and scope_decision.get("writer_authorized") is False
+        )
+        chain_valid = (
+            scope_identity_valid
+            and scope_contract_valid
+            and r7_chain_valid
+            and r8_chain_valid
+            and authority_ceiling_chain_valid
+            and failure_assessment_valid
+            and common_chain_valid
+        )
+    elif submission_resume:
         failed_authority = _read_json(paths["failed_authority_ref"])
         failed_public = _read_json(paths["failed_public_ref"])
         failed_private = _read_json(paths["failed_private_ref"])
@@ -5172,6 +5389,7 @@ def _execute_submission_successor_role_repair(
         payload,
         context=repair_context,
         expected_agent_id=agent_id,
+        validation_feedback=submission_validation_feedback,
     )
     before = _workpaper_authority_sets(role_bundle["workpaper"])
     after = _workpaper_authority_sets(repaired)
@@ -7465,6 +7683,10 @@ def run_content_repair_live(
         authority.get("schema_version")
         == CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_SCHEMA
     )
+    authority_ceiling_resume = (
+        authority.get("schema_version")
+        == CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_SCHEMA
+    )
     _, predecessor, assessment = _load_content_repair_inputs(
         predecessor_public_path=paths["predecessor_public_ref"],
         predecessor_private_path=paths["predecessor_private_ref"],
@@ -7492,8 +7714,15 @@ def run_content_repair_live(
     }
     resume_capture_manifest: tuple[dict[str, Any], ...] = ()
     resume_source: dict[str, Any] = {}
-    if submission_resume:
-        failed_private = _read_json(paths["failed_private_ref"])
+    authority_ceiling_feedback: tuple[dict[str, Any], ...] = ()
+    if submission_resume or authority_ceiling_resume:
+        failed_private = _read_json(
+            paths[
+                "failed_r7_private_ref"
+                if authority_ceiling_resume
+                else "failed_private_ref"
+            ]
+        )
         failed_manifest = _validate_resume_capture_manifest(
             failed_private.get("capture_manifest") or ()
         )
@@ -7518,23 +7747,91 @@ def run_content_repair_live(
             raise DynamicMultiAgentLoopError(
                 "dynamic_multi_agent_content_repair_submission_resume_manifest_invalid"
             )
-        resume_capture_manifest = accepted
-        resume_source = {
-            "failed_authority_ref": authority["bound_inputs"][
-                "failed_authority_ref"
-            ],
-            "failed_public_ref": authority["bound_inputs"]["failed_public_ref"],
-            "failed_private_ref": authority["bound_inputs"][
-                "failed_private_ref"
-            ],
-            "accepted_capture_attempt_ids": [
-                str(row["attempt_id"]) for row in accepted
-            ],
-            "rejected_capture_attempt_id": str(
-                failed_manifest[-1]["attempt_id"]
-            ),
-            "rejection_code": "multi_agent_workpaper_claim_unbound",
-        }
+        if authority_ceiling_resume:
+            failed_r8_private = _read_json(paths["failed_r8_private_ref"])
+            r8_manifest = _validate_resume_capture_manifest(
+                failed_r8_private.get("capture_manifest") or ()
+            )
+            r8_submission = _resume_capture_draft(
+                r8_manifest,
+                attempt_fragment="demand-quality-repair-r3-submit",
+                expected_name=SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
+            )
+            if not (
+                len(r8_manifest) == 1
+                and str(r8_manifest[0]["attempt_id"]).endswith(
+                    "demand-quality-repair-r3-submit"
+                )
+                and r8_submission is not None
+            ):
+                raise DynamicMultiAgentLoopError(
+                    "dynamic_multi_agent_content_repair_authority_ceiling_R8_manifest_invalid"
+                )
+            r8_payload = json.loads(r8_submission[0])
+            if not isinstance(r8_payload, dict):
+                raise DynamicMultiAgentLoopError(
+                    "dynamic_multi_agent_content_repair_authority_ceiling_R8_payload_invalid"
+                )
+            authority_ceiling_feedback = (
+                compile_specialist_claim_authority_ceiling_feedback(
+                    r8_payload
+                )
+            )
+            resume_capture_manifest = (*accepted, *r8_manifest)
+            resume_source = {
+                "failed_R7_authority_ref": authority["bound_inputs"][
+                    "failed_r7_authority_ref"
+                ],
+                "failed_R7_public_ref": authority["bound_inputs"][
+                    "failed_r7_public_ref"
+                ],
+                "failed_R7_private_ref": authority["bound_inputs"][
+                    "failed_r7_private_ref"
+                ],
+                "failed_R8_authority_ref": authority["bound_inputs"][
+                    "failed_r8_authority_ref"
+                ],
+                "failed_R8_public_ref": authority["bound_inputs"][
+                    "failed_r8_public_ref"
+                ],
+                "failed_R8_private_ref": authority["bound_inputs"][
+                    "failed_r8_private_ref"
+                ],
+                "accepted_capture_attempt_ids": [
+                    str(row["attempt_id"])
+                    for row in resume_capture_manifest
+                ],
+                "R7_rejected_capture_attempt_id": str(
+                    failed_manifest[-1]["attempt_id"]
+                ),
+                "R8_revalidated_capture_attempt_id": str(
+                    r8_manifest[0]["attempt_id"]
+                ),
+                "rejection_code": "multi_agent_workpaper_claim_unbound",
+                "authority_ceiling": deepcopy(
+                    authority_ceiling_feedback[0]
+                ),
+            }
+        else:
+            resume_capture_manifest = accepted
+            resume_source = {
+                "failed_authority_ref": authority["bound_inputs"][
+                    "failed_authority_ref"
+                ],
+                "failed_public_ref": authority["bound_inputs"][
+                    "failed_public_ref"
+                ],
+                "failed_private_ref": authority["bound_inputs"][
+                    "failed_private_ref"
+                ],
+                "accepted_capture_attempt_ids": [
+                    str(row["attempt_id"]) for row in accepted
+                ],
+                "rejected_capture_attempt_id": str(
+                    failed_manifest[-1]["attempt_id"]
+                ),
+                "rejection_code": "multi_agent_workpaper_claim_unbound",
+            }
     challenges = compile_independent_content_challenges(
         assessment=assessment,
         workpapers=[role_bundles[key]["workpaper"] for key in SPECIALIST_AGENT_IDS],
@@ -7598,9 +7895,15 @@ def run_content_repair_live(
                 submission_executor=submission_executor,
                 resume_capture_manifest=resume_capture_manifest,
                 submission_validation_feedback=(
-                    _demand_claim_unbound_submission_feedback()
-                    if submission_resume and agent_id == "AGENT::DEMAND_QUALITY"
-                    else ()
+                    authority_ceiling_feedback
+                    if authority_ceiling_resume
+                    and agent_id == "AGENT::DEMAND_QUALITY"
+                    else (
+                        _demand_claim_unbound_submission_feedback()
+                        if submission_resume
+                        and agent_id == "AGENT::DEMAND_QUALITY"
+                        else ()
+                    )
                 ),
             )
             repairs.append(repair)
@@ -7691,9 +7994,13 @@ def run_content_repair_live(
         current_lead_events, attempt_prefix=attempt_prefix
     )
     budget = (
-        expected_content_repair_submission_resume_budget()
-        if submission_resume
-        else expected_content_repair_budget()
+        expected_content_repair_authority_ceiling_resume_budget()
+        if authority_ceiling_resume
+        else (
+            expected_content_repair_submission_resume_budget()
+            if submission_resume
+            else expected_content_repair_budget()
+        )
     )
     if provider_calls > budget["maximum_new_model_calls"]:
         raise DynamicMultiAgentLoopError(
@@ -7712,24 +8019,40 @@ def run_content_repair_live(
         for row in repairs
         if not bool(row.get("provider_steps"))
     }
-    expected_new_repair_count = 3 if submission_resume else 5
+    expected_new_repair_count = (
+        2
+        if authority_ceiling_resume
+        else (3 if submission_resume else 5)
+    )
+    expected_reused_repair_ids = (
+        {
+            "AGENT::CASH_CONVERSION",
+            "AGENT::COUNTEREVIDENCE",
+            "AGENT::DEMAND_QUALITY",
+        }
+        if authority_ceiling_resume
+        else (
+            {"AGENT::CASH_CONVERSION", "AGENT::COUNTEREVIDENCE"}
+            if submission_resume
+            else set()
+        )
+    )
     if status == "completed_contract_valid_reassessment_pending" and not (
         len(new_repair_ids) == expected_new_repair_count
-        and (
-            reused_repair_ids
-            == {"AGENT::CASH_CONVERSION", "AGENT::COUNTEREVIDENCE"}
-            if submission_resume
-            else not reused_repair_ids
-        )
+        and reused_repair_ids == expected_reused_repair_ids
     ):
         raise DynamicMultiAgentLoopError(
             "dynamic_multi_agent_content_repair_execution_topology_invalid"
         )
     full_body = {
         "schema_version": (
-            CONTENT_REPAIR_SUBMISSION_RESUME_FULL_SCHEMA
-            if submission_resume
-            else CONTENT_REPAIR_FULL_SCHEMA
+            CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_FULL_SCHEMA
+            if authority_ceiling_resume
+            else (
+                CONTENT_REPAIR_SUBMISSION_RESUME_FULL_SCHEMA
+                if submission_resume
+                else CONTENT_REPAIR_FULL_SCHEMA
+            )
         ),
         "status": status,
         "recorded_at": recorded_at,
@@ -7773,9 +8096,17 @@ def run_content_repair_live(
         },
         "claims": {
             "R5_preserved_immutable": True,
-            "R7_partial_terminal_preserved_immutable": submission_resume,
-            "exact_five_role_repair_scope": not submission_resume,
+            "R7_partial_terminal_preserved_immutable": (
+                submission_resume or authority_ceiling_resume
+            ),
+            "R8_terminal_preserved_immutable": authority_ceiling_resume,
+            "exact_five_role_repair_scope": not (
+                submission_resume or authority_ceiling_resume
+            ),
             "exact_R7_bound_three_role_submission_resume_scope": submission_resume,
+            "exact_R8_bound_two_role_authority_ceiling_resume_scope": (
+                authority_ceiling_resume
+            ),
             "supply_workpaper_reused_unchanged": role_bundles[
                 "AGENT::SUPPLY_RELATIONSHIP"
             ]["workpaper"]["workpaper_digest"]
@@ -7798,9 +8129,13 @@ def run_content_repair_live(
     _write_json(private_root / "full_result.json", full, exclusive=True)
     public_body = {
         "schema_version": (
-            CONTENT_REPAIR_SUBMISSION_RESUME_LIVE_SCHEMA
-            if submission_resume
-            else CONTENT_REPAIR_LIVE_SCHEMA
+            CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_LIVE_SCHEMA
+            if authority_ceiling_resume
+            else (
+                CONTENT_REPAIR_SUBMISSION_RESUME_LIVE_SCHEMA
+                if submission_resume
+                else CONTENT_REPAIR_LIVE_SCHEMA
+            )
         ),
         "status": status,
         "recorded_at": recorded_at,
@@ -8414,6 +8749,405 @@ def run_zero_call_content_repair_submission_resume(
     return public
 
 
+def run_zero_call_content_repair_authority_ceiling_resume(
+    *,
+    attempt_id: str,
+    failed_r8_authority_path: Path,
+    failed_r8_public_path: Path,
+    failed_r8_private_path: Path,
+    private_output: Path,
+    public_output: Path,
+) -> dict[str, Any]:
+    """Revalidate the R8 Demand payload under one digest-bound fail-down ceiling."""
+
+    failed_r8_authority = _read_json(failed_r8_authority_path)
+    failed_r8_public = _read_json(failed_r8_public_path)
+    failed_r8_private = _read_json(failed_r8_private_path)
+    r8_public_body = {
+        key: deepcopy(value)
+        for key, value in failed_r8_public.items()
+        if key != "result_digest"
+    }
+    r8_private_body = {
+        key: deepcopy(value)
+        for key, value in failed_r8_private.items()
+        if key != "full_result_digest"
+    }
+    if not (
+        failed_r8_authority.get("schema_version")
+        == CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_SCHEMA
+        and failed_r8_authority.get("status")
+        == CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_STATUS
+        and dict(failed_r8_authority.get("execution_budget") or {})
+        == expected_content_repair_submission_resume_budget()
+        and failed_r8_public.get("status")
+        == "terminal_partial_content_repair_failure_preserved"
+        and failed_r8_private.get("status")
+        == "terminal_partial_content_repair_failure_preserved"
+        and failed_r8_public.get("result_digest")
+        == canonical_digest(r8_public_body)
+        and failed_r8_private.get("full_result_digest")
+        == canonical_digest(r8_private_body)
+        and failed_r8_public.get("private_full_result_sha256")
+        == _sha256(failed_r8_private_path)
+        and failed_r8_private.get("authority_sha256")
+        == _sha256(failed_r8_authority_path)
+        and (failed_r8_public.get("failure") or {}).get("code")
+        == "multi_agent_workpaper_claim_unbound"
+        and (failed_r8_private.get("failure") or {}).get("code")
+        == "multi_agent_workpaper_claim_unbound"
+        and (failed_r8_private.get("execution") or {}).get(
+            "new_provider_calls_attempted"
+        )
+        == 1
+        and (failed_r8_private.get("execution") or {}).get(
+            "new_provider_http_200"
+        )
+        == 1
+        and (failed_r8_private.get("execution") or {}).get("retries") == 0
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_repair_authority_ceiling_R8_binding_invalid"
+        )
+    r8_bound = dict(failed_r8_authority.get("bound_inputs") or {})
+    r7_paths: dict[str, Path] = {}
+    for name in ("failed_authority", "failed_public", "failed_private"):
+        path = _resolve_repo_ref(str(r8_bound.get(f"{name}_ref") or ""))
+        if not (
+            path.is_file()
+            and _sha256(path) == str(r8_bound.get(f"{name}_sha256") or "")
+        ):
+            raise DynamicMultiAgentLoopError(
+                "dynamic_multi_agent_content_repair_authority_ceiling_R7_binding_invalid"
+            )
+        r7_paths[name] = path
+    failed_r7_authority = _read_json(r7_paths["failed_authority"])
+    failed_r7_public = _read_json(r7_paths["failed_public"])
+    failed_r7_private = _read_json(r7_paths["failed_private"])
+    r7_public_body = {
+        key: deepcopy(value)
+        for key, value in failed_r7_public.items()
+        if key != "result_digest"
+    }
+    r7_private_body = {
+        key: deepcopy(value)
+        for key, value in failed_r7_private.items()
+        if key != "full_result_digest"
+    }
+    if not (
+        failed_r7_authority.get("schema_version")
+        == CONTENT_REPAIR_AUTHORITY_SCHEMA
+        and failed_r7_authority.get("status")
+        == CONTENT_REPAIR_AUTHORITY_STATUS
+        and failed_r7_public.get("status")
+        == "terminal_partial_local_contract_failure_preserved"
+        and failed_r7_private.get("status")
+        == "terminal_partial_local_contract_failure_preserved"
+        and failed_r7_public.get("result_digest")
+        == canonical_digest(r7_public_body)
+        and failed_r7_private.get("full_result_digest")
+        == canonical_digest(r7_private_body)
+        and failed_r7_public.get("private_full_result_sha256")
+        == _sha256(r7_paths["failed_private"])
+        and failed_r7_private.get("authority_sha256")
+        == _sha256(r7_paths["failed_authority"])
+        and (failed_r7_private.get("execution") or {}).get(
+            "new_provider_calls_attempted"
+        )
+        == 6
+        and (failed_r7_private.get("execution") or {}).get(
+            "reusable_semantic_nodes"
+        )
+        == 5
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_repair_authority_ceiling_R7_chain_invalid"
+        )
+    r7_manifest = _validate_resume_capture_manifest(
+        failed_r7_private.get("capture_manifest") or ()
+    )
+    r7_rejected_ref = str(
+        (failed_r7_private.get("failure") or {}).get("capture_ref") or ""
+    ).replace("\\", "/")
+    accepted_r7 = [
+        deepcopy(dict(row))
+        for row in r7_manifest
+        if str(row["response_ref"]).replace("\\", "/") != r7_rejected_ref
+    ]
+    r8_manifest = _validate_resume_capture_manifest(
+        failed_r8_private.get("capture_manifest") or ()
+    )
+    if not (
+        len(r7_manifest) == 6
+        and len(accepted_r7) == 5
+        and len(r8_manifest) == 1
+        and str(accepted_r7[-1]["attempt_id"]).endswith(
+            "demand-quality-repair-r3-draft"
+        )
+        and str(r8_manifest[0]["attempt_id"]).endswith(
+            "demand-quality-repair-r3-submit"
+        )
+    ):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_repair_authority_ceiling_manifest_invalid"
+        )
+    r7_rejected = _resume_capture_draft(
+        (r7_manifest[-1],),
+        attempt_fragment="demand-quality-repair-r3-submit",
+        expected_name=SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
+    )
+    r8_submission = _resume_capture_draft(
+        r8_manifest,
+        attempt_fragment="demand-quality-repair-r3-submit",
+        expected_name=SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME,
+    )
+    if r7_rejected is None or r8_submission is None:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_repair_authority_ceiling_payload_missing"
+        )
+    r7_payload = json.loads(r7_rejected[0])
+    r8_payload = json.loads(r8_submission[0])
+    if not isinstance(r7_payload, dict) or not isinstance(r8_payload, dict):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_repair_authority_ceiling_payload_invalid"
+        )
+    precise_feedback = compile_specialist_claim_authority_ceiling_feedback(
+        r8_payload
+    )
+    r8_request = _read_json(
+        _resolve_repo_ref(str(r8_manifest[0]["request_ref"]))
+    )
+    messages = (r8_request.get("request_body") or {}).get("messages") or []
+    try:
+        visible_request = json.loads(str(messages[1]["content"]))
+    except (IndexError, KeyError, TypeError, json.JSONDecodeError) as exc:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_repair_authority_ceiling_request_invalid"
+        ) from exc
+    model_feedback = visible_request.get("prior_submission_feedback") or []
+    combined_manifest = [*accepted_r7, *r8_manifest]
+    predecessor_public_path = _resolve_repo_ref(
+        str(r8_bound["predecessor_public_ref"])
+    )
+    predecessor_private_path = _resolve_repo_ref(
+        str(r8_bound["predecessor_private_ref"])
+    )
+    assessment_path = _resolve_repo_ref(str(r8_bound["assessment_ref"]))
+    _, predecessor, assessment = _load_content_repair_inputs(
+        predecessor_public_path=predecessor_public_path,
+        predecessor_private_path=predecessor_private_path,
+        assessment_path=assessment_path,
+    )
+    role_bundles = {
+        str(row["agent_id"]): deepcopy(dict(row))
+        for row in predecessor["role_bundles"]
+    }
+    challenges = compile_independent_content_challenges(
+        assessment=assessment,
+        workpapers=[
+            role_bundles[key]["workpaper"] for key in SPECIALIST_AGENT_IDS
+        ],
+    )
+    by_target: dict[str, list[dict[str, Any]]] = {}
+    for row in challenges:
+        by_target.setdefault(str(row["target_agent_id"]), []).append(row)
+    for agent_id in sorted(by_target):
+        rebound, _ = rebind_workpaper_context_semantic_rules(
+            role_bundles[agent_id]["workpaper_context"],
+            expected_agent_id=agent_id,
+        )
+        role_bundles[agent_id]["workpaper_context"] = rebound
+    research_profile = load_agent_transport_profile(
+        _read_json(_resolve_repo_ref(str(r8_bound["provider_profile_ref"])))
+    )
+    submission_profile = load_chat_completion_profile(
+        _read_json(_resolve_repo_ref(str(r8_bound["submission_profile_ref"])))
+    )
+
+    def _forbidden(**_: Any) -> AgentToolStepResult:
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_repair_authority_ceiling_provider_forbidden"
+        )
+
+    recorded_at = str(failed_r8_private["recorded_at"])
+    completed: list[str] = []
+    demand_repair: dict[str, Any] = {}
+    for repair_index, agent_id in enumerate(
+        (
+            "AGENT::CASH_CONVERSION",
+            "AGENT::COUNTEREVIDENCE",
+            "AGENT::DEMAND_QUALITY",
+        ),
+        start=1,
+    ):
+        repair = _execute_submission_successor_role_repair(
+            role_bundle=role_bundles[agent_id],
+            challenges=by_target[agent_id],
+            research_profile=research_profile,
+            submission_profile=submission_profile,
+            capture_root=private_output.parent / "forbidden-captures",
+            run_id=f"{attempt_id}-REPLAY",
+            attempt_prefix=f"{attempt_id}-REPLAY",
+            repair_index=repair_index,
+            recorded_at=recorded_at,
+            research_executor=_forbidden,
+            submission_executor=_forbidden,
+            resume_capture_manifest=combined_manifest,
+            submission_validation_feedback=(
+                precise_feedback
+                if agent_id == "AGENT::DEMAND_QUALITY"
+                else ()
+            ),
+        )
+        role_bundles[agent_id]["workpaper"] = repair["repaired_workpaper"]
+        role_bundles[agent_id]["events"] = repair["continued_events"]
+        completed.append(agent_id)
+        if agent_id == "AGENT::DEMAND_QUALITY":
+            demand_repair = repair
+
+    class _FreshOperatingDraftFrontier(RuntimeError):
+        pass
+
+    frontiers: list[str] = []
+
+    def _analysis_frontier(**kwargs: Any) -> AgentToolStepResult:
+        frontiers.append(str(kwargs.get("attempt_id") or ""))
+        raise _FreshOperatingDraftFrontier(frontiers[-1])
+
+    try:
+        _execute_submission_successor_role_repair(
+            role_bundle=role_bundles["AGENT::OPERATING_PERFORMANCE"],
+            challenges=by_target["AGENT::OPERATING_PERFORMANCE"],
+            research_profile=research_profile,
+            submission_profile=submission_profile,
+            capture_root=private_output.parent / "forbidden-captures",
+            run_id=f"{attempt_id}-FRONTIER",
+            attempt_prefix=f"{attempt_id}-FRONTIER",
+            repair_index=4,
+            recorded_at=recorded_at,
+            research_executor=_analysis_frontier,
+            submission_executor=_forbidden,
+            resume_capture_manifest=combined_manifest,
+        )
+    except _FreshOperatingDraftFrontier:
+        pass
+    ceiling_receipts = (
+        demand_repair.get("submission_receipt") or {}
+    ).get("local_claim_authority_ceiling_receipts") or []
+    checks = {
+        "R7_and_R8_authority_public_private_digests_bound": True,
+        "R8_one_HTTP200_attempt_and_zero_retry_preserved": True,
+        "R8_model_visible_feedback_present_and_forbids_expansion": (
+            model_feedback == list(_demand_claim_unbound_submission_feedback())
+            and model_feedback[0]["authority_expansion_allowed"] is False
+        ),
+        "R7_and_R8_mapper_payloads_identical": r7_payload == r8_payload,
+        "R8_payload_has_one_digest_bound_gap_claim": len(precise_feedback) == 1,
+        "Cash_Counterevidence_and_Demand_replayed_without_provider": completed
+        == [
+            "AGENT::CASH_CONVERSION",
+            "AGENT::COUNTEREVIDENCE",
+            "AGENT::DEMAND_QUALITY",
+        ],
+        "Demand_authority_ceiling_only": (
+            len(ceiling_receipts) == 1
+            and ceiling_receipts[0]["submitted_authority"]
+            == "bounded_inference"
+            and ceiling_receipts[0]["effective_authority"]
+            == "not_inferable"
+            and ceiling_receipts[0]["claim_text_changed"] is False
+            and ceiling_receipts[0]["reference_sets_changed"] is False
+            and ceiling_receipts[0]["authority_expansion"] is False
+        ),
+        "next_fresh_frontier_is_Operating_draft": len(frontiers) == 1
+        and frontiers[0].endswith(
+            "operating-performance-repair-r4-draft"
+        ),
+        "remaining_topology_exactly_six_calls": (
+            expected_content_repair_authority_ceiling_resume_budget()[
+                "maximum_new_model_calls"
+            ]
+            == 6
+        ),
+        "zero_model_provider_network_retrieval_calls": True,
+    }
+    if not all(checks.values()):
+        raise DynamicMultiAgentLoopError(
+            "dynamic_multi_agent_content_repair_authority_ceiling_zero_call_not_proven"
+        )
+    result_body = {
+        "schema_version": CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_ZERO_SCHEMA,
+        "status": "content_repair_authority_ceiling_resume_zero_call_proven",
+        "recorded_at": _now(),
+        "attempt_id": attempt_id,
+        "failed_R7_authority_ref": _relative(r7_paths["failed_authority"]),
+        "failed_R7_authority_sha256": _sha256(r7_paths["failed_authority"]),
+        "failed_R7_public_ref": _relative(r7_paths["failed_public"]),
+        "failed_R7_public_sha256": _sha256(r7_paths["failed_public"]),
+        "failed_R7_public_result_digest": failed_r7_public["result_digest"],
+        "failed_R7_private_ref": _relative(r7_paths["failed_private"]),
+        "failed_R7_private_sha256": _sha256(r7_paths["failed_private"]),
+        "failed_R7_private_full_result_digest": failed_r7_private[
+            "full_result_digest"
+        ],
+        "failed_R8_authority_ref": _relative(failed_r8_authority_path),
+        "failed_R8_authority_sha256": _sha256(failed_r8_authority_path),
+        "failed_R8_public_ref": _relative(failed_r8_public_path),
+        "failed_R8_public_sha256": _sha256(failed_r8_public_path),
+        "failed_R8_public_result_digest": failed_r8_public["result_digest"],
+        "failed_R8_private_ref": _relative(failed_r8_private_path),
+        "failed_R8_private_sha256": _sha256(failed_r8_private_path),
+        "failed_R8_private_full_result_digest": failed_r8_private[
+            "full_result_digest"
+        ],
+        "accepted_capture_manifest": combined_manifest,
+        "R8_mapper_payload_digest": canonical_digest(r8_payload),
+        "precise_authority_ceiling_feedback": list(precise_feedback),
+        "demand_submission_receipt": deepcopy(
+            demand_repair["submission_receipt"]
+        ),
+        "demand_repaired_workpaper_digest": demand_repair[
+            "repaired_workpaper"
+        ]["workpaper_digest"],
+        "first_fresh_provider_frontier": frontiers[0],
+        "execution_budget": (
+            expected_content_repair_authority_ceiling_resume_budget()
+        ),
+        "checks": checks,
+        "execution": {
+            "model_calls": 0,
+            "provider_calls": 0,
+            "network_calls": 0,
+            "retrieval_calls": 0,
+            "candidate_promotions": 0,
+        },
+        "next_exact_frontier": "Operating_Value_then_Lead",
+    }
+    private = {
+        **result_body,
+        "full_result_digest": canonical_digest(result_body),
+    }
+    _write_json(private_output, private, exclusive=True)
+    public_body = {
+        **result_body,
+        "accepted_capture_manifest": [
+            {
+                "attempt_id": row["attempt_id"],
+                "request_sha256": row["request_sha256"],
+                "response_sha256": row["response_sha256"],
+                "finish_reason": row["finish_reason"],
+                "tool_name": row["tool_name"],
+            }
+            for row in combined_manifest
+        ],
+        "private_result_ref": _relative(private_output),
+        "private_result_sha256": _sha256(private_output),
+    }
+    public = {**public_body, "result_digest": canonical_digest(public_body)}
+    _write_json(public_output, public, exclusive=True)
+    return public
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -8426,6 +9160,7 @@ def main() -> int:
             "zero-call-content-repair",
             "zero-call-content-repair-successor",
             "zero-call-content-repair-submission-resume",
+            "zero-call-content-repair-authority-ceiling-resume",
             "live",
             "live-submission-successor",
             "live-content-repair",
@@ -8475,7 +9210,12 @@ def main() -> int:
                                     "zero_call_content_repair_submission_resume_full_result.json"
                                     if args.mode
                                     == "zero-call-content-repair-submission-resume"
-                                    else "full_result.json"
+                                    else (
+                                        "zero_call_content_repair_authority_ceiling_resume_full_result.json"
+                                        if args.mode
+                                        == "zero-call-content-repair-authority-ceiling-resume"
+                                        else "full_result.json"
+                                    )
                                 )
                             )
                         )
@@ -8508,12 +9248,18 @@ def main() -> int:
                             if args.mode
                             == "zero-call-content-repair-submission-resume"
                             else (
-                                DEFAULT_CONTENT_REPAIR_LIVE_PUBLIC
-                                if args.mode == "live-content-repair"
+                                DEFAULT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_ZERO_PUBLIC
+                                if args.mode
+                                == "zero-call-content-repair-authority-ceiling-resume"
                                 else (
-                                    DEFAULT_SUBMISSION_SUCCESSOR_LIVE_PUBLIC
-                                    if args.mode == "live-submission-successor"
-                                    else DEFAULT_LIVE_PUBLIC
+                                    DEFAULT_CONTENT_REPAIR_LIVE_PUBLIC
+                                    if args.mode == "live-content-repair"
+                                    else (
+                                        DEFAULT_SUBMISSION_SUCCESSOR_LIVE_PUBLIC
+                                        if args.mode
+                                        == "live-submission-successor"
+                                        else DEFAULT_LIVE_PUBLIC
+                                    )
                                 )
                             )
                         )
@@ -8632,6 +9378,28 @@ def main() -> int:
             failed_authority_path=_resolve_repo_ref(args.authority).resolve(),
             failed_public_path=_resolve_repo_ref(args.resume_public).resolve(),
             failed_private_path=_resolve_repo_ref(args.resume_private).resolve(),
+            private_output=private_output,
+            public_output=public_output,
+        )
+    elif args.mode == "zero-call-content-repair-authority-ceiling-resume":
+        if not (
+            args.authority and args.resume_private and args.resume_public
+        ):
+            parser.error(
+                "--authority and failed R8 --resume-public/--resume-private "
+                "are required for content repair authority-ceiling resume"
+            )
+        result = run_zero_call_content_repair_authority_ceiling_resume(
+            attempt_id=args.attempt_id,
+            failed_r8_authority_path=_resolve_repo_ref(
+                args.authority
+            ).resolve(),
+            failed_r8_public_path=_resolve_repo_ref(
+                args.resume_public
+            ).resolve(),
+            failed_r8_private_path=_resolve_repo_ref(
+                args.resume_private
+            ).resolve(),
             private_output=private_output,
             public_output=public_output,
         )

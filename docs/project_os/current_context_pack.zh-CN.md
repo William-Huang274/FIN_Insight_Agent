@@ -7,13 +7,13 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-DELL current 动态多 Agent 已完成 R5 的六份 Specialist workpaper 与两轮 Lead 结构闭环，但独立审查在 L1／L2 发现 7 项金融语义错误，Writer 因此继续冻结。R6 在首次 Provider 调用前因空 optional resume manifest 的 Harness 缺陷以 0 调用终止；R7 修复后发生 6 次 DeepSeek HTTP 200，Cash 与 Counterevidence 两份返修完整通过，Demand 自然草稿完成，但其 strict mapper 生成无 Evidence／NumericFact／Relation 绑定的 claim，被本地合同拒绝。Operating、Value、Lead 尚未调用。
+DELL current 动态多 Agent 已完成 R5 的六份 Specialist workpaper 与两轮 Lead 结构闭环，但独立审查在 L1／L2 发现 7 项金融语义错误，Writer 因此继续冻结。R7 发生 6 次 DeepSeek HTTP 200，Cash 与 Counterevidence 两份返修完整通过，Demand 自然草稿完成，但其 strict mapper 生成无 Evidence／NumericFact／Relation 绑定的 `bounded_inference` claim，被本地合同拒绝。
 
-R7 terminal 已由 6 份 immutable capture 零调用物化，保留 2 个完成 repair、5 个可复用语义节点和 1 个被拒绝节点。R8 submission-resume proof 只复用 Cash／Counterevidence 的 draft＋submit 和 Demand draft，排除失败的 Demand submit；首个 fresh frontier 为 Demand strict submission，剩余拓扑精确为 7 个 Provider 节点：Demand submit 1、Operating／Value draft＋submit 4、Lead draft＋submit 2。0 S1/S2、retrieval、外源、promotion、retry、fallback 和 Writer。
+R8 使用 fresh 7-call authority，只执行了首个 Demand strict submission：HTTP 200、完整 Tool Call、0 retry。模型可见请求包含 typed feedback 和禁止扩权约束，但返回 payload 与 R7 逐字节一致，因此同一 claim 再次以 `multi_agent_workpaper_claim_unbound` 被拒。R8 authority／output identity 已消费，Operating、Value、Lead 均未调用；R7 与 R8 terminal 及 capture 保持不可变。
 
-2026-08-24 接管审计已冻结原长任务：不存在 R8 authority 或 R8 live，也没有接管后的 Provider／网络调用、commit 或 push。原工作区为 10 个 tracked 修改和 4 个 untracked 结果；全仓 pytest 主体完成，但组合工程门的 pyflakes 因 `tests/test_s3_multi_agent_preview.py:1607` 未使用局部变量失败，且 R8 scope／Project OS 新记录使用了未来时间戳。两项均由当前接管任务修正；另补一条零网络假 Provider 回归，把 7 个剩余节点完整跑穿，避免再用付费 live 发现确定性接缝错误。
+接管后的零调用审计已证明该 claim digest `84033e8d...120d` 恰为唯一 zero-ref `bounded_inference`，原文明确保留既有 `GAP::00730082A5C08C4C`。provider-neutral successor 只在精确 feedback／digest／gap 三重绑定下把有效 authority 降为 `not_inferable`；claim 文本、Evidence／NumericFact／Relation 引用和 gap 集合均不变，并记录 submitted/effective authority receipt。Cash、Counterevidence、Demand 复用，Supply 不变，首个 fresh frontier 移到 Operating；R9 剩余拓扑精确为 Operating／Value 两对和 Lead 一对，共 6 次，0 S1/S2、retrieval、外源、promotion、retry、fallback 和 Writer。
 
-接管后的本地工程门已通过：定向 `134 passed`、全仓 `1141 passed`（2 条既有 SWIG warning）、compileall／pyflakes、active baseline `211／8／5／28／0`、7,788-file secret scan／0 和 diff check 均有效。工程门提交 `08e6dfa6...b5816` 已 clean／synced，repository-aware preflight 全部通过；R8 authority `4bd8b4eb...db483` 已签发但未执行。下一门是在 authority 提交／推送并再次验证 clean 绑定后执行唯一 R8；随后仍必须独立复评七项 finding 的 L1／L2 与内容质量。Writer、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。
+R9 本地工程门已通过：定向 `140 passed`、全仓 `1147 passed`（2 条既有 SWIG warning）、compileall／pyflakes、active baseline `211／8／5／28／0`。签权前 pyflakes 还发现 authority validator 分支早于 bound-input 解析的未定义名缺陷；已登记 `RC-S3-086`、修复顺序、绑定 R8 failure assessment，并用真实 validator 全链测试覆盖。当前没有 R9 authority 或 R9 Provider 调用。下一门仅为最终仓库卫生检查、clean commit／push、repository-aware preflight 和 fresh 六调用 authority；R9 成功后仍必须独立复评七项 finding 的 L1／L2 与内容质量。Writer、S3 acceptance、MU／NVDA、异质泛化、Workbench publication 和 release 均未通过。
 
 ## 2026-08-20 Multi-Agent Preview R14 Supply 推理耗尽与 R15 角色上下文 successor
 
@@ -1589,3 +1589,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 工程门提交 `08e6dfa6...b5816` 已 clean／synced；repository-aware Project OS preflight 的仓库、Project OS、R5／R7／zero-call 摘要链、根因范围、profile、凭据存在性和 TokenBudgetBasis 检查全 true，0 模型／Provider／网络。
 - R8 authority SHA=`4bd8b4eb...db483`，绑定 14 组输入与 implementation commit，输出 identity 全新，本地 validator 通过。最多 7 次：Demand submit 1、Operating／Value 两对 4、Lead 一对 2；0 retry／S1/S2／retrieval／外源／promotion／pointer mutation。
 - 当前仅为 signed／not executed。authority 提交／推送并复验 clean 绑定后才可执行唯一 R8；成功后仍须独立 L1/L2 与内容质量复评。详见 `docs/worklog/fin_0_1_3_s3/152_R8_submission_resume_live_authority.md`。
+
+### 2026-08-24 R8 重复 mapper 失败与 R9 authority-ceiling 工程门
+
+- R8 只消费 1 次 Demand strict submission：HTTP 200、完整 Tool Call、0 retry；尽管 typed feedback 可见，全部 model-owned 字段仍与 R7 失败 payload 一致，同一 zero-ref `bounded_inference` claim 再次被合同拒绝。Operating／Value／Lead 未调用，R8 保持 immutable terminal。
+- 零调用审计把唯一 rejected claim digest、既有 gap 和要求的 `not_inferable` 三重绑定；本地 authority ceiling 只改变有效权限标签，文本、全部引用与 gap 均不变，并保留明确 receipt。R7／R8 不改写，也不再消耗一个 Demand 模型调用。
+- R9 proof 复用 Cash／Counterevidence／Demand，Supply 不变，首个 fresh frontier 为 Operating；剩余只有 Operating、Value、Lead 三对，共最多 6 次，0 retry／S1/S2／retrieval／外源／promotion／Writer。
+- 签权前 pyflakes 发现并阻止了 validator 分支早于 bound-input 解析的未定义名缺陷。`RC-S3-086` 已由输入解析重排、R8 failure-assessment 强绑定和真实 authority validator 测试关闭；没有消耗 Provider／模型调用。
+- 定向 `140 passed`，全仓 `1147 passed`，compileall／pyflakes 和 active baseline 通过。当前没有 R9 authority 或 live；下一门仍是最终仓库卫生、clean commit／push、repository-aware preflight 和 fresh 六调用 authority。详见 `docs/worklog/fin_0_1_3_s3/153_R8_repeat_mapper_failure_and_R9_authority_ceiling_gate.md`。

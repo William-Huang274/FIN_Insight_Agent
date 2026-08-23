@@ -1,0 +1,162 @@
+{
+  "R8_mapper_payload_digest": "989cde048bd77ee84f624833953158429f148d1a706a1405801ecd69a71f944e",
+  "accepted_capture_manifest": [
+    {
+      "attempt_id": "FIN013-S3-DELL-MULTI-CONTENT-REPAIR-R7-cash-conversion-repair-r1-draft",
+      "finish_reason": "tool_calls",
+      "request_sha256": "cb00375cb9e82e460a1d324fcaac4519139bbbff250f9f3f699d3e5aa2f63fde",
+      "response_sha256": "bf5cf62b64bf6f7f62ab0144f0755c300b8aa3465faf192767b0f5da5285deec",
+      "tool_name": "submit_specialist_workpaper"
+    },
+    {
+      "attempt_id": "FIN013-S3-DELL-MULTI-CONTENT-REPAIR-R7-cash-conversion-repair-r1-submit",
+      "finish_reason": "tool_calls",
+      "request_sha256": "797af380177376adb57ff16285b193fa72e1d77991a55b3b0e4a0bb05a9d0370",
+      "response_sha256": "c96a77cffc22913573093f3ed1cba5ec5834ceed6593db93dd1f7161b2b21cbd",
+      "tool_name": "submit_specialist_workpaper_judgment"
+    },
+    {
+      "attempt_id": "FIN013-S3-DELL-MULTI-CONTENT-REPAIR-R7-counterevidence-repair-r2-draft",
+      "finish_reason": "tool_calls",
+      "request_sha256": "33bdd2720354a3d6b4ff43bf08def58f274236429ad917b0d1dea780745da637",
+      "response_sha256": "f31adc783de7461ff518d38663d0c82bcd924ffec2aa287b31783463735c48c1",
+      "tool_name": "submit_specialist_workpaper"
+    },
+    {
+      "attempt_id": "FIN013-S3-DELL-MULTI-CONTENT-REPAIR-R7-counterevidence-repair-r2-submit",
+      "finish_reason": "tool_calls",
+      "request_sha256": "6bd5bc62e257b290c9872810eb8085570ceecaf983a25c3c5aad0fd65156bdc8",
+      "response_sha256": "250aa1995475d2be3746259653c792fa38dda177cb9c7db9bc157925f8b8ab94",
+      "tool_name": "submit_specialist_workpaper_judgment"
+    },
+    {
+      "attempt_id": "FIN013-S3-DELL-MULTI-CONTENT-REPAIR-R7-demand-quality-repair-r3-draft",
+      "finish_reason": "tool_calls",
+      "request_sha256": "5c8893908b3bf3cb148554a3c541c830049010e2949a7d53dce59db157af23d4",
+      "response_sha256": "04bf75157eb55438e64c4d46ec10fec6ba32c0e0f5f9b662c944730241b0bd3c",
+      "tool_name": "submit_specialist_workpaper"
+    },
+    {
+      "attempt_id": "FIN013-S3-DELL-MULTI-CONTENT-REPAIR-R8-demand-quality-repair-r3-submit",
+      "finish_reason": "tool_calls",
+      "request_sha256": "e59b9420fecc3b93d6925896dbdcfebcf0c82716e333cb2584a899474fe47964",
+      "response_sha256": "06df555103f390661ccf7a56160ea2301a52d5ae3e950ee5f28c0b57d766663b",
+      "tool_name": "submit_specialist_workpaper_judgment"
+    }
+  ],
+  "attempt_id": "FIN013-S3-DELL-CONTENT-REPAIR-R9-AUTHORITY-CEILING-ZERO-CALL",
+  "checks": {
+    "Cash_Counterevidence_and_Demand_replayed_without_provider": true,
+    "Demand_authority_ceiling_only": true,
+    "R7_and_R8_authority_public_private_digests_bound": true,
+    "R7_and_R8_mapper_payloads_identical": true,
+    "R8_model_visible_feedback_present_and_forbids_expansion": true,
+    "R8_one_HTTP200_attempt_and_zero_retry_preserved": true,
+    "R8_payload_has_one_digest_bound_gap_claim": true,
+    "next_fresh_frontier_is_Operating_draft": true,
+    "remaining_topology_exactly_six_calls": true,
+    "zero_model_provider_network_retrieval_calls": true
+  },
+  "demand_repaired_workpaper_digest": "2bf4dda093fcbed05970335fadb50e1aee07a761f7e2576f0c0a40bd43cff5c5",
+  "demand_submission_receipt": {
+    "agent_id": "AGENT::DEMAND_QUALITY",
+    "local_claim_authority_ceiling_receipts": [
+      {
+        "applied_from_digest_bound_validation_feedback": true,
+        "authority_expansion": false,
+        "claim_index": 9,
+        "claim_text_changed": false,
+        "effective_authority": "not_inferable",
+        "effective_claim_digest": "2c0b3b5f9fd2b7ffd2bbd12700b34757e3ab8f73e5e524193f3cd5d87937f7f7",
+        "matched_gap_refs": [
+          "GAP::00730082A5C08C4C"
+        ],
+        "receipt_digest": "73dd9b042dc1ef5cee0af17e098a3c87ecc1f1f9d57123c279fff0cf5c554c8e",
+        "reference_sets_changed": false,
+        "schema_version": "fin_ia_specialist_claim_authority_ceiling_receipt_v1_0",
+        "submitted_authority": "bounded_inference",
+        "submitted_claim_digest": "84033e8de0ea1ff92cfe42b15427e75e1eadb847d37944767734c0da3a56120d"
+      }
+    ],
+    "locally_bound_fields": [
+      "agent_id",
+      "schema_version"
+    ],
+    "model_authority_label_ceiling_applied": true,
+    "model_judgment_changed": false,
+    "model_narrative_judgment_changed": false,
+    "model_owned_fields": [
+      "alternative_explanations",
+      "confidence",
+      "cross_role_challenges",
+      "mechanism",
+      "remaining_gap_refs",
+      "sourced_claims",
+      "stop_reason",
+      "strongest_counterarguments",
+      "thesis",
+      "what_would_change"
+    ],
+    "schema_version": "fin_ia_specialist_workpaper_submission_receipt_v1_0",
+    "submission_receipt_digest": "b52a4fe00d3ddcc87c9dfc5b59dac1b704ea90737350110a8af99b3ed69fdb02"
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retrieval_calls": 0
+  },
+  "execution_budget": {
+    "candidate_promotions": 0,
+    "current_product_pointer_mutations": 0,
+    "fallbacks": 0,
+    "lead_coordination_drafts": 1,
+    "lead_coordination_submissions": 1,
+    "locally_revalidated_demand_submissions": 1,
+    "maximum_external_source_network_calls": 0,
+    "maximum_lead_rounds": 1,
+    "maximum_new_model_calls": 6,
+    "maximum_new_retrieval_rounds": 0,
+    "maximum_new_role_repairs": 2,
+    "maximum_new_s1_s2_requests": 0,
+    "maximum_new_transport_attempts": 6,
+    "remaining_role_repair_drafts": 2,
+    "remaining_role_repair_submissions": 2,
+    "retries": 0
+  },
+  "failed_R7_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_authority_v1_1.json",
+  "failed_R7_authority_sha256": "52f3567de0cdf3e93c5bc0a70069af62f2ab3c030940e38f9eacac9527585022",
+  "failed_R7_private_full_result_digest": "59996224b520a4bbac507cd36981aacb9dd5fe15254f04b7900a29b5dd194b88",
+  "failed_R7_private_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-content-repair-live-r7-20260824T001000Z/full_result.json",
+  "failed_R7_private_sha256": "de59e64685fbe5a660ff28ea9a2e68e42dbaccd54bab1324d9a81b1876d3faad",
+  "failed_R7_public_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_result_v1_1.json",
+  "failed_R7_public_result_digest": "7ea5d5aadde402b08d069464c7c62921da61b9acd4d4a608beb0acc111c41a55",
+  "failed_R7_public_sha256": "baa4c919ec42e94d7643edea28fcdea3cee0ffc8c9707eb46fc7ff6a51b6c196",
+  "failed_R8_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_authority_v1_2.json",
+  "failed_R8_authority_sha256": "4bd8b4eb2e70c72f5fa93d82974fcc3261e6b8d7d94c0c9d5128d33fcf8db483",
+  "failed_R8_private_full_result_digest": "ed2946c25488c03f526bde657d55b00abe0f3099229707288694c5f7eeddef2b",
+  "failed_R8_private_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-content-repair-live-r8-20260823T175423Z/full_result.json",
+  "failed_R8_private_sha256": "408bf91e390ccc0fe3a50591cf2a4d80f66e5091c29819c077b75ff9882822f7",
+  "failed_R8_public_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_result_v1_2.json",
+  "failed_R8_public_result_digest": "7a11a025453dd7480cbef9939594f732a25c1233cc736970c64221cdda882923",
+  "failed_R8_public_sha256": "fe0f1ab2d41124f7874ac395cebb2d5d6fe2f46ca1b4c6f9db2f1f4f89130ff3",
+  "first_fresh_provider_frontier": "FIN013-S3-DELL-CONTENT-REPAIR-R9-AUTHORITY-CEILING-ZERO-CALL-FRONTIER-operating-performance-repair-r4-draft",
+  "next_exact_frontier": "Operating_Value_then_Lead",
+  "precise_authority_ceiling_feedback": [
+    {
+      "authority_expansion_allowed": false,
+      "corrective_action": "Keep the claim text, remaining gap and all reference arrays unchanged; apply the deterministic not_inferable authority ceiling without adding any research authority.",
+      "error_code": "multi_agent_workpaper_claim_unbound",
+      "rejected_claim_digest": "84033e8de0ea1ff92cfe42b15427e75e1eadb847d37944767734c0da3a56120d",
+      "rejected_surface": "sourced_claims[9] is a gap-bound bounded_inference with no Evidence, NumericFact or Relation ref.",
+      "required_effective_authority": "not_inferable"
+    }
+  ],
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/FIN013-S3-DELL-CONTENT-REPAIR-R9-AUTHORITY-CEILING-ZERO-CALL/zero_call_content_repair_authority_ceiling_resume_full_result.json",
+  "private_result_sha256": "f90189f31955b60b2fa565c5145ef894b2145d055a20000037a2ed0a16dab0cd",
+  "recorded_at": "2026-08-23T18:13:09+00:00",
+  "result_digest": "af6f5881a780d24cc57aa0eee653c69490afc0e68429c79e1afd74c2840e0ab8",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_zero_call_v1_0",
+  "status": "content_repair_authority_ceiling_resume_zero_call_proven"
+}

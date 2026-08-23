@@ -3950,13 +3950,27 @@ def specialist_workpaper_tool(
                         "type": "array",
                         "minItems": 1,
                         "maxItems": 10,
+                        "description": (
+                            "Each sourced_fact or bounded_inference claim must carry "
+                            "at least one authorized Evidence, NumericFact or Relation "
+                            "ref. An unresolved boundary with no such ref must use "
+                            "not_inferable or remain only in remaining_gap_refs."
+                        ),
                         "items": {
                             "type": "object",
                             "additionalProperties": False,
                             "required": ["claim", "authority", "evidence_refs", "numeric_refs", "numeric_relation_refs"],
                             "properties": {
                                 "claim": {"type": "string", "minLength": 12, "maxLength": 900},
-                                "authority": {"type": "string", "enum": ["sourced_fact", "bounded_inference", "not_inferable"]},
+                                "authority": {
+                                    "type": "string",
+                                    "enum": ["sourced_fact", "bounded_inference", "not_inferable"],
+                                    "description": (
+                                        "sourced_fact and bounded_inference require at "
+                                        "least one authorized ref; select not_inferable "
+                                        "for a gap-bound statement with zero authority refs."
+                                    ),
+                                },
                                 "evidence_refs": ref_array(evidence_refs),
                                 "numeric_refs": ref_array(numeric_refs),
                                 "numeric_relation_refs": ref_array(relation_refs),
@@ -4078,6 +4092,194 @@ def bind_specialist_workpaper_submission(
     }
 
 
+def _normalize_specialist_workpaper_submission_feedback(
+    validation_feedback: Sequence[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    normalized: list[dict[str, Any]] = []
+    base_fields = {
+        "error_code",
+        "rejected_surface",
+        "corrective_action",
+        "authority_expansion_allowed",
+    }
+    ceiling_fields = {
+        *base_fields,
+        "rejected_claim_digest",
+        "required_effective_authority",
+    }
+    for row in validation_feedback:
+        fields = set(row) if isinstance(row, Mapping) else set()
+        precise_ceiling = fields == ceiling_fields
+        _require(
+            isinstance(row, Mapping)
+            and (fields == base_fields or fields == ceiling_fields)
+            and len(str(row.get("error_code") or "").strip()) >= 8
+            and len(str(row.get("rejected_surface") or "").strip()) >= 12
+            and len(str(row.get("corrective_action") or "").strip()) >= 20
+            and row.get("authority_expansion_allowed") is False
+            and (
+                not precise_ceiling
+                or (
+                    len(str(row.get("rejected_claim_digest") or "")) == 64
+                    and row.get("required_effective_authority")
+                    == "not_inferable"
+                )
+            ),
+            "multi_agent_workpaper_submission_feedback_invalid",
+        )
+        normalized.append(deepcopy(dict(row)))
+    return normalized
+
+
+def compile_specialist_claim_authority_ceiling_feedback(
+    payload: Mapping[str, Any],
+) -> tuple[dict[str, Any], ...]:
+    """Bind one gap-backed, unreferenced bounded claim to a fail-down repair."""
+
+    value = deepcopy(dict(payload))
+    gaps = {
+        str(ref)
+        for ref in value.get("remaining_gap_refs") or ()
+        if str(ref).strip()
+    }
+    candidates: list[tuple[int, dict[str, Any], list[str]]] = []
+    for index, raw in enumerate(value.get("sourced_claims") or ()):
+        if not isinstance(raw, Mapping):
+            continue
+        claim = deepcopy(dict(raw))
+        refs = [
+            str(ref)
+            for field in (
+                "evidence_refs",
+                "numeric_refs",
+                "numeric_relation_refs",
+            )
+            for ref in claim.get(field) or ()
+        ]
+        claim_text = str(claim.get("claim") or "")
+        matched_gaps = sorted(ref for ref in gaps if ref in claim_text)
+        if (
+            claim.get("authority") == "bounded_inference"
+            and not refs
+            and matched_gaps
+        ):
+            candidates.append((index, claim, matched_gaps))
+    _require(
+        len(candidates) == 1,
+        "multi_agent_workpaper_authority_ceiling_candidate_invalid",
+    )
+    index, claim, _ = candidates[0]
+    return (
+        {
+            "error_code": "multi_agent_workpaper_claim_unbound",
+            "rejected_surface": (
+                f"sourced_claims[{index}] is a gap-bound bounded_inference "
+                "with no Evidence, NumericFact or Relation ref."
+            ),
+            "corrective_action": (
+                "Keep the claim text, remaining gap and all reference arrays "
+                "unchanged; apply the deterministic not_inferable authority "
+                "ceiling without adding any research authority."
+            ),
+            "authority_expansion_allowed": False,
+            "rejected_claim_digest": canonical_digest(claim),
+            "required_effective_authority": "not_inferable",
+        },
+    )
+
+
+def _apply_specialist_claim_authority_ceiling(
+    payload: Mapping[str, Any],
+    *,
+    validation_feedback: Sequence[Mapping[str, Any]],
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    value = deepcopy(dict(payload))
+    normalized_feedback = _normalize_specialist_workpaper_submission_feedback(
+        validation_feedback
+    )
+    precise = [
+        row
+        for row in normalized_feedback
+        if set(row)
+        == {
+            "error_code",
+            "rejected_surface",
+            "corrective_action",
+            "authority_expansion_allowed",
+            "rejected_claim_digest",
+            "required_effective_authority",
+        }
+    ]
+    if not precise:
+        return value, []
+    _require(
+        len(precise) == 1
+        and precise[0]["error_code"]
+        == "multi_agent_workpaper_claim_unbound",
+        "multi_agent_workpaper_authority_ceiling_feedback_invalid",
+    )
+    target_digest = str(precise[0]["rejected_claim_digest"])
+    gaps = {
+        str(ref)
+        for ref in value.get("remaining_gap_refs") or ()
+        if str(ref).strip()
+    }
+    matched: list[tuple[int, dict[str, Any], list[str]]] = []
+    claims = value.get("sourced_claims")
+    if isinstance(claims, list):
+        for index, raw in enumerate(claims):
+            if not isinstance(raw, Mapping):
+                continue
+            claim = deepcopy(dict(raw))
+            refs = [
+                str(ref)
+                for field in (
+                    "evidence_refs",
+                    "numeric_refs",
+                    "numeric_relation_refs",
+                )
+                for ref in claim.get(field) or ()
+            ]
+            claim_text = str(claim.get("claim") or "")
+            matched_gaps = sorted(ref for ref in gaps if ref in claim_text)
+            if (
+                canonical_digest(claim) == target_digest
+                and claim.get("authority") == "bounded_inference"
+                and not refs
+                and matched_gaps
+            ):
+                matched.append((index, claim, matched_gaps))
+    _require(
+        len(matched) == 1,
+        "multi_agent_workpaper_authority_ceiling_binding_invalid",
+    )
+    index, before, matched_gaps = matched[0]
+    after = deepcopy(before)
+    after["authority"] = "not_inferable"
+    value["sourced_claims"][index] = after
+    receipt_body = {
+        "schema_version": (
+            "fin_ia_specialist_claim_authority_ceiling_receipt_v1_0"
+        ),
+        "claim_index": index,
+        "submitted_claim_digest": canonical_digest(before),
+        "effective_claim_digest": canonical_digest(after),
+        "submitted_authority": "bounded_inference",
+        "effective_authority": "not_inferable",
+        "matched_gap_refs": matched_gaps,
+        "claim_text_changed": False,
+        "reference_sets_changed": False,
+        "authority_expansion": False,
+        "applied_from_digest_bound_validation_feedback": True,
+    }
+    return value, [
+        {
+            **receipt_body,
+            "receipt_digest": canonical_digest(receipt_body),
+        }
+    ]
+
+
 def compile_specialist_workpaper_submission_messages(
     *,
     context: Mapping[str, Any],
@@ -4104,28 +4306,20 @@ def compile_specialist_workpaper_submission_messages(
         ],
     }
     if validation_feedback:
-        normalized_feedback: list[dict[str, Any]] = []
-        for row in validation_feedback:
-            _require(
-                isinstance(row, Mapping)
-                and set(row)
-                == {
-                    "error_code",
-                    "rejected_surface",
-                    "corrective_action",
-                    "authority_expansion_allowed",
-                }
-                and len(str(row.get("error_code") or "").strip()) >= 8
-                and len(str(row.get("rejected_surface") or "").strip()) >= 12
-                and len(str(row.get("corrective_action") or "").strip()) >= 20
-                and row.get("authority_expansion_allowed") is False,
-                "multi_agent_workpaper_submission_feedback_invalid",
+        normalized_feedback = (
+            _normalize_specialist_workpaper_submission_feedback(
+                validation_feedback
             )
-            normalized_feedback.append(deepcopy(dict(row)))
+        )
         visible["prior_submission_feedback"] = normalized_feedback
         visible["rules"].append(
             "Apply the prior local validation feedback without adding authority or changing the source draft's financial judgment."
         )
+    visible["rules"].append(
+        "Every sourced_fact or bounded_inference claim must carry at least one "
+        "Evidence, NumericFact or Relation ref. A zero-ref unresolved boundary "
+        "must be not_inferable or remain only in remaining_gap_refs."
+    )
     return (
         {
             "role": "system",
@@ -4149,10 +4343,34 @@ def validate_specialist_workpaper_submission(
     *,
     context: Mapping[str, Any],
     expected_agent_id: str,
+    validation_feedback: Sequence[Mapping[str, Any]] = (),
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    bound, receipt = bind_specialist_workpaper_submission(
-        payload, agent_id=expected_agent_id
+    effective_payload, ceiling_receipts = (
+        _apply_specialist_claim_authority_ceiling(
+            payload,
+            validation_feedback=validation_feedback,
+        )
     )
+    bound, receipt = bind_specialist_workpaper_submission(
+        effective_payload, agent_id=expected_agent_id
+    )
+    if ceiling_receipts:
+        receipt_body = {
+            key: deepcopy(value)
+            for key, value in receipt.items()
+            if key != "submission_receipt_digest"
+        }
+        receipt_body.update(
+            {
+                "model_narrative_judgment_changed": False,
+                "model_authority_label_ceiling_applied": True,
+                "local_claim_authority_ceiling_receipts": ceiling_receipts,
+            }
+        )
+        receipt = {
+            **receipt_body,
+            "submission_receipt_digest": canonical_digest(receipt_body),
+        }
     return (
         validate_specialist_workpaper(
             bound, context=context, expected_agent_id=expected_agent_id
@@ -7401,6 +7619,7 @@ __all__ = [
     "compile_specialist_plan_checkpoint",
     "compile_specialist_workpaper_checkpoint",
     "compile_specialist_workpaper_messages",
+    "compile_specialist_claim_authority_ceiling_feedback",
     "compile_specialist_workpaper_submission_messages",
     "compile_token_budget_basis",
     "merge_analysis_draft_fragments",

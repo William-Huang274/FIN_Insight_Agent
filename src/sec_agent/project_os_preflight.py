@@ -51,6 +51,7 @@ from sec_agent.research.dynamic_single_unit_loop import (
 )
 from sec_agent.research.multi_agent_content_repair import (
     CONTENT_ASSESSMENT_SCHEMA_VERSION,
+    expected_content_repair_authority_ceiling_resume_budget,
     expected_content_repair_budget,
     expected_content_repair_submission_resume_budget,
 )
@@ -205,11 +206,20 @@ CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUBMISSION_RESUME_DECISION_SCHEMA = (
 CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUBMISSION_RESUME_DECISION_STATUS = (
     "R7_partial_content_repair_preserved_R8_exact_submission_resume_authorized"
 )
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_DECISION_SCHEMA = (
+    "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_scope_decision_v1_0"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_DECISION_STATUS = (
+    "R8_repeat_mapper_failure_preserved_R9_authority_ceiling_resume_authorized"
+)
 CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SCOPE = (
     "one_clean_authorized_five_role_content_repair_and_Lead_recheck"
 )
 CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUBMISSION_RESUME_SCOPE = (
     "one_R7_bound_submission_resume_then_remaining_role_repairs_and_Lead"
+)
+CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_SCOPE = (
+    "one_R8_bound_authority_ceiling_resume_then_Operating_Value_and_Lead"
 )
 DYNAMIC_FIVE_CELL_DECISION_SCHEMA = (
     "fin_ia_s3_dynamic_five_cell_live_scope_decision_v1_0"
@@ -578,6 +588,7 @@ def _validate_fixed_pack_decision(
         CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_SCHEMA,
         CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUCCESSOR_DECISION_SCHEMA,
         CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUBMISSION_RESUME_DECISION_SCHEMA,
+        CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_DECISION_SCHEMA,
     }:
         return _validate_current_dynamic_multi_agent_content_repair_decision(
             root=root,
@@ -7149,9 +7160,361 @@ def _validate_current_dynamic_multi_agent_content_repair_submission_resume_decis
     }
 
 
+def _validate_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_decision(
+    *, root: Path, decision: Mapping[str, Any]
+) -> dict[str, Any]:
+    expected_equal = {
+        "schema_version": (
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_DECISION_SCHEMA
+        ),
+        "status": (
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_DECISION_STATUS
+        ),
+        "case_key": "DELL",
+        "cell_id": "MULTI_AGENT::DELL::CONTENT_REPAIR",
+        "run_scope_id": (
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_SCOPE
+        ),
+        "evidence_mode": (
+            "immutable_R5_R7_R8_and_digest_bound_Demand_authority_ceiling_zero_new_evidence"
+        ),
+        "next_authorized_scope": (
+            CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_SCOPE
+        ),
+        "replacement_is_new_attempt_not_retry": True,
+        "content_repair_live_authorized": True,
+        "credential_presence_required": True,
+        "immutable_R5_predecessor_required": True,
+        "failed_R7_required": True,
+        "failed_R8_required": True,
+        "R8_one_provider_zero_retry_required": True,
+        "digest_bound_authority_ceiling_required": True,
+        "authority_ceiling_zero_call_proof_required": True,
+        "fresh_R9_authority_required": True,
+        "exact_two_remaining_role_repairs_required": True,
+        "demand_local_revalidation_reuse_required": True,
+        "supply_workpaper_reuse_required": True,
+        "authority_sets_unchanged_required": True,
+        "one_natural_lead_recheck_required": True,
+        "independent_reassessment_required": True,
+        "provider_neutral_semantic_contract_required": True,
+        "new_S1_S2_authorized": False,
+        "external_source_network_authorized": False,
+        "candidate_promotion_authorized": False,
+        "writer_authorized": False,
+        "S3_acceptance_authorized": False,
+        "heterogeneous_generalization_authorized": False,
+        "product_publication_authorized": False,
+        "release_authorized": False,
+    }
+    if any(decision.get(key) != value for key, value in expected_equal.items()):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_"
+            "authority_ceiling_resume_identity_invalid"
+        )
+    expected_budget = expected_content_repair_authority_ceiling_resume_budget()
+    if dict(decision.get("execution_budget") or {}) != expected_budget:
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_"
+            "authority_ceiling_resume_budget_invalid"
+        )
+    if tuple(decision.get("new_repair_agent_ids") or ()) != (
+        "AGENT::OPERATING_PERFORMANCE",
+        "AGENT::VALUE_CAPTURE",
+    ) or tuple(decision.get("reused_repair_agent_ids") or ()) != (
+        "AGENT::CASH_CONVERSION",
+        "AGENT::COUNTEREVIDENCE",
+        "AGENT::DEMAND_QUALITY",
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_"
+            "authority_ceiling_resume_target_invalid"
+        )
+    _, zero = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="zero_call_result_ref",
+        sha_field="zero_call_result_sha256",
+        digest_field="zero_call_result_digest",
+    )
+    _, predecessor_public = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_public_result_ref",
+        sha_field="predecessor_public_result_sha256",
+        digest_field="predecessor_public_result_digest",
+    )
+    predecessor_private_path, predecessor_private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="predecessor_private_result_ref",
+        sha_field="predecessor_private_result_sha256",
+        digest_field="predecessor_private_full_result_digest",
+        artifact_digest_field="full_result_digest",
+    )
+    _, assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="assessment_ref",
+        sha_field="assessment_sha256",
+    )
+    _, failed_r7_authority = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_R7_authority_ref",
+        sha_field="failed_R7_authority_sha256",
+    )
+    _, failed_r7_public = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_R7_public_ref",
+        sha_field="failed_R7_public_sha256",
+        digest_field="failed_R7_public_result_digest",
+    )
+    failed_r7_private_path, failed_r7_private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_R7_private_ref",
+        sha_field="failed_R7_private_sha256",
+        digest_field="failed_R7_private_full_result_digest",
+        artifact_digest_field="full_result_digest",
+    )
+    _, failed_r8_authority = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_R8_authority_ref",
+        sha_field="failed_R8_authority_sha256",
+    )
+    _, failed_r8_public = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_R8_public_ref",
+        sha_field="failed_R8_public_sha256",
+        digest_field="failed_R8_public_result_digest",
+    )
+    failed_r8_private_path, failed_r8_private = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_R8_private_ref",
+        sha_field="failed_R8_private_sha256",
+        digest_field="failed_R8_private_full_result_digest",
+        artifact_digest_field="full_result_digest",
+    )
+    _, failure_assessment = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="failed_R8_assessment_ref",
+        sha_field="failed_R8_assessment_sha256",
+    )
+    failure_code = "multi_agent_workpaper_claim_unbound"
+    r8_manifest = failed_r8_private.get("capture_manifest") or []
+    if not (
+        predecessor_public.get("status")
+        == "completed_contract_valid_assessment_pending"
+        and predecessor_private.get("status")
+        == "completed_contract_valid_assessment_pending"
+        and predecessor_public.get("private_full_result_sha256")
+        == _sha256(predecessor_private_path)
+        and assessment.get("schema_version") == CONTENT_ASSESSMENT_SCHEMA_VERSION
+        and assessment.get("status")
+        == "dynamic_multi_agent_contract_pass_financial_truth_and_evidence_authority_fail_writer_not_eligible"
+        and len(assessment.get("material_findings") or ()) == 7
+        and failed_r7_authority.get("schema_version")
+        == "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_v1_0"
+        and failed_r7_authority.get("status")
+        == "signed_exact_once_DELL_current_dynamic_multi_agent_content_repair"
+        and failed_r7_public.get("status")
+        == "terminal_partial_local_contract_failure_preserved"
+        and failed_r7_private.get("status")
+        == "terminal_partial_local_contract_failure_preserved"
+        and failed_r7_public.get("private_full_result_sha256")
+        == _sha256(failed_r7_private_path)
+        and failed_r7_private.get("authority_sha256")
+        == str(decision["failed_R7_authority_sha256"])
+        and (failed_r7_private.get("execution") or {}).get(
+            "new_provider_calls_attempted"
+        )
+        == 6
+        and (failed_r7_private.get("execution") or {}).get(
+            "reusable_semantic_nodes"
+        )
+        == 5
+        and failed_r8_authority.get("schema_version")
+        == "fin_ia_s3_current_dynamic_multi_agent_content_repair_authority_v1_1"
+        and failed_r8_authority.get("status")
+        == "signed_exact_once_DELL_current_dynamic_multi_agent_content_repair_submission_resume"
+        and failed_r8_public.get("status")
+        == "terminal_partial_content_repair_failure_preserved"
+        and failed_r8_private.get("status")
+        == "terminal_partial_content_repair_failure_preserved"
+        and failed_r8_public.get("private_full_result_sha256")
+        == _sha256(failed_r8_private_path)
+        and failed_r8_private.get("authority_sha256")
+        == str(decision["failed_R8_authority_sha256"])
+        and (failed_r8_public.get("failure") or {}).get("code")
+        == failure_code
+        and (failed_r8_private.get("failure") or {}).get("code")
+        == failure_code
+        and (failed_r8_private.get("execution") or {}).get(
+            "new_provider_calls_attempted"
+        )
+        == 1
+        and (failed_r8_private.get("execution") or {}).get(
+            "new_provider_http_200"
+        )
+        == 1
+        and (failed_r8_private.get("execution") or {}).get("retries") == 0
+        and isinstance(r8_manifest, list)
+        and len(r8_manifest) == 1
+        and failure_assessment.get("status")
+        == "R8_one_call_repeat_mapper_noncompliance_preserved_digest_bound_authority_ceiling_successor_proven"
+        and (failure_assessment.get("rejected_claim") or {}).get(
+            "claim_digest"
+        )
+        == "84033e8de0ea1ff92cfe42b15427e75e1eadb847d37944767734c0da3a56120d"
+        and zero.get("status")
+        == "content_repair_authority_ceiling_resume_zero_call_proven"
+        and all((zero.get("checks") or {}).values())
+        and (zero.get("execution") or {}).get("model_calls") == 0
+        and (zero.get("execution") or {}).get("provider_calls") == 0
+        and zero.get("failed_R7_public_result_digest")
+        == failed_r7_public.get("result_digest")
+        and zero.get("failed_R7_private_full_result_digest")
+        == failed_r7_private.get("full_result_digest")
+        and zero.get("failed_R8_public_result_digest")
+        == failed_r8_public.get("result_digest")
+        and zero.get("failed_R8_private_full_result_digest")
+        == failed_r8_private.get("full_result_digest")
+        and len(zero.get("accepted_capture_manifest") or ()) == 6
+        and dict(zero.get("execution_budget") or {}) == expected_budget
+        and (zero.get("demand_submission_receipt") or {}).get(
+            "model_authority_label_ceiling_applied"
+        )
+        is True
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_"
+            "authority_ceiling_resume_chain_invalid"
+        )
+    for ref_field, sha_field in (
+        ("runner_ref", "runner_sha256"),
+        ("content_repair_runtime_ref", "content_repair_runtime_sha256"),
+        ("role_loop_runtime_ref", "role_loop_runtime_sha256"),
+        ("multi_agent_runtime_ref", "multi_agent_runtime_sha256"),
+    ):
+        bound_path = _repo_path(root, str(decision.get(ref_field) or ""))
+        if _sha256(bound_path) != str(decision.get(sha_field) or ""):
+            raise ValueError(
+                "project_os_current_dynamic_multi_agent_content_repair_"
+                f"authority_ceiling_resume_runtime_sha_drift:{ref_field}"
+            )
+    _, profile = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="provider_profile_ref",
+        sha_field="provider_profile_sha256",
+    )
+    _, submission = _validate_artifact_binding(
+        root=root,
+        decision=decision,
+        ref_field="submission_profile_ref",
+        sha_field="submission_profile_sha256",
+    )
+    if not (
+        profile.get("provider_id") == "deepseek"
+        and profile.get("model") == "deepseek-v4-pro"
+        and profile.get("base_url") == "https://api.deepseek.com"
+        and profile.get("endpoint") == "/chat/completions"
+        and profile.get("request_defaults")
+        == {
+            "max_tokens": 32000,
+            "stream": False,
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": "max",
+        }
+        and (profile.get("authority") or {}).get("retry_count") == 0
+        and submission.get("provider_id") == "deepseek"
+        and submission.get("model") == "deepseek-v4-pro"
+        and submission.get("base_url") == "https://api.deepseek.com"
+        and submission.get("endpoint") == "/chat/completions"
+        and submission.get("request_defaults")
+        == {
+            "max_tokens": 8000,
+            "stream": False,
+            "thinking": {"type": "disabled"},
+        }
+        and (submission.get("authority") or {}).get("retry_count") == 0
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_"
+            "authority_ceiling_resume_profile_invalid"
+        )
+    token_basis = decision.get("token_budget_basis")
+    required_nodes = {
+        "remaining_role_repair_analysis": 2,
+        "remaining_role_repair_submission": 2,
+        "lead_recheck_analysis": 1,
+        "lead_recheck_submission": 1,
+    }
+    required_fields = {
+        "node_purpose",
+        "input_scale",
+        "required_outputs",
+        "schema_burden",
+        "materiality_quality_risk",
+        "comparable_run_evidence",
+        "reasoning_profile",
+        "stop_and_truncation_behavior",
+        "maximum_calls",
+    }
+    if not (
+        isinstance(token_basis, Mapping)
+        and set(token_basis) == set(required_nodes)
+        and all(
+            isinstance(token_basis[node], Mapping)
+            and set(token_basis[node]) == required_fields
+            and token_basis[node].get("maximum_calls") == maximum_calls
+            and all(
+                len(str(token_basis[node].get(field) or "").strip()) >= 12
+                for field in required_fields - {"maximum_calls"}
+            )
+            for node, maximum_calls in required_nodes.items()
+        )
+        and sum(required_nodes.values())
+        == expected_budget["maximum_new_model_calls"]
+    ):
+        raise ValueError(
+            "project_os_current_dynamic_multi_agent_content_repair_"
+            "authority_ceiling_resume_token_basis_invalid"
+        )
+    return {
+        "clean_proof_status": zero["status"],
+        "provider_id": profile["provider_id"],
+        "provider_model": profile["model"],
+        "api_key_env": profile["api_key_env"],
+        "recent_provider_steps": 7,
+        "current_dynamic_multi_agent_content_repair": True,
+        "current_dynamic_multi_agent_content_repair_authority_ceiling_resume": True,
+        "run_scope_id": decision["run_scope_id"],
+        "execution_limits": expected_budget,
+        "node_profiles": token_basis,
+        "failed_R8_code": failure_code,
+        "failed_R8_provider_calls": 1,
+        "authority_ceiling_resume_zero_call_status": zero["status"],
+    }
+
+
 def _validate_current_dynamic_multi_agent_content_repair_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if (
+        decision.get("schema_version")
+        == CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_DECISION_SCHEMA
+    ):
+        return _validate_current_dynamic_multi_agent_content_repair_authority_ceiling_resume_decision(
+            root=root,
+            decision=decision,
+        )
     if (
         decision.get("schema_version")
         == CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_SUBMISSION_RESUME_DECISION_SCHEMA
@@ -12353,6 +12716,15 @@ def build_preflight(
             "RC-S3-079-company-gross-margin-used-as-necessary-test-of-product-pricing-power",
             "RC-S3-080-demand-context-promoted-to-definite-pull-forward-and-digestion",
         }
+        if decision_projection.get(
+            "current_dynamic_multi_agent_content_repair_authority_ceiling_resume"
+        ) is True:
+            required_allowances.update(
+                {
+                    "RC-S3-083-demand-strict-mapper-emitted-unbound-bounded-inference",
+                    "RC-S3-085-r8-mapper-repeated-unbound-claim-and-runtime-lacked-digest-bound-authority-ceiling",
+                }
+            )
         if not required_allowances.issubset(
             set(scope_projection["explicit_allow_issue_ids"])
         ):
@@ -12510,6 +12882,34 @@ def build_preflight(
         is True
     ):
         if decision_projection.get(
+            "current_dynamic_multi_agent_content_repair_authority_ceiling_resume"
+        ) is True:
+            known_boundary = (
+                "This current-baseline preflight preserves immutable R5, the "
+                "consumed R7 six-call terminal and the consumed R8 one-call "
+                "terminal. R8 received typed feedback but repeated the exact "
+                "unbound Demand claim. A zero-call successor binds that unique "
+                "claim digest to its existing gap and lowers only effective "
+                "authority from bounded_inference to not_inferable; claim text, "
+                "Evidence, NumericFact, Relation and gap refs remain unchanged. "
+                "Cash, Counterevidence and Demand repairs are reusable. It "
+                "authorizes only Operating and Value analysis plus strict "
+                "submission pairs and one Lead recheck pair: at most 6 new "
+                "Provider calls. It permits zero new S1/S2 request, retrieval "
+                "round, external source call, retry, fallback, Candidate "
+                "promotion or product-pointer mutation. Success still requires "
+                "independent L1/L2 and content reassessment and does not "
+                "authorize Writer, S3 acceptance, heterogeneous generalization, "
+                "Workbench publication or release."
+            )
+            required_terms = (
+                "consumed R8 one-call terminal",
+                "lowers only effective authority",
+                "at most 6 new Provider calls",
+                "zero new S1/S2 request",
+                "does not authorize Writer",
+            )
+        elif decision_projection.get(
             "current_dynamic_multi_agent_content_repair_submission_resume"
         ) is True:
             known_boundary = (

@@ -34,6 +34,7 @@ from sec_agent.research.multi_agent_preview import (
     compile_planner_payload_from_role_opinions,
     compile_report_messages,
     compile_role_evaluation_messages,
+    compile_specialist_claim_authority_ceiling_feedback,
     compile_specialist_plan_checkpoint,
     compile_specialist_repair_context,
     compile_specialist_workpaper_checkpoint,
@@ -1240,6 +1241,11 @@ def test_specialist_submission_binds_local_envelope_without_changing_judgment() 
     assert feedback_visible["prior_submission_feedback"][0][
         "authority_expansion_allowed"
     ] is False
+    assert "zero-ref unresolved boundary" in feedback_visible["rules"][-1]
+    authority_schema = parameters["properties"]["sourced_claims"]["items"][
+        "properties"
+    ]["authority"]
+    assert "zero authority refs" in authority_schema["description"]
 
     with pytest.raises(
         MultiAgentPreviewError,
@@ -1266,6 +1272,92 @@ def test_specialist_submission_binds_local_envelope_without_changing_judgment() 
         MultiAgentPreviewError, match="multi_agent_workpaper_local_envelope_overridden"
     ):
         bind_specialist_workpaper_submission(overridden, agent_id=agent_id)
+
+
+def test_digest_bound_claim_authority_ceiling_only_downgrades_metadata() -> None:
+    agent_id = "AGENT::DEMAND_QUALITY"
+    context = _context(agent_id)
+    payload = json.loads(json.dumps(_workpaper(agent_id)))
+    for field in (
+        "schema_version",
+        "agent_id",
+        "context_digest",
+        "workpaper_digest",
+    ):
+        payload.pop(field)
+    unbound = {
+        "claim": (
+            "当前证据不能量化后续消化路径；该信息边界由 "
+            "GAP::ONE 保留，不能升级为方向性结论。"
+        ),
+        "authority": "bounded_inference",
+        "evidence_refs": [],
+        "numeric_refs": [],
+        "numeric_relation_refs": [],
+    }
+    payload["sourced_claims"].append(unbound)
+
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_workpaper_claim_unbound",
+    ):
+        validate_specialist_workpaper_submission(
+            payload,
+            context=context,
+            expected_agent_id=agent_id,
+        )
+
+    feedback = compile_specialist_claim_authority_ceiling_feedback(payload)
+    assert feedback[0]["rejected_claim_digest"] == canonical_digest(unbound)
+    assert feedback[0]["required_effective_authority"] == "not_inferable"
+    assert feedback[0]["authority_expansion_allowed"] is False
+
+    validated, receipt = validate_specialist_workpaper_submission(
+        payload,
+        context=context,
+        expected_agent_id=agent_id,
+        validation_feedback=feedback,
+    )
+    effective = validated["sourced_claims"][-1]
+    assert effective["claim"] == unbound["claim"]
+    assert effective["authority"] == "not_inferable"
+    assert effective["evidence_refs"] == []
+    assert effective["numeric_refs"] == []
+    assert effective["numeric_relation_refs"] == []
+    assert validated["remaining_gap_refs"] == payload["remaining_gap_refs"]
+    assert receipt["model_judgment_changed"] is False
+    assert receipt["model_narrative_judgment_changed"] is False
+    assert receipt["model_authority_label_ceiling_applied"] is True
+    ceiling = receipt["local_claim_authority_ceiling_receipts"][0]
+    assert ceiling["submitted_authority"] == "bounded_inference"
+    assert ceiling["effective_authority"] == "not_inferable"
+    assert ceiling["matched_gap_refs"] == ["GAP::ONE"]
+    assert ceiling["claim_text_changed"] is False
+    assert ceiling["reference_sets_changed"] is False
+    assert ceiling["authority_expansion"] is False
+
+    drifted = json.loads(json.dumps(feedback))
+    drifted[0]["rejected_claim_digest"] = "0" * 64
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_workpaper_authority_ceiling_binding_invalid",
+    ):
+        validate_specialist_workpaper_submission(
+            payload,
+            context=context,
+            expected_agent_id=agent_id,
+            validation_feedback=drifted,
+        )
+
+    no_gap = json.loads(json.dumps(payload))
+    no_gap["sourced_claims"][-1]["claim"] = (
+        "当前证据不能量化后续消化路径，不能升级为方向性结论。"
+    )
+    with pytest.raises(
+        MultiAgentPreviewError,
+        match="multi_agent_workpaper_authority_ceiling_candidate_invalid",
+    ):
+        compile_specialist_claim_authority_ceiling_feedback(no_gap)
 
 
 def test_lead_submission_binds_local_envelope_and_preserves_partition() -> None:

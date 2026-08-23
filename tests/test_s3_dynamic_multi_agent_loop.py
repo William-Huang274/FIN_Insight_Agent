@@ -41,6 +41,8 @@ from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from scripts.research.run_s3_current_dynamic_multi_agent import (
     CONTENT_REPAIR_AUTHORITY_SCHEMA,
     CONTENT_REPAIR_AUTHORITY_STATUS,
+    CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_SCHEMA,
+    CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_STATUS,
     CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_SCHEMA,
     CONTENT_REPAIR_SUBMISSION_RESUME_AUTHORITY_STATUS,
     LIVE_AUTHORITY_SCHEMA,
@@ -55,6 +57,7 @@ from scripts.research.run_s3_current_dynamic_multi_agent import (
     _tool_draft,
     _tool_arguments,
     expected_content_repair_budget,
+    expected_content_repair_authority_ceiling_resume_budget,
     expected_content_repair_submission_resume_budget,
     expected_live_execution_budget,
     expected_submission_repair_resume_budget,
@@ -763,6 +766,314 @@ def test_content_repair_submission_resume_fake_runs_all_seven_fresh_nodes(
     assert (private_root / "full_result.json").is_file()
 
 
+def test_content_repair_authority_ceiling_resume_fake_runs_six_fresh_nodes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Replay the R8 Demand response locally, then run only six fresh nodes."""
+
+    r8_authority_ref = (
+        "configs/research/evals/"
+        "fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
+        "content_repair_live_authority_v1_2.json"
+    )
+    r8_authority = _load(r8_authority_ref)
+    bound = dict(r8_authority["bound_inputs"])
+    authority_path = tmp_path / "authority.json"
+    capture_root = tmp_path / "captures"
+    private_root = tmp_path / "private"
+    public_path = tmp_path / "public.json"
+    attempt_prefix = "ATTEMPT::R9-FAKE"
+    authority = {
+        "schema_version": (
+            CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_SCHEMA
+        ),
+        "status": CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_STATUS,
+        "signed_at": "2026-08-24T00:00:00Z",
+        "implementation_commit": "0" * 40,
+        "case_key": "DELL",
+        "execution_budget": (
+            expected_content_repair_authority_ceiling_resume_budget()
+        ),
+        "token_budget_basis": {},
+        "bound_inputs": {
+            "predecessor_public_ref": bound["predecessor_public_ref"],
+            "predecessor_private_ref": bound["predecessor_private_ref"],
+            "assessment_ref": bound["assessment_ref"],
+            "failed_r7_authority_ref": bound["failed_authority_ref"],
+            "failed_r7_public_ref": bound["failed_public_ref"],
+            "failed_r7_private_ref": bound["failed_private_ref"],
+            "failed_r8_authority_ref": r8_authority_ref,
+            "failed_r8_public_ref": (
+                "configs/research/evals/"
+                "fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
+                "content_repair_live_result_v1_2.json"
+            ),
+            "failed_r8_private_ref": (
+                "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/"
+                "dell-current-dynamic-multi-agent-content-repair-live-r8-"
+                "20260823T175423Z/full_result.json"
+            ),
+        },
+        "output_contract": {
+            "capture_root_ref": "__pytest_r9__/captures",
+            "private_output_root_ref": "__pytest_r9__/private",
+            "public_result_ref": "__pytest_r9__/public.json",
+            "run_id": "RUN::R9-FAKE",
+            "attempt_prefix": attempt_prefix,
+            "product_publication": "forbidden",
+        },
+        "known_boundary": (
+            "This fixture replays one digest-bound authority ceiling and then "
+            "exercises only the six remaining local execution nodes. It performs "
+            "no network, Provider, retrieval, publication or product acceptance."
+        ),
+    }
+    authority_path.write_text(
+        json.dumps(authority, ensure_ascii=False), encoding="utf-8"
+    )
+    paths = {
+        "predecessor_public_ref": ROOT / bound["predecessor_public_ref"],
+        "predecessor_private_ref": ROOT / bound["predecessor_private_ref"],
+        "assessment_ref": ROOT / bound["assessment_ref"],
+        "failed_r7_private_ref": ROOT / bound["failed_private_ref"],
+        "failed_r8_private_ref": ROOT
+        / authority["bound_inputs"]["failed_r8_private_ref"],
+        "provider_profile_ref": ROOT / bound["provider_profile_ref"],
+        "submission_profile_ref": ROOT / bound["submission_profile_ref"],
+    }
+    monkeypatch.setattr(
+        multi_agent_runner,
+        "validate_content_repair_authority",
+        lambda *_args, **_kwargs: paths,
+    )
+    original_resolve = multi_agent_runner._resolve_repo_ref
+    test_output_refs = {
+        "__pytest_r9__/captures": capture_root,
+        "__pytest_r9__/private": private_root,
+        "__pytest_r9__/public.json": public_path,
+    }
+
+    def resolve_test_ref(ref: str | Path) -> Path:
+        raw = str(ref)
+        if raw in test_output_refs:
+            return test_output_refs[raw]
+        return original_resolve(ref)
+
+    monkeypatch.setattr(multi_agent_runner, "_resolve_repo_ref", resolve_test_ref)
+    monkeypatch.setattr(
+        multi_agent_runner,
+        "_relative",
+        lambda path: Path(path).resolve().as_posix(),
+    )
+
+    attempts: list[str] = []
+
+    def research_executor(**kwargs: object) -> ChatCompletionToolStepResult:
+        attempt_id = str(kwargs["attempt_id"])
+        attempts.append(attempt_id)
+        tool = dict(list(kwargs["tools"])[0])
+        name = str(dict(tool["function"])["name"])
+        return _provider_step(
+            name=name,
+            arguments={"fixture_draft": f"local draft for {attempt_id}"},
+        )
+
+    def submission_executor(**kwargs: object) -> ChatCompletionToolStepResult:
+        attempt_id = str(kwargs["attempt_id"])
+        attempts.append(attempt_id)
+        tool = dict(list(kwargs["tools"])[0])
+        function = dict(tool["function"])
+        name = str(function["name"])
+        visible = json.loads(
+            str(dict(list(kwargs["messages"])[-1])["content"])
+        )
+        if name == SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME:
+            prior = deepcopy(
+                visible["validated_context"]["repair_state"]["prior_workpaper"]
+            )
+            for field in (
+                "schema_version",
+                "agent_id",
+                "context_digest",
+                "workpaper_digest",
+            ):
+                prior.pop(field, None)
+            prior["confidence"] = (
+                "low" if prior["confidence"] != "low" else "medium"
+            )
+            payload = prior
+        else:
+            assert name == "submit_lead_coordination_judgment"
+            properties = dict(function["parameters"])["properties"]
+            selectable = list(
+                dict(dict(properties["deferred_challenge_ids"])["items"]).get(
+                    "enum"
+                )
+                or ()
+            )
+            payload = {
+                "accepted_challenge_ids": [],
+                "deferred_challenge_ids": [
+                    value
+                    for value in selectable
+                    if str(value).startswith("CHALLENGE::")
+                ],
+                "coordination_rationale": (
+                    "The fixture defers the catalog to independent reassessment "
+                    "without adding facts or changing research authority."
+                ),
+                "next_state": "proceed_to_evaluation",
+            }
+        return _provider_step(name=name, arguments=payload)
+
+    result = multi_agent_runner.run_content_repair_live(
+        authority_path=authority_path,
+        research_executor=research_executor,
+        submission_executor=submission_executor,
+    )
+
+    assert attempts == [
+        f"{attempt_prefix}-operating-performance-repair-r4-draft",
+        f"{attempt_prefix}-operating-performance-repair-r4-submit",
+        f"{attempt_prefix}-value-capture-repair-r5-draft",
+        f"{attempt_prefix}-value-capture-repair-r5-submit",
+        f"{attempt_prefix}-lead-r1-draft",
+        f"{attempt_prefix}-lead-r1-submit",
+    ]
+    assert result["status"] == "completed_contract_valid_reassessment_pending"
+    assert result["execution"]["new_provider_calls_attempted"] == 6
+    assert result["execution"]["role_repairs_executed"] == 2
+    assert result["execution"]["role_repairs_reused"] == 3
+    assert result["claims"]["R8_terminal_preserved_immutable"] is True
+    assert result["claims"][
+        "exact_R8_bound_two_role_authority_ceiling_resume_scope"
+    ] is True
+    demand = next(
+        row
+        for row in result["role_summaries"]
+        if row["agent_id"] == "AGENT::DEMAND_QUALITY"
+    )
+    assert demand["workpaper"]["sourced_claims"][-1]["authority"] == (
+        "not_inferable"
+    )
+    assert public_path.is_file()
+    assert (private_root / "full_result.json").is_file()
+
+
+def test_content_repair_authority_ceiling_resume_validator_binds_full_chain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    scope_ref = (
+        "configs/research/evals/"
+        "fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_"
+        "content_repair_authority_ceiling_resume_scope_decision_v1_0.json"
+    )
+    scope = _load(scope_ref)
+
+    refs = {
+        "provider_profile": scope["provider_profile_ref"],
+        "submission_profile": scope["submission_profile_ref"],
+        "runner": scope["runner_ref"],
+        "loop_runtime": scope["role_loop_runtime_ref"],
+        "multi_agent_runtime": scope["multi_agent_runtime_ref"],
+        "content_repair_runtime": scope["content_repair_runtime_ref"],
+        "scope_decision": scope_ref,
+        "zero_call_result": scope["zero_call_result_ref"],
+        "predecessor_public": scope["predecessor_public_result_ref"],
+        "predecessor_private": scope["predecessor_private_result_ref"],
+        "assessment": scope["assessment_ref"],
+        "failed_r7_authority": scope["failed_R7_authority_ref"],
+        "failed_r7_public": scope["failed_R7_public_ref"],
+        "failed_r7_private": scope["failed_R7_private_ref"],
+        "failed_r8_authority": scope["failed_R8_authority_ref"],
+        "failed_r8_public": scope["failed_R8_public_ref"],
+        "failed_r8_private": scope["failed_R8_private_ref"],
+        "failed_r8_assessment": scope["failed_R8_assessment_ref"],
+    }
+    bound: dict[str, object] = {}
+    for name, ref in refs.items():
+        bound[f"{name}_ref"] = ref
+        bound[f"{name}_sha256"] = multi_agent_runner._sha256(ROOT / ref)
+    bound.update(
+        {
+            "zero_call_result_digest": scope["zero_call_result_digest"],
+            "predecessor_public_result_digest": scope[
+                "predecessor_public_result_digest"
+            ],
+            "predecessor_private_full_result_digest": scope[
+                "predecessor_private_full_result_digest"
+            ],
+            "failed_r7_public_result_digest": scope[
+                "failed_R7_public_result_digest"
+            ],
+            "failed_r7_private_full_result_digest": scope[
+                "failed_R7_private_full_result_digest"
+            ],
+            "failed_r8_public_result_digest": scope[
+                "failed_R8_public_result_digest"
+            ],
+            "failed_r8_private_full_result_digest": scope[
+                "failed_R8_private_full_result_digest"
+            ],
+        }
+    )
+    authority_path = tmp_path / "authority.json"
+    authority = {
+        "schema_version": CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_SCHEMA,
+        "status": CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_STATUS,
+        "signed_at": "2026-08-24T00:00:00+08:00",
+        "implementation_commit": "0" * 40,
+        "case_key": "DELL",
+        "execution_budget": expected_content_repair_authority_ceiling_resume_budget(),
+        "token_budget_basis": scope["token_budget_basis"],
+        "bound_inputs": bound,
+        "output_contract": {
+            "capture_root_ref": "__pytest_r9_validator__/captures",
+            "private_output_root_ref": "__pytest_r9_validator__/private",
+            "public_result_ref": "__pytest_r9_validator__/public.json",
+            "run_id": "RUN::R9-VALIDATOR",
+            "attempt_prefix": "ATTEMPT::R9-VALIDATOR",
+            "product_publication": "forbidden",
+        },
+        "known_boundary": (
+            "This validator fixture binds the complete immutable R7 and R8 chain, "
+            "the failure assessment and zero-call authority ceiling, while "
+            "authorizing no Provider, network, Writer, publication or release work."
+        ),
+    }
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    original_resolve = multi_agent_runner._resolve_repo_ref
+    output_refs = {
+        "__pytest_r9_validator__/private": tmp_path / "private",
+        "__pytest_r9_validator__/public.json": tmp_path / "public.json",
+    }
+
+    def resolve_test_ref(ref: str | Path) -> Path:
+        return output_refs.get(str(ref), original_resolve(ref))
+
+    monkeypatch.setattr(multi_agent_runner, "_resolve_repo_ref", resolve_test_ref)
+    git_hashes = {
+        str(ref): str(bound[f"{name}_sha256"])
+        for name, ref in refs.items()
+        if name
+        in {"runner", "loop_runtime", "multi_agent_runtime", "content_repair_runtime"}
+    }
+    monkeypatch.setattr(
+        multi_agent_runner,
+        "_git_blob_sha256",
+        lambda *, commit, ref: git_hashes[ref],
+    )
+
+    paths = validate_content_repair_authority(
+        authority, authority_path=authority_path.resolve()
+    )
+    assert paths["failed_r8_assessment_ref"] == ROOT / refs[
+        "failed_r8_assessment"
+    ]
+    assert paths["failed_r8_private_ref"] == ROOT / refs["failed_r8_private"]
+
+
 def test_content_repair_authority_rejects_budget_drift_before_execution(
     tmp_path: Path,
 ) -> None:
@@ -797,6 +1108,32 @@ def test_content_repair_submission_resume_authority_rejects_old_budget(
         "implementation_commit": "0" * 40,
         "case_key": "DELL",
         "execution_budget": expected_content_repair_budget(),
+        "token_budget_basis": {},
+        "bound_inputs": {},
+        "output_contract": {},
+        "known_boundary": "x" * 160,
+    }
+    path = tmp_path / "authority.json"
+    path.write_text(json.dumps(authority), encoding="utf-8")
+    with pytest.raises(
+        DynamicMultiAgentLoopError,
+        match="dynamic_multi_agent_content_repair_authority_invalid",
+    ):
+        validate_content_repair_authority(authority, authority_path=path.resolve())
+
+
+def test_content_repair_authority_ceiling_resume_rejects_seven_call_budget(
+    tmp_path: Path,
+) -> None:
+    authority = {
+        "schema_version": (
+            CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_SCHEMA
+        ),
+        "status": CONTENT_REPAIR_AUTHORITY_CEILING_RESUME_AUTHORITY_STATUS,
+        "signed_at": "2026-08-24T00:00:00Z",
+        "implementation_commit": "0" * 40,
+        "case_key": "DELL",
+        "execution_budget": expected_content_repair_submission_resume_budget(),
         "token_budget_basis": {},
         "bound_inputs": {},
         "output_contract": {},

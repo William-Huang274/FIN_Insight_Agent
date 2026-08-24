@@ -1,0 +1,95 @@
+{
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_R16_bounded_successor_scope_decision_v1_0",
+  "status": "approved_owner_bounded_zero_provider_text_successor",
+  "recorded_at": "2026-08-24",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_BOUNDED_SUCCESSOR_R16",
+  "case_key": "DELL",
+  "user_authorization_basis": "User authorized migration and continuation after independent audit and asked for a clean post-completion subagent review.",
+  "source_bindings": {
+    "R15_public_candidate": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_independent_takeover_candidate_result_v1_0.json",
+      "sha256": "c8b07af55aa0780a3c9b3e5a563ee9b092b20d4795129f4cdbe32386dc6826cb",
+      "digest_field": "result_digest",
+      "digest": "e0f76545375b477bc035869c25b87193fd831d63e9a73c9de95071a58680f4f8"
+    },
+    "R15_private_full_result": {
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-independent-takeover-r15/full_result.json",
+      "sha256": "7c1597e23914c47b460347ea4bb505e7e69575b1e392afb37cc215af57008082",
+      "digest_field": "full_result_digest",
+      "digest": "50ebe3dbb7cedcbc6e466c8fd264bafc558ab9ed24190782b6ed06a469bdfe23"
+    },
+    "R15_independent_review": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_independent_takeover_R15_independent_review_v1_0.json",
+      "sha256": "e11b5c71c916a3cf83871e71e8e5f9490875eba6bb99cf8be35bc9b078ff11a9"
+    },
+    "R10_authority_catalog": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_authority_catalog_v1_0.json",
+      "sha256": "fe33215f8d46a5fa9db422d8192ba3c18daf29563a7941ba6fe16808ce07a84b",
+      "digest_field": "authority_catalog_digest",
+      "digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765"
+    },
+    "R10_protection_contract": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_writer_protection_contract_v1_0.json",
+      "sha256": "e17b9526aa97951eb1b3ff2c026e3d38b51d4d78de447087e8907a06e46d247c",
+      "digest_field": "protection_digest",
+      "digest": "e81473c78211b163bbe87e3eaf0fae4e53e36f8d1d2a82fcc0bb1be7080a7b62"
+    }
+  },
+  "change_boundary": {
+    "allowed_changed_model_text_paths": [
+      "sections[1].clauses[0].model_text",
+      "sections[3].clauses[0].model_text",
+      "sections[4].clauses[4].model_text",
+      "sections[5].clauses[1].model_text",
+      "sections[5].clauses[5].model_text",
+      "what_would_change[1].model_text",
+      "what_would_change[5].model_text"
+    ],
+    "reference_changes_allowed": false,
+    "remaining_gap_changes_allowed": false,
+    "new_evidence_numeric_fact_relation_or_gap_authority_allowed": false,
+    "topology_changes_allowed": false,
+    "material_correction_required": [
+      "demand reversal requires material AI-linked persistent evidence evaluated under a predeclared threshold",
+      "product margin working-capital attribution and reconciled cash-flow conversion remain separate gates"
+    ],
+    "nonmaterial_corrections_required": [
+      "company revenue and profit co-growth is not a proved conversion",
+      "free cash flow is identified as deterministic non-GAAP OCF-minus-capex",
+      "absolute inventory balance is context rather than AI-risk corroboration",
+      "post-normalization order behavior helps distinguish rather than resolves competing explanations"
+    ]
+  },
+  "execution_budget": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 0,
+    "candidate_promotions": 0
+  },
+  "token_budget_basis": {
+    "node_purpose": "No model node is created; deterministic text substitution repairs seven independently identified financial-expression surfaces.",
+    "input_scale": "One immutable R15 candidate, one independent review receipt, and two protected-authority contracts.",
+    "required_outputs": "One private full result, one public receipt, exact change inventory, contract audit, trusted report, and deterministic rendering.",
+    "schema_burden": "Bind all source hashes and digests, preserve topology and every reference/gap inventory, and record zero-call execution.",
+    "materiality_quality_risk": "Unbounded reversal rules or stock-to-cash wording can invert a thesis or imply unsupported product cash conversion.",
+    "comparable_run_evidence": "R15 protected-contract pass plus its failed clean independent content review.",
+    "reasoning_profile": "deterministic_no_model_successor",
+    "stop_and_truncation": "Fail closed on any source drift, unauthorized path or reference change, contract finding, topology drift, or pre-existing output."
+  },
+  "output_contract": {
+    "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-bounded-successor-r16/full_result.json",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_R16_bounded_successor_candidate_result_v1_0.json",
+    "overwrite_existing_output_allowed": false
+  },
+  "acceptance_boundary": {
+    "local_protected_contract_pass_can_be_recomputed": true,
+    "independent_post_writer_review_pass": false,
+    "qualified_human_review_pass": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "decision_digest": "802bdd58198b71f5c89cf8d12b5e712a185dc7194965f5f1c02ae688470c13aa"
+}

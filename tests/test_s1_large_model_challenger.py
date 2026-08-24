@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from retrieval.large_model_challenger import evaluate_large_model_resource_gate
-from scripts.data_retrieval.materialize_s1_large_model_challenger_preflight import (
+from scripts.data_retrieval.materialize_s1_large_model_challenger_preflight_v2 import (
     _artifact_state,
 )
 
@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PROGRAM = json.loads(
     (
         ROOT
-        / "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_program_v1_0.json"
+        / "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_program_v1_1.json"
     ).read_text(encoding="utf-8")
 )
 
@@ -55,7 +55,7 @@ def test_suitable_profile_with_bound_models_is_attempt_eligible_not_authority() 
             "free_memory_bytes": 22 * 1024**3,
         },
         storage={"free_bytes": 30 * 1024**3},
-        model_artifacts=_artifacts("identity_bound"),
+        model_artifacts=_artifacts("identity_bound_v3"),
     )
 
     assert result["status"] == "eligible_for_preregistered_development_attempt"
@@ -69,10 +69,19 @@ def test_program_forbids_hidden_cost_and_runtime_promotion() -> None:
     split = PROGRAM["split_and_leakage_policy"]
     assert split["forbidden_case_keys"] == ["COST"]
     assert split["hidden_frozen_holdout_reference_loading_forbidden"] is True
+    assert (
+        split["historical_forbidden_case_diagnostics_as_execution_input_allowed"]
+        is False
+    )
+    assert "known_cost_r2_diagnostic" not in PROGRAM["hypothesis"]
     assert PROGRAM["authority"]["runtime_promotion_authorized"] is False
     assert PROGRAM["execution_order"][2] == (
         "candidate_ceiling_on_shared_development_corpus"
     )
+    identity = PROGRAM["artifact_identity_contract"]
+    assert identity["identity_contract_version"] == "local_model_identity_v3"
+    assert identity["exact_recursive_file_closure_required"] is True
+    assert identity["remote_code_and_nested_configs_bound"] is True
 
 
 def test_partial_local_artifact_returns_typed_blocker_instead_of_crashing(
@@ -95,17 +104,56 @@ def test_partial_local_artifact_returns_typed_blocker_instead_of_crashing(
         storage={"free_bytes": 30 * 1024**3},
         model_artifacts={
             "qwen3_embedding_4b": artifact,
-            "qwen3_reranker_4b": {"status": "identity_bound"},
+            "qwen3_reranker_4b": {"status": "identity_bound_v3"},
         },
     )
 
     assert artifact["status"] == "identity_invalid"
-    assert artifact["identity_error"].startswith(
-        "local_embedding_model_v2_incomplete:"
-    )
+    assert artifact["identity_error"] == "local_model_acquisition_manifest_missing"
     assert result["status"] == (
         "model_artifacts_missing_download_not_authorized_by_preflight"
     )
     assert result["artifact_blockers"] == [
-        "model_artifact_not_identity_bound:qwen3_embedding_4b:identity_invalid"
+        "model_artifact_not_identity_bound_v3:qwen3_embedding_4b:identity_invalid"
     ]
+
+
+def test_identity_v2_status_cannot_authorize_a_new_attempt() -> None:
+    result = evaluate_large_model_resource_gate(
+        PROGRAM,
+        hardware={
+            "cuda_available": True,
+            "total_memory_bytes": 24 * 1024**3,
+            "free_memory_bytes": 22 * 1024**3,
+        },
+        storage={"free_bytes": 30 * 1024**3},
+        model_artifacts=_artifacts("identity_bound"),
+    )
+
+    assert result["status"] == (
+        "model_artifacts_missing_download_not_authorized_by_preflight"
+    )
+    assert result["artifact_blockers"] == [
+        "model_artifact_not_identity_bound_v3:qwen3_embedding_4b:identity_bound",
+        "model_artifact_not_identity_bound_v3:qwen3_reranker_4b:identity_bound",
+    ]
+
+
+def test_program_without_exact_recursive_identity_contract_fails_closed() -> None:
+    invalid = dict(PROGRAM)
+    invalid["artifact_identity_contract"] = {
+        **PROGRAM["artifact_identity_contract"],
+        "exact_recursive_file_closure_required": False,
+    }
+
+    try:
+        evaluate_large_model_resource_gate(
+            invalid,
+            hardware={"cuda_available": True},
+            storage={"free_bytes": 30 * 1024**3},
+            model_artifacts=_artifacts("identity_bound_v3"),
+        )
+    except ValueError as exc:
+        assert str(exc) == "large_model_challenger_identity_contract_invalid"
+    else:
+        raise AssertionError("invalid identity contract must fail closed")

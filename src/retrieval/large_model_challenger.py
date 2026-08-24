@@ -3,7 +3,11 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 
-PROGRAM_SCHEMA_VERSION = "fin_ia_s1_large_model_challenger_program_v1_0"
+PROGRAM_SCHEMA_VERSION = "fin_ia_s1_large_model_challenger_program_v1_1"
+PROGRAM_STATUS = (
+    "preregistered_development_challenger_identity_v3_required"
+)
+IDENTITY_CONTRACT_VERSION = "local_model_identity_v3"
 
 
 def evaluate_large_model_resource_gate(
@@ -15,8 +19,20 @@ def evaluate_large_model_resource_gate(
 ) -> dict[str, Any]:
     if program.get("schema_version") != PROGRAM_SCHEMA_VERSION:
         raise ValueError("large_model_challenger_program_schema_invalid")
-    if program.get("status") != "preregistered_development_challenger":
+    if program.get("status") != PROGRAM_STATUS:
         raise ValueError("large_model_challenger_program_status_invalid")
+    identity_contract = program.get("artifact_identity_contract")
+    if not isinstance(identity_contract, Mapping) or not (
+        identity_contract.get("identity_contract_version")
+        == IDENTITY_CONTRACT_VERSION
+        and identity_contract.get("acquisition_manifest_required") is True
+        and identity_contract.get("expected_model_id_must_match_manifest") is True
+        and identity_contract.get("immutable_resolved_revision_required") is True
+        and identity_contract.get("exact_recursive_file_closure_required") is True
+        and identity_contract.get("remote_code_and_nested_configs_bound") is True
+        and identity_contract.get("extra_or_missing_files_fail_closed") is True
+    ):
+        raise ValueError("large_model_challenger_identity_contract_invalid")
     profile = program.get("execution_profile")
     if not isinstance(profile, Mapping):
         raise ValueError("large_model_challenger_execution_profile_invalid")
@@ -52,12 +68,12 @@ def evaluate_large_model_resource_gate(
     artifact_blockers: list[str] = []
     for key in required_model_keys:
         artifact_status = model_artifacts.get(key, {}).get("status")
-        if artifact_status == "identity_bound":
+        if artifact_status == "identity_bound_v3":
             continue
         artifact_blockers.append(
             f"model_artifact_absent:{key}"
             if artifact_status in {None, "absent"}
-            else f"model_artifact_not_identity_bound:{key}:{artifact_status}"
+            else f"model_artifact_not_identity_bound_v3:{key}:{artifact_status}"
         )
 
     if resource_blockers:
@@ -102,4 +118,9 @@ def evaluate_large_model_resource_gate(
     }
 
 
-__all__ = ["PROGRAM_SCHEMA_VERSION", "evaluate_large_model_resource_gate"]
+__all__ = [
+    "IDENTITY_CONTRACT_VERSION",
+    "PROGRAM_SCHEMA_VERSION",
+    "PROGRAM_STATUS",
+    "evaluate_large_model_resource_gate",
+]

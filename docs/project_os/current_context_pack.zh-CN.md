@@ -1639,3 +1639,24 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 原单请求 successor 已 resolved：FY2026 Q3 `2026-02-27→05-28`、FY2025 Q3 `2025-02-28→05-29`，旧截至 `2025-02-27` 区间不再冒充 Q3；3 个 NumericFact，0 model／Provider／network。
 - RC-S2-006 关闭；RC-S2-004、S2 stage qualification、S1/S3 acceptance、publication 和 release 保持开放／false。
 - 本次联合工程复证为定向 `59 passed`、全仓 `1188 passed`（仅两条既有 SWIG warning）、compileall、9 个变更 Python 文件 pyflakes、984 份 config JSON、8 份 Project OS JSONL／1122 行、active baseline `212／8／5／28／0`、Workbench typecheck／build、7862-file secret scan／0 和 diff check。第一次 `1185 passed／2 failed` 的 frozen-runtime digest 漂移已作为 immutable failure receipt 保存，未修改旧策略哈希；v1 byte-exact 恢复、v2 identity 后继与 `RC-S1-057` 关闭。
+
+### 2026-08-24 独立审计更正：S1 identity v2 不得签发未来 4B attempt
+
+- `635c943f...` 的 8GB GPU resource block、两个 4B artifact absent、0 call 和冻结 runtime hash 均真实；它不是 4B quality result。
+- 独立审计发现 v2 identity 未绑定 `trust_remote_code` 可消费的本地 Python、`modules.json` 与嵌套配置，也没有 acquisition revision／claimed model provenance，故旧 `identity_bound` 不得在合适 GPU 上授权运行。
+- R2 program 与 identity v3 要求 snapshot acquisition manifest、expected model ID 相等、40-hex resolved revision 和 exact recursive all-file closure；missing／extra／drift 全部 fail closed。历史 COST-derived 诊断已移出 executable program，COST／hidden／frozen／holdout 继续不可读。
+- 新 preflight 仍在下载前因 GPU total/free memory 阻断，calls=`0/0/0`。`S1_qualified_stable=false`、runtime promotion 和 hidden qualification 均为 false。
+
+### 2026-08-24 独立审计更正：S2 final successor pointer 不代表 physical-period identity
+
+- 旧 RC-S2-006 closure 无效。真实 mart 有 419 个 multi-vintage groups、90 个 3+ vintage groups、78 个 label-varying groups；MU 六行样本的 FY/FP 会振荡，旧 executor 在 intermediate as-of 冲突并最终选择错误 label。
+- 新 executor 以 contemporaneous filing context 冻结 physical-period identity：10-Q 最多 45 天、10-K 最多 90 天；后续同 label 才能作为 numeric vintage。没有及时 origin 且 labels 不一致时返回 typed conflict，不猜测。
+- 六个历史 as-of 全部稳定为 FY2023/Q1；原 current MU 请求仍精确返回三条 fact。predecessor／audit failure／SQLite／facts／accessions／observation IDs／authority 全绑定，0 call。
+- 只关闭新 RC-S2-010 的 pointer-authority 根因；RC-S2-004、S2 stage、产品 PVM／ASP／利润桥、S3 和 release 仍开放／false。
+
+### 2026-08-24 R15 independent content failure 与 R16 bounded successor
+
+- separate read-only reviewer 确认 R15 hash、protected number、公司／产品和跨公司主边界总体正确，但发现 material finding：需求质量反转条件缺少 materiality、AI 产品归属、持续性和预冻结阈值，并可能把 working-capital stock evidence 错当 cash-conversion bridge closure。R15 independent gate 因此失败且保持 immutable。
+- Owner 在用户授权范围内开零模型 R16，只改 7 个 model-text surface；Evidence／NumericFact／Relation／gap refs、remaining gaps、topology 和 protected numbers 均不变。
+- R16 本地 contract surface／hard／quality finding 为 `0/0/0`，calls=`0/0/0`，但它由当前 Codex 编写，仍须第二个全新 read-only reviewer。independent／qualified-human／S3／product／publication／release 全为 false。
+- 本轮仓库门禁：联合定向 `129 passed`；全仓 `1201 passed, 2 warnings`；compileall、10 个变更 Python 文件 pyflakes、992 config JSON、8 Project OS JSONL／1137 行、active baseline `212／8／5／28／0`、Workbench typecheck／build、7,878-file secret scan／0 和 diff check 全通过。

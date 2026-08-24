@@ -276,26 +276,34 @@ def test_latest_vintage_numeric_conflict_fails_closed(tmp_path: Path) -> None:
     )
 
 
-def test_period_identity_successor_is_point_in_time_and_removes_false_q3_collision(
+def test_contemporaneous_period_identity_rejects_later_comparable_relabels(
     tmp_path: Path,
 ) -> None:
     metrics = (_metric("net_income"),)
-    obsolete_q2_as_q3 = replace(
-        _observation(
-            "OBS-Q2-OBSOLETE",
-            "net_income",
-            "1583000000",
-            accepted_at="2025-06-25T22:50:42+00:00",
-            accession="0000723125-25-000021",
-            period_start="2024-11-29",
-            period_end="2025-02-27",
-            fiscal_year=2025,
-            fiscal_period="Q3",
-        ),
-        superseded_by_observation_id="OBS-Q2-CORRECTED",
+    contemporaneous_q2 = _observation(
+        "OBS-Q2-CONTEMPORANEOUS",
+        "net_income",
+        "1583000000",
+        accepted_at="2025-03-20T23:20:23+00:00",
+        accession="0000723125-25-000009",
+        period_start="2024-11-29",
+        period_end="2025-02-27",
+        fiscal_year=2025,
+        fiscal_period="Q2",
     )
-    corrected_q2 = _observation(
-        "OBS-Q2-CORRECTED",
+    later_q3_copy = _observation(
+        "OBS-Q2-LATER-Q3-COPY",
+        "net_income",
+        "1583000000",
+        accepted_at="2025-06-25T22:50:42+00:00",
+        accession="0000723125-25-000021",
+        period_start="2024-11-29",
+        period_end="2025-02-27",
+        fiscal_year=2025,
+        fiscal_period="Q3",
+    )
+    later_q2_copy = _observation(
+        "OBS-Q2-LATER-Q2-COPY",
         "net_income",
         "1583000000",
         accepted_at="2026-03-18T23:00:06+00:00",
@@ -331,8 +339,9 @@ def test_period_identity_successor_is_point_in_time_and_removes_false_q3_collisi
     write_company_fact_mart(
         sqlite_path,
         observations=(
-            obsolete_q2_as_q3,
-            corrected_q2,
+            contemporaneous_q2,
+            later_q3_copy,
+            later_q2_copy,
             comparable_q3,
             current_q3,
         ),
@@ -340,10 +349,10 @@ def test_period_identity_successor_is_point_in_time_and_removes_false_q3_collisi
         policy=_policy(metrics=metrics),
     )
 
-    before_correction = execute_fact_lookup(
+    after_wrong_copy = execute_fact_lookup(
         sqlite_path,
         FactLookup(
-            fact_request_id="TEST::MU-Q2-BEFORE-CORRECTION",
+            fact_request_id="TEST::MU-Q2-AFTER-WRONG-COPY",
             ticker="DELL",
             metric_id="net_income",
             research_as_of="2025-12-31",
@@ -356,10 +365,10 @@ def test_period_identity_successor_is_point_in_time_and_removes_false_q3_collisi
             requested_unit="reported_source_unit",
         ),
     )
-    after_correction = execute_fact_lookup(
+    after_same_identity_copy = execute_fact_lookup(
         sqlite_path,
         FactLookup(
-            fact_request_id="TEST::MU-Q2-AFTER-CORRECTION",
+            fact_request_id="TEST::MU-Q2-AFTER-SAME-IDENTITY-COPY",
             ticker="DELL",
             metric_id="net_income",
             research_as_of="2026-08-06",
@@ -389,15 +398,15 @@ def test_period_identity_successor_is_point_in_time_and_removes_false_q3_collisi
         ),
     )
 
-    assert before_correction.status == "resolved"
-    assert before_correction.facts[0].fiscal_period == "Q3"
-    assert before_correction.facts[0].source_observation_ids == (
-        "OBS-Q2-OBSOLETE",
+    assert after_wrong_copy.status == "resolved"
+    assert after_wrong_copy.facts[0].fiscal_period == "Q2"
+    assert after_wrong_copy.facts[0].source_observation_ids == (
+        "OBS-Q2-CONTEMPORANEOUS",
     )
-    assert after_correction.status == "resolved"
-    assert after_correction.facts[0].fiscal_period == "Q2"
-    assert after_correction.facts[0].source_observation_ids == (
-        "OBS-Q2-CORRECTED",
+    assert after_same_identity_copy.status == "resolved"
+    assert after_same_identity_copy.facts[0].fiscal_period == "Q2"
+    assert after_same_identity_copy.facts[0].source_observation_ids == (
+        "OBS-Q2-LATER-Q2-COPY",
     )
     assert current_series.status == "resolved"
     assert {
@@ -412,6 +421,156 @@ def test_period_identity_successor_is_point_in_time_and_removes_false_q3_collisi
         (2026, "Q3", "2026-02-27", "2026-05-28"),
         (2025, "Q3", "2025-02-28", "2025-05-29"),
     }
+
+
+def test_multi_vintage_period_identity_is_stable_at_every_research_as_of(
+    tmp_path: Path,
+) -> None:
+    metrics = (_metric("net_income"),)
+    rows = (
+        _observation(
+            "OBS-Q1-ORIGIN",
+            "net_income",
+            "-195000000",
+            accepted_at="2022-12-22T17:38:24+00:00",
+            period_start="2022-09-02",
+            period_end="2022-12-01",
+            fiscal_year=2023,
+            fiscal_period="Q1",
+        ),
+        _observation(
+            "OBS-Q1-AS-Q2-COPY",
+            "net_income",
+            "-195000000",
+            accepted_at="2023-03-29T20:48:21+00:00",
+            period_start="2022-09-02",
+            period_end="2022-12-01",
+            fiscal_year=2022,
+            fiscal_period="Q2",
+        ),
+        _observation(
+            "OBS-Q1-AS-Q3-COPY",
+            "net_income",
+            "-195000000",
+            accepted_at="2023-06-29T19:34:20+00:00",
+            period_start="2022-09-02",
+            period_end="2022-12-01",
+            fiscal_year=2022,
+            fiscal_period="Q3",
+        ),
+        _observation(
+            "OBS-Q1-LATER-SAME-IDENTITY",
+            "net_income",
+            "-196000000",
+            accepted_at="2023-12-21T18:05:34+00:00",
+            period_start="2022-09-02",
+            period_end="2022-12-01",
+            fiscal_year=2023,
+            fiscal_period="Q1",
+        ),
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=rows,
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+
+    def lookup(research_as_of: str):
+        return execute_fact_lookup(
+            sqlite_path,
+            FactLookup(
+                fact_request_id=f"TEST::MU-Q1::{research_as_of}",
+                ticker="DELL",
+                metric_id="net_income",
+                research_as_of=research_as_of,
+                period={
+                    "start_date": "2022-09-02",
+                    "end_date": "2022-12-01",
+                    "fiscal_years": [2022, 2023],
+                },
+                granularity="quarter_discrete",
+                requested_unit="reported_source_unit",
+            ),
+        )
+
+    for research_as_of in ("2022-12-31", "2023-04-01", "2023-07-01"):
+        result = lookup(research_as_of)
+        assert result.status == "resolved"
+        assert (result.facts[0].fiscal_year, result.facts[0].fiscal_period) == (
+            2023,
+            "Q1",
+        )
+        assert result.facts[0].value_decimal == "-195000000"
+        assert result.facts[0].source_observation_ids == ("OBS-Q1-ORIGIN",)
+
+    latest = lookup("2024-01-01")
+    assert latest.status == "resolved"
+    assert (latest.facts[0].fiscal_year, latest.facts[0].fiscal_period) == (
+        2023,
+        "Q1",
+    )
+    assert latest.facts[0].value_decimal == "-196000000"
+    assert latest.facts[0].source_observation_ids == (
+        "OBS-Q1-LATER-SAME-IDENTITY",
+    )
+
+
+def test_period_identity_without_timely_origin_fails_closed(tmp_path: Path) -> None:
+    metrics = (_metric("net_income"),)
+    rows = (
+        _observation(
+            "OBS-LATE-Q1",
+            "net_income",
+            "10",
+            accepted_at="2025-07-01T00:00:00+00:00",
+            period_start="2025-01-01",
+            period_end="2025-03-31",
+            fiscal_year=2025,
+            fiscal_period="Q1",
+        ),
+        _observation(
+            "OBS-LATE-Q2",
+            "net_income",
+            "10",
+            accepted_at="2025-10-01T00:00:00+00:00",
+            period_start="2025-01-01",
+            period_end="2025-03-31",
+            fiscal_year=2025,
+            fiscal_period="Q2",
+        ),
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=rows,
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+
+    result = execute_fact_lookup(
+        sqlite_path,
+        FactLookup(
+            fact_request_id="TEST::AMBIGUOUS-PERIOD-IDENTITY",
+            ticker="DELL",
+            metric_id="net_income",
+            research_as_of="2025-12-31",
+            period={
+                "start_date": "2025-01-01",
+                "end_date": "2025-03-31",
+                "fiscal_years": [2025],
+            },
+            granularity="quarter_discrete",
+            requested_unit="reported_source_unit",
+        ),
+    )
+
+    assert result.status == "typed_conflict"
+    assert result.facts == ()
+    assert result.typed_conflict["conflicts"][0]["code"] == (
+        "typed_fact_physical_period_identity_ambiguous"
+    )
 
 
 def test_derived_margin_and_fcf_require_aligned_source_period(tmp_path: Path) -> None:

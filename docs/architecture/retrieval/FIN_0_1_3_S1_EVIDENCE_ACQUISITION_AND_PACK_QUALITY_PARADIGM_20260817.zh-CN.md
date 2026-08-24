@@ -683,3 +683,13 @@ Search API、RSS 或搜索结果页只负责 discovery。原始材料必须 capt
 正式程序支持 Hugging Face 分片权重的 index＋全 shard 身份绑定，同时证明当前 0.6B 单文件 digest 不漂移。运行 profile 固定为单卡 24GB-class CUDA／FP16（最低 `24,000,000,000` bytes）、载入前至少 20 GiB free，禁止 CPU 模型 fallback、量化资格替代和 profile 偷换。当前 RTX 4060 Laptop 总显存只有 `8,585,216,000` 字节，预检因此在下载前停止，0 network／Provider／model call。该结果只能标记 `resource_blocked_before_download`；换到合适 GPU 后必须新开 attempt，从 ceiling 开始，不能把本次预检追认为模型质量结果。
 
 程序与凭据分别见 `configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_program_v1_0.json` 和 `configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_preflight_result_v1_0.json`。`S1_qualified_stable=false` 保持不变。
+
+## 35. 4B challenger identity v3 独立审计 successor（2026-08-24）
+
+§34 的资源事实仍成立，但“v2 identity support 可以给未来 4B attempt 签权”已被独立审计推翻。v2 只绑定选定的顶层 config、weight 和 tokenizer 文件；实际 SentenceTransformer loader 允许 `trust_remote_code=True`，还可读取 `modules.json`、嵌套 module 配置和本地 Python。调用方提供的 model ID 也没有上游 acquisition provenance。故旧 preflight 的 `resource_blocked_before_download` 可信，旧 artifact absent 可信，但换到合适 GPU 后不得以 v2 `identity_bound` 进入运行。
+
+v3 使用独立 acquisition manifest：expected model ID 必须一致，resolved revision 必须为小写 40-hex commit，tool 固定为 `huggingface_hub.snapshot_download`，并精确递归绑定模型目录内除 manifest 自身外的全部 regular files。manifest、自定义代码、nested configs、tokenizer、index 与每个 shard 都进入 identity；任何 missing、extra、size／digest drift 或路径逃逸都 fail closed。v2 保留供 R1 immutable receipt replay，gate v1.1 只接受 `identity_bound_v3`。
+
+R1 可执行程序中曾内嵌历史 COST-derived 诊断，却同时声称禁止全部 COST reference access。它没有导致本次 hidden-label 执行泄漏：bound inputs 不含 COST，preflight 没有读取 qrel／hidden。但合同文字不一致，因此 R2 将该诊断从 executable hypothesis 移除，并明确禁止任何 historical forbidden-case diagnostic 进入运行输入。
+
+新程序／preflight 为 `program_v1_1`／`preflight_result_v1_1`。本机仍因总显存和 free memory 双重不足在下载前停止，两个 4B artifact 均 absent，0 network／Provider／model。新结果只证明 resource 与 identity gate 的工程语义，不包含 embedding、reranker、candidate ceiling、latency 或质量观察。

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import closing
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal, localcontext
 from pathlib import Path
 import sqlite3
@@ -33,6 +34,10 @@ _DERIVED_FORMULAS = {
         "capital_expenditures",
         "subtract",
     ),
+}
+_PERIOD_IDENTITY_MAX_FILING_LAG_DAYS = {
+    "10-Q": 45,
+    "10-K": 90,
 }
 
 
@@ -117,8 +122,10 @@ def _execute_direct(
     connection: sqlite3.Connection,
     lookup: FactLookup,
 ) -> TypedFactExecutionResult:
-    rows = _candidate_rows(connection, lookup)
+    rows, period_identity_conflicts = _candidate_rows(connection, lookup)
     if not rows:
+        if period_identity_conflicts:
+            return _conflict(lookup, period_identity_conflicts)
         return _gap(
             fact_request_id=lookup.fact_request_id,
             ticker=lookup.ticker,
@@ -139,7 +146,9 @@ def _execute_direct(
             [],
         ).append(row)
     resolved: list[tuple[tuple[Any, ...], list[Mapping[str, Any]]]] = []
-    conflicts: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = [
+        dict(value) for value in period_identity_conflicts
+    ]
     for key, group_rows in groups.items():
         latest_accepted = max(str(row["accepted_at"]) for row in group_rows)
         latest = [
@@ -377,17 +386,12 @@ def _execute_derived(
 def _candidate_rows(
     connection: sqlite3.Connection,
     lookup: FactLookup,
-) -> list[Mapping[str, Any]]:
+) -> tuple[list[Mapping[str, Any]], list[Mapping[str, Any]]]:
     clauses = [
         "current.ticker = ?",
         "current.metric_id = ?",
         "substr(current.accepted_at, 1, 10) <= ?",
         "current.period_end <= ?",
-        "(current.superseded_by_observation_id IS NULL OR NOT EXISTS ("
-        "SELECT 1 FROM company_fact_observations AS successor "
-        "WHERE successor.observation_id = current.superseded_by_observation_id "
-        "AND successor.accepted_at > current.accepted_at "
-        "AND substr(successor.accepted_at, 1, 10) <= ?))",
     ]
     as_of_end = str(lookup.period.get("end_date") or lookup.research_as_of)
     params: list[Any] = [
@@ -395,24 +399,140 @@ def _candidate_rows(
         lookup.metric_id,
         lookup.research_as_of,
         min(as_of_end, lookup.research_as_of),
-        lookup.research_as_of,
     ]
     start_date = lookup.period.get("start_date")
     if start_date:
         clauses.append("(current.period_start IS NULL OR current.period_start >= ?)")
         params.append(str(start_date))
-    fiscal_years = lookup.period.get("fiscal_years") or ()
-    if fiscal_years:
-        placeholders = ",".join("?" for _ in fiscal_years)
-        clauses.append(f"current.fiscal_year IN ({placeholders})")
-        params.extend(int(value) for value in fiscal_years)
     query = (
         "SELECT current.* FROM company_fact_observations AS current WHERE "
         + " AND ".join(clauses)
         + " ORDER BY current.period_end, current.accepted_at, "
         "current.concept_priority, current.observation_id"
     )
-    return [dict(row) for row in connection.execute(query, params).fetchall()]
+    rows = [dict(row) for row in connection.execute(query, params).fetchall()]
+    return _admit_physical_period_identities(
+        rows,
+        fiscal_years=lookup.period.get("fiscal_years") or (),
+    )
+
+
+def _admit_physical_period_identities(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    fiscal_years: Sequence[Any],
+) -> tuple[list[Mapping[str, Any]], list[Mapping[str, Any]]]:
+    """Admit value vintages only under a proved physical-period identity.
+
+    SEC CompanyFacts copies can inherit a later filing's ``fy``/``fp`` even
+    when the value belongs to an earlier physical quarter.  A comparable copy
+    therefore cannot rename that period.  A 10-Q/10-K accepted inside the
+    applicable filing window supplies the identity; later rows may update the
+    value only when they retain it.  Without a timely origin, every observed
+    vintage must agree or the executor fails closed.
+    """
+
+    requested_years = {int(value) for value in fiscal_years}
+    groups: dict[tuple[Any, ...], list[Mapping[str, Any]]] = {}
+    for row in rows:
+        groups.setdefault(
+            (
+                row["ticker"],
+                row["metric_id"],
+                row["period_start"],
+                row["period_end"],
+                row["period_role"],
+                row["unit"],
+            ),
+            [],
+        ).append(row)
+
+    admitted: list[Mapping[str, Any]] = []
+    conflicts: list[Mapping[str, Any]] = []
+    for key, group_rows in groups.items():
+        labels = {
+            (row["fiscal_year"], row["fiscal_period"]) for row in group_rows
+        }
+        timely_rows = [
+            row for row in group_rows if _is_timely_period_identity_source(row)
+        ]
+        timely_labels = {
+            (row["fiscal_year"], row["fiscal_period"]) for row in timely_rows
+        }
+        if timely_rows and len(timely_labels) == 1:
+            canonical_label = next(iter(timely_labels))
+        elif not timely_rows and len(labels) == 1:
+            canonical_label = next(iter(labels))
+        else:
+            candidate_years = {
+                int(year) for year, _ in labels if isinstance(year, int)
+            }
+            if requested_years and candidate_years.isdisjoint(requested_years):
+                continue
+            conflicts.append(
+                {
+                    "code": "typed_fact_physical_period_identity_ambiguous",
+                    "period_start": key[2],
+                    "period_end": key[3],
+                    "period_role": key[4],
+                    "unit": key[5],
+                    "candidate_fiscal_identities": [
+                        {
+                            "fiscal_year": year,
+                            "fiscal_period": period,
+                        }
+                        for year, period in sorted(
+                            labels,
+                            key=lambda value: (
+                                -1 if value[0] is None else int(value[0]),
+                                str(value[1] or ""),
+                            ),
+                        )
+                    ],
+                    "timely_identity_source_observation_ids": sorted(
+                        str(row["observation_id"]) for row in timely_rows
+                    ),
+                    "observation_ids": sorted(
+                        str(row["observation_id"]) for row in group_rows
+                    ),
+                    "accession_numbers": sorted(
+                        {str(row["accession_number"]) for row in group_rows}
+                    ),
+                }
+            )
+            continue
+
+        canonical_year = canonical_label[0]
+        if requested_years and canonical_year not in requested_years:
+            continue
+        admitted.extend(
+            row
+            for row in group_rows
+            if (row["fiscal_year"], row["fiscal_period"]) == canonical_label
+        )
+    admitted.sort(
+        key=lambda row: (
+            str(row["period_end"]),
+            str(row["accepted_at"]),
+            int(row["concept_priority"]),
+            str(row["observation_id"]),
+        )
+    )
+    return admitted, conflicts
+
+
+def _is_timely_period_identity_source(row: Mapping[str, Any]) -> bool:
+    maximum_lag = _PERIOD_IDENTITY_MAX_FILING_LAG_DAYS.get(str(row["form"]))
+    if maximum_lag is None:
+        return False
+    try:
+        lag_days = (
+            date.fromisoformat(str(row["accepted_at"])[:10])
+            - date.fromisoformat(str(row["period_end"]))
+        ).days
+    except ValueError:
+        return False
+    return 0 <= lag_days <= maximum_lag
 
 
 def _select_latest_period_roles(

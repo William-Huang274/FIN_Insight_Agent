@@ -115,3 +115,15 @@ MU current replay 暴露了一个独立于数值冲突的期间身份错误：�
 原失败 replay 保持不可变；本轮只重算原 MU `net_income` 请求，没有重建 1,319-row mart。successor 返回 FY2026 Q3 `2026-02-27→05-28`、FY2025 Q3 `2025-02-28→05-29` 和最近财年事实，共 3 个 source-bound NumericFact，0 model／Provider／network。机器凭据为 `configs/financial_facts/fin_ia_0_1_3_s2_mu_period_identity_successor_result_v1_0.json`。
 
 这关闭 `RC-S2-006` 的假期间碰撞，不关闭 `RC-S2-004`、S2 产品桥或阶段资格。
+
+## 11. 2026-08-24 independent audit：final successor pointer 不是期间身份权威
+
+§10 的特定 MU current request 结果可以保留，但其通用算法与 RC-S2-006 closure 必须撤回。独立审计发现 `_apply_current_supersession` 将同 physical group 的所有旧行直接指向全局最后一行；这既不是 PIT chain，最后 filing copy 的 `fy/fp` 也可能只是该文档 focus 对历史 comparable 的投影。真实 mart 的 419 个 multi-vintage groups 中，90 组超过两个 vintages、最大 6，78 组出现多个 fiscal labels，43 组 latest 与 earliest label 不同。
+
+MU `net_income / 2022-09-02→2022-12-01 / quarter_discrete / USD` 的六个 filings 在 FY2023/Q1、FY2022/Q2、FY2022/Q3 间振荡。§10 executor 在 intermediate as-of 形成假冲突，并在最终 as-of 把最后 FY2022/Q3 copy 错当物理期间真相。因此只把 pointer 改成 immediate chain 仍然错误。
+
+successor 将 fiscal identity 与 numeric vintage 分离：同物理期间的 10-Q 在 45 天内、10-K 在 90 天内 accepted 时，contemporaneous filing context 才可冻结 fiscal identity；后续 row 只有保留同一 label 才能更新 numeric vintage。不存在及时来源时，全部 labels 必须一致；否则返回 `typed_fact_physical_period_identity_ambiguous`。requested fiscal-year filtering 在 identity admission 后执行，同一 accepted time 的数值冲突继续 fail closed。executor 不再把 mart pointer 用作 period authority。
+
+真实回放中，六个 historical as-of 全部稳定为 FY2023/Q1，最终错误 copy 从未被选；原 MU current request 的三条 source-bound facts、exact periods、values、accessions、observation IDs 与 authority inventory 均保持一致。旧 result、独立失败和新 `physical_period_identity_successor_result_v1_1` 均保留。
+
+因此 RC-S2-006 的历史“PIT 通用关闭”记录无效；新 RC-S2-010 只关闭 final-pointer authority 根因。当前 bound mart timestamps 全为 UTC、pointer scope invariant 当前无违规；offset canonicalization 与 deprecated pointer 的未来误用仍作为 generic hardening 开放。RC-S2-004、产品桥、S2 qualification 和 release 不变。

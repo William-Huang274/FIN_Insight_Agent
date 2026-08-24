@@ -357,3 +357,24 @@ anchor 门，而是扩展 replacement contract，使其可选绑定 reviewed-anc
 时，原有长文本拒绝行为保持不变。新增正反回归后 pack-set runner 定向测试为 `10 passed`；
 用真实 R4 Pack 与 anchor v1.6 只读组合得到 `86` entries、DELL binding 精确指向 R4，证明可在
 不降低 anchor 质量的情况下进入原子晋升。
+
+### 8.4 R4 current 原子晋升
+
+在分支与 HEAD 已同步远端、worktree clean 后，使用 authority
+`FIN-0.1.3-S1-CURRENT-PACK-SET-PROMOTION-DELL-DIRECT-R4` 执行一次 pack-set promotion。
+runner 验证完整 `R3 48 -> direct R1 53 -> corrected R4 55` successor chain、R4 ProductReadiness
+v1.7、reviewed-anchor v1.6 以及 predecessor current registry／policy 的全部文件 SHA。实际结果：
+
+- current DELL Evidence：`48 -> 55`；residual gaps：`14 -> 14`；
+- current reviewed anchors：`79 -> 86`；composed catalog digest
+  `c1e6f4aa...9f55d`；
+- current Pack result digest：`e66941c5...cc373`；
+- MU、NVDA、ORCL、ASML、ANET 按 predecessor digest 保留；
+- runtime registry：`R33 -> R34`，current policy `V1.9`，receipt v1.10；
+- execution：`0` network／provider／model／retry、`0` private copy、`0` raw publication。
+
+第一次 current 定向回归为 `35 passed / 5 failed`。五个失败均为晋升后测试合同仍硬编码 R33、
+R3 Pack／anchor／readiness／policy／receipt 和 DELL `48` Evidence；实际 runtime binding 本身没有
+漂移。测试合同同步到 R34 与 DELL `55` 后，同一集合复跑为 `40 passed`。这次晋升只把已经
+审定的 R4 资产变为 current；execution result 仍明确记录 S1 product acceptance、external blind
+qualification、qualified-human review、S3 execution 与 release 全为 false。

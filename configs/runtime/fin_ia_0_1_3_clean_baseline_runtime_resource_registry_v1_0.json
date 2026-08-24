@@ -15,9 +15,9 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R33",
-  "resource_bytes": 3107692,
-  "resource_canonical_digest": "c57b1fb03207e64051b49700ffdf28e8ed59c73640d6fa35ac3eb763fb436ea4",
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R34",
+  "resource_bytes": 3115268,
+  "resource_canonical_digest": "44e032c1eb3aaec9ba55462c0f3f834bdd6e2624b7cf672ffef85e8668ff5fd7",
   "resource_count": 28,
   "resources": [
     {
@@ -131,10 +131,10 @@
         "apps.workbench.research_workspace_service.ResearchWorkspaceService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_5.json",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_6.json",
       "required": true,
       "resource_id": "application.config.current_research_workspace_catalog",
-      "sha256": "4135a4ed771bbd23677d9f5c9a9e1f6c9c3c3ca6ae36260feb7167bfa2d6b967",
+      "sha256": "bfd2082028b1b47363a8ab5059e87fddeed6287a0938a03a106ec20fc46cc656",
       "source_owner": "apps.workbench.backend.application.research_workspace_service"
     },
     {
@@ -186,10 +186,10 @@
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_8.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_9.json",
       "required": true,
       "resource_id": "application.config.current_s1_runtime_binding_policy",
-      "sha256": "79cd2d8049d5ab5d3ad0b6c6a41f14cbb128ac50b9dc369d2884aebb7d206749",
+      "sha256": "4b44de0b875a238f76415310ac81c4f14e07b46afd0d94e7943979c143ff9e74",
       "source_owner": "retrieval.current_runtime_binding.load_current_s1_runtime_binding_policy"
     },
     {
@@ -232,16 +232,16 @@
       "source_owner": "ingestion.source_intake.SourceIntakePolicy.from_path"
     },
     {
-      "bytes": 7736,
+      "bytes": 7721,
       "classification": "digest_bound_read_only_product_result",
       "consumer_ids": [
         "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_5.json",
+      "repo_relative_path": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_6.json",
       "required": true,
       "resource_id": "application.result.current_research_local_evidence_packs",
-      "sha256": "8cc1e9cd29d68dcb8ce23bebafe5444c83d7459eb2b1f19641f7a1beed115d74",
+      "sha256": "b3289bdf91ae2654f4a5a37aecf603a444581a7969d9e866146feeb1efbcfa14",
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
     },
     {
@@ -258,16 +258,16 @@
       "source_owner": "apps.workbench.backend.application.research_retrieval_service"
     },
     {
-      "bytes": 85983,
+      "bytes": 93574,
       "classification": "digest_bound_read_only_product_result",
       "consumer_ids": [
         "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_5.json",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_7.json",
       "required": true,
       "resource_id": "application.result.current_reviewed_claim_anchors",
-      "sha256": "93928924566185eb8ec0ef3e362177e2cfb85f9c5449402711dddb79911252bb",
+      "sha256": "8fab8f9f2050b0a2af134d0b126fdddf590dc9b787a09368e4754c1a5e574f15",
       "source_owner": "sec_agent.research.reviewed_evidence_anchor.load_reviewed_evidence_anchor_catalog"
     },
     {
@@ -277,10 +277,10 @@
         "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_6.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_7.json",
       "required": true,
       "resource_id": "application.result.current_s1_dell_product_readiness",
-      "sha256": "2a563e7ba12b9bcdb58447054cf1152d7247916168053f7d6701bb04daa84e9e",
+      "sha256": "67a65f8efbde97bef20e2cc2ff8439e30eb3fac4ddeb2680c369d67f1361b19b",
       "source_owner": "retrieval.product_pack_readiness.compile_product_pack_readiness"
     },
     {
@@ -316,10 +316,10 @@
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_9.json",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_10.json",
       "required": true,
       "resource_id": "application.result.current_s1_runtime_binding_receipt",
-      "sha256": "ace35dbaf35bb4f95e08a2b50f8a0b61c066283dbb3bf4220d81117413feb69a",
+      "sha256": "37a35707b3ca23dbef0e811274b3ca13085be99df7566a7bb06162f0d0a480e8",
       "source_owner": "retrieval.current_runtime_binding.validate_current_s1_runtime_binding_receipt"
     },
     {

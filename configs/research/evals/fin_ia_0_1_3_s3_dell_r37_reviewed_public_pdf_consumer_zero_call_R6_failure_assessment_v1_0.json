@@ -1,0 +1,32 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_single_unit_zero_call_failure_result_v1_0",
+  "attempt_id": "dell-r37-reviewed-public-pdf-consumer-zero-call-r6-20260824T195154Z",
+  "status": "terminal_failed_current_dynamic_single_unit_zero_call_gate",
+  "recorded_at": "2026-08-25T03:51:54+08:00",
+  "prepared_from_commit": "e6d08d78",
+  "failed_stage": "S1_candidate_shortlist_feature_compilation",
+  "failed_checks": [
+    "reviewed_public_pdf_successor_facets_have_legacy_advisory_role_compatibility"
+  ],
+  "failure": {
+    "root_error": "evidence_role_facet_unknown:bounded_price_configuration_context",
+    "cause": "The current hybrid runtime reached candidate shortlist feature compilation, where financial_evidence_shortlist_v2 still called the older evidence_role_v2 facet enumeration. The authoritative v4 role layer knew the successor facet, but the legacy advisory ranking feature did not."
+  },
+  "inputs": {
+    "runtime_registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R37",
+    "dynamic_policy_ref": "configs/research/fin_ia_0_1_3_s3_dell_dynamic_single_unit_loop_policy_v1_5.json",
+    "hybrid_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_7.json"
+  },
+  "authority": {
+    "provider_calls": 0,
+    "network_calls": 0,
+    "model_generation_calls": 0,
+    "paid_tool_calls": 0,
+    "candidate_auto_promotion": 0,
+    "public_information_gap_authorized_count": 0,
+    "failed_attempt_is_immutable": true,
+    "product_version_changed": false
+  },
+  "known_boundary": "The fix may alias the three bounded successor facets to semantically equivalent predecessor facets only inside legacy candidate-ranking features. The original facet identity, source lineage, Evidence admission, NumericFact authority and public-gap authority must remain unchanged. This failure does not qualify S1/S3 or reopen R17.",
+  "result_digest": "38eb9d2629f622739e0482d54c7de5d6386a5da3f52e619e977ea5fe931e4f24"
+}

@@ -9,7 +9,10 @@ from retrieval.contracts import (
     load_evidence_request,
     load_financial_research_kernel,
 )
+from retrieval.evidence_role_v2 import evaluate_evidence_role as evaluate_legacy_role
+from retrieval.hybrid_candidate_runtime import _legacy_shortlist_compatibility_lane
 from retrieval.query_plan import canonical_digest
+from retrieval.query_plan import compile_query_facet_plan_for_request
 from retrieval.route_compiler import load_query_object_fact_route_policy
 
 
@@ -193,3 +196,56 @@ def test_r37_all_current_facets_have_need_and_material_policy() -> None:
     assert requested_facets.issubset(material["facet_required_roles"])
     assert need["successor_change"]["candidate_is_not_evidence"] is True
     assert material["successor_change"]["numeric_fact_authority"] is False
+
+
+def test_r37_hybrid_adapts_bounded_facets_without_mutating_frozen_v2() -> None:
+    kernel = load_financial_research_kernel(
+        _json(
+            "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_5.json"
+        )
+    )
+    program = _json(
+        "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_3.json"
+    )
+    bounded = {
+        "bounded_unit_volume_context",
+        "bounded_price_configuration_context",
+        "current_platform_relationship_context",
+    }
+    expected_aliases = {
+        "bounded_unit_volume_context": "downstream_demand_context",
+        "bounded_price_configuration_context": "pricing_and_mix",
+        "current_platform_relationship_context": "counterparty_direct_mention",
+    }
+    requests = [
+        load_evidence_request(raw, kernel)
+        for raw in program["evidence_requests"]
+        if set(raw["requested_facet_ids"]).intersection(bounded)
+    ]
+    seen: set[str] = set()
+    for request in requests:
+        lane = compile_query_facet_plan_for_request(kernel, request).lanes[0]
+        compatibility_lane = _legacy_shortlist_compatibility_lane(lane)
+        role = evaluate_legacy_role(
+            {
+                "ticker": lane.evidence_owner_tickers[0],
+                "section": "product availability and reported results",
+                "subsection": "configuration",
+                "source_type": "PUBLIC_PDF",
+                "object_kind": "claim",
+                "document_text": (
+                    "Dell reported systems, configuration, partnership and "
+                    "product availability context."
+                ),
+            },
+            slot_id=compatibility_lane.slot_id,
+            subject_ticker=compatibility_lane.subject_ticker,
+            facet_id=compatibility_lane.facet_id,
+            evidence_owner_ticker=compatibility_lane.evidence_owner_tickers[0],
+            relationship_direction=compatibility_lane.relationship_constraints[0],
+        )
+        assert role.evidence_promoted is False
+        assert compatibility_lane.facet_id == expected_aliases[lane.facet_id]
+        assert request.requested_facet_ids == (lane.facet_id,)
+        seen.add(lane.facet_id)
+    assert seen == bounded

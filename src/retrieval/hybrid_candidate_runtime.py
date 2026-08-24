@@ -127,6 +127,17 @@ _RELATIONSHIP_CUE_TERMS = (
     "supply",
 )
 
+_SUCCESSOR_FACET_COMPATIBILITY = {
+    "bounded_unit_volume_context": "downstream_demand_context",
+    "bounded_price_configuration_context": "pricing_and_mix",
+    "current_platform_relationship_context": "counterparty_direct_mention",
+}
+
+
+def _legacy_shortlist_compatibility_lane(lane: Any) -> Any:
+    facet_id = _SUCCESSOR_FACET_COMPATIBILITY.get(lane.facet_id)
+    return replace(lane, facet_id=facet_id) if facet_id else lane
+
 
 def _policy_feature_flags(schema_version: str) -> tuple[bool, bool, bool]:
     typed_balanced = (
@@ -462,7 +473,13 @@ def _direct_relationship_material_route_qualified(
 ) -> bool:
     """Fail closed when a direct-mention request lacks graph qualification."""
 
-    return facet_id != "counterparty_direct_mention" or object_id in graph_ranks
+    compatibility_facet_id = _SUCCESSOR_FACET_COMPATIBILITY.get(
+        facet_id, facet_id
+    )
+    return (
+        compatibility_facet_id != "counterparty_direct_mention"
+        or object_id in graph_ranks
+    )
 
 
 def _material_candidate_metadata(
@@ -567,7 +584,7 @@ def _material_candidate_metadata(
                 continue
             feature = candidate_shortlist_features(
                 object_row,
-                lane=narrowed_lane,
+                lane=_legacy_shortlist_compatibility_lane(narrowed_lane),
                 route_rows=route_rows,
                 union_rank=union_rank,
                 cross_encoder_ranks={},
@@ -1330,7 +1347,9 @@ def retrieve_hybrid_candidates(
         and not material_selection["unmet_requirement_ids"]
     )
     direct_relationship_material_gate_active = bool(
-        material_aware and lane.facet_id == "counterparty_direct_mention"
+        material_aware
+        and _SUCCESSOR_FACET_COMPATIBILITY.get(lane.facet_id, lane.facet_id)
+        == "counterparty_direct_mention"
     )
     direct_relationship_graph_qualified_count = 0
     for object_id in raw_union_ids:

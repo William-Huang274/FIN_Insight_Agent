@@ -1,0 +1,62 @@
+{
+  "schema_version": "fin_ia_s1_dell_direct_source_compilation_replay_plan_v1_0",
+  "status": "approved_zero_network_publication_date_correction_replay",
+  "recorded_at": "2026-08-24",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "plan_id": "FIN-0.1.3-S1-DELL-DIRECT-SOURCE-COMPILATION-REPLAY-R3",
+  "predecessor_terminal_binding": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_capture/fin013-dell-direct-r2-20260824-b5ace0f5/terminal_result.json",
+    "sha256": "d91e146b5bb2d56f1e785634b57bd731fa234b0b8c287ef7a8b07056646d158c",
+    "result_digest": "a5b4c1ed4ea5722a5e73e1f43762cc4cad156c7315242aa1880260b9978f8fe9",
+    "attempt_id": "fin013-dell-direct-r2-20260824-b5ace0f5"
+  },
+  "effective_capture_plan_binding": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_capture/fin013-dell-direct-r2-20260824-b5ace0f5/effective_plan.json",
+    "sha256": "9f888e28c5eb22369588e40a0fba2d7f3dcf7b7f2695c044682748ea2dd998b9",
+    "plan_digest": "126f6189810ceba9fb56876a9e156afe13b45fd11c8e60abd2dffaa20d0dd893"
+  },
+  "defect_receipt_binding": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_direct_source_r2_publication_date_defect_receipt_v1_0.json",
+    "sha256": "ca506f62ef8eb4cdb69a0068e303ad8785302347985928ecfbbcdc928dacf6eb",
+    "receipt_digest": "6eefdf33bd875b74a6161b5d6f65a41980f5cd9478188723e6f082e79c23148a"
+  },
+  "expected_capture_count": 5,
+  "expected_corrected_source_url": "https://investors.delltechnologies.com/node/17471/pdf",
+  "expected_corrected_publication_date": "2025-03-18",
+  "execution_budget": {
+    "network_call_ceiling": 0,
+    "provider_call_ceiling": 0,
+    "model_call_ceiling": 0,
+    "generation_call_ceiling": 0,
+    "capture_reuse_count_required": 5
+  },
+  "token_budget_basis": {
+    "model_tokens": 0,
+    "node_purpose": "Recompile the five immutable R2 source responses after correcting PDF visible-date precedence, without issuing another network or model call.",
+    "input_scale_basis": "One digest-bound R2 terminal, one digest-bound effective plan, five successful immutable response captures and one publication-date defect receipt.",
+    "required_outputs": [
+      "five-capture reuse receipt",
+      "corrected original publication-date receipt",
+      "corrected Dell source object identity",
+      "candidate-only proposition proposals",
+      "zero-network and zero-model execution receipt"
+    ],
+    "schema_burden": "Every reused response object must retain its request/response digest, route, source identity and original authority while the corrected Dell PDF records visible header date and later file CreationDate separately.",
+    "materiality_and_quality_risk": "Reusing the invalid R2 source object instead of the immutable raw response would preserve the wrong date; silently refetching would lose exact failure lineage and spend an unnecessary network call.",
+    "comparable_run_evidence": "R2 captured all five originals, but its Dell IR source object selected 2026-06-06 from PDF CreationDate instead of the visible March 18, 2025 release date. The preserved raw body reproduces the corrected 2025-03-18 decision locally.",
+    "reasoning_profile": "Deterministic AI-free capture validation and compilation replay only.",
+    "stop_and_truncation_behavior": "Abort unless all five predecessor captures are captured and digest-bound, no transport executes, and the Dell IR source resolves to 2025-03-18 with provider telemetry only as corroboration; preserve R2 unchanged.",
+    "cost_and_latency_are_secondary_constraints": true
+  },
+  "authority": {
+    "predecessor_source_objects_reusable": false,
+    "predecessor_raw_captures_reusable": true,
+    "candidate_is_not_evidence": true,
+    "candidate_decision_and_evidence_gate_required": true,
+    "gap_closure_authorized": false,
+    "S1_qualification_authorized": false,
+    "product_publication_authorized": false
+  },
+  "plan_digest": "c5bf5e6d808d253226a897bb7503cf83d54add1d689f4de212e95677909df30e"
+}

@@ -247,3 +247,27 @@ R1 的 403 不是“官方原文不存在”。同一发行人控制的 Dell Tec
 
 截至本记录，R2 合同与代码已完成定向单测，尚未执行网络 capture；必须在 clean commit 后用新
 attempt ID 运行，R1 不得改写或重跑。
+
+R2 随后以 attempt `fin013-dell-direct-r2-20260824-b5ace0f5` 执行：严格观测到 `4` 个
+predecessor capture reuse、`1` 个 fresh route、恰好 `1` 次网络 attempt、`0` retry／provider／
+model／generation；Dell IR PDF capture 成功，五条路线均形成 source object，合计 `10`
+candidate proposals、`0` parse reject、`0` unresolved date。
+
+但在进入 CandidateDecision 前，人工核验发现 material defect：Dell IR PDF 正文标题与 provider
+telemetry 均为 `2025-03-18`，编译器却优先选择 PDF `/CreationDate=2026-06-06`。R2 public
+result digest `03cbb776...00e54`、private terminal digest `a5b4c1ed...f8fe9` 与全部 raw capture
+保持不可变；另建 defect receipt `6eefdf33...3148a`，明确 R2 Dell source object 及两个 proposals
+均不可进入 CandidateDecision／Evidence Gate。
+
+根因归属 original-source publication-date adjudication：旧规则只从 PDF 前四页识别数值型
+`YYYY-MM-DD`，未识别首屏 `March 18, 2025`，同时把文件生成 metadata 放在更高优先级。修复为：
+
+- PDF 第一页前 1,200 个规范化字符识别英文全称／缩写的 month-name 与数值日期；
+- explicit visible header date 的优先级高于文件 `/CreationDate`；
+- metadata 与正文候选全部保留在 receipt，provider date 仍只可 corroborate，不能单独授权；
+- 新回归固定“可见 2025-03-18、文件创建 2026-06-06”的真实缺陷形态。
+
+定向回归为 `32 passed`。由于 raw response capture 本身有效，后续 R3 不再发网络请求，而是
+用新 attempt ID 做 `5` 个 immutable raw captures 的 zero-network compilation replay；必须证明
+四个无关 source object digest 不变、Dell source date 纠正为 `2025-03-18`，然后才允许重新进入
+CandidateDecision。

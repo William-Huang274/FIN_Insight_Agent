@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import base64
 import hashlib
+from io import BytesIO
 import json
 from pathlib import Path
 
 import pytest
+from pypdf import PdfReader, PdfWriter
+from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
 
 from ingestion.official_source_capture import CAPTURE_SCHEMA_VERSION
 from retrieval.public_context_source import (
@@ -33,6 +36,63 @@ def _capture(html: str, *, url: str) -> dict:
         "status_code": 200,
         "final_url": url,
         "headers": {"content-type": "text/html; charset=utf-8"},
+        "redirect_chain": [],
+        "body_base64": base64.b64encode(body).decode("ascii"),
+        "body_sha256": hashlib.sha256(body).hexdigest(),
+        "body_bytes": len(body),
+        "capture_before_parse": True,
+        "credential_cookie_authorization_present": False,
+        "preflight_response_refs": [],
+    }
+
+
+def _pdf_capture(
+    visible_text: str,
+    *,
+    url: str,
+    creation_date: str,
+) -> dict:
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+    font = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject("/Helvetica"),
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {
+            NameObject("/Font"): DictionaryObject(
+                {NameObject("/F1"): writer._add_object(font)}
+            )
+        }
+    )
+    stream = DecodedStreamObject()
+    escaped = (
+        visible_text.replace("\\", "\\\\")
+        .replace("(", "\\(")
+        .replace(")", "\\)")
+    )
+    stream.set_data(
+        f"BT /F1 12 Tf 72 720 Td ({escaped}) Tj ET".encode("latin-1")
+    )
+    page[NameObject("/Contents")] = writer._add_object(stream)
+    writer.add_metadata({"/CreationDate": creation_date})
+    output = BytesIO()
+    writer.write(output)
+    body = output.getvalue()
+    assert visible_text in (PdfReader(BytesIO(body)).pages[0].extract_text() or "")
+    return {
+        "schema_version": CAPTURE_SCHEMA_VERSION,
+        "capture_kind": "source_response",
+        "case_key": "DELL",
+        "route_id": "ROUTE::DELL-IR-PDF",
+        "request_capture_ref": "sha256://request",
+        "request_capture_digest": "a" * 64,
+        "status_code": 200,
+        "final_url": url,
+        "headers": {"content-type": "application/pdf"},
         "redirect_chain": [],
         "body_base64": base64.b64encode(body).decode("ascii"),
         "body_sha256": hashlib.sha256(body).hexdigest(),
@@ -206,6 +266,36 @@ def test_publication_date_does_not_promote_provider_date_without_original() -> N
 
     assert receipt["status"] == "unresolved_original_publication_date"
     assert receipt["selected_publication_date"] is None
+
+
+def test_pdf_visible_release_date_outranks_later_file_creation_metadata() -> None:
+    receipt = adjudicate_publication_date_from_capture(
+        response_capture=_pdf_capture(
+            "Dell Technologies release March 18, 2025",
+            url="https://investors.delltechnologies.com/node/17471/pdf",
+            creation_date="D:20260606000000Z",
+        ),
+        research_as_of="2026-08-06",
+        provider_date_telemetry="2025-03-18",
+    )
+
+    assert receipt["status"] == "resolved_from_original_source"
+    assert receipt["selected_publication_date"] == "2025-03-18"
+    assert receipt["provider_date_corroborates_selected"] is True
+    assert receipt["original_source_candidates"] == [
+        {
+            "date": "2025-03-18",
+            "source": "original_pdf_visible_header_date",
+            "priority": 1,
+            "after_research_as_of": False,
+        },
+        {
+            "date": "2026-06-06",
+            "source": "original_pdf_creation_date",
+            "priority": 2,
+            "after_research_as_of": False,
+        },
+    ]
 
 
 def test_publication_date_recovers_visible_month_name_date_marker() -> None:

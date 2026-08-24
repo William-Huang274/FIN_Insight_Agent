@@ -25,6 +25,9 @@ from retrieval.query_plan import canonical_digest  # noqa: E402
 from scripts.data_retrieval.run_dell_external_source_ladder import (  # noqa: E402
     _compile_original_capture_plan,
 )
+from scripts.data_retrieval.replay_dell_direct_source_compilation import (  # noqa: E402
+    validate_replay_plan,
+)
 
 
 PLAN = (
@@ -36,6 +39,11 @@ SUCCESSOR_PLAN = (
     ROOT
     / "configs/retrieval/"
     "fin_ia_0_1_3_s1_dell_direct_source_capture_successor_plan_v1_0.json"
+)
+REPLAY_PLAN = (
+    ROOT
+    / "configs/retrieval/"
+    "fin_ia_0_1_3_s1_dell_direct_source_compilation_replay_plan_v1_0.json"
 )
 
 
@@ -211,3 +219,31 @@ def test_failed_route_successor_rejects_same_url_retry() -> None:
         validate_dell_direct_source_capture_successor_plan(
             _redigest(successor)
         )
+
+
+def test_compilation_replay_plan_is_zero_network_and_capture_bound() -> None:
+    plan = validate_replay_plan(
+        json.loads(REPLAY_PLAN.read_text(encoding="utf-8"))
+    )
+
+    assert plan["execution_budget"] == {
+        "network_call_ceiling": 0,
+        "provider_call_ceiling": 0,
+        "model_call_ceiling": 0,
+        "generation_call_ceiling": 0,
+        "capture_reuse_count_required": 5,
+    }
+    assert plan["expected_corrected_publication_date"] == "2025-03-18"
+    assert plan["authority"]["predecessor_source_objects_reusable"] is False
+    assert plan["authority"]["predecessor_raw_captures_reusable"] is True
+
+
+def test_compilation_replay_plan_rejects_network_authority() -> None:
+    plan = json.loads(REPLAY_PLAN.read_text(encoding="utf-8"))
+    plan["execution_budget"]["network_call_ceiling"] = 1
+
+    with pytest.raises(
+        ValueError,
+        match="dell_direct_source_compilation_replay_plan_shape_invalid",
+    ):
+        validate_replay_plan(_redigest(plan))

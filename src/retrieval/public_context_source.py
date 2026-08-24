@@ -174,18 +174,41 @@ def _normalized_date_candidate(value: object) -> str | None:
             ).isoformat()
         except ValueError:
             return None
+    month_pattern = (
+        r"Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|"
+        r"Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|"
+        r"Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?"
+    )
     month_date = re.search(
-        r"(?i)\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:st|nd|rd|th)?[,]?\s+(20\d{2})\b",
+        rf"(?i)\b({month_pattern})\.?\s+(\d{{1,2}})(?:st|nd|rd|th)?[,]?\s+(20\d{{2}})\b",
         text,
     )
     if month_date:
-        try:
-            return datetime.strptime(
-                f"{month_date.group(1)} {month_date.group(2)} {month_date.group(3)}",
-                "%B %d %Y",
-            ).date().isoformat()
-        except ValueError:
-            return None
+        raw = (
+            f"{month_date.group(1).rstrip('.')} "
+            f"{month_date.group(2)} {month_date.group(3)}"
+        )
+        for format_string in ("%B %d %Y", "%b %d %Y"):
+            try:
+                return datetime.strptime(raw, format_string).date().isoformat()
+            except ValueError:
+                continue
+        return None
+    day_month_date = re.search(
+        rf"(?i)\b(\d{{1,2}})(?:st|nd|rd|th)?\s+({month_pattern})\.?[,]?\s+(20\d{{2}})\b",
+        text,
+    )
+    if day_month_date:
+        raw = (
+            f"{day_month_date.group(1)} "
+            f"{day_month_date.group(2).rstrip('.')} "
+            f"{day_month_date.group(3)}"
+        )
+        for format_string in ("%d %B %Y", "%d %b %Y"):
+            try:
+                return datetime.strptime(raw, format_string).date().isoformat()
+            except ValueError:
+                continue
     return None
 
 
@@ -391,10 +414,29 @@ def adjudicate_publication_date_from_capture(
             matched = re.search(r"D:(20\d{2})(\d{2})(\d{2})", creation)
             if matched:
                 add("-".join(matched.groups()), "original_pdf_creation_date", 2)
-            first_pages = "\n".join(
-                (reader.pages[index].extract_text() or "")
+            extracted_pages = [
+                reader.pages[index].extract_text() or ""
                 for index in range(min(4, len(reader.pages)))
+            ]
+            first_pages = "\n".join(extracted_pages)
+            visible_header = _normalized(extracted_pages[0] if extracted_pages else "")[
+                :1200
+            ]
+            month_pattern = (
+                r"Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|"
+                r"Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|"
+                r"Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?"
             )
+            visible_header_patterns = (
+                rf"(?i)\b(?:{month_pattern})\.?\s+\d{{1,2}}"
+                rf"(?:st|nd|rd|th)?[,]?\s+20\d{{2}}\b",
+                rf"(?i)\b\d{{1,2}}(?:st|nd|rd|th)?\s+"
+                rf"(?:{month_pattern})\.?[,]?\s+20\d{{2}}\b",
+                r"(?<!\d)20\d{2}[/-]\d{1,2}[/-]\d{1,2}(?!\d)",
+            )
+            for pattern in visible_header_patterns:
+                for value in re.findall(pattern, visible_header)[:20]:
+                    add(value, "original_pdf_visible_header_date", 1)
             for value in re.findall(
                 r"(?<!\d)20\d{2}[/-]\d{1,2}[/-]\d{1,2}(?!\d)", first_pages
             )[:20]:

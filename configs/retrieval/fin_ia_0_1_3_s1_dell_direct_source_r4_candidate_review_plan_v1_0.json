@@ -1,0 +1,134 @@
+{
+  "schema_version": "fin_ia_s1_external_source_candidate_review_plan_v1_0",
+  "status": "approved_internal_engineering_candidate_review",
+  "recorded_at": "2026-08-24",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "plan_id": "FIN-0.1.3-S1-DELL-DIRECT-SOURCE-R4-CANDIDATE-REVIEW-V1.0",
+  "ladder_terminal_ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_capture/fin013-dell-direct-r4-replay-20260824-0d31f720/terminal_result.json",
+  "ladder_terminal_sha256": "2a237a301e8e261e8cf159e2a30724b032b1175e1890cd81054f3956a3231662",
+  "ladder_terminal_result_digest": "7d8e69e398fc2bb95f6c320588cf690268fb88100977f69d12dca1b90baa788b",
+  "source_use_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_source_strength_and_claim_use_policy_v1_0.json",
+  "source_use_policy_sha256": "d55b813321210a2de33312a900912bf925649ece003d70608066c26d05bb8283",
+  "original_proposal_dispositions": [
+    {
+      "candidate_proposal_digest": "af51b97caa4bfe7a87ede5426e285ed6ae10c2f442f8a6c32d0eb5e85feb1ecd",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "PT 报价候选已在 R1 以相同 source-object identity 完成 CandidateDecision 和 Evidence Gate；R4 不重复计入。"
+    },
+    {
+      "candidate_proposal_digest": "910f207bc7775da8639752b4001e49cf0d2247de7b635eb6d2918ad00784f29b",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "PT 配置候选已在 R1 以相同 source-object identity 完成 CandidateDecision 和 Evidence Gate；R4 不重复计入。"
+    },
+    {
+      "candidate_proposal_digest": "896f1a6450acb14b0cf6f61e19858b6d737cf6e25c42539f3776c2632a3a52d0",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "mississippi-jsu-four-xe9680-systems-corrected-date",
+      "reason_zh": "该 proposal 绑定纠正后的 2025-02-20 source identity，但自动摘录混入前一合同；改用 JSU 四套系统与 Dell XE9680/H100 配置的连续原文。"
+    },
+    {
+      "candidate_proposal_digest": "022986ba14068b8c0724790afae86d32b1244911096fb8d381de9f63c0569d62",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "该自动候选是 Epic 软件合同段落，与 Dell AI server 数量、价格或供应关系无关。"
+    },
+    {
+      "candidate_proposal_digest": "13ff3f95eecb190c1b94a95c960e0a972be67b935288010118b67279892eb0e9",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "CMBI source object 与 R1 完全相同，且 Figure 17 视觉复核不能恢复可辩护的 Dell share；不重复或升级。"
+    },
+    {
+      "candidate_proposal_digest": "376e95794b6e8749e9a6fcea10182a5a8cfe314a6260b0c51885b14de796d0b2",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "该段主要讨论 PC、AI server orders 与 backlog，不是 Dell unit shipments，且已在 R1 判为 out-of-scope。"
+    },
+    {
+      "candidate_proposal_digest": "2c46fb2c3e497e484c3d00a162318debe17f59a2d88f45a51c88c45e3ceadb14",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "dell-nvidia-executive-confirmation-and-global-availability",
+      "reason_zh": "用同一 issuer capture 的双方 CEO 引述和明确 availability 子串证明公开合作与产品可用状态；不推断私有 allocation。"
+    },
+    {
+      "candidate_proposal_digest": "302dfa7cd05cab2229ff4b4a22e7ccd90cec8d1ec03fc9fb920ef0e38d3090e2",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "dell-nvidia-current-partnership-and-availability",
+      "reason_zh": "用 Dell 官方 PDF 的标题、周年、广泛采用与协作表述建立 2025-03-18 Dell→NVIDIA 当前关系，避免使用整页产品规格。"
+    },
+    {
+      "candidate_proposal_digest": "12eb20841f319f8f56c87ce7e74ca00fecb8cee1ef54961a7201466a195d992c",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "NVIDIA shipping-scale 候选已在 R1 以相同 source-object identity 进入 Evidence Pack；R4 不重复计入。"
+    },
+    {
+      "candidate_proposal_digest": "5735f2545a880bc0e94eaeadf1d04a261119a6979bde188e96e3149e6739f174",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "该 NVIDIA 重叠候选已在 R1 拒绝，R4 不改变其 disposition。"
+    }
+  ],
+  "reviewed_candidate_specs": [
+    {
+      "review_candidate_key": "mississippi-jsu-four-xe9680-systems-corrected-date",
+      "source_id": "PUBLIC::DELL-EXT::3F7981CD8B953FA5A0E6",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "Jackson State University (“JSU”) requests approval to enter into an agreement with Teklinks, Inc. dba CSpire Business (“Cspire”) for the purchase of four (4) high performance computer systems for the purpose of research and teaching utilizing Artificial Intelligence and Machine Learning. Contractor’s Legal Name: TEKLINKS, INC. DBA C SPIRE BUSINESS History of Contract: This is a new agree ment. Specific Type of Contract: Purchase agreement. Purpose: The purpose of this agreement is to purchase four (4) fully integrated computer systems that will be designed and produced according to university specifications. The unique systems will feature Dell’s PowerEdge XE9680 technology utilizing the latest Intel Xeon Platinum 8468 processors, NVIDIA HGX H100 GPUs, Dell’s Advanced Cluster Engine management software and other high-level components.",
+      "origin_candidate_proposal_digests": [
+        "896f1a6450acb14b0cf6f61e19858b6d737cf6e25c42539f3776c2632a3a52d0"
+      ],
+      "claim_use": "bounded_market_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "以纠正后的 2025-02-20 Board Book identity 替代 R1 的 2025-02-19 identity；仍只证明单一采购项目四套系统，不证明 Dell 公司出货。"
+    },
+    {
+      "review_candidate_key": "mississippi-jsu-bundled-contract-value-corrected-date",
+      "source_id": "PUBLIC::DELL-EXT::3F7981CD8B953FA5A0E6",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "Scope of Work: CSpire will provide (4) high performance computer systems, installation, training, and a five (5) year maintenance and support. Term of Contract: The agreement is for the immediate one-time purchase and installation of the equipment. However, under the included Maintenance and Support plan, JSU shall receive training and support services for the period of five (5) years from the date the equipment is installed. Contract Amount: The total contract cost for the purchase of the equipment, delivery, installation, training and the five (5) year maintenance and support services plan is $2,278,577.28.",
+      "origin_candidate_proposal_digests": [],
+      "supplemental_reason_zh": "日期纠正后的 deterministic proposal 未再次覆盖合同总额下一页；该精确子串已在 R1 同一 raw body 中审阅，现需用纠正后的 source identity 重建并退休旧 identity。",
+      "claim_use": "bounded_market_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "以纠正后的 2025-02-20 source identity 绑定四套系统、交付、安装、培训、五年支持与合同总额；不得变成裸机或公司 ASP。"
+    },
+    {
+      "review_candidate_key": "dell-nvidia-current-partnership-and-availability",
+      "source_id": "PUBLIC::DELL-EXT::518D98AA635617191E58",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "Dell Technologies Accelerates Enterprise AI Innovation from PC to Data Center with NVIDIA March 18, 2025 The Dell AI Factory with NVIDIA adds new AI solutions and services that accelerate agentic AI adoption and simplify AI deployment with the industry’s broadest NVIDIA AI Enterprise Infrastructure portfolio Dell celebrates one-year anniversary of the Dell AI Factory with NVIDIA, helping over 2,000 customers from startups to enterprises to hyperscalers develop AI factories Dell Technologies announces broad adoption of the latest NVIDIA innovations, including the NVIDIA Blackwell Ultra platform and NVIDIA AI Data Platform across the industry’s first and only end-to-end enterprise AI solution 1 SAN JOSE, Calif.--(BUSINESS WIRE)--Mar. 18, 2025-- NVIDIA GTC 2025: Marking one year since the launch of the Dell AI Factory with NVIDIA, Dell Technologies (NYSE: DELL) announces new AI PCs, infrastructure, software and services advancements to accelerate enterprise AI innovation at any scale.",
+      "origin_candidate_proposal_digests": [
+        "302dfa7cd05cab2229ff4b4a22e7ccd90cec8d1ec03fc9fb920ef0e38d3090e2"
+      ],
+      "claim_use": "target_company_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [
+        "PUBLIC::DELL-EXT::2184F13EB685F627C757"
+      ],
+      "business_reason_zh": "Dell issuer 原文证明截至 2025-03-18 的 Dell AI Factory with NVIDIA 当前合作、客户采用与 Blackwell 平台采用；与 NVIDIA 官方反向点名形成双向公开关系。"
+    },
+    {
+      "review_candidate_key": "dell-nvidia-executive-confirmation-and-global-availability",
+      "source_id": "PUBLIC::DELL-EXT::518D98AA635617191E58",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "Perspectives: Michael Dell, Chief Executive Officer, Dell Technologies, states, \"We are celebrating the one-year anniversary of the Dell AI Factory with NVIDIA by doubling down on our mission to simplify AI for the enterprise. With seamless NVIDIA hardware and software from desktop to data center, only Dell delivers the consistency and reliability organizations need to support AI initiatives. We are breaking down barriers to AI adoption, speeding up deployments, and helping enterprises integrate AI into their operations.” Jensen Huang, Founder and Chief Executive Officer, NVIDIA, states, “Every industry is racing to build AI factories to produce intelligence. NVIDIA and Dell are partnering to deliver the industry’s broadest, end-to-end AI infrastructure, giving enterprises everything they need to develop, deploy and scale AI. From deskside workstations to data center-scale AI factories, this platform will power the next wave of AI-driven breakthroughs.” Read what customers are saying about Dell AI Factory here. Availability Dell Pro Max desktops and laptops will be available beginning March 2025 with more releasing in the coming months. Dell Pro Max with GB300 and Dell Pro Max with GB10 will be available later this year. Dell PowerEdge XE7740 and XE7745 servers supporting NVIDIA RTX PRO™ 6000 Blackwell Server Edition PCIe GPUs will be globally available later this year. The Dell PowerEdge XE8712 will be globally available later this year. All components of the Dell AI Data Platform with NVIDIA are available globally now. The Dell AI Factory with NVIDIA delivering Agentic AI is available globally now. The Dell AI Factory with NVIDIA validating NVIDIA Run:ai’s orchestration platform is available globally now. The Dell AI Code Assistant is available globally now.",
+      "origin_candidate_proposal_digests": [
+        "2c46fb2c3e497e484c3d00a162318debe17f59a2d88f45a51c88c45e3ceadb14"
+      ],
+      "claim_use": "target_company_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [
+        "PUBLIC::DELL-EXT::2184F13EB685F627C757"
+      ],
+      "business_reason_zh": "双方 CEO 的 issuer-captured 引述和 Dell 的明确 availability 清单证明公开合作与当时产品状态；不证明私有 GPU allocation、采购合同、公司 units 或利润。"
+    }
+  ],
+  "plan_digest": "50c7dc7864360fc61476e140d0aa75c790e79c9b779fb4c7948a0f50b82ea9d5"
+}

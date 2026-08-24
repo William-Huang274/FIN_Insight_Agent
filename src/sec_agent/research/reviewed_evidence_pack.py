@@ -229,12 +229,140 @@ def build_reviewed_evidence_pack_successor(
     return successor
 
 
+def build_reviewed_evidence_pack_correction_successor(
+    *,
+    predecessor: Mapping[str, Any],
+    evidence_result: Mapping[str, Any],
+    accepted_result_statuses: Sequence[str],
+    gap_ids_satisfied: Sequence[str],
+    retirements: Sequence[Mapping[str, Any]],
+    successor_lineage: Mapping[str, Any],
+    content_gate_basis: str,
+    known_boundary_suffix: str,
+) -> dict[str, Any]:
+    """Retire exactly bound stale identities before adding corrected Evidence."""
+
+    validate_reviewed_evidence_pack(predecessor)
+    rows = [dict(row) for row in retirements]
+    target_ids = [str(row.get("target_id") or "") for row in rows]
+    replacement_candidate_ids = [
+        str(row.get("replacement_candidate_id") or "") for row in rows
+    ]
+    _require(
+        rows
+        and len(target_ids) == len(set(target_ids))
+        and all(target_ids)
+        and len(replacement_candidate_ids)
+        == len(set(replacement_candidate_ids))
+        and all(replacement_candidate_ids)
+        and all(str(row.get("reason_zh") or "") for row in rows),
+        "reviewed_evidence_pack_correction_retirement_shape_invalid",
+    )
+    existing_items = {
+        str(row.get("target_id") or ""): dict(row)
+        for row in predecessor.get("evidence_items") or ()
+    }
+    existing_materials = {
+        str(row.get("material_ref") or ""): dict(row)
+        for row in predecessor.get("source_materials") or ()
+    }
+    accepted_items = {
+        str(row.get("target_id") or ""): dict(row)
+        for row in evidence_result.get("accepted_evidence_items") or ()
+    }
+    expected_replacement_targets = {
+        "EXTEV::"
+        + canonical_digest(
+            {
+                "candidate_id": candidate_id,
+                "plan_id": evidence_result.get("plan_id"),
+            }
+        )[:20].upper()
+        for candidate_id in replacement_candidate_ids
+    }
+    _require(
+        expected_replacement_targets <= set(accepted_items),
+        "reviewed_evidence_pack_correction_replacement_missing",
+    )
+    retired_material_refs: set[str] = set()
+    for retirement in rows:
+        target_id = str(retirement["target_id"])
+        item = existing_items.get(target_id)
+        material_ref = str(retirement.get("source_material_ref") or "")
+        material = existing_materials.get(material_ref)
+        _require(
+            item is not None
+            and material is not None
+            and str(item.get("evidence_item_digest") or "")
+            == str(retirement.get("evidence_item_digest") or "")
+            and str(item.get("source_record_id") or "")
+            == str(retirement.get("source_record_id") or "")
+            and str(item.get("source_material_ref") or "") == material_ref
+            and str(material.get("source_record_id") or "")
+            == str(retirement.get("source_record_id") or ""),
+            "reviewed_evidence_pack_correction_retirement_binding_invalid",
+        )
+        retired_material_refs.add(material_ref)
+    kept_items = [
+        deepcopy(dict(row))
+        for row in predecessor.get("evidence_items") or ()
+        if str(row.get("target_id") or "") not in set(target_ids)
+    ]
+    _require(
+        kept_items
+        and not any(
+            str(row.get("source_material_ref") or "") in retired_material_refs
+            for row in kept_items
+        ),
+        "reviewed_evidence_pack_correction_shared_material_invalid",
+    )
+    corrected_body = deepcopy(dict(predecessor))
+    corrected_body.pop("pack_payload_digest", None)
+    corrected_body["evidence_items"] = kept_items
+    corrected_body["source_materials"] = [
+        deepcopy(dict(row))
+        for row in predecessor.get("source_materials") or ()
+        if str(row.get("material_ref") or "") not in retired_material_refs
+    ]
+    counts = dict(corrected_body.get("observed_counts") or {})
+    counts["accepted_evidence_items"] = len(corrected_body["evidence_items"])
+    counts["bounded_context_items"] = sum(
+        row.get("disposition") == "accepted_bounded_context_evidence"
+        for row in corrected_body["evidence_items"]
+    )
+    counts["direct_evidence_items"] = sum(
+        row.get("disposition") == "accepted_direct_source_evidence"
+        for row in corrected_body["evidence_items"]
+    )
+    counts["source_materials"] = len(corrected_body["source_materials"])
+    corrected_body["observed_counts"] = counts
+    corrected_body["known_boundary"] = (
+        "Intermediate correction view retires only digest-bound stale Evidence "
+        "and source materials before replacement admission."
+    )
+    corrected_predecessor = {
+        **corrected_body,
+        "pack_payload_digest": canonical_digest(corrected_body),
+    }
+    validate_reviewed_evidence_pack(corrected_predecessor)
+    return build_reviewed_evidence_pack_successor(
+        predecessor=corrected_predecessor,
+        evidence_result=evidence_result,
+        accepted_result_statuses=accepted_result_statuses,
+        gap_ids_satisfied=gap_ids_satisfied,
+        successor_lineage=successor_lineage,
+        content_gate_basis=content_gate_basis,
+        known_boundary_suffix=known_boundary_suffix,
+    )
+
+
 __all__ = [
     "REVIEWED_EVIDENCE_PACK_CONTRACT",
     "REVIEWED_EVIDENCE_PACK_SCHEMA",
     "ReviewedEvidencePackError",
     "canonical_bytes",
     "canonical_digest",
+    "build_reviewed_evidence_pack_correction_successor",
     "build_reviewed_evidence_pack_successor",
     "file_sha256",
     "validate_reviewed_evidence_pack",

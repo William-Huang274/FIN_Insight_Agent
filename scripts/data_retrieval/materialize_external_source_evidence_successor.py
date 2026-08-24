@@ -20,6 +20,7 @@ from retrieval.external_source_evidence import (  # noqa: E402
 )
 from retrieval.query_plan import canonical_digest  # noqa: E402
 from sec_agent.research.reviewed_evidence_pack import (  # noqa: E402
+    build_reviewed_evidence_pack_correction_successor,
     build_reviewed_evidence_pack_successor,
     validate_reviewed_evidence_pack,
 )
@@ -112,7 +113,7 @@ def _product_successor_projection(
                 coverage["added_direct_evidence_count"]
                 + coverage["added_bounded_context_evidence_count"]
             ),
-            "retired_evidence_count": 0,
+            "retired_evidence_count": coverage["retired_evidence_count"],
             "successor_evidence_count": coverage["successor_evidence_count"],
             "candidate_text_promoted_count": 0,
             "numeric_authority_granted_count": 0,
@@ -184,14 +185,22 @@ def materialize(plan: dict) -> tuple[dict, dict, dict]:
         compiled_result=compiled,
         plan=plan,
     )
-    successor = build_reviewed_evidence_pack_successor(
-        predecessor=predecessor,
-        evidence_result=evidence,
-        accepted_result_statuses=(
+    retirements = [
+        dict(row) for row in plan.get("predecessor_evidence_retirements") or ()
+    ]
+    builder = (
+        build_reviewed_evidence_pack_correction_successor
+        if retirements
+        else build_reviewed_evidence_pack_successor
+    )
+    builder_kwargs = {
+        "predecessor": predecessor,
+        "evidence_result": evidence,
+        "accepted_result_statuses": (
             "external_source_evidence_gate_passed_internal_engineering",
         ),
-        gap_ids_satisfied=plan.get("gap_ids_satisfied") or (),
-        successor_lineage={
+        "gap_ids_satisfied": plan.get("gap_ids_satisfied") or (),
+        "successor_lineage": {
             "recorded_at": plan.get("recorded_at"),
             "source_family": "captured_external_source_ladder",
             "adjudication_plan_id": plan.get("plan_id"),
@@ -201,17 +210,27 @@ def materialize(plan: dict) -> tuple[dict, dict, dict]:
                 "pack_payload_digest"
             ),
             "evidence_result_digest": evidence.get("result_digest"),
+            "retirement_receipt_digest": (
+                canonical_digest(retirements) if retirements else None
+            ),
         },
-        content_gate_basis=(
+        "content_gate_basis": (
             "reviewed_predecessor_plus_capture_bound_source_use_gated_external_ladder"
         ),
-        known_boundary_suffix=(
+        "known_boundary_suffix": (
             "The added Evidence preserves issuer-direct versus bounded ecosystem "
             "roles. Industry, channel and media material cannot create Dell "
             "exact ASP, unit, allocation, yield, profit or causal authority. "
-            "This internal engineering successor does not qualify S1, grant "
-            "qualified-human acceptance or authorize publication."
+            "Any retired item is a digest-bound stale source identity replaced "
+            "by corrected Evidence, not a silent deletion. This internal "
+            "engineering successor does not qualify S1, grant qualified-human "
+            "acceptance or authorize publication."
         ),
+    }
+    if retirements:
+        builder_kwargs["retirements"] = retirements
+    successor = builder(
+        **builder_kwargs,
     )
     direct_count = sum(
         row.get("disposition") == "accepted_direct_source_evidence"
@@ -238,6 +257,7 @@ def materialize(plan: dict) -> tuple[dict, dict, dict]:
             "predecessor_evidence_count": len(predecessor.get("evidence_items") or ()),
             "added_direct_evidence_count": direct_count,
             "added_bounded_context_evidence_count": bounded_count,
+            "retired_evidence_count": len(retirements),
             "successor_evidence_count": len(successor.get("evidence_items") or ()),
             "residual_gap_count_before": len(predecessor.get("residual_gaps") or ()),
             "residual_gap_count_after": len(successor.get("residual_gaps") or ()),

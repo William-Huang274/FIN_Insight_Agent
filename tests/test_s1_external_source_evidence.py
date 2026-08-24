@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import hashlib
 import json
 from pathlib import Path
 
@@ -16,6 +17,12 @@ from retrieval.external_source_evidence import (
 from retrieval.public_context_source import PUBLIC_HTML_SOURCE_OBJECT_SCHEMA_VERSION
 from retrieval.query_plan import canonical_digest
 from retrieval.source_use_policy import SourceUsePolicy
+from sec_agent.research.reviewed_evidence_pack import (
+    REVIEWED_EVIDENCE_PACK_CONTRACT,
+    REVIEWED_EVIDENCE_PACK_SCHEMA,
+    ReviewedEvidencePackError,
+    build_reviewed_evidence_pack_correction_successor,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -249,6 +256,138 @@ def _evidence_plan(compiled: dict) -> dict:
     return {**body, "plan_digest": canonical_digest(body)}
 
 
+def _stale_pack() -> dict:
+    source_text = "Stale date-bound procurement evidence."
+    source_digest = hashlib.sha256(source_text.encode("utf-8")).hexdigest()
+    body = {
+        "schema_version": REVIEWED_EVIDENCE_PACK_SCHEMA,
+        "contract_ref": REVIEWED_EVIDENCE_PACK_CONTRACT,
+        "status": "local_evidence_pack_ready_with_declared_residual_gaps",
+        "case_key": "DELL",
+        "candidate_manifest_digest": "a" * 64,
+        "retrieval_result_digest": "b" * 64,
+        "generalization_contract_digest": "c" * 64,
+        "content_gate_basis": "fixture",
+        "evidence_items": [
+            {
+                "case_key": "DELL",
+                "target_id": "EXTEV::STALE",
+                "source_record_id": "SOURCE::STALE",
+                "source_material_ref": "MATERIAL::STALE",
+                "source_content_digest": source_digest,
+                "object_type": "claim",
+                "disposition": "accepted_bounded_context_evidence",
+                "evidence_role": "counterparty_or_ecosystem_readthrough",
+                "publication_date": "2025-02-19",
+                "source_reporting_period_end": None,
+                "research_as_of": "2026-08-06",
+                "relationship_directions": ["procurement_to_target_proxy"],
+                "slot_bindings": [
+                    {
+                        "slot_id": "demand_volume_quality",
+                        "facet_ids": ["bounded_units"],
+                        "qualification_id": "fixture",
+                        "business_meaning_zh": "旧日期采购观察。",
+                        "claim_boundary_zh": "不是公司出货量。",
+                    }
+                ],
+                "numeric_use_boundary": "No company NumericFact.",
+                "causal_attribution_authorized": False,
+                "writer_citable": True,
+                "evidence_item_digest": "d" * 64,
+            },
+            {
+                "case_key": "DELL",
+                "target_id": "EXTEV::STABLE",
+                "source_record_id": "SOURCE::STABLE",
+                "source_material_ref": "MATERIAL::STABLE",
+                "source_content_digest": source_digest,
+                "object_type": "claim",
+                "disposition": "accepted_direct_source_evidence",
+                "evidence_role": "issuer_direct_source",
+                "publication_date": "2025-03-01",
+                "source_reporting_period_end": None,
+                "research_as_of": "2026-08-06",
+                "relationship_directions": ["subject_self_disclosure"],
+                "slot_bindings": [
+                    {
+                        "slot_id": "demand_volume_quality",
+                        "facet_ids": ["stable_fact"],
+                        "qualification_id": "fixture",
+                        "business_meaning_zh": "稳定发行人证据。",
+                        "claim_boundary_zh": "不受日期纠正影响。",
+                    }
+                ],
+                "numeric_use_boundary": "No NumericFact.",
+                "causal_attribution_authorized": False,
+                "writer_citable": True,
+                "evidence_item_digest": "e" * 64,
+            },
+        ],
+        "rejected_items": [],
+        "residual_gaps": [
+            {
+                "gap_id": "dell-gap-pricing-units",
+                "gap_code": "metric_not_disclosed",
+                "slot_id": "pricing_mix_value_capture",
+                "facet_id": "volume_or_units",
+                "attempted_lane_ids": ["fixture"],
+                "business_reason_zh": "公司单位量未披露。",
+                "supplement_direction_zh": "保留缺口。",
+            }
+        ],
+        "source_materials": [
+            {
+                "material_ref": "MATERIAL::STALE",
+                "source_record_id": "SOURCE::STALE",
+                "evidence_owner_ticker": "ORG::FIXTURE",
+                "source_tier": "government_primary",
+                "source_type": "PUBLIC_PDF",
+                "source_url": "https://example.org/stale.pdf",
+                "publication_date": "2025-02-19",
+                "period_end": None,
+                "license_scope": "public_web_private_research_capture",
+                "redistributable": False,
+                "source_text": source_text,
+                "source_text_digest": source_digest,
+            },
+            {
+                "material_ref": "MATERIAL::STABLE",
+                "source_record_id": "SOURCE::STABLE",
+                "evidence_owner_ticker": "DELL",
+                "source_tier": "issuer_primary",
+                "source_type": "PUBLIC_WEB",
+                "source_url": "https://example.org/stable",
+                "publication_date": "2025-03-01",
+                "period_end": None,
+                "license_scope": "public_web_private_research_capture",
+                "redistributable": False,
+                "source_text": source_text,
+                "source_text_digest": source_digest,
+            },
+        ],
+        "observed_counts": {
+            "accepted_evidence_items": 2,
+            "direct_evidence_items": 1,
+            "bounded_context_items": 1,
+            "rejected_items": 0,
+            "residual_gaps": 1,
+            "source_materials": 2,
+        },
+        "consumer_contract": {
+            "writer_may_consume_only_writer_citable_items": True,
+            "context_items_must_preserve_claim_boundary": True,
+            "rejected_items_must_not_enter_prompt": True,
+            "residual_gaps_must_remain_visible": True,
+            "exact_numeric_surface_must_be_source_visible_or_typed": True,
+            "derived_numeric_claim_requires_deterministic_program": True,
+            "model_may_not_change_identity_period_currency_unit_or_relationship_direction": True,
+        },
+        "known_boundary": "Fixture stale pack.",
+    }
+    return {**body, "pack_payload_digest": canonical_digest(body)}
+
+
 def test_external_review_and_gate_preserve_direct_and_context_roles() -> None:
     terminal, review_plan = _review_fixture()
     compiled = compile_external_source_candidate_review(
@@ -344,4 +483,90 @@ def test_external_evidence_cannot_close_gap_without_separate_receipt() -> None:
         adjudicate_external_source_evidence(
             compiled_result=compiled,
             plan=mutated,
+        )
+
+
+def test_pack_correction_retires_stale_identity_before_replacement() -> None:
+    terminal, review_plan = _review_fixture()
+    compiled = compile_external_source_candidate_review(
+        ladder_terminal=terminal,
+        plan=review_plan,
+        source_use_policy=_policy(),
+    )
+    evidence = adjudicate_external_source_evidence(
+        compiled_result=compiled,
+        plan=_evidence_plan(compiled),
+    )
+    replacement_candidate_id = compiled["candidates"][0]["candidate_id"]
+    successor = build_reviewed_evidence_pack_correction_successor(
+        predecessor=_stale_pack(),
+        evidence_result=evidence,
+        accepted_result_statuses=(
+            "external_source_evidence_gate_passed_internal_engineering",
+        ),
+        gap_ids_satisfied=(),
+        retirements=(
+            {
+                "target_id": "EXTEV::STALE",
+                "evidence_item_digest": "d" * 64,
+                "source_record_id": "SOURCE::STALE",
+                "source_material_ref": "MATERIAL::STALE",
+                "replacement_candidate_id": replacement_candidate_id,
+                "reason_zh": "以纠正后的 source identity 替代旧日期。",
+            },
+        ),
+        successor_lineage={"fixture": True},
+        content_gate_basis="fixture_correction",
+        known_boundary_suffix="No gap closure.",
+    )
+
+    assert "EXTEV::STALE" not in {
+        row["target_id"] for row in successor["evidence_items"]
+    }
+    assert "MATERIAL::STALE" not in {
+        row["material_ref"] for row in successor["source_materials"]
+    }
+    assert successor["observed_counts"]["accepted_evidence_items"] == 3
+    assert successor["observed_counts"]["source_materials"] == 3
+    assert len(successor["residual_gaps"]) == 1
+
+
+def test_pack_correction_rejects_stale_digest_drift() -> None:
+    terminal, review_plan = _review_fixture()
+    compiled = compile_external_source_candidate_review(
+        ladder_terminal=terminal,
+        plan=review_plan,
+        source_use_policy=_policy(),
+    )
+    evidence = adjudicate_external_source_evidence(
+        compiled_result=compiled,
+        plan=_evidence_plan(compiled),
+    )
+
+    with pytest.raises(
+        ReviewedEvidencePackError,
+        match="reviewed_evidence_pack_correction_retirement_binding_invalid",
+    ):
+        build_reviewed_evidence_pack_correction_successor(
+            predecessor=_stale_pack(),
+            evidence_result=evidence,
+            accepted_result_statuses=(
+                "external_source_evidence_gate_passed_internal_engineering",
+            ),
+            gap_ids_satisfied=(),
+            retirements=(
+                {
+                    "target_id": "EXTEV::STALE",
+                    "evidence_item_digest": "e" * 64,
+                    "source_record_id": "SOURCE::STALE",
+                    "source_material_ref": "MATERIAL::STALE",
+                    "replacement_candidate_id": compiled["candidates"][0][
+                        "candidate_id"
+                    ],
+                    "reason_zh": "漂移必须拒绝。",
+                },
+            ),
+            successor_lineage={"fixture": True},
+            content_gate_basis="fixture_correction",
+            known_boundary_suffix="No gap closure.",
         )

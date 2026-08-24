@@ -285,3 +285,28 @@ date；同时 Mississippi Board Book 标题开头的 `February 20, 2025` 确实�
 preflight finding receipt 为 `d36c10eb...4542d`，successor replay plan v1.1 为
 `46405378...d5a6b`。修正后的只读复现已经得到恰好 `2` 个 date/object identity change 与 `3`
 个 unchanged digest；正式 zero-network replay 仍须等 clean commit 后使用新 attempt ID。
+
+正式 replay attempt `fin013-dell-direct-r4-replay-20260824-0d31f720` 通过：`5` 个 immutable
+raw captures 全部复用，`0` network／provider／model／generation，重新生成 `5` 个 source
+objects 与 `10` 个 proposals。delta receipt `b176c98e...8a084` 证明：
+
+- Dell IR：`2026-06-06 -> 2025-03-18`，新 source ID
+  `PUBLIC::DELL-EXT::518D98AA635617191E58`；
+- Mississippi Board Book：`2025-02-19 -> 2025-02-20`，新 source ID
+  `PUBLIC::DELL-EXT::3F7981CD8B953FA5A0E6`；
+- PT、CMBI、NVIDIA 三个 source object digest 不变。
+
+R4 exhaustive CandidateDecision 覆盖 `10/10` proposals：`3` 个 replaced、`7` 个 rejected，另有
+`1` 个 capture-bound supplemental candidate 用于重建 Board Book 合同总额；最终 `4` 个 reviewed
+candidates、`0` unjudged、`0` network/model。两个 Dell candidates 为 issuer
+`target_company_exact_fact`，两个 Mississippi candidates 仍为 bounded market context；全部保持
+exact numeric authority 为 false。
+
+R4 Evidence Gate 使用 correction successor，而不是在 Pack 中叠加冲突日期：从前序 `53`
+Evidence 精确退休 `2` 条旧 Mississippi target/material identity，加入 `2` 条 2025-02-20
+replacement 与 `2` 条 2025-03-18 Dell issuer-direct Evidence，得到 `55` Evidence／`55`
+materials。旧 source ID 在 successor 中为 `0` 条；两条 Dell item 均为
+`accepted_direct_source_evidence`。`14 -> 14` residual gaps、`0` closed，只继续 narrowed
+`pricing-asp`、`pricing-units` 与 `supplier-capacity-readthrough`。Pack payload digest 为
+`1654b68f...e2a98`，Evidence successor result digest 为 `9ec7bdef...052c9`；仍不授予
+qualified-human、S1 qualification、NumericFact 或 publication。

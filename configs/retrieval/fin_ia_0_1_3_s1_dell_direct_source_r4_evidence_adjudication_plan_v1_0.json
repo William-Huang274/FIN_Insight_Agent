@@ -1,0 +1,162 @@
+{
+  "schema_version": "fin_ia_s1_external_source_evidence_adjudication_plan_v1_0",
+  "status": "approved_internal_engineering_evidence_gate",
+  "recorded_at": "2026-08-24",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "plan_id": "FIN-0.1.3-S1-DELL-DIRECT-SOURCE-R4-EVIDENCE-ADJUDICATION-V1.0",
+  "compiled_result_ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/candidate_review_result.json",
+  "compiled_result_sha256": "4e5d6bd677907053963d50715b88fe9d54c57cbe9e248da5a9e3aca601073405",
+  "compiled_result_digest": "46cfdd5ca7ec9857ed809c6aec8b1bffbfc58b932a27c9dcfabe40a76021c402",
+  "predecessor_pack_ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r1/successor/pack.json",
+  "predecessor_pack_sha256": "51efe2d916368f12eea6fb0543ee7a149baa9e13be948aa8c046a72c3568a967",
+  "predecessor_pack_payload_digest": "33e9a565f7ba4468410afbf230cc4190ec7049d11de0efe1dc114d70fbd389ec",
+  "qualified_human_review": false,
+  "S1_qualification_authorized": false,
+  "product_publication_authorized": false,
+  "gap_ids_satisfied": [],
+  "predecessor_evidence_retirements": [
+    {
+      "target_id": "EXTEV::25A5DC3F8DED871F7DFC",
+      "evidence_item_digest": "9d9dd03a79723ea8254868bfe0fe938405bf901449f64a567b7322147f762723",
+      "source_record_id": "PUBLIC::DELL-EXT::B6A8601D8D3E8A4243BA",
+      "source_material_ref": "source_material_external_823669a4cf569149768c71e8",
+      "replacement_candidate_id": "PUBCAND::A370227B07EA30B45678",
+      "reason_zh": "退休 publication_date=2025-02-19 的合同总额 Evidence identity，以同一 immutable raw body、纠正后的 Board Book 2025-02-20 source identity 一一替换。"
+    },
+    {
+      "target_id": "EXTEV::59BE4D9DD9312721FB70",
+      "evidence_item_digest": "0cf35bd4fd7a0a41cf8e79201d682cc785547663f80c26440f3b8d59eb47ca58",
+      "source_record_id": "PUBLIC::DELL-EXT::B6A8601D8D3E8A4243BA",
+      "source_material_ref": "source_material_external_60b874dcb04748cb3ea4c7fe",
+      "replacement_candidate_id": "PUBCAND::EA4FD410345E44FDAACB",
+      "reason_zh": "退休 publication_date=2025-02-19 的四套系统 Evidence identity，以同一 immutable raw body、纠正后的 Board Book 2025-02-20 source identity 一一替换。"
+    }
+  ],
+  "decisions": [
+    {
+      "candidate_id": "PUBCAND::030F3B42188134F8ACEB",
+      "candidate_digest": "149a293a42d43f2e025371a74af1aef294a8d42b63a83606a201121c36141256",
+      "source_object_digest": "11e2ef57e6cf776821181b0f1a32ee167be02d44a3319dadef000a1969bf94d0",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "relationship_attribution",
+          "facet_ids": [
+            "issuer_names_nvidia_current_collaboration",
+            "current_platform_adoption",
+            "public_customer_adoption"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-SUPPLY-RELATIONSHIP"
+          ],
+          "business_meaning_zh": "Dell 官方在 2025-03-18 明确披露 Dell AI Factory with NVIDIA 一周年、超过 2,000 个客户采用及 Blackwell Ultra/NVIDIA AI Data Platform 的广泛采用，建立 Dell→NVIDIA 当前官方关系。",
+          "claim_boundary_zh": "只证明 Dell issuer 对公开合作、平台采用与客户采用的表述；不证明 NVIDIA 给 Dell 的私有 GPU allocation、采购合同、Dell server units 或利润。"
+        }
+      ],
+      "numeric_use_boundary_zh": "超过 2,000 个客户是 Dell 对 AI Factory 客户采用的 issuer exact statement，不是 AI server 出货台数、GPU 配额、订单或收入，不生成 NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::1ACF77CAFA32DB9DA79B",
+      "candidate_digest": "b9dd6b694bc13d93607905131c30a2b257355a1e49ff0feb1ed8d7964f0e98b5",
+      "source_object_digest": "11e2ef57e6cf776821181b0f1a32ee167be02d44a3319dadef000a1969bf94d0",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "relationship_attribution",
+          "facet_ids": [
+            "bilateral_executive_confirmation",
+            "public_solution_availability",
+            "issuer_product_timing"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-SUPPLY-RELATIONSHIP"
+          ],
+          "business_meaning_zh": "Dell capture 同时保留 Michael Dell 与 Jensen Huang 对 Dell-NVIDIA 合作的公开确认，以及当时 Dell AI Data Platform／AI Factory 组件的 availability 清单。",
+          "claim_boundary_zh": "公开产品可用状态和双方高管合作表述不等于私有供货配额、产能承诺、良率、采购条款、公司 shipments 或利润转化。"
+        }
+      ],
+      "numeric_use_boundary_zh": "availability 时点只可作为产品状态；不得转换为供货量、Dell units、allocation、收入或利润 NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::A370227B07EA30B45678",
+      "candidate_digest": "0790171d38d9b9b534cce83e506a4dfe5fd9f0ad9232d2685079dc89942581d9",
+      "source_object_digest": "f8a1d9e4c5259f783bd3669a490509b44f1471ecd5809f5a0a7bebe90c4badf7",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "bounded_public_procurement_contract_value",
+            "bundled_service_boundary"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PRICE-CONFIGURATION",
+            "DELL-PROP-UNIT-VOLUME"
+          ],
+          "business_meaning_zh": "纠正后的 2025-02-20 Board Book identity 把四套 Dell XE9680 系统与 2,278,577.28 美元总合同值绑定。",
+          "claim_boundary_zh": "总额覆盖设备、交付、安装、培训和五年维护支持；不得除以四后称为裸机成交价、Dell 公司 ASP 或产品收入。"
+        },
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "bounded_public_procurement_unit_observation"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-UNIT-VOLUME"
+          ],
+          "business_meaning_zh": "同一纠正 identity 保留四套完整系统的公开采购数量。",
+          "claim_boundary_zh": "四套只属于单一采购合同，不能外推为 Dell 当期出货、订单、市场份额或需求增速。"
+        }
+      ],
+      "numeric_use_boundary_zh": "2,278,577.28 美元和四套数量仅属于包含服务的单一采购合同，不得生成 Dell 公司级 ASP、units 或 NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-pricing-asp",
+        "dell-gap-pricing-units"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::EA4FD410345E44FDAACB",
+      "candidate_digest": "0f1ca18752e0e6fd02ec98b124367bc3fe4319d558d2ac41af2ee6a5c999c63a",
+      "source_object_digest": "f8a1d9e4c5259f783bd3669a490509b44f1471ecd5809f5a0a7bebe90c4badf7",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "bounded_public_procurement_unit_observation",
+            "saleable_configuration_example"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-UNIT-VOLUME"
+          ],
+          "business_meaning_zh": "纠正后的政府采购 source identity 明确列出四套采用 Dell XE9680、Xeon 8468、NVIDIA HGX H100 与 Dell Advanced Cluster Engine 的系统。",
+          "claim_boundary_zh": "只证明该采购项目数量与配置，不证明 Dell 公司总出货、标准销售单位、订单转收入节奏或市场份额。"
+        }
+      ],
+      "numeric_use_boundary_zh": "四套是单一高校项目采购数量，不是 Dell 公司级 units，也不能直接推导公司收入或 PVM volume。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-pricing-units"
+      ],
+      "gap_ids_satisfied": []
+    }
+  ],
+  "plan_digest": "35cbbe659c31180d40b22134ef22abe527aa640630a9bdf3223b04e890d3e640"
+}

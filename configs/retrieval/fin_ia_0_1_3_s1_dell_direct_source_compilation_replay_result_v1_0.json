@@ -1,0 +1,406 @@
+{
+  "attempt_id": "fin013-dell-direct-r4-replay-20260824-0d31f720",
+  "authority": {
+    "S1_qualification_authorized": false,
+    "candidate_decision_and_evidence_gate_required": true,
+    "candidate_is_not_evidence": true,
+    "gap_closure_authorized": false,
+    "predecessor_raw_captures_reusable": true,
+    "predecessor_source_objects_reusable": false,
+    "product_publication_authorized": false
+  },
+  "case_key": "DELL",
+  "defect_receipt_digest": "6eefdf33bd875b74a6161b5d6f65a41980f5cd9478188723e6f082e79c23148a",
+  "known_boundary": "This attempt reuses five immutable raw response captures and corrects only the original-source compilation/date adjudication. It performs zero network, provider, model and generation calls. Recompiled proposals remain candidate-only until exhaustive CandidateDecision and Evidence Gate; no gap closure or S1 qualification is authorized.",
+  "observed_counts": {
+    "candidate_evidence_promotions": 0,
+    "generation_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "raw_captures_reused": 5,
+    "source_objects_recompiled": 5
+  },
+  "original_compilation_summary": {
+    "candidate_proposal_count": 10,
+    "captured_count": 5,
+    "original_route_count": 5,
+    "parse_rejected_count": 0,
+    "publication_date_unresolved_count": 0,
+    "source_object_count": 5
+  },
+  "plan_digest": "464053789bbc9be3b19544edd3bf5b4f56ddf89841151e93ac529b25dfdd5a6b",
+  "plan_id": "FIN-0.1.3-S1-DELL-DIRECT-SOURCE-COMPILATION-REPLAY-R4",
+  "predecessor_attempt_id": "fin013-dell-direct-r2-20260824-b5ace0f5",
+  "predecessor_terminal_result_digest": "a5b4c1ed4ea5722a5e73e1f43762cc4cad156c7315242aa1880260b9978f8fe9",
+  "prepared_from_commit": "0d31f7207887a2b9d427e47209981b3bbb255bd2",
+  "private_terminal_ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_capture/fin013-dell-direct-r4-replay-20260824-0d31f720/terminal_result.json",
+  "private_terminal_result_digest": "7d8e69e398fc2bb95f6c320588cf690268fb88100977f69d12dca1b90baa788b",
+  "private_terminal_sha256": "2a237a301e8e261e8cf159e2a30724b032b1175e1890cd81054f3956a3231662",
+  "recorded_at": "2026-08-24T11:01:18+00:00",
+  "replay_preflight_finding_digest": "d36c10eb082fb3752d7f13689b8f7232512dafbb315be99bfc53410029f4542d",
+  "research_as_of": "2026-08-06",
+  "result_digest": "12484054e212902262fa1c6a75e0ec6740f42dc1ed61e2ba9a391335b0e61dd8",
+  "route_receipts": [
+    {
+      "candidate_proposal_count": 2,
+      "canonical_url": "https://www.principledtechnologies.com/dell/Dell-AI-Factory-vs-AWS-Azure-TCO-science-0725.pdf",
+      "capture_failure_code": null,
+      "capture_reused_from_predecessor": true,
+      "capture_status": "captured",
+      "locator_digest": "3a9bc41d3b58aa9bf870d297085346706c14297ae40ce79c0486d69b3e275199",
+      "predecessor_capture_status": "captured",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "publication_date_receipt": {
+        "content_type": "application/pdf",
+        "final_url": "https://www.principledtechnologies.com/dell/Dell-AI-Factory-vs-AWS-Azure-TCO-science-0725.pdf",
+        "original_source_candidates": [
+          {
+            "after_research_as_of": false,
+            "date": "2025-07-23",
+            "priority": 2,
+            "source": "original_pdf_creation_date"
+          }
+        ],
+        "provider_date_corroborates_selected": false,
+        "provider_date_is_authority": false,
+        "provider_date_telemetry": null,
+        "receipt_digest": "feb8021c5abf2661e265fb3defa872a3327692b9bea1ef22a3f16451f3ef5271",
+        "research_as_of": "2026-08-06",
+        "schema_version": "fin_ia_s1_publication_date_adjudication_receipt_v1_0",
+        "selected_publication_date": "2025-07-23",
+        "status": "resolved_from_original_source"
+      },
+      "query_unit_id": "DELL-DIRECT-PRICE-QUOTE",
+      "route_id": "DELL_EXT_ORIGINAL_001_85EC7A48AB",
+      "source_id": "PUBLIC::DELL-EXT::329F1654BF36A1B63B37",
+      "source_object_digest": "6146274b3241eaf948422d4018707c5dd6d4e9cb1a4290e4ce1c63c09e5d64b1",
+      "source_object_status": "compiled_candidate_only",
+      "tier_id": "product_procurement_channel_deployment"
+    },
+    {
+      "candidate_proposal_count": 2,
+      "canonical_url": "https://www.mississippi.edu/sites/default/files/ihl/files/February%202025%20Board%20Book.pdf",
+      "capture_failure_code": null,
+      "capture_reused_from_predecessor": true,
+      "capture_status": "captured",
+      "locator_digest": "56ecdc5194f951036a0c1d9c6c01b755623c8dd38307f53330808dfd808e6121",
+      "predecessor_capture_status": "captured",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "publication_date_receipt": {
+        "content_type": "application/pdf",
+        "final_url": "https://www.mississippi.edu/sites/default/files/ihl/files/February%202025%20Board%20Book.pdf",
+        "original_source_candidates": [
+          {
+            "after_research_as_of": false,
+            "date": "2025-02-20",
+            "priority": 1,
+            "source": "original_pdf_visible_header_date"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2025-02-19",
+            "priority": 2,
+            "source": "original_pdf_creation_date"
+          }
+        ],
+        "provider_date_corroborates_selected": true,
+        "provider_date_is_authority": false,
+        "provider_date_telemetry": "2025-02-20",
+        "receipt_digest": "10c5f79d100f3432a011c159ddedada905b5841c17d981a2aea70dd2fff939e8",
+        "research_as_of": "2026-08-06",
+        "schema_version": "fin_ia_s1_publication_date_adjudication_receipt_v1_0",
+        "selected_publication_date": "2025-02-20",
+        "status": "resolved_from_original_source"
+      },
+      "query_unit_id": "DELL-DIRECT-VOLUME-PROCUREMENT",
+      "route_id": "DELL_EXT_ORIGINAL_002_28C311CF53",
+      "source_id": "PUBLIC::DELL-EXT::3F7981CD8B953FA5A0E6",
+      "source_object_digest": "f8a1d9e4c5259f783bd3669a490509b44f1471ecd5809f5a0a7bebe90c4badf7",
+      "source_object_status": "compiled_candidate_only",
+      "tier_id": "product_procurement_channel_deployment"
+    },
+    {
+      "candidate_proposal_count": 2,
+      "canonical_url": "https://www.cmbi.com.hk/upload/202601/20260102116952.pdf",
+      "capture_failure_code": null,
+      "capture_reused_from_predecessor": true,
+      "capture_status": "captured",
+      "locator_digest": "6a8c1dc519167b2b23ebaf84deebff23df364797cb66e5b767f4d1adc28f8962",
+      "predecessor_capture_status": "captured",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "publication_date_receipt": {
+        "content_type": "application/pdf",
+        "final_url": "https://www.cmbi.com.hk/upload/202601/20260102116952.pdf",
+        "original_source_candidates": [
+          {
+            "after_research_as_of": false,
+            "date": "2026-01-02",
+            "priority": 1,
+            "source": "original_pdf_visible_header_date"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2026-01-02",
+            "priority": 2,
+            "source": "original_pdf_creation_date"
+          }
+        ],
+        "provider_date_corroborates_selected": true,
+        "provider_date_is_authority": false,
+        "provider_date_telemetry": "2026-01-02",
+        "receipt_digest": "8a5750d806da1057932210d8cce72e900d9ae0ec552f69f402a54cc763bc393c",
+        "research_as_of": "2026-08-06",
+        "schema_version": "fin_ia_s1_publication_date_adjudication_receipt_v1_0",
+        "selected_publication_date": "2026-01-02",
+        "status": "resolved_from_original_source"
+      },
+      "query_unit_id": "DELL-DIRECT-VOLUME-INDUSTRY",
+      "route_id": "DELL_EXT_ORIGINAL_003_F208E21FDC",
+      "source_id": "PUBLIC::DELL-EXT::76844734FD1668F3A1C7",
+      "source_object_digest": "1c7c6c5bf75e759f4a7422a173a149593077ca5ec6ae82ecefe1e226d7ac029c",
+      "source_object_status": "compiled_candidate_only",
+      "tier_id": "industry_association_market_tracking"
+    },
+    {
+      "candidate_proposal_count": 2,
+      "canonical_url": "https://investors.delltechnologies.com/node/17471/pdf",
+      "capture_failure_code": null,
+      "capture_reused_from_predecessor": true,
+      "capture_status": "captured",
+      "locator_digest": "fc24ac82a1efc11eb9e13fad7671893f8f798358d2ff92a29f0f22efbbb8d2fd",
+      "predecessor_capture_status": "captured",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "publication_date_receipt": {
+        "content_type": "application/pdf",
+        "final_url": "https://investors.delltechnologies.com/node/17471/pdf",
+        "original_source_candidates": [
+          {
+            "after_research_as_of": false,
+            "date": "2025-03-18",
+            "priority": 1,
+            "source": "original_pdf_visible_header_date"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2026-06-06",
+            "priority": 2,
+            "source": "original_pdf_creation_date"
+          }
+        ],
+        "provider_date_corroborates_selected": true,
+        "provider_date_is_authority": false,
+        "provider_date_telemetry": "2025-03-18",
+        "receipt_digest": "348470bfac6e3f63126172cfe5d50b6b24480db7d24e462bc3f57abd8dd4ec13",
+        "research_as_of": "2026-08-06",
+        "schema_version": "fin_ia_s1_publication_date_adjudication_receipt_v1_0",
+        "selected_publication_date": "2025-03-18",
+        "status": "resolved_from_original_source"
+      },
+      "query_unit_id": "DELL-DIRECT-CURRENT-RELATIONSHIP",
+      "route_id": "DELL_EXT_ORIGINAL_004_26D16095FA",
+      "source_id": "PUBLIC::DELL-EXT::518D98AA635617191E58",
+      "source_object_digest": "11e2ef57e6cf776821181b0f1a32ee167be02d44a3319dadef000a1969bf94d0",
+      "source_object_status": "compiled_candidate_only",
+      "tier_id": "official_subject_regulator_customer_supplier"
+    },
+    {
+      "candidate_proposal_count": 2,
+      "canonical_url": "https://blogs.nvidia.com/blog/dell-technologies-ai-factories-blackwell/",
+      "capture_failure_code": null,
+      "capture_reused_from_predecessor": true,
+      "capture_status": "captured",
+      "locator_digest": "55cb4daeed526a4e1b4d116347d198dee0e11a94a86c74765406c558f78c00fc",
+      "predecessor_capture_status": "captured",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "publication_date_receipt": {
+        "content_type": "text/html",
+        "final_url": "https://blogs.nvidia.com/blog/dell-technologies-ai-factories-blackwell/",
+        "original_source_candidates": [
+          {
+            "after_research_as_of": false,
+            "date": "2025-05-27",
+            "priority": 0,
+            "source": "original_html_meta:article:published_time"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2025-05-27",
+            "priority": 1,
+            "source": "original_html_article_scoped_visible_date"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-13",
+            "priority": 1,
+            "source": "original_html_article_scoped_visible_date"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-14",
+            "priority": 1,
+            "source": "original_html_article_scoped_visible_date"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-17",
+            "priority": 1,
+            "source": "original_html_article_scoped_visible_date"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-20",
+            "priority": 1,
+            "source": "original_html_article_scoped_visible_date"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2025-05-27",
+            "priority": 2,
+            "source": "original_html_json_ld"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2026-07-23",
+            "priority": 2,
+            "source": "original_html_time_datetime"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2026-07-30",
+            "priority": 2,
+            "source": "original_html_time_datetime"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2026-08-06",
+            "priority": 2,
+            "source": "original_html_time_datetime"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-13",
+            "priority": 2,
+            "source": "original_html_time_datetime"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-14",
+            "priority": 2,
+            "source": "original_html_time_datetime"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-17",
+            "priority": 2,
+            "source": "original_html_time_datetime"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-20",
+            "priority": 2,
+            "source": "original_html_time_datetime"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2025-05-27",
+            "priority": 3,
+            "source": "original_html_visible_date_marker"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2026-07-23",
+            "priority": 3,
+            "source": "original_html_visible_date_marker"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2026-07-30",
+            "priority": 3,
+            "source": "original_html_visible_date_marker"
+          },
+          {
+            "after_research_as_of": false,
+            "date": "2026-08-06",
+            "priority": 3,
+            "source": "original_html_visible_date_marker"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-13",
+            "priority": 3,
+            "source": "original_html_visible_date_marker"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-14",
+            "priority": 3,
+            "source": "original_html_visible_date_marker"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-17",
+            "priority": 3,
+            "source": "original_html_visible_date_marker"
+          },
+          {
+            "after_research_as_of": true,
+            "date": "2026-08-20",
+            "priority": 3,
+            "source": "original_html_visible_date_marker"
+          }
+        ],
+        "provider_date_corroborates_selected": true,
+        "provider_date_is_authority": false,
+        "provider_date_telemetry": "2025-05-27",
+        "receipt_digest": "eccc4f1df1559d592b2a8db265e86b43c5a1d0700763bb141958f07ab0ca6a7e",
+        "research_as_of": "2026-08-06",
+        "schema_version": "fin_ia_s1_publication_date_adjudication_receipt_v1_0",
+        "selected_publication_date": "2025-05-27",
+        "status": "resolved_from_original_source"
+      },
+      "query_unit_id": "DELL-DIRECT-CURRENT-RELATIONSHIP",
+      "route_id": "DELL_EXT_ORIGINAL_005_FA985F5FA8",
+      "source_id": "PUBLIC::DELL-EXT::2184F13EB685F627C757",
+      "source_object_digest": "53decac62da35c62591b03830f1cab11c89a108815769bae23d5cd47e8ebd429",
+      "source_object_status": "compiled_candidate_only",
+      "tier_id": "official_subject_regulator_customer_supplier"
+    }
+  ],
+  "schema_version": "fin_ia_s1_dell_direct_source_compilation_replay_result_v1_0",
+  "source_object_delta_receipt": {
+    "case_key": "DELL",
+    "corrected_sources": [
+      {
+        "predecessor_publication_date": "2026-06-06",
+        "predecessor_source_id": "PUBLIC::DELL-EXT::FB81DB11FD81A3041F82",
+        "predecessor_source_object_digest": "f80339d4b2af1792d14cc7a8c9cc0f23d0c34e60a2dba7909bf62f0902498832",
+        "provider_date_corroborates_selected": true,
+        "source_url": "https://investors.delltechnologies.com/node/17471/pdf",
+        "successor_publication_date": "2025-03-18",
+        "successor_source_id": "PUBLIC::DELL-EXT::518D98AA635617191E58",
+        "successor_source_object_digest": "11e2ef57e6cf776821181b0f1a32ee167be02d44a3319dadef000a1969bf94d0"
+      },
+      {
+        "predecessor_publication_date": "2025-02-19",
+        "predecessor_source_id": "PUBLIC::DELL-EXT::B6A8601D8D3E8A4243BA",
+        "predecessor_source_object_digest": "464b405200092f75d9b61130a7e402f1ebd358ef50469ce84d98d9e92c845484",
+        "provider_date_corroborates_selected": true,
+        "source_url": "https://www.mississippi.edu/sites/default/files/ihl/files/February%202025%20Board%20Book.pdf",
+        "successor_publication_date": "2025-02-20",
+        "successor_source_id": "PUBLIC::DELL-EXT::3F7981CD8B953FA5A0E6",
+        "successor_source_object_digest": "f8a1d9e4c5259f783bd3669a490509b44f1471ecd5809f5a0a7bebe90c4badf7"
+      }
+    ],
+    "model_calls": 0,
+    "network_calls": 0,
+    "receipt_digest": "b176c98e0eeb3cc49eea1cc7a74db87352b813be6fdd6b04b4f95ea86048a084",
+    "schema_version": "fin_ia_s1_dell_direct_source_compilation_delta_receipt_v1_1",
+    "unchanged_source_object_urls": [
+      "https://blogs.nvidia.com/blog/dell-technologies-ai-factories-blackwell/",
+      "https://www.cmbi.com.hk/upload/202601/20260102116952.pdf",
+      "https://www.principledtechnologies.com/dell/Dell-AI-Factory-vs-AWS-Azure-TCO-science-0725.pdf"
+    ]
+  },
+  "status": "dell_direct_source_compilation_replay_complete"
+}

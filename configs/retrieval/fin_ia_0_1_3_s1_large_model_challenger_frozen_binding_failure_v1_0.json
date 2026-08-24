@@ -1,0 +1,38 @@
+{
+  "attempt_id": "FIN-0.1.3-S1-LARGE-MODEL-CHALLENGER-FULL-GATE-R1",
+  "authority": {
+    "evidence_or_numeric_authority_granted": false,
+    "runtime_promotion_authorized": false,
+    "s1_qualification_authorized": false
+  },
+  "calls": {
+    "model": 0,
+    "network": 0,
+    "provider": 0
+  },
+  "command": "python -m pytest -q",
+  "disposition": {
+    "historical_policy_hashes_changed": false,
+    "immutable_failure_preserved": true,
+    "required_successor": "restore both frozen v1 runtime files byte-for-byte and move sharded artifact identity to a versioned v2 module before a new full-gate attempt"
+  },
+  "failure_class": "frozen_runtime_digest_drift",
+  "failures": [
+    "tests/test_s1_vs5_candidate_execution_contract.py::test_vs5_candidate_execution_policy_binds_every_runtime_input",
+    "tests/test_s1_vs5_materiality_successor.py::test_successor_policy_binds_only_label_blind_r2_runtime_and_cuda_budget"
+  ],
+  "observed_binding": {
+    "expected_embedding_runtime_sha256": "e1778f246f56c2fe3ae5eb3baf09b1e0b647e95376beccd54b69a2c1885bada1",
+    "observed_embedding_runtime_sha256": "425b25fe6de92762955061674ea72624bcc9c0bf1a397a744a4a155b7c49df3"
+  },
+  "recorded_at": "2026-08-24T11:03:50+08:00",
+  "result": {
+    "duration_seconds": 193,
+    "failed": 2,
+    "passed": 1185,
+    "warnings": 2
+  },
+  "root_cause": "the first challenger implementation extended the already-frozen embedding and cross-encoder runtime source files; immutable VS5 execution policies bind the embedding runtime source digest, so the repository gate correctly rejected that source mutation",
+  "schema_version": "fin_ia_s1_large_model_challenger_failure_receipt_v1_0",
+  "status": "failed_preserved"
+}

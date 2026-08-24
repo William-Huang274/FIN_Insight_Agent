@@ -105,3 +105,13 @@ S1 将 Dell／TSMC 法说接回 current retrieval 后，S2 做了独立非回归
 旧 v1.0 result 保持不可变；current builder 与 Workbench 构建入口使用 `fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json`。v1.1 仍为 1,319 observations、9/9 最新财年、15/15 current interim，result digest=`0c25c917...95a1`。formal regression 见 `configs/financial_facts/fin_ia_0_1_3_s2_transcript_numeric_authority_regression_result_v1_0.json`。
 
 该 successor 不关闭 `RC-S2-004`：产品收入、ASP、PVM、出货量、产品利润与公司／分部利润桥仍可能公开不可得。S2 不会为填满五单元而从法说叙事抽取一个伪 NumericFact。
+
+## 10. 2026-08-24 MU 期间身份 supersession 的 PIT 消费
+
+MU current replay 暴露了一个独立于数值冲突的期间身份错误：截至 2025-02-27 的真实 FY2025 Q2 历史比较列曾在后续 Q3 filing 中携带 `fp=Q3`，与截至 2025-05-29 的真实 Q3 同时进入 comparable selection。Mart 已保存同物理区间的 `superseded_by_observation_id`，但 executor 没有按 `research_as_of` 消费它，因而正确 fail-closed 为两个 FY2025 Q3。
+
+查询 successor 只在更晚 successor 已于研究截至日前 accepted 时排除旧投影；successor 尚未公开的历史查询仍保留旧 vintage。严格使用 `successor.accepted_at > current.accepted_at`，所以同一披露时点的多 concept 数值分歧不会被隐藏，原 `typed_conflict` 门继续有效。
+
+原失败 replay 保持不可变；本轮只重算原 MU `net_income` 请求，没有重建 1,319-row mart。successor 返回 FY2026 Q3 `2026-02-27→05-28`、FY2025 Q3 `2025-02-28→05-29` 和最近财年事实，共 3 个 source-bound NumericFact，0 model／Provider／network。机器凭据为 `configs/financial_facts/fin_ia_0_1_3_s2_mu_period_identity_successor_result_v1_0.json`。
+
+这关闭 `RC-S2-006` 的假期间碰撞，不关闭 `RC-S2-004`、S2 产品桥或阶段资格。

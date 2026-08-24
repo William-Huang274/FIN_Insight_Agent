@@ -673,3 +673,13 @@ Search API、RSS 或搜索结果页只负责 discovery。原始材料必须 capt
 正式顺序冻结为：命题 CoverageState → AI-free 内源执行 → 外源来源阶梯 → CandidateDecision／Evidence Gate → current Pack 物化 → S2 受影响重编译 → Proposition Coverage／EvidencePackReadiness → DELL 动态单单元 → 动态多单元／多 Agent → Writer 产品能力。动态单单元只获得用户问题、Case 身份、截至日期和 typed tools；它必须自己发出 EvidenceRequest、处理 S1／S2 Feedback 并产生 PlanDelta，不能再次伪装为 fixed-Pack 测试。
 
 这不是要求 S1 在 Agent 前穷尽整个互联网。S1 的 AI-free 工具资格、seed Evidence、来源阶梯和错误分型先成立；Agent 再对真实 residual gaps 循环调用它们。未达到这一门前不得消费付费多 Agent live 权限；四来源 successor、1–7 zero-call 和历史结果中的 `next_scope` 都不构成当前 authority。`S1_qualified_stable=false`、`S3 accepted=false`、Writer product-ready=false、release=false 保持不变。
+
+## 34. 大模型 challenger 的 ceiling-first 与资源真实性（2026-08-24）
+
+当前 request-bound selector 已经在完整候选池上优先保留 direct／counter／bridge／context 与 same-basis temporal bundle；定向回归 `35 passed`。因此不能把 COST R2 的 rank-21 现象继续描述成“材料组选择尚未实现”，也不能重复开发一套 selector。它仍不是 blind qualification：COST R1/R2 不可变且失败，旧 labels 已失盲。
+
+更大的 embedding／reranker 只作为同语料 development challenger。主候选冻结为 Qwen3-Embedding-4B 与 Qwen3-Reranker-4B，BGE reranker v2 Gemma 为次级；先跑 candidate ceiling，material target 不在 shared pool 时禁止运行 reranker。同池 reranker 必须同时改善 hard-negative accuracy 和 material rank，并保持公司、指标、期间、关系方向、来源角色与 Evidence Role critical error 为 0。排序仍不能授予 Evidence、NumericFact 或 public-gap 权威。
+
+正式程序支持 Hugging Face 分片权重的 index＋全 shard 身份绑定，同时证明当前 0.6B 单文件 digest 不漂移。运行 profile 固定为单卡 24GB-class CUDA／FP16（最低 `24,000,000,000` bytes）、载入前至少 20 GiB free，禁止 CPU 模型 fallback、量化资格替代和 profile 偷换。当前 RTX 4060 Laptop 总显存只有 `8,585,216,000` 字节，预检因此在下载前停止，0 network／Provider／model call。该结果只能标记 `resource_blocked_before_download`；换到合适 GPU 后必须新开 attempt，从 ceiling 开始，不能把本次预检追认为模型质量结果。
+
+程序与凭据分别见 `configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_program_v1_0.json` 和 `configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_preflight_result_v1_0.json`。`S1_qualified_stable=false` 保持不变。

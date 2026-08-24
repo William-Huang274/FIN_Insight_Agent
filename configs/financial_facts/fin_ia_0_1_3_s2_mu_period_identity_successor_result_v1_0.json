@@ -1,0 +1,178 @@
+{
+  "after": {
+    "fact_request_id": "TFR::916e7ab7802ba4c47059ac2f",
+    "fact_request_is_not_numeric_fact": true,
+    "facts": [
+      {
+        "accepted_at": "2026-06-24T22:59:46+00:00",
+        "accession_numbers": [
+          "0000723125-26-000015"
+        ],
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "citation_urls": [
+          "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm"
+        ],
+        "fact_request_id": "TFR::916e7ab7802ba4c47059ac2f",
+        "fiscal_period": "Q3",
+        "fiscal_year": 2026,
+        "formula_trace": null,
+        "metric_id": "net_income",
+        "numeric_fact_authority": true,
+        "numeric_fact_id": "NUMFACT::ab796f0e29bc5d375f3497821ccade75",
+        "period_end": "2026-05-28",
+        "period_role": "quarter_discrete",
+        "period_start": "2026-02-27",
+        "research_as_of": "2026-08-06",
+        "schema_version": "fin_ia_numeric_fact_v1_0",
+        "source_digests": [
+          "1513d04033b854fc2bdc1727a5c133925818dc2069d23cc60d1e9df10e66b1c3",
+          "8d198ff48519902ff6ae95c166e92e61a46b5761d18ac2addc6303ea7c244052"
+        ],
+        "source_observation_ids": [
+          "CFOBS::3b94da5561e0c024872a7bf2bcfc2905"
+        ],
+        "ticker": "MU",
+        "unit": "USD",
+        "unit_family": "currency",
+        "value_decimal": "28243000000"
+      },
+      {
+        "accepted_at": "2026-06-24T22:59:46+00:00",
+        "accession_numbers": [
+          "0000723125-26-000015"
+        ],
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "citation_urls": [
+          "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm"
+        ],
+        "fact_request_id": "TFR::916e7ab7802ba4c47059ac2f",
+        "fiscal_period": "Q3",
+        "fiscal_year": 2025,
+        "formula_trace": null,
+        "metric_id": "net_income",
+        "numeric_fact_authority": true,
+        "numeric_fact_id": "NUMFACT::3292c649e63374ba15f56bd46398f09d",
+        "period_end": "2025-05-29",
+        "period_role": "quarter_discrete",
+        "period_start": "2025-02-28",
+        "research_as_of": "2026-08-06",
+        "schema_version": "fin_ia_numeric_fact_v1_0",
+        "source_digests": [
+          "1513d04033b854fc2bdc1727a5c133925818dc2069d23cc60d1e9df10e66b1c3",
+          "8d198ff48519902ff6ae95c166e92e61a46b5761d18ac2addc6303ea7c244052"
+        ],
+        "source_observation_ids": [
+          "CFOBS::b229ee72bf6fe5e47979769e1aa90078"
+        ],
+        "ticker": "MU",
+        "unit": "USD",
+        "unit_family": "currency",
+        "value_decimal": "1885000000"
+      },
+      {
+        "accepted_at": "2026-06-24T22:59:46+00:00",
+        "accession_numbers": [
+          "0000723125-26-000015"
+        ],
+        "authority_mode": "source_bound_company_reported_numeric_fact",
+        "citation_urls": [
+          "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm"
+        ],
+        "fact_request_id": "TFR::916e7ab7802ba4c47059ac2f",
+        "fiscal_period": "Q3",
+        "fiscal_year": 2026,
+        "formula_trace": null,
+        "metric_id": "net_income",
+        "numeric_fact_authority": true,
+        "numeric_fact_id": "NUMFACT::890044db1c26e562f80b46868de046c3",
+        "period_end": "2026-05-28",
+        "period_role": "fiscal_ytd",
+        "period_start": "2025-08-29",
+        "research_as_of": "2026-08-06",
+        "schema_version": "fin_ia_numeric_fact_v1_0",
+        "source_digests": [
+          "1513d04033b854fc2bdc1727a5c133925818dc2069d23cc60d1e9df10e66b1c3",
+          "8d198ff48519902ff6ae95c166e92e61a46b5761d18ac2addc6303ea7c244052"
+        ],
+        "source_observation_ids": [
+          "CFOBS::e2990f6e9d52fe2b158850cb3f77feff"
+        ],
+        "ticker": "MU",
+        "unit": "USD",
+        "unit_family": "currency",
+        "value_decimal": "47268000000"
+      }
+    ],
+    "metric_id": "net_income",
+    "schema_version": "fin_ia_typed_fact_execution_result_v1_0",
+    "status": "resolved",
+    "ticker": "MU",
+    "typed_conflict": null,
+    "typed_gap": null
+  },
+  "authority": {
+    "candidate_or_narrative_grants_numeric_authority": false,
+    "numeric_fact_authority_is_source_bound_executor_only": true,
+    "publication_or_release_authorized": false,
+    "s1_or_s3_acceptance_authorized": false,
+    "s2_stage_qualification_authorized": false
+  },
+  "before": {
+    "candidate_periods": [
+      [
+        "2024-11-29",
+        "2025-02-27",
+        "quarter_discrete",
+        2025,
+        "Q3",
+        "USD"
+      ],
+      [
+        "2025-02-28",
+        "2025-05-29",
+        "quarter_discrete",
+        2025,
+        "Q3",
+        "USD"
+      ]
+    ],
+    "code": "typed_fact_comparable_period_ambiguous",
+    "status": "typed_conflict"
+  },
+  "bound_inputs": {
+    "fact_request_id": "TFR::916e7ab7802ba4c47059ac2f",
+    "immutable_failure_receipt_ref": "data/workbench_private/fin_0_1_3_s1_candidate_provenance_replay/mu-r1/full_result.json",
+    "immutable_failure_receipt_sha256": "1e8b91a1b734e27b333ea10a83a275a2bf8e7f650efad76c863e237f3edeedfc",
+    "sqlite_ref": "data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_facts.sqlite",
+    "sqlite_sha256": "d05b0cc8e08d063a252d3032db13f6840abe0048200f3696b3ffccaa9d93c585"
+  },
+  "calls": {
+    "model": 0,
+    "network": 0,
+    "provider": 0
+  },
+  "checks": {
+    "current_and_comparable_q3_exact": true,
+    "failure_receipt_preserved": true,
+    "obsolete_fy2025_q2_range_not_labelled_q3": true,
+    "request_resolved": true,
+    "typed_conflict_absent": true
+  },
+  "implementation_refs": [
+    {
+      "path": "src/financial_facts/executor.py",
+      "sha256": "62bd526281ac10a8090acf56bc6cea23a7ec1a9601bb6e7ba43e31a32cb8e338"
+    },
+    {
+      "path": "scripts/data_retrieval/materialize_s2_mu_period_identity_successor.py",
+      "sha256": "42224da29dabcd1d3bda5ac86df08f29d50cf4304694eb29559a9ee1e0150c21"
+    }
+  ],
+  "issue_id": "RC-S2-006-MU-fiscal-quarter-discrete-period-identity-collision",
+  "known_boundary": "This successor closes only the false MU net-income period-label collision by honoring a later physical-period identity successor as of the request date. It does not erase the immutable failure, rebuild the mart, close other S2 product bridges, or qualify any stage.",
+  "recorded_at": "2026-08-24",
+  "result_digest": "71c188b5c895928e06666f557318471b4ac2515e9a6ff852ee136020753c4408",
+  "schema_version": "fin_ia_s2_mu_period_identity_successor_result_v1_0",
+  "scope": "single_existing_typed_fact_request_recomputed_no_mart_rebuild",
+  "status": "s2_mu_period_identity_successor_pass"
+}

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from datetime import date
 import hashlib
 import json
 from pathlib import Path
@@ -244,7 +243,13 @@ def test_open_period_uses_one_current_interim_filing_cohort(tmp_path: Path) -> N
 
 def test_latest_vintage_numeric_conflict_fails_closed(tmp_path: Path) -> None:
     metrics = (_metric("revenue"),)
-    first = _observation("OBS-A", "revenue", "43842000000")
+    first = replace(
+        _observation("OBS-A", "revenue", "43842000000"),
+        # The source parser may link same-vintage concept rows while choosing
+        # one physical-period successor.  Equal-time disagreement must still
+        # remain visible to the conflict gate.
+        superseded_by_observation_id="OBS-B",
+    )
     second = replace(
         _observation(
             "OBS-B",
@@ -269,6 +274,144 @@ def test_latest_vintage_numeric_conflict_fails_closed(tmp_path: Path) -> None:
     assert result.typed_conflict["conflict_code"] == (
         "authoritative_numeric_fact_conflict"
     )
+
+
+def test_period_identity_successor_is_point_in_time_and_removes_false_q3_collision(
+    tmp_path: Path,
+) -> None:
+    metrics = (_metric("net_income"),)
+    obsolete_q2_as_q3 = replace(
+        _observation(
+            "OBS-Q2-OBSOLETE",
+            "net_income",
+            "1583000000",
+            accepted_at="2025-06-25T22:50:42+00:00",
+            accession="0000723125-25-000021",
+            period_start="2024-11-29",
+            period_end="2025-02-27",
+            fiscal_year=2025,
+            fiscal_period="Q3",
+        ),
+        superseded_by_observation_id="OBS-Q2-CORRECTED",
+    )
+    corrected_q2 = _observation(
+        "OBS-Q2-CORRECTED",
+        "net_income",
+        "1583000000",
+        accepted_at="2026-03-18T23:00:06+00:00",
+        accession="0000723125-26-000006",
+        period_start="2024-11-29",
+        period_end="2025-02-27",
+        fiscal_year=2025,
+        fiscal_period="Q2",
+    )
+    comparable_q3 = _observation(
+        "OBS-Q3-COMPARABLE",
+        "net_income",
+        "1885000000",
+        accepted_at="2026-06-24T22:59:46+00:00",
+        accession="0000723125-26-000015",
+        period_start="2025-02-28",
+        period_end="2025-05-29",
+        fiscal_year=2025,
+        fiscal_period="Q3",
+    )
+    current_q3 = _observation(
+        "OBS-Q3-CURRENT",
+        "net_income",
+        "28243000000",
+        accepted_at="2026-06-24T22:59:46+00:00",
+        accession="0000723125-26-000015",
+        period_start="2026-02-27",
+        period_end="2026-05-28",
+        fiscal_year=2026,
+        fiscal_period="Q3",
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=(
+            obsolete_q2_as_q3,
+            corrected_q2,
+            comparable_q3,
+            current_q3,
+        ),
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+
+    before_correction = execute_fact_lookup(
+        sqlite_path,
+        FactLookup(
+            fact_request_id="TEST::MU-Q2-BEFORE-CORRECTION",
+            ticker="DELL",
+            metric_id="net_income",
+            research_as_of="2025-12-31",
+            period={
+                "start_date": "2024-11-29",
+                "end_date": "2025-02-27",
+                "fiscal_years": [2025],
+            },
+            granularity="quarter_discrete",
+            requested_unit="reported_source_unit",
+        ),
+    )
+    after_correction = execute_fact_lookup(
+        sqlite_path,
+        FactLookup(
+            fact_request_id="TEST::MU-Q2-AFTER-CORRECTION",
+            ticker="DELL",
+            metric_id="net_income",
+            research_as_of="2026-08-06",
+            period={
+                "start_date": "2024-11-29",
+                "end_date": "2025-02-27",
+                "fiscal_years": [2025],
+            },
+            granularity="quarter_discrete",
+            requested_unit="reported_source_unit",
+        ),
+    )
+    current_series = execute_fact_lookup(
+        sqlite_path,
+        FactLookup(
+            fact_request_id="TEST::MU-CURRENT-NET-INCOME",
+            ticker="DELL",
+            metric_id="net_income",
+            research_as_of="2026-08-06",
+            period={
+                "start_date": "2024-09-01",
+                "end_date": "2026-08-06",
+                "fiscal_years": [2025, 2026],
+            },
+            granularity="quarter_and_fiscal_year",
+            requested_unit="reported_source_unit",
+        ),
+    )
+
+    assert before_correction.status == "resolved"
+    assert before_correction.facts[0].fiscal_period == "Q3"
+    assert before_correction.facts[0].source_observation_ids == (
+        "OBS-Q2-OBSOLETE",
+    )
+    assert after_correction.status == "resolved"
+    assert after_correction.facts[0].fiscal_period == "Q2"
+    assert after_correction.facts[0].source_observation_ids == (
+        "OBS-Q2-CORRECTED",
+    )
+    assert current_series.status == "resolved"
+    assert {
+        (
+            fact.fiscal_year,
+            fact.fiscal_period,
+            fact.period_start,
+            fact.period_end,
+        )
+        for fact in current_series.facts
+    } == {
+        (2026, "Q3", "2026-02-27", "2026-05-28"),
+        (2025, "Q3", "2025-02-28", "2025-05-29"),
+    }
 
 
 def test_derived_margin_and_fcf_require_aligned_source_period(tmp_path: Path) -> None:

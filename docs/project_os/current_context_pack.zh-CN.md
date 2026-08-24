@@ -1624,3 +1624,18 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 独立复评发现 `RC-S3-075` 跨角色残留：Demand `strongest_counterarguments[1]` 仍用同季收入证明同季订单已部分转化，违反无 cohort 关系时只能写共现的通用规则。Lead 仍宣称 recheck 全部满足，故 L1 与 Lead semantic adjudication 均失败。
 - 评估为原七项全集合 `6/7` 关闭、诊断 `23/28`、Q8 N/A；Writer、S3、产品与 release 继续 false。新根因 `RC-S3-087` 属跨角色 repair coverage，不是数据或 Provider。
 - 当前只允许零调用编译一份 Demand 精确 feedback、复用其余底稿并证明 Demand＋Lead 最多四节点 successor；R10 authority／live 均不存在。详见 `docs/worklog/fin_0_1_3_s3/155_R9_contract_success_and_cross_role_L1_failure.md`。
+
+### 2026-08-24 S1 大模型 challenger 与材料选择真相更正
+
+- request-bound material group／same-basis temporal bundle 已在当前 selector 和产品 seam 实现，本轮 `35 passed`，不再重复开发；RC-S1-024 的旧“R3 被 collective axis expansion 阻断”投影已由 RC-S1-028／029 successor 事实取代。
+- 冻结 Qwen3-Embedding-4B＋Qwen3-Reranker-4B 主 challenger 和 BGE reranker v2 Gemma 次级候选；只允许 DELL／MU／NVDA development，COST／hidden／frozen／holdout 禁止读取，candidate ceiling 先于 reranker。
+- 当前 RTX 4060 Laptop 总显存 `8,585,216,000` 字节，低于冻结的 24GB-class CUDA／FP16 profile（最低 `24,000,000,000` bytes）；预检在下载前 `resource_blocked`，0 network／Provider／model。分片权重身份接入已完成，现有 0.6B model digest 不变。
+- RC-S1-054／056 的 Project OS 旧“候选审核待完成”状态已更正：capture replay 已完成 review、Evidence Gate、48-Evidence current Pack、R32 source/object/index Runtime 与任务级 readiness；仍有 14 gaps，12 请求中 9 research-consumable，`S1_qualified_stable=false`。
+
+### 2026-08-24 S2 MU 期间身份 successor
+
+- immutable MU replay 的 net-income 两个 FY2025 Q3 冲突保留。根因是 executor 未按 research-as-of 消费 mart 已有 physical-period supersession，而不是数值任选逻辑错误。
+- 查询层现在只排除截至日期前已被更晚 accepted successor 取代的旧投影；历史时点仍见旧 vintage，同日真冲突继续 fail closed。
+- 原单请求 successor 已 resolved：FY2026 Q3 `2026-02-27→05-28`、FY2025 Q3 `2025-02-28→05-29`，旧截至 `2025-02-27` 区间不再冒充 Q3；3 个 NumericFact，0 model／Provider／network。
+- RC-S2-006 关闭；RC-S2-004、S2 stage qualification、S1/S3 acceptance、publication 和 release 保持开放／false。
+- 本次联合工程复证为定向 `59 passed`、全仓 `1188 passed`（仅两条既有 SWIG warning）、compileall、9 个变更 Python 文件 pyflakes、984 份 config JSON、8 份 Project OS JSONL／1122 行、active baseline `212／8／5／28／0`、Workbench typecheck／build、7862-file secret scan／0 和 diff check。第一次 `1185 passed／2 failed` 的 frozen-runtime digest 漂移已作为 immutable failure receipt 保存，未修改旧策略哈希；v1 byte-exact 恢复、v2 identity 后继与 `RC-S1-057` 关闭。

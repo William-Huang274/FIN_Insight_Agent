@@ -379,10 +379,15 @@ def _candidate_rows(
     lookup: FactLookup,
 ) -> list[Mapping[str, Any]]:
     clauses = [
-        "ticker = ?",
-        "metric_id = ?",
-        "substr(accepted_at, 1, 10) <= ?",
-        "period_end <= ?",
+        "current.ticker = ?",
+        "current.metric_id = ?",
+        "substr(current.accepted_at, 1, 10) <= ?",
+        "current.period_end <= ?",
+        "(current.superseded_by_observation_id IS NULL OR NOT EXISTS ("
+        "SELECT 1 FROM company_fact_observations AS successor "
+        "WHERE successor.observation_id = current.superseded_by_observation_id "
+        "AND successor.accepted_at > current.accepted_at "
+        "AND substr(successor.accepted_at, 1, 10) <= ?))",
     ]
     as_of_end = str(lookup.period.get("end_date") or lookup.research_as_of)
     params: list[Any] = [
@@ -390,20 +395,22 @@ def _candidate_rows(
         lookup.metric_id,
         lookup.research_as_of,
         min(as_of_end, lookup.research_as_of),
+        lookup.research_as_of,
     ]
     start_date = lookup.period.get("start_date")
     if start_date:
-        clauses.append("(period_start IS NULL OR period_start >= ?)")
+        clauses.append("(current.period_start IS NULL OR current.period_start >= ?)")
         params.append(str(start_date))
     fiscal_years = lookup.period.get("fiscal_years") or ()
     if fiscal_years:
         placeholders = ",".join("?" for _ in fiscal_years)
-        clauses.append(f"fiscal_year IN ({placeholders})")
+        clauses.append(f"current.fiscal_year IN ({placeholders})")
         params.extend(int(value) for value in fiscal_years)
     query = (
-        "SELECT * FROM company_fact_observations WHERE "
+        "SELECT current.* FROM company_fact_observations AS current WHERE "
         + " AND ".join(clauses)
-        + " ORDER BY period_end, accepted_at, concept_priority, observation_id"
+        + " ORDER BY current.period_end, current.accepted_at, "
+        "current.concept_priority, current.observation_id"
     )
     return [dict(row) for row in connection.execute(query, params).fetchall()]
 

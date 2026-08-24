@@ -5,6 +5,11 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
+from scripts.data_retrieval import (
+    promote_s1_reviewed_public_pdf_to_current_runtime as r35_promotion,
+)
 from retrieval.contracts import (
     load_evidence_request,
     load_financial_research_kernel,
@@ -38,6 +43,52 @@ def _jsonl_tail(relative: str, count: int) -> list[dict]:
             if line.strip():
                 rows.append(json.loads(line))
     return list(rows)
+
+
+def test_r35_promotion_rejects_current_r38_before_any_write(monkeypatch) -> None:
+    writes: list[str] = []
+    monkeypatch.setattr(
+        r35_promotion,
+        "_write_json",
+        lambda ref, _value: writes.append(ref),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="reviewed_public_pdf_runtime_R34_predecessor_required",
+    ):
+        r35_promotion.main()
+
+    assert writes == []
+
+
+def test_r35_promotion_requires_every_versioned_output_to_be_fresh(
+    monkeypatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(r35_promotion, "ROOT", tmp_path)
+    r35_promotion._require_new_outputs()
+
+    for ref in r35_promotion.VERSIONED_OUTPUT_REFS:
+        path = tmp_path / ref
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}", encoding="utf-8")
+        with pytest.raises(
+            FileExistsError,
+            match="reviewed_public_pdf_runtime_output_exists",
+        ):
+            r35_promotion._require_new_outputs()
+        path.unlink()
+
+    temporary = (tmp_path / r35_promotion.VERSIONED_OUTPUT_REFS[0]).with_suffix(
+        ".json.tmp"
+    )
+    temporary.parent.mkdir(parents=True, exist_ok=True)
+    temporary.write_text("partial", encoding="utf-8")
+    with pytest.raises(
+        FileExistsError,
+        match="reviewed_public_pdf_runtime_output_exists",
+    ):
+        r35_promotion._require_new_outputs()
 
 
 def test_reviewed_pdf_successor_contracts_are_single_lane_and_fail_closed() -> None:

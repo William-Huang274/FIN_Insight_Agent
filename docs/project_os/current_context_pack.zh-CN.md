@@ -19,9 +19,11 @@ zero-call canary R1 的 Harness mutation 失败已不可变保留，R2 两轮成
 `blocked_by_candidate_coverage`，三案都没有 public-information-gap authority，S1/S2/S3、
 qualified-human、产品、publication 和 release 均未通过。
 
-R17 Writer 已有 fresh author-separated independent content pass；本轮没有 material finding，
-不创建 R18。下一步是全量工程门和一名全新只读 reviewer 审计本轮 immutable commit；该 reviewer
-不能替代 qualified human。详见 S1/080、S2/009、S3/170。
+R17 Writer 已有 fresh author-separated independent content pass；没有 R17 内容 finding，不创建
+R18。首轮整合审计对 `d63e7966...` 判定 `P0/P1/P2/P3=0/0/1/1`：S1／4B／S2／R17／R38
+数据和权限边界均通过，但 R35 promotion runner 缺 replay guard，可能把 current R38 回退到 R35；
+另有本段状态过时的 P3。当前只允许在 S1 所属层关闭该 finding、重跑工程门并交给新的只读
+reviewer；reviewer 不能替代 qualified human。详见 S1/081、S2/010、S3/171。
 
 ## 历史上下文（保留）
 

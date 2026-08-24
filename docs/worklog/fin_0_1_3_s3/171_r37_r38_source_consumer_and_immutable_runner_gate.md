@@ -39,3 +39,10 @@ R38 canary 是 deterministic fixture 的 Harness/data-plane 证明，不是自�
 端到端产品验收。qualified human、S1／S2／S3、publication 和 release 均为 false。下一步仅为
 clean push 后全新只读 subagent 对 immutable commit 做 P0–P3 审计；若发现 material finding，
 在所属阶段开新 attempt，而不是改写 R37/R38。
+
+## 4. 首轮整合审计的跨阶段处置
+
+reviewer 对 `d63e7966...` 给出 FAIL，唯一 P2 属 S1 R35 promotion replay guard，不是 S3 canary、
+R17 内容或自然 Agent finding；另一个 P3 是 context pack 顶部状态漂移。因此没有开 R18，也没有
+改 R17。P2 已迁回 S1 所属层修复并保存独立 failure receipt；新的 full gate 与 fresh reviewer
+通过前，S3／产品／publication／release 继续为 false。

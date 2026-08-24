@@ -55,6 +55,10 @@ REGISTRY_REF = (
     "configs/runtime/"
     "fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json"
 )
+PREDECESSOR_REGISTRY_ID = (
+    "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R34"
+)
+REGISTRY_ID = "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R35"
 PDF_RESULT_REF = (
     "configs/retrieval/"
     "fin_ia_0_1_3_s1_reviewed_public_pdf_reachability_successor_result_v1_0.json"
@@ -84,6 +88,13 @@ PACK_RESULT_REF = (
 PACK_OBJECT_ROOT = (
     "data/workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/"
     "zero-call-r1/objects"
+)
+VERSIONED_OUTPUT_REFS = (
+    SOURCE_RESULT_REF,
+    SNAPSHOT_REF,
+    POLICY_REF,
+    DYNAMIC_POLICY_REF,
+    RECEIPT_REF,
 )
 
 
@@ -123,6 +134,23 @@ def _write_json(ref: str, value: Mapping[str, Any]) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_bytes(_render_json(value))
     temporary.replace(path)
+
+
+def _load_exact_predecessor_registry() -> dict[str, Any]:
+    registry = deepcopy(_read_json(REGISTRY_REF))
+    if registry.get("registry_id") != PREDECESSOR_REGISTRY_ID:
+        raise ValueError("reviewed_public_pdf_runtime_R34_predecessor_required")
+    return registry
+
+
+def _require_new_outputs() -> None:
+    for ref in VERSIONED_OUTPUT_REFS:
+        path = _path(ref)
+        temporary = path.with_suffix(path.suffix + ".tmp")
+        if path.exists() or temporary.exists():
+            raise FileExistsError(
+                f"reviewed_public_pdf_runtime_output_exists:{ref}"
+            )
 
 
 def _sha256_file(ref: str) -> str:
@@ -351,6 +379,8 @@ def _build_dynamic_policy(predecessor: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def main() -> int:
+    registry = _load_exact_predecessor_registry()
+    _require_new_outputs()
     predecessor_source = _read_json(
         "configs/runtime/"
         "fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_2.json"
@@ -385,10 +415,7 @@ def main() -> int:
     )
     _write_json(DYNAMIC_POLICY_REF, dynamic_policy)
 
-    registry = deepcopy(_read_json(REGISTRY_REF))
-    registry["registry_id"] = (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R35"
-    )
+    registry["registry_id"] = REGISTRY_ID
     replacements: dict[str, tuple[str, Mapping[str, Any]]] = {
         "application.config.current_financial_research_kernel": (
             KERNEL_REF,

@@ -72,3 +72,20 @@ baseline `213/8/5/28/0`、changed JSON 与 Project OS JSONL、8,041-file secret 
 资格。4-bit 4B 在 8GB 上 full-offload 已证明；因 NVDA embedding 和 reranker 质量回退未晋升，
 不是 VRAM block。DELL 更广命题与 MU/NVDA 外源梯子仍须按 action ledger 执行，不能声明“能补的
 源全补完”。
+
+## 6. `d63e7966` 独立审计 FAIL 与 R35 replay guard successor
+
+全新只读 reviewer 对 commit `d63e7966...`／tree `af5a0595...` 的结论为
+`P0/P1/P2/P3=0/0/1/1`。S1 readiness、4B raw scores/offload、S2、R17、R38 append-only 数据和
+权限边界均独立通过；唯一 material finding 是 R35 promotion runner 没有 R36–R38 已有的 exact
+predecessor 与 fresh-output guard。若在 current R38 上误重跑，它可覆盖五个 R35 产物并把共享
+registry 回退到 R35。失败审计 digest=`7189f504...`，不得追认为通过。
+
+检查未发现该 R35 runner 被 authority artifact SHA 显式冻结；旧实现仍由 `d63e7966` Git 对象保留。
+当前 checkout 的 executable entry 在任何写入前执行两道门：current registry 必须精确为 R34；
+五个 R35 versioned outputs 及相应 `.tmp` 必须全部不存在。当前 R38 下调用 `main()` 的定向测试
+确认写调用为 0；每一个输出和 temporary collision 都会 fail closed。相关定向测试 `15 passed`，
+pyflakes／diff check 通过。
+
+context pack 顶部的过期“下一步仍是全量门”同时修正。当前只是 finding 的 engineering successor；
+仍需 full gate、clean commit 和另一名全新只读 reviewer，不能自行把原审计 FAIL 改写成 PASS。

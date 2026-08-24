@@ -40,6 +40,34 @@ def _is_link_or_reparse(path: Path) -> bool:
     )
 
 
+def _reject_link_or_reparse_path_components(path: Path) -> None:
+    """Reject link-like components without resolving them first.
+
+    Checking only the final model directory is insufficient when an ordinary
+    directory is reached through an ancestor symlink or Windows junction.
+    ``abspath`` normalizes the locator without following those components;
+    every component can therefore be inspected with ``lstat`` before any
+    canonical resolved path is returned to a future loader.
+    """
+
+    absolute = Path(os.path.abspath(os.fspath(path)))
+    if not absolute.is_absolute() or not absolute.anchor:
+        raise ValueError("local_model_acquisition_root_path_invalid")
+    current = Path(absolute.anchor)
+    components = [current]
+    for part in absolute.parts[1:]:
+        current = current / part
+        components.append(current)
+    for component in components:
+        if not _is_link_or_reparse(component):
+            continue
+        if component == absolute:
+            raise ValueError("local_model_acquisition_root_link_forbidden")
+        raise ValueError(
+            "local_model_acquisition_ancestor_link_or_reparse_forbidden"
+        )
+
+
 def _regular_files_without_links(model_dir: Path) -> tuple[Path, ...]:
     """Enumerate every regular file while rejecting link-like entries.
 
@@ -50,8 +78,7 @@ def _regular_files_without_links(model_dir: Path) -> tuple[Path, ...]:
     silently omitting them.
     """
 
-    if _is_link_or_reparse(model_dir):
-        raise ValueError("local_model_acquisition_root_link_forbidden")
+    _reject_link_or_reparse_path_components(model_dir)
     pending = [model_dir]
     files: list[Path] = []
     while pending:

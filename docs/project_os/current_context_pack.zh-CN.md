@@ -1667,3 +1667,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - S2 撤回“无及时来源但晚期 label 一致即可接纳”。真实 728-group 对账证明该 fallback 会接纳错误 FY role。当前无 timely origin 一律 fail closed；direct input conflict 在 derived request 中保持 typed conflict；无关 period role 在 identity admission 前隔离。v1.2 receipt 自审失败、v1.3 strict-origin pass、v1.4 fresh-audit successor pass 均不可变保留。S2 仍只是标准化报表事实 executor，不含 ASP／units／PVM／利润桥。
 - R16 fresh independent review 因 reversal 条件中的 `persist OR breach` 而失败：one-off threshold breach 或 persistent-but-below-threshold 都可能误触发。R17 只同步两个 model-text path 为 `material AND AI-linked AND persistent AND evaluated as breaching a predeclared threshold`，并绑定 materializer／validator／renderer SHA；references、gaps、topology 与 protected numbers 不变，calls=`0/0/0`。
 - R17 由当前 Codex 编写，只是 local candidate。下一合法门是先提交成不可变 commit，再由新的 clean read-only reviewer 审计；在此之前 fresh independent、qualified-human、S3、产品、publication 和 release 均为 false。
+
+### 2026-08-24 `1243b3cc` clean audit failure 与 cross-stage successor
+
+- 作者分离 subagent 对 immutable `1243b3cc...` 最终判定 FAIL：P0=0、P1=1、P2=3、P3=0。失败收据绑定 commit/tree/blobs 与 reviewer task；没有网络、Provider、模型、受限 split 或 ignored private read，也不具 qualified-human authority。
+- P1 属 S2：timely current 与 no-origin requested/automatic comparable 共存时，旧期 conflict 可因 nested identity 与 latest selector 不匹配而消失，返回 partial resolved。v1.5 现传播 explicit requested、automatic prior-year 与 derived 三条 conflict 路由，11/11 checks true，并保留 v1.4、原 MU 三事实、六 as-of 与 728-group inventory。S2 产品桥和 stage仍 false。
+- S1 P2 已由 raw locator 从 anchor 到 root 的逐 component `lstat` 修复；actual symlink privilege skip 与 non-skipped component-walk regression并存。preflight v1.3 仍是 8.59GB resource block、artifacts absent、calls=`0/0/0`；acquisition、24GB host 和 4B quality仍不存在。
+- R17 tracked 四项 AND 语义获得 clean reviewer positive control，但总体 audit 失败且 reviewer 未读 private candidate，故 independent仍 false。private-dependent compile test 已按 exact predecessor guard；三条 R16 编辑的归属追加更正为“用户/Owner授权范围、当前 Codex 编写”，没有 R18 或内容变化。
+- 当前下一门是联合/full engineering gate、clean successor commit，然后再由另一名全新只读 reviewer 审计最终 commit。qualified-human、S1、S2、S3、产品、publication 和 release均未通过。

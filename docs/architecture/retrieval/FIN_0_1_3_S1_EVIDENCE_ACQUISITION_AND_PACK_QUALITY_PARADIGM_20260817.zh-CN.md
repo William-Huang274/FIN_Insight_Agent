@@ -708,3 +708,11 @@ R3 将权限改成以下合取门：
 6. acquisition receipt 必须单独绑定 snapshot invocation、Hub 返回的 40-hex commit、下载目录闭包、实现 SHA 与 receipt digest，且 exact revision 经 Owner 批准。当前两候选的批准 revision／receipt 均为 `null`，所以即便未来目录存在也会返回 `model_artifact_upstream_revision_not_owner_approved`。
 
 主候选仍是 Qwen3-Embedding-4B＋Qwen3-Reranker-4B，BGE reranker v2 Gemma 为次级；gte-Qwen2-7B、e5-mistral-7B、NV-Embed-v2 8B 与 Jina Embeddings v4 只作为资源／许可／长上下文取舍已登记的替代观察项，不代表已下载或已比较。当前 RTX 4060 Laptop 总显存 `8,585,216,000` bytes，R3 preflight 仍在下载前停止，calls=`0/0/0`。因此现在成立的是“更严格的工程运行门”，不是 4B embedding／reranker 质量能力、S1 qualification、runtime promotion 或产品提升。
+
+## 37. clean audit 更正：model locator 的 ancestor component 也属于身份边界（2026-08-24）
+
+§36 的 final root／nested entry link-reparse closure 对 checked model directory 成立，但不能外推为 raw locator 全路径 closure。普通 model directory 可以位于 ancestor symlink 或 Windows junction 下；只 `lstat(model_dir)` 与 descendants 不会看到祖先 component 的 reparse bit。当前 approved revision／receipt 为空，所以该缺口没有签发模型执行权限，但 broad fail-closed 表述必须更正。
+
+successor 在任何 `resolve()` 前，以不 follow links 的绝对 locator 从 filesystem anchor 逐 component `lstat`。final root、任一 ancestor、manifest 和任一 descendant 出现 symlink／reparse 都停止；gate 只向后续消费者返回已验证的 canonical path。实际 ancestor symlink 测试在当前 Windows 权限不足时明确 skip，另有不依赖权限的 component-walk regression，避免把平台 skip 当覆盖。
+
+新 `preflight_result_v1_3` 绑定 v1.2 resource receipt、`1243b3cc` clean-audit failure、当前 model-identity／gate／materializer SHA。硬件仍为 8.59GB，artifact absent，calls=`0/0/0`。这不改变 §36 的 acquisition、24GB host 和零质量观察边界。

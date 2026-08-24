@@ -9,6 +9,7 @@ from retrieval.model_identity import (
     ACQUISITION_MANIFEST_NAME,
     ACQUISITION_MANIFEST_SCHEMA_VERSION,
 )
+from retrieval.query_plan import canonical_digest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +32,33 @@ SUITABLE_HARDWARE = {
     "free_memory_bytes": 22 * 1024**3,
 }
 SUITABLE_STORAGE = {"free_bytes": 30 * 1024**3}
+
+
+def test_ancestor_locator_preflight_successor_receipt_is_canonical() -> None:
+    path = (
+        ROOT
+        / "configs/retrieval/"
+        "fin_ia_0_1_3_s1_large_model_challenger_preflight_result_v1_3.json"
+    )
+    result = json.loads(path.read_text(encoding="utf-8"))
+    unsigned = {
+        key: value for key, value in result.items() if key != "result_digest"
+    }
+
+    assert result["result_digest"] == canonical_digest(unsigned)
+    assert result["status"] == "resource_blocked_before_download"
+    assert all(result["audit_successor_checks"].values())
+    assert result["identity_contract"][
+        "every_locator_ancestor_link_or_reparse_component_forbidden"
+    ] is True
+    assert result["artifact_blockers"] == [
+        "model_artifact_absent:qwen3_embedding_4b",
+        "model_artifact_absent:qwen3_reranker_4b",
+    ]
+    assert result["calls"] == {"network": 0, "provider": 0, "model": 0}
+    assert result["decision"][
+        "development_execution_authorized_by_this_preflight"
+    ] is False
 
 
 def _locators(embedding_dir: Path, reranker_dir: Path) -> dict[str, dict[str, str]]:

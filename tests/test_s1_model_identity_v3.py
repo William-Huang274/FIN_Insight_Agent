@@ -170,6 +170,51 @@ def test_v3_identity_rejects_symlinked_nested_directory(
         local_embedding_model_identity_v3(model_dir, model_id)
 
 
+def test_v3_identity_rejects_symlinked_ancestor_directory(
+    tmp_path: Path,
+) -> None:
+    model_id = "Qwen/Qwen3-Embedding-4B"
+    physical_parent = tmp_path / "physical-parent"
+    physical_parent.mkdir()
+    model_dir = physical_parent / "model"
+    model_dir.mkdir()
+    _write_remote_code_model(model_dir, model_id=model_id)
+    linked_parent = tmp_path / "linked-parent"
+    try:
+        linked_parent.symlink_to(physical_parent, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory symlink unavailable on this host: {exc}")
+
+    with pytest.raises(
+        ValueError,
+        match="local_model_acquisition_ancestor_link_or_reparse_forbidden",
+    ):
+        local_embedding_model_identity_v3(linked_parent / "model", model_id)
+
+
+def test_v3_identity_walks_every_ancestor_component(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    model_id = "Qwen/Qwen3-Embedding-4B"
+    parent = tmp_path / "ordinary-parent"
+    parent.mkdir()
+    model_dir = parent / "model"
+    model_dir.mkdir()
+    _write_remote_code_model(model_dir, model_id=model_id)
+    original = model_identity_module._is_link_or_reparse
+
+    def classify(path: Path) -> bool:
+        return Path(path) == parent or original(path)
+
+    monkeypatch.setattr(model_identity_module, "_is_link_or_reparse", classify)
+    with pytest.raises(
+        ValueError,
+        match="local_model_acquisition_ancestor_link_or_reparse_forbidden",
+    ):
+        local_embedding_model_identity_v3(model_dir, model_id)
+
+
 def test_windows_reparse_attribute_is_classified_as_link_like(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

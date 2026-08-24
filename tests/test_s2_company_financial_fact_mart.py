@@ -22,6 +22,7 @@ from financial_facts import (
     write_company_fact_mart,
 )
 from retrieval.route_compiler import TypedFactRequest
+from retrieval.query_plan import canonical_digest
 from apps.workbench.backend.application.research_retrieval_service import (
     ResearchRetrievalPrincipal,
     ResearchRetrievalService,
@@ -652,6 +653,170 @@ def test_unanimous_late_copies_do_not_create_period_identity_authority(
     assert result.typed_conflict["conflicts"][0]["code"] == (
         "typed_fact_physical_period_identity_source_unavailable"
     )
+
+
+def test_requested_or_automatic_comparable_identity_conflict_is_not_dropped(
+    tmp_path: Path,
+) -> None:
+    metrics = (_metric("revenue"),)
+    current = _observation(
+        "OBS-CURRENT-Q1-ORIGIN",
+        "revenue",
+        "200",
+    )
+    unverified_comparable = replace(
+        _observation(
+            "OBS-COMPARABLE-Q1-LATE-COPY",
+            "revenue",
+            "100",
+            period_start="2025-02-01",
+            period_end="2025-05-02",
+            fiscal_year=2026,
+            fiscal_period="Q1",
+        ),
+        accession_number=current.accession_number,
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=(current, unverified_comparable),
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+
+    def run(fiscal_years: list[int]):
+        return execute_fact_lookup(
+            sqlite_path,
+            FactLookup(
+                fact_request_id="TEST::CURRENT-WITH-UNVERIFIED-COMPARABLE",
+                ticker="DELL",
+                metric_id="revenue",
+                research_as_of="2026-08-06",
+                period={
+                    "start_date": None,
+                    "end_date": "2026-08-06",
+                    "fiscal_years": fiscal_years,
+                },
+                granularity="quarter_discrete",
+                requested_unit="reported_source_unit",
+            ),
+        )
+
+    for result in (run([2026, 2027]), run([])):
+        assert result.status == "typed_conflict"
+        assert result.facts == ()
+        conflicts = result.typed_conflict["conflicts"]
+        assert len(conflicts) == 1
+        assert conflicts[0]["code"] == (
+            "typed_fact_physical_period_identity_source_unavailable"
+        )
+        assert conflicts[0]["period_end"] == "2025-05-02"
+        assert conflicts[0]["candidate_fiscal_identities"] == [
+            {"fiscal_year": 2026, "fiscal_period": "Q1"}
+        ]
+
+
+def test_derived_formula_propagates_requested_comparable_identity_conflict(
+    tmp_path: Path,
+) -> None:
+    metrics = (
+        _metric("revenue"),
+        _metric("gross_profit"),
+        _metric(
+            "gross_margin",
+            unit_family="percentage",
+            formula="gross_profit / revenue * 100",
+        ),
+    )
+    current_revenue = _observation(
+        "OBS-CURRENT-REV-ORIGIN",
+        "revenue",
+        "200",
+    )
+    current_gross_profit = _observation(
+        "OBS-CURRENT-GP-ORIGIN",
+        "gross_profit",
+        "50",
+    )
+    unverified_comparable = replace(
+        _observation(
+            "OBS-COMPARABLE-REV-LATE-COPY",
+            "revenue",
+            "100",
+            period_start="2025-02-01",
+            period_end="2025-05-02",
+            fiscal_year=2026,
+            fiscal_period="Q1",
+        ),
+        accession_number=current_revenue.accession_number,
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=(
+            current_revenue,
+            current_gross_profit,
+            unverified_comparable,
+        ),
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+
+    result = execute_fact_lookup(
+        sqlite_path,
+        FactLookup(
+            fact_request_id="TEST::DERIVED-WITH-UNVERIFIED-COMPARABLE",
+            ticker="DELL",
+            metric_id="gross_margin",
+            research_as_of="2026-08-06",
+            period={
+                "start_date": None,
+                "end_date": "2026-08-06",
+                "fiscal_years": [2026, 2027],
+            },
+            granularity="quarter_discrete",
+            requested_unit="reported_source_unit",
+        ),
+    )
+
+    assert result.status == "typed_conflict"
+    assert result.typed_gap is None
+    propagated = result.typed_conflict["conflicts"][0]
+    assert propagated["code"] == "derived_formula_input_conflict"
+    assert propagated["input_metric"] == "revenue"
+    assert propagated["input_conflicts"][0]["period_end"] == "2025-05-02"
+    assert propagated["input_conflicts"][0]["code"] == (
+        "typed_fact_physical_period_identity_source_unavailable"
+    )
+
+
+def test_v1_5_requested_comparable_successor_receipt_is_canonical() -> None:
+    path = (
+        ROOT
+        / "configs/financial_facts/"
+        "fin_ia_0_1_3_s2_mu_physical_period_identity_successor_result_v1_5.json"
+    )
+    result = json.loads(path.read_text(encoding="utf-8"))
+    unsigned = {
+        key: value for key, value in result.items() if key != "result_digest"
+    }
+
+    assert result["result_digest"] == canonical_digest(unsigned)
+    assert result["status"] == (
+        "s2_mu_requested_comparable_conflict_successor_pass"
+    )
+    assert all(result["checks"].values())
+    assert result["checks"][
+        "explicit_requested_comparable_identity_conflict_propagates"
+    ] is True
+    assert result["checks"][
+        "automatic_comparable_identity_conflict_propagates"
+    ] is True
+    assert result["checks"][
+        "derived_requested_comparable_conflict_propagates"
+    ] is True
+    assert result["calls"] == {"network": 0, "provider": 0, "model": 0}
+    assert result["authority"]["s2_stage_qualification_authorized"] is False
 
 
 def test_derived_margin_and_fcf_require_aligned_source_period(tmp_path: Path) -> None:

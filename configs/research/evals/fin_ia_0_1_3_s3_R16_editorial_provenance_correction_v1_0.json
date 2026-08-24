@@ -1,0 +1,41 @@
+{
+  "schema_version": "fin_ia_s3_R16_editorial_provenance_correction_v1_0",
+  "status": "append_only_author_provenance_corrected",
+  "recorded_at": "2026-08-24T14:08:00+08:00",
+  "correction_id": "FIN-0.1.3-S3-R16-EDITORIAL-PROVENANCE-CORRECTION-R1",
+  "bound_predecessors": {
+    "R16_fresh_independent_failure_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_R16_fresh_independent_review_failure_v1_0.json",
+    "R16_fresh_independent_failure_sha256": "cd1f7fee2e26dd4ecd5157d67c904a6681e49b600d2517ab7c186bce502de421",
+    "R17_scope_decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_R17_reversal_gate_successor_scope_decision_v1_0.json",
+    "R17_scope_decision_sha256": "3155fac6df8ce724116ca6b10430c8bfc4878e620a27053d291cf6a720a19562",
+    "R16_worklog_ref": "docs/worklog/fin_0_1_3_s3/166_R15_independent_failure_and_R16_bounded_successor.md",
+    "R16_worklog_sha256": "91e8c6293da4ad71a13d30ebceb6a9228d3a1d74a1dfe80b5d425597b6a24ea8"
+  },
+  "corrected_paths": [
+    "sections[4].clauses[4].model_text",
+    "sections[5].clauses[1].model_text",
+    "what_would_change[1].model_text"
+  ],
+  "prior_attribution": "owner_authored_bounded_editorial_corrections",
+  "corrected_attribution": {
+    "scope_authority": "user_owner_authorized_continuation_and_bounded_zero_provider_editorial_correction",
+    "exact_wording_author": "current_Codex",
+    "exact_owner_wording_receipt_present": false,
+    "classification": "owner_authorized_current_Codex_authored_bounded_editorial_corrections_not_findings_listed_in_the_R15_independent_review_receipt"
+  },
+  "content_or_authority_change": {
+    "R16_or_R17_text_changed": false,
+    "references_or_gaps_changed": false,
+    "candidate_or_evidence_promoted": false,
+    "independent_review_status_changed": false,
+    "qualified_human_status_changed": false,
+    "S3_product_publication_or_release_status_changed": false
+  },
+  "calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0
+  },
+  "known_boundary": "This receipt corrects author provenance only. It does not alter immutable R16 or R17 content and grants no independent, human, S3, product, publication, or release authority.",
+  "receipt_digest": "7fa8e64c4a4e6bfe3d5a0d6a4080b7d9d4c1773cbbf82c70e6e7db5d617dc253"
+}

@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -23,6 +24,16 @@ PUBLIC_PATH = (
     "fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_"
     "R17_reversal_gate_successor_candidate_result_v1_0.json"
 )
+PROVENANCE_CORRECTION_PATH = (
+    ROOT
+    / "configs/research/evals/"
+    "fin_ia_0_1_3_s3_R16_editorial_provenance_correction_v1_0.json"
+)
+
+
+def _required_R16_private_path() -> Path:
+    decision = json.loads(DECISION_PATH.read_text(encoding="utf-8"))
+    return ROOT / decision["source_bindings"]["R16_private_full_result"]["ref"]
 
 
 def test_R17_decision_binds_scope_and_implementations() -> None:
@@ -69,6 +80,9 @@ def test_R17_reversal_gate_requires_explicit_conjunction() -> None:
 
 
 def test_R17_compile_preserves_authority_and_reference_boundaries() -> None:
+    predecessor_private = _required_R16_private_path()
+    if not predecessor_private.is_file():
+        pytest.skip("private R16 predecessor is not present in this checkout")
     public = RUNNER.compile_successor()["public"]
 
     assert public["edit_receipt"]["changed_model_text_paths"] == [
@@ -91,6 +105,21 @@ def test_R17_compile_preserves_authority_and_reference_boundaries() -> None:
     assert public["acceptance"]["S3_pass"] is False
 
 
+def test_R17_compile_guard_skips_when_R16_private_is_absent(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    missing = tmp_path / "absent-R16-private.json"
+    monkeypatch.setattr(
+        sys.modules[__name__],
+        "_required_R16_private_path",
+        lambda: missing,
+    )
+
+    with pytest.raises(pytest.skip.Exception):
+        test_R17_compile_preserves_authority_and_reference_boundaries()
+
+
 def test_R17_public_receipt_is_clean_checkout_revalidatable() -> None:
     public = json.loads(PUBLIC_PATH.read_text(encoding="utf-8"))
     unsigned = {key: value for key, value in public.items() if key != "result_digest"}
@@ -106,3 +135,34 @@ def test_R17_public_receipt_is_clean_checkout_revalidatable() -> None:
     ]
     assert private["full_result_digest"] == public["private_full_result_digest"]
     assert private["implementation_refs"] == public["implementation_refs"]
+
+
+def test_R16_editorial_author_provenance_correction_is_append_only() -> None:
+    correction = json.loads(
+        PROVENANCE_CORRECTION_PATH.read_text(encoding="utf-8")
+    )
+    unsigned = {
+        key: value for key, value in correction.items() if key != "receipt_digest"
+    }
+
+    assert correction["receipt_digest"] == canonical_digest(unsigned)
+    assert correction["corrected_paths"] == [
+        "sections[4].clauses[4].model_text",
+        "sections[5].clauses[1].model_text",
+        "what_would_change[1].model_text",
+    ]
+    attribution = correction["corrected_attribution"]
+    assert attribution["exact_wording_author"] == "current_Codex"
+    assert attribution["exact_owner_wording_receipt_present"] is False
+    assert all(
+        value is False
+        for value in correction["content_or_authority_change"].values()
+    )
+    for key, value in correction["bound_predecessors"].items():
+        if not key.endswith("_ref"):
+            continue
+        sha_key = key.removesuffix("_ref") + "_sha256"
+        path = ROOT / value
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == correction[
+            "bound_predecessors"
+        ][sha_key]

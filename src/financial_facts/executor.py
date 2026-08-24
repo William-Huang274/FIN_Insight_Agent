@@ -499,8 +499,20 @@ def _admit_physical_period_identities(
             candidate_years = {
                 int(year) for year, _ in labels if isinstance(year, int)
             }
-            if requested_years and candidate_years.isdisjoint(requested_years):
+            if (
+                requested_years
+                and candidate_years
+                and candidate_years.isdisjoint(requested_years)
+            ):
                 continue
+            ordered_labels = sorted(
+                labels,
+                key=lambda value: (
+                    -1 if value[0] is None else int(value[0]),
+                    str(value[1] or ""),
+                ),
+            )
+            single_label = ordered_labels[0] if len(ordered_labels) == 1 else None
             conflicts.append(
                 {
                     "code": (
@@ -512,18 +524,22 @@ def _admit_physical_period_identities(
                     "period_end": key[3],
                     "period_role": key[4],
                     "unit": key[5],
+                    "fiscal_year": single_label[0] if single_label else None,
+                    "fiscal_period": single_label[1] if single_label else None,
+                    "candidate_fiscal_years": sorted(candidate_years),
+                    "explicit_requested_fiscal_year_match": bool(
+                        requested_years
+                        and (
+                            not candidate_years
+                            or not candidate_years.isdisjoint(requested_years)
+                        )
+                    ),
                     "candidate_fiscal_identities": [
                         {
                             "fiscal_year": year,
                             "fiscal_period": period,
                         }
-                        for year, period in sorted(
-                            labels,
-                            key=lambda value: (
-                                -1 if value[0] is None else int(value[0]),
-                                str(value[1] or ""),
-                            ),
-                        )
+                        for year, period in ordered_labels
                     ],
                     "timely_identity_source_observation_ids": sorted(
                         str(row["observation_id"]) for row in timely_rows
@@ -592,8 +608,11 @@ def _select_latest_period_roles(
     conflict_by_role: dict[str, list[Mapping[str, Any]]] = {}
     for conflict in conflicts:
         role = str(conflict.get("period_role") or "")
-        if role in allowed_roles and _conflict_matches_filing_cohort(
-            conflict, role=role, filing_cohorts=filing_cohorts
+        if role in allowed_roles and (
+            conflict.get("explicit_requested_fiscal_year_match") is True
+            or _conflict_matches_filing_cohort(
+                conflict, role=role, filing_cohorts=filing_cohorts
+            )
         ):
             conflict_by_role.setdefault(role, []).append(conflict)
     selected: list[tuple[tuple[Any, ...], list[Mapping[str, Any]]]] = []
@@ -601,6 +620,14 @@ def _select_latest_period_roles(
     for role in sorted(allowed_roles, key=lambda value: _ROLE_ORDER.get(value, 99)):
         candidates = resolved_by_role.get(role, [])
         role_conflicts = conflict_by_role.get(role, [])
+        explicit_requested_conflicts = [
+            item
+            for item in role_conflicts
+            if item.get("explicit_requested_fiscal_year_match") is True
+        ]
+        if explicit_requested_conflicts:
+            selected_conflicts.extend(explicit_requested_conflicts)
+            continue
         newest_end = max(
             [str(item[0][1]) for item in candidates]
             + [str(item.get("period_end") or "") for item in role_conflicts],
@@ -643,8 +670,11 @@ def _select_latest_period_roles(
         comparable_conflicts = [
             item
             for item in role_conflicts
-            if item.get("fiscal_year") == comparable_year
-            and item.get("fiscal_period") == current_fiscal_period
+            if _conflict_has_fiscal_identity(
+                item,
+                fiscal_year=comparable_year,
+                fiscal_period=current_fiscal_period,
+            )
         ]
         if comparable_conflicts:
             selected_conflicts.extend(comparable_conflicts)
@@ -669,6 +699,26 @@ def _select_latest_period_roles(
         if comparable_candidates:
             selected.append(comparable_candidates[0])
     return selected, selected_conflicts
+
+
+def _conflict_has_fiscal_identity(
+    conflict: Mapping[str, Any],
+    *,
+    fiscal_year: int,
+    fiscal_period: str,
+) -> bool:
+    if (
+        conflict.get("fiscal_year") == fiscal_year
+        and conflict.get("fiscal_period") == fiscal_period
+    ):
+        return True
+    identities = conflict.get("candidate_fiscal_identities") or ()
+    return any(
+        isinstance(identity, Mapping)
+        and identity.get("fiscal_year") == fiscal_year
+        and identity.get("fiscal_period") == fiscal_period
+        for identity in identities
+    )
 
 
 def _latest_filing_cohorts(
@@ -718,7 +768,7 @@ def _conflict_matches_filing_cohort(
     cohort_key = "annual" if role == "fiscal_year" else "interim"
     expected = filing_cohorts.get(cohort_key)
     accessions = {str(value) for value in conflict.get("accession_numbers") or ()}
-    return bool(expected) and accessions == {expected}
+    return bool(expected) and expected in accessions
 
 
 def _roles_for_granularity(value: str) -> set[str]:

@@ -137,3 +137,11 @@ successor 将 fiscal identity 与 numeric vintage 分离：同物理期间的 10
 fresh reviewer 还发现 derived formula 会把 direct input 的 `typed_conflict` 降为 `derived_formula_input_missing` gap。successor 现在传播 authoritative conflict，并保留 input side、metric、request ID、conflict code 与 nested conflicts；只有 conflict-free 的真实缺失输入才能形成 gap。这使“数据互相矛盾”和“公开信息缺失”继续是两个不同状态。
 
 不可变 attempt 链为：v1.2 业务检查为真但 receipt shape 自审失败；v1.3 修复自审并证明 strict origin；v1.4 在 fresh finding 后新增 derived-conflict 与 unrelated-role probes。v1.4 对原 MU 三事实、六个 FY2023/Q1 as-of、DELL no-origin counterexample、728-group population、derived conflict 与 irrelevant-role 共八项检查全部为 true，calls=`0/0/0`。这只关闭 executor 身份／冲突边界，不重建 mart，也不提供 ASP、units、PVM、产品利润桥或 S2 产品资格。
+
+## 13. clean audit 更正：requested/comparable conflict 必须跨 latest selection 传播（2026-08-24）
+
+§12 的单 group no-origin 与 derived-conflict 检查仍成立，但 v1.4 的 generic closure 被 clean audit 推翻。组合场景中，current Q1 有及时来源而 prior-year Q1 只有晚期 copy；identity producer 正确生成旧期 conflict，但其 fiscal identity 只在 nested candidates。selector 只无条件处理最新 `period_end`，自动 comparable 又查顶层 year/period，故旧期 conflict 可消失，顶层只返回 current fact 的 `resolved`。
+
+v1.5 为 conflict 增加 single-label、candidate years、完整 nested identities 与 explicit-request match。显式 fiscal-year request 命中的 conflict 在 latest-role selection 前传播；无显式年份时，以 current fiscal year - 1 和同 fiscal period 在 nested identities 中选择 automatic comparable conflict。Identity conflict 只要包含当前 filing accession 即属于当前 cohort，不要求全部历史 copies 来自同一 accession。任何上述 direct conflict 在 derived formula 中继续保持 conflict。
+
+新回归覆盖 explicit `[2026, 2027]`、automatic comparable 与 derived 三条路径；旧期 `2025-05-02` 均 fail closed。v1.5 同时重放原 MU 三事实、六 as-of、no-origin、728-group inventory 和 v1.4 probes，11/11 checks true，calls=`0/0/0`。这关闭 `RC-S2-017` 的路由根因，不扩张 mart 或产品金融桥能力。

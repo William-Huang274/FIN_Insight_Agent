@@ -583,6 +583,19 @@ def validate_pack_set_authority(
             case_key=case_key,
             repository_root=repository_root,
         )
+        anchor_ref = str(raw.get("reviewed_anchor_catalog_ref") or "")
+        anchor_sha256 = str(raw.get("reviewed_anchor_catalog_sha256") or "")
+        if bool(anchor_ref) != bool(anchor_sha256):
+            raise CurrentEvidencePackPromotionError(
+                f"current_pack_set_reviewed_anchor_binding_incomplete:{case_key}"
+            )
+        if anchor_ref:
+            _bound_file(
+                repository_root,
+                raw,
+                ref_key="reviewed_anchor_catalog_ref",
+                digest_key="reviewed_anchor_catalog_sha256",
+            )
 
     all_case_keys = [
         str(row.get("case_key") or "")
@@ -688,6 +701,7 @@ def compose_current_pack_set(
     replacements: dict[
         str, tuple[dict[str, Any], Path, dict[str, Any], dict[str, Any]]
     ] = {}
+    reviewed_anchor_successors: dict[str, Any] = {}
     for raw in authority["replacement_chains"]:
         case_key = str(raw["case_key"])
         final_chain_row = raw["successor_result_chain"][-1]
@@ -723,6 +737,17 @@ def compose_current_pack_set(
             repository_root=repository_root,
         )
         replacements[case_key] = (pack, pack_path, final_result, readiness)
+        anchor_ref = str(raw.get("reviewed_anchor_catalog_ref") or "")
+        if anchor_ref:
+            anchor_path = _bound_file(
+                repository_root,
+                raw,
+                ref_key="reviewed_anchor_catalog_ref",
+                digest_key="reviewed_anchor_catalog_sha256",
+            )
+            reviewed_anchor_successors[case_key] = (
+                load_reviewed_evidence_anchor_catalog(_read_json(anchor_path))
+            )
 
     body = deepcopy(dict(current_result))
     predecessor_result_digest = str(body.pop("result_digest", ""))
@@ -818,6 +843,7 @@ def compose_current_pack_set(
     composed_anchor = _compose_anchor_catalog(
         predecessor_anchor=predecessor_anchor,
         replacements=replacements,
+        reviewed_anchor_successors=reviewed_anchor_successors,
     )
 
     composed_policy = deepcopy(dict(binding_policy))
@@ -1104,7 +1130,9 @@ def _compose_anchor_catalog(
         str,
         tuple[dict[str, Any], Path, dict[str, Any], dict[str, Any]],
     ],
+    reviewed_anchor_successors: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    reviewed_anchor_successors = dict(reviewed_anchor_successors or {})
     old_entries = {
         (str(row["case_key"]), str(row["target_id"])): dict(row)
         for row in predecessor_anchor.entries
@@ -1119,6 +1147,24 @@ def _compose_anchor_catalog(
         for key, value in predecessor_anchor.case_pack_bindings.items()
     }
     for case_key, (pack, pack_path, _result, _readiness) in replacements.items():
+        reviewed_successor = reviewed_anchor_successors.get(case_key)
+        if reviewed_successor is not None:
+            _validate_reviewed_anchor_successor(
+                predecessor_anchor=predecessor_anchor,
+                successor_anchor=reviewed_successor,
+                case_key=case_key,
+                pack=pack,
+                pack_path=pack_path,
+            )
+            entries.extend(
+                dict(row)
+                for row in reviewed_successor.entries
+                if str(row["case_key"]) == case_key
+            )
+            bindings[case_key] = dict(
+                reviewed_successor.case_pack_bindings[case_key]
+            )
+            continue
         sources = {
             str(row["material_ref"]): dict(row)
             for row in pack.get("source_materials") or ()
@@ -1174,6 +1220,104 @@ def _compose_anchor_catalog(
             "causal, qualified-human, S1 or publication authority."
         ),
     )
+
+
+def _validate_reviewed_anchor_successor(
+    *,
+    predecessor_anchor: Any,
+    successor_anchor: Any,
+    case_key: str,
+    pack: Mapping[str, Any],
+    pack_path: Path,
+) -> None:
+    expected_binding = {
+        "artifact_digest": file_sha256(pack_path),
+        "pack_payload_digest": str(pack["pack_payload_digest"]),
+    }
+    if successor_anchor.case_pack_bindings.get(case_key) != expected_binding:
+        raise CurrentEvidencePackPromotionError(
+            f"current_pack_set_reviewed_anchor_pack_binding_invalid:{case_key}"
+        )
+
+    retained_case_keys = set(predecessor_anchor.case_pack_bindings) - {case_key}
+    for retained_case_key in retained_case_keys:
+        if (
+            successor_anchor.case_pack_bindings.get(retained_case_key)
+            != predecessor_anchor.case_pack_bindings.get(retained_case_key)
+        ):
+            raise CurrentEvidencePackPromotionError(
+                "current_pack_set_reviewed_anchor_retained_binding_drift:"
+                f"{retained_case_key}"
+            )
+        predecessor_rows = [
+            dict(row)
+            for row in predecessor_anchor.entries
+            if str(row["case_key"]) == retained_case_key
+        ]
+        successor_rows = [
+            dict(row)
+            for row in successor_anchor.entries
+            if str(row["case_key"]) == retained_case_key
+        ]
+        if successor_rows != predecessor_rows:
+            raise CurrentEvidencePackPromotionError(
+                "current_pack_set_reviewed_anchor_retained_entry_drift:"
+                f"{retained_case_key}"
+            )
+
+    materials = {
+        str(row["material_ref"]): row for row in pack.get("source_materials") or ()
+    }
+    claims = {
+        str(row["target_id"]): row
+        for row in pack.get("evidence_items") or ()
+        if str(row.get("object_type") or "") == "claim"
+    }
+    successor_rows = {
+        str(row["target_id"]): dict(row)
+        for row in successor_anchor.entries
+        if str(row["case_key"]) == case_key
+    }
+    predecessor_rows = {
+        str(row["target_id"]): dict(row)
+        for row in predecessor_anchor.entries
+        if str(row["case_key"]) == case_key
+    }
+    if set(successor_rows) != set(claims):
+        raise CurrentEvidencePackPromotionError(
+            f"current_pack_set_reviewed_anchor_claim_partition_invalid:{case_key}"
+        )
+    for target_id, item in claims.items():
+        row = successor_rows[target_id]
+        material = materials.get(str(item.get("source_material_ref") or ""))
+        if material is None:
+            raise CurrentEvidencePackPromotionError(
+                f"current_pack_set_anchor_source_missing:{case_key}"
+            )
+        source_text = str(material.get("source_text") or "")
+        start = int(row.get("anchor_start") or 0)
+        end = int(row.get("anchor_end") or 0)
+        anchor_text = str(row.get("anchor_text") or "")
+        prior = predecessor_rows.get(target_id)
+        reviewed_surface_length_valid = (
+            row == prior if prior is not None else 24 <= len(anchor_text) <= 800
+        )
+        if not (
+            row.get("source_record_id") == item.get("source_record_id")
+            and row.get("evidence_item_digest") == item.get("evidence_item_digest")
+            and row.get("source_text_digest") == material.get("source_text_digest")
+            and row.get("review_status") == "reviewed_exact_source_surface"
+            and reviewed_surface_length_valid
+            and 0 <= start < end <= len(source_text)
+            and end - start == len(anchor_text)
+            and source_text[start:end] == anchor_text
+            and row.get("anchor_digest")
+            == hashlib.sha256(anchor_text.encode("utf-8")).hexdigest()
+        ):
+            raise CurrentEvidencePackPromotionError(
+                f"current_pack_set_reviewed_anchor_surface_invalid:{case_key}:"
+                f"{target_id}"
+            )
 
 
 def _old_anchor_still_binds(

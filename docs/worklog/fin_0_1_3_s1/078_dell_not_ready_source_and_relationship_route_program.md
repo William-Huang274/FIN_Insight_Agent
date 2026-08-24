@@ -347,3 +347,13 @@ ProductReadiness v1.7。它绑定同一冻结 candidate replay、compiled object
 `bd6d652c...805e40f`，private SHA-256 为 `c6af4681...b0db42`。这份 v1.7 是原子
 promotion 所需的 S1 current consumer 资产；它与更细的 12-request R4 task readiness 各自保留
 用途，不互相冒充。
+
+promotion preflight 又发现同阶段实现缺陷：旧 pack-set runner 对没有旧 anchor 的 claim 只允许
+把完整 source text 自动变成 anchor，并要求长度不超过 `1,600`；R4 一条 Dell 官方 source
+surface 为 `1,790` 字符，但其真正审过的精确 passage 不超过 `800`。本轮没有放宽整段自动
+anchor 门，而是扩展 replacement contract，使其可选绑定 reviewed-anchor successor，并校验：
+目标 Pack artifact/payload digest、目标 case 的 claim 全分区覆盖、每条 passage 在 source text
+中的唯一坐标和 digest、以及所有 retained case 的 binding／entries 零漂移。没有显式 successor
+时，原有长文本拒绝行为保持不变。新增正反回归后 pack-set runner 定向测试为 `10 passed`；
+用真实 R4 Pack 与 anchor v1.6 只读组合得到 `86` entries、DELL binding 精确指向 R4，证明可在
+不降低 anchor 质量的情况下进入原子晋升。

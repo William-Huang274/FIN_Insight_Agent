@@ -786,3 +786,76 @@ def test_current_pack_set_rejects_long_claim_without_reviewed_anchor(
             predecessor_anchor=anchor,
             replacements={"DELL": (pack, pack_path, {}, {})},
         )
+
+
+def test_current_pack_set_accepts_digest_bound_reviewed_anchor_for_long_claim(
+    tmp_path: Path,
+) -> None:
+    repo, _authority_path, authority = _pack_set_fixture(tmp_path)
+    predecessor = authority["predecessor_contract"]
+    predecessor_anchor = load_reviewed_evidence_anchor_catalog(
+        json.loads(
+            (repo / predecessor["current_anchor_catalog_ref"]).read_text(
+                encoding="utf-8"
+            )
+        )
+    )
+    pack = _pack_for_case("DELL")
+    anchor_text = "reviewed financial evidence " * 10
+    long_text = f"prefix surface. {anchor_text}" + ("long tail " * 180)
+    source_digest = hashlib.sha256(long_text.encode()).hexdigest()
+    pack["source_materials"][0]["source_text"] = long_text
+    pack["source_materials"][0]["source_text_digest"] = source_digest
+    pack["evidence_items"][0]["source_content_digest"] = source_digest
+    pack.pop("pack_payload_digest")
+    pack["pack_payload_digest"] = canonical_digest(pack)
+    pack_path = repo / "data/workbench_private/long-reviewed/pack.json"
+    _write_json(pack_path, pack)
+
+    item = pack["evidence_items"][0]
+    material = pack["source_materials"][0]
+    start = long_text.index(anchor_text)
+    retained_entries = [
+        dict(row)
+        for row in predecessor_anchor.entries
+        if row["case_key"] != "DELL"
+    ]
+    successor_payload = compile_reviewed_evidence_anchor_catalog(
+        case_pack_bindings={
+            **dict(predecessor_anchor.case_pack_bindings),
+            "DELL": {
+                "artifact_digest": _sha(pack_path),
+                "pack_payload_digest": pack["pack_payload_digest"],
+            },
+        },
+        entries=[
+            *retained_entries,
+            {
+                "case_key": "DELL",
+                "target_id": item["target_id"],
+                "source_record_id": item["source_record_id"],
+                "evidence_item_digest": item["evidence_item_digest"],
+                "source_text_digest": material["source_text_digest"],
+                "anchor_kind": "reviewed_current_document_passage",
+                "anchor_text": anchor_text,
+                "anchor_start": start,
+                "anchor_end": start + len(anchor_text),
+                "anchor_digest": hashlib.sha256(anchor_text.encode()).hexdigest(),
+                "review_status": "reviewed_exact_source_surface",
+            },
+        ],
+        known_boundary="reviewed long-claim fixture",
+    )
+    successor_anchor = load_reviewed_evidence_anchor_catalog(successor_payload)
+
+    composed = _compose_anchor_catalog(
+        predecessor_anchor=predecessor_anchor,
+        replacements={"DELL": (pack, pack_path, {}, {})},
+        reviewed_anchor_successors={"DELL": successor_anchor},
+    )
+    loaded = load_reviewed_evidence_anchor_catalog(composed)
+
+    dell_rows = [row for row in loaded.entries if row["case_key"] == "DELL"]
+    assert len(dell_rows) == 1
+    assert dell_rows[0]["anchor_text"] == anchor_text
+    assert len(dell_rows[0]["anchor_text"]) < len(long_text)

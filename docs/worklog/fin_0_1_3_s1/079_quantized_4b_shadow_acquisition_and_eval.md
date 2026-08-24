@@ -1,7 +1,7 @@
 # S1 工作记录 079：8GB 量化 4B shadow 获取与同池评测
 
 日期：2026-08-24
-状态：`acquisition_preregistered / execution_pending`
+状态：`acquisition_r1_succeeded / execution_program_pending`
 
 ## 1. 决策目标
 
@@ -37,6 +37,23 @@ ANET、隐藏 pack binding 和 source-bound input 一律不载入。
 
 - program：`configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_shadow_acquisition_program_v1_0.json`
 - implementation：`src/retrieval/quantized_shadow.py`
-- acquisition runner：提交并同步 clean commit 后执行；
+- acquisition runner：已从 clean／upstream-equal commit `f26d38d9` 执行；
 - 每个失败 attempt 必须保留 receipt，修复后使用新 attempt ID；
 - 获取成功后另建 execution program，绑定实际 model/tool identity 和本工作记录，不从聊天记忆推断。
+
+## 5. acquisition-r1 结果
+
+`acquisition-r1` 成功，公开结果为
+`configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_shadow_acquisition_result_v1_0.json`，
+`result_digest=8655e01c7c6f686bd6a3b93031561151e64deea73ad7c4306291d5758986387e`。
+
+- embedding identity：`8d94e3ac9802c1e6b6105c788d5aafadaf278a9ffc5d0a44df164e508db937f2`；
+- reranker identity：`1067660e34c2174f80f827e9984008069425cd002e6210db3ec271b1abc6fd55`；
+- llama.cpp identity：`ee50da2b1e2c8883ba0fb7814f94b8a6e3cf887a035c6f0e8e9c710dcad0fc06`；
+- 工具自检：build 10516／commit `b95502ba9`，Windows x86_64，return code 0；
+- 高层网络调用：2 次固定 HF snapshot + 2 次固定 GitHub release asset；provider 0、模型推理 0；
+- 获取后 Z 盘剩余 `20,851,736,576` bytes；没有 CPU inference fallback，也没有运行任何评测。
+
+公开结果与 private full result 逐字节相同，result digest 已重算通过；最终目录重新计算的
+model/tool identity 与 transaction staging identity 完全一致。下一步必须先提交该 immutable
+acquisition result，再建立 execution program，禁止直接凭成功下载启动无契约推理。

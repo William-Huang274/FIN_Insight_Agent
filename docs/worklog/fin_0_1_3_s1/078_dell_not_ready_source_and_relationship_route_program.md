@@ -271,3 +271,17 @@ result digest `03cbb776...00e54`、private terminal digest `a5b4c1ed...f8fe9` �
 用新 attempt ID 做 `5` 个 immutable raw captures 的 zero-network compilation replay；必须证明
 四个无关 source object digest 不变、Dell source date 纠正为 `2025-03-18`，然后才允许重新进入
 CandidateDecision。
+
+第一次 replay attempt `fin013-dell-direct-r3-replay-20260824-1478c9bf` 在写出任何结果前被
+`dell_direct_source_compilation_replay_unaffected_source_changed` 保护性断言终止，网络／provider／
+model／generation 均为 `0`。逐源只读复现显示，初版 1,200-character header window 过宽：PT
+PDF 在字符 309／426／503 出现 research-conclusion 与 AWS price-update 日期，不能当作 publication
+date；同时 Mississippi Board Book 标题开头的 `February 20, 2025` 确实比旧的
+`/CreationDate=2025-02-19` 更有权威，且 provider telemetry 同为 2025-02-20。
+
+因此不通过放松 unchanged 断言关闭失败，而是：将 PDF explicit-header window 收窄到前 `240`
+个规范化字符；登记两项显式 correction（Dell `2026-06-06 -> 2025-03-18`、Mississippi
+`2025-02-19 -> 2025-02-20`）；要求 PT、CMBI、NVIDIA 三个 source object digest 保持不变。
+preflight finding receipt 为 `d36c10eb...4542d`，successor replay plan v1.1 为
+`46405378...d5a6b`。修正后的只读复现已经得到恰好 `2` 个 date/object identity change 与 `3`
+个 unchanged digest；正式 zero-network replay 仍须等 clean commit 后使用新 attempt ID。

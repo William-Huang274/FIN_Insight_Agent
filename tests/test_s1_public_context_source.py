@@ -298,6 +298,30 @@ def test_pdf_visible_release_date_outranks_later_file_creation_metadata() -> Non
     ]
 
 
+def test_pdf_context_dates_beyond_header_do_not_override_file_date() -> None:
+    receipt = adjudicate_publication_date_from_capture(
+        response_capture=_pdf_capture(
+            "Technical study without a visible release date in its title. "
+            + "Scope and configuration context. " * 12
+            + "Research concluded March 27, 2025 and prices changed June 27, 2025.",
+            url="https://example.com/technical-study.pdf",
+            creation_date="D:20250723000000Z",
+        ),
+        research_as_of="2026-08-06",
+    )
+
+    assert receipt["status"] == "resolved_from_original_source"
+    assert receipt["selected_publication_date"] == "2025-07-23"
+    assert receipt["original_source_candidates"] == [
+        {
+            "date": "2025-07-23",
+            "source": "original_pdf_creation_date",
+            "priority": 2,
+            "after_research_as_of": False,
+        }
+    ]
+
+
 def test_publication_date_recovers_visible_month_name_date_marker() -> None:
     html = """
     <html><body><article>

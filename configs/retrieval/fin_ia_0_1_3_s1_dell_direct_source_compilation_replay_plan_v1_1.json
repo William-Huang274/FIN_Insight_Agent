@@ -1,0 +1,80 @@
+{
+  "schema_version": "fin_ia_s1_dell_direct_source_compilation_replay_plan_v1_1",
+  "status": "approved_zero_network_publication_date_correction_replay",
+  "recorded_at": "2026-08-24",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "plan_id": "FIN-0.1.3-S1-DELL-DIRECT-SOURCE-COMPILATION-REPLAY-R4",
+  "predecessor_terminal_binding": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_capture/fin013-dell-direct-r2-20260824-b5ace0f5/terminal_result.json",
+    "sha256": "d91e146b5bb2d56f1e785634b57bd731fa234b0b8c287ef7a8b07056646d158c",
+    "result_digest": "a5b4c1ed4ea5722a5e73e1f43762cc4cad156c7315242aa1880260b9978f8fe9",
+    "attempt_id": "fin013-dell-direct-r2-20260824-b5ace0f5"
+  },
+  "effective_capture_plan_binding": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_capture/fin013-dell-direct-r2-20260824-b5ace0f5/effective_plan.json",
+    "sha256": "9f888e28c5eb22369588e40a0fba2d7f3dcf7b7f2695c044682748ea2dd998b9",
+    "plan_digest": "126f6189810ceba9fb56876a9e156afe13b45fd11c8e60abd2dffaa20d0dd893"
+  },
+  "defect_receipt_binding": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_direct_source_r2_publication_date_defect_receipt_v1_0.json",
+    "sha256": "ca506f62ef8eb4cdb69a0068e303ad8785302347985928ecfbbcdc928dacf6eb",
+    "receipt_digest": "6eefdf33bd875b74a6161b5d6f65a41980f5cd9478188723e6f082e79c23148a"
+  },
+  "replay_preflight_finding_binding": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_direct_source_r3_replay_preflight_finding_v1_0.json",
+    "sha256": "c0c1bd546649cc918e75a16adae9651d2638d206a33448eae93dfb68a40b2123",
+    "receipt_digest": "d36c10eb082fb3752d7f13689b8f7232512dafbb315be99bfc53410029f4542d"
+  },
+  "expected_capture_count": 5,
+  "expected_corrections": [
+    {
+      "source_url": "https://investors.delltechnologies.com/node/17471/pdf",
+      "predecessor_publication_date": "2026-06-06",
+      "successor_publication_date": "2025-03-18",
+      "provider_date_corroboration_required": true
+    },
+    {
+      "source_url": "https://www.mississippi.edu/sites/default/files/ihl/files/February%202025%20Board%20Book.pdf",
+      "predecessor_publication_date": "2025-02-19",
+      "successor_publication_date": "2025-02-20",
+      "provider_date_corroboration_required": true
+    }
+  ],
+  "expected_unchanged_source_object_count": 3,
+  "execution_budget": {
+    "network_call_ceiling": 0,
+    "provider_call_ceiling": 0,
+    "model_call_ceiling": 0,
+    "generation_call_ceiling": 0,
+    "capture_reuse_count_required": 5
+  },
+  "token_budget_basis": {
+    "model_tokens": 0,
+    "node_purpose": "Recompile five immutable R2 source responses after bounding PDF header-date scope, correcting Dell IR and Mississippi Board Book dates without issuing another network or model call.",
+    "input_scale_basis": "One digest-bound R2 terminal, one effective capture plan, five successful immutable response captures, the R2 date defect receipt and the failed R3 replay preflight finding.",
+    "required_outputs": [
+      "five-capture reuse receipt",
+      "two explicit publication-date correction receipts",
+      "three unchanged source-object identities",
+      "candidate-only proposition proposals",
+      "zero-network and zero-model execution receipt"
+    ],
+    "schema_burden": "The replay must distinguish first-page title/header dates from later contextual dates, preserve both visible and file-metadata candidates, prove two explicit corrections and preserve three unaffected source object digests.",
+    "materiality_and_quality_risk": "An over-wide visible-header window can mistake research-event dates for publication dates; an over-narrow correction scope can preserve a known one-day Board Book date error; silent refetching would break exact failure lineage.",
+    "comparable_run_evidence": "R3 preflight proved that a 1,200-character window incorrectly captured PT research/update dates, while a 240-character window retains Dell, Mississippi and CMBI title/header dates. It also proved the Mississippi visible date is 2025-02-20 and provider-corroborated.",
+    "reasoning_profile": "Deterministic AI-free capture validation and compilation replay only.",
+    "stop_and_truncation_behavior": "Abort unless all five predecessor captures are digest-bound and reused, no transport executes, exactly Dell and Mississippi receive the registered dates, and PT, CMBI and NVIDIA source object digests remain unchanged; preserve R2 and failed R3.",
+    "cost_and_latency_are_secondary_constraints": true
+  },
+  "authority": {
+    "predecessor_source_objects_reusable": false,
+    "predecessor_raw_captures_reusable": true,
+    "candidate_is_not_evidence": true,
+    "candidate_decision_and_evidence_gate_required": true,
+    "gap_closure_authorized": false,
+    "S1_qualification_authorized": false,
+    "product_publication_authorized": false
+  },
+  "plan_digest": "464053789bbc9be3b19544edd3bf5b4f56ddf89841151e93ac529b25dfdd5a6b"
+}

@@ -420,7 +420,7 @@ def adjudicate_publication_date_from_capture(
             ]
             first_pages = "\n".join(extracted_pages)
             visible_header = _normalized(extracted_pages[0] if extracted_pages else "")[
-                :1200
+                :240
             ]
             month_pattern = (
                 r"Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|"

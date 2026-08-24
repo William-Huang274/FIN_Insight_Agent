@@ -1,0 +1,77 @@
+{
+  "schema_version": "fin_ia_s1_dell_direct_source_replay_preflight_finding_v1_0",
+  "status": "failed_replay_scope_expanded_before_candidate_review",
+  "recorded_at": "2026-08-24",
+  "case_key": "DELL",
+  "failed_attempt_id": "fin013-dell-direct-r3-replay-20260824-1478c9bf",
+  "prepared_from_commit": "1478c9bf3759486588ae9f8b857278ebe383f403",
+  "replay_plan_binding": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_direct_source_compilation_replay_plan_v1_0.json",
+    "plan_digest": "c5bf5e6d808d253226a897bb7503cf83d54add1d689f4de212e95677909df30e"
+  },
+  "terminal_failure_code": "dell_direct_source_compilation_replay_unaffected_source_changed",
+  "output_materialized": false,
+  "network_calls": 0,
+  "provider_calls": 0,
+  "model_calls": 0,
+  "generation_calls": 0,
+  "reproduction_findings": [
+    {
+      "source_url": "https://www.principledtechnologies.com/dell/Dell-AI-Factory-vs-AWS-Azure-TCO-science-0725.pdf",
+      "predecessor_publication_date": "2025-07-23",
+      "observed_dates": [
+        "2025-03-27",
+        "2025-06-27",
+        "2025-07-23"
+      ],
+      "finding": "The 1,200-character visible-header window was too broad: research-conclusion and AWS-price-update dates at character offsets 309, 426 and 503 are contextual, not publication dates.",
+      "decision": "Narrow explicit PDF header-date scope to the first 240 normalized characters; retain 2025-07-23 file CreationDate for this source because no explicit title/header date is present in that scope."
+    },
+    {
+      "source_url": "https://www.mississippi.edu/sites/default/files/ihl/files/February%202025%20Board%20Book.pdf",
+      "predecessor_publication_date": "2025-02-19",
+      "visible_header_date": "2025-02-20",
+      "file_creation_date": "2025-02-19",
+      "provider_date_telemetry": "2025-02-20",
+      "finding": "The title begins 'Board Book February 20, 2025'; the visible document date is more authoritative than the prior-day PDF CreationDate and is independently corroborated by provider telemetry.",
+      "decision": "Add Mississippi 2025-02-20 to the explicit correction set instead of forcing its old source-object digest to remain unchanged."
+    },
+    {
+      "source_url": "https://www.cmbi.com.hk/upload/202601/20260102116952.pdf",
+      "predecessor_publication_date": "2026-01-02",
+      "visible_header_date": "2026-01-02",
+      "file_creation_date": "2026-01-02",
+      "decision": "Source-object identity must remain unchanged."
+    },
+    {
+      "source_url": "https://investors.delltechnologies.com/node/17471/pdf",
+      "predecessor_publication_date": "2026-06-06",
+      "visible_header_date": "2025-03-18",
+      "file_creation_date": "2026-06-06",
+      "provider_date_telemetry": "2025-03-18",
+      "decision": "Correct to 2025-03-18 as already required by the R2 defect receipt."
+    },
+    {
+      "source_url": "https://blogs.nvidia.com/blog/dell-technologies-ai-factories-blackwell/",
+      "predecessor_publication_date": "2025-05-27",
+      "visible_publication_date": "2025-05-27",
+      "decision": "Source-object identity must remain unchanged."
+    }
+  ],
+  "successor_replay_contract": {
+    "explicit_corrected_source_count": 2,
+    "unchanged_source_object_count": 3,
+    "raw_capture_reuse_count": 5,
+    "fresh_network_calls_authorized": 0,
+    "new_attempt_id_required": true,
+    "candidate_decision_authorized_only_after_replay_pass": true
+  },
+  "authority": {
+    "failed_attempt_immutable": true,
+    "candidate_evidence_promotions": 0,
+    "gap_closure_authorized": false,
+    "S1_qualification_authorized": false,
+    "product_publication_authorized": false
+  },
+  "receipt_digest": "d36c10eb082fb3752d7f13689b8f7232512dafbb315be99bfc53410029f4542d"
+}

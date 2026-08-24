@@ -43,7 +43,7 @@ SUCCESSOR_PLAN = (
 REPLAY_PLAN = (
     ROOT
     / "configs/retrieval/"
-    "fin_ia_0_1_3_s1_dell_direct_source_compilation_replay_plan_v1_0.json"
+    "fin_ia_0_1_3_s1_dell_direct_source_compilation_replay_plan_v1_1.json"
 )
 
 
@@ -233,7 +233,21 @@ def test_compilation_replay_plan_is_zero_network_and_capture_bound() -> None:
         "generation_call_ceiling": 0,
         "capture_reuse_count_required": 5,
     }
-    assert plan["expected_corrected_publication_date"] == "2025-03-18"
+    assert {
+        (row["source_url"], row["successor_publication_date"])
+        for row in plan["expected_corrections"]
+    } == {
+        (
+            "https://investors.delltechnologies.com/node/17471/pdf",
+            "2025-03-18",
+        ),
+        (
+            "https://www.mississippi.edu/sites/default/files/ihl/files/"
+            "February%202025%20Board%20Book.pdf",
+            "2025-02-20",
+        ),
+    }
+    assert plan["expected_unchanged_source_object_count"] == 3
     assert plan["authority"]["predecessor_source_objects_reusable"] is False
     assert plan["authority"]["predecessor_raw_captures_reusable"] is True
 

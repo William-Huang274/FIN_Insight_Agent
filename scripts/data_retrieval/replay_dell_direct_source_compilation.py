@@ -37,7 +37,7 @@ PLAN = (
     ROOT
     / "configs"
     / "retrieval"
-    / "fin_ia_0_1_3_s1_dell_direct_source_compilation_replay_plan_v1_0.json"
+    / "fin_ia_0_1_3_s1_dell_direct_source_compilation_replay_plan_v1_1.json"
 )
 DEFAULT_PUBLIC = (
     ROOT
@@ -76,9 +76,10 @@ def validate_replay_plan(payload: Mapping[str, Any]) -> dict[str, Any]:
         "predecessor_terminal_binding",
         "effective_capture_plan_binding",
         "defect_receipt_binding",
+        "replay_preflight_finding_binding",
         "expected_capture_count",
-        "expected_corrected_source_url",
-        "expected_corrected_publication_date",
+        "expected_corrections",
+        "expected_unchanged_source_object_count",
         "execution_budget",
         "token_budget_basis",
         "authority",
@@ -87,13 +88,15 @@ def validate_replay_plan(payload: Mapping[str, Any]) -> dict[str, Any]:
     predecessor = value.get("predecessor_terminal_binding")
     effective = value.get("effective_capture_plan_binding")
     defect = value.get("defect_receipt_binding")
+    preflight = value.get("replay_preflight_finding_binding")
+    corrections = value.get("expected_corrections")
     budget = value.get("execution_budget")
     token_basis = value.get("token_budget_basis")
     authority = value.get("authority")
     if not (
         set(value) == expected_fields
         and value.get("schema_version")
-        == "fin_ia_s1_dell_direct_source_compilation_replay_plan_v1_0"
+        == "fin_ia_s1_dell_direct_source_compilation_replay_plan_v1_1"
         and value.get("status")
         == "approved_zero_network_publication_date_correction_replay"
         and str(value.get("case_key") or "").upper() == "DELL"
@@ -112,11 +115,31 @@ def validate_replay_plan(payload: Mapping[str, Any]) -> dict[str, Any]:
         and str(defect.get("ref") or "")
         and len(str(defect.get("sha256") or "")) == 64
         and len(str(defect.get("receipt_digest") or "")) == 64
+        and isinstance(preflight, Mapping)
+        and str(preflight.get("ref") or "")
+        and len(str(preflight.get("sha256") or "")) == 64
+        and len(str(preflight.get("receipt_digest") or "")) == 64
         and int(value.get("expected_capture_count") or 0) == 5
-        and str(value.get("expected_corrected_source_url") or "").startswith(
-            "https://"
+        and isinstance(corrections, list)
+        and len(corrections) == 2
+        and len(
+            {
+                str(row.get("source_url") or "")
+                for row in corrections
+                if isinstance(row, Mapping)
+            }
         )
-        and str(value.get("expected_corrected_publication_date") or "")
+        == 2
+        and all(
+            isinstance(row, Mapping)
+            and str(row.get("source_url") or "").startswith("https://")
+            and str(row.get("predecessor_publication_date") or "")
+            and str(row.get("successor_publication_date") or "")
+            and row.get("provider_date_corroboration_required") is True
+            for row in corrections
+        )
+        and int(value.get("expected_unchanged_source_object_count") or 0)
+        == 3
         and isinstance(budget, Mapping)
         and budget.get("network_call_ceiling") == 0
         and budget.get("provider_call_ceiling") == 0
@@ -213,6 +236,11 @@ def run(
         digest_field="receipt_digest",
         code="dell_direct_source_compilation_replay_defect_receipt",
     )
+    preflight_path, preflight = _validate_bound_json(
+        plan["replay_preflight_finding_binding"],
+        digest_field="receipt_digest",
+        code="dell_direct_source_compilation_replay_preflight_finding",
+    )
     effective_plan = validate_dell_direct_source_capture_plan(effective_plan)
     if (
         str(predecessor.get("attempt_id") or "")
@@ -220,6 +248,9 @@ def run(
         or str(predecessor.get("plan_binding", {}).get("plan_digest") or "")
         != str(effective_plan["plan_digest"])
         or defect.get("authority", {}).get("r2_source_object_eligible") is not False
+        or preflight.get("status")
+        != "failed_replay_scope_expanded_before_candidate_review"
+        or int(preflight.get("network_calls") or 0) != 0
     ):
         raise RuntimeError(
             "dell_direct_source_compilation_replay_lineage_invalid"
@@ -260,35 +291,6 @@ def run(
         capture_result=replay_capture,
     )
 
-    corrected_url = str(plan["expected_corrected_source_url"])
-    corrected_date = str(plan["expected_corrected_publication_date"])
-    corrected_sources = [
-        dict(row)
-        for row in original_result.get("source_objects") or ()
-        if str(row.get("source_url") or "") == corrected_url
-    ]
-    corrected_receipts = [
-        dict(row)
-        for row in original_result.get("route_receipts") or ()
-        if str(row.get("canonical_url") or "") == corrected_url
-    ]
-    if not (
-        len(corrected_sources) == 1
-        and len(corrected_receipts) == 1
-        and corrected_sources[0].get("publication_date") == corrected_date
-        and corrected_receipts[0]
-        .get("publication_date_receipt", {})
-        .get("selected_publication_date")
-        == corrected_date
-        and corrected_receipts[0]
-        .get("publication_date_receipt", {})
-        .get("provider_date_corroborates_selected")
-        is True
-    ):
-        raise RuntimeError(
-            "dell_direct_source_compilation_replay_date_correction_failed"
-        )
-
     predecessor_sources = {
         str(row.get("source_url") or ""): dict(row)
         for row in (
@@ -302,9 +304,72 @@ def run(
         str(row.get("source_url") or ""): dict(row)
         for row in original_result.get("source_objects") or ()
     }
-    unchanged_urls = sorted(set(successor_sources) - {corrected_url})
+    correction_specs = {
+        str(row["source_url"]): dict(row)
+        for row in plan["expected_corrections"]
+    }
+    if set(predecessor_sources) != set(successor_sources):
+        raise RuntimeError(
+            "dell_direct_source_compilation_replay_source_set_changed"
+        )
+    route_receipts = {
+        str(row.get("canonical_url") or ""): dict(row)
+        for row in original_result.get("route_receipts") or ()
+    }
+    corrected_deltas = []
+    for corrected_url in sorted(correction_specs):
+        spec = correction_specs[corrected_url]
+        predecessor_source = predecessor_sources.get(corrected_url)
+        successor_source = successor_sources.get(corrected_url)
+        route_receipt = route_receipts.get(corrected_url)
+        date_receipt = dict(
+            (route_receipt or {}).get("publication_date_receipt") or {}
+        )
+        if not (
+            predecessor_source is not None
+            and successor_source is not None
+            and route_receipt is not None
+            and predecessor_source.get("publication_date")
+            == spec["predecessor_publication_date"]
+            and successor_source.get("publication_date")
+            == spec["successor_publication_date"]
+            and date_receipt.get("selected_publication_date")
+            == spec["successor_publication_date"]
+            and (
+                not spec.get("provider_date_corroboration_required")
+                or date_receipt.get("provider_date_corroborates_selected")
+                is True
+            )
+        ):
+            raise RuntimeError(
+                "dell_direct_source_compilation_replay_date_correction_failed"
+            )
+        corrected_deltas.append(
+            {
+                "source_url": corrected_url,
+                "predecessor_source_id": predecessor_source["source_id"],
+                "predecessor_source_object_digest": predecessor_source[
+                    "source_object_digest"
+                ],
+                "predecessor_publication_date": predecessor_source[
+                    "publication_date"
+                ],
+                "successor_source_id": successor_source["source_id"],
+                "successor_source_object_digest": successor_source[
+                    "source_object_digest"
+                ],
+                "successor_publication_date": successor_source[
+                    "publication_date"
+                ],
+                "provider_date_corroborates_selected": date_receipt[
+                    "provider_date_corroborates_selected"
+                ],
+            }
+        )
+    unchanged_urls = sorted(set(successor_sources) - set(correction_specs))
     if not (
-        len(unchanged_urls) == 4
+        len(unchanged_urls)
+        == int(plan["expected_unchanged_source_object_count"])
         and all(
             predecessor_sources[url].get("source_object_digest")
             == successor_sources[url].get("source_object_digest")
@@ -316,23 +381,11 @@ def run(
         )
     source_delta_body = {
         "schema_version": (
-            "fin_ia_s1_dell_direct_source_compilation_delta_receipt_v1_0"
+            "fin_ia_s1_dell_direct_source_compilation_delta_receipt_v1_1"
         ),
         "case_key": "DELL",
         "unchanged_source_object_urls": unchanged_urls,
-        "corrected_source_url": corrected_url,
-        "predecessor_source_id": predecessor_sources[corrected_url]["source_id"],
-        "predecessor_source_object_digest": predecessor_sources[corrected_url][
-            "source_object_digest"
-        ],
-        "predecessor_publication_date": predecessor_sources[corrected_url][
-            "publication_date"
-        ],
-        "successor_source_id": corrected_sources[0]["source_id"],
-        "successor_source_object_digest": corrected_sources[0][
-            "source_object_digest"
-        ],
-        "successor_publication_date": corrected_date,
+        "corrected_sources": corrected_deltas,
         "network_calls": 0,
         "model_calls": 0,
     }
@@ -382,6 +435,11 @@ def run(
             "sha256": _sha256(defect_path),
             "receipt_digest": defect["receipt_digest"],
         },
+        "replay_preflight_finding_binding": {
+            "ref": _relative(preflight_path),
+            "sha256": _sha256(preflight_path),
+            "receipt_digest": preflight["receipt_digest"],
+        },
         "source_object_delta_receipt": source_delta,
         "fetch_shortlist": shortlist,
         "original_capture_result": replay_capture,
@@ -421,6 +479,7 @@ def run(
         "predecessor_attempt_id": predecessor["attempt_id"],
         "predecessor_terminal_result_digest": predecessor["result_digest"],
         "defect_receipt_digest": defect["receipt_digest"],
+        "replay_preflight_finding_digest": preflight["receipt_digest"],
         "private_terminal_ref": _relative(private_result_path),
         "private_terminal_sha256": _sha256(private_result_path),
         "private_terminal_result_digest": private_result["result_digest"],

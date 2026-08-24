@@ -114,6 +114,7 @@ _KNOWN_REVIEWED_SOURCE_TYPES = {
     "6-K",
     "EARNINGS_CALL_TRANSCRIPT",
     "PUBLIC_WEB",
+    "PUBLIC_PDF",
 }
 _KNOWN_REVIEWED_SOURCE_TIERS = {
     "primary_sec_filing",
@@ -242,7 +243,7 @@ def load_current_research_consumer_policy(
         "research_consumer_transcript_policy_invalid",
     )
     public_web = source_policy.get("public_web_constraints")
-    if "PUBLIC_WEB" in source_types:
+    if {"PUBLIC_WEB", "PUBLIC_PDF"}.intersection(source_types):
         _require(
             isinstance(public_web, Mapping)
             and dict(public_web)
@@ -639,7 +640,14 @@ def _evidence_card(
         "evidence_item_digest": str(item.get("evidence_item_digest") or ""),
         "source_text_digest": str(source.get("source_text_digest") or ""),
     }
-    if card["source_tier"] in _BOUNDED_CONTEXT_SOURCE_TIERS:
+    if (
+        card["source_tier"] in _BOUNDED_CONTEXT_SOURCE_TIERS
+        or (
+            card["source_type"] in {"PUBLIC_WEB", "PUBLIC_PDF"}
+            and card["evidence_role"]
+            == "counterparty_or_ecosystem_readthrough"
+        )
+    ):
         card["bounded_context_source_receipt"] = {
             "disposition": str(item.get("disposition") or ""),
             "claim_use": str(item.get("claim_use") or ""),
@@ -693,7 +701,7 @@ def _validate_evidence_source(
         and card.get("source_url"),
         "research_consumer_evidence_source_incomplete",
     )
-    if card.get("source_type") == "PUBLIC_WEB":
+    if card.get("source_type") in {"PUBLIC_WEB", "PUBLIC_PDF"}:
         public_web = _mapping(
             source_policy.get("public_web_constraints"),
             "research_consumer_public_web_policy_missing",
@@ -711,14 +719,24 @@ def _validate_evidence_source(
                 or (
                     not issuer_direct
                     and card.get("source_tier")
-                    in _BOUNDED_CONTEXT_SOURCE_TIERS
+                    in (
+                        _BOUNDED_CONTEXT_SOURCE_TIERS
+                        | {"issuer_regulator_or_government_primary"}
+                    )
                     and card.get("evidence_role")
                     == "counterparty_or_ecosystem_readthrough"
                 )
             ),
             "research_consumer_public_web_boundary_invalid",
         )
-    if card.get("source_tier") in _BOUNDED_CONTEXT_SOURCE_TIERS:
+    if (
+        card.get("source_tier") in _BOUNDED_CONTEXT_SOURCE_TIERS
+        or (
+            card.get("source_type") in {"PUBLIC_WEB", "PUBLIC_PDF"}
+            and card.get("evidence_role")
+            == "counterparty_or_ecosystem_readthrough"
+        )
+    ):
         context_receipt = card.get("bounded_context_source_receipt")
         _require(
             isinstance(context_receipt, Mapping)

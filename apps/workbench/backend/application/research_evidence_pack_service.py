@@ -1341,7 +1341,10 @@ class ResearchEvidencePackService:
                 "source_text_digest",
             )
         }
-        if str(source.get("source_type") or "") == "PUBLIC_WEB":
+        if str(source.get("source_type") or "") in {
+            "PUBLIC_WEB",
+            "PUBLIC_PDF",
+        }:
             for key in (
                 "claim_use",
                 "speaker_entity",

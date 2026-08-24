@@ -275,7 +275,7 @@ def test_pack_retrieval_and_workbench_consume_the_same_canonical_lineage(
     assert pack_view["canonical_spine"]["historical_vertical_lineage"][
         "not_current_pack_producer"
     ] is True
-    assert len(pack_view["evidence_items"]) == 48
+    assert len(pack_view["evidence_items"]) == 55
     assert len(pack_view["residual_gaps"]) == 14
     ResearchRetrievalResponse.model_validate(retrieval_view)
     ResearchEvidencePackResponse.model_validate(pack_view)

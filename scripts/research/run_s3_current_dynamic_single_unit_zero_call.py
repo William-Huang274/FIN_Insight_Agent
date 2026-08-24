@@ -270,7 +270,8 @@ def run(
     program = _read_json(Path(source_refs["request_program_ref"]))
     task_readiness = _read_json(Path(source_refs["task_readiness_ref"]))
     truth_policy = _read_json(Path(source_refs["truth_spine_policy_ref"]))
-    consumer_policy = _read_json(Path(source_refs["consumer_policy_ref"]))
+    consumer_policy_ref = str(source_refs["consumer_policy_ref"])
+    consumer_policy = _read_json(Path(consumer_policy_ref))
     task_quantitative = _read_json(
         Path(source_refs["task_quantitative_result_ref"])
     )
@@ -618,6 +619,22 @@ def run(
         reflections=reflections,
         stop_decision=reflection_artifacts[-1]["stop_decision"],
     )
+    workpaper_evidence_cards = list(
+        workpaper_context["cell_analysis_view"]["cell"][
+            "cell_evidence_views"
+        ]
+    )
+    public_pdf_cards = [
+        row
+        for row in workpaper_evidence_cards
+        if row.get("source_type") == "PUBLIC_PDF"
+    ]
+    accepted_source_type_counts: dict[str, int] = {}
+    for row in workpaper_evidence_cards:
+        source_type = str(row.get("source_type") or "")
+        accepted_source_type_counts[source_type] = (
+            accepted_source_type_counts.get(source_type, 0) + 1
+        )
     workpaper_tool = specialist_workpaper_tool(
         agent_id="AGENT::VALUE_CAPTURE", context=workpaper_context
     )
@@ -907,6 +924,36 @@ def run(
                 is None
             )
         ),
+        "reviewed_public_pdf_reaches_workpaper_under_successor_policy": (
+            "PUBLIC_PDF"
+            not in consumer_policy["reviewed_source_policy"][
+                "allowed_source_types"
+            ]
+            or (
+                bool(public_pdf_cards)
+                and all(
+                    row.get("reviewed_anchor_receipt")
+                    and "numeric_ref" not in row
+                    and (
+                        (
+                            row.get("evidence_role")
+                            == "issuer_direct_source"
+                            and row.get("source_tier")
+                            == "issuer_regulator_or_government_primary"
+                        )
+                        or (
+                            row.get("evidence_role")
+                            == "counterparty_or_ecosystem_readthrough"
+                            and row.get(
+                                "bounded_context_source_receipt", {}
+                            ).get("causal_attribution_authorized")
+                            is False
+                        )
+                    )
+                    for row in public_pdf_cards
+                )
+            )
+        ),
         "cuda_fp16_required": (
             str(cuda.get("execution_device") or "").startswith("cuda:")
             and cuda.get("embedding_precision") == "fp16"
@@ -1040,6 +1087,17 @@ def run(
         ],
         "task_readiness_result_digest": task_readiness["result_digest"],
         "task_readiness_status": task_readiness["status"],
+        "consumer_policy": {
+            "ref": consumer_policy_ref,
+            "sha256": _sha256(Path(consumer_policy_ref)),
+            "policy_digest": canonical_digest(consumer_policy),
+            "reviewed_public_pdf_enabled": (
+                "PUBLIC_PDF"
+                in consumer_policy["reviewed_source_policy"][
+                    "allowed_source_types"
+                ]
+            ),
+        },
     }
     if product_value_bridge is not None:
         bridge_context = workpaper_context["product_value_bridge"]
@@ -1077,6 +1135,9 @@ def run(
             "retrieval_round_count": len(round_responses),
             "executed_request_count": len(executed_ids),
             "accepted_reviewed_evidence_count": len(accepted_refs),
+            "accepted_reviewed_evidence_source_type_counts": dict(
+                sorted(accepted_source_type_counts.items())
+            ),
             "numeric_fact_count": len(numeric_refs),
             "open_gap_count": len(open_gap_refs),
             "feedback_receipt_count": len(unresolved_feedback_refs),

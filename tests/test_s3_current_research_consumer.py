@@ -60,6 +60,10 @@ CURRENT_PUBLIC_WEB_POLICY = ROOT / (
     "configs/research/"
     "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_5.json"
 )
+CURRENT_PUBLIC_DOCUMENT_POLICY = ROOT / (
+    "configs/research/"
+    "fin_ia_0_1_3_s3_current_research_consumer_policy_v1_6.json"
+)
 OBJECTIVE = ROOT / (
     "configs/research/evals/"
     "fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json"
@@ -209,7 +213,7 @@ def test_current_policy_consumes_reviewed_public_web_without_promoting_authority
 
     assert research_input["input_selection_summary"][
         "reviewed_pack_evidence_count"
-    ] == 48
+    ] == 55
     public_web_cards = [
         row
         for row in research_input["evidence_cards"]
@@ -235,6 +239,54 @@ def test_current_policy_consumes_reviewed_public_web_without_promoting_authority
     assert any(
         row["evidence_role"] == "counterparty_or_ecosystem_readthrough"
         for row in public_web_cards
+    )
+    assert not any(
+        row["source_type"] == "PUBLIC_PDF"
+        for row in research_input["evidence_cards"]
+    )
+
+
+def test_public_document_successor_consumes_only_reviewed_anchor_bound_pdfs(
+) -> None:
+    paths = resolve_runtime_paths(ROOT)
+    evidence_service = ResearchEvidencePackService.from_runtime_paths(
+        ROOT,
+        paths,
+        load_s1_vertical_slice=False,
+    )
+    evidence_pack = evidence_service.get_case(
+        "DELL", ResearchEvidencePackPrincipal("current", READ)
+    )
+    _, controlled, _ = _current_inputs()
+
+    research_input = compile_current_research_input(
+        policy=_json(CURRENT_PUBLIC_DOCUMENT_POLICY),
+        evidence_pack=evidence_pack,
+        controlled_plan=controlled,
+    )
+
+    public_pdf_cards = [
+        row
+        for row in research_input["evidence_cards"]
+        if row["source_type"] == "PUBLIC_PDF"
+    ]
+    assert public_pdf_cards
+    assert all(row.get("reviewed_anchor_receipt") for row in public_pdf_cards)
+    assert all(
+        (
+            row["evidence_role"] == "issuer_direct_source"
+            and row["source_tier"]
+            == "issuer_regulator_or_government_primary"
+        )
+        or (
+            row["evidence_role"]
+            == "counterparty_or_ecosystem_readthrough"
+            and row["bounded_context_source_receipt"][
+                "causal_attribution_authorized"
+            ]
+            is False
+        )
+        for row in public_pdf_cards
     )
 
 

@@ -1128,26 +1128,22 @@ def _mutation_checks(
         executed_request_ids=[partial_request_id],
         round_index=1,
     )
-    premature_artifacts = compile_reflection_artifacts(
-        policy=demand["loop_policy"],
-        reflection=premature,
-        session_id="SESSION::MUTATION",
-        agent_id=demand["agent_id"],
-        base_plan={"executed_request_ids": []},
-        base_graph_digest="a" * 64,
-        executed_request_ids=[partial_request_id],
-        open_gap_refs=["GAP::MUTATION"],
-        model_calls_used=0,
-    )
-    premature_receipt = premature_artifacts["stop_compilation_receipt"]
-    checks["premature_stop_compiles_to_no_progress"] = (
-        premature["proposed_stop_decision"] == "stop_sufficient"
-        and premature_artifacts["stop_decision"]["decision"]
-        == "stop_no_progress"
-        and premature_receipt["proposed_stop_decision"] == "stop_sufficient"
-        and premature_receipt["effective_stop_decision"] == "stop_no_progress"
-        and premature_receipt["model_research_judgment_changed"] is False
-    )
+    try:
+        compile_reflection_artifacts(
+            policy=demand["loop_policy"],
+            reflection=premature,
+            session_id="SESSION::MUTATION",
+            agent_id=demand["agent_id"],
+            base_plan={"executed_request_ids": []},
+            base_graph_digest="a" * 64,
+            executed_request_ids=[partial_request_id],
+            open_gap_refs=["GAP::MUTATION"],
+            model_calls_used=0,
+        )
+    except DynamicSingleUnitLoopError as exc:
+        checks["premature_stop_fails_closed"] = (
+            exc.code == "dynamic_single_unit_stop_sufficient_coverage_incomplete"
+        )
 
     mutated_reflection = _fake_reflection_payload(
         agent_id=demand["agent_id"],

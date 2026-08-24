@@ -8,6 +8,9 @@ from types import SimpleNamespace
 import pytest
 
 import scripts.research.run_s3_current_dynamic_multi_agent as multi_agent_runner
+from scripts.research import (
+    run_s3_current_dynamic_multi_agent_stop_successor as multi_agent_stop_successor,
+)
 
 from retrieval.contracts import load_financial_research_kernel
 from retrieval.route_compiler import load_query_object_fact_route_policy
@@ -84,6 +87,18 @@ def test_submission_successor_workpaper_tool_name_is_bound_at_module_import() ->
     assert (
         SPECIALIST_WORKPAPER_SUBMISSION_TOOL_NAME
         == "submit_specialist_workpaper_judgment"
+    )
+
+
+def test_stop_successor_preserves_legacy_runner_and_checks_current_compiler() -> None:
+    _policy, programs = multi_agent_runner._compile_role_programs()
+
+    assert multi_agent_stop_successor.premature_stop_compiles_to_no_progress(
+        programs
+    ) is True
+    assert (
+        multi_agent_runner._mutation_checks
+        is multi_agent_stop_successor._LEGACY_MUTATION_CHECKS
     )
 
 

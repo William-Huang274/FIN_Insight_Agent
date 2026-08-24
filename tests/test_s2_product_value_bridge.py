@@ -3,6 +3,8 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -16,6 +18,24 @@ ROOT = Path(__file__).resolve().parents[1]
 PROGRAM = ROOT / "configs/financial_facts/fin_ia_0_1_3_s2_dell_product_value_bridge_program_v1_0.json"
 PACK = ROOT / "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json"
 QUANTITATIVE = ROOT / "data/workbench_private/fin_0_1_3_s2_task_quantitative_program/dell-r2/full_result.json"
+
+
+def test_product_bridge_import_does_not_mutate_global_decimal_context() -> None:
+    code = (
+        "import sys; from decimal import getcontext; from pathlib import Path; "
+        f"root=Path({str(ROOT)!r}); sys.path[:0]=[str(root),str(root/'src')]; "
+        "getcontext().prec=29; import sec_agent.research.product_value_bridge; "
+        "print(getcontext().prec)"
+    )
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    assert completed.stdout.strip() == "29"
 
 
 def _json(path: Path) -> dict:

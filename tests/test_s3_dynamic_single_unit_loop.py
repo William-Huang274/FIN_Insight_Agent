@@ -59,6 +59,11 @@ R34_POLICY_REF = (
     / "configs/research/"
     "fin_ia_0_1_3_s3_dell_dynamic_single_unit_loop_policy_v1_1.json"
 )
+R34_PUBLIC_DOCUMENT_POLICY_REF = (
+    ROOT
+    / "configs/research/"
+    "fin_ia_0_1_3_s3_dell_dynamic_single_unit_loop_policy_v1_2.json"
+)
 R34_PROGRAM_REF = (
     ROOT
     / "configs/retrieval/"
@@ -126,6 +131,24 @@ def test_r34_policy_binds_current_r4_readiness_and_s2_bridge() -> None:
     ).replace("\\", "/")
     assert bridge["bridge_readiness"]["reported_product_revenue_bridge_available"]
     assert bridge["bridge_readiness"]["target_company_pvm_calculable"] is False
+
+
+def test_r34_public_document_successor_binds_pdf_consumer_without_new_authority(
+) -> None:
+    policy = load_dynamic_single_unit_policy(
+        _json(R34_PUBLIC_DOCUMENT_POLICY_REF)
+    )
+
+    assert policy["source_refs"]["consumer_policy_ref"].endswith(
+        "_v1_6.json"
+    )
+    assert policy["authority"][
+        "reviewed_public_pdf_requires_anchor_and_bounded_source_authority"
+    ] is True
+    assert policy["authority"][
+        "consumer_successor_does_not_promote_public_pdf_to_numeric_fact"
+    ] is True
+    assert policy["authority"]["R17_content_review_reopened"] is False
 
 
 def test_request_tool_and_validator_fail_closed_on_repeat_and_cross_case(

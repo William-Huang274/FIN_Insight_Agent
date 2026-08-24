@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import date
-from decimal import Decimal, InvalidOperation, getcontext
+from decimal import Decimal, InvalidOperation, localcontext
 from typing import Any, Mapping, Sequence
 
 from sec_agent.canonical_runtime.session import canonical_digest
 
-
-getcontext().prec = 36
 
 PRODUCT_VALUE_BRIDGE_PROGRAM_SCHEMA = "fin_ia_s2_product_value_bridge_program_v1_0"
 PRODUCT_VALUE_BRIDGE_RESULT_SCHEMA = "fin_ia_s2_product_value_bridge_result_v1_0"
@@ -57,8 +55,21 @@ def _decimal(value: object, code: str) -> Decimal:
 
 
 def _decimal_string(value: Decimal) -> str:
-    rendered = format(value.normalize(), "f")
+    with localcontext() as context:
+        context.prec = 36
+        rendered = format(value.normalize(), "f")
     return "0" if rendered in {"-0", ""} else rendered
+
+
+def _ratio(
+    numerator: Decimal,
+    denominator: Decimal,
+    *,
+    multiplier: Decimal = Decimal("1"),
+) -> Decimal:
+    with localcontext() as context:
+        context.prec = 36
+        return numerator / denominator * multiplier
 
 
 def _as_date(value: object, code: str) -> date:
@@ -394,7 +405,9 @@ def compile_product_value_bridge(
     derived_values = [
         {
             "derived_metric_id": "dell_ai_server_revenue_yoy_growth",
-            "value_decimal": _decimal_string((ai_current - ai_prior) / ai_prior),
+            "value_decimal": _decimal_string(
+                _ratio(ai_current - ai_prior, ai_prior)
+            ),
             "unit": "ratio",
             "formula": "(current_ai_server_revenue - prior_ai_server_revenue) / prior_ai_server_revenue",
             "input_observation_ids": [
@@ -404,7 +417,7 @@ def compile_product_value_bridge(
         },
         {
             "derived_metric_id": "dell_ai_server_share_of_isg_revenue_q1_fy27",
-            "value_decimal": _decimal_string(ai_current / isg_current),
+            "value_decimal": _decimal_string(_ratio(ai_current, isg_current)),
             "unit": "ratio",
             "formula": "ai_server_revenue / isg_revenue",
             "input_observation_ids": [
@@ -414,7 +427,7 @@ def compile_product_value_bridge(
         },
         {
             "derived_metric_id": "dell_ai_server_share_of_isg_revenue_q1_fy26",
-            "value_decimal": _decimal_string(ai_prior / isg_prior),
+            "value_decimal": _decimal_string(_ratio(ai_prior, isg_prior)),
             "unit": "ratio",
             "formula": "ai_server_revenue / isg_revenue",
             "input_observation_ids": [
@@ -424,7 +437,9 @@ def compile_product_value_bridge(
         },
         {
             "derived_metric_id": "dell_ai_server_share_of_company_revenue_q1_fy27",
-            "value_decimal": _decimal_string(ai_current / company_current),
+            "value_decimal": _decimal_string(
+                _ratio(ai_current, company_current)
+            ),
             "unit": "ratio",
             "formula": "ai_server_revenue / company_revenue",
             "input_observation_ids": [
@@ -434,7 +449,7 @@ def compile_product_value_bridge(
         },
         {
             "derived_metric_id": "dell_ai_server_share_of_company_revenue_q1_fy26",
-            "value_decimal": _decimal_string(ai_prior / company_prior),
+            "value_decimal": _decimal_string(_ratio(ai_prior, company_prior)),
             "unit": "ratio",
             "formula": "ai_server_revenue / company_revenue",
             "input_observation_ids": [
@@ -444,7 +459,13 @@ def compile_product_value_bridge(
         },
         {
             "derived_metric_id": "dell_isg_operating_margin_recalculated_q1_fy27",
-            "value_decimal": _decimal_string(isg_oi_current / isg_current * 100),
+            "value_decimal": _decimal_string(
+                _ratio(
+                    isg_oi_current,
+                    isg_current,
+                    multiplier=Decimal("100"),
+                )
+            ),
             "unit": "percent",
             "formula": "isg_operating_income / isg_revenue * 100",
             "input_observation_ids": [
@@ -454,7 +475,13 @@ def compile_product_value_bridge(
         },
         {
             "derived_metric_id": "dell_isg_operating_margin_recalculated_q1_fy26",
-            "value_decimal": _decimal_string(isg_oi_prior / isg_prior * 100),
+            "value_decimal": _decimal_string(
+                _ratio(
+                    isg_oi_prior,
+                    isg_prior,
+                    multiplier=Decimal("100"),
+                )
+            ),
             "unit": "percent",
             "formula": "isg_operating_income / isg_revenue * 100",
             "input_observation_ids": [

@@ -1,0 +1,63 @@
+{
+  "schema_version": "fin_ia_s1_quantized_4b_controlled_shadow_result_v1_0",
+  "status": "controlled_shadow_failed_successor_attempt_required",
+  "recorded_at": "2026-08-24",
+  "started_at_utc": "2026-08-24T15:53:00.196474+00:00",
+  "completed_at_utc": "2026-08-24T15:56:29.687813+00:00",
+  "attempt_id": "controlled-shadow-r1",
+  "program_ref": "configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_program_v1_0.json",
+  "program_sha256": "08d5d334c99469c38397e6c915a2ff09edb179044aaa86346fefc44a5d5e6f0c",
+  "program_result_digest": "58fb88666784c2c71fb5c0cdd95ef2df0c8e63535877abe9c57359109b157681",
+  "git_receipt": {
+    "head": "3fcb4ac5848ea0021f39acdaf447bb519205978d",
+    "upstream": "3fcb4ac5848ea0021f39acdaf447bb519205978d",
+    "clean": true,
+    "upstream_equal": true,
+    "status_porcelain": ""
+  },
+  "hardware_before": {
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "total_vram_mib": 8188,
+    "free_vram_mib": 6886,
+    "used_vram_mib": 1072,
+    "driver_version": "555.97",
+    "compute_capability": "8.9"
+  },
+  "failure": {
+    "exception_type": "ValueError",
+    "message": "quantized_shadow_full_gpu_offload_not_proved"
+  },
+  "completed_stage_receipts": {
+    "baseline_embedding_0_6b": {
+      "elapsed_seconds": 114.096,
+      "query_count": 18,
+      "unique_document_count": 47,
+      "candidate_occurrence_count": 86,
+      "maximum_query_tokens": 138,
+      "maximum_document_tokens": 2199,
+      "maximum_tokens": 2560,
+      "embedding_dimensions": 1024,
+      "torch_peak_allocated_bytes": 2286227456,
+      "torch_peak_reserved_bytes": 2608857088,
+      "gpu_monitor": {
+        "sample_count": 146,
+        "maximum_used_vram_mib": 3685,
+        "minimum_free_vram_mib": 4273
+      }
+    }
+  },
+  "calls": {
+    "baseline_embedding_scored_inputs": 65,
+    "challenger_embedding_scored_inputs": 65,
+    "localhost_http:/health": 32,
+    "localhost_http:/tokenize": 65,
+    "localhost_http:/v1/embeddings": 65,
+    "external_network": 0,
+    "provider": 0,
+    "paid_model": 0
+  },
+  "runtime_promotion_authorized": false,
+  "S1_qualification_authorized": false,
+  "successor_attempt_required": true,
+  "result_digest": "80f2ed2727e2ca187dcc9614d27f3880022baf5c3b23f7e4542c34dd0e4eeeaf"
+}

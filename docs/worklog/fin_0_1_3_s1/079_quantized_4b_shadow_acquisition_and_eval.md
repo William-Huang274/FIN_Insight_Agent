@@ -1,7 +1,7 @@
 # S1 工作记录 079：8GB 量化 4B shadow 获取与同池评测
 
 日期：2026-08-24
-状态：`acquisition_r1_succeeded / controlled_shadow_r1_preregistered`
+状态：`acquisition_r1_succeeded / controlled_shadow_r1_failed / r2_required`
 
 ## 1. 决策目标
 
@@ -79,3 +79,28 @@ execution program：
 ineligible query，而不是伪造负样本或拒绝整个 projection；三个 case 都仍有足够比较对。
 runner 和 program 必须先提交并与 upstream 相等；由于 GitHub HTTPS 暂时超时／reset，当前
 不得绕过 clean-sync gate 启动推理。
+
+## 7. controlled-shadow-r1 immutable failure
+
+GitHub 恢复后，program／runner 与 acquisition receipt 一并同步到 clean commit
+`3fcb4ac5`，R1 从该 commit 启动。R1 在完成 0.6B embedding 和全部 4B embedding 输入后
+fail closed：不是 OOM、不是 token drift、不是模型输出失败，而是 default log verbosity 3
+没有打印底层 layer-offload 行，过窄的 proof parser 因此无法证明 full GPU offload。
+
+- 0.6B embedding：65 scored inputs，114.096 秒，pair input 无截断；peak used VRAM
+  3,685 MiB；
+- 4B embedding：65 scored inputs，65/65 tokenizer exact match，所有 server task 均显示
+  `truncated = 0`；
+- 调用：baseline 65 + challenger 65，localhost health 32／tokenize 65／embeddings 65；
+  external network 0、provider 0、paid model 0；
+- failure result：
+  `configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_result_v1_0.json`，
+  file SHA-256 `110d2f12ad3a0ae8205ad7f69fbebb4617479abe48c47179e8b7e7357421f8d8`，
+  `result_digest=80f2ed2727e2ca187dcc9614d27f3880022baf5c3b23f7e4542c34dd0e4eeeaf`；
+- private log SHA-256：
+  `ec9f786acb03a2fab0ca3591053030bd1a15e321dbd8b517164da69300f59279`，
+  20,330 bytes。
+
+R1 结果不得补写成功阶段、不得复用未公开的 embedding score。R2 必须重跑相同四阶段，
+唯一 proof 修复为把 llama server log verbosity 固定为 4，并把 observed embeddings
+`n_batch=512` 显式写入命令，避免依赖 runtime 自动降档；仍需相同 full-offload gate。

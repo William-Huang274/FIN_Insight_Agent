@@ -1,0 +1,212 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "generation_model_calls": 0,
+    "numeric_fact_authority": false,
+    "numeric_relation_authority": false,
+    "provider_neutral": true,
+    "qrel_or_reference_visible": false,
+    "runtime_plan_compiled_before_candidate_selection": true
+  },
+  "evidence_role_to_material_roles": {
+    "capital_allocation_or_valuation": [
+      "direct",
+      "bridge"
+    ],
+    "demand_risk_or_counterevidence": [
+      "counter"
+    ],
+    "direct_demand_signal": [
+      "direct",
+      "context"
+    ],
+    "direct_supply_capacity_signal": [
+      "direct",
+      "context"
+    ],
+    "financial_statement_or_reconciliation": [
+      "direct",
+      "bridge"
+    ],
+    "generic_or_boilerplate": [],
+    "management_guidance": [
+      "direct"
+    ],
+    "mechanism_or_definition_context": [
+      "context"
+    ],
+    "observed_operating_result": [
+      "direct"
+    ],
+    "regulatory_or_policy_exposure": [
+      "counter"
+    ],
+    "relationship_context": [
+      "context"
+    ],
+    "supply_risk_or_counterevidence": [
+      "counter"
+    ]
+  },
+  "facet_required_roles": {
+    "bounded_price_configuration_context": [
+      "direct",
+      "context"
+    ],
+    "bounded_unit_volume_context": [
+      "context",
+      "counter"
+    ],
+    "capital_allocation": [
+      "direct",
+      "bridge"
+    ],
+    "cash_generation": [
+      "bridge"
+    ],
+    "conversion_and_durability": [
+      "direct",
+      "counter"
+    ],
+    "counterparty_direct_mention": [
+      "context"
+    ],
+    "current_platform_relationship_context": [
+      "context"
+    ],
+    "downstream_demand_context": [
+      "context",
+      "counter"
+    ],
+    "guidance_and_outlook": [
+      "direct"
+    ],
+    "issuer_counterevidence": [
+      "counter"
+    ],
+    "issuer_policy_exposure": [
+      "counter"
+    ],
+    "margin_and_incremental_profit": [
+      "bridge"
+    ],
+    "orders_and_backlog": [
+      "direct",
+      "counter"
+    ],
+    "point_in_time_valuation": [
+      "direct",
+      "bridge"
+    ],
+    "pricing_and_mix": [
+      "direct",
+      "context"
+    ],
+    "reported_results": [
+      "direct"
+    ],
+    "subject_execution": [
+      "direct",
+      "counter"
+    ],
+    "subject_relationship_disclosure": [
+      "context"
+    ],
+    "upstream_capacity_context": [
+      "context",
+      "counter"
+    ],
+    "upstream_or_demand_counterevidence": [
+      "counter",
+      "context"
+    ],
+    "working_capital_risk": [
+      "bridge",
+      "counter"
+    ]
+  },
+  "known_boundary": "Atomic proposition decomposition prevents one missing product axis from erasing independently recalled evidence. It does not declare every proposition complete, promote a candidate, create NumericFact authority or prove a public-information gap. Novel or unclassified product topics still require an explicit natural ResearchBlueprint.",
+  "material_intent_axis_contract": {
+    "contextual_topic_concept_ids": [
+      "accelerator_demand_supply_readthrough",
+      "ai_infrastructure_deployment_usage",
+      "ai_server_demand_constraints",
+      "cash_conversion",
+      "customer_commitment_purchase_structure"
+    ],
+    "explicit_research_blueprint_may_bind_any_request_visible_product_intent": true,
+    "fallback_collective_axis_coverage": true,
+    "hard_product_concept_ids": [
+      "advanced_packaging_cowos",
+      "ai_optimized_servers",
+      "ai_server_orders_backlog",
+      "data_center_platform",
+      "gpu_supply_capacity_transition",
+      "hbm4_shipment_capacity",
+      "hbm_data_center"
+    ],
+    "proposition_decomposition": {
+      "facet_promoted_contextual_concept_ids": {
+        "conversion_and_durability": [
+          "customer_commitment_purchase_structure"
+        ],
+        "issuer_counterevidence": [
+          "customer_commitment_purchase_structure"
+        ],
+        "orders_and_backlog": [
+          "customer_commitment_purchase_structure"
+        ],
+        "subject_relationship_disclosure": [
+          "customer_commitment_purchase_structure"
+        ]
+      },
+      "fallback_non_temporal_mode": "one_product_axis_per_role"
+    },
+    "unmapped_product_intent_mode": "context_only_and_require_explicit_blueprint_for_hard_scope"
+  },
+  "material_role_axis_contract": {
+    "bridge": {
+      "bind_hard_product_intents": true,
+      "bind_requested_metrics": true
+    },
+    "context": {
+      "bind_hard_product_intents": true,
+      "bind_requested_metrics": false
+    },
+    "counter": {
+      "bind_hard_product_intents": true,
+      "bind_requested_metrics": false
+    },
+    "direct": {
+      "bind_hard_product_intents": true,
+      "bind_requested_metrics": true
+    }
+  },
+  "purpose_zh": "在当前产品 Hybrid Runtime 的 16 条候选窗口中，先把复合 EvidenceRequest 拆成独立产品命题，再按命题与 Evidence Role 保留事实、桥接、背景和反方材料。候选仍不是 Evidence，文本仍不拥有数值权威。",
+  "recorded_at": "2026-08-25",
+  "review_k": 16,
+  "schema_version": "fin_ia_s1_material_evidence_runtime_policy_v1_1",
+  "selection_contract": {
+    "candidate_review_does_not_promote_evidence": true,
+    "material_binding_preserves_facet_role_metric_product_correlation": true,
+    "mixed_product_intents_are_separate_proposition_requirements": true,
+    "one_candidate_may_cover_multiple_requirements": true,
+    "reservation_runs_before_source_quota_owner_balance_and_output_cut": true,
+    "unaligned_candidate_cannot_fill_review_window": true,
+    "wrong_case_or_unapproved_entity_is_hard_rejected": true
+  },
+  "status": "provider_neutral_atomic_proposition_candidate_reservation_policy",
+  "successor_change": {
+    "bounded_context_does_not_become_company_metric": true,
+    "candidate_is_not_evidence": true,
+    "failed_attempt_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_r36_reviewed_public_pdf_consumer_zero_call_R5_failure_assessment_v1_0.json",
+    "numeric_fact_authority": false
+  },
+  "temporal_contract": {
+    "atomic_group_requires_one_metric_zero_or_one_product_one_entity": true,
+    "multi_product_temporal_scope_requires_explicit_research_blueprint": true,
+    "period_only_product_intent_is_temporal_directive": true,
+    "same_basis_key_is_candidate_comparability_not_numeric_relation_authority": true,
+    "worst_case_capacity_reserves_one_candidate_per_requested_year": true
+  }
+}

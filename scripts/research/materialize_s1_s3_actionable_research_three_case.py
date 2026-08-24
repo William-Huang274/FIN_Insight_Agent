@@ -46,7 +46,7 @@ CURRENT_BINDING_RECEIPT = (
     ROOT
     / "configs"
     / "runtime"
-    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_12.json"
+    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_13.json"
 )
 CURRENT_PACK_RESULT = (
     ROOT
@@ -131,9 +131,9 @@ def _current_binding_projection(
     bindings = dict(receipt.get("bindings") or {})
     runtime_registry = dict(bindings.get("runtime_registry") or {})
     if runtime_registry.get("registry_id") != (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R36"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R37"
     ):
-        raise ValueError("three_case_current_registry_R36_required")
+        raise ValueError("three_case_current_registry_R37_required")
 
     expected_paths = {
         "current_evidence_pack_result": CURRENT_PACK_RESULT,

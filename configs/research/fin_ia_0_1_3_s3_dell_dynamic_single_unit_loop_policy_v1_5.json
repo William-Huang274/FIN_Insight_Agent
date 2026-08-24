@@ -1,0 +1,135 @@
+{
+  "authority": {
+    "R17_content_review_reopened": false,
+    "bundled_quote_or_contract_is_not_company_asp": true,
+    "candidate_rank_grants_evidence": false,
+    "consumer_successor_does_not_promote_public_pdf_to_numeric_fact": true,
+    "failed_attempts_are_immutable": true,
+    "graph_hypothesis_grants_fact_authority": false,
+    "harness_owns_identity_dates_sources_budgets_and_request_compilation": true,
+    "initial_message_may_contain_evidence_or_numeric_facts": false,
+    "model_may_self_authorize_public_information_gap": false,
+    "model_selects_research_actions": true,
+    "natural_model_authority_requires_separate_signed_run": true,
+    "null_pvm_and_product_profit_values_must_remain_null": true,
+    "product_value_bridge_creates_numeric_facts": false,
+    "public_procurement_unit_is_not_company_units_or_share": true,
+    "reviewed_public_pdf_facets_require_material_policy_coverage": true,
+    "reviewed_public_pdf_recall_requires_current_object_index": true,
+    "reviewed_public_pdf_requires_anchor_and_bounded_source_authority": true,
+    "reviewed_public_pdf_requires_current_local_source_route": true,
+    "single_unit_success_does_not_claim_S1_or_S3_pass": true
+  },
+  "case_identity": {
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "subject_legal_name": "Dell Technologies Inc.",
+    "subject_ticker": "DELL"
+  },
+  "coverage_groups": {
+    "counterevidence": [
+      "REQ::DELL::COUNTER_ISSUER::V1",
+      "REQ::DELL::COUNTER_ECOSYSTEM::V1"
+    ],
+    "customer_demand": [
+      "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1"
+    ],
+    "price_and_configuration": [
+      "REQ::DELL::PRICE_CONFIGURATION::V1"
+    ],
+    "pvm": [
+      "REQ::DELL::PVM_BRIDGE::V1"
+    ],
+    "supply_chain": [
+      "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "REQ::DELL::SUPPLY_RELATIONSHIP::V1"
+    ],
+    "unit_volume": [
+      "REQ::DELL::UNIT_VOLUME::V1"
+    ],
+    "value_pool": [
+      "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1"
+    ]
+  },
+  "loop_limits": {
+    "candidate_text_model_visibility": false,
+    "maximum_provider_steps": 5,
+    "maximum_request_ids_per_round": 6,
+    "maximum_retrieval_rounds": 2,
+    "maximum_total_request_ids": 12,
+    "repeated_request_forbidden": true,
+    "reviewed_evidence_excerpt_maximum_chars": 2400
+  },
+  "objective": {
+    "agent_id": "AGENT::VALUE_CAPTURE",
+    "cell_id": "value_capture",
+    "objective_id": "OBJ::DELL::DYNAMIC-VALUE-CAPTURE-R37-REVIEWED-PUBLIC-PDF-MATERIAL",
+    "question_zh": "戴尔 AI 服务器收入增长有多少能转化为毛利、经营利润和现金？价格与配置、销量、价格数量组合、客户需求、供应链和上下游价值分配如何影响这一判断，哪些反方证据会改变结论？"
+  },
+  "schema_version": "fin_ia_s3_dynamic_single_unit_loop_policy_v1_0",
+  "source_refs": {
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_6.json",
+    "product_value_bridge_result_ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_product_value_bridge_result_v1_0.json",
+    "provider_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+    "request_program_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_3.json",
+    "role_topology_ref": "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json",
+    "task_quantitative_result_ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_task_quantitative_program_result_v1_1.json",
+    "task_readiness_ref": "configs/retrieval/fin_ia_0_1_3_s1_s2_dell_value_capture_task_readiness_result_v1_1.json",
+    "truth_spine_policy_ref": "configs/research/fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_1.json"
+  },
+  "status": "bounded_current_runtime_dynamic_single_unit_candidate",
+  "token_budget_bases": {
+    "reflection_and_plan_delta": {
+      "comparable_run_evidence": "The R32 loop proved plan adaptation but did not expose the R4 product-value bridge; the R34 successor must preserve null PVM and product-profit fields while still surfacing the exact revenue bridge.",
+      "input_scale": "At most six request results per round, reviewed-Evidence cards, typed facts, feedback receipts, seven deterministic revenue-surface derivations and four open bridge gaps.",
+      "materiality_and_quality_risk": "high because a false sufficient stop, invented PVM value or false public-information boundary would suppress necessary research",
+      "maximum_completion_tokens": 16000,
+      "node_purpose": "Read exact tool receipts plus the fail-closed product-value bridge, identify what changed, and propose the next bounded request set or a justified stop decision.",
+      "reasoning_profile": "DeepSeek GA thinking enabled at maximum reasoning effort",
+      "required_outputs": [
+        "feedback_refs",
+        "next_request_ids",
+        "graph_hypotheses",
+        "proposed_stop_decision"
+      ],
+      "schema_burden": "strict reflection payload plus bounded plan and hypothesis atoms",
+      "stop_or_truncation_behavior": "invalid stop authority fails closed; the failed attempt is retained and cannot be relabelled as completion"
+    },
+    "request_planning": {
+      "comparable_run_evidence": "R36 R5 passed source-route compilation but failed during deterministic retrieval-need compilation because the bounded price facet was absent from the current material policies. R37 enumerates all three bounded facets without changing Evidence or NumericFact authority.",
+      "input_scale": "Twelve owner-reviewed DELL requests across seven proposition groups; no Evidence, numeric values, source URLs or expected answers are present in the initial message.",
+      "materiality_and_quality_risk": "high because omitted price, volume, supply or counterevidence lanes can bias the final value-capture judgment",
+      "maximum_completion_tokens": 16000,
+      "node_purpose": "Select proposition-bound S1/S2 research requests from the current R37 tool catalog without seeing answers.",
+      "reasoning_profile": "DeepSeek GA thinking enabled at maximum reasoning effort",
+      "required_outputs": [
+        "request_ids",
+        "research_rationale",
+        "expected_information_gain"
+      ],
+      "schema_burden": "small strict tool payload with up to six request identifiers",
+      "stop_or_truncation_behavior": "empty, truncated or non-tool output is a failed provider attempt; required research work is never silently dropped"
+    },
+    "specialist_workpaper": {
+      "comparable_run_evidence": "R17 passed a fresh author-separated content review on its immutable source set; the R34 canary is an interface successor only and does not reopen or supersede that content review.",
+      "input_scale": "Two bounded research rounds, up to the current reviewed DELL pack, typed S2 context, one product-value bridge and the complete feedback/reflection history.",
+      "materiality_and_quality_risk": "very high because unsupported AI profit attribution, bundled-price ASP inference or generic boundary prose directly degrades the research product",
+      "maximum_completion_tokens": 16000,
+      "node_purpose": "Synthesize a decision-ready value-capture workpaper from reviewed Evidence, typed NumericFacts, the deterministic revenue surface, bounded estimates, scenarios and explicit bridge gaps.",
+      "reasoning_profile": "DeepSeek GA thinking enabled at maximum reasoning effort",
+      "required_outputs": [
+        "thesis",
+        "sourced_claims",
+        "mechanism",
+        "alternative_explanations",
+        "counterarguments",
+        "what_would_change"
+      ],
+      "schema_burden": "large strict workpaper tool with source, numeric, relation and gap reference enums",
+      "stop_or_truncation_behavior": "truncation, unbound claims and unauthorized references are terminal failures for the attempt"
+    }
+  }
+}

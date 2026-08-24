@@ -136,11 +136,11 @@ def test_reviewed_pdf_successor_is_exact_append_with_lineage_and_cuda_cache() ->
     }
 
 
-def test_r36_current_receipt_binds_pdf_successor_without_stage_qualification() -> None:
+def test_r37_current_receipt_binds_pdf_successor_without_stage_qualification() -> None:
     receipt = _json(
-        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_12.json"
+        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_13.json"
     )
-    assert receipt["registry_binding"]["registry_id"].endswith("R36")
+    assert receipt["registry_binding"]["registry_id"].endswith("R37")
     assert receipt["source_object_index_lineage"]["source_record_count"] == 1886
     assert receipt["source_object_index_lineage"]["compiled_object_count"] == 34189
     assert receipt["embedding_index"]["object_count"] == 34189
@@ -167,3 +167,29 @@ def test_r36_source_route_successor_covers_bounded_public_roles() -> None:
     assert exact["exact_registry_required"] is True
     assert policy["successor_change"]["candidate_is_not_evidence"] is True
     assert policy["successor_change"]["public_information_gap_authority"] is False
+
+
+def test_r37_all_current_facets_have_need_and_material_policy() -> None:
+    kernel = load_financial_research_kernel(
+        _json(
+            "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_5.json"
+        )
+    )
+    program = _json(
+        "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_3.json"
+    )
+    requested_facets = {
+        facet_id
+        for raw in program["evidence_requests"]
+        for facet_id in load_evidence_request(raw, kernel).requested_facet_ids
+    }
+    need = _json(
+        "configs/retrieval/fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_3.json"
+    )
+    material = _json(
+        "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_2.json"
+    )
+    assert requested_facets.issubset(need["facet_role_cues"])
+    assert requested_facets.issubset(material["facet_required_roles"])
+    assert need["successor_change"]["candidate_is_not_evidence"] is True
+    assert material["successor_change"]["numeric_fact_authority"] is False

@@ -1,0 +1,157 @@
+{
+  "schema_version": "fin_ia_s1_quantized_4b_shadow_acquisition_program_v1_0",
+  "status": "preregistered_owner_authorized_development_only_acquisition",
+  "recorded_at": "2026-08-24",
+  "program_id": "FIN-0.1.3-S1-QUANTIZED-4B-SHADOW-ACQUISITION-R1",
+  "decision_target": "Acquire exact Q4_K_M 4B embedding and reranker artifacts plus a pinned CUDA llama.cpp server for an 8 GB, controlled-candidate development shadow. Acquisition cannot qualify S1, prove natural candidate recall, replace source work, or promote a runtime.",
+  "owner_authority": {
+    "authorized_request": "Try a larger embedding model such as a 4B Qwen reranker on the current 8 GB GPU and compare it with the existing baseline.",
+    "authorized_scope": "local_four_bit_development_shadow_only",
+    "full_precision_program_mutated": false,
+    "qualification_profile_substituted": false
+  },
+  "predecessor_bindings": [
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_program_v1_2.json",
+      "sha256": "bbf452ef1a35551eb090e5a3417c2ea9f9dc548289b296793b1703d9f30edf77",
+      "disposition": "immutable_24gb_fp16_program_remains_resource_blocked_and_is_not_reinterpreted"
+    },
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_preflight_result_v1_3.json",
+      "sha256": "0fba62a38d17603fcde92be288b6530d9182e7dfe8b6024d2bea4f720dc892ae",
+      "disposition": "truthful_zero_call_resource_block_preserved"
+    },
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_large_model_dev_only_role_eval_v1_0.json",
+      "sha256": "6c305dfb2ca999b087b0ee59479ac50b002b315501bfcb6c130cd3cf285966bc",
+      "disposition": "only_allowed_controlled_evaluation_projection"
+    },
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1c_runtime_query_atom_model_shadow_result_v1_1.json",
+      "sha256": "78c0d0d41c86611a09901692bdcf0758db5f62771933f682226d29e5fbc2592b",
+      "disposition": "historical_0_6b_reference_only_fair_same_pool_baseline_must_be_rerun"
+    }
+  ],
+  "models": {
+    "embedding": {
+      "artifact_key": "qwen3_embedding_4b_gguf_q4_k_m",
+      "source_model_id": "Qwen/Qwen3-Embedding-4B",
+      "quantized_repo_id": "Qwen/Qwen3-Embedding-4B-GGUF",
+      "upstream_provenance": "official_Qwen_quantization_repository",
+      "resolved_revision": "f4602530db1d980e16da9d7d3a70294cf5c190be",
+      "selected_model_file": "Qwen3-Embedding-4B-Q4_K_M.gguf",
+      "expected_bytes": 2496703776,
+      "quantization": "Q4_K_M",
+      "local_directory": "Z:/hf_models/FIN_0_1_3_Qwen3_Embedding_4B_GGUF_Q4_K_M"
+    },
+    "reranker": {
+      "artifact_key": "qwen3_reranker_4b_gguf_q4_k_m",
+      "source_model_id": "Qwen/Qwen3-Reranker-4B",
+      "quantized_repo_id": "giladgd/Qwen3-Reranker-4B-GGUF",
+      "upstream_provenance": "community_static_quantization_not_verified_against_official_full_precision",
+      "resolved_revision": "618ca919a196583806708d695f64dc002bd229a3",
+      "selected_model_file": "Qwen3-Reranker-4B.Q4_K_M.gguf",
+      "expected_bytes": 2496717472,
+      "quantization": "Q4_K_M",
+      "local_directory": "Z:/hf_models/FIN_0_1_3_Qwen3_Reranker_4B_GGUF_Q4_K_M"
+    }
+  },
+  "tool": {
+    "tool_id": "ggml-org/llama.cpp",
+    "release_tag": "b10516",
+    "release_published_at": "2026-08-20",
+    "server_relative_path": "llama-server.exe",
+    "local_directory": "Z:/fin_ia_tools/llama.cpp/b10516",
+    "assets": [
+      {
+        "name": "llama-b10516-bin-win-cuda-12.4-x64.zip",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10516/llama-b10516-bin-win-cuda-12.4-x64.zip",
+        "expected_bytes": 250892658,
+        "sha256": "96d64faeb5b8e655341f32b26ad3e51fbea8bff0bc8120ad3dbffdc0b05b8ad3"
+      },
+      {
+        "name": "cudart-llama-bin-win-cuda-12.4-x64.zip",
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10516/cudart-llama-bin-win-cuda-12.4-x64.zip",
+        "expected_bytes": 391443627,
+        "sha256": "8c79a9b226de4b3cacfd1f83d24f962d0773be79f1e7b75c6af4ded7e32ae1d6"
+      }
+    ]
+  },
+  "execution_resource_gate": {
+    "required_device_name_contains": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "minimum_total_vram_mib": 8000,
+    "minimum_free_vram_mib_before_acquisition": 6000,
+    "minimum_free_storage_bytes": 15032385536,
+    "storage_probe_root": "Z:/",
+    "huggingface_cache_root": "Z:/fin_ia_cache/huggingface",
+    "download_cache_root": "Z:/fin_ia_cache/fin_ia_quantized_4b_shadow/b10516",
+    "models_loaded_concurrently": false,
+    "cpu_inference_fallback_allowed": false
+  },
+  "acquisition_contract": {
+    "attempt_id": "acquisition-r1",
+    "clean_commit_and_upstream_equality_required": true,
+    "huggingface_tool": "huggingface_hub.snapshot_download",
+    "huggingface_snapshot_invocation_budget": 2,
+    "github_asset_download_invocation_budget": 2,
+    "provider_call_budget": 0,
+    "model_inference_call_budget": 0,
+    "exact_revision_required": true,
+    "exact_selected_file_size_required": true,
+    "downloaded_archive_size_and_sha256_required": true,
+    "safe_zip_extraction_required": true,
+    "exact_recursive_regular_file_manifest_required": true,
+    "links_and_reparse_points_forbidden": true,
+    "existing_destination_overwrite_forbidden": true,
+    "failed_attempt_receipt_required_after_attempt_start": true
+  },
+  "future_execution_token_budget_basis": {
+    "embedding_node": {
+      "purpose": "score the unchanged 18-query DELL/MU/NVDA controlled candidate projection with both 0.6B baseline and quantized 4B challenger",
+      "input_scale": "18 queries and 86 candidate occurrences; longest observed query 631 characters and document 6505 characters",
+      "required_outputs": "one normalized embedding score per query-candidate pair, per-case and overall pairwise/top1/MRR metrics, token counts, truncation receipts, latency and peak VRAM",
+      "schema_burden": "exact eval digest, model/tool acquisition identities, fixed instruction, candidate identity and deterministic metric receipts",
+      "materiality_quality_risk": "a controlled-pool gain does not prove external retrieval recall; truncation or identity drift could manufacture a ranking gain",
+      "comparable_run_evidence": "Qwen3-Embedding-0.6B must be rerun over the exact same 86 candidate occurrences",
+      "reasoning_profile": "non-generative embedding; instruction-aware query and raw document",
+      "stop_and_truncation": "sequential batch size one, preregistered token ceiling, fail on silent omission, CPU fallback, hidden input, or uncontrolled prompt change"
+    },
+    "reranker_node": {
+      "purpose": "score the same 86 query-document pairs through fixed yes/no relevance surfaces for 0.6B and quantized 4B",
+      "input_scale": "18 queries and 86 candidate occurrences with one-token yes/no scoring",
+      "required_outputs": "yes/no log-probability difference, per-case and overall pairwise/top1/MRR metrics, prompt token counts, truncation receipts, latency and peak VRAM",
+      "schema_burden": "exact tokenizer/prompt binding, model/tool identities, raw yes/no score receipts and deterministic metric compilation",
+      "materiality_quality_risk": "community quant provenance, tokenization mismatch, or absent yes/no logits can make the challenger result non-comparable",
+      "comparable_run_evidence": "Qwen3-Reranker-0.6B must be rerun over the exact same 86 candidate occurrences; historical 0.75 result is context only",
+      "reasoning_profile": "bounded discriminative one-token yes/no scoring; free-form generation forbidden",
+      "stop_and_truncation": "sequential batch size one, preregistered token ceiling, fail if yes/no probabilities are unavailable, prompt tokenization drifts, OOM occurs, or CPU fallback is attempted"
+    }
+  },
+  "future_quality_gates": {
+    "embedding_pairwise_accuracy_minimum": 0.8,
+    "embedding_must_not_regress_vs_same_pool_0_6b": true,
+    "reranker_pairwise_accuracy_minimum": 0.8,
+    "reranker_pairwise_improvement_minimum_vs_same_pool_0_6b": 0.05,
+    "each_case_pairwise_regression_allowed": false,
+    "controlled_result_can_authorize_natural_pool_eval_only": true
+  },
+  "authority": {
+    "acquisition_authorized": true,
+    "controlled_local_inference_authorized_after_successful_acquisition": true,
+    "runtime_promotion_authorized": false,
+    "S1_qualification_authorized": false,
+    "natural_candidate_recall_proved": false,
+    "evidence_or_numeric_authority_granted": false,
+    "source_gap_closure_authorized": false
+  },
+  "source_references": [
+    "https://huggingface.co/Qwen/Qwen3-Embedding-4B",
+    "https://huggingface.co/Qwen/Qwen3-Embedding-4B-GGUF",
+    "https://huggingface.co/Qwen/Qwen3-Reranker-4B",
+    "https://huggingface.co/giladgd/Qwen3-Reranker-4B-GGUF",
+    "https://github.com/ggml-org/llama.cpp/releases/tag/b10516",
+    "https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md"
+  ],
+  "known_boundary": "This is a separate, owner-authorized 8 GB quantized development shadow. The official embedding quant is content-addressed; the selected reranker quant is community-produced and therefore cannot establish official full-precision behavior. Even a passing controlled-pool result will not repair inner/outer retrieval recall, close DELL public-information gaps, qualify S1, or authorize runtime promotion.",
+  "result_digest": "e8e49632cb3b633545ebd445932df439a1db7e798e0f2c39c4f3c3f5aa709d3c"
+}

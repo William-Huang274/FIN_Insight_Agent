@@ -1,0 +1,87 @@
+{
+  "schema_version": "fin_ia_s1_dell_direct_source_capture_successor_plan_v1_0",
+  "plan_id": "FIN-0.1.3-S1-DELL-DIRECT-SOURCE-CAPTURE-R2",
+  "status": "approved_failed_route_direct_source_successor",
+  "recorded_at": "2026-08-24",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "predecessor_plan_binding": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_direct_source_capture_plan_v1_0.json",
+    "sha256": "e1303c4b805454c58ee8bd1adcc7e5d99734da8255ed29f06fea39a1677c0fa6",
+    "plan_digest": "f6b78b9d8161cce914f9906fa0d2712b6dd2dbb28ade8e592ff3ccd8f56e6b0a"
+  },
+  "predecessor_terminal_binding": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_capture/fin013-dell-direct-r1-20260824-ca4adff7/terminal_result.json",
+    "sha256": "47725c2ebcab297fe1a31c3665da27f790ff484164f07ebfed17a111fc724a61",
+    "result_digest": "6a522682d9e10ceadf1687d0032e6482ee999828b5b0866d19258df2dba661cd",
+    "attempt_id": "fin013-dell-direct-r1-20260824-ca4adff7"
+  },
+  "failed_route_binding": {
+    "direct_source_id": "DELL-DIRECT-DELL-NVIDIA-NEWSROOM-2025",
+    "canonical_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2025~03~corp.htm",
+    "failure_code": "official_source_http_403",
+    "locator_digest": "6988d2fd6311e88aee7788e14b26b0349f7854e574efddcb5233cf6dc988d2e2"
+  },
+  "replacement_source_registry": {
+    "source_family_id": "delltechnologies.com",
+    "host": "delltechnologies.com",
+    "safe_host_aliases": [
+      "investors.delltechnologies.com"
+    ],
+    "speaker_entity": "Dell Technologies Inc.",
+    "speaker_ticker": "DELL",
+    "source_class": "issuer_regulator_or_government_primary",
+    "source_role": "issuer_investor_relations_primary",
+    "relationship_directions": [
+      "issuer_to_upstream_supplier_current_relationship"
+    ],
+    "allowed_ladder_tiers": [
+      "official_subject_regulator_customer_supplier"
+    ]
+  },
+  "replacement_direct_source": {
+    "direct_source_id": "DELL-DIRECT-DELL-NVIDIA-IR-PDF-2025",
+    "query_unit_id": "DELL-DIRECT-CURRENT-RELATIONSHIP",
+    "source_family_id": "delltechnologies.com",
+    "canonical_url": "https://investors.delltechnologies.com/node/17471/pdf",
+    "title": "Dell Technologies Accelerates Enterprise AI Innovation from PC to Data Center with NVIDIA",
+    "provider_date_telemetry": "2025-03-18"
+  },
+  "execution_budget": {
+    "provider_call_ceiling": 0,
+    "fresh_original_fetch_ceiling": 1,
+    "expected_unchanged_locator_count": 4,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0
+  },
+  "token_budget_basis": {
+    "model_tokens": 0,
+    "node_purpose": "Bind the failed Dell newsroom route to the same issuer's official investor-relations PDF while reusing every successful immutable R1 capture.",
+    "input_scale_basis": "One failed R1 locator, one reviewed official replacement locator and four digest-bound reusable captures; no provider discovery, generation or learned-ranking call.",
+    "required_outputs": [
+      "predecessor plan and terminal bindings",
+      "one-locator retirement and replacement receipt",
+      "four immutable capture reuse receipts",
+      "one capture-before-parse request and response or typed failure",
+      "candidate-only issuer source object and proposition proposals",
+      "zero-provider and zero-model execution receipt"
+    ],
+    "schema_burden": "The successor must prove exactly one retired failed URL, one fresh official issuer URL, four unchanged captures, publication date, speaker identity, source class and candidate-only authority.",
+    "materiality_and_quality_risk": "A mirrored press release could be mistaken for new independent evidence, or Dell product availability could be mislabeled as private NVIDIA allocation, Dell units or profit authority.",
+    "comparable_run_evidence": "R1 preserved one Dell newsroom HTTP 403 while four other direct originals succeeded; the official investor-relations PDF exposes the same March 18, 2025 issuer release on an accessible Dell-controlled host.",
+    "reasoning_profile": "Deterministic AI-free predecessor validation, immutable capture reuse, one exact-once official PDF fetch, parse and candidate compilation.",
+    "stop_and_truncation_behavior": "Execute only the one replacement route with no retry; abort if the predecessor binding, four-route reuse count, one-route delta or issuer identity changes; preserve any new failure and do not infer allocation, units, ASP or gap closure.",
+    "cost_and_latency_are_secondary_constraints": true
+  },
+  "authority": {
+    "direct_locator_is_not_evidence": true,
+    "provider_result_is_locator_only": true,
+    "provider_calls_authorized": false,
+    "original_capture_required": true,
+    "candidate_is_not_evidence": true,
+    "candidate_decision_and_evidence_gate_required": true,
+    "public_information_gap_authorized": false,
+    "S1_qualification_authorized": false
+  },
+  "plan_digest": "74c95af50bdb8be920969b2ca1159d318572ce4650cca2a91b31be48dabc4428"
+}

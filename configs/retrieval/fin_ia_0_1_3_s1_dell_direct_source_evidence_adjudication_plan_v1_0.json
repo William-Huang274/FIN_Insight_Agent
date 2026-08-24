@@ -1,0 +1,170 @@
+{
+  "schema_version": "fin_ia_s1_external_source_evidence_adjudication_plan_v1_0",
+  "status": "approved_internal_engineering_evidence_gate",
+  "recorded_at": "2026-08-24",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "plan_id": "FIN-0.1.3-S1-DELL-DIRECT-SOURCE-EVIDENCE-ADJUDICATION-V1.0",
+  "compiled_result_ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r1/candidate_review_result.json",
+  "compiled_result_sha256": "016353f3ec2c5ba7e4adaac934134908640da1501f65420e396eff860bd73ca3",
+  "compiled_result_digest": "d9db1024fbf10798197f78336e7d73e66c3612b5c9506d64d9c739d273ad193d",
+  "predecessor_pack_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r3-capture-replay/successor/pack.json",
+  "predecessor_pack_sha256": "80c19b7fba1363558483d7ad8af31297c9c94156645f34c594540d477d249177",
+  "predecessor_pack_payload_digest": "46f3704656ee15d960d3f39d8a45169a326604e871b7c01dd495b7bbac693864",
+  "qualified_human_review": false,
+  "S1_qualification_authorized": false,
+  "product_publication_authorized": false,
+  "gap_ids_satisfied": [],
+  "decisions": [
+    {
+      "candidate_id": "PUBCAND::63CD70D662539BFBB3ED",
+      "candidate_digest": "36f08bba677ab32c6ef503bfa7386103c82f8c55739a4d7653b257bc3e4b35e5",
+      "source_object_digest": "464b405200092f75d9b61130a7e402f1ebd358ef50469ce84d98d9e92c845484",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "bounded_public_procurement_contract_value",
+            "bundled_service_boundary"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PRICE-CONFIGURATION",
+            "DELL-PROP-UNIT-VOLUME"
+          ],
+          "business_meaning_zh": "密西西比州公开采购文件把四套基于 Dell PowerEdge XE9680 的系统与 2,278,577.28 美元总合同值绑定，提供一个可引用的配置化交易样本。",
+          "claim_boundary_zh": "合同总额同时覆盖设备、交付、安装、培训和五年维护支持；不得除以四后写成裸机成交价、Dell 公司 ASP 或产品收入。"
+        },
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "bounded_public_procurement_unit_observation"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-UNIT-VOLUME"
+          ],
+          "business_meaning_zh": "同一合同提供四套完整系统的公开采购数量观测，用于说明公开市场上可见的交易单位。",
+          "claim_boundary_zh": "四套只属于单一采购合同，不能外推为 Dell 当期出货量、订单量、市场份额或需求增速。"
+        }
+      ],
+      "numeric_use_boundary_zh": "2,278,577.28 美元是包含设备、交付、安装、培训及五年维护支持的合同总额；四套是该合同数量。二者均不得转化为 Dell 公司级 ASP、units 或 NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-pricing-asp",
+        "dell-gap-pricing-units"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::D9A96E9342FE3A0A9C0B",
+      "candidate_digest": "040d20430a6a7f3cce4d6c82ee6d65e22d69d918813081b62da39ef88687d1c2",
+      "source_object_digest": "464b405200092f75d9b61130a7e402f1ebd358ef50469ce84d98d9e92c845484",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "bounded_public_procurement_unit_observation",
+            "saleable_configuration_example"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-UNIT-VOLUME"
+          ],
+          "business_meaning_zh": "政府公开采购文件明确列出四套采用 Dell PowerEdge XE9680、Xeon 8468、NVIDIA HGX H100 和 Dell Advanced Cluster Engine 的完整系统。",
+          "claim_boundary_zh": "这只能证明该采购项目的数量和配置，不证明 Dell 公司总出货、标准销售单位、订单转收入节奏或市场份额。"
+        }
+      ],
+      "numeric_use_boundary_zh": "四套是单一高校项目的采购数量，不是 Dell 公司级 units，也不能用于直接推导公司收入或 PVM volume。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-pricing-units"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::DFB8BC71FB8FF202AC73",
+      "candidate_digest": "65417cb5f41baa2e76f9c5ad96b4bec493d3aa307c35fae33945a3fd8a217641",
+      "source_object_digest": "53decac62da35c62591b03830f1cab11c89a108815769bae23d5cd47e8ebd429",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "relationship_attribution",
+          "facet_ids": [
+            "supplier_names_dell",
+            "current_platform_shipping_scale",
+            "public_delivery_execution"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-SUPPLY-RELATIONSHIP"
+          ],
+          "business_meaning_zh": "NVIDIA 官方在 2025-05-27 点名与 Dell 的长期合作、GB200 服务器规模化出货，以及 Dell 工厂公开展示的 Blackwell 交付能力。",
+          "claim_boundary_zh": "该材料证明公开合作与案例级交付能力，不证明 NVIDIA 对 Dell 的私有 GPU 配额、采购合同、良率、Dell 公司服务器台数或利润转化。"
+        }
+      ],
+      "numeric_use_boundary_zh": "每周数千颗 GPU 与六周部署十万颗 GPU 是 NVIDIA 对特定工厂能力和客户案例的表述，不得写成 Dell 公司服务器 units、GPU allocation 或收入。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::619385369F88677FC4F9",
+      "candidate_digest": "efb33cff859149411ae240967f9558efdf9961fe8e9363b0e70a5b63af8c2910",
+      "source_object_digest": "6146274b3241eaf948422d4018707c5dd6d4e9cb1a4290e4ce1c63c09e5d64b1",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "observable_bundled_price_range",
+            "recommended_price_boundary"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PRICE-CONFIGURATION"
+          ],
+          "business_meaning_zh": "Principled Technologies 记录了 2025-03-12 可公开观察的 Dell 推荐价：两台 XE9680 节点、交换机以及五年支持和部署服务合计 757,231 美元。",
+          "claim_boundary_zh": "这是推荐价而非已验证成交价，且覆盖多设备与多年服务；不得除以服务器数量后称为单机 ASP，也不是 Dell 公司 ASP。"
+        }
+      ],
+      "numeric_use_boundary_zh": "757,231 美元仅可标注为该明确配置和服务包的 Dell 推荐价样本；不得晋升为 Dell 公司级 ASP、成交价、收入或 NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-pricing-asp"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::9707B528A09DD8769D09",
+      "candidate_digest": "8fe582e4d2e15ebef918ed64598b9de588b123a18659da5e1c52c33eb41ff453",
+      "source_object_digest": "6146274b3241eaf948422d4018707c5dd6d4e9cb1a4290e4ce1c63c09e5d64b1",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "saleable_configuration_example",
+            "gpu_memory_storage_mix"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PRICE-CONFIGURATION"
+          ],
+          "business_meaning_zh": "同一公开研究披露两台 XE9680 节点各自的双 Xeon 8468、1,024GB 内存、44.8TB 原始存储和 HGX H100 8-GPU 配置，为价格样本提供配置分母。",
+          "claim_boundary_zh": "配置说明不授予单部件价格、单机成交价、标准 ASP、销量或毛利率权限。"
+        }
+      ],
+      "numeric_use_boundary_zh": "CPU、内存、存储和 GPU 规格只能解释报价样本的配置强度；不得独立生成价格、units、收入或利润 NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-pricing-asp"
+      ],
+      "gap_ids_satisfied": []
+    }
+  ],
+  "plan_digest": "a8745487c5d122c999288afccaf3d7f60459b89c69ef15d29ac60efe37d68232"
+}

@@ -15,8 +15,12 @@ DELL_DIRECT_SOURCE_CAPTURE_PLAN_SCHEMA_VERSION = (
 DELL_DIRECT_SOURCE_SHORTLIST_SCHEMA_VERSION = (
     "fin_ia_s1_dell_direct_source_shortlist_v1_0"
 )
+DELL_DIRECT_SOURCE_CAPTURE_SUCCESSOR_PLAN_SCHEMA_VERSION = (
+    "fin_ia_s1_dell_direct_source_capture_successor_plan_v1_0"
+)
 
 _STATUS = "approved_exact_once_direct_original_capture_plan"
+_SUCCESSOR_STATUS = "approved_failed_route_direct_source_successor"
 _TIERS = {
     "official_subject_regulator_customer_supplier",
     "industry_association_market_tracking",
@@ -318,10 +322,256 @@ def compile_dell_direct_source_shortlist(
     return {**body, "shortlist_digest": canonical_digest(body)}
 
 
+def validate_dell_direct_source_capture_successor_plan(
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate one failed-route-only successor without weakening R1."""
+
+    value = deepcopy(dict(payload))
+    _validate_digest(value)
+    expected_fields = {
+        "schema_version",
+        "plan_id",
+        "status",
+        "recorded_at",
+        "case_key",
+        "research_as_of",
+        "predecessor_plan_binding",
+        "predecessor_terminal_binding",
+        "failed_route_binding",
+        "replacement_source_registry",
+        "replacement_direct_source",
+        "execution_budget",
+        "token_budget_basis",
+        "authority",
+        "plan_digest",
+    }
+    predecessor_plan = value.get("predecessor_plan_binding")
+    predecessor_terminal = value.get("predecessor_terminal_binding")
+    failed = value.get("failed_route_binding")
+    registry = value.get("replacement_source_registry")
+    replacement = value.get("replacement_direct_source")
+    budget = value.get("execution_budget")
+    token_basis = value.get("token_budget_basis")
+    replacement_url = str(
+        replacement.get("canonical_url") if isinstance(replacement, Mapping) else ""
+    )
+    replacement_host = str(urlsplit(replacement_url).hostname or "").lower()
+    replacement_allowed_hosts = (
+        {
+            str(registry.get("host") or "").lower(),
+            *(
+                str(host).lower()
+                for host in registry.get("safe_host_aliases") or ()
+            ),
+        }
+        if isinstance(registry, Mapping)
+        else set()
+    )
+    _require(
+        set(value) == expected_fields
+        and value.get("schema_version")
+        == DELL_DIRECT_SOURCE_CAPTURE_SUCCESSOR_PLAN_SCHEMA_VERSION
+        and value.get("status") == _SUCCESSOR_STATUS
+        and str(value.get("plan_id") or "")
+        and str(value.get("case_key") or "").upper() == "DELL"
+        and _valid_date(value.get("recorded_at"))
+        and _valid_date(value.get("research_as_of"))
+        and isinstance(predecessor_plan, Mapping)
+        and str(predecessor_plan.get("ref") or "")
+        and len(str(predecessor_plan.get("sha256") or "")) == 64
+        and len(str(predecessor_plan.get("plan_digest") or "")) == 64
+        and isinstance(predecessor_terminal, Mapping)
+        and str(predecessor_terminal.get("ref") or "")
+        and len(str(predecessor_terminal.get("sha256") or "")) == 64
+        and len(str(predecessor_terminal.get("result_digest") or "")) == 64
+        and str(predecessor_terminal.get("attempt_id") or "")
+        and isinstance(failed, Mapping)
+        and str(failed.get("direct_source_id") or "")
+        and str(failed.get("canonical_url") or "").startswith("https://")
+        and str(failed.get("failure_code") or "")
+        and len(str(failed.get("locator_digest") or "")) == 64
+        and isinstance(registry, Mapping)
+        and str(registry.get("source_family_id") or "").lower()
+        == str(registry.get("host") or "").lower()
+        and str(registry.get("speaker_ticker") or "").upper() == "DELL"
+        and str(registry.get("source_class") or "")
+        == "issuer_regulator_or_government_primary"
+        and replacement_host in replacement_allowed_hosts
+        and isinstance(replacement, Mapping)
+        and str(replacement.get("direct_source_id") or "")
+        and str(replacement.get("direct_source_id") or "")
+        != str(failed.get("direct_source_id") or "")
+        and str(replacement.get("query_unit_id") or "")
+        == "DELL-DIRECT-CURRENT-RELATIONSHIP"
+        and str(replacement.get("source_family_id") or "").lower()
+        == str(registry.get("source_family_id") or "").lower()
+        and replacement_url.startswith("https://")
+        and replacement_url != str(failed.get("canonical_url") or "")
+        and str(replacement.get("title") or "")
+        and _valid_date(replacement.get("provider_date_telemetry"))
+        and isinstance(budget, Mapping)
+        and budget.get("provider_call_ceiling") == 0
+        and budget.get("fresh_original_fetch_ceiling") == 1
+        and budget.get("expected_unchanged_locator_count") == 4
+        and budget.get("retry_ceiling") == 0
+        and budget.get("model_call_ceiling") == 0
+        and isinstance(token_basis, Mapping)
+        and token_basis.get("model_tokens") == 0
+        and token_basis.get("cost_and_latency_are_secondary_constraints") is True
+        and str(token_basis.get("node_purpose") or "")
+        and str(token_basis.get("input_scale_basis") or "")
+        and isinstance(token_basis.get("required_outputs"), list)
+        and bool(token_basis["required_outputs"])
+        and str(token_basis.get("schema_burden") or "")
+        and str(token_basis.get("materiality_and_quality_risk") or "")
+        and str(token_basis.get("comparable_run_evidence") or "")
+        and str(token_basis.get("reasoning_profile") or "")
+        and str(token_basis.get("stop_and_truncation_behavior") or "")
+        and value.get("authority") == _AUTHORITY,
+        "direct_source_capture_successor_plan_shape_invalid",
+    )
+    return value
+
+
+def compile_dell_direct_source_capture_successor(
+    *,
+    successor_plan: Mapping[str, Any],
+    predecessor_plan: Mapping[str, Any],
+    predecessor_terminal: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Replace exactly one failed R1 locator and preserve every other route."""
+
+    successor = validate_dell_direct_source_capture_successor_plan(successor_plan)
+    predecessor = validate_dell_direct_source_capture_plan(predecessor_plan)
+    terminal = deepcopy(dict(predecessor_terminal))
+    terminal_body = deepcopy(terminal)
+    terminal_digest = str(terminal_body.pop("result_digest", ""))
+    _require(
+        terminal_digest == canonical_digest(terminal_body)
+        and terminal_digest
+        == str(successor["predecessor_terminal_binding"]["result_digest"])
+        and str(terminal.get("attempt_id") or "")
+        == str(successor["predecessor_terminal_binding"]["attempt_id"])
+        and str(terminal.get("plan_binding", {}).get("plan_digest") or "")
+        == str(predecessor["plan_digest"])
+        == str(successor["predecessor_plan_binding"]["plan_digest"])
+        and str(successor["research_as_of"]) == str(predecessor["research_as_of"]),
+        "direct_source_capture_successor_predecessor_binding_invalid",
+    )
+
+    failed = dict(successor["failed_route_binding"])
+    old_sources = [dict(row) for row in predecessor["direct_sources"]]
+    old_source = next(
+        (
+            row
+            for row in old_sources
+            if str(row.get("direct_source_id") or "")
+            == str(failed["direct_source_id"])
+        ),
+        None,
+    )
+    old_receipts = list(
+        (terminal.get("original_compilation_result") or {}).get("route_receipts")
+        or ()
+    )
+    failed_receipt = next(
+        (
+            dict(row)
+            for row in old_receipts
+            if str(row.get("canonical_url") or "")
+            == str(failed["canonical_url"])
+        ),
+        None,
+    )
+    old_shortlist = list((terminal.get("fetch_shortlist") or {}).get("selected") or ())
+    failed_locator = next(
+        (
+            dict(row)
+            for row in old_shortlist
+            if str(row.get("direct_source_id") or "")
+            == str(failed["direct_source_id"])
+        ),
+        None,
+    )
+    _require(
+        old_source is not None
+        and failed_receipt is not None
+        and failed_locator is not None
+        and str(old_source.get("canonical_url") or "")
+        == str(failed["canonical_url"])
+        and str(failed_receipt.get("capture_failure_code") or "")
+        == str(failed["failure_code"])
+        and str(failed_locator.get("locator_digest") or "")
+        == str(failed["locator_digest"]),
+        "direct_source_capture_successor_failed_route_binding_invalid",
+    )
+
+    replacement = deepcopy(dict(successor["replacement_direct_source"]))
+    effective = deepcopy(predecessor)
+    effective["plan_id"] = str(successor["plan_id"]) + "::EFFECTIVE"
+    effective["recorded_at"] = successor["recorded_at"]
+    effective["purpose"] = (
+        "Reuse every successful immutable R1 capture and replace only the bound "
+        "Dell newsroom HTTP 403 with the same issuer's official investor-relations PDF."
+    )
+    effective["token_budget_basis"] = deepcopy(successor["token_budget_basis"])
+    effective["source_registry"].append(
+        deepcopy(dict(successor["replacement_source_registry"]))
+    )
+    effective["direct_sources"] = [
+        replacement
+        if str(row.get("direct_source_id") or "")
+        == str(failed["direct_source_id"])
+        else row
+        for row in old_sources
+    ]
+    effective_body = deepcopy(effective)
+    effective_body.pop("plan_digest", None)
+    effective["plan_digest"] = canonical_digest(effective_body)
+    effective = validate_dell_direct_source_capture_plan(effective)
+
+    old_urls = {str(row["canonical_url"]) for row in old_sources}
+    new_urls = {
+        str(row["canonical_url"]) for row in effective["direct_sources"]
+    }
+    unchanged = sorted(old_urls & new_urls)
+    added = sorted(new_urls - old_urls)
+    retired = sorted(old_urls - new_urls)
+    budget = successor["execution_budget"]
+    _require(
+        len(unchanged) == int(budget["expected_unchanged_locator_count"])
+        and len(added) == int(budget["fresh_original_fetch_ceiling"])
+        and len(retired) == 1
+        and retired == [str(failed["canonical_url"])]
+        and added == [str(replacement["canonical_url"])],
+        "direct_source_capture_successor_locator_delta_invalid",
+    )
+    delta_body = {
+        "schema_version": "fin_ia_s1_dell_direct_source_locator_delta_receipt_v1_0",
+        "case_key": "DELL",
+        "successor_plan_digest": successor["plan_digest"],
+        "predecessor_plan_digest": predecessor["plan_digest"],
+        "unchanged_urls": unchanged,
+        "retired_failed_urls": retired,
+        "fresh_urls": added,
+        "expected_fresh_network_routes": 1,
+        "provider_calls": 0,
+        "model_calls": 0,
+    }
+    return effective, {
+        **delta_body,
+        "receipt_digest": canonical_digest(delta_body),
+    }
+
+
 __all__ = [
     "DELL_DIRECT_SOURCE_CAPTURE_PLAN_SCHEMA_VERSION",
+    "DELL_DIRECT_SOURCE_CAPTURE_SUCCESSOR_PLAN_SCHEMA_VERSION",
     "DELL_DIRECT_SOURCE_SHORTLIST_SCHEMA_VERSION",
     "DirectSourceCaptureError",
+    "compile_dell_direct_source_capture_successor",
     "compile_dell_direct_source_shortlist",
     "validate_dell_direct_source_capture_plan",
+    "validate_dell_direct_source_capture_successor_plan",
 ]

@@ -13,10 +13,13 @@ sys.path[:0] = [str(ROOT), str(ROOT / "src")]
 
 from retrieval.direct_source_capture import (  # noqa: E402
     DELL_DIRECT_SOURCE_CAPTURE_PLAN_SCHEMA_VERSION,
+    DELL_DIRECT_SOURCE_CAPTURE_SUCCESSOR_PLAN_SCHEMA_VERSION,
     DELL_DIRECT_SOURCE_SHORTLIST_SCHEMA_VERSION,
     DirectSourceCaptureError,
+    compile_dell_direct_source_capture_successor,
     compile_dell_direct_source_shortlist,
     validate_dell_direct_source_capture_plan,
+    validate_dell_direct_source_capture_successor_plan,
 )
 from retrieval.query_plan import canonical_digest  # noqa: E402
 from scripts.data_retrieval.run_dell_external_source_ladder import (  # noqa: E402
@@ -29,6 +32,11 @@ PLAN = (
     / "configs/retrieval/"
     "fin_ia_0_1_3_s1_dell_direct_source_capture_plan_v1_0.json"
 )
+SUCCESSOR_PLAN = (
+    ROOT
+    / "configs/retrieval/"
+    "fin_ia_0_1_3_s1_dell_direct_source_capture_successor_plan_v1_0.json"
+)
 
 
 def _plan() -> dict[str, object]:
@@ -40,6 +48,34 @@ def _redigest(value: dict[str, object]) -> dict[str, object]:
     body.pop("plan_digest", None)
     body["plan_digest"] = canonical_digest(body)
     return body
+
+
+def _successor_plan() -> dict[str, object]:
+    return json.loads(SUCCESSOR_PLAN.read_text(encoding="utf-8"))
+
+
+def _predecessor_terminal(plan: dict[str, object]) -> dict[str, object]:
+    shortlist = compile_dell_direct_source_shortlist(plan)
+    failed = next(
+        row
+        for row in shortlist["selected"]
+        if row["direct_source_id"]
+        == "DELL-DIRECT-DELL-NVIDIA-NEWSROOM-2025"
+    )
+    body = {
+        "attempt_id": "fixture-r1",
+        "plan_binding": {"plan_digest": plan["plan_digest"]},
+        "fetch_shortlist": shortlist,
+        "original_compilation_result": {
+            "route_receipts": [
+                {
+                    "canonical_url": failed["canonical_url"],
+                    "capture_failure_code": "official_source_http_403",
+                }
+            ]
+        },
+    }
+    return {**body, "result_digest": canonical_digest(body)}
 
 
 def test_direct_plan_compiles_five_zero_provider_original_routes() -> None:
@@ -122,3 +158,56 @@ def test_direct_relationship_sources_are_bidirectional_and_non_authoritative() -
     assert plan["authority"]["candidate_is_not_evidence"] is True
     assert plan["authority"]["public_information_gap_authorized"] is False
     assert plan["authority"]["S1_qualification_authorized"] is False
+
+
+def test_failed_route_successor_replaces_only_dell_403_locator() -> None:
+    predecessor = validate_dell_direct_source_capture_plan(_plan())
+    terminal = _predecessor_terminal(predecessor)
+    successor = _successor_plan()
+    successor["predecessor_terminal_binding"]["result_digest"] = terminal[
+        "result_digest"
+    ]
+    successor["predecessor_terminal_binding"]["attempt_id"] = terminal[
+        "attempt_id"
+    ]
+    successor = _redigest(successor)
+
+    effective, receipt = compile_dell_direct_source_capture_successor(
+        successor_plan=successor,
+        predecessor_plan=predecessor,
+        predecessor_terminal=terminal,
+    )
+
+    assert successor["schema_version"] == (
+        DELL_DIRECT_SOURCE_CAPTURE_SUCCESSOR_PLAN_SCHEMA_VERSION
+    )
+    assert len(receipt["unchanged_urls"]) == 4
+    assert receipt["retired_failed_urls"] == [
+        "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/"
+        "detailpage.press-releases~usa~2025~03~corp.htm"
+    ]
+    assert receipt["fresh_urls"] == [
+        "https://investors.delltechnologies.com/node/17471/pdf"
+    ]
+    assert receipt["expected_fresh_network_routes"] == 1
+    assert any(
+        row["source_family_id"] == "delltechnologies.com"
+        and row["speaker_ticker"] == "DELL"
+        for row in effective["source_registry"]
+    )
+    assert len(effective["direct_sources"]) == 5
+
+
+def test_failed_route_successor_rejects_same_url_retry() -> None:
+    successor = _successor_plan()
+    successor["replacement_direct_source"]["canonical_url"] = successor[
+        "failed_route_binding"
+    ]["canonical_url"]
+
+    with pytest.raises(
+        DirectSourceCaptureError,
+        match="direct_source_capture_successor_plan_shape_invalid",
+    ):
+        validate_dell_direct_source_capture_successor_plan(
+            _redigest(successor)
+        )

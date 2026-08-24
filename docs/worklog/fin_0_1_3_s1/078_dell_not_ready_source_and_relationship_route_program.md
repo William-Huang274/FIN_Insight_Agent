@@ -190,3 +190,60 @@ public projection；任何 capture／date／parse 失败均原样保留。
 
 本节截至 clean execution 前没有把网页搜索观察写成 Evidence。下一次材料结果必须记录实际
 transport、parse、proposal、review 与 admission 数量，而不是按预期宣布“补源完成”。
+
+### 8.1 R1 clean execution、CandidateDecision 与 Evidence Gate
+
+工程基线已冻结在 local commit `ca4adff7`，分支为
+`codex/fin013-dell-s1-s2-product-bridge`。该 commit 上最终验证为：全仓
+`1233 passed / 2 skipped / 2 existing warnings`，active baseline `213` Python、`8`
+frontend、`5` detectors、`28` resources、`0` forbidden，`1017` 个 config JSON 有效，
+secret scan `7930` files／`0` findings，`git diff --check` clean。远端 push 与
+`git ls-remote` 均遭遇连接 reset，因此只能确认 local commit，不得宣称远端已同步。
+
+clean execution attempt：`fin013-dell-direct-r1-20260824-ca4adff7`。实际结果为：
+
+- `5` 个唯一 locator、恰好 `5` 次网络 attempt、`0` retry、`0` provider、`0` model、
+  `0` generation；
+- `4` 个 capture／source object、`8` 个 candidate proposal；
+- PT、Mississippi IHL、CMBI、NVIDIA 原文成功；Dell newsroom 原 URL 以
+  `official_source_http_403` 失败并保留；
+- public result digest：`1ed793b4...3592f`；private terminal digest：
+  `6a522682...661cd`，terminal SHA-256：`47725c2e...a61`。
+
+exhaustive CandidateDecision 对 `8/8` proposals 给出 disposition：`5` 个接受或替换为
+reviewed candidate、`3` 个拒绝、`0` 未裁决，review result digest 为
+`d9db1024...d193d`。CMBI Figure 17 另经 PDF 页面渲染与图像复核：图中只明确标出
+OEM Others／Self-build 与 ODM Direct／White brand 两个聚合序列，Dell 是无单独数值标签的
+灰色堆叠区，不能可靠恢复 Dell share；因此相关 proposal 被拒绝，没有用视觉估读补数字。
+
+Evidence Gate 接受 `5` 条 bounded-context Evidence：Pack 从 `48` 增至 `53`，direct
+target-company Evidence 增量为 `0`，exact numeric authority 增量为 `0`。`14` 个 residual
+gap 全部保留，`0` gap closed，只把以下 `3` 个 gap 标记为 narrowed：
+
+1. `dell-gap-pricing-asp`：有两套 XE9680＋交换机＋五年支持／部署的 757,231 美元推荐价样本，
+   以及四套系统＋交付／安装／培训／五年维护的 2,278,577.28 美元公共采购合同；均不是裸机
+   成交 ASP 或 Dell 公司 ASP。
+2. `dell-gap-pricing-units`：有单一高校项目四套系统的配置化数量观察；不是 Dell 公司
+   shipments、orders 或 share。
+3. `dell-gap-supplier-capacity-readthrough`：NVIDIA 官方证明当前 Dell 合作、GB200 shipping
+   scale 与案例级交付能力；不证明私有 allocation、合同、公司 server units 或利润转化。
+
+Evidence successor result digest 为 `9c66530d...40d5`；coverage 为
+`48 + 5 = 53`、`14 -> 14` gaps。该 gate 只是 internal engineering admission，明确不授予
+qualified-human、S1 qualification、publication 或 gap closure。
+
+### 8.2 Dell 403 的 R2 failed-route successor
+
+R1 的 403 不是“官方原文不存在”。同一发行人控制的 Dell Technologies Investor Relations
+站提供 2025-03-18 新闻稿官方 PDF：
+`https://investors.delltechnologies.com/node/17471/pdf`。本轮新增 successor 合同和执行器：
+
+- digest 绑定 R1 plan、terminal、失败 URL、`official_source_http_403` 与失败 locator；
+- 保持四个成功 URL 与 capture 不变，只退休一个失败 URL并加入一个 Dell IR 官方 URL；
+- 执行时必须观测 `4` 个 immutable capture reuse 与恰好 `1` 个 fresh network route；
+- `0` provider、`0` model、`0` generation、`0` retry；任何绑定或 route delta 改变即停止；
+- 新 Dell 原文仍先是 candidate-only，必须另做 exhaustive CandidateDecision 与 Evidence Gate；
+  新闻稿的产品／availability 表述不得生成 Dell units、ASP、NVIDIA allocation 或利润权限。
+
+截至本记录，R2 合同与代码已完成定向单测，尚未执行网络 capture；必须在 clean commit 后用新
+attempt ID 运行，R1 不得改写或重跑。

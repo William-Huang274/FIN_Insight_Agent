@@ -1675,3 +1675,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - S1 P2 已由 raw locator 从 anchor 到 root 的逐 component `lstat` 修复；actual symlink privilege skip 与 non-skipped component-walk regression并存。preflight v1.3 仍是 8.59GB resource block、artifacts absent、calls=`0/0/0`；acquisition、24GB host 和 4B quality仍不存在。
 - R17 tracked 四项 AND 语义获得 clean reviewer positive control，但总体 audit 失败且 reviewer 未读 private candidate，故 independent仍 false。private-dependent compile test 已按 exact predecessor guard；三条 R16 编辑的归属追加更正为“用户/Owner授权范围、当前 Codex 编写”，没有 R18 或内容变化。
 - 当前下一门是联合/full engineering gate、clean successor commit，然后再由另一名全新只读 reviewer 审计最终 commit。qualified-human、S1、S2、S3、产品、publication 和 release均未通过。
+
+### 2026-08-24 `f8cc99b5` final clean successor audit 与 R17 independent pass
+
+- 全新、作者分离的只读 reviewer 审计 immutable `f8cc99b5...`（parent `1243b3cc...`、tree `e7000e73...`），最终 `P0/P1/P2/P3=0/0/0/0`。S1 祖先 locator component 与 S2 requested/automatic/derived conflict 的上一轮 findings 均作为工程 successor 独立关闭。
+- S1 v1.3 仍是 8,585,216,000-byte GPU resource block、artifacts absent、approved revision／acquisition receipt 为空、calls=`0/0/0`；没有 4B 运行、质量或 S1 qualification。S2 v1.5 的 11/11 executor checks、MU 3 facts／6 as-of／728 population 保持，但 ASP／units／PVM／利润桥与完整 S2 仍未通过。
+- Reviewer 在精确授权下只读复算 R16/R17 两个 private result：SHA 分别为 `d099e26e...3896` 与 `433b2c48...c0e8`。R17 只改两个允许的 model-text path；references、4 gaps、topology 与 737 个数字 token不变，四项 reversal 条件为严格 AND，故新增 append-only `fresh_independent_post_writer_review_pass=true` 收据。
+- 旧 R17 public candidate 的 pending／false acceptance flags 保持 immutable。Reviewer 不是 qualified human；S3、产品验收、publication 和 release继续为 false。详见 `docs/worklog/fin_0_1_3_s3/169_final_clean_successor_audit_and_R17_fresh_independent_pass.md`。

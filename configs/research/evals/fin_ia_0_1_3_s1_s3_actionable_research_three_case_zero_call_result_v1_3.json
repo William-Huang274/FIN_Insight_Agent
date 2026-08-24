@@ -1,0 +1,531 @@
+{
+  "schema_version": "fin_ia_s1_s3_actionable_research_three_case_zero_call_result_v1_3",
+  "attempt_id": "three-case-r38-reviewed-public-sync-generalization-r3-20260824T211343Z",
+  "status": "current_data_runtime_and_s3_consumption_pass",
+  "recorded_at": "2026-08-25T05:13:45+08:00",
+  "prepared_from_commit": "9d2f9edfd111647718dc8da35bac7bc1fc07947f",
+  "current_bindings": {
+    "runtime_binding_receipt": {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_14.json",
+      "sha256": "6cd117423f1ef2037720ab5399f95d074056c1ebde636050d02436fa20aee435",
+      "policy_id": "FIN-0.1.3-S1-CURRENT-PRODUCT-RUNTIME-BINDING-V1.13",
+      "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R38"
+    },
+    "current_pack_result": {
+      "ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_6.json",
+      "sha256": "b3289bdf91ae2654f4a5a37aecf603a444581a7969d9e866146feeb1efbcfa14",
+      "result_digest": "e66941c5a55cb4759a759966927f2fe67c586968599b3302df7d3009f7acc373",
+      "attempt_id": "FIN-0.1.3-S1-CURRENT-PACK-SET-PROMOTION-DELL-DIRECT-R4",
+      "DELL_replaced_in_current_composition": true,
+      "MU_NVDA_retained_by_digest_without_rematerialization": true
+    },
+    "case_pack_identities": {
+      "DELL": {
+        "artifact_digest": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+        "pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98",
+        "projection_digest": "2d4e3d572494e6fc7b7537b567a644a894cdf1e82143d325812860c4cc84eccd"
+      },
+      "MU": {
+        "artifact_digest": "ce0140b19319e185cd32c7fb502529618591cdd990bbd9501b8e399b27ae7b7b",
+        "pack_payload_digest": "8eb3eee1bd1b8f4f8d3f518d8ce8727ab1c04c6db5eb43b7fd048f4d73ebb359",
+        "projection_digest": "0a9e9064888417bac66e23931d3c6c03ba96e540798c543cca2eaa56fca40c7a"
+      },
+      "NVDA": {
+        "artifact_digest": "fe3aa05304a7c2d841e4b42a2bf88c58bd4739cfbe752d82f076e90124f8cbda",
+        "pack_payload_digest": "ecc6fb1d3ea49bc08110afcda5d376deb44d872f0ed4f2ab429ee339d6479afa",
+        "projection_digest": "55436fb1ff1bd7820e4147aae85fe25408e00e165b0b17cded5ce7e73af11f63"
+      }
+    },
+    "case_readiness": {
+      "DELL": {
+        "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_7.json",
+        "sha256": "67a65f8efbde97bef20e2cc2ff8439e30eb3fac4ddeb2680c369d67f1361b19b",
+        "result_digest": "bd6d652cc4b9551fc3d046724702d57b62beb56bfd76f6131c4513a4c805e40f",
+        "readiness_state": "blocked_by_evidence_admission",
+        "request_count": 8,
+        "accepted_reviewed_evidence_count": 7,
+        "candidate_count": 768
+      },
+      "MU": {
+        "ref": "configs/retrieval/fin_ia_0_1_3_s1_mu_current_product_readiness_result_v1_6.json",
+        "sha256": "19b0868508de8e260f55b4f9ec6e905fb8477dc9f0770fdfca7fcf5a407f478b",
+        "result_digest": "3478309794de5c8546ee77f16bbe1d50d60d1c46b63b2b047b3fae151731c2a8",
+        "readiness_state": "blocked_by_candidate_coverage",
+        "request_count": 8,
+        "accepted_reviewed_evidence_count": 7,
+        "candidate_count": 768
+      },
+      "NVDA": {
+        "ref": "configs/retrieval/fin_ia_0_1_3_s1_nvda_current_product_readiness_result_v1_6.json",
+        "sha256": "8b04313117b21bd2d98ef8a35cee5728f176c920a5353a6d0abc76872c034233",
+        "result_digest": "c75b913b4aaf93fc0bfb9e67710719e0d2369891092e51a7c9232bbc4888a17d",
+        "readiness_state": "blocked_by_candidate_coverage",
+        "request_count": 8,
+        "accepted_reviewed_evidence_count": 10,
+        "candidate_count": 768
+      }
+    }
+  },
+  "scope": {
+    "completed_steps": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "case_keys": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "uses_current_runtime_registry": true,
+    "uses_current_private_candidate_replay_for_s2_compilation": true,
+    "uses_current_reviewed_evidence_packs": true,
+    "natural_model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0
+  },
+  "case_results": [
+    {
+      "case_key": "DELL",
+      "current_pack": {
+        "reviewed_evidence_count": 55,
+        "residual_gap_count": 14,
+        "product_readiness_state": "blocked_by_evidence_admission"
+      },
+      "source_portfolio": {
+        "current_source_count": 55,
+        "source_class_counts": {
+          "issuer_regulator_or_government_primary": 15,
+          "licensed_structured_or_user_entitled": 32,
+          "named_counterparty_or_standards_primary": 8
+        },
+        "source_type_counts": {
+          "10-K": 8,
+          "10-Q": 7,
+          "6-K": 1,
+          "8-K": 7,
+          "EARNINGS_CALL_TRANSCRIPT": 6,
+          "PUBLIC_PDF": 6,
+          "PUBLIC_WEB": 20
+        },
+        "rights_axes": [
+          "discovery",
+          "internal_analysis",
+          "citation",
+          "redistribution"
+        ]
+      },
+      "quantitative_authority": {
+        "reported_fact_count": 38,
+        "deterministic_derived_metric_count": 27,
+        "research_estimate_count": 0,
+        "scenario_count": 0,
+        "typed_gap_count": 9,
+        "typed_conflict_count": 0
+      },
+      "actionable_research": {
+        "uncertainty_count": 21,
+        "research_action_count": 21,
+        "uncertainty_category_counts": {
+          "candidate_present_evidence_authority_pending": 4,
+          "declared_gap_free_source_exhaustion_not_proved": 12,
+          "partial_answer_numeric_or_material_support_open": 3,
+          "research_method_parameter_missing": 2
+        },
+        "action_type_counts": {
+          "adjudicate_candidate_to_evidence": 4,
+          "resolve_numeric_fact_or_bridge": 3,
+          "set_research_method_threshold": 2,
+          "targeted_source_supplement": 12
+        },
+        "owner_stage_counts": {
+          "S1": 16,
+          "S2": 3,
+          "S3": 2
+        },
+        "owning_plane_counts": {
+          "agent_work_mode_plane": 2,
+          "harness_control_plane": 4,
+          "infrastructure_and_tool_plane": 15
+        },
+        "public_information_gap_authorized_count": 0
+      },
+      "reflection_continuity": {
+        "feedback_receipt_count": 7,
+        "plan_delta_status": "accepted",
+        "active_plan_changed": true,
+        "graph_delta_disposition": "no_graph_mutation_without_reviewed_relationship_evidence",
+        "stop_decision": "continue",
+        "checkpoint_open_gap_count": 21,
+        "checkpoint_unresolved_feedback_count": 7,
+        "resume_status": "resume_replay_verified"
+      },
+      "token_budget_basis": {
+        "basis_id": "TOKENBASIS::E0574DA7990B873A931E4103",
+        "input_scale": {
+          "reviewed_evidence_item_count": 55,
+          "reviewed_evidence_visible_char_count": 31894,
+          "actionable_uncertainty_count": 21,
+          "research_action_count": 21,
+          "feedback_receipt_count": 7
+        },
+        "required_outputs": {
+          "coverage_reflections": 21,
+          "action_dispositions": 21,
+          "feedback_responses": 7,
+          "plan_delta": 1,
+          "stop_decision": 1
+        },
+        "capacity_basis": {
+          "minimum_visible_output_tokens": 7980,
+          "formula": "max(1800,700+180*uncertainties+140*actions+80*feedback)",
+          "headroom_must_be_recalibrated_from_actual_usage": true
+        },
+        "execution_authority": false
+      },
+      "evaluation": {
+        "status": "pass",
+        "gates": {
+          "uncertainty_has_action": true,
+          "identity_unique": true,
+          "no_false_public_gap": true,
+          "source_rights_separated": true,
+          "candidate_not_promoted": true,
+          "quantitative_kinds_separated": true,
+          "feedback_changes_plan": true,
+          "checkpoint_resume_preserves_open_state": true,
+          "stop_semantics_honest": true,
+          "token_budget_basis_complete": true,
+          "event_log_valid": true,
+          "natural_agent_not_falsely_claimed": true
+        },
+        "summary": {
+          "gate_count": 12,
+          "passed_gate_count": 12,
+          "failed_gate_count": 0,
+          "actionable_uncertainty_count": 21,
+          "research_action_count": 21,
+          "reported_fact_count": 38,
+          "derived_metric_count": 27
+        },
+        "evaluation_digest": "4cb47dcc326813747c9232816de20ef682a5388d1f246dfafc8187f59d6f1c77"
+      }
+    },
+    {
+      "case_key": "MU",
+      "current_pack": {
+        "reviewed_evidence_count": 14,
+        "residual_gap_count": 15,
+        "product_readiness_state": "blocked_by_candidate_coverage"
+      },
+      "source_portfolio": {
+        "current_source_count": 14,
+        "source_class_counts": {
+          "issuer_regulator_or_government_primary": 11,
+          "named_counterparty_or_standards_primary": 3
+        },
+        "source_type_counts": {
+          "10-Q": 13,
+          "8-K": 1
+        },
+        "rights_axes": [
+          "discovery",
+          "internal_analysis",
+          "citation",
+          "redistribution"
+        ]
+      },
+      "quantitative_authority": {
+        "reported_fact_count": 16,
+        "deterministic_derived_metric_count": 13,
+        "research_estimate_count": 0,
+        "scenario_count": 0,
+        "typed_gap_count": 10,
+        "typed_conflict_count": 1
+      },
+      "actionable_research": {
+        "uncertainty_count": 22,
+        "research_action_count": 22,
+        "uncertainty_category_counts": {
+          "candidate_present_evidence_authority_pending": 3,
+          "declared_gap_free_source_exhaustion_not_proved": 13,
+          "reachable_source_route_not_terminal": 4,
+          "research_method_parameter_missing": 2
+        },
+        "action_type_counts": {
+          "adjudicate_candidate_to_evidence": 3,
+          "set_research_method_threshold": 2,
+          "targeted_source_supplement": 17
+        },
+        "owner_stage_counts": {
+          "S1": 20,
+          "S3": 2
+        },
+        "owning_plane_counts": {
+          "agent_work_mode_plane": 2,
+          "harness_control_plane": 3,
+          "infrastructure_and_tool_plane": 17
+        },
+        "public_information_gap_authorized_count": 0
+      },
+      "reflection_continuity": {
+        "feedback_receipt_count": 7,
+        "plan_delta_status": "accepted",
+        "active_plan_changed": true,
+        "graph_delta_disposition": "no_graph_mutation_without_reviewed_relationship_evidence",
+        "stop_decision": "continue",
+        "checkpoint_open_gap_count": 22,
+        "checkpoint_unresolved_feedback_count": 7,
+        "resume_status": "resume_replay_verified"
+      },
+      "token_budget_basis": {
+        "basis_id": "TOKENBASIS::339063D92B4740AFEF8CB3DD",
+        "input_scale": {
+          "reviewed_evidence_item_count": 14,
+          "reviewed_evidence_visible_char_count": 3274,
+          "actionable_uncertainty_count": 22,
+          "research_action_count": 22,
+          "feedback_receipt_count": 7
+        },
+        "required_outputs": {
+          "coverage_reflections": 22,
+          "action_dispositions": 22,
+          "feedback_responses": 7,
+          "plan_delta": 1,
+          "stop_decision": 1
+        },
+        "capacity_basis": {
+          "minimum_visible_output_tokens": 8300,
+          "formula": "max(1800,700+180*uncertainties+140*actions+80*feedback)",
+          "headroom_must_be_recalibrated_from_actual_usage": true
+        },
+        "execution_authority": false
+      },
+      "evaluation": {
+        "status": "pass",
+        "gates": {
+          "uncertainty_has_action": true,
+          "identity_unique": true,
+          "no_false_public_gap": true,
+          "source_rights_separated": true,
+          "candidate_not_promoted": true,
+          "quantitative_kinds_separated": true,
+          "feedback_changes_plan": true,
+          "checkpoint_resume_preserves_open_state": true,
+          "stop_semantics_honest": true,
+          "token_budget_basis_complete": true,
+          "event_log_valid": true,
+          "natural_agent_not_falsely_claimed": true
+        },
+        "summary": {
+          "gate_count": 12,
+          "passed_gate_count": 12,
+          "failed_gate_count": 0,
+          "actionable_uncertainty_count": 22,
+          "research_action_count": 22,
+          "reported_fact_count": 16,
+          "derived_metric_count": 13
+        },
+        "evaluation_digest": "0c4cfd892d914f93882073126d80935126be495df61fda22b5c75c0b1f2ab06e"
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "current_pack": {
+        "reviewed_evidence_count": 25,
+        "residual_gap_count": 13,
+        "product_readiness_state": "blocked_by_candidate_coverage"
+      },
+      "source_portfolio": {
+        "current_source_count": 25,
+        "source_class_counts": {
+          "issuer_regulator_or_government_primary": 16,
+          "licensed_structured_or_user_entitled": 2,
+          "named_counterparty_or_standards_primary": 7
+        },
+        "source_type_counts": {
+          "10-Q": 22,
+          "8-K": 1,
+          "EARNINGS_CALL_TRANSCRIPT": 2
+        },
+        "rights_axes": [
+          "discovery",
+          "internal_analysis",
+          "citation",
+          "redistribution"
+        ]
+      },
+      "quantitative_authority": {
+        "reported_fact_count": 19,
+        "deterministic_derived_metric_count": 15,
+        "research_estimate_count": 0,
+        "scenario_count": 0,
+        "typed_gap_count": 10,
+        "typed_conflict_count": 0
+      },
+      "actionable_research": {
+        "uncertainty_count": 19,
+        "research_action_count": 19,
+        "uncertainty_category_counts": {
+          "candidate_present_evidence_authority_pending": 3,
+          "declared_gap_free_source_exhaustion_not_proved": 11,
+          "reachable_source_route_not_terminal": 3,
+          "research_method_parameter_missing": 2
+        },
+        "action_type_counts": {
+          "adjudicate_candidate_to_evidence": 3,
+          "set_research_method_threshold": 2,
+          "targeted_source_supplement": 14
+        },
+        "owner_stage_counts": {
+          "S1": 17,
+          "S3": 2
+        },
+        "owning_plane_counts": {
+          "agent_work_mode_plane": 2,
+          "harness_control_plane": 3,
+          "infrastructure_and_tool_plane": 14
+        },
+        "public_information_gap_authorized_count": 0
+      },
+      "reflection_continuity": {
+        "feedback_receipt_count": 6,
+        "plan_delta_status": "accepted",
+        "active_plan_changed": true,
+        "graph_delta_disposition": "no_graph_mutation_without_reviewed_relationship_evidence",
+        "stop_decision": "continue",
+        "checkpoint_open_gap_count": 19,
+        "checkpoint_unresolved_feedback_count": 6,
+        "resume_status": "resume_replay_verified"
+      },
+      "token_budget_basis": {
+        "basis_id": "TOKENBASIS::CCF1D40D316D11802A47A2F3",
+        "input_scale": {
+          "reviewed_evidence_item_count": 25,
+          "reviewed_evidence_visible_char_count": 6949,
+          "actionable_uncertainty_count": 19,
+          "research_action_count": 19,
+          "feedback_receipt_count": 6
+        },
+        "required_outputs": {
+          "coverage_reflections": 19,
+          "action_dispositions": 19,
+          "feedback_responses": 6,
+          "plan_delta": 1,
+          "stop_decision": 1
+        },
+        "capacity_basis": {
+          "minimum_visible_output_tokens": 7260,
+          "formula": "max(1800,700+180*uncertainties+140*actions+80*feedback)",
+          "headroom_must_be_recalibrated_from_actual_usage": true
+        },
+        "execution_authority": false
+      },
+      "evaluation": {
+        "status": "pass",
+        "gates": {
+          "uncertainty_has_action": true,
+          "identity_unique": true,
+          "no_false_public_gap": true,
+          "source_rights_separated": true,
+          "candidate_not_promoted": true,
+          "quantitative_kinds_separated": true,
+          "feedback_changes_plan": true,
+          "checkpoint_resume_preserves_open_state": true,
+          "stop_semantics_honest": true,
+          "token_budget_basis_complete": true,
+          "event_log_valid": true,
+          "natural_agent_not_falsely_claimed": true
+        },
+        "summary": {
+          "gate_count": 12,
+          "passed_gate_count": 12,
+          "failed_gate_count": 0,
+          "actionable_uncertainty_count": 19,
+          "research_action_count": 19,
+          "reported_fact_count": 19,
+          "derived_metric_count": 15
+        },
+        "evaluation_digest": "413b62adaf0b019d322376adb7a243a3c3b2437af2e23fcd3eb3b39f210e343c"
+      }
+    }
+  ],
+  "dell_dynamic_s3_consumption": {
+    "dynamic_research_input_digest": "7bc239132e6da4b71b2c8525e1f76e965604fffa551e72349fafa673a76b4126",
+    "control_context_status": "current_action_feedback_checkpoint_bound_to_dynamic_input",
+    "cell_consumption": [
+      {
+        "cell_id": "CELL::demand_quality",
+        "user_message_chars": 31684,
+        "visible_research_action_count": 3,
+        "visible_feedback_receipt_count": 2,
+        "stop_decision": "continue",
+        "checkpoint_resume_status": "resume_replay_verified",
+        "quantitative_kinds": []
+      },
+      {
+        "cell_id": "CELL::operating_performance",
+        "user_message_chars": 24097,
+        "visible_research_action_count": 1,
+        "visible_feedback_receipt_count": 1,
+        "stop_decision": "continue",
+        "checkpoint_resume_status": "resume_replay_verified",
+        "quantitative_kinds": [
+          "deterministic_derived_metric",
+          "reported_fact"
+        ]
+      },
+      {
+        "cell_id": "CELL::value_capture",
+        "user_message_chars": 35083,
+        "visible_research_action_count": 4,
+        "visible_feedback_receipt_count": 1,
+        "stop_decision": "continue",
+        "checkpoint_resume_status": "resume_replay_verified",
+        "quantitative_kinds": [
+          "deterministic_derived_metric",
+          "reported_fact"
+        ]
+      },
+      {
+        "cell_id": "CELL::cash_conversion",
+        "user_message_chars": 33269,
+        "visible_research_action_count": 3,
+        "visible_feedback_receipt_count": 2,
+        "stop_decision": "continue",
+        "checkpoint_resume_status": "resume_replay_verified",
+        "quantitative_kinds": [
+          "deterministic_derived_metric",
+          "reported_fact"
+        ]
+      },
+      {
+        "cell_id": "CELL::counterevidence",
+        "user_message_chars": 36720,
+        "visible_research_action_count": 6,
+        "visible_feedback_receipt_count": 1,
+        "stop_decision": "continue",
+        "checkpoint_resume_status": "resume_replay_verified",
+        "quantitative_kinds": [
+          "reported_fact"
+        ]
+      }
+    ],
+    "all_five_cells_receive_current_typed_control_context": true
+  },
+  "quality_and_authority": {
+    "all_three_case_evaluations_pass": true,
+    "candidate_auto_promotion": 0,
+    "public_information_gap_authorized_count": 0,
+    "natural_agent_reflection_quality_proven": false,
+    "S1_qualified_claimed": false,
+    "S3_accepted_claimed": false,
+    "release_claimed": false,
+    "next_scope": "step_8_bounded_natural_multi_agent_vertical_slice_after_separate_authority"
+  },
+  "result_digest": "812b1a1016a4df002eb35bc1d257f0a467003a6edfaf4e745509db1984db3d12"
+}

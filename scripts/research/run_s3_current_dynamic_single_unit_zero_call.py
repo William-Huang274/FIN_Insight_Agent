@@ -254,6 +254,15 @@ def run(
     public_output: Path,
     policy_ref: Path = POLICY_REF,
 ) -> dict[str, Any]:
+    if private_output.exists() or public_output.exists():
+        raise FileExistsError(
+            "dynamic_single_unit_zero_call_output_exists:"
+            + ",".join(
+                str(path)
+                for path in (private_output, public_output)
+                if path.exists()
+            )
+        )
     recorded_at = _now()
     resolved_policy_ref = policy_ref if policy_ref.is_absolute() else ROOT / policy_ref
     policy = load_dynamic_single_unit_policy(_read_json(resolved_policy_ref))
@@ -761,23 +770,26 @@ def run(
         executed_request_ids=["REQ::DELL::PVM_BRIDGE::V1"],
         round_index=1,
     )
-    try:
-        compile_reflection_artifacts(
-            policy=policy,
-            reflection=incomplete_reflection,
-            session_id=session_id,
-            agent_id="AGENT::VALUE_CAPTURE",
-            base_plan=base_plan,
-            base_graph_digest=base_graph_digest,
-            executed_request_ids=["REQ::DELL::PVM_BRIDGE::V1"],
-            open_gap_refs=["GAP::TEST"],
-            model_calls_used=0,
-        )
-    except DynamicSingleUnitLoopError as exc:
-        mutation_checks["premature_stop_sufficient_fails_closed"] = (
-            exc.code
-            == "dynamic_single_unit_stop_sufficient_coverage_incomplete"
-        )
+    premature_artifacts = compile_reflection_artifacts(
+        policy=policy,
+        reflection=incomplete_reflection,
+        session_id=session_id,
+        agent_id="AGENT::VALUE_CAPTURE",
+        base_plan=base_plan,
+        base_graph_digest=base_graph_digest,
+        executed_request_ids=["REQ::DELL::PVM_BRIDGE::V1"],
+        open_gap_refs=["GAP::TEST"],
+        model_calls_used=0,
+    )
+    premature_receipt = premature_artifacts["stop_compilation_receipt"]
+    mutation_checks["premature_stop_compiles_to_no_progress"] = (
+        incomplete_reflection["proposed_stop_decision"] == "stop_sufficient"
+        and premature_artifacts["stop_decision"]["decision"]
+        == "stop_no_progress"
+        and premature_receipt["proposed_stop_decision"] == "stop_sufficient"
+        and premature_receipt["effective_stop_decision"] == "stop_no_progress"
+        and premature_receipt["model_research_judgment_changed"] is False
+    )
     try:
         resume_agent_session(
             session=session,
@@ -906,8 +918,75 @@ def run(
     }
     if not all(checks.values()):
         failed = [key for key, passed in checks.items() if not passed]
+        failed_mutations = [
+            key for key, passed in mutation_checks.items() if not passed
+        ]
+        failure_private_body = {
+            "schema_version": "fin_ia_s3_dynamic_single_unit_zero_call_failure_full_v1_0",
+            "status": "terminal_failed_current_dynamic_single_unit_zero_call_gate",
+            "attempt_id": attempt_id,
+            "recorded_at": recorded_at,
+            "policy_ref": _relative(resolved_policy_ref),
+            "policy_digest": canonical_digest(policy),
+            "pack_payload_digest": evidence_pack["pack_payload_digest"],
+            "task_readiness_result_digest": task_readiness["result_digest"],
+            "product_value_bridge_result_digest": (
+                product_value_bridge.get("result_digest")
+                if product_value_bridge is not None
+                else None
+            ),
+            "failed_checks": failed,
+            "failed_mutation_checks": failed_mutations,
+            "checks": checks,
+            "mutation_checks": mutation_checks,
+            "execution_summary": {
+                "retrieval_round_count": len(round_responses),
+                "executed_request_count": len(executed_ids),
+                "accepted_reviewed_evidence_count": len(accepted_refs),
+                "numeric_fact_count": len(numeric_refs),
+                "open_gap_count": len(open_gap_refs),
+            },
+            "authority": {
+                "network_calls": 0,
+                "provider_calls": 0,
+                "generation_model_calls": 0,
+                "failed_attempt_relabelled": False,
+                "S1_pass": False,
+                "S2_pass": False,
+                "S3_pass": False,
+                "release": False,
+            },
+        }
+        failure_private = {
+            **failure_private_body,
+            "result_digest": canonical_digest(failure_private_body),
+        }
+        _write_json(private_output, failure_private, exclusive=True)
+        failure_public_body = {
+            "schema_version": "fin_ia_s3_dynamic_single_unit_zero_call_failure_result_v1_0",
+            "status": failure_private["status"],
+            "attempt_id": attempt_id,
+            "recorded_at": recorded_at,
+            "failed_checks": failed,
+            "failed_mutation_checks": failed_mutations,
+            "private_result_ref": _relative(private_output),
+            "private_result_sha256": _sha256(private_output),
+            "authority": failure_private["authority"],
+            "known_boundary": (
+                "This immutable attempt failed its local control gate and grants no "
+                "S1, S2, S3, product, publication or release authority."
+            ),
+        }
+        failure_public = {
+            **failure_public_body,
+            "result_digest": canonical_digest(failure_public_body),
+        }
+        _write_json(public_output, failure_public, exclusive=True)
         raise DynamicSingleUnitLoopError(
-            "dynamic_single_unit_zero_call_checks_failed:" + ",".join(failed)
+            "dynamic_single_unit_zero_call_checks_failed:"
+            + ",".join(failed)
+            + ":mutations="
+            + ",".join(failed_mutations)
         )
 
     private_body = {
@@ -1049,7 +1128,7 @@ def run(
         **public_body,
         "result_digest": canonical_digest(public_body),
     }
-    _write_json(public_output, public_result, exclusive=False)
+    _write_json(public_output, public_result, exclusive=True)
     return public_result
 
 

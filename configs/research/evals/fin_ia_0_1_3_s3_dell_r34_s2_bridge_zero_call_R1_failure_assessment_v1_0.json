@@ -1,0 +1,52 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_single_unit_zero_call_failure_assessment_v1_0",
+  "status": "terminal_failed_current_dynamic_single_unit_zero_call_mutation_gate",
+  "recorded_at": "2026-08-25T00:41:21+08:00",
+  "attempt_id": "dell-r34-s2-bridge-zero-call-r1-20260824t1636z",
+  "implementation_commit": "65a092124de19db951aa7962bf4498cf3f255329",
+  "policy_ref": "configs/research/fin_ia_0_1_3_s3_dell_dynamic_single_unit_loop_policy_v1_1.json",
+  "intended_outputs": {
+    "private_result_ref": "data/workbench_private/fin_0_1_3_s3_dynamic_single_unit_zero_call/dell-r34-s2-bridge-zero-call-r1-20260824t1636z/full_result.json",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_r34_s2_bridge_zero_call_result_v1_0.json",
+    "private_result_created": false,
+    "public_result_created": false
+  },
+  "terminal_failure": {
+    "exception_type": "DynamicSingleUnitLoopError",
+    "failure_code": "dynamic_single_unit_zero_call_checks_failed:all_mutations_fail_closed_or_stable",
+    "failure_stage": "post_runtime_mutation_gate_before_result_persistence",
+    "failed_check": "all_mutations_fail_closed_or_stable"
+  },
+  "root_cause_assessment": {
+    "owning_stage": "S3_harness_control_plane",
+    "root_cause": "The zero-call runner still expected a premature stop_sufficient proposal to raise dynamic_single_unit_stop_sufficient_coverage_incomplete. The current control compiler intentionally preserves the model proposal and compiles the effective decision to stop_no_progress when coverage, feedback or gaps remain. The stale exception-based mutation assertion therefore returned false even though the runtime failed safe.",
+    "product_value_bridge_failure": false,
+    "retrieval_failure": false,
+    "cuda_or_vram_failure": false,
+    "provider_or_generation_failure": false,
+    "material_product_finding": false,
+    "failed_run_relabelled": false
+  },
+  "observed_execution": {
+    "current_runtime_retrieval_started": true,
+    "local_embedding_and_reranker_execution_started": true,
+    "exact_local_learned_call_counts": "not_persisted_before_terminal_mutation_check",
+    "network_calls": 0,
+    "provider_calls": 0,
+    "generation_model_calls": 0,
+    "paid_calls": 0
+  },
+  "successor_gate": {
+    "R1_immutable": true,
+    "new_attempt_id_required": true,
+    "repair_scope": [
+      "replace stale exception expectation with an explicit proposed-stop to effective-stop control-compilation assertion",
+      "apply the same root-cause repair to the multi-agent zero-call mutation gate",
+      "persist future terminal failures before raising",
+      "rerun only after tests, clean commit and push"
+    ],
+    "R2_authorized_after_repair": true
+  },
+  "known_boundary": "R1 proves only that the current runner reached its post-runtime mutation gate and failed closed on a stale test expectation. It is not a successful DELL canary and grants no S1, S2, S3, product, publication or release authority.",
+  "failure_assessment_digest": "d8882af99b7f9a6d2507cc34aa5798c511d44b6ddbd62255c7bc5288fd941191"
+}

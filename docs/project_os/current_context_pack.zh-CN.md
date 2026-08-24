@@ -1700,3 +1700,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - S1 v1.3 仍是 8,585,216,000-byte GPU resource block、artifacts absent、approved revision／acquisition receipt 为空、calls=`0/0/0`；没有 4B 运行、质量或 S1 qualification。S2 v1.5 的 11/11 executor checks、MU 3 facts／6 as-of／728 population 保持，但 ASP／units／PVM／利润桥与完整 S2 仍未通过。
 - Reviewer 在精确授权下只读复算 R16/R17 两个 private result：SHA 分别为 `d099e26e...3896` 与 `433b2c48...c0e8`。R17 只改两个允许的 model-text path；references、4 gaps、topology 与 737 个数字 token不变，四项 reversal 条件为严格 AND，故新增 append-only `fresh_independent_post_writer_review_pass=true` 收据。
 - 旧 R17 public candidate 的 pending／false acceptance flags 保持 immutable。Reviewer 不是 qualified human；S3、产品验收、publication 和 release继续为 false。详见 `docs/worklog/fin_0_1_3_s3/169_final_clean_successor_audit_and_R17_fresh_independent_pass.md`。
+
+### 2026-08-25 R38 已审阅公共源同步、产品桥边界与最终工程门
+
+- R35–R37 把 DELL R4 的六份 reviewed `PUBLIC_PDF` 真正接入 source/object/index、Evidence receipts 和动态 workpaper；中间 R3–R7 与一次 material-policy promotion 失败均按新 attempt 保留，R8 成功。R37 canary digest=`20a180aa...`，三案回执 digest=`3e6e0d05...`。
+- R37 第一次全仓门暴露两个问题：28-lane 新合同仍用 25-lane 旧断言；更重要的是 R4 新晋升的 NVIDIA `PUBLIC_WEB` 在 current corpus 中缺四次 reviewed-label occurrence。失败回执 digest=`ad922332...`，没有削弱 zero-missing 断言。
+- R38 只追加该网页和精确 reviewed slice：source `1886→1888`、objects `34189→34198`、CUDA FP16 embedding append `9`、CPU fallback／network／model calls 均为 `0`；snapshot missing reviewed labels `4→0`。P1 的不存在 import 在 current 输出前失败并保留，P2 使用 fresh identity 成功。receipt digest=`3c3ff77a...`，snapshot digest=`2e52d235...`。
+- R38 DELL canary R9 执行 `12/12` requests、两轮 current runtime、15 Evidence、17 NumericFacts、9 gaps，public digest=`f05731a7...`。三案 R3 回执 digest=`812b1a10...`：DELL `55/14`、MU `14/15`、NVDA `25/13`，每案 12/12 control gates，但 readiness 仍分别 blocked by evidence admission／candidate coverage，public-gap authority 全为 `0`。
+- 4-bit Qwen 4B 已在本机 8GB full-offload；未晋升是 NVDA 与 reranker 质量回退，不是显存不足。S2 产品桥已到动态 Agent，且 Decimal 精度只在局部 context 使用；公开证据仍不能计算 Dell 公司 ASP／units／mix、PVM 或 AI 产品利润。
+- fresh 全仓门为 `1282 passed, 2 skipped, 2 warnings`；compileall、pyflakes、active baseline `213/8/5/28/0`、14 changed JSON＋8 Project OS JSONL、8,041-file secret scan／0 与 diff check 均通过。R17 fresh independent pass 保持，不开 R18；qualified human、S1／S2／S3、产品、publication 和 release 仍为 false。下一门是 clean push 后全新只读 subagent 审计本轮 immutable commit。

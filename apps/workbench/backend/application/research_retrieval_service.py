@@ -18,6 +18,10 @@ from retrieval.hybrid_candidate_runtime import (
     HybridCandidateRuntimeError,
     LazyLocalQwenHybridCandidateRuntime,
 )
+from retrieval.financial_intent_v3 import (
+    FinancialIntentError,
+    project_grouped_recall_ontology_to_current,
+)
 from retrieval.current_runtime_binding import (
     CurrentS1RuntimeBindingError,
     project_request_route_execution_truth,
@@ -274,6 +278,20 @@ class ResearchRetrievalService:
             if financial_intent_ontology is not None
             else None
         )
+        try:
+            self._material_intent_ontology = (
+                project_grouped_recall_ontology_to_current(
+                    self._financial_intent_ontology
+                )
+                if self._financial_intent_ontology is not None
+                else None
+            )
+        except FinancialIntentError as exc:
+            raise ResearchRetrievalServiceError(
+                "research_material_intent_ontology_invalid",
+                503,
+                typed_reason=str(exc),
+            ) from exc
         self._retrieval_need_policy = (
             deepcopy(dict(retrieval_need_policy))
             if retrieval_need_policy is not None
@@ -708,7 +726,7 @@ class ResearchRetrievalService:
                         compile_material_requirement_plan_from_runtime_input(
                             runtime_input=runtime_input,
                             policy=self._material_runtime_policy,
-                            ontology=self._financial_intent_ontology,
+                            ontology=self._material_intent_ontology,
                         )
                     )
                     material_runtime_inputs[request.request_id] = runtime_input
@@ -738,7 +756,7 @@ class ResearchRetrievalService:
                         required_request_ids=required_scope_ids,
                         policy=self._material_scope_policy,
                         material_runtime_policy=self._material_runtime_policy,
-                        intent_ontology=self._financial_intent_ontology,
+                        intent_ontology=self._material_intent_ontology,
                     )
                 except ResearchMaterialScopeError as exc:
                     raise ResearchRetrievalServiceError(str(exc), 422) from exc
@@ -1326,7 +1344,7 @@ class ResearchRetrievalService:
                     _, receipt = compile_material_requirement_plan_from_runtime_input(
                         runtime_input=runtime_input,
                         policy=self._material_runtime_policy,
-                        ontology=self._financial_intent_ontology,
+                        ontology=self._material_intent_ontology,
                     )
                     material_runtime_inputs[request.request_id] = runtime_input
                     material_receipts.append(receipt)

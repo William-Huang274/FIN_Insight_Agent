@@ -27,6 +27,7 @@ def balanced_bm25_rank(
     subqueries: Sequence[TypedLexicalSubquery],
     *,
     limit: int,
+    positive_scores_only: bool = False,
 ) -> BalancedLexicalRecall:
     """Give every typed business concept a bounded first-stage opportunity.
 
@@ -69,6 +70,7 @@ def balanced_bm25_rank(
                 score=float(score),
             )
             for object_index, score in zip(eligible_indices, scores)
+            if not positive_scores_only or float(score) > 0.0
         ]
         candidates.sort(key=lambda item: (-item.score, item.compiled_object_id))
         candidates = candidates[:limit]
@@ -80,6 +82,7 @@ def balanced_bm25_rank(
                 "concept_id": row.concept_id,
                 "lexical_query": row.lexical_query,
                 "candidate_count": len(candidates),
+                "positive_scores_only": positive_scores_only,
             }
         )
 
@@ -108,6 +111,7 @@ def balanced_bm25_rank(
             "eligible_object_count": int(eligible_indices.size),
             "candidate_count": len(candidates),
             "candidate_limit": limit,
+            "positive_scores_only": positive_scores_only,
             "fusion": "minimum_rank_then_cross_query_rank_sum",
             "candidate_not_evidence": True,
             "numeric_authority": False,

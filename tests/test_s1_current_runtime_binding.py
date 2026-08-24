@@ -26,13 +26,13 @@ POLICY = (
     ROOT
     / "configs"
     / "retrieval"
-    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_7.json"
+    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_8.json"
 )
 RECEIPT = (
     ROOT
     / "configs"
     / "runtime"
-    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_8.json"
+    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_9.json"
 )
 
 
@@ -109,12 +109,12 @@ def test_request_route_truth_distinguishes_unavailable_route_from_source_gap() -
     assert [row["execution_state"] for row in routes] == [
         "scheduled_in_current_hybrid_runtime",
         "scheduled_in_current_hybrid_runtime",
-        "not_executed_route_unavailable",
+        "scheduled_in_current_hybrid_runtime",
     ]
     assert [row["required_for_current_runtime"] for row in routes] == [
         True,
         True,
-        False,
+        True,
     ]
     assert scheduled["required_candidate_routes_all_executed"] is False
     assert all(row["public_information_gap_eligible"] is False for row in routes)
@@ -130,8 +130,28 @@ def test_request_route_truth_distinguishes_unavailable_route_from_source_gap() -
     ] == "executed"
     assert executed["narrative_route_requests"][0]["routes"][2][
         "execution_state"
-    ] == "not_executed_route_unavailable"
-    assert executed["required_candidate_routes_all_executed"] is True
+    ] == "not_executed_handler_missing"
+    assert executed["required_candidate_routes_all_executed"] is False
+
+    explicit = project_request_route_execution_truth(
+        execution_plan=execution_plan,
+        binding_receipt=receipt,
+        hybrid_result={
+            "result_digest": "b" * 64,
+            "route_execution": {
+                "executed_candidate_routes": [
+                    "bm25_lexical",
+                    "dense_embedding",
+                    "typed_relationship_graph",
+                ]
+            },
+        },
+    )
+    assert explicit["required_candidate_routes_all_executed"] is True
+    assert [
+        row["execution_state"]
+        for row in explicit["narrative_route_requests"][0]["routes"]
+    ] == ["executed", "executed", "executed"]
 
 
 def test_current_runtime_receipt_fails_closed_on_digest_mutation() -> None:
@@ -160,7 +180,7 @@ def test_current_runtime_receipt_fails_closed_if_product_readiness_is_removed() 
 
 def test_current_runtime_receipt_fails_closed_on_policy_semantic_drift() -> None:
     policy = deepcopy(_read(POLICY))
-    policy["runtime_route_capabilities"][-1]["capability_state"] = "available"
+    policy["runtime_route_capabilities"][-1]["capability_state"] = "not_configured"
 
     with pytest.raises(
         CurrentS1RuntimeBindingError,

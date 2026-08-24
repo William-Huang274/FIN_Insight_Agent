@@ -1,0 +1,329 @@
+{
+  "schema_version": "fin_ia_s1_dell_direct_source_capture_plan_v1_0",
+  "plan_id": "FIN-0.1.3-S1-DELL-DIRECT-SOURCE-CAPTURE-R1",
+  "status": "approved_exact_once_direct_original_capture_plan",
+  "recorded_at": "2026-08-24",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "program_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_2.json",
+  "source_use_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_source_strength_and_claim_use_policy_v1_0.json",
+  "purpose": "Capture five reviewed direct originals for the three DELL not-ready requests without another broad provider search, then preserve capture-bound candidate proposals for exhaustive CandidateDecision and Evidence Gate.",
+  "execution_budget": {
+    "provider_call_ceiling": 0,
+    "original_fetch_ceiling": 5,
+    "original_fetch_timeout_seconds": 60,
+    "original_fetch_byte_ceiling": 25165824,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0
+  },
+  "token_budget_basis": {
+    "model_tokens": 0,
+    "node_purpose": "Bind reviewed Dell, NVIDIA, government-procurement and public-analyst locators to immutable originals for price/configuration, bounded unit proxies and the current bilateral relationship request.",
+    "input_scale_basis": "Four request-bound query units and five unique reviewed HTTPS originals; no provider discovery, generation or learned-ranking call.",
+    "required_outputs": [
+      "digest-bound direct-locator shortlist",
+      "capture-before-parse request and response objects or typed transport failures",
+      "original-source publication-date receipts",
+      "source objects and candidate-only proposition proposals",
+      "zero-provider and zero-model execution receipt"
+    ],
+    "schema_burden": "Each source must retain query unit, proposition, tier, speaker, source class, relationship direction, publication date, immutable response capture and candidate-only authority.",
+    "materiality_and_quality_risk": "Bundled procurement or quote values could be mislabeled as Dell ASP, deployment quantities as company shipments, and product collaboration as private supply allocation unless the source and claim boundaries remain explicit.",
+    "comparable_run_evidence": "The R1-R3 broad ladders produced many weak locators and left the same three requests not-ready; current-runtime diagnostics also proved that ranking cannot recover an uncaptured source. A bounded direct-original lane is therefore the earliest useful next action.",
+    "reasoning_profile": "Deterministic AI-free capture, parse and candidate compilation; no model, provider or generation calls.",
+    "stop_and_truncation_behavior": "Fetch each unique locator once with no retry; preserve every failure; stop after five routes; do not infer company ASP, shipments, share, allocation or a public-information gap from missing or rejected material.",
+    "cost_and_latency_are_secondary_constraints": true
+  },
+  "query_units": [
+    {
+      "query_unit_id": "DELL-DIRECT-PRICE-QUOTE",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge XE9680 public quote total price hardware configuration services boundary 2025",
+      "expected_output_ids": [
+        "observable_bundled_price_range",
+        "saleable_configuration_example",
+        "not_company_asp_boundary"
+      ],
+      "relationship_directions": [
+        "public_quote_to_research_subject_proxy"
+      ],
+      "speaker_or_source_targets": [
+        "Principled Technologies",
+        "Dell-supplied quote"
+      ]
+    },
+    {
+      "query_unit_id": "DELL-DIRECT-VOLUME-PROCUREMENT",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge XE9680 public procurement quantity systems contract value configuration 2025",
+      "expected_output_ids": [
+        "customer_deployment_units",
+        "bounded_transaction_quantity_proxy",
+        "not_company_shipments_boundary"
+      ],
+      "relationship_directions": [
+        "public_procurement_to_research_subject_proxy"
+      ],
+      "speaker_or_source_targets": [
+        "Mississippi Institutions of Higher Learning",
+        "Jackson State University"
+      ]
+    },
+    {
+      "query_unit_id": "DELL-DIRECT-VOLUME-INDUSTRY",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "tier_id": "industry_association_market_tracking",
+      "query": "global server shipment by brand Dell market share units 2025 2026 TrendForce public analyst",
+      "expected_output_ids": [
+        "industry_server_volume",
+        "dell_brand_share_proxy",
+        "definition_and_paywall_boundary"
+      ],
+      "relationship_directions": [
+        "public_analyst_industry_tracker_to_research_subject_proxy"
+      ],
+      "speaker_or_source_targets": [
+        "CMB International",
+        "TrendForce"
+      ]
+    },
+    {
+      "query_unit_id": "DELL-DIRECT-CURRENT-RELATIONSHIP",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "tier_id": "official_subject_regulator_customer_supplier",
+      "query": "Dell NVIDIA official current collaboration PowerEdge Blackwell shipping availability delivery allocation boundary 2025",
+      "expected_output_ids": [
+        "dell_names_nvidia_supplier_relationship",
+        "nvidia_names_dell_platform_delivery",
+        "current_product_availability",
+        "private_allocation_boundary"
+      ],
+      "relationship_directions": [
+        "issuer_to_upstream_supplier_current_relationship",
+        "upstream_supplier_to_research_subject_current_relationship"
+      ],
+      "speaker_or_source_targets": [
+        "Dell Technologies",
+        "NVIDIA"
+      ]
+    }
+  ],
+  "source_registry": [
+    {
+      "source_family_id": "principledtechnologies.com",
+      "host": "principledtechnologies.com",
+      "safe_host_aliases": [
+        "www.principledtechnologies.com"
+      ],
+      "speaker_entity": "Principled Technologies, Inc.",
+      "speaker_ticker": null,
+      "source_class": "trusted_media_industry_association_or_public_analyst_context",
+      "source_role": "commissioned_technical_study_public_quote_context",
+      "relationship_directions": [
+        "public_quote_to_research_subject_proxy"
+      ],
+      "allowed_ladder_tiers": [
+        "product_procurement_channel_deployment"
+      ]
+    },
+    {
+      "source_family_id": "mississippi.edu",
+      "host": "mississippi.edu",
+      "safe_host_aliases": [
+        "www.mississippi.edu"
+      ],
+      "speaker_entity": "Mississippi Institutions of Higher Learning",
+      "speaker_ticker": null,
+      "source_class": "issuer_regulator_or_government_primary",
+      "source_role": "public_procurement_primary",
+      "relationship_directions": [
+        "public_procurement_to_research_subject_proxy"
+      ],
+      "allowed_ladder_tiers": [
+        "product_procurement_channel_deployment"
+      ]
+    },
+    {
+      "source_family_id": "cmbi.com.hk",
+      "host": "cmbi.com.hk",
+      "safe_host_aliases": [
+        "www.cmbi.com.hk"
+      ],
+      "speaker_entity": "CMB International Capital Corporation Limited",
+      "speaker_ticker": null,
+      "source_class": "trusted_media_industry_association_or_public_analyst_context",
+      "source_role": "public_analyst_industry_context",
+      "relationship_directions": [
+        "public_analyst_industry_tracker_to_research_subject_proxy"
+      ],
+      "allowed_ladder_tiers": [
+        "industry_association_market_tracking"
+      ]
+    },
+    {
+      "source_family_id": "dell.com",
+      "host": "dell.com",
+      "safe_host_aliases": [
+        "www.dell.com"
+      ],
+      "speaker_entity": "Dell Technologies Inc.",
+      "speaker_ticker": "DELL",
+      "source_class": "issuer_regulator_or_government_primary",
+      "source_role": "issuer_product_and_newsroom_primary",
+      "relationship_directions": [
+        "issuer_to_upstream_supplier_current_relationship"
+      ],
+      "allowed_ladder_tiers": [
+        "official_subject_regulator_customer_supplier"
+      ]
+    },
+    {
+      "source_family_id": "nvidia.com",
+      "host": "nvidia.com",
+      "safe_host_aliases": [
+        "blogs.nvidia.com",
+        "www.nvidia.com"
+      ],
+      "speaker_entity": "NVIDIA Corporation",
+      "speaker_ticker": "NVDA",
+      "source_class": "named_counterparty_or_standards_primary",
+      "source_role": "upstream_gpu_primary",
+      "relationship_directions": [
+        "upstream_supplier_to_research_subject_current_relationship"
+      ],
+      "allowed_ladder_tiers": [
+        "official_subject_regulator_customer_supplier"
+      ]
+    }
+  ],
+  "direct_sources": [
+    {
+      "direct_source_id": "DELL-DIRECT-PT-QUOTE-2025",
+      "query_unit_id": "DELL-DIRECT-PRICE-QUOTE",
+      "source_family_id": "principledtechnologies.com",
+      "canonical_url": "https://www.principledtechnologies.com/dell/Dell-AI-Factory-vs-AWS-Azure-TCO-science-0725.pdf",
+      "title": "Dell AI Factory with NVIDIA on-premises solution versus AWS and Azure TCO science",
+      "provider_date_telemetry": null
+    },
+    {
+      "direct_source_id": "DELL-DIRECT-MS-IHL-BOARD-BOOK-2025",
+      "query_unit_id": "DELL-DIRECT-VOLUME-PROCUREMENT",
+      "source_family_id": "mississippi.edu",
+      "canonical_url": "https://www.mississippi.edu/sites/default/files/ihl/files/February%202025%20Board%20Book.pdf",
+      "title": "Mississippi Institutions of Higher Learning February 2025 Board Book",
+      "provider_date_telemetry": "2025-02-20"
+    },
+    {
+      "direct_source_id": "DELL-DIRECT-CMBI-SERVER-SHARE-2026",
+      "query_unit_id": "DELL-DIRECT-VOLUME-INDUSTRY",
+      "source_family_id": "cmbi.com.hk",
+      "canonical_url": "https://www.cmbi.com.hk/upload/202601/20260102116952.pdf",
+      "title": "CMB International 2026 technology outlook public research PDF",
+      "provider_date_telemetry": "2026-01-02"
+    },
+    {
+      "direct_source_id": "DELL-DIRECT-DELL-NVIDIA-NEWSROOM-2025",
+      "query_unit_id": "DELL-DIRECT-CURRENT-RELATIONSHIP",
+      "source_family_id": "dell.com",
+      "canonical_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2025~03~corp.htm",
+      "title": "Dell Technologies and NVIDIA collaborate on AI infrastructure",
+      "provider_date_telemetry": "2025-03-18"
+    },
+    {
+      "direct_source_id": "DELL-DIRECT-NVIDIA-DELL-BLACKWELL-2025",
+      "query_unit_id": "DELL-DIRECT-CURRENT-RELATIONSHIP",
+      "source_family_id": "nvidia.com",
+      "canonical_url": "https://blogs.nvidia.com/blog/dell-technologies-ai-factories-blackwell/",
+      "title": "Dell Technologies expands AI factories with NVIDIA Blackwell",
+      "provider_date_telemetry": "2025-05-27"
+    }
+  ],
+  "candidate_selection_policy": {
+    "DELL-PROP-PRICE-CONFIGURATION": {
+      "scope_anchor_terms": [
+        "dell",
+        "poweredge",
+        "xe9680",
+        "ai",
+        "server",
+        "gpu"
+      ],
+      "material_signal_terms": [
+        "price",
+        "quote",
+        "cost",
+        "configuration",
+        "memory",
+        "networking",
+        "storage",
+        "support",
+        "deploy"
+      ],
+      "minimum_scope_anchor_hits": 1,
+      "minimum_material_signal_hits": 2,
+      "context_blocks_before": 1,
+      "context_blocks_after": 1
+    },
+    "DELL-PROP-UNIT-VOLUME": {
+      "scope_anchor_terms": [
+        "dell",
+        "poweredge",
+        "xe9680",
+        "server",
+        "system"
+      ],
+      "material_signal_terms": [
+        "unit",
+        "units",
+        "quantity",
+        "shipment",
+        "shipments",
+        "share",
+        "deployment",
+        "systems",
+        "brand"
+      ],
+      "minimum_scope_anchor_hits": 1,
+      "minimum_material_signal_hits": 1,
+      "context_blocks_before": 1,
+      "context_blocks_after": 1
+    },
+    "DELL-PROP-SUPPLY-CHAIN": {
+      "scope_anchor_terms": [
+        "dell",
+        "nvidia",
+        "blackwell",
+        "poweredge",
+        "server",
+        "gpu"
+      ],
+      "material_signal_terms": [
+        "collaboration",
+        "partner",
+        "shipping",
+        "availability",
+        "available",
+        "delivery",
+        "deployment",
+        "supply"
+      ],
+      "minimum_scope_anchor_hits": 2,
+      "minimum_material_signal_hits": 1,
+      "context_blocks_before": 1,
+      "context_blocks_after": 1
+    }
+  },
+  "authority": {
+    "direct_locator_is_not_evidence": true,
+    "provider_result_is_locator_only": true,
+    "provider_calls_authorized": false,
+    "original_capture_required": true,
+    "candidate_is_not_evidence": true,
+    "candidate_decision_and_evidence_gate_required": true,
+    "public_information_gap_authorized": false,
+    "S1_qualification_authorized": false
+  },
+  "plan_digest": "f6b78b9d8161cce914f9906fa0d2712b6dd2dbb28ade8e592ff3ccd8f56e6b0a"
+}

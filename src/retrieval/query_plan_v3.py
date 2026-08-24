@@ -4,7 +4,10 @@ from dataclasses import asdict, dataclass, replace
 from typing import Any, Iterable, Mapping
 
 from .contracts import EvidenceRequest, FinancialResearchKernel
-from .financial_intent import concept_aliases, validate_financial_intent_ontology
+from .financial_intent_v3 import (
+    concept_aliases,
+    validate_financial_intent_ontology,
+)
 from .query_plan import (
     OwnerQuery,
     QueryFacetPlan,
@@ -17,6 +20,9 @@ from .text import tokenize
 
 
 QUERY_PLAN_V3_SCHEMA_VERSION = "fin_ia_typed_query_facet_plan_v1_2"
+QUERY_PLAN_V3_GROUPED_RECALL_SCHEMA_VERSION = (
+    "fin_ia_typed_query_facet_plan_v1_3"
+)
 
 
 def _unique(values: Iterable[str]) -> tuple[str, ...]:
@@ -54,7 +60,12 @@ def _concept_surface(
     *,
     family: str,
     ontology: Mapping[str, Any],
-) -> tuple[str, tuple[str, ...], tuple[str, ...]]:
+) -> tuple[
+    str,
+    tuple[str, ...],
+    tuple[str, ...],
+    tuple[tuple[str, tuple[str, ...]], ...],
+]:
     concepts = ontology.get(family) or {}
     if intent in concepts:
         concept_id = str(intent)
@@ -72,7 +83,17 @@ def _concept_surface(
         if family == "product_concepts"
         else ()
     )
-    return concept_id, aliases, supporting
+    recall_groups = (
+        tuple(
+            (str(group_id), _unique(terms or ()))
+            for group_id, terms in (
+                raw.get("recall_surface_groups") or {}
+            ).items()
+        )
+        if family == "product_concepts"
+        else ()
+    )
+    return concept_id, aliases, supporting, recall_groups
 
 
 def _subquery(
@@ -109,6 +130,7 @@ def compile_query_facet_plan_for_request(
     request: EvidenceRequest,
     *,
     ontology: Mapping[str, Any] | None = None,
+    grouped_surface_recall_enabled: bool = False,
 ) -> QueryFacetPlan:
     """Compile a request into balanced, typed lexical recall surfaces.
 
@@ -126,33 +148,43 @@ def compile_query_facet_plan_for_request(
         validate_financial_intent_ontology(ontology)
 
     metric_surfaces: list[str] = []
-    product_groups: list[tuple[str, tuple[str, ...]]] = []
+    product_groups: list[
+        tuple[
+            str,
+            tuple[str, ...],
+            tuple[tuple[str, tuple[str, ...]], ...],
+        ]
+    ] = []
     if ontology is not None:
         for intent in request.metric_intents:
-            _, aliases, _ = _concept_surface(
+            _, aliases, _, _ = _concept_surface(
                 intent,
                 family="metric_concepts",
                 ontology=ontology,
             )
             metric_surfaces.extend(aliases)
         for intent in request.product_intents:
-            concept_id, aliases, supporting = _concept_surface(
+            concept_id, aliases, supporting, recall_groups = _concept_surface(
                 intent,
                 family="product_concepts",
                 ontology=ontology,
             )
             product_groups.append(
-                (concept_id, _unique((*aliases, *supporting)))
+                (
+                    concept_id,
+                    _unique((*aliases, *supporting)),
+                    recall_groups,
+                )
             )
     else:
         metric_surfaces.extend(request.metric_intents)
         product_groups.extend(
-            (f"unmapped::{intent.casefold()}", (intent,))
+            (f"unmapped::{intent.casefold()}", (intent,), ())
             for intent in request.product_intents
         )
 
     product_primary_surfaces = [
-        surfaces[0] for _, surfaces in product_groups if surfaces
+        surfaces[0] for _, surfaces, _ in product_groups if surfaces
     ]
     query_rows: list[TypedLexicalSubquery] = []
     for row in (
@@ -171,7 +203,10 @@ def compile_query_facet_plan_for_request(
     ):
         if row is not None:
             query_rows.append(row)
-    for index, (concept_id, surfaces) in enumerate(product_groups, start=1):
+    for index, (concept_id, surfaces, recall_groups) in enumerate(
+        product_groups,
+        start=1,
+    ):
         row = _subquery(
             query_id=f"product_{index:02d}",
             query_kind="product_aliases_and_disclosure_surfaces",
@@ -180,6 +215,21 @@ def compile_query_facet_plan_for_request(
         )
         if row is not None:
             query_rows.append(row)
+        if grouped_surface_recall_enabled:
+            for group_index, (group_id, group_terms) in enumerate(
+                recall_groups,
+                start=1,
+            ):
+                group_row = _subquery(
+                    query_id=(
+                        f"product_{index:02d}_surface_{group_index:02d}"
+                    ),
+                    query_kind="product_grouped_disclosure_surface",
+                    concept_id=f"{concept_id}::{group_id}",
+                    terms=group_terms,
+                )
+                if group_row is not None:
+                    query_rows.append(group_row)
     if not query_rows:
         for lane in base.lanes:
             row = _subquery(
@@ -208,7 +258,16 @@ def compile_query_facet_plan_for_request(
         token for term in focused_terms for token in tokenize(term)
     )
     semantic_surfaces = _unique(
-        (*metric_surfaces, *(term for _, rows in product_groups for term in rows))
+        (
+            *metric_surfaces,
+            *(term for _, rows, _ in product_groups for term in rows),
+            *(
+                term
+                for _, _, groups in product_groups
+                for _, group_terms in groups
+                for term in group_terms
+            ),
+        )
     )
     lanes: list[QueryLane] = []
     for lane in base.lanes:
@@ -245,7 +304,11 @@ def compile_query_facet_plan_for_request(
         )
 
     unsigned = {
-        "schema_version": QUERY_PLAN_V3_SCHEMA_VERSION,
+        "schema_version": (
+            QUERY_PLAN_V3_GROUPED_RECALL_SCHEMA_VERSION
+            if grouped_surface_recall_enabled
+            else QUERY_PLAN_V3_SCHEMA_VERSION
+        ),
         "case_key": base.case_key,
         "subject_ticker": base.subject_ticker,
         "subject_legal_name": base.subject_legal_name,
@@ -254,7 +317,11 @@ def compile_query_facet_plan_for_request(
         "lanes": [lane.as_dict() for lane in lanes],
     }
     return QueryFacetPlan(
-        schema_version=QUERY_PLAN_V3_SCHEMA_VERSION,
+        schema_version=(
+            QUERY_PLAN_V3_GROUPED_RECALL_SCHEMA_VERSION
+            if grouped_surface_recall_enabled
+            else QUERY_PLAN_V3_SCHEMA_VERSION
+        ),
         case_key=base.case_key,
         subject_ticker=base.subject_ticker,
         subject_legal_name=base.subject_legal_name,
@@ -268,6 +335,7 @@ def compile_query_facet_plan_for_request(
 __all__ = [
     "OwnerQuery",
     "QUERY_PLAN_V3_SCHEMA_VERSION",
+    "QUERY_PLAN_V3_GROUPED_RECALL_SCHEMA_VERSION",
     "QueryFacetPlan",
     "QueryLane",
     "TypedLexicalSubquery",

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import replace
-import hashlib
 import json
 import os
 from pathlib import Path
+import re
 from threading import Lock
 from typing import Any, Mapping, Sequence
 
@@ -18,6 +18,7 @@ from .embedding_runtime import (
     sha256_file,
 )
 from .financial_candidate_ranking import rank_financial_candidate_union
+from .financial_intent_v3 import project_grouped_recall_ontology_to_current
 from .evidence_role_v4 import evaluate_evidence_role
 from .evidence_set_coverage import select_request_bound_review
 from .financial_evidence_shortlist_v2 import candidate_shortlist_features
@@ -56,6 +57,12 @@ HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION = (
 HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION = (
     "fin_ia_s1c_hybrid_candidate_runtime_policy_v1_3"
 )
+HYBRID_RUNTIME_POLICY_RELATIONSHIP_GRAPH_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_runtime_policy_v1_4"
+)
+HYBRID_RUNTIME_POLICY_GROUPED_RECALL_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_runtime_policy_v1_5"
+)
 HYBRID_RESULT_SCHEMA_VERSION = "fin_ia_s1c_hybrid_candidate_result_v1_0"
 HYBRID_RESULT_SUCCESSOR_SCHEMA_VERSION = (
     "fin_ia_s1c_hybrid_candidate_result_v1_1"
@@ -72,6 +79,12 @@ HYBRID_RESULT_TYPED_BALANCED_SCHEMA_VERSION = (
 HYBRID_RESULT_PRODUCT_DECISION_SCHEMA_VERSION = (
     "fin_ia_s1c_hybrid_candidate_result_v1_5"
 )
+HYBRID_RESULT_RELATIONSHIP_GRAPH_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_result_v1_6"
+)
+HYBRID_RESULT_GROUPED_RECALL_SCHEMA_VERSION = (
+    "fin_ia_s1c_hybrid_candidate_result_v1_7"
+)
 
 _REQUIRED_AUTHORITY = {
     "candidate_is_not_evidence": True,
@@ -81,21 +94,74 @@ _REQUIRED_AUTHORITY = {
     "generation_model_calls_authorized": False,
 }
 
+_REQUIRED_TYPED_RELATIONSHIP_GRAPH_POLICY = {
+    "enabled": True,
+    "strategy": "source_bound_registered_entity_explicit_mention_v1",
+    "candidate_source": "current_compiled_financial_objects",
+    "as_of_and_request_period_filters_required": True,
+    "registered_entity_aliases_only": True,
+    "result_or_label_access": False,
+    "candidate_is_not_evidence": True,
+    "relationship_fact_authority": False,
+    "numeric_authority": False,
+}
+
+_RELATIONSHIP_CUE_TERMS = (
+    "customer",
+    "supplier",
+    "partner",
+    "partnership",
+    "collaboration",
+    "collaborate",
+    "powered",
+    "manufacturer",
+    "manufacturers",
+    "server",
+    "servers",
+    "platform",
+    "deployment",
+    "deploy",
+    "available",
+    "purchase",
+    "orders",
+    "supply",
+)
+
 
 def _policy_feature_flags(schema_version: str) -> tuple[bool, bool, bool]:
     typed_balanced = (
-        schema_version == HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION
+        schema_version
+        in {
+            HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION,
+            HYBRID_RUNTIME_POLICY_RELATIONSHIP_GRAPH_SCHEMA_VERSION,
+            HYBRID_RUNTIME_POLICY_GROUPED_RECALL_SCHEMA_VERSION,
+        }
     )
     owner_balanced = schema_version in {
         HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION,
         HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION,
+        HYBRID_RUNTIME_POLICY_RELATIONSHIP_GRAPH_SCHEMA_VERSION,
+        HYBRID_RUNTIME_POLICY_GROUPED_RECALL_SCHEMA_VERSION,
     }
     financial_ranking = schema_version in {
         HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION,
         HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION,
         HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION,
+        HYBRID_RUNTIME_POLICY_RELATIONSHIP_GRAPH_SCHEMA_VERSION,
+        HYBRID_RUNTIME_POLICY_GROUPED_RECALL_SCHEMA_VERSION,
     }
     return financial_ranking, owner_balanced, typed_balanced
+
+
+def _relationship_graph_feature_enabled(schema_version: str) -> bool:
+    return schema_version in {
+        HYBRID_RUNTIME_POLICY_RELATIONSHIP_GRAPH_SCHEMA_VERSION,
+        HYBRID_RUNTIME_POLICY_GROUPED_RECALL_SCHEMA_VERSION,
+    }
+
+
+def _grouped_recall_feature_enabled(schema_version: str) -> bool:
+    return schema_version == HYBRID_RUNTIME_POLICY_GROUPED_RECALL_SCHEMA_VERSION
 
 
 class HybridCandidateRuntimeError(ValueError):
@@ -152,6 +218,115 @@ def _route_maps(
     )
 
 
+def _alias_occurrence_count(text: str, alias: str) -> int:
+    normalized = " ".join(str(alias or "").casefold().split())
+    if not normalized:
+        return 0
+    return len(
+        re.findall(
+            rf"(?<![\w]){re.escape(normalized)}(?![\w])",
+            text,
+        )
+    )
+
+
+def _typed_relationship_graph_rank(
+    objects: Sequence[Mapping[str, Any]],
+    eligible_indices: np.ndarray,
+    *,
+    request: EvidenceRequest,
+    kernel: FinancialResearchKernel,
+    limit: int,
+) -> tuple[list[CandidateScore], dict[str, Any]]:
+    """Rank explicit registered-entity mentions without granting edge authority.
+
+    The route is deliberately narrower than a generic co-mention graph.  It
+    reads only the already-bound compiled object population, keeps the normal
+    owner/as-of/source/period hard filters, and requires both a registered
+    counterparty mention and relationship language.  It never reads reviewed
+    labels or infers a financial relationship from the resulting candidate.
+    """
+
+    profile = kernel.cases.get(request.case_key)
+    _require(profile is not None, "typed_relationship_graph_case_missing")
+    subject_aliases = tuple(
+        dict.fromkeys(
+            (
+                profile.subject_legal_name,
+                *profile.subject_aliases,
+            )
+        )
+    )
+    requested_targets = {str(value).upper() for value in request.target_entities}
+    related_entities = tuple(
+        entity
+        for entity in profile.related_entities
+        if entity.ticker.upper() in requested_targets
+    ) or tuple(profile.related_entities)
+    related_aliases = tuple(
+        dict.fromkeys(
+            alias
+            for entity in related_entities
+            for alias in (entity.legal_name, *entity.aliases)
+        )
+    )
+    subject_ticker = profile.subject_ticker.upper()
+    scored: list[CandidateScore] = []
+    matched_subject_owner = 0
+    matched_related_owner = 0
+    for raw_index in eligible_indices:
+        row = objects[int(raw_index)]
+        base = row["base_object_view"]
+        owner = str(base.get("ticker") or "").upper()
+        text = " ".join(str(row.get("model_text") or "").casefold().split())
+        aliases = related_aliases if owner == subject_ticker else subject_aliases
+        alias_hits = sum(_alias_occurrence_count(text, alias) for alias in aliases)
+        if alias_hits == 0:
+            continue
+        cue_hits = sum(_alias_occurrence_count(text, cue) for cue in _RELATIONSHIP_CUE_TERMS)
+        if cue_hits == 0:
+            continue
+        if owner == subject_ticker:
+            matched_subject_owner += 1
+        else:
+            matched_related_owner += 1
+        intent_hits = sum(
+            _alias_occurrence_count(text, value)
+            for value in (
+                *request.product_intents,
+                *request.metric_intents,
+            )
+            if len(str(value).strip()) >= 3
+        )
+        score = float(1000 + (100 * alias_hits) + (10 * cue_hits) + intent_hits)
+        scored.append(
+            CandidateScore(
+                compiled_object_id=str(row["compiled_object_id"]),
+                score=score,
+            )
+        )
+    ranked = sorted(
+        scored,
+        key=lambda value: (-value.score, value.compiled_object_id),
+    )[:limit]
+    trace = {
+        "strategy": "source_bound_registered_entity_explicit_mention_v1",
+        "eligible_object_count": int(eligible_indices.size),
+        "matched_object_count_before_limit": len(scored),
+        "candidate_count": len(ranked),
+        "matched_subject_owner_object_count": matched_subject_owner,
+        "matched_related_owner_object_count": matched_related_owner,
+        "registered_alias_source": "current_financial_research_kernel",
+        "source_population": "current_compiled_financial_objects",
+        "as_of_and_request_period_filters_applied_before_route": True,
+        "result_or_label_access": False,
+        "candidate_is_not_evidence": True,
+        "relationship_fact_authority": False,
+        "numeric_authority": False,
+    }
+    return ranked, trace
+
+
 def _owner_lane(lane: Any, owner: str) -> Any:
     try:
         index = lane.evidence_owner_tickers.index(owner)
@@ -181,6 +356,115 @@ def _owner_lane(lane: Any, owner: str) -> Any:
     )
 
 
+def _owner_balanced_candidate_union(
+    *,
+    global_union_ids: Sequence[str],
+    owner_ordered_ids: Mapping[str, Sequence[str]],
+    owner_order: Sequence[str],
+    minimum_per_owner: int,
+    maximum: int,
+) -> tuple[list[str], dict[str, Any]]:
+    """Reserve a bounded owner floor before the global union tail is cut.
+
+    The reservation operates only on already hard-filtered per-owner route
+    outputs.  It neither injects labels nor grants Evidence authority.
+    """
+
+    _require(minimum_per_owner >= 1, "hybrid_owner_union_minimum_invalid")
+    _require(maximum >= 1, "hybrid_owner_union_maximum_invalid")
+    owners = tuple(dict.fromkeys(str(value) for value in owner_order if value))
+    _require(len(owners) > 1, "hybrid_owner_union_requires_multiple_owners")
+    effective_minimum = min(minimum_per_owner, maximum // len(owners))
+    _require(effective_minimum >= 1, "hybrid_owner_union_capacity_invalid")
+
+    selected: list[str] = []
+    selected_set: set[str] = set()
+    pointers = {owner: 0 for owner in owners}
+    reserved_count = {owner: 0 for owner in owners}
+    for _ in range(effective_minimum):
+        for owner in owners:
+            candidates = owner_ordered_ids.get(owner, ())
+            pointer = pointers[owner]
+            while pointer < len(candidates) and candidates[pointer] in selected_set:
+                pointer += 1
+            pointers[owner] = pointer
+            if pointer >= len(candidates):
+                continue
+            object_id = str(candidates[pointer])
+            pointers[owner] += 1
+            selected.append(object_id)
+            selected_set.add(object_id)
+            reserved_count[owner] += 1
+            if len(selected) >= maximum:
+                break
+        if len(selected) >= maximum:
+            break
+
+    for object_id in global_union_ids:
+        identity = str(object_id)
+        if identity not in selected_set:
+            selected.append(identity)
+            selected_set.add(identity)
+        if len(selected) >= maximum:
+            break
+
+    # A short global union must not leave capacity unused while an explicitly
+    # requested owner still has hard-filtered route candidates.
+    while len(selected) < maximum:
+        admitted = False
+        for owner in owners:
+            candidates = owner_ordered_ids.get(owner, ())
+            pointer = pointers[owner]
+            while pointer < len(candidates) and candidates[pointer] in selected_set:
+                pointer += 1
+            pointers[owner] = pointer
+            if pointer >= len(candidates):
+                continue
+            identity = str(candidates[pointer])
+            pointers[owner] += 1
+            selected.append(identity)
+            selected_set.add(identity)
+            admitted = True
+            if len(selected) >= maximum:
+                break
+        if not admitted:
+            break
+
+    global_set = {str(value) for value in global_union_ids}
+    outside_global = [value for value in selected if value not in global_set]
+    displaced_global = [
+        str(value) for value in global_union_ids if str(value) not in selected_set
+    ]
+    return selected, {
+        "mode": "owner_floor_then_global_fill_v1",
+        "requested_minimum_per_owner": minimum_per_owner,
+        "effective_minimum_per_owner": effective_minimum,
+        "reserved_candidate_count_by_owner": reserved_count,
+        "owner_floor_unmet": sorted(
+            owner
+            for owner, count in reserved_count.items()
+            if count < effective_minimum
+        ),
+        "admitted_outside_global_union_count": len(outside_global),
+        "displaced_global_union_count": len(displaced_global),
+        "candidate_union_count": len(selected),
+        "candidate_not_evidence": True,
+        "numeric_authority": False,
+        "result_or_label_access": False,
+    }
+
+
+def _direct_relationship_material_route_qualified(
+    *,
+    facet_id: str,
+    object_id: str,
+    graph_ranks: Mapping[str, int],
+) -> bool:
+    """Fail closed when a direct-mention request lacks graph qualification."""
+
+    return facet_id != "counterparty_direct_mention" or object_id in graph_ranks
+
+
 def _material_candidate_metadata(
     *,
     request: EvidenceRequest,
@@ -189,10 +473,22 @@ def _material_candidate_metadata(
     objects_by_id: Mapping[str, Mapping[str, Any]],
     route_maps_by_owner: Mapping[
         str,
-        tuple[Mapping[str, int], Mapping[str, float], Mapping[str, int], Mapping[str, float]],
+        tuple[
+            Mapping[str, int],
+            Mapping[str, float],
+            Mapping[str, int],
+            Mapping[str, float],
+            Mapping[str, int],
+            Mapping[str, float],
+        ],
     ],
     fallback_route_maps: tuple[
-        Mapping[str, int], Mapping[str, float], Mapping[str, int], Mapping[str, float]
+        Mapping[str, int],
+        Mapping[str, float],
+        Mapping[str, int],
+        Mapping[str, float],
+        Mapping[str, int],
+        Mapping[str, float],
     ],
     material_runtime_policy: Mapping[str, Any],
     intent_ontology: Mapping[str, Any],
@@ -221,11 +517,27 @@ def _material_candidate_metadata(
         base = object_row["base_object_view"]
         owner = str(base["ticker"])
         narrowed_lane, needs = needs_by_owner[owner]
-        bm25_ranks, bm25_scores, qwen_ranks, qwen_scores = (
+        (
+            bm25_ranks,
+            bm25_scores,
+            qwen_ranks,
+            qwen_scores,
+            graph_ranks,
+            graph_scores,
+        ) = (
             route_maps_by_owner.get(owner, fallback_route_maps)
         )
         feature_views: list[dict[str, Any]] = []
+        direct_relationship_route_qualified = (
+            _direct_relationship_material_route_qualified(
+                facet_id=lane.facet_id,
+                object_id=object_id,
+                graph_ranks=graph_ranks,
+            )
+        )
         for need in needs:
+            if not direct_relationship_route_qualified:
+                continue
             route_rows: list[dict[str, Any]] = []
             if object_id in bm25_ranks:
                 route_rows.append(
@@ -241,6 +553,14 @@ def _material_candidate_metadata(
                         "need_id": need["need_id"],
                         "route_id": "qwen3_embedding_0_6b_dense",
                         "rank": qwen_ranks[object_id],
+                    }
+                )
+            if object_id in graph_ranks:
+                route_rows.append(
+                    {
+                        "need_id": need["need_id"],
+                        "route_id": "typed_relationship_graph",
+                        "rank": graph_ranks[object_id],
                     }
                 )
             if not route_rows:
@@ -285,6 +605,7 @@ def _material_candidate_metadata(
             for value in (
                 bm25_scores.get(object_id),
                 qwen_scores.get(object_id),
+                graph_scores.get(object_id),
             )
             if value is not None
         )
@@ -327,8 +648,12 @@ def retrieve_hybrid_candidates(
     intent_ontology: Mapping[str, Any] | None = None,
     retrieval_need_policy: Mapping[str, Any] | None = None,
     typed_balanced_lexical_enabled: bool = False,
+    typed_relationship_graph_enabled: bool = False,
+    grouped_surface_recall_enabled: bool = False,
+    lexical_positive_scores_only: bool = False,
+    owner_candidate_union_minimum: int = 0,
 ) -> dict[str, Any]:
-    """Return a hard-filtered, source-diverse BM25 + Qwen candidate union."""
+    """Return a hard-filtered, source-diverse candidate-route union."""
 
     _require(
         first_stage_limit >= output_limit >= 1
@@ -339,6 +664,14 @@ def retrieve_hybrid_candidates(
     _require(
         0 <= minimum_candidates_per_owner <= output_limit,
         "hybrid_candidate_owner_floor_invalid",
+    )
+    _require(
+        0 <= owner_candidate_union_minimum <= candidate_union_limit,
+        "hybrid_candidate_owner_union_floor_invalid",
+    )
+    _require(
+        not grouped_surface_recall_enabled or typed_balanced_lexical_enabled,
+        "hybrid_grouped_recall_requires_typed_lexical",
     )
     material_contract_inputs = (
         material_runtime_input,
@@ -367,12 +700,18 @@ def retrieve_hybrid_candidates(
             kernel,
             request,
             ontology=intent_ontology,
+            grouped_surface_recall_enabled=grouped_surface_recall_enabled,
         )
         if typed_balanced_lexical_enabled
         else compile_query_facet_plan_for_request_v1(kernel, request)
     )
     _require(len(plan.lanes) == 1, "hybrid_candidate_lane_count_invalid")
     lane = plan.lanes[0]
+    material_intent_ontology = (
+        project_grouped_recall_ontology_to_current(intent_ontology)
+        if intent_ontology is not None
+        else None
+    )
     eligible, exclusions = eligible_request_indices(
         objects,
         request=request,
@@ -385,6 +724,7 @@ def retrieve_hybrid_candidates(
             eligible,
             lane.lexical_subqueries,
             limit=first_stage_limit,
+            positive_scores_only=lexical_positive_scores_only,
         )
         bm25 = list(lexical_recall.candidates)
         lexical_recall_trace = dict(lexical_recall.trace)
@@ -408,22 +748,62 @@ def retrieve_hybrid_candidates(
         qwen_query_embedding,
         limit=first_stage_limit,
     )
-    union_ids = union_candidate_ids(
-        (bm25, qwen),
+    family = route_policy.family_by_facet().get(lane.facet_id)
+    _require(family is not None, "hybrid_candidate_facet_route_missing")
+    relationship_graph_requested = (
+        "typed_relationship_graph" in family.candidate_routes
+    )
+    relationship_graph_executed = bool(
+        typed_relationship_graph_enabled and relationship_graph_requested
+    )
+    if relationship_graph_executed:
+        graph, graph_trace = _typed_relationship_graph_rank(
+            objects,
+            eligible,
+            request=request,
+            kernel=kernel,
+            limit=first_stage_limit,
+        )
+    else:
+        graph = []
+        graph_trace = {
+            "strategy": "source_bound_registered_entity_explicit_mention_v1",
+            "candidate_count": 0,
+            "execution_state": (
+                "not_requested_for_query_family"
+                if not relationship_graph_requested
+                else "not_configured"
+            ),
+            "result_or_label_access": False,
+            "candidate_is_not_evidence": True,
+            "relationship_fact_authority": False,
+            "numeric_authority": False,
+        }
+    global_union_ids = union_candidate_ids(
+        (bm25, qwen, graph),
         maximum=candidate_union_limit,
     )
+    union_ids = list(global_union_ids)
     bm25_ranks, bm25_scores = _route_maps(bm25)
     qwen_ranks, qwen_scores = _route_maps(qwen)
+    graph_ranks, graph_scores = _route_maps(graph)
     objects_by_id = {str(row["compiled_object_id"]): row for row in objects}
     owner_route_maps: dict[
         str,
-        tuple[dict[str, int], dict[str, float], dict[str, int], dict[str, float]],
+        tuple[
+            dict[str, int],
+            dict[str, float],
+            dict[str, int],
+            dict[str, float],
+            dict[str, int],
+            dict[str, float],
+        ],
     ] = {}
     owner_ordered_ids: dict[str, list[str]] = {}
     owner_balance_active = (
         minimum_candidates_per_owner > 0 and len(lane.evidence_owner_tickers) > 1
     )
-    if owner_balance_active or (
+    if owner_balance_active or owner_candidate_union_minimum > 0 or (
         material_aware and len(lane.evidence_owner_tickers) > 1
     ):
         for owner in lane.evidence_owner_tickers:
@@ -442,6 +822,7 @@ def retrieve_hybrid_candidates(
                         owner_eligible,
                         lane.lexical_subqueries,
                         limit=first_stage_limit,
+                        positive_scores_only=lexical_positive_scores_only,
                     ).candidates
                 )
                 if typed_balanced_lexical_enabled
@@ -459,16 +840,50 @@ def retrieve_hybrid_candidates(
                 qwen_query_embedding,
                 limit=first_stage_limit,
             )
+            owner_graph = (
+                _typed_relationship_graph_rank(
+                    objects,
+                    owner_eligible,
+                    request=request,
+                    kernel=kernel,
+                    limit=first_stage_limit,
+                )[0]
+                if relationship_graph_executed
+                else []
+            )
             owner_ordered_ids[owner] = list(
                 union_candidate_ids(
-                    (owner_bm25, owner_qwen),
+                    (owner_bm25, owner_qwen, owner_graph),
                     maximum=candidate_union_limit,
                 )
             )
             owner_route_maps[owner] = (
                 *_route_maps(owner_bm25),
                 *_route_maps(owner_qwen),
+                *_route_maps(owner_graph),
             )
+    owner_union_active = bool(
+        owner_candidate_union_minimum > 0
+        and len(lane.evidence_owner_tickers) > 1
+    )
+    if owner_union_active:
+        union_ids, owner_union_trace = _owner_balanced_candidate_union(
+            global_union_ids=global_union_ids,
+            owner_ordered_ids=owner_ordered_ids,
+            owner_order=lane.evidence_owner_tickers,
+            minimum_per_owner=owner_candidate_union_minimum,
+            maximum=candidate_union_limit,
+        )
+    else:
+        owner_union_trace = {
+            "mode": "global_route_union_v1",
+            "requested_minimum_per_owner": owner_candidate_union_minimum,
+            "effective_minimum_per_owner": 0,
+            "candidate_union_count": len(union_ids),
+            "candidate_not_evidence": True,
+            "numeric_authority": False,
+            "result_or_label_access": False,
+        }
     material_compiler_receipt: dict[str, Any] | None = None
     material_requirement_plan: dict[str, Any] | None = None
     material_selection: dict[str, Any] | None = None
@@ -481,7 +896,7 @@ def retrieve_hybrid_candidates(
             compile_material_requirement_plan_from_runtime_input(
                 runtime_input=material_runtime_input,
                 policy=material_runtime_policy,
-                ontology=intent_ontology,
+                ontology=material_intent_ontology,
             )
         )
         material_candidates = _material_candidate_metadata(
@@ -495,9 +910,11 @@ def retrieve_hybrid_candidates(
                 bm25_scores,
                 qwen_ranks,
                 qwen_scores,
+                graph_ranks,
+                graph_scores,
             ),
             material_runtime_policy=material_runtime_policy,
-            intent_ontology=intent_ontology,
+            intent_ontology=material_intent_ontology,
             retrieval_need_policy=retrieval_need_policy,
         )
         material_candidates_by_id = {
@@ -521,17 +938,32 @@ def retrieve_hybrid_candidates(
     raw_union_ids = list(union_ids)
     ordered_ids = list(raw_union_ids)
     if financial_ranking_enabled:
+        effective_route_ranks_by_id: dict[str, dict[str, int | None]] = {}
+        for object_id in union_ids:
+            owner = str(objects_by_id[object_id]["base_object_view"]["ticker"])
+            owner_maps = owner_route_maps.get(owner)
+            effective_route_ranks_by_id[object_id] = {
+                "bm25_lexical": (
+                    owner_maps[0].get(object_id)
+                    if owner_maps is not None
+                    else bm25_ranks.get(object_id)
+                ),
+                "qwen3_embedding_0_6b_dense": (
+                    owner_maps[2].get(object_id)
+                    if owner_maps is not None
+                    else qwen_ranks.get(object_id)
+                ),
+                "typed_relationship_graph": (
+                    owner_maps[4].get(object_id)
+                    if owner_maps is not None
+                    else graph_ranks.get(object_id)
+                ),
+            }
         ranked = rank_financial_candidate_union(
             union_object_ids=union_ids,
             objects_by_id=objects_by_id,
             lane=lane,
-            route_ranks_by_id={
-                object_id: {
-                    "bm25_lexical": bm25_ranks.get(object_id),
-                    "qwen3_embedding_0_6b_dense": qwen_ranks.get(object_id),
-                }
-                for object_id in union_ids
-            },
+            route_ranks_by_id=effective_route_ranks_by_id,
             role_evaluator=evaluate_evidence_role,
         )
         ordered_ids = [str(row["compiled_object_id"]) for row in ranked]
@@ -681,11 +1113,14 @@ def retrieve_hybrid_candidates(
         owner_maps = owner_route_maps.get(owner)
         effective_bm25_ranks = owner_maps[0] if owner_maps else bm25_ranks
         effective_qwen_ranks = owner_maps[2] if owner_maps else qwen_ranks
+        effective_graph_ranks = owner_maps[4] if owner_maps else graph_ranks
         routes = []
         if object_id in effective_bm25_ranks:
             routes.append("bm25_lexical")
         if object_id in effective_qwen_ranks:
             routes.append("qwen3_embedding_0_6b_dense")
+        if object_id in effective_graph_ranks:
+            routes.append("typed_relationship_graph")
         evidence_role = None
         if evidence_role_advisory_enabled:
             evidence_role = {
@@ -749,6 +1184,9 @@ def retrieve_hybrid_candidates(
                     "qwen3_embedding_0_6b_dense": effective_qwen_ranks.get(
                         object_id
                     ),
+                    "typed_relationship_graph": effective_graph_ranks.get(
+                        object_id
+                    ),
                 },
                 "material_alignment_state": alignment_state,
                 "material_reserved_for_requirement": (
@@ -776,11 +1214,15 @@ def retrieve_hybrid_candidates(
         effective_bm25_scores = owner_maps[1] if owner_maps else bm25_scores
         effective_qwen_ranks = owner_maps[2] if owner_maps else qwen_ranks
         effective_qwen_scores = owner_maps[3] if owner_maps else qwen_scores
+        effective_graph_ranks = owner_maps[4] if owner_maps else graph_ranks
+        effective_graph_scores = owner_maps[5] if owner_maps else graph_scores
         routes = []
         if object_id in effective_bm25_ranks:
             routes.append("bm25_lexical")
         if object_id in effective_qwen_ranks:
             routes.append("qwen3_embedding_0_6b_dense")
+        if object_id in effective_graph_ranks:
+            routes.append("typed_relationship_graph")
         evidence_role = None
         if evidence_role_advisory_enabled:
             evidence_role = {
@@ -837,10 +1279,12 @@ def retrieve_hybrid_candidates(
                 "route_ranks": {
                     "bm25_lexical": effective_bm25_ranks.get(object_id),
                     "qwen3_embedding_0_6b_dense": effective_qwen_ranks.get(object_id),
+                    "typed_relationship_graph": effective_graph_ranks.get(object_id),
                 },
                 "route_scores": {
                     "bm25_lexical": effective_bm25_scores.get(object_id),
                     "qwen3_embedding_0_6b_dense": effective_qwen_scores.get(object_id),
+                    "typed_relationship_graph": effective_graph_scores.get(object_id),
                 },
                 "financial_ranking": financial_features_by_id.get(object_id),
                 "evidence_role": evidence_role,
@@ -856,11 +1300,23 @@ def retrieve_hybrid_candidates(
                 object_id in reserved_material_id_set
             )
 
-    both = sum(len(row["route_membership"]) == 2 for row in selected)
+    both = sum(
+        {"bm25_lexical", "qwen3_embedding_0_6b_dense"}.issubset(
+            set(row["route_membership"])
+        )
+        for row in selected
+    )
     bm25_only = sum(row["route_membership"] == ["bm25_lexical"] for row in selected)
     qwen_only = sum(
         row["route_membership"] == ["qwen3_embedding_0_6b_dense"]
         for row in selected
+    )
+    graph_only = sum(
+        row["route_membership"] == ["typed_relationship_graph"]
+        for row in selected
+    )
+    graph_selected = sum(
+        "typed_relationship_graph" in row["route_membership"] for row in selected
     )
     material_scope_ready = bool(
         material_aware
@@ -873,9 +1329,26 @@ def retrieve_hybrid_candidates(
         and material_selection
         and not material_selection["unmet_requirement_ids"]
     )
+    direct_relationship_material_gate_active = bool(
+        material_aware and lane.facet_id == "counterparty_direct_mention"
+    )
+    direct_relationship_graph_qualified_count = 0
+    for object_id in raw_union_ids:
+        owner = str(objects_by_id[object_id]["base_object_view"]["ticker"])
+        owner_maps = owner_route_maps.get(owner)
+        effective_graph_ranks = (
+            owner_maps[4] if owner_maps is not None else graph_ranks
+        )
+        direct_relationship_graph_qualified_count += int(
+            object_id in effective_graph_ranks
+        )
     body = {
         "schema_version": (
-            HYBRID_RESULT_PRODUCT_DECISION_SCHEMA_VERSION
+            HYBRID_RESULT_GROUPED_RECALL_SCHEMA_VERSION
+            if grouped_surface_recall_enabled or owner_union_active
+            else HYBRID_RESULT_RELATIONSHIP_GRAPH_SCHEMA_VERSION
+            if typed_relationship_graph_enabled
+            else HYBRID_RESULT_PRODUCT_DECISION_SCHEMA_VERSION
             if typed_balanced_lexical_enabled
             else HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION
             if material_aware
@@ -889,7 +1362,27 @@ def retrieve_hybrid_candidates(
         "facet_id": lane.facet_id,
         "evidence_owner_tickers": list(lane.evidence_owner_tickers),
         "route_id": (
-            "typed_balanced_bm25_qwen_union_with_material_reservation_v2"
+            "grouped_typed_bm25_qwen_relationship_graph_owner_union_with_material_reservation_v1"
+            if grouped_surface_recall_enabled
+            and typed_relationship_graph_enabled
+            and owner_union_active
+            and material_aware
+            else "grouped_typed_bm25_qwen_relationship_graph_union_with_material_reservation_v1"
+            if grouped_surface_recall_enabled
+            and typed_relationship_graph_enabled
+            and material_aware
+            else "grouped_typed_bm25_qwen_relationship_graph_owner_union_v1"
+            if grouped_surface_recall_enabled
+            and typed_relationship_graph_enabled
+            and owner_union_active
+            else "grouped_typed_bm25_qwen_relationship_graph_union_v1"
+            if grouped_surface_recall_enabled
+            and typed_relationship_graph_enabled
+            else "typed_balanced_bm25_qwen_relationship_graph_union_with_material_reservation_v1"
+            if typed_relationship_graph_enabled and material_aware
+            else "typed_balanced_bm25_qwen_relationship_graph_union_v1"
+            if typed_relationship_graph_enabled
+            else "typed_balanced_bm25_qwen_union_with_material_reservation_v2"
             if typed_balanced_lexical_enabled and material_aware
             else "typed_balanced_bm25_qwen_union_v1"
             if typed_balanced_lexical_enabled
@@ -917,6 +1410,7 @@ def retrieve_hybrid_candidates(
             "eligible_object_count": int(eligible.size),
             "bm25_first_stage_count": len(bm25),
             "qwen_first_stage_count": len(qwen),
+            "global_route_union_count": len(global_union_ids),
             "union_count_before_source_quota": len(union_ids),
             "selected_count": len(selected),
             "selected_both_routes": both,
@@ -933,9 +1427,21 @@ def retrieve_hybrid_candidates(
             "owner_floor_unmet": sorted(set(owner_floor_unmet)),
             "evidence_role_advisory_enabled": evidence_role_advisory_enabled,
             "typed_balanced_lexical_enabled": typed_balanced_lexical_enabled,
+            "grouped_surface_recall_enabled": grouped_surface_recall_enabled,
+            "lexical_positive_scores_only": lexical_positive_scores_only,
+            "owner_candidate_union_active": owner_union_active,
+            "owner_candidate_union": owner_union_trace,
             "material_reservation_active": material_aware,
             "material_scope_ready": material_scope_ready,
             "material_set_complete": material_set_complete,
+            "direct_relationship_material_gate_active": (
+                direct_relationship_material_gate_active
+            ),
+            "direct_relationship_graph_qualified_count": (
+                direct_relationship_graph_qualified_count
+                if direct_relationship_material_gate_active
+                else None
+            ),
             "material_reserved_candidate_count": len(reserved_material_ids),
             "material_review_order_candidate_count": len(
                 material_review_order_ids
@@ -945,6 +1451,59 @@ def retrieve_hybrid_candidates(
         "candidates": selected,
         "authority": dict(_REQUIRED_AUTHORITY),
     }
+    if typed_relationship_graph_enabled:
+        body["query"]["typed_relationship_graph"] = graph_trace
+        body["summary"].update(
+            {
+                "typed_relationship_graph_requested": relationship_graph_requested,
+                "typed_relationship_graph_executed": relationship_graph_executed,
+                "typed_relationship_graph_first_stage_count": len(graph),
+                "selected_typed_relationship_graph": graph_selected,
+                "selected_typed_relationship_graph_only": graph_only,
+            }
+        )
+        executed_routes = ["bm25_lexical", "dense_embedding"]
+        if relationship_graph_executed:
+            executed_routes.append("typed_relationship_graph")
+        body["route_execution"] = {
+            "requested_candidate_routes": list(family.candidate_routes),
+            "executed_candidate_routes": executed_routes,
+            "routes": [
+                {
+                    "declared_route": "bm25_lexical",
+                    "executor_route_id": "bm25_lexical",
+                    "execution_state": "executed",
+                    "candidate_count": len(bm25),
+                },
+                {
+                    "declared_route": "dense_embedding",
+                    "executor_route_id": "qwen3_embedding_0_6b_dense",
+                    "execution_state": "executed",
+                    "candidate_count": len(qwen),
+                },
+                *(
+                    [
+                        {
+                            "declared_route": "typed_relationship_graph",
+                            "executor_route_id": (
+                                "source_bound_registered_entity_explicit_mention_v1"
+                            ),
+                            "execution_state": (
+                                "executed"
+                                if relationship_graph_executed
+                                else "not_executed_route_unavailable"
+                            ),
+                            "candidate_count": len(graph),
+                        }
+                    ]
+                    if relationship_graph_requested
+                    else []
+                ),
+            ],
+            "candidate_is_not_evidence": True,
+            "relationship_fact_authority": False,
+            "numeric_authority": False,
+        }
     if typed_balanced_lexical_enabled:
         body["candidate_decision_seed"] = candidate_decision_seed
     if material_aware:
@@ -980,6 +1539,10 @@ class LocalQwenHybridCandidateRuntime:
         evidence_role_advisory_enabled: bool,
         runtime_identity: Mapping[str, Any],
         typed_balanced_lexical_enabled: bool = False,
+        typed_relationship_graph_enabled: bool = False,
+        grouped_surface_recall_enabled: bool = False,
+        lexical_positive_scores_only: bool = False,
+        owner_candidate_union_minimum: int = 0,
     ) -> None:
         self._objects = tuple(objects)
         self._qwen_document_embeddings = qwen_document_embeddings
@@ -993,6 +1556,12 @@ class LocalQwenHybridCandidateRuntime:
         self._minimum_candidates_per_owner = minimum_candidates_per_owner
         self._evidence_role_advisory_enabled = evidence_role_advisory_enabled
         self._typed_balanced_lexical_enabled = typed_balanced_lexical_enabled
+        self._typed_relationship_graph_enabled = (
+            typed_relationship_graph_enabled
+        )
+        self._grouped_surface_recall_enabled = grouped_surface_recall_enabled
+        self._lexical_positive_scores_only = lexical_positive_scores_only
+        self._owner_candidate_union_minimum = owner_candidate_union_minimum
         self.runtime_identity = dict(runtime_identity)
         self._inference_lock = Lock()
 
@@ -1007,6 +1576,8 @@ class LocalQwenHybridCandidateRuntime:
         successor, owner_balanced, typed_balanced = _policy_feature_flags(
             schema_version
         )
+        relationship_graph = _relationship_graph_feature_enabled(schema_version)
+        grouped_recall = _grouped_recall_feature_enabled(schema_version)
         expected_fields = {
             "schema_version",
             "status",
@@ -1021,6 +1592,8 @@ class LocalQwenHybridCandidateRuntime:
             expected_fields.update({"owner_balance", "evidence_role"})
         if typed_balanced:
             expected_fields.add("typed_query_recall")
+        if relationship_graph:
+            expected_fields.add("typed_relationship_graph")
         _require(set(payload) == expected_fields, "hybrid_runtime_policy_fields_invalid")
         _require(
             schema_version
@@ -1029,13 +1602,19 @@ class LocalQwenHybridCandidateRuntime:
                 HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION,
                 HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION,
                 HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION,
+                HYBRID_RUNTIME_POLICY_RELATIONSHIP_GRAPH_SCHEMA_VERSION,
+                HYBRID_RUNTIME_POLICY_GROUPED_RECALL_SCHEMA_VERSION,
             },
             "hybrid_runtime_policy_schema_invalid",
         )
         _require(
             payload.get("status")
             == (
-                "provisional_typed_balanced_candidate_runtime_not_evidence_authority"
+                "provisional_grouped_recall_relationship_graph_candidate_runtime_not_evidence_authority"
+                if grouped_recall
+                else "provisional_typed_relationship_graph_candidate_runtime_not_evidence_authority"
+                if relationship_graph
+                else "provisional_typed_balanced_candidate_runtime_not_evidence_authority"
                 if typed_balanced
                 else "provisional_owner_balanced_candidate_runtime_not_evidence_authority"
                 if owner_balanced
@@ -1057,6 +1636,7 @@ class LocalQwenHybridCandidateRuntime:
         owner_balance = payload.get("owner_balance")
         evidence_role = payload.get("evidence_role")
         typed_query_recall = payload.get("typed_query_recall")
+        typed_relationship_graph = payload.get("typed_relationship_graph")
         _require(
             isinstance(object_policy, Mapping)
             and isinstance(model_policy, Mapping)
@@ -1076,14 +1656,24 @@ class LocalQwenHybridCandidateRuntime:
                 "hybrid_runtime_financial_ranking_policy_invalid",
             )
         if owner_balanced:
+            expected_owner_balance = {
+                "enabled": True,
+                "minimum_candidates_per_owner": 2,
+                "apply_only_to_multi_owner_requests": True,
+                "candidate_is_not_evidence": True,
+            }
+            if grouped_recall:
+                expected_owner_balance.update(
+                    {
+                        "candidate_union_strategy": (
+                            "owner_floor_then_global_fill_v1"
+                        ),
+                        "candidate_union_minimum_per_owner": 12,
+                        "result_or_label_access": False,
+                    }
+                )
             _require(
-                owner_balance
-                == {
-                    "enabled": True,
-                    "minimum_candidates_per_owner": 2,
-                    "apply_only_to_multi_owner_requests": True,
-                    "candidate_is_not_evidence": True,
-                }
+                owner_balance == expected_owner_balance
                 and evidence_role
                 == {
                     "mode": "advisory_with_abstain",
@@ -1094,17 +1684,36 @@ class LocalQwenHybridCandidateRuntime:
                 "hybrid_runtime_owner_balance_policy_invalid",
             )
         if typed_balanced:
+            expected_typed_query_recall = {
+                "enabled": True,
+                "query_plan_schema": "fin_ia_typed_query_facet_plan_v1_2",
+                "strategy": "per_request_metric_product_balanced_bm25_v1",
+                "ontology_expansion_candidate_only": True,
+                "result_or_label_access": False,
+                "candidate_is_not_evidence": True,
+            }
+            if grouped_recall:
+                expected_typed_query_recall.update(
+                    {
+                        "query_plan_schema": (
+                            "fin_ia_typed_query_facet_plan_v1_3"
+                        ),
+                        "strategy": (
+                            "per_request_grouped_disclosure_surface_balanced_bm25_v2"
+                        ),
+                        "grouped_disclosure_surfaces": True,
+                        "zero_score_candidates_excluded": True,
+                    }
+                )
             _require(
-                typed_query_recall
-                == {
-                    "enabled": True,
-                    "query_plan_schema": "fin_ia_typed_query_facet_plan_v1_2",
-                    "strategy": "per_request_metric_product_balanced_bm25_v1",
-                    "ontology_expansion_candidate_only": True,
-                    "result_or_label_access": False,
-                    "candidate_is_not_evidence": True,
-                },
+                typed_query_recall == expected_typed_query_recall,
                 "hybrid_runtime_typed_query_recall_policy_invalid",
+            )
+        if relationship_graph:
+            _require(
+                typed_relationship_graph
+                == _REQUIRED_TYPED_RELATIONSHIP_GRAPH_POLICY,
+                "hybrid_runtime_typed_relationship_graph_policy_invalid",
             )
         objects_path = _resolve(root, str(object_policy.get("objects_ref") or ""))
         cache_path = _resolve(root, str(model_policy.get("dense_cache_ref") or ""))
@@ -1165,9 +1774,21 @@ class LocalQwenHybridCandidateRuntime:
                 candidate_policy.get("max_candidates_per_source_record") or 0
             ),
             financial_ranking_enabled=successor,
-            minimum_candidates_per_owner=(2 if owner_balanced else 0),
+            minimum_candidates_per_owner=(
+                int(owner_balance["minimum_candidates_per_owner"])
+                if owner_balanced
+                else 0
+            ),
             evidence_role_advisory_enabled=owner_balanced,
             typed_balanced_lexical_enabled=typed_balanced,
+            typed_relationship_graph_enabled=relationship_graph,
+            grouped_surface_recall_enabled=grouped_recall,
+            lexical_positive_scores_only=grouped_recall,
+            owner_candidate_union_minimum=(
+                int(owner_balance["candidate_union_minimum_per_owner"])
+                if grouped_recall
+                else 0
+            ),
             runtime_identity=runtime_identity,
         )
 
@@ -1216,6 +1837,18 @@ class LocalQwenHybridCandidateRuntime:
                 retrieval_need_policy=retrieval_need_policy,
                 typed_balanced_lexical_enabled=(
                     self._typed_balanced_lexical_enabled
+                ),
+                typed_relationship_graph_enabled=(
+                    self._typed_relationship_graph_enabled
+                ),
+                grouped_surface_recall_enabled=(
+                    self._grouped_surface_recall_enabled
+                ),
+                lexical_positive_scores_only=(
+                    self._lexical_positive_scores_only
+                ),
+                owner_candidate_union_minimum=(
+                    self._owner_candidate_union_minimum
                 ),
             )
             for index, request in enumerate(requests)
@@ -1283,6 +1916,9 @@ class LocalQwenHybridCandidateRuntime:
                     kernel,
                     request,
                     ontology=intent_ontology,
+                    grouped_surface_recall_enabled=(
+                        self._grouped_surface_recall_enabled
+                    ),
                 )
                 if self._typed_balanced_lexical_enabled
                 else compile_query_facet_plan_for_request_v1(kernel, request)
@@ -1358,10 +1994,14 @@ __all__ = [
     "HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION",
     "HYBRID_RESULT_TYPED_BALANCED_SCHEMA_VERSION",
     "HYBRID_RESULT_PRODUCT_DECISION_SCHEMA_VERSION",
+    "HYBRID_RESULT_RELATIONSHIP_GRAPH_SCHEMA_VERSION",
+    "HYBRID_RESULT_GROUPED_RECALL_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_SUCCESSOR_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_OWNER_BALANCED_SCHEMA_VERSION",
     "HYBRID_RUNTIME_POLICY_TYPED_BALANCED_SCHEMA_VERSION",
+    "HYBRID_RUNTIME_POLICY_RELATIONSHIP_GRAPH_SCHEMA_VERSION",
+    "HYBRID_RUNTIME_POLICY_GROUPED_RECALL_SCHEMA_VERSION",
     "HybridCandidateRuntimeError",
     "LazyLocalQwenHybridCandidateRuntime",
     "LocalQwenHybridCandidateRuntime",

@@ -218,6 +218,16 @@ def eligible_atom_indices(
     fiscal_years = {
         int(value) for value in request_period.get("fiscal_years") or ()
     }
+    period_start = (
+        date.fromisoformat(str(request_period["start_date"]))
+        if request_period.get("start_date")
+        else None
+    )
+    period_end = (
+        date.fromisoformat(str(request_period["end_date"]))
+        if request_period.get("end_date")
+        else None
+    )
     as_of = date.fromisoformat(lane.publication_date_lte)
     owner = lane.evidence_owner_tickers[0]
     eligible: list[int] = []
@@ -230,6 +240,8 @@ def eligible_atom_indices(
             source_types=lane.source_types,
             object_kinds=object_kinds,
             fiscal_years=fiscal_years,
+            period_start=period_start,
+            period_end=period_end,
         )
         if reason is None:
             eligible.append(index)
@@ -269,6 +281,8 @@ def eligible_request_indices(
             source_types=lane.source_types,
             object_kinds=object_kinds,
             fiscal_years=fiscal_years,
+            period_start=request.period.start_date,
+            period_end=request.period.end_date,
         )
         if reason is None:
             eligible.append(index)
@@ -300,6 +314,16 @@ def label_eligibility_rows(
     }
     request_period = atom.request_payload.get("period") or {}
     fiscal_years = {int(value) for value in request_period.get("fiscal_years") or ()}
+    period_start = (
+        date.fromisoformat(str(request_period["start_date"]))
+        if request_period.get("start_date")
+        else None
+    )
+    period_end = (
+        date.fromisoformat(str(request_period["end_date"]))
+        if request_period.get("end_date")
+        else None
+    )
     as_of = date.fromisoformat(lane.publication_date_lte)
     owner = lane.evidence_owner_tickers[0]
     objects_by_id = {str(row["compiled_object_id"]): row for row in objects}
@@ -321,6 +345,8 @@ def label_eligibility_rows(
                     source_types=lane.source_types,
                     object_kinds=object_kinds,
                     fiscal_years=fiscal_years,
+                    period_start=period_start,
+                    period_end=period_end,
                 )
             )
             rows.append(
@@ -419,6 +445,8 @@ def _atom_object_exclusion_reason(
     source_types: Sequence[str],
     object_kinds: set[str],
     fiscal_years: set[int],
+    period_start: date | None = None,
+    period_end: date | None = None,
 ) -> str | None:
     return _request_object_exclusion_reason(
         row,
@@ -427,6 +455,8 @@ def _atom_object_exclusion_reason(
         source_types=source_types,
         object_kinds=object_kinds,
         fiscal_years=fiscal_years,
+        period_start=period_start,
+        period_end=period_end,
     )
 
 
@@ -438,6 +468,8 @@ def _request_object_exclusion_reason(
     source_types: Sequence[str],
     object_kinds: set[str],
     fiscal_years: set[int],
+    period_start: date | None = None,
+    period_end: date | None = None,
 ) -> str | None:
     base = row["base_object_view"]
     if str(base.get("ticker") or "").upper() not in owners:
@@ -454,7 +486,27 @@ def _request_object_exclusion_reason(
         return "source_type_not_allowed"
     if str(row.get("object_kind") or "") not in object_kinds:
         return "object_form_not_allowed"
-    if fiscal_years and base.get("fiscal_year") not in fiscal_years:
+    raw_fiscal_year = base.get("fiscal_year")
+    publication_outside_period = bool(
+        (period_start is not None and published < period_start)
+        or (period_end is not None and published > period_end)
+    )
+    if fiscal_years:
+        if raw_fiscal_year is None:
+            # Non-periodic official materials (for example issuer IR pages and
+            # press releases) often have no fiscal-year field.  Bind those
+            # rows to the request's explicit publication window instead of
+            # discarding every otherwise-current source before retrieval.
+            if period_start is None or period_end is None or publication_outside_period:
+                return "reporting_period_outside_request"
+        else:
+            try:
+                fiscal_year = int(raw_fiscal_year)
+            except (TypeError, ValueError):
+                return "reporting_period_outside_request"
+            if fiscal_year not in fiscal_years:
+                return "reporting_period_outside_request"
+    elif publication_outside_period:
         return "reporting_period_outside_request"
     return None
 

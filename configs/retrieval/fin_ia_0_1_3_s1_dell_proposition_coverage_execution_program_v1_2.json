@@ -1,0 +1,972 @@
+{
+  "case_key": "DELL",
+  "controls": {
+    "candidate_is_not_evidence": true,
+    "current_pack_promotion_requires_candidate_decision_and_evidence_gate": true,
+    "generation_model_calls": 0,
+    "network_calls_in_internal_phase": 0,
+    "nonperiodic_source_temporal_binding": "explicit_publication_window_when_fiscal_year_is_null",
+    "public_gap_requires_complete_route_receipts": true,
+    "rank_never_grants_evidence_authority": true,
+    "relationship_graph_grants_relationship_fact_authority": false,
+    "relationship_graph_result_or_label_access": false,
+    "token_budget_basis": {
+      "applicable": false,
+      "reason": "The internal proposition-coverage phase uses deterministic local tools and no model node."
+    },
+    "typed_relationship_graph_executor": "source_bound_registered_entity_explicit_mention_v1",
+    "vector_execution_device": "cuda",
+    "vector_execution_precision": "float16"
+  },
+  "evidence_requests": [
+    {
+      "acceptable_proxy": true,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "EARNINGS_CALL_TRANSCRIPT",
+        "PUBLIC_WEB"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::PRICE_CONFIGURATION",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "operating_performance",
+      "forbidden_proxy": [
+        "unbound channel quote",
+        "wrong company product",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "average_selling_price",
+        "revenue"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "AI server observable price range",
+        "AI server configuration tiers",
+        "GPU HBM networking and storage configuration mix"
+      ],
+      "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "requested_facet_ids": [
+        "pricing_and_mix"
+      ],
+      "requester_role": "value_capture_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": true,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "EARNINGS_CALL_TRANSCRIPT",
+        "PUBLIC_WEB"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::UNIT_VOLUME",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "demand",
+      "forbidden_proxy": [
+        "revenue divided by invented ASP",
+        "wrong company shipments",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "shipments",
+        "orders",
+        "backlog"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "AI server units shipped",
+        "industry AI server shipment volume",
+        "Dell shipment share proxy"
+      ],
+      "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+      "requested_facet_ids": [
+        "orders_and_backlog"
+      ],
+      "requester_role": "demand_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": true,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "EARNINGS_CALL_TRANSCRIPT",
+        "PUBLIC_WEB"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::PVM_BRIDGE",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "operating_performance",
+      "forbidden_proxy": [
+        "unbound arithmetic",
+        "incomparable periods",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "revenue",
+        "average_selling_price",
+        "shipments"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "reported AI server revenue and mix",
+        "industry AI server shipment and ASP",
+        "configuration intensity inputs"
+      ],
+      "request_id": "REQ::DELL::PVM_BRIDGE::V1",
+      "requested_facet_ids": [
+        "pricing_and_mix"
+      ],
+      "requester_role": "value_capture_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "EARNINGS_CALL_TRANSCRIPT"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::CUSTOMER_DEMAND",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "demand",
+      "forbidden_proxy": [
+        "unbound industry demand",
+        "orders treated as revenue",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "orders",
+        "backlog",
+        "shipments",
+        "customer_count"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "AI order conversion",
+        "backlog durability",
+        "customer concentration",
+        "pull-forward risk"
+      ],
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "requested_facet_ids": [
+        "conversion_and_durability"
+      ],
+      "requester_role": "demand_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": true,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "EARNINGS_CALL_TRANSCRIPT",
+        "PUBLIC_WEB"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::CUSTOMER_DEMAND",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "demand",
+      "forbidden_proxy": [
+        "customer demand attributed directly to Dell",
+        "wrong relationship direction",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "capital_expenditures",
+        "customer_count"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "named Dell customer or deployment relationship",
+        "customer AI infrastructure deployment",
+        "customer budget durability"
+      ],
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "requested_facet_ids": [
+        "downstream_demand_context"
+      ],
+      "requester_role": "demand_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL",
+        "MSFT"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "EARNINGS_CALL_TRANSCRIPT"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::SUPPLY_CHAIN",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "supply",
+      "forbidden_proxy": [
+        "supplier capacity treated as Dell allocation",
+        "wrong company inventory",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "shipments",
+        "capacity",
+        "inventory"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "AI server delivery cadence",
+        "component constraint",
+        "inventory and fulfillment execution"
+      ],
+      "request_id": "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "requested_facet_ids": [
+        "subject_execution"
+      ],
+      "requester_role": "supply_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": true,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "20-F",
+        "6-K",
+        "EARNINGS_CALL_TRANSCRIPT",
+        "PUBLIC_WEB"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::SUPPLY_CHAIN",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "supply",
+      "forbidden_proxy": [
+        "ecosystem capacity treated as Dell allocation",
+        "wrong relationship direction",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "capacity",
+        "yield",
+        "shipments",
+        "capital_expenditures"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "Dell supplier dependency or allocation disclosure",
+        "GPU supply release",
+        "HBM availability",
+        "advanced packaging capacity"
+      ],
+      "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "requested_facet_ids": [
+        "upstream_capacity_context"
+      ],
+      "requester_role": "supply_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL",
+        "NVDA",
+        "MU",
+        "TSM"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "20-F",
+        "6-K",
+        "PUBLIC_WEB"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::SUPPLY_CHAIN",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "relationship",
+      "forbidden_proxy": [
+        "industry relationship inferred as direct contract",
+        "wrong relationship direction",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "capacity",
+        "shipments"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "supplier names Dell",
+        "Dell names supplier",
+        "delivery or allocation relationship"
+      ],
+      "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+      "requested_facet_ids": [
+        "counterparty_direct_mention"
+      ],
+      "requester_role": "supply_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL",
+        "NVDA",
+        "MU",
+        "TSM"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": true,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "EARNINGS_CALL_TRANSCRIPT"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::VALUE_POOL",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "operating_performance",
+      "forbidden_proxy": [
+        "company margin treated as AI margin",
+        "industry BOM treated as Dell cost",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "revenue",
+        "gross_profit",
+        "gross_margin",
+        "operating_income",
+        "operating_margin"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "AI server OEM gross profit and margin",
+        "AI server incremental margin inputs",
+        "supplier component value proxy"
+      ],
+      "request_id": "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "requested_facet_ids": [
+        "margin_and_incremental_profit"
+      ],
+      "requester_role": "value_capture_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": true,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "20-F",
+        "6-K",
+        "PUBLIC_WEB"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::VALUE_POOL",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "relationship",
+      "forbidden_proxy": [
+        "supplier company-wide margin treated as Dell value share",
+        "wrong relationship direction",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "revenue",
+        "gross_margin",
+        "operating_margin"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "Dell supplier attribution or relationship",
+        "GPU HBM packaging and OEM value pool inputs",
+        "supplier economics"
+      ],
+      "request_id": "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+      "requested_facet_ids": [
+        "counterparty_direct_mention"
+      ],
+      "requester_role": "value_capture_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL",
+        "NVDA",
+        "MU",
+        "TSM"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::COUNTEREVIDENCE",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "risk_policy",
+      "forbidden_proxy": [
+        "generic risk factor without current linkage",
+        "wrong company risk",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "inventory",
+        "gross_margin",
+        "operating_cash_flow"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "AI demand digestion signals",
+        "AI margin dilution signals",
+        "AI working-capital pressure"
+      ],
+      "request_id": "REQ::DELL::COUNTER_ISSUER::V1",
+      "requested_facet_ids": [
+        "issuer_counterevidence"
+      ],
+      "requester_role": "counterevidence_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": true,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K",
+        "20-F",
+        "6-K",
+        "PUBLIC_WEB"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::DELL::COUNTEREVIDENCE",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "risk_policy",
+      "forbidden_proxy": [
+        "ecosystem risk treated as Dell fact",
+        "wrong relationship direction",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "capacity",
+        "shipments",
+        "capital_expenditures",
+        "inventory"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "GPU HBM packaging constraint",
+        "customer capex slowdown",
+        "architecture transition",
+        "supply release or easing evidence"
+      ],
+      "request_id": "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "requested_facet_ids": [
+        "upstream_or_demand_counterevidence"
+      ],
+      "requester_role": "counterevidence_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return direct evidence, bounded proxies, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "NVDA",
+        "MU",
+        "TSM",
+        "MSFT"
+      ],
+      "unit": "reported_source_unit"
+    }
+  ],
+  "external_source_ladder": [
+    {
+      "exhaustion_authority": true,
+      "source_classes": [
+        "issuer_ir_and_filings",
+        "regulator_primary",
+        "customer_official",
+        "supplier_official"
+      ],
+      "tier_id": "official_subject_regulator_customer_supplier"
+    },
+    {
+      "exhaustion_authority": false,
+      "source_classes": [
+        "industry_association",
+        "market_tracker_public_release",
+        "standards_body",
+        "government_statistics"
+      ],
+      "tier_id": "industry_association_market_tracking"
+    },
+    {
+      "exhaustion_authority": false,
+      "source_classes": [
+        "product_catalog",
+        "public_procurement",
+        "channel_quote",
+        "customer_deployment",
+        "public_configuration_inventory"
+      ],
+      "tier_id": "product_procurement_channel_deployment"
+    },
+    {
+      "exhaustion_authority": false,
+      "source_classes": [
+        "trusted_media",
+        "public_analyst_material",
+        "expert_or_supply_chain_interview",
+        "counterevidence_search"
+      ],
+      "tier_id": "trusted_context_analyst_counterevidence"
+    }
+  ],
+  "internal_route_contract": [
+    "company_financial_fact_mart",
+    "current_financial_object_store",
+    "capture_bound_raw_source",
+    "bm25_lexical",
+    "qwen_dense_cuda_fp16",
+    "typed_relationship_graph_source_bound_explicit_mention"
+  ],
+  "material_scope_blueprint": {
+    "candidate_or_reference_inputs_read": false,
+    "generation_model_calls": 0,
+    "metric_binding_roles": [
+      "direct",
+      "bridge"
+    ],
+    "mode": "explicit_all_visible_product_intents_hard_material_axes",
+    "required_roles_by_request": {
+      "REQ::DELL::COUNTER_ECOSYSTEM::V1": [
+        "counter",
+        "context"
+      ],
+      "REQ::DELL::COUNTER_ISSUER::V1": [
+        "counter"
+      ],
+      "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1": [
+        "context",
+        "counter"
+      ],
+      "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1": [
+        "direct",
+        "counter"
+      ],
+      "REQ::DELL::PRICE_CONFIGURATION::V1": [
+        "direct",
+        "context"
+      ],
+      "REQ::DELL::PVM_BRIDGE::V1": [
+        "direct",
+        "context"
+      ],
+      "REQ::DELL::SUPPLY_RELATIONSHIP::V1": [
+        "context"
+      ],
+      "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1": [
+        "direct",
+        "counter"
+      ],
+      "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1": [
+        "context",
+        "counter"
+      ],
+      "REQ::DELL::UNIT_VOLUME::V1": [
+        "direct",
+        "counter"
+      ],
+      "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1": [
+        "context"
+      ],
+      "REQ::DELL::VALUE_POOL_MARGIN::V1": [
+        "bridge"
+      ]
+    },
+    "scope_authority": "owner_reviewed_dell_proposition_execution_program",
+    "stage_scope": "observable_source_inputs_only"
+  },
+  "predecessor": {
+    "program_id": "FIN-0.1.3-S1-DELL-PROPOSITION-COVERAGE-R2",
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_1.json",
+    "sha256": "e8edac67f838ad6e7e9e09f3d810f6147ccd21759345b829ff16aabd939ae54a"
+  },
+  "program_id": "FIN-0.1.3-S1-DELL-PROPOSITION-COVERAGE-R3",
+  "propositions": [
+    {
+      "business_question_zh": "戴尔 AI 服务器的可观察价格区间、配置层级与组合变化是什么？",
+      "minimum_useful_outputs": [
+        "configuration taxonomy",
+        "observable price range or price proxy",
+        "period-bound mix evidence",
+        "limitations of translating channel prices into issuer ASP"
+      ],
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "request_ids": [
+        "REQ::DELL::PRICE_CONFIGURATION::V1"
+      ]
+    },
+    {
+      "business_question_zh": "在没有公司直接披露销量时，销量、出货和份额可以如何形成可复算区间？",
+      "minimum_useful_outputs": [
+        "reported unit or shipment evidence",
+        "bounded shipment proxy",
+        "market-share or industry-volume bridge",
+        "sensitivity bounds"
+      ],
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "request_ids": [
+        "REQ::DELL::UNIT_VOLUME::V1"
+      ]
+    },
+    {
+      "business_question_zh": "收入变化中价格、数量和配置组合分别可能贡献多少？",
+      "minimum_useful_outputs": [
+        "revenue anchor",
+        "price proxy",
+        "unit proxy",
+        "deterministic PVM scenario or typed gap"
+      ],
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "request_ids": [
+        "REQ::DELL::PVM_BRIDGE::V1"
+      ]
+    },
+    {
+      "business_question_zh": "AI 需求来自哪些客户、部署与预算信号，持续性和提前采购风险如何？",
+      "minimum_useful_outputs": [
+        "issuer order and backlog evidence",
+        "customer deployment evidence",
+        "conversion or durability evidence",
+        "demand-side counterevidence"
+      ],
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "request_ids": [
+        "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+        "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1"
+      ]
+    },
+    {
+      "business_question_zh": "GPU、HBM、先进封装、网络和存储供给如何约束戴尔的交付节奏？",
+      "minimum_useful_outputs": [
+        "subject execution evidence",
+        "upstream capacity and release timing",
+        "relationship direction",
+        "allocation or yield boundary"
+      ],
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "request_ids": [
+        "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+        "REQ::DELL::SUPPLY_RELATIONSHIP::V1"
+      ]
+    },
+    {
+      "business_question_zh": "AI 服务器价值池如何在 Dell、GPU、HBM、网络与其他供应商之间分配？",
+      "minimum_useful_outputs": [
+        "issuer gross-profit or margin anchor",
+        "component or supplier cost proxy",
+        "OEM value-pool range",
+        "causal attribution boundary"
+      ],
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "request_ids": [
+        "REQ::DELL::VALUE_POOL_MARGIN::V1",
+        "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1"
+      ]
+    },
+    {
+      "business_question_zh": "哪些发行人、客户、供应商和行业证据会削弱当前判断，什么变化会使结论失效？",
+      "minimum_useful_outputs": [
+        "issuer counterevidence",
+        "upstream or demand counterevidence",
+        "observable invalidation indicators",
+        "time-bound what-would-change conditions"
+      ],
+      "proposition_id": "DELL-PROP-COUNTEREVIDENCE-WWC",
+      "request_ids": [
+        "REQ::DELL::COUNTER_ISSUER::V1",
+        "REQ::DELL::COUNTER_ECOSYSTEM::V1"
+      ]
+    }
+  ],
+  "purpose": "Prove task-relative proposition coverage across the mounted S1/S2 runtime before any dynamic model authority is issued.",
+  "readiness_contract": {
+    "accepted_evidence_bound_to_case_period_source_role_and_proposition": true,
+    "all_material_candidates_decided": true,
+    "downstream_derived_outputs_never_required_as_s1_evidence": true,
+    "dynamic_single_unit_authorized_only_after_task_relative_readiness": true,
+    "local_failure_never_reported_as_public_gap": true,
+    "required_route_receipts_per_request": true,
+    "s1_readiness_requires_only_observable_source_inputs": true,
+    "typed_gap_requires_gap_eligibility_receipt": true,
+    "unexecuted_external_route_never_reported_as_public_gap": true
+  },
+  "research_as_of": "2026-08-06",
+  "schema_version": "fin_ia_s1_proposition_coverage_execution_program_v1_1",
+  "stage_output_handoffs": {
+    "S2": [
+      {
+        "downstream_output": "bounded unit-volume range or typed gap",
+        "handoff_id": "DELL-S2-UNIT-VOLUME-RANGE",
+        "required_observable_inputs": [
+          "AI server units shipped",
+          "industry AI server shipment volume",
+          "Dell shipment share proxy"
+        ],
+        "source_request_ids": [
+          "REQ::DELL::UNIT_VOLUME::V1"
+        ]
+      },
+      {
+        "downstream_output": "deterministic price-volume-mix scenario or typed gap",
+        "handoff_id": "DELL-S2-PVM-BRIDGE",
+        "required_observable_inputs": [
+          "reported AI server revenue and mix",
+          "industry AI server shipment and ASP",
+          "configuration intensity inputs"
+        ],
+        "source_request_ids": [
+          "REQ::DELL::PRICE_CONFIGURATION::V1",
+          "REQ::DELL::UNIT_VOLUME::V1",
+          "REQ::DELL::PVM_BRIDGE::V1"
+        ]
+      },
+      {
+        "downstream_output": "bounded supplier-cost and OEM-value-pool sensitivity or typed gap",
+        "handoff_id": "DELL-S2-VALUE-POOL-SENSITIVITY",
+        "required_observable_inputs": [
+          "AI server OEM gross profit and margin",
+          "supplier component value proxy",
+          "supplier economics"
+        ],
+        "source_request_ids": [
+          "REQ::DELL::VALUE_POOL_MARGIN::V1",
+          "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1"
+        ]
+      }
+    ],
+    "S3": [
+      {
+        "downstream_output": "observable invalidation thresholds and time-bound what-would-change conditions",
+        "handoff_id": "DELL-S3-WHAT-WOULD-CHANGE",
+        "required_observable_inputs": [
+          "AI demand digestion signals",
+          "AI margin dilution signals",
+          "AI working-capital pressure",
+          "supply release or easing evidence"
+        ],
+        "source_request_ids": [
+          "REQ::DELL::COUNTER_ISSUER::V1",
+          "REQ::DELL::COUNTER_ECOSYSTEM::V1"
+        ]
+      }
+    ]
+  },
+  "status": "approved_ai_free_stage_owned_vertical_execution_program_with_official_web_and_relationship_graph",
+  "successor_change": {
+    "candidate_is_not_evidence": true,
+    "current_bilateral_relationship_not_inferred_from_historical_mention": true,
+    "historical_material_outside_request_period_remains_ineligible": true,
+    "numeric_authority": false,
+    "owned_defects": [
+      "nonperiodic_official_source_rejected_when_fiscal_year_null",
+      "typed_relationship_graph_declared_without_runtime_handler",
+      "task_requests_excluded_official_public_web_source_class"
+    ],
+    "public_web_enabled_request_ids": [
+      "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "REQ::DELL::PVM_BRIDGE::V1",
+      "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+      "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "REQ::DELL::UNIT_VOLUME::V1",
+      "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1"
+    ]
+  }
+}

@@ -216,11 +216,16 @@ def _request_public_row(request_result: Mapping[str, Any]) -> dict[str, Any]:
                 "eligible_object_count",
                 "bm25_first_stage_count",
                 "qwen_first_stage_count",
+                "typed_relationship_graph_requested",
+                "typed_relationship_graph_executed",
+                "typed_relationship_graph_first_stage_count",
                 "union_count_before_source_quota",
                 "selected_count",
                 "selected_both_routes",
                 "selected_bm25_only",
                 "selected_qwen_only",
+                "selected_typed_relationship_graph",
+                "selected_typed_relationship_graph_only",
                 "selected_candidate_count_by_owner",
                 "owner_floor_unmet",
                 "material_scope_ready",
@@ -373,9 +378,10 @@ def run(
     attempt_id: str,
     private_output: Path,
     public_output: Path,
+    program_path: Path = PROGRAM,
 ) -> dict[str, Any]:
     _require_clean()
-    program = _read_json(PROGRAM)
+    program = _read_json(program_path)
     service = ResearchRetrievalService.from_runtime_paths(ROOT)
     principal = ResearchRetrievalPrincipal(
         mode="current", permissions=frozenset({"current_product:read"})
@@ -396,8 +402,8 @@ def run(
         "recorded_at": recorded_at,
         "prepared_from_commit": prepared_from_commit,
         "program_binding": {
-            "ref": _relative(PROGRAM),
-            "sha256": _sha256(PROGRAM),
+            "ref": _relative(program_path),
+            "sha256": _sha256(program_path),
             "program_id": program.get("program_id"),
         },
         "runtime_registry_binding": {
@@ -433,6 +439,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         description="Run and materialize the AI-free DELL proposition coverage batch."
     )
     parser.add_argument("--attempt-id", required=True)
+    parser.add_argument("--program", default=str(PROGRAM))
     parser.add_argument("--private-output")
     parser.add_argument("--public-output", default=str(DEFAULT_PUBLIC))
     args = parser.parse_args(argv)
@@ -445,6 +452,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         attempt_id=args.attempt_id,
         private_output=private_output,
         public_output=_resolve(args.public_output),
+        program_path=_resolve(args.program),
     )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0

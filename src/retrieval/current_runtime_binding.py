@@ -646,6 +646,20 @@ def project_request_route_execution_truth(
         str(row["declared_route"]): dict(row)
         for row in binding_receipt["route_execution_truth"]["routes"]
     }
+    explicit_execution = (
+        dict(hybrid_result.get("route_execution") or {})
+        if hybrid_result is not None
+        else {}
+    )
+    executed_candidate_routes = {
+        str(value)
+        for value in explicit_execution.get("executed_candidate_routes") or ()
+    }
+    if hybrid_result is not None and not explicit_execution:
+        # Legacy hybrid results predate per-route receipts and are known to
+        # execute only these two handlers.  Never infer graph execution merely
+        # because a hybrid result object exists.
+        executed_candidate_routes = {"bm25_lexical", "dense_embedding"}
     narrative_rows: list[dict[str, Any]] = []
     if execution_plan is not None:
         for request in execution_plan.get("narrative_requests") or ():
@@ -657,6 +671,8 @@ def project_request_route_execution_truth(
                     "not_executed_route_unavailable"
                     if state == "not_configured"
                     else "executed"
+                    if route in executed_candidate_routes
+                    else "not_executed_handler_missing"
                     if hybrid_result is not None
                     else "scheduled_in_current_hybrid_runtime"
                 )
@@ -687,6 +703,8 @@ def project_request_route_execution_truth(
         ),
         "static_snapshot_filter_executed": True,
         "hybrid_candidate_runtime_executed": hybrid_result is not None,
+        "hybrid_runtime_route_receipt_explicit": bool(explicit_execution),
+        "executed_candidate_routes": sorted(executed_candidate_routes),
         "required_candidate_routes_all_executed": all(
             route.get("execution_state") == "executed"
             for request in narrative_rows

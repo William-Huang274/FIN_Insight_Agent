@@ -310,3 +310,31 @@ materials。旧 source ID 在 successor 中为 `0` 条；两条 Dell item 均为
 `pricing-asp`、`pricing-units` 与 `supplier-capacity-readthrough`。Pack payload digest 为
 `1654b68f...e2a98`，Evidence successor result digest 为 `9ec7bdef...052c9`；仍不授予
 qualified-human、S1 qualification、NumericFact 或 publication。
+
+### 8.3 Reviewed anchors、S2 桥接与任务级 readiness 后继
+
+R4 Pack 生成后没有把“已接纳 Evidence”误当成“下游可直接引用”。新增 reviewed-anchor
+successor，把前序 `79` 条目录扩展为 `86` 条，仅加入 `7` 条能够在原文中逐字定位且用途边界
+明确的 anchor；目录 digest 为 `597eb9ec...e66e9b`。新增 anchor 只授权有界产品／合作／报价／
+采购观察，不授权 Dell 公司 ASP、出货量、份额、NVIDIA 私有 allocation 或 AI 产品利润。
+
+S2 quantitative successor 重新绑定 R4 Pack，保留 `38` 条 reported facts、`27` 条确定性派生、
+`2` 个 estimates、`2` 个 scenarios 和 `9` 个 typed quantitative gaps。随后新增产品价值桥：它把
+Dell Q1 FY27 披露的 AI server revenue、ISG revenue、ISG operating income 与公司收入放在同一
+期间、同一单位下，计算可复核的收入占比与 ISG margin reconciliation；但由于公开输入缺少
+可比公司级 units／ASP／mix 和 AI 产品成本归因，PVM 三项与 product profit 均保持 `null`。
+
+任务级 readiness successor 绑定 R4 Pack、R4 quantitative program 和 product-value bridge：
+
+- `20` 个 requirement 中 `7` 个 fully satisfied、`18` 个 research-consumable；
+- `12` 个请求中 `2` 个 ready、`11` 个可在边界下研究；
+- 当前 Dell→NVIDIA／NVIDIA→Dell 双向供应关系请求为 ready；
+- 价格／配置请求已有 bundle 与公共采购上下文，但不是公司 ASP；
+- 唯一仍为 `not_ready` 的请求是 `REQ::DELL::UNIT_VOLUME::V1`，对应
+  `dell-gap-pricing-units`；
+- PVM 与 AI 产品利润不是被 readiness “关掉”，而是继续以 S2 bridge gap 显式阻断精确结论。
+
+public readiness digest 为 `9021eae8...d4d4e0`。截至本节，R4 Pack、anchor v1.6 和 S2 bridge
+仍是后继资产；current runtime registry 仍绑定 R3 Pack／anchor v1.5。必须走原子 promotion，
+验证完整 predecessor digest、保留 MU/NVDA/holdout，再能称为 current。远端 push 仍因连接
+reset 未证实，任何 promotion authority 不能伪造 `pushed_head_required` 已满足。

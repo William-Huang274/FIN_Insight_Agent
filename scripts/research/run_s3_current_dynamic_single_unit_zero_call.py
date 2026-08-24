@@ -990,6 +990,18 @@ def run(
                 "retrieval_round_count": len(round_responses),
                 "executed_request_count": len(executed_ids),
                 "accepted_reviewed_evidence_count": len(accepted_refs),
+                "accepted_reviewed_source_type_counts": dict(
+                    sorted(accepted_source_type_counts.items())
+                ),
+                "public_pdf_card_count": len(public_pdf_cards),
+                "public_pdf_reviewed_anchor_receipt_count": sum(
+                    bool(row.get("reviewed_anchor_receipt"))
+                    for row in public_pdf_cards
+                ),
+                "public_pdf_bounded_context_receipt_count": sum(
+                    bool(row.get("bounded_context_source_receipt"))
+                    for row in public_pdf_cards
+                ),
                 "numeric_fact_count": len(numeric_refs),
                 "open_gap_count": len(open_gap_refs),
             },

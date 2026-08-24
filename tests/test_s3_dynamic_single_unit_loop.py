@@ -14,6 +14,7 @@ from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     DynamicSingleUnitLoopError,
     REFLECTION_PAYLOAD_SCHEMA_VERSION,
     REQUEST_PAYLOAD_SCHEMA_VERSION,
+    _compact_evidence_card,
     bind_reflection_submission,
     compile_reflection_artifacts,
     compile_reflection_submission_messages,
@@ -111,6 +112,41 @@ def test_initial_message_contains_no_answer_pack_or_numeric_fact(
     assert "reviewed_evidence" not in rendered.lower()
     assert "$43.8" not in rendered
     assert "戴尔 AI 服务器收入增长" in rendered
+
+
+def test_compact_evidence_card_preserves_public_pdf_authority_receipts() -> None:
+    card = _compact_evidence_card(
+        {
+            "evidence_ref": "EVIDENCE::PDF::1",
+            "evidence_role": "counterparty_or_ecosystem_readthrough",
+            "evidence_owner_ticker": "ORG::PUBLIC-CUSTOMER",
+            "source_type": "PUBLIC_PDF",
+            "source_tier": "issuer_regulator_or_government_primary",
+            "source_url": "https://example.invalid/reviewed.pdf",
+            "publication_date": "2026-01-01",
+            "source_reporting_period_end": "",
+            "relationship_directions": ["customer_context_to_subject"],
+            "slot_bindings": [],
+            "source_visible_fact_excerpt": "bounded reviewed excerpt",
+            "numeric_use_boundary": "context_only",
+            "reviewed_anchor_receipt": {
+                "source_record_id": "PUBLIC::PDF::1",
+                "anchor_start": 10,
+                "anchor_end": 33,
+            },
+            "bounded_context_source_receipt": {
+                "disposition": "bounded_context_only",
+                "causal_attribution_authorized": False,
+            },
+        },
+        maximum_excerpt_chars=2400,
+    )
+    assert card["reviewed_anchor_receipt"]["anchor_start"] == 10
+    assert card["bounded_context_source_receipt"] == {
+        "disposition": "bounded_context_only",
+        "causal_attribution_authorized": False,
+    }
+    assert "numeric_ref" not in card
 
 
 def test_r34_policy_binds_current_r4_readiness_and_s2_bridge() -> None:

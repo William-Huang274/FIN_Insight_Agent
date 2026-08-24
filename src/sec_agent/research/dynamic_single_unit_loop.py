@@ -693,7 +693,7 @@ def _compact_evidence_card(
     row: Mapping[str, Any], *, maximum_excerpt_chars: int
 ) -> dict[str, Any]:
     excerpt = str(row.get("source_visible_fact_excerpt") or "")
-    return {
+    card = {
         "evidence_ref": str(row.get("evidence_ref") or ""),
         "evidence_role": str(row.get("evidence_role") or ""),
         "evidence_owner_ticker": str(row.get("evidence_owner_ticker") or ""),
@@ -713,6 +713,13 @@ def _compact_evidence_card(
         > maximum_excerpt_chars,
         "numeric_use_boundary": str(row.get("numeric_use_boundary") or ""),
     }
+    for receipt_key in (
+        "reviewed_anchor_receipt",
+        "bounded_context_source_receipt",
+    ):
+        if isinstance(row.get(receipt_key), Mapping):
+            card[receipt_key] = deepcopy(dict(row[receipt_key]))
+    return card
 
 
 def _compact_numeric_card(row: Mapping[str, Any]) -> dict[str, Any]:

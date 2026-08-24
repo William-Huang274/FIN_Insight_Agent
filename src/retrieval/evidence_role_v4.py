@@ -41,6 +41,9 @@ _PUBLIC_FACET_ALIASES = {
     "trusted_or_industry_counterevidence": (
         "upstream_or_demand_counterevidence"
     ),
+    "bounded_unit_volume_context": "downstream_demand_context",
+    "bounded_price_configuration_context": "pricing_and_mix",
+    "current_platform_relationship_context": "counterparty_direct_mention",
 }
 
 _PUBLIC_COMPATIBLE_ROLES = {
@@ -93,6 +96,31 @@ _PUBLIC_COMPATIBLE_ROLES = {
             ROLE_REGULATORY,
             ROLE_OBSERVED_RESULT,
             ROLE_RELATIONSHIP,
+        }
+    ),
+    "bounded_unit_volume_context": frozenset(
+        {
+            ROLE_DIRECT_DEMAND,
+            ROLE_DEMAND_RISK,
+            ROLE_OBSERVED_RESULT,
+            ROLE_GUIDANCE,
+            ROLE_RELATIONSHIP,
+        }
+    ),
+    "bounded_price_configuration_context": frozenset(
+        {
+            ROLE_OBSERVED_RESULT,
+            ROLE_GUIDANCE,
+            ROLE_DIRECT_DEMAND,
+            ROLE_DEMAND_RISK,
+            ROLE_RELATIONSHIP,
+        }
+    ),
+    "current_platform_relationship_context": frozenset(
+        {
+            ROLE_RELATIONSHIP,
+            ROLE_DIRECT_SUPPLY,
+            ROLE_OBSERVED_RESULT,
         }
     ),
 }

@@ -130,6 +130,7 @@ def main() -> int:
     parser.add_argument("--model-dir", type=Path)
     parser.add_argument("--maximum-sequence-length", type=int, default=512)
     parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--recorded-at", default="2026-08-23")
     args = parser.parse_args()
 
     base_objects_path = _resolve(args.base_objects)
@@ -226,7 +227,7 @@ def main() -> int:
     result = {
         "schema_version": "fin_ia_s1c_qwen_embedding_cache_successor_result_v1_0",
         "status": "cuda_fp16_append_only_candidate_embedding_cache_materialized",
-        "recorded_at": "2026-08-23",
+        "recorded_at": str(args.recorded_at),
         "inputs": {
             "base_objects_ref": _repo_ref(base_objects_path),
             "base_objects_sha256": sha256_file(base_objects_path),

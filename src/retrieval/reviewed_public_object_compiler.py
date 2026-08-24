@@ -65,6 +65,8 @@ def _slice_record_id(source_page_record_id: str, source_content_digest: str) -> 
 
 def _public_material_record(
     material: Mapping[str, Any],
+    *,
+    allowed_source_types: frozenset[str],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     source_page_record_id = _source_record_id(material)
     material_ref = _material_ref(material)
@@ -80,7 +82,7 @@ def _public_material_record(
         "public_source_record_id_invalid",
     )
     _require(material_ref, "public_source_material_ref_missing")
-    _require(source_type == "PUBLIC_WEB", "public_source_type_invalid")
+    _require(source_type in allowed_source_types, "public_source_type_invalid")
     _require(owner and speaker and source_tier, "public_source_identity_missing")
     _require(publication_date, "public_source_publication_date_missing")
     _require(source_text, "public_source_text_missing")
@@ -234,6 +236,7 @@ def compile_reviewed_public_source_objects(
     *,
     evidence_pack: Mapping[str, Any],
     route_policy: QueryObjectFactRoutePolicy,
+    allowed_source_types: Sequence[str] = ("PUBLIC_WEB",),
 ) -> ReviewedPublicObjectCompilation:
     """Compile capture-bound reviewed public sources into label-free candidates.
 
@@ -244,6 +247,14 @@ def compile_reviewed_public_source_objects(
     against the immutable reviewed Pack.
     """
 
+    normalized_source_types = frozenset(
+        str(value).strip().upper() for value in allowed_source_types if str(value).strip()
+    )
+    _require(
+        bool(normalized_source_types)
+        and normalized_source_types.issubset({"PUBLIC_WEB", "PUBLIC_PDF"}),
+        "reviewed_public_allowed_source_types_invalid",
+    )
     case_key = str(evidence_pack.get("case_key") or "").strip().upper()
     _require(case_key, "reviewed_public_pack_case_missing")
     raw_items = evidence_pack.get("evidence_items")
@@ -257,6 +268,13 @@ def compile_reviewed_public_source_objects(
         if isinstance(item, Mapping)
         and item.get("writer_citable") is True
         and str(item.get("source_record_id") or "").startswith("PUBLIC::")
+        and any(
+            isinstance(material, Mapping)
+            and _material_ref(material) == str(item.get("source_material_ref") or "")
+            and str(material.get("source_type") or "").strip().upper()
+            in normalized_source_types
+            for material in raw_materials
+        )
     }
     _require(eligible_material_refs, "reviewed_public_material_refs_empty")
     materials_by_ref: dict[str, Mapping[str, Any]] = {}
@@ -280,7 +298,10 @@ def compile_reviewed_public_source_objects(
     source_content_identities: set[tuple[str, str]] = set()
     for material_ref in sorted(materials_by_ref):
         material = materials_by_ref[material_ref]
-        record, parent = _public_material_record(material)
+        record, parent = _public_material_record(
+            material,
+            allowed_source_types=normalized_source_types,
+        )
         source_record_id = str(record["evidence_id"])
         source_page_record_id = str(
             (record.get("metadata") or {})["source_page_record_id"]
@@ -361,6 +382,7 @@ def compile_reviewed_public_source_objects(
     )
     summary = {
         "case_key": case_key,
+        "allowed_source_types": sorted(normalized_source_types),
         "eligible_reviewed_item_count": sum(
             1
             for item in raw_items

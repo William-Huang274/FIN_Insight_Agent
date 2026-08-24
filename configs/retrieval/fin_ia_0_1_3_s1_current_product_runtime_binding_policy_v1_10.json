@@ -1,0 +1,116 @@
+{
+  "assets": {
+    "current_evidence_pack_result": {
+      "ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_6.json",
+      "registry_resource_id": "application.result.current_research_local_evidence_packs"
+    },
+    "current_reviewed_anchor_catalog": {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_7.json",
+      "registry_resource_id": "application.result.current_reviewed_claim_anchors"
+    },
+    "dell_product_readiness": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_7.json",
+      "registry_resource_id": "application.result.current_s1_dell_product_readiness"
+    },
+    "hybrid_runtime_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_7.json",
+      "registry_resource_id": "application.config.current_hybrid_candidate_runtime_policy"
+    },
+    "mu_product_readiness": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_mu_current_product_readiness_result_v1_6.json",
+      "registry_resource_id": "application.result.current_s1_mu_product_readiness"
+    },
+    "nvda_product_readiness": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_nvda_current_product_readiness_result_v1_6.json",
+      "registry_resource_id": "application.result.current_s1_nvda_product_readiness"
+    },
+    "object_compiler_result": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_reviewed_public_pdf_reachability_successor_result_v1_0.json"
+    },
+    "product_readiness_catalog": {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_s1_product_readiness_catalog_v1_1.json",
+      "registry_resource_id": "application.config.current_s1_product_readiness_catalog"
+    },
+    "retrieval_snapshot": {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_3.json",
+      "registry_resource_id": "application.result.current_research_retrieval_snapshot"
+    },
+    "route_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_5.json",
+      "registry_resource_id": "application.config.current_query_object_fact_route_policy"
+    },
+    "runtime_registry": {
+      "ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json"
+    },
+    "s2_fact_mart_result": {
+      "ref": "configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json"
+    }
+  },
+  "binding_receipt_projection": {
+    "workbench_per_object_lineage_drilldown_complete": true
+  },
+  "policy_id": "FIN-0.1.3-S1-CURRENT-PRODUCT-RUNTIME-BINDING-V1.10",
+  "product_consumer": {
+    "consumer_id": "apps.workbench.research_retrieval_service.ResearchRetrievalService+apps.workbench.research_evidence_pack_service.ResearchEvidencePackService",
+    "hybrid_runtime_consumer_registered": true,
+    "integrated_pack_readiness_is_development_audit_only": true,
+    "product_pack_readiness_producer_registered": true,
+    "product_pack_readiness_workbench_consumer_registered": true,
+    "reviewed_pack_consumer_registered": true,
+    "s2_typed_fact_consumer_registered": true,
+    "source_snapshot_consumer_registered": true,
+    "workbench_per_object_lineage_drilldown_complete": true
+  },
+  "runtime_route_capabilities": [
+    {
+      "candidate_set_member": false,
+      "capability_state": "separate_sibling",
+      "declared_route": "typed_exact_fact_lookup",
+      "executor_id": "s2_company_financial_fact_mart",
+      "grants_numeric_authority_only_after_typed_execution": true,
+      "owning_stage": "S2"
+    },
+    {
+      "candidate_set_member": true,
+      "capability_state": "available",
+      "declared_route": "bm25_lexical",
+      "executor_id": "current_snapshot_bm25_and_hybrid_bm25",
+      "grants_numeric_authority_only_after_typed_execution": false,
+      "owning_stage": "S1"
+    },
+    {
+      "candidate_set_member": true,
+      "capability_state": "available",
+      "declared_route": "dense_embedding",
+      "executor_id": "qwen3_embedding_0_6b_dense_cuda_fp16",
+      "grants_numeric_authority_only_after_typed_execution": false,
+      "owning_stage": "S1"
+    },
+    {
+      "candidate_set_member": true,
+      "capability_state": "not_configured",
+      "declared_route": "learned_sparse",
+      "executor_id": "none",
+      "grants_numeric_authority_only_after_typed_execution": false,
+      "owning_stage": "S1"
+    },
+    {
+      "candidate_set_member": true,
+      "capability_state": "not_configured",
+      "declared_route": "multi_vector",
+      "executor_id": "none",
+      "grants_numeric_authority_only_after_typed_execution": false,
+      "owning_stage": "S1"
+    },
+    {
+      "candidate_set_member": true,
+      "capability_state": "available",
+      "declared_route": "typed_relationship_graph",
+      "executor_id": "source_bound_registered_entity_explicit_mention_v1",
+      "grants_numeric_authority_only_after_typed_execution": false,
+      "owning_stage": "S1"
+    }
+  ],
+  "schema_version": "fin_ia_s1_current_runtime_binding_policy_v1_2",
+  "status": "current_product_binding_policy"
+}

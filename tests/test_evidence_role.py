@@ -279,6 +279,21 @@ def test_public_context_successor_facets_are_supported_without_granting_authorit
             "trusted_or_industry_counterevidence",
             "Demand digestion and HBM supply constraints may pressure margins.",
         ),
+        (
+            "demand_volume_quality",
+            "bounded_unit_volume_context",
+            "A public procurement acquired four Dell PowerEdge XE9680 systems.",
+        ),
+        (
+            "pricing_mix_value_capture",
+            "bounded_price_configuration_context",
+            "Dell quoted a recommended bundled price for two PowerEdge GPU systems.",
+        ),
+        (
+            "relationship_attribution",
+            "current_platform_relationship_context",
+            "Dell and NVIDIA collaborate on the Dell AI Factory platform.",
+        ),
     )
     for slot_id, facet_id, text in cases:
         result = evaluate_evidence_role_v4(

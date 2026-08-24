@@ -133,3 +133,29 @@ def test_unreviewed_public_material_is_not_indexed() -> None:
         "UNREVIEWED" not in str(row["base_object_view"]["source_record_id"])
         for row in result.objects
     )
+
+
+def test_reviewed_public_pdf_requires_explicit_successor_source_type() -> None:
+    pack = _pack()
+    pack["source_materials"][0]["source_type"] = "PUBLIC_PDF"
+
+    with pytest.raises(
+        ReviewedPublicObjectCompilationError,
+        match="reviewed_public_material_refs_empty",
+    ):
+        compile_reviewed_public_source_objects(
+            evidence_pack=pack,
+            route_policy=_policy(),
+        )
+
+    result = compile_reviewed_public_source_objects(
+        evidence_pack=pack,
+        route_policy=_policy(),
+        allowed_source_types=("PUBLIC_PDF",),
+    )
+    assert result.summary["allowed_source_types"] == ["PUBLIC_PDF"]
+    assert {row["source_type"] for row in result.source_records} == {"PUBLIC_PDF"}
+    assert all(
+        row["base_object_view"]["source_type"] == "PUBLIC_PDF"
+        for row in result.objects
+    )

@@ -15,9 +15,9 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R34",
-  "resource_bytes": 3115268,
-  "resource_canonical_digest": "44e032c1eb3aaec9ba55462c0f3f834bdd6e2624b7cf672ffef85e8668ff5fd7",
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R35",
+  "resource_bytes": 3595650,
+  "resource_canonical_digest": "ec6563fbe15b85f92348cbddd1ef537680e4c123d073ec1147cb6e088581a87f",
   "resource_count": 28,
   "resources": [
     {
@@ -34,16 +34,16 @@
       "source_owner": "retrieval.material_evidence_runtime"
     },
     {
-      "bytes": 37986,
+      "bytes": 41543,
       "classification": "application_runtime_config",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_4.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_5.json",
       "required": true,
       "resource_id": "application.config.current_financial_research_kernel",
-      "sha256": "13d9c142c44166cddcb34e647b68b6b6f02d73296cf65d40bb8989eb1505e2a0",
+      "sha256": "4b42a4942a5026719263e1bdd86c66bc3f602e79d422dcd0c8f5cc07ecfe753c",
       "source_owner": "src.retrieval.contracts.load_financial_research_kernel"
     },
     {
@@ -53,10 +53,10 @@
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "lazy_first_controlled_research_plan",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_6.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_7.json",
       "required": true,
       "resource_id": "application.config.current_hybrid_candidate_runtime_policy",
-      "sha256": "9c7eb8796261ccf69c53d311edf6d1310e826a413f46483cb99924e3af3ceb4f",
+      "sha256": "b37c752cb75d37a217d10afd93c0b4b2c57fd6d2d7fdcb2d369f627302f80de8",
       "source_owner": "retrieval.hybrid_candidate_runtime.LocalQwenHybridCandidateRuntime.from_policy"
     },
     {
@@ -73,16 +73,16 @@
       "source_owner": "retrieval.material_evidence_runtime.compile_material_requirement_plan_from_runtime_input"
     },
     {
-      "bytes": 16309,
+      "bytes": 16447,
       "classification": "application_runtime_config",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_4.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_5.json",
       "required": true,
       "resource_id": "application.config.current_query_object_fact_route_policy",
-      "sha256": "ce7db58eafdc04f4a43e93f2fba524bf3674b19d520c50d78ef261a2b610e224",
+      "sha256": "05975a2dbe5503797e3e7487083ffa5a9c695b5587bec2f8ef8ed68857c37be7",
       "source_owner": "src.retrieval.route_compiler.load_query_object_fact_route_policy"
     },
     {
@@ -180,16 +180,16 @@
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
     },
     {
-      "bytes": 5035,
+      "bytes": 5041,
       "classification": "provider_neutral_current_s1_runtime_binding_policy",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_9.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_10.json",
       "required": true,
       "resource_id": "application.config.current_s1_runtime_binding_policy",
-      "sha256": "4b44de0b875a238f76415310ac81c4f14e07b46afd0d94e7943979c143ff9e74",
+      "sha256": "f921b49482ac2851219806911eaa21176c34156dfdfc5437742a23424ba426e6",
       "source_owner": "retrieval.current_runtime_binding.load_current_s1_runtime_binding_policy"
     },
     {
@@ -245,16 +245,16 @@
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
     },
     {
-      "bytes": 2364139,
+      "bytes": 2840814,
       "classification": "digest_bound_read_only_retrieval_candidate_result",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_2.json",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_3.json",
       "required": true,
       "resource_id": "application.result.current_research_retrieval_snapshot",
-      "sha256": "8eda1c8b6cd3c5523bb7c60493bdfb472929073d759b3a805220f87e702520ee",
+      "sha256": "110632491692bc63760faf2a41206c599650396afe75826e57d9318b2b010445",
       "source_owner": "apps.workbench.backend.application.research_retrieval_service"
     },
     {
@@ -310,16 +310,16 @@
       "source_owner": "retrieval.product_pack_readiness.compile_product_pack_readiness"
     },
     {
-      "bytes": 13299,
+      "bytes": 13305,
       "classification": "digest_bound_current_s1_runtime_binding_receipt",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_10.json",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_11.json",
       "required": true,
       "resource_id": "application.result.current_s1_runtime_binding_receipt",
-      "sha256": "37a35707b3ca23dbef0e811274b3ca13085be99df7566a7bb06162f0d0a480e8",
+      "sha256": "9d2dddbe50c9d6438b1cb120c77884888ba22766b53f83d6673609c5191a009c",
       "source_owner": "retrieval.current_runtime_binding.validate_current_s1_runtime_binding_receipt"
     },
     {

@@ -1,0 +1,39 @@
+{
+  "authority": {
+    "base_prefix_reuse_exactly_validated": true,
+    "candidate_is_not_evidence": true,
+    "embedding_grants_evidence_authority": false,
+    "numeric_authority": false
+  },
+  "inputs": {
+    "base_dense_ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v6/qwen3_embedding_0_6b_v1/dense.float16.npy",
+    "base_dense_sha256": "72002e4369bf7777dcb7db55295a5d96e338ca3b5fc4a0cc9f3c2b68753bbfd5",
+    "base_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v6/objects.jsonl",
+    "base_objects_sha256": "494c35fe657f3df80f7878c6ec64cadd154871c9310859d418fd323767c50e8c",
+    "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+    "model_id": "Qwen/Qwen3-Embedding-0.6B",
+    "successor_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v7/objects.jsonl",
+    "successor_objects_sha256": "8dd81907dfd7a2e2526a6f41ea9aad24845286adf268131a49c5947ffedbfa3d"
+  },
+  "outputs": {
+    "cache_manifest_ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v7/qwen3_embedding_0_6b_v1/manifest.json",
+    "cache_manifest_sha256": "66158562440ccd4fc3942bbb1c07df6164084b1342b5a9f8b090a350a8a75e14",
+    "dense_cache_ref": "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v7/qwen3_embedding_0_6b_v1/dense.float16.npy",
+    "dense_cache_sha256": "c58c1a1d528138a4838d5bce3299526e2cd6557e465d114ebe348d54df4abace",
+    "embedding_dimensions": 1024,
+    "object_count": 34189
+  },
+  "recorded_at": "2026-08-25",
+  "runtime": {
+    "base_object_count_reused": 34166,
+    "cache_dtype": "float16",
+    "cpu_fallback_count": 0,
+    "device": "cuda:0",
+    "model_generation_calls": 0,
+    "network_calls": 0,
+    "new_object_count_embedded": 23,
+    "parameter_dtype": "torch.float16"
+  },
+  "schema_version": "fin_ia_s1c_qwen_embedding_cache_successor_result_v1_0",
+  "status": "cuda_fp16_append_only_candidate_embedding_cache_materialized"
+}

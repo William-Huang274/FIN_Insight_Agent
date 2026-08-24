@@ -1,7 +1,7 @@
 # S1 工作记录 079：8GB 量化 4B shadow 获取与同池评测
 
 日期：2026-08-24
-状态：`acquisition_r1_succeeded / execution_program_pending`
+状态：`acquisition_r1_succeeded / controlled_shadow_r1_preregistered`
 
 ## 1. 决策目标
 
@@ -57,3 +57,25 @@ ANET、隐藏 pack binding 和 source-bound input 一律不载入。
 公开结果与 private full result 逐字节相同，result digest 已重算通过；最终目录重新计算的
 model/tool identity 与 transaction staging identity 完全一致。下一步必须先提交该 immutable
 acquisition result，再建立 execution program，禁止直接凭成功下载启动无契约推理。
+
+## 6. execution program 与 reranker 路线纠正
+
+tokenizer 预检对完整固定输入实测：embedding query 最大 138 tokens、document 最大
+2,199 tokens；reranker 官方完整 prompt 最大 2,397 tokens、p95 为 2,219。因此 execution
+统一使用 2,560-token 输入上限和 4,096 server context，不允许静默截断。
+
+设计时发现 `llama.cpp b10516` 虽公开 `/rerank`，但 causal-LM Qwen3 路线仍有 near-zero
+score 缺陷（issue #25447）；completion logit-margin 修复 PR #25448 已关闭但没有 merge，
+task instruction PR #20009 仍未 merge。直接使用该 endpoint 会生成形式完整但不可信的指标，
+故 material correction 为：禁止 `/rerank`，逐 pair 使用与官方 0.6B 完全相同的 token IDs 和
+fixed prompt，经 `/completion` 只生成一个 token，读取 raw `yes - no` logprob；任一 token
+不在 top-logprobs、tokenization 不一致、发生 truncation 或不能证明 full GPU offload 都
+fail closed。
+
+execution program：
+`configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_program_v1_0.json`，
+`result_digest=58fb88666784c2c71fb5c0cdd95ef2df0c8e63535877abe9c57359109b157681`。
+其中 `s1c_qrel_03` 只有 positive、没有 hard negative，按既有 metric contract 记为
+ineligible query，而不是伪造负样本或拒绝整个 projection；三个 case 都仍有足够比较对。
+runner 和 program 必须先提交并与 upstream 相等；由于 GitHub HTTPS 暂时超时／reset，当前
+不得绕过 clean-sync gate 启动推理。

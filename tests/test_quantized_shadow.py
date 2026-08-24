@@ -12,9 +12,11 @@ from retrieval.quantized_shadow import (
     QUANTIZED_MANIFEST_SCHEMA,
     TOOL_MANIFEST_NAME,
     TOOL_MANIFEST_SCHEMA,
+    build_qwen3_reranker_prompt,
     compile_controlled_ranking_metrics,
     compile_quantized_shadow_decision,
     llama_cpp_tool_identity,
+    parse_llama_yes_no_margin,
     quantized_gguf_identity,
 )
 from scripts.data_retrieval.acquire_s1_quantized_4b_shadow_assets import (
@@ -121,6 +123,51 @@ def test_safe_zip_extraction_rejects_parent_escape(tmp_path: Path) -> None:
         _safe_extract_zip(archive, tmp_path / "destination")
 
     assert not (tmp_path / "outside.dll").exists()
+
+
+def test_qwen3_prompt_matches_official_yes_no_surface() -> None:
+    prompt = build_qwen3_reranker_prompt(
+        instruction="financial evidence",
+        query="Dell AI server revenue",
+        document="Dell disclosed AI server revenue.",
+    )
+
+    assert prompt.startswith(
+        "<|im_start|>system\nJudge whether the Document meets the requirements"
+    )
+    assert (
+        "<Instruct>: financial evidence\n<Query>: Dell AI server revenue\n"
+        "<Document>: Dell disclosed AI server revenue."
+    ) in prompt
+    assert prompt.endswith(
+        "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+    )
+
+
+def test_yes_no_margin_uses_raw_top_logprobs_and_rejects_truncation() -> None:
+    response = {
+        "content": "yes",
+        "tokens": [10],
+        "truncated": False,
+        "tokens_evaluated": 120,
+        "probs": [
+            {
+                "top_logprobs": [
+                    {"id": 10, "token": "yes", "logprob": -0.1},
+                    {"id": 20, "token": "no", "logprob": -1.6},
+                ]
+            }
+        ],
+    }
+
+    parsed = parse_llama_yes_no_margin(
+        response, yes_token_id=10, no_token_id=20
+    )
+
+    assert parsed["score"] == pytest.approx(1.5)
+    response["truncated"] = True
+    with pytest.raises(ValueError, match="quantized_shadow_yes_no_response_invalid"):
+        parse_llama_yes_no_margin(response, yes_token_id=10, no_token_id=20)
 
 
 def _metrics(scores: tuple[float, float, float]) -> dict:

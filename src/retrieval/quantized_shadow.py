@@ -16,6 +16,13 @@ QUANTIZED_MANIFEST_NAME = "fin_ia_quantized_acquisition_manifest_v1_0.json"
 QUANTIZED_MANIFEST_SCHEMA = "fin_ia_quantized_acquisition_manifest_v1_0"
 TOOL_MANIFEST_NAME = "fin_ia_tool_acquisition_manifest_v1_0.json"
 TOOL_MANIFEST_SCHEMA = "fin_ia_tool_acquisition_manifest_v1_0"
+QWEN3_RERANKER_SYSTEM = (
+    "Judge whether the Document meets the requirements based on the Query and "
+    'the Instruct provided. Note that the answer can only be "yes" or "no".'
+)
+QWEN3_RERANKER_SUFFIX = (
+    "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+)
 
 
 def sha256_file(path: Path) -> str:
@@ -24,6 +31,86 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def build_qwen3_reranker_prompt(
+    *, instruction: str, query: str, document: str
+) -> str:
+    values = (instruction.strip(), query.strip(), document.strip())
+    if not all(values):
+        raise ValueError("quantized_shadow_reranker_prompt_field_empty")
+    return (
+        f"<|im_start|>system\n{QWEN3_RERANKER_SYSTEM}"
+        "<|im_end|>\n<|im_start|>user\n"
+        f"<Instruct>: {values[0]}\n<Query>: {values[1]}\n"
+        f"<Document>: {values[2]}{QWEN3_RERANKER_SUFFIX}"
+    )
+
+
+def parse_llama_yes_no_margin(
+    response: Mapping[str, Any],
+    *,
+    yes_token_id: int,
+    no_token_id: int,
+) -> dict[str, Any]:
+    if (
+        isinstance(yes_token_id, bool)
+        or isinstance(no_token_id, bool)
+        or not isinstance(yes_token_id, int)
+        or not isinstance(no_token_id, int)
+        or yes_token_id < 0
+        or no_token_id < 0
+        or yes_token_id == no_token_id
+        or response.get("truncated") is not False
+    ):
+        raise ValueError("quantized_shadow_yes_no_response_invalid")
+    probabilities = response.get("probs")
+    if probabilities is None:
+        probabilities = response.get("completion_probabilities")
+    if not isinstance(probabilities, list) or len(probabilities) != 1:
+        raise ValueError("quantized_shadow_yes_no_probability_row_invalid")
+    row = probabilities[0]
+    if not isinstance(row, Mapping):
+        raise ValueError("quantized_shadow_yes_no_probability_row_invalid")
+    top = row.get("top_logprobs")
+    if not isinstance(top, list):
+        raise ValueError("quantized_shadow_yes_no_top_logprobs_missing")
+    by_id: dict[int, float] = {}
+    token_text: dict[int, str] = {}
+    for item in top:
+        if not isinstance(item, Mapping):
+            raise ValueError("quantized_shadow_yes_no_top_logprobs_invalid")
+        token_id = item.get("id")
+        logprob = item.get("logprob")
+        if (
+            isinstance(token_id, bool)
+            or not isinstance(token_id, int)
+            or token_id in by_id
+            or isinstance(logprob, bool)
+            or not isinstance(logprob, (int, float))
+            or not math.isfinite(float(logprob))
+        ):
+            raise ValueError("quantized_shadow_yes_no_top_logprobs_invalid")
+        by_id[token_id] = float(logprob)
+        token_text[token_id] = str(item.get("token") or "")
+    if yes_token_id not in by_id or no_token_id not in by_id:
+        raise ValueError("quantized_shadow_yes_no_tokens_absent_from_top_logprobs")
+    margin = by_id[yes_token_id] - by_id[no_token_id]
+    if not math.isfinite(margin):
+        raise ValueError("quantized_shadow_yes_no_margin_not_finite")
+    return {
+        "score": margin,
+        "yes_token_id": yes_token_id,
+        "no_token_id": no_token_id,
+        "yes_token": token_text[yes_token_id],
+        "no_token": token_text[no_token_id],
+        "yes_logprob": by_id[yes_token_id],
+        "no_logprob": by_id[no_token_id],
+        "generated_content": str(response.get("content") or ""),
+        "generated_token_ids": list(response.get("tokens") or []),
+        "tokens_evaluated": response.get("tokens_evaluated"),
+        "timings": deepcopy(response.get("timings") or {}),
+    }
 
 
 def _read_json(path: Path, code: str) -> dict[str, Any]:
@@ -353,9 +440,11 @@ __all__ = [
     "QUANTIZED_MANIFEST_SCHEMA",
     "TOOL_MANIFEST_NAME",
     "TOOL_MANIFEST_SCHEMA",
+    "build_qwen3_reranker_prompt",
     "compile_controlled_ranking_metrics",
     "compile_quantized_shadow_decision",
     "llama_cpp_tool_identity",
+    "parse_llama_yes_no_margin",
     "quantized_gguf_identity",
     "sha256_file",
 ]

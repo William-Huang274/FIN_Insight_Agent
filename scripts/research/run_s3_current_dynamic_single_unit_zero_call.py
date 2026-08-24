@@ -247,9 +247,16 @@ def _fake_workpaper(
     }
 
 
-def run(*, attempt_id: str, private_output: Path, public_output: Path) -> dict[str, Any]:
+def run(
+    *,
+    attempt_id: str,
+    private_output: Path,
+    public_output: Path,
+    policy_ref: Path = POLICY_REF,
+) -> dict[str, Any]:
     recorded_at = _now()
-    policy = load_dynamic_single_unit_policy(_read_json(POLICY_REF))
+    resolved_policy_ref = policy_ref if policy_ref.is_absolute() else ROOT / policy_ref
+    policy = load_dynamic_single_unit_policy(_read_json(resolved_policy_ref))
     source_refs = policy["source_refs"]
     program = _read_json(Path(source_refs["request_program_ref"]))
     task_readiness = _read_json(Path(source_refs["task_readiness_ref"]))
@@ -258,6 +265,25 @@ def run(*, attempt_id: str, private_output: Path, public_output: Path) -> dict[s
     task_quantitative = _read_json(
         Path(source_refs["task_quantitative_result_ref"])
     )
+    product_value_bridge = None
+    product_value_bridge_ref = str(
+        source_refs.get("product_value_bridge_result_ref") or ""
+    )
+    if product_value_bridge_ref:
+        bridge_binding = dict(
+            task_readiness.get("source_bindings", {}).get(
+                "product_value_bridge_public_result", {}
+            )
+        )
+        if (
+            bridge_binding.get("ref") != product_value_bridge_ref
+            or bridge_binding.get("sha256")
+            != _sha256(Path(product_value_bridge_ref))
+        ):
+            raise DynamicSingleUnitLoopError(
+                "dynamic_single_unit_product_value_bridge_binding_invalid"
+            )
+        product_value_bridge = _read_json(Path(product_value_bridge_ref))
     catalog = compile_request_catalog(
         policy=policy,
         program=program,
@@ -290,6 +316,11 @@ def run(*, attempt_id: str, private_output: Path, public_output: Path) -> dict[s
         "policy_digest": canonical_digest(policy),
         "catalog_digest": catalog["catalog_digest"],
         "pack_payload_digest": evidence_pack["pack_payload_digest"],
+        "product_value_bridge_result_digest": (
+            product_value_bridge.get("result_digest")
+            if product_value_bridge is not None
+            else None
+        ),
     }
     session_id = "SESSION::" + canonical_digest(session_seed)[:24].upper()
     base_plan_body = {
@@ -416,6 +447,7 @@ def run(*, attempt_id: str, private_output: Path, public_output: Path) -> dict[s
             consumer_policy=consumer_policy,
             task_quantitative_result=task_quantitative,
             round_index=round_index,
+            product_value_bridge_result=product_value_bridge,
         )
         replay = compile_round_response(
             policy=policy,
@@ -425,6 +457,7 @@ def run(*, attempt_id: str, private_output: Path, public_output: Path) -> dict[s
             consumer_policy=consumer_policy,
             task_quantitative_result=task_quantitative,
             round_index=round_index,
+            product_value_bridge_result=product_value_bridge,
         )
         if response["round_response_digest"] != replay["round_response_digest"]:
             raise DynamicSingleUnitLoopError(
@@ -837,6 +870,31 @@ def run(*, attempt_id: str, private_output: Path, public_output: Path) -> dict[s
             workpaper_tool["function"]["name"] == "submit_specialist_workpaper"
             and bool(validated_fixture["workpaper_digest"])
         ),
+        "product_value_bridge_reaches_workpaper_fail_closed": (
+            product_value_bridge is None
+            or (
+                workpaper_context.get("product_value_bridge", {})
+                .get("bridge_readiness", {})
+                .get("reported_product_revenue_bridge_available")
+                is True
+                and workpaper_context.get("product_value_bridge", {})
+                .get("bridge_readiness", {})
+                .get("target_company_pvm_calculable")
+                is False
+                and workpaper_context.get("product_value_bridge", {})
+                .get("bridge_readiness", {})
+                .get("product_profit_bridge_calculable")
+                is False
+                and workpaper_context.get("product_value_bridge", {})
+                .get("pvm_bridge", {})
+                .get("price_effect_value")
+                is None
+                and workpaper_context.get("product_value_bridge", {})
+                .get("product_profit_bridge", {})
+                .get("implied_product_operating_profit_value")
+                is None
+            )
+        ),
         "cuda_fp16_required": (
             str(cuda.get("execution_device") or "").startswith("cuda:")
             and cuda.get("embedding_precision") == "fp16"
@@ -857,6 +915,7 @@ def run(*, attempt_id: str, private_output: Path, public_output: Path) -> dict[s
         "status": "current_dynamic_single_unit_zero_call_proven",
         "attempt_id": attempt_id,
         "recorded_at": recorded_at,
+        "policy_ref": _relative(resolved_policy_ref),
         "policy": policy,
         "request_catalog": catalog,
         "initial_messages": initial_messages,
@@ -895,24 +954,46 @@ def run(*, attempt_id: str, private_output: Path, public_output: Path) -> dict[s
         "result_digest": canonical_digest(private_body),
     }
     _write_json(private_output, private_result, exclusive=True)
+    current_runtime_binding = {
+        "evidence_pack_payload_digest": evidence_pack["pack_payload_digest"],
+        "reviewed_evidence_count": evidence_pack["summary"][
+            "accepted_evidence_items"
+        ],
+        "task_readiness_result_digest": task_readiness["result_digest"],
+        "task_readiness_status": task_readiness["status"],
+    }
+    if product_value_bridge is not None:
+        bridge_context = workpaper_context["product_value_bridge"]
+        current_runtime_binding["product_value_bridge"] = {
+            "ref": product_value_bridge_ref,
+            "sha256": _sha256(Path(product_value_bridge_ref)),
+            "result_digest": product_value_bridge["result_digest"],
+            "context_digest": bridge_context[
+                "product_value_bridge_context_digest"
+            ],
+            "source_numeric_observation_count": len(
+                bridge_context["source_numeric_observations"]
+            ),
+            "deterministic_derivation_count": len(
+                bridge_context["deterministic_source_surface_derivations"]
+            ),
+            "open_bridge_gap_count": len(
+                bridge_context["bridge_gap_receipts"]
+            ),
+            "target_company_pvm_calculable": False,
+            "product_profit_bridge_calculable": False,
+        }
     public_body = {
         "schema_version": "fin_ia_s3_dynamic_single_unit_zero_call_result_v1_0",
         "status": "current_dynamic_single_unit_zero_call_proven",
         "recorded_at": recorded_at,
         "attempt_id": attempt_id,
         "policy_binding": {
-            "ref": POLICY_REF.as_posix(),
-            "sha256": _sha256(POLICY_REF),
+            "ref": _relative(resolved_policy_ref),
+            "sha256": _sha256(resolved_policy_ref),
             "policy_digest": canonical_digest(policy),
         },
-        "current_runtime_binding": {
-            "evidence_pack_payload_digest": evidence_pack["pack_payload_digest"],
-            "reviewed_evidence_count": evidence_pack["summary"][
-                "accepted_evidence_items"
-            ],
-            "task_readiness_result_digest": task_readiness["result_digest"],
-            "task_readiness_status": task_readiness["status"],
-        },
+        "current_runtime_binding": current_runtime_binding,
         "execution_summary": {
             "retrieval_round_count": len(round_responses),
             "executed_request_count": len(executed_ids),
@@ -955,9 +1036,11 @@ def run(*, attempt_id: str, private_output: Path, public_output: Path) -> dict[s
         "private_result_sha256": _sha256(private_output),
         "authority": private_result["authority"],
         "known_boundary": (
-            "This proves the current R32 S1/S2 runtime, reviewed-Evidence gate, "
+            "This proves the policy-bound current S1/S2 runtime, reviewed-Evidence gate, "
             "typed feedback, plan/graph deltas, checkpoint/resume and final workpaper "
-            "contract in a two-round deterministic loop. The request and reflection "
+            "contract in a two-round deterministic loop. When the policy binds an S2 "
+            "product-value bridge, the exact revenue surface and typed null PVM/profit "
+            "boundary reach the workpaper context without creating NumericFacts. The request and reflection "
             "payloads are zero-model fixtures; natural DeepSeek planning, reflection "
             "and content quality require a separately signed exact-once live run."
         ),
@@ -973,6 +1056,7 @@ def run(*, attempt_id: str, private_output: Path, public_output: Path) -> dict[s
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--attempt-id", required=True)
+    parser.add_argument("--policy", default=str(POLICY_REF))
     parser.add_argument("--private-output")
     parser.add_argument("--public-output", default=str(DEFAULT_PUBLIC))
     args = parser.parse_args()
@@ -992,6 +1076,7 @@ def main() -> int:
         attempt_id=args.attempt_id,
         private_output=private_output,
         public_output=public_output,
+        policy_ref=Path(args.policy),
     )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0

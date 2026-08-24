@@ -19,6 +19,7 @@ from sec_agent.research.dynamic_single_unit_loop import (  # noqa: E402
     compile_reflection_submission_messages,
     compile_initial_messages,
     compile_material_requirement_blueprints,
+    compile_product_value_bridge_context,
     compile_request_catalog,
     compile_workpaper_context,
     compile_workpaper_repair_context,
@@ -47,6 +48,26 @@ READINESS_REF = (
     ROOT
     / "configs/retrieval/"
     "fin_ia_0_1_3_s1_s2_dell_value_capture_task_readiness_result_v1_0.json"
+)
+PRODUCT_VALUE_BRIDGE_REF = (
+    ROOT
+    / "configs/financial_facts/"
+    "fin_ia_0_1_3_s2_dell_product_value_bridge_result_v1_0.json"
+)
+R34_POLICY_REF = (
+    ROOT
+    / "configs/research/"
+    "fin_ia_0_1_3_s3_dell_dynamic_single_unit_loop_policy_v1_1.json"
+)
+R34_PROGRAM_REF = (
+    ROOT
+    / "configs/retrieval/"
+    "fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_2.json"
+)
+R34_READINESS_REF = (
+    ROOT
+    / "configs/retrieval/"
+    "fin_ia_0_1_3_s1_s2_dell_value_capture_task_readiness_result_v1_1.json"
 )
 
 
@@ -85,6 +106,26 @@ def test_initial_message_contains_no_answer_pack_or_numeric_fact(
     assert "reviewed_evidence" not in rendered.lower()
     assert "$43.8" not in rendered
     assert "戴尔 AI 服务器收入增长" in rendered
+
+
+def test_r34_policy_binds_current_r4_readiness_and_s2_bridge() -> None:
+    current_policy = load_dynamic_single_unit_policy(_json(R34_POLICY_REF))
+    catalog = compile_request_catalog(
+        policy=current_policy,
+        program=_json(R34_PROGRAM_REF),
+        task_readiness=_json(R34_READINESS_REF),
+    )
+    bridge = compile_product_value_bridge_context(_json(PRODUCT_VALUE_BRIDGE_REF))
+
+    assert len(catalog["requests"]) == 12
+    assert current_policy["source_refs"]["task_quantitative_result_ref"].endswith(
+        "_v1_1.json"
+    )
+    assert current_policy["source_refs"]["product_value_bridge_result_ref"] == str(
+        PRODUCT_VALUE_BRIDGE_REF.relative_to(ROOT)
+    ).replace("\\", "/")
+    assert bridge["bridge_readiness"]["reported_product_revenue_bridge_available"]
+    assert bridge["bridge_readiness"]["target_company_pvm_calculable"] is False
 
 
 def test_request_tool_and_validator_fail_closed_on_repeat_and_cross_case(
@@ -447,6 +488,9 @@ def test_strict_reflection_submission_binds_local_identity_and_requires_missing_
 def test_workpaper_context_merges_rounds_without_candidate_promotion(
     policy: dict,
 ) -> None:
+    product_value_bridge = compile_product_value_bridge_context(
+        _json(PRODUCT_VALUE_BRIDGE_REF)
+    )
     round_one = {
         "reviewed_evidence": [
             {
@@ -472,6 +516,7 @@ def test_workpaper_context_merges_rounds_without_candidate_promotion(
                 {"scenario_id": "SCENARIO::ONE", "scenario_type": "base"}
             ],
         },
+        "product_value_bridge_context": product_value_bridge,
         "_dynamic_research_input": {
             "cells": [
                 {
@@ -504,6 +549,10 @@ def test_workpaper_context_merges_rounds_without_candidate_promotion(
     }
     assert cell["allowed_numeric_relation_refs"] == ["REL::ONE"]
     assert context["authority"]["candidate_or_graph_hypothesis_is_not_evidence"]
+    assert context["product_value_bridge"]["pvm_bridge"]["price_effect_value"] is None
+    assert context["product_value_bridge"]["product_profit_bridge"][
+        "implied_product_operating_profit_value"
+    ] is None
 
     submission = compile_workpaper_submission_view(context)
     assert submission["source_context_digest"] == context["context_digest"]
@@ -522,6 +571,9 @@ def test_workpaper_context_merges_rounds_without_candidate_promotion(
     ]
     assert "cell_analysis_view" not in submission
     assert "evidence_fact_catalog" not in submission
+    assert submission["product_value_bridge"]["source_result_digest"] == _json(
+        PRODUCT_VALUE_BRIDGE_REF
+    )["result_digest"]
 
     tampered = deepcopy(context)
     tampered["objective"]["research_question"] = "tampered"
@@ -530,7 +582,6 @@ def test_workpaper_context_merges_rounds_without_candidate_promotion(
         match="workpaper_submission_context_invalid",
     ):
         compile_workpaper_submission_view(tampered)
-
     prior_body = {
         "schema_version": "fin_ia_multi_agent_specialist_workpaper_v1_0",
         "agent_id": "AGENT::VALUE_CAPTURE",
@@ -593,3 +644,19 @@ def test_workpaper_context_merges_rounds_without_candidate_promotion(
             prior_workpaper=prior,
             feedback_receipts=[foreign],
         )
+
+
+def test_product_value_bridge_context_rejects_silent_pvm_value_creation() -> None:
+    from sec_agent.canonical_runtime.session import canonical_digest
+
+    bridge = _json(PRODUCT_VALUE_BRIDGE_REF)
+    mutated = deepcopy(bridge)
+    mutated["pvm_bridge"]["price_effect_value"] = "1"
+    body = {key: value for key, value in mutated.items() if key != "result_digest"}
+    mutated["result_digest"] = canonical_digest(body)
+
+    with pytest.raises(
+        DynamicSingleUnitLoopError,
+        match="product_value_bridge_fail_closed_invalid",
+    ):
+        compile_product_value_bridge_context(mutated)

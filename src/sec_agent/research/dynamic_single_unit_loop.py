@@ -771,6 +771,98 @@ def _task_quantitative_projection(
     }
 
 
+def compile_product_value_bridge_context(
+    product_value_bridge_result: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Project the source-bound S2 bridge without inventing missing PVM inputs.
+
+    The tracked public bridge is already a bounded S2 authority surface.  This
+    compiler verifies its digest and its fail-closed invariants before exposing
+    the useful revenue bridge, formulas, and typed gaps to a dynamic research
+    node.  It intentionally does not turn source-visible observations or
+    deterministic ratios into new ``NumericFact`` objects.
+    """
+
+    value = deepcopy(dict(product_value_bridge_result))
+    result_digest = str(value.pop("result_digest", ""))
+    _require(
+        value.get("schema_version")
+        == "fin_ia_s2_product_value_bridge_public_result_v1_0"
+        and value.get("status") == "bounded_product_value_bridge_with_typed_gaps"
+        and value.get("case_key") == "DELL"
+        and result_digest == canonical_digest(value),
+        "dynamic_single_unit_product_value_bridge_identity_invalid",
+    )
+    pvm = _mapping(
+        value.get("pvm_bridge"),
+        "dynamic_single_unit_product_value_bridge_pvm_invalid",
+    )
+    profit = _mapping(
+        value.get("product_profit_bridge"),
+        "dynamic_single_unit_product_value_bridge_profit_invalid",
+    )
+    readiness = _mapping(
+        value.get("bridge_readiness"),
+        "dynamic_single_unit_product_value_bridge_readiness_invalid",
+    )
+    authority = _mapping(
+        value.get("authority"),
+        "dynamic_single_unit_product_value_bridge_authority_invalid",
+    )
+    observations = deepcopy(list(value.get("source_numeric_observations") or ()))
+    derivations = deepcopy(
+        list(value.get("deterministic_source_surface_derivations") or ())
+    )
+    gaps = deepcopy(list(value.get("bridge_gap_receipts") or ()))
+    _require(
+        bool(observations)
+        and bool(derivations)
+        and bool(gaps)
+        and readiness.get("safe_for_bounded_dynamic_research") is True
+        and readiness.get("reported_product_revenue_bridge_available") is True
+        and readiness.get("target_company_pvm_calculable") is False
+        and readiness.get("product_profit_bridge_calculable") is False
+        and readiness.get("s2_stage_qualified") is False
+        and pvm.get("state") == "not_calculable_typed_input_gaps"
+        and all(
+            pvm.get(field) is None
+            for field in (
+                "price_effect_value",
+                "volume_effect_value",
+                "mix_effect_value",
+                "unexplained_residual_value",
+            )
+        )
+        and profit.get("state")
+        == "not_calculable_product_profit_attribution_gap"
+        and profit.get("implied_product_operating_profit_value") is None
+        and all(row.get("closed") is False for row in gaps)
+        and authority.get("candidate_or_model_numbers_created") is False
+        and authority.get("public_information_gap_claimed") is False
+        and authority.get("product_publication") is False,
+        "dynamic_single_unit_product_value_bridge_fail_closed_invalid",
+    )
+    body = {
+        "schema_version": "fin_ia_dynamic_product_value_bridge_context_v1_0",
+        "source_result_digest": result_digest,
+        "case_key": value["case_key"],
+        "research_as_of": value.get("research_as_of"),
+        "status": value["status"],
+        "source_numeric_observations": observations,
+        "deterministic_source_surface_derivations": derivations,
+        "pvm_bridge": pvm,
+        "product_profit_bridge": profit,
+        "bridge_gap_receipts": gaps,
+        "bridge_readiness": readiness,
+        "authority": authority,
+        "known_boundary": value.get("known_boundary"),
+    }
+    return {
+        **body,
+        "product_value_bridge_context_digest": canonical_digest(body),
+    }
+
+
 def compile_round_response(
     *,
     policy: Mapping[str, Any],
@@ -780,6 +872,7 @@ def compile_round_response(
     consumer_policy: Mapping[str, Any],
     task_quantitative_result: Mapping[str, Any],
     round_index: int,
+    product_value_bridge_result: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     trusted = load_dynamic_single_unit_policy(policy)
     projection = compile_dynamic_research_input_projection(
@@ -876,6 +969,10 @@ def compile_round_response(
             "failed_route_is_not_public_non_disclosure": True,
         },
     }
+    if product_value_bridge_result is not None:
+        body["product_value_bridge_context"] = (
+            compile_product_value_bridge_context(product_value_bridge_result)
+        )
     return {
         **body,
         "round_response_digest": canonical_digest(body),
@@ -1736,6 +1833,7 @@ def compile_workpaper_context(
     gaps: dict[str, dict[str, Any]] = {}
     estimates: dict[str, dict[str, Any]] = {}
     scenarios: dict[str, dict[str, Any]] = {}
+    product_value_bridges: dict[str, dict[str, Any]] = {}
     method_pack: dict[str, Any] | None = None
     graph_packs: list[dict[str, Any]] = []
     objective_cell_id = str(trusted["objective"]["cell_id"])
@@ -1755,6 +1853,21 @@ def compile_workpaper_context(
             estimates[str(row["estimate_id"])] = deepcopy(dict(row))
         for row in task.get("scenarios") or ():
             scenarios[str(row["scenario_id"])] = deepcopy(dict(row))
+        bridge = response.get("product_value_bridge_context")
+        if isinstance(bridge, Mapping):
+            bridge_value = deepcopy(dict(bridge))
+            bridge_digest = str(
+                bridge_value.pop("product_value_bridge_context_digest", "")
+            )
+            _require(
+                bool(bridge_digest)
+                and bridge_digest == canonical_digest(bridge_value),
+                "dynamic_single_unit_product_value_bridge_context_invalid",
+            )
+            product_value_bridges[bridge_digest] = {
+                **bridge_value,
+                "product_value_bridge_context_digest": bridge_digest,
+            }
         dynamic = response.get("_dynamic_research_input") or {}
         for cell in dynamic.get("cells") or ():
             if str(cell.get("cell_id") or "") == objective_cell_id:
@@ -1826,6 +1939,14 @@ def compile_workpaper_context(
             "working_draft_not_business_truth": True,
         },
     }
+    if product_value_bridges:
+        _require(
+            len(product_value_bridges) == 1,
+            "dynamic_single_unit_product_value_bridge_context_drift",
+        )
+        model_context["product_value_bridge"] = next(
+            iter(product_value_bridges.values())
+        )
     return {
         **model_context,
         "context_digest": canonical_digest(model_context),
@@ -1961,6 +2082,10 @@ def compile_workpaper_submission_view(
         "rules": deepcopy(context.get("rules") or []),
         "authority": deepcopy(context.get("authority") or {}),
     }
+    if isinstance(context.get("product_value_bridge"), Mapping):
+        body["product_value_bridge"] = deepcopy(
+            dict(context["product_value_bridge"])
+        )
     if context_schema_version == WORKPAPER_REPAIR_CONTEXT_SCHEMA_VERSION:
         repair_state = context.get("repair_state")
         _require(
@@ -2053,6 +2178,7 @@ __all__ = [
     "compile_controlled_batch_projection",
     "compile_initial_messages",
     "compile_material_requirement_blueprints",
+    "compile_product_value_bridge_context",
     "compile_reflection_artifacts",
     "compile_reflection_submission_messages",
     "compile_request_catalog",

@@ -36,6 +36,21 @@ REPLAY = (
     / "dell-r1"
     / "full_result.json"
 )
+R4_PROGRAM = (
+    ROOT
+    / "configs"
+    / "financial_facts"
+    / "fin_ia_0_1_3_s2_dell_task_quantitative_program_v1_1.json"
+)
+R4_PACK = (
+    ROOT
+    / "data"
+    / "workbench_private"
+    / "fin_0_1_3_s1_dell_direct_source_evidence"
+    / "r4"
+    / "successor"
+    / "pack.json"
+)
 
 
 def _json(path: Path) -> dict:
@@ -115,3 +130,20 @@ def test_every_current_pack_gap_requires_explicit_owner() -> None:
         match="task_quantitative_gap_coverage_invalid",
     ):
         _compile(program=program)
+
+
+def test_r4_successor_rebinds_narrowed_inputs_without_closing_pack_gaps() -> None:
+    result = _compile(program=_json(R4_PROGRAM), pack=_json(R4_PACK))
+
+    assert result["evidence_pack_binding"]["pack_payload_digest"] == (
+        "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98"
+    )
+    assert len(result["typed_gap_dispositions"]) == 14
+    assert all(row["closed"] is False for row in result["typed_gap_dispositions"])
+    gap_rows = {row["gap_id"]: row for row in result["typed_gap_dispositions"]}
+    assert "推荐捆绑报价" in gap_rows["dell-gap-pricing-asp"]["reason_zh"]
+    assert "四套 XE9680" in gap_rows["dell-gap-pricing-units"]["reason_zh"]
+    assert "双向官方材料" in gap_rows[
+        "dell-gap-supplier-capacity-readthrough"
+    ]["reason_zh"]
+    assert result["authority"]["target_company_ASP_units_PVM_or_allocation_inferred"] is False

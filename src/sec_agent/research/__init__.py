@@ -242,6 +242,12 @@ from .task_quantitative_program import (
     TaskQuantitativeProgramError,
     compile_task_quantitative_program,
 )
+from .product_value_bridge import (
+    PRODUCT_VALUE_BRIDGE_PROGRAM_SCHEMA,
+    PRODUCT_VALUE_BRIDGE_RESULT_SCHEMA,
+    ProductValueBridgeError,
+    compile_product_value_bridge,
+)
 from .actionable_research_evaluation import (
     ACTIONABLE_RESEARCH_EVALUATION_SCHEMA_VERSION,
     ActionableResearchEvaluationError,
@@ -398,6 +404,10 @@ __all__ = [
     "TASK_QUANTITATIVE_PROJECTION_SCHEMA_VERSION",
     "TaskQuantitativeProgramError",
     "compile_task_quantitative_program",
+    "PRODUCT_VALUE_BRIDGE_PROGRAM_SCHEMA",
+    "PRODUCT_VALUE_BRIDGE_RESULT_SCHEMA",
+    "ProductValueBridgeError",
+    "compile_product_value_bridge",
     "compile_research_estimate",
     "compile_research_scenario",
     "evaluate_actionable_research_state",

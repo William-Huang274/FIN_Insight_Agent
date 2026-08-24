@@ -15,9 +15,9 @@
     "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R37",
-  "resource_bytes": 3601695,
-  "resource_canonical_digest": "f113d298f12c9af2d6888979fc21a50ea56f48d280f6431788c0108ddcdb7427",
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R38",
+  "resource_bytes": 3601240,
+  "resource_canonical_digest": "671d0bfef84e6aa5cf885317e6d38bdcbd3ad1b44848c289994c86d9d6ed5f6b",
   "resource_count": 28,
   "resources": [
     {
@@ -53,10 +53,10 @@
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "lazy_first_controlled_research_plan",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_7.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_8.json",
       "required": true,
       "resource_id": "application.config.current_hybrid_candidate_runtime_policy",
-      "sha256": "b37c752cb75d37a217d10afd93c0b4b2c57fd6d2d7fdcb2d369f627302f80de8",
+      "sha256": "440809724398a3b759e8b031e4420040e5effa44936dbc6cc71395afbcd09037",
       "source_owner": "retrieval.hybrid_candidate_runtime.LocalQwenHybridCandidateRuntime.from_policy"
     },
     {
@@ -180,16 +180,16 @@
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
     },
     {
-      "bytes": 5474,
+      "bytes": 5420,
       "classification": "provider_neutral_current_s1_runtime_binding_policy",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_12.json",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_13.json",
       "required": true,
       "resource_id": "application.config.current_s1_runtime_binding_policy",
-      "sha256": "371d0990eb574d4454090016fdff8d871f9c18bba387add25a0c73227c131095",
+      "sha256": "a4f7bd2e3c0fe7e31f5b6507b20b4a231b5cba405e8ecd707ae4f876dfc6a442",
       "source_owner": "retrieval.current_runtime_binding.load_current_s1_runtime_binding_policy"
     },
     {
@@ -245,16 +245,16 @@
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
     },
     {
-      "bytes": 2840814,
+      "bytes": 2840414,
       "classification": "digest_bound_read_only_retrieval_candidate_result",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_3.json",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_4.json",
       "required": true,
       "resource_id": "application.result.current_research_retrieval_snapshot",
-      "sha256": "110632491692bc63760faf2a41206c599650396afe75826e57d9318b2b010445",
+      "sha256": "dcdfe40e50c4adc3eae555fa45458ccd8cf911a550f11b94a0bac0c1617c90f0",
       "source_owner": "apps.workbench.backend.application.research_retrieval_service"
     },
     {
@@ -310,16 +310,16 @@
       "source_owner": "retrieval.product_pack_readiness.compile_product_pack_readiness"
     },
     {
-      "bytes": 13305,
+      "bytes": 13304,
       "classification": "digest_bound_current_s1_runtime_binding_receipt",
       "consumer_ids": [
         "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
-      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_13.json",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_14.json",
       "required": true,
       "resource_id": "application.result.current_s1_runtime_binding_receipt",
-      "sha256": "b5225d24e4df208ad1ab2774f17a2b93297189da823a5103874b2c9dba73d465",
+      "sha256": "6cd117423f1ef2037720ab5399f95d074056c1ebde636050d02436fa20aee435",
       "source_owner": "retrieval.current_runtime_binding.validate_current_s1_runtime_binding_receipt"
     },
     {

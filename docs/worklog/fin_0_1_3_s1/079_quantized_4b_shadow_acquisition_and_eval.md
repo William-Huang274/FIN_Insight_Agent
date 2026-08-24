@@ -104,3 +104,10 @@ fail closed：不是 OOM、不是 token drift、不是模型输出失败，而�
 R1 结果不得补写成功阶段、不得复用未公开的 embedding score。R2 必须重跑相同四阶段，
 唯一 proof 修复为把 llama server log verbosity 固定为 4，并把 observed embeddings
 `n_batch=512` 显式写入命令，避免依赖 runtime 自动降档；仍需相同 full-offload gate。
+
+2026-08-25 已预注册 R2 successor：
+`configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_program_v1_1.json`，
+`result_digest=f3f760565efa585c6caefe927380e9eae0167f9bc680d0d2d75dc22992cfa5e4`。
+successor loader 内容寻址读取 R1 program 与 failure，硬编码只允许上述两项变化；其余
+settings、四节点 TokenBudgetBasis、quality gates、authority 与 known boundary 从 R1
+继承。R2 attempt ID 为 `controlled-shadow-r2`，输出使用 v1.1，绝不覆盖 v1.0。

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 from contextlib import AbstractContextManager
+from copy import deepcopy
 from datetime import datetime, timezone
 import gc
 import hashlib
@@ -52,13 +53,13 @@ from retrieval.query_plan import canonical_digest  # noqa: E402
 
 PROGRAM = (
     "configs/retrieval/"
-    "fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_program_v1_0.json"
+    "fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_program_v1_1.json"
 )
 OUTPUT = (
     "configs/retrieval/"
-    "fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_result_v1_0.json"
+    "fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_result_v1_1.json"
 )
-ATTEMPT_ID = "controlled-shadow-r1"
+ATTEMPT_ID = "controlled-shadow-r2"
 
 
 def parse_args() -> argparse.Namespace:
@@ -132,9 +133,9 @@ def _verify_program(program_path: Path, program: Mapping[str, Any]) -> None:
     if not (
         program_path == _repo_path(PROGRAM)
         and program.get("schema_version")
-        == "fin_ia_s1_quantized_4b_controlled_shadow_program_v1_0"
+        == "fin_ia_s1_quantized_4b_controlled_shadow_program_v1_1"
         and program.get("status")
-        == "preregistered_controlled_shadow_ready_after_clean_commit"
+        == "preregistered_r1_log_proof_successor_ready_after_clean_commit"
         and program.get("attempt_id") == ATTEMPT_ID
         and program.get("result_digest") == canonical_digest(unsigned)
     ):
@@ -151,6 +152,71 @@ def _verify_program(program_path: Path, program: Mapping[str, Any]) -> None:
                 raise ValueError(
                     f"quantized_shadow_binding_drift:{section}:{row.get('path')}"
                 )
+
+
+def _effective_successor_program(successor: Mapping[str, Any]) -> dict[str, Any]:
+    predecessor_path = _repo_path(str(successor["predecessor_program_ref"]))
+    failure_path = _repo_path(str(successor["predecessor_failure_ref"]))
+    predecessor = _read_json(predecessor_path)
+    failure = _read_json(failure_path)
+    predecessor_unsigned = {
+        key: value for key, value in predecessor.items() if key != "result_digest"
+    }
+    failure_unsigned = {
+        key: value for key, value in failure.items() if key != "result_digest"
+    }
+    if not (
+        predecessor.get("schema_version")
+        == "fin_ia_s1_quantized_4b_controlled_shadow_program_v1_0"
+        and predecessor.get("result_digest")
+        == canonical_digest(predecessor_unsigned)
+        == successor["predecessor_program_result_digest"]
+        and _sha256(predecessor_path) == successor["predecessor_program_sha256"]
+        and failure.get("schema_version")
+        == "fin_ia_s1_quantized_4b_controlled_shadow_result_v1_0"
+        and failure.get("status")
+        == "controlled_shadow_failed_successor_attempt_required"
+        and failure.get("attempt_id") == "controlled-shadow-r1"
+        and failure.get("failure", {}).get("message")
+        == "quantized_shadow_full_gpu_offload_not_proved"
+        and failure.get("result_digest")
+        == canonical_digest(failure_unsigned)
+        == successor["predecessor_failure_result_digest"]
+        and _sha256(failure_path) == successor["predecessor_failure_sha256"]
+        and successor.get("only_successor_changes")
+        == {
+            "llama_log_verbosity": 4,
+            "llama_batch_size": 512,
+            "reason": (
+                "R1 completed both embedding scorers but default verbosity 3 "
+                "did not expose the layer-offload proof line; the server also "
+                "observed and applied n_batch 512 for embedding mode."
+            ),
+        }
+    ):
+        raise ValueError("quantized_shadow_successor_predecessor_invalid")
+    effective = deepcopy(predecessor)
+    for key in (
+        "schema_version",
+        "status",
+        "program_id",
+        "attempt_id",
+        "implementation_bindings",
+        "result_digest",
+    ):
+        effective[key] = deepcopy(successor[key])
+    effective["bound_inputs"] = deepcopy(successor["bound_inputs"])
+    effective["predecessor"] = {
+        "program_ref": successor["predecessor_program_ref"],
+        "program_sha256": successor["predecessor_program_sha256"],
+        "program_result_digest": successor["predecessor_program_result_digest"],
+        "failure_ref": successor["predecessor_failure_ref"],
+        "failure_sha256": successor["predecessor_failure_sha256"],
+        "failure_result_digest": successor["predecessor_failure_result_digest"],
+    }
+    effective["execution_settings"]["llama_log_verbosity"] = 4
+    effective["execution_settings"]["llama_batch_size"] = 512
+    return effective
 
 
 def _hardware_receipt() -> dict[str, Any]:
@@ -514,6 +580,8 @@ class LocalLlamaServer(AbstractContextManager["LocalLlamaServer"]):
         log_path: Path,
         mode: str,
         context_size: int,
+        batch_size: int,
+        log_verbosity: int,
         call_counts: Counter[str],
     ) -> None:
         self.server_path = server_path
@@ -522,6 +590,8 @@ class LocalLlamaServer(AbstractContextManager["LocalLlamaServer"]):
         self.log_path = log_path
         self.mode = mode
         self.context_size = context_size
+        self.batch_size = batch_size
+        self.log_verbosity = log_verbosity
         self.call_counts = call_counts
         self.port = _free_local_port()
         self.base_url = f"http://127.0.0.1:{self.port}"
@@ -557,7 +627,7 @@ class LocalLlamaServer(AbstractContextManager["LocalLlamaServer"]):
             "--ctx-size",
             str(self.context_size),
             "--batch-size",
-            str(self.context_size),
+            str(self.batch_size),
             "--ubatch-size",
             "512",
             "--parallel",
@@ -567,6 +637,8 @@ class LocalLlamaServer(AbstractContextManager["LocalLlamaServer"]):
             "8",
             "--threads-batch",
             "8",
+            "--log-verbosity",
+            str(self.log_verbosity),
         ]
         if self.mode == "embedding":
             command.extend(
@@ -583,6 +655,8 @@ class LocalLlamaServer(AbstractContextManager["LocalLlamaServer"]):
             }
         )
         creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        self.receipt["command"] = command
+        self.receipt["command_digest"] = canonical_digest(command)
         self.monitor = GpuMonitor()
         self.monitor.__enter__()
         self.started = time.perf_counter()
@@ -718,6 +792,8 @@ def _run_challenger_embedding(
     maximum_tokens: int,
     context_size: int,
     expected_dimensions: int,
+    batch_size: int,
+    log_verbosity: int,
     call_counts: Counter[str],
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     documents = _unique_documents(rows)
@@ -736,6 +812,8 @@ def _run_challenger_embedding(
         log_path=log_path,
         mode="embedding",
         context_size=context_size,
+        batch_size=batch_size,
+        log_verbosity=log_verbosity,
         call_counts=call_counts,
     )
     with server:
@@ -876,6 +954,8 @@ def _run_challenger_reranker(
     maximum_tokens: int,
     context_size: int,
     n_probs: int,
+    batch_size: int,
+    log_verbosity: int,
     call_counts: Counter[str],
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     pairs = _flatten_pairs(rows)
@@ -894,6 +974,8 @@ def _run_challenger_reranker(
         log_path=log_path,
         mode="completion",
         context_size=context_size,
+        batch_size=batch_size,
+        log_verbosity=log_verbosity,
         call_counts=call_counts,
     )
     parsed_rows: list[dict[str, Any]] = []
@@ -1065,8 +1147,9 @@ def main() -> int:
     private_path = private_dir / "full_result.json"
     if output_path.exists() or private_path.exists() or private_dir.exists():
         raise ValueError("quantized_shadow_attempt_output_already_exists")
-    program = _read_json(program_path)
-    _verify_program(program_path, program)
+    successor_program = _read_json(program_path)
+    _verify_program(program_path, successor_program)
+    program = _effective_successor_program(successor_program)
     git_receipt = _clean_git_receipt()
     hardware = _hardware_receipt()
     gate = program["resource_gate"]
@@ -1140,6 +1223,8 @@ def main() -> int:
                 maximum_tokens=settings["maximum_input_tokens"],
                 context_size=settings["llama_context_size"],
                 expected_dimensions=settings["challenger_embedding_dimensions"],
+                batch_size=settings["llama_batch_size"],
+                log_verbosity=settings["llama_log_verbosity"],
                 call_counts=call_counts,
             )
         )
@@ -1186,6 +1271,8 @@ def main() -> int:
                 maximum_tokens=settings["maximum_input_tokens"],
                 context_size=settings["llama_context_size"],
                 n_probs=settings["reranker_n_probs"],
+                batch_size=settings["llama_batch_size"],
+                log_verbosity=settings["llama_log_verbosity"],
                 call_counts=call_counts,
             )
         )
@@ -1206,15 +1293,15 @@ def main() -> int:
             gates=program["quality_gates"],
         )
         body = {
-            "schema_version": "fin_ia_s1_quantized_4b_controlled_shadow_result_v1_0",
+            "schema_version": "fin_ia_s1_quantized_4b_controlled_shadow_result_v1_1",
             "status": "controlled_shadow_complete_no_runtime_or_s1_authority",
-            "recorded_at": "2026-08-24",
+            "recorded_at": "2026-08-25",
             "started_at_utc": started_at,
             "completed_at_utc": datetime.now(timezone.utc).isoformat(),
             "attempt_id": args.attempt_id,
             "program_ref": program_path.relative_to(ROOT).as_posix(),
             "program_sha256": _sha256(program_path),
-            "program_result_digest": program["result_digest"],
+            "program_result_digest": successor_program["result_digest"],
             "git_receipt": git_receipt,
             "hardware_before": hardware,
             "eval": {
@@ -1286,15 +1373,15 @@ def main() -> int:
     except Exception as exc:
         _release_cuda()
         body = {
-            "schema_version": "fin_ia_s1_quantized_4b_controlled_shadow_result_v1_0",
+            "schema_version": "fin_ia_s1_quantized_4b_controlled_shadow_result_v1_1",
             "status": "controlled_shadow_failed_successor_attempt_required",
-            "recorded_at": "2026-08-24",
+            "recorded_at": "2026-08-25",
             "started_at_utc": started_at,
             "completed_at_utc": datetime.now(timezone.utc).isoformat(),
             "attempt_id": args.attempt_id,
             "program_ref": program_path.relative_to(ROOT).as_posix(),
             "program_sha256": _sha256(program_path),
-            "program_result_digest": program["result_digest"],
+            "program_result_digest": successor_program["result_digest"],
             "git_receipt": git_receipt,
             "hardware_before": hardware,
             "failure": {
